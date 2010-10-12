@@ -24,12 +24,12 @@ Global global;
 
 void init_textures() {
 	load_texture(FILE_PREFIX "gfx/proyoumu.png", &global.textures.projwave);
-	load_texture(FILE_PREFIX "gfx/projectiles/ball.png", &global.textures.ball);
-	load_texture(FILE_PREFIX "gfx/projectiles/ball_clr.png", &global.textures.ball_c);
-	load_texture(FILE_PREFIX "gfx/projectiles/rice.png", &global.textures.rice);
-	load_texture(FILE_PREFIX "gfx/projectiles/rice_clr.png", &global.textures.rice_c);
-	load_texture(FILE_PREFIX "gfx/projectiles/bigball.png", &global.textures.bigball);
-	load_texture(FILE_PREFIX "gfx/projectiles/bigball_clr.png", &global.textures.bigball_c);
+	// load_texture(FILE_PREFIX "gfx/projectiles/ball.png", &global.textures.ball);
+	// load_texture(FILE_PREFIX "gfx/projectiles/ball_clr.png", &global.textures.ball_c);
+	// load_texture(FILE_PREFIX "gfx/projectiles/rice.png", &global.textures.rice);
+	// load_texture(FILE_PREFIX "gfx/projectiles/rice_clr.png", &global.textures.rice_c);
+	// load_texture(FILE_PREFIX "gfx/projectiles/bigball.png", &global.textures.bigball);
+	// load_texture(FILE_PREFIX "gfx/projectiles/bigball_clr.png", &global.textures.bigball_c);
 	load_texture(FILE_PREFIX "gfx/wasser.png", &global.textures.water);
 	load_texture(FILE_PREFIX "gfx/hud.png", &global.textures.hud);
 	
