@@ -23,11 +23,16 @@
 void load_texture(const char *filename, Texture* texture) {
 	SDL_Surface *surface = IMG_Load(filename);
 	
+	if(surface == NULL)
+		err(EXIT_FAILURE,"load_texture()\n-- cannot load '%s'", filename);
+	
 	glGenTextures(1, &texture->gltex);
 	glBindTexture(GL_TEXTURE_2D, texture->gltex);
 	
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
 	int nw = 2;
 	int nh = 2;
@@ -47,7 +52,6 @@ void load_texture(const char *filename, Texture* texture) {
 				tex[y*nw+x] = '\0';
 		}
 	}
-
 	
 	texture->w = surface->w;
 	texture->h = surface->h;
@@ -66,18 +70,27 @@ void draw_texture(int x, int y, Texture *tex) {
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 	
+	glPushMatrix();
+	
+	float wq = ((float)tex->w)/tex->trueh;
+	float hq = ((float)tex->h)/tex->trueh;
+	
+	glTranslatef(x,y,0);
+	
 	glBegin(GL_QUADS);
-		glTexCoord2i(0,0);
-		glVertex3f(x - tex->w/2, y - tex->h/2, 0.0f);
+		glTexCoord2f(0,0);
+		glVertex3f(-tex->w/2, -tex->h/2, 0.0f);
 		
-		glTexCoord2i(0,1);
-		glVertex3f(x - tex->w/2, y + tex->trueh-tex->h/2, 0.0f);
+		glTexCoord2f(0,hq);
+		glVertex3f(-tex->w/2, tex->h/2, 0.0f);
 		
-		glTexCoord2i(1,1);
-		glVertex3f(x + tex->truew-tex->w/2, y + tex->trueh-tex->h/2, 0.0f);
+		glTexCoord2f(wq,hq);
+		glVertex3f(tex->w/2, tex->h/2, 0.0f);
 		
-		glTexCoord2i(1,0);
-		glVertex3f(x + tex->truew-tex->w/2, y - tex->h/2, 0.0f);
-	glEnd();
+		glTexCoord2f(wq,0);
+		glVertex3f(tex->w/2, -tex->h/2, 0.0f);
+	glEnd();	
+		
+	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
 }

@@ -29,11 +29,8 @@ typedef struct {
 	float b;
 } Color;
 
-// typedef float Color[3];
-
 struct Projectile;
 typedef void (*ProjRule)(struct Projectile*);
-typedef void (*DrawRule)(int x, int y, float angle, Color *clr);
 
 typedef struct Projectile {
 	int birthtime;
@@ -48,7 +45,7 @@ typedef struct Projectile {
 	float angle;
 	
 	ProjRule rule;
-	DrawRule draw;	
+	Texture *tex;
 	
 	struct Projectile *next;
 	struct Projectile *prev;
@@ -56,7 +53,17 @@ typedef struct Projectile {
 	Color clr;
 } Projectile;
 
-void create_projectile(int x, int y, int v, float angle, ProjRule rule, DrawRule draw, Color clr);
+typedef struct {
+	Texture ball;
+	Texture rice;
+	Texture bigball;
+} ProjCache;
+
+extern ProjCache _projs;
+
+void load_projectiles();
+
+void create_projectile(int x, int y, int v, float angle, ProjRule rule, Texture *tex, Color clr);
 void delete_projectile(Projectile *proj);
 void draw_projectile(Projectile *proj);
 void free_projectiles();
@@ -64,5 +71,4 @@ void free_projectiles();
 void process_projectiles();
 
 void simple(Projectile *p);
-void ProjBall(int x, int y, float angle, Color *clr);
 #endif

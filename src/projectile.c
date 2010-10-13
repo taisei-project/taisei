@@ -24,7 +24,15 @@
 #include <math.h>
 #include "global.h"
 
-void create_projectile(int x, int y, int v, float angle, ProjRule rule, DrawRule draw, Color clr) {
+ProjCache _projs;
+
+void load_projectiles() {
+	load_texture(FILE_PREFIX "gfx/projectiles/ball.png", &_projs.ball);
+	// load_texture(FILE_PREFIX "gfx/projectiles/rice.png", &_projs.rice);
+	// load_texture(FILE_PREFIX "gfx/projectiles/bigball.png", &_projs.bigball);
+}
+
+void create_projectile(int x, int y, int v, float angle, ProjRule rule, Texture *tex, Color clr) {
 	Projectile *p, *last = global.projs;
 	
 	p = malloc(sizeof(Projectile));
@@ -37,7 +45,7 @@ void create_projectile(int x, int y, int v, float angle, ProjRule rule, DrawRule
 		global.projs = p;
 	}
 	
-	*p = ((Projectile){ global.frames,x,y,x,y,v,angle,rule,draw,NULL,last,clr });
+	*p = ((Projectile){ global.frames,x,y,x,y,v,angle,rule,tex,NULL,last,clr });
 }
 
 void delete_projectile(Projectile *proj) {
@@ -52,19 +60,49 @@ void delete_projectile(Projectile *proj) {
 }
 
 void draw_projectile(Projectile* proj) {
-// 	glPushMatrix();
-// 	glTranslatef(proj->x, proj->y, 0);
-// 	glRotatef(proj->angle, 0, 0, 1);
-// 	glTranslatef(-proj->x, -proj->y, 0);
-// 	draw_texture(proj->x, proj->y, proj->tex);
-// 	
-// 	if(proj->overlay != NULL) {
-// 		glColor3fv((float *)&proj->clr);
-// 		draw_texture(proj->x, proj->y, proj->overlay);
-// 		glColor3f(1,1,1);
-// 	}
-// 	glPopMatrix();
-	proj->draw(proj->x, proj->y, proj->angle, &proj->clr);
+	glPushMatrix();
+	
+	glTranslatef(proj->x, proj->y, 0);
+	glRotatef(proj->angle, 0, 0, 1);
+	
+	Texture *tex = proj->tex;
+	
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, tex->gltex);	
+	
+	float wq = ((float)tex->w)/2/tex->trueh;
+	float hq = ((float)tex->h)/tex->trueh;
+	
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,0);
+		glVertex3f(-tex->w/4, -tex->h/2, 0.0f);
+		
+		glTexCoord2f(0,hq);
+		glVertex3f(-tex->w/4, tex->h/2, 0.0f);
+		
+		glTexCoord2f(wq/2,hq);
+		glVertex3f(tex->w/4, tex->h/2, 0.0f);
+		
+		glTexCoord2f(wq/2,0);
+		glVertex3f(tex->w/4, -tex->h/2, 0.0f);
+
+		glColor3fv((float *)&proj->clr);
+		glTexCoord2f(wq/2,0);
+		glVertex3f(-tex->w/4, -tex->h/2, 0.0f);
+		
+		glTexCoord2f(wq/2,hq);
+		glVertex3f(-tex->w/4, tex->h/2, 0.0f);
+		
+		glTexCoord2f(1*wq,hq);
+		glVertex3f(tex->w/4, tex->h/2, 0.0f);
+		
+		glTexCoord2f(1*wq,0);
+		glVertex3f(tex->w/4, -tex->h/2, 0.0f);
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+	
+	glPopMatrix();
+	glColor3f(1,1,1);
 }
 
 void free_projectiles() {
@@ -96,39 +134,4 @@ void process_projectiles() {
 void simple(Projectile *p) { // sure is physics in here
 	p->y = p->sy + p->v*sin((p->angle-90)/180*M_PI)*(global.frames-p->birthtime);
 	p->x = p->sx + p->v*cos((p->angle-90)/180*M_PI)*(global.frames-p->birthtime);
-}
-
-
-void ProjBall(int x, int y, float angle, Color *clr) { 
-	// This would be a lot easier using opengls matrices for rotation...
-	
-	glColor4f(1,1,1,1);
-	glBegin(GL_TRIANGLE_FAN);		
-		glVertex3f(x, y, 0);
-		
-		float i;
-		for(i = 360; i >= 0; i -= 40)			
-			glVertex3f(8*cos(i/180*M_PI)+x, 8*sin(i/180*M_PI)+y, 0);
-	glEnd();
-	
-	glBegin(GL_TRIANGLE_STRIP);
-		for(i = 0; i <= 380; i+=20) {
-			if(((int)i/20)&1) {
-				glColor4f(1,1,1,1);
-				glVertex3f(6*cos(i/180*M_PI)+x, 6*sin(i/180*M_PI)+y, 0);
-				
-			} else {					
-				glColor3fv((float*)clr);
-				glVertex3f(10*cos(i/180*M_PI)+x, 10*sin(i/180*M_PI)+y, 0);
-			}
-		}
-	glEnd();
-			
-			
-	glColor3fv((float*)clr);
-	glBegin(GL_LINE_STRIP);
-		for(i = 360; i >= 0; i -= 40)
-			glVertex3f(12*cos(i/180*M_PI)+x, 12*sin(i/180*M_PI)+y, 0);
-	glEnd();
-	glColor4f(1,1,1,1);
 }

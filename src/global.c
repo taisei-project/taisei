@@ -23,21 +23,8 @@
 Global global;
 
 void init_textures() {
-	load_texture(FILE_PREFIX "gfx/proyoumu.png", &global.textures.projwave);
-	// load_texture(FILE_PREFIX "gfx/projectiles/ball.png", &global.textures.ball);
-	// load_texture(FILE_PREFIX "gfx/projectiles/ball_clr.png", &global.textures.ball_c);
-	// load_texture(FILE_PREFIX "gfx/projectiles/rice.png", &global.textures.rice);
-	// load_texture(FILE_PREFIX "gfx/projectiles/rice_clr.png", &global.textures.rice_c);
-	// load_texture(FILE_PREFIX "gfx/projectiles/bigball.png", &global.textures.bigball);
-	// load_texture(FILE_PREFIX "gfx/projectiles/bigball_clr.png", &global.textures.bigball_c);
 	load_texture(FILE_PREFIX "gfx/wasser.png", &global.textures.water);
 	load_texture(FILE_PREFIX "gfx/hud.png", &global.textures.hud);
-	
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, global.textures.water.gltex);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glDisable(GL_TEXTURE_2D);
 }
 
 void init_global() {
@@ -45,6 +32,7 @@ void init_global() {
 	
 	init_textures();
 	
+	load_projectiles();
 	global.projs = NULL;
 	global.fairies = NULL;
 	

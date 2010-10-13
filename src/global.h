@@ -53,12 +53,6 @@ typedef struct {
 		
 		Texture projwave;
 		Texture water;
-		Texture ball;
-		Texture ball_c;
-		Texture rice;
-		Texture rice_c;
-		Texture bigball;
-		Texture bigball_c;
 	} textures;
 } Global;
 

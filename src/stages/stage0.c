@@ -31,7 +31,7 @@ void simpleFairy(Fairy *f) {
 		case 70:
 		case 90:
 			for(a = 120; a <= 220; a += 10)
-				create_projectile(f->x, f->y, 2, a, simple, &ProjBall, ((Color){0,0,1}));
+				create_projectile(f->x, f->y, 2, a, simple, &_projs.ball, ((Color){0,0,1}));
 	}
 	
 	f->x += 1;
@@ -88,7 +88,7 @@ void stage0_events() {
 		case 200:
 			break;
 		case 250:
-			create_projectile(500, 0, 1, 180, simple, ProjBall, ((Color){1,0,0}));
+			create_projectile(500, 0, 1, 180, simple, &_projs.ball, ((Color){1,0,0}));
 	}
 }
 
