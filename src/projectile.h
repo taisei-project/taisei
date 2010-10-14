@@ -57,6 +57,8 @@ typedef struct {
 	Texture ball;
 	Texture rice;
 	Texture bigball;
+	
+	Texture youmu;
 } ProjCache;
 
 extern ProjCache _projs;

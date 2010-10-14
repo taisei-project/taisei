@@ -28,8 +28,9 @@ ProjCache _projs;
 
 void load_projectiles() {
 	load_texture(FILE_PREFIX "gfx/projectiles/ball.png", &_projs.ball);
-	// load_texture(FILE_PREFIX "gfx/projectiles/rice.png", &_projs.rice);
-	// load_texture(FILE_PREFIX "gfx/projectiles/bigball.png", &_projs.bigball);
+	load_texture(FILE_PREFIX "gfx/projectiles/rice.png", &_projs.rice);
+	load_texture(FILE_PREFIX "gfx/projectiles/bigball.png", &_projs.bigball);
+	load_texture(FILE_PREFIX "gfx/proyoumu.png", &_projs.youmu);
 }
 
 void create_projectile(int x, int y, int v, float angle, ProjRule rule, Texture *tex, Color clr) {
@@ -70,7 +71,7 @@ void draw_projectile(Projectile* proj) {
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);	
 	
-	float wq = ((float)tex->w)/2/tex->trueh;
+	float wq = ((float)tex->w/2.0)/tex->truew;
 	float hq = ((float)tex->h)/tex->trueh;
 	
 	glBegin(GL_QUADS);
@@ -80,23 +81,23 @@ void draw_projectile(Projectile* proj) {
 		glTexCoord2f(0,hq);
 		glVertex3f(-tex->w/4, tex->h/2, 0.0f);
 		
-		glTexCoord2f(wq/2,hq);
+		glTexCoord2f(wq,hq);
 		glVertex3f(tex->w/4, tex->h/2, 0.0f);
 		
-		glTexCoord2f(wq/2,0);
+		glTexCoord2f(wq,0);
 		glVertex3f(tex->w/4, -tex->h/2, 0.0f);
 
 		glColor3fv((float *)&proj->clr);
-		glTexCoord2f(wq/2,0);
+		glTexCoord2f(wq,0);
 		glVertex3f(-tex->w/4, -tex->h/2, 0.0f);
 		
-		glTexCoord2f(wq/2,hq);
+		glTexCoord2f(wq,hq);
 		glVertex3f(-tex->w/4, tex->h/2, 0.0f);
 		
-		glTexCoord2f(1*wq,hq);
+		glTexCoord2f(2*wq,hq);
 		glVertex3f(tex->w/4, tex->h/2, 0.0f);
 		
-		glTexCoord2f(1*wq,0);
+		glTexCoord2f(2*wq,0);
 		glVertex3f(tex->w/4, -tex->h/2, 0.0f);
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
