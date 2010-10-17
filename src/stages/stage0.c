@@ -84,7 +84,7 @@ void stage0_events() {
 	Color c = { 1,0,0 };
 	switch(global.frames) {
 		case 100:
-			create_fairy(200, 100, 1, 180, 100, simpleFairy);
+			create_fairy(200, 100, 1, 180, 10, simpleFairy);
 		case 150:
 		case 200:
 			break;

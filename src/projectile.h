@@ -47,6 +47,8 @@ typedef struct Projectile {
 	ProjRule rule;
 	Texture *tex;
 	
+	enum { PlrProj, FairyProj } type;
+	
 	struct Projectile *next;
 	struct Projectile *prev;
 	
@@ -65,7 +67,7 @@ extern ProjCache _projs;
 
 void load_projectiles();
 
-void create_projectile(int x, int y, int v, float angle, ProjRule rule, Texture *tex, Color clr);
+Projectile *create_projectile(int x, int y, int v, float angle, ProjRule rule, Texture *tex, Color clr);
 void delete_projectile(Projectile *proj);
 void draw_projectile(Projectile *proj);
 void free_projectiles();

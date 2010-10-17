@@ -33,7 +33,7 @@ void load_projectiles() {
 	load_texture(FILE_PREFIX "gfx/proyoumu.png", &_projs.youmu);
 }
 
-void create_projectile(int x, int y, int v, float angle, ProjRule rule, Texture *tex, Color clr) {
+Projectile *create_projectile(int x, int y, int v, float angle, ProjRule rule, Texture *tex, Color clr) {
 	Projectile *p, *last = global.projs;
 	
 	p = malloc(sizeof(Projectile));
@@ -46,7 +46,9 @@ void create_projectile(int x, int y, int v, float angle, ProjRule rule, Texture 
 		global.projs = p;
 	}
 	
-	*p = ((Projectile){ global.frames,x,y,x,y,v,angle,rule,tex,NULL,last,clr });
+	*p = ((Projectile){ global.frames,x,y,x,y,v,angle,rule,tex,FairyProj,NULL,last,clr });
+	
+	return p;
 }
 
 void delete_projectile(Projectile *proj) {
@@ -123,8 +125,19 @@ int test_collision(Projectile *p) {
 	
 	int projr = sqrt(pow(p->tex->w/4*cos(angle),2)*8/10 + pow(p->tex->h/2*sin(angle)*8/10,2));
 	
-	if(sqrt(pow(p->x-global.plr.x,2) + pow(p->y-global.plr.y,2)) < projr+5)
-		return 1;
+	if(p->type == FairyProj) {
+		if(sqrt(pow(p->x-global.plr.x,2) + pow(p->y-global.plr.y,2)) < projr+5)
+			return 1;
+	} else {
+		Fairy *f = global.fairies;
+		while(f != NULL) {
+			if(sqrt(pow(p->x-f->x,2) + pow(p->y-f->y,2)) < projr+10) {
+				f->hp--;
+				return 2;
+			}
+			f = f->next;
+		}
+	}
 	return 0;
 }
 
@@ -138,8 +151,13 @@ void process_projectiles() {
 			|| proj->y + proj->tex->h/2 < 0 || proj->y - proj->tex->h/2 > VIEWPORT_H)
 			del = proj;
 		
-		if(test_collision(proj))
-			game_over();
+		switch(test_collision(proj)) {
+			case 1:
+				game_over();
+			case 2:
+				del = proj;
+		}
+		
 		proj = proj->next;
 	}
 	
