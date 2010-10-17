@@ -71,10 +71,11 @@ void free_fairies() {
 	Fairy *fairy = global.fairies;
 	Fairy *tmp;
 	
-	do {
+	while(fairy != 0) {
 		tmp = fairy;
+		fairy = fairy->next;
 		delete_fairy(tmp);
-	} while((fairy = fairy->next) != 0);
+	}
 	
 	global.fairies = NULL;
 }

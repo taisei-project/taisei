@@ -25,17 +25,15 @@
 #include "../global.h"
 
 void simpleFairy(Fairy *f) {
-	switch(global.frames-f->birthtime) {
-		int a;		
-		case 50:
-		case 70:
-		case 90:
-			for(a = 120; a <= 220; a += 10)
-				create_projectile(f->x, f->y, 2, a, simple, &_projs.rice, ((Color){0,0,1}));
+	if(!((global.frames-f->birthtime) % 30)) {
+		float angle = atan((float)(global.plr.y-f->y)/(global.plr.x-f->x))*180/M_PI+90;
+		if(global.plr.x < f->x) angle += 180;
+		
+		create_projectile(f->x, f->y, 3, angle, simple, &_projs.bigball, ((Color){1,0,0}));
 	}
 	f->moving = 1;
 	f->dir = 1;
-	f->x += 1;
+	f->x += f->v;
 }
 
 void stage0_draw() {
@@ -81,16 +79,19 @@ void stage0_draw() {
 }
 
 void stage0_events() {
-	Color c = { 1,0,0 };
-	switch(global.frames) {
-		case 100:
-			create_fairy(200, 100, 1, 180, 10, simpleFairy);
-		case 150:
-		case 200:
-			break;
-		case 250:
-			create_projectile(200, 200, 0, 220, simple, &_projs.bigball, ((Color){1,0,0}));
-	}
+// 	switch(global.frames) {
+// 		case 100:
+// 			create_fairy(200, 100, 1, 180, 10, simpleFairy);
+// 		case 150:
+// 		case 200:
+// 			break;
+// 		case 250:
+// 			create_projectile(200, 200, 0, 220, simple, &_projs.bigball, ((Color){1,0,0}));
+// 	}
+
+	if(!(global.frames % 200))
+		create_fairy(0, 100, 2, 180, 10, simpleFairy);
+	create_projectile(VIEWPORT_W/2, 100, 7, abs((global.frames%36)*10-180)+90+abs(global.frames%40-20), simple, &_projs.rice, ((Color){1,1,0}));
 }
 
 void stage0_loop() {

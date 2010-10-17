@@ -18,3 +18,5 @@ cd build
 cmake -DCMAKE_INSTALL_PREFIX=$yourprefix ..
 make
 make install
+
+Note: Installing is necessary as otherwise the game data would not be found in the right place. If you want to test set the installation prefix to "." or $(pwd).

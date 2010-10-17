@@ -25,8 +25,8 @@
 #include "global.h"
 
 void init_player(Player* plr, Character cha) {
-	plr->x = 0;
-	plr->y = 0;
+	plr->x = VIEWPORT_W/2;
+	plr->y = VIEWPORT_H-20;
 	
 	plr->focus = False;
 	plr->fire = False;
