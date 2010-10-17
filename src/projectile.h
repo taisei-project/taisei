@@ -70,6 +70,7 @@ void delete_projectile(Projectile *proj);
 void draw_projectile(Projectile *proj);
 void free_projectiles();
 
+int test_collision(Projectile *p);
 void process_projectiles();
 
 void simple(Projectile *p);

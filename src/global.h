@@ -54,10 +54,13 @@ typedef struct {
 		Texture projwave;
 		Texture water;
 	} textures;
+	
+	int game_over;
 } Global;
 
 extern Global global;
 
 void init_global();
+void game_over();
 
 #endif

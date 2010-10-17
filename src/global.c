@@ -37,4 +37,10 @@ void init_global() {
 	global.fairies = NULL;
 	
 	global.frames = 0;
+	global.game_over = 0;
+}
+
+void game_over() {
+	global.game_over = 1;
+	printf("Game Over!");
 }

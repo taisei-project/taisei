@@ -33,7 +33,8 @@ void simpleFairy(Fairy *f) {
 			for(a = 120; a <= 220; a += 10)
 				create_projectile(f->x, f->y, 2, a, simple, &_projs.rice, ((Color){0,0,1}));
 	}
-	
+	f->moving = 1;
+	f->dir = 1;
 	f->x += 1;
 }
 
@@ -88,7 +89,7 @@ void stage0_events() {
 		case 200:
 			break;
 		case 250:
-			create_projectile(500, 0, 1, 220, simple, &_projs.bigball, ((Color){1,0,0}));
+			create_projectile(200, 200, 0, 220, simple, &_projs.bigball, ((Color){1,0,0}));
 	}
 }
 
@@ -100,7 +101,7 @@ void stage0_loop() {
 	glFogf(GL_FOG_MODE, GL_EXP);
 	glFogf(GL_FOG_DENSITY, 0.005);
 	
-	while(1) {
+	while(!global.game_over) {
 		stage_logic();
 		stage_input();
 		stage0_events();

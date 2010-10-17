@@ -41,6 +41,9 @@ void stage_input() {
 					break;
 				case SDLK_ESCAPE:
 					exit(1);
+					break;
+				default:
+					break;
 			}
 		} else if(event.type == SDL_KEYUP) {
 			switch(event.key.keysym.sym) {
@@ -49,6 +52,8 @@ void stage_input() {
 					break;
 				case SDLK_y:
 					global.plr.fire = False;
+					break;
+				default:
 					break;
 			}
 		} else if(event.type == SDL_QUIT) {
