@@ -19,6 +19,7 @@
  */
 
 #include "global.h"
+#include <SDL/SDL.h>
 
 Global global;
 
@@ -38,9 +39,21 @@ void init_global() {
 	
 	global.frames = 0;
 	global.game_over = 0;
+	
+	global.time = 0;
+	global.fps = 0;
+	
+	global.lasttime = 0;
 }
 
 void game_over() {
 	global.game_over = 1;
 	printf("Game Over!");
+}
+
+void frame_rate() {
+	int t = global.lasttime + 1000/FPS - SDL_GetTicks();
+	if(t > 0)
+		SDL_Delay(t);
+	global.lasttime = SDL_GetTicks();
 }

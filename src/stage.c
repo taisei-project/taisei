@@ -91,12 +91,8 @@ void stage_draw() {
 	glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
 	
 	player_draw(&global.plr);
-	
-	Projectile *proj = global.projs;
-	while(proj != NULL) {
-		draw_projectile(proj);		
-		proj = proj->next;
-	}
+
+	draw_projectiles();
 
 	Fairy *f = global.fairies;
 	while(f != NULL) {
@@ -119,6 +115,14 @@ void stage_logic() {
 	process_projectiles();
 	
 	global.frames++;
+	
+	if(SDL_GetTicks() > global.time+1000) {
+// 		fprintf(stderr, "FPS: %d\n", global.fps);
+		global.fps = 0;
+		global.time = SDL_GetTicks();
+	} else {
+		global.fps++;
+	}
 }
 
 void stage_end() {

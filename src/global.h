@@ -36,12 +36,14 @@ enum {
 	VIEWPORT_X = 25,
 	VIEWPORT_Y = 25,
 	VIEWPORT_W = 500,
-	VIEWPORT_H = 550
+	VIEWPORT_H = 550,
+	
+	FPS = 50
 };
 
 #define FILE_PREFIX PREFIX "/share/openth/"
 
-typedef struct {	
+typedef struct {
 	Player plr;	
 	Projectile *projs;
 	Fairy *fairies;
@@ -56,11 +58,18 @@ typedef struct {
 	} textures;
 	
 	int game_over;
+	
+	int time;
+	int fps;
+	
+	int lasttime;
 } Global;
 
 extern Global global;
 
 void init_global();
 void game_over();
+
+void frame_rate();
 
 #endif

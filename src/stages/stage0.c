@@ -91,7 +91,7 @@ void stage0_events() {
 
 	if(!(global.frames % 200))
 		create_fairy(0, 100, 2, 180, 10, simpleFairy);
-	create_projectile(VIEWPORT_W/2, 100, 7, abs((global.frames%36)*10-180)+90+abs(global.frames%40-20), simple, &_projs.rice, ((Color){1,1,0}));
+	create_projectile(VIEWPORT_W/2, 0, 7, abs((global.frames%36)*10-180)+90+abs(global.frames%45-22), simple, &_projs.rice, ((Color){1,1,0}));
 }
 
 void stage0_loop() {
@@ -111,7 +111,7 @@ void stage0_loop() {
 		stage0_draw();
 		stage_draw();
 		
-		SDL_Delay(20);
+		frame_rate();
 	}
 	
 	glDisable(GL_FOG);

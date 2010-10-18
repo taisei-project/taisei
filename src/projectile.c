@@ -62,52 +62,6 @@ void delete_projectile(Projectile *proj) {
 	free(proj);
 }
 
-void draw_projectile(Projectile* proj) {
-	glPushMatrix();
-	
-	glTranslatef(proj->x, proj->y, 0);
-	glRotatef(proj->angle, 0, 0, 1);
-	
-	Texture *tex = proj->tex;
-	
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, tex->gltex);	
-	
-	float wq = ((float)tex->w/2.0)/tex->truew;
-	float hq = ((float)tex->h)/tex->trueh;
-	
-	glBegin(GL_QUADS);
-		glTexCoord2f(0,0);
-		glVertex3f(-tex->w/4, -tex->h/2, 0.0f);
-		
-		glTexCoord2f(0,hq);
-		glVertex3f(-tex->w/4, tex->h/2, 0.0f);
-		
-		glTexCoord2f(wq,hq);
-		glVertex3f(tex->w/4, tex->h/2, 0.0f);
-		
-		glTexCoord2f(wq,0);
-		glVertex3f(tex->w/4, -tex->h/2, 0.0f);
-
-		glColor3fv((float *)&proj->clr);
-		glTexCoord2f(wq,0);
-		glVertex3f(-tex->w/4, -tex->h/2, 0.0f);
-		
-		glTexCoord2f(wq,hq);
-		glVertex3f(-tex->w/4, tex->h/2, 0.0f);
-		
-		glTexCoord2f(2*wq,hq);
-		glVertex3f(tex->w/4, tex->h/2, 0.0f);
-		
-		glTexCoord2f(2*wq,0);
-		glVertex3f(tex->w/4, -tex->h/2, 0.0f);
-	glEnd();
-	glDisable(GL_TEXTURE_2D);
-	
-	glPopMatrix();
-	glColor3f(1,1,1);
-}
-
 void free_projectiles() {
 	Projectile *proj = global.projs;
 	Projectile *tmp;
@@ -144,28 +98,85 @@ int test_collision(Projectile *p) {
 	return 0;
 }
 
+void draw_projectiles() {
+	Projectile *proj = global.projs;
+	int size = 3;
+	int i = 0, i1;
+	Texture **texs = calloc(size, sizeof(Texture *));
+	texs[i++] = proj->tex;
+	
+	while(proj != NULL) {
+		for(i1 = 0; i1 < i; i1++)
+			if(proj->tex == texs[i1])
+				goto next0;
+		
+		if(i >= size)
+			texs = realloc(texs, (size++)*sizeof(Texture *));
+		texs[i++] = proj->tex;
+next0:
+		proj = proj->next;
+	}
+		
+	glEnable(GL_TEXTURE_2D);	
+	for(i1 = 0; i1 < i; i1++) {
+		Texture *tex = texs[i1];
+				
+		glBindTexture(GL_TEXTURE_2D, tex->gltex);	
+		
+		float wq = ((float)tex->w/2.0)/tex->truew;
+		float hq = ((float)tex->h)/tex->trueh;
+		
+		proj = global.projs;
+		while(proj != NULL) {
+			if(proj->tex != tex)
+				goto next1;
+			glPushMatrix();
+			
+			glTranslatef(proj->x, proj->y, 0);
+			glRotatef(proj->angle, 0, 0, 1);
+			glScalef(tex->w/4, tex->h/2,0);
+			
+			glBegin(GL_QUADS);
+				glTexCoord2f(0,0); glVertex2f(-1, -1);
+				glTexCoord2f(0,hq); glVertex2f(-1, 1);
+				glTexCoord2f(wq,hq); glVertex2f(1, 1);
+				glTexCoord2f(wq,0);	glVertex2f(1, -1);
+				
+				glColor3fv((float *)&proj->clr);
+				glTexCoord2f(wq,0); glVertex2f(-1, -1);
+				glTexCoord2f(wq,hq); glVertex2f(-1, 1);
+				glTexCoord2f(2*wq,hq); glVertex2f(1, 1);
+				glTexCoord2f(2*wq,0); glVertex2f(1, -1);
+			glEnd();
+			
+			glPopMatrix();
+			glColor3f(1,1,1);			
+next1:
+			proj = proj->next;
+		}
+	}
+	glDisable(GL_TEXTURE_2D);
+}
 
 void process_projectiles() {
 	Projectile *proj = global.projs, *del = NULL;
 	while(proj != NULL) {
 		proj->rule(proj);
 		
-		if(proj->x + proj->tex->w/2 < 0 || proj->x - proj->tex->w/2 > VIEWPORT_W
-			|| proj->y + proj->tex->h/2 < 0 || proj->y - proj->tex->h/2 > VIEWPORT_H)
+		int v = test_collision(proj);
+		if(v == 1)
+			game_over();
+		
+		if(v || proj->x + proj->tex->w/2 < 0 || proj->x - proj->tex->w/2 > VIEWPORT_W
+			 || proj->y + proj->tex->h/2 < 0 || proj->y - proj->tex->h/2 > VIEWPORT_H) {
 			del = proj;
-		
-		switch(test_collision(proj)) {
-			case 1:
-				game_over();
-			case 2:
-				del = proj;
+			proj = proj->next;
+			delete_projectile(del);
+			if(proj == NULL) break;
+		} else {
+			proj = proj->next;
 		}
-		
-		proj = proj->next;
-	}
-	
-	if(del)
-		delete_projectile(del);
+	}		
 }
 
 void simple(Projectile *p) { // sure is physics in here

@@ -25,6 +25,8 @@
 #include "global.h"
 #include "stages/stage0.h"
 
+SDL_Surface *display;
+
 void init_gl() {
 	glClearColor(0, 0, 0, 0);
 	
@@ -48,12 +50,15 @@ void init_gl() {
 	glCullFace(GL_BACK);
 }
 
+void shutdown() {
+	SDL_FreeSurface(display);
+	SDL_Quit();
+}
+
 int main(int argc, char** argv) {
 	if(SDL_Init(SDL_INIT_VIDEO) < 0)
 		errx(-1, "Error initializing SDL: %s", SDL_GetError());
-	
-	SDL_Surface *display;
-	
+		
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	if((display = SDL_SetVideoMode(RESX, RESY, 32, SDL_OPENGL)) == NULL)
 		errx(-1, "Error opening screen: %s", SDL_GetError());
@@ -63,8 +68,5 @@ int main(int argc, char** argv) {
 	
 	stage0_loop();
 	
-	atexit(SDL_Quit);
-	
-	SDL_FreeSurface(display);
-	SDL_Quit();
+	atexit(shutdown);	
 }

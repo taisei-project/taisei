@@ -70,6 +70,7 @@ void load_projectiles();
 Projectile *create_projectile(int x, int y, int v, float angle, ProjRule rule, Texture *tex, Color clr);
 void delete_projectile(Projectile *proj);
 void draw_projectile(Projectile *proj);
+void draw_projectiles();
 void free_projectiles();
 
 int test_collision(Projectile *p);
