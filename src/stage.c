@@ -104,7 +104,6 @@ void stage_draw() {
 	
 	draw_texture(SCREEN_W/2, SCREEN_H/2, &global.textures.hud);
 	
-	glFlush(); 
 	SDL_GL_SwapBuffers();
 }
 
@@ -117,7 +116,7 @@ void stage_logic() {
 	global.frames++;
 	
 	if(SDL_GetTicks() > global.time+1000) {
-// 		fprintf(stderr, "FPS: %d\n", global.fps);
+		fprintf(stderr, "FPS: %d\n", global.fps);
 		global.fps = 0;
 		global.time = SDL_GetTicks();
 	} else {

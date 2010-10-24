@@ -60,6 +60,7 @@ int main(int argc, char** argv) {
 		errx(-1, "Error initializing SDL: %s", SDL_GetError());
 		
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 0);
 	if((display = SDL_SetVideoMode(RESX, RESY, 32, SDL_OPENGL)) == NULL)
 		errx(-1, "Error opening screen: %s", SDL_GetError());
 	

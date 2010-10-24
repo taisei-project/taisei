@@ -34,29 +34,38 @@ void init_animation(Animation *buf, int rows, int cols, int speed, const char *f
 	buf->h = buf->tex.h/rows;
 }
 
-void draw_animation(int x, int y, int row, Animation *ani) {	
+void draw_animation(int x, int y, int row, Animation *ani) { // matrices are cool
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, ani->tex.gltex);
 	
 	float s = (float)ani->tex.w/ani->cols/ani->tex.truew;
-	float t = ((float)ani->tex.h)/ani->tex.trueh;
+	float t = ((float)ani->tex.h)/ani->tex.trueh/(float)ani->rows;
 	
 	assert(ani->speed != 0);
+	
+	glPushMatrix();
+	glTranslatef(x,y,0);
+	glScalef(ani->w/2,ani->h/2, 1);
+	
+	glMatrixMode(GL_TEXTURE);
+		glPushMatrix();
+		glScalef(s,t,1);
+		glTranslatef(global.frames/ani->speed % ani->cols, row, 0);
+	glMatrixMode(GL_MODELVIEW);
+	
 	glColor4f(1,1,1,1);
 	glBegin(GL_QUADS);
-		glTexCoord2f(s*(global.frames/ani->speed % ani->cols),row/(float)ani->rows*t);
-		glVertex3f(x - ani->w/2, y - ani->h/2, 0.0f);
-		
-		glTexCoord2f(s*(global.frames/ani->speed % ani->cols),(row+1)/(float)ani->rows*t);
-		glVertex3f(x - ani->w/2, y + ani->h/2, 0.0f);	
-		
-		glTexCoord2f(s*(global.frames/ani->speed % ani->cols+1),(row+1)/(float)ani->rows*t);
-		glVertex3f(x + ani->w/2, y + ani->h/2, 0.0f);
-		
-		glTexCoord2f(s*(global.frames/ani->speed % ani->cols+1),row/(float)ani->rows*t);
-		glVertex3f(x + ani->w/2, y - ani->h/2, 0.0f);		
+		glTexCoord2f(0,0); glVertex3f(-1, -1, 0);
+		glTexCoord2f(0,1); glVertex3f(-1, 1, 0);	
+		glTexCoord2f(1,1); glVertex3f(1, 1, 0);
+		glTexCoord2f(1,0); glVertex3f(1, -1, 0);		
 	glEnd();
-	glDisable(GL_TEXTURE_2D);
 	
+	glMatrixMode(GL_TEXTURE);
+		glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	
+	glPopMatrix();
+	glDisable(GL_TEXTURE_2D);
 }
 	

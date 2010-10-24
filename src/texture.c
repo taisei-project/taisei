@@ -24,7 +24,7 @@ void load_texture(const char *filename, Texture* texture) {
 	SDL_Surface *surface = IMG_Load(filename);
 	
 	if(surface == NULL)
-		err(EXIT_FAILURE,"load_texture()\n-- cannot load '%s'", filename);
+		err(EXIT_FAILURE,"load_texture():\n-- cannot load '%s'", filename);
 	
 	glGenTextures(1, &texture->gltex);
 	glBindTexture(GL_TEXTURE_2D, texture->gltex);
@@ -76,19 +76,13 @@ void draw_texture(int x, int y, Texture *tex) {
 	float hq = ((float)tex->h)/tex->trueh;
 	
 	glTranslatef(x,y,0);
+	glScalef(tex->w/2,tex->h/2,1);
 	
 	glBegin(GL_QUADS);
-		glTexCoord2f(0,0);
-		glVertex3f(-tex->w/2, -tex->h/2, 0.0f);
-		
-		glTexCoord2f(0,hq);
-		glVertex3f(-tex->w/2, tex->h/2, 0.0f);
-		
-		glTexCoord2f(wq,hq);
-		glVertex3f(tex->w/2, tex->h/2, 0.0f);
-		
-		glTexCoord2f(wq,0);
-		glVertex3f(tex->w/2, -tex->h/2, 0.0f);
+		glTexCoord2f(0,0); glVertex3f(-1, -1, 0);
+		glTexCoord2f(0,hq); glVertex3f(-1, 1, 0);
+		glTexCoord2f(wq,hq); glVertex3f(1, 1, 0);
+		glTexCoord2f(wq,0); glVertex3f(1, -1, 0);
 	glEnd();	
 		
 	glPopMatrix();

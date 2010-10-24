@@ -33,7 +33,7 @@ void load_projectiles() {
 	load_texture(FILE_PREFIX "gfx/proyoumu.png", &_projs.youmu);
 }
 
-Projectile *create_projectile(int x, int y, int v, float angle, ProjRule rule, Texture *tex, Color clr) {
+Projectile *create_projectile(Texture *tex, int x, int y, int angle, Color clr, ProjRule rule, float args, ...) {
 	Projectile *p, *last = global.projs;
 	
 	p = malloc(sizeof(Projectile));
@@ -46,7 +46,15 @@ Projectile *create_projectile(int x, int y, int v, float angle, ProjRule rule, T
 		global.projs = p;
 	}
 	
-	*p = ((Projectile){ global.frames,x,y,x,y,v,angle,rule,tex,FairyProj,NULL,last,clr });
+	*p = ((Projectile){ global.frames,x,y,x,y,angle,rule,tex,FairyProj,NULL,last,clr });
+	
+	va_list ap;
+	int i;
+	
+	va_start(ap, args);
+	for(i = 0; i < 4 && (args != 0); i++ && (args = va_arg(ap, double)))
+		p->args[i] = args;
+	va_end(ap);
 	
 	return p;
 }
@@ -116,7 +124,7 @@ void draw_projectiles() {
 next0:
 		proj = proj->next;
 	}
-		
+	
 	glEnable(GL_TEXTURE_2D);	
 	for(i1 = 0; i1 < i; i1++) {
 		Texture *tex = texs[i1];
@@ -134,7 +142,7 @@ next0:
 			
 			glTranslatef(proj->x, proj->y, 0);
 			glRotatef(proj->angle, 0, 0, 1);
-			glScalef(tex->w/4, tex->h/2,0);
+			glScalef(tex->w/4.0, tex->h/2.0,0);
 			
 			glBegin(GL_QUADS);
 				glTexCoord2f(0,0); glVertex2f(-1, -1);
@@ -161,7 +169,7 @@ next1:
 void process_projectiles() {
 	Projectile *proj = global.projs, *del = NULL;
 	while(proj != NULL) {
-		proj->rule(proj);
+		proj->rule(&proj->x, &proj->y, proj->angle, proj->sx, proj->sy, global.frames - proj->birthtime, proj->args);
 		
 		int v = test_collision(proj);
 		if(v == 1)
@@ -179,7 +187,8 @@ void process_projectiles() {
 	}		
 }
 
-void simple(Projectile *p) { // sure is physics in here
-	p->y = p->sy + p->v*sin((p->angle-90)/180*M_PI)*(global.frames-p->birthtime);
-	p->x = p->sx + p->v*cos((p->angle-90)/180*M_PI)*(global.frames-p->birthtime);
+void simple(int *x, int *y, int angle, int sx, int sy, int time, float* a) { // sure is physics in here; a[0]: velocity
+
+	*y = sy + a[0]*sin((float)(angle-90)/180*M_PI)*time;
+	*x = sx + a[0]*cos((float)(angle-90)/180*M_PI)*time;
 }

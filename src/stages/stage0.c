@@ -29,7 +29,7 @@ void simpleFairy(Fairy *f) {
 		float angle = atan((float)(global.plr.y-f->y)/(global.plr.x-f->x))*180/M_PI+90;
 		if(global.plr.x < f->x) angle += 180;
 		
-		create_projectile(f->x, f->y, 3, angle, simple, &_projs.bigball, ((Color){1,0,0}));
+		create_projectile(&_projs.bigball, f->x, f->y, angle, ((Color){1,0,0}), simple, 3);
 	}
 	f->moving = 1;
 	f->dir = 1;
@@ -91,7 +91,7 @@ void stage0_events() {
 
 	if(!(global.frames % 200))
 		create_fairy(0, 100, 2, 180, 10, simpleFairy);
-	create_projectile(VIEWPORT_W/2, 0, 7, abs((global.frames%36)*10-180)+90+abs(global.frames%45-22), simple, &_projs.rice, ((Color){1,1,0}));
+	create_projectile(&_projs.rice, VIEWPORT_W/2, 0, abs((global.frames%36)*10-180)+90+abs(global.frames%45-22), ((Color){1,1,0}), simple, 7);
 }
 
 void stage0_loop() {

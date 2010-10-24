@@ -23,6 +23,8 @@
 
 #include "texture.h"
 
+#include <stdarg.h>
+
 typedef struct {
 	float r;
 	float g;
@@ -30,7 +32,7 @@ typedef struct {
 } Color;
 
 struct Projectile;
-typedef void (*ProjRule)(struct Projectile*);
+typedef void (*ProjRule)(int *x, int *y, int angle, int sx, int sy, int time, float* a);
 
 typedef struct Projectile {
 	int birthtime;
@@ -41,8 +43,7 @@ typedef struct Projectile {
 	int sx;
 	int sy;
 	
-	int v;
-	float angle;
+	int angle;
 	
 	ProjRule rule;
 	Texture *tex;
@@ -53,6 +54,8 @@ typedef struct Projectile {
 	struct Projectile *prev;
 	
 	Color clr;
+	
+	float args[4];
 } Projectile;
 
 typedef struct {
@@ -67,7 +70,7 @@ extern ProjCache _projs;
 
 void load_projectiles();
 
-Projectile *create_projectile(int x, int y, int v, float angle, ProjRule rule, Texture *tex, Color clr);
+Projectile *create_projectile(Texture *tex, int x, int y, int angle, Color clr, ProjRule rule, float args, ...);
 void delete_projectile(Projectile *proj);
 void draw_projectile(Projectile *proj);
 void draw_projectiles();
@@ -76,5 +79,5 @@ void free_projectiles();
 int test_collision(Projectile *p);
 void process_projectiles();
 
-void simple(Projectile *p);
+void simple(int *x, int *y, int angle, int sx, int sy, int time, float* a);
 #endif

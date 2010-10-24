@@ -38,7 +38,7 @@ enum {
 	VIEWPORT_W = 500,
 	VIEWPORT_H = 550,
 	
-	FPS = 50
+	FPS = 60
 };
 
 #define FILE_PREFIX PREFIX "/share/openth/"
