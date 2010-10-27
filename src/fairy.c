@@ -20,47 +20,30 @@
 
 #include "fairy.h"
 #include "global.h"
+#include "list.h"
 
 void create_fairy(int x, int y, int v, int angle, int hp, FairyRule rule) {
-	Fairy *fairy, *last = global.fairies;
+	Fairy *fairy = create_element((void **)&global.fairies, sizeof(Fairy));
 	
-	fairy = malloc(sizeof(Fairy));
-	
-	if(last != NULL) {
-		while(last->next != NULL)
-			last = last->next;
-		last->next = fairy;
-	} else {
-		global.fairies = fairy;
-	}
-	
-	*fairy = ((Fairy) { .prev = last,
-					   .next = NULL,
-					   .sx = x,
-					   .sy = y,
-					   .x = x,
-					   .y = y,
-					   .v = v,
-					   .angle = angle,
-					   .rule = rule,
-					   .birthtime = global.frames,
-					   .moving = 0,
-					   .hp = hp,
-					   .dir = 0 
+	*fairy = ((Fairy) {
+		.sx = x,
+		.sy = y,
+		.x = x,
+		.y = y,
+		.v = v,
+		.angle = angle,
+		.rule = rule,
+		.birthtime = global.frames,
+		.moving = 0,
+		.hp = hp,
+		.dir = 0 
 	});
 	
 	init_animation(&fairy->ani, 2, 4, 2, FILE_PREFIX "gfx/fairy.png"); 
 }
 
 void delete_fairy(Fairy *fairy) {
-	if(fairy->prev != NULL)
-		fairy->prev->next = fairy->next;
-	if(fairy->next != NULL)
-		fairy->next->prev = fairy->prev;	
-	if(global.fairies == fairy)
-		global.fairies = fairy->next;
-	
-	free(fairy);
+	delete_element((void **)&global.fairies, fairy);
 }
 
 void draw_fairy(Fairy *f) {
@@ -68,16 +51,7 @@ void draw_fairy(Fairy *f) {
 }
 
 void free_fairies() {
-	Fairy *fairy = global.fairies;
-	Fairy *tmp;
-	
-	while(fairy != 0) {
-		tmp = fairy;
-		fairy = fairy->next;
-		delete_fairy(tmp);
-	}
-	
-	global.fairies = NULL;
+	delete_all_elements((void **)&global.fairies);
 }
 
 void process_fairies() {

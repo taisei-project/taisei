@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "global.h"
+#include "list.h"
 
 ProjCache _projs;
 
@@ -34,19 +35,19 @@ void load_projectiles() {
 }
 
 Projectile *create_projectile(Texture *tex, int x, int y, int angle, Color clr, ProjRule rule, float args, ...) {
-	Projectile *p, *last = global.projs;
+
+	Projectile *p = create_element((void **)&global.projs, sizeof(Projectile));
 	
-	p = malloc(sizeof(Projectile));
-	
-	if(last != NULL) {
-		while(last->next != NULL)
-			last = last->next;
-		last->next = p;
-	} else {
-		global.projs = p;
-	}
-	
-	*p = ((Projectile){ global.frames,x,y,x,y,angle,rule,tex,FairyProj,NULL,last,clr });
+	p->birthtime = global.frames;
+	p->x = x;
+	p->y = y;
+	p->sx = x;
+	p->sy = y;
+	p->angle = angle;
+	p->rule = rule;
+	p->tex = tex;
+	p->type = FairyProj;
+	p->clr = clr;
 	
 	va_list ap;
 	int i;
@@ -60,27 +61,11 @@ Projectile *create_projectile(Texture *tex, int x, int y, int angle, Color clr, 
 }
 
 void delete_projectile(Projectile *proj) {
-	if(proj->prev != NULL)
-		proj->prev->next = proj->next;
-	if(proj->next != NULL)
-		proj->next->prev = proj->prev;	
-	if(global.projs == proj)
-		global.projs = proj->next;
-	
-	free(proj);
+	delete_element((void **)&global.projs, proj);
 }
 
 void free_projectiles() {
-	Projectile *proj = global.projs;
-	Projectile *tmp;
-	
-	while(proj != 0) {
-		tmp = proj;
-		proj = proj->next;
-		delete_projectile(tmp);
-	} 
-	
-	global.projs = NULL;
+	delete_all_elements((void **)&global.projs);
 }
 
 int test_collision(Projectile *p) {	
@@ -184,7 +169,7 @@ void process_projectiles() {
 		} else {
 			proj = proj->next;
 		}
-	}		
+	}
 }
 
 void simple(int *x, int *y, int angle, int sx, int sy, int time, float* a) { // sure is physics in here; a[0]: velocity

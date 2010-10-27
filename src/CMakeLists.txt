@@ -7,6 +7,7 @@ set(SRCs
 	projectile.c
 	animation.c
 	fairy.c
+	list.c
 	stages/stage0.c)
 
 find_package(SDL REQUIRED)

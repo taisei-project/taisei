@@ -18,40 +18,15 @@
  Copyright (C) 2010, Lukas Weber <laochailan@web.de>
  */
 
-#ifndef FAIRY_H
-#define FAIRY_H
+#ifndef LIST_H
+#define LIST_H
 
-#include "animation.h"
+/* I got annoyed of the code doubling caused by simple linked lists,
+ * so i do some void-magic here to save the lines.
+ */
 
-struct Fairy;
-
-typedef void (*FairyRule)(struct Fairy*);
-
-typedef struct Fairy {
-	struct Fairy *next;
-	struct Fairy *prev;
-	
-	int birthtime;
-	int hp;
-	
-	int x, y;
-	int sx, sy;
-	int angle;
-	int v;
-	
-	char moving;
-	char dir;
-	
-	Animation ani;
-	
-	FairyRule rule;
-} Fairy;
-
-void create_fairy(int x, int y, int speed, int angle, int hp, FairyRule rule);
-void delete_fairy(Fairy *fairy);
-void draw_fairy(Fairy *fairy);
-void free_fairies();
-
-void process_fairies();
+void *create_element(void **dest, int size);
+void *delete_element(void **dest, void *e);
+void *delete_all_elements(void **dest);
 
 #endif

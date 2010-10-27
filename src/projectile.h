@@ -35,6 +35,9 @@ struct Projectile;
 typedef void (*ProjRule)(int *x, int *y, int angle, int sx, int sy, int time, float* a);
 
 typedef struct Projectile {
+	struct Projectile *next;
+	struct Projectile *prev;
+	
 	int birthtime;
 	
 	int x;
@@ -49,9 +52,6 @@ typedef struct Projectile {
 	Texture *tex;
 	
 	enum { PlrProj, FairyProj } type;
-	
-	struct Projectile *next;
-	struct Projectile *prev;
 	
 	Color clr;
 	
