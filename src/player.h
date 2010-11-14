@@ -40,7 +40,8 @@ typedef struct {
 	short moving;	
 	
 	short dir;
-		
+    float power;
+    
 	Character cha;
 	
 	Animation ani;

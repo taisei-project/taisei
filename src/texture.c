@@ -26,6 +26,11 @@ void load_texture(const char *filename, Texture* texture) {
 	if(surface == NULL)
 		err(EXIT_FAILURE,"load_texture():\n-- cannot load '%s'", filename);
 	
+	load_sdl_surf(surface, texture);	
+	SDL_FreeSurface(surface);
+}
+
+void load_sdl_surf(SDL_Surface *surface, Texture *texture) {
 	glGenTextures(1, &texture->gltex);
 	glBindTexture(GL_TEXTURE_2D, texture->gltex);
 	
@@ -62,8 +67,7 @@ void load_texture(const char *filename, Texture* texture) {
 	
 	glTexImage2D(GL_TEXTURE_2D, 0, 4, nw, nh, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex);
 	
-	free(tex);	
-	SDL_FreeSurface(surface);
+	free(tex);
 }
 
 void draw_texture(int x, int y, Texture *tex) {
@@ -72,7 +76,7 @@ void draw_texture(int x, int y, Texture *tex) {
 	
 	glPushMatrix();
 	
-	float wq = ((float)tex->w)/tex->trueh;
+	float wq = ((float)tex->w)/tex->truew;
 	float hq = ((float)tex->h)/tex->trueh;
 	
 	glTranslatef(x,y,0);

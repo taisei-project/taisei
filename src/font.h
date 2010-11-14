@@ -18,22 +18,20 @@
  Copyright (C) 2010, Lukas Weber <laochailan@web.de>
  */
 
-#ifndef TEXTURE_H
-#define TEXTURE_H
+#ifndef FONT_H
+#define FONT_H
 
 #include <SDL/SDL.h>
-#include <SDL/SDL_image.h>
-#include <SDL/SDL_opengl.h>
-#include <math.h>
+#include <SDL/SDL_ttf.h>
+#include "texture.h"
 
-typedef struct {
-	int w, h;
-	int truew, trueh;
-	GLuint gltex;
-} Texture;
+Texture *load_text(const char *text, TTF_Font *font);
+void draw_text(const char *text, int x, int y, TTF_Font *font);
 
-void load_texture(const char *filename, Texture *texture);
-void load_sdl_surf(SDL_Surface *surface, Texture *texture);
+struct Fonts {
+	TTF_Font *biolinum;
+};
 
-void draw_texture(int x, int y, Texture *tex);
+extern struct Fonts _fonts;
+
 #endif

@@ -8,16 +8,18 @@ set(SRCs
 	animation.c
 	fairy.c
 	list.c
+	font.c
 	stages/stage0.c)
 
 find_package(SDL REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(SDL_image REQUIRED)
+find_package(SDL_ttf REQUIRED)
 
 add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}")
 
 include_directories(${SDL_INCLUDE_DIRS})
 add_executable(openth ${SRCs})
-target_link_libraries(openth ${SDL_LIBRARY} ${OPENGL_LIBRARY} ${SDLIMAGE_LIBRARY})
+target_link_libraries(openth ${SDL_LIBRARY} ${OPENGL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLTTF_LIBRARY})
 
 install(TARGETS openth RUNTIME DESTINATION bin)

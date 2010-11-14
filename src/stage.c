@@ -22,6 +22,7 @@
 
 #include <SDL/SDL.h>
 #include "global.h"
+#include "font.h"
 
 SDL_Event event;
 
@@ -102,8 +103,11 @@ void stage_draw() {
 	
 	glPopMatrix();
 	
-	draw_texture(SCREEN_W/2, SCREEN_H/2, &global.textures.hud);
+	char buf[16];
+	sprintf(buf, "Power: %.2f", global.plr.power);
 	
+	draw_texture(SCREEN_W/2, SCREEN_H/2, &global.textures.hud);
+	draw_text(buf, SCREEN_W-200, 200, _fonts.biolinum);
 	SDL_GL_SwapBuffers();
 }
 

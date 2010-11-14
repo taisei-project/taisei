@@ -32,6 +32,7 @@ void init_player(Player* plr, Character cha) {
 	plr->fire = False;
 	plr->moving = False;
 	plr->dir = 0;
+    plr->power = 0;
 	
 	plr->cha = cha;
 	
@@ -57,5 +58,13 @@ void player_logic(Player* plr) {
 	if(plr->fire && !(global.frames % 4)) {
 		create_projectile(&_projs.youmu, plr->x-10, plr->y-20, 0, ((Color){1,1,1}), simple, 20, 0)->type = PlrProj;
 		create_projectile(&_projs.youmu, plr->x+10, plr->y-20, 0, ((Color){1,1,1}), simple, 20, 0)->type = PlrProj;
+		
+		if(plr->power >= 2) {
+			int a = 15;
+			if(plr->focus) a = 5;
+			create_projectile(&_projs.youmu, plr->x-10, plr->y-20, -a, ((Color){1,1,1}), simple, 20, 0)->type = PlrProj;
+			create_projectile(&_projs.youmu, plr->x+10, plr->y-20, a, ((Color){1,1,1}), simple, 20, 0)->type = PlrProj;
+		}
 	}
+	
 }

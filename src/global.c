@@ -20,6 +20,7 @@
 
 #include "global.h"
 #include <SDL/SDL.h>
+#include "font.h"
 
 Global global;
 
@@ -34,6 +35,8 @@ void init_global() {
 	init_textures();
 	
 	load_projectiles();
+	init_fonts();
+	
 	global.projs = NULL;
 	global.fairies = NULL;
 	

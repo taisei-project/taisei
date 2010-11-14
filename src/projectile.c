@@ -83,6 +83,7 @@ int test_collision(Projectile *p) {
 			int projr = sqrt(pow(p->tex->w/4*cos(angle),2)*8/10 + pow(p->tex->h/2*sin(angle)*8/10,2));			
 			if(sqrt(pow(p->x-f->x,2) + pow(p->y-f->y,2)) < projr+10) {
 				f->hp--;
+                if(global.plr.power < 6) global.plr.power += 0.1;
 				return 2;
 			}
 			f = f->next;
@@ -96,16 +97,16 @@ void draw_projectiles() {
 	int size = 3;
 	int i = 0, i1;
 	Texture **texs = calloc(size, sizeof(Texture *));
-	texs[i++] = proj->tex;
 	
 	while(proj != NULL) {
+		texs[i] = proj->tex;
 		for(i1 = 0; i1 < i; i1++)
 			if(proj->tex == texs[i1])
 				goto next0;
 		
 		if(i >= size)
 			texs = realloc(texs, (size++)*sizeof(Texture *));
-		texs[i++] = proj->tex;
+		i++;
 next0:
 		proj = proj->next;
 	}

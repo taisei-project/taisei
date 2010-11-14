@@ -79,19 +79,9 @@ void stage0_draw() {
 }
 
 void stage0_events() {
-// 	switch(global.frames) {
-// 		case 100:
-// 			create_fairy(200, 100, 1, 180, 10, simpleFairy);
-// 		case 150:
-// 		case 200:
-// 			break;
-// 		case 250:
-// 			create_projectile(200, 200, 0, 220, simple, &_projs.bigball, ((Color){1,0,0}));
-// 	}
-
-	if(!(global.frames % 200))
+	if(!(global .frames % 200))
 		create_fairy(0, 100, 2, 180, 10, simpleFairy);
-	create_projectile(&_projs.rice, VIEWPORT_W/2, 0, abs((global.frames%36)*10-180)+90+abs(global.frames%45-22), ((Color){1,1,0}), simple, 7);
+// 	create_projectile(&_projs.rice, VIEWPORT_W/2, 0, abs((global.frames%36)*10-180)+90+abs(global.frames%45-22), ((Color){1,1,0}), simple, 7);
 }
 
 void stage0_loop() {

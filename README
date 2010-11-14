@@ -7,7 +7,7 @@ OpenTH is an open clone of the Touhou series. Touhou is a one-man project of sho
 2. Installation
 
 Dependencies:
-	- SDL, SDL_image
+	- SDL, SDL_image, SDL_ttf
 	- OpenGL
 	- CMake (build system)
 

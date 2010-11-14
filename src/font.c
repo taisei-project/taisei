@@ -18,22 +18,31 @@
  Copyright (C) 2010, Lukas Weber <laochailan@web.de>
  */
 
-#ifndef TEXTURE_H
-#define TEXTURE_H
+#include "font.h"
+#include "global.h"
+#include <assert.h>
 
-#include <SDL/SDL.h>
-#include <SDL/SDL_image.h>
-#include <SDL/SDL_opengl.h>
-#include <math.h>
+struct Fonts _fonts;
 
-typedef struct {
-	int w, h;
-	int truew, trueh;
-	GLuint gltex;
-} Texture;
+void init_fonts() {
+	TTF_Init();
+	_fonts.biolinum = TTF_OpenFont(FILE_PREFIX "gfx/LinBiolinum.ttf", 20);
+	assert(_fonts.biolinum);
+}
 
-void load_texture(const char *filename, Texture *texture);
-void load_sdl_surf(SDL_Surface *surface, Texture *texture);
+Texture *load_text(const char *text, TTF_Font *font) {
+	Texture *tex = malloc(sizeof(Texture));
+	SDL_Surface *surf = TTF_RenderText_Blended(font, text, ((SDL_Color){255,255,255}));
+	assert(surf != NULL);	
+	
+	load_sdl_surf(surf, tex);
+	SDL_FreeSurface(surf);
+	
+	return tex;
+}
 
-void draw_texture(int x, int y, Texture *tex);
-#endif
+void draw_text(const char *text, int x, int y, TTF_Font *font) {
+	Texture *tex = load_text(text, font);
+	draw_texture(x, y, tex);
+	free(tex);
+}
