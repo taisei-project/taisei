@@ -35,6 +35,6 @@ typedef struct {
 } Animation;
 
 void init_animation(Animation *buf, int rows, int cols, int speed, const char *filename);
-void draw_animation(int x, int y, int row, Animation *ani);
+void draw_animation(int x, int y, int row, const Animation *ani);
 
 #endif

@@ -23,23 +23,21 @@
 #include "list.h"
 
 void create_fairy(int x, int y, int v, int angle, int hp, FairyRule rule) {
-	Fairy *fairy = create_element((void **)&global.fairies, sizeof(Fairy));
+	Fairy *f = create_element((void **)&global.fairies, sizeof(Fairy));
 	
-	*fairy = ((Fairy) {
-		.sx = x,
-		.sy = y,
-		.x = x,
-		.y = y,
-		.v = v,
-		.angle = angle,
-		.rule = rule,
-		.birthtime = global.frames,
-		.moving = 0,
-		.hp = hp,
-		.dir = 0 
-	});
+	f->sx = x;
+	f->sy = y;
+	f->x = x;
+	f->y = y;
+	f->v = v;
+	f->angle = angle;
+	f->rule = rule;
+	f->birthtime = global.frames;
+	f->moving = 0;
+	f->hp = hp;
+	f->dir = 0;
 	
-	fairy->ani = &global.textures.fairy;
+	f->ani = &global.textures.fairy;
 }
 
 void delete_fairy(Fairy *fairy) {
@@ -52,7 +50,7 @@ void draw_fairy(Fairy *f) {
 		glTranslatef(f->x, f->y,0);
 		glScalef(s, s, s);
 		glRotatef(global.frames*10,0,0,1);
-		glColor3f(0.2,0.5,1);
+		glColor3f(0.5,0.8,1);
 		draw_texture(0, 0, &global.textures.fairy_circle);
 		glColor3f(1,1,1);
 	glPopMatrix();
@@ -65,14 +63,23 @@ void free_fairies() {
 
 void process_fairies() {
 	Fairy *fairy = global.fairies, *del = NULL;
+	
+// 	while(fairy != NULL) {
+// 		printf("%d <- %d -> %d\n", fairy->prev, fairy, fairy->next);
+// 		fairy = fairy->next;
+// 	}
+// 	printf("=================\n");
+	
+	fairy = global.fairies;
 	while(fairy != NULL) {
 		fairy->rule(fairy);
 		
-		if(fairy->x < 0 || fairy->x > VIEWPORT_W || fairy->y < 0 || fairy->y > VIEWPORT_H || fairy->hp <= 0)
+		if(fairy->x < -50 || fairy->x > VIEWPORT_W + 50 || fairy->y < -50 || fairy->y > VIEWPORT_H + 50 || fairy->hp <= 0) {
 			del = fairy;
-		fairy = fairy->next;
+			fairy = fairy->next;
+			delete_fairy(del);
+		} else {
+			fairy = fairy->next;
+		}
 	}
-	
-	if(del)
-		delete_fairy(del);
 }

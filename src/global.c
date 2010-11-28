@@ -28,6 +28,7 @@ void init_textures() {
 	load_texture(FILE_PREFIX "gfx/wasser.png", &global.textures.water);
 	load_texture(FILE_PREFIX "gfx/hud.png", &global.textures.hud);
 	load_texture(FILE_PREFIX "gfx/fairy_circle.png", &global.textures.fairy_circle);
+	load_texture(FILE_PREFIX "gfx/focus.png", &global.textures.focus);
 	
 	init_animation(&global.textures.fairy, 2, 2, 15, FILE_PREFIX "gfx/fairy.png"); 
 }

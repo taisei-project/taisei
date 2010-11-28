@@ -34,7 +34,7 @@ void init_animation(Animation *buf, int rows, int cols, int speed, const char *f
 	buf->h = buf->tex.h/rows;
 }
 
-void draw_animation(int x, int y, int row, Animation *ani) { // matrices are cool
+void draw_animation(int x, int y, int row, const Animation *ani) { // matrices are cool
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, ani->tex.gltex);
 	

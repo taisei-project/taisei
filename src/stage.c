@@ -35,7 +35,7 @@ void stage_input() {
 		if(event.type == SDL_KEYDOWN) {
 			switch(event.key.keysym.sym) {					
 				case SDLK_LSHIFT:
-					global.plr.focus = True;
+					global.plr.focus = 1;
 					break;
 				case SDLK_y:
 					global.plr.fire = True;
@@ -49,7 +49,7 @@ void stage_input() {
 		} else if(event.type == SDL_KEYUP) {
 			switch(event.key.keysym.sym) {
 				case SDLK_LSHIFT:
-					global.plr.focus = False;
+					global.plr.focus = -30; // that's for the transparency timer
 					break;
 				case SDLK_y:
 					global.plr.fire = False;
@@ -62,7 +62,7 @@ void stage_input() {
 		}
 	}
 	
-	float speed = 0.01*VIEWPORT_W/(global.plr.focus+1);
+	float speed = 0.01*VIEWPORT_W/((global.plr.focus > 0)+1);	
 	
 	Uint8 *keys = SDL_GetKeyState(NULL);
 	

@@ -29,11 +29,13 @@ void simpleFairy(Fairy *f) {
 		float angle = atan((float)(global.plr.y-f->y)/(global.plr.x-f->x))*180/M_PI+90;
 		if(global.plr.x < f->x) angle += 180;
 		
-		create_projectile(&_projs.ball, f->x, f->y, angle, ((Color){0,0,1}), simple, 2);
+		create_projectile(&_projs.rice, f->x, f->y, 180, ((Color){0,0,1}), simple, 2);
 	}
 	f->moving = 0;
 	f->dir = 1;
-	f->y += f->v;
+	
+	f->x += f->v;
+	f->y = sin((global.frames-f->birthtime)/10.0f)*20+f->sy;
 }
 
 void stage0_draw() {
@@ -83,7 +85,8 @@ void stage0_events() {
 // 		int i;
 // 		for(i = 0; i < VIEWPORT_W/15; i++)
 // 			create_projectile(&_projs.ball, i*VIEWPORT_W/15, 0, 180, ((Color) {0,0,1}), simple, 2);
-		create_fairy(100, 0, 1, 180, 10, simpleFairy);
+		create_fairy(0, 100, 1, 180, 2, simpleFairy);
+		create_fairy(VIEWPORT_W-1, 10, -1, 180, 3, simpleFairy);
 	}
 }
 
@@ -96,9 +99,9 @@ void stage0_loop() {
 	glFogf(GL_FOG_DENSITY, 0.005);
 	
 	while(!global.game_over) {
+		stage0_events();
 		stage_logic();
 		stage_input();
-		stage0_events();
 		
 		glClear(GL_COLOR_BUFFER_BIT);
 		stage0_draw();
