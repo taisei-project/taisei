@@ -62,7 +62,7 @@ void stage_input() {
 		}
 	}
 	
-	int speed = 5 - 3*global.plr.focus;
+	float speed = 0.01*VIEWPORT_W/(global.plr.focus+1);
 	
 	Uint8 *keys = SDL_GetKeyState(NULL);
 	

@@ -42,7 +42,7 @@ typedef struct Fairy {
 	char moving;
 	char dir;
 	
-	Animation ani;
+	 Animation *ani;
 	
 	FairyRule rule;
 } Fairy;

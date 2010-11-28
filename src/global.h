@@ -33,10 +33,10 @@ enum {
 	SCREEN_W = 800,
 	SCREEN_H = 600,
 	
-	VIEWPORT_X = 25,
-	VIEWPORT_Y = 25,
-	VIEWPORT_W = 500,
-	VIEWPORT_H = 550,
+	VIEWPORT_X = 40,
+	VIEWPORT_Y = 20,
+	VIEWPORT_W = 480,
+	VIEWPORT_H = 560,
 	
 	FPS = 60
 };
@@ -55,6 +55,9 @@ typedef struct {
 		
 		Texture projwave;
 		Texture water;
+		Texture fairy_circle;
+		
+		Animation fairy;
 	} textures;
 	
 	int game_over;

@@ -39,7 +39,7 @@ void create_fairy(int x, int y, int v, int angle, int hp, FairyRule rule) {
 		.dir = 0 
 	});
 	
-	init_animation(&fairy->ani, 2, 4, 2, FILE_PREFIX "gfx/fairy.png"); 
+	fairy->ani = &global.textures.fairy;
 }
 
 void delete_fairy(Fairy *fairy) {
@@ -47,7 +47,16 @@ void delete_fairy(Fairy *fairy) {
 }
 
 void draw_fairy(Fairy *f) {
-	draw_animation(f->x, f->y, f->moving, &f->ani);
+	glPushMatrix();
+		float s = sin((float)global.frames/10.0f)/4.0f+1.3f;
+		glTranslatef(f->x, f->y,0);
+		glScalef(s, s, s);
+		glRotatef(global.frames*10,0,0,1);
+		glColor3f(0.2,0.5,1);
+		draw_texture(0, 0, &global.textures.fairy_circle);
+		glColor3f(1,1,1);
+	glPopMatrix();
+	draw_animation(f->x, f->y, f->moving, f->ani);
 }
 
 void free_fairies() {
