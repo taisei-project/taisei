@@ -34,7 +34,7 @@ typedef enum {
 } Character;
 
 typedef struct {
-	int x, y;
+	float x, y;
 	short focus;
 	short fire;
 	short moving;	

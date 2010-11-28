@@ -68,10 +68,10 @@ void stage_input() {
 	
 	global.plr.moving = False;
 	
-	if(keys[SDLK_LEFT]) {
+	if(keys[SDLK_LEFT] && !keys[SDLK_RIGHT]) {
 		global.plr.moving = True;
 		global.plr.dir = 1;
-	} else if(keys[SDLK_RIGHT]) {
+	} else if(keys[SDLK_RIGHT] && !keys[SDLK_LEFT]) {
 		global.plr.moving = True;
 		global.plr.dir = 0;
 	}	
