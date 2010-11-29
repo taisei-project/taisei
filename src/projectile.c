@@ -135,8 +135,11 @@ next0:
 				glTexCoord2f(0,hq); glVertex2f(-1, 1);
 				glTexCoord2f(wq,hq); glVertex2f(1, 1);
 				glTexCoord2f(wq,0);	glVertex2f(1, -1);
-				
-				glColor3fv((float *)&proj->clr);
+			glEnd();
+			
+			glColor3fv((float *)&proj->clr);
+			
+			glBegin(GL_QUADS);
 				glTexCoord2f(wq,0); glVertex2f(-1, -1);
 				glTexCoord2f(wq,hq); glVertex2f(-1, 1);
 				glTexCoord2f(2*wq,hq); glVertex2f(1, 1);

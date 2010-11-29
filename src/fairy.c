@@ -46,15 +46,25 @@ void delete_fairy(Fairy *fairy) {
 
 void draw_fairy(Fairy *f) {
 	glPushMatrix();
-		float s = sin((float)global.frames/10.0f)/4.0f+1.3f;
 		glTranslatef(f->x, f->y,0);
-		glScalef(s, s, s);
-		glRotatef(global.frames*10,0,0,1);
-		glColor3f(0.5,0.8,1);
-		draw_texture(0, 0, &global.textures.fairy_circle);
-		glColor3f(1,1,1);
+		glPushMatrix();
+			float s = sin((float)global.frames/10.0f)/4.0f+1.3f;
+			glScalef(s, s, s);
+			glRotatef(global.frames*10,0,0,1);
+			glColor3f(0.5,0.8,1);
+			draw_texture(0, 0, &global.textures.fairy_circle);
+			glColor3f(1,1,1);
+		glPopMatrix();
+		glPushMatrix();
+			glDisable(GL_CULL_FACE);
+			
+			if(f->dir)
+				glScalef(-1,1,1);
+			draw_animation(0, 0, f->moving, f->ani);
+			
+			glEnable(GL_CULL_FACE);
+		glPopMatrix();
 	glPopMatrix();
-	draw_animation(f->x, f->y, f->moving, f->ani);
 }
 
 void free_fairies() {
@@ -64,17 +74,11 @@ void free_fairies() {
 void process_fairies() {
 	Fairy *fairy = global.fairies, *del = NULL;
 	
-// 	while(fairy != NULL) {
-// 		printf("%d <- %d -> %d\n", fairy->prev, fairy, fairy->next);
-// 		fairy = fairy->next;
-// 	}
-// 	printf("=================\n");
-	
 	fairy = global.fairies;
 	while(fairy != NULL) {
 		fairy->rule(fairy);
 		
-		if(fairy->x < -50 || fairy->x > VIEWPORT_W + 50 || fairy->y < -50 || fairy->y > VIEWPORT_H + 50 || fairy->hp <= 0) {
+		if(fairy->x < -20 || fairy->x > VIEWPORT_W + 20 || fairy->y < -20 || fairy->y > VIEWPORT_H + 20 || fairy->hp <= 0) {
 			del = fairy;
 			fairy = fairy->next;
 			delete_fairy(del);

@@ -31,8 +31,8 @@ void simpleFairy(Fairy *f) {
 		
 		create_projectile(&_projs.rice, f->x, f->y, 180, ((Color){0,0,1}), simple, 2);
 	}
-	f->moving = 0;
-	f->dir = 1;
+	f->moving = 1;
+	f->dir = f->v < 0;
 	
 	f->x += f->v;
 	f->y = sin((global.frames-f->birthtime)/10.0f)*20+f->sy;
@@ -87,6 +87,7 @@ void stage0_events() {
 // 			create_projectile(&_projs.ball, i*VIEWPORT_W/15, 0, 180, ((Color) {0,0,1}), simple, 2);
 		create_fairy(0, 100, 1, 180, 2, simpleFairy);
 		create_fairy(VIEWPORT_W-1, 10, -1, 180, 3, simpleFairy);
+		create_fairy(VIEWPORT_W-1, 200, -1, 180, 3, simpleFairy);
 	}
 }
 

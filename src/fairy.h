@@ -32,17 +32,17 @@ typedef struct Fairy {
 	struct Fairy *prev;
 	
 	int birthtime;
-	int hp;
+	char hp;
 	
 	int x, y;
 	int sx, sy;
-	int angle;
-	int v;
+	char angle;
+	char v;
 	
 	char moving;
 	char dir;
 	
-	 Animation *ani;
+	Animation *ani;
 	
 	FairyRule rule;
 } Fairy;
