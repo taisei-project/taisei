@@ -18,7 +18,7 @@ typedef struct Fairy {
 	struct Fairy *next;
 	struct Fairy *prev;
 	
-	int birthtime;
+	long birthtime;
 	char hp;
 	
 	int x, y;
@@ -36,7 +36,7 @@ typedef struct Fairy {
 
 void create_fairy(int x, int y, int speed, int angle, int hp, FairyRule rule);
 void delete_fairy(Fairy *fairy);
-void draw_fairy(Fairy *fairy);
+void draw_fairies();
 void free_fairies();
 
 void process_fairies();

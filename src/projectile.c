@@ -1,21 +1,8 @@
 /*
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 2
- of the License, or (at your option) any later version.
- 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- 
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 51 Franklin Street, Fifth Floor,
- Boston, MA  02110-1301, USA.
- 
- ---
- Copyright (C) 2010, Lukas Weber <laochailan@web.de>
+ * This software is licensed under the terms of the MIT-License
+ * See COPYING for further information. 
+ * ---
+ * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
 #include "projectile.h"
@@ -38,7 +25,7 @@ Projectile *create_projectile(Texture *tex, int x, int y, int angle, Color clr, 
 
 	Projectile *p = create_element((void **)&global.projs, sizeof(Projectile));
 	
-	p->birthtime = global.frames;
+	p->birthtime = SDL_GetTicks();
 	p->x = x;
 	p->y = y;
 	p->sx = x;
@@ -120,10 +107,9 @@ next0:
 		float wq = ((float)tex->w/2.0)/tex->truew;
 		float hq = ((float)tex->h)/tex->trueh;
 		
-		proj = global.projs;
-		while(proj != NULL) {
+		for(proj = global.projs; proj; proj = proj->next) {
 			if(proj->tex != tex)
-				goto next1;
+				continue;
 			glPushMatrix();
 			
 			glTranslatef(proj->x, proj->y, 0);
@@ -147,9 +133,7 @@ next0:
 			glEnd();
 			
 			glPopMatrix();
-			glColor3f(1,1,1);			
-next1:
-			proj = proj->next;
+			glColor3f(1,1,1);		
 		}
 	}
 	glDisable(GL_TEXTURE_2D);
@@ -158,7 +142,7 @@ next1:
 void process_projectiles() {
 	Projectile *proj = global.projs, *del = NULL;
 	while(proj != NULL) {
-		proj->rule(&proj->x, &proj->y, proj->angle, proj->sx, proj->sy, global.frames - proj->birthtime, proj->args);
+		proj->rule(&proj->x, &proj->y, proj->angle, proj->sx, proj->sy, (SDL_GetTicks() - proj->birthtime)/16, proj->args);
 		
 		int v = test_collision(proj);
 		if(v == 1)
@@ -176,7 +160,7 @@ void process_projectiles() {
 	}
 }
 
-void simple(int *x, int *y, int angle, int sx, int sy, int time, float* a) { // sure is physics in here; a[0]: velocity
+void simple(float *x, float *y, int angle, int sx, int sy, int time, float* a) { // sure is physics in here; a[0]: velocity
 
 	*y = sy + a[0]*sin((float)(angle-90)/180*M_PI)*time;
 	*x = sx + a[0]*cos((float)(angle-90)/180*M_PI)*time;

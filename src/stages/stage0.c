@@ -12,7 +12,7 @@
 #include "../global.h"
 
 void simpleFairy(Fairy *f) {
-	if(!((global.frames-f->birthtime) % 30)) {
+	if(!((SDL_GetTicks()-f->birthtime) % 300)) {
 		float angle = atan((float)(global.plr.y-f->y)/(global.plr.x-f->x))*180/M_PI+90;
 		if(global.plr.x < f->x) angle += 180;
 		
@@ -21,8 +21,9 @@ void simpleFairy(Fairy *f) {
 	f->moving = 1;
 	f->dir = f->v < 0;
 	
-	f->x += f->v;
-	f->y = sin((global.frames-f->birthtime)/10.0f)*20+f->sy;
+	f->x += f->v*DTe;
+	
+	f->y = sin((SDL_GetTicks()-f->birthtime)/160.0f)*20*DTe+f->sy;
 }
 
 void stage0_draw() {
@@ -91,7 +92,6 @@ void stage0_loop() {
 		stage_logic();
 		stage_input();
 		
-		glClear(GL_COLOR_BUFFER_BIT);
 		stage0_draw();
 		stage_draw();
 		

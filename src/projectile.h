@@ -1,21 +1,8 @@
 /*
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 2
- of the License, or (at your option) any later version.
- 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- 
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 51 Franklin Street, Fifth Floor,
- Boston, MA  02110-1301, USA.
- 
- ---
- Copyright (C) 2010, Lukas Weber <laochailan@web.de>
+ * This software is licensed under the terms of the MIT-License
+ * See COPYING for further information. 
+ * ---
+ * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
 #ifndef PROJECTILE
@@ -32,16 +19,16 @@ typedef struct {
 } Color;
 
 struct Projectile;
-typedef void (*ProjRule)(int *x, int *y, int angle, int sx, int sy, int time, float* a);
+typedef void (*ProjRule)(float *x, float *y, int angle, int sx, int sy, int time, float* a);
 
 typedef struct Projectile {
 	struct Projectile *next;
 	struct Projectile *prev;
 	
-	int birthtime;
+	long birthtime;
 	
-	int x;
-	int y;
+	float x;
+	float y;
 	
 	int sx;
 	int sy;
@@ -79,5 +66,5 @@ void free_projectiles();
 int test_collision(Projectile *p);
 void process_projectiles();
 
-void simple(int *x, int *y, int angle, int sx, int sy, int time, float* a);
+void simple(float *x, float *y, int angle, int sx, int sy, int time, float* a);
 #endif

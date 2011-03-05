@@ -30,6 +30,9 @@ enum {
 
 #define FILE_PREFIX PREFIX "/share/seiyou/"
 
+#define DT (SDL_GetTicks() - global.time)
+#define DTe ((float)DT/16.0)
+
 typedef struct {
 	Player plr;	
 	Projectile *projs;
@@ -51,6 +54,8 @@ typedef struct {
 	int game_over;
 	
 	int time;
+	
+	int fpstime;  // frame counter
 	int fps;
 	
 	int lasttime;

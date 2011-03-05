@@ -34,9 +34,10 @@ void init_global() {
 	global.frames = 0;
 	global.game_over = 0;
 	
-	global.time = 0;
+	global.fpstime = 0;
 	global.fps = 0;
 	
+	global.time = 0;
 	global.lasttime = 0;
 }
 
@@ -47,7 +48,9 @@ void game_over() {
 
 void frame_rate() {
 	int t = global.lasttime + 1000/FPS - SDL_GetTicks();
+	global.time = SDL_GetTicks();
 	if(t > 0)
 		SDL_Delay(t);
+	
 	global.lasttime = SDL_GetTicks();
 }

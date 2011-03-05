@@ -45,11 +45,11 @@ void stage_input() {
 					break;
 			}
 		} else if(event.type == SDL_QUIT) {
-			exit(1);
+			global.game_over = 1;
 		}
 	}
 	
-	float speed = 0.01*VIEWPORT_W/((global.plr.focus > 0)+1);	
+	float speed = 0.01*VIEWPORT_W/((global.plr.focus > 0)+1)*DTe;	
 	
 	Uint8 *keys = SDL_GetKeyState(NULL);
 	
@@ -81,12 +81,7 @@ void stage_draw() {
 	player_draw(&global.plr);
 
 	draw_projectiles();
-
-	Fairy *f = global.fairies;
-	while(f != NULL) {
-		draw_fairy(f);		
-		f = f->next;
-	}	
+	draw_fairies();
 	
 	glPopMatrix();
 	
@@ -106,10 +101,10 @@ void stage_logic() {
 	
 	global.frames++;
 	
-	if(SDL_GetTicks() > global.time+1000) {
+	if(SDL_GetTicks() > global.fpstime+1000) {
 		fprintf(stderr, "FPS: %d\n", global.fps);
 		global.fps = 0;
-		global.time = SDL_GetTicks();
+		global.fpstime = SDL_GetTicks();
 	} else {
 		global.fps++;
 	}
