@@ -19,7 +19,7 @@ find_package(SDL_ttf REQUIRED)
 add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}")
 
 include_directories(${SDL_INCLUDE_DIRS})
-add_executable(openth ${SRCs})
-target_link_libraries(openth ${SDL_LIBRARY} ${OPENGL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLTTF_LIBRARY})
+add_executable(seiyou ${SRCs})
+target_link_libraries(seiyou ${SDL_LIBRARY} ${OPENGL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLTTF_LIBRARY})
 
-install(TARGETS openth RUNTIME DESTINATION bin)
+install(TARGETS seiyou RUNTIME DESTINATION bin)
