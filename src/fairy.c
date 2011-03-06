@@ -31,29 +31,6 @@ void delete_fairy(Fairy *fairy) {
 	delete_element((void **)&global.fairies, fairy);
 }
 
-void draw_fairy(Fairy *f) {
-	glPushMatrix();
-		glTranslatef(f->x, f->y,0);
-		glPushMatrix();
-			float s = sin((float)SDL_GetTicks()/300.f)/4.0f+1.3f;
-			glScalef(s, s, s);
-			glRotatef((float)SDL_GetTicks()/6.0,0,0,1);
-			glColor3f(0.5,0.8,1);
-			draw_texture(0, 0, &global.textures.fairy_circle);
-			glColor3f(1,1,1);
-		glPopMatrix();
-		glPushMatrix();
-			glDisable(GL_CULL_FACE);
-			
-			if(f->dir)
-				glScalef(-1,1,1);
-			draw_animation(0, 0, f->moving, f->ani);
-			
-			glEnable(GL_CULL_FACE);
-		glPopMatrix();
-	glPopMatrix();
-}
-
 void draw_fairies() {
 	glEnable(GL_TEXTURE_2D);
 	Texture *tex = &global.textures.fairy_circle;
@@ -62,7 +39,7 @@ void draw_fairies() {
 	Fairy *f;
 	glPushMatrix();
 	
-	float s = sin((float)SDL_GetTicks()/160.f)/4.0f+1.3f;
+	float s = sin((float)SDL_GetTicks()/160.f)/6 + 0.8;
 	float wq = ((float)tex->w)/tex->truew;
 	float hq = ((float)tex->h)/tex->trueh;
 	
@@ -73,9 +50,9 @@ void draw_fairies() {
 		glPushMatrix();
 				
 		glTranslatef(f->x,f->y,0);
-		glScalef(s, s, s);
-		glRotatef(global.frames*10,0,0,1);
+		glRotatef(SDL_GetTicks()/2,0,0,1);
 		glScalef(tex->w/2,tex->h/2,1);
+		glScalef(s, s, s);
 		
 		glBegin(GL_QUADS);
 			glTexCoord2f(0,0); glVertex3f(-1, -1, 0);

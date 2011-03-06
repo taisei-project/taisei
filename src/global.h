@@ -28,7 +28,7 @@ enum {
 	FPS = 60
 };
 
-#define FILE_PREFIX PREFIX "/share/seiyou/"
+#define FILE_PREFIX PREFIX "/share/taisei/"
 
 #define DT (SDL_GetTicks() - global.time)
 #define DTe ((float)DT/16.0)

@@ -14,11 +14,11 @@
    height="354.45395"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.0 r9654"
+   inkscape:version="0.48.1 r9760"
    sodipodi:docname="fairy_circle.svg"
-   inkscape:export-filename="/home/laochailan/src/touhouclone/gfx/fairy_circle.png"
-   inkscape:export-xdpi="9"
-   inkscape:export-ydpi="9">
+   inkscape:export-filename="/home/laochailan/src/taisei/gfx/fairy_circle.png"
+   inkscape:export-xdpi="15.234701"
+   inkscape:export-ydpi="15.234701">
   <defs
      id="defs4">
     <linearGradient
@@ -69,33 +69,6 @@
          offset="1"
          id="stop3873" />
     </linearGradient>
-    <filter
-       inkscape:collect="always"
-       id="filter3842"
-       color-interpolation-filters="sRGB">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="1.681904"
-         id="feGaussianBlur3844" />
-    </filter>
-    <filter
-       inkscape:collect="always"
-       id="filter3846"
-       color-interpolation-filters="sRGB">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="1.681904"
-         id="feGaussianBlur3848" />
-    </filter>
-    <filter
-       inkscape:collect="always"
-       id="filter3850"
-       color-interpolation-filters="sRGB">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="1.681904"
-         id="feGaussianBlur3852" />
-    </filter>
     <radialGradient
        inkscape:collect="always"
        xlink:href="#linearGradient3869"
@@ -305,7 +278,7 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.7"
-     inkscape:cx="486.05076"
+     inkscape:cx="213.19361"
      inkscape:cy="147.12966"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -315,7 +288,7 @@
      fit-margin-right="0"
      fit-margin-bottom="0"
      inkscape:window-width="958"
-     inkscape:window-height="1061"
+     inkscape:window-height="1037"
      inkscape:window-x="0"
      inkscape:window-y="17"
      inkscape:window-maximized="0" />
@@ -340,7 +313,7 @@
        id="g3819"
        style="fill-opacity:1;fill:none;stroke:url(#radialGradient3840)">
       <path
-         d="m 368.70567,296.76807 a 168.1904,168.1904 0 1 1 -336.380795,0 168.1904,168.1904 0 1 1 336.380795,0 z"
+         d="m 368.70567,296.76807 c 0,92.88899 -75.3014,168.1904 -168.1904,168.1904 -92.88899,0 -168.190395,-75.30141 -168.190395,-168.1904 0,-92.889 75.301405,-168.1904 168.190395,-168.1904 92.889,0 168.1904,75.3014 168.1904,168.1904 z"
          sodipodi:ry="168.1904"
          sodipodi:rx="168.1904"
          sodipodi:cy="296.76807"
@@ -352,7 +325,7 @@
          style="stroke:url(#radialGradient3840);stroke-width:3.75000000000000000;stroke-miterlimit:4;stroke-dasharray:none;filter:url(#filter3811);fill-opacity:1;fill:none"
          id="g3782">
         <path
-           d="m 368.70567,296.76807 a 168.1904,168.1904 0 1 1 -336.380795,0 168.1904,168.1904 0 1 1 336.380795,0 z"
+           d="m 368.70567,296.76807 c 0,92.88899 -75.3014,168.1904 -168.1904,168.1904 -92.88899,0 -168.190395,-75.30141 -168.190395,-168.1904 0,-92.889 75.301405,-168.1904 168.190395,-168.1904 92.889,0 168.1904,75.3014 168.1904,168.1904 z"
            sodipodi:ry="168.1904"
            sodipodi:rx="168.1904"
            sodipodi:cy="296.76807"

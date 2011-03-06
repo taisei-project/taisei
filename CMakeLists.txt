@@ -1,8 +1,8 @@
-project(seiyou)
+project(taisei)
 
 cmake_minimum_required(VERSION 2.6)
 
 add_subdirectory(src)
 
-set(DATA_DIR "share/seiyou")
+set(DATA_DIR "share/taisei")
 install(DIRECTORY gfx DESTINATION ${DATA_DIR})

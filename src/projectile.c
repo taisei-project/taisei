@@ -21,8 +21,8 @@ void load_projectiles() {
 	load_texture(FILE_PREFIX "gfx/proyoumu.png", &_projs.youmu);
 }
 
-Projectile *create_projectile(Texture *tex, int x, int y, int angle, Color clr, ProjRule rule, float args, ...) {
-
+Projectile *create_projectile(Texture *tex, int x, int y, int angle, Color clr,
+							  ProjRule rule, float args, ...) {
 	Projectile *p = create_element((void **)&global.projs, sizeof(Projectile));
 	
 	p->birthtime = SDL_GetTicks();
@@ -60,7 +60,10 @@ int test_collision(Projectile *p) {
 		float angle = atan((float)(global.plr.y - p->y)/(global.plr.x - p->x));
 		
 		int projr = sqrt(pow(p->tex->w/4*cos(angle),2)*8/10 + pow(p->tex->h/2*sin(angle)*8/10,2));
-		if(sqrt(pow(p->x-global.plr.x,2) + pow(p->y-global.plr.y,2)) < projr+1) // <- most magic line in the game. i tried to get some touhou feel. +/- 9 didn't really work so i used +1
+		if(sqrt(pow(p->x-global.plr.x,2) + pow(p->y-global.plr.y,2)) < projr+1)
+			// most magic line in the game.
+			// i tried to get some touhou feel.
+			// +/- 9 didn't really work so i used +1
 			return 1;
 	} else {
 		Fairy *f = global.fairies;
@@ -142,7 +145,8 @@ next0:
 void process_projectiles() {
 	Projectile *proj = global.projs, *del = NULL;
 	while(proj != NULL) {
-		proj->rule(&proj->x, &proj->y, proj->angle, proj->sx, proj->sy, (SDL_GetTicks() - proj->birthtime)/16, proj->args);
+		proj->rule(&proj->x, &proj->y, proj->angle, proj->sx, proj->sy,
+				   (SDL_GetTicks() - proj->birthtime)/16, proj->args);
 		
 		int v = test_collision(proj);
 		if(v == 1)
