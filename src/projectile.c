@@ -122,6 +122,7 @@ void draw_projectiles() {
 		glColor3f(1,1,1);		
 	}
 	
+	
 	glDisable(GL_TEXTURE_2D);
 }
 
