@@ -67,14 +67,14 @@ void player_draw(Player* plr) {
 
 void player_logic(Player* plr) {
 	if(plr->fire && !(global.frames % 4)) {
-		create_projectile(&_projs.youmu, plr->x-10, plr->y-20, 0, ((Color){1,1,1}), simple, 20, 0)->type = PlrProj;
-		create_projectile(&_projs.youmu, plr->x+10, plr->y-20, 0, ((Color){1,1,1}), simple, 20, 0)->type = PlrProj;
+		create_projectile(&_projs.youmu, plr->x-10, plr->y-20, 0, ((Color){1,1,1}), simple, 20)->type = PlrProj;
+		create_projectile(&_projs.youmu, plr->x+10, plr->y-20, 0, ((Color){1,1,1}), simple, 20)->type = PlrProj;
 		
 		if(plr->power >= 2) {
 			int a = 15;
 			if(plr->focus > 0) a = 5;
-			create_projectile(&_projs.youmu, plr->x-10, plr->y-20, -a, ((Color){1,1,1}), simple, 20, 0)->type = PlrProj;
-			create_projectile(&_projs.youmu, plr->x+10, plr->y-20, a, ((Color){1,1,1}), simple, 20, 0)->type = PlrProj;
+			create_projectile(&_projs.youmu, plr->x-10, plr->y-20, -a, ((Color){1,1,1}), simple, 20)->type = PlrProj;
+			create_projectile(&_projs.youmu, plr->x+10, plr->y-20, a, ((Color){1,1,1}), simple, 20)->type = PlrProj;
 		}
 	}
 	

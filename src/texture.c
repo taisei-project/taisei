@@ -57,6 +57,11 @@ void load_sdl_surf(SDL_Surface *surface, Texture *texture) {
 	free(tex);
 }
 
+void free_texture(Texture *tex) {
+	glDeleteTextures(1, &tex->gltex);
+	free(tex);
+}
+
 void draw_texture(int x, int y, Texture *tex) {
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);

@@ -73,12 +73,12 @@ void stage0_draw() {
 		glVertex3f(VIEWPORT_W*0.75,1000,0);		
 	glEnd();
 	glPopMatrix();
-	
+		glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
+		glMatrixMode(GL_MODELVIEW);	
 	glPopMatrix();
 	
-	glMatrixMode(GL_TEXTURE);
-		glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);	
+	glDisable(GL_TEXTURE_2D);
 }
 
 void stage0_events() {
@@ -109,8 +109,8 @@ void stage0_loop() {
 		stage_draw();
 		SDL_GL_SwapBuffers();
 		
-		SDL_Delay(1000/FPS);
-// 		frame_rate();
+// 		SDL_Delay(1000/FPS);
+		frame_rate();
 	}
 	
 	glDisable(GL_FOG);

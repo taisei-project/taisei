@@ -40,7 +40,7 @@ Projectile *create_projectile(Texture *tex, int x, int y, int angle, Color clr,
 	int i;
 	
 	va_start(ap, args);
-	for(i = 0; i < 4 && (args != 0); i++ && (args = va_arg(ap, double)))
+	for(i = 0; i < 4 && args; i++ && (args = va_arg(ap, double)))
 		p->args[i] = args;
 	va_end(ap);
 	
@@ -83,62 +83,45 @@ int test_collision(Projectile *p) {
 }
 
 void draw_projectiles() {
-	Projectile *proj = global.projs;
-	int size = 3;
-	int i = 0, i1;
-	Texture **texs = calloc(size, sizeof(Texture *));
-	
-	while(proj != NULL) {
-		texs[i] = proj->tex;
-		for(i1 = 0; i1 < i; i1++)
-			if(proj->tex == texs[i1])
-				goto next0;
-		
-		if(i >= size)
-			texs = realloc(texs, (size++)*sizeof(Texture *));
-		i++;
-next0:
-		proj = proj->next;
-	}
-	
 	glEnable(GL_TEXTURE_2D);	
-	for(i1 = 0; i1 < i; i1++) {
-		Texture *tex = texs[i1];
-				
+	
+	Projectile *proj;
+	Texture *tex;
+	float wq, hq;
+	
+	for(proj = global.projs; proj; proj = proj->next) {
+		tex = proj->tex;
+		
 		glBindTexture(GL_TEXTURE_2D, tex->gltex);	
+	
+		wq = ((float)tex->w/2.0)/tex->truew;
+		hq = ((float)tex->h)/tex->trueh;
 		
-		float wq = ((float)tex->w/2.0)/tex->truew;
-		float hq = ((float)tex->h)/tex->trueh;
+		glPushMatrix();
+		glTranslatef(proj->x, proj->y, 0);
+		glRotatef(proj->angle, 0, 0, 1);
+		glScalef(tex->w/4.0, tex->h/2.0,0);
 		
-		for(proj = global.projs; proj; proj = proj->next) {
-			if(proj->tex != tex)
-				continue;
-			glPushMatrix();
-			
-			glTranslatef(proj->x, proj->y, 0);
-			glRotatef(proj->angle, 0, 0, 1);
-			glScalef(tex->w/4.0, tex->h/2.0,0);
-			
-			glBegin(GL_QUADS);
-				glTexCoord2f(0,0); glVertex2f(-1, -1);
-				glTexCoord2f(0,hq); glVertex2f(-1, 1);
-				glTexCoord2f(wq,hq); glVertex2f(1, 1);
-				glTexCoord2f(wq,0);	glVertex2f(1, -1);
-			glEnd();
-			
-			glColor3fv((float *)&proj->clr);
-			
-			glBegin(GL_QUADS);
-				glTexCoord2f(wq,0); glVertex2f(-1, -1);
-				glTexCoord2f(wq,hq); glVertex2f(-1, 1);
-				glTexCoord2f(2*wq,hq); glVertex2f(1, 1);
-				glTexCoord2f(2*wq,0); glVertex2f(1, -1);
-			glEnd();
-			
-			glPopMatrix();
-			glColor3f(1,1,1);		
-		}
+		glBegin(GL_QUADS);
+			glTexCoord2f(0,0); glVertex2f(-1, -1);
+			glTexCoord2f(0,hq); glVertex2f(-1, 1);
+			glTexCoord2f(wq,hq); glVertex2f(1, 1);
+			glTexCoord2f(wq,0);	glVertex2f(1, -1);
+		glEnd();
+		
+		glColor3fv((float *)&proj->clr);
+		
+		glBegin(GL_QUADS);
+			glTexCoord2f(wq,0); glVertex2f(-1, -1);
+			glTexCoord2f(wq,hq); glVertex2f(-1, 1);
+			glTexCoord2f(2*wq,hq); glVertex2f(1, 1);
+			glTexCoord2f(2*wq,0); glVertex2f(1, -1);
+		glEnd();
+		
+		glPopMatrix();
+		glColor3f(1,1,1);		
 	}
+	
 	glDisable(GL_TEXTURE_2D);
 }
 

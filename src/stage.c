@@ -99,7 +99,7 @@ void stage_logic() {
 	process_projectiles();
 	
 	global.frames++;
-	
+		
 	if(SDL_GetTicks() > global.fpstime+1000) {
 		fprintf(stderr, "FPS: %d\n", global.fps);
 		global.fps = 0;

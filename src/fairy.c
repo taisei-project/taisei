@@ -50,7 +50,7 @@ void draw_fairies() {
 		glPushMatrix();
 				
 		glTranslatef(f->x,f->y,0);
-		glRotatef(SDL_GetTicks()/2,0,0,1);
+		glRotatef(global.frames*10,0,0,1);
 		glScalef(tex->w/2,tex->h/2,1);
 		glScalef(s, s, s);
 		

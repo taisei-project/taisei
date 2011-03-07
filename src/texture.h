@@ -21,6 +21,7 @@ typedef struct {
 
 void load_texture(const char *filename, Texture *texture);
 void load_sdl_surf(SDL_Surface *surface, Texture *texture);
+void free_texture(Texture *tex);
 
 void draw_texture(int x, int y, Texture *tex);
 #endif

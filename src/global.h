@@ -25,7 +25,7 @@ enum {
 	VIEWPORT_W = 480,
 	VIEWPORT_H = 560,
 	
-	FPS = 100
+	FPS = 60
 };
 
 #define FILE_PREFIX PREFIX "/share/taisei/"
