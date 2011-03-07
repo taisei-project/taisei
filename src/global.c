@@ -13,6 +13,7 @@ Global global;
 
 void init_textures() {
 	load_texture(FILE_PREFIX "gfx/wasser.png", &global.textures.water);
+	load_texture(FILE_PREFIX "gfx/stage1/border.png", &global.textures.border);
 	load_texture(FILE_PREFIX "gfx/hud.png", &global.textures.hud);
 	load_texture(FILE_PREFIX "gfx/fairy_circle.png", &global.textures.fairy_circle);
 	load_texture(FILE_PREFIX "gfx/focus.png", &global.textures.focus);

@@ -42,6 +42,7 @@ typedef struct {
 		
 		Texture projwave;
 		Texture water;
+		Texture border;
 		Texture fairy_circle;
 		Texture focus;
 		

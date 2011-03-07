@@ -26,7 +26,7 @@ void simpleFairy(Fairy *f) {
 void stage0_draw() {
 	glPushMatrix();
 	glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
-	
+		
 	glBegin(GL_QUADS);
 		glVertex3f(0,0,1000);
 		glVertex3f(0,VIEWPORT_H,1000);
@@ -56,13 +56,29 @@ void stage0_draw() {
 		glTexCoord2i(0,1);
 		glVertex3f(0,1000,0);
 	glEnd();
+	
+	
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, global.textures.border.gltex);
+	
+// 	glColor3f(1,0.75,0.75);
+	glBegin(GL_QUADS);
+		glTexCoord2i(0,0);
+		glVertex3f(VIEWPORT_W,-500,0);
+		glTexCoord2i(1,0);
+		glVertex3f(VIEWPORT_W,-500,1000);
+		glTexCoord2i(1,1);
+		glVertex3f(VIEWPORT_W,1000,1000);
+		glTexCoord2i(0,1);
+		glVertex3f(VIEWPORT_W*0.75,1000,0);		
+	glEnd();
+	glPopMatrix();
+	
 	glPopMatrix();
 	
 	glMatrixMode(GL_TEXTURE);
 		glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
-	
-	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);	
 }
 
 void stage0_events() {
