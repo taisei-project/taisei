@@ -12,18 +12,15 @@
 #include "../global.h"
 
 void simpleFairy(Fairy *f) {
-	if(!((SDL_GetTicks()-f->birthtime) % 300)) {
-		float angle = atan((float)(global.plr.y-f->y)/(global.plr.x-f->x))*180/M_PI+90;
-		if(global.plr.x < f->x) angle += 180;
-		
+	if(!((global.frames - f->birthtime) % 50)) {
 		create_projectile(&_projs.rice, f->x, f->y, 180, ((Color){0,0,1}), simple, 2);
 	}
 	f->moving = 1;
 	f->dir = f->v < 0;
 	
-	f->x += f->v*DTe;
+	f->x += f->v;
 	
-	f->y = sin((SDL_GetTicks()-f->birthtime)/160.0f)*20*DTe+f->sy;
+	f->y = sin((global.frames - f->birthtime)/10.0f)*20 + f->sy;
 }
 
 void stage0_draw() {
@@ -70,9 +67,9 @@ void stage0_draw() {
 
 void stage0_events() {
 	if(!(global .frames % 100)) {
-// 		int i;
-// 		for(i = 0; i < VIEWPORT_W/15; i++)
-// 			create_projectile(&_projs.ball, i*VIEWPORT_W/15, 0, 180, ((Color) {0,0,1}), simple, 2);
+		int i;
+		for(i = 0; i < VIEWPORT_W/15; i++)
+			create_projectile(&_projs.ball, i*VIEWPORT_W/15, 0, 90 + i*10, ((Color) {0,0,1}), simple, 2);
 		create_fairy(0, 100, 1, 180, 2, simpleFairy);
 		create_fairy(VIEWPORT_W-1, 10, -1, 180, 3, simpleFairy);
 		create_fairy(VIEWPORT_W-1, 200, -1, 180, 3, simpleFairy);
@@ -94,8 +91,10 @@ void stage0_loop() {
 		
 		stage0_draw();
 		stage_draw();
+		SDL_GL_SwapBuffers();
 		
-		frame_rate();
+		SDL_Delay(1000/FPS);
+// 		frame_rate();
 	}
 	
 	glDisable(GL_FOG);

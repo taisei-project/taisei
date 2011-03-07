@@ -37,7 +37,6 @@ void init_global() {
 	global.fpstime = 0;
 	global.fps = 0;
 	
-	global.time = 0;
 	global.lasttime = 0;
 }
 

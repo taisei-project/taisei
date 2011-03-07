@@ -25,13 +25,10 @@ enum {
 	VIEWPORT_W = 480,
 	VIEWPORT_H = 560,
 	
-	FPS = 60
+	FPS = 100
 };
 
 #define FILE_PREFIX PREFIX "/share/taisei/"
-
-#define DT (SDL_GetTicks() - global.time)
-#define DTe ((float)DT/16.0)
 
 typedef struct {
 	Player plr;	

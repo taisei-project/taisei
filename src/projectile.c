@@ -25,7 +25,7 @@ Projectile *create_projectile(Texture *tex, int x, int y, int angle, Color clr,
 							  ProjRule rule, float args, ...) {
 	Projectile *p = create_element((void **)&global.projs, sizeof(Projectile));
 	
-	p->birthtime = SDL_GetTicks();
+	p->birthtime = global.frames;
 	p->x = x;
 	p->y = y;
 	p->sx = x;
@@ -146,7 +146,7 @@ void process_projectiles() {
 	Projectile *proj = global.projs, *del = NULL;
 	while(proj != NULL) {
 		proj->rule(&proj->x, &proj->y, proj->angle, proj->sx, proj->sy,
-				   (SDL_GetTicks() - proj->birthtime)/16, proj->args);
+				   global.frames - proj->birthtime, proj->args);
 		
 		int v = test_collision(proj);
 		if(v == 1)
@@ -165,7 +165,6 @@ void process_projectiles() {
 }
 
 void simple(float *x, float *y, int angle, int sx, int sy, int time, float* a) { // sure is physics in here; a[0]: velocity
-
 	*y = sy + a[0]*sin((float)(angle-90)/180*M_PI)*time;
 	*x = sx + a[0]*cos((float)(angle-90)/180*M_PI)*time;
 }

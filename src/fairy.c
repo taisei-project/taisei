@@ -19,7 +19,7 @@ void create_fairy(int x, int y, int v, int angle, int hp, FairyRule rule) {
 	f->v = v;
 	f->angle = angle;
 	f->rule = rule;
-	f->birthtime = SDL_GetTicks();
+	f->birthtime = global.frames;
 	f->moving = 0;
 	f->hp = hp;
 	f->dir = 0;
@@ -39,7 +39,7 @@ void draw_fairies() {
 	Fairy *f;
 	glPushMatrix();
 	
-	float s = sin((float)SDL_GetTicks()/160.f)/6 + 0.8;
+	float s = sin((float)global.frames/10.f)/6 + 0.8;
 	float wq = ((float)tex->w)/tex->truew;
 	float hq = ((float)tex->h)/tex->trueh;
 	

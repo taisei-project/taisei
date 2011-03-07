@@ -49,7 +49,7 @@ void stage_input() {
 		}
 	}
 	
-	float speed = 0.01*VIEWPORT_W/((global.plr.focus > 0)+1)*DTe;	
+	float speed = 0.01*VIEWPORT_W/((global.plr.focus > 0)+1);	
 	
 	Uint8 *keys = SDL_GetKeyState(NULL);
 	
@@ -90,7 +90,6 @@ void stage_draw() {
 	
 	draw_texture(SCREEN_W/2, SCREEN_H/2, &global.textures.hud);
 	draw_text(buf, SCREEN_W-200, 200, _fonts.biolinum);
-	SDL_GL_SwapBuffers();
 }
 
 void stage_logic() {
