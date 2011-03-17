@@ -17,7 +17,6 @@ typedef void (*FairyRule)(struct Fairy*);
 typedef struct Fairy {
 	struct Fairy *next;
 	struct Fairy *prev;
-	
 	long birthtime;
 	char hp;
 	

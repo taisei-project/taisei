@@ -73,7 +73,6 @@ int test_collision(Projectile *p) {
 			int projr = sqrt(pow(p->tex->w/4*cos(angle),2)*8/10 + pow(p->tex->h/2*sin(angle)*8/10,2));			
 			if(sqrt(pow(p->x-f->x,2) + pow(p->y-f->y,2)) < projr+10) {
 				f->hp--;
-                if(global.plr.power < 6) global.plr.power += 0.1;
 				return 2;
 			}
 			f = f->next;

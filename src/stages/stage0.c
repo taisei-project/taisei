@@ -86,7 +86,7 @@ void stage0_events() {
 // 		int i;
 // 		for(i = 0; i < VIEWPORT_W/15; i++)
 // 			create_projectile(&_projs.ball, i*VIEWPORT_W/15, 0, 90 + i*10, ((Color) {0,0,1}), simple, 2);
-// 		create_fairy(0, 100, 1, 180, 2, simpleFairy);
+		create_fairy(0, 100, 1, 180, 2, simpleFairy);
 // 		create_fairy(VIEWPORT_W-1, 10, -1, 180, 3, simpleFairy);
 // 		create_fairy(VIEWPORT_W-1, 200, -1, 180, 3, simpleFairy);
 		create_projectile(&_projs.ball, VIEWPORT_W/2, 0, 180, ((Color) {0,0,1}), simple, 2);
@@ -108,9 +108,10 @@ void stage0_loop() {
 		
 		stage0_draw();
 		stage_draw();
-		SDL_GL_SwapBuffers();
+
+        glPopMatrix();
 		
-// 		SDL_Delay(1000/FPS);
+		SDL_GL_SwapBuffers();
 		frame_rate();
 	}
 	

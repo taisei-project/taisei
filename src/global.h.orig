@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information.
+ * See COPYING for further information. 
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
@@ -12,7 +12,6 @@
 #include "player.h"
 #include "projectile.h"
 #include "fairy.h"
-#include "poweritem.h"
 
 enum {
 	RESX = 800,
@@ -35,7 +34,6 @@ typedef struct {
 	Player plr;	
 	Projectile *projs;
 	Fairy *fairies;
-	Poweritem *poweritems;
 	
 	int frames;
 	
@@ -47,7 +45,6 @@ typedef struct {
 		Texture border;
 		Texture fairy_circle;
 		Texture focus;
-		Texture poweritems;
 		
 		Animation fairy;
 	} textures;

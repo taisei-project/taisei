@@ -7,6 +7,7 @@ set(SRCs
 	projectile.c
 	animation.c
 	fairy.c
+	poweritem.c
 	list.c
 	font.c
 	stages/stage0.c)

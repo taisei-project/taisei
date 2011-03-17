@@ -28,6 +28,7 @@ void create_fairy(int x, int y, int v, int angle, int hp, FairyRule rule) {
 }
 
 void delete_fairy(Fairy *fairy) {
+	if(global.plr.power < 6) create_poweritem(fairy->x, fairy->y,0.03,0,simpleItem);
 	delete_element((void **)&global.fairies, fairy);
 }
 

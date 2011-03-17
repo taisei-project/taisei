@@ -82,6 +82,7 @@ void stage_draw() {
 
 	draw_projectiles();
 	draw_fairies();
+	draw_poweritems();
 	
 	glPopMatrix();
 	
@@ -97,6 +98,7 @@ void stage_logic() {
 	
 	process_fairies();
 	process_projectiles();
+	process_poweritems();
 	
 	global.frames++;
 		
@@ -112,6 +114,7 @@ void stage_logic() {
 void stage_end() {
 	free_projectiles();
 	free_fairies();
+	free_poweritems();
 	global.frames = 0;
 }
 		
