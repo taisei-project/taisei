@@ -108,8 +108,6 @@ void stage0_loop() {
 		
 		stage0_draw();
 		stage_draw();
-
-        glPopMatrix();
 		
 		SDL_GL_SwapBuffers();
 		frame_rate();
