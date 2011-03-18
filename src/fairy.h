@@ -9,6 +9,7 @@
 #define FAIRY_H
 
 #include "animation.h"
+#include <complex.h>
 
 struct Fairy;
 
@@ -18,12 +19,10 @@ typedef struct Fairy {
 	struct Fairy *next;
 	struct Fairy *prev;
 	long birthtime;
-	char hp;
+	int hp;
 	
-	int x, y;
-	int sx, sy;
-	char angle;
-	char v;
+	complex pos;
+	complex pos0;
 	
 	char moving;
 	char dir;
@@ -31,9 +30,10 @@ typedef struct Fairy {
 	Animation *ani;
 	
 	FairyRule rule;
+	complex args[4];
 } Fairy;
 
-void create_fairy(int x, int y, int speed, int angle, int hp, FairyRule rule);
+void create_fairy(complex pos, int hp, FairyRule rule, complex args, ...);
 void delete_fairy(Fairy *fairy);
 void draw_fairies();
 void free_fairies();

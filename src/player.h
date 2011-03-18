@@ -10,6 +10,7 @@
 
 #include "texture.h"
 #include "animation.h"
+#include <complex.h>
 
 enum {
 	False = 0,
@@ -21,7 +22,7 @@ typedef enum {
 } Character;
 
 typedef struct {
-	float x, y;
+	complex pos;
 	short focus;
 	short fire;
 	short moving;	

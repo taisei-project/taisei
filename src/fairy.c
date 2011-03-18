@@ -9,15 +9,11 @@
 #include "global.h"
 #include "list.h"
 
-void create_fairy(int x, int y, int v, int angle, int hp, FairyRule rule) {
+void create_fairy(complex pos, int hp, FairyRule rule, complex args, ...) {
 	Fairy *f = create_element((void **)&global.fairies, sizeof(Fairy));
 	
-	f->sx = x;
-	f->sy = y;
-	f->x = x;
-	f->y = y;
-	f->v = v;
-	f->angle = angle;
+	f->pos0 = pos;
+	f->pos = pos;
 	f->rule = rule;
 	f->birthtime = global.frames;
 	f->moving = 0;
@@ -25,10 +21,21 @@ void create_fairy(int x, int y, int v, int angle, int hp, FairyRule rule) {
 	f->dir = 0;
 	
 	f->ani = &global.textures.fairy;
+	
+	va_list ap;
+	int i;
+	
+	va_start(ap, args);
+	for(i = 0; i < 4 && args; i++) {
+		f->args[i] = args;
+		args = va_arg(ap, complex);
+	}
+	va_end(ap);
 }
 
 void delete_fairy(Fairy *fairy) {
-	if(global.plr.power < 6) create_poweritem(fairy->x, fairy->y,0.03,0,simpleItem);
+	if(global.plr.power < 6 && fairy->hp <= 0)
+		create_poweritem(fairy->pos, 6-15*I);
 	delete_element((void **)&global.fairies, fairy);
 }
 
@@ -50,7 +57,7 @@ void draw_fairies() {
 		glEnable(GL_TEXTURE_2D);		
 		glPushMatrix();
 				
-		glTranslatef(f->x,f->y,0);
+		glTranslatef(creal(f->pos),cimag(f->pos),0);
 		glRotatef(global.frames*10,0,0,1);
 		glScalef(tex->w/2,tex->h/2,1);
 		glScalef(s, s, s);
@@ -68,7 +75,7 @@ void draw_fairies() {
 	
 	for(f = global.fairies; f; f = f->next) {
 		glPushMatrix();
-		glTranslatef(f->x,f->y,0);
+		glTranslatef(creal(f->pos),cimag(f->pos),0);
 				
 		if(f->dir) {
 			glCullFace(GL_FRONT);
@@ -94,7 +101,8 @@ void process_fairies() {
 	while(fairy != NULL) {
 		fairy->rule(fairy);
 		
-		if(fairy->x < -20 || fairy->x > VIEWPORT_W + 20 || fairy->y < -20 || fairy->y > VIEWPORT_H + 20 || fairy->hp <= 0) {
+		if(creal(fairy->pos) < -20 || creal(fairy->pos) > VIEWPORT_W + 20
+			|| cimag(fairy->pos) < -20 || cimag(fairy->pos) > VIEWPORT_H + 20 || fairy->hp <= 0) {
 			del = fairy;
 			fairy = fairy->next;
 			delete_fairy(del);
