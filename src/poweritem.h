@@ -10,25 +10,22 @@
 #define POWERITEM_H
 
 #include "texture.h"
+#include <complex.h>
 
 struct Poweritem;
-typedef void (*ItemRule)(int *y,int sy, float acc, long time, float *velo);
 
 typedef struct Poweritem{
 	struct Poweritem *next;
 	struct Poweritem *prev;
 
 	long birthtime;
-	int x, y, sy;
-	char angle;
-	float acc;
-	float velo;
-	Texture *tex;
-
-	ItemRule rule;
+	complex pos;
+	complex pos0;
+	
+	complex v;
 } Poweritem;
 
-void create_poweritem(int x, int y, float acc, int angle, ItemRule rule);
+void create_poweritem(complex pos, complex v);
 void delete_poweritem(Poweritem *poweritem);
 void draw_poweritems();
 void free_poweritems();

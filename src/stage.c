@@ -63,14 +63,14 @@ void stage_input() {
 		global.plr.dir = 0;
 	}	
 	
-	if(keys[SDLK_LEFT] && global.plr.x - global.plr.ani.w/2 - speed > 0)
-		global.plr.x -= speed;		
-	if(keys[SDLK_RIGHT] && global.plr.x + global.plr.ani.w/2 + speed < VIEWPORT_W)
-		global.plr.x += speed;
-	if(keys[SDLK_UP] && global.plr.y - global.plr.ani.h/2 - speed > 0)
-		global.plr.y -= speed;
-	if(keys[SDLK_DOWN] && global.plr.y + global.plr.ani.h/2 + speed < VIEWPORT_H)
-		global.plr.y += speed;
+	if(keys[SDLK_LEFT] && creal(global.plr.pos) - global.plr.ani.w/2 - speed > 0)
+		global.plr.pos -= speed;		
+	if(keys[SDLK_RIGHT] && creal(global.plr.pos) + global.plr.ani.w/2 + speed < VIEWPORT_W)
+		global.plr.pos += speed;
+	if(keys[SDLK_UP] && cimag(global.plr.pos) - global.plr.ani.h/2 - speed > 0)
+		global.plr.pos -= I*speed;
+	if(keys[SDLK_DOWN] && cimag(global.plr.pos) + global.plr.ani.h/2 + speed < VIEWPORT_H)
+		global.plr.pos += I*speed;
 
 }
 

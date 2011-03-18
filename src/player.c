@@ -12,8 +12,7 @@
 #include "global.h"
 
 void init_player(Player* plr, Character cha) {
-	plr->x = VIEWPORT_W/2;
-	plr->y = VIEWPORT_H-20;
+	plr->pos = VIEWPORT_W/2 + I*(VIEWPORT_H-20);
 	
 	plr->focus = False;
 	plr->fire = False;
@@ -28,7 +27,7 @@ void init_player(Player* plr, Character cha) {
 
 void player_draw(Player* plr) {		
 	glPushMatrix();
-		glTranslatef(plr->x, plr->y, 0);
+		glTranslatef(creal(plr->pos), cimag(plr->pos), 0);
 		
 		if(plr->focus != 0) {
 			glPushMatrix();
@@ -67,14 +66,14 @@ void player_draw(Player* plr) {
 
 void player_logic(Player* plr) {
 	if(plr->fire && !(global.frames % 4)) {
-		create_projectile(&_projs.youmu, plr->x-10, plr->y-20, 0, ((Color){1,1,1}), simple, 20)->type = PlrProj;
-		create_projectile(&_projs.youmu, plr->x+10, plr->y-20, 0, ((Color){1,1,1}), simple, 20)->type = PlrProj;
+		create_projectile(&_projs.youmu, plr->pos + 10 - I*20, ((Color){1,1,1}), linear, -20I)->type = PlrProj;
+		create_projectile(&_projs.youmu, plr->pos - 10 - I*20, ((Color){1,1,1}), linear, -20I)->type = PlrProj;
 		
 		if(plr->power >= 2) {
-			int a = 15;
-			if(plr->focus > 0) a = 5;
-			create_projectile(&_projs.youmu, plr->x-10, plr->y-20, -a, ((Color){1,1,1}), simple, 20)->type = PlrProj;
-			create_projectile(&_projs.youmu, plr->x+10, plr->y-20, a, ((Color){1,1,1}), simple, 20)->type = PlrProj;
+			float a = 0.20;
+			if(plr->focus > 0) a = 0.06;
+			create_projectile(&_projs.youmu, plr->pos + 10 - I*20, ((Color){1,1,1}), linear, I*-20*cexp(-I*a))->type = PlrProj;
+			create_projectile(&_projs.youmu, plr->pos - 10 - I*20, ((Color){1,1,1}), linear, I*-20*cexp(I*a))->type = PlrProj;
 		}
 	}
 	

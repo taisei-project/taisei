@@ -11,6 +11,7 @@
 #include "texture.h"
 
 #include <stdarg.h>
+#include <complex.h>
 
 typedef struct {
 	float r;
@@ -19,7 +20,7 @@ typedef struct {
 } Color;
 
 struct Projectile;
-typedef void (*ProjRule)(float *x, float *y, int angle, int sx, int sy, int time, float* a);
+typedef void (*ProjRule)(complex *pos, complex pos0, float *angle, int time, complex* args);
 
 typedef struct Projectile {
 	struct Projectile *next;
@@ -27,13 +28,10 @@ typedef struct Projectile {
 	
 	long birthtime;
 	
-	float x;
-	float y;
+	complex pos;
+	complex pos0;
 	
-	int sx;
-	int sy;
-	
-	int angle;
+	float angle;
 	
 	ProjRule rule;
 	Texture *tex;
@@ -42,7 +40,7 @@ typedef struct Projectile {
 	
 	Color clr;
 	
-	float args[4];
+	complex args[4];
 } Projectile;
 
 typedef struct {
@@ -57,7 +55,7 @@ extern ProjCache _projs;
 
 void load_projectiles();
 
-Projectile *create_projectile(Texture *tex, int x, int y, int angle, Color clr, ProjRule rule, float args, ...);
+Projectile *create_projectile(Texture *tex, complex pos, Color clr, ProjRule rule, complex args, ...);
 void delete_projectile(Projectile *proj);
 void draw_projectile(Projectile *proj);
 void draw_projectiles();
@@ -66,5 +64,5 @@ void free_projectiles();
 int test_collision(Projectile *p);
 void process_projectiles();
 
-void simple(float *x, float *y, int angle, int sx, int sy, int time, float* a);
+void linear(complex *pos, complex pos0, float *angle, int time, complex* args);
 #endif
