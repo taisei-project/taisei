@@ -77,7 +77,6 @@ void stage_input() {
 void stage_draw() {
 	glPushMatrix();
 	glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
-	
 	player_draw(&global.plr);
 
 	draw_projectiles();

@@ -92,7 +92,7 @@ void draw_projectiles() {
 		
 		glPushMatrix();
 		glTranslatef(creal(proj->pos), cimag(proj->pos), 0);
-		glRotatef(proj->angle*180/M_PI-90, 0, 0, 1);
+		glRotatef(proj->angle*180/M_PI+90, 0, 0, 1);
 		glScalef(tex->w/4.0, tex->h/2.0,0);
 		
 		glBegin(GL_QUADS);

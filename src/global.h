@@ -26,6 +26,8 @@ enum {
 	VIEWPORT_W = 480,
 	VIEWPORT_H = 560,
 	
+	POINT_OF_COLLECT = VIEWPORT_H/4,
+	
 	FPS = 60
 };
 

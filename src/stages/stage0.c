@@ -13,7 +13,7 @@
 
 void simpleFairy(Fairy *f) {
 	if(!((global.frames - f->birthtime) % 50)) {
-		create_projectile(&_projs.rice, f->pos, ((Color){0,0,1}), linear, 2*I);
+		create_projectile(&_projs.rice, f->pos, ((Color){0,0,1}), linear,3+ 2*I);
 	}
 	f->moving = 1;
 	f->dir = creal(f->args[0]) < 0;

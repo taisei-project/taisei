@@ -22,6 +22,8 @@ typedef struct Poweritem{
 	complex pos;
 	complex pos0;
 	
+	int auto_collect;
+	
 	complex v;
 } Poweritem;
 
