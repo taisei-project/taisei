@@ -32,7 +32,7 @@ void player_draw(Player* plr) {
 		if(plr->focus != 0) {
 			glPushMatrix();
 				glRotatef(global.frames*10, 0, 0, 1);
-				glScalef(1.3, 1.3, 1);
+				glScalef(1, 1, 1);
 				glColor4f(1,1,1,0.2);
 				draw_texture(0, 0, &global.textures.fairy_circle);
 				glColor4f(1,1,1,1);
