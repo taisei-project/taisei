@@ -11,7 +11,7 @@ Dependencies:
 	- OpenGL
 	- CMake (build system)
 
-To build and install Seiyou just follow these steps.
+To build and install Taisei just follow these steps.
 
 mkdir build
 cd build
