@@ -32,7 +32,7 @@ typedef struct {
     
 	Character cha;
 	
-	Animation ani;
+	Animation *ani;
 } Player;
 
 void init_player(Player*, Character cha);

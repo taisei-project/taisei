@@ -22,7 +22,7 @@ void init_player(Player* plr, Character cha) {
 	
 	plr->cha = cha;
 	
-	init_animation(&plr->ani, 2, 4, 5, FILE_PREFIX "gfx/youmu.png");
+	plr->ani = get_ani("youmu");
 }
 
 void player_draw(Player* plr) {		
@@ -34,7 +34,7 @@ void player_draw(Player* plr) {
 				glRotatef(global.frames*10, 0, 0, 1);
 				glScalef(1, 1, 1);
 				glColor4f(1,1,1,0.2);
-				draw_texture(0, 0, &global.textures.fairy_circle);
+				draw_texture(0, 0, "fairy_circle");
 				glColor4f(1,1,1,1);
 			glPopMatrix();
 		}
@@ -45,7 +45,7 @@ void player_draw(Player* plr) {
 			glScalef(-1,1,1);
 		}
 		
-		draw_animation(0, 0, !plr->moving, &plr->ani);
+		draw_animation_p(0, 0, !plr->moving, plr->ani);
 		
 		if(plr->dir)
 			glPopMatrix();
@@ -56,7 +56,7 @@ void player_draw(Player* plr) {
 			glPushMatrix();
 				glColor4f(1,1,1,fabs((float)plr->focus/30.0f));
 				glRotatef(global.frames, 0, 0, -1);
-				draw_texture(0, 0, &global.textures.focus);
+				draw_texture(0, 0, "focus");
 				glColor4f(1,1,1,1);
 			glPopMatrix();
 		}
@@ -66,14 +66,14 @@ void player_draw(Player* plr) {
 
 void player_logic(Player* plr) {
 	if(plr->fire && !(global.frames % 4)) {
-		create_projectile(&_projs.youmu, plr->pos + 10 - I*20, ((Color){1,1,1}), linear, -20I)->type = PlrProj;
-		create_projectile(&_projs.youmu, plr->pos - 10 - I*20, ((Color){1,1,1}), linear, -20I)->type = PlrProj;
+		create_projectile("youmu", plr->pos + 10 - I*20, ((Color){1,1,1}), linear, -20I)->type = PlrProj;
+		create_projectile("youmu", plr->pos - 10 - I*20, ((Color){1,1,1}), linear, -20I)->type = PlrProj;
 		
 		if(plr->power >= 2) {
 			float a = 0.20;
 			if(plr->focus > 0) a = 0.06;
-			create_projectile(&_projs.youmu, plr->pos + 10 - I*20, ((Color){1,1,1}), linear, I*-20*cexp(-I*a))->type = PlrProj;
-			create_projectile(&_projs.youmu, plr->pos - 10 - I*20, ((Color){1,1,1}), linear, I*-20*cexp(I*a))->type = PlrProj;
+			create_projectile("youmu", plr->pos + 10 - I*20, ((Color){1,1,1}), linear, I*-20*cexp(-I*a))->type = PlrProj;
+			create_projectile("youmu", plr->pos - 10 - I*20, ((Color){1,1,1}), linear, I*-20*cexp(I*a))->type = PlrProj;
 		}
 	}
 	

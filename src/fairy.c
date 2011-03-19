@@ -20,7 +20,7 @@ void create_fairy(complex pos, int hp, FairyRule rule, complex args, ...) {
 	f->hp = hp;
 	f->dir = 0;
 	
-	f->ani = &global.textures.fairy;
+	f->ani = get_ani("fairy");
 	
 	va_list ap;
 	int i;
@@ -41,7 +41,7 @@ void delete_fairy(Fairy *fairy) {
 
 void draw_fairies() {
 	glEnable(GL_TEXTURE_2D);
-	Texture *tex = &global.textures.fairy_circle;
+	Texture *tex = get_tex("fairy_circle");
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 	
 	Fairy *f;
@@ -81,7 +81,7 @@ void draw_fairies() {
 			glCullFace(GL_FRONT);
 			glScalef(-1,1,1);
 		}
-		draw_animation(0, 0, f->moving, f->ani);
+		draw_animation_p(0, 0, f->moving, f->ani);
 		
 		glCullFace(GL_BACK);
 		glPopMatrix();

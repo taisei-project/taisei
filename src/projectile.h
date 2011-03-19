@@ -43,19 +43,9 @@ typedef struct Projectile {
 	complex args[4];
 } Projectile;
 
-typedef struct {
-	Texture ball;
-	Texture rice;
-	Texture bigball;
-	
-	Texture youmu;
-} ProjCache;
-
-extern ProjCache _projs;
-
 void load_projectiles();
 
-Projectile *create_projectile(Texture *tex, complex pos, Color clr, ProjRule rule, complex args, ...);
+Projectile *create_projectile(char *name, complex pos, Color clr, ProjRule rule, complex args, ...);
 void delete_projectile(Projectile *proj);
 void draw_projectile(Projectile *proj);
 void draw_projectiles();

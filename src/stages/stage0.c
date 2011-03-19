@@ -12,9 +12,9 @@
 #include "../global.h"
 
 void simpleFairy(Fairy *f) {
-	if(!((global.frames - f->birthtime) % 50)) {
-		create_projectile(&_projs.rice, f->pos, ((Color){0,0,1}), linear,3+ 2*I);
-	}
+	if(!((global.frames - f->birthtime) % 50))
+		create_projectile("rice", f->pos, ((Color){0,0,1}), linear,3+ 2*I);
+	
 	f->moving = 1;
 	f->dir = creal(f->args[0]) < 0;
 	
@@ -37,12 +37,14 @@ void stage0_draw() {
 	glTranslatef(0,VIEWPORT_H,0);
 	glRotatef(110, 1, 0, 0);
 	
+	Texture *water = get_tex("wasser");
+	
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, global.textures.water.gltex);
+	glBindTexture(GL_TEXTURE_2D, water->gltex);
 	
 	glMatrixMode(GL_TEXTURE);
 		glLoadIdentity();
-		glTranslatef(0,global.frames/(float)global.textures.water.h, 0);
+		glTranslatef(0,global.frames/(float)water->h, 0);
 	glMatrixMode(GL_MODELVIEW);
 	
 	glBegin(GL_QUADS);
@@ -58,7 +60,7 @@ void stage0_draw() {
 	
 	
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, global.textures.border.gltex);
+	glBindTexture(GL_TEXTURE_2D, get_tex("stage1/border")->gltex);
 	
 // 	glColor3f(1,0.75,0.75);
 	glBegin(GL_QUADS);
@@ -88,11 +90,11 @@ void stage0_events() {
 		create_fairy(0 + I*100, 3, simpleFairy, 2);
 // 		create_fairy(VIEWPORT_W-1, 10, -1, 180, 3, simpleFairy);
 // 		create_fairy(VIEWPORT_W-1, 200, -1, 180, 3, simpleFairy);
-		create_projectile(&_projs.ball, VIEWPORT_W/2, ((Color) {0,0,1}), linear, 2*I);
+		create_projectile("ball", VIEWPORT_W/2, ((Color) {0,0,1}), linear, 2*I);
 	}
 }
 
-void stage0_loop() {
+void stage0_loop() {	
 	stage_start();
 	glEnable(GL_FOG);
 	GLfloat clr[] = { 0.1, 0.1, 0.1, 0 };

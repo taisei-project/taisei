@@ -41,18 +41,8 @@ typedef struct {
 	
 	int frames;
 	
-	struct {
-		Texture hud;
-		
-		Texture projwave;
-		Texture water;
-		Texture border;
-		Texture fairy_circle;
-		Texture focus;
-		Texture poweritems;
-		
-		Animation fairy;
-	} textures;
+	Texture *textures;
+	Animation *animations;	
 	
 	int game_over;
 	

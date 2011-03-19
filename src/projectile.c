@@ -12,25 +12,20 @@
 #include "global.h"
 #include "list.h"
 
-ProjCache _projs;
-
-void load_projectiles() {
-	load_texture(FILE_PREFIX "gfx/projectiles/ball.png", &_projs.ball);
-	load_texture(FILE_PREFIX "gfx/projectiles/rice.png", &_projs.rice);
-	load_texture(FILE_PREFIX "gfx/projectiles/bigball.png", &_projs.bigball);
-	load_texture(FILE_PREFIX "gfx/proyoumu.png", &_projs.youmu);
-}
-
-Projectile *create_projectile(Texture *tex, complex pos, Color clr,
+Projectile *create_projectile(char *name, complex pos, Color clr,
 							  ProjRule rule, complex args, ...) {
 	Projectile *p = create_element((void **)&global.projs, sizeof(Projectile));
+	
+	char buf[128];
+	strcpy(buf, "proj/");
+	strcat(buf, name);
 	
 	p->birthtime = global.frames;
 	p->pos = pos;
 	p->pos0 = pos;
 	p->angle = 0;
 	p->rule = rule;
-	p->tex = tex;
+	p->tex = get_tex(buf);
 	p->type = FairyProj;
 	p->clr = clr;
 	

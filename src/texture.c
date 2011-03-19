@@ -6,15 +6,77 @@
  */
 
 #include "texture.h"
+#include "global.h"
+#include <dirent.h>
 
-void load_texture(const char *filename, Texture* texture) {
+void recurse_dir(char *path) {
+	DIR *dir = opendir(path);
+	struct dirent *dp;
+	
+	char buf[512];
+			
+	while((dp = readdir(dir)) != NULL) {
+		strncpy(buf, path, sizeof(buf));
+		strncat(buf, "/", sizeof(buf));
+		strncat(buf, dp->d_name, sizeof(buf));
+		
+		if(dp->d_type == DT_DIR && dp->d_name[0] != '.') {
+			recurse_dir(buf);
+		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".png") == 0) {
+			if(strncmp(dp->d_name, "ani_", 4) == 0)
+				init_animation(buf);
+			else
+				load_texture(buf);			
+		}
+	}
+}
+
+void load_textures() {
+	printf("load_textures():\n");
+	char *path = malloc(sizeof(FILE_PREFIX)+4);
+	strcpy(path, FILE_PREFIX);
+	strncat(path, "gfx", sizeof(FILE_PREFIX)+4);
+		
+	recurse_dir(path);
+}
+
+Texture *get_tex(char *name) {
+	Texture *t, *res = NULL;
+	for(t = global.textures; t; t = t->next) {
+		if(strcmp(t->name, name) == 0)
+			res = t;
+	}
+	
+	if(res == NULL)
+		errx(-1,"get_tex():\n!- cannot load texture '%s'", name);
+	
+	return res;
+}
+	
+void delete_textures() {
+	delete_all_elements((void **)&global.textures);
+}
+
+Texture *load_texture(const char *filename) {	
 	SDL_Surface *surface = IMG_Load(filename);
 	
 	if(surface == NULL)
-		err(EXIT_FAILURE,"load_texture():\n-- cannot load '%s'", filename);
+		err(-1,"load_texture():\n!- cannot load '%s'", filename);
 	
+	Texture *texture = create_element((void **)&global.textures, sizeof(Texture));
 	load_sdl_surf(surface, texture);	
 	SDL_FreeSurface(surface);
+	
+	char *beg = strstr(filename, "gfx/") + 4;
+	char *end = strrchr(filename, '.');
+	
+	texture->name = malloc(end - beg + 1);
+	memset(texture->name, 0, end-beg + 1);
+	strncpy(texture->name, beg, end-beg);
+	
+	printf("-- loaded '%s' as '%s'\n", filename, texture->name);
+	
+	return texture;
 }
 
 void load_sdl_surf(SDL_Surface *surface, Texture *texture) {
@@ -62,7 +124,11 @@ void free_texture(Texture *tex) {
 	free(tex);
 }
 
-void draw_texture(int x, int y, Texture *tex) {
+void draw_texture(int x, int y, char *name) {
+	draw_texture_p(x, y, get_tex(name));
+}
+
+void draw_texture_p(int x, int y, Texture *tex) {
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 	

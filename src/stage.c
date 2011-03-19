@@ -63,13 +63,13 @@ void stage_input() {
 		global.plr.dir = 0;
 	}	
 	
-	if(keys[SDLK_LEFT] && creal(global.plr.pos) - global.plr.ani.w/2 - speed > 0)
+	if(keys[SDLK_LEFT] && creal(global.plr.pos) - global.plr.ani->w/2 - speed > 0)
 		global.plr.pos -= speed;		
-	if(keys[SDLK_RIGHT] && creal(global.plr.pos) + global.plr.ani.w/2 + speed < VIEWPORT_W)
+	if(keys[SDLK_RIGHT] && creal(global.plr.pos) + global.plr.ani->w/2 + speed < VIEWPORT_W)
 		global.plr.pos += speed;
-	if(keys[SDLK_UP] && cimag(global.plr.pos) - global.plr.ani.h/2 - speed > 0)
+	if(keys[SDLK_UP] && cimag(global.plr.pos) - global.plr.ani->h/2 - speed > 0)
 		global.plr.pos -= I*speed;
-	if(keys[SDLK_DOWN] && cimag(global.plr.pos) + global.plr.ani.h/2 + speed < VIEWPORT_H)
+	if(keys[SDLK_DOWN] && cimag(global.plr.pos) + global.plr.ani->h/2 + speed < VIEWPORT_H)
 		global.plr.pos += I*speed;
 
 }
@@ -88,7 +88,7 @@ void stage_draw() {
 	char buf[16];
 	sprintf(buf, "Power: %.2f", global.plr.power);
 	
-	draw_texture(SCREEN_W/2, SCREEN_H/2, &global.textures.hud);
+	draw_texture(SCREEN_W/2, SCREEN_H/2, "hud");
 	draw_text(buf, SCREEN_W-200, 200, _fonts.biolinum);
 }
 

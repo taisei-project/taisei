@@ -38,6 +38,9 @@ void init_gl() {
 }
 
 void shutdown() {
+	delete_textures();
+	delete_animations();
+	
 	SDL_FreeSurface(display);
 	SDL_Quit();
 }

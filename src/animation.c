@@ -10,23 +10,74 @@
 
 #include <assert.h>
 
-void init_animation(Animation *buf, int rows, int cols, int speed, const char *filename) {
-	buf->rows = rows;
-	buf->cols = cols;
+Animation *init_animation(char *filename) {
+	Animation *buf = create_element((void **)&global.animations, sizeof(Animation));
 	
-	buf->speed = speed;
+	char *beg = strstr(filename, "gfx/") + 4;
+	char *end = strrchr(filename, '.');
+		
+	char *name = malloc(end - beg + 1);
+	memset(name, 0, end - beg + 1);
+	strncpy(name, beg, end-beg);
 	
-	load_texture(filename,&buf->tex);
-	buf->w = buf->tex.w/cols;
-	buf->h = buf->tex.h/rows;
+	char* tok;
+	strtok(name, "_");
+	
+	if((tok = strtok(NULL, "_")) == NULL)
+		errx(-1, "init_animation():\n!- bad 'rows' in filename '%s'", name);
+	buf->rows = atoi(tok);
+	if((tok = strtok(NULL, "_")) == NULL)
+		errx(-1, "init_animation():\n!- bad 'cols' in filename '%s'", name);
+	buf->cols = atoi(tok);
+	if((tok = strtok(NULL, "_")) == NULL)
+		errx(-1, "init_animation():\n!- bad 'speed' in filename '%s'", name);
+	buf->speed = atoi(tok);
+	
+	if((tok = strtok(NULL, "_")) == NULL)
+		errx(-1, "init_animation():\n!- bad 'name' in filename '%s'", name);
+	
+	
+	buf->name = malloc(strlen(tok)+1);
+	memset(buf->name, 0, strlen(tok)+1);
+	strcpy(buf->name, tok);
+	
+	buf->tex = load_texture(filename);
+	buf->w = buf->tex->w/buf->cols;
+	buf->h = buf->tex->h/buf->rows;
+	
+	printf("-- initialized animation '%s'\n", buf->name);
+	return buf;
 }
 
-void draw_animation(int x, int y, int row, const Animation *ani) { // matrices are cool
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, ani->tex.gltex);
+Animation *get_ani(char *name) {
+	Animation *a;
+	Animation *res = NULL;
+	for(a = global.animations; a; a = a->next) {
+		if(strcmp(a->name, name) == 0) {
+			res = a;
+		}
+	}
 	
-	float s = (float)ani->tex.w/ani->cols/ani->tex.truew;
-	float t = ((float)ani->tex.h)/ani->tex.trueh/(float)ani->rows;
+	if(res == NULL)
+		errx(-1,"get_ani():\n!- cannot load animation '%s'", name);
+	
+	return res;
+}
+
+void delete_animations() {
+	delete_all_elements((void **)&global.animations);
+}
+
+void draw_animation(float x, float y, int row, char *name) {
+	draw_animation_p(x, y, row, get_ani(name));
+}
+
+void draw_animation_p(float x, float y, int row, Animation *ani) {
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, ani->tex->gltex);
+	
+	float s = (float)ani->tex->w/ani->cols/ani->tex->truew;
+	float t = ((float)ani->tex->h)/ani->tex->trueh/(float)ani->rows;
 	
 	assert(ani->speed != 0);
 	

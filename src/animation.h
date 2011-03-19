@@ -10,7 +10,12 @@
 
 #include "texture.h"
 
-typedef struct {
+struct Animation;
+
+typedef struct Animation {
+	struct Animation *next;
+	struct Animation *prev;
+	
 	int rows;
 	int cols;
 	
@@ -18,10 +23,14 @@ typedef struct {
 	
 	int speed;
 	
-	Texture tex;
+	char *name;
+	Texture *tex;
 } Animation;
 
-void init_animation(Animation *buf, int rows, int cols, int speed, const char *filename);
-void draw_animation(int x, int y, int row, const Animation *ani);
+Animation *init_animation(char *filename);
+Animation *get_ani(char *name);
+void delete_animations();
+void draw_animation(float x, float y, int row, char *name);
+void draw_animation_p(float x, float y, int row, Animation *ani);
 
 #endif
