@@ -8,6 +8,9 @@
 #include "texture.h"
 #include "global.h"
 #include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 
 void recurse_dir(char *path) {
 	DIR *dir = opendir(path);
@@ -20,7 +23,10 @@ void recurse_dir(char *path) {
 		strncat(buf, "/", sizeof(buf));
 		strncat(buf, dp->d_name, sizeof(buf));
 		
-		if(dp->d_type == DT_DIR && dp->d_name[0] != '.') {
+		struct stat statbuf;
+		stat(buf, &statbuf);
+		
+		if(S_ISDIR(statbuf.st_mode) && dp->d_name[0] != '.') {
 			recurse_dir(buf);
 		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".png") == 0) {
 			if(strncmp(dp->d_name, "ani_", 4) == 0)
