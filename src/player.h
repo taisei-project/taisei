@@ -28,7 +28,12 @@ typedef struct {
 	short moving;	
 	
 	short dir;
-    float power;
+	float power;
+    
+	int lives;
+	int bombs;
+	
+	float recovery;
     
 	Character cha;
 	
@@ -39,4 +44,6 @@ void init_player(Player*, Character cha);
 
 void player_draw(Player*);
 void player_logic(Player*);
+
+void plr_bomb();
 #endif

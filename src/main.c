@@ -28,11 +28,13 @@ void init_gl() {
 	glViewport(0, 0, SCREEN_W, SCREEN_H);
 	
 	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	
+	glLoadIdentity();	
 	glOrtho(0, SCREEN_W, SCREEN_H, 0, -1000, 1000);
 	glMatrixMode(GL_MODELVIEW);
 	
+	glClearDepth(1.0);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 }

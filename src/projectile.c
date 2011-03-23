@@ -120,8 +120,8 @@ void process_projectiles() {
 		proj->rule(&proj->pos, proj->pos0, &proj->angle, global.frames - proj->birthtime, proj->args);
 		
 		int v = test_collision(proj);
-		if(v == 1)
-			game_over();
+		if(v == 1 && (global.frames - global.plr.recovery) >= 0)
+			plr_death(&global.plr);
 		
 		if(v || creal(proj->pos) + proj->tex->w/2 < 0 || creal(proj->pos) - proj->tex->w/2 > VIEWPORT_W
 			 || cimag(proj->pos) + proj->tex->h/2 < 0 || cimag(proj->pos) - proj->tex->h/2 > VIEWPORT_H) {

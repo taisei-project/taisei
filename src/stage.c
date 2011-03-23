@@ -27,6 +27,9 @@ void stage_input() {
 				case SDLK_y:
 					global.plr.fire = True;
 					break;
+				case SDLK_x:
+					plr_bomb(&global.plr);
+					break;
 				case SDLK_ESCAPE:
 					exit(1);
 					break;
@@ -75,6 +78,12 @@ void stage_input() {
 }
 
 void stage_draw() {
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0, SCREEN_W, SCREEN_H, 0, -10, 10);
+	glMatrixMode(GL_MODELVIEW);
+	glDisable(GL_DEPTH_TEST);
+	
 	glPushMatrix();
 	glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
 	player_draw(&global.plr);
@@ -84,12 +93,26 @@ void stage_draw() {
 	draw_poweritems();
 	
 	glPopMatrix();
+	draw_texture(SCREEN_W/2, SCREEN_H/2, "hud");
 	
 	char buf[16];
-	sprintf(buf, "Power: %.2f", global.plr.power);
+	int i;
 	
-	draw_texture(SCREEN_W/2, SCREEN_H/2, "hud");
-	draw_text(buf, SCREEN_W-200, 200, _fonts.biolinum);
+	glPushMatrix();
+	glTranslatef(615,0,0);
+	
+// 	glColor3f(1,0,0);
+	for(i = 0; i < global.plr.lives; i++)
+	  draw_texture(16*i,167, "star");
+// 	glColor3f(0,1,0);
+	for(i = 0; i < global.plr.bombs; i++)
+	  draw_texture(16*i,200, "star");
+	glColor3f(1,1,1);
+	
+	sprintf(buf, "%.2f", global.plr.power);
+	draw_text(buf, 10, 236, _fonts.biolinum);
+	
+	glPopMatrix();
 }
 
 void stage_logic() {

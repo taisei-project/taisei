@@ -37,7 +37,7 @@ void free_poweritems() {
 
 void move_poweritem(Poweritem *p) {
 	int t = global.frames - p->birthtime;
-	complex lim = I*3;
+	complex lim = I*2;
 	
 	if(p->auto_collect)	
 		p->pos -= 7*cexp(I*carg(p->pos - global.plr.pos));
@@ -49,7 +49,8 @@ void process_poweritems() {
 	Poweritem *poweritem = global.poweritems, *del = NULL;
     int v;
 	while(poweritem != NULL) {
-		if(cimag(global.plr.pos) < POINT_OF_COLLECT || cabs(global.plr.pos - poweritem->pos) < 12 + global.plr.focus * 1.3)
+		if(cimag(global.plr.pos) < POINT_OF_COLLECT || cabs(global.plr.pos - poweritem->pos) < 19 + global.plr.focus
+			|| global.frames - global.plr.recovery < 0)
 			poweritem->auto_collect = 1;
 		
 		move_poweritem(poweritem);
@@ -59,7 +60,7 @@ void process_poweritems() {
 			global.plr.power += 0.1;
 		}
 		if(v == 1 || creal(poweritem->pos) < -9 || creal(poweritem->pos) > VIEWPORT_W + 9
-			|| cimag(poweritem->pos) > VIEWPORT_H + 8) {
+			|| cimag(poweritem->pos) > VIEWPORT_H + 8 ) {
 			del = poweritem;
 			poweritem = poweritem->next;
 			delete_poweritem(del);

@@ -18,7 +18,12 @@ void init_player(Player* plr, Character cha) {
 	plr->fire = False;
 	plr->moving = False;
 	plr->dir = 0;
-    plr->power = 0;
+	plr->power = 0;
+	
+	plr->lives = 2;
+	plr->bombs = 3;
+	
+	plr->recovery = 0;
 	
 	plr->cha = cha;
 	
@@ -77,6 +82,34 @@ void player_logic(Player* plr) {
 		}
 	}
 	
+	if(global.frames - plr->recovery >= 0)
+		
 	if(plr->focus < 0 || (plr->focus > 0 && plr->focus < 30))
 		plr->focus++;
+}
+
+void plr_bomb(Player *plr) {
+	if(global.frames - plr->recovery >= 0 && plr->bombs >= 0) {
+		Fairy *f;
+		for(f = global.fairies; f; f = f->next)
+			f->hp = 0;
+		free_projectiles();
+		plr->bombs--;
+		plr->recovery = global.frames + 200;
+	}
+}
+
+void plr_death(Player *plr) {
+	if(plr->lives-- == 0) {
+		game_over();
+	} else {
+		create_poweritem(plr->pos, 6-15*I);
+		create_poweritem(plr->pos, -6-15*I);
+		
+		plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I;
+// 		plr->recovery = global.frames + 200;		
+		
+		if(global.plr.bombs < 2)
+			global.plr.bombs = 2;
+	}
 }

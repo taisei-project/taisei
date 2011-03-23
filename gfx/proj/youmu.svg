@@ -10,15 +10,15 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="8"
+   width="16"
    height="8"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.0 r9654"
-   sodipodi:docname="proyoumu.svg"
-   inkscape:export-filename="/home/laochailan/src/touhouclone/build/gfx/proyoumu.png"
-   inkscape:export-xdpi="208.63139"
-   inkscape:export-ydpi="208.63139">
+   inkscape:version="0.48.1 r9760"
+   sodipodi:docname="youmu.svg"
+   inkscape:export-filename="/home/laochailan/src/taisei/gfx/proj/youmu.png"
+   inkscape:export-xdpi="180"
+   inkscape:export-ydpi="180">
   <defs
      id="defs4">
     <linearGradient
@@ -84,12 +84,12 @@
      inkscape:pageshadow="2"
      inkscape:zoom="56.375"
      inkscape:cx="1.1396896"
-     inkscape:cy="0.43398194"
+     inkscape:cy="5.4007225"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1918"
-     inkscape:window-height="1061"
+     inkscape:window-height="1037"
      inkscape:window-x="0"
      inkscape:window-y="17"
      inkscape:window-maximized="0" />
@@ -124,7 +124,9 @@
        sodipodi:cy="2.0776052"
        sodipodi:rx="0.66740578"
        sodipodi:ry="0.92904657"
-       d="m 2.9844789,2.0776052 a 0.66740578,0.92904657 0 1 1 -1.3348116,0 0.66740578,0.92904657 0 1 1 1.3348116,0 z"
-       transform="matrix(2.5422674,0,0,2.7598816,-1.8261722,1043.0527)" />
+       d="m 2.9844789,2.0776052 c 0,0.5130983 -0.2988078,0.9290466 -0.6674058,0.9290466 -0.368598,0 -0.6674058,-0.4159483 -0.6674058,-0.9290466 0,-0.5130982 0.2988078,-0.9290465 0.6674058,-0.9290465 0.368598,0 0.6674058,0.4159483 0.6674058,0.9290465 z"
+       transform="matrix(2.5422674,0,0,2.7598816,-1.8261722,1043.0527)"
+       inkscape:export-xdpi="424.34714"
+       inkscape:export-ydpi="424.34714" />
   </g>
 </svg>
