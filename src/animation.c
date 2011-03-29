@@ -91,7 +91,6 @@ void draw_animation_p(float x, float y, int row, Animation *ani) {
 		glTranslatef(global.frames/ani->speed % ani->cols, row, 0);
 	glMatrixMode(GL_MODELVIEW);
 	
-	glColor4f(1,1,1,1);
 	glBegin(GL_QUADS);
 		glTexCoord2f(0,0); glVertex3f(-1, -1, 0);
 		glTexCoord2f(0,1); glVertex3f(-1, 1, 0);	

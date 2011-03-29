@@ -50,7 +50,12 @@ void player_draw(Player* plr) {
 			glScalef(-1,1,1);
 		}
 		
+		if(global.frames - abs(plr->recovery) < 0 && (global.frames/17)&1)
+			glColor4f(0.8,0.8,1,0.9);
+			
 		draw_animation_p(0, 0, !plr->moving, plr->ani);
+		
+		glColor4f(1,1,1,1);
 		
 		if(plr->dir)
 			glPopMatrix();
@@ -82,7 +87,7 @@ void player_logic(Player* plr) {
 		}
 	}
 	
-	if(global.frames - plr->recovery >= 0)
+// 	if(global.frames - abs(plr->recovery) >= 0)
 		
 	if(plr->focus < 0 || (plr->focus > 0 && plr->focus < 30))
 		plr->focus++;
@@ -107,7 +112,7 @@ void plr_death(Player *plr) {
 		create_poweritem(plr->pos, -6-15*I);
 		
 		plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I;
-// 		plr->recovery = global.frames + 200;		
+		plr->recovery = -(global.frames + 200);		
 		
 		if(global.plr.bombs < 2)
 			global.plr.bombs = 2;

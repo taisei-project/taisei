@@ -73,6 +73,7 @@ void draw_fairies() {
 	}
 	glPopMatrix();
 	
+	glColor3f(1,1,1);
 	for(f = global.fairies; f; f = f->next) {
 		glPushMatrix();
 		glTranslatef(creal(f->pos),cimag(f->pos),0);
