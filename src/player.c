@@ -27,7 +27,7 @@ void init_player(Player* plr, Character cha) {
 	
 	plr->cha = cha;
 	
-	plr->ani = get_ani("youmu");
+	plr->ani = get_ani("marisa");
 }
 
 void player_draw(Player* plr) {		
