@@ -8,6 +8,8 @@ set(CMAKE_CFLAGS="--std=c99")
 
 set(DATA_DIR "share/taisei")
 install(DIRECTORY gfx DESTINATION ${DATA_DIR})
+install(DIRECTORY sfx DESTINATION ${DATA_DIR})
+
 # uninstall target
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"

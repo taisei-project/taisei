@@ -62,6 +62,7 @@ int test_collision(Projectile *p) {
 		while(f != NULL) {
 			if(cabs(f->pos - p->pos) < 15) {
 				f->hp--;
+				play_sound("hit");
 				return 2;
 			}
 			f = f->next;

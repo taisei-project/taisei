@@ -58,6 +58,7 @@ void process_poweritems() {
 		v = collision(poweritem);
 		if(v == 1) {
 			global.plr.power += 0.1;
+			play_sound("item_generic");
 		}
 		if(v == 1 || creal(poweritem->pos) < -9 || creal(poweritem->pos) > VIEWPORT_W + 9
 			|| cimag(poweritem->pos) > VIEWPORT_H + 8 ) {

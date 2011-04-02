@@ -13,6 +13,7 @@
 #include "projectile.h"
 #include "fairy.h"
 #include "poweritem.h"
+#include "audio.h"
 
 enum {
 	RESX = 800,
@@ -27,6 +28,8 @@ enum {
 	VIEWPORT_H = 560,
 	
 	POINT_OF_COLLECT = VIEWPORT_H/4,
+	
+	SNDSRC_COUNT = 30,
 	
 	FPS = 60
 };
@@ -43,6 +46,9 @@ typedef struct {
 	
 	Texture *textures;
 	Animation *animations;	
+	Sound *sounds;
+	
+	ALuint sndsrc[SNDSRC_COUNT];
 	
 	int game_over;
 	

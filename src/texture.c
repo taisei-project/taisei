@@ -10,7 +10,7 @@
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
+#include "audio.h"
 
 void recurse_dir(char *path) {
 	DIR *dir = opendir(path);
@@ -33,16 +33,24 @@ void recurse_dir(char *path) {
 				init_animation(buf);
 			else
 				load_texture(buf);			
+		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".wav") == 0) {
+			load_sound(buf);
 		}
 	}
 }
 
-void load_textures() {
-	printf("load_textures():\n");
+void load_resources() {
+	printf("load_resources():\n");
 	char *path = malloc(sizeof(FILE_PREFIX)+4);
+	
+	printf("- textures:\n");
 	strcpy(path, FILE_PREFIX);
 	strncat(path, "gfx", sizeof(FILE_PREFIX)+4);
-		
+	recurse_dir(path);
+	
+	printf("- sounds:\n");
+	strcpy(path, FILE_PREFIX);
+	strncat(path, "sfx", sizeof(FILE_PREFIX)+4);
 	recurse_dir(path);
 }
 

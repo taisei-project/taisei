@@ -101,6 +101,7 @@ void stage0_events() {
 // 		create_fairy(VIEWPORT_W-1, 10, -1, 180, 3, simpleFairy);
 // 		create_fairy(VIEWPORT_W-1, 200, -1, 180, 3, simpleFairy);
 		create_projectile("ball", VIEWPORT_W/2, ((Color) {0,0,1}), linear, 2*I);
+		play_sound("shot_special1");
 	}
 }
 

@@ -43,6 +43,7 @@ void shutdown() {
 	delete_textures();
 	delete_animations();
 	
+	alutExit();
 	SDL_FreeSurface(display);
 	SDL_Quit();
 }
@@ -57,9 +58,11 @@ int main(int argc, char** argv) {
 		errx(-1, "Error opening screen: %s", SDL_GetError());
 	
 	init_gl();
+	if(!alutInit(&argc, argv))
+		errx(-1, "Error initializing audio: %s", alutGetErrorString(alutGetError()));
 	init_global();
 	
 	stage0_loop();
 	
-	atexit(shutdown);	
+	shutdown();	
 }

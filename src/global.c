@@ -27,7 +27,9 @@ void init_global() {
 	
 	global.lasttime = 0;
 	
-	load_textures();
+	alGenSources(SNDSRC_COUNT, global.sndsrc);
+	
+	load_resources();
 	init_fonts();
 }
 

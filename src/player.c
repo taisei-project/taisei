@@ -86,8 +86,6 @@ void player_logic(Player* plr) {
 			create_projectile("youmu", plr->pos - 10 - I*20, ((Color){1,1,1}), linear, I*-20*cexp(I*a))->type = PlrProj;
 		}
 	}
-	
-// 	if(global.frames - abs(plr->recovery) >= 0)
 		
 	if(plr->focus < 0 || (plr->focus > 0 && plr->focus < 30))
 		plr->focus++;
@@ -99,6 +97,9 @@ void plr_bomb(Player *plr) {
 		for(f = global.fairies; f; f = f->next)
 			f->hp = 0;
 		free_projectiles();
+		
+		play_sound("laser1");
+		
 		plr->bombs--;
 		plr->recovery = global.frames + 200;
 	}
