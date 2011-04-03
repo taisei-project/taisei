@@ -26,7 +26,7 @@ void delete_poweritem(Poweritem *poweritem) {
 
 void draw_poweritems() {
 	Poweritem *p;
-	Texture *tex = get_tex("poweritem");
+	Texture *tex = get_tex("items/power");
 	for(p = global.poweritems; p; p = p->next)
 		draw_texture_p(creal(p->pos), cimag(p->pos), tex);
 }

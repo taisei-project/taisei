@@ -9,6 +9,7 @@ Taisei is an open clone of the Touhou series. Touhou is a one-man project of sho
 Dependencies:
 	- SDL, SDL_image, SDL_ttf
 	- OpenGL
+	- OpenAL, ALUT
 	- CMake (build system)
 
 To build and install Taisei just follow these steps.

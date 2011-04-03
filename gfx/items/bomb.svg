@@ -15,10 +15,10 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.48.1 r9760"
-   sodipodi:docname="power.svg"
-   inkscape:export-filename="/home/laochailan/power.png"
-   inkscape:export-xdpi="6.1964884"
-   inkscape:export-ydpi="6.1964884">
+   sodipodi:docname="bomb.svg"
+   inkscape:export-filename="/home/laochailan/src/taisei/gfx/items/bomb.png"
+   inkscape:export-xdpi="12.392977"
+   inkscape:export-ydpi="12.392977">
   <defs
      id="defs4">
     <linearGradient
@@ -35,11 +35,11 @@
     <linearGradient
        id="linearGradient3763">
       <stop
-         style="stop-color:#800000;stop-opacity:1;"
+         style="stop-color:#004a03;stop-opacity:1;"
          offset="0"
          id="stop3765" />
       <stop
-         style="stop-color:#ff4800;stop-opacity:1;"
+         style="stop-color:#008f0e;stop-opacity:1;"
          offset="1"
          id="stop3767" />
     </linearGradient>
@@ -72,8 +72,8 @@
      borderopacity="1.0"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.35"
-     inkscape:cx="-99.396394"
+     inkscape:zoom="0.12374369"
+     inkscape:cx="26.565102"
      inkscape:cy="60.585693"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -112,7 +112,7 @@
        height="232.38969"
        width="232.38969"
        id="rect3813"
-       style="fill:#970d00;fill-opacity:1;stroke:none" />
+       style="fill:#00970f;fill-opacity:1;stroke:none" />
     <rect
        style="fill:url(#linearGradient3769);fill-opacity:1;stroke:#ffffff;stroke-width:19.52022361999999944;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        id="rect2985"
@@ -123,10 +123,10 @@
        ry="18.930275"
        transform="matrix(0,-1,1,0,0,0)" />
     <path
-       id="path3847"
-       style="fill:#ffffff;fill-opacity:1;stroke:none"
-       d="m 229.75045,202.95593 c 11.5343,-8.31412 40.88286,-0.7841 42.72511,12.14286 1.83113,12.84898 -24.31631,26.22078 -37.79529,20.71428 -11.4988,-4.69755 -14.71028,-25.80721 -4.92982,-32.85714 z m -44.3684,-8.57142 c -1.44723,30.77936 0.71692,92.49464 2.4649,127.14285 0.59399,11.77379 33.83542,15.3775 40.26021,5 10.81049,-17.46139 5.89667,-65.67221 8.21638,-65 0,0 88.11291,13.93991 79.69879,-55.71428 -4.62903,-38.32027 -128.83009,-49.92742 -130.64028,-11.42857 z"
+       id="path4290"
+       style="fill:#ffffff;stroke:none"
+       d="m 235.86984,200.94499 c 15.3306,-5.86634 46.39027,-0.0503 45.35715,16.42857 0.97602,13.85338 -35.82941,26.17234 -49.28573,18.57144 -7.78167,-4.39554 -8.83542,-31.0632 3.92858,-35.00001 z m -5.35714,80.71429 c 12.67544,-24.20223 50.50561,-6.46692 52.14286,6.42857 3.50035,27.56991 -37.44517,25.41523 -50,18.92857 -6.9405,-3.58592 -5.59158,-18.77222 -2.14286,-25.35714 z m -35.71429,-78.57143 c -1.67663,25.02731 0.49159,73.73272 0.71429,92.85714 0.5914,50.78681 105.22428,41.19274 106.42857,-0.71428 1.27059,-44.21391 -29.28571,-47.85715 -29.28571,-47.85715 0,0 37.54777,-11.91851 27.85714,-40.71428 -15.30001,-45.46408 -103.23381,-40.5977 -105.71429,-3.57143 z"
        inkscape:connector-curvature="0"
-       sodipodi:nodetypes="ssssssscss" />
+       sodipodi:nodetypes="ccscssssssscss" />
   </g>
 </svg>
