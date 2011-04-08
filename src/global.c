@@ -18,6 +18,9 @@ void init_global() {
 	
 	global.textures = NULL;
 	global.animations = NULL;
+	global.sounds = NULL;
+	
+	global.boss = NULL;
 	
 	global.frames = 0;
 	global.game_over = 0;

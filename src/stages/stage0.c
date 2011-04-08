@@ -13,7 +13,7 @@
 
 void simpleFairy(Fairy *f) {
 	if(!((global.frames - f->birthtime) % 50))
-		create_projectile("rice", f->pos, ((Color){0,0,1}), linear,3+ 2*I);
+		create_projectile("rice", f->pos, ((Color){0,0,1}), linear,3 + 2I);
 	
 	f->moving = 1;
 	f->dir = creal(f->args[0]) < 0;
@@ -92,17 +92,35 @@ void stage0_draw() {
 	glDisable(GL_TEXTURE_2D);
 }
 
-void stage0_events() {
-	if(!(global .frames % 100)) {
-// 		int i;
-// 		for(i = 0; i < VIEWPORT_W/15; i++)
-// 			create_projectile(&_projs.ball, i*VIEWPORT_W/15, 0, 90 + i*10, ((Color) {0,0,1}), simple, 2);
-		create_fairy(0 + I*100, 10, simpleFairy, 2);
-// 		create_fairy(VIEWPORT_W-1, 10, -1, 180, 3, simpleFairy);
-// 		create_fairy(VIEWPORT_W-1, 200, -1, 180, 3, simpleFairy);
-		create_projectile("ball", VIEWPORT_W/2, ((Color) {0,0,0.8}), linear, 2*I);
-		play_sound("shot_special1");
+void cirno_intro(Boss *c, int time) {
+	if(time == 0) {
+		boss_add_waypoint(c->current, VIEWPORT_W/2-10 + 30I, 0);
+		boss_add_waypoint(c->current, VIEWPORT_W/2 + 100I, 100);
+		boss_add_waypoint(c->current, VIEWPORT_W + VIEWPORT_H*I, 200);
+		boss_add_waypoint(c->current, VIEWPORT_W/2+60 + 100I, 300);
+		boss_add_waypoint(c->current, VIEWPORT_W/2-10 + 30I, 320);
 	}
+}
+
+void cirno_test(Boss *c, int time) {
+	if(time == 0) {
+		boss_add_waypoint(c->current, 220 + 100I, 50);
+		boss_add_waypoint(c->current, 12 + 100I, 60);
+		boss_add_waypoint(c->current, 200 + 90I, 100);
+	}
+}
+
+Boss *create_cirno() {
+	Boss* cirno = create_boss("Cirno", "fairy", VIEWPORT_W/2 + 30I);
+	boss_add_attack(cirno, Normal, "Introduction", 10, 100, cirno_intro);
+	boss_add_attack(cirno, Spellcard, "Test Sign ~ Strongest Implementation", 10, 100, cirno_test);
+	
+	return cirno;
+}
+
+void stage0_events() {
+	if(global.frames == 300)
+		global.boss = create_cirno();
 }
 
 void stage0_loop() {	

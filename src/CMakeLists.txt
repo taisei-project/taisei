@@ -11,6 +11,7 @@ set(SRCs
 	list.c
 	font.c
 	audio.c
+	boss.c
 	stages/stage0.c)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})

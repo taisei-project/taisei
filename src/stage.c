@@ -92,6 +92,9 @@ void stage_draw() {
 	draw_fairies();
 	draw_poweritems();
 	
+	if(global.boss)
+		draw_boss(global.boss);
+	
 	glPopMatrix();
 	draw_texture(SCREEN_W/2, SCREEN_H/2, "hud");
 	
@@ -122,6 +125,13 @@ void stage_logic() {
 	process_projectiles();
 	process_poweritems();
 	
+	if(global.boss) {
+		process_boss(global.boss);
+		if(global.boss->dmg > global.boss->attacks[global.boss->acount-1].dmglimit) {
+			free_boss(global.boss);
+			global.boss = NULL;
+		}
+	}
 	global.frames++;
 		
 	if(SDL_GetTicks() > global.fpstime+1000) {

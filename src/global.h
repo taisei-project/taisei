@@ -14,6 +14,7 @@
 #include "fairy.h"
 #include "poweritem.h"
 #include "audio.h"
+#include "boss.h"
 
 enum {
 	RESX = 800,
@@ -48,10 +49,11 @@ typedef struct {
 	Animation *animations;	
 	Sound *sounds;
 	
+	Boss *boss;
+	
 	ALuint sndsrc[SNDSRC_COUNT];
 	
 	int game_over;
-	
 	
 	int fpstime;  // frame counter
 	int fps;

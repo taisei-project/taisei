@@ -67,6 +67,12 @@ int test_collision(Projectile *p) {
 			}
 			f = f->next;
 		}
+		
+		if(global.boss != NULL && cabs(global.boss->pos - p->pos) < 15) {
+			global.boss->dmg++;
+			play_sound("hit");
+			return 2;
+		}
 	}
 	return 0;
 }
