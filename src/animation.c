@@ -7,6 +7,7 @@
 
 #include "animation.h"
 #include "global.h"
+#include "list.h"
 
 #include <assert.h>
 

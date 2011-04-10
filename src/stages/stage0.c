@@ -119,8 +119,9 @@ Boss *create_cirno() {
 }
 
 void stage0_events() {
-	if(global.frames == 300)
+	if(global.frames == 300 )
 		global.boss = create_cirno();
+	if(global.boss == NULL && !(global.frames % 100)) create_fairy(0 + I*100, 3, simpleFairy, 2);
 }
 
 void stage0_loop() {	
@@ -134,8 +135,8 @@ void stage0_loop() {
 	
 	while(!global.game_over) {
 		stage0_events();
-		stage_logic();
 		stage_input();
+		stage_logic();		
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		stage0_draw();

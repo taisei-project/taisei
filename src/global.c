@@ -15,13 +15,15 @@ void init_global() {
 	global.projs = NULL;
 	global.fairies = NULL;
 	global.poweritems = NULL;
-	
+	global.slaves = NULL;
+		
 	global.textures = NULL;
 	global.animations = NULL;
 	global.sounds = NULL;
 	
 	global.boss = NULL;
 	
+	global.points = 0;	
 	global.frames = 0;
 	global.game_over = 0;
 	

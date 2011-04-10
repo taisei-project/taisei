@@ -61,6 +61,7 @@ int test_collision(Projectile *p) {
 		Fairy *f = global.fairies;
 		while(f != NULL) {
 			if(cabs(f->pos - p->pos) < 15) {
+				global.points += 100;
 				f->hp--;
 				play_sound("hit");
 				return 2;

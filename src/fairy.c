@@ -35,7 +35,7 @@ void create_fairy(complex pos, int hp, FairyRule rule, complex args, ...) {
 
 void delete_fairy(Fairy *fairy) {
 	if(global.plr.power < 6 && fairy->hp <= 0)
-		create_poweritem(fairy->pos, 6-15*I);
+		create_poweritem(fairy->pos, 6-15*I, Power);
 	delete_element((void **)&global.fairies, fairy);
 }
 

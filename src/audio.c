@@ -7,6 +7,7 @@
 
 #include "audio.h"
 #include "global.h"
+#include "list.h"
 
 Sound *load_sound(char *filename) {
 	ALuint sound;

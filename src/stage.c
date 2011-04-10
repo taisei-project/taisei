@@ -91,6 +91,7 @@ void stage_draw() {
 	draw_projectiles();
 	draw_fairies();
 	draw_poweritems();
+	draw_slaves();
 	
 	if(global.boss)
 		draw_boss(global.boss);
@@ -105,7 +106,7 @@ void stage_draw() {
 	glTranslatef(615,0,0);
 	
 // 	glColor3f(1,0,0);
-	for(i = 0; i < global.plr.lives; i++)
+	for(i = 0; i < global.plr.lifes; i++)
 	  draw_texture(16*i,167, "star");
 // 	glColor3f(0,1,0);
 	for(i = 0; i < global.plr.bombs; i++)
@@ -114,6 +115,9 @@ void stage_draw() {
 	
 	sprintf(buf, "%.2f", global.plr.power);
 	draw_text(buf, 10, 236, _fonts.biolinum);
+	
+	sprintf(buf, "%i", global.points);
+	draw_text(buf, 13, 49, _fonts.biolinum);
 	
 	glPopMatrix();
 }
@@ -124,6 +128,7 @@ void stage_logic() {
 	process_fairies();
 	process_projectiles();
 	process_poweritems();
+	process_slaves();
 	
 	if(global.boss) {
 		process_boss(global.boss);
@@ -147,6 +152,7 @@ void stage_end() {
 	free_projectiles();
 	free_fairies();
 	free_poweritems();
+	free_slaves();
 	global.frames = 0;
 }
 		

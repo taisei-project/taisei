@@ -8,6 +8,7 @@ set(SRCs
 	animation.c
 	fairy.c
 	poweritem.c
+	slave.c
 	list.c
 	font.c
 	audio.c

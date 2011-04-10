@@ -10,13 +10,14 @@
 #include "global.h"
 #include "list.h"
 
-void create_poweritem(complex pos, complex v) {
+void create_poweritem(complex pos, complex v, Type type) {
 	Poweritem *p = create_element((void **)&global.poweritems, sizeof(Poweritem));
 	p->pos = pos;
 	p->pos0 = pos;
 	p->v = v;
 	p->birthtime = global.frames;
 	p->auto_collect = 0;
+	p->type = type;
 }
 
 
@@ -26,9 +27,26 @@ void delete_poweritem(Poweritem *poweritem) {
 
 void draw_poweritems() {
 	Poweritem *p;
-	Texture *tex = get_tex("items/power");
-	for(p = global.poweritems; p; p = p->next)
+	Texture *tex = NULL;
+	for(p = global.poweritems; p; p = p->next){
+	  switch(p->type){
+	  case Power:
+	    tex = get_tex("items/power");
+	    break;
+	  case Point:
+	    tex = get_tex("items/point");
+	    break;
+	  case Life:
+	    tex = get_tex("items/life");
+	    break;
+	  case Bomb:
+	    tex = get_tex("items/bomb");
+	    break;
+	  default:
+	    break;
+	}
 		draw_texture_p(creal(p->pos), cimag(p->pos), tex);
+	}
 }
 
 void free_poweritems() {
@@ -57,7 +75,20 @@ void process_poweritems() {
 		
 		v = collision(poweritem);
 		if(v == 1) {
-			global.plr.power += 0.1;
+			switch(poweritem->type) {
+			case Power:
+				global.plr.power += 0.1;
+				break;
+			case Point:
+				global.points += 100;
+				break;
+			case Life:
+				global.plr.lifes++;
+				break;
+			case Bomb:
+				global.plr.bombs++;
+				break;
+			}
 			play_sound("item_generic");
 		}
 		if(v == 1 || creal(poweritem->pos) < -9 || creal(poweritem->pos) > VIEWPORT_W + 9

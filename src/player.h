@@ -30,7 +30,7 @@ typedef struct {
 	short dir;
 	float power;
     
-	int lives;
+	int lifes;
 	int bombs;
 	
 	float recovery;

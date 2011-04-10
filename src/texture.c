@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "audio.h"
+#include "list.h"
 
 void recurse_dir(char *path) {
 	DIR *dir = opendir(path);

@@ -20,7 +20,7 @@ void init_player(Player* plr, Character cha) {
 	plr->dir = 0;
 	plr->power = 0;
 	
-	plr->lives = 2;
+	plr->lifes = 2;
 	plr->bombs = 3;
 	
 	plr->recovery = 0;
@@ -82,17 +82,20 @@ void player_logic(Player* plr) {
 		if(plr->power >= 2) {
 			float a = 0.20;
 			if(plr->focus > 0) a = 0.06;
-			create_projectile("youmu", plr->pos + 10 - I*20, ((Color){1,1,1}), linear, I*-20*cexp(-I*a))->type = PlrProj;
-			create_projectile("youmu", plr->pos - 10 - I*20, ((Color){1,1,1}), linear, I*-20*cexp(I*a))->type = PlrProj;
+			create_projectile("youmu", plr->pos - 10 - I*20, ((Color){1,1,1}), linear, I*-20*cexp(-I*a))->type = PlrProj;
+			create_projectile("youmu", plr->pos + 10 - I*20, ((Color){1,1,1}), linear, I*-20*cexp(I*a))->type = PlrProj;
 		}
 	}
 		
 	if(plr->focus < 0 || (plr->focus > 0 && plr->focus < 30))
 		plr->focus++;
+	
+	if(plr->power >= 1 && global.slaves == NULL)
+		create_slave(plr->pos, -30*I);
 }
 
 void plr_bomb(Player *plr) {
-	if(global.frames - plr->recovery >= 0 && plr->bombs >= 0) {
+	if(global.frames - plr->recovery >= 0 && plr->bombs > 0) {
 		Fairy *f;
 		for(f = global.fairies; f; f = f->next)
 			f->hp = 0;
@@ -106,11 +109,11 @@ void plr_bomb(Player *plr) {
 }
 
 void plr_death(Player *plr) {
-	if(plr->lives-- == 0) {
+	if(plr->lifes-- == 0) {
 		game_over();
 	} else {
-		create_poweritem(plr->pos, 6-15*I);
-		create_poweritem(plr->pos, -6-15*I);
+		create_poweritem(plr->pos, 6-15*I, Power);
+		create_poweritem(plr->pos, -6-15*I, Power);
 		
 		plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I;
 		plr->recovery = -(global.frames + 200);		

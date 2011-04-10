@@ -13,6 +13,7 @@
 #include "projectile.h"
 #include "fairy.h"
 #include "poweritem.h"
+#include "slave.h"
 #include "audio.h"
 #include "boss.h"
 
@@ -42,6 +43,7 @@ typedef struct {
 	Projectile *projs;
 	Fairy *fairies;
 	Poweritem *poweritems;
+	Slave *slaves;
 	
 	int frames;
 	
@@ -54,7 +56,8 @@ typedef struct {
 	ALuint sndsrc[SNDSRC_COUNT];
 	
 	int game_over;
-	
+	int points;
+		
 	int fpstime;  // frame counter
 	int fps;
 	
