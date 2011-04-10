@@ -43,7 +43,6 @@ typedef struct {
 	Projectile *projs;
 	Fairy *fairies;
 	Poweritem *poweritems;
-	Slave *slaves;
 	
 	int frames;
 	

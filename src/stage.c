@@ -91,7 +91,6 @@ void stage_draw() {
 	draw_projectiles();
 	draw_fairies();
 	draw_poweritems();
-	draw_slaves();
 	
 	if(global.boss)
 		draw_boss(global.boss);
@@ -128,7 +127,6 @@ void stage_logic() {
 	process_fairies();
 	process_projectiles();
 	process_poweritems();
-	process_slaves();
 	
 	if(global.boss) {
 		process_boss(global.boss);
@@ -152,7 +150,6 @@ void stage_end() {
 	free_projectiles();
 	free_fairies();
 	free_poweritems();
-	free_slaves();
 	global.frames = 0;
 }
 		

@@ -8,9 +8,10 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include <complex.h>
 #include "texture.h"
 #include "animation.h"
-#include <complex.h>
+#include "slave.h"
 
 enum {
 	False = 0,
@@ -18,8 +19,13 @@ enum {
 };
 
 typedef enum {
-	Youmu
+	Youmu,
+	Marisa
 } Character;
+
+typedef enum {
+	YoumuOpposite
+} ShotMode;
 
 typedef struct {
 	complex pos;
@@ -36,6 +42,8 @@ typedef struct {
 	float recovery;
     
 	Character cha;
+	ShotMode shot;
+	Slave *slaves;
 	
 	Animation *ani;
 } Player;

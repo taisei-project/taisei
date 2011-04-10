@@ -10,6 +10,7 @@
 #include <SDL/SDL.h>
 #include "projectile.h"
 #include "global.h"
+#include "plrmodes.h"
 
 void init_player(Player* plr, Character cha) {
 	plr->pos = VIEWPORT_W/2 + I*(VIEWPORT_H-20);
@@ -23,14 +24,25 @@ void init_player(Player* plr, Character cha) {
 	plr->lifes = 2;
 	plr->bombs = 3;
 	
+	plr->slaves = NULL;
+	
 	plr->recovery = 0;
 	
 	plr->cha = cha;
 	
-	plr->ani = get_ani("marisa");
+	switch(cha) {
+	case Youmu:
+		plr->ani = get_ani("youmu");
+		break;
+	case Marisa:
+		plr->ani = get_ani("marisa");
+		break;
+	}
 }
 
-void player_draw(Player* plr) {		
+void player_draw(Player* plr) {
+	draw_slaves(plr->slaves);
+	
 	glPushMatrix();
 		glTranslatef(creal(plr->pos), cimag(plr->pos), 0);
 		
@@ -75,6 +87,8 @@ void player_draw(Player* plr) {
 }
 
 void player_logic(Player* plr) {
+	process_slaves(plr->slaves);
+	
 	if(plr->fire && !(global.frames % 4)) {
 		create_projectile("youmu", plr->pos + 10 - I*20, ((Color){1,1,1}), linear, -20I)->type = PlrProj;
 		create_projectile("youmu", plr->pos - 10 - I*20, ((Color){1,1,1}), linear, -20I)->type = PlrProj;
@@ -90,8 +104,8 @@ void player_logic(Player* plr) {
 	if(plr->focus < 0 || (plr->focus > 0 && plr->focus < 30))
 		plr->focus++;
 	
-	if(plr->power >= 1 && global.slaves == NULL)
-		create_slave(plr->pos, -30*I);
+	if(plr->power >= 0 && plr->slaves == NULL)
+		create_slave(&plr->slaves, youmu_opposite_logic, youmu_opposite_draw, plr->pos, plr, 0);
 }
 
 void plr_bomb(Player *plr) {
@@ -121,4 +135,6 @@ void plr_death(Player *plr) {
 		if(global.plr.bombs < 2)
 			global.plr.bombs = 2;
 	}
+	
+	free_slaves(&plr->slaves);
 }

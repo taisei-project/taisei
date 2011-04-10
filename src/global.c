@@ -15,7 +15,6 @@ void init_global() {
 	global.projs = NULL;
 	global.fairies = NULL;
 	global.poweritems = NULL;
-	global.slaves = NULL;
 		
 	global.textures = NULL;
 	global.animations = NULL;
