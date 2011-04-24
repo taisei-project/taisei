@@ -88,7 +88,7 @@ void draw_projectiles() {
 	for(proj = global.projs; proj; proj = proj->next) {
 		tex = proj->tex;
 		
-		glBindTexture(GL_TEXTURE_2D, tex->gltex);	
+		glBindTexture(GL_TEXTURE_2D, tex->gltex);
 	
 		wq = ((float)tex->w/2.0)/tex->truew;
 		hq = ((float)tex->h)/tex->trueh;

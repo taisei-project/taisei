@@ -91,6 +91,7 @@ void stage_draw() {
 	draw_projectiles();
 	draw_fairies();
 	draw_poweritems();
+	draw_lasers();
 	
 	if(global.boss)
 		draw_boss(global.boss);
@@ -127,6 +128,7 @@ void stage_logic() {
 	process_fairies();
 	process_projectiles();
 	process_poweritems();
+	process_lasers();
 	
 	if(global.boss) {
 		process_boss(global.boss);

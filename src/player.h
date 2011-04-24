@@ -53,5 +53,6 @@ void init_player(Player*, Character cha);
 void player_draw(Player*);
 void player_logic(Player*);
 
-void plr_bomb();
+void plr_bomb(Player*);
+void plr_death(Player*);
 #endif

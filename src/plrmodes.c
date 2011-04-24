@@ -21,7 +21,7 @@ void youmu_opposite_logic(Slave *slave) {
 		slave->args[1] = carg(plr->pos - slave->pos0);
 		slave->pos = slave->pos0 - plr->pos;
 		
-		if(cabs(slave->pos) > 50)
+		if(cabs(slave->pos) > 30)
 			slave->pos -= 5*cexp(I*carg(slave->pos));
 	}
 	

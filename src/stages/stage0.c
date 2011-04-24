@@ -94,12 +94,19 @@ void stage0_draw() {
 
 void cirno_intro(Boss *c, int time) {
 	if(time == 0) {
-		boss_add_waypoint(c->current, VIEWPORT_W/2-10 + 30I, 0);
-		boss_add_waypoint(c->current, VIEWPORT_W/2 + 100I, 100);
-		boss_add_waypoint(c->current, VIEWPORT_W + VIEWPORT_H*I, 200);
-		boss_add_waypoint(c->current, VIEWPORT_W/2+60 + 100I, 300);
-		boss_add_waypoint(c->current, VIEWPORT_W/2-10 + 30I, 320);
+		boss_add_waypoint(c->current, VIEWPORT_W/2-100 + 30I, 100);
+		boss_add_waypoint(c->current, VIEWPORT_W/2+100 + 30I, 400);
 	}
+	
+// 	if(!(time % 50))
+// 		create_laser(LaserLine, c->pos, 10*cexp(I*carg(global.plr.pos - c->pos)), 30, 200, ((Color){1,0,0}), NULL, 0);
+}
+
+complex lolsin(Laser *l, float t) {
+	complex pos;
+	pos = l->pos0 + (1-t/200)*t*cexp(I*l->args[0])*3 + t*2I;
+	
+	return pos;
 }
 
 void cirno_test(Boss *c, int time) {
@@ -108,6 +115,10 @@ void cirno_test(Boss *c, int time) {
 		boss_add_waypoint(c->current, 12 + 100I, 60);
 		boss_add_waypoint(c->current, 200 + 90I, 100);
 	}
+	int i;
+	if(!(time % 50))
+		for(i = 0; i < 6; i++)
+			create_laser(LaserCurve, c->pos, c->pos, 50, 200, ((ColorA){0.5,0.5,1,0.4}), lolsin, i);
 }
 
 Boss *create_cirno() {
@@ -122,6 +133,9 @@ void stage0_events() {
 	if(global.frames == 300 )
 		global.boss = create_cirno();
 	if(global.boss == NULL && !(global.frames % 100)) create_fairy(0 + I*100, 3, simpleFairy, 2);
+	
+// 	if(!(global.frames % 100))
+// 		create_laser(LaserCurve, 300, 300, 60, 500, ((ColorA){0.6,0.6,1,0.4}), lolsin, 0);
 }
 
 void stage0_loop() {	
@@ -140,8 +154,7 @@ void stage0_loop() {
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		stage0_draw();
-		stage_draw();
-				
+		stage_draw();				
 		
 		SDL_GL_SwapBuffers();
 		frame_rate();

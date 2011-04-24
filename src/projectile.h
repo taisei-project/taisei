@@ -19,6 +19,13 @@ typedef struct {
 	float b;
 } Color;
 
+typedef struct {
+	float r;
+	float g;
+	float b;
+	float a;
+} ColorA;
+
 struct Projectile;
 typedef void (*ProjRule)(complex *pos, complex pos0, float *angle, int time, complex* args);
 

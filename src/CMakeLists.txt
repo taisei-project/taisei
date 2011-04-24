@@ -14,6 +14,7 @@ set(SRCs
 	audio.c
 	boss.c
 	plrmodes.c
+	laser.c
 	stages/stage0.c)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})

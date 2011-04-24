@@ -12,24 +12,7 @@
 Global global;
 
 void init_global() {
-	global.projs = NULL;
-	global.fairies = NULL;
-	global.poweritems = NULL;
-		
-	global.textures = NULL;
-	global.animations = NULL;
-	global.sounds = NULL;
-	
-	global.boss = NULL;
-	
-	global.points = 0;	
-	global.frames = 0;
-	global.game_over = 0;
-	
-	global.fpstime = 0;
-	global.fps = 0;
-	
-	global.lasttime = 0;
+	memset(&global, 0, sizeof(global));	
 	
 	alGenSources(SNDSRC_COUNT, global.sndsrc);
 	

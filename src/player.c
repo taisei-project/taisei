@@ -136,5 +136,6 @@ void plr_death(Player *plr) {
 			global.plr.bombs = 2;
 	}
 	
-	free_slaves(&plr->slaves);
+	if(plr->slaves)
+		free_slaves(&plr->slaves);
 }

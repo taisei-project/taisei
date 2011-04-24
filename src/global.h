@@ -13,9 +13,9 @@
 #include "projectile.h"
 #include "fairy.h"
 #include "poweritem.h"
-#include "slave.h"
 #include "audio.h"
 #include "boss.h"
+#include "laser.h"
 
 enum {
 	RESX = 800,
@@ -43,6 +43,7 @@ typedef struct {
 	Projectile *projs;
 	Fairy *fairies;
 	Poweritem *poweritems;
+	Laser *lasers;
 	
 	int frames;
 	
