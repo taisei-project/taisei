@@ -9,6 +9,7 @@ set(CMAKE_CFLAGS="--std=c99")
 set(DATA_DIR "share/taisei")
 install(DIRECTORY gfx DESTINATION ${DATA_DIR})
 install(DIRECTORY sfx DESTINATION ${DATA_DIR})
+install(DIRECTORY shader DESTINATION ${DATA_DIR})
 
 # uninstall target
 configure_file(

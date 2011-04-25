@@ -16,11 +16,9 @@
 #include "audio.h"
 #include "boss.h"
 #include "laser.h"
+#include "shader.h"
 
-enum {
-	RESX = 800,
-	RESY = 600,
-	
+enum {	
 	SCREEN_W = 800,
 	SCREEN_H = 600,
 	
@@ -50,6 +48,15 @@ typedef struct {
 	Texture *textures;
 	Animation *animations;	
 	Sound *sounds;
+	Shader *shaders;
+	
+	struct {
+		GLuint fbo;
+		GLuint tex;
+		GLuint depth;
+		
+		int nw,nh;
+	} rtt;
 	
 	Boss *boss;
 	
@@ -67,6 +74,7 @@ typedef struct {
 extern Global global;
 
 void init_global();
+void init_rtt();
 void game_over();
 
 void frame_rate();

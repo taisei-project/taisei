@@ -23,6 +23,8 @@ void simpleFairy(Fairy *f) {
 }
 
 void stage0_draw() {
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, global.rtt.fbo);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPushMatrix();
 	
 	glTranslatef(-(VIEWPORT_X+VIEWPORT_W/2.0), -(VIEWPORT_Y+VIEWPORT_H/2.0),0);
@@ -90,6 +92,8 @@ void stage0_draw() {
 	glPopMatrix();
 	
 	glDisable(GL_TEXTURE_2D);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	glViewport(0,0,SCREEN_W,SCREEN_H);
 }
 
 void cirno_intro(Boss *c, int time) {

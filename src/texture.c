@@ -11,10 +11,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "audio.h"
+#include "shader.h"
 #include "list.h"
 
 void recurse_dir(char *path) {
 	DIR *dir = opendir(path);
+	if(dir == NULL)
+		err(-1, "Couldn't open directory '%s'", path);
 	struct dirent *dp;
 	
 	char buf[512];
@@ -36,6 +39,8 @@ void recurse_dir(char *path) {
 				load_texture(buf);			
 		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".wav") == 0) {
 			load_sound(buf);
+		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".sha") == 0) {
+			load_shader(buf);
 		}
 	}
 }
@@ -52,6 +57,11 @@ void load_resources() {
 	printf("- sounds:\n");
 	strcpy(path, FILE_PREFIX);
 	strncat(path, "sfx", sizeof(FILE_PREFIX)+4);
+	recurse_dir(path);
+	
+	printf("- shader:\n");
+	strcpy(path, FILE_PREFIX);
+	strncat(path, "shader", sizeof(FILE_PREFIX)+4);
 	recurse_dir(path);
 }
 

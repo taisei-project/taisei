@@ -86,6 +86,7 @@ void stage_draw() {
 	
 	glPushMatrix();
 	glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
+	apply_bg_shaders();
 	player_draw(&global.plr);
 
 	draw_projectiles();
@@ -119,6 +120,40 @@ void stage_draw() {
 	sprintf(buf, "%i", global.points);
 	draw_text(buf, 13, 49, _fonts.biolinum);
 	
+	glPopMatrix();
+}
+
+void apply_bg_shaders() {
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	
+	if(global.boss) { // Boss background shader
+		GLuint shader = get_shader("boss_zoom");
+		glUseProgram(shader);
+		
+		complex pos = global.boss->pos + 10*cexp(I*global.frames/5.0);
+		complex fpos = global.boss->pos;
+		
+		glUniform2f(glGetUniformLocation(shader, "blur_orig"),
+					(creal(pos)+VIEWPORT_X)/global.rtt.nw, (VIEWPORT_H - cimag(pos) - VIEWPORT_Y/2)/global.rtt.nh);
+		glUniform2f(glGetUniformLocation(shader, "fix_orig"),
+					(creal(fpos)+VIEWPORT_X)/global.rtt.nw, (VIEWPORT_H - cimag(fpos) - VIEWPORT_Y/2)/global.rtt.nh);
+		glUniform1f(glGetUniformLocation(shader, "rad"), 0.3);
+	}
+	
+	glPushMatrix();
+	glTranslatef(-global.rtt.nw+VIEWPORT_W,-global.rtt.nh+VIEWPORT_H,0);
+	
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, global.rtt.tex);
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,1); glVertex3f(0, 0, 0);
+		glTexCoord2f(0,0); glVertex3f(0, global.rtt.nh, 0);
+		glTexCoord2f(1,0); glVertex3f(global.rtt.nw, global.rtt.nh, 0);
+		glTexCoord2f(1,1); glVertex3f(global.rtt.nw, 0, 0);
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+	
+	glUseProgramObjectARB(0);
 	glPopMatrix();
 }
 

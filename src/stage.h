@@ -16,4 +16,5 @@ void stage_input();
 
 void stage_end();
 
+void apply_bg_shaders();
 #endif

@@ -19,8 +19,8 @@ void init_gl() {
 	
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_BLEND);
-		
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	glEnable(GL_LINE_SMOOTH);
 	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
@@ -42,6 +42,8 @@ void init_gl() {
 void shutdown() {
 	delete_textures();
 	delete_animations();
+	delete_sounds();
+	delete_shaders();
 	
 	alutExit();
 	SDL_FreeSurface(display);
@@ -54,10 +56,11 @@ int main(int argc, char** argv) {
 		
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 0);
-	if((display = SDL_SetVideoMode(RESX, RESY, 32, SDL_OPENGL)) == NULL)
+	if((display = SDL_SetVideoMode(SCREEN_W, SCREEN_H, 32, SDL_OPENGL)) == NULL)
 		errx(-1, "Error opening screen: %s", SDL_GetError());
 	
 	init_gl();
+		
 	if(!alutInit(&argc, argv))
 		errx(-1, "Error initializing audio: %s", alutGetErrorString(alutGetError()));
 	init_global();

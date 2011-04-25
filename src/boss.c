@@ -43,6 +43,7 @@ void spell_opening(Boss *b, int time) {
 	draw_text(b->current->name, VIEWPORT_W-strlen(b->current->name)*5, y, _fonts.biolinum);
 }
 
+
 void draw_boss(Boss *boss) {
 	draw_animation_p(creal(boss->pos), cimag(boss->pos), boss->anirow, boss->ani);
 	

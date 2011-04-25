@@ -28,6 +28,7 @@ typedef struct Texture {
 
 Texture *get_tex(char *name);
 void load_textures();
+void load_resources();
 void delete_textures();
 
 Texture *load_texture(const char *filename);
@@ -36,4 +37,5 @@ void free_texture(Texture *tex);
 
 void draw_texture(int x, int y, char *name);
 void draw_texture_p(int x, int y, Texture *tex);
+
 #endif

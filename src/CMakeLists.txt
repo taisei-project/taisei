@@ -15,6 +15,7 @@ set(SRCs
 	boss.c
 	plrmodes.c
 	laser.c
+	shader.c
 	stages/stage0.c)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
@@ -26,7 +27,7 @@ find_package(ALUT REQUIRED)
 find_package(SDL_image REQUIRED)
 find_package(SDL_ttf REQUIRED)
 
-add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}")
+add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -DGL_GLEXT_PROTOTYPES)
 
 include_directories(${SDL_INCLUDE_DIRS} ${ALUT_INCLUDE_DIRS})
 add_executable(taisei ${SRCs})
