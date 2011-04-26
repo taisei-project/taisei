@@ -188,6 +188,7 @@ void stage_end() {
 	delete_projectiles();
 	delete_enemies(&global.enemies);
 	delete_poweritems();
+	delete_lasers();
 	global.frames = 0;
 }
 		

@@ -70,6 +70,7 @@ void play_sound_p(Sound *snd) {
 void delete_sound(void **snds, void *snd) {
 	free(((Sound *)snd)->name);
 	alDeleteBuffers(1, &((Sound *)snd)->alsnd);
+	delete_element(snds, snd);
 }
 
 void delete_sounds() {
