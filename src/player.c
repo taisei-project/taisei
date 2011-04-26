@@ -41,7 +41,7 @@ void init_player(Player* plr, Character cha) {
 }
 
 void player_draw(Player* plr) {
-	draw_slaves(plr->slaves);
+	draw_enemies(plr->slaves);
 	
 	glPushMatrix();
 		glTranslatef(creal(plr->pos), cimag(plr->pos), 0);
@@ -87,7 +87,7 @@ void player_draw(Player* plr) {
 }
 
 void player_logic(Player* plr) {
-	process_slaves(plr->slaves);
+	process_enemies(&plr->slaves);
 	
 	if(plr->fire && !(global.frames % 4)) {
 		create_projectile("youmu", plr->pos + 10 - I*20, ((Color){1,1,1}), linear, -20I)->type = PlrProj;
@@ -105,14 +105,16 @@ void player_logic(Player* plr) {
 		plr->focus++;
 	
 	if(plr->power >= 0 && plr->slaves == NULL)
-		create_slave(&plr->slaves, youmu_opposite_logic, youmu_opposite_draw, plr->pos, plr, 0);
+		create_enemy(&plr->slaves, youmu_opposite_draw, youmu_opposite_logic, plr->pos, ENEMY_IMMUNE, plr, 0);
 }
 
 void plr_bomb(Player *plr) {
 	if(global.frames - plr->recovery >= 0 && plr->bombs > 0) {
-		Fairy *f;
-		for(f = global.fairies; f; f = f->next)
-			f->hp = 0;
+		Enemy *e;
+		for(e = global.enemies; e; e = e->next)
+			if(e->hp != ENEMY_IMMUNE)
+				e->hp = 0;
+		
 		free_projectiles();
 		
 		play_sound("laser1");
@@ -137,5 +139,5 @@ void plr_death(Player *plr) {
 	}
 	
 	if(plr->slaves)
-		free_slaves(&plr->slaves);
+		free_enemies(&plr->slaves);
 }

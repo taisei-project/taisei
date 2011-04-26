@@ -11,7 +11,7 @@
 #include <complex.h>
 #include "texture.h"
 #include "animation.h"
-#include "slave.h"
+#include "enemy.h"
 
 enum {
 	False = 0,
@@ -43,7 +43,7 @@ typedef struct {
     
 	Character cha;
 	ShotMode shot;
-	Slave *slaves;
+	Enemy *slaves;
 	
 	Animation *ani;
 } Player;

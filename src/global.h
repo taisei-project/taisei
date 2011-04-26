@@ -11,7 +11,7 @@
 #include <SDL/SDL.h>
 #include "player.h"
 #include "projectile.h"
-#include "fairy.h"
+#include "enemy.h"
 #include "poweritem.h"
 #include "audio.h"
 #include "boss.h"
@@ -31,6 +31,9 @@ enum {
 	
 	SNDSRC_COUNT = 30,
 	
+	EVENT_DEATH = -8999,
+	EVENT_BIRTH,
+	
 	FPS = 60
 };
 
@@ -39,7 +42,7 @@ enum {
 typedef struct {
 	Player plr;	
 	Projectile *projs;
-	Fairy *fairies;
+	Enemy *enemies;
 	Poweritem *poweritems;
 	Laser *lasers;
 	

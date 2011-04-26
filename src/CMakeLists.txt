@@ -5,10 +5,9 @@ set(SRCs
 	player.c
 	texture.c
 	projectile.c
+	enemy.c
 	animation.c
-	fairy.c
 	poweritem.c
-	slave.c
 	list.c
 	font.c
 	audio.c

@@ -90,7 +90,7 @@ void stage_draw() {
 	player_draw(&global.plr);
 
 	draw_projectiles();
-	draw_fairies();
+	draw_enemies(global.enemies);
 	draw_poweritems();
 	draw_lasers();
 	
@@ -130,7 +130,7 @@ void apply_bg_shaders() {
 		GLuint shader = get_shader("boss_zoom");
 		glUseProgram(shader);
 		
-		complex pos = global.boss->pos + 10*cexp(I*global.frames/5.0);
+		complex pos = global.boss->pos + 15*cexp(I*global.frames/5.0);
 		complex fpos = global.boss->pos;
 		
 		glUniform2f(glGetUniformLocation(shader, "blur_orig"),
@@ -160,7 +160,7 @@ void apply_bg_shaders() {
 void stage_logic() {
 	player_logic(&global.plr);
 	
-	process_fairies();
+	process_enemies(&global.enemies);
 	process_projectiles();
 	process_poweritems();
 	process_lasers();
@@ -185,7 +185,7 @@ void stage_logic() {
 
 void stage_end() {
 	free_projectiles();
-	free_fairies();
+	free_enemies(&global.enemies);
 	free_poweritems();
 	global.frames = 0;
 }

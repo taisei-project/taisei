@@ -58,15 +58,15 @@ int test_collision(Projectile *p) {
 		if(cabs(global.plr.pos - p->pos) < projr + 1)
 			return 1;
 	} else {
-		Fairy *f = global.fairies;
-		while(f != NULL) {
-			if(cabs(f->pos - p->pos) < 15) {
+		Enemy *e = global.enemies;
+		while(e != NULL) {
+			if(e->hp != ENEMY_IMMUNE && cabs(e->pos - p->pos) < 15) {
 				global.points += 100;
-				f->hp--;
+				e->hp--;
 				play_sound("hit");
 				return 2;
 			}
-			f = f->next;
+			e = e->next;
 		}
 		
 		if(global.boss != NULL && cabs(global.boss->pos - p->pos) < 15) {

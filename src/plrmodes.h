@@ -8,9 +8,9 @@
 #ifndef PLRMODES_H
 #define PLRMODES_H
 
-#include "slave.h"
+#include "enemy.h"
 
-void youmu_opposite_draw(Slave *s);
-void youmu_opposite_logic(Slave *slave);
+void youmu_opposite_draw(Enemy *e, int t);
+void youmu_opposite_logic(Enemy *e, int t);
 
 #endif

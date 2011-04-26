@@ -9,24 +9,27 @@
 #include "player.h"
 #include "global.h"
 
-void youmu_opposite_draw(Slave *s) {
-	complex pos = s->pos + ((Player *)s->parent)->pos;
+void youmu_opposite_draw(Enemy *e, int t) {
+	complex pos = e->pos + ((Player *)e->parent)->pos;
 	draw_texture(creal(pos), cimag(pos), "items/power");
 }
 
-void youmu_opposite_logic(Slave *slave) {
-	Player *plr = (Player *)slave->parent;
+void youmu_opposite_logic(Enemy *e, int t) {
+	if(t < 0)
+		return;
+	
+	Player *plr = (Player *)e->parent;
 	
 	if(plr->focus < 15) {
-		slave->args[1] = carg(plr->pos - slave->pos0);
-		slave->pos = slave->pos0 - plr->pos;
+		e->args[1] = carg(plr->pos - e->pos0);
+		e->pos = e->pos0 - plr->pos;
 		
-		if(cabs(slave->pos) > 30)
-			slave->pos -= 5*cexp(I*carg(slave->pos));
+		if(cabs(e->pos) > 30)
+			e->pos -= 5*cexp(I*carg(e->pos));
 	}
 	
 	if(plr->fire && !(global.frames % 4))
-		create_projectile("youmu", slave->pos + plr->pos, ((Color){1,1,1}), linear, -20*cexp(I*slave->args[1]))->type = PlrProj; 
+		create_projectile("youmu", e->pos + plr->pos, ((Color){1,1,1}), linear, -20*cexp(I*e->args[1]))->type = PlrProj; 
 	
-	slave->pos0 = slave->pos + plr->pos;	
+	e->pos0 = e->pos + plr->pos;	
 }

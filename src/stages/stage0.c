@@ -11,15 +11,21 @@
 #include "../stage.h"
 #include "../global.h"
 
-void simpleFairy(Fairy *f) {
-	if(!((global.frames - f->birthtime) % 50))
-		create_projectile("rice", f->pos, ((Color){0,0,1}), linear,3 + 2I);
+void simpleEnemy(Enemy *e, int t) {
+	if(t == EVENT_DEATH && global.plr.power < 6) {
+		create_poweritem(e->pos, 6-15*I, Power);
+		return;
+	} else if(t < 0) {
+		return;
+	}
 	
-	f->moving = 1;
-	f->dir = creal(f->args[0]) < 0;
+	if(!((global.frames - e->birthtime) % 50))
+		create_projectile("rice", e->pos, ((Color){0,0,1}), linear,3 + 2I);
 	
-	int t = global.frames - f->birthtime;
-	f->pos = f->pos0 + f->args[0]*t + I*sin((global.frames - f->birthtime)/10.0f)*20; // TODO: do this way cooler.
+	e->moving = 1;
+	e->dir = creal(e->args[0]) < 0;
+	
+	e->pos = e->pos0 + e->args[0]*t + I*sin((global.frames - e->birthtime)/10.0f)*20; // TODO: do this way cooler.
 }
 
 void stage0_draw() {
@@ -136,7 +142,7 @@ Boss *create_cirno() {
 void stage0_events() {
 	if(global.frames == 300 )
 		global.boss = create_cirno();
-	if(global.boss == NULL && !(global.frames % 100)) create_fairy(0 + I*100, 3, simpleFairy, 2);
+	if(global.boss == NULL && !(global.frames % 100)) create_enemy(&global.enemies, Fairy, simpleEnemy, 0 + I*100, 3, NULL, 2);
 	
 // 	if(!(global.frames % 100))
 // 		create_laser(LaserCurve, 300, 300, 60, 500, ((ColorA){0.6,0.6,1,0.4}), lolsin, 0);
