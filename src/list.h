@@ -13,7 +13,7 @@
  */
 
 void *create_element(void **dest, int size);
-void *delete_element(void **dest, void *e);
-void *delete_all_elements(void **dest);
+void delete_element(void **dest, void *e);
+void *delete_all_elements(void **dest, void (callback)(void **, void *));
 
 #endif

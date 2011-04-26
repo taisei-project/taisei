@@ -33,7 +33,7 @@ void *create_element(void **dest, int size) {
 	return e;
 }
 
-void *delete_element(void **dest, void *e) {
+void delete_element(void **dest, void *e) {
 	if(((List *)e)->prev != NULL)
 		((List *)((List *)e)->prev)->next = ((List *)e)->next;
 	if(((List *)e)->next != NULL)
@@ -44,14 +44,14 @@ void *delete_element(void **dest, void *e) {
 	free(e);
 }
 
-void *delete_all_elements(void **dest) {
+void *delete_all_elements(void **dest, void (callback)(void **, void *)) {
 	void *e = *dest;
 	void *tmp;
 	
 	while(e != 0) {
 		tmp = e;
 		e = ((List *)e)->next;
-		delete_element(dest, tmp);
+		callback(dest, tmp);
 	} 
 	
 	*dest = NULL;

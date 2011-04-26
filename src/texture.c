@@ -77,9 +77,17 @@ Texture *get_tex(char *name) {
 	
 	return res;
 }
+
+void delete_texture(void **texs, void *tex) {
+	Texture *t = (Texture *)tex;
+	free(t->name);
+	glDeleteTextures(1, &t->gltex);
 	
+	delete_element((void **)texs, tex);
+}
+
 void delete_textures() {
-	delete_all_elements((void **)&global.textures);
+	delete_all_elements((void **)&global.textures, delete_texture);
 }
 
 Texture *load_texture(const char *filename) {	

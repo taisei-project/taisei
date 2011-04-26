@@ -56,12 +56,17 @@ Projectile *create_projectile(char *name, complex pos, Color *clr,
 	return p;
 }
 
-void delete_projectile(Projectile *proj) {
-	delete_element((void **)&global.projs, proj);
+void _delete_projectile(void **projs, void *proj) {
+	free(((Projectile*)proj)->clr);	
+	delete_element(projs, proj);
 }
 
-void free_projectiles() {
-	delete_all_elements((void **)&global.projs);
+void delete_projectile(Projectile *proj) {
+	_delete_projectile((void **)&global.projs, proj);
+}
+
+void delete_projectiles() {
+	delete_all_elements((void **)&global.projs, _delete_projectile);
 }
 
 int collision_projectile(Projectile *p) {	

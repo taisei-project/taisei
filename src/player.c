@@ -115,7 +115,7 @@ void plr_bomb(Player *plr) {
 			if(e->hp != ENEMY_IMMUNE)
 				e->hp = 0;
 		
-		free_projectiles();
+		delete_projectiles();
 		
 		play_sound("laser1");
 		
@@ -139,5 +139,5 @@ void plr_death(Player *plr) {
 	}
 	
 	if(plr->slaves)
-		free_enemies(&plr->slaves);
+		delete_enemies(&plr->slaves);
 }

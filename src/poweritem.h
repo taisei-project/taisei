@@ -38,7 +38,7 @@ typedef struct Poweritem{
 void create_poweritem(complex pos, complex v, Type type);
 void delete_poweritem(Poweritem *poweritem);
 void draw_poweritems();
-void free_poweritems();
+void delete_poweritems();
 
 int collision(Poweritem *p);
 void process_poweritems();

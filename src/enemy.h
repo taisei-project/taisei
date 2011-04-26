@@ -46,7 +46,7 @@ void create_enemy(Enemy **enemies, EnemyDrawRule draw_rule, EnemyLogicRule logic
 				  complex pos, int hp, void *parent, complex args, ...);
 void delete_enemy(Enemy **enemies, Enemy* enemy);
 void draw_enemies(Enemy *enemies);
-void free_enemies(Enemy **enemies);
+void delete_enemies(Enemy **enemies);
 
 void process_enemies(Enemy **enemies);
 

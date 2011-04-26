@@ -185,9 +185,9 @@ void stage_logic() {
 }
 
 void stage_end() {
-	free_projectiles();
-	free_enemies(&global.enemies);
-	free_poweritems();
+	delete_projectiles();
+	delete_enemies(&global.enemies);
+	delete_poweritems();
 	global.frames = 0;
 }
 		

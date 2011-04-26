@@ -67,6 +67,11 @@ void play_sound_p(Sound *snd) {
 	}
 }
 
+void delete_sound(void **snds, void *snd) {
+	free(((Sound *)snd)->name);
+	alDeleteBuffers(1, &((Sound *)snd)->alsnd);
+}
+
 void delete_sounds() {
-	delete_all_elements((void **)&global.sounds);
+	delete_all_elements((void **)&global.sounds, delete_sound);
 }

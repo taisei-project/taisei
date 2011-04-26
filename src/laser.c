@@ -9,7 +9,7 @@
 #include "global.h"
 #include "list.h"
 
-Laser *create_laser(LaserType type, complex pos, complex pos0, int time, int deathtime, Color color, LaserRule rule, complex args, ...) {
+Laser *create_laser(LaserType type, complex pos, complex pos0, int time, int deathtime, Color *color, LaserRule rule, complex args, ...) {
 	Laser *l = create_element((void **)&global.lasers, sizeof(Laser));
 		
 	l->type = type;
@@ -85,7 +85,7 @@ void draw_laser_curve(Laser *laser) {
 	Texture *tex = get_tex("lasercurve");
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 	
-	glColor4fv((float *)&laser->color);
+	glColor4fv((float *)laser->color);
 	for(i = 0; i < 2; i++) {
 		float t = global.frames - laser->birthtime - laser->time;
 		if(t < 0)
@@ -138,8 +138,8 @@ void draw_lasers() {
 	}
 }
 
-void free_lasers() {
-	delete_all_elements((void **)&global.lasers);
+void delete_lasers() {
+	delete_all_elements((void **)&global.lasers, delete_element);
 }
 
 void process_lasers() {

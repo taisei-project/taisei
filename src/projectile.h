@@ -52,10 +52,9 @@ inline Color *rgb(float r, float g, float b);
 
 Projectile *create_projectile(char *name, complex pos, Color *clr, ProjRule rule, complex args, ...);
 void delete_projectile(Projectile *proj);
+void delete_projectiles();
 void draw_projectile(Projectile *proj);
 void draw_projectiles();
-void free_projectiles();
-
 int collision_projectile(Projectile *p);
 void process_projectiles();
 

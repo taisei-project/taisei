@@ -41,13 +41,17 @@ void create_enemy(Enemy **enemies, EnemyDrawRule draw_rule, EnemyLogicRule logic
 	e->logic_rule(e, EVENT_BIRTH);
 }
 
-void delete_enemy(Enemy **enemies, Enemy* enemy) {
-	enemy->logic_rule(enemy, EVENT_DEATH);
+void _delete_enemy(void **enemies, void* enemy) {
+	((Enemy* )enemy)->logic_rule(enemy, EVENT_DEATH);
 	delete_element((void **)enemies, enemy);
 }
 
-void free_enemies(Enemy **enemies) {
-	delete_all_elements((void **)enemies);
+void delete_enemy(Enemy **enemies, Enemy* enemy) {
+	_delete_enemy((void**) enemies, enemy);
+}
+
+void delete_enemies(Enemy **enemies) {
+	delete_all_elements((void **)enemies, _delete_enemy);
 }
 
 void draw_enemies(Enemy *enemies) {

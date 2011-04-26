@@ -65,8 +65,13 @@ Animation *get_ani(char *name) {
 	return res;
 }
 
+void delete_animation(void **anis, void *ani) {
+	free(((Animation *)ani)->name);
+	delete_element(anis, ani);
+}
+
 void delete_animations() {
-	delete_all_elements((void **)&global.animations);
+	delete_all_elements((void **)&global.animations, delete_animation);
 }
 
 void draw_animation(float x, float y, int row, char *name) {

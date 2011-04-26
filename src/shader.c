@@ -101,6 +101,11 @@ GLuint get_shader(const char *name) {
 	return res->prog;
 }
 
+void delete_shader(void **shas, void *sha) {
+	free(((Shader *)sha)->name);
+	glDeleteShader(((Shader*)sha)->prog);
+}
+
 void delete_shaders() {
-	delete_all_elements((void **)&global.shaders);
+	delete_all_elements((void **)&global.shaders, delete_shader);
 }

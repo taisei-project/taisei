@@ -128,7 +128,7 @@ void cirno_test(Boss *c, int time) {
 	int i;
 	if(!(time % 50))
 		for(i = 0; i < 6; i++)
-			create_laser(LaserCurve, c->pos, c->pos, 50, 200, ((Color){0.5,0.5,1,0.4}), lolsin, i);
+			create_laser(LaserCurve, c->pos, c->pos, 50, 200, rgba(0.5,0.5,1,0.4), lolsin, i);
 }
 
 Boss *create_cirno() {

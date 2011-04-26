@@ -29,7 +29,7 @@ typedef struct Laser {
 	complex pos;
 	complex pos0; // if type == LaserLine, carg(pos0) is orientation and cabs(pos0) width
 	
-	Color color;
+	Color *color;
 	
 	int birthtime;
 	int time; // line: startup time; curve: length
@@ -39,7 +39,7 @@ typedef struct Laser {
 	complex args[4];
 } Laser;
 
-Laser *create_laser(LaserType type, complex pos, complex pos0, int time, int deathtime, Color color, LaserRule rule, complex args, ...);
+Laser *create_laser(LaserType type, complex pos, complex pos0, int time, int deathtime, Color *color, LaserRule rule, complex args, ...);
 void draw_lasers();
 void free_lasers();
 void process_lasers();

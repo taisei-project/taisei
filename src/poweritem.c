@@ -49,8 +49,8 @@ void draw_poweritems() {
 	}
 }
 
-void free_poweritems() {
-	delete_all_elements((void **)&global.poweritems);
+void delete_poweritems() {
+	delete_all_elements((void **)&global.poweritems, delete_element);
 }
 
 void move_poweritem(Poweritem *p) {
