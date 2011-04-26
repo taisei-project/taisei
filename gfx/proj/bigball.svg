@@ -14,8 +14,11 @@
    height="40"
    id="svg4388"
    version="1.1"
-   inkscape:version="0.48.0 r9654"
-   sodipodi:docname="Neues Dokument 8">
+   inkscape:version="0.48.1 r9760"
+   sodipodi:docname="bigball_auto.svg"
+   inkscape:export-filename="/home/laochailan/src/taisei/gfx/proj/bigball.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
   <defs
      id="defs4390">
     <linearGradient
@@ -59,9 +62,9 @@
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1918"
-     inkscape:window-height="1061"
-     inkscape:window-x="0"
-     inkscape:window-y="17"
+     inkscape:window-height="1037"
+     inkscape:window-x="-75"
+     inkscape:window-y="178"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata4393">
@@ -88,7 +91,7 @@
        sodipodi:cy="14.190687"
        sodipodi:rx="5.6319289"
        sodipodi:ry="6.2084255"
-       d="m 24.345897,14.190687 a 5.6319289,6.2084255 0 1 1 -11.263858,0 5.6319289,6.2084255 0 1 1 11.263858,0 z"
+       d="m 24.345897,14.190687 c 0,3.428819 -2.5215,6.208426 -5.631929,6.208426 -3.110428,0 -5.631929,-2.779607 -5.631929,-6.208426 0,-3.428819 2.521501,-6.2084253 5.631929,-6.2084253 3.110429,0 5.631929,2.7796063 5.631929,6.2084253 z"
        transform="matrix(3.5511812,0,0,3.2214287,-46.456692,986.64793)" />
   </g>
 </svg>

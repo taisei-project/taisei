@@ -138,6 +138,7 @@ void apply_bg_shaders() {
 		glUniform2f(glGetUniformLocation(shader, "fix_orig"),
 					(creal(fpos)+VIEWPORT_X)/global.rtt.nw, (VIEWPORT_H - cimag(fpos) - VIEWPORT_Y/2)/global.rtt.nh);
 		glUniform1f(glGetUniformLocation(shader, "rad"), 0.3);
+		glUniform1f(glGetUniformLocation(shader, "ratio"), (float)global.rtt.nh/global.rtt.nw);
 	}
 	
 	glPushMatrix();

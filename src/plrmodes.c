@@ -29,7 +29,7 @@ void youmu_opposite_logic(Enemy *e, int t) {
 	}
 	
 	if(plr->fire && !(global.frames % 4))
-		create_projectile("youmu", e->pos + plr->pos, ((Color){1,1,1}), linear, -20*cexp(I*e->args[1]))->type = PlrProj; 
+		create_projectile("youmu", e->pos + plr->pos, NULL, linear, -20*cexp(I*e->args[1]))->type = PlrProj; 
 	
 	e->pos0 = e->pos + plr->pos;	
 }

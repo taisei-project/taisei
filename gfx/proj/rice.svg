@@ -14,8 +14,11 @@
    height="20"
    id="svg3824"
    version="1.1"
-   inkscape:version="0.48.0 r9654"
-   sodipodi:docname="Neues Dokument 5">
+   inkscape:version="0.48.1 r9760"
+   sodipodi:docname="rice_auto.svg"
+   inkscape:export-filename="/home/laochailan/src/taisei/gfx/proj/rice.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
   <defs
      id="defs3826">
     <linearGradient
@@ -59,9 +62,9 @@
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1918"
-     inkscape:window-height="1061"
-     inkscape:window-x="0"
-     inkscape:window-y="17"
+     inkscape:window-height="1037"
+     inkscape:window-x="-167"
+     inkscape:window-y="0"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata3829">
@@ -88,7 +91,7 @@
        sodipodi:cy="9.7228384"
        sodipodi:rx="4.6452327"
        sodipodi:ry="9.7228384"
-       d="m 9.2682924,9.7228384 a 4.6452327,9.7228384 0 1 1 -9.29046533,0 4.6452327,9.7228384 0 1 1 9.29046533,0 z"
+       d="m 9.2682924,9.7228384 c 0,5.3697756 -2.0797415,9.7228386 -4.6452327,9.7228386 -2.5654911,0 -4.64523263,-4.353063 -4.64523263,-9.7228386 C -0.02217293,4.353063 2.0575686,0 4.6230597,0 7.1885509,0 9.2682924,4.353063 9.2682924,9.7228384 z"
        transform="matrix(1.0763723,0,0,1.0285062,0.02386633,1032.3622)" />
   </g>
 </svg>

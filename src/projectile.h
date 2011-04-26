@@ -17,14 +17,8 @@ typedef struct {
 	float r;
 	float g;
 	float b;
-} Color;
-
-typedef struct {
-	float r;
-	float g;
-	float b;
 	float a;
-} ColorA;
+} Color;
 
 struct Projectile;
 typedef void (*ProjRule)(complex *pos, complex pos0, float *angle, int time, complex* args);
@@ -45,20 +39,24 @@ typedef struct Projectile {
 	
 	enum { PlrProj, FairyProj } type;
 	
-	Color clr;
+	Color *clr;
 	
 	complex args[4];
 } Projectile;
 
 void load_projectiles();
 
-Projectile *create_projectile(char *name, complex pos, Color clr, ProjRule rule, complex args, ...);
+Color *rgba(float r, float g, float b, float a);
+
+inline Color *rgb(float r, float g, float b);
+
+Projectile *create_projectile(char *name, complex pos, Color *clr, ProjRule rule, complex args, ...);
 void delete_projectile(Projectile *proj);
 void draw_projectile(Projectile *proj);
 void draw_projectiles();
 void free_projectiles();
 
-int test_collision(Projectile *p);
+int collision_projectile(Projectile *p);
 void process_projectiles();
 
 void linear(complex *pos, complex pos0, float *angle, int time, complex* args);

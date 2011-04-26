@@ -10,7 +10,7 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="16"
+   width="8"
    height="12"
    id="svg2"
    version="1.1"
@@ -74,19 +74,6 @@
        x2="2.3495057"
        y2="3.0433807"
        gradientUnits="userSpaceOnUse" />
-    <filter
-       inkscape:collect="always"
-       id="filter4412"
-       x="-0.17254388"
-       width="1.3450878"
-       y="-0.12395158"
-       height="1.2479032"
-       color-interpolation-filters="sRGB">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="0.095963993"
-         id="feGaussianBlur4414" />
-    </filter>
     <filter
        inkscape:collect="always"
        id="filter3777"
@@ -156,7 +143,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -166,13 +153,13 @@
      id="layer1"
      transform="translate(0,-1040.3622)">
     <path
-       style="color:#000000;fill:url(#linearGradient3839);fill-opacity:1;stroke:none;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;opacity:0.82677165"
+       style="opacity:0.8267717;color:#000000;fill:url(#linearGradient3839);fill-opacity:1;stroke:none;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 0.36489949,1047.7169 c 0.35033055,-8.1615 6.16583381,-10.4109 7.27020101,0 -2.5409842,-7.9675 -4.9605546,-7.708 -7.27020101,0 z"
        id="path2985"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="ccc" />
     <path
-       style="opacity:0.56299213;color:#000000;fill:#659eff;fill-opacity:1;stroke:none;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible;filter:url(#filter3783);enable-background:accumulate"
+       style="opacity:0.56299217;color:#000000;fill:#659eff;fill-opacity:1;stroke:none;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible;filter:url(#filter3783);enable-background:accumulate"
        d="m 0.15077605,1052.2779 c 0.0776544,-16.901 6.23081395,-23.0311 7.86488385,0 -2.7886226,-9.0012 -5.4199058,-9.1633 -7.86488385,0 z"
        id="path3781"
        inkscape:connector-curvature="0"
@@ -185,7 +172,7 @@
        inkscape:connector-curvature="0"
        id="path3775"
        d="m 0.39474728,1047.3341 c 0.37898665,-8.8342 6.67018232,-11.269 7.86488382,0 -2.5560342,-7.0818 -5.2264322,-7.2242 -7.86488382,0 z"
-       style="color:#000000;fill:url(#linearGradient3841);fill-opacity:1;stroke:none;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible;filter:url(#filter3777);enable-background:accumulate;opacity:0.82677165"
+       style="opacity:0.8267717;color:#000000;fill:url(#linearGradient3841);fill-opacity:1;stroke:none;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible;filter:url(#filter3777);enable-background:accumulate"
        transform="matrix(0.92438759,0,0,0.92385898,0,80.127931)" />
   </g>
 </svg>

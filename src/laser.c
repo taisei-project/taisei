@@ -9,7 +9,7 @@
 #include "global.h"
 #include "list.h"
 
-Laser *create_laser(LaserType type, complex pos, complex pos0, int time, int deathtime, ColorA color, LaserRule rule, complex args, ...) {
+Laser *create_laser(LaserType type, complex pos, complex pos0, int time, int deathtime, Color color, LaserRule rule, complex args, ...) {
 	Laser *l = create_element((void **)&global.lasers, sizeof(Laser));
 		
 	l->type = type;

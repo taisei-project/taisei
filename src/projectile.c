@@ -12,7 +12,21 @@
 #include "global.h"
 #include "list.h"
 
-Projectile *create_projectile(char *name, complex pos, Color clr,
+Color *rgba(float r, float g, float b, float a) {
+	Color *clr = malloc(sizeof(Color));
+	clr->r = r;
+	clr->g = g;
+	clr->b = b;
+	clr->a = a;
+	
+	return clr;
+}
+
+inline Color *rgb(float r, float g, float b) {
+	return rgba(r, g, b, 1.0);
+}
+
+Projectile *create_projectile(char *name, complex pos, Color *clr,
 							  ProjRule rule, complex args, ...) {
 	Projectile *p = create_element((void **)&global.projs, sizeof(Projectile));
 	
@@ -50,7 +64,7 @@ void free_projectiles() {
 	delete_all_elements((void **)&global.projs);
 }
 
-int test_collision(Projectile *p) {	
+int collision_projectile(Projectile *p) {	
 	if(p->type == FairyProj) {
 		float angle = carg(global.plr.pos - p->pos);
 		int projr = sqrt(pow(p->tex->w/4*cos(angle),2)*8/10 + pow(p->tex->h/2*sin(angle)*8/10,2));		
@@ -63,7 +77,6 @@ int test_collision(Projectile *p) {
 			if(e->hp != ENEMY_IMMUNE && cabs(e->pos - p->pos) < 15) {
 				global.points += 100;
 				e->hp--;
-				play_sound("hit");
 				return 2;
 			}
 			e = e->next;
@@ -71,55 +84,35 @@ int test_collision(Projectile *p) {
 		
 		if(global.boss != NULL && cabs(global.boss->pos - p->pos) < 15) {
 			global.boss->dmg++;
-			play_sound("hit");
 			return 2;
 		}
 	}
 	return 0;
 }
 
-void draw_projectiles() {
-	glEnable(GL_TEXTURE_2D);	
-	
+void draw_projectiles() {	
 	Projectile *proj;
-	Texture *tex;
-	float wq, hq;
 	
-	for(proj = global.projs; proj; proj = proj->next) {
-		tex = proj->tex;
-		
-		glBindTexture(GL_TEXTURE_2D, tex->gltex);
+	GLuint shader = get_shader("bullet_color");
+	glUseProgramObjectARB(shader);
 	
-		wq = ((float)tex->w/2.0)/tex->truew;
-		hq = ((float)tex->h)/tex->trueh;
+	for(proj = global.projs; proj; proj = proj->next) {				
+		if(proj->clr == NULL)
+			glUseProgramObjectARB(0);
 		
+		glUniform4fv(glGetUniformLocation(shader, "color"), 1, (GLfloat *)proj->clr);
+				
 		glPushMatrix();
 		glTranslatef(creal(proj->pos), cimag(proj->pos), 0);
 		glRotatef(proj->angle*180/M_PI+90, 0, 0, 1);
-		glScalef(tex->w/4.0, tex->h/2.0,0);
-		
-		glBegin(GL_QUADS);
-			glTexCoord2f(0,0); glVertex2f(-1, -1);
-			glTexCoord2f(0,hq); glVertex2f(-1, 1);
-			glTexCoord2f(wq,hq); glVertex2f(1, 1);
-			glTexCoord2f(wq,0);	glVertex2f(1, -1);
-		glEnd();
-		
-		glColor3fv((float *)&proj->clr);
-		
-		glBegin(GL_QUADS);
-			glTexCoord2f(wq,0); glVertex2f(-1, -1);
-			glTexCoord2f(wq,hq); glVertex2f(-1, 1);
-			glTexCoord2f(2*wq,hq); glVertex2f(1, 1);
-			glTexCoord2f(2*wq,0); glVertex2f(1, -1);
-		glEnd();
-		
+
+		draw_texture_p(0,0, proj->tex);
 		glPopMatrix();
-		glColor3f(1,1,1);		
+				
+		if(proj->clr == NULL)
+			glUseProgramObjectARB(shader);
 	}
-	
-	
-	glDisable(GL_TEXTURE_2D);
+	glUseProgramObjectARB(0);
 }
 
 void process_projectiles() {
@@ -127,7 +120,7 @@ void process_projectiles() {
 	while(proj != NULL) {
 		proj->rule(&proj->pos, proj->pos0, &proj->angle, global.frames - proj->birthtime, proj->args);
 		
-		int v = test_collision(proj);
+		int v = collision_projectile(proj);
 		if(v == 1 && (global.frames - abs(global.plr.recovery)) >= 0)
 			plr_death(&global.plr);
 		

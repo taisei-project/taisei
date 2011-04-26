@@ -20,7 +20,7 @@ void simpleEnemy(Enemy *e, int t) {
 	}
 	
 	if(!((global.frames - e->birthtime) % 50))
-		create_projectile("rice", e->pos, ((Color){0,0,1}), linear,3 + 2I);
+		create_projectile("ball", e->pos, rgb(0,0,1), linear,3 + 2I);
 	
 	e->moving = 1;
 	e->dir = creal(e->args[0]) < 0;
@@ -128,7 +128,7 @@ void cirno_test(Boss *c, int time) {
 	int i;
 	if(!(time % 50))
 		for(i = 0; i < 6; i++)
-			create_laser(LaserCurve, c->pos, c->pos, 50, 200, ((ColorA){0.5,0.5,1,0.4}), lolsin, i);
+			create_laser(LaserCurve, c->pos, c->pos, 50, 200, ((Color){0.5,0.5,1,0.4}), lolsin, i);
 }
 
 Boss *create_cirno() {

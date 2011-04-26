@@ -90,14 +90,14 @@ void player_logic(Player* plr) {
 	process_enemies(&plr->slaves);
 	
 	if(plr->fire && !(global.frames % 4)) {
-		create_projectile("youmu", plr->pos + 10 - I*20, ((Color){1,1,1}), linear, -20I)->type = PlrProj;
-		create_projectile("youmu", plr->pos - 10 - I*20, ((Color){1,1,1}), linear, -20I)->type = PlrProj;
+		create_projectile("youmu", plr->pos + 10 - I*20, NULL, linear, -20I)->type = PlrProj;
+		create_projectile("youmu", plr->pos - 10 - I*20, NULL, linear, -20I)->type = PlrProj;
 		
 		if(plr->power >= 2) {
 			float a = 0.20;
 			if(plr->focus > 0) a = 0.06;
-			create_projectile("youmu", plr->pos - 10 - I*20, ((Color){1,1,1}), linear, I*-20*cexp(-I*a))->type = PlrProj;
-			create_projectile("youmu", plr->pos + 10 - I*20, ((Color){1,1,1}), linear, I*-20*cexp(I*a))->type = PlrProj;
+			create_projectile("youmu", plr->pos - 10 - I*20, NULL, linear, I*-20*cexp(-I*a))->type = PlrProj;
+			create_projectile("youmu", plr->pos + 10 - I*20, NULL, linear, I*-20*cexp(I*a))->type = PlrProj;
 		}
 	}
 		
