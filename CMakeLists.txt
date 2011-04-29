@@ -4,7 +4,6 @@ cmake_minimum_required(VERSION 2.6)
 
 add_subdirectory(src)
 
-set(CMAKE_CFLAGS="--std=c99")
 
 set(DATA_DIR "share/taisei")
 install(DIRECTORY gfx DESTINATION ${DATA_DIR})

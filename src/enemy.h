@@ -5,8 +5,8 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
-#ifndef SLAVE_H
-#define SLAVE_H
+#ifndef ENEMY_H
+#define ENEMY_H
 
 #include "animation.h"
 #include <complex.h>

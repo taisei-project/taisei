@@ -24,7 +24,8 @@ typedef enum {
 } Character;
 
 typedef enum {
-	YoumuOpposite
+	YoumuOpposite,
+	YoumuHoming
 } ShotMode;
 
 typedef struct {
@@ -48,7 +49,7 @@ typedef struct {
 	Animation *ani;
 } Player;
 
-void init_player(Player*, Character cha);
+void init_player(Player*, Character cha, ShotMode shot);
 
 void player_draw(Player*);
 void player_logic(Player*);

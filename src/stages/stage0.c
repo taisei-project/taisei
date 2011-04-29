@@ -13,7 +13,7 @@
 
 void simpleEnemy(Enemy *e, int t) {
 	if(t == EVENT_DEATH && global.plr.power < 6) {
-		create_poweritem(e->pos, 6-15*I, Power);
+		create_item(e->pos, 6*cexp(I*rand()), Power);
 		return;
 	} else if(t < 0) {
 		return;
@@ -132,7 +132,7 @@ void cirno_test(Boss *c, int time) {
 }
 
 Boss *create_cirno() {
-	Boss* cirno = create_boss("Cirno", "fairy", VIEWPORT_W/2 + 30I);
+	Boss* cirno = create_boss("Cirno", "cirno", VIEWPORT_W/2 + 30I);
 	boss_add_attack(cirno, Normal, "Introduction", 10, 100, cirno_intro);
 	boss_add_attack(cirno, Spellcard, "Test Sign ~ Strongest Implementation", 10, 100, cirno_test);
 	

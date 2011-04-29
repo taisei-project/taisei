@@ -12,7 +12,7 @@
 #include "player.h"
 #include "projectile.h"
 #include "enemy.h"
-#include "poweritem.h"
+#include "item.h"
 #include "audio.h"
 #include "boss.h"
 #include "laser.h"
@@ -43,7 +43,7 @@ typedef struct {
 	Player plr;	
 	Projectile *projs;
 	Enemy *enemies;
-	Poweritem *poweritems;
+	Item *items;
 	Laser *lasers;
 	
 	int frames;

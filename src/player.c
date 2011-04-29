@@ -12,7 +12,7 @@
 #include "global.h"
 #include "plrmodes.h"
 
-void init_player(Player* plr, Character cha) {
+void init_player(Player* plr, Character cha, ShotMode shot) {
 	plr->pos = VIEWPORT_W/2 + I*(VIEWPORT_H-20);
 	
 	plr->focus = False;
@@ -29,6 +29,7 @@ void init_player(Player* plr, Character cha) {
 	plr->recovery = 0;
 	
 	plr->cha = cha;
+	plr->shot = shot;
 	
 	switch(cha) {
 	case Youmu:
@@ -89,22 +90,31 @@ void player_draw(Player* plr) {
 void player_logic(Player* plr) {
 	process_enemies(&plr->slaves);
 	
-	if(plr->fire && !(global.frames % 4)) {
-		create_projectile("youmu", plr->pos + 10 - I*20, NULL, linear, -20I)->type = PlrProj;
-		create_projectile("youmu", plr->pos - 10 - I*20, NULL, linear, -20I)->type = PlrProj;
+	if(plr->fire && plr->cha == Youmu) {
+		if(!(global.frames % 4)) {
+			create_projectile("youmu", plr->pos + 10 - I*20, NULL, linear, -20I)->type = PlrProj;
+			create_projectile("youmu", plr->pos - 10 - I*20, NULL, linear, -20I)->type = PlrProj;
 		
-		if(plr->power >= 2) {
-			float a = 0.20;
-			if(plr->focus > 0) a = 0.06;
-			create_projectile("youmu", plr->pos - 10 - I*20, NULL, linear, I*-20*cexp(-I*a))->type = PlrProj;
-			create_projectile("youmu", plr->pos + 10 - I*20, NULL, linear, I*-20*cexp(I*a))->type = PlrProj;
+				
+			if(plr->power >= 2) {
+				float a = 0.20;
+				if(plr->focus > 0) a = 0.06;
+				create_projectile("youmu", plr->pos - 10 - I*20, NULL, linear, I*-20*cexp(-I*a))->type = PlrProj;
+				create_projectile("youmu", plr->pos + 10 - I*20, NULL, linear, I*-20*cexp(I*a))->type = PlrProj;
+			}		
 		}
+		
+		float a = 1;
+		if(plr->focus > 0)
+			a = 0.2;
+		if(plr->shot == YoumuHoming && !(global.frames % 7))
+			create_projectile("hghost", plr->pos, NULL, youmu_homing, a*cexp(I*rand()))->type = PlrProj;		
 	}
 		
 	if(plr->focus < 0 || (plr->focus > 0 && plr->focus < 30))
 		plr->focus++;
 	
-	if(plr->power >= 0 && plr->slaves == NULL)
+	if(plr->shot == YoumuOpposite && plr->slaves == NULL)
 		create_enemy(&plr->slaves, youmu_opposite_draw, youmu_opposite_logic, plr->pos, ENEMY_IMMUNE, plr, 0);
 }
 
@@ -128,8 +138,8 @@ void plr_death(Player *plr) {
 	if(plr->lifes-- == 0) {
 		game_over();
 	} else {
-		create_poweritem(plr->pos, 6-15*I, Power);
-		create_poweritem(plr->pos, -6-15*I, Power);
+		create_item(plr->pos, 6-15*I, Power);
+		create_item(plr->pos, -6-15*I, Power);
 		
 		plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I;
 		plr->recovery = -(global.frames + 200);		

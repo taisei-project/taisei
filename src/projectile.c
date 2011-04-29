@@ -123,7 +123,7 @@ void draw_projectiles() {
 void process_projectiles() {
 	Projectile *proj = global.projs, *del = NULL;
 	while(proj != NULL) {
-		proj->rule(&proj->pos, proj->pos0, &proj->angle, global.frames - proj->birthtime, proj->args);
+		proj->rule(&proj->pos, &proj->pos0, &proj->angle, global.frames - proj->birthtime, proj->args);
 		
 		int v = collision_projectile(proj);
 		if(v == 1 && (global.frames - abs(global.plr.recovery)) >= 0)
@@ -141,7 +141,7 @@ void process_projectiles() {
 	}
 }
 
-void linear(complex *pos, complex pos0, float *angle, int time, complex* a) { // sure is physics in here; a[0]: velocity	
+void linear(complex *pos, complex *pos0, float *angle, int time, complex* a) { // sure is physics in here; a[0]: velocity	
 	*angle = carg(a[0]);
-	*pos = pos0 + a[0]*time;
+	*pos = *pos0 + a[0]*time;
 }

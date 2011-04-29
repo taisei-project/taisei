@@ -13,4 +13,6 @@
 void youmu_opposite_draw(Enemy *e, int t);
 void youmu_opposite_logic(Enemy *e, int t);
 
+void youmu_homing(complex *pos, complex *pos0, float *angle, int t, complex* a);
+
 #endif

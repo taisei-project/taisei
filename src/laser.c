@@ -51,7 +51,7 @@ void draw_laser_line(Laser *laser) {
 		
 	glBindTexture(GL_TEXTURE_2D, get_tex("lasercurve")->gltex);
 	
-	glColor4fv((float *)&laser->color);
+	glColor4fv((float *)laser->color);
 	
 	glBegin(GL_QUADS);
 		glTexCoord2i(0,0);

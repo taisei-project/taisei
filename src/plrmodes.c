@@ -33,3 +33,23 @@ void youmu_opposite_logic(Enemy *e, int t) {
 	
 	e->pos0 = e->pos + plr->pos;	
 }
+
+void youmu_homing(complex *pos, complex *pos0, float *angle, int t, complex* a) { // a[0]: velocity
+ 	*angle = t/30.0;
+	
+	complex tv = 0;
+	
+	if(global.enemies != NULL)
+		tv = cexp(I*carg(global.enemies[0].pos - *pos));;
+	if(global.boss != NULL)
+		tv = cexp(I*carg(global.boss->pos - *pos));;
+
+	if(t > 150 || tv == 0)
+		tv = - ((rand()%3)-1)/2.0 - 0.5I;
+	
+	complex s0 = 0;
+
+	*pos += a[0]*log(t + 1) + tv*t/15.0;
+	*pos0 = *pos;
+	
+}

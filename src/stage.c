@@ -14,7 +14,7 @@
 SDL_Event event;
 
 void stage_start() {
-	init_player(&global.plr, Youmu);
+	init_player(&global.plr, Youmu, YoumuHoming);
 }
 
 void stage_input() {	
@@ -91,7 +91,7 @@ void stage_draw() {
 
 	draw_projectiles();
 	draw_enemies(global.enemies);
-	draw_poweritems();
+	draw_items();
 	draw_lasers();
 	
 	if(global.boss)
@@ -163,7 +163,7 @@ void stage_logic() {
 	
 	process_enemies(&global.enemies);
 	process_projectiles();
-	process_poweritems();
+	process_items();
 	process_lasers();
 	
 	if(global.boss) {
@@ -187,7 +187,7 @@ void stage_logic() {
 void stage_end() {
 	delete_projectiles();
 	delete_enemies(&global.enemies);
-	delete_poweritems();
+	delete_items();
 	delete_lasers();
 	global.frames = 0;
 }

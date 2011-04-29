@@ -7,6 +7,7 @@
 
 #include "global.h"
 #include <SDL/SDL.h>
+#include <time.h>
 #include "font.h"
 
 Global global;
@@ -15,6 +16,8 @@ void init_global() {
 	memset(&global, 0, sizeof(global));	
 	
 	alGenSources(SNDSRC_COUNT, global.sndsrc);
+	
+	srand(time(0));
 	
 	load_resources();
 	init_fonts();

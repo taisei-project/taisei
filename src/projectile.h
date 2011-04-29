@@ -21,7 +21,7 @@ typedef struct {
 } Color;
 
 struct Projectile;
-typedef void (*ProjRule)(complex *pos, complex pos0, float *angle, int time, complex* args);
+typedef void (*ProjRule)(complex *pos, complex *pos0, float *angle, int time, complex* args);
 
 typedef struct Projectile {
 	struct Projectile *next;
@@ -58,5 +58,5 @@ void draw_projectiles();
 int collision_projectile(Projectile *p);
 void process_projectiles();
 
-void linear(complex *pos, complex pos0, float *angle, int time, complex* args);
+void linear(complex *pos, complex *pos0, float *angle, int time, complex* args);
 #endif

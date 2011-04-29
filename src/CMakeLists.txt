@@ -7,7 +7,7 @@ set(SRCs
 	projectile.c
 	enemy.c
 	animation.c
-	poweritem.c
+	item.c
 	list.c
 	font.c
 	audio.c
