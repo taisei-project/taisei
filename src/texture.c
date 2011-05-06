@@ -10,6 +10,7 @@
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <png.h>
 #include "audio.h"
 #include "shader.h"
 #include "list.h"
@@ -91,7 +92,7 @@ void delete_textures() {
 }
 
 Texture *load_texture(const char *filename) {	
-	SDL_Surface *surface = IMG_Load(filename);
+	SDL_Surface *surface = load_png(filename);
 	
 	if(surface == NULL)
 		err(-1,"load_texture():\n!- cannot load '%s'", filename);
@@ -110,6 +111,68 @@ Texture *load_texture(const char *filename) {
 	printf("-- loaded '%s' as '%s'\n", filename, texture->name);
 	
 	return texture;
+}
+
+SDL_Surface *load_png(const char *filename) {
+	FILE *fp = fopen(filename, "rb");
+	if(!fp)
+		err(-1, "Error loading '%s'", filename);
+	
+	png_structp png_ptr;
+	if(!(png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL)))
+		errx(-1,"Error loading '%s'", filename);
+	
+	png_infop info_ptr;
+	if(!(info_ptr = png_create_info_struct(png_ptr))) {
+		png_destroy_read_struct(&png_ptr, NULL, NULL);
+		errx(-1,"Error loading '%s'", filename);
+	}
+	
+	png_infop end_info;
+	if(!(end_info = png_create_info_struct(png_ptr))) {
+		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+		errx(-1,"Error loading '%s'", filename);
+	}
+	
+	png_init_io(png_ptr, fp);
+	
+	png_read_png(png_ptr, info_ptr, 0, NULL);
+	
+	int width = png_get_image_width(png_ptr, info_ptr);
+	int height = png_get_image_height(png_ptr, info_ptr);
+	int depth = png_get_bit_depth(png_ptr, info_ptr);
+	
+	png_bytep *row_pointers = png_get_rows(png_ptr, info_ptr);
+	
+	Uint32 *pixels = malloc(sizeof(Uint32)*width*height);
+	
+	int i;
+	for(i = 0; i < height; i++)
+		memcpy(&pixels[i*width], row_pointers[i], sizeof(Uint32)*width);
+	
+	Uint32 rmask, gmask, bmask, amask;
+	
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    rmask = 0xff000000;
+    gmask = 0x00ff0000;
+    bmask = 0x0000ff00;
+    amask = 0x000000ff;
+#else
+    rmask = 0x000000ff;
+    gmask = 0x0000ff00;
+    bmask = 0x00ff0000;
+    amask = 0xff000000;
+#endif
+	
+	SDL_Surface *res = SDL_CreateRGBSurfaceFrom(pixels, width, height, depth*4, 0, rmask, gmask, bmask, amask);
+	if(!res)
+		errx(-1,"Error loading '%s'", filename);
+	
+	fclose(fp);
+	
+	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
+	
+	return res;
 }
 
 void load_sdl_surf(SDL_Surface *surface, Texture *texture) {

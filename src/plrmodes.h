@@ -9,10 +9,11 @@
 #define PLRMODES_H
 
 #include "enemy.h"
+#include "projectile.h"
 
 void youmu_opposite_draw(Enemy *e, int t);
 void youmu_opposite_logic(Enemy *e, int t);
 
-void youmu_homing(complex *pos, complex *pos0, float *angle, int t, complex* a);
+void youmu_homing(Projectile *p, int t);
 
 #endif

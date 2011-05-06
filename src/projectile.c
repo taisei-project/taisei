@@ -26,9 +26,9 @@ inline Color *rgb(float r, float g, float b) {
 	return rgba(r, g, b, 1.0);
 }
 
-Projectile *create_projectile(char *name, complex pos, Color *clr,
-							  ProjRule rule, complex args, ...) {
-	Projectile *p = create_element((void **)&global.projs, sizeof(Projectile));
+Projectile *create_projectile_d(Projectile **dest, char *name, complex pos, Color *clr,
+							    ProjRule rule, complex args, ...) {
+	Projectile *p = create_element((void **)dest, sizeof(Projectile));
 	
 	char buf[128];
 	strcpy(buf, "proj/");
@@ -61,12 +61,12 @@ void _delete_projectile(void **projs, void *proj) {
 	delete_element(projs, proj);
 }
 
-void delete_projectile(Projectile *proj) {
-	_delete_projectile((void **)&global.projs, proj);
+void delete_projectile(Projectile **projs, Projectile *proj) {
+	_delete_projectile((void **)projs, proj);
 }
 
-void delete_projectiles() {
-	delete_all_elements((void **)&global.projs, _delete_projectile);
+void delete_projectiles(Projectile **projs) {
+	delete_all_elements((void **)projs, _delete_projectile);
 }
 
 int collision_projectile(Projectile *p) {	
@@ -95,13 +95,13 @@ int collision_projectile(Projectile *p) {
 	return 0;
 }
 
-void draw_projectiles() {	
+void draw_projectiles(Projectile *projs) {	
 	Projectile *proj;
 	
 	GLuint shader = get_shader("bullet_color");
 	glUseProgramObjectARB(shader);
 	
-	for(proj = global.projs; proj; proj = proj->next) {				
+	for(proj = projs; proj; proj = proj->next) {				
 		if(proj->clr == NULL)
 			glUseProgramObjectARB(0);
 		
@@ -120,12 +120,15 @@ void draw_projectiles() {
 	glUseProgramObjectARB(0);
 }
 
-void process_projectiles() {
-	Projectile *proj = global.projs, *del = NULL;
+void process_projectiles(Projectile **projs, short collision) {
+	Projectile *proj = *projs, *del = NULL;
 	while(proj != NULL) {
-		proj->rule(&proj->pos, &proj->pos0, &proj->angle, global.frames - proj->birthtime, proj->args);
+		proj->rule(proj, global.frames - proj->birthtime);
 		
-		int v = collision_projectile(proj);
+		int v = 0;
+		if(collision)
+			v = collision_projectile(proj);
+		
 		if(v == 1 && (global.frames - abs(global.plr.recovery)) >= 0)
 			plr_death(&global.plr);
 		
@@ -133,7 +136,7 @@ void process_projectiles() {
 			 || cimag(proj->pos) + proj->tex->h/2 < 0 || cimag(proj->pos) - proj->tex->h/2 > VIEWPORT_H) {
 			del = proj;
 			proj = proj->next;
-			delete_projectile(del);
+			delete_projectile(projs, del);
 			if(proj == NULL) break;
 		} else {
 			proj = proj->next;
@@ -141,7 +144,7 @@ void process_projectiles() {
 	}
 }
 
-void linear(complex *pos, complex *pos0, float *angle, int time, complex* a) { // sure is physics in here; a[0]: velocity	
-	*angle = carg(a[0]);
-	*pos = *pos0 + a[0]*time;
+void linear(Projectile *p, int t) { // sure is physics in here; a[0]: velocity	
+	p->angle = carg(p->args[0]);
+	p->pos = p->pos0 + p->args[0]*t;
 }

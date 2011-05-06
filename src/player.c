@@ -94,8 +94,7 @@ void player_logic(Player* plr) {
 		if(!(global.frames % 4)) {
 			create_projectile("youmu", plr->pos + 10 - I*20, NULL, linear, -20I)->type = PlrProj;
 			create_projectile("youmu", plr->pos - 10 - I*20, NULL, linear, -20I)->type = PlrProj;
-		
-				
+						
 			if(plr->power >= 2) {
 				float a = 0.20;
 				if(plr->focus > 0) a = 0.06;
@@ -125,7 +124,7 @@ void plr_bomb(Player *plr) {
 			if(e->hp != ENEMY_IMMUNE)
 				e->hp = 0;
 		
-		delete_projectiles();
+		delete_projectiles(&global.projs);
 		
 		play_sound("laser1");
 		

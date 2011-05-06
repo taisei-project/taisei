@@ -19,7 +19,8 @@ void init_fonts() {
 
 Texture *load_text(const char *text, TTF_Font *font) {
 	Texture *tex = malloc(sizeof(Texture));
-	SDL_Surface *surf = TTF_RenderText_Blended(font, text, ((SDL_Color){255,255,255}));
+	SDL_Color clr = {255,255,255};
+	SDL_Surface *surf = TTF_RenderText_Blended(font, text, clr);
 	assert(surf != NULL);	
 	
 	load_sdl_surf(surf, tex);

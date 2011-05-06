@@ -21,7 +21,7 @@ typedef struct {
 } Color;
 
 struct Projectile;
-typedef void (*ProjRule)(complex *pos, complex *pos0, float *angle, int time, complex* args);
+typedef void (*ProjRule)(struct Projectile *p, int t);
 
 typedef struct Projectile {
 	struct Projectile *next;
@@ -50,13 +50,14 @@ Color *rgba(float r, float g, float b, float a);
 
 inline Color *rgb(float r, float g, float b);
 
-Projectile *create_projectile(char *name, complex pos, Color *clr, ProjRule rule, complex args, ...);
-void delete_projectile(Projectile *proj);
-void delete_projectiles();
-void draw_projectile(Projectile *proj);
-void draw_projectiles();
+#define create_particle(name, pos, clr, rule, args) (create_projectile_d(&global.particles, name, pos, clr, rule, args))
+#define create_projectile(name, pos, clr, rule, args) (create_projectile_d(&global.projs, name, pos, clr, rule, args))
+Projectile *create_projectile_d(Projectile **dest, char *name, complex pos, Color *clr, ProjRule rule, complex args, ...);
+void delete_projectile(Projectile **dest, Projectile *proj);
+void delete_projectiles(Projectile **dest);
+void draw_projectiles(Projectile *projs);
 int collision_projectile(Projectile *p);
-void process_projectiles();
+void process_projectiles(Projectile **projs, short collision);
 
-void linear(complex *pos, complex *pos0, float *angle, int time, complex* args);
+void linear(Projectile *p, int t);
 #endif

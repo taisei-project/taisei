@@ -89,7 +89,7 @@ void stage_draw() {
 	apply_bg_shaders();
 	player_draw(&global.plr);
 
-	draw_projectiles();
+	draw_projectiles(global.projs);
 	draw_enemies(global.enemies);
 	draw_items();
 	draw_lasers();
@@ -162,7 +162,7 @@ void stage_logic() {
 	player_logic(&global.plr);
 	
 	process_enemies(&global.enemies);
-	process_projectiles();
+	process_projectiles(&global.projs, True);
 	process_items();
 	process_lasers();
 	
@@ -185,7 +185,7 @@ void stage_logic() {
 }
 
 void stage_end() {
-	delete_projectiles();
+	delete_projectiles(&global.projs);
 	delete_enemies(&global.enemies);
 	delete_items();
 	delete_lasers();

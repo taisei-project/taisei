@@ -9,7 +9,6 @@
 #define TEXTURE_H
 
 #include <SDL/SDL.h>
-#include <SDL/SDL_image.h>
 #include <SDL/SDL_opengl.h>
 #include <math.h>
 
@@ -29,6 +28,8 @@ typedef struct Texture {
 Texture *get_tex(char *name);
 void load_textures();
 void load_resources();
+
+SDL_Surface *load_png(const char *filename);
 
 void delete_texture(void **texs, void *tex);
 void delete_textures();
