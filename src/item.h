@@ -25,7 +25,7 @@ typedef struct Item{
 	struct Item *next;
 	struct Item *prev;
 
-	long birthtime;
+	int birthtime;
 	complex pos;
 	complex pos0;
 	
@@ -40,7 +40,7 @@ void delete_item(Item *item);
 void draw_items();
 void delete_items();
 
-int collision(Item *p);
+int collision_item(Item *p);
 void process_items();
 
 #endif

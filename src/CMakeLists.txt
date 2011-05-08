@@ -15,6 +15,7 @@ set(SRCs
 	plrmodes.c
 	laser.c
 	shader.c
+	dialog.c
 	stages/stage0.c)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})

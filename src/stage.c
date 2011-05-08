@@ -15,6 +15,7 @@ SDL_Event event;
 
 void stage_start() {
 	init_player(&global.plr, Youmu, YoumuHoming);
+	global.timer = 0;
 }
 
 void stage_input() {	
@@ -25,10 +26,14 @@ void stage_input() {
 					global.plr.focus = 1;
 					break;
 				case SDLK_y:
-					global.plr.fire = True;
+					if(!global.dialog)
+						global.plr.fire = True;
+					else
+						page_dialog(&global.dialog);
 					break;
 				case SDLK_x:
-					plr_bomb(&global.plr);
+					if(!global.dialog)
+						plr_bomb(&global.plr);
 					break;
 				case SDLK_ESCAPE:
 					exit(1);
@@ -77,28 +82,8 @@ void stage_input() {
 
 }
 
-void stage_draw() {
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, SCREEN_W, SCREEN_H, 0, -10, 10);
-	glMatrixMode(GL_MODELVIEW);
-	glDisable(GL_DEPTH_TEST);
-	
-	glPushMatrix();
-	glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
-	apply_bg_shaders();
-	player_draw(&global.plr);
-
-	draw_projectiles(global.projs);
-	draw_enemies(global.enemies);
-	draw_items();
-	draw_lasers();
-	
-	if(global.boss)
-		draw_boss(global.boss);
-	
-	glPopMatrix();
-	draw_texture(SCREEN_W/2, SCREEN_H/2, "hud");
+void draw_hud() {
+	draw_texture(SCREEN_W/2, SCREEN_H/2, "hud");	
 	
 	char buf[16];
 	int i;
@@ -121,6 +106,34 @@ void stage_draw() {
 	draw_text(buf, 13, 49, _fonts.biolinum);
 	
 	glPopMatrix();
+}
+
+void stage_draw() {
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0, SCREEN_W, SCREEN_H, 0, -10, 10);
+	glMatrixMode(GL_MODELVIEW);
+	glDisable(GL_DEPTH_TEST);
+	
+	glPushMatrix();
+	glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
+	apply_bg_shaders();
+	player_draw(&global.plr);
+
+	draw_projectiles(global.projs);
+	draw_enemies(global.enemies);
+	draw_items();
+	draw_lasers();
+	
+	if(global.boss)
+		draw_boss(global.boss);
+	
+	if(global.dialog)
+		draw_dialog(global.dialog);
+	
+	glPopMatrix();
+	
+	draw_hud();
 }
 
 void apply_bg_shaders() {
@@ -173,7 +186,11 @@ void stage_logic() {
 			global.boss = NULL;
 		}
 	}
+	
 	global.frames++;
+	
+	if(!global.dialog)
+		global.timer++;
 		
 	if(SDL_GetTicks() > global.fpstime+1000) {
 		fprintf(stderr, "FPS: %d\n", global.fps);
@@ -189,6 +206,5 @@ void stage_end() {
 	delete_enemies(&global.enemies);
 	delete_items();
 	delete_lasers();
-	global.frames = 0;
 }
 		

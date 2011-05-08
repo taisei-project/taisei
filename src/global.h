@@ -17,6 +17,7 @@
 #include "boss.h"
 #include "laser.h"
 #include "shader.h"
+#include "dialog.h"
 
 enum {	
 	SCREEN_W = 800,
@@ -47,6 +48,7 @@ typedef struct {
 	Laser *lasers;
 	
 	int frames;
+	int timer;
 	
 	Texture *textures;
 	Animation *animations;	
@@ -62,6 +64,7 @@ typedef struct {
 	} rtt;
 	
 	Boss *boss;
+	Dialog *dialog;
 	
 	ALuint sndsrc[SNDSRC_COUNT];
 	

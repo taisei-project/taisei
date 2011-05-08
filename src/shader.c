@@ -9,6 +9,7 @@
 #include "global.h"
 #include "list.h"
 #include <stdio.h>
+#include <err.h>
 
 void print_info_log(GLuint shader) {
 	int len, alen;

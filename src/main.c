@@ -67,5 +67,7 @@ int main(int argc, char** argv) {
 	
 	stage0_loop();
 	
-	shutdown();	
+	shutdown();
+	
+	return 1;
 }

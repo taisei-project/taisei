@@ -19,13 +19,23 @@ void simpleEnemy(Enemy *e, int t) {
 		return;
 	}
 	
-	if(!((global.frames - e->birthtime) % 50))
+	if(!(t % 50))
 		create_projectile("ball", e->pos, rgb(0,0,1), linear,3 + 2I);
 	
 	e->moving = 1;
 	e->dir = creal(e->args[0]) < 0;
 	
-	e->pos = e->pos0 + e->args[0]*t + I*sin((global.frames - e->birthtime)/10.0f)*20; // TODO: do this way cooler.
+	e->pos = e->pos0 + e->args[0]*t + I*sin(t/10.0f)*20; // TODO: do this way cooler.
+}
+
+Dialog *test_dialog() {
+	Dialog *d = create_dialog("dialog/youmu", "dialog/youmu");
+		
+	dadd_msg(d, Left, "Hello");
+	dadd_msg(d, Right, "Hello you");
+	dadd_msg(d, Right, "Uhm ... who are you?\nNew line.\nAnother longer line.");
+	
+	return d;
 }
 
 void stage0_draw() {
@@ -103,13 +113,14 @@ void stage0_draw() {
 }
 
 void cirno_intro(Boss *c, int time) {
-	if(time == 0) {
+	if(time == EVENT_BIRTH) {
 		boss_add_waypoint(c->current, VIEWPORT_W/2-100 + 30I, 100);
 		boss_add_waypoint(c->current, VIEWPORT_W/2+100 + 30I, 400);
+		return;
 	}
 	
-// 	if(!(time % 50))
-// 		create_laser(LaserLine, c->pos, 10*cexp(I*carg(global.plr.pos - c->pos)), 30, 200, ((Color){1,0,0}), NULL, 0);
+	if(!(time % 50))
+		create_laser(LaserLine, c->pos, 10*cexp(I*carg(global.plr.pos - c->pos)+I*0.1), 30, 200, rgb(1,0,0), NULL, 0);
 }
 
 complex lolsin(Laser *l, float t) {
@@ -120,10 +131,11 @@ complex lolsin(Laser *l, float t) {
 }
 
 void cirno_test(Boss *c, int time) {
-	if(time == 0) {
+	if(time == EVENT_BIRTH) {
 		boss_add_waypoint(c->current, 220 + 100I, 50);
 		boss_add_waypoint(c->current, 12 + 100I, 60);
 		boss_add_waypoint(c->current, 200 + 90I, 100);
+		return;
 	}
 	int i;
 	if(!(time % 50))
@@ -140,11 +152,15 @@ Boss *create_cirno() {
 }
 
 void stage0_events() {
-	if(global.frames == 300 )
+	if(global.dialog)
+		return;	
+	if(global.timer == 200)
+		global.dialog = test_dialog();
+	if(global.timer == 300)
 		global.boss = create_cirno();
-	if(global.boss == NULL && !(global.frames % 100)) create_enemy(&global.enemies, Fairy, simpleEnemy, 0 + I*100, 3, NULL, 2);
+	if(global.boss == NULL && !(global.timer % 100)) create_enemy(&global.enemies, Fairy, simpleEnemy, 0 + I*100, 3, NULL, 2);
 	
-// 	if(!(global.frames % 100))
+// 	if(!(global.timer % 100))
 // 		create_laser(LaserCurve, 300, 300, 60, 500, ((ColorA){0.6,0.6,1,0.4}), lolsin, 0);
 }
 

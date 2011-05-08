@@ -30,7 +30,17 @@ Texture *load_text(const char *text, TTF_Font *font) {
 }
 
 void draw_text(const char *text, int x, int y, TTF_Font *font) {
-	Texture *tex = load_text(text, font);
+	char *nl;
+	char *buf = malloc(strlen(text));
+	strcpy(buf, text);
+	
+	if((nl = strchr(buf, '\n')) != NULL && strlen(nl) > 1) {
+		draw_text(nl+1, x, y + 20, font);
+		*nl = '\0';
+	}
+		
+	Texture *tex = load_text(buf, font);
 	draw_texture_p(x, y, tex);
 	free_texture(tex);
+	free(buf);
 }

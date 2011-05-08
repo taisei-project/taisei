@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <png.h>
+#include <err.h>
 #include "audio.h"
 #include "shader.h"
 #include "list.h"

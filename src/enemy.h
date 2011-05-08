@@ -10,6 +10,10 @@
 
 #include "animation.h"
 #include <complex.h>
+
+#undef complex
+#define complex double _Complex
+
 #include <stdarg.h>
 
 struct Enemy;
@@ -17,7 +21,7 @@ typedef void (*EnemyLogicRule)(struct Enemy*, int t);
 typedef EnemyLogicRule EnemyDrawRule;
 
 enum {
-	ENEMY_IMMUNE = -9000,
+	ENEMY_IMMUNE = -9000
 };
 
 typedef struct Enemy {

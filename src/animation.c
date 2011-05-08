@@ -10,6 +10,7 @@
 #include "list.h"
 
 #include <assert.h>
+#include <err.h>
 
 Animation *init_animation(char *filename) {
 	Animation *buf = create_element((void **)&global.animations, sizeof(Animation));

@@ -113,7 +113,11 @@ void process_boss(Boss *boss) {
 			}
 		}
 		
-		boss->current->rule(boss, time);
+		if(time == 0)
+			boss->current->rule(boss, EVENT_BIRTH);
+		else
+			boss->current->rule(boss, time);
+		
 		
 		if(time > boss->current->timeout)
 			boss->dmg = boss->current->dmglimit + 1;
@@ -145,7 +149,6 @@ void free_attack(Attack *a) {
 
 void start_attack(Boss *b, Attack *a) {
 	a->starttime = global.frames;
-	a->rule(b, 0);
 	if(a->type == Spellcard || a->type == SurvivalSpell)
 		play_sound("charge_generic");
 }
@@ -162,7 +165,6 @@ Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 	strcpy(a->name, name);
 	a->timeout = timeout * FPS;
 	
-	int i;
 	int dmg = 0;
 	if(boss->acount > 1)
 		dmg = boss->attacks[boss->acount - 2].dmglimit;

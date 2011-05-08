@@ -44,7 +44,7 @@ void delete_element(void **dest, void *e) {
 	free(e);
 }
 
-void *delete_all_elements(void **dest, void (callback)(void **, void *)) {
+void delete_all_elements(void **dest, void (callback)(void **, void *)) {
 	void *e = *dest;
 	void *tmp;
 	

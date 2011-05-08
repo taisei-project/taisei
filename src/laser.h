@@ -41,7 +41,7 @@ typedef struct Laser {
 
 Laser *create_laser(LaserType type, complex pos, complex pos0, int time, int deathtime, Color *color, LaserRule rule, complex args, ...);
 void draw_lasers();
-void free_lasers();
+void delete_lasers();
 void process_lasers();
 
 int collision_laser_line(Laser *l);

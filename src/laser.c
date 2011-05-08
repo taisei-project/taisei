@@ -91,7 +91,7 @@ void draw_laser_curve(Laser *laser) {
 		if(t < 0)
 			t = 0;
 		
-		for(t; t < global.frames - laser->birthtime && t <= laser->deathtime; t+=0.5) {
+		for(; t < global.frames - laser->birthtime && t <= laser->deathtime; t+=0.5) {
 			complex pos = laser->rule(laser,t);
 			glPushMatrix();
 			
@@ -181,7 +181,7 @@ int collision_laser_curve(Laser *l) {
 	if(t < 0)
 		t = 0;
 	
-	for(t; t < global.frames - l->birthtime && t <= l->deathtime; t+=2) {
+	for(; t < global.frames - l->birthtime && t <= l->deathtime; t+=2) {
 		complex pos = l->rule(l,t);
 		if(cabs(pos - global.plr.pos) < 5)
 			return 1;
