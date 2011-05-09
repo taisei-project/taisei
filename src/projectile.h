@@ -33,6 +33,7 @@ typedef struct Projectile {
 	complex pos0;
 	
 	float angle;
+	void *parent;
 	
 	ProjRule rule;
 	Texture *tex;

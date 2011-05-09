@@ -41,4 +41,5 @@ void free_texture(Texture *tex);
 void draw_texture(int x, int y, char *name);
 void draw_texture_p(int x, int y, Texture *tex);
 
+void fill_screen(float xoff, float yoff, float ratio, char *name);
 #endif

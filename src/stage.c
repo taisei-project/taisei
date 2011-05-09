@@ -106,6 +106,9 @@ void draw_hud() {
 	draw_text(buf, 13, 49, _fonts.biolinum);
 	
 	glPopMatrix();
+	
+	sprintf(buf, "%i fps", global.show_fps);
+	draw_text(buf, SCREEN_W-5*strlen(buf), SCREEN_H-20, _fonts.biolinum);
 }
 
 void stage_draw() {
@@ -114,6 +117,7 @@ void stage_draw() {
 	glOrtho(0, SCREEN_W, SCREEN_H, 0, -10, 10);
 	glMatrixMode(GL_MODELVIEW);
 	glDisable(GL_DEPTH_TEST);
+	
 	
 	glPushMatrix();
 	glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
@@ -137,6 +141,15 @@ void stage_draw() {
 }
 
 void apply_bg_shaders() {
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, global.rtt.fbo);
+	if(global.boss && global.boss->current && global.boss->current->draw_rule) {
+		glPushMatrix();
+		glTranslatef(-VIEWPORT_X,0,0); // Some transformation for concenience. Don't ask why. it's because of rtt.
+		glScalef((VIEWPORT_W+VIEWPORT_X)/(float)VIEWPORT_W, (VIEWPORT_H+VIEWPORT_Y)/(float)VIEWPORT_H, 1);
+		global.boss->current->draw_rule(global.boss, global.frames - global.boss->current->starttime);
+		glPopMatrix();
+	}
+	
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	
 	if(global.boss) { // Boss background shader
@@ -150,6 +163,7 @@ void apply_bg_shaders() {
 					(creal(pos)+VIEWPORT_X)/global.rtt.nw, (VIEWPORT_H - cimag(pos) - VIEWPORT_Y/2)/global.rtt.nh);
 		glUniform2f(glGetUniformLocation(shader, "fix_orig"),
 					(creal(fpos)+VIEWPORT_X)/global.rtt.nw, (VIEWPORT_H - cimag(fpos) - VIEWPORT_Y/2)/global.rtt.nh);
+		glUniform1f(glGetUniformLocation(shader, "blur_rad"), 0.2+0.05*sin(global.frames/10.0));
 		glUniform1f(glGetUniformLocation(shader, "rad"), 0.3);
 		glUniform1f(glGetUniformLocation(shader, "ratio"), (float)global.rtt.nh/global.rtt.nw);
 	}
@@ -181,10 +195,8 @@ void stage_logic() {
 	
 	if(global.boss) {
 		process_boss(global.boss);
-		if(global.boss->dmg > global.boss->attacks[global.boss->acount-1].dmglimit) {
-			free_boss(global.boss);
-			global.boss = NULL;
-		}
+		if(global.boss->dmg > global.boss->attacks[global.boss->acount-1].dmglimit)
+			boss_death(&global.boss);
 	}
 	
 	global.frames++;
@@ -193,7 +205,7 @@ void stage_logic() {
 		global.timer++;
 		
 	if(SDL_GetTicks() > global.fpstime+1000) {
-		fprintf(stderr, "FPS: %d\n", global.fps);
+		global.show_fps = global.fps;
 		global.fps = 0;
 		global.fpstime = SDL_GetTicks();
 	} else {

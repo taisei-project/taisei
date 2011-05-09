@@ -29,6 +29,7 @@ enum {
 	VIEWPORT_H = 560,
 	
 	POINT_OF_COLLECT = VIEWPORT_H/4,
+	ATTACK_START_DELAY = 40,
 	
 	SNDSRC_COUNT = 30,
 	
@@ -48,6 +49,7 @@ typedef struct {
 	Laser *lasers;
 	
 	int frames;
+	int lasttime;
 	int timer;
 	
 	Texture *textures;
@@ -72,9 +74,8 @@ typedef struct {
 	int points;
 		
 	int fpstime;  // frame counter
-	int fps;
-	
-	int lasttime;
+	int fps;	
+	int show_fps;
 } Global;
 
 extern Global global;

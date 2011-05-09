@@ -115,12 +115,12 @@ void stage0_draw() {
 void cirno_intro(Boss *c, int time) {
 	if(time == EVENT_BIRTH) {
 		boss_add_waypoint(c->current, VIEWPORT_W/2-100 + 30I, 100);
-		boss_add_waypoint(c->current, VIEWPORT_W/2+100 + 30I, 400);
+		boss_add_waypoint(c->current, VIEWPORT_W/2+100 + 30I, 200);
 		return;
 	}
 	
-	if(!(time % 50))
-		create_laser(LaserLine, c->pos, 10*cexp(I*carg(global.plr.pos - c->pos)+I*0.1), 30, 200, rgb(1,0,0), NULL, 0);
+// 	if(!(time % 50))
+// 		create_laser(LaserLine, c->pos, 10*cexp(I*carg(global.plr.pos - c->pos)+I*0.1), 30, 200, rgb(1,0,0), NULL, 0);
 }
 
 complex lolsin(Laser *l, float t) {
@@ -130,24 +130,62 @@ complex lolsin(Laser *l, float t) {
 	return pos;
 }
 
-void cirno_test(Boss *c, int time) {
+void cirno_pfreeze_frogs(Projectile *p, int t) {
+	int boss_t = (global.frames - *((int *)p->parent)) % 320;
+	
+	if(boss_t < 110)
+		linear(p, t);
+	else if(boss_t == 110) {
+		free(p->clr);
+		p->clr = rgb(0.7,0.7,0.7);
+	}
+	
+	if(t == 240) {
+		p->pos0 = p->pos;
+		p->args[0] = 2*cexp(I*rand());
+	}
+
+	if(t > 240)
+		linear(p, t-240);
+			
+}
+
+void cirno_perfect_freeze(Boss *c, int time) {
 	if(time == EVENT_BIRTH) {
-		boss_add_waypoint(c->current, 220 + 100I, 50);
-		boss_add_waypoint(c->current, 12 + 100I, 60);
-		boss_add_waypoint(c->current, 200 + 90I, 100);
+		boss_add_waypoint(c->current, VIEWPORT_W/2 + 100I, 110);
+		boss_add_waypoint(c->current, VIEWPORT_W/2 + 100I, 160);
+		boss_add_waypoint(c->current, VIEWPORT_W/2+90 + 130I, 190);
+		boss_add_waypoint(c->current, VIEWPORT_W/2-90 + 130I, 320);
 		return;
 	}
-	int i;
-	if(!(time % 50))
-		for(i = 0; i < 6; i++)
-			create_laser(LaserCurve, c->pos, c->pos, 50, 200, rgba(0.5,0.5,1,0.4), lolsin, i);
+	
+	if(time > 10 && time < 80)
+		create_projectile("ball", c->pos, rgb(rand()/(float)RAND_MAX, rand()/(float)RAND_MAX, rand()/(float)RAND_MAX), cirno_pfreeze_frogs, 4*cexp(I*rand()))->parent=&c->current->starttime;
+	if(time > 160 && time < 220 && !(time % 7)) {
+		create_projectile("rice", c->pos + 60, rgb(0.3, 0.4, 0.9), linear, 5*cexp(I*carg(global.plr.pos - c->pos)));
+		create_projectile("rice", c->pos - 60, rgb(0.3, 0.4, 0.9), linear, 5*cexp(I*carg(global.plr.pos - c->pos)));
+	}
+		
 }
+
+void cirno_pfreeze_bg(Boss *c, int time) {
+	glColor4f(1,1,1,1);	
+	fill_screen(time/700.0, time/700.0, 2, "cirnobg");	
+	glColor4f(1,1,1,0.5);	
+	fill_screen(time/700.0, time/700.0+0.5, 2, "cirnobg");
+	fill_screen(0, -time/100.0, 0, "snowlayer");
+	
+// 	draw_texture(VIEWPORT_W/2,VIEWPORT_H/2, "snowlayer");
+	glColor4f(1,1,1,1);
+}
+	
 
 Boss *create_cirno() {
 	Boss* cirno = create_boss("Cirno", "cirno", VIEWPORT_W/2 + 30I);
-	boss_add_attack(cirno, Normal, "Introduction", 10, 100, cirno_intro);
-	boss_add_attack(cirno, Spellcard, "Test Sign ~ Strongest Implementation", 10, 100, cirno_test);
+	boss_add_attack(cirno, Normal, "Introduction", 10, 100, cirno_intro, NULL);
+	boss_add_attack(cirno, Spellcard, "Freeze Sign ~ Perfect Freeze", 20, 300, cirno_perfect_freeze, cirno_pfreeze_bg);
 	
+	start_attack(cirno, cirno->attacks);
 	return cirno;
 }
 

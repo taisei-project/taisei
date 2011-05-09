@@ -42,6 +42,7 @@ Projectile *create_projectile_d(Projectile **dest, char *name, complex pos, Colo
 	p->tex = get_tex(buf);
 	p->type = FairyProj;
 	p->clr = clr;
+	p->parent = NULL;
 	
 	va_list ap;
 	int i;

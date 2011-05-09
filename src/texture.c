@@ -247,3 +247,34 @@ void draw_texture_p(int x, int y, Texture *tex) {
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
 }
+
+void fill_screen(float xoff, float yoff, float ratio, char *name) {
+	glEnable(GL_TEXTURE_2D);
+	
+	Texture *tex = get_tex(name);
+	glBindTexture(GL_TEXTURE_2D, tex->gltex);
+	
+	glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
+		glTranslatef(xoff,yoff, 0);
+	glMatrixMode(GL_MODELVIEW);
+	
+	float rw = ratio;
+	float rh = ratio;
+	
+	if(ratio == 0) {
+		rw = ((float)tex->w)/tex->truew;
+		rh = ((float)tex->h)/tex->trueh;
+	}
+	
+	glBegin(GL_QUADS);
+	glTexCoord2f(0,0); glVertex3f(0,0,0);
+	glTexCoord2f(0,rh); glVertex3f(0,VIEWPORT_H,0);
+	glTexCoord2f(rw,rh); glVertex3f(VIEWPORT_W,VIEWPORT_H,0);
+	glTexCoord2f(rw,0); glVertex3f(VIEWPORT_W,0,0);
+	glEnd();
+	
+	glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+}

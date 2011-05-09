@@ -43,7 +43,6 @@ void spell_opening(Boss *b, int time) {
 	draw_text(b->current->name, VIEWPORT_W-strlen(b->current->name)*5, y, _fonts.biolinum);
 }
 
-
 void draw_boss(Boss *boss) {
 	draw_animation_p(creal(boss->pos), cimag(boss->pos), boss->anirow, boss->ani);
 	
@@ -52,7 +51,7 @@ void draw_boss(Boss *boss) {
 	
 	draw_text(boss->name, 10 + strlen(boss->name)*5, 20, _fonts.biolinum);
 	
-	if(boss->current) {
+	if(boss->current) {		
 		char buf[16];
 		snprintf(buf, 16,  "%.2f", (boss->current->timeout - global.frames + boss->current->starttime)/(float)FPS);
 		draw_text(buf, VIEWPORT_W - 20, 10, _fonts.biolinum);
@@ -89,35 +88,31 @@ void draw_boss(Boss *boss) {
 }
 
 void process_boss(Boss *boss) {
-	if(boss->current) {		
+	if(boss->current && boss->current->waypoints) {		
 		int time = global.frames - boss->current->starttime;
-				
-		if(boss->current->waypoints) {
-			struct Waypoint *wps = boss->current->waypoints;
-			int *i = &boss->current->wp;
 			
-			int wtime = time % (wps[boss->current->wpcount-1].time + 1);
+		struct Waypoint *wps = boss->current->waypoints;
+		int *i = &boss->current->wp;
+		
+		if(time < 0) {
+			boss->pos = boss->pos0 + (wps[0].pos - boss->pos0)/ATTACK_START_DELAY * (ATTACK_START_DELAY + time);
+		} else {
+			int wtime = time % wps[boss->current->wpcount-1].time + 1;
 			
 			int next = *i + 1;
 			if(next >= boss->current->wpcount)
 				next = 0;
 			
-			boss->pos = boss->pos0 + (wps[*i].pos - boss->pos0)/(wps[*i].time - boss->time0) * (wtime - boss->time0);
+			boss->pos = wps[*i].pos + (wps[next].pos - wps[*i].pos)/(wps[*i].time - boss->time0) * (wtime - boss->time0);
 			
 			if(wtime >= wps[*i].time) {
-				boss->pos0 = wps[*i].pos;
-				boss->time0 = wps[*i].time;
-				if(*i == boss->current->wpcount-1)
-					boss->time0 = 0;
+				boss->pos0 = wps[next].pos;
+				boss->time0 = wps[*i].time % wps[boss->current->wpcount-1].time;
 				*i = next;
 			}
-		}
-		
-		if(time == 0)
-			boss->current->rule(boss, EVENT_BIRTH);
-		else
-			boss->current->rule(boss, time);
-		
+			
+			boss->current->rule(boss, time % wps[boss->current->wpcount-1].time);
+		}	
 		
 		if(time > boss->current->timeout)
 			boss->dmg = boss->current->dmglimit + 1;
@@ -131,6 +126,13 @@ void process_boss(Boss *boss) {
 				boss->current = NULL;
 		}
 	}	
+}
+
+void boss_death(Boss **boss) {
+	free_boss(*boss);
+	*boss = NULL;
+	delete_projectiles(&global.projs);
+	delete_lasers(&global.lasers);
 }
 
 void free_boss(Boss *boss) {
@@ -147,13 +149,14 @@ void free_attack(Attack *a) {
 	free(a->waypoints);
 }
 
-void start_attack(Boss *b, Attack *a) {
-	a->starttime = global.frames;
+void start_attack(Boss *b, Attack *a) {	
+	a->starttime = global.frames + ATTACK_START_DELAY;
+	a->rule(b, EVENT_BIRTH);
 	if(a->type == Spellcard || a->type == SurvivalSpell)
 		play_sound("charge_generic");
 }
 
-Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule) {
+Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule) {
 	boss->attacks = realloc(boss->attacks, sizeof(Attack)*(++boss->acount));
 	Attack *a = &boss->attacks[boss->acount-1];
 	
@@ -171,6 +174,7 @@ Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 	
 	a->dmglimit = dmg + hp;
 	a->rule = rule;
+	a->draw_rule = draw_rule;
 	
 	a->starttime = global.frames;
 	
