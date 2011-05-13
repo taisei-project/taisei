@@ -31,7 +31,7 @@ Texture *load_text(const char *text, TTF_Font *font) {
 
 void draw_text(const char *text, int x, int y, TTF_Font *font) {
 	char *nl;
-	char *buf = malloc(strlen(text));
+	char *buf = malloc(strlen(text)+1);
 	strcpy(buf, text);
 	
 	if((nl = strchr(buf, '\n')) != NULL && strlen(nl) > 1) {

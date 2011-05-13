@@ -10,7 +10,7 @@
 #include "global.h"
 #include "list.h"
 
-void create_item(complex pos, complex v, Type type) {
+Item *create_item(complex pos, complex v, Type type) {
 	Item *i = create_element((void **)&global.items, sizeof(Item));
 	i->pos = pos;
 	i->pos0 = pos;
@@ -18,6 +18,8 @@ void create_item(complex pos, complex v, Type type) {
 	i->birthtime = global.frames;
 	i->auto_collect = 0;
 	i->type = type;
+	
+	return i;
 }
 
 
@@ -28,23 +30,26 @@ void delete_item(Item *item) {
 void draw_items() {
 	Item *p;
 	Texture *tex = NULL;
-	for(p = global.items; p; p = p->next){
-	  switch(p->type){
-	  case Power:
-	    tex = get_tex("items/power");
-	    break;
-	  case Point:
-	    tex = get_tex("items/point");
-	    break;
-	  case Life:
-	    tex = get_tex("items/life");
-	    break;
-	  case Bomb:
-	    tex = get_tex("items/bomb");
-	    break;
-	  default:
-	    break;
-	}
+	for(p = global.items; p; p = p->next) {
+		switch(p->type){
+			case Power:
+				tex = get_tex("items/power");
+				break;
+			case Point:
+				tex = get_tex("items/point");
+				break;
+			case Life:
+				tex = get_tex("items/life");
+				break;
+			case Bomb:
+				tex = get_tex("items/bomb");
+				break;
+			case BPoint:
+				tex = get_tex("items/bullet_point");
+				break;
+			default:
+				break;
+		}
 		draw_texture_p(creal(p->pos), cimag(p->pos), tex);
 	}
 }
@@ -58,7 +63,7 @@ void move_item(Item *i) {
 	complex lim = 0 + 2I;
 	
 	if(i->auto_collect)	
-		i->pos -= 7*cexp(I*carg(i->pos - global.plr.pos));
+		i->pos -= (7+i->auto_collect)*cexp(I*carg(i->pos - global.plr.pos));
 	else
 		i->pos = i->pos0 + log(t/5.0 + 1)*5*(i->v + lim) + lim*t;
 }
@@ -81,6 +86,9 @@ void process_items() {
 				break;
 			case Point:
 				global.points += 100;
+				break;
+			case BPoint:
+				global.points += 1;
 				break;
 			case Life:
 				global.plr.lifes++;

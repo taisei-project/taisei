@@ -34,6 +34,7 @@ Dialog *test_dialog() {
 	dadd_msg(d, Left, "Hello");
 	dadd_msg(d, Right, "Hello you");
 	dadd_msg(d, Right, "Uhm ... who are you?\nNew line.\nAnother longer line.");
+	dadd_msg(d, Left, "idk");
 	
 	return d;
 }
@@ -130,8 +131,11 @@ complex lolsin(Laser *l, float t) {
 	return pos;
 }
 
-void cirno_pfreeze_frogs(Projectile *p, int t) {
-	int boss_t = (global.frames - *((int *)p->parent)) % 320;
+int cirno_pfreeze_frogs(Projectile *p, int t) {
+	if(*((Boss**)p->parent) == NULL || (*(Boss**)p->parent)->current == NULL)
+		return 1;
+	
+	int boss_t = (global.frames - (*(Boss**)p->parent)->current->starttime) % 320;
 	
 	if(boss_t < 110)
 		linear(p, t);
@@ -147,7 +151,8 @@ void cirno_pfreeze_frogs(Projectile *p, int t) {
 
 	if(t > 240)
 		linear(p, t-240);
-			
+	
+	return 1;
 }
 
 void cirno_perfect_freeze(Boss *c, int time) {
@@ -160,7 +165,7 @@ void cirno_perfect_freeze(Boss *c, int time) {
 	}
 	
 	if(time > 10 && time < 80)
-		create_projectile("ball", c->pos, rgb(rand()/(float)RAND_MAX, rand()/(float)RAND_MAX, rand()/(float)RAND_MAX), cirno_pfreeze_frogs, 4*cexp(I*rand()))->parent=&c->current->starttime;
+		create_projectile("ball", c->pos, rgb(rand()/(float)RAND_MAX, rand()/(float)RAND_MAX, rand()/(float)RAND_MAX), cirno_pfreeze_frogs, 4*cexp(I*rand()))->parent=&global.boss;
 	if(time > 160 && time < 220 && !(time % 7)) {
 		create_projectile("rice", c->pos + 60, rgb(0.3, 0.4, 0.9), linear, 5*cexp(I*carg(global.plr.pos - c->pos)));
 		create_projectile("rice", c->pos - 60, rgb(0.3, 0.4, 0.9), linear, 5*cexp(I*carg(global.plr.pos - c->pos)));
@@ -169,13 +174,12 @@ void cirno_perfect_freeze(Boss *c, int time) {
 }
 
 void cirno_pfreeze_bg(Boss *c, int time) {
-	glColor4f(1,1,1,1);	
-	fill_screen(time/700.0, time/700.0, 2, "cirnobg");	
-	glColor4f(1,1,1,0.5);	
-	fill_screen(time/700.0, time/700.0+0.5, 2, "cirnobg");
+	glColor4f(0.5,0.5,0.5,1);	
+	fill_screen(time/700.0, time/700.0, 1, "cirnobg");	
+	glColor4f(0.7,0.7,0.7,0.5);	
+	fill_screen(-time/700.0 + 0.5, time/700.0+0.5, 0.4, "cirnobg");
 	fill_screen(0, -time/100.0, 0, "snowlayer");
 	
-// 	draw_texture(VIEWPORT_W/2,VIEWPORT_H/2, "snowlayer");
 	glColor4f(1,1,1,1);
 }
 	

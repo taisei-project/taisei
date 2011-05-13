@@ -34,20 +34,21 @@ void youmu_opposite_logic(Enemy *e, int t) {
 	e->pos0 = e->pos + plr->pos;	
 }
 
-void youmu_homing(Projectile *p, int t) { // a[0]: velocity
- 	p->angle = t/30.0;
+int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: target, a[2]: old velocity
+//  	p->angle = t/30.0;
+	if(t == EVENT_DEATH) {
+		free_ref(p->args[1]);
+	}
 	
-	complex tv = 0;
+	complex tv = p->args[2];
+	if(REF(p->args[1]) != NULL)
+		tv = cexp(I*carg(((Enemy *)REF(p->args[1]))->pos - p->pos));
 	
-	if(global.enemies != NULL)
-		tv = cexp(I*carg(global.enemies[0].pos - p->pos));;
-	if(global.boss != NULL)
-		tv = cexp(I*carg(global.boss->pos - p->pos));;
-
-	if(t > 150 || tv == 0)
-		tv = - ((rand()%3)-1)/2.0 - 0.5I;
+		
+	p->args[2] = tv;
 	
-	p->pos += p->args[0]*log(t + 1) + tv*t/15.0;
+	p->pos += p->args[0]*log(t + 1) + tv*t*t/300.0;
 	p->pos0 = p->pos;
 	
+	return 1;
 }

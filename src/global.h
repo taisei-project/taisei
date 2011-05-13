@@ -18,6 +18,7 @@
 #include "laser.h"
 #include "shader.h"
 #include "dialog.h"
+#include "list.h"
 
 enum {	
 	SCREEN_W = 800,
@@ -33,6 +34,8 @@ enum {
 	
 	SNDSRC_COUNT = 30,
 	
+	ACTION_DESTROY,
+	
 	EVENT_DEATH = -8999,
 	EVENT_BIRTH,
 	
@@ -47,6 +50,8 @@ typedef struct {
 	Enemy *enemies;
 	Item *items;
 	Laser *lasers;
+	
+	Projectile *particles;
 	
 	int frames;
 	int lasttime;
@@ -69,6 +74,8 @@ typedef struct {
 	Dialog *dialog;
 	
 	ALuint sndsrc[SNDSRC_COUNT];
+	
+	RefArray refs; // for super extra OOP-tardness: references. the cool way.
 	
 	int game_over;
 	int points;

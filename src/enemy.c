@@ -43,6 +43,8 @@ void create_enemy(Enemy **enemies, EnemyDrawRule draw_rule, EnemyLogicRule logic
 
 void _delete_enemy(void **enemies, void* enemy) {
 	((Enemy* )enemy)->logic_rule(enemy, EVENT_DEATH);
+	del_ref(enemy);
+	
 	delete_element((void **)enemies, enemy);
 }
 

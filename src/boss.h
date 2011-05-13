@@ -44,19 +44,20 @@ typedef struct Attack {
 } Attack;	
 
 typedef struct Boss {	
-	char *name;
-	
 	Attack *attacks;
 	Attack *current;
-	int acount;
-	
-	Animation *ani;
-	int anirow;
 	
 	complex pos;
 	complex pos0;
 	int time0;
 	
+	char *name;
+	
+	int acount;
+	
+	Animation *ani;
+	int anirow;
+			
 	int dmg;
 } Boss;
 

@@ -17,6 +17,7 @@ struct Item;
 typedef enum {
 	Power,
 	Point,
+	BPoint,
 	Life,
 	Bomb
 } Type;
@@ -35,7 +36,7 @@ typedef struct Item{
 	complex v;
 } Item;
 
-void create_item(complex pos, complex v, Type type);
+Item *create_item(complex pos, complex v, Type type);
 void delete_item(Item *item);
 void draw_items();
 void delete_items();

@@ -28,10 +28,10 @@ typedef struct Enemy {
 	struct Enemy *next;
 	struct Enemy *prev;
 	
-	long birthtime;
-	
 	complex pos;
 	complex pos0;
+	
+	long birthtime;	
 	
 	int dir; // TODO: deprecate those
 	int moving;

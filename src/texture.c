@@ -49,7 +49,7 @@ void recurse_dir(char *path) {
 
 void load_resources() {
 	printf("load_resources():\n");
-	char *path = malloc(sizeof(FILE_PREFIX)+4);
+	char *path = malloc(sizeof(FILE_PREFIX)+7);
 	
 	printf("- textures:\n");
 	strcpy(path, FILE_PREFIX);

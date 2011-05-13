@@ -106,8 +106,16 @@ void player_logic(Player* plr) {
 		float a = 1;
 		if(plr->focus > 0)
 			a = 0.2;
-		if(plr->shot == YoumuHoming && !(global.frames % 7))
-			create_projectile("hghost", plr->pos, NULL, youmu_homing, a*cexp(I*rand()))->type = PlrProj;		
+		if(plr->shot == YoumuHoming && !(global.frames % 7)) {
+			complex ref = -1;
+			if(global.boss != NULL)
+				ref = add_ref(global.boss);
+			else if(global.enemies != NULL)
+				ref = add_ref(global.enemies);
+			
+			if(ref != -1)
+				create_projectile("hghost", plr->pos, NULL, youmu_homing, a*cexp(I*rand()), ref)->type = PlrProj;
+		}
 	}
 		
 	if(plr->focus < 0 || (plr->focus > 0 && plr->focus < 30))

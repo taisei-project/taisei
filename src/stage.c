@@ -11,14 +11,15 @@
 #include "global.h"
 #include "font.h"
 
-SDL_Event event;
 
 void stage_start() {
 	init_player(&global.plr, Youmu, YoumuHoming);
 	global.timer = 0;
 }
 
-void stage_input() {	
+void stage_input() {
+	SDL_Event event;
+	memset(&event, 0, sizeof(event));
 	while(SDL_PollEvent(&event)) {
 		if(event.type == SDL_KEYDOWN) {
 			switch(event.key.keysym.sym) {					
@@ -127,10 +128,12 @@ void stage_draw() {
 	draw_projectiles(global.projs);
 	draw_enemies(global.enemies);
 	draw_items();
-	draw_lasers();
+	draw_lasers();	
 	
 	if(global.boss)
 		draw_boss(global.boss);
+	
+	draw_projectiles(global.particles);
 	
 	if(global.dialog)
 		draw_dialog(global.dialog);
@@ -170,7 +173,7 @@ void apply_bg_shaders() {
 	
 	glPushMatrix();
 	glTranslatef(-global.rtt.nw+VIEWPORT_W,-global.rtt.nh+VIEWPORT_H,0);
-	
+		
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, global.rtt.tex);
 	glBegin(GL_QUADS);
@@ -192,6 +195,7 @@ void stage_logic() {
 	process_projectiles(&global.projs, True);
 	process_items();
 	process_lasers();
+	process_projectiles(&global.particles, False);
 	
 	if(global.boss) {
 		process_boss(global.boss);

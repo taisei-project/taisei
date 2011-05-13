@@ -131,11 +131,18 @@ void process_boss(Boss *boss) {
 void boss_death(Boss **boss) {
 	free_boss(*boss);
 	*boss = NULL;
-	delete_projectiles(&global.projs);
+	
+	Projectile *p;
+	for(p = global.projs; p; p = p->next)
+		if(p->type == FairyProj)
+			p->type = DeadProj;
+	
 	delete_lasers(&global.lasers);
 }
 
 void free_boss(Boss *boss) {
+	del_ref(boss);
+	
 	free(boss->name);
 	int i;
 	for(i = 0; i < boss->acount; i++)

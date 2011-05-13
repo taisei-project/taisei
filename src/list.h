@@ -16,4 +16,15 @@ void *create_element(void **dest, int size);
 void delete_element(void **dest, void *e);
 void delete_all_elements(void **dest, void (callback)(void **, void *));
 
+typedef struct {
+	void **ptrs;
+	int count;
+} RefArray;
+
+extern void *_FREEREF;
+#define FREEREF &_FREEREF
+#define REF(p) (global.refs.ptrs[(int)p])
+int add_ref(void *ptr);
+void del_ref(void *ptr);
+void free_ref(int i);
 #endif

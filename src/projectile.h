@@ -21,24 +21,26 @@ typedef struct {
 } Color;
 
 struct Projectile;
-typedef void (*ProjRule)(struct Projectile *p, int t);
+typedef int (*ProjRule)(struct Projectile *p, int t);
+typedef void (*ProjDRule)(struct Projectile *p, int t);
 
 typedef struct Projectile {
 	struct Projectile *next;
 	struct Projectile *prev;
 	
-	long birthtime;
-	
 	complex pos;
 	complex pos0;
+	
+	long birthtime;
 	
 	float angle;
 	void *parent;
 	
 	ProjRule rule;
+	ProjDRule draw;
 	Texture *tex;
 	
-	enum { PlrProj, FairyProj } type;
+	enum { PlrProj, FairyProj, DeadProj } type;
 	
 	Color *clr;
 	
@@ -51,14 +53,23 @@ Color *rgba(float r, float g, float b, float a);
 
 inline Color *rgb(float r, float g, float b);
 
-#define create_particle(name, pos, clr, rule, args) (create_projectile_d(&global.particles, name, pos, clr, rule, args))
-#define create_projectile(name, pos, clr, rule, args) (create_projectile_d(&global.projs, name, pos, clr, rule, args))
-Projectile *create_projectile_d(Projectile **dest, char *name, complex pos, Color *clr, ProjRule rule, complex args, ...);
+Projectile *create_particle(char *name, complex pos, Color *clr, ProjDRule draw, ProjRule rule, complex arg1, ...);
+Projectile *create_projectile(char *name, complex pos, Color *clr, ProjRule rule, complex arg1, ...);
+Projectile *create_projectile_dv(Projectile **dest, char *name, complex pos, Color *clr, ProjDRule draw, ProjRule rule, complex *args);
 void delete_projectile(Projectile **dest, Projectile *proj);
 void delete_projectiles(Projectile **dest);
 void draw_projectiles(Projectile *projs);
 int collision_projectile(Projectile *p);
-void process_projectiles(Projectile **projs, short collision);
+void process_projectiles(Projectile **projs, char collision);
 
-void linear(Projectile *p, int t);
+Projectile *get_proj(Projectile *hay, int birthtime);
+
+int linear(Projectile *p, int t);
+void ProjDraw(Projectile *p, int t);
+
+void Shrink(Projectile *p, int t);
+int bullet_flare_move(Projectile *p, int t);
+
+void Fade(Projectile *p, int t);
+int timeout(Projectile *p, int t);
 #endif

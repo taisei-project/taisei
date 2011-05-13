@@ -12,7 +12,7 @@
 #include <err.h>
 
 void print_info_log(GLuint shader) {
-	int len, alen;
+	int len = 0, alen = 0;
 	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &len);
 	
 	if(len > 1) {
