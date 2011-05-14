@@ -37,7 +37,7 @@ Projectile *create_particle(char *name, complex pos, Color *clr, ProjDRule draw,
 	
 	a[0] = arg1;
 	for(i = 1; i < 4; i++) {
-		a[i] = va_arg(ap, complex);
+		a[i] = (complex)va_arg(ap, complex);
 	}
 	va_end(ap);
 	
@@ -55,7 +55,7 @@ Projectile *create_projectile(char *name, complex pos, Color *clr, ProjRule rule
 	
 	a[0] = arg1;
 	for(i = 1; i < 4; i++) {
-		a[i] = va_arg(ap, complex);
+		a[i] = (complex)va_arg(ap, complex);
 	}
 	va_end(ap);
 		
@@ -91,7 +91,7 @@ Projectile *create_projectile_dv(Projectile **dest, char *name, complex pos, Col
 	if(dest != &global.particles && clr != NULL) {
 		Color *color = rgba(clr->r, clr->g, clr->b, clr->a);
 		
-		create_particle(name, pos, color, Shrink, bullet_flare_move, add_ref(p));
+		create_particle(name, pos, color, Shrink, bullet_flare_move, 16, (complex)add_ref(p));
 	}
 	return p;
 }
@@ -158,7 +158,7 @@ void process_projectiles(Projectile **projs, char collision) {
 		if(proj->type == DeadProj && killed < 2) {
 			killed++;
 			action = ACTION_DESTROY;
-			create_particle("!lasercurve", proj->pos, NULL, Fade, timeout, 20);
+			create_particle("!flare", proj->pos, NULL, Fade, timeout, (complex)40);
 			create_item(proj->pos, 0, BPoint)->auto_collect = 10;
 		}
 			
@@ -214,7 +214,7 @@ void Shrink(Projectile *p, int t) {
 	}
 	
 	glPushMatrix();
-	float s = 2.0-t/8.0;
+	float s = 2.0-t/p->args[0]*2;
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
 	glRotatef(p->angle, 0, 0, 1);
 	glScalef(s, s, 1);
@@ -227,20 +227,20 @@ void Shrink(Projectile *p, int t) {
 int bullet_flare_move(Projectile *p, int t) {
 	int i;
 
-	if(t > 16 || REF(p->args[0]) == NULL) {
-		free_ref(p->args[0]);
+	if(t > 16 || REF(p->args[1]) == NULL) {
+		free_ref(p->args[1]);
 		return ACTION_DESTROY;
 	}
 	
 	
-	p->pos = ((Projectile *) REF(p->args[0]))->pos;
-	p->angle = ((Projectile *) REF(p->args[0]))->angle;
+	p->pos = ((Projectile *) REF(p->args[1]))->pos;
+	p->angle = ((Projectile *) REF(p->args[1]))->angle;
 		
 	return 1;
 }
 
 void Fade(Projectile *p, int t) {
-	glColor4f(1,1,1,(float)t/p->args[0]);
+	glColor4f(1,1,1, 1.0 - (float)t/p->args[0]);
 	draw_texture_p(creal(p->pos), cimag(p->pos), p->tex);
 	glColor4f(1,1,1,1);
 }

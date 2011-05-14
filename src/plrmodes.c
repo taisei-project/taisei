@@ -11,7 +11,8 @@
 
 void youmu_opposite_draw(Enemy *e, int t) {
 	complex pos = e->pos + ((Player *)e->parent)->pos;
-	draw_texture(creal(pos), cimag(pos), "items/power");
+	
+	create_particle("!flare", pos, NULL, Shrink, timeout, (complex)10, -e->pos+10I, 1);
 }
 
 void youmu_opposite_logic(Enemy *e, int t) {
@@ -21,7 +22,7 @@ void youmu_opposite_logic(Enemy *e, int t) {
 	Player *plr = (Player *)e->parent;
 	
 	if(plr->focus < 15) {
-		e->args[1] = carg(plr->pos - e->pos0);
+		e->args[2] = carg(plr->pos - e->pos0);
 		e->pos = e->pos0 - plr->pos;
 		
 		if(cabs(e->pos) > 30)
@@ -29,7 +30,7 @@ void youmu_opposite_logic(Enemy *e, int t) {
 	}
 	
 	if(plr->fire && !(global.frames % 4))
-		create_projectile("youmu", e->pos + plr->pos, NULL, linear, -20*cexp(I*e->args[1]))->type = PlrProj; 
+		create_projectile("youmu", e->pos + plr->pos, NULL, linear, -20*cexp(I*e->args[2]))->type = PlrProj; 
 	
 	e->pos0 = e->pos + plr->pos;	
 }

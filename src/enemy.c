@@ -32,8 +32,8 @@ void create_enemy(Enemy **enemies, EnemyDrawRule draw_rule, EnemyLogicRule logic
 	
 	memset(e->args, 0, 4);
 	va_start(ap, args);
-	for(i = 0; i < 4 && args; i++) {
-		e->args[i++] = args;
+	for(i = 0; i < 4; i++) {
+		e->args[i] = args;
 		args = va_arg(ap, complex);
 	}
 	va_end(ap);

@@ -13,7 +13,7 @@
 
 
 void stage_start() {
-	init_player(&global.plr, Youmu, YoumuHoming);
+	init_player(&global.plr, Youmu, YoumuOpposite);
 	global.timer = 0;
 }
 

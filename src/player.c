@@ -105,7 +105,7 @@ void player_logic(Player* plr) {
 		
 		float a = 1;
 		if(plr->focus > 0)
-			a = 0.2;
+			a = 0.4;
 		if(plr->shot == YoumuHoming && !(global.frames % 7)) {
 			complex ref = -1;
 			if(global.boss != NULL)
