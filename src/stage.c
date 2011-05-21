@@ -19,40 +19,27 @@ void stage_start() {
 
 void stage_input() {
 	SDL_Event event;
-	memset(&event, 0, sizeof(event));
 	while(SDL_PollEvent(&event)) {
+		int sym = event.key.keysym.sym;
 		if(event.type == SDL_KEYDOWN) {
-			switch(event.key.keysym.sym) {					
-				case SDLK_LSHIFT:
-					global.plr.focus = 1;
-					break;
-				case SDLK_y:
-					if(!global.dialog)
-						global.plr.fire = True;
-					else
-						page_dialog(&global.dialog);
-					break;
-				case SDLK_x:
-					if(!global.dialog)
-						plr_bomb(&global.plr);
-					break;
-				case SDLK_ESCAPE:
+			if(sym == tconfig.intval[KEY_FOCUS])
+				global.plr.focus = 1;
+			else if(sym == tconfig.intval[KEY_SHOT]) {
+				if(!global.dialog)
+					global.plr.fire = True;
+				else
+					page_dialog(&global.dialog);
+			} else if(sym == tconfig.intval[KEY_BOMB]) {
+				if(!global.dialog)
+					plr_bomb(&global.plr);
+			} else if(sym == SDLK_ESCAPE) {
 					exit(1);
-					break;
-				default:
-					break;
 			}
 		} else if(event.type == SDL_KEYUP) {
-			switch(event.key.keysym.sym) {
-				case SDLK_LSHIFT:
-					global.plr.focus = -30; // that's for the transparency timer
-					break;
-				case SDLK_y:
-					global.plr.fire = False;
-					break;
-				default:
-					break;
-			}
+			if(sym == tconfig.intval[KEY_FOCUS])
+				global.plr.focus = -30; // that's for the transparency timer
+			else if(sym == tconfig.intval[KEY_SHOT])
+				global.plr.fire = False;
 		} else if(event.type == SDL_QUIT) {
 			global.game_over = 1;
 		}
@@ -64,21 +51,21 @@ void stage_input() {
 	
 	global.plr.moving = False;
 	
-	if(keys[SDLK_LEFT] && !keys[SDLK_RIGHT]) {
+	if(keys[tconfig.intval[KEY_LEFT]] && !keys[tconfig.intval[KEY_RIGHT]]) {
 		global.plr.moving = True;
 		global.plr.dir = 1;
-	} else if(keys[SDLK_RIGHT] && !keys[SDLK_LEFT]) {
+	} else if(keys[tconfig.intval[KEY_RIGHT]] && !keys[tconfig.intval[KEY_LEFT]]) {
 		global.plr.moving = True;
 		global.plr.dir = 0;
 	}	
 	
-	if(keys[SDLK_LEFT] && creal(global.plr.pos) - global.plr.ani->w/2 - speed > 0)
+	if(keys[tconfig.intval[KEY_LEFT]] && creal(global.plr.pos) - global.plr.ani->w/2 - speed > 0)
 		global.plr.pos -= speed;		
-	if(keys[SDLK_RIGHT] && creal(global.plr.pos) + global.plr.ani->w/2 + speed < VIEWPORT_W)
+	if(keys[tconfig.intval[KEY_RIGHT]] && creal(global.plr.pos) + global.plr.ani->w/2 + speed < VIEWPORT_W)
 		global.plr.pos += speed;
-	if(keys[SDLK_UP] && cimag(global.plr.pos) - global.plr.ani->h/2 - speed > 0)
+	if(keys[tconfig.intval[KEY_UP]] && cimag(global.plr.pos) - global.plr.ani->h/2 - speed > 0)
 		global.plr.pos -= I*speed;
-	if(keys[SDLK_DOWN] && cimag(global.plr.pos) + global.plr.ani->h/2 + speed < VIEWPORT_H)
+	if(keys[tconfig.intval[KEY_DOWN]] && cimag(global.plr.pos) + global.plr.ani->h/2 + speed < VIEWPORT_H)
 		global.plr.pos += I*speed;
 
 }

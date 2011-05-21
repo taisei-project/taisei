@@ -23,6 +23,8 @@ void init_global() {
 	load_resources();
 	init_fonts();
 	init_rtt();
+	
+	parse_config(CONFIG_FILE);
 }
 
 void init_rtt() {

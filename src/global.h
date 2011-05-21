@@ -19,7 +19,10 @@
 #include "shader.h"
 #include "dialog.h"
 #include "list.h"
+#include "config.h"
 
+#define FILE_PREFIX PREFIX "/share/taisei/"
+#define CONFIG_FILE ".taisei/config"
 enum {	
 	SCREEN_W = 800,
 	SCREEN_H = 600,
@@ -41,8 +44,6 @@ enum {
 	
 	FPS = 60
 };
-
-#define FILE_PREFIX PREFIX "/share/taisei/"
 
 typedef struct {
 	Player plr;	

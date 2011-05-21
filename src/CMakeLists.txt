@@ -1,3 +1,18 @@
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
+
+find_package(SDL REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(OpenAL REQUIRED)
+find_package(ALUT REQUIRED)
+find_package(PNG REQUIRED)
+find_package(SDL_ttf REQUIRED)
+find_package(BISON)
+find_package(FLEX)
+
+BISON_TARGET(cfgparser config.y ${CMAKE_CURRENT_SOURCE_DIR}/parser.c)
+FLEX_TARGET(cfgscanner config.l  ${CMAKE_CURRENT_SOURCE_DIR}/lexer.c)
+ADD_FLEX_BISON_DEPENDENCY(cfgscanner cfgparser)
+
 set(SRCs
 	main.c
 	stage.c
@@ -16,16 +31,9 @@ set(SRCs
 	laser.c
 	shader.c
 	dialog.c
-	stages/stage0.c)
-
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
-
-find_package(SDL REQUIRED)
-find_package(OpenGL REQUIRED)
-find_package(OpenAL REQUIRED)
-find_package(ALUT REQUIRED)
-find_package(PNG REQUIRED)
-find_package(SDL_ttf REQUIRED)
+	stages/stage0.c
+	${BISON_cfgparser_OUTPUTS}
+	${FLEX_cfgscanner_OUTPUTS})
 
 add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -DGL_GLEXT_PROTOTYPES)
 

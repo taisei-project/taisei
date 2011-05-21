@@ -1,0 +1,15 @@
+# -- Taisei example config
+# move to ~/.taisei/config
+
+# setting default values.
+# this config would be useless, as there is a built-in default settings fallback
+
+key_up = up
+key_down = down
+key_left = left
+key_right = right
+
+key_focus = shift
+key_shot = z
+# key_shot = y # if you are qwertz-fag
+key_bomb = x

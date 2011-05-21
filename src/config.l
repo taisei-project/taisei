@@ -1,0 +1,48 @@
+/*
+ * This software is licensed under the terms of the MIT-License
+ * See COPYING for further information. 
+ * ---
+ * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
+ */
+
+%{
+	#include "parser.h"
+	#include "config.h"
+	#include <SDL/SDL_keysym.h>
+	
+%}
+
+%%
+
+=			return EQ;
+
+#.+			;
+
+"key_up"	{ yylval = KEY_UP; return tKEY_UP; }
+"key_down"	{ yylval = KEY_DOWN; return tKEY_DOWN; }
+"key_left"	{ yylval = KEY_LEFT; return tKEY_LEFT; }
+"key_right"	{ yylval = KEY_RIGHT; return tKEY_RIGHT; }
+
+"key_focus"	{ yylval = KEY_FOCUS; return tKEY_FOCUS; }
+
+"key_shot"	{ yylval = KEY_SHOT; return tKEY_SHOT; }
+"key_bomb"	{ yylval = KEY_BOMB; return tKEY_BOMB; }
+
+"shift"	{ yylval = SDLK_LSHIFT; return SKEY; }
+"ctrl"	{ yylval = SDLK_LCTRL; return SKEY; }
+"return"	{ yylval = SDLK_RETURN; return SKEY; }
+"alt"	{ yylval = SDLK_LALT; return SKEY; }
+
+"up"		{ yylval = SDLK_UP; return SKEY; }
+"down"	{ yylval = SDLK_DOWN; return SKEY; }
+"right"	{ yylval = SDLK_RIGHT; return SKEY; }
+"left"	{ yylval = SDLK_LEFT; return SKEY; }
+
+
+[0-9]+		{ yylval = atoi(yytext); return NUMBER; }
+[a-zA-Z]	{ yylval = yytext[0]; return CHAR; }
+
+\n			return LB;
+[ \t]		;
+
+%%
