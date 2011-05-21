@@ -20,7 +20,7 @@ void simpleEnemy(Enemy *e, int t) {
 	}
 	
 	if(!(t % 50))
-		create_projectile("ball", e->pos, rgb(0,0,1), linear,3 + 2I);
+		create_projectile("ball", e->pos, rgb(0,0,1), linear,rarg(3 + 2I));
 	
 	e->moving = 1;
 	e->dir = creal(e->args[0]) < 0;
@@ -164,11 +164,17 @@ void cirno_perfect_freeze(Boss *c, int time) {
 		return;
 	}
 	
-	if(time > 10 && time < 80)
-		create_projectile("ball", c->pos, rgb(rand()/(float)RAND_MAX, rand()/(float)RAND_MAX, rand()/(float)RAND_MAX), cirno_pfreeze_frogs, 4*cexp(I*rand()))->parent=&global.boss;
+	if(time > 10 && time < 80) {
+		float r = rand()/(float)RAND_MAX;
+		float g = rand()/(float)RAND_MAX;
+		float b = rand()/(float)RAND_MAX;
+		
+		create_projectile("ball", c->pos, rgb(r, g, b), cirno_pfreeze_frogs, rarg(4*cexp(I*rand())))->parent=&global.boss;
+	}
+	
 	if(time > 160 && time < 220 && !(time % 7)) {
-		create_projectile("rice", c->pos + 60, rgb(0.3, 0.4, 0.9), linear, 5*cexp(I*carg(global.plr.pos - c->pos)));
-		create_projectile("rice", c->pos - 60, rgb(0.3, 0.4, 0.9), linear, 5*cexp(I*carg(global.plr.pos - c->pos)));
+		create_projectile("rice", c->pos + 60, rgb(0.3, 0.4, 0.9), linear, rarg(5*cexp(I*carg(global.plr.pos - c->pos))));
+		create_projectile("rice", c->pos - 60, rgb(0.3, 0.4, 0.9), linear, rarg(5*cexp(I*carg(global.plr.pos - c->pos))));
 	}
 		
 }

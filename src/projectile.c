@@ -26,53 +26,45 @@ inline Color *rgb(float r, float g, float b) {
 	return rgba(r, g, b, 1.0);
 }
 
-Projectile *create_particle(char *name, complex pos, Color *clr, ProjDRule draw, ProjRule rule, complex arg1, ...) {
+complex *rarg(complex arg0, ...) {
+	complex *a = calloc(RULE_ARGC, sizeof(complex));
 	va_list ap;
-	complex a[4];	
 	int i;
 	
 	memset(a, 0, sizeof(a));
 	
-	va_start(ap, arg1);
+	va_start(ap, arg0);
 	
-	a[0] = arg1;
-	for(i = 1; i < 4; i++) {
+	a[0] = arg0;
+	for(i = 1; i < RULE_ARGC; i++) {
 		a[i] = (complex)va_arg(ap, complex);
 	}
 	va_end(ap);
 	
-	return create_projectile_dv(&global.particles, name, pos, clr, draw, rule, a);
+	return a;
 }
 
-Projectile *create_projectile(char *name, complex pos, Color *clr, ProjRule rule, complex arg1, ...) {
-	va_list ap;
-	complex a[4], ar;
-	int i;
+Projectile *create_particle(char *name, complex pos, Color *clr, ProjDRule draw, ProjRule rule, complex *a) {
+	Projectile *p = create_projectile_p(&global.particles, get_tex(name), pos, clr, draw, rule, a);
 	
-	memset(a, 0, sizeof(a));
-		
-	va_start(ap, arg1);
-	
-	a[0] = arg1;
-	for(i = 1; i < 4; i++) {
-		a[i] = (complex)va_arg(ap, complex);
-	}
-	va_end(ap);
-		
-	return create_projectile_dv(&global.projs, name, pos, clr, ProjDraw, rule, a);
+	p->type = Particle;
+	return p;
 }
 
-Projectile *create_projectile_dv(Projectile **dest, char *name, complex pos, Color *clr,
+Projectile *create_projectile(char *name, complex pos, Color *clr, ProjRule rule, complex *a) {
+	char *buf = malloc(strlen(name) + 6);
+	strcpy(buf, "proj/");
+	strcat(buf, name);
+	
+	Texture *tex = get_tex(buf);
+	free(buf);
+	
+	return create_projectile_p(&global.projs, tex, pos, clr, ProjDraw, rule, a);
+}
+
+Projectile *create_projectile_p(Projectile **dest, Texture *tex, complex pos, Color *clr,
 							    ProjDRule draw, ProjRule rule, complex *args) {
 	Projectile *p = create_element((void **)dest, sizeof(Projectile));
-	
-	char buf[128];
-	if(name[0] == '!')
-		strncpy(buf, name+1, sizeof(buf));
-	else {
-		strcpy(buf, "proj/");
-		strcat(buf, name);
-	}
 	
 	p->birthtime = global.frames;
 	p->pos = pos;
@@ -80,27 +72,31 @@ Projectile *create_projectile_dv(Projectile **dest, char *name, complex pos, Col
 	p->angle = 0;
 	p->rule = rule;
 	p->draw = draw;
-	p->tex = get_tex(buf);
+	p->tex = tex;
 	p->type = FairyProj;
 	p->clr = clr;
 	p->parent = NULL;
-		
-	memcpy(p->args, args, sizeof(p->args));
 	
+	memset(p->args, 0, sizeof(p->args));
+	if(args) {
+		memcpy(p->args, args, sizeof(p->args));
+		free(args);
+	}	
 	
 	if(dest != &global.particles && clr != NULL) {
 		Color *color = rgba(clr->r, clr->g, clr->b, clr->a);
 		
-		create_particle(name, pos, color, Shrink, bullet_flare_move, 16, (complex)add_ref(p));
+		create_projectile_p(Pa, tex, pos, color, Shrink, bullet_flare_move, rarg(16, (complex)add_ref(p)));
 	}
 	return p;
 }
 
 void _delete_projectile(void **projs, void *proj) {
-	((Projectile *)proj)->rule(proj, EVENT_DEATH);
-	
-	if(((Projectile*)proj)->clr)
-		free(((Projectile*)proj)->clr);	
+	Projectile *p = proj;
+	p->rule(p, EVENT_DEATH);
+		
+	if(p->clr)
+		free(p->clr);
 	del_ref(proj);
 	delete_element(projs, proj);
 }
@@ -158,15 +154,25 @@ void process_projectiles(Projectile **projs, char collision) {
 		if(proj->type == DeadProj && killed < 2) {
 			killed++;
 			action = ACTION_DESTROY;
-			create_particle("!flare", proj->pos, NULL, Fade, timeout, (complex)40);
+			create_particle("flare", proj->pos, NULL, Fade, timeout, rarg(30));
 			create_item(proj->pos, 0, BPoint)->auto_collect = 10;
 		}
 			
 		if(collision)
 			col = collision_projectile(proj);
 		
-		if(col == 1 && (global.frames - abs(global.plr.recovery)) >= 0)
-			plr_death(&global.plr);
+		if(col && proj->type != Particle) {
+			Color *clr = NULL;
+			if(proj->clr) {
+				clr = malloc(sizeof(Color));
+				memcpy(clr, proj->clr, sizeof(Color));
+			}
+			create_projectile_p(Pa, proj->tex, proj->pos, clr, DeathShrink, timeout_linear, rarg(15, -20I*cexp(proj->angle)));
+		}
+		
+		
+		if(col == 1 && global.frames - abs(global.plr.recovery) >= 0)
+				plr_death(&global.plr);
 		
 		if(action == ACTION_DESTROY || col
 		|| creal(proj->pos) + proj->tex->w/2 < 0 || creal(proj->pos) - proj->tex->w/2 > VIEWPORT_W
@@ -181,6 +187,7 @@ void process_projectiles(Projectile **projs, char collision) {
 	}
 }
 
+
 int linear(Projectile *p, int t) { // sure is physics in here; a[0]: velocity	
 	p->angle = carg(p->args[0]);
 	p->pos = p->pos0 + p->args[0]*t;
@@ -188,7 +195,7 @@ int linear(Projectile *p, int t) { // sure is physics in here; a[0]: velocity
 	return 1;
 }
 
-void ProjDraw(Projectile *proj, int t) {
+void _ProjDraw(Projectile *proj, int t) {
 	if(proj->clr != NULL) {
 		GLuint shader = get_shader("bullet_color");
 		glUseProgramObjectARB(shader);
@@ -196,32 +203,41 @@ void ProjDraw(Projectile *proj, int t) {
 		glUniform4fv(glGetUniformLocation(shader, "color"), 1, (GLfloat *)proj->clr);
 	}
 	
-	glPushMatrix();
-	glTranslatef(creal(proj->pos), cimag(proj->pos), 0);
-	glRotatef(proj->angle*180/M_PI+90, 0, 0, 1);
-
 	draw_texture_p(0,0, proj->tex);
-	glPopMatrix();
 	
 	glUseProgramObjectARB(0);
 }
 
-void Shrink(Projectile *p, int t) {	
-	if(p->clr != NULL) {
-		GLuint shader = get_shader("bullet_color");
-		glUseProgramObjectARB(shader);
-		glUniform4fv(glGetUniformLocation(shader, "color"), 1, (GLfloat *)p->clr);
-	}
+void ProjDraw(Projectile *proj, int t) {
+	glPushMatrix();
+	glTranslatef(creal(proj->pos), cimag(proj->pos), 0);
+	glRotatef(proj->angle*180/M_PI+90, 0, 0, 1);
+
+	_ProjDraw(proj, t);
 	
+	glPopMatrix();	
+}
+
+void Shrink(Projectile *p, int t) {	
 	glPushMatrix();
 	float s = 2.0-t/p->args[0]*2;
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
 	glRotatef(p->angle, 0, 0, 1);
 	glScalef(s, s, 1);
-	draw_texture_p(0, 0, p->tex);
-	glPopMatrix();
 	
-	glUseProgramObjectARB(0);
+	_ProjDraw(p, t);
+	glPopMatrix();
+}
+
+void DeathShrink(Projectile *p, int t) {
+	glPushMatrix();
+	float s = 2.0-t/p->args[0]*2;
+	glTranslatef(creal(p->pos), cimag(p->pos), 0);
+	glRotatef(p->angle, 0, 0, 1);
+	glScalef(s, 1, 1);
+	
+	_ProjDraw(p, t);
+	glPopMatrix();
 }
 
 int bullet_flare_move(Projectile *p, int t) {
@@ -241,7 +257,7 @@ int bullet_flare_move(Projectile *p, int t) {
 
 void Fade(Projectile *p, int t) {
 	glColor4f(1,1,1, 1.0 - (float)t/p->args[0]);
-	draw_texture_p(creal(p->pos), cimag(p->pos), p->tex);
+	ProjDraw(p, t);
 	glColor4f(1,1,1,1);
 }
 
@@ -250,4 +266,12 @@ int timeout(Projectile *p, int t) {
 		return ACTION_DESTROY;
 	
 	return 1;
+}
+
+int timeout_linear(Projectile *p, int t) {
+	if(t >= creal(p->args[0]))
+		return ACTION_DESTROY;
+	
+	p->angle = carg(p->args[1]);
+	p->pos = p->pos0 + p->args[1]*t;
 }

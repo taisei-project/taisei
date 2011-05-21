@@ -10,6 +10,7 @@
 
 #include "animation.h"
 #include <complex.h>
+#include "projectile.h"
 
 #undef complex
 #define complex double _Complex
@@ -42,7 +43,7 @@ typedef struct Enemy {
 	int hp;
 	
 	void *parent;
-	complex args[4];
+	complex args[RULE_ARGC];
 } Enemy;
 
 #define create_enemyg(drule, lrule, pos, hp, par, args) (create_enemy(&global.enemies, drule, lrule, pos, hp, par, args))

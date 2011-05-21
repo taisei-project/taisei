@@ -12,7 +12,7 @@
 void youmu_opposite_draw(Enemy *e, int t) {
 	complex pos = e->pos + ((Player *)e->parent)->pos;
 	
-	create_particle("!flare", pos, NULL, Shrink, timeout, (complex)10, -e->pos+10I, 1);
+	create_particle("flare", pos, NULL, Shrink, timeout, rarg(10, -e->pos+10I));
 }
 
 void youmu_opposite_logic(Enemy *e, int t) {
@@ -30,13 +30,13 @@ void youmu_opposite_logic(Enemy *e, int t) {
 	}
 	
 	if(plr->fire && !(global.frames % 4))
-		create_projectile("youmu", e->pos + plr->pos, NULL, linear, -20*cexp(I*e->args[2]))->type = PlrProj; 
+		create_projectile("youmu", e->pos + plr->pos, NULL, linear, rarg(-20*cexp(I*e->args[2])))->type = PlrProj; 
 	
 	e->pos0 = e->pos + plr->pos;	
 }
 
 int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: target, a[2]: old velocity
-//  	p->angle = t/30.0;
+ 	p->angle = rand();
 	if(t == EVENT_DEATH) {
 		free_ref(p->args[1]);
 	}

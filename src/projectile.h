@@ -24,6 +24,13 @@ struct Projectile;
 typedef int (*ProjRule)(struct Projectile *p, int t);
 typedef void (*ProjDRule)(struct Projectile *p, int t);
 
+#define Pr (&global.projs)
+#define Pa (&global.particles)
+
+enum {
+	RULE_ARGC = 4
+};
+
 typedef struct Projectile {
 	struct Projectile *next;
 	struct Projectile *prev;
@@ -40,22 +47,23 @@ typedef struct Projectile {
 	ProjDRule draw;
 	Texture *tex;
 	
-	enum { PlrProj, FairyProj, DeadProj } type;
+	enum { PlrProj, FairyProj, DeadProj, Particle } type;
 	
 	Color *clr;
 	
-	complex args[4];
+	complex args[RULE_ARGC];
 } Projectile;
 
 void load_projectiles();
 
 Color *rgba(float r, float g, float b, float a);
 
+inline complex *rarg(complex arg0, ...);
 inline Color *rgb(float r, float g, float b);
 
-Projectile *create_particle(char *name, complex pos, Color *clr, ProjDRule draw, ProjRule rule, complex arg1, ...);
-Projectile *create_projectile(char *name, complex pos, Color *clr, ProjRule rule, complex arg1, ...);
-Projectile *create_projectile_dv(Projectile **dest, char *name, complex pos, Color *clr, ProjDRule draw, ProjRule rule, complex *args);
+Projectile *create_particle(char *name, complex pos, Color *clr, ProjDRule draw, ProjRule rule, complex *a);
+Projectile *create_projectile(char *name, complex pos, Color *clr, ProjRule rule, complex *a);
+Projectile *create_projectile_p(Projectile **dest, Texture *tex, complex pos, Color *clr, ProjDRule draw, ProjRule rule, complex *args);
 void delete_projectile(Projectile **dest, Projectile *proj);
 void delete_projectiles(Projectile **dest);
 void draw_projectiles(Projectile *projs);
@@ -72,4 +80,8 @@ int bullet_flare_move(Projectile *p, int t);
 
 void Fade(Projectile *p, int t);
 int timeout(Projectile *p, int t);
+
+void DeathShrink(Projectile *p, int t);
+int timeout_linear(Projectile *p, int t);
+
 #endif

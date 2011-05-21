@@ -92,14 +92,14 @@ void player_logic(Player* plr) {
 	
 	if(plr->fire && plr->cha == Youmu) {
 		if(!(global.frames % 4)) {
-			create_projectile("youmu", plr->pos + 10 - I*20, NULL, linear, -20I)->type = PlrProj;
-			create_projectile("youmu", plr->pos - 10 - I*20, NULL, linear, -20I)->type = PlrProj;
+			create_projectile("youmu", plr->pos + 10 - I*20, NULL, linear, rarg(-20I))->type = PlrProj;
+			create_projectile("youmu", plr->pos - 10 - I*20, NULL, linear, rarg(-20I))->type = PlrProj;
 						
 			if(plr->power >= 2) {
 				float a = 0.20;
 				if(plr->focus > 0) a = 0.06;
-				create_projectile("youmu", plr->pos - 10 - I*20, NULL, linear, I*-20*cexp(-I*a))->type = PlrProj;
-				create_projectile("youmu", plr->pos + 10 - I*20, NULL, linear, I*-20*cexp(I*a))->type = PlrProj;
+				create_projectile("youmu", plr->pos - 10 - I*20, NULL, linear, rarg(I*-20*cexp(-I*a)))->type = PlrProj;
+				create_projectile("youmu", plr->pos + 10 - I*20, NULL, linear, rarg(I*-20*cexp(I*a)))->type = PlrProj;
 			}		
 		}
 		
@@ -114,7 +114,7 @@ void player_logic(Player* plr) {
 				ref = add_ref(global.enemies);
 			
 			if(ref != -1)
-				create_projectile("hghost", plr->pos, NULL, youmu_homing, a*cexp(I*rand()), ref)->type = PlrProj;
+				create_projectile("hghost", plr->pos, NULL, youmu_homing, rarg(a*cexp(I*rand()), ref))->type = PlrProj;
 		}
 	}
 		
