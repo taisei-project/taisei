@@ -1,0 +1,25 @@
+void main(void) {
+	gl_Position     = gl_ModelViewProjectionMatrix * gl_Vertex;
+	gl_FrontColor   = gl_Color;
+	gl_TexCoord[0]  = gl_MultiTexCoord0;
+}
+
+%% -- FRAG
+
+uniform sampler2D tex;
+uniform float rad;
+
+float pi = 2.0 * asin(1.0);
+
+void main(void) {
+	vec2 pos = vec2(gl_TexCoord[0]);
+	
+	gl_FragColor = texture2D(tex, pos)*0.02;
+	
+	float a, r;
+	for(a = 0.0; a < 2.0*pi; a += pi/10.0)
+		for(r = rad/5.0; r < rad; r += rad/5.0)
+			gl_FragColor += texture2D(tex, pos + vec2(r*cos(a),r*sin(a)*0.5))*(1.0 - r/rad)*0.02;
+		
+	gl_FragColor *= pow(vec4(0.4,0.5,0.6,1), vec4(rad*25.0));
+}

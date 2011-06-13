@@ -221,11 +221,11 @@ void free_texture(Texture *tex) {
 	free(tex);
 }
 
-void draw_texture(int x, int y, char *name) {
+void draw_texture(float x, float y, char *name) {
 	draw_texture_p(x, y, get_tex(name));
 }
 
-void draw_texture_p(int x, int y, Texture *tex) {
+void draw_texture_p(float x, float y, Texture *tex) {
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 	
@@ -249,9 +249,12 @@ void draw_texture_p(int x, int y, Texture *tex) {
 }
 
 void fill_screen(float xoff, float yoff, float ratio, char *name) {
+	fill_screen_p(xoff, yoff, ratio, get_tex(name));
+}
+
+void fill_screen_p(float xoff, float yoff, float ratio, Texture *tex) {
 	glEnable(GL_TEXTURE_2D);
 	
-	Texture *tex = get_tex(name);
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 	
 	glMatrixMode(GL_TEXTURE);

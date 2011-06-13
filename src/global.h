@@ -9,20 +9,28 @@
 #define GLOBAL_H
 
 #include <SDL/SDL.h>
+
+#include "resource/audio.h"
+#include "resource/shader.h"
+#include "resource/font.h"
+#include "resource/animation.h"
+
+#include "menu/menu.h"
+
 #include "player.h"
 #include "projectile.h"
 #include "enemy.h"
 #include "item.h"
-#include "audio.h"
 #include "boss.h"
 #include "laser.h"
-#include "shader.h"
 #include "dialog.h"
 #include "list.h"
 #include "config.h"
+#include "fbo.h"
 
 #define FILE_PREFIX PREFIX "/share/taisei/"
 #define CONFIG_FILE ".taisei/config"
+
 enum {	
 	SCREEN_W = 800,
 	SCREEN_H = 600,
@@ -45,8 +53,23 @@ enum {
 	FPS = 60
 };
 
+typedef enum {
+	D_Easy,
+	D_Normal,
+	D_Hard,
+	D_Lunatic
+} Difficulty;
+
 typedef struct {
-	Player plr;	
+	int fpstime;  // frame counter
+	int fps;	
+	int show_fps;
+} FPSCounter;
+
+typedef struct {
+	Player plr;
+	Difficulty diff;
+	
 	Projectile *projs;
 	Enemy *enemies;
 	Item *items;
@@ -63,15 +86,11 @@ typedef struct {
 	Sound *sounds;
 	Shader *shaders;
 	
-	struct {
-		GLuint fbo;
-		GLuint tex;
-		GLuint depth;
-		
-		int nw,nh;
-	} rtt;
+	FBO fbg;
+	FBO fsec;
 	
 	Boss *boss;
+	MenuData *menu;
 	Dialog *dialog;
 	
 	ALuint sndsrc[SNDSRC_COUNT];
@@ -81,9 +100,7 @@ typedef struct {
 	int game_over;
 	int points;
 		
-	int fpstime;  // frame counter
-	int fps;	
-	int show_fps;
+	FPSCounter fps;
 } Global;
 
 extern Global global;

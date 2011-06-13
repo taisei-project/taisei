@@ -18,24 +18,30 @@ set(SRCs
 	stage.c
 	global.c
 	player.c
-	texture.c
 	projectile.c
 	enemy.c
-	animation.c
 	item.c
 	list.c
-	font.c
-	audio.c
 	boss.c
 	plrmodes.c
 	laser.c
-	shader.c
 	dialog.c
+	fbo.c
+	menu/menu.c
+	menu/mainmenu.c
+	menu/ingamemenu.c
 	stages/stage0.c
+	resource/texture.c
+	resource/animation.c
+	resource/font.c
+	resource/shader.c
+	resource/audio.c
 	${BISON_cfgparser_OUTPUTS}
 	${FLEX_cfgscanner_OUTPUTS})
 
 add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -DGL_GLEXT_PROTOTYPES)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 include_directories(${SDL_INCLUDE_DIRS} ${ALUT_INCLUDE_DIRS})
 add_executable(taisei ${SRCs})

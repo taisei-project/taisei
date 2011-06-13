@@ -7,7 +7,6 @@
 
 #include "boss.h"
 #include "global.h"
-#include "font.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -40,21 +39,21 @@ void spell_opening(Boss *b, int time) {
 		y = 20;
 	}
 	
-	draw_text(b->current->name, VIEWPORT_W-strlen(b->current->name)*5, y, _fonts.biolinum);
+	draw_text(AlRight, VIEWPORT_W, y, b->current->name, _fonts.standard);
 }
 
 void draw_boss(Boss *boss) {
 	draw_animation_p(creal(boss->pos), cimag(boss->pos), boss->anirow, boss->ani);
 	
-	if(boss->current && (boss->current->type == Spellcard || boss->current->type == SurvivalSpell))
+	if(boss->current && (boss->current->type == AT_Spellcard || boss->current->type == AT_SurvivalSpell))
 		spell_opening(boss, global.frames - boss->current->starttime);
 	
-	draw_text(boss->name, 10 + strlen(boss->name)*5, 20, _fonts.biolinum);
+	draw_text(AlLeft, 10, 20, boss->name, _fonts.standard);
 	
 	if(boss->current) {		
 		char buf[16];
 		snprintf(buf, 16,  "%.2f", (boss->current->timeout - global.frames + boss->current->starttime)/(float)FPS);
-		draw_text(buf, VIEWPORT_W - 20, 10, _fonts.biolinum);
+		draw_text(AlCenter, VIEWPORT_W - 20, 10, buf, _fonts.standard);
 	}
 	
 	glPushMatrix();
@@ -66,13 +65,13 @@ void draw_boss(Boss *boss) {
 			continue;
 		
 		switch(boss->attacks[i].type) {
-		case Normal:
+		case AT_Normal:
 			glColor3f(1,1,1);
 			break;
-		case Spellcard:
+		case AT_Spellcard:
 			glColor3f(1,0.8,0.8);
 			break;
-		case SurvivalSpell:
+		case AT_SurvivalSpell:
 			glColor3f(1,0.5,0.5);
 		}		
 		
@@ -159,7 +158,7 @@ void free_attack(Attack *a) {
 void start_attack(Boss *b, Attack *a) {	
 	a->starttime = global.frames + ATTACK_START_DELAY;
 	a->rule(b, EVENT_BIRTH);
-	if(a->type == Spellcard || a->type == SurvivalSpell)
+	if(a->type == AT_Spellcard || a->type == AT_SurvivalSpell)
 		play_sound("charge_generic");
 }
 

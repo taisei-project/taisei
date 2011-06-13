@@ -8,17 +8,17 @@
 #ifndef BOSS_H
 #define BOSS_H
 
-#include "animation.h"
 #include <complex.h>
 
+typedef struct Animation Animation;
 struct Boss;
 
 typedef void (*BossRule)(struct Boss*, int time);
 
 typedef enum AttackType {
-	Normal,
-	Spellcard,
-	SurvivalSpell
+	AT_Normal,
+	AT_Spellcard,
+	AT_SurvivalSpell
 } AttackType;
 
 

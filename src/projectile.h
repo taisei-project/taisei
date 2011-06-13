@@ -8,10 +8,10 @@
 #ifndef PROJECTILE
 #define PROJECTILE
 
-#include "texture.h"
-
 #include <stdarg.h>
 #include <complex.h>
+
+typedef struct Texture Texture;
 
 typedef struct {
 	float r;

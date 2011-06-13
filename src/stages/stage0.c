@@ -40,7 +40,7 @@ Dialog *test_dialog() {
 }
 
 void stage0_draw() {
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, global.rtt.fbo);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, global.fbg.fbo);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPushMatrix();
 	
@@ -192,8 +192,8 @@ void cirno_pfreeze_bg(Boss *c, int time) {
 
 Boss *create_cirno() {
 	Boss* cirno = create_boss("Cirno", "cirno", VIEWPORT_W/2 + 30I);
-	boss_add_attack(cirno, Normal, "Introduction", 10, 100, cirno_intro, NULL);
-	boss_add_attack(cirno, Spellcard, "Freeze Sign ~ Perfect Freeze", 20, 300, cirno_perfect_freeze, cirno_pfreeze_bg);
+	boss_add_attack(cirno, AT_Normal, "Introduction", 10, 100, cirno_intro, NULL);
+	boss_add_attack(cirno, AT_Spellcard, "Freeze Sign ~ Perfect Freeze", 20, 300, cirno_perfect_freeze, cirno_pfreeze_bg);
 	
 	start_attack(cirno, cirno->attacks);
 	return cirno;
@@ -221,12 +221,12 @@ void stage0_loop() {
 	glFogf(GL_FOG_START, 0);
 	glFogf(GL_FOG_END, 1500);
 	
-	while(!global.game_over) {
+	while(global.game_over <= 0) {
 		stage0_events();
 		stage_input();
 		stage_logic();		
 		
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+// 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		stage0_draw();
 		stage_draw();				
 		

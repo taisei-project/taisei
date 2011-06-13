@@ -9,9 +9,9 @@
 #define PLAYER_H
 
 #include <complex.h>
-#include "texture.h"
-#include "animation.h"
 #include "enemy.h"
+
+typedef struct Animation Animation;
 
 enum {
 	False = 0,

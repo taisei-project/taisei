@@ -74,7 +74,7 @@ void parse_config(char *filename) {
 	config_preset();
 	lineno = 1;
 	
-	char *buf = malloc(strlen(filename)+strlen(getenv("HOME")+2));
+	char *buf = malloc(strlen(filename)+strlen(getenv("HOME"))+3);
 	
 	strcpy(buf, getenv("HOME"));
 	strcat(buf, "/");
@@ -85,13 +85,12 @@ void parse_config(char *filename) {
 	printf("parse_config():\n");
 	if(yyin) {
 		yyparse();
-		fclose(yyin);
 		printf("-- parsing complete\n");
 	} else {
 		printf("-- parsing incomplete; falling back to built-in preset\n");
 		warn("problems with parsing %s", buf);
 	}
-	
+	fclose(yyin);
 	free(buf);
 }
 

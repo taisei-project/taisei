@@ -7,8 +7,6 @@
 
 #ifndef ENEMY_H
 #define ENEMY_H
-
-#include "animation.h"
 #include <complex.h>
 #include "projectile.h"
 

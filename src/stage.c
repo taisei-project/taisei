@@ -9,15 +9,20 @@
 
 #include <SDL/SDL.h>
 #include "global.h"
-#include "font.h"
-
+#include "menu/ingamemenu.h"
 
 void stage_start() {
-	init_player(&global.plr, Youmu, YoumuOpposite);
 	global.timer = 0;
+	global.frames = 0;
+	global.game_over = 0;
 }
 
 void stage_input() {
+	if(global.menu) {
+		menu_input(global.menu);
+		return;
+	}		
+	
 	SDL_Event event;
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;
@@ -33,7 +38,10 @@ void stage_input() {
 				if(!global.dialog)
 					plr_bomb(&global.plr);
 			} else if(sym == SDLK_ESCAPE) {
-					exit(1);
+				if(!global.menu)
+					global.menu = create_ingame_menu();
+				else
+					global.menu->quit = 1;
 			}
 		} else if(event.type == SDL_KEYUP) {
 			if(sym == tconfig.intval[KEY_FOCUS])
@@ -41,7 +49,7 @@ void stage_input() {
 			else if(sym == tconfig.intval[KEY_SHOT])
 				global.plr.fire = False;
 		} else if(event.type == SDL_QUIT) {
-			global.game_over = 1;
+			exit(1);
 		}
 	}
 	
@@ -67,6 +75,11 @@ void stage_input() {
 		global.plr.pos -= I*speed;
 	if(keys[tconfig.intval[KEY_DOWN]] && cimag(global.plr.pos) + global.plr.ani->h/2 + speed < VIEWPORT_H)
 		global.plr.pos += I*speed;
+	
+	if(!keys[tconfig.intval[KEY_SHOT]] && global.plr.fire)
+		global.plr.fire = False;
+	if(!keys[tconfig.intval[KEY_FOCUS]] && global.plr.focus > 0)
+		global.plr.focus = -30;
 
 }
 
@@ -88,16 +101,18 @@ void draw_hud() {
 	glColor3f(1,1,1);
 	
 	sprintf(buf, "%.2f", global.plr.power);
-	draw_text(buf, 10, 236, _fonts.biolinum);
+	draw_text(AlCenter, 10, 236, buf, _fonts.standard);
 	
 	sprintf(buf, "%i", global.points);
-	draw_text(buf, 13, 49, _fonts.biolinum);
+	draw_text(AlCenter, 13, 49, buf, _fonts.standard);
 	
 	glPopMatrix();
 	
-	sprintf(buf, "%i fps", global.show_fps);
-	draw_text(buf, SCREEN_W-5*strlen(buf), SCREEN_H-20, _fonts.biolinum);
+	sprintf(buf, "%i fps", global.fps.show_fps);
+	draw_text(AlLeft, SCREEN_W, SCREEN_H-20, buf, _fonts.standard);
 }
+
+
 
 void stage_draw() {
 	glMatrixMode(GL_PROJECTION);
@@ -105,77 +120,86 @@ void stage_draw() {
 	glOrtho(0, SCREEN_W, SCREEN_H, 0, -10, 10);
 	glMatrixMode(GL_MODELVIEW);
 	glDisable(GL_DEPTH_TEST);
-	
-	
+		
 	glPushMatrix();
 	glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
-	apply_bg_shaders();
-	player_draw(&global.plr);
+		
+	if(!global.menu) {
+		apply_bg_shaders();
+		glPushMatrix();
+		glTranslatef(-VIEWPORT_X/3.0,0,0);
 
-	draw_projectiles(global.projs);
-	draw_enemies(global.enemies);
-	draw_items();
-	draw_lasers();	
-	
-	if(global.boss)
-		draw_boss(global.boss);
-	
-	draw_projectiles(global.particles);
-	
-	if(global.dialog)
-		draw_dialog(global.dialog);
-	
-	glPopMatrix();
-	
+		player_draw(&global.plr);
+
+		draw_projectiles(global.projs);
+		draw_enemies(global.enemies);
+		draw_items();
+		draw_lasers();
+
+		if(global.boss)
+			draw_boss(global.boss);
+
+		draw_projectiles(global.particles);
+
+		if(global.dialog)
+			draw_dialog(global.dialog);
+
+		glPopMatrix();
+			
+
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+		draw_fbo_viewport(&global.fsec);		
+	} if(global.menu) {
+		draw_ingame_menu(global.menu);
+	}
+	glPopMatrix();		
 	draw_hud();
+	
+	if(global.frames < FADE_TIME)
+		fade_out(1.0 - global.frames/(float)FADE_TIME);
+	if(global.menu && global.menu->selected == 1) {
+		fade_out(global.menu->fade);
+	}
 }
 
 void apply_bg_shaders() {
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, global.rtt.fbo);
-	if(global.boss && global.boss->current && global.boss->current->draw_rule) {
-		glPushMatrix();
-		glTranslatef(-VIEWPORT_X,0,0); // Some transformation for concenience. Don't ask why. it's because of rtt.
-		glScalef((VIEWPORT_W+VIEWPORT_X)/(float)VIEWPORT_W, (VIEWPORT_H+VIEWPORT_Y)/(float)VIEWPORT_H, 1);
-		global.boss->current->draw_rule(global.boss, global.frames - global.boss->current->starttime);
-		glPopMatrix();
-	}
-	
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-	
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, global.fsec.fbo);
+		
 	if(global.boss) { // Boss background shader
 		GLuint shader = get_shader("boss_zoom");
 		glUseProgram(shader);
 		
-		complex pos = global.boss->pos + 15*cexp(I*global.frames/5.0);
-		complex fpos = global.boss->pos;
+		complex fpos = VIEWPORT_H*I + conj(global.boss->pos) + (VIEWPORT_X + VIEWPORT_Y*I)*0.5;
+		complex pos = fpos + 15*cexp(I*global.frames/5.0);
 		
 		glUniform2f(glGetUniformLocation(shader, "blur_orig"),
-					(creal(pos)+VIEWPORT_X)/global.rtt.nw, (VIEWPORT_H - cimag(pos) - VIEWPORT_Y/2)/global.rtt.nh);
+					creal(pos)/global.fbg.nw, cimag(pos)/global.fbg.nh);
 		glUniform2f(glGetUniformLocation(shader, "fix_orig"),
-					(creal(fpos)+VIEWPORT_X)/global.rtt.nw, (VIEWPORT_H - cimag(fpos) - VIEWPORT_Y/2)/global.rtt.nh);
+					creal(fpos)/global.fbg.nw, cimag(fpos)/global.fbg.nh);
 		glUniform1f(glGetUniformLocation(shader, "blur_rad"), 0.2+0.05*sin(global.frames/10.0));
 		glUniform1f(glGetUniformLocation(shader, "rad"), 0.3);
-		glUniform1f(glGetUniformLocation(shader, "ratio"), (float)global.rtt.nh/global.rtt.nw);
+		glUniform1f(glGetUniformLocation(shader, "ratio"), (float)global.fbg.nh/global.fbg.nw);
 	}
 	
-	glPushMatrix();
-	glTranslatef(-global.rtt.nw+VIEWPORT_W,-global.rtt.nh+VIEWPORT_H,0);
-		
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, global.rtt.tex);
-	glBegin(GL_QUADS);
-		glTexCoord2f(0,1); glVertex3f(0, 0, 0);
-		glTexCoord2f(0,0); glVertex3f(0, global.rtt.nh, 0);
-		glTexCoord2f(1,0); glVertex3f(global.rtt.nw, global.rtt.nh, 0);
-		glTexCoord2f(1,1); glVertex3f(global.rtt.nw, 0, 0);
-	glEnd();
-	glDisable(GL_TEXTURE_2D);
+	draw_fbo_viewport(&global.fbg);
 	
 	glUseProgramObjectARB(0);
-	glPopMatrix();
+		
+	if(global.boss && global.boss->current && global.boss->current->draw_rule) {
+		glPushMatrix();
+		glTranslatef(-VIEWPORT_X,0,0); // Some transformation for convenience. Don't ask why. it's because of rtt.
+		glScalef((VIEWPORT_W+VIEWPORT_X)/(float)VIEWPORT_W, (VIEWPORT_H+VIEWPORT_Y)/(float)VIEWPORT_H, 1);
+		global.boss->current->draw_rule(global.boss, global.frames - global.boss->current->starttime);
+		glPopMatrix();
+	}
 }
 
 void stage_logic() {
+	if(global.menu) {
+		ingame_menu_logic(&global.menu);
+		return;
+	}
+	
 	player_logic(&global.plr);
 	
 	process_enemies(&global.enemies);
@@ -194,20 +218,30 @@ void stage_logic() {
 	
 	if(!global.dialog)
 		global.timer++;
-		
-	if(SDL_GetTicks() > global.fpstime+1000) {
-		global.show_fps = global.fps;
-		global.fps = 0;
-		global.fpstime = SDL_GetTicks();
-	} else {
-		global.fps++;
-	}
+	
+	calc_fps(&global.fps);
 }
 
 void stage_end() {
 	delete_projectiles(&global.projs);
+	delete_projectiles(&global.particles);
 	delete_enemies(&global.enemies);
 	delete_items();
 	delete_lasers();
+		
+	if(global.menu) {
+		destroy_menu(global.menu);
+		global.menu = NULL;
+	}
+	
+	if(global.dialog) {
+		delete_dialog(global.dialog);
+		global.dialog = NULL;
+	}
+	
+	if(global.boss) {
+		free_boss(global.boss);
+		global.boss = NULL;
+	}
 }
 		

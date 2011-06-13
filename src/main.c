@@ -11,6 +11,7 @@
 
 #include "global.h"
 #include "stages/stage0.h"
+#include "menu/mainmenu.h"
 
 SDL_Surface *display;
 
@@ -26,12 +27,7 @@ void init_gl() {
 	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 	
 	glViewport(0, 0, SCREEN_W, SCREEN_H);
-	
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();	
-	glOrtho(0, SCREEN_W, SCREEN_H, 0, -1000, 1000);
-	glMatrixMode(GL_MODELVIEW);
-	
+		
 	glClearDepth(1.0);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
@@ -59,13 +55,21 @@ int main(int argc, char** argv) {
 	if((display = SDL_SetVideoMode(SCREEN_W, SCREEN_H, 32, SDL_OPENGL)) == NULL)
 		errx(-1, "Error opening screen: %s", SDL_GetError());
 	
+	SDL_WM_SetCaption("TaiseiProject", NULL); 
+	
 	init_gl();
 		
 	if(!alutInit(&argc, argv))
 		errx(-1, "Error initializing audio: %s", alutGetErrorString(alutGetError()));
 	init_global();
 	
-	stage0_loop();
+	init_player(&global.plr, Youmu, YoumuOpposite);
+	
+	MenuData menu;
+	create_main_menu(&menu);
+	
+// 	stage0_loop();
+	main_menu_loop(&menu);
 	
 	shutdown();
 	

@@ -9,7 +9,6 @@
 #ifndef ITEM_H
 #define ITEM_H
 
-#include "texture.h"
 #include <complex.h>
 
 struct Item;

@@ -13,8 +13,8 @@ struct Fonts _fonts;
 
 void init_fonts() {
 	TTF_Init();
-	_fonts.biolinum = TTF_OpenFont(FILE_PREFIX "gfx/LinBiolinum.ttf", 20);
-	assert(_fonts.biolinum);
+	_fonts.standard = TTF_OpenFont(FILE_PREFIX "gfx/LinBiolinum.ttf", 20);
+	_fonts.mainmenu = TTF_OpenFont(FILE_PREFIX "gfx/immortal.ttf", 35);
 }
 
 Texture *load_text(const char *text, TTF_Font *font) {
@@ -29,18 +29,31 @@ Texture *load_text(const char *text, TTF_Font *font) {
 	return tex;
 }
 
-void draw_text(const char *text, int x, int y, TTF_Font *font) {
+void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *font) {
 	char *nl;
 	char *buf = malloc(strlen(text)+1);
 	strcpy(buf, text);
 	
 	if((nl = strchr(buf, '\n')) != NULL && strlen(nl) > 1) {
-		draw_text(nl+1, x, y + 20, font);
+		draw_text(AlCenter, x, y + 20, nl+1, font);
 		*nl = '\0';
 	}
 		
 	Texture *tex = load_text(buf, font);
-	draw_texture_p(x, y, tex);
+	
+	switch(align) {
+	case AlCenter:
+		draw_texture_p(x, y, tex);
+		break;
+	case AlLeft:
+		draw_texture_p(x + tex->w/2.0, y, tex);
+		break;
+	case AlRight:
+		draw_texture_p(x - tex->w/2.0, y, tex);
+		break;
+	}
+		
 	free_texture(tex);
 	free(buf);
 }
+

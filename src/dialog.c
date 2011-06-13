@@ -7,7 +7,6 @@
 
 #include "dialog.h"
 #include "global.h"
-#include "font.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -101,7 +100,7 @@ void draw_dialog(Dialog *dialog) {
 	
 	if(dialog->messages[dialog->pos].side == Right)
 		glColor3f(0.6,0.6,1);
-	draw_text(dialog->messages[dialog->pos].msg, VIEWPORT_W/2, VIEWPORT_H-110, _fonts.biolinum);
+	draw_text(AlCenter, VIEWPORT_W/2, VIEWPORT_H-110, dialog->messages[dialog->pos].msg, _fonts.standard);
 	
 	glColor4f(1,1,1,1);
 	glPopMatrix();

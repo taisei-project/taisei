@@ -18,7 +18,7 @@ void print_info_log(GLuint shader) {
 	if(len > 1) {
 		char *log = malloc(len);
 		memset(log, 0, len);
-		glGetShaderInfoLog(shader, len, &alen, log);
+		glGetShaderInfoLog(shader, 256, &alen, log);
 		printf("%s\n", log);
 		free(log);
 	}

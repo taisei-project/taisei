@@ -12,12 +12,19 @@
 #include <SDL/SDL_ttf.h>
 #include "texture.h"
 
+typedef enum {
+	AlCenter,
+	AlLeft,
+	AlRight
+} Alignment;
+
 Texture *load_text(const char *text, TTF_Font *font);
-void draw_text(const char *text, int x, int y, TTF_Font *font);
+void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *font);
 void init_fonts();
 
 struct Fonts {
-	TTF_Font *biolinum;
+	TTF_Font *standard;
+	TTF_Font *mainmenu;
 };
 
 extern struct Fonts _fonts;
