@@ -86,11 +86,11 @@ void parse_config(char *filename) {
 	if(yyin) {
 		yyparse();
 		printf("-- parsing complete\n");
+		fclose(yyin);
 	} else {
 		printf("-- parsing incomplete; falling back to built-in preset\n");
 		warn("problems with parsing %s", buf);
 	}
-	fclose(yyin);
 	free(buf);
 }
 
