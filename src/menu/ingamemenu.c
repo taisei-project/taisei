@@ -21,7 +21,7 @@ MenuData *create_ingame_menu() {
 	create_menu(m);
 	add_menu_entry(m, "Return to Game", return_to_game, NULL);
 	add_menu_entry(m, "Return to Title", return_to_title, NULL);
-	add_menu_entry(m, "Give Up and Retry", return_to_title, NULL);
+	add_menu_entry(m, "Give Up and Retry", NULL, NULL);
 	
 	return m;
 }
@@ -83,7 +83,7 @@ void draw_ingame_menu(MenuData *menu) {
 			s = 0.3 + 0.2*sin(menu->frames/7.0);
 		
 		glColor4f(1-s,1-s,1, 1.0 - menu->fade);
-		draw_text(AlCenter, 0, i*35, menu->entries[i].name, _fonts.standard);
+		draw_text(AL_Center, 0, i*35, menu->entries[i].name, _fonts.standard);
 	}
 		
 	glColor4f(1,1,1,1);

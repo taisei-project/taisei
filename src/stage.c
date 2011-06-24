@@ -101,25 +101,21 @@ void draw_hud() {
 	glColor3f(1,1,1);
 	
 	sprintf(buf, "%.2f", global.plr.power);
-	draw_text(AlCenter, 10, 236, buf, _fonts.standard);
+	draw_text(AL_Center, 10, 236, buf, _fonts.standard);
 	
 	sprintf(buf, "%i", global.points);
-	draw_text(AlCenter, 13, 49, buf, _fonts.standard);
+	draw_text(AL_Center, 13, 49, buf, _fonts.standard);
 	
 	glPopMatrix();
 	
 	sprintf(buf, "%i fps", global.fps.show_fps);
-	draw_text(AlLeft, SCREEN_W, SCREEN_H-20, buf, _fonts.standard);
+	draw_text(AL_Left, SCREEN_W, SCREEN_H-20, buf, _fonts.standard);
 }
 
 
 
 void stage_draw() {
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, SCREEN_W, SCREEN_H, 0, -10, 10);
-	glMatrixMode(GL_MODELVIEW);
-	glDisable(GL_DEPTH_TEST);
+	set_ortho();
 		
 	glPushMatrix();
 	glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);

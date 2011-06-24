@@ -13,9 +13,9 @@
 #include "texture.h"
 
 typedef enum {
-	AlCenter,
-	AlLeft,
-	AlRight
+	AL_Center,
+	AL_Left,
+	AL_Right
 } Alignment;
 
 Texture *load_text(const char *text, TTF_Font *font);

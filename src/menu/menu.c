@@ -43,7 +43,7 @@ void menu_input(MenuData *menu) {
 			} else if(sym == tconfig.intval[KEY_UP] && menu->cursor > 0) {
 				menu->drawdata[3] = 10;
 				menu->cursor--;
-			} else if(sym == tconfig.intval[KEY_SHOT] || sym == SDLK_RETURN) {
+			} else if((sym == tconfig.intval[KEY_SHOT] || sym == SDLK_RETURN) && menu->entries[menu->cursor].action) {
 				menu->quit = 1;
 				menu->selected = menu->cursor;
 			} else if(sym == SDLK_ESCAPE && menu->type == MT_Transient) {
@@ -70,10 +70,8 @@ void menu_logic(MenuData *menu) {
 		
 	if(menu->quit == 1 && menu->fade >= 1.0) {
 		menu->quit = menu->type == MT_Transient ? 2 : 0;
-		if(menu->selected != -1) {
+		if(menu->selected != -1 && menu->entries[menu->selected].action != NULL)
 			menu->entries[menu->selected].action(menu->entries[menu->selected].arg);
-// 			menu->selected = -1;
-		}
 	}
 }
 

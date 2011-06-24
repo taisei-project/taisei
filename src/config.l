@@ -28,19 +28,26 @@
 "key_shot"	{ yylval = KEY_SHOT; return tKEY_SHOT; }
 "key_bomb"	{ yylval = KEY_BOMB; return tKEY_BOMB; }
 
-"shift"	{ yylval = SDLK_LSHIFT; return SKEY; }
-"ctrl"	{ yylval = SDLK_LCTRL; return SKEY; }
+"shift"		{ yylval = SDLK_LSHIFT; return SKEY; }
+"ctrl"		{ yylval = SDLK_LCTRL; return SKEY; }
 "return"	{ yylval = SDLK_RETURN; return SKEY; }
-"alt"	{ yylval = SDLK_LALT; return SKEY; }
+"alt"		{ yylval = SDLK_LALT; return SKEY; }
 
 "up"		{ yylval = SDLK_UP; return SKEY; }
-"down"	{ yylval = SDLK_DOWN; return SKEY; }
-"right"	{ yylval = SDLK_RIGHT; return SKEY; }
-"left"	{ yylval = SDLK_LEFT; return SKEY; }
+"down"		{ yylval = SDLK_DOWN; return SKEY; }
+"right"		{ yylval = SDLK_RIGHT; return SKEY; }
+"left"		{ yylval = SDLK_LEFT; return SKEY; }
 
 
 [0-9]+		{ yylval = atoi(yytext); return NUMBER; }
 [a-zA-Z]	{ yylval = yytext[0]; return CHAR; }
+
+ä			{ yylval = SDLK_WORLD_68; return CHAR; }
+ü			{ yylval = SDLK_WORLD_92; return CHAR; }
+ö			{ yylval = SDLK_WORLD_86; return CHAR; }
+ß			{ yylval = SDLK_WORLD_63; return CHAR; }
+
+K[0-9]+		{ yylval = atoi(yytext + 1); return CHAR; }
 
 \n			return LB;
 [ \t]		;

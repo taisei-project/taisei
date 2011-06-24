@@ -30,6 +30,7 @@ set(SRCs
 	menu/menu.c
 	menu/mainmenu.c
 	menu/ingamemenu.c
+	menu/difficulty.c
 	stages/stage0.c
 	resource/texture.c
 	resource/animation.c

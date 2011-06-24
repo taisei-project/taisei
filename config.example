@@ -13,3 +13,6 @@ key_focus = shift
 key_shot = z
 # key_shot = y # if you are qwertz-fag
 key_bomb = x
+
+# if your favourite keysym isn't supported, look it up in SDL/SDL_keysym.h
+# key_bomb = K42 # Syntax: K${value} where value is the value defined in the header.

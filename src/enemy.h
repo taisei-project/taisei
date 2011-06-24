@@ -15,7 +15,7 @@
 
 #include <stdarg.h>
 
-struct Enemy;
+typedef struct Enemy Enemy;
 typedef void (*EnemyLogicRule)(struct Enemy*, int t);
 typedef EnemyLogicRule EnemyDrawRule;
 
@@ -23,9 +23,9 @@ enum {
 	ENEMY_IMMUNE = -9000
 };
 
-typedef struct Enemy {
-	struct Enemy *next;
-	struct Enemy *prev;
+struct Enemy {
+	Enemy *next;
+	Enemy *prev;
 	
 	complex pos;
 	complex pos0;
@@ -42,7 +42,7 @@ typedef struct Enemy {
 	
 	void *parent;
 	complex args[RULE_ARGC];
-} Enemy;
+};
 
 #define create_enemyg(drule, lrule, pos, hp, par, args) (create_enemy(&global.enemies, drule, lrule, pos, hp, par, args))
 void create_enemy(Enemy **enemies, EnemyDrawRule draw_rule, EnemyLogicRule logic_rule,

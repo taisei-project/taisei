@@ -39,7 +39,7 @@ void spell_opening(Boss *b, int time) {
 		y = 20;
 	}
 	
-	draw_text(AlRight, VIEWPORT_W, y, b->current->name, _fonts.standard);
+	draw_text(AL_Right, VIEWPORT_W, y, b->current->name, _fonts.standard);
 }
 
 void draw_boss(Boss *boss) {
@@ -48,12 +48,12 @@ void draw_boss(Boss *boss) {
 	if(boss->current && (boss->current->type == AT_Spellcard || boss->current->type == AT_SurvivalSpell))
 		spell_opening(boss, global.frames - boss->current->starttime);
 	
-	draw_text(AlLeft, 10, 20, boss->name, _fonts.standard);
+	draw_text(AL_Left, 10, 20, boss->name, _fonts.standard);
 	
 	if(boss->current) {		
 		char buf[16];
 		snprintf(buf, 16,  "%.2f", (boss->current->timeout - global.frames + boss->current->starttime)/(float)FPS);
-		draw_text(AlCenter, VIEWPORT_W - 20, 10, buf, _fonts.standard);
+		draw_text(AL_Center, VIEWPORT_W - 20, 10, buf, _fonts.standard);
 	}
 	
 	glPushMatrix();

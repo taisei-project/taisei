@@ -29,7 +29,7 @@ void simpleEnemy(Enemy *e, int t) {
 }
 
 Dialog *test_dialog() {
-	Dialog *d = create_dialog("dialog/youmu", "dialog/youmu");
+	Dialog *d = create_dialog("dialog/marisa", "dialog/youmu");
 		
 	dadd_msg(d, Left, "Hello");
 	dadd_msg(d, Right, "Hello you");

@@ -35,20 +35,20 @@ void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *fo
 	strcpy(buf, text);
 	
 	if((nl = strchr(buf, '\n')) != NULL && strlen(nl) > 1) {
-		draw_text(AlCenter, x, y + 20, nl+1, font);
+		draw_text(align, x, y + 20, nl+1, font);
 		*nl = '\0';
 	}
 		
 	Texture *tex = load_text(buf, font);
 	
 	switch(align) {
-	case AlCenter:
+	case AL_Center:
 		draw_texture_p(x, y, tex);
 		break;
-	case AlLeft:
+	case AL_Left:
 		draw_texture_p(x + tex->w/2.0, y, tex);
 		break;
-	case AlRight:
+	case AL_Right:
 		draw_texture_p(x - tex->w/2.0, y, tex);
 		break;
 	}

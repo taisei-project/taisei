@@ -101,6 +101,7 @@ typedef struct {
 	int points;
 		
 	FPSCounter fps;
+	
 } Global;
 
 extern Global global;
@@ -110,5 +111,7 @@ void init_rtt();
 void game_over();
 
 void frame_rate();
+
+void set_ortho();
 
 #endif

@@ -11,7 +11,7 @@
 
 #include <complex.h>
 
-struct Item;
+typedef struct Item Item;
 
 typedef enum {
 	Power,
@@ -21,9 +21,9 @@ typedef enum {
 	Bomb
 } Type;
 
-typedef struct Item{
-	struct Item *next;
-	struct Item *prev;
+struct Item{
+	Item *next;
+	Item *prev;
 
 	int birthtime;
 	complex pos;
@@ -33,7 +33,7 @@ typedef struct Item{
 	Type type;
 	
 	complex v;
-} Item;
+};
 
 Item *create_item(complex pos, complex v, Type type);
 void delete_item(Item *item);
