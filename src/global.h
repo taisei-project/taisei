@@ -67,9 +67,12 @@ typedef struct {
 } FPSCounter;
 
 typedef struct {
-	Player plr;
 	Difficulty diff;
+	Character plrtype;
+	ShotMode plrmode;
 	
+	Player plr;
+		
 	Projectile *projs;
 	Enemy *enemies;
 	Item *items;

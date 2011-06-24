@@ -7,6 +7,10 @@
 
 #include "mainmenu.h"
 #include "menu.h"
+
+#include "difficulty.h"
+#include "charselect.h"
+
 #include "global.h"
 
 void quit_menu(void *arg) {
@@ -16,11 +20,17 @@ void quit_menu(void *arg) {
 
 void start_story(void *arg) {
 	MenuData m;
+
+troll:
 	create_difficulty_menu(&m);
-	difficulty_menu_loop(&m);
-// 	
-// 	create_char_menu(&m);
-// 	character_menu_loop(m);
+	if(difficulty_menu_loop(&m) == -1)
+		return;
+	
+	create_char_menu(&m);
+	if(char_menu_loop(&m) == -1)
+		goto troll;
+	
+	init_player(&global.plr, global.plrtype, global.plrmode);
 	
 	stage0_loop();
 }

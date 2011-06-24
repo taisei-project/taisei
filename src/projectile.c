@@ -167,7 +167,7 @@ void process_projectiles(Projectile **projs, char collision) {
 				clr = malloc(sizeof(Color));
 				memcpy(clr, proj->clr, sizeof(Color));
 			}
-			create_projectile_p(Pa, proj->tex, proj->pos, clr, DeathShrink, timeout_linear, rarg(15, -20I*cexp(proj->angle)));
+			create_projectile_p(Pa, proj->tex, proj->pos, clr, DeathShrink, timeout_linear, rarg(10, 5*cexp(proj->angle*I)));
 		}
 		
 		
@@ -222,7 +222,7 @@ void Shrink(Projectile *p, int t) {
 	glPushMatrix();
 	float s = 2.0-t/p->args[0]*2;
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
-	glRotatef(p->angle, 0, 0, 1);
+	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
 	glScalef(s, s, 1);
 	
 	_ProjDraw(p, t);
@@ -233,9 +233,9 @@ void DeathShrink(Projectile *p, int t) {
 	glPushMatrix();
 	float s = 2.0-t/p->args[0]*2;
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
-	glRotatef(p->angle, 0, 0, 1);
+	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
 	glScalef(s, 1, 1);
-	
+		
 	_ProjDraw(p, t);
 	glPopMatrix();
 }

@@ -53,7 +53,7 @@ void calc_fps(FPSCounter *fps) {
 void set_ortho() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, SCREEN_W, SCREEN_H, 0, -10, 10);
+	glOrtho(0, SCREEN_W, SCREEN_H, 0, -100, 100);
 	glMatrixMode(GL_MODELVIEW);
 	glDisable(GL_DEPTH_TEST);
 }

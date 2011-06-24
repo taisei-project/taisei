@@ -8,7 +8,7 @@
 #ifndef INGAMEMENU_H
 #define INGAMEMENU_H
 
-typedef struct MenuData MenuData;
+#include "menu.h"
 
 MenuData *create_ingame_menu();
 void draw_ingame_menu(MenuData *menu);

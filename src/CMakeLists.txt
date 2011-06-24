@@ -31,6 +31,7 @@ set(SRCs
 	menu/mainmenu.c
 	menu/ingamemenu.c
 	menu/difficulty.c
+	menu/charselect.c
 	stages/stage0.c
 	resource/texture.c
 	resource/animation.c

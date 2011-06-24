@@ -5,16 +5,14 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
-#ifndef MAINMENU_H
-#define MAINMENU_H
+#ifndef CHARSELECT_H
+#define CHARSELECT_H
 
 #include "menu.h"
 
-void create_main_menu(MenuData *m);
+void create_char_menu(MenuData *m);
+void draw_char_menu(MenuData *menu);
+int char_menu_loop(MenuData *menu);
 
-void draw_main_menu_bg(MenuData *m);
-
-void draw_main_menu(MenuData *m);
-void main_menu_loop(MenuData *m);
 
 #endif

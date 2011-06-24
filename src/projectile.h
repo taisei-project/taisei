@@ -10,8 +10,7 @@
 
 #include <stdarg.h>
 #include <complex.h>
-
-typedef struct Texture Texture;
+#include "resource/texture.h"
 
 typedef struct {
 	float r;

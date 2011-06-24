@@ -63,8 +63,6 @@ int main(int argc, char** argv) {
 		errx(-1, "Error initializing audio: %s", alutGetErrorString(alutGetError()));
 	init_global();
 	
-	init_player(&global.plr, Youmu, YoumuOpposite);
-	
 	MenuData menu;
 	create_main_menu(&menu);
 	

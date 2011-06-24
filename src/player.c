@@ -87,10 +87,8 @@ void player_draw(Player* plr) {
 	glPopMatrix();
 }
 
-void player_logic(Player* plr) {
-	process_enemies(&plr->slaves);
-	
-	if(plr->fire && plr->cha == Youmu) {
+void youmu_shot(Player *plr) {
+	if(plr->fire) {
 		if(!(global.frames % 4)) {
 			create_projectile("youmu", plr->pos + 10 - I*20, NULL, linear, rarg(-20I))->type = PlrProj;
 			create_projectile("youmu", plr->pos - 10 - I*20, NULL, linear, rarg(-20I))->type = PlrProj;
@@ -117,12 +115,26 @@ void player_logic(Player* plr) {
 				create_projectile("hghost", plr->pos, NULL, youmu_homing, rarg(a*cexp(I*rand()), ref))->type = PlrProj;
 		}
 	}
-		
-	if(plr->focus < 0 || (plr->focus > 0 && plr->focus < 30))
-		plr->focus++;
 	
 	if(plr->shot == YoumuOpposite && plr->slaves == NULL)
 		create_enemy(&plr->slaves, youmu_opposite_draw, youmu_opposite_logic, plr->pos, ENEMY_IMMUNE, plr, 0);
+}
+
+void marisa_shot(Player *plr) {
+}
+
+void player_logic(Player* plr) {
+	process_enemies(&plr->slaves);
+	
+	if(plr->focus < 0 || (plr->focus > 0 && plr->focus < 30))
+		plr->focus++;
+	
+	switch(plr->cha) {
+	case Youmu:
+		youmu_shot(plr);
+	case Marisa:
+		marisa_shot(plr);
+	}
 }
 
 void plr_bomb(Player *plr) {

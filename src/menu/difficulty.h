@@ -12,6 +12,6 @@
 
 void create_difficulty_menu(MenuData *menu);
 void draw_difficulty_menu(MenuData *m);
-void difficulty_menu_loop(MenuData *m);
+int difficulty_menu_loop(MenuData *m);
 
 #endif

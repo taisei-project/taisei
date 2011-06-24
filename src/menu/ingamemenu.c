@@ -57,9 +57,7 @@ void draw_ingame_menu(MenuData *menu) {
 	glPushMatrix();
 	glTranslatef(0, menu->drawdata[0], 0);
 	glScalef(menu->drawdata[1],15,1);
-	glRotatef(menu->drawdata[3],0,0,1);
-	
-	
+		
 	glBegin(GL_QUADS);
 	glVertex3f(-1,-1,0);
 	glVertex3f(-1,1,0);
@@ -74,7 +72,6 @@ void draw_ingame_menu(MenuData *menu) {
 	menu->drawdata[1] += (strlen(menu->entries[menu->cursor].name)*5 - menu->drawdata[1])/10.0;
 	
 	menu->drawdata[2] -= menu->drawdata[3]*0.3 + menu->drawdata[2]*0.1;
-	menu->drawdata[3] += menu->drawdata[2]*0.3;
 	
 	int i;
 	for(i = 0; i < menu->ecount; i++) {

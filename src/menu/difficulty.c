@@ -23,7 +23,7 @@ void create_difficulty_menu(MenuData *m) {
 	
 }
 
-void difficulty_menu_loop(MenuData *menu) {
+int difficulty_menu_loop(MenuData *menu) {
 	set_ortho();
 	while(menu->quit != 2) {
 		menu_logic(menu);
@@ -34,16 +34,20 @@ void difficulty_menu_loop(MenuData *menu) {
 		SDL_Delay(16);
 	}
 	destroy_menu(menu);
+	
+	return menu->selected;
 }
 
 void draw_difficulty_menu(MenuData *menu) {
 	draw_main_menu_bg(menu);
-	draw_text(AL_Left, 10, 30, "Difficulty", _fonts.mainmenu);
+	draw_text(AL_Right, 210*(1-menu->fade), 30, "Rank Select", _fonts.mainmenu);
 	
 	int i;
 	for(i = 0; i < menu->ecount; i++) {
+		menu->entries[i].drawdata += 0.2 * (30*(i == menu->cursor) - menu->entries[i].drawdata);
+		
 		glPushMatrix();
-		glTranslatef(SCREEN_W/3 - 30*(i==menu->cursor), 200 + 70*i,0);
+		glTranslatef(SCREEN_W/3 - menu->entries[i].drawdata, 200 + 70*i,0);
 		
 		glColor4f(1,1-0.1*i,1-0.1*i,0.7);
 		glBegin(GL_QUADS);

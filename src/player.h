@@ -25,7 +25,10 @@ typedef enum {
 
 typedef enum {
 	YoumuOpposite,
-	YoumuHoming
+	YoumuHoming,
+	
+	MarisaFoo = YoumuOpposite,
+	MarisaBar = YoumuHoming
 } ShotMode;
 
 typedef struct {

@@ -8,7 +8,7 @@
 #ifndef DIALOG_H
 #define DIALOG_H
 
-typedef struct Texture Texture;
+#include "resource/texture.h"
 
 struct DialogMessage;
 struct DialogSpeaker;

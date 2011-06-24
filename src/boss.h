@@ -10,7 +10,7 @@
 
 #include <complex.h>
 
-typedef struct Animation Animation;
+#include <resource/animation.h>
 struct Boss;
 
 typedef void (*BossRule)(struct Boss*, int time);

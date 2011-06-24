@@ -14,6 +14,7 @@ void add_menu_entry(MenuData *menu, char *name, void (*action)(void *), void *ar
 	strcpy(menu->entries[menu->ecount-1].name, name);
 	menu->entries[menu->ecount-1].action = action;
 	menu->entries[menu->ecount-1].arg = arg;
+	menu->entries[menu->ecount-1].drawdata = 0;
 }
 
 void destroy_menu(MenuData *menu) {
