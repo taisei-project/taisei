@@ -13,23 +13,17 @@
 #include "plrmodes.h"
 
 void init_player(Player* plr, Character cha, ShotMode shot) {
+	memset(plr, 0, sizeof(Player));
+	
 	plr->pos = VIEWPORT_W/2 + I*(VIEWPORT_H-20);
-	
-	plr->focus = False;
-	plr->fire = False;
-	plr->moving = False;
-	plr->dir = 0;
-	plr->power = 0;
-	
+		
 	plr->lifes = 2;
 	plr->bombs = 3;
 	
-	plr->slaves = NULL;
-	
-	plr->recovery = 0;
-	
 	plr->cha = cha;
 	plr->shot = shot;
+	
+	plr->deathtime = -1;
 	
 	switch(cha) {
 	case Youmu:
@@ -87,42 +81,6 @@ void player_draw(Player* plr) {
 	glPopMatrix();
 }
 
-void youmu_shot(Player *plr) {
-	if(plr->fire) {
-		if(!(global.frames % 4)) {
-			create_projectile("youmu", plr->pos + 10 - I*20, NULL, linear, rarg(-20I))->type = PlrProj;
-			create_projectile("youmu", plr->pos - 10 - I*20, NULL, linear, rarg(-20I))->type = PlrProj;
-						
-			if(plr->power >= 2) {
-				float a = 0.20;
-				if(plr->focus > 0) a = 0.06;
-				create_projectile("youmu", plr->pos - 10 - I*20, NULL, linear, rarg(I*-20*cexp(-I*a)))->type = PlrProj;
-				create_projectile("youmu", plr->pos + 10 - I*20, NULL, linear, rarg(I*-20*cexp(I*a)))->type = PlrProj;
-			}		
-		}
-		
-		float a = 1;
-		if(plr->focus > 0)
-			a = 0.4;
-		if(plr->shot == YoumuHoming && !(global.frames % 7)) {
-			complex ref = -1;
-			if(global.boss != NULL)
-				ref = add_ref(global.boss);
-			else if(global.enemies != NULL)
-				ref = add_ref(global.enemies);
-			
-			if(ref != -1)
-				create_projectile("hghost", plr->pos, NULL, youmu_homing, rarg(a*cexp(I*rand()), ref))->type = PlrProj;
-		}
-	}
-	
-	if(plr->shot == YoumuOpposite && plr->slaves == NULL)
-		create_enemy(&plr->slaves, youmu_opposite_draw, youmu_opposite_logic, plr->pos, ENEMY_IMMUNE, plr, 0);
-}
-
-void marisa_shot(Player *plr) {
-}
-
 void player_logic(Player* plr) {
 	process_enemies(&plr->slaves);
 	
@@ -135,6 +93,12 @@ void player_logic(Player* plr) {
 	case Marisa:
 		marisa_shot(plr);
 	}
+	
+	if(plr->deathtime > 0)
+		create_particle("flare", plr->pos, rgb(255,0,0), Shrink, timeout_linear, rarg(10, 4*cexp(I*rand())));
+	
+	if(global.frames == plr->deathtime)
+		plr_realdeath(plr);
 }
 
 void plr_bomb(Player *plr) {
@@ -148,12 +112,21 @@ void plr_bomb(Player *plr) {
 		
 		play_sound("laser1");
 		
+		if(plr->deathtime > 0) {
+			plr->deathtime = -1;
+			plr->bombs /= 2;
+		}
+		
 		plr->bombs--;
+		
 		plr->recovery = global.frames + 200;
+		
 	}
 }
 
-void plr_death(Player *plr) {
+void plr_realdeath(Player *plr) {
+	plr->deathtime = -1;
+	
 	if(plr->lifes-- == 0) {
 		game_over();
 	} else {
@@ -161,12 +134,16 @@ void plr_death(Player *plr) {
 		create_item(plr->pos, -6-15*I, Power);
 		
 		plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I;
-		plr->recovery = -(global.frames + 200);		
+		plr->recovery = -(global.frames + 200);
 		
-		if(global.plr.bombs < 2)
-			global.plr.bombs = 2;
+		if(global.plr.bombs < 3)
+			global.plr.bombs = 3;
 	}
 	
 	if(plr->slaves)
 		delete_enemies(&plr->slaves);
+}
+
+void plr_death(Player *plr) {
+	plr->deathtime = global.frames + DEATHBOMB_TIME;
 }

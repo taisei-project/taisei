@@ -240,4 +240,24 @@ void stage_end() {
 		global.boss = NULL;
 	}
 }
+
+void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event) {	
+	stage_start();
+	start();
+	
+	while(global.game_over <= 0) {
+		event();
+		stage_input();
+		stage_logic();		
+		
+		draw();
+		stage_draw();				
+		
+		SDL_GL_SwapBuffers();
+		frame_rate(&global.lasttime);
+	}
+	
+	end();
+	stage_end();
+}
 		

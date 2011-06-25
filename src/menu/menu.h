@@ -33,6 +33,7 @@ typedef struct MenuData{
 	int ecount;
 	
 	int frames;
+	int lasttime;
 		
 	int quit;
 	float fade;
@@ -46,6 +47,8 @@ void destroy_menu(MenuData *menu);
 
 void menu_logic(MenuData *menu);
 void menu_input(MenuData *menu);
+
+int menu_loop(MenuData *menu, void (*input)(MenuData*), void (*draw)(MenuData*));
 
 void fade_out(float f);
 #endif

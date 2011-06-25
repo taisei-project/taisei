@@ -23,21 +23,6 @@ void create_difficulty_menu(MenuData *m) {
 	
 }
 
-int difficulty_menu_loop(MenuData *menu) {
-	set_ortho();
-	while(menu->quit != 2) {
-		menu_logic(menu);
-		menu_input(menu);
-		
-		draw_difficulty_menu(menu);
-		SDL_GL_SwapBuffers();
-		SDL_Delay(16);
-	}
-	destroy_menu(menu);
-	
-	return menu->selected;
-}
-
 void draw_difficulty_menu(MenuData *menu) {
 	draw_main_menu_bg(menu);
 	draw_text(AL_Right, 210*(1-menu->fade), 30, "Rank Select", _fonts.mainmenu);
@@ -68,4 +53,7 @@ void draw_difficulty_menu(MenuData *menu) {
 	
 	fade_out(menu->fade);
 }
-	
+
+int difficulty_menu_loop(MenuData *menu) {
+	menu_loop(menu, NULL, draw_difficulty_menu);
+}

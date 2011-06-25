@@ -11,7 +11,7 @@
 #include <complex.h>
 #include "enemy.h"
 
-typedef struct Animation Animation;
+#include "resource/animation.h"
 
 enum {
 	False = 0,
@@ -44,6 +44,8 @@ typedef struct {
 	int bombs;
 	
 	float recovery;
+	
+	int deathtime;
     
 	Character cha;
 	ShotMode shot;
@@ -58,5 +60,6 @@ void player_draw(Player*);
 void player_logic(Player*);
 
 void plr_bomb(Player*);
+void plr_realdeath(Player*);
 void plr_death(Player*);
 #endif

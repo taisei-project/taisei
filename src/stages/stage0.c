@@ -212,7 +212,7 @@ void stage0_events() {
 // 		create_laser(LaserCurve, 300, 300, 60, 500, ((ColorA){0.6,0.6,1,0.4}), lolsin, 0);
 }
 
-void stage0_loop() {	
+void stage0_start() {
 	stage_start();
 	glEnable(GL_FOG);
 	GLfloat clr[] = { 0.1, 0.1, 0.1, 0 };
@@ -220,20 +220,12 @@ void stage0_loop() {
 	glFogf(GL_FOG_MODE, GL_LINEAR);
 	glFogf(GL_FOG_START, 0);
 	glFogf(GL_FOG_END, 1500);
-	
-	while(global.game_over <= 0) {
-		stage0_events();
-		stage_input();
-		stage_logic();		
-		
-// 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		stage0_draw();
-		stage_draw();				
-		
-		SDL_GL_SwapBuffers();
-		frame_rate();
-	}
-	
+}
+
+void stage0_end() {
 	glDisable(GL_FOG);
-	stage_end();
+}
+
+void stage0_loop() {	
+	stage_loop(stage0_start, stage0_end, stage0_draw, stage0_events);
 }

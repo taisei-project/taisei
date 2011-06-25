@@ -8,6 +8,10 @@
 #ifndef STAGE_H
 #define STAGE_H
 
+typedef void (*StageRule)(void);
+
+void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event);
+
 void stage_start();
 
 void stage_logic();

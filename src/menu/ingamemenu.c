@@ -13,7 +13,7 @@ void return_to_game(void *arg) {
 }
 
 void return_to_title(void *arg) {
-	global.game_over = 1;
+	global.game_over = GAMEOVER_ABORT;
 }
 	
 MenuData *create_ingame_menu() {
@@ -21,7 +21,6 @@ MenuData *create_ingame_menu() {
 	create_menu(m);
 	add_menu_entry(m, "Return to Game", return_to_game, NULL);
 	add_menu_entry(m, "Return to Title", return_to_title, NULL);
-	add_menu_entry(m, "Give Up and Retry", NULL, NULL);
 	
 	return m;
 }
@@ -40,8 +39,7 @@ void draw_ingame_menu(MenuData *menu) {
 	
 	GLenum shader = get_shader("ingame_menu");
 	glUseProgram(shader);	
-	
-	
+		
 	float rad = IMENU_BLUR;
 	if(menu->selected != 1) // hardly hardcoded. 1 -> "Return to Title"
 		rad = IMENU_BLUR * (1.0-menu->fade);

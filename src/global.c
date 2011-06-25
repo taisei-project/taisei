@@ -28,16 +28,16 @@ void init_global() {
 }
 
 void game_over() {
-	global.game_over = 1;
+	global.game_over = GAMEOVER_DEFEAT;
 	printf("Game Over!\n");
 }
 
-void frame_rate() {
-	int t = global.lasttime + 1000/FPS - SDL_GetTicks();
+void frame_rate(int *lasttime) {
+	int t = *lasttime + 1000/FPS - SDL_GetTicks();
 	if(t > 0)
 		SDL_Delay(t);
 	
-	global.lasttime = SDL_GetTicks();
+	*lasttime = SDL_GetTicks();
 }
 
 void calc_fps(FPSCounter *fps) {

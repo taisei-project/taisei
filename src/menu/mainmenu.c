@@ -35,12 +35,6 @@ troll:
 	stage0_loop();
 }
 
-void start_extra(void *arg) {
-}
-
-void start_options(void *arg) {
-}
-
 void create_main_menu(MenuData *m) {
 	create_menu(m);
 	
@@ -103,14 +97,5 @@ void draw_main_menu(MenuData *menu) {
 }
 
 void main_menu_loop(MenuData *menu) {
-	set_ortho();
-	while(menu->quit != 2) {
-		menu_logic(menu);
-		menu_input(menu);
-		
-		draw_main_menu(menu);
-		SDL_GL_SwapBuffers();
-		SDL_Delay(16);
-	}
-	destroy_menu(menu);
+	menu_loop(menu, NULL, draw_main_menu);
 }

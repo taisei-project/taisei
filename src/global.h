@@ -42,6 +42,7 @@ enum {
 	
 	POINT_OF_COLLECT = VIEWPORT_H/4,
 	ATTACK_START_DELAY = 40,
+	DEATHBOMB_TIME = 10,
 	
 	SNDSRC_COUNT = 30,
 	
@@ -50,7 +51,10 @@ enum {
 	EVENT_DEATH = -8999,
 	EVENT_BIRTH,
 	
-	FPS = 60
+	FPS = 60,
+	
+	GAMEOVER_DEFEAT = 1,
+	GAMEOVER_ABORT
 };
 
 typedef enum {

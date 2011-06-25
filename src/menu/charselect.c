@@ -102,16 +102,12 @@ void char_menu_input(MenuData *menu, MenuData *mod) {
 		if(event.type == SDL_KEYDOWN) {
 			if(sym == tconfig.intval[KEY_RIGHT]) {
 				menu->cursor++;
-				menu->cursor = abs(menu->cursor % menu->ecount);
 			} else if(sym == tconfig.intval[KEY_LEFT]) {
 				menu->cursor--;
-				menu->cursor = abs(menu->cursor % menu->ecount);
 			} else if(sym == tconfig.intval[KEY_DOWN]) {
 				mod->cursor++;
-				mod->cursor = abs(mod->cursor % mod->ecount);
 			} else if(sym == tconfig.intval[KEY_UP]) {
 				mod->cursor--;
-				mod->cursor = abs(mod->cursor % mod->ecount);
 			} else if((sym == tconfig.intval[KEY_SHOT] || sym == SDLK_RETURN) && menu->entries[menu->cursor].action) {
 				menu->quit = 1;
 				menu->selected = menu->cursor;
@@ -122,6 +118,8 @@ void char_menu_input(MenuData *menu, MenuData *mod) {
 				menu->quit = 1;
 			}
 			
+			menu->cursor = (menu->cursor % menu->ecount) + menu->ecount*(menu->cursor < 0);
+			mod->cursor = (mod->cursor % mod->ecount) + mod->ecount*(mod->cursor < 0);
 		} else if(event.type == SDL_QUIT) {
 			exit(1);
 		}
@@ -141,7 +139,7 @@ int char_menu_loop(MenuData *menu) {
 		
 		draw_char_menu(menu, &mod);
 		SDL_GL_SwapBuffers();
-		SDL_Delay(16);
+		frame_rate(&menu->lasttime);
 	}
 	destroy_menu(menu);
 	
