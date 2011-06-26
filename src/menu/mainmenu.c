@@ -48,9 +48,9 @@ void create_main_menu(MenuData *m) {
 
 
 void draw_main_menu_bg(MenuData* menu) {
-	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenubgbg");
+	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubgbg");
 	glColor4f(1,1,1,0.6 + 0.1*sin(menu->frames/100.0));
-	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenubg");
+	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubg");
 	glColor4f(1,1,1,1);
 }
 
@@ -58,7 +58,7 @@ void draw_main_menu(MenuData *menu) {
 	draw_main_menu_bg(menu);
 	
 	glColor4f(1,1,1,0.7);
-	draw_texture(SCREEN_W/2+40, SCREEN_H/2, "gate");
+	draw_texture(SCREEN_W/2+40, SCREEN_H/2, "mainmenu/gate");
 		
 	glPushMatrix();
 	glTranslatef(0, SCREEN_H-200, 0);

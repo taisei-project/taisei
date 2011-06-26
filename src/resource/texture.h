@@ -26,6 +26,8 @@ typedef struct Texture {
 } Texture;
 
 Texture *get_tex(char *name);
+Texture *prefix_get_tex(char *name, char *prefix);
+
 void load_textures();
 void load_resources();
 

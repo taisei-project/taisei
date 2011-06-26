@@ -8,7 +8,6 @@
 #ifndef PROJECTILE
 #define PROJECTILE
 
-#include <stdarg.h>
 #include <complex.h>
 #include "resource/texture.h"
 
@@ -19,16 +18,13 @@ typedef struct {
 	float a;
 } Color;
 
-struct Projectile;
-typedef int (*ProjRule)(struct Projectile *p, int t);
-typedef void (*ProjDRule)(struct Projectile *p, int t);
-
-#define Pr (&global.projs)
-#define Pa (&global.particles)
-
 enum {
 	RULE_ARGC = 4
 };
+
+struct Projectile;
+typedef int (*ProjRule)(struct Projectile *p, int t);
+typedef void (*ProjDRule)(struct Projectile *p, int t);
 
 typedef struct Projectile {
 	struct Projectile *next;
@@ -40,7 +36,6 @@ typedef struct Projectile {
 	long birthtime;
 	
 	float angle;
-	void *parent;
 	
 	ProjRule rule;
 	ProjDRule draw;
@@ -53,16 +48,20 @@ typedef struct Projectile {
 	complex args[RULE_ARGC];
 } Projectile;
 
-void load_projectiles();
-
 Color *rgba(float r, float g, float b, float a);
-
-inline complex *rarg(complex arg0, ...);
 inline Color *rgb(float r, float g, float b);
 
-Projectile *create_particle(char *name, complex pos, Color *clr, ProjDRule draw, ProjRule rule, complex *a);
-Projectile *create_projectile(char *name, complex pos, Color *clr, ProjRule rule, complex *a);
-Projectile *create_projectile_p(Projectile **dest, Texture *tex, complex pos, Color *clr, ProjDRule draw, ProjRule rule, complex *args);
+#define create_particle3c(n,p,c,d,r,a1,a2,a3) create_particle4c(n,p,c,d,r,a1,a2,a3,0)
+#define create_particle2c(n,p,c,d,r,a1,a2) create_particle4c(n,p,c,d,r,a1,a2,0,0)
+#define create_particle1c(n,p,c,d,r,a1) create_particle4c(n,p,c,d,r,a1,0,0,0)
+
+#define create_projectile3c(n,p,c,r,a1,a2,a3) create_projectile4c(n,p,c,r,a1,a2,a3,0)
+#define create_projectile2c(n,p,c,r,a1,a2) create_projectile4c(n,p,c,r,a1,a2,0,0)
+#define create_projectile1c(n,p,c,r,a1) create_projectile4c(n,p,c,r,a1,0,0,0)
+
+Projectile *create_particle4c(char *name, complex pos, Color *clr, ProjDRule draw, ProjRule rule, complex a1, complex a2, complex a3, complex a4);
+Projectile *create_projectile4c(char *name, complex pos, Color *clr, ProjRule rule, complex a1, complex a2, complex a3, complex a4);
+Projectile *create_projectile_p(Projectile **dest, Texture *tex, complex pos, Color *clr, ProjDRule draw, ProjRule rule, complex a1, complex a2, complex a3, complex a4);
 void delete_projectile(Projectile **dest, Projectile *proj);
 void delete_projectiles(Projectile **dest);
 void draw_projectiles(Projectile *projs);

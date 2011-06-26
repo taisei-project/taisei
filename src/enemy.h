@@ -40,13 +40,16 @@ struct Enemy {
 	
 	int hp;
 	
-	void *parent;
 	complex args[RULE_ARGC];
 };
 
-#define create_enemyg(drule, lrule, pos, hp, par, args) (create_enemy(&global.enemies, drule, lrule, pos, hp, par, args))
-void create_enemy(Enemy **enemies, EnemyDrawRule draw_rule, EnemyLogicRule logic_rule,
-				  complex pos, int hp, void *parent, complex args, ...);
+#define create_enemy4c(p,h,d,l,a1,a2,a3,a4) create_enemy_p(&global.enemies,p,h,d,l,a1,a2,a3,a4)
+#define create_enemy3c(p,h,d,l,a1,a2,a3) create_enemy_p(&global.enemies,p,h,d,l,a1,a2,a3,0)
+#define create_enemy2c(p,h,d,l,a1,a2) create_enemy_p(&global.enemies,p,h,d,l,a1,a2,0,0)
+#define create_enemy1c(p,h,d,l,a1) create_enemy_p(&global.enemies,p,h,d,l,a1,0,0,0)
+
+void create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyDrawRule draw_rule, EnemyLogicRule logic_rule,
+				    complex a1, complex a2, complex a3, complex a4);
 void delete_enemy(Enemy **enemies, Enemy* enemy);
 void draw_enemies(Enemy *enemies);
 void delete_enemies(Enemy **enemies);

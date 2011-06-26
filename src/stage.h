@@ -8,6 +8,11 @@
 #ifndef STAGE_H
 #define STAGE_H
 
+#define TIMER(ptr) int *__timep = ptr; int _i;
+#define AT(t) if(*__timep == t)
+#define FROM_TO(start,end,step) _i = (*__timep - start)/step; if(*__timep >= (start) && *__timep <= (end) && !(*__timep % (step)))
+
+
 typedef void (*StageRule)(void);
 
 void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event);

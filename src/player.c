@@ -90,12 +90,14 @@ void player_logic(Player* plr) {
 	switch(plr->cha) {
 	case Youmu:
 		youmu_shot(plr);
+		break;
 	case Marisa:
 		marisa_shot(plr);
+		break;
 	}
 	
 	if(plr->deathtime > 0)
-		create_particle("flare", plr->pos, rgb(255,0,0), Shrink, timeout_linear, rarg(10, 4*cexp(I*rand())));
+		create_particle2c("flare", plr->pos, rgb(255,0,0), Shrink, timeout_linear, 10, 4*cexp(I*rand()));
 	
 	if(global.frames == plr->deathtime)
 		plr_realdeath(plr);
@@ -112,12 +114,12 @@ void plr_bomb(Player *plr) {
 		
 		play_sound("laser1");
 		
+		plr->bombs--;
+		
 		if(plr->deathtime > 0) {
 			plr->deathtime = -1;
 			plr->bombs /= 2;
-		}
-		
-		plr->bombs--;
+		}			
 		
 		plr->recovery = global.frames + 200;
 		

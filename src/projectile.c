@@ -26,44 +26,19 @@ inline Color *rgb(float r, float g, float b) {
 	return rgba(r, g, b, 1.0);
 }
 
-complex *rarg(complex arg0, ...) {
-	complex *a = calloc(RULE_ARGC, sizeof(complex));
-	va_list ap;
-	int i;
-	
-	memset(a, 0, sizeof(a));
-	
-	va_start(ap, arg0);
-	
-	a[0] = arg0;
-	for(i = 1; i < RULE_ARGC; i++) {
-		a[i] = (complex)va_arg(ap, complex);
-	}
-	va_end(ap);
-	
-	return a;
-}
-
-Projectile *create_particle(char *name, complex pos, Color *clr, ProjDRule draw, ProjRule rule, complex *a) {
-	Projectile *p = create_projectile_p(&global.particles, get_tex(name), pos, clr, draw, rule, a);
+Projectile *create_particle4c(char *name, complex pos, Color *clr, ProjDRule draw, ProjRule rule, complex a1, complex a2, complex a3, complex a4) {
+	Projectile *p = create_projectile_p(&global.particles, prefix_get_tex(name, "part/"), pos, clr, draw, rule, a1, a2, a3, a4);
 	
 	p->type = Particle;
 	return p;
 }
 
-Projectile *create_projectile(char *name, complex pos, Color *clr, ProjRule rule, complex *a) {
-	char *buf = malloc(strlen(name) + 6);
-	strcpy(buf, "proj/");
-	strcat(buf, name);
-	
-	Texture *tex = get_tex(buf);
-	free(buf);
-	
-	return create_projectile_p(&global.projs, tex, pos, clr, ProjDraw, rule, a);
+Projectile *create_projectile4c(char *name, complex pos, Color *clr, ProjRule rule, complex a1, complex a2, complex a3, complex a4) {
+	return create_projectile_p(&global.projs, prefix_get_tex(name, "proj/"), pos, clr, ProjDraw, rule, a1, a2, a3, a4);
 }
 
 Projectile *create_projectile_p(Projectile **dest, Texture *tex, complex pos, Color *clr,
-							    ProjDRule draw, ProjRule rule, complex *args) {
+							    ProjDRule draw, ProjRule rule, complex a1, complex a2, complex a3, complex a4) {
 	Projectile *p = create_element((void **)dest, sizeof(Projectile));
 	
 	p->birthtime = global.frames;
@@ -75,18 +50,16 @@ Projectile *create_projectile_p(Projectile **dest, Texture *tex, complex pos, Co
 	p->tex = tex;
 	p->type = FairyProj;
 	p->clr = clr;
-	p->parent = NULL;
 	
-	memset(p->args, 0, sizeof(p->args));
-	if(args) {
-		memcpy(p->args, args, sizeof(p->args));
-		free(args);
-	}	
+	p->args[0] = a1;
+	p->args[1] = a2;
+	p->args[2] = a3;
+	p->args[3] = a4;
 	
 	if(dest != &global.particles && clr != NULL) {
 		Color *color = rgba(clr->r, clr->g, clr->b, clr->a);
 		
-		create_projectile_p(Pa, tex, pos, color, Shrink, bullet_flare_move, rarg(16, (complex)add_ref(p)));
+		create_projectile_p(&global.particles, tex, pos, color, Shrink, bullet_flare_move, 16, add_ref(p), 0, 0);
 	}
 	return p;
 }
@@ -154,7 +127,7 @@ void process_projectiles(Projectile **projs, char collision) {
 		if(proj->type == DeadProj && killed < 2) {
 			killed++;
 			action = ACTION_DESTROY;
-			create_particle("flare", proj->pos, NULL, Fade, timeout, rarg(30));
+			create_particle1c("flare", proj->pos, NULL, Fade, timeout, 30);
 			create_item(proj->pos, 0, BPoint)->auto_collect = 10;
 		}
 			
@@ -167,10 +140,9 @@ void process_projectiles(Projectile **projs, char collision) {
 				clr = malloc(sizeof(Color));
 				memcpy(clr, proj->clr, sizeof(Color));
 			}
-			create_projectile_p(Pa, proj->tex, proj->pos, clr, DeathShrink, timeout_linear, rarg(10, 5*cexp(proj->angle*I)));
+			create_projectile_p(&global.particles, proj->tex, proj->pos, clr, DeathShrink, timeout_linear, 10, 5*cexp(proj->angle*I), 0, 0);
 		}
-		
-		
+				
 		if(col == 1 && global.frames - abs(global.plr.recovery) >= 0)
 				plr_death(&global.plr);
 		

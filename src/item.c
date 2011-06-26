@@ -33,8 +33,12 @@ void draw_items() {
 	for(p = global.items; p; p = p->next) {
 		switch(p->type){
 			case Power:
-				tex = get_tex("items/power");
-				break;
+				if(global.plr.power < 6) {
+					tex = get_tex("items/power");
+					break;
+				}
+				
+				p->type = Point;
 			case Point:
 				tex = get_tex("items/point");
 				break;

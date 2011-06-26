@@ -212,7 +212,7 @@ void stage_logic() {
 	
 	global.frames++;
 	
-	if(!global.dialog)
+	if(!global.dialog && !global.boss)
 		global.timer++;
 	
 	calc_fps(&global.fps);

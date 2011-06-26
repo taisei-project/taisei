@@ -80,6 +80,24 @@ Texture *get_tex(char *name) {
 	return res;
 }
 
+Texture *prefix_get_tex(char *name, char *prefix) {
+	char *src;
+	
+	if((src = strrchr(name, '/')))
+		src++;
+	else
+		src = name;
+	
+	char *buf = malloc(strlen(src) + strlen(prefix));
+	strcpy(buf, prefix);
+	strcat(buf, src);
+	
+	Texture *tex = get_tex(buf);
+	free(buf);
+
+	return tex;
+}
+
 void delete_texture(void **texs, void *tex) {
 	Texture *t = (Texture *)tex;
 	free(t->name);

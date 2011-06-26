@@ -13,9 +13,11 @@
 #include "projectile.h"
 #include "list.h"
 
-void create_enemy(Enemy **enemies, EnemyDrawRule draw_rule, EnemyLogicRule logic_rule,
-				  complex pos, int hp, void *parent, complex args, ...) {
+void create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyDrawRule draw_rule, EnemyLogicRule logic_rule,
+				  complex a1, complex a2, complex a3, complex a4) {
 	Enemy *e = (Enemy *)create_element((void **)enemies, sizeof(Enemy));
+	e->moving = 0;
+	e->dir = 0;
 	
 	e->birthtime = global.frames;
 	e->pos = pos;
@@ -23,26 +25,20 @@ void create_enemy(Enemy **enemies, EnemyDrawRule draw_rule, EnemyLogicRule logic
 	
 	e->hp = hp;
 	
-	e->parent = parent;
 	e->logic_rule = logic_rule;
 	e->draw_rule = draw_rule;
-	
-	va_list ap;
-	int i;
-	
-	memset(e->args, 0, RULE_ARGC);
-	va_start(ap, args);
-	for(i = 0; i < RULE_ARGC; i++) {
-		e->args[i] = args;
-		args = va_arg(ap, complex);
-	}
-	va_end(ap);
+		
+	e->args[0] = a1;
+	e->args[1] = a2;
+	e->args[2] = a3;
+	e->args[3] = a4;
 	
 	e->logic_rule(e, EVENT_BIRTH);
 }
 
 void _delete_enemy(void **enemies, void* enemy) {
-	((Enemy* )enemy)->logic_rule(enemy, EVENT_DEATH);
+	if(((Enemy* )enemy)->hp <= 0)
+		((Enemy* )enemy)->logic_rule(enemy, EVENT_DEATH);
 	del_ref(enemy);
 	
 	delete_element((void **)enemies, enemy);
@@ -88,6 +84,10 @@ void Fairy(Enemy *e, int t) {
 	
 	glPopMatrix();	
 	glDisable(GL_TEXTURE_2D);
+	
+	if(e->dir) {
+		glCullFace(GL_BACK);
+	}
 }
 
 void process_enemies(Enemy **enemies) {
