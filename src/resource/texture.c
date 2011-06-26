@@ -23,12 +23,11 @@ void recurse_dir(char *path) {
 		errx(-1, "Couldn't open directory '%s'", path);
 	struct dirent *dp;
 	
-	char buf[512];
-			
 	while((dp = readdir(dir)) != NULL) {
-		strncpy(buf, path, sizeof(buf));
-		strncat(buf, "/", sizeof(buf));
-		strncat(buf, dp->d_name, sizeof(buf));
+		char *buf = malloc(strlen(path) + strlen(dp->d_name)+2);
+		strcpy(buf, path);
+		strcat(buf, "/");
+		strcat(buf, dp->d_name);
 		
 		struct stat statbuf;
 		stat(buf, &statbuf);
