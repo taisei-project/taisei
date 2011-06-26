@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <png.h>
+#include "native.h"
 #include "taisei_err.h"
 #include "audio.h"
 #include "shader.h"
@@ -49,21 +50,21 @@ void recurse_dir(char *path) {
 
 void load_resources() {
 	printf("load_resources():\n");
-	char *path = malloc(sizeof(FILE_PREFIX)+7);
-	
+	char *path = malloc(strlen(get_prefix())+7);
+		
 	printf("- textures:\n");
-	strcpy(path, FILE_PREFIX);
-	strncat(path, "gfx", sizeof(FILE_PREFIX)+4);
+	strcpy(path, get_prefix());
+	strcat(path, "gfx");
 	recurse_dir(path);
 	
 	printf("- sounds:\n");
-	strcpy(path, FILE_PREFIX);
-	strncat(path, "sfx", sizeof(FILE_PREFIX)+4);
+	strcpy(path, get_prefix());
+	strcat(path, "sfx");
 	recurse_dir(path);
 	
 	printf("- shader:\n");
-	strcpy(path, FILE_PREFIX);
-	strncat(path, "shader", sizeof(FILE_PREFIX)+4);
+	strcpy(path, get_prefix());
+	strcat(path, "shader");
 	recurse_dir(path);
 }
 

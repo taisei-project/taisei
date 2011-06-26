@@ -17,7 +17,7 @@ void init_global() {
 	alGenSources(SNDSRC_COUNT, global.sndsrc);
 	
 	srand(time(0));
-	
+		
 	load_resources();
 	init_fonts();
 	init_fbo(&global.fbg);

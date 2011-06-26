@@ -29,7 +29,7 @@
 #include "fbo.h"
 
 #define FILE_PREFIX PREFIX "/share/taisei/"
-#define CONFIG_FILE ".taisei/config"
+#define CONFIG_FILE "config"
 
 enum {	
 	SCREEN_W = 800,

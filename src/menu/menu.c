@@ -35,6 +35,7 @@ void create_menu(MenuData *menu) {
 
 void menu_input(MenuData *menu) {
 	SDL_Event event;
+	memset(&event, 0, sizeof(event));
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;
 		if(event.type == SDL_KEYDOWN) {

@@ -43,13 +43,19 @@ set(SRCs
 	${BISON_cfgparser_OUTPUTS}
 	${FLEX_cfgscanner_OUTPUTS})
 
+if(WIN32)
+	set(SRCs ${SRCs} win32.c)
+else()
+	set(SRCs ${SRCs} posix.c)
+endif()
+
 add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-include_directories(${SDL_INCLUDE_DIRS} ${ALUT_INCLUDE_DIRS})
-add_executable(taisei ${SRCs})
-target_link_libraries(taisei ${SDL_LIBRARY} ${OPENGL_LIBRARY} ${PNG_LIBRARY}
-				${SDLTTF_LIBRARY} ${OPENAL_LIBRARY} ${ALUT_LIBRARY} ${GLEW_LIBRARY})
+include_directories(${SDL_INCLUDE_DIR} ${ALUT_INCLUDE_DIR} ${GLEW_INCLUDE_PATH})
+add_executable(taisei WIN32 ${SRCs})
+target_link_libraries(taisei ${SDL_LIBRARY} ${PNG_LIBRARY} ${SDLTTF_LIBRARY}
+					${OPENAL_LIBRARY} ${ALUT_LIBRARY} ${GLEW_LIBRARY} ${OPENGL_LIBRARY})
 
 install(TARGETS taisei RUNTIME DESTINATION bin)

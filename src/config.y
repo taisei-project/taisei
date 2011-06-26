@@ -11,6 +11,8 @@
 	#include <string.h>
 	#include <stdlib.h>
 	
+	#include "native.h"
+	
 	Config tconfig;
 	int lineno;
 	
@@ -72,11 +74,14 @@ nl		: LB { lineno++; };
 
 void parse_config(char *filename) {
 	config_preset();
+		
 	lineno = 1;
 	
-	char *buf = malloc(strlen(filename)+strlen(getenv("HOME"))+3);
+	char *buf;
 	
-	strcpy(buf, getenv("HOME"));
+	buf = malloc(strlen(filename)+strlen(get_config_path())+3);	
+	strcpy(buf, get_config_path());
+	
 	strcat(buf, "/");
 	strcat(buf, filename);
 	
@@ -89,7 +94,7 @@ void parse_config(char *filename) {
 		fclose(yyin);
 	} else {
 		printf("-- parsing incomplete; falling back to built-in preset\n");
-		warn("problems with parsing %s", buf);
+		warnx("problems with parsing %s", buf);
 	}
 	free(buf);
 }

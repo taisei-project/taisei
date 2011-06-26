@@ -1,4 +1,5 @@
 build/
+winbuild/
 src/parser.c
 src/parser.h
 src/lexer.h

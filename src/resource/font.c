@@ -7,14 +7,26 @@
 
 #include "font.h"
 #include "global.h"
+#include "native.h"
 #include <assert.h>
 
 struct Fonts _fonts;
 
+TTF_Font *load_font(char *name, int size) {
+	char *buf = malloc(strlen(get_prefix()) + strlen(name)+1);
+	strcpy(buf, get_prefix());
+	strcat(buf, name);
+	
+	TTF_Font *f =  TTF_OpenFont(buf, size);
+	free(buf);
+	return f;
+}
+
 void init_fonts() {
 	TTF_Init();
-	_fonts.standard = TTF_OpenFont(FILE_PREFIX "gfx/LinBiolinum.ttf", 20);
-	_fonts.mainmenu = TTF_OpenFont(FILE_PREFIX "gfx/immortal.ttf", 35);
+	
+	_fonts.standard = load_font("gfx/LinBiolinum.ttf", 20);
+	_fonts.mainmenu = load_font("gfx/immortal.ttf", 35);
 }
 
 Texture *load_text(const char *text, TTF_Font *font) {
