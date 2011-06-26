@@ -39,7 +39,7 @@
 %token SKEY
 
 %token NUMBER
-%token CHAR
+%token tCHAR
 
 %token SEMI
 %token EQ
@@ -57,7 +57,7 @@ line	: line nl
 		| nl;
 
 key_val : SKEY 
-		| CHAR;
+		| tCHAR;
 
 key_key	: tKEY_UP
 		| tKEY_DOWN

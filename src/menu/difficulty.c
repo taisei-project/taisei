@@ -55,5 +55,5 @@ void draw_difficulty_menu(MenuData *menu) {
 }
 
 int difficulty_menu_loop(MenuData *menu) {
-	menu_loop(menu, NULL, draw_difficulty_menu);
+	return menu_loop(menu, NULL, draw_difficulty_menu);	
 }

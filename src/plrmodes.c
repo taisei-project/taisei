@@ -99,6 +99,8 @@ int mari_laser(Projectile *p, int t) {
 	Player *plr = (Player *)REF(p->args[1]);
 	
 	p->pos = plr->pos + p->pos - creal(p->pos0)*abs(plr->focus)/30.0;
+	
+	return 1;
 }
 
 void marisa_shot(Player *plr) {

@@ -6,6 +6,7 @@ find_package(OpenAL REQUIRED)
 find_package(ALUT REQUIRED)
 find_package(PNG REQUIRED)
 find_package(SDL_ttf REQUIRED)
+find_package(GLEW REQUIRED)
 find_package(BISON)
 find_package(FLEX)
 
@@ -38,15 +39,17 @@ set(SRCs
 	resource/font.c
 	resource/shader.c
 	resource/audio.c
+	taisei_err.c
 	${BISON_cfgparser_OUTPUTS}
 	${FLEX_cfgscanner_OUTPUTS})
 
-add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -DGL_GLEXT_PROTOTYPES)
+add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 include_directories(${SDL_INCLUDE_DIRS} ${ALUT_INCLUDE_DIRS})
 add_executable(taisei ${SRCs})
-target_link_libraries(taisei ${SDL_LIBRARY} ${OPENGL_LIBRARY} ${PNG_LIBRARY} ${SDLTTF_LIBRARY} ${OPENAL_LIBRARY} ${ALUT_LIBRARY})
+target_link_libraries(taisei ${SDL_LIBRARY} ${OPENGL_LIBRARY} ${PNG_LIBRARY}
+				${SDLTTF_LIBRARY} ${OPENAL_LIBRARY} ${ALUT_LIBRARY} ${GLEW_LIBRARY})
 
 install(TARGETS taisei RUNTIME DESTINATION bin)

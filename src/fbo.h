@@ -8,7 +8,7 @@
 #ifndef FBO_H
 #define FBO_H
 
-#include <SDL/SDL_opengl.h>
+#include <GL/glew.h>
 
 typedef struct {
 	GLuint fbo;

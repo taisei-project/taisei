@@ -213,8 +213,6 @@ void DeathShrink(Projectile *p, int t) {
 }
 
 int bullet_flare_move(Projectile *p, int t) {
-	int i;
-
 	if(t > 16 || REF(p->args[1]) == NULL) {
 		free_ref(p->args[1]);
 		return ACTION_DESTROY;
@@ -246,4 +244,6 @@ int timeout_linear(Projectile *p, int t) {
 	
 	p->angle = carg(p->args[1]);
 	p->pos = p->pos0 + p->args[1]*t;
+	
+	return 1;
 }

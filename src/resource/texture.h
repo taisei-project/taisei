@@ -9,7 +9,7 @@
 #define TEXTURE_H
 
 #include <SDL/SDL.h>
-#include <SDL/SDL_opengl.h>
+#include <GL/glew.h>
 #include <math.h>
 
 struct Texture;

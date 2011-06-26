@@ -7,7 +7,6 @@
 
 #include "stage0.h"
 
-#include <SDL/SDL_opengl.h>
 #include "../stage.h"
 #include "../global.h"
 

@@ -11,7 +11,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <png.h>
-#include <err.h>
+#include "taisei_err.h"
 #include "audio.h"
 #include "shader.h"
 #include "list.h"
@@ -19,7 +19,7 @@
 void recurse_dir(char *path) {
 	DIR *dir = opendir(path);
 	if(dir == NULL)
-		err(-1, "Couldn't open directory '%s'", path);
+		errx(-1, "Couldn't open directory '%s'", path);
 	struct dirent *dp;
 	
 	char buf[512];
@@ -88,7 +88,7 @@ Texture *prefix_get_tex(char *name, char *prefix) {
 	else
 		src = name;
 	
-	char *buf = malloc(strlen(src) + strlen(prefix));
+	char *buf = malloc(strlen(src) + strlen(prefix) + 1);
 	strcpy(buf, prefix);
 	strcat(buf, src);
 	
@@ -114,7 +114,7 @@ Texture *load_texture(const char *filename) {
 	SDL_Surface *surface = load_png(filename);
 	
 	if(surface == NULL)
-		err(-1,"load_texture():\n!- cannot load '%s'", filename);
+		errx(-1,"load_texture():\n!- cannot load '%s'", filename);
 	
 	Texture *texture = create_element((void **)&global.textures, sizeof(Texture));
 	load_sdl_surf(surface, texture);	
@@ -135,7 +135,7 @@ Texture *load_texture(const char *filename) {
 SDL_Surface *load_png(const char *filename) {
 	FILE *fp = fopen(filename, "rb");
 	if(!fp)
-		err(-1, "Error loading '%s'", filename);
+		errx(-1, "Error loading '%s'", filename);
 	
 	png_structp png_ptr;
 	if(!(png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL)))

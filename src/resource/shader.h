@@ -8,7 +8,7 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#include <SDL/SDL_opengl.h>
+#include <GL/glew.h>
 
 #define DELIM "%% -- FRAG"
 #define DELIM_SIZE 10

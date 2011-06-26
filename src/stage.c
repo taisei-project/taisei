@@ -112,8 +112,6 @@ void draw_hud() {
 	draw_text(AL_Left, SCREEN_W, SCREEN_H-20, buf, _fonts.standard);
 }
 
-
-
 void stage_draw() {
 	set_ortho();
 		

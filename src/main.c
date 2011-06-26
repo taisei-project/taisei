@@ -6,8 +6,8 @@
  */
 
 #include <SDL/SDL.h>
-#include <SDL/SDL_opengl.h>
-#include <err.h>
+#include <GL/glew.h>
+#include "taisei_err.h"
 
 #include "global.h"
 #include "stages/stage0.h"
@@ -51,11 +51,15 @@ int main(int argc, char** argv) {
 		errx(-1, "Error initializing SDL: %s", SDL_GetError());
 		
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 0);
 	if((display = SDL_SetVideoMode(SCREEN_W, SCREEN_H, 32, SDL_OPENGL)) == NULL)
 		errx(-1, "Error opening screen: %s", SDL_GetError());
 	
 	SDL_WM_SetCaption("TaiseiProject", NULL); 
+	
+	int err;
+	if((err = glewInit()) != GLEW_OK)
+		errx(-1, "GLEW failed: %s", glewGetErrorString(err));
+	
 	
 	init_gl();
 		

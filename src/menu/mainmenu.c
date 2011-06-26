@@ -12,6 +12,7 @@
 #include "charselect.h"
 
 #include "global.h"
+#include "stages/stage0.h"
 
 void quit_menu(void *arg) {
 	MenuData *m = arg;

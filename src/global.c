@@ -8,7 +8,6 @@
 #include "global.h"
 #include <SDL/SDL.h>
 #include <time.h>
-#include <err.h>
 
 Global global;
 

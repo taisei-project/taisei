@@ -118,7 +118,7 @@ void init_rtt();
 void game_over();
 
 void frame_rate();
-
+void calc_fps(FPSCounter *fps);
 void set_ortho();
 
 #endif

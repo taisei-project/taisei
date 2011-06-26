@@ -9,7 +9,7 @@
 #include "global.h"
 #include "list.h"
 #include <stdio.h>
-#include <err.h>
+#include "taisei_err.h"
 
 void print_info_log(GLuint shader) {
 	int len = 0, alen = 0;
@@ -27,7 +27,7 @@ void print_info_log(GLuint shader) {
 void load_shader(const char *filename) {
 	FILE *file = fopen(filename,"r");
 	if(file == NULL)
-		err(-1, "Error opening '%s'", filename);
+		errx(-1, "Error opening '%s'", filename);
 	
 	fseek(file, 0, SEEK_END);
 	int size = ftell(file);

@@ -40,14 +40,14 @@
 
 
 [0-9]+		{ yylval = atoi(yytext); return NUMBER; }
-[a-zA-Z]	{ yylval = yytext[0]; return CHAR; }
+[a-zA-Z]	{ yylval = yytext[0]; return tCHAR; }
 
-ä			{ yylval = SDLK_WORLD_68; return CHAR; }
-ü			{ yylval = SDLK_WORLD_92; return CHAR; }
-ö			{ yylval = SDLK_WORLD_86; return CHAR; }
-ß			{ yylval = SDLK_WORLD_63; return CHAR; }
+ä			{ yylval = SDLK_WORLD_68; return tCHAR; }
+ü			{ yylval = SDLK_WORLD_92; return tCHAR; }
+ö			{ yylval = SDLK_WORLD_86; return tCHAR; }
+ß			{ yylval = SDLK_WORLD_63; return tCHAR; }
 
-K[0-9]+		{ yylval = atoi(yytext + 1); return CHAR; }
+K[0-9]+		{ yylval = atoi(yytext + 1); return tCHAR; }
 
 \n			return LB;
 [ \t]		;

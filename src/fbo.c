@@ -1,6 +1,7 @@
 
 #include "fbo.h"
 #include "global.h"
+#include "taisei_err.h"
 
 void init_fbo(FBO *fbo) {
 	glGenTextures(1, &fbo->tex);
