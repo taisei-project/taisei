@@ -11,7 +11,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <png.h>
-#include "native.h"
+#include "paths/native.h"
 #include "taisei_err.h"
 #include "audio.h"
 #include "shader.h"
@@ -44,6 +44,8 @@ void recurse_dir(char *path) {
 		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".sha") == 0) {
 			load_shader(buf);
 		}
+		
+		free(buf);
 	}
 }
 

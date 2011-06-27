@@ -25,6 +25,11 @@ void print_info_log(GLuint shader) {
 }
 
 void load_shader(const char *filename) {
+	if(!GLEW_ARB_vertex_program || !GLEW_ARB_fragment_program) {
+		warnx("missing shader support; skipping.");
+		return;
+	}
+	
 	FILE *file = fopen(filename,"r");
 	if(file == NULL)
 		errx(-1, "Error opening '%s'", filename);
@@ -82,7 +87,7 @@ void load_shader(const char *filename) {
 	char *beg = strstr(filename, "shader/") + 7;
 	char *end = strrchr(filename, '.');
 	
-	sha->name = malloc(end - beg + 1);
+	sha->name = malloc(end-beg + 1);
 	memset(sha->name, 0, end-beg + 1);
 	strncpy(sha->name, beg, end-beg);
 	

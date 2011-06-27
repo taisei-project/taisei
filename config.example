@@ -1,5 +1,5 @@
 # -- Taisei example config
-# move to ~/.taisei/config
+# move to ~/.taisei/config or if you built with RELATIVE flag, to the working directory of your executable.
 
 # setting default values.
 # this config would be useless, as there is a built-in default settings fallback

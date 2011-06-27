@@ -11,7 +11,7 @@
 	#include <string.h>
 	#include <stdlib.h>
 	
-	#include "native.h"
+	#include "paths/native.h"
 	
 	Config tconfig;
 	int lineno;

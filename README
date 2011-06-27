@@ -2,7 +2,8 @@ Taisei
 
 1. Introduction
 
-Taisei is an open clone of the Touhou series. Touhou is a one-man project of shoot-em-up games set in an isolated world full of Japanese folklore.
+Taisei is an open clone of the Touhou series. Touhou is a one-man project of
+shoot-em-up games set in an isolated world full of Japanese folklore.
 
 2. Installation
 
@@ -22,4 +23,16 @@ cmake -DCMAKE_INSTALL_PREFIX=$yourprefix ..
 make
 make install
 
-Note: Installing is necessary as otherwise the game data would not be found in the right place. If you want to test set the installation prefix to "." or $(pwd).
+This will install game data to $prefix/share/taisei/ and build this path
+_statically_ into the executable. This might be a package maintainer's choice.
+Alternatively you may want to add -DRELATIVE=TRUE to get a relative structure
+like
+
+$prefix/taisei
+$prefix/data/
+($prefix/config)
+
+RELATIVE is always set when building for Windows.
+
+
+

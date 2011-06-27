@@ -73,9 +73,9 @@ int main(int argc, char** argv) {
 	if(!alutInit(&argc, argv))
 		errx(-1, "Error initializing audio: %s", alutGetErrorString(alutGetError()));
 	printf("-- ALUT\n");
-		
+	
 	init_global();
-	printf("-- initialized gamedata\n");
+	printf("initialization complete.\n");
 	MenuData menu;
 	create_main_menu(&menu);
 	printf("-- menu\n");

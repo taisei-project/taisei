@@ -4,6 +4,11 @@
 #include "taisei_err.h"
 
 void init_fbo(FBO *fbo) {
+	if(!GLEW_ARB_framebuffer_object) {
+		warnx("missing FBO support. seriously.");
+		return;
+	}
+	
 	glGenTextures(1, &fbo->tex);
 	glBindTexture(GL_TEXTURE_2D, fbo->tex);
 	
@@ -34,8 +39,6 @@ void init_fbo(FBO *fbo) {
 	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, fbo->depth);
 	
 	GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-	if(status != GL_FRAMEBUFFER_COMPLETE_EXT)
-		warnx("!- GPU seems not to support Framebuffer Objects");
 	
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 }

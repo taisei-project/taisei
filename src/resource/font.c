@@ -7,7 +7,7 @@
 
 #include "font.h"
 #include "global.h"
-#include "native.h"
+#include "paths/native.h"
 #include <assert.h>
 
 struct Fonts _fonts;
@@ -18,6 +18,11 @@ TTF_Font *load_font(char *name, int size) {
 	strcat(buf, name);
 	
 	TTF_Font *f =  TTF_OpenFont(buf, size);
+	if(!f)
+		errx(-1, "failed to load font '%s'", buf);
+	
+	printf("-- loaded '%s'\n", buf);
+	
 	free(buf);
 	return f;
 }
@@ -27,6 +32,7 @@ void init_fonts() {
 	
 	_fonts.standard = load_font("gfx/LinBiolinum.ttf", 20);
 	_fonts.mainmenu = load_font("gfx/immortal.ttf", 35);
+		
 }
 
 Texture *load_text(const char *text, TTF_Font *font) {

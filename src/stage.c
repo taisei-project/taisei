@@ -15,6 +15,7 @@ void stage_start() {
 	global.timer = 0;
 	global.frames = 0;
 	global.game_over = 0;
+	global.points = 0;
 }
 
 void stage_input() {
@@ -222,7 +223,7 @@ void stage_end() {
 	delete_enemies(&global.enemies);
 	delete_items();
 	delete_lasers();
-		
+	
 	if(global.menu) {
 		destroy_menu(global.menu);
 		global.menu = NULL;

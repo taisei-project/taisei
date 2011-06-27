@@ -2,10 +2,19 @@ project(taisei)
 
 cmake_minimum_required(VERSION 2.6)
 
+if(WIN32)
+	add_definitions(-DRELATIVE)
+	set(RELATIVE TRUE)
+endif()
+	
 add_subdirectory(src)
 
+if(RELATIVE)
+	set(DATA_DIR "data")
+else()
+	set(DATA_DIR "share/taisei")
+endif()
 
-set(DATA_DIR "share/taisei")
 install(DIRECTORY gfx DESTINATION ${DATA_DIR})
 install(DIRECTORY sfx DESTINATION ${DATA_DIR})
 install(DIRECTORY shader DESTINATION ${DATA_DIR})

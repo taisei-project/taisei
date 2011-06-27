@@ -19,10 +19,12 @@ void init_global() {
 	srand(time(0));
 		
 	load_resources();
+	printf("- fonts:\n");
 	init_fonts();
+	printf("init_fbo():\n");
 	init_fbo(&global.fbg);
 	init_fbo(&global.fsec);
-	
+	printf("-- ok\n");
 	parse_config(CONFIG_FILE);
 }
 

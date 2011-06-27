@@ -43,10 +43,10 @@ set(SRCs
 	${BISON_cfgparser_OUTPUTS}
 	${FLEX_cfgscanner_OUTPUTS})
 
-if(WIN32)
-	set(SRCs ${SRCs} win32.c)
+if(RELATIVE)
+	set(SRCs ${SRCs} paths/relative.c)	
 else()
-	set(SRCs ${SRCs} posix.c)
+	set(SRCs ${SRCs} paths/static.c)
 endif()
 
 add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}")
@@ -58,4 +58,8 @@ add_executable(taisei WIN32 ${SRCs})
 target_link_libraries(taisei ${SDL_LIBRARY} ${PNG_LIBRARY} ${SDLTTF_LIBRARY}
 					${OPENAL_LIBRARY} ${ALUT_LIBRARY} ${GLEW_LIBRARY} ${OPENGL_LIBRARY})
 
-install(TARGETS taisei RUNTIME DESTINATION bin)
+if(RELATIVE)
+	install(TARGETS taisei RUNTIME DESTINATION .)
+else()
+	install(TARGETS taisei RUNTIME DESTINATION bin)
+endif()
