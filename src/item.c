@@ -120,3 +120,7 @@ int collision_item(Item *i) {
 	
 	return 0;
 }
+
+void spawn_item(complex pos, Type type) {
+	create_item(pos, 5*cexp(I*rand()/(float)RAND_MAX*M_PI*2), type);
+}

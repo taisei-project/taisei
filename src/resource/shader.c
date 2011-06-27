@@ -27,6 +27,7 @@ void print_info_log(GLuint shader) {
 void load_shader(const char *filename) {
 	if(!GLEW_ARB_vertex_program || !GLEW_ARB_fragment_program) {
 		warnx("missing shader support; skipping.");
+		tconfig.intval[NO_SHADER] = 1;
 		return;
 	}
 	

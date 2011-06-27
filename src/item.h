@@ -43,4 +43,6 @@ void delete_items();
 int collision_item(Item *p);
 void process_items();
 
+void spawn_item(complex pos, Type type);
+
 #endif

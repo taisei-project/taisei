@@ -37,6 +37,8 @@
 %token tKEY_SHOT
 %token tKEY_BOMB
 
+%token tNO_SHADER
+%token tNO_AUDIO
 
 %token SKEY
 
@@ -54,11 +56,14 @@ file	: line file
 	
 line	: line nl
 		| key_key EQ key_val {
+			if($1 > sizeof(tconfig.intval)/sizeof(int))
+				errx("config index out of range"); // should not happen
 			tconfig.intval[$1] = $3;
 		}
 		| nl;
 
-key_val : SKEY 
+key_val : SKEY
+		| NUMBER
 		| tCHAR;
 
 key_key	: tKEY_UP
@@ -67,7 +72,9 @@ key_key	: tKEY_UP
 		| tKEY_RIGHT
 		| tKEY_FOCUS
 		| tKEY_SHOT
-		| tKEY_BOMB;
+		| tKEY_BOMB
+		| tNO_SHADER
+		| tNO_AUDIO;
 
 nl		: LB { lineno++; };
 %%
@@ -108,4 +115,7 @@ void config_preset() {
 	tconfig.intval[KEY_FOCUS] = SDLK_LSHIFT;
 	tconfig.intval[KEY_SHOT] = SDLK_z;
 	tconfig.intval[KEY_BOMB] = SDLK_x;
+	
+	tconfig.intval[NO_SHADER] = 0;
+	tconfig.intval[NO_AUDIO] = 0;
 }

@@ -13,19 +13,18 @@ Global global;
 
 void init_global() {
 	memset(&global, 0, sizeof(global));	
-	
-	alGenSources(SNDSRC_COUNT, global.sndsrc);
-	
 	srand(time(0));
-		
+	
 	load_resources();
 	printf("- fonts:\n");
 	init_fonts();
-	printf("init_fbo():\n");
-	init_fbo(&global.fbg);
-	init_fbo(&global.fsec);
-	printf("-- ok\n");
-	parse_config(CONFIG_FILE);
+	
+	if(!tconfig.intval[NO_SHADER]) {
+		printf("init_fbo():\n");
+		init_fbo(&global.fbg);
+		init_fbo(&global.fsec);
+		printf("-- finished\n");
+	}
 }
 
 void game_over() {

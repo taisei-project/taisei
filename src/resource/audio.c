@@ -46,10 +46,14 @@ Sound *get_snd(char *name) {
 }
 
 void play_sound(char *name) {
-	play_sound_p(get_snd(name));
+	if(!tconfig.intval[NO_AUDIO])
+		play_sound_p(get_snd(name));
 }
 
 void play_sound_p(Sound *snd) {
+	if(tconfig.intval[NO_AUDIO])
+		return;
+	
 	ALuint i,res = -1;
 	ALint play;
 	for(i = 0; i < SNDSRC_COUNT; i++) {

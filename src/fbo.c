@@ -6,6 +6,7 @@
 void init_fbo(FBO *fbo) {
 	if(!GLEW_ARB_framebuffer_object) {
 		warnx("missing FBO support. seriously.");
+		tconfig.intval[NO_SHADER] = 1;
 		return;
 	}
 	

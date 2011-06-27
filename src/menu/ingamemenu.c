@@ -35,18 +35,20 @@ void ingame_menu_logic(MenuData **menu) {
 }
 
 void draw_ingame_menu(MenuData *menu) {
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-	
-	GLenum shader = get_shader("ingame_menu");
-	glUseProgram(shader);	
-		
 	float rad = IMENU_BLUR;
 	if(menu->selected != 1) // hardly hardcoded. 1 -> "Return to Title"
 		rad = IMENU_BLUR * (1.0-menu->fade);
-		
-	glUniform1f(glGetUniformLocation(shader, "rad"), rad);
-	draw_fbo_viewport(&global.fsec);
-	glUseProgram(0);
+	
+	if(!tconfig.intval[NO_SHADER]) {
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	
+		GLenum shader = get_shader("ingame_menu");
+		glUseProgram(shader);	
+					
+		glUniform1f(glGetUniformLocation(shader, "rad"), rad);
+		draw_fbo_viewport(&global.fsec);
+		glUseProgram(0);
+	}
 	
 	glPushMatrix();
 	glTranslatef(VIEWPORT_W/2, VIEWPORT_H/4, 0);
@@ -68,9 +70,7 @@ void draw_ingame_menu(MenuData *menu) {
 	// cirno's perfect math class #2: Euler Sign ~ Differential Fun
 	menu->drawdata[0] += (menu->cursor*35 - menu->drawdata[0])/10.0;
 	menu->drawdata[1] += (strlen(menu->entries[menu->cursor].name)*5 - menu->drawdata[1])/10.0;
-	
-	menu->drawdata[2] -= menu->drawdata[3]*0.3 + menu->drawdata[2]*0.1;
-	
+		
 	int i;
 	for(i = 0; i < menu->ecount; i++) {
 		float s = 0;

@@ -10,23 +10,6 @@
 #include "../stage.h"
 #include "../global.h"
 
-void simpleEnemy(Enemy *e, int t) {
-	if(t == EVENT_DEATH) {
-		create_item(e->pos, 6*cexp(I*rand()), Power);
-		return;
-	} else if(t < 0) {
-		return;
-	}
-	
-	if(!(t % 50))
-		create_projectile1c("ball", e->pos, rgb(0,0,1), linear, 3 + 2I);
-	
-	e->moving = 1;
-	e->dir = creal(e->args[0]) < 0;
-	
-	e->pos = e->pos0 + e->args[0]*t + I*sin(t/10.0f)*20; // TODO: do this way cooler.
-}
-
 Dialog *test_dialog() {
 	Dialog *d = create_dialog("dialog/marisa", "dialog/youmu");
 		
@@ -39,8 +22,6 @@ Dialog *test_dialog() {
 }
 
 void stage0_draw() {
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, global.fbg.fbo);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPushMatrix();
 	
 	glTranslatef(-(VIEWPORT_X+VIEWPORT_W/2.0), -(VIEWPORT_Y+VIEWPORT_H/2.0),0);
@@ -104,7 +85,6 @@ void cirno_intro(Boss *c, int time) {
 	
 }
 
-
 void cirno_perfect_freeze(Boss *c, int time) {
 	if(time == EVENT_BIRTH) {
 		boss_add_waypoint(c->current, VIEWPORT_W/2 + 100I, 110);
@@ -150,10 +130,10 @@ Boss *create_cirno() {
 }
 
 
-void stage0_fairy0(Enemy *e, int time) {
+void stage0_enemy0(Enemy *e, int time) {
 	TIMER(&time);
 	AT(EVENT_DEATH) {
-		create_item(e->pos, 6*cexp(I*rand()), Power);
+		spawn_item(e->pos, Power);
 		return;
 	}	
 	
@@ -175,12 +155,12 @@ void stage0_fairy0(Enemy *e, int time) {
 		e->pos = e->pos0 + (0.04*e->args[0] + 0.06I)*_i*_i;		
 }
 
-void stage0_statfairy1(Enemy *e, int time) {
+void stage0_enemy1(Enemy *e, int time) {
 	TIMER(&time);
 	AT(EVENT_DEATH) {
-		create_item(e->pos, 6*cexp(I*rand()), Power);
-		create_item(e->pos, 6*cexp(I*rand()), Power);
-		create_item(e->pos, 6*cexp(I*rand()), Point);
+		spawn_item(e->pos, Power);
+		spawn_item(e->pos, Power);
+		spawn_item(e->pos, Point);
 		return;
 	}
 	
@@ -202,12 +182,16 @@ void stage0_statfairy1(Enemy *e, int time) {
 		e->args[0] += 0.03*e->args[1] - 0.04I;
 }
 
-void Swirl(Enemy *e, int t) {
-	glPushMatrix();
-	glTranslatef(creal(e->pos), cimag(e->pos),0);
-	glRotatef(t*15,0,0,1);
-	draw_texture(0,0, "swirl");
-	glPopMatrix();
+void stage0_enemy2(Enemy *e, int time) {
+	TIMER(&time);
+	AT(EVENT_DEATH) {
+		spawn_item(e->pos, Point);
+		return;
+	}
+	
+	e->args[1] -= cimag(e->pos-e->pos0)*0.03I;
+	e->pos += e->args[1]*0.4 + e->args[0];
+	
 }
 
 void stage0_events() {
@@ -217,18 +201,20 @@ void stage0_events() {
 	TIMER(&global.timer);
 	
 	FROM_TO(100, 160, 25) {
-		create_enemy1c(VIEWPORT_W/2 + 70, 8, Fairy, stage0_fairy0, 1);
-		create_enemy1c(VIEWPORT_W/2 - 70, 8, Fairy, stage0_fairy0, -1);
+		create_enemy1c(VIEWPORT_W/2 + 70, 8, Fairy, stage0_enemy0, 1);
+		create_enemy1c(VIEWPORT_W/2 - 70, 8, Fairy, stage0_enemy0, -1);
 	}
 		
 	FROM_TO(240, 300, 30) {
-		create_enemy1c(70 + _i*40, 8, Fairy, stage0_fairy0, -1);
-		create_enemy1c(VIEWPORT_W - (70 + _i*40), 8, Fairy, stage0_fairy0, 1);
+		create_enemy1c(70 + _i*40, 8, Fairy, stage0_enemy0, -1);
+		create_enemy1c(VIEWPORT_W - (70 + _i*40), 8, Fairy, stage0_enemy0, 1);
 	}
 	
 	FROM_TO(400, 460, 50)
-		create_enemy2c(VIEWPORT_W*_i + VIEWPORT_H/3*I, 15, Swirl, stage0_statfairy1, 2-4*_i-0.3I, 1-2*_i);	
+		create_enemy2c(VIEWPORT_W*_i + VIEWPORT_H/3*I, 15, Fairy, stage0_enemy1, 2-4*_i-0.3I, 1-2*_i);	
 	
+	FROM_TO(380, 1000, 20)
+		create_enemy2c(VIEWPORT_W*(_i&1) + rand()/(float)RAND_MAX*100I + 70I, 5, Swirl, stage0_enemy2, 3.5*(1-2*(_i&1)), rand()/(float)RAND_MAX*7I);
 // 	if(!(global.timer % 100))
 // 		create_laser(LaserCurve, 300, 300, 60, 500, ((ColorA){0.6,0.6,1,0.4}), lolsin, 0);
 }

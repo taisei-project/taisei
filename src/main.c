@@ -48,6 +48,8 @@ void shutdown() {
 }
 
 int main(int argc, char** argv) {
+	parse_config(CONFIG_FILE);	
+	
 	printf("initialize:\n");
 	if(SDL_Init(SDL_INIT_VIDEO) < 0)
 		errx(-1, "Error initializing SDL: %s", SDL_GetError());
@@ -70,9 +72,11 @@ int main(int argc, char** argv) {
 	
 	printf("-- GL\n");
 		
-	if(!alutInit(&argc, argv))
-		errx(-1, "Error initializing audio: %s", alutGetErrorString(alutGetError()));
-	printf("-- ALUT\n");
+	if(!tconfig.intval[NO_AUDIO] && !alutInit(&argc, argv)) {
+		warnx("Error initializing audio: %s", alutGetErrorString(alutGetError()));
+		tconfig.intval[NO_AUDIO] = 1;
+		printf("-- ALUT\n");
+	}	
 	
 	init_global();
 	printf("initialization complete.\n");

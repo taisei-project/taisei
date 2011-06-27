@@ -58,15 +58,22 @@ void load_resources() {
 	strcat(path, "gfx");
 	recurse_dir(path);
 	
-	printf("- sounds:\n");
-	strcpy(path, get_prefix());
-	strcat(path, "sfx");
-	recurse_dir(path);
+	if(!tconfig.intval[NO_AUDIO]) {
+		printf("- sounds:\n");
+		alGenSources(SNDSRC_COUNT, global.sndsrc);
+		strcpy(path, get_prefix());
+		strcat(path, "sfx");
+		recurse_dir(path);
+	}
 	
-	printf("- shader:\n");
-	strcpy(path, get_prefix());
-	strcat(path, "shader");
-	recurse_dir(path);
+	if(!tconfig.intval[NO_SHADER]) {
+		printf("- shader:\n");
+		strcpy(path, get_prefix());
+		strcat(path, "shader");
+		recurse_dir(path);
+	} else {
+		printf("- shader: disabled.\n");
+	}
 }
 
 Texture *get_tex(char *name) {

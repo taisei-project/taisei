@@ -12,5 +12,5 @@ const char *get_prefix() {
 }
 
 const char *get_config_path() {
-	return "./";
+	return ".";
 }

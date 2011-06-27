@@ -167,17 +167,29 @@ int linear(Projectile *p, int t) { // sure is physics in here; a[0]: velocity
 	return 1;
 }
 
+int accelerated(Projectile *p, int t) {
+	p->angle = carg(p->args[0]);
+	p->pos = p->pos0 + p->args[0]*t + p->args[1]*t*t;
+	
+	return 1;
+}
+
 void _ProjDraw(Projectile *proj, int t) {
-	if(proj->clr != NULL) {
+	if(proj->clr != NULL && !tconfig.intval[NO_SHADER]) {
 		GLuint shader = get_shader("bullet_color");
 		glUseProgramObjectARB(shader);
 		
 		glUniform4fv(glGetUniformLocation(shader, "color"), 1, (GLfloat *)proj->clr);
 	}
+	if(proj->clr != NULL && tconfig.intval[NO_SHADER])
+		glColor3f(0,0,0);
 	
 	draw_texture_p(0,0, proj->tex);
 	
-	glUseProgramObjectARB(0);
+	glColor3f(1,1,1);
+	
+	if(!tconfig.intval[NO_SHADER])
+		glUseProgramObjectARB(0);
 }
 
 void ProjDraw(Projectile *proj, int t) {

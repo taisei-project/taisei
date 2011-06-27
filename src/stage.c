@@ -93,10 +93,9 @@ void draw_hud() {
 	glPushMatrix();
 	glTranslatef(615,0,0);
 	
-// 	glColor3f(1,0,0);
 	for(i = 0; i < global.plr.lifes; i++)
 	  draw_texture(16*i,167, "star");
-// 	glColor3f(0,1,0);
+
 	for(i = 0; i < global.plr.bombs; i++)
 	  draw_texture(16*i,200, "star");
 	glColor3f(1,1,1);
@@ -110,7 +109,7 @@ void draw_hud() {
 	glPopMatrix();
 	
 	sprintf(buf, "%i fps", global.fps.show_fps);
-	draw_text(AL_Left, SCREEN_W, SCREEN_H-20, buf, _fonts.standard);
+	draw_text(AL_Right, SCREEN_W, SCREEN_H-20, buf, _fonts.standard);
 }
 
 void stage_draw() {
@@ -120,7 +119,8 @@ void stage_draw() {
 	glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
 		
 	if(!global.menu) {
-		apply_bg_shaders();
+		if(!tconfig.intval[NO_SHADER])
+			apply_bg_shaders();
 		glPushMatrix();
 		glTranslatef(-VIEWPORT_X/3.0,0,0);
 
@@ -140,10 +140,11 @@ void stage_draw() {
 			draw_dialog(global.dialog);
 
 		glPopMatrix();
-			
 
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-		draw_fbo_viewport(&global.fsec);		
+		if(!tconfig.intval[NO_SHADER]) {
+			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+			draw_fbo_viewport(&global.fsec);
+		}
 	} if(global.menu) {
 		draw_ingame_menu(global.menu);
 	}
@@ -249,6 +250,9 @@ void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event)
 		stage_input();
 		stage_logic();		
 		
+		if(!tconfig.intval[NO_SHADER])
+			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, global.fbg.fbo);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		draw();
 		stage_draw();				
 		

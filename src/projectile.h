@@ -71,6 +71,7 @@ void process_projectiles(Projectile **projs, char collision);
 Projectile *get_proj(Projectile *hay, int birthtime);
 
 int linear(Projectile *p, int t);
+int accelerated(Projectile *p, int t);
 void ProjDraw(Projectile *p, int t);
 
 void Shrink(Projectile *p, int t);

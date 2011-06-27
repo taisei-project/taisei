@@ -24,7 +24,10 @@ enum {
 	KEY_RIGHT,
 	KEY_FOCUS,
 	KEY_SHOT,
-	KEY_BOMB
+	KEY_BOMB,
+	
+	NO_SHADER,
+	NO_AUDIO
 };
 
 void parse_config();

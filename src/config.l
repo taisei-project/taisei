@@ -28,6 +28,9 @@
 "key_shot"	{ yylval = KEY_SHOT; return tKEY_SHOT; }
 "key_bomb"	{ yylval = KEY_BOMB; return tKEY_BOMB; }
 
+"disable_shader" { yylval = NO_SHADER; return tNO_SHADER; }
+"disable_audio" {yylval = NO_AUDIO; return tNO_AUDIO; }
+
 "shift"		{ yylval = SDLK_LSHIFT; return SKEY; }
 "ctrl"		{ yylval = SDLK_LCTRL; return SKEY; }
 "return"	{ yylval = SDLK_RETURN; return SKEY; }

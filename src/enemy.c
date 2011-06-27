@@ -90,6 +90,14 @@ void Fairy(Enemy *e, int t) {
 	}
 }
 
+void Swirl(Enemy *e, int t) {
+	glPushMatrix();
+	glTranslatef(creal(e->pos), cimag(e->pos),0);
+	glRotatef(t*15,0,0,1);
+	draw_texture(0,0, "swirl");
+	glPopMatrix();
+}
+
 void process_enemies(Enemy **enemies) {
 	Enemy *enemy = *enemies, *del = NULL;
 	
