@@ -84,7 +84,7 @@ void delete_projectiles(Projectile **projs) {
 
 int collision_projectile(Projectile *p) {	
 	if(p->type == FairyProj) {
-		float angle = carg(global.plr.pos - p->pos);
+		float angle = carg(global.plr.pos - p->pos) + p->angle;
 		int projr = sqrt(pow(p->tex->w/4*cos(angle),2)*8/10 + pow(p->tex->h/2*sin(angle)*8/10,2));		
 		
 		if(cabs(global.plr.pos - p->pos) < projr + 1)
@@ -174,6 +174,15 @@ int accelerated(Projectile *p, int t) {
 	return 1;
 }
 
+int asymptotic(Projectile *p, int t) { // v = a[0]*(a[1] + 1); a[1] -> 0
+	p->angle = carg(p->args[0] + p->args[1]);
+	
+	p->args[1] *= 0.8;
+	p->pos += p->args[0]*(p->args[1] + 1);
+	
+	return 1;
+}
+
 void _ProjDraw(Projectile *proj, int t) {
 	if(proj->clr != NULL && !tconfig.intval[NO_SHADER]) {
 		GLuint shader = get_shader("bullet_color");
@@ -202,6 +211,23 @@ void ProjDraw(Projectile *proj, int t) {
 	glPopMatrix();	
 }
 
+void Blast(Projectile *p, int t) {
+	if(t == 1) {
+		p->args[1] = frand()*360 + frand()*I;
+		p->args[2] = frand() + frand()*I;
+	}
+	
+	glPushMatrix();
+	glTranslatef(creal(p->pos), cimag(p->pos), 0);
+	glRotatef(creal(p->args[1]), cimag(p->args[1]), creal(p->args[2]), cimag(p->args[2]));
+	glScalef(t/p->args[0], t/p->args[0], 1);
+	glColor4f(0.3,0.6,1,1 - t/p->args[0]);
+	draw_texture_p(0,0,p->tex);
+	glPopMatrix();
+	
+	glColor4f(1,1,1,1);
+}
+	
 void Shrink(Projectile *p, int t) {	
 	glPushMatrix();
 	float s = 2.0-t/p->args[0]*2;
@@ -224,12 +250,28 @@ void DeathShrink(Projectile *p, int t) {
 	glPopMatrix();
 }
 
+void GrowFade(Projectile *p, int t) {
+	glPushMatrix();
+	glTranslatef(creal(p->pos), cimag(p->pos), 0);
+	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
+	glScalef(t/p->args[0]*(1+p->args[1]), t/p->args[0]*(1+p->args[1]), 1);
+	
+	if(p->clr)
+		glColor4f(p->clr->r,p->clr->g,p->clr->b,1-t/p->args[0]);
+	else
+		glColor4f(1,1,1,1-t/p->args[0]);
+	
+	draw_texture_p(0,0,p->tex);
+	
+	glColor4f(1,1,1,1);
+	glPopMatrix();
+}		
+
 int bullet_flare_move(Projectile *p, int t) {
 	if(t > 16 || REF(p->args[1]) == NULL) {
 		free_ref(p->args[1]);
 		return ACTION_DESTROY;
-	}
-	
+	}	
 	
 	p->pos = ((Projectile *) REF(p->args[1]))->pos;
 	p->angle = ((Projectile *) REF(p->args[1]))->angle;

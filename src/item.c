@@ -74,8 +74,13 @@ void move_item(Item *i) {
 void process_items() {
 	Item *item = global.items, *del = NULL;
     int v;
+	
+	float r = 30;
+	if(global.plr.focus > 0);
+		r *= 2;
+	
 	while(item != NULL) {
-		if(cimag(global.plr.pos) < POINT_OF_COLLECT || cabs(global.plr.pos - item->pos) < 19 + global.plr.focus
+		if(cimag(global.plr.pos) < POINT_OF_COLLECT || cabs(global.plr.pos - item->pos) < r
 		|| global.frames - global.plr.recovery < 0)
 			item->auto_collect = 1;
 		
@@ -115,12 +120,27 @@ void process_items() {
 }
 
 int collision_item(Item *i) {
-	if(cabs(global.plr.pos - i->pos) < 5)
+	if(cabs(global.plr.pos - i->pos) < 10)
 		return 1;
 	
 	return 0;
 }
 
-void spawn_item(complex pos, Type type) {
-	create_item(pos, 5*cexp(I*rand()/(float)RAND_MAX*M_PI*2), type);
+inline void spawn_item(complex pos, Type type) {
+	create_item(pos, 5*cexp(I*rand()/frand()*M_PI*2), type);
+}
+
+void spawn_items(complex pos, int point, int power, int bomb, int life) {
+	int i;
+	for(i = 0; i < point; i++)
+		spawn_item(pos, Point);
+	
+	for(i = 0; i < power; i++)
+		spawn_item(pos, Power);
+	
+	for(i = 0; i < bomb; i++)
+		spawn_item(pos, Bomb);
+	
+	for(i = 0; i < life; i++)
+		spawn_item(pos, Life);
 }

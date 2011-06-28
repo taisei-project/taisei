@@ -90,6 +90,24 @@ void draw_char_menu(MenuData *menu, MenuData *mod) {
 		
 		glPopMatrix();
 	}
+	glColor4f(1,1,1,0.3*sin(menu->frames/20.0)+0.5);
+	
+	for(i = 0; i <= 1; i++) {
+		glPushMatrix();		
+		
+		glTranslatef(60 + (SCREEN_W/2 - 30)*i, SCREEN_H/2+80, 0);
+		glScalef(1-2*i,1,1);
+		if(i) glCullFace(GL_FRONT);
+		glBegin(GL_TRIANGLES);
+		glVertex3f(0,0,0);
+		glVertex3f(20,30,0);
+		glVertex3f(20,-30,0);
+		glEnd();
+		
+		glPopMatrix();
+	}
+	
+	glCullFace(GL_BACK);
 	glColor4f(1,1,1,1);
 	
 	fade_out(menu->fade);

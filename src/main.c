@@ -28,7 +28,7 @@ void init_gl() {
 	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 	
 	glViewport(0, 0, SCREEN_W, SCREEN_H);
-		
+	
 	glClearDepth(1.0);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
@@ -39,10 +39,15 @@ void init_gl() {
 void shutdown() {
 	delete_textures();
 	delete_animations();
-	delete_sounds();
-	delete_shaders();
 	
-	alutExit();
+	if(!tconfig.intval[NO_SHADER])
+		delete_shaders();
+	
+	if(!tconfig.intval[NO_AUDIO]) {
+		delete_sounds();
+		alutExit();
+	}
+	
 	SDL_FreeSurface(display);
 	SDL_Quit();
 }

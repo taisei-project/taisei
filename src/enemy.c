@@ -37,8 +37,17 @@ void create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyDrawRule draw_rul
 }
 
 void _delete_enemy(void **enemies, void* enemy) {
-	if(((Enemy* )enemy)->hp <= 0)
-		((Enemy* )enemy)->logic_rule(enemy, EVENT_DEATH);
+	Enemy *e = (Enemy *)enemy;
+	
+	if(e->hp <= 0) {
+		int i;
+		for(i = 0; i < 10; i++)
+			create_particle2c("flare", e->pos, NULL, Fade, timeout_linear, 10, (3+frand()*10)*cexp(I*frand()*2*M_PI));
+		create_particle1c("blast", e->pos, NULL, Blast, timeout, 20);
+		create_particle1c("blast", e->pos, NULL, Blast, timeout, 20);
+		create_particle2c("blast", e->pos, NULL, GrowFade, timeout, 15,0);
+		e->logic_rule(enemy, EVENT_DEATH);
+	}
 	del_ref(enemy);
 	
 	delete_element((void **)enemies, enemy);
@@ -69,7 +78,7 @@ void Fairy(Enemy *e, int t) {
 	glPushMatrix();	
 	glRotatef(global.frames*10,0,0,1);
 	glScalef(s, s, s);
-	glColor3f(0.2,0.7,1);
+// 	glColor4f(1,1,1,0.7);
 	draw_texture(0,0,"fairy_circle");
 	glPopMatrix();
 	
@@ -103,7 +112,10 @@ void process_enemies(Enemy **enemies) {
 	
 	while(enemy != NULL) {
 		enemy->logic_rule(enemy, global.frames - enemy->birthtime);
-						
+		
+		if(enemy->hp != ENEMY_IMMUNE && cabs(enemy->pos - global.plr.pos) < 25)
+			plr_death(&global.plr);
+		
 		if(enemy->hp != ENEMY_IMMUNE
 		&& (creal(enemy->pos) < -20 || creal(enemy->pos) > VIEWPORT_W + 20
 		|| cimag(enemy->pos) < -20 || cimag(enemy->pos) > VIEWPORT_H + 20
@@ -113,6 +125,6 @@ void process_enemies(Enemy **enemies) {
 			delete_enemy(enemies, del);
 		} else {
 			enemy = enemy->next;
-		}
+		}		
 	}
 }

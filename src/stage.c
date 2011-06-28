@@ -110,6 +110,8 @@ void draw_hud() {
 	
 	sprintf(buf, "%i fps", global.fps.show_fps);
 	draw_text(AL_Right, SCREEN_W, SCREEN_H-20, buf, _fonts.standard);
+	
+	glDisable(GL_STENCIL_TEST);
 }
 
 void stage_draw() {
@@ -126,9 +128,9 @@ void stage_draw() {
 
 		player_draw(&global.plr);
 
+		draw_items();
 		draw_projectiles(global.projs);
 		draw_enemies(global.enemies);
-		draw_items();
 		draw_lasers();
 
 		if(global.boss)

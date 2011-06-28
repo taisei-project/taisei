@@ -57,8 +57,8 @@ void player_draw(Player* plr) {
 			glScalef(-1,1,1);
 		}
 		
-		if(global.frames - abs(plr->recovery) < 0 && (global.frames/17)&1)
-			glColor4f(0.8,0.8,1,0.9);
+		if(global.frames - abs(plr->recovery) < 0 && (global.frames/8)&1)
+			glColor4f(0.4,0.4,1,0.9);
 			
 		draw_animation_p(0, 0, !plr->moving, plr->ani);
 		
@@ -95,9 +95,6 @@ void player_logic(Player* plr) {
 		marisa_shot(plr);
 		break;
 	}
-	
-	if(plr->deathtime > 0)
-		create_particle2c("flare", plr->pos, rgb(255,0,0), Shrink, timeout_linear, 10, 4*cexp(I*rand()));
 	
 	if(global.frames == plr->deathtime)
 		plr_realdeath(plr);
@@ -136,7 +133,7 @@ void plr_realdeath(Player *plr) {
 		create_item(plr->pos, -6-15*I, Power);
 		
 		plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I;
-		plr->recovery = -(global.frames + 200);
+		plr->recovery = -(global.frames + 150);
 		
 		if(global.plr.bombs < 3)
 			global.plr.bombs = 3;
@@ -147,5 +144,11 @@ void plr_realdeath(Player *plr) {
 }
 
 void plr_death(Player *plr) {
-	plr->deathtime = global.frames + DEATHBOMB_TIME;
+	if(plr->deathtime == -1) {
+		int i;
+		for(i = 0; i < 20; i++)
+			create_particle2c("flare", plr->pos, NULL, Shrink, timeout_linear, 40, (3+frand()*7)*cexp(I*rand()));
+		create_particle2c("blast", plr->pos, rgb(1,0.5,0.3), GrowFade, timeout, 35, 2.4);
+		plr->deathtime = global.frames + DEATHBOMB_TIME;
+	}
 }

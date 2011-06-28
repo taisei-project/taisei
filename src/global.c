@@ -57,3 +57,7 @@ void set_ortho() {
 	glMatrixMode(GL_MODELVIEW);
 	glDisable(GL_DEPTH_TEST);
 }
+
+inline double frand() {
+	return rand()/(double)RAND_MAX;
+}

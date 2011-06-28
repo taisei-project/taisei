@@ -133,7 +133,7 @@ Boss *create_cirno() {
 void stage0_enemy0(Enemy *e, int time) {
 	TIMER(&time);
 	AT(EVENT_DEATH) {
-		spawn_item(e->pos, Power);
+		spawn_items(e->pos, 3,0,0,0);
 		return;
 	}	
 	
@@ -143,7 +143,7 @@ void stage0_enemy0(Enemy *e, int time) {
 	AT(60) {
 		int i = 0;
 		for(i = -1; i <= 1; i++)
-			create_projectile1c("ball", e->pos, rgb(0.2, 0.3, 0.5), linear, 4*cexp(I*(carg(global.plr.pos - e->pos) + 0.2*i)));
+			create_projectile2c("crystal", e->pos, rgb(0.2, 0.3, 0.5), asymptotic, 2*cexp(I*(carg(global.plr.pos - e->pos) + 0.2*i)), 5);
 		
 		e->moving = 1;
 		e->dir = creal(e->args[0]) < 0;
@@ -158,9 +158,7 @@ void stage0_enemy0(Enemy *e, int time) {
 void stage0_enemy1(Enemy *e, int time) {
 	TIMER(&time);
 	AT(EVENT_DEATH) {
-		spawn_item(e->pos, Power);
-		spawn_item(e->pos, Power);
-		spawn_item(e->pos, Point);
+		spawn_items(e->pos, 2,2,0,0);
 		return;
 	}
 	
@@ -169,15 +167,14 @@ void stage0_enemy1(Enemy *e, int time) {
 	
 	FROM_TO(60,100,2) {
 		e->args[0] = 0.5*e->args[0];
-		create_projectile1c("rice", e->pos, rgb(0.2, 0.4, 0.8), linear, 3*cexp(I*M_PI/10*_i));
+		create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, 2*cexp(I*M_PI/10*_i), _i/2.0);
 	}
 	
-	FROM_TO(90, 500, 60) {
-		int i;
-		for(i = 4; i < 8; i++)
-			create_projectile1c("ball", e->pos, rgb(0.2,0.4,0.8), linear, i*cexp(I*carg(global.plr.pos- e->pos)));
-	}
 	
+	FROM_TO(90, 500, 20);
+	if(!(_i % 9))
+		create_projectile2c("thickrice", e->pos, rgb(0.2, 0.4, 0.8), asymptotic, (1+frand()*3)*cexp(I*carg(global.plr.pos - e->pos)), 3);
+		
 	FROM_TO(500, 900, 1)
 		e->args[0] += 0.03*e->args[1] - 0.04I;
 }
@@ -185,7 +182,7 @@ void stage0_enemy1(Enemy *e, int time) {
 void stage0_enemy2(Enemy *e, int time) {
 	TIMER(&time);
 	AT(EVENT_DEATH) {
-		spawn_item(e->pos, Point);
+		spawn_items(e->pos, frand()>0.5, frand()>0.2,0,0);
 		return;
 	}
 	
@@ -194,6 +191,58 @@ void stage0_enemy2(Enemy *e, int time) {
 	
 }
 
+void stage0_enemy3(Enemy *e, int t) {
+	TIMER(&t);
+	AT(EVENT_DEATH) {
+		spawn_items(e->pos, 2,1,0,0);
+		return;
+	}
+	
+	e->pos = e->pos0 + e->args[0]*t + e->args[1]*t*t;
+	
+	FROM_TO(10,1000,1)
+		if(frand() > 0.98)
+			create_projectile1c("ball", e->pos, rgb(0.8,0.8,0.4), linear, (1+frand())*cexp(I*carg(global.plr.pos - e->pos)));
+}
+
+void stage0_enemy4(Enemy *e, int t) {
+	TIMER(&t);
+	AT(EVENT_DEATH) {
+		spawn_items(e->pos, 3,4,0,0);
+		return;
+	}
+	
+	FROM_TO(0, 150, 1)
+		e->pos += (e->args[0] - e->pos)*0.02;
+	
+	FROM_TO_INT(150, 550, 40, 40, 2)
+		create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, 2*cexp(I*M_PI/10*_ni), _ni/2.0);
+	
+	FROM_TO(560,1000,1)
+		e->pos += e->args[1];
+}
+
+void stage0_enemy5(Enemy *e, int t) {
+	TIMER(&t);
+	AT(EVENT_DEATH) {
+		spawn_items(e->pos, 3,4,0,0);
+		return;
+	}
+	
+	FROM_TO(0, 50, 1)
+		e->pos += 2I;
+		
+	FROM_TO_INT(60, 300, 70, 40, 12) {
+		int i;
+		for(i = -1; i <= 1; i++)
+			create_projectile1c("crystal", e->pos, rgb(0.2, 0.3, 0.5), linear, 2.5*cexp(I*(carg(global.plr.pos - e->pos) + i/5.0)));
+	}
+	
+	FROM_TO(320, 700, 1) {
+		e->args[1] += 0.03;
+		e->pos += e->args[0]*e->args[1] + 1.4I;
+	}
+}
 void stage0_events() {
 	if(global.dialog)
 		return;	
@@ -211,10 +260,28 @@ void stage0_events() {
 	}
 	
 	FROM_TO(400, 460, 50)
-		create_enemy2c(VIEWPORT_W*_i + VIEWPORT_H/3*I, 15, Fairy, stage0_enemy1, 2-4*_i-0.3I, 1-2*_i);	
+		create_enemy2c(VIEWPORT_W*_i + VIEWPORT_H/3*I, 25, Fairy, stage0_enemy1, 2-4*_i-0.3I, 1-2*_i);	
 	
 	FROM_TO(380, 1000, 20)
-		create_enemy2c(VIEWPORT_W*(_i&1) + rand()/(float)RAND_MAX*100I + 70I, 5, Swirl, stage0_enemy2, 3.5*(1-2*(_i&1)), rand()/(float)RAND_MAX*7I);
+		create_enemy2c(VIEWPORT_W*(_i&1) + frand()*100I + 70I, 2, Swirl, stage0_enemy2, 3.5*(1-2*(_i&1)), frand()*7I);
+		
+	FROM_TO(1100, 1600, 20)
+		create_enemy2c(VIEWPORT_W/3, 3, Swirl, stage0_enemy3, 4I, 0.06);
+		
+	FROM_TO(1500, 2000, 20)
+		create_enemy2c(VIEWPORT_W+200I, 3, Swirl, stage0_enemy3, -2, -0.04-0.03I);
+	
+	FROM_TO(1250, 1800, 60)
+		create_enemy1c(VIEWPORT_W/2 + frand()*500-250 , 8, Fairy, stage0_enemy0, frand()*2-1);
+		
+	FROM_TO(1700, 2700, 300)
+		create_enemy2c(VIEWPORT_W/2, 35, Fairy, stage0_enemy4, VIEWPORT_W/4 + VIEWPORT_W/2*frand()+200I, 3-6*(frand()>0.5)+frand()*2I);
+	
+	FROM_TO(2000,2800, 200) {
+		int i;
+		for(i = 0; i < 5; i++)
+			create_enemy1c(VIEWPORT_W/4 + VIEWPORT_H/10*i, 8, Fairy, stage0_enemy5, i - 2.5);
+	}
 // 	if(!(global.timer % 100))
 // 		create_laser(LaserCurve, 300, 300, 60, 500, ((ColorA){0.6,0.6,1,0.4}), lolsin, 0);
 }

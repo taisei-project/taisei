@@ -7,8 +7,14 @@ find_package(ALUT REQUIRED)
 find_package(PNG REQUIRED)
 find_package(SDL_ttf REQUIRED)
 find_package(GLEW REQUIRED)
-find_package(BISON)
-find_package(FLEX)
+find_package(BISON REQUIRED)
+find_package(FLEX REQUIRED)
+find_package(Freetype)
+find_package(ZLIB)
+
+if(WIN32)
+	add_definitions(-lwinmm -ldxguid -limm32 -lversion)
+endif()
 
 BISON_TARGET(cfgparser config.y ${CMAKE_CURRENT_SOURCE_DIR}/parser.c)
 FLEX_TARGET(cfgscanner config.l  ${CMAKE_CURRENT_SOURCE_DIR}/lexer.c)
@@ -51,12 +57,27 @@ endif()
 
 add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}")
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+set(LIBs ${LIBs}
+	${SDL_LIBRARY}
+	${PNG_LIBRARY}
+	${SDLTTF_LIBRARY}
+	${OPENAL_LIBRARY}
+	${ALUT_LIBRARY}
+	${GLEW_LIBRARY}
+	${OPENGL_LIBRARY})
+	
 
-include_directories(${SDL_INCLUDE_DIR} ${ALUT_INCLUDE_DIR} ${GLEW_INCLUDE_PATH})
+if(FREETYPE_FOUND)
+	set(LIBs ${LIBs} ${FREETYPE_LIBRARY})
+endif()
+
+if(ZLIB_FOUND)
+	set(LIBs ${LIBs} ${ZLIB_LIBRARY})
+endif()
+	
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${SDL_INCLUDE_DIR} ${ALUT_INCLUDE_DIR} ${GLEW_INCLUDE_PATH})
 add_executable(taisei WIN32 ${SRCs})
-target_link_libraries(taisei ${SDL_LIBRARY} ${PNG_LIBRARY} ${SDLTTF_LIBRARY}
-					${OPENAL_LIBRARY} ${ALUT_LIBRARY} ${GLEW_LIBRARY} ${OPENGL_LIBRARY})
+target_link_libraries(taisei ${LIBs})
 
 if(RELATIVE)
 	install(TARGETS taisei RUNTIME DESTINATION .)

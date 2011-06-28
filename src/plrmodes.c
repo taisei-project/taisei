@@ -93,6 +93,17 @@ int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: target, a[2]: 
 
 /* Marisa */
 
+void MariLaser(Projectile *p, int t) {
+	Player *plr = (Player *)REF(p->args[1]);
+	if(cimag(p->pos) - cimag(plr->pos) < 90) {
+		glScissor(VIEWPORT_X, SCREEN_H - cimag(plr->pos)+5, VIEWPORT_W+VIEWPORT_X, VIEWPORT_H);
+		glEnable(GL_SCISSOR_TEST);
+	}
+	ProjDraw(p, t);
+	
+	glDisable(GL_SCISSOR_TEST);
+}
+
 int mari_laser(Projectile *p, int t) {
 	linear(p, t);
 	
@@ -106,8 +117,8 @@ int mari_laser(Projectile *p, int t) {
 void marisa_shot(Player *plr) {
 	if(plr->fire) {
 		if(!(global.frames % 4)) {
-			create_projectile2c("marisa", +10, NULL, mari_laser, -20I, add_ref(plr))->type = PlrProj;
-			create_projectile2c("marisa", -10, NULL, mari_laser, -20I, add_ref(plr))->type = PlrProj;
+			create_projectile_p(&global.projs, get_tex("proj/marisa"), +15, NULL, MariLaser, mari_laser, -20I, add_ref(plr),0,0)->type = PlrProj;
+			create_projectile_p(&global.projs, get_tex("proj/marisa"), -15, NULL, MariLaser, mari_laser, -20I, add_ref(plr),0,0)->type = PlrProj;
 		}
 	}
 }

@@ -72,9 +72,13 @@ Projectile *get_proj(Projectile *hay, int birthtime);
 
 int linear(Projectile *p, int t);
 int accelerated(Projectile *p, int t);
+int asymptotic(Projectile *p, int t);
 void ProjDraw(Projectile *p, int t);
 
+void Blast(Projectile *p, int t);
+
 void Shrink(Projectile *p, int t);
+void GrowFade(Projectile *p, int t);
 int bullet_flare_move(Projectile *p, int t);
 
 void Fade(Projectile *p, int t);

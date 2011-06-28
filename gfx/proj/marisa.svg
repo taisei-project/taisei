@@ -17,8 +17,8 @@
    inkscape:version="0.48.1 r9760"
    sodipodi:docname="marisa.svg"
    inkscape:export-filename="/home/laochailan/src/taisei/gfx/proj/marisa.png"
-   inkscape:export-xdpi="101.66402"
-   inkscape:export-ydpi="101.66402">
+   inkscape:export-xdpi="104.20562"
+   inkscape:export-ydpi="104.20562">
   <defs
      id="defs4">
     <linearGradient
@@ -78,6 +78,30 @@
        y1="716.18787"
        x2="757.54218"
        y2="746.35284" />
+    <filter
+       inkscape:collect="always"
+       id="filter4668"
+       x="-0.61853757"
+       width="2.2370751"
+       y="-0.02166328"
+       height="1.0433266">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="0.63926099"
+         id="feGaussianBlur4670" />
+    </filter>
+    <filter
+       inkscape:collect="always"
+       id="filter4680"
+       x="-0.1773141"
+       width="1.3546282"
+       y="-0.0062101403"
+       height="1.0124203">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="0.18325482"
+         id="feGaussianBlur4682" />
+    </filter>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -87,7 +111,7 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:zoom="9.5901357"
-     inkscape:cx="-30.411532"
+     inkscape:cx="-49.076544"
      inkscape:cy="38.193551"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -122,25 +146,33 @@
        id="g3761"
        transform="translate(-8.6162061e-6,-0.71894668)"
        style="stroke:url(#linearGradient3771)" />
-    <g
-       style="opacity:0.58898303;stroke:url(#linearGradient3798);stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
-       transform="matrix(1.2087394,0,0,1.2087394,-1.6699256,-241.42496)"
-       id="g3792">
-      <path
-         id="path3794"
-         transform="matrix(0.70710678,0.70710678,-0.70710678,0.70710678,0,0)"
-         style="fill:none;stroke:url(#linearGradient3801);stroke-width:0.5;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-         d="m 729.09119,717.77747 6.25598,0 0,6.25598 -6.25598,0 z m 15.7057,15.7057 6.25598,0 0,6.25598 -6.25598,0 z m -12.87727,-12.87727 6.25598,0 0,6.25598 -6.25598,0 z m 15.7057,15.7057 6.25598,0 0,6.25598 -6.25598,0 z"
-         inkscape:connector-curvature="0"
-         sodipodi:nodetypes="cccccccccccccccccscc" />
-    </g>
     <rect
-       style="opacity:0.41338583;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none"
+       style="opacity:0.37007874;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;filter:url(#filter4668)"
        id="rect2985"
        width="2.4804094"
        height="70.821518"
        x="6.7597957"
        y="981.57758"
        ry="0" />
+    <g
+       style="opacity:0.99212598;stroke:url(#linearGradient3798);stroke-width:0.50000000000000000;stroke-miterlimit:4;stroke-dasharray:none"
+       transform="matrix(1.2087394,0,0,1.2087394,-1.6699256,-241.42496)"
+       id="g3792">
+      <path
+         id="path3794"
+         transform="matrix(0.70710678,0.70710678,-0.70710678,0.70710678,0,0)"
+         style="fill:none;stroke:url(#linearGradient3801);stroke-width:0.50000000000000000;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         d="m 729.09119,717.77747 6.25598,0 0,6.25598 -6.25598,0 z m 15.7057,15.7057 6.25598,0 0,6.25598 -6.25598,0 z m -12.87727,-12.87727 6.25598,0 0,6.25598 -6.25598,0 z m 15.7057,15.7057 6.25598,0 0,6.25598 -6.25598,0 z"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="cccccccccccccccccscc" />
+    </g>
+    <rect
+       ry="0"
+       y="981.57758"
+       x="6.7597957"
+       height="70.821518"
+       width="2.4804094"
+       id="rect4142"
+       style="opacity:0.37007874;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;filter:url(#filter4680)" />
   </g>
 </svg>

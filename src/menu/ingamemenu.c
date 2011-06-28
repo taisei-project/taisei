@@ -68,7 +68,7 @@ void draw_ingame_menu(MenuData *menu) {
 	glPopMatrix();
 	
 	// cirno's perfect math class #2: Euler Sign ~ Differential Fun
-	menu->drawdata[0] += (menu->cursor*35 - menu->drawdata[0])/10.0;
+	menu->drawdata[0] += (menu->cursor*35 - menu->drawdata[0])/7.0;
 	menu->drawdata[1] += (strlen(menu->entries[menu->cursor].name)*5 - menu->drawdata[1])/10.0;
 		
 	int i;
