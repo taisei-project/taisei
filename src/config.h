@@ -26,6 +26,8 @@ enum {
 	KEY_SHOT,
 	KEY_BOMB,
 	
+	FULLSCREEN,
+	
 	NO_SHADER,
 	NO_AUDIO
 };

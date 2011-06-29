@@ -21,8 +21,11 @@ void youmu_opposite_logic(Enemy *e, int t);
 
 int youmu_homing(Projectile *p, int t);
 
+void youmu_power(Player *plr, float npow);
+
 /* Marisa */
 
 void marisa_shot(Player *plr);
 
+void marisa_power(Player *plr, float npow);
 #endif

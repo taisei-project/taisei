@@ -44,7 +44,7 @@ Projectile *create_projectile_p(Projectile **dest, Texture *tex, complex pos, Co
 	p->birthtime = global.frames;
 	p->pos = pos;
 	p->pos0 = pos;
-	p->angle = 0;
+	p->angle = M_PI/2;
 	p->rule = rule;
 	p->draw = draw;
 	p->tex = tex;
@@ -211,6 +211,19 @@ void ProjDraw(Projectile *proj, int t) {
 	glPopMatrix();	
 }
 
+void PartDraw(Projectile *proj, int t) {
+	glPushMatrix();
+	glTranslatef(creal(proj->pos), cimag(proj->pos), 0);
+	glRotatef(proj->angle*180/M_PI+90, 0, 0, 1);
+
+	if(proj->clr)
+		glColor4fv((float *)proj->clr);
+	
+	draw_texture_p(0,0, proj->tex);
+	
+	glPopMatrix();	
+	glColor3f(1,1,1);
+}
 void Blast(Projectile *p, int t) {
 	if(t == 1) {
 		p->args[1] = frand()*360 + frand()*I;

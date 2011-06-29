@@ -12,10 +12,6 @@ find_package(FLEX REQUIRED)
 find_package(Freetype)
 find_package(ZLIB)
 
-if(WIN32)
-	add_definitions(-lwinmm -ldxguid -limm32 -lversion)
-endif()
-
 BISON_TARGET(cfgparser config.y ${CMAKE_CURRENT_SOURCE_DIR}/parser.c)
 FLEX_TARGET(cfgscanner config.l  ${CMAKE_CURRENT_SOURCE_DIR}/lexer.c)
 ADD_FLEX_BISON_DEPENDENCY(cfgscanner cfgparser)
@@ -73,6 +69,10 @@ endif()
 
 if(ZLIB_FOUND)
 	set(LIBs ${LIBs} ${ZLIB_LIBRARY})
+endif()
+
+if(WIN32)
+	set(LIBs ${LIBs} -ldxguid -limm32 -lversion)
 endif()
 	
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${SDL_INCLUDE_DIR} ${ALUT_INCLUDE_DIR} ${GLEW_INCLUDE_PATH})

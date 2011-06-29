@@ -27,7 +27,7 @@ typedef enum {
 	YoumuOpposite,
 	YoumuHoming,
 	
-	MarisaFoo = YoumuOpposite,
+	MarisaLaser = YoumuOpposite,
 	MarisaBar = YoumuHoming
 } ShotMode;
 
@@ -43,7 +43,7 @@ typedef struct {
 	int lifes;
 	int bombs;
 	
-	float recovery;
+	int recovery;
 	
 	int deathtime;
     
@@ -58,6 +58,8 @@ void init_player(Player*, Character cha, ShotMode shot);
 
 void player_draw(Player*);
 void player_logic(Player*);
+
+void plr_set_power(Player *plr, float npow);
 
 void plr_bomb(Player*);
 void plr_realdeath(Player*);

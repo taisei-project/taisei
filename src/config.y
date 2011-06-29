@@ -37,6 +37,8 @@
 %token tKEY_SHOT
 %token tKEY_BOMB
 
+%token tFULLSCREEN
+
 %token tNO_SHADER
 %token tNO_AUDIO
 
@@ -74,7 +76,8 @@ key_key	: tKEY_UP
 		| tKEY_SHOT
 		| tKEY_BOMB
 		| tNO_SHADER
-		| tNO_AUDIO;
+		| tNO_AUDIO
+		| tFULLSCREEN;
 
 nl		: LB { lineno++; };
 %%
@@ -115,6 +118,8 @@ void config_preset() {
 	tconfig.intval[KEY_FOCUS] = SDLK_LSHIFT;
 	tconfig.intval[KEY_SHOT] = SDLK_z;
 	tconfig.intval[KEY_BOMB] = SDLK_x;
+	
+	tconfig.intval[FULLSCREEN] = 0;
 	
 	tconfig.intval[NO_SHADER] = 0;
 	tconfig.intval[NO_AUDIO] = 0;

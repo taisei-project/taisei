@@ -100,6 +100,25 @@ void player_logic(Player* plr) {
 		plr_realdeath(plr);
 }
 
+void plr_set_power(Player *plr, float npow) {
+	switch(plr->cha) {
+		case Youmu:
+			youmu_power(plr, npow);
+			break;
+		case Marisa:
+			marisa_power(plr, npow);
+			break;
+	}
+	
+	plr->power = npow;
+	
+	if(plr->power > PLR_MAXPOWER)
+		plr->power = PLR_MAXPOWER;
+	
+	if(plr->power < 0)
+		plr->power = 0;
+}
+
 void plr_bomb(Player *plr) {
 	if(global.frames - plr->recovery >= 0 && plr->bombs > 0) {
 		Enemy *e;
@@ -138,13 +157,10 @@ void plr_realdeath(Player *plr) {
 		if(global.plr.bombs < 3)
 			global.plr.bombs = 3;
 	}
-	
-	if(plr->slaves)
-		delete_enemies(&plr->slaves);
 }
 
 void plr_death(Player *plr) {
-	if(plr->deathtime == -1) {
+	if(plr->deathtime == -1 && global.frames - abs(plr->recovery) > 0) {
 		int i;
 		for(i = 0; i < 20; i++)
 			create_particle2c("flare", plr->pos, NULL, Shrink, timeout_linear, 40, (3+frand()*7)*cexp(I*rand()));

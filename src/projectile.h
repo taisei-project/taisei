@@ -74,6 +74,7 @@ int linear(Projectile *p, int t);
 int accelerated(Projectile *p, int t);
 int asymptotic(Projectile *p, int t);
 void ProjDraw(Projectile *p, int t);
+void PartDraw(Projectile *p, int t);
 
 void Blast(Projectile *p, int t);
 

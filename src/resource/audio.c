@@ -68,7 +68,7 @@ void play_sound_p(Sound *snd) {
 		alSourcei(global.sndsrc[res],AL_BUFFER, snd->alsnd);
 		alSourcePlay(global.sndsrc[res]);
 	} else {
-		fprintf(stderr,"play_sound_p():\n!- not enough sources");
+		warnx("play_sound_p():\n!- not enough sources");
 	}
 }
 

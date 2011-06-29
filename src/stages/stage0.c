@@ -266,10 +266,10 @@ void stage0_events() {
 		create_enemy2c(VIEWPORT_W*(_i&1) + frand()*100I + 70I, 2, Swirl, stage0_enemy2, 3.5*(1-2*(_i&1)), frand()*7I);
 		
 	FROM_TO(1100, 1600, 20)
-		create_enemy2c(VIEWPORT_W/3, 3, Swirl, stage0_enemy3, 4I, 0.06);
+		create_enemy2c(VIEWPORT_W/3, 1, Swirl, stage0_enemy3, 4I, 0.06);
 		
 	FROM_TO(1500, 2000, 20)
-		create_enemy2c(VIEWPORT_W+200I, 3, Swirl, stage0_enemy3, -2, -0.04-0.03I);
+		create_enemy2c(VIEWPORT_W+200I, 2, Swirl, stage0_enemy3, -2, -0.04-0.03I);
 	
 	FROM_TO(1250, 1800, 60)
 		create_enemy1c(VIEWPORT_W/2 + frand()*500-250 , 8, Fairy, stage0_enemy0, frand()*2-1);
