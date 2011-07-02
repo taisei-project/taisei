@@ -47,6 +47,8 @@ typedef struct {
 	
 	int deathtime;
     
+    int continues;
+    
 	Character cha;
 	ShotMode shot;
 	Enemy *slaves;

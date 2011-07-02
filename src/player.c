@@ -11,6 +11,7 @@
 #include "projectile.h"
 #include "global.h"
 #include "plrmodes.h"
+#include "menu/gameovermenu.h"
 
 void init_player(Player* plr, Character cha, ShotMode shot) {
 	memset(plr, 0, sizeof(Player));
@@ -24,6 +25,8 @@ void init_player(Player* plr, Character cha, ShotMode shot) {
 	plr->shot = shot;
 	
 	plr->deathtime = -1;
+	
+	plr->continues = 0;
 	
 	switch(cha) {
 	case Youmu:
@@ -146,7 +149,8 @@ void plr_realdeath(Player *plr) {
 	plr->deathtime = -1;
 	
 	if(plr->lifes-- == 0) {
-		game_over();
+		//game_over();
+		global.menu = create_gameover_menu();
 	} else {
 		create_item(plr->pos, 6-15*I, Power);
 		create_item(plr->pos, -6-15*I, Power);
