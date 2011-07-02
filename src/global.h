@@ -130,6 +130,8 @@ void set_ortho();
 
 void toggle_fullscreen();
 void global_input();
+void global_processevent(SDL_Event*);
+void take_screenshot();
 
 double frand();
 

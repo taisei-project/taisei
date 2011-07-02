@@ -120,6 +120,8 @@ void char_menu_input(MenuData *menu, MenuData *mod) {
 	
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;
+		
+		global_processevent(&event);
 		if(event.type == SDL_KEYDOWN) {
 			if(sym == tconfig.intval[KEY_RIGHT]) {
 				menu->cursor++;
