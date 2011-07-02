@@ -36,8 +36,6 @@ void create_menu(MenuData *menu) {
 void menu_input(MenuData *menu) {
 	SDL_Event event;
 	
-	global_input();
-	
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;
 		

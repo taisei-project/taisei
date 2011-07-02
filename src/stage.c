@@ -24,8 +24,6 @@ void stage_input() {
 		return;
 	}		
 	
-	global_input();
-	
 	SDL_Event event;
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;

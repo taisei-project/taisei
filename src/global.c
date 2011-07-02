@@ -107,10 +107,18 @@ void take_screenshot()
 	fclose(out);
 }
 
-void global_input()
+void global_processevent(SDL_Event *event)
 {
-	SDL_Event event;
-	Uint8 *keys = SDL_GetKeyState(NULL);
+	int sym = event->key.keysym.sym;
+	Uint8 *keys;
+	
+	if(event->type == SDL_KEYDOWN)
+	{
+		if(sym == tconfig.intval[KEY_SCREENSHOT])
+			take_screenshot();
+	}
+	
+	keys = SDL_GetKeyState(NULL);
 	
 	// Catch fullscreen hotkeys (Alt+Enter and the user-defined one)
 	if((keys[SDLK_LALT] || keys[SDLK_RALT]) && keys[SDLK_RETURN] || keys[tconfig.intval[KEY_FULLSCREEN]])
@@ -122,15 +130,4 @@ void global_input()
 		}
 	}
 	else global.fullscreenhotkey_state = 0;
-}
-
-void global_processevent(SDL_Event *event)
-{
-	int sym = event->key.keysym.sym;
-	
-	if(event->type == SDL_KEYDOWN)
-	{
-		if(sym == tconfig.intval[KEY_SCREENSHOT])
-			take_screenshot();
-	}
 }
