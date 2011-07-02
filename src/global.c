@@ -61,3 +61,31 @@ void set_ortho() {
 inline double frand() {
 	return rand()/(double)RAND_MAX;
 }
+
+extern SDL_Surface *display;
+
+void toggle_fullscreen()
+{
+	int newflags = display->flags;
+	newflags ^= SDL_FULLSCREEN;
+	
+	SDL_FreeSurface(display);
+	if((display = SDL_SetVideoMode(SCREEN_W, SCREEN_H, 32, newflags)) == NULL)
+		errx(-1, "Error opening screen: %s", SDL_GetError());
+}
+
+void global_input()
+{
+	Uint8 *keys = SDL_GetKeyState(NULL);
+	
+	// Catch the fullscreen hotkey (Alt+Enter)
+	if((keys[SDLK_LALT] || keys[SDLK_RALT]) && keys[SDLK_RETURN])
+	{
+		if(!global.fullscreenhotkey_state)
+		{
+			toggle_fullscreen();
+			global.fullscreenhotkey_state = 1;
+		}
+	}
+	else global.fullscreenhotkey_state = 0;
+}

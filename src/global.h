@@ -111,7 +111,9 @@ typedef struct {
 	
 	int game_over;
 	int points;
-		
+	
+	int fullscreenhotkey_state;
+	
 	FPSCounter fps;
 	
 } Global;
@@ -125,6 +127,8 @@ void game_over();
 void frame_rate();
 void calc_fps(FPSCounter *fps);
 void set_ortho();
+
+void global_input();
 
 double frand();
 

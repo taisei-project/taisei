@@ -24,6 +24,8 @@ void stage_input() {
 		return;
 	}		
 	
+	global_input();
+	
 	SDL_Event event;
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;
@@ -81,7 +83,6 @@ void stage_input() {
 		global.plr.fire = False;
 	if(!keys[tconfig.intval[KEY_FOCUS]] && global.plr.focus > 0)
 		global.plr.focus = -30;
-
 }
 
 void draw_hud() {
