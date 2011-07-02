@@ -28,6 +28,8 @@
 "key_shot"	{ yylval = KEY_SHOT; return tKEY_SHOT; }
 "key_bomb"	{ yylval = KEY_BOMB; return tKEY_BOMB; }
 
+"key_fullscreen" { yylval = KEY_FULLSCREEN; return tKEY_FULLSCREEN; }
+
 "fullscreen" { yylval = FULLSCREEN; return tFULLSCREEN; }
 
 "disable_shader" { yylval = NO_SHADER; return tNO_SHADER; }

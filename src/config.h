@@ -26,6 +26,8 @@ enum {
 	KEY_SHOT,
 	KEY_BOMB,
 	
+	KEY_FULLSCREEN,
+	
 	FULLSCREEN,
 	
 	NO_SHADER,

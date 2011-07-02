@@ -128,6 +128,7 @@ void frame_rate();
 void calc_fps(FPSCounter *fps);
 void set_ortho();
 
+void toggle_fullscreen();
 void global_input();
 
 double frand();

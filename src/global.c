@@ -78,8 +78,8 @@ void global_input()
 {
 	Uint8 *keys = SDL_GetKeyState(NULL);
 	
-	// Catch the fullscreen hotkey (Alt+Enter)
-	if((keys[SDLK_LALT] || keys[SDLK_RALT]) && keys[SDLK_RETURN])
+	// Catch fullscreen hotkeys (Alt+Enter and the user-defined one)
+	if((keys[SDLK_LALT] || keys[SDLK_RALT]) && keys[SDLK_RETURN] || keys[tconfig.intval[KEY_FULLSCREEN]])
 	{
 		if(!global.fullscreenhotkey_state)
 		{
