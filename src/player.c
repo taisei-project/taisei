@@ -18,8 +18,8 @@ void init_player(Player* plr, Character cha, ShotMode shot) {
 	
 	plr->pos = VIEWPORT_W/2 + I*(VIEWPORT_H-20);
 		
-	plr->lifes = 2;
-	plr->bombs = 3;
+	plr->lifes = PLR_START_LIVES;
+	plr->bombs = PLR_START_BOMBS;
 	
 	plr->cha = cha;
 	plr->shot = shot;
@@ -148,18 +148,20 @@ void plr_bomb(Player *plr) {
 void plr_realdeath(Player *plr) {
 	plr->deathtime = -1;
 	
+	create_item(plr->pos, 6-15*I, Power);
+	create_item(plr->pos, -6-15*I, Power);
+	
+	plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I;
+	plr->recovery = -(global.frames + 150);
+
+	if(global.plr.bombs < PLR_START_BOMBS)
+		global.plr.bombs = PLR_START_BOMBS;
+	
 	if(plr->lifes-- == 0) {
-		//game_over();
-		global.menu = create_gameover_menu();
-	} else {
-		create_item(plr->pos, 6-15*I, Power);
-		create_item(plr->pos, -6-15*I, Power);
-		
-		plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I;
-		plr->recovery = -(global.frames + 150);
-		
-		if(global.plr.bombs < 3)
-			global.plr.bombs = 3;
+		if(plr->continues < MAX_CONTINUES)
+			global.menu = create_gameover_menu();
+		else
+			game_over();		
 	}
 }
 

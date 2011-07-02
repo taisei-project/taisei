@@ -7,16 +7,7 @@ void continue_game(void *arg)
 {
 	printf("The game is being continued...\n");
 	
-	create_item(global.plr.pos, 6-15*I, Power);
-	create_item(global.plr.pos, -6-15*I, Power);
-	
-	global.plr.pos = VIEWPORT_W/2 + VIEWPORT_H*I;
-	global.plr.recovery = -(global.frames + 150);
-	
-	if(global.plr.bombs < 3)
-		global.plr.bombs = 3;
-	
-	global.plr.lifes = 2;
+	global.plr.lifes = PLR_START_LIVES;
 	global.plr.continues += 1;
 	
 	delete_projectiles(&global.projs);
@@ -33,8 +24,8 @@ MenuData *create_gameover_menu() {
 	
 	if(global.plr.continues)
 	{
-		char s[256];
-		sprintf(s, "Continue (%i)", global.plr.continues);
+		char s[64];
+		snprintf(s, sizeof(s), "Continue (%i)", global.plr.continues);
 		add_menu_entry(m, s, continue_game, NULL);
 	}
 	else

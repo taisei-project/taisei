@@ -16,8 +16,8 @@ void init_fbo(FBO *fbo) {
 	fbo->nw = 2;
 	fbo->nh = 2;
 	
-	while(fbo->nw < VIEWPORT_W) fbo->nw *= 2;
-	while(fbo->nh < VIEWPORT_H) fbo->nh *= 2;
+	while(fbo->nw < VIEWPORT_W+VIEWPORT_X) fbo->nw *= 2;
+	while(fbo->nh < VIEWPORT_H+VIEWPORT_Y) fbo->nh *= 2;
 		
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -39,14 +39,12 @@ void init_fbo(FBO *fbo) {
 
 	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, fbo->depth);
 	
-	GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-	
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 }
 
 void draw_fbo_viewport(FBO *fbo) {
 	glPushMatrix();
-	glTranslatef(-fbo->nw+VIEWPORT_W,-fbo->nh+VIEWPORT_H+VIEWPORT_Y,0);
+	glTranslatef(-VIEWPORT_X,VIEWPORT_H+VIEWPORT_Y-fbo->nh,0);
 		
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, fbo->tex);

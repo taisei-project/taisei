@@ -246,7 +246,7 @@ void stage0_enemy5(Enemy *e, int t) {
 void stage0_events() {
 	if(global.dialog)
 		return;	
-	
+		
 	TIMER(&global.timer);
 	
 	FROM_TO(100, 160, 25) {

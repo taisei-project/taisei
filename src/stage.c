@@ -109,22 +109,18 @@ void draw_hud() {
 	glPopMatrix();
 	
 	sprintf(buf, "%i fps", global.fps.show_fps);
-	draw_text(AL_Right, SCREEN_W, SCREEN_H-20, buf, _fonts.standard);
-	
-	glDisable(GL_STENCIL_TEST);
+	draw_text(AL_Right, SCREEN_W, SCREEN_H-20, buf, _fonts.standard);	
 }
 
 void stage_draw() {
 	set_ortho();
-		
+	
 	glPushMatrix();
 	glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
 		
-	if(!global.menu) {
+	if(!global.menu) {		
 		if(!tconfig.intval[NO_SHADER])
 			apply_bg_shaders();
-		glPushMatrix();
-		glTranslatef(-VIEWPORT_X/3.0,0,0);
 
 		player_draw(&global.plr);
 
@@ -140,17 +136,17 @@ void stage_draw() {
 
 		if(global.dialog)
 			draw_dialog(global.dialog);
-
-		glPopMatrix();
-
+				
 		if(!tconfig.intval[NO_SHADER]) {
 			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 			draw_fbo_viewport(&global.fsec);
 		}
 	} if(global.menu) {
-		draw_ingame_menu(global.menu);
+		draw_ingame_menu(global.menu);		
 	}
-	glPopMatrix();		
+	
+	glPopMatrix();
+	
 	draw_hud();
 	
 	if(global.frames < FADE_TIME)
