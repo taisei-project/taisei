@@ -80,19 +80,22 @@ void take_screenshot()
 	FILE *out;
 	char data[3 * SCREEN_W * SCREEN_H];
 	short head[] = {0, 2, 0, 0, 0, 0, SCREEN_W, SCREEN_H, 24};
-	char outfile[128], outpath[256];
+	char outfile[128], *outpath;
 	time_t rawtime;
 	struct tm * timeinfo;
 	
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
 	strftime(outfile, 128, "/taisei_%d-%m-%y_%H-%M-%S_%Z.tga", timeinfo);
+	
+	outpath = malloc(strlen(outfile) + strlen((char*)get_screenshots_path()) + 1);
 	strcpy(outpath, (char*)get_screenshots_path());
 	strcat(outpath, outfile);
 	
 	printf("Saving screenshot as %s\n", outpath);
-	
 	out = fopen(outpath, "w");
+	free(outpath);
+	
 	if(!out)
 	{
 		perror("fopen");
