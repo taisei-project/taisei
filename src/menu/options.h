@@ -19,6 +19,11 @@ int options_menu_loop(MenuData *m);
 typedef int (*BindingGetter)(void*);
 typedef int (*BindingSetter)(void*, int);
 
+typedef enum BindingType {
+	BT_IntValue,
+	BT_KeyBinding
+} BindingType;
+
 typedef struct OptionBinding {
 	char **values;
 	int valcount;
@@ -28,6 +33,7 @@ typedef struct OptionBinding {
 	int configentry;
 	int enabled;
 	char *optname;
+	BindingType type;
 } OptionBinding;
 
 void draw_options_menu_bg(MenuData*);
