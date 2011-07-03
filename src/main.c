@@ -7,17 +7,12 @@
 
 #include <SDL.h>
 #include <GL/glew.h>
+#include <sys/stat.h>
 #include "taisei_err.h"
 
 #include "global.h"
 #include "stages/stage0.h"
 #include "menu/mainmenu.h"
-
-#ifdef _WIN32
-#include <direct.h>
-#else
-#include <sys/stat.h>
-#endif
 
 SDL_Surface *display;
 
@@ -58,13 +53,8 @@ void shutdown() {
 }
 
 int main(int argc, char** argv) {
-	#ifndef _WIN32
 	mkdir((const char*)get_config_path(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	mkdir((const char*)get_screenshots_path(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-	#else
-	mkdir((const char*)get_config_path());
-	mkdir((const char*)get_screenshots_path());
-	#endif
 	
 	parse_config(CONFIG_FILE);	
 	
