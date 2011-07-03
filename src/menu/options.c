@@ -340,7 +340,7 @@ void draw_options_menu(MenuData *menu) {
 	
 	OptionBinding *binds = (OptionBinding*)menu->context;
 	OptionBinding *bind;
-	int i;
+	int i, caption_drawn = 0;
 
 	for(i = 0; i < menu->ecount; i++) {
 		float s = 0;
@@ -380,6 +380,13 @@ void draw_options_menu(MenuData *menu) {
 					break;
 				
 				case BT_KeyBinding:
+					if(!caption_drawn)
+					{
+						glColor4f(1,1,1,0.7);
+						draw_text(AL_Center, (SCREEN_W - 200)/2, 20*(i-1), "Controls", _fonts.standard);
+						caption_drawn = 1;
+					}
+				
 					if(bind->blockinput)
 					{
 						glColor4f(0,1,0,0.7);
