@@ -13,6 +13,7 @@
 
 // --- Menu entry <-> config option binding stuff --- //
 
+// Initialized an allocated binding
 void initialize_binding(OptionBinding* bind)
 {
 	bind->values 	 	= NULL;
@@ -24,6 +25,7 @@ void initialize_binding(OptionBinding* bind)
 	bind->enabled	 	= False;
 }
 
+// Allocates a binding bound to the last menu entry
 OptionBinding* allocate_binding(MenuData *m)
 {
 	OptionBinding *binds = (OptionBinding*)m->context, *bind;
@@ -36,6 +38,7 @@ OptionBinding* allocate_binding(MenuData *m)
 	return bind;
 }
 
+// Destroys all bindings
 void free_bindings(MenuData *m)
 {
 	OptionBinding *binds = (OptionBinding*)m->context;
@@ -54,6 +57,8 @@ void free_bindings(MenuData *m)
 	free(binds);
 }
 
+// Binds the last entry to an integer config option having limited values (BT_IntValue type binding).
+// Values are defined with bind_addvalue.
 OptionBinding* bind_option(MenuData *m, char *optname, int cfgentry, BindingGetter getter, BindingSetter setter)
 {
 	OptionBinding *binds = (OptionBinding*)m->context, *bind;
@@ -71,6 +76,7 @@ OptionBinding* bind_option(MenuData *m, char *optname, int cfgentry, BindingGett
 	return bind;
 }
 
+// Binds the last entry to a keybinding config option (BT_KeyBinding type binding).
 OptionBinding* bind_keybinding(MenuData *m, char *optname, int cfgentry)
 {
 	OptionBinding *binds = (OptionBinding*)m->context, *bind;
@@ -86,6 +92,7 @@ OptionBinding* bind_keybinding(MenuData *m, char *optname, int cfgentry)
 	return bind;
 }
 
+// Returns a pointer to the first found binding that blocks input. If none found, returns NULL.
 OptionBinding* get_input_blocking_binding(MenuData *m)
 {
 	OptionBinding *binds = (OptionBinding*)m->context;
@@ -97,7 +104,7 @@ OptionBinding* get_input_blocking_binding(MenuData *m)
 	return NULL;
 }
 
-
+// Adds a value to a BT_IntValue type binding
 int bind_addvalue(OptionBinding *b, char *val)
 {
 	if(!b->values)
@@ -110,17 +117,20 @@ int bind_addvalue(OptionBinding *b, char *val)
 	return b->valcount-1;
 }
 
+// Called to select a value of a BT_IntValue type binding by index
 int binding_setvalue(OptionBinding *b, int v)
 {
 	return b->selected = b->setter(b, v);
 }
 
+// Called to get the selected value of a BT_IntValue type binding by index
 int binding_getvalue(OptionBinding *b)
 {
 	// query AND update
 	return b->selected = b->getter(b);
 }
 
+// Selects the next to current value of a BT_IntValue type binding
 int binding_setnext(OptionBinding *b)
 {
 	int s = b->selected + 1;
@@ -130,6 +140,7 @@ int binding_setnext(OptionBinding *b)
 	return binding_setvalue(b, s);
 }
 
+// Selects the previous to current value of a BT_IntValue type binding
 int binding_setprev(OptionBinding *b)
 {
 	int s = b->selected - 1;
@@ -139,6 +150,7 @@ int binding_setprev(OptionBinding *b)
 	return binding_setvalue(b, s);
 }
 
+// Initializes selection for all BT_IntValue type bindings
 void bindings_initvalues(MenuData *m)
 {
 	OptionBinding *binds = (OptionBinding*)m->context;
