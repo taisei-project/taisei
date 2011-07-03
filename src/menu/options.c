@@ -120,6 +120,7 @@ OptionBinding* bind_option_to_entry(MenuData *m, int entry, char *optname, int c
 	bind->optname = malloc((strlen(optname) + 1) * sizeof(char));
 	strcpy(bind->optname, optname);
 	bind->enabled = True;
+	bind->blockinput = False;
 	bind->type = BT_IntValue;
 	
 	return bind;
@@ -134,6 +135,7 @@ OptionBinding* bind_keybinding_to_entry(MenuData *m, int entry, char *optname, i
 	bind->optname = malloc((strlen(optname) + 1) * sizeof(char));
 	strcpy(bind->optname, optname);
 	bind->enabled = True;
+	bind->blockinput = False;
 	bind->type = BT_KeyBinding;
 	
 	return bind;
@@ -234,6 +236,17 @@ int bind_noshader_set(void *b, int v)
 	}
 	
 	return i;
+}
+
+OptionBinding* get_input_blocking_binding(MenuData *m)
+{
+	OptionBinding *binds = (OptionBinding*)m->context;
+	
+	int i;
+	for(i = 0; i < m->ecount; ++i)
+		if(binds[i].blockinput)
+			return &(binds[i]);
+	return NULL;
 }
 
 #define bind_onoff(b) bind_addvalue(b, "on"); bind_addvalue(b, "off")
@@ -367,7 +380,13 @@ void draw_options_menu(MenuData *menu) {
 					break;
 				
 				case BT_KeyBinding:
-					draw_text(AL_Right, origin, 20*i, SDL_GetKeyName(tconfig.intval[bind->configentry]), _fonts.standard);
+					if(bind->blockinput)
+					{
+						glColor4f(0,1,0,0.7);
+						draw_text(AL_Right, origin, 20*i, "Press a key to assign, ESC to cancel", _fonts.standard);
+					}
+					else
+						draw_text(AL_Right, origin, 20*i, SDL_GetKeyName(tconfig.intval[bind->configentry]), _fonts.standard);
 					break;
 			}
 		}
@@ -382,8 +401,40 @@ void draw_options_menu(MenuData *menu) {
 	glColor4f(1,1,1,1);	
 }
 
+void binding_input(MenuData *menu, OptionBinding *b)
+{
+	// yes, no global_input() here.
+	
+	SDL_Event event;
+	
+	if(b->type != BT_KeyBinding) // shouldn't happen, but just in case.
+	{
+		b->blockinput = False;
+		return;
+	}
+	
+	while(SDL_PollEvent(&event)) {
+		int sym = event.key.keysym.sym;
+		
+		if(event.type == SDL_KEYDOWN) {
+			if(sym != SDLK_ESCAPE)	// escape means cancel
+				tconfig.intval[b->configentry] = sym;
+			b->blockinput = False;
+		} else if(event.type == SDL_QUIT) {
+			exit(1);
+		}
+	}
+}
+
 void options_menu_input(MenuData *menu) {
 	SDL_Event event;
+	OptionBinding *b;
+	
+	if((b = get_input_blocking_binding(menu)) != NULL)
+	{
+		binding_input(menu, b);
+		return;
+	}
 	
 	// REMOVE after akari/screenshot is merged
 	global_input();
@@ -417,6 +468,7 @@ void options_menu_input(MenuData *menu) {
 				if(bind->enabled) switch(bind->type)
 				{
 					case BT_IntValue: binding_setnext(bind); break;
+					case BT_KeyBinding: bind->blockinput = True; break;
 				}
 				else
 					menu->quit = 1;

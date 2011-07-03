@@ -34,6 +34,7 @@ typedef struct OptionBinding {
 	int enabled;
 	char *optname;
 	BindingType type;
+	int blockinput;
 } OptionBinding;
 
 void draw_options_menu_bg(MenuData*);
