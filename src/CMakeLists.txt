@@ -32,6 +32,7 @@ set(SRCs
 	fbo.c
 	menu/menu.c
 	menu/mainmenu.c
+	menu/options.c
 	menu/ingamemenu.c
     menu/gameovermenu.c
 	menu/difficulty.c

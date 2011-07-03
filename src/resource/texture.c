@@ -52,28 +52,42 @@ void recurse_dir(char *path) {
 void load_resources() {
 	printf("load_resources():\n");
 	char *path = malloc(strlen(get_prefix())+7);
-		
-	printf("- textures:\n");
-	strcpy(path, get_prefix());
-	strcat(path, "gfx");
-	recurse_dir(path);
 	
-	if(!tconfig.intval[NO_AUDIO]) {
+	if(!global.textures_loaded)
+	{
+		printf("- textures:\n");
+		strcpy(path, get_prefix());
+		strcat(path, "gfx");
+		recurse_dir(path);
+		
+		global.textures_loaded = True;
+	}
+	
+	if(!global.sounds_loaded && !tconfig.intval[NO_AUDIO]) {
 		printf("- sounds:\n");
 		alGenSources(SNDSRC_COUNT, global.sndsrc);
 		strcpy(path, get_prefix());
 		strcat(path, "sfx");
 		recurse_dir(path);
+		
+		global.sounds_loaded = True;
 	}
 	
-	if(!tconfig.intval[NO_SHADER]) {
-		printf("- shader:\n");
-		strcpy(path, get_prefix());
-		strcat(path, "shader");
-		recurse_dir(path);
-	} else {
-		printf("- shader: disabled.\n");
+	if(!global.shaders_loaded)
+	{
+		if(!tconfig.intval[NO_SHADER]) {
+			printf("- shader:\n");
+			strcpy(path, get_prefix());
+			strcat(path, "shader");
+			recurse_dir(path);
+			
+			global.shaders_loaded = True;
+		} else {
+			printf("- shader: disabled.\n");
+		}
 	}
+	
+	free(path);
 }
 
 Texture *get_tex(char *name) {

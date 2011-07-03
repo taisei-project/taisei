@@ -101,6 +101,12 @@ typedef struct {
 	FBO fbg;
 	FBO fsec;
 	
+	int fbo_initialized;
+	int alut_initialized;
+	int sounds_loaded;
+	int textures_loaded;
+	int shaders_loaded;
+	
 	Boss *boss;
 	MenuData *menu;
 	Dialog *dialog;
@@ -113,6 +119,9 @@ typedef struct {
 	int points;
 	
 	int fullscreenhotkey_state;
+	
+	int argc;
+	char **argv;
 	
 	FPSCounter fps;
 	

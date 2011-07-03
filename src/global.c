@@ -11,20 +11,53 @@
 
 Global global;
 
-void init_global() {
-	memset(&global, 0, sizeof(global));	
-	srand(time(0));
-	
-	load_resources();
-	printf("- fonts:\n");
-	init_fonts();
-	
-	if(!tconfig.intval[NO_SHADER]) {
+void _init_fbo()
+{
+	if(!tconfig.intval[NO_SHADER] && !global.fbo_initialized) {
 		printf("init_fbo():\n");
 		init_fbo(&global.fbg);
 		init_fbo(&global.fsec);
 		printf("-- finished\n");
+		global.fbo_initialized = True;
 	}
+}
+
+void init_alut()
+{
+	if(!tconfig.intval[NO_AUDIO] && !global.alut_initialized)
+	{
+		if(!alutInit(&global.argc, global.argv))
+		{
+			warnx("Error initializing audio: %s", alutGetErrorString(alutGetError()));
+			tconfig.intval[NO_AUDIO] = 1;
+			printf("-- ALUT\n");
+			global.alut_initialized = False;
+			return;
+		}
+		
+		tconfig.intval[NO_AUDIO] = 0;
+		global.alut_initialized = True;
+	}
+}
+
+void init_global(int argc, char **argv) {
+	memset(&global, 0, sizeof(global));	
+	srand(time(0));
+	
+	global.fbo_initialized  = False;
+	global.textures_loaded  = False;
+	global.shaders_loaded   = False;
+	global.sounds_loaded    = False;
+	global.alut_initialized = False;
+	
+	global.argc = argc;
+	global.argv = argv;
+	
+	load_resources();
+	printf("- fonts:\n");
+	init_fonts();
+	_init_fbo();
+	init_alut();
 }
 
 void game_over() {
