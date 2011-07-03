@@ -13,6 +13,7 @@
 #include "global.h"
 #include "stages/stage0.h"
 #include "menu/mainmenu.h"
+#include "paths/native.h"
 
 SDL_Surface *display;
 
@@ -53,8 +54,8 @@ void shutdown() {
 }
 
 int main(int argc, char** argv) {
-	mkdir((const char*)get_config_path(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-	mkdir((const char*)get_screenshots_path(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	mkdir(get_config_path(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	mkdir(get_screenshots_path(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	
 	parse_config(CONFIG_FILE);	
 	

@@ -9,6 +9,7 @@
 #include <SDL/SDL.h>
 #include <time.h>
 #include <stdio.h>
+#include "paths/native.h"
 
 Global global;
 
@@ -88,8 +89,8 @@ void take_screenshot()
 	timeinfo = localtime(&rawtime);
 	strftime(outfile, 128, "/taisei_%d-%m-%y_%H-%M-%S_%Z.tga", timeinfo);
 	
-	outpath = malloc(strlen(outfile) + strlen((char*)get_screenshots_path()) + 1);
-	strcpy(outpath, (char*)get_screenshots_path());
+	outpath = malloc(strlen(outfile) + strlen(get_screenshots_path()) + 1);
+	strcpy(outpath, get_screenshots_path());
 	strcat(outpath, outfile);
 	
 	printf("Saving screenshot as %s\n", outpath);
