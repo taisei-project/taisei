@@ -19,6 +19,8 @@ fullscreen = 0
 # To toggle the fullscreen mode in game. Default is F11, Alt+Enter also works.
 key_fullscreen = K292
 
+key_screenshot = p
+
 # activate this for the intel-graphics crapbox at your workplace
 # won't look as good as you expect it to do, but should run.
 # taisei should have automatic fallback for this, so don't worry.
