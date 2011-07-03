@@ -3,11 +3,7 @@
 #include "options.h"
 #include "global.h"
 
-void do_nothing(void *arg)
-{
-	printf("NOTHING happened!\n");
-}
-
+void do_nothing(void *arg) { }
 void backtomain(void *arg)
 {
 	MenuData *m = arg;
@@ -164,6 +160,8 @@ int bind_noshader_set(void *b, int v)
 	return i;
 }
 
+#define bind_onoff(b) bind_addvalue(b, "on"); bind_addvalue(b, "off")
+
 void create_options_menu(MenuData *m) {
 	OptionBinding* b;
 	
@@ -181,29 +179,29 @@ void create_options_menu(MenuData *m) {
 	allocate_bindings(m);
 	
 	b = bind_option_to_entry(m, 0, "fullscreen", FULLSCREEN, bind_common_onoffget, bind_fullscreen_set);
-		bind_addvalue(b, "on");
-		bind_addvalue(b, "off");
+		bind_onoff(b);
 	
 	b = bind_option_to_entry(m, 1, "disable_audio", NO_AUDIO, bind_common_onoffget_inverted,
 															  bind_noaudio_set);
-		bind_addvalue(b, "on");
-		bind_addvalue(b, "off");
+		bind_onoff(b);
 	
 	b = bind_option_to_entry(m, 2, "disable_shader", NO_SHADER, bind_common_onoffget_inverted,
 																bind_noshader_set);
-		bind_addvalue(b, "on");
-		bind_addvalue(b, "off");
+		bind_onoff(b);
 	
 	bindings_initvalues(m);
 }
 
-void draw_options_menu(MenuData *menu) {
+void draw_options_menu_bg(MenuData* menu) {
 	glColor4f(0.3, 0.3, 0.3, 1);
 	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubgbg");
 	glColor4f(1,0.6,0.5,0.6 + 0.1*sin(menu->frames/100.0));
 	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubg");
+}
+
+void draw_options_menu(MenuData *menu) {
+	draw_options_menu_bg(menu);
 	glColor4f(1,1,1,1);
-	
 	draw_text(AL_Right, 140*(1-menu->fade), 30, "Options", _fonts.mainmenu);
 	
 	//glColor4f(1,1,1,0.7);
@@ -230,18 +228,16 @@ void draw_options_menu(MenuData *menu) {
 	for(i = 0; i < menu->ecount; i++) {
 		float s = 0;
 		
-		float grey = 1;
 		if(menu->entries[i].action == NULL)
-			grey = 0.5;
-		
-		if(i == menu->cursor)
+			glColor4f(0.5, 0.5, 0.5, 0.7);
+		else if(i == menu->cursor)
 		{
 			glColor4f(1,1,0,0.7);
 			s = 5*sin(menu->frames/80.0 + 20*i);
 		}
 		else
-			glColor4f(grey,grey,grey,0.7);
-		
+			glColor4f(1, 1, 1, 0.7);
+
 		draw_text(AL_Left, 20 + s, 20*i, menu->entries[i].name, _fonts.standard);
 		
 		bind = &(binds[i]);
@@ -275,29 +271,39 @@ void draw_options_menu(MenuData *menu) {
 void options_menu_input(MenuData *menu) {
 	SDL_Event event;
 	
+	// REMOVE after akari/screenshot is merged
 	global_input();
 	
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;
+		
+		// UNCOMMENT after akari/screenshot is merged
+		//global_processevent(&event);
 		if(event.type == SDL_KEYDOWN) {
 			if(sym == tconfig.intval[KEY_DOWN]) {
 				menu->drawdata[3] = 10;
-				while(!(menu->entries[++menu->cursor].action));
+				while(!menu->entries[++menu->cursor].action);
+				
+				if(menu->cursor >= menu->ecount)
+					menu->cursor = 0;
+				
 			} else if(sym == tconfig.intval[KEY_UP]) {
 				menu->drawdata[3] = 10;
-				while(!(menu->entries[--menu->cursor].action));
+				while(!menu->entries[--menu->cursor].action);
+				
+				if(menu->cursor < 0)
+					menu->cursor = menu->ecount - 1;
+				
 			} else if((sym == tconfig.intval[KEY_SHOT] || sym == SDLK_RETURN) && menu->entries[menu->cursor].action) {
 				menu->selected = menu->cursor;
-				
-				// hack hack
-				if(menu->entries[menu->selected].action == backtomain)
-					menu->quit = 1;
 				
 				OptionBinding *binds = (OptionBinding*)menu->context;
 				OptionBinding *bind = &(binds[menu->selected]);
 				
 				if(bind->enabled)
 					binding_setnext(bind);
+				else
+					menu->quit = 1;
 			} else if(sym == tconfig.intval[KEY_LEFT]) {
 				menu->selected = menu->cursor;
 				OptionBinding *binds = (OptionBinding*)menu->context;

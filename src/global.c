@@ -53,11 +53,11 @@ void init_global(int argc, char **argv) {
 	global.argc = argc;
 	global.argv = argv;
 	
+	init_alut();
 	load_resources();
 	printf("- fonts:\n");
 	init_fonts();
 	_init_fbo();
-	init_alut();
 }
 
 void game_over() {

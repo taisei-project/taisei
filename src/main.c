@@ -40,10 +40,10 @@ void shutdown() {
 	delete_textures();
 	delete_animations();
 	
-	if(!tconfig.intval[NO_SHADER])
+	if(global.shaders_loaded)
 		delete_shaders();
 	
-	if(!tconfig.intval[NO_AUDIO]) {
+	if(global.sounds_loaded) {
 		delete_sounds();
 		alutExit();
 	}

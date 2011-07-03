@@ -23,5 +23,7 @@ typedef struct OptionBinding {
 	char *optname;
 } OptionBinding;
 
+void draw_options_menu_bg(MenuData*);
+
 #endif
 
