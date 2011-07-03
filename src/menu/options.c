@@ -303,7 +303,7 @@ void create_options_menu(MenuData *m) {
 	bind_keybinding_to_entry(m, 11, "key_bomb", KEY_BOMB);
 	
 	bind_keybinding_to_entry(m, 13, "key_fullscreen", KEY_FULLSCREEN);
-	// UNCOMMENT after akari/screeenshot is merged
+	// UNCOMMENT after akari/screenshot is merged
 	//bind_keybinding_to_entry(m, 14, "key_screenshot", KEY_SCREENSHOT);
 	
 	bindings_initvalues(m);
