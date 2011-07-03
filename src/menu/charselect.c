@@ -116,10 +116,10 @@ void draw_char_menu(MenuData *menu, MenuData *mod) {
 void char_menu_input(MenuData *menu, MenuData *mod) {
 	SDL_Event event;
 	
-	global_input();
-	
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;
+		
+		global_processevent(&event);
 		if(event.type == SDL_KEYDOWN) {
 			if(sym == tconfig.intval[KEY_RIGHT]) {
 				menu->cursor++;

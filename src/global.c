@@ -8,6 +8,8 @@
 #include "global.h"
 #include <SDL/SDL.h>
 #include <time.h>
+#include <stdio.h>
+#include "paths/native.h"
 
 Global global;
 
@@ -74,9 +76,53 @@ void toggle_fullscreen()
 		errx(-1, "Error opening screen: %s", SDL_GetError());
 }
 
-void global_input()
+void take_screenshot()
 {
-	Uint8 *keys = SDL_GetKeyState(NULL);
+	FILE *out;
+	char data[3 * SCREEN_W * SCREEN_H];
+	short head[] = {0, 2, 0, 0, 0, 0, SCREEN_W, SCREEN_H, 24};
+	char outfile[128], *outpath;
+	time_t rawtime;
+	struct tm * timeinfo;
+	
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	strftime(outfile, 128, "/taisei_%d-%m-%y_%H-%M-%S_%Z.tga", timeinfo);
+	
+	outpath = malloc(strlen(outfile) + strlen(get_screenshots_path()) + 1);
+	strcpy(outpath, get_screenshots_path());
+	strcat(outpath, outfile);
+	
+	printf("Saving screenshot as %s\n", outpath);
+	out = fopen(outpath, "w");
+	free(outpath);
+	
+	if(!out)
+	{
+		perror("fopen");
+		return;
+	}
+	
+	glReadBuffer(GL_FRONT);
+	glReadPixels(0, 0, SCREEN_W, SCREEN_H, GL_BGR, GL_UNSIGNED_BYTE, data);
+	fwrite(&head, sizeof(head), 1, out);
+	fwrite(data, 3 * SCREEN_W * SCREEN_H, 1, out);
+	
+	fclose(out);
+}
+
+void global_processevent(SDL_Event *event)
+{
+	int sym = event->key.keysym.sym;
+	Uint8 *keys;
+	
+	if(event->type == SDL_KEYDOWN)
+	{
+		if(sym == tconfig.intval[KEY_SCREENSHOT])
+			take_screenshot();
+	}
+	
+	keys = SDL_GetKeyState(NULL);
 	
 	// Catch fullscreen hotkeys (Alt+Enter and the user-defined one)
 	if((keys[SDLK_LALT] || keys[SDLK_RALT]) && keys[SDLK_RETURN] || keys[tconfig.intval[KEY_FULLSCREEN]])

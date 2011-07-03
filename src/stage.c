@@ -24,11 +24,11 @@ void stage_input() {
 		return;
 	}		
 	
-	global_input();
-	
 	SDL_Event event;
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;
+		
+		global_processevent(&event);
 		if(event.type == SDL_KEYDOWN) {
 			if(sym == tconfig.intval[KEY_FOCUS])
 				global.plr.focus = 1;
