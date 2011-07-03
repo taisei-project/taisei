@@ -87,7 +87,7 @@ void take_screenshot()
 	
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
-	strftime(outfile, 128, "/taisei_%d-%m-%y_%H-%M-%S_%Z.tga", timeinfo);
+	strftime(outfile, 128, "/taisei_%Y%m%d_%H-%M-%S_%Z.tga", timeinfo);
 	
 	outpath = malloc(strlen(outfile) + strlen(get_screenshots_path()) + 1);
 	strcpy(outpath, get_screenshots_path());
