@@ -13,7 +13,7 @@
 
 // --- Menu entry <-> config option binding stuff --- //
 
-// Initialized an allocated binding
+// Initializes an allocated binding
 void initialize_binding(OptionBinding* bind)
 {
 	bind->values 	 	= NULL;
@@ -25,7 +25,7 @@ void initialize_binding(OptionBinding* bind)
 	bind->enabled	 	= False;
 }
 
-// Allocates a binding bound to the last menu entry
+// Allocates a binding (bound to the last menu entry)
 OptionBinding* allocate_binding(MenuData *m)
 {
 	OptionBinding *binds = (OptionBinding*)m->context, *bind;
@@ -254,8 +254,7 @@ void menu_save_config(MenuData *m, char *filename)
 				break;
 			
 			case BT_KeyBinding:
-				fprintf(out, "%s = K%i\n", bind->optname, tconfig.intval[bind->configentry],
-																			 SDL_GetKeyName(tconfig.intval[bind->configentry]));
+				fprintf(out, "%s = K%i\n", bind->optname, tconfig.intval[bind->configentry]);
 				break;
 			
 			default:
