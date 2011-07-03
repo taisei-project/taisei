@@ -278,8 +278,7 @@ void create_options_menu(MenuData *m) {
 	add_menu_entry(m, "Bomb", do_nothing, NULL);
 	add_menu_entry(m, " ", NULL, NULL);
 	add_menu_entry(m, "Toggle fullscreen", do_nothing, NULL); // entry 13
-	// UNCOMMENT after akari/screenshot is merged
-	//add_menu_entry(m, "Take a screenshot", do_nothing, NULL);
+	add_menu_entry(m, "Take a screenshot", do_nothing, NULL);
 	add_menu_entry(m, " ", NULL, NULL);
 	//add_menu_entry(m, "Customize controls", NULL, NULL);
 	add_menu_entry(m, "Return to the main menu", backtomain, m);
@@ -309,8 +308,7 @@ void create_options_menu(MenuData *m) {
 	bind_keybinding_to_entry(m, 11, "key_bomb", KEY_BOMB);
 	
 	bind_keybinding_to_entry(m, 13, "key_fullscreen", KEY_FULLSCREEN);
-	// UNCOMMENT after akari/screenshot is merged
-	//bind_keybinding_to_entry(m, 14, "key_screenshot", KEY_SCREENSHOT);
+	bind_keybinding_to_entry(m, 14, "key_screenshot", KEY_SCREENSHOT);
 	
 	bindings_initvalues(m);
 }
@@ -449,14 +447,10 @@ void options_menu_input(MenuData *menu) {
 		return;
 	}
 	
-	// REMOVE after akari/screenshot is merged
-	global_input();
-	
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;
 		
-		// UNCOMMENT after akari/screenshot is merged
-		//global_processevent(&event);
+		global_processevent(&event);
 		if(event.type == SDL_KEYDOWN) {
 			if(sym == tconfig.intval[KEY_DOWN]) {
 				menu->drawdata[3] = 10;
