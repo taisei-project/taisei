@@ -14,3 +14,7 @@ const char *get_prefix() {
 const char *get_config_path() {
 	return ".";
 }
+
+const char *get_screenshots_path() {
+	return "./screenshots";
+}

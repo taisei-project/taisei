@@ -7,12 +7,13 @@
 
 #include <SDL.h>
 #include <GL/glew.h>
+#include <sys/stat.h>
 #include "taisei_err.h"
 
 #include "global.h"
 #include "stages/stage0.h"
 #include "menu/mainmenu.h"
-
+#include "paths/native.h"
 
 SDL_Surface *display;
 
@@ -53,6 +54,14 @@ void shutdown() {
 }
 
 int main(int argc, char** argv) {
+#ifdef __MINGW32__
+	mkdir(get_config_path());
+	mkdir(get_screenshots_path());
+#else
+	mkdir(get_config_path(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	mkdir(get_screenshots_path(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+#endif
+	
 	parse_config(CONFIG_FILE);	
 	
 	printf("initialize:\n");

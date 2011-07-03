@@ -11,8 +11,10 @@
 #include <string.h>
 
 #define CFG_DIR "/.taisei"
+#define SCR_DIR "/screenshots"
 
 char *conf_path = NULL;
+char *scr_path = NULL;
 
 const char *get_prefix() {
 	return FILE_PREFIX;
@@ -27,3 +29,14 @@ const char *get_config_path() {
 	
 	return conf_path;
 }
+
+const char *get_screenshots_path() {
+	if(scr_path == NULL) {
+		scr_path = malloc(strlen(SCR_DIR) + strlen(get_config_path()) + 1);
+		strcpy(scr_path, get_config_path());
+		strcat(scr_path, SCR_DIR);
+	}
+	
+	return scr_path;
+}
+

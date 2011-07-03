@@ -29,6 +29,7 @@
 "key_bomb"	{ yylval = KEY_BOMB; return tKEY_BOMB; }
 
 "key_fullscreen" { yylval = KEY_FULLSCREEN; return tKEY_FULLSCREEN; }
+"key_screenshot" { yylval = KEY_SCREENSHOT; return tKEY_SCREENSHOT; }
 
 "fullscreen" { yylval = FULLSCREEN; return tFULLSCREEN; }
 
