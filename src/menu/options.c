@@ -90,7 +90,7 @@ void menu_save_config(MenuData *m, char *filename)
 				break;
 			
 			case BT_KeyBinding:
-				fprintf(out, "%s = K%i # SDL key name: %s\n", bind->optname, tconfig.intval[bind->configentry],
+				fprintf(out, "%s = K%i\n", bind->optname, tconfig.intval[bind->configentry],
 																			 SDL_GetKeyName(tconfig.intval[bind->configentry]));
 				break;
 			
@@ -158,6 +158,12 @@ int binding_setvalue(OptionBinding *b, int v)
 	return b->selected = b->setter(b, v);
 }
 
+int binding_getvalue(OptionBinding *b)
+{
+	// query AND update
+	return b->selected = b->getter(b);
+}
+
 int binding_setnext(OptionBinding *b)
 {
 	int s = b->selected + 1;
@@ -183,7 +189,7 @@ void bindings_initvalues(MenuData *m)
 	int i;
 	for(i = 0; i < m->ecount; ++i)
 		if(binds[i].enabled && binds[i].type == BT_IntValue)
-			binds[i].selected = binds[i].getter(&(binds[i]));
+			binding_getvalue(&(binds[i]));
 }
 
 int bind_common_onoffget(void *b)
@@ -370,7 +376,7 @@ void draw_options_menu(MenuData *menu) {
 						if(j != bind->valcount-1)
 							origin -= strlen(bind->values[j+1])/2.0 * 20;
 						
-						if(bind->selected == j)
+						if(binding_getvalue(bind) == j)
 							glColor4f(1,1,0,0.7);
 						else
 							glColor4f(0.5,0.5,0.5,0.7);
