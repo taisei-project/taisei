@@ -40,7 +40,7 @@ void enter_options(void *arg)
 {
 	MenuData m;
 	create_options_menu(&m);
-	options_menu_loop();
+	options_menu_loop(&m);
 }
 
 void create_main_menu(MenuData *m) {
