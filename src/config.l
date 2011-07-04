@@ -10,6 +10,7 @@
 	#include "config.h"
 	#include <SDL/SDL_keysym.h>
 	
+	#define YY_NO_INPUT
 %}
 
 %%

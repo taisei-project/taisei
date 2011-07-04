@@ -41,10 +41,10 @@ void menu_input(MenuData *menu) {
 		
 		global_processevent(&event);
 		if(event.type == SDL_KEYDOWN) {
-			if(sym == tconfig.intval[KEY_DOWN]) {
+			if(sym == tconfig.intval[KEY_DOWN] || sym == SDLK_DOWN) {
 				menu->drawdata[3] = 10;
 				menu->cursor++;
-			} else if(sym == tconfig.intval[KEY_UP]) {
+			} else if(sym == tconfig.intval[KEY_UP] || sym == SDLK_UP) {
 				menu->drawdata[3] = 10;
 				menu->cursor--;
 			} else if((sym == tconfig.intval[KEY_SHOT] || sym == SDLK_RETURN) && menu->entries[menu->cursor].action) {

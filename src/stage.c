@@ -56,6 +56,9 @@ void stage_input() {
 		}
 	}
 	
+	if(global.plr.deathtime < -1)
+		return;
+	
 	float speed = 0.01*VIEWPORT_W/((global.plr.focus > 0)+1);	
 	
 	Uint8 *keys = SDL_GetKeyState(NULL);

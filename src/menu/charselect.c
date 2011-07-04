@@ -121,13 +121,13 @@ void char_menu_input(MenuData *menu, MenuData *mod) {
 		
 		global_processevent(&event);
 		if(event.type == SDL_KEYDOWN) {
-			if(sym == tconfig.intval[KEY_RIGHT]) {
+			if(sym == tconfig.intval[KEY_RIGHT] || sym == SDLK_RIGHT) {
 				menu->cursor++;
-			} else if(sym == tconfig.intval[KEY_LEFT]) {
+			} else if(sym == tconfig.intval[KEY_LEFT] || sym == SDLK_LEFT) {
 				menu->cursor--;
-			} else if(sym == tconfig.intval[KEY_DOWN]) {
+			} else if(sym == tconfig.intval[KEY_DOWN] || sym == SDLK_DOWN) {
 				mod->cursor++;
-			} else if(sym == tconfig.intval[KEY_UP]) {
+			} else if(sym == tconfig.intval[KEY_UP] || sym == SDLK_UP) {
 				mod->cursor--;
 			} else if((sym == tconfig.intval[KEY_SHOT] || sym == SDLK_RETURN) && menu->entries[menu->cursor].action) {
 				menu->quit = 1;

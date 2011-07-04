@@ -59,16 +59,15 @@
 
 %%
 
-file	: line file
+file	: line nl file
+		| nl file
 		| ;
 	
-line	: line nl
-		| key_key EQ key_val {
+line	: key_key EQ key_val {
 			if($1 > sizeof(tconfig.intval)/sizeof(int))
 				errx(-1, "config index out of range"); // should not happen
 			tconfig.intval[$1] = $3;
-		}
-		| nl;
+		};
 
 key_val : SKEY
 		| NUMBER

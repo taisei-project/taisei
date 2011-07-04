@@ -105,6 +105,12 @@ void player_draw(Player* plr) {
 }
 
 void player_logic(Player* plr) {
+	if(plr->deathtime < -1) {
+		plr->deathtime++;
+		plr->pos += 0.7I;
+		return;
+	}
+	
 	process_enemies(&plr->slaves);
 	
 	if(plr->focus < 0 || (plr->focus > 0 && plr->focus < 30))
@@ -147,7 +153,7 @@ void plr_bomb(Player *plr) {
 }
 
 void plr_realdeath(Player *plr) {
-	plr->deathtime = -1;
+	plr->deathtime = -DEATH_DELAY-1;
 	
 	create_item(plr->pos, 6-15*I, Power);
 	create_item(plr->pos, -6-15*I, Power);
