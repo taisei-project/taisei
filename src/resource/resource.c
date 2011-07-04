@@ -48,7 +48,6 @@ void recurse_dir(char *path) {
 
 void load_resources() {
 	printf("load_resources():\n");
-	memset(&resources, 0, sizeof(Resources));
 	
 	char *path = malloc(strlen(get_prefix())+7);
 	
