@@ -50,6 +50,8 @@ void free_bindings(MenuData *m)
 		
 		if(bind->values) for(j = 0; j < bind->valcount; ++j)
 			free(bind->values[j]);
+			
+		free(bind->values);
 		free(bind->optname);
 	}
 	free(binds);

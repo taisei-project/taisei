@@ -39,7 +39,7 @@ void init_gl() {
 
 
 void shutdown() {	
-	if(global.alut_initialized)
+	if(resources.state & RS_SfxLoaded)
 		alutExit();
 	
 	SDL_FreeSurface(display);

@@ -89,8 +89,6 @@ typedef struct {
 	int lasttime; // frame limiter
 	int timer;
 	
-	int alut_initialized;
-	
 	Boss *boss;
 	MenuData *menu;
 	Dialog *dialog;
