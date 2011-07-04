@@ -10,12 +10,14 @@
 #include "menu.h"
 #include "options.h"
 #include "global.h"
+#include "paths/native.h"
 
 // --- Menu entry <-> config option binding stuff --- //
 
 // Initializes an allocated binding
 void initialize_binding(OptionBinding* bind)
 {
+	memset(bind, 0, sizeof(OptionBinding));
 	bind->values 	 	= NULL;
 	bind->getter		= NULL;
 	bind->setter 		= NULL;
@@ -67,7 +69,7 @@ OptionBinding* bind_option(MenuData *m, char *optname, int cfgentry, BindingGett
 	bind->getter = getter;
 	bind->setter = setter;
 	bind->configentry = cfgentry;
-	bind->optname = malloc((strlen(optname) + 1) * sizeof(char));
+	bind->optname = malloc(strlen(optname) + 1);
 	strcpy(bind->optname, optname);
 	bind->enabled = True;
 	bind->blockinput = False;
@@ -107,12 +109,8 @@ OptionBinding* get_input_blocking_binding(MenuData *m)
 // Adds a value to a BT_IntValue type binding
 int bind_addvalue(OptionBinding *b, char *val)
 {
-	if(!b->values)
-		b->values = malloc(++b->valcount * sizeof(char));
-	else
-		b->values = realloc(b->values, ++b->valcount * sizeof(char));
-	
-	b->values[b->valcount-1] = malloc((strlen(val) + 1) * sizeof(char));
+	b->values = realloc(b->values, ++b->valcount);
+	b->values[b->valcount-1] = malloc(strlen(val) + 1);
 	strcpy(b->values[b->valcount-1], val);
 	return b->valcount-1;
 }
@@ -219,8 +217,8 @@ int bind_noshader_set(void *b, int v)
 void menu_save_config(MenuData *m, char *filename)
 {
 	char *buf;
-	buf = malloc(strlen((char*)filename)+strlen((char*)get_config_path())+3);	
-	strcpy(buf, (char*)get_config_path());
+	buf = malloc(strlen(filename) + strlen(get_config_path()) + 2);
+	strcpy(buf, get_config_path());
 	strcat(buf, "/");
 	strcat(buf, filename);
 	
@@ -289,7 +287,7 @@ void create_options_menu(MenuData *m) {
 	
 	#define bind_onoff(b) bind_addvalue(b, "on"); bind_addvalue(b, "off")
 	
-	add_menu_entry(m, "Fullscreen", do_nothing, NULL);	// entry 0
+	add_menu_entry(m, "Fullscreen", do_nothing, NULL);
 		b = bind_option(m, "fullscreen", FULLSCREEN, bind_common_onoffget, bind_fullscreen_set);
 			bind_onoff(b);
 			
