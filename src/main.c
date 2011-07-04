@@ -88,7 +88,6 @@ int main(int argc, char** argv) {
 		warnx("Error initializing audio: %s", alutGetErrorString(alutGetError()));
 		tconfig.intval[NO_AUDIO] = 1;
 		printf("-- ALUT\n");
-		return;
 	}
 	
 	init_global();

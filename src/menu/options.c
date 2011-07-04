@@ -11,6 +11,7 @@
 #include "options.h"
 #include "global.h"
 #include "paths/native.h"
+#include "taisei_err.h"
 
 // --- Menu entry <-> config option binding stuff --- //
 
@@ -58,7 +59,7 @@ void free_bindings(MenuData *m)
 // Values are defined with bind_addvalue.
 OptionBinding* bind_option(MenuData *m, char *optname, int cfgentry, BindingGetter getter, BindingSetter setter)
 {
-	OptionBinding *binds = (OptionBinding*)m->context, *bind;
+	OptionBinding *bind;
 	bind = allocate_binding(m);
 	
 	bind->getter = getter;
@@ -75,7 +76,7 @@ OptionBinding* bind_option(MenuData *m, char *optname, int cfgentry, BindingGett
 // Binds the last entry to a keybinding config option (BT_KeyBinding type binding).
 OptionBinding* bind_keybinding(MenuData *m, char *optname, int cfgentry)
 {
-	OptionBinding *binds = (OptionBinding*)m->context, *bind;
+	OptionBinding *bind;
 	bind = allocate_binding(m);
 	
 	bind->configentry = cfgentry;

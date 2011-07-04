@@ -10,6 +10,7 @@
 
 #include "difficulty.h"
 #include "charselect.h"
+#include "options.h"
 
 #include "global.h"
 #include "stages/stage0.h"
