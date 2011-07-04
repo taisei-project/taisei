@@ -34,7 +34,6 @@ void create_menu(MenuData *menu) {
 	
 	menu->fade = 1;
 	menu->selected = -1;
-	menu->ondestroy = NULL;
 }
 
 void menu_input(MenuData *menu) {

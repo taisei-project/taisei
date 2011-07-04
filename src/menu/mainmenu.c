@@ -51,7 +51,6 @@ void create_main_menu(MenuData *m) {
 	
 	add_menu_entry(m, "Start Story", start_story, NULL);
 	add_menu_entry(m, "Start Extra", NULL, NULL);
-	//add_menu_entry(m, "Options", NULL, NULL);
 	add_menu_entry(m, "Options", enter_options, NULL);
 	add_menu_entry(m, "Quit", quit_menu, m);
 }
