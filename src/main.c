@@ -37,8 +37,9 @@ void init_gl() {
 	glCullFace(GL_BACK);
 }
 
+
 void shutdown() {	
-	if(!tconfig.intval[NO_AUDIO])
+	if(resources.state & RS_SfxLoaded)
 		alutExit();
 	
 	SDL_FreeSurface(display);
@@ -80,14 +81,14 @@ int main(int argc, char** argv) {
 	
 	printf("-- GLEW\n");
 	init_gl();
-	
 	printf("-- GL\n");
-		
-	if(!tconfig.intval[NO_AUDIO] && !alutInit(&argc, argv)) {
+	
+	if(!tconfig.intval[NO_AUDIO] && !alutInit(&argc, argv))
+	{
 		warnx("Error initializing audio: %s", alutGetErrorString(alutGetError()));
 		tconfig.intval[NO_AUDIO] = 1;
 		printf("-- ALUT\n");
-	}	
+	}
 	
 	init_global();
 	printf("initialization complete.\n");
