@@ -45,19 +45,21 @@ void menu_input(MenuData *menu) {
 		global_processevent(&event);
 		if(event.type == SDL_KEYDOWN) {
 			if(sym == tconfig.intval[KEY_DOWN] || sym == SDLK_DOWN) {
-// 				menu->drawdata[3] = 10;
-				while(menu->entries[++menu->cursor].action == NULL);
+				do {
+					if(++menu->cursor >= menu->ecount)
+						menu->cursor = 0;
+				} while(menu->entries[menu->cursor].action == NULL);
 			} else if(sym == tconfig.intval[KEY_UP] || sym == SDLK_UP) {
-// 				menu->drawdata[3] = 10;
-				while(menu->entries[--menu->cursor].action == NULL);
+				do {
+					if(--menu->cursor < 0)
+						menu->cursor = menu->ecount - 1;
+				} while(menu->entries[menu->cursor].action == NULL);
 			} else if((sym == tconfig.intval[KEY_SHOT] || sym == SDLK_RETURN) && menu->entries[menu->cursor].action) {
 				menu->quit = 1;
 				menu->selected = menu->cursor;
 			} else if(sym == SDLK_ESCAPE && menu->type == MT_Transient) {
 				menu->quit = 1;
 			}
-			
-			menu->cursor = (menu->cursor % menu->ecount) + menu->ecount*(menu->cursor < 0);
 		} else if(event.type == SDL_QUIT) {
 			exit(1);
 		}
