@@ -7,8 +7,8 @@
 
 #include "stage0.h"
 
-#include "../stage.h"
-#include "../global.h"
+#include "stage.h"
+#include "global.h"
 
 Dialog *test_dialog() {
 	Dialog *d = create_dialog("dialog/marisa", "dialog/youmu");
@@ -76,6 +76,7 @@ void stage0_draw() {
 	glViewport(0,0,SCREEN_W,SCREEN_H);
 }
 
+/*
 void cirno_intro(Boss *c, int time) {
 	if(time == EVENT_BIRTH) {
 		boss_add_waypoint(c->current, VIEWPORT_W/2-100 + 30I, 100);
@@ -99,7 +100,7 @@ void cirno_perfect_freeze(Boss *c, int time) {
 		float g = rand()/(float)RAND_MAX;
 		float b = rand()/(float)RAND_MAX;
 		
-// 		create_projectile2c("ball", c->pos, rgb(r, g, b), cirno_pfreeze_frogs, 4*cexp(I*rand()), add_ref(&global.boss))->parent=&global.boss;
+		create_projectile2c("ball", c->pos, rgb(r, g, b), cirno_pfreeze_frogs, 4*cexp(I*rand()), add_ref(&global.boss))->parent=&global.boss;
 	}
 	
 	if(time > 160 && time < 220 && !(time % 7)) {
@@ -127,7 +128,7 @@ Boss *create_cirno() {
 	
 	start_attack(cirno, cirno->attacks);
 	return cirno;
-}
+}*/
 
 
 void stage0_enemy0(Enemy *e, int time) {

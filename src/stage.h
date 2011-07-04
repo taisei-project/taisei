@@ -17,9 +17,9 @@
  * 
  */
 
-#define TIMER(ptr) int *__timep = ptr; int _i, _ni;
-#define AT(t) if(*__timep == t)
-#define FROM_TO(start,end,step) _i = (*__timep - (start))/(step); if(*__timep >= (start) && *__timep <= (end) && !((*__timep - (start)) % (step)))
+#define TIMER(ptr) int *__timep = ptr; int _i = 0, _ni = 0;
+#define AT(t)  _i = _ni= _i; if(*__timep == t) 
+#define FROM_TO(start,end,step) _ni = _ni; _i = (*__timep - (start))/(step); if(*__timep >= (start) && *__timep <= (end) && !((*__timep - (start)) % (step)))
 #define FROM_TO_INT(start, end, step, dur, istep) \
 		_i = (*__timep - (start))/(step+dur); _ni = ((*__timep - (start)) % (step+dur))/istep; \
 		if(*__timep >= (start) && *__timep <= (end) && (*__timep - (start)) % ((dur) + (step)) <= dur && !((*__timep - (start)) % (istep)))

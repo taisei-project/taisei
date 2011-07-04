@@ -12,7 +12,8 @@
 	#include <stdlib.h>
 	
 	#include "paths/native.h"
-	
+	#include "taisei_err.h"
+		
 	Config tconfig;
 	int lineno;
 	
@@ -22,8 +23,10 @@
 	
 	int yyerror(char *s) {
 		errx(-1, "!- %d: %s", lineno, s);
+		return 1;
 	}
 	
+	extern int yylex(void);
 	extern FILE *yyin;
 %}
 
@@ -62,7 +65,7 @@ file	: line file
 line	: line nl
 		| key_key EQ key_val {
 			if($1 > sizeof(tconfig.intval)/sizeof(int))
-				errx("config index out of range"); // should not happen
+				errx(-1, "config index out of range"); // should not happen
 			tconfig.intval[$1] = $3;
 		}
 		| nl;

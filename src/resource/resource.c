@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include "paths/native.h"
 #include "config.h"
+#include "taisei_err.h"
 
 Resources resources;
 

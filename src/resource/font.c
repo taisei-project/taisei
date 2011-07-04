@@ -9,6 +9,7 @@
 #include "global.h"
 #include "paths/native.h"
 #include <assert.h>
+#include "taisei_err.h"
 
 struct Fonts _fonts;
 
