@@ -56,11 +56,11 @@ typedef struct {
 	Animation *ani;
 } Player;
 
-void init_player(Player*, Character cha, ShotMode shot);
-
+void init_player(Player*);
 void player_draw(Player*);
 void player_logic(Player*);
 
+void plr_set_char(Player*, Character);
 void plr_set_power(Player *plr, float npow);
 
 void plr_bomb(Player*);

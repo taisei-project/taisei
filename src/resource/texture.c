@@ -6,93 +6,16 @@
  */
 
 #include "texture.h"
+#include "resource.h"
 #include "global.h"
-#include <dirent.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <png.h>
 #include "paths/native.h"
 #include "taisei_err.h"
-#include "audio.h"
-#include "shader.h"
 #include "list.h"
-
-void recurse_dir(char *path) {
-	DIR *dir = opendir(path);
-	if(dir == NULL)
-		errx(-1, "Couldn't open directory '%s'", path);
-	struct dirent *dp;
-	
-	while((dp = readdir(dir)) != NULL) {
-		char *buf = malloc(strlen(path) + strlen(dp->d_name)+2);
-		strcpy(buf, path);
-		strcat(buf, "/");
-		strcat(buf, dp->d_name);
-		
-		struct stat statbuf;
-		stat(buf, &statbuf);
-		
-		if(S_ISDIR(statbuf.st_mode) && dp->d_name[0] != '.') {
-			recurse_dir(buf);
-		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".png") == 0) {
-			if(strncmp(dp->d_name, "ani_", 4) == 0)
-				init_animation(buf);
-			else
-				load_texture(buf);			
-		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".wav") == 0) {
-			load_sound(buf);
-		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".sha") == 0) {
-			load_shader(buf);
-		}
-		
-		free(buf);
-	}
-}
-
-void load_resources() {
-	printf("load_resources():\n");
-	char *path = malloc(strlen(get_prefix())+7);
-	
-	if(!global.textures_loaded)
-	{
-		printf("- textures:\n");
-		strcpy(path, get_prefix());
-		strcat(path, "gfx");
-		recurse_dir(path);
-		
-		global.textures_loaded = True;
-	}
-	
-	if(!global.sounds_loaded && !tconfig.intval[NO_AUDIO]) {
-		printf("- sounds:\n");
-		alGenSources(SNDSRC_COUNT, global.sndsrc);
-		strcpy(path, get_prefix());
-		strcat(path, "sfx");
-		recurse_dir(path);
-		
-		global.sounds_loaded = True;
-	}
-	
-	if(!global.shaders_loaded)
-	{
-		if(!tconfig.intval[NO_SHADER]) {
-			printf("- shader:\n");
-			strcpy(path, get_prefix());
-			strcat(path, "shader");
-			recurse_dir(path);
-			
-			global.shaders_loaded = True;
-		} else {
-			printf("- shader: disabled.\n");
-		}
-	}
-	
-	free(path);
-}
+#include <png.h>
 
 Texture *get_tex(char *name) {
 	Texture *t, *res = NULL;
-	for(t = global.textures; t; t = t->next) {
+	for(t = resources.textures; t; t = t->next) {
 		if(strcmp(t->name, name) == 0)
 			res = t;
 	}
@@ -130,7 +53,7 @@ void delete_texture(void **texs, void *tex) {
 }
 
 void delete_textures() {
-	delete_all_elements((void **)&global.textures, delete_texture);
+	delete_all_elements((void **)&resources.textures, delete_texture);
 }
 
 Texture *load_texture(const char *filename) {	
@@ -139,7 +62,7 @@ Texture *load_texture(const char *filename) {
 	if(surface == NULL)
 		errx(-1,"load_texture():\n!- cannot load '%s'", filename);
 	
-	Texture *texture = create_element((void **)&global.textures, sizeof(Texture));
+	Texture *texture = create_element((void **)&resources.textures, sizeof(Texture));
 	load_sdl_surf(surface, texture);	
 	SDL_FreeSurface(surface);
 	

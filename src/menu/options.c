@@ -209,10 +209,7 @@ int bind_noshader_set(void *b, int v)
 	int i = bind_common_onoffset_inverted(b, v);
 	
 	if(!v)
-	{
-		_init_fbo();
 		load_resources();
-	}
 	
 	return i;
 }

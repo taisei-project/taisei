@@ -7,13 +7,13 @@
 
 #include "animation.h"
 #include "global.h"
+#include "resource.h"
 #include "list.h"
 
-#include <assert.h>
 #include "taisei_err.h"
 
 Animation *init_animation(char *filename) {
-	Animation *buf = create_element((void **)&global.animations, sizeof(Animation));
+	Animation *buf = create_element((void **)&resources.animations, sizeof(Animation));
 	
 	char *beg = strstr(filename, "gfx/") + 4;
 	char *end = strrchr(filename, '.');
@@ -54,7 +54,7 @@ Animation *init_animation(char *filename) {
 Animation *get_ani(char *name) {
 	Animation *a;
 	Animation *res = NULL;
-	for(a = global.animations; a; a = a->next) {
+	for(a = resources.animations; a; a = a->next) {
 		if(strcmp(a->name, name) == 0) {
 			res = a;
 		}
@@ -72,7 +72,7 @@ void delete_animation(void **anis, void *ani) {
 }
 
 void delete_animations() {
-	delete_all_elements((void **)&global.animations, delete_animation);
+	delete_all_elements((void **)&resources.animations, delete_animation);
 }
 
 void draw_animation(float x, float y, int row, char *name) {
@@ -86,7 +86,8 @@ void draw_animation_p(float x, float y, int row, Animation *ani) {
 	float s = (float)ani->tex->w/ani->cols/ani->tex->truew;
 	float t = ((float)ani->tex->h)/ani->tex->trueh/(float)ani->rows;
 	
-	assert(ani->speed != 0);
+	if(ani->speed == 0)
+		errx(-1, "animation speed of %s == 0. relativity?", ani->name);
 	
 	glPushMatrix();
 	glTranslatef(x,y,0);

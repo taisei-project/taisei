@@ -13,20 +13,21 @@
 #include "plrmodes.h"
 #include "menu/gameovermenu.h"
 
-void init_player(Player* plr, Character cha, ShotMode shot) {
+void init_player(Player* plr) {
 	memset(plr, 0, sizeof(Player));
 	
 	plr->pos = VIEWPORT_W/2 + I*(VIEWPORT_H-20);
 		
 	plr->lifes = PLR_START_LIVES;
 	plr->bombs = PLR_START_BOMBS;
-	
-	plr->cha = cha;
-	plr->shot = shot;
-	
+		
 	plr->deathtime = -1;
 	
 	plr->continues = 0;
+}
+
+void plr_set_char(Player* plr, Character cha) {
+	plr->cha = cha;
 	
 	switch(cha) {
 	case Youmu:
@@ -36,6 +37,25 @@ void init_player(Player* plr, Character cha, ShotMode shot) {
 		plr->ani = get_ani("marisa");
 		break;
 	}
+}
+
+void plr_set_power(Player *plr, float npow) {
+	switch(plr->cha) {
+		case Youmu:
+			youmu_power(plr, npow);
+			break;
+		case Marisa:
+			marisa_power(plr, npow);
+			break;
+	}
+	
+	plr->power = npow;
+	
+	if(plr->power > PLR_MAXPOWER)
+		plr->power = PLR_MAXPOWER;
+	
+	if(plr->power < 0)
+		plr->power = 0;
 }
 
 void player_draw(Player* plr) {
@@ -101,25 +121,6 @@ void player_logic(Player* plr) {
 	
 	if(global.frames == plr->deathtime)
 		plr_realdeath(plr);
-}
-
-void plr_set_power(Player *plr, float npow) {
-	switch(plr->cha) {
-		case Youmu:
-			youmu_power(plr, npow);
-			break;
-		case Marisa:
-			marisa_power(plr, npow);
-			break;
-	}
-	
-	plr->power = npow;
-	
-	if(plr->power > PLR_MAXPOWER)
-		plr->power = PLR_MAXPOWER;
-	
-	if(plr->power < 0)
-		plr->power = 0;
 }
 
 void plr_bomb(Player *plr) {

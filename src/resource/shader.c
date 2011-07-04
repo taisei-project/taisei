@@ -6,7 +6,8 @@
  */
 
 #include "shader.h"
-#include "global.h"
+#include "resource.h"
+#include "config.h"
 #include "list.h"
 #include <stdio.h>
 #include "taisei_err.h"
@@ -54,7 +55,7 @@ void load_shader(const char *filename) {
 	*delim = 0;
 	char *ftext = delim + DELIM_SIZE;
 	
-	Shader *sha = create_element((void **)&global.shaders, sizeof(Shader));
+	Shader *sha = create_element((void **)&resources.shaders, sizeof(Shader));
 	GLuint vshaderobj;
 	GLuint fshaderobj;
 	
@@ -97,7 +98,7 @@ void load_shader(const char *filename) {
 	
 GLuint get_shader(const char *name) {
 	Shader *s, *res = NULL;
-	for(s = global.shaders; s; s = s->next) {
+	for(s = resources.shaders; s; s = s->next) {
 		if(strcmp(s->name, name) == 0)
 			res = s;
 	}
@@ -116,5 +117,5 @@ void delete_shader(void **shas, void *sha) {
 }
 
 void delete_shaders() {
-	delete_all_elements((void **)&global.shaders, delete_shader);
+	delete_all_elements((void **)&resources.shaders, delete_shader);
 }

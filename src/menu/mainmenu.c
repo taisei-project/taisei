@@ -22,6 +22,8 @@ void quit_menu(void *arg) {
 void start_story(void *arg) {
 	MenuData m;
 
+	init_player(&global.plr);
+	
 troll:
 	create_difficulty_menu(&m);
 	if(difficulty_menu_loop(&m) == -1)
@@ -30,8 +32,6 @@ troll:
 	create_char_menu(&m);
 	if(char_menu_loop(&m) == -1)
 		goto troll;
-	
-	init_player(&global.plr, global.plrtype, global.plrmode);
 	
 	stage0_loop();
 }

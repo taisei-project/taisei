@@ -19,26 +19,16 @@
    inkscape:export-ydpi="104.20562"
    sodipodi:docname="marilaser_part0.svg">
   <defs
-     id="defs3922">
-    <filter
-       inkscape:collect="always"
-       id="filter4463"
-       color-interpolation-filters="sRGB">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="0.11800381"
-         id="feGaussianBlur4465" />
-    </filter>
-  </defs>
+     id="defs3922" />
   <sodipodi:namedview
      id="base"
      pagecolor="#000000"
      bordercolor="#666666"
-     borderopacity="1.0"
+     borderopacity="1"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:zoom="47.137155"
-     inkscape:cx="2.3116009"
+     inkscape:cx="-1.5706869"
      inkscape:cy="8.5101465"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -70,14 +60,8 @@
      id="layer1"
      transform="translate(0.41595824,-363.81447)">
     <path
-       inkscape:connector-curvature="0"
-       style="fill:none;stroke:#ffffff;stroke-width:1.4252522;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       d="m 5.714286,364.9846 5.080582,5.08055 -5.080582,5.08055 -5.08058216,-5.08055 z"
-       id="path3811" />
-    <path
-       inkscape:connector-curvature="0"
-       style="fill:none;stroke:#ffffff;stroke-width:1.4252522;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       d="m 5.714286,369.57857 5.080582,5.08064 -5.080582,5.08055 -5.08058216,-5.08055 z"
-       id="path4004" />
+       id="path4004"
+       style="fill:none;stroke:#ffffff;stroke-width:1.42525220000000008;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;opacity:0.69924812"
+       d="m 5.714286,369.57857 5.080582,5.08064 -5.080582,5.08055 -5.08058216,-5.08055 z m 0,-4.59397 5.080582,5.08055 -5.080582,5.08055 -5.08058216,-5.08055 z" />
   </g>
 </svg>

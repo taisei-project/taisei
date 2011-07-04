@@ -12,24 +12,21 @@
 #include <GL/glew.h>
 #include <math.h>
 
-struct Texture;
+typedef struct Texture Texture;
 
-typedef struct Texture {
-	struct Texture *next;
-	struct Texture *prev;
+struct Texture {
+	Texture *next;
+	Texture *prev;
 	
 	int w, h;
 	int truew, trueh;
 	
 	char *name;	
 	GLuint gltex;
-} Texture;
+};
 
 Texture *get_tex(char *name);
 Texture *prefix_get_tex(char *name, char *prefix);
-
-void load_textures();
-void load_resources();
 
 SDL_Surface *load_png(const char *filename);
 
