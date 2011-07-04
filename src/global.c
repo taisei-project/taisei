@@ -10,6 +10,7 @@
 #include <time.h>
 #include <stdio.h>
 #include "paths/native.h"
+#include "resource/resource.h"
 
 Global global;
 
@@ -20,13 +21,6 @@ void init_global() {
 	load_resources();
 	printf("- fonts:\n");
 	init_fonts();
-	
-	if(!tconfig.intval[NO_SHADER]) {
-		printf("init_fbo():\n");
-		init_fbo(&global.fbg);
-		init_fbo(&global.fsec);
-		printf("-- finished\n");
-	}
 }
 
 void game_over() {
@@ -116,22 +110,13 @@ void global_processevent(SDL_Event *event)
 	int sym = event->key.keysym.sym;
 	Uint8 *keys;
 	
+	keys = SDL_GetKeyState(NULL);
+	
 	if(event->type == SDL_KEYDOWN)
 	{
 		if(sym == tconfig.intval[KEY_SCREENSHOT])
 			take_screenshot();
-	}
-	
-	keys = SDL_GetKeyState(NULL);
-	
-	// Catch fullscreen hotkeys (Alt+Enter and the user-defined one)
-	if((keys[SDLK_LALT] || keys[SDLK_RALT]) && keys[SDLK_RETURN] || keys[tconfig.intval[KEY_FULLSCREEN]])
-	{
-		if(!global.fullscreenhotkey_state)
-		{
+		if((sym == SDLK_RETURN && (keys[SDLK_LALT] || keys[SDLK_RALT])) || sym == tconfig.intval[KEY_FULLSCREEN])
 			toggle_fullscreen();
-			global.fullscreenhotkey_state = 1;
-		}
 	}
-	else global.fullscreenhotkey_state = 0;
 }

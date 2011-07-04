@@ -37,17 +37,9 @@ void init_gl() {
 	glCullFace(GL_BACK);
 }
 
-void shutdown() {
-	delete_textures();
-	delete_animations();
-	
-	if(!tconfig.intval[NO_SHADER])
-		delete_shaders();
-	
-	if(!tconfig.intval[NO_AUDIO]) {
-		delete_sounds();
+void shutdown() {	
+	if(!tconfig.intval[NO_AUDIO])
 		alutExit();
-	}
 	
 	SDL_FreeSurface(display);
 	SDL_Quit();

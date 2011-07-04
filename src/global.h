@@ -27,6 +27,7 @@
 #include "list.h"
 #include "config.h"
 #include "fbo.h"
+#include "resource/resource.h"
 
 #define FILE_PREFIX PREFIX "/share/taisei/"
 #define CONFIG_FILE "config"
@@ -48,8 +49,6 @@ enum {
 	PLR_START_LIVES = 2,
 	PLR_START_BOMBS = 3,
 	MAX_CONTINUES = 3,	
-	
-	SNDSRC_COUNT = 35,
 	
 	ACTION_DESTROY,
 	
@@ -77,9 +76,6 @@ typedef struct {
 
 typedef struct {
 	Difficulty diff;
-	Character plrtype;
-	ShotMode plrmode;
-	
 	Player plr;
 		
 	Projectile *projs;
@@ -90,29 +86,17 @@ typedef struct {
 	Projectile *particles;
 	
 	int frames;
-	int lasttime;
+	int lasttime; // frame limiter
 	int timer;
-	
-	Texture *textures;
-	Animation *animations;	
-	Sound *sounds;
-	Shader *shaders;
-	
-	FBO fbg;
-	FBO fsec;
 	
 	Boss *boss;
 	MenuData *menu;
 	Dialog *dialog;
 	
-	ALuint sndsrc[SNDSRC_COUNT];
-	
 	RefArray refs; // for super extra OOP-tardness: references. the cool way.
 	
 	int game_over;
 	int points;
-	
-	int fullscreenhotkey_state;
 	
 	FPSCounter fps;
 	
@@ -121,7 +105,6 @@ typedef struct {
 extern Global global;
 
 void init_global();
-void init_rtt();
 void game_over();
 
 void frame_rate();

@@ -140,7 +140,7 @@ void stage_draw() {
 				
 		if(!tconfig.intval[NO_SHADER]) {
 			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-			draw_fbo_viewport(&global.fsec);
+			draw_fbo_viewport(&resources.fsec);
 		}
 	} if(global.menu) {
 		draw_ingame_menu(global.menu);		
@@ -158,7 +158,7 @@ void stage_draw() {
 }
 
 void apply_bg_shaders() {
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, global.fsec.fbo);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, resources.fsec.fbo);
 		
 	if(global.boss) { // Boss background shader
 		GLuint shader = get_shader("boss_zoom");
@@ -168,15 +168,15 @@ void apply_bg_shaders() {
 		complex pos = fpos + 15*cexp(I*global.frames/5.0);
 		
 		glUniform2f(glGetUniformLocation(shader, "blur_orig"),
-					creal(pos)/global.fbg.nw, cimag(pos)/global.fbg.nh);
+					creal(pos)/resources.fbg.nw, cimag(pos)/resources.fbg.nh);
 		glUniform2f(glGetUniformLocation(shader, "fix_orig"),
-					creal(fpos)/global.fbg.nw, cimag(fpos)/global.fbg.nh);
+					creal(fpos)/resources.fbg.nw, cimag(fpos)/resources.fbg.nh);
 		glUniform1f(glGetUniformLocation(shader, "blur_rad"), 0.2+0.05*sin(global.frames/10.0));
 		glUniform1f(glGetUniformLocation(shader, "rad"), 0.3);
-		glUniform1f(glGetUniformLocation(shader, "ratio"), (float)global.fbg.nh/global.fbg.nw);
+		glUniform1f(glGetUniformLocation(shader, "ratio"), (float)resources.fbg.nh/resources.fbg.nw);
 	}
 	
-	draw_fbo_viewport(&global.fbg);
+	draw_fbo_viewport(&resources.fbg);
 	
 	glUseProgramObjectARB(0);
 		
@@ -250,7 +250,7 @@ void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event)
 		stage_logic();		
 		
 		if(!tconfig.intval[NO_SHADER])
-			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, global.fbg.fbo);
+			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, resources.fbg.fbo);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		draw();
 		stage_draw();				

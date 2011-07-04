@@ -37,12 +37,12 @@ set(SRCs
 	menu/difficulty.c
 	menu/charselect.c
 	stages/stage0.c
+	resource/resource.c
 	resource/texture.c
 	resource/animation.c
 	resource/font.c
 	resource/shader.c
 	resource/audio.c
-	taisei_err.c
 	${BISON_cfgparser_OUTPUTS}
 	${FLEX_cfgscanner_OUTPUTS})
 
@@ -50,6 +50,10 @@ if(RELATIVE)
 	set(SRCs ${SRCs} paths/relative.c)	
 else()
 	set(SRCs ${SRCs} paths/static.c)
+endif()
+
+if(WIN32)
+	set(SRCs ${SRCs} taisei_err.c)
 endif()
 
 add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}")

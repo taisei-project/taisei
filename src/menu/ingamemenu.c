@@ -46,7 +46,7 @@ void draw_ingame_menu(MenuData *menu) {
 		glUseProgram(shader);	
 					
 		glUniform1f(glGetUniformLocation(shader, "rad"), rad);
-		draw_fbo_viewport(&global.fsec);
+		draw_fbo_viewport(&resources.fsec);
 		glUseProgram(0);
 	}
 	

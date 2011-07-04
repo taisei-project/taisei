@@ -6,6 +6,7 @@
  */
 
 #include "audio.h"
+#include "resource.h"
 #include "global.h"
 #include "list.h"
 #include "taisei_err.h"
@@ -16,7 +17,7 @@ Sound *load_sound(char *filename) {
 		errx(-1,"load_sound():\n!- cannot load '%s': %s", filename, alutGetErrorString(alutGetError()));
 	
 	
-	Sound *snd = create_element((void **)&global.sounds, sizeof(Sound));
+	Sound *snd = create_element((void **)&resources.sounds, sizeof(Sound));
 	
 	snd->alsnd = sound;
 	
@@ -34,7 +35,7 @@ Sound *load_sound(char *filename) {
 
 Sound *get_snd(char *name) {
 	Sound *s, *res = NULL;
-	for(s = global.sounds; s; s = s->next) {
+	for(s = resources.sounds; s; s = s->next) {
 		if(strcmp(s->name, name) == 0)
 			res = s;
 	}
@@ -57,7 +58,7 @@ void play_sound_p(Sound *snd) {
 	ALuint i,res = -1;
 	ALint play;
 	for(i = 0; i < SNDSRC_COUNT; i++) {
-		alGetSourcei(global.sndsrc[i],AL_SOURCE_STATE,&play);
+		alGetSourcei(resources.sndsrc[i],AL_SOURCE_STATE,&play);
 		if(play != AL_PLAYING) {
 			res = i;
 			break;
@@ -65,8 +66,8 @@ void play_sound_p(Sound *snd) {
 	}
 	
 	if(res != -1) {
-		alSourcei(global.sndsrc[res],AL_BUFFER, snd->alsnd);
-		alSourcePlay(global.sndsrc[res]);
+		alSourcei(resources.sndsrc[res],AL_BUFFER, snd->alsnd);
+		alSourcePlay(resources.sndsrc[res]);
 	} else {
 		warnx("play_sound_p():\n!- not enough sources");
 	}
@@ -79,5 +80,5 @@ void delete_sound(void **snds, void *snd) {
 }
 
 void delete_sounds() {
-	delete_all_elements((void **)&global.sounds, delete_sound);
+	delete_all_elements((void **)&resources.sounds, delete_sound);
 }
