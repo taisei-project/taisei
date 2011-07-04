@@ -498,14 +498,14 @@ void options_menu_input(MenuData *menu) {
 		
 		global_processevent(&event);
 		if(event.type == SDL_KEYDOWN) {
-			if(sym == tconfig.intval[KEY_DOWN]) {
+			if(sym == tconfig.intval[KEY_DOWN] || sym == SDLK_DOWN) {
 				menu->drawdata[3] = 10;
 				while(!menu->entries[++menu->cursor].action);
 				
 				if(menu->cursor >= menu->ecount)
 					menu->cursor = 0;
 				
-			} else if(sym == tconfig.intval[KEY_UP]) {
+			} else if(sym == tconfig.intval[KEY_UP] || sym == SDLK_UP) {
 				menu->drawdata[3] = 10;
 				while(!menu->entries[--menu->cursor].action);
 				
@@ -525,14 +525,14 @@ void options_menu_input(MenuData *menu) {
 				}
 				else
 					menu->quit = 1;
-			} else if(sym == tconfig.intval[KEY_LEFT]) {
+			} else if(sym == tconfig.intval[KEY_LEFT] || sym == SDLK_LEFT) {
 				menu->selected = menu->cursor;
 				OptionBinding *binds = (OptionBinding*)menu->context;
 				OptionBinding *bind = &(binds[menu->selected]);
 				
 				if(bind->enabled && bind->type == BT_IntValue)
 					binding_setprev(bind);
-			} else if(sym == tconfig.intval[KEY_RIGHT]) {
+			} else if(sym == tconfig.intval[KEY_RIGHT] || sym == SDLK_RIGHT) {
 				menu->selected = menu->cursor;
 				OptionBinding *binds = (OptionBinding*)menu->context;
 				OptionBinding *bind = &(binds[menu->selected]);

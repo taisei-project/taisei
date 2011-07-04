@@ -107,7 +107,7 @@ void player_draw(Player* plr) {
 void player_logic(Player* plr) {
 	if(plr->deathtime < -1) {
 		plr->deathtime++;
-		plr->pos += 0.7I;
+		plr->pos -= 0.7I;
 		return;
 	}
 	
@@ -158,8 +158,8 @@ void plr_realdeath(Player *plr) {
 	create_item(plr->pos, 6-15*I, Power);
 	create_item(plr->pos, -6-15*I, Power);
 	
-	plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I;
-	plr->recovery = -(global.frames + 150);
+	plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I+30I;
+	plr->recovery = -(global.frames + DEATH_DELAY + 150);
 
 	if(global.plr.bombs < PLR_START_BOMBS)
 		global.plr.bombs = PLR_START_BOMBS;
