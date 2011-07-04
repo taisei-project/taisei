@@ -20,6 +20,9 @@ void add_menu_entry(MenuData *menu, char *name, void (*action)(void *), void *ar
 void destroy_menu(MenuData *menu) {
 	int i;
 	
+	if(menu->ondestroy)
+		menu->ondestroy(menu);
+	
 	for(i = 0; i < menu->ecount; i++)
 		free(menu->entries[i].name);
 	

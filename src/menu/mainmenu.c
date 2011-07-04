@@ -10,6 +10,7 @@
 
 #include "difficulty.h"
 #include "charselect.h"
+#include "options.h"
 
 #include "global.h"
 #include "stages/stage0.h"
@@ -36,6 +37,13 @@ troll:
 	stage0_loop();
 }
 
+void enter_options(void *arg)
+{
+	MenuData m;
+	create_options_menu(&m);
+	options_menu_loop(&m);
+}
+
 void create_main_menu(MenuData *m) {
 	create_menu(m);
 	
@@ -43,7 +51,7 @@ void create_main_menu(MenuData *m) {
 	
 	add_menu_entry(m, "Start Story", start_story, NULL);
 	add_menu_entry(m, "Start Extra", NULL, NULL);
-	add_menu_entry(m, "Options", NULL, NULL);
+	add_menu_entry(m, "Options", enter_options, NULL);
 	add_menu_entry(m, "Quit", quit_menu, m);
 }
 
