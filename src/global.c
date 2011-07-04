@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include "paths/native.h"
 #include "resource/resource.h"
+#include "taisei_err.h"
 
 Global global;
 

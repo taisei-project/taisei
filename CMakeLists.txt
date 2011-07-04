@@ -6,6 +6,10 @@ if(WIN32)
 	add_definitions(-DRELATIVE)
 	set(RELATIVE TRUE)
 endif()
+
+if(CMAKE_COMPILER_IS_GNUCC)  
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+endif()
 	
 add_subdirectory(src)
 
