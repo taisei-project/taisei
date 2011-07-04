@@ -83,7 +83,15 @@ int main(int argc, char** argv) {
 	init_gl();
 	printf("-- GL\n");
 	
-	init_global(argc, argv);
+	if(!tconfig.intval[NO_AUDIO] && !alutInit(&argc, argv))
+	{
+		warnx("Error initializing audio: %s", alutGetErrorString(alutGetError()));
+		tconfig.intval[NO_AUDIO] = 1;
+		printf("-- ALUT\n");
+		return;
+	}
+	
+	init_global();
 	printf("initialization complete.\n");
 	MenuData menu;
 	create_main_menu(&menu);

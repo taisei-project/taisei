@@ -80,7 +80,7 @@ OptionBinding* bind_keybinding(MenuData *m, char *optname, int cfgentry)
 	bind = allocate_binding(m);
 	
 	bind->configentry = cfgentry;
-	bind->optname = malloc((strlen(optname) + 1) * sizeof(char));
+	bind->optname = malloc(strlen(optname) + 1);
 	strcpy(bind->optname, optname);
 	bind->enabled = True;
 	bind->blockinput = False;
@@ -188,9 +188,28 @@ int bind_noaudio_set(void *b, int v)
 {
 	int i = bind_common_onoffset_inverted(b, v);
 	
-	if(!v)
+	if(v)
 	{
-		init_alut();
+		alutExit();
+		printf("-- Unloaded ALUT\n");
+		
+		if(resources.state & RS_SfxLoaded)
+		{
+			delete_sounds();
+			resources.state &= ~RS_SfxLoaded;
+		}
+	}
+	else
+	{
+		if(!alutInit(NULL, NULL))
+		{
+			warnx("Error initializing audio: %s", alutGetErrorString(alutGetError()));
+			tconfig.intval[NO_AUDIO] = 1;
+			return 1;	// index of "off"
+		}
+		tconfig.intval[NO_AUDIO] = 0;
+		printf("-- ALUT\n");
+		
 		load_resources();
 	}
 	

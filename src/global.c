@@ -14,34 +14,10 @@
 
 Global global;
 
-void init_alut()
-{
-	if(!tconfig.intval[NO_AUDIO] && !global.alut_initialized)
-	{
-		if(!alutInit(&global.argc, global.argv))
-		{
-			warnx("Error initializing audio: %s", alutGetErrorString(alutGetError()));
-			tconfig.intval[NO_AUDIO] = 1;
-			printf("-- ALUT\n");
-			global.alut_initialized = False;
-			return;
-		}
-		
-		tconfig.intval[NO_AUDIO] = 0;
-		global.alut_initialized = True;
-	}
-}
-
-void init_global(int argc, char **argv) {
+void init_global() {
 	memset(&global, 0, sizeof(global));	
 	srand(time(0));
 	
-	global.alut_initialized = False;
-	
-	global.argc = argc;
-	global.argv = argv;
-	
-	init_alut();
 	load_resources();
 	printf("- fonts:\n");
 	init_fonts();

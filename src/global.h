@@ -100,9 +100,6 @@ typedef struct {
 	int game_over;
 	int points;
 	
-	int argc;
-	char **argv;
-	
 	FPSCounter fps;
 	
 } Global;
