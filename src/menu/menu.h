@@ -39,6 +39,9 @@ typedef struct MenuData{
 	float fade;
 	
 	float drawdata[4];
+	
+	void *context;
+	void (*ondestroy)(void*);
 } MenuData;
 
 void add_menu_entry(MenuData *menu, char *name, void (*action)(void *), void *arg);

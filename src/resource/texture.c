@@ -11,7 +11,6 @@
 #include "paths/native.h"
 #include "taisei_err.h"
 #include "list.h"
-
 #include <png.h>
 
 Texture *get_tex(char *name) {
