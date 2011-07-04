@@ -102,7 +102,7 @@ OptionBinding* get_input_blocking_binding(MenuData *m)
 // Adds a value to a BT_IntValue type binding
 int bind_addvalue(OptionBinding *b, char *val)
 {
-	b->values = realloc(b->values, ++b->valcount);
+	b->values = realloc(b->values, ++b->valcount * sizeof(char*));
 	b->values[b->valcount-1] = malloc(strlen(val) + 1);
 	strcpy(b->values[b->valcount-1], val);
 	return b->valcount-1;
