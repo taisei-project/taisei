@@ -67,7 +67,6 @@ OptionBinding* bind_option(MenuData *m, char *optname, int cfgentry, BindingGett
 	bind->optname = malloc(strlen(optname) + 1);
 	strcpy(bind->optname, optname);
 	bind->enabled = True;
-	bind->blockinput = False;
 	bind->type = BT_IntValue;
 	
 	return bind;
@@ -83,7 +82,6 @@ OptionBinding* bind_keybinding(MenuData *m, char *optname, int cfgentry)
 	bind->optname = malloc(strlen(optname) + 1);
 	strcpy(bind->optname, optname);
 	bind->enabled = True;
-	bind->blockinput = False;
 	bind->type = BT_KeyBinding;
 	
 	return bind;
