@@ -392,22 +392,18 @@ void draw_options_menu(MenuData *menu) {
 	int i, caption_drawn = 0;
 
 	for(i = 0; i < menu->ecount; i++) {
-		float s = 0;
+		menu->entries[i].drawdata += 0.2 * (10*(i == menu->cursor) - menu->entries[i].drawdata);
 		
 		if(menu->entries[i].action == NULL)
 			glColor4f(0.5, 0.5, 0.5, 0.7);
 		else if(i == menu->cursor)
-		{
 			glColor4f(1,1,0,0.7);
-			s = 5*sin(menu->frames/80.0 + 20*i);
-		}
 		else
 			glColor4f(1, 1, 1, 0.7);
-
-		draw_text(AL_Left, 20 + s, 20*i, menu->entries[i].name, _fonts.standard);
+		
+		draw_text(AL_Left, 20 - menu->entries[i].drawdata, 20*i, menu->entries[i].name, _fonts.standard);
 		
 		bind = &(binds[i]);
-		
 		if(bind->enabled)
 		{
 			int j, origin = SCREEN_W - 220;
