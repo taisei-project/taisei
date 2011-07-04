@@ -18,13 +18,8 @@
 void initialize_binding(OptionBinding* bind)
 {
 	memset(bind, 0, sizeof(OptionBinding));
-	bind->values 	 	= NULL;
-	bind->getter		= NULL;
-	bind->setter 		= NULL;
 	bind->selected 	 	= -1;
-	bind->valcount	 	= 0;
 	bind->configentry 	= -1;
-	bind->enabled	 	= False;
 }
 
 // Allocates a binding (bound to the last menu entry)
