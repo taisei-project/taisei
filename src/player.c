@@ -58,6 +58,21 @@ void plr_set_power(Player *plr, float npow) {
 		plr->power = 0;
 }
 
+void plr_move(Player *plr, complex delta) {
+	float speed = 0.01*VIEWPORT_W/((plr->focus > 0)+1);
+	
+	if(plr->cha == Marisa && plr->shot == MarisaLaser && global.frames - plr->recovery < 0)
+		speed /= 5.0;
+	
+	complex opos = plr->pos - VIEWPORT_W/2.0 - VIEWPORT_H/2.0*I;
+	complex npos = opos + delta*speed;
+		
+	short xfac = fabs(creal(npos)) < fabs(creal(opos)) || fabs(creal(npos)) < VIEWPORT_W/2.0 - global.plr.ani->w/2;
+	short yfac = fabs(cimag(npos)) < fabs(cimag(opos)) || fabs(cimag(npos)) < VIEWPORT_H/2.0 - global.plr.ani->h/2;
+		
+	plr->pos += (creal(delta)*xfac + cimag(delta)*yfac*I)*speed;
+}
+	
 void player_draw(Player* plr) {
 	draw_enemies(plr->slaves);
 	
@@ -105,24 +120,25 @@ void player_draw(Player* plr) {
 }
 
 void player_logic(Player* plr) {
+	process_enemies(&plr->slaves);
 	if(plr->deathtime < -1) {
 		plr->deathtime++;
 		plr->pos -= 0.7I;
 		return;
 	}
-	
-	process_enemies(&plr->slaves);
-	
+		
 	if(plr->focus < 0 || (plr->focus > 0 && plr->focus < 30))
 		plr->focus++;
 	
-	switch(plr->cha) {
-	case Youmu:
-		youmu_shot(plr);
-		break;
-	case Marisa:
-		marisa_shot(plr);
-		break;
+	if(global.frames - plr->recovery >= 0) {		
+		switch(plr->cha) {
+		case Youmu:
+			youmu_shot(plr);
+			break;
+		case Marisa:
+			marisa_shot(plr);
+			break;
+		}
 	}
 	
 	if(global.frames == plr->deathtime)
@@ -137,8 +153,15 @@ void plr_bomb(Player *plr) {
 				e->hp = 0;
 		
 		delete_projectiles(&global.projs);
-		
-		play_sound("laser1");
+				
+		switch(plr->cha) {
+		case Marisa:
+			marisa_bomb(plr);
+			break;
+		case Youmu:
+			youmu_bomb(plr);
+			break;
+		}
 		
 		plr->bombs--;
 		
@@ -147,7 +170,7 @@ void plr_bomb(Player *plr) {
 			plr->bombs /= 2;
 		}			
 		
-		plr->recovery = global.frames + 200;
+		plr->recovery = global.frames + BOMB_RECOVERY;
 		
 	}
 }

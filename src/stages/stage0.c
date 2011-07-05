@@ -131,11 +131,11 @@ Boss *create_cirno() {
 }*/
 
 
-void stage0_enemy0(Enemy *e, int time) {
+int stage0_enemy0(Enemy *e, int time) {
 	TIMER(&time);
 	AT(EVENT_DEATH) {
 		spawn_items(e->pos, 3,0,0,0);
-		return;
+		return 1;
 	}	
 	
 	FROM_TO(0, 60, 1)
@@ -154,13 +154,15 @@ void stage0_enemy0(Enemy *e, int time) {
 	
 	FROM_TO(70, 900, 1)
 		e->pos = e->pos0 + (0.04*e->args[0] + 0.06I)*_i*_i;		
+		
+	return 1;
 }
 
-void stage0_enemy1(Enemy *e, int time) {
+int stage0_enemy1(Enemy *e, int time) {
 	TIMER(&time);
 	AT(EVENT_DEATH) {
 		spawn_items(e->pos, 2,2,0,0);
-		return;
+		return 1;
 	}
 	
 	e->pos += e->args[0];
@@ -178,25 +180,28 @@ void stage0_enemy1(Enemy *e, int time) {
 		
 	FROM_TO(500, 900, 1)
 		e->args[0] += 0.03*e->args[1] - 0.04I;
+		
+	return 1;
 }
 
-void stage0_enemy2(Enemy *e, int time) {
+int stage0_enemy2(Enemy *e, int time) {
 	TIMER(&time);
 	AT(EVENT_DEATH) {
 		spawn_items(e->pos, frand()>0.5, frand()>0.2,0,0);
-		return;
+		return 1;
 	}
 	
 	e->args[1] -= cimag(e->pos-e->pos0)*0.03I;
 	e->pos += e->args[1]*0.4 + e->args[0];
 	
+	return 1;
 }
 
-void stage0_enemy3(Enemy *e, int t) {
+int stage0_enemy3(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
 		spawn_items(e->pos, 2,1,0,0);
-		return;
+		return 1;
 	}
 	
 	e->pos = e->pos0 + e->args[0]*t + e->args[1]*t*t;
@@ -204,13 +209,15 @@ void stage0_enemy3(Enemy *e, int t) {
 	FROM_TO(10,1000,1)
 		if(frand() > 0.98)
 			create_projectile1c("ball", e->pos, rgb(0.8,0.8,0.4), linear, (1+frand())*cexp(I*carg(global.plr.pos - e->pos)));
+		
+	return 1;
 }
 
-void stage0_enemy4(Enemy *e, int t) {
+int stage0_enemy4(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
 		spawn_items(e->pos, 3,4,0,0);
-		return;
+		return 1;
 	}
 	
 	FROM_TO(0, 150, 1)
@@ -221,13 +228,15 @@ void stage0_enemy4(Enemy *e, int t) {
 	
 	FROM_TO(560,1000,1)
 		e->pos += e->args[1];
+		
+	return 1;
 }
 
-void stage0_enemy5(Enemy *e, int t) {
+int stage0_enemy5(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
 		spawn_items(e->pos, 3,4,0,0);
-		return;
+		return 1;
 	}
 	
 	FROM_TO(0, 50, 1)
@@ -243,6 +252,8 @@ void stage0_enemy5(Enemy *e, int t) {
 		e->args[1] += 0.03;
 		e->pos += e->args[0]*e->args[1] + 1.4I;
 	}
+	
+	return 1;
 }
 void stage0_events() {
 	if(global.dialog)
@@ -251,17 +262,17 @@ void stage0_events() {
 	TIMER(&global.timer);
 	
 	FROM_TO(100, 160, 25) {
-		create_enemy1c(VIEWPORT_W/2 + 70, 8, Fairy, stage0_enemy0, 1);
-		create_enemy1c(VIEWPORT_W/2 - 70, 8, Fairy, stage0_enemy0, -1);
+		create_enemy1c(VIEWPORT_W/2 + 70, 5, Fairy, stage0_enemy0, 1);
+		create_enemy1c(VIEWPORT_W/2 - 70, 5, Fairy, stage0_enemy0, -1);
 	}
 		
 	FROM_TO(240, 300, 30) {
-		create_enemy1c(70 + _i*40, 8, Fairy, stage0_enemy0, -1);
-		create_enemy1c(VIEWPORT_W - (70 + _i*40), 8, Fairy, stage0_enemy0, 1);
+		create_enemy1c(70 + _i*40, 6, Fairy, stage0_enemy0, -1);
+		create_enemy1c(VIEWPORT_W - (70 + _i*40), 6, Fairy, stage0_enemy0, 1);
 	}
 	
 	FROM_TO(400, 460, 50)
-		create_enemy2c(VIEWPORT_W*_i + VIEWPORT_H/3*I, 25, Fairy, stage0_enemy1, 2-4*_i-0.3I, 1-2*_i);	
+		create_enemy2c(VIEWPORT_W*_i + VIEWPORT_H/3*I, 20, Fairy, stage0_enemy1, 2-4*_i-0.3I, 1-2*_i);	
 	
 	FROM_TO(380, 1000, 20)
 		create_enemy2c(VIEWPORT_W*(_i&1) + frand()*100I + 70I, 2, Swirl, stage0_enemy2, 3.5*(1-2*(_i&1)), frand()*7I);
@@ -273,15 +284,15 @@ void stage0_events() {
 		create_enemy2c(VIEWPORT_W+200I, 2, Swirl, stage0_enemy3, -2, -0.04-0.03I);
 	
 	FROM_TO(1250, 1800, 60)
-		create_enemy1c(VIEWPORT_W/2 + frand()*500-250 , 8, Fairy, stage0_enemy0, frand()*2-1);
+		create_enemy1c(VIEWPORT_W/2 + frand()*500-250 , 3, Fairy, stage0_enemy0, frand()*2-1);
 		
 	FROM_TO(1700, 2700, 300)
-		create_enemy2c(VIEWPORT_W/2, 35, Fairy, stage0_enemy4, VIEWPORT_W/4 + VIEWPORT_W/2*frand()+200I, 3-6*(frand()>0.5)+frand()*2I);
+		create_enemy2c(VIEWPORT_W/2, 30, Fairy, stage0_enemy4, VIEWPORT_W/4 + VIEWPORT_W/2*frand()+200I, 3-6*(frand()>0.5)+frand()*2I);
 	
 	FROM_TO(2000,2800, 200) {
 		int i;
 		for(i = 0; i < 5; i++)
-			create_enemy1c(VIEWPORT_W/4 + VIEWPORT_H/10*i, 8, Fairy, stage0_enemy5, i - 2.5);
+			create_enemy1c(VIEWPORT_W/4 + VIEWPORT_H/10*i, 5, Fairy, stage0_enemy5, i - 2.5);
 	}
 // 	if(!(global.timer % 100))
 // 		create_laser(LaserCurve, 300, 300, 60, 500, ((ColorA){0.6,0.6,1,0.4}), lolsin, 0);

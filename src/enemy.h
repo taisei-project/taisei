@@ -16,11 +16,12 @@
 #include <stdarg.h>
 
 typedef struct Enemy Enemy;
-typedef void (*EnemyLogicRule)(struct Enemy*, int t);
-typedef EnemyLogicRule EnemyDrawRule;
+typedef int (*EnemyLogicRule)(struct Enemy*, int t);
+typedef void (*EnemyDrawRule)(struct Enemy*, int t);
 
 enum {
-	ENEMY_IMMUNE = -9000
+	ENEMY_IMMUNE = -9000,
+	ENEMY_BOMB = -9001
 };
 
 struct Enemy {

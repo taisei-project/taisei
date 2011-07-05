@@ -102,16 +102,3 @@ int menu_loop(MenuData *menu, void (*input)(MenuData*), void (*draw)(MenuData*))
 	
 	return menu->selected;
 }
-
-void fade_out(float f) {
-	glColor4f(0,0,0,f);
-			
-	glBegin(GL_QUADS);
-	glVertex3f(0,0,0);
-	glVertex3f(0,SCREEN_H,0);
-	glVertex3f(SCREEN_W,SCREEN_H,0);
-	glVertex3f(SCREEN_W,0,0);
-	glEnd();
-	
-	glColor4f(1,1,1,1);	
-}

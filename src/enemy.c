@@ -111,15 +111,15 @@ void process_enemies(Enemy **enemies) {
 	Enemy *enemy = *enemies, *del = NULL;
 	
 	while(enemy != NULL) {
-		enemy->logic_rule(enemy, global.frames - enemy->birthtime);
+		int action = enemy->logic_rule(enemy, global.frames - enemy->birthtime);
 		
-		if(enemy->hp != ENEMY_IMMUNE && cabs(enemy->pos - global.plr.pos) < 25)
+		if(enemy->hp > ENEMY_IMMUNE && cabs(enemy->pos - global.plr.pos) < 25)
 			plr_death(&global.plr);
 		
-		if(enemy->hp != ENEMY_IMMUNE
+		if((enemy->hp > ENEMY_IMMUNE
 		&& (creal(enemy->pos) < -20 || creal(enemy->pos) > VIEWPORT_W + 20
 		|| cimag(enemy->pos) < -20 || cimag(enemy->pos) > VIEWPORT_H + 20
-		|| enemy->hp <= 0)) {
+		|| enemy->hp <= 0)) || action == ACTION_DESTROY) {
 			del = enemy;
 			enemy = enemy->next;
 			delete_enemy(enemies, del);

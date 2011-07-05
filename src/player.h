@@ -63,6 +63,8 @@ void player_logic(Player*);
 void plr_set_char(Player*, Character);
 void plr_set_power(Player *plr, float npow);
 
+void plr_move(Player*, complex delta);
+
 void plr_bomb(Player*);
 void plr_realdeath(Player*);
 void plr_death(Player*);

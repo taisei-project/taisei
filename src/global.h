@@ -43,6 +43,7 @@ enum {
 	
 	POINT_OF_COLLECT = VIEWPORT_H/4,
 	ATTACK_START_DELAY = 40,
+	BOMB_RECOVERY = 250,
 	DEATHBOMB_TIME = 10,
 	DEATH_DELAY = 70,
 	
@@ -111,6 +112,7 @@ void game_over();
 void frame_rate();
 void calc_fps(FPSCounter *fps);
 void set_ortho();
+void fade_out(float f);
 
 void toggle_fullscreen();
 void global_processevent(SDL_Event*);

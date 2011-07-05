@@ -53,5 +53,5 @@ void menu_input(MenuData *menu);
 
 int menu_loop(MenuData *menu, void (*input)(MenuData*), void (*draw)(MenuData*));
 
-void fade_out(float f);
+
 #endif

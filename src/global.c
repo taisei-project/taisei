@@ -56,6 +56,19 @@ void set_ortho() {
 	glDisable(GL_DEPTH_TEST);
 }
 
+void fade_out(float f) {
+	glColor4f(0,0,0,f);
+			
+	glBegin(GL_QUADS);
+	glVertex3f(0,0,0);
+	glVertex3f(0,SCREEN_H,0);
+	glVertex3f(SCREEN_W,SCREEN_H,0);
+	glVertex3f(SCREEN_W,0,0);
+	glEnd();
+	
+	glColor4f(1,1,1,1);	
+}
+
 inline double frand() {
 	return rand()/(double)RAND_MAX;
 }

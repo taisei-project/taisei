@@ -59,8 +59,6 @@ void stage_input() {
 	if(global.plr.deathtime < -1)
 		return;
 	
-	float speed = 0.01*VIEWPORT_W/((global.plr.focus > 0)+1);	
-	
 	Uint8 *keys = SDL_GetKeyState(NULL);
 	
 	global.plr.moving = False;
@@ -73,14 +71,19 @@ void stage_input() {
 		global.plr.dir = 0;
 	}	
 	
-	if(keys[tconfig.intval[KEY_LEFT]] && creal(global.plr.pos) - global.plr.ani->w/2 - speed > 0)
-		global.plr.pos -= speed;		
-	if(keys[tconfig.intval[KEY_RIGHT]] && creal(global.plr.pos) + global.plr.ani->w/2 + speed < VIEWPORT_W)
-		global.plr.pos += speed;
-	if(keys[tconfig.intval[KEY_UP]] && cimag(global.plr.pos) - global.plr.ani->h/2 - speed > 0)
-		global.plr.pos -= I*speed;
-	if(keys[tconfig.intval[KEY_DOWN]] && cimag(global.plr.pos) + global.plr.ani->h/2 + speed < VIEWPORT_H)
-		global.plr.pos += I*speed;
+	complex direction = 0;
+	
+	if(keys[tconfig.intval[KEY_LEFT]])
+		direction -= 1;		
+	if(keys[tconfig.intval[KEY_RIGHT]])
+		direction += 1;
+	if(keys[tconfig.intval[KEY_UP]])
+		direction -= 1I;
+	if(keys[tconfig.intval[KEY_DOWN]])
+		direction += 1I;
+	
+	if(direction)
+		plr_move(&global.plr, direction);
 	
 	if(!keys[tconfig.intval[KEY_SHOT]] && global.plr.fire)
 		global.plr.fire = False;
@@ -143,7 +146,12 @@ void stage_draw() {
 				
 		if(!tconfig.intval[NO_SHADER]) {
 			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+			
+			glPushMatrix();
+			if(global.plr.cha == Marisa && global.plr.shot == MarisaLaser && global.frames - global.plr.recovery < 0)
+				glTranslatef(8*sin(global.frames),8*sin(global.frames+3),0);
 			draw_fbo_viewport(&resources.fsec);
+			glPopMatrix();
 		}
 	} if(global.menu) {
 		draw_ingame_menu(global.menu);		
@@ -182,6 +190,22 @@ void apply_bg_shaders() {
 	draw_fbo_viewport(&resources.fbg);
 	
 	glUseProgramObjectARB(0);
+	
+	if(global.frames - global.plr.recovery < 0) {
+		float t = BOMB_RECOVERY - global.plr.recovery + global.frames;
+		float fade = 1;
+	
+		if(t < BOMB_RECOVERY/6)
+			fade = t/BOMB_RECOVERY*6;
+		
+		if(t > BOMB_RECOVERY/4*3)
+			fade = 1-t/BOMB_RECOVERY*4 + 3;
+	
+		glPushMatrix();
+		glTranslatef(-30,-30,0);
+		fade_out(fade*0.6);
+		glPopMatrix();
+	}
 		
 	if(global.boss && global.boss->current && global.boss->current->draw_rule) {
 		glPushMatrix();
