@@ -201,7 +201,7 @@ void MasterSpark(Enemy *e, int t) {
 	glColor4f(0.9,1,1,fade*0.8);
 	int i;
 	for(i = 0; i < 8; i++)
-		draw_masterspark_ring(global.plr.pos, t%30 + 15*i);
+		draw_masterspark_ring(global.plr.pos - 50I, t%30 + 15*i);
 	
 	glColor4f(1,1,1,1);
 }
