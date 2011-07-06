@@ -89,19 +89,19 @@ int collision_projectile(Projectile *p) {
 		
 		if(cabs(global.plr.pos - p->pos) < projr + 1)
 			return 1;
-	} else {
+	} else if(p->type >= PlrProj) {
 		Enemy *e = global.enemies;
 		while(e != NULL) {
 			if(e->hp != ENEMY_IMMUNE && cabs(e->pos - p->pos) < 15) {
 				global.points += 100;
-				e->hp--;
+				e->hp -= p->type - PlrProj + 1;
 				return 2;
 			}
 			e = e->next;
 		}
 		
 		if(global.boss != NULL && cabs(global.boss->pos - p->pos) < 15) {
-			global.boss->dmg++;
+			global.boss->dmg+= p->type - PlrProj + 1;
 			return 2;
 		}
 	}
@@ -208,7 +208,7 @@ void ProjDraw(Projectile *proj, int t) {
 
 	_ProjDraw(proj, t);
 	
-	glPopMatrix();	
+	glPopMatrix();
 }
 
 void PartDraw(Projectile *proj, int t) {

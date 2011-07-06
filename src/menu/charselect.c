@@ -27,8 +27,8 @@ void create_char_menu(MenuData *m) {
 void create_shottype_menu(MenuData *m) {
 	create_menu(m);
 	
-	add_menu_entry(m, "Foo Sign|Mirror Sign", set_shotmode, (void *) YoumuOpposite);
-	add_menu_entry(m, "Bar Sign|Haunting Sign", set_shotmode, (void *) YoumuHoming);
+	add_menu_entry(m, "Laser Sign|Mirror Sign", set_shotmode, (void *) YoumuOpposite);
+	add_menu_entry(m, "Star Sign|Haunting Sign", set_shotmode, (void *) YoumuHoming);
 }
 
 void draw_char_menu(MenuData *menu, MenuData *mod) {

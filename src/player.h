@@ -28,7 +28,7 @@ typedef enum {
 	YoumuHoming,
 	
 	MarisaLaser = YoumuOpposite,
-	MarisaBar = YoumuHoming
+	MarisaStar = YoumuHoming
 } ShotMode;
 
 typedef struct {

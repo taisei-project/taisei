@@ -26,6 +26,13 @@ struct Projectile;
 typedef int (*ProjRule)(struct Projectile *p, int t);
 typedef void (*ProjDRule)(struct Projectile *p, int t);
 
+typedef enum {
+	FairyProj,
+	DeadProj,
+	Particle,
+	PlrProj
+} ProjType;
+
 typedef struct Projectile {
 	struct Projectile *next;
 	struct Projectile *prev;
@@ -41,7 +48,7 @@ typedef struct Projectile {
 	ProjDRule draw;
 	Texture *tex;
 	
-	enum { PlrProj, FairyProj, DeadProj, Particle } type;
+	ProjType type;
 	
 	Color *clr;
 	

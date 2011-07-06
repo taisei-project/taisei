@@ -137,7 +137,7 @@ int marisa_laser_slave(Enemy *e, int t) {
 		if(!(global.frames % 4))
 			create_projectile_p(&global.projs, get_tex("proj/marilaser"), 0, NULL, MariLaser, mari_laser, -20I, add_ref(e),0,0)->type = PlrProj;
 		
-		if(!(global.frames%3)) {
+		if(!(global.frames % 3)) {
 			float s = 0.5 + 0.3*sin(global.frames/7.0);
 			create_particle2c("marilaser_part0", 0, rgb(1-s,0.5,s), PartDraw, mari_laser, -15I, add_ref(e))->type = PlrProj;
 		}
@@ -223,6 +223,26 @@ int master_spark(Enemy *e, int t) {
 	return 1;
 }
 
+// Star Sign
+
+void MariStar(Projectile *p, int t) {
+	glColor4f(1,1,0.7,0.8);
+	draw_texture_p(creal(p->pos), cimag(p->pos), p->tex);
+	create_particle1c("flare", p->pos, NULL, Shrink, timeout, 10);
+	glColor4f(1,1,1,1);
+}
+
+int marisa_star_slave(Enemy *e, int t) {
+	if(global.plr.fire && global.frames - global.plr.recovery >= 0) {
+		if(!(global.frames % 20))
+			create_projectile_p(&global.projs, get_tex("proj/maristar"), e->pos, NULL, MariStar, accelerated, e->args[1], e->args[2], 0, 0)->type = PlrProj+4;
+	}
+	
+	e->pos = global.plr.pos + (1 - abs(global.plr.focus)/30.0)*e->pos0 + (abs(global.plr.focus)/30.0)*e->args[0];
+	
+	return 1;
+}
+
 // Generic Marisa
 
 void marisa_shot(Player *plr) {
@@ -232,15 +252,12 @@ void marisa_shot(Player *plr) {
 			create_projectile1c("marisa", plr->pos - 10 - 15I, NULL, linear, -20I)->type = PlrProj;
 		}
 	}
-	
-	if(plr->shot == MarisaLaser && plr->slaves == NULL)
-		create_enemy_p(&plr->slaves, -40I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -40I,0,0,0);
 }
 
 void marisa_bomb(Player *plr) {
 	switch(plr->shot) {
 	case MarisaLaser:
-		create_enemy_p(&plr->slaves, 0, ENEMY_BOMB, MasterSpark, master_spark, 280,0,0,0);
+		create_enemy_p(&plr->slaves, 40I, ENEMY_BOMB, MasterSpark, master_spark, 280,0,0,0);
 		break;
 	default:
 		break;
@@ -249,6 +266,10 @@ void marisa_bomb(Player *plr) {
 
 void marisa_power(Player *plr, float npow) {
 	Enemy *e = plr->slaves, *tmp;
+	
+	if((int)plr->power == (int)npow)
+		return;
+	
 	while(e != 0) {
 		tmp = e;
 		e = e->next;
@@ -258,24 +279,37 @@ void marisa_power(Player *plr, float npow) {
 	
 	switch(plr->shot) {
 	case MarisaLaser:
-		if(npow < 1) {
+		if((int)npow == 1)
 			create_enemy_p(&plr->slaves, -40I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -40I,0,0,0);
-			return;
-		}
 		
-		if(npow >= 1) {
+		if(npow >= 2) {
 			create_enemy_p(&plr->slaves, 25-5I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, 8-40I,0,0,0);
 			create_enemy_p(&plr->slaves, -25-5I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -8-40I,0,0,0);
 		}
 		
-		if(npow >= 3) {
+		if((int)npow == 3)
+			create_enemy_p(&plr->slaves, -30I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -50I,0,0,0);
+		
+		if(npow >= 4) {
 			create_enemy_p(&plr->slaves, 17-30I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, 4-45I,0,0,0);
 			create_enemy_p(&plr->slaves, -17-30I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -4-45I,0,0,0);
-		} else if(npow >= 2) {
-			create_enemy_p(&plr->slaves, -30I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -50I,0,0,0);
 		}
 		break;
-	default:
+	case MarisaStar:
+		if((int)npow == 1)
+			create_enemy_p(&plr->slaves, 40I, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -30I, 3I, -0.1I,0);
+		
+		if(npow >= 2) {
+			create_enemy_p(&plr->slaves, 30I+15, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -30I+10, 3I, -0.2I,0);
+			create_enemy_p(&plr->slaves, 30I-15, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -30I-10, 3I, -0.2I,0);
+		}
+		
+		if((int)npow == 3)
+			create_enemy_p(&plr->slaves, -30I, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -30I, 3I, -0.1I,0);
+		if(npow >= 4) {
+			create_enemy_p(&plr->slaves, 30, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, 25, 2+3I, -0.03-0.1I,0);
+			create_enemy_p(&plr->slaves, -30, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -25, -2+3I, 0.03-0.1I,0);
+		}
 		break;
 	}
 }

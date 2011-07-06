@@ -39,7 +39,7 @@ void create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyDrawRule draw_rul
 void _delete_enemy(void **enemies, void* enemy) {
 	Enemy *e = (Enemy *)enemy;
 	
-	if(e->hp <= 0 && e->hp != ENEMY_IMMUNE) {
+	if(e->hp <= 0 && e->hp > ENEMY_IMMUNE) {
 		int i;
 		for(i = 0; i < 10; i++)
 			create_particle2c("flare", e->pos, NULL, Fade, timeout_linear, 10, (3+frand()*10)*cexp(I*frand()*2*M_PI));
