@@ -242,6 +242,7 @@ void stage_logic() {
 		global.timer++;
 	
 	calc_fps(&global.fps);
+	
 }
 
 void stage_end() {

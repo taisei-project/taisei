@@ -203,6 +203,8 @@ int stage0_enemy3(Enemy *e, int t) {
 		spawn_items(e->pos, 2,1,0,0);
 		return 1;
 	}
+	if(t < 0)
+		return 1;
 	
 	e->pos = e->pos0 + e->args[0]*t + e->args[1]*t*t;
 	

@@ -16,6 +16,8 @@ typedef struct Sound {
 	struct Sound *next;
 	struct Sound *prev;
 	
+	int lastplayframe;
+	
 	ALuint alsnd;
 	char *name;
 } Sound;

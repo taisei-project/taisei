@@ -52,8 +52,10 @@ void play_sound(char *name) {
 }
 
 void play_sound_p(Sound *snd) {
-	if(tconfig.intval[NO_AUDIO])
+	if(tconfig.intval[NO_AUDIO] || snd->lastplayframe == global.frames)
 		return;
+	
+	snd->lastplayframe = global.frames;
 	
 	ALuint i,res = -1;
 	ALint play;

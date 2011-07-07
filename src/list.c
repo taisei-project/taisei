@@ -64,14 +64,23 @@ int add_ref(void *ptr) {
 	int i;
 		
 	for(i = 0; i < global.refs.count; i++) {
-		if(global.refs.ptrs[i] == FREEREF) {
-			global.refs.ptrs[i] = ptr;
+		if(global.refs.ptrs[i].ptr == ptr) {
+			global.refs.ptrs[i].refs++;
 			return i;
 		}
 	}
 	
-	global.refs.ptrs = realloc(global.refs.ptrs, (++global.refs.count)*sizeof(void *));
-	global.refs.ptrs[global.refs.count - 1] = ptr;
+	for(i = 0; i < global.refs.count; i++) {
+		if(global.refs.ptrs[i].ptr == FREEREF) {
+			global.refs.ptrs[i].ptr = ptr;
+			global.refs.ptrs[i].refs = 1;
+			return i;
+		}
+	}
+	
+	global.refs.ptrs = realloc(global.refs.ptrs, (++global.refs.count)*sizeof(Reference));
+	global.refs.ptrs[global.refs.count - 1].ptr = ptr;
+	global.refs.ptrs[global.refs.count - 1].refs = 1;
 	
 	return global.refs.count - 1;
 }
@@ -80,11 +89,17 @@ void del_ref(void *ptr) {
 	int i;
 	
 	for(i = 0; i < global.refs.count; i++)
-		if(global.refs.ptrs[i] == ptr)
-			global.refs.ptrs[i] = NULL;
+		if(global.refs.ptrs[i].ptr == ptr)
+			global.refs.ptrs[i].ptr = NULL;
 }
 
 void free_ref(int i) {
-	if(i >= 0)
-		REF(i) = FREEREF;
+	if(i < 0)
+		return;
+	
+	global.refs.ptrs[i].refs--;
+	if(global.refs.ptrs[i].refs <= 0) {
+		global.refs.ptrs[i].ptr = FREEREF;
+		global.refs.ptrs[i].refs = 0;
+	}
 }

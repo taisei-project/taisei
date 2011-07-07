@@ -18,8 +18,6 @@ void YoumuOppositeMyon(Enemy *e, int t) {
 }
 
 int youmu_opposite_myon(Enemy *e, int t) {
-	if(t == EVENT_DEATH)
-		free_ref(e->args[0]);
 	if(t < 0)
 		return 1;
 	
@@ -41,22 +39,29 @@ int youmu_opposite_myon(Enemy *e, int t) {
 	return 1;
 }
 
-int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: target, a[2]: old velocity
- 	p->angle = rand();
-	if(t == EVENT_DEATH)
-		free_ref(p->args[1]);
-	
-	
-	complex tv = p->args[2];
-	if(REF(p->args[1]) != NULL)
-		tv = cexp(I*carg(((Enemy *)REF(p->args[1]))->pos - p->pos));
-	
+int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: target
+	if(t == EVENT_DEATH) {
+// 		free_ref(p->args[1]);
+		return 1;
+	}
 		
-	p->args[2] = tv;
+	Enemy *target;
 	
-	p->pos += p->args[0]*log(t + 1) + tv*t*t/300.0;
-	p->pos0 = p->pos;
+	if((target = REF(p->args[1]))) {
+		p->args[0] += 0.15*cexp(I*carg(target->pos - p->pos));
+	} else {
+		free_ref(p->args[1]);
+		
+		if(global.enemies)
+			p->args[1] = add_ref(global.enemies);
+		if(global.boss)
+			p->args[1] = add_ref(global.boss);
+	}
 	
+	p->angle = carg(p->args[0]);
+	
+	p->pos += p->args[0];
+		
 	return 1;
 }
 
@@ -64,28 +69,33 @@ void youmu_shot(Player *plr) {
 	if(plr->fire) {
 		if(!(global.frames % 4)) {
 			create_projectile1c("youmu", plr->pos + 10 - I*20, NULL, linear, -20I)->type = PlrProj;
-			create_projectile1c("youmu", plr->pos - 10 - I*20, NULL, linear, -20I)->type = PlrProj;
-						
-			if(plr->power >= 2) {
-				float a = 0.20;
-				if(plr->focus > 0) a = 0.06;
-				create_projectile1c("youmu", plr->pos - 10 - I*20, NULL, linear, -20I*cexp(-I*a))->type = PlrProj;
-				create_projectile1c("youmu", plr->pos + 10 - I*20, NULL, linear, -20I*cexp(I*a))->type = PlrProj;
-			}		
+			create_projectile1c("youmu", plr->pos - 10 - I*20, NULL, linear, -20I)->type = PlrProj;		
 		}
 		
-		float a = 1;
-		if(plr->focus > 0)
-			a = 0.4;
-		if(plr->shot == YoumuHoming && !(global.frames % 7)) {
-			complex ref = -1;
-			if(global.boss != NULL)
-				ref = add_ref(global.boss);
-			else if(global.enemies != NULL)
-				ref = add_ref(global.enemies);
+		if(plr->shot == YoumuHoming) {
+			if(plr->focus && !(global.frames % 12-(int)plr->power)*1.5) {
+				int ref = -1;
+				if(global.boss != NULL)
+					ref = add_ref(global.boss);
+				else if(global.enemies != NULL)
+					ref = add_ref(global.enemies);
+				if(ref == -1)
+					ref = add_ref(NULL);
+				create_projectile2c("hghost", plr->pos, NULL, youmu_homing, 5*cexp(I*sin(global.frames/10.0))/I, ref)->type = PlrProj;
+				create_projectile2c("hghost", plr->pos, NULL, youmu_homing, 5*cexp(I*-sin(global.frames/10.0))/I, ref)->type = PlrProj;
+			}
 			
-			if(ref != -1)
-				create_projectile2c("hghost", plr->pos, NULL, youmu_homing, a*cexp(I*rand()), ref)->type = PlrProj;
+			if(!plr->focus && !(global.frames % 8-(int)plr->power)) {
+				float arg = -M_PI/2;
+				if(global.enemies)
+					arg = carg(global.enemies->pos - plr->pos);
+				if(global.boss)
+					arg = carg(global.boss->pos - plr->pos);
+								
+				create_projectile2c("hghost", plr->pos, NULL, accelerated, 10*cexp((arg-0.2)*I), 0.4*cexp((arg-0.2)*I))->type = PlrProj;
+				create_projectile2c("hghost", plr->pos, NULL, accelerated, 10*cexp(arg*I), 0.4*cexp(arg*I))->type = PlrProj;
+				create_projectile2c("hghost", plr->pos, NULL, accelerated, 10*cexp((arg+0.2)*I), 0.4*cexp((arg+0.2)*I))->type = PlrProj;
+			}
 		}
 	}
 	
@@ -161,12 +171,14 @@ void MariLaserSlave(Enemy *e, int t) {
 
 // Laser sign bomb (implemented as Enemy)
 
-static void draw_masterspark_ring(complex base, int t) {
+static void draw_masterspark_ring(complex base, int t, float fade) {
 	glPushMatrix();
 	
-	glTranslatef(creal(base), cimag(base)-t*t*0.2, 0);
+	glTranslatef(creal(base), cimag(base)-t*t*0.4, 0);
 		
 	float f = sqrt(t/500.0)*1200;
+	
+	glColor4f(1,1,1,fade*20.0/t);
 	
 	Texture *tex = get_tex("masterspark_ring");
 	glScalef(f/tex->w, 1-tex->h/f,0);
@@ -198,10 +210,10 @@ void MasterSpark(Enemy *e, int t) {
 	draw_texture(0, -450, "masterspark");
 	glPopMatrix();
 	
-	glColor4f(0.9,1,1,fade*0.8);
+// 	glColor4f(0.9,1,1,fade*0.8);
 	int i;
 	for(i = 0; i < 8; i++)
-		draw_masterspark_ring(global.plr.pos - 50I, t%30 + 15*i);
+		draw_masterspark_ring(global.plr.pos - 50I, t%20 + 10*i, fade);
 	
 	glColor4f(1,1,1,1);
 }
@@ -257,6 +269,7 @@ void marisa_shot(Player *plr) {
 void marisa_bomb(Player *plr) {
 	switch(plr->shot) {
 	case MarisaLaser:
+		play_sound("masterspark");
 		create_enemy_p(&plr->slaves, 40I, ENEMY_BOMB, MasterSpark, master_spark, 280,0,0,0);
 		break;
 	default:

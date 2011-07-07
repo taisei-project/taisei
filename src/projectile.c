@@ -130,7 +130,7 @@ void process_projectiles(Projectile **projs, char collision) {
 			create_particle1c("flare", proj->pos, NULL, Fade, timeout, 30);
 			create_item(proj->pos, 0, BPoint)->auto_collect = 10;
 		}
-			
+							
 		if(collision)
 			col = collision_projectile(proj);
 		
@@ -160,7 +160,9 @@ void process_projectiles(Projectile **projs, char collision) {
 }
 
 
-int linear(Projectile *p, int t) { // sure is physics in here; a[0]: velocity	
+int linear(Projectile *p, int t) { // sure is physics in here; a[0]: velocity
+	if(t < 0)
+		return 1;
 	p->angle = carg(p->args[0]);
 	p->pos = p->pos0 + p->args[0]*t;
 	
@@ -168,6 +170,8 @@ int linear(Projectile *p, int t) { // sure is physics in here; a[0]: velocity
 }
 
 int accelerated(Projectile *p, int t) {
+	if(t < 0)
+		return 1;
 	p->angle = carg(p->args[0]);
 	p->pos = p->pos0 + p->args[0]*t + p->args[1]*t*t;
 	
@@ -175,6 +179,8 @@ int accelerated(Projectile *p, int t) {
 }
 
 int asymptotic(Projectile *p, int t) { // v = a[0]*(a[1] + 1); a[1] -> 0
+	if(t < 0)
+		return 1;
 	p->angle = carg(p->args[0] + p->args[1]);
 	
 	p->args[1] *= 0.8;
@@ -248,6 +254,18 @@ void Shrink(Projectile *p, int t) {
 	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
 	glScalef(s, s, 1);
 	
+	if(cabs(p->pos) < 10) {
+		printf("Hey! %d t:%d [", (int)p->args[1], t);
+		int i;
+		for(i = 0; i < global.refs.count; i++) {
+			if(global.refs.ptrs[i].ptr == FREEREF)
+				printf("%02d:FREE,",i);
+			else
+				printf("%02d:0x%x*%d,",i, (int)global.refs.ptrs[i].ptr,global.refs.ptrs[i].refs);
+		}
+		printf("\b]\n");
+	}
+		
 	_ProjDraw(p, t);
 	glPopMatrix();
 }
@@ -258,7 +276,7 @@ void DeathShrink(Projectile *p, int t) {
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
 	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
 	glScalef(s, 1, 1);
-		
+	
 	_ProjDraw(p, t);
 	glPopMatrix();
 }
@@ -281,10 +299,14 @@ void GrowFade(Projectile *p, int t) {
 }		
 
 int bullet_flare_move(Projectile *p, int t) {
-	if(t > 16 || REF(p->args[1]) == NULL) {
-		free_ref(p->args[1]);
+	if(t >= creal(p->args[0]) || REF(p->args[1]) == NULL) {
 		return ACTION_DESTROY;
-	}	
+	} if(t == EVENT_DEATH) {
+		free_ref(p->args[1]);
+		return 1;
+	} else if(t < 0) {
+		return 1;
+	}
 	
 	p->pos = ((Projectile *) REF(p->args[1]))->pos;
 	p->angle = ((Projectile *) REF(p->args[1]))->angle;
@@ -308,6 +330,8 @@ int timeout(Projectile *p, int t) {
 int timeout_linear(Projectile *p, int t) {
 	if(t >= creal(p->args[0]))
 		return ACTION_DESTROY;
+	if(t < 0)
+		return 1;
 	
 	p->angle = carg(p->args[1]);
 	p->pos = p->pos0 + p->args[1]*t;
