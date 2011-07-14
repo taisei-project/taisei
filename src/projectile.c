@@ -254,18 +254,6 @@ void Shrink(Projectile *p, int t) {
 	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
 	glScalef(s, s, 1);
 	
-	if(cabs(p->pos) < 10) {
-		printf("Hey! %d t:%d [", (int)p->args[1], t);
-		int i;
-		for(i = 0; i < global.refs.count; i++) {
-			if(global.refs.ptrs[i].ptr == FREEREF)
-				printf("%02d:FREE,",i);
-			else
-				printf("%02d:0x%x*%d,",i, (int)global.refs.ptrs[i].ptr,global.refs.ptrs[i].refs);
-		}
-		printf("\b]\n");
-	}
-		
 	_ProjDraw(p, t);
 	glPopMatrix();
 }

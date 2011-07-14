@@ -52,10 +52,13 @@ int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: target
 	} else {
 		free_ref(p->args[1]);
 		
-		if(global.enemies)
-			p->args[1] = add_ref(global.enemies);
 		if(global.boss)
 			p->args[1] = add_ref(global.boss);
+		else if(global.enemies)
+			p->args[1] = add_ref(global.enemies);
+		else
+			p->args[1] = add_ref(NULL);
+		
 	}
 	
 	p->angle = carg(p->args[0]);
