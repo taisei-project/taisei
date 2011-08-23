@@ -12,21 +12,13 @@
 
 Boss *create_boss(char *name, char *ani, complex pos) {
 	Boss *buf = malloc(sizeof(Boss));
+	memset(buf, 0, sizeof(Boss));	
 	
 	buf->name = malloc(strlen(name) + 1);
 	strcpy(buf->name, name);
 	buf->pos = pos;
-	buf->pos0 = pos;
-	buf->time0 = 0;
-	
-	buf->acount = 0;
-	buf->attacks = NULL;
-	buf->current = NULL;
-	
+		
 	buf->ani = get_ani(ani);
-	
-	buf->anirow = 0;
-	buf->dmg = 0;
 	
 	return buf;
 }
@@ -43,88 +35,70 @@ void spell_opening(Boss *b, int time) {
 }
 
 void draw_boss(Boss *boss) {
-	draw_animation_p(creal(boss->pos), cimag(boss->pos), boss->anirow, boss->ani);
-	
-	if(boss->current && (boss->current->type == AT_Spellcard || boss->current->type == AT_SurvivalSpell))
-		spell_opening(boss, global.frames - boss->current->starttime);
-	
+	draw_animation_p(creal(boss->pos), cimag(boss->pos) + 10*sin(global.frames/25.0), boss->anirow, boss->ani);
 	draw_text(AL_Left, 10, 20, boss->name, _fonts.standard);
 	
-	if(boss->current) {		
-		char buf[16];
-		snprintf(buf, 16,  "%.2f", (boss->current->timeout - global.frames + boss->current->starttime)/(float)FPS);
-		draw_text(AL_Center, VIEWPORT_W - 20, 10, buf, _fonts.standard);
-	}
+	if(!boss->current)
+		return;
 	
-	glPushMatrix();
-	glTranslatef(boss->attacks[boss->acount-1].dmglimit+10, 4,0);
+	if(boss->current->type == AT_Spellcard || boss->current->type == AT_SurvivalSpell)
+		spell_opening(boss, global.frames - boss->current->starttime);
+	
+	if(boss->current->type != AT_Move) {
+		char buf[16];
+		snprintf(buf, sizeof(buf),  "%.2f", (boss->current->timeout - global.frames + boss->current->starttime)/(float)FPS);
+		draw_text(AL_Center, VIEWPORT_W - 20, 10, buf, _fonts.standard);
 		
-	int i;
-	for(i = boss->acount-1; i >= 0; i--) {
-		if(boss->dmg > boss->attacks[i].dmglimit)
-			continue;
+		glPushMatrix();
+		glTranslatef(boss->attacks[boss->acount-1].dmglimit+10, 4,0);
 		
-		switch(boss->attacks[i].type) {
-		case AT_Normal:
-			glColor3f(1,1,1);
-			break;
-		case AT_Spellcard:
-			glColor3f(1,0.8,0.8);
-			break;
-		case AT_SurvivalSpell:
-			glColor3f(1,0.5,0.5);
-		}		
-		
-		glBegin(GL_QUADS);
-		glVertex3f(-boss->attacks[i].dmglimit, 0, 0);
-		glVertex3f(-boss->attacks[i].dmglimit, 2, 0);
-		glVertex3f(-boss->dmg, 2, 0);
-		glVertex3f(-boss->dmg, 0, 0);
-		glEnd();
+		int i;
+		for(i = boss->acount-1; i >= 0; i--) {
+			if(boss->dmg > boss->attacks[i].dmglimit)
+				continue;
+			
+			switch(boss->attacks[i].type) {
+			case AT_Normal:
+				glColor3f(1,1,1);
+				break;
+			case AT_Spellcard:
+				glColor3f(1,0.8,0.8);
+				break;
+			case AT_SurvivalSpell:
+				glColor3f(1,0.5,0.5);
+			default:
+				break; // never happens
+			}		
+			
+			glBegin(GL_QUADS);
+			glVertex3f(-boss->attacks[i].dmglimit, 0, 0);
+			glVertex3f(-boss->attacks[i].dmglimit, 2, 0);
+			glVertex3f(-boss->dmg, 2, 0);
+			glVertex3f(-boss->dmg, 0, 0);
+			glEnd();
+		}
+		glPopMatrix();
 	}
-	glColor3f(1,1,1);
-	glPopMatrix();
+	glColor3f(1,1,1);	
 }
 
 void process_boss(Boss *boss) {
-	if(boss->current && boss->current->waypoints) {		
+	if(boss->current) {		
 		int time = global.frames - boss->current->starttime;
-			
-		struct Waypoint *wps = boss->current->waypoints;
-		int *i = &boss->current->wp;
 		
-		if(time < 0) {
-			boss->pos = boss->pos0 + (wps[0].pos - boss->pos0)/ATTACK_START_DELAY * (ATTACK_START_DELAY + time);
-		} else {
-			int wtime = time % wps[boss->current->wpcount-1].time + 1;
-			
-			int next = *i + 1;
-			if(next >= boss->current->wpcount)
-				next = 0;
-			
-			boss->pos = wps[*i].pos + (wps[next].pos - wps[*i].pos)/(wps[*i].time - boss->time0) * (wtime - boss->time0);
-			
-			if(wtime >= wps[*i].time) {
-				boss->pos0 = wps[next].pos;
-				boss->time0 = wps[*i].time % wps[boss->current->wpcount-1].time;
-				*i = next;
-			}
-			
-			boss->current->rule(boss, time % wps[boss->current->wpcount-1].time);
-		}	
-		
-		if(time > boss->current->timeout)
+		boss->current->rule(boss, time);
+				
+		if(boss->current->type != AT_Move && boss->dmg >= boss->current->dmglimit)
+			time = boss->current->timeout + 1;
+		if(time > boss->current->timeout) {
 			boss->dmg = boss->current->dmglimit + 1;
-		if(boss->dmg >= boss->current->dmglimit) {
-			boss->pos0 = boss->pos;
-			boss->time0 = 0;
 			boss->current++;
 			if(boss->current - boss->attacks < boss->acount)
 				start_attack(boss, boss->current);
 			else
 				boss->current = NULL;
 		}
-	}	
+	}
 }
 
 void boss_death(Boss **boss) {
@@ -152,7 +126,6 @@ void free_boss(Boss *boss) {
 
 void free_attack(Attack *a) {
 	free(a->name);
-	free(a->waypoints);
 }
 
 void start_attack(Boss *b, Attack *a) {	
@@ -184,16 +157,5 @@ Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 	
 	a->starttime = global.frames;
 	
-	a->wpcount = 0;
-	a->waypoints = NULL;
-	a->wp = 0;
-
 	return a;
-}
-
-void boss_add_waypoint(Attack *attack, complex pos, int time) {
-	attack->waypoints = realloc(attack->waypoints, (sizeof(struct Waypoint))*(++attack->wpcount));
-	struct Waypoint *w = &attack->waypoints[attack->wpcount - 1];
-	w->pos = pos;
-	w->time = time;
 }

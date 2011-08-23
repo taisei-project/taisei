@@ -11,14 +11,14 @@ uniform vec2 blur_orig; // center
 uniform vec2 fix_orig;
 uniform float blur_rad;  // radius of zoom effect
 uniform float rad;
-uniform float ratio; // texture w/h
+uniform float ratio; // texture h/w
 
 void main(void) {
 	vec2 pos = vec2(gl_TexCoord[0]);
 	pos -= blur_orig;
 	
 	vec2 pos1 = pos;
-	pos1.y *= 2.0;
+	pos1.y *= ratio;
 	
 	if(length(pos1) < blur_rad)
 		pos *= length(pos1)/blur_rad;

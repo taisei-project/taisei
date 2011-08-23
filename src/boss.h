@@ -17,6 +17,7 @@ typedef void (*BossRule)(struct Boss*, int time);
 
 typedef enum AttackType {
 	AT_Normal,
+	AT_Move,
 	AT_Spellcard,
 	AT_SurvivalSpell
 } AttackType;
@@ -31,14 +32,7 @@ typedef struct Attack {
 	
 	int timeout;
 	int dmglimit;
-	
-	struct Waypoint {
-		complex pos;
-		int time;
-	}* waypoints;
-	int wpcount;
-	int wp;
-	
+		
 	BossRule rule;
 	BossRule draw_rule;
 } Attack;	
@@ -48,8 +42,6 @@ typedef struct Boss {
 	Attack *current;
 	
 	complex pos;
-	complex pos0;
-	int time0;
 	
 	char *name;
 	
@@ -71,7 +63,7 @@ void free_attack(Attack *a);
 void start_attack(Boss *b, Attack *a);
 
 Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule);
-void boss_add_waypoint(Attack *attack, complex pos, int time);
+// void boss_add_waypoint(Attack *attack, complex pos, int time);
 
 void boss_death(Boss **boss);
 

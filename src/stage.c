@@ -92,7 +92,7 @@ void stage_input() {
 }
 
 void draw_hud() {
-	draw_texture(SCREEN_W/2, SCREEN_H/2, "hud");	
+	draw_texture(SCREEN_W/2.0, SCREEN_H/2.0, "hud");	
 	
 	char buf[16];
 	int i;
@@ -121,7 +121,7 @@ void draw_hud() {
 
 void stage_draw() {
 	set_ortho();
-	
+
 	glPushMatrix();
 	glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
 		
@@ -169,21 +169,28 @@ void stage_draw() {
 }
 
 void apply_bg_shaders() {
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, resources.fsec.fbo);
+	if(global.boss && global.boss->current && global.boss->current->draw_rule) {
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, resources.fbg.fbo);
+		global.boss->current->draw_rule(global.boss, global.frames - global.boss->current->starttime);
 		
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	}
+	
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, resources.fsec.fbo);
+	
 	if(global.boss) { // Boss background shader
 		GLuint shader = get_shader("boss_zoom");
 		glUseProgram(shader);
 		
-		complex fpos = VIEWPORT_H*I + conj(global.boss->pos) + (VIEWPORT_X + VIEWPORT_Y*I)*0.5;
-		complex pos = fpos + 15*cexp(I*global.frames/5.0);
+		complex fpos = VIEWPORT_H*I + conj(global.boss->pos) + (VIEWPORT_X + VIEWPORT_Y*I);
+		complex pos = fpos + 15*cexp(I*global.frames/4.5);
 		
 		glUniform2f(glGetUniformLocation(shader, "blur_orig"),
 					creal(pos)/resources.fbg.nw, cimag(pos)/resources.fbg.nh);
 		glUniform2f(glGetUniformLocation(shader, "fix_orig"),
 					creal(fpos)/resources.fbg.nw, cimag(fpos)/resources.fbg.nh);
-		glUniform1f(glGetUniformLocation(shader, "blur_rad"), 0.2+0.05*sin(global.frames/10.0));
-		glUniform1f(glGetUniformLocation(shader, "rad"), 0.3);
+		glUniform1f(glGetUniformLocation(shader, "blur_rad"), 0.2+0.025*sin(global.frames/15.0));
+		glUniform1f(glGetUniformLocation(shader, "rad"), 0.24);
 		glUniform1f(glGetUniformLocation(shader, "ratio"), (float)resources.fbg.nh/resources.fbg.nw);
 	}
 	
@@ -206,14 +213,6 @@ void apply_bg_shaders() {
 		fade_out(fade*0.6);
 		glPopMatrix();
 	}
-		
-	if(global.boss && global.boss->current && global.boss->current->draw_rule) {
-		glPushMatrix();
-		glTranslatef(-VIEWPORT_X,0,0); // Some transformation for convenience. Don't ask why. it's because of rtt.
-		glScalef((VIEWPORT_W+VIEWPORT_X)/(float)VIEWPORT_W, (VIEWPORT_H+VIEWPORT_Y)/(float)VIEWPORT_H, 1);
-		global.boss->current->draw_rule(global.boss, global.frames - global.boss->current->starttime);
-		glPopMatrix();
-	}
 }
 
 void stage_logic() {
@@ -230,7 +229,7 @@ void stage_logic() {
 	process_lasers();
 	process_projectiles(&global.particles, False);
 	
-	if(global.boss) {
+	if(global.boss && !global.dialog) {
 		process_boss(global.boss);
 		if(global.boss->dmg > global.boss->attacks[global.boss->acount-1].dmglimit)
 			boss_death(&global.boss);
@@ -273,7 +272,8 @@ void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event)
 	start();
 	
 	while(global.game_over <= 0) {
-		event();
+		if(!global.boss && !global.dialog)
+			event();
 		stage_input();
 		stage_logic();		
 		
