@@ -156,7 +156,7 @@ void cirno_pfreeze_bg(Boss *c, int time) {
 }
 	
 Boss *create_cirno() {
-	Boss* cirno = create_boss("Cirno", "cirno", VIEWPORT_W + 30 + 30I);
+	Boss* cirno = create_boss("Cirno", "cirno", VIEWPORT_W + 150 + 30I);
 	boss_add_attack(cirno, AT_Move, "Introduction", 4, 0, cirno_intro, NULL);
 	boss_add_attack(cirno, AT_Spellcard, "Freeze Sign ~ Perfect Freeze", 22, 100, cirno_perfect_freeze, cirno_pfreeze_bg);
 	

@@ -129,6 +129,23 @@ void stage_draw() {
 		if(!tconfig.intval[NO_SHADER])
 			apply_bg_shaders();
 
+		if(global.boss) {
+			glPushMatrix();
+			glTranslatef(creal(global.boss->pos), cimag(global.boss->pos), 0);
+			
+			glColor3f(0.2,0.35,0.6);
+			draw_texture(0,0,"boss_shadow");
+			
+			glColor3f(1,1,1);			
+			glRotatef(global.frames*4.0, 0, 0, -1);
+			float f = 0.8+0.1*sin(global.frames/8.0);
+			glScalef(f,f,f);
+			draw_texture(0,0,"boss_circle");
+			
+			
+			glPopMatrix();
+		}
+		
 		player_draw(&global.plr);
 
 		draw_items();
@@ -172,6 +189,19 @@ void apply_bg_shaders() {
 	if(global.boss && global.boss->current && global.boss->current->draw_rule) {
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, resources.fbg.fbo);
 		global.boss->current->draw_rule(global.boss, global.frames - global.boss->current->starttime);
+		
+		glPushMatrix();
+			glTranslatef(creal(global.boss->pos), cimag(global.boss->pos), 0);
+			glRotatef(global.frames*7.0, 0, 0, -1);
+			
+			int t;
+			if((t = global.frames - global.boss->current->starttime) < 0) {
+				float f = 1.0 - t/(float)ATTACK_START_DELAY;
+				glScalef(f,f,f);
+			}
+			
+			draw_texture(0,0,"boss_spellcircle0");
+		glPopMatrix();
 		
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	}

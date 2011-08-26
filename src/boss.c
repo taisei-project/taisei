@@ -35,7 +35,7 @@ void spell_opening(Boss *b, int time) {
 }
 
 void draw_boss(Boss *boss) {
-	draw_animation_p(creal(boss->pos), cimag(boss->pos) + 10*sin(global.frames/25.0), boss->anirow, boss->ani);
+	draw_animation_p(creal(boss->pos), cimag(boss->pos) + 6*sin(global.frames/25.0), boss->anirow, boss->ani);
 	draw_text(AL_Left, 10, 20, boss->name, _fonts.standard);
 	
 	if(!boss->current)
