@@ -50,7 +50,8 @@ void draw_boss(Boss *boss) {
 		draw_text(AL_Center, VIEWPORT_W - 20, 10, buf, _fonts.standard);
 		
 		glPushMatrix();
-		glTranslatef(boss->attacks[boss->acount-1].dmglimit+10, 4,0);
+		glTranslatef(VIEWPORT_W-10, 4, 0);
+		glScalef((VIEWPORT_W-20)/(float)boss->attacks[boss->acount-1].dmglimit,1,1);
 		
 		int i;
 		for(i = boss->acount-1; i >= 0; i--) {
@@ -62,7 +63,7 @@ void draw_boss(Boss *boss) {
 				glColor3f(1,1,1);
 				break;
 			case AT_Spellcard:
-				glColor3f(1,0.8,0.8);
+				glColor3f(1,0.65,0.65);
 				break;
 			case AT_SurvivalSpell:
 				glColor3f(1,0.5,0.5);
@@ -133,6 +134,11 @@ void start_attack(Boss *b, Attack *a) {
 	a->rule(b, EVENT_BIRTH);
 	if(a->type == AT_Spellcard || a->type == AT_SurvivalSpell)
 		play_sound("charge_generic");
+	
+	Projectile *p;
+	for(p = global.projs; p; p = p->next)
+		if(p->type == FairyProj)
+			p->type = DeadProj;
 }
 
 Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule) {

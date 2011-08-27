@@ -14,8 +14,10 @@ Dialog *create_dialog(char *left, char *right) {
 	Dialog *d = malloc(sizeof(Dialog));
 	memset(d, 0, sizeof(Dialog));
 	
-	d->images[Left] = get_tex(left);
-	d->images[Right] = get_tex(right);
+	if(left)
+		d->images[Left] = get_tex(left);
+	if(right)
+		d->images[Right] = get_tex(right);
 	
 	d->page_time = global.frames;
 	d->birthtime = global.frames;

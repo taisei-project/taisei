@@ -172,8 +172,8 @@ int linear(Projectile *p, int t) { // sure is physics in here; a[0]: velocity
 int accelerated(Projectile *p, int t) {
 	if(t < 0)
 		return 1;
-	p->angle = carg(p->args[0]);
-	p->pos = p->pos0 + p->args[0]*t + p->args[1]*t*t;
+	p->angle = carg(p->args[0] + p->args[1]*t);
+	p->pos = p->pos0 + p->args[0]*t + p->args[1]*t*t/2.0;
 	
 	return 1;
 }
@@ -181,7 +181,7 @@ int accelerated(Projectile *p, int t) {
 int asymptotic(Projectile *p, int t) { // v = a[0]*(a[1] + 1); a[1] -> 0
 	if(t < 0)
 		return 1;
-	p->angle = carg(p->args[0] + p->args[1]);
+	p->angle = carg(p->args[0]);
 	
 	p->args[1] *= 0.8;
 	p->pos += p->args[0]*(p->args[1] + 1);

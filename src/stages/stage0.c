@@ -10,13 +10,15 @@
 #include "stage.h"
 #include "global.h"
 
-Dialog *test_dialog() {
-	Dialog *d = create_dialog("dialog/marisa", "dialog/youmu");
+Dialog *stage0_dialog() {
+	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
 		
-	dadd_msg(d, Left, "Hello");
-	dadd_msg(d, Right, "Hello you");
-	dadd_msg(d, Right, "Uhm ... who are you?\nNew line.\nAnother longer line.");
-	dadd_msg(d, Left, "idk");
+	dadd_msg(d, Right, "Hey! Who is there?");
+	dadd_msg(d, Left, "Just someone?");
+	dadd_msg(d, Right, "How dare you pass the lake of the fairies!\nIt's a dangerous area for weak humans.");
+	dadd_msg(d, Left, "I'm just walking by. Any problem with that?");
+	dadd_msg(d, Right, "Of course! It's not right!");
+	dadd_msg(d, Right, "I'll just freeze you!");
 	
 	return d;
 }
@@ -78,13 +80,19 @@ void stage0_draw() {
 
 
 void cirno_intro(Boss *c, int time) {
-	TIMER(&time);
-	
-	GO_TO(c, VIEWPORT_W/2.0 + 100I, 0.03);
 
-	AT(220)
-		global.dialog = test_dialog();
+	GO_TO(c, VIEWPORT_W/2.0 + 100I, 0.035);
 }
+
+void cirno_icy(Boss *c, int time) {
+	int t = time % 280;
+	TIMER(&t);
+	
+	FROM_TO(0, 200, 3) {
+		create_projectile2c("crystal", VIEWPORT_W/2.0 + 10*_i*(0.5-frand()) + cimag(c->pos)*I, rgb(0.2,0.5,0.4+0.5*frand()), accelerated, 1.7*cexp(I*_i/10.0)*(1-2*(_i&1)), 0.0001I*_i + (0.0025 - 0.005*frand()));
+	}
+}
+	
 
 int cirno_pfreeze_frogs(Projectile *p, int t) {
 	if(t == EVENT_DEATH)
@@ -132,14 +140,14 @@ void cirno_perfect_freeze(Boss *c, int time) {
 		create_projectile2c("ball", c->pos, rgb(r, g, b), cirno_pfreeze_frogs, 4*cexp(I*rand()), add_ref(global.boss));
 	}
 	
-	GO_AT(c, 110, 150, 2 + 1I);
+	GO_AT(c, 160, 190, 2 + 1I);
 
 	FROM_TO(160, 220, 6) {
-		create_projectile2c("rice", c->pos + 60, rgb(0.3, 0.4, 0.9), asymptotic, 4*cexp(I*(carg(global.plr.pos - c->pos) + frand() - 0.5)), 2.5);
-		create_projectile2c("rice", c->pos - 60, rgb(0.3, 0.4, 0.9), asymptotic, 4*cexp(I*(carg(global.plr.pos - c->pos) + frand() - 0.5)), 2.5);
+		create_projectile2c("rice", c->pos + 60, rgb(0.3, 0.4, 0.9), asymptotic, 3*cexp(I*(carg(global.plr.pos - c->pos) + frand() - 0.5)), 2.5);
+		create_projectile2c("rice", c->pos - 60, rgb(0.3, 0.4, 0.9), asymptotic, 3*cexp(I*(carg(global.plr.pos - c->pos) + frand() - 0.5)), 2.5);
 	}
 	
-	GO_AT(c, 160, 220, -3)
+	GO_AT(c, 190, 220, -2)
 	
 	FROM_TO(280, 320, 1)
 		GO_TO(c, VIEWPORT_W/2.0 + 100I, 0.04);
@@ -155,10 +163,133 @@ void cirno_pfreeze_bg(Boss *c, int time) {
 	glColor4f(1,1,1,1);
 }
 	
-Boss *create_cirno() {
+Boss *create_cirno_mid() {
 	Boss* cirno = create_boss("Cirno", "cirno", VIEWPORT_W + 150 + 30I);
-	boss_add_attack(cirno, AT_Move, "Introduction", 4, 0, cirno_intro, NULL);
-	boss_add_attack(cirno, AT_Spellcard, "Freeze Sign ~ Perfect Freeze", 22, 100, cirno_perfect_freeze, cirno_pfreeze_bg);
+	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro, NULL);
+	boss_add_attack(cirno, AT_Normal, "Icy Storm", 20, 240, cirno_icy, NULL);
+	boss_add_attack(cirno, AT_Spellcard, "Freeze Sign ~ Perfect Freeze", 32, 350, cirno_perfect_freeze, cirno_pfreeze_bg);
+	
+	start_attack(cirno, cirno->attacks);
+	return cirno;
+}
+
+void cirno_intro_boss(Boss *c, int time) {
+	TIMER(&time);
+	GO_TO(c, VIEWPORT_W/2.0 + 100I, 0.035);
+	
+	AT(100)
+		global.dialog = stage0_dialog();
+}
+
+void cirno_iceplosion0(Boss *c, int time) {
+	int t = time % 350;
+	TIMER(&t);
+	
+	FROM_TO(20,30,2) {
+		int i;
+		for(i = 0; i < 8; i++) {
+			create_projectile2c("plainball", c->pos, rgb(0,0,0.5), asymptotic, (3+_i/3.0)*cexp(I*(2*M_PI/8.0*i - 0.3)), _i*0.7);
+		}
+	}
+	
+	FROM_TO(40,100,1) {
+		create_projectile2c("crystal", c->pos, rgb(0.3,0.3,0.8), accelerated, 2*cexp(2I*M_PI*frand()) + 2I, 0.002*cexp(I*(M_PI/10.0*(_i%20))));
+	}
+	
+	FROM_TO(150, 300, 30) {
+		float dif = M_PI*2*frand();
+		int i;
+		for(i = 0; i < 20; i++) {			
+			create_projectile2c("plainball", c->pos, rgb(0.04*_i,0.04*_i,0.4+0.04*_i), asymptotic, (3+_i/3.0)*cexp(I*(2*M_PI/8.0*i + dif)), 2.5);
+		}
+	}
+}
+
+void cirno_crystal_rain(Boss *c, int time) {
+	int t = time % 500;
+	TIMER(&t);
+	
+	if(frand() > 0.8)
+		create_projectile2c("crystal", VIEWPORT_W*frand(), rgb(0.2,0.2,0.4), accelerated, 1I, 0.01I + 0.005 - 0.01*frand());
+	
+	FROM_TO(100, 400, 100)
+		create_projectile2c("bigball", c->pos, rgb(0.2,0.2,0.9), asymptotic, 2*cexp(I*carg(global.plr.pos-c->pos)), 2.3);
+	
+	GO_AT(c, 20, 70, 1+0.6I);
+	GO_AT(c, 120, 170, -1+0.2I);
+	GO_AT(c, 230, 300, -1+0.6I);
+	
+	FROM_TO(400, 500, 1)
+		GO_TO(c, VIEWPORT_W/2.0 + 100I, 0.01);
+}
+
+void cirno_iceplosion1(Boss *c, int time) {
+	int t = time % 360;
+	TIMER(&t);
+	
+	if(time < 0)
+		GO_TO(c, VIEWPORT_W/2.0 + 100I, 0.02);
+	
+	FROM_TO(20,30,2) {
+		int i;
+		for(i = 0; i < 16; i++) {
+			create_projectile2c("plainball", c->pos, rgb(0,0,0.5), asymptotic, (3+_i/3.0)*cexp(I*(2*M_PI/8.0*i + 0.1*(1 - 2*frand()))), _i*0.7);
+		}		
+	}
+	
+	FROM_TO(40,100,2) {
+		create_projectile2c("crystal", c->pos + 100, rgb(0.3,0.3,0.8), accelerated, 1.5*cexp(2I*M_PI*frand()) - 0.4 + 2I, 0.002*cexp(I*(M_PI/10.0*(_i%20))));
+		create_projectile2c("crystal", c->pos - 100, rgb(0.3,0.3,0.8), accelerated, 1.5*cexp(2I*M_PI*frand()) + 0.4 + 2I, 0.002*cexp(I*(M_PI/10.0*(_i%20))));
+	}
+	
+	FROM_TO(150, 300, 30) {
+		float dif = M_PI*2*frand();
+		int i;
+		for(i = 0; i < 20; i++) {			
+			create_projectile2c("plainball", c->pos, rgb(0.04*_i,0.04*_i,0.4+0.04*_i), asymptotic, (3+_i/3.0)*cexp(I*(2*M_PI/8.0*i + dif)), 2.5);
+		}
+	}
+}
+
+int cirno_icicles(Projectile *p, int t) {
+	if(t < 0)
+		return 1;
+	
+	int turn = 60;
+	
+	if(t < turn) {
+		p->pos += p->args[0]*pow(0.9,t);
+	} else if(t == turn) {
+		p->args[0] = 2.5*cexp(I*(carg(p->args[0])-M_PI/2.0+M_PI*(creal(p->args[0]) > 0)));
+	} else if(t > turn) {
+		p->pos += p->args[0];
+	}
+	
+	p->angle = carg(p->args[0]);
+	
+	return 1;
+}
+
+void cirno_icicle_fall(Boss *c, int time) {
+	int t = time % 400;
+	TIMER(&t);
+	
+	FROM_TO(20,200,30) {
+		int i;
+		for(i = 2; i < 5; i++) {
+			create_projectile1c("crystal", c->pos, rgb(0.3,0.3,0.9), cirno_icicles, 6*i*cexp(I*(-0.1+0.1*_i)));
+			create_projectile1c("crystal", c->pos, rgb(0.3,0.3,0.9), cirno_icicles, 6*i*cexp(I*(M_PI+0.1-0.1*_i)));
+		}
+	}
+}
+
+Boss *create_cirno() {
+	Boss* cirno = create_boss("Cirno", "cirno", -150 + 100I);
+	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro_boss, NULL);
+	boss_add_attack(cirno, AT_Normal, "Iceplosion 0", 20, 240, cirno_iceplosion0, NULL);
+	boss_add_attack(cirno, AT_Spellcard, "Freeze Sign ~ Crystal Rain", 28, 350, cirno_crystal_rain, cirno_pfreeze_bg);
+	boss_add_attack(cirno, AT_Normal, "Iceplosion 1", 20, 240, cirno_iceplosion1, NULL);
+	boss_add_attack(cirno, AT_Spellcard, "Doom Sign ~ Icicle Fall", 35, 350, cirno_icicle_fall, cirno_pfreeze_bg);
 	
 	start_attack(cirno, cirno->attacks);
 	return cirno;
@@ -288,12 +419,74 @@ int stage0_multiburst(Enemy *e, int t) {
 	return 1;
 }
 
+int stage0_instantcircle(Enemy *e, int t) {
+	TIMER(&t);
+	AT(EVENT_DEATH) {
+		spawn_items(e->pos, 2,4,0,0);
+		return 1;
+	}
+	
+	FROM_TO(0, 110, 1) {
+		e->pos += e->args[0];
+	}
+	
+	int i;
+	
+	AT(150) {
+		for(i = 0; i < 20; i++)
+			create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, 1.5*cexp(I*M_PI/10.0*i), 2.0);
+	}
+	
+	AT(170) {
+		for(i = 0; i < 20; i++)
+			create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, 3*cexp(I*M_PI/10.0*i), 3.0);
+	}
+	
+	if(t > 200)
+		e->pos += e->args[1];
+	
+	return 1;
+}
+
+int  stage0_tritoss(Enemy *e, int t) {
+	TIMER(&t);
+	AT(EVENT_DEATH) {
+		spawn_items(e->pos, 5,5,0,0);
+		return 1;
+	}
+	
+	FROM_TO(0, 100, 1) {
+		e->pos += e->args[0];
+	}
+	
+	FROM_TO(120, 800,5) {
+		float a = M_PI/30.0*((_i/7)%30)+0.1*(1-2*frand());
+		
+		create_projectile2c("thickrice", e->pos, rgb(0.2, 0.4, 0.8), asymptotic, 2*cexp(I*a), 3);
+		create_projectile2c("thickrice", e->pos, rgb(0.2, 0.4, 0.8), asymptotic, 2*cexp(I*(a+2*M_PI/3.0)), 3);
+		create_projectile2c("thickrice", e->pos, rgb(0.2, 0.4, 0.8), asymptotic, 2*cexp(I*(a+4*M_PI/3.0)), 3);
+	}
+	
+	FROM_TO(480, 800, 300) {
+		int i;
+		for(i = 0; i < 20; i++) {
+			create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, 1.5*cexp(I*M_PI/10.0*i), 2.0);
+			create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, 3*cexp(I*M_PI/10.0*i), 3.0);
+		}
+	}
+	
+	if(t > 820)
+		e->pos += e->args[1];
+	
+	return 1;
+}
+
 void stage0_events() {
 	if(global.dialog)
 		return;	
 		
 	TIMER(&global.timer);
-	/*
+		
 	// opening. projectile bursts
 	FROM_TO(100, 160, 25) {
 		create_enemy1c(VIEWPORT_W/2 + 70, 5, Fairy, stage0_burst, 1 + 0.6I);
@@ -305,8 +498,7 @@ void stage0_events() {
 		create_enemy1c(70 + _i*40, 6, Fairy, stage0_burst, -1 + 0.6I);
 		create_enemy1c(VIEWPORT_W - (70 + _i*40), 6, Fairy, stage0_burst, 1 + 0.6I);
 	}
-	
-	
+		
 	// big fairies, circle + projectile toss
 	FROM_TO(400, 460, 50)
 		create_enemy2c(VIEWPORT_W*_i + VIEWPORT_H/3*I, 20, Fairy, stage0_circletoss, 2-4*_i-0.3I, 1-2*_i);	
@@ -336,11 +528,36 @@ void stage0_events() {
 		for(i = 0; i < 5; i++)
 			create_enemy1c(VIEWPORT_W/4 + VIEWPORT_H/10*i, 5, Fairy, stage0_multiburst, i - 2.5);
 	}
-	*/
-	AT(200) {
+	
+	AT(2700)
+		global.boss = create_cirno_mid();
+	
+	// some chaotic swirls + instant circle combo
+	FROM_TO(2760, 3800, 20)
+		create_enemy2c(VIEWPORT_W/2 - 200*(1-2*frand()), 3, Swirl, stage0_drop, 1I, 0.001I + 0.02+0.06*(1-2*frand()));
+	
+	FROM_TO(2900, 3750, 190)
+		create_enemy2c(VIEWPORT_W*frand(), 25, Fairy, stage0_instantcircle, 2I, 3.0 - 6*frand() - 1I);
+	
+		
+	// multiburst + normal circletoss, later tri-toss
+	FROM_TO(3900, 4800, 200)
+		create_enemy1c(VIEWPORT_W*frand(), 5, Fairy, stage0_multiburst, 2.5*frand());
+		
+	FROM_TO(4000, 4100, 20)
+		create_enemy2c(VIEWPORT_W*_i + VIEWPORT_H/3*I, 20, Fairy, stage0_circletoss, 2-4*_i-0.3I, 1-2*_i);	
+		
+	AT(4200)
+		create_enemy2c(VIEWPORT_W/2.0, 30, Fairy, stage0_tritoss, 2I, -2.6I);
+		
+	AT(5000)
 		global.boss = create_cirno();
-// 		global.dialog = test_dialog();
+	
+	AT(5200) {
+		global.game_over = 1;
+		printf("You won! for now.\n");
 	}
+	
 }
 
 void stage0_start() {

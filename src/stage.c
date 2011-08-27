@@ -117,6 +117,9 @@ void draw_hud() {
 	
 	sprintf(buf, "%i fps", global.fps.show_fps);
 	draw_text(AL_Right, SCREEN_W, SCREEN_H-20, buf, _fonts.standard);	
+	
+	if(global.boss)
+		draw_texture(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
 }
 
 void stage_draw() {

@@ -32,7 +32,7 @@ void draw_items() {
 	for(p = global.items; p; p = p->next) {
 		switch(p->type){
 			case Power:
-				if(global.plr.power <= PLR_MAXPOWER) {
+				if(global.plr.power < PLR_MAXPOWER) {
 					tex = get_tex("items/power");
 					break;
 				}
@@ -90,7 +90,7 @@ void process_items() {
 		if(v == 1) {
 			switch(item->type) {
 			case Power:
-				plr_set_power(&global.plr, global.plr.power + 0.05);
+				plr_set_power(&global.plr, global.plr.power + 0.01);
 				break;
 			case Point:
 				global.points += 100;
