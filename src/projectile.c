@@ -326,3 +326,32 @@ int timeout_linear(Projectile *p, int t) {
 	
 	return 1;
 }
+
+void Petal(Projectile *p, int t) {
+	float x = creal(p->args[2]);
+	float y = cimag(p->args[2]);
+	float z = creal(p->args[3]);
+	
+	glDisable(GL_CULL_FACE);
+	
+	glPushMatrix();
+	glTranslatef(creal(p->pos), cimag(p->pos),0);
+	glRotatef(t*4.0 + cimag(p->args[3]), x, y, z);
+		
+	if(p->clr)
+		glColor4fv((float *)p->clr);
+	
+	draw_texture_p(0,0, p->tex);
+	if(p->clr)
+		glColor4f(1,1,1,1);
+	glPopMatrix();
+	
+	glEnable(GL_CULL_FACE);
+}
+
+void petal_explosion(int n, complex pos) {
+	int i;
+	for(i = 0; i < n; i++) {
+		create_particle4c("petal", pos, rgb(1,1,1), Petal, linear, (3+13*frand())*cexp(I*M_PI*2*frand()), 0, frand() + frand()*I, frand() + 360I*frand());
+	}
+}

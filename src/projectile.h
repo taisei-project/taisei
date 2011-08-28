@@ -95,4 +95,7 @@ int timeout(Projectile *p, int t);
 void DeathShrink(Projectile *p, int t);
 int timeout_linear(Projectile *p, int t);
 
+void Petal(Projectile *p, int t);
+void petal_explosion(int n, complex pos);
+
 #endif

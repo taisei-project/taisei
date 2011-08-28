@@ -176,7 +176,7 @@ Boss *create_cirno_mid() {
 void cirno_intro_boss(Boss *c, int time) {
 	TIMER(&time);
 	GO_TO(c, VIEWPORT_W/2.0 + 100I, 0.035);
-	
+		
 	AT(100)
 		global.dialog = stage0_dialog();
 }
@@ -274,6 +274,8 @@ void cirno_icicle_fall(Boss *c, int time) {
 	int t = time % 400;
 	TIMER(&t);
 	
+	GO_TO(c, VIEWPORT_W/2.0+120I, 0.01);
+		
 	FROM_TO(20,200,30) {
 		int i;
 		for(i = 2; i < 5; i++) {
@@ -287,7 +289,7 @@ Boss *create_cirno() {
 	Boss* cirno = create_boss("Cirno", "cirno", -150 + 100I);
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro_boss, NULL);
 	boss_add_attack(cirno, AT_Normal, "Iceplosion 0", 20, 240, cirno_iceplosion0, NULL);
-	boss_add_attack(cirno, AT_Spellcard, "Freeze Sign ~ Crystal Rain", 28, 350, cirno_crystal_rain, cirno_pfreeze_bg);
+	boss_add_attack(cirno, AT_Spellcard, "Freeze Sign ~ Crystal Rain", 28, 300, cirno_crystal_rain, cirno_pfreeze_bg);
 	boss_add_attack(cirno, AT_Normal, "Iceplosion 1", 20, 240, cirno_iceplosion1, NULL);
 	boss_add_attack(cirno, AT_Spellcard, "Doom Sign ~ Icicle Fall", 35, 350, cirno_icicle_fall, cirno_pfreeze_bg);
 	
@@ -484,9 +486,12 @@ int  stage0_tritoss(Enemy *e, int t) {
 void stage0_events() {
 	if(global.dialog)
 		return;	
-		
+	
 	TIMER(&global.timer);
-		
+	
+	AT(0)
+		global.timer = 5000;
+	
 	// opening. projectile bursts
 	FROM_TO(100, 160, 25) {
 		create_enemy1c(VIEWPORT_W/2 + 70, 5, Fairy, stage0_burst, 1 + 0.6I);

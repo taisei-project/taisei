@@ -24,11 +24,11 @@ Boss *create_boss(char *name, char *ani, complex pos) {
 }
 
 void spell_opening(Boss *b, int time) {
-	int y = VIEWPORT_H - 15;
+	float y = VIEWPORT_H - 15;
 	if(time > 40 && time <= 100)
-		y -= (VIEWPORT_H-35)/60*(time-40);
+		y -= (VIEWPORT_H-50)/60.0*(time-40);
 	if(time > 100) {
-		y = 20;
+		y = 35;
 	}
 	
 	draw_text(AL_Right, VIEWPORT_W, y, b->current->name, _fonts.standard);
@@ -49,12 +49,36 @@ void draw_boss(Boss *boss) {
 		snprintf(buf, sizeof(buf),  "%.2f", (boss->current->timeout - global.frames + boss->current->starttime)/(float)FPS);
 		draw_text(AL_Center, VIEWPORT_W - 20, 10, buf, _fonts.standard);
 		
-		glPushMatrix();
-		glTranslatef(VIEWPORT_W-10, 4, 0);
-		glScalef((VIEWPORT_W-20)/(float)boss->attacks[boss->acount-1].dmglimit,1,1);
+		int nextspell, lastspell;
+		for(nextspell = 0; nextspell < boss->acount; nextspell++) {
+			if(boss->dmg < boss->attacks[nextspell].dmglimit && boss->attacks[nextspell].type == AT_Spellcard)
+				break;
+		}
 		
+		for(lastspell = nextspell; lastspell > 0; lastspell--) {
+			if(boss->dmg > boss->attacks[lastspell].dmglimit && boss->attacks[lastspell].type == AT_Spellcard)
+				break;
+		}
+		
+		int dmgoffset = boss->attacks[lastspell].dmglimit;
+		int dmgspan = boss->attacks[nextspell].dmglimit - boss->attacks[lastspell].dmglimit;
+				
+		glPushMatrix();
+		glTranslatef(VIEWPORT_W-50, 4, 0);
+		glScalef((VIEWPORT_W-60)/(float)dmgspan,1,1);
+		glTranslatef(dmgoffset,0,0);
 		int i;
-		for(i = boss->acount-1; i >= 0; i--) {
+		
+		glColor4f(0,0,0,0.65);
+		
+		glBegin(GL_QUADS);
+			glVertex3f(-boss->attacks[nextspell].dmglimit, 0, 0);
+			glVertex3f(-boss->attacks[nextspell].dmglimit, 4, 0);
+			glVertex3f(-boss->dmg+2, 4, 0);
+			glVertex3f(-boss->dmg+2, 0, 0);
+		glEnd();
+		
+		for(i = nextspell; i >= 0; i--) {
 			if(boss->dmg > boss->attacks[i].dmglimit)
 				continue;
 			
@@ -78,8 +102,17 @@ void draw_boss(Boss *boss) {
 			glVertex3f(-boss->dmg, 0, 0);
 			glEnd();
 		}
+				
 		glPopMatrix();
+		
+		glColor4f(1,1,1,0.7);
+		
+		int x = 0;
+		for(i = boss->acount-1; i > nextspell; i--)
+			if(boss->attacks[i].type == AT_Spellcard)
+				draw_texture(x += 22, 40, "star");
 	}
+		
 	glColor3f(1,1,1);	
 }
 
@@ -103,6 +136,7 @@ void process_boss(Boss *boss) {
 }
 
 void boss_death(Boss **boss) {
+	petal_explosion(35, (*boss)->pos);
 	free_boss(*boss);
 	*boss = NULL;
 	
