@@ -31,7 +31,7 @@ int youmu_opposite_myon(Enemy *e, int t) {
 			e->pos -= 5*cexp(I*carg(e->pos));
 	}
 	
-	if(plr->fire && !(global.frames % 4))
+	if(plr->fire && !(global.frames % 6))
 		create_projectile1c("youmu", e->pos + plr->pos, NULL, linear, -21*cexp(I*e->args[2]))->type = PlrProj; 
 	
 	e->pos0 = e->pos + plr->pos;
@@ -41,7 +41,6 @@ int youmu_opposite_myon(Enemy *e, int t) {
 
 int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: target
 	if(t == EVENT_DEATH) {
-// 		free_ref(p->args[1]);
 		return 1;
 	}
 		
@@ -70,7 +69,7 @@ int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: target
 
 void youmu_shot(Player *plr) {
 	if(plr->fire) {
-		if(!(global.frames % 4)) {
+		if(!(global.frames % 6)) {
 			create_projectile1c("youmu", plr->pos + 10 - I*20, NULL, linear, -20I)->type = PlrProj;
 			create_projectile1c("youmu", plr->pos - 10 - I*20, NULL, linear, -20I)->type = PlrProj;		
 		}
@@ -106,7 +105,54 @@ void youmu_shot(Player *plr) {
 		create_enemy_p(&plr->slaves, plr->pos, ENEMY_IMMUNE, YoumuOppositeMyon, youmu_opposite_myon, 0, 0, 0, 0);
 }
 
+
+int petal_gravity(Projectile *p, int t) {
+	if(t < 0)
+		return 1;
+	
+	complex d = VIEWPORT_W/2.0 + VIEWPORT_H/2.0*I - p->pos;
+	
+	if(t < 230)
+		p->args[0] += 5000/pow(cabs(d),2)*cexp(I*carg(d));
+	p->pos += p->args[0];
+	
+	return 1;
+}
+
+void Slice(Projectile *p, int t) {
+	if(t < creal(p->args[0])/20.0)
+		p->args[1] += 1;
+
+	if(t > creal(p->args[0])/20.0*19)
+		p->args[1] -= 1;
+	
+	float f = p->args[1]/p->args[0]*20.0;
+	
+	glPushMatrix();
+	glTranslatef(creal(p->pos), cimag(p->pos),0);
+	glScalef(f,1,1);
+	draw_texture(0,0,"part/youmu_slice");
+	
+	glPopMatrix();
+}
+
 void youmu_bomb(Player *plr) {
+	int i;
+	switch(plr->shot) {
+		case YoumuOpposite:
+			for(i = 0; i < 40; i++) {
+				complex pos = VIEWPORT_W*frand() + VIEWPORT_H*frand()*I;
+				complex d = VIEWPORT_W/2.0+VIEWPORT_H/2.0*I - pos;
+				create_particle4c("petal", pos, rgba(1,1,1,0.5) , Petal, petal_gravity, 5*I*cexp(I*carg(d)), 0, frand() + frand()*I, frand() + 360I*frand());
+			}
+			break;
+		case YoumuHoming:
+			petal_explosion(40, VIEWPORT_W/2.0 + VIEWPORT_H/2.0*I);
+			plr->pos = VIEWPORT_W/2.0 + (VIEWPORT_H - 80)*I;
+			for(i = 0; i < 5; i++)			
+				create_particle1c("youmu_slice", VIEWPORT_W/2.0 - 160 + 80*i + VIEWPORT_H/2.0*I, NULL, Slice, timeout, 200+i*10);
+			break;
+	}
 }
 
 void youmu_power(Player *plr, float npow) {

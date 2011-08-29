@@ -100,8 +100,9 @@ int collision_projectile(Projectile *p) {
 			e = e->next;
 		}
 		
-		if(global.boss != NULL && cabs(global.boss->pos - p->pos) < 15) {
-			global.boss->dmg+= p->type - PlrProj + 1;
+		if(global.boss && cabs(global.boss->pos - p->pos) < 15
+		&& global.boss->current->type != AT_Move && global.boss->current->type != AT_SurvivalSpell && global.boss->current->starttime < global.frames) {
+			global.boss->dmg += p->type - PlrProj + 1;
 			return 2;
 		}
 	}
