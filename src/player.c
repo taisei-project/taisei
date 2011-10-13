@@ -130,7 +130,7 @@ void player_logic(Player* plr) {
 	if(plr->focus < 0 || (plr->focus > 0 && plr->focus < 30))
 		plr->focus++;
 	
-	if(global.frames - plr->recovery >= 0) {		
+// 	if(global.frames - plr->recovery >= 0) {		
 		switch(plr->cha) {
 		case Youmu:
 			youmu_shot(plr);
@@ -139,7 +139,7 @@ void player_logic(Player* plr) {
 			marisa_shot(plr);
 			break;
 		}
-	}
+// 	}
 	
 	if(global.frames == plr->deathtime)
 		plr_realdeath(plr);
