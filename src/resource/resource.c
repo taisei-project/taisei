@@ -85,6 +85,7 @@ void load_resources() {
 		
 		resources.state |= RS_ShaderLoaded;
 	}
+	
 }
 
 void free_resources() {

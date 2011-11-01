@@ -24,6 +24,8 @@ void init_player(Player* plr) {
 	plr->deathtime = -1;
 	
 	plr->continues = 0;
+	
+	plr_set_power(plr, 3.99);
 }
 
 void plr_set_char(Player* plr, Character cha) {
@@ -143,6 +145,12 @@ void player_logic(Player* plr) {
 	
 	if(global.frames == plr->deathtime)
 		plr_realdeath(plr);
+	
+	if(global.frames - plr->recovery < 0) {
+		Enemy *en;
+		for(en = global.enemies; en; en = en->next)
+			en->hp--;
+	}
 }
 
 void plr_bomb(Player *plr) {
@@ -171,7 +179,6 @@ void plr_bomb(Player *plr) {
 		}			
 		
 		plr->recovery = global.frames + BOMB_RECOVERY;
-		
 	}
 }
 

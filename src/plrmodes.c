@@ -277,20 +277,23 @@ int master_spark(Enemy *e, int t) {
 	if(global.boss)
 		global.boss->dmg++;
 	
-	Enemy *en;
-	for(en = global.enemies; en; en = en->next)
-		en->hp--;
-	
 	return 1;
 }
 
 // Star Sign
 
 void MariStar(Projectile *p, int t) {
-	glColor4f(1,1,0.7,0.8);
-	draw_texture_p(creal(p->pos), cimag(p->pos), p->tex);
-	create_particle1c("flare", p->pos, NULL, Shrink, timeout, 10);
-	glColor4f(1,1,1,1);
+	glPushMatrix();
+	glTranslatef(creal(p->pos), cimag(p->pos), 0);
+	glRotatef(t*10, 0, 0, 1);
+	draw_texture_p(0, 0, p->tex);
+	glPopMatrix();
+}
+
+void MariStarBomb(Projectile *p, int t) {
+	MariStar(p, t);
+	
+	create_particle1c("maristar_orbit", p->pos, NULL, GrowFade, timeout, 40);
 }
 
 int marisa_star_slave(Enemy *e, int t) {
@@ -304,6 +307,25 @@ int marisa_star_slave(Enemy *e, int t) {
 	return 1;
 }
 
+int marisa_star_orbit(Projectile *p, int t) { // a[0]: x' a[1]: x''
+	if(t == 0)
+		p->pos0 = global.plr.pos;
+	if(t < 0)
+		return 1;
+	
+	if(t > 400)
+		return ACTION_DESTROY;
+	
+	float r = cabs(p->pos0 - p->pos);
+	
+	p->args[1] = (1e5-t*t)*cexp(I*carg(p->pos0 - p->pos))/(r*r);
+	p->args[0] += p->args[1]*0.2;
+	p->pos += p->args[0];
+	
+	return 1;
+}
+	
+
 // Generic Marisa
 
 void marisa_shot(Player *plr) {
@@ -316,12 +338,20 @@ void marisa_shot(Player *plr) {
 }
 
 void marisa_bomb(Player *plr) {
+	int i;
+	float r, phi;
 	switch(plr->shot) {
 	case MarisaLaser:
 		play_sound("masterspark");
 		create_enemy_p(&plr->slaves, 40I, ENEMY_BOMB, MasterSpark, master_spark, 280,0,0,0);
 		break;
 	default:
+		for(i = 0; i < 20; i++) {
+			r = frand()*50 + 100;
+			phi = frand()*2*M_PI;		
+			create_particle1c("maristar_orbit", plr->pos + r*cexp(I*phi), NULL, MariStarBomb, marisa_star_orbit, I*r*cexp(I*(phi+frand()*0.5))/10);
+		}
+		
 		break;
 	}
 }
@@ -359,18 +389,18 @@ void marisa_power(Player *plr, float npow) {
 		break;
 	case MarisaStar:
 		if((int)npow == 1)
-			create_enemy_p(&plr->slaves, 40I, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -30I, 3I, -0.1I,0);
+			create_enemy_p(&plr->slaves, 40I, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -30I, -2I, -0.1I,0);
 		
 		if(npow >= 2) {
-			create_enemy_p(&plr->slaves, 30I+15, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -30I+10, 3I, -0.2I,0);
-			create_enemy_p(&plr->slaves, 30I-15, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -30I-10, 3I, -0.2I,0);
+			create_enemy_p(&plr->slaves, 30I+15, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -30I+10, -2I, -0.1I,0);
+			create_enemy_p(&plr->slaves, 30I-15, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -30I-10, -2I, -0.1I,0);
 		}
 		
 		if((int)npow == 3)
-			create_enemy_p(&plr->slaves, -30I, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -30I, 3I, -0.1I,0);
+			create_enemy_p(&plr->slaves, -30I, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -30I, -2I, -0.1I,0);
 		if(npow >= 4) {
-			create_enemy_p(&plr->slaves, 30, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, 25, 2+3I, -0.03-0.1I,0);
-			create_enemy_p(&plr->slaves, -30, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -25, -2+3I, 0.03-0.1I,0);
+			create_enemy_p(&plr->slaves, 30, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, 25, -1-2I, -0.1I,0);
+			create_enemy_p(&plr->slaves, -30, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -25, 1-2I, -0.1I,0);
 		}
 		break;
 	}

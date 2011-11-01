@@ -147,9 +147,14 @@ void process_projectiles(Projectile **projs, char collision) {
 		if(col == 1 && global.frames - abs(global.plr.recovery) >= 0)
 				plr_death(&global.plr);
 		
+		int e = 0;
+		if(proj->type == Particle) {
+			e = 300;
+		}
+		
 		if(action == ACTION_DESTROY || col
-		|| creal(proj->pos) + proj->tex->w/2 < 0 || creal(proj->pos) - proj->tex->w/2 > VIEWPORT_W
-		|| cimag(proj->pos) + proj->tex->h/2 < 0 || cimag(proj->pos) - proj->tex->h/2 > VIEWPORT_H) {
+		|| creal(proj->pos) + proj->tex->w/2 + e < 0 || creal(proj->pos) - proj->tex->w/2 - e > VIEWPORT_W
+		|| cimag(proj->pos) + proj->tex->h/2 + e < 0 || cimag(proj->pos) - proj->tex->h/2 - e > VIEWPORT_H) {
 			del = proj;
 			proj = proj->next;
 			delete_projectile(projs, del);
