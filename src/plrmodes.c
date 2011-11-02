@@ -8,6 +8,7 @@
 #include "plrmodes.h"
 #include "player.h"
 #include "global.h"
+#include "stage.h"
 
 /* Youmu */
 
@@ -123,17 +124,63 @@ void Slice(Projectile *p, int t) {
 	if(t < creal(p->args[0])/20.0)
 		p->args[1] += 1;
 
-	if(t > creal(p->args[0])/20.0*19)
-		p->args[1] -= 1;
+	if(t > creal(p->args[0])/20.0*19) {
+		p->args[1] += 3;
+		p->args[2] += 1;
+	}
 	
 	float f = p->args[1]/p->args[0]*20.0;
 	
+	glColor4f(1,1,1,1.0 - p->args[2]/p->args[0]*20.0);
+	
 	glPushMatrix();
 	glTranslatef(creal(p->pos), cimag(p->pos),0);
+	glRotatef(p->angle,0,0,1);
 	glScalef(f,1,1);
 	draw_texture(0,0,"part/youmu_slice");
 	
 	glPopMatrix();
+	
+	glColor4f(1,1,1,1);
+}
+
+void YoumuSlash(Enemy *e, int t) {
+	glColor4f(1,1,1,10.0/t+sin(t/10.0)*0.1);
+	
+	glBegin(GL_QUADS);
+	glVertex3f(0,0,0);
+	glVertex3f(0,VIEWPORT_H,0);
+	glVertex3f(VIEWPORT_W,VIEWPORT_H,0);
+	glVertex3f(VIEWPORT_W,0,0);
+	glEnd();
+	
+	glColor4f(1,1,1,1);
+}
+
+int spin(Projectile *p, int t) {
+	int i = timeout_linear(p, t);
+	
+	p->args[2] += 0.06;
+	p->angle = p->args[2];
+	
+	return i;
+}
+
+int youmu_slash(Enemy *e, int t) {
+	if(t > creal(e->args[0]))
+		return ACTION_DESTROY;
+	if(t < 0)
+		return 1;
+	
+	TIMER(&t);
+	
+	FROM_TO(0, 30, 10) {
+		create_particle1c("youmu_slice", VIEWPORT_W/2.0 - 150 + 100*_i + VIEWPORT_H/2.0*I - 10-10I + 20*frand()+20I*frand(), NULL, Slice, timeout, 200)->angle = -10.0+20.0*frand();
+	}
+	
+	if(t < creal(e->args[0])-50 && frand() > 0.2)
+		create_particle3c("smoke", VIEWPORT_W*frand() + (VIEWPORT_H+100)*I, rgba(0.4,0.4,0.4,0.4+frand()*0.2), PartDraw, spin, 300, -6I+frand()*1I, frand());
+	return 1;
 }
 
 void youmu_bomb(Player *plr) {
@@ -147,10 +194,8 @@ void youmu_bomb(Player *plr) {
 			}
 			break;
 		case YoumuHoming:
-			petal_explosion(40, VIEWPORT_W/2.0 + VIEWPORT_H/2.0*I);
 			plr->pos = VIEWPORT_W/2.0 + (VIEWPORT_H - 80)*I;
-			for(i = 0; i < 5; i++)			
-				create_particle1c("youmu_slice", VIEWPORT_W/2.0 - 160 + 80*i + VIEWPORT_H/2.0*I, NULL, Slice, timeout, 200+i*10);
+			create_enemy_p(&plr->slaves, 40I, ENEMY_BOMB, YoumuSlash, youmu_slash, 280,0,0,0);
 			break;
 	}
 }

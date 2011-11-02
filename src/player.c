@@ -24,8 +24,6 @@ void init_player(Player* plr) {
 	plr->deathtime = -1;
 	
 	plr->continues = 0;
-	
-	plr_set_power(plr, 3.99);
 }
 
 void plr_set_char(Player* plr, Character cha) {
