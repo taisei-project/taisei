@@ -20,6 +20,7 @@ Sound *load_sound(char *filename) {
 	Sound *snd = create_element((void **)&resources.sounds, sizeof(Sound));
 	
 	snd->alsnd = sound;
+	snd->lastplayframe = 0;
 	
 	char *beg = strstr(filename, "sfx/") + 4;
 	char *end = strrchr(filename, '.');

@@ -45,6 +45,8 @@ void recurse_dir(char *path) {
 		
 		free(buf);
 	}
+	
+	closedir(dir);
 }
 
 void load_resources() {

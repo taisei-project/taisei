@@ -500,16 +500,18 @@ void options_menu_input(MenuData *menu) {
 		if(event.type == SDL_KEYDOWN) {
 			if(sym == tconfig.intval[KEY_DOWN] || sym == SDLK_DOWN) {
 				menu->drawdata[3] = 10;
-				while(!menu->entries[++menu->cursor].action) {				
+				do {
+					menu->cursor++;
 					if(menu->cursor >= menu->ecount)
 						menu->cursor = 0;
-				}
+				} while(!menu->entries[menu->cursor].action);
 			} else if(sym == tconfig.intval[KEY_UP] || sym == SDLK_UP) {
 				menu->drawdata[3] = 10;
-				while(!menu->entries[--menu->cursor].action) {
+				do {
+					menu->cursor--;
 					if(menu->cursor < 0)
 						menu->cursor = menu->ecount - 1;
-				}
+				} while(!menu->entries[menu->cursor].action);
 			} else if((sym == tconfig.intval[KEY_SHOT] || sym == SDLK_RETURN) && menu->entries[menu->cursor].action) {
 				menu->selected = menu->cursor;
 				

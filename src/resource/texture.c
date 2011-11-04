@@ -64,6 +64,7 @@ Texture *load_texture(const char *filename) {
 	
 	Texture *texture = create_element((void **)&resources.textures, sizeof(Texture));
 	load_sdl_surf(surface, texture);	
+	free(surface->pixels);
 	SDL_FreeSurface(surface);
 	
 	char *beg = strstr(filename, "gfx/") + 4;

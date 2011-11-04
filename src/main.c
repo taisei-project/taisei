@@ -42,6 +42,8 @@ void shutdown() {
 	if(resources.state & RS_SfxLoaded)
 		alutExit();
 	
+	delete_textures();
+	
 	SDL_FreeSurface(display);
 	SDL_Quit();
 }
