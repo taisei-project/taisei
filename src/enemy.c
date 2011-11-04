@@ -65,7 +65,8 @@ void draw_enemies(Enemy *enemies) {
 	Enemy *e;	
 		
 	for(e = enemies; e; e = e->next)
-		e->draw_rule(e, global.frames - e->birthtime);
+		if(e->draw_rule)
+			e->draw_rule(e, global.frames - e->birthtime);
 }
 
 void Fairy(Enemy *e, int t) {

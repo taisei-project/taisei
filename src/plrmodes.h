@@ -28,4 +28,5 @@ void youmu_power(Player *plr, float npow);
 void marisa_shot(Player *plr);
 void marisa_bomb(Player *plr);
 void marisa_power(Player *plr, float npow);
+
 #endif

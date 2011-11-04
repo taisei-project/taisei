@@ -12,33 +12,7 @@
 
 /* Youmu */
 
-void YoumuOppositeMyon(Enemy *e, int t) {
-	complex pos = e->pos + global.plr.pos;
-	
-	create_particle2c("flare", pos, NULL, Shrink, timeout, 10, -e->pos+10I);
-}
-
-int youmu_opposite_myon(Enemy *e, int t) {
-	if(t < 0)
-		return 1;
-	
-	Player *plr = &global.plr;
-	
-	if(plr->focus < 15) {
-		e->args[2] = carg(plr->pos - e->pos0);
-		e->pos = e->pos0 - plr->pos;
-		
-		if(cabs(e->pos) > 30)
-			e->pos -= 5*cexp(I*carg(e->pos));
-	}
-	
-	if(plr->fire && !(global.frames % 6))
-		create_projectile1c("youmu", e->pos + plr->pos, NULL, linear, -21*cexp(I*e->args[2]))->type = PlrProj; 
-	
-	e->pos0 = e->pos + plr->pos;
-	
-	return 1;
-}
+// Haunting Sign
 
 int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: target
 	if(t == EVENT_DEATH) {
@@ -48,7 +22,7 @@ int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: target
 	Enemy *target;
 	
 	if((target = REF(p->args[1]))) {
-		p->args[0] += 0.15*cexp(I*carg(target->pos - p->pos));
+		p->args[0] += 0.2*cexp(I*carg(target->pos - p->pos));
 	} else {
 		free_ref(p->args[1]);
 		
@@ -68,63 +42,11 @@ int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: target
 	return 1;
 }
 
-void youmu_shot(Player *plr) {
-	if(plr->fire) {
-		if(!(global.frames % 6)) {
-			create_projectile1c("youmu", plr->pos + 10 - I*20, NULL, linear, -20I)->type = PlrProj;
-			create_projectile1c("youmu", plr->pos - 10 - I*20, NULL, linear, -20I)->type = PlrProj;		
-		}
-		
-		if(plr->shot == YoumuHoming) {
-			if(plr->focus && !(global.frames % 12-(int)plr->power)*1.5) {
-				int ref = -1;
-				if(global.boss != NULL)
-					ref = add_ref(global.boss);
-				else if(global.enemies != NULL)
-					ref = add_ref(global.enemies);
-				if(ref == -1)
-					ref = add_ref(NULL);
-				create_projectile2c("hghost", plr->pos, NULL, youmu_homing, 5*cexp(I*sin(global.frames/10.0))/I, ref)->type = PlrProj;
-				create_projectile2c("hghost", plr->pos, NULL, youmu_homing, 5*cexp(I*-sin(global.frames/10.0))/I, ref)->type = PlrProj;
-			}
-			
-			if(!plr->focus && !(global.frames % 8-(int)plr->power)) {
-				float arg = -M_PI/2;
-				if(global.enemies)
-					arg = carg(global.enemies->pos - plr->pos);
-				if(global.boss)
-					arg = carg(global.boss->pos - plr->pos);
-								
-				create_projectile2c("hghost", plr->pos, NULL, accelerated, 10*cexp((arg-0.2)*I), 0.4*cexp((arg-0.2)*I))->type = PlrProj;
-				create_projectile2c("hghost", plr->pos, NULL, accelerated, 10*cexp(arg*I), 0.4*cexp(arg*I))->type = PlrProj;
-				create_projectile2c("hghost", plr->pos, NULL, accelerated, 10*cexp((arg+0.2)*I), 0.4*cexp((arg+0.2)*I))->type = PlrProj;
-			}
-		}
-	}
-	
-	if(plr->shot == YoumuOpposite && plr->slaves == NULL)
-		create_enemy_p(&plr->slaves, plr->pos, ENEMY_IMMUNE, YoumuOppositeMyon, youmu_opposite_myon, 0, 0, 0, 0);
-}
-
-
-int petal_gravity(Projectile *p, int t) {
-	if(t < 0)
-		return 1;
-	
-	complex d = VIEWPORT_W/2.0 + VIEWPORT_H/2.0*I - p->pos;
-	
-	if(t < 230)
-		p->args[0] += 5000/pow(cabs(d),2)*cexp(I*carg(d));
-	p->pos += p->args[0];
-	
-	return 1;
-}
-
 void Slice(Projectile *p, int t) {
 	if(t < creal(p->args[0])/20.0)
 		p->args[1] += 1;
 
-	if(t > creal(p->args[0])/20.0*19) {
+	if(t > creal(p->args[0])-10) {
 		p->args[1] += 3;
 		p->args[2] += 1;
 	}
@@ -160,9 +82,12 @@ void YoumuSlash(Enemy *e, int t) {
 int spin(Projectile *p, int t) {
 	int i = timeout_linear(p, t);
 	
-	p->args[2] += 0.06;
-	p->angle = p->args[2];
-	
+	if(t < 0)
+		return 1;	
+		
+	p->args[3] += 0.06;
+	p->angle = p->args[3];
+		
 	return i;
 }
 
@@ -174,27 +99,125 @@ int youmu_slash(Enemy *e, int t) {
 	
 	TIMER(&t);
 	
-	FROM_TO(0, 30, 10) {
+	AT(0)
+		global.plr.pos = VIEWPORT_W/5.0 + (VIEWPORT_H - 100)*I;
+	
+	FROM_TO(8,20,1)
+		global.plr.pos = VIEWPORT_W + (VIEWPORT_H - 100)*I - exp(-_i/8.0+log(4*VIEWPORT_W/5.0));
+		
+	FROM_TO(30, 60, 10) {
 		create_particle1c("youmu_slice", VIEWPORT_W/2.0 - 150 + 100*_i + VIEWPORT_H/2.0*I - 10-10I + 20*frand()+20I*frand(), NULL, Slice, timeout, 200)->angle = -10.0+20.0*frand();
 	}
 	
-	if(t < creal(e->args[0])-50 && frand() > 0.2)
-		create_particle3c("smoke", VIEWPORT_W*frand() + (VIEWPORT_H+100)*I, rgba(0.4,0.4,0.4,0.4+frand()*0.2), PartDraw, spin, 300, -6I+frand()*1I, frand());
+	FROM_TO(40,200,1)
+		if(frand() > 0.7)
+			create_particle2c("blast", VIEWPORT_W*frand() + (VIEWPORT_H+50)*I, rgb(frand(),frand(),frand()), Shrink, timeout_linear, 80, 3*(1-2.0*frand())-14I+frand()*2I);
+		
+	int tpar = 30;
+	if(t < 30)
+		tpar = t;
+	
+	if(t < creal(e->args[0])-60 && frand() > 0.2) {
+		create_particle2c("smoke", VIEWPORT_W*frand() + (VIEWPORT_H+100)*I, rgba(0.4,0.4,0.4,frand()*0.2 - 0.2 + 0.6*(tpar/30.0)), PartDraw, spin, 300, -7I+frand()*1I);		
+	}
 	return 1;
 }
 
-void youmu_bomb(Player *plr) {
-	int i;
-	switch(plr->shot) {
-		case YoumuOpposite:
-			for(i = 0; i < 40; i++) {
-				complex pos = VIEWPORT_W*frand() + VIEWPORT_H*frand()*I;
-				complex d = VIEWPORT_W/2.0+VIEWPORT_H/2.0*I - pos;
-				create_particle4c("petal", pos, rgba(1,1,1,0.5) , Petal, petal_gravity, 5*I*cexp(I*carg(d)), 0, frand() + frand()*I, frand() + 360I*frand());
+// Opposite Sign
+
+void YoumuOppositeMyon(Enemy *e, int t) {
+	complex pos = e->pos;
+	
+	create_particle2c("flare", pos, NULL, Shrink, timeout, 10, -e->pos+10I);
+}
+
+int youmu_opposite_myon(Enemy *e, int t) {
+	if(t == EVENT_BIRTH)
+		e->pos = e->pos0 + global.plr.pos;
+	if(t < 0)
+		return 1;
+	
+	Player *plr = &global.plr;
+	float arg = carg(e->pos0);
+	float rad = cabs(e->pos0);
+	
+	if(plr->focus < 15)
+		arg -= (carg(e->pos0)-carg(e->pos-plr->pos))*2;
+	
+	e->pos0 = rad*cexp(I*arg);	
+	e->pos = e->pos0 + plr->pos;
+	
+	if(plr->fire && !(global.frames % 6))
+		create_projectile1c("hghost", e->pos, NULL, linear, -21*cexp(I*carg(-e->pos0)))->type = PlrProj; 
+	
+	return 1;
+}
+
+int youmu_split(Enemy *e, int t) {
+	if(t < 0)
+		return 1;
+	
+	if(t > creal(e->args[0]))
+		return ACTION_DESTROY;
+	
+	TIMER(&t);
+	
+	FROM_TO(30,260,1) {
+		create_particle2c("smoke", VIEWPORT_W/2 + VIEWPORT_H/2*I, rgba(0.4,0.4,0.4,frand()*0.2+0.4), PartDraw, spin, 300, 6*cexp(I*frand()*2*M_PI));
+	}
+	
+	FROM_TO(100,220,10) {
+		create_particle1c("youmu_slice", VIEWPORT_W/2.0 + VIEWPORT_H/2.0*I - 200-200I + 400*frand()+400I*frand(), NULL, Slice, timeout, 100-_i)->angle = 360.0*frand();
+	}
+	
+	float talt = atan((t-e->args[0]/2)/30.0)*10+atan(-e->args[0]/2);
+	global.plr.pos = VIEWPORT_W/2.0 + (VIEWPORT_H-80)*I + VIEWPORT_W/3.0*sin(talt);
+	
+	return 1;
+}
+
+// Youmu Generic
+
+void youmu_shot(Player *plr) {
+	if(plr->fire) {
+		if(!(global.frames % 6)) {
+			create_projectile1c("youmu", plr->pos + 10 - I*20, NULL, linear, -20I)->type = PlrProj;
+			create_projectile1c("youmu", plr->pos - 10 - I*20, NULL, linear, -20I)->type = PlrProj;		
+		}
+		
+		if(plr->shot == YoumuHoming) {
+			if(plr->focus && !(global.frames % 45)) {
+				int ref = -1;
+				if(global.boss != NULL)
+					ref = add_ref(global.boss);
+				else if(global.enemies != NULL)
+					ref = add_ref(global.enemies);
+				if(ref == -1)
+					ref = add_ref(NULL);
+				
+				create_projectile2c("youhoming", plr->pos, NULL, youmu_homing, -3I, ref)->type = PlrProj;
 			}
+			
+			if(!plr->focus && !(global.frames % 8-(int)plr->power)) {
+												
+				create_projectile2c("hghost", plr->pos, NULL, accelerated, 2-10I, -0.4I)->type = PlrProj;
+				create_projectile2c("hghost", plr->pos, NULL, accelerated, -10I, -0.4I)->type = PlrProj;
+				create_projectile2c("hghost", plr->pos, NULL, accelerated, -2-10I, -0.4I)->type = PlrProj;
+			}
+		}
+	}
+	
+	if(plr->shot == YoumuOpposite && plr->slaves == NULL)
+		create_enemy_p(&plr->slaves, 40I, ENEMY_IMMUNE, YoumuOppositeMyon, youmu_opposite_myon, 0, 0, 0, 0);
+}
+
+void youmu_bomb(Player *plr) {
+	switch(plr->shot) {
+		case YoumuOpposite:			
+			create_enemy_p(&plr->slaves, 40I, ENEMY_BOMB, NULL, youmu_split, 280,0,0,0);
+			
 			break;
 		case YoumuHoming:
-			plr->pos = VIEWPORT_W/2.0 + (VIEWPORT_H - 80)*I;
 			create_enemy_p(&plr->slaves, 40I, ENEMY_BOMB, YoumuSlash, youmu_slash, 280,0,0,0);
 			break;
 	}
