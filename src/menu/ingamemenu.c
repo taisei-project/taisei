@@ -53,17 +53,12 @@ void draw_ingame_menu(MenuData *menu) {
 	glPushMatrix();
 	glTranslatef(VIEWPORT_W/2, VIEWPORT_H/4, 0);
 	
-	glColor4f(0.1,0.1,0.2,0.4*rad/IMENU_BLUR);
+	glColor4f(0.6,0.6,0.8,0.14*rad/IMENU_BLUR);
 	glPushMatrix();
 	glTranslatef(0, menu->drawdata[0], 0);
-	glScalef(menu->drawdata[1],15,1);
-		
-	glBegin(GL_QUADS);
-	glVertex3f(-1,-1,0);
-	glVertex3f(-1,1,0);
-	glVertex3f(1,1,0);
-	glVertex3f(1,-1,0);
-	glEnd();
+	glScalef(menu->drawdata[1]/6.5,15/7.0,1);
+	
+	draw_texture(0,0,"part/lasercurve");
 	
 	glPopMatrix();
 	
@@ -73,11 +68,13 @@ void draw_ingame_menu(MenuData *menu) {
 		
 	int i;
 	for(i = 0; i < menu->ecount; i++) {
-		float s = 0;
-		if(i == menu->cursor)
+		float s = 0, t = 0.7;
+		if(i == menu->cursor) {
+			t = 1;
 			s = 0.3 + 0.2*sin(menu->frames/7.0);
+		}
 		
-		glColor4f(1-s,1-s,1, 1.0 - menu->fade);
+		glColor4f(t-s,t-s,t-s/2, 1.0 - menu->fade);
 		draw_text(AL_Center, 0, i*35, menu->entries[i].name, _fonts.standard);
 	}
 		
