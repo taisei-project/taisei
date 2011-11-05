@@ -147,16 +147,16 @@ void player_logic(Player* plr) {
 	if(global.frames - plr->recovery < 0) {
 		Enemy *en;
 		for(en = global.enemies; en; en = en->next)
-			en->hp--;
+			en->hp -= 300;
 	}
 }
 
 void plr_bomb(Player *plr) {
 	if(global.frames - plr->recovery >= 0 && plr->bombs > 0) {
-		Enemy *e;
-		for(e = global.enemies; e; e = e->next)
-			if(e->hp != ENEMY_IMMUNE)
-				e->hp = 0;
+// 		Enemy *e;
+// 		for(e = global.enemies; e; e = e->next)
+// 			if(e->hp != ENEMY_IMMUNE)
+// 				e->hp = 0;
 		
 		delete_projectiles(&global.projs);
 				

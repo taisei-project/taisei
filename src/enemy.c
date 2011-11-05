@@ -79,7 +79,6 @@ void Fairy(Enemy *e, int t) {
 	glPushMatrix();	
 	glRotatef(global.frames*10,0,0,1);
 	glScalef(s, s, s);
-// 	glColor4f(1,1,1,0.7);
 	draw_texture(0,0,"fairy_circle");
 	glPopMatrix();
 	

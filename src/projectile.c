@@ -94,7 +94,7 @@ int collision_projectile(Projectile *p) {
 		while(e != NULL) {
 			if(e->hp != ENEMY_IMMUNE && cabs(e->pos - p->pos) < 15) {
 				global.points += 100;
-				e->hp -= p->type - PlrProj + 1;
+				e->hp -= p->type - PlrProj;
 				return 2;
 			}
 			e = e->next;
@@ -102,7 +102,7 @@ int collision_projectile(Projectile *p) {
 		
 		if(global.boss && cabs(global.boss->pos - p->pos) < 15
 		&& global.boss->current->type != AT_Move && global.boss->current->type != AT_SurvivalSpell && global.boss->current->starttime < global.frames) {
-			global.boss->dmg += p->type - PlrProj + 1;
+			global.boss->dmg += p->type - PlrProj;
 			return 2;
 		}
 	}

@@ -166,8 +166,8 @@ void cirno_pfreeze_bg(Boss *c, int time) {
 Boss *create_cirno_mid() {
 	Boss* cirno = create_boss("Cirno", "cirno", VIEWPORT_W + 150 + 30I);
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro, NULL);
-	boss_add_attack(cirno, AT_Normal, "Icy Storm", 20, 200, cirno_icy, NULL);
-	boss_add_attack(cirno, AT_Spellcard, "Freeze Sign ~ Perfect Freeze", 32, 320, cirno_perfect_freeze, cirno_pfreeze_bg);
+	boss_add_attack(cirno, AT_Normal, "Icy Storm", 20, 20000, cirno_icy, NULL);
+	boss_add_attack(cirno, AT_Spellcard, "Freeze Sign ~ Perfect Freeze", 32, 32000, cirno_perfect_freeze, cirno_pfreeze_bg);
 	
 	start_attack(cirno, cirno->attacks);
 	return cirno;
@@ -288,10 +288,10 @@ void cirno_icicle_fall(Boss *c, int time) {
 Boss *create_cirno() {
 	Boss* cirno = create_boss("Cirno", "cirno", -150 + 100I);
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro_boss, NULL);
-	boss_add_attack(cirno, AT_Normal, "Iceplosion 0", 20, 200, cirno_iceplosion0, NULL);
-	boss_add_attack(cirno, AT_Spellcard, "Freeze Sign ~ Crystal Rain", 28, 280, cirno_crystal_rain, cirno_pfreeze_bg);
-	boss_add_attack(cirno, AT_Normal, "Iceplosion 1", 20, 200, cirno_iceplosion1, NULL);
-	boss_add_attack(cirno, AT_Spellcard, "Doom Sign ~ Icicle Fall", 35, 350, cirno_icicle_fall, cirno_pfreeze_bg);
+	boss_add_attack(cirno, AT_Normal, "Iceplosion 0", 20, 20000, cirno_iceplosion0, NULL);
+	boss_add_attack(cirno, AT_Spellcard, "Freeze Sign ~ Crystal Rain", 28, 28000, cirno_crystal_rain, cirno_pfreeze_bg);
+	boss_add_attack(cirno, AT_Normal, "Iceplosion 1", 20, 20000, cirno_iceplosion1, NULL);
+	boss_add_attack(cirno, AT_Spellcard, "Doom Sign ~ Icicle Fall", 35, 40000, cirno_icicle_fall, cirno_pfreeze_bg);
 	
 	start_attack(cirno, cirno->attacks);
 	return cirno;
@@ -488,51 +488,47 @@ void stage0_events() {
 		return;	
 	
 	TIMER(&global.timer);
-	
-// 	AT(0) {
-// 		global.timer = 5000;
-// 	}
-	
+		
 	// opening. projectile bursts
 	FROM_TO(100, 160, 25) {
-		create_enemy1c(VIEWPORT_W/2 + 70, 5, Fairy, stage0_burst, 1 + 0.6I);
-		create_enemy1c(VIEWPORT_W/2 - 70, 5, Fairy, stage0_burst, -1 + 0.6I);
+		create_enemy1c(VIEWPORT_W/2 + 70, 700, Fairy, stage0_burst, 1 + 0.6I);
+		create_enemy1c(VIEWPORT_W/2 - 70, 700, Fairy, stage0_burst, -1 + 0.6I);
 	}
 	
 	// more bursts. fairies move / \ like
 	FROM_TO(240, 300, 30) {
-		create_enemy1c(70 + _i*40, 6, Fairy, stage0_burst, -1 + 0.6I);
-		create_enemy1c(VIEWPORT_W - (70 + _i*40), 6, Fairy, stage0_burst, 1 + 0.6I);
+		create_enemy1c(70 + _i*40, 700, Fairy, stage0_burst, -1 + 0.6I);
+		create_enemy1c(VIEWPORT_W - (70 + _i*40), 700, Fairy, stage0_burst, 1 + 0.6I);
 	}
 		
 	// big fairies, circle + projectile toss
 	FROM_TO(400, 460, 50)
-		create_enemy2c(VIEWPORT_W*_i + VIEWPORT_H/3*I, 20, Fairy, stage0_circletoss, 2-4*_i-0.3I, 1-2*_i);	
+		create_enemy2c(VIEWPORT_W*_i + VIEWPORT_H/3*I, 1500, Fairy, stage0_circletoss, 2-4*_i-0.3I, 1-2*_i);	
 	
 	
 	// swirl, sine pass
 	FROM_TO(380, 1000, 20)
-		create_enemy2c(VIEWPORT_W*(_i&1) + frand()*100I + 70I, 2, Swirl, stage0_sinepass, 3.5*(1-2*(_i&1)), frand()*7I);
+		create_enemy2c(VIEWPORT_W*(_i&1) + frand()*100I + 70I, 100, Swirl, stage0_sinepass, 3.5*(1-2*(_i&1)), frand()*7I);
 	
 	// swirl, drops
 	FROM_TO(1100, 1600, 20)
-		create_enemy2c(VIEWPORT_W/3, 1, Swirl, stage0_drop, 4I, 0.06);
+		create_enemy2c(VIEWPORT_W/3, 100, Swirl, stage0_drop, 4I, 0.06);
 		
 	FROM_TO(1500, 2000, 20)
-		create_enemy2c(VIEWPORT_W+200I, 2, Swirl, stage0_drop, -2, -0.04-0.03I);
+		create_enemy2c(VIEWPORT_W+200I, 100, Swirl, stage0_drop, -2, -0.04-0.03I);
 	
 	// bursts
 	FROM_TO(1250, 1800, 60)
-		create_enemy1c(VIEWPORT_W/2 + frand()*500-250 , 3, Fairy, stage0_burst, frand()*2-1);
+		create_enemy1c(VIEWPORT_W/2 + frand()*500-250, 500, Fairy, stage0_burst, frand()*2-1);
 			
 	// circle - multi burst combo
 	FROM_TO(1700, 2300, 300)
-		create_enemy2c(VIEWPORT_W/2, 30, Fairy, stage0_circle, VIEWPORT_W/4 + VIEWPORT_W/2*frand()+200I, 3-6*(frand()>0.5)+frand()*2I);
+		create_enemy2c(VIEWPORT_W/2, 1400, Fairy, stage0_circle, VIEWPORT_W/4 + VIEWPORT_W/2*frand()+200I, 3-6*(frand()>0.5)+frand()*2I);
 	
 	FROM_TO(2000, 2500, 200) {
 		int i;
 		for(i = 0; i < 5; i++)
-			create_enemy1c(VIEWPORT_W/4 + VIEWPORT_H/10*i, 5, Fairy, stage0_multiburst, i - 2.5);
+			create_enemy1c(VIEWPORT_W/4 + VIEWPORT_H/10*i, 1000, Fairy, stage0_multiburst, i - 2.5);
 	}
 	
 	AT(2700)
@@ -540,21 +536,21 @@ void stage0_events() {
 	
 	// some chaotic swirls + instant circle combo
 	FROM_TO(2760, 3800, 20)
-		create_enemy2c(VIEWPORT_W/2 - 200*(1-2*frand()), 3, Swirl, stage0_drop, 1I, 0.001I + 0.02+0.06*(1-2*frand()));
+		create_enemy2c(VIEWPORT_W/2 - 200*(1-2*frand()), 100, Swirl, stage0_drop, 1I, 0.001I + 0.02+0.06*(1-2*frand()));
 	
 	FROM_TO(2900, 3750, 190)
-		create_enemy2c(VIEWPORT_W*frand(), 25, Fairy, stage0_instantcircle, 2I, 3.0 - 6*frand() - 1I);
+		create_enemy2c(VIEWPORT_W*frand(), 1200, Fairy, stage0_instantcircle, 2I, 3.0 - 6*frand() - 1I);
 	
 		
 	// multiburst + normal circletoss, later tri-toss
 	FROM_TO(3900, 4800, 200)
-		create_enemy1c(VIEWPORT_W*frand(), 5, Fairy, stage0_multiburst, 2.5*frand());
+		create_enemy1c(VIEWPORT_W*frand(), 1000, Fairy, stage0_multiburst, 2.5*frand());
 		
 	FROM_TO(4000, 4100, 20)
-		create_enemy2c(VIEWPORT_W*_i + VIEWPORT_H/3*I, 20, Fairy, stage0_circletoss, 2-4*_i-0.3I, 1-2*_i);	
+		create_enemy2c(VIEWPORT_W*_i + VIEWPORT_H/3*I, 1700, Fairy, stage0_circletoss, 2-4*_i-0.3I, 1-2*_i);	
 		
 	AT(4200)
-		create_enemy2c(VIEWPORT_W/2.0, 30, Fairy, stage0_tritoss, 2I, -2.6I);
+		create_enemy2c(VIEWPORT_W/2.0, 1800, Fairy, stage0_tritoss, 2I, -2.6I);
 		
 	AT(5000)
 		global.boss = create_cirno();
