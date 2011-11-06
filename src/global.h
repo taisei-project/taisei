@@ -64,7 +64,7 @@ enum {
 };
 
 typedef enum {
-	D_Easy,
+	D_Easy = 1,
 	D_Normal,
 	D_Hard,
 	D_Lunatic

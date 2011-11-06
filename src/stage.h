@@ -40,4 +40,5 @@ void stage_input();
 void stage_end();
 
 void apply_bg_shaders();
+void draw_stage_title(int t, int dur, char *stage, char *subtitle);
 #endif

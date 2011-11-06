@@ -31,7 +31,7 @@ void game_over() {
 }
 
 void frame_rate(int *lasttime) {
-	int t = *lasttime + 1000/FPS - SDL_GetTicks();
+	int t = *lasttime + 1000.0/FPS - SDL_GetTicks();
 	if(t > 0)
 		SDL_Delay(t);
 	

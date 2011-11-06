@@ -53,12 +53,12 @@ void draw_ingame_menu(MenuData *menu) {
 	glPushMatrix();
 	glTranslatef(VIEWPORT_W/2, VIEWPORT_H/4, 0);
 	
-	glColor4f(0.6,0.6,0.8,0.14*rad/IMENU_BLUR);
+	glColor4f(0.6,0.6,0.8,0.23*rad/IMENU_BLUR);
 	glPushMatrix();
 	glTranslatef(0, menu->drawdata[0], 0);
-	glScalef(menu->drawdata[1]/6.5,15/7.0,1);
-	
-	draw_texture(0,0,"part/lasercurve");
+	glScalef(menu->drawdata[1]/45.0,0.25,1);
+	glRotatef(menu->frames*2,0,0,1);
+	draw_texture(0,0,"part/smoke");
 	
 	glPopMatrix();
 	

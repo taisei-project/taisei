@@ -173,6 +173,7 @@ void stage_draw() {
 			draw_fbo_viewport(&resources.fsec);
 			glPopMatrix();
 		}
+				
 	} if(global.menu) {
 		draw_ingame_menu(global.menu);		
 	}
@@ -180,7 +181,7 @@ void stage_draw() {
 	glPopMatrix();
 	
 	draw_hud();
-	
+		
 	if(global.frames < FADE_TIME)
 		fade_out(1.0 - global.frames/(float)FADE_TIME);
 	if(global.menu && global.menu->selected == 1) {
@@ -324,3 +325,9 @@ void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event)
 	stage_end();
 }
 		
+void draw_stage_title(int t, int dur, char *stage, char *subtitle) {
+	if(t < 0 || t > dur)
+		return;
+	
+	draw_text(AL_Center, VIEWPORT_W/2, VIEWPORT_H/2, stage, _fonts.mainmenu);
+}
