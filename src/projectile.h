@@ -11,13 +11,6 @@
 #include <complex.h>
 #include "resource/texture.h"
 
-typedef struct {
-	float r;
-	float g;
-	float b;
-	float a;
-} Color;
-
 enum {
 	RULE_ARGC = 4
 };

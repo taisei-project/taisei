@@ -23,6 +23,8 @@ void init_global() {
 	load_resources();
 	printf("- fonts:\n");
 	init_fonts();
+	
+	init_quadvbo();
 }
 
 void game_over() {

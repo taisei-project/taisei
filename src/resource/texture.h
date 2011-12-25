@@ -12,6 +12,13 @@
 #include <GL/glew.h>
 #include <math.h>
 
+typedef struct {
+	float r;
+	float g;
+	float b;
+	float a;
+} Color;
+
 typedef struct Texture Texture;
 
 struct Texture {

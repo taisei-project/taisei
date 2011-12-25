@@ -27,6 +27,7 @@
 #include "list.h"
 #include "config.h"
 #include "fbo.h"
+#include "vbo.h"
 #include "resource/resource.h"
 
 #define FILE_PREFIX PREFIX "/share/taisei/"
@@ -96,7 +97,7 @@ typedef struct {
 	Dialog *dialog;
 	
 	RefArray refs; // for super extra OOP-tardness: references. the cool way.
-	
+		
 	int game_over;
 	int points;
 	

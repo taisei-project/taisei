@@ -151,8 +151,9 @@ void stage_draw() {
 		
 		player_draw(&global.plr);
 
-		draw_items();
+		draw_items();		
 		draw_projectiles(global.projs);
+		
 		draw_enemies(global.enemies);
 		draw_lasers();
 
@@ -165,7 +166,7 @@ void stage_draw() {
 			draw_dialog(global.dialog);
 				
 		if(!tconfig.intval[NO_SHADER]) {
-			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			
 			glPushMatrix();
 			if(global.plr.cha == Marisa && global.plr.shot == MarisaLaser && global.frames - global.plr.recovery < 0)
@@ -191,7 +192,7 @@ void stage_draw() {
 
 void apply_bg_shaders() {
 	if(global.boss && global.boss->current && global.boss->current->draw_rule) {
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, resources.fbg.fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg.fbo);
 		global.boss->current->draw_rule(global.boss, global.frames - global.boss->current->starttime);
 		
 		glPushMatrix();
@@ -207,10 +208,10 @@ void apply_bg_shaders() {
 			draw_texture(0,0,"boss_spellcircle0");
 		glPopMatrix();
 		
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 	
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, resources.fsec.fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, resources.fsec.fbo);
 	
 	if(global.boss) { // Boss background shader
 		GLuint shader = get_shader("boss_zoom");
@@ -230,7 +231,7 @@ void apply_bg_shaders() {
 	
 	draw_fbo_viewport(&resources.fbg);
 	
-	glUseProgramObjectARB(0);
+	glUseProgram(0);
 	
 	if(global.frames - global.plr.recovery < 0) {
 		float t = BOMB_RECOVERY - global.plr.recovery + global.frames;

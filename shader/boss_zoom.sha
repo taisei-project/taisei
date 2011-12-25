@@ -1,3 +1,5 @@
+#version 110
+
 void main(void) {
  gl_Position     = gl_ModelViewProjectionMatrix * gl_Vertex;
  gl_FrontColor   = gl_Color;
@@ -5,6 +7,8 @@ void main(void) {
 }
 
 %% -- FRAG
+
+#version 110
 
 uniform sampler2D tex;
 uniform vec2 blur_orig; // center

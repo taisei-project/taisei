@@ -11,7 +11,22 @@
 #include "paths/native.h"
 #include "taisei_err.h"
 #include "list.h"
+#include "vbo.h"
 #include <png.h>
+
+Color *rgba(float r, float g, float b, float a) {
+	Color *clr = malloc(sizeof(Color));
+	clr->r = r;
+	clr->g = g;
+	clr->b = b;
+	clr->a = a;
+	
+	return clr;
+}
+
+inline Color *rgb(float r, float g, float b) {
+	return rgba(r, g, b, 1.0);
+}
 
 Texture *get_tex(char *name) {
 	Texture *t, *res = NULL;
@@ -198,17 +213,21 @@ void draw_texture_p(float x, float y, Texture *tex) {
 	
 	float wq = ((float)tex->w)/tex->truew;
 	float hq = ((float)tex->h)/tex->trueh;
-	
-	glTranslatef(x,y,0);
-	glScalef(tex->w/2,tex->h/2,1);
-	
-	glBegin(GL_QUADS);
-		glTexCoord2f(0,0); glVertex3f(-1, -1, 0);
-		glTexCoord2f(0,hq); glVertex3f(-1, 1, 0);
-		glTexCoord2f(wq,hq); glVertex3f(1, 1, 0);
-		glTexCoord2f(wq,0); glVertex3f(1, -1, 0);
-	glEnd();	
 		
+	glTranslatef(x,y,0);
+	glScalef(tex->w,tex->h,1);
+	
+	glMatrixMode(GL_TEXTURE);
+	glLoadIdentity();
+	glScalef(wq, hq, 1);
+	glMatrixMode(GL_MODELVIEW);
+
+	draw_quad();
+	
+	glMatrixMode(GL_TEXTURE);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
 }
@@ -222,11 +241,6 @@ void fill_screen_p(float xoff, float yoff, float ratio, Texture *tex) {
 	
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 	
-	glMatrixMode(GL_TEXTURE);
-		glLoadIdentity();
-		glTranslatef(xoff,yoff, 0);
-	glMatrixMode(GL_MODELVIEW);
-	
 	float rw = ratio;
 	float rh = ratio;
 	
@@ -235,12 +249,19 @@ void fill_screen_p(float xoff, float yoff, float ratio, Texture *tex) {
 		rh = ((float)tex->h)/tex->trueh;
 	}
 	
-	glBegin(GL_QUADS);
-	glTexCoord2f(0,0); glVertex3f(0,0,0);
-	glTexCoord2f(0,rh); glVertex3f(0,VIEWPORT_H,0);
-	glTexCoord2f(rw,rh); glVertex3f(VIEWPORT_W,VIEWPORT_H,0);
-	glTexCoord2f(rw,0); glVertex3f(VIEWPORT_W,0,0);
-	glEnd();
+	glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
+		glTranslatef(xoff,yoff, 0);
+		glScalef(rw, rh, 1);
+	glMatrixMode(GL_MODELVIEW);
+	
+	glPushMatrix();
+	glTranslatef(VIEWPORT_W*0.5, VIEWPORT_H*0.5, 0);
+	glScalef(VIEWPORT_W, VIEWPORT_H, 1);
+	
+	draw_quad();
+	
+	glPopMatrix();
 	
 	glMatrixMode(GL_TEXTURE);
 		glLoadIdentity();

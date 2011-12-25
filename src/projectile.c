@@ -11,20 +11,7 @@
 #include <math.h>
 #include "global.h"
 #include "list.h"
-
-Color *rgba(float r, float g, float b, float a) {
-	Color *clr = malloc(sizeof(Color));
-	clr->r = r;
-	clr->g = g;
-	clr->b = b;
-	clr->a = a;
-	
-	return clr;
-}
-
-inline Color *rgb(float r, float g, float b) {
-	return rgba(r, g, b, 1.0);
-}
+#include "vbo.h"
 
 Projectile *create_particle4c(char *name, complex pos, Color *clr, ProjDRule draw, ProjRule rule, complex a1, complex a2, complex a3, complex a4) {
 	Projectile *p = create_projectile_p(&global.particles, prefix_get_tex(name, "part/"), pos, clr, draw, rule, a1, a2, a3, a4);
@@ -114,6 +101,7 @@ void draw_projectiles(Projectile *projs) {
 	
 	for(proj = projs; proj; proj = proj->next)	
 		proj->draw(proj, global.frames - proj->birthtime);
+	
 }
 
 void process_projectiles(Projectile **projs, char collision) {
@@ -202,15 +190,16 @@ void _ProjDraw(Projectile *proj, int t) {
 		
 		glUniform4fv(glGetUniformLocation(shader, "color"), 1, (GLfloat *)proj->clr);
 	}
+	
 	if(proj->clr != NULL && tconfig.intval[NO_SHADER])
 		glColor3f(0,0,0);
 	
 	draw_texture_p(0,0, proj->tex);
-	
+		
 	glColor3f(1,1,1);
 	
 	if(!tconfig.intval[NO_SHADER])
-		glUseProgramObjectARB(0);
+		glUseProgramObjectARB(0);	
 }
 
 void ProjDraw(Projectile *proj, int t) {

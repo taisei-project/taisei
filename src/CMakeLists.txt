@@ -30,6 +30,8 @@ set(SRCs
 	laser.c
 	dialog.c
 	fbo.c
+	vbo.c
+	matrix.c
 	menu/menu.c
 	menu/mainmenu.c
 	menu/options.c

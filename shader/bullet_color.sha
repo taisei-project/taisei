@@ -1,15 +1,25 @@
+#version 110
+#extension GL_EXT_draw_instanced : enable
+
+varying vec4 TexCoord0;
+
+
 void main(void) {
-	gl_Position     = gl_ModelViewProjectionMatrix * gl_Vertex;
-	gl_FrontColor   = gl_Color;
-	gl_TexCoord[0]  = gl_MultiTexCoord0;
+	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+	gl_FrontColor = gl_Color;
+		
+	TexCoord0 = gl_TextureMatrix[0] * gl_MultiTexCoord0;
 }
 
 %% -- FRAG
+#version 110
 
 uniform sampler2D tex;
 uniform vec4 color;
 
+varying vec4 TexCoord0;
+
 void main(void) {
-	vec4 texel = texture2D(tex, vec2(gl_TexCoord[0]));
+	vec4 texel = texture2D(tex, vec2(TexCoord0.xy));
 	gl_FragColor = mix(color, vec4(1.0), texel.b)*texel.a;
 }
