@@ -171,7 +171,9 @@ void stage_draw() {
 			glPushMatrix();
 			if(global.plr.cha == Marisa && global.plr.shot == MarisaLaser && global.frames - global.plr.recovery < 0)
 				glTranslatef(8*sin(global.frames),8*sin(global.frames+3),0);
+// 			glColor4f(1,1,1,0.2);
 			draw_fbo_viewport(&resources.fsec);
+// 			glColor4f(1,1,1,1);
 			glPopMatrix();
 		}
 				

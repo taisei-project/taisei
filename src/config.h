@@ -35,7 +35,7 @@ enum {
 	NO_AUDIO
 };
 
-void parse_config();
+void parse_config(char *filename);
 void config_preset();
 
 #endif

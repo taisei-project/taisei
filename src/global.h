@@ -110,7 +110,7 @@ extern Global global;
 void init_global();
 void game_over();
 
-void frame_rate();
+void frame_rate(int *lasttime);
 void calc_fps(FPSCounter *fps);
 void set_ortho();
 void fade_out(float f);

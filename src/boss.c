@@ -145,7 +145,7 @@ void boss_death(Boss **boss) {
 		if(p->type == FairyProj)
 			p->type = DeadProj;
 	
-	delete_lasers(&global.lasers);
+	delete_lasers();
 }
 
 void free_boss(Boss *boss) {
