@@ -122,7 +122,20 @@ void draw_hud() {
 		draw_texture(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
 }
 
-void stage_draw() {
+void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
+	if(!tconfig.intval[NO_SHADER])
+		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[0].fbo);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glPushMatrix();	
+	glTranslatef(-(VIEWPORT_X+VIEWPORT_W/2.0), -(VIEWPORT_Y+VIEWPORT_H/2.0),0);
+	glEnable(GL_DEPTH_TEST);
+	
+	if(!global.menu)
+		bgdraw();
+	
+	glPopMatrix();	
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	
 	set_ortho();
 
 	glPushMatrix();
@@ -130,7 +143,7 @@ void stage_draw() {
 		
 	if(!global.menu) {		
 		if(!tconfig.intval[NO_SHADER])
-			apply_bg_shaders();
+			apply_bg_shaders(shaderrules);
 
 		if(global.boss) {
 			glPushMatrix();
@@ -183,18 +196,25 @@ void stage_draw() {
 	
 	glPopMatrix();
 	
-	draw_hud();
-		
-	if(global.frames < FADE_TIME)
-		fade_out(1.0 - global.frames/(float)FADE_TIME);
-	if(global.menu && global.menu->selected == 1) {
-		fade_out(global.menu->fade);
+	if(global.frames < 4*FADE_TIME)
+		fade_out(1.0 - global.frames/(float)(4*FADE_TIME));
+	if(global.timer > time - 4*FADE_TIME) {
+		fade_out((global.timer - time + 4*FADE_TIME)/(float)(4*FADE_TIME));
 	}
+	
+	draw_hud();	
+	
+	if(global.menu && global.menu->selected == 1)
+		fade_out(global.menu->fade);	
+	
 }
 
-void apply_bg_shaders() {
+void apply_bg_shaders(ShaderRule *shaderrules) {
+	int fbonum = 0;
+	int i;
+	
 	if(global.boss && global.boss->current && global.boss->current->draw_rule) {
-		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg.fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[0].fbo);
 		global.boss->current->draw_rule(global.boss, global.frames - global.boss->current->starttime);
 		
 		glPushMatrix();
@@ -211,6 +231,13 @@ void apply_bg_shaders() {
 		glPopMatrix();
 		
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	} else {		
+		for(i = 0; shaderrules != NULL && shaderrules[i] != NULL; i++) {
+			glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[!fbonum].fbo);
+			shaderrules[i](fbonum);
+
+			fbonum = !fbonum;
+		}
 	}
 	
 	glBindFramebuffer(GL_FRAMEBUFFER, resources.fsec.fbo);
@@ -223,15 +250,15 @@ void apply_bg_shaders() {
 		complex pos = fpos + 15*cexp(I*global.frames/4.5);
 		
 		glUniform2f(glGetUniformLocation(shader, "blur_orig"),
-					creal(pos)/resources.fbg.nw, cimag(pos)/resources.fbg.nh);
+					creal(pos)/resources.fbg[fbonum].nw, cimag(pos)/resources.fbg[fbonum].nh);
 		glUniform2f(glGetUniformLocation(shader, "fix_orig"),
-					creal(fpos)/resources.fbg.nw, cimag(fpos)/resources.fbg.nh);
+					creal(fpos)/resources.fbg[fbonum].nw, cimag(fpos)/resources.fbg[fbonum].nh);
 		glUniform1f(glGetUniformLocation(shader, "blur_rad"), 0.2+0.025*sin(global.frames/15.0));
 		glUniform1f(glGetUniformLocation(shader, "rad"), 0.24);
-		glUniform1f(glGetUniformLocation(shader, "ratio"), (float)resources.fbg.nh/resources.fbg.nw);
+		glUniform1f(glGetUniformLocation(shader, "ratio"), (float)resources.fbg[fbonum].nh/resources.fbg[fbonum].nw);
 	}
 	
-	draw_fbo_viewport(&resources.fbg);
+	draw_fbo_viewport(&resources.fbg[fbonum]);
 	
 	glUseProgram(0);
 	
@@ -252,7 +279,7 @@ void apply_bg_shaders() {
 	}
 }
 
-void stage_logic() {
+void stage_logic(int time) {
 	if(global.menu) {
 		ingame_menu_logic(&global.menu);
 		return;
@@ -279,6 +306,9 @@ void stage_logic() {
 	
 	calc_fps(&global.fps);
 	
+	if(global.timer >= time)
+		global.game_over = GAMEOVER_WIN;
+	
 }
 
 void stage_end() {
@@ -304,7 +334,13 @@ void stage_end() {
 	}
 }
 
-void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event) {	
+void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event, ShaderRule *shaderrules, int endtime) {	
+	if(global.game_over == GAMEOVER_WIN) {
+		global.game_over = 0;
+	} else if(global.game_over) {
+		return;
+	}
+	
 	stage_start();
 	start();
 	
@@ -312,13 +348,9 @@ void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event)
 		if(!global.boss && !global.dialog)
 			event();
 		stage_input();
-		stage_logic();		
-		
-		if(!tconfig.intval[NO_SHADER])
-			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, resources.fbg.fbo);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		draw();
-		stage_draw();				
+		stage_logic(endtime);		
+				
+		stage_draw(draw, shaderrules, endtime);	
 		
 		SDL_GL_SwapBuffers();
 		frame_rate(&global.lasttime);

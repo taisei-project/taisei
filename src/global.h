@@ -61,6 +61,7 @@ enum {
 	FPS = 60,
 	
 	GAMEOVER_DEFEAT = 1,
+	GAMEOVER_WIN,
 	GAMEOVER_ABORT
 };
 

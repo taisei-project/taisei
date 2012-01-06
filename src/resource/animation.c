@@ -91,7 +91,7 @@ void draw_animation_p(float x, float y, int row, Animation *ani) {
 	
 	glPushMatrix();
 	glTranslatef(x,y,0);
-	glScalef(ani->w/2,ani->h/2, 1);
+	glScalef(ani->w,ani->h, 1);
 	
 	glMatrixMode(GL_TEXTURE);
 		glPushMatrix();
@@ -99,12 +99,7 @@ void draw_animation_p(float x, float y, int row, Animation *ani) {
 		glTranslatef(global.frames/ani->speed % ani->cols, row, 0);
 	glMatrixMode(GL_MODELVIEW);
 	
-	glBegin(GL_QUADS);
-		glTexCoord2f(0,0); glVertex3f(-1, -1, 0);
-		glTexCoord2f(0,1); glVertex3f(-1, 1, 0);	
-		glTexCoord2f(1,1); glVertex3f(1, 1, 0);
-		glTexCoord2f(1,0); glVertex3f(1, -1, 0);		
-	glEnd();
+	draw_quad();
 	
 	glMatrixMode(GL_TEXTURE);
 		glPopMatrix();

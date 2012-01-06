@@ -38,7 +38,7 @@ struct Resources {
 	
 	ALuint sndsrc[SNDSRC_COUNT];
 	
-	FBO fbg;
+	FBO fbg[2];
 	FBO fsec;
 };
 

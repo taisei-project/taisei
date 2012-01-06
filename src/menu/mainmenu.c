@@ -14,6 +14,7 @@
 
 #include "global.h"
 #include "stages/stage0.h"
+#include "stages/stage1.h"
 
 void quit_menu(void *arg) {
 	MenuData *m = arg;
@@ -35,10 +36,12 @@ troll:
 		goto troll;
 	
 	stage0_loop();
+	stage1_loop();
+	
+	global.game_over = 0;
 }
 
-void enter_options(void *arg)
-{
+void enter_options(void *arg) {
 	MenuData m;
 	create_options_menu(&m);
 	options_menu_loop(&m);

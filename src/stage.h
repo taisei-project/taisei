@@ -28,17 +28,10 @@
 #define GO_TO(obj, p, f) (obj)->pos += (f)*((p) - (obj)->pos);
 
 typedef void (*StageRule)(void);
+typedef void (*ShaderRule)(int);
 
-void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event);
+void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event, ShaderRule *shaderrules, int endtime);
 
-void stage_start();
-
-void stage_logic();
-void stage_draw();
-void stage_input();
-
-void stage_end();
-
-void apply_bg_shaders();
+void apply_bg_shaders(ShaderRule *shaderrules);
 void draw_stage_title(int t, int dur, char *stage, char *subtitle);
 #endif

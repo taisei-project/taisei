@@ -9,6 +9,9 @@
 
 #include "stage.h"
 #include "global.h"
+#include "stageutils.h"
+
+static Stage3D bgcontext;
 
 Dialog *stage0_dialog() {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
@@ -23,59 +26,50 @@ Dialog *stage0_dialog() {
 	return d;
 }
 
-void stage0_draw() {
+void stage0_bg_draw(Vector pos) {
 	glPushMatrix();
-	
-	glTranslatef(-(VIEWPORT_X+VIEWPORT_W/2.0), -(VIEWPORT_Y+VIEWPORT_H/2.0),0);
-	glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glTranslatef(-(VIEWPORT_X+VIEWPORT_W/2.0)/SCREEN_W, -(VIEWPORT_Y+VIEWPORT_H/2.0)/SCREEN_H,0);
-		gluPerspective(45, 5.0/6.0, 500, 5000);
-		glTranslatef(0,0,-500);
-	glMatrixMode(GL_MODELVIEW);
-	glEnable(GL_DEPTH_TEST);
-	
-	glBegin(GL_QUADS);
-		glVertex3f(-1000,0,-3000);
-		glVertex3f(1500,-0,-3000);
-		glVertex3f(1500,2500,-3000);
-		glVertex3f(-1000,2500,-3000);		
-	glEnd();
-	
-	glPushMatrix();
-	glRotatef(60, -1, 0, 0);
-	
-	Texture *water = get_tex("stage0/water");
+	glTranslatef(pos[0]+330,pos[1],pos[0]);
+	glRotatef(180,1,0,0);
+	glScalef(1200,3000,1);
 	
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, water->gltex);
+	glBindTexture(GL_TEXTURE_2D, get_tex("stage0/water")->gltex);
 	
-	glMatrixMode(GL_TEXTURE);
-		glLoadIdentity();
-		glTranslatef(0,global.frames/(float)water->h, 0);
-		glScalef(2,2,2);
-	glMatrixMode(GL_MODELVIEW);
-	
-	glBegin(GL_QUADS);
-		glTexCoord2i(0,0);
-		glVertex3f(-500,0,0);
-		glTexCoord2i(1,0);
-		glVertex3f(1000,0,0);
-		glTexCoord2i(1,1);
-		glVertex3f(1000,3000,0);
-		glTexCoord2i(0,1);
-		glVertex3f(-500,3000,0);
-	glEnd();
-	
-	glPopMatrix();
-	glMatrixMode(GL_TEXTURE);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);	
-		
-	glPopMatrix();
+	draw_quad();
 	
 	glDisable(GL_TEXTURE_2D);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	glPopMatrix();
+	
+	
+}
+
+Vector **stage0_bg_pos(Vector p, float maxrange) {
+	Vector q = {0,0,0};
+	Vector r = {0,3000,0};
+	return linear3dpos(p, maxrange, q, r);
+}
+
+void stage0_fog(int fbonum) {
+	GLuint shader = get_shader("zbuf_fog");
+	
+	glUseProgram(shader);
+	glUniform1i(glGetUniformLocation(shader, "depth"),2);
+	glUniform4f(glGetUniformLocation(shader, "fog_color"),0.1, 0.1, 0.1, 1.0);
+	glUniform1f(glGetUniformLocation(shader, "start"),0.0);
+	glUniform1f(glGetUniformLocation(shader, "end"),0.4);
+	glActiveTexture(GL_TEXTURE0 + 2);
+	glBindTexture(GL_TEXTURE_2D, resources.fbg[fbonum].depth);
+	glActiveTexture(GL_TEXTURE0);
+	
+	draw_fbo_viewport(&resources.fbg[fbonum]);
+	glUseProgram(0);
+}
+
+void stage0_draw() {
+	set_perspective(&bgcontext, 500, 5000);
+	
+	draw_stage3d(&bgcontext, 7000);
+	
 }
 
 
@@ -568,27 +562,22 @@ void stage0_events() {
 	AT(5000)
 		global.boss = create_cirno();
 	
-	AT(5200) {
-		global.game_over = 1;
-		printf("You won! for now.\n");
-	}
-	
 }
 
 void stage0_start() {
-	stage_start();
-	glEnable(GL_FOG);
-	GLfloat clr[] = { 0.1, 0.1, 0.1, 0 };
-	glFogfv(GL_FOG_COLOR, clr);
-	glFogf(GL_FOG_MODE, GL_LINEAR);
-	glFogf(GL_FOG_START, 0);
-	glFogf(GL_FOG_END, 1500);
+	init_stage3d(&bgcontext);
+	add_model(&bgcontext, stage0_bg_draw, stage0_bg_pos);
+	
+	bgcontext.crot[0] = -60;
+	bgcontext.cx[2] = -700;
+	bgcontext.cv[1] = -7;
 }
 
 void stage0_end() {
-	glDisable(GL_FOG);
+	free_stage3d(&bgcontext);
 }
 
-void stage0_loop() {	
-	stage_loop(stage0_start, stage0_end, stage0_draw, stage0_events);
+void stage0_loop() {
+	ShaderRule list[] = { stage0_fog, NULL };
+	stage_loop(stage0_start, stage0_end, stage0_draw, stage0_events, list, 5200);
 }

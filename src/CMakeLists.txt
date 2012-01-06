@@ -31,6 +31,7 @@ set(SRCs
 	dialog.c
 	fbo.c
 	vbo.c
+	stageutils.c
 	matrix.c
 	menu/menu.c
 	menu/mainmenu.c
@@ -40,6 +41,7 @@ set(SRCs
 	menu/difficulty.c
 	menu/charselect.c
 	stages/stage0.c
+	stages/stage1.c
 	resource/resource.c
 	resource/texture.c
 	resource/animation.c

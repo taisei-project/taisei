@@ -32,23 +32,29 @@ void init_fbo(FBO *fbo) {
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, fbo->nw, fbo->nh, 0, GL_BGR, GL_UNSIGNED_BYTE, NULL);
 	
-	glGenFramebuffersEXT(1,&fbo->fbo);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo->fbo);
-	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, fbo->tex, 0);
+	glGenFramebuffers(1,&fbo->fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo->fbo);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbo->tex, 0);
 	
 	glEnable(GL_BLEND);
     glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 	
-	glGenRenderbuffersEXT(1, &fbo->depth);
-	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, fbo->depth);
-	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, fbo->nw, fbo->nh);
-
-	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, fbo->depth);
+	glGenTextures(1, &fbo->depth);
+	glBindTexture(GL_TEXTURE_2D, fbo->depth);
 	
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, fbo->nw, fbo->nh, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,fbo->depth, 0);
+	
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void draw_fbo_viewport(FBO *fbo) {
+void draw_fbo_viewport(FBO *fbo) {	
 	glPushMatrix();
 	glTranslatef(-VIEWPORT_X,VIEWPORT_H+VIEWPORT_Y-fbo->nh,0);
 		

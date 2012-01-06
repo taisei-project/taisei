@@ -81,7 +81,8 @@ void load_resources() {
 		recurse_dir(path);
 		
 		printf("init_fbo():\n");
-		init_fbo(&resources.fbg);
+		init_fbo(&resources.fbg[0]);
+		init_fbo(&resources.fbg[1]);
 		init_fbo(&resources.fsec);
 		printf("-- finished\n");
 		

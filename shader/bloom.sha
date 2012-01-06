@@ -1,0 +1,37 @@
+#version 110
+
+void main(void) {
+	gl_Position     = ftransform();
+	gl_FrontColor   = gl_Color;
+	gl_TexCoord[0]  = gl_MultiTexCoord0;	
+}
+
+%% -- FRAG
+
+#version 110
+
+uniform sampler2D tex;
+uniform float intensity;
+
+float pi = 2.0 * asin(1.0);
+
+void main(void) {
+	vec2 pos = vec2(gl_TexCoord[0]);
+	
+	float a;
+	float i = 0.0;
+	vec4 sum = vec4(0.0), c;
+	
+	for(a = 0.0; a <= 2.0*pi; a+=0.6) {
+		c = texture2D(tex, pos + vec2(cos(a),sin(a))*0.01);
+		if(c != vec4(0.0)) {
+			sum += c;
+			i++;
+		}		
+	}
+	
+	
+	gl_FragColor = texture2D(tex, pos) + intensity*sum*sum/i;
+	
+// 	gl_FragColor = texture2D(tex, pos);
+}
