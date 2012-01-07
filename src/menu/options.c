@@ -483,6 +483,55 @@ void binding_input(MenuData *menu, OptionBinding *b)
 	}
 }
 
+static void options_key_action(MenuData *menu, int sym) {
+	if(sym == tconfig.intval[KEY_DOWN] || sym == SDLK_DOWN) {
+		menu->drawdata[3] = 10;
+		do {
+			menu->cursor++;
+			if(menu->cursor >= menu->ecount)
+				menu->cursor = 0;
+		} while(!menu->entries[menu->cursor].action);
+	} else if(sym == tconfig.intval[KEY_UP] || sym == SDLK_UP) {
+		menu->drawdata[3] = 10;
+		do {
+			menu->cursor--;
+			if(menu->cursor < 0)
+				menu->cursor = menu->ecount - 1;
+		} while(!menu->entries[menu->cursor].action);
+	} else if((sym == tconfig.intval[KEY_SHOT] || sym == SDLK_RETURN) && menu->entries[menu->cursor].action) {
+		menu->selected = menu->cursor;
+		
+		OptionBinding *binds = (OptionBinding*)menu->context;
+		OptionBinding *bind = &(binds[menu->selected]);
+		
+		if(bind->enabled) switch(bind->type)
+		{
+			case BT_IntValue: binding_setnext(bind); break;
+			case BT_KeyBinding: bind->blockinput = True; break;
+		}
+		else
+			menu->quit = 1;
+	} else if(sym == tconfig.intval[KEY_LEFT] || sym == SDLK_LEFT) {
+		menu->selected = menu->cursor;
+		OptionBinding *binds = (OptionBinding*)menu->context;
+		OptionBinding *bind = &(binds[menu->selected]);
+		
+		if(bind->enabled && bind->type == BT_IntValue)
+			binding_setprev(bind);
+	} else if(sym == tconfig.intval[KEY_RIGHT] || sym == SDLK_RIGHT) {
+		menu->selected = menu->cursor;
+		OptionBinding *binds = (OptionBinding*)menu->context;
+		OptionBinding *bind = &(binds[menu->selected]);
+		
+		if(bind->enabled && bind->type == BT_IntValue)
+			binding_setnext(bind);
+	} else if(sym == SDLK_ESCAPE) {
+		menu->quit = 2;
+	}
+	
+	menu->cursor = (menu->cursor % menu->ecount) + menu->ecount*(menu->cursor < 0);
+}
+
 void options_menu_input(MenuData *menu) {
 	SDL_Event event;
 	OptionBinding *b;
@@ -498,55 +547,22 @@ void options_menu_input(MenuData *menu) {
 		
 		global_processevent(&event);
 		if(event.type == SDL_KEYDOWN) {
-			if(sym == tconfig.intval[KEY_DOWN] || sym == SDLK_DOWN) {
-				menu->drawdata[3] = 10;
-				do {
-					menu->cursor++;
-					if(menu->cursor >= menu->ecount)
-						menu->cursor = 0;
-				} while(!menu->entries[menu->cursor].action);
-			} else if(sym == tconfig.intval[KEY_UP] || sym == SDLK_UP) {
-				menu->drawdata[3] = 10;
-				do {
-					menu->cursor--;
-					if(menu->cursor < 0)
-						menu->cursor = menu->ecount - 1;
-				} while(!menu->entries[menu->cursor].action);
-			} else if((sym == tconfig.intval[KEY_SHOT] || sym == SDLK_RETURN) && menu->entries[menu->cursor].action) {
-				menu->selected = menu->cursor;
-				
-				OptionBinding *binds = (OptionBinding*)menu->context;
-				OptionBinding *bind = &(binds[menu->selected]);
-				
-				if(bind->enabled) switch(bind->type)
-				{
-					case BT_IntValue: binding_setnext(bind); break;
-					case BT_KeyBinding: bind->blockinput = True; break;
-				}
-				else
-					menu->quit = 1;
-			} else if(sym == tconfig.intval[KEY_LEFT] || sym == SDLK_LEFT) {
-				menu->selected = menu->cursor;
-				OptionBinding *binds = (OptionBinding*)menu->context;
-				OptionBinding *bind = &(binds[menu->selected]);
-				
-				if(bind->enabled && bind->type == BT_IntValue)
-					binding_setprev(bind);
-			} else if(sym == tconfig.intval[KEY_RIGHT] || sym == SDLK_RIGHT) {
-				menu->selected = menu->cursor;
-				OptionBinding *binds = (OptionBinding*)menu->context;
-				OptionBinding *bind = &(binds[menu->selected]);
-				
-				if(bind->enabled && bind->type == BT_IntValue)
-					binding_setnext(bind);
-			} else if(sym == SDLK_ESCAPE) {
-				menu->quit = 2;
-			}
-			
-			menu->cursor = (menu->cursor % menu->ecount) + menu->ecount*(menu->cursor < 0);
+			options_key_action(menu, sym);
+			menu->lastkey = sym;
 		} else if(event.type == SDL_QUIT) {
 			exit(1);
 		}
+	}
+	
+	Uint8 *keys = SDL_GetKeyState(NULL);
+	if(keys[menu->lastkey])
+		menu->keypressed++;
+	else
+		menu->keypressed = 0;
+	
+	if(menu->keypressed > KEYREPEAT_TIME) {
+		options_key_action(menu, menu->lastkey);
+		menu->keypressed = KEYREPEAT_TIME-10;
 	}
 }
 

@@ -10,6 +10,7 @@
 
 #define IMENU_BLUR 0.05
 #define FADE_TIME 15
+#define KEYREPEAT_TIME 40
 
 typedef struct {
 	char *name;
@@ -28,6 +29,9 @@ typedef struct MenuData{
 	
 	int cursor;
 	int selected;
+	
+	int lastkey;
+	int keypressed;
 	
 	MenuEntry *entries;
 	int ecount;

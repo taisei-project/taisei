@@ -36,33 +36,50 @@ void create_menu(MenuData *menu) {
 	menu->selected = -1;
 }
 
+static void key_action(MenuData *menu, int sym) {
+	if(sym == tconfig.intval[KEY_DOWN] || sym == SDLK_DOWN) {
+		do {
+			if(++menu->cursor >= menu->ecount)
+				menu->cursor = 0;
+		} while(menu->entries[menu->cursor].action == NULL);
+	} else if(sym == tconfig.intval[KEY_UP] || sym == SDLK_UP) {
+		do {
+			if(--menu->cursor < 0)
+				menu->cursor = menu->ecount - 1;
+		} while(menu->entries[menu->cursor].action == NULL);
+	} else if((sym == tconfig.intval[KEY_SHOT] || sym == SDLK_RETURN) && menu->entries[menu->cursor].action) {
+		menu->quit = 1;
+		menu->selected = menu->cursor;
+	} else if(sym == SDLK_ESCAPE && menu->type == MT_Transient) {
+		menu->quit = 1;
+	}
+}
+
 void menu_input(MenuData *menu) {
 	SDL_Event event;
 	
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;
-		
+				
 		global_processevent(&event);
 		if(event.type == SDL_KEYDOWN) {
-			if(sym == tconfig.intval[KEY_DOWN] || sym == SDLK_DOWN) {
-				do {
-					if(++menu->cursor >= menu->ecount)
-						menu->cursor = 0;
-				} while(menu->entries[menu->cursor].action == NULL);
-			} else if(sym == tconfig.intval[KEY_UP] || sym == SDLK_UP) {
-				do {
-					if(--menu->cursor < 0)
-						menu->cursor = menu->ecount - 1;
-				} while(menu->entries[menu->cursor].action == NULL);
-			} else if((sym == tconfig.intval[KEY_SHOT] || sym == SDLK_RETURN) && menu->entries[menu->cursor].action) {
-				menu->quit = 1;
-				menu->selected = menu->cursor;
-			} else if(sym == SDLK_ESCAPE && menu->type == MT_Transient) {
-				menu->quit = 1;
-			}
+			key_action(menu,sym);
+			
+			menu->lastkey = sym;
 		} else if(event.type == SDL_QUIT) {
 			exit(1);
 		}
+	}
+	
+	Uint8 *keys = SDL_GetKeyState(NULL);
+	if(keys[menu->lastkey])
+		menu->keypressed++;
+	else
+		menu->keypressed = 0;
+	
+	if(menu->keypressed > KEYREPEAT_TIME) {
+		key_action(menu, menu->lastkey);
+		menu->keypressed = KEYREPEAT_TIME-10;
 	}
 }
 
