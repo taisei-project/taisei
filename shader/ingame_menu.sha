@@ -20,10 +20,9 @@ void main(void) {
 	
 	gl_FragColor = texture2D(tex, pos)*0.02;
 	
-	float a, r;
-	for(a = 0.0; a < 2.0*pi; a += pi/10.0)
-		for(r = rad/5.0; r < rad; r += rad/5.0)
-			gl_FragColor += texture2D(tex, pos + vec2(r*cos(a),r*sin(a)*0.5))*(1.0 - r/rad)*0.02;
-		
-	gl_FragColor *= pow(vec4(0.4,0.5,0.6,1), vec4(rad*25.0));
+	float a, r = rad*0.4;
+	for(a = 0.0; a < 2.0*pi; a += pi/5.0)
+		gl_FragColor += texture2D(tex, pos + r*vec2(cos(a*dot(pos, vec2(10.0,3.0))),sin(a*a)))*0.1;
+
+	gl_FragColor *= sqrt(gl_FragColor)*pow(vec4(0.4,0.5,0.6,1), vec4(rad*25.0));
 }
