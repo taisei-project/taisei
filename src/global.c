@@ -9,6 +9,7 @@
 #include <SDL/SDL.h>
 #include <time.h>
 #include <stdio.h>
+#include <png.h>
 #include "paths/native.h"
 #include "resource/resource.h"
 #include "taisei_err.h"
@@ -92,14 +93,13 @@ void take_screenshot()
 {
 	FILE *out;
 	char data[3 * SCREEN_W * SCREEN_H];
-	short head[] = {0, 2, 0, 0, 0, 0, SCREEN_W, SCREEN_H, 24};
 	char outfile[128], *outpath;
 	time_t rawtime;
 	struct tm * timeinfo;
 	
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
-	strftime(outfile, 128, "/taisei_%Y%m%d_%H-%M-%S_%Z.tga", timeinfo);
+	strftime(outfile, 128, "/taisei_%Y%m%d_%H-%M-%S_%Z.png", timeinfo);
 	
 	outpath = malloc(strlen(outfile) + strlen(get_screenshots_path()) + 1);
 	strcpy(outpath, get_screenshots_path());
@@ -116,10 +116,37 @@ void take_screenshot()
 	}
 	
 	glReadBuffer(GL_FRONT);
-	glReadPixels(0, 0, SCREEN_W, SCREEN_H, GL_BGR, GL_UNSIGNED_BYTE, data);
-	fwrite(&head, sizeof(head), 1, out);
-	fwrite(data, 3 * SCREEN_W * SCREEN_H, 1, out);
+	glReadPixels(0, 0, SCREEN_W, SCREEN_H, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+	png_structp png_ptr;
+    png_infop info_ptr;
+	png_byte **row_pointers;
+	int y;
 	
+	png_ptr = png_create_write_struct (PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	info_ptr = png_create_info_struct (png_ptr);
+
+	png_set_IHDR(png_ptr, info_ptr, SCREEN_W, SCREEN_H, 8, PNG_COLOR_TYPE_RGB,
+                  PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+
+	row_pointers = png_malloc(png_ptr, SCREEN_H*sizeof(png_byte *));
+	
+	for(y = 0; y < SCREEN_H; y++) {
+		row_pointers[y] = png_malloc(png_ptr, 8*3*SCREEN_W);
+		
+		memcpy(row_pointers[y], data + SCREEN_W*3*(SCREEN_H-1-y), SCREEN_W*3);
+	}
+	
+	png_init_io(png_ptr, out);
+	png_set_rows(png_ptr, info_ptr, row_pointers);
+	png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
+	
+	for(y = 0; y < SCREEN_H; y++)
+		png_free(png_ptr, row_pointers[y]);
+		
+	png_free(png_ptr, row_pointers);
+	
+	png_destroy_write_struct(&png_ptr, &info_ptr);	
 	fclose(out);
 }
 
