@@ -69,7 +69,7 @@ void draw_enemies(Enemy *enemies) {
 			e->draw_rule(e, global.frames - e->birthtime);
 }
 
-void Fairy(Enemy *e, int t) {
+void Fairy(Enemy *e, int t) {	
 	glEnable(GL_TEXTURE_2D);
 	
 	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;

@@ -38,7 +38,7 @@ void init_gl() {
 }
 
 
-void shutdown() {	
+void taisei_shutdown() {	
 	if(resources.state & RS_SfxLoaded)
 		alutExit();
 	
@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
 	
 	main_menu_loop(&menu);
 	
-	shutdown();
+	taisei_shutdown();
 	
 	return 1;
 }
