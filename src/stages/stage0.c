@@ -498,10 +498,6 @@ void stage0_events() {
 		return;	
 	
 	TIMER(&global.timer);
-	
-	AT(30) {
-		global.timer = 2700;
-	}
 		
 	// opening. projectile bursts
 	FROM_TO(100, 160, 25) {
