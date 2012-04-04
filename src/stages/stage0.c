@@ -155,9 +155,11 @@ void cirno_pfreeze_bg(Boss *c, int time) {
 	glColor4f(0.5,0.5,0.5,1);	
 	fill_screen(time/700.0, time/700.0, 1, "stage0/cirnobg");	
 	glColor4f(0.7,0.7,0.7,0.5);	
-	fill_screen(-time/700.0 + 0.5, time/700.0+0.5, 0.4, "stage0/cirnobg");
+	glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+	fill_screen(-time/700.0 + 0.5, time/700.0+0.5, 0.4, "stage0/cirnobg");	
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	fill_screen(0, -time/100.0, 0, "stage0/snowlayer");
-	
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glColor4f(1,1,1,1);
 }
 	
@@ -496,6 +498,10 @@ void stage0_events() {
 		return;	
 	
 	TIMER(&global.timer);
+	
+	AT(30) {
+		global.timer = 2700;
+	}
 		
 	// opening. projectile bursts
 	FROM_TO(100, 160, 25) {
