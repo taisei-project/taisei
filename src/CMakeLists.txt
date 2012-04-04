@@ -61,7 +61,7 @@ if(WIN32)
 	set(SRCs ${SRCs} taisei_err.c)
 endif()
 
-add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}")
+add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall)
 
 set(LIBs ${LIBs}
 	${SDL_LIBRARY}

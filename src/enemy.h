@@ -59,4 +59,9 @@ void process_enemies(Enemy **enemies);
 
 void Fairy(Enemy*, int t);
 void Swirl(Enemy*, int t);
+void BigFairy(Enemy*, int t);
+
+int enemy_flare(Projectile *p, int t);
+void EnemyFlareShrink(Projectile *p, int t);
+
 #endif

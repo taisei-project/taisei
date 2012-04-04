@@ -69,6 +69,72 @@ void draw_enemies(Enemy *enemies) {
 			e->draw_rule(e, global.frames - e->birthtime);
 }
 
+
+int enemy_flare(Projectile *p, int t) { // a[0] timeout, a[1] velocity, a[2] ref to enemy
+	if(t >= creal(p->args[0]) || REF(p->args[2]) == NULL) {
+		return ACTION_DESTROY;
+	} if(t == EVENT_DEATH) {
+		free_ref(p->args[2]);
+		return 1;
+	} else if(t < 0) {
+		return 1;
+	}
+	
+	p->pos += p->args[1];
+	
+	return 1;
+}
+
+void EnemyFlareShrink(Projectile *p, int t) {
+	Enemy *e = (Enemy *)REF(p->args[2]);
+	if(e == NULL)
+		return;
+	
+	glPushMatrix();
+	float s = 2.0-t/p->args[0]*2;
+		
+	glTranslatef(creal(e->pos + p->pos), cimag(e->pos + p->pos), 0);
+	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
+	glScalef(s, s, 1);
+	
+	if(p->clr)
+		glColor4fv((float *)p->clr);
+	
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	draw_texture_p(0, 0, p->tex);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
+	glPopMatrix();
+	
+	glColor3f(1,1,1);
+}
+
+void BigFairy(Enemy *e, int t) {
+	if(!(t % 5)) {
+		complex offset = (frand()-0.5)*30 + (frand()-0.5)*20I;
+		create_particle3c("lasercurve", offset, rgb(0,0.2,0.3), EnemyFlareShrink, enemy_flare, 50, (-50I-offset)/50.0, add_ref(e));
+	}
+	
+	glPushMatrix();
+	glTranslatef(creal(e->pos), cimag(e->pos), 0);
+	
+	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;
+	
+	glPushMatrix();	
+	glRotatef(global.frames*10,0,0,1);
+	glScalef(s, s, s);
+	draw_texture(0,0,"fairy_circle");
+	glPopMatrix();
+	
+	if(e->dir) {
+		glCullFace(GL_FRONT);
+		glScalef(-1,1,1);
+	}
+	draw_animation(0, 0, e->moving, "bigfairy");
+	glPopMatrix();
+	glCullFace(GL_BACK);
+}
+
 void Fairy(Enemy *e, int t) {	
 	glEnable(GL_TEXTURE_2D);
 	
@@ -82,7 +148,6 @@ void Fairy(Enemy *e, int t) {
 	draw_texture(0,0,"fairy_circle");
 	glPopMatrix();
 	
-	glColor4f(1,1,1,1);
 	glPushMatrix();
 	if(e->dir) {
 		glCullFace(GL_FRONT);

@@ -511,7 +511,7 @@ void stage0_events() {
 		
 	// big fairies, circle + projectile toss
 	FROM_TO(400, 460, 50)
-		create_enemy2c(VIEWPORT_W*_i + VIEWPORT_H/3*I, 1500, Fairy, stage0_circletoss, 2-4*_i-0.3I, 1-2*_i);	
+		create_enemy2c(VIEWPORT_W*_i + VIEWPORT_H/3*I, 1500, BigFairy, stage0_circletoss, 2-4*_i-0.3I, 1-2*_i);	
 	
 	
 	// swirl, sine pass
@@ -531,7 +531,7 @@ void stage0_events() {
 			
 	// circle - multi burst combo
 	FROM_TO(1700, 2300, 300)
-		create_enemy2c(VIEWPORT_W/2, 1400, Fairy, stage0_circle, VIEWPORT_W/4 + VIEWPORT_W/2*frand()+200I, 3-6*(frand()>0.5)+frand()*2I);
+		create_enemy2c(VIEWPORT_W/2, 1400, BigFairy, stage0_circle, VIEWPORT_W/4 + VIEWPORT_W/2*frand()+200I, 3-6*(frand()>0.5)+frand()*2I);
 	
 	FROM_TO(2000, 2500, 200) {
 		int i, t = global.diff + 1;
@@ -558,7 +558,7 @@ void stage0_events() {
 		create_enemy2c(VIEWPORT_W*_i + VIEWPORT_H/3*I, 1700, Fairy, stage0_circletoss, 2-4*_i-0.3I, 1-2*_i);	
 		
 	AT(4200)
-		create_enemy2c(VIEWPORT_W/2.0, 1800, Fairy, stage0_tritoss, 2I, -2.6I);
+		create_enemy2c(VIEWPORT_W/2.0, 1800, BigFairy, stage0_tritoss, 2I, -2.6I);
 		
 	AT(5000)
 		global.boss = create_cirno();

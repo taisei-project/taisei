@@ -337,7 +337,10 @@ void Petal(Projectile *p, int t) {
 	if(p->clr)
 		glColor4fv((float *)p->clr);
 	
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	draw_texture_p(0,0, p->tex);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
 	if(p->clr)
 		glColor4f(1,1,1,1);
 	glPopMatrix();
@@ -348,6 +351,6 @@ void Petal(Projectile *p, int t) {
 void petal_explosion(int n, complex pos) {
 	int i;
 	for(i = 0; i < n; i++) {
-		create_particle4c("petal", pos, rgb(1,1,1), Petal, linear, (3+13*frand())*cexp(I*M_PI*2*frand()), 0, frand() + frand()*I, frand() + 360I*frand());
+		create_particle4c("petal", pos, rgba(0.6,1-frand()*0.4,0.5,1-0.5*frand()), Petal, asymptotic, (3+5*frand())*cexp(I*M_PI*2*frand()), 5, frand() + frand()*I, frand() + 360I*frand());
 	}
 }
