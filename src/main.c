@@ -29,14 +29,28 @@ void init_gl() {
 }
 
 
-void taisei_shutdown() {	
-	if(resources.state & RS_SfxLoaded)
+void taisei_shutdown() {
+	printf("\nshutdown:\n");
+	if(resources.state & RS_SfxLoaded) {
+		printf("-- alutExit()\n");
 		alutExit();
+	}
 	
+	printf("-- freeing textures\n");
 	delete_textures();
+	
+	printf("-- freeing FBOs\n");
+	delete_fbo(&resources.fbg[0]);
+	delete_fbo(&resources.fbg[1]);
+	delete_fbo(&resources.fsec);
+	printf("-- freeing VBOs\n");
+	delete_vbo(&_quadvbo);
+	printf("-- freeing shaders\n");
+	delete_shaders();
 	
 	SDL_FreeSurface(display);
 	SDL_Quit();
+	printf("-- Good Bye.\n");
 }
 
 int main(int argc, char** argv) {
@@ -85,13 +99,16 @@ int main(int argc, char** argv) {
 	
 	init_global();
 	printf("initialization complete.\n");
+	
+	atexit(taisei_shutdown);
+	
 	MenuData menu;
 	create_main_menu(&menu);
 	printf("-- menu\n");
 	
 	main_menu_loop(&menu);
 	
-	taisei_shutdown();
+// 	taisei_shutdown();
 	
 	return 1;
 }

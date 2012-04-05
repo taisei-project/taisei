@@ -34,8 +34,10 @@ void partbuf_draw(PartBuffer *buf, GLuint shader, char *posname, char *tcname, c
 void partbuf_add(PartBuffer *buf, Matrix m, Texture *tex, Color *clr);
 */
 
+extern GLuint _quadvbo;
 
 void init_quadvbo();
 void draw_quad();
+void delete_vbo(GLuint *vbo);
 
 #endif

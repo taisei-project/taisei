@@ -9,7 +9,7 @@
 #include <string.h>
 #include "taisei_err.h"
 
-static GLuint quadvbo;
+GLuint _quadvbo;
 
 /*void init_partbuf(PartBuffer *buf) {
 	memset(buf, 0, sizeof(buf));
@@ -64,17 +64,23 @@ void partbuf_add(PartBuffer *buf, Matrix m, Texture *tex, Color *clr) {
 }*/
 
 void init_quadvbo() {
-	glGenBuffers(1, &quadvbo);
+	glGenBuffers(1, &_quadvbo);
 	
 	Vector verts[] = {
 		{-0.5,-0.5,0}, {0,0,0},
 		{-0.5,0.5,0}, {0,1,0},
 		{0.5,0.5,0}, {1,1,0},
-		{0.5,-0.5,0}, {1,0,0}
+		{0.5,-0.5,0}, {1,0,0},
+		
+		// Alternative quad for FBO		
+		{-0.5,-0.5,0}, {0,1,0},
+		{-0.5,0.5,0}, {0,0,0},
+		{0.5,0.5,0}, {1,0,0},
+		{0.5,-0.5,0}, {1,1,0}		
 	};
 	
-	glBindBuffer(GL_ARRAY_BUFFER, quadvbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vector)*8, verts, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, _quadvbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vector)*16, verts, GL_STATIC_DRAW);
 	
 	glVertexPointer(3, GL_FLOAT, sizeof(float)*6, NULL);
 	glTexCoordPointer(3, GL_FLOAT, sizeof(float)*6, NULL + 3*sizeof(float));
@@ -85,9 +91,13 @@ void init_quadvbo() {
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
+void delete_vbo(GLuint *vbo) {
+	glDeleteBuffers(1, vbo);
+}
+
 void draw_quad() {
 	
-	glBindBuffer(GL_ARRAY_BUFFER, quadvbo);	
+	glBindBuffer(GL_ARRAY_BUFFER, _quadvbo);	
 	
 // 	glEnableClientState(GL_VERTEX_ARRAY);
 // 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);

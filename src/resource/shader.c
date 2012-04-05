@@ -151,7 +151,7 @@ Shader *get_shader(const char *name) {
 
 void delete_shader(void **shas, void *sha) {
 	free(((Shader *)sha)->name);
-	glDeleteShader(((Shader*)sha)->prog);
+	glDeleteProgram(((Shader*)sha)->prog);
 	
 	int i;
 	for(i = 0; i < ((Shader *)sha)->unicount; i++)

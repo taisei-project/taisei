@@ -51,6 +51,12 @@ void init_fbo(FBO *fbo) {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void delete_fbo(FBO *fbo) {
+	glDeleteFramebuffers(1, &fbo->fbo);
+	glDeleteTextures(1, &fbo->depth);
+	glDeleteTextures(1, &fbo->tex);
+}
+
 void draw_fbo_viewport(FBO *fbo) {	
 	glPushMatrix();
 	glTranslatef(-VIEWPORT_X,VIEWPORT_H+VIEWPORT_Y-fbo->nh,0);
@@ -61,13 +67,10 @@ void draw_fbo_viewport(FBO *fbo) {
 	glScalef(fbo->nw, fbo->nh, 1);
 		
 	glBindTexture(GL_TEXTURE_2D, fbo->tex);
-	glBegin(GL_QUADS);
-	glTexCoord2f(0,1); glVertex3f(-0.5, -0.5, 0);
-	glTexCoord2f(0,0); glVertex3f(-0.5, 0.5, 0);
-	glTexCoord2f(1,0); glVertex3f(0.5, 0.5, 0);
-	glTexCoord2f(1,1); glVertex3f(0.5, -0.5, 0);
-	glEnd();
 	
+	glBindBuffer(GL_ARRAY_BUFFER, _quadvbo);	
+	glDrawArrays(GL_QUADS, 4, 4);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);	
 	
 	glDisable(GL_TEXTURE_2D);
 	
