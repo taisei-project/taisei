@@ -42,10 +42,10 @@ void draw_ingame_menu(MenuData *menu) {
 	if(!tconfig.intval[NO_SHADER]) {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	
-		GLenum shader = get_shader("ingame_menu");
-		glUseProgram(shader);	
+		Shader *shader = get_shader("ingame_menu");
+		glUseProgram(shader->prog);	
 		
-		glUniform1f(glGetUniformLocation(shader, "rad"), rad);
+		glUniform1f(uniloc(shader, "rad"), rad);
 		draw_fbo_viewport(&resources.fsec);
 		glUseProgram(0);
 	}

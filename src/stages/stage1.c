@@ -15,7 +15,7 @@ static Stage3D bgcontext;
 void stage1_bg_leaves_draw(Vector pos) {
 	glEnable(GL_TEXTURE_2D);
 	if(!tconfig.intval[NO_SHADER])
-		glUseProgram(get_shader("alpha_depth"));
+		glUseProgram(get_shader("alpha_depth")->prog);
 	
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
@@ -100,13 +100,13 @@ Vector **stage1_bg_pos(Vector pos, float maxrange) {
 }
 
 void stage1_fog(int fbonum) {
-	GLuint shader = get_shader("zbuf_fog");
+	Shader *shader = get_shader("zbuf_fog");
 	
-	glUseProgram(shader);
-	glUniform1i(glGetUniformLocation(shader, "depth"),2);
-	glUniform4f(glGetUniformLocation(shader, "fog_color"),0.05,0.0,0.03,1.0);
-	glUniform1f(glGetUniformLocation(shader, "start"),0.2);
-	glUniform1f(glGetUniformLocation(shader, "end"),0.8);
+	glUseProgram(shader->prog);
+	glUniform1i(uniloc(shader, "depth"),2);
+	glUniform4f(uniloc(shader, "fog_color"),0.05,0.0,0.03,1.0);
+	glUniform1f(uniloc(shader, "start"),0.2);
+	glUniform1f(uniloc(shader, "end"),0.8);
 	glActiveTexture(GL_TEXTURE0 + 2);
 	glBindTexture(GL_TEXTURE_2D, resources.fbg[fbonum].depth);
 	glActiveTexture(GL_TEXTURE0);
@@ -116,10 +116,10 @@ void stage1_fog(int fbonum) {
 }
 
 void stage1_bloom(int fbonum) {
-	GLuint shader = get_shader("bloom");
+	Shader *shader = get_shader("bloom");
 	
-	glUseProgram(shader);
-	glUniform1f(glGetUniformLocation(shader, "intensity"),0.05);
+	glUseProgram(shader->prog);
+	glUniform1f(uniloc(shader, "intensity"),0.05);
 	draw_fbo_viewport(&resources.fbg[fbonum]);
 	glUseProgram(0);
 }

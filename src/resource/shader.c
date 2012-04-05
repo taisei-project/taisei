@@ -25,6 +25,19 @@ void print_info_log(GLuint shader) {
 	}
 }
 
+void print_program_info_log(GLuint program) {
+	int len = 0, alen = 0;
+	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len);
+	
+	if(len > 1) {
+		char *log = malloc(len);
+		memset(log, 0, len);
+		glGetProgramInfoLog(program, 256, &alen, log);
+		printf("%s\n", log);
+		free(log);
+	}
+}
+
 void load_shader(const char *filename) {
 	if(!GLEW_ARB_vertex_program || !GLEW_ARB_fragment_program) {
 		warnx("missing shader support; skipping.");
@@ -82,7 +95,7 @@ void load_shader(const char *filename) {
 	
 	glLinkProgram(sha->prog);
 	
-// 	print_info_log(sha->prog);
+	print_program_info_log(sha->prog);
 	
 	free(text);
 	
@@ -93,10 +106,37 @@ void load_shader(const char *filename) {
 	memset(sha->name, 0, end-beg + 1);
 	strncpy(sha->name, beg, end-beg);
 	
+	cache_uniforms(sha);
+	
 	printf("-- loaded '%s' as '%s'\n", filename, sha->name);
 }
+
+void cache_uniforms(Shader *sha) {
+	int i, maxlen = 0;
+	glGetProgramiv(sha->prog, GL_ACTIVE_UNIFORMS, &sha->unicount);
+	glGetProgramiv(sha->prog, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxlen);
 	
-GLuint get_shader(const char *name) {
+	sha->uniforms = calloc(sizeof(Uniform), sha->unicount);
+	
+	for(i = 0; i < sha->unicount; i++) {
+		sha->uniforms[i].name = malloc(maxlen);
+		memset(sha->uniforms[i].name, 0, maxlen);
+		
+		glGetActiveUniformName(sha->prog, i, maxlen, NULL, sha->uniforms[i].name);
+		sha->uniforms[i].location = glGetUniformLocation(sha->prog, sha->uniforms[i].name);
+	}
+}
+
+int uniloc(Shader *sha, char *name) {
+	int i;
+	for(i = 0; i < sha->unicount; i++)
+		if(strcmp(sha->uniforms[i].name, name) == 0)
+			return sha->uniforms[i].location;
+		
+	return -1;
+}
+
+Shader *get_shader(const char *name) {
 	Shader *s, *res = NULL;
 	for(s = resources.shaders; s; s = s->next) {
 		if(strcmp(s->name, name) == 0)
@@ -106,12 +146,19 @@ GLuint get_shader(const char *name) {
 	if(res == NULL)
 		errx(-1,"get_shader():\n!- cannot load shader '%s'", name);
 	
-	return res->prog;
+	return res;
 }
 
 void delete_shader(void **shas, void *sha) {
 	free(((Shader *)sha)->name);
 	glDeleteShader(((Shader*)sha)->prog);
+	
+	int i;
+	for(i = 0; i < ((Shader *)sha)->unicount; i++)
+		free(((Shader *)sha)->uniforms[i].name);
+	
+	if(((Shader *)sha)->uniforms)
+		free(((Shader *)sha)->uniforms);
 	
 	delete_element(shas, sha);
 }

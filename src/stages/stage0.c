@@ -72,14 +72,14 @@ Vector **stage0_smoke_pos(Vector p, float maxrange) {
 }
 
 void stage0_fog(int fbonum) {
-	GLuint shader = get_shader("zbuf_fog");
+	Shader *shader = get_shader("zbuf_fog");
 	
-	glUseProgram(shader);
-	glUniform1i(glGetUniformLocation(shader, "tex"), 0);
-	glUniform1i(glGetUniformLocation(shader, "depth"), 1);
-	glUniform4f(glGetUniformLocation(shader, "fog_color"),0.1, 0.1, 0.1, 1.0);
-	glUniform1f(glGetUniformLocation(shader, "start"),0.0);
-	glUniform1f(glGetUniformLocation(shader, "end"),0.4);
+	glUseProgram(shader->prog);
+	glUniform1i(uniloc(shader, "tex"), 0);
+	glUniform1i(uniloc(shader, "depth"), 1);
+	glUniform4f(uniloc(shader, "fog_color"),0.1, 0.1, 0.1, 1.0);
+	glUniform1f(uniloc(shader, "start"),0.0);
+	glUniform1f(uniloc(shader, "end"),0.4);
 	glActiveTexture(GL_TEXTURE0 + 1);
 	glBindTexture(GL_TEXTURE_2D, resources.fbg[fbonum].depth);
 	glActiveTexture(GL_TEXTURE0);

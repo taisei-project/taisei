@@ -246,19 +246,19 @@ void apply_bg_shaders(ShaderRule *shaderrules) {
 	glBindFramebuffer(GL_FRAMEBUFFER, resources.fsec.fbo);
 	
 	if(global.boss) { // Boss background shader
-		GLuint shader = get_shader("boss_zoom");
-		glUseProgram(shader);
+		Shader *shader = get_shader("boss_zoom");
+		glUseProgram(shader->prog);
 		
 		complex fpos = VIEWPORT_H*I + conj(global.boss->pos) + (VIEWPORT_X + VIEWPORT_Y*I);
 		complex pos = fpos + 15*cexp(I*global.frames/4.5);
 		
-		glUniform2f(glGetUniformLocation(shader, "blur_orig"),
+		glUniform2f(uniloc(shader, "blur_orig"),
 					creal(pos)/resources.fbg[fbonum].nw, cimag(pos)/resources.fbg[fbonum].nh);
-		glUniform2f(glGetUniformLocation(shader, "fix_orig"),
+		glUniform2f(uniloc(shader, "fix_orig"),
 					creal(fpos)/resources.fbg[fbonum].nw, cimag(fpos)/resources.fbg[fbonum].nh);
-		glUniform1f(glGetUniformLocation(shader, "blur_rad"), 0.2+0.025*sin(global.frames/15.0));
-		glUniform1f(glGetUniformLocation(shader, "rad"), 0.24);
-		glUniform1f(glGetUniformLocation(shader, "ratio"), (float)resources.fbg[fbonum].nh/resources.fbg[fbonum].nw);
+		glUniform1f(uniloc(shader, "blur_rad"), 0.2+0.025*sin(global.frames/15.0));
+		glUniform1f(uniloc(shader, "rad"), 0.24);
+		glUniform1f(uniloc(shader, "ratio"), (float)resources.fbg[fbonum].nh/resources.fbg[fbonum].nw);
 	}
 	
 	draw_fbo_viewport(&resources.fbg[fbonum]);

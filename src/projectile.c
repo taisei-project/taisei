@@ -185,10 +185,10 @@ int asymptotic(Projectile *p, int t) { // v = a[0]*(a[1] + 1); a[1] -> 0
 
 void _ProjDraw(Projectile *proj, int t) {
 	if(proj->clr != NULL && !tconfig.intval[NO_SHADER]) {
-		GLuint shader = get_shader("bullet_color");
-		glUseProgramObjectARB(shader);
+		Shader *shader = get_shader("bullet_color");
+		glUseProgramObjectARB(shader->prog);
 		
-		glUniform4fv(glGetUniformLocation(shader, "color"), 1, (GLfloat *)proj->clr);
+		glUniform4fv(uniloc(shader, "color"), 1, (GLfloat *)proj->clr);
 	}
 	
 	if(proj->clr != NULL && tconfig.intval[NO_SHADER])
