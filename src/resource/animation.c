@@ -90,13 +90,18 @@ void draw_animation_p(float x, float y, int row, Animation *ani) {
 		errx(-1, "animation speed of %s == 0. relativity?", ani->name);
 	
 	glPushMatrix();
-	glTranslatef(x,y,0);
-	glScalef(ani->w,ani->h, 1);
+	if(x || y)
+		glTranslatef(x,y,0);
+	if(ani->w != 1 || ani->h != 1)
+		glScalef(ani->w,ani->h, 1);
 	
 	glMatrixMode(GL_TEXTURE);
 		glPushMatrix();
 		glScalef(s,t,1);
-		glTranslatef(global.frames/ani->speed % ani->cols, row, 0);
+		
+		int col = global.frames/ani->speed % ani->cols;
+		if(col || row)
+			glTranslatef(col, row, 0);
 	glMatrixMode(GL_MODELVIEW);
 	
 	draw_quad();

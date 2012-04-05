@@ -37,14 +37,11 @@ void draw_char_menu(MenuData *menu, MenuData *mod) {
 	
 	glPushMatrix();
 	glColor4f(0,0,0,0.7);
-	glTranslatef(SCREEN_W/4*3, 0, 0);
+	glTranslatef(SCREEN_W/4*3, SCREEN_H/2, 0);
+	glScalef(300, SCREEN_H, 1);
 	
-	glBegin(GL_QUADS);
-	glVertex3f(-150,0, 0);
-	glVertex3f(-150,SCREEN_H, 0);
-	glVertex3f(150,SCREEN_H, 0);
-	glVertex3f(150,0, 0);
-	glEnd();
+	draw_quad();
+	
 	glPopMatrix();
 	
 	char buf[128];
@@ -68,12 +65,17 @@ void draw_char_menu(MenuData *menu, MenuData *mod) {
 		glTranslatef(SCREEN_W/4*3, SCREEN_H/3, 0);
 		
 		glPushMatrix();
-		glTranslatef(0,-300*menu->entries[i].drawdata, 0);
-		glRotatef(180*menu->entries[i].drawdata, 1,0,0);
+		
+		if(menu->entries[i].drawdata != 0) {
+			glTranslatef(0,-300*menu->entries[i].drawdata, 0);
+			glRotatef(180*menu->entries[i].drawdata, 1,0,0);
+		}
+		
 		draw_text(AL_Center, 0, 0, name, _fonts.mainmenu);
 		glPopMatrix();
 		
-		glColor4f(1,1,1,1-menu->entries[i].drawdata*3);
+		if(menu->entries[i].drawdata)
+			glColor4f(1,1,1,1-menu->entries[i].drawdata*3);
 		draw_text(AL_Center, 0, 70, title, _fonts.standard);
 		
 		strncpy(buf, mod->entries[i].name, sizeof(buf));
@@ -83,7 +85,9 @@ void draw_char_menu(MenuData *menu, MenuData *mod) {
 		
 		char *use = menu->entries[menu->cursor].arg == (void *)Marisa ? mari : youmu;
 		
-		glColor4f(1,1,1,1);
+		if(menu->entries[i].drawdata)
+			glColor4f(1,1,1,1);
+		
 		if(mod->cursor == i)
 			glColor4f(0.9,0.6,0.2,1);
 		draw_text(AL_Center, 0, 200+40*i, use, _fonts.standard);
@@ -96,19 +100,23 @@ void draw_char_menu(MenuData *menu, MenuData *mod) {
 		glPushMatrix();		
 		
 		glTranslatef(60 + (SCREEN_W/2 - 30)*i, SCREEN_H/2+80, 0);
-		glScalef(1-2*i,1,1);
-		if(i) glCullFace(GL_FRONT);
+		
+		if(i) {
+			glScalef(-1,1,1);
+			glCullFace(GL_FRONT);
+		}
 		glBegin(GL_TRIANGLES);
 		glVertex3f(0,0,0);
 		glVertex3f(20,30,0);
 		glVertex3f(20,-30,0);
-		glEnd();
-		
+		glEnd();		
 		glPopMatrix();
+		
+		if(i)
+			glCullFace(GL_BACK);
 	}
 	
-	glCullFace(GL_BACK);
-	glColor4f(1,1,1,1);
+	glColor3f(1,1,1);
 	
 	fade_out(menu->fade);
 }

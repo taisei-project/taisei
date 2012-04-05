@@ -105,7 +105,6 @@ void draw_hud() {
 
 	for(i = 0; i < global.plr.bombs; i++)
 	  draw_texture(16*i,200, "star");
-	glColor3f(1,1,1);
 	
 	sprintf(buf, "%.2f", global.plr.power);
 	draw_text(AL_Center, 10, 236, buf, _fonts.standard);
@@ -155,8 +154,7 @@ void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
 			}
 			
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-			
-			glColor3f(1,1,1);			
+						
 			glRotatef(global.frames*4.0, 0, 0, -1);
 			float f = 0.8+0.1*sin(global.frames/8.0);
 			glScalef(f,f,f);

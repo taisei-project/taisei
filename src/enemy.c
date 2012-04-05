@@ -92,10 +92,15 @@ void EnemyFlareShrink(Projectile *p, int t) {
 	
 	glPushMatrix();
 	float s = 2.0-t/p->args[0]*2;
-		
-	glTranslatef(creal(e->pos + p->pos), cimag(e->pos + p->pos), 0);
-	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
-	glScalef(s, s, 1);
+	
+	if(e->pos + p->pos)
+		glTranslatef(creal(e->pos + p->pos), cimag(e->pos + p->pos), 0);
+	
+	if(p->angle != M_PI*0.5)
+		glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
+	
+	if(s != 1 && s != 0)
+		glScalef(s, s, 1);
 	
 	if(p->clr)
 		glColor4fv((float *)p->clr);
@@ -106,7 +111,8 @@ void EnemyFlareShrink(Projectile *p, int t) {
 	
 	glPopMatrix();
 	
-	glColor3f(1,1,1);
+	if(p->clr)
+		glColor3f(1,1,1);
 }
 
 void BigFairy(Enemy *e, int t) {
@@ -132,11 +138,12 @@ void BigFairy(Enemy *e, int t) {
 	}
 	draw_animation(0, 0, e->moving, "bigfairy");
 	glPopMatrix();
-	glCullFace(GL_BACK);
+	
+	if(e->dir)
+		glCullFace(GL_BACK);
 }
 
-void Fairy(Enemy *e, int t) {	
-	glEnable(GL_TEXTURE_2D);
+void Fairy(Enemy *e, int t) {
 	
 	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;
 	glPushMatrix();
@@ -156,8 +163,7 @@ void Fairy(Enemy *e, int t) {
 	draw_animation(0, 0, e->moving, "fairy");
 	glPopMatrix();
 	
-	glPopMatrix();	
-	glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
 	
 	if(e->dir) {
 		glCullFace(GL_BACK);

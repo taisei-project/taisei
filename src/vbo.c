@@ -75,22 +75,27 @@ void init_quadvbo() {
 	
 	glBindBuffer(GL_ARRAY_BUFFER, quadvbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vector)*8, verts, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-void draw_quad() {
-	glBindBuffer(GL_ARRAY_BUFFER, quadvbo);
 	
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-				
 	glVertexPointer(3, GL_FLOAT, sizeof(float)*6, NULL);
 	glTexCoordPointer(3, GL_FLOAT, sizeof(float)*6, NULL + 3*sizeof(float));
 	
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+}
+
+void draw_quad() {
+	
+	glBindBuffer(GL_ARRAY_BUFFER, quadvbo);	
+	
+// 	glEnableClientState(GL_VERTEX_ARRAY);
+// 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	
 	glDrawArrays(GL_QUADS, 0, 4);
 		
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
+// 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+// 	glDisableClientState(GL_VERTEX_ARRAY);
 	
 	glBindBuffer(GL_ARRAY_BUFFER, 0);	
 }

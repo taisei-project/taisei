@@ -30,11 +30,15 @@ void set_perspective(Stage3D *s, float near, float far) {
 	glTranslatef(-(VIEWPORT_X+VIEWPORT_W/2.0)/SCREEN_W, -(VIEWPORT_Y+VIEWPORT_H/2.0)/SCREEN_H,0);
 	gluPerspective(s->projangle, 1, near, far);
 	
-	glRotatef(s->crot[0], 1, 0, 0);
-	glRotatef(s->crot[1], 0, 1, 0);
-	glRotatef(s->crot[2], 0, 0, 1);
+	if(s->crot[0])
+		glRotatef(s->crot[0], 1, 0, 0);
+	if(s->crot[1])
+		glRotatef(s->crot[1], 0, 1, 0);
+	if(s->crot[2])
+		glRotatef(s->crot[2], 0, 0, 1);
 	
-	glTranslatef(s->cx[0],s->cx[1],s->cx[2]);
+	if(s->cx[0] || s->cx[1] || s->cx[2])
+		glTranslatef(s->cx[0],s->cx[1],s->cx[2]);
 	
 	glMatrixMode(GL_MODELVIEW);	
 }

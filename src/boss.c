@@ -111,9 +111,9 @@ void draw_boss(Boss *boss) {
 		for(i = boss->acount-1; i > nextspell; i--)
 			if(boss->attacks[i].type == AT_Spellcard)
 				draw_texture(x += 22, 40, "star");
-	}
 		
-	glColor3f(1,1,1);	
+		glColor3f(1,1,1);
+	}		
 }
 
 void process_boss(Boss *boss) {

@@ -213,13 +213,16 @@ void draw_texture_p(float x, float y, Texture *tex) {
 	
 	float wq = ((float)tex->w)/tex->truew;
 	float hq = ((float)tex->h)/tex->trueh;
-		
-	glTranslatef(x,y,0);
-	glScalef(tex->w,tex->h,1);
+	
+	if(x || y)
+		glTranslatef(x,y,0);
+	if(tex->w != 1 || tex->h != 1)
+		glScalef(tex->w,tex->h,1);
 	
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
-	glScalef(wq, hq, 1);
+	if(wq != 1 || hq != 1)
+		glScalef(wq, hq, 1);
 	glMatrixMode(GL_MODELVIEW);
 
 	draw_quad();

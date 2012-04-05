@@ -69,7 +69,6 @@ void draw_main_menu_bg(MenuData* menu) {
 void draw_main_menu(MenuData *menu) {
 	draw_main_menu_bg(menu);
 	
-	glColor4f(1,1,1,1);
 	draw_texture(SCREEN_W-200, SCREEN_H/2+100, "dialog/marisa");
 	
 	draw_texture(150, 100, "mainmenu/logo");
@@ -78,27 +77,31 @@ void draw_main_menu(MenuData *menu) {
 	glTranslatef(0, SCREEN_H-200, 0);
 	
 	glPushMatrix();
-	glTranslatef(0, menu->drawdata[2], 0);
-	glColor4f(0,0,0,0.5);
-	glBegin(GL_QUADS);
-		glVertex3f(0,-17, 0);
-		glVertex3f(0,17, 0);
-		glVertex3f(270, 17, 0);
-		glVertex3f(270,-17, 0);
-	glEnd();
+	glTranslatef(135, menu->drawdata[2], 0);
+	glScalef(270, 34, 1);
+	
+	glColor4f(0,0,0,0.7);
+	
+	draw_quad();
+	
 	glPopMatrix();
 	
 	int i;
 
+	int grey = 2;
+	
 	for(i = 0; i < menu->ecount; i++) {
 		float s = 5*sin(menu->frames/80.0 + 20*i);
+				
+		if(menu->entries[i].action == NULL && grey != 1) {
+			glColor4f(0.5,0.5,0.5,0.7);
+			grey = 1;
+		} else if(grey != 0) {
+			glColor4f(1,1,1,0.7);
+			grey = 0;
+		}
 		
-		float grey = 1;
-		if(menu->entries[i].action == NULL)
-			grey = 0.5;
-		
-		glColor4f(grey,grey,grey,0.7);
-		draw_text(AL_Left, 50 + s, 35*i, menu->entries[i].name, _fonts.mainmenu);		
+		draw_text(AL_Left, 50 + s, 35*i, menu->entries[i].name, _fonts.mainmenu);				
 	}
 	
 	glPopMatrix();
@@ -106,8 +109,6 @@ void draw_main_menu(MenuData *menu) {
 	menu->drawdata[2] += (35*menu->cursor - menu->drawdata[2])/10.0;
 	
 	fade_out(menu->fade);
-	
-	glColor4f(1,1,1,1);	
 }
 
 void main_menu_loop(MenuData *menu) {

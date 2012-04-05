@@ -95,12 +95,17 @@ void player_draw(Player* plr) {
 			glScalef(-1,1,1);
 		}
 		
-		if(global.frames - abs(plr->recovery) < 0 && (global.frames/8)&1)
+		int clr_changed = 0;
+		
+		if(global.frames - abs(plr->recovery) < 0 && (global.frames/8)&1) {
 			glColor4f(0.4,0.4,1,0.9);
+			clr_changed = 1;
+		}
 			
 		draw_animation_p(0, 0, !plr->moving, plr->ani);
 		
-		glColor4f(1,1,1,1);
+		if(clr_changed)
+			glColor3f(1,1,1);
 		
 		if(plr->dir)
 			glPopMatrix();

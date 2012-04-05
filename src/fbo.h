@@ -20,4 +20,5 @@ typedef struct {
 
 void init_fbo(FBO *fbo);
 void draw_fbo_viewport(FBO *fbo);
+
 #endif

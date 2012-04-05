@@ -62,7 +62,7 @@ void stage0_smoke_draw(Vector pos) {
 	glColor4f(1,1,1,1);
 	
 	glPopMatrix();
-	glEnable(GL_DEPTH_TEST);	
+	glEnable(GL_DEPTH_TEST);
 }
 
 Vector **stage0_smoke_pos(Vector p, float maxrange) {
@@ -519,7 +519,6 @@ void stage0_events() {
 		return;	
 	
 	TIMER(&global.timer);
-	
 	
 	// opening. projectile bursts
 	FROM_TO(100, 160, 25) {

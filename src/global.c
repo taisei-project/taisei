@@ -24,8 +24,6 @@ void init_global() {
 	load_resources();
 	printf("- fonts:\n");
 	init_fonts();
-	
-	init_quadvbo();
 }
 
 void game_over() {
@@ -61,13 +59,13 @@ void set_ortho() {
 
 void fade_out(float f) {
 	glColor4f(0,0,0,f);
-			
-	glBegin(GL_QUADS);
-	glVertex3f(0,0,0);
-	glVertex3f(0,SCREEN_H,0);
-	glVertex3f(SCREEN_W,SCREEN_H,0);
-	glVertex3f(SCREEN_W,0,0);
-	glEnd();
+	
+	glPushMatrix();
+	glScalef(SCREEN_W,SCREEN_H,1);
+	glTranslatef(0.5,0.5,0);
+	
+	draw_quad();
+	glPopMatrix();
 	
 	glColor4f(1,1,1,1);	
 }

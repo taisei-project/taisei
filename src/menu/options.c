@@ -366,11 +366,12 @@ void draw_options_menu_bg(MenuData* menu) {
 	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubgbg");
 	glColor4f(1,0.6,0.5,0.6 + 0.1*sin(menu->frames/100.0));
 	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubg");
+	glColor3f(1,1,1);
 }
 
 void draw_options_menu(MenuData *menu) {
 	draw_options_menu_bg(menu);
-	glColor4f(1,1,1,1);
+	
 	draw_text(AL_Right, 140*(1-menu->fade), 30, "Options", _fonts.mainmenu);
 	
 	//glColor4f(1,1,1,0.7);
@@ -380,29 +381,33 @@ void draw_options_menu(MenuData *menu) {
 	glTranslatef(100, 100, 0);
 	
 	glPushMatrix();
-	glTranslatef(0, menu->drawdata[2], 0);
+	glTranslatef(SCREEN_W/2 - 100, menu->drawdata[2], 0);
+	glScalef(SCREEN_W - 200, 20, 1);
 	glColor4f(0,0,0,0.5);
-	glBegin(GL_QUADS);
-		glVertex3f(0, -10, 0);
-		glVertex3f(0,  10, 0);
-		glVertex3f(SCREEN_W - 200,  10, 0);
-		glVertex3f(SCREEN_W - 200, -10, 0);
-	glEnd();
+	
+	draw_quad();
+	
 	glPopMatrix();
 	
 	OptionBinding *binds = (OptionBinding*)menu->context;
 	OptionBinding *bind;
 	int i, caption_drawn = 0;
 
+	int clr = 4;
+	
 	for(i = 0; i < menu->ecount; i++) {
 		menu->entries[i].drawdata += 0.2 * (10*(i == menu->cursor) - menu->entries[i].drawdata);
 		
-		if(menu->entries[i].action == NULL)
+		if(menu->entries[i].action == NULL && clr != 0) {
+			clr = 0;
 			glColor4f(0.5, 0.5, 0.5, 0.7);
-		else if(i == menu->cursor)
+		} else if(i == menu->cursor && clr != 1) {
+			clr = 1;
 			glColor4f(1,1,0,0.7);
-		else
+		} else if(clr != 2) {
+			clr = 2;
 			glColor4f(1, 1, 1, 0.7);
+		}
 		
 		draw_text(AL_Left, 20 - menu->entries[i].drawdata, 20*i, menu->entries[i].name, _fonts.standard);
 		
@@ -418,10 +423,13 @@ void draw_options_menu(MenuData *menu) {
 						if(j != bind->valcount-1)
 							origin -= strlen(bind->values[j+1])/2.0 * 20;
 						
-						if(binding_getvalue(bind) == j)
+						if(binding_getvalue(bind) == j && clr != 1) {
+							clr = 1;
 							glColor4f(1,1,0,0.7);
-						else
+						} else if(clr != 0) {
+							clr = 0;
 							glColor4f(0.5,0.5,0.5,0.7);
+						}
 							
 						draw_text(AL_Right, origin, 20*i, bind->values[j], _fonts.standard);
 					}
@@ -430,13 +438,17 @@ void draw_options_menu(MenuData *menu) {
 				case BT_KeyBinding:
 					if(!caption_drawn)
 					{
-						glColor4f(1,1,1,0.7);
+						if(clr != 2) {
+							clr = 2;
+							glColor4f(1,1,1,0.7);
+						}
 						draw_text(AL_Center, (SCREEN_W - 200)/2, 20*(i-1), "Controls", _fonts.standard);
 						caption_drawn = 1;
 					}
 				
-					if(bind->blockinput)
+					if(bind->blockinput && clr != 3)
 					{
+						clr = 3;
 						glColor4f(0,1,0,0.7);
 						draw_text(AL_Right, origin, 20*i, "Press a key to assign, ESC to cancel", _fonts.standard);
 					}
@@ -452,8 +464,6 @@ void draw_options_menu(MenuData *menu) {
 	menu->drawdata[2] += (20*menu->cursor - menu->drawdata[2])/10.0;
 	
 	fade_out(menu->fade);
-	
-	glColor4f(1,1,1,1);	
 }
 
 // --- Input processing --- //

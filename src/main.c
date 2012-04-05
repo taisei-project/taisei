@@ -18,23 +18,14 @@
 SDL_Surface *display;
 
 void init_gl() {
-	glClearColor(0, 0, 0, 0);
-	
-	glShadeModel(GL_SMOOTH);
-	glEnable(GL_BLEND);
-	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-	glEnable(GL_LINE_SMOOTH);
-	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-	
-	glViewport(0, 0, SCREEN_W, SCREEN_H);
-	
-	glClearDepth(1.0);
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+	glEnable(GL_BLEND);
+	init_quadvbo();
 }
 
 

@@ -35,10 +35,7 @@ void init_fbo(FBO *fbo) {
 	glGenFramebuffers(1,&fbo->fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo->fbo);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbo->tex, 0);
-	
-	glEnable(GL_BLEND);
-    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
-	
+		
 	glGenTextures(1, &fbo->depth);
 	glBindTexture(GL_TEXTURE_2D, fbo->depth);
 	
@@ -59,15 +56,20 @@ void draw_fbo_viewport(FBO *fbo) {
 	glTranslatef(-VIEWPORT_X,VIEWPORT_H+VIEWPORT_Y-fbo->nh,0);
 		
 	glEnable(GL_TEXTURE_2D);
+	
+	glTranslatef(fbo->nw/2,fbo->nw/2,0);
+	glScalef(fbo->nw, fbo->nh, 1);
+		
 	glBindTexture(GL_TEXTURE_2D, fbo->tex);
 	glBegin(GL_QUADS);
-		glTexCoord2f(0,1); glVertex3f(0, 0, 0);
-		glTexCoord2f(0,0); glVertex3f(0, fbo->nh, 0);
-		glTexCoord2f(1,0); glVertex3f(fbo->nw, fbo->nh, 0);
-		glTexCoord2f(1,1); glVertex3f(fbo->nw, 0, 0);
+	glTexCoord2f(0,1); glVertex3f(-0.5, -0.5, 0);
+	glTexCoord2f(0,0); glVertex3f(-0.5, 0.5, 0);
+	glTexCoord2f(1,0); glVertex3f(0.5, 0.5, 0);
+	glTexCoord2f(1,1); glVertex3f(0.5, -0.5, 0);
 	glEnd();
+	
+	
 	glDisable(GL_TEXTURE_2D);
 	
-	glUseProgramObjectARB(0);
 	glPopMatrix();
 }

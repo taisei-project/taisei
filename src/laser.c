@@ -36,7 +36,7 @@ Laser *create_laser(LaserType type, complex pos, complex pos0, int time, int dea
 	return l;
 }
 
-void draw_laser_line(Laser *laser) {
+void draw_laser_line(Laser *laser) { // REALLY OLD.
 	float width = cabs(laser->pos0);
 	if(global.frames - laser->birthtime < laser->time*3/5.0)
 		width = 2;

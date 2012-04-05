@@ -80,9 +80,11 @@ void draw_dialog(Dialog *dialog) {
 		if(dialog->images[i])
 			draw_texture_p(0, 0, dialog->images[i]);
 		glPopMatrix();
+		
+		glColor3f(1,1,1);
 	}
 	
-	glColor3f(1,1,1);
+	
 			
 	glCullFace(GL_BACK);
 	glPopMatrix();
@@ -92,19 +94,20 @@ void draw_dialog(Dialog *dialog) {
 		glTranslatef(0, 100-(global.frames-dialog->birthtime)*4, 0);
 	glColor4f(0,0,0,0.8);
 	
-	glBegin(GL_QUADS);
-	glVertex3f(20, VIEWPORT_H-130, 0);
-	glVertex3f(20, VIEWPORT_H-20, 0);
-	glVertex3f(VIEWPORT_W-20, VIEWPORT_H-20, 0);
-	glVertex3f(VIEWPORT_W-20, VIEWPORT_H-130, 0);
-	glEnd();
+	glPushMatrix();
+	glTranslatef(VIEWPORT_W/2, VIEWPORT_H-75, 0);
+	glScalef(VIEWPORT_W-40, 110, 1);
+	
+	draw_quad();
+	glPopMatrix();
 	glColor4f(1,1,1,1);
 	
 	if(dialog->messages[dialog->pos].side == Right)
 		glColor3f(0.6,0.6,1);
 	draw_text(AL_Center, VIEWPORT_W/2, VIEWPORT_H-110, dialog->messages[dialog->pos].msg, _fonts.standard);
 	
-	glColor4f(1,1,1,1);
+	if(dialog->messages[dialog->pos].side == Right)
+		glColor3f(1,1,1);
 	glPopMatrix();
 }
 	

@@ -82,7 +82,7 @@ void load_shader(const char *filename) {
 	
 	glLinkProgram(sha->prog);
 	
-	print_info_log(sha->prog);
+// 	print_info_log(sha->prog);
 	
 	free(text);
 	

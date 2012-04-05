@@ -195,8 +195,9 @@ void _ProjDraw(Projectile *proj, int t) {
 		glColor3f(0,0,0);
 	
 	draw_texture_p(0,0, proj->tex);
-		
-	glColor3f(1,1,1);
+	
+	if(proj->clr != NULL && tconfig.intval[NO_SHADER])
+		glColor3f(1,1,1);
 	
 	if(!tconfig.intval[NO_SHADER])
 		glUseProgramObjectARB(0);	
@@ -222,8 +223,10 @@ void PartDraw(Projectile *proj, int t) {
 	
 	draw_texture_p(0,0, proj->tex);
 	
-	glPopMatrix();	
-	glColor3f(1,1,1);
+	glPopMatrix();
+	
+	if(proj->clr)
+		glColor3f(1,1,1);
 }
 
 void Blast(Projectile *p, int t) {
@@ -233,9 +236,11 @@ void Blast(Projectile *p, int t) {
 	}
 	
 	glPushMatrix();
-	glTranslatef(creal(p->pos), cimag(p->pos), 0);
+	if(p->pos)
+		glTranslatef(creal(p->pos), cimag(p->pos), 0);
 	glRotatef(creal(p->args[1]), cimag(p->args[1]), creal(p->args[2]), cimag(p->args[2]));
-	glScalef(t/p->args[0], t/p->args[0], 1);
+	if(t != p->args[0])
+		glScalef(t/p->args[0], t/p->args[0], 1);
 	glColor4f(0.3,0.6,1,1 - t/p->args[0]);
 	draw_texture_p(0,0,p->tex);
 	glPopMatrix();
@@ -246,9 +251,14 @@ void Blast(Projectile *p, int t) {
 void Shrink(Projectile *p, int t) {	
 	glPushMatrix();
 	float s = 2.0-t/p->args[0]*2;
-	glTranslatef(creal(p->pos), cimag(p->pos), 0);
-	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
-	glScalef(s, s, 1);
+	
+	if(p->pos)
+		glTranslatef(creal(p->pos), cimag(p->pos), 0);
+	
+	if(p->angle != M_PI*0.5)
+		glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
+	if(s != 1 && s != 0)
+		glScalef(s, s, 1);
 	
 	_ProjDraw(p, t);
 	glPopMatrix();
@@ -259,7 +269,9 @@ void DeathShrink(Projectile *p, int t) {
 	float s = 2.0-t/p->args[0]*2;
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
 	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
-	glScalef(s, 1, 1);
+	
+	if(s != 1)
+		glScalef(s, 1, 1);
 	
 	_ProjDraw(p, t);
 	glPopMatrix();
@@ -269,11 +281,14 @@ void GrowFade(Projectile *p, int t) {
 	glPushMatrix();
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
 	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
-	glScalef(t/p->args[0]*(1+p->args[1]), t/p->args[0]*(1+p->args[1]), 1);
+	
+	float s = t/p->args[0]*(1+p->args[1]);
+	if(s != 1)
+		glScalef(s, s, 1);
 	
 	if(p->clr)
 		glColor4f(p->clr->r,p->clr->g,p->clr->b,1-t/p->args[0]);
-	else
+	else if(t/p->args[0] != 0)
 		glColor4f(1,1,1,1-t/p->args[0]);
 	
 	draw_texture_p(0,0,p->tex);
@@ -299,9 +314,12 @@ int bullet_flare_move(Projectile *p, int t) {
 }
 
 void Fade(Projectile *p, int t) {
-	glColor4f(1,1,1, 1.0 - (float)t/p->args[0]);
+	if(t/creal(p->args[0]) != 0)
+		glColor4f(1,1,1, 1.0 - (float)t/p->args[0]);
 	ProjDraw(p, t);
-	glColor4f(1,1,1,1);
+	
+	if(t/creal(p->args[0]) != 0)
+		glColor4f(1,1,1,1);
 }
 
 int timeout(Projectile *p, int t) {
@@ -331,7 +349,8 @@ void Petal(Projectile *p, int t) {
 	glDisable(GL_CULL_FACE);
 	
 	glPushMatrix();
-	glTranslatef(creal(p->pos), cimag(p->pos),0);
+	if(p->pos)
+		glTranslatef(creal(p->pos), cimag(p->pos),0);
 	glRotatef(t*4.0 + cimag(p->args[3]), x, y, z);
 		
 	if(p->clr)

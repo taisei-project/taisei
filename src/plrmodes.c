@@ -67,16 +67,8 @@ void Slice(Projectile *p, int t) {
 }
 
 void YoumuSlash(Enemy *e, int t) {
-	glColor4f(1,1,1,10.0/t+sin(t/10.0)*0.1);
+	fade_out(10.0/t+sin(t/10.0)*0.1);
 	
-	glBegin(GL_QUADS);
-	glVertex3f(0,0,0);
-	glVertex3f(0,VIEWPORT_H,0);
-	glVertex3f(VIEWPORT_W,VIEWPORT_H,0);
-	glVertex3f(VIEWPORT_W,0,0);
-	glEnd();
-	
-	glColor4f(1,1,1,1);
 }
 
 int spin(Projectile *p, int t) {

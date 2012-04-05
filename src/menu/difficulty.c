@@ -35,12 +35,12 @@ void draw_difficulty_menu(MenuData *menu) {
 		glTranslatef(SCREEN_W/3 - menu->entries[i].drawdata, 200 + 70*i,0);
 		
 		glColor4f(1,1-0.1*i,1-0.1*i,0.7);
-		glBegin(GL_QUADS);
-		glVertex3f(-10,-30,0);
-		glVertex3f(-10,30,0);
-		glVertex3f(300,30,0);
-		glVertex3f(300,-30,0);
-		glEnd();
+		glPushMatrix();
+		glTranslatef(145,0,0);
+		glScalef(310,60,1);
+		
+		draw_quad();
+		glPopMatrix();
 		
 		glColor4f(0,0,0,1);
 		
