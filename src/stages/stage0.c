@@ -38,15 +38,37 @@ void stage0_bg_draw(Vector pos) {
 	draw_quad();
 	
 	glDisable(GL_TEXTURE_2D);
-	glPopMatrix();
-	
-	
+	glPopMatrix();	
 }
 
 Vector **stage0_bg_pos(Vector p, float maxrange) {
 	Vector q = {0,0,0};
 	Vector r = {0,3000,0};
 	return linear3dpos(p, maxrange, q, r);
+}
+
+void stage0_smoke_draw(Vector pos) {
+	float d = abs(pos[1]+bgcontext.cx[1]);
+	
+	glDisable(GL_DEPTH_TEST);
+	glPushMatrix();
+	glTranslatef(pos[0]+200*sin(pos[1]), pos[1], pos[2]+200*sin(pos[1]/25.0));
+	glRotatef(90,-1,0,0);
+	glScalef(3.5,2,1);		
+	glRotatef(global.frames,0,0,1);
+	
+	glColor4f(.2,.2,.2,((d-500)*(d-500))/1.5e6);
+	draw_texture(0,0,"stage0/fog");
+	glColor4f(1,1,1,1);
+	
+	glPopMatrix();
+	glEnable(GL_DEPTH_TEST);	
+}
+
+Vector **stage0_smoke_pos(Vector p, float maxrange) {
+	Vector q = {-300,0,-300};
+	Vector r = {0,300,0};
+	return linear3dpos(p, maxrange/2.0, q, r);
 }
 
 void stage0_fog(int fbonum) {
@@ -69,8 +91,7 @@ void stage0_fog(int fbonum) {
 void stage0_draw() {
 	set_perspective(&bgcontext, 500, 5000);
 	
-	draw_stage3d(&bgcontext, 7000);
-	
+	draw_stage3d(&bgcontext, 7000);	
 }
 
 
@@ -498,7 +519,8 @@ void stage0_events() {
 		return;	
 	
 	TIMER(&global.timer);
-		
+	
+	
 	// opening. projectile bursts
 	FROM_TO(100, 160, 25) {
 		create_enemy1c(VIEWPORT_W/2 + 70, 700, Fairy, stage0_burst, 1 + 0.6I);
@@ -570,6 +592,8 @@ void stage0_events() {
 void stage0_start() {
 	init_stage3d(&bgcontext);
 	add_model(&bgcontext, stage0_bg_draw, stage0_bg_pos);
+	add_model(&bgcontext, stage0_smoke_draw, stage0_smoke_pos);
+
 	
 	bgcontext.crot[0] = -60;
 	bgcontext.cx[2] = -700;
