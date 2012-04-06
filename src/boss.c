@@ -71,12 +71,12 @@ void draw_boss(Boss *boss) {
 		
 		glColor4f(0,0,0,0.65);
 		
-		glBegin(GL_QUADS);
-			glVertex3f(-boss->attacks[nextspell].dmglimit, 0, 0);
-			glVertex3f(-boss->attacks[nextspell].dmglimit, 4, 0);
-			glVertex3f(-boss->dmg+2, 4, 0);
-			glVertex3f(-boss->dmg+2, 0, 0);
-		glEnd();
+		glPushMatrix();
+		glTranslatef(-(boss->attacks[nextspell].dmglimit+boss->dmg-2)*0.5, 2, 0);
+		glScalef(boss->attacks[nextspell].dmglimit-boss->dmg+2, 4, 1);
+		
+		draw_quad();
+		glPopMatrix();
 		
 		for(i = nextspell; i >= 0; i--) {
 			if(boss->dmg > boss->attacks[i].dmglimit)
@@ -95,12 +95,12 @@ void draw_boss(Boss *boss) {
 				break; // never happens
 			}		
 			
-			glBegin(GL_QUADS);
-			glVertex3f(-boss->attacks[i].dmglimit, 0, 0);
-			glVertex3f(-boss->attacks[i].dmglimit, 2, 0);
-			glVertex3f(-boss->dmg, 2, 0);
-			glVertex3f(-boss->dmg, 0, 0);
-			glEnd();
+			glPushMatrix();
+			glTranslatef(-(boss->attacks[i].dmglimit+boss->dmg)*0.5, 1, 0);
+			glScalef(boss->attacks[i].dmglimit-boss->dmg, 2, 1);
+			
+			draw_quad();
+			glPopMatrix();
 		}
 				
 		glPopMatrix();

@@ -520,6 +520,7 @@ void stage0_events() {
 	
 	TIMER(&global.timer);
 	
+	
 	// opening. projectile bursts
 	FROM_TO(100, 160, 25) {
 		create_enemy1c(VIEWPORT_W/2 + 70, 700, Fairy, stage0_burst, 1 + 0.6I);

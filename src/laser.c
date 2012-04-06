@@ -53,29 +53,17 @@ void draw_laser_line(Laser *laser) { // REALLY OLD.
 	
 	glColor4fv((float *)laser->color);
 	
-	glBegin(GL_QUADS);
-		glTexCoord2i(0,0);
-		glVertex3f(0, width/2.0+2, 0);
-		glTexCoord2i(1,0);
-		glVertex3f(1000, width/2.0+2, 0);
-		glTexCoord2i(1,1);
-		glVertex3f(1000, -width/2.0-2, 0);
-		glTexCoord2i(0,1);
-		glVertex3f(0, -width/2.0-2, 0);
-	glEnd();
+	glTranslatef(500, 0, 0);
+	glScalef(1000,width+4,1);
+	
+	draw_quad();
 	
 	glColor3f(1,1,1);
 	
-	glBegin(GL_QUADS);
-		glTexCoord2i(0,0);
-		glVertex3f(0, width/2.0, 0);
-		glTexCoord2i(1,0);
-		glVertex3f(1000, width/2.0, 0);
-		glTexCoord2i(1,1);
-		glVertex3f(1000, -width/2.0, 0);
-		glTexCoord2i(0,1);
-		glVertex3f(0, -width/2.0, 0);
-	glEnd();
+	glScalef(1,0.8,1);
+	
+	draw_quad();
+	
 	glPopMatrix();
 }
 
@@ -111,14 +99,9 @@ void draw_laser_curve(Laser *laser) {
 			float wq = ((float)tex->w)/tex->truew;
 			float hq = ((float)tex->h)/tex->trueh;			
 			
-			glScalef(tex->w/2,tex->h/2,1);
+			glScalef(tex->w*wq,tex->h*hq,1);			
+			draw_quad();
 			
-			glBegin(GL_QUADS);
-				glTexCoord2f(0,0); glVertex3f(-1, -1, 0);
-				glTexCoord2f(0,hq); glVertex3f(-1, 1, 0);
-				glTexCoord2f(wq,hq); glVertex3f(1, 1, 0);
-				glTexCoord2f(wq,0); glVertex3f(1, -1, 0);
-			glEnd();
 			glPopMatrix();
 		}
 		glColor4f(1,1,1,1);
