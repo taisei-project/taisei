@@ -43,11 +43,6 @@ Projectile *create_projectile_p(Projectile **dest, Texture *tex, complex pos, Co
 	p->args[2] = a3;
 	p->args[3] = a4;
 	
-	if(dest != &global.particles && clr != NULL) {
-		Color *color = rgba(clr->r, clr->g, clr->b, clr->a);
-		
-		create_projectile_p(&global.particles, tex, pos, color, Shrink, bullet_flare_move, 16, add_ref(p), 0, 0);
-	}
 	return p;
 }
 
@@ -207,7 +202,13 @@ void ProjDraw(Projectile *proj, int t) {
 	glPushMatrix();
 	glTranslatef(creal(proj->pos), cimag(proj->pos), 0);
 	glRotatef(proj->angle*180/M_PI+90, 0, 0, 1);
-
+	
+	if(t < 16) {
+		float s = 2.0-t/16.0;
+		if(s != 1)
+			glScalef(s,s,1);
+	}
+	
 	_ProjDraw(proj, t);
 	
 	glPopMatrix();
@@ -296,22 +297,6 @@ void GrowFade(Projectile *p, int t) {
 	glColor4f(1,1,1,1);
 	glPopMatrix();
 }		
-
-int bullet_flare_move(Projectile *p, int t) {
-	if(t >= creal(p->args[0]) || REF(p->args[1]) == NULL) {
-		return ACTION_DESTROY;
-	} if(t == EVENT_DEATH) {
-		free_ref(p->args[1]);
-		return 1;
-	} else if(t < 0) {
-		return 1;
-	}
-	
-	p->pos = ((Projectile *) REF(p->args[1]))->pos;
-	p->angle = ((Projectile *) REF(p->args[1]))->angle;
-		
-	return 1;
-}
 
 void Fade(Projectile *p, int t) {
 	if(t/creal(p->args[0]) != 0)
