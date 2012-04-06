@@ -52,8 +52,6 @@ typedef struct {
 	Character cha;
 	ShotMode shot;
 	Enemy *slaves;
-	
-	Animation *ani;
 } Player;
 
 void init_player(Player*);

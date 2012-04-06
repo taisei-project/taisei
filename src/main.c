@@ -12,6 +12,7 @@
 
 #include "global.h"
 #include "stages/stage0.h"
+#include "stages/stage1.h"
 #include "menu/mainmenu.h"
 #include "paths/native.h"
 
@@ -101,14 +102,31 @@ int main(int argc, char** argv) {
 	printf("initialization complete.\n");
 	
 	atexit(taisei_shutdown);
+		
+	
+#ifdef DEBUG
+	printf("Compiled with DEBUG flag! %d\n", argc);
+	if(argc == 2 && argv[1]) {
+		printf("Entering stage skip mode: Stage %d\n", atoi(argv[1]));
+		
+		init_player(&global.plr);
+		
+		switch(atoi(argv[1])) {
+		case 1:
+			stage0_loop();
+		case 2:
+			stage1_loop();
+			return 1;
+		}
+		
+		printf("Invalid stage number. Quitting stage skip mode.\n");
+	}
+#endif
 	
 	MenuData menu;
 	create_main_menu(&menu);
-	printf("-- menu\n");
-	
+	printf("-- menu\n");	
 	main_menu_loop(&menu);
-	
-// 	taisei_shutdown();
-	
+		
 	return 1;
 }

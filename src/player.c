@@ -26,17 +26,18 @@ void init_player(Player* plr) {
 	plr->continues = 0;
 }
 
-void plr_set_char(Player* plr, Character cha) {
-	plr->cha = cha;
-	
+Animation *player_get_ani(Character cha) {
+	Animation *ani;
 	switch(cha) {
 	case Youmu:
-		plr->ani = get_ani("youmu");
+		ani = get_ani("youmu");
 		break;
 	case Marisa:
-		plr->ani = get_ani("marisa");
+		ani = get_ani("marisa");
 		break;
 	}
+	
+	return ani;
 }
 
 void plr_set_power(Player *plr, float npow) {
@@ -66,9 +67,11 @@ void plr_move(Player *plr, complex delta) {
 	
 	complex opos = plr->pos - VIEWPORT_W/2.0 - VIEWPORT_H/2.0*I;
 	complex npos = opos + delta*speed;
-		
-	short xfac = fabs(creal(npos)) < fabs(creal(opos)) || fabs(creal(npos)) < VIEWPORT_W/2.0 - global.plr.ani->w/2;
-	short yfac = fabs(cimag(npos)) < fabs(cimag(opos)) || fabs(cimag(npos)) < VIEWPORT_H/2.0 - global.plr.ani->h/2;
+	
+	Animation *ani = player_get_ani(plr->cha);
+	
+	short xfac = fabs(creal(npos)) < fabs(creal(opos)) || fabs(creal(npos)) < VIEWPORT_W/2.0 - ani->w/2;
+	short yfac = fabs(cimag(npos)) < fabs(cimag(opos)) || fabs(cimag(npos)) < VIEWPORT_H/2.0 - ani->h/2;
 		
 	plr->pos += (creal(delta)*xfac + cimag(delta)*yfac*I)*speed;
 }
@@ -101,8 +104,8 @@ void player_draw(Player* plr) {
 			glColor4f(0.4,0.4,1,0.9);
 			clr_changed = 1;
 		}
-			
-		draw_animation_p(0, 0, !plr->moving, plr->ani);
+				
+		draw_animation_p(0, 0, !plr->moving, player_get_ani(plr->cha));
 		
 		if(clr_changed)
 			glColor3f(1,1,1);

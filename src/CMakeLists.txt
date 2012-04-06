@@ -63,6 +63,10 @@ endif()
 
 add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall)
 
+if(TAISEI_DEBUG)
+	add_definitions(-DDEBUG)
+endif()
+
 set(LIBs ${LIBs}
 	${SDL_LIBRARY}
 	${PNG_LIBRARY}
