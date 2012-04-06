@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
 		
 	
 #ifdef DEBUG
-	printf("Compiled with DEBUG flag! %d\n", argc);
+	printf("Compiled with DEBUG flag!\n");
 	if(argc == 2 && argv[1]) {
 		printf("Entering stage skip mode: Stage %d\n", atoi(argv[1]));
 		

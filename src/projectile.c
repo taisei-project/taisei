@@ -203,7 +203,7 @@ void ProjDraw(Projectile *proj, int t) {
 	glTranslatef(creal(proj->pos), cimag(proj->pos), 0);
 	glRotatef(proj->angle*180/M_PI+90, 0, 0, 1);
 	
-	if(t < 16) {
+	if(t < 16 && proj->type < PlrProj && proj->type != Particle) {
 		float s = 2.0-t/16.0;
 		if(s != 1)
 			glScalef(s,s,1);
@@ -258,7 +258,7 @@ void Shrink(Projectile *p, int t) {
 	
 	if(p->angle != M_PI*0.5)
 		glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
-	if(s != 1 && s != 0)
+	if(s != 1)
 		glScalef(s, s, 1);
 	
 	_ProjDraw(p, t);
