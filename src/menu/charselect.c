@@ -105,11 +105,9 @@ void draw_char_menu(MenuData *menu, MenuData *mod) {
 			glScalef(-1,1,1);
 			glCullFace(GL_FRONT);
 		}
-		glBegin(GL_TRIANGLES);
-		glVertex3f(0,0,0);
-		glVertex3f(20,30,0);
-		glVertex3f(20,-30,0);
-		glEnd();		
+		
+		draw_texture(0,0,"charselect_arrow");
+		
 		glPopMatrix();
 		
 		if(i)
