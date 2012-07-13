@@ -16,6 +16,7 @@ void stage_start() {
 	global.frames = 0;
 	global.game_over = 0;
 	global.points = 0;
+	global.nostagebg = False;
 }
 
 void stage_input() {
@@ -129,9 +130,14 @@ void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
 	glTranslatef(-(VIEWPORT_X+VIEWPORT_W/2.0), -(VIEWPORT_Y+VIEWPORT_H/2.0),0);
 	glEnable(GL_DEPTH_TEST);
 	
-	if(!global.menu && !tconfig.intval[NO_STAGEBG])
+	// NO_STAGEBG == 2 means "automatic mode". Do we need a derpenum for this?
+	// global.fps.fps is unreliable here, show_fps is better
+	
+	if(!global.nostagebg && ((!global.menu && !tconfig.intval[NO_STAGEBG]) ||
+		(tconfig.intval[NO_STAGEBG] == 2 && (global.fps.show_fps == 0 || global.fps.show_fps > tconfig.intval[NO_STAGEBG_FPSLIMIT]))))
 		bgdraw();
-		
+	else global.nostagebg = True;
+	
 	glPopMatrix();	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	
@@ -234,7 +240,7 @@ void apply_bg_shaders(ShaderRule *shaderrules) {
 		glPopMatrix();
 		
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	} else if(!tconfig.intval[NO_STAGEBG]) {		
+	} else if(!global.nostagebg) {		
 		for(i = 0; shaderrules != NULL && shaderrules[i] != NULL; i++) {
 			glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[!fbonum].fbo);
 			shaderrules[i](fbonum);
@@ -357,9 +363,6 @@ void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event,
 		
 		SDL_GL_SwapBuffers();
 		frame_rate(&global.lasttime);
-		
-		if(global.fps.fps <= 40)
-			tconfig.intval[NO_STAGEBG] = 1;
 	}
 	
 	end();

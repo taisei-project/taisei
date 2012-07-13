@@ -111,37 +111,60 @@ int bind_addvalue(OptionBinding *b, char *val)
 	return b->valcount-1;
 }
 
+void bind_setvaluerange(OptionBinding *b, int vmin, int vmax) {
+	b->valrange_min = vmin;
+	b->valrange_max = vmax;
+}
+
 // Called to select a value of a BT_IntValue type binding by index
-int binding_setvalue(OptionBinding *b, int v)
+int bind_setvalue(OptionBinding *b, int v)
 {
 	return b->selected = b->setter(b, v);
 }
 
 // Called to get the selected value of a BT_IntValue type binding by index
-int binding_getvalue(OptionBinding *b)
+int bind_getvalue(OptionBinding *b)
 {
 	// query AND update
 	return b->selected = b->getter(b);
 }
 
 // Selects the next to current value of a BT_IntValue type binding
-int binding_setnext(OptionBinding *b)
+int bind_setnext(OptionBinding *b)
 {
-	int s = b->selected + 1;
-	if(s >= b->valcount)
+	int s = b->selected +1;
+	
+	if(b->valrange_max) {
+		if(s > b->valrange_max)
+			s = b->valrange_min;
+	} else if(s >= b->valcount)
 		s = 0;
-		
-	return binding_setvalue(b, s);
+	
+	return bind_setvalue(b, s);
 }
 
 // Selects the previous to current value of a BT_IntValue type binding
-int binding_setprev(OptionBinding *b)
+int bind_setprev(OptionBinding *b)
 {
 	int s = b->selected - 1;
-	if(s < 0)
+	
+	if(b->valrange_max) {
+		if(s < b->valrange_min)
+			s = b->valrange_max;
+	} else if(s < 0)
 		s = b->valcount - 1;
 		
-	return binding_setvalue(b, s);
+	return bind_setvalue(b, s);
+}
+
+void bind_setdependence(OptionBinding *b, BindingDependence dep) {
+	b->dependence = dep;
+}
+
+int bind_isactive(OptionBinding *b) {
+	if(!b->dependence)
+		return True;
+	return b->dependence();
 }
 
 // Initializes selection for all BT_IntValue type bindings
@@ -152,7 +175,7 @@ void bindings_initvalues(MenuData *m)
 	int i;
 	for(i = 0; i < m->ecount; ++i)
 		if(binds[i].enabled && binds[i].type == BT_IntValue)
-			binding_getvalue(&(binds[i]));
+			bind_getvalue(&(binds[i]));
 }
 
 // --- Shared binding callbacks --- //
@@ -176,6 +199,9 @@ int bind_common_onoffset_inverted(void *b, int v)
 {
 	return tconfig.intval[((OptionBinding*)b)->configentry] = v;
 }
+
+#define bind_common_intget bind_common_onoffget_inverted
+#define bind_common_intset bind_common_onoffset_inverted
 
 // --- Binding callbacks for individual options --- //
 
@@ -225,6 +251,10 @@ int bind_noshader_set(void *b, int v)
 		load_resources();
 	
 	return i;
+}
+
+int bind_stagebg_fpslimit_dependence() {
+	return tconfig.intval[NO_STAGEBG] == 2;
 }
 
 // --- Config saving --- //
@@ -293,7 +323,7 @@ void backtomain(void *arg)
 }
 
 void create_options_menu(MenuData *m) {
-	OptionBinding* b;
+	OptionBinding *b;
 	
 	create_menu(m);
 	m->type = MT_Persistent;
@@ -317,10 +347,18 @@ void create_options_menu(MenuData *m) {
 			bind_onoff(b);
 			
 	add_menu_entry(m, "Stage Background", do_nothing, NULL);
-		b = bind_option(m, "disable_stagebg", NO_STAGEBG, bind_common_onoffget_inverted,
-														bind_common_onoffset_inverted);
-			bind_onoff(b);
-		
+		b = bind_option(m, "disable_stagebg", NO_STAGEBG, bind_common_intget,
+																		bind_common_intset);
+			bind_addvalue(b, "on");
+			bind_addvalue(b, "off");
+			bind_addvalue(b, "auto");
+	
+	add_menu_entry(m, "Minimum FPS", do_nothing, NULL);
+		b = bind_option(m, "disable_stagebg_auto_fpslimit", NO_STAGEBG_FPSLIMIT, bind_common_intget,
+																				 bind_common_intset);
+			bind_setvaluerange(b, 20, 60);
+			bind_setdependence(b, bind_stagebg_fpslimit_dependence);
+			
 	add_menu_entry(m, " ", NULL, NULL);
 		allocate_binding(m);
 	
@@ -403,37 +441,46 @@ void draw_options_menu(MenuData *menu) {
 	for(i = 0; i < menu->ecount; i++) {
 		menu->entries[i].drawdata += 0.2 * (10*(i == menu->cursor) - menu->entries[i].drawdata);
 		
+		bind = &(binds[i]);
+		int hasbind = bind->enabled;
+		float alpha = (!hasbind || bind_isactive(bind))? 1 : 0.5;
+		
 		if(menu->entries[i].action == NULL && clr != 0) {
 			clr = 0;
-			glColor4f(0.5, 0.5, 0.5, 0.7);
+			glColor4f(0.5, 0.5, 0.5, 0.7 * alpha);
 		} else if(i == menu->cursor && clr != 1) {
 			clr = 1;
-			glColor4f(1,1,0,0.7);
+			glColor4f(1,1,0,0.7 * alpha);
 		} else if(clr != 2) {
 			clr = 2;
-			glColor4f(1, 1, 1, 0.7);
+			glColor4f(1, 1, 1, 0.7 * alpha);
 		}
 		
-		draw_text(AL_Left, 20 - menu->entries[i].drawdata, 20*i, menu->entries[i].name, _fonts.standard);
+		draw_text(AL_Left,
+					((hasbind && bind->dependence)? 20 : 0)	// hack hack hack
+					+ 20 - menu->entries[i].drawdata, 20*i, menu->entries[i].name, _fonts.standard);
 		
-		bind = &(binds[i]);
-		if(bind->enabled)
+		if(hasbind)
 		{
 			int j, origin = SCREEN_W - 220;
+			
 			switch(bind->type)
 			{
 				case BT_IntValue:
-					for(j = bind->valcount-1; j+1; --j)
-					{
+					if(bind->valrange_max) {
+						char tmp[16];	// who'd use a 16-digit number here anyway?
+						snprintf(tmp, 16, "%d", bind_getvalue(bind));
+						draw_text(AL_Right, origin, 20*i, tmp, _fonts.standard);
+					} else for(j = bind->valcount-1; j+1; --j) {
 						if(j != bind->valcount-1)
 							origin -= strlen(bind->values[j+1])/2.0 * 20;
 						
-						if(binding_getvalue(bind) == j && clr != 1) {
+						if(bind_getvalue(bind) == j) {
 							clr = 1;
-							glColor4f(1,1,0,0.7);
+							glColor4f(1,1,0,0.7 * alpha);
 						} else if(clr != 0) {
 							clr = 0;
-							glColor4f(0.5,0.5,0.5,0.7);
+							glColor4f(0.5,0.5,0.5,0.7 * alpha);
 						}
 							
 						draw_text(AL_Right, origin, 20*i, bind->values[j], _fonts.standard);
@@ -473,7 +520,7 @@ void draw_options_menu(MenuData *menu) {
 
 // --- Input processing --- //
 
-void binding_input(MenuData *menu, OptionBinding *b)
+void bind_input(MenuData *menu, OptionBinding *b)
 {
 	// yes, no global_input() here.
 	
@@ -499,20 +546,22 @@ void binding_input(MenuData *menu, OptionBinding *b)
 }
 
 static void options_key_action(MenuData *menu, int sym) {
+	#define SHOULD_SKIP (!menu->entries[menu->cursor].action || (((OptionBinding*)menu->context)[menu->cursor].enabled && !bind_isactive(&(((OptionBinding*)menu->context)[menu->cursor]))))
+	
 	if(sym == tconfig.intval[KEY_DOWN] || sym == SDLK_DOWN) {
 		menu->drawdata[3] = 10;
 		do {
 			menu->cursor++;
 			if(menu->cursor >= menu->ecount)
 				menu->cursor = 0;
-		} while(!menu->entries[menu->cursor].action);
+		} while SHOULD_SKIP;
 	} else if(sym == tconfig.intval[KEY_UP] || sym == SDLK_UP) {
 		menu->drawdata[3] = 10;
 		do {
 			menu->cursor--;
 			if(menu->cursor < 0)
 				menu->cursor = menu->ecount - 1;
-		} while(!menu->entries[menu->cursor].action);
+		} while SHOULD_SKIP;
 	} else if((sym == tconfig.intval[KEY_SHOT] || sym == SDLK_RETURN) && menu->entries[menu->cursor].action) {
 		menu->selected = menu->cursor;
 		
@@ -521,7 +570,7 @@ static void options_key_action(MenuData *menu, int sym) {
 		
 		if(bind->enabled) switch(bind->type)
 		{
-			case BT_IntValue: binding_setnext(bind); break;
+			case BT_IntValue: bind_setnext(bind); break;
 			case BT_KeyBinding: bind->blockinput = True; break;
 		}
 		else
@@ -532,14 +581,14 @@ static void options_key_action(MenuData *menu, int sym) {
 		OptionBinding *bind = &(binds[menu->selected]);
 		
 		if(bind->enabled && bind->type == BT_IntValue)
-			binding_setprev(bind);
+			bind_setprev(bind);
 	} else if(sym == tconfig.intval[KEY_RIGHT] || sym == SDLK_RIGHT) {
 		menu->selected = menu->cursor;
 		OptionBinding *binds = (OptionBinding*)menu->context;
 		OptionBinding *bind = &(binds[menu->selected]);
 		
 		if(bind->enabled && bind->type == BT_IntValue)
-			binding_setnext(bind);
+			bind_setnext(bind);
 	} else if(sym == SDLK_ESCAPE) {
 		menu->quit = 2;
 	}
@@ -553,7 +602,7 @@ void options_menu_input(MenuData *menu) {
 	
 	if((b = get_input_blocking_binding(menu)) != NULL)
 	{
-		binding_input(menu, b);
+		bind_input(menu, b);
 		return;
 	}
 	

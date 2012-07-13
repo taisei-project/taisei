@@ -18,6 +18,7 @@ int options_menu_loop(MenuData *m);
 
 typedef int (*BindingGetter)(void*);
 typedef int (*BindingSetter)(void*, int);
+typedef int (*BindingDependence)();
 
 typedef enum BindingType {
 	BT_IntValue,
@@ -27,8 +28,11 @@ typedef enum BindingType {
 typedef struct OptionBinding {
 	char **values;
 	int valcount;
+	int valrange_min;
+	int valrange_max;
 	BindingGetter getter;
 	BindingSetter setter;
+	BindingDependence dependence;
 	int selected;
 	int configentry;
 	int enabled;

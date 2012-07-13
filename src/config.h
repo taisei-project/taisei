@@ -34,7 +34,8 @@ enum {
 	NO_SHADER,
 	NO_AUDIO,
 	
-	NO_STAGEBG
+	NO_STAGEBG,
+	NO_STAGEBG_FPSLIMIT
 };
 
 void parse_config(char *filename);

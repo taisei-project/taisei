@@ -104,6 +104,7 @@ typedef struct {
 	
 	FPSCounter fps;
 	
+	int nostagebg;	// I don't want the automatic stagebg handling to mess with the config, and I don't want that longass if in more than one place either.
 } Global;
 
 extern Global global;
