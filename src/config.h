@@ -32,7 +32,9 @@ enum {
 	FULLSCREEN,
 	
 	NO_SHADER,
-	NO_AUDIO
+	NO_AUDIO,
+	
+	NO_STAGEBG
 };
 
 void parse_config(char *filename);

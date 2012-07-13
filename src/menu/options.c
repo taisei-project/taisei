@@ -315,6 +315,11 @@ void create_options_menu(MenuData *m) {
 		b = bind_option(m, "disable_shader", NO_SHADER, bind_common_onoffget_inverted,
 														bind_noshader_set);
 			bind_onoff(b);
+			
+	add_menu_entry(m, "Stage Background", do_nothing, NULL);
+		b = bind_option(m, "disable_stagebg", NO_STAGEBG, bind_common_onoffget_inverted,
+														bind_common_onoffset_inverted);
+			bind_onoff(b);
 		
 	add_menu_entry(m, " ", NULL, NULL);
 		allocate_binding(m);

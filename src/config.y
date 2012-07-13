@@ -47,6 +47,7 @@
 
 %token tNO_SHADER
 %token tNO_AUDIO
+%token tNO_STAGEBG
 
 %token SKEY
 
@@ -84,7 +85,8 @@ key_key	: tKEY_UP
 		| tKEY_SCREENSHOT
 		| tNO_SHADER
 		| tNO_AUDIO
-		| tFULLSCREEN;
+		| tFULLSCREEN
+		| tNO_STAGEBG;
 
 nl		: LB { lineno++; };
 %%
@@ -133,4 +135,6 @@ void config_preset() {
 	
 	tconfig.intval[NO_SHADER] = 0;
 	tconfig.intval[NO_AUDIO] = 0;
+	
+	tconfig.intval[NO_STAGEBG] = 0;
 }

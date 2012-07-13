@@ -129,9 +129,9 @@ void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
 	glTranslatef(-(VIEWPORT_X+VIEWPORT_W/2.0), -(VIEWPORT_Y+VIEWPORT_H/2.0),0);
 	glEnable(GL_DEPTH_TEST);
 	
-	if(!global.menu)
+	if(!global.menu && !tconfig.intval[NO_STAGEBG])
 		bgdraw();
-	
+		
 	glPopMatrix();	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	
@@ -234,7 +234,7 @@ void apply_bg_shaders(ShaderRule *shaderrules) {
 		glPopMatrix();
 		
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	} else {		
+	} else if(!tconfig.intval[NO_STAGEBG]) {		
 		for(i = 0; shaderrules != NULL && shaderrules[i] != NULL; i++) {
 			glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[!fbonum].fbo);
 			shaderrules[i](fbonum);
@@ -357,6 +357,9 @@ void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event,
 		
 		SDL_GL_SwapBuffers();
 		frame_rate(&global.lasttime);
+		
+		if(global.fps.fps <= 40)
+			tconfig.intval[NO_STAGEBG] = 1;
 	}
 	
 	end();
