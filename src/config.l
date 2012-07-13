@@ -37,6 +37,7 @@
 "disable_shader" { yylval = NO_SHADER; return tNO_SHADER; }
 "disable_audio" {yylval = NO_AUDIO; return tNO_AUDIO; }
 "disable_stagebg" { yylval = NO_STAGEBG; return tNO_STAGEBG; }
+"disable_stagebg_auto_fpslimit" { yylval = NO_STAGEBG_FPSLIMIT; return tNO_STAGEBG_FPSLIMIT; }
 
 "shift"		{ yylval = SDLK_LSHIFT; return SKEY; }
 "ctrl"		{ yylval = SDLK_LCTRL; return SKEY; }

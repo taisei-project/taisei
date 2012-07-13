@@ -48,6 +48,7 @@
 %token tNO_SHADER
 %token tNO_AUDIO
 %token tNO_STAGEBG
+%token tNO_STAGEBG_FPSLIMIT
 
 %token SKEY
 
@@ -86,7 +87,8 @@ key_key	: tKEY_UP
 		| tNO_SHADER
 		| tNO_AUDIO
 		| tFULLSCREEN
-		| tNO_STAGEBG;
+		| tNO_STAGEBG
+		| tNO_STAGEBG_FPSLIMIT;
 
 nl		: LB { lineno++; };
 %%
@@ -137,4 +139,5 @@ void config_preset() {
 	tconfig.intval[NO_AUDIO] = 0;
 	
 	tconfig.intval[NO_STAGEBG] = 0;
+	tconfig.intval[NO_STAGEBG_FPSLIMIT] = 40;
 }

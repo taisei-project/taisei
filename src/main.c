@@ -103,7 +103,6 @@ int main(int argc, char** argv) {
 	
 	atexit(taisei_shutdown);
 		
-	
 #ifdef DEBUG
 	printf("** Compiled with DEBUG flag!\n");
 	if(argc >= 2 && argv[1]) {
