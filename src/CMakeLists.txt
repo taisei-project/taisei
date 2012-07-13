@@ -42,6 +42,7 @@ set(SRCs
 	menu/charselect.c
 	stages/stage0.c
 	stages/stage1.c
+	stages/stage1_events.c
 	resource/resource.c
 	resource/texture.c
 	resource/animation.c

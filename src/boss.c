@@ -50,11 +50,11 @@ void draw_boss(Boss *boss) {
 		draw_text(AL_Center, VIEWPORT_W - 20, 10, buf, _fonts.standard);
 		
 		int nextspell, lastspell;
-		for(nextspell = 0; nextspell < boss->acount; nextspell++) {
+		for(nextspell = 0; nextspell < boss->acount - 1; nextspell++) {
 			if(boss->dmg < boss->attacks[nextspell].dmglimit && boss->attacks[nextspell].type == AT_Spellcard)
 				break;
 		}
-		
+				
 		for(lastspell = nextspell; lastspell > 0; lastspell--) {
 			if(boss->dmg > boss->attacks[lastspell].dmglimit && boss->attacks[lastspell].type == AT_Spellcard)
 				break;

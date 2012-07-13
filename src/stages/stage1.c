@@ -9,6 +9,7 @@
 #include "global.h"
 #include "stage.h"
 #include "stageutils.h"
+#include "stage1_events.h"
 
 static Stage3D bgcontext;
 
@@ -157,10 +158,7 @@ void stage1_draw() {
 	
 }
 
-void stage1_events() {
-}
-
 void stage1_loop() {
 	ShaderRule shaderrules[] = { stage1_fog, stage1_bloom, NULL };
-	stage_loop(stage1_start, stage1_end, stage1_draw, stage1_events, shaderrules, 5000);
+	stage_loop(stage1_start, stage1_end, stage1_draw, stage1_events, shaderrules, 5500);
 }

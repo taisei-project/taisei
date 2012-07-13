@@ -99,7 +99,7 @@ void EnemyFlareShrink(Projectile *p, int t) {
 	if(p->angle != M_PI*0.5)
 		glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
 	
-	if(s != 1 && s != 0)
+	if(s != 1)
 		glScalef(s, s, 1);
 	
 	if(p->clr)

@@ -105,9 +105,16 @@ int main(int argc, char** argv) {
 		
 	
 #ifdef DEBUG
-	printf("Compiled with DEBUG flag!\n");
-	if(argc == 2 && argv[1]) {
-		printf("Entering stage skip mode: Stage %d\n", atoi(argv[1]));
+	printf("** Compiled with DEBUG flag!\n");
+	if(argc >= 2 && argv[1]) {
+		printf("** Entering stage skip mode: Stage %d\n", atoi(argv[1]));
+		
+		global.diff = D_Easy;
+		
+		if(argc == 3 && argv[2]) {
+			printf("** Setting difficulty to %d.\n", atoi(argv[2]));
+			global.diff = atoi(argv[2]);
+		}
 		
 		init_player(&global.plr);
 		
@@ -119,7 +126,7 @@ int main(int argc, char** argv) {
 			return 1;
 		}
 		
-		printf("Invalid stage number. Quitting stage skip mode.\n");
+		printf("** Invalid stage number. Quitting stage skip mode.\n");
 	}
 #endif
 	

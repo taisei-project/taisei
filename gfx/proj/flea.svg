@@ -14,7 +14,7 @@
    height="12"
    id="svg3824"
    version="1.1"
-   inkscape:version="0.48.1 r9760"
+   inkscape:version="0.48.3.1 r9886"
    sodipodi:docname="flea.svg"
    inkscape:export-filename="/home/laochailan/src/taisei/gfx/proj/flea.png"
    inkscape:export-xdpi="90"
@@ -71,7 +71,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="31.890516"
-     inkscape:cx="-4.4602959"
+     inkscape:cx="-12.388201"
      inkscape:cy="3.4420286"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -112,19 +112,23 @@
      transform="translate(0,-1037.3519)">
     <path
        sodipodi:type="arc"
-       style="fill:#0000ff;fill-opacity:1;fill-rule:nonzero;stroke:none"
+       style="fill:#0000ff;fill-opacity:0.884;fill-rule:nonzero;stroke:none"
        id="path4222"
        sodipodi:cx="4"
        sodipodi:cy="4"
        sodipodi:rx="4"
        sodipodi:ry="4"
-       d="M 8,4 A 4,4 0 1 1 0,4 4,4 0 1 1 8,4 z"
-       transform="matrix(1.4899576,0,0,1.4899576,0,1037.4322)" />
+       d="M 8,4 C 8,6.209139 6.209139,8 4,8 1.790861,8 0,6.209139 0,4 0,1.790861 1.790861,0 4,0 6.209139,0 8,1.790861 8,4 z"
+       transform="matrix(1.4899576,0,0,1.4899576,0.0401696,1037.3921)" />
     <path
-       style="fill:#00ff00;stroke:none;fill-opacity:1"
-       d="m 9.4519184,1038.5022 c 1.2334496,4.6098 -0.2551263,9.7379 -6.6116868,9.9573 0.9048355,0.5588 1.9809308,0.8924 3.1195987,0.8924 3.2915234,0 5.9598307,-2.6916 5.9598307,-6.0119 0,-2.003 -0.974681,-3.7453 -2.4677426,-4.8378 z"
-       id="path4224"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="ccssc" />
+       transform="matrix(0.98824105,0,0,0.98824105,2.0470359,1039.399)"
+       d="M 8,4 C 8,6.209139 6.209139,8 4,8 1.790861,8 0,6.209139 0,4 0,1.790861 1.790861,0 4,0 6.209139,0 8,1.790861 8,4 z"
+       sodipodi:ry="4"
+       sodipodi:rx="4"
+       sodipodi:cy="4"
+       sodipodi:cx="4"
+       id="path3772"
+       style="fill:#00ff00;fill-opacity:1;fill-rule:nonzero;stroke:none"
+       sodipodi:type="arc" />
   </g>
 </svg>
