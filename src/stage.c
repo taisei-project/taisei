@@ -138,7 +138,7 @@ void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
 		global.nostagebg = True;
 	}
 	
-	if(!global.nostagebg)
+	if(!global.nostagebg && !global.menu)
 		bgdraw();
 		
 	glPopMatrix();	
@@ -202,7 +202,7 @@ void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
 			glPopMatrix();
 		}
 				
-	} if(global.menu) {
+	} else {
 		draw_ingame_menu(global.menu);		
 	}
 	
