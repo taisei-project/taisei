@@ -39,6 +39,8 @@ void stage_start() {
 	global.game_over = 0;
 	global.points = 0;
 	global.nostagebg = False;
+		
+	global.plr.recovery = 0;
 }
 
 void stage_ingamemenu() {
