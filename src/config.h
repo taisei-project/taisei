@@ -41,4 +41,8 @@ enum {
 void parse_config(char *filename);
 void config_preset();
 
+#define CONFIG_KEY_FIRST KEY_UP
+#define CONFIG_KEY_LAST KEY_SCREENSHOT
+int config_sym2key(int sym);
+
 #endif

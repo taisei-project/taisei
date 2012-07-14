@@ -9,6 +9,9 @@
 
 #include <SDL/SDL.h>
 #include "global.h"
+#include "replay.h"
+#include "config.h"
+#include "player.h"
 #include "menu/ingamemenu.h"
 
 StageInfo stages[] = {
@@ -38,6 +41,13 @@ void stage_start() {
 	global.nostagebg = False;
 }
 
+void stage_ingamemenu() {
+	if(!global.menu)
+		global.menu = create_ingame_menu();
+	else
+		global.menu->quit = 1;
+}
+
 void stage_input() {
 	if(global.menu) {
 		menu_input(global.menu);
@@ -47,68 +57,35 @@ void stage_input() {
 	SDL_Event event;
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;
+		int key = config_sym2key(sym);
 		
-		global_processevent(&event);
-		if(event.type == SDL_KEYDOWN) {
-			if(sym == tconfig.intval[KEY_FOCUS])
-				global.plr.focus = 1;
-			else if(sym == tconfig.intval[KEY_SHOT]) {
-				if(!global.dialog)
-					global.plr.fire = True;
-				else
+		switch(event.type) {
+			case SDL_KEYDOWN:
+				printf("%d / %d\n", sym, SDLK_ESCAPE);
+				
+				if(global.dialog && (key == KEY_SHOT || key == KEY_BOMB)) {
 					page_dialog(&global.dialog);
-			} else if(sym == tconfig.intval[KEY_BOMB]) {
-				if(!global.dialog)
-					plr_bomb(&global.plr);
-			} else if(sym == SDLK_ESCAPE) {
-				if(!global.menu)
-					global.menu = create_ingame_menu();
-				else
-					global.menu->quit = 1;
-			}
-		} else if(event.type == SDL_KEYUP) {
-			if(sym == tconfig.intval[KEY_FOCUS])
-				global.plr.focus = -30; // that's for the transparency timer
-			else if(sym == tconfig.intval[KEY_SHOT])
-				global.plr.fire = False;
-		} else if(event.type == SDL_QUIT) {
-			exit(1);
+				} else if(sym == SDLK_ESCAPE) {
+					stage_ingamemenu();
+				} else {
+					player_event(&global.plr, EV_PRESS, key);
+					replay_event(EV_PRESS, key);
+				}
+				
+				break;
+				
+			case SDL_KEYUP:
+				player_event(&global.plr,EV_RELEASE, key);
+				replay_event(EV_RELEASE, key);
+				break;
+			
+			case SDL_QUIT:
+				exit(1);
+				break;
 		}
 	}
 	
-	if(global.plr.deathtime < -1)
-		return;
-	
-	Uint8 *keys = SDL_GetKeyState(NULL);
-	
-	global.plr.moving = False;
-	
-	if(keys[tconfig.intval[KEY_LEFT]] && !keys[tconfig.intval[KEY_RIGHT]]) {
-		global.plr.moving = True;
-		global.plr.dir = 1;
-	} else if(keys[tconfig.intval[KEY_RIGHT]] && !keys[tconfig.intval[KEY_LEFT]]) {
-		global.plr.moving = True;
-		global.plr.dir = 0;
-	}	
-	
-	complex direction = 0;
-	
-	if(keys[tconfig.intval[KEY_LEFT]])
-		direction -= 1;		
-	if(keys[tconfig.intval[KEY_RIGHT]])
-		direction += 1;
-	if(keys[tconfig.intval[KEY_UP]])
-		direction -= 1I;
-	if(keys[tconfig.intval[KEY_DOWN]])
-		direction += 1I;
-	
-	if(direction)
-		plr_move(&global.plr, direction);
-	
-	if(!keys[tconfig.intval[KEY_SHOT]] && global.plr.fire)
-		global.plr.fire = False;
-	if(!keys[tconfig.intval[KEY_FOCUS]] && global.plr.focus > 0)
-		global.plr.focus = -30;
+	player_applymovement(&global.plr);
 }
 
 void draw_hud() {
@@ -332,8 +309,11 @@ void stage_logic(int time) {
 	
 	global.frames++;
 	
-	if(!global.dialog && !global.boss)
-		global.timer++;
+	if(!global.dialog) {
+		if(!global.boss)
+			global.timer++;
+		global.replaytimer++;
+	}
 	
 	if(global.timer >= time)
 		global.game_over = GAMEOVER_WIN;

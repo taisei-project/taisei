@@ -141,3 +141,10 @@ void config_preset() {
 	tconfig.intval[NO_STAGEBG] = 0;
 	tconfig.intval[NO_STAGEBG_FPSLIMIT] = 40;
 }
+
+int config_sym2key(int sym) {
+	int i;
+	for(i = CONFIG_KEY_FIRST; i <= CONFIG_KEY_LAST; ++i)
+		if(sym == tconfig.intval[i])
+			return i;
+}

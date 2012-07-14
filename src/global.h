@@ -92,6 +92,7 @@ typedef struct {
 	int frames;
 	int lasttime; // frame limiter
 	int timer;
+	int replaytimer;	// lol
 	
 	Boss *boss;
 	MenuData *menu;
@@ -122,5 +123,11 @@ void global_processevent(SDL_Event*);
 void take_screenshot();
 
 double frand();
+
+// this is used by both player and replay code
+enum {
+	EV_PRESS,
+	EV_RELEASE
+};
 
 #endif
