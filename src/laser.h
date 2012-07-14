@@ -12,8 +12,8 @@
 #include "projectile.h"
 
 typedef enum {
-	LaserLine,
-	LaserCurve
+	LT_Line,
+	LT_Curve
 } LaserType;
 
 struct Laser;

@@ -14,12 +14,17 @@
 static Stage3D bgcontext;
 
 void stage2_start() {
+	init_stage3d(&bgcontext);
 }
 
 void stage2_end() {
+	free_stage3d(&bgcontext);
 }
 
 void stage2_draw() {
+	set_perspective(&bgcontext, 500, 5000);
+	
+	draw_stage3d(&bgcontext, 7000);
 }
 
 void stage2_loop() {

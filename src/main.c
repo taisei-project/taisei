@@ -13,6 +13,8 @@
 #include "global.h"
 #include "stages/stage0.h"
 #include "stages/stage1.h"
+#include "stages/stage2.h"
+#include "stages/stage3.h"
 #include "menu/mainmenu.h"
 #include "paths/native.h"
 
