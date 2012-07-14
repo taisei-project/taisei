@@ -44,7 +44,7 @@ void taisei_shutdown() {
 	delete_fbo(&resources.fbg[1]);
 	delete_fbo(&resources.fsec);
 	printf("-- freeing VBOs\n");
-	delete_vbo(&_quadvbo);
+	delete_vbo(&_vbo);
 	printf("-- freeing shaders\n");
 	delete_shaders();
 	

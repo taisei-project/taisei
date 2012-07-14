@@ -68,9 +68,9 @@ void draw_fbo_viewport(FBO *fbo) {
 		
 	glBindTexture(GL_TEXTURE_2D, fbo->tex);
 	
-	glBindBuffer(GL_ARRAY_BUFFER, _quadvbo);	
+// 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);	
 	glDrawArrays(GL_QUADS, 4, 4);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);	
+// 	glBindBuffer(GL_ARRAY_BUFFER, 0);	
 	
 	glDisable(GL_TEXTURE_2D);
 	
