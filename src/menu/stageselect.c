@@ -22,7 +22,7 @@ void create_stage_menu(MenuData *m) {
 	create_menu(m);
 	m->type = MT_Persistent;
 	
-	for(i = 0; stages[i].loop; ++i) {
+	for(i = 0; stages[i].loop; ++i) if(!stages[i].hidden) {
 		snprintf(title, STGMENU_MAX_TITLE_LENGTH, "%d. %s", i + 1, stages[i].title);
 		add_menu_entry(m, title, start_story, &(stages[i]));
 	}
