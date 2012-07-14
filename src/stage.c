@@ -11,6 +11,23 @@
 #include "global.h"
 #include "menu/ingamemenu.h"
 
+StageInfo stages[] = {
+	// TODO: Give the stages actual titles/subtitles
+	
+	{stage0_loop, False, "Stage 1", "(insert subtitle here)"},
+	{stage1_loop, False, "Stage 2", "(insert subtitle here)"},
+	
+	{NULL, False, NULL, NULL}
+};
+
+StageInfo* stage_get(int n) {
+	int i;
+	for(i = 0; stages[i].loop; ++i)
+		if(i == n)
+			return &(stages[i]);
+	return NULL;
+}
+
 void stage_start() {
 	global.timer = 0;
 	global.frames = 0;

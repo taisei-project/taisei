@@ -30,8 +30,21 @@
 typedef void (*StageRule)(void);
 typedef void (*ShaderRule)(int);
 
+typedef struct StageInfo {
+	StageRule loop;
+	int hidden;
+	// reserved for draw_stage_title when/if it's used
+	char *title;
+	char *subtitle;
+} StageInfo;
+
+StageInfo* stage_get(int);
 void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event, ShaderRule *shaderrules, int endtime);
 
 void apply_bg_shaders(ShaderRule *shaderrules);
 void draw_stage_title(int t, int dur, char *stage, char *subtitle);
+
+void stage0_loop();
+void stage1_loop();
+
 #endif
