@@ -11,10 +11,10 @@
 #include "difficulty.h"
 #include "charselect.h"
 #include "options.h"
+#include "stageselect.h"
 
 #include "global.h"
-#include "stages/stage0.h"
-#include "stages/stage1.h"
+#include "stage.h"
 
 void quit_menu(void *arg) {
 	MenuData *m = arg;
@@ -35,8 +35,13 @@ troll:
 	if(char_menu_loop(&m) == -1)
 		goto troll;
 	
-	stage0_loop();
-	stage1_loop();
+	if(arg)
+		((StageInfo*)arg)->loop();
+	else {
+		int i;
+		for(i = 0; stages[i].loop; ++i)
+			stages[i].loop();
+	}
 	
 	global.game_over = 0;
 }
@@ -47,6 +52,12 @@ void enter_options(void *arg) {
 	options_menu_loop(&m);
 }
 
+void enter_stagemenu(void *arg) {
+	MenuData m;
+	create_stage_menu(&m);
+	stage_menu_loop(&m);
+}
+
 void create_main_menu(MenuData *m) {
 	create_menu(m);
 	
@@ -54,6 +65,9 @@ void create_main_menu(MenuData *m) {
 	
 	add_menu_entry(m, "Start Story", start_story, NULL);
 	add_menu_entry(m, "Start Extra", NULL, NULL);
+#ifdef DEBUG
+	add_menu_entry(m, "Select stage", enter_stagemenu, NULL);
+#endif
 	add_menu_entry(m, "Options", enter_options, NULL);
 	add_menu_entry(m, "Quit", quit_menu, m);
 }

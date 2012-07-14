@@ -405,7 +405,7 @@ void create_options_menu(MenuData *m) {
 // --- Drawing the menu --- //
 
 void draw_options_menu_bg(MenuData* menu) {
-	glColor4f(0.3, 0.3, 0.3, 1);
+	glColor4f(0.3, 0.3, 0.3,1);
 	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubgbg");
 	glColor4f(1,0.6,0.5,0.6 + 0.1*sin(menu->frames/100.0));
 	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubg");

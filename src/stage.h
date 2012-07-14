@@ -38,7 +38,9 @@ typedef struct StageInfo {
 	char *subtitle;
 } StageInfo;
 
+extern StageInfo stages[];
 StageInfo* stage_get(int);
+
 void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event, ShaderRule *shaderrules, int endtime);
 
 void apply_bg_shaders(ShaderRule *shaderrules);
