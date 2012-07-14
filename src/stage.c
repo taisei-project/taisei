@@ -130,14 +130,17 @@ void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
 	glTranslatef(-(VIEWPORT_X+VIEWPORT_W/2.0), -(VIEWPORT_Y+VIEWPORT_H/2.0),0);
 	glEnable(GL_DEPTH_TEST);
 	
-	// NO_STAGEBG == 2 means "automatic mode". Do we need a derpenum for this?
-	// global.fps.fps is unreliable here, show_fps is better
+	if(tconfig.intval[NO_STAGEBG] == 2 && global.fps.show_fps != 0
+		&& global.fps.show_fps < tconfig.intval[NO_STAGEBG_FPSLIMIT]
+		&& !global.nostagebg) {
+		
+		printf("stage_draw(): !- Stage background has been switched off due to low frame rate. You can change that in the options.\n");
+		global.nostagebg = True;
+	}
 	
-	if(!global.nostagebg && ((!global.menu && !tconfig.intval[NO_STAGEBG]) ||
-		(tconfig.intval[NO_STAGEBG] == 2 && (global.fps.show_fps == 0 || global.fps.show_fps > tconfig.intval[NO_STAGEBG_FPSLIMIT]))))
+	if(!global.nostagebg)
 		bgdraw();
-	else global.nostagebg = True;
-	
+		
 	glPopMatrix();	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	
