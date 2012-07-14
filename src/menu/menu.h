@@ -49,6 +49,7 @@ typedef struct MenuData{
 } MenuData;
 
 void add_menu_entry(MenuData *menu, char *name, void (*action)(void *), void *arg);
+void add_menu_separator();
 void create_menu(MenuData *menu);
 void destroy_menu(MenuData *menu);
 

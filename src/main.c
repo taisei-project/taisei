@@ -11,10 +11,7 @@
 #include "taisei_err.h"
 
 #include "global.h"
-#include "stages/stage0.h"
-#include "stages/stage1.h"
-#include "stages/stage2.h"
-#include "stages/stage3.h"
+#include "stage.h"
 #include "menu/mainmenu.h"
 #include "paths/native.h"
 
@@ -118,16 +115,11 @@ int main(int argc, char** argv) {
 		}
 		
 		init_player(&global.plr);
+		StageInfo* stg = stage_get(atoi(argv[1]) - 1);
 		
-		switch(atoi(argv[1])) {
-		case 1:
-			stage0_loop();
-		case 2:
-			stage1_loop();
-		case 3:
-			stage2_loop();
-		case 4:
-			stage3_loop();
+		if(stg) {
+			printf("** Entering %s.\n", stg->title);
+			stg->loop();
 			return 1;
 		}
 		
