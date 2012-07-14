@@ -66,7 +66,7 @@ void create_main_menu(MenuData *m) {
 	add_menu_entry(m, "Start Story", start_story, NULL);
 	add_menu_entry(m, "Start Extra", NULL, NULL);
 #ifdef DEBUG
-	add_menu_entry(m, "Select stage", enter_stagemenu, NULL);
+	add_menu_entry(m, "Select Stage", enter_stagemenu, NULL);
 #endif
 	add_menu_entry(m, "Options", enter_options, NULL);
 	add_menu_entry(m, "Quit", quit_menu, m);
