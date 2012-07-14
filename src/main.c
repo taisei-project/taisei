@@ -122,6 +122,10 @@ int main(int argc, char** argv) {
 			stage0_loop();
 		case 2:
 			stage1_loop();
+		case 3:
+			stage2_loop();
+		case 4:
+			stage3_loop();
 			return 1;
 		}
 		

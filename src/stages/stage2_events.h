@@ -5,9 +5,9 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
-#ifndef STAGE1_EVENTS_H
-#define STAGE1_EVENTS_H
+#ifndef STAGE2_EVENTS_H
+#define STAGE2_EVENTS_H
 
-void stage1_events();
+void stage2_events();
 
 #endif

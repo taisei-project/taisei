@@ -15,6 +15,8 @@
 #include "global.h"
 #include "stages/stage0.h"
 #include "stages/stage1.h"
+#include "stages/stage2.h"
+#include "stages/stage3.h"
 
 void quit_menu(void *arg) {
 	MenuData *m = arg;
@@ -37,6 +39,8 @@ troll:
 	
 	stage0_loop();
 	stage1_loop();
+	stage2_loop();
+	stage3_loop();
 	
 	global.game_over = 0;
 }

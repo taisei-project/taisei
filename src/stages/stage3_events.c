@@ -5,9 +5,10 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
-#ifndef STAGE1_EVENTS_H
-#define STAGE1_EVENTS_H
+#include "stage3_events.h"
+#include "global.h"
+#include "stage.h"
+#include "enemy.h"
 
-void stage1_events();
-
-#endif
+void stage3_events() {
+}
