@@ -17,6 +17,11 @@ void add_menu_entry(MenuData *menu, char *name, void (*action)(void *), void *ar
 	menu->entries[menu->ecount-1].drawdata = 0;
 }
 
+void add_menu_separator(MenuData *menu) {
+	menu->entries = realloc(menu->entries, (++menu->ecount)*sizeof(MenuEntry));
+	memset(&(menu->entries[menu->ecount-1]), 0, sizeof(MenuEntry));
+}
+
 void destroy_menu(MenuData *menu) {
 	int i;
 	
