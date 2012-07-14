@@ -16,6 +16,8 @@ StageInfo stages[] = {
 	
 	{stage0_loop, False, "Stage 1", "(insert subtitle here)"},
 	{stage1_loop, False, "Stage 2", "(insert subtitle here)"},
+	{stage2_loop, False, "Stage 3", "(insert subtitle here)"},
+	{stage3_loop, False, "Stage 4", "(insert subtitle here)"},
 	
 	{NULL, False, NULL, NULL}
 };

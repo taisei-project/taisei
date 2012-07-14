@@ -368,10 +368,9 @@ Boss *create_hina() {
 	return hina;
 }
 
-
 void stage1_events() {
 	TIMER(&global.timer);
-	
+		
 	AT(300) {
 		create_enemy1c(VIEWPORT_W/2-10I, 7000+500*global.diff, BigFairy, stage1_great_circle, 2I);
 	}

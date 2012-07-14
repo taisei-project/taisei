@@ -48,5 +48,7 @@ void draw_stage_title(int t, int dur, char *stage, char *subtitle);
 
 void stage0_loop();
 void stage1_loop();
+void stage2_loop();
+void stage3_loop();
 
 #endif

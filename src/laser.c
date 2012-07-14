@@ -36,7 +36,7 @@ Laser *create_laser(LaserType type, complex pos, complex pos0, int time, int dea
 	return l;
 }
 
-void draw_laser_line(Laser *laser) { // REALLY OLD.
+void draw_laser_line(Laser *laser) {
 	float width = cabs(laser->pos0);
 	if(global.frames - laser->birthtime < laser->time*3/5.0)
 		width = 2;
@@ -49,7 +49,7 @@ void draw_laser_line(Laser *laser) { // REALLY OLD.
 	glTranslatef(creal(laser->pos), cimag(laser->pos),0);
 	glRotatef(carg(laser->pos0)*180/M_PI,0,0,1);
 		
-	glBindTexture(GL_TEXTURE_2D, get_tex("lasercurve")->gltex);
+	glBindTexture(GL_TEXTURE_2D, get_tex("part/lasercurve")->gltex);
 	
 	glColor4fv((float *)laser->color);
 	
@@ -67,45 +67,43 @@ void draw_laser_line(Laser *laser) { // REALLY OLD.
 	glPopMatrix();
 }
 
-void draw_laser_curve(Laser *laser) {
-	int i;
-	
-	Texture *tex = get_tex("lasercurve");
+void draw_laser_curve(Laser *laser) {	
+	Texture *tex = get_tex("part/lasercurve");
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 	
 	glColor4fv((float *)laser->color);
-	for(i = 0; i < 2; i++) {
-		float t = global.frames - laser->birthtime - laser->time;
-		if(t < 0)
-			t = 0;
+	
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		
-		for(; t < global.frames - laser->birthtime && t <= laser->deathtime; t+=0.5) {
-			complex pos = laser->rule(laser,t);
-			glPushMatrix();
-			
-			float t1 = t - (global.frames - laser->birthtime - laser->time/2);
-			
-			float tail = laser->time/1.9 + (1-i)*3;
+	float t = global.frames - laser->birthtime - laser->time;
+	if(t < 0)
+		t = 0;
+		
+	for(; t < global.frames - laser->birthtime && t <= laser->deathtime; t += 0.5) {
+		complex pos = laser->rule(laser,t);
+		glPushMatrix();
+		
+		float t1 = t - (global.frames - laser->birthtime - laser->time/2);
+		
+		float tail = laser->time/1.9;
 
-			float s = -0.75/pow(tail,2)*(t1-tail)*(t1+tail);
-			s += 0.2*(1-i);
-			
-			if(i)
-				glColor4f(1,1,1,1.0/(laser->time)*(t1+laser->time/2));
-			
-			glTranslatef(creal(pos), cimag(pos), 0);
-			glScalef(s,s,s);
-						
-			float wq = ((float)tex->w)/tex->truew;
-			float hq = ((float)tex->h)/tex->trueh;			
-			
-			glScalef(tex->w*wq,tex->h*hq,1);			
-			draw_quad();
-			
-			glPopMatrix();
-		}
-		glColor4f(1,1,1,1);
-	}	
+		float s = -0.75/pow(tail,2)*(t1-tail)*(t1+tail);
+				
+		glTranslatef(creal(pos), cimag(pos), 0);
+							
+		float wq = ((float)tex->w)/tex->truew;
+		float hq = ((float)tex->h)/tex->trueh;			
+		
+		glScalef(s*tex->w*wq,s*tex->h*hq,s);			
+		draw_quad();
+		
+		glPopMatrix();
+	}
+	
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
+	glColor4f(1,1,1,1);
+		
 }
 
 void draw_lasers() {
@@ -113,7 +111,7 @@ void draw_lasers() {
 	
 	for(laser = global.lasers; laser; laser = laser->next) {
 		glEnable(GL_TEXTURE_2D);
-		if(laser->type == LaserLine)
+		if(laser->type == LT_Line)
 			draw_laser_line(laser);
 		else
 			draw_laser_curve(laser);
@@ -130,7 +128,7 @@ void process_lasers() {
 	
 	while(laser != NULL) {
 		int c = 0;
-		if(laser->type == LaserLine)
+		if(laser->type == LT_Line)
 			c = collision_laser_line(laser);
 		else
 			c = collision_laser_curve(laser);
