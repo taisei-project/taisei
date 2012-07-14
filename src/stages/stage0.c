@@ -55,7 +55,7 @@ void stage0_smoke_draw(Vector pos) {
 	glTranslatef(pos[0]+200*sin(pos[1]), pos[1], pos[2]+200*sin(pos[1]/25.0));
 	glRotatef(90,-1,0,0);
 	glScalef(3.5,2,1);		
-	glRotatef(global.frames,0,0,1);
+	glRotatef(global.timer,0,0,1);
 	
 	glColor4f(.2,.2,.2,((d-500)*(d-500))/1.5e6);
 	draw_texture(0,0,"stage0/fog");

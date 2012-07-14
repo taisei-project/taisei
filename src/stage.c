@@ -138,7 +138,7 @@ void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
 		global.nostagebg = True;
 	}
 	
-	if(!global.nostagebg)
+	if(!global.nostagebg && !global.menu)
 		bgdraw();
 		
 	glPopMatrix();	
@@ -202,7 +202,7 @@ void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
 			glPopMatrix();
 		}
 				
-	} if(global.menu) {
+	} else {
 		draw_ingame_menu(global.menu);		
 	}
 	
@@ -316,8 +316,6 @@ void stage_logic(int time) {
 	if(!global.dialog && !global.boss)
 		global.timer++;
 	
-	calc_fps(&global.fps);
-	
 	if(global.timer >= time)
 		global.game_over = GAMEOVER_WIN;
 	
@@ -360,7 +358,8 @@ void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event,
 		if(!global.boss && !global.dialog)
 			event();
 		stage_input();
-		stage_logic(endtime);		
+		stage_logic(endtime);
+		calc_fps(&global.fps);
 				
 		stage_draw(draw, shaderrules, endtime);	
 		
