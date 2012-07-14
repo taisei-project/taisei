@@ -147,4 +147,5 @@ int config_sym2key(int sym) {
 	for(i = CONFIG_KEY_FIRST; i <= CONFIG_KEY_LAST; ++i)
 		if(sym == tconfig.intval[i])
 			return i;
+	return -1;
 }
