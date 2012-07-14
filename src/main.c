@@ -115,7 +115,7 @@ int main(int argc, char** argv) {
 		}
 		
 		init_player(&global.plr);
-		StageInfo* stg = stage_get(atoi(argv[1]) - 1);
+		StageInfo* stg = stage_get(atoi(argv[1]));
 		
 		if(stg) {
 			printf("** Entering %s.\n", stg->title);

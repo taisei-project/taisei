@@ -35,7 +35,7 @@ typedef struct {
 	complex pos;
 	short focus;
 	short fire;
-	short moving;	
+	short moving;
 	
 	short dir;
 	float power;

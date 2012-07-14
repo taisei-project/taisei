@@ -8,6 +8,7 @@
 #include "stage.h"
 
 #include <SDL/SDL.h>
+#include <time.h>
 #include "global.h"
 #include "replay.h"
 #include "config.h"
@@ -17,18 +18,19 @@
 StageInfo stages[] = {
 	// TODO: Give the stages actual titles/subtitles
 	
-	{stage0_loop, False, "Stage 1", "(insert subtitle here)"},
-	{stage1_loop, False, "Stage 2", "(insert subtitle here)"},
-	{stage2_loop, False, "Stage 3", "(insert subtitle here)"},
-	{stage3_loop, False, "Stage 4", "(insert subtitle here)"},
+	{1, stage0_loop, False, "Stage 1", "(insert subtitle here)"},
+	{2, stage1_loop, False, "Stage 2", "(insert subtitle here)"},
+	{3, stage2_loop, False, "Stage 3", "(insert subtitle here)"},
+	{4, stage3_loop, False, "Stage 4", "(insert subtitle here)"},
 	
-	{NULL, False, NULL, NULL}
+	{0, NULL, False, NULL, NULL}
 };
 
+// NOTE: This returns the stage BY ID, not by the array index!
 StageInfo* stage_get(int n) {
 	int i;
 	for(i = 0; stages[i].loop; ++i)
-		if(i == n)
+		if(stages[i].id == n)
 			return &(stages[i]);
 	return NULL;
 }
@@ -39,7 +41,7 @@ void stage_start() {
 	global.game_over = 0;
 	global.points = 0;
 	global.nostagebg = False;
-		
+	
 	global.plr.recovery = 0;
 }
 
@@ -50,11 +52,55 @@ void stage_ingamemenu() {
 		global.menu->quit = 1;
 }
 
+void replay_input() {
+	if(global.menu) {
+		menu_input(global.menu);
+		return;
+	}
+	
+	SDL_Event event;
+	while(SDL_PollEvent(&event)) {
+		int sym = event.key.keysym.sym;
+		
+		switch(event.type) {
+			case SDL_KEYDOWN:
+				if(sym == SDLK_ESCAPE)
+					stage_ingamemenu();
+				break;
+				
+			case SDL_QUIT:
+				exit(1);
+				break;
+		}
+	}
+	
+	// I know this loop is not (yet) optimal - consider it a sketch
+	int i;
+	for(i = 0; i < global.replay.ecount; ++i) {
+		ReplayEvent *e = &(global.replay.events[i]);
+		
+		if(e->frame == global.frames) switch(e->type) {
+			case EV_OVER:
+				global.game_over = GAMEOVER_ABORT;
+				break;
+			
+			default:
+				if(global.dialog && e->type == EV_PRESS && (e->key == KEY_SHOT || e->key == KEY_BOMB))
+					page_dialog(&global.dialog);
+				else
+					player_event(&global.plr, e->type, e->key);
+				break;
+		}
+	}
+	
+	player_applymovement(&global.plr);
+}
+
 void stage_input() {
 	if(global.menu) {
 		menu_input(global.menu);
 		return;
-	}		
+	}
 	
 	SDL_Event event;
 	while(SDL_PollEvent(&event)) {
@@ -63,22 +109,21 @@ void stage_input() {
 		
 		switch(event.type) {
 			case SDL_KEYDOWN:
-				printf("%d / %d\n", sym, SDLK_ESCAPE);
-				
 				if(global.dialog && (key == KEY_SHOT || key == KEY_BOMB)) {
 					page_dialog(&global.dialog);
+					replay_event(&global.replay, EV_PRESS, key);
 				} else if(sym == SDLK_ESCAPE) {
 					stage_ingamemenu();
 				} else {
 					player_event(&global.plr, EV_PRESS, key);
-					replay_event(EV_PRESS, key);
+					replay_event(&global.replay, EV_PRESS, key);
 				}
 				
 				break;
 				
 			case SDL_KEYUP:
 				player_event(&global.plr,EV_RELEASE, key);
-				replay_event(EV_RELEASE, key);
+				replay_event(&global.replay, EV_RELEASE, key);
 				break;
 			
 			case SDL_QUIT:
@@ -311,11 +356,8 @@ void stage_logic(int time) {
 	
 	global.frames++;
 	
-	if(!global.dialog) {
-		if(!global.boss)
-			global.timer++;
-		global.replaytimer++;
-	}
+	if(!global.dialog && !global.boss)
+		global.timer++;
 	
 	if(global.timer >= time)
 		global.game_over = GAMEOVER_WIN;
@@ -345,11 +387,32 @@ void stage_end() {
 	}
 }
 
-void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event, ShaderRule *shaderrules, int endtime) {	
+void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw, StageRule event, ShaderRule *shaderrules, int endtime) {
 	if(global.game_over == GAMEOVER_WIN) {
 		global.game_over = 0;
 	} else if(global.game_over) {
 		return;
+	}
+	
+	int seed = time(0);
+	srand(seed);
+	
+	if(global.replaymode == REPLAY_RECORD) {
+		replay_destroy(&global.replay);
+		replay_init(&global.replay, info, seed, &global.plr);
+	} else {
+		printf("REPLAY_PLAY mode: %d events\n", global.replay.ecount);
+		
+		srand(global.replay.seed);
+		global.diff			= global.replay.diff;
+		global.points		= global.replay.points;
+		
+		global.plr.shot		= global.replay.plr_shot;
+		global.plr.cha		= global.replay.plr_char;
+		global.plr.pos		= global.replay.plr_pos;
+		global.plr.lifes	= global.replay.plr_lifes;
+		global.plr.bombs	= global.replay.plr_bombs;
+		global.plr.power	= global.replay.plr_power;
 	}
 	
 	stage_start();
@@ -358,7 +421,7 @@ void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event,
 	while(global.game_over <= 0) {
 		if(!global.boss && !global.dialog)
 			event();
-		stage_input();
+		((global.replaymode == REPLAY_PLAY)? replay_input : stage_input)();
 		stage_logic(endtime);
 		calc_fps(&global.fps);
 				
@@ -368,10 +431,13 @@ void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event,
 		frame_rate(&global.lasttime);
 	}
 	
+	if(global.replaymode == REPLAY_RECORD)
+		replay_event(&global.replay, EV_OVER, 0);
+	
 	end();
 	stage_end();
 }
-		
+
 void draw_stage_title(int t, int dur, char *stage, char *subtitle) {
 	if(t < 0 || t > dur)
 		return;

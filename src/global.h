@@ -29,6 +29,7 @@
 #include "fbo.h"
 #include "vbo.h"
 #include "resource/resource.h"
+#include "replay.h"
 
 #define FILE_PREFIX PREFIX "/share/taisei/"
 #define CONFIG_FILE "config"
@@ -92,7 +93,6 @@ typedef struct {
 	int frames;
 	int lasttime; // frame limiter
 	int timer;
-	int replaytimer;	// lol
 	
 	Boss *boss;
 	MenuData *menu;
@@ -106,6 +106,9 @@ typedef struct {
 	FPSCounter fps;
 	
 	int nostagebg;	// I don't want the automatic stagebg handling to mess with the config, and I don't want that longass if in more than one place either.
+	
+	Replay replay;
+	int replaymode;
 } Global;
 
 extern Global global;
@@ -127,7 +130,8 @@ double frand();
 // this is used by both player and replay code
 enum {
 	EV_PRESS,
-	EV_RELEASE
+	EV_RELEASE,
+	EV_OVER		// replay-only
 };
 
 #endif

@@ -201,10 +201,12 @@ void plr_realdeath(Player *plr) {
 		plr->bombs = PLR_START_BOMBS;
 	
 	if(plr->lifes-- == 0) {
-		if(plr->continues < MAX_CONTINUES)
+		if(plr->continues < MAX_CONTINUES) {
+			if(global.replaymode == REPLAY_RECORD)	// actually... I'd be strange if REPLAY_PLAY ever got there
+				replay_destroy(&global.replay);		// 19:39:29 [@  laochailan] no. no fame for continue users >:D
 			global.menu = create_gameover_menu();
-		else
-			game_over();		
+		} else
+			game_over();
 	}
 }
 

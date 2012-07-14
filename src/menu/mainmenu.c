@@ -46,6 +46,23 @@ troll:
 	global.game_over = 0;
 }
 
+void start_replay(void *arg) {
+	StageInfo *s = stage_get(global.replay.stage);
+	
+	if(!s) {
+		printf("Invalid stage %d in replay... wtf?!\n", global.replay.stage);
+		return;
+	}
+	
+	// XXX: workaround, doesn't even always work. DEBUG THIS.
+	global.fps.show_fps = 0;
+	
+	global.replaymode = REPLAY_PLAY;
+	s->loop();
+	global.replaymode = REPLAY_RECORD;
+	global.game_over = 0;
+}
+
 void enter_options(void *arg) {
 	MenuData m;
 	create_options_menu(&m);
@@ -64,6 +81,7 @@ void create_main_menu(MenuData *m) {
 	m->type = MT_Persistent;
 	
 	add_menu_entry(m, "Start Story", start_story, NULL);
+	add_menu_entry(m, "Replay (TEST)", start_replay, NULL);
 	add_menu_entry(m, "Start Extra", NULL, NULL);
 #ifdef DEBUG
 	add_menu_entry(m, "Select Stage", enter_stagemenu, NULL);
