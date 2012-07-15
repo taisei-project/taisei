@@ -29,6 +29,7 @@ Dialog *stage0_dialog() {
 void stage0_bg_draw(Vector pos) {
 	glPushMatrix();
 	glTranslatef(pos[0],pos[1],pos[0]);
+	glRotatef(180,1,0,0);
 	glScalef(1200,3000,1);
 	
 	glEnable(GL_TEXTURE_2D);
