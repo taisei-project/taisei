@@ -15,6 +15,7 @@
 
 #include "global.h"
 #include "stage.h"
+#include "paths/native.h"
 
 void quit_menu(void *arg) {
 	MenuData *m = arg;
@@ -47,12 +48,21 @@ troll:
 }
 
 void start_replay(void *arg) {
+	char p[1337];
+	snprintf(p, 1337, "%s/test.%s", get_config_path(), REPLAY_EXTENSION);
+	FILE *fp = fopen(p, "rb");
+	printf("%s\n", p);
+	replay_read(&global.replay, fp);
+	fclose(fp);
+	
 	StageInfo *s = stage_get(global.replay.stage);
 	
 	if(!s) {
 		printf("Invalid stage %d in replay... wtf?!\n", global.replay.stage);
 		return;
 	}
+	
+	init_player(&global.plr);
 	
 	// XXX: workaround, doesn't even always work. DEBUG THIS.
 	global.fps.show_fps = 0;

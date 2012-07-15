@@ -35,9 +35,9 @@ typedef struct Replay {
 	
 	ReplayEvent *events;
 	int ecount;
-	int capacity;
 	
 	// The fields below should not be stored
+	int capacity;
 	int active;
 } Replay;
 
@@ -50,7 +50,12 @@ void replay_init(Replay *rpy, StageInfo *stage, int seed, Player *plr);
 void replay_destroy(Replay *rpy);
 void replay_event(Replay *rpy, int type, int key);
 
+int replay_write(Replay *rpy, FILE *file);
+int replay_read(Replay *rpy, FILE *file);
+
 #define REPLAY_ALLOC_INITIAL 100
 #define REPLAY_ALLOC_ADDITIONAL 100
+#define REPLAY_MAGICNUMBER 1337
+#define REPLAY_EXTENSION "tsr"
 
 #endif

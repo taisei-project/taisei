@@ -80,6 +80,7 @@ void replay_input() {
 		ReplayEvent *e = &(global.replay.events[i]);
 		
 		if(e->frame == global.frames) switch(e->type) {
+			
 			case EV_OVER:
 				global.game_over = GAMEOVER_ABORT;
 				break;
@@ -400,10 +401,13 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	if(global.replaymode == REPLAY_RECORD) {
 		replay_destroy(&global.replay);
 		replay_init(&global.replay, info, seed, &global.plr);
+		printf("Random seed: %d\n", seed);
 	} else {
 		printf("REPLAY_PLAY mode: %d events\n", global.replay.ecount);
 		
 		srand(global.replay.seed);
+		printf("Random seed: %d\n", global.replay.seed);
+		
 		global.diff			= global.replay.diff;
 		global.points		= global.replay.points;
 		
