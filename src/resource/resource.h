@@ -15,13 +15,15 @@
 #include "audio.h"
 #include "shader.h"
 #include "font.h"
+#include "model.h"
 
 typedef struct Resources Resources;
 
 typedef enum ResourceState {
 	RS_GfxLoaded = 1,
 	RS_SfxLoaded = 2,
-	RS_ShaderLoaded = 4
+	RS_ShaderLoaded = 4,
+	RS_ModelsLoaded = 8
 } ResourceState;
 
 enum {
@@ -35,6 +37,7 @@ struct Resources {
 	Animation *animations;	
 	Sound *sounds;
 	Shader *shaders;
+	Model *models;
 	
 	ALuint sndsrc[SNDSRC_COUNT];
 	
@@ -45,5 +48,5 @@ struct Resources {
 extern Resources resources;
 
 void load_resources();
-
+void free_resources();
 #endif

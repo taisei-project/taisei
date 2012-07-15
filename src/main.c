@@ -31,22 +31,8 @@ void init_gl() {
 
 void taisei_shutdown() {
 	printf("\nshutdown:\n");
-	if(resources.state & RS_SfxLoaded) {
-		printf("-- alutExit()\n");
-		alutExit();
-	}
 	
-	printf("-- freeing textures\n");
-	delete_textures();
-	
-	printf("-- freeing FBOs\n");
-	delete_fbo(&resources.fbg[0]);
-	delete_fbo(&resources.fbg[1]);
-	delete_fbo(&resources.fsec);
-	printf("-- freeing VBOs\n");
-	delete_vbo(&_vbo);
-	printf("-- freeing shaders\n");
-	delete_shaders();
+	free_resources();
 	
 	SDL_FreeSurface(display);
 	SDL_Quit();

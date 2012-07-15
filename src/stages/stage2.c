@@ -30,13 +30,13 @@ void stage2_bg_tunnel_draw(Vector pos) {
 	glPushMatrix();
 	glTranslatef(pos[0], pos[1], pos[2]);
 		
+	glBindTexture(GL_TEXTURE_2D, get_tex("stage1/border")->gltex);
 	for(i = 0; i < n; i++) {
 		glPushMatrix();
 		glRotatef(360/n*i, 0, 1, 0);
 		glTranslatef(0,0,-r);
 		glScalef(2*r/tan((n-2)*M_PI/n), 3000, 1);
-		glBindTexture(GL_TEXTURE_2D, get_tex("stage1/border")->gltex);
-		
+						
 		draw_quad();
 		glPopMatrix();		
 	}
@@ -45,6 +45,7 @@ void stage2_bg_tunnel_draw(Vector pos) {
 	
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
+	
 }
 
 void stage2_fog(int fbonum) {

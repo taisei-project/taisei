@@ -16,8 +16,8 @@ void init_stage3d(Stage3D *s) {
 	s->projangle = 45;
 }
 
-void add_model(Stage3D *s, ModelDrawRule draw, ModelPositionRule pos) {
-	s->models = realloc(s->models, (++s->msize)*sizeof(Model));
+void add_model(Stage3D *s, SegmentDrawRule draw, SegmentPositionRule pos) {
+	s->models = realloc(s->models, (++s->msize)*sizeof(StageSegment));
 	
 	s->models[s->msize - 1].draw = draw;
 	s->models[s->msize - 1].pos = pos;
