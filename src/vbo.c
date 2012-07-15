@@ -9,103 +9,66 @@
 #include <string.h>
 #include "taisei_err.h"
 
-GLuint _quadvbo;
+VBO _vbo;
 
-/*void init_partbuf(PartBuffer *buf) {
-	memset(buf, 0, sizeof(buf));
-}
+void init_vbo(VBO *vbo, int size) {
+	memset(vbo, 0, sizeof(VBO));	
+	vbo->size = size;
+	
+	glGenBuffers(1, &vbo->vbo);
 
-void destroy_partbuf(PartBuffer *buf){
-	free(buf->poss);
-	free(buf->texcs);
-	free(buf->clrs);
-}
-
-void partbuf_add_batch(PartBuffer *buf, Matrix m, Vector tex, Color *clr) {
-	if(buf->cursor >= buf->size) {
-		buf->size += 10;
-		buf->poss = realloc(buf->poss, buf->size*sizeof(Matrix));
-		buf->texcs = realloc(buf->texcs, buf->size*sizeof(Vector));
-		buf->clrs = realloc(buf->clrs, buf->size*sizeof(Color));
-	}
+	glBindBuffer(GL_ARRAY_BUFFER, vbo->vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex)*size, NULL, GL_STATIC_DRAW);
 		
-	memcpy(&buf->poss[buf->cursor], m, sizeof(Matrix));
-	memcpy(&buf->texcs[buf->cursor], tex, sizeof(Vector));
-	
-	if(clr != NULL) {
-		memcpy(&buf->clrs[buf->cursor], clr, sizeof(Color));
-	} else {
-		memset(&buf->clrs[buf->cursor], 0, sizeof(Color));
-	}
-	
-	buf->cursor++;
-}
-
-void partbuf_clear(PartBuffer *buf) {
-	buf->cursor = 0;
-}
-
-void partbuf_draw(PartBuffer *buf, GLuint shader, char *posname, char *tcname, char *clrname) {	
-	glUniformMatrix4fv(glGetUniformLocation(shader, posname), buf->cursor, 0, (GLfloat *)buf->poss);
-	glUniform3fv(glGetUniformLocation(shader, tcname), buf->cursor, (GLfloat *)buf->texcs);
-	glUniform4fv(glGetUniformLocation(shader, clrname), buf->cursor, (GLfloat *)buf->clrs);
-	
-	glDrawArraysInstanced(GL_QUADS, 0, buf->cursor-1, buf->cursor);	
-}
-
-void partbuf_add(PartBuffer *buf, Matrix m, Texture *tex, Color *clr) {
-	Vector texscale = {1,1,0};
-	
-	Matrix m2;
-	matscale(m2, m, tex->w, tex->h, tex->gltex);
-// 	Vector scale = {tex->w, tex->h, tex->gltex};
-			
-	partbuf_add_batch(buf, m2, texscale, clr);
-}*/
-
-void init_quadvbo() {
-	glGenBuffers(1, &_quadvbo);
-	
-	Vector verts[] = {
-		{-0.5,-0.5,0}, {0,0,0},
-		{-0.5,0.5,0}, {0,1,0},
-		{0.5,0.5,0}, {1,1,0},
-		{0.5,-0.5,0}, {1,0,0},
-		
-		// Alternative quad for FBO		
-		{-0.5,-0.5,0}, {0,1,0},
-		{-0.5,0.5,0}, {0,0,0},
-		{0.5,0.5,0}, {1,0,0},
-		{0.5,-0.5,0}, {1,1,0}		
-	};
-	
-	glBindBuffer(GL_ARRAY_BUFFER, _quadvbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vector)*16, verts, GL_STATIC_DRAW);
-	
-	glVertexPointer(3, GL_FLOAT, sizeof(float)*6, NULL);
-	glTexCoordPointer(3, GL_FLOAT, sizeof(float)*6, NULL + 3*sizeof(float));
+	glVertexPointer(3, GL_FLOAT, sizeof(Vertex), NULL);
+	glNormalPointer(GL_FLOAT, sizeof(Vertex), NULL + sizeof(Vector));
+	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), NULL + 2*sizeof(Vector));
 	
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glEnableClientState(GL_NORMAL_ARRAY);
 }
 
-void delete_vbo(GLuint *vbo) {
-	glDeleteBuffers(1, vbo);
+void vbo_add_verts(VBO *vbo, Vertex *verts, int count) {
+	if(vbo->offset + count > vbo->size)
+		errx(-1, "vbo_add_verts():\n !- Cannot add Vertices: VBO too small!\n");
+	
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(Vertex)*vbo->offset, sizeof(Vertex)*count, verts);
+	
+	vbo->offset += count;
+}
+
+void init_quadvbo() {
+	Vertex verts[] = {
+		{{-0.5,-0.5,0},{0,0,1},0,0},
+		{{-0.5,0.5,0},{0,0,1},0,1},
+		{{0.5,0.5,0},{0,0,1},1,1},
+		{{0.5,-0.5,0},{0,0,1},1,0},
+		
+		// Alternative quad for FBO		
+		{{-0.5,-0.5,0},{0,0,1},0,1},
+		{{-0.5,0.5,0},{0,0,1},0,0},
+		{{0.5,0.5,0},{0,0,1},1,0},
+		{{0.5,-0.5,0},{0,0,1},1,1}		
+	};
+	
+	init_vbo(&_vbo, VBO_SIZE);
+	glBindBuffer(GL_ARRAY_BUFFER, _vbo.vbo);
+	
+	vbo_add_verts(&_vbo, verts, 8);
+}
+
+void delete_vbo(VBO *vbo) {
+	glDeleteBuffers(1, &vbo->vbo);
 }
 
 void draw_quad() {
 	
-	glBindBuffer(GL_ARRAY_BUFFER, _quadvbo);	
-	
-// 	glEnableClientState(GL_VERTEX_ARRAY);
-// 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+// 	glBindBuffer(GL_ARRAY_BUFFER, _vbo.vbo);	
 	
 	glDrawArrays(GL_QUADS, 0, 4);
-		
-// 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-// 	glDisableClientState(GL_VERTEX_ARRAY);
 	
-	glBindBuffer(GL_ARRAY_BUFFER, 0);	
+// 	glBindBuffer(GL_ARRAY_BUFFER, 0);	
 }

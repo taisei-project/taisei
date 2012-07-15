@@ -55,6 +55,7 @@ set(SRCs
 	resource/font.c
 	resource/shader.c
 	resource/audio.c
+	resource/model.c
 	${BISON_cfgparser_OUTPUTS}
 	${FLEX_cfgscanner_OUTPUTS})
 
