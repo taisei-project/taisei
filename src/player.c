@@ -156,6 +156,11 @@ void player_logic(Player* plr) {
 		Enemy *en;
 		for(en = global.enemies; en; en = en->next)
 			en->hp -= 300;
+		
+		Projectile *p;
+		for(p = global.projs; p; p = p->next)
+			if(p->type >= FairyProj)
+				p->type = DeadProj;
 	}
 }
 
