@@ -80,7 +80,6 @@ void replay_input() {
 		ReplayEvent *e = &(global.replay.events[i]);
 		
 		if(e->frame == global.frames) switch(e->type) {
-			
 			case EV_OVER:
 				global.game_over = GAMEOVER_ABORT;
 				break;
@@ -423,7 +422,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	start();
 	
 	while(global.game_over <= 0) {
-		if(!global.boss && !global.dialog)
+		if(!global.boss && !global.dialog && !global.menu)
 			event();
 		((global.replaymode == REPLAY_PLAY)? replay_input : stage_input)();
 		stage_logic(endtime);
