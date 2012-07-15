@@ -28,8 +28,7 @@ Dialog *stage0_dialog() {
 
 void stage0_bg_draw(Vector pos) {
 	glPushMatrix();
-	glTranslatef(pos[0]+330,pos[1],pos[0]);
-	glRotatef(180,1,0,0);
+	glTranslatef(pos[0],pos[1],pos[0]);
 	glScalef(1200,3000,1);
 	
 	glEnable(GL_TEXTURE_2D);
@@ -48,7 +47,7 @@ Vector **stage0_bg_pos(Vector p, float maxrange) {
 }
 
 void stage0_smoke_draw(Vector pos) {
-	float d = abs(pos[1]+bgcontext.cx[1]);
+	float d = abs(pos[1]-bgcontext.cx[1]);
 	
 	glDisable(GL_DEPTH_TEST);
 	glPushMatrix();
@@ -66,7 +65,7 @@ void stage0_smoke_draw(Vector pos) {
 }
 
 Vector **stage0_smoke_pos(Vector p, float maxrange) {
-	Vector q = {-300,0,-300};
+	Vector q = {0,0,-300};
 	Vector r = {0,300,0};
 	return linear3dpos(p, maxrange/2.0, q, r);
 }
@@ -80,6 +79,7 @@ void stage0_fog(int fbonum) {
 	glUniform4f(uniloc(shader, "fog_color"),0.1, 0.1, 0.1, 1.0);
 	glUniform1f(uniloc(shader, "start"),0.0);
 	glUniform1f(uniloc(shader, "end"),0.4);
+	glUniform1f(uniloc(shader, "exponent"),3.0);
 	glActiveTexture(GL_TEXTURE0 + 1);
 	glBindTexture(GL_TEXTURE_2D, resources.fbg[fbonum].depth);
 	glActiveTexture(GL_TEXTURE0);
@@ -595,9 +595,9 @@ void stage0_start() {
 	add_model(&bgcontext, stage0_smoke_draw, stage0_smoke_pos);
 
 	
-	bgcontext.crot[0] = -60;
-	bgcontext.cx[2] = -700;
-	bgcontext.cv[1] = -7;
+	bgcontext.crot[0] = 60;
+	bgcontext.cx[2] = 700;
+	bgcontext.cv[1] = 7;
 }
 
 void stage0_end() {

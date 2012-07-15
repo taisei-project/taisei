@@ -64,13 +64,13 @@ void stage3_events() {
 // 		create_laser(LT_Line, VIEWPORT_W/2, 20*cexp(I*0.3*_i), 40, 200, rgb(0.9,0.9,0.0), NULL, 0);
 // 	}
 	
-	AT(70) {
-		create_enemy1c(VIEWPORT_H/4*3*I, 9000, BigFairy, stage3_splasher, 3-4I);
-		create_enemy1c(VIEWPORT_W + VIEWPORT_H/4*3*I, 9000, BigFairy, stage3_splasher, -3-4I);
-	}
-	
-	FROM_TO(300, 350, 10) {
-		create_enemy1c(VIEWPORT_H/3*2*I-60*_i*I, 1000, Fairy, stage3_fodder, 2);
-		create_enemy1c(VIEWPORT_W + VIEWPORT_H/3*2*I-60*_i*I, 1000, Fairy, stage3_fodder, -2);
-	}
+// 	AT(70) {
+// 		create_enemy1c(VIEWPORT_H/4*3*I, 9000, BigFairy, stage3_splasher, 3-4I);
+// 		create_enemy1c(VIEWPORT_W + VIEWPORT_H/4*3*I, 9000, BigFairy, stage3_splasher, -3-4I);
+// 	}
+// 	
+// 	FROM_TO(300, 350, 10) {
+// 		create_enemy1c(VIEWPORT_H/3*2*I-60*_i*I, 1000, Fairy, stage3_fodder, 2);
+// 		create_enemy1c(VIEWPORT_W + VIEWPORT_H/3*2*I-60*_i*I, 1000, Fairy, stage3_fodder, -2);
+// 	}
 }

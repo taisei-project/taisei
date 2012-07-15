@@ -14,14 +14,14 @@
 static Stage3D bgcontext;
 
 Vector **stage2_bg_pos(Vector pos, float maxrange) {
-	Vector p = {-320, 0, 0};
+	Vector p = {0, 0, 0};
 	Vector r = {0, 3000, 0};
 	
 	return linear3dpos(pos, maxrange, p, r);
 }
 
 void stage2_bg_tunnel_draw(Vector pos) {
-	int n = 7;
+	int n = 6;
 	float r = 300;
 	int i;
 	
@@ -38,7 +38,7 @@ void stage2_bg_tunnel_draw(Vector pos) {
 		glScalef(2*r/tan((n-2)*M_PI/n), 3000, 1);
 						
 		draw_quad();
-		glPopMatrix();		
+		glPopMatrix();
 	}
 	
 // 	bgcontext.crot[1] = (creal(global.plr.pos)-VIEWPORT_W/2)/10.0;
@@ -56,6 +56,7 @@ void stage2_fog(int fbonum) {
 	glUniform4f(uniloc(shader, "fog_color"),1,1,1,1.0);
 	glUniform1f(uniloc(shader, "start"),0.2);
 	glUniform1f(uniloc(shader, "end"),0.8);
+	glUniform1f(uniloc(shader, "exponent"),4.0);
 	glActiveTexture(GL_TEXTURE0 + 2);
 	glBindTexture(GL_TEXTURE_2D, resources.fbg[fbonum].depth);
 	glActiveTexture(GL_TEXTURE0);
@@ -68,7 +69,7 @@ void stage2_start() {
 	init_stage3d(&bgcontext);
 	
 // 	bgcontext.cx[2] = -10;
-	bgcontext.crot[0] = -70;
+	bgcontext.crot[0] = -90;
 	bgcontext.cv[1] = 20;
 	
 	add_model(&bgcontext, stage2_bg_tunnel_draw, stage2_bg_pos);
