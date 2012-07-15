@@ -57,5 +57,6 @@ int replay_read(Replay *rpy, FILE *file);
 #define REPLAY_ALLOC_ADDITIONAL 100
 #define REPLAY_MAGICNUMBER 1337
 #define REPLAY_EXTENSION "tsr"
+#define REPLAY_READ_MAXSTRLEN 128
 
 #endif

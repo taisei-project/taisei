@@ -50,7 +50,7 @@ troll:
 void start_replay(void *arg) {
 	char p[1337];
 	snprintf(p, 1337, "%s/test.%s", get_config_path(), REPLAY_EXTENSION);
-	FILE *fp = fopen(p, "rb");
+	FILE *fp = fopen(p, "r");
 	printf("%s\n", p);
 	replay_read(&global.replay, fp);
 	fclose(fp);
