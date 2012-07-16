@@ -474,7 +474,7 @@ void draw_options_menu(MenuData *menu) {
 		} else if(i == menu->cursor && clr != 1) {
 			clr = 1;
 			glColor4f(1,1,0,0.7 * alpha);
-		} else if(clr != 2) {
+		} else {
 			clr = 2;
 			glColor4f(1, 1, 1, 0.7 * alpha);
 		}
