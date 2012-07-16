@@ -34,7 +34,6 @@ void create_stage_menu(MenuData *m) {
 }
 
 float min(float a, float b)  { return a < b? a : b; }
-float max(float a, float b)  { return a > b? a : b; }
 
 void draw_stage_menu(MenuData *m) {
 	draw_options_menu_bg(m);
@@ -45,7 +44,6 @@ void draw_stage_menu(MenuData *m) {
 	
 	glPushMatrix();
 	glTranslatef(100, 100 + min(0, SCREEN_H * 0.7 - 100 - m->drawdata[2]), 0);
-	printf("%f\n", min(0, SCREEN_H - m->drawdata[2]));
 	
 	glPushMatrix();
 	glTranslatef(SCREEN_W/2 - 100, m->drawdata[2], 0);

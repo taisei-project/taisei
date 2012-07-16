@@ -49,8 +49,6 @@ void replay_event(Replay *rpy, int type, int key) {
 	if(!rpy->active)
 		return;
 	
-	printf("[%d] Replay event #%d: %d, %d\n", global.frames, rpy->ecount, type, key);
-	
 	ReplayEvent *e = &(rpy->events[rpy->ecount]);
 	e->frame = global.frames;
 	e->type = (char)type;
