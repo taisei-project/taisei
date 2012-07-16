@@ -205,7 +205,13 @@ void draw_model_p(Model *model) {
 		errx(-1, "draw_model_p():\n!- Model '%s': invalid face vertex count");
 	}
 	
+	glMatrixMode(GL_TEXTURE);
+	glScalef(1,-1,1); // every texture in taisei is actually read vertically mirrored. and I noticed that just now.
+	
 	glDrawElements(flag, model->icount, GL_UNSIGNED_INT, model->indices);
+	
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
 }
 
 void draw_model(char *name) {
