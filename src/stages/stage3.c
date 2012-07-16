@@ -188,7 +188,7 @@ void stage3_corridor_draw(Vector pos) {
 void stage3_start() {
 	init_stage3d(&bgcontext);
 	
-	bgcontext.cx[2] = -5000;
+	bgcontext.cx[2] = -10000;
 // 	bgcontext.cv[1] = 0.1;
 	bgcontext.cv[2] = 19.7;
 	bgcontext.crot[0] = 80;
@@ -216,9 +216,9 @@ void stage3_draw() {
 		bgcontext.cv[2] = 0;
 	
 	if(bgcontext.cx[2] >= 0 && bgcontext.cx[2] <= 10)
-		bgcontext.cv[1] += 0.5;
+		bgcontext.cv[1] += 0.2;
 	
-	if(bgcontext.cx[1] >= 1200 && bgcontext.cx[1] <= 1500)
+	if(bgcontext.cx[1] >= 1200 && bgcontext.cx[1] <= 2000)
 		bgcontext.cv[1] += 0.02;
 }
 
