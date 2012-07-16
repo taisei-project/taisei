@@ -49,6 +49,7 @@
 %token tNO_AUDIO
 %token tNO_STAGEBG
 %token tNO_STAGEBG_FPSLIMIT
+%token tSAVE_RPY
 
 %token SKEY
 
@@ -88,7 +89,8 @@ key_key	: tKEY_UP
 		| tNO_AUDIO
 		| tFULLSCREEN
 		| tNO_STAGEBG
-		| tNO_STAGEBG_FPSLIMIT;
+		| tNO_STAGEBG_FPSLIMIT
+		| tSAVE_RPY;
 
 nl		: LB { lineno++; };
 %%
@@ -140,6 +142,8 @@ void config_preset() {
 	
 	tconfig.intval[NO_STAGEBG] = 0;
 	tconfig.intval[NO_STAGEBG_FPSLIMIT] = 40;
+	
+	tconfig.intval[SAVE_RPY] = 2;
 }
 
 int config_sym2key(int sym) {

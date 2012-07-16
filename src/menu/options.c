@@ -257,6 +257,22 @@ int bind_stagebg_fpslimit_dependence() {
 	return tconfig.intval[NO_STAGEBG] == 2;
 }
 
+int bind_saverpy_get(void *b)
+{
+	int v = tconfig.intval[((OptionBinding*)b)->configentry];
+	
+	if(v > 1)
+		return v;
+	return !v;
+}
+
+int bind_saverpy_set(void *b, int v)
+{
+	if(v > 1)
+		return tconfig.intval[((OptionBinding*)b)->configentry] = v;
+	return !(tconfig.intval[((OptionBinding*)b)->configentry] = !v);
+}
+
 // --- Config saving --- //
 
 void menu_save_config(MenuData *m, char *filename)
@@ -348,7 +364,7 @@ void create_options_menu(MenuData *m) {
 			
 	add_menu_entry(m, "Stage Background", do_nothing, NULL);
 		b = bind_option(m, "disable_stagebg", NO_STAGEBG, bind_common_intget,
-																		bind_common_intset);
+														  bind_common_intset);
 			bind_addvalue(b, "on");
 			bind_addvalue(b, "off");
 			bind_addvalue(b, "auto");
@@ -358,7 +374,14 @@ void create_options_menu(MenuData *m) {
 																				 bind_common_intset);
 			bind_setvaluerange(b, 20, 60);
 			bind_setdependence(b, bind_stagebg_fpslimit_dependence);
-			
+	
+	add_menu_entry(m, "Save Replays", do_nothing, NULL);
+		b = bind_option(m, "save_rpy", SAVE_RPY, bind_saverpy_get,
+												 bind_saverpy_set);
+			bind_addvalue(b, "on");
+			bind_addvalue(b, "off");
+			bind_addvalue(b, "ask");
+	
 	add_menu_entry(m, " ", NULL, NULL);
 		allocate_binding(m);
 	

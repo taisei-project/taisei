@@ -134,4 +134,6 @@ enum {
 	EV_OVER		// replay-only
 };
 
+#define REPLAY_ASKSAVE (tconfig.intval[SAVE_RPY] == 2 && global.replay.active)
+
 #endif

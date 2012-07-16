@@ -64,16 +64,8 @@ void replay_event(Replay *rpy, int type, int key) {
 		printf("The new capacity is %d\n", rpy->capacity);
 	}
 	
-	if(type == EV_OVER) {
+	if(type == EV_OVER)
 		printf("The replay is OVER\n");
-		
-		char p[1337];
-		snprintf(p, 1337, "%s/test.%s", get_config_path(), REPLAY_EXTENSION);
-		FILE *fp = fopen(p, "w");
-		replay_write(rpy, fp);
-		fflush(fp);
-		fclose(fp);
-	}
 }
 
 void replay_write_separator(FILE *file) {
@@ -247,3 +239,44 @@ int replay_read(Replay *rpy, FILE *file) {
 
 #undef FLOATOF
 #undef INTOF
+
+char* replay_getpath(char *name) {
+	char *p = (char*)malloc(strlen(get_replays_path()) + strlen(name) + strlen(REPLAY_EXTENSION) + 3);
+	sprintf(p, "%s/%s.%s", get_replays_path(), name, REPLAY_EXTENSION);
+	return p;
+}
+
+int replay_save(Replay *rpy, char *name) {
+	char *p = replay_getpath(name);
+	printf("replay_save(): saving %s\n", p);
+	
+	FILE *fp = fopen(p, "w");
+	
+	if(!fp) {
+		printf("replay_save(): fopen() failed\n");
+		return False;
+	}
+	
+	free(p);
+	int result = replay_write(rpy, fp);
+	fflush(fp);
+	fclose(fp);
+	return result;
+}
+
+int replay_load(Replay *rpy, char *name) {
+	char *p = replay_getpath(name);
+	printf("replay_load(): loading %s\n", p);
+	
+	FILE *fp = fopen(p, "r");
+	
+	if(!fp) {
+		printf("replay_load(): fopen() failed\n");
+		return False;
+	}
+	
+	free(p);
+	int result = replay_read(rpy, fp);
+	fclose(fp);
+	return result;
+}

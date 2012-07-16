@@ -14,6 +14,7 @@
 #include "config.h"
 #include "player.h"
 #include "menu/ingamemenu.h"
+#include "menu/savereplay.h"
 
 StageInfo stages[] = {
 	// TODO: Give the stages actual titles/subtitles
@@ -41,6 +42,7 @@ void stage_start() {
 	global.game_over = 0;
 	global.points = 0;
 	global.nostagebg = False;
+	global.fps.show_fps = 0;
 	
 	global.plr.recovery = 0;
 }
@@ -181,6 +183,9 @@ void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
 		global.nostagebg = True;
 	}
 	
+	if(tconfig.intval[NO_STAGEBG] == 1)
+		global.nostagebg = True;
+	
 	if(!global.nostagebg && !global.menu)
 		bgdraw();
 		
@@ -189,10 +194,10 @@ void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
 	
 	set_ortho();
 
-	glPushMatrix();
-	glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
+	if(!global.menu) {
+		glPushMatrix();
+		glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
 		
-	if(!global.menu) {		
 		if(!tconfig.intval[NO_SHADER])
 			apply_bg_shaders(shaderrules);
 
@@ -244,12 +249,9 @@ void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
 // 			glColor4f(1,1,1,1);
 			glPopMatrix();
 		}
-				
-	} else {
-		draw_ingame_menu(global.menu);		
+		
+		glPopMatrix();
 	}
-	
-	glPopMatrix();
 	
 	if(global.frames < 4*FADE_TIME)
 		fade_out(1.0 - global.frames/(float)(4*FADE_TIME));
@@ -257,11 +259,26 @@ void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
 		fade_out((global.timer - time + 4*FADE_TIME)/(float)(4*FADE_TIME));
 	}
 	
-	draw_hud();	
+	if(global.menu) {
+		glPushMatrix();
+		glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
+		draw_ingame_menu(global.menu);
+		glPopMatrix();
+	}
 	
-	if(global.menu && global.menu->selected == 1)
-		fade_out(global.menu->fade);	
+	draw_hud();
 	
+	if(global.menu) {
+		// horrible hacks because we have no sane transitions between ingame menus
+		
+		if(REPLAY_ASKSAVE) {
+			if(global.menu->context && global.menu->quit == 1) {
+				fade_out(global.menu->fade);
+			}
+		} else {
+			fade_out(global.menu->fade);
+		}
+	}
 }
 
 void apply_bg_shaders(ShaderRule *shaderrules) {
@@ -434,8 +451,28 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		frame_rate(&global.lasttime);
 	}
 	
-	if(global.replaymode == REPLAY_RECORD)
+	if(global.replaymode == REPLAY_RECORD) {
 		replay_event(&global.replay, EV_OVER, 0);
+		
+		if(REPLAY_ASKSAVE) {
+			global.menu = create_saverpy_menu();
+			while(global.menu) {
+				ingame_menu_logic(&global.menu);
+				
+				if(!global.menu)
+					break;
+				
+				menu_input(global.menu);
+				stage_draw(draw, shaderrules, endtime);
+				
+				SDL_GL_SwapBuffers();
+				frame_rate(&global.lasttime);
+			}
+		}
+		
+		if(global.replay.active && tconfig.intval[SAVE_RPY] == 1)
+			save_rpy(NULL);
+	}
 	
 	end();
 	stage_end();

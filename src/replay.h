@@ -53,6 +53,10 @@ void replay_event(Replay *rpy, int type, int key);
 int replay_write(Replay *rpy, FILE *file);
 int replay_read(Replay *rpy, FILE *file);
 
+char* replay_getpath(char *name);	// must be freed
+int replay_save(Replay *rpy, char *name);
+int replay_load(Replay *rpy, char *name);
+
 #define REPLAY_ALLOC_INITIAL 100
 #define REPLAY_ALLOC_ADDITIONAL 100
 #define REPLAY_MAGICNUMBER 1337

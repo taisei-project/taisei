@@ -62,6 +62,8 @@ void set_ortho() {
 }
 
 void fade_out(float f) {
+	if(f == 0) return;
+	
 	glColor4f(0,0,0,f);
 	
 	glPushMatrix();
