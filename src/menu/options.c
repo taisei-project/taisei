@@ -342,7 +342,7 @@ void create_options_menu(MenuData *m) {
 	OptionBinding *b;
 	
 	create_menu(m);
-	m->type = MT_Persistent;
+	m->type = MT_Transient;
 	m->ondestroy = destroy_options_menu;
 	m->context = NULL;
 	
@@ -613,7 +613,7 @@ static void options_key_action(MenuData *menu, int sym) {
 		if(bind->enabled && bind->type == BT_IntValue)
 			bind_setnext(bind);
 	} else if(sym == SDLK_ESCAPE) {
-		menu->quit = 2;
+		menu->quit = 1;
 	}
 	
 	menu->cursor = (menu->cursor % menu->ecount) + menu->ecount*(menu->cursor < 0);

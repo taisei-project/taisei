@@ -20,7 +20,9 @@ void create_stage_menu(MenuData *m) {
 	int i;
 	
 	create_menu(m);
-	m->type = MT_Persistent;
+	m->type = MT_Transient;
+	// TODO: I think ALL menus should use the title field, but I don't want to screw with it right now.
+	m->title = "Stage Select";
 	
 	for(i = 0; stages[i].loop; ++i) if(!stages[i].hidden) {
 		snprintf(title, STGMENU_MAX_TITLE_LENGTH, "%d. %s", i + 1, stages[i].title);
@@ -33,7 +35,10 @@ void create_stage_menu(MenuData *m) {
 
 void draw_stage_menu(MenuData *m) {
 	draw_options_menu_bg(m);
-	draw_text(AL_Right, 220*(1-m->fade), 30, "Stage Select", _fonts.mainmenu);
+	
+	int w, h;
+	TTF_SizeText(_fonts.mainmenu, m->title, &w, &h);
+	draw_text(AL_Right, (w + 10) * (1-m->fade), 30, m->title, _fonts.mainmenu);
 	
 	glPushMatrix();
 	glTranslatef(100, 100, 0);

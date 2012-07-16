@@ -12,6 +12,7 @@
 #include "charselect.h"
 #include "options.h"
 #include "stageselect.h"
+#include "replayview.h"
 
 #include "global.h"
 #include "stage.h"
@@ -47,32 +48,6 @@ troll:
 	global.game_over = 0;
 }
 
-void start_replay(void *arg) {
-	char p[1337];
-	snprintf(p, 1337, "%s/test.%s", get_config_path(), REPLAY_EXTENSION);
-	FILE *fp = fopen(p, "r");
-	printf("%s\n", p);
-	replay_read(&global.replay, fp);
-	fclose(fp);
-	
-	StageInfo *s = stage_get(global.replay.stage);
-	
-	if(!s) {
-		printf("Invalid stage %d in replay... wtf?!\n", global.replay.stage);
-		return;
-	}
-	
-	init_player(&global.plr);
-	
-	// XXX: workaround, doesn't even always work. DEBUG THIS.
-	global.fps.show_fps = 0;
-	
-	global.replaymode = REPLAY_PLAY;
-	s->loop();
-	global.replaymode = REPLAY_RECORD;
-	global.game_over = 0;
-}
-
 void enter_options(void *arg) {
 	MenuData m;
 	create_options_menu(&m);
@@ -85,17 +60,23 @@ void enter_stagemenu(void *arg) {
 	stage_menu_loop(&m);
 }
 
+void enter_replayview(void *arg) {
+	MenuData m;
+	create_replayview_menu(&m);
+	replayview_menu_loop(&m);
+}
+
 void create_main_menu(MenuData *m) {
 	create_menu(m);
 	
 	m->type = MT_Persistent;
 	
 	add_menu_entry(m, "Start Story", start_story, NULL);
-	add_menu_entry(m, "Replay (TEST)", start_replay, NULL);
 	add_menu_entry(m, "Start Extra", NULL, NULL);
 #ifdef DEBUG
 	add_menu_entry(m, "Select Stage", enter_stagemenu, NULL);
 #endif
+	add_menu_entry(m, "Replays", enter_replayview, NULL);
 	add_menu_entry(m, "Options", enter_options, NULL);
 	add_menu_entry(m, "Quit", quit_menu, m);
 }
