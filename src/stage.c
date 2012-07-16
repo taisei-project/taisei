@@ -8,24 +8,30 @@
 #include "stage.h"
 
 #include <SDL/SDL.h>
+#include <time.h>
 #include "global.h"
+#include "replay.h"
+#include "config.h"
+#include "player.h"
 #include "menu/ingamemenu.h"
+#include "menu/savereplay.h"
 
 StageInfo stages[] = {
 	// TODO: Give the stages actual titles/subtitles
 	
-	{stage0_loop, False, "Stage 1", "(insert subtitle here)"},
-	{stage1_loop, False, "Stage 2", "(insert subtitle here)"},
-	{stage2_loop, False, "Stage 3", "(insert subtitle here)"},
-	{stage3_loop, False, "Stage 4", "(insert subtitle here)"},
+	{1, stage0_loop, False, "Stage 1", "(insert subtitle here)"},
+	{2, stage1_loop, False, "Stage 2", "(insert subtitle here)"},
+	{3, stage2_loop, False, "Stage 3", "(insert subtitle here)"},
+	{4, stage3_loop, False, "Stage 4", "(insert subtitle here)"},
 	
-	{NULL, False, NULL, NULL}
+	{0, NULL, False, NULL, NULL}
 };
 
+// NOTE: This returns the stage BY ID, not by the array index!
 StageInfo* stage_get(int n) {
 	int i;
 	for(i = 0; stages[i].loop; ++i)
-		if(i == n)
+		if(stages[i].id == n)
 			return &(stages[i]);
 	return NULL;
 }
@@ -36,81 +42,99 @@ void stage_start() {
 	global.game_over = 0;
 	global.points = 0;
 	global.nostagebg = False;
-		
+	global.fps.show_fps = 0;
+	
 	global.plr.recovery = 0;
+}
+
+void stage_ingamemenu() {
+	if(!global.menu)
+		global.menu = create_ingame_menu();
+	else
+		global.menu->quit = 1;
+}
+
+void replay_input() {
+	if(global.menu) {
+		menu_input(global.menu);
+		return;
+	}
+	
+	SDL_Event event;
+	while(SDL_PollEvent(&event)) {
+		int sym = event.key.keysym.sym;
+		
+		switch(event.type) {
+			case SDL_KEYDOWN:
+				if(sym == SDLK_ESCAPE)
+					stage_ingamemenu();
+				break;
+				
+			case SDL_QUIT:
+				exit(1);
+				break;
+		}
+	}
+	
+	// I know this loop is not (yet) optimal - consider it a sketch
+	int i;
+	for(i = 0; i < global.replay.ecount; ++i) {
+		ReplayEvent *e = &(global.replay.events[i]);
+		
+		if(e->frame == global.frames) switch(e->type) {
+			case EV_OVER:
+				global.game_over = GAMEOVER_ABORT;
+				break;
+			
+			default:
+				if(global.dialog && e->type == EV_PRESS && (e->key == KEY_SHOT || e->key == KEY_BOMB))
+					page_dialog(&global.dialog);
+				else
+					player_event(&global.plr, e->type, e->key);
+				break;
+		}
+	}
+	
+	player_applymovement(&global.plr);
 }
 
 void stage_input() {
 	if(global.menu) {
 		menu_input(global.menu);
 		return;
-	}		
+	}
 	
 	SDL_Event event;
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;
+		int key = config_sym2key(sym);
 		
-		global_processevent(&event);
-		if(event.type == SDL_KEYDOWN) {
-			if(sym == tconfig.intval[KEY_FOCUS])
-				global.plr.focus = 1;
-			else if(sym == tconfig.intval[KEY_SHOT]) {
-				if(!global.dialog)
-					global.plr.fire = True;
-				else
+		switch(event.type) {
+			case SDL_KEYDOWN:
+				if(global.dialog && (key == KEY_SHOT || key == KEY_BOMB)) {
 					page_dialog(&global.dialog);
-			} else if(sym == tconfig.intval[KEY_BOMB]) {
-				if(!global.dialog)
-					plr_bomb(&global.plr);
-			} else if(sym == SDLK_ESCAPE) {
-				if(!global.menu)
-					global.menu = create_ingame_menu();
-				else
-					global.menu->quit = 1;
-			}
-		} else if(event.type == SDL_KEYUP) {
-			if(sym == tconfig.intval[KEY_FOCUS])
-				global.plr.focus = -30; // that's for the transparency timer
-			else if(sym == tconfig.intval[KEY_SHOT])
-				global.plr.fire = False;
-		} else if(event.type == SDL_QUIT) {
-			exit(1);
+					replay_event(&global.replay, EV_PRESS, key);
+				} else if(sym == SDLK_ESCAPE) {
+					stage_ingamemenu();
+				} else {
+					player_event(&global.plr, EV_PRESS, key);
+					replay_event(&global.replay, EV_PRESS, key);
+				}
+				
+				break;
+				
+			case SDL_KEYUP:
+				player_event(&global.plr,EV_RELEASE, key);
+				replay_event(&global.replay, EV_RELEASE, key);
+				break;
+			
+			case SDL_QUIT:
+				exit(1);
+				break;
 		}
 	}
 	
-	if(global.plr.deathtime < -1)
-		return;
-	
-	Uint8 *keys = SDL_GetKeyState(NULL);
-	
-	global.plr.moving = False;
-	
-	if(keys[tconfig.intval[KEY_LEFT]] && !keys[tconfig.intval[KEY_RIGHT]]) {
-		global.plr.moving = True;
-		global.plr.dir = 1;
-	} else if(keys[tconfig.intval[KEY_RIGHT]] && !keys[tconfig.intval[KEY_LEFT]]) {
-		global.plr.moving = True;
-		global.plr.dir = 0;
-	}	
-	
-	complex direction = 0;
-	
-	if(keys[tconfig.intval[KEY_LEFT]])
-		direction -= 1;		
-	if(keys[tconfig.intval[KEY_RIGHT]])
-		direction += 1;
-	if(keys[tconfig.intval[KEY_UP]])
-		direction -= 1I;
-	if(keys[tconfig.intval[KEY_DOWN]])
-		direction += 1I;
-	
-	if(direction)
-		plr_move(&global.plr, direction);
-	
-	if(!keys[tconfig.intval[KEY_SHOT]] && global.plr.fire)
-		global.plr.fire = False;
-	if(!keys[tconfig.intval[KEY_FOCUS]] && global.plr.focus > 0)
-		global.plr.focus = -30;
+	player_applymovement(&global.plr);
 }
 
 void draw_hud() {
@@ -159,6 +183,9 @@ void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
 		global.nostagebg = True;
 	}
 	
+	if(tconfig.intval[NO_STAGEBG] == 1)
+		global.nostagebg = True;
+	
 	if(!global.nostagebg && !global.menu)
 		bgdraw();
 		
@@ -167,10 +194,10 @@ void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
 	
 	set_ortho();
 
-	glPushMatrix();
-	glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
+	if(!global.menu) {
+		glPushMatrix();
+		glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
 		
-	if(!global.menu) {		
 		if(!tconfig.intval[NO_SHADER])
 			apply_bg_shaders(shaderrules);
 
@@ -222,12 +249,9 @@ void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
 // 			glColor4f(1,1,1,1);
 			glPopMatrix();
 		}
-				
-	} else {
-		draw_ingame_menu(global.menu);		
+		
+		glPopMatrix();
 	}
-	
-	glPopMatrix();
 	
 	if(global.frames < 4*FADE_TIME)
 		fade_out(1.0 - global.frames/(float)(4*FADE_TIME));
@@ -235,11 +259,26 @@ void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
 		fade_out((global.timer - time + 4*FADE_TIME)/(float)(4*FADE_TIME));
 	}
 	
-	draw_hud();	
+	if(global.menu) {
+		glPushMatrix();
+		glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
+		draw_ingame_menu(global.menu);
+		glPopMatrix();
+	}
 	
-	if(global.menu && global.menu->selected == 1)
-		fade_out(global.menu->fade);	
+	draw_hud();
 	
+	if(global.menu) {
+		// horrible hacks because we have no sane transitions between ingame menus
+		
+		if(REPLAY_ASKSAVE) {
+			if(global.menu->context && global.menu->quit == 1) {
+				fade_out(global.menu->fade);
+			}
+		} else {
+			fade_out(global.menu->fade);
+		}
+	}
 }
 
 void apply_bg_shaders(ShaderRule *shaderrules) {
@@ -365,20 +404,44 @@ void stage_end() {
 	}
 }
 
-void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event, ShaderRule *shaderrules, int endtime) {	
+void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw, StageRule event, ShaderRule *shaderrules, int endtime) {
 	if(global.game_over == GAMEOVER_WIN) {
 		global.game_over = 0;
 	} else if(global.game_over) {
 		return;
 	}
 	
+	int seed = time(0);
+	srand(seed);
+	
+	if(global.replaymode == REPLAY_RECORD) {
+		replay_destroy(&global.replay);
+		replay_init(&global.replay, info, seed, &global.plr);
+		printf("Random seed: %d\n", seed);
+	} else {
+		printf("REPLAY_PLAY mode: %d events\n", global.replay.ecount);
+		
+		srand(global.replay.seed);
+		printf("Random seed: %d\n", global.replay.seed);
+		
+		global.diff			= global.replay.diff;
+		global.points		= global.replay.points;
+		
+		global.plr.shot		= global.replay.plr_shot;
+		global.plr.cha		= global.replay.plr_char;
+		global.plr.pos		= global.replay.plr_pos;
+		global.plr.lifes	= global.replay.plr_lifes;
+		global.plr.bombs	= global.replay.plr_bombs;
+		global.plr.power	= global.replay.plr_power;
+	}
+	
 	stage_start();
 	start();
 	
 	while(global.game_over <= 0) {
-		if(!global.boss && !global.dialog)
+		if(!global.boss && !global.dialog && !global.menu)
 			event();
-		stage_input();
+		((global.replaymode == REPLAY_PLAY)? replay_input : stage_input)();
 		stage_logic(endtime);
 		calc_fps(&global.fps);
 				
@@ -388,10 +451,33 @@ void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event,
 		frame_rate(&global.lasttime);
 	}
 	
+	if(global.replaymode == REPLAY_RECORD) {
+		replay_event(&global.replay, EV_OVER, 0);
+		
+		if(REPLAY_ASKSAVE) {
+			global.menu = create_saverpy_menu();
+			while(global.menu) {
+				ingame_menu_logic(&global.menu);
+				
+				if(!global.menu)
+					break;
+				
+				menu_input(global.menu);
+				stage_draw(draw, shaderrules, endtime);
+				
+				SDL_GL_SwapBuffers();
+				frame_rate(&global.lasttime);
+			}
+		}
+		
+		if(global.replay.active && tconfig.intval[SAVE_RPY] == 1)
+			save_rpy(NULL);
+	}
+	
 	end();
 	stage_end();
 }
-		
+
 void draw_stage_title(int t, int dur, char *stage, char *subtitle) {
 	if(t < 0 || t > dur)
 		return;

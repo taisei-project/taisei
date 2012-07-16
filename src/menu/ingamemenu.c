@@ -27,6 +27,7 @@ MenuData *create_ingame_menu() {
 
 void ingame_menu_logic(MenuData **menu) {
 	menu_logic(*menu);
+	
 	if((*menu)->quit == 2 && (*menu)->selected != 1) { // let the stage clean up when returning to title
 		destroy_menu(*menu);
 		free(*menu);
@@ -36,8 +37,18 @@ void ingame_menu_logic(MenuData **menu) {
 
 void draw_ingame_menu(MenuData *menu) {
 	float rad = IMENU_BLUR;
+	
+	float fade = menu->fade;
+	
+	if(	// horrible hacks because we have no sane transitions between ingame menus
+		REPLAY_ASKSAVE && (
+			(menu->selected != 0 && menu->quit == 1 && !menu->context) ||
+			(!menu->quit && menu->context)
+		)
+	) fade = 0;
+	
 	if(menu->selected != 1) // hardly hardcoded. 1 -> "Return to Title"
-		rad = IMENU_BLUR * (1.0-menu->fade);
+		rad = IMENU_BLUR * (1.0-fade);
 	
 	if(!tconfig.intval[NO_SHADER]) {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -65,7 +76,13 @@ void draw_ingame_menu(MenuData *menu) {
 	// cirno's perfect math class #2: Euler Sign ~ Differential Fun
 	menu->drawdata[0] += (menu->cursor*35 - menu->drawdata[0])/7.0;
 	menu->drawdata[1] += (strlen(menu->entries[menu->cursor].name)*5 - menu->drawdata[1])/10.0;
-		
+	
+	if(menu->context) {
+		float s = 0.3 + 0.2 * sin(menu->frames/10.0);
+		glColor4f(1-s/2, 1-s/2, 1-s, 1.0 - menu->fade);
+		draw_text(AL_Center, 0, -2 * 35, (char*)menu->context, _fonts.standard);
+	}
+	
 	int i;
 	for(i = 0; i < menu->ecount; i++) {
 		float s = 0, t = 0.7;

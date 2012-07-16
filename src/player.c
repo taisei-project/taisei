@@ -202,14 +202,14 @@ void plr_realdeath(Player *plr) {
 	plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I+30I;
 	plr->recovery = -(global.frames + DEATH_DELAY + 150);
 
-	if(global.plr.bombs < PLR_START_BOMBS)
-		global.plr.bombs = PLR_START_BOMBS;
+	if(plr->bombs < PLR_START_BOMBS)
+		plr->bombs = PLR_START_BOMBS;
 	
 	if(plr->lifes-- == 0) {
-		if(plr->continues < MAX_CONTINUES)
+		if(plr->continues < MAX_CONTINUES) {
 			global.menu = create_gameover_menu();
-		else
-			game_over();		
+		} else
+			game_over();
 	}
 }
 
@@ -221,4 +221,109 @@ void plr_death(Player *plr) {
 		create_particle2c("blast", plr->pos, rgb(1,0.5,0.3), GrowFade, timeout, 35, 2.4);
 		plr->deathtime = global.frames + DEATHBOMB_TIME;
 	}
+}
+
+// XXX: how about we convert all the plr_ prefixes to player_?
+
+void player_setmoveflag(Player* plr, int key, int mode) {
+	int flag = 0;
+	
+	switch(key) {
+		case KEY_UP:	flag = MOVEFLAG_UP; 	break;
+		case KEY_DOWN:	flag = MOVEFLAG_DOWN;	break;
+		case KEY_LEFT:	flag = MOVEFLAG_LEFT;	break;
+		case KEY_RIGHT:	flag = MOVEFLAG_RIGHT;	break;
+	}
+	
+	if(!flag)
+		return;
+	
+	if(mode)
+		plr->moveflags |= flag;
+	else
+		plr->moveflags &= ~flag;
+}
+
+void player_event(Player* plr, int type, int key) {
+	switch(type) {
+		case EV_PRESS:
+			switch(key) {
+				case KEY_FOCUS:
+					plr->focus = 1;
+					break;
+				
+				case KEY_SHOT:
+					plr->fire = True;
+					break;
+				
+				case KEY_BOMB:
+					plr_bomb(plr);
+					break;
+				
+				default:
+					player_setmoveflag(plr, key, True);
+					break;
+			}
+			break;
+		
+		case EV_RELEASE:
+			switch(key) {
+				case KEY_FOCUS:
+					plr->focus = -30;  // that's for the transparency timer
+					break;
+				
+				case KEY_SHOT:
+					plr->fire = False;
+					break;
+				
+				default:
+					player_setmoveflag(plr, key, False);
+					break;
+			}
+			
+			break;
+	}
+}
+
+void player_applymovement(Player* plr) {
+	if(plr->deathtime < -1)
+		return;
+	
+	plr->moving = False;
+	
+	int up		=	player_hasmoveflag(*plr, MOVEFLAG_UP),
+		down	=	player_hasmoveflag(*plr, MOVEFLAG_DOWN),
+		left	=	player_hasmoveflag(*plr, MOVEFLAG_LEFT),
+		right	=	player_hasmoveflag(*plr, MOVEFLAG_RIGHT);
+	
+	if(left && !right) {
+		plr->moving = True;
+		plr->dir = 1;
+	} else if(right && !left) {
+		plr->moving = True;
+		plr->dir = 0;
+	}	
+	
+	complex direction = 0;
+	
+	if(up)		direction -= 1I;
+	if(down)	direction += 1I;
+	if(left)	direction -= 1;
+	if(right)	direction += 1;
+	
+	double real = creal(direction);
+	double imag = cimag(direction);
+	
+	if(real && imag)
+		direction = (real + imag*I) / sqrt(real*real + imag*imag);
+	
+	if(direction)
+		plr_move(&global.plr, direction);
+	
+	/*
+	if(!keys[tconfig.intval[KEY_SHOT]] && plr->fire)
+		plr->fire = False;
+	if(!keys[tconfig.intval[KEY_FOCUS]] && plr->focus > 0)
+		plr->focus = -30;
+	*/
 }

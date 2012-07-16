@@ -10,9 +10,10 @@
 
 void add_menu_entry(MenuData *menu, char *name, void (*action)(void *), void *arg) {
 	menu->entries = realloc(menu->entries, (++menu->ecount)*sizeof(MenuEntry));
-	menu->entries[menu->ecount-1].name = malloc(strlen(name)+1);	
+	menu->entries[menu->ecount-1].name = malloc(strlen(name)+1);
 	strcpy(menu->entries[menu->ecount-1].name, name);
 	menu->entries[menu->ecount-1].action = action;
+	menu->entries[menu->ecount-1].freearg = False;
 	menu->entries[menu->ecount-1].arg = arg;
 	menu->entries[menu->ecount-1].drawdata = 0;
 }
@@ -28,8 +29,13 @@ void destroy_menu(MenuData *menu) {
 	if(menu->ondestroy)
 		menu->ondestroy(menu);
 	
-	for(i = 0; i < menu->ecount; i++)
-		free(menu->entries[i].name);
+	for(i = 0; i < menu->ecount; i++) {
+		MenuEntry *e = &(menu->entries[i]);
+		
+		free(e->name);
+		if(e->freearg)
+			free(e->arg);
+	}
 	
 	free(menu->entries);
 }

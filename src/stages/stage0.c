@@ -521,7 +521,6 @@ void stage0_events() {
 	
 	TIMER(&global.timer);
 	
-	
 	// opening. projectile bursts
 	FROM_TO(100, 160, 25) {
 		create_enemy1c(VIEWPORT_W/2 + 70, 700, Fairy, stage0_burst, 1 + 0.6I);
@@ -607,5 +606,5 @@ void stage0_end() {
 
 void stage0_loop() {
 	ShaderRule list[] = { stage0_fog, NULL };
-	stage_loop(stage0_start, stage0_end, stage0_draw, stage0_events, list, 5200);
+	stage_loop(stage_get(1), stage0_start, stage0_end, stage0_draw, stage0_events, list, 5200);
 }

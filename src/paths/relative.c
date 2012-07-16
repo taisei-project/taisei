@@ -18,3 +18,7 @@ const char *get_config_path() {
 const char *get_screenshots_path() {
 	return "./screenshots";
 }
+
+const char *get_replays_path() {
+	return "./screenshots";
+}

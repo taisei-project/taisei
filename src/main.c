@@ -39,14 +39,16 @@ void taisei_shutdown() {
 	printf("-- Good Bye.\n");
 }
 
-int main(int argc, char** argv) {
 #ifdef __MINGW32__
-	mkdir(get_config_path());
-	mkdir(get_screenshots_path());
+	#define MKDIR(p) mkdir(p)
 #else
-	mkdir(get_config_path(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-	mkdir(get_screenshots_path(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	#define MKDIR(p) mkdir(p, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)
 #endif
+
+int main(int argc, char** argv) {
+	MKDIR(get_config_path());
+	MKDIR(get_screenshots_path());
+	MKDIR(get_replays_path());
 	
 	parse_config(CONFIG_FILE);	
 	
@@ -101,7 +103,7 @@ int main(int argc, char** argv) {
 		}
 		
 		init_player(&global.plr);
-		StageInfo* stg = stage_get(atoi(argv[1]) - 1);
+		StageInfo* stg = stage_get(atoi(argv[1]));
 		
 		if(stg) {
 			printf("** Entering %s.\n", stg->title);

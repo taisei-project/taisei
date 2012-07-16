@@ -19,6 +19,7 @@ ADD_FLEX_BISON_DEPENDENCY(cfgscanner cfgparser)
 set(SRCs
 	main.c
 	stage.c
+	replay.c
 	global.c
 	player.c
 	projectile.c
@@ -36,9 +37,11 @@ set(SRCs
 	menu/menu.c
 	menu/mainmenu.c
 	menu/options.c
-    menu/stageselect.c
+	menu/stageselect.c
+	menu/replayview.c
 	menu/ingamemenu.c
-    menu/gameovermenu.c
+	menu/gameovermenu.c
+	menu/savereplay.c
 	menu/difficulty.c
 	menu/charselect.c
 	stages/stage0.c

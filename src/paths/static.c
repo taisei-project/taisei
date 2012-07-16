@@ -12,9 +12,11 @@
 
 #define CFG_DIR "/.taisei"
 #define SCR_DIR "/screenshots"
+#define RPY_DIR "/replays"
 
-char *conf_path = NULL;
-char *scr_path = NULL;
+char *conf_path 	= NULL;
+char *scr_path		= NULL;
+char *rpy_path		= NULL;
 
 const char *get_prefix() {
 	return FILE_PREFIX;
@@ -40,3 +42,12 @@ const char *get_screenshots_path() {
 	return scr_path;
 }
 
+const char *get_replays_path() {
+	if(rpy_path == NULL) {
+		rpy_path = malloc(strlen(RPY_DIR) + strlen(get_config_path()) + 1);
+		strcpy(rpy_path, get_config_path());
+		strcat(rpy_path, RPY_DIR);
+	}
+	
+	return rpy_path;
+}

@@ -474,3 +474,20 @@ void marisa_power(Player *plr, float npow) {
 		break;
 	}
 }
+
+int plrmode_repr(char *out, size_t outsize, Character pchar, ShotMode pshot) {
+	char *plr, sht;
+	
+	switch(pchar) {
+		case Marisa		:	plr = "marisa"	;	break;
+		case Youmu		:	plr = "youmu" 	;	break;
+		default			:	plr = "wtf"		;	break;
+	}
+	
+	switch(pshot) {
+		case MarisaLaser:	sht = 'A'		;	break;
+		case MarisaStar :	sht = 'B'		;	break;
+	}
+	
+	return snprintf(out, outsize, "%s%c", plr, sht);
+}

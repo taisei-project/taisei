@@ -39,6 +39,8 @@
 "disable_stagebg" { yylval = NO_STAGEBG; return tNO_STAGEBG; }
 "disable_stagebg_auto_fpslimit" { yylval = NO_STAGEBG_FPSLIMIT; return tNO_STAGEBG_FPSLIMIT; }
 
+"save_rpy" { yylval = SAVE_RPY; return tSAVE_RPY; }
+
 "shift"		{ yylval = SDLK_LSHIFT; return SKEY; }
 "ctrl"		{ yylval = SDLK_LCTRL; return SKEY; }
 "return"	{ yylval = SDLK_RETURN; return SKEY; }

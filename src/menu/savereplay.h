@@ -3,14 +3,15 @@
  * See COPYING for further information. 
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
- * Copyright (C) 2011, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
+ * Copyright (C) 2012, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
  */
 
-#ifndef GAMEOVERMENU_H
-#define GAMEOVERMENU_H
+#ifndef SAVERPYMENU_H
+#define SAVERPYMENU_H
 
 #include "menu.h"
 
-MenuData *create_gameover_menu();
+void save_rpy(void*);
+MenuData *create_saverpy_menu();
 
 #endif

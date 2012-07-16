@@ -17,6 +17,7 @@ typedef struct {
 	void (*action)(void* arg);
 	void *arg;
 	float drawdata;
+	int freearg;
 } MenuEntry;
 
 typedef enum MenuType { // whether to close on selection or not.
@@ -44,6 +45,7 @@ typedef struct MenuData{
 	
 	float drawdata[4];
 	
+	char *title;
 	void *context;
 	void (*ondestroy)(void*);
 } MenuData;
