@@ -50,13 +50,14 @@ int strendswith(char *s, char *e) {
 	return True;
 }
 
-void fill_replayview_menu(MenuData *m) {
+int fill_replayview_menu(MenuData *m) {
 	DIR *dir = opendir(get_replays_path());
 	struct dirent *e;
+	int rpys = 0;
 	
 	if(!dir) {
 		printf("Could't read %s\n", get_replays_path());
-		return;
+		return -1;
 	}
 	
 	char ext[5];
@@ -73,9 +74,11 @@ void fill_replayview_menu(MenuData *m) {
 		
 		add_menu_entry(m, s, start_replay, s);
 		m->entries[m->ecount-1].freearg = True;
+		++rpys;
 	}
 	
 	closedir(dir);
+	return rpys;
 }
 
 void create_replayview_menu(MenuData *m) {
@@ -83,9 +86,16 @@ void create_replayview_menu(MenuData *m) {
 	m->type = MT_Transient;
 	m->title = "Replays";
 	
-	fill_replayview_menu(m);
-	add_menu_separator(m);
-	add_menu_entry(m, "Back", backtomain, m);
+	int r = fill_replayview_menu(m);
+	
+	if(!r) {
+		add_menu_entry(m, "No replays available. Play the game and record some!", backtomain, m);
+	} else if(r < 0) {
+		add_menu_entry(m, "There was a problem getting the replay list :(", backtomain, m);
+	} else {
+		add_menu_separator(m);
+		add_menu_entry(m, "Back", backtomain, m);
+	}
 }
 
 void draw_stage_menu(MenuData *m);

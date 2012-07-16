@@ -33,6 +33,9 @@ void create_stage_menu(MenuData *m) {
 	add_menu_entry(m, "Back", backtomain, m);
 }
 
+float min(float a, float b)  { return a < b? a : b; }
+float max(float a, float b)  { return a > b? a : b; }
+
 void draw_stage_menu(MenuData *m) {
 	draw_options_menu_bg(m);
 	
@@ -41,7 +44,8 @@ void draw_stage_menu(MenuData *m) {
 	draw_text(AL_Right, (w + 10) * (1-m->fade), 30, m->title, _fonts.mainmenu);
 	
 	glPushMatrix();
-	glTranslatef(100, 100, 0);
+	glTranslatef(100, 100 + min(0, SCREEN_H * 0.7 - 100 - m->drawdata[2]), 0);
+	printf("%f\n", min(0, SCREEN_H - m->drawdata[2]));
 	
 	glPushMatrix();
 	glTranslatef(SCREEN_W/2 - 100, m->drawdata[2], 0);
