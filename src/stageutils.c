@@ -27,7 +27,7 @@ void set_perspective(Stage3D *s, float near, float far) {
 	glMatrixMode(GL_PROJECTION);
 	
 	glLoadIdentity();
-	glTranslatef(-(VIEWPORT_X+VIEWPORT_W/2.0)/SCREEN_W, 0, 0);
+	glTranslatef(-(VIEWPORT_W/2.0)/SCREEN_W, 0, 0);
 	gluPerspective(s->projangle, 1, near, far);
 	glTranslatef(VIEWPORT_X+VIEWPORT_W/2.0, VIEWPORT_Y+VIEWPORT_H/2.0, 0);
 		

@@ -14,7 +14,7 @@
 #include <GL/glew.h>
 
 enum {
-	VBO_SIZE = 1024, // * sizeof(Vertex)
+	VBO_SIZE = 2048, // * sizeof(Vertex)
 };
 
 typedef struct VBO VBO;
