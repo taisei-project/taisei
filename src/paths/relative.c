@@ -20,5 +20,5 @@ const char *get_screenshots_path() {
 }
 
 const char *get_replays_path() {
-	return "./screenshots";
+	return "./replays";
 }
