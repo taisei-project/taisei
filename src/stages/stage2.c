@@ -64,11 +64,8 @@ void stage2_bg_tunnel_draw(Vector pos) {
 		glPopMatrix();
 	}
 	
- 	bgcontext.crot[2] = -(creal(global.plr.pos)-VIEWPORT_W/2)/40.0;
-	
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
-	
 }
 
 void stage2_fog(int fbonum) {
@@ -78,9 +75,9 @@ void stage2_fog(int fbonum) {
 	glUseProgram(shader->prog);
 	glUniform1i(uniloc(shader, "depth"), 2);
 	glUniform4f(uniloc(shader, "fog_color"), 1, 1, 1, 1.0);
-	glUniform1f(uniloc(shader, "start"), 0.1);
+	glUniform1f(uniloc(shader, "start"), 0.2);
 	glUniform1f(uniloc(shader, "end"), 0.8);
-	glUniform1f(uniloc(shader, "exponent"), stgstate.fog_exp);
+	glUniform1f(uniloc(shader, "exponent"), stgstate.fog_exp + 0.5 * sin(global.frames / 50.0));
 	glActiveTexture(GL_TEXTURE0 + 2);
 	glBindTexture(GL_TEXTURE_2D, resources.fbg[fbonum].depth);
 	glActiveTexture(GL_TEXTURE0);
@@ -108,13 +105,14 @@ void stage2_draw() {
 	TIMER(&global.timer)
 	
 	set_perspective(&bgcontext, 300, 5000);
-	stgstate.tunnel_angle += stgstate.tunnel_avel;
+	stgstate.tunnel_angle += stgstate.tunnel_avel * 5;
+ 	bgcontext.crot[2] = -(creal(global.plr.pos)-VIEWPORT_W/2)/40.0;
 	
 	FROM_TO(0, 160, 1)
 		bgcontext.cv[1] -= 0.5;
 	
 	FROM_TO(0, 500, 1)
-		stgstate.fog_exp += 4.0 / 500.0;
+		stgstate.fog_exp += 5.0 / 500.0;
 	
 	FROM_TO(400, 500, 1) {
 		stgstate.tunnel_avel += 0.005;
