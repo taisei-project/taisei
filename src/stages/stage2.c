@@ -66,7 +66,6 @@ void stage2_bg_tunnel_draw(Vector pos) {
 	}
 	
  	bgcontext.crot[2] = -(creal(global.plr.pos)-VIEWPORT_W/2)/40.0;
- 	printf("%f\n", bgcontext.crot[2]);
 	
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
