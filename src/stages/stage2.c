@@ -46,7 +46,6 @@ void stage2_bg_tunnel_draw(Vector pos) {
 	
 	glPushMatrix();
 	glTranslatef(pos[0], pos[1], pos[2]);
-	stgstate.tunnel_angle += stgstate.tunnel_avel;
 	
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage2/border")->gltex);
 	for(i = 0; i < n; i++) {
@@ -109,6 +108,7 @@ void stage2_draw() {
 	TIMER(&global.timer)
 	
 	set_perspective(&bgcontext, 300, 5000);
+	stgstate.tunnel_angle += stgstate.tunnel_avel;
 	
 	FROM_TO(0, 160, 1)
 		bgcontext.cv[1] -= 0.5;
