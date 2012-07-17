@@ -341,10 +341,14 @@ void hina_wheel(Boss *h, int time) {
 	
 
 void hina_spell_bg(Boss *h, int time) {
-	fill_screen(0, 0, 0.7, "stage1/spellbg1");
-	glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+	
 	glPushMatrix();
 	glTranslatef(VIEWPORT_W/2, VIEWPORT_H/2,0);
+	glPushMatrix();
+	glScalef(0.6,0.6,1);
+	draw_texture(0, 0, "stage1/spellbg1");
+	glPopMatrix();
+	glBlendFunc(GL_ZERO, GL_SRC_COLOR);
 	glRotatef(time*5, 0,0,1);
 	draw_texture(0, 0, "stage1/spellbg2");	
 	glPopMatrix();
@@ -370,7 +374,7 @@ Boss *create_hina() {
 
 void stage1_events() {
 	TIMER(&global.timer);
-		
+	
 	AT(300) {
 		create_enemy1c(VIEWPORT_W/2-10I, 7000+500*global.diff, BigFairy, stage1_great_circle, 2I);
 	}

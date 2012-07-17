@@ -29,4 +29,7 @@ void marisa_shot(Player *plr);
 void marisa_bomb(Player *plr);
 void marisa_power(Player *plr, float npow);
 
+/* Misc */
+int plrmode_repr(char *out, size_t outsize, Character pchar, ShotMode pshot);
+
 #endif

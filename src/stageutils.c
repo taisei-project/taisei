@@ -16,8 +16,8 @@ void init_stage3d(Stage3D *s) {
 	s->projangle = 45;
 }
 
-void add_model(Stage3D *s, ModelDrawRule draw, ModelPositionRule pos) {
-	s->models = realloc(s->models, (++s->msize)*sizeof(Model));
+void add_model(Stage3D *s, SegmentDrawRule draw, SegmentPositionRule pos) {
+	s->models = realloc(s->models, (++s->msize)*sizeof(StageSegment));
 	
 	s->models[s->msize - 1].draw = draw;
 	s->models[s->msize - 1].pos = pos;
@@ -27,19 +27,10 @@ void set_perspective(Stage3D *s, float near, float far) {
 	glMatrixMode(GL_PROJECTION);
 	
 	glLoadIdentity();
-	glTranslatef(-(VIEWPORT_X+VIEWPORT_W/2.0)/SCREEN_W, -(VIEWPORT_Y+VIEWPORT_H/2.0)/SCREEN_H,0);
+	glTranslatef(-(VIEWPORT_W/2.0)/SCREEN_W, 0, 0);
 	gluPerspective(s->projangle, 1, near, far);
-	
-	if(s->crot[0])
-		glRotatef(s->crot[0], 1, 0, 0);
-	if(s->crot[1])
-		glRotatef(s->crot[1], 0, 1, 0);
-	if(s->crot[2])
-		glRotatef(s->crot[2], 0, 0, 1);
-	
-	if(s->cx[0] || s->cx[1] || s->cx[2])
-		glTranslatef(s->cx[0],s->cx[1],s->cx[2]);
-	
+	glTranslatef(VIEWPORT_X+VIEWPORT_W/2.0, VIEWPORT_Y+VIEWPORT_H/2.0, 0);
+		
 	glMatrixMode(GL_MODELVIEW);	
 }
 
@@ -48,17 +39,31 @@ void draw_stage3d(Stage3D *s, float maxrange) {
 	for(i = 0; i < 3;i++)
 		s->cx[i] += s->cv[i];
 	
+	glPushMatrix();
+	
+	if(s->crot[0])
+		glRotatef(-s->crot[0], 1, 0, 0);
+	if(s->crot[1])
+		glRotatef(-s->crot[1], 0, 1, 0);
+	if(s->crot[2])
+		glRotatef(-s->crot[2], 0, 0, 1);
+	
+	if(s->cx[0] || s->cx[1] || s->cx[2])
+		glTranslatef(-s->cx[0],-s->cx[1],-s->cx[2]);	
+		
 	for(i = 0; i < s->msize; i++) {
 		Vector **list;
 		list = s->models[i].pos(s->cx, maxrange);
 		
-		for(j = 0; list[j] != NULL; j++) {
+		for(j = 0; list && list[j] != NULL; j++) {
 			s->models[i].draw(*list[j]);
 			free(list[j]);
 		}
 		
 		free(list);
 	}
+	
+	glPopMatrix();
 }
 
 void free_stage3d(Stage3D *s) {
@@ -91,7 +96,7 @@ Vector **linear3dpos(Vector q, float maxrange, Vector p, Vector r) {
 			list = realloc(list, (++size)*sizeof(Vector*));
 			list[size-1] = malloc(sizeof(Vector));
 			for(i = 0; i < 3; i++)
-				(*list[size-1])[i] = - p[i] - r[i]*num;
+				(*list[size-1])[i] = p[i] + r[i]*num;
 		} else if(mod == 1) {
 			mod = -1;
 			num = t;

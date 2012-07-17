@@ -12,9 +12,11 @@
 #include "charselect.h"
 #include "options.h"
 #include "stageselect.h"
+#include "replayview.h"
 
 #include "global.h"
 #include "stage.h"
+#include "paths/native.h"
 
 void quit_menu(void *arg) {
 	MenuData *m = arg;
@@ -58,6 +60,12 @@ void enter_stagemenu(void *arg) {
 	stage_menu_loop(&m);
 }
 
+void enter_replayview(void *arg) {
+	MenuData m;
+	create_replayview_menu(&m);
+	replayview_menu_loop(&m);
+}
+
 void create_main_menu(MenuData *m) {
 	create_menu(m);
 	
@@ -68,6 +76,7 @@ void create_main_menu(MenuData *m) {
 #ifdef DEBUG
 	add_menu_entry(m, "Select Stage", enter_stagemenu, NULL);
 #endif
+	add_menu_entry(m, "Replays", enter_replayview, NULL);
 	add_menu_entry(m, "Options", enter_options, NULL);
 	add_menu_entry(m, "Quit", quit_menu, m);
 }

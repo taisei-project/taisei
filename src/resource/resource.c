@@ -41,6 +41,8 @@ void recurse_dir(char *path) {
 			load_sound(buf);
 		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".sha") == 0) {
 			load_shader(buf);
+		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".obj") == 0) {
+			load_model(buf);
 		}
 		
 		free(buf);
@@ -89,17 +91,40 @@ void load_resources() {
 		resources.state |= RS_ShaderLoaded;
 	}
 	
+	if(!(resources.state & RS_ModelsLoaded)) {
+		printf("- models:\n");
+		strcpy(path, get_prefix());
+		strcat(path, "models");
+		recurse_dir(path);
+		
+		resources.state |= RS_ModelsLoaded;
+	}	
 }
 
-void free_resources() {
+void free_resources() {	
+	if(resources.state & RS_SfxLoaded) {
+		printf("-- freeing sounds\n");
+		delete_sounds();
+		printf("-- alutExit()\n");
+		alutExit();
+	}
+	
+	printf("-- freeing textures\n");
 	delete_textures();
+	
+	printf("-- freeing models\n");
 	delete_animations();
 	
-	if(!tconfig.intval[NO_SHADER])
-		delete_shaders();
+	printf("-- freeing VBOs\n");
+	delete_vbo(&_vbo);
 	
-	if(!tconfig.intval[NO_AUDIO]) {
-		delete_sounds();
-		alutExit();
+	if(resources.state & RS_ShaderLoaded) {
+		printf("-- freeing FBOs\n");
+		delete_fbo(&resources.fbg[0]);
+		delete_fbo(&resources.fbg[1]);
+		delete_fbo(&resources.fsec);
+		
+		printf("-- freeing shaders\n");
+		delete_shaders();
 	}
 }

@@ -10,19 +10,19 @@
 
 #include "matrix.h"
 
-typedef struct Model Model;
+typedef struct StageSegment StageSegment;
 
-typedef void (*ModelDrawRule)(Vector pos);
-typedef Vector **(*ModelPositionRule)(Vector q, float maxrange); // returns NULL-terminated array
+typedef void (*SegmentDrawRule)(Vector pos);
+typedef Vector **(*SegmentPositionRule)(Vector q, float maxrange); // returns NULL-terminated array
 
-struct Model {
-	ModelDrawRule draw;
-	ModelPositionRule pos;
+struct StageSegment {
+	SegmentDrawRule draw;
+	SegmentPositionRule pos;
 };
 
 typedef struct Stage3D Stage3D;
 struct Stage3D {
-	Model *models;
+	StageSegment *models;
 	int msize;
 	
 	// Camera
@@ -36,7 +36,7 @@ struct Stage3D {
 
 void init_stage3d(Stage3D *s);
 
-void add_model(Stage3D *s, ModelDrawRule draw, ModelPositionRule pos);
+void add_model(Stage3D *s, SegmentDrawRule draw, SegmentPositionRule pos);
 
 void set_perspective(Stage3D *s, float near, float far);
 void draw_stage3d(Stage3D *s, float maxrange);

@@ -14,13 +14,14 @@ uniform sampler2D tex;
 uniform sampler2D depth;
 uniform float start;
 uniform float end;
+uniform float exponent;
 
 uniform vec4 fog_color;
 
 void main(void) {
 	vec2 pos = vec2(gl_TexCoord[0]);
 	
-	float z = pow(texture2D(depth, pos).x,6.0);
+	float z = pow(texture2D(depth, pos).x, exponent);
 
 	
 	float f = clamp((end - z)/(end-start),0.0,1.0);

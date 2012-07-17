@@ -25,6 +25,8 @@ install(DIRECTORY gfx DESTINATION ${DATA_DIR}
 	FILES_MATCHING PATTERN "*.ttf")
 install(DIRECTORY sfx DESTINATION ${DATA_DIR})
 install(DIRECTORY shader DESTINATION ${DATA_DIR})
+install(DIRECTORY models DESTINATION ${DATA_DIR}
+	FILES_MATCHING PATTERN "*.obj")
 
 # uninstall target
 configure_file(

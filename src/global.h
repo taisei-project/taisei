@@ -29,6 +29,7 @@
 #include "fbo.h"
 #include "vbo.h"
 #include "resource/resource.h"
+#include "replay.h"
 
 #define FILE_PREFIX PREFIX "/share/taisei/"
 #define CONFIG_FILE "config"
@@ -105,6 +106,9 @@ typedef struct {
 	FPSCounter fps;
 	
 	int nostagebg;	// I don't want the automatic stagebg handling to mess with the config, and I don't want that longass if in more than one place either.
+	
+	Replay replay;
+	int replaymode;
 } Global;
 
 extern Global global;
@@ -122,5 +126,14 @@ void global_processevent(SDL_Event*);
 void take_screenshot();
 
 double frand();
+
+// this is used by both player and replay code
+enum {
+	EV_PRESS,
+	EV_RELEASE,
+	EV_OVER		// replay-only
+};
+
+#define REPLAY_ASKSAVE (tconfig.intval[SAVE_RPY] == 2 && global.replay.active)
 
 #endif

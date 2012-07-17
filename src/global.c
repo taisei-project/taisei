@@ -13,6 +13,7 @@
 #include "paths/native.h"
 #include "resource/resource.h"
 #include "taisei_err.h"
+#include "replay.h"
 
 Global global;
 
@@ -24,6 +25,9 @@ void init_global() {
 	load_resources();
 	printf("- fonts:\n");
 	init_fonts();
+	
+	memset(&global.replay, 0, sizeof(Replay));
+	global.replaymode = REPLAY_RECORD;
 }
 
 void game_over() {
@@ -58,6 +62,8 @@ void set_ortho() {
 }
 
 void fade_out(float f) {
+	if(f == 0) return;
+	
 	glColor4f(0,0,0,f);
 	
 	glPushMatrix();

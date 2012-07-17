@@ -13,31 +13,32 @@
 #include "resource/shader.h"
 #include <GL/glew.h>
 
-/* PartBuffer for fast instanced Particle/whatever (maybe everything) rendering (for now rocket science)*/
-/*
-typedef struct {
-	Matrix *poss;
-	Vector *texcs;
-	Color *clrs;
-	
-	int cursor;
+enum {
+	VBO_SIZE = 2048, // * sizeof(Vertex)
+};
+
+typedef struct VBO VBO;
+struct VBO {
+	GLuint vbo;
+	int offset;
 	int size;
-} PartBuffer;
+};
 
+extern VBO _vbo;
 
-void init_partbuf(PartBuffer *buf);
-void destroy_partbuf(PartBuffer *buf);
+typedef struct Vertex Vertex;
+struct Vertex {
+	Vector x;
+	Vector n;
+	float s;
+	float t;
+};
 
-void partbuf_add_batch(PartBuffer *buf, Matrix m, Vector v, Color *clr);
-void partbuf_clear(PartBuffer *buf);
-void partbuf_draw(PartBuffer *buf, GLuint shader, char *posname, char *tcname, char *clrname);
-void partbuf_add(PartBuffer *buf, Matrix m, Texture *tex, Color *clr);
-*/
-
-extern GLuint _quadvbo;
+void init_vbo(VBO *vbo, int size);
+void vbo_add_verts(VBO *vbo, Vertex *verts, int count);
 
 void init_quadvbo();
 void draw_quad();
-void delete_vbo(GLuint *vbo);
+void delete_vbo(VBO *vbo);
 
 #endif
