@@ -416,7 +416,8 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	
 	if(global.replaymode == REPLAY_RECORD) {
 		replay_destroy(&global.replay);
-		replay_init(&global.replay, info, seed, &global.plr);
+		if(!global.plr.continues)
+			replay_init(&global.replay, info, seed, &global.plr);
 		printf("Random seed: %d\n", seed);
 	} else {
 		printf("REPLAY_PLAY mode: %d events\n", global.replay.ecount);
