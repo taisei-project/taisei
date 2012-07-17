@@ -64,10 +64,10 @@ int fill_replayview_menu(MenuData *m) {
 		if(!strendswith(e->d_name, ext))
 			continue;
 		
-		int size = strlen(e->d_name) - strlen(ext);
+		int size = strlen(e->d_name) - strlen(ext) + 1;
 		char *s = (char*)malloc(size);
 		strncpy(s, e->d_name, size);
-		s[size] = 0;
+		s[size-1] = 0;
 		
 		add_menu_entry(m, s, start_replay, s);
 		m->entries[m->ecount-1].freearg = True;
