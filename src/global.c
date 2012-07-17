@@ -20,7 +20,7 @@ Global global;
 void init_global() {
 	memset(&global, 0, sizeof(global));	
 	srand(time(0));
-	
+		
 	memset(&resources, 0, sizeof(Resources));
 	load_resources();
 	printf("- fonts:\n");

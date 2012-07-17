@@ -26,10 +26,7 @@ void start_replay(void *arg) {
 	}
 	
 	init_player(&global.plr);
-	
-	// XXX: workaround, doesn't even always work. DEBUG THIS.
-	global.fps.show_fps = 0;
-	
+		
 	global.replaymode = REPLAY_PLAY;
 	s->loop();
 	global.replaymode = REPLAY_RECORD;

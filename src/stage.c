@@ -42,7 +42,9 @@ void stage_start() {
 	global.game_over = 0;
 	global.points = 0;
 	global.nostagebg = False;
-	global.fps.show_fps = 0;
+	
+	global.fps.show_fps = 60;
+	global.fps.fpstime = SDL_GetTicks();
 	
 	global.plr.recovery = 0;
 }
@@ -76,7 +78,7 @@ void replay_input() {
 		}
 	}
 	
-	// I know this loop is not (yet) optimal - consider it a sketch
+// 	I know this loop is not (yet) optimal - consider it a sketch
 	int i;
 	for(i = 0; i < global.replay.ecount; ++i) {
 		ReplayEvent *e = &(global.replay.events[i]);
@@ -174,9 +176,8 @@ void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
 	glPushMatrix();	
 	glTranslatef(-(VIEWPORT_X+VIEWPORT_W/2.0), -(VIEWPORT_Y+VIEWPORT_H/2.0),0);
 	glEnable(GL_DEPTH_TEST);
-	
-	if(tconfig.intval[NO_STAGEBG] == 2 && global.fps.show_fps != 0
-		&& global.fps.show_fps < tconfig.intval[NO_STAGEBG_FPSLIMIT]
+		
+	if(tconfig.intval[NO_STAGEBG] == 2 && global.fps.show_fps < tconfig.intval[NO_STAGEBG_FPSLIMIT]
 		&& !global.nostagebg) {
 		
 		printf("stage_draw(): !- Stage background has been switched off due to low frame rate. You can change that in the options.\n");
@@ -443,6 +444,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 			event();
 		((global.replaymode == REPLAY_PLAY)? replay_input : stage_input)();
 		stage_logic(endtime);
+		
 		calc_fps(&global.fps);
 				
 		stage_draw(draw, shaderrules, endtime);	
@@ -461,7 +463,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 				
 				if(!global.menu)
 					break;
-				
+								
 				menu_input(global.menu);
 				stage_draw(draw, shaderrules, endtime);
 				
