@@ -458,8 +458,6 @@ void draw_options_menu(MenuData *menu) {
 	OptionBinding *binds = (OptionBinding*)menu->context;
 	OptionBinding *bind;
 	int i, caption_drawn = 0;
-
-	int clr = 4;
 	
 	for(i = 0; i < menu->ecount; i++) {
 		menu->entries[i].drawdata += 0.2 * (10*(i == menu->cursor) - menu->entries[i].drawdata);
@@ -468,14 +466,11 @@ void draw_options_menu(MenuData *menu) {
 		int hasbind = bind->enabled;
 		float alpha = (!hasbind || bind_isactive(bind))? 1 : 0.5;
 		
-		if(menu->entries[i].action == NULL && clr != 0) {
-			clr = 0;
+		if(menu->entries[i].action == NULL) {
 			glColor4f(0.5, 0.5, 0.5, 0.7 * alpha);
-		} else if(i == menu->cursor && clr != 1) {
-			clr = 1;
+		} else if(i == menu->cursor) {
 			glColor4f(1,1,0,0.7 * alpha);
 		} else {
-			clr = 2;
 			glColor4f(1, 1, 1, 0.7 * alpha);
 		}
 		
@@ -499,10 +494,8 @@ void draw_options_menu(MenuData *menu) {
 							origin -= strlen(bind->values[j+1])/2.0 * 20;
 						
 						if(bind_getvalue(bind) == j) {
-							clr = 1;
 							glColor4f(1,1,0,0.7 * alpha);
-						} else if(clr != 0) {
-							clr = 0;
+						} else {
 							glColor4f(0.5,0.5,0.5,0.7 * alpha);
 						}
 							
@@ -513,17 +506,13 @@ void draw_options_menu(MenuData *menu) {
 				case BT_KeyBinding:
 					if(!caption_drawn)
 					{
-						if(clr != 2) {
-							clr = 2;
-							glColor4f(1,1,1,0.7);
-						}
+						glColor4f(1,1,1,0.7);
 						draw_text(AL_Center, (SCREEN_W - 200)/2, 20*(i-1), "Controls", _fonts.standard);
 						caption_drawn = 1;
 					}
 				
-					if(bind->blockinput && clr != 3)
+					if(bind->blockinput)
 					{
-						clr = 3;
 						glColor4f(0,1,0,0.7);
 						draw_text(AL_Right, origin, 20*i, "Press a key to assign, ESC to cancel", _fonts.standard);
 					}
