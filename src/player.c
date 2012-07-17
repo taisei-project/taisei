@@ -206,7 +206,7 @@ void plr_realdeath(Player *plr) {
 		plr->bombs = PLR_START_BOMBS;
 	
 	if(plr->lifes-- == 0) {
-		if(plr->continues < MAX_CONTINUES) {
+		if(plr->continues < MAX_CONTINUES && global.replaymode != REPLAY_PLAY) {
 			global.menu = create_gameover_menu();
 		} else
 			game_over();
