@@ -16,10 +16,10 @@ typedef struct Stage2State {
 	
 	float fog_exp;
 	
-	float tunel_angle;
-	float tunel_avel;
-	float tunel_updn;
-	float tunel_side;
+	float tunnel_angle;
+	float tunnel_avel;
+	float tunnel_updn;
+	float tunnel_side;
 } Stage2State;
 
 static Stage3D bgcontext;
@@ -28,9 +28,9 @@ static Stage2State stgstate;
 Vector **stage2_bg_pos(Vector pos, float maxrange) {
 	//Vector p = {100 * cos(global.frames / 52.0), 100, 50 * sin(global.frames / 50.0)};
 	Vector p = {
-		stgstate.tunel_side * cos(global.frames / 52.0),
+		stgstate.tunnel_side * cos(global.frames / 52.0),
 		0,
-		stgstate.tunel_updn * sin(global.frames / 50.0)
+		stgstate.tunnel_updn * sin(global.frames / 50.0)
 	};
 	Vector r = {0, 3000, 0};
 	
@@ -46,12 +46,12 @@ void stage2_bg_tunnel_draw(Vector pos) {
 	
 	glPushMatrix();
 	glTranslatef(pos[0], pos[1], pos[2]);
-	stgstate.tunel_angle += stgstate.tunel_avel;
+	stgstate.tunnel_angle += stgstate.tunnel_avel;
 	
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage2/border")->gltex);
 	for(i = 0; i < n; i++) {
 		glPushMatrix();
-		glRotatef(360.0/n*i + stgstate.tunel_angle, 0, 1, 0);
+		glRotatef(360.0/n*i + stgstate.tunnel_angle, 0, 1, 0);
 		glTranslatef(0,0,-r);
 		glScalef(2*r/tan((n-2)*M_PI/n), 3000, 1);
 		glColor4f(
@@ -117,7 +117,7 @@ void stage2_draw() {
 		stgstate.fog_exp += 4.0 / 500.0;
 	
 	FROM_TO(400, 500, 1) {
-		stgstate.tunel_avel += 0.005;
+		stgstate.tunnel_avel += 0.005;
 		bgcontext.cv[1] -= 0.3;
 	}
 	
@@ -125,35 +125,35 @@ void stage2_draw() {
 		stgstate.shadeamp += 0.0007;
 	
 	FROM_TO(1050, 1150, 1) {
-		stgstate.tunel_avel -= 0.010;
+		stgstate.tunnel_avel -= 0.010;
 		bgcontext.cv[1] -= 0.2;
 	}
 	
 	FROM_TO(1170, 1400, 1)
-		stgstate.tunel_side += 100.0 / 230.0;
+		stgstate.tunnel_side += 100.0 / 230.0;
 	
 	FROM_TO(1400, 1550, 1) {
 		bgcontext.crot[0] -= 3 / 150.0;
-		stgstate.tunel_updn += 70.0 / 150.0;
-		stgstate.tunel_avel += 1 / 150.0;
+		stgstate.tunnel_updn += 70.0 / 150.0;
+		stgstate.tunnel_avel += 1 / 150.0;
 		bgcontext.cv[1] -= 0.2;
 	}
 	
 	FROM_TO(1570, 1700, 1) {
-		stgstate.tunel_updn -= 20 / 130.0;
+		stgstate.tunnel_updn -= 20 / 130.0;
 		stgstate.shadeamp -= 0.007 / 130.0;
 	}
 	
 	FROM_TO(1800, 1850, 1)
-		stgstate.tunel_avel -= 0.02;
+		stgstate.tunnel_avel -= 0.02;
 	
 	FROM_TO(1900, 2000, 1) {
-		stgstate.tunel_avel += 0.013;
+		stgstate.tunnel_avel += 0.013;
 		stgstate.shadeamp -= 0.00015;
 	}
 	
 	FROM_TO(2000, 2740, 1) {
-		stgstate.tunel_side -= 100.0 / 740.0;
+		stgstate.tunnel_side -= 100.0 / 740.0;
 		stgstate.fog_exp -= 1.0 / 740.0;
 		bgcontext.crot[0] += 11 / 740.0;
 	}
@@ -161,7 +161,7 @@ void stage2_draw() {
 	FROM_TO(2740, 2800, 1) {
 		stgstate.fog_exp += 3.0 / 60.0;
 		bgcontext.cv[1] += 1.5;
-		stgstate.tunel_avel -= 0.7 / 60.0;
+		stgstate.tunnel_avel -= 0.7 / 60.0;
 		bgcontext.crot[0] -= 11 / 60.0;
 	}
 	
