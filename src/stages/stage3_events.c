@@ -273,9 +273,8 @@ void kurumi_redspike(Boss *b, int time) {
 	FROM_TO(0, 500, 100) {
 		int i;
 		int n = global.diff*4;
-		float f = frand();
 		for(i = 0; i < n; i++)
-			create_projectile2c("bigball", b->pos, rgb(1,0,0), asymptotic, 2*cexp(2I*M_PI/n*i+I*f), 3);
+			create_projectile2c("bigball", b->pos, rgb(1,0,0), asymptotic, 2*cexp(2I*M_PI/n*i+I*carg(global.plr.pos-b->pos)), 3);
 	}	
 }
 
