@@ -40,7 +40,8 @@ int stage3_fodder(Enemy *e, int t) {
 		return 1;
 	}	
 	
-	e->moving = 1;
+	if(creal(e->args[0]) != 0)
+		e->moving = 1;
 	e->dir = creal(e->args[0]) < 0;
 	e->pos += e->args[0];
 	
@@ -277,13 +278,13 @@ void kurumi_redspike(Boss *b, int time) {
 			int i;
 			int n = global.diff*8;
 			for(i = 0; i < n; i++)
-				create_projectile2c("bigball", b->pos, rgb(1,0,0), asymptotic, 3*cexp(2I*M_PI/n*i+I*carg(global.plr.pos-b->pos)), 3);
+				create_projectile2c("bigball", b->pos, rgb(1,0,0), asymptotic, 3*cexp(2I*M_PI/n*i+I*carg(global.plr.pos-b->pos)), 3)->draw=ProjDrawAdd;
 		}
 	} else {
 		FROM_TO(80, 500, 2+2*(global.diff == D_Hard)) {
 			complex offset = 100*frand()*cexp(2I*M_PI*frand());
 			complex n = cexp(I*carg(global.plr.pos-b->pos-offset));
-			create_projectile2c("rice", b->pos+offset, rgb(1,0,0), accelerated, -1*n, 0.05*n);
+			create_projectile2c("rice", b->pos+offset, rgb(1,0,0), accelerated, -1*n, 0.05*n)->draw=ProjDrawAdd;
 		}
 	}
 }
@@ -375,8 +376,8 @@ int stage3_supercard(Enemy *e, int t) {
 void stage3_events() {
 	TIMER(&global.timer);
 	
-	AT(0)
-		global.timer = 3200;
+// 	AT(0)
+// 		global.timer = 3200;
 		
 	AT(70) {
 		create_enemy1c(VIEWPORT_H/4*3*I, 3000, BigFairy, stage3_splasher, 3-4I);

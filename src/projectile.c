@@ -214,6 +214,12 @@ void ProjDraw(Projectile *proj, int t) {
 	glPopMatrix();
 }
 
+void ProjDrawAdd(Projectile *proj, int t) {
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+	ProjDraw(proj, t);
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+}
+
 void PartDraw(Projectile *proj, int t) {
 	glPushMatrix();
 	glTranslatef(creal(proj->pos), cimag(proj->pos), 0);

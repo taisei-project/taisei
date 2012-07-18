@@ -76,6 +76,8 @@ int asymptotic(Projectile *p, int t);
 void ProjDraw(Projectile *p, int t);
 void PartDraw(Projectile *p, int t);
 
+void ProjDrawAdd(Projectile *p, int t);
+
 void Blast(Projectile *p, int t);
 
 void Shrink(Projectile *p, int t);
