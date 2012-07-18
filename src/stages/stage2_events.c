@@ -196,16 +196,16 @@ void stage2_events() {
 		create_enemy1c(VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 10000, BigFairy, stage2_bigfairy, 0);
 	}
 	
-	FROM_TO(1000, 1300, 10) {
+	FROM_TO(1100, 1300, 10) {
 		create_enemy1c(20 + (VIEWPORT_H+20)*I, 50, Swirl, stage2_bitchswirl, 0);
 		create_enemy1c(VIEWPORT_W-20 + (VIEWPORT_H+20)*I, 50, Swirl, stage2_bitchswirl, 0);
 	}
 	
-	AT(1400) {
+	AT(1500) {
 		create_enemy1c(VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 10000, BigFairy, stage2_bigfairy, 1);
 	}
 	
-	FROM_TO(2200, 2420, 130) {
+	FROM_TO(2300, 2520, 130) {
 		double offs = -50;
 		
 		complex p1 = 0+0I;
