@@ -113,6 +113,9 @@ void load_shader(const char *filename) {
 
 void cache_uniforms(Shader *sha) {
 	int i, maxlen = 0;
+	GLint tmpi;
+	GLenum tmpt;
+	
 	glGetProgramiv(sha->prog, GL_ACTIVE_UNIFORMS, &sha->unicount);
 	glGetProgramiv(sha->prog, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxlen);
 	
@@ -122,7 +125,7 @@ void cache_uniforms(Shader *sha) {
 		sha->uniforms[i].name = malloc(maxlen);
 		memset(sha->uniforms[i].name, 0, maxlen);
 		
-		glGetActiveUniformName(sha->prog, i, maxlen, NULL, sha->uniforms[i].name);
+		glGetActiveUniform(sha->prog, i, maxlen, NULL, &tmpi, &tmpt, sha->uniforms[i].name);
 		sha->uniforms[i].location = glGetUniformLocation(sha->prog, sha->uniforms[i].name);
 	}
 }

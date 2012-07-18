@@ -196,6 +196,8 @@ void plr_bomb(Player *plr) {
 void plr_realdeath(Player *plr) {
 	plr->deathtime = -DEATH_DELAY-1;
 	
+	plr->moveflags = 0;
+	
 	create_item(plr->pos, 6-15*I, Power);
 	create_item(plr->pos, -6-15*I, Power);
 	
@@ -208,8 +210,9 @@ void plr_realdeath(Player *plr) {
 	if(plr->lifes-- == 0) {
 		if(plr->continues < MAX_CONTINUES && global.replaymode != REPLAY_PLAY) {
 			global.menu = create_gameover_menu();
-		} else
+		} else {
 			game_over();
+		}
 	}
 }
 
