@@ -75,9 +75,13 @@ int stage2_slavefairy(Enemy *e, int t) {
 			a = -a;
 		complex dir = sin(a) + I * cos(a);
 		
-		create_projectile2c("wave", e->pos + dir * 10, (global.timer % 2)? rgb(1.0, 0.6, 0.6) : rgb(0.6, 0.6, 1.0), accelerated,
+		create_projectile2c("wave", e->pos + dir * 10, (global.timer % 2)? rgb(1.0, 0.5, 0.5) : rgb(0.5, 0.5, 1.0), accelerated,
 			dir * 3,
 			dir * -0.05
+		);
+		
+		if(e->args[1] && !(_i % 7)) create_projectile1c("ball", e->pos + dir * 10, rgb(0.3, 0.6, 0.3), linear,
+			dir * (0.3 + 0.5 + 0.5 * sin(a * 3))
 		);
 	}
 	
@@ -102,13 +106,13 @@ int stage2_bigfairy(Enemy *e, int t) {
 	}
 	
 	FROM_TO(30, 600, 270) {
-		create_enemy1c(e->pos, 300, Fairy, stage2_slavefairy, e->pos + 70 + 50 * I);
-		create_enemy1c(e->pos, 300, Fairy, stage2_slavefairy, e->pos - 70 + 50 * I);
+		create_enemy2c(e->pos, 300, Fairy, stage2_slavefairy, e->pos + 70 + 50 * I, e->args[0]);
+		create_enemy2c(e->pos, 300, Fairy, stage2_slavefairy, e->pos - 70 + 50 * I, e->args[0]);
 	}
 	
 	FROM_TO(120, 600, 270) {
-		create_enemy1c(e->pos, 300, Fairy, stage2_slavefairy, e->pos + 70 - 50 * I);
-		create_enemy1c(e->pos, 300, Fairy, stage2_slavefairy, e->pos - 70 - 50 * I);
+		create_enemy2c(e->pos, 300, Fairy, stage2_slavefairy, e->pos + 70 - 50 * I, e->args[0]);
+		create_enemy2c(e->pos, 300, Fairy, stage2_slavefairy, e->pos - 70 - 50 * I, e->args[0]);
 	}
 	
 	AT(600)
