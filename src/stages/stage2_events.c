@@ -307,7 +307,7 @@ void stage2_events() {
 		create_enemy1c(VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 10000, BigFairy, stage2_bigfairy, 1);
 	}
 	
-	FROM_TO(2300, 2520, 130) {
+	FROM_TO(2400, 2620, 130) {
 		double offs = -50;
 		
 		complex p1 = 0+0I;
