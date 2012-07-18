@@ -217,6 +217,7 @@ Boss* stage2_create_midboss() {
 	Boss* wriggle = create_boss("Derpius III", "wriggle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 4, 0, stage2_mid_intro, NULL);
 	boss_add_attack(wriggle, AT_Normal, "Herp Storm", 20, 20000, stage2_mid_a1, NULL);
+	wriggle->zoomcolor = rgb(0.5, 0.2, 0.3);
 	
 	start_attack(wriggle, wriggle->attacks);
 	return wriggle;

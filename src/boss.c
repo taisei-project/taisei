@@ -157,6 +157,8 @@ void free_boss(Boss *boss) {
 		free_attack(&boss->attacks[i]);
 	if(boss->attacks)
 		free(boss->attacks);
+	if(boss->zoomcolor)
+		free(boss->zoomcolor);
 }
 
 void free_attack(Attack *a) {

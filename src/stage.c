@@ -331,6 +331,13 @@ void apply_bg_shaders(ShaderRule *shaderrules) {
 		glUniform1f(uniloc(shader, "blur_rad"), 0.2+0.025*sin(global.frames/15.0));
 		glUniform1f(uniloc(shader, "rad"), 0.24);
 		glUniform1f(uniloc(shader, "ratio"), (float)resources.fbg[fbonum].nh/resources.fbg[fbonum].nw);
+		if(global.boss->zoomcolor)
+			glUniform4f(uniloc(shader, "color"),	global.boss->zoomcolor->r,
+													global.boss->zoomcolor->g,
+													global.boss->zoomcolor->b,
+													global.boss->zoomcolor->a);
+		else
+			glUniform4f(uniloc(shader, "color"), 0.1, 0.2, 0.3, 1);
 	}
 	
 	draw_fbo_viewport(&resources.fbg[fbonum]);

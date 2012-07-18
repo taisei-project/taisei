@@ -51,6 +51,7 @@ typedef struct Boss {
 	int anirow;
 			
 	int dmg;
+	Color *zoomcolor;
 } Boss;
 
 Boss *create_boss(char *name, char *ani, complex pos);
