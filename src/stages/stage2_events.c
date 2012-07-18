@@ -93,9 +93,7 @@ int stage2_bigfairy(Enemy *e, int t) {
 	
 	AT(EVENT_DEATH) {
 		if(e->args[0])
-			spawn_items(e->pos, 5, 5, 0, 1);
-		else
-			spawn_items(e->pos, 3, 3, 1, 0);
+			spawn_items(e->pos, 5, 5, 1, 0);
 		return 1;
 	}
 	
