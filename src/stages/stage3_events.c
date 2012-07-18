@@ -324,8 +324,8 @@ Boss *create_kurumi_mid() {
 void stage3_events() {
 	TIMER(&global.timer);
 	
-	AT(0)
-		global.timer = 3200;
+// 	AT(0)
+// 		global.timer = 3200;
 		
 	AT(70) {
 		create_enemy1c(VIEWPORT_H/4*3*I, 9000, BigFairy, stage3_splasher, 3-4I);
