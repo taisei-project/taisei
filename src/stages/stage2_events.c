@@ -259,7 +259,6 @@ void stage2_mid_a1(Boss *boss, int time) {
 }
 
 void stage2_mid_spellbg(Boss *h, int time) {
-	glPushMatrix();
 	float b = (0.3 + 0.2 * (sin(time / 50.0) * sin(time / 25.0f + M_PI))) * min(time/10.0, 1);
 	glColor4f(b, b, b, 1.0);
 	fill_screen(-time/50.0 + 0.5, time/100.0+0.5, 1, "stage2/spellbg1");
@@ -267,10 +266,6 @@ void stage2_mid_spellbg(Boss *h, int time) {
 	fill_screen(time/50.0 + 0.5, time/90.0+0.5, 1, "stage2/spellbg1");
 	fill_screen(-time/55.0 + 0.5, -time/100.0+0.5, 1, "stage2/spellbg1");
 	fill_screen(time/55.0 + 0.5, -time/90.0+0.5, 1, "stage2/spellbg1");
-	glPopMatrix();
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	//draw_animation(creal(h->pos), cimag(h->pos), 0, "fire");
-	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
