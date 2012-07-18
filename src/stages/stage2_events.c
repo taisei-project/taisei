@@ -67,7 +67,8 @@ int stage2_slavefairy(Enemy *e, int t) {
 		e->alpha = 0;
 	}
 	
-	GO_TO(e, e->args[0], 0.03)
+	if(t < 120)
+		GO_TO(e, e->args[0], 0.03)
 	
 	FROM_TO_INT(30, 120, 5 - global.diff, 1, 1) {
 		float a = global.timer * 0.5;
@@ -85,9 +86,8 @@ int stage2_slavefairy(Enemy *e, int t) {
 		);
 	}
 	
-	AT(120) {
-		e->hp = 0;
-	}
+	if(t >= 120)
+		e->pos += 3 * e->args[2] + 2I;
 	
 	return 0;
 }
@@ -106,13 +106,13 @@ int stage2_bigfairy(Enemy *e, int t) {
 	}
 	
 	FROM_TO(30, 600, 270) {
-		create_enemy2c(e->pos, 300, Fairy, stage2_slavefairy, e->pos + 70 + 50 * I, e->args[0]);
-		create_enemy2c(e->pos, 300, Fairy, stage2_slavefairy, e->pos - 70 + 50 * I, e->args[0]);
+		create_enemy3c(e->pos, 300, Fairy, stage2_slavefairy, e->pos + 70 + 50 * I, e->args[0], +1);
+		create_enemy3c(e->pos, 300, Fairy, stage2_slavefairy, e->pos - 70 + 50 * I, e->args[0], -1);
 	}
 	
 	FROM_TO(120, 600, 270) {
-		create_enemy2c(e->pos, 300, Fairy, stage2_slavefairy, e->pos + 70 - 50 * I, e->args[0]);
-		create_enemy2c(e->pos, 300, Fairy, stage2_slavefairy, e->pos - 70 - 50 * I, e->args[0]);
+		create_enemy3c(e->pos, 300, Fairy, stage2_slavefairy, e->pos + 70 - 50 * I, e->args[0], +1);
+		create_enemy3c(e->pos, 300, Fairy, stage2_slavefairy, e->pos - 70 - 50 * I, e->args[0], -1);
 	}
 	
 	AT(600)
