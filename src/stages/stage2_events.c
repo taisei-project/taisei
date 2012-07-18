@@ -171,8 +171,8 @@ int stage2_cornerfairy(Enemy *e, int t) {
 					1.5
 				);
 				
-				if(global.diff > D_Easy) if(frand() < 0.3) {
-					create_projectile2c("flea", e->pos, rgb(0.5, 0.8, 0.5), asymptotic,
+				if(global.diff > D_Easy) {
+					create_projectile2c("flea", e->pos, rgb(0.5 + 1.2 * c, 0.8, 0.5), asymptotic,
 						2*cexp(I*(carg(global.plr.pos - e->pos) + i)),
 						1.5
 					);
@@ -283,8 +283,8 @@ Boss* stage2_create_midboss() {
 void stage2_events() {
 	TIMER(&global.timer);
 	
-	AT(0)
-		global.timer = 2300;
+	//AT(0)
+	//	global.timer = 2300;
 	
 	FROM_TO(160, 300, 10) {
 		create_enemy1c(VIEWPORT_W/2 + 20 * nfrand() + (VIEWPORT_H/4 + 20 * nfrand())*I, 200, Swirl, stage2_enterswirl, I * 3 + nfrand() * 3);
