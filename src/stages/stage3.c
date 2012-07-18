@@ -196,6 +196,7 @@ void stage3_start() {
 // 	bgcontext.cx[1] = 2000;
 // 	bgcontext.cx[2] = 130;
 // 	bgcontext.cv[1] = 10;
+// 	bgcontext.crot[0] = 80;
 	
 	add_model(&bgcontext, stage3_lake_draw, stage3_lake_pos);
 	add_model(&bgcontext, stage3_fountain_draw, stage3_fountain_pos);

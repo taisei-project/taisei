@@ -17,7 +17,6 @@ void parse_obj(char *filename, ObjFileData *data) {
 	FILE *fp = fopen(filename, "rb");
 	
 	char line[256];
-	char cbuf[128];
 	Vector buf;
 	char mode;
 	int linen = 0;
@@ -63,24 +62,25 @@ void parse_obj(char *filename, ObjFileData *data) {
 			}
 		} else if(mode == 'f') {
 			char *segment, *seg;
-			char *ctmp;
 			int j = 0, jj;
 			IVector ibuf;
 			memset(ibuf, 0, sizeof(ibuf));
 			
 			while((segment = strtok(NULL, " \n"))) {
-				memset(cbuf, 0, sizeof(cbuf));
-				strncpy(cbuf, segment, sizeof(cbuf));
-								j++;				
+				seg = segment;
+				j++;				
 				
 				jj = 0;
-				while((seg = strtok_r(jj == 0 ? cbuf : NULL, "/", &ctmp))) {
-					if(jj >= 3)
-						break;
-					
+				while(jj < 3) {
 					ibuf[jj] = atoi(seg);
-					
 					jj++;
+					
+					while(*seg != '\0' && *(++seg) != '/');
+					
+					if(*seg == '\0')
+						break;
+					else
+						seg++;
 				}
 				
 				if(strstr(segment, "//")) {
@@ -94,7 +94,7 @@ void parse_obj(char *filename, ObjFileData *data) {
 				data->indices = realloc(data->indices, sizeof(IVector)*(++data->icount));
 				memcpy(data->indices[data->icount-1], ibuf, sizeof(IVector));
 			}
-			
+
 			if(data->fverts == 0)
 				data->fverts = j;
 			

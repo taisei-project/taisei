@@ -39,12 +39,14 @@ int stage3_fodder(Enemy *e, int t) {
 		spawn_items(e->pos, 0,1,0,0);
 		return 1;
 	}	
-		
+	
+	e->moving = 1;
+	e->dir = creal(e->args[0]) < 0;
 	e->pos += e->args[0];
 	
-	FROM_TO(100, 200, 22-global.diff*2) {
+	FROM_TO(100, 200, 22-global.diff*3) {
 		if(global.diff > D_Easy) {
-			create_projectile2c("ball", e->pos, rgb(1, 0.3, 0.5), asymptotic, 1*cexp(I*M_PI*2*frand()), 3);
+			create_projectile2c("ball", e->pos, rgb(1, 0.3, 0.5), asymptotic, 2*cexp(I*M_PI*2*frand()), 3);
 		}
 	}
 	
@@ -175,7 +177,7 @@ int stage3_explosive(Enemy *e, int t) {
 	
 	e->pos += e->args[0];
 		
-	if(!(t % 30) && global.diff > D_Normal && frand() < 0.05 && cimag(e->pos) < VIEWPORT_H/2)
+	if(!(t % 30) && global.diff > D_Normal && frand() < 0.1)
 		e->hp = 0;
 	
 	return 1;
@@ -270,13 +272,20 @@ void kurumi_redspike(Boss *b, int time) {
 		create_enemy3c(b->pos, ENEMY_IMMUNE, KurumiSlave, kurumi_spikeslave, 1-2*(_i&1), 0, add_ref(b));
 	}
 	
-	FROM_TO(0, 500, 100) {
-		int i;
-		int n = global.diff*4;
-		float f = frand();
-		for(i = 0; i < n; i++)
-			create_projectile2c("bigball", b->pos, rgb(1,0,0), asymptotic, 2*cexp(2I*M_PI/n*i+I*f), 3);
-	}	
+	if(global.diff < D_Hard) {
+		FROM_TO(0, 500, 100) {
+			int i;
+			int n = global.diff*4;
+			for(i = 0; i < n; i++)
+				create_projectile2c("bigball", b->pos, rgb(1,0,0), asymptotic, 2*cexp(2I*M_PI/n*i+I*carg(global.plr.pos-b->pos)), 3);
+		}
+	} else {
+		FROM_TO(80, 500, 2+2*(global.diff == D_Hard)) {
+			complex offset = 100*frand()*cexp(2I*M_PI*frand());
+			complex n = cexp(I*carg(global.plr.pos-b->pos-offset));
+			create_projectile2c("rice", b->pos+offset, rgb(1,0,0), accelerated, -1*n, 0.05*n);
+		}
+	}
 }
 
 void kurumi_spell_bg(Boss *b, int time) {
@@ -315,11 +324,53 @@ Boss *create_kurumi_mid() {
 	Boss* b = create_boss("Kurumi", "kurumi", VIEWPORT_W/2-400I);
 	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_intro, NULL);
 	boss_add_attack(b, AT_Spellcard, "Bloodless ~ Gate of Walachia", 25, 20000, kurumi_slaveburst, kurumi_spell_bg);
-	boss_add_attack(b, AT_Spellcard, "Bloodless ~ Dry Fountain", 30, 30000, kurumi_redspike, kurumi_spell_bg);
+	boss_add_attack(b, AT_Spellcard, global.diff < D_Hard ? "Bloodless ~ Dry Fountain" : "Bloodless ~ Red Spike", 30, 30000, kurumi_redspike, kurumi_spell_bg);
 	boss_add_attack(b, AT_Move, "Outro", 2, 1, kurumi_outro, NULL);
 	start_attack(b, b->attacks);
 	return b;
 }
+
+int splitcard(Projectile *p, int t) {
+	if(t == creal(p->args[2])) {
+		p->args[0] += p->args[3];
+		p->clr->b = -p->clr->b;
+	}
+	
+	return asymptotic(p, t);
+}
+
+int stage3_supercard(Enemy *e, int t) {
+	int time = t % 150;
+	
+	TIMER(&t);
+	AT(EVENT_DEATH) {
+		spawn_items(e->pos, 2,3,0,0);		
+		return 1;
+	}
+	
+	e->pos += e->args[0];
+	
+	FROM_TO(50, 70, 1) {
+		e->args[0] *= 0.7;
+	}
+	
+	if(t > 450) {
+		e->pos -= I;
+		return 1;
+	}
+	
+	__timep = &time;
+	
+	FROM_TO(70, 70+20*global.diff, 1) {
+		int i;
+		complex n = cexp(I*carg(global.plr.pos - e->pos) + 0.3I*_i);
+		for(i = -1; i <= 1 && t; i++)
+			create_projectile4c("card", e->pos + 30*n, rgb(1-_i/20.0, 0, 0.4), splitcard, 1*n, 0.4I, 100-time+70, 1.4*I*i*n);		
+	}
+	 
+	return 1;
+}
+	
 		
 void stage3_events() {
 	TIMER(&global.timer);
@@ -358,8 +409,24 @@ void stage3_events() {
 		create_enemy1c(VIEWPORT_W/2+200-400*frand(), 1000, BigFairy, stage3_bigcircle, 2I);
 		
 	FROM_TO(2600, 2800, 10)
-		create_enemy1c(20+(VIEWPORT_W-40)*frand(), 100, Swirl, stage3_explosive, 3I);
+		create_enemy1c(20I+VIEWPORT_H/3*I*frand()+VIEWPORT_W, 100, Swirl, stage3_explosive, -3);
 	
 	AT(3200)
 		global.boss = create_kurumi_mid();
+		
+	FROM_TO(3201, 3601, 10)
+		create_enemy1c(VIEWPORT_W*(_i&1)+VIEWPORT_H/2*I-300I*frand(), 200, Fairy, stage3_fodder, 2-4*(_i&1)+1I);
+	
+	FROM_TO(3500, 4000, 100)
+		create_enemy3c(VIEWPORT_W/4.0 + VIEWPORT_W/2.0*(_i&1), 1000, BigFairy, stage3_cardbuster, VIEWPORT_W/6.0*(_i&1)+100I,
+					VIEWPORT_W/4.0+VIEWPORT_W/2.0*((_i+1)&1)+300I, VIEWPORT_W/2.0-200I);
+		
+	AT(3800)
+		create_enemy1c(VIEWPORT_W/2, 7000, BigFairy, stage3_supercard, 4I);
+		
+	FROM_TO(4300, 4600, 95-10*global.diff)
+		create_enemy1c(VIEWPORT_W*(_i&1)+100*I, 200, Swirl, stage3_backfire, frand()*(1-2*(_i&1)));
+		
+	FROM_TO(4800, 5200, 10)
+		create_enemy1c(20I+I*VIEWPORT_H/3*frand()+VIEWPORT_W*(_i&1), 100, Swirl, stage3_explosive, (1-2*(_i&1))*3+I);
 }
