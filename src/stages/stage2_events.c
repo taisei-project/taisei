@@ -23,9 +23,9 @@ int stage2_enterswirl(Enemy *e, int t) {
 		float r, g;
 		if(frand() > 0.5) {
 			r = 0.3 + 0.3 * frand();
-			g = 1;
+			g = 0.7;
 		} else {
-			r = 1;
+			r = 0.7;
 			g = 0.3 + 0.3 * frand();
 		}
 		
@@ -33,7 +33,7 @@ int stage2_enterswirl(Enemy *e, int t) {
 			complex dir = sin(a) + I * cos(a);
 			float spd = 1 + 0.5 * sin(10 * a);
 			
-			create_projectile2c("rice", e->pos, rgb(r, g, 1), accelerated,
+			create_projectile2c("rice", e->pos, rgb(r, g, 0.7), accelerated,
 				dir * 2,
 				dir * spd * -0.03
 			);
