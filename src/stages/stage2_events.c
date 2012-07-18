@@ -226,14 +226,6 @@ void stage2_mid_a1(Boss *boss, int time) {
 	
 	if(time > 120) {
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2 + sin(time/30.0) * time/5.0 * cexp(I * M_PI_2 * time/100.0), 0.03)
-		/*
-		if(!(time % 5)) {
-			for(i = 0; i < 3; ++i) create_projectile2c("flea", boss->pos, rgb(0.5, 0.7 + 0.3 * sin(time/50.0), 0.5), accelerated,
-				0,
-				0.005*cexp(I*(M_PI*2 * sin(time/20.0 + i)))
-			);
-		}
-		*/
 		
 		if(!(time % 70)) {
 			for(i = 0; i < 15; ++i) {
@@ -247,11 +239,19 @@ void stage2_mid_a1(Boss *boss, int time) {
 			}
 		}
 		
+		if(global.diff > D_Easy && !(time % 35)) {
+			int cnt = global.diff * 3;
+			for(i = 0; i < cnt; ++i) create_projectile2c("rice", boss->pos, rgb(1.0, 1.0, 0.3), asymptotic,
+				(0.5 + 3 * psin(time + M_PI/3*2*i)) * cexp(I*(time / 20.0 + M_PI/cnt*i*2)),
+				1.5
+			);
+		}
+		
 		if(!(time % 3)) {
 			for(i = -1; i < 2; i += 2) {
 				float c = psin(time/10.0);
 				create_projectile1c("crystal", boss->pos, rgba(0.3 + c * 0.7, 0.6 - c * 0.3, 0.3, 0.7), linear,
-					10 * cexp(I*(carg(global.plr.pos - boss->pos) + M_PI/4.0 * i * (1-time/2300.0)))
+					10 * cexp(I*(carg(global.plr.pos - boss->pos) + (M_PI/4.0 * i * (1-time/2300.0)) * (1 - 0.5 * psin(time/10.0))))
 				);
 			}
 		}
@@ -259,14 +259,15 @@ void stage2_mid_a1(Boss *boss, int time) {
 }
 
 void stage2_mid_spellbg(Boss *h, int time) {
-	float b = (0.3 + 0.2 * (sin(time / 50.0) * sin(time / 25.0f + M_PI))) * min(time/10.0, 1);
-	glColor4f(b, b, b, 1.0);
+	float b = (0.3 + 0.2 * (sin(time / 50.0) * sin(time / 25.0f + M_PI))) * min(time/20.0, 1);
+	glColor4f(b, b, b, 1);
 	fill_screen(-time/50.0 + 0.5, time/100.0+0.5, 1, "stage2/spellbg1");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	fill_screen(time/50.0 + 0.5, time/90.0+0.5, 1, "stage2/spellbg1");
 	fill_screen(-time/55.0 + 0.5, -time/100.0+0.5, 1, "stage2/spellbg1");
 	fill_screen(time/55.0 + 0.5, -time/90.0+0.5, 1, "stage2/spellbg1");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glColor4f(1, 1, 1, 1);
 }
 
 Boss* stage2_create_midboss() {
@@ -282,8 +283,8 @@ Boss* stage2_create_midboss() {
 void stage2_events() {
 	TIMER(&global.timer);
 	
-	//AT(0)
-	//	global.timer = 2300;
+	AT(0)
+		global.timer = 2300;
 	
 	FROM_TO(160, 300, 10) {
 		create_enemy1c(VIEWPORT_W/2 + 20 * nfrand() + (VIEWPORT_H/4 + 20 * nfrand())*I, 200, Swirl, stage2_enterswirl, I * 3 + nfrand() * 3);
