@@ -156,7 +156,7 @@ void stage2_draw() {
 		bgcontext.crot[0] += 11 / 740.0;
 	}
 	
-	FROM_TO(2740, 2800, 1) {
+	FROM_TO(2740, 2799, 1) {
 		stgstate.fog_exp += 3.0 / 60.0;
 		bgcontext.cv[1] += 1.5;
 		stgstate.tunnel_avel -= 0.7 / 60.0;

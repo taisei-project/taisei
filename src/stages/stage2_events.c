@@ -175,7 +175,7 @@ int stage2_cornerfairy(Enemy *e, int t) {
 					1.5
 				);
 				
-				if(global.diff > D_Easy) if(frand() < 0.4) {
+				if(global.diff > D_Easy) if(frand() < 0.3) {
 					create_projectile2c("flea", e->pos, rgb(0.5, 0.8, 0.5), asymptotic,
 						2*cexp(I*(carg(global.plr.pos - e->pos) + i)),
 						1.5
@@ -191,11 +191,42 @@ int stage2_cornerfairy(Enemy *e, int t) {
 	return 0;
 }
 
+Dialog* stage2_dialog_mid() {
+	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
+	
+	dadd_msg(d, Right, "Hurrrrr durr herp a derp!");
+	dadd_msg(d, Left, "Fuck fuck fuckity fuck!");
+	dadd_msg(d, Right, "HURR DURR A DERP A HERP HERP LOL DERP.");
+	
+	return d;
+}
+
+void stage2_mid_intro(Boss *boss, int time) {
+	TIMER(&time);
+	GO_TO(boss, VIEWPORT_W/2.0 + 100I, 0.03);
+		
+	AT(100)
+		global.dialog = stage2_dialog_mid();
+}
+
+void stage2_mid_a1(Boss *boss, int time) {
+	
+}
+
+Boss* stage2_create_midboss() {
+	Boss* wriggle = create_boss("Derpius III", "wriggle", VIEWPORT_W/2 - 200I);
+	boss_add_attack(wriggle, AT_Move, "Introduction", 4, 0, stage2_mid_intro, NULL);
+	boss_add_attack(wriggle, AT_Normal, "Herp Storm", 20, 20000, stage2_mid_a1, NULL);
+	
+	start_attack(wriggle, wriggle->attacks);
+	return wriggle;
+}
+
 void stage2_events() {
 	TIMER(&global.timer);
 	
-	//AT(0)
-	//	global.timer = 1460;
+	AT(0)
+		global.timer = 2300;
 	
 	FROM_TO(160, 300, 10) {
 		create_enemy1c(VIEWPORT_W/2 + 20 * nfrand() + (VIEWPORT_H/4 + 20 * nfrand())*I, 200, Swirl, stage2_enterswirl, I * 3 + nfrand() * 3);
@@ -227,4 +258,7 @@ void stage2_events() {
 		create_enemy2c(p3, 500, Fairy, stage2_cornerfairy, p3 + offs + offs*I, p4 - offs + offs*I);
 		create_enemy2c(p4, 500, Fairy, stage2_cornerfairy, p4 - offs + offs*I, p1 - offs - offs*I);
 	}
+	
+	AT(2800)
+		global.boss = stage2_create_midboss();
 }
