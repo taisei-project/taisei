@@ -181,6 +181,15 @@ int stage3_explosive(Enemy *e, int t) {
 	return 1;
 }
 
+void KurumiSlave(Enemy *e, int t) {
+	if(!(t%2)) {
+		complex offset = (frand()-0.5)*30 + (frand()-0.5)*20I;
+		create_particle3c("lasercurve", offset, rgb(0.3,0.0,0.0), EnemyFlareShrink, enemy_flare, 50, (-50I-offset)/50.0, add_ref(e));
+	}
+		
+}
+	
+
 void kurumi_intro(Boss *b, int t) {
 	GO_TO(b, VIEWPORT_W/2.0+200I, 0.01);
 }
@@ -223,7 +232,7 @@ void kurumi_slaveburst(Boss *b, int time) {
 		int i;
 		int n = 3+2*global.diff;
 		for(i = 0; i < n; i++) {
-			create_enemy3c(b->pos, ENEMY_IMMUNE, Swirl, kurumi_burstslave, cexp(I*2*M_PI/n*i+0.2I*time/500), 0, add_ref(b));
+			create_enemy3c(b->pos, ENEMY_IMMUNE, KurumiSlave, kurumi_burstslave, cexp(I*2*M_PI/n*i+0.2I*time/500), 0, add_ref(b));
 		}
 	}
 }
@@ -258,7 +267,7 @@ void kurumi_redspike(Boss *b, int time) {
 	TIMER(&t);
 	
 	FROM_TO(0, 500, 60) {
-		create_enemy3c(b->pos, ENEMY_IMMUNE, Swirl, kurumi_spikeslave, 1-2*(_i&1), 0, add_ref(b));
+		create_enemy3c(b->pos, ENEMY_IMMUNE, KurumiSlave, kurumi_spikeslave, 1-2*(_i&1), 0, add_ref(b));
 	}
 	
 	FROM_TO(0, 500, 100) {
@@ -267,7 +276,7 @@ void kurumi_redspike(Boss *b, int time) {
 		float f = frand();
 		for(i = 0; i < n; i++)
 			create_projectile2c("bigball", b->pos, rgb(1,0,0), asymptotic, 2*cexp(2I*M_PI/n*i+I*f), 3);
-	}
+	}	
 }
 
 void kurumi_spell_bg(Boss *b, int time) {
@@ -290,6 +299,16 @@ void kurumi_spell_bg(Boss *b, int time) {
 
 void kurumi_outro(Boss *b, int time) {
 	b->pos += -5-I;
+	
+	if(time == 0) {
+		Enemy *e;
+		for(e = global.enemies; e; e = e->next)
+			e->hp = 0;
+		
+		Projectile *p;
+		for(p = global.projs; p; p = p->next)
+			p->type = DeadProj;
+	}		
 }
 
 Boss *create_kurumi_mid() {
@@ -297,7 +316,7 @@ Boss *create_kurumi_mid() {
 	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_intro, NULL);
 	boss_add_attack(b, AT_Spellcard, "Bloodless ~ Gate of Walachia", 25, 20000, kurumi_slaveburst, kurumi_spell_bg);
 	boss_add_attack(b, AT_Spellcard, "Bloodless ~ Dry Fountain", 30, 30000, kurumi_redspike, kurumi_spell_bg);
-	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_outro, NULL);
+	boss_add_attack(b, AT_Move, "Outro", 2, 1, kurumi_outro, NULL);
 	start_attack(b, b->attacks);
 	return b;
 }
@@ -305,8 +324,8 @@ Boss *create_kurumi_mid() {
 void stage3_events() {
 	TIMER(&global.timer);
 	
-// 	AT(0)
-// 		global.timer = 2000;
+	AT(0)
+		global.timer = 3200;
 		
 	AT(70) {
 		create_enemy1c(VIEWPORT_H/4*3*I, 9000, BigFairy, stage3_splasher, 3-4I);
