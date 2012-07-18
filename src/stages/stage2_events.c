@@ -175,8 +175,8 @@ int stage2_cornerfairy(Enemy *e, int t) {
 					1.5
 				);
 				
-				if(frand() < 0.4) {
-					create_projectile2c("flea", e->pos, rgb(0.6, 1.0, 0.6), asymptotic,
+				if(global.diff > D_Easy) if(frand() < 0.4) {
+					create_projectile2c("flea", e->pos, rgb(0.5, 0.8, 0.5), asymptotic,
 						2*cexp(I*(carg(global.plr.pos - e->pos) + i)),
 						1.5
 					);
