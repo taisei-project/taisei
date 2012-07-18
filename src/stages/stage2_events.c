@@ -80,7 +80,7 @@ int stage2_slavefairy(Enemy *e, int t) {
 			dir * -0.05
 		);
 		
-		if(e->args[1] && !(_i % 7)) create_projectile1c("ball", e->pos + dir * 10, rgb(0.3, 0.6, 0.3), linear,
+		if(e->args[1] && !(_i % 10)) create_projectile1c("ball", e->pos + dir * 10, rgb(0.3, 0.6, 0.3), linear,
 			dir * (0.3 + 0.5 + 0.5 * sin(a * 3))
 		);
 	}
@@ -174,6 +174,13 @@ int stage2_cornerfairy(Enemy *e, int t) {
 					2*cexp(I*(i+carg((VIEWPORT_W+I*VIEWPORT_H)/2 - e->pos))),
 					1.5
 				);
+				
+				if(frand() < 0.4) {
+					create_projectile2c("flea", e->pos, rgb(0.6, 1.0, 0.6), asymptotic,
+						2*cexp(I*(carg(global.plr.pos - e->pos) + i)),
+						1.5
+					);
+				}
 			}
 		}
 	}
