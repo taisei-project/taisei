@@ -80,11 +80,6 @@ void replay_write_int(FILE *file, int val) {
 	replay_write_separator(file);
 }
 
-void replay_write_char(FILE *file, char val) {
-	fprintf(file, "%c", val);
-	replay_write_separator(file);
-}
-
 void replay_write_double(FILE *file, double val) {
 	fprintf(file, "%f", val);
 	replay_write_separator(file);
@@ -124,10 +119,8 @@ int replay_write(Replay *rpy, FILE *file) {
 	for(i = 0; i < rpy->ecount; ++i) {
 		ReplayEvent *e = &(rpy->events[i]);
 		replay_write_int(file, e->frame);
-		
-		// trollface.tsr
-		replay_write_char(file, e->type);
-		replay_write_char(file, e->key);
+		replay_write_int(file, e->type);
+		replay_write_int(file, e->key);
 	}
 	
 	return True;
@@ -212,9 +205,9 @@ int replay_read(Replay *rpy, FILE *file) {
 					rpy->events		= (ReplayEvent*)malloc(sizeof(ReplayEvent) * rpy->capacity);
 					break;
 				
-				case RPY_E_FRAME:	rpy->events[eidx].frame = INTOF(buf);		break;
-				case RPY_E_TYPE:	rpy->events[eidx].type  = buf[0];			break;
-				case RPY_E_KEY:		rpy->events[eidx].key 	= buf[0]; eidx++;	break;
+				case RPY_E_FRAME:	rpy->events[eidx].frame = INTOF(buf);			break;
+				case RPY_E_TYPE:	rpy->events[eidx].type  = INTOF(buf);			break;
+				case RPY_E_KEY:		rpy->events[eidx].key 	= INTOF(buf); eidx++;	break;
 			}
 			
 			if(rpy->capacity && eidx == rpy->capacity)
