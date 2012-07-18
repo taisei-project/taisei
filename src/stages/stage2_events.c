@@ -126,9 +126,9 @@ int stage2_bitchswirl(Enemy *e, int t) {
 	}
 	
 	FROM_TO(0, 120, 20) {
-		float c = 0.25 + 0.25 * sin(t / 5.0);
+		float c = 0.25 + 0.25 * sin(t / 15.0);
 		
-		create_projectile2c("flea", e->pos, rgb(1.0 - c, 0.6, 0.5 + c), accelerated,
+		create_projectile2c("flea", e->pos, rgb(0.5 + c, 0.8, 0.4), accelerated,
 			2*cexp(I*carg(global.plr.pos - e->pos)),
 			0.005*cexp(I*(M_PI*2 * frand()))
 		);
@@ -160,8 +160,8 @@ int stage2_cornerfairy(Enemy *e, int t) {
 	
 	FROM_TO(60, 120, 1) {
 		GO_TO(e, e->args[1], 0.05)
-		
-		if(!(t % (D_Lunatic - global.diff + 2))) {
+		int d = (D_Lunatic - global.diff + 2);
+		if(!(t % d)) {
 			float i; for(i = -M_PI; i <= M_PI; i += 1.0) {
 				float c = 0.25 + 0.25 * sin(t / 5.0);
 				
@@ -171,7 +171,7 @@ int stage2_cornerfairy(Enemy *e, int t) {
 					1.5
 				);
 				
-				if(global.diff > D_Easy) {
+				if(global.diff > D_Easy && !(t % 3*d)) {
 					create_projectile2c("flea", e->pos, rgb(0.5 + 1.2 * c, 0.8, 0.5), asymptotic,
 						2*cexp(I*(carg(global.plr.pos - e->pos) + i)),
 						1.5
@@ -208,7 +208,7 @@ int stage2_mid_poison(Projectile *p, int time) {
 		float a = p->args[2];
 		float t = p->args[3] + time;
 		
-		create_projectile2c("flea", p->pos, rgb(0.5, 0.7 + 0.3 * sin(a/3.0 + t/20.0), 0.5), accelerated,
+		create_projectile2c((frand() > 0.5)? "thickrice" : "rice", p->pos, rgb(0.3, 0.7 + 0.3 * psin(a/3.0 + t/20.0), 0.3), accelerated,
 				0,
 				0.005*cexp(I*(M_PI*2 * sin(a/5.0 + t/20.0)))
 		);
@@ -241,7 +241,7 @@ void stage2_mid_a1(Boss *boss, int time) {
 		
 		if(global.diff > D_Easy && !(time % 35)) {
 			int cnt = global.diff * 3;
-			for(i = 0; i < cnt; ++i) create_projectile2c("rice", boss->pos, rgb(1.0, 1.0, 0.3), asymptotic,
+			for(i = 0; i < cnt; ++i) create_projectile2c("ball", boss->pos, rgb(1.0, 1.0, 0.3), asymptotic,
 				(0.5 + 3 * psin(time + M_PI/3*2*i)) * cexp(I*(time / 20.0 + M_PI/cnt*i*2)),
 				1.5
 			);
