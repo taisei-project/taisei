@@ -126,6 +126,10 @@ void global_processevent(SDL_Event*);
 void take_screenshot();
 
 double frand();
+double nfrand();
+double psin();
+double min(double, double);
+double max(double, double);
 
 // this is used by both player and replay code
 enum {

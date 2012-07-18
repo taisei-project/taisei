@@ -10,10 +10,6 @@
 #include "stage.h"
 #include "enemy.h"
 
-float nfrand() {
-	return (frand() - 0.5) * 2;
-}
-
 int stage2_enterswirl(Enemy *e, int t) {
 	TIMER(&t)
 	
@@ -134,7 +130,7 @@ int stage2_bitchswirl(Enemy *e, int t) {
 		
 		create_projectile2c("flea", e->pos, rgb(1.0 - c, 0.6, 0.5 + c), accelerated,
 			2*cexp(I*carg(global.plr.pos - e->pos)),
-			0.005*cexp(I*(M_PI_2 * nfrand()))
+			0.005*cexp(I*(M_PI*2 * frand()))
 		);
 	}
 	
@@ -202,18 +198,86 @@ Dialog* stage2_dialog() {
 }
 
 void stage2_mid_intro(Boss *boss, int time) {
-	TIMER(&time);
 	GO_TO(boss, VIEWPORT_W/2.0 + 100I, 0.03);
 }
 
-void stage2_mid_a1(Boss *boss, int time) {
+int stage2_mid_poison(Projectile *p, int time) {
+	int result = accelerated(p, time);
 	
+	if(!(time % (57 - global.diff * 3))) {
+		float a = p->args[2];
+		float t = p->args[3] + time;
+		
+		create_projectile2c("flea", p->pos, rgb(0.5, 0.7 + 0.3 * sin(a/3.0 + t/20.0), 0.5), accelerated,
+				0,
+				0.005*cexp(I*(M_PI*2 * sin(a/5.0 + t/20.0)))
+		);
+	}
+	
+	return result;
+}
+
+void stage2_mid_a1(Boss *boss, int time) {
+	int i;
+	TIMER(&time);
+	
+	FROM_TO(0, 120, 1)
+		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.03)
+	
+	if(time > 120) {
+		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2 + sin(time/30.0) * time/5.0 * cexp(I * M_PI_2 * time/100.0), 0.03)
+		/*
+		if(!(time % 5)) {
+			for(i = 0; i < 3; ++i) create_projectile2c("flea", boss->pos, rgb(0.5, 0.7 + 0.3 * sin(time/50.0), 0.5), accelerated,
+				0,
+				0.005*cexp(I*(M_PI*2 * sin(time/20.0 + i)))
+			);
+		}
+		*/
+		
+		if(!(time % 70)) {
+			for(i = 0; i < 15; ++i) {
+				float a = M_PI/(5 + global.diff) * i * 2;
+				create_projectile4c("wave", boss->pos, rgb(0.3, 0.3 + 0.7 * psin(a*3 + time/50.0), 0.3), stage2_mid_poison,
+					0,
+					0.02 * cexp(I*(a+time/10.0)),
+					a,
+					time
+				);
+			}
+		}
+		
+		if(!(time % 3)) {
+			for(i = -1; i < 2; i += 2) {
+				float c = psin(time/10.0);
+				create_projectile1c("crystal", boss->pos, rgba(0.3 + c * 0.7, 0.6 - c * 0.3, 0.3, 0.7), linear,
+					10 * cexp(I*(carg(global.plr.pos - boss->pos) + M_PI/4.0 * i * (1-time/2300.0)))
+				);
+			}
+		}
+	}
+}
+
+void stage2_mid_spellbg(Boss *h, int time) {
+	glPushMatrix();
+	float b = (0.3 + 0.2 * (sin(time / 50.0) * sin(time / 25.0f + M_PI))) * min(time/10.0, 1);
+	glColor4f(b, b, b, 1.0);
+	fill_screen(-time/50.0 + 0.5, time/100.0+0.5, 1, "stage2/spellbg1");
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	fill_screen(time/50.0 + 0.5, time/90.0+0.5, 1, "stage2/spellbg1");
+	fill_screen(-time/55.0 + 0.5, -time/100.0+0.5, 1, "stage2/spellbg1");
+	fill_screen(time/55.0 + 0.5, -time/90.0+0.5, 1, "stage2/spellbg1");
+	glPopMatrix();
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	//draw_animation(creal(h->pos), cimag(h->pos), 0, "fire");
+	
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 Boss* stage2_create_midboss() {
 	Boss* scuttle = create_boss("Scuttle", "scuttle", VIEWPORT_W/2 - 200I);
-	boss_add_attack(scuttle, AT_Move, "Introduction", 4, 0, stage2_mid_intro, NULL);
-	boss_add_attack(scuttle, AT_Normal, "Herp Storm", 20, 20000, stage2_mid_a1, NULL);
+	boss_add_attack(scuttle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
+	boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Deadly Dance", 30, 20000, stage2_mid_a1, stage2_mid_spellbg);
 	scuttle->zoomcolor = rgb(0.4, 0.5, 0.4);
 	
 	start_attack(scuttle, scuttle->attacks);
@@ -239,7 +303,7 @@ void stage2_events() {
 		create_enemy1c(VIEWPORT_W-20 + (VIEWPORT_H+20)*I, 50, Swirl, stage2_bitchswirl, 0);
 	}
 	
-	AT(1500) {
+	AT(1600) {
 		create_enemy1c(VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 10000, BigFairy, stage2_bigfairy, 1);
 	}
 	

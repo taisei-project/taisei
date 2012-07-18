@@ -80,6 +80,22 @@ inline double frand() {
 	return rand()/(double)RAND_MAX;
 }
 
+inline double nfrand() {
+	return frand() * 2 - 1;
+}
+
+inline double psin(double x) {
+	return 0.5 + 0.5 * sin(x);
+}
+
+inline double max(double a, double b) {
+	return (a > b)? a : b;
+}
+
+inline double min(double a, double b) {
+	return (a < b)? a : b;
+}
+
 extern SDL_Surface *display;
 
 void toggle_fullscreen()
