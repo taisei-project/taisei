@@ -24,6 +24,7 @@ void create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyDrawRule draw_rul
 	e->pos0 = pos;
 	
 	e->hp = hp;
+	e->alpha = 1.0;
 	
 	e->logic_rule = logic_rule;
 	e->draw_rule = draw_rule;
@@ -62,11 +63,25 @@ void delete_enemies(Enemy **enemies) {
 }
 
 void draw_enemies(Enemy *enemies) {
-	Enemy *e;	
+	Enemy *e;
+	int reset = False;
 		
-	for(e = enemies; e; e = e->next)
-		if(e->draw_rule)
+	for(e = enemies; e; e = e->next) {
+		if(e->draw_rule) {
+			if(e->alpha < 1) {
+				e->alpha += 1 / 60.0;
+				if(e->alpha > 1)
+					e->alpha = 1;
+				
+				glColor4f(1,1,1,e->alpha);
+				reset = True;
+			}
+			
 			e->draw_rule(e, global.frames - e->birthtime);
+			if(reset)
+				glColor4f(1,1,1,1);
+		}
+	}
 }
 
 

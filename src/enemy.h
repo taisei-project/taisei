@@ -42,6 +42,7 @@ struct Enemy {
 	int hp;
 	
 	complex args[RULE_ARGC];
+	float alpha;
 };
 
 #define create_enemy4c(p,h,d,l,a1,a2,a3,a4) create_enemy_p(&global.enemies,p,h,d,l,a1,a2,a3,a4)
