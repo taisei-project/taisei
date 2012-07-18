@@ -163,9 +163,6 @@ void stage2_draw() {
 		bgcontext.crot[0] -= 11 / 60.0;
 	}
 	
-	AT(2800)
-		printf("SUDDENLY, MIDBOSS!\n");
-	
 	draw_stage3d(&bgcontext, 7000);
 }
 
