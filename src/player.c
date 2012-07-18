@@ -197,7 +197,7 @@ void plr_realdeath(Player *plr) {
 	plr->deathtime = -DEATH_DELAY-1;
 	
 	plr->moveflags = 0;
-	
+		
 	create_item(plr->pos, 6-15*I, Power);
 	create_item(plr->pos, -6-15*I, Power);
 	
@@ -294,10 +294,10 @@ void player_applymovement(Player* plr) {
 	
 	plr->moving = False;
 	
-	int up		=	player_hasmoveflag(*plr, MOVEFLAG_UP),
-		down	=	player_hasmoveflag(*plr, MOVEFLAG_DOWN),
-		left	=	player_hasmoveflag(*plr, MOVEFLAG_LEFT),
-		right	=	player_hasmoveflag(*plr, MOVEFLAG_RIGHT);
+	int up		=	plr->moveflags & MOVEFLAG_UP,
+		down	=	plr->moveflags & MOVEFLAG_DOWN,
+		left	=	plr->moveflags & MOVEFLAG_LEFT,
+		right	=	plr->moveflags & MOVEFLAG_RIGHT;
 	
 	if(left && !right) {
 		plr->moving = True;
@@ -323,10 +323,8 @@ void player_applymovement(Player* plr) {
 	if(direction)
 		plr_move(&global.plr, direction);
 	
-	/*
-	if(!keys[tconfig.intval[KEY_SHOT]] && plr->fire)
-		plr->fire = False;
-	if(!keys[tconfig.intval[KEY_FOCUS]] && plr->focus > 0)
-		plr->focus = -30;
-	*/
+// 	if(!keys[tconfig.intval[KEY_SHOT]] && plr->fire)
+// 		plr->fire = False;
+// 	if(!keys[tconfig.intval[KEY_FOCUS]] && plr->focus > 0)
+// 		plr->focus = -30;	
 }

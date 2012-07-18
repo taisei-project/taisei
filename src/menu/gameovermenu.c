@@ -19,6 +19,8 @@ void continue_game(void *arg)
 		
 	global.plr.lifes = PLR_START_LIVES;
 	global.plr.continues += 1;
+	global.plr.focus = 0;
+	global.plr.fire = 0;
 	
 	delete_projectiles(&global.projs);
 	delete_projectiles(&global.particles);
