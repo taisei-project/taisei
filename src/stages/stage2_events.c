@@ -237,7 +237,7 @@ void stage2_mid_a1(Boss *boss, int time) {
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.03)
 	
 	if(time > 120) {
-		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2 + sin(time/30.0) * time/5.0 * cexp(I * M_PI_2 * time/100.0), 0.03)
+		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2 + sin(time/30.0) * time/6.5 * cexp(I * M_PI_2 * time/100.0), 0.03)
 		
 		if(!(time % 70)) {
 			for(i = 0; i < 15; ++i) {
@@ -263,7 +263,7 @@ void stage2_mid_a1(Boss *boss, int time) {
 			for(i = -1; i < 2; i += 2) {
 				float c = psin(time/10.0);
 				create_projectile1c("crystal", boss->pos, rgba(0.3 + c * 0.7, 0.6 - c * 0.3, 0.3, 0.7), linear,
-					10 * cexp(I*(carg(global.plr.pos - boss->pos) + (M_PI/4.0 * i * (1-time/2300.0)) * (1 - 0.5 * psin(time/10.0))))
+					10 * cexp(I*(carg(global.plr.pos - boss->pos) + (M_PI/4.0 * i * (1-time/2500.0)) * (1 - 0.5 * psin(time/15.0))))
 				);
 			}
 		}
