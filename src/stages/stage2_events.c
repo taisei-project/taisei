@@ -3,6 +3,7 @@
  * See COPYING for further information. 
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
+ * Copyright (C) 2012, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
  */
 
 #include "stage2_events.h"

@@ -3,6 +3,7 @@
  * See COPYING for further information. 
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
+ * Copyright (C) 2012, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
  */
 
 #include "stage2.h"
@@ -13,6 +14,10 @@
 
 typedef struct Stage2State {
 	float shadeamp;
+	
+	float clr_r;
+	float clr_g;
+	float clr_b;
 	
 	float fog_exp;
 	
@@ -53,19 +58,38 @@ void stage2_bg_tunnel_draw(Vector pos) {
 		glRotatef(360.0/n*i + stgstate.tunnel_angle, 0, 1, 0);
 		glTranslatef(0,0,-r);
 		glScalef(2*r/tan((n-2)*M_PI/n), 3000, 1);
+		/*
 		glColor4f(
 					1.0 - 0.3 * stgstate.shadeamp * (0.5 + 0.5 * sin(1337.1337 + global.frames / 9.3)),
 					1.0 - stgstate.shadeamp * (0.5 + 0.5 * cos(global.frames / 11.3)),
 					1.0 - stgstate.shadeamp * (0.5 + 0.5 * sin(global.frames / 10.0)),
 					1.0
 		);
-						
+		*/
 		draw_quad();
 		glPopMatrix();
 	}
 	
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
+}
+
+void stage2_tunnel(int fbonum) {
+	Shader *shader = get_shader("tunnel");
+	
+	glColor4f(1,1,1,1);
+	glUseProgram(shader->prog);
+	glUniform3f(uniloc(shader, "color"),
+		stgstate.clr_r - 0.3 * stgstate.shadeamp * (0.5 + 0.5 * sin(1337.1337 + global.frames / 9.3)),
+		stgstate.clr_g - stgstate.shadeamp * (0.5 + 0.5 * cos(global.frames / 11.3)),
+		stgstate.clr_b - stgstate.shadeamp * (0.5 + 0.5 * sin(global.frames / 10.0))
+	);
+	glActiveTexture(GL_TEXTURE0 + 2);
+	glBindTexture(GL_TEXTURE_2D, resources.fbg[fbonum].depth);
+	glActiveTexture(GL_TEXTURE0);
+	
+	draw_fbo_viewport(&resources.fbg[fbonum]);
+	glUseProgram(0);
 }
 
 void stage2_fog(int fbonum) {
@@ -94,7 +118,11 @@ void stage2_start() {
 	bgcontext.cv[1] = 20;
 	
 	add_model(&bgcontext, stage2_bg_tunnel_draw, stage2_bg_pos);
+	
 	memset(&stgstate, 0, sizeof(Stage2State));
+	stgstate.clr_r = 1.0;
+	stgstate.clr_g = 0.0;
+	stgstate.clr_b = 0.3;
 }
 
 void stage2_end() {
@@ -125,6 +153,12 @@ void stage2_draw() {
 	FROM_TO(1050, 1150, 1) {
 		stgstate.tunnel_avel -= 0.010;
 		bgcontext.cv[1] -= 0.2;
+	}
+	
+	FROM_TO(1060, 1400, 1) {
+		stgstate.clr_r -= 1.0 / 340.0;
+		stgstate.clr_g += 1.0 / 340.0;
+		stgstate.clr_b -= 0.3 / 340.0;
 	}
 	
 	FROM_TO(1170, 1400, 1)
@@ -167,6 +201,6 @@ void stage2_draw() {
 }
 
 void stage2_loop() {
-	ShaderRule shaderrules[] = { stage2_fog, NULL };
+	ShaderRule shaderrules[] = { stage2_fog, stage2_tunnel, NULL };
 	stage_loop(stage_get(3), stage2_start, stage2_end, stage2_draw, stage2_events, shaderrules, 5500);
 }
