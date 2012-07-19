@@ -284,11 +284,28 @@ void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
 	}
 }
 
-void apply_bg_shaders(ShaderRule *shaderrules) {
-	int fbonum = 0;
+int apply_shaderrules(ShaderRule *shaderrules, int fbonum) {
 	int i;
 	
+	if(!global.nostagebg) {
+		for(i = 0; shaderrules != NULL && shaderrules[i] != NULL; i++) {
+			glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[!fbonum].fbo);
+			shaderrules[i](fbonum);
+			
+			fbonum = !fbonum;
+		}
+	}
+	
+	return fbonum;
+}
+
+void apply_bg_shaders(ShaderRule *shaderrules) {
+	int fbonum = 0;
+	
 	if(global.boss && global.boss->current && global.boss->current->draw_rule) {
+		if(global.frames - global.boss->current->starttime <= 0)
+			fbonum = apply_shaderrules(shaderrules, fbonum);
+		
 		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[0].fbo);
 		global.boss->current->draw_rule(global.boss, global.frames - global.boss->current->starttime);
 		
@@ -306,14 +323,8 @@ void apply_bg_shaders(ShaderRule *shaderrules) {
 		glPopMatrix();
 		
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	} else if(!global.nostagebg) {		
-		for(i = 0; shaderrules != NULL && shaderrules[i] != NULL; i++) {
-			glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[!fbonum].fbo);
-			shaderrules[i](fbonum);
-
-			fbonum = !fbonum;
-		}
-	}
+	} else
+		fbonum = apply_shaderrules(shaderrules, fbonum);
 	
 	glBindFramebuffer(GL_FRAMEBUFFER, resources.fsec.fbo);
 	

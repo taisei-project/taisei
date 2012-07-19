@@ -310,8 +310,13 @@ void stage2_mid_a2(Boss *boss, int time) {
 }
 
 void stage2_mid_spellbg(Boss *h, int time) {
-	float b = (0.3 + 0.2 * (sin(time / 50.0) * sin(time / 25.0f + M_PI))) * min(time/20.0, 1);
-	glColor4f(b, b, b, 1);
+	float b = (0.3 + 0.2 * (sin(time / 50.0) * sin(time / 25.0f + M_PI)));
+	float a = 1.0;
+	
+	if(time < 0)
+		a += (time / (float)ATTACK_START_DELAY);
+	
+	glColor4f(b, b, b, a);
 	fill_screen(-time/50.0 + 0.5, time/100.0+0.5, 1, "stage2/spellbg1");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	fill_screen(time/50.0 + 0.5, time/90.0+0.5, 1, "stage2/spellbg1");
