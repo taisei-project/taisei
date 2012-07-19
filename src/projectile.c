@@ -67,7 +67,7 @@ void delete_projectiles(Projectile **projs) {
 int collision_projectile(Projectile *p) {	
 	if(p->type == FairyProj) {
 		float angle = carg(global.plr.pos - p->pos) + p->angle;
-		int projr = sqrt(pow(p->tex->w/4*cos(angle),2)*8/10 + pow(p->tex->h/2*sin(angle)*8/10,2));		
+		int projr = sqrt(pow(p->tex->w/4*cos(angle),2)*5/10.0 + pow(p->tex->h/2*sin(angle)*5/10.0,2));		
 		
 		if(cabs(global.plr.pos - p->pos) < projr + 1)
 			return 1;
@@ -212,6 +212,12 @@ void ProjDraw(Projectile *proj, int t) {
 	_ProjDraw(proj, t);
 	
 	glPopMatrix();
+}
+
+void ProjDrawAdd(Projectile *proj, int t) {
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+	ProjDraw(proj, t);
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void PartDraw(Projectile *proj, int t) {

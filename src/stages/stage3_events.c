@@ -40,7 +40,8 @@ int stage3_fodder(Enemy *e, int t) {
 		return 1;
 	}	
 	
-	e->moving = 1;
+	if(creal(e->args[0]) != 0)
+		e->moving = 1;
 	e->dir = creal(e->args[0]) < 0;
 	e->pos += e->args[0];
 	
@@ -140,7 +141,7 @@ int stage3_backfire(Enemy *e, int t) {
 int stage3_bigcircle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 1,3,1,0);
+		spawn_items(e->pos, 1,3,0,0);
 		
 		return 1;
 	}
@@ -211,7 +212,7 @@ int kurumi_burstslave(Enemy *e, int t) {
 	
 	e->pos += 2*e->args[1]*(sin(t/10.0)+1.5);
 		
-	FROM_TO(0, 600, 14) {
+	FROM_TO(0, 600, 18-2*global.diff) {
 		float r = cimag(e->pos)/VIEWPORT_H;
 		create_projectile2c("wave", e->pos + 10I*e->args[0], rgb(r,0,0), accelerated, 2I*e->args[0], -0.01*e->args[1]);
 		create_projectile2c("wave", e->pos - 10I*e->args[0], rgb(r,0,0), accelerated, -2I*e->args[0], -0.01*e->args[1]);
@@ -273,17 +274,17 @@ void kurumi_redspike(Boss *b, int time) {
 	}
 	
 	if(global.diff < D_Hard) {
-		FROM_TO(0, 500, 100) {
+		FROM_TO(0, 500, 150-50*global.diff) {
 			int i;
-			int n = global.diff*4;
+			int n = global.diff*8;
 			for(i = 0; i < n; i++)
-				create_projectile2c("bigball", b->pos, rgb(1,0,0), asymptotic, 2*cexp(2I*M_PI/n*i+I*carg(global.plr.pos-b->pos)), 3);
+				create_projectile2c("bigball", b->pos, rgb(1,0,0), asymptotic, 3*cexp(2I*M_PI/n*i+I*carg(global.plr.pos-b->pos)), 3)->draw=ProjDrawAdd;
 		}
 	} else {
 		FROM_TO(80, 500, 2+2*(global.diff == D_Hard)) {
 			complex offset = 100*frand()*cexp(2I*M_PI*frand());
 			complex n = cexp(I*carg(global.plr.pos-b->pos-offset));
-			create_projectile2c("rice", b->pos+offset, rgb(1,0,0), accelerated, -1*n, 0.05*n);
+			create_projectile2c("rice", b->pos+offset, rgb(1,0,0), accelerated, -1*n, 0.05*n)->draw=ProjDrawAdd;
 		}
 	}
 }
@@ -379,8 +380,8 @@ void stage3_events() {
 // 		global.timer = 3200;
 		
 	AT(70) {
-		create_enemy1c(VIEWPORT_H/4*3*I, 9000, BigFairy, stage3_splasher, 3-4I);
-		create_enemy1c(VIEWPORT_W + VIEWPORT_H/4*3*I, 9000, BigFairy, stage3_splasher, -3-4I);
+		create_enemy1c(VIEWPORT_H/4*3*I, 3000, BigFairy, stage3_splasher, 3-4I);
+		create_enemy1c(VIEWPORT_W + VIEWPORT_H/4*3*I, 3000, BigFairy, stage3_splasher, -3-4I);
 	}
 	
 	FROM_TO(300, 450, 20) {
@@ -393,7 +394,7 @@ void stage3_events() {
 	}
 	
 	FROM_TO(600, 1400, 100) {
-		create_enemy3c(VIEWPORT_W/4.0 + VIEWPORT_W/2.0*(_i&1), 4000, BigFairy, stage3_cardbuster, VIEWPORT_W/6.0 + VIEWPORT_W/3.0*2*(_i&1)+100I,
+		create_enemy3c(VIEWPORT_W/4.0 + VIEWPORT_W/2.0*(_i&1), 3000, BigFairy, stage3_cardbuster, VIEWPORT_W/6.0 + VIEWPORT_W/3.0*2*(_i&1)+100I,
 					VIEWPORT_W/4.0 + VIEWPORT_W/2.0*((_i+1)&1)+300I, VIEWPORT_W/2.0+VIEWPORT_H*I+200I);
 	}
 	

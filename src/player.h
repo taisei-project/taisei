@@ -15,7 +15,12 @@
 
 enum {
 	False = 0,
-	True = 1
+	True = 1,
+	
+	MOVEFLAG_UP = 1,
+	MOVEFLAG_DOWN = 2,
+	MOVEFLAG_LEFT = 4,
+	MOVEFLAG_RIGHT = 8
 };
 
 typedef enum {
@@ -69,12 +74,7 @@ void plr_bomb(Player*);
 void plr_realdeath(Player*);
 void plr_death(Player*);
 
-#define MOVEFLAG_UP 1
-#define MOVEFLAG_DOWN 2
-#define MOVEFLAG_LEFT 4
-#define MOVEFLAG_RIGHT 8
 
-#define player_hasmoveflag(p,f) (((p).moveflags & (f)) == (f))
 void player_setmoveflag(Player* plr, int key, int mode);
 void player_event(Player* plr,int type, int key);
 void player_applymovement(Player* plr);
