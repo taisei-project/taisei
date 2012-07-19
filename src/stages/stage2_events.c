@@ -273,11 +273,13 @@ void stage2_mid_a1(Boss *boss, int time) {
 int stage2_mid_poison2(Projectile *p, int time) {
 	int result = linear(p, time);
 	
-	if(!(time % 15)) {
+	int d = 25 - global.diff * 3;
+	if(!(time % d)) {
 		float a = p->args[2];
 		float t = p->args[3] + time;
+		p->args[1] = !p->args[1];
 		
-		create_projectile2c((frand() > 0.5)? "thickrice" : "rice", p->pos, rgb(0.3 + 0.7 * psin(a/3.0 + t/20.0), 1.0, 0.3), accelerated,
+		create_projectile2c((time % (2*d))? "thickrice" : "rice", p->pos, rgb(0.3 + 0.7 * psin(a/3.0 + t/20.0), 1.0, 0.3), accelerated,
 				0,
 				-0.01 * p->args[0]
 		);
@@ -292,13 +294,13 @@ void stage2_mid_a2(Boss *boss, int time) {
 	if(time < 0)
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/6, 0.05)
 
-	FROM_TO_INT(30, 9000, 20, 1, 1) {
+	FROM_TO_INT(30, 9000, 40 - (int)rint(global.diff * 1.35), 1, 1) {
 		int i, cnt = 7;
 		for(i = 0; i < cnt; ++i) {
 			float a = M_PI/cnt * i * 2;
 			
-			create_projectile4c("soul", boss->pos, rgb(1.0, 0.3, 0.3), stage2_mid_poison2,
-				2 * cexp(I * (a + 7.5 * time + M_PI * (_i % 2))),
+			create_projectile4c("soul", boss->pos, (_i % 2)? rgb(0.3, 0.3, 1.0) : rgb(1.0, 0.3, 0.3), stage2_mid_poison2,
+				2 * cexp(I * (a + 7.4 * time + M_PI * (_i % 2))),
 				0,
 				a,
 				time
