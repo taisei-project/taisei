@@ -357,7 +357,7 @@ void stage2_events() {
 	}
 	
 	FROM_TO(1100, 1300, 10) {
-		create_enemy1c(20 + (VIEWPORT_H+20)*I, 50, Swirl, stage2_bitchswirl, 0);
+		create_enemy1c(20 + (VIEWPORT_H+20)*I, 50, Swirl, stage2_bitchswirl, 1);
 		create_enemy1c(VIEWPORT_W-20 + (VIEWPORT_H+20)*I, 50, Swirl, stage2_bitchswirl, 1);
 	}
 	
