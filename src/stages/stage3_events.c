@@ -371,13 +371,44 @@ int stage3_supercard(Enemy *e, int t) {
 	 
 	return 1;
 }
+
+void kurumi_breaker(Boss *b, int time) {
+	int t = time % 400;
+	TIMER(&t);
 	
+	FROM_TO(0, 400, 10) {
+		char *type;
+		int i;
+		if(t < 100)
+			type = "soul";
+		else if(t < 200)
+			type = "bigball";
+		else if(t < 300)
+			type = "plainball";
+		else
+			type = "rice";
+		
+		for(i = 0; i < global.diff*2; i++)
+			create_projectile2c(type, b->pos, rgb(0.3,0.1,0.1), asymptotic, 2*cexp(I*0.2*_i*(i/2 + 1)*(1-2*(i&1))+I*M_PI/2), 4);
+	}
+}
+
+Boss *create_kurumi() {
+	Boss* b = create_boss("Kurumi", "kurumi", -400I);
+	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_intro, NULL);
+	boss_add_attack(b, AT_Normal, "Cold Breaker", 25, 20000, kurumi_breaker, NULL);
+// 	boss_add_attack(b, AT_Spellcard, "Bloodless ~ Dry Fountain" : "Bloodless ~ Red Spike", 30, 30000, kurumi_redspike, kurumi_spell_bg);
+	start_attack(b, b->attacks);
+	return b;
+}
+
+
 		
 void stage3_events() {
 	TIMER(&global.timer);
 	
-// 	AT(0)
-// 		global.timer = 3200;
+	AT(0)
+		global.timer = 5300;
 		
 	AT(70) {
 		create_enemy1c(VIEWPORT_H/4*3*I, 3000, BigFairy, stage3_splasher, 3-4I);
@@ -430,4 +461,7 @@ void stage3_events() {
 		
 	FROM_TO(4800, 5200, 10)
 		create_enemy1c(20I+I*VIEWPORT_H/3*frand()+VIEWPORT_W*(_i&1), 100, Swirl, stage3_explosive, (1-2*(_i&1))*3+I);
+		
+	AT(5300)
+		global.boss = create_kurumi();
 }
