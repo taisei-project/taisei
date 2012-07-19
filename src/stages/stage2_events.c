@@ -315,13 +315,14 @@ void stage2_mid_spellbg(Boss *h, int time) {
 	
 	if(time < 0)
 		a += (time / (float)ATTACK_START_DELAY);
+	float s = 0.3 + 0.7 * a;
 	
 	glColor4f(b, b, b, a);
-	fill_screen(-time/50.0 + 0.5, time/100.0+0.5, 1, "stage2/spellbg1");
+	fill_screen(-time/50.0 + 0.5, time/100.0+0.5, s, "stage2/spellbg1");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	fill_screen(time/50.0 + 0.5, time/90.0+0.5, 1, "stage2/spellbg1");
-	fill_screen(-time/55.0 + 0.5, -time/100.0+0.5, 1, "stage2/spellbg1");
-	fill_screen(time/55.0 + 0.5, -time/90.0+0.5, 1, "stage2/spellbg1");
+	fill_screen(time/50.0 + 0.5, time/90.0+0.5, s, "stage2/spellbg1");
+	fill_screen(-time/55.0 + 0.5, -time/100.0+0.5, s, "stage2/spellbg1");
+	fill_screen(time/55.0 + 0.5, -time/90.0+0.5, s, "stage2/spellbg1");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glColor4f(1, 1, 1, 1);
 }
