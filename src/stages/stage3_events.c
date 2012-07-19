@@ -374,30 +374,124 @@ int stage3_supercard(Enemy *e, int t) {
 
 void kurumi_breaker(Boss *b, int time) {
 	int t = time % 400;
+	int i;
 	TIMER(&t);
 	
-	FROM_TO(0, 400, 10) {
-		char *type;
-		int i;
-		if(t < 100)
-			type = "soul";
-		else if(t < 200)
-			type = "bigball";
-		else if(t < 300)
-			type = "plainball";
-		else
-			type = "rice";
+	int c = 10+global.diff*2;
+	int kt = 20;
+	
+	FROM_TO(20, 400, 50-7*global.diff) {
+		complex p = b->pos + 150*sin(_i) + 100I*cos(_i);
 		
-		for(i = 0; i < global.diff*2; i++)
-			create_projectile2c(type, b->pos, rgb(0.3,0.1,0.1), asymptotic, 2*cexp(I*0.2*_i*(i/2 + 1)*(1-2*(i&1))+I*M_PI/2), 4);
+		for(i = 0; i < c; i++) {			
+			complex n = cexp(2I*M_PI/c*i);
+			create_projectile4c("rice", p, rgb(1,0,0.5), splitcard, 3*n, 0,
+									kt, 1.5*cexp(I*carg(global.plr.pos - p - 2*kt*n))-2.6*n);
+			
+		}
 	}
+	
+	FROM_TO(60, 400, 100) {
+		for(i = 0; i < 20; i++)
+			create_projectile2c("bigball", b->pos, rgb(0.5,0,0.5), asymptotic, cexp(2I*M_PI/20.0*i), 3);
+	}
+	
 }
+
+complex kurumi_wall_laser(Laser *l, float t) {
+	return l->pos + 0.5*t*t*l->args[0]+ctan(l->args[0]*t);
+}
+
+int aniwall_bullet(Projectile *p, int t) {
+	if(t < 0)
+		return 1;
+	
+	if(t > creal(p->args[1]))
+		p->pos += p->args[0];
+	
+	p->clr->r = cimag(p->pos)/VIEWPORT_H;
+	
+	return 1;
+}
+
+int aniwall_slave(Enemy *e, int t) {
+	float re, im;
+
+	if(t < 0)
+		return 1;
+		
+	if(creal(e->pos) <= 0)
+		e->pos = I*cimag(e->pos);
+	if(creal(e->pos) >= VIEWPORT_W)
+		e->pos = VIEWPORT_W + I*cimag(e->pos);
+	if(cimag(e->pos) <= 0)
+		e->pos = creal(e->pos);
+	if(cimag(e->pos) >= VIEWPORT_H)
+		e->pos = creal(e->pos) + I*VIEWPORT_H;
+	
+	re = creal(e->pos);
+	im = cimag(e->pos);
+	
+	if(cabs(e->args[1]) <= 0.1) {
+		if(re == 0 || re == VIEWPORT_W) {
+			
+			e->args[1] = 1;
+			e->args[2] = 10I;
+		}
+		
+		e->pos += e->args[0]*t;		
+	} else {
+		if((re <= 0) + (im <= 0) + (re >= VIEWPORT_W) + (im >= VIEWPORT_H) == 2) {
+			float sign = 1;
+			sign *= 1-2*(re > 0);
+			sign *= 1-2*(im > 0);
+			sign *= 1-2*(cimag(e->args[2]) == 0);
+			e->args[2] *= sign*I;
+		}
+		
+		e->pos += e->args[2];
+		
+		
+		if(!(t % 10-global.diff)) {
+			complex v = e->args[2]/cabs(e->args[2])*I*copysign(1,creal(e->args[0]));
+			create_projectile2c("ball", e->pos, rgb(1,0,0), aniwall_bullet, 1*v, 40);
+		}
+	}
+		
+	return 1;
+}
+
+void FadeAdd(Projectile *p, int t) {
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	Shrink(p,t);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void KurumiAniWallSlave(Enemy *e, int t) {
+	if(e->args[1])
+		create_particle1c("part/lasercurve", e->pos, rgb(1,1,1), FadeAdd, timeout, 30);
+}
+
+void kurumi_aniwall(Boss *b, int time) {
+	TIMER(&time);
+	
+	Enemy *a, *b;
+	
+	AT(60) {
+		create_laser(LT_Curve, b->pos, 0, 50, 80, rgb(1, 0.8, 0.8), kurumi_wall_laser, 0.2*cexp(0.4I));
+		create_enemy1c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, aniwall_slave, 0.2*cexp(0.4I));
+		create_laser(LT_Curve, b->pos, 0, 50, 80, rgb(1, 0.8, 0.8), kurumi_wall_laser, 0.2*cexp(I*M_PI - 0.4I));
+		create_enemy1c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, aniwall_slave, 0.2*cexp(I*M_PI - 0.4I));
+	}
+	
+}
+	
 
 Boss *create_kurumi() {
 	Boss* b = create_boss("Kurumi", "kurumi", -400I);
 	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_intro, NULL);
-	boss_add_attack(b, AT_Normal, "Cold Breaker", 25, 20000, kurumi_breaker, NULL);
-// 	boss_add_attack(b, AT_Spellcard, "Bloodless ~ Dry Fountain" : "Bloodless ~ Red Spike", 30, 30000, kurumi_redspike, kurumi_spell_bg);
+// 	boss_add_attack(b, AT_Normal, "Cold Breaker", 20, 20000, kurumi_breaker, NULL);
+	boss_add_attack(b, AT_Spellcard, "Limit ~ Animate Wall", 30, 30000, kurumi_aniwall, kurumi_spell_bg);
 	start_attack(b, b->attacks);
 	return b;
 }
