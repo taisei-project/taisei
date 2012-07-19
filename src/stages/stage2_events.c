@@ -135,7 +135,7 @@ int stage2_bitchswirl(Enemy *e, int t) {
 		);
 	}
 	
-	e->pos -= 5I;
+	e->pos -= 5I * e->args[0];
 	
 	AT(120) {
 		e->hp = 0;
@@ -270,6 +270,43 @@ void stage2_mid_a1(Boss *boss, int time) {
 	}
 }
 
+int stage2_mid_poison2(Projectile *p, int time) {
+	int result = linear(p, time);
+	
+	if(!(time % 15)) {
+		float a = p->args[2];
+		float t = p->args[3] + time;
+		
+		create_projectile2c((frand() > 0.5)? "thickrice" : "rice", p->pos, rgb(0.3 + 0.7 * psin(a/3.0 + t/20.0), 1.0, 0.3), accelerated,
+				0,
+				-0.01 * p->args[0]
+		);
+	}
+	
+	return result;
+}
+
+void stage2_mid_a2(Boss *boss, int time) {
+	TIMER(&time)
+	
+	if(time < 0)
+		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/6, 0.05)
+
+	FROM_TO_INT(30, 9000, 20, 1, 1) {
+		int i, cnt = 7;
+		for(i = 0; i < cnt; ++i) {
+			float a = M_PI/cnt * i * 2;
+			
+			create_projectile4c("soul", boss->pos, rgb(1.0, 0.3, 0.3), stage2_mid_poison2,
+				2 * cexp(I * (a + 7.5 * time + M_PI * (_i % 2))),
+				0,
+				a,
+				time
+			)->draw = ProjDrawAdd;
+		}
+	}
+}
+
 void stage2_mid_spellbg(Boss *h, int time) {
 	float b = (0.3 + 0.2 * (sin(time / 50.0) * sin(time / 25.0f + M_PI))) * min(time/20.0, 1);
 	glColor4f(b, b, b, 1);
@@ -285,7 +322,8 @@ void stage2_mid_spellbg(Boss *h, int time) {
 Boss* stage2_create_midboss() {
 	Boss* scuttle = create_boss("Scuttle", "scuttle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(scuttle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
-	boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Deadly Dance", 30, 20000, stage2_mid_a1, stage2_mid_spellbg);
+	//boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Deadly Dance", 30, 20000, stage2_mid_a1, stage2_mid_spellbg);
+	boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Acid Rain", 30, 25000, stage2_mid_a2, stage2_mid_spellbg);
 	boss_add_attack(scuttle, AT_Move, "Runaway", 2, 1, stage2_mid_outro, NULL);
 	scuttle->zoomcolor = rgb(0.4, 0.5, 0.4);
 	
@@ -296,8 +334,8 @@ Boss* stage2_create_midboss() {
 void stage2_events() {
 	TIMER(&global.timer);
 	
-//	AT(0)
-//		global.timer = 2300;
+	AT(0)
+		global.timer = 2700;
 	
 	FROM_TO(160, 300, 10) {
 		create_enemy1c(VIEWPORT_W/2 + 20 * nfrand() + (VIEWPORT_H/4 + 20 * nfrand())*I, 200, Swirl, stage2_enterswirl, I * 3 + nfrand() * 3);
@@ -309,7 +347,7 @@ void stage2_events() {
 	
 	FROM_TO(1100, 1300, 10) {
 		create_enemy1c(20 + (VIEWPORT_H+20)*I, 50, Swirl, stage2_bitchswirl, 0);
-		create_enemy1c(VIEWPORT_W-20 + (VIEWPORT_H+20)*I, 50, Swirl, stage2_bitchswirl, 0);
+		create_enemy1c(VIEWPORT_W-20 + (VIEWPORT_H+20)*I, 50, Swirl, stage2_bitchswirl, 1);
 	}
 	
 	AT(1600) {
