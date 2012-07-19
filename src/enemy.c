@@ -184,7 +184,7 @@ void process_enemies(Enemy **enemies) {
 	while(enemy != NULL) {
 		int action = enemy->logic_rule(enemy, global.frames - enemy->birthtime);
 		
-		if(enemy->hp > ENEMY_IMMUNE && cabs(enemy->pos - global.plr.pos) < 25)
+		if(enemy->hp > ENEMY_IMMUNE && cabs(enemy->pos - global.plr.pos) < 7)
 			plr_death(&global.plr);
 		
 		if((enemy->hp > ENEMY_IMMUNE
