@@ -57,6 +57,8 @@ void delete_enemies(Enemy **enemies);
 
 void process_enemies(Enemy **enemies);
 
+void killall(Enemy **enemies);
+
 void Fairy(Enemy*, int t);
 void Swirl(Enemy*, int t);
 void BigFairy(Enemy*, int t);

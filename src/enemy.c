@@ -69,6 +69,12 @@ void draw_enemies(Enemy *enemies) {
 			e->draw_rule(e, global.frames - e->birthtime);
 }
 
+void killall(Enemy **enemies) {
+	Enemy *e;	
+		
+	for(e = enemies; e; e = e->next)
+		e->hp = 0;
+}
 
 int enemy_flare(Projectile *p, int t) { // a[0] timeout, a[1] velocity, a[2] ref to enemy
 	if(t >= creal(p->args[0]) || REF(p->args[2]) == NULL) {

@@ -125,6 +125,7 @@ void process_boss(Boss *boss) {
 		if(boss->current->type != AT_Move && boss->dmg >= boss->current->dmglimit)
 			time = boss->current->timeout + 1;
 		if(time > boss->current->timeout) {
+			boss->current->rule(boss, EVENT_DEATH);
 			boss->dmg = boss->current->dmglimit + 1;
 			boss->current++;
 			if(boss->current - boss->attacks < boss->acount)
