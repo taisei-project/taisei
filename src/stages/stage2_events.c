@@ -233,8 +233,8 @@ void stage2_mid_a1(Boss *boss, int time) {
 	int i;
 	TIMER(&time);
 	
-	FROM_TO(0, 120, 1)
-		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.03)
+	//FROM_TO(0, 120, 1)
+	//	GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.03)
 	
 	if(time > 120) {
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2 + sin(time/30.0) * time/5.0 * cexp(I * M_PI_2 * time/100.0), 0.03)
@@ -324,7 +324,7 @@ void stage2_mid_spellbg(Boss *h, int time) {
 Boss* stage2_create_midboss() {
 	Boss* scuttle = create_boss("Scuttle", "scuttle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(scuttle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
-	//boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Deadly Dance", 30, 20000, stage2_mid_a1, stage2_mid_spellbg);
+	boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Deadly Dance", 30, 20000, stage2_mid_a1, stage2_mid_spellbg);
 	boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Acid Rain", 30, 25000, stage2_mid_a2, stage2_mid_spellbg);
 	boss_add_attack(scuttle, AT_Move, "Runaway", 2, 1, stage2_mid_outro, NULL);
 	scuttle->zoomcolor = rgb(0.4, 0.5, 0.4);
@@ -336,8 +336,8 @@ Boss* stage2_create_midboss() {
 void stage2_events() {
 	TIMER(&global.timer);
 	
-	AT(0)
-		global.timer = 2700;
+//	AT(0)
+//		global.timer = 2700;
 	
 	FROM_TO(160, 300, 10) {
 		create_enemy1c(VIEWPORT_W/2 + 20 * nfrand() + (VIEWPORT_H/4 + 20 * nfrand())*I, 200, Swirl, stage2_enterswirl, I * 3 + nfrand() * 3);
