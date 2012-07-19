@@ -69,7 +69,7 @@ void draw_enemies(Enemy *enemies) {
 			e->draw_rule(e, global.frames - e->birthtime);
 }
 
-void killall(Enemy **enemies) {
+void killall(Enemy *enemies) {
 	Enemy *e;	
 		
 	for(e = enemies; e; e = e->next)
