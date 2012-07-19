@@ -233,8 +233,8 @@ void stage2_mid_a1(Boss *boss, int time) {
 	int i;
 	TIMER(&time);
 	
-	//FROM_TO(0, 120, 1)
-	//	GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.03)
+	FROM_TO(0, 120, 1)
+		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.03)
 	
 	if(time > 120) {
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2 + sin(time/30.0) * time/5.0 * cexp(I * M_PI_2 * time/100.0), 0.03)
