@@ -202,6 +202,17 @@ void stage2_mid_intro(Boss *boss, int time) {
 	GO_TO(boss, VIEWPORT_W/2.0 + 100I, 0.03);
 }
 
+void stage2_mid_outro(Boss *boss, int time) {
+	if(time == 0) {
+		spawn_items(boss->pos, 10, 10, 0, 1);
+		Projectile *p;
+		for(p = global.projs; p; p = p->next)
+			p->type = DeadProj;
+	}
+	
+	boss->pos += pow(max(0, time)/30.0, 2) * cexp(I*(3*M_PI/2 + 0.5 * sin(time / 20.0)));
+}
+
 int stage2_mid_poison(Projectile *p, int time) {
 	int result = accelerated(p, time);
 	
@@ -275,6 +286,7 @@ Boss* stage2_create_midboss() {
 	Boss* scuttle = create_boss("Scuttle", "scuttle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(scuttle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
 	boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Deadly Dance", 30, 20000, stage2_mid_a1, stage2_mid_spellbg);
+	boss_add_attack(scuttle, AT_Move, "Runaway", 2, 1, stage2_mid_outro, NULL);
 	scuttle->zoomcolor = rgb(0.4, 0.5, 0.4);
 	
 	start_attack(scuttle, scuttle->attacks);
@@ -284,8 +296,8 @@ Boss* stage2_create_midboss() {
 void stage2_events() {
 	TIMER(&global.timer);
 	
-	//AT(0)
-	//	global.timer = 2300;
+//	AT(0)
+//		global.timer = 2300;
 	
 	FROM_TO(160, 300, 10) {
 		create_enemy1c(VIEWPORT_W/2 + 20 * nfrand() + (VIEWPORT_H/4 + 20 * nfrand())*I, 200, Swirl, stage2_enterswirl, I * 3 + nfrand() * 3);
