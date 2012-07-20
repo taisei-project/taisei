@@ -16,14 +16,12 @@
 #include "menu/ingamemenu.h"
 #include "menu/savereplay.h"
 
-StageInfo stages[] = {
-	// TODO: Give the stages actual titles/subtitles
-	
-	{1, stage0_loop, False, "Stage 1", "(insert subtitle here)"},
-	{2, stage1_loop, False, "Stage 2", "(insert subtitle here)"},
-	{3, stage2_loop, False, "Stage 3", "(insert subtitle here)"},
-	{4, stage3_loop, False, "Stage 4", "(insert subtitle here)"},
-	{5, stage4_loop, False, "Stage 5", "(insert subtitle here)"},
+StageInfo stages[] = {	
+	{1, stage0_loop, False, "Stage 1", "Misty Lake"},
+	{2, stage1_loop, False, "Stage 2", "Walk Along the Border"},
+	{3, stage2_loop, False, "Stage 3", "Through the Tunnel of Light"},
+	{4, stage3_loop, False, "Stage 4", "Forgotten Mansion"},
+	{5, stage4_loop, False, "Stage 5", "Climbing the Tower of Babel"},
 	
 	{0, NULL, False, NULL, NULL}
 };
