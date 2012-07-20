@@ -128,7 +128,7 @@ void process_projectiles(Projectile **projs, char collision) {
 		}
 				
 		if(col == 1 && global.frames - abs(global.plr.recovery) >= 0)
-				plr_death(&global.plr);
+				player_death(&global.plr);
 		
 		int e = 0;
 		if(proj->type == Particle) {

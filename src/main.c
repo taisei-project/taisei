@@ -5,7 +5,7 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include <GL/gl.h>
 #include <GL/glext.h>
 #include <sys/stat.h>

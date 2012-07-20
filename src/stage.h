@@ -51,5 +51,6 @@ void stage0_loop();
 void stage1_loop();
 void stage2_loop();
 void stage3_loop();
+void stage4_loop();
 
 #endif
