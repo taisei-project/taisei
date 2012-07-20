@@ -673,9 +673,9 @@ void kurumi_danmaku(Boss *b, int time) {
 Boss *create_kurumi() {
 	Boss* b = create_boss("Kurumi", "kurumi", -400I);
 	boss_add_attack(b, AT_Move, "Introduction", 5, 0, kurumi_boss_intro, NULL);
-	boss_add_attack(b, AT_Normal, "Cold Breaker", 20, 20000, kurumi_breaker, NULL);
-	boss_add_attack(b, AT_Spellcard, "Limit ~ Animate Wall", 30, 30000, kurumi_aniwall, kurumi_spell_bg);
 	boss_add_attack(b, AT_Normal, "Sin Breaker", 20, 20000, kurumi_sbreaker, NULL);
+	boss_add_attack(b, AT_Spellcard, "Limit ~ Animate Wall", 30, 30000, kurumi_aniwall, kurumi_spell_bg);
+	boss_add_attack(b, AT_Normal, "Cold Breaker", 20, 20000, kurumi_breaker, NULL);
 	boss_add_attack(b, AT_Spellcard, "Power Sign ~ Blow the Walls", 30, 32000, kurumi_blowwall, kurumi_spell_bg);
 	if(global.diff > D_Normal)
 		boss_add_attack(b, AT_Spellcard, "Fear Sign ~ Bloody Danmaku", 30, 32000, kurumi_danmaku, kurumi_spell_bg);
