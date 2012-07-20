@@ -229,9 +229,57 @@ int stage2_mid_poison(Projectile *p, int time) {
 	return result;
 }
 
+
+
+int stage2_mid_a0_proj(Projectile *p, int time) {
+	#define A0_PROJ_START 120
+	#define A0_PROJ_CHARGE 20
+	TIMER(&time)
+	
+	FROM_TO(A0_PROJ_START, A0_PROJ_START + A0_PROJ_CHARGE, 1)
+		return 1;
+	
+	AT(A0_PROJ_START + A0_PROJ_CHARGE + 1) {
+		p->args[1] = 3;
+		p->args[0] = 5 * cexp(I*carg(global.plr.pos - p->pos));
+		
+		int i; for(i = 0; i < (2 + global.diff); ++i) {
+			create_particle3c("lasercurve", 0, rgb(max(0.3, 1.0 - p->clr->r), p->clr->g, p->clr->b), EnemyFlareShrink, enemy_flare, 100, cexp(I*(M_PI*nfrand())) * (1 + frand()), add_ref(p));
+			
+			create_projectile1c("thickrice", p->pos, p->clr->r == 1.0? rgb(1.0, 0.3, 0.3) : rgb(0.3, 0.3, 1.0), accelerated,
+				0
+				-cexp(I*(i*2*M_PI/5 + global.frames / 15.0))
+			);
+		}
+	}
+	
+	return asymptotic(p, time);
+	#undef A0_PROJ_START
+	#undef A0_PROJ_CHARGE
+}
+
+void stage2_mid_a0(Boss *boss, int time) {
+	int i;
+	TIMER(&time)
+	
+	GO_TO(boss, creal(global.plr.pos) + I*cimag(boss->pos), 0.03)
+	
+	FROM_TO_INT(0, 90000, 60 + D_Lunatic - global.diff, 0, 1) {
+		int cnt = 30 - 4 * (D_Lunatic - global.diff);
+		
+		for(i = 0; i < cnt; ++i) {
+			complex v = (2 - psin((6*M_PI*i/(float)cnt) + time)) * cexp(I*2*M_PI/cnt*i);
+			create_projectile2c("wave", boss->pos - v * 50, _i % 2? rgb(1.0, 1.0, 0.3) : rgb(0.3, 1.0, 0.3), stage2_mid_a0_proj,
+				v,
+				2.0
+			);
+		}
+	}
+}
+
 void stage2_mid_a1(Boss *boss, int time) {
 	int i;
-	TIMER(&time);
+	TIMER(&time)
 	
 	FROM_TO(0, 120, 1)
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.03)
@@ -333,6 +381,7 @@ void stage2_mid_spellbg(Boss *h, int time) {
 Boss* stage2_create_midboss() {
 	Boss* scuttle = create_boss("Scuttle", "scuttle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(scuttle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
+	boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 30, 20000, stage2_mid_a0, NULL);
 	boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Deadly Dance", 30, 20000, stage2_mid_a1, stage2_mid_spellbg);
 	boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Acid Rain", 30, 25000, stage2_mid_a2, stage2_mid_spellbg);
 	boss_add_attack(scuttle, AT_Move, "Runaway", 2, 1, stage2_mid_outro, NULL);
