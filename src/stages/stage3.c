@@ -16,9 +16,15 @@ static Stage3D bgcontext;
 void stage3_fog(int fbonum) {
 	Shader *shader = get_shader("zbuf_fog");
 	
+	float f = 0;
+	if(global.timer > 5100) {
+		float v = (global.timer-5100)*0.0005;
+		f =  v < 0.1 ? v : 0.1;
+	}
+	
 	glUseProgram(shader->prog);
 	glUniform1i(uniloc(shader, "depth"),2);
-	glUniform4f(uniloc(shader, "fog_color"),0,0,0.1,1.0);
+	glUniform4f(uniloc(shader, "fog_color"),10*f,0,0.1-f,1.0);
 	glUniform1f(uniloc(shader, "start"),0.4);
 	glUniform1f(uniloc(shader, "end"),0.8);
 	glUniform1f(uniloc(shader, "exponent"),4.0);
@@ -227,5 +233,5 @@ void stage3_draw() {
 
 void stage3_loop() {
 	ShaderRule shaderrules[] = { stage3_fog, NULL };
-	stage_loop(stage_get(4), stage3_start, stage3_end, stage3_draw, stage3_events, shaderrules, 5500);
+	stage_loop(stage_get(4), stage3_start, stage3_end, stage3_draw, stage3_events, shaderrules, 5550);
 }

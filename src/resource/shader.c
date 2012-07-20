@@ -5,11 +5,14 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
+#include <stdio.h>
+#include <GL/gl.h>
+#include <GL/glext.h>
+
 #include "shader.h"
 #include "resource.h"
 #include "config.h"
 #include "list.h"
-#include <stdio.h>
 #include "taisei_err.h"
 
 void print_info_log(GLuint shader) {
@@ -39,12 +42,6 @@ void print_program_info_log(GLuint program) {
 }
 
 void load_shader(const char *filename) {
-	if(!GLEW_ARB_vertex_program || !GLEW_ARB_fragment_program) {
-		warnx("missing shader support; skipping.");
-		tconfig.intval[NO_SHADER] = 1;
-		return;
-	}
-	
 	FILE *file = fopen(filename,"r");
 	if(file == NULL)
 		errx(-1, "Error opening '%s'", filename);

@@ -9,13 +9,7 @@
 #include "global.h"
 #include "taisei_err.h"
 
-void init_fbo(FBO *fbo) {
-	if(!GLEW_ARB_framebuffer_object) {
-		warnx("missing FBO support. seriously.");
-		tconfig.intval[NO_SHADER] = 1;
-		return;
-	}
-	
+void init_fbo(FBO *fbo) {	
 	glGenTextures(1, &fbo->tex);
 	glBindTexture(GL_TEXTURE_2D, fbo->tex);
 	

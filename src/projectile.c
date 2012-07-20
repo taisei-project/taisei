@@ -108,7 +108,7 @@ void process_projectiles(Projectile **projs, char collision) {
 	while(proj != NULL) {
 		action = proj->rule(proj, global.frames - proj->birthtime);
 		
-		if(proj->type == DeadProj && killed < 2) {
+		if(proj->type == DeadProj && killed < 5) {
 			killed++;
 			action = ACTION_DESTROY;
 			create_particle1c("flare", proj->pos, NULL, Fade, timeout, 30);

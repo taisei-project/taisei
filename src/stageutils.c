@@ -8,7 +8,9 @@
 #include "stageutils.h"
 #include <string.h>
 #include <stdlib.h>
-#include <GL/glew.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glext.h>
 #include "global.h"
 
 void init_stage3d(Stage3D *s) {

@@ -23,6 +23,7 @@ Dialog *stage1_dialog() {
 	
 	return d;
 }
+
 int stage1_great_circle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
@@ -224,7 +225,6 @@ Boss *create_wriggle_mid() {
 	Boss* wriggle = create_boss("Wriggle", "wriggle", VIEWPORT_W + 150 - 30I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 4, 0, wriggle_intro, NULL);
 	boss_add_attack(wriggle, AT_Normal, "Small Bug Storm", 20, 20000, wriggle_small_storm, NULL);
-// 	boss_add_attack(cirno, AT_Spellcard, "Freeze Sign ~ Perfect Freeze", 32, 20000, cirno_perfect_freeze, cirno_pfreeze_bg);
 	
 	start_attack(wriggle, wriggle->attacks);
 	return wriggle;
@@ -246,13 +246,6 @@ void hina_cards1(Boss *h, int time) {
 		create_projectile2c("card", h->pos+50*cexp(I*t/10), rgb(0.8,0.0,0.0),  asymptotic, 2*cexp(I*t/5.0), 3);
 		create_projectile2c("card", h->pos-50*cexp(I*t/10), rgb(0.0,0.0,0.8),  asymptotic, -2*cexp(I*t/5.0), 3);
 	}
-	
-// 	FROM_TO(200, 240, 6) {
-// 		int i;
-// 		for(i = 0; i < 3+global.diff; i++) {
-// 			create_projectile2c("bigball", h->pos, rgb(0.5, 0.0, 0.5), asymptotic, 3*cexp(I*M_PI*2*(i+0.05*_i)/(2+global.diff)), 3);
-// 		}
-// 	}
 }
 
 void hina_amulet(Boss *h, int time) {

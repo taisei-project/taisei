@@ -5,6 +5,8 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
+#include <png.h>
+
 #include "texture.h"
 #include "resource.h"
 #include "global.h"
@@ -12,7 +14,6 @@
 #include "taisei_err.h"
 #include "list.h"
 #include "vbo.h"
-#include <png.h>
 
 Color *rgba(float r, float g, float b, float a) {
 	Color *clr = malloc(sizeof(Color));

@@ -5,13 +5,14 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
-#ifndef PartBuffer_H
-#define PartBuffer_H
+#ifndef VBO_H
+#define VBO_H
 
 #include "matrix.h"
 #include "resource/texture.h"
 #include "resource/shader.h"
-#include <GL/glew.h>
+#include <GL/gl.h>
+#include <GL/glext.h>
 
 enum {
 	VBO_SIZE = 2048, // * sizeof(Vertex)
