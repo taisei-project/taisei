@@ -109,7 +109,6 @@ void stage_input() {
 	
 	SDL_Event event;
 	while(SDL_PollEvent(&event)) {
-		global_processevent(&event);
 		int sym = event.key.keysym.sym;
 		int key = config_sym2key(sym);
 		global_processevent(&event);
