@@ -11,6 +11,29 @@
 #include "enemy.h"
 #include "laser.h"
 
+Dialog *stage3_dialog() {
+	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
+		
+	dadd_msg(d, Right, "Ah! Intruder! Stop being so persistent!");
+	dadd_msg(d, Left, "What? I mean where am I?");
+	dadd_msg(d, Right, "You are in the ...");
+	dadd_msg(d, Right, "STOP! That's secret for intruders!");
+	dadd_msg(d, Left, "... in the mansion of the\nevil mastermind, right?");
+	dadd_msg(d, Right, "AHH! Anyway! You won't reach\nthe end of this corridor!");
+		
+	return d;
+}
+
+Dialog *stage3_dialog_end() {
+	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
+	
+	dadd_msg(d, Left, "Where is your master now?");
+	dadd_msg(d, Right, "Didn't I say? At the end of this corridor,\nthere is a door.");
+	dadd_msg(d, Right, "Just leave me alone.");
+		
+	return d;
+}
+
 int stage3_splasher(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
@@ -375,6 +398,14 @@ int stage3_supercard(Enemy *e, int t) {
 	return 1;
 }
 
+void kurumi_boss_intro(Boss *b, int t) {
+	TIMER(&t);
+	GO_TO(b, VIEWPORT_W/2.0+200I, 0.01);
+	
+	AT(150)
+		global.dialog = stage3_dialog();
+}
+
 void kurumi_breaker(Boss *b, int time) {
 	int t = time % 400;
 	int i;
@@ -641,7 +672,7 @@ void kurumi_danmaku(Boss *b, int time) {
 
 Boss *create_kurumi() {
 	Boss* b = create_boss("Kurumi", "kurumi", -400I);
-	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_intro, NULL);
+	boss_add_attack(b, AT_Move, "Introduction", 5, 0, kurumi_boss_intro, NULL);
 	boss_add_attack(b, AT_Normal, "Cold Breaker", 20, 20000, kurumi_breaker, NULL);
 	boss_add_attack(b, AT_Spellcard, "Limit ~ Animate Wall", 30, 30000, kurumi_aniwall, kurumi_spell_bg);
 	boss_add_attack(b, AT_Normal, "Sin Breaker", 20, 20000, kurumi_sbreaker, NULL);
@@ -714,4 +745,7 @@ void stage3_events() {
 		
 	AT(5300)
 		global.boss = create_kurumi();
+		
+	AT(5400)
+		global.dialog = stage3_dialog_end();
 }

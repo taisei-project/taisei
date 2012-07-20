@@ -233,5 +233,5 @@ void stage3_draw() {
 
 void stage3_loop() {
 	ShaderRule shaderrules[] = { stage3_fog, NULL };
-	stage_loop(stage_get(4), stage3_start, stage3_end, stage3_draw, stage3_events, shaderrules, 5500);
+	stage_loop(stage_get(4), stage3_start, stage3_end, stage3_draw, stage3_events, shaderrules, 5550);
 }
