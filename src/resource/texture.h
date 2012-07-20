@@ -9,7 +9,8 @@
 #define TEXTURE_H
 
 #include <SDL/SDL.h>
-#include <GL/glew.h>
+#include <GL/gl.h>
+#include <GL/glext.h>
 #include <math.h>
 
 typedef struct {

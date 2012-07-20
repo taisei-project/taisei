@@ -6,7 +6,8 @@
  */
 
 #include <SDL.h>
-#include <GL/glew.h>
+#include <GL/gl.h>
+#include <GL/glext.h>
 #include <sys/stat.h>
 #include "taisei_err.h"
 
@@ -70,9 +71,9 @@ int main(int argc, char** argv) {
 		
 	SDL_WM_SetCaption("TaiseiProject", NULL); 
 	
-	int e;
-	if((e = glewInit()) != GLEW_OK)
-		errx(-1, "GLEW failed: %s", glewGetErrorString(e));
+// 	int e;
+// 	if((e = glewInit()) != GLEW_OK)
+// 		errx(-1, "GLEW failed: %s", glewGetErrorString(e));
 	
 	printf("-- GLEW\n");
 	init_gl();

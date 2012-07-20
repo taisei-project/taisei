@@ -6,7 +6,6 @@ find_package(OpenAL REQUIRED)
 find_package(ALUT REQUIRED)
 find_package(PNG REQUIRED)
 find_package(SDL_ttf REQUIRED)
-find_package(GLEW REQUIRED)
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 find_package(Freetype)
@@ -71,7 +70,7 @@ if(WIN32)
 	set(SRCs ${SRCs} taisei_err.c)
 endif()
 
-add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall)
+add_definitions(-DGL_GLEXT_PROTOTYPES -DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall)
 
 if(TAISEI_DEBUG)
 	add_definitions(-DDEBUG)
@@ -83,7 +82,6 @@ set(LIBs ${LIBs}
 	${SDLTTF_LIBRARY}
 	${OPENAL_LIBRARY}
 	${ALUT_LIBRARY}
-	${GLEW_LIBRARY}
 	${OPENGL_LIBRARY}
 	m)
 	
@@ -100,7 +98,7 @@ if(WIN32)
 	set(LIBs ${LIBs} -ldxguid -limm32 -lversion)
 endif()
 	
-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${SDL_INCLUDE_DIR} ${ALUT_INCLUDE_DIR} ${GLEW_INCLUDE_PATH})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${SDL_INCLUDE_DIR} ${ALUT_INCLUDE_DIR})
 add_executable(taisei WIN32 ${SRCs})
 target_link_libraries(taisei ${LIBs})
 
