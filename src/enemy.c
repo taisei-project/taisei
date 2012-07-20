@@ -191,7 +191,7 @@ void process_enemies(Enemy **enemies) {
 		int action = enemy->logic_rule(enemy, global.frames - enemy->birthtime);
 		
 		if(enemy->hp > ENEMY_IMMUNE && cabs(enemy->pos - global.plr.pos) < 7)
-			plr_death(&global.plr);
+			player_death(&global.plr);
 		
 		if((enemy->hp > ENEMY_IMMUNE
 		&& (creal(enemy->pos) < -20 || creal(enemy->pos) > VIEWPORT_W + 20

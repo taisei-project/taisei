@@ -65,14 +65,14 @@ void init_player(Player*);
 void player_draw(Player*);
 void player_logic(Player*);
 
-void plr_set_char(Player*, Character);
-void plr_set_power(Player *plr, float npow);
+void player_set_char(Player*, Character);
+void player_set_power(Player *plr, float npow);
 
-void plr_move(Player*, complex delta);
+void player_move(Player*, complex delta);
 
-void plr_bomb(Player*);
-void plr_realdeath(Player*);
-void plr_death(Player*);
+void player_bomb(Player*);
+void player_realdeath(Player*);
+void player_death(Player*);
 
 
 void player_setmoveflag(Player* plr, int key, int mode);

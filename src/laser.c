@@ -134,7 +134,7 @@ void process_lasers() {
 			c = collision_laser_curve(laser);
 		
 		if(c && global.frames - laser->birthtime > laser->time)
-			plr_death(&global.plr);
+			player_death(&global.plr);
 		
 		if(global.frames - laser->birthtime > laser->deathtime + laser->time) {
 			del = laser;

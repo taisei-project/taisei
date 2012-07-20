@@ -40,7 +40,7 @@ Animation *player_get_ani(Character cha) {
 	return ani;
 }
 
-void plr_set_power(Player *plr, float npow) {
+void player_set_power(Player *plr, float npow) {
 	switch(plr->cha) {
 		case Youmu:
 			youmu_power(plr, npow);
@@ -59,7 +59,7 @@ void plr_set_power(Player *plr, float npow) {
 		plr->power = 0;
 }
 
-void plr_move(Player *plr, complex delta) {
+void player_move(Player *plr, complex delta) {
 	float speed = 0.01*VIEWPORT_W/((plr->focus > 0)+1);
 	
 	if(plr->cha == Marisa && plr->shot == MarisaLaser && global.frames - plr->recovery < 0)
@@ -150,7 +150,7 @@ void player_logic(Player* plr) {
 // 	}
 	
 	if(global.frames == plr->deathtime)
-		plr_realdeath(plr);
+		player_realdeath(plr);
 	
 	if(global.frames - plr->recovery < 0) {
 		Enemy *en;
@@ -164,7 +164,7 @@ void player_logic(Player* plr) {
 	}
 }
 
-void plr_bomb(Player *plr) {
+void player_bomb(Player *plr) {
 	if(global.frames - plr->recovery >= 0 && plr->bombs > 0) {
 // 		Enemy *e;
 // 		for(e = global.enemies; e; e = e->next)
@@ -193,7 +193,7 @@ void plr_bomb(Player *plr) {
 	}
 }
 
-void plr_realdeath(Player *plr) {
+void player_realdeath(Player *plr) {
 	plr->deathtime = -DEATH_DELAY-1;
 	
 	plr->moveflags = 0;
@@ -216,7 +216,7 @@ void plr_realdeath(Player *plr) {
 	}
 }
 
-void plr_death(Player *plr) {
+void player_death(Player *plr) {
 	if(plr->deathtime == -1 && global.frames - abs(plr->recovery) > 0) {
 		int i;
 		for(i = 0; i < 20; i++)
@@ -225,8 +225,6 @@ void plr_death(Player *plr) {
 		plr->deathtime = global.frames + DEATHBOMB_TIME;
 	}
 }
-
-// XXX: how about we convert all the plr_ prefixes to player_?
 
 void player_setmoveflag(Player* plr, int key, int mode) {
 	int flag = 0;
@@ -260,7 +258,7 @@ void player_event(Player* plr, int type, int key) {
 					break;
 				
 				case KEY_BOMB:
-					plr_bomb(plr);
+					player_bomb(plr);
 					break;
 				
 				default:
@@ -313,15 +311,12 @@ void player_applymovement(Player* plr) {
 	if(down)	direction += 1I;
 	if(left)	direction -= 1;
 	if(right)	direction += 1;
-	
-	double real = creal(direction);
-	double imag = cimag(direction);
-	
-	if(real && imag)
-		direction = (real + imag*I) / sqrt(real*real + imag*imag);
+		
+	if(cabs(direction))
+		direction /= cabs(direction);
 	
 	if(direction)
-		plr_move(&global.plr, direction);
+		player_move(&global.plr, direction);
 	
 // 	if(!keys[tconfig.intval[KEY_SHOT]] && plr->fire)
 // 		plr->fire = False;
