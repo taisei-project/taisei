@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
 	if(tconfig.intval[FULLSCREEN])
 		flags |= SDL_FULLSCREEN;
 	
-	if((display = SDL_SetVideoMode(SCREEN_W, SCREEN_H, 32, flags)) == NULL)
+	if((display = SDL_SetVideoMode(RESX, RESY, 32, flags)) == NULL)
 		errx(-1, "Error opening screen: %s", SDL_GetError());
 		
 	printf("-- SDL viewport\n");

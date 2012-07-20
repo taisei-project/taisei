@@ -35,9 +35,12 @@
 #define CONFIG_FILE "config"
 
 enum {	
+	RESX = 800,
+	RESY = 600,	
+	
 	SCREEN_W = 800,
 	SCREEN_H = 600,
-	
+		
 	VIEWPORT_X = 40,
 	VIEWPORT_Y = 20,
 	VIEWPORT_W = 480,

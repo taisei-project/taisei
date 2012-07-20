@@ -170,8 +170,11 @@ void draw_hud() {
 }
 
 void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
-	if(!tconfig.intval[NO_SHADER])
+	if(!tconfig.intval[NO_SHADER]) {
 		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[0].fbo);
+		if(!global.menu)
+			glViewport(0,0,SCREEN_W,SCREEN_H);
+	}
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPushMatrix();	
 	glTranslatef(-(VIEWPORT_X+VIEWPORT_W/2.0), -(VIEWPORT_Y+VIEWPORT_H/2.0),0);
@@ -241,7 +244,7 @@ void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
 				
 		if(!tconfig.intval[NO_SHADER]) {
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			
+			glViewport(0,0,RESX,RESY);
 			glPushMatrix();
 			if(global.plr.cha == Marisa && global.plr.shot == MarisaLaser && global.frames - global.plr.recovery < 0)
 				glTranslatef(8*sin(global.frames),8*sin(global.frames+3),0);
