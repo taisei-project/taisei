@@ -515,10 +515,7 @@ int  stage0_tritoss(Enemy *e, int t) {
 	return 1;
 }
 
-void stage0_events() {
-	if(global.dialog)
-		return;	
-	
+void stage0_events() {	
 	TIMER(&global.timer);
 	
 	// opening. projectile bursts
