@@ -197,10 +197,79 @@ void stage2_draw() {
 		bgcontext.crot[0] -= 11 / 60.0;
 	}
 	
+	FROM_TO(2900, 3100, 1) {
+		bgcontext.cv[1] -= 90 / 200.0;
+		stgstate.tunnel_avel -= 1 / 200.0;
+		stgstate.fog_exp -= 1.0 / 200.0;
+		stgstate.clr_r += 0.5 / 200.0;
+		stgstate.clr_g -= 1.0 / 200.0;
+		stgstate.clr_b += 1.0 / 200.0;
+	}
+	
+	FROM_TO(3200, 3450, 1) {
+		stgstate.shadeamp += 0.1 / 250.0;
+	}
+	
+	FROM_TO(3300, 3360, 1) {
+		stgstate.tunnel_avel += 2 / 60.0;
+		stgstate.tunnel_side += 70 / 60.0;
+	}
+	
+	FROM_TO(3600, 3700, 1) {
+		stgstate.tunnel_side += 20 / 60.0;
+		stgstate.tunnel_updn += 40 / 60.0;
+	}
+	
+	FROM_TO(3830, 3950, 1) {
+		stgstate.tunnel_avel -= 2 / 120.0;
+	}
+	
+	FROM_TO(3960, 4000, 1) {
+		stgstate.tunnel_avel += 2 / 40.0;
+	}
+	
+	FROM_TO(4100, 4130, 1) {
+		stgstate.clr_r -= 1.0 / 30.0;
+		stgstate.clr_g += 0.5 / 30.0;
+	}
+	
+	FROM_TO(4130, 4250, 1) {
+		stgstate.clr_r += 1.0 / 120.0;
+		stgstate.clr_g -= 0.5 / 120.0;
+	}
+	
+	FROM_TO(4299, 5299, 1) {
+		stgstate.tunnel_side -= 90 / 1000.0;
+		stgstate.tunnel_updn -= 40 / 1000.0;
+		stgstate.clr_r -= 0.5 / 1000.0;
+		bgcontext.crot[0] += 7 / 1000.0;
+		stgstate.shadeamp -= 0.15 / 1000.0;
+		stgstate.fog_exp -= 3.0 / 1000.0;
+	}
+	
+	FROM_TO(5099, 5299, 1) {
+		bgcontext.cv[1] += 90 / 200.0;
+		stgstate.tunnel_avel -= 1.1 / 200.0;
+		bgcontext.crot[0] -= 15 / 200.0;
+		stgstate.fog_exp += 3.0 / 200.0;
+	}
+	
+	FROM_TO(5301, 5500, 1) {
+		bgcontext.cv[1] -= 70 / 200.0;
+		stgstate.clr_r += 1.1 / 200.0;
+		stgstate.clr_b -= 0.6 / 200.0;
+	}
+	
+	FROM_TO(5301, 5700, 1) {
+		bgcontext.crot[0] -= 10 / 400.0;
+		stgstate.fog_exp -= 4.0 / 400.0;
+		//stgstate.tunnel_avel -= 0.5 / 200.0;
+	}
+	
 	draw_stage3d(&bgcontext, 7000);
 }
 
 void stage2_loop() {
 	ShaderRule shaderrules[] = { stage2_fog, stage2_tunnel, NULL };
-	stage_loop(stage_get(3), stage2_start, stage2_end, stage2_draw, stage2_events, shaderrules, 5500);
+	stage_loop(stage_get(3), stage2_start, stage2_end, stage2_draw, stage2_events, shaderrules, 5700);
 }
