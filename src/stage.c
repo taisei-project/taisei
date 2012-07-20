@@ -109,6 +109,7 @@ void stage_input() {
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;
 		int key = config_sym2key(sym);
+		global_processevent(&event);
 		
 		switch(event.type) {
 			case SDL_KEYDOWN:
