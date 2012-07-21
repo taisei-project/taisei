@@ -229,8 +229,6 @@ int stage2_mid_poison(Projectile *p, int time) {
 	return result;
 }
 
-
-
 int stage2_mid_a0_proj(Projectile *p, int time) {
 	#define A0_PROJ_START 120
 	#define A0_PROJ_CHARGE 20
@@ -241,15 +239,17 @@ int stage2_mid_a0_proj(Projectile *p, int time) {
 	
 	AT(A0_PROJ_START + A0_PROJ_CHARGE + 1) {
 		p->args[1] = 3;
-		p->args[0] = 5 * cexp(I*carg(global.plr.pos - p->pos));
+		p->args[0] = (3 + 2 * global.diff / (float)D_Lunatic) * cexp(I*carg(global.plr.pos - p->pos));
 		
-		int i; for(i = 0; i < (2 + global.diff); ++i) {
+		int cnt = 2 + global.diff, i;
+		for(i = 0; i < cnt; ++i) {
 			create_particle3c("lasercurve", 0, rgb(max(0.3, 1.0 - p->clr->r), p->clr->g, p->clr->b), EnemyFlareShrink, enemy_flare, 100, cexp(I*(M_PI*nfrand())) * (1 + frand()), add_ref(p));
 			
-			create_projectile1c("thickrice", p->pos, p->clr->r == 1.0? rgb(1.0, 0.3, 0.3) : rgb(0.3, 0.3, 1.0), accelerated,
+			int jcnt = 1 + (global.diff > D_Normal), j;
+			for(j = 0; j < jcnt; ++j) create_projectile1c("thickrice", p->pos, p->clr->r == 1.0? rgb(1.0, 0.3, 0.3) : rgb(0.3, 0.3, 1.0), accelerated,
 				0
-				-cexp(I*(i*2*M_PI/5 + global.frames / 15.0))
-			);
+				-cexp(I*(i*2*M_PI/cnt + global.frames / 15.0)) * (1.0 + 0.1 * j)
+			); //->draw = global.diff > D_Hard? ProjDrawAdd : ProjDraw;
 		}
 	}
 	
@@ -264,11 +264,11 @@ void stage2_mid_a0(Boss *boss, int time) {
 	
 	GO_TO(boss, creal(global.plr.pos) + I*cimag(boss->pos), 0.03)
 	
-	FROM_TO_INT(0, 90000, 60 + D_Lunatic - global.diff, 0, 1) {
+	FROM_TO_INT(0, 90000, 60 + 10 * (D_Lunatic - global.diff), 0, 1) {
 		int cnt = 30 - 4 * (D_Lunatic - global.diff);
 		
 		for(i = 0; i < cnt; ++i) {
-			complex v = (2 - psin((6*M_PI*i/(float)cnt) + time)) * cexp(I*2*M_PI/cnt*i);
+			complex v = (2 - psin((max(3, global.diff+1)*2*M_PI*i/(float)cnt) + time)) * cexp(I*2*M_PI/cnt*i);
 			create_projectile2c("wave", boss->pos - v * 50, _i % 2? rgb(1.0, 1.0, 0.3) : rgb(0.3, 1.0, 0.3), stage2_mid_a0_proj,
 				v,
 				2.0
@@ -394,8 +394,8 @@ Boss* stage2_create_midboss() {
 void stage2_events() {
 	TIMER(&global.timer);
 	
-//	AT(0)
-//		global.timer = 2700;
+	AT(0)
+		global.timer = 2700;
 	
 	FROM_TO(160, 300, 10) {
 		create_enemy1c(VIEWPORT_W/2 + 20 * nfrand() + (VIEWPORT_H/4 + 20 * nfrand())*I, 200, Swirl, stage2_enterswirl, I * 3 + nfrand() * 3);
