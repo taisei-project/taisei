@@ -105,6 +105,9 @@ void cirno_icy(Boss *c, int time) {
 	int t = time % 280;
 	TIMER(&t);
 	
+	if(time < 0)
+		return;
+	
 	FROM_TO(0, 200, 5-global.diff) {
 		create_projectile2c("crystal", VIEWPORT_W/2.0 + 10*_i*(0.5-frand()) + cimag(c->pos)*I, rgb(0.2,0.5,0.4+0.5*frand()), accelerated, 1.7*cexp(I*_i/10.0)*(1-2*(_i&1)), 0.0001I*_i + (0.0025 - 0.005*frand()));
 		create_projectile2c("crystal", VIEWPORT_W/2.0 + 10*_i*(0.5-frand()) + cimag(c->pos)*I, rgb(0.2,0.5,0.4+0.5*frand()), accelerated, 1.7*cexp(I*_i/10.0)*(1-2*(_i&1)), 0.0001I*_i + (0.0025 - 0.005*frand()));
@@ -146,6 +149,9 @@ int cirno_pfreeze_frogs(Projectile *p, int t) {
 void cirno_perfect_freeze(Boss *c, int time) {
 	int t = time % 320;
 	TIMER(&t);
+	
+	if(time < 0)
+		return;
 	
 	FROM_TO(-40, 0, 1)
 		GO_TO(c, VIEWPORT_W/2.0 + 100I, 0.04);
@@ -196,6 +202,8 @@ Boss *create_cirno_mid() {
 }
 
 void cirno_intro_boss(Boss *c, int time) {
+	if(time < 0)
+		return;
 	TIMER(&time);
 	GO_TO(c, VIEWPORT_W/2.0 + 100I, 0.035);
 		
@@ -206,6 +214,9 @@ void cirno_intro_boss(Boss *c, int time) {
 void cirno_iceplosion0(Boss *c, int time) {
 	int t = time % 350;
 	TIMER(&t);
+	
+	if(time < 0)
+		return;
 	
 	FROM_TO(20,30,2) {
 		int i;
@@ -231,6 +242,9 @@ void cirno_crystal_rain(Boss *c, int time) {
 	int t = time % 500;
 	TIMER(&t);
 	
+	if(time < 0)
+		return;
+	
 	if(frand() > 0.9-0.07*global.diff)
 		create_projectile2c("crystal", VIEWPORT_W*frand(), rgb(0.2,0.2,0.4), accelerated, 1I, 0.01I + (0.01+0.003*global.diff)*(1-2*frand()));
 	
@@ -248,6 +262,9 @@ void cirno_crystal_rain(Boss *c, int time) {
 void cirno_iceplosion1(Boss *c, int time) {
 	int t = time % 360;
 	TIMER(&t);
+	
+	if(time < 0)
+		return;
 	
 	if(time < 0)
 		GO_TO(c, VIEWPORT_W/2.0 + 100I, 0.02);
@@ -274,10 +291,10 @@ void cirno_iceplosion1(Boss *c, int time) {
 }
 
 int cirno_icicles(Projectile *p, int t) {
+	int turn = 60;
+	
 	if(t < 0)
 		return 1;
-	
-	int turn = 60;
 	
 	if(t < turn) {
 		p->pos += p->args[0]*pow(0.9,t);
@@ -295,6 +312,9 @@ int cirno_icicles(Projectile *p, int t) {
 void cirno_icicle_fall(Boss *c, int time) {
 	int t = time % 400;
 	TIMER(&t);
+	
+	if(time < 0)
+		return;
 	
 	GO_TO(c, VIEWPORT_W/2.0+120I, 0.01);
 		
@@ -482,7 +502,7 @@ int stage0_instantcircle(Enemy *e, int t) {
 	return 1;
 }
 
-int  stage0_tritoss(Enemy *e, int t) {
+int stage0_tritoss(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
 		spawn_items(e->pos, 5,5,0,0);

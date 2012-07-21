@@ -185,6 +185,9 @@ int stage1_accel_circle(Enemy *e, int t) {
 }
 
 void wriggle_intro(Boss *w, int t) {
+	if(t < 0)
+		return;
+	
 	w->pos = VIEWPORT_W/2 + 100I + 400*(1.0-t/(4.0*FPS))*cexp(I*(3-t*0.04));
 }
 
@@ -205,6 +208,9 @@ int wriggle_bug(Projectile *p, int t) {
 void wriggle_small_storm(Boss *w, int time) {
 	int t = time % 400;
 	TIMER(&t);
+	
+	if(time < 0)
+		return;
 	
 	FROM_TO(0,400,5) {
 		create_projectile1c("rice", w->pos, rgb(1,0.5,0.2), wriggle_bug, 2*cexp(I*_i*2*M_PI/20));
@@ -231,7 +237,11 @@ Boss *create_wriggle_mid() {
 }
 
 void hina_intro(Boss *h, int time) {
-	TIMER(&time);
+	TIMER(&time);	
+	
+	if(time < 0)
+		return;
+	
 	AT(100)
 		global.dialog = stage1_dialog();
 	
@@ -242,6 +252,9 @@ void hina_cards1(Boss *h, int time) {
 	int t = time % 500;
 	TIMER(&t);
 	
+	if(time < 0)
+		return;
+	
 	FROM_TO(0, 500, 2-(global.diff > D_Normal)) {
 		create_projectile2c("card", h->pos+50*cexp(I*t/10), rgb(0.8,0.0,0.0),  asymptotic, 2*cexp(I*t/5.0), 3);
 		create_projectile2c("card", h->pos-50*cexp(I*t/10), rgb(0.0,0.0,0.8),  asymptotic, -2*cexp(I*t/5.0), 3);
@@ -250,6 +263,9 @@ void hina_cards1(Boss *h, int time) {
 
 void hina_amulet(Boss *h, int time) {
 	int t = time % 200;
+	
+	if(time < 0)
+		return;
 	
 	if(time < 100)
 		GO_TO(h, VIEWPORT_W/2 + 200I, 0.02);
@@ -266,11 +282,14 @@ void hina_amulet(Boss *h, int time) {
 }
 
 void hina_cards2(Boss *h, int time) {
-	hina_cards1(h, time);
-	
 	int t = time % 500;
 	TIMER(&t);
-		
+	
+	if(time < 0)
+		return;
+	
+	hina_cards1(h, time);
+			
 	GO_AT(h, 100, 200, 2);
 	GO_AT(h, 260, 460, -2);
 	GO_AT(h, 460, 500, 5);
@@ -288,6 +307,9 @@ void hina_bad_pick(Boss *h, int time) {
 	int i, j;
 	
 	TIMER(&t);
+	
+	if(time < 0)
+		return;
 	
 	GO_TO(h, VIEWPORT_W/5*(time/400+0.6)+ 100I, 0.02);
 	
@@ -314,6 +336,9 @@ void hina_wheel(Boss *h, int time) {
 	int t = time % 400;
 	TIMER(&t);
 	
+	if(time < 0)
+		return;
+	
 	GO_TO(h, VIEWPORT_W/2+VIEWPORT_H/2*I, 0.02);
 	
 	if(time < 60)
@@ -330,8 +355,6 @@ void hina_wheel(Boss *h, int time) {
 		}
 	}
 }
-
-	
 
 void hina_spell_bg(Boss *h, int time) {
 	
@@ -367,7 +390,7 @@ Boss *create_hina() {
 
 void stage1_events() {
 	TIMER(&global.timer);
-	
+		
 	AT(300) {
 		create_enemy1c(VIEWPORT_W/2-10I, 7000+500*global.diff, BigFairy, stage1_great_circle, 2I);
 	}
