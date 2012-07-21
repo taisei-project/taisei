@@ -25,14 +25,12 @@ void main(void) {
 	vec2 pos1 = pos;
 	pos1.y *= ratio;
 	
-	if(length(pos1) < blur_rad)
-		pos *= length(pos1)/blur_rad;
+	pos *= min(length(pos1)/blur_rad,1.0);
 		
 	gl_FragColor = texture2D(tex, pos + blur_orig);
 	
 	pos1 = vec2(gl_TexCoord[0]) - fix_orig;
 	pos1.y *= ratio;
 	
-	if(length(pos1) < rad)
-		gl_FragColor *= pow(color,vec4(3.0*(rad - length(pos1))));
+	gl_FragColor *= pow(color,vec4(3.0*max(0.0,rad - length(pos1))));
 }

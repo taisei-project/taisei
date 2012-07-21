@@ -254,8 +254,10 @@ void kurumi_slaveburst(Boss *b, int time) {
 	int t = time % 400;
 	TIMER(&t);
 	
-	AT(EVENT_DEATH)
+	if(time == EVENT_DEATH)
 		killall(global.enemies);
+	if(time < 0)
+		return;
 	
 	AT(0) {
 		int i;
@@ -293,12 +295,15 @@ int kurumi_spikeslave(Enemy *e, int t) {
 
 void kurumi_redspike(Boss *b, int time) {
 	int t = time % 500;
+	
+	if(time == EVENT_DEATH)
+		killall(global.enemies);	
+	
+	if(time < 0)
+		return;
+	
 	TIMER(&t);
-	
-	AT(EVENT_DEATH)
-		killall(global.enemies);
-	
-	
+			
 	FROM_TO(0, 500, 60) {
 		create_enemy3c(b->pos, ENEMY_IMMUNE, KurumiSlave, kurumi_spikeslave, 1-2*(_i&1), 0, add_ref(b));
 	}
@@ -338,13 +343,10 @@ void kurumi_spell_bg(Boss *b, int time) {
 }
 
 void kurumi_outro(Boss *b, int time) {
-	b->pos += -5-I;
+	if(time < 0)
+		return;
 	
-	if(time == 0) {		
-		Projectile *p;
-		for(p = global.projs; p; p = p->next)
-			p->type = DeadProj;
-	}		
+	b->pos += -5-I;		
 }
 
 Boss *create_kurumi_mid() {
@@ -399,6 +401,9 @@ int stage3_supercard(Enemy *e, int t) {
 }
 
 void kurumi_boss_intro(Boss *b, int t) {
+	if(t < 0)
+		return;
+	
 	TIMER(&t);
 	GO_TO(b, VIEWPORT_W/2.0+200I, 0.01);
 	
@@ -409,10 +414,14 @@ void kurumi_boss_intro(Boss *b, int t) {
 void kurumi_breaker(Boss *b, int time) {
 	int t = time % 400;
 	int i;
-	TIMER(&t);
-	
+		
 	int c = 10+global.diff*2;
 	int kt = 20;
+	
+	if(time < 0)
+		return;
+	
+	TIMER(&t);
 	
 	FROM_TO(50, 400, 50-7*global.diff) {
 		complex p = b->pos + 150*sin(_i) + 100I*cos(_i);
@@ -512,6 +521,9 @@ void kurumi_aniwall(Boss *b, int time) {
 	AT(EVENT_DEATH)
 		killall(global.enemies);
 	
+	if(time < 0)
+		return;
+		
 	AT(60) {
 		create_laser(LT_Curve, b->pos, 0, 50, 80, rgb(1, 0.8, 0.8), kurumi_wall_laser, 0.2*cexp(0.4I));
 		create_enemy1c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, aniwall_slave, 0.2*cexp(0.4I));
@@ -521,6 +533,9 @@ void kurumi_aniwall(Boss *b, int time) {
 }
 
 void kurumi_sbreaker(Boss *b, int time) {
+	if(time < 0)
+		return;
+	
 	int t = time % 400;
 	int i;
 	TIMER(&t);
@@ -602,6 +617,9 @@ void kurumi_blowwall(Boss *b, int time) {
 	int t = time % 600;
 	TIMER(&t);
 	
+	if(time < 0)
+		return;
+	
 	AT(50)
 		bwlaser(b, 0.4, 1);
 		
@@ -659,8 +677,10 @@ void kurumi_danmaku(Boss *b, int time) {
 	int t = time % 600;
 	TIMER(&t);
 	
-	AT(EVENT_DEATH)
+	if(time == EVENT_DEATH)
 		killall(global.enemies);
+	if(time < 0)
+		return;
 	
 	AT(50) {
 		create_laser(LT_Curve, b->pos, 0, 50, 100, rgb(1, 0.8, 0.8), kurumi_wall_laser, 0.2*cexp(I*carg(-b->pos)));
@@ -689,7 +709,7 @@ void stage3_events() {
 	TIMER(&global.timer);
 	
 // 	AT(0)
-// 		global.timer = 5300;
+// 		global.timer = 3200;
 		
 	AT(70) {
 		create_enemy1c(VIEWPORT_H/4*3*I, 3000, BigFairy, stage3_splasher, 3-4I);
