@@ -13,25 +13,14 @@ void main(void) {
 uniform sampler2D tex;
 uniform float intensity;
 
-float pi = 2.0 * asin(1.0);
-
 void main(void) {
 	vec2 pos = vec2(gl_TexCoord[0]);
 	
-	float a;
-	float i = 0.0;
-	vec4 sum = vec4(0.0), c;
+	vec4 sum = vec4(0.0);
 	
-	for(a = 0.0; a <= 2.0*pi; a+=0.6) {
-		c = texture2D(tex, pos + vec2(cos(a),sin(a))*0.01);
-		if(c != vec4(0.0)) {
-			sum += c;
-			i++;
-		}		
-	}
+	for(int a = 0; a < 10; a++) {
+		sum += texture2D(tex, pos + vec2(cos(0.628*float(a)),sin(0.628*float(a)))*0.03);;
+	}	
 	
-	
-	gl_FragColor = texture2D(tex, pos) + intensity*sum*sum/i;
-	
-// 	gl_FragColor = texture2D(tex, pos);
+	gl_FragColor = texture2D(tex, pos) + intensity*sum*sum/10.0;
 }
