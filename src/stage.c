@@ -482,14 +482,13 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		if(REPLAY_ASKSAVE) {
 			global.menu = create_saverpy_menu();
 			while(global.menu) {
+				stage_draw(draw, shaderrules, endtime);
 				ingame_menu_logic(&global.menu);
 				
 				if(!global.menu)
 					break;
 								
-				menu_input(global.menu);
-				stage_draw(draw, shaderrules, endtime);
-				
+				menu_input(global.menu);								
 				SDL_GL_SwapBuffers();
 				frame_rate(&global.lasttime);
 			}
