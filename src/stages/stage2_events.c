@@ -30,7 +30,7 @@ int stage2_enterswirl(Enemy *e, int t) {
 			complex dir = sin(a) + I * cos(a);
 			float spd = 1 + 0.5 * sin(10 * a);
 			
-			create_projectile2c("rice", e->pos, rgb(r, g, 0.7), accelerated,
+			create_projectile2c(e->args[1]? "ball" : "rice", e->pos, rgb(r, g, 0.7), accelerated,
 				dir * 2,
 				dir * spd * -0.03
 			);
@@ -78,7 +78,7 @@ int stage2_slavefairy(Enemy *e, int t) {
 			dir * -0.05
 		);
 		
-		if(e->args[1] && !(_i % 10)) create_projectile1c("ball", e->pos + dir * 10, rgb(0.3, 0.6, 0.3), linear,
+		if(e->args[1] == 1 && !(_i % 10)) create_projectile1c("ball", e->pos + dir * 10, rgb(0.3, 0.6, 0.3), linear,
 			dir * (0.3 + 0.5 + 0.5 * sin(a * 3))
 		);
 	}
@@ -127,9 +127,7 @@ int stage2_bitchswirl(Enemy *e, int t) {
 	}
 	
 	FROM_TO(0, 120, 20) {
-		float c = 0.25 + 0.25 * sin(t / 15.0);
-		
-		create_projectile2c("flea", e->pos, rgb(0.5 + c, 0.8, 0.4), accelerated,
+		create_projectile2c("flea", e->pos, e->args[1]? rgb(1.0, 0.5, 0.5) : rgb(0.7 + 0.25 * sin(t / 15.0), 0.8, 0.4), accelerated,
 			2*cexp(I*carg(global.plr.pos - e->pos)),
 			0.005*cexp(I*(M_PI*2 * frand()))
 		);
@@ -163,7 +161,7 @@ int stage2_cornerfairy(Enemy *e, int t) {
 		GO_TO(e, e->args[1], 0.05)
 		int d = (D_Lunatic - global.diff + 2);
 		if(!(t % d)) {
-			float i; for(i = -M_PI; i <= M_PI; i += 1.0) {
+			float i; for(i = -M_PI; i <= M_PI; i += (e->args[2]? 0.3 : 1.0)) {
 				float c = 0.25 + 0.25 * sin(t / 5.0);
 				
 				create_projectile2c("thickrice", e->pos, rgb(1.0 - c, 0.6, 0.5 + c), asymptotic,
@@ -172,7 +170,7 @@ int stage2_cornerfairy(Enemy *e, int t) {
 					1.5
 				);
 				
-				if(global.diff > D_Easy && !(t % 3*d)) {
+				if(global.diff > D_Easy && !(t % 3*d) && !e->args[2]) {
 					create_projectile2c("flea", e->pos, rgb(0.5 + 1.2 * c, 0.8, 0.5), asymptotic,
 						2*cexp(I*(carg(global.plr.pos - e->pos) + i)),
 						1.5
@@ -381,9 +379,9 @@ void stage2_mid_spellbg(Boss *h, int time) {
 Boss* stage2_create_midboss() {
 	Boss* scuttle = create_boss("Scuttle", "scuttle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(scuttle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
-	boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 30, 20000, stage2_mid_a0, NULL);
-	boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Deadly Dance", 30, 20000, stage2_mid_a1, stage2_mid_spellbg);
-	boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Acid Rain", 30, 25000, stage2_mid_a2, stage2_mid_spellbg);
+	//boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 30, 20000, stage2_mid_a0, NULL);
+	//boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Deadly Dance", 30, 20000, stage2_mid_a1, stage2_mid_spellbg);
+	//boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Acid Rain", 30, 25000, stage2_mid_a2, stage2_mid_spellbg);
 	boss_add_attack(scuttle, AT_Move, "Runaway", 2, 1, stage2_mid_outro, NULL);
 	scuttle->zoomcolor = rgb(0.4, 0.5, 0.4);
 	
@@ -394,8 +392,8 @@ Boss* stage2_create_midboss() {
 void stage2_events() {
 	TIMER(&global.timer);
 	
-	AT(0)
-		global.timer = 2700;
+//	AT(0)
+//		global.timer = 2801;
 	
 	FROM_TO(160, 300, 10) {
 		create_enemy1c(VIEWPORT_W/2 + 20 * nfrand() + (VIEWPORT_H/4 + 20 * nfrand())*I, 200, Swirl, stage2_enterswirl, I * 3 + nfrand() * 3);
@@ -430,4 +428,38 @@ void stage2_events() {
 	
 	AT(2800)
 		global.boss = stage2_create_midboss();
+	
+	FROM_TO(2801, 3000, 10) {
+		create_enemy2c(VIEWPORT_W/2 + 20 * nfrand() + (VIEWPORT_H/4 + 20 * nfrand())*I, 200, Swirl, stage2_enterswirl, I * 3 + nfrand() * 3, 1);
+	}
+	
+	AT(3000) {
+		create_enemy1c(VIEWPORT_W - VIEWPORT_W/3 + (VIEWPORT_H/5)*I, 10000, BigFairy, stage2_bigfairy, 2);
+	}
+	
+	FROM_TO(3000, 3100, 20) {
+		create_enemy2c(VIEWPORT_W-20 + (VIEWPORT_H+20)*I, 50, Swirl, stage2_bitchswirl, 1, 1);
+	}
+	
+	AT(3500) {
+		create_enemy1c(VIEWPORT_W/3 + (VIEWPORT_H/5)*I, 10000, BigFairy, stage2_bigfairy, 2);
+	}
+	
+	FROM_TO(3500, 3600, 20) {
+		create_enemy2c(20 + (VIEWPORT_H+20)*I, 50, Swirl, stage2_bitchswirl, 1, 1);
+	}
+	
+	AT(4270) {
+		double offs = -50;
+		
+		complex p1 = 0+0I;
+		complex p2 = VIEWPORT_W+0I;
+		complex p3 = VIEWPORT_W + VIEWPORT_H*I;
+		complex p4 = 0+VIEWPORT_H*I;
+		
+		create_enemy3c(p1, 500, Fairy, stage2_cornerfairy, p1 - offs - offs*I, p2 + offs - offs*I, 1);
+		create_enemy3c(p2, 500, Fairy, stage2_cornerfairy, p2 + offs - offs*I, p3 + offs + offs*I, 1);
+		create_enemy3c(p3, 500, Fairy, stage2_cornerfairy, p3 + offs + offs*I, p4 - offs + offs*I, 1);
+		create_enemy3c(p4, 500, Fairy, stage2_cornerfairy, p4 - offs + offs*I, p1 - offs - offs*I, 1);
+	}
 }

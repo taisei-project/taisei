@@ -197,6 +197,8 @@ void stage2_draw() {
 		bgcontext.crot[0] -= 11 / 60.0;
 	}
 	
+	// 2800 - MIDBOSS
+	
 	FROM_TO(2900, 3100, 1) {
 		bgcontext.cv[1] -= 90 / 200.0;
 		stgstate.tunnel_avel -= 1 / 200.0;
@@ -228,12 +230,12 @@ void stage2_draw() {
 		stgstate.tunnel_avel += 2 / 40.0;
 	}
 	
-	FROM_TO(4100, 4130, 1) {
+	FROM_TO(4300, 4330, 1) {
 		stgstate.clr_r -= 1.0 / 30.0;
 		stgstate.clr_g += 0.5 / 30.0;
 	}
 	
-	FROM_TO(4130, 4250, 1) {
+	FROM_TO(4330, 4450, 1) {
 		stgstate.clr_r += 1.0 / 120.0;
 		stgstate.clr_g -= 0.5 / 120.0;
 	}
@@ -246,6 +248,8 @@ void stage2_draw() {
 		stgstate.shadeamp -= 0.15 / 1000.0;
 		stgstate.fog_exp -= 3.0 / 1000.0;
 	}
+	
+	// 5300 - BOSS
 	
 	FROM_TO(5099, 5299, 1) {
 		bgcontext.cv[1] += 90 / 200.0;
