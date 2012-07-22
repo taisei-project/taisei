@@ -407,7 +407,7 @@ void kurumi_boss_intro(Boss *b, int t) {
 	TIMER(&t);
 	GO_TO(b, VIEWPORT_W/2.0+200I, 0.01);
 	
-	AT(150)
+	AT(400)
 		global.dialog = stage3_dialog();
 }
 
@@ -449,8 +449,14 @@ int aniwall_bullet(Projectile *p, int t) {
 	if(t < 0)
 		return 1;
 	
-	if(t > creal(p->args[1]))
+	if(t > creal(p->args[1])) {
+		if(global.diff > D_Normal) {
+			p->args[0] += (0.1-0.2*frand() + 0.1I-0.2I*frand())*(global.diff-2);
+			p->args[0] += 0.005*cexp(I*carg(global.plr.pos - p->pos));
+		}
+		
 		p->pos += p->args[0];
+	}		
 	
 	p->clr->r = cimag(p->pos)/VIEWPORT_H;
 	
@@ -495,7 +501,7 @@ int aniwall_slave(Enemy *e, int t) {
 		e->pos += e->args[2];
 		
 		
-		if(!(t % 7-global.diff)) {
+		if(!(t % 7-global.diff-2*(global.diff > D_Normal))) {
 			complex v = e->args[2]/cabs(e->args[2])*I*copysign(1,creal(e->args[0]));
 			create_projectile2c("ball", e->pos, rgb(1,0,0), aniwall_bullet, 1*v, 40);
 		}
@@ -692,9 +698,9 @@ void kurumi_danmaku(Boss *b, int time) {
 
 Boss *create_kurumi() {
 	Boss* b = create_boss("Kurumi", "kurumi", -400I);
-	boss_add_attack(b, AT_Move, "Introduction", 5, 0, kurumi_boss_intro, NULL);
+	boss_add_attack(b, AT_Move, "Introduction", 9, 0, kurumi_boss_intro, NULL);
 	boss_add_attack(b, AT_Normal, "Sin Breaker", 20, 20000, kurumi_sbreaker, NULL);
-	boss_add_attack(b, AT_Spellcard, "Limit ~ Animate Wall", 30, 30000, kurumi_aniwall, kurumi_spell_bg);
+	boss_add_attack(b, AT_Spellcard, global.diff < D_Hard ? "Limit ~ Animate Wall" : "Summoning ~ Demon Wall", 30, 40000, kurumi_aniwall, kurumi_spell_bg);
 	boss_add_attack(b, AT_Normal, "Cold Breaker", 20, 20000, kurumi_breaker, NULL);
 	boss_add_attack(b, AT_Spellcard, "Power Sign ~ Blow the Walls", 30, 32000, kurumi_blowwall, kurumi_spell_bg);
 	if(global.diff > D_Normal)
@@ -708,8 +714,8 @@ Boss *create_kurumi() {
 void stage3_events() {
 	TIMER(&global.timer);
 	
-// 	AT(0)
-// 		global.timer = 3200;
+	AT(0)
+		global.timer = 5200;
 		
 	AT(70) {
 		create_enemy1c(VIEWPORT_H/4*3*I, 3000, BigFairy, stage3_splasher, 3-4I);
