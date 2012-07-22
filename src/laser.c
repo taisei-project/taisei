@@ -9,7 +9,7 @@
 #include "global.h"
 #include "list.h"
 
-Laser *create_laser(LaserType type, complex pos, complex pos0, int time, int deathtime, Color *color, LaserRule rule, complex args, ...) {
+Laser *create_laser_p(LaserType type, complex pos, complex pos0, int time, int deathtime, Color *color, LaserRule rule, complex a0, complex a1, complex a2, complex a3) {
 	Laser *l = create_element((void **)&global.lasers, sizeof(Laser));
 		
 	l->type = type;
@@ -21,18 +21,11 @@ Laser *create_laser(LaserType type, complex pos, complex pos0, int time, int dea
 	l->rule = rule;
 	l->color = color;
 	
-	va_list ap;
-	int i;
-	
-	va_start(ap, args);
-	for(i = 0; i < 4 && args; i++) {
-		l->args[i++] = args;
-		args = va_arg(ap, complex);
-	}
-	va_end(ap);
-	
-// 	play_sound("laser1");
-	
+	l->args[0] = a0;	
+	l->args[1] = a1;
+	l->args[2] = a2;
+	l->args[3] = a3;
+		
 	return l;
 }
 
