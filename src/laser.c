@@ -9,7 +9,7 @@
 #include "global.h"
 #include "list.h"
 
-Laser *create_laser_p(LaserType type, complex pos, complex pos0, int time, int deathtime, Color *color, LaserRule rule, complex a0, complex a1, complex a2, complex a3) {
+Laser *create_laser_p(LaserType type, complex pos, complex dir, int time, int deathtime, Color *color, LaserRule rule, complex a0, complex a1, complex a2, complex a3) {
 	Laser *l = create_element((void **)&global.lasers, sizeof(Laser));
 		
 	l->type = type;
@@ -17,7 +17,7 @@ Laser *create_laser_p(LaserType type, complex pos, complex pos0, int time, int d
 	l->time = time;
 	l->deathtime = deathtime;
 	l->pos = pos;
-	l->pos0 = pos0;
+	l->dir = dir;
 	l->rule = rule;
 	l->color = color;
 	
@@ -30,7 +30,7 @@ Laser *create_laser_p(LaserType type, complex pos, complex pos0, int time, int d
 }
 
 void draw_laser_line(Laser *laser) {
-	float width = cabs(laser->pos0);
+	float width = cabs(laser->dir);
 	if(global.frames - laser->birthtime < laser->time*3/5.0)
 		width = 2;
 	else if(global.frames - laser->birthtime < laser->time)
@@ -40,7 +40,7 @@ void draw_laser_line(Laser *laser) {
 	
 	glPushMatrix();
 	glTranslatef(creal(laser->pos), cimag(laser->pos),0);
-	glRotatef(carg(laser->pos0)*180/M_PI,0,0,1);
+	glRotatef(carg(laser->dir)*180/M_PI,0,0,1);
 		
 	glBindTexture(GL_TEXTURE_2D, get_tex("part/lasercurve")->gltex);
 	
@@ -123,7 +123,7 @@ void process_lasers() {
 		int c = 0;
 		if(laser->type == LT_Line) {
 			if(laser->rule)
-				laser->rule(laser, global.frames - birthtime);
+				laser->rule(laser, global.frames - laser->birthtime);
 			c = collision_laser_line(laser);
 		} else {
 			c = collision_laser_curve(laser);
@@ -145,9 +145,9 @@ void process_lasers() {
 
 int collision_laser_line(Laser *l) {
 	Player *plr = &global.plr;	
-	float x = creal(l->pos) + creal(l->pos0)/cimag(l->pos0)*(cimag(plr->pos) - cimag(l->pos));
+	float x = creal(l->pos) + creal(l->dir)/cimag(l->dir)*(cimag(plr->pos) - cimag(l->pos));
 	
-	if(fabs(creal(plr->pos) - x) < fabs(creal(l->pos0*I)/2))
+	if(fabs(creal(plr->pos) - x) < fabs(creal(l->dir*I)/2))
 		return 1;
 	else
 		return 0;

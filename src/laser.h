@@ -27,7 +27,7 @@ typedef struct Laser {
 	LaserType type;
 	
 	complex pos;
-	complex pos0; // if type == LaserLine, carg(pos0) is orientation and cabs(pos0) width
+	complex dir; // if type == LaserLine, carg(pos0) is orientation and cabs(pos0) width
 	
 	Color *color;
 	
@@ -49,7 +49,7 @@ typedef struct Laser {
 #define create_laserline3c(p, prop, time, deathtime, clr, rule, a0, a1, a2) create_laser_p(LT_Line, p, prop, time, deathtime, clr, rule, a0, a1, a2, 0)
 #define create_laserline4c(p, prop, time, deathtime, clr, rule, a0, a1, a2, a3) create_laser_p(LT_Line, p, prop, time, deathtime, clr, rule, a0, a1, a2, a3)
 
-Laser *create_laser_p(LaserType type, complex pos, complex pos0, int time, int deathtime, Color *color, LaserRule rule, complex a0, complex a1, complex a2, complex a3);
+Laser *create_laser_p(LaserType type, complex pos, complex dir, int time, int deathtime, Color *color, LaserRule rule, complex a0, complex a1, complex a2, complex a3);
 void draw_lasers();
 void delete_lasers();
 void process_lasers();
