@@ -121,10 +121,13 @@ void process_lasers() {
 	
 	while(laser != NULL) {
 		int c = 0;
-		if(laser->type == LT_Line)
+		if(laser->type == LT_Line) {
+			if(laser->rule)
+				laser->rule(laser, global.frames - birthtime);
 			c = collision_laser_line(laser);
-		else
+		} else {
 			c = collision_laser_curve(laser);
+		}
 		
 		if(c && global.frames - laser->birthtime > laser->time)
 			player_death(&global.plr);
