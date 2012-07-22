@@ -214,7 +214,10 @@ void stage2_mid_outro(Boss *boss, int time) {
 int stage2_mid_poison(Projectile *p, int time) {
 	int result = accelerated(p, time);
 	
-	if(!(time % (57 - global.diff * 3))) {
+	if(time < 0)
+		return 1;
+	
+	if(!(time % (57 - global.diff * 3)) && p->type != DeadProj) {
 		float a = p->args[2];
 		float t = p->args[3] + time;
 		
@@ -235,7 +238,7 @@ int stage2_mid_a0_proj(Projectile *p, int time) {
 	FROM_TO(A0_PROJ_START, A0_PROJ_START + A0_PROJ_CHARGE, 1)
 		return 1;
 	
-	AT(A0_PROJ_START + A0_PROJ_CHARGE + 1) {
+	AT(A0_PROJ_START + A0_PROJ_CHARGE + 1) if(p->type != DeadProj) {
 		p->args[1] = 3;
 		p->args[0] = (3 + 2 * global.diff / (float)D_Lunatic) * cexp(I*carg(global.plr.pos - p->pos));
 		
@@ -319,8 +322,11 @@ void stage2_mid_a1(Boss *boss, int time) {
 int stage2_mid_poison2(Projectile *p, int time) {
 	int result = linear(p, time);
 	
+	if(time < 0)
+		return 1;
+	
 	int d = 25 - global.diff * 3;
-	if(!(time % d)) {
+	if(!(time % d) && p->type != DeadProj) {
 		float a = p->args[2];
 		float t = p->args[3] + time;
 		p->args[1] = !p->args[1];

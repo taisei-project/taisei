@@ -36,7 +36,7 @@
 
 enum {	
 	RESX = 800,
-	RESY = 600,	
+	RESY = 600,
 	
 	SCREEN_W = 800,
 	SCREEN_H = 600,
