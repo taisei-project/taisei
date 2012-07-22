@@ -135,10 +135,6 @@ int stage2_bitchswirl(Enemy *e, int t) {
 	
 	e->pos -= 5I * e->args[0];
 	
-	AT(120) {
-		e->hp = 0;
-	}
-	
 	return 0;
 }
 
@@ -398,8 +394,8 @@ Boss* stage2_create_midboss() {
 void stage2_events() {
 	TIMER(&global.timer);
 	
-//	AT(0)
-//		global.timer = 2801;
+	//AT(0)
+	//	global.timer = 2801;
 	
 	FROM_TO(160, 300, 10) {
 		create_enemy1c(VIEWPORT_W/2 + 20 * nfrand() + (VIEWPORT_H/4 + 20 * nfrand())*I, 200, Swirl, stage2_enterswirl, I * 3 + nfrand() * 3);
@@ -455,7 +451,7 @@ void stage2_events() {
 		create_enemy2c(20 + (VIEWPORT_H+20)*I, 50, Swirl, stage2_bitchswirl, 1, 1);
 	}
 	
-	AT(4330) {
+	FROM_TO(4330, 4460, 130) {
 		double offs = -50;
 		
 		complex p1 = 0+0I;
@@ -468,4 +464,12 @@ void stage2_events() {
 		create_enemy3c(p3, 500, Fairy, stage2_cornerfairy, p3 + offs + offs*I, p4 - offs + offs*I, 1);
 		create_enemy3c(p4, 500, Fairy, stage2_cornerfairy, p4 - offs + offs*I, p1 - offs - offs*I, 1);
 	}
+	
+	FROM_TO(4760, 4940, 10) {
+		create_enemy2c(VIEWPORT_W-20 - 20I, 50, Swirl, stage2_bitchswirl, -0.5, 1);
+		create_enemy2c(20 + -20I, 50, Swirl, stage2_bitchswirl, -0.5, 1);
+	}
+	
+	AT(5300)
+		global.boss = stage2_create_midboss();
 }
