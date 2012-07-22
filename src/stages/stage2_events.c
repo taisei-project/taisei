@@ -19,11 +19,11 @@ int stage2_enterswirl(Enemy *e, int t) {
 		
 		float r, g;
 		if(frand() > 0.5) {
-			r = 0.3 + 0.3 * frand();
+			r = 0.3;
 			g = 0.7;
 		} else {
 			r = 0.7;
-			g = 0.3 + 0.3 * frand();
+			g = 0.3;
 		}
 		
 		float a; for(a = 0; a < M_PI * 2; a += 1.3 - global.diff * 0.2) {
@@ -74,11 +74,11 @@ int stage2_slavefairy(Enemy *e, int t) {
 		complex dir = sin(a) + I * cos(a);
 		
 		create_projectile2c("wave", e->pos + dir * 10, (global.timer % 2)? rgb(1.0, 0.5, 0.5) : rgb(0.5, 0.5, 1.0), accelerated,
-			dir * 3,
-			dir * -0.05
+			dir * 2,
+			dir * -0.03
 		);
 		
-		if(e->args[1] == 1 && !(_i % 10)) create_projectile1c("ball", e->pos + dir * 10, rgb(0.3, 0.6, 0.3), linear,
+		if(e->args[1] && !(_i % 10 / e->args[1])) create_projectile1c("ball", e->pos + dir * 10, rgb(0.3, 0.6, 0.3), linear,
 			dir * (0.3 + 0.5 + 0.5 * sin(a * 3))
 		);
 	}
@@ -170,7 +170,7 @@ int stage2_cornerfairy(Enemy *e, int t) {
 					1.5
 				);
 				
-				if(global.diff > D_Easy && !(t % 3*d) && !e->args[2]) {
+				if(global.diff > D_Hard && !(t % 5) && !e->args[2]) {
 					create_projectile2c("flea", e->pos, rgb(0.5 + 1.2 * c, 0.8, 0.5), asymptotic,
 						2*cexp(I*(carg(global.plr.pos - e->pos) + i)),
 						1.5
@@ -449,7 +449,7 @@ void stage2_events() {
 		create_enemy2c(20 + (VIEWPORT_H+20)*I, 50, Swirl, stage2_bitchswirl, 1, 1);
 	}
 	
-	AT(4270) {
+	AT(4330) {
 		double offs = -50;
 		
 		complex p1 = 0+0I;

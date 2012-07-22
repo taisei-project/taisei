@@ -230,12 +230,12 @@ void stage2_draw() {
 		stgstate.tunnel_avel += 2 / 40.0;
 	}
 	
-	FROM_TO(4300, 4330, 1) {
+	FROM_TO(4360, 4390, 1) {
 		stgstate.clr_r -= 1.0 / 30.0;
 		stgstate.clr_g += 0.5 / 30.0;
 	}
 	
-	FROM_TO(4330, 4450, 1) {
+	FROM_TO(4390, 4510, 1) {
 		stgstate.clr_r += 1.0 / 120.0;
 		stgstate.clr_g -= 0.5 / 120.0;
 	}
