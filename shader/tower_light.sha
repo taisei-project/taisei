@@ -30,8 +30,7 @@ void main(void) {
 	vec4 texel = texture2D(tex, vec2(TexCoord0.xy));
 	
 	vec3 l = lightvec-pos;
-	float light = (1.0+strength)*dot(normal*(vec3(0.1)+vec3(texel)), normalize(l));	
-	if(light < 0.0)
-		light = 0.0;
+	float light = (1.6+strength)*dot(normal*(vec3(0.1)+vec3(texel)), normalize(l));	
+	
 	gl_FragColor = vec4(vec3(texel + color*light)*(light+0.6),1.0);
 }
