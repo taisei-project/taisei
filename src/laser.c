@@ -11,7 +11,7 @@
 
 Laser *create_laser(LaserType type, complex pos, complex pos0, int time, int deathtime, Color *color, LaserRule rule, complex args, ...) {
 	Laser *l = create_element((void **)&global.lasers, sizeof(Laser));
-		
+	
 	l->type = type;
 	l->birthtime = global.frames;
 	l->time = time;
@@ -20,7 +20,7 @@ Laser *create_laser(LaserType type, complex pos, complex pos0, int time, int dea
 	l->pos0 = pos0;
 	l->rule = rule;
 	l->color = color;
-	
+		
 	va_list ap;
 	int i;
 	
@@ -168,4 +168,13 @@ int collision_laser_curve(Laser *l) {
 			return 1;
 	}
 	return 0;
+}
+
+complex las_linear(Laser *l, float t) {
+	return l->pos + l->args[0]*t;
+}
+
+complex las_accel(Laser *l, float t) {
+	printf("%f\n", cimag(l->args[1]));
+	return l->pos + l->args[0]*t + 0.5*l->args[1]*t*t;
 }

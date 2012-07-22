@@ -373,7 +373,7 @@ int stage3_supercard(Enemy *e, int t) {
 	
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 2,3,0,0);		
+		spawn_items(e->pos, 2,3,0,0);	
 		return 1;
 	}
 	
@@ -714,9 +714,6 @@ Boss *create_kurumi() {
 void stage3_events() {
 	TIMER(&global.timer);
 	
-	AT(0)
-		global.timer = 5200;
-		
 	AT(70) {
 		create_enemy1c(VIEWPORT_H/4*3*I, 3000, BigFairy, stage3_splasher, 3-4I);
 		create_enemy1c(VIEWPORT_W + VIEWPORT_H/4*3*I, 3000, BigFairy, stage3_splasher, -3-4I);
