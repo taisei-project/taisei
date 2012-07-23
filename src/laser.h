@@ -27,7 +27,7 @@ typedef struct Laser {
 	LaserType type;
 	
 	complex pos;
-	complex pos0; // if type == LaserLine, carg(pos0) is orientation and cabs(pos0) width
+	complex dir; // if type == LaserLine, carg(pos0) is orientation and cabs(pos0) width
 	
 	Color *color;
 	
@@ -39,7 +39,17 @@ typedef struct Laser {
 	complex args[4];
 } Laser;
 
-Laser *create_laser(LaserType type, complex pos, complex pos0, int time, int deathtime, Color *color, LaserRule rule, complex args, ...);
+#define create_lasercurve1c(p, time, deathtime, clr, rule, a0) create_laser_p(LT_Curve, p, 0, time, deathtime, clr, rule, a0, 0, 0, 0)
+#define create_lasercurve2c(p, time, deathtime, clr, rule, a0, a1) create_laser_p(LT_Curve, p, 0, time, deathtime, clr, rule, a0, a1, 0, 0)
+#define create_lasercurve3c(p, time, deathtime, clr, rule, a0, a1, a2) create_laser_p(LT_Curve, p, 0, time, deathtime, clr, rule, a0, a1, a2, 0)
+#define create_lasercurve4c(p, time, deathtime, clr, rule, a0, a1, a2, a3) create_laser_p(LT_Curve, p, 0, time, deathtime, clr, rule, a0, a1, a2, a3)
+
+#define create_laserline1c(p, prop, time, deathtime, clr, rule, a0) create_laser_p(LT_Line, p, prop, time, deathtime, clr, rule, a0, 0, 0, 0)
+#define create_laserline2c(p, prop, time, deathtime, clr, rule, a0, a1) create_laser_p(LT_Line, p, prop, time, deathtime, clr, rule, a0, a1, 0, 0)
+#define create_laserline3c(p, prop, time, deathtime, clr, rule, a0, a1, a2) create_laser_p(LT_Line, p, prop, time, deathtime, clr, rule, a0, a1, a2, 0)
+#define create_laserline4c(p, prop, time, deathtime, clr, rule, a0, a1, a2, a3) create_laser_p(LT_Line, p, prop, time, deathtime, clr, rule, a0, a1, a2, a3)
+
+Laser *create_laser_p(LaserType type, complex pos, complex dir, int time, int deathtime, Color *color, LaserRule rule, complex a0, complex a1, complex a2, complex a3);
 void draw_lasers();
 void delete_lasers();
 void process_lasers();

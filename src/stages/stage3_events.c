@@ -531,9 +531,9 @@ void kurumi_aniwall(Boss *b, int time) {
 		return;
 		
 	AT(60) {
-		create_laser(LT_Curve, b->pos, 0, 50, 80, rgb(1, 0.8, 0.8), kurumi_wall_laser, 0.2*cexp(0.4I));
+		create_lasercurve1c(b->pos, 50, 80, rgb(1, 0.8, 0.8), kurumi_wall_laser, 0.2*cexp(0.4I));
 		create_enemy1c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, aniwall_slave, 0.2*cexp(0.4I));
-		create_laser(LT_Curve, b->pos, 0, 50, 80, rgb(1, 0.8, 0.8), kurumi_wall_laser, 0.2*cexp(I*M_PI - 0.4I));
+		create_lasercurve1c(b->pos, 50, 80, rgb(1, 0.8, 0.8), kurumi_wall_laser, 0.2*cexp(I*M_PI - 0.4I));
 		create_enemy1c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, aniwall_slave, 0.2*cexp(I*M_PI - 0.4I));
 	}
 }
@@ -614,7 +614,7 @@ int blowwall_slave(Enemy *e, int t) {
 		
 
 static void bwlaser(Boss *b, float arg, int slave) {
-	create_laser(LT_Curve, b->pos, 0, 50, 100, rgb(1, 0.5+0.3*slave, 0.5+0.3*slave), kurumi_wall_laser, (0.1+0.1*slave)*cexp(I*arg));
+	create_lasercurve1c(b->pos, 50, 100, rgb(1, 0.5+0.3*slave, 0.5+0.3*slave), kurumi_wall_laser, (0.1+0.1*slave)*cexp(I*arg));
 	if(slave)
 		create_enemy1c(b->pos, ENEMY_IMMUNE, NULL, blowwall_slave, 0.2*cexp(I*arg));
 }
@@ -689,8 +689,8 @@ void kurumi_danmaku(Boss *b, int time) {
 		return;
 	
 	AT(50) {
-		create_laser(LT_Curve, b->pos, 0, 50, 100, rgb(1, 0.8, 0.8), kurumi_wall_laser, 0.2*cexp(I*carg(-b->pos)));
-		create_laser(LT_Curve, b->pos, 0, 50, 100, rgb(1, 0.8, 0.8), kurumi_wall_laser, 0.2*cexp(I*carg(VIEWPORT_W-b->pos)));
+		create_lasercurve1c(b->pos, 50, 100, rgb(1, 0.8, 0.8), kurumi_wall_laser, 0.2*cexp(I*carg(-b->pos)));
+		create_lasercurve1c(b->pos, 50, 100, rgb(1, 0.8, 0.8), kurumi_wall_laser, 0.2*cexp(I*carg(VIEWPORT_W-b->pos)));
 		create_enemy3c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, kdanmaku_slave, 0.2*cexp(I*carg(-b->pos)), 0, 1);
 		create_enemy3c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, kdanmaku_slave, 0.2*cexp(I*carg(VIEWPORT_W-b->pos)), 0, 0);
 	}
