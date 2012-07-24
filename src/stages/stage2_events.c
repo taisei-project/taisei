@@ -409,8 +409,10 @@ int stage2_boss_a1_slave(Enemy *e, int time) {
 		120
 	)->angle = angle;
 	
-	if(!(time % 60))
+	if(!(time % 60)) {
 		create_lasercurve3c(e->pos, 70, 200, rgb(1.0, 1.0, 0.5), las_sine, 5*dir, M_PI/12, 0.2);
+		create_lasercurve3c(e->pos, 70, 200, rgb(0.5, 1.0, 0.5), las_sine_expanding, 5*dir, M_PI/24, 0.2);
+	}
 	
 	return 1;
 }

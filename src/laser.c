@@ -174,7 +174,13 @@ complex las_accel(Laser *l, float t) {
 	return l->pos + l->args[0]*t + 0.5*l->args[1]*t*t;
 }
 
-complex las_sine(Laser *l, float t) {		// [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
+complex las_sine(Laser *l, float t) {				// [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
 	double s = (l->args[2] * t + l->args[3]);
 	return l->pos + cexp(I * (carg(l->args[0]) + l->args[1] * sin(s) / s)) * t * cabs(l->args[0]);
 }
+
+complex las_sine_expanding(Laser *l, float t) {	// [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
+	double s = (l->args[2] * t + l->args[3]);
+	return l->pos + cexp(I * (carg(l->args[0]) + l->args[1] * sin(s))) * t * cabs(l->args[0]);
+}
+

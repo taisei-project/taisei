@@ -60,5 +60,6 @@ int collision_laser_curve(Laser *l);
 complex las_linear(Laser *l, float t);
 complex las_accel(Laser *l, float t);
 complex las_sine(Laser *l, float t);
+complex las_sine_expanding(Laser *l, float t);
 
 #endif
