@@ -342,13 +342,13 @@ void stage2_mid_a2(Boss *boss, int time) {
 	if(time < 0)
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/6, 0.05)
 
-	FROM_TO_INT(30, 9000, 40 - (int)rint(global.diff * 1.35), 1, 1) {
+	FROM_TO_INT(30, 9000, 35 - (int)rint(global.diff * 1.35), 1, 1) {
 		int i, cnt = 7;
 		for(i = 0; i < cnt; ++i) {
 			float a = M_PI/cnt * i * 2;
 			
 			create_projectile4c("soul", boss->pos, (_i % 2)? rgb(0.3, 0.3, 1.0) : rgb(1.0, 0.3, 0.3), stage2_mid_poison2,
-				2 * cexp(I * (a + 7.4 * time + M_PI * (_i % 2))),
+				2 * cexp(I * (a + ((global.diff == D_Hard)? 7.4 : 7.3) * time + M_PI * (_i % 2))),
 				0,
 				a,
 				time
@@ -383,7 +383,8 @@ Boss* stage2_create_midboss() {
 	boss_add_attack(scuttle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
 	boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 30, 20000, stage2_mid_a0, NULL);
 	boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Deadly Dance", 30, 20000, stage2_mid_a1, stage2_mid_spellbg);
-	boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Acid Rain", 30, 25000, stage2_mid_a2, stage2_mid_spellbg);
+	if(global.diff > D_Normal)
+		boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Acid Rain", 30, 25000, stage2_mid_a2, stage2_mid_spellbg);
 	boss_add_attack(scuttle, AT_Move, "Runaway", 2, 1, stage2_mid_outro, NULL);
 	scuttle->zoomcolor = rgb(0.4, 0.5, 0.4);
 	
@@ -394,8 +395,8 @@ Boss* stage2_create_midboss() {
 void stage2_events() {
 	TIMER(&global.timer);
 	
-	//AT(0)
-	//	global.timer = 2801;
+//	AT(0)
+//		global.timer = 2700;
 	
 	FROM_TO(160, 300, 10) {
 		create_enemy1c(VIEWPORT_W/2 + 20 * nfrand() + (VIEWPORT_H/4 + 20 * nfrand())*I, 200, Swirl, stage2_enterswirl, I * 3 + nfrand() * 3);
