@@ -396,7 +396,7 @@ int stage2_boss_a1_laserbullet(Projectile *p, int time) {
 	if(time >= creal(p->args[1])) {
 		if(p->args[2]) {
 			complex dist = global.plr.pos - p->pos;
-			complex accel = 0.2 * cexp(I*carg(dist));
+			complex accel = (0.1 + 0.2 * (global.diff / (float)D_Lunatic)) * cexp(I*carg(dist));
 			float deathtime = sqrt(2*cabs(dist)/cabs(accel));
 			
 			Laser *l = create_lasercurve2c(p->pos, 2 * deathtime, deathtime, rgb(1.0, 0.5, 0.5), las_accel, 0, accel);
@@ -419,11 +419,25 @@ int stage2_boss_a1_laserbullet(Projectile *p, int time) {
 		return 1;
 	
 	Laser *laser = (Laser*)REF(p->args[0]);
-	
 	p->pos = laser->rule(laser, time);
-	p->angle = carg(p->pos);
 	
 	return 1;
+}
+
+void stage2_boss_a1_slave_part(Projectile *p, int t) {
+	Texture *tex = p->tex;
+	glBindTexture(GL_TEXTURE_2D, tex->gltex);
+	float b = 1 - t / p->args[0];
+	glColor4f(p->clr->r*b, p->clr->g*b, p->clr->b*b, 1);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	
+	glPushMatrix();
+	glTranslatef(creal(p->pos), cimag(p->pos), 0);
+	draw_texture_p(0,0, p->tex);
+	glPopMatrix();
+	
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glColor4f(1,1,1,1);
 }
 
 int stage2_boss_a1_slave(Enemy *e, int time) {
@@ -439,15 +453,21 @@ int stage2_boss_a1_slave(Enemy *e, int time) {
 		return 1;
 	}
 	
-	if(!(time % 10)) create_projectile1c("thickrice", e->pos, rgb(1.0, 1.0, 0.5), timeout,
-		120
-	)->angle = angle;
+	if(!(time % 2)) {
+		float c = 0.5 * psin(time / 25.0);
+		Projectile *p = create_particle1c("lasercurve", e->pos, rgb(1.0 - c, 0.5, 0.5 + c), stage2_boss_a1_slave_part, timeout,
+			120
+		);
+		
+		p->type = FairyProj;
+		p->angle = angle;
+	}
 	
 	if(!(time % 140)) {
 		float dt = 70;
 		
-		Laser *l = create_lasercurve3c(e->pos, dt, dt, rgb(1.0, 1.0, 0.5), las_sine, 2.5*dir, M_PI/12, 0.2);
-		create_lasercurve3c(e->pos, dt, dt, rgb(0.5, 1.0, 0.5), las_sine_expanding, 2.5*dir, M_PI/24, 0.2);
+		Laser *l = create_lasercurve3c(e->pos, dt, dt, rgb(1.0, 1.0, 0.5), las_sine, 2.5*dir, M_PI/4, 0.2);
+		create_lasercurve4c(e->pos, dt, dt, rgb(0.5, 1.0, 0.5), las_sine_expanding, 2.5*dir, M_PI/20, 0.2, M_PI);
 		create_projectile3c("ball", e->pos, rgb(1.0, 0.5, 0.5), stage2_boss_a1_laserbullet, add_ref(l), dt-1, 1);
 	}
 	
@@ -477,7 +497,7 @@ Boss* stage2_create_boss() {
 	
 	Boss* wriggle = create_boss("EX Wriggle", "wriggle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
-	boss_add_attack(wriggle, AT_Spellcard, "OMG sign ~ Lazorz pwnage", 30, 20000, stage2_boss_a1, stage2_mid_spellbg);
+	boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage2_boss_a1, stage2_mid_spellbg);
 	boss_add_attack(wriggle, AT_Move, "Runaway", 2, 1, stage2_mid_outro, NULL);
 	//scuttle->zoomcolor = rgb(0.4, 0.5, 0.4);
 	
