@@ -15,7 +15,7 @@
 #include <GL/glext.h>
 
 enum {
-	VBO_SIZE = 2048, // * sizeof(Vertex)
+	VBO_SIZE = 8192, // * sizeof(Vertex)
 };
 
 typedef struct VBO VBO;
