@@ -392,11 +392,65 @@ Boss* stage2_create_midboss() {
 	return scuttle;
 }
 
+int stage2_boss_a1_slave(Enemy *e, int time) {
+	TIMER(&time)
+	
+	float angle = e->args[2] * (time / 70.0 + e->args[1]);
+	complex dir = cexp(I*angle);
+	
+	GO_TO(e, ((Boss*)REF(e->args[0]))->pos + 150 * sin(time / 100.0) * dir, 0.03)
+	
+	AT(EVENT_DEATH) {
+		free_ref(e->args[0]);
+		return 1;
+	}
+	
+	if(!(time % 10)) create_projectile1c("thickrice", e->pos, rgb(1.0, 1.0, 0.5), timeout,
+		120
+	)->angle = angle;
+	
+	if(!(time % 60))
+		create_lasercurve3c(e->pos, 70, 200, rgb(1.0, 1.0, 0.5), las_sine, 5*dir, M_PI/12, 0.2);
+	
+	return 1;
+}
+
+void stage2_boss_a1(Boss *boss, int time) {
+	int i, j, cnt = 5;
+	TIMER(&time)
+	
+	AT(EVENT_DEATH) {
+		killall(global.enemies);
+		return;
+	}
+	
+	if(time < 0)
+		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/3, 0.05)
+	
+	if(time == 0) {
+		for(j = -1; j < 2; j += 2) for(i = 0; i < cnt; ++i)
+			create_enemy3c(boss->pos, ENEMY_IMMUNE, Swirl, stage2_boss_a1_slave, add_ref(boss), i*2*M_PI/cnt, j);
+	}
+}
+
+Boss* stage2_create_boss() {
+	// TODO: spellbg
+	
+	Boss* wriggle = create_boss("EX Wriggle", "wriggle", VIEWPORT_W/2 - 200I);
+	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
+	boss_add_attack(wriggle, AT_Spellcard, "OMG sign ~ Lazorz pwnage", 30, 20000, stage2_boss_a1, stage2_mid_spellbg);
+	boss_add_attack(wriggle, AT_Move, "Runaway", 2, 1, stage2_mid_outro, NULL);
+	//scuttle->zoomcolor = rgb(0.4, 0.5, 0.4);
+	
+	start_attack(wriggle, wriggle->attacks);
+	return wriggle;
+}
+
 void stage2_events() {
 	TIMER(&global.timer);
 	
-//	AT(0)
-//		global.timer = 2700;
+	AT(0)
+		global.timer = 5200;
 	
 	FROM_TO(160, 300, 10) {
 		create_enemy1c(VIEWPORT_W/2 + 20 * nfrand() + (VIEWPORT_H/4 + 20 * nfrand())*I, 200, Swirl, stage2_enterswirl, I * 3 + nfrand() * 3);
@@ -472,5 +526,5 @@ void stage2_events() {
 	}
 	
 	AT(5300)
-		global.boss = stage2_create_midboss();
+		global.boss = stage2_create_boss();
 }
