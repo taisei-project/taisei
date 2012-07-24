@@ -343,7 +343,7 @@ void stage2_mid_a2(Boss *boss, int time) {
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/6, 0.05)
 
 	FROM_TO_INT(30, 9000, 35 - (int)rint(global.diff * 1.35), 1, 1) {
-		int i, cnt = 7;
+		int i, cnt = 5 + global.diff;
 		for(i = 0; i < cnt; ++i) {
 			float a = M_PI/cnt * i * 2;
 			
@@ -402,7 +402,7 @@ int stage2_boss_a1_laserbullet(Projectile *p, int time) {
 			Laser *l = create_lasercurve2c(p->pos, 2 * deathtime, deathtime, rgb(1.0, 0.5, 0.5), las_accel, 0, accel);
 			create_projectile3c("ball", p->pos, rgb(1.0, 0.5, 0.5), stage2_boss_a1_laserbullet, add_ref(l), deathtime - 1, 0);
 		} else {
-			int cnt = 10, i;
+			int cnt = max(3 + global.diff, 5), i;
 			
 			for(i = 0; i < cnt; ++i) {
 				create_projectile2c("thickrice", p->pos, (i % 2)? rgb(1.0, 0.5, 0.5) : rgb(0.5, 0.5, 1.0), asymptotic,
@@ -443,17 +443,19 @@ int stage2_boss_a1_slave(Enemy *e, int time) {
 		120
 	)->angle = angle;
 	
-	if(!(time % 120)) {
-		Laser *l = create_lasercurve3c(e->pos, 50, 50, rgb(1.0, 1.0, 0.5), las_sine, 5*dir, M_PI/12, 0.2);
-		create_lasercurve3c(e->pos, 50, 50, rgb(0.5, 1.0, 0.5), las_sine_expanding, 5*dir, M_PI/24, 0.2);
-		create_projectile3c("ball", e->pos, rgb(1.0, 0.5, 0.5), stage2_boss_a1_laserbullet, add_ref(l), 49, 1);
+	if(!(time % 140)) {
+		float dt = 70;
+		
+		Laser *l = create_lasercurve3c(e->pos, dt, dt, rgb(1.0, 1.0, 0.5), las_sine, 2.5*dir, M_PI/12, 0.2);
+		create_lasercurve3c(e->pos, dt, dt, rgb(0.5, 1.0, 0.5), las_sine_expanding, 2.5*dir, M_PI/24, 0.2);
+		create_projectile3c("ball", e->pos, rgb(1.0, 0.5, 0.5), stage2_boss_a1_laserbullet, add_ref(l), dt-1, 1);
 	}
 	
 	return 1;
 }
 
 void stage2_boss_a1(Boss *boss, int time) {
-	int i, j, cnt = 5;
+	int i, j, cnt = 1 + global.diff;
 	TIMER(&time)
 	
 	AT(EVENT_DEATH) {
