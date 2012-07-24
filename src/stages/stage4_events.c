@@ -184,15 +184,54 @@ Boss *create_iku_mid() {
 	return b;
 }
 
+int stage4_lightburst2(Enemy *e, int t) {
+	TIMER(&t);
+	AT(EVENT_DEATH) {
+		spawn_items(e->pos, 4, 3, 0, 0);
+		return 1;
+	}
+	
+	if(t < 70 || t > 200)
+		e->pos += e->args[0];
+	
+	FROM_TO(20, 170, 5) {
+		int i;
+		int c = 5+global.diff;
+		for(i = 0; i < c; i++) {
+			complex n = cexp(I*carg(global.plr.pos-e->pos) + 2I*M_PI/c*i);
+			create_projectile2c("bigball", e->pos + 50*n*cexp(-1I*_i*global.diff), rgb(0.3, 0, 0.7+0.3*(_i&1)), asymptotic, 2.5*n+0.25*global.diff*frand()*cexp(2I*M_PI*frand()), 3);
+		}
+	}
+	
+	return 1;
+}
+
+int stage4_superbullet(Enemy *e, int t) {
+	TIMER(&t);
+	AT(EVENT_DEATH) {
+		spawn_items(e->pos, 4, 3, 0, 0);
+		return 1;
+	}
+	
+	FROM_TO(0, 70, 1)
+		e->pos += e->args[0];
+		
+	FROM_TO(60, 200, 1) {
+		complex n = cexp(I*M_PI*sin(_i/(8.0+global.diff)+frand()*0.1)+I*carg(global.plr.pos-e->pos));
+		
+		create_projectile2c("bullet", e->pos + 50*n, rgb(0.6, 0, 0), asymptotic, 2*n, 10);
+	}
+	
+	FROM_TO(260, 400, 1)
+		e->pos -= e->args[0];
+	return 1;
+}
+
 void stage4_events() {
 	TIMER(&global.timer);
-	
-// 	AT(0)
-// 		global.timer = 2800;
-	
-	FROM_TO(60, 120, 10) {
+		
+	FROM_TO(60, 120, 10)
 		create_enemy1c(VIEWPORT_W+70I+50*_i*I, 300, Fairy, stage4_greeter, -3);
-	}
 	
 	FROM_TO(270, 320, 25)
 		create_enemy1c(VIEWPORT_W/4+VIEWPORT_W/2*_i, 2000, BigFairy, stage4_lightburst, 2I);
@@ -221,5 +260,19 @@ void stage4_events() {
 	AT(2920)
 		global.dialog = stage4_post_mid_dialog();
 		
-// 	FROM_TO
+	FROM_TO(3000, 3200, 100)
+		create_enemy1c(VIEWPORT_W/2 + VIEWPORT_W/6*(1-2*(_i&1)), 2000, BigFairy, stage4_lightburst2, -1+2*(_i&1) + 2I);
+		
+	FROM_TO(3300, 4000, 50)
+		create_enemy1c(200I+VIEWPORT_W*(_i&1), 1500, Fairy, stage4_superbullet, 3-6*(_i&1));
+	
+	AT(3400) {
+		create_enemy1c(VIEWPORT_W/4, 6000, BigFairy, stage4_laserfairy, 2I);
+		create_enemy1c(VIEWPORT_W/4*3, 6000, BigFairy, stage4_laserfairy, 2I);
+	}
+	
+	FROM_TO(4200, 5000, 20) {
+		float f = frand();
+		create_enemy3c(VIEWPORT_W/2, 600, Swirl, stage4_swirl, 2*cexp(I*M_PI*f)+I, 60 + 100I, cexp(0.01I*(1-2*(f<0.5))));
+	}
 }
