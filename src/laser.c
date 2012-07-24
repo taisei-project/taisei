@@ -183,4 +183,3 @@ complex las_sine_expanding(Laser *l, float t) {	// [0] = velocity; [1] = sine am
 	double s = (l->args[2] * t + l->args[3]);
 	return l->pos + cexp(I * (carg(l->args[0]) + l->args[1] * sin(s))) * t * cabs(l->args[0]);
 }
-

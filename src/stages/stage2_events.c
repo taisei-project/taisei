@@ -392,6 +392,40 @@ Boss* stage2_create_midboss() {
 	return scuttle;
 }
 
+int stage2_boss_a1_laserbullet(Projectile *p, int time) {
+	if(time >= creal(p->args[1])) {
+		if(p->args[2]) {
+			complex dist = global.plr.pos - p->pos;
+			complex accel = 0.2 * cexp(I*carg(dist));
+			float deathtime = sqrt(2*cabs(dist)/cabs(accel));
+			
+			Laser *l = create_lasercurve2c(p->pos, 2 * deathtime, deathtime, rgb(1.0, 0.5, 0.5), las_accel, 0, accel);
+			create_projectile3c("ball", p->pos, rgb(1.0, 0.5, 0.5), stage2_boss_a1_laserbullet, add_ref(l), deathtime - 1, 0);
+		} else {
+			int cnt = 10, i;
+			
+			for(i = 0; i < cnt; ++i) {
+				create_projectile2c("thickrice", p->pos, (i % 2)? rgb(1.0, 0.5, 0.5) : rgb(0.5, 0.5, 1.0), asymptotic,
+					(0.1 + frand()) * cexp(I*2*i*M_PI/cnt), 3
+				)->draw = ProjDrawAdd;
+			}
+		}
+		
+		free_ref(p->args[0]);
+		return ACTION_DESTROY;
+	}
+	
+	if(time < 0)
+		return 1;
+	
+	Laser *laser = (Laser*)REF(p->args[0]);
+	
+	p->pos = laser->rule(laser, time);
+	p->angle = carg(p->pos);
+	
+	return 1;
+}
+
 int stage2_boss_a1_slave(Enemy *e, int time) {
 	TIMER(&time)
 	
@@ -409,9 +443,10 @@ int stage2_boss_a1_slave(Enemy *e, int time) {
 		120
 	)->angle = angle;
 	
-	if(!(time % 60)) {
-		create_lasercurve3c(e->pos, 70, 200, rgb(1.0, 1.0, 0.5), las_sine, 5*dir, M_PI/12, 0.2);
-		create_lasercurve3c(e->pos, 70, 200, rgb(0.5, 1.0, 0.5), las_sine_expanding, 5*dir, M_PI/24, 0.2);
+	if(!(time % 120)) {
+		Laser *l = create_lasercurve3c(e->pos, 50, 50, rgb(1.0, 1.0, 0.5), las_sine, 5*dir, M_PI/12, 0.2);
+		create_lasercurve3c(e->pos, 50, 50, rgb(0.5, 1.0, 0.5), las_sine_expanding, 5*dir, M_PI/24, 0.2);
+		create_projectile3c("ball", e->pos, rgb(1.0, 0.5, 0.5), stage2_boss_a1_laserbullet, add_ref(l), 49, 1);
 	}
 	
 	return 1;
