@@ -92,6 +92,32 @@ void stage4_draw() {
 		stagedata.light_strength = 5+5*frand();
 }
 
+void iku_spell_bg(Boss *b, int t) {
+	fill_screen(0, 300, 1, "stage4/spell_bg");
+	
+	glPushMatrix();
+	glTranslatef(0, -100, 0);
+	
+	fill_screen(t/100.0,0,0.5,"stage4/spell_clouds");
+	glPushMatrix();
+	glTranslatef(0, 100, 0);	
+	fill_screen(t/100.0*0.75,0,0.6,"stage4/spell_clouds");
+	glPushMatrix();
+	glTranslatef(0, 100, 0);	
+	fill_screen(t/100.0*0.5,0,0.7,"stage4/spell_clouds");	
+	glPushMatrix();
+	glTranslatef(0, 100, 0);	
+	fill_screen(t/100.0*0.25,0,0.8,"stage4/spell_clouds");	
+	glPopMatrix();	
+	glPopMatrix();
+	glPopMatrix();
+	glPopMatrix();
+		
+	glColor4f(1,1,1,0.05*stagedata.light_strength);
+	fill_screen(0, 300, 1, "stage4/spell_lightning");
+	glColor4f(1,1,1,1);
+}
+
 void stage4_start() {
 	memset(&stagedata, 0, sizeof(stagedata));
 	

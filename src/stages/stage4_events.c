@@ -6,6 +6,7 @@
  */
 
 #include "stage4_events.h"
+#include "stage4.h"
 #include <global.h>
 
 Dialog *stage4_post_mid_dialog() {
@@ -177,9 +178,9 @@ void iku_mid_intro(Boss *b, int t) {
 }
 
 Boss *create_iku_mid() {
-	Boss *b = create_boss(" ", "iku", VIEWPORT_W+800I);
+	Boss *b = create_boss("Bombs?", "iku", VIEWPORT_W+800I);
 	
-	boss_add_attack(b, AT_Move, "Introduction", 16, 0, iku_mid_intro, NULL);
+	boss_add_attack(b, AT_SurvivalSpell, "Introduction", 16, 10, iku_mid_intro, NULL);
 	
 	return b;
 }
@@ -227,9 +228,236 @@ int stage4_superbullet(Enemy *e, int t) {
 	return 1;
 }
 
+void iku_intro(Boss *b, int t) {
+	GO_TO(b, VIEWPORT_W/2+300I, 0.01);
+}
+
+void iku_bolts(Boss *b, int time) {
+	int t = time % 400;
+	TIMER(&t);
+	
+	FROM_TO(0, 400, 2)
+		create_projectile2c("bigball", VIEWPORT_W*frand()-15I, rgb(1,0,0), accelerated, 1-2*frand()+1.7I, -0.01I)->draw = ProjDrawSub;
+		
+	FROM_TO(60, 400, 50) {
+		int i, c = 10+global.diff;
+		for(i = 0; i < c; i++) {
+			create_projectile2c("ball", b->pos, rgb(0.4, 1, 1), asymptotic, (i+2)*0.4*cexp(I*carg(global.plr.pos-b->pos))+0.2*(global.diff-1)*frand(), 3)->draw = ProjDrawAdd;
+		}
+	}
+	
+	FROM_TO(0, 70, 1)
+		GO_TO(b, 100+300I, 0.02);
+		
+	FROM_TO(100, 200, 1)
+		GO_TO(b, VIEWPORT_W/2+100I, 0.02);
+		
+	FROM_TO(230, 300, 1)
+		GO_TO(b, VIEWPORT_W-100+300I, 0.02);
+		
+	FROM_TO(330, 400, 1)
+		GO_TO(b, VIEWPORT_W/2+100I, 0.02);
+		
+}
+
+void iku_atmospheric(Boss *b, int time) {
+	if(time < 0) {
+		GO_TO(b, VIEWPORT_W/2+200I, 0.06);
+		return;
+	}
+	
+	int t = time % 500;
+	TIMER(&t);
+	
+	FROM_TO(0, 500, 23-2*global.diff) {
+		complex p1 = VIEWPORT_W*frand() + VIEWPORT_H/2*I*frand();
+		complex p2 = p1 + (120+20*global.diff)*cexp(0.5I-frand()*I)*(1-2*(frand() > 0.5));
+		
+		int i;
+		int c = 10;
+		
+		for(i = -c*0.5; i <= c*0.5; i++) {
+			create_projectile2c("ball", p1+(p2-p1)/c*i, rgb(1/(1+fabs(0.3*i)), 1, 1), accelerated, 0, 0.01*cexp(I*carg(p2-p1)+I*M_PI/2+0.2I*i))->draw = ProjDrawAdd;
+		}
+	}
+	
+	FROM_TO(0, 500, 7-global.diff)
+		create_projectile2c("thickrice", VIEWPORT_W*frand(), rgb(0,0.3,0.7), accelerated, 0, 0.01I);
+}
+
+complex bolts2_laser(Laser *l, float t) {
+	return creal(l->args[0])+I*cimag(l->pos) + copysign(1,cimag(l->args[0]-l->pos))*0.06I*t*t + (20+4*global.diff)*sin(t*0.1+creal(l->args[0]));
+}
+
+void iku_bolts2(Boss *b, int time) {
+	int t = time % 400;
+	TIMER(&t);
+	
+	FROM_TO(0, 400, 2)
+		create_projectile2c("bigball", VIEWPORT_W*frand()-15I, rgb(1,0,0), accelerated, 1-2*frand()+1.7I, -0.01I)->draw = ProjDrawSub;
+		
+	FROM_TO(0, 400, 60)
+		create_lasercurve1c(creal(global.plr.pos), 100, 200, rgb(0.3,1,1), bolts2_laser, global.plr.pos);
+	
+	FROM_TO(0, 400, 5-global.diff)
+		if(frand() < 0.9)
+			create_projectile1c("plainball", b->pos, rgb(0.2,0,0.8), linear, cexp(0.1I*_i));
+	
+	FROM_TO(0, 70, 1)
+		GO_TO(b, 100+200I, 0.02);
+				
+	FROM_TO(230, 300, 1)
+		GO_TO(b, VIEWPORT_W-100+200I, 0.02);
+		
+}
+
+int lightning_slave(Enemy *e, int t) {
+	if(t < 0)
+		return 1;
+	if(t > 200)
+		return ACTION_DESTROY;
+	
+	TIMER(&t);
+	
+	e->pos += e->args[0];
+	
+	FROM_TO(0,200,20)
+		e->args[0] *= cexp(2I*M_PI*frand());
+	
+	FROM_TO(0, 200, 3)
+		if(cabs(e->pos-global.plr.pos) > 60)
+			create_projectile2c("wave", e->pos, rgb(0, 1, 1), accelerated, 0.5*e->args[0]/cabs(e->args[0])*I, 0.005*(1-2*frand()+I*frand()))->draw = ProjDrawAdd;
+
+	return 1;
+}
+	
+
+void iku_lightning(Boss *b, int time) {
+	int t = time % 151;
+	
+	if(time == EVENT_DEATH) {
+		killall(global.enemies);
+		return;
+	}
+	
+	if(time < 0) {
+		GO_TO(b, VIEWPORT_W/2.0+200I, 0.03);
+		return;
+	}
+	
+	TIMER(&t);	
+			
+	FROM_TO(0, 100, 1) {
+		complex n = cexp(2I*M_PI*frand());
+		float l = 200*frand()+100;
+		float s = 4+_i*0.01;
+		create_particle2c("flare", b->pos+l*n, rgb(0.7,1,1), Shrink, timeout_linear, l/s, -s*n);
+	}
+	
+	AT(150) {
+		int i;
+		for(i = 0; i < global.diff+1; i++)
+			create_enemy1c(b->pos, ENEMY_IMMUNE, NULL, lightning_slave, 10*cexp(I*carg(global.plr.pos - b->pos)+2I*M_PI/(global.diff+1)*i));
+	}
+}
+
+void iku_bolts3(Boss *b, int time) {
+	int t = time % 400;
+	TIMER(&t);
+	
+	FROM_TO(0, 400, 2)
+		create_projectile2c("bigball", VIEWPORT_W*frand()-15I, rgb(1,0,0), accelerated, 1-2*frand()+1.8I, -0.01I)->draw = ProjDrawSub;
+		
+	FROM_TO(60, 400, 60) {
+		int i, c = 10+global.diff;
+		complex n = cexp(I*carg(global.plr.pos-b->pos)+0.1I-0.2I*frand());
+		for(i = 0; i < c; i++) {
+			create_projectile2c("ball", b->pos, rgb(0.4, 1, 1), asymptotic, (i+2)*0.4*n+0.2*(global.diff-1)*frand(), 3)->draw = ProjDrawAdd;
+		}
+	}
+	
+	FROM_TO(0, 400, 5-global.diff)
+		if(frand() < 0.9)
+			create_projectile1c("plainball", b->pos, rgb(0.2,0,0.8), linear, cexp(0.1I*_i));
+	
+	FROM_TO(0, 70, 1)
+		GO_TO(b, 100+200I, 0.02);
+				
+	FROM_TO(230, 300, 1)
+		GO_TO(b, VIEWPORT_W-100+200I, 0.02);
+		
+}
+
+
+int induction_bullet(Projectile *p, int t) {
+	if(t < 0)
+		return 1;
+	
+	p->pos = p->pos0 + p->args[0]*t*cexp(p->args[1]*t);
+	p->angle = carg(p->args[0]*cexp(p->args[1]*t)*(1+p->args[1]*t));
+	return 1;
+}
+
+complex cathode_laser(Laser *l, float t) {
+	return l->pos + l->args[0]*t*cexp(l->args[1]*t);
+}
+
+void iku_cathode(Boss *b, int t) {
+	TIMER(&t)
+	
+	FROM_TO(50, 1800, 70-global.diff*10) {
+		int i;
+		int c = 5+global.diff;
+		
+		for(i = 0; i < c; i++) {
+			create_projectile2c("bigball", b->pos, rgb(0.2, 0.4, 1), induction_bullet, 2*cexp(2I*M_PI*frand()), 0.01*I*(1-2*(_i&1)))->draw = ProjDrawAdd;
+			create_lasercurve2c(b->pos, 60, 200, rgb(0.4, 1, 1), cathode_laser, 2*cexp(2I*M_PI*M_PI*frand()), 0.015*I*(1-2*(_i&1)));
+		}
+	}
+}
+
+void iku_induction(Boss *b, int t) {
+	if(t < 0) {
+		GO_TO(b, VIEWPORT_W/2+200I, 0.02);
+		return;
+	}
+		
+	TIMER(&t);
+
+	FROM_TO(0, 1800, 8) {
+		int i,j;
+		int c = 5+global.diff;
+		for(i = 0; i < c; i++) {
+			for(j = 0; j < 2; j++)
+				create_projectile2c("ball", b->pos, rgb(0, 1, 1), induction_bullet, 2*cexp(2I*M_PI/c*i+I*M_PI/2+0.6I*(_i/6)), (0.01+0.001*global.diff)*I*(1-2*j))->draw = ProjDrawAdd;			
+		}
+		
+	}
+}
+
+void iku_spell_bg(Boss *b, int t);
+
+Boss *create_iku() {
+	Boss *b = create_boss("Nagae Iku", "iku", VIEWPORT_W/2-200I);
+	
+	boss_add_attack(b, AT_Move, "Introduction", 3, 0, iku_intro, NULL);
+	boss_add_attack(b, AT_Normal, "Bolts1", 20, 20000, iku_bolts, NULL);
+	boss_add_attack(b, AT_Spellcard, "High Voltage ~ Atmospheric Discharge", 30, 30000, iku_atmospheric, iku_spell_bg);
+	boss_add_attack(b, AT_Normal, "Bolts2", 25, 20000, iku_bolts2, NULL);
+	boss_add_attack(b, AT_Spellcard, "Charge Sign ~ Artificial Lightning", 30, 35000, iku_lightning, iku_spell_bg);
+	boss_add_attack(b, AT_Normal, "Bolts3", 20, 20000, iku_bolts3, NULL);
+	boss_add_attack(b, AT_Spellcard, "Spark Sign ~ Natural Cathode", 30, 35000, iku_cathode, iku_spell_bg);
+	boss_add_attack(b, AT_Spellcard, "Current Sign ~ Induction", 30, 35000, iku_induction, iku_spell_bg);
+		
+	return b;
+}
+
 void stage4_events() {
 	TIMER(&global.timer);
-		
+	
+	AT(0)
+		global.timer = 5000;
+	
 	FROM_TO(60, 120, 10)
 		create_enemy1c(VIEWPORT_W+70I+50*_i*I, 300, Fairy, stage4_greeter, -3);
 	
@@ -275,4 +503,7 @@ void stage4_events() {
 		float f = frand();
 		create_enemy3c(VIEWPORT_W/2, 600, Swirl, stage4_swirl, 2*cexp(I*M_PI*f)+I, 60 + 100I, cexp(0.01I*(1-2*(f<0.5))));
 	}
+	
+	AT(5300)
+		global.boss = create_iku();
 }
