@@ -159,8 +159,6 @@ int collision_laser_line(Laser *l) {
 	
 	s = b*b - (la - r*r)/lm;
 	
-	printf("%f\n", s);
-	
 	if(s >= 0) {		
 		if((b+s >= 0 && b+s <= 1) || (b-s >= 0 && b-s <= 1))
 			return 1;
