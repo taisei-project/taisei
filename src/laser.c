@@ -144,13 +144,29 @@ void process_lasers() {
 }
 
 int collision_laser_line(Laser *l) {
-	Player *plr = &global.plr;	
-	float x = creal(l->pos) + creal(l->dir)/cimag(l->dir)*(cimag(plr->pos) - cimag(l->pos));
+	complex a, m;
+	float b, la, lm, r, s;
 	
-	if(fabs(creal(plr->pos) - x) < fabs(creal(l->dir*I)/2))
-		return 1;
-	else
-		return 0;
+	a = l->pos-global.plr.pos;
+	m = l->dir*VIEWPORT_H;
+	
+	r = 10+cabs(l->dir);
+	
+	la = a*conj(a);
+	lm = m*conj(m);
+	
+	b = -(creal(a)*creal(m)+cimag(a)*cimag(m))/lm;	
+	
+	s = b*b - (la - r*r)/lm;
+	
+	printf("%f\n", s);
+	
+	if(s >= 0) {		
+		if((b+s >= 0 && b+s <= 1) || (b-s >= 0 && b-s <= 1))
+			return 1;
+	}
+		
+	return 0;	
 }
 
 int collision_laser_curve(Laser *l) {
