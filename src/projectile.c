@@ -220,6 +220,14 @@ void ProjDrawAdd(Projectile *proj, int t) {
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 }
 
+void ProjDrawSub(Projectile *proj, int t) {
+	glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+	ProjDraw(proj, t);
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	glBlendEquation(GL_FUNC_ADD);
+}
+
 void PartDraw(Projectile *proj, int t) {
 	glPushMatrix();
 	glTranslatef(creal(proj->pos), cimag(proj->pos), 0);

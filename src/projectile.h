@@ -77,6 +77,7 @@ void ProjDraw(Projectile *p, int t);
 void PartDraw(Projectile *p, int t);
 
 void ProjDrawAdd(Projectile *p, int t);
+void ProjDrawSub(Projectile *p, int t);
 
 void Blast(Projectile *p, int t);
 
