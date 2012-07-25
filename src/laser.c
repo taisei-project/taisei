@@ -129,7 +129,7 @@ void process_lasers() {
 			c = collision_laser_curve(laser);
 		}
 		
-		if(c && global.frames - laser->birthtime > laser->time)
+		if(c)
 			player_death(&global.plr);
 		
 		if(global.frames - laser->birthtime > laser->deathtime + laser->time) {
@@ -143,39 +143,51 @@ void process_lasers() {
 	}
 }
 
-int collision_laser_line(Laser *l) {
-	complex a, m;
-	float b, la, lm, r, s;
-	
-	a = l->pos-global.plr.pos;
-	m = l->dir*VIEWPORT_H;
-	
-	r = 10+cabs(l->dir);
+int collision_line(complex a, complex b, complex c, float r) {
+	complex m;
+	float d, la, lm, s;
+		
+	m = b-a;
+	a -= c;
 	
 	la = a*conj(a);
 	lm = m*conj(m);
 	
-	b = -(creal(a)*creal(m)+cimag(a)*cimag(m))/lm;	
+	d = -(creal(a)*creal(m)+cimag(a)*cimag(m))/lm;	
 	
-	s = b*b - (la - r*r)/lm;
+	s = d*d - (la - r*r)/lm;
 	
 	if(s >= 0) {		
-		if((b+s >= 0 && b+s <= 1) || (b-s >= 0 && b-s <= 1))
+		if((d+s >= 0 && d+s <= 1) || (d-s >= 0 && d-s <= 1))
 			return 1;
 	}
 		
-	return 0;	
+	return 0;
+}
+
+int collision_laser_line(Laser *l) {
+	int t = global.frames - l->birthtime;
+	if(t > l->time && t < l->deathtime)
+		return collision_line(l->pos, l->pos+l->dir*VIEWPORT_H, global.plr.pos, cabs(l->dir));
+	
+	return 0;
 }
 
 int collision_laser_curve(Laser *l) {
 	float t = global.frames - l->birthtime - l->time;
+	complex last;
+	
 	if(t < 0)
 		t = 0;
 	
-	for(; t < global.frames - l->birthtime && t <= l->deathtime; t+=2) {
+	last = l->rule(l,t);
+	
+	for(t += 5; t < global.frames - l->birthtime && t <= l->deathtime; t += 5) {
 		complex pos = l->rule(l,t);
-		if(cabs(pos - global.plr.pos) < 5)
+		if(collision_line(last, pos, global.plr.pos, 3))
 			return 1;
+		
+		last = pos;
 	}
 	return 0;
 }

@@ -174,6 +174,8 @@ void start_attack(Boss *b, Attack *a) {
 	for(p = global.projs; p; p = p->next)
 		if(p->type == FairyProj)
 			p->type = DeadProj;
+		
+	delete_lasers();
 }
 
 Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule) {
