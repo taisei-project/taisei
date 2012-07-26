@@ -41,7 +41,7 @@ Laser *create_laser(complex pos, float time, float deathtime, Color *color, Lase
 }
 
 Laser *create_laserline_ab(complex a, complex b, float width, float charge, float dur, Color *clr) {
-	complex m = (a-b)*0.005;
+	complex m = (b-a)*0.005;
 	
 	return create_laser(a, 200, dur, clr, las_linear, static_laser, m, charge + I*width, 0, 0);
 }
@@ -63,8 +63,8 @@ void draw_laser_curve_instanced(Laser *l) {
 		t = 0;
 	}
 	
-	if(t + l->timespan > l->deathtime)
-		c += l->deathtime - (t + l->timespan);
+	if(t + l->timespan > l->deathtime + l->timeshift)
+		c += l->deathtime + l->timeshift - (t + l->timespan);
 	
 	glEnable(GL_TEXTURE_2D);
 	
@@ -110,7 +110,7 @@ void draw_laser_curve(Laser *laser) {
 	
 	last = laser->prule(laser, t);
 	
-	for(t += 0.5; t < (global.frames - laser->birthtime)*laser->speed + laser->timeshift && t <= laser->deathtime; t += 0.5) {
+	for(t += 0.5; t < (global.frames - laser->birthtime)*laser->speed + laser->timeshift && t <= laser->deathtime + laser->timeshift; t += 0.5) {
 		complex pos = laser->prule(laser,t);
 		glPushMatrix();
 		
@@ -119,7 +119,7 @@ void draw_laser_curve(Laser *laser) {
 		float tail = laser->timespan/1.9;
 
 		float s = -0.75/pow(tail,2)*(t1-tail)*(t1+tail);
-				
+			
 		glTranslatef(creal(pos), cimag(pos), 0);
 		glRotatef(180/M_PI*carg(last-pos), 0, 0, 1);
 		
@@ -210,10 +210,15 @@ int collision_line(complex a, complex b, complex c, float r) {
 	return 0;
 }
 
+static float min(float a, float b) {
+	return a < b ? a : b;
+}
+
 int collision_laser_curve(Laser *l) {
-	float t = (global.frames - l->birthtime)*l->speed - l->timespan + l->timeshift;
-	complex last;
-	
+	float s = (global.frames - l->birthtime)*l->speed + l->timeshift;
+	float t = s - l->timespan;
+	complex last, pos;
+		
 	if(l->width <= 2.0)
 		return 0;
 	
@@ -222,13 +227,19 @@ int collision_laser_curve(Laser *l) {
 	
 	last = l->prule(l,t);
 	
-	for(t += l->collision_step; t <= (global.frames - l->birthtime)*l->speed + l->timeshift && t <= l->deathtime; t += l->collision_step) {
-		complex pos = l->prule(l,t);
+	for(t += l->collision_step; t + l->collision_step <= s && t + l->collision_step <= l->deathtime + l->timeshift; t += l->collision_step) {
+		pos = l->prule(l,t);
 		if(collision_line(last, pos, global.plr.pos, l->width*0.5))
 			return 1;
 		
 		last = pos;
 	}
+	
+	pos = l->prule(l, min(s, l->deathtime + l->timeshift));
+	
+	if(collision_line(last, pos, global.plr.pos, l->width*0.5))
+		return 1;
+	
 	return 0;
 }
 
