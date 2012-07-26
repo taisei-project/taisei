@@ -158,7 +158,7 @@ int stage4_explosion(Enemy *e, int t) {
 	}
 	
 	FROM_TO(500, 800, 60-5*global.diff)
-		create_laserline_ab(e->pos, e->pos-2000*cexp(I*carg(global.plr.pos-e->pos)+0.04I*(1-2*frand())), 10, 30, 60, rgb(1, 0.3, 1));
+		create_laserline(e->pos, 10*cexp(I*carg(global.plr.pos-e->pos)+0.04I*(1-2*frand())), 30, 60, rgb(1, 0.3, 1));
 		
 	return 1;
 }
