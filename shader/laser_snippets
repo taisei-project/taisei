@@ -10,14 +10,26 @@ uniform vec2 a3;
 uniform vec2 pos;
 
 uniform float timeshift;
+uniform float wq;
+uniform float hq;
+uniform int span;
 
 vec2 posrule(float t) {
 %%VSHADER-FOOT%%
 }
 
 void main(void) {
-	gl_Position     = gl_ModelViewProjectionMatrix*vec4(gl_Vertex.xy+posrule(gl_InstanceID*0.5+timeshift), 0.0, 1.0);
-	gl_FrontColor   = gl_Color;
+	vec2 v = gl_Vertex.xy;
+	
+	float t1 = gl_InstanceID-span/2;
+	float tail = span/1.9;
+
+	float s = -0.75/pow(tail,2)*(t1-tail)*(t1+tail);
+	
+	v.x *= wq*s;
+	v.y *= hq*s;
+	
+	gl_Position     = gl_ModelViewProjectionMatrix*vec4(v+posrule(gl_InstanceID*0.5+timeshift), 0.0, 1.0);
 	gl_TexCoord[0]  = gl_MultiTexCoord0;	
 }
 
@@ -26,9 +38,10 @@ void main(void) {
 #version 120
 
 uniform sampler2D tex;
+uniform vec4 clr;
 
 void main(void) {
-	gl_FragColor = texture2D(tex, vec2(gl_TexCoord[0].xy));
+	gl_FragColor = texture2D(tex, vec2(gl_TexCoord[0].xy))*clr;
 }
 
 %%linear%%

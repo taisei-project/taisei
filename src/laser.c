@@ -30,6 +30,8 @@ Laser *create_laser(complex pos, float time, float deathtime, Color *color, Lase
 	l->collision_step = 5;
 	l->width = 10;
 	l->speed = 1;
+	l->timeshift = 0;
+	
 	if(l->lrule)
 		l->lrule(l, EVENT_BIRTH);
 	
@@ -44,7 +46,51 @@ Laser *create_laserline_ab(complex a, complex b, float width, float charge, floa
 	return create_laser(a, 200, dur, clr, las_linear, static_laser, m, charge + I*width, 0, 0);
 }
 
-void draw_laser_curve_instanced(Laser *laser) {
+void draw_laser_curve_instanced(Laser *l) {
+	float t;
+	int c;
+	
+	Texture *tex = get_tex("part/lasercurve");
+	
+	float wq = ((float)tex->w)/tex->truew;
+	float hq = ((float)tex->h)/tex->trueh;	
+	
+	c = l->timespan;
+	
+	t = (global.frames - l->birthtime)*l->speed - l->timespan + l->timeshift;
+	if(t < 0) {
+		c += t;
+		t = 0;
+	}
+	
+	if(t + l->timespan > l->deathtime)
+		c += l->deathtime - (t + l->timespan);
+	
+	glEnable(GL_TEXTURE_2D);
+	
+	glBindTexture(GL_TEXTURE_2D, tex->gltex);
+	
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	
+	glUseProgram(l->shader->prog);
+	glUniform4fv(uniloc(l->shader, "clr"), 1, (float *)l->color);
+	
+	glUniform2f(uniloc(l->shader, "pos"), creal(l->pos), cimag(l->pos));
+	glUniform2f(uniloc(l->shader, "a0"), creal(l->args[0]), cimag(l->args[0]));
+	glUniform2f(uniloc(l->shader, "a1"), creal(l->args[1]), cimag(l->args[1]));
+	glUniform2f(uniloc(l->shader, "a2"), creal(l->args[2]), cimag(l->args[2]));
+	glUniform2f(uniloc(l->shader, "a3"), creal(l->args[3]), cimag(l->args[3]));
+	
+	glUniform1f(uniloc(l->shader, "timeshift"), t);
+	glUniform1f(uniloc(l->shader, "wq"), wq*l->width);
+	glUniform1f(uniloc(l->shader, "hq"), hq*l->width);
+	
+	glUniform1i(uniloc(l->shader, "span"), c*2);
+		
+	glDrawArraysInstanced(GL_QUADS, 0, 4, c*2);
+		
+	glUseProgram(0);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void draw_laser_curve(Laser *laser) {
@@ -58,7 +104,7 @@ void draw_laser_curve(Laser *laser) {
 	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		
-	float t = (global.frames - laser->birthtime)*laser->speed - laser->timespan + laser->timeshift ;
+	float t = (global.frames - laser->birthtime)*laser->speed - laser->timespan + laser->timeshift;
 	if(t < 0)
 		t = 0;
 	
@@ -188,6 +234,7 @@ int collision_laser_curve(Laser *l) {
 
 complex las_linear(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
+		l->shader = get_shader("laser_linear");
 		l->collision_step = l->timespan;
 		return 0;
 	}
@@ -197,6 +244,7 @@ complex las_linear(Laser *l, float t) {
 
 complex las_accel(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
+		l->shader = get_shader("laser_accelerated");
 		return 0;
 	}
 	
