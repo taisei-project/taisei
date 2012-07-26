@@ -115,10 +115,11 @@ int stage4_laserfairy(Enemy *e, int t) {
 	if(t > 700)
 		e->pos -= e->args[0];
 	
-	FROM_TO(100, 700, 7-global.diff) {
+	FROM_TO(100, 700, (7-global.diff)*(1+(int)creal(e->args[1]))) {
 		complex n = cexp(I*carg(global.plr.pos-e->pos)+(0.2-0.02*global.diff)*I*_i-M_PI/2*I);
-		create_lasercurve2c(e->pos, 100, 300, rgb(0.7, 0.3, 1), las_accel, 4*n, 0.05*n);
-		create_projectile2c("plainball", e->pos, rgb(0.7, 0.3, 1), accelerated, 4*n, 0.05*n)->draw = ProjDrawAdd;
+		float fac = (0.5+0.2*global.diff);
+		create_lasercurve2c(e->pos, 100, 300, rgb(0.7, 0.3, 1), las_accel, fac*4*n, fac*0.05*n);
+		create_projectile2c("plainball", e->pos, rgb(0.7, 0.3, 1), accelerated, fac*4*n, fac*0.05*n)->draw = ProjDrawAdd;
 	}
 	return 1;
 }
@@ -157,8 +158,8 @@ int stage4_explosion(Enemy *e, int t) {
 		create_projectile2c("rice", e->pos, rgb(1,0,0), asymptotic, -2*cexp(-0.3I*_i+frand()*I), 3);
 	}
 	
-	FROM_TO(500, 800, 60-5*global.diff)
-		create_laserline(e->pos, 10*cexp(I*carg(global.plr.pos-e->pos)+0.04I*(1-2*frand())), 30, 60, rgb(1, 0.3, 1));
+	FROM_TO(500, 800, 80-5*global.diff)
+		create_laserline(e->pos, 10*cexp(I*carg(global.plr.pos-e->pos)+0.04I*(1-2*frand())), 60, 120, rgb(1, 0.3, 1));
 		
 	return 1;
 }
@@ -180,7 +181,7 @@ void iku_mid_intro(Boss *b, int t) {
 Boss *create_iku_mid() {
 	Boss *b = create_boss("Bombs?", "iku", VIEWPORT_W+800I);
 	
-	boss_add_attack(b, AT_SurvivalSpell, "Introduction", 16, 10, iku_mid_intro, NULL);
+	boss_add_attack(b, AT_SurvivalSpell, "Static Bombs", 16, 10, iku_mid_intro, NULL);
 	
 	return b;
 }
@@ -277,7 +278,7 @@ void iku_atmospheric(Boss *b, int time) {
 		int c = 10;
 		
 		for(i = -c*0.5; i <= c*0.5; i++) {
-			create_projectile2c("ball", p1+(p2-p1)/c*i, rgb(1/(1+fabs(0.3*i)), 1, 1), accelerated, 0, 0.01*cexp(I*carg(p2-p1)+I*M_PI/2+0.2I*i))->draw = ProjDrawAdd;
+			create_projectile2c("ball", p1+(p2-p1)/c*i, rgb(1/(1+fabs(0.3*i)), 1, 1), accelerated, 0, (0.005+0.001*global.diff)*cexp(I*carg(p2-p1)+I*M_PI/2+0.2I*i))->draw = ProjDrawAdd;
 		}
 	}
 	
@@ -403,6 +404,11 @@ complex cathode_laser(Laser *l, float t) {
 }
 
 void iku_cathode(Boss *b, int t) {
+	if(t < 0) {
+		GO_TO(b, VIEWPORT_W/2+200I, 0.02);
+		return;
+	}
+	
 	TIMER(&t)
 	
 	FROM_TO(50, 1800, 70-global.diff*10) {
@@ -456,7 +462,7 @@ void stage4_events() {
 	TIMER(&global.timer);
 	
 	AT(0)
-		global.timer = 2900;
+		global.timer = 5000;
 	
 	FROM_TO(60, 120, 10)
 		create_enemy1c(VIEWPORT_W+70I+50*_i*I, 300, Fairy, stage4_greeter, -3);
@@ -476,7 +482,7 @@ void stage4_events() {
 	AT(1000)
 		create_enemy1c(VIEWPORT_W/2, 6000, BigFairy, stage4_laserfairy, 2I);
 		
-	FROM_TO(1800, 2200, 40)
+	FROM_TO(1500, 2200, 40)
 		create_enemy1c(VIEWPORT_W+200I*frand(), 500, Swirl, stage4_miner, -3+2I*frand());
 		
 	FROM_TO(2200, 2600, 40)
@@ -495,13 +501,13 @@ void stage4_events() {
 		create_enemy1c(200I+VIEWPORT_W*(_i&1), 1500, Fairy, stage4_superbullet, 3-6*(_i&1));
 	
 	AT(3400) {
-		create_enemy1c(VIEWPORT_W/4, 6000, BigFairy, stage4_laserfairy, 2I);
-		create_enemy1c(VIEWPORT_W/4*3, 6000, BigFairy, stage4_laserfairy, 2I);
+		create_enemy2c(VIEWPORT_W/4, 6000, BigFairy, stage4_laserfairy, 2I, 1);
+		create_enemy2c(VIEWPORT_W/4*3, 6000, BigFairy, stage4_laserfairy, 2I, 1);
 	}
 	
 	FROM_TO(4200, 5000, 20) {
 		float f = frand();
-		create_enemy3c(VIEWPORT_W/2, 600, Swirl, stage4_swirl, 2*cexp(I*M_PI*f)+I, 60 + 100I, cexp(0.01I*(1-2*(f<0.5))));
+		create_enemy3c(VIEWPORT_W/2, 400, Swirl, stage4_swirl, 2*cexp(I*M_PI*f)+I, 60 + 100I, cexp(0.01I*(1-2*(f<0.5))));
 	}
 	
 	AT(5300)
