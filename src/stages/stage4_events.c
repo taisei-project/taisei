@@ -17,5 +17,5 @@ void stage4_events() {
 	
 	FROM_TO(0, 500, 500)
 // 		create_projectile2c("bullet", VIEWPORT_W/2, rgb(0.3,0,1), asymptotic, 2I+1-2*frand(), 5);
-		create_laserline_ab(VIEWPORT_W/2+VIEWPORT_H/2*I, 0, 10, 60, 500, rgb(0.3,1,1));
+		create_laserline(0, 20*cexp(0.8I), 60, 500, rgb(0.3,1,1));
 }
