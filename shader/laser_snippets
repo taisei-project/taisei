@@ -1,0 +1,37 @@
+%%VSHADER-HEAD%%
+#version 120
+#extension GL_EXT_draw_instanced : enable
+
+uniform vec2 a0;
+uniform vec2 a1;
+uniform vec2 a2;
+uniform vec2 a3;
+
+uniform vec2 pos;
+
+uniform float timeshift;
+
+vec2 posrule(float t) {
+%%VSHADER-FOOT%%
+}
+
+void main(void) {
+	gl_Position     = gl_ModelViewProjectionMatrix*vec4(gl_Vertex.xy+posrule(gl_InstanceID*0.5+timeshift), 0.0, 1.0);
+	gl_FrontColor   = gl_Color;
+	gl_TexCoord[0]  = gl_MultiTexCoord0;	
+}
+
+%%FSHADER-HEAD%%
+
+#version 120
+
+uniform sampler2D tex;
+
+void main(void) {
+	gl_FragColor = texture2D(tex, vec2(gl_TexCoord[0].xy));
+}
+
+%%linear%%
+return pos + a0*t;
+%%accelerated%%
+return pos + a0*t + 0.5*a1*t*t;

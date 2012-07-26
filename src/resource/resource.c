@@ -40,7 +40,7 @@ void recurse_dir(char *path) {
 		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".wav") == 0) {
 			load_sound(buf);
 		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".sha") == 0) {
-			load_shader(buf);
+			load_shader_file(buf);
 		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".obj") == 0) {
 			load_model(buf);
 		}
@@ -54,7 +54,7 @@ void recurse_dir(char *path) {
 void load_resources() {
 	printf("load_resources():\n");
 	
-	char *path = malloc(strlen(get_prefix())+7);
+	char *path = malloc(strlen(get_prefix())+32);
 	
 	if(!(resources.state & RS_GfxLoaded)) {
 		printf("- textures:\n");
@@ -81,6 +81,10 @@ void load_resources() {
 		strcpy(path, get_prefix());
 		strcat(path, "shader");
 		recurse_dir(path);
+		
+		strcpy(path, get_prefix());
+		strcat(path, "shader/laser_snippets");
+		load_shader_snippets(path, "laser_");
 		
 		printf("init_fbo():\n");
 		init_fbo(&resources.fbg[0]);
