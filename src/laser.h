@@ -49,7 +49,7 @@ struct Laser {
 #define create_lasercurve3c(p, time, deathtime, clr, rule, a0, a1, a2) create_laser(p, time, deathtime, clr, rule, 0, a0, a1, a2, 0)
 #define create_lasercurve4c(p, time, deathtime, clr, rule, a0, a1, a2, a3) create_laser(p, time, deathtime, clr, rule, 0, a0, a1, a2, a3)
 
-#define create_laserline(pos, dir, charge, dur, clr) create_laserline_ab(pos, (pos)-(dir)*VIEWPORT_H*0.4/cabs(dir), cabs(dir), charge, dur, clr)
+#define create_laserline(pos, dir, charge, dur, clr) create_laserline_ab(pos, (pos)+(dir)*VIEWPORT_H*1.4/cabs(dir), cabs(dir), charge, dur, clr)
 
 Laser *create_laserline_ab(complex a, complex b, float width, float charge, float dur, Color *clr);
 
