@@ -158,7 +158,7 @@ int stage4_explosion(Enemy *e, int t) {
 	}
 	
 	FROM_TO(500, 800, 60-5*global.diff)
-		create_laserline1c(e->pos, 10*cexp(I*carg(global.plr.pos-e->pos)+0.04I*(1-2*frand())), 30, 60, rgb(1, 0, 1), NULL, 0);
+		create_laserline_ab(e->pos, e->pos-2000*cexp(I*carg(global.plr.pos-e->pos)+0.04I*(1-2*frand())), 10, 30, 60, rgb(1, 0.3, 1));
 		
 	return 1;
 }
@@ -456,7 +456,7 @@ void stage4_events() {
 	TIMER(&global.timer);
 	
 	AT(0)
-		global.timer = 5000;
+		global.timer = 2900;
 	
 	FROM_TO(60, 120, 10)
 		create_enemy1c(VIEWPORT_W+70I+50*_i*I, 300, Fairy, stage4_greeter, -3);

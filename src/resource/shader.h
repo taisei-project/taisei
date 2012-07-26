@@ -31,7 +31,9 @@ typedef struct Shader {
 	Uniform *uniforms;
 } Shader;
 
-void load_shader(const char *filename);
+void load_shader_snippets(char *filename, char *prefix);
+void load_shader_file(char *filename);
+void load_shader(char *vtext, char *ftext, char *name, int nsize);
 Shader *get_shader(const char *name);
 void delete_shaders();
 

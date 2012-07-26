@@ -469,7 +469,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 				if(!global.menu)
 					break;
 								
-				menu_input(global.menu);								
+				menu_input(global.menu);
 				SDL_GL_SwapBuffers();
 				frame_rate(&global.lasttime);
 			}
