@@ -9,86 +9,81 @@
 #include "global.h"
 #include "list.h"
 
-Laser *create_laser_p(LaserType type, complex pos, complex dir, int time, int deathtime, Color *color, LaserRule rule, complex a0, complex a1, complex a2, complex a3) {
+Laser *create_laser_p(complex pos, float time, float deathtime, Color *color, LaserPosRule prule, LaserLogicRule lrule, complex a0, complex a1, complex a2, complex a3) {
 	Laser *l = create_element((void **)&global.lasers, sizeof(Laser));
 		
-	l->type = type;
 	l->birthtime = global.frames;
-	l->time = time;
+	l->timespan = time;
 	l->deathtime = deathtime;
 	l->pos = pos;
-	l->dir = dir;
-	l->rule = rule;
 	l->color = color;
 	
 	l->args[0] = a0;	
 	l->args[1] = a1;
 	l->args[2] = a2;
 	l->args[3] = a3;
-		
+	
+	l->prule = prule;
+	l->lrule = lrule;
+	
+	l->shader = NULL;
+	l->collision_step = 5;
+	l->width = 10;
+	l->speed = 1;
+	if(l->lrule)
+		l->lrule(l, EVENT_BIRTH);
+	
+	l->prule(l, EVENT_BIRTH);
+	
 	return l;
 }
 
-void draw_laser_line(Laser *laser) {
-	float width = cabs(laser->dir);
-	if(global.frames - laser->birthtime < laser->time*3/5.0)
-		width = 2;
-	else if(global.frames - laser->birthtime < laser->time)
-		width = 2 + (width - 2)/laser->time * (global.frames - laser->birthtime);
-	else if(global.frames - laser->birthtime > laser->deathtime-20)
-		width = width - width/20 * (global.frames - laser->birthtime - laser->deathtime + 20);
+Laser *create_laserline_ab(complex a, complex b, float width, float charge, float dur, Color *clr) {
+	complex m = (a-b)*0.01;
 	
-	glPushMatrix();
-	glTranslatef(creal(laser->pos), cimag(laser->pos),0);
-	glRotatef(carg(laser->dir)*180/M_PI,0,0,1);
-		
-	glBindTexture(GL_TEXTURE_2D, get_tex("part/lasercurve")->gltex);
-	
-	glColor4fv((float *)laser->color);
-	
-	glTranslatef(500, 0, 0);
-	glScalef(1000,width+4,1);
-	
-	draw_quad();
-	
-	glColor3f(1,1,1);
-	
-	glScalef(1,0.8,1);
-	
-	draw_quad();
-	
-	glPopMatrix();
+	return create_laser_p(a, 100, dur, clr, las_linear, static_laser, m, charge + I*width, 0, 0);
 }
 
-void draw_laser_curve(Laser *laser) {	
+void draw_laser_curve_instanced(Laser *laser) {
+}
+
+void draw_laser_curve(Laser *laser) {
+	glEnable(GL_TEXTURE_2D);
 	Texture *tex = get_tex("part/lasercurve");
+	complex last;
+	
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 	
 	glColor4fv((float *)laser->color);
 	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		
-	float t = global.frames - laser->birthtime - laser->time;
+	float t = (global.frames - laser->birthtime)*laser->speed - laser->timespan + laser->timeshift ;
 	if(t < 0)
 		t = 0;
-		
-	for(; t < global.frames - laser->birthtime && t <= laser->deathtime; t += 0.5) {
-		complex pos = laser->rule(laser,t);
+	
+	last = laser->prule(laser, t);
+	
+	for(t += 0.5; t < (global.frames - laser->birthtime)*laser->speed + laser->timeshift && t <= laser->deathtime; t += 0.5) {
+		complex pos = laser->prule(laser,t);
 		glPushMatrix();
 		
-		float t1 = t - (global.frames - laser->birthtime - laser->time/2);
+		float t1 = t - ((global.frames - laser->birthtime)*laser->speed - laser->timespan/2 + laser->timeshift);
 		
-		float tail = laser->time/1.9;
+		float tail = laser->timespan/1.9;
 
 		float s = -0.75/pow(tail,2)*(t1-tail)*(t1+tail);
 				
 		glTranslatef(creal(pos), cimag(pos), 0);
-							
+		glRotatef(180/M_PI*carg(last-pos), 0, 0, 1);
+		
 		float wq = ((float)tex->w)/tex->truew;
 		float hq = ((float)tex->h)/tex->trueh;			
 		
-		glScalef(s*tex->w*wq,s*tex->h*hq,s);			
+		glScalef(s*tex->w*wq,s*laser->width*hq,s);			
 		draw_quad();
+		
+		last = pos;
 		
 		glPopMatrix();
 	}
@@ -96,46 +91,50 @@ void draw_laser_curve(Laser *laser) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	glColor4f(1,1,1,1);
-		
+	glDisable(GL_TEXTURE_2D);
 }
 
 void draw_lasers() {
 	Laser *laser;
 	
 	for(laser = global.lasers; laser; laser = laser->next) {
-		glEnable(GL_TEXTURE_2D);
-		if(laser->type == LT_Line)
-			draw_laser_line(laser);
+		if(laser->shader && !tconfig.intval[NO_SHADER])
+			draw_laser_curve_instanced(laser);
 		else
 			draw_laser_curve(laser);
-		glDisable(GL_TEXTURE_2D);
 	}
 }
 
+void _delete_laser(void **lasers, void *laser) {
+	Laser *l = laser;
+	
+	if(l->lrule)
+		l->lrule(l, EVENT_DEATH);
+		
+	if(l->color)
+		free(l->color);
+	del_ref(laser);
+	delete_element(lasers, laser);
+}
+
 void delete_lasers() {
-	delete_all_elements((void **)&global.lasers, delete_element);
+	delete_all_elements((void **)&global.lasers, _delete_laser);
 }
 
 void process_lasers() {
 	Laser *laser = global.lasers, *del = NULL;
 	
 	while(laser != NULL) {
-		int c = 0;
-		if(laser->type == LT_Line) {
-			if(laser->rule)
-				laser->rule(laser, global.frames - laser->birthtime);
-			c = collision_laser_line(laser);
-		} else {
-			c = collision_laser_curve(laser);
-		}
-		
-		if(c)
+		if(collision_laser_curve(laser))
 			player_death(&global.plr);
 		
-		if(global.frames - laser->birthtime > laser->deathtime + laser->time) {
+		if(laser->lrule)
+			laser->lrule(laser, global.frames - laser->birthtime);
+		
+		if(global.frames - laser->birthtime > laser->deathtime + laser->timespan*laser->speed) {
 			del = laser;
 			laser = laser->next;
-			delete_element((void **)&global.lasers, del);
+			_delete_laser((void **)&global.lasers, del);
 			if(laser == NULL) break;
 		} else {
 			laser = laser->next;
@@ -165,29 +164,68 @@ int collision_line(complex a, complex b, complex c, float r) {
 	return 0;
 }
 
-int collision_laser_line(Laser *l) {
-	int t = global.frames - l->birthtime;
-	if(t > l->time && t < l->deathtime)
-		return collision_line(l->pos, l->pos+l->dir*VIEWPORT_H, global.plr.pos, cabs(l->dir));
-	
-	return 0;
-}
-
 int collision_laser_curve(Laser *l) {
-	float t = global.frames - l->birthtime - l->time;
+	float t = (global.frames - l->birthtime)*l->speed - l->timespan + l->timeshift;
 	complex last;
+	
+	if(l->width <= 2.0)
+		return 0;
 	
 	if(t < 0)
 		t = 0;
 	
-	last = l->rule(l,t);
+	last = l->prule(l,t);
 	
-	for(t += 5; t < global.frames - l->birthtime && t <= l->deathtime; t += 5) {
-		complex pos = l->rule(l,t);
-		if(collision_line(last, pos, global.plr.pos, 3))
+	for(t += l->collision_step; t <= (global.frames - l->birthtime)*l->speed + l->timeshift && t <= l->deathtime; t += l->collision_step) {
+		complex pos = l->prule(l,t);
+		if(collision_line(last, pos, global.plr.pos, l->width*0.5))
 			return 1;
 		
 		last = pos;
 	}
 	return 0;
+}
+
+complex las_linear(Laser *l, float t) {
+	if(t == EVENT_BIRTH) {
+		l->collision_step = l->timespan;
+		return 0;
+	}
+	
+	return l->pos + l->args[0]*t;
+}
+
+complex las_accel(Laser *l, float t) {
+	if(t == EVENT_BIRTH) {
+		return 0;
+	}
+	
+	return l->pos + l->args[0]*t + 0.5*l->args[1]*t*t;
+}
+
+float laser_charge(Laser *l, int t, float charge, float width) {
+	if(t < charge - 10)
+		return 1.7;
+	
+	if(t >= charge - 10 && t < l->deathtime - 20) {
+		float w = 1.7 + width/20*(t-charge+10);
+		return w < width ? w : width;
+	}
+	
+	if(t >= l->deathtime - 20) {
+		float w = width - width/20*(t-l->deathtime+20);
+		return w > 0 ? w : 0;
+	}
+	
+	return width;
+}
+
+void static_laser(Laser *l, int t) {
+	if(t == EVENT_BIRTH) {
+		l->speed = 0;
+		l->timeshift = l->timespan;
+		return;
+	}
+	
+	l->width = laser_charge(l, t, creal(l->args[1]), cimag(l->args[1]));
 }
