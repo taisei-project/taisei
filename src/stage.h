@@ -17,6 +17,8 @@
  * 
  */
 
+#include <projectile.h>
+
 #define TIMER(ptr) int *__timep = ptr; int _i = 0, _ni = 0;  _i = _ni = _i;
 #define AT(t) if(*__timep == t) 
 #define FROM_TO(start,end,step) _ni = _ni; _i = (*__timep - (start))/(step); if(*__timep >= (start) && *__timep <= (end) && !((*__timep - (start)) % (step)))
@@ -37,6 +39,8 @@ typedef struct StageInfo {
 	// reserved for draw_stage_title when/if it's used
 	char *title;
 	char *subtitle;
+	
+	Color titleclr;
 } StageInfo;
 
 extern StageInfo stages[];
@@ -45,7 +49,8 @@ StageInfo* stage_get(int);
 void stage_loop(StageInfo *info, StageRule start, StageRule end, StageRule draw, StageRule event, ShaderRule *shaderrules, int endtime);
 
 void apply_bg_shaders(ShaderRule *shaderrules);
-void draw_stage_title(int t, int dur, char *stage, char *subtitle);
+
+void draw_stage_title(StageInfo *info);
 
 void stage0_loop();
 void stage1_loop();

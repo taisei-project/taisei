@@ -321,7 +321,7 @@ void hina_bad_pick(Boss *h, int time) {
 	}
 	
 	AT(200) {
-		int win = rand()%5;
+		int win = tsrand()%5;
 		for(i = 0; i < 5; i++) {
 			if(i == win)
 				continue;

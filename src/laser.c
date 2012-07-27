@@ -287,6 +287,7 @@ float laser_charge(Laser *l, int t, float charge, float width) {
 
 void static_laser(Laser *l, int t) {
 	if(t == EVENT_BIRTH) {
+		l->width = 0;
 		l->speed = 0;
 		l->timeshift = l->timespan;
 		return;

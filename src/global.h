@@ -30,6 +30,7 @@
 #include "vbo.h"
 #include "resource/resource.h"
 #include "replay.h"
+#include "random.h"
 
 #define FILE_PREFIX PREFIX "/share/taisei/"
 #define CONFIG_FILE "config"
@@ -112,6 +113,9 @@ typedef struct {
 	
 	Replay replay;
 	int replaymode;
+	
+	RandomState rand_game;
+	RandomState rand_visual;
 } Global;
 
 extern Global global;
@@ -128,8 +132,6 @@ void toggle_fullscreen();
 void global_processevent(SDL_Event*);
 void take_screenshot();
 
-double frand();
-double nfrand();
 double psin();
 double min(double, double);
 double max(double, double);

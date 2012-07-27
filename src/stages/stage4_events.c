@@ -28,7 +28,7 @@ int stage4_greeter(Enemy *e, int t) {
 	e->moving = 1;
 	e->dir = creal(e->args[0]) < 0;
 	
-	if((t < 100 && creal(e->pos) > VIEWPORT_W-100) || t > 200)
+	if(t < 50 || t > 200)
 		e->pos += e->args[0];
 		
 	FROM_TO(100, 180, 20) {
@@ -116,7 +116,7 @@ int stage4_laserfairy(Enemy *e, int t) {
 		e->pos -= e->args[0];
 	
 	FROM_TO(100, 700, (7-global.diff)*(1+(int)creal(e->args[1]))) {
-		complex n = cexp(I*carg(global.plr.pos-e->pos)+(0.2-0.02*global.diff)*I*_i-M_PI/2*I);
+		complex n = cexp(I*carg(global.plr.pos-e->pos)+(0.2-0.02*global.diff)*I*_i);
 		float fac = (0.5+0.2*global.diff);
 		create_lasercurve2c(e->pos, 100, 300, rgb(0.7, 0.3, 1), las_accel, fac*4*n, fac*0.05*n);
 		create_projectile2c("plainball", e->pos, rgb(0.7, 0.3, 1), accelerated, fac*4*n, fac*0.05*n)->draw = ProjDrawAdd;
@@ -460,10 +460,7 @@ Boss *create_iku() {
 
 void stage4_events() {
 	TIMER(&global.timer);
-	
-	AT(0)
-		global.timer = 5000;
-	
+		
 	FROM_TO(60, 120, 10)
 		create_enemy1c(VIEWPORT_W+70I+50*_i*I, 300, Fairy, stage4_greeter, -3);
 	
@@ -476,14 +473,17 @@ void stage4_events() {
 	FROM_TO(700, 800, 10)
 		create_enemy3c(VIEWPORT_W+200I*frand(), 500, Swirl, stage4_swirl, -4+frand()*I, 70+20*frand()+200I, cexp(0.05I));
 		
-	FROM_TO(870, 1200, 50)
+	FROM_TO(870, 1000, 50)
 		create_enemy1c(VIEWPORT_W/4+VIEWPORT_W/2*(_i&1), 2000, BigFairy, stage4_limiter, I);
 		
 	AT(1000)
-		create_enemy1c(VIEWPORT_W/2, 6000, BigFairy, stage4_laserfairy, 2I);
+		create_enemy1c(VIEWPORT_W/2, 9000, BigFairy, stage4_laserfairy, 2I);
 		
-	FROM_TO(1500, 2200, 40)
+	FROM_TO(1900, 2200, 40)
 		create_enemy1c(VIEWPORT_W+200I*frand(), 500, Swirl, stage4_miner, -3+2I*frand());
+	
+	FROM_TO(1500, 2400, 80)
+		create_enemy1c(VIEWPORT_W*(_i&1)+100I, 300, Fairy, stage4_greeter, 3-6*(_i&1));
 		
 	FROM_TO(2200, 2600, 40)
 		create_enemy1c(VIEWPORT_W/10*_i, 200, Swirl, stage4_miner, 3I);
