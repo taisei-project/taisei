@@ -393,6 +393,12 @@ Boss* stage2_create_midboss() {
 }
 
 int stage2_boss_a1_laserbullet(Projectile *p, int time) {
+	if(time == EVENT_DEATH) {
+		free_ref(p->args[0]);
+		return 1;
+	} else if(time < 0)
+		return 1;
+	
 	if(time >= creal(p->args[1])) {
 		if(p->args[2]) {
 			complex dist = global.plr.pos - p->pos;
@@ -411,14 +417,15 @@ int stage2_boss_a1_laserbullet(Projectile *p, int time) {
 			}
 		}
 		
-		free_ref(p->args[0]);
 		return ACTION_DESTROY;
-	}
-	
-	if(time < 0)
+	} else if(time < 0)
 		return 1;
 	
 	Laser *laser = (Laser*)REF(p->args[0]);
+	
+	if(!laser)
+		return ACTION_DESTROY;
+	
 	p->pos = laser->prule(laser, time);
 	
 	return 1;
@@ -445,13 +452,17 @@ int stage2_boss_a1_slave(Enemy *e, int time) {
 	
 	float angle = e->args[2] * (time / 70.0 + e->args[1]);
 	complex dir = cexp(I*angle);
+	Boss *boss = (Boss*)REF(e->args[0]);
 	
-	GO_TO(e, ((Boss*)REF(e->args[0]))->pos + 150 * sin(time / 100.0) * dir, 0.03)
+	if(!boss)
+		return ACTION_DESTROY;
 	
 	AT(EVENT_DEATH) {
 		free_ref(e->args[0]);
 		return 1;
 	}
+	
+	GO_TO(e, boss->pos + 150 * sin(time / 100.0) * dir, 0.03)
 	
 	if(!(time % 2)) {
 		float c = 0.5 * psin(time / 25.0);
@@ -485,8 +496,7 @@ void stage2_boss_a1(Boss *boss, int time) {
 	
 	if(time < 0)
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/3, 0.05)
-	
-	if(time == 0) {
+	else if(time == 0) {
 		for(j = -1; j < 2; j += 2) for(i = 0; i < cnt; ++i)
 			create_enemy3c(boss->pos, ENEMY_IMMUNE, Swirl, stage2_boss_a1_slave, add_ref(boss), i*2*M_PI/cnt, j);
 	}
@@ -498,7 +508,6 @@ Boss* stage2_create_boss() {
 	Boss *wriggle = create_boss("EX Wriggle", "wriggle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
 	boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage2_boss_a1, stage2_mid_spellbg);
-	boss_add_attack(wriggle, AT_Move, "Runaway", 2, 1, stage2_mid_outro, NULL);
 	
 	start_attack(wriggle, wriggle->attacks);
 	return wriggle;

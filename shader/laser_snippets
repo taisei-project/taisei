@@ -14,6 +14,16 @@ uniform float wq;
 uniform float hq;
 uniform int span;
 
+float pi = 2.0 * asin(1.0);
+
+vec2 dir(float a) {
+	return vec2(cos(a), sin(a));
+}
+
+float angle(vec2 v) {
+	return atan(v.y, v.x);
+}
+
 vec2 posrule(float t) {
 %%VSHADER-FOOT%%
 }
@@ -48,3 +58,9 @@ void main(void) {
 return pos + a0*t;
 %%accelerated%%
 return pos + a0*t + 0.5*a1*t*t;
+%%sine%%
+float s = (a2.x * t + a3.x);
+return pos + dir(angle(a0) + a1.x * sin(s) / s) * t * length(a0);
+%%sine_expanding%%
+float s = (a2.x * t + a3.x);
+return pos + dir(angle(a0) + a1.x * sin(s)) * t * length(a0);
