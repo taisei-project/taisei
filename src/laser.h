@@ -10,46 +10,50 @@
 
 #include <complex.h>
 #include "projectile.h"
+#include "resource/shader.h"
 
-typedef enum {
-	LT_Line,
-	LT_Curve
-} LaserType;
+typedef struct Laser Laser;
 
-struct Laser;
+typedef complex (*LaserPosRule)(Laser* l, float time);
+typedef void (*LaserLogicRule)(Laser* l, int time);
 
-typedef complex (*LaserRule)(struct Laser*, float time);
-
-typedef struct Laser {
+struct Laser {
 	struct Laser *next;
 	struct Laser *prev;
 	
-	LaserType type;
-	
 	complex pos;
-	complex dir; // if type == LaserLine, carg(pos0) is orientation and cabs(pos0) width
 	
 	Color *color;
 	
 	int birthtime;
-	int time; // line: startup time; curve: length
-	int deathtime;
 	
-	LaserRule rule;
+	float timespan;
+	float deathtime;
+	
+	float timeshift;
+	float speed;
+	float width;
+		
+	Shader *shader;
+	
+	float collision_step;
+	
+	LaserPosRule prule;
+	LaserLogicRule lrule;
+	
 	complex args[4];
-} Laser;
+};
 
-#define create_lasercurve1c(p, time, deathtime, clr, rule, a0) create_laser_p(LT_Curve, p, 0, time, deathtime, clr, rule, a0, 0, 0, 0)
-#define create_lasercurve2c(p, time, deathtime, clr, rule, a0, a1) create_laser_p(LT_Curve, p, 0, time, deathtime, clr, rule, a0, a1, 0, 0)
-#define create_lasercurve3c(p, time, deathtime, clr, rule, a0, a1, a2) create_laser_p(LT_Curve, p, 0, time, deathtime, clr, rule, a0, a1, a2, 0)
-#define create_lasercurve4c(p, time, deathtime, clr, rule, a0, a1, a2, a3) create_laser_p(LT_Curve, p, 0, time, deathtime, clr, rule, a0, a1, a2, a3)
+#define create_lasercurve1c(p, time, deathtime, clr, rule, a0) create_laser(p, time, deathtime, clr, rule, 0, a0, 0, 0, 0)
+#define create_lasercurve2c(p, time, deathtime, clr, rule, a0, a1) create_laser(p, time, deathtime, clr, rule, 0, a0, a1, 0, 0)
+#define create_lasercurve3c(p, time, deathtime, clr, rule, a0, a1, a2) create_laser(p, time, deathtime, clr, rule, 0, a0, a1, a2, 0)
+#define create_lasercurve4c(p, time, deathtime, clr, rule, a0, a1, a2, a3) create_laser(p, time, deathtime, clr, rule, 0, a0, a1, a2, a3)
 
-#define create_laserline1c(p, prop, time, deathtime, clr, rule, a0) create_laser_p(LT_Line, p, prop, time, deathtime, clr, rule, a0, 0, 0, 0)
-#define create_laserline2c(p, prop, time, deathtime, clr, rule, a0, a1) create_laser_p(LT_Line, p, prop, time, deathtime, clr, rule, a0, a1, 0, 0)
-#define create_laserline3c(p, prop, time, deathtime, clr, rule, a0, a1, a2) create_laser_p(LT_Line, p, prop, time, deathtime, clr, rule, a0, a1, a2, 0)
-#define create_laserline4c(p, prop, time, deathtime, clr, rule, a0, a1, a2, a3) create_laser_p(LT_Line, p, prop, time, deathtime, clr, rule, a0, a1, a2, a3)
+#define create_laserline(pos, dir, charge, dur, clr) create_laserline_ab(pos, (pos)+(dir)*VIEWPORT_H*1.4/cabs(dir), cabs(dir), charge, dur, clr)
 
-Laser *create_laser_p(LaserType type, complex pos, complex dir, int time, int deathtime, Color *color, LaserRule rule, complex a0, complex a1, complex a2, complex a3);
+Laser *create_laserline_ab(complex a, complex b, float width, float charge, float dur, Color *clr);
+
+Laser *create_laser(complex pos, float time, float deathtime, Color *color, LaserPosRule prule, LaserLogicRule lrule, complex a0, complex a1, complex a2, complex a3);
 void draw_lasers();
 void delete_lasers();
 void process_lasers();
@@ -61,5 +65,8 @@ complex las_linear(Laser *l, float t);
 complex las_accel(Laser *l, float t);
 complex las_sine(Laser *l, float t);
 complex las_sine_expanding(Laser *l, float t);
+
+float laser_charge(Laser *l, int t, float charge, float width);
+void static_laser(Laser *l, int t);
 
 #endif

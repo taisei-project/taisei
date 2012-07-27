@@ -419,7 +419,7 @@ int stage2_boss_a1_laserbullet(Projectile *p, int time) {
 		return 1;
 	
 	Laser *laser = (Laser*)REF(p->args[0]);
-	p->pos = laser->rule(laser, time);
+	p->pos = laser->prule(laser, time);
 	
 	return 1;
 }

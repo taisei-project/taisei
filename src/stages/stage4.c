@@ -95,6 +95,10 @@ void stage4_draw() {
 void iku_spell_bg(Boss *b, int t) {
 	fill_screen(0, 300, 1, "stage4/spell_bg");
 	
+	glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+	fill_screen(0, t*0.001, 0.7, "stage4/noise");
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
 	glPushMatrix();
 	glTranslatef(0, -100, 0);
 	

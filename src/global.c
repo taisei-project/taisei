@@ -105,7 +105,7 @@ void toggle_fullscreen()
 	tconfig.intval[FULLSCREEN] = newflags & SDL_FULLSCREEN;
 	
 	SDL_FreeSurface(display);
-	if((display = SDL_SetVideoMode(SCREEN_W, SCREEN_H, 32, newflags)) == NULL)
+	if((display = SDL_SetVideoMode(RESX, RESY, 32, newflags)) == NULL)
 		errx(-1, "Error opening screen: %s", SDL_GetError());
 }
 

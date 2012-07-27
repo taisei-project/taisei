@@ -70,12 +70,7 @@ int main(int argc, char** argv) {
 	printf("-- SDL viewport\n");
 		
 	SDL_WM_SetCaption("TaiseiProject", NULL); 
-	
-// 	int e;
-// 	if((e = glewInit()) != GLEW_OK)
-// 		errx(-1, "GLEW failed: %s", glewGetErrorString(e));
-	
-	printf("-- GLEW\n");
+
 	init_gl();
 	printf("-- GL\n");
 	
