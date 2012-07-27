@@ -161,9 +161,9 @@ void cirno_perfect_freeze(Boss *c, int time) {
 		float g = frand();
 		float b = frand();
 		
-		create_projectile2c("ball", c->pos, rgb(r, g, b), cirno_pfreeze_frogs, 4*cexp(I*rand()), add_ref(global.boss));
+		create_projectile2c("ball", c->pos, rgb(r, g, b), cirno_pfreeze_frogs, 4*cexp(I*tsrand()), add_ref(global.boss));
 		if(global.diff > D_Normal)
-			create_projectile2c("ball", c->pos, rgb(r, g, b), cirno_pfreeze_frogs, 4*cexp(I*rand()), add_ref(global.boss));
+			create_projectile2c("ball", c->pos, rgb(r, g, b), cirno_pfreeze_frogs, 4*cexp(I*tsrand()), add_ref(global.boss));
 	}
 	
 	GO_AT(c, 160, 190, 2 + 1I);
