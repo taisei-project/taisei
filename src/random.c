@@ -11,7 +11,7 @@
 #include <stdlib.h>
 
 /*
- *	Multiply-with-carry algorythm
+ *	Multiply-with-carry algorithm
  */
 
 static RandomState *tsrand_current;
