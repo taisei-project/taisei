@@ -379,7 +379,7 @@ void stage2_mid_spellbg(Boss *h, int time) {
 }
 
 Boss* stage2_create_midboss() {
-	Boss* scuttle = create_boss("Scuttle", "scuttle", VIEWPORT_W/2 - 200I);
+	Boss *scuttle = create_boss("Scuttle", "scuttle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(scuttle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
 	boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 30, 20000, stage2_mid_a0, NULL);
 	boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Deadly Dance", 30, 20000, stage2_mid_a1, stage2_mid_spellbg);
@@ -495,11 +495,10 @@ void stage2_boss_a1(Boss *boss, int time) {
 Boss* stage2_create_boss() {
 	// TODO: spellbg
 	
-	Boss* wriggle = create_boss("EX Wriggle", "wriggle", VIEWPORT_W/2 - 200I);
+	Boss *wriggle = create_boss("EX Wriggle", "wriggle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
 	boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage2_boss_a1, stage2_mid_spellbg);
 	boss_add_attack(wriggle, AT_Move, "Runaway", 2, 1, stage2_mid_outro, NULL);
-	//scuttle->zoomcolor = rgb(0.4, 0.5, 0.4);
 	
 	start_attack(wriggle, wriggle->attacks);
 	return wriggle;
