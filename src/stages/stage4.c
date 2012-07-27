@@ -88,7 +88,7 @@ void stage4_draw() {
 	
 	stagedata.light_strength *= 0.98;
 	
-	if(frand() < 0.01) // TODO: this will desync replays, so we need our own rand();
+	if(frand() < 0.01)
 		stagedata.light_strength = 5+5*frand();
 }
 

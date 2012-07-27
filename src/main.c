@@ -47,6 +47,9 @@ void taisei_shutdown() {
 #endif
 
 int main(int argc, char** argv) {
+	if(tsrand_test())
+		return 0;
+	
 	MKDIR(get_config_path());
 	MKDIR(get_screenshots_path());
 	MKDIR(get_replays_path());

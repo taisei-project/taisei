@@ -19,8 +19,11 @@ Global global;
 
 void init_global() {
 	memset(&global, 0, sizeof(global));	
-	srand(time(0));
-		
+	
+	tsrand_seed_p(&global.rand_game, time(0));
+	tsrand_seed_p(&global.rand_visual, time(0));
+	tsrand_switch(&global.rand_visual);
+	
 	memset(&resources, 0, sizeof(Resources));
 	load_resources();
 	printf("- fonts:\n");
@@ -74,10 +77,6 @@ void fade_out(float f) {
 	glPopMatrix();
 	
 	glColor4f(1,1,1,1);	
-}
-
-inline double frand() {
-	return rand()/(double)RAND_MAX;
 }
 
 extern SDL_Surface *display;
