@@ -460,10 +460,7 @@ Boss *create_iku() {
 
 void stage4_events() {
 	TIMER(&global.timer);
-	
-	AT(0)
-		global.timer = 870;
-	
+		
 	FROM_TO(60, 120, 10)
 		create_enemy1c(VIEWPORT_W+70I+50*_i*I, 300, Fairy, stage4_greeter, -3);
 	

@@ -17,11 +17,11 @@
 #include "menu/savereplay.h"
 
 StageInfo stages[] = {	
-	{1, stage0_loop, False, "Stage 1", "Misty Lake"},
-	{2, stage1_loop, False, "Stage 2", "Walk Along the Border"},
-	{3, stage2_loop, False, "Stage 3", "Through the Tunnel of Light"},
-	{4, stage3_loop, False, "Stage 4", "Forgotten Mansion"},
-	{5, stage4_loop, False, "Stage 5", "Climbing the Tower of Babel"},
+	{1, stage0_loop, False, "Stage 1", "Misty Lake", {1, 1, 1}},
+	{2, stage1_loop, False, "Stage 2", "Walk Along the Border", {1, 1, 1}},
+	{3, stage2_loop, False, "Stage 3", "Through the Tunnel of Light", {0, 0, 0}},
+	{4, stage3_loop, False, "Stage 4", "Forgotten Mansion", {0, 0, 0}},
+	{5, stage4_loop, False, "Stage 5", "Climbing the Tower of Babel", {1, 1, 1}},
 	
 	{0, NULL, False, NULL, NULL}
 };
@@ -169,7 +169,7 @@ void draw_hud() {
 		draw_texture(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
 }
 
-void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
+void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int time) {
 	if(!tconfig.intval[NO_SHADER]) {
 		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[0].fbo);
 		if(!global.menu)
@@ -235,22 +235,24 @@ void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
 		draw_projectiles(global.particles);
 		draw_enemies(global.enemies);
 		draw_lasers();
-
+				
 		if(global.boss)
 			draw_boss(global.boss);
 
 		if(global.dialog)
 			draw_dialog(global.dialog);
-				
+		
+		draw_stage_title(info);
+		
 		if(!tconfig.intval[NO_SHADER]) {
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			glViewport(0,0,RESX,RESY);
 			glPushMatrix();
 			if(global.plr.cha == Marisa && global.plr.shot == MarisaLaser && global.frames - global.plr.recovery < 0)
 				glTranslatef(8*sin(global.frames),8*sin(global.frames+3),0);
-// 			glColor4f(1,1,1,0.2);
+
 			draw_fbo_viewport(&resources.fsec);
-// 			glColor4f(1,1,1,1);
+
 			glPopMatrix();
 		}
 		
@@ -451,7 +453,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		
 		calc_fps(&global.fps);
 				
-		stage_draw(draw, shaderrules, endtime);	
+		stage_draw(info, draw, shaderrules, endtime);	
 		
 		SDL_GL_SwapBuffers();
 		frame_rate(&global.lasttime);
@@ -463,7 +465,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		if(REPLAY_ASKSAVE) {
 			global.menu = create_saverpy_menu();
 			while(global.menu) {
-				stage_draw(draw, shaderrules, endtime);
+				stage_draw(info, draw, shaderrules, endtime);
 				ingame_menu_logic(&global.menu);
 				
 				if(!global.menu)
@@ -483,9 +485,22 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	stage_end();
 }
 
-void draw_stage_title(int t, int dur, char *stage, char *subtitle) {
-	if(t < 0 || t > dur)
+void draw_stage_title(StageInfo *info) {
+	int t = global.timer;
+	int i;
+	float f = 0;
+	if(t < 30 || t > 220)
 		return;
 	
-	draw_text(AL_Center, VIEWPORT_W/2, VIEWPORT_H/2, stage, _fonts.mainmenu);
+	if((i = abs(t-135)) >= 50) {
+		i -= 50;
+		f = 1/35.0*i;		
+	}
+	
+	glColor4f(info->titleclr.r,info->titleclr.g,info->titleclr.b,1.0-f);
+	
+	draw_text(AL_Center, VIEWPORT_W/2, VIEWPORT_H/2-40, info->title, _fonts.mainmenu);
+	draw_text(AL_Center, VIEWPORT_W/2, VIEWPORT_H/2, info->subtitle, _fonts.standard);
+	
+	glColor4f(1,1,1,1);
 }
