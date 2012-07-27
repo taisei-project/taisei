@@ -24,7 +24,7 @@ int tsrand_p(RandomState *rnd);
 inline void tsrand_seed(uint32_t seed);
 inline int tsrand(void);
 
-double frand();
+inline double frand();
 
 #define TSRAND_MAX INT32_MAX
 

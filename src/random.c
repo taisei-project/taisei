@@ -40,7 +40,7 @@ inline int tsrand(void) {
 	return tsrand_p(tsrand_current);
 }
 
-double frand(void) {
+inline double frand(void) {
 	return tsrand()/(double)TSRAND_MAX;
 }
 
