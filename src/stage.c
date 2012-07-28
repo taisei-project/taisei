@@ -501,10 +501,23 @@ void draw_stage_title(StageInfo *info) {
 		f = 1/35.0*i;		
 	}
 	
-	glColor4f(info->titleclr.r,info->titleclr.g,info->titleclr.b,1.0-f);
+	if(!tconfig.intval[NO_SHADER]) {
+		Shader *sha = get_shader("stagetitle");
+		glUseProgram(sha->prog);
+		glUniform1i(uniloc(sha, "trans"), 1);
+		glUniform1f(uniloc(sha, "t"), 1.0-f);
+		glUniform3fv(uniloc(sha, "color"), 1, (float *)&info->titleclr);
+		
+		glActiveTexture(GL_TEXTURE0 + 1);
+		glBindTexture(GL_TEXTURE_2D, get_tex("titletransition")->gltex);
+		glActiveTexture(GL_TEXTURE0);
+	} else {
+		glColor4f(info->titleclr.r,info->titleclr.g,info->titleclr.b,1.0-f);
+	}
 	
 	draw_text(AL_Center, VIEWPORT_W/2, VIEWPORT_H/2-40, info->title, _fonts.mainmenu);
 	draw_text(AL_Center, VIEWPORT_W/2, VIEWPORT_H/2, info->subtitle, _fonts.standard);
 	
 	glColor4f(1,1,1,1);
+	glUseProgram(0);
 }
