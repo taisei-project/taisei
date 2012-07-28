@@ -114,3 +114,25 @@ Vector **linear3dpos(Vector q, float maxrange, Vector p, Vector r) {
 	
 	return list;
 }
+
+Vector **single3dpos(Vector q, float maxrange, Vector p) {
+	Vector d;
+	
+	int i;
+	
+	for(i = 0; i < 3; i++)
+		d[i] = p[i] - q[i];
+	
+	if(length(d) > maxrange) {
+		return NULL;
+	} else {
+		Vector **list = calloc(2, sizeof(Vector*));
+		
+		list[0] = malloc(sizeof(Vector));
+		for(i = 0; i < 3; i++)
+			(*list[0])[i] = p[i];
+		list[1] = NULL;
+		
+		return list;
+	}
+}

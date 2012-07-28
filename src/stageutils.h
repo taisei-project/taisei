@@ -44,4 +44,6 @@ void draw_stage3d(Stage3D *s, float maxrange);
 void free_stage3d(Stage3D *s);
 
 Vector **linear3dpos(Vector q, float maxrange, Vector p, Vector r);
+
+Vector **single3dpos(Vector q, float maxrange, Vector p);
 #endif

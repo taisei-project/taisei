@@ -52,6 +52,8 @@ set(SRCs
 	stages/stage3_events.c
 	stages/stage4.c
 	stages/stage4_events.c
+	stages/stage6.c
+	stages/stage6_events.c
 	resource/resource.c
 	resource/texture.c
 	resource/animation.c

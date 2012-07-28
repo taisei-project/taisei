@@ -70,25 +70,8 @@ void stage3_fountain_draw(Vector pos) {
 
 Vector **stage3_lake_pos(Vector pos, float maxrange) {
 	Vector p = {0, 600, 0};
-	Vector d;
 	
-	int i;
-	
-	for(i = 0; i < 3; i++)
-		d[i] = p[i] - pos[i];
-	
-	if(length(d) > maxrange) {
-		return NULL;
-	} else {
-		Vector **list = calloc(2, sizeof(Vector*));
-		
-		list[0] = malloc(sizeof(Vector));
-		for(i = 0; i < 3; i++)
-			(*list[0])[i] = p[i];
-		list[1] = NULL;
-		
-		return list;
-	}	
+	return single3dpos(pos, maxrange, p);
 }
 
 void stage3_lake_draw(Vector pos) {	

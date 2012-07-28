@@ -22,6 +22,7 @@ StageInfo stages[] = {
 	{3, stage2_loop, False, "Stage 3", "Through the Tunnel of Light", {0, 0, 0}},
 	{4, stage3_loop, False, "Stage 4", "Forgotten Mansion", {0, 0, 0}},
 	{5, stage4_loop, False, "Stage 5", "Climbing the Tower of Babel", {1, 1, 1}},
+	{6, stage6_loop, False, "Stage 6", "Roof of the World", {1, 1, 1}},
 	
 	{0, NULL, False, NULL, NULL}
 };
