@@ -125,7 +125,7 @@ void draw_laser_curve(Laser *laser) {
 		float wq = ((float)tex->w)/tex->truew;
 		float hq = ((float)tex->h)/tex->trueh;			
 		
-		glScalef(s*tex->w*wq,s*laser->width*hq,s);			
+		glScalef(tex->w*wq*0.5*cabs(last-pos),s*laser->width*hq,s);			
 		draw_quad();
 		
 		last = pos;
