@@ -91,8 +91,8 @@ OptionBinding* bind_keybinding(MenuData *m, char *optname, int cfgentry)
 	return bind;
 }
 
-// Super-special binding type for the resulution setting
-OptionBinding* bind_resulution(MenuData *m) {
+// Super-special binding type for the resolution setting
+OptionBinding* bind_resolution(MenuData *m) {
 	OptionBinding *bind;
 	bind = allocate_binding(m);
 	
@@ -394,7 +394,7 @@ void create_options_menu(MenuData *m) {
 	#define bind_onoff(b) bind_addvalue(b, "on"); bind_addvalue(b, "off")
 	
 	add_menu_entry(m, "Video Mode", do_nothing, NULL);
-		b = bind_resulution(m);
+		b = bind_resolution(m);
 	
 	add_menu_entry(m, "Fullscreen", do_nothing, NULL);
 		b = bind_option(m, "fullscreen", FULLSCREEN, bind_common_onoffget, bind_fullscreen_set);
