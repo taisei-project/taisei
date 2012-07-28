@@ -406,6 +406,7 @@ int stage2_boss_a1_laserbullet(Projectile *p, int time) {
 			float deathtime = sqrt(2*cabs(dist)/cabs(accel));
 			
 			Laser *l = create_lasercurve2c(p->pos, 2 * deathtime, deathtime, rgb(1.0, 0.5, 0.5), las_accel, 0, accel);
+			l->width = 15;
 			create_projectile3c("ball", p->pos, rgb(1.0, 0.5, 0.5), stage2_boss_a1_laserbullet, add_ref(l), deathtime - 1, 0);
 		} else {
 			int cnt = max(3 + global.diff, 5), i;
