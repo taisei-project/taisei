@@ -17,6 +17,28 @@ Dialog *stage4_post_mid_dialog() {
 	return d;
 }
 
+Dialog *stage4_boss_dialog() {
+	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
+	
+	dadd_msg(d, Left, "Finally!");
+	dadd_msg(d, Right, "Stop following me!");
+	dadd_msg(d, Left, "Why? You aren't involved in this, are you?");
+	dadd_msg(d, Right, "I don't have time for your suspicions now.");
+	dadd_msg(d, Left, "Sounds very suspecious, actually.");
+	dadd_msg(d, Right, "Ok, let's finish this quickly.");	
+		
+	return d;
+}
+
+Dialog *stage4_post_boss_dialog() {
+	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", NULL);
+	
+	dadd_msg(d, Left, "I can see the top!");
+	dadd_msg(d, Left, "Hopefully climbing all those stairs\nwas worth it.");
+		
+	return d;
+}
+
 
 int stage4_greeter(Enemy *e, int t) {
 	TIMER(&t)
@@ -231,6 +253,9 @@ int stage4_superbullet(Enemy *e, int t) {
 
 void iku_intro(Boss *b, int t) {
 	GO_TO(b, VIEWPORT_W/2+300I, 0.01);
+	
+	if(t == 100)
+		global.dialog = stage4_boss_dialog();
 }
 
 void iku_bolts(Boss *b, int time) {
@@ -460,7 +485,7 @@ Boss *create_iku() {
 
 void stage4_events() {
 	TIMER(&global.timer);
-		
+			
 	FROM_TO(60, 120, 10)
 		create_enemy1c(VIEWPORT_W+70I+50*_i*I, 300, Fairy, stage4_greeter, -3);
 	
@@ -512,4 +537,7 @@ void stage4_events() {
 	
 	AT(5300)
 		global.boss = create_iku();
+		
+	AT(5320)
+		global.dialog = stage4_post_boss_dialog();
 }

@@ -343,9 +343,6 @@ void kurumi_spell_bg(Boss *b, int time) {
 }
 
 void kurumi_outro(Boss *b, int time) {
-	if(time < 0)
-		return;
-	
 	b->pos += -5-I;		
 }
 
@@ -401,9 +398,6 @@ int stage3_supercard(Enemy *e, int t) {
 }
 
 void kurumi_boss_intro(Boss *b, int t) {
-	if(t < 0)
-		return;
-	
 	TIMER(&t);
 	GO_TO(b, VIEWPORT_W/2.0+200I, 0.01);
 	
@@ -698,7 +692,7 @@ void kurumi_danmaku(Boss *b, int time) {
 
 Boss *create_kurumi() {
 	Boss* b = create_boss("Kurumi", "kurumi", -400I);
-	boss_add_attack(b, AT_Move, "Introduction", 9, 0, kurumi_boss_intro, NULL);
+	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_boss_intro, NULL);
 	boss_add_attack(b, AT_Normal, "Sin Breaker", 20, 20000, kurumi_sbreaker, NULL);
 	boss_add_attack(b, AT_Spellcard, global.diff < D_Hard ? "Limit ~ Animate Wall" : "Summoning ~ Demon Wall", 30, 40000, kurumi_aniwall, kurumi_spell_bg);
 	boss_add_attack(b, AT_Normal, "Cold Breaker", 20, 20000, kurumi_breaker, NULL);

@@ -17,6 +17,7 @@ ADD_FLEX_BISON_DEPENDENCY(cfgscanner cfgparser)
 
 set(SRCs
 	main.c
+	random.c
 	stage.c
 	replay.c
 	global.c

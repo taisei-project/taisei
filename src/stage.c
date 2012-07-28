@@ -419,7 +419,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	}
 	
 	int seed = time(0);
-	srand(seed);
+	tsrand_seed_p(&global.rand_game, seed);
 	
 	if(global.replaymode == REPLAY_RECORD) {
 		replay_destroy(&global.replay);
@@ -429,7 +429,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	} else {
 		printf("REPLAY_PLAY mode: %d events\n", global.replay.ecount);
 		
-		srand(global.replay.seed);
+		tsrand_seed_p(&global.rand_game, global.replay.seed);
 		printf("Random seed: %d\n", global.replay.seed);
 		
 		global.diff			= global.replay.diff;
@@ -443,6 +443,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		global.plr.power	= global.replay.plr_power;
 	}
 	
+	tsrand_switch(&global.rand_game);
 	stage_start();
 	start();
 	
@@ -453,8 +454,10 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		stage_logic(endtime);
 		
 		calc_fps(&global.fps);
-				
-		stage_draw(info, draw, shaderrules, endtime);	
+		
+		tsrand_switch(&global.rand_visual);
+		stage_draw(info, draw, shaderrules, endtime);
+		tsrand_switch(&global.rand_game);
 		
 		SDL_GL_SwapBuffers();
 		frame_rate(&global.lasttime);
@@ -484,6 +487,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	
 	end();
 	stage_end();
+	tsrand_switch(&global.rand_visual);
 }
 
 void draw_stage_title(StageInfo *info) {
