@@ -113,10 +113,6 @@ void video_init(void) {
 	// sort it, mainly for the options menu
 	qsort(video.modes, video.mcount, sizeof(VideoMode), video_compare_modes);
 	
-	for(i = 0; i < video.mcount; ++i) {
-		printf(" +++ %dx%d\n", video.modes[i].width, video.modes[i].height);
-	}
-	
 	video_setmode(tconfig.intval[VID_WIDTH], tconfig.intval[VID_HEIGHT], tconfig.intval[FULLSCREEN]);
 	SDL_WM_SetCaption("TaiseiProject", NULL); 
 }
