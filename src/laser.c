@@ -58,16 +58,15 @@ void draw_laser_curve_instanced(Laser *l) {
 	c = l->timespan;
 	
 	t = (global.frames - l->birthtime)*l->speed - l->timespan + l->timeshift;
-	if(t < 0) {
-		c += t;
-		t = 0;
-	}
 	
 	if(t + l->timespan > l->deathtime + l->timeshift)
 		c += l->deathtime + l->timeshift - (t + l->timespan);
 	
-	glEnable(GL_TEXTURE_2D);
-	
+	if(t < 0) {
+		c += t;
+		t = 0;
+	}
+			
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
