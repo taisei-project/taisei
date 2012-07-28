@@ -28,10 +28,6 @@ vec2 posrule(float t) {
 %%VSHADER-FOOT%%
 }
 
-float angle(vec2 v) {
-	return atan(v.y, v.x);
-}
-
 void main(void) {
 	vec2 v = gl_Vertex.xy;
 	
