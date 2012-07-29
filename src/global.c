@@ -202,7 +202,7 @@ int strendswith(char *s, char *e) {
 char* difficulty_name(Difficulty diff) {
 	switch(diff) {
 		case D_Easy:	return "Easy";		break;
-		case D_Normal:	return "Nromal";	break;
+		case D_Normal:	return "Normal";	break;
 		case D_Hard:	return "Hard";		break;
 		case D_Lunatic:	return "Lunatic";	break;
 		default:		return "Unknown";	break;
