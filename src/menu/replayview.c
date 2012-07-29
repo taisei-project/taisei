@@ -15,6 +15,7 @@
 #include "replayview.h"
 #include "paths/native.h"
 #include "plrmodes.h"
+#include "video.h"
 
 void backtomain(void*);
 
@@ -41,10 +42,25 @@ static void replayview_freearg(void *a) {
 	free(r);
 }
 
+static void shorten(char *s, int width) {
+	float sw = stringwidth(s, _fonts.standard);
+	float len = strlen(s);
+	float avgw = sw / len;
+	int c = width / avgw, i;
+	
+	if(c > len)
+		return;
+	
+	s[c+1] = 0;
+	
+	for(i = 0; i < 3; ++i)
+		s[c - i] = '.';
+}
+
 static void replayview_drawitem(void *n, int item, int cnt) {
 	MenuEntry *e = (MenuEntry*)n;
 	Replay *rpy = (Replay*)e->arg;
-	float sizes[] = {0.7, 1.5, 0.8, 0.9, 1.0};
+	float sizes[] = {0.7, 1.5, 0.8, 0.8, 1.1};
 	
 	//draw_text(AL_Left, 20 - e->drawdata, 20*i, "lol replay omg", _fonts.standard);
 	
@@ -81,7 +97,7 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 				break;
 			
 			case 4:
-				a = AL_Left;
+				a = AL_Right;
 				
 				time_t t = rpy->seed;
 				struct tm* timeinfo = localtime(&t);
@@ -90,6 +106,7 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 				break;
 		}
 		
+		shorten(tmp, csize);
 		switch(a) {
 			case AL_Center:	o += csize * 0.5 - stringwidth(tmp, _fonts.standard) * 0.5;		break;
 			case AL_Right:	o += csize - stringwidth(tmp, _fonts.standard);					break;
