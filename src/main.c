@@ -49,7 +49,7 @@ void taisei_shutdown() {
 int main(int argc, char** argv) {
 	if(tsrand_test())
 		return 0;
-	
+		
 	MKDIR(get_config_path());
 	MKDIR(get_screenshots_path());
 	MKDIR(get_replays_path());
@@ -106,10 +106,12 @@ int main(int argc, char** argv) {
 	}
 #endif
 	
+	printf("playename = %s\n", tconfig.strval[PLAYERNAME]);
+	
 	MenuData menu;
 	create_main_menu(&menu);
 	printf("-- menu\n");	
 	main_menu_loop(&menu);
-		
+	
 	return 1;
 }

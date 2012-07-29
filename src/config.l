@@ -44,6 +44,8 @@
 "vid_width" { yylval = VID_WIDTH; return tVID_WIDTH; }
 "vid_height" { yylval = VID_HEIGHT; return tVID_HEIGHT; }
 
+"playername" { yylval = PLAYERNAME; return tPLAYERNAME; }
+
 "shift"		{ yylval = SDLK_LSHIFT; return SKEY; }
 "ctrl"		{ yylval = SDLK_LCTRL; return SKEY; }
 "return"	{ yylval = SDLK_RETURN; return SKEY; }
@@ -54,7 +56,6 @@
 "right"		{ yylval = SDLK_RIGHT; return SKEY; }
 "left"		{ yylval = SDLK_LEFT; return SKEY; }
 
-
 [0-9]+		{ yylval = atoi(yytext); return NUMBER; }
 [a-zA-Z]	{ yylval = yytext[0]; return tCHAR; }
 
@@ -64,6 +65,16 @@
 ß			{ yylval = SDLK_WORLD_63; return tCHAR; }
 
 K[0-9]+		{ yylval = atoi(yytext + 1); return tCHAR; }
+
+\"[^\"\n\r]+\"	{
+	int l = strlen(yytext) - 1;
+	char *s = malloc(l);
+	strcpy(s, yytext + 1);
+	s[l-1] = 0;
+	
+	yylval = (int)s;
+	return tSTRING;
+}
 
 \n			return LB;
 [ \t]		;

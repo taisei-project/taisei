@@ -176,3 +176,34 @@ void global_processevent(SDL_Event *event)
 			video_toggle_fullscreen();
 	}
 }
+
+int strendswith(char *s, char *e) {
+	int ls = strlen(s);
+	int le = strlen(e);
+	
+	if(le > ls)
+		return False;
+	
+	int i; for(i = ls - 1; i < le; ++i)
+		if(s[i] != e[i])
+			return False;
+	
+	return True;
+}
+
+char* difficulty_name(Difficulty diff) {
+	switch(diff) {
+		case D_Easy:	return "Easy";		break;
+		case D_Normal:	return "Nromal";	break;
+		case D_Hard:	return "Hard";		break;
+		case D_Lunatic:	return "Lunatic";	break;
+		default:		return "Unknown";	break;
+	}
+}
+
+void stralloc(char **dest, char *src) {
+	if(*dest)
+		free(*dest);
+	*dest = malloc(strlen(src)+1);
+	strcpy(*dest, src);
+}

@@ -12,7 +12,8 @@
 #include "parser.h"
 
 typedef struct Config {
-	int intval[64];
+	int 	intval[64];
+	char* 	strval[64];
 } Config;
 
 extern Config tconfig;
@@ -41,6 +42,8 @@ enum {
 	
 	VID_WIDTH,
 	VID_HEIGHT,
+	
+	PLAYERNAME
 };
 
 void parse_config(char *filename);

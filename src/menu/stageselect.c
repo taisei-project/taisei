@@ -35,10 +35,7 @@ void create_stage_menu(MenuData *m) {
 
 void draw_stage_menu(MenuData *m) {
 	draw_options_menu_bg(m);
-	
-	int w, h;
-	TTF_SizeText(_fonts.mainmenu, m->title, &w, &h);
-	draw_text(AL_Right, (w + 10) * (1-m->fade), 30, m->title, _fonts.mainmenu);
+	draw_text(AL_Right, (stringwidth(m->title, _fonts.mainmenu) + 10) * (1-m->fade), 30, m->title, _fonts.mainmenu);
 	
 	glPushMatrix();
 	glTranslatef(100, 100 + min(0, SCREEN_H * 0.7 - 100 - m->drawdata[2]), 0);
@@ -64,7 +61,9 @@ void draw_stage_menu(MenuData *m) {
 		else
 			glColor4f(1, 1, 1, 0.7);
 		
-		if(e->name)
+		if(e->draw)
+			e->draw(e, i, m->ecount);
+		else if(e->name)
 			draw_text(AL_Left, 20 - e->drawdata, 20*i, e->name, _fonts.standard);
 	}
 	
