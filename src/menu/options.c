@@ -10,6 +10,7 @@
 #include "menu.h"
 #include "options.h"
 #include "global.h"
+#include "video.h"
 #include "paths/native.h"
 #include "taisei_err.h"
 
@@ -90,6 +91,26 @@ OptionBinding* bind_keybinding(MenuData *m, char *optname, int cfgentry)
 	return bind;
 }
 
+// Super-special binding type for the resolution setting
+OptionBinding* bind_resolution(MenuData *m) {
+	OptionBinding *bind;
+	bind = allocate_binding(m);
+	
+	bind->enabled = True;
+	bind->type = BT_Resolution;
+	bind->valcount = video.mcount;
+	bind->selected = -1;
+	
+	int i; for(i = 0; i < video.mcount; ++i) {
+		VideoMode *m = &(video.modes[i]);
+		
+		if(m->width == video.intended.width && m->height == video.intended.height)
+			bind->selected = i;
+	}
+	
+	return bind;
+}
+
 // Returns a pointer to the first found binding that blocks input. If none found, returns NULL.
 OptionBinding* get_input_blocking_binding(MenuData *m)
 {
@@ -119,14 +140,20 @@ void bind_setvaluerange(OptionBinding *b, int vmin, int vmax) {
 // Called to select a value of a BT_IntValue type binding by index
 int bind_setvalue(OptionBinding *b, int v)
 {
-	return b->selected = b->setter(b, v);
+	if(b->setter)
+		return b->selected = b->setter(b, v);
+	else
+		return b->selected = v;
 }
 
 // Called to get the selected value of a BT_IntValue type binding by index
 int bind_getvalue(OptionBinding *b)
 {
-	// query AND update
-	return b->selected = b->getter(b);
+	if(b->getter)
+		// query AND update
+		return b->selected = b->getter(b);
+	else
+		return b->selected;
 }
 
 // Selects the next to current value of a BT_IntValue type binding
@@ -207,7 +234,7 @@ int bind_common_onoffset_inverted(void *b, int v)
 
 int bind_fullscreen_set(void *b, int v)
 {
-	toggle_fullscreen();
+	video_toggle_fullscreen();
 	return bind_common_onoffset(b, v);
 }
 
@@ -313,6 +340,11 @@ void menu_save_config(MenuData *m, char *filename)
 				fprintf(out, "%s = K%i\n", bind->optname, tconfig.intval[bind->configentry]);
 				break;
 			
+			case BT_Resolution:
+				// at this point, the intended resolution is what the user has picked
+				fprintf(out, "vid_width = %i\nvid_height = %i\n", video.intended.width, video.intended.height);
+				break;
+			
 			default:
 				printf("FIXME: unhandled BindingType %i, option '%s' will NOT be saved!\n", bind->type, bind->optname);
 		}
@@ -327,6 +359,19 @@ void menu_save_config(MenuData *m, char *filename)
 void destroy_options_menu(void *menu)
 {
 	MenuData *m = (MenuData*)menu;
+	OptionBinding *binds = (OptionBinding*)m->context;
+	int i;
+	
+	for(i = 0; i < m->ecount; ++i) {
+		if(binds[i].type == BT_Resolution) {
+			if(binds[i].selected != -1) {
+				VideoMode *m = &(video.modes[binds[i].selected]);
+				video_setmode(m->width, m->height, tconfig.intval[FULLSCREEN]);
+			}
+			break;
+		}
+	}
+	
 	menu_save_config(m, CONFIG_FILE);
 	free_bindings(menu);
 }
@@ -348,6 +393,9 @@ void create_options_menu(MenuData *m) {
 	
 	#define bind_onoff(b) bind_addvalue(b, "on"); bind_addvalue(b, "off")
 	
+	add_menu_entry(m, "Video Mode", do_nothing, NULL);
+		b = bind_resolution(m);
+	
 	add_menu_entry(m, "Fullscreen", do_nothing, NULL);
 		b = bind_option(m, "fullscreen", FULLSCREEN, bind_common_onoffget, bind_fullscreen_set);
 			bind_onoff(b);
@@ -357,7 +405,7 @@ void create_options_menu(MenuData *m) {
 													  bind_noaudio_set);
 			bind_onoff(b);
 		
-	add_menu_entry(m, "Shader", do_nothing, NULL);
+	add_menu_entry(m, "Shaders", do_nothing, NULL);
 		b = bind_option(m, "disable_shader", NO_SHADER, bind_common_onoffget_inverted,
 														bind_noshader_set);
 			bind_onoff(b);
@@ -519,6 +567,24 @@ void draw_options_menu(MenuData *menu) {
 					else
 						draw_text(AL_Right, origin, 20*i, SDL_GetKeyName(tconfig.intval[bind->configentry]), _fonts.standard);
 					break;
+				
+				case BT_Resolution: {
+					char tmp[16];
+					int w, h;
+					
+					if(bind->selected == -1) {
+						w = video.intended.width;
+						h = video.intended.height;
+					} else {
+						VideoMode *m = &(video.modes[bind->selected]);
+						w = m->width;
+						h = m->height;
+					}
+					
+					snprintf(tmp, 16, "%dx%d", w, h);
+					draw_text(AL_Right, origin, 20*i, tmp, _fonts.standard);
+					break;
+				}
 			}
 		}
 	}
@@ -582,24 +648,22 @@ static void options_key_action(MenuData *menu, int sym) {
 		
 		if(bind->enabled) switch(bind->type)
 		{
-			case BT_IntValue: bind_setnext(bind); break;
-			case BT_KeyBinding: bind->blockinput = True; break;
-		}
-		else
-			menu->quit = 1;
+			case BT_IntValue: case BT_Resolution:	bind_setnext(bind); 		break;
+			case BT_KeyBinding: 					bind->blockinput = True; 	break;
+		} else menu->quit = 1;
 	} else if(sym == tconfig.intval[KEY_LEFT] || sym == SDLK_LEFT) {
 		menu->selected = menu->cursor;
 		OptionBinding *binds = (OptionBinding*)menu->context;
 		OptionBinding *bind = &(binds[menu->selected]);
 		
-		if(bind->enabled && bind->type == BT_IntValue)
+		if(bind->enabled && (bind->type == BT_IntValue || bind->type == BT_Resolution))
 			bind_setprev(bind);
 	} else if(sym == tconfig.intval[KEY_RIGHT] || sym == SDLK_RIGHT) {
 		menu->selected = menu->cursor;
 		OptionBinding *binds = (OptionBinding*)menu->context;
 		OptionBinding *bind = &(binds[menu->selected]);
 		
-		if(bind->enabled && bind->type == BT_IntValue)
+		if(bind->enabled && (bind->type == BT_IntValue || bind->type == BT_Resolution))
 			bind_setnext(bind);
 	} else if(sym == SDLK_ESCAPE) {
 		menu->quit = 1;

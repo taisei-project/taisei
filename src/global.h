@@ -35,7 +35,8 @@
 #define FILE_PREFIX PREFIX "/share/taisei/"
 #define CONFIG_FILE "config"
 
-enum {	
+enum {
+	// defaults
 	RESX = 800,
 	RESY = 600,
 	
@@ -128,7 +129,6 @@ void calc_fps(FPSCounter *fps);
 void set_ortho();
 void fade_out(float f);
 
-void toggle_fullscreen();
 void global_processevent(SDL_Event*);
 void take_screenshot();
 

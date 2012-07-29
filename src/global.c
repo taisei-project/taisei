@@ -6,6 +6,7 @@
  */
 
 #include "global.h"
+#include "video.h"
 #include <SDL/SDL.h>
 #include <time.h>
 #include <stdio.h>
@@ -91,19 +92,6 @@ inline double min(double a, double b) {
 	return (a < b)? a : b;
 }
 
-extern SDL_Surface *display;
-
-void toggle_fullscreen()
-{
-	int newflags = display->flags;
-	newflags ^= SDL_FULLSCREEN;
-	tconfig.intval[FULLSCREEN] = newflags & SDL_FULLSCREEN;
-	
-	SDL_FreeSurface(display);
-	if((display = SDL_SetVideoMode(RESX, RESY, 32, newflags)) == NULL)
-		errx(-1, "Error opening screen: %s", SDL_GetError());
-}
-
 void take_screenshot()
 {
 	FILE *out;
@@ -177,6 +165,6 @@ void global_processevent(SDL_Event *event)
 		if(sym == tconfig.intval[KEY_SCREENSHOT])
 			take_screenshot();
 		if((sym == SDLK_RETURN && (keys[SDLK_LALT] || keys[SDLK_RALT])) || sym == tconfig.intval[KEY_FULLSCREEN])
-			toggle_fullscreen();
+			video_toggle_fullscreen();
 	}
 }
