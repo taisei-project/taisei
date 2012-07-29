@@ -78,12 +78,17 @@ void replay_input() {
 		}
 	}
 	
-// 	I know this loop is not (yet) optimal - consider it a sketch
+	if(global.menu)
+		return;
+	
 	int i;
-	for(i = 0; i < global.replay.ecount; ++i) {
+	for(i = global.replay.lastframeplayed; i < global.replay.ecount; ++i) {
 		ReplayEvent *e = &(global.replay.events[i]);
 		
-		if(e->frame == global.frames) switch(e->type) {
+		if(e->frame != global.frames)
+			break;
+		
+		switch(e->type) {
 			case EV_OVER:
 				global.game_over = GAMEOVER_ABORT;
 				break;
@@ -97,6 +102,7 @@ void replay_input() {
 		}
 	}
 	
+	global.replay.lastframeplayed = i;
 	player_applymovement(&global.plr);
 }
 
@@ -137,7 +143,8 @@ void stage_input() {
 		}
 	}
 	
-	player_applymovement(&global.plr);
+	if(!global.menu)
+		player_applymovement(&global.plr);
 }
 
 void draw_hud() {
@@ -441,6 +448,8 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		global.plr.lifes	= global.replay.plr_lifes;
 		global.plr.bombs	= global.replay.plr_bombs;
 		global.plr.power	= global.replay.plr_power;
+		
+		global.replay.lastframeplayed = 0;
 	}
 	
 	tsrand_switch(&global.rand_game);
