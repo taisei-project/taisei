@@ -9,8 +9,7 @@
 #define TEXTURE_H
 
 #include <SDL/SDL.h>
-#include <GL/gl.h>
-#include <GL/glext.h>
+#include "taiseigl.h"
 #include <math.h>
 
 typedef struct {

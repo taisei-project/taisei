@@ -37,7 +37,10 @@ enum {
 	NO_STAGEBG,
 	NO_STAGEBG_FPSLIMIT,
 	
-	SAVE_RPY
+	SAVE_RPY,
+	
+	VID_WIDTH,
+	VID_HEIGHT,
 };
 
 void parse_config(char *filename);

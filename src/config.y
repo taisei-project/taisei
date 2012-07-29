@@ -7,6 +7,7 @@
 
 %{	
 	#include "config.h"
+	#include "global.h"
 	#include <stdio.h>
 	#include <string.h>
 	#include <stdlib.h>
@@ -51,6 +52,9 @@
 %token tNO_STAGEBG_FPSLIMIT
 %token tSAVE_RPY
 
+%token tVID_WIDTH
+%token tVID_HEIGHT
+
 %token SKEY
 
 %token NUMBER
@@ -90,6 +94,8 @@ key_key	: tKEY_UP
 		| tFULLSCREEN
 		| tNO_STAGEBG
 		| tNO_STAGEBG_FPSLIMIT
+		| tVID_WIDTH
+		| tVID_HEIGHT
 		| tSAVE_RPY;
 
 nl		: LB { lineno++; };
@@ -144,6 +150,9 @@ void config_preset() {
 	tconfig.intval[NO_STAGEBG_FPSLIMIT] = 40;
 	
 	tconfig.intval[SAVE_RPY] = 2;
+	
+	tconfig.intval[VID_WIDTH] = RESX;
+	tconfig.intval[VID_HEIGHT] = RESY;
 }
 
 int config_sym2key(int sym) {
