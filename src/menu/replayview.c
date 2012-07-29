@@ -60,7 +60,7 @@ static void shorten(char *s, int width) {
 static void replayview_drawitem(void *n, int item, int cnt) {
 	MenuEntry *e = (MenuEntry*)n;
 	Replay *rpy = (Replay*)e->arg;
-	float sizes[] = {1.1, 1.6, 0.8, 0.8, 0.6};
+	float sizes[] = {1.2, 1.5, 0.8, 0.8, 0.6};
 	
 	//draw_text(AL_Left, 20 - e->drawdata, 20*i, "lol replay omg", _fonts.standard);
 	
@@ -82,7 +82,7 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 				
 				time_t t = rpy->seed;
 				struct tm* timeinfo = localtime(&t);
-				strftime(tmp, 128, "%y/%m/%d  %H:%M", timeinfo);
+				strftime(tmp, 128, "%Y-%m-%d %H:%M", timeinfo);
 				
 				break;
 			
