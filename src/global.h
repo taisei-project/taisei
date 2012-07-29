@@ -84,8 +84,9 @@ typedef enum {
 
 typedef struct {
 	int fpstime;  // frame counter
-	int fps;	
+	int fps;
 	int show_fps;
+	double stagebg_fps;
 } FPSCounter;
 
 typedef struct {
@@ -136,6 +137,8 @@ void fade_out(float f);
 void toggle_fullscreen();
 void global_processevent(SDL_Event*);
 void take_screenshot();
+
+double approach(double v, double t, double d);
 
 // this is used by both player and replay code
 enum {
