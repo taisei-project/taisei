@@ -78,7 +78,11 @@ void replay_input() {
 		}
 	}
 	
+	if(global.menu)
+		return;
+	
 // 	I know this loop is not (yet) optimal - consider it a sketch
+	
 	int i;
 	for(i = 0; i < global.replay.ecount; ++i) {
 		ReplayEvent *e = &(global.replay.events[i]);
@@ -137,7 +141,8 @@ void stage_input() {
 		}
 	}
 	
-	player_applymovement(&global.plr);
+	if(!global.menu)
+		player_applymovement(&global.plr);
 }
 
 void draw_hud() {

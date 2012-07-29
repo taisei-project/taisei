@@ -294,6 +294,8 @@ void player_event(Player* plr, int type, int key) {
 }
 
 void player_applymovement(Player* plr) {
+	printf("[%d] player_applymovement()\n", global.frames);
+	
 	if(plr->deathtime < -1)
 		return;
 	
@@ -325,8 +327,18 @@ void player_applymovement(Player* plr) {
 	if(direction)
 		player_move(&global.plr, direction);
 	
-// 	if(!keys[tconfig.intval[KEY_SHOT]] && plr->fire)
-// 		plr->fire = False;
-// 	if(!keys[tconfig.intval[KEY_FOCUS]] && plr->focus > 0)
-// 		plr->focus = -30;	
+	// workaround
+	if(global.replaymode == REPLAY_RECORD) {
+		Uint8 *keys = SDL_GetKeyState(NULL);
+		
+		if(!keys[tconfig.intval[KEY_SHOT]] && plr->fire) {
+			player_event(plr, EV_RELEASE, KEY_SHOT);
+			replay_event(&global.replay, EV_RELEASE, KEY_SHOT);
+		}
+		
+		if(!keys[tconfig.intval[KEY_FOCUS]] && plr->focus > 0) {
+			player_event(plr, EV_RELEASE, KEY_FOCUS);
+			replay_event(&global.replay, EV_RELEASE, KEY_FOCUS);
+		}
+	}
 }
