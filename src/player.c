@@ -294,8 +294,6 @@ void player_event(Player* plr, int type, int key) {
 }
 
 void player_applymovement(Player* plr) {
-	printf("[%d] player_applymovement()\n", global.frames);
-	
 	if(plr->deathtime < -1)
 		return;
 	
