@@ -82,7 +82,7 @@ void replay_input() {
 		return;
 	
 	int i;
-	for(i = global.replay.lastframeplayed; i < global.replay.ecount; ++i) {
+	for(i = global.replay.playpos; i < global.replay.ecount; ++i) {
 		ReplayEvent *e = &(global.replay.events[i]);
 		
 		if(e->frame != global.frames)
@@ -102,7 +102,7 @@ void replay_input() {
 		}
 	}
 	
-	global.replay.lastframeplayed = i;
+	global.replay.playpos = i;
 	player_applymovement(&global.plr);
 }
 
@@ -449,7 +449,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		global.plr.bombs	= global.replay.plr_bombs;
 		global.plr.power	= global.replay.plr_power;
 		
-		global.replay.lastframeplayed = 0;
+		global.replay.playpos = 0;
 	}
 	
 	tsrand_switch(&global.rand_game);
