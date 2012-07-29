@@ -17,6 +17,7 @@ ADD_FLEX_BISON_DEPENDENCY(cfgscanner cfgparser)
 
 set(SRCs
 	main.c
+	taiseigl.c
 	random.c
 	stage.c
 	replay.c
@@ -74,7 +75,7 @@ if(WIN32)
 	set(SRCs ${SRCs} taisei_err.c)
 endif()
 
-add_definitions(-DGL_GLEXT_PROTOTYPES -DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall)
+add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall)
 
 if(TAISEI_DEBUG)
 	add_definitions(-DDEBUG)

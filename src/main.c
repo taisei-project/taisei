@@ -6,8 +6,6 @@
  */
 
 #include <SDL/SDL.h>
-#include <GL/gl.h>
-#include <GL/glext.h>
 #include <sys/stat.h>
 #include "taisei_err.h"
 
@@ -16,8 +14,11 @@
 #include "stage.h"
 #include "menu/mainmenu.h"
 #include "paths/native.h"
+#include "taiseigl.h"
 
 void init_gl() {
+	load_gl_functions();
+	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 

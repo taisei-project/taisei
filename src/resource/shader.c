@@ -6,9 +6,8 @@
  */
 
 #include <stdio.h>
-#include <GL/gl.h>
-#include <GL/glext.h>
 
+#include "taiseigl.h"
 #include "shader.h"
 #include "resource.h"
 #include "config.h"

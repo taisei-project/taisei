@@ -133,6 +133,10 @@ void global_processevent(SDL_Event*);
 void take_screenshot();
 
 double psin();
+
+// NOTE: do NOT convert these to macros please.
+// max(frand(), 0.5);
+// min(huge_costly_expression, another_huge_costly_expression)
 double min(double, double);
 double max(double, double);
 
