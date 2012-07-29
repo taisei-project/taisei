@@ -10,6 +10,7 @@
 #include <SDL/SDL.h>
 #include <time.h>
 #include "global.h"
+#include "video.h"
 #include "replay.h"
 #include "config.h"
 #include "player.h"
@@ -246,7 +247,7 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 		
 		if(!tconfig.intval[NO_SHADER]) {
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glViewport(0,0,RESX,RESY);
+			glViewport(0, 0, video.current.width, video.current.height);
 			glPushMatrix();
 			if(global.plr.cha == Marisa && global.plr.shot == MarisaLaser && global.frames - global.plr.recovery < 0)
 				glTranslatef(8*sin(global.frames),8*sin(global.frames+3),0);

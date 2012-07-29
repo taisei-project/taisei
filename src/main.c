@@ -12,11 +12,10 @@
 #include "taisei_err.h"
 
 #include "global.h"
+#include "video.h"
 #include "stage.h"
 #include "menu/mainmenu.h"
 #include "paths/native.h"
-
-SDL_Surface *display;
 
 void init_gl() {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -35,7 +34,7 @@ void taisei_shutdown() {
 	
 	free_resources();
 	
-	SDL_FreeSurface(display);
+	video_shutdown();
 	SDL_Quit();
 	printf("-- Good Bye.\n");
 }
@@ -63,17 +62,9 @@ int main(int argc, char** argv) {
 	
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	
-	int flags = SDL_OPENGL;
-	if(tconfig.intval[FULLSCREEN])
-		flags |= SDL_FULLSCREEN;
-	
-	if((display = SDL_SetVideoMode(RESX, RESY, 32, flags)) == NULL)
-		errx(-1, "Error opening screen: %s", SDL_GetError());
-		
+	video_init();
 	printf("-- SDL viewport\n");
-		
-	SDL_WM_SetCaption("TaiseiProject", NULL); 
-
+	
 	init_gl();
 	printf("-- GL\n");
 	
