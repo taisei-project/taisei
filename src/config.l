@@ -41,6 +41,9 @@
 
 "save_rpy" { yylval = SAVE_RPY; return tSAVE_RPY; }
 
+"vid_width" { yylval = VID_WIDTH; return tVID_WIDTH; }
+"vid_height" { yylval = VID_HEIGHT; return tVID_HEIGHT; }
+
 "shift"		{ yylval = SDLK_LSHIFT; return SKEY; }
 "ctrl"		{ yylval = SDLK_LCTRL; return SKEY; }
 "return"	{ yylval = SDLK_RETURN; return SKEY; }

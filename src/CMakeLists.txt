@@ -34,6 +34,7 @@ set(SRCs
 	vbo.c
 	stageutils.c
 	matrix.c
+	video.c
 	menu/menu.c
 	menu/mainmenu.c
 	menu/options.c
