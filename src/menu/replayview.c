@@ -62,8 +62,6 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 	Replay *rpy = (Replay*)e->arg;
 	float sizes[] = {1.2, 1.5, 0.8, 0.8, 0.6};
 	
-	//draw_text(AL_Left, 20 - e->drawdata, 20*i, "lol replay omg", _fonts.standard);
-	
 	int columns = 5, i, j;
 	for(i = 0; i < columns; ++i) {
 		char tmp[128];
