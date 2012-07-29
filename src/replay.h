@@ -39,6 +39,7 @@ typedef struct Replay {
 	// The fields below should not be stored
 	int capacity;
 	int active;
+	int lastframeplayed;
 } Replay;
 
 enum {
