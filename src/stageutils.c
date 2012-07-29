@@ -25,12 +25,12 @@ void add_model(Stage3D *s, SegmentDrawRule draw, SegmentPositionRule pos) {
 	s->models[s->msize - 1].pos = pos;
 }
 
-void set_perspective(Stage3D *s, float near, float far) {
+void set_perspective(Stage3D *s, float n, float f) {
 	glMatrixMode(GL_PROJECTION);
 	
 	glLoadIdentity();
 	glTranslatef(-(VIEWPORT_W/2.0)/SCREEN_W, 0, 0);
-	gluPerspective(s->projangle, 1, near, far);
+	gluPerspective(s->projangle, 1, n, f);
 	glTranslatef(VIEWPORT_X+VIEWPORT_W/2.0, VIEWPORT_Y+VIEWPORT_H/2.0, 0);
 		
 	glMatrixMode(GL_MODELVIEW);	

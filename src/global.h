@@ -35,6 +35,9 @@
 #define FILE_PREFIX PREFIX "/share/taisei/"
 #define CONFIG_FILE "config"
 
+#undef min
+#define min(a, b) ((a) < (b) ? (a) : (b))
+
 enum {	
 	RESX = 800,
 	RESY = 600,	
