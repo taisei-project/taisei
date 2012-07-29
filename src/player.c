@@ -155,12 +155,19 @@ void player_logic(Player* plr) {
 	if(global.frames - plr->recovery < 0) {
 		Enemy *en;
 		for(en = global.enemies; en; en = en->next)
-			en->hp -= 300;
+			if(!en->unbombable)
+				en->hp -= 300;
 		
 		Projectile *p;
 		for(p = global.projs; p; p = p->next)
 			if(p->type >= FairyProj)
 				p->type = DeadProj;
+			
+		if(global.boss && global.boss->current) {
+			AttackType at = global.boss->current->type;
+			if(at != AT_Move && at != AT_SurvivalSpell)
+				global.boss->dmg += 30;
+		}
 	}
 }
 

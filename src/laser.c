@@ -209,9 +209,8 @@ int collision_line(complex a, complex b, complex c, float r) {
 	return 0;
 }
 
-static float min(float a, float b) {
-	return a < b ? a : b;
-}
+#undef min
+#define min(a,b) ((a) < (b) ? (a) : (b))
 
 int collision_laser_curve(Laser *l) {
 	float s = (global.frames - l->birthtime)*l->speed + l->timeshift;

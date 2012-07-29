@@ -301,7 +301,7 @@ void iku_atmospheric(Boss *b, int time) {
 		
 		int i;
 		int c = 10;
-		
+				
 		for(i = -c*0.5; i <= c*0.5; i++) {
 			create_projectile2c("ball", p1+(p2-p1)/c*i, rgb(1/(1+fabs(0.3*i)), 1, 1), accelerated, 0, (0.005+0.001*global.diff)*cexp(I*carg(p2-p1)+I*M_PI/2+0.2I*i))->draw = ProjDrawAdd;
 		}

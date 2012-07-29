@@ -33,8 +33,6 @@ void create_stage_menu(MenuData *m) {
 	add_menu_entry(m, "Back", backtomain, m);
 }
 
-float min(float a, float b)  { return a < b? a : b; }
-
 void draw_stage_menu(MenuData *m) {
 	draw_options_menu_bg(m);
 	

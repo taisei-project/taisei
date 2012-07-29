@@ -8,8 +8,7 @@
 #ifndef FBO_H
 #define FBO_H
 
-#include <GL/gl.h>
-#include <GL/glext.h>
+#include "taiseigl.h"
 
 typedef struct {
 	GLuint fbo;

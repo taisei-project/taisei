@@ -13,7 +13,7 @@
 #include "projectile.h"
 #include "list.h"
 
-void create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyDrawRule draw_rule, EnemyLogicRule logic_rule,
+Enemy *create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyDrawRule draw_rule, EnemyLogicRule logic_rule,
 				  complex a1, complex a2, complex a3, complex a4) {
 	Enemy *e = (Enemy *)create_element((void **)enemies, sizeof(Enemy));
 	e->moving = 0;
@@ -24,6 +24,7 @@ void create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyDrawRule draw_rul
 	e->pos0 = pos;
 	
 	e->hp = hp;
+	e->unbombable = 0;
 	
 	e->logic_rule = logic_rule;
 	e->draw_rule = draw_rule;
@@ -34,6 +35,8 @@ void create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyDrawRule draw_rul
 	e->args[3] = a4;
 	
 	e->logic_rule(e, EVENT_BIRTH);
+	
+	return e;
 }
 
 void _delete_enemy(void **enemies, void* enemy) {
