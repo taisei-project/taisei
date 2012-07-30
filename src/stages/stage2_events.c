@@ -556,7 +556,7 @@ void stage2_boss_a2(Boss *boss, int time) {
 		float clr = psin(time / 30.0) * (1.0 - b);
 		
 		//create_lasercurve2c(boss->pos, dt*2, dt, rgb(0.5, 1.0, 0.5), las_accel, 0, 0.1 * cexp(I*a));
-		create_lasercurve3c(boss->pos, dt*2, dt, rgb(1.0, 1.0 - clr, b), las_sine_expanding, 5 * cexp(I*a), M_PI/4, 0.1)->width = 20;
+		create_lasercurve3c(boss->pos, dt*2, dt, rgb(1.0, 1.0 - clr, b), las_sine_expanding, 5 * cexp(I*a), M_PI/4, 0.015 * _i)->width = 15;
 	}
 }
 
@@ -566,7 +566,7 @@ Boss* stage2_create_boss() {
 	Boss *wriggle = create_boss("EX Wriggle", "wriggle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
 	//boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage2_boss_a1, stage2_boss_spellbg);
-	boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Super Derpness", 30, 20000, stage2_boss_a2, stage2_boss_spellbg);
+	boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Super Derpness", 30, 40000, stage2_boss_a2, stage2_boss_spellbg);
 	
 	start_attack(wriggle, wriggle->attacks);
 	return wriggle;
