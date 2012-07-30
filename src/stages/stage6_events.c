@@ -46,7 +46,7 @@ int stage6_side(Enemy *e, int t) {
 		int i;
 		int c = 15+10*global.diff;
 		for(i = 0; i < c; i++) {
-			create_projectile2c("rice", e->pos+5*(i/2)*e->args[1], rgb(0, 0.5, 1), accelerated, 1I-2I*(i&1), (0.001-0.0001*global.diff)*(i/2)*e->args[1]);
+			create_projectile2c("rice", e->pos+5*(i/2)*e->args[1], rgb(0, 0.5, 1), accelerated, (1I-2I*(i&1))*(0.7+0.2*global.diff), 0.001*(i/2)*e->args[1]);
 		}
 	}
 	
@@ -75,17 +75,96 @@ int stage6_flowermine(Enemy *e, int t) {
 		e->args[0] += 0.07*cexp(I*carg(e->args[1]-e->pos));
 		
 	FROM_TO(0, 1000, 7-global.diff) {
-		create_projectile2c("rice", e->pos + 40*cexp(I*0.6*_i+I*carg(e->args[0])), rgb(0.3, 0.8, creal(e->args[2])), wait_proj, I*cexp(I*0.6*_i), 200)->angle = 0.6*_i;
+		create_projectile2c("rice", e->pos + 40*cexp(I*0.6*_i+I*carg(e->args[0])), rgb(0.3, 0.8, creal(e->args[2])), wait_proj, I*cexp(I*0.6*_i)*(0.7+0.3*global.diff), 200)->angle = 0.6*_i;
 	}
 	
 	return 1;
 }
 
+void ScaleFade(Projectile *p, int t) {
+	glPushMatrix();
+	glTranslatef(creal(p->pos), cimag(p->pos), 0);
+	glScalef(creal(p->args[1]), creal(p->args[1]), 1);
+	glRotatef(180/M_PI*p->angle, 0, 0, 1);
+	if(t/creal(p->args[0]) != 0)
+		glColor4f(1,1,1, 1.0 - (float)t/p->args[0]);
+	
+	draw_texture_p(0, 0, p->tex);
+	
+	if(t/creal(p->args[0]) != 0)
+		glColor4f(1,1,1,1);
+	glPopMatrix();
+}
+
+int scythe_mid(Enemy *e, int t) {
+	complex n;
+	
+	if(t < 0)
+		return 1;
+	if(t > 300)
+		return ACTION_DESTROY;
+		
+	e->pos += 6-global.diff-0.005I*t;
+	
+	n = cexp(cimag(e->args[1])*I*t);
+	create_projectile2c("bigball", e->pos + 80*n, rgb(carg(n), 1-carg(n), 1/carg(n)), wait_proj, global.diff*cexp(0.6I)*n, 100)->draw=ProjDrawAdd;
+	
+	if(global.diff > D_Normal && t&1)
+		create_projectile2c("ball", e->pos + 80*n, rgb(0, 0.2, 0.5), accelerated, n, 0.01*global.diff*cexp(I*carg(global.plr.pos - e->pos - 80*n)))->draw=ProjDrawAdd;
+	
+	return 1;
+}
+
+void Scythe(Enemy *e, int t) {
+	Projectile *p = create_projectile_p(&global.particles, get_tex("stage6/scythe"), e->pos, NULL, ScaleFade, timeout, 8, e->args[2], 0, 0);
+	p->type = Particle;
+	p->angle = creal(e->args[1]);
+	e->args[1] += cimag(e->args[1]);
+	
+	create_particle2c("flare", e->pos+100*frand()*cexp(2I*M_PI*frand()), rgb(1,1,0.6), GrowFadeAdd, timeout_linear, 60, -I+1);
+}
+
+int scythe_intro(Enemy *e, int t) {
+	if(t < 0)
+		return 0;
+	
+	TIMER(&t);
+	
+	GO_TO(e,VIEWPORT_W/2+200I, 0.05);
+	
+	
+	FROM_TO(60, 119, 1) {
+		e->args[1] -= 0.00333I;
+		e->args[2] -= 0.007;
+	}
+		
+	return 1;
+}
+
+void elly_intro(Boss *b, int t) {
+	TIMER(&t);
+	GO_TO(b, VIEWPORT_W/2+200I, 0.01);
+	
+	AT(200) {
+		create_enemy3c(VIEWPORT_W+200+200I, ENEMY_IMMUNE, Scythe, scythe_intro, 0, 1+0.2I, 1);
+	}
+}
+
+Boss *create_elly() {
+	Boss *b = create_boss("Elly", "elly", -200I);
+	
+	boss_add_attack(b, AT_Move, "Catch the Scythe", 10, 0, elly_intro, NULL);
+	
+	start_attack(b, b->attacks);
+	
+	return b;
+}
+	
 void stage6_events() {
 	TIMER(&global.timer);
 	
 // 	AT(0)
-// 		global.timer = 1300;
+// 		global.timer = 2300;
 	
 	AT(100)
 		create_enemy1c(VIEWPORT_W/2, 6000, BigFairy, stage6_hacker, 2I);
@@ -103,4 +182,10 @@ void stage6_events() {
 		
 	FROM_TO(1600, 2000, 20)
 		create_enemy3c(VIEWPORT_W/2, 600, Fairy, stage6_flowermine, 2*cexp(0.5I*M_PI/9*_i+I*M_PI/2)+1I, VIEWPORT_H/2*I+VIEWPORT_W, 1);
+	
+	AT(2300)
+		create_enemy3c(200I-200, ENEMY_IMMUNE, Scythe, scythe_mid, 0, 0.2I, 1);
+		
+	AT(3800)
+		global.boss = create_elly();
 }

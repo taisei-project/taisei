@@ -27,6 +27,9 @@ void init_gl() {
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
 	init_quadvbo();
+	
+	GLint texSize;
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &texSize);
 }
 
 

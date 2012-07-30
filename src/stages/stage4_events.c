@@ -204,6 +204,7 @@ Boss *create_iku_mid() {
 	Boss *b = create_boss("Bombs?", "iku", VIEWPORT_W+800I);
 	
 	boss_add_attack(b, AT_SurvivalSpell, "Static Bombs", 16, 10, iku_mid_intro, NULL);
+	start_attack(b, b->attacks);
 	
 	return b;
 }
@@ -479,7 +480,8 @@ Boss *create_iku() {
 	boss_add_attack(b, AT_Normal, "Bolts3", 20, 20000, iku_bolts3, NULL);
 	boss_add_attack(b, AT_Spellcard, "Spark Sign ~ Natural Cathode", 30, 35000, iku_cathode, iku_spell_bg);
 	boss_add_attack(b, AT_Spellcard, "Current Sign ~ Induction", 30, 35000, iku_induction, iku_spell_bg);
-		
+	start_attack(b, b->attacks);
+	
 	return b;
 }
 

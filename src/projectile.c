@@ -292,6 +292,12 @@ void DeathShrink(Projectile *p, int t) {
 	glPopMatrix();
 }
 
+void GrowFadeAdd(Projectile *p, int t) {
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+	GrowFade(p, t);
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+}
+
 void GrowFade(Projectile *p, int t) {
 	glPushMatrix();
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
