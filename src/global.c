@@ -192,8 +192,8 @@ int strendswith(char *s, char *e) {
 	if(le > ls)
 		return False;
 	
-	int i; for(i = ls - 1; i < le; ++i)
-		if(s[i] != e[i])
+	int i; for(i = 0; i < le; ++i)
+		if(s[ls-i-1] != e[le-i-1])
 			return False;
 	
 	return True;
