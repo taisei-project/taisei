@@ -41,6 +41,8 @@ void replay_init(Replay *rpy, StageInfo *stage, int seed, Player *plr) {
 void replay_destroy(Replay *rpy) {
 	if(rpy->events)
 		free(rpy->events);
+	if(rpy->playername)
+		free(rpy->playername);
 	memset(rpy, 0, sizeof(Replay));
 	printf("Replay destroyed.\n");
 }
@@ -95,7 +97,7 @@ int replay_write(Replay *rpy, FILE *file) {
 	
 	// header
 	replay_write_int(file, REPLAY_MAGICNUMBER);
-	replay_write_string(file, "Taisei replay file");
+	replay_write_string(file, tconfig.strval[PLAYERNAME]);
 	replay_write_string(file, "This file is not for your eyes, move on");
 	replay_write_int(file, 1);
 	
@@ -163,6 +165,7 @@ int replay_read(Replay *rpy, FILE *file) {
 	int readstate = RPY_H_MAGIC;
 	int bufidx = 0, eidx = 0;
 	char buf[REPLAY_READ_MAXSTRLEN], c;
+	memset(rpy, 0, sizeof(Replay));
 	
 	while((c = fgetc(file)) != EOF) {
 		if(c == ':') {
@@ -181,7 +184,8 @@ int replay_read(Replay *rpy, FILE *file) {
 				}
 				
 				case RPY_H_META1:
-					printf("replay_read(): %s\n", buf);
+					stralloc(&rpy->playername, buf);
+					printf("replay_read(): replay META1 is: %s\n", buf);
 					break;
 				
 				case RPY_H_META2: case RPY_H_REPLAYCOUNT:	// skip
@@ -231,14 +235,17 @@ int replay_read(Replay *rpy, FILE *file) {
 #undef FLOATOF
 #undef INTOF
 
-char* replay_getpath(char *name) {
+char* replay_getpath(char *name, int ext) {
 	char *p = (char*)malloc(strlen(get_replays_path()) + strlen(name) + strlen(REPLAY_EXTENSION) + 3);
-	sprintf(p, "%s/%s.%s", get_replays_path(), name, REPLAY_EXTENSION);
+	if(ext)
+		sprintf(p, "%s/%s.%s", get_replays_path(), name, REPLAY_EXTENSION);
+	else
+		sprintf(p, "%s/%s", get_replays_path(), name);
 	return p;
 }
 
 int replay_save(Replay *rpy, char *name) {
-	char *p = replay_getpath(name);
+	char *p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION));
 	printf("replay_save(): saving %s\n", p);
 	
 	FILE *fp = fopen(p, "w");
@@ -256,7 +263,7 @@ int replay_save(Replay *rpy, char *name) {
 }
 
 int replay_load(Replay *rpy, char *name) {
-	char *p = replay_getpath(name);
+	char *p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION));
 	printf("replay_load(): loading %s\n", p);
 	
 	FILE *fp = fopen(p, "r");
@@ -270,4 +277,11 @@ int replay_load(Replay *rpy, char *name) {
 	int result = replay_read(rpy, fp);
 	fclose(fp);
 	return result;
+}
+
+void replay_copy(Replay *dst, Replay *src) {
+	memcpy(dst, src, sizeof(Replay));
+	dst->capacity = dst->ecount;
+	dst->events = (ReplayEvent*)malloc(sizeof(ReplayEvent) * dst->capacity);
+	memcpy(dst->events, src->events, dst->capacity * sizeof(ReplayEvent));
 }

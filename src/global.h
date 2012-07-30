@@ -141,6 +141,9 @@ double psin();
 double min(double, double);
 double max(double, double);
 double approach(double v, double t, double d);
+int strendswith(char *s, char *e);
+char* difficulty_name(Difficulty diff);
+void stralloc(char **dest, char *src);
 
 // this is used by both player and replay code
 enum {
