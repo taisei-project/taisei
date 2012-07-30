@@ -365,23 +365,55 @@ void stage2_mid_spellbg(Boss *h, int time) {
 		a += (time / (float)ATTACK_START_DELAY);
 	float s = 0.3 + 0.7 * a;
 	
-	glColor4f(b, b, b, a);
+	glColor4f(b*0.7, b*0.7, b*0.7, a);
+	int t = abs(time);
+	
 	fill_screen(-time/50.0 + 0.5, time/100.0+0.5, s, "stage2/spellbg1");
+	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	
+	float ff = max(0, min(1, time * 0.01)) * 0.7;
+	glColor4f(ff, ff, ff, ff);
+	
+	int i; for(i = 0; i < 5; ++i)
+		fill_screen(sin(t / (10.0 + i * 0.5)) * 0.01, cos(t / (11.0 + i * 0.3)) * 0.01, s, "stage2/spellbg2");
+	glColor4f(b*0.7, b*0.7, b*0.7, a);
+	
+	/*
 	fill_screen(time/50.0 + 0.5, time/90.0+0.5, s, "stage2/spellbg1");
 	fill_screen(-time/55.0 + 0.5, -time/100.0+0.5, s, "stage2/spellbg1");
 	fill_screen(time/55.0 + 0.5, -time/90.0+0.5, s, "stage2/spellbg1");
+	/*
 	glColor4f(0.7, 0, 0, a * 0.7);
 	fill_screen(time/99.0 + 0.5, -time/30.0+0.5, s*0.5, "stage2/spellbg1");
 	fill_screen(time/37.0 + 0.5, -time/53.0+0.5, s*0.5, "stage2/spellbg1");
+	*/
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
 	glColor4f(1, 1, 1, 1);
+}
+
+void stage2_boss_spellbg(Boss *b, int time) {
+	glColor4f(1,1,1,1);
+	fill_screen(0, 0, 768.0/1024.0, "stage2/wspellbg");
+	glColor4f(1,1,1,0.7);
+	glBlendEquation(GL_FUNC_SUBTRACT);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	fill_screen(sin(time) * 0.015, time / 50.0, 1, "stage2/wspellclouds");
+	glBlendEquation(GL_FUNC_ADD);
+	fill_screen(0, time / 70.0, 1, "stage2/wspellswarm");
+	glBlendEquation(GL_FUNC_SUBTRACT);
+	fill_screen(cos(time) * 0.02, time / 30.0, 1, "stage2/wspellclouds");
+	
+	glBlendEquation(GL_FUNC_ADD);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glColor4f(1,1,1,1);
 }
 
 Boss* stage2_create_midboss() {
 	Boss *scuttle = create_boss("Scuttle", "scuttle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(scuttle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
-	boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 30, 20000, stage2_mid_a0, NULL);
+	//boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 30, 20000, stage2_mid_a0, NULL);
 	boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Deadly Dance", 30, 20000, stage2_mid_a1, stage2_mid_spellbg);
 	if(global.diff > D_Normal)
 		boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Acid Rain", 30, 25000, stage2_mid_a2, stage2_mid_spellbg);
@@ -508,7 +540,7 @@ Boss* stage2_create_boss() {
 	
 	Boss *wriggle = create_boss("EX Wriggle", "wriggle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
-	boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage2_boss_a1, stage2_mid_spellbg);
+	boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage2_boss_a1, stage2_boss_spellbg);
 	
 	start_attack(wriggle, wriggle->attacks);
 	return wriggle;
@@ -518,7 +550,7 @@ void stage2_events() {
 	TIMER(&global.timer);
 	
 	AT(0)
-		global.timer = 5200;
+		global.timer = 5300;
 	
 	FROM_TO(160, 300, 10) {
 		create_enemy1c(VIEWPORT_W/2 + 20 * nfrand() + (VIEWPORT_H/4 + 20 * nfrand())*I, 200, Swirl, stage2_enterswirl, I * 3 + nfrand() * 3);
