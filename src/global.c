@@ -47,7 +47,24 @@ void frame_rate(int *lasttime) {
 	*lasttime = SDL_GetTicks();
 }
 
+double approach(double v, double t, double d) {
+	if(v < t) {
+		v += d; 
+		if(v > t)
+			return t;
+	} else if(v > t) {
+		v -= d;
+		if(v < t)
+			return t;
+	}
+	
+	return v;
+}
+
 void calc_fps(FPSCounter *fps) {
+	if(!fps->stagebg_fps)
+		fps->stagebg_fps = FPS;
+	
 	if(SDL_GetTicks() > fps->fpstime+1000) {
 		fps->show_fps = fps->fps;
 		fps->fps = 0;
@@ -55,6 +72,9 @@ void calc_fps(FPSCounter *fps) {
 	} else {
 		fps->fps++;
 	}
+	
+	if(!global.menu)
+		fps->stagebg_fps = approach(fps->stagebg_fps, fps->show_fps, 0.1);
 }
 
 void set_ortho() {

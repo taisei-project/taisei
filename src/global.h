@@ -80,8 +80,9 @@ typedef enum {
 
 typedef struct {
 	int fpstime;  // frame counter
-	int fps;	
+	int fps;
 	int show_fps;
+	double stagebg_fps;
 } FPSCounter;
 
 typedef struct {
@@ -139,6 +140,7 @@ double psin();
 // min(huge_costly_expression, another_huge_costly_expression)
 double min(double, double);
 double max(double, double);
+double approach(double v, double t, double d);
 
 // this is used by both player and replay code
 enum {
