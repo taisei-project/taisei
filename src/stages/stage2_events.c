@@ -500,15 +500,11 @@ int stage2_boss_a1_slave(Enemy *e, int time) {
 	
 	if(!(time % 2)) {
 		float c = 0.5 * psin(time / 25.0);
-		Projectile *p = create_particle1c("lasercurve", e->pos, rgb(1.0 - c, 0.5, 0.5 + c), stage2_boss_a1_slave_part, timeout,
-			120
-		);
-		
+		Projectile *p = create_projectile_p(&global.projs, prefix_get_tex("lasercurve", "part/"), e->pos, rgb(1.0 - c, 0.5, 0.5 + c), stage2_boss_a1_slave_part, timeout, 120, 0, 0, 0);
 		p->type = FairyProj;
-		p->angle = angle;
 	}
 	
-	if(!(time % 140)) {
+	if(!creal(e->args[3]) && !(time % 140)) {
 		float dt = 70;
 		
 		Laser *l = create_lasercurve3c(e->pos, dt, dt, rgb(1.0, 1.0, 0.5), las_sine, 2.5*dir, M_PI/4, 0.2);
@@ -560,6 +556,7 @@ void stage2_boss_a2(Boss *boss, int time) {
 	TIMER(&time)
 	
 	float dfactor = global.diff / (float)D_Lunatic;
+	int i, j;
 	
 	AT(EVENT_DEATH) {
 		return;
@@ -570,7 +567,10 @@ void stage2_boss_a2(Boss *boss, int time) {
 		return;
 	}
 	
-	FROM_TO_INT(0, 1000000, 120, 120, 10) {
+	AT(0) for(j = -1; j < 2; j += 2) for(i = 0; i < 7; ++i)
+		create_enemy4c(boss->pos, ENEMY_IMMUNE, Swirl, stage2_boss_a1_slave, add_ref(boss), i*2*M_PI/7, j, 1);
+	
+	FROM_TO_INT(0, 1000000, 180, 120, 10) {
 		float dt = 200;
 		float lt = 100 * dfactor;
 		
