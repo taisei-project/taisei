@@ -96,6 +96,8 @@ void replay_input() {
 			default:
 				if(global.dialog && e->type == EV_PRESS && (e->key == KEY_SHOT || e->key == KEY_BOMB))
 					page_dialog(&global.dialog);
+				else if(global.dialog && e->key == KEY_SKIP)
+					global.dialog->skip = (e->type == EV_PRESS);
 				else
 					player_event(&global.plr, e->type, e->key);
 				break;
@@ -128,6 +130,9 @@ void stage_input() {
 				} else {
 					player_event(&global.plr, EV_PRESS, key);
 					replay_event(&global.replay, EV_PRESS, key);
+					
+					if(key == KEY_SKIP && global.dialog)
+						global.dialog->skip = True;
 				}
 				
 				break;
@@ -135,11 +140,24 @@ void stage_input() {
 			case SDL_KEYUP:
 				player_event(&global.plr,EV_RELEASE, key);
 				replay_event(&global.replay, EV_RELEASE, key);
+				
+				if(key == KEY_SKIP && global.dialog)
+					global.dialog->skip = False;
 				break;
 			
 			case SDL_QUIT:
 				exit(1);
 				break;
+		}
+	}
+	
+	// workaround
+	if(global.dialog && global.dialog->skip) {
+		Uint8 *keys = SDL_GetKeyState(NULL);
+			
+		if(!keys[tconfig.intval[KEY_SKIP]]) {
+			global.dialog->skip = False;
+			replay_event(&global.replay, EV_RELEASE, KEY_SKIP);
 		}
 	}
 	
@@ -385,6 +403,9 @@ void stage_logic(int time) {
 			boss_death(&global.boss);
 	}
 	
+	if(global.dialog && global.dialog->skip && global.frames - global.dialog->page_time > 3)
+		page_dialog(&global.dialog);
+	
 	global.frames++;
 	
 	if(!global.dialog && !global.boss)
@@ -392,7 +413,6 @@ void stage_logic(int time) {
 	
 	if(global.timer >= time)
 		global.game_over = GAMEOVER_WIN;
-	
 }
 
 void stage_end() {

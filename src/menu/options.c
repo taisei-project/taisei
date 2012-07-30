@@ -492,7 +492,10 @@ void create_options_menu(MenuData *m) {
 		
 	add_menu_entry(m, "Take a screenshot", do_nothing, NULL);
 		bind_keybinding(m, "key_screenshot", KEY_SCREENSHOT);
-		
+	
+	add_menu_entry(m, "Skip dialog", do_nothing, NULL);
+		bind_keybinding(m, "key_skip", KEY_SKIP);
+	
 	add_menu_separator(m);
 		allocate_binding(m);
 		

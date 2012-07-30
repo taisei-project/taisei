@@ -31,6 +31,7 @@
 
 "key_fullscreen" { yylval = KEY_FULLSCREEN; return tKEY_FULLSCREEN; }
 "key_screenshot" { yylval = KEY_SCREENSHOT; return tKEY_SCREENSHOT; }
+"key_skip" { yylval = KEY_SKIP; return tKEY_SKIP; }
 
 "fullscreen" { yylval = FULLSCREEN; return tFULLSCREEN; }
 

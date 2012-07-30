@@ -77,11 +77,9 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 		switch(i) {
 			case 0:
 				a = AL_Left;
-				
 				time_t t = rpy->seed;
 				struct tm* timeinfo = localtime(&t);
 				strftime(tmp, 128, "%Y-%m-%d %H:%M", timeinfo);
-				
 				break;
 			
 			case 1:
