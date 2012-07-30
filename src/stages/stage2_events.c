@@ -536,6 +536,26 @@ void stage2_boss_a1(Boss *boss, int time) {
 	}
 }
 
+int stage2_boss_a2_laserbullet(Projectile *p, int time) {
+	if(time == EVENT_DEATH) {
+		free_ref(p->args[0]);
+		return 1;
+	} else if(time < 0)
+		return 1;
+	
+	if(time < 0)
+		return 1;
+	
+	Laser *laser = (Laser*)REF(p->args[0]);
+	
+	if(!laser)
+		return ACTION_DESTROY;
+	
+	p->pos = laser->prule(laser, time - p->args[1]);
+	
+	return 1;
+}
+
 void stage2_boss_a2(Boss *boss, int time) {
 	TIMER(&time)
 	
@@ -548,15 +568,29 @@ void stage2_boss_a2(Boss *boss, int time) {
 		return;
 	}
 	
-	FROM_TO_INT(0, 1000000, 120, 120, 5) {
-		float dt = 100;
-		float a = _ni*M_PI/6.2 + _i;
+	FROM_TO_INT(0, 1000000, 120, 120, 10) {
+		float dt = 200;
+		float a = _ni*M_PI/2.5 + _i + time;
 		
-		float b = 0.45;
-		float clr = psin(time / 30.0) * (1.0 - b);
+		//float b = 0.45;
+		//float clr = psin(time / 30.0) * (1.0 - b);
 		
 		//create_lasercurve2c(boss->pos, dt*2, dt, rgb(0.5, 1.0, 0.5), las_accel, 0, 0.1 * cexp(I*a));
-		create_lasercurve3c(boss->pos, dt*2, dt, rgb(1.0, 1.0 - clr, b), las_sine_expanding, 5 * cexp(I*a), M_PI/4, 0.015 * _i)->width = 15;
+		
+		float b = 0.4;
+		float c = 0.3;
+		
+		Laser *l1 = create_lasercurve3c(boss->pos, dt/3, dt, rgb(b, b, 1.0), las_sine_expanding, 2 * cexp(I*a), M_PI/4, 0.05);
+		Laser *l2 = create_lasercurve3c(boss->pos, dt/2, dt, rgb(1.0, b, b), las_sine_expanding, 2 * cexp(I*a), M_PI/4, 0.047);
+		Laser *l3 = create_lasercurve3c(boss->pos, dt/3, dt, rgb(b, b, 1.0), las_sine_expanding, 2 * cexp(I*a), M_PI/4, 0.045);
+		
+		l2->width = 15;
+		
+		int i; for(i = 0; i < 20; ++i) {
+			create_projectile2c("plainball",	boss->pos, rgb(c, c, 1.0), stage2_boss_a2_laserbullet, add_ref(l1), i)->draw = ProjDrawAdd;
+			create_projectile2c("bigball",		boss->pos, rgb(1.0, c, c), stage2_boss_a2_laserbullet, add_ref(l2), i)->draw = ProjDrawAdd;
+			create_projectile2c("plainball",	boss->pos, rgb(c, c, 1.0), stage2_boss_a2_laserbullet, add_ref(l3), i)->draw = ProjDrawAdd;
+		}
 	}
 }
 
