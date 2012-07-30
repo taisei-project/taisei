@@ -559,6 +559,8 @@ int stage2_boss_a2_laserbullet(Projectile *p, int time) {
 void stage2_boss_a2(Boss *boss, int time) {
 	TIMER(&time)
 	
+	float dfactor = global.diff / (float)D_Lunatic;
+	
 	AT(EVENT_DEATH) {
 		return;
 	}
@@ -570,6 +572,8 @@ void stage2_boss_a2(Boss *boss, int time) {
 	
 	FROM_TO_INT(0, 1000000, 120, 120, 10) {
 		float dt = 200;
+		float lt = 100 * dfactor;
+		
 		float a = _ni*M_PI/2.5 + _i + time;
 		
 		//float b = 0.45;
@@ -580,13 +584,13 @@ void stage2_boss_a2(Boss *boss, int time) {
 		float b = 0.4;
 		float c = 0.3;
 		
-		Laser *l1 = create_lasercurve3c(boss->pos, dt/3, dt, rgb(b, b, 1.0), las_sine_expanding, 2 * cexp(I*a), M_PI/4, 0.05);
-		Laser *l2 = create_lasercurve3c(boss->pos, dt/2, dt, rgb(1.0, b, b), las_sine_expanding, 2 * cexp(I*a), M_PI/4, 0.047);
-		Laser *l3 = create_lasercurve3c(boss->pos, dt/3, dt, rgb(b, b, 1.0), las_sine_expanding, 2 * cexp(I*a), M_PI/4, 0.045);
+		Laser *l1 = create_lasercurve3c(boss->pos, lt,			dt, rgb(b, b, 1.0), las_sine_expanding, 2 * cexp(I*a), M_PI/4, 0.05);
+		Laser *l2 = create_lasercurve3c(boss->pos, lt * 1.5,	dt, rgb(1.0, b, b), las_sine_expanding, 2 * cexp(I*a), M_PI/4, 0.047);
+		Laser *l3 = create_lasercurve3c(boss->pos, lt,			dt, rgb(b, b, 1.0), las_sine_expanding, 2 * cexp(I*a), M_PI/4, 0.045);
 		
 		l2->width = 15;
 		
-		int i; for(i = 0; i < 20; ++i) {
+		int i; for(i = 0; i < 5 + 15 * dfactor; ++i) {
 			create_projectile2c("plainball",	boss->pos, rgb(c, c, 1.0), stage2_boss_a2_laserbullet, add_ref(l1), i)->draw = ProjDrawAdd;
 			create_projectile2c("bigball",		boss->pos, rgb(1.0, c, c), stage2_boss_a2_laserbullet, add_ref(l2), i)->draw = ProjDrawAdd;
 			create_projectile2c("plainball",	boss->pos, rgb(c, c, 1.0), stage2_boss_a2_laserbullet, add_ref(l3), i)->draw = ProjDrawAdd;
@@ -600,7 +604,7 @@ Boss* stage2_create_boss() {
 	Boss *wriggle = create_boss("EX Wriggle", "wriggle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
 	//boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage2_boss_a1, stage2_boss_spellbg);
-	boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Super Derpness", 30, 40000, stage2_boss_a2, stage2_boss_spellbg);
+	boss_add_attack(wriggle, AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 30, 40000, stage2_boss_a2, stage2_boss_spellbg);
 	
 	start_attack(wriggle, wriggle->attacks);
 	return wriggle;
