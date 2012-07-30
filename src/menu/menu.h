@@ -14,10 +14,11 @@
 
 typedef struct {
 	char *name;
-	void (*action)(void* arg);
+	void (*action)(void *arg);
 	void *arg;
 	float drawdata;
-	int freearg;
+	void (*freearg)(void *arg);
+	void (*draw)(void *e, int i, int cnt);
 } MenuEntry;
 
 typedef enum MenuType { // whether to close on selection or not.

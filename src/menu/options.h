@@ -23,6 +23,7 @@ typedef int (*BindingDependence)();
 typedef enum BindingType {
 	BT_IntValue,
 	BT_KeyBinding,
+	BT_StrValue,
 	BT_Resolution
 } BindingType;
 

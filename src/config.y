@@ -14,7 +14,7 @@
 	
 	#include "paths/native.h"
 	#include "taisei_err.h"
-		
+	
 	Config tconfig;
 	int lineno;
 	
@@ -43,6 +43,7 @@
 
 %token tKEY_FULLSCREEN
 %token tKEY_SCREENSHOT
+%token tKEY_SKIP
 
 %token tFULLSCREEN
 
@@ -55,10 +56,13 @@
 %token tVID_WIDTH
 %token tVID_HEIGHT
 
+%token tPLAYERNAME
+
 %token SKEY
 
 %token NUMBER
 %token tCHAR
+%token tSTRING
 
 %token SEMI
 %token EQ
@@ -74,6 +78,14 @@ line	: key_key EQ key_val {
 			if($1 > sizeof(tconfig.intval)/sizeof(int))
 				errx(-1, "config index out of range"); // should not happen
 			tconfig.intval[$1] = $3;
+		}
+		| key_strkey EQ tSTRING {
+			if($1 > sizeof(tconfig.strval)/sizeof(char*))
+				errx(-1, "config index out of range"); // should not happen
+			
+			if(tconfig.strval[$1])
+				free(tconfig.strval[$1]);
+			tconfig.strval[$1] = $3;
 		};
 
 key_val : SKEY
@@ -89,6 +101,7 @@ key_key	: tKEY_UP
 		| tKEY_BOMB
 		| tKEY_FULLSCREEN
 		| tKEY_SCREENSHOT
+		| tKEY_SKIP
 		| tNO_SHADER
 		| tNO_AUDIO
 		| tFULLSCREEN
@@ -97,6 +110,9 @@ key_key	: tKEY_UP
 		| tVID_WIDTH
 		| tVID_HEIGHT
 		| tSAVE_RPY;
+
+key_strkey : tPLAYERNAME;
+
 
 nl		: LB { lineno++; };
 %%
@@ -113,7 +129,6 @@ void parse_config(char *filename) {
 	
 	strcat(buf, "/");
 	strcat(buf, filename);
-	
 	yyin = fopen(buf, "r");
 	
 	printf("parse_config():\n");
@@ -129,6 +144,8 @@ void parse_config(char *filename) {
 }
 
 void config_preset() {
+	memset(tconfig.strval, 0, sizeof(tconfig.strval));
+	
 	tconfig.intval[KEY_UP] = SDLK_UP;
 	tconfig.intval[KEY_DOWN] = SDLK_DOWN;
 	tconfig.intval[KEY_LEFT] = SDLK_LEFT;
@@ -140,6 +157,7 @@ void config_preset() {
 	
 	tconfig.intval[KEY_FULLSCREEN] = SDLK_F11;
 	tconfig.intval[KEY_SCREENSHOT] = SDLK_p;
+	tconfig.intval[KEY_SKIP] = SDLK_LCTRL;
 	
 	tconfig.intval[FULLSCREEN] = 0;
 	
@@ -153,6 +171,10 @@ void config_preset() {
 	
 	tconfig.intval[VID_WIDTH] = RESX;
 	tconfig.intval[VID_HEIGHT] = RESY;
+	
+	char *name = "Player";
+	tconfig.strval[PLAYERNAME] = malloc(strlen(name)+1);
+	strcpy(tconfig.strval[PLAYERNAME], name);
 }
 
 int config_sym2key(int sym) {

@@ -139,6 +139,9 @@ void global_processevent(SDL_Event*);
 void take_screenshot();
 
 double approach(double v, double t, double d);
+int strendswith(char *s, char *e);
+char* difficulty_name(Difficulty diff);
+void stralloc(char **dest, char *src);
 
 // this is used by both player and replay code
 enum {
