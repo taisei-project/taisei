@@ -76,3 +76,15 @@ void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *fo
 	free(buf);
 }
 
+int stringwidth(char *s, TTF_Font *font) {
+	int w;
+	TTF_SizeText(font, s, &w, NULL);
+	return w;
+}
+
+int charwidth(char c, TTF_Font *font) {
+	char s[2];
+	s[0] = c;
+	s[1] = 0;
+	return stringwidth(s, font);
+}

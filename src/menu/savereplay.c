@@ -18,7 +18,8 @@ void save_rpy(void *a) {
 	time_t rawtime;
 	struct tm * timeinfo;
 	
-	time(&rawtime);
+	// time when the game was *initiated*
+	rawtime = (time_t)rpy->seed;
 	timeinfo = localtime(&rawtime);
 	strftime(strtime, 128, "%Y%m%d_%H-%M-%S_%Z", timeinfo);
 	
