@@ -396,7 +396,7 @@ void stage2_mid_spellbg(Boss *h, int time) {
 void stage2_boss_spellbg(Boss *b, int time) {
 	glColor4f(1,1,1,1);
 	fill_screen(0, 0, 768.0/1024.0, "stage2/wspellbg");
-	glColor4f(1,1,1,0.7);
+	glColor4f(1,1,1,0.5);
 	glBlendEquation(GL_FUNC_SUBTRACT);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	fill_screen(sin(time) * 0.015, time / 50.0, 1, "stage2/wspellclouds");
