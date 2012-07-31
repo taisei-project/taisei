@@ -656,6 +656,7 @@ void stage2_boss_a3(Boss *boss, int time) {
 int stage2_boss_prea1_slave(Enemy *e, int time) {
 	TIMER(&time)
 	
+	int level = e->args[3];
 	float angle = e->args[2] * (time / 70.0 + e->args[1]);
 	complex dir = cexp(I*angle);
 	Boss *boss = (Boss*)REF(e->args[0]);
@@ -674,21 +675,24 @@ int stage2_boss_prea1_slave(Enemy *e, int time) {
 	
 	GO_TO(e, boss->pos + (100 + 20 * e->args[2] * sin(time / 100.0)) * dir, 0.03)
 	
-	if(!(time % 10)) {
-		create_projectile1c("wave", e->pos, rgb(0.5, 0.2, 1.0), linear, 2 * cexp(I*carg(boss->pos - e->pos)));
+	int d = 12 - global.diff;
+	if(!(time % d)) {
 		create_projectile1c("rice", e->pos, rgb(1.0, 0.5, 0.2), linear, 3 * cexp(I*carg(boss->pos - e->pos)));
-		create_projectile1c("thickrice", e->pos, rgb(1.0, 1.0, 0.2), linear, 2.5 * cexp(I*carg(boss->pos - e->pos)));
+		if(!(time % (d*2)) || level > 1)
+			create_projectile1c("thickrice", e->pos, rgb(1.0, 1.0, 0.2), linear, 2.5 * cexp(I*carg(boss->pos - e->pos)));
+		if(level > 2)
+			create_projectile1c("wave", e->pos, rgb(0.5, 0.2 + 0.8 * psin(time / 25.0), 1.0), linear, 2 * cexp(I*carg(boss->pos - e->pos)));
 	}
 	
 	return 1;
 }
 
-void stage2_boss_prea1(Boss *boss, int time) {
+void stage2_boss_pre_common(Boss *boss, int time, int level) {
 	TIMER(&time)
 	int i, j, cnt = 3 + global.diff;
 	
 	AT(0) for(j = -1; j < 2; j += 2) for(i = 0; i < cnt; ++i)
-		create_enemy4c(boss->pos, ENEMY_IMMUNE, Swirl, stage2_boss_prea1_slave, add_ref(boss), i*2*M_PI/cnt, j, 1);
+		create_enemy4c(boss->pos, ENEMY_IMMUNE, Swirl, stage2_boss_prea1_slave, add_ref(boss), i*2*M_PI/cnt, j, level);
 		
 	AT(EVENT_DEATH) {
 		killall(global.enemies);
@@ -699,32 +703,27 @@ void stage2_boss_prea1(Boss *boss, int time) {
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/3, 0.05)
 		return;
 	}
+	
+	FROM_TO(120, 240, 1)
+		GO_TO(boss, VIEWPORT_W/3 + VIEWPORT_H*I/3, 0.03)
+	
+	FROM_TO(360, 480, 1)
+		GO_TO(boss, VIEWPORT_W - VIEWPORT_W/3 + VIEWPORT_H*I/3, 0.03)
+	
+	FROM_TO(600, 720, 1)
+		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/3, 0.03)
+}
+
+void stage2_boss_prea1(Boss *boss, int time) {
+	stage2_boss_pre_common(boss, time, 1);
 }
 
 void stage2_boss_prea2(Boss *boss, int time) {
-	TIMER(&time)
-	
-	AT(EVENT_DEATH) {
-		return;
-	}
-	
-	if(time < 0) {
-		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.05)
-		return;
-	}
+	stage2_boss_pre_common(boss, time, 2);
 }
 
 void stage2_boss_prea3(Boss *boss, int time) {
-	TIMER(&time)
-	
-	AT(EVENT_DEATH) {
-		return;
-	}
-	
-	if(time < 0) {
-		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.05)
-		return;
-	}
+	stage2_boss_pre_common(boss, time, 3);
 }
 
 Boss* stage2_create_boss() {
@@ -734,7 +733,7 @@ Boss* stage2_create_boss() {
 	boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage2_boss_a1, stage2_boss_spellbg);
 	boss_add_attack(wriggle, AT_Normal, "", 30, 20000, stage2_boss_prea2, NULL);
 	boss_add_attack(wriggle, AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 30, 40000, stage2_boss_a2, stage2_boss_spellbg);
-	boss_add_attack(wriggle, AT_Normal, "", 30, 20000, stage2_boss_prea2, NULL);
+	boss_add_attack(wriggle, AT_Normal, "", 30, 20000, stage2_boss_prea3, NULL);
 	boss_add_attack(wriggle, AT_Spellcard, "Bug Sign ~ Phosphaenus Hemipterus", 60, 30000, stage2_boss_a3, stage2_boss_spellbg);
 	
 	start_attack(wriggle, wriggle->attacks);
