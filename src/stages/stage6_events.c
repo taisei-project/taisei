@@ -163,7 +163,7 @@ int scythe_infinity(Enemy *e, int t) {
 	
 	FROM_TO(40, 3000, 1) {
 		float w = min(0.15, 0.0001*(t-40));
-		e->pos = VIEWPORT_W/2 + 200I + 200*cos(w*(t-40)+M_PI/2.0) + I*80*sin(2*w*(t-40));
+		e->pos = VIEWPORT_W/2 + 200I + 200*cos(w*(t-40)+M_PI/2.0) + I*80*sin(creal(e->args[0])*w*(t-40));
 		
 		create_projectile2c("ball", e->pos+80*cexp(I*creal(e->args[1])), rgb(cos(creal(e->args[1])), sin(creal(e->args[1])), cos(creal(e->args[1])+2.1)), asymptotic, (1+0.2*global.diff)*cexp(I*creal(e->args[1])), 3);
 	}
@@ -190,10 +190,12 @@ void elly_frequency(Boss *b, int t) {
 	AT(EVENT_BIRTH) {
 		global.enemies->birthtime = global.frames;
 		global.enemies->logic_rule = scythe_infinity;
+		global.enemies->args[0] = 2;
 	}
 	AT(EVENT_DEATH) {
 		global.enemies->birthtime = global.frames;
 		global.enemies->logic_rule = scythe_reset;
+		global.enemies->args[0] = 0;
 	}
 		
 }
@@ -243,6 +245,11 @@ void elly_newton(Boss *b, int t) {
 		global.enemies->logic_rule = scythe_newton;
 	}
 	
+	AT(EVENT_DEATH) {
+		global.enemies->birthtime = global.frames;
+		global.enemies->logic_rule = scythe_reset;
+	}
+	
 	FROM_TO(0, 2000, 20) {
 		float a = 2.7*_i;
 		int x, y;
@@ -265,12 +272,62 @@ void elly_spellbg(Boss *b, int t) {
 	glColor4f(1,1,1,1);
 }
 
+void elly_frequency2(Boss *b, int t) {
+	TIMER(&t);
+	AT(0) {
+		global.enemies->birthtime = global.frames;
+		global.enemies->logic_rule = scythe_infinity;
+		global.enemies->args[0] = 4;
+	}
+	AT(EVENT_DEATH) {
+		global.enemies->birthtime = global.frames;
+		global.enemies->logic_rule = scythe_reset;
+		global.enemies->args[0] = 0;
+	}
+	
+	FROM_TO(0, 2000, 3-global.diff/2) {
+		complex n = sin(t*0.12*global.diff)*cexp(t*0.02I*global.diff);
+		create_projectile2c("plainball", b->pos+80*n, rgb(0,0,0.7), asymptotic, 2*n/cabs(n), 3);
+	}
+}
+
+complex maxwell_laser(Laser *l, float t) {
+	if(t == EVENT_BIRTH) {
+		return 0;
+	}
+	
+	return l->pos + l->args[0]*(t+I*creal(l->args[2])*t*0.02*sin(0.1*t+cimag(l->args[2])));
+}
+
+void maxwell_laser_logic(Laser *l, int t) {
+	static_laser(l, t);
+	TIMER(&t);
+	
+	FROM_TO(120, 150, 1) {
+		l->args[2] += 0.1+0.02*global.diff;
+	}
+	
+	FROM_TO(00, 10000, 1) {
+		l->args[2] -= 0.1I+0.02I*global.diff;
+	}
+}
+
+void elly_maxwell(Boss *b, int t) {
+	TIMER(&t);
+	
+	FROM_TO(40, 159, 5)
+		create_laser(b->pos, 200, 10000, rgb(0,0.1,1), maxwell_laser, maxwell_laser_logic, cexp(2I*M_PI/24*_i)*VIEWPORT_H*0.005, 60+15I, 0, 0);
+	
+}
+
 Boss *create_elly() {
 	Boss *b = create_boss("Elly", "elly", -200I);
 	
 	boss_add_attack(b, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
 // 	boss_add_attack(b, AT_Normal, "Frequency", 20, 23000, elly_frequency, NULL);
-	boss_add_attack(b, AT_Spellcard, "Newton Sign ~ 2.5 Laws of Movement", 30, 30000, elly_newton, elly_spellbg);
+// 	boss_add_attack(b, AT_Spellcard, "Newton Sign ~ 2.5 Laws of Movement", 30, 30000, elly_newton, elly_spellbg);
+// 	boss_add_attack(b, AT_Normal, "Frequency2", 20, 23000, elly_frequency2, NULL);
+	boss_add_attack(b, AT_Spellcard, "Maxwell Sign ~ Wave Theory", 30, 30000, elly_maxwell, elly_spellbg);
 	
 	start_attack(b, b->attacks);
 	
