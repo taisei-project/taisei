@@ -54,10 +54,6 @@ void stage6_skysphere_draw(Vector pos) {
 	glDisable(GL_TEXTURE_2D);
 }
 
-static float max(float a, float b) {
-	return a > b ? a : b;
-}
-
 void stage6_draw() {
 	set_perspective(&bgcontext, 100, 1000);
 	draw_stage3d(&bgcontext, 30000);
@@ -90,12 +86,12 @@ void stage6_start() {
 	bgcontext.crot[0] = 90;
 	bgcontext.crot[2] = -40;
 	
-//	for testing
-// 	bgcontext.cx[0] = 80;
-// 	bgcontext.cx[1] = -215;
-// 	bgcontext.cx[2] = 295;
-// 	bgcontext.crot[0] = 90;
-// 	bgcontext.crot[2] = 381;
+// 	for testing
+	bgcontext.cx[0] = 80;
+	bgcontext.cx[1] = -215;
+	bgcontext.cx[2] = 295;
+	bgcontext.crot[0] = 90;
+	bgcontext.crot[2] = 381;
 	
 	
 }
