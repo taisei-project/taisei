@@ -44,7 +44,7 @@ void stage_start() {
 	global.points = 0;
 	global.nostagebg = False;
 	
-	global.fps.show_fps = 60;
+	global.fps.stagebg_fps = global.fps.show_fps = FPS;
 	global.fps.fpstime = SDL_GetTicks();
 	
 	global.plr.recovery = 0;
@@ -79,12 +79,17 @@ void replay_input() {
 		}
 	}
 	
-// 	I know this loop is not (yet) optimal - consider it a sketch
+	if(global.menu)
+		return;
+	
 	int i;
-	for(i = 0; i < global.replay.ecount; ++i) {
+	for(i = global.replay.playpos; i < global.replay.ecount; ++i) {
 		ReplayEvent *e = &(global.replay.events[i]);
 		
-		if(e->frame == global.frames) switch(e->type) {
+		if(e->frame != global.frames)
+			break;
+		
+		switch(e->type) {
 			case EV_OVER:
 				global.game_over = GAMEOVER_ABORT;
 				break;
@@ -92,12 +97,15 @@ void replay_input() {
 			default:
 				if(global.dialog && e->type == EV_PRESS && (e->key == KEY_SHOT || e->key == KEY_BOMB))
 					page_dialog(&global.dialog);
+				else if(global.dialog && e->key == KEY_SKIP)
+					global.dialog->skip = (e->type == EV_PRESS);
 				else
 					player_event(&global.plr, e->type, e->key);
 				break;
 		}
 	}
 	
+	global.replay.playpos = i;
 	player_applymovement(&global.plr);
 }
 
@@ -123,6 +131,9 @@ void stage_input() {
 				} else {
 					player_event(&global.plr, EV_PRESS, key);
 					replay_event(&global.replay, EV_PRESS, key);
+					
+					if(key == KEY_SKIP && global.dialog)
+						global.dialog->skip = True;
 				}
 				
 				break;
@@ -130,6 +141,9 @@ void stage_input() {
 			case SDL_KEYUP:
 				player_event(&global.plr,EV_RELEASE, key);
 				replay_event(&global.replay, EV_RELEASE, key);
+				
+				if(key == KEY_SKIP && global.dialog)
+					global.dialog->skip = False;
 				break;
 			
 			case SDL_QUIT:
@@ -138,7 +152,18 @@ void stage_input() {
 		}
 	}
 	
-	player_applymovement(&global.plr);
+	// workaround
+	if(global.dialog && global.dialog->skip) {
+		Uint8 *keys = SDL_GetKeyState(NULL);
+			
+		if(!keys[tconfig.intval[KEY_SKIP]]) {
+			global.dialog->skip = False;
+			replay_event(&global.replay, EV_RELEASE, KEY_SKIP);
+		}
+	}
+	
+	if(!global.menu)
+		player_applymovement(&global.plr);
 }
 
 void draw_hud() {
@@ -182,7 +207,7 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	glTranslatef(-(VIEWPORT_X+VIEWPORT_W/2.0), -(VIEWPORT_Y+VIEWPORT_H/2.0),0);
 	glEnable(GL_DEPTH_TEST);
 		
-	if(tconfig.intval[NO_STAGEBG] == 2 && global.fps.show_fps < tconfig.intval[NO_STAGEBG_FPSLIMIT]
+	if(tconfig.intval[NO_STAGEBG] == 2 && global.fps.stagebg_fps < tconfig.intval[NO_STAGEBG_FPSLIMIT]
 		&& !global.nostagebg) {
 		
 		printf("stage_draw(): !- Stage background has been switched off due to low frame rate. You can change that in the options.\n");
@@ -379,6 +404,9 @@ void stage_logic(int time) {
 			boss_death(&global.boss);
 	}
 	
+	if(global.dialog && global.dialog->skip && global.frames - global.dialog->page_time > 3)
+		page_dialog(&global.dialog);
+	
 	global.frames++;
 	
 	if(!global.dialog && !global.boss)
@@ -386,7 +414,6 @@ void stage_logic(int time) {
 	
 	if(global.timer >= time)
 		global.game_over = GAMEOVER_WIN;
-	
 }
 
 void stage_end() {
@@ -442,6 +469,8 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		global.plr.lifes	= global.replay.plr_lifes;
 		global.plr.bombs	= global.replay.plr_bombs;
 		global.plr.power	= global.replay.plr_power;
+		
+		global.replay.playpos = 0;
 	}
 	
 	tsrand_switch(&global.rand_game);

@@ -10,12 +10,13 @@
 
 void add_menu_entry(MenuData *menu, char *name, void (*action)(void *), void *arg) {
 	menu->entries = realloc(menu->entries, (++menu->ecount)*sizeof(MenuEntry));
-	menu->entries[menu->ecount-1].name = malloc(strlen(name)+1);
-	strcpy(menu->entries[menu->ecount-1].name, name);
-	menu->entries[menu->ecount-1].action = action;
-	menu->entries[menu->ecount-1].freearg = False;
-	menu->entries[menu->ecount-1].arg = arg;
-	menu->entries[menu->ecount-1].drawdata = 0;
+	MenuEntry *e = &(menu->entries[menu->ecount-1]);
+	memset(e, 0, sizeof(MenuEntry));
+	
+	e->name = malloc(strlen(name)+1);
+	strcpy(e->name, name);
+	e->action = action;
+	e->arg = arg;
 }
 
 void add_menu_separator(MenuData *menu) {
@@ -34,7 +35,7 @@ void destroy_menu(MenuData *menu) {
 		
 		free(e->name);
 		if(e->freearg)
-			free(e->arg);
+			e->freearg(e->arg);
 	}
 	
 	free(menu->entries);
