@@ -58,3 +58,6 @@ void main(void) {
 return pos + a0*t;
 %%accelerated%%
 return pos + a0*t + 0.5*a1*t*t;
+%%maxwell%%
+vec2 p = vec2(t, a2.x*t*0.02*sin(0.1*t+a2.y));
+return pos + vec2(a0.x*p.x - a0.y*p.y, a0.x*p.y + a0.y*p.x);

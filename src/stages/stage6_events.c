@@ -293,6 +293,7 @@ void elly_frequency2(Boss *b, int t) {
 
 complex maxwell_laser(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
+		l->shader = get_shader("laser_maxwell");
 		return 0;
 	}
 	
@@ -304,7 +305,7 @@ void maxwell_laser_logic(Laser *l, int t) {
 	TIMER(&t);
 	
 	FROM_TO(120, 150, 1) {
-		l->args[2] += 0.1+0.02*global.diff;
+		l->args[2] += 0.16+0.01*global.diff;
 	}
 	
 	FROM_TO(00, 10000, 1) {
@@ -316,7 +317,7 @@ void elly_maxwell(Boss *b, int t) {
 	TIMER(&t);
 	
 	FROM_TO(40, 159, 5)
-		create_laser(b->pos, 200, 10000, rgb(0,0.1,1), maxwell_laser, maxwell_laser_logic, cexp(2I*M_PI/24*_i)*VIEWPORT_H*0.005, 60+15I, 0, 0);
+		create_laser(b->pos, 200, 10000, rgb(0,0.2,1), maxwell_laser, maxwell_laser_logic, cexp(2I*M_PI/24*_i)*VIEWPORT_H*0.005, 200+15I, 0, 0);
 	
 }
 
