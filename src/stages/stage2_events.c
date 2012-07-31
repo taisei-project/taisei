@@ -605,13 +605,58 @@ void stage2_boss_a2(Boss *boss, int time) {
 	}
 }
 
-Boss* stage2_create_boss() {
-	// TODO: spellbg
+void stage2_boss_a3(Boss *boss, int time) {
+	TIMER(&time)
 	
+	AT(EVENT_DEATH) {
+		return;
+	}
+	
+	if(time < 0) {
+		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.05)
+		return;
+	}
+	
+	int d = 5 - min(global.diff, D_Hard);
+	FROM_TO_INT(0, 1000000, 75, 60, d) {
+		float a = _ni*2*M_PI/(15.0/d) + _i + time*2;
+		float dt = 150;
+		float lt = 100;
+		
+		float b = 0.5;
+		
+		Color *c1;
+		Color *c2;
+		
+		if(_i % 2) {
+			c1 = rgb(1.0, 1.0, b);
+			c2 = rgb(b, 1.0, b);
+		} else {
+			c1 = rgb(1.0, b, b);
+			c2 = rgb(b, b, 1.0);
+		}
+		
+		create_lasercurve3c(boss->pos, lt,			dt, c1, las_sine, 3 * cexp(I*a), M_PI/4, 0.05);
+		create_lasercurve4c(boss->pos, lt,			dt, c2, las_sine, 3 * cexp(I*a), M_PI/4, 0.05, M_PI);
+		
+		if(global.diff > D_Hard)
+			create_lasercurve2c(boss->pos, lt,		dt, rgb(b, 1.0, 1.0), las_accel, 0, 0.1 * cexp(I*a));
+	}
+	
+	int cnt = 50;
+	FROM_TO_INT(120, 1000000, 60, cnt*2, 1) {
+		create_projectile2c("wave", boss->pos, (_ni % 2)? rgb(1.0, 0.5, 0.5) : rgb(0.5, 0.5, 1.0), (_ni % 2)? asymptotic : linear,
+			cexp(I*2*_ni*M_PI/cnt), 10
+		)->draw = ProjDrawAdd;
+	}
+}
+
+Boss* stage2_create_boss() {
 	Boss *wriggle = create_boss("EX Wriggle", "wriggle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
-	boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage2_boss_a1, stage2_boss_spellbg);
-	boss_add_attack(wriggle, AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 30, 40000, stage2_boss_a2, stage2_boss_spellbg);
+	//boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage2_boss_a1, stage2_boss_spellbg);
+	//boss_add_attack(wriggle, AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 30, 40000, stage2_boss_a2, stage2_boss_spellbg);
+	boss_add_attack(wriggle, AT_Spellcard, "WTF sign ~ Omgness", 60, 30000, stage2_boss_a3, stage2_boss_spellbg);
 	
 	start_attack(wriggle, wriggle->attacks);
 	return wriggle;
@@ -620,8 +665,8 @@ Boss* stage2_create_boss() {
 void stage2_events() {
 	TIMER(&global.timer);
 	
-//	AT(0)
-//		global.timer = 2800;
+	AT(0)
+		global.timer = 5300;
 	
 	FROM_TO(160, 300, 10) {
 		create_enemy1c(VIEWPORT_W/2 + 20 * nfrand() + (VIEWPORT_H/4 + 20 * nfrand())*I, 200, Swirl, stage2_enterswirl, I * 3 + nfrand() * 3);
