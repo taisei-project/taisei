@@ -62,6 +62,7 @@ int stage2_slavefairy(Enemy *e, int t) {
 	
 	AT(EVENT_BIRTH) {
 		e->alpha = 0;
+		e->unbombable = True;
 	}
 	
 	if(t < 120)
@@ -75,7 +76,7 @@ int stage2_slavefairy(Enemy *e, int t) {
 		
 		create_projectile2c("wave", e->pos + dir * 10, (global.timer % 2)? rgb(1.0, 0.5, 0.5) : rgb(0.5, 0.5, 1.0), accelerated,
 			dir * 2,
-			dir * -0.03
+			dir * -0.035
 		);
 		
 		if(e->args[1] && !(_i % 10 / e->args[1])) create_projectile1c("ball", e->pos + dir * 10, rgb(0.3, 0.6, 0.3), linear,
@@ -100,6 +101,7 @@ int stage2_bigfairy(Enemy *e, int t) {
 	
 	AT(EVENT_BIRTH) {
 		e->alpha = 0;
+		e->unbombable = True;
 	}
 	
 	FROM_TO(30, 600, 270) {
@@ -120,6 +122,11 @@ int stage2_bigfairy(Enemy *e, int t) {
 
 int stage2_bitchswirl(Enemy *e, int t) {
 	TIMER(&t)
+	
+	AT(EVENT_BIRTH) {
+		e->unbombable = True;
+		return 1;
+	}
 	
 	AT(EVENT_DEATH) {
 		spawn_items(e->pos, 1, 1, 0, 0);
@@ -148,6 +155,7 @@ int stage2_cornerfairy(Enemy *e, int t) {
 	
 	AT(EVENT_BIRTH) {
 		e->alpha = 0;
+		e->unbombable = True;
 	}
 	
 	FROM_TO(0, 60, 1)
@@ -371,15 +379,14 @@ void stage2_mid_spellbg(Boss *h, int time) {
 	fill_screen(-time/50.0 + 0.5, time/100.0+0.5, s, "stage2/spellbg1");
 	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	
+	/*
 	float ff = max(0, min(1, time * 0.01)) * 0.7;
 	glColor4f(ff, ff, ff, ff);
 	
 	int i; for(i = 0; i < 5; ++i)
 		fill_screen(sin(t / (10.0 + i * 0.5)) * 0.01, cos(t / (11.0 + i * 0.3)) * 0.01, s, "stage2/spellbg2");
 	glColor4f(b*0.7, b*0.7, b*0.7, a);
-	
-	/*
+	*/
 	fill_screen(time/50.0 + 0.5, time/90.0+0.5, s, "stage2/spellbg1");
 	fill_screen(-time/55.0 + 0.5, -time/100.0+0.5, s, "stage2/spellbg1");
 	fill_screen(time/55.0 + 0.5, -time/90.0+0.5, s, "stage2/spellbg1");
@@ -414,7 +421,7 @@ void stage2_boss_spellbg(Boss *b, int time) {
 Boss* stage2_create_midboss() {
 	Boss *scuttle = create_boss("Scuttle", "scuttle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(scuttle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
-	//boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 30, 20000, stage2_mid_a0, NULL);
+	boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 30, 20000, stage2_mid_a0, NULL);
 	boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Deadly Dance", 30, 20000, stage2_mid_a1, stage2_mid_spellbg);
 	if(global.diff > D_Normal)
 		boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Acid Rain", 30, 25000, stage2_mid_a2, stage2_mid_spellbg);
@@ -525,7 +532,7 @@ void stage2_boss_a1(Boss *boss, int time) {
 	}
 	
 	if(time < 0)
-		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/3, 0.05)
+		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2.5, 0.05)
 	else if(time == 0) {
 		for(j = -1; j < 2; j += 2) for(i = 0; i < cnt; ++i)
 			create_enemy3c(boss->pos, ENEMY_IMMUNE, Swirl, stage2_boss_a1_slave, add_ref(boss), i*2*M_PI/cnt, j);
@@ -603,7 +610,7 @@ Boss* stage2_create_boss() {
 	
 	Boss *wriggle = create_boss("EX Wriggle", "wriggle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
-	//boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage2_boss_a1, stage2_boss_spellbg);
+	boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage2_boss_a1, stage2_boss_spellbg);
 	boss_add_attack(wriggle, AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 30, 40000, stage2_boss_a2, stage2_boss_spellbg);
 	
 	start_attack(wriggle, wriggle->attacks);
@@ -613,8 +620,8 @@ Boss* stage2_create_boss() {
 void stage2_events() {
 	TIMER(&global.timer);
 	
-	AT(0)
-		global.timer = 5300;
+//	AT(0)
+//		global.timer = 2800;
 	
 	FROM_TO(160, 300, 10) {
 		create_enemy1c(VIEWPORT_W/2 + 20 * nfrand() + (VIEWPORT_H/4 + 20 * nfrand())*I, 200, Swirl, stage2_enterswirl, I * 3 + nfrand() * 3);
