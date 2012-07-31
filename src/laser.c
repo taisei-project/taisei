@@ -217,7 +217,7 @@ int collision_laser_curve(Laser *l) {
 	float t = s - l->timespan;
 	complex last, pos;
 		
-	if(l->width <= 2.0)
+	if(l->width <= 3.0)
 		return 0;
 	
 	if(t < 0)

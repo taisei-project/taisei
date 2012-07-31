@@ -304,12 +304,15 @@ void maxwell_laser_logic(Laser *l, int t) {
 	static_laser(l, t);
 	TIMER(&t);
 	
-	FROM_TO(120, 150, 1) {
-		l->args[2] += 0.16+0.01*global.diff;
+	if(l->width < 3)
+		l->width = 2.9;
+	
+	FROM_TO(60, 99, 1) {
+		l->args[2] += 0.145+0.01*global.diff;
 	}
 	
 	FROM_TO(00, 10000, 1) {
-		l->args[2] -= 0.1I+0.02I*global.diff;
+		l->args[2] -= 0.1I+0.02I*global.diff-0.05I*(global.diff == D_Lunatic);
 	}
 }
 
