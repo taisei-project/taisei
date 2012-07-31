@@ -228,6 +228,9 @@ int scythe_newton(Enemy *e, int t) {
 		}
 	}
 			
+	FROM_TO(100, 2000, 5-global.diff) {
+		create_projectile1c("rice", e->pos, rgb(0.3, 1, 0.8), linear, I);
+	}
 	
 	return 1;
 }
@@ -247,7 +250,7 @@ void elly_newton(Boss *b, int t) {
 		
 		for(x = -w; x <= w; x++) {
 			for(y = -w; y <= w; y++) {
-				create_projectile2c("plainball", b->pos+(x+I*y)*(18)*cexp(I*a), rgb(0, 0.1, 0.4), accelerated, 2*cexp(I*a), 0);
+				create_projectile2c("plainball", b->pos+(x+I*y)*(18)*cexp(I*a), rgb(0, 0.2, 0.6), accelerated, 2*cexp(I*a), 0);
 			}
 		}
 	}	
