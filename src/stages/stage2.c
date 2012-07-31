@@ -123,6 +123,10 @@ void stage2_start() {
 	stgstate.clr_r = 1.0;
 	stgstate.clr_g = 0.0;
 	stgstate.clr_b = 0.3;
+
+// TESTING
+	bgcontext.cv[1] = -90;
+	stgstate.fog_exp = 5.0;
 }
 
 void stage2_end() {
@@ -135,7 +139,7 @@ void stage2_draw() {
 	set_perspective(&bgcontext, 300, 5000);
 	stgstate.tunnel_angle += stgstate.tunnel_avel * 5;
  	bgcontext.crot[2] = -(creal(global.plr.pos)-VIEWPORT_W/2)/40.0;
-	
+#if 0
 	FROM_TO(0, 160, 1)
 		bgcontext.cv[1] -= 0.5;
 	
@@ -269,7 +273,8 @@ void stage2_draw() {
 		stgstate.fog_exp -= 4.0 / 400.0;
 		//stgstate.tunnel_avel -= 0.5 / 200.0;
 	}
-	
+#endif
+
 	draw_stage3d(&bgcontext, 7000);
 }
 
