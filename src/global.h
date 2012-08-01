@@ -121,6 +121,8 @@ typedef struct {
 	Replay replay;
 	int replaymode;
 	
+	float shake_view;
+	
 	RandomState rand_game;
 	RandomState rand_visual;
 } Global;

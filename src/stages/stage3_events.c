@@ -504,15 +504,10 @@ int aniwall_slave(Enemy *e, int t) {
 	return 1;
 }
 
-void FadeAdd(Projectile *p, int t) {
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	Shrink(p,t);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-}
 
 void KurumiAniWallSlave(Enemy *e, int t) {
 	if(e->args[1])
-		create_particle1c("part/lasercurve", e->pos, rgb(1,1,1), FadeAdd, timeout, 30);
+		create_particle1c("part/lasercurve", e->pos, rgb(1,1,1), ShrinkAdd, timeout, 30);
 }
 
 void kurumi_aniwall(Boss *b, int time) {

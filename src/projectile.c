@@ -281,6 +281,12 @@ void Shrink(Projectile *p, int t) {
 	glPopMatrix();
 }
 
+void ShrinkAdd(Projectile *p, int t) {
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	Shrink(p,t);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
 void DeathShrink(Projectile *p, int t) {
 	glPushMatrix();
 	float s = 2.0-t/p->args[0]*2;
@@ -327,6 +333,21 @@ void Fade(Projectile *p, int t) {
 	
 	if(t/creal(p->args[0]) != 0)
 		glColor4f(1,1,1,1);
+}
+
+void FadeAdd(Projectile *p, int t) {
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	
+	glColor4f(p->clr->r,p->clr->g,p->clr->b, 1.0 - (float)t/p->args[0]);
+	glPushMatrix();
+	glTranslatef(creal(p->pos), cimag(p->pos), 0);
+	glRotatef(180/M_PI*p->angle+90, 0, 0, 1);
+	
+	draw_texture_p(0,0, p->tex);
+	glPopMatrix();
+	glColor4f(1,1,1,1);
+	
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
 }
 
 int timeout(Projectile *p, int t) {

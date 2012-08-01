@@ -82,11 +82,13 @@ void ProjDrawSub(Projectile *p, int t);
 void Blast(Projectile *p, int t);
 
 void Shrink(Projectile *p, int t);
+void ShrinkAdd(Projectile *p, int t);
 void GrowFade(Projectile *p, int t);
 void GrowFadeAdd(Projectile *p, int t);
 int bullet_flare_move(Projectile *p, int t);
 
 void Fade(Projectile *p, int t);
+void FadeAdd(Projectile *p, int t);
 int timeout(Projectile *p, int t);
 
 void DeathShrink(Projectile *p, int t);

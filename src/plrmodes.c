@@ -336,8 +336,15 @@ void MasterSpark(Enemy *e, int t) {
 }
 
 int master_spark(Enemy *e, int t) {
-	if(t > creal(e->args[0]))
+	if(t == EVENT_BIRTH) {
+		global.shake_view = 8;
+		return 1;
+	}
+	
+	if(t > creal(e->args[0])) {
+		global.shake_view = 0;
 		return ACTION_DESTROY;
+	}
 		
 	return 1;
 }

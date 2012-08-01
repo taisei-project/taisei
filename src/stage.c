@@ -275,8 +275,8 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			glViewport(0, 0, video.current.width, video.current.height);
 			glPushMatrix();
-			if(global.plr.cha == Marisa && global.plr.shot == MarisaLaser && global.frames - global.plr.recovery < 0)
-				glTranslatef(8*sin(global.frames),8*sin(global.frames+3),0);
+			if(global.shake_view)
+				glTranslatef(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames+3),0);
 
 			draw_fbo_viewport(&resources.fsec);
 

@@ -263,15 +263,6 @@ void elly_newton(Boss *b, int t) {
 	}	
 }
 
-void elly_spellbg(Boss *b, int t) {
-	fill_screen(0,0,0.7,"stage6/spellbg_classic");
-	glBlendFunc(GL_ZERO,GL_SRC_COLOR);
-	glColor4f(1,1,1,0);
-	fill_screen(0,-t*0.005,0.7,"stage6/spellbg_chalk");
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-	glColor4f(1,1,1,1);
-}
-
 void elly_frequency2(Boss *b, int t) {
 	TIMER(&t);
 	AT(0) {
@@ -324,14 +315,207 @@ void elly_maxwell(Boss *b, int t) {
 	
 }
 
+void Baryon(Enemy *e, int t) {
+	Enemy *n;
+	
+	draw_texture(creal(e->pos), cimag(e->pos), "stage6/baryon");
+	
+	n = REF(e->args[1]);
+	if(!n)
+		return;
+	
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/baryon_connector")->gltex);
+	glPushMatrix();
+	glTranslatef(creal(e->pos+n->pos)/2.0, cimag(e->pos+n->pos)/2.0, 0);
+	glRotatef(180/M_PI*carg(e->pos-n->pos), 0, 0, 1);
+	glScalef(cabs(e->pos-n->pos)-58, 20, 1);
+	
+	draw_quad();
+	glPopMatrix();
+	glDisable(GL_TEXTURE_2D);
+	
+// 	create_particle2c("flare", e->pos+40*frand()*cexp(2I*M_PI*frand()), rgb(0, 1, 1), GrowFadeAdd, timeout_linear, 50, 1-I);
+	
+	if(!(t % 10))
+		create_particle1c("stain", e->pos+10*frand()*cexp(2I*M_PI*frand()), rgb(0, 1, 0.7), FadeAdd, timeout, 50)->angle = 2*M_PI*frand();
+}
+
+void BaryonCenter(Enemy *e, int t) {
+	Enemy *l[2];
+	int i;
+	
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+	
+	glPushMatrix();
+	glTranslatef(creal(e->pos), cimag(e->pos), 0);
+	glRotatef(2*t, 0, 0, 1);
+	draw_texture(0, 0, "stage6/scythecircle");
+	glPopMatrix();
+	draw_texture(creal(e->pos), cimag(e->pos), "stage6/baryon");
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	
+	
+	l[0] = REF(creal(e->args[1]));
+	l[1] = REF(cimag(e->args[1]));
+	
+	if(!l[0] || !l[1])
+		return;
+	
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/baryon_connector")->gltex);
+	for(i = 0; i < 2; i++) {		
+		glPushMatrix();
+		glTranslatef(creal(e->pos+l[i]->pos)/2.0, cimag(e->pos+l[i]->pos)/2.0, 0);
+		glRotatef(180/M_PI*carg(e->pos-l[i]->pos), 0, 0, 1);
+		glScalef(cabs(e->pos-l[i]->pos)-58, 20, 1);
+		draw_quad();
+		glPopMatrix();
+		
+	}
+	glDisable(GL_TEXTURE_2D);
+	create_particle2c("flare", e->pos+40*frand()*cexp(2I*M_PI*frand()), rgb(0, 1, 1), GrowFadeAdd, timeout_linear, 50, 1-I);
+	create_particle1c("stain", e->pos+40*frand()*cexp(2I*M_PI*frand()), rgb(0, 1, 0.2), FadeAdd, timeout, 50)->angle = 2*M_PI*frand();
+}
+
+int baryon_unfold(Enemy *e, int t) {
+	if(t < 0)
+		return 1; // not catching death for references! because there will be no death!
+
+	TIMER(&t);
+	FROM_TO(0, 100, 1)
+		e->pos += e->args[0];
+	
+	AT(100)
+		e->pos0 = e->pos;
+	return 1;
+}
+
+int baryon_center(Enemy *e, int t) {
+	if(t == EVENT_DEATH) {
+		free_ref(creal(e->args[1]));
+		free_ref(cimag(e->args[1]));
+	}
+	
+	return 1;
+}
+
+int scythe_explode(Enemy *e, int t) {
+	if(t < 0)
+		return 0;
+	
+	if(t < 50) {
+		e->args[1] += 0.001I*t;
+		e->args[2] += 0.002*t;
+	}
+	
+	if(t >= 50)
+		e->args[2] -= 0.002*(t-50);
+	
+	if(t == 100) {
+		petal_explosion(100, e->pos);
+		global.shake_view = 16;
+		return ACTION_DESTROY;
+	}
+	return 1;
+}
+
+void elly_unbound(Boss *b, int t) {
+	TIMER(&t);
+	
+	AT(0) {
+		global.enemies->birthtime = global.frames;
+		global.enemies->logic_rule = scythe_explode;
+	}
+	
+	AT(100) {
+		int i;
+		Enemy *e, *last = NULL, *first, *middle;
+		for(i = 0; i < 6; i++) {
+			e = create_enemy3c(b->pos, ENEMY_IMMUNE, Baryon, baryon_unfold, 1.5*cexp(2I*M_PI/6*i), i != 0 ? add_ref(last) : 0, i);
+			if(i == 0)
+				first = e;
+			else if(i == 3)
+				middle = e;
+			
+			last = e;			
+		}
+		
+		first->args[1] = add_ref(last);
+		
+		e = create_enemy2c(b->pos, ENEMY_IMMUNE, BaryonCenter, baryon_center, 0, add_ref(first) + I*add_ref(middle));
+	}
+	
+	if(t > 120)
+		global.shake_view = max(0, 16-0.1*(t-120));
+}
+
+void set_baryon_rule(EnemyLogicRule r) {
+	Enemy *e;
+	for(e = global.enemies; e; e = e->next) {
+		if(e->draw_rule == Baryon) {
+			e->birthtime = global.frames;
+			e->logic_rule = r;
+		}
+	}
+}
+
+int baryon_eigenstate(Enemy *e, int t) {
+	if(t < 0)
+		return 1;
+	
+	e->pos = e->pos0 + 40*sin(0.03*t+M_PI*(creal(e->args[0]) > 0)) + 30*cimag(e->args[0])*I*sin(0.06*t);
+	
+	TIMER(&t);
+	
+	FROM_TO(100+20*(int)creal(e->args[2]), 100000, 100) {
+		int i;
+		int n = 30;
+		
+		for(i = 0; i < n; i++) {
+			create_projectile2c("plainball", e->pos, rgb(1, 0, 0), accelerated, cexp(2I*M_PI/30*i),0.001I*cexp(2I*M_PI/30*i)*(i%3-1))->draw = ProjDrawAdd;
+		}
+	}
+	
+	return 1;
+}
+
+void elly_eigenstate(Boss *b, int t) {
+	TIMER(&t);
+	
+	AT(EVENT_BIRTH) {
+		set_baryon_rule(baryon_eigenstate);
+	}
+}
+
+void elly_spellbg_classic(Boss *b, int t) {
+	fill_screen(0,0,0.7,"stage6/spellbg_classic");
+	glBlendFunc(GL_ZERO,GL_SRC_COLOR);
+	glColor4f(1,1,1,0);
+	fill_screen(0,-t*0.005,0.7,"stage6/spellbg_chalk");
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	glColor4f(1,1,1,1);
+}
+
+void elly_spellbg_modern(Boss *b, int t) {
+	fill_screen(0,0,0.8,"stage6/spellbg_modern");
+	glBlendFunc(GL_ZERO,GL_SRC_COLOR);
+	glColor4f(1,1,1,0);
+	fill_screen(0,-t*0.005,0.7,"stage6/spellbg_chalk");
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	glColor4f(1,1,1,1);
+}
+
 Boss *create_elly() {
 	Boss *b = create_boss("Elly", "elly", -200I);
 	
 	boss_add_attack(b, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
 // 	boss_add_attack(b, AT_Normal, "Frequency", 20, 23000, elly_frequency, NULL);
-// 	boss_add_attack(b, AT_Spellcard, "Newton Sign ~ 2.5 Laws of Movement", 30, 30000, elly_newton, elly_spellbg);
+// 	boss_add_attack(b, AT_Spellcard, "Newton Sign ~ 2.5 Laws of Movement", 30, 30000, elly_newton, elly_spellbg_classic);
 // 	boss_add_attack(b, AT_Normal, "Frequency2", 20, 23000, elly_frequency2, NULL);
-	boss_add_attack(b, AT_Spellcard, "Maxwell Sign ~ Wave Theory", 30, 30000, elly_maxwell, elly_spellbg);
+// 	boss_add_attack(b, AT_Spellcard, "Maxwell Sign ~ Wave Theory", 30, 30000, elly_maxwell, elly_spellbg_classic);
+	boss_add_attack(b, AT_Move, "Unbound", 6, 10, elly_unbound, NULL);
+	boss_add_attack(b, AT_Spellcard, "Eigenstate ~ Collapse of the Wave Function", 30, 30000, elly_eigenstate, elly_spellbg_modern);
 	
 	start_attack(b, b->attacks);
 	
