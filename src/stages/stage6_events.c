@@ -468,7 +468,7 @@ int baryon_eigenstate(Enemy *e, int t) {
 	
 	TIMER(&t);
 	
-	FROM_TO(100+20*(int)creal(e->args[2]), 100000, 100) {
+	FROM_TO(100+20*(int)creal(e->args[2]), 100000, 120-10*global.diff) {
 		int i;
 		int n = 30;
 		
@@ -480,11 +480,96 @@ int baryon_eigenstate(Enemy *e, int t) {
 	return 1;
 }
 
+int baryon_reset(Enemy *e, int t) {
+	GO_TO(e, e->pos0, 0.1);
+	return 1;
+}
+
 void elly_eigenstate(Boss *b, int t) {
 	TIMER(&t);
 	
-	AT(EVENT_BIRTH) {
+	AT(EVENT_BIRTH)
 		set_baryon_rule(baryon_eigenstate);
+	AT(EVENT_DEATH)
+		set_baryon_rule(baryon_reset);
+}
+
+int baryon_nattack(Enemy *e, int t) {
+	if(t < 0)
+		return 1;
+	
+	TIMER(&t);
+	
+	e->pos = global.boss->pos + (e->pos-global.boss->pos)*cexp(0.006I);
+	
+	FROM_TO(30, 10000, 5-global.diff) {
+		float a = 0.2*_i + creal(e->args[2]) + 0.006*t;
+		create_projectile2c("ball", e->pos+40*cexp(I*a), rgb(cos(a), sin(a), cos(a+2.1)), asymptotic, (1+0.2*global.diff)*cexp(I*a), 3);
+	}
+	
+	return 1;
+}
+
+void elly_baryonattack(Boss *b, int t) {
+	TIMER(&t);
+	AT(0)
+		set_baryon_rule(baryon_nattack);
+	AT(EVENT_DEATH)
+		set_baryon_rule(baryon_reset);
+}
+
+int baryon_ricci(Enemy *e, int t) {
+	if(!creal(e->args[2]) || creal(e->args[2]) > 2) {
+		GO_TO(e, creal(global.boss->pos) + creal(e->pos0-global.boss->pos)*1.5+40I, 0.02);
+	} else {
+		TIMER(&t);
+		FROM_TO(200, 400, 1) {
+			GO_TO(e, creal(global.boss->pos) + creal(e->pos0-global.boss->pos)*1.8 + 230I, 0.05);
+		}
+		
+		FROM_TO_INT(600, 10000, 100, 200, 1)
+			GO_TO(e, creal(global.boss->pos) + creal(e->pos0-global.boss->pos)*1.8 + 230I + 200I*(_i&1), 0.02);
+	}	
+	
+	return 1;
+}
+
+int ricci_proj(Projectile *p, int t) {
+	if(t < 0)
+		return 1;
+	p->pos += p->args[0];
+	
+	if(t > creal(p->args[1])) {
+		Enemy *e;
+		for(e = global.enemies; e; e = e->next) {
+			if(cimag(e->pos) < 200)
+				continue;
+			
+			float f = max(20,cabs(e->pos-p->pos));
+			
+			p->args[0] += 70*pow(f, -3)*(e->pos-p->pos);
+		}
+	}
+	
+	p->angle = carg(p->args[0]);
+	p->clr->b = cabs(p->args[0])*0.5;
+	
+	return 1;
+}
+
+void elly_ricci(Boss *b, int t) {
+	TIMER(&t);
+	AT(0)
+		set_baryon_rule(baryon_ricci);
+	AT(EVENT_DEATH)
+		set_baryon_rule(baryon_reset);
+		
+	FROM_TO(80, 100000, 50-global.diff) {
+		int i;
+		int c = 6 + global.diff;
+		for(i = 0; i < c*2; i++)
+			create_projectile2c("plainball", fmod(VIEWPORT_W/(float)c*(i/2)+0.1*t,VIEWPORT_W)+VIEWPORT_H*I*(i&1), rgb(0.3+0.7*(i&1), 1-0.7*(i&1), 0), ricci_proj, I-2I*(i&1), 200-t)->draw = ProjDrawAdd;
+			
 	}
 }
 
@@ -510,12 +595,14 @@ Boss *create_elly() {
 	Boss *b = create_boss("Elly", "elly", -200I);
 	
 	boss_add_attack(b, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
-// 	boss_add_attack(b, AT_Normal, "Frequency", 20, 23000, elly_frequency, NULL);
-// 	boss_add_attack(b, AT_Spellcard, "Newton Sign ~ 2.5 Laws of Movement", 30, 30000, elly_newton, elly_spellbg_classic);
-// 	boss_add_attack(b, AT_Normal, "Frequency2", 20, 23000, elly_frequency2, NULL);
-// 	boss_add_attack(b, AT_Spellcard, "Maxwell Sign ~ Wave Theory", 30, 30000, elly_maxwell, elly_spellbg_classic);
+	boss_add_attack(b, AT_Normal, "Frequency", 20, 23000, elly_frequency, NULL);
+	boss_add_attack(b, AT_Spellcard, "Newton Sign ~ 2.5 Laws of Movement", 30, 30000, elly_newton, elly_spellbg_classic);
+	boss_add_attack(b, AT_Normal, "Frequency2", 20, 23000, elly_frequency2, NULL);
+	boss_add_attack(b, AT_Spellcard, "Maxwell Sign ~ Wave Theory", 30, 30000, elly_maxwell, elly_spellbg_classic);
 	boss_add_attack(b, AT_Move, "Unbound", 6, 10, elly_unbound, NULL);
 	boss_add_attack(b, AT_Spellcard, "Eigenstate ~ Collapse of the Wave Function", 30, 30000, elly_eigenstate, elly_spellbg_modern);
+	boss_add_attack(b, AT_Normal, "Baryon", 25, 23000, elly_baryonattack, NULL);
+	boss_add_attack(b, AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 35, 35000, elly_ricci, elly_spellbg_modern);
 	
 	start_attack(b, b->attacks);
 	
