@@ -520,11 +520,14 @@ int stage2_boss_a1_slave(Enemy *e, int time) {
 		create_projectile3c("ball", e->pos, rgb(1.0, 0.5, 0.5), stage2_boss_a1_laserbullet, add_ref(l), dt-1, 1);
 	}
 	
+	// night ignite balls
 	if(creal(e->args[3]) && global.diff > D_Easy) {
 		FROM_TO(300, 1000000, 180) {
 			int cnt = 5, i;
 			for(i = 0; i < cnt; ++i) {
-				create_projectile2c(global.diff > D_Normal? "soul" : "ball", e->pos, rgb(0.5, 1.0, 0.5), accelerated, 0, 0.02 * cexp(I*i*2*M_PI/cnt))->draw = ProjDrawAdd;
+				create_projectile2c("ball", e->pos, rgb(0.5, 1.0, 0.5), accelerated, 0, 0.02 * cexp(I*i*2*M_PI/cnt))->draw = ProjDrawAdd;
+				if(global.diff > D_Hard)
+					create_projectile2c("ball", e->pos, rgb(1.0, 1.0, 0.5), accelerated, 0, 0.01 * cexp(I*i*2*M_PI/cnt))->draw = ProjDrawAdd;
 			}
 		}
 	}
@@ -603,8 +606,8 @@ void stage2_boss_a2(Boss *boss, int time) {
 		float c = 0.3;
 		
 		Laser *l1 = create_lasercurve3c(boss->pos, lt,			dt, rgb(b, b, 1.0), las_sine_expanding, 2 * cexp(I*a), M_PI/4, 0.05);
-		Laser *l2 = create_lasercurve3c(boss->pos, lt * 1.5,	dt, rgb(1.0, b, b), las_sine_expanding, 2 * cexp(I*a), M_PI/4, 0.05 - 0.002 * global.diff);
-		Laser *l3 = create_lasercurve3c(boss->pos, lt,			dt, rgb(b, b, 1.0), las_sine_expanding, 2 * cexp(I*a), M_PI/4, 0.05 - 0.004 * global.diff);
+		Laser *l2 = create_lasercurve3c(boss->pos, lt * 1.5,	dt, rgb(1.0, b, b), las_sine_expanding, 2 * cexp(I*a), M_PI/4, 0.05 - 0.002 * min(global.diff, D_Hard));
+		Laser *l3 = create_lasercurve3c(boss->pos, lt,			dt, rgb(b, b, 1.0), las_sine_expanding, 2 * cexp(I*a), M_PI/4, 0.05 - 0.004 * min(global.diff, D_Hard));
 		
 		l2->width = 15;
 		
@@ -739,10 +742,10 @@ Boss* stage2_create_boss() {
 	Boss *wriggle = create_boss("EX Wriggle", "wriggle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
 	
-	boss_add_attack(wriggle, AT_Normal, "", 30, 20000, stage2_boss_prea1, NULL);
-	boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage2_boss_a1, stage2_boss_spellbg);
-	boss_add_attack(wriggle, AT_Normal, "", 30, 20000, stage2_boss_prea2, NULL);
-	boss_add_attack(wriggle, AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 30, 40000, stage2_boss_a2, stage2_boss_spellbg);
+//	boss_add_attack(wriggle, AT_Normal, "", 30, 20000, stage2_boss_prea1, NULL);
+//	boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage2_boss_a1, stage2_boss_spellbg);
+//	boss_add_attack(wriggle, AT_Normal, "", 30, 20000, stage2_boss_prea2, NULL);
+	boss_add_attack(wriggle, AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 25, 40000, stage2_boss_a2, stage2_boss_spellbg);
 	boss_add_attack(wriggle, AT_Normal, "", 30, 20000, stage2_boss_prea3, NULL);
 	boss_add_attack(wriggle, AT_Spellcard, "Bug Sign ~ Phosphaenus Hemipterus", 60, 30000, stage2_boss_a3, stage2_boss_spellbg);
 	
