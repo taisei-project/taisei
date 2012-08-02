@@ -591,14 +591,6 @@ void elly_baryonattack2(Boss *b, int t) {
 	}
 }
 
-complex lhc_laser(Laser *l, float t) {
-	if(t == EVENT_BIRTH) {
-		return 0;
-	}
-	
-	return l->args[3]+l->args[0]*t;
-}
-
 void lhc_laser_logic(Laser *l, int t) {
 	Enemy *e;
 	
@@ -613,7 +605,7 @@ void lhc_laser_logic(Laser *l, int t) {
 	e = REF(l->args[2]);
 		
 	if(e)
-		l->args[3] = e->pos;
+		l->pos = e->pos;
 }
 
 int baryon_lhc(Enemy *e, int t) {
@@ -627,7 +619,7 @@ int baryon_lhc(Enemy *e, int t) {
 		e->args[3] = 100I+400I*((t/400)&1);
 	
 		if(g == 2 || g == 5) {
-			create_laser(e->pos, 200, 300, rgb(0.1+0.9*(g>3),0,1-0.9*(g>3)), lhc_laser, lhc_laser_logic, (1-2*(g>3))*VIEWPORT_W*0.005, 200+30I, add_ref(e), 0);
+			create_laser(e->pos, 200, 300, rgb(0.1+0.9*(g>3),0,1-0.9*(g>3)), las_linear, lhc_laser_logic, (1-2*(g>3))*VIEWPORT_W*0.005, 200+30I, add_ref(e), 0);
 		}
 	}
 		
