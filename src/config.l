@@ -69,7 +69,7 @@ K[0-9]+		{ yylval = atoi(yytext + 1); return tCHAR; }
 
 \"[^\"\n\r]+\"	{
 	int l = strlen(yytext) - 1;
-	char *s = malloc(l);
+	char *s = malloc(l+1);
 	strcpy(s, yytext + 1);
 	s[l-1] = 0;
 	
