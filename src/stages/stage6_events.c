@@ -476,14 +476,14 @@ int baryon_eigenstate(Enemy *e, int t) {
 	
 	TIMER(&t);
 	
-	FROM_TO(100+20*(int)creal(e->args[2]), 100000, 70-10*global.diff) {
+	FROM_TO(100+20*(int)creal(e->args[2]), 100000, 150-12*global.diff) {
 		int i, j;
 		int c = 9;
 		
 		for(i = 0; i < c; i++) {
 			complex n = cexp(2I*_i+I*M_PI/2+I*creal(e->args[2]));
 			for(j = 0; j < 3; j++)
-				create_projectile4c("plainball", e->pos + 50*cexp(2I*M_PI/c*i), rgb(j == 0, j == 1, j == 2), eigenstate_proj, 1*n, 1, 60, 0.3I*n*(j-1))->draw = ProjDrawAdd;
+				create_projectile4c("plainball", e->pos + 60*cexp(2I*M_PI/c*i), rgb(j == 0, j == 1, j == 2), eigenstate_proj, 1*n, 1, 60, 0.6I*n*(j-1)*cexp(0.4I-0.1I*global.diff))->draw = ProjDrawAdd;
 			
 		}
 	}
