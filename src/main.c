@@ -108,9 +108,7 @@ int main(int argc, char** argv) {
 		printf("** Invalid stage number. Quitting stage skip mode.\n");
 	}
 #endif
-	
-	printf("playename = %s\n", tconfig.strval[PLAYERNAME]);
-	
+		
 	MenuData menu;
 	create_main_menu(&menu);
 	printf("-- menu\n");	

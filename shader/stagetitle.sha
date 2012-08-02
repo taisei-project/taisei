@@ -11,8 +11,8 @@ void main(void) {
 %% -- FRAG
 #version 110
 
-uniform sampler2D tex;
 uniform sampler2D trans;
+uniform sampler2D tex;
 
 uniform vec3 color;
 uniform float t;
