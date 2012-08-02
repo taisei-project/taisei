@@ -687,7 +687,10 @@ int stage2_boss_prea1_slave(Enemy *e, int time) {
 	
 	GO_TO(e, boss->pos + (100 + 20 * e->args[2] * sin(time / 100.0)) * dir, 0.03)
 	
-	int d = 12 - global.diff;
+	int d = 10 - global.diff;
+	if(level > 2)
+		d += 4;
+	
 	if(!(time % d)) {
 		create_projectile1c("rice", e->pos, rgb(1.0, 0.5, 0.2), linear, 3 * cexp(I*carg(boss->pos - e->pos)));
 		if(!(time % (d*2)) || level > 1)
@@ -742,10 +745,10 @@ Boss* stage2_create_boss() {
 	Boss *wriggle = create_boss("EX Wriggle", "wriggle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
 	
-//	boss_add_attack(wriggle, AT_Normal, "", 30, 20000, stage2_boss_prea1, NULL);
+	boss_add_attack(wriggle, AT_Normal, "", 30, 20000, stage2_boss_prea1, NULL);
 //	boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage2_boss_a1, stage2_boss_spellbg);
-//	boss_add_attack(wriggle, AT_Normal, "", 30, 20000, stage2_boss_prea2, NULL);
-	boss_add_attack(wriggle, AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 25, 40000, stage2_boss_a2, stage2_boss_spellbg);
+	boss_add_attack(wriggle, AT_Normal, "", 30, 20000, stage2_boss_prea2, NULL);
+//	boss_add_attack(wriggle, AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 25, 40000, stage2_boss_a2, stage2_boss_spellbg);
 	boss_add_attack(wriggle, AT_Normal, "", 30, 20000, stage2_boss_prea3, NULL);
 	boss_add_attack(wriggle, AT_Spellcard, "Bug Sign ~ Phosphaenus Hemipterus", 60, 30000, stage2_boss_a3, stage2_boss_spellbg);
 	
