@@ -619,8 +619,8 @@ void stage2_boss_a3(Boss *boss, int time) {
 		return;
 	}
 	
-	int d = 5 - min(global.diff, D_Hard);
-	FROM_TO_INT(0, 1000000, 75, 60, d) {
+	int d = 4 - min(global.diff, D_Hard);
+	FROM_TO_INT(0, 1000000, 100, 60, d) {
 		float a = _ni*2*M_PI/(15.0/d) + _i + time*2;
 		float dt = 150;
 		float lt = 100;
@@ -642,10 +642,10 @@ void stage2_boss_a3(Boss *boss, int time) {
 		create_lasercurve4c(boss->pos, lt,			dt, c2, las_sine, 3 * cexp(I*a), M_PI/4, 0.05, M_PI);
 		
 		if(global.diff > D_Hard)
-			create_lasercurve2c(boss->pos, lt,		dt, rgb(b, 1.0, 1.0), las_accel, 0, 0.1 * cexp(I*a));
+			create_lasercurve2c(boss->pos, lt,		dt, rgb(b, 1.0, 1.0), las_accel, 0, 0.1 * cexp(I*(a + M_PI)));
 	}
 	
-	int cnt = 50;
+	int cnt = 35;
 	FROM_TO_INT(120, 1000000, 60, cnt*2, 1) {
 		create_projectile2c("wave", boss->pos, (_ni % 2)? rgb(1.0, 0.5, 0.5) : rgb(0.5, 0.5, 1.0), (_ni % 2)? asymptotic : linear,
 			cexp(I*2*_ni*M_PI/cnt), 10
@@ -729,11 +729,13 @@ void stage2_boss_prea3(Boss *boss, int time) {
 Boss* stage2_create_boss() {
 	Boss *wriggle = create_boss("EX Wriggle", "wriggle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
+	
 	boss_add_attack(wriggle, AT_Normal, "", 30, 20000, stage2_boss_prea1, NULL);
 	boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage2_boss_a1, stage2_boss_spellbg);
 	boss_add_attack(wriggle, AT_Normal, "", 30, 20000, stage2_boss_prea2, NULL);
 	boss_add_attack(wriggle, AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 30, 40000, stage2_boss_a2, stage2_boss_spellbg);
 	boss_add_attack(wriggle, AT_Normal, "", 30, 20000, stage2_boss_prea3, NULL);
+	
 	boss_add_attack(wriggle, AT_Spellcard, "Bug Sign ~ Phosphaenus Hemipterus", 60, 30000, stage2_boss_a3, stage2_boss_spellbg);
 	
 	start_attack(wriggle, wriggle->attacks);
