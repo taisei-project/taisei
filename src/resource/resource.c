@@ -84,7 +84,9 @@ void load_resources() {
 		
 		strcpy(path, get_prefix());
 		strcat(path, "shader/laser_snippets");
-		load_shader_snippets(path, "laser_");
+		
+		if(tgl_ext[TGLEXT_draw_instanced])
+			load_shader_snippets(path, "laser_");
 		
 		printf("init_fbo():\n");
 		init_fbo(&resources.fbg[0]);

@@ -109,7 +109,7 @@ void draw_laser_curve(Laser *laser) {
 	
 	last = laser->prule(laser, t);
 	
-	for(t += 0.5; t < (global.frames - laser->birthtime)*laser->speed + laser->timeshift && t <= laser->deathtime + laser->timeshift; t += 0.5) {
+	for(t += 0.5; t < (global.frames - laser->birthtime)*laser->speed + laser->timeshift && t <= laser->deathtime + laser->timeshift; t += 1.5) {
 		complex pos = laser->prule(laser,t);
 		glPushMatrix();
 		
@@ -143,7 +143,7 @@ void draw_lasers() {
 	Laser *laser;
 	
 	for(laser = global.lasers; laser; laser = laser->next) {
-		if(laser->shader && !tconfig.intval[NO_SHADER])
+		if(laser->shader && !tconfig.intval[NO_SHADER] && tgl_ext[TGLEXT_draw_instanced])
 			draw_laser_curve_instanced(laser);
 		else
 			draw_laser_curve(laser);

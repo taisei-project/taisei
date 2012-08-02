@@ -12,7 +12,15 @@
 #include <GL/glu.h>
 #include <GL/glext.h>
 
+enum {
+	TGLEXT_draw_instanced = 0,
+	_TGLEXT_COUNT
+};
+
+extern int tgl_ext[_TGLEXT_COUNT];
+
 void load_gl_functions();
+void check_gl_extensions();
 
 #ifdef __WIN32__
 PFNGLACTIVETEXTUREPROC glActiveTexture;
