@@ -18,6 +18,7 @@
 
 void init_gl() {
 	load_gl_functions();
+	check_gl_extensions();
 	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);

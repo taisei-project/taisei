@@ -13,6 +13,11 @@
 #include <GL/glx.h>
 #endif
 
+#include <string.h>
+#include <stdio.h>
+
+int tgl_ext[_TGLEXT_COUNT];
+
 typedef void (*GLFuncPtr)(void);
 GLFuncPtr get_proc_address(char *name) {
 #ifdef __WIN32__
@@ -20,6 +25,26 @@ GLFuncPtr get_proc_address(char *name) {
 #else
 	return glXGetProcAddress((GLubyte *)name);
 #endif
+}
+
+
+void check_gl_extensions() {
+	int l;
+	char *ext = (char*)glGetString(GL_EXTENSIONS);
+	char *last, *pos;
+	
+	last = ext;
+	pos = ext;
+	while((pos = strchr(pos, ' '))) {
+		pos++;
+		
+		l = pos - last - 1;
+		
+		if(strncmp(last, "GL_EXT_draw_instanced", l) == 0)
+			tgl_ext[TGLEXT_draw_instanced] = 1;
+			
+		last = pos;
+	}
 }
 
 void load_gl_functions() {
