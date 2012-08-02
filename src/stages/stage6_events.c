@@ -329,7 +329,7 @@ void Baryon(Enemy *e, int t) {
 	glPushMatrix();
 	glTranslatef(creal(e->pos+n->pos)/2.0, cimag(e->pos+n->pos)/2.0, 0);
 	glRotatef(180/M_PI*carg(e->pos-n->pos), 0, 0, 1);
-	glScalef(cabs(e->pos-n->pos)-58, 20, 1);
+	glScalef(cabs(e->pos-n->pos)-70, 20, 1);
 	
 	draw_quad();
 	glPopMatrix();
@@ -368,7 +368,7 @@ void BaryonCenter(Enemy *e, int t) {
 		glPushMatrix();
 		glTranslatef(creal(e->pos+l[i]->pos)/2.0, cimag(e->pos+l[i]->pos)/2.0, 0);
 		glRotatef(180/M_PI*carg(e->pos-l[i]->pos), 0, 0, 1);
-		glScalef(cabs(e->pos-l[i]->pos)-58, 20, 1);
+		glScalef(cabs(e->pos-l[i]->pos)-70, 20, 1);
 		draw_quad();
 		glPopMatrix();
 		
@@ -406,7 +406,7 @@ int scythe_explode(Enemy *e, int t) {
 	
 	if(t < 50) {
 		e->args[1] += 0.001I*t;
-		e->args[2] += 0.002*t;
+		e->args[2] += 0.0015*t;
 	}
 	
 	if(t >= 50)
@@ -502,7 +502,7 @@ int baryon_nattack(Enemy *e, int t) {
 	
 	e->pos = global.boss->pos + (e->pos-global.boss->pos)*cexp(0.006I);
 	
-	FROM_TO(30, 10000, 5-global.diff) {
+	FROM_TO(30, 10000, 7-global.diff) {
 		float a = 0.2*_i + creal(e->args[2]) + 0.006*t;
 		create_projectile2c("ball", e->pos+40*cexp(I*a), rgb(cos(a), sin(a), cos(a+2.1)), asymptotic, (1+0.2*global.diff)*cexp(I*a), 3);
 	}
@@ -527,7 +527,7 @@ int baryon_ricci(Enemy *e, int t) {
 			GO_TO(e, creal(global.boss->pos) + creal(e->pos0-global.boss->pos)*1.8 + 230I, 0.05);
 		}
 		
-		FROM_TO_INT(600, 10000, 100, 200, 1)
+		FROM_TO_INT(300, 10000, 100, 200, 1)
 			GO_TO(e, creal(global.boss->pos) + creal(e->pos0-global.boss->pos)*1.8 + 230I + 200I*(_i&1), 0.02);
 	}	
 	
@@ -568,9 +568,103 @@ void elly_ricci(Boss *b, int t) {
 		int i;
 		int c = 6 + global.diff;
 		for(i = 0; i < c*2; i++)
-			create_projectile2c("plainball", fmod(VIEWPORT_W/(float)c*(i/2)+0.1*t,VIEWPORT_W)+VIEWPORT_H*I*(i&1), rgb(0.3+0.7*(i&1), 1-0.7*(i&1), 0), ricci_proj, I-2I*(i&1), 200-t)->draw = ProjDrawAdd;
+			create_projectile2c("plainball", fmod(VIEWPORT_W/(float)c*(i/2),VIEWPORT_W)+VIEWPORT_H*I*(i&1), rgb(0.3+0.7*(i&1), 1-0.7*(i&1), 0), ricci_proj, I-2I*(i&1), 200-t)->draw = ProjDrawAdd;
 			
 	}
+}
+
+void elly_baryonattack2(Boss *b, int t) {
+	TIMER(&t);
+	AT(0)
+		set_baryon_rule(baryon_nattack);
+	AT(EVENT_DEATH)
+		set_baryon_rule(baryon_reset);
+		
+	FROM_TO(100, 100000, 200-5*global.diff) {
+		int x, y;
+		int w = 1+(global.diff > D_Normal);
+		complex n = cexp(I*carg(global.plr.pos-b->pos));
+		
+		for(x = -w; x <= w; x++)
+			for(y = -w; y <= w; y++)
+				create_projectile2c("bigball", b->pos+30*(x+I*y)*n, rgb(0,0.2,0.9), asymptotic, n, 3);
+	}
+}
+
+complex lhc_laser(Laser *l, float t) {
+	if(t == EVENT_BIRTH) {
+		return 0;
+	}
+	
+	return l->args[3]+l->args[0]*t;
+}
+
+void lhc_laser_logic(Laser *l, int t) {
+	Enemy *e;
+	
+	static_laser(l, t);
+	
+	TIMER(&t);
+	AT(EVENT_DEATH) {
+		free_ref(l->args[2]);
+		return;
+	}
+	
+	e = REF(l->args[2]);
+		
+	if(e)
+		l->args[3] = e->pos;
+}
+
+int baryon_lhc(Enemy *e, int t) {
+	int t1 = t % 400;
+	int g = (int)creal(e->args[2]);
+	if(g == 0 || g == 3)
+		return 1;
+	TIMER(&t1);	
+	
+	AT(1) {
+		e->args[3] = 100I+400I*((t/400)&1);
+	
+		if(g == 2 || g == 5) {
+			create_laser(e->pos, 200, 300, rgb(0.1+0.9*(g>3),0,1-0.9*(g>3)), lhc_laser, lhc_laser_logic, (1-2*(g>3))*VIEWPORT_W*0.005, 200+30I, add_ref(e), 0);
+		}
+	}
+		
+	GO_TO(e, VIEWPORT_W*(creal(e->pos0) > VIEWPORT_W/2)+I*cimag(e->args[3]) + (100-0.4*t1)*I*(1-2*(g > 3)), 0.02);
+	
+	return 1;
+}		
+
+void elly_lhc(Boss *b, int t) {
+	TIMER(&t);
+	
+	AT(0)
+		set_baryon_rule(baryon_lhc);
+	AT(EVENT_DEATH)
+		set_baryon_rule(baryon_reset);
+	
+	FROM_TO(280, 10000, 400) {
+		int i;
+		int c = 30+10*global.diff;
+		complex pos = VIEWPORT_W/2 + 100I+400I*((t/400)&1);
+		
+		global.shake_view = 16;		
+				
+		for(i = 0; i < c; i++) {
+			complex v = 3*cexp(2I*M_PI*frand());
+			create_lasercurve2c(pos, 70+20*global.diff, 300, rgb(1, 1, 1), las_accel, v, 0.02*frand()*copysign(1,creal(v)))->width=15;
+			create_projectile1c("soul", pos, rgb(0.4, 0, 1.0), linear, (1+2.5*frand())*cexp(2I*M_PI*frand()))->draw = ProjDrawAdd;
+			create_projectile1c("bigball", pos, rgb(1, 0, 0.4), linear, (1+2.5*frand())*cexp(2I*M_PI*frand()))->draw = ProjDrawAdd;
+		}
+	}
+	
+	FROM_TO(0, 100000,7-global.diff)
+		create_projectile2c("ball", b->pos, rgb(0, 0.4,1), asymptotic, cexp(2I*_i), 3)->draw = ProjDrawAdd;
+	
+	FROM_TO(300, 10000, 400) {
+		global.shake_view = 0;
+	}	
 }
 
 void elly_spellbg_classic(Boss *b, int t) {
@@ -583,7 +677,7 @@ void elly_spellbg_classic(Boss *b, int t) {
 }
 
 void elly_spellbg_modern(Boss *b, int t) {
-	fill_screen(0,0,0.8,"stage6/spellbg_modern");
+	fill_screen(0,0,0.6,"stage6/spellbg_modern");
 	glBlendFunc(GL_ZERO,GL_SRC_COLOR);
 	glColor4f(1,1,1,0);
 	fill_screen(0,-t*0.005,0.7,"stage6/spellbg_chalk");
@@ -595,15 +689,16 @@ Boss *create_elly() {
 	Boss *b = create_boss("Elly", "elly", -200I);
 	
 	boss_add_attack(b, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
-	boss_add_attack(b, AT_Normal, "Frequency", 20, 23000, elly_frequency, NULL);
-	boss_add_attack(b, AT_Spellcard, "Newton Sign ~ 2.5 Laws of Movement", 30, 30000, elly_newton, elly_spellbg_classic);
-	boss_add_attack(b, AT_Normal, "Frequency2", 20, 23000, elly_frequency2, NULL);
-	boss_add_attack(b, AT_Spellcard, "Maxwell Sign ~ Wave Theory", 30, 30000, elly_maxwell, elly_spellbg_classic);
+// 	boss_add_attack(b, AT_Normal, "Frequency", 20, 23000, elly_frequency, NULL);
+// 	boss_add_attack(b, AT_Spellcard, "Newton Sign ~ 2.5 Laws of Movement", 30, 30000, elly_newton, elly_spellbg_classic);
+// 	boss_add_attack(b, AT_Normal, "Frequency2", 20, 23000, elly_frequency2, NULL);
+// 	boss_add_attack(b, AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 22000, elly_maxwell, elly_spellbg_classic);
 	boss_add_attack(b, AT_Move, "Unbound", 6, 10, elly_unbound, NULL);
-	boss_add_attack(b, AT_Spellcard, "Eigenstate ~ Collapse of the Wave Function", 30, 30000, elly_eigenstate, elly_spellbg_modern);
-	boss_add_attack(b, AT_Normal, "Baryon", 25, 23000, elly_baryonattack, NULL);
-	boss_add_attack(b, AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 35, 35000, elly_ricci, elly_spellbg_modern);
-	
+// 	boss_add_attack(b, AT_Spellcard, "Eigenstate ~ Collapse of the Wave Function", 30, 30000, elly_eigenstate, elly_spellbg_modern);
+// 	boss_add_attack(b, AT_Normal, "Baryon", 25, 23000, elly_baryonattack, NULL);
+// 	boss_add_attack(b, AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 35, 40000, elly_ricci, elly_spellbg_modern);
+// 	boss_add_attack(b, AT_Normal, "Baryon", 25, 23000, elly_baryonattack2, NULL);
+	boss_add_attack(b, AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 35, 40000, elly_lhc, elly_spellbg_modern);
 	start_attack(b, b->attacks);
 	
 	return b;
