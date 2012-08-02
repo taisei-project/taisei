@@ -10,8 +10,8 @@ void main(void) {
 
 #version 110
 
-uniform sampler2D tex;
 uniform sampler2D depth;
+uniform sampler2D tex;
 uniform float start;
 uniform float end;
 uniform float exponent;

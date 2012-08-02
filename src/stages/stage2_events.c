@@ -750,7 +750,7 @@ Boss* stage2_create_boss() {
 	boss_add_attack(wriggle, AT_Normal, "", 20, 15000, stage2_boss_prea2, NULL);
 	boss_add_attack(wriggle, AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 25, 40000, stage2_boss_a2, stage2_boss_spellbg);
 	boss_add_attack(wriggle, AT_Normal, "", 20, 15000, stage2_boss_prea3, NULL);
-	boss_add_attack(wriggle, AT_Spellcard, "Bug Sign ~ Phosphaenus Hemipterus", 60, 30000, stage2_boss_a3, stage2_boss_spellbg);
+	boss_add_attack(wriggle, AT_Spellcard, "Bug Sign ~ Phosphaenus Hemipterus", 35, 30000, stage2_boss_a3, stage2_boss_spellbg);
 	
 	start_attack(wriggle, wriggle->attacks);
 	return wriggle;
@@ -759,8 +759,8 @@ Boss* stage2_create_boss() {
 void stage2_events() {
 	TIMER(&global.timer);
 	
-	AT(0)
-		global.timer = 5300;
+//	AT(0)
+//		global.timer = 5300;
 	
 	FROM_TO(160, 300, 10) {
 		create_enemy1c(VIEWPORT_W/2 + 20 * nfrand() + (VIEWPORT_H/4 + 20 * nfrand())*I, 200, Swirl, stage2_enterswirl, I * 3 + nfrand() * 3);
