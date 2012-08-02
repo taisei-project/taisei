@@ -10,6 +10,7 @@
 #include "menu.h"
 #include "options.h"
 #include "global.h"
+#include "video.h"
 #include "paths/native.h"
 #include "taisei_err.h"
 
@@ -59,8 +60,7 @@ void free_bindings(MenuData *m)
 
 // Binds the last entry to an integer config option having limited values (BT_IntValue type binding).
 // Values are defined with bind_addvalue.
-OptionBinding* bind_option(MenuData *m, char *optname, int cfgentry, BindingGetter getter, BindingSetter setter)
-{
+OptionBinding* bind_option(MenuData *m, char *optname, int cfgentry, BindingGetter getter, BindingSetter setter) {
 	OptionBinding *bind;
 	bind = allocate_binding(m);
 	
@@ -76,8 +76,7 @@ OptionBinding* bind_option(MenuData *m, char *optname, int cfgentry, BindingGett
 }
 
 // Binds the last entry to a keybinding config option (BT_KeyBinding type binding).
-OptionBinding* bind_keybinding(MenuData *m, char *optname, int cfgentry)
-{
+OptionBinding* bind_keybinding(MenuData *m, char *optname, int cfgentry) {
 	OptionBinding *bind;
 	bind = allocate_binding(m);
 	
@@ -86,6 +85,45 @@ OptionBinding* bind_keybinding(MenuData *m, char *optname, int cfgentry)
 	strcpy(bind->optname, optname);
 	bind->enabled = True;
 	bind->type = BT_KeyBinding;
+	
+	return bind;
+}
+
+// For string values, with a "textbox" editor
+OptionBinding* bind_stroption(MenuData *m, char *optname, int cfgentry) {
+	OptionBinding *bind;
+	bind = allocate_binding(m);
+	
+	bind->configentry = cfgentry;
+	bind->optname = malloc(strlen(optname) + 1);
+	strcpy(bind->optname, optname);
+	bind->enabled = True;
+	bind->type = BT_StrValue;
+	
+	bind->valcount = 1;
+	bind->values = malloc(sizeof(char*));
+	*bind->values = malloc(128);
+	strncpy(*bind->values, tconfig.strval[cfgentry], 128);
+	
+	return bind;
+}
+
+// Super-special binding type for the resolution setting
+OptionBinding* bind_resolution(MenuData *m) {
+	OptionBinding *bind;
+	bind = allocate_binding(m);
+	
+	bind->enabled = True;
+	bind->type = BT_Resolution;
+	bind->valcount = video.mcount;
+	bind->selected = -1;
+	
+	int i; for(i = 0; i < video.mcount; ++i) {
+		VideoMode *m = &(video.modes[i]);
+		
+		if(m->width == video.intended.width && m->height == video.intended.height)
+			bind->selected = i;
+	}
 	
 	return bind;
 }
@@ -119,14 +157,20 @@ void bind_setvaluerange(OptionBinding *b, int vmin, int vmax) {
 // Called to select a value of a BT_IntValue type binding by index
 int bind_setvalue(OptionBinding *b, int v)
 {
-	return b->selected = b->setter(b, v);
+	if(b->setter)
+		return b->selected = b->setter(b, v);
+	else
+		return b->selected = v;
 }
 
 // Called to get the selected value of a BT_IntValue type binding by index
 int bind_getvalue(OptionBinding *b)
 {
-	// query AND update
-	return b->selected = b->getter(b);
+	if(b->getter)
+		// query AND update
+		return b->selected = b->getter(b);
+	else
+		return b->selected;
 }
 
 // Selects the next to current value of a BT_IntValue type binding
@@ -207,7 +251,7 @@ int bind_common_onoffset_inverted(void *b, int v)
 
 int bind_fullscreen_set(void *b, int v)
 {
-	toggle_fullscreen();
+	video_toggle_fullscreen();
 	return bind_common_onoffset(b, v);
 }
 
@@ -313,6 +357,15 @@ void menu_save_config(MenuData *m, char *filename)
 				fprintf(out, "%s = K%i\n", bind->optname, tconfig.intval[bind->configentry]);
 				break;
 			
+			case BT_StrValue:
+				fprintf(out, "%s = \"%s\"\n", bind->optname, tconfig.strval[bind->configentry]);
+				break;
+			
+			case BT_Resolution:
+				// at this point, the intended resolution is what the user has picked
+				fprintf(out, "vid_width = %i\nvid_height = %i\n", video.intended.width, video.intended.height);
+				break;
+			
 			default:
 				printf("FIXME: unhandled BindingType %i, option '%s' will NOT be saved!\n", bind->type, bind->optname);
 		}
@@ -327,6 +380,19 @@ void menu_save_config(MenuData *m, char *filename)
 void destroy_options_menu(void *menu)
 {
 	MenuData *m = (MenuData*)menu;
+	OptionBinding *binds = (OptionBinding*)m->context;
+	int i;
+	
+	for(i = 0; i < m->ecount; ++i) {
+		if(binds[i].type == BT_Resolution) {
+			if(binds[i].selected != -1) {
+				VideoMode *m = &(video.modes[binds[i].selected]);
+				video_setmode(m->width, m->height, tconfig.intval[FULLSCREEN]);
+			}
+			break;
+		}
+	}
+	
 	menu_save_config(m, CONFIG_FILE);
 	free_bindings(menu);
 }
@@ -348,6 +414,15 @@ void create_options_menu(MenuData *m) {
 	
 	#define bind_onoff(b) bind_addvalue(b, "on"); bind_addvalue(b, "off")
 	
+	add_menu_entry(m, "Player Name", do_nothing, NULL);
+		b = bind_stroption(m, "playername", PLAYERNAME);
+		
+	add_menu_separator(m);
+		allocate_binding(m);
+	
+	add_menu_entry(m, "Video Mode", do_nothing, NULL);
+		b = bind_resolution(m);
+	
 	add_menu_entry(m, "Fullscreen", do_nothing, NULL);
 		b = bind_option(m, "fullscreen", FULLSCREEN, bind_common_onoffget, bind_fullscreen_set);
 			bind_onoff(b);
@@ -357,7 +432,7 @@ void create_options_menu(MenuData *m) {
 													  bind_noaudio_set);
 			bind_onoff(b);
 		
-	add_menu_entry(m, "Shader", do_nothing, NULL);
+	add_menu_entry(m, "Shaders", do_nothing, NULL);
 		b = bind_option(m, "disable_shader", NO_SHADER, bind_common_onoffget_inverted,
 														bind_noshader_set);
 			bind_onoff(b);
@@ -382,7 +457,7 @@ void create_options_menu(MenuData *m) {
 			bind_addvalue(b, "off");
 			bind_addvalue(b, "ask");
 	
-	add_menu_entry(m, " ", NULL, NULL);
+	add_menu_separator(m);
 		allocate_binding(m);
 	
 	add_menu_entry(m, "Move up", do_nothing, NULL);
@@ -397,7 +472,7 @@ void create_options_menu(MenuData *m) {
 	add_menu_entry(m, "Move right", do_nothing, NULL);
 		bind_keybinding(m, "key_right", KEY_RIGHT);
 	
-	add_menu_entry(m, " ", NULL, NULL);
+	add_menu_separator(m);
 		allocate_binding(m);
 	
 	add_menu_entry(m, "Fire", do_nothing, NULL);
@@ -409,7 +484,7 @@ void create_options_menu(MenuData *m) {
 	add_menu_entry(m, "Bomb", do_nothing, NULL);
 		bind_keybinding(m, "key_bomb", KEY_BOMB);
 		
-	add_menu_entry(m, " ", NULL, NULL);
+	add_menu_separator(m);
 		allocate_binding(m);
 	
 	add_menu_entry(m, "Toggle fullscreen", do_nothing, NULL);
@@ -417,8 +492,11 @@ void create_options_menu(MenuData *m) {
 		
 	add_menu_entry(m, "Take a screenshot", do_nothing, NULL);
 		bind_keybinding(m, "key_screenshot", KEY_SCREENSHOT);
-		
-	add_menu_entry(m, " ", NULL, NULL);
+	
+	add_menu_entry(m, "Skip dialog", do_nothing, NULL);
+		bind_keybinding(m, "key_skip", KEY_SKIP);
+	
+	add_menu_separator(m);
 		allocate_binding(m);
 		
 	add_menu_entry(m, "Return to the main menu", backtomain, m);
@@ -460,6 +538,9 @@ void draw_options_menu(MenuData *menu) {
 	int i, caption_drawn = 0;
 	
 	for(i = 0; i < menu->ecount; i++) {
+		if(!menu->entries[i].name)
+			continue;
+		
 		menu->entries[i].drawdata += 0.2 * (10*(i == menu->cursor) - menu->entries[i].drawdata);
 		
 		bind = &(binds[i]);
@@ -511,14 +592,39 @@ void draw_options_menu(MenuData *menu) {
 						caption_drawn = 1;
 					}
 				
-					if(bind->blockinput)
-					{
+					if(bind->blockinput) {
 						glColor4f(0,1,0,0.7);
 						draw_text(AL_Right, origin, 20*i, "Press a key to assign, ESC to cancel", _fonts.standard);
-					}
-					else
+					} else
 						draw_text(AL_Right, origin, 20*i, SDL_GetKeyName(tconfig.intval[bind->configentry]), _fonts.standard);
 					break;
+				
+				case BT_StrValue:
+					if(bind->blockinput) {
+						glColor4f(0,1,0,0.7);
+						if(strlen(*bind->values))
+							draw_text(AL_Right, origin, 20*i, *bind->values, _fonts.standard);
+					} else
+						draw_text(AL_Right, origin, 20*i, tconfig.strval[bind->configentry], _fonts.standard);
+					break;
+				
+				case BT_Resolution: {
+					char tmp[16];
+					int w, h;
+					
+					if(bind->selected == -1) {
+						w = video.intended.width;
+						h = video.intended.height;
+					} else {
+						VideoMode *m = &(video.modes[bind->selected]);
+						w = m->width;
+						h = m->height;
+					}
+					
+					snprintf(tmp, 16, "%dx%d", w, h);
+					draw_text(AL_Right, origin, 20*i, tmp, _fonts.standard);
+					break;
+				}
 			}
 		}
 	}
@@ -534,27 +640,58 @@ void draw_options_menu(MenuData *menu) {
 
 void bind_input(MenuData *menu, OptionBinding *b)
 {
-	// yes, no global_input() here.
-	
 	SDL_Event event;
 	
-	if(b->type != BT_KeyBinding) // shouldn't happen, but just in case.
-	{
-		b->blockinput = False;
-		return;
-	}
-	
+	SDL_EnableUNICODE(True);
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;
+		int uni = event.key.keysym.unicode;
 		
 		if(event.type == SDL_KEYDOWN) {
-			if(sym != SDLK_ESCAPE)	// escape means cancel
-				tconfig.intval[b->configentry] = sym;
-			b->blockinput = False;
+			if(sym != SDLK_ESCAPE) {
+				switch(b->type) {
+					case BT_KeyBinding:
+						tconfig.intval[b->configentry] = sym;
+						b->blockinput = False;
+						break;
+					
+					case BT_StrValue: {
+						// Very basic editor for string config values
+						// b->values is a pointer to the editor buffer string here (char**)
+						// Normally it's used to store the value names for BT_IntValue binds, though.
+						// TODO: implement a cursor here (so we can use arrow keys for editing)
+						
+						char c = (char)(uni & 0x7F);
+						char *dest = *b->values;
+						
+						if(sym == SDLK_RETURN) {
+							if(strlen(dest))
+								stralloc(&(tconfig.strval[b->configentry]), dest);
+							else
+								strncpy(dest, tconfig.strval[b->configentry], 128);
+							b->blockinput = False;
+						} else if(sym == SDLK_BACKSPACE) {
+							if(strlen(dest))
+								dest[strlen(dest)-1] = 0;
+						} else if(uni && sym != SDLK_TAB && c != ':') {		// we use ':' as a separator for replays (and might use it as such somewhere else), and I don't feel like escaping it.
+							strncat(dest, &c, 128);
+							dest[strlen(dest)-1] = 0;
+						}
+						break;
+					}
+					
+					default:	// should never get there anyway
+						b->blockinput = False;
+						break;
+				}
+			} else
+				b->blockinput = False;
+			
 		} else if(event.type == SDL_QUIT) {
 			exit(1);
 		}
 	}
+	SDL_EnableUNICODE(False);
 }
 
 static void options_key_action(MenuData *menu, int sym) {
@@ -582,24 +719,26 @@ static void options_key_action(MenuData *menu, int sym) {
 		
 		if(bind->enabled) switch(bind->type)
 		{
-			case BT_IntValue: bind_setnext(bind); break;
-			case BT_KeyBinding: bind->blockinput = True; break;
-		}
-		else
-			menu->quit = 1;
+			case BT_IntValue: case BT_Resolution:	bind_setnext(bind); 		break;
+			case BT_KeyBinding:						bind->blockinput = True; 	break;
+			case BT_StrValue:
+				bind->selected = strlen(tconfig.strval[bind->configentry]);
+				bind->blockinput = True;
+				break;
+		} else menu->quit = 1;
 	} else if(sym == tconfig.intval[KEY_LEFT] || sym == SDLK_LEFT) {
 		menu->selected = menu->cursor;
 		OptionBinding *binds = (OptionBinding*)menu->context;
 		OptionBinding *bind = &(binds[menu->selected]);
 		
-		if(bind->enabled && bind->type == BT_IntValue)
+		if(bind->enabled && (bind->type == BT_IntValue || bind->type == BT_Resolution))
 			bind_setprev(bind);
 	} else if(sym == tconfig.intval[KEY_RIGHT] || sym == SDLK_RIGHT) {
 		menu->selected = menu->cursor;
 		OptionBinding *binds = (OptionBinding*)menu->context;
 		OptionBinding *bind = &(binds[menu->selected]);
 		
-		if(bind->enabled && bind->type == BT_IntValue)
+		if(bind->enabled && (bind->type == BT_IntValue || bind->type == BT_Resolution))
 			bind_setnext(bind);
 	} else if(sym == SDLK_ESCAPE) {
 		menu->quit = 1;

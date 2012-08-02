@@ -339,12 +339,6 @@ int master_spark(Enemy *e, int t) {
 	if(t > creal(e->args[0]))
 		return ACTION_DESTROY;
 		
-	if(global.projs && global.projs->type != PlrProj)
-		global.projs->type = DeadProj;
-	
-	if(global.boss)
-		global.boss->dmg++;
-	
 	return 1;
 }
 

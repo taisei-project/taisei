@@ -10,6 +10,7 @@
 #include <SDL/SDL.h>
 #include <time.h>
 #include "global.h"
+#include "video.h"
 #include "replay.h"
 #include "config.h"
 #include "player.h"
@@ -17,11 +18,11 @@
 #include "menu/savereplay.h"
 
 StageInfo stages[] = {	
-	{1, stage0_loop, False, "Stage 1", "Misty Lake"},
-	{2, stage1_loop, False, "Stage 2", "Walk Along the Border"},
-	{3, stage2_loop, False, "Stage 3", "Through the Tunnel of Light"},
-	{4, stage3_loop, False, "Stage 4", "Forgotten Mansion"},
-	{5, stage4_loop, False, "Stage 5", "Climbing the Tower of Babel"},
+	{1, stage0_loop, False, "Stage 1", "Misty Lake", {1, 1, 1}},
+	{2, stage1_loop, False, "Stage 2", "Walk Along the Border", {1, 1, 1}},
+	{3, stage2_loop, False, "Stage 3", "Through the Tunnel of Light", {0, 0, 0}},
+	{4, stage3_loop, False, "Stage 4", "Forgotten Mansion", {0, 0, 0}},
+	{5, stage4_loop, False, "Stage 5", "Climbing the Tower of Babel", {1, 1, 1}},
 	
 	{0, NULL, False, NULL, NULL}
 };
@@ -42,7 +43,7 @@ void stage_start() {
 	global.points = 0;
 	global.nostagebg = False;
 	
-	global.fps.show_fps = 60;
+	global.fps.stagebg_fps = global.fps.show_fps = FPS;
 	global.fps.fpstime = SDL_GetTicks();
 	
 	global.plr.recovery = 0;
@@ -65,6 +66,7 @@ void replay_input() {
 	while(SDL_PollEvent(&event)) {
 		global_processevent(&event);
 		int sym = event.key.keysym.sym;
+		global_processevent(&event);
 		
 		switch(event.type) {
 			case SDL_KEYDOWN:
@@ -78,12 +80,17 @@ void replay_input() {
 		}
 	}
 	
-// 	I know this loop is not (yet) optimal - consider it a sketch
+	if(global.menu)
+		return;
+	
 	int i;
-	for(i = 0; i < global.replay.ecount; ++i) {
+	for(i = global.replay.playpos; i < global.replay.ecount; ++i) {
 		ReplayEvent *e = &(global.replay.events[i]);
 		
-		if(e->frame == global.frames) switch(e->type) {
+		if(e->frame != global.frames)
+			break;
+		
+		switch(e->type) {
 			case EV_OVER:
 				global.game_over = GAMEOVER_ABORT;
 				break;
@@ -91,12 +98,15 @@ void replay_input() {
 			default:
 				if(global.dialog && e->type == EV_PRESS && (e->key == KEY_SHOT || e->key == KEY_BOMB))
 					page_dialog(&global.dialog);
+				else if(global.dialog && e->key == KEY_SKIP)
+					global.dialog->skip = (e->type == EV_PRESS);
 				else
 					player_event(&global.plr, e->type, e->key);
 				break;
 		}
 	}
 	
+	global.replay.playpos = i;
 	player_applymovement(&global.plr);
 }
 
@@ -122,6 +132,9 @@ void stage_input() {
 				} else {
 					player_event(&global.plr, EV_PRESS, key);
 					replay_event(&global.replay, EV_PRESS, key);
+					
+					if(key == KEY_SKIP && global.dialog)
+						global.dialog->skip = True;
 				}
 				
 				break;
@@ -129,6 +142,9 @@ void stage_input() {
 			case SDL_KEYUP:
 				player_event(&global.plr,EV_RELEASE, key);
 				replay_event(&global.replay, EV_RELEASE, key);
+				
+				if(key == KEY_SKIP && global.dialog)
+					global.dialog->skip = False;
 				break;
 			
 			case SDL_QUIT:
@@ -137,7 +153,18 @@ void stage_input() {
 		}
 	}
 	
-	player_applymovement(&global.plr);
+	// workaround
+	if(global.dialog && global.dialog->skip) {
+		Uint8 *keys = SDL_GetKeyState(NULL);
+			
+		if(!keys[tconfig.intval[KEY_SKIP]]) {
+			global.dialog->skip = False;
+			replay_event(&global.replay, EV_RELEASE, KEY_SKIP);
+		}
+	}
+	
+	if(!global.menu)
+		player_applymovement(&global.plr);
 }
 
 void draw_hud() {
@@ -170,7 +197,7 @@ void draw_hud() {
 		draw_texture(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
 }
 
-void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
+void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int time) {
 	if(!tconfig.intval[NO_SHADER]) {
 		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[0].fbo);
 		if(!global.menu)
@@ -181,7 +208,7 @@ void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
 	glTranslatef(-(VIEWPORT_X+VIEWPORT_W/2.0), -(VIEWPORT_Y+VIEWPORT_H/2.0),0);
 	glEnable(GL_DEPTH_TEST);
 		
-	if(tconfig.intval[NO_STAGEBG] == 2 && global.fps.show_fps < tconfig.intval[NO_STAGEBG_FPSLIMIT]
+	if(tconfig.intval[NO_STAGEBG] == 2 && global.fps.stagebg_fps < tconfig.intval[NO_STAGEBG_FPSLIMIT]
 		&& !global.nostagebg) {
 		
 		printf("stage_draw(): !- Stage background has been switched off due to low frame rate. You can change that in the options.\n");
@@ -236,22 +263,24 @@ void stage_draw(StageRule bgdraw, ShaderRule *shaderrules, int time) {
 		draw_projectiles(global.particles);
 		draw_enemies(global.enemies);
 		draw_lasers();
-
+				
 		if(global.boss)
 			draw_boss(global.boss);
 
 		if(global.dialog)
 			draw_dialog(global.dialog);
-				
+		
+		draw_stage_title(info);
+		
 		if(!tconfig.intval[NO_SHADER]) {
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glViewport(0,0,RESX,RESY);
+			glViewport(0, 0, video.current.width, video.current.height);
 			glPushMatrix();
 			if(global.plr.cha == Marisa && global.plr.shot == MarisaLaser && global.frames - global.plr.recovery < 0)
 				glTranslatef(8*sin(global.frames),8*sin(global.frames+3),0);
-// 			glColor4f(1,1,1,0.2);
+
 			draw_fbo_viewport(&resources.fsec);
-// 			glColor4f(1,1,1,1);
+
 			glPopMatrix();
 		}
 		
@@ -394,6 +423,9 @@ void stage_logic(int time) {
 			boss_death(&global.boss);
 	}
 	
+	if(global.dialog && global.dialog->skip && global.frames - global.dialog->page_time > 3)
+		page_dialog(&global.dialog);
+	
 	global.frames++;
 	
 	if(!global.dialog && !global.boss)
@@ -401,7 +433,6 @@ void stage_logic(int time) {
 	
 	if(global.timer >= time)
 		global.game_over = GAMEOVER_WIN;
-	
 }
 
 void stage_end() {
@@ -435,7 +466,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	}
 	
 	int seed = time(0);
-	srand(seed);
+	tsrand_seed_p(&global.rand_game, seed);
 	
 	if(global.replaymode == REPLAY_RECORD) {
 		replay_destroy(&global.replay);
@@ -445,7 +476,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	} else {
 		printf("REPLAY_PLAY mode: %d events\n", global.replay.ecount);
 		
-		srand(global.replay.seed);
+		tsrand_seed_p(&global.rand_game, global.replay.seed);
 		printf("Random seed: %d\n", global.replay.seed);
 		
 		global.diff			= global.replay.diff;
@@ -457,8 +488,11 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		global.plr.lifes	= global.replay.plr_lifes;
 		global.plr.bombs	= global.replay.plr_bombs;
 		global.plr.power	= global.replay.plr_power;
+		
+		global.replay.playpos = 0;
 	}
 	
+	tsrand_switch(&global.rand_game);
 	stage_start();
 	start();
 	
@@ -469,8 +503,10 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		stage_logic(endtime);
 		
 		calc_fps(&global.fps);
-				
-		stage_draw(draw, shaderrules, endtime);	
+		
+		tsrand_switch(&global.rand_visual);
+		stage_draw(info, draw, shaderrules, endtime);
+		tsrand_switch(&global.rand_game);
 		
 		SDL_GL_SwapBuffers();
 		frame_rate(&global.lasttime);
@@ -482,13 +518,13 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		if(REPLAY_ASKSAVE) {
 			global.menu = create_saverpy_menu();
 			while(global.menu) {
-				stage_draw(draw, shaderrules, endtime);
+				stage_draw(info, draw, shaderrules, endtime);
 				ingame_menu_logic(&global.menu);
 				
 				if(!global.menu)
 					break;
 								
-				menu_input(global.menu);								
+				menu_input(global.menu);
 				SDL_GL_SwapBuffers();
 				frame_rate(&global.lasttime);
 			}
@@ -500,11 +536,38 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	
 	end();
 	stage_end();
+	tsrand_switch(&global.rand_visual);
 }
 
-void draw_stage_title(int t, int dur, char *stage, char *subtitle) {
-	if(t < 0 || t > dur)
+void draw_stage_title(StageInfo *info) {
+	int t = global.timer;
+	int i;
+	float f = 0;
+	if(t < 30 || t > 220)
 		return;
 	
-	draw_text(AL_Center, VIEWPORT_W/2, VIEWPORT_H/2, stage, _fonts.mainmenu);
+	if((i = abs(t-135)) >= 50) {
+		i -= 50;
+		f = 1/35.0*i;		
+	}
+	
+	if(!tconfig.intval[NO_SHADER]) {
+		Shader *sha = get_shader("stagetitle");
+		glUseProgram(sha->prog);
+		glUniform1i(uniloc(sha, "trans"), 1);
+		glUniform1f(uniloc(sha, "t"), 1.0-f);
+		glUniform3fv(uniloc(sha, "color"), 1, (float *)&info->titleclr);
+		
+		glActiveTexture(GL_TEXTURE0 + 1);
+		glBindTexture(GL_TEXTURE_2D, get_tex("titletransition")->gltex);
+		glActiveTexture(GL_TEXTURE0);
+	} else {
+		glColor4f(info->titleclr.r,info->titleclr.g,info->titleclr.b,1.0-f);
+	}
+	
+	draw_text(AL_Center, VIEWPORT_W/2, VIEWPORT_H/2-40, info->title, _fonts.mainmenu);
+	draw_text(AL_Center, VIEWPORT_W/2, VIEWPORT_H/2, info->subtitle, _fonts.standard);
+	
+	glColor4f(1,1,1,1);
+	glUseProgram(0);
 }

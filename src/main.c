@@ -6,19 +6,19 @@
  */
 
 #include <SDL/SDL.h>
-#include <GL/gl.h>
-#include <GL/glext.h>
 #include <sys/stat.h>
 #include "taisei_err.h"
 
 #include "global.h"
+#include "video.h"
 #include "stage.h"
 #include "menu/mainmenu.h"
 #include "paths/native.h"
-
-SDL_Surface *display;
+#include "taiseigl.h"
 
 void init_gl() {
+	load_gl_functions();
+	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 
@@ -35,7 +35,7 @@ void taisei_shutdown() {
 	
 	free_resources();
 	
-	SDL_FreeSurface(display);
+	video_shutdown();
 	SDL_Quit();
 	printf("-- Good Bye.\n");
 }
@@ -47,6 +47,9 @@ void taisei_shutdown() {
 #endif
 
 int main(int argc, char** argv) {
+	if(tsrand_test())
+		return 0;
+		
 	MKDIR(get_config_path());
 	MKDIR(get_screenshots_path());
 	MKDIR(get_replays_path());
@@ -60,22 +63,9 @@ int main(int argc, char** argv) {
 	
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	
-	int flags = SDL_OPENGL;
-	if(tconfig.intval[FULLSCREEN])
-		flags |= SDL_FULLSCREEN;
-	
-	if((display = SDL_SetVideoMode(RESX, RESY, 32, flags)) == NULL)
-		errx(-1, "Error opening screen: %s", SDL_GetError());
-		
+	video_init();
 	printf("-- SDL viewport\n");
-		
-	SDL_WM_SetCaption("TaiseiProject", NULL); 
 	
-// 	int e;
-// 	if((e = glewInit()) != GLEW_OK)
-// 		errx(-1, "GLEW failed: %s", glewGetErrorString(e));
-	
-	printf("-- GLEW\n");
 	init_gl();
 	printf("-- GL\n");
 	
@@ -115,11 +105,11 @@ int main(int argc, char** argv) {
 		printf("** Invalid stage number. Quitting stage skip mode.\n");
 	}
 #endif
-	
+		
 	MenuData menu;
 	create_main_menu(&menu);
 	printf("-- menu\n");	
 	main_menu_loop(&menu);
-		
+	
 	return 1;
 }

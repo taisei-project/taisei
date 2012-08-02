@@ -181,7 +181,7 @@ int asymptotic(Projectile *p, int t) { // v = a[0]*(a[1] + 1); a[1] -> 0
 void _ProjDraw(Projectile *proj, int t) {
 	if(proj->clr != NULL && !tconfig.intval[NO_SHADER]) {
 		Shader *shader = get_shader("bullet_color");
-		glUseProgramObjectARB(shader->prog);
+		glUseProgram(shader->prog);
 		
 		glUniform4fv(uniloc(shader, "color"), 1, (GLfloat *)proj->clr);
 	}
@@ -195,7 +195,7 @@ void _ProjDraw(Projectile *proj, int t) {
 		glColor3f(1,1,1);
 	
 	if(!tconfig.intval[NO_SHADER])
-		glUseProgramObjectARB(0);	
+		glUseProgram(0);	
 }
 
 void ProjDraw(Projectile *proj, int t) {
@@ -218,6 +218,14 @@ void ProjDrawAdd(Projectile *proj, int t) {
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 	ProjDraw(proj, t);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void ProjDrawSub(Projectile *proj, int t) {
+	glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+	ProjDraw(proj, t);
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	glBlendEquation(GL_FUNC_ADD);
 }
 
 void PartDraw(Projectile *proj, int t) {
@@ -269,6 +277,12 @@ void Shrink(Projectile *p, int t) {
 	
 	_ProjDraw(p, t);
 	glPopMatrix();
+}
+
+void ShrinkAdd(Projectile *p, int t) {
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	Shrink(p, t);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void DeathShrink(Projectile *p, int t) {

@@ -19,9 +19,12 @@ typedef struct ReplayEvent {
 } ReplayEvent;
 
 typedef struct Replay {
+	// metadata
+	char *playername;
+	
 	// initial game settings
 	int stage;
-	int seed;
+	int seed;	// this also happens to be the game initiation time - and we use this property, don't break it please
 	int diff;
 	int points;
 	
@@ -33,12 +36,14 @@ typedef struct Replay {
 	int plr_lifes;
 	int plr_bombs;
 	
+	// events
 	ReplayEvent *events;
 	int ecount;
 	
 	// The fields below should not be stored
 	int capacity;
 	int active;
+	int playpos;
 } Replay;
 
 enum {
@@ -53,9 +58,10 @@ void replay_event(Replay *rpy, int type, int key);
 int replay_write(Replay *rpy, FILE *file);
 int replay_read(Replay *rpy, FILE *file);
 
-char* replay_getpath(char *name);	// must be freed
+char* replay_getpath(char *name, int ext);	// must be freed
 int replay_save(Replay *rpy, char *name);
 int replay_load(Replay *rpy, char *name);
+void replay_copy(Replay *dst, Replay *src);
 
 #define REPLAY_ALLOC_INITIAL 100
 #define REPLAY_ALLOC_ADDITIONAL 100

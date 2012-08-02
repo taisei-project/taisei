@@ -30,13 +30,15 @@
 #include "vbo.h"
 #include "resource/resource.h"
 #include "replay.h"
+#include "random.h"
 
 #define FILE_PREFIX PREFIX "/share/taisei/"
 #define CONFIG_FILE "config"
 
-enum {	
+enum {
+	// defaults
 	RESX = 800,
-	RESY = 600,	
+	RESY = 600,
 	
 	SCREEN_W = 800,
 	SCREEN_H = 600,
@@ -78,8 +80,9 @@ typedef enum {
 
 typedef struct {
 	int fpstime;  // frame counter
-	int fps;	
+	int fps;
 	int show_fps;
+	double stagebg_fps;
 } FPSCounter;
 
 typedef struct {
@@ -112,6 +115,9 @@ typedef struct {
 	
 	Replay replay;
 	int replaymode;
+	
+	RandomState rand_game;
+	RandomState rand_visual;
 } Global;
 
 extern Global global;
@@ -124,15 +130,20 @@ void calc_fps(FPSCounter *fps);
 void set_ortho();
 void fade_out(float f);
 
-void toggle_fullscreen();
 void global_processevent(SDL_Event*);
 void take_screenshot();
 
-double frand();
-double nfrand();
 double psin();
+
+// NOTE: do NOT convert these to macros please.
+// max(frand(), 0.5);
+// min(huge_costly_expression, another_huge_costly_expression)
 double min(double, double);
 double max(double, double);
+double approach(double v, double t, double d);
+int strendswith(char *s, char *e);
+char* difficulty_name(Difficulty diff);
+void stralloc(char **dest, char *src);
 
 // this is used by both player and replay code
 enum {

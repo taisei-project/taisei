@@ -1,0 +1,35 @@
+#version 110
+uniform vec3 lightvec;
+
+varying vec4 TexCoord0;
+varying vec3 normal;
+varying vec3 l;
+
+void main(void) {
+	gl_Position = ftransform();
+	
+	normal = gl_Normal;
+	l = lightvec - vec3(gl_ModelViewMatrix*gl_Vertex);
+	
+	TexCoord0 = gl_TextureMatrix[0] * gl_MultiTexCoord0;
+}
+
+%% -- FRAG
+#version 110
+
+uniform sampler2D tex;
+uniform vec4 color;
+uniform float strength;
+
+varying vec4 TexCoord0;
+varying vec3 normal;
+varying vec3 l;
+
+void main(void) {
+	vec4 texel = texture2D(tex, vec2(TexCoord0.xy));
+	
+	float light = (1.6+strength)*dot(normal*(vec3(0.1)+texel.xyz), normalize(l));	
+	light = max(light, 0.0);
+	
+	gl_FragColor = vec4(vec3(texel + color*light)*(light+0.6)*1000.0/length(l),1.0);
+}

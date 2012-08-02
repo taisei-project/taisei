@@ -6,6 +6,7 @@
  */
 
 #include "global.h"
+#include "video.h"
 #include <SDL/SDL.h>
 #include <time.h>
 #include <stdio.h>
@@ -19,8 +20,11 @@ Global global;
 
 void init_global() {
 	memset(&global, 0, sizeof(global));	
-	srand(time(0));
-		
+	
+	tsrand_seed_p(&global.rand_game, time(0));
+	tsrand_seed_p(&global.rand_visual, time(0));
+	tsrand_switch(&global.rand_visual);
+	
 	memset(&resources, 0, sizeof(Resources));
 	load_resources();
 	printf("- fonts:\n");
@@ -43,7 +47,24 @@ void frame_rate(int *lasttime) {
 	*lasttime = SDL_GetTicks();
 }
 
+double approach(double v, double t, double d) {
+	if(v < t) {
+		v += d; 
+		if(v > t)
+			return t;
+	} else if(v > t) {
+		v -= d;
+		if(v < t)
+			return t;
+	}
+	
+	return v;
+}
+
 void calc_fps(FPSCounter *fps) {
+	if(!fps->stagebg_fps)
+		fps->stagebg_fps = FPS;
+	
 	if(SDL_GetTicks() > fps->fpstime+1000) {
 		fps->show_fps = fps->fps;
 		fps->fps = 0;
@@ -51,6 +72,9 @@ void calc_fps(FPSCounter *fps) {
 	} else {
 		fps->fps++;
 	}
+	
+	if(!global.menu)
+		fps->stagebg_fps = approach(fps->stagebg_fps, fps->show_fps, 0.1);
 }
 
 void set_ortho() {
@@ -76,14 +100,6 @@ void fade_out(float f) {
 	glColor4f(1,1,1,1);	
 }
 
-inline double frand() {
-	return rand()/(double)RAND_MAX;
-}
-
-inline double nfrand() {
-	return frand() * 2 - 1;
-}
-
 inline double psin(double x) {
 	return 0.5 + 0.5 * sin(x);
 }
@@ -96,26 +112,19 @@ inline double min(double a, double b) {
 	return (a < b)? a : b;
 }
 
-extern SDL_Surface *display;
-
-void toggle_fullscreen()
-{
-	int newflags = display->flags;
-	newflags ^= SDL_FULLSCREEN;
-	tconfig.intval[FULLSCREEN] = newflags & SDL_FULLSCREEN;
-	
-	SDL_FreeSurface(display);
-	if((display = SDL_SetVideoMode(SCREEN_W, SCREEN_H, 32, newflags)) == NULL)
-		errx(-1, "Error opening screen: %s", SDL_GetError());
-}
-
 void take_screenshot()
 {
 	FILE *out;
-	char data[3 * SCREEN_W * SCREEN_H];
+	char *data;
 	char outfile[128], *outpath;
 	time_t rawtime;
 	struct tm * timeinfo;
+	int w, h;
+	
+	w = video.current.width;
+	h = video.current.height;
+	
+	data = malloc(3 * w * h);
 	
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
@@ -136,7 +145,7 @@ void take_screenshot()
 	}
 	
 	glReadBuffer(GL_FRONT);
-	glReadPixels(0, 0, SCREEN_W, SCREEN_H, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, data);
 
 	png_structp png_ptr;
     png_infop info_ptr;
@@ -146,27 +155,29 @@ void take_screenshot()
 	png_ptr = png_create_write_struct (PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	info_ptr = png_create_info_struct (png_ptr);
 
-	png_set_IHDR(png_ptr, info_ptr, SCREEN_W, SCREEN_H, 8, PNG_COLOR_TYPE_RGB,
+	png_set_IHDR(png_ptr, info_ptr, w, h, 8, PNG_COLOR_TYPE_RGB,
                   PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 
-	row_pointers = png_malloc(png_ptr, SCREEN_H*sizeof(png_byte *));
+	row_pointers = png_malloc(png_ptr, h*sizeof(png_byte *));
 	
-	for(y = 0; y < SCREEN_H; y++) {
-		row_pointers[y] = png_malloc(png_ptr, 8*3*SCREEN_W);
+	for(y = 0; y < h; y++) {
+		row_pointers[y] = png_malloc(png_ptr, 8*3*w);
 		
-		memcpy(row_pointers[y], data + SCREEN_W*3*(SCREEN_H-1-y), SCREEN_W*3);
+		memcpy(row_pointers[y], data + w*3*(h-1-y), w*3);
 	}
 	
 	png_init_io(png_ptr, out);
 	png_set_rows(png_ptr, info_ptr, row_pointers);
 	png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
 	
-	for(y = 0; y < SCREEN_H; y++)
+	for(y = 0; y < h; y++)
 		png_free(png_ptr, row_pointers[y]);
 		
 	png_free(png_ptr, row_pointers);
 	
-	png_destroy_write_struct(&png_ptr, &info_ptr);	
+	png_destroy_write_struct(&png_ptr, &info_ptr);
+	
+	free(data);
 	fclose(out);
 }
 
@@ -182,6 +193,37 @@ void global_processevent(SDL_Event *event)
 		if(sym == tconfig.intval[KEY_SCREENSHOT])
 			take_screenshot();
 		if((sym == SDLK_RETURN && (keys[SDLK_LALT] || keys[SDLK_RALT])) || sym == tconfig.intval[KEY_FULLSCREEN])
-			toggle_fullscreen();
+			video_toggle_fullscreen();
 	}
+}
+
+int strendswith(char *s, char *e) {
+	int ls = strlen(s);
+	int le = strlen(e);
+	
+	if(le > ls)
+		return False;
+	
+	int i; for(i = 0; i < le; ++i)
+		if(s[ls-i-1] != e[le-i-1])
+			return False;
+	
+	return True;
+}
+
+char* difficulty_name(Difficulty diff) {
+	switch(diff) {
+		case D_Easy:	return "Easy";		break;
+		case D_Normal:	return "Normal";	break;
+		case D_Hard:	return "Hard";		break;
+		case D_Lunatic:	return "Lunatic";	break;
+		default:		return "Unknown";	break;
+	}
+}
+
+void stralloc(char **dest, char *src) {
+	if(*dest)
+		free(*dest);
+	*dest = malloc(strlen(src)+1);
+	strcpy(*dest, src);
 }

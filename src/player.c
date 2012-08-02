@@ -155,12 +155,19 @@ void player_logic(Player* plr) {
 	if(global.frames - plr->recovery < 0) {
 		Enemy *en;
 		for(en = global.enemies; en; en = en->next)
-			en->hp -= 300;
+			if(!en->unbombable)
+				en->hp -= 300;
 		
 		Projectile *p;
 		for(p = global.projs; p; p = p->next)
 			if(p->type >= FairyProj)
 				p->type = DeadProj;
+			
+		if(global.boss && global.boss->current) {
+			AttackType at = global.boss->current->type;
+			if(at != AT_Move && at != AT_SurvivalSpell)
+				global.boss->dmg += 30;
+		}
 	}
 }
 
@@ -220,7 +227,7 @@ void player_death(Player *plr) {
 	if(plr->deathtime == -1 && global.frames - abs(plr->recovery) > 0) {
 		int i;
 		for(i = 0; i < 20; i++)
-			create_particle2c("flare", plr->pos, NULL, Shrink, timeout_linear, 40, (3+frand()*7)*cexp(I*rand()));
+			create_particle2c("flare", plr->pos, NULL, Shrink, timeout_linear, 40, (3+frand()*7)*cexp(I*tsrand()));
 		create_particle2c("blast", plr->pos, rgb(1,0.5,0.3), GrowFade, timeout, 35, 2.4);
 		plr->deathtime = global.frames + DEATHBOMB_TIME;
 	}
@@ -318,8 +325,18 @@ void player_applymovement(Player* plr) {
 	if(direction)
 		player_move(&global.plr, direction);
 	
-// 	if(!keys[tconfig.intval[KEY_SHOT]] && plr->fire)
-// 		plr->fire = False;
-// 	if(!keys[tconfig.intval[KEY_FOCUS]] && plr->focus > 0)
-// 		plr->focus = -30;	
+	// workaround
+	if(global.replaymode == REPLAY_RECORD) {
+		Uint8 *keys = SDL_GetKeyState(NULL);
+		
+		if(!keys[tconfig.intval[KEY_SHOT]] && plr->fire) {
+			player_event(plr, EV_RELEASE, KEY_SHOT);
+			replay_event(&global.replay, EV_RELEASE, KEY_SHOT);
+		}
+		
+		if(!keys[tconfig.intval[KEY_FOCUS]] && plr->focus > 0) {
+			player_event(plr, EV_RELEASE, KEY_FOCUS);
+			replay_event(&global.replay, EV_RELEASE, KEY_FOCUS);
+		}
+	}
 }

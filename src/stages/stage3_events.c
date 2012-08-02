@@ -343,9 +343,6 @@ void kurumi_spell_bg(Boss *b, int time) {
 }
 
 void kurumi_outro(Boss *b, int time) {
-	if(time < 0)
-		return;
-	
 	b->pos += -5-I;		
 }
 
@@ -373,7 +370,7 @@ int stage3_supercard(Enemy *e, int t) {
 	
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 2,3,0,0);		
+		spawn_items(e->pos, 2,3,0,0);	
 		return 1;
 	}
 	
@@ -401,9 +398,6 @@ int stage3_supercard(Enemy *e, int t) {
 }
 
 void kurumi_boss_intro(Boss *b, int t) {
-	if(t < 0)
-		return;
-	
 	TIMER(&t);
 	GO_TO(b, VIEWPORT_W/2.0+200I, 0.01);
 	
@@ -531,9 +525,9 @@ void kurumi_aniwall(Boss *b, int time) {
 		return;
 		
 	AT(60) {
-		create_laser(LT_Curve, b->pos, 0, 50, 80, rgb(1, 0.8, 0.8), kurumi_wall_laser, 0.2*cexp(0.4I));
+		create_lasercurve1c(b->pos, 50, 80, rgb(1, 0.8, 0.8), kurumi_wall_laser, 0.2*cexp(0.4I));
 		create_enemy1c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, aniwall_slave, 0.2*cexp(0.4I));
-		create_laser(LT_Curve, b->pos, 0, 50, 80, rgb(1, 0.8, 0.8), kurumi_wall_laser, 0.2*cexp(I*M_PI - 0.4I));
+		create_lasercurve1c(b->pos, 50, 80, rgb(1, 0.8, 0.8), kurumi_wall_laser, 0.2*cexp(I*M_PI - 0.4I));
 		create_enemy1c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, aniwall_slave, 0.2*cexp(I*M_PI - 0.4I));
 	}
 }
@@ -614,7 +608,7 @@ int blowwall_slave(Enemy *e, int t) {
 		
 
 static void bwlaser(Boss *b, float arg, int slave) {
-	create_laser(LT_Curve, b->pos, 0, 50, 100, rgb(1, 0.5+0.3*slave, 0.5+0.3*slave), kurumi_wall_laser, (0.1+0.1*slave)*cexp(I*arg));
+	create_lasercurve1c(b->pos, 50, 100, rgb(1, 0.5+0.3*slave, 0.5+0.3*slave), kurumi_wall_laser, (0.1+0.1*slave)*cexp(I*arg));
 	if(slave)
 		create_enemy1c(b->pos, ENEMY_IMMUNE, NULL, blowwall_slave, 0.2*cexp(I*arg));
 }
@@ -689,8 +683,8 @@ void kurumi_danmaku(Boss *b, int time) {
 		return;
 	
 	AT(50) {
-		create_laser(LT_Curve, b->pos, 0, 50, 100, rgb(1, 0.8, 0.8), kurumi_wall_laser, 0.2*cexp(I*carg(-b->pos)));
-		create_laser(LT_Curve, b->pos, 0, 50, 100, rgb(1, 0.8, 0.8), kurumi_wall_laser, 0.2*cexp(I*carg(VIEWPORT_W-b->pos)));
+		create_lasercurve1c(b->pos, 50, 100, rgb(1, 0.8, 0.8), kurumi_wall_laser, 0.2*cexp(I*carg(-b->pos)));
+		create_lasercurve1c(b->pos, 50, 100, rgb(1, 0.8, 0.8), kurumi_wall_laser, 0.2*cexp(I*carg(VIEWPORT_W-b->pos)));
 		create_enemy3c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, kdanmaku_slave, 0.2*cexp(I*carg(-b->pos)), 0, 1);
 		create_enemy3c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, kdanmaku_slave, 0.2*cexp(I*carg(VIEWPORT_W-b->pos)), 0, 0);
 	}
@@ -698,7 +692,7 @@ void kurumi_danmaku(Boss *b, int time) {
 
 Boss *create_kurumi() {
 	Boss* b = create_boss("Kurumi", "kurumi", -400I);
-	boss_add_attack(b, AT_Move, "Introduction", 9, 0, kurumi_boss_intro, NULL);
+	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_boss_intro, NULL);
 	boss_add_attack(b, AT_Normal, "Sin Breaker", 20, 20000, kurumi_sbreaker, NULL);
 	boss_add_attack(b, AT_Spellcard, global.diff < D_Hard ? "Limit ~ Animate Wall" : "Summoning ~ Demon Wall", 30, 40000, kurumi_aniwall, kurumi_spell_bg);
 	boss_add_attack(b, AT_Normal, "Cold Breaker", 20, 20000, kurumi_breaker, NULL);
@@ -714,9 +708,6 @@ Boss *create_kurumi() {
 void stage3_events() {
 	TIMER(&global.timer);
 	
-	AT(0)
-		global.timer = 5200;
-		
 	AT(70) {
 		create_enemy1c(VIEWPORT_H/4*3*I, 3000, BigFairy, stage3_splasher, 3-4I);
 		create_enemy1c(VIEWPORT_W + VIEWPORT_H/4*3*I, 3000, BigFairy, stage3_splasher, -3-4I);

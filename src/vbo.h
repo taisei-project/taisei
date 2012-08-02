@@ -11,11 +11,10 @@
 #include "matrix.h"
 #include "resource/texture.h"
 #include "resource/shader.h"
-#include <GL/gl.h>
-#include <GL/glext.h>
+#include "taiseigl.h"
 
 enum {
-	VBO_SIZE = 2048, // * sizeof(Vertex)
+	VBO_SIZE = 8192, // * sizeof(Vertex)
 };
 
 typedef struct VBO VBO;
