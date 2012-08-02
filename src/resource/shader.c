@@ -282,10 +282,7 @@ Shader *get_shader(const char *name) {
 		if(strcmp(s->name, name) == 0)
 			res = s;
 	}
-	
-	if(res == NULL)
-		errx(-1,"get_shader():\n!- cannot load shader '%s'", name);
-	
+		
 	return res;
 }
 
