@@ -460,6 +460,14 @@ void set_baryon_rule(EnemyLogicRule r) {
 	}
 }
 
+int eigenstate_proj(Projectile *p, int t) {
+	if(t == creal(p->args[2])) {
+		p->args[0] += p->args[3];
+	}
+	
+	return asymptotic(p, t);
+}
+
 int baryon_eigenstate(Enemy *e, int t) {
 	if(t < 0)
 		return 1;
@@ -468,12 +476,15 @@ int baryon_eigenstate(Enemy *e, int t) {
 	
 	TIMER(&t);
 	
-	FROM_TO(100+20*(int)creal(e->args[2]), 100000, 120-10*global.diff) {
-		int i;
-		int n = 30;
+	FROM_TO(100+20*(int)creal(e->args[2]), 100000, 70-10*global.diff) {
+		int i, j;
+		int c = 9;
 		
-		for(i = 0; i < n; i++) {
-			create_projectile2c("plainball", e->pos, rgb(1, 0, 0), accelerated, cexp(2I*M_PI/30*i),0.001I*cexp(2I*M_PI/30*i)*(i%3-1))->draw = ProjDrawAdd;
+		for(i = 0; i < c; i++) {
+			complex n = cexp(2I*_i+I*M_PI/2+I*creal(e->args[2]));
+			for(j = 0; j < 3; j++)
+				create_projectile4c("plainball", e->pos + 50*cexp(2I*M_PI/c*i), rgb(j == 0, j == 1, j == 2), eigenstate_proj, 1*n, 1, 60, 0.3I*n*(j-1))->draw = ProjDrawAdd;
+			
 		}
 	}
 	
@@ -686,7 +697,7 @@ Boss *create_elly() {
 // 	boss_add_attack(b, AT_Normal, "Frequency2", 20, 23000, elly_frequency2, NULL);
 // 	boss_add_attack(b, AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 22000, elly_maxwell, elly_spellbg_classic);
 	boss_add_attack(b, AT_Move, "Unbound", 6, 10, elly_unbound, NULL);
-// 	boss_add_attack(b, AT_Spellcard, "Eigenstate ~ Collapse of the Wave Function", 30, 30000, elly_eigenstate, elly_spellbg_modern);
+	boss_add_attack(b, AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 30, 30000, elly_eigenstate, elly_spellbg_modern);
 // 	boss_add_attack(b, AT_Normal, "Baryon", 25, 23000, elly_baryonattack, NULL);
 // 	boss_add_attack(b, AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 35, 40000, elly_ricci, elly_spellbg_modern);
 // 	boss_add_attack(b, AT_Normal, "Baryon", 25, 23000, elly_baryonattack2, NULL);
