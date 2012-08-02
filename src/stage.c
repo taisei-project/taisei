@@ -65,6 +65,7 @@ void replay_input() {
 	SDL_Event event;
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;
+		global_processevent(&event);
 		
 		switch(event.type) {
 			case SDL_KEYDOWN:
