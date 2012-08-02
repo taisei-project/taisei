@@ -280,8 +280,11 @@ int replay_load(Replay *rpy, char *name) {
 }
 
 void replay_copy(Replay *dst, Replay *src) {
+	replay_destroy(dst);
 	memcpy(dst, src, sizeof(Replay));
 	dst->capacity = dst->ecount;
 	dst->events = (ReplayEvent*)malloc(sizeof(ReplayEvent) * dst->capacity);
 	memcpy(dst->events, src->events, dst->capacity * sizeof(ReplayEvent));
+	dst->playername = (char*)malloc(strlen(src->playername));
+	strcpy(dst->playername, src->playername);
 }
