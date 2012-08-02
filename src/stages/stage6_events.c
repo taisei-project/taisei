@@ -670,6 +670,40 @@ void elly_lhc(Boss *b, int t) {
 	}	
 }
 
+int baryon_explode(Enemy *e, int t) {
+	TIMER(&t);
+	AT(EVENT_DEATH) {
+		free_ref(e->args[1]);
+		return 1;
+	}
+	
+	if(frand() < 0.01) {
+		e->hp = 0;
+		return 1;
+	}
+	
+	FROM_TO(10, 20000, 3)
+		petal_explosion(1, e->pos);
+	
+	return 1;
+}
+
+void elly_baryon_explode(Boss *b, int t) {
+	TIMER(&t);
+	
+	AT(0)
+		set_baryon_rule(baryon_explode);
+	
+		
+	FROM_TO(0, 300, 60) {
+		petal_explosion(10, b->pos + 200*frand()*cexp(2I*M_PI*frand()));
+	}
+	
+	AT(200)
+		killall(global.enemies);
+
+}
+
 void elly_spellbg_classic(Boss *b, int t) {
 	fill_screen(0,0,0.7,"stage6/spellbg_classic");
 	glBlendFunc(GL_ZERO,GL_SRC_COLOR);
@@ -697,11 +731,12 @@ Boss *create_elly() {
 // 	boss_add_attack(b, AT_Normal, "Frequency2", 20, 23000, elly_frequency2, NULL);
 // 	boss_add_attack(b, AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 22000, elly_maxwell, elly_spellbg_classic);
 	boss_add_attack(b, AT_Move, "Unbound", 6, 10, elly_unbound, NULL);
-	boss_add_attack(b, AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 30, 30000, elly_eigenstate, elly_spellbg_modern);
+// 	boss_add_attack(b, AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 30, 30000, elly_eigenstate, elly_spellbg_modern);
 // 	boss_add_attack(b, AT_Normal, "Baryon", 25, 23000, elly_baryonattack, NULL);
 // 	boss_add_attack(b, AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 35, 40000, elly_ricci, elly_spellbg_modern);
 // 	boss_add_attack(b, AT_Normal, "Baryon", 25, 23000, elly_baryonattack2, NULL);
-	boss_add_attack(b, AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 35, 40000, elly_lhc, elly_spellbg_modern);
+// 	boss_add_attack(b, AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 35, 40000, elly_lhc, elly_spellbg_modern);
+	boss_add_attack(b, AT_Move, "Explode", 6, 10, elly_baryon_explode, NULL);
 	start_attack(b, b->attacks);
 	
 	return b;
