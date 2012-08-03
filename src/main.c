@@ -35,6 +35,7 @@ void init_gl() {
 
 
 void taisei_shutdown() {
+	config_save(CONFIG_FILE);
 	printf("\nshutdown:\n");
 	
 	free_resources();
@@ -58,7 +59,7 @@ int main(int argc, char** argv) {
 	MKDIR(get_screenshots_path());
 	MKDIR(get_replays_path());
 	
-	parse_config(CONFIG_FILE);	
+	config_load(CONFIG_FILE);
 	
 	printf("initialize:\n");
 	if(SDL_Init(SDL_INIT_VIDEO) < 0)
