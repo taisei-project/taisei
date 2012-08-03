@@ -469,7 +469,6 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	tsrand_seed_p(&global.rand_game, seed);
 	
 	if(global.replaymode == REPLAY_RECORD) {
-		replay_destroy(&global.replay);
 		if(!global.plr.continues)
 			replay_init(&global.replay, info, seed, &global.plr);
 		printf("Random seed: %d\n", seed);
@@ -537,6 +536,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	end();
 	stage_end();
 	tsrand_switch(&global.rand_visual);
+	replay_destroy(&global.replay);
 }
 
 void draw_stage_title(StageInfo *info) {
