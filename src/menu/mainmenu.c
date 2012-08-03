@@ -84,16 +84,16 @@ void create_main_menu(MenuData *m) {
 
 void draw_main_menu_bg(MenuData* menu) {
 	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubgbg");
-	glColor4f(1,1,1,0.7 + 0.1*sin(menu->frames/100.0));
+	glColor4f(1,1,1,0.9 + 0.1*sin(menu->frames/100.0));
+	
 	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubg");
 	glColor4f(1,1,1,1);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void draw_main_menu(MenuData *menu) {
 	draw_main_menu_bg(menu);
-	
-	draw_texture(SCREEN_W-200, SCREEN_H/2+100, "dialog/marisa");
-	
+		
 	draw_texture(150, 100, "mainmenu/logo");
 	
 	glPushMatrix();
