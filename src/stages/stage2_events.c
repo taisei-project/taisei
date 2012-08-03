@@ -20,9 +20,9 @@ int stage2_enterswirl(Enemy *e, int t) {
 		float r, g;
 		if(frand() > 0.5) {
 			r = 0.3;
-			g = 0.7;
+			g = 1.0;
 		} else {
-			r = 0.7;
+			r = 1.0;
 			g = 0.3;
 		}
 		
@@ -30,7 +30,7 @@ int stage2_enterswirl(Enemy *e, int t) {
 			complex dir = sin(a) + I * cos(a);
 			float spd = 1 + 0.5 * sin(10 * a);
 			
-			create_projectile2c(e->args[1]? "ball" : "rice", e->pos, rgb(r, g, 0.7), accelerated,
+			create_projectile2c(e->args[1]? "ball" : "rice", e->pos, rgb(r, g, 1.0), accelerated,
 				dir * 2,
 				dir * spd * -0.03
 			);
@@ -74,7 +74,7 @@ int stage2_slavefairy(Enemy *e, int t) {
 			a = -a;
 		complex dir = sin(a) + I * cos(a);
 		
-		create_projectile2c("wave", e->pos + dir * 10, (global.timer % 2)? rgb(1.0, 0.5, 0.5) : rgb(0.5, 0.5, 1.0), accelerated,
+		create_projectile2c("wave", e->pos + dir * 10, (global.timer % 2)? rgb(1.0, 0.3, 0.3) : rgb(0.3, 0.3, 1.0), accelerated,
 			dir * 2,
 			dir * -0.035
 		);
@@ -134,7 +134,7 @@ int stage2_bitchswirl(Enemy *e, int t) {
 	}
 	
 	FROM_TO(0, 120, 20) {
-		create_projectile2c("flea", e->pos, e->args[1]? rgb(1.0, 0.5, 0.5) : rgb(0.7 + 0.25 * sin(t / 15.0), 0.8, 0.4), accelerated,
+		create_projectile2c("flea", e->pos, rgb(1.0, 0.5, 0.5), accelerated,
 			2*cexp(I*carg(global.plr.pos - e->pos)),
 			0.005*cexp(I*(M_PI*2 * frand()))
 		);
@@ -356,7 +356,7 @@ void stage2_mid_a2(Boss *boss, int time) {
 			float a = M_PI/cnt * i * 2;
 			
 			create_projectile4c("soul", boss->pos, (_i % 2)? rgb(0.3, 0.3, 1.0) : rgb(1.0, 0.3, 0.3), stage2_mid_poison2,
-				2 * cexp(I * (a + ((global.diff == D_Hard)? 7.4 : 7.3) * time + M_PI * (_i % 2))),
+				2 * cexp(I * (a + ((global.diff == D_Hard)? 7.2 : 7.3) * time + M_PI * (_i % 2))),
 				0,
 				a,
 				time
@@ -760,7 +760,7 @@ void stage2_events() {
 	TIMER(&global.timer);
 	
 //	AT(0)
-//		global.timer = 5300;
+//		global.timer = 2800;
 	
 	FROM_TO(160, 300, 10) {
 		create_enemy1c(VIEWPORT_W/2 + 20 * nfrand() + (VIEWPORT_H/4 + 20 * nfrand())*I, 200, Swirl, stage2_enterswirl, I * 3 + nfrand() * 3);
