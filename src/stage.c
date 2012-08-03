@@ -18,11 +18,11 @@
 #include "menu/savereplay.h"
 
 StageInfo stages[] = {	
-	{1, stage0_loop, False, "Stage 1", "Misty Lake", {1, 1, 1}},
-	{2, stage1_loop, False, "Stage 2", "Walk Along the Border", {1, 1, 1}},
-	{3, stage2_loop, False, "Stage 3", "Through the Tunnel of Light", {0, 0, 0}},
-	{4, stage3_loop, False, "Stage 4", "Forgotten Mansion", {0, 0, 0}},
-	{5, stage4_loop, False, "Stage 5", "Climbing the Tower of Babel", {1, 1, 1}},
+	{1, stage1_loop, False, "Stage 1", "Misty Lake", {1, 1, 1}},
+	{2, stage2_loop, False, "Stage 2", "Walk Along the Border", {1, 1, 1}},
+	{3, stage3_loop, False, "Stage 3", "Through the Tunnel of Light", {0, 0, 0}},
+	{4, stage4_loop, False, "Stage 4", "Forgotten Mansion", {0, 0, 0}},
+	{5, stage5_loop, False, "Stage 5", "Climbing the Tower of Babel", {1, 1, 1}},
 	
 	{0, NULL, False, NULL, NULL}
 };

@@ -5,8 +5,8 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
-#ifndef STAGE3_H
-#define STAGE3_H
+#ifndef STAGE2_H
+#define STAGE2_H
 
 void stage2_loop();
 

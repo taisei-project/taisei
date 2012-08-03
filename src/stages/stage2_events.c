@@ -3,7 +3,6 @@
  * See COPYING for further information. 
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
- * Copyright (C) 2012, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
  */
 
 #include "stage2_events.h"
@@ -11,831 +10,442 @@
 #include "stage.h"
 #include "enemy.h"
 
-int stage2_enterswirl(Enemy *e, int t) {
-	TIMER(&t)
-	
-	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 1, 1, 0, 0);
-		
-		float r, g;
-		if(frand() > 0.5) {
-			r = 0.3;
-			g = 1.0;
-		} else {
-			r = 1.0;
-			g = 0.3;
-		}
-		
-		float a; for(a = 0; a < M_PI * 2; a += 1.3 - global.diff * 0.2) {
-			complex dir = sin(a) + I * cos(a);
-			float spd = 1 + 0.5 * sin(10 * a);
-			
-			create_projectile2c(e->args[1]? "ball" : "rice", e->pos, rgb(r, g, 1.0), accelerated,
-				dir * 2,
-				dir * spd * -0.03
-			);
-		}
-		
-		return 1;
-	}
-	
-	AT(EVENT_BIRTH) {
-		e->alpha = 0;
-	}
-	
-	AT(60) {
-		e->hp = 0;
-	}
-	
-	e->pos += e->args[0];
-	
-	return 0;
-}
-
-int stage2_slavefairy(Enemy *e, int t) {
-	TIMER(&t)
-	
-	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 1, 3, 0, 0);
-		return 1;
-	}
-	
-	AT(EVENT_BIRTH) {
-		e->alpha = 0;
-		e->unbombable = True;
-	}
-	
-	if(t < 120)
-		GO_TO(e, e->args[0], 0.03)
-	
-	FROM_TO_INT(30, 120, 5 - global.diff, 1, 1) {
-		float a = global.timer * 0.5;
-		if(_i % 2)
-			a = -a;
-		complex dir = sin(a) + I * cos(a);
-		
-		create_projectile2c("wave", e->pos + dir * 10, (global.timer % 2)? rgb(1.0, 0.3, 0.3) : rgb(0.3, 0.3, 1.0), accelerated,
-			dir * 2,
-			dir * -0.035
-		);
-		
-		if(e->args[1] && !(_i % 10 / e->args[1])) create_projectile1c("ball", e->pos + dir * 10, rgb(0.3, 0.6, 0.3), linear,
-			dir * (0.3 + 0.5 + 0.5 * sin(a * 3))
-		);
-	}
-	
-	if(t >= 120)
-		e->pos += 3 * e->args[2] + 2I;
-	
-	return 0;
-}
-
-int stage2_bigfairy(Enemy *e, int t) {
-	TIMER(&t)
-	
-	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 5, 5, 0, 0);
-		if(e->args[0] && global.timer > 2800)
-			spawn_items(e->pos, 0, 0, 1, 0);
-		return 1;
-	}
-	
-	AT(EVENT_BIRTH) {
-		e->alpha = 0;
-		e->unbombable = True;
-	}
-	
-	FROM_TO(30, 600, 270) {
-		create_enemy3c(e->pos, 900, Fairy, stage2_slavefairy, e->pos + 70 + 50 * I, e->args[0], +1);
-		create_enemy3c(e->pos, 900, Fairy, stage2_slavefairy, e->pos - 70 + 50 * I, e->args[0], -1);
-	}
-	
-	FROM_TO(120, 600, 270) {
-		create_enemy3c(e->pos, 900, Fairy, stage2_slavefairy, e->pos + 70 - 50 * I, e->args[0], +1);
-		create_enemy3c(e->pos, 900, Fairy, stage2_slavefairy, e->pos - 70 - 50 * I, e->args[0], -1);
-	}
-	
-	AT(600)
-		e->hp = 0;
-	
-	return 0;
-}
-
-int stage2_bitchswirl(Enemy *e, int t) {
-	TIMER(&t)
-	
-	AT(EVENT_BIRTH) {
-		e->unbombable = True;
-		return 1;
-	}
-	
-	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 1, 1, 0, 0);
-		return -1;
-	}
-	
-	FROM_TO(0, 120, 20) {
-		create_projectile2c("flea", e->pos, rgb(1.0, 0.5, 0.5), accelerated,
-			2*cexp(I*carg(global.plr.pos - e->pos)),
-			0.005*cexp(I*(M_PI*2 * frand()))
-		);
-	}
-	
-	e->pos -= 5I * e->args[0];
-	
-	return 0;
-}
-
-int stage2_cornerfairy(Enemy *e, int t) {
-	TIMER(&t)
-	
-	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 5, 5, 0, 0);
-		return -1;
-	}
-	
-	AT(EVENT_BIRTH) {
-		e->alpha = 0;
-		e->unbombable = True;
-	}
-	
-	FROM_TO(0, 60, 1)
-		GO_TO(e, e->args[0], 0.01)
-	
-	FROM_TO(60, 120, 1) {
-		GO_TO(e, e->args[1], 0.05)
-		int d = (D_Lunatic - global.diff + 2);
-		if(!(t % d)) {
-			float i; for(i = -M_PI; i <= M_PI; i += (e->args[2]? 0.3 : 1.0)) {
-				float c = 0.25 + 0.25 * sin(t / 5.0);
-				
-				create_projectile2c("thickrice", e->pos, rgb(1.0 - c, 0.6, 0.5 + c), asymptotic,
-					//2*cexp(I*(carg(global.plr.pos - e->pos) + i)),
-					2*cexp(I*(i+carg((VIEWPORT_W+I*VIEWPORT_H)/2 - e->pos))),
-					1.5
-				);
-				
-				if(global.diff > D_Hard && !(t % 5) && !e->args[2]) {
-					create_projectile2c("flea", e->pos, rgb(0.5 + 1.2 * c, 0.8, 0.5), asymptotic,
-						2*cexp(I*(carg(global.plr.pos - e->pos) + i)),
-						1.5
-					);
-				}
-			}
-		}
-	}
-	
-	AT(180)
-		e->hp = 0;
-	
-	return 0;
-}
-
-Dialog* stage2_dialog() {
+Dialog *stage2_dialog() {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
-	
-	dadd_msg(d, Right, "Hurrrrr durr herp a derp!");
-	dadd_msg(d, Left, "Fuck fuck fuckity fuck!");
-	dadd_msg(d, Right, "HURR DURR A DERP A HERP HERP LOL DERP.");
+		
+	dadd_msg(d, Left, "What are you doing here?\nYou the culprit?");
+	dadd_msg(d, Right, "Huh? No, you? Everone is upset, you know?\nSo I came too.");
+	dadd_msg(d, Left, "Why, what happened?");
+	dadd_msg(d, Right, "The border has cracked.");
+	dadd_msg(d, Left, "Is that even possible!?");
+	dadd_msg(d, Right, "Look, there is a way outside\nright behind us.");
+	dadd_msg(d, Left, "But I have the feeling that you\n won't let me pass, haha");
 	
 	return d;
 }
 
-void stage2_mid_intro(Boss *boss, int time) {
-	GO_TO(boss, VIEWPORT_W/2.0 + 100I, 0.03);
-}
-
-void stage2_mid_outro(Boss *boss, int time) {
-	if(time == 0) {
-		spawn_items(boss->pos, 10, 10, 0, 1);
-		Projectile *p;
-		for(p = global.projs; p; p = p->next)
-			p->type = DeadProj;
+int stage2_great_circle(Enemy *e, int t) {
+	TIMER(&t);
+	AT(EVENT_DEATH) {
+		spawn_items(e->pos, 5,4,0,0);
+		return 1;
 	}
 	
-	boss->pos += pow(max(0, time)/30.0, 2) * cexp(I*(3*M_PI/2 + 0.5 * sin(time / 20.0)));
-}
-
-int stage2_mid_poison(Projectile *p, int time) {
-	int result = accelerated(p, time);
+	e->pos += e->args[0];
 	
-	if(time < 0)
-		return 1;
-	
-	if(!(time % (57 - global.diff * 3)) && p->type != DeadProj) {
-		float a = p->args[2];
-		float t = p->args[3] + time;
+	FROM_TO(50,70,1)
+		e->args[0] *= 0.5;
 		
-		create_projectile2c((frand() > 0.5)? "thickrice" : "rice", p->pos, rgb(0.3, 0.7 + 0.3 * psin(a/3.0 + t/20.0), 0.3), accelerated,
-				0,
-				0.005*cexp(I*(M_PI*2 * sin(a/5.0 + t/20.0)))
-		);
-	}
-	
-	return result;
-}
-
-int stage2_mid_a0_proj(Projectile *p, int time) {
-	#define A0_PROJ_START 120
-	#define A0_PROJ_CHARGE 20
-	TIMER(&time)
-	
-	FROM_TO(A0_PROJ_START, A0_PROJ_START + A0_PROJ_CHARGE, 1)
-		return 1;
-	
-	AT(A0_PROJ_START + A0_PROJ_CHARGE + 1) if(p->type != DeadProj) {
-		p->args[1] = 3;
-		p->args[0] = (3 + 2 * global.diff / (float)D_Lunatic) * cexp(I*carg(global.plr.pos - p->pos));
-		
-		int cnt = 2 + global.diff, i;
-		for(i = 0; i < cnt; ++i) {
-			create_particle3c("lasercurve", 0, rgb(max(0.3, 1.0 - p->clr->r), p->clr->g, p->clr->b), EnemyFlareShrink, enemy_flare, 100, cexp(I*(M_PI*nfrand())) * (1 + frand()), add_ref(p));
+	FROM_TO(70, 190+global.diff*25, 5) {
+		int n, c = 7;
+		for(n = 0; n < c; n++) {
+			complex dir = cexp(I*(2*M_PI/c*n+0.0001*(_i%5-3)+0.5*_i/5));
+			create_projectile2c("rice", e->pos+30*dir, rgb(0.6,0.0,0.3), asymptotic, 1.5*dir, _i%5);
 			
-			int jcnt = 1 + (global.diff > D_Normal), j;
-			for(j = 0; j < jcnt; ++j) create_projectile1c("thickrice", p->pos, p->clr->r == 1.0? rgb(1.0, 0.3, 0.3) : rgb(0.3, 0.3, 1.0), accelerated,
-				0
-				-cexp(I*(i*2*M_PI/cnt + global.frames / 15.0)) * (1.0 + 0.1 * j)
-			); //->draw = global.diff > D_Hard? ProjDrawAdd : ProjDraw;
+			if(global.diff > D_Normal && _i%6 == 0)
+				create_projectile1c("bigball", e->pos+30*dir, rgb(0.3,0.0,0.6), linear, 1.5*dir);
 		}
 	}
 	
-	return asymptotic(p, time);
-	#undef A0_PROJ_START
-	#undef A0_PROJ_CHARGE
-}
-
-void stage2_mid_a0(Boss *boss, int time) {
-	int i;
-	TIMER(&time)
-	
-	GO_TO(boss, creal(global.plr.pos) + I*cimag(boss->pos), 0.03)
-	
-	FROM_TO_INT(0, 90000, 60 + 10 * (D_Lunatic - global.diff), 0, 1) {
-		int cnt = 30 - 4 * (D_Lunatic - global.diff);
-		
-		for(i = 0; i < cnt; ++i) {
-			complex v = (2 - psin((max(3, global.diff+1)*2*M_PI*i/(float)cnt) + time)) * cexp(I*2*M_PI/cnt*i);
-			create_projectile2c("wave", boss->pos - v * 50, _i % 2? rgb(1.0, 1.0, 0.3) : rgb(0.3, 1.0, 0.3), stage2_mid_a0_proj,
-				v,
-				2.0
-			);
-		}
+	AT(210+global.diff*25) {
+		e->args[0] = 2I;
 	}
-}
-
-void stage2_mid_a1(Boss *boss, int time) {
-	int i;
-	TIMER(&time)
-	
-	FROM_TO(0, 120, 1)
-		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.03)
-	
-	if(time > 120) {
-		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2 + sin(time/30.0) * time/6.5 * cexp(I * M_PI_2 * time/100.0), 0.03)
-		
-		if(!(time % 70)) {
-			for(i = 0; i < 15; ++i) {
-				float a = M_PI/(5 + global.diff) * i * 2;
-				create_projectile4c("wave", boss->pos, rgb(0.3, 0.3 + 0.7 * psin(a*3 + time/50.0), 0.3), stage2_mid_poison,
-					0,
-					0.02 * cexp(I*(a+time/10.0)),
-					a,
-					time
-				);
-			}
-		}
-		
-		if(global.diff > D_Easy && !(time % 35)) {
-			int cnt = global.diff * 3;
-			for(i = 0; i < cnt; ++i) create_projectile2c("ball", boss->pos, rgb(1.0, 1.0, 0.3), asymptotic,
-				(0.5 + 3 * psin(time + M_PI/3*2*i)) * cexp(I*(time / 20.0 + M_PI/cnt*i*2)),
-				1.5
-			);
-		}
-		
-		if(!(time % 3)) {
-			for(i = -1; i < 2; i += 2) {
-				float c = psin(time/10.0);
-				create_projectile1c("crystal", boss->pos, rgba(0.3 + c * 0.7, 0.6 - c * 0.3, 0.3, 0.7), linear,
-					10 * cexp(I*(carg(global.plr.pos - boss->pos) + (M_PI/4.0 * i * (1-time/2500.0)) * (1 - 0.5 * psin(time/15.0))))
-				);
-			}
-		}
-	}
-}
-
-int stage2_mid_poison2(Projectile *p, int time) {
-	int result = linear(p, time);
-	
-	if(time < 0)
-		return 1;
-	
-	int d = 25 - global.diff * 3;
-	if(!(time % d) && p->type != DeadProj) {
-		float a = p->args[2];
-		float t = p->args[3] + time;
-		p->args[1] = !p->args[1];
-		
-		create_projectile2c((time % (2*d))? "thickrice" : "rice", p->pos, rgb(0.3 + 0.7 * psin(a/3.0 + t/20.0), 1.0, 0.3), accelerated,
-				0,
-				-0.01 * p->args[0]
-		);
-	}
-	
-	return result;
-}
-
-void stage2_mid_a2(Boss *boss, int time) {
-	TIMER(&time)
-	
-	if(time < 0)
-		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/6, 0.05)
-
-	FROM_TO_INT(30, 9000, 35 - (int)rint(global.diff * 1.35), 1, 1) {
-		int i, cnt = 5 + global.diff;
-		for(i = 0; i < cnt; ++i) {
-			float a = M_PI/cnt * i * 2;
-			
-			create_projectile4c("soul", boss->pos, (_i % 2)? rgb(0.3, 0.3, 1.0) : rgb(1.0, 0.3, 0.3), stage2_mid_poison2,
-				2 * cexp(I * (a + ((global.diff == D_Hard)? 7.2 : 7.3) * time + M_PI * (_i % 2))),
-				0,
-				a,
-				time
-			)->draw = ProjDrawAdd;
-		}
-	}
-}
-
-void stage2_mid_spellbg(Boss *h, int time) {
-	float b = (0.3 + 0.2 * (sin(time / 50.0) * sin(time / 25.0f + M_PI)));
-	float a = 1.0;
-	
-	if(time < 0)
-		a += (time / (float)ATTACK_START_DELAY);
-	float s = 0.3 + 0.7 * a;
-	
-	glColor4f(b*0.7, b*0.7, b*0.7, a);
-	//int t = abs(time);
-	
-	fill_screen(-time/50.0 + 0.5, time/100.0+0.5, s, "stage2/spellbg1");
-	
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	/*
-	float ff = max(0, min(1, time * 0.01)) * 0.7;
-	glColor4f(ff, ff, ff, ff);
-	
-	int i; for(i = 0; i < 5; ++i)
-		fill_screen(sin(t / (10.0 + i * 0.5)) * 0.01, cos(t / (11.0 + i * 0.3)) * 0.01, s, "stage2/spellbg2");
-	glColor4f(b*0.7, b*0.7, b*0.7, a);
-	*/
-	fill_screen(time/50.0 + 0.5, time/90.0+0.5, s, "stage2/spellbg1");
-	fill_screen(-time/55.0 + 0.5, -time/100.0+0.5, s, "stage2/spellbg1");
-	fill_screen(time/55.0 + 0.5, -time/90.0+0.5, s, "stage2/spellbg1");
-	/*
-	glColor4f(0.7, 0, 0, a * 0.7);
-	fill_screen(time/99.0 + 0.5, -time/30.0+0.5, s*0.5, "stage2/spellbg1");
-	fill_screen(time/37.0 + 0.5, -time/53.0+0.5, s*0.5, "stage2/spellbg1");
-	*/
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-	glColor4f(1, 1, 1, 1);
-}
-
-void stage2_boss_spellbg(Boss *b, int time) {
-	glColor4f(1,1,1,1);
-	fill_screen(0, 0, 768.0/1024.0, "stage2/wspellbg");
-	glColor4f(1,1,1,0.5);
-	glBlendEquation(GL_FUNC_SUBTRACT);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	fill_screen(sin(time) * 0.015, time / 50.0, 1, "stage2/wspellclouds");
-	glBlendEquation(GL_FUNC_ADD);
-	fill_screen(0, time / 70.0, 1, "stage2/wspellswarm");
-	glBlendEquation(GL_FUNC_SUBTRACT);
-	glColor4f(1,1,1,0.4);
-	fill_screen(cos(time) * 0.02, time / 30.0, 1, "stage2/wspellclouds");
-	
-	glBlendEquation(GL_FUNC_ADD);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glColor4f(1,1,1,1);
-}
-
-Boss* stage2_create_midboss() {
-	Boss *scuttle = create_boss("Scuttle", "scuttle", VIEWPORT_W/2 - 200I);
-	boss_add_attack(scuttle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
-	boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 30, 20000, stage2_mid_a0, NULL);
-	boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Deadly Dance", 30, 20000, stage2_mid_a1, stage2_mid_spellbg);
-	if(global.diff > D_Normal)
-		boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Acid Rain", 30, 25000, stage2_mid_a2, stage2_mid_spellbg);
-	boss_add_attack(scuttle, AT_Move, "Runaway", 2, 1, stage2_mid_outro, NULL);
-	scuttle->zoomcolor = rgb(0.4, 0.5, 0.4);
-	
-	start_attack(scuttle, scuttle->attacks);
-	return scuttle;
-}
-
-int stage2_boss_a1_laserbullet(Projectile *p, int time) {
-	if(time == EVENT_DEATH) {
-		free_ref(p->args[0]);
-		return 1;
-	} else if(time < 0)
-		return 1;
-	
-	if(time >= creal(p->args[1])) {
-		if(p->args[2]) {
-			complex dist = global.plr.pos - p->pos;
-			complex accel = (0.1 + 0.2 * (global.diff / (float)D_Lunatic)) * cexp(I*carg(dist));
-			float deathtime = sqrt(2*cabs(dist)/cabs(accel));
-			
-			Laser *l = create_lasercurve2c(p->pos, 2 * deathtime, deathtime, rgb(1.0, 0.5, 0.5), las_accel, 0, accel);
-			l->width = 15;
-			create_projectile3c("ball", p->pos, rgb(1.0, 0.5, 0.5), stage2_boss_a1_laserbullet, add_ref(l), deathtime - 1, 0);
-		} else {
-			int cnt = max(3 + global.diff, 5), i;
-			
-			for(i = 0; i < cnt; ++i) {
-				create_projectile2c("thickrice", p->pos, (i % 2)? rgb(1.0, 0.5, 0.5) : rgb(0.5, 0.5, 1.0), asymptotic,
-					(0.1 + frand()) * cexp(I*2*i*M_PI/cnt), 3
-				)->draw = ProjDrawAdd;
-			}
-		}
-		
-		return ACTION_DESTROY;
-	} else if(time < 0)
-		return 1;
-	
-	Laser *laser = (Laser*)REF(p->args[0]);
-	
-	if(!laser)
-		return ACTION_DESTROY;
-	
-	p->pos = laser->prule(laser, time);
 	
 	return 1;
 }
 
-void stage2_boss_a1_slave_part(Projectile *p, int t) {
-	Texture *tex = p->tex;
-	glBindTexture(GL_TEXTURE_2D, tex->gltex);
-	float b = 1 - t / p->args[0];
-	glColor4f(p->clr->r*b, p->clr->g*b, p->clr->b*b, 1);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+int spin_circle(Projectile *p, int t) { // a[0]: angular velocity, a[1]: center, a[2]: center speed
+	if(t < 0)
+		return 1;
 	
-	glPushMatrix();
-	glTranslatef(creal(p->pos), cimag(p->pos), 0);
-	draw_texture_p(0,0, p->tex);
-	glPopMatrix();
+	p->pos += p->args[0]*cimag(p->args[1]-p->pos) - p->args[0]*creal(p->args[1]-p->pos)*I;
 	
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glColor4f(1,1,1,1);
+	p->args[1] += p->args[2];
+	
+	return 1;
 }
 
-int stage2_boss_a1_slave(Enemy *e, int time) {
-	TIMER(&time)
-	
-	float angle = e->args[2] * (time / 70.0 + e->args[1]);
-	complex dir = cexp(I*angle);
-	Boss *boss = (Boss*)REF(e->args[0]);
-	
-	if(!boss)
-		return ACTION_DESTROY;
-	
+int stage2_small_spin_circle(Enemy *e, int t) {
+	TIMER(&t);
 	AT(EVENT_DEATH) {
-		free_ref(e->args[0]);
-		spawn_items(e->pos, 1, 1, 0, 0);
+		spawn_items(e->pos, 2,0,0,0);
 		return 1;
 	}
 	
-	GO_TO(e, boss->pos + 150 * sin(time / 100.0) * dir, 0.03)
+	if(creal(e->args[0]) < 0)
+		e->dir = 1;
+	else
+		e->dir = 0;
 	
-	if(!(time % 2)) {
-		float c = 0.5 * psin(time / 25.0);
-		Projectile *p = create_projectile_p(&global.projs, prefix_get_tex("lasercurve", "part/"), e->pos, rgb(1.0 - c, 0.5, 0.5 + c), stage2_boss_a1_slave_part, timeout, 120, 0, 0, 0);
-		p->type = FairyProj;
-	}
+	e->pos += e->args[0];
 	
-	if(!creal(e->args[3]) && !(time % 140)) {
-		float dt = 70;
+	if(t < 100)
+		e->args[0] += 0.0002*(VIEWPORT_W/2+I*VIEWPORT_H/2-e->pos);
+	
+	AT(50)
+		e->pos0 = e->pos;
 		
-		Laser *l = create_lasercurve3c(e->pos, dt, dt, rgb(1.0, 1.0, 0.5), las_sine, 2.5*dir, M_PI/4, 0.2);
-		create_lasercurve4c(e->pos, dt, dt, rgb(0.5, 1.0, 0.5), las_sine_expanding, 2.5*dir, M_PI/20, 0.2, M_PI);
-		create_projectile3c("ball", e->pos, rgb(1.0, 0.5, 0.5), stage2_boss_a1_laserbullet, add_ref(l), dt-1, 1);
+	FROM_TO(50,80+global.diff*5,5)
+		create_projectile3c("ball", e->pos, rgb(0.9,0.0,0.3), spin_circle, 0.02 - 0.04*(!e->dir), e->pos0 + _i*10*((1-2*e->dir)+1I), (1-2*e->dir)+1I);
+	
+	return 1;
+}
+
+int stage2_aim(Enemy *e, int t) {
+	TIMER(&t);
+	AT(EVENT_DEATH) {
+		spawn_items(e->pos, 0,2,0,0);
+		return 1;
 	}
 	
-	// night ignite balls
-	if(creal(e->args[3]) && global.diff > D_Easy) {
-		FROM_TO(300, 1000000, 180) {
-			int cnt = 5, i;
-			for(i = 0; i < cnt; ++i) {
-				create_projectile2c("ball", e->pos, rgb(0.5, 1.0, 0.5), accelerated, 0, 0.02 * cexp(I*i*2*M_PI/cnt))->draw = ProjDrawAdd;
-				if(global.diff > D_Hard)
-					create_projectile2c("ball", e->pos, rgb(1.0, 1.0, 0.5), accelerated, 0, 0.01 * cexp(I*i*2*M_PI/cnt))->draw = ProjDrawAdd;
-			}
+	if(t < 70)
+		e->pos += e->args[0];
+	if(t > 150)
+		e->pos -= e->args[0];
+	
+	AT(90) {
+		if(global.diff > D_Normal) {
+			create_projectile2c("plainball", e->pos, rgb(0.6,0.0,0.8), asymptotic, 5*cexp(I*carg(global.plr.pos-e->pos)), -1);
+			create_projectile1c("plainball", e->pos, rgb(0.2,0.0,0.1), linear, 3*cexp(I*carg(global.plr.pos-e->pos)));
 		}
 	}
 	
 	return 1;
 }
 
-void stage2_boss_a1(Boss *boss, int time) {
-	int i, j, cnt = 1 + global.diff;
-	TIMER(&time)
-	
+int stage2_sidebox_trail(Enemy *e, int t) { // creal(a[0]): velocity, cimag(a[0]): angle, a[1]: d angle/dt, a[2]: time of acceleration
+	TIMER(&t);
 	AT(EVENT_DEATH) {
-		killall(global.enemies);
-		return;
+		spawn_items(e->pos, 1,1,0,0);
+		return 1;
 	}
 	
-	if(time < 0)
-		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2.5, 0.05)
-	else if(time == 0) {
-		for(j = -1; j < 2; j += 2) for(i = 0; i < cnt; ++i)
-			create_enemy3c(boss->pos, ENEMY_IMMUNE, Swirl, stage2_boss_a1_slave, add_ref(boss), i*2*M_PI/cnt, j);
+	e->pos += creal(e->args[0])*cexp(I*cimag(e->args[0]));
+	
+	FROM_TO((int) creal(e->args[2]),(int) creal(e->args[2])+M_PI*0.5/fabs(creal(e->args[1])),1)
+		e->args[0] += creal(e->args[1])*I;
+		
+	FROM_TO(10,200,27-global.diff*2) {
+		float f = 0;
+		if(global.diff > D_Normal)
+			f = 0.03*global.diff*frand();
+		
+		create_projectile1c("rice", e->pos, rgb(0.9,0.0,0.9), linear, 3*cexp(I*(cimag(e->args[0])+f+0.5*M_PI)));
+		create_projectile1c("rice", e->pos, rgb(0.9,0.0,0.9), linear, 3*cexp(I*(cimag(e->args[0])-f-0.5*M_PI)));
 	}
-}
-
-int stage2_boss_a2_laserbullet(Projectile *p, int time) {
-	if(time == EVENT_DEATH) {
-		free_ref(p->args[0]);
-		return 1;
-	} else if(time < 0)
-		return 1;
-	
-	if(time < 0)
-		return 1;
-	
-	Laser *laser = (Laser*)REF(p->args[0]);
-	
-	if(!laser)
-		return ACTION_DESTROY;
-	
-	p->pos = laser->prule(laser, time - p->args[1]);
-	
+		
 	return 1;
-}
-
-void stage2_boss_a2(Boss *boss, int time) {
-	TIMER(&time)
+}	
 	
-	float dfactor = global.diff / (float)D_Lunatic;
-	int i, j;
-	
+int stage2_flea(Enemy *e, int t) {
+	TIMER(&t);
 	AT(EVENT_DEATH) {
-		killall(global.enemies);
-		return;
-	}
-	
-	if(time < 0) {
-		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/3, 0.05)
-		return;
-	}
-	
-	AT(0) for(j = -1; j < 2; j += 2) for(i = 0; i < 7; ++i)
-		create_enemy4c(boss->pos, ENEMY_IMMUNE, Swirl, stage2_boss_a1_slave, add_ref(boss), i*2*M_PI/7, j, 1);
-	
-	FROM_TO_INT(0, 1000000, 180, 120, 10) {
-		float dt = 200;
-		float lt = 100 * dfactor;
-		
-		float a = _ni*M_PI/2.5 + _i + time;
-		
-		//float b = 0.45;
-		//float clr = psin(time / 30.0) * (1.0 - b);
-		
-		//create_lasercurve2c(boss->pos, dt*2, dt, rgb(0.5, 1.0, 0.5), las_accel, 0, 0.1 * cexp(I*a));
-		
-		float b = 0.4;
-		float c = 0.3;
-		
-		Laser *l1 = create_lasercurve3c(boss->pos, lt,			dt, rgb(b, b, 1.0), las_sine_expanding, 2 * cexp(I*a), M_PI/4, 0.05);
-		Laser *l2 = create_lasercurve3c(boss->pos, lt * 1.5,	dt, rgb(1.0, b, b), las_sine_expanding, 2 * cexp(I*a), M_PI/4, 0.05 - 0.002 * min(global.diff, D_Hard));
-		Laser *l3 = create_lasercurve3c(boss->pos, lt,			dt, rgb(b, b, 1.0), las_sine_expanding, 2 * cexp(I*a), M_PI/4, 0.05 - 0.004 * min(global.diff, D_Hard));
-		
-		l2->width = 15;
-		
-		int i; for(i = 0; i < 5 + 15 * dfactor; ++i) {
-			create_projectile2c("plainball",	boss->pos, rgb(c, c, 1.0), stage2_boss_a2_laserbullet, add_ref(l1), i)->draw = ProjDrawAdd;
-			create_projectile2c("bigball",		boss->pos, rgb(1.0, c, c), stage2_boss_a2_laserbullet, add_ref(l2), i)->draw = ProjDrawAdd;
-			create_projectile2c("plainball",	boss->pos, rgb(c, c, 1.0), stage2_boss_a2_laserbullet, add_ref(l3), i)->draw = ProjDrawAdd;
-		}
-	}
-}
-
-void stage2_boss_a3(Boss *boss, int time) {
-	TIMER(&time)
-	
-	AT(EVENT_DEATH) {
-		return;
-	}
-	
-	if(time < 0) {
-		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.05)
-		return;
-	}
-	
-	int d = 4 - min(global.diff, D_Hard);
-	FROM_TO_INT(0, 1000000, 100, 60, d) {
-		float a = _ni*2*M_PI/(15.0/d) + _i + time*2;
-		float dt = 150;
-		float lt = 100;
-		
-		float b = 0.5;
-		
-		Color *c1;
-		Color *c2;
-		
-		if(_i % 2) {
-			c1 = rgb(1.0, 1.0, b);
-			c2 = rgb(b, 1.0, b);
-		} else {
-			c1 = rgb(1.0, b, b);
-			c2 = rgb(b, b, 1.0);
-		}
-		
-		create_lasercurve3c(boss->pos, lt,			dt, c1, las_sine, 3 * cexp(I*a), M_PI/4, 0.05);
-		create_lasercurve4c(boss->pos, lt,			dt, c2, las_sine, 3 * cexp(I*a), M_PI/4, 0.05, M_PI);
-		
-		if(global.diff > D_Hard)
-			create_lasercurve2c(boss->pos, lt,		dt, rgb(b, 1.0, 1.0), las_accel, 0, 0.1 * cexp(I*(a + M_PI)));
-	}
-	
-	int cnt = 35;
-	FROM_TO_INT(120, 1000000, 60, cnt*2, 1) {
-		create_projectile2c("wave", boss->pos, (_ni % 2)? rgb(1.0, 0.5, 0.5) : rgb(0.5, 0.5, 1.0), (_ni % 2)? asymptotic : linear,
-			cexp(I*2*_ni*M_PI/cnt), 10
-		)->draw = ProjDrawAdd;
-	}
-}
-
-int stage2_boss_prea1_slave(Enemy *e, int time) {
-	TIMER(&time)
-	
-	int level = e->args[3];
-	float angle = e->args[2] * (time / 70.0 + e->args[1]);
-	complex dir = cexp(I*angle);
-	Boss *boss = (Boss*)REF(e->args[0]);
-	
-	if(!boss)
-		return ACTION_DESTROY;
-	
-	AT(EVENT_DEATH) {
-		free_ref(e->args[0]);
-		spawn_items(e->pos, 1, 1, 0, 0);
+		spawn_items(e->pos, 2,0,0,0);
 		return 1;
 	}
 	
-	if(time < 0)
-		return 1;
+	e->pos += e->args[0]*(1-e->args[1]);
 	
-	GO_TO(e, boss->pos + (100 + 20 * e->args[2] * sin(time / 100.0)) * dir, 0.03)
+	FROM_TO(80,90,1)
+		e->args[1] += 0.1;
+		
+	FROM_TO(200,205,1)
+		e->args[1] -= 0.2;
 	
-	int d = 10 - global.diff;
-	if(level > 2)
-		d += 4;
-	
-	if(!(time % d)) {
-		create_projectile1c("rice", e->pos, rgb(1.0, 0.5, 0.2), linear, 3 * cexp(I*carg(boss->pos - e->pos)));
-		if(!(time % (d*2)) || level > 1)
-			create_projectile1c("thickrice", e->pos, rgb(1.0, 1.0, 0.2), linear, 2.5 * cexp(I*carg(boss->pos - e->pos)));
-		if(level > 2)
-			create_projectile1c("wave", e->pos, rgb(0.5, 0.2 + 0.8 * psin(time / 25.0), 1.0), linear, 2 * cexp(I*carg(boss->pos - e->pos)));
+		
+	FROM_TO(10, 400, 40-global.diff*5-t/70) {
+		create_projectile2c("flea", e->pos, rgb(0.2,0.2,1), asymptotic, 1.5*cexp(2I*M_PI*frand()), 1.5);
 	}
 	
 	return 1;
 }
 
-void stage2_boss_pre_common(Boss *boss, int time, int level) {
-	TIMER(&time)
-	int i, j, cnt = 3 + global.diff;
-	
-	AT(0) for(j = -1; j < 2; j += 2) for(i = 0; i < cnt; ++i)
-		create_enemy4c(boss->pos, ENEMY_IMMUNE, Swirl, stage2_boss_prea1_slave, add_ref(boss), i*2*M_PI/cnt, j, level);
-		
+int stage2_accel_circle(Enemy *e, int t) {
+	TIMER(&t);
 	AT(EVENT_DEATH) {
-		killall(global.enemies);
-		return;
+		spawn_items(e->pos, 1,3,0,0);
+		return 1;
 	}
 	
-	if(time < 0) {
-		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/3, 0.05)
-		return;
+	e->pos += e->args[0];
+		
+	FROM_TO(60,250, 10) {
+		e->args[0] *= 0.5;
+		
+		int i;
+		for(i = 0; i < 6; i++) {
+			create_projectile2c("ball", e->pos, rgb(0.6,0.1,0.2), accelerated, 1.5*cexp(2I*M_PI/6*i)+cexp(I*carg(global.plr.pos - e->pos)), -0.02*cexp(I*(2*M_PI/6*i+0.02*frand()*global.diff)));
+		}
 	}
 	
-	FROM_TO(120, 240, 1)
-		GO_TO(boss, VIEWPORT_W/3 + VIEWPORT_H*I/3, 0.03)
+	if(t > 270)
+		e->args[0] -= 0.01I;
+
+	return 1;
+}
+
+void wriggle_intro(Boss *w, int t) {
+	if(t < 0)
+		return;
 	
-	FROM_TO(360, 480, 1)
-		GO_TO(boss, VIEWPORT_W - VIEWPORT_W/3 + VIEWPORT_H*I/3, 0.03)
+	w->pos = VIEWPORT_W/2 + 100I + 400*(1.0-t/(4.0*FPS))*cexp(I*(3-t*0.04));
+}
+
+int wriggle_bug(Projectile *p, int t) {
+	if(t < 0)
+		return 1;
 	
-	FROM_TO(600, 720, 1)
-		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/3, 0.03)
-}
-
-void stage2_boss_prea1(Boss *boss, int time) {
-	stage2_boss_pre_common(boss, time, 1);
-}
-
-void stage2_boss_prea2(Boss *boss, int time) {
-	stage2_boss_pre_common(boss, time, 2);
-}
-
-void stage2_boss_prea3(Boss *boss, int time) {
-	stage2_boss_pre_common(boss, time, 3);
-}
-
-Boss* stage2_create_boss() {
-	Boss *wriggle = create_boss("EX Wriggle", "wriggle", VIEWPORT_W/2 - 200I);
-	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage2_mid_intro, NULL);
+	p->pos += p->args[0];
+	p->angle = carg(p->args[0]);
 	
-	boss_add_attack(wriggle, AT_Normal, "", 20, 15000, stage2_boss_prea1, NULL);
-	boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage2_boss_a1, stage2_boss_spellbg);
-	boss_add_attack(wriggle, AT_Normal, "", 20, 15000, stage2_boss_prea2, NULL);
-	boss_add_attack(wriggle, AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 25, 40000, stage2_boss_a2, stage2_boss_spellbg);
-	boss_add_attack(wriggle, AT_Normal, "", 20, 15000, stage2_boss_prea3, NULL);
-	boss_add_attack(wriggle, AT_Spellcard, "Bug Sign ~ Phosphaenus Hemipterus", 35, 30000, stage2_boss_a3, stage2_boss_spellbg);
+	
+	if(t > 70 && frand() < 0.01)
+		p->args[0] *= cexp(I*M_PI/3);
+	
+	return 1;
+}
+
+void wriggle_small_storm(Boss *w, int time) {
+	int t = time % 400;
+	TIMER(&t);
+	
+	if(time < 0)
+		return;
+	
+	FROM_TO(0,400,5) {
+		create_projectile1c("rice", w->pos, rgb(1,0.5,0.2), wriggle_bug, 2*cexp(I*_i*2*M_PI/20));
+		create_projectile1c("rice", w->pos, rgb(1,0.5,0.2), wriggle_bug, 2*cexp(I*_i*2*M_PI/20+I*M_PI));
+	}
+	
+	GO_AT(w, 60, 120, 1)
+	GO_AT(w, 180, 240, -1)
+	
+	if(!(t%200)) {
+		int i;
+		for(i = 0; i < 10; i++)
+			create_projectile2c("bigball", w->pos, rgb(0.1,0.3,0.0), asymptotic, 2*cexp(I*i*2*M_PI/10), 2);
+	}
+}
+
+Boss *create_wriggle_mid() {
+	Boss* wriggle = create_boss("Wriggle", "wriggle", VIEWPORT_W + 150 - 30I);
+	boss_add_attack(wriggle, AT_Move, "Introduction", 4, 0, wriggle_intro, NULL);
+	boss_add_attack(wriggle, AT_Normal, "Small Bug Storm", 20, 20000, wriggle_small_storm, NULL);
 	
 	start_attack(wriggle, wriggle->attacks);
 	return wriggle;
 }
 
+void hina_intro(Boss *h, int time) {
+	TIMER(&time);	
+	
+	if(time < 0)
+		return;
+	
+	AT(100)
+		global.dialog = stage2_dialog();
+	
+	GO_TO(h, VIEWPORT_W/2 + 100I, 0.05);
+}
+
+void hina_cards1(Boss *h, int time) {
+	int t = time % 500;
+	TIMER(&t);
+	
+	if(time < 0)
+		return;
+	
+	FROM_TO(0, 500, 2-(global.diff > D_Normal)) {
+		create_projectile2c("card", h->pos+50*cexp(I*t/10), rgb(0.8,0.0,0.0),  asymptotic, 2*cexp(I*t/5.0), 3);
+		create_projectile2c("card", h->pos-50*cexp(I*t/10), rgb(0.0,0.0,0.8),  asymptotic, -2*cexp(I*t/5.0), 3);
+	}
+}
+
+void hina_amulet(Boss *h, int time) {
+	int t = time % 200;
+	
+	if(time < 0)
+		return;
+	
+	if(time < 100)
+		GO_TO(h, VIEWPORT_W/2 + 200I, 0.02);
+	
+	TIMER(&t);
+	
+	FROM_TO(0,30*global.diff,1) {
+			float f = _i/30.0;
+			complex n = cexp(I*2*M_PI*f+0.7*time/200*I);		
+			
+			create_projectile2c("crystal", h->pos+30*log(1+_i/2.0)*n, rgb(0.8,0,0), accelerated, 2*n*I, -0.01*n);
+			create_projectile2c("crystal", h->pos+30*log(1+_i/2.0)*n, rgb(0.8,0,0.5), accelerated, -2*n*I, -0.01*n);
+	}
+}
+
+void hina_cards2(Boss *h, int time) {
+	int t = time % 500;
+	TIMER(&t);
+	
+	if(time < 0)
+		return;
+	
+	hina_cards1(h, time);
+			
+	GO_AT(h, 100, 200, 2);
+	GO_AT(h, 260, 460, -2);
+	GO_AT(h, 460, 500, 5);
+	
+	AT(100) {
+		int i;
+		for(i = 0; i < 30; i++) {
+			create_projectile2c("bigball", h->pos, rgb(0.7, 0, 0.7), asymptotic, 2*cexp(I*2*M_PI*i/20.0), 3);
+		}
+	}
+}
+
+void hina_bad_pick(Boss *h, int time) {
+	int t = time % 400;
+	int i, j;
+	
+	TIMER(&t);
+	
+	if(time < 0)
+		return;
+	
+	GO_TO(h, VIEWPORT_W/5*(time/400+0.6)+ 100I, 0.02);
+	
+	FROM_TO(100, 500, 5) {
+		
+		for(i = 1; i < 5; i++) {
+			create_projectile1c("crystal", VIEWPORT_W/5*i, rgb(0.2,0,0.2), linear, 7I);
+		}
+	}
+	
+	AT(200) {
+		int win = tsrand()%5;
+		for(i = 0; i < 5; i++) {
+			if(i == win)
+				continue;
+			
+			for(j = 0; j < 2+global.diff; j++)
+				create_projectile1c("bigball", VIEWPORT_W/5*(i+0.2+0.6*frand()), rgb(0.7,0,0.0), linear, 2I);
+		}
+	}
+}
+
+void hina_wheel(Boss *h, int time) {
+	int t = time % 400;
+	TIMER(&t);
+	
+	if(time < 0)
+		return;
+	
+	GO_TO(h, VIEWPORT_W/2+VIEWPORT_H/2*I, 0.02);
+	
+	if(time < 60)
+		return;
+	
+	FROM_TO(0, 400, 5-global.diff) {
+		int i;
+		float speed = 10;
+		if(time > 500)
+			speed = 1+9*exp(-(time-500)/100.0);
+						
+		for(i = 1; i < 6; i++) {
+			create_projectile1c("crystal", h->pos, rgb(log(1+time*1e-3),0,0.2), linear, speed*cexp(I*2*M_PI/5*(i+time/100.0+frand()*time/1700.0)));
+		}
+	}
+}
+
+void hina_spell_bg(Boss *h, int time) {
+	
+	glPushMatrix();
+	glTranslatef(VIEWPORT_W/2, VIEWPORT_H/2,0);
+	glPushMatrix();
+	glScalef(0.6,0.6,1);
+	draw_texture(0, 0, "stage2/spellbg1");
+	glPopMatrix();
+	glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+	glRotatef(time*5, 0,0,1);
+	draw_texture(0, 0, "stage2/spellbg2");	
+	glPopMatrix();
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	draw_animation(creal(h->pos), cimag(h->pos), 0, "fire");
+	
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
+}
+
+Boss *create_hina() {
+	Boss* hina = create_boss("Kagiyama Hina", "hina", VIEWPORT_W + 150 + 100I);
+	boss_add_attack(hina, AT_Move, "Introduction", 2, 0, hina_intro, NULL);
+	boss_add_attack(hina, AT_Normal, "Cards1", 20, 15000, hina_cards1, NULL);
+	boss_add_attack(hina, AT_Spellcard, "Shard ~ Amulet of Harm", 26, 25000, hina_amulet, hina_spell_bg);
+	boss_add_attack(hina, AT_Normal, "Cards2", 17, 15000, hina_cards2, NULL);
+	boss_add_attack(hina, AT_Spellcard, "Lottery Sign ~ Bad Pick", 30, 36000, hina_bad_pick, hina_spell_bg);
+	boss_add_attack(hina, AT_Spellcard, "Lottery Sign ~ Wheel of Fortune", 20, 36000, hina_wheel, hina_spell_bg);
+	
+	start_attack(hina, hina->attacks);
+	return hina;
+}
+
 void stage2_events() {
 	TIMER(&global.timer);
-	
-//	AT(0)
-//		global.timer = 2800;
-	
-	FROM_TO(160, 300, 10) {
-		create_enemy1c(VIEWPORT_W/2 + 20 * nfrand() + (VIEWPORT_H/4 + 20 * nfrand())*I, 200, Swirl, stage2_enterswirl, I * 3 + nfrand() * 3);
-	}
-	
-	AT(400) {
-		create_enemy1c(VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 10000, BigFairy, stage2_bigfairy, 0);
-	}
-	
-	FROM_TO(1100, 1300, 10) {
-		create_enemy1c(20 + (VIEWPORT_H+20)*I, 50, Swirl, stage2_bitchswirl, 1);
-		create_enemy1c(VIEWPORT_W-20 + (VIEWPORT_H+20)*I, 50, Swirl, stage2_bitchswirl, 1);
-	}
-	
-	AT(1600) {
-		create_enemy1c(VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 10000, BigFairy, stage2_bigfairy, 1);
-	}
-	
-	FROM_TO(2400, 2620, 130) {
-		double offs = -50;
 		
-		complex p1 = 0+0I;
-		complex p2 = VIEWPORT_W+0I;
-		complex p3 = VIEWPORT_W + VIEWPORT_H*I;
-		complex p4 = 0+VIEWPORT_H*I;
-		
-		create_enemy2c(p1, 500, Fairy, stage2_cornerfairy, p1 - offs - offs*I, p2 + offs - offs*I);
-		create_enemy2c(p2, 500, Fairy, stage2_cornerfairy, p2 + offs - offs*I, p3 + offs + offs*I);
-		create_enemy2c(p3, 500, Fairy, stage2_cornerfairy, p3 + offs + offs*I, p4 - offs + offs*I);
-		create_enemy2c(p4, 500, Fairy, stage2_cornerfairy, p4 - offs + offs*I, p1 - offs - offs*I);
+	AT(300) {
+		create_enemy1c(VIEWPORT_W/2-10I, 7000+500*global.diff, BigFairy, stage2_great_circle, 2I);
 	}
 	
+	FROM_TO(650-50*global.diff, 750+25*(4-global.diff), 50) {
+		create_enemy1c(VIEWPORT_W*((_i)%2)+50I, 2000, Fairy, stage2_small_spin_circle, 2-4*(_i%2)+1I);
+	}
+	
+	FROM_TO(850, 1000, 15)
+		create_enemy1c(VIEWPORT_W/2+25*(_i-5)-20I, 200, Fairy, stage2_aim, (2+frand()*0.3)*I);
+		
+	FROM_TO(960, 1200, 20)
+		create_enemy3c(VIEWPORT_W-80+(VIEWPORT_H+20)*I, 200, Fairy, stage2_sidebox_trail, 3 - 0.5*M_PI*I, -0.02, 90);
+	
+	FROM_TO(1140, 1400, 20)
+		create_enemy3c(200-20I, 200, Fairy, stage2_sidebox_trail, 3+0.5I*M_PI, -0.05, 70);
+		
+	AT(1300)
+		create_enemy1c(150-10I, 4000, BigFairy, stage2_great_circle, 2.5I);
+		
+	AT(1500)
+		create_enemy1c(VIEWPORT_W-150-10I, 4000, BigFairy, stage2_great_circle, 2.5I);
+		
+	FROM_TO(1700, 2000, 30)
+		create_enemy1c(VIEWPORT_W*frand()-20I, 200, Fairy, stage2_flea, 1.7I);
+		
+	FROM_TO(1950, 2500, 60) {
+		create_enemy3c(VIEWPORT_W-40+(VIEWPORT_H+20)*I, 200, Fairy, stage2_sidebox_trail, 5 - 0.5*M_PI*I, -0.02, 83-global.diff*3);
+		create_enemy3c(40+(VIEWPORT_H+20)*I, 200, Fairy, stage2_sidebox_trail, 5 - 0.5*M_PI*I, 0.02, 80-global.diff*3);
+	}
+	
+	AT(2500) {
+		create_enemy1c(VIEWPORT_W/4-10I, 2000, Fairy, stage2_accel_circle, 2I);
+		create_enemy1c(VIEWPORT_W/4*3-10I, 2000, Fairy, stage2_accel_circle, 2I);
+	}
+		
 	AT(2800)
-		global.boss = stage2_create_midboss();
-	
-	FROM_TO(2801, 3000, 10) {
-		create_enemy2c(VIEWPORT_W/2 + 20 * nfrand() + (VIEWPORT_H/4 + 20 * nfrand())*I, 200, Swirl, stage2_enterswirl, I * 3 + nfrand() * 3, 1);
-	}
-	
-	AT(3000) {
-		create_enemy1c(VIEWPORT_W - VIEWPORT_W/3 + (VIEWPORT_H/5)*I, 10000, BigFairy, stage2_bigfairy, 2);
-	}
-	
-	FROM_TO(3000, 3100, 20) {
-		create_enemy2c(VIEWPORT_W-20 + (VIEWPORT_H+20)*I, 50, Swirl, stage2_bitchswirl, 1, 1);
-	}
-	
-	AT(3500) {
-		create_enemy1c(VIEWPORT_W/3 + (VIEWPORT_H/5)*I, 10000, BigFairy, stage2_bigfairy, 2);
-	}
-	
-	FROM_TO(3500, 3600, 20) {
-		create_enemy2c(20 + (VIEWPORT_H+20)*I, 50, Swirl, stage2_bitchswirl, 1, 1);
-	}
-	
-	FROM_TO(4330, 4460, 130) {
-		double offs = -50;
+		global.boss = create_wriggle_mid();
 		
-		complex p1 = 0+0I;
-		complex p2 = VIEWPORT_W+0I;
-		complex p3 = VIEWPORT_W + VIEWPORT_H*I;
-		complex p4 = 0+VIEWPORT_H*I;
+	FROM_TO(3100, 3400, 50) {
+		create_enemy3c(VIEWPORT_W-80+(VIEWPORT_H+20)*I, 200, Fairy, stage2_sidebox_trail, 3 - 0.5*M_PI*I, -0.02, 90);
+		create_enemy3c(80+(VIEWPORT_H+20)*I, 200, Fairy, stage2_sidebox_trail, 3 - 0.5*M_PI*I, 0.02, 90);
+	}
+	
+	AT(3600) {
+		create_enemy1c(VIEWPORT_W/2-10I, 7000+500*global.diff, BigFairy, stage2_great_circle, 2I);
+	}
+	
+	FROM_TO(3700, 4500, 40)
+		create_enemy1c(VIEWPORT_W*frand()-10I, 150, Fairy, stage2_flea, 2.5I);
 		
-		create_enemy3c(p1, 500, Fairy, stage2_cornerfairy, p1 - offs - offs*I, p2 + offs - offs*I, 1);
-		create_enemy3c(p2, 500, Fairy, stage2_cornerfairy, p2 + offs - offs*I, p3 + offs + offs*I, 1);
-		create_enemy3c(p3, 500, Fairy, stage2_cornerfairy, p3 + offs + offs*I, p4 - offs + offs*I, 1);
-		create_enemy3c(p4, 500, Fairy, stage2_cornerfairy, p4 - offs + offs*I, p1 - offs - offs*I, 1);
+	FROM_TO(4000, 4600, 100)
+		create_enemy1c(VIEWPORT_W/2+100-200*frand()-10I, 2000, Fairy, stage2_accel_circle, 2I);
+		
+	AT(5100) {
+		global.boss = create_hina();
 	}
-	
-	FROM_TO(4760, 4940, 10) {
-		create_enemy2c(VIEWPORT_W-20 - 20I, 50, Swirl, stage2_bitchswirl, -0.5, 1);
-		create_enemy2c(20 + -20I, 50, Swirl, stage2_bitchswirl, -0.5, 1);
-	}
-	
-	AT(5300)
-		global.boss = stage2_create_boss();
 }
