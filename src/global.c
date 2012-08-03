@@ -100,6 +100,18 @@ void fade_out(float f) {
 	glColor4f(1,1,1,1);	
 }
 
+inline double psin(double x) {
+	return 0.5 + 0.5 * sin(x);
+}
+
+inline double max(double a, double b) {
+	return (a > b)? a : b;
+}
+
+inline double min(double a, double b) {
+	return (a < b)? a : b;
+}
+
 void take_screenshot()
 {
 	FILE *out;
