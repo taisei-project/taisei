@@ -122,7 +122,7 @@ void stage2_start() {
 	memset(&stgstate, 0, sizeof(Stage2State));
 	stgstate.clr_r = 1.0;
 	stgstate.clr_g = 0.0;
-	stgstate.clr_b = 0.3;
+	stgstate.clr_b = 0.5;
 
 // TESTING
 //	bgcontext.cv[1] = -90;
@@ -162,7 +162,7 @@ void stage2_draw() {
 	FROM_TO(1060, 1400, 1) {
 		stgstate.clr_r -= 1.0 / 340.0;
 		stgstate.clr_g += 1.0 / 340.0;
-		stgstate.clr_b -= 0.3 / 340.0;
+		stgstate.clr_b -= 0.5 / 340.0;
 	}
 	
 	FROM_TO(1170, 1400, 1)
