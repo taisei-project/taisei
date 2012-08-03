@@ -138,6 +138,5 @@ void stage5_end() {
 }
 
 void stage5_loop() {
-// 	ShaderRule shaderrules[] = { stage3_fog, NULL };
 	stage_loop(stage_get(5), stage5_start, stage5_end, stage5_draw, stage5_events, NULL, 5700);
 }

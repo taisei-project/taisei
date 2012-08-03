@@ -153,7 +153,6 @@ void stage2_draw() {
 		bgcontext.cv[1] += 0.1;
 		bgcontext.crot[2] += 0.5;
 	}
-// 	bgcontext.cv[1] -= 0.5;
 	
 	draw_stage3d(&bgcontext, 7000);
 	

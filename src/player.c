@@ -138,16 +138,16 @@ void player_logic(Player* plr) {
 	if(plr->focus < 0 || (plr->focus > 0 && plr->focus < 30))
 		plr->focus++;
 	
-// 	if(global.frames - plr->recovery >= 0) {		
-		switch(plr->cha) {
-		case Youmu:
-			youmu_shot(plr);
-			break;
-		case Marisa:
-			marisa_shot(plr);
-			break;
-		}
-// 	}
+		
+	switch(plr->cha) {
+	case Youmu:
+		youmu_shot(plr);
+		break;
+	case Marisa:
+		marisa_shot(plr);
+		break;
+	}
+
 	
 	if(global.frames == plr->deathtime)
 		player_realdeath(plr);
@@ -173,10 +173,6 @@ void player_logic(Player* plr) {
 
 void player_bomb(Player *plr) {
 	if(global.frames - plr->recovery >= 0 && plr->bombs > 0) {
-// 		Enemy *e;
-// 		for(e = global.enemies; e; e = e->next)
-// 			if(e->hp != ENEMY_IMMUNE)
-// 				e->hp = 0;
 		
 		delete_projectiles(&global.projs);
 				

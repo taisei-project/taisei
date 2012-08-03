@@ -104,14 +104,14 @@ typedef struct {
 	MenuData *menu;
 	Dialog *dialog;
 	
-	RefArray refs; // for super extra OOP-tardness: references. the cool way.
+	RefArray refs;
 		
 	int game_over;
 	int points;
 	
 	FPSCounter fps;
 	
-	int nostagebg;	// I don't want the automatic stagebg handling to mess with the config, and I don't want that longass if in more than one place either.
+	int nostagebg;
 	
 	Replay replay;
 	int replaymode;

@@ -64,7 +64,6 @@ void free_attack(Attack *a);
 void start_attack(Boss *b, Attack *a);
 
 Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule);
-// void boss_add_waypoint(Attack *attack, complex pos, int time);
 
 void boss_death(Boss **boss);
 

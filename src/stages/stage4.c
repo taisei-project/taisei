@@ -98,8 +98,6 @@ void stage4_lake_draw(Vector pos) {
 	glPushMatrix();
 	glTranslatef(pos[0], pos[1]+140, pos[2]);
 	glScalef(15,15,15);
-		
-// 	glRotatef(180,1,0,0);
 	
 	draw_model("lake");
 	glPopMatrix();

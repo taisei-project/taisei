@@ -36,7 +36,6 @@ typedef struct StageInfo {
 	int id;
 	StageRule loop;
 	int hidden;
-	// reserved for draw_stage_title when/if it's used
 	char *title;
 	char *subtitle;
 	
