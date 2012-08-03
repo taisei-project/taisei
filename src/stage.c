@@ -189,8 +189,12 @@ void draw_hud() {
 	draw_text(AL_Center, 13, 49, buf, _fonts.standard);
 	
 	glPopMatrix();
-	
+
+#ifdef DEBUG
 	sprintf(buf, "%i fps / %i stgframes", global.fps.show_fps, global.timer);
+#else
+	sprintf(buf, "%i fps", global.fps.show_fps);
+#endif
 	draw_text(AL_Right, SCREEN_W, SCREEN_H-20, buf, _fonts.standard);	
 	
 	if(global.boss)
