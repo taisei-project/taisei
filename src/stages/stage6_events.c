@@ -9,6 +9,32 @@
 #include "stage6.h"
 #include <global.h>
 
+Dialog *stage6_dialog() {
+	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
+	
+	dadd_msg(d, Left, "You are responsible?");
+	dadd_msg(d, Right, "Yes ...");
+	
+	if(global.plr.cha == Marisa) {
+		dadd_msg(d, Left, "I'll masterspark you now.");
+		dadd_msg(d, Right, "What? Why do you want to fight?\nDo you even understand, what I did here?");
+		dadd_msg(d, Left, "I understand it's a huge mess! Cracking\nthe border, a giant mansion, a giant tower ...");
+		dadd_msg(d, Left, "At first I was curious. But now\nI just want to finish this! Seriously.");
+	} else {
+		dadd_msg(d, Left, "How did you manage to do all of this?");
+		dadd_msg(d, Right, "A kind person granted me an unknown power.\nAnd thanks to that I was able\nto create this little place for myself.");
+		dadd_msg(d, Left, "Why did you create *this* place for yourself?");
+		dadd_msg(d, Right, "Because it is great for research!\nAnd it's almost done! Just a matter of moments ...");
+		dadd_msg(d, Right, "And the true potential of my power will be\nunleashed!");
+		dadd_msg(d, Left, "That means ...\nI'll better finish you off quickly?");
+	}
+		
+	dadd_msg(d, Right, "Why do you have to be so ignorant?");
+	dadd_msg(d, Right, "... sorry, this is more important than you!");
+	
+	return d;
+}
+
 int stage6_hacker(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
@@ -148,6 +174,9 @@ void elly_intro(Boss *b, int t) {
 	AT(200) {
 		create_enemy3c(VIEWPORT_W+200+200I, ENEMY_IMMUNE, Scythe, scythe_intro, 0, 1+0.2I, 1);
 	}
+	
+	AT(300)
+		global.dialog = stage6_dialog();
 }
 
 int scythe_infinity(Enemy *e, int t) {
@@ -214,12 +243,12 @@ int scythe_newton(Enemy *e, int t) {
 // 		e->args[2] = 1;
 	}
 	
-	FROM_TO(100, 2000, 1) {
+	FROM_TO(100, 10000, 1) {
 		e->pos = VIEWPORT_W/2+I*VIEWPORT_H/2 + 500*cos(_i*0.06)*cexp(I*_i*0.01);
 	}
 	
 	
-	FROM_TO(100, 2000, 3) {
+	FROM_TO(100, 10000, 3) {
 		float f = carg(global.plr.pos-e->pos);
 		Projectile *p;
 		for(p = global.projs; p; p = p->next) {
@@ -230,7 +259,7 @@ int scythe_newton(Enemy *e, int t) {
 		}
 	}
 			
-	FROM_TO(100, 2000, 5-global.diff) {
+	FROM_TO(100, 10000, 5-global.diff) {
 		create_projectile1c("rice", e->pos, rgb(0.3, 1, 0.8), linear, I);
 	}
 	
@@ -250,7 +279,7 @@ void elly_newton(Boss *b, int t) {
 		global.enemies->logic_rule = scythe_reset;
 	}
 	
-	FROM_TO(0, 2000, 20) {
+	FROM_TO(0, 100000, 20) {
 		float a = 2.7*_i;
 		int x, y;
 		int w = 3;
@@ -779,15 +808,15 @@ int scythe_theory(Enemy *e, int t) {
 	n = cexp(cimag(e->args[1])*I*t);
 	
 	TIMER(&t);
-	FROM_TO(0, 300, 2)
-		create_projectile2c("ball", e->pos + 80*n, rgb(carg(n), 1-carg(n), 1/carg(n)), wait_proj, global.diff*cexp(0.6I)*n, 100)->draw=ProjDrawAdd;
+	FROM_TO(0, 300, 5-global.diff/2)
+		create_projectile2c("ball", e->pos + 80*n, rgb(carg(n), 1-carg(n), 1/carg(n)), wait_proj, (0.5+0.5*global.diff)*cexp(0.6I)*n, 100)->draw=ProjDrawAdd;
 	
 			
 	return 1;
 }
 
 void elly_theory(Boss *b, int time) {
-	int t = time % 500;
+	int t = time % 570;
 	int i;
 	
 	if(time == EVENT_BIRTH)
@@ -799,7 +828,7 @@ void elly_theory(Boss *b, int time) {
 	
 	TIMER(&t);
 	
-	FROM_TO(0, 500, 10)
+	FROM_TO(0, 600, 10)
 		for(i = 0; i < 3; i++)
 			create_particle2c("stain", b->pos+80*frand()*cexp(2I*M_PI*frand()), rgba(1-frand(),0.8,0.5,1), FadeAdd, timeout, 60, 1+3*frand())->angle = 2*M_PI*frand();
 	
@@ -817,7 +846,7 @@ void elly_theory(Boss *b, int time) {
 		complex n = cexp(0.7I*_i+0.2I*frand());
 		for(x = -w; x <= w; x++)
 			for(y = -w; y <= w; y++)
-				create_projectile2c("ball", b->pos + (15+5*global.diff)*(x+I*y)*n, rgb(0, 0.5, 1), accelerated, 2*n, (0.03+0.01I*frand())*n);
+				create_projectile2c("ball", b->pos + (15+3*global.diff)*(x+I*y)*n, rgb(0, 0.5, 1), accelerated, 2*n, (0.02+0.01I*frand())*n);
 	}
 	
 	FROM_TO(250, 299, 10) {
@@ -847,18 +876,18 @@ void elly_spellbg_modern(Boss *b, int t) {
 Boss *create_elly() {
 	Boss *b = create_boss("Elly", "elly", -200I);
 	
-	boss_add_attack(b, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
-	boss_add_attack(b, AT_Normal, "Frequency", 30, 26000, elly_frequency, NULL);
-	boss_add_attack(b, AT_Spellcard, "Newton Sign ~ 2.5 Laws of Movement", 60, 40000, elly_newton, elly_spellbg_classic);
-	boss_add_attack(b, AT_Normal, "Frequency2", 40, 23000, elly_frequency2, NULL);
-	boss_add_attack(b, AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 22000, elly_maxwell, elly_spellbg_classic);
-	boss_add_attack(b, AT_Move, "Unbound", 6, 10, elly_unbound, NULL);
-	boss_add_attack(b, AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 60, 30000, elly_eigenstate, elly_spellbg_modern);
-	boss_add_attack(b, AT_Normal, "Baryon", 40, 23000, elly_baryonattack, NULL);
-	boss_add_attack(b, AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 50, 40000, elly_ricci, elly_spellbg_modern);
-	boss_add_attack(b, AT_Normal, "Baryon", 25, 23000, elly_baryonattack2, NULL);
-	boss_add_attack(b, AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 60, 50000, elly_lhc, elly_spellbg_modern);
-	boss_add_attack(b, AT_Move, "Explode", 6, 10, elly_baryon_explode, NULL);
+// 	boss_add_attack(b, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
+// 	boss_add_attack(b, AT_Normal, "Frequency", 30, 26000, elly_frequency, NULL);
+// 	boss_add_attack(b, AT_Spellcard, "Newton Sign ~ 2.5 Laws of Movement", 60, 40000, elly_newton, elly_spellbg_classic);
+// 	boss_add_attack(b, AT_Normal, "Frequency2", 40, 23000, elly_frequency2, NULL);
+// 	boss_add_attack(b, AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 22000, elly_maxwell, elly_spellbg_classic);
+// 	boss_add_attack(b, AT_Move, "Unbound", 6, 10, elly_unbound, NULL);
+// 	boss_add_attack(b, AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 60, 30000, elly_eigenstate, elly_spellbg_modern);
+// 	boss_add_attack(b, AT_Normal, "Baryon", 40, 23000, elly_baryonattack, NULL);
+// 	boss_add_attack(b, AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 50, 40000, elly_ricci, elly_spellbg_modern);
+// 	boss_add_attack(b, AT_Normal, "Baryon", 25, 23000, elly_baryonattack2, NULL);
+// 	boss_add_attack(b, AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 60, 50000, elly_lhc, elly_spellbg_modern);
+// 	boss_add_attack(b, AT_Move, "Explode", 6, 10, elly_baryon_explode, NULL);
 	boss_add_attack(b, AT_SurvivalSpell, "Tower of Truth ~ Theory of Everything", 70, 40000, elly_theory, elly_spellbg_modern);
 	start_attack(b, b->attacks);
 	
@@ -868,8 +897,8 @@ Boss *create_elly() {
 void stage6_events() {
 	TIMER(&global.timer);
 	
-// 	AT(0)
-// 		global.timer = 3800;
+	AT(0)
+		global.timer = 3800;
 	
 	AT(100)
 		create_enemy1c(VIEWPORT_W/2, 6000, BigFairy, stage6_hacker, 2I);

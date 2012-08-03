@@ -138,8 +138,6 @@ void stage6_draw() {
 	bgcontext.cx[2] += w*f*140/M_PI;
 	
 	bgcontext.crot[2] += 180/M_PI*g*w;
-	
-	printf("%f\n", bgcontext.crot[2]);
 }
 
 void start_fall_over() { //troll
@@ -174,5 +172,5 @@ void stage6_end() {
 
 void stage6_loop() {
 // 	ShaderRule shaderrules[] = { stage6_bloom, NULL };
-	stage_loop(stage_get(6), stage6_start, stage6_end, stage6_draw, stage6_events, NULL, 5700);
+	stage_loop(stage_get(6), stage6_start, stage6_end, stage6_draw, stage6_events, NULL, 3900);
 }
