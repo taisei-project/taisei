@@ -602,7 +602,7 @@ void bind_input(MenuData *menu, OptionBinding *b)
 						// b->values is a pointer to the editor buffer string here (char**)
 						// Normally it's used to store the value names for BT_IntValue binds, though.
 						// TODO: implement a cursor here (so we can use arrow keys for editing)
-						
+												
 						char c = (char)(uni & 0x7F);
 						char *dest = *b->values;
 						
@@ -638,6 +638,7 @@ void bind_input(MenuData *menu, OptionBinding *b)
 
 static void options_key_action(MenuData *menu, int sym) {
 	#define SHOULD_SKIP (!menu->entries[menu->cursor].action || (((OptionBinding*)menu->context)[menu->cursor].enabled && !bind_isactive(&(((OptionBinding*)menu->context)[menu->cursor]))))
+	Uint8 *keys = SDL_GetKeyState(NULL);
 	
 	if(sym == tconfig.intval[KEY_DOWN] || sym == SDLK_DOWN) {
 		menu->drawdata[3] = 10;
@@ -653,7 +654,7 @@ static void options_key_action(MenuData *menu, int sym) {
 			if(menu->cursor < 0)
 				menu->cursor = menu->ecount - 1;
 		} while SHOULD_SKIP;
-	} else if((sym == tconfig.intval[KEY_SHOT] || sym == SDLK_RETURN) && menu->entries[menu->cursor].action) {
+	} else if((sym == tconfig.intval[KEY_SHOT] || (sym == SDLK_RETURN && !keys[SDLK_LALT] && !keys[SDLK_LALT])) && menu->entries[menu->cursor].action) {
 		menu->selected = menu->cursor;
 		
 		OptionBinding *binds = (OptionBinding*)menu->context;
@@ -661,7 +662,7 @@ static void options_key_action(MenuData *menu, int sym) {
 		
 		if(bind->enabled) switch(bind->type)
 		{
-			case BT_IntValue: case BT_Resolution:	bind_setnext(bind); 		break;
+// 			case BT_IntValue: case BT_Resolution:	bind_setnext(bind); 		break;
 			case BT_KeyBinding:						bind->blockinput = True; 	break;
 			case BT_StrValue:
 				bind->selected = strlen(tconfig.strval[bind->configentry]);

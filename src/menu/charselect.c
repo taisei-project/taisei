@@ -124,6 +124,7 @@ void char_menu_input(MenuData *menu, MenuData *mod) {
 	
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;
+		Uint8 *keys = SDL_GetKeyState(NULL);
 		
 		global_processevent(&event);
 		if(event.type == SDL_KEYDOWN) {
@@ -135,7 +136,7 @@ void char_menu_input(MenuData *menu, MenuData *mod) {
 				mod->cursor++;
 			} else if(sym == tconfig.intval[KEY_UP] || sym == SDLK_UP) {
 				mod->cursor--;
-			} else if((sym == tconfig.intval[KEY_SHOT] || sym == SDLK_RETURN) && menu->entries[menu->cursor].action) {
+			} else if((sym == tconfig.intval[KEY_SHOT] || (sym == SDLK_RETURN && !keys[SDLK_LALT] && !keys[SDLK_RALT])) && menu->entries[menu->cursor].action) {
 				menu->quit = 1;
 				menu->selected = menu->cursor;
 				mod->quit = 1;

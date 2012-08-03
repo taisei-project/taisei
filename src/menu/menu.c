@@ -49,6 +49,8 @@ void create_menu(MenuData *menu) {
 }
 
 static void key_action(MenuData *menu, int sym) {
+	Uint8 *keys = SDL_GetKeyState(NULL);
+	
 	if(sym == tconfig.intval[KEY_DOWN] || sym == SDLK_DOWN) {
 		do {
 			if(++menu->cursor >= menu->ecount)
@@ -59,7 +61,7 @@ static void key_action(MenuData *menu, int sym) {
 			if(--menu->cursor < 0)
 				menu->cursor = menu->ecount - 1;
 		} while(menu->entries[menu->cursor].action == NULL);
-	} else if((sym == tconfig.intval[KEY_SHOT] || sym == SDLK_RETURN) && menu->entries[menu->cursor].action) {
+	} else if((sym == tconfig.intval[KEY_SHOT] || (sym == SDLK_RETURN && !keys[SDLK_LALT] && !keys[SDLK_LALT])) && menu->entries[menu->cursor].action) {
 		menu->quit = 1;
 		menu->selected = menu->cursor;
 	} else if(sym == SDLK_ESCAPE && menu->type == MT_Transient) {
