@@ -94,8 +94,9 @@ int stage2_bigfairy(Enemy *e, int t) {
 	TIMER(&t)
 	
 	AT(EVENT_DEATH) {
-		if(e->args[0])
-			spawn_items(e->pos, 5, 5, 1, 0);
+		spawn_items(e->pos, 5, 5, 0, 0);
+		if(e->args[0] && global.timer > 2800)
+			spawn_items(e->pos, 0, 0, 1, 0);
 		return 1;
 	}
 	
