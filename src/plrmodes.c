@@ -98,19 +98,23 @@ int youmu_slash(Enemy *e, int t) {
 		global.plr.pos = VIEWPORT_W + (VIEWPORT_H - 100)*I - exp(-_i/8.0+log(4*VIEWPORT_W/5.0));
 		
 	FROM_TO(30, 60, 10) {
-		create_particle1c("youmu_slice", VIEWPORT_W/2.0 - 150 + 100*_i + VIEWPORT_H/2.0*I - 10-10I + 20*frand()+20I*frand(), NULL, Slice, timeout, 200)->angle = -10.0+20.0*frand();
+		tsrand_fill(3);
+		create_particle1c("youmu_slice", VIEWPORT_W/2.0 - 150 + 100*_i + VIEWPORT_H/2.0*I - 10-10I + 20*afrand(0)+20I*afrand(1), NULL, Slice, timeout, 200)->angle = -10.0+20.0*afrand(2);
 	}
 	
 	FROM_TO(40,200,1)
-		if(frand() > 0.7)
-			create_particle2c("blast", VIEWPORT_W*frand() + (VIEWPORT_H+50)*I, rgb(frand(),frand(),frand()), Shrink, timeout_linear, 80, 3*(1-2.0*frand())-14I+frand()*2I);
+		if(frand() > 0.7) {
+			tsrand_fill(6);
+			create_particle2c("blast", VIEWPORT_W*afrand(0) + (VIEWPORT_H+50)*I, rgb(afrand(1),afrand(2),afrand(3)), Shrink, timeout_linear, 80, 3*(1-2.0*afrand(4))-14I+afrand(5)*2I);
+		}
 		
 	int tpar = 30;
 	if(t < 30)
 		tpar = t;
 	
 	if(t < creal(e->args[0])-60 && frand() > 0.2) {
-		create_particle2c("smoke", VIEWPORT_W*frand() + (VIEWPORT_H+100)*I, rgba(0.4,0.4,0.4,frand()*0.2 - 0.2 + 0.6*(tpar/30.0)), PartDraw, spin, 300, -7I+frand()*1I);		
+		tsrand_fill(3);
+		create_particle2c("smoke", VIEWPORT_W*afrand(0) + (VIEWPORT_H+100)*I, rgba(0.4,0.4,0.4,afrand(1)*0.2 - 0.2 + 0.6*(tpar/30.0)), PartDraw, spin, 300, -7I+afrand(2)*1I);		
 	}
 	return 1;
 }
@@ -164,11 +168,13 @@ int youmu_split(Enemy *e, int t) {
 	TIMER(&t);
 	
 	FROM_TO(30,260,1) {
-		create_particle2c("smoke", VIEWPORT_W/2 + VIEWPORT_H/2*I, rgba(0.4,0.4,0.4,frand()*0.2+0.4), PartDraw, spin, 300, 6*cexp(I*frand()*2*M_PI));
+		tsrand_fill(2);
+		create_particle2c("smoke", VIEWPORT_W/2 + VIEWPORT_H/2*I, rgba(0.4,0.4,0.4,afrand(0)*0.2+0.4), PartDraw, spin, 300, 6*cexp(I*afrand(1)*2*M_PI));
 	}
 	
 	FROM_TO(100,220,10) {
-		create_particle1c("youmu_slice", VIEWPORT_W/2.0 + VIEWPORT_H/2.0*I - 200-200I + 400*frand()+400I*frand(), NULL, Slice, timeout, 100-_i)->angle = 360.0*frand();
+		tsrand_fill(3);
+		create_particle1c("youmu_slice", VIEWPORT_W/2.0 + VIEWPORT_H/2.0*I - 200-200I + 400*afrand(0)+400I*afrand(1), NULL, Slice, timeout, 100-_i)->angle = 360.0*afrand(2);
 	}
 	
 	float talt = atan((t-e->args[0]/2)/30.0)*10+atan(-e->args[0]/2);

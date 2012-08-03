@@ -249,7 +249,8 @@ int stage3_mid_a0_proj(Projectile *p, int time) {
 		
 		int cnt = 2 + global.diff, i;
 		for(i = 0; i < cnt; ++i) {
-			create_particle3c("lasercurve", 0, rgb(max(0.3, 1.0 - p->clr->r), p->clr->g, p->clr->b), EnemyFlareShrink, enemy_flare, 100, cexp(I*(M_PI*nfrand())) * (1 + frand()), add_ref(p));
+			tsrand_fill(2);
+			create_particle3c("lasercurve", 0, rgb(max(0.3, 1.0 - p->clr->r), p->clr->g, p->clr->b), EnemyFlareShrink, enemy_flare, 100, cexp(I*(M_PI*anfrand(0))) * (1 + afrand(1)), add_ref(p));
 			
 			int jcnt = 1 + (global.diff > D_Normal), j;
 			for(j = 0; j < jcnt; ++j) create_projectile1c("thickrice", p->pos, p->clr->r == 1.0? rgb(1.0, 0.3, 0.3) : rgb(0.3, 0.3, 1.0), accelerated,
@@ -764,7 +765,8 @@ void stage3_events() {
 //		global.timer = 2800;
 	
 	FROM_TO(160, 300, 10) {
-		create_enemy1c(VIEWPORT_W/2 + 20 * nfrand() + (VIEWPORT_H/4 + 20 * nfrand())*I, 200, Swirl, stage3_enterswirl, I * 3 + nfrand() * 3);
+		tsrand_fill(3);
+		create_enemy1c(VIEWPORT_W/2 + 20 * anfrand(0) + (VIEWPORT_H/4 + 20 * anfrand(1))*I, 200, Swirl, stage3_enterswirl, I * 3 + anfrand(2) * 3);
 	}
 	
 	AT(400) {
@@ -798,7 +800,8 @@ void stage3_events() {
 		global.boss = stage3_create_midboss();
 	
 	FROM_TO(2801, 3000, 10) {
-		create_enemy2c(VIEWPORT_W/2 + 20 * nfrand() + (VIEWPORT_H/4 + 20 * nfrand())*I, 200, Swirl, stage3_enterswirl, I * 3 + nfrand() * 3, 1);
+		tsrand_fill(2);
+		create_enemy2c(VIEWPORT_W/2 + 20 * anfrand(0) + (VIEWPORT_H/4 + 20 * anfrand(1))*I, 200, Swirl, stage3_enterswirl, I * 3 + anfrand(2) * 3, 1);
 	}
 	
 	AT(3000) {
