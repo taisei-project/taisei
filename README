@@ -12,7 +12,6 @@ Dependencies:
 	- libpng
 	- OpenGL
 	- OpenAL, ALUT
-	- flex/bison
 	- CMake (build system)
 
 To build and install Taisei just follow these steps.

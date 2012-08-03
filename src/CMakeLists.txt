@@ -6,19 +6,14 @@ find_package(OpenAL REQUIRED)
 find_package(ALUT REQUIRED)
 find_package(PNG REQUIRED)
 find_package(SDL_ttf REQUIRED)
-find_package(BISON REQUIRED)
-find_package(FLEX REQUIRED)
 find_package(Freetype)
 find_package(ZLIB)
-
-BISON_TARGET(cfgparser config.y ${CMAKE_CURRENT_SOURCE_DIR}/parser.c)
-FLEX_TARGET(cfgscanner config.l  ${CMAKE_CURRENT_SOURCE_DIR}/lexer.c)
-ADD_FLEX_BISON_DEPENDENCY(cfgscanner cfgparser)
 
 set(SRCs
 	main.c
 	taiseigl.c
 	random.c
+	config.c
 	stage.c
 	replay.c
 	global.c
@@ -62,8 +57,7 @@ set(SRCs
 	resource/shader.c
 	resource/audio.c
 	resource/model.c
-	${BISON_cfgparser_OUTPUTS}
-	${FLEX_cfgscanner_OUTPUTS})
+)
 
 if(RELATIVE)
 	set(SRCs ${SRCs} paths/relative.c)	

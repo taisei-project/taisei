@@ -3,8 +3,9 @@
  * See COPYING for further information. 
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
+ * Copyright (C) 2012, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
  */
-
+ 
 #ifndef CONFIG_H
 #define CONFIG_H
 
@@ -23,7 +24,7 @@ extern Config tconfig;
  * Not doing so will likely break replays! And don't forget to update CONFIG_KEY_LAST below.
  */
 
-enum {
+typedef enum ConfigKey {
 	KEY_UP = 0,
 	KEY_DOWN,
 	KEY_LEFT,
@@ -50,14 +51,36 @@ enum {
 	VID_HEIGHT,
 	
 	PLAYERNAME
-};
+} ConfigKey;
 
-void parse_config(char *filename);
-void config_preset();
+typedef enum ConfigKeyType {
+	CFGT_INT,
+	CFGT_STRING,
+	CFGT_KEYBINDING
+} ConfigKeyType;
+
+typedef struct ConfigEntry {
+	ConfigKeyType type;
+	ConfigKey key;
+	char *name;
+} ConfigEntry;
+
+extern ConfigEntry configdefs[];
+Config tconfig;
 
 #define CONFIG_KEY_FIRST KEY_UP
 #define CONFIG_KEY_LAST KEY_SKIP
+#define CONFIG_LOAD_BUFSIZE 256
 
 int config_sym2key(int sym);
+void config_preset();
+void config_load(char *filename);
+void config_save(char *filename);
+ConfigEntry* config_findentry(char *name);
+
+inline int config_intval(char*);
+inline int config_intval_p(ConfigEntry*);
+inline char* config_strval(char*);
+inline char* config_strval_p(ConfigEntry*);
 
 #endif
