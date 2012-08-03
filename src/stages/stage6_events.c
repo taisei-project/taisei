@@ -833,10 +833,10 @@ void elly_theory(Boss *b, int time) {
 			create_particle2c("stain", b->pos+80*frand()*cexp(2I*M_PI*frand()), rgba(1-frand(),0.8,0.5,1), FadeAdd, timeout, 60, 1+3*frand())->angle = 2*M_PI*frand();
 	
 	FROM_TO(20, 70, 30-global.diff) {
-		int c = 20+2*global.diff;
+		int c = 20+global.diff;
 		for(i = 0; i < c; i++) {
 			complex n = cexp(2I*M_PI/c*i);
-			create_projectile2c("soul", b->pos, rgb(0.2, 0, 0.9), accelerated, n, (0.01+0.002*global.diff)*n+0.01I*n*(1-2*(_i&1)))->draw = ProjDrawAdd;
+			create_projectile2c("soul", b->pos, rgb(0.2, 0, 0.9), accelerated, n, (0.01+0.001*global.diff)*n+0.01I*n*(1-2*(_i&1)))->draw = ProjDrawAdd;
 		}
 	}
 	
