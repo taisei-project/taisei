@@ -47,8 +47,10 @@ int stage4_splasher(Enemy *e, int t) {
 	FROM_TO(0, 50, 1)
 		e->pos += e->args[0]*(1-t/50.0);
 	
-	FROM_TO(60, 150, 5-global.diff)
-		create_projectile2c(frand() > 0.5 ? "rice" : "thickrice", e->pos, rgb(1,0.6-0.2*frand(),0.8), accelerated, e->args[0]/2+(1-2*frand())+(1-2*frand())*I, 0.02I);
+	FROM_TO(60, 150, 5-global.diff) {
+		tsrand_fill(4);
+		create_projectile2c(afrand(0) > 0.5 ? "rice" : "thickrice", e->pos, rgb(1,0.6-0.2*afrand(1),0.8), accelerated, e->args[0]/2+(1-2*afrand(2))+(1-2*afrand(3))*I, 0.02I);
+	}
 	
 	FROM_TO(200, 300, 1)
 		e->pos -= creal(e->args[0])*(t-200)/100.0;
@@ -209,7 +211,8 @@ int stage4_explosive(Enemy *e, int t) {
 
 void KurumiSlave(Enemy *e, int t) {
 	if(!(t%2)) {
-		complex offset = (frand()-0.5)*30 + (frand()-0.5)*20I;
+		complex offset  = (frand()-0.5)*30;
+				offset += (frand()-0.5)*20I;
 		create_particle3c("lasercurve", offset, rgb(0.3,0.0,0.0), EnemyFlareShrink, enemy_flare, 50, (-50I-offset)/50.0, add_ref(e));
 	}		
 }
@@ -316,7 +319,8 @@ void kurumi_redspike(Boss *b, int time) {
 		}
 	} else {
 		FROM_TO(80, 500, 2+2*(global.diff == D_Hard)) {
-			complex offset = 100*frand()*cexp(2I*M_PI*frand());
+			tsrand_fill(2);
+			complex offset = 100*afrand(0)*cexp(2I*M_PI*afrand(1));
 			complex n = cexp(I*carg(global.plr.pos-b->pos-offset));
 			create_projectile2c("rice", b->pos+offset, rgb(1,0,0), accelerated, -1*n, 0.05*n)->draw=ProjDrawAdd;
 		}
@@ -440,7 +444,8 @@ int aniwall_bullet(Projectile *p, int t) {
 	
 	if(t > creal(p->args[1])) {
 		if(global.diff > D_Normal) {
-			p->args[0] += (0.1-0.2*frand() + 0.1I-0.2I*frand())*(global.diff-2);
+			tsrand_fill(2);
+			p->args[0] += (0.1-0.2*afrand(0) + 0.1I-0.2I*afrand(1))*(global.diff-2);
 			p->args[0] += 0.005*cexp(I*carg(global.plr.pos - p->pos));
 		}
 		

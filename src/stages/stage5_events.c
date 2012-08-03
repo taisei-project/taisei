@@ -156,7 +156,8 @@ int stage5_miner(Enemy *e, int t) {
 	e->pos += e->args[0];
 	
 	FROM_TO(0, 600, 5-global.diff/2) {
-		create_projectile1c("rice", e->pos + 20*cexp(2I*M_PI*frand()), rgb(0,0,cabs(e->args[0])), linear, cexp(2I*M_PI*frand()));
+		tsrand_fill(2);
+		create_projectile1c("rice", e->pos + 20*cexp(2I*M_PI*afrand(0)), rgb(0,0,cabs(e->args[0])), linear, cexp(2I*M_PI*afrand(1)));
 	}
 	
 	return 1;
@@ -222,8 +223,9 @@ int stage5_lightburst2(Enemy *e, int t) {
 		int i;
 		int c = 5+global.diff;
 		for(i = 0; i < c; i++) {
+			tsrand_fill(2);
 			complex n = cexp(I*carg(global.plr.pos-e->pos) + 2I*M_PI/c*i);
-			create_projectile2c("bigball", e->pos + 50*n*cexp(-1I*_i*global.diff), rgb(0.3, 0, 0.7+0.3*(_i&1)), asymptotic, 2.5*n+0.25*global.diff*frand()*cexp(2I*M_PI*frand()), 3);
+			create_projectile2c("bigball", e->pos + 50*n*cexp(-1I*_i*global.diff), rgb(0.3, 0, 0.7+0.3*(_i&1)), asymptotic, 2.5*n+0.25*global.diff*afrand(0)*cexp(2I*M_PI*afrand(1)), 3);
 		}
 	}
 	
@@ -262,8 +264,10 @@ void iku_bolts(Boss *b, int time) {
 	int t = time % 400;
 	TIMER(&t);
 	
-	FROM_TO(0, 400, 2)
-		create_projectile2c("bigball", VIEWPORT_W*frand()-15I, rgb(1,0,0), accelerated, 1-2*frand()+1.7I, -0.01I)->draw = ProjDrawSub;
+	FROM_TO(0, 400, 2) {
+		tsrand_fill(2);
+		create_projectile2c("bigball", VIEWPORT_W*afrand(0)-15I, rgb(1,0,0), accelerated, 1-2*afrand(1)+1.7I, -0.01I)->draw = ProjDrawSub;
+	}
 		
 	FROM_TO(60, 400, 50) {
 		int i, c = 10+global.diff;
@@ -296,8 +300,9 @@ void iku_atmospheric(Boss *b, int time) {
 	TIMER(&t);
 	
 	FROM_TO(0, 500, 23-2*global.diff) {
-		complex p1 = VIEWPORT_W*frand() + VIEWPORT_H/2*I*frand();
-		complex p2 = p1 + (120+20*global.diff)*cexp(0.5I-frand()*I)*(1-2*(frand() > 0.5));
+		tsrand_fill(4);
+		complex p1 = VIEWPORT_W*afrand(0) + VIEWPORT_H/2*I*afrand(1);
+		complex p2 = p1 + (120+20*global.diff)*cexp(0.5I-afrand(2)*I)*(1-2*(afrand(3) > 0.5));
 		
 		int i;
 		int c = 10;
@@ -319,8 +324,10 @@ void iku_bolts2(Boss *b, int time) {
 	int t = time % 400;
 	TIMER(&t);
 	
-	FROM_TO(0, 400, 2)
-		create_projectile2c("bigball", VIEWPORT_W*frand()-15I, rgb(1,0,0), accelerated, 1-2*frand()+1.7I, -0.01I)->draw = ProjDrawSub;
+	FROM_TO(0, 400, 2) {
+		tsrand_fill(2);
+		create_projectile2c("bigball", VIEWPORT_W*afrand(0)-15I, rgb(1,0,0), accelerated, 1-2*afrand(1)+1.7I, -0.01I)->draw = ProjDrawSub;
+	}
 		
 	FROM_TO(0, 400, 60)
 		create_lasercurve1c(creal(global.plr.pos), 100, 200, rgb(0.3,1,1), bolts2_laser, global.plr.pos);
@@ -351,8 +358,10 @@ int lightning_slave(Enemy *e, int t) {
 		e->args[0] *= cexp(2I*M_PI*frand());
 	
 	FROM_TO(0, 200, 3)
-		if(cabs(e->pos-global.plr.pos) > 60)
-			create_projectile2c("wave", e->pos, rgb(0, 1, 1), accelerated, 0.5*e->args[0]/cabs(e->args[0])*I, 0.005*(1-2*frand()+I*frand()))->draw = ProjDrawAdd;
+		if(cabs(e->pos-global.plr.pos) > 60) {
+			tsrand_fill(2);
+			create_projectile2c("wave", e->pos, rgb(0, 1, 1), accelerated, 0.5*e->args[0]/cabs(e->args[0])*I, 0.005*(1-2*afrand(0)+I*afrand(1)))->draw = ProjDrawAdd;
+		}
 
 	return 1;
 }
@@ -391,8 +400,10 @@ void iku_bolts3(Boss *b, int time) {
 	int t = time % 400;
 	TIMER(&t);
 	
-	FROM_TO(0, 400, 2)
-		create_projectile2c("bigball", VIEWPORT_W*frand()-15I, rgb(1,0,0), accelerated, 1-2*frand()+1.8I, -0.01I)->draw = ProjDrawSub;
+	FROM_TO(0, 400, 2) {
+		tsrand_fill(2);
+		create_projectile2c("bigball", VIEWPORT_W*afrand(0)-15I, rgb(1,0,0), accelerated, 1-2*afrand(1)+1.8I, -0.01I)->draw = ProjDrawSub;
+	}
 		
 	FROM_TO(60, 400, 60) {
 		int i, c = 10+global.diff;
@@ -492,11 +503,15 @@ void stage5_events() {
 	FROM_TO(270, 320, 25)
 		create_enemy1c(VIEWPORT_W/4+VIEWPORT_W/2*_i, 2000, BigFairy, stage5_lightburst, 2I);
 		
-	FROM_TO(500, 600, 10)
-		create_enemy3c(200I*frand(), 500, Swirl, stage5_swirl, 4+I, 70+20*frand()+200I, cexp(-0.05I));
+	FROM_TO(500, 600, 10) {
+		tsrand_fill(2);
+		create_enemy3c(200I*afrand(0), 500, Swirl, stage5_swirl, 4+I, 70+20*afrand(1)+200I, cexp(-0.05I));
+	}
 		
-	FROM_TO(700, 800, 10)
-		create_enemy3c(VIEWPORT_W+200I*frand(), 500, Swirl, stage5_swirl, -4+frand()*I, 70+20*frand()+200I, cexp(0.05I));
+	FROM_TO(700, 800, 10) {
+		tsrand_fill(3);
+		create_enemy3c(VIEWPORT_W+200I*afrand(0), 500, Swirl, stage5_swirl, -4+afrand(1)*I, 70+20*afrand(2)+200I, cexp(0.05I));
+	}
 		
 	FROM_TO(870, 1000, 50)
 		create_enemy1c(VIEWPORT_W/4+VIEWPORT_W/2*(_i&1), 2000, BigFairy, stage5_limiter, I);
@@ -504,8 +519,10 @@ void stage5_events() {
 	AT(1000)
 		create_enemy1c(VIEWPORT_W/2, 9000, BigFairy, stage5_laserfairy, 2I);
 		
-	FROM_TO(1900, 2200, 40)
-		create_enemy1c(VIEWPORT_W+200I*frand(), 500, Swirl, stage5_miner, -3+2I*frand());
+	FROM_TO(1900, 2200, 40) {
+		tsrand_fill(2);
+		create_enemy1c(VIEWPORT_W+200I*afrand(0), 500, Swirl, stage5_miner, -3+2I*afrand(1));
+	}
 	
 	FROM_TO(1500, 2400, 80)
 		create_enemy1c(VIEWPORT_W*(_i&1)+100I, 300, Fairy, stage5_greeter, 3-6*(_i&1));
