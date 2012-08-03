@@ -109,8 +109,9 @@ void cirno_icy(Boss *c, int time) {
 		return;
 	
 	FROM_TO(0, 200, 5-global.diff) {
-		create_projectile2c("crystal", VIEWPORT_W/2.0 + 10*_i*(0.5-frand()) + cimag(c->pos)*I, rgb(0.2,0.5,0.4+0.5*frand()), accelerated, 1.7*cexp(I*_i/10.0)*(1-2*(_i&1)), 0.0001I*_i + (0.0025 - 0.005*frand()));
-		create_projectile2c("crystal", VIEWPORT_W/2.0 + 10*_i*(0.5-frand()) + cimag(c->pos)*I, rgb(0.2,0.5,0.4+0.5*frand()), accelerated, 1.7*cexp(I*_i/10.0)*(1-2*(_i&1)), 0.0001I*_i + (0.0025 - 0.005*frand()));
+		tsrand_fill(6);
+		create_projectile2c("crystal", VIEWPORT_W/2.0 + 10*_i*(0.5-afrand(0)) + cimag(c->pos)*I, rgb(0.2,0.5,0.4+0.5*afrand(1)), accelerated, 1.7*cexp(I*_i/10.0)*(1-2*(_i&1)), 0.0001I*_i + (0.0025 - 0.005*afrand(2)));
+		create_projectile2c("crystal", VIEWPORT_W/2.0 + 10*_i*(0.5-afrand(3)) + cimag(c->pos)*I, rgb(0.2,0.5,0.4+0.5*afrand(4)), accelerated, 1.7*cexp(I*_i/10.0)*(1-2*(_i&1)), 0.0001I*_i + (0.0025 - 0.005*afrand(5)));
 	}
 }
 	
@@ -399,7 +400,8 @@ int stage1_circletoss(Enemy *e, int time) {
 int stage1_sinepass(Enemy *e, int time) {
 	TIMER(&time);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, frand()>0.5, frand()>0.2,0,0);
+		tsrand_fill(2);
+		spawn_items(e->pos, afrand(0)>0.5, afrand(1)>0.2,0,0);
 		return 1;
 	}
 	
@@ -556,8 +558,10 @@ void stage1_events() {
 	
 	
 	// swirl, sine pass
-	FROM_TO(380, 1000, 20)
-		create_enemy2c(VIEWPORT_W*(_i&1) + frand()*100I + 70I, 100, Swirl, stage1_sinepass, 3.5*(1-2*(_i&1)), frand()*7I);
+	FROM_TO(380, 1000, 20) {
+		tsrand_fill(2);
+		create_enemy2c(VIEWPORT_W*(_i&1) + afrand(0)*100I + 70I, 100, Swirl, stage1_sinepass, 3.5*(1-2*(_i&1)), afrand(1)*7I);
+	}
 	
 	// swirl, drops
 	FROM_TO(1100, 1600, 20)
@@ -567,12 +571,16 @@ void stage1_events() {
 		create_enemy2c(VIEWPORT_W+200I, 100, Swirl, stage1_drop, -2, -0.04-0.03I);
 	
 	// bursts
-	FROM_TO(1250, 1800, 60)
-		create_enemy1c(VIEWPORT_W/2 + frand()*500-250, 500, Fairy, stage1_burst, frand()*2-1);
+	FROM_TO(1250, 1800, 60) {
+		tsrand_fill(2);
+		create_enemy1c(VIEWPORT_W/2 + afrand(0)*500-250, 500, Fairy, stage1_burst, afrand(1)*2-1);
+	}
 			
 	// circle - multi burst combo
-	FROM_TO(1700, 2300, 300)
-		create_enemy2c(VIEWPORT_W/2, 1400, BigFairy, stage1_circle, VIEWPORT_W/4 + VIEWPORT_W/2*frand()+200I, 3-6*(frand()>0.5)+frand()*2I);
+	FROM_TO(1700, 2300, 300) {
+		tsrand_fill(3);
+		create_enemy2c(VIEWPORT_W/2, 1400, BigFairy, stage1_circle, VIEWPORT_W/4 + VIEWPORT_W/2*afrand(0)+200I, 3-6*(afrand(1)>0.5)+afrand(2)*2I);
+	}
 	
 	FROM_TO(2000, 2500, 200) {
 		int i, t = global.diff + 1;
@@ -584,16 +592,22 @@ void stage1_events() {
 		global.boss = create_cirno_mid();
 	
 	// some chaotic swirls + instant circle combo
-	FROM_TO(2760, 3800, 20)
-		create_enemy2c(VIEWPORT_W/2 - 200*(1-2*frand()), 100, Swirl, stage1_drop, 1I, 0.001I + 0.02+0.06*(1-2*frand()));
+	FROM_TO(2760, 3800, 20) {
+		tsrand_fill(2);
+		create_enemy2c(VIEWPORT_W/2 - 200*(1-2*afrand(0)), 100, Swirl, stage1_drop, 1I, 0.001I + 0.02+0.06*(1-2*afrand(1)));
+	}
 	
-	FROM_TO(2900, 3750, 190)
-		create_enemy2c(VIEWPORT_W*frand(), 1200, Fairy, stage1_instantcircle, 2I, 3.0 - 6*frand() - 1I);
+	FROM_TO(2900, 3750, 190) {
+		tsrand_fill(2);
+		create_enemy2c(VIEWPORT_W*afrand(0), 1200, Fairy, stage1_instantcircle, 2I, 3.0 - 6*afrand(1) - 1I);
+	}
 	
 		
 	// multiburst + normal circletoss, later tri-toss
-	FROM_TO(3900, 4800, 200)
-		create_enemy1c(VIEWPORT_W*frand(), 1000, Fairy, stage1_multiburst, 2.5*frand());
+	FROM_TO(3900, 4800, 200) {
+		tsrand_fill(2);
+		create_enemy1c(VIEWPORT_W*afrand(0), 1000, Fairy, stage1_multiburst, 2.5*afrand(1));
+	}
 		
 	FROM_TO(4000, 4100, 20)
 		create_enemy2c(VIEWPORT_W*_i + VIEWPORT_H/3*I, 1700, Fairy, stage1_circletoss, 2-4*_i-0.3I, 1-2*_i);	
