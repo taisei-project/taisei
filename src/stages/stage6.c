@@ -17,7 +17,7 @@ static Stage3D bgcontext;
 static int fall_over;
 
 Vector **stage6_towerwall_pos(Vector pos, float maxrange) {
-	Vector p = {0, 0, 190};
+	Vector p = {0, 0, -220};
 	Vector r = {0, 0, 300};
 	
 	Vector **list = linear3dpos(pos, maxrange, p, r);
@@ -99,8 +99,8 @@ void stage6_draw() {
 		TIMER(&t);
 		
 		FROM_TO(0, 240, 1) {
-			bgcontext.cx[0] += 0.02*cos(180/M_PI*bgcontext.crot[2])*_i;
-			bgcontext.cx[1] += 0.02*sin(180/M_PI*bgcontext.crot[2])*_i;			
+			bgcontext.cx[0] += 0.02*cos(M_PI/180*bgcontext.crot[2]+M_PI/2)*_i;
+			bgcontext.cx[1] += 0.02*sin(M_PI/180*bgcontext.crot[2]+M_PI/2)*_i;
 		}		
 				
 		FROM_TO(150, 1000, 1) {
@@ -113,8 +113,8 @@ void stage6_draw() {
 			bgcontext.cx[2] -= max(6, 0.05*(global.frames-fall_over-150));
 		
 		FROM_TO(300, 470,1) {
-			bgcontext.cx[0] -= 0.01*cos(180/M_PI*bgcontext.crot[2])*_i;
-			bgcontext.cx[1] -= 0.01*sin(180/M_PI*bgcontext.crot[2])*_i;			
+			bgcontext.cx[0] -= 0.01*cos(M_PI/180*bgcontext.crot[2]+M_PI/2)*_i;
+			bgcontext.cx[1] -= 0.01*sin(M_PI/180*bgcontext.crot[2]+M_PI/2)*_i;			
 		}
 		
 		if(t > 470)
@@ -138,6 +138,8 @@ void stage6_draw() {
 	bgcontext.cx[2] += w*f*140/M_PI;
 	
 	bgcontext.crot[2] += 180/M_PI*g*w;
+	
+	printf("%f\n", bgcontext.crot[2]);
 }
 
 void start_fall_over() { //troll
@@ -161,7 +163,7 @@ void stage6_start() {
 	bgcontext.cx[1] = -215;
 	bgcontext.cx[2] = 295;
 	bgcontext.crot[0] = 90;
-	bgcontext.crot[2] = 381;
+	bgcontext.crot[2] = 381.415100;
 	
 	
 }
