@@ -807,12 +807,12 @@ void elly_spellbg_modern(Boss *b, int t) {
 Boss *create_elly() {
 	Boss *b = create_boss("Elly", "elly", -200I);
 	
-// 	boss_add_attack(b, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
+	boss_add_attack(b, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
 // 	boss_add_attack(b, AT_Normal, "Frequency", 20, 23000, elly_frequency, NULL);
 // 	boss_add_attack(b, AT_Spellcard, "Newton Sign ~ 2.5 Laws of Movement", 30, 30000, elly_newton, elly_spellbg_classic);
 // 	boss_add_attack(b, AT_Normal, "Frequency2", 20, 23000, elly_frequency2, NULL);
 // 	boss_add_attack(b, AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 22000, elly_maxwell, elly_spellbg_classic);
-// 	boss_add_attack(b, AT_Move, "Unbound", 6, 10, elly_unbound, NULL);
+	boss_add_attack(b, AT_Move, "Unbound", 6, 10, elly_unbound, NULL);
 // 	boss_add_attack(b, AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 30, 30000, elly_eigenstate, elly_spellbg_modern);
 // 	boss_add_attack(b, AT_Normal, "Baryon", 25, 23000, elly_baryonattack, NULL);
 // 	boss_add_attack(b, AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 35, 40000, elly_ricci, elly_spellbg_modern);
