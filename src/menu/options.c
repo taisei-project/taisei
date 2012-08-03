@@ -662,11 +662,12 @@ static void options_key_action(MenuData *menu, int sym) {
 		
 		if(bind->enabled) switch(bind->type)
 		{
-// 			case BT_IntValue: case BT_Resolution:	bind_setnext(bind); 		break;
 			case BT_KeyBinding:						bind->blockinput = True; 	break;
 			case BT_StrValue:
 				bind->selected = strlen(tconfig.strval[bind->configentry]);
 				bind->blockinput = True;
+				break;
+			default:
 				break;
 		} else menu->quit = 1;
 	} else if(sym == tconfig.intval[KEY_LEFT] || sym == SDLK_LEFT) {
