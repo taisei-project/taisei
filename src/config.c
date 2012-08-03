@@ -242,9 +242,6 @@ void config_load(char *filename) {
 
 end:
 	fclose(in);
-	
-	ConfigEntry *e = configdefs;
-	do printf("%s = %i [%s]\n", e->name, config_intval_p(e), config_strval_p(e)); while((++e)->name);
 }
 
 #undef SYNTAXERROR
