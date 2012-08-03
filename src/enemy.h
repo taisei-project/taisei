@@ -33,7 +33,7 @@ struct Enemy {
 	
 	long birthtime;	
 	
-	int dir; // TODO: deprecate those
+	int dir;
 	int moving;
 	
 	EnemyLogicRule logic_rule;

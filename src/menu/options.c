@@ -462,10 +462,7 @@ void draw_options_menu(MenuData *menu) {
 	draw_options_menu_bg(menu);
 	
 	draw_text(AL_Right, 140*(1-menu->fade), 30, "Options", _fonts.mainmenu);
-	
-	//glColor4f(1,1,1,0.7);
-	//draw_texture(SCREEN_W/2+40, SCREEN_H/2, "mainmenu/gate");
-	
+		
 	glPushMatrix();
 	glTranslatef(100, 100, 0);
 	

@@ -184,8 +184,7 @@ Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 	boss->attacks = realloc(boss->attacks, sizeof(Attack)*(++boss->acount));
 	Attack *a = &boss->attacks[boss->acount-1];
 	
-// 	if(!boss->current)
-		boss->current = &boss->attacks[0];
+	boss->current = &boss->attacks[0];
 	
 	a->type = type;
 	a->name = malloc(strlen(name)+1);
