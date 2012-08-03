@@ -674,16 +674,16 @@ int baryon_explode(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
 		free_ref(e->args[1]);
+		petal_explosion(35, e->pos);
 		return 1;
 	}
 	
-	if(frand() < 0.01) {
+	GO_TO(e, global.boss->pos + (e->pos0-global.boss->pos)*(1.5+0.2*sin(t*0.05)), 0.04);
+	
+	if(frand() < 0.02) {
 		e->hp = 0;
 		return 1;
-	}
-	
-	FROM_TO(10, 20000, 3)
-		petal_explosion(1, e->pos);
+	}		
 	
 	return 1;
 }
@@ -692,16 +692,98 @@ void elly_baryon_explode(Boss *b, int t) {
 	TIMER(&t);
 	
 	AT(0)
-		set_baryon_rule(baryon_explode);
+		start_fall_over();
 	
-		
-	FROM_TO(0, 300, 60) {
-		petal_explosion(10, b->pos + 200*frand()*cexp(2I*M_PI*frand()));
+	AT(20)
+		set_baryon_rule(baryon_explode);
+			
+	FROM_TO(0, 200, 1) {
+		petal_explosion(1, b->pos + 100*frand()*cexp(2I*M_PI*frand()));
 	}
 	
-	AT(200)
+	AT(200) {
+		global.shake_view = 10;
+		petal_explosion(100, b->pos + 100*frand()*cexp(2I*M_PI*frand()));
 		killall(global.enemies);
+	}
+	
+	AT(220) {
+		global.shake_view = 0;		
+	}
+}
 
+void ScaleFadeSub(Projectile *proj, int t) {
+	glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+	ScaleFade(proj, t);
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	glBlendEquation(GL_FUNC_ADD);
+}
+
+int theory_proj(Projectile *p, int t) {
+		
+	if(t < 0)
+		return 1;
+	
+	p->pos += p->args[0];
+	p->angle = carg(p->args[0]);	
+	
+	if(!cimag(p->args[1])) {
+		float re = creal(p->pos);
+		float im = cimag(p->pos);
+		
+		if(re <= 0 || re >= VIEWPORT_W)
+			p->args[0] = -creal(p->args[0]) + I*cimag(p->args[0]);
+		else if(im <= 0 || im >= VIEWPORT_H)
+			p->args[0] = creal(p->args[0]) - I*cimag(p->args[0]);
+		else
+			return 1;
+		
+		p->args[0] *= 0.4+0.1*global.diff;
+		
+		switch((int)creal(p->args[1])) {
+		case 0:
+			p->tex = get_tex("proj/ball");
+			break;
+		case 1:
+			p->tex = get_tex("proj/bigball");
+			break;
+		case 2:
+			p->tex = get_tex("proj/bullet");
+			break;
+		case 3:
+			p->tex = get_tex("proj/plainball");
+			break;
+		}
+		
+		p->clr->r = cos(p->angle);
+		p->clr->g = sin(p->angle);
+		p->clr->b = cos(p->angle+2.1);
+		
+		p->args[1] += I;
+	}
+	
+	return 1;
+}
+
+void elly_theory(Boss *b, int t) {
+	if(t < 20)
+		GO_TO(b, VIEWPORT_W/2+300I, 0.05);
+	
+	TIMER(&t);
+	
+	FROM_TO(0, 10000, 10)
+		create_particle2c("stain", b->pos+80*frand()*cexp(2I*M_PI*frand()), rgba(1,0.9,0.9,0.5), ScaleFadeSub, timeout, 60, 1+2*frand())->angle = 2*M_PI*frand();
+	
+	FROM_TO(0, 10000, 20-2*global.diff)
+		create_projectile2c("soul", b->pos, rgb(1,0,0), asymptotic, cexp(1.6I*_i), 2)->draw = ProjDrawSub;
+	
+	FROM_TO_INT(30, 10000, 100, 60, 20) {
+		int i;
+		int c = 4*5;
+		for(i = 0; i < c; i++)			
+			create_projectile2c("crystal", b->pos, rgb(0,0,0), theory_proj, 2*cexp(0.1I*(i%5)+I*M_PI/2*(i/5)+I*_i), (i/5+_i)%4);
+	}
 }
 
 void elly_spellbg_classic(Boss *b, int t) {
@@ -725,18 +807,19 @@ void elly_spellbg_modern(Boss *b, int t) {
 Boss *create_elly() {
 	Boss *b = create_boss("Elly", "elly", -200I);
 	
-	boss_add_attack(b, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
+// 	boss_add_attack(b, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
 // 	boss_add_attack(b, AT_Normal, "Frequency", 20, 23000, elly_frequency, NULL);
 // 	boss_add_attack(b, AT_Spellcard, "Newton Sign ~ 2.5 Laws of Movement", 30, 30000, elly_newton, elly_spellbg_classic);
 // 	boss_add_attack(b, AT_Normal, "Frequency2", 20, 23000, elly_frequency2, NULL);
 // 	boss_add_attack(b, AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 22000, elly_maxwell, elly_spellbg_classic);
-	boss_add_attack(b, AT_Move, "Unbound", 6, 10, elly_unbound, NULL);
+// 	boss_add_attack(b, AT_Move, "Unbound", 6, 10, elly_unbound, NULL);
 // 	boss_add_attack(b, AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 30, 30000, elly_eigenstate, elly_spellbg_modern);
 // 	boss_add_attack(b, AT_Normal, "Baryon", 25, 23000, elly_baryonattack, NULL);
 // 	boss_add_attack(b, AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 35, 40000, elly_ricci, elly_spellbg_modern);
 // 	boss_add_attack(b, AT_Normal, "Baryon", 25, 23000, elly_baryonattack2, NULL);
 // 	boss_add_attack(b, AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 35, 40000, elly_lhc, elly_spellbg_modern);
-	boss_add_attack(b, AT_Move, "Explode", 6, 10, elly_baryon_explode, NULL);
+	boss_add_attack(b, AT_Move, "Explode", 7, 10, elly_baryon_explode, NULL);
+	boss_add_attack(b, AT_SurvivalSpell, "Tower of Truth ~ Theory of Everything", 35, 40000, elly_theory, NULL);
 	start_attack(b, b->attacks);
 	
 	return b;

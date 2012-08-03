@@ -9,5 +9,6 @@
 #define STAGE6_H
 
 void stage6_loop();
+void start_fall_over();
 
 #endif
