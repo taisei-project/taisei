@@ -25,6 +25,7 @@ inline void tsrand_seed(uint32_t seed);
 inline int tsrand(void);
 
 inline double frand();
+inline double nfrand();
 
 #define TSRAND_MAX INT32_MAX
 

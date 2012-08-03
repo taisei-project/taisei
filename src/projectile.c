@@ -279,6 +279,12 @@ void Shrink(Projectile *p, int t) {
 	glPopMatrix();
 }
 
+void ShrinkAdd(Projectile *p, int t) {
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	Shrink(p, t);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
 void DeathShrink(Projectile *p, int t) {
 	glPushMatrix();
 	float s = 2.0-t/p->args[0]*2;
