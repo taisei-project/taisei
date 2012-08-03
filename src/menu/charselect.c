@@ -6,7 +6,7 @@
  */
 
 #include "menu.h"
-#include "mainmenu.h"
+#include "options.h"
 #include "global.h"
 
 void set_player(void *p) {
@@ -32,7 +32,7 @@ void create_shottype_menu(MenuData *m) {
 }
 
 void draw_char_menu(MenuData *menu, MenuData *mod) {
-	draw_main_menu_bg(menu);
+	draw_options_menu_bg(menu);
 	draw_text(AL_Right, 220*(1-menu->fade), 30, "Player Select", _fonts.mainmenu);
 	
 	glPushMatrix();

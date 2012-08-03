@@ -32,6 +32,8 @@ void init_global() {
 	
 	memset(&global.replay, 0, sizeof(Replay));
 	global.replaymode = REPLAY_RECORD;
+	
+	SDL_EnableKeyRepeat(TS_KR_DELAY, TS_KR_INTERVAL);
 }
 
 void game_over() {

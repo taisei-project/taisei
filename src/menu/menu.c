@@ -78,22 +78,9 @@ void menu_input(MenuData *menu) {
 		global_processevent(&event);
 		if(event.type == SDL_KEYDOWN) {
 			key_action(menu,sym);
-			
-			menu->lastkey = sym;
 		} else if(event.type == SDL_QUIT) {
 			exit(1);
 		}
-	}
-	
-	Uint8 *keys = SDL_GetKeyState(NULL);
-	if(keys[menu->lastkey])
-		menu->keypressed++;
-	else
-		menu->keypressed = 0;
-	
-	if(menu->keypressed > KEYREPEAT_TIME) {
-		key_action(menu, menu->lastkey);
-		menu->keypressed = KEYREPEAT_TIME-10;
 	}
 }
 

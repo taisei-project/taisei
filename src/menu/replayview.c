@@ -21,6 +21,7 @@ void backtomain(void*);
 
 void start_replay(void *arg) {
 	replay_copy(&global.replay, (Replay*)arg);
+	
 	StageInfo *s = stage_get(global.replay.stage);
 	
 	if(!s) {
@@ -29,9 +30,16 @@ void start_replay(void *arg) {
 	}
 	
 	init_player(&global.plr);
-		
+	
 	global.replaymode = REPLAY_PLAY;
 	s->loop();
+	
+	if(global.game_over == GAMEOVER_REWATCH) {
+		global.game_over = 0;
+		start_replay(arg);
+		return;
+	}
+	
 	global.replaymode = REPLAY_RECORD;
 	global.game_over = 0;
 }

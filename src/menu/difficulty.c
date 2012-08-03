@@ -6,7 +6,7 @@
  */
 
 #include "difficulty.h"
-#include "mainmenu.h"
+#include "options.h"
 #include "global.h"
 
 void set_difficulty(void *d) {
@@ -24,7 +24,7 @@ void create_difficulty_menu(MenuData *m) {
 }
 
 void draw_difficulty_menu(MenuData *menu) {
-	draw_main_menu_bg(menu);
+	draw_options_menu_bg(menu);
 	draw_text(AL_Right, 210*(1-menu->fade), 30, "Rank Select", _fonts.mainmenu);
 	
 	int i;

@@ -68,7 +68,8 @@ enum {
 	
 	GAMEOVER_DEFEAT = 1,
 	GAMEOVER_WIN,
-	GAMEOVER_ABORT
+	GAMEOVER_ABORT,
+	GAMEOVER_REWATCH
 };
 
 typedef enum {
@@ -158,6 +159,6 @@ enum {
 	EV_OVER		// replay-only
 };
 
-#define REPLAY_ASKSAVE (tconfig.intval[SAVE_RPY] == 2 && global.replay.active)
+#define REPLAY_ASKSAVE (tconfig.intval[SAVE_RPY] == 2 && global.replay.active && global.replaymode == REPLAY_RECORD)
 
 #endif
