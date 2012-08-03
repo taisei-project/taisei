@@ -201,7 +201,6 @@ void config_load(char *filename) {
 			buf[i] = 0;
 			i = 0;
 			strcpy(key, buf);
-			printf("config_load(): key = %s\n", key);
 			
 			found = 0;
 			while((c = fgetc(in)) != EOF) {
@@ -217,7 +216,6 @@ void config_load(char *filename) {
 							buf[i] = 0;
 							i = 0;
 							strcpy(val, buf);
-							printf("config_load(): val = %s\n", val);
 							found = 0;
 							++line;
 							
