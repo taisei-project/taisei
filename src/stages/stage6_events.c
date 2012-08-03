@@ -808,15 +808,15 @@ int scythe_theory(Enemy *e, int t) {
 	n = cexp(cimag(e->args[1])*I*t);
 	
 	TIMER(&t);
-	FROM_TO(0, 300, 5-global.diff/2)
-		create_projectile2c("ball", e->pos + 80*n, rgb(carg(n), 1-carg(n), 1/carg(n)), wait_proj, (0.5+0.5*global.diff)*cexp(0.6I)*n, 100)->draw=ProjDrawAdd;
+	FROM_TO(0, 300, 4)
+		create_projectile2c("ball", e->pos + 80*n, rgb(carg(n), 1-carg(n), 1/carg(n)), wait_proj, (0.6+0.3*global.diff)*cexp(0.6I)*n, 100)->draw=ProjDrawAdd;
 	
 			
 	return 1;
 }
 
 void elly_theory(Boss *b, int time) {
-	int t = time % 570;
+	int t = time % 500;
 	int i;
 	
 	if(time == EVENT_BIRTH)
@@ -828,15 +828,15 @@ void elly_theory(Boss *b, int time) {
 	
 	TIMER(&t);
 	
-	FROM_TO(0, 600, 10)
+	FROM_TO(0, 500, 10)
 		for(i = 0; i < 3; i++)
 			create_particle2c("stain", b->pos+80*frand()*cexp(2I*M_PI*frand()), rgba(1-frand(),0.8,0.5,1), FadeAdd, timeout, 60, 1+3*frand())->angle = 2*M_PI*frand();
 	
 	FROM_TO(20, 70, 30-global.diff) {
-		int c = 20+global.diff;
+		int c = 20+2*global.diff;
 		for(i = 0; i < c; i++) {
 			complex n = cexp(2I*M_PI/c*i);
-			create_projectile2c("soul", b->pos, rgb(0.2, 0, 0.9), accelerated, n, (0.01+0.001*global.diff)*n+0.01I*n*(1-2*(_i&1)))->draw = ProjDrawAdd;
+			create_projectile2c("soul", b->pos, rgb(0.2, 0, 0.9), accelerated, n, (0.01+0.002*global.diff)*n+0.01I*n*(1-2*(_i&1)))->draw = ProjDrawAdd;
 		}
 	}
 	
@@ -846,7 +846,7 @@ void elly_theory(Boss *b, int time) {
 		complex n = cexp(0.7I*_i+0.2I*frand());
 		for(x = -w; x <= w; x++)
 			for(y = -w; y <= w; y++)
-				create_projectile2c("ball", b->pos + (15+3*global.diff)*(x+I*y)*n, rgb(0, 0.5, 1), accelerated, 2*n, (0.02+0.01I*frand())*n);
+				create_projectile2c("ball", b->pos + (15+5*global.diff)*(x+I*y)*n, rgb(0, 0.5, 1), accelerated, 2*n, 0.026*n);
 	}
 	
 	FROM_TO(250, 299, 10) {
