@@ -159,12 +159,12 @@ void stage6_start() {
 	bgcontext.crot[2] = -40;
 	
 // 	for testing
-	bgcontext.cx[0] = 80;
-	bgcontext.cx[1] = -215;
-	bgcontext.cx[2] = 295;
-	bgcontext.crot[0] = 90;
-	bgcontext.crot[2] = 381.415100;
-	
+// 	bgcontext.cx[0] = 80;
+// 	bgcontext.cx[1] = -215;
+// 	bgcontext.cx[2] = 295;
+// 	bgcontext.crot[0] = 90;
+// 	bgcontext.crot[2] = 381.415100;
+// 	
 	
 }
 
