@@ -551,6 +551,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 				destroy_menu(global.menu);
 				free(global.menu);
 				global.menu = NULL;
+				break;
 			}
 			
 			menu_input(global.menu);
