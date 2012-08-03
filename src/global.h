@@ -135,6 +135,10 @@ void take_screenshot();
 
 double psin();
 
+// needed for mingw compatibility:
+#undef min
+#undef max
+
 // NOTE: do NOT convert these to macros please.
 // max(frand(), 0.5);
 // min(huge_costly_expression, another_huge_costly_expression)
