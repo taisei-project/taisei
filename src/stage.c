@@ -18,11 +18,11 @@
 #include "menu/savereplay.h"
 
 StageInfo stages[] = {	
-	{1, stage0_loop, False, "Stage 1", "Misty Lake", {1, 1, 1}},
-	{2, stage1_loop, False, "Stage 2", "Walk Along the Border", {1, 1, 1}},
-	{3, stage2_loop, False, "Stage 3", "Through the Tunnel of Light", {0, 0, 0}},
-	{4, stage3_loop, False, "Stage 4", "Forgotten Mansion", {0, 0, 0}},
-	{5, stage4_loop, False, "Stage 5", "Climbing the Tower of Babel", {1, 1, 1}},
+	{1, stage1_loop, False, "Stage 1", "Misty Lake", {1, 1, 1}},
+	{2, stage2_loop, False, "Stage 2", "Walk Along the Border", {1, 1, 1}},
+	{3, stage3_loop, False, "Stage 3", "Through the Tunnel of Light", {0, 0, 0}},
+	{4, stage4_loop, False, "Stage 4", "Forgotten Mansion", {0, 0, 0}},
+	{5, stage5_loop, False, "Stage 5", "Climbing the Tower of Babel", {1, 1, 1}},
 	{6, stage6_loop, False, "Stage 6", "Roof of the World", {1, 1, 1}},
 	
 	{0, NULL, False, NULL, NULL}
@@ -65,6 +65,7 @@ void replay_input() {
 	
 	SDL_Event event;
 	while(SDL_PollEvent(&event)) {
+		global_processevent(&event);
 		int sym = event.key.keysym.sym;
 		global_processevent(&event);
 		
@@ -189,8 +190,12 @@ void draw_hud() {
 	draw_text(AL_Center, 13, 49, buf, _fonts.standard);
 	
 	glPopMatrix();
-	
+
+#ifdef DEBUG
+	sprintf(buf, "%i fps / %i stgframes", global.fps.show_fps, global.timer);
+#else
 	sprintf(buf, "%i fps", global.fps.show_fps);
+#endif
 	draw_text(AL_Right, SCREEN_W, SCREEN_H-20, buf, _fonts.standard);	
 	
 	if(global.boss)
@@ -315,11 +320,28 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	}
 }
 
-void apply_bg_shaders(ShaderRule *shaderrules) {
-	int fbonum = 0;
+int apply_shaderrules(ShaderRule *shaderrules, int fbonum) {
 	int i;
 	
+	if(!global.nostagebg) {
+		for(i = 0; shaderrules != NULL && shaderrules[i] != NULL; i++) {
+			glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[!fbonum].fbo);
+			shaderrules[i](fbonum);
+			
+			fbonum = !fbonum;
+		}
+	}
+	
+	return fbonum;
+}
+
+void apply_bg_shaders(ShaderRule *shaderrules) {
+	int fbonum = 0;
+	
 	if(global.boss && global.boss->current && global.boss->current->draw_rule) {
+		if(global.frames - global.boss->current->starttime <= 0)
+			fbonum = apply_shaderrules(shaderrules, fbonum);
+		
 		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[0].fbo);
 		global.boss->current->draw_rule(global.boss, global.frames - global.boss->current->starttime);
 		
@@ -337,14 +359,8 @@ void apply_bg_shaders(ShaderRule *shaderrules) {
 		glPopMatrix();
 		
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	} else if(!global.nostagebg) {		
-		for(i = 0; shaderrules != NULL && shaderrules[i] != NULL; i++) {
-			glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[!fbonum].fbo);
-			shaderrules[i](fbonum);
-
-			fbonum = !fbonum;
-		}
-	}
+	} else
+		fbonum = apply_shaderrules(shaderrules, fbonum);
 	
 	glBindFramebuffer(GL_FRAMEBUFFER, resources.fsec.fbo);
 	
@@ -362,6 +378,13 @@ void apply_bg_shaders(ShaderRule *shaderrules) {
 		glUniform1f(uniloc(shader, "blur_rad"), 0.2+0.025*sin(global.frames/15.0));
 		glUniform1f(uniloc(shader, "rad"), 0.24);
 		glUniform1f(uniloc(shader, "ratio"), (float)resources.fbg[fbonum].nh/resources.fbg[fbonum].nw);
+		if(global.boss->zoomcolor)
+			glUniform4f(uniloc(shader, "color"),	global.boss->zoomcolor->r,
+													global.boss->zoomcolor->g,
+													global.boss->zoomcolor->b,
+													global.boss->zoomcolor->a);
+		else
+			glUniform4f(uniloc(shader, "color"), 0.1, 0.2, 0.3, 1);
 	}
 	
 	draw_fbo_viewport(&resources.fbg[fbonum]);

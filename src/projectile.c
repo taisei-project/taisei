@@ -283,7 +283,7 @@ void Shrink(Projectile *p, int t) {
 
 void ShrinkAdd(Projectile *p, int t) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	Shrink(p,t);
+	Shrink(p, t);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 

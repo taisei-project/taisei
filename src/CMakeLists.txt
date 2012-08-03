@@ -41,15 +41,15 @@ set(SRCs
 	menu/savereplay.c
 	menu/difficulty.c
 	menu/charselect.c
-	stages/stage0.c
 	stages/stage1.c
-	stages/stage1_events.c
 	stages/stage2.c
 	stages/stage2_events.c
 	stages/stage3.c
 	stages/stage3_events.c
 	stages/stage4.c
 	stages/stage4_events.c
+	stages/stage5.c
+	stages/stage5_events.c
 	stages/stage6.c
 	stages/stage6_events.c
 	resource/resource.c

@@ -876,18 +876,18 @@ void elly_spellbg_modern(Boss *b, int t) {
 Boss *create_elly() {
 	Boss *b = create_boss("Elly", "elly", -200I);
 	
-// 	boss_add_attack(b, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
-// 	boss_add_attack(b, AT_Normal, "Frequency", 30, 26000, elly_frequency, NULL);
-// 	boss_add_attack(b, AT_Spellcard, "Newton Sign ~ 2.5 Laws of Movement", 60, 40000, elly_newton, elly_spellbg_classic);
-// 	boss_add_attack(b, AT_Normal, "Frequency2", 40, 23000, elly_frequency2, NULL);
-// 	boss_add_attack(b, AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 22000, elly_maxwell, elly_spellbg_classic);
-// 	boss_add_attack(b, AT_Move, "Unbound", 6, 10, elly_unbound, NULL);
-// 	boss_add_attack(b, AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 60, 30000, elly_eigenstate, elly_spellbg_modern);
-// 	boss_add_attack(b, AT_Normal, "Baryon", 40, 23000, elly_baryonattack, NULL);
-// 	boss_add_attack(b, AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 50, 40000, elly_ricci, elly_spellbg_modern);
-// 	boss_add_attack(b, AT_Normal, "Baryon", 25, 23000, elly_baryonattack2, NULL);
-// 	boss_add_attack(b, AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 60, 50000, elly_lhc, elly_spellbg_modern);
-// 	boss_add_attack(b, AT_Move, "Explode", 6, 10, elly_baryon_explode, NULL);
+	boss_add_attack(b, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
+	boss_add_attack(b, AT_Normal, "Frequency", 30, 26000, elly_frequency, NULL);
+	boss_add_attack(b, AT_Spellcard, "Newton Sign ~ 2.5 Laws of Movement", 60, 40000, elly_newton, elly_spellbg_classic);
+	boss_add_attack(b, AT_Normal, "Frequency2", 40, 23000, elly_frequency2, NULL);
+	boss_add_attack(b, AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 22000, elly_maxwell, elly_spellbg_classic);
+	boss_add_attack(b, AT_Move, "Unbound", 6, 10, elly_unbound, NULL);
+	boss_add_attack(b, AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 60, 30000, elly_eigenstate, elly_spellbg_modern);
+	boss_add_attack(b, AT_Normal, "Baryon", 40, 23000, elly_baryonattack, NULL);
+	boss_add_attack(b, AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 50, 40000, elly_ricci, elly_spellbg_modern);
+	boss_add_attack(b, AT_Normal, "Baryon", 25, 23000, elly_baryonattack2, NULL);
+	boss_add_attack(b, AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 60, 50000, elly_lhc, elly_spellbg_modern);
+	boss_add_attack(b, AT_Move, "Explode", 6, 10, elly_baryon_explode, NULL);
 	boss_add_attack(b, AT_SurvivalSpell, "Tower of Truth ~ Theory of Everything", 70, 40000, elly_theory, elly_spellbg_modern);
 	start_attack(b, b->attacks);
 	
@@ -897,8 +897,8 @@ Boss *create_elly() {
 void stage6_events() {
 	TIMER(&global.timer);
 	
-	AT(0)
-		global.timer = 3800;
+// 	AT(0)
+// 		global.timer = 3800;
 	
 	AT(100)
 		create_enemy1c(VIEWPORT_W/2, 6000, BigFairy, stage6_hacker, 2I);

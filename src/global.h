@@ -35,11 +35,6 @@
 #define FILE_PREFIX PREFIX "/share/taisei/"
 #define CONFIG_FILE "config"
 
-#undef min
-#undef max
-#define min(a, b) ((a) < (b) ? (a) : (b))
-#define max(a, b) ((a) > (b) ? (a) : (b))
-
 enum {
 	// defaults
 	RESX = 800,
@@ -137,10 +132,16 @@ void calc_fps(FPSCounter *fps);
 void set_ortho();
 void fade_out(float f);
 
-void toggle_fullscreen();
 void global_processevent(SDL_Event*);
 void take_screenshot();
 
+double psin();
+
+// NOTE: do NOT convert these to macros please.
+// max(frand(), 0.5);
+// min(huge_costly_expression, another_huge_costly_expression)
+double min(double, double);
+double max(double, double);
 double approach(double v, double t, double d);
 int strendswith(char *s, char *e);
 char* difficulty_name(Difficulty diff);

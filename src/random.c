@@ -44,6 +44,10 @@ inline double frand(void) {
 	return tsrand()/(double)TSRAND_MAX;
 }
 
+inline double nfrand() {
+	return frand() * 2 - 1;
+}
+
 int tsrand_test(void) {
 #if defined(TSRAND_FLOATTEST)
 	RandomState rnd;

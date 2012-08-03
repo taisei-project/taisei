@@ -209,9 +209,6 @@ int collision_line(complex a, complex b, complex c, float r) {
 	return 0;
 }
 
-#undef min
-#define min(a,b) ((a) < (b) ? (a) : (b))
-
 int collision_laser_curve(Laser *l) {
 	float s = (global.frames - l->birthtime)*l->speed + l->timeshift;
 	float t = s - l->timespan;
@@ -258,6 +255,26 @@ complex las_accel(Laser *l, float t) {
 	}
 	
 	return l->pos + l->args[0]*t + 0.5*l->args[1]*t*t;
+}
+
+complex las_sine(Laser *l, float t) {				// [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
+	if(t == EVENT_BIRTH) {
+		l->shader = get_shader("laser_sine");
+		return 0;
+	}
+	
+	double s = (l->args[2] * t + l->args[3]);
+	return l->pos + cexp(I * (carg(l->args[0]) + l->args[1] * sin(s) / s)) * t * cabs(l->args[0]);
+}
+
+complex las_sine_expanding(Laser *l, float t) {	// [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
+	if(t == EVENT_BIRTH) {
+		l->shader = get_shader("laser_sine_expanding");
+		return 0;
+	}
+	
+	double s = (l->args[2] * t + l->args[3]);
+	return l->pos + cexp(I * (carg(l->args[0]) + l->args[1] * sin(s))) * t * cabs(l->args[0]);
 }
 
 float laser_charge(Laser *l, int t, float charge, float width) {

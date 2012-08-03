@@ -16,6 +16,7 @@ uniform vec2 fix_orig;
 uniform float blur_rad;  // radius of zoom effect
 uniform float rad;
 uniform float ratio; // texture h/w
+uniform vec4 color;
 
 void main(void) {
 	vec2 pos = vec2(gl_TexCoord[0]);
@@ -31,5 +32,5 @@ void main(void) {
 	pos1 = vec2(gl_TexCoord[0]) - fix_orig;
 	pos1.y *= ratio;
 	
-	gl_FragColor *= pow(vec4(0.1,0.2,0.3,1),vec4(3.0*max(0.0,rad - length(pos1))));
+	gl_FragColor *= pow(color,vec4(3.0*max(0.0,rad - length(pos1))));
 }
