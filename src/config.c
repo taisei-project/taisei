@@ -152,7 +152,7 @@ void config_save(char *filename) {
 }
 
 #define SYNTAXERROR { warnx("config_load(): syntax error on line %i, aborted! [%s:%i]\n", line, __FILE__, __LINE__); goto end; }
-#define BUFFERERROR { warnx("config_load(): string exceed the limit of %i, aborted! [%s:%i]", line, __FILE__, __LINE__); goto end; }
+#define BUFFERERROR { warnx("config_load(): string exceed the limit of %i, aborted! [%s:%i]", CONFIG_LOAD_BUFSIZE, __FILE__, __LINE__); goto end; }
 #define INTOF(s) ((int)strtol(s, NULL, 10))
 
 void config_set(char *key, char *val) {

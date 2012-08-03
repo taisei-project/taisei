@@ -80,7 +80,7 @@ ConfigEntry* config_findentry(char *name);
 
 inline int config_intval(char*);
 inline int config_intval_p(ConfigEntry*);
-inline int config_strval(char*);
-inline int config_strval_p(ConfigEntry*)
+inline char* config_strval(char*);
+inline char* config_strval_p(ConfigEntry*);
 
 #endif
