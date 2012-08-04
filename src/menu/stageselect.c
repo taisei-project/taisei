@@ -25,7 +25,7 @@ void create_stage_menu(MenuData *m) {
 	m->title = "Stage Select";
 	
 	for(i = 0; stages[i].loop; ++i) if(!stages[i].hidden) {
-		snprintf(title, STGMENU_MAX_TITLE_LENGTH, "%d. %s", i + 1, stages[i].title);
+		snprintf(title, STGMENU_MAX_TITLE_LENGTH, "%s", stages[i].title);
 		add_menu_entry(m, title, start_story, &(stages[i]));
 	}
 	
