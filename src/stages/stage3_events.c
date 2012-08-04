@@ -11,6 +11,16 @@
 #include "stage.h"
 #include "enemy.h"
 
+Dialog *stage3_dialog() {
+	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
+	
+	dadd_msg(d, Left, "Ugh, it's like bugs being attracted\nby the light ...");
+	dadd_msg(d, Right, "Yes! Because the light makes us strong!");
+	dadd_msg(d, Right, "This place is full of it! So feel my tremendous power!");
+		
+	return d;
+}
+
 int stage3_enterswirl(Enemy *e, int t) {
 	TIMER(&t)
 	
@@ -189,16 +199,6 @@ int stage3_cornerfairy(Enemy *e, int t) {
 		e->hp = 0;
 	
 	return 0;
-}
-
-Dialog* stage3_dialog() {
-	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
-	
-	dadd_msg(d, Right, "Hurrrrr durr herp a derp!");
-	dadd_msg(d, Left, "Fuck fuck fuckity fuck!");
-	dadd_msg(d, Right, "HURR DURR A DERP A HERP HERP LOL DERP.");
-	
-	return d;
 }
 
 void stage3_mid_intro(Boss *boss, int time) {
@@ -743,9 +743,16 @@ void stage3_boss_prea3(Boss *boss, int time) {
 	stage3_boss_pre_common(boss, time, 3);
 }
 
+void stage3_boss_intro(Boss *boss, int time) {
+	if(time == 110)
+		global.dialog = stage3_dialog();
+	
+	GO_TO(boss, VIEWPORT_W/2.0 + 100I, 0.03);
+}
+
 Boss* stage3_create_boss() {
 	Boss *wriggle = create_boss("EX Wriggle", "wriggle", VIEWPORT_W/2 - 200I);
-	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage3_mid_intro, NULL);
+	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage3_boss_intro, NULL);
 	
 	boss_add_attack(wriggle, AT_Normal, "", 20, 15000, stage3_boss_prea1, NULL);
 	boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage3_boss_a1, stage3_boss_spellbg);

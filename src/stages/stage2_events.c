@@ -12,14 +12,31 @@
 
 Dialog *stage2_dialog() {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
+	
+	if(global.plr.cha == Marisa) {
+		dadd_msg(d, Left, "Ha! What are you doing here?\nYou the culprit?");
+		dadd_msg(d, Right, "Huh? No, you? Everone is upset, you know?\nSo I came too.");
+		dadd_msg(d, Left, "Why, what happened?");
+		dadd_msg(d, Right, "The border has been broken.");
+		dadd_msg(d, Left, "Is that even possible!?");
+		dadd_msg(d, Right, "Look, there is a way outside\nright behind us.");
+		dadd_msg(d, Left, "But I have the feeling that you\n won't let me pass, haha");
+	} else {
+		dadd_msg(d, Left, "This must be the place ...");
+		dadd_msg(d, Right, "Hello? ");
+		dadd_msg(d, Left, "You came here because of the\n\"crack\", too? Where is it?");
+		dadd_msg(d, Right, "Right behind us, but ...");
+		dadd_msg(d, Left, "Ok, I'll go there.");
+		dadd_msg(d, Right, "No! Don't make it more of a\ntrouble than it already is!");
+	}
+	
+	return d;
+}
+
+Dialog *stage2_post_dialog() {
+	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", NULL);
 		
-	dadd_msg(d, Left, "What are you doing here?\nYou the culprit?");
-	dadd_msg(d, Right, "Huh? No, you? Everone is upset, you know?\nSo I came too.");
-	dadd_msg(d, Left, "Why, what happened?");
-	dadd_msg(d, Right, "The border has cracked.");
-	dadd_msg(d, Left, "Is that even possible!?");
-	dadd_msg(d, Right, "Look, there is a way outside\nright behind us.");
-	dadd_msg(d, Left, "But I have the feeling that you\n won't let me pass, haha");
+	dadd_msg(d, Right, "Well, let's go then.");
 	
 	return d;
 }
@@ -185,9 +202,6 @@ int stage2_accel_circle(Enemy *e, int t) {
 }
 
 void wriggle_intro(Boss *w, int t) {
-	if(t < 0)
-		return;
-	
 	w->pos = VIEWPORT_W/2 + 100I + 400*(1.0-t/(4.0*FPS))*cexp(I*(3-t*0.04));
 }
 
@@ -238,10 +252,7 @@ Boss *create_wriggle_mid() {
 
 void hina_intro(Boss *h, int time) {
 	TIMER(&time);	
-	
-	if(time < 0)
-		return;
-	
+		
 	AT(100)
 		global.dialog = stage2_dialog();
 	
@@ -447,5 +458,9 @@ void stage2_events() {
 		
 	AT(5100) {
 		global.boss = create_hina();
+	}
+	
+	AT(5120) {
+		global.dialog = stage2_post_dialog();
 	}
 }
