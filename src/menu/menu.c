@@ -93,7 +93,7 @@ void menu_input(MenuData *menu) {
 	
 	if(menu->keypressed > KEYREPEAT_TIME) {
 		key_action(menu, menu->lastkey);
-		menu->keypressed = KEYREPEAT_TIME-10;
+		menu->keypressed = KEYREPEAT_TIME-5;
 	}
 }
 

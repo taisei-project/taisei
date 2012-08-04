@@ -451,11 +451,10 @@ void create_options_menu(MenuData *m) {
 // --- Drawing the menu --- //
 
 void draw_options_menu_bg(MenuData* menu) {
-	glColor4f(0.3, 0.3, 0.3,1);
-	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubgbg");
-	glColor4f(1,0.6,0.5,0.6 + 0.1*sin(menu->frames/100.0));
+	//draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubgbg");
+	glColor4f(0.3, 0.3, 0.3, 0.9 + 0.1 * sin(menu->frames/100.0));
 	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubg");
-	glColor3f(1,1,1);
+	glColor4f(1, 1, 1, 1);
 }
 
 void draw_options_menu(MenuData *menu) {
@@ -484,6 +483,7 @@ void draw_options_menu(MenuData *menu) {
 			continue;
 		
 		menu->entries[i].drawdata += 0.2 * (10*(i == menu->cursor) - menu->entries[i].drawdata);
+		float a = menu->entries[i].drawdata * 0.1;
 		
 		bind = &(binds[i]);
 		int hasbind = bind->enabled;
@@ -491,10 +491,10 @@ void draw_options_menu(MenuData *menu) {
 		
 		if(menu->entries[i].action == NULL) {
 			glColor4f(0.5, 0.5, 0.5, 0.7 * alpha);
-		} else if(i == menu->cursor) {
-			glColor4f(1,1,0,0.7 * alpha);
 		} else {
-			glColor4f(1, 1, 1, 0.7 * alpha);
+			//glColor4f(0.7 + 0.3 * (1-a), 1, 1, (0.7 + 0.3 * a) * alpha);
+			float ia = 1-a;
+			glColor4f(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a) * alpha);
 		}
 		
 		draw_text(AL_Left,
@@ -517,7 +517,7 @@ void draw_options_menu(MenuData *menu) {
 							origin -= strlen(bind->values[j+1])/2.0 * 20;
 						
 						if(bind_getvalue(bind) == j) {
-							glColor4f(1,1,0,0.7 * alpha);
+							glColor4f(0.9, 0.6, 0.2, alpha);
 						} else {
 							glColor4f(0.5,0.5,0.5,0.7 * alpha);
 						}
@@ -527,23 +527,22 @@ void draw_options_menu(MenuData *menu) {
 					break;
 				
 				case BT_KeyBinding:
-					if(!caption_drawn)
-					{
+					if(bind->blockinput) {
+						glColor4f(0.5, 1, 0.5, 1);
+						draw_text(AL_Right, origin, 20*i, "Press a key to assign, ESC to cancel", _fonts.standard);
+					} else
+						draw_text(AL_Right, origin, 20*i, SDL_GetKeyName(tconfig.intval[bind->configentry]), _fonts.standard);
+					
+					if(!caption_drawn) {
 						glColor4f(1,1,1,0.7);
 						draw_text(AL_Center, (SCREEN_W - 200)/2, 20*(i-1), "Controls", _fonts.standard);
 						caption_drawn = 1;
 					}
-				
-					if(bind->blockinput) {
-						glColor4f(0,1,0,0.7);
-						draw_text(AL_Right, origin, 20*i, "Press a key to assign, ESC to cancel", _fonts.standard);
-					} else
-						draw_text(AL_Right, origin, 20*i, SDL_GetKeyName(tconfig.intval[bind->configentry]), _fonts.standard);
 					break;
 				
 				case BT_StrValue:
 					if(bind->blockinput) {
-						glColor4f(0,1,0,0.7);
+						glColor4f(0.5, 1, 0.5, 1.0);
 						if(strlen(*bind->values))
 							draw_text(AL_Right, origin, 20*i, *bind->values, _fonts.standard);
 					} else
@@ -720,7 +719,7 @@ void options_menu_input(MenuData *menu) {
 	
 	if(menu->keypressed > KEYREPEAT_TIME) {
 		options_key_action(menu, menu->lastkey);
-		menu->keypressed = KEYREPEAT_TIME-10;
+		menu->keypressed = KEYREPEAT_TIME-5;
 	}
 }
 
