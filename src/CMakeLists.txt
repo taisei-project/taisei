@@ -36,6 +36,7 @@ set(SRCs
 	menu/options.c
 	menu/stageselect.c
 	menu/replayview.c
+    menu/replayover.c
 	menu/ingamemenu.c
 	menu/gameovermenu.c
 	menu/savereplay.c

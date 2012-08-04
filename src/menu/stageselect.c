@@ -25,7 +25,7 @@ void create_stage_menu(MenuData *m) {
 	m->title = "Stage Select";
 	
 	for(i = 0; stages[i].loop; ++i) if(!stages[i].hidden) {
-		snprintf(title, STGMENU_MAX_TITLE_LENGTH, "%d. %s", i + 1, stages[i].title);
+		snprintf(title, STGMENU_MAX_TITLE_LENGTH, "%s", stages[i].title);
 		add_menu_entry(m, title, start_story, &(stages[i]));
 	}
 	
@@ -38,7 +38,7 @@ void draw_stage_menu(MenuData *m) {
 	draw_text(AL_Right, (stringwidth(m->title, _fonts.mainmenu) + 10) * (1-m->fade), 30, m->title, _fonts.mainmenu);
 	
 	glPushMatrix();
-	glTranslatef(100, 100 + min(0, SCREEN_H * 0.7 - 100 - m->drawdata[2]), 0);
+	glTranslatef(100, 100 + ((m->ecount * 20 + 140 > SCREEN_W)? min(0, SCREEN_H * 0.7 - 100 - m->drawdata[2]) : 0), 0);
 	
 	glPushMatrix();
 	glTranslatef(SCREEN_W/2 - 100, m->drawdata[2], 0);
@@ -53,13 +53,15 @@ void draw_stage_menu(MenuData *m) {
 		MenuEntry *e = &(m->entries[i]);
 		
 		e->drawdata += 0.2 * (10*(i == m->cursor) - e->drawdata);
+		float a = e->drawdata * 0.1;
 		
 		if(e->action == NULL)
-			glColor4f(0.5, 0.5, 0.5, 0.7);
-		else if(i == m->cursor)
-			glColor4f(1,1,0,0.7);
-		else
-			glColor4f(1, 1, 1, 0.7);
+			glColor4f(0.5, 0.5, 0.5, 0.5);
+		else {
+			//glColor4f(0.7 + 0.3 * (1-a), 1, 1, 0.7 + 0.3 * a);
+			float ia = 1-a;
+			glColor4f(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, 0.7 + 0.3 * a);
+		}
 		
 		if(e->draw)
 			e->draw(e, i, m->ecount);

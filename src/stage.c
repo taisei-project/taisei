@@ -16,6 +16,7 @@
 #include "player.h"
 #include "menu/ingamemenu.h"
 #include "menu/savereplay.h"
+#include "menu/replayover.h"
 
 StageInfo stages[] = {	
 	{1, stage1_loop, False, "Stage 1", "Misty Lake", {1, 1, 1}},
@@ -93,7 +94,7 @@ void replay_input() {
 		
 		switch(e->type) {
 			case EV_OVER:
-				global.game_over = GAMEOVER_ABORT;
+				global.game_over = GAMEOVER_DEFEAT;
 				break;
 			
 			default:
@@ -315,7 +316,8 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 				fade_out(global.menu->fade);
 			}
 		} else {
-			fade_out(global.menu->fade);
+			if(global.replaymode != REPLAY_PLAY || (global.menu->quit && global.game_over))
+				fade_out(global.menu->fade);
 		}
 	}
 }
@@ -500,6 +502,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	stage_start();
 	start();
 	
+	SDL_EnableKeyRepeat(0, 0);
 	while(global.game_over <= 0) {
 		if(!global.boss && !global.dialog && !global.menu)
 			event();
@@ -527,7 +530,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 				
 				if(!global.menu)
 					break;
-								
+				
 				menu_input(global.menu);
 				SDL_GL_SwapBuffers();
 				frame_rate(&global.lasttime);
@@ -536,12 +539,32 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		
 		if(global.replay.active && tconfig.intval[SAVE_RPY] == 1)
 			save_rpy(NULL);
+	} else if(global.game_over != GAMEOVER_ABORT) {
+		global.menu = create_replayover_menu();
+		while(global.menu) {
+			stage_draw(info, draw, shaderrules, endtime);
+			ingame_menu_logic(&global.menu);
+			
+			if(!global.menu)
+				break;
+			else if(global.menu->quit == 2) {	// a hack that semi-fixes problems caused by another hack
+				destroy_menu(global.menu);
+				free(global.menu);
+				global.menu = NULL;
+				break;
+			}
+			
+			menu_input(global.menu);
+			SDL_GL_SwapBuffers();
+			frame_rate(&global.lasttime);
+		}
 	}
 	
 	end();
 	stage_end();
 	tsrand_switch(&global.rand_visual);
 	replay_destroy(&global.replay);
+	SDL_EnableKeyRepeat(TS_KR_DELAY, TS_KR_INTERVAL);
 }
 
 void draw_stage_title(StageInfo *info) {
