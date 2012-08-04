@@ -6,9 +6,10 @@
  * Copyright (C) 2012, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
  */
 
-#include "random.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "random.h"
+#include "taisei_err.h"
 
 /*
  *	Multiply-with-carry algorithm
@@ -87,8 +88,10 @@ int tsrand_test(void) {
 // we use this to support multiple rands in a single statement without breaking replays across different builds
 
 static int tsrand_array[TSRAND_ARRAY_LIMIT];
+static int tsrand_array_elems;
 
 void tsrand_fill_p(RandomState *rnd, int amount) {
+	tsrand_array_elems = amount;
 	int i; for(i = 0; i < amount; ++i)
 		tsrand_array[i] = tsrand_p(rnd);
 }
@@ -98,6 +101,8 @@ inline void tsrand_fill(int amount) {
 }
 
 inline int tsrand_a(int idx) {
+	if(idx >= tsrand_array_elems || idx < 0)
+		errx(-1, "tsrand_a: index out of range (%i / %i)", idx, tsrand_array_elems);
 	return tsrand_array[idx];
 }
 
