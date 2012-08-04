@@ -685,9 +685,10 @@ void elly_lhc(Boss *b, int t) {
 				
 		for(i = 0; i < c; i++) {
 			complex v = 3*cexp(2I*M_PI*frand());
+			tsrand_fill(4);
 			create_lasercurve2c(pos, 70+20*global.diff, 300, rgb(1, 1, 1), las_accel, v, 0.02*frand()*copysign(1,creal(v)))->width=15;
-			create_projectile1c("soul", pos, rgb(0.4, 0, 1.0), linear, (1+2.5*frand())*cexp(2I*M_PI*frand()))->draw = ProjDrawAdd;
-			create_projectile1c("bigball", pos, rgb(1, 0, 0.4), linear, (1+2.5*frand())*cexp(2I*M_PI*frand()))->draw = ProjDrawAdd;
+			create_projectile1c("soul", pos, rgb(0.4, 0, 1.0), linear, (1+2.5*afrand(0))*cexp(2I*M_PI*afrand(1)))->draw = ProjDrawAdd;
+			create_projectile1c("bigball", pos, rgb(1, 0, 0.4), linear, (1+2.5*afrand(2))*cexp(2I*M_PI*afrand(3)))->draw = ProjDrawAdd;
 		}
 	}
 	
@@ -727,12 +728,14 @@ void elly_baryon_explode(Boss *b, int t) {
 		set_baryon_rule(baryon_explode);
 			
 	FROM_TO(0, 200, 1) {
-		petal_explosion(1, b->pos + 100*frand()*cexp(2I*M_PI*frand()));
+		tsrand_fill(2);
+		petal_explosion(1, b->pos + 100*afrand(0)*cexp(2I*M_PI*afrand(1)));
 	}
 	
 	AT(200) {
+		tsrand_fill(2);
 		global.shake_view = 10;
-		petal_explosion(100, b->pos + 100*frand()*cexp(2I*M_PI*frand()));
+		petal_explosion(100, b->pos + 100*afrand(0)*cexp(2I*M_PI*afrand(1)));
 		killall(global.enemies);
 	}
 	
@@ -829,8 +832,10 @@ void elly_theory(Boss *b, int time) {
 	TIMER(&t);
 	
 	FROM_TO(0, 500, 10)
-		for(i = 0; i < 3; i++)
-			create_particle2c("stain", b->pos+80*frand()*cexp(2I*M_PI*frand()), rgba(1-frand(),0.8,0.5,1), FadeAdd, timeout, 60, 1+3*frand())->angle = 2*M_PI*frand();
+		for(i = 0; i < 3; i++) {
+			tsrand_fill(5);
+			create_particle2c("stain", b->pos+80*afrand(0)*cexp(2I*M_PI*afrand(1)), rgba(1-afrand(2),0.8,0.5,1), FadeAdd, timeout, 60, 1+3*afrand(3))->angle = 2*M_PI*afrand(4);
+		}
 	
 	FROM_TO(20, 70, 30-global.diff) {
 		int c = 20+2*global.diff;
