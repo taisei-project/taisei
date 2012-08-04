@@ -250,12 +250,13 @@ int replay_save(Replay *rpy, char *name) {
 	
 	FILE *fp = fopen(p, "w");
 	
+	free(p);
+	
 	if(!fp) {
 		printf("replay_save(): fopen() failed\n");
 		return False;
 	}
-	
-	free(p);
+		
 	int result = replay_write(rpy, fp);
 	fflush(fp);
 	fclose(fp);
@@ -268,12 +269,13 @@ int replay_load(Replay *rpy, char *name) {
 	
 	FILE *fp = fopen(p, "r");
 	
+	free(p);
+	
 	if(!fp) {
 		printf("replay_load(): fopen() failed\n");
 		return False;
 	}
-	
-	free(p);
+		
 	int result = replay_read(rpy, fp);
 	fclose(fp);
 	return result;
