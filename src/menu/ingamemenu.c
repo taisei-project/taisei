@@ -47,7 +47,7 @@ void draw_ingame_menu(MenuData *menu) {
 		)
 	) fade = 0;
 	
-	if(menu->selected != 1) // hardly hardcoded. 1 -> "Return to Title"
+	if(menu->selected != 1 || (global.game_over && global.replaymode == REPLAY_PLAY)) // hardly hardcoded. 1 -> "Return to Title"
 		rad = IMENU_BLUR * (1.0-fade);
 	
 	if(!tconfig.intval[NO_SHADER]) {
