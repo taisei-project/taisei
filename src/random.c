@@ -104,3 +104,8 @@ inline int tsrand_a(int idx) {
 inline double afrand(int idx) {
 	return tsrand_a(idx)/(double)TSRAND_MAX;
 }
+
+inline double anfrand(int idx) {
+	return afrand(idx) * 2 - 1;
+}
+

@@ -31,6 +31,7 @@ void tsrand_fill_p(RandomState *rnd, int amount);
 inline void tsrand_fill(int amount);
 inline int tsrand_a(int idx);
 inline double afrand(int idx);
+inline double anfrand(int idx);
 
 #define TSRAND_MAX INT32_MAX
 
