@@ -83,3 +83,24 @@ int tsrand_test(void) {
 	return 0;
 #endif
 }
+
+// we use this to support multiple rands in a single statement without breaking replays across different builds
+
+static int tsrand_array[TSRAND_ARRAY_LIMIT];
+
+void tsrand_fill_p(RandomState *rnd, int amount) {
+	int i; for(i = 0; i < amount; ++i)
+		tsrand_array[i] = tsrand_p(rnd);
+}
+
+inline void tsrand_fill(int amount) {
+	tsrand_fill_p(tsrand_current, amount);
+}
+
+inline int tsrand_a(int idx) {
+	return tsrand_array[idx];
+}
+
+inline double afrand(int idx) {
+	return tsrand_a(idx)/(double)TSRAND_MAX;
+}

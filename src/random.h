@@ -27,8 +27,14 @@ inline int tsrand(void);
 inline double frand();
 inline double nfrand();
 
+void tsrand_fill_p(RandomState *rnd, int amount);
+inline void tsrand_fill(int amount);
+inline int tsrand_a(int idx);
+inline double afrand(int idx);
+
 #define TSRAND_MAX INT32_MAX
 
+#define TSRAND_ARRAY_LIMIT 128
 #define srand USE_tsrand_seed_INSTEAD_OF_srand
 #define rand USE_tsrand_INSTEAD_OF_rand
 
