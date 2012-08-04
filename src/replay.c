@@ -177,6 +177,7 @@ int replay_read(Replay *rpy, FILE *file) {
 					int magic = INTOF(buf);
 					if(magic != REPLAY_MAGICNUMBER) {
 						printf("replay_read(): invalid magic number: %d\n", magic);
+						replay_destroy(rpy);
 						return False;
 					}
 					
@@ -206,6 +207,11 @@ int replay_read(Replay *rpy, FILE *file) {
 				
 				case RPY_E_COUNT:
 					rpy->capacity 	= rpy->ecount = INTOF(buf);
+					if(rpy->capacity <= 0) {
+						printf("replay_read(): insane capacity: %i\n", rpy->capacity);
+						replay_destroy(rpy);
+						return False;
+					}
 					rpy->events		= (ReplayEvent*)malloc(sizeof(ReplayEvent) * rpy->capacity);
 					break;
 				
@@ -221,15 +227,17 @@ int replay_read(Replay *rpy, FILE *file) {
 				readstate = RPY_E_FRAME;
 			else
 				++readstate;
-		} else buf[bufidx++] = c;
-		
-		if(bufidx > REPLAY_READ_MAXSTRLEN) {
-			printf("replay_read(): item is too long\n");
-			return False;
+		} else {
+			buf[bufidx++] = c;
+			if(bufidx >= REPLAY_READ_MAXSTRLEN) {
+				printf("replay_read(): item is too long\n");
+				replay_destroy(rpy);
+				return False;
+			}
 		}
 	}
 	
-	return False;
+	return True;
 }
 
 #undef FLOATOF
