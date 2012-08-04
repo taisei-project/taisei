@@ -285,6 +285,6 @@ void replay_copy(Replay *dst, Replay *src) {
 	dst->capacity = dst->ecount;
 	dst->events = (ReplayEvent*)malloc(sizeof(ReplayEvent) * dst->capacity);
 	memcpy(dst->events, src->events, dst->capacity * sizeof(ReplayEvent));
-	dst->playername = (char*)malloc(strlen(src->playername));
+	dst->playername = (char*)malloc(strlen(src->playername)+1);
 	strcpy(dst->playername, src->playername);
 }
