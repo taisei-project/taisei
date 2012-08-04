@@ -143,7 +143,9 @@ int fill_replayview_menu(MenuData *m) {
 			continue;
 		
 		Replay *rpy = malloc(sizeof(Replay));
-		replay_load(rpy, e->d_name);
+		if(!replay_load(rpy, e->d_name)) {
+			free(rpy);
+		}
 		
 		/*
 		int size = strlen(e->d_name) - strlen(ext) + 1;
