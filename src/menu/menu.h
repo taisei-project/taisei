@@ -10,7 +10,8 @@
 
 #define IMENU_BLUR 0.05
 #define FADE_TIME 15
-#define KEYREPEAT_TIME 40
+#define TS_KR_DELAY SDL_DEFAULT_REPEAT_DELAY
+#define TS_KR_INTERVAL (SDL_DEFAULT_REPEAT_INTERVAL*2)
 
 typedef struct {
 	char *name;
@@ -31,9 +32,6 @@ typedef struct MenuData{
 	
 	int cursor;
 	int selected;
-	
-	int lastkey;
-	int keypressed;
 	
 	MenuEntry *entries;
 	int ecount;

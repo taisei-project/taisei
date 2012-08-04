@@ -500,6 +500,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	stage_start();
 	start();
 	
+	SDL_EnableKeyRepeat(0, 0);
 	while(global.game_over <= 0) {
 		if(!global.boss && !global.dialog && !global.menu)
 			event();
@@ -542,6 +543,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	stage_end();
 	tsrand_switch(&global.rand_visual);
 	replay_destroy(&global.replay);
+	SDL_EnableKeyRepeat(TS_KR_DELAY, TS_KR_INTERVAL);
 }
 
 void draw_stage_title(StageInfo *info) {
