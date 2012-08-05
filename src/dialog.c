@@ -118,6 +118,7 @@ void page_dialog(Dialog **d) {
 	if((*d)->pos >= (*d)->count) {
 		delete_dialog(*d);
 		*d = NULL;
-		global.timer++;
+		if(!global.boss)
+			global.timer++;
 	}
 }
