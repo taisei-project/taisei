@@ -807,7 +807,7 @@ void stage3_events() {
 		global.boss = stage3_create_midboss();
 	
 	FROM_TO(2801, 3000, 10) {
-		tsrand_fill(2);
+		tsrand_fill(3);
 		create_enemy2c(VIEWPORT_W/2 + 20 * anfrand(0) + (VIEWPORT_H/4 + 20 * anfrand(1))*I, 200, Swirl, stage3_enterswirl, I * 3 + anfrand(2) * 3, 1);
 	}
 	
