@@ -25,7 +25,7 @@ Dialog *stage1_dialog() {
 	dadd_msg(d, Right, "How dare you pass the lake of the fairies!\nIt's a dangerous area for weak humans!");
 	if(global.plr.cha == Marisa) {
 		dadd_msg(d, Left, "You call me weak?");
-		dadd_msg(d, Left, "Yes!");
+		dadd_msg(d, Right, "Yes!");
 	} else {
 		dadd_msg(d, Left, "I'm just walking by. Any problem with that?");
 		dadd_msg(d, Right, "Of course! It's not right!");
