@@ -23,7 +23,21 @@ static struct {
 	CreditsEntry *entries;
 	int ecount;
 	float panelalpha;
+	float fadeout;
+	int end;
 } credits;
+
+void credits_fill(void) {
+	credits_add("Taisei Project\nbrought to you by...", 200);
+	credits_add("laochailan\nLukas Weber\nlaochailan@web.de", 300);
+	credits_add("Akari\nAndrew Alexeyew\nhttp://akari.thebadasschoobs.org/", 300);
+	credits_add("lachs0r\nMartin Herkt\nluck3r@phicode.de", 300);
+	credits_add("Special Thanks", 300);
+	credits_add("ZUN\nfor Touhou Project\nhttp://www16.big.or.jp/~zun/", 300);
+	credits_add("Burj Khalifa\nfor the Burj Khalifa photo\nhttp://www.burjkhalifa.ae/", 300);
+	credits_add("...and You!\nfor playing", 300);
+	credits_add("Visit Us\nhttp://taisei-project.org/\n \nAnd join our IRC channel\n#taisei-project at irc.freenode.net", 500);
+}
 
 void credits_add(char *data, int time) {
 	CreditsEntry *e;
@@ -54,6 +68,7 @@ void credits_add(char *data, int time) {
 	buf[i] = 0;
 	e->data[l] = malloc(strlen(buf) + 1);
 	strcpy(e->data[l], buf);
+	credits.end += time + CREDITS_ENTRY_FADEOUT;
 }
 
 Vector **stage6_towerwall_pos(Vector pos, float maxrange);
@@ -96,12 +111,6 @@ void credits_towerwall_draw(Vector pos) {
 	glDisable(GL_TEXTURE_2D);
 }
 
-void credits_fill(void) {
-	credits_add("Taisei Project", 200);
-	credits_add("String 1\nDerp 2\nHuge derp 3", 500);
-	credits_add("lol 1\nomg 2\nwtf 3", 500);
-}
-
 Vector **credits_skysphere_pos(Vector pos, float maxrange) {
 	return single3dpos(pos, maxrange, bgcontext.cx);
 }
@@ -120,6 +129,7 @@ void credits_init(void) {
 	
 	global.frames = 0;
 	credits_fill();
+	credits.end += 500 + CREDITS_ENTRY_FADEOUT;
 }
 
 void credits_draw_entry(CreditsEntry *e) {
@@ -148,13 +158,13 @@ void credits_draw_entry(CreditsEntry *e) {
 	
 	glPushMatrix();
 	if(fadein < 1)
-		glTranslatef(0, (SCREEN_W * pow(1 - fadein,  2)) *  0.5, 0);
+		glTranslatef(0, SCREEN_W * pow(1 - fadein,  2) *  0.5, 0);
 	else if(fadeout < 1)
-		glTranslatef(0, (SCREEN_W * pow(1 - fadeout, 2)) * -0.5, 0);
+		glTranslatef(0, SCREEN_W * pow(1 - fadeout, 2) * -0.5, 0);
 	
 	glColor4f(1, 1, 1, fadein * fadeout);
 	for(i = 0; i < e->lines; ++i)
-		draw_text(AL_Center, 0, -0.5 * (i? (other * (e->lines - i) - first) : first), e->data[i], (i? _fonts.standard : _fonts.mainmenu));
+		draw_text(AL_Center, 0, (first + other * (e->lines-1)) * -0.25 + (i? first/4 + other/2 * i : 0), e->data[i], (i? _fonts.standard : _fonts.mainmenu));
 	glPopMatrix();
 }
 
@@ -167,10 +177,6 @@ void credits_draw(void) {
 	
 	set_perspective_viewport(&bgcontext, 100, 9000, 0, 0, SCREEN_W, SCREEN_H);
 	draw_stage3d(&bgcontext, 10000);
-	
-	bgcontext.cx[2] = 200 - global.frames * 50;
-	bgcontext.cx[1] = 500 + 100 * psin(global.frames / 100.0) * psin(global.frames / 200.0 + M_PI);
-	bgcontext.cx[0] += nfrand();
 	
 	glPopMatrix();
 	set_ortho();
@@ -192,13 +198,26 @@ void credits_draw(void) {
 	glPopMatrix();
 	
 	fade_out(1 - (global.frames / 300.0));
+	fade_out(credits.fadeout);
 }
 
 void credits_process(void) {
 	TIMER(&global.frames);
 	
+	bgcontext.cx[2] = 200 - global.frames * 50;
+	bgcontext.cx[1] = 500 + 100 * psin(global.frames / 100.0) * psin(global.frames / 200.0 + M_PI);
+	bgcontext.cx[0] += nfrand();
+	
 	FROM_TO(200, 300, 1)
 		credits.panelalpha += 0.01;
+	
+	if(global.frames >= credits.end - CREDITS_ENTRY_FADEOUT) {
+		credits.panelalpha -= 1 / 120.0;
+	}
+	
+	if(global.frames >= credits.end) {
+		credits.fadeout += 1 / 120.0;
+	}
 }
 
 void credits_input(void) {
@@ -229,7 +248,7 @@ void credits_free(void) {
 
 void credits_loop(void) {
 	credits_init();
-	while(1) {
+	while(credits.fadeout <= 1) {
 		credits_input();
 		credits_process();
 		credits_draw();

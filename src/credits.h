@@ -10,6 +10,7 @@
 #define CREDITS_H
 
 void credits_loop(void);
+void credits_add(char*, int);
 
 #define CREDITS_ENTRY_FADEIN 200.0
 #define CREDITS_ENTRY_FADEOUT 100.0
