@@ -461,7 +461,7 @@ void stage2_events() {
 		global.boss = create_hina();
 	}
 	
-	AT(5120) {
+	AT(5180) {
 		global.dialog = stage2_post_dialog();
 	}
 }

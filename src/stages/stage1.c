@@ -203,7 +203,7 @@ void cirno_pfreeze_bg(Boss *c, int time) {
 }
 	
 Boss *create_cirno_mid() {
-	Boss* cirno = create_boss("Cirno", "cirno", VIEWPORT_W + 150 + 30I);
+	Boss* cirno = create_boss("Cirno", "cirno", VIEWPORT_W + 220 + 30I);
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro, NULL);
 	boss_add_attack(cirno, AT_Normal, "Icy Storm", 20, 20000, cirno_icy, NULL);
 	boss_add_attack(cirno, AT_Spellcard, "Freeze Sign ~ Perfect Freeze", 32, 20000, cirno_perfect_freeze, cirno_pfreeze_bg);
@@ -339,7 +339,7 @@ void cirno_icicle_fall(Boss *c, int time) {
 }
 
 Boss *create_cirno() {
-	Boss* cirno = create_boss("Cirno", "cirno", -150 + 100I);
+	Boss* cirno = create_boss("Cirno", "cirno", -230 + 100I);
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro_boss, NULL);
 	boss_add_attack(cirno, AT_Normal, "Iceplosion 0", 20, 20000, cirno_iceplosion0, NULL);
 	boss_add_attack(cirno, AT_Spellcard, "Freeze Sign ~ Crystal Rain", 28, 28000, cirno_crystal_rain, cirno_pfreeze_bg);
