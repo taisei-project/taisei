@@ -147,6 +147,7 @@ double psin();
 // min(huge_costly_expression, another_huge_costly_expression)
 double min(double, double);
 double max(double, double);
+double clamp(double, double, double);
 double approach(double v, double t, double d);
 int strendswith(char *s, char *e);
 char* difficulty_name(Difficulty diff);

@@ -114,6 +114,15 @@ inline double min(double a, double b) {
 	return (a < b)? a : b;
 }
 
+inline double clamp(double f, double lower, double upper) {
+	if(f < lower)
+		return lower;
+	if(f > upper)
+		return upper;
+	
+	return f;
+}
+
 void take_screenshot()
 {
 	FILE *out;

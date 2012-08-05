@@ -16,6 +16,8 @@
 
 #include "global.h"
 #include "stage.h"
+#include "ending.h"
+#include "credits.h"
 #include "paths/native.h"
 
 void quit_menu(void *arg) {
@@ -46,6 +48,9 @@ troll:
 	}
 	
 	global.game_over = 0;
+	
+	ending_loop();
+	credits_loop();
 }
 
 void enter_options(void *arg) {

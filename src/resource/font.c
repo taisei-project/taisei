@@ -82,6 +82,12 @@ int stringwidth(char *s, TTF_Font *font) {
 	return w;
 }
 
+int stringheight(char *s, TTF_Font *font) {
+	int h;
+	TTF_SizeText(font, s, NULL, &h);
+	return h;
+}
+
 int charwidth(char c, TTF_Font *font) {
 	char s[2];
 	s[0] = c;
