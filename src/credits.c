@@ -34,7 +34,7 @@ void credits_fill(void) {
 	credits_add("lachs0r\nMartin Herkt\nluck3r@phicode.de", 300);
 	credits_add("Special Thanks", 300);
 	credits_add("ZUN\nfor Touhou Project\nhttp://www16.big.or.jp/~zun/", 300);
-	credits_add("Burj Khalifa\nfor the Burj Khalifa photo\nhttp://www.burjkhalifa.ae/", 300);
+//	credits_add("Burj Khalifa\nfor the Burj Khalifa photo\nhttp://www.burjkhalifa.ae/", 300);
 	credits_add("...and You!\nfor playing", 300);
 	credits_add("Visit Us\nhttp://taisei-project.org/\n \nAnd join our IRC channel\n#taisei-project at irc.freenode.net", 500);
 }
@@ -206,7 +206,8 @@ void credits_process(void) {
 	
 	bgcontext.cx[2] = 200 - global.frames * 50;
 	bgcontext.cx[1] = 500 + 100 * psin(global.frames / 100.0) * psin(global.frames / 200.0 + M_PI);
-	bgcontext.cx[0] += nfrand();
+	//bgcontext.cx[0] += nfrand();
+	bgcontext.cx[0] = 25 * sin(global.frames / 75.7) * cos(global.frames / 99.3);
 	
 	FROM_TO(200, 300, 1)
 		credits.panelalpha += 0.01;
