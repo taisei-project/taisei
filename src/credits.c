@@ -75,6 +75,27 @@ void credits_skysphere_draw(Vector pos) {
 	glDisable(GL_TEXTURE_2D);
 }
 
+void credits_towerwall_draw(Vector pos) {
+	glEnable(GL_TEXTURE_2D);
+	
+	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towerwall")->gltex);
+	if(!tconfig.intval[NO_SHADER]) {
+		Shader *s = get_shader("tower_wall");
+		glUseProgram(s->prog);
+		glUniform1i(uniloc(s, "lendiv"), 2800.0 + 300.0 * sin(global.frames / 77.7));
+	}
+	
+	glPushMatrix();
+	glTranslatef(pos[0], pos[1], pos[2]);
+// 	glRotatef(90, 1,0,0);
+	glScalef(30,30,30);
+	draw_model("towerwall");
+	glPopMatrix();
+	
+	glUseProgram(0);
+	glDisable(GL_TEXTURE_2D);
+}
+
 void credits_fill(void) {
 	credits_add("Taisei Project", 200);
 	credits_add("String 1\nDerp 2\nHuge derp 3", 500);
@@ -90,7 +111,7 @@ void credits_init(void) {
 	init_stage3d(&bgcontext);
 	
 	add_model(&bgcontext, credits_skysphere_draw, credits_skysphere_pos);
-	add_model(&bgcontext, stage6_towerwall_draw, stage6_towerwall_pos);
+	add_model(&bgcontext, credits_towerwall_draw, stage6_towerwall_pos);
 	
 	bgcontext.cx[0] = 0;
 	bgcontext.cx[1] = 600;

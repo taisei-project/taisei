@@ -14,6 +14,7 @@ void main(void) {
 #version 110
 
 uniform sampler2D tex;
+uniform float lendiv;
 
 varying vec4 d;
 varying vec4 TexCoord0;
