@@ -202,7 +202,8 @@ int stage2_accel_circle(Enemy *e, int t) {
 }
 
 void wriggle_intro(Boss *w, int t) {
-	w->pos = VIEWPORT_W/2 + 100I + 400*(1.0-t/(4.0*FPS))*cexp(I*(3-t*0.04));
+	if(t != EVENT_DEATH)
+		w->pos = VIEWPORT_W/2 + 100I + 400*(1.0-t/(4.0*FPS))*cexp(I*(3-t*0.04));
 }
 
 int wriggle_bug(Projectile *p, int t) {
