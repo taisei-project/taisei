@@ -177,6 +177,7 @@ int replay_read(Replay *rpy, FILE *file) {
 					int magic = INTOF(buf);
 					if(magic != REPLAY_MAGICNUMBER) {
 						printf("replay_read(): invalid magic number: %d\n", magic);
+						replay_destroy(rpy);
 						return False;
 					}
 					
@@ -206,6 +207,11 @@ int replay_read(Replay *rpy, FILE *file) {
 				
 				case RPY_E_COUNT:
 					rpy->capacity 	= rpy->ecount = INTOF(buf);
+					if(rpy->capacity <= 0) {
+						printf("replay_read(): insane capacity: %i\n", rpy->capacity);
+						replay_destroy(rpy);
+						return False;
+					}
 					rpy->events		= (ReplayEvent*)malloc(sizeof(ReplayEvent) * rpy->capacity);
 					break;
 				
@@ -221,15 +227,17 @@ int replay_read(Replay *rpy, FILE *file) {
 				readstate = RPY_E_FRAME;
 			else
 				++readstate;
-		} else buf[bufidx++] = c;
-		
-		if(bufidx > REPLAY_READ_MAXSTRLEN) {
-			printf("replay_read(): item is too long\n");
-			return False;
+		} else {
+			buf[bufidx++] = c;
+			if(bufidx >= REPLAY_READ_MAXSTRLEN) {
+				printf("replay_read(): item is too long\n");
+				replay_destroy(rpy);
+				return False;
+			}
 		}
 	}
 	
-	return False;
+	return True;
 }
 
 #undef FLOATOF
@@ -250,12 +258,13 @@ int replay_save(Replay *rpy, char *name) {
 	
 	FILE *fp = fopen(p, "w");
 	
+	free(p);
+	
 	if(!fp) {
 		printf("replay_save(): fopen() failed\n");
 		return False;
 	}
-	
-	free(p);
+		
 	int result = replay_write(rpy, fp);
 	fflush(fp);
 	fclose(fp);
@@ -268,12 +277,13 @@ int replay_load(Replay *rpy, char *name) {
 	
 	FILE *fp = fopen(p, "r");
 	
+	free(p);
+	
 	if(!fp) {
 		printf("replay_load(): fopen() failed\n");
 		return False;
 	}
-	
-	free(p);
+		
 	int result = replay_read(rpy, fp);
 	fclose(fp);
 	return result;
@@ -285,6 +295,6 @@ void replay_copy(Replay *dst, Replay *src) {
 	dst->capacity = dst->ecount;
 	dst->events = (ReplayEvent*)malloc(sizeof(ReplayEvent) * dst->capacity);
 	memcpy(dst->events, src->events, dst->capacity * sizeof(ReplayEvent));
-	dst->playername = (char*)malloc(strlen(src->playername));
+	dst->playername = (char*)malloc(strlen(src->playername)+1);
 	strcpy(dst->playername, src->playername);
 }

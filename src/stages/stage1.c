@@ -17,10 +17,20 @@ Dialog *stage1_dialog() {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
 		
 	dadd_msg(d, Right, "Hey! Who is there?");
-	dadd_msg(d, Left, "Just someone?");
-	dadd_msg(d, Right, "How dare you pass the lake of the fairies!\nIt's a dangerous area for weak humans.");
-	dadd_msg(d, Left, "I'm just walking by. Any problem with that?");
-	dadd_msg(d, Right, "Of course! It's not right!");
+	
+	if(global.plr.cha == Marisa)
+		dadd_msg(d, Left, "It's me!");
+	else
+		dadd_msg(d, Left, "Just someone?");
+	dadd_msg(d, Right, "How dare you pass the lake of the fairies!\nIt's a dangerous area for weak humans!");
+	if(global.plr.cha == Marisa) {
+		dadd_msg(d, Left, "You call me weak?");
+		dadd_msg(d, Right, "Yes!");
+	} else {
+		dadd_msg(d, Left, "I'm just walking by. Any problem with that?");
+		dadd_msg(d, Right, "Of course! It's not right!");
+	}
+	
 	dadd_msg(d, Right, "I'll just freeze you!");
 	
 	return d;

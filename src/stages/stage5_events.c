@@ -24,7 +24,7 @@ Dialog *stage5_boss_dialog() {
 	dadd_msg(d, Right, "Stop following me!");
 	dadd_msg(d, Left, "Why? You aren't involved in this, are you?");
 	dadd_msg(d, Right, "I don't have time for your suspicions now.");
-	dadd_msg(d, Left, "Sounds very suspecious, actually.");
+	dadd_msg(d, Left, "Sounds very suspicious, actually.");
 	dadd_msg(d, Right, "Ok, let's finish this quickly.");	
 		
 	return d;
