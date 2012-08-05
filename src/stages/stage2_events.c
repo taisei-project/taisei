@@ -11,7 +11,7 @@
 #include "enemy.h"
 
 Dialog *stage2_dialog() {
-	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
+	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/hina");
 	
 	if(global.plr.cha == Marisa) {
 		dadd_msg(d, Left, "Ha! What are you doing here?\nYou the culprit?");
