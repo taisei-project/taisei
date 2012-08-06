@@ -97,6 +97,7 @@ void menu_logic(MenuData *menu) {
 		menu->fade = 1;
 		
 	if(menu->quit == 1 && menu->fade >= 1.0) {
+		global.whitefade = 0;
 		menu->quit = menu->type == MT_Transient ? 2 : 0;
 		if(menu->selected != -1 && menu->entries[menu->selected].action != NULL)
 			menu->entries[menu->selected].action(menu->entries[menu->selected].arg);

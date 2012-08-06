@@ -55,15 +55,6 @@ void stage5_stairs_draw(Vector pos) {
 	glUseProgram(0);
 }
 
-float clamp(float f, float lower, float upper) {
-	if(f < lower)
-		return lower;
-	if(f > upper)
-		return upper;
-	
-	return f;
-}
-
 void stage5_draw() {
 	set_perspective(&bgcontext, 100, 20000);
 	draw_stage3d(&bgcontext, 30000);
