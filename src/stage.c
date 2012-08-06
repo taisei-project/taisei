@@ -486,7 +486,11 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		stg->playpos = 0;
 	}
 	
+	float power = global.plr.power;
+	global.plr.power = -1;
 	killall(global.plr.slaves);
+	player_set_power(&global.plr, power);
+	
 	tsrand_switch(&global.rand_game);
 	stage_start();
 	start();

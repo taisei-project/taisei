@@ -22,7 +22,6 @@ void init_player(Player* plr) {
 	plr->bombs = PLR_START_BOMBS;
 		
 	plr->deathtime = -1;
-	
 	plr->continues = 0;
 }
 
