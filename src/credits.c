@@ -31,7 +31,7 @@ void credits_fill(void) {
 	credits_add("Taisei Project\nbrought to you by...", 200);
 	credits_add("laochailan\nLukas Weber\nlaochailan@web.de", 300);
 	credits_add("Akari\nAndrew Alexeyew\nhttp://akari.thebadasschoobs.org/", 300);
-	credits_add("lachs0r\nMartin Herkt\nluck3r@phicode.de", 300);
+	credits_add("lachs0r\nMartin Herkt\nlachs0r@hong-mailing.de", 300);
 	credits_add("Special Thanks", 300);
 	credits_add("ZUN\nfor Touhou Project\nhttp://www16.big.or.jp/~zun/", 300);
 //	credits_add("Burj Khalifa\nfor the Burj Khalifa photo\nhttp://www.burjkhalifa.ae/", 300);
