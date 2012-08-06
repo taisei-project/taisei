@@ -461,21 +461,35 @@ void draw_options_menu(MenuData *menu) {
 	draw_options_menu_bg(menu);
 	
 	draw_text(AL_Right, 140*(1-menu->fade), 30, "Options", _fonts.mainmenu);
-		
+	
 	glPushMatrix();
 	glTranslatef(100, 100, 0);
 	
+	/*
 	glPushMatrix();
 	glTranslatef(SCREEN_W/2 - 100, menu->drawdata[2], 0);
 	glScalef(SCREEN_W - 200, 20, 1);
 	glColor4f(0,0,0,0.5);
-	
 	draw_quad();
+	glPopMatrix();
+	*/
 	
+	Texture *bg = get_tex("part/smoke");
+	glPushMatrix();
+	glTranslatef(menu->drawdata[0], menu->drawdata[2], 0);
+	glScalef(menu->drawdata[1]/100.0, 0.2, 1);
+	glRotatef(menu->frames*2,0,0,1);
+	glColor4f(0,0,0,0.5);
+	draw_texture_p(0,0,bg);
 	glPopMatrix();
 	
 	OptionBinding *binds = (OptionBinding*)menu->context;
 	OptionBinding *bind;
+	
+	menu->drawdata[0] += ((SCREEN_W/2 - 100) - menu->drawdata[0])/10.0;
+	menu->drawdata[1] += ((SCREEN_W - 200) - menu->drawdata[1])/10.0;
+	menu->drawdata[2] += (20*menu->cursor - menu->drawdata[2])/10.0;
+	
 	int i, caption_drawn = 0;
 	
 	for(i = 0; i < menu->ecount; i++) {
@@ -572,7 +586,6 @@ void draw_options_menu(MenuData *menu) {
 	
 	
 	glPopMatrix();
-	menu->drawdata[2] += (20*menu->cursor - menu->drawdata[2])/10.0;
 	
 	fade_out(menu->fade);
 }

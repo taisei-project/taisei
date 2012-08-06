@@ -40,13 +40,28 @@ void draw_stage_menu(MenuData *m) {
 	glPushMatrix();
 	glTranslatef(100, 100 + ((m->ecount * 20 + 140 > SCREEN_W)? min(0, SCREEN_H * 0.7 - 100 - m->drawdata[2]) : 0), 0);
 	
+	/*
 	glPushMatrix();
 	glTranslatef(SCREEN_W/2 - 100, m->drawdata[2], 0);
 	glScalef(SCREEN_W - 200, 20, 1);
 	glColor4f(0,0,0,0.5);
-	
 	draw_quad();
 	glPopMatrix();
+	*/
+	
+	Texture *bg = get_tex("part/smoke");
+	glPushMatrix();
+	glTranslatef(m->drawdata[0], m->drawdata[2], 0);
+	glScalef(m->drawdata[1]/100.0, 0.2, 1);
+	glRotatef(m->frames*2,0,0,1);
+	glColor4f(0,0,0,0.5);
+	draw_texture_p(0,0,bg);
+	glPopMatrix();
+	
+	MenuEntry *s = &(m->entries[m->cursor]);
+	m->drawdata[0] += ((s->draw? SCREEN_W/2 - 100 : (stringwidth(s->name, _fonts.mainmenu)/2 - s->drawdata*1.5)) - m->drawdata[0])/10.0;
+	m->drawdata[1] += ((s->draw? (SCREEN_W - 200)*0.85 : stringwidth(s->name, _fonts.mainmenu)) - m->drawdata[1])/10.0;
+	m->drawdata[2] += (20*m->cursor - m->drawdata[2])/10.0;
 	
 	int i;
 	for(i = 0; i < m->ecount; i++) {
@@ -70,7 +85,6 @@ void draw_stage_menu(MenuData *m) {
 	}
 	
 	glPopMatrix();
-	m->drawdata[2] += (20*m->cursor - m->drawdata[2])/10.0;
 	
 	fade_out(m->fade);
 }
