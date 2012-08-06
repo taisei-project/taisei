@@ -35,8 +35,10 @@ void credits_fill(void) {
 	credits_add("Special Thanks", 300);
 	credits_add("ZUN\nfor Touhou Project\nhttp://www16.big.or.jp/~zun/", 300);
 //	credits_add("Burj Khalifa\nfor the Burj Khalifa photo\nhttp://www.burjkhalifa.ae/", 300);
+	credits_add("Mochizuki Ado\nfor a nice yukkuri image", 300);
 	credits_add("...and You!\nfor playing", 300);
 	credits_add("Visit Us\nhttp://taisei-project.org/\n \nAnd join our IRC channel\n#taisei-project at irc.freenode.net", 500);
+	credits_add("*", 150);
 }
 
 void credits_add(char *data, int time) {
@@ -133,9 +135,10 @@ void credits_init(void) {
 }
 
 void credits_draw_entry(CreditsEntry *e) {
-	int time = global.frames - 400, i;
+	int time = global.frames - 400, i, yukkuri = False;
 	float first, other = 0, fadein = 1, fadeout = 1;
 	CreditsEntry *o;
+	Texture *ytex;
 	
 	for(o = credits.entries; o != e; ++o)
 		time -= o->time + CREDITS_ENTRY_FADEOUT;
@@ -152,7 +155,12 @@ void credits_draw_entry(CreditsEntry *e) {
 	if(!fadein || !fadeout)
 		return;
 	
-	first = stringheight(e->data[0], _fonts.mainmenu) * 1.2;
+	if(*(e->data[0]) == '*') {
+		yukkuri = True;
+		ytex = get_tex("yukkureimu");
+	}
+	
+	first = yukkuri? ytex->trueh * CREDITS_YUKKURI_SCALE : (stringheight(e->data[0], _fonts.mainmenu) * 1.2);
 	if(e->lines > 1)
 		other = stringheight(e->data[1], _fonts.standard) * 1.3;
 	
@@ -163,9 +171,18 @@ void credits_draw_entry(CreditsEntry *e) {
 		glTranslatef(0, SCREEN_W * pow(1 - fadeout, 2) * -0.5, 0);
 	
 	glColor4f(1, 1, 1, fadein * fadeout);
-	for(i = 0; i < e->lines; ++i)
-		draw_text(AL_Center, 0, (first + other * (e->lines-1)) * -0.25 + (i? first/4 + other/2 * i : 0), e->data[i], (i? _fonts.standard : _fonts.mainmenu));
+	for(i = 0; i < e->lines; ++i) {
+		if(yukkuri && !i) {
+			glPushMatrix();
+			glScalef(CREDITS_YUKKURI_SCALE, CREDITS_YUKKURI_SCALE, 1.0);
+			draw_texture_p(0, (first + other * (e->lines-1)) / -8 + 10 * sin(global.frames / 10.0) * fadeout * fadein, ytex);
+			glPopMatrix();
+		} else draw_text(AL_Center, 0,
+			(first + other * (e->lines-1)) * -0.25 + (i? first/4 + other/2 * i : 0) + (yukkuri? other*2.5 : 0), e->data[i],
+		(i? _fonts.standard : _fonts.mainmenu));
+	}
 	glPopMatrix();
+	glColor4f(1, 1, 1, 1);
 }
 
 void credits_draw(void) {
@@ -191,14 +208,13 @@ void credits_draw(void) {
 	glPushMatrix();
 	glColor4f(1, 1, 1, credits.panelalpha * 0.7);
 	glTranslatef(SCREEN_W/4*3, SCREEN_H/2, 0);
-	
+	glColor4f(1, 1, 1, 1);
 	int i; for(i = 0; i < credits.ecount; ++i)
 		credits_draw_entry(&(credits.entries[i]));
-	
 	glPopMatrix();
 	
-	fade_out(1 - (global.frames / 300.0));
-	fade_out(credits.fadeout);
+	colorfill(1, 1, 1, 1 - (global.frames / 300.0));
+	colorfill(1, 1, 1, credits.fadeout);
 }
 
 void credits_process(void) {
@@ -257,5 +273,6 @@ void credits_loop(void) {
 		SDL_GL_SwapBuffers();
 		frame_rate(&global.lasttime);
 	}
+	global.whitefade = 1.0;
 	credits_free();
 }

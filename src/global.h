@@ -121,6 +121,8 @@ typedef struct {
 	
 	RandomState rand_game;
 	RandomState rand_visual;
+	
+	float whitefade;	// hack for credits --> main transition
 } Global;
 
 extern Global global;
@@ -131,6 +133,7 @@ void game_over();
 void frame_rate(int *lasttime);
 void calc_fps(FPSCounter *fps);
 void set_ortho();
+void colorfill(float r, float g, float b, float a);
 void fade_out(float f);
 
 void global_processevent(SDL_Event*);

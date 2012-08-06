@@ -137,6 +137,10 @@ void draw_main_menu(MenuData *menu) {
 	menu->drawdata[2] += (35*menu->cursor - menu->drawdata[2])/10.0;
 	
 	fade_out(menu->fade);
+	if(global.whitefade > 0) {
+		colorfill(1, 1, 1, global.whitefade);
+		global.whitefade -= 1 / 300.0;
+	} else global.whitefade = 0;
 }
 
 void main_menu_loop(MenuData *menu) {

@@ -87,10 +87,10 @@ void set_ortho() {
 	glDisable(GL_DEPTH_TEST);
 }
 
-void fade_out(float f) {
-	if(f == 0) return;
+void colorfill(float r, float g, float b, float a) {
+	if(a <= 0) return;
 	
-	glColor4f(0,0,0,f);
+	glColor4f(r,g,b,a);
 	
 	glPushMatrix();
 	glScalef(SCREEN_W,SCREEN_H,1);
@@ -100,6 +100,10 @@ void fade_out(float f) {
 	glPopMatrix();
 	
 	glColor4f(1,1,1,1);	
+}
+
+void fade_out(float f) {
+	colorfill(0, 0, 0, f);
 }
 
 inline double psin(double x) {
