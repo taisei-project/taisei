@@ -486,6 +486,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		stg->playpos = 0;
 	}
 	
+	killall(global.plr.slaves);
 	tsrand_switch(&global.rand_game);
 	stage_start();
 	start();
