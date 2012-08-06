@@ -22,6 +22,7 @@ Texture *load_text(const char *text, TTF_Font *font);
 void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *font);
 void init_fonts();
 int stringwidth(char *s, TTF_Font *font);
+int stringheight(char *s, TTF_Font *font);
 int charwidth(char c, TTF_Font *font);
 
 struct Fonts {

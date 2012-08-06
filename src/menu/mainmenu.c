@@ -16,6 +16,8 @@
 
 #include "global.h"
 #include "stage.h"
+#include "ending.h"
+#include "credits.h"
 #include "paths/native.h"
 
 void quit_menu(void *arg) {
@@ -43,6 +45,11 @@ troll:
 		int i;
 		for(i = 0; stages[i].loop; ++i)
 			stages[i].loop();
+	}
+	
+	if(global.game_over == GAMEOVER_WIN) {
+		ending_loop();
+		credits_loop();
 	}
 	
 	global.game_over = 0;
@@ -132,6 +139,10 @@ void draw_main_menu(MenuData *menu) {
 	menu->drawdata[2] += (35*menu->cursor - menu->drawdata[2])/10.0;
 	
 	fade_out(menu->fade);
+	if(global.whitefade > 0) {
+		colorfill(1, 1, 1, global.whitefade);
+		global.whitefade -= 1 / 300.0;
+	} else global.whitefade = 0;
 }
 
 void main_menu_loop(MenuData *menu) {
