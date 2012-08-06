@@ -9,6 +9,34 @@
 #ifndef ENDING_H
 #define ENDING_H
 
+#include "resource/texture.h"
+
+enum {
+	ENDING_FADE_OUT = 200,
+	ENDING_FADE_TIME = 60,
+};
+
+typedef struct EndingEntry EndingEntry;
+struct EndingEntry {
+	char *msg;
+	Texture *tex;
+	
+	int time;
+};
+
+typedef struct Ending Ending;
+struct Ending {
+	EndingEntry *entries;
+	int count;
+	int duration;
+	
+	int pos;
+};
+
+void add_ending_entry(Ending *e, int time, char *msg, char *tex);
+
+void create_ending(Ending *e);
 void ending_loop(void);
+void free_ending(Ending *e);
 
 #endif

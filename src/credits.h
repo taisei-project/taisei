@@ -9,6 +9,7 @@
 #ifndef CREDITS_H
 #define CREDITS_H
 
+void credits_input(void);
 void credits_loop(void);
 void credits_add(char*, int);
 

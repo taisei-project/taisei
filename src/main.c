@@ -111,8 +111,6 @@ int main(int argc, char** argv) {
 	}
 #endif
 	
-	credits_loop();
-	
 	MenuData menu;
 	create_main_menu(&menu);
 	printf("-- menu\n");	
