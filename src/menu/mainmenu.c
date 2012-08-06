@@ -47,10 +47,12 @@ troll:
 			stages[i].loop();
 	}
 	
-	global.game_over = 0;
+	if(global.game_over == GAMEOVER_WIN) {
+		ending_loop();
+		credits_loop();
+	}
 	
-	ending_loop();
-	credits_loop();
+	global.game_over = 0;
 }
 
 void enter_options(void *arg) {
