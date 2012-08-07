@@ -54,10 +54,22 @@ void create_saverpy_menu(MenuData *m) {
 void draw_saverpy_menu(MenuData *m) {
 	draw_options_menu_bg(m);
 	
+	Texture *bg = get_tex("part/smoke");
 	glPushMatrix();
+	glTranslatef(SCREEN_W/2 + 100 * m->drawdata[0] - 50, SCREEN_H/2, 0);	// 135
+	glScalef(1, 0.5, 1);
+	glRotatef(m->frames*2,0,0,1);
+	glColor4f(0,0,0,0.5);
+	draw_texture_p(0,0,bg);
+	glPopMatrix();
+	
+	glPushMatrix();
+	glColor4f(1, 1, 1, 1);
 	glTranslatef(SCREEN_W/2, SCREEN_H/2 - 100, 0);
 	draw_text(AL_Center, 0, 0, m->title, _fonts.mainmenu);
 	glTranslatef(0, 100, 0);
+	
+	m->drawdata[0] += (m->cursor - m->drawdata[0])/10.0;
 	
 	int i; for(i = 0; i < m->ecount; i++) {
 		MenuEntry *e = &(m->entries[i]);
