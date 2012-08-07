@@ -33,7 +33,7 @@ void save_rpy(void *a) {
 		snprintf(name, 128, "taisei_stg%d_%s_%s", rpy->stages[0].stage, prepr, strtime);
 	
 	replay_save(rpy, name);
-	((MenuData*)a)->quit = 2;
+	if(a) ((MenuData*)a)->quit = 2;
 }
 
 void dont_save_rpy(void *a) {
