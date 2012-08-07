@@ -258,8 +258,8 @@ int replay_read(Replay *rpy, FILE *file) {
 				
 				case RPY_P_CHAR:	s->plr_char		 = INTOF(buf);		break;
 				case RPY_P_SHOT:	s->plr_shot		 = INTOF(buf);		break;
-				case RPY_P_POSREAL:	s->plr_pos		 = INTOF(buf);		break;
-				case RPY_P_POSIMAG:	s->plr_pos		+= INTOF(buf) * I;	break;
+				case RPY_P_POSREAL:	s->plr_pos		 = FLOATOF(buf);	break;
+				case RPY_P_POSIMAG:	s->plr_pos		+= FLOATOF(buf) * I;break;
 				case RPY_P_FOCUS:	s->plr_focus	 = INTOF(buf);		break;
 				case RPY_P_FIRE:	s->plr_fire		 = INTOF(buf);		break;
 				case RPY_P_POWER:	s->plr_power	 = FLOATOF(buf);	break;

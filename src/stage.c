@@ -508,7 +508,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		global.plr.bombs		= stg->plr_bombs;
 		global.plr.power		= stg->plr_power;
 		global.plr.moveflags	= stg->plr_mflags;
-		
+				
 		stg->playpos = 0;
 	}
 	
