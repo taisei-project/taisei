@@ -20,7 +20,10 @@ void create_stage_menu(MenuData *m) {
 	int i;
 	
 	create_menu(m);
-	m->type = MT_Transient;
+	m->type = MT_Persistent;
+	m->abortable = True;
+	m->abortaction = backtomain;
+	m->abortarg = m;
 	// TODO: I think ALL menus should use the title field, but I don't want to screw with it right now.
 	m->title = "Stage Select";
 	

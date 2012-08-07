@@ -239,16 +239,8 @@ void credits_process(void) {
 
 void credits_input(void) {
 	SDL_Event event;
-	while(SDL_PollEvent(&event)) {
-		//int sym = event.key.keysym.sym;
+	while(SDL_PollEvent(&event))
 		global_processevent(&event);
-		
-		switch(event.type) {
-			case SDL_QUIT:
-				exit(1);
-				break;
-		}
-	}
 }
 
 void credits_free(void) {
