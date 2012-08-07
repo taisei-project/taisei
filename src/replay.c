@@ -45,6 +45,7 @@ ReplayStage* replay_init_stage(Replay *rpy, StageInfo *stage, int seed, Player *
 	s->plr_lifes	= plr->lifes;
 	s->plr_bombs	= plr->bombs;
 	s->plr_power	= plr->power;
+	s->plr_mflags	= plr->moveflags;
 	
 	printf("replay_init_stage(): created a new stage for writting\n");
 	replay_select(rpy, rpy->stgcount-1);
@@ -153,6 +154,7 @@ int replay_write(Replay *rpy, FILE *file) {
 		replay_write_double(file, stg->plr_power);
 		replay_write_int(file, stg->plr_lifes);
 		replay_write_int(file, stg->plr_bombs);
+		replay_write_int(file, stg->plr_mflags);
 		
 		// events
 		replay_write_int(file, stg->ecount);
@@ -192,6 +194,7 @@ enum {
 	RPY_P_POWER,
 	RPY_P_LIFES,
 	RPY_P_BOMBS,
+	RPY_P_MFLAGS,
 	
 	// events
 	RPY_E_COUNT,
@@ -262,6 +265,7 @@ int replay_read(Replay *rpy, FILE *file) {
 				case RPY_P_POWER:	s->plr_power	 = FLOATOF(buf);	break;
 				case RPY_P_LIFES:	s->plr_lifes	 = INTOF(buf);		break;
 				case RPY_P_BOMBS:	s->plr_bombs	 = INTOF(buf);		break;
+				case RPY_P_MFLAGS:	s->plr_mflags	 = INTOF(buf);		break;
 				
 				case RPY_E_COUNT:
 					s->capacity = s->ecount = INTOF(buf);

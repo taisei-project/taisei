@@ -34,6 +34,7 @@ typedef struct ReplayStage {
 	float plr_power;
 	int plr_lifes;
 	int plr_bombs;
+	int plr_mflags;
 	
 	// events
 	ReplayEvent *events;

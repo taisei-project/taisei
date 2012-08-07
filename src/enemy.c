@@ -43,10 +43,12 @@ Enemy *create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyDrawRule draw_r
 void _delete_enemy(void **enemies, void* enemy) {
 	Enemy *e = (Enemy *)enemy;
 	
-	if(e->hp <= 0 && e->hp > ENEMY_IMMUNE) {
+	if(e->hp <= 0 && e->hp > ENEMY_IMMUNE && !e->is_playerslave) {
 		int i;
-		for(i = 0; i < 10; i++)
-			create_particle2c("flare", e->pos, NULL, Fade, timeout_linear, 10, (3+frand()*10)*cexp(I*frand()*2*M_PI));
+		for(i = 0; i < 10; i++) {
+			tsrand_fill(2);
+			create_particle2c("flare", e->pos, NULL, Fade, timeout_linear, 10, (3+afrand(0)*10)*cexp(I*afrand(1)*2*M_PI));
+		}
 		create_particle1c("blast", e->pos, NULL, Blast, timeout, 20);
 		create_particle1c("blast", e->pos, NULL, Blast, timeout, 20);
 		create_particle2c("blast", e->pos, NULL, GrowFade, timeout, 15,0);

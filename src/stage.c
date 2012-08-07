@@ -458,7 +458,9 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	}
 	
 	int seed = time(0);
+	tsrand_switch(&global.rand_game);
 	tsrand_seed_p(&global.rand_game, seed);
+	stage_start();
 	
 	if(global.replaymode == REPLAY_RECORD) {
 		if(global.replay.active)
@@ -471,17 +473,18 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		tsrand_seed_p(&global.rand_game, stg->seed);
 		printf("Random seed: %d\n", stg->seed);
 		
-		global.diff			= stg->diff;
-		global.points		= stg->points;
+		global.diff				= stg->diff;
+		global.points			= stg->points;
 		
-		global.plr.shot		= stg->plr_shot;
-		global.plr.cha		= stg->plr_char;
-		global.plr.pos		= stg->plr_pos;
-		global.plr.focus	= stg->plr_focus;
-		global.plr.fire		= stg->plr_fire;
-		global.plr.lifes	= stg->plr_lifes;
-		global.plr.bombs	= stg->plr_bombs;
-		global.plr.power	= stg->plr_power;
+		global.plr.shot			= stg->plr_shot;
+		global.plr.cha			= stg->plr_char;
+		global.plr.pos			= stg->plr_pos;
+		global.plr.focus		= stg->plr_focus;
+		global.plr.fire			= stg->plr_fire;
+		global.plr.lifes		= stg->plr_lifes;
+		global.plr.bombs		= stg->plr_bombs;
+		global.plr.power		= stg->plr_power;
+		global.plr.moveflags	= stg->plr_mflags;
 		
 		stg->playpos = 0;
 	}
@@ -491,8 +494,6 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	killall(global.plr.slaves);
 	player_set_power(&global.plr, power);
 	
-	tsrand_switch(&global.rand_game);
-	stage_start();
 	start();
 	
 	SDL_EnableKeyRepeat(0, 0);

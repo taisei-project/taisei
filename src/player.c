@@ -221,8 +221,10 @@ void player_realdeath(Player *plr) {
 void player_death(Player *plr) {
 	if(plr->deathtime == -1 && global.frames - abs(plr->recovery) > 0) {
 		int i;
-		for(i = 0; i < 20; i++)
-			create_particle2c("flare", plr->pos, NULL, Shrink, timeout_linear, 40, (3+frand()*7)*cexp(I*tsrand()));
+		for(i = 0; i < 20; i++) {
+			tsrand_fill(2);
+			create_particle2c("flare", plr->pos, NULL, Shrink, timeout_linear, 40, (3+afrand(0)*7)*cexp(I*tsrand_a(1)));
+		}
 		create_particle2c("blast", plr->pos, rgb(1,0.5,0.3), GrowFade, timeout, 35, 2.4);
 		plr->deathtime = global.frames + DEATHBOMB_TIME;
 	}

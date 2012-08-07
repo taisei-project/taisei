@@ -25,7 +25,7 @@ static int pickedstage;
 void start_replay(void *arg) {
 	ReplayStage *rstg;
 	StageInfo 	*gstg;
-	int i;
+	int i, pinit = False;
 	
 	replay_copy(&global.replay, (Replay*)arg);
 	global.replaymode = REPLAY_PLAY;
@@ -43,7 +43,11 @@ void start_replay(void *arg) {
 			continue;
 		}
 		
-		init_player(&global.plr);
+		if(!pinit) {
+			init_player(&global.plr);
+			pinit = True;
+		}
+		
 		gstg->loop();
 		
 		if(global.game_over == GAMEOVER_ABORT)
