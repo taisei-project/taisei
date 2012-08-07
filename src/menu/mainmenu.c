@@ -60,7 +60,7 @@ troll:
 			case 0: break;
 				
 			case 1: {
-				replay_save(&global.replay, "multistage_test");
+				save_rpy(NULL);
 				break;
 			}
 			
