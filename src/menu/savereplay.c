@@ -24,13 +24,15 @@ void save_rpy(void *a) {
 	timeinfo = localtime(&rawtime);
 	strftime(strtime, 128, "%Y%m%d_%H-%M-%S_%Z", timeinfo);
 	
-	char prepr[16];
+	char prepr[16], drepr[16];
 	plrmode_repr(prepr, 16, rpy->stages[0].plr_char, rpy->stages[0].plr_shot);
+	strncpy(drepr, difficulty_name(rpy->stages[0].diff), 16);
+	drepr[0] += 'a' - 'A';
 	
 	if(rpy->stgcount > 1)
-		snprintf(name, 128, "taisei_%s_%s", prepr, strtime);
+		snprintf(name, 128, "taisei_%s_%s_%s", strtime, prepr, drepr);
 	else
-		snprintf(name, 128, "taisei_stg%d_%s_%s", rpy->stages[0].stage, prepr, strtime);
+		snprintf(name, 128, "taisei_%s_stg%d_%s_%s", strtime, rpy->stages[0].stage, prepr, drepr);
 	
 	replay_save(rpy, name);
 	if(a) ((MenuData*)a)->quit = 2;
