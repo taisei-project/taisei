@@ -112,8 +112,9 @@ void create_main_menu(MenuData *m) {
 
 
 void draw_main_menu_bg(MenuData* menu) {
+	glColor4f(1,1,1,1);
 	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubgbg");
-	glColor4f(1,1,1,0.9 + 0.1*sin(menu->frames/100.0));
+	glColor4f(1,1,1,0.95 + 0.05*sin(menu->frames/100.0));
 	
 	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubg");
 	glColor4f(1,1,1,1);
@@ -128,29 +129,30 @@ void draw_main_menu(MenuData *menu) {
 	glPushMatrix();
 	glTranslatef(0, SCREEN_H-200, 0);
 	
+	Texture *bg = get_tex("part/smoke");
 	glPushMatrix();
-	glTranslatef(135, menu->drawdata[2], 0);
-	glScalef(270, 34, 1);
-	
-	glColor4f(0,0,0,0.7);
-	
-	draw_quad();
-	
+	glTranslatef(50 + menu->drawdata[1]/2, menu->drawdata[2], 0);	// 135
+	glScalef(menu->drawdata[1]/100.0, 0.5, 1);
+	glRotatef(menu->frames*2,0,0,1);
+	glColor4f(0,0,0,0.5);
+	draw_texture_p(0,0,bg);
 	glPopMatrix();
 	
 	int i;
-
-	int grey = 2;
+	
+	menu->drawdata[1] += (stringwidth(menu->entries[menu->cursor].name, _fonts.mainmenu) - menu->drawdata[1])/10.0;
+	menu->drawdata[2] += (35*menu->cursor - menu->drawdata[2])/10.0;
 	
 	for(i = 0; i < menu->ecount; i++) {
 		float s = 5*sin(menu->frames/80.0 + 20*i);
-				
-		if(menu->entries[i].action == NULL && grey != 1) {
+		menu->entries[i].drawdata += 0.2 * ((i == menu->cursor) - menu->entries[i].drawdata);
+		
+		if(menu->entries[i].action == NULL) {
 			glColor4f(0.5,0.5,0.5,0.7);
-			grey = 1;
-		} else if(grey != 0) {
-			glColor4f(1,1,1,0.7);
-			grey = 0;
+		} else {
+			//glColor4f(1,1,1,0.7);
+			float a = 1 - menu->entries[i].drawdata;
+			glColor4f(1, 0.7 + a, 0.4 + a, 0.7);
 		}
 		
 		draw_text(AL_Left, 50 + s, 35*i, menu->entries[i].name, _fonts.mainmenu);				
@@ -158,7 +160,6 @@ void draw_main_menu(MenuData *menu) {
 	
 	glPopMatrix();
 	
-	menu->drawdata[2] += (35*menu->cursor - menu->drawdata[2])/10.0;
 	
 	fade_out(menu->fade);
 	if(global.whitefade > 0) {
