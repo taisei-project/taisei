@@ -449,11 +449,12 @@ void stage_logic(int time) {
 }
 
 void stage_end() {
-	delete_projectiles(&global.projs);
-	delete_projectiles(&global.particles);
 	delete_enemies(&global.enemies);
 	delete_items();
 	delete_lasers();
+	
+	delete_projectiles(&global.projs);
+	delete_projectiles(&global.particles);
 	
 	if(global.menu) {
 		destroy_menu(global.menu);
