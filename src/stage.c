@@ -538,9 +538,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		tsrand_switch(&global.rand_visual);
 		stage_draw(info, draw, shaderrules, endtime);
 		tsrand_switch(&global.rand_game);
-		
-		print_state_checksum();
-		
+				
 		SDL_GL_SwapBuffers();
 		frame_rate(&global.lasttime);
 	}
