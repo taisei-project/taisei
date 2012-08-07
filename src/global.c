@@ -209,6 +209,8 @@ void global_processevent(SDL_Event *event)
 			take_screenshot();
 		if((sym == SDLK_RETURN && (keys[SDLK_LALT] || keys[SDLK_RALT])) || sym == tconfig.intval[KEY_FULLSCREEN])
 			video_toggle_fullscreen();
+	} else if(event->type == SDL_QUIT) {
+		exit(0);
 	}
 }
 

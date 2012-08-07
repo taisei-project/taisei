@@ -15,53 +15,88 @@
 #include "global.h"
 #include "paths/native.h"
 
-void replay_init(Replay *rpy, StageInfo *stage, int seed, Player *plr) {
+void replay_init(Replay *rpy) {
 	memset(rpy, 0, sizeof(Replay));
+	rpy->active = True;
 	
-	rpy->capacity 	= REPLAY_ALLOC_INITIAL;
-	rpy->events 	= (ReplayEvent*)malloc(sizeof(ReplayEvent) * rpy->capacity);
+	printf("replay_init(): replay initialized for writting\n");
+}
+
+ReplayStage* replay_init_stage(Replay *rpy, StageInfo *stage, int seed, Player *plr) {
+	ReplayStage *s;
 	
-	rpy->stage		= stage->id;
-	rpy->seed		= seed;
-	rpy->diff		= global.diff;
-	rpy->points		= global.points;
+	rpy->stages = (ReplayStage*)realloc(rpy->stages, sizeof(ReplayStage) * (++rpy->stgcount));
+	s = &(rpy->stages[rpy->stgcount-1]);
+	memset(s, 0, sizeof(ReplayStage));
 	
-	rpy->plr_pos	= plr->pos;
-	rpy->plr_char	= plr->cha;
-	rpy->plr_shot	= plr->shot;
-	rpy->plr_lifes	= plr->lifes;
-	rpy->plr_bombs	= plr->bombs;
-	rpy->plr_power	= plr->power;
+	s->capacity 	= REPLAY_ALLOC_INITIAL;
+	s->events 		= (ReplayEvent*)malloc(sizeof(ReplayEvent) * s->capacity);
 	
-	rpy->active		= True;
+	s->stage		= stage->id;
+	s->seed			= seed;
+	s->diff			= global.diff;
+	s->points		= global.points;
 	
-	printf("Replay initialized with capacity of %d\n", rpy->capacity);
+	s->plr_pos		= plr->pos;
+	s->plr_focus	= plr->focus;
+	s->plr_fire		= plr->fire;
+	s->plr_char		= plr->cha;
+	s->plr_shot		= plr->shot;
+	s->plr_lifes	= plr->lifes;
+	s->plr_bombs	= plr->bombs;
+	s->plr_power	= plr->power;
+	s->plr_mflags	= plr->moveflags;
+	
+	printf("replay_init_stage(): created a new stage for writting\n");
+	replay_select(rpy, rpy->stgcount-1);
+	return s;
+}
+
+void replay_destroy_stage(ReplayStage *stage) {
+	if(stage->events)
+		free(stage->events);
+	memset(stage, 0, sizeof(ReplayStage));
 }
 
 void replay_destroy(Replay *rpy) {
-	if(rpy->events)
-		free(rpy->events);
+	if(rpy->stages) {
+		int i; for(i = 0; i < rpy->stgcount; ++i)
+			replay_destroy_stage(&(rpy->stages[i]));
+		free(rpy->stages);
+	}
+	
 	if(rpy->playername)
 		free(rpy->playername);
+	
 	memset(rpy, 0, sizeof(Replay));
 	printf("Replay destroyed.\n");
+}
+
+ReplayStage* replay_select(Replay *rpy, int stage) {
+	if(stage < 0 || stage >= rpy->stgcount)
+		return NULL;
+	
+	rpy->current = &(rpy->stages[stage]);
+	rpy->currentidx = stage;
+	return rpy->current;
 }
 
 void replay_event(Replay *rpy, int type, int key) {
 	if(!rpy->active)
 		return;
 	
-	ReplayEvent *e = &(rpy->events[rpy->ecount]);
+	ReplayStage *s = rpy->current;
+	ReplayEvent *e = &(s->events[s->ecount]);
 	e->frame = global.frames;
 	e->type = (char)type;
 	e->key = (char)key;
-	rpy->ecount++;
+	s->ecount++;
 	
-	if(rpy->ecount >= rpy->capacity) {
-		printf("Replay reached it's capacity of %d, reallocating\n", rpy->capacity);
-		rpy->capacity += REPLAY_ALLOC_ADDITIONAL;
-		rpy->events = (ReplayEvent*)realloc(rpy->events, sizeof(ReplayEvent) * rpy->capacity);
-		printf("The new capacity is %d\n", rpy->capacity);
+	if(s->ecount >= s->capacity) {
+		printf("Replay reached it's capacity of %d, reallocating\n", s->capacity);
+		s->capacity += REPLAY_ALLOC_ADDITIONAL;
+		s->events = (ReplayEvent*)realloc(s->events, sizeof(ReplayEvent) * s->capacity);
+		printf("The new capacity is %d\n", s->capacity);
 	}
 	
 	if(type == EV_OVER)
@@ -93,36 +128,43 @@ void replay_write_complex(FILE *file, complex val) {
 }
 
 int replay_write(Replay *rpy, FILE *file) {
-	int i;
+	int i, j;
 	
 	// header
 	replay_write_int(file, REPLAY_MAGICNUMBER);
 	replay_write_string(file, tconfig.strval[PLAYERNAME]);
-	replay_write_string(file, "This file is not for your eyes, move on");
-	replay_write_int(file, 1);
+	replay_write_string(file, "Get out of here, you nasty cheater!");
+	replay_write_int(file, rpy->stgcount);
 	
-	// initial game settings
-	replay_write_int(file, rpy->stage);
-	replay_write_int(file, rpy->seed);
-	replay_write_int(file, rpy->diff);
-	replay_write_int(file, rpy->points);
-	
-	// initial player settings
-	replay_write_int(file, rpy->plr_char);
-	replay_write_int(file, rpy->plr_shot);
-	replay_write_complex(file, rpy->plr_pos);
-	replay_write_double(file, rpy->plr_power);
-	replay_write_int(file, rpy->plr_lifes);
-	replay_write_int(file, rpy->plr_bombs);
-	
-	// events
-	replay_write_int(file, rpy->ecount);
-	
-	for(i = 0; i < rpy->ecount; ++i) {
-		ReplayEvent *e = &(rpy->events[i]);
-		replay_write_int(file, e->frame);
-		replay_write_int(file, e->type);
-		replay_write_int(file, e->key);
+	for(j = 0; j < rpy->stgcount; ++j) {
+		ReplayStage *stg = &(rpy->stages[j]);
+		
+		// initial game settings
+		replay_write_int(file, stg->stage);
+		replay_write_int(file, stg->seed);
+		replay_write_int(file, stg->diff);
+		replay_write_int(file, stg->points);
+		
+		// initial player settings
+		replay_write_int(file, stg->plr_char);
+		replay_write_int(file, stg->plr_shot);
+		replay_write_complex(file, stg->plr_pos);
+		replay_write_int(file, stg->plr_focus);
+		replay_write_int(file, stg->plr_fire);
+		replay_write_double(file, stg->plr_power);
+		replay_write_int(file, stg->plr_lifes);
+		replay_write_int(file, stg->plr_bombs);
+		replay_write_int(file, stg->plr_mflags);
+		
+		// events
+		replay_write_int(file, stg->ecount);
+		
+		for(i = 0; i < stg->ecount; ++i) {
+			ReplayEvent *e = &(stg->events[i]);
+			replay_write_int(file, e->frame);
+			replay_write_int(file, e->type);
+			replay_write_int(file, e->key);
+		}
 	}
 	
 	return True;
@@ -134,7 +176,7 @@ enum {
 	RPY_H_MAGIC = 0,
 	RPY_H_META1,
 	RPY_H_META2,
-	RPY_H_REPLAYCOUNT,
+	RPY_H_STAGECOUNT,
 	
 	// initial game settings
 	RPY_G_STAGE,
@@ -147,9 +189,12 @@ enum {
 	RPY_P_SHOT,
 	RPY_P_POSREAL,
 	RPY_P_POSIMAG,
+	RPY_P_FOCUS,
+	RPY_P_FIRE,
 	RPY_P_POWER,
 	RPY_P_LIFES,
 	RPY_P_BOMBS,
+	RPY_P_MFLAGS,
 	
 	// events
 	RPY_E_COUNT,
@@ -165,6 +210,8 @@ int replay_read(Replay *rpy, FILE *file) {
 	int readstate = RPY_H_MAGIC;
 	int bufidx = 0, eidx = 0;
 	char buf[REPLAY_READ_MAXSTRLEN], c;
+	ReplayStage *s;
+	int stgnum = 0;
 	memset(rpy, 0, sizeof(Replay));
 	
 	while((c = fgetc(file)) != EOF) {
@@ -189,39 +236,64 @@ int replay_read(Replay *rpy, FILE *file) {
 					printf("replay_read(): replay META1 is: %s\n", buf);
 					break;
 				
-				case RPY_H_META2: case RPY_H_REPLAYCOUNT:	// skip
+				case RPY_H_META2:	// skip
 					break;
 				
-				case RPY_G_STAGE:	rpy->stage		 = INTOF(buf);		break;
-				case RPY_G_SEED:	rpy->seed		 = INTOF(buf);		break;
-				case RPY_G_DIFF:	rpy->diff		 = INTOF(buf);		break;
-				case RPY_G_PTS:		rpy->points		 = INTOF(buf);		break;
-				
-				case RPY_P_CHAR:	rpy->plr_char	 = INTOF(buf);		break;
-				case RPY_P_SHOT:	rpy->plr_shot	 = INTOF(buf);		break;
-				case RPY_P_POSREAL:	rpy->plr_pos	 = INTOF(buf);		break;
-				case RPY_P_POSIMAG:	rpy->plr_pos	+= INTOF(buf) * I;	break;
-				case RPY_P_POWER:	rpy->plr_power	 = FLOATOF(buf);	break;
-				case RPY_P_LIFES:	rpy->plr_lifes	 = INTOF(buf);		break;
-				case RPY_P_BOMBS:	rpy->plr_bombs	 = INTOF(buf);		break;
-				
-				case RPY_E_COUNT:
-					rpy->capacity 	= rpy->ecount = INTOF(buf);
-					if(rpy->capacity <= 0) {
-						printf("replay_read(): insane capacity: %i\n", rpy->capacity);
+				case RPY_H_STAGECOUNT:
+					rpy->stgcount = INTOF(buf);
+					if(rpy->stgcount <= 0) {
+						printf("replay_read(): insane stage count: %i\n", rpy->stgcount);
 						replay_destroy(rpy);
 						return False;
 					}
-					rpy->events		= (ReplayEvent*)malloc(sizeof(ReplayEvent) * rpy->capacity);
+					rpy->stages = (ReplayStage*)malloc(sizeof(ReplayStage) * rpy->stgcount);
+					s = &(rpy->stages[0]);
+					memset(s, 0, sizeof(ReplayStage));
 					break;
 				
-				case RPY_E_FRAME:	rpy->events[eidx].frame = INTOF(buf);			break;
-				case RPY_E_TYPE:	rpy->events[eidx].type  = INTOF(buf);			break;
-				case RPY_E_KEY:		rpy->events[eidx].key 	= INTOF(buf); eidx++;	break;
+				case RPY_G_STAGE:	s->stage		 = INTOF(buf);		break;
+				case RPY_G_SEED:	s->seed		 	 = INTOF(buf);		break;
+				case RPY_G_DIFF:	s->diff		 	 = INTOF(buf);		break;
+				case RPY_G_PTS:		s->points		 = INTOF(buf);		break;
+				
+				case RPY_P_CHAR:	s->plr_char		 = INTOF(buf);		break;
+				case RPY_P_SHOT:	s->plr_shot		 = INTOF(buf);		break;
+				case RPY_P_POSREAL:	s->plr_pos		 = INTOF(buf);		break;
+				case RPY_P_POSIMAG:	s->plr_pos		+= INTOF(buf) * I;	break;
+				case RPY_P_FOCUS:	s->plr_focus	 = INTOF(buf);		break;
+				case RPY_P_FIRE:	s->plr_fire		 = INTOF(buf);		break;
+				case RPY_P_POWER:	s->plr_power	 = FLOATOF(buf);	break;
+				case RPY_P_LIFES:	s->plr_lifes	 = INTOF(buf);		break;
+				case RPY_P_BOMBS:	s->plr_bombs	 = INTOF(buf);		break;
+				case RPY_P_MFLAGS:	s->plr_mflags	 = INTOF(buf);		break;
+				
+				case RPY_E_COUNT:
+					s->capacity = s->ecount = INTOF(buf);
+					if(s->capacity <= 0) {
+						printf("replay_read(): insane capacity in stage %i: %i\n", stgnum, s->capacity);
+						replay_destroy(rpy);
+						return False;
+					}
+					s->events = (ReplayEvent*)malloc(sizeof(ReplayEvent) * s->capacity);
+					break;
+				
+				case RPY_E_FRAME:	s->events[eidx].frame	= INTOF(buf);			break;
+				case RPY_E_TYPE:	s->events[eidx].type	= INTOF(buf);			break;
+				case RPY_E_KEY:	
+					s->events[eidx].key = INTOF(buf);
+					eidx++;
+					
+					if(eidx == s->capacity) {
+						if((++stgnum) >= rpy->stgcount)
+							return True;
+						s = &(rpy->stages[stgnum]);
+						readstate = RPY_G_STAGE;
+						eidx = 0;
+						continue;
+					}
+					
+					break;
 			}
-			
-			if(rpy->capacity && eidx == rpy->capacity)
-				return True;
 			
 			if(readstate == RPY_E_KEY)
 				readstate = RPY_E_FRAME;
@@ -237,7 +309,9 @@ int replay_read(Replay *rpy, FILE *file) {
 		}
 	}
 	
-	return True;
+	printf("replay_read(): replay isn't properly terminated\n");
+	replay_destroy(rpy);
+	return False;
 }
 
 #undef FLOATOF
@@ -290,11 +364,23 @@ int replay_load(Replay *rpy, char *name) {
 }
 
 void replay_copy(Replay *dst, Replay *src) {
+	int i;
 	replay_destroy(dst);
 	memcpy(dst, src, sizeof(Replay));
-	dst->capacity = dst->ecount;
-	dst->events = (ReplayEvent*)malloc(sizeof(ReplayEvent) * dst->capacity);
-	memcpy(dst->events, src->events, dst->capacity * sizeof(ReplayEvent));
+	
 	dst->playername = (char*)malloc(strlen(src->playername)+1);
 	strcpy(dst->playername, src->playername);
+	
+	dst->stages = (ReplayStage*)malloc(sizeof(ReplayStage) * src->stgcount);
+	memcpy(dst->stages, src->stages, sizeof(ReplayStage) * src->stgcount);
+	
+	for(i = 0; i < src->stgcount; ++i) {
+		ReplayStage *s, *d;
+		s = &(src->stages[i]);
+		d = &(dst->stages[i]);
+		
+		d->capacity = s->ecount;
+		d->events = (ReplayEvent*)malloc(sizeof(ReplayEvent) * d->capacity);
+		memcpy(d->events, s->events, sizeof(ReplayEvent) * d->capacity);
+	}
 }

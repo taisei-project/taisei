@@ -628,8 +628,6 @@ void bind_input(MenuData *menu, OptionBinding *b)
 			} else
 				b->blockinput = False;
 			
-		} else if(event.type == SDL_QUIT) {
-			exit(1);
 		}
 	}
 	SDL_EnableUNICODE(False);
@@ -704,11 +702,8 @@ void options_menu_input(MenuData *menu) {
 		int sym = event.key.keysym.sym;
 		
 		global_processevent(&event);
-		if(event.type == SDL_KEYDOWN) {
+		if(event.type == SDL_KEYDOWN)
 			options_key_action(menu, sym);
-		} else if(event.type == SDL_QUIT) {
-			exit(1);
-		}
 	}
 }
 
