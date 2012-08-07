@@ -37,22 +37,13 @@ void ingame_menu_logic(MenuData **menu) {
 
 void draw_ingame_menu(MenuData *menu) {
 	float rad = IMENU_BLUR;
-	
 	float fade = menu->fade;
 	
-	if(	// horrible hacks because we have no sane transitions between ingame menus
-		REPLAY_ASKSAVE && (
-			(menu->selected != 0 && menu->quit == 1 && !menu->context) ||
-			(!menu->quit && menu->context)
-		)
-	) fade = 0;
-	
-	if(menu->selected != 1 || (global.game_over && global.replaymode == REPLAY_PLAY)) // hardly hardcoded. 1 -> "Return to Title"
+	if(menu->selected != 1) // hardly hardcoded. 1 -> "Return to Title"
 		rad = IMENU_BLUR * (1.0-fade);
 	
 	if(!tconfig.intval[NO_SHADER]) {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	
 		Shader *shader = get_shader("ingame_menu");
 		glUseProgram(shader->prog);	
 		

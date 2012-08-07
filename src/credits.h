@@ -6,13 +6,15 @@
  * Copyright (C) 2012, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
  */
 
-#ifndef SAVERPYMENU_H
-#define SAVERPYMENU_H
+#ifndef CREDITS_H
+#define CREDITS_H
 
-#include "menu.h"
+void credits_input(void);
+void credits_loop(void);
+void credits_add(char*, int);
 
-void save_rpy(void*);
-void create_saverpy_menu(MenuData*);
-int saverpy_menu_loop(MenuData*);
+#define CREDITS_ENTRY_FADEIN 200.0
+#define CREDITS_ENTRY_FADEOUT 100.0
+#define CREDITS_YUKKURI_SCALE 0.5
 
 #endif

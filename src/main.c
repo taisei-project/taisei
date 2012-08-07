@@ -110,7 +110,7 @@ int main(int argc, char** argv) {
 		printf("** Invalid stage number. Quitting stage skip mode.\n");
 	}
 #endif
-		
+	
 	MenuData menu;
 	create_main_menu(&menu);
 	printf("-- menu\n");	

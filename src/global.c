@@ -87,10 +87,10 @@ void set_ortho() {
 	glDisable(GL_DEPTH_TEST);
 }
 
-void fade_out(float f) {
-	if(f == 0) return;
+void colorfill(float r, float g, float b, float a) {
+	if(a <= 0) return;
 	
-	glColor4f(0,0,0,f);
+	glColor4f(r,g,b,a);
 	
 	glPushMatrix();
 	glScalef(SCREEN_W,SCREEN_H,1);
@@ -100,6 +100,10 @@ void fade_out(float f) {
 	glPopMatrix();
 	
 	glColor4f(1,1,1,1);	
+}
+
+void fade_out(float f) {
+	colorfill(0, 0, 0, f);
 }
 
 inline double psin(double x) {
@@ -112,6 +116,15 @@ inline double max(double a, double b) {
 
 inline double min(double a, double b) {
 	return (a < b)? a : b;
+}
+
+inline double clamp(double f, double lower, double upper) {
+	if(f < lower)
+		return lower;
+	if(f > upper)
+		return upper;
+	
+	return f;
 }
 
 void take_screenshot()
@@ -196,6 +209,8 @@ void global_processevent(SDL_Event *event)
 			take_screenshot();
 		if((sym == SDLK_RETURN && (keys[SDLK_LALT] || keys[SDLK_RALT])) || sym == tconfig.intval[KEY_FULLSCREEN])
 			video_toggle_fullscreen();
+	} else if(event->type == SDL_QUIT) {
+		exit(0);
 	}
 }
 

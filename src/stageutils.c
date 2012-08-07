@@ -23,15 +23,19 @@ void add_model(Stage3D *s, SegmentDrawRule draw, SegmentPositionRule pos) {
 	s->models[s->msize - 1].pos = pos;
 }
 
-void set_perspective(Stage3D *s, float n, float f) {
+void set_perspective_viewport(Stage3D *s, float n, float f, int vx, int vy, int vw, int vh) {
 	glMatrixMode(GL_PROJECTION);
 	
 	glLoadIdentity();
-	glTranslatef(-(VIEWPORT_W/2.0)/SCREEN_W, 0, 0);
+	glTranslatef(-(vw/2.0)/SCREEN_W, 0, 0);
 	gluPerspective(s->projangle, 1, n, f);
-	glTranslatef(VIEWPORT_X+VIEWPORT_W/2.0, VIEWPORT_Y+VIEWPORT_H/2.0, 0);
+	glTranslatef(vx+vw/2.0, vy+vh/2.0, 0);
 		
-	glMatrixMode(GL_MODELVIEW);	
+	glMatrixMode(GL_MODELVIEW);
+}
+
+inline void set_perspective(Stage3D *s, float n, float f) {
+	set_perspective_viewport(s, n, f, VIEWPORT_X, VIEWPORT_Y, VIEWPORT_W, VIEWPORT_H);
 }
 
 void draw_stage3d(Stage3D *s, float maxrange) {

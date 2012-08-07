@@ -15,8 +15,6 @@
 #include "config.h"
 #include "player.h"
 #include "menu/ingamemenu.h"
-#include "menu/savereplay.h"
-#include "menu/replayover.h"
 
 StageInfo stages[] = {	
 	{1, stage1_loop, False, "Stage 1", "Misty Lake", {1, 1, 1}},
@@ -69,24 +67,21 @@ void replay_input() {
 		int sym = event.key.keysym.sym;
 		global_processevent(&event);
 		
-		switch(event.type) {
-			case SDL_KEYDOWN:
-				if(sym == SDLK_ESCAPE)
-					stage_ingamemenu();
-				break;
-				
-			case SDL_QUIT:
-				exit(1);
-				break;
+		if(event.type == SDL_KEYDOWN) {
+			if(sym == SDLK_ESCAPE)
+				stage_ingamemenu();
+			break;
 		}
 	}
 	
 	if(global.menu)
 		return;
 	
+	ReplayStage *s = global.replay.current;
 	int i;
-	for(i = global.replay.playpos; i < global.replay.ecount; ++i) {
-		ReplayEvent *e = &(global.replay.events[i]);
+	
+	for(i = s->playpos; i < s->ecount; ++i) {
+		ReplayEvent *e = &(s->events[i]);
 		
 		if(e->frame != global.frames)
 			break;
@@ -107,7 +102,7 @@ void replay_input() {
 		}
 	}
 	
-	global.replay.playpos = i;
+	s->playpos = i;
 	player_applymovement(&global.plr);
 }
 
@@ -146,10 +141,6 @@ void stage_input() {
 				
 				if(key == KEY_SKIP && global.dialog)
 					global.dialog->skip = False;
-				break;
-			
-			case SDL_QUIT:
-				exit(1);
 				break;
 		}
 	}
@@ -307,18 +298,13 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	
 	draw_hud();
 	
-	if(global.menu) {
-		// horrible hacks because we have no sane transitions between ingame menus
-		
-		if(REPLAY_ASKSAVE) {
-			if(global.menu->context && global.menu->quit == 1) {
-				fade_out(global.menu->fade);
-			}
-		} else {
-			if(global.replaymode != REPLAY_PLAY || (global.menu->quit && global.game_over))
-				fade_out(global.menu->fade);
-		}
-	}
+	// I don't remember how did it work before the massive transition hacking - and neither do I want to.
+	// So I'll just leave these new hacks here. At least they are not AS horrible as the old ones.
+	// They are still horrible, though. I hate them. HATE HATE HATE HATE HATE HATE HATE HATE HATE.
+	if(global.menu && !global.menu->abort && global.menu->quit == 1 && global.menu->selected == 1)
+		fade_out(global.menu->fade);
+	else if(global.game_over == GAMEOVER_ABORT)
+		fade_out(1);
 }
 
 int apply_shaderrules(ShaderRule *shaderrules, int fbonum) {
@@ -472,33 +458,49 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	}
 	
 	int seed = time(0);
+	tsrand_switch(&global.rand_game);
 	tsrand_seed_p(&global.rand_game, seed);
+	stage_start();
 	
 	if(global.replaymode == REPLAY_RECORD) {
-		if(!global.plr.continues)
-			replay_init(&global.replay, info, seed, &global.plr);
+		if(global.replay.active)
+			replay_init_stage(&global.replay, info, seed, &global.plr);
 		printf("Random seed: %d\n", seed);
 	} else {
-		printf("REPLAY_PLAY mode: %d events\n", global.replay.ecount);
+		ReplayStage *stg = global.replay.current;
+		printf("REPLAY_PLAY mode: %d events, stage: \"%s\"\n", stg->ecount, stage_get(stg->stage)->title);
 		
-		tsrand_seed_p(&global.rand_game, global.replay.seed);
-		printf("Random seed: %d\n", global.replay.seed);
+		tsrand_seed_p(&global.rand_game, stg->seed);
+		printf("Random seed: %d\n", stg->seed);
 		
-		global.diff			= global.replay.diff;
-		global.points		= global.replay.points;
+		global.diff				= stg->diff;
+		global.points			= stg->points;
 		
-		global.plr.shot		= global.replay.plr_shot;
-		global.plr.cha		= global.replay.plr_char;
-		global.plr.pos		= global.replay.plr_pos;
-		global.plr.lifes	= global.replay.plr_lifes;
-		global.plr.bombs	= global.replay.plr_bombs;
-		global.plr.power	= global.replay.plr_power;
+		global.plr.shot			= stg->plr_shot;
+		global.plr.cha			= stg->plr_char;
+		global.plr.pos			= stg->plr_pos;
+		global.plr.focus		= stg->plr_focus;
+		global.plr.fire			= stg->plr_fire;
+		global.plr.lifes		= stg->plr_lifes;
+		global.plr.bombs		= stg->plr_bombs;
+		global.plr.power		= stg->plr_power;
+		global.plr.moveflags	= stg->plr_mflags;
 		
-		global.replay.playpos = 0;
+		stg->playpos = 0;
 	}
 	
-	tsrand_switch(&global.rand_game);
-	stage_start();
+	Enemy *e = global.plr.slaves, *tmp;
+	float power = global.plr.power;
+	global.plr.power = -1;
+			
+	while(e != 0) {
+		tmp = e;
+		e = e->next;
+		delete_enemy(&global.plr.slaves, tmp);
+	}
+	
+	player_set_power(&global.plr, power);
+	
 	start();
 	
 	SDL_EnableKeyRepeat(0, 0);
@@ -520,49 +522,13 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	
 	if(global.replaymode == REPLAY_RECORD) {
 		replay_event(&global.replay, EV_OVER, 0);
-		
-		if(REPLAY_ASKSAVE) {
-			global.menu = create_saverpy_menu();
-			while(global.menu) {
-				stage_draw(info, draw, shaderrules, endtime);
-				ingame_menu_logic(&global.menu);
-				
-				if(!global.menu)
-					break;
-				
-				menu_input(global.menu);
-				SDL_GL_SwapBuffers();
-				frame_rate(&global.lasttime);
-			}
-		}
-		
-		if(global.replay.active && tconfig.intval[SAVE_RPY] == 1)
-			save_rpy(NULL);
-	} else if(global.game_over != GAMEOVER_ABORT) {
-		global.menu = create_replayover_menu();
-		while(global.menu) {
-			stage_draw(info, draw, shaderrules, endtime);
-			ingame_menu_logic(&global.menu);
-			
-			if(!global.menu)
-				break;
-			else if(global.menu->quit == 2) {	// a hack that semi-fixes problems caused by another hack
-				destroy_menu(global.menu);
-				free(global.menu);
-				global.menu = NULL;
-				break;
-			}
-			
-			menu_input(global.menu);
-			SDL_GL_SwapBuffers();
-			frame_rate(&global.lasttime);
-		}
 	}
 	
 	end();
 	stage_end();
 	tsrand_switch(&global.rand_visual);
-	replay_destroy(&global.replay);
+//	if(global.replaymode != REPLAY_PLAY)
+//		replay_destroy(&global.replay);
 	SDL_EnableKeyRepeat(TS_KR_DELAY, TS_KR_INTERVAL);
 }
 

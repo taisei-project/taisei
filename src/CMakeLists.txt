@@ -36,7 +36,6 @@ set(SRCs
 	menu/options.c
 	menu/stageselect.c
 	menu/replayview.c
-    menu/replayover.c
 	menu/ingamemenu.c
 	menu/gameovermenu.c
 	menu/savereplay.c
@@ -53,6 +52,8 @@ set(SRCs
 	stages/stage5_events.c
 	stages/stage6.c
 	stages/stage6_events.c
+	ending.c
+	credits.c
 	resource/resource.c
 	resource/texture.c
 	resource/animation.c
@@ -72,10 +73,14 @@ if(WIN32)
 	set(SRCs ${SRCs} taisei_err.c)
 endif()
 
-add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall)
+add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall -Wno-parentheses)
 
 if(TAISEI_DEBUG)
 	add_definitions(-DDEBUG)
+endif()
+
+if(WERROR)
+	add_definitions(-Werror)
 endif()
 
 set(LIBs ${LIBs}
@@ -97,7 +102,7 @@ if(ZLIB_FOUND)
 endif()
 
 if(WIN32)
-	set(LIBs ${LIBs} -ldxguid -limm32 -lversion)
+	set(LIBs ${LIBs} -ldxguid -lwinmm)
 endif()
 	
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${SDL_INCLUDE_DIR} ${ALUT_INCLUDE_DIR})
