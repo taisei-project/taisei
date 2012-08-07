@@ -152,7 +152,6 @@ void draw_main_menu(MenuData *menu) {
 		} else {
 			//glColor4f(1,1,1,0.7);
 			float a = 1 - menu->entries[i].drawdata;
-			float b = 1.5;
 			glColor4f(1, 0.7 + a, 0.4 + a, 0.7);
 		}
 		
