@@ -163,15 +163,35 @@ void stage_input() {
 void draw_hud() {
 	draw_texture(SCREEN_W/2.0, SCREEN_H/2.0, "hud");	
 	
-	char buf[16];
+	char buf[16], *diff;
 	int i;
 	
 	glPushMatrix();
 	glTranslatef(615,0,0);
 	
+	glPushMatrix();
+	glTranslatef((SCREEN_W - 615) * 0.25, 20, 0);
+	glScalef(0.6, 0.6, 0);
+	
+	float b = 0.5;
+	
+	switch(global.diff) {
+		case D_Easy:		glColor4f(b, 1, b, 0.7);		break;
+		case D_Normal:		glColor4f(b, b, 1, 0.7);		break;
+		case D_Hard:		glColor4f(1, b, b, 0.7);		break;
+		case D_Lunatic:		glColor4f(1, b, 1, 0.7);		break;
+	}
+	
+	diff = difficulty_name(global.diff);
+	draw_text(AL_Center, 1, 1, diff, _fonts.mainmenu);
+	draw_text(AL_Center, 2, 2, diff, _fonts.mainmenu);
+	glColor4f(1,1,1,1);
+	draw_text(AL_Center, 0, 0, diff, _fonts.mainmenu);
+	glPopMatrix();
+	
 	for(i = 0; i < global.plr.lifes; i++)
 	  draw_texture(16*i,167, "star");
-
+	
 	for(i = 0; i < global.plr.bombs; i++)
 	  draw_texture(16*i,200, "star");
 	
