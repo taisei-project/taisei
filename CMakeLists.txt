@@ -19,6 +19,14 @@ else()
 	set(DATA_DIR "share/taisei")
 endif()
 
+if(NOT RELATIVE)  
+	install(FILES "taisei.desktop" DESTINATION "share/applications")
+	install(FILES "taisei.png" DESTINATION "share/icons/hicolor/128x128/apps")
+	install(FILES "story.txt" DESTINATION ${DATA_DIR})
+else()
+	install(FILES "story.txt" DESTINATION .)
+endif()
+
 install(DIRECTORY gfx DESTINATION ${DATA_DIR}
 	FILES_MATCHING PATTERN "*.png")
 install(DIRECTORY gfx DESTINATION ${DATA_DIR}
@@ -27,6 +35,8 @@ install(DIRECTORY sfx DESTINATION ${DATA_DIR})
 install(DIRECTORY shader DESTINATION ${DATA_DIR})
 install(DIRECTORY models DESTINATION ${DATA_DIR}
 	FILES_MATCHING PATTERN "*.obj")
+
+install(FILES "story.txt" DESTINATION ${DATA_DIR})
 
 # uninstall target
 configure_file(

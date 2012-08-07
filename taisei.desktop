@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Taisei
+Icon=taisei
+Exec=taisei
+Terminal=false
+Categories=Game;
+Comment=An open-source Touhou clone.
