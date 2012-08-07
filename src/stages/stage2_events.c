@@ -442,7 +442,7 @@ void stage2_events() {
 	AT(2800)
 		global.boss = create_wriggle_mid();
 		
-	FROM_TO(3100, 3400, 50) {
+	FROM_TO(2900, 3400, 50) {
 		create_enemy3c(VIEWPORT_W-80+(VIEWPORT_H+20)*I, 200, Fairy, stage2_sidebox_trail, 3 - 0.5*M_PI*I, -0.02, 90);
 		create_enemy3c(80+(VIEWPORT_H+20)*I, 200, Fairy, stage2_sidebox_trail, 3 - 0.5*M_PI*I, 0.02, 90);
 	}
