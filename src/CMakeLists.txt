@@ -102,7 +102,7 @@ if(ZLIB_FOUND)
 endif()
 
 if(WIN32)
-	set(LIBs ${LIBs} -ldxguid -limm32 -lversion)
+	set(LIBs ${LIBs} -ldxguid -lwinmm)
 endif()
 	
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${SDL_INCLUDE_DIR} ${ALUT_INCLUDE_DIR})
