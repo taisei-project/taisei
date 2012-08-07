@@ -127,6 +127,8 @@ typedef struct {
 
 extern Global global;
 
+void print_state_checksum();
+
 void init_global();
 void game_over();
 

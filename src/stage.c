@@ -48,6 +48,7 @@ void stage_start() {
 	global.fps.fpstime = SDL_GetTicks();
 	
 	global.plr.recovery = 0;
+	global.plr.deathtime = -1;
 }
 
 void stage_ingamemenu() {
@@ -538,6 +539,8 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		stage_draw(info, draw, shaderrules, endtime);
 		tsrand_switch(&global.rand_game);
 		
+		print_state_checksum();
+		
 		SDL_GL_SwapBuffers();
 		frame_rate(&global.lasttime);
 	}
@@ -545,7 +548,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	if(global.replaymode == REPLAY_RECORD) {
 		replay_event(&global.replay, EV_OVER, 0);
 	}
-	
+		
 	end();
 	stage_end();
 	tsrand_switch(&global.rand_visual);

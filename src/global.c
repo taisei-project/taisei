@@ -36,6 +36,27 @@ void init_global() {
 	SDL_EnableKeyRepeat(TS_KR_DELAY, TS_KR_INTERVAL);
 }
 
+void print_state_checksum() {
+	int plr, spos = 0, smisc = 0, sargs = 0, proj = 0;
+	Player *p = &global.plr;
+	Enemy *s;
+	Projectile *pr;
+	
+	plr = creal(p->pos)+cimag(p->pos)+p->focus+p->fire+p->power+p->lifes+p->bombs+p->recovery+p->deathtime+p->continues+p->moveflags;
+	
+	for(s = global.plr.slaves; s; s = s->next) {
+		spos += creal(s->pos + s->pos0) + cimag(s->pos + s->pos0);
+		smisc += s->birthtime + s->hp + s->unbombable + s->alpha;
+		sargs += cabs(s->args[0]) + cabs(s->args[1]) + cabs(s->args[2]) + cabs(s->args[3]) + s->alpha;
+	}
+	
+	for(pr = global.projs; pr; pr = pr->next)
+		proj += cabs(pr->pos + pr->pos0) + pr->birthtime + pr->angle + pr->type + cabs(pr->args[0]) + cabs(pr->args[1]) + cabs(pr->args[2]) + cabs(pr->args[3]);
+
+	printf("[%05d] %d\t(%d\t%d\t%d)\t%d\n", global.frames, plr, spos, smisc, sargs, proj);
+}
+	
+
 void game_over() {
 	global.game_over = GAMEOVER_DEFEAT;
 	printf("Game Over!\n");
