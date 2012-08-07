@@ -18,10 +18,7 @@ typedef struct ReplayEvent {
 	char key;
 } ReplayEvent;
 
-typedef struct Replay {
-	// metadata
-	char *playername;
-	
+typedef struct ReplayStage {
 	// initial game settings
 	int stage;
 	int seed;	// this also happens to be the game initiation time - and we use this property, don't break it please
@@ -32,9 +29,12 @@ typedef struct Replay {
 	Character plr_char;
 	ShotMode plr_shot;
 	complex plr_pos;
+	short plr_focus;
+	short plr_fire;
 	float plr_power;
 	int plr_lifes;
 	int plr_bombs;
+	int plr_mflags;
 	
 	// events
 	ReplayEvent *events;
@@ -42,8 +42,21 @@ typedef struct Replay {
 	
 	// The fields below should not be stored
 	int capacity;
-	int active;
 	int playpos;
+} ReplayStage;
+
+typedef struct Replay {
+	// metadata
+	char *playername;
+	
+	// stages (NOTE FOR FUTURE: stages do not represent stage runs in particular, they can and should be used to store stuff like spell practice runs, too)
+	ReplayStage *stages;
+	int stgcount;
+	
+	// The fields below should not be stored
+	int active;
+	ReplayStage *current;
+	int currentidx;
 } Replay;
 
 enum {
@@ -51,8 +64,11 @@ enum {
 	REPLAY_PLAY
 };
 
-void replay_init(Replay *rpy, StageInfo *stage, int seed, Player *plr);
+void replay_init(Replay *rpy);
+ReplayStage* replay_init_stage(Replay *rpy, StageInfo *stage, int seed, Player *plr);
 void replay_destroy(Replay *rpy);
+void replay_destroy_stage(ReplayStage *stage);
+ReplayStage* replay_select(Replay *rpy, int stage);
 void replay_event(Replay *rpy, int type, int key);
 
 int replay_write(Replay *rpy, FILE *file);

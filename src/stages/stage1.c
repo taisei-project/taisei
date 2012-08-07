@@ -634,7 +634,6 @@ void stage1_start() {
 	init_stage3d(&bgcontext);
 	add_model(&bgcontext, stage1_bg_draw, stage1_bg_pos);
 	add_model(&bgcontext, stage1_smoke_draw, stage1_smoke_pos);
-
 	
 	bgcontext.crot[0] = 60;
 	bgcontext.cx[2] = 700;

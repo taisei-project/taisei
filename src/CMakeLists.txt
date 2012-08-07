@@ -36,7 +36,6 @@ set(SRCs
 	menu/options.c
 	menu/stageselect.c
 	menu/replayview.c
-    menu/replayover.c
 	menu/ingamemenu.c
 	menu/gameovermenu.c
 	menu/savereplay.c
@@ -74,10 +73,14 @@ if(WIN32)
 	set(SRCs ${SRCs} taisei_err.c)
 endif()
 
-add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall)
+add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall -Wno-parentheses)
 
 if(TAISEI_DEBUG)
 	add_definitions(-DDEBUG)
+endif()
+
+if(WERROR)
+	add_definitions(-Werror)
 endif()
 
 set(LIBs ${LIBs}

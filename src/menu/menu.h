@@ -41,6 +41,11 @@ typedef struct MenuData{
 		
 	int quit;
 	float fade;
+	int abort;
+	int abortable;
+	void (*abortaction)(void *arg);
+	void *abortarg;
+	int instantselect;
 	
 	float drawdata[4];
 	

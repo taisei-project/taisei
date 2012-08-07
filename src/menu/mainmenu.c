@@ -13,6 +13,7 @@
 #include "options.h"
 #include "stageselect.h"
 #include "replayview.h"
+#include "savereplay.h"
 
 #include "global.h"
 #include "stage.h"
@@ -39,6 +40,8 @@ troll:
 	if(char_menu_loop(&m) == -1)
 		goto troll;
 	
+	replay_init(&global.replay);
+	
 	if(arg)
 		((StageInfo*)arg)->loop();
 	else {
@@ -47,11 +50,30 @@ troll:
 			stages[i].loop();
 	}
 	
-	if(global.game_over == GAMEOVER_WIN) {
+	if(global.replay.active) {
+		switch(tconfig.intval[SAVE_RPY]) {
+			case 0: break;
+				
+			case 1: {
+				save_rpy(NULL);
+				break;
+			}
+			
+			case 2: {
+				MenuData m;
+				create_saverpy_menu(&m);
+				saverpy_menu_loop(&m);
+				break;
+			}
+		}
+	}
+	
+	if(global.game_over == GAMEOVER_WIN && !arg) {
 		ending_loop();
 		credits_loop();
 	}
 	
+	replay_destroy(&global.replay);
 	global.game_over = 0;
 }
 
