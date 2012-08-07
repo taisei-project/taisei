@@ -36,14 +36,13 @@ Enemy *create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyDrawRule draw_r
 	e->args[3] = a4;
 	
 	e->logic_rule(e, EVENT_BIRTH);
-	
 	return e;
 }
 
 void _delete_enemy(void **enemies, void* enemy) {
 	Enemy *e = (Enemy *)enemy;
 	
-	if(e->hp <= 0 && e->hp > ENEMY_IMMUNE && !e->is_playerslave) {
+	if(e->hp <= 0 && e->hp > ENEMY_IMMUNE) {
 		int i;
 		for(i = 0; i < 10; i++) {
 			tsrand_fill(2);
@@ -52,8 +51,8 @@ void _delete_enemy(void **enemies, void* enemy) {
 		create_particle1c("blast", e->pos, NULL, Blast, timeout, 20);
 		create_particle1c("blast", e->pos, NULL, Blast, timeout, 20);
 		create_particle2c("blast", e->pos, NULL, GrowFade, timeout, 15,0);
-		e->logic_rule(enemy, EVENT_DEATH);
 	}
+	e->logic_rule(enemy, EVENT_DEATH);
 	del_ref(enemy);
 	
 	delete_element((void **)enemies, enemy);

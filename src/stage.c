@@ -489,9 +489,16 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		stg->playpos = 0;
 	}
 	
+	Enemy *e = global.plr.slaves, *tmp;
 	float power = global.plr.power;
 	global.plr.power = -1;
-	killall(global.plr.slaves);
+			
+	while(e != 0) {
+		tmp = e;
+		e = e->next;
+		delete_enemy(&global.plr.slaves, tmp);
+	}
+	
 	player_set_power(&global.plr, power);
 	
 	start();

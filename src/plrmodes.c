@@ -214,17 +214,17 @@ void youmu_shot(Player *plr) {
 	}
 	
 	if(plr->shot == YoumuOpposite && plr->slaves == NULL)
-		create_enemy_p(&plr->slaves, 40I, ENEMY_IMMUNE, YoumuOppositeMyon, youmu_opposite_myon, 0, 0, 0, 0)->is_playerslave = True;
+		create_enemy_p(&plr->slaves, 40I, ENEMY_IMMUNE, YoumuOppositeMyon, youmu_opposite_myon, 0, 0, 0, 0);
 }
 
 void youmu_bomb(Player *plr) {
 	switch(plr->shot) {
 		case YoumuOpposite:			
-			create_enemy_p(&plr->slaves, 40I, ENEMY_BOMB, NULL, youmu_split, 280,0,0,0)->is_playerslave = True;
+			create_enemy_p(&plr->slaves, 40I, ENEMY_BOMB, NULL, youmu_split, 280,0,0,0);
 			
 			break;
 		case YoumuHoming:
-			create_enemy_p(&plr->slaves, 40I, ENEMY_BOMB, YoumuSlash, youmu_slash, 280,0,0,0)->is_playerslave = True;
+			create_enemy_p(&plr->slaves, 40I, ENEMY_BOMB, YoumuSlash, youmu_slash, 280,0,0,0);
 			break;
 	}
 }
@@ -418,7 +418,7 @@ void marisa_bomb(Player *plr) {
 	switch(plr->shot) {
 	case MarisaLaser:
 		play_sound("masterspark");
-		create_enemy_p(&plr->slaves, 40I, ENEMY_BOMB, MasterSpark, master_spark, 280,0,0,0)->is_playerslave = True;
+		create_enemy_p(&plr->slaves, 40I, ENEMY_BOMB, MasterSpark, master_spark, 280,0,0,0);
 		break;
 	case MarisaStar:
 		for(i = 0; i < 20; i++) {
@@ -448,35 +448,35 @@ void marisa_power(Player *plr, float npow) {
 	switch(plr->shot) {
 	case MarisaLaser:
 		if((int)npow == 1)
-			create_enemy_p(&plr->slaves, -40I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -40I,5,0,0)->is_playerslave = True;
+			create_enemy_p(&plr->slaves, -40I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -40I,5,0,0);
 		
 		if(npow >= 2) {
-			create_enemy_p(&plr->slaves, 25-5I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, 8-40I,5,0,0)->is_playerslave = True;
-			create_enemy_p(&plr->slaves, -25-5I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -8-40I,5,0,0)->is_playerslave = True;
+			create_enemy_p(&plr->slaves, 25-5I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, 8-40I,5,0,0);
+			create_enemy_p(&plr->slaves, -25-5I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -8-40I,5,0,0);
 		}
 		
 		if((int)npow == 3)
-			create_enemy_p(&plr->slaves, -30I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -50I,5,0,0)->is_playerslave = True;
+			create_enemy_p(&plr->slaves, -30I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -50I,5,0,0);
 		
 		if(npow >= 4) {
-			create_enemy_p(&plr->slaves, 17-30I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, 4-45I,5,0,0)->is_playerslave = True;
-			create_enemy_p(&plr->slaves, -17-30I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -4-45I,5,0,0)->is_playerslave = True;
+			create_enemy_p(&plr->slaves, 17-30I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, 4-45I,5,0,0);
+			create_enemy_p(&plr->slaves, -17-30I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -4-45I,5,0,0);
 		}
 		break;
 	case MarisaStar:
 		if((int)npow == 1)
-			create_enemy_p(&plr->slaves, 40I, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -30I, -2I, -0.1I, 5)->is_playerslave = True;
+			create_enemy_p(&plr->slaves, 40I, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -30I, -2I, -0.1I, 5);
 		
 		if(npow >= 2) {
-			create_enemy_p(&plr->slaves, 30I+15, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -30I+10, -2I, -0.1I, 5)->is_playerslave = True;
-			create_enemy_p(&plr->slaves, 30I-15, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -30I-10, -2I, -0.1I, 5)->is_playerslave = True;
+			create_enemy_p(&plr->slaves, 30I+15, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -30I+10, -2I, -0.1I, 5);
+			create_enemy_p(&plr->slaves, 30I-15, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -30I-10, -2I, -0.1I, 5);
 		}
 		
 		if((int)npow == 3)
-			create_enemy_p(&plr->slaves, -30I, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -30I, -2I, -0.1I, 5)->is_playerslave = True;
+			create_enemy_p(&plr->slaves, -30I, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -30I, -2I, -0.1I, 5);
 		if(npow >= 4) {
-			create_enemy_p(&plr->slaves, 30, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, 25, -1-2I, -0.1I, 5)->is_playerslave = True;
-			create_enemy_p(&plr->slaves, -30, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -25, 1-2I, -0.1I, 5)->is_playerslave = True;
+			create_enemy_p(&plr->slaves, 30, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, 25, -1-2I, -0.1I, 5);
+			create_enemy_p(&plr->slaves, -30, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -25, 1-2I, -0.1I, 5);
 		}
 		break;
 	}
