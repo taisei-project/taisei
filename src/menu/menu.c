@@ -87,7 +87,7 @@ void menu_input(MenuData *menu) {
 }
 
 void menu_logic(MenuData *menu) {
-	int hax;
+	int hax = 0;
 	menu->frames++;
 	
 	if(menu->quit == 1 && menu->fade < 1.0)
