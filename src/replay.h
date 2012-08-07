@@ -29,6 +29,8 @@ typedef struct ReplayStage {
 	Character plr_char;
 	ShotMode plr_shot;
 	complex plr_pos;
+	short plr_focus;
+	short plr_fire;
 	float plr_power;
 	int plr_lifes;
 	int plr_bombs;

@@ -38,6 +38,8 @@ ReplayStage* replay_init_stage(Replay *rpy, StageInfo *stage, int seed, Player *
 	s->points		= global.points;
 	
 	s->plr_pos		= plr->pos;
+	s->plr_focus	= plr->focus;
+	s->plr_fire		= plr->fire;
 	s->plr_char		= plr->cha;
 	s->plr_shot		= plr->shot;
 	s->plr_lifes	= plr->lifes;
@@ -146,6 +148,8 @@ int replay_write(Replay *rpy, FILE *file) {
 		replay_write_int(file, stg->plr_char);
 		replay_write_int(file, stg->plr_shot);
 		replay_write_complex(file, stg->plr_pos);
+		replay_write_int(file, stg->plr_focus);
+		replay_write_int(file, stg->plr_fire);
 		replay_write_double(file, stg->plr_power);
 		replay_write_int(file, stg->plr_lifes);
 		replay_write_int(file, stg->plr_bombs);
@@ -183,6 +187,8 @@ enum {
 	RPY_P_SHOT,
 	RPY_P_POSREAL,
 	RPY_P_POSIMAG,
+	RPY_P_FOCUS,
+	RPY_P_FIRE,
 	RPY_P_POWER,
 	RPY_P_LIFES,
 	RPY_P_BOMBS,
@@ -251,6 +257,8 @@ int replay_read(Replay *rpy, FILE *file) {
 				case RPY_P_SHOT:	s->plr_shot		 = INTOF(buf);		break;
 				case RPY_P_POSREAL:	s->plr_pos		 = INTOF(buf);		break;
 				case RPY_P_POSIMAG:	s->plr_pos		+= INTOF(buf) * I;	break;
+				case RPY_P_FOCUS:	s->plr_focus	 = INTOF(buf);		break;
+				case RPY_P_FIRE:	s->plr_fire		 = INTOF(buf);		break;
 				case RPY_P_POWER:	s->plr_power	 = FLOATOF(buf);	break;
 				case RPY_P_LIFES:	s->plr_lifes	 = INTOF(buf);		break;
 				case RPY_P_BOMBS:	s->plr_bombs	 = INTOF(buf);		break;

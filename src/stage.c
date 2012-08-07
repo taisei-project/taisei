@@ -477,6 +477,8 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		global.plr.shot		= stg->plr_shot;
 		global.plr.cha		= stg->plr_char;
 		global.plr.pos		= stg->plr_pos;
+		global.plr.focus	= stg->plr_focus;
+		global.plr.fire		= stg->plr_fire;
 		global.plr.lifes	= stg->plr_lifes;
 		global.plr.bombs	= stg->plr_bombs;
 		global.plr.power	= stg->plr_power;
