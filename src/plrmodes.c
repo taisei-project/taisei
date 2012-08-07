@@ -230,6 +230,8 @@ void youmu_bomb(Player *plr) {
 }
 
 void youmu_power(Player *plr, float npow) {
+	if(plr->shot == YoumuOpposite && plr->slaves == NULL)
+		create_enemy_p(&plr->slaves, 40I, ENEMY_IMMUNE, YoumuOppositeMyon, youmu_opposite_myon, 0, 0, 0, 0);
 }
 
 /* Marisa */
