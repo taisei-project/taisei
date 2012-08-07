@@ -41,7 +41,7 @@ void draw_stage_menu(MenuData *m) {
 	draw_text(AL_Right, (stringwidth(m->title, _fonts.mainmenu) + 10) * (1-m->fade), 30, m->title, _fonts.mainmenu);
 	
 	glPushMatrix();
-	glTranslatef(100, 100 + (((m->ecount * 20 + 280) > SCREEN_W)? min(0, SCREEN_H * 0.7 - 100 - m->drawdata[2]) : 0), 0);
+	glTranslatef(100, 100 + (((m->ecount * 20 + 290) > SCREEN_W)? min(0, SCREEN_H * 0.7 - 100 - m->drawdata[2]) : 0), 0);
 	
 	glPushMatrix();
 	glTranslatef(SCREEN_W/2 - 100, m->drawdata[2], 0);
