@@ -25,7 +25,7 @@ static int pickedstage;
 void start_replay(void *arg) {
 	ReplayStage *rstg;
 	StageInfo 	*gstg;
-	int i, pinit = False;
+	int i;
 	
 	replay_copy(&global.replay, (Replay*)arg);
 	global.replaymode = REPLAY_PLAY;
@@ -33,6 +33,7 @@ void start_replay(void *arg) {
 	if(global.replay.stgcount == 1)
 		pickedstage = 0;
 	
+	init_player(&global.plr);
 	for(i = pickedstage; i < global.replay.stgcount; ++i) {
 		replay_select(&global.replay, i);
 		rstg = global.replay.current;
@@ -41,11 +42,6 @@ void start_replay(void *arg) {
 		if(!gstg) {
 			printf("start_replay(): Invalid stage %d in replay at %i skipped.\n", rstg->stage, i);
 			continue;
-		}
-		
-		if(!pinit) {
-			init_player(&global.plr);
-			pinit = True;
 		}
 		
 		gstg->loop();
