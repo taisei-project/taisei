@@ -50,11 +50,6 @@ troll:
 			stages[i].loop();
 	}
 	
-	if(global.game_over == GAMEOVER_WIN) {
-		ending_loop();
-		credits_loop();
-	}
-	
 	if(global.replay.active) {
 		switch(tconfig.intval[SAVE_RPY]) {
 			case 0: break;
@@ -71,6 +66,11 @@ troll:
 				break;
 			}
 		}
+	}
+	
+	if(global.game_over == GAMEOVER_WIN && !arg) {
+		ending_loop();
+		credits_loop();
 	}
 	
 	replay_destroy(&global.replay);
