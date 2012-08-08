@@ -53,14 +53,15 @@ int stage2_great_circle(Enemy *e, int t) {
 	FROM_TO(50,70,1)
 		e->args[0] *= 0.5;
 		
-	FROM_TO(70, 190+global.diff*25, 5) {
+	FROM_TO(70, 190+global.diff*25, 5-global.diff/2) {
 		int n, c = 7;
+		
 		for(n = 0; n < c; n++) {
 			complex dir = cexp(I*(2*M_PI/c*n+0.0001*(_i%5-3)+0.5*_i/5));
 			create_projectile2c("rice", e->pos+30*dir, rgb(0.6,0.0,0.3), asymptotic, 1.5*dir, _i%5);
 			
-			if(global.diff > D_Normal && _i%6 == 0)
-				create_projectile1c("bigball", e->pos+30*dir, rgb(0.3,0.0,0.6), linear, 1.5*dir);
+			if(global.diff > D_Easy && _i%7 == 0)
+				create_projectile1c("bigball", e->pos+30*dir, rgb(0.3,0.0,0.6), linear, 1.7*dir*cexp(0.3I*frand()));
 		}
 	}
 	
@@ -142,7 +143,7 @@ int stage2_sidebox_trail(Enemy *e, int t) { // creal(a[0]): velocity, cimag(a[0]
 	FROM_TO((int) creal(e->args[2]),(int) creal(e->args[2])+M_PI*0.5/fabs(creal(e->args[1])),1)
 		e->args[0] += creal(e->args[1])*I;
 		
-	FROM_TO(10,200,27-global.diff*2) {
+	FROM_TO(10,200,30-global.diff*4) {
 		float f = 0;
 		if(global.diff > D_Normal)
 			f = 0.03*global.diff*frand();
@@ -170,7 +171,7 @@ int stage2_flea(Enemy *e, int t) {
 		e->args[1] -= 0.2;
 	
 		
-	FROM_TO(10, 400, 40-global.diff*7-t/70) {
+	FROM_TO(10, 400, 20-global.diff*2-t/70) {
 		create_projectile2c("flea", e->pos, rgb(0.2,0.2,1), asymptotic, 1.5*cexp(2I*M_PI*frand()), 1.5);
 	}
 	
@@ -268,8 +269,8 @@ void hina_cards1(Boss *h, int time) {
 		return;
 	
 	FROM_TO(0, 500, 2-(global.diff > D_Normal)) {
-		create_projectile2c("card", h->pos+50*cexp(I*t/10), rgb(0.8,0.0,0.0),  asymptotic, 2*cexp(I*t/5.0), 3);
-		create_projectile2c("card", h->pos-50*cexp(I*t/10), rgb(0.0,0.0,0.8),  asymptotic, -2*cexp(I*t/5.0), 3);
+		create_projectile2c("card", h->pos+50*cexp(I*t/10), rgb(0.8,0.0,0.0),  asymptotic, (1.6+0.4*global.diff)*cexp(I*t/5.0), 3);
+		create_projectile2c("card", h->pos-50*cexp(I*t/10), rgb(0.0,0.0,0.8),  asymptotic, -(1.6+0.4*global.diff)*cexp(I*t/5.0), 3);
 	}
 }
 
@@ -450,8 +451,8 @@ void stage2_events() {
 		create_enemy3c(80+(VIEWPORT_H+20)*I, 200, Fairy, stage2_sidebox_trail, 3 - 0.5*M_PI*I, 0.02, 90);
 	}
 	
-	AT(3600) {
-		create_enemy1c(VIEWPORT_W/2-10I, 7000+500*global.diff, BigFairy, stage2_great_circle, 2I);
+	FROM_TO(3000, 3600, 300) {
+		create_enemy1c(VIEWPORT_W/2-60*(_i-1)-10I, 7000+500*global.diff, BigFairy, stage2_great_circle, 2I);
 	}
 	
 	FROM_TO(3700, 4500, 40)
