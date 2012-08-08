@@ -185,8 +185,8 @@ int stage3_cornerfairy(Enemy *e, int t) {
 					1.5
 				);
 				
-				if(global.diff > D_Hard && !(t % 5) && !e->args[2]) {
-					create_projectile2c("flea", e->pos, rgb(0.5 + 1.2 * c, 0.8, 0.5), asymptotic,
+				if(global.diff > D_Normal && !(t % 5) && !e->args[2]) {
+					create_projectile2c("flea", e->pos, rgb(1.0, 0.5, 0.5), asymptotic,
 						2*cexp(I*(carg(global.plr.pos - e->pos) + i)),
 						1.5
 					);
@@ -292,7 +292,7 @@ void stage3_mid_a1(Boss *boss, int time) {
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.03)
 	
 	if(time > 120) {
-		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2 + sin(time/30.0) * time/6.5 * cexp(I * M_PI_2 * time/100.0), 0.03)
+		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2 + sin(time/50.0) * time/6.5 * cexp(I * M_PI_2 * time/100.0), 0.03)
 		
 		if(!(time % 70)) {
 			for(i = 0; i < 15; ++i) {
@@ -331,7 +331,7 @@ int stage3_mid_poison2(Projectile *p, int time) {
 	if(time < 0)
 		return 1;
 	
-	int d = 25 - global.diff * 3;
+	int d = 30 - global.diff * 3;
 	if(!(time % d) && p->type != DeadProj) {
 		float a = p->args[2];
 		float t = p->args[3] + time;
@@ -423,10 +423,10 @@ void stage3_boss_spellbg(Boss *b, int time) {
 Boss* stage3_create_midboss() {
 	Boss *scuttle = create_boss("Scuttle", "scuttle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(scuttle, AT_Move, "Introduction", 2, 0, stage3_mid_intro, NULL);
-	boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 30, 20000, stage3_mid_a0, NULL);
-	boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Deadly Dance", 30, 20000, stage3_mid_a1, stage3_mid_spellbg);
+	boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 30, 25000, stage3_mid_a0, NULL);
+	boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Deadly Dance", 25, 25000, stage3_mid_a1, stage3_mid_spellbg);
 	if(global.diff > D_Normal)
-		boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Acid Rain", 30, 25000, stage3_mid_a2, stage3_mid_spellbg);
+		boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Acid Rain", 20, 23000, stage3_mid_a2, stage3_mid_spellbg);
 	boss_add_attack(scuttle, AT_Move, "Runaway", 2, 1, stage3_mid_outro, NULL);
 	scuttle->zoomcolor = rgb(0.4, 0.5, 0.4);
 	
@@ -767,9 +767,6 @@ Boss* stage3_create_boss() {
 
 void stage3_events() {
 	TIMER(&global.timer);
-	
-//	AT(0)
-//		global.timer = 2800;
 	
 	FROM_TO(160, 300, 10) {
 		tsrand_fill(3);
