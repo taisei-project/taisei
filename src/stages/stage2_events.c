@@ -338,8 +338,11 @@ void hina_bad_pick(Boss *h, int time) {
 			if(i == win)
 				continue;
 			
-			for(j = 0; j < 2+global.diff; j++)
-				create_projectile1c("bigball", VIEWPORT_W/5*(i+0.2+0.6*frand()), rgb(0.7,0,0.0), linear, 2I);
+			float cnt = (2.0+global.diff) * 5;
+			for(j = 0; j < cnt; j++) {
+				complex o = VIEWPORT_W/5*(i + j/(cnt-1));
+				create_projectile2c("ball", o, rgb(0.7,0,0.0), accelerated, 0, 0.005*nfrand() + 0.01I * (1 + (1 * psin(i + j + global.frames))))->draw = ProjDrawAdd;
+			}
 		}
 	}
 }
@@ -402,7 +405,7 @@ Boss *create_hina() {
 
 void stage2_events() {
 	TIMER(&global.timer);
-		
+	
 	AT(300) {
 		create_enemy1c(VIEWPORT_W/2-10I, 7000+500*global.diff, BigFairy, stage2_great_circle, 2I);
 	}
