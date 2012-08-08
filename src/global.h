@@ -57,7 +57,7 @@ enum {
 	PLR_MAXPOWER = 4,
 	PLR_START_LIVES = 2,
 	PLR_START_BOMBS = 3,
-	MAX_CONTINUES = 3,	
+	MAX_CONTINUES = 3,
 	
 	ACTION_DESTROY,
 	
@@ -130,7 +130,6 @@ extern Global global;
 void print_state_checksum();
 
 void init_global();
-void game_over();
 
 void frame_rate(int *lasttime);
 void calc_fps(FPSCounter *fps);

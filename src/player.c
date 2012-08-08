@@ -209,13 +209,8 @@ void player_realdeath(Player *plr) {
 	if(plr->bombs < PLR_START_BOMBS)
 		plr->bombs = PLR_START_BOMBS;
 	
-	if(plr->lifes-- == 0) {
-		if(plr->continues < MAX_CONTINUES && global.replaymode != REPLAY_PLAY) {
-			global.menu = create_gameover_menu();
-		} else {
-			game_over();
-		}
-	}
+	if(plr->lifes-- == 0 && global.replaymode != REPLAY_PLAY)
+		global.menu = create_gameover_menu();
 }
 
 void player_death(Player *plr) {

@@ -68,21 +68,25 @@ void draw_ingame_menu(MenuData *menu) {
 	menu->drawdata[0] += (menu->cursor*35 - menu->drawdata[0])/7.0;
 	menu->drawdata[1] += (strlen(menu->entries[menu->cursor].name)*5 - menu->drawdata[1])/10.0;
 	
-	if(menu->context) {
+	if(menu->title) {
 		float s = 0.3 + 0.2 * sin(menu->frames/10.0);
 		glColor4f(1-s/2, 1-s/2, 1-s, 1.0 - menu->fade);
-		draw_text(AL_Center, 0, -2 * 35, (char*)menu->context, _fonts.standard);
+		draw_text(AL_Center, 0, -2 * 35, menu->title, _fonts.standard);
 	}
 	
 	int i;
 	for(i = 0; i < menu->ecount; i++) {
-		float s = 0, t = 0.7;
-		if(i == menu->cursor) {
-			t = 1;
-			s = 0.3 + 0.2*sin(menu->frames/7.0);
-		}
+		if(menu->entries[i].action) {
+			float s = 0, t = 0.7;
+			if(i == menu->cursor) {
+				t = 1;
+				s = 0.3 + 0.2*sin(menu->frames/7.0);
+			}
+			
+			glColor4f(t-s,t-s,t-s/2, 1.0 - menu->fade);
+		} else
+			glColor4f(0.5, 0.5, 0.5, 0.5);
 		
-		glColor4f(t-s,t-s,t-s/2, 1.0 - menu->fade);
 		draw_text(AL_Center, 0, i*35, menu->entries[i].name, _fonts.standard);
 	}
 		
