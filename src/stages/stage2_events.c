@@ -314,10 +314,9 @@ void hina_cards2(Boss *h, int time) {
 	}
 }
 
-void hina_bad_pick(Boss *h, int t) {
-	int i;
-	
-	int n = 4+global.diff;
+void hina_bad_pick(Boss *h, int time) {
+	int t = time % 400;
+	int i, j;
 	
 	TIMER(&t);
 	
@@ -326,17 +325,21 @@ void hina_bad_pick(Boss *h, int t) {
 	
 	GO_TO(h, VIEWPORT_W/5*(time/400+0.6)+ 100I, 0.02);
 	
-	FROM_TO(10, 10000, 13-2*global.diff) {
-		for(i = 1; i <= n; i++) {
-			create_projectile1c("crystal", fmod((VIEWPORT_W/n+3)*i+(1+global.diff)*t, VIEWPORT_W), rgb(0.2,0,0.2), linear, 3I+I*global.diff);
+	FROM_TO(100, 500, 5) {
+		
+		for(i = 1; i < 5; i++) {
+			create_projectile1c("crystal", VIEWPORT_W/5*i, rgb(0.2,0,0.2), linear, 7I);
 		}
 	}
 	
-	FROM_TO(100, 10000, 100) {
-		n = 20+5*global.diff;
-		for(i = 0; i < 6*n; i++) {
-			if(frand() > 0.5)
-				create_projectile1c("bigball", VIEWPORT_W/n*i, rgb(0.7,0,0.0), linear, 2I);
+	AT(200) {
+		int win = tsrand()%5;
+		for(i = 0; i < 5; i++) {
+			if(i == win)
+				continue;
+			
+			for(j = 0; j < 2+global.diff; j++)
+				create_projectile1c("bigball", VIEWPORT_W/5*(i+0.2+0.6*frand()), rgb(0.7,0,0.0), linear, 2I);
 		}
 	}
 }
@@ -387,9 +390,9 @@ void hina_spell_bg(Boss *h, int time) {
 Boss *create_hina() {
 	Boss* hina = create_boss("Kagiyama Hina", "hina", VIEWPORT_W + 150 + 100I);
 	boss_add_attack(hina, AT_Move, "Introduction", 2, 0, hina_intro, NULL);
-// 	boss_add_attack(hina, AT_Normal, "Cards1", 20, 15000, hina_cards1, NULL);
-// 	boss_add_attack(hina, AT_Spellcard, "Shard ~ Amulet of Harm", 26, 25000, hina_amulet, hina_spell_bg);
-// 	boss_add_attack(hina, AT_Normal, "Cards2", 17, 15000, hina_cards2, NULL);
+	boss_add_attack(hina, AT_Normal, "Cards1", 20, 15000, hina_cards1, NULL);
+	boss_add_attack(hina, AT_Spellcard, "Shard ~ Amulet of Harm", 26, 25000, hina_amulet, hina_spell_bg);
+	boss_add_attack(hina, AT_Normal, "Cards2", 17, 15000, hina_cards2, NULL);
 	boss_add_attack(hina, AT_Spellcard, "Lottery Sign ~ Bad Pick", 30, 36000, hina_bad_pick, hina_spell_bg);
 	boss_add_attack(hina, AT_Spellcard, "Lottery Sign ~ Wheel of Fortune", 20, 36000, hina_wheel, hina_spell_bg);
 	
@@ -399,11 +402,7 @@ Boss *create_hina() {
 
 void stage2_events() {
 	TIMER(&global.timer);
-	
-	AT(0) {
-		global.timer = 5100;
-	}
-	
+		
 	AT(300) {
 		create_enemy1c(VIEWPORT_W/2-10I, 7000+500*global.diff, BigFairy, stage2_great_circle, 2I);
 	}
