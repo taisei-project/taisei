@@ -170,7 +170,7 @@ int stage2_flea(Enemy *e, int t) {
 		e->args[1] -= 0.2;
 	
 		
-	FROM_TO(10, 400, 40-global.diff*5-t/70) {
+	FROM_TO(10, 400, 40-global.diff*7-t/70) {
 		create_projectile2c("flea", e->pos, rgb(0.2,0.2,1), asymptotic, 1.5*cexp(2I*M_PI*frand()), 1.5);
 	}
 	
@@ -227,7 +227,7 @@ void wriggle_small_storm(Boss *w, int time) {
 	if(time < 0)
 		return;
 	
-	FROM_TO(0,400,5) {
+	FROM_TO(0,400,5-global.diff) {
 		create_projectile1c("rice", w->pos, rgb(1,0.5,0.2), wriggle_bug, 2*cexp(I*_i*2*M_PI/20));
 		create_projectile1c("rice", w->pos, rgb(1,0.5,0.2), wriggle_bug, 2*cexp(I*_i*2*M_PI/20+I*M_PI));
 	}
@@ -237,8 +237,8 @@ void wriggle_small_storm(Boss *w, int time) {
 	
 	if(!(t%200)) {
 		int i;
-		for(i = 0; i < 10; i++)
-			create_projectile2c("bigball", w->pos, rgb(0.1,0.3,0.0), asymptotic, 2*cexp(I*i*2*M_PI/10), 2);
+		for(i = 0; i < 10+global.diff; i++)
+			create_projectile2c("bigball", w->pos, rgb(0.1,0.3,0.0), asymptotic, 2*cexp(I*i*2*M_PI/(10+global.diff)), 2);
 	}
 }
 
@@ -405,7 +405,7 @@ Boss *create_hina() {
 
 void stage2_events() {
 	TIMER(&global.timer);
-	
+		
 	AT(300) {
 		create_enemy1c(VIEWPORT_W/2-10I, 7000+500*global.diff, BigFairy, stage2_great_circle, 2I);
 	}
