@@ -562,8 +562,8 @@ int stage1_tritoss(Enemy *e, int t) {
 void stage1_events() {	
 	TIMER(&global.timer);
 	
-	AT(0)
-		global.timer = 5000;
+// 	AT(0)
+// 		global.timer = 5000;
 	
 	// opening. projectile bursts
 	FROM_TO(100, 160, 25) {
