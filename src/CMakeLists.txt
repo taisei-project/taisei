@@ -105,7 +105,7 @@ if(WIN32)
 	set(LIBs ${LIBs} -ldxguid -lwinmm)
 endif()
 	
-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${SDL_INCLUDE_DIR} ${ALUT_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${SDL_INCLUDE_DIR} ${ALUT_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${PNG_INCLUDE_DIR})
 add_executable(taisei WIN32 ${SRCs})
 target_link_libraries(taisei ${LIBs})
 
