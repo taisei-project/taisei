@@ -33,6 +33,7 @@ void give_up(void *arg) {
 MenuData *create_gameover_menu() {
 	MenuData *m = malloc(sizeof(MenuData));
 	create_menu(m);
+	m->abortable = -1;
 	
 	char s[64];
 	snprintf(s, sizeof(s), "Continue (%i)", MAX_CONTINUES - global.plr.continues);

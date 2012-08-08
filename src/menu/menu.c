@@ -68,7 +68,7 @@ static void key_action(MenuData *menu, int sym) {
 	} else if((sym == tconfig.intval[KEY_SHOT] || (sym == SDLK_RETURN && !keys[SDLK_LALT] && !keys[SDLK_LALT])) && menu->entries[menu->cursor].action) {
 		menu->quit = 1;
 		menu->selected = menu->cursor;
-	} else if(sym == SDLK_ESCAPE && (menu->type == MT_Transient || menu->abortable)) {
+	} else if(sym == SDLK_ESCAPE && (menu->type == MT_Transient || menu->abortable) && menu->abortable >= 0) {
 		menu->quit = 1;
 		menu->abort = 1;
 	}
