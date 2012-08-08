@@ -325,7 +325,7 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	// They are still horrible, though. I hate them. HATE HATE HATE HATE HATE HATE HATE HATE HATE.
 	if(global.menu && !global.menu->abort && global.menu->quit == 1 && global.menu->selected == 1)
 		fade_out(global.menu->fade);
-	else if(global.game_over == GAMEOVER_ABORT)
+	else if(global.game_over == GAMEOVER_ABORT || global.game_over == GAMEOVER_DEFEAT)
 		fade_out(1);
 }
 
