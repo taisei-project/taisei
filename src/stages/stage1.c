@@ -364,7 +364,7 @@ int stage1_burst(Enemy *e, int time) {
 		int i = 0;
 		int n = global.diff+1;
 		
-		for(i = -n/2; i <= n/2; i++) {
+		for(i = -n; i <= n; i++) {
 			create_projectile2c("crystal", e->pos, rgb(0.2, 0.3, 0.5), asymptotic, (2+0.1*global.diff)*cexp(I*(carg(global.plr.pos - e->pos) + 0.2*i)), 5);
 		}
 		
@@ -397,8 +397,10 @@ int stage1_circletoss(Enemy *e, int time) {
 	
 	
 	if(global.diff > D_Easy) {
-		FROM_TO_INT(90,500,150,15,1)
-			create_projectile2c("thickrice", e->pos, rgb(0.2, 0.4, 0.8), asymptotic, (1+frand()*2)*cexp(I*carg(global.plr.pos - e->pos)), 3);
+		FROM_TO_INT(90,500,150,15+5*global.diff,1) {
+			tsrand_fill(2);
+			create_projectile2c("thickrice", e->pos, rgb(0.2, 0.4, 0.8), asymptotic, (1+afrand(0)*2)*cexp(I*carg(global.plr.pos - e->pos)+0.05I*global.diff*anfrand(1)), 3);
+		}
 	}
 	
 	FROM_TO(global.diff > D_Easy ? 500 : 240, 900, 1)
@@ -418,8 +420,8 @@ int stage1_sinepass(Enemy *e, int time) {
 	e->args[1] -= cimag(e->pos-e->pos0)*0.03I;
 	e->pos += e->args[1]*0.4 + e->args[0];
 	
-	if(frand() > 0.993-0.001*global.diff)
-		create_projectile1c("ball", e->pos, rgb(0.8,0.8,0.4), linear, (1+frand())*cexp(I*carg(global.plr.pos - e->pos)));
+	if(frand() > 0.993-0.002*global.diff)
+		create_projectile1c("ball", e->pos, rgb(0.8,0.8,0.4), linear, (1+0.2*global.diff+frand())*cexp(I*carg(global.plr.pos - e->pos)));
 	
 	return 1;
 }
@@ -436,8 +438,8 @@ int stage1_drop(Enemy *e, int t) {
 	e->pos = e->pos0 + e->args[0]*t + e->args[1]*t*t;
 	
 	FROM_TO(10,1000,1)
-		if(frand() > 0.995-0.002*global.diff)
-			create_projectile1c("ball", e->pos, rgb(0.8,0.8,0.4), linear, (1+frand())*cexp(I*carg(global.plr.pos - e->pos)));
+		if(frand() > 0.995-0.003*global.diff)
+			create_projectile1c("ball", e->pos, rgb(0.8,0.8,0.4), linear, (1+0.3*global.diff+frand())*cexp(I*carg(global.plr.pos - e->pos)));
 		
 	return 1;
 }
@@ -473,7 +475,8 @@ int stage1_multiburst(Enemy *e, int t) {
 	
 	FROM_TO_INT(60, 300, 70, 40, 12-global.diff) {
 		int i;
-		for(i = -1; i <= 1; i++)
+		int n = 1+global.diff/2;
+		for(i = -n; i <= n; i++)
 			create_projectile1c("crystal", e->pos, rgb(0.2, 0.3, 0.5), linear, 2.5*cexp(I*(carg(global.plr.pos - e->pos) + i/5.0)));
 	}
 	
