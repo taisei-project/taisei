@@ -317,18 +317,18 @@ void hina_cards2(Boss *h, int time) {
 void hina_bad_pick(Boss *h, int t) {
 	int i;
 	
-	int n = 4+global.diff;
+	int n = 4+global.diff/2;
 	
 	TIMER(&t);
 	
-	if(time < 0)
+	if(t < 0)
 		return;
 	
-	GO_TO(h, VIEWPORT_W/5*(time/400+0.6)+ 100I, 0.02);
+	GO_TO(h, VIEWPORT_W/5*(t/400+0.6)+ 100I, 0.02);
 	
 	FROM_TO(10, 10000, 13-2*global.diff) {
 		for(i = 1; i <= n; i++) {
-			create_projectile1c("crystal", fmod((VIEWPORT_W/n+3)*i+(1+global.diff)*t, VIEWPORT_W), rgb(0.2,0,0.2), linear, 3I+I*global.diff);
+			create_projectile1c("crystal", fmod((VIEWPORT_W/n)*i+2*t, VIEWPORT_W), rgb(0.2,0,0.2), linear, 3I+I*global.diff);
 		}
 	}
 	
