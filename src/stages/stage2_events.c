@@ -393,11 +393,9 @@ void hina_spell_bg(Boss *h, int time) {
 Boss *create_hina() {
 	Boss* hina = create_boss("Kagiyama Hina", "hina", VIEWPORT_W + 150 + 100I);
 	boss_add_attack(hina, AT_Move, "Introduction", 2, 0, hina_intro, NULL);
-	/*
 	boss_add_attack(hina, AT_Normal, "Cards1", 20, 15000, hina_cards1, NULL);
 	boss_add_attack(hina, AT_Spellcard, "Shard ~ Amulet of Harm", 26, 25000, hina_amulet, hina_spell_bg);
 	boss_add_attack(hina, AT_Normal, "Cards2", 17, 15000, hina_cards2, NULL);
-	*/
 	boss_add_attack(hina, AT_Spellcard, "Lottery Sign ~ Bad Pick", 30, 36000, hina_bad_pick, hina_spell_bg);
 	boss_add_attack(hina, AT_Spellcard, "Lottery Sign ~ Wheel of Fortune", 20, 36000, hina_wheel, hina_spell_bg);
 	
@@ -407,9 +405,6 @@ Boss *create_hina() {
 
 void stage2_events() {
 	TIMER(&global.timer);
-	
-	AT(0)
-		global.timer = 5100;
 	
 	AT(300) {
 		create_enemy1c(VIEWPORT_W/2-10I, 7000+500*global.diff, BigFairy, stage2_great_circle, 2I);
