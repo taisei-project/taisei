@@ -55,12 +55,6 @@ void print_state_checksum() {
 
 	printf("[%05d] %d\t(%d\t%d\t%d)\t%d\n", global.frames, plr, spos, smisc, sargs, proj);
 }
-	
-
-void game_over() {
-	global.game_over = GAMEOVER_DEFEAT;
-	printf("Game Over!\n");
-}
 
 void frame_rate(int *lasttime) {
 	int t = *lasttime + 1000.0/FPS - SDL_GetTicks();
