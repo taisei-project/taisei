@@ -283,9 +283,6 @@ void cirno_iceplosion1(Boss *c, int time) {
 	TIMER(&t);
 	
 	if(time < 0)
-		return;
-	
-	if(time < 0)
 		GO_TO(c, VIEWPORT_W/2.0 + 100I, 0.02);
 	
 	FROM_TO(20,30,2) {
