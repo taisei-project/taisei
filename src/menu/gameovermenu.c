@@ -27,17 +27,23 @@ void continue_game(void *arg)
 }
 
 void give_up(void *arg) {
-	global.game_over = GAMEOVER_ABORT;
+	global.game_over = (MAX_CONTINUES - global.plr.continues)? GAMEOVER_ABORT : GAMEOVER_DEFEAT;
 }
 
 MenuData *create_gameover_menu() {
 	MenuData *m = malloc(sizeof(MenuData));
 	create_menu(m);
+	m->abortable = -1;
+	m->title = "Game over!";
 	
 	char s[64];
-	snprintf(s, sizeof(s), "Continue (%i)", MAX_CONTINUES - global.plr.continues);
-	add_menu_entry(m, s, continue_game, NULL);
-	add_menu_entry(m, "Give up", give_up, NULL);
+	int c = MAX_CONTINUES - global.plr.continues;
+	snprintf(s, sizeof(s), "Continue (%i)", c);
+	add_menu_entry(m, s, c? continue_game : NULL, NULL);
+	add_menu_entry(m, c? "Give up" : "Return to Title", give_up, NULL);
+	
+	if(!c)
+		m->cursor = 1;
 	
 	return m;
 }
