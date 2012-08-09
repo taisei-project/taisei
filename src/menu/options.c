@@ -602,45 +602,45 @@ void bind_input(MenuData *menu, OptionBinding *b)
 		int uni = event.key.keysym.unicode;
 		
 		if(event.type == SDL_KEYDOWN) {
-			if(sym != SDLK_ESCAPE) {
-				switch(b->type) {
-					case BT_KeyBinding:
+			switch(b->type) {
+				case BT_KeyBinding:
+					if(sym != SDLK_ESCAPE)
 						tconfig.intval[b->configentry] = sym;
-						b->blockinput = False;
-						break;
+					b->blockinput = False;
+					break;
+				
+				case BT_StrValue: {
+					// Very basic editor for string config values
+					// b->values is a pointer to the editor buffer string here (char**)
+					// Normally it's used to store the value names for BT_IntValue binds, though.
+					// TODO: implement a cursor here (so we can use arrow keys for editing)
+											
+					char c = (char)(uni & 0x7F);
+					char *dest = *b->values;
 					
-					case BT_StrValue: {
-						// Very basic editor for string config values
-						// b->values is a pointer to the editor buffer string here (char**)
-						// Normally it's used to store the value names for BT_IntValue binds, though.
-						// TODO: implement a cursor here (so we can use arrow keys for editing)
-												
-						char c = (char)(uni & 0x7F);
-						char *dest = *b->values;
-						
-						if(sym == SDLK_RETURN) {
-							if(strlen(dest))
-								stralloc(&(tconfig.strval[b->configentry]), dest);
-							else
-								strncpy(dest, tconfig.strval[b->configentry], 128);
-							b->blockinput = False;
-						} else if(sym == SDLK_BACKSPACE) {
-							if(strlen(dest))
-								dest[strlen(dest)-1] = 0;
-						} else if(uni && sym != SDLK_TAB && c != ':') {		// we use ':' as a separator for replays (and might use it as such somewhere else), and I don't feel like escaping it.
-							strncat(dest, &c, 128);
+					if(sym == SDLK_RETURN) {
+						if(strlen(dest))
+							stralloc(&(tconfig.strval[b->configentry]), dest);
+						else
+							strncpy(dest, tconfig.strval[b->configentry], 128);
+						b->blockinput = False;
+					} else if(sym == SDLK_BACKSPACE) {
+						if(strlen(dest))
 							dest[strlen(dest)-1] = 0;
-						}
-						break;
-					}
-					
-					default:	// should never get there anyway
+					} else if(sym == SDLK_ESCAPE) {
+						strncpy(dest, tconfig.strval[b->configentry], 128);
 						b->blockinput = False;
-						break;
+					} else if(uni && sym != SDLK_TAB && c != ':') {		// we use ':' as a separator for replays (and might use it as such somewhere else), and I don't feel like escaping it.
+						strncat(dest, &c, 128);
+						dest[strlen(dest)-1] = 0;
+					}
+					break;
 				}
-			} else
-				b->blockinput = False;
-			
+				
+				default:	// should never get there anyway
+					b->blockinput = False;
+					break;
+			}
 		}
 	}
 	SDL_EnableUNICODE(False);
