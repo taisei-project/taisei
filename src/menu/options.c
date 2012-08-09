@@ -251,7 +251,9 @@ int bind_common_onoffset_inverted(void *b, int v)
 
 int bind_fullscreen_set(void *b, int v)
 {
+#ifndef WIN32
 	video_toggle_fullscreen();
+#endif
 	return bind_common_onoffset(b, v);
 }
 
@@ -328,8 +330,10 @@ void destroy_options_menu(void *menu)
 	for(i = 0; i < m->ecount; ++i) {
 		if(binds[i].type == BT_Resolution) {
 			if(binds[i].selected != -1) {
+#ifndef WIN32
 				VideoMode *m = &(video.modes[binds[i].selected]);
 				video_setmode(m->width, m->height, tconfig.intval[FULLSCREEN]);
+#endif
 				
 				tconfig.intval[VID_WIDTH]  = video.intended.width;
 				tconfig.intval[VID_HEIGHT] = video.intended.height;
