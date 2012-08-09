@@ -45,7 +45,7 @@ inline double frand(void) {
 	return tsrand()/(double)TSRAND_MAX;
 }
 
-inline double nfrand() {
+inline double nfrand(void) {
 	return frand() * 2 - 1;
 }
 

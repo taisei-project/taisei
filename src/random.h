@@ -24,8 +24,8 @@ int tsrand_p(RandomState *rnd);
 inline void tsrand_seed(uint32_t seed);
 inline int tsrand(void);
 
-inline double frand();
-inline double nfrand();
+inline double frand(void);
+inline double nfrand(void);
 
 void tsrand_fill_p(RandomState *rnd, int amount);
 inline void tsrand_fill(int amount);
