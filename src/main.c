@@ -29,8 +29,8 @@ void init_gl() {
 	glEnable(GL_BLEND);
 	init_quadvbo();
 	
-	GLint texSize;
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &texSize);
+	glClear(GL_COLOR_BUFFER_BIT);
+	SDL_GL_SwapBuffers();
 }
 
 
