@@ -33,7 +33,13 @@ $prefix/data/
 
 RELATIVE is always set when building for Windows.
 
-3. Contact
+3. NOTE ABOUT REPLAYS
+
+As of version 1.0 replays are not guaranteed to work between different
+operating systems or architectures (or compiler versions). Screen capture
+your replays if you really want to publish them.
+
+4. Contact
 
 http://taisei-project.org/
 
