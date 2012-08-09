@@ -90,7 +90,7 @@ void draw_boss(Boss *boss) {
 				glColor3f(1,0.65,0.65);
 				break;
 			case AT_SurvivalSpell:
-				glColor3f(1,0.5,0.5);
+				glColor3f(0.5,0.5,1);
 			default:
 				break; // never happens
 			}		
