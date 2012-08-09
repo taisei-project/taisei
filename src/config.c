@@ -182,7 +182,7 @@ void config_set(char *key, char *val) {
 
 void config_load(char *filename) {
 	FILE *in = config_open(filename, "r");
-	int c, i = 0, found, line;
+	int c, i = 0, found, line = 0;
 	char buf[CONFIG_LOAD_BUFSIZE];
 	char key[CONFIG_LOAD_BUFSIZE];
 	char val[CONFIG_LOAD_BUFSIZE];
