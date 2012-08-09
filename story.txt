@@ -1,9 +1,9 @@
 --------------------------------------------------------------------------------
 ○ Taisei Project
 
-	Characterization and Story
+    Characterization and Story
 
-																	2012/08/06
+                                                                    2012/08/06
 --------------------------------------------------------------------------------
 ================================================================================
 ■ 0. Information
@@ -12,8 +12,8 @@
   This file contains spoiler and other content aimed at players who have cleared
   the game.
 
-		If you still think you want to proceed, scroll down.
-								↓
+        If you still think you want to proceed, scroll down.
+                                ↓
 
 
 
@@ -84,18 +84,18 @@
 
   ○ Konpaku Youmu
 
-	Because Youmu is awesome.
-  
+    Because Youmu is awesome.
+
     A blossomless spring morning in the Netherworld … or rather before
     morning. Shattering noise cut the gardens of passed souls. A noise not even
     ghosts can enjoy.
     This ending night was in fact nothing like a normal night. The whole
     Netherworld was awake early, including Yuyuko-sama and of course the
     half-phantom girl.
-    
+
     "I cannot sleep. I think the restless should at least get this kind of rest
     … this really has to be changed or I will get lunatic."
-    
+
     "Of course, Yuyuko-sama. I will slash every little clangor in this world
     until your sleep is left undisturbed!"
 
@@ -127,8 +127,8 @@
     Of course she has no idea of the course of events, but she still steps into
     action full of power and courage to bend history to her favour.
 
-    
-    
+
+
   ○ Stage 2 Boss
     Kagiyama Hina
 
@@ -137,8 +137,8 @@
     fact, the only thing she wanted was to maintain a bit of law and order in
     her forest.
 
-    
-    
+
+
   ○ Stage 3 Boss
     Wriggle
 
@@ -148,20 +148,20 @@
 
     The story doesn't take place underground after all.
 
-    
-    
+
+
   ○ Stage 4 Boss
     Kurumi
 
     She is a friend of Elly's … or at least her former kouhai. Somehow she got
     dragged into a longer journey and returned now together with Elly. She tries
     her best to keep Elly's back free of all the curious youkai (and players)
-	entering from the tunnel. But she got sick of her guard job a long time ago.
+    entering from the tunnel. But she got sick of her guard job a long time ago.
 
     They really like each other … somehow.
 
-    
-    
+
+
   ○ Stage 5 Boss
     Nagae Iku
 
@@ -170,12 +170,12 @@
 
     Being interrupted, when she is in a hurry and always being suspected for
     everything.
-  
+
     That happening both at the same time, she is quite unamused. But that makes
     her seem even more suspicious, doesn't it?
 
-    
-    
+
+
   ○ Stage 6 Boss
     Elly
 
@@ -183,24 +183,23 @@
     new power from the outside world: the power to manipulate Relations
     (i.e. she can do fancy maths). Thus she was able to trick Gensokyo's
     border*. Creating herself a place to research using her new powers.
-  
+
     What would she want to research on that high tower? The Theory of Everything
     of course.
-  
+
     Maybe she didn't even plan to use it to anyones harm. She certainly didn't
     know that the location she chose for here tower would cause that much
     trouble. But that's what scientists are like, only concentrating on what's
     important.
-  
+
     Her spellcards are based on physical phenomena. Turning her experiments into
     weapons.
-  
+
     fun fact: Taisei actually uses complex math for projectile positioning.
 
-  
+
     * It's not like the border is a real limitation for youkai. Lots of youkai
-	  are powerful enough to pass through there without a problem. Some even
-	  visit the outside world regularily to hunt humans for food.
+      are powerful enough to pass through there without a problem. Some even
+      visit the outside world regularily to hunt humans for food.
       But Elly broke it at some place and made it lead to her own place
       *somewhere inbetween*, which is unusual and shouldn't be easily possible.
-    
