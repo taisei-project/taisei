@@ -126,7 +126,7 @@ int collision_item(Item *i) {
 	return 0;
 }
 
-inline void spawn_item(complex pos, Type type) {
+void spawn_item(complex pos, Type type) {
 	tsrand_fill(2);
 	create_item(pos, 5*cexp(I*tsrand_a(0)/afrand(1)*M_PI*2), type);
 }

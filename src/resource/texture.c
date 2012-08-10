@@ -25,7 +25,7 @@ Color *rgba(float r, float g, float b, float a) {
 	return clr;
 }
 
-inline Color *rgb(float r, float g, float b) {
+Color *rgb(float r, float g, float b) {
 	return rgba(r, g, b, 1.0);
 }
 

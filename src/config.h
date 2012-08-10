@@ -77,9 +77,9 @@ void config_load(char *filename);
 void config_save(char *filename);
 ConfigEntry* config_findentry(char *name);
 
-inline int config_intval(char*);
-inline int config_intval_p(ConfigEntry*);
-inline char* config_strval(char*);
-inline char* config_strval_p(ConfigEntry*);
+int config_intval(char*);
+int config_intval_p(ConfigEntry*);
+char* config_strval(char*);
+char* config_strval_p(ConfigEntry*);
 
 #endif

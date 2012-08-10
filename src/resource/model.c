@@ -107,7 +107,7 @@ void parse_obj(char *filename, ObjFileData *data) {
 	}
 }
 	
-static inline void bad_reference_error(char *filename, char *aux, int n) {
+static void bad_reference_error(char *filename, char *aux, int n) {
 	errx(-1, "load_model():\n!- OBJ file '%s': Index %d: bad %s index reference\n", filename, n, aux);
 }
 

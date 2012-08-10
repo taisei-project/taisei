@@ -121,19 +121,19 @@ void fade_out(float f) {
 	colorfill(0, 0, 0, f);
 }
 
-inline double psin(double x) {
+double psin(double x) {
 	return 0.5 + 0.5 * sin(x);
 }
 
-inline double max(double a, double b) {
+double max(double a, double b) {
 	return (a > b)? a : b;
 }
 
-inline double min(double a, double b) {
+double min(double a, double b) {
 	return (a < b)? a : b;
 }
 
-inline double clamp(double f, double lower, double upper) {
+double clamp(double f, double lower, double upper) {
 	if(f < lower)
 		return lower;
 	if(f > upper)
