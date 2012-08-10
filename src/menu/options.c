@@ -668,7 +668,7 @@ static void options_key_action(MenuData *menu, int sym) {
 			if(menu->cursor < 0)
 				menu->cursor = menu->ecount - 1;
 		} while SHOULD_SKIP;
-	} else if((sym == tconfig.intval[KEY_SHOT] || (sym == SDLK_RETURN && !keys[SDLK_LALT] && !keys[SDLK_LALT])) && menu->entries[menu->cursor].action) {
+	} else if((sym == tconfig.intval[KEY_SHOT] || (sym == SDLK_RETURN && !keys[SDLK_LALT] && !keys[SDLK_RALT])) && menu->entries[menu->cursor].action) {
 		menu->selected = menu->cursor;
 		
 		OptionBinding *binds = (OptionBinding*)menu->context;
