@@ -14,9 +14,9 @@
 Dialog *stage3_dialog() {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
 	
-	dadd_msg(d, Left, "Ugh, it's like bugs being attracted\nby the light ...");
-	dadd_msg(d, Right, "Yes! Because the light makes us strong!");
-	dadd_msg(d, Right, "This place is full of it! So feel my tremendous power!");
+	dadd_msg(d, Left, "Ugh, it's like bugs being attracted by the light...");
+	dadd_msg(d, Right, "That's right! The light makes us strong!");
+	dadd_msg(d, Right, "This place is full of it, so feel my tremendous power!");
 		
 	return d;
 }

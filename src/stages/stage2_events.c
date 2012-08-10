@@ -18,16 +18,16 @@ Dialog *stage2_dialog() {
 		dadd_msg(d, Right, "Huh? No, you? Everone is upset, you know?\nSo I came too.");
 		dadd_msg(d, Left, "Why, what happened?");
 		dadd_msg(d, Right, "The border has been broken.");
-		dadd_msg(d, Left, "Is that even possible!?");
+		dadd_msg(d, Left, "Is that even possible?!");
 		dadd_msg(d, Right, "Look, there is a way outside\nright behind us.");
-		dadd_msg(d, Left, "But I have the feeling that you\n won't let me pass, haha");
+		dadd_msg(d, Left, "But I've got the feeling that you\n won't let me pass, haha");
 	} else {
-		dadd_msg(d, Left, "This must be the place ...");
+		dadd_msg(d, Left, "This must be the place...");
 		dadd_msg(d, Right, "Hello? ");
 		dadd_msg(d, Left, "You came here because of the\n\"crack\", too? Where is it?");
-		dadd_msg(d, Right, "Right behind us, but ...");
+		dadd_msg(d, Right, "Right behind us, but...");
 		dadd_msg(d, Left, "Ok, I'll go there.");
-		dadd_msg(d, Right, "No! Don't make it more of a\ntrouble than it already is!");
+		dadd_msg(d, Right, "No! Don't make it more\ntroubling than it already is!");
 	}
 	
 	return d;
