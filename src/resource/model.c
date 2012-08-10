@@ -105,6 +105,8 @@ void parse_obj(char *filename, ObjFileData *data) {
 				errx(-1, "parse_obj():\n!- OBJ file '%s:%d': Parsing error: face vertex count must be either 3 or 4\n", filename, linen);	
 		}
 	}
+	
+	fclose(fp);
 }
 	
 static inline void bad_reference_error(char *filename, char *aux, int n) {
