@@ -47,6 +47,7 @@ Animation *init_animation(char *filename) {
 	buf->w = buf->tex->w/buf->cols;
 	buf->h = buf->tex->h/buf->rows;
 	
+	free(name);
 	printf("-- initialized animation '%s'\n", buf->name);
 	return buf;
 }
