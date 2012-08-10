@@ -3,17 +3,18 @@
 
     Characterization and Story
 
-                                                                    2012/08/06
+                                                                      2012-08-10
 --------------------------------------------------------------------------------
 ================================================================================
 ■ 0. Information
 ================================================================================
 
-  This file contains spoiler and other content aimed at players who have cleared
-  the game.
+  This file contains spoilers and other content intended for players who have
+  cleared the game.
 
-        If you still think you want to proceed, scroll down.
-                                ↓
+                  If you still wish to proceed, scroll down.
+                                      ↓
+
 
 
 
@@ -47,11 +48,9 @@
 ■ 1. Incident
 ================================================================================
 
-  Yet another culprit terrorizes the land of dreams. This time, the functioning
-  of the barrier is disrupted. Unknown powers reach for the control of the
-  borders themselves and for the matter beyond them: Profit, blur and the
-  relativity of limits.
-
+  Another villain threatens to turn the land of dreams into a place of terror.
+  The barrier is disrupted. Unknown forces reach for control over the borders
+  themselves, throwing all of Gensokyo into chaos.
 
 ================================================================================
 ■ 2. Characters
@@ -60,48 +59,50 @@
 
   ○ Kirisame Marisa
 
-    Because it's a fan game after all.
+    Because it’s a fan game after all.
 
-    In the first morning of spring, Marisa checked the shop's shelves as she
-    noticed that her cash box was all empty. There was nobody around. Normally
-    at least a few customers would drop by … but this state left Marisa really
-    bored.
-    She glanced around the shop, sighted … but there was a paper on her table.
-    A brand new issue of the Bunbunmaru Newspaper. At least that one is never
-    late.
+    Just at the beginning of spring, Marisa went to check the shop’s shelves,
+    only to notice that her cash box was as empty as the shop itself. Usually,
+    at least a few customers would show up eventually, but not that day.
 
-    "News Exclusive: Border Broken?"
+    She was really bored.
 
-    The headline catched her eyes in an instant.
+    After a quick glance around the store, a brand new issue of the Bunbunmaru
+    Newspaper that was lying on the table caught her eyes. At least that one is
+    never late.
 
-    "[…] large gathering of curious youkai […]"
+        “News Exclusive: Border Broken?!”
 
-    "Ok I'll better take a look!", she thought, happy about having found an
-    exciting alternative to looking after her empty shop.
+    Her eyes flashed in excitement as she read on.
 
-    "Time to spark som ass!"
+        “[…] large gathering of curious youkai […]”
+
+    “Okay, I’ll better check it out!”, she thought, happy about having found a
+    better pastime than looking after her depressingly empty shop.
+
+    “Time to spark some ass!”
 
 
   ○ Konpaku Youmu
 
     Because Youmu is awesome.
 
-    A blossomless spring morning in the Netherworld … or rather before
-    morning. Shattering noise cut the gardens of passed souls. A noise not even
-    ghosts can enjoy.
-    This ending night was in fact nothing like a normal night. The whole
-    Netherworld was awake early, including Yuyuko-sama and of course the
+    A blossomless spring dawn in the Netherworld. Shattering noises cut through
+    the gardens of passed souls. Noises not even ghosts can enjoy.
+    This ending night was in fact nothing like a normal night. The entire
+    Netherworld was awake early, including Yuyuko-sama and of course a certain
     half-phantom girl.
 
-    "I cannot sleep. I think the restless should at least get this kind of rest
-    … this really has to be changed or I will get lunatic."
+    “I cannot sleep like this. Can the restless not have at least this kind of
+    rest? Something really needs to be done about this, or I will go insane.”
 
-    "Of course, Yuyuko-sama. I will slash every little clangor in this world
-    until your sleep is left undisturbed!"
+    “Of course, Yuyuko-sama. I shall slash every little clangor in this world
+    until your sleep is left undisturbed!”
 
     The fact that Hakugyokuro is closely connected to the border makes it
-    sensitive to changes of the borders structure. Youmu knew that, so she
-    decided to look after this "border breaking" rumor first.
+    sensitive to changes of the border’s structure. Youmu was aware of that,
+    which led her to the decision to investigate this “border breaking” rumor
+    first.
 
 
 ================================================================================
@@ -111,7 +112,7 @@
 
   ○ Stage 1: Misty Lake
   ○ Stage 2: Walk Along the Border
-  ○ Stage 3: Tunnel of Light
+  ○ Stage 3: Through the Tunnel of Light
   ○ Stage 4: Forgotten Mansion
   ○ Stage 5: Climbing the Tower of Babel
   ○ Stage 6: Roof of the World
@@ -124,82 +125,82 @@
   ○ Stage 1 Boss
     Cirno
 
-    Of course she has no idea of the course of events, but she still steps into
-    action full of power and courage to bend history to her favour.
+    Clueless about the course of events, she still jumps into action with full
+    force. Her reckless courage may seem like foolishness to others, but she is
+    bound and determined to bend history in her favor.
 
 
 
   ○ Stage 2 Boss
     Kagiyama Hina
 
-    She was somehow the first considerably strong youkai at the place of action,
-    therefore she ended up as the inofficial overseer of the growing crowd. In
-    fact, the only thing she wanted was to maintain a bit of law and order in
-    her forest.
+    Hina was the first considerably strong youkai to show up at the place of
+    action, which is why she ended up as the inofficial overseer of the growing
+    crowd. Actually, the only thing she wanted was to maintain a bit of law and
+    order in her forest.
 
 
 
   ○ Stage 3 Boss
     Wriggle
 
-    When a half-youkai like Wriggle gets reasonable amounts of power, it is only
-    natural for them to get a bit self confident. Fortunately, it wasn't enough
-    to get the final boss because of this.
+    When half-youkai like Wriggle gain a reasonable amount of power, it is only
+    natural for them to become a bit overconfident. Fortunately, that alone
+    wasn’t enough for her to become the final boss.
 
-    The story doesn't take place underground after all.
+    The story doesn’t take place underground after all.
 
 
 
   ○ Stage 4 Boss
     Kurumi
 
-    She is a friend of Elly's … or at least her former kouhai. Somehow she got
-    dragged into a longer journey and returned now together with Elly. She tries
-    her best to keep Elly's back free of all the curious youkai (and players)
-    entering from the tunnel. But she got sick of her guard job a long time ago.
+    She is a friend of Elly’s… or at least her former kouhai. Some time ago,
+    Elly dragged her along when she left her mansion to set out on a longer
+    journey, and now they have returned. Still trying her best at keeping all
+    the curious youkai (and players) who are entering from the tunnel off
+    Elly’s back, she grew tired of being her bodyguard long ago.
 
-    They really like each other … somehow.
+    Somehow they’ve really taken a liking to each other.
 
 
 
   ○ Stage 5 Boss
     Nagae Iku
 
-    She slipped through the guard right after the player. Who knows what she is
-    after. But there are two things she hates:
+    She slipped through the guard right after the player. No one knows what
+    she is after, but there are two things she hates:
 
-    Being interrupted, when she is in a hurry and always being suspected for
+    Being interrupted when she is in a hurry and always being suspected for
     everything.
 
-    That happening both at the same time, she is quite unamused. But that makes
-    her seem even more suspicious, doesn't it?
+    Both happening at the same time has made her lose her temper.
+    But that makes her seem even more suspicious, doesn't it?
 
 
 
   ○ Stage 6 Boss
     Elly
 
-    She quit her office guarding that mansion in Lotus Land Story and obtained a
-    new power from the outside world: the power to manipulate Relations
-    (i.e. she can do fancy maths). Thus she was able to trick Gensokyo's
-    border*. Creating herself a place to research using her new powers.
+    She quit her task of guarding that mation in Lotus Land Story and obtained
+    a new power from the outside world: the power to manipulate relations
+    (i.e. she can do fancy maths). This enabled her to trick Gensokyo’s border*
+    and create herself a new place for research using her new powers.
 
-    What would she want to research on that high tower? The Theory of Everything
-    of course.
+    On that high tower, she wants to research The Theory of Everything.
 
-    Maybe she didn't even plan to use it to anyones harm. She certainly didn't
-    know that the location she chose for here tower would cause that much
-    trouble. But that's what scientists are like, only concentrating on what's
-    important.
+    Maybe she didn’t even plan to use it to anyone’s harm. She certainly didn’t
+    expect the location she chose for her tower to cause that much trouble.
+    But that’s what scientists are like. Research comes first.
 
-    Her spellcards are based on physical phenomena. Turning her experiments into
-    weapons.
+    Her spellcards are based on physical phenomena, turning her experiments
+    into powerful weapons.
 
-    fun fact: Taisei actually uses complex math for projectile positioning.
+    Fun Fact™: Taisei actually uses complex math for projectile positioning.
 
 
-    * It's not like the border is a real limitation for youkai. Lots of youkai
-      are powerful enough to pass through there without a problem. Some even
-      visit the outside world regularily to hunt humans for food.
+    * It’s not like the border is an absolute barrier for youkai. It is not
+      uncommon for powerful youkai to pass through there without much trouble.
+      Some even visit the outside world regularly to hunt humans for food.
       But Elly broke it at some place and made it lead to her own place
-      *somewhere inbetween*, which is unusual and shouldn't be easily possible.
+      *somewhere inbetween*, which is unusual and shouldn’t be easily possible.
