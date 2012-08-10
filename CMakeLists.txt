@@ -36,8 +36,6 @@ install(DIRECTORY shader DESTINATION ${DATA_DIR})
 install(DIRECTORY models DESTINATION ${DATA_DIR}
 	FILES_MATCHING PATTERN "*.obj")
 
-install(FILES "story.txt" DESTINATION ${DATA_DIR})
-
 # uninstall target
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"

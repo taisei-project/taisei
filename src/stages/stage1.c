@@ -22,13 +22,15 @@ Dialog *stage1_dialog(void) {
 		dadd_msg(d, Left, "It's me!");
 	else
 		dadd_msg(d, Left, "Just someone?");
-	dadd_msg(d, Right, "How dare you pass the lake of the fairies!\nIt's a dangerous area for weak humans!");
+	
+	dadd_msg(d, Right, "How dare you pass the lake of the fairies?!\nIt's a dangerous place for weak humans!");
+	
 	if(global.plr.cha == Marisa) {
 		dadd_msg(d, Left, "You call me weak?");
-		dadd_msg(d, Right, "Yes!");
+		dadd_msg(d, Right, "I do!");
 	} else {
-		dadd_msg(d, Left, "I'm just walking by. Any problem with that?");
-		dadd_msg(d, Right, "Of course! It's not right!");
+		dadd_msg(d, Left, "I'm just passing by. Any problem with that?");
+		dadd_msg(d, Right, "Of course! You can't do that!");
 	}
 	
 	dadd_msg(d, Right, "I'll just freeze you!");

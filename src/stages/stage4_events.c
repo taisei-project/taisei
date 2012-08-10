@@ -17,18 +17,18 @@ Dialog *stage4_dialog(void) {
 	dadd_msg(d, Right, "Ah! Intruder! Stop being so persistent!");
 	
 	if(global.plr.cha == Marisa) {
-		dadd_msg(d, Left, "What? I mean where am I?");
-		dadd_msg(d, Right, "You are in the ...");
-		dadd_msg(d, Right, "STOP! That's secret for intruders!");
-		dadd_msg(d, Left, "... in the mansion of the\nevil mastermind, right?");
+		dadd_msg(d, Left, "What? I mean, where am I?");
+		dadd_msg(d, Right, "You are in the...");
+		dadd_msg(d, Right, "STOP! I won't tell that to intruders!");
+		dadd_msg(d, Left, "...in the mansion of the\nevil mastermind, right?");
 		dadd_msg(d, Right, "AHH! Anyway! You won't reach\nthe end of this corridor!");
 	} else {
 		dadd_msg(d, Left, "So you are the owner of this place?");
 		dadd_msg(d, Right, "No, I'm just the guard!");
 		dadd_msg(d, Left, "What is there to be guarded?");
-		dadd_msg(d, Right, "My master ... I mean that's a secret!");
+		dadd_msg(d, Right, "My master... I mean, that's a secret!");
 		dadd_msg(d, Left, "...");
-		dadd_msg(d, Right, "So stop asking questions!\nSecrets are secrets!\n ... and I will beat you now!");
+		dadd_msg(d, Right, "So stop asking questions!\nSecrets are secret!\n...\nAnd I will beat you now!");
 	}
 		
 	return d;
@@ -37,8 +37,8 @@ Dialog *stage4_dialog(void) {
 Dialog *stage4_dialog_end(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
 	
-	dadd_msg(d, Left, "Where is your master now?");
-	dadd_msg(d, Right, "Didn't I say? At the end of this corridor,\nthere is a door.");
+	dadd_msg(d, Left, "Now, where is your master?");
+	dadd_msg(d, Right, "Didn't I tell you? At the end of this corridor,\nthere is a door.");
 	dadd_msg(d, Right, "Just leave me alone.");
 		
 	return d;

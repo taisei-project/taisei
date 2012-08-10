@@ -171,6 +171,7 @@ void take_screenshot(void)
 	if(!out)
 	{
 		perror("fopen");
+		free(data);
 		return;
 	}
 	
