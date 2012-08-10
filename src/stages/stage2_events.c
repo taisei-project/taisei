@@ -10,7 +10,7 @@
 #include "stage.h"
 #include "enemy.h"
 
-Dialog *stage2_dialog() {
+Dialog *stage2_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/hina");
 	
 	if(global.plr.cha == Marisa) {
@@ -33,7 +33,7 @@ Dialog *stage2_dialog() {
 	return d;
 }
 
-Dialog *stage2_post_dialog() {
+Dialog *stage2_post_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", NULL);
 		
 	dadd_msg(d, Right, "Well, let's go then.");
@@ -243,7 +243,7 @@ void wriggle_small_storm(Boss *w, int time) {
 	}
 }
 
-Boss *create_wriggle_mid() {
+Boss *create_wriggle_mid(void) {
 	Boss* wriggle = create_boss("Wriggle", "wriggle", VIEWPORT_W + 150 - 30I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 4, 0, wriggle_intro, NULL);
 	boss_add_attack(wriggle, AT_Normal, "Small Bug Storm", 20, 20000, wriggle_small_storm, NULL);
@@ -391,7 +391,7 @@ void hina_spell_bg(Boss *h, int time) {
 	
 }
 
-Boss *create_hina() {
+Boss *create_hina(void) {
 	Boss* hina = create_boss("Kagiyama Hina", "hina", VIEWPORT_W + 150 + 100I);
 	boss_add_attack(hina, AT_Move, "Introduction", 2, 0, hina_intro, NULL);
 	boss_add_attack(hina, AT_Normal, "Cards1", 20, 15000, hina_cards1, NULL);
@@ -404,7 +404,7 @@ Boss *create_hina() {
 	return hina;
 }
 
-void stage2_events() {
+void stage2_events(void) {
 	TIMER(&global.timer);
 		
 	AT(300) {

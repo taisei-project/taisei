@@ -16,7 +16,7 @@
 #include "paths/native.h"
 #include "taiseigl.h"
 
-void init_gl() {
+void init_gl(void) {
 	load_gl_functions();
 	check_gl_extensions();
 	
@@ -34,7 +34,7 @@ void init_gl() {
 }
 
 
-void taisei_shutdown() {
+void taisei_shutdown(void) {
 	config_save(CONFIG_FILE);
 	printf("\nshutdown:\n");
 	

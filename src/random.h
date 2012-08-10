@@ -21,17 +21,17 @@ void tsrand_switch(RandomState *rnd);
 void tsrand_seed_p(RandomState *rnd, uint32_t seed);
 int tsrand_p(RandomState *rnd);
 
-inline void tsrand_seed(uint32_t seed);
-inline int tsrand(void);
+void tsrand_seed(uint32_t seed);
+int tsrand(void);
 
-inline double frand(void);
-inline double nfrand(void);
+double frand(void);
+double nfrand(void);
 
 void tsrand_fill_p(RandomState *rnd, int amount);
-inline void tsrand_fill(int amount);
-inline int tsrand_a(int idx);
-inline double afrand(int idx);
-inline double anfrand(int idx);
+void tsrand_fill(int amount);
+int tsrand_a(int idx);
+double afrand(int idx);
+double anfrand(int idx);
 
 #define TSRAND_MAX INT32_MAX
 

@@ -55,7 +55,7 @@ void stage5_stairs_draw(Vector pos) {
 	glUseProgram(0);
 }
 
-void stage5_draw() {
+void stage5_draw(void) {
 	set_perspective(&bgcontext, 100, 20000);
 	draw_stage3d(&bgcontext, 30000);
 	
@@ -113,7 +113,7 @@ void iku_spell_bg(Boss *b, int t) {
 	glColor4f(1,1,1,1);
 }
 
-void stage5_start() {
+void stage5_start(void) {
 	memset(&stagedata, 0, sizeof(stagedata));
 	
 	init_stage3d(&bgcontext);
@@ -124,10 +124,10 @@ void stage5_start() {
 	stagedata.rad = 2800;
 }
 
-void stage5_end() {
+void stage5_end(void) {
 	free_stage3d(&bgcontext);
 }
 
-void stage5_loop() {
+void stage5_loop(void) {
 	stage_loop(stage_get(5), stage5_start, stage5_end, stage5_draw, stage5_events, NULL, 5700);
 }

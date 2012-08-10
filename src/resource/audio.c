@@ -82,6 +82,6 @@ void delete_sound(void **snds, void *snd) {
 	delete_element(snds, snd);
 }
 
-void delete_sounds() {
+void delete_sounds(void) {
 	delete_all_elements((void **)&resources.sounds, delete_sound);
 }

@@ -47,6 +47,6 @@ struct Resources {
 
 extern Resources resources;
 
-void load_resources();
-void free_resources();
+void load_resources(void);
+void free_resources(void);
 #endif

@@ -28,7 +28,7 @@ GLFuncPtr get_proc_address(char *name) {
 }
 
 
-void check_gl_extensions() {
+void check_gl_extensions(void) {
 	int l;
 	char *ext = (char*)glGetString(GL_EXTENSIONS);
 	char *last, *pos;
@@ -47,7 +47,7 @@ void check_gl_extensions() {
 	}
 }
 
-void load_gl_functions() {
+void load_gl_functions(void) {
 #ifdef __WIN32__
 	glActiveTexture = (PFNGLACTIVETEXTUREPROC)get_proc_address("glActiveTexture");
 	glBlendEquation = (PFNGLBLENDEQUATIONPROC)get_proc_address("glBlendEquation");

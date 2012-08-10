@@ -30,7 +30,7 @@ void give_up(void *arg) {
 	global.game_over = (MAX_CONTINUES - global.plr.continues)? GAMEOVER_ABORT : GAMEOVER_DEFEAT;
 }
 
-MenuData *create_gameover_menu() {
+MenuData *create_gameover_menu(void) {
 	MenuData *m = malloc(sizeof(MenuData));
 	create_menu(m);
 	m->abortable = -1;

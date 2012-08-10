@@ -51,11 +51,11 @@ void apply_bg_shaders(ShaderRule *shaderrules);
 
 void draw_stage_title(StageInfo *info);
 
-void stage1_loop();
-void stage2_loop();
-void stage3_loop();
-void stage4_loop();
-void stage5_loop();
-void stage6_loop();
+void stage1_loop(void);
+void stage2_loop(void);
+void stage3_loop(void);
+void stage4_loop(void);
+void stage5_loop(void);
+void stage6_loop(void);
 
 #endif

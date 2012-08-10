@@ -9,6 +9,6 @@
 #ifndef STAGE3_EVENTS_H
 #define STAGE3_EVENTS_H
 
-void stage3_events();
+void stage3_events(void);
 
 #endif

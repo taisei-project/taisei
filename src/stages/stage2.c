@@ -126,7 +126,7 @@ void stage2_bloom(int fbonum) {
 	glUseProgram(0);
 }
 
-void stage2_start() {
+void stage2_start(void) {
 	init_stage3d(&bgcontext);
 	bgcontext.cx[2] = 1000;
 	bgcontext.cx[0] = -850;
@@ -139,11 +139,11 @@ void stage2_start() {
 	add_model(&bgcontext, stage2_bg_leaves_draw, stage2_bg_pos);
 }
 
-void stage2_end() {
+void stage2_end(void) {
 	free_stage3d(&bgcontext);
 }
 
-void stage2_draw() {
+void stage2_draw(void) {
 	TIMER(&global.frames);
 	
 	set_perspective(&bgcontext, 500, 5000);
@@ -158,7 +158,7 @@ void stage2_draw() {
 	
 }
 
-void stage2_loop() {
+void stage2_loop(void) {
 	ShaderRule shaderrules[] = { stage2_fog, stage2_bloom, NULL };
 	stage_loop(stage_get(2), stage2_start, stage2_end, stage2_draw, stage2_events, shaderrules, 5240);
 }

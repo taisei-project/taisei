@@ -46,7 +46,7 @@ ConfigEntry* config_findentry(char *name) {
 	return NULL;
 }
 
-void config_preset() {
+void config_preset(void) {
 	memset(tconfig.strval, 0, sizeof(tconfig.strval));
 	
 	tconfig.intval[KEY_UP] = SDLK_UP;
@@ -108,19 +108,19 @@ FILE* config_open(char *filename, char *mode) {
 	return out;
 }
 
-inline int config_intval_p(ConfigEntry *e) {
+int config_intval_p(ConfigEntry *e) {
 	return tconfig.intval[e->key];
 }
 
-inline char* config_strval_p(ConfigEntry *e) {
+char* config_strval_p(ConfigEntry *e) {
 	return tconfig.strval[e->key];
 }
 
-inline int config_intval(char *key) {
+int config_intval(char *key) {
 	return config_intval_p(config_findentry(key));
 }
 
-inline char* config_strval(char *key) {
+char* config_strval(char *key) {
 	return config_strval_p(config_findentry(key));
 }
 

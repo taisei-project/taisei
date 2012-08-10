@@ -9,7 +9,7 @@
 #include "stage6.h"
 #include <global.h>
 
-Dialog *stage6_dialog() {
+Dialog *stage6_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
 	
 	dadd_msg(d, Left, "You are responsible?");
@@ -878,7 +878,7 @@ void elly_spellbg_modern(Boss *b, int t) {
 	glColor4f(1,1,1,1);
 }
 
-Boss *create_elly() {
+Boss *create_elly(void) {
 	Boss *b = create_boss("Elly", "elly", -200I);
 	
 	boss_add_attack(b, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
@@ -899,7 +899,7 @@ Boss *create_elly() {
 	return b;
 }
 	
-void stage6_events() {
+void stage6_events(void) {
 	TIMER(&global.timer);
 	
 // 	AT(0)

@@ -109,7 +109,7 @@ void parse_obj(char *filename, ObjFileData *data) {
 	fclose(fp);
 }
 	
-static inline void bad_reference_error(char *filename, char *aux, int n) {
+static void bad_reference_error(char *filename, char *aux, int n) {
 	errx(-1, "load_model():\n!- OBJ file '%s': Index %d: bad %s index reference\n", filename, n, aux);
 }
 
@@ -227,6 +227,6 @@ void delete_model(void **models, void *model) {
 	delete_element(models, model);
 }
 
-void delete_models() { // Does not delete elements from the VBO, so doing this at runtime is leaking VBO space		
+void delete_models(void) { // Does not delete elements from the VBO, so doing this at runtime is leaking VBO space		
 	delete_all_elements((void **)&resources.models, delete_model);
 }

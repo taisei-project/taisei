@@ -13,7 +13,7 @@
 
 static Stage3D bgcontext;
 
-Dialog *stage1_dialog() {
+Dialog *stage1_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
 		
 	dadd_msg(d, Right, "Hey! Who is there?");
@@ -101,7 +101,7 @@ void stage1_fog(int fbonum) {
 	glUseProgram(0);
 }
 
-void stage1_draw() {
+void stage1_draw(void) {
 	set_perspective(&bgcontext, 500, 5000);
 	
 	draw_stage3d(&bgcontext, 7000);	
@@ -205,7 +205,7 @@ void cirno_pfreeze_bg(Boss *c, int time) {
 	glColor4f(1,1,1,1);
 }
 	
-Boss *create_cirno_mid() {
+Boss *create_cirno_mid(void) {
 	Boss* cirno = create_boss("Cirno", "cirno", VIEWPORT_W + 220 + 30I);
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro, NULL);
 	boss_add_attack(cirno, AT_Normal, "Icy Storm", 20, 20000, cirno_icy, NULL);
@@ -345,7 +345,7 @@ void cirno_icicle_fall(Boss *c, int time) {
 	}
 }
 
-Boss *create_cirno() {
+Boss *create_cirno(void) {
 	Boss* cirno = create_boss("Cirno", "cirno", -230 + 100I);
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro_boss, NULL);
 	boss_add_attack(cirno, AT_Normal, "Iceplosion 0", 20, 20000, cirno_iceplosion0, NULL);
@@ -558,7 +558,7 @@ int stage1_tritoss(Enemy *e, int t) {
 	return 1;
 }
 
-void stage1_events() {	
+void stage1_events(void) {	
 	TIMER(&global.timer);
 	
 // 	AT(0)
@@ -644,7 +644,7 @@ void stage1_events() {
 	
 }
 
-void stage1_start() {
+void stage1_start(void) {
 	init_stage3d(&bgcontext);
 	add_model(&bgcontext, stage1_bg_draw, stage1_bg_pos);
 	add_model(&bgcontext, stage1_smoke_draw, stage1_smoke_pos);
@@ -654,11 +654,11 @@ void stage1_start() {
 	bgcontext.cv[1] = 7;
 }
 
-void stage1_end() {
+void stage1_end(void) {
 	free_stage3d(&bgcontext);
 }
 
-void stage1_loop() {
+void stage1_loop(void) {
 	ShaderRule list[] = { stage1_fog, NULL };
 	stage_loop(stage_get(1), stage1_start, stage1_end, stage1_draw, stage1_events, list, 5200);
 }

@@ -189,7 +189,7 @@ void stage4_corridor_draw(Vector pos) {
 	glColor3f(1,1,1);
 }
 
-void stage4_start() {
+void stage4_start(void) {
 	init_stage3d(&bgcontext);
 	
 	bgcontext.cx[2] = -10000;
@@ -207,11 +207,11 @@ void stage4_start() {
 	add_model(&bgcontext, stage4_corridor_draw, stage4_corridor_pos);
 }
 
-void stage4_end() {
+void stage4_end(void) {
 	free_stage3d(&bgcontext);
 }
 
-void stage4_draw() {
+void stage4_draw(void) {
 	set_perspective(&bgcontext, 130, 3000);
 	
 	draw_stage3d(&bgcontext, 4000);
@@ -229,7 +229,7 @@ void stage4_draw() {
 		bgcontext.cv[1] += 0.02;
 }
 
-void stage4_loop() {
+void stage4_loop(void) {
 	ShaderRule shaderrules[] = { stage4_fog, NULL };
 	stage_loop(stage_get(4), stage4_start, stage4_end, stage4_draw, stage4_events, shaderrules, 5550);
 }

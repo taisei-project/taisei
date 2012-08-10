@@ -8,9 +8,9 @@
 #ifndef NATIVE_H
 #define NATIVE_H
 
-const char *get_prefix();
-const char *get_config_path();
-const char *get_screenshots_path();
-const char *get_replays_path();
+const char *get_prefix(void);
+const char *get_config_path(void);
+const char *get_screenshots_path(void);
+const char *get_replays_path(void);
 
 #endif

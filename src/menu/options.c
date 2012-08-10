@@ -299,7 +299,7 @@ int bind_noshader_set(void *b, int v)
 	return i;
 }
 
-int bind_stagebg_fpslimit_dependence() {
+int bind_stagebg_fpslimit_dependence(void) {
 	return tconfig.intval[NO_STAGEBG] == 2;
 }
 

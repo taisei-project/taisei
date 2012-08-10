@@ -72,7 +72,7 @@ void delete_animation(void **anis, void *ani) {
 	delete_element(anis, ani);
 }
 
-void delete_animations() {
+void delete_animations(void) {
 	delete_all_elements((void **)&resources.animations, delete_animation);
 }
 

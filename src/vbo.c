@@ -40,7 +40,7 @@ void vbo_add_verts(VBO *vbo, Vertex *verts, int count) {
 	vbo->offset += count;
 }
 
-void init_quadvbo() {
+void init_quadvbo(void) {
 	Vertex verts[] = {
 		{{-0.5,-0.5,0},{0,0,1},0,0},
 		{{-0.5,0.5,0},{0,0,1},0,1},
@@ -64,7 +64,7 @@ void delete_vbo(VBO *vbo) {
 	glDeleteBuffers(1, &vbo->vbo);
 }
 
-void draw_quad() {
+void draw_quad(void) {
 	
 // 	glBindBuffer(GL_ARRAY_BUFFER, _vbo.vbo);	
 	

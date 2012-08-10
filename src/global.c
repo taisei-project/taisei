@@ -18,7 +18,7 @@
 
 Global global;
 
-void init_global() {
+void init_global(void) {
 	memset(&global, 0, sizeof(global));	
 	
 	tsrand_seed_p(&global.rand_game, time(0));
@@ -36,7 +36,7 @@ void init_global() {
 	SDL_EnableKeyRepeat(TS_KR_DELAY, TS_KR_INTERVAL);
 }
 
-void print_state_checksum() {
+void print_state_checksum(void) {
 	int plr, spos = 0, smisc = 0, sargs = 0, proj = 0;
 	Player *p = &global.plr;
 	Enemy *s;
@@ -94,7 +94,7 @@ void calc_fps(FPSCounter *fps) {
 		fps->stagebg_fps = approach(fps->stagebg_fps, fps->show_fps, 0.1);
 }
 
-void set_ortho() {
+void set_ortho(void) {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(0, SCREEN_W, SCREEN_H, 0, -100, 100);
@@ -121,19 +121,19 @@ void fade_out(float f) {
 	colorfill(0, 0, 0, f);
 }
 
-inline double psin(double x) {
+double psin(double x) {
 	return 0.5 + 0.5 * sin(x);
 }
 
-inline double max(double a, double b) {
+double max(double a, double b) {
 	return (a > b)? a : b;
 }
 
-inline double min(double a, double b) {
+double min(double a, double b) {
 	return (a < b)? a : b;
 }
 
-inline double clamp(double f, double lower, double upper) {
+double clamp(double f, double lower, double upper) {
 	if(f < lower)
 		return lower;
 	if(f > upper)
@@ -142,7 +142,7 @@ inline double clamp(double f, double lower, double upper) {
 	return f;
 }
 
-void take_screenshot()
+void take_screenshot(void)
 {
 	FILE *out;
 	char *data;

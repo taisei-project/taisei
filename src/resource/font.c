@@ -28,7 +28,7 @@ TTF_Font *load_font(char *name, int size) {
 	return f;
 }
 
-void init_fonts() {
+void init_fonts(void) {
 	TTF_Init();
 	
 	_fonts.standard = load_font("gfx/LinBiolinum.ttf", 20);

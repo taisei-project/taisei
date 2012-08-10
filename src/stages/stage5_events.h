@@ -8,6 +8,6 @@
 #ifndef STAGE5_EVENTS_H
 #define STAGE5_EVENTS_H
 
-void stage5_events();
+void stage5_events(void);
 
 #endif

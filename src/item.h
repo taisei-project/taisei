@@ -37,11 +37,11 @@ struct Item{
 
 Item *create_item(complex pos, complex v, Type type);
 void delete_item(Item *item);
-void draw_items();
-void delete_items();
+void draw_items(void);
+void delete_items(void);
 
 int collision_item(Item *p);
-void process_items();
+void process_items(void);
 
 void spawn_item(complex pos, Type type);
 void spawn_items(complex pos, int point, int power, int bomb, int life);
