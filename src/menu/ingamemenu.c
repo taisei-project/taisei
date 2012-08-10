@@ -16,7 +16,7 @@ void return_to_title(void *arg) {
 	global.game_over = GAMEOVER_ABORT;
 }
 	
-MenuData *create_ingame_menu() {
+MenuData *create_ingame_menu(void) {
 	MenuData *m = malloc(sizeof(MenuData));
 	create_menu(m);
 	add_menu_entry(m, "Return to Game", return_to_game, NULL);

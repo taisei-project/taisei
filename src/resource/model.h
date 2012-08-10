@@ -48,6 +48,6 @@ Model *get_model(char *name);
 
 void draw_model_p(Model *model);
 void draw_model(char *name);
-void delete_models(); // Does not delete elements from the VBO, so doing this at runtime is leaking VBO space
+void delete_models(void); // Does not delete elements from the VBO, so doing this at runtime is leaking VBO space
 
 #endif

@@ -300,6 +300,6 @@ void delete_shader(void **shas, void *sha) {
 	delete_element(shas, sha);
 }
 
-void delete_shaders() {
+void delete_shaders(void) {
 	delete_all_elements((void **)&resources.shaders, delete_shader);
 }

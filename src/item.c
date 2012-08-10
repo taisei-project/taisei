@@ -26,7 +26,7 @@ void delete_item(Item *item) {
 	delete_element((void **)&global.items, item);
 }
 
-void draw_items() {
+void draw_items(void) {
 	Item *p;
 	Texture *tex = NULL;
 	for(p = global.items; p; p = p->next) {
@@ -57,7 +57,7 @@ void draw_items() {
 	}
 }
 
-void delete_items() {
+void delete_items(void) {
 	delete_all_elements((void **)&global.items, delete_element);
 }
 
@@ -71,7 +71,7 @@ void move_item(Item *i) {
 		i->pos = i->pos0 + log(t/5.0 + 1)*5*(i->v + lim) + lim*t;
 }
 
-void process_items() {
+void process_items(void) {
 	Item *item = global.items, *del = NULL;
     int v;
 	

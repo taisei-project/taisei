@@ -19,8 +19,8 @@ enum {
 
 extern int tgl_ext[_TGLEXT_COUNT];
 
-void load_gl_functions();
-void check_gl_extensions();
+void load_gl_functions(void);
+void check_gl_extensions(void);
 
 #ifdef __WIN32__
 PFNGLACTIVETEXTUREPROC glActiveTexture;

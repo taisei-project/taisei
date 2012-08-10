@@ -46,7 +46,7 @@ ConfigEntry* config_findentry(char *name) {
 	return NULL;
 }
 
-void config_preset() {
+void config_preset(void) {
 	memset(tconfig.strval, 0, sizeof(tconfig.strval));
 	
 	tconfig.intval[KEY_UP] = SDLK_UP;

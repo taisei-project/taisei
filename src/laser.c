@@ -139,7 +139,7 @@ void draw_laser_curve(Laser *laser) {
 	glDisable(GL_TEXTURE_2D);
 }
 
-void draw_lasers() {
+void draw_lasers(void) {
 	Laser *laser;
 	
 	for(laser = global.lasers; laser; laser = laser->next) {
@@ -162,11 +162,11 @@ void _delete_laser(void **lasers, void *laser) {
 	delete_element(lasers, laser);
 }
 
-void delete_lasers() {
+void delete_lasers(void) {
 	delete_all_elements((void **)&global.lasers, _delete_laser);
 }
 
-void process_lasers() {
+void process_lasers(void) {
 	Laser *laser = global.lasers, *del = NULL;
 	
 	while(laser != NULL) {

@@ -9,7 +9,7 @@
 #include "stage5.h"
 #include <global.h>
 
-Dialog *stage5_post_mid_dialog() {
+Dialog *stage5_post_mid_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", NULL);
 		
 	dadd_msg(d, Left, "Hey! Stop!");
@@ -17,7 +17,7 @@ Dialog *stage5_post_mid_dialog() {
 	return d;
 }
 
-Dialog *stage5_boss_dialog() {
+Dialog *stage5_boss_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
 	
 	dadd_msg(d, Left, "Finally!");
@@ -30,7 +30,7 @@ Dialog *stage5_boss_dialog() {
 	return d;
 }
 
-Dialog *stage5_post_boss_dialog() {
+Dialog *stage5_post_boss_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", NULL);
 	
 	dadd_msg(d, Left, "I can see the top!");
@@ -201,7 +201,7 @@ void iku_mid_intro(Boss *b, int t) {
 		killall(global.enemies);
 }
 
-Boss *create_iku_mid() {
+Boss *create_iku_mid(void) {
 	Boss *b = create_boss("Bombs?", "iku", VIEWPORT_W+800I);
 	
 	boss_add_attack(b, AT_SurvivalSpell, "Static Bombs", 16, 10, iku_mid_intro, NULL);
@@ -479,7 +479,7 @@ void iku_induction(Boss *b, int t) {
 
 void iku_spell_bg(Boss *b, int t);
 
-Boss *create_iku() {
+Boss *create_iku(void) {
 	Boss *b = create_boss("Nagae Iku", "iku", VIEWPORT_W/2-200I);
 	
 	boss_add_attack(b, AT_Move, "Introduction", 3, 0, iku_intro, NULL);
@@ -494,7 +494,7 @@ Boss *create_iku() {
 	return b;
 }
 
-void stage5_events() {
+void stage5_events(void) {
 	TIMER(&global.timer);
 			
 	FROM_TO(60, 120, 10)

@@ -8,6 +8,6 @@
 #ifndef STAGE2_H
 #define STAGE2_H
 
-void stage2_loop();
+void stage2_loop(void);
 
 #endif

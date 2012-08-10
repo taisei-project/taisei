@@ -27,6 +27,6 @@ void play_sound(char *name);
 void play_sound_p(Sound *snd);
 
 Sound *get_snd(char *name);
-void delete_sounds();
+void delete_sounds(void);
 
 #endif

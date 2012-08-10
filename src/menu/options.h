@@ -18,7 +18,7 @@ int options_menu_loop(MenuData *m);
 
 typedef int (*BindingGetter)(void*);
 typedef int (*BindingSetter)(void*, int);
-typedef int (*BindingDependence)();
+typedef int (*BindingDependence)(void);
 
 typedef enum BindingType {
 	BT_IntValue,

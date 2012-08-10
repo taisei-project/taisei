@@ -36,7 +36,7 @@ StageInfo* stage_get(int n) {
 	return NULL;
 }
 
-void stage_start() {
+void stage_start(void) {
 	global.timer = 0;
 	global.frames = 0;
 	global.game_over = 0;
@@ -51,14 +51,14 @@ void stage_start() {
 	global.plr.deathtime = -1;
 }
 
-void stage_ingamemenu() {
+void stage_ingamemenu(void) {
 	if(!global.menu)
 		global.menu = create_ingame_menu();
 	else
 		global.menu->quit = 1;
 }
 
-void replay_input() {
+void replay_input(void) {
 	if(global.menu) {
 		menu_input(global.menu);
 		return;
@@ -108,7 +108,7 @@ void replay_input() {
 	player_applymovement(&global.plr);
 }
 
-void stage_input() {
+void stage_input(void) {
 	if(global.menu) {
 		menu_input(global.menu);
 		return;
@@ -161,7 +161,7 @@ void stage_input() {
 		player_applymovement(&global.plr);
 }
 
-void draw_hud() {
+void draw_hud(void) {
 	draw_texture(SCREEN_W/2.0, SCREEN_H/2.0, "hud");	
 	
 	char buf[16], *diff;
@@ -449,7 +449,7 @@ void stage_logic(int time) {
 		global.game_over = GAMEOVER_WIN;
 }
 
-void stage_end() {
+void stage_end(void) {
 	delete_enemies(&global.enemies);
 	delete_items();
 	delete_lasers();

@@ -11,7 +11,7 @@
 #include "enemy.h"
 #include "laser.h"
 
-Dialog *stage4_dialog() {
+Dialog *stage4_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
 		
 	dadd_msg(d, Right, "Ah! Intruder! Stop being so persistent!");
@@ -34,7 +34,7 @@ Dialog *stage4_dialog() {
 	return d;
 }
 
-Dialog *stage4_dialog_end() {
+Dialog *stage4_dialog_end(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
 	
 	dadd_msg(d, Left, "Where is your master now?");
@@ -359,7 +359,7 @@ void kurumi_outro(Boss *b, int time) {
 	b->pos += -5-I;		
 }
 
-Boss *create_kurumi_mid() {
+Boss *create_kurumi_mid(void) {
 	Boss* b = create_boss("Kurumi", "kurumi", VIEWPORT_W/2-400I);
 	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_intro, NULL);
 	boss_add_attack(b, AT_Spellcard, "Bloodless ~ Gate of Walachia", 25, 20000, kurumi_slaveburst, kurumi_spell_bg);
@@ -695,7 +695,7 @@ void kurumi_danmaku(Boss *b, int time) {
 }
 
 
-Boss *create_kurumi() {
+Boss *create_kurumi(void) {
 	Boss* b = create_boss("Kurumi", "kurumi", -400I);
 	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_boss_intro, NULL);
 	boss_add_attack(b, AT_Normal, "Sin Breaker", 20, 20000, kurumi_sbreaker, NULL);
@@ -711,7 +711,7 @@ Boss *create_kurumi() {
 
 
 		
-void stage4_events() {
+void stage4_events(void) {
 	TIMER(&global.timer);
 	
 	AT(70) {

@@ -51,7 +51,7 @@ void recurse_dir(char *path) {
 	closedir(dir);
 }
 
-void load_resources() {
+void load_resources(void) {
 	printf("load_resources():\n");
 	
 	char *path = malloc(strlen(get_prefix())+32);
@@ -107,7 +107,7 @@ void load_resources() {
 	}	
 }
 
-void free_resources() {	
+void free_resources(void) {	
 	if(resources.state & RS_SfxLoaded) {
 		printf("-- freeing sounds\n");
 		delete_sounds();

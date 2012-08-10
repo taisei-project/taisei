@@ -38,7 +38,7 @@ Texture *prefix_get_tex(char *name, char *prefix);
 SDL_Surface *load_png(const char *filename);
 
 void delete_texture(void **texs, void *tex);
-void delete_textures();
+void delete_textures(void);
 
 Texture *load_texture(const char *filename);
 void load_sdl_surf(SDL_Surface *surface, Texture *texture);

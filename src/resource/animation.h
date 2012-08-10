@@ -29,7 +29,7 @@ typedef struct Animation {
 
 Animation *init_animation(char *filename);
 Animation *get_ani(char *name);
-void delete_animations();
+void delete_animations(void);
 void draw_animation(float x, float y, int row, char *name);
 void draw_animation_p(float x, float y, int row, Animation *ani);
 

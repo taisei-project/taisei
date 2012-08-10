@@ -127,20 +127,18 @@ typedef struct {
 
 extern Global global;
 
-void print_state_checksum();
+void print_state_checksum(void);
 
-void init_global();
+void init_global(void);
 
 void frame_rate(int *lasttime);
 void calc_fps(FPSCounter *fps);
-void set_ortho();
+void set_ortho(void);
 void colorfill(float r, float g, float b, float a);
 void fade_out(float f);
 
 void global_processevent(SDL_Event*);
-void take_screenshot();
-
-double psin();
+void take_screenshot(void);
 
 // needed for mingw compatibility:
 #undef min
@@ -153,6 +151,7 @@ double min(double, double);
 double max(double, double);
 double clamp(double, double, double);
 double approach(double v, double t, double d);
+double psin(double);
 int strendswith(char *s, char *e);
 char* difficulty_name(Difficulty diff);
 void stralloc(char **dest, char *src);

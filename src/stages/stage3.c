@@ -110,7 +110,7 @@ void stage3_fog(int fbonum) {
 	glUseProgram(0);
 }
 
-void stage3_start() {
+void stage3_start(void) {
 	init_stage3d(&bgcontext);
 	
  	bgcontext.cx[2] = -10;
@@ -129,11 +129,11 @@ void stage3_start() {
 //	stgstate.fog_exp = 5.0;
 }
 
-void stage3_end() {
+void stage3_end(void) {
 	free_stage3d(&bgcontext);
 }
 
-void stage3_draw() {
+void stage3_draw(void) {
 	TIMER(&global.timer)
 	
 	set_perspective(&bgcontext, 300, 5000);
@@ -278,7 +278,7 @@ void stage3_draw() {
 	draw_stage3d(&bgcontext, 7000);
 }
 
-void stage3_loop() {
+void stage3_loop(void) {
 	ShaderRule shaderrules[] = { stage3_fog, stage3_tunnel, NULL };
 	stage_loop(stage_get(3), stage3_start, stage3_end, stage3_draw, stage3_events, shaderrules, 5700);
 }

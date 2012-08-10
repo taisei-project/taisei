@@ -11,7 +11,7 @@
 #include "stage.h"
 #include "enemy.h"
 
-Dialog *stage3_dialog() {
+Dialog *stage3_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
 	
 	dadd_msg(d, Left, "Ugh, it's like bugs being attracted\nby the light ...");
@@ -420,7 +420,7 @@ void stage3_boss_spellbg(Boss *b, int time) {
 	glColor4f(1,1,1,1);
 }
 
-Boss* stage3_create_midboss() {
+Boss* stage3_create_midboss(void) {
 	Boss *scuttle = create_boss("Scuttle", "scuttle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(scuttle, AT_Move, "Introduction", 2, 0, stage3_mid_intro, NULL);
 	boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 30, 25000, stage3_mid_a0, NULL);
@@ -750,7 +750,7 @@ void stage3_boss_intro(Boss *boss, int time) {
 	GO_TO(boss, VIEWPORT_W/2.0 + 100I, 0.03);
 }
 
-Boss* stage3_create_boss() {
+Boss* stage3_create_boss(void) {
 	Boss *wriggle = create_boss("EX Wriggle", "wriggle", VIEWPORT_W/2 - 200I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage3_boss_intro, NULL);
 	
@@ -765,7 +765,7 @@ Boss* stage3_create_boss() {
 	return wriggle;
 }
 
-void stage3_events() {
+void stage3_events(void) {
 	TIMER(&global.timer);
 	
 	FROM_TO(160, 300, 10) {

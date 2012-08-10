@@ -93,7 +93,7 @@ void stage6_skysphere_draw(Vector pos) {
 	glDisable(GL_TEXTURE_2D);
 }
 
-void stage6_draw() {
+void stage6_draw(void) {
 	set_perspective(&bgcontext, 100, 9000);
 	draw_stage3d(&bgcontext, 10000);
 	
@@ -143,11 +143,11 @@ void stage6_draw() {
 	bgcontext.crot[2] += 180/M_PI*g*w;
 }
 
-void start_fall_over() { //troll
+void start_fall_over(void) { //troll
 	fall_over = global.frames;
 }
 
-void stage6_start() {
+void stage6_start(void) {
 	init_stage3d(&bgcontext);
 	fall_over = 0;
 	
@@ -169,11 +169,11 @@ void stage6_start() {
 	
 }
 
-void stage6_end() {
+void stage6_end(void) {
 	free_stage3d(&bgcontext);
 }
 
-void stage6_loop() {
+void stage6_loop(void) {
 // 	ShaderRule shaderrules[] = { stage6_bloom, NULL };
 	stage_loop(stage_get(6), stage6_start, stage6_end, stage6_draw, stage6_events, NULL, 3900);
 }
