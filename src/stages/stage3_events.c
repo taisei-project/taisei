@@ -17,7 +17,7 @@ Dialog *stage3_dialog(void) {
 	dadd_msg(d, Left, "Ugh, it's like bugs being attracted by the light...");
 	dadd_msg(d, Right, "That's right! The light makes us strong!");
 	dadd_msg(d, Right, "This place is full of it, so feel my tremendous power!");
-		
+	
 	return d;
 }
 
@@ -169,33 +169,37 @@ int stage3_cornerfairy(Enemy *e, int t) {
 		e->unbombable = True;
 	}
 	
-	FROM_TO(0, 60, 1)
+	FROM_TO(0, 120, 1)
 		GO_TO(e, e->args[0], 0.01)
 	
-	FROM_TO(60, 120, 1) {
-		GO_TO(e, e->args[1], 0.05)
-		int d = (D_Lunatic - global.diff + 2);
+	FROM_TO(120, 240, 1) {
+		GO_TO(e, e->args[1], 0.025)
+		int d = 5; //(D_Lunatic - global.diff + 3);
 		if(!(t % d)) {
-			float i; for(i = -M_PI; i <= M_PI; i += (e->args[2]? 0.3 : 1.0)) {
-				float c = 0.25 + 0.25 * sin(t / 5.0);
+			int i, cnt = 10 + global.diff * 1.5;
+			
+			for(i = 0; i < cnt; ++i) {
+				float c = 0.5 + 0.5 * sin(t / 15.0);
 				
-				create_projectile2c("thickrice", e->pos, rgb(1.0 - c, 0.6, 0.5 + c), asymptotic,
+				create_projectile2c(cabs(e->args[2])? "wave" : "thickrice", e->pos, cabs(e->args[2])? rgb(0.5 - c*0.2, 0.3 + c*0.7, 1.0) : rgb(1.0 - c*0.5, 0.6, 0.5 + c*0.5), asymptotic,
 					//2*cexp(I*(carg(global.plr.pos - e->pos) + i)),
-					2*cexp(I*(i+carg((VIEWPORT_W+I*VIEWPORT_H)/2 - e->pos))),
+					(global.diff > D_Normal? 2 : 1.5)*cexp(I*((2*i*M_PI/cnt)+carg((VIEWPORT_W+I*VIEWPORT_H)/2 - e->pos))),
 					1.5
 				);
 				
+				/*
 				if(global.diff > D_Normal && !(t % 5) && !e->args[2]) {
 					create_projectile2c("flea", e->pos, rgb(1.0, 0.5, 0.5), asymptotic,
 						2*cexp(I*(carg(global.plr.pos - e->pos) + i)),
 						1.5
 					);
 				}
+				*/
 			}
 		}
 	}
 	
-	AT(180)
+	AT(260)
 		e->hp = 0;
 	
 	return 0;
@@ -768,6 +772,9 @@ Boss* stage3_create_boss(void) {
 void stage3_events(void) {
 	TIMER(&global.timer);
 	
+//	AT(0)
+//		global.timer = 2300;
+	
 	FROM_TO(160, 300, 10) {
 		tsrand_fill(3);
 		create_enemy1c(VIEWPORT_W/2 + 20 * anfrand(0) + (VIEWPORT_H/4 + 20 * anfrand(1))*I, 200, Swirl, stage3_enterswirl, I * 3 + anfrand(2) * 3);
@@ -786,7 +793,8 @@ void stage3_events(void) {
 		create_enemy1c(VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 10000, BigFairy, stage3_bigfairy, 1);
 	}
 	
-	FROM_TO(2400, 2620, 130) {
+	//FROM_TO(2400, 2620, 130) {
+	AT(2400) {
 		double offs = -50;
 		
 		complex p1 = 0+0I;
@@ -824,7 +832,8 @@ void stage3_events(void) {
 		create_enemy2c(20 + (VIEWPORT_H+20)*I, 50, Swirl, stage3_bitchswirl, 1, 1);
 	}
 	
-	FROM_TO(4330, 4460, 130) {
+	//FROM_TO(4330, 4460, 130) {
+	AT(4330) {
 		double offs = -50;
 		
 		complex p1 = 0+0I;
