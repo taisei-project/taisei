@@ -133,11 +133,11 @@ void player_logic(Player* plr) {
 		plr->pos -= 0.7I;
 		return;
 	}
-		
+
 	if(plr->focus < 0 || (plr->focus > 0 && plr->focus < 30))
 		plr->focus++;
-	
-		
+
+
 	switch(plr->cha) {
 	case Youmu:
 		youmu_shot(plr);
@@ -147,21 +147,21 @@ void player_logic(Player* plr) {
 		break;
 	}
 
-	
+
 	if(global.frames == plr->deathtime)
 		player_realdeath(plr);
-	
+
 	if(global.frames - plr->recovery < 0) {
 		Enemy *en;
 		for(en = global.enemies; en; en = en->next)
-			if(!en->unbombable)
+			if(!en->unbombable && en->hp > ENEMY_IMMUNE)
 				en->hp -= 300;
-		
+
 		Projectile *p;
 		for(p = global.projs; p; p = p->next)
 			if(p->type >= FairyProj)
 				p->type = DeadProj;
-			
+
 		if(global.boss && global.boss->current) {
 			AttackType at = global.boss->current->type;
 			if(at != AT_Move && at != AT_SurvivalSpell)
