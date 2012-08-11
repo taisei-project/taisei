@@ -266,7 +266,7 @@ int mari_laser(Projectile *p, int t) {
 	
 	float angle = creal(p->args[2]);
 	float factor = (1-abs(global.plr.focus)/30.0) * !!angle;
-	complex dir = -cexp(I*((angle+0.05*sin(global.frames/50.0)*(angle > 0? 1 : -1))*factor + M_PI/2));
+	complex dir = -cexp(I*((angle+0.025*sin(global.frames/50.0)*(angle > 0? 1 : -1))*factor + M_PI/2));
 	p->args[0] = 20*dir;
 	linear(p, t);
 	
@@ -464,8 +464,8 @@ void marisa_power(Player *plr, float npow) {
 			create_enemy_p(&plr->slaves, -40I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -40I, 5, 0, 0);
 		
 		if(npow >= 2) {
-			create_enemy_p(&plr->slaves, 25-5I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, 8-40I, 5, -M_PI/12, 0);
-			create_enemy_p(&plr->slaves, -25-5I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -8-40I, 5, M_PI/12, 0);
+			create_enemy_p(&plr->slaves, 25-5I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, 8-40I, 5,    M_PI/30, 0);
+			create_enemy_p(&plr->slaves, -25-5I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -8-40I, 5, -M_PI/30, 0);
 		}
 		
 		if((int)npow == 3)
