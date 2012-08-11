@@ -171,7 +171,7 @@ void player_logic(Player* plr) {
 }
 
 void player_bomb(Player *plr) {
-	if(global.frames - plr->recovery >= 0 && plr->bombs > 0) {
+	if(global.frames - plr->recovery >= 0 && plr->bombs > 0 && global.frames - plr->respawntime >= 60) {
 		
 		delete_projectiles(&global.projs);
 				
@@ -197,7 +197,7 @@ void player_bomb(Player *plr) {
 
 void player_realdeath(Player *plr) {
 	plr->deathtime = -DEATH_DELAY-1;
-	
+	plr->respawntime = global.frames;
 	plr->moveflags = 0;
 		
 	create_item(plr->pos, 6-15*I, Power);

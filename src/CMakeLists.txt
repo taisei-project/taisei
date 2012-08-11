@@ -103,8 +103,14 @@ endif()
 
 if(WIN32)
 	set(LIBs ${LIBs} -ldxguid -lwinmm)
+
+	string(REPLACE "gcc" "windres" CMAKE_RC_COMPILER_INIT ${CMAKE_C_COMPILER})
+	enable_language(RC)
+	set(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> -O coff -o <OBJECT> <SOURCE>")
+
+	set(SRCs ${SRCs} taisei.rc)
 endif()
-	
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${SDL_INCLUDE_DIR} ${ALUT_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${PNG_INCLUDE_DIR})
 add_executable(taisei WIN32 ${SRCs})
 target_link_libraries(taisei ${LIBs})
