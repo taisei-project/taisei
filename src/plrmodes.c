@@ -187,6 +187,10 @@ int youmu_split(Enemy *e, int t) {
 
 void youmu_shot(Player *plr) {
 	if(plr->fire) {
+
+		if(!(global.frames % 4))
+			play_sound("generic_shot");
+		
 		if(!(global.frames % 6)) {
 			create_projectile1c("youmu", plr->pos + 10 - I*20, NULL, linear, -20I)->type = PlrProj+120;
 			create_projectile1c("youmu", plr->pos - 10 - I*20, NULL, linear, -20I)->type = PlrProj+120;		
@@ -407,6 +411,9 @@ int marisa_star_orbit(Projectile *p, int t) { // a[0]: x' a[1]: x''
 
 void marisa_shot(Player *plr) {
 	if(plr->fire) {
+		if(!(global.frames % 4))
+			play_sound("generic_shot");
+		
 		if(!(global.frames % 6)) {
 			create_projectile1c("marisa", plr->pos + 10 - 15I, NULL, linear, -20I)->type = PlrProj+150;
 			create_projectile1c("marisa", plr->pos - 10 - 15I, NULL, linear, -20I)->type = PlrProj+150;
