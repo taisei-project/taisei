@@ -324,6 +324,9 @@ void player_applymovement(Player* plr) {
 		if(!keys[tconfig.intval[KEY_SHOT]] && plr->fire) {
 			player_event(plr, EV_RELEASE, KEY_SHOT);
 			replay_event(&global.replay, EV_RELEASE, KEY_SHOT);
+		} else if(keys[tconfig.intval[KEY_SHOT]] && !plr->fire) {
+			player_event(plr, EV_PRESS, KEY_SHOT);
+			replay_event(&global.replay, EV_PRESS, KEY_SHOT);
 		}
 		
 		if(!keys[tconfig.intval[KEY_FOCUS]] && plr->focus > 0) {
