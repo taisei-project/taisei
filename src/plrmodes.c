@@ -143,7 +143,7 @@ int youmu_opposite_myon(Enemy *e, int t) {
 	e->pos0 = rad*cexp(I*arg);	
 	e->pos = e->pos0 + plr->pos;
 	
-	if(plr->fire && !(global.frames % 6)) {
+	if(plr->fire && !(global.frames % 6) && global.plr.deathtime >= -1) {
 		int a = 20;
 		
 		if(plr->power >= 3) {
@@ -272,7 +272,7 @@ int mari_laser(Projectile *p, int t) {
 }
 
 int marisa_laser_slave(Enemy *e, int t) {
-	if(global.plr.fire && global.frames - global.plr.recovery >= 0) {
+	if(global.plr.fire && global.frames - global.plr.recovery >= 0 && global.plr.deathtime >= -1) {
 		if(!(global.frames % 4))
 			create_projectile_p(&global.projs, get_tex("proj/marilaser"), 0, NULL, MariLaser, mari_laser, -20I, add_ref(e),0,0)->type = PlrProj+e->args[1]*4;
 		
@@ -378,7 +378,7 @@ void MariStarBomb(Projectile *p, int t) {
 }
 
 int marisa_star_slave(Enemy *e, int t) {
-	if(global.plr.fire && global.frames - global.plr.recovery >= 0) {
+	if(global.plr.fire && global.frames - global.plr.recovery >= 0 && global.plr.deathtime >= -1) {
 		if(!(global.frames % 20))
 			create_projectile_p(&global.projs, get_tex("proj/maristar"), e->pos, NULL, MariStar, accelerated, e->args[1], e->args[2], 0, 0)->type = PlrProj+e->args[3]*20;
 	}
