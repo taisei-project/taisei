@@ -51,6 +51,7 @@ typedef struct {
 	int recovery;
 	
 	int deathtime;
+	int respawntime;
     
     int continues;
     
