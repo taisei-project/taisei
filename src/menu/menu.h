@@ -83,6 +83,4 @@ float menu_fade(MenuData *menu);
 
 void draw_menu_selector(float x, float y, float w, float h, float t);
 void draw_menu_title(MenuData *m, char *title);
-
-void start_delayed(MenuData *m, MenuAction, int delay); // use in menu action. postpones execution of action
 #endif
