@@ -55,7 +55,7 @@ void stage_ingamemenu(void) {
 	if(!global.menu)
 		global.menu = create_ingame_menu();
 	else
-		global.menu->quit = 1;
+		close_menu(global.menu);
 }
 
 void replay_input(void) {
@@ -305,12 +305,6 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 		glPopMatrix();
 	}
 	
-	if(global.frames < 4*FADE_TIME)
-		fade_out(1.0 - global.frames/(float)(4*FADE_TIME));
-	if(global.timer > time - 4*FADE_TIME) {
-		fade_out((global.timer - time + 4*FADE_TIME)/(float)(4*FADE_TIME));
-	}
-	
 	if(global.menu) {
 		glPushMatrix();
 		glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
@@ -319,14 +313,6 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	}
 	
 	draw_hud();
-	
-	// I don't remember how did it work before the massive transition hacking - and neither do I want to.
-	// So I'll just leave these new hacks here. At least they are not AS horrible as the old ones.
-	// They are still horrible, though. I hate them. HATE HATE HATE HATE HATE HATE HATE HATE HATE.
-	if(global.menu && !global.menu->abort && global.menu->quit == 1 && global.menu->selected == 1)
-		fade_out(global.menu->fade);
-	else if(global.game_over == GAMEOVER_ABORT || global.game_over == GAMEOVER_DEFEAT)
-		fade_out(1);
 }
 
 int apply_shaderrules(ShaderRule *shaderrules, int fbonum) {

@@ -54,8 +54,6 @@ void start_replay(void *arg) {
 	global.game_over = 0;
 	global.replaymode = REPLAY_RECORD;
 	replay_destroy(&global.replay);
-	
-	replayview->instantselect = False;
 }
 
 MenuData* replayview_stageselect(Replay *rpy) {
@@ -102,7 +100,7 @@ static void shorten(char *s, int width) {
 }
 
 static void replayview_draw_stagemenu(MenuData *m) {
-	float alpha = 1 - m->fade;
+	float alpha = min(1, m->frames/40.0);
 	int i;
 	
 	float height = (1+m->ecount) * 20;
@@ -138,31 +136,16 @@ static void replayview_draw_stagemenu(MenuData *m) {
 	glPopMatrix();
 }
 
-static void replayview_draw(MenuData *m) {
-	draw_stage_menu(m);
-	
-	if(m->context) {
-		MenuData *sm = m->context;
-		menu_logic(sm);
-		if(sm->quit == 2) {
-			destroy_menu(sm);
-			m->context = NULL;
-		} else {
-			fade_out(0.3 * (1 - sm->fade));
-			replayview_draw_stagemenu(sm);
-			
-			if(!sm->abort && sm->quit == 1)
-				m->fade = sm->fade;
-		}
-	}
-}
-
 static void replayview_drawitem(void *n, int item, int cnt) {
 	MenuEntry *e = (MenuEntry*)n;
 	Replay *rpy = (Replay*)e->arg;
 	float sizes[] = {1.2, 1.45, 0.8, 0.8, 0.65};
-	
+		
 	int columns = 5, i, j;
+	
+	if(!rpy)
+		return;
+	
 	for(i = 0; i < columns; ++i) {
 		char tmp[128];
 		int csize = sizes[i] * (SCREEN_W - 210)/columns;
@@ -216,6 +199,29 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 	}
 }
 
+static void replayview_draw(MenuData *m) {
+	draw_options_menu_bg(m);
+	draw_menu_title(m, "Replays");
+
+	m->drawdata[0] = SCREEN_W/2 - 100;
+	m->drawdata[1] = (SCREEN_W - 200)*0.85;
+	m->drawdata[2] += (20*m->cursor - m->drawdata[2])/10.0;
+	
+	draw_menu_list(m, 100, 100, replayview_drawitem);	
+	
+	if(m->context) {
+		MenuData *sm = m->context;
+		menu_logic(sm);
+		if(sm->state == MS_Dead) {
+			destroy_menu(sm);
+			m->context = NULL;
+		} else {
+			replayview_draw_stagemenu(sm);			
+		}
+	}
+}
+
+
 int replayview_cmp(const void *a, const void *b) {
 	return ((Replay*)(((MenuEntry*)b)->arg))->stages[0].seed - ((Replay*)(((MenuEntry*)a)->arg))->stages[0].seed;
 }
@@ -244,8 +250,6 @@ int fill_replayview_menu(MenuData *m) {
 		}
 		
 		add_menu_entry(m, " ", replayview_run, rpy);
-		m->entries[m->ecount-1].freearg = replayview_freearg;
-		m->entries[m->ecount-1].draw = replayview_drawitem;
 		++rpys;
 	}
 	
@@ -257,7 +261,7 @@ int fill_replayview_menu(MenuData *m) {
 
 void replayview_abort(void *a) {
 	MenuData *m = a;
-	m->quit = 2;
+	close_menu(m);
 	
 	if(m->context) {	// will unlikely get here
 		MenuData *sm = m->context;
@@ -268,12 +272,9 @@ void replayview_abort(void *a) {
 
 void create_replayview_menu(MenuData *m) {
 	create_menu(m);
-	m->type = MT_Persistent;
-	m->abortable = True;
-	m->abortaction = replayview_abort;
-	m->abortarg = m;
-	m->title = "Replays";
 	replayview = m;
+	
+	m->flags = MF_Abortable;
 	
 	int r = fill_replayview_menu(m);
 	
@@ -295,11 +296,17 @@ void replayview_menu_input(MenuData *m) {
 	else
 		menu_input(m);
 	
-	if(m->selected >= 0)
-		m->instantselect = m->selected != m->ecount-1 && (((Replay*)m->entries[m->selected].arg)->stgcount > 1);
+}
+
+void free_replayview(MenuData *m) {
+	int i;
+	
+	for(i = 0; i < m->ecount; i++)
+		if(m->entries[i].action == replayview_run)
+			replayview_freearg(m->entries[i].arg);
 }
 
 int replayview_menu_loop(MenuData *m) {
-	return menu_loop(m, replayview_menu_input, replayview_draw);
+	return menu_loop(m, replayview_menu_input, replayview_draw, free_replayview);
 }
 

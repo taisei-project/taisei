@@ -33,8 +33,6 @@ void give_up(void *arg) {
 MenuData *create_gameover_menu(void) {
 	MenuData *m = malloc(sizeof(MenuData));
 	create_menu(m);
-	m->abortable = -1;
-	m->title = "Game over!";
 	
 	char s[64];
 	int c = MAX_CONTINUES - global.plr.continues;

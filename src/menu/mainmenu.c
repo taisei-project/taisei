@@ -21,11 +21,6 @@
 #include "credits.h"
 #include "paths/native.h"
 
-void quit_menu(void *arg) {
-	MenuData *m = arg;
-	m->quit = 2;
-}
-
 void start_story(void *arg) {
 	MenuData m;
 
@@ -97,9 +92,7 @@ void enter_replayview(void *arg) {
 
 void create_main_menu(MenuData *m) {
 	create_menu(m);
-	
-	m->type = MT_Persistent;
-	
+		
 	add_menu_entry(m, "Start Story", start_story, NULL);
 	add_menu_entry(m, "Start Extra", NULL, NULL);
 #ifdef DEBUG
@@ -107,7 +100,7 @@ void create_main_menu(MenuData *m) {
 #endif
 	add_menu_entry(m, "Replays", enter_replayview, NULL);
 	add_menu_entry(m, "Options", enter_options, NULL);
-	add_menu_entry(m, "Quit", quit_menu, m);
+	add_menu_entry(m, "Quit", (MenuAction)kill_menu, m);
 }
 
 
@@ -159,15 +152,8 @@ void draw_main_menu(MenuData *menu) {
 	}
 	
 	glPopMatrix();
-	
-	
-	fade_out(menu->fade);
-	if(global.whitefade > 0) {
-		colorfill(1, 1, 1, global.whitefade);
-		global.whitefade -= 1 / 300.0;
-	} else global.whitefade = 0;
 }
 
 void main_menu_loop(MenuData *menu) {
-	menu_loop(menu, NULL, draw_main_menu);
+	menu_loop(menu, NULL, draw_main_menu, NULL);
 }

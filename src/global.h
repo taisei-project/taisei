@@ -121,8 +121,6 @@ typedef struct {
 	
 	RandomState rand_game;
 	RandomState rand_visual;
-	
-	float whitefade;	// hack for credits --> main transition
 } Global;
 
 extern Global global;

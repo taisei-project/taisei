@@ -16,6 +16,8 @@ void set_difficulty(void *d) {
 void create_difficulty_menu(MenuData *m) {
 	create_menu(m);
 	
+	m->flags = MF_Transient | MF_Abortable;
+	
 	add_menu_entry(m, "Easy\nfor fearful fairies", set_difficulty, (void *)D_Easy);
 	add_menu_entry(m, "Normal\nfor confident kappa", set_difficulty, (void *)D_Normal);
 	add_menu_entry(m, "Hard\nfor omnipotent oni", set_difficulty, (void *)D_Hard);
@@ -25,7 +27,7 @@ void create_difficulty_menu(MenuData *m) {
 
 void draw_difficulty_menu(MenuData *menu) {
 	draw_options_menu_bg(menu);
-	draw_text(AL_Right, 210*(1-menu->fade), 30, "Rank Select", _fonts.mainmenu);
+	draw_text(AL_Right, 210*(1-menu_fade(menu)), 30, "Rank Select", _fonts.mainmenu);
 	
 	int i;
 	for(i = 0; i < menu->ecount; i++) {
@@ -50,10 +52,8 @@ void draw_difficulty_menu(MenuData *menu) {
 		glColor3f(1,1,1);
 		glPopMatrix();
 	}
-	
-	fade_out(menu->fade);
 }
 
 int difficulty_menu_loop(MenuData *menu) {
-	return menu_loop(menu, NULL, draw_difficulty_menu);	
+	return menu_loop(menu, NULL, draw_difficulty_menu, NULL);	
 }

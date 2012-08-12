@@ -265,6 +265,5 @@ void credits_loop(void) {
 		SDL_GL_SwapBuffers();
 		frame_rate(&global.lasttime);
 	}
-	global.whitefade = 1.0;
 	credits_free();
 }
