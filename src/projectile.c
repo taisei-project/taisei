@@ -80,8 +80,8 @@ int collision_projectile(Projectile *p) {
 			global.points += !(global.frames % 3);
 			
 			if(!(global.frames % 7)) {
-				tsrand_fill(3);
-				create_particle2c("flare", global.plr.pos + 15 * cexp(I*carg(p->pos - global.plr.pos)), NULL, Shrink, timeout_linear, 10, (1+afrand(1)*5)*cexp(I*tsrand_a(2)));
+				tsrand_fill(2);
+				create_particle2c("flare", global.plr.pos + 15 * cexp(I*carg(p->pos - global.plr.pos)), NULL, Shrink, timeout_linear, 10, (1+afrand(0)*5)*cexp(I*tsrand_a(1)));
 			}
 		}
 	} else if(p->type >= PlrProj) {
