@@ -18,7 +18,7 @@ void create_stage_menu(MenuData *m) {
 	int i;
 	
 	create_menu(m);
-	m->flags = MF_Abortable;
+	m->flags = MF_Transient | MF_Abortable;
 	
 	for(i = 0; stages[i].loop; ++i) if(!stages[i].hidden) {
 		snprintf(title, STGMENU_MAX_TITLE_LENGTH, "%s", stages[i].title);

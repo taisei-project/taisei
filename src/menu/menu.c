@@ -104,9 +104,12 @@ void menu_logic(MenuData *menu) {
 		
 	if(menu->quitframe && menu->frames >= menu->quitframe + menu->quitdelay) {
 		menu->state = MS_Dead;
-		if(!(menu->flags & MF_Transient) && menu->selected != -1 && menu->entries[menu->selected].action != NULL) {
-			menu->state = MS_Normal;
-			menu->quitframe = 0;
+		if(menu->selected != -1 && menu->entries[menu->selected].action != NULL) {
+			if(!(menu->flags & MF_Transient)) {
+				menu->state = MS_Normal;
+				menu->quitframe = 0;
+			}
+			
 			menu->entries[menu->selected].action(menu->entries[menu->selected].arg);			
 		}
 	}

@@ -10,7 +10,7 @@
 #include "global.h"
 
 void set_difficulty(void *d) {
-	global.diff = (Difficulty) d;
+	global.diff = (Difficulty) d;	
 }
 
 void create_difficulty_menu(MenuData *m) {
@@ -21,8 +21,7 @@ void create_difficulty_menu(MenuData *m) {
 	add_menu_entry(m, "Easy\nfor fearful fairies", set_difficulty, (void *)D_Easy);
 	add_menu_entry(m, "Normal\nfor confident kappa", set_difficulty, (void *)D_Normal);
 	add_menu_entry(m, "Hard\nfor omnipotent oni", set_difficulty, (void *)D_Hard);
-	add_menu_entry(m, "Lunatic\nfor gods", set_difficulty, (void *)D_Lunatic);
-	
+	add_menu_entry(m, "Lunatic\nfor gods", set_difficulty, (void *)D_Lunatic);	
 }
 
 void draw_difficulty_menu(MenuData *menu) {

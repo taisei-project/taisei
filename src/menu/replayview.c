@@ -263,7 +263,7 @@ int fill_replayview_menu(MenuData *m) {
 
 void replayview_abort(void *a) {
 	MenuData *m = a;
-	close_menu(m);
+	kill_menu(m);
 	
 	if(m->context) {	// will unlikely get here
 		MenuData *sm = m->context;

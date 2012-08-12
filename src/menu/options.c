@@ -681,6 +681,7 @@ static void options_key_action(MenuData *menu, int sym) {
 		if(bind->enabled && (bind->type == BT_IntValue || bind->type == BT_Resolution))
 			bind_setnext(bind);
 	} else if(sym == SDLK_ESCAPE) {
+		menu->selected = -1;
 		close_menu(menu);
 	}
 	
