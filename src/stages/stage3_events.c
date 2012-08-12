@@ -173,7 +173,7 @@ int stage3_cornerfairy(Enemy *e, int t) {
 		GO_TO(e, e->args[0], 0.01)
 	
 	FROM_TO(120, 240, 1) {
-		GO_TO(e, e->args[1], 0.025)
+		GO_TO(e, e->args[1], 0.025 * min((t - 120) / 42.0, 1))
 		int d = 5; //(D_Lunatic - global.diff + 3);
 		if(!(t % d)) {
 			int i, cnt = 10 + global.diff * 1.5;
@@ -773,7 +773,7 @@ void stage3_events(void) {
 	TIMER(&global.timer);
 	
 //	AT(0)
-//		global.timer = 2300;
+//		global.timer = 4300;
 	
 	FROM_TO(160, 300, 10) {
 		tsrand_fill(3);
