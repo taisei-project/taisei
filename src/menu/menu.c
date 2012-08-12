@@ -8,7 +8,11 @@
 #include "menu.h"
 #include "global.h"
 
-void add_menu_entry(MenuData *menu, char *name, void (*action)(void *), void *arg) {
+void add_menu_entry(MenuData *menu, char *name, MenuAction action, void *arg) {
+	add_menu_entry_f(menu, name, action, arg, 0);
+}
+
+void add_menu_entry_f(MenuData *menu, char *name, MenuAction action, void *arg, int flags) {
 	menu->entries = realloc(menu->entries, (++menu->ecount)*sizeof(MenuEntry));
 	MenuEntry *e = &(menu->entries[menu->ecount-1]);
 	memset(e, 0, sizeof(MenuEntry));
@@ -17,6 +21,7 @@ void add_menu_entry(MenuData *menu, char *name, void (*action)(void *), void *ar
 	strcpy(e->name, name);
 	e->action = action;
 	e->arg = arg;
+	e->flags = flags;
 }
 
 void add_menu_separator(MenuData *menu) {
@@ -43,7 +48,7 @@ void create_menu(MenuData *menu) {
 	menu->quitdelay = FADE_TIME;
 }
 
-void close_menu(MenuData *menu) {
+void close_menu(MenuData *menu) {	
 	menu->quitframe = menu->frames;
 }
 
@@ -79,8 +84,8 @@ void menu_key_action(MenuData *menu, int sym) {
 		
 		close_menu(menu);
 	} else if(sym == SDLK_ESCAPE && menu->flags & MF_Abortable) {
-		close_menu(menu);
 		menu->selected = -1;
+		close_menu(menu);		
 	}
 }
 
@@ -101,8 +106,8 @@ void menu_logic(MenuData *menu) {
 	
 	if(menu->quitframe && menu->frames >= menu->quitframe)
 		menu->state = MS_FadeOut;
-		
-	if(menu->quitframe && menu->frames >= menu->quitframe + menu->quitdelay) {
+	
+	if(menu->quitframe && menu->frames >= menu->quitframe + menu->quitdelay*!(menu->state & MF_InstantSelect || menu->selected != -1 && menu->entries[menu->selected].flags & MF_InstantSelect)) {
 		menu->state = MS_Dead;
 		if(menu->selected != -1 && menu->entries[menu->selected].action != NULL) {
 			if(!(menu->flags & MF_Transient)) {
@@ -153,3 +158,4 @@ void draw_menu_selector(float x, float y, float w, float h, float t) {
 void draw_menu_title(MenuData *m, char *title) {
 	draw_text(AL_Right, (stringwidth(title, _fonts.mainmenu) + 10) * (1.0-menu_fade(m)), 30, title, _fonts.mainmenu);
 }
+	

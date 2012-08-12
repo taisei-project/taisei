@@ -30,9 +30,11 @@ void give_up(void *arg) {
 	global.game_over = (MAX_CONTINUES - global.plr.continues)? GAMEOVER_ABORT : GAMEOVER_DEFEAT;
 }
 
-MenuData *create_gameover_menu(void) {
-	MenuData *m = malloc(sizeof(MenuData));
+void create_gameover_menu(MenuData *m) {
 	create_menu(m);
+	
+	m->flags = MF_Transient;	
+	m->context = "Game Over";
 	
 	char s[64];
 	int c = MAX_CONTINUES - global.plr.continues;
@@ -42,6 +44,4 @@ MenuData *create_gameover_menu(void) {
 	
 	if(!c)
 		m->cursor = 1;
-	
-	return m;
 }

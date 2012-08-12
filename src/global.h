@@ -102,7 +102,6 @@ typedef struct {
 	int timer;
 	
 	Boss *boss;
-	MenuData *menu;
 	Dialog *dialog;
 	
 	RefArray refs;

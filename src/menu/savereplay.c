@@ -41,6 +41,8 @@ void save_rpy(void *a) {
 void create_saverpy_menu(MenuData *m) {
 	create_menu(m);
 	
+	m->flags = MF_Transient;
+	
 	add_menu_entry(m, "Yes",	save_rpy,		m);
 	add_menu_entry(m, "No", (MenuAction) close_menu, m);
 }

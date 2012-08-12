@@ -16,16 +16,23 @@ enum {
 	FADE_TIME = 15
 };
 
+typedef  void (*MenuAction)(void*);
+
 typedef struct {
 	char *name;
-	void (*action)(void *arg);
+	MenuAction action;
 	void *arg;
-	float drawdata;
+	
+	int flags;
+	
+	float drawdata;	
 } MenuEntry;
 
 typedef enum MenuFlag { 
 	MF_Transient = 1, // whether to close on selection or not.
-	MF_Abortable = 2
+	MF_Abortable = 2,
+	
+	MF_InstantSelect = 4
 } MenuType;
 
 enum MenuState{
@@ -33,8 +40,6 @@ enum MenuState{
 	MS_FadeOut,
 	MS_Dead
 };
-
-typedef  void (*MenuAction)(void*);
 
 typedef struct MenuData{
 	int flags;
@@ -58,6 +63,8 @@ typedef struct MenuData{
 } MenuData;
 
 void add_menu_entry(MenuData *menu, char *name, MenuAction action, void *arg);
+void add_menu_entry_f(MenuData *menu, char *name, MenuAction action, void *arg, int flags);
+
 void add_menu_separator(MenuData *menu);
 void create_menu(MenuData *menu);
 void destroy_menu(MenuData *menu);
@@ -76,4 +83,6 @@ float menu_fade(MenuData *menu);
 
 void draw_menu_selector(float x, float y, float w, float h, float t);
 void draw_menu_title(MenuData *m, char *title);
+
+void start_delayed(MenuData *m, MenuAction, int delay); // use in menu action. postpones execution of action
 #endif

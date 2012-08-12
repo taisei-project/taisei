@@ -50,6 +50,7 @@ void stage_loop(StageInfo *info, StageRule start, StageRule end, StageRule draw,
 void apply_bg_shaders(ShaderRule *shaderrules);
 
 void draw_stage_title(StageInfo *info);
+void draw_hud(void);
 
 void stage1_loop(void);
 void stage2_loop(void);

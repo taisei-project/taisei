@@ -52,18 +52,12 @@ void stage_start(void) {
 }
 
 void stage_ingamemenu(void) {
-	if(!global.menu)
-		global.menu = create_ingame_menu();
-	else
-		close_menu(global.menu);
+	MenuData menu;
+	create_ingame_menu(&menu);
+	ingame_menu_loop(&menu);
 }
 
-void replay_input(void) {
-	if(global.menu) {
-		menu_input(global.menu);
-		return;
-	}
-	
+void replay_input(void) {	
 	SDL_Event event;
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;
@@ -75,10 +69,7 @@ void replay_input(void) {
 			break;
 		}
 	}
-	
-	if(global.menu)
-		return;
-	
+		
 	ReplayStage *s = global.replay.current;
 	int i;
 	
@@ -109,10 +100,6 @@ void replay_input(void) {
 }
 
 void stage_input(void) {
-	if(global.menu) {
-		menu_input(global.menu);
-		return;
-	}
 	
 	SDL_Event event;
 	while(SDL_PollEvent(&event)) {
@@ -157,8 +144,7 @@ void stage_input(void) {
 		}
 	}
 	
-	if(!global.menu)
-		player_applymovement(&global.plr);
+	player_applymovement(&global.plr);
 }
 
 void draw_hud(void) {
@@ -218,8 +204,7 @@ void draw_hud(void) {
 void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int time) {
 	if(!tconfig.intval[NO_SHADER]) {
 		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[0].fbo);
-		if(!global.menu)
-			glViewport(0,0,SCREEN_W,SCREEN_H);
+		glViewport(0,0,SCREEN_W,SCREEN_H);
 	}
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPushMatrix();	
@@ -236,7 +221,7 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	if(tconfig.intval[NO_STAGEBG] == 1)
 		global.nostagebg = True;
 	
-	if(!global.nostagebg && !global.menu)
+	if(!global.nostagebg)
 		bgdraw();
 		
 	glPopMatrix();	
@@ -244,74 +229,65 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	
 	set_ortho();
 
-	if(!global.menu) {
+	glPushMatrix();
+	glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
+	
+	if(!tconfig.intval[NO_SHADER])
+		apply_bg_shaders(shaderrules);
+
+	if(global.boss) {
 		glPushMatrix();
-		glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
+		glTranslatef(creal(global.boss->pos), cimag(global.boss->pos), 0);
 		
-		if(!tconfig.intval[NO_SHADER])
-			apply_bg_shaders(shaderrules);
-
-		if(global.boss) {
-			glPushMatrix();
-			glTranslatef(creal(global.boss->pos), cimag(global.boss->pos), 0);
-			
-			if(!(global.frames % 5)) {
-				complex offset = (frand()-0.5)*50 + (frand()-0.5)*20I;
-				create_particle3c("boss_shadow", -20I, rgba(0.2,0.35,0.5,0.5), EnemyFlareShrink, enemy_flare, 50, (-100I-offset)/(50.0+frand()*10), add_ref(global.boss));
-			}
-			
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-						
-			glRotatef(global.frames*4.0, 0, 0, -1);
-			float f = 0.8+0.1*sin(global.frames/8.0);
-			glScalef(f,f,f);
-			draw_texture(0,0,"boss_circle");
-			
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			
-			glPopMatrix();
+		if(!(global.frames % 5)) {
+			complex offset = (frand()-0.5)*50 + (frand()-0.5)*20I;
+			create_particle3c("boss_shadow", -20I, rgba(0.2,0.35,0.5,0.5), EnemyFlareShrink, enemy_flare, 50, (-100I-offset)/(50.0+frand()*10), add_ref(global.boss));
 		}
 		
-		player_draw(&global.plr);
-
-		draw_items();		
-		draw_projectiles(global.projs);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+					
+		glRotatef(global.frames*4.0, 0, 0, -1);
+		float f = 0.8+0.1*sin(global.frames/8.0);
+		glScalef(f,f,f);
+		draw_texture(0,0,"boss_circle");
 		
-		
-		draw_projectiles(global.particles);
-		draw_enemies(global.enemies);
-		draw_lasers();
-				
-		if(global.boss)
-			draw_boss(global.boss);
-
-		if(global.dialog)
-			draw_dialog(global.dialog);
-		
-		draw_stage_title(info);
-		
-		if(!tconfig.intval[NO_SHADER]) {
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glViewport(0, 0, video.current.width, video.current.height);
-			glPushMatrix();
-			if(global.shake_view)
-				glTranslatef(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames+3),0);
-
-			draw_fbo_viewport(&resources.fsec);
-
-			glPopMatrix();
-		}
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		
 		glPopMatrix();
 	}
 	
-	if(global.menu) {
+	player_draw(&global.plr);
+
+	draw_items();		
+	draw_projectiles(global.projs);
+	
+	
+	draw_projectiles(global.particles);
+	draw_enemies(global.enemies);
+	draw_lasers();
+			
+	if(global.boss)
+		draw_boss(global.boss);
+
+	if(global.dialog)
+		draw_dialog(global.dialog);
+	
+	draw_stage_title(info);
+	
+	if(!tconfig.intval[NO_SHADER]) {
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, video.current.width, video.current.height);
 		glPushMatrix();
-		glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
-		draw_ingame_menu(global.menu);
+		if(global.shake_view)
+			glTranslatef(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames+3),0);
+
+		draw_fbo_viewport(&resources.fsec);
+
 		glPopMatrix();
 	}
 	
+	glPopMatrix();
+		
 	draw_hud();
 }
 
@@ -400,12 +376,7 @@ void apply_bg_shaders(ShaderRule *shaderrules) {
 	}
 }
 
-void stage_logic(int time) {
-	if(global.menu) {
-		ingame_menu_logic(&global.menu);
-		return;
-	}
-	
+void stage_logic(int time) {	
 	player_logic(&global.plr);
 	
 	process_enemies(&global.enemies);
@@ -439,12 +410,7 @@ void stage_end(void) {
 	
 	delete_projectiles(&global.projs);
 	delete_projectiles(&global.particles);
-	
-	if(global.menu) {
-		destroy_menu(global.menu);
-		global.menu = NULL;
-	}
-	
+		
 	if(global.dialog) {
 		delete_dialog(global.dialog);
 		global.dialog = NULL;
@@ -511,7 +477,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	
 	SDL_EnableKeyRepeat(0, 0);
 	while(global.game_over <= 0) {
-		if(!global.boss && !global.dialog && !global.menu)
+		if(!global.boss && !global.dialog)
 			event();
 		((global.replaymode == REPLAY_PLAY)? replay_input : stage_input)();
 		stage_logic(endtime);

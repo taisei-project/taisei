@@ -90,8 +90,7 @@ void calc_fps(FPSCounter *fps) {
 		fps->fps++;
 	}
 	
-	if(!global.menu)
-		fps->stagebg_fps = approach(fps->stagebg_fps, fps->show_fps, 0.1);
+	fps->stagebg_fps = approach(fps->stagebg_fps, fps->show_fps, 0.1);
 }
 
 void set_ortho(void) {

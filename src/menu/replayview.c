@@ -63,8 +63,7 @@ MenuData* replayview_stageselect(Replay *rpy) {
 	create_menu(m);
 	m->context = rpy;
 	m->flags = MF_Transient | MF_Abortable;
-	m->quitdelay = 0;
-	
+		
 	for(i = 0; i < rpy->stgcount; ++i) {
 		add_menu_entry(m, stage_get(rpy->stages[i].stage)->title, start_replay, rpy);
 	}
@@ -251,7 +250,7 @@ int fill_replayview_menu(MenuData *m) {
 			continue;
 		}
 		
-		add_menu_entry(m, " ", replayview_run, rpy);
+		add_menu_entry_f(m, " ", replayview_run, rpy, (rpy->stgcount > 1)*MF_InstantSelect);
 		++rpys;
 	}
 	
@@ -277,8 +276,7 @@ void create_replayview_menu(MenuData *m) {
 	replayview = m;
 	
 	m->flags = MF_Abortable;
-	m->quitdelay = 0;
-	
+		
 	int r = fill_replayview_menu(m);
 	
 	if(!r) {

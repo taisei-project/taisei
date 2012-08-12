@@ -8,6 +8,7 @@
 #include "menu.h"
 #include "ingamemenu.h"
 #include "global.h"
+#include "stage.h"
 
 void return_to_game(void *arg) {
 }
@@ -16,30 +17,18 @@ void return_to_title(void *arg) {
 	global.game_over = GAMEOVER_ABORT;
 }
 	
-MenuData *create_ingame_menu(void) {
-	MenuData *m = malloc(sizeof(MenuData));
-		
+void create_ingame_menu(MenuData *m) {
 	create_menu(m);
 	m->flags = MF_Abortable | MF_Transient;
 	add_menu_entry(m, "Return to Game", return_to_game, NULL);
 	add_menu_entry(m, "Return to Title", return_to_title, NULL);
-	
-	return m;
-}
-
-void ingame_menu_logic(MenuData **menu) {
-	menu_logic(*menu);
-	
-	if((*menu)->state == MS_FadeOut && (*menu)->selected != 1) { // let the stage clean up when returning to title
-		destroy_menu(*menu);
-		free(*menu);
-		*menu = NULL;
-	}
 }
 
 void draw_ingame_menu(MenuData *menu) {
 	float rad = (1.0-menu_fade(menu))*IMENU_BLUR;
 	
+	glPushMatrix();
+		glTranslatef(VIEWPORT_X, VIEWPORT_Y, 0);
 	
 	if(!tconfig.intval[NO_SHADER]) {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -47,7 +36,9 @@ void draw_ingame_menu(MenuData *menu) {
 		glUseProgram(shader->prog);	
 		
 		glUniform1f(uniloc(shader, "rad"), rad);
+				
 		draw_fbo_viewport(&resources.fsec);
+				
 		glUseProgram(0);
 	}
 	
@@ -60,11 +51,11 @@ void draw_ingame_menu(MenuData *menu) {
 	menu->drawdata[0] += (menu->cursor*35 - menu->drawdata[0])/7.0;
 	menu->drawdata[1] += (strlen(menu->entries[menu->cursor].name)*5 - menu->drawdata[1])/10.0;
 	
-// 	if(menu->title) {
-// 		float s = 0.3 + 0.2 * sin(menu->frames/10.0);
-// 		glColor4f(1-s/2, 1-s/2, 1-s, 1-menu_fade(menu));
-// 		draw_text(AL_Center, 0, -2 * 35, menu->title, _fonts.standard);
-// 	}
+	if(menu->context) {
+		float s = 0.3 + 0.2 * sin(menu->frames/10.0);
+		glColor4f(1-s/2, 1-s/2, 1-s, 1-menu_fade(menu));
+		draw_text(AL_Center, 0, -2 * 35, menu->context, _fonts.standard);
+	}
 	
 	int i;
 	for(i = 0; i < menu->ecount; i++) {
@@ -84,4 +75,11 @@ void draw_ingame_menu(MenuData *menu) {
 		
 	glColor4f(1,1,1,1);
 	glPopMatrix();
+	glPopMatrix();
+	
+	draw_hud();
+}
+
+int ingame_menu_loop(MenuData *m) {
+	return menu_loop(m, NULL, draw_ingame_menu, NULL);
 }

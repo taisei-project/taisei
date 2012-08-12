@@ -12,6 +12,7 @@
 #include "global.h"
 #include "plrmodes.h"
 #include "menu/gameovermenu.h"
+#include "menu/ingamemenu.h"
 
 void init_player(Player* plr) {
 	memset(plr, 0, sizeof(Player));
@@ -209,8 +210,11 @@ void player_realdeath(Player *plr) {
 	if(plr->bombs < PLR_START_BOMBS)
 		plr->bombs = PLR_START_BOMBS;
 	
-	if(plr->lifes-- == 0 && global.replaymode != REPLAY_PLAY)
-		global.menu = create_gameover_menu();
+	if(plr->lifes-- == 0 && global.replaymode != REPLAY_PLAY) {
+		MenuData m;
+		create_gameover_menu(&m);
+		ingame_menu_loop(&m);
+	}
 }
 
 void player_death(Player *plr) {
