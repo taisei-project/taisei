@@ -561,8 +561,22 @@ int stage1_tritoss(Enemy *e, int t) {
 void stage1_events(void) {	
 	TIMER(&global.timer);
 	
-// 	AT(0)
-// 		global.timer = 5000;
+	/*
+	// graze testing
+ 	AT(0) {
+		create_projectile1c("rice", 0.5*(VIEWPORT_W+VIEWPORT_H*1.3*I), rgb(1, 0.3, 0.3), linear, 0);
+		create_projectile1c("ball", 0.5*(VIEWPORT_W+VIEWPORT_H*1.5*I), rgb(1, 0.3, 0.3), linear, 0);
+		create_projectile1c("soul", 0.5*(VIEWPORT_W+VIEWPORT_H*I), rgb(1, 0.3, 0.3), linear, 0);
+		
+		int i;
+		for(i = 0; i < 20; ++i) {
+			create_projectile1c("crystal", VIEWPORT_W/2+30 + (30+10*i)*I, rgb(0.7, 0.7, 1), linear, 0.01I);
+			create_projectile1c("crystal", VIEWPORT_W/2-30 + (30+10*i)*I, rgb(0.7, 0.7, 1), linear, 0.01I);
+		}
+	}
+	
+	return;
+	*/
 	
 	// opening. projectile bursts
 	FROM_TO(100, 160, 25) {
