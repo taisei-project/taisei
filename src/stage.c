@@ -523,6 +523,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	}
 	
 	player_set_power(&global.plr, power);
+	global.plr.movetime = global.plr.prevmove = global.plr.prevmovetime = 0;
 	
 	start();
 	
