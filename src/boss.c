@@ -23,6 +23,13 @@ Boss *create_boss(char *name, char *ani, complex pos) {
 	return buf;
 }
 
+void draw_boss_text(Alignment align, float x, float y, const char *text) {
+	glColor4f(0,0,0,1);
+	draw_text(align, x+1, y+1, text, _fonts.standard);
+	glColor4f(1,1,1,1);
+	draw_text(align, x, y, text, _fonts.standard);
+}
+
 void spell_opening(Boss *b, int time) {
 	float y = VIEWPORT_H - 15;
 	if(time > 40 && time <= 100)
@@ -31,12 +38,12 @@ void spell_opening(Boss *b, int time) {
 		y = 35;
 	}
 	
-	draw_text(AL_Right, VIEWPORT_W, y, b->current->name, _fonts.standard);
+	draw_boss_text(AL_Right, VIEWPORT_W, y, b->current->name);
 }
 
 void draw_boss(Boss *boss) {
 	draw_animation_p(creal(boss->pos), cimag(boss->pos) + 6*sin(global.frames/25.0), boss->anirow, boss->ani);
-	draw_text(AL_Left, 10, 20, boss->name, _fonts.standard);
+	draw_boss_text(AL_Left, 10, 20, boss->name);
 	
 	if(!boss->current)
 		return;
@@ -47,7 +54,7 @@ void draw_boss(Boss *boss) {
 	if(boss->current->type != AT_Move) {
 		char buf[16];
 		snprintf(buf, sizeof(buf),  "%.2f", (boss->current->timeout - global.frames + boss->current->starttime)/(float)FPS);
-		draw_text(AL_Center, VIEWPORT_W - 20, 10, buf, _fonts.standard);
+		draw_boss_text(AL_Center, VIEWPORT_W - 20, 10, buf);
 		
 		int nextspell, lastspell;
 		for(nextspell = 0; nextspell < boss->acount - 1; nextspell++) {
