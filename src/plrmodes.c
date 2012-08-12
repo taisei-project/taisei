@@ -141,21 +141,22 @@ int youmu_opposite_myon(Enemy *e, int t) {
 		if(plr->moveflags && !creal(e->args[0]))
 			arg -= (carg(e->pos0)-carg(e->pos-plr->pos))*2;
 		
-		if(global.frames - plr->prevmovetime <= 10 && global.frames == plr->movetime) {
+		//if(global.frames - plr->prevmovetime <= 10 && global.frames == plr->movetime) {
+		if(global.frames == plr->movetime) {
 			int new = plr->curmove;
 			int old = plr->prevmove;
 			
 			if(new == MOVEFLAG_UP && old == MOVEFLAG_DOWN) {
-				arg = -M_PI/2;
+				arg = M_PI/2;
 				e->args[0] = plr->movetime;
 			} else if(new == MOVEFLAG_DOWN && old == MOVEFLAG_UP) {
-				arg = -3*M_PI/2;
+				arg = 3*M_PI/2;
 				e->args[0] = plr->movetime;
 			} else if(new == MOVEFLAG_LEFT && old == MOVEFLAG_RIGHT) {
-				arg = M_PI;
+				arg = 0;
 				e->args[0] = plr->movetime;
 			} else if(new == MOVEFLAG_RIGHT && old == MOVEFLAG_LEFT) {
-				arg = 0;
+				arg = M_PI;
 				e->args[0] = plr->movetime;
 			}
 		}
