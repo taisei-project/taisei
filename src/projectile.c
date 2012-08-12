@@ -77,13 +77,13 @@ int collision_projectile(Projectile *p) {
 			return 1;
 		
 		if(!p->grazed && dst < grazer) {
-			//p->grazed = 1;
-			global.points += !(global.frames % 3);
+			p->grazed = True;
+			global.points += 10;
+			play_sound("graze");
 			
-			if(!(global.frames % 7)) {
-				play_sound("graze");
-				tsrand_fill(2);
-				create_particle2c("flare", p->pos - grazer * 0.3 * cexp(I*carg(p->pos - global.plr.pos)), NULL, Shrink, timeout_linear, 10, (1+afrand(0)*5)*cexp(I*tsrand_a(1)));
+			int i = 0; for(i = 0; i < 10; ++i) {
+				tsrand_fill(3);
+				create_particle2c("flare", p->pos - grazer * 0.3 * cexp(I*carg(p->pos - global.plr.pos)), NULL, Shrink, timeout_linear, 10 + 10 * afrand(2), (1+afrand(0)*5)*cexp(I*tsrand_a(1)));
 			}
 		}
 	} else if(p->type >= PlrProj) {
