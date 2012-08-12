@@ -560,7 +560,7 @@ int stage1_tritoss(Enemy *e, int t) {
 
 void stage1_events(void) {	
 	TIMER(&global.timer);
-	return;
+	
 // 	AT(0)
 // 		global.timer = 5000;
 	
