@@ -238,10 +238,15 @@ void player_setmoveflag(Player* plr, int key, int mode) {
 	if(!flag)
 		return;
 	
-	if(mode)
+	if(mode) {
+		plr->prevmove = plr->curmove;
+		plr->prevmovetime = plr->movetime;
+		plr->curmove = flag;
 		plr->moveflags |= flag;
-	else
+		plr->movetime = global.frames;
+	} else {
 		plr->moveflags &= ~flag;
+	}
 }
 
 void player_event(Player* plr, int type, int key) {

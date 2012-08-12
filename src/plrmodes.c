@@ -137,11 +137,37 @@ int youmu_opposite_myon(Enemy *e, int t) {
 	float arg = carg(e->pos0);
 	float rad = cabs(e->pos0);
 	
-	if(plr->focus < 15)
-		arg -= (carg(e->pos0)-carg(e->pos-plr->pos))*2;
+	if(plr->focus < 1) {
+		if(plr->moveflags && !creal(e->args[0]))
+			arg -= (carg(e->pos0)-carg(e->pos-plr->pos))*2;
+		
+		//if(global.frames - plr->prevmovetime <= 10 && global.frames == plr->movetime) {
+		if(global.frames == plr->movetime) {
+			int new = plr->curmove;
+			int old = plr->prevmove;
+			
+			if(new == MOVEFLAG_UP && old == MOVEFLAG_DOWN) {
+				arg = M_PI/2;
+				e->args[0] = plr->movetime;
+			} else if(new == MOVEFLAG_DOWN && old == MOVEFLAG_UP) {
+				arg = 3*M_PI/2;
+				e->args[0] = plr->movetime;
+			} else if(new == MOVEFLAG_LEFT && old == MOVEFLAG_RIGHT) {
+				arg = 0;
+				e->args[0] = plr->movetime;
+			} else if(new == MOVEFLAG_RIGHT && old == MOVEFLAG_LEFT) {
+				arg = M_PI;
+				e->args[0] = plr->movetime;
+			}
+		}
+	}
 	
-	e->pos0 = rad*cexp(I*arg);	
-	e->pos = e->pos0 + plr->pos;
+	if(creal(e->args[0]) && plr->movetime != creal(e->args[0]))
+		e->args[0] = 0;
+	
+	e->pos0 = rad * cexp(I*arg);
+	complex target = plr->pos + e->pos0;
+	e->pos += cexp(I*carg(target - e->pos)) * min(10, 0.07 * cabs(target - e->pos));
 	
 	if(plr->fire && !(global.frames % 6) && global.plr.deathtime >= -1) {
 		int a = 20;
