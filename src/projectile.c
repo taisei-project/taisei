@@ -75,7 +75,8 @@ int collision_projectile(Projectile *p) {
 		
 		if(dst < projr + 1)
 			return 1;
-		else if(!p->grazed && dst < grazer) {
+		
+		if(!p->grazed && dst < grazer) {
 			//p->grazed = 1;
 			global.points += !(global.frames % 3);
 			
