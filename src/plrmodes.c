@@ -181,6 +181,8 @@ int youmu_split(Enemy *e, int t) {
 	FROM_TO(0, 220, 1) {
 		float talt = atan((t-e->args[0]/2)/30.0)*10+atan(-e->args[0]/2);
 		global.plr.pos = VIEWPORT_W/2.0 + (VIEWPORT_H-80)*I + VIEWPORT_W/3.0*sin(talt);
+		global.plr.moving = 1;
+		global.plr.dir = 1.0/(pow(e->args[0]/2-t,2) + 1)*cos(talt) < 0;
 	}
 	
 	return 1;
