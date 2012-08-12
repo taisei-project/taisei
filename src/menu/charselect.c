@@ -27,6 +27,7 @@ void create_shottype_menu(MenuData *m) {
 void create_char_menu(MenuData *m) {
 	create_menu(m);
 	
+	m->flags = MF_Abortable | MF_Transient;
 	m->context = malloc(sizeof(MenuData));
 	create_shottype_menu(m->context);
 	
