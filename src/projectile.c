@@ -68,7 +68,7 @@ void delete_projectiles(Projectile **projs) {
 int collision_projectile(Projectile *p) {	
 	if(p->type == FairyProj) {
 		float angle = carg(global.plr.pos - p->pos) + p->angle;
-		int projr = sqrt(pow(p->tex->w/4*cos(angle),2)*5/10.0 + pow(p->tex->h/2*sin(angle)*5/10.0,2));		
+		int projr = sqrt(pow(p->tex->w/4*cos(angle),2)*5/10.0 + pow(p->tex->h/2*sin(angle)*5/10.0,2));
 		double grazer = max(p->tex->w, p->tex->h);
 		grazer = (0.9 * sqrt(grazer) + 0.1 * grazer) * 5;
 		int dst = cabs(global.plr.pos - p->pos);
@@ -82,7 +82,7 @@ int collision_projectile(Projectile *p) {
 			
 			if(!(global.frames % 7)) {
 				tsrand_fill(2);
-				create_particle2c("flare", global.plr.pos + 15 * cexp(I*carg(p->pos - global.plr.pos)), NULL, Shrink, timeout_linear, 10, (1+afrand(0)*5)*cexp(I*tsrand_a(1)));
+				create_particle2c("flare", p->pos - grazer * 0.3 * cexp(I*carg(p->pos - global.plr.pos)), NULL, Shrink, timeout_linear, 10, (1+afrand(0)*5)*cexp(I*tsrand_a(1)));
 			}
 		}
 	} else if(p->type >= PlrProj) {
