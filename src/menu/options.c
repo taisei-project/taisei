@@ -441,7 +441,7 @@ void create_options_menu(MenuData *m) {
 	add_menu_separator(m);
 		allocate_binding(m);
 		
-	add_menu_entry(m, "Return to the main menu", (MenuAction)close_menu, m);
+	add_menu_entry(m, "Return to the main menu", (MenuAction)kill_menu, m);
 		allocate_binding(m);
 }
 

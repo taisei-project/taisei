@@ -62,6 +62,8 @@ MenuData* replayview_stageselect(Replay *rpy) {
 	
 	create_menu(m);
 	m->context = rpy;
+	m->flags = MF_Transient | MF_Abortable;
+	m->quitdelay = 0;
 	
 	for(i = 0; i < rpy->stgcount; ++i) {
 		add_menu_entry(m, stage_get(rpy->stages[i].stage)->title, start_replay, rpy);
@@ -100,7 +102,7 @@ static void shorten(char *s, int width) {
 }
 
 static void replayview_draw_stagemenu(MenuData *m) {
-	float alpha = min(1, m->frames/40.0);
+	float alpha = 1-menu_fade(m);
 	int i;
 	
 	float height = (1+m->ecount) * 20;
@@ -275,6 +277,7 @@ void create_replayview_menu(MenuData *m) {
 	replayview = m;
 	
 	m->flags = MF_Abortable;
+	m->quitdelay = 0;
 	
 	int r = fill_replayview_menu(m);
 	
@@ -294,8 +297,7 @@ void replayview_menu_input(MenuData *m) {
 	if(m->context)
 		menu_input((MenuData*)m->context);
 	else
-		menu_input(m);
-	
+		menu_input(m);	
 }
 
 void free_replayview(MenuData *m) {

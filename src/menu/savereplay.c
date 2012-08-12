@@ -80,6 +80,24 @@ void draw_saverpy_menu(MenuData *m) {
 	glPopMatrix();
 }
 
+void saverpy_menu_input(MenuData *menu) {
+	SDL_Event event;
+	
+	while(SDL_PollEvent(&event)) {
+		int sym = event.key.keysym.sym;
+				
+		global_processevent(&event);
+		if(event.type == SDL_KEYDOWN) {
+			if(sym == SDLK_LEFT)
+				menu_key_action(menu, SDLK_UP);
+			else if(sym == SDLK_RIGHT)
+				menu_key_action(menu, SDLK_DOWN);
+			else
+				menu_key_action(menu,sym);
+		}
+	}
+}
+
 int saverpy_menu_loop(MenuData *m) {
-	return menu_loop(m, NULL, draw_saverpy_menu, NULL);
+	return menu_loop(m, saverpy_menu_input, draw_saverpy_menu, NULL);
 }

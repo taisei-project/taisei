@@ -61,7 +61,7 @@ float menu_fade(MenuData *menu) {
 	return 0.0;
 }
 
-static void key_action(MenuData *menu, int sym) {
+void menu_key_action(MenuData *menu, int sym) {
 	Uint8 *keys = SDL_GetKeyState(NULL);
 		
 	if(sym == tconfig.intval[KEY_DOWN] || sym == SDLK_DOWN) {
@@ -92,7 +92,7 @@ void menu_input(MenuData *menu) {
 				
 		global_processevent(&event);
 		if(event.type == SDL_KEYDOWN)
-			key_action(menu,sym);
+			menu_key_action(menu,sym);
 	}
 }
 

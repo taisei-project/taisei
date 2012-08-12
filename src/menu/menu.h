@@ -68,6 +68,7 @@ void menu_input(MenuData *menu);
 void close_menu(MenuData *menu); // softly close menu (should be used in most cases)
 void kill_menu(MenuData *menu); // quit action for persistent menus
 
+void menu_key_action(MenuData *menu, int sym);
 
 int menu_loop(MenuData *menu, void (*input)(MenuData*), void (*draw)(MenuData*), void (*end)(MenuData*));
 
