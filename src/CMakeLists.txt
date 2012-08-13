@@ -31,6 +31,7 @@ set(SRCs
 	stageutils.c
 	matrix.c
 	video.c
+	transition.c
 	menu/menu.c
 	menu/mainmenu.c
 	menu/options.c
