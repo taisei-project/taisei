@@ -60,6 +60,10 @@ typedef struct {
 	Enemy *slaves;
 	
 	int moveflags;
+	int curmove;
+	int movetime;
+	int prevmove;
+	int prevmovetime;
 } Player;
 
 void init_player(Player*);
