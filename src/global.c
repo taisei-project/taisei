@@ -222,8 +222,10 @@ void global_processevent(SDL_Event *event)
 	{
 		if(sym == tconfig.intval[KEY_SCREENSHOT])
 			take_screenshot();
+#ifndef WIN32	// TODO: remove when we're on SDL2
 		if((sym == SDLK_RETURN && (keys[SDLK_LALT] || keys[SDLK_RALT])) || sym == tconfig.intval[KEY_FULLSCREEN])
 			video_toggle_fullscreen();
+#endif
 	} else if(event->type == SDL_QUIT) {
 		exit(0);
 	}

@@ -242,10 +242,15 @@ void player_setmoveflag(Player* plr, int key, int mode) {
 	if(!flag)
 		return;
 	
-	if(mode)
+	if(mode) {
+		plr->prevmove = plr->curmove;
+		plr->prevmovetime = plr->movetime;
+		plr->curmove = flag;
 		plr->moveflags |= flag;
-	else
+		plr->movetime = global.frames;
+	} else {
 		plr->moveflags &= ~flag;
+	}
 }
 
 void player_event(Player* plr, int type, int key) {
@@ -328,6 +333,9 @@ void player_applymovement(Player* plr) {
 		if(!keys[tconfig.intval[KEY_SHOT]] && plr->fire) {
 			player_event(plr, EV_RELEASE, KEY_SHOT);
 			replay_event(&global.replay, EV_RELEASE, KEY_SHOT);
+		} else if(keys[tconfig.intval[KEY_SHOT]] && !plr->fire) {
+			player_event(plr, EV_PRESS, KEY_SHOT);
+			replay_event(&global.replay, EV_PRESS, KEY_SHOT);
 		}
 		
 		if(!keys[tconfig.intval[KEY_FOCUS]] && plr->focus > 0) {
