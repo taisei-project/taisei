@@ -67,11 +67,11 @@ void delete_projectiles(Projectile **projs) {
 
 int collision_projectile(Projectile *p) {	
 	if(p->type == FairyProj) {
-		float angle = carg(global.plr.pos - p->pos) + p->angle;
-		int projr = sqrt(pow(p->tex->w/4*cos(angle),2)*5/10.0 + pow(p->tex->h/2*sin(angle)*5/10.0,2));
+		double angle = carg(global.plr.pos - p->pos) + p->angle;
+		double projr = sqrt(pow(p->tex->w/4*cos(angle),2)*5/10.0 + pow(p->tex->h/2*sin(angle)*5/10.0,2));
 		double grazer = max(p->tex->w, p->tex->h);
+		double dst = cabs(global.plr.pos - p->pos);
 		grazer = (0.9 * sqrt(grazer) + 0.1 * grazer) * 5;
-		int dst = cabs(global.plr.pos - p->pos);
 		
 		if(dst < projr + 1)
 			return 1;
