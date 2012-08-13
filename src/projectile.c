@@ -76,7 +76,7 @@ int collision_projectile(Projectile *p) {
 		if(dst < projr + 1)
 			return 1;
 		
-		if(!p->grazed && dst < grazer) {
+		if(!p->grazed && dst < grazer && global.frames - abs(global.plr.recovery) > 0) {
 			p->grazed = True;
 			global.points += 10;
 			play_sound("graze");
