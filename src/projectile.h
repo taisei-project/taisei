@@ -46,6 +46,7 @@ typedef struct Projectile {
 	Color *clr;
 	
 	complex args[RULE_ARGC];
+	int grazed;
 } Projectile;
 
 Color *rgba(float r, float g, float b, float a);
