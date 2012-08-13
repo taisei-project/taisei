@@ -123,38 +123,33 @@ void draw_char_menu(MenuData *menu) {
 	glColor3f(1,1,1);
 }
 
-void char_menu_input(MenuData *menu) {
-	SDL_Event event;
+void char_menu_input_event(EventType type, int state, void *arg) {
+	MenuData *menu = arg;
+	MenuData *mod  = menu->context;
 	
-	MenuData *mod = menu->context;
-	
-	while(SDL_PollEvent(&event)) {
-		int sym = event.key.keysym.sym;
-		Uint8 *keys = SDL_GetKeyState(NULL);
-		
-		global_processevent(&event);
-		if(event.type == SDL_KEYDOWN) {
-			if(sym == tconfig.intval[KEY_RIGHT] || sym == SDLK_RIGHT) {
-				menu->cursor++;
-			} else if(sym == tconfig.intval[KEY_LEFT] || sym == SDLK_LEFT) {
-				menu->cursor--;
-			} else if(sym == tconfig.intval[KEY_DOWN] || sym == SDLK_DOWN) {
-				mod->cursor++;
-			} else if(sym == tconfig.intval[KEY_UP] || sym == SDLK_UP) {
-				mod->cursor--;
-			} else if((sym == tconfig.intval[KEY_SHOT] || (sym == SDLK_RETURN && !keys[SDLK_LALT] && !keys[SDLK_RALT])) && menu->entries[menu->cursor].action) {
-				close_menu(menu);
-				menu->selected = menu->cursor;
-				close_menu(mod);
-				mod->selected = mod->cursor;
-			} else if(sym == SDLK_ESCAPE) {
-				close_menu(menu);
-			}
-			
-			menu->cursor = (menu->cursor % menu->ecount) + menu->ecount*(menu->cursor < 0);
-			mod->cursor = (mod->cursor % mod->ecount) + mod->ecount*(mod->cursor < 0);
-		}
+	if(type == E_CursorRight)
+		menu->cursor++;
+	else if(type == E_CursorLeft)
+		menu->cursor--;
+	else if(type == E_CursorDown)
+		mod->cursor++;
+	else if(type == E_CursorUp)
+		mod->cursor--;
+	else if(type == E_MenuAccept) {
+		close_menu(menu);
+		menu->selected = menu->cursor;
+		close_menu(menu);
+		mod->selected = mod->cursor;
+	} else if(type == E_MenuAbort) {
+		close_menu(menu);
 	}
+	
+	menu->cursor = (menu->cursor % menu->ecount) + menu->ecount*(menu->cursor < 0);
+	mod->cursor = (mod->cursor % mod->ecount) + mod->ecount*(mod->cursor < 0);
+}
+
+void char_menu_input(MenuData *menu) {
+	handle_events(char_menu_input_event, EF_Menu, menu);
 }
 
 void free_char_menu(MenuData *menu) {

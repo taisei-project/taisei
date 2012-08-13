@@ -57,21 +57,47 @@ void stage_ingamemenu(void) {
 	ingame_menu_loop(&menu);
 }
 
-void replay_input(void) {	
-	SDL_Event event;
-	while(SDL_PollEvent(&event)) {
-		int sym = event.key.keysym.sym;
-		global_processevent(&event);
-		
-		if(event.type == SDL_KEYDOWN) {
-			if(sym == SDLK_ESCAPE)
-				stage_ingamemenu();
+void stage_input_event(EventType type, int key, void *arg) {
+	switch(type) {
+		case E_PlrKeyDown:
+			if(global.dialog && (key == KEY_SHOT || key == KEY_BOMB)) {
+				page_dialog(&global.dialog);
+				replay_event(&global.replay, EV_PRESS, key);
+			} else {
+				player_event(&global.plr, EV_PRESS, key);
+				replay_event(&global.replay, EV_PRESS, key);
+				
+				if(key == KEY_SKIP && global.dialog)
+					global.dialog->skip = True;
+			}
 			break;
-		}
-	}
 		
+		case E_PlrKeyUp:
+			player_event(&global.plr, EV_RELEASE, key);
+			replay_event(&global.replay, EV_RELEASE, key);
+			
+			if(key == KEY_SKIP && global.dialog)
+				global.dialog->skip = False;
+			break;
+		
+		case E_Pause:
+			stage_ingamemenu();
+			break;
+		
+		default: break;
+	}
+}
+
+void stage_replay_event(EventType type, int state, void *arg) {
+	if(type == E_Pause)
+		stage_ingamemenu();
+}
+
+void replay_input(void) {
 	ReplayStage *s = global.replay.current;
 	int i;
+	
+	handle_events(stage_replay_event, EF_Game, NULL);
 	
 	for(i = s->playpos; i < s->ecount; ++i) {
 		ReplayEvent *e = &(s->events[i]);
@@ -100,39 +126,7 @@ void replay_input(void) {
 }
 
 void stage_input(void) {
-	
-	SDL_Event event;
-	while(SDL_PollEvent(&event)) {
-		int sym = event.key.keysym.sym;
-		int key = config_sym2key(sym);
-		global_processevent(&event);
-		
-		switch(event.type) {
-			case SDL_KEYDOWN:
-				if(global.dialog && (key == KEY_SHOT || key == KEY_BOMB)) {
-					page_dialog(&global.dialog);
-					replay_event(&global.replay, EV_PRESS, key);
-				} else if(sym == SDLK_ESCAPE) {
-					stage_ingamemenu();
-				} else {
-					player_event(&global.plr, EV_PRESS, key);
-					replay_event(&global.replay, EV_PRESS, key);
-					
-					if(key == KEY_SKIP && global.dialog)
-						global.dialog->skip = True;
-				}
-				
-				break;
-				
-			case SDL_KEYUP:
-				player_event(&global.plr,EV_RELEASE, key);
-				replay_event(&global.replay, EV_RELEASE, key);
-				
-				if(key == KEY_SKIP && global.dialog)
-					global.dialog->skip = False;
-				break;
-		}
-	}
+	handle_events(stage_input_event, EF_Game, NULL);
 	
 	// workaround
 	if(global.dialog && global.dialog->skip) {

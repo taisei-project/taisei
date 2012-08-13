@@ -211,24 +211,6 @@ void take_screenshot(void)
 	fclose(out);
 }
 
-void global_processevent(SDL_Event *event)
-{
-	int sym = event->key.keysym.sym;
-	Uint8 *keys;
-	
-	keys = SDL_GetKeyState(NULL);
-	
-	if(event->type == SDL_KEYDOWN)
-	{
-		if(sym == tconfig.intval[KEY_SCREENSHOT])
-			take_screenshot();
-		if((sym == SDLK_RETURN && (keys[SDLK_LALT] || keys[SDLK_RALT])) || sym == tconfig.intval[KEY_FULLSCREEN])
-			video_toggle_fullscreen();
-	} else if(event->type == SDL_QUIT) {
-		exit(0);
-	}
-}
-
 int strendswith(char *s, char *e) {
 	int ls = strlen(s);
 	int le = strlen(e);

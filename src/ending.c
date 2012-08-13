@@ -8,7 +8,6 @@
 
 #include "ending.h"
 #include "global.h"
-#include "credits.h"
 
 void add_ending_entry(Ending *e, int dur, char *msg, char *tex) {
 	EndingEntry *entry;	
@@ -131,7 +130,7 @@ void ending_loop(void) {
 	set_ortho();
 	
 	while(e.pos < e.count-1) {
-		credits_input();
+		handle_events(NULL, 0, NULL);
 		
 		ending_draw(&e);
 		global.frames++;

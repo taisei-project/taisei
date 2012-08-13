@@ -237,12 +237,6 @@ void credits_process(void) {
 	}
 }
 
-void credits_input(void) {
-	SDL_Event event;
-	while(SDL_PollEvent(&event))
-		global_processevent(&event);
-}
-
 void credits_free(void) {
 	int i, j;
 	for(i = 0; i < credits.ecount; ++i) {
@@ -258,7 +252,7 @@ void credits_free(void) {
 void credits_loop(void) {
 	credits_init();
 	while(credits.fadeout <= 1) {
-		credits_input();
+		handle_events(NULL, 0, NULL);
 		credits_process();
 		credits_draw();
 		global.frames++;

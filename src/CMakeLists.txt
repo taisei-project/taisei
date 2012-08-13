@@ -17,6 +17,7 @@ set(SRCs
 	stage.c
 	replay.c
 	global.c
+	events.c
 	player.c
 	projectile.c
 	enemy.c

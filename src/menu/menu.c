@@ -66,39 +66,44 @@ float menu_fade(MenuData *menu) {
 	return 0.0;
 }
 
-void menu_key_action(MenuData *menu, int sym) {
-	Uint8 *keys = SDL_GetKeyState(NULL);
+void menu_event(EventType type, int state, void *arg) {
+	MenuData *menu = arg;
+	
+	switch(type) {
+		case E_CursorDown:
+			do {
+				if(++menu->cursor >= menu->ecount)
+					menu->cursor = 0;
+			} while(menu->entries[menu->cursor].action == NULL);
+		break;
 		
-	if(sym == tconfig.intval[KEY_DOWN] || sym == SDLK_DOWN) {
-		do {
-			if(++menu->cursor >= menu->ecount)
-				menu->cursor = 0;
-		} while(menu->entries[menu->cursor].action == NULL);
-	} else if(sym == tconfig.intval[KEY_UP] || sym == SDLK_UP) {
-		do {
-			if(--menu->cursor < 0)
-				menu->cursor = menu->ecount - 1;
-		} while(menu->entries[menu->cursor].action == NULL);
-	} else if((sym == tconfig.intval[KEY_SHOT] || (sym == SDLK_RETURN && !keys[SDLK_LALT] && !keys[SDLK_RALT])) && menu->entries[menu->cursor].action) {
-		menu->selected = menu->cursor;
+		case E_CursorUp:
+			do {
+				if(--menu->cursor < 0)
+					menu->cursor = menu->ecount - 1;
+			} while(menu->entries[menu->cursor].action == NULL);
+		break;
 		
-		close_menu(menu);
-	} else if(sym == SDLK_ESCAPE && menu->flags & MF_Abortable) {
-		menu->selected = -1;
-		close_menu(menu);		
+		case E_MenuAccept:
+			if(menu->entries[menu->cursor].action) {
+				menu->selected = menu->cursor;
+				close_menu(menu);
+			}
+		break;
+		
+		case E_MenuAbort:
+			if(menu->flags & MF_Abortable) {
+				menu->selected = -1;
+				close_menu(menu);
+			}
+		break;
+		
+		default: break;
 	}
 }
 
 void menu_input(MenuData *menu) {
-	SDL_Event event;
-	
-	while(SDL_PollEvent(&event)) {
-		int sym = event.key.keysym.sym;
-				
-		global_processevent(&event);
-		if(event.type == SDL_KEYDOWN)
-			menu_key_action(menu,sym);
-	}
+	handle_events(menu_event, EF_Menu, (void*)menu);
 }
 
 void menu_logic(MenuData *menu) {
