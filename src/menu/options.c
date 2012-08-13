@@ -686,63 +686,6 @@ static void options_input_event(EventType type, int state, void *arg) {
 }
 #undef SHOULD_SKIP
 
-/*
-static void options_key_action(MenuData *menu, int sym) {
-	#define SHOULD_SKIP (!menu->entries[menu->cursor].action || (((OptionBinding*)menu->context)[menu->cursor].enabled && !bind_isactive(&(((OptionBinding*)menu->context)[menu->cursor]))))
-	Uint8 *keys = SDL_GetKeyState(NULL);
-	
-	if(sym == tconfig.intval[KEY_DOWN] || sym == SDLK_DOWN) {
-		menu->drawdata[3] = 10;
-		do {
-			menu->cursor++;
-			if(menu->cursor >= menu->ecount)
-				menu->cursor = 0;
-		} while SHOULD_SKIP;
-	} else if(sym == tconfig.intval[KEY_UP] || sym == SDLK_UP) {
-		menu->drawdata[3] = 10;
-		do {
-			menu->cursor--;
-			if(menu->cursor < 0)
-				menu->cursor = menu->ecount - 1;
-		} while SHOULD_SKIP;
-	} else if((sym == tconfig.intval[KEY_SHOT] || (sym == SDLK_RETURN && !keys[SDLK_LALT] && !keys[SDLK_RALT])) && menu->entries[menu->cursor].action) {
-		menu->selected = menu->cursor;
-		
-		OptionBinding *binds = (OptionBinding*)menu->context;
-		OptionBinding *bind = &(binds[menu->selected]);
-		
-		if(bind->enabled) switch(bind->type)
-		{
-			case BT_KeyBinding:						bind->blockinput = True; 	break;
-			case BT_StrValue:
-				bind->selected = strlen(tconfig.strval[bind->configentry]);
-				bind->blockinput = True;
-				break;
-			default:
-				break;
-		} else close_menu(menu);
-	} else if(sym == tconfig.intval[KEY_LEFT] || sym == SDLK_LEFT) {
-		menu->selected = menu->cursor;
-		OptionBinding *binds = (OptionBinding*)menu->context;
-		OptionBinding *bind = &(binds[menu->selected]);
-		
-		if(bind->enabled && (bind->type == BT_IntValue || bind->type == BT_Resolution))
-			bind_setprev(bind);
-	} else if(sym == tconfig.intval[KEY_RIGHT] || sym == SDLK_RIGHT) {
-		menu->selected = menu->cursor;
-		OptionBinding *binds = (OptionBinding*)menu->context;
-		OptionBinding *bind = &(binds[menu->selected]);
-		
-		if(bind->enabled && (bind->type == BT_IntValue || bind->type == BT_Resolution))
-			bind_setnext(bind);
-	} else if(sym == SDLK_ESCAPE) {
-		menu->selected = -1;
-		close_menu(menu);
-	}
-	
-	menu->cursor = (menu->cursor % menu->ecount) + menu->ecount*(menu->cursor < 0);
-}
-*/
 void options_menu_input(MenuData *menu) {
 	OptionBinding *b;
 	
