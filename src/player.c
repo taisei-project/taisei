@@ -327,7 +327,7 @@ void player_applymovement(Player* plr) {
 		player_move(&global.plr, direction);
 	
 	// workaround
-	if(global.replaymode == REPLAY_RECORD) {
+	if(global.replaymode == REPLAY_RECORD && !global.dialog) {
 		Uint8 *keys = SDL_GetKeyState(NULL);
 		
 		if(!keys[tconfig.intval[KEY_SHOT]] && plr->fire) {
