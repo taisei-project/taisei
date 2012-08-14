@@ -398,7 +398,7 @@ void stage_logic(int time) {
 	if(!global.dialog && !global.boss)
 		global.timer++;
 	
-	if(global.timer == time - FADE_TIME)
+	if(global.timer == time - FADE_TIME || global.replaymode == REPLAY_PLAY && global.frames == global.replay.current->events[global.replay.current->ecount-1].frame - FADE_TIME)
 		set_transition(TransFadeBlack, FADE_TIME, FADE_TIME*2);
 	
 	if(global.timer >= time)
@@ -461,11 +461,6 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		global.plr.moveflags	= stg->plr_mflags;
 		
 		stg->playpos = 0;
-		
-		if(stg->events[stg->ecount-1].type != EV_OVER)
-			warnx("stage_loop(): INSANE replay, does not end with EV_OVER. Will probably not work at all.\n");
-		else
-			endtime = stg->events[stg->ecount-1].frame;
 	}
 	
 	Enemy *e = global.plr.slaves, *tmp;
