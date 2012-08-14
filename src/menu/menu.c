@@ -145,7 +145,7 @@ int menu_loop(MenuData *menu, void (*input)(MenuData*), void (*draw)(MenuData*),
 				input(menu);
 			else
 				menu_input(menu);
-		}	
+		} else handle_events(NULL, 0, NULL);
 		
 		draw(menu);
 		if(!(menu->flags & MF_ManualDrawTransition))
