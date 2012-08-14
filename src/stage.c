@@ -179,6 +179,9 @@ void draw_hud(void) {
 	sprintf(buf, "%.2f", global.plr.power);
 	draw_text(AL_Center, 10, 236, buf, _fonts.standard);
 	
+	sprintf(buf, "%i", global.plr.graze);
+	draw_text(AL_Left, -5, 270, buf, _fonts.standard);
+	
 	sprintf(buf, "%i", global.points);
 	draw_text(AL_Center, 13, 49, buf, _fonts.standard);
 	
@@ -283,6 +286,7 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	glPopMatrix();
 		
 	draw_hud();
+	draw_transition();
 }
 
 int apply_shaderrules(ShaderRule *shaderrules, int fbonum) {
@@ -392,6 +396,9 @@ void stage_logic(int time) {
 	
 	if(!global.dialog && !global.boss)
 		global.timer++;
+	
+	if(global.timer == time - FADE_TIME)
+		set_transition(TransFadeBlack, FADE_TIME, FADE_TIME*2);
 	
 	if(global.timer >= time)
 		global.game_over = GAMEOVER_WIN;

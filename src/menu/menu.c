@@ -8,11 +8,11 @@
 #include "menu.h"
 #include "global.h"
 
-void add_menu_entry(MenuData *menu, char *name, MenuAction action, void *arg) {
-	add_menu_entry_f(menu, name, action, arg, 0);
+MenuEntry *add_menu_entry(MenuData *menu, char *name, MenuAction action, void *arg) {
+	return add_menu_entry_f(menu, name, action, arg, 0);
 }
 
-void add_menu_entry_f(MenuData *menu, char *name, MenuAction action, void *arg, int flags) {
+MenuEntry *add_menu_entry_f(MenuData *menu, char *name, MenuAction action, void *arg, int flags) {
 	menu->entries = realloc(menu->entries, (++menu->ecount)*sizeof(MenuEntry));
 	MenuEntry *e = &(menu->entries[menu->ecount-1]);
 	memset(e, 0, sizeof(MenuEntry));
@@ -22,6 +22,8 @@ void add_menu_entry_f(MenuData *menu, char *name, MenuAction action, void *arg, 
 	e->action = action;
 	e->arg = arg;
 	e->flags = flags;
+	e->transition = menu->transition;
+	return e;
 }
 
 void add_menu_separator(MenuData *menu) {
@@ -46,13 +48,21 @@ void create_menu(MenuData *menu) {
 	
 	menu->selected = -1;
 	menu->quitdelay = FADE_TIME;
+	menu->transition = TransFadeBlack;
+}
+	
+void close_menu(MenuData *menu) {
+	TransitionRule trans = menu->transition;
+		
+	if(menu->selected != -1)
+		trans = menu->entries[menu->selected].transition;
+	
+	set_transition(trans, menu->quitdelay, menu->quitdelay);	
+	
+	menu->quitframe = menu->frames;	
 }
 
-void close_menu(MenuData *menu) {	
-	menu->quitframe = menu->frames;
-}
-
-void kill_menu(MenuData *menu) {
+void kill_menu(MenuData *menu) {		
 	menu->state = MS_Dead;
 }
 
@@ -138,6 +148,9 @@ int menu_loop(MenuData *menu, void (*input)(MenuData*), void (*draw)(MenuData*),
 		}	
 		
 		draw(menu);
+		if(!(menu->flags & MF_ManualDrawTransition))
+			draw_transition();
+		
 		SDL_GL_SwapBuffers();
 		frame_rate(&menu->lasttime);
 	}

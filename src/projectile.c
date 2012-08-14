@@ -65,26 +65,20 @@ void delete_projectiles(Projectile **projs) {
 	delete_all_elements((void **)projs, _delete_projectile);
 }
 
-int collision_projectile(Projectile *p) {	
+int collision_projectile(Projectile *p) {
 	if(p->type == FairyProj) {
-		float angle = carg(global.plr.pos - p->pos) + p->angle;
-		int projr = sqrt(pow(p->tex->w/4*cos(angle),2)*5/10.0 + pow(p->tex->h/2*sin(angle)*5/10.0,2));
+		double angle = carg(global.plr.pos - p->pos) + p->angle;
+		double projr = sqrt(pow(p->tex->w/4*cos(angle),2)*5/10.0 + pow(p->tex->h/2*sin(angle)*5/10.0,2));
 		double grazer = max(p->tex->w, p->tex->h);
+		double dst = cabs(global.plr.pos - p->pos);
 		grazer = (0.9 * sqrt(grazer) + 0.1 * grazer) * 5;
-		int dst = cabs(global.plr.pos - p->pos);
 		
 		if(dst < projr + 1)
 			return 1;
 		
-		if(!p->grazed && dst < grazer) {
+		if(!p->grazed && dst < grazer && global.frames - abs(global.plr.recovery) > 0) {
 			p->grazed = True;
-			global.points += 10;
-			play_sound("graze");
-			
-			int i = 0; for(i = 0; i < 10; ++i) {
-				tsrand_fill(3);
-				create_particle2c("flare", p->pos - grazer * 0.3 * cexp(I*carg(p->pos - global.plr.pos)), NULL, Shrink, timeout_linear, 10 + 10 * afrand(2), (1+afrand(0)*5)*cexp(I*tsrand_a(1)));
-			}
+			player_graze(&global.plr, p->pos - grazer * 0.3 * cexp(I*carg(p->pos - global.plr.pos)), 10);
 		}
 	} else if(p->type >= PlrProj) {
 		Enemy *e = global.enemies;
@@ -106,10 +100,10 @@ int collision_projectile(Projectile *p) {
 	return 0;
 }
 
-void draw_projectiles(Projectile *projs) {	
+void draw_projectiles(Projectile *projs) {
 	Projectile *proj;
 	
-	for(proj = projs; proj; proj = proj->next)	
+	for(proj = projs; proj; proj = proj->next)
 		proj->draw(proj, global.frames - proj->birthtime);
 	
 }
@@ -129,7 +123,7 @@ void process_projectiles(Projectile **projs, char collision) {
 			create_particle1c("flare", proj->pos, NULL, Fade, timeout, 30);
 			create_item(proj->pos, 0, BPoint)->auto_collect = 10;
 		}
-							
+		
 		if(collision)
 			col = collision_projectile(proj);
 		

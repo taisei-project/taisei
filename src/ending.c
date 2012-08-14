@@ -116,10 +116,7 @@ void ending_draw(Ending *e) {
 	draw_text(AL_Center, SCREEN_W/2, SCREEN_H/5*4, e->entries[e->pos].msg, _fonts.standard);
 	glColor4f(1,1,1,1);
 	
-	if(global.frames > - e->entries[e->count-1].time-ENDING_FADE_OUT)
-		colorfill(1, 1, 1, (global.frames - e->entries[e->count-1].time + ENDING_FADE_OUT)/(float)ENDING_FADE_OUT);
-		
-// 	colorfill(1, 1, 1, 1);
+	draw_transition();
 }
 
 void ending_loop(void) {
@@ -128,7 +125,7 @@ void ending_loop(void) {
 	
 	global.frames = 0;
 	set_ortho();
-	
+		
 	while(e.pos < e.count-1) {
 		handle_events(NULL, 0, NULL);
 		
@@ -139,5 +136,8 @@ void ending_loop(void) {
 		
 		if(global.frames >= e.entries[e.pos+1].time)
 			e.pos++;
+		
+		if(global.frames == e.entries[e.count-1].time-ENDING_FADE_OUT)
+			set_transition(TransFadeWhite, ENDING_FADE_OUT, ENDING_FADE_OUT);
 	}
 }

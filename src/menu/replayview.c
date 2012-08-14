@@ -63,9 +63,10 @@ MenuData* replayview_stageselect(Replay *rpy) {
 	create_menu(m);
 	m->context = rpy;
 	m->flags = MF_Transient | MF_Abortable;
-		
+	m->transition = 0;
+	
 	for(i = 0; i < rpy->stgcount; ++i) {
-		add_menu_entry(m, stage_get(rpy->stages[i].stage)->title, start_replay, rpy);
+		add_menu_entry(m, stage_get(rpy->stages[i].stage)->title, start_replay, rpy)->transition = TransFadeBlack;
 	}
 	
 	return m;
@@ -220,6 +221,7 @@ static void replayview_draw(MenuData *m) {
 			replayview_draw_stagemenu(sm);			
 		}
 	}
+	
 }
 
 
@@ -250,7 +252,7 @@ int fill_replayview_menu(MenuData *m) {
 			continue;
 		}
 		
-		add_menu_entry_f(m, " ", replayview_run, rpy, (rpy->stgcount > 1)*MF_InstantSelect);
+		add_menu_entry_f(m, " ", replayview_run, rpy, (rpy->stgcount > 1)*MF_InstantSelect)->transition = rpy->stgcount < 1 ? TransFadeBlack : NULL;
 		++rpys;
 	}
 	

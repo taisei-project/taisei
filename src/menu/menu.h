@@ -8,6 +8,8 @@
 #ifndef MENU_H
 #define MENU_H
 
+#include "transition.h"
+
 #define IMENU_BLUR 0.05
 #define TS_KR_DELAY SDL_DEFAULT_REPEAT_DELAY
 #define TS_KR_INTERVAL (SDL_DEFAULT_REPEAT_INTERVAL*2)
@@ -27,15 +29,21 @@ typedef struct {
 	
 	int flags;
 	
-	float drawdata;	
+	float drawdata;
+	TransitionRule transition;
 } MenuEntry;
 
-typedef enum MenuFlag { 
+// enum EntryFlag {
+//	MF_InstantSelect = 4
+// };
+
+enum MenuFlag { 
 	MF_Transient = 1, // whether to close on selection or not.
 	MF_Abortable = 2,
 	
-	MF_InstantSelect = 4
-} MenuType;
+	MF_InstantSelect = 4,
+	MF_ManualDrawTransition = 8, // the menu will not call draw_transition() automatically
+};
 
 enum MenuState{
 	MS_Normal = 0,
@@ -59,13 +67,15 @@ typedef struct MenuData{
 	int quitframe;
 	int quitdelay;
 	
+	TransitionRule transition;
+	
 	float drawdata[4];	
 	
 	void *context;
 } MenuData;
 
-void add_menu_entry(MenuData *menu, char *name, MenuAction action, void *arg);
-void add_menu_entry_f(MenuData *menu, char *name, MenuAction action, void *arg, int flags);
+MenuEntry *add_menu_entry(MenuData *menu, char *name, MenuAction action, void *arg);
+MenuEntry *add_menu_entry_f(MenuData *menu, char *name, MenuAction action, void *arg, int flags);
 
 void add_menu_separator(MenuData *menu);
 void create_menu(MenuData *menu);

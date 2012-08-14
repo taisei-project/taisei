@@ -44,7 +44,7 @@ void create_saverpy_menu(MenuData *m) {
 	m->flags = MF_Transient;
 	
 	add_menu_entry(m, "Yes",	save_rpy,		m);
-	add_menu_entry(m, "No", (MenuAction) close_menu, m);
+	add_menu_entry(m, "No", (MenuAction) kill_menu, m);
 }
 
 void draw_saverpy_menu(MenuData *m) {
