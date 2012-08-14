@@ -15,6 +15,7 @@
 #include "config.h"
 #include "player.h"
 #include "menu/ingamemenu.h"
+#include "taisei_err.h"
 
 StageInfo stages[] = {	
 	{1, stage1_loop, False, "Stage 1", "Misty Lake", {1, 1, 1}},
@@ -374,7 +375,7 @@ void apply_bg_shaders(ShaderRule *shaderrules) {
 	}
 }
 
-void stage_logic(int time) {	
+void stage_logic(int time) {
 	player_logic(&global.plr);
 	
 	process_enemies(&global.enemies);
@@ -458,8 +459,13 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		global.plr.bombs		= stg->plr_bombs;
 		global.plr.power		= stg->plr_power;
 		global.plr.moveflags	= stg->plr_mflags;
-				
+		
 		stg->playpos = 0;
+		
+		if(stg->events[stg->ecount-1].type != EV_OVER)
+			warnx("stage_loop(): INSANE replay, does not end with EV_OVER. Will probably not work at all.\n");
+		else
+			endtime = stg->events[stg->ecount-1].frame;
 	}
 	
 	Enemy *e = global.plr.slaves, *tmp;
