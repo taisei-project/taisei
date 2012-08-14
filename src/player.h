@@ -79,7 +79,7 @@ void player_move(Player*, complex delta);
 void player_bomb(Player*);
 void player_realdeath(Player*);
 void player_death(Player*);
-
+void player_graze(Player*, complex, int);
 
 void player_setmoveflag(Player* plr, int key, int mode);
 void player_event(Player* plr,int type, int key);

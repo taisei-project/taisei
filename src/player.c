@@ -340,3 +340,14 @@ void player_applymovement(Player* plr) {
 		}
 	}
 }
+
+void player_graze(Player *plr, complex pos, int pts) {
+	global.points += pts;
+	plr->graze++;
+	play_sound("graze");
+	
+	int i = 0; for(i = 0; i < 5; ++i) {
+		tsrand_fill(3);
+		create_particle2c("flare", pos, NULL, Shrink, timeout_linear, 5 + 5 * afrand(2), (1+afrand(0)*5)*cexp(I*tsrand_a(1)));
+	}
+}
