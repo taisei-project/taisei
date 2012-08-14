@@ -35,7 +35,6 @@ void save_rpy(void *a) {
 		snprintf(name, 128, "taisei_%s_stg%d_%s_%s", strtime, rpy->stages[0].stage, prepr, drepr);
 	
 	replay_save(rpy, name);
-	if(a) close_menu(a);
 }
 
 void create_saverpy_menu(MenuData *m) {

@@ -221,7 +221,7 @@ static void replayview_draw(MenuData *m) {
 			replayview_draw_stagemenu(sm);			
 		}
 	}
-	
+
 }
 
 
@@ -252,7 +252,7 @@ int fill_replayview_menu(MenuData *m) {
 			continue;
 		}
 		
-		add_menu_entry_f(m, " ", replayview_run, rpy, (rpy->stgcount > 1)*MF_InstantSelect)->transition = rpy->stgcount < 1 ? TransFadeBlack : NULL;
+		add_menu_entry_f(m, " ", replayview_run, rpy, (rpy->stgcount > 1)*MF_InstantSelect)->transition = rpy->stgcount < 2 ? TransFadeBlack : NULL;
 		++rpys;
 	}
 	
