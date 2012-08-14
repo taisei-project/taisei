@@ -26,11 +26,10 @@ void TransFadeWhite(Transition *t) {
 	colorfill(1,1,1,trans_fade(t));
 }
 
-void TransIngame(Transition *t) {
-	draw_ingame_menu_bg(trans_fade(t));
-}
-
 void set_transition(TransitionRule rule, int dur1, int dur2) {
+	if(!rule)
+		return;
+		
 	memset(&transition, 0, sizeof(Transition));
 	transition.rule = rule;
 	transition.dur1 = dur1;
@@ -38,8 +37,10 @@ void set_transition(TransitionRule rule, int dur1, int dur2) {
 }
 
 void draw_transition(void) {
-	if(transition.rule)
-		transition.rule(&transition);
+	if(!transition.rule)
+		return;
+	
+	transition.rule(&transition);
 	
 	transition.frames++;
 	

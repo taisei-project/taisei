@@ -17,4 +17,6 @@ void credits_add(char*, int);
 #define CREDITS_ENTRY_FADEOUT 100.0
 #define CREDITS_YUKKURI_SCALE 0.5
 
+#define CREDITS_FADEOUT 120
+
 #endif

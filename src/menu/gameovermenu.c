@@ -34,13 +34,14 @@ void create_gameover_menu(MenuData *m) {
 	create_menu(m);
 	
 	m->flags = MF_Transient;	
+	m->transition = NULL;
 	m->context = "Game Over";
 	
 	char s[64];
 	int c = MAX_CONTINUES - global.plr.continues;
 	snprintf(s, sizeof(s), "Continue (%i)", c);
 	add_menu_entry(m, s, c? continue_game : NULL, NULL);
-	add_menu_entry(m, c? "Give up" : "Return to Title", give_up, NULL);
+	add_menu_entry(m, c? "Give up" : "Return to Title", give_up, NULL)->transition = TransFadeBlack;
 	
 	if(!c)
 		m->cursor = 1;

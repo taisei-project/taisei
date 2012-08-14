@@ -20,8 +20,9 @@ void return_to_title(void *arg) {
 void create_ingame_menu(MenuData *m) {
 	create_menu(m);
 	m->flags = MF_Abortable | MF_Transient;
+	m->transition = NULL;
 	add_menu_entry(m, "Return to Game", return_to_game, NULL);
-	add_menu_entry(m, "Return to Title", return_to_title, NULL);
+	add_menu_entry(m, "Return to Title", return_to_title, NULL)->transition = TransFadeBlack;
 }
 
 void draw_ingame_menu_bg(float f) {

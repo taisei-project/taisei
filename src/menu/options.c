@@ -577,8 +577,7 @@ void draw_options_menu(MenuData *menu) {
 			}
 		}
 	}
-	
-	
+		
 	glPopMatrix();
 }
 

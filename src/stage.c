@@ -289,6 +289,7 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	glPopMatrix();
 		
 	draw_hud();
+	draw_transition();
 }
 
 int apply_shaderrules(ShaderRule *shaderrules, int fbonum) {
@@ -398,6 +399,9 @@ void stage_logic(int time) {
 	
 	if(!global.dialog && !global.boss)
 		global.timer++;
+	
+	if(global.timer == time - FADE_TIME)
+		set_transition(TransFadeBlack, FADE_TIME, FADE_TIME*2);
 	
 	if(global.timer >= time)
 		global.game_over = GAMEOVER_WIN;
