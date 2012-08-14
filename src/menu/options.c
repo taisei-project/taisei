@@ -583,133 +583,121 @@ void draw_options_menu(MenuData *menu) {
 
 // --- Input processing --- //
 
-void bind_input(MenuData *menu, OptionBinding *b)
-{
-	SDL_Event event;
+void bind_input_event(EventType type, int state, void *arg) {
+	OptionBinding *b = arg;
 	
-	SDL_EnableUNICODE(True);
-	while(SDL_PollEvent(&event)) {
-		int sym = event.key.keysym.sym;
-		int uni = event.key.keysym.unicode;
+	int sym = state;
+	char c = (char)(((Uint16)state) & 0x7F);
+	char *dest = b->type == BT_StrValue? *b->values : NULL;
+	
+	switch(type) {
+		case E_KeyDown:
+			if(sym != SDLK_ESCAPE)
+				tconfig.intval[b->configentry] = sym;
+			b->blockinput = False;
+		break;
 		
-		if(event.type == SDL_KEYDOWN) {
-			switch(b->type) {
-				case BT_KeyBinding:
-					if(sym != SDLK_ESCAPE)
-						tconfig.intval[b->configentry] = sym;
-					b->blockinput = False;
-					break;
-				
-				case BT_StrValue: {
-					// Very basic editor for string config values
-					// b->values is a pointer to the editor buffer string here (char**)
-					// Normally it's used to store the value names for BT_IntValue binds, though.
-					// TODO: implement a cursor here (so we can use arrow keys for editing)
-											
-					char c = (char)(uni & 0x7F);
-					char *dest = *b->values;
-					
-					if(sym == SDLK_RETURN) {
-						if(strlen(dest))
-							stralloc(&(tconfig.strval[b->configentry]), dest);
-						else
-							strncpy(dest, tconfig.strval[b->configentry], 128);
-						b->blockinput = False;
-					} else if(sym == SDLK_BACKSPACE) {
-						if(strlen(dest))
-							dest[strlen(dest)-1] = 0;
-					} else if(sym == SDLK_ESCAPE) {
-						strncpy(dest, tconfig.strval[b->configentry], 128);
-						b->blockinput = False;
-					} else if(uni && sym != SDLK_TAB && c != ':') {		// we use ':' as a separator for replays (and might use it as such somewhere else), and I don't feel like escaping it.
-						strncat(dest, &c, 128);
-						dest[strlen(dest)-1] = 0;
-					}
-					break;
-				}
-				
-				default:	// should never get there anyway
-					b->blockinput = False;
-					break;
+		case E_CharTyped:
+			if(c != ':') {
+				char s[] = {c, 0};
+				strncat(dest, s, 128);
 			}
-		}
+		break;
+		
+		case E_CharErased:
+			if(strlen(dest))
+				dest[strlen(dest)-1] = 0;
+		break;
+		
+		case E_SubmitText:
+			if(strlen(dest))
+				stralloc(&(tconfig.strval[b->configentry]), dest);
+			else
+				strncpy(dest, tconfig.strval[b->configentry], 128);
+			b->blockinput = False;
+		break;
+		
+		case E_CancelText:
+			strncpy(dest, tconfig.strval[b->configentry], 128);
+			b->blockinput = False;
+		break;
+		
+		default: break;
 	}
-	SDL_EnableUNICODE(False);
 }
 
-static void options_key_action(MenuData *menu, int sym) {
-	#define SHOULD_SKIP (!menu->entries[menu->cursor].action || (((OptionBinding*)menu->context)[menu->cursor].enabled && !bind_isactive(&(((OptionBinding*)menu->context)[menu->cursor]))))
-	Uint8 *keys = SDL_GetKeyState(NULL);
+#define SHOULD_SKIP (!menu->entries[menu->cursor].action || (((OptionBinding*)menu->context)[menu->cursor].enabled && !bind_isactive(&(((OptionBinding*)menu->context)[menu->cursor]))))
+static void options_input_event(EventType type, int state, void *arg) {
+	MenuData *menu = arg;
+	OptionBinding *binds = menu->context;
+	OptionBinding *bind = &(binds[menu->cursor]);
 	
-	if(sym == tconfig.intval[KEY_DOWN] || sym == SDLK_DOWN) {
-		menu->drawdata[3] = 10;
-		do {
-			menu->cursor++;
-			if(menu->cursor >= menu->ecount)
-				menu->cursor = 0;
-		} while SHOULD_SKIP;
-	} else if(sym == tconfig.intval[KEY_UP] || sym == SDLK_UP) {
-		menu->drawdata[3] = 10;
-		do {
-			menu->cursor--;
-			if(menu->cursor < 0)
-				menu->cursor = menu->ecount - 1;
-		} while SHOULD_SKIP;
-	} else if((sym == tconfig.intval[KEY_SHOT] || (sym == SDLK_RETURN && !keys[SDLK_LALT] && !keys[SDLK_RALT])) && menu->entries[menu->cursor].action) {
-		menu->selected = menu->cursor;
+	switch(type) {
+		case E_CursorDown:
+			menu->drawdata[3] = 10;
+			do {
+				menu->cursor++;
+				if(menu->cursor >= menu->ecount)
+					menu->cursor = 0;
+			} while SHOULD_SKIP;
+		break;
 		
-		OptionBinding *binds = (OptionBinding*)menu->context;
-		OptionBinding *bind = &(binds[menu->selected]);
+		case E_CursorUp:
+			menu->drawdata[3] = 10;
+			do {
+				menu->cursor--;
+				if(menu->cursor < 0)
+					menu->cursor = menu->ecount - 1;
+			} while SHOULD_SKIP;
+		break;
 		
-		if(bind->enabled) switch(bind->type)
-		{
-			case BT_KeyBinding:						bind->blockinput = True; 	break;
-			case BT_StrValue:
-				bind->selected = strlen(tconfig.strval[bind->configentry]);
-				bind->blockinput = True;
-				break;
-			default:
-				break;
-		} else close_menu(menu);
-	} else if(sym == tconfig.intval[KEY_LEFT] || sym == SDLK_LEFT) {
-		menu->selected = menu->cursor;
-		OptionBinding *binds = (OptionBinding*)menu->context;
-		OptionBinding *bind = &(binds[menu->selected]);
+		case E_CursorLeft:
+			if(bind->enabled && (bind->type == BT_IntValue || bind->type == BT_Resolution))
+				bind_setprev(bind);
+		break;
 		
-		if(bind->enabled && (bind->type == BT_IntValue || bind->type == BT_Resolution))
-			bind_setprev(bind);
-	} else if(sym == tconfig.intval[KEY_RIGHT] || sym == SDLK_RIGHT) {
-		menu->selected = menu->cursor;
-		OptionBinding *binds = (OptionBinding*)menu->context;
-		OptionBinding *bind = &(binds[menu->selected]);
+		case E_CursorRight:
+			if(bind->enabled && (bind->type == BT_IntValue || bind->type == BT_Resolution))
+				bind_setnext(bind);
+		break;
 		
-		if(bind->enabled && (bind->type == BT_IntValue || bind->type == BT_Resolution))
-			bind_setnext(bind);
-	} else if(sym == SDLK_ESCAPE) {
-		menu->selected = -1;
-		close_menu(menu);
+		case E_MenuAccept:
+			menu->selected = menu->cursor;
+			
+			if(bind->enabled) switch(bind->type) {
+				case BT_KeyBinding:
+					bind->blockinput = True; 
+					break;
+					
+				case BT_StrValue:
+					bind->selected = strlen(tconfig.strval[bind->configentry]);
+					bind->blockinput = True;
+					break;
+					
+				default:
+					break;
+			} else close_menu(menu);
+		break;
+		
+		case E_MenuAbort:
+			menu->selected = -1;
+			close_menu(menu);
+		break;
+		
+		default: break;
 	}
 	
 	menu->cursor = (menu->cursor % menu->ecount) + menu->ecount*(menu->cursor < 0);
 }
+#undef SHOULD_SKIP
 
 void options_menu_input(MenuData *menu) {
-	SDL_Event event;
 	OptionBinding *b;
 	
 	if((b = get_input_blocking_binding(menu)) != NULL)
-	{
-		bind_input(menu, b);
-		return;
-	}
-	
-	while(SDL_PollEvent(&event)) {
-		int sym = event.key.keysym.sym;
-		
-		global_processevent(&event);
-		if(event.type == SDL_KEYDOWN)
-			options_key_action(menu, sym);
-	}
+		handle_events(bind_input_event, b->type == BT_StrValue? EF_Text : EF_Keyboard, b);
+	else
+		handle_events(options_input_event, EF_Menu, menu);
 }
 
 int options_menu_loop(MenuData *menu) {

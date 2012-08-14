@@ -14,6 +14,8 @@
 #define TS_KR_DELAY SDL_DEFAULT_REPEAT_DELAY
 #define TS_KR_INTERVAL (SDL_DEFAULT_REPEAT_INTERVAL*2)
 
+#include "events.h"
+
 enum {	
 	FADE_TIME = 15
 };
@@ -93,4 +95,7 @@ float menu_fade(MenuData *menu);
 
 void draw_menu_selector(float x, float y, float w, float h, float t);
 void draw_menu_title(MenuData *m, char *title);
+
+void menu_event(EventType type, int state, void *arg);
+
 #endif

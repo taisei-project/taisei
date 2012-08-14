@@ -31,6 +31,7 @@
 #include "resource/resource.h"
 #include "replay.h"
 #include "random.h"
+#include "events.h"
 
 #define FILE_PREFIX PREFIX "/share/taisei/"
 #define CONFIG_FILE "config"
@@ -133,8 +134,6 @@ void calc_fps(FPSCounter *fps);
 void set_ortho(void);
 void colorfill(float r, float g, float b, float a);
 void fade_out(float f);
-
-void global_processevent(SDL_Event*);
 void take_screenshot(void);
 
 // needed for mingw compatibility:
