@@ -29,24 +29,30 @@ void create_stage_menu(MenuData *m) {
 	add_menu_entry(m, "Back", (MenuAction)kill_menu, m);
 }
 
-void draw_menu_list(MenuData *m, float x, float y, void (*draw)(void *, int, int)) {
+void draw_menu_list(MenuData *m, float x, float y, void (*draw)(void*, int, int)) {
 	glPushMatrix();
-	glTranslatef(x, y + (((m->ecount * 20 + 290) > SCREEN_W)? min(0, SCREEN_H * 0.7 - 100 - m->drawdata[2]) : 0), 0);
+	float offset = ((((m->ecount+5) * 20) > SCREEN_H)? min(0, SCREEN_H * 0.7 - y - m->drawdata[2]) : 0);
+	glTranslatef(x, y + offset, 0);
 	
 	draw_menu_selector(m->drawdata[0], m->drawdata[2], m->drawdata[1]/100.0, 0.2, m->frames);
 	
 	int i;
 	for(i = 0; i < m->ecount; i++) {
 		MenuEntry *e = &(m->entries[i]);
-		
 		e->drawdata += 0.2 * (10*(i == m->cursor) - e->drawdata);
-		float a = e->drawdata * 0.1;
 		
+		float p = offset + 20*i;
+		
+		if(p < -y-10 || p > SCREEN_H+10)
+			continue;
+		
+		float a = e->drawdata * 0.1;
+		float o = (p < 0? 1-p/(-y-10) : 1);
 		if(e->action == NULL)
-			glColor4f(0.5, 0.5, 0.5, 0.5);
+			glColor4f(0.5, 0.5, 0.5, 0.5*o);
 		else {
 			float ia = 1-a;
-			glColor4f(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, 0.7 + 0.3 * a);
+			glColor4f(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a)*o);
 		}
 		
 		if(draw && i < m->ecount-1)
@@ -57,7 +63,7 @@ void draw_menu_list(MenuData *m, float x, float y, void (*draw)(void *, int, int
 	
 	glPopMatrix();
 }
-	
+
 void draw_stage_menu(MenuData *m) {
 	MenuEntry *s = &(m->entries[m->cursor]);
 	
