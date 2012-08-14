@@ -185,6 +185,9 @@ void draw_hud(void) {
 	sprintf(buf, "%.2f", global.plr.power);
 	draw_text(AL_Center, 10, 236, buf, _fonts.standard);
 	
+	sprintf(buf, "%i", global.plr.graze);
+	draw_text(AL_Left, -5, 270, buf, _fonts.standard);
+	
 	sprintf(buf, "%i", global.points);
 	draw_text(AL_Center, 13, 49, buf, _fonts.standard);
 	

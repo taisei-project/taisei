@@ -18,10 +18,10 @@ void init_player(Player* plr) {
 	memset(plr, 0, sizeof(Player));
 	
 	plr->pos = VIEWPORT_W/2 + I*(VIEWPORT_H-20);
-		
+	
 	plr->lifes = PLR_START_LIVES;
 	plr->bombs = PLR_START_BOMBS;
-		
+	
 	plr->deathtime = -1;
 	plr->continues = 0;
 }
@@ -342,5 +342,16 @@ void player_applymovement(Player* plr) {
 			player_event(plr, EV_RELEASE, KEY_FOCUS);
 			replay_event(&global.replay, EV_RELEASE, KEY_FOCUS);
 		}
+	}
+}
+
+void player_graze(Player *plr, complex pos, int pts) {
+	global.points += pts;
+	plr->graze++;
+	play_sound("graze");
+	
+	int i = 0; for(i = 0; i < 5; ++i) {
+		tsrand_fill(3);
+		create_particle2c("flare", pos, NULL, Shrink, timeout_linear, 5 + 5 * afrand(2), (1+afrand(0)*5)*cexp(I*tsrand_a(1)));
 	}
 }
