@@ -321,9 +321,8 @@ int bind_saverpy_set(void *b, int v)
 
 // --- Creating, destroying, filling the menu --- //
 
-void destroy_options_menu(void *menu)
+void destroy_options_menu(MenuData *m)
 {
-	MenuData *m = (MenuData*)menu;
 	OptionBinding *binds = (OptionBinding*)m->context;
 	int i;
 	
@@ -347,22 +346,16 @@ void destroy_options_menu(void *menu)
 	}
 	
 	config_save(CONFIG_FILE);
-	free_bindings(menu);
+	free_bindings(m);
 }
 
 void do_nothing(void *arg) { }
-void backtomain(void *arg)
-{
-	MenuData *m = arg;
-	m->quit = 2;
-}
 
 void create_options_menu(MenuData *m) {
 	OptionBinding *b;
 	
 	create_menu(m);
-	m->type = MT_Transient;
-	m->ondestroy = destroy_options_menu;
+	m->flags = MF_Abortable;
 	m->context = NULL;
 	
 	#define bind_onoff(b) bind_addvalue(b, "on"); bind_addvalue(b, "off")
@@ -454,7 +447,7 @@ void create_options_menu(MenuData *m) {
 	add_menu_separator(m);
 		allocate_binding(m);
 		
-	add_menu_entry(m, "Return to the main menu", backtomain, m);
+	add_menu_entry(m, "Return to the main menu", (MenuAction)kill_menu, m);
 		allocate_binding(m);
 }
 
@@ -470,20 +463,11 @@ void draw_options_menu_bg(MenuData* menu) {
 void draw_options_menu(MenuData *menu) {
 	draw_options_menu_bg(menu);
 	
-	draw_text(AL_Right, 140*(1-menu->fade), 30, "Options", _fonts.mainmenu);
+	draw_text(AL_Right, 140*(1-menu_fade(menu)), 30, "Options", _fonts.mainmenu);
 	
 	glPushMatrix();
 	glTranslatef(100, 100, 0);
-	
-	/*
-	glPushMatrix();
-	glTranslatef(SCREEN_W/2 - 100, menu->drawdata[2], 0);
-	glScalef(SCREEN_W - 200, 20, 1);
-	glColor4f(0,0,0,0.5);
-	draw_quad();
-	glPopMatrix();
-	*/
-	
+		
 	Texture *bg = get_tex("part/smoke");
 	glPushMatrix();
 	glTranslatef(menu->drawdata[0], menu->drawdata[2], 0);
@@ -593,11 +577,8 @@ void draw_options_menu(MenuData *menu) {
 			}
 		}
 	}
-	
-	
+		
 	glPopMatrix();
-	
-	fade_out(menu->fade);
 }
 
 // --- Input processing --- //
@@ -689,7 +670,7 @@ static void options_key_action(MenuData *menu, int sym) {
 				break;
 			default:
 				break;
-		} else menu->quit = 1;
+		} else close_menu(menu);
 	} else if(sym == tconfig.intval[KEY_LEFT] || sym == SDLK_LEFT) {
 		menu->selected = menu->cursor;
 		OptionBinding *binds = (OptionBinding*)menu->context;
@@ -705,7 +686,8 @@ static void options_key_action(MenuData *menu, int sym) {
 		if(bind->enabled && (bind->type == BT_IntValue || bind->type == BT_Resolution))
 			bind_setnext(bind);
 	} else if(sym == SDLK_ESCAPE) {
-		menu->quit = 1;
+		menu->selected = -1;
+		close_menu(menu);
 	}
 	
 	menu->cursor = (menu->cursor % menu->ecount) + menu->ecount*(menu->cursor < 0);
@@ -731,6 +713,6 @@ void options_menu_input(MenuData *menu) {
 }
 
 int options_menu_loop(MenuData *menu) {
-	return menu_loop(menu, options_menu_input, draw_options_menu);
+	return menu_loop(menu, options_menu_input, draw_options_menu, destroy_options_menu);
 }
 

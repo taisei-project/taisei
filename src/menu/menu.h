@@ -8,27 +8,49 @@
 #ifndef MENU_H
 #define MENU_H
 
+#include "transition.h"
+
 #define IMENU_BLUR 0.05
-#define FADE_TIME 15
 #define TS_KR_DELAY SDL_DEFAULT_REPEAT_DELAY
 #define TS_KR_INTERVAL (SDL_DEFAULT_REPEAT_INTERVAL*2)
 
+enum {	
+	FADE_TIME = 15
+};
+
+typedef  void (*MenuAction)(void*);
+
 typedef struct {
 	char *name;
-	void (*action)(void *arg);
+	MenuAction action;
 	void *arg;
+	
+	int flags;
+	
 	float drawdata;
-	void (*freearg)(void *arg);
-	void (*draw)(void *e, int i, int cnt);
+	TransitionRule transition;
 } MenuEntry;
 
-typedef enum MenuType { // whether to close on selection or not.
-	MT_Transient, // ingame menus are for the transient people.
-	MT_Persistent
-} MenuType;
+// enum EntryFlag {
+//	MF_InstantSelect = 4
+// };
+
+enum MenuFlag { 
+	MF_Transient = 1, // whether to close on selection or not.
+	MF_Abortable = 2,
+	
+	MF_InstantSelect = 4,
+	MF_ManualDrawTransition = 8, // the menu will not call draw_transition() automatically
+};
+
+enum MenuState{
+	MS_Normal = 0,
+	MS_FadeOut,
+	MS_Dead
+};
 
 typedef struct MenuData{
-	MenuType type;
+	int flags;
 	
 	int cursor;
 	int selected;
@@ -39,22 +61,20 @@ typedef struct MenuData{
 	int frames;
 	int lasttime;
 		
-	int quit;
-	float fade;
-	int abort;
-	int abortable;
-	void (*abortaction)(void *arg);
-	void *abortarg;
-	int instantselect;
+	int state;
+	int quitframe;
+	int quitdelay;
 	
-	float drawdata[4];
+	TransitionRule transition;
 	
-	char *title;
+	float drawdata[4];	
+	
 	void *context;
-	void (*ondestroy)(void*);
 } MenuData;
 
-void add_menu_entry(MenuData *menu, char *name, void (*action)(void *), void *arg);
+MenuEntry *add_menu_entry(MenuData *menu, char *name, MenuAction action, void *arg);
+MenuEntry *add_menu_entry_f(MenuData *menu, char *name, MenuAction action, void *arg, int flags);
+
 void add_menu_separator(MenuData *menu);
 void create_menu(MenuData *menu);
 void destroy_menu(MenuData *menu);
@@ -62,7 +82,15 @@ void destroy_menu(MenuData *menu);
 void menu_logic(MenuData *menu);
 void menu_input(MenuData *menu);
 
-int menu_loop(MenuData *menu, void (*input)(MenuData*), void (*draw)(MenuData*));
+void close_menu(MenuData *menu); // softly close menu (should be used in most cases)
+void kill_menu(MenuData *menu); // quit action for persistent menus
 
+void menu_key_action(MenuData *menu, int sym);
 
+int menu_loop(MenuData *menu, void (*input)(MenuData*), void (*draw)(MenuData*), void (*end)(MenuData*));
+
+float menu_fade(MenuData *menu);
+
+void draw_menu_selector(float x, float y, float w, float h, float t);
+void draw_menu_title(MenuData *m, char *title);
 #endif

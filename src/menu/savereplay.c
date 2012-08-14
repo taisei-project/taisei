@@ -35,43 +35,33 @@ void save_rpy(void *a) {
 		snprintf(name, 128, "taisei_%s_stg%d_%s_%s", strtime, rpy->stages[0].stage, prepr, drepr);
 	
 	replay_save(rpy, name);
-	if(a) ((MenuData*)a)->quit = 2;
-}
-
-void dont_save_rpy(void *a) {
-	((MenuData*)a)->quit = 2;
 }
 
 void create_saverpy_menu(MenuData *m) {
 	create_menu(m);
-	m->type = MT_Persistent;
-	m->title = "Save replay?";
+	
+	m->flags = MF_Transient;
 	
 	add_menu_entry(m, "Yes",	save_rpy,		m);
-	add_menu_entry(m, "No",		dont_save_rpy,	m);
+	add_menu_entry(m, "No", (MenuAction) kill_menu, m);
 }
 
 void draw_saverpy_menu(MenuData *m) {
-	draw_options_menu_bg(m);
+	int i;
 	
-	Texture *bg = get_tex("part/smoke");
-	glPushMatrix();
-	glTranslatef(SCREEN_W/2 + 100 * m->drawdata[0] - 50, SCREEN_H/2, 0);	// 135
-	glScalef(1, 0.5, 1);
-	glRotatef(m->frames*2,0,0,1);
-	glColor4f(0,0,0,0.5);
-	draw_texture_p(0,0,bg);
-	glPopMatrix();
+	draw_options_menu_bg(m);
+		
+	draw_menu_selector(SCREEN_W/2 + 100 * m->drawdata[0] - 50, SCREEN_H/2, 1, 0.5, m->frames);
 	
 	glPushMatrix();
 	glColor4f(1, 1, 1, 1);
 	glTranslatef(SCREEN_W/2, SCREEN_H/2 - 100, 0);
-	draw_text(AL_Center, 0, 0, m->title, _fonts.mainmenu);
+	draw_text(AL_Center, 0, 0, "Save Replay?", _fonts.mainmenu);
 	glTranslatef(0, 100, 0);
 	
 	m->drawdata[0] += (m->cursor - m->drawdata[0])/10.0;
 	
-	int i; for(i = 0; i < m->ecount; i++) {
+	for(i = 0; i < m->ecount; i++) {
 		MenuEntry *e = &(m->entries[i]);
 		
 		e->drawdata += 0.2 * (10*(i == m->cursor) - e->drawdata);
@@ -89,10 +79,26 @@ void draw_saverpy_menu(MenuData *m) {
 	}
 	
 	glPopMatrix();
+}
+
+void saverpy_menu_input(MenuData *menu) {
+	SDL_Event event;
 	
-	fade_out(m->fade);
+	while(SDL_PollEvent(&event)) {
+		int sym = event.key.keysym.sym;
+				
+		global_processevent(&event);
+		if(event.type == SDL_KEYDOWN) {
+			if(sym == SDLK_LEFT)
+				menu_key_action(menu, SDLK_UP);
+			else if(sym == SDLK_RIGHT)
+				menu_key_action(menu, SDLK_DOWN);
+			else
+				menu_key_action(menu,sym);
+		}
+	}
 }
 
 int saverpy_menu_loop(MenuData *m) {
-	return menu_loop(m, NULL, draw_saverpy_menu);
+	return menu_loop(m, saverpy_menu_input, draw_saverpy_menu, NULL);
 }

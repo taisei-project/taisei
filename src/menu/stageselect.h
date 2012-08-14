@@ -12,7 +12,7 @@
 #define STGMENU_MAX_TITLE_LENGTH 128
 
 void create_stage_menu(MenuData *m);
-void draw_stage_menu(MenuData *m);
+void draw_menu_list(MenuData *m, float x, float y, void (*draw)(void *, int, int));
 int stage_menu_loop(MenuData *m);
 
 #endif

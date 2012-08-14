@@ -10,8 +10,10 @@
 
 #include "menu.h"
 
-MenuData *create_ingame_menu(void);
+void draw_ingame_menu_bg(float f);
+
+void create_ingame_menu(MenuData *menu);
 void draw_ingame_menu(MenuData *menu);
-void ingame_menu_logic(MenuData **menu);
+int ingame_menu_loop(MenuData *menu);
 
 #endif

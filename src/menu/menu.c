@@ -8,7 +8,11 @@
 #include "menu.h"
 #include "global.h"
 
-void add_menu_entry(MenuData *menu, char *name, void (*action)(void *), void *arg) {
+MenuEntry *add_menu_entry(MenuData *menu, char *name, MenuAction action, void *arg) {
+	return add_menu_entry_f(menu, name, action, arg, 0);
+}
+
+MenuEntry *add_menu_entry_f(MenuData *menu, char *name, MenuAction action, void *arg, int flags) {
 	menu->entries = realloc(menu->entries, (++menu->ecount)*sizeof(MenuEntry));
 	MenuEntry *e = &(menu->entries[menu->ecount-1]);
 	memset(e, 0, sizeof(MenuEntry));
@@ -17,6 +21,9 @@ void add_menu_entry(MenuData *menu, char *name, void (*action)(void *), void *ar
 	strcpy(e->name, name);
 	e->action = action;
 	e->arg = arg;
+	e->flags = flags;
+	e->transition = menu->transition;
+	return e;
 }
 
 void add_menu_separator(MenuData *menu) {
@@ -26,16 +33,11 @@ void add_menu_separator(MenuData *menu) {
 
 void destroy_menu(MenuData *menu) {
 	int i;
-	
-	if(menu->ondestroy)
-		menu->ondestroy(menu);
-	
+		
 	for(i = 0; i < menu->ecount; i++) {
 		MenuEntry *e = &(menu->entries[i]);
 		
 		free(e->name);
-		if(e->freearg)
-			e->freearg(e->arg);
 	}
 	
 	free(menu->entries);
@@ -44,33 +46,56 @@ void destroy_menu(MenuData *menu) {
 void create_menu(MenuData *menu) {
 	memset(menu, 0, sizeof(MenuData));
 	
-	menu->fade = 1;
 	menu->selected = -1;
+	menu->quitdelay = FADE_TIME;
+	menu->transition = TransFadeBlack;
+}
+	
+void close_menu(MenuData *menu) {
+	TransitionRule trans = menu->transition;
+		
+	if(menu->selected != -1)
+		trans = menu->entries[menu->selected].transition;
+	
+	set_transition(trans, menu->quitdelay, menu->quitdelay);	
+	
+	menu->quitframe = menu->frames;	
 }
 
-static void key_action(MenuData *menu, int sym) {
+void kill_menu(MenuData *menu) {		
+	menu->state = MS_Dead;
+}
+
+float menu_fade(MenuData *menu) {
+	if(menu->frames < menu->quitdelay)
+		return 1.0 - menu->frames/(float)menu->quitdelay;
+	
+	if(menu->quitframe && menu->frames >= menu->quitframe)
+		return (menu->frames - menu->quitframe)/(float)menu->quitdelay;
+	
+	return 0.0;
+}
+
+void menu_key_action(MenuData *menu, int sym) {
 	Uint8 *keys = SDL_GetKeyState(NULL);
-	
-	int look_i_can_hardcode_annoying_menu_hacks_too = menu->title && !strcmp(menu->title, "Save replay?");
-	
-	if(sym == tconfig.intval[KEY_DOWN]  || sym == SDLK_DOWN || look_i_can_hardcode_annoying_menu_hacks_too &&
-	  (sym == tconfig.intval[KEY_RIGHT] || sym == SDLK_RIGHT)) {
+		
+	if(sym == tconfig.intval[KEY_DOWN] || sym == SDLK_DOWN) {
 		do {
 			if(++menu->cursor >= menu->ecount)
 				menu->cursor = 0;
 		} while(menu->entries[menu->cursor].action == NULL);
-	} else if(sym == tconfig.intval[KEY_UP]   || sym == SDLK_UP || look_i_can_hardcode_annoying_menu_hacks_too &&
-			 (sym == tconfig.intval[KEY_LEFT] || sym == SDLK_LEFT)) {
+	} else if(sym == tconfig.intval[KEY_UP] || sym == SDLK_UP) {
 		do {
 			if(--menu->cursor < 0)
 				menu->cursor = menu->ecount - 1;
 		} while(menu->entries[menu->cursor].action == NULL);
 	} else if((sym == tconfig.intval[KEY_SHOT] || (sym == SDLK_RETURN && !keys[SDLK_LALT] && !keys[SDLK_RALT])) && menu->entries[menu->cursor].action) {
-		menu->quit = 1;
 		menu->selected = menu->cursor;
-	} else if(sym == SDLK_ESCAPE && (menu->type == MT_Transient || menu->abortable) && menu->abortable >= 0) {
-		menu->quit = 1;
-		menu->abort = 1;
+		
+		close_menu(menu);
+	} else if(sym == SDLK_ESCAPE && menu->flags & MF_Abortable) {
+		menu->selected = -1;
+		close_menu(menu);		
 	}
 }
 
@@ -82,51 +107,68 @@ void menu_input(MenuData *menu) {
 				
 		global_processevent(&event);
 		if(event.type == SDL_KEYDOWN)
-			key_action(menu,sym);
+			menu_key_action(menu,sym);
 	}
 }
 
 void menu_logic(MenuData *menu) {
-	int hax = 0;
 	menu->frames++;
 	
-	if(menu->quit == 1 && menu->fade < 1.0)
-		menu->fade += 1.0/FADE_TIME;
-	if(menu->quit == 0 && menu->fade > 0)
-		menu->fade -= 1.0/FADE_TIME;
+	if(menu->quitframe && menu->frames >= menu->quitframe)
+		menu->state = MS_FadeOut;
 	
-	if(menu->fade < 0)
-		menu->fade = 0;
-	if(menu->fade > 1)
-		menu->fade = 1;
-	
-	if(menu->quit == 1 && (menu->fade >= 1.0 || (hax = (!menu->abort && menu->instantselect)))) {
-		if(hax)
-			menu->fade = 0;
-		global.whitefade = 0;
-		menu->quit = menu->type == MT_Transient ? 2 : 0;
-		
-		if(menu->abort && menu->abortaction)
-			menu->abortaction(menu->abortarg);
-		else if(menu->selected != -1 && menu->entries[menu->selected].action != NULL)
-			menu->entries[menu->selected].action(menu->entries[menu->selected].arg);
+	if(menu->quitframe && menu->frames >= menu->quitframe + menu->quitdelay*!(menu->state & MF_InstantSelect || menu->selected != -1 && menu->entries[menu->selected].flags & MF_InstantSelect)) {
+		menu->state = MS_Dead;
+		if(menu->selected != -1 && menu->entries[menu->selected].action != NULL) {
+			if(!(menu->flags & MF_Transient)) {
+				menu->state = MS_Normal;
+				menu->quitframe = 0;
+			}
+			
+			menu->entries[menu->selected].action(menu->entries[menu->selected].arg);			
+		}
 	}
 }
 
-int menu_loop(MenuData *menu, void (*input)(MenuData*), void (*draw)(MenuData*)) {
+int menu_loop(MenuData *menu, void (*input)(MenuData*), void (*draw)(MenuData*), void (*end)(MenuData*)) {
 	set_ortho();
-	while(menu->quit != 2) {
+	while(menu->state != MS_Dead) {
 		menu_logic(menu);
-		if(input)
-			input(menu);
-		else
-			menu_input(menu);
+		
+		if(menu->state != MS_FadeOut) {
+			if(input)
+				input(menu);
+			else
+				menu_input(menu);
+		}	
 		
 		draw(menu);
+		if(!(menu->flags & MF_ManualDrawTransition))
+			draw_transition();
+		
 		SDL_GL_SwapBuffers();
 		frame_rate(&menu->lasttime);
 	}
-	destroy_menu(menu);
 	
+	if(end)
+		end(menu);
+	destroy_menu(menu);
+		
 	return menu->selected;
 }
+
+void draw_menu_selector(float x, float y, float w, float h, float t) {
+	Texture *bg = get_tex("part/smoke");
+	glPushMatrix();
+	glTranslatef(x, y, 0);
+	glScalef(w, h, 1);
+	glRotatef(t*2,0,0,1);
+	glColor4f(0,0,0,0.5);
+	draw_texture_p(0,0,bg);
+	glPopMatrix();
+}
+
+void draw_menu_title(MenuData *m, char *title) {
+	draw_text(AL_Right, (stringwidth(title, _fonts.mainmenu) + 10) * (1.0-menu_fade(m)), 30, title, _fonts.mainmenu);
+}
+	

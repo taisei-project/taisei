@@ -15,6 +15,7 @@
 #include "config.h"
 #include "player.h"
 #include "menu/ingamemenu.h"
+#include "taisei_err.h"
 
 StageInfo stages[] = {	
 	{1, stage1_loop, False, "Stage 1", "Misty Lake", {1, 1, 1}},
@@ -52,18 +53,12 @@ void stage_start(void) {
 }
 
 void stage_ingamemenu(void) {
-	if(!global.menu)
-		global.menu = create_ingame_menu();
-	else
-		global.menu->quit = 1;
+	MenuData menu;
+	create_ingame_menu(&menu);
+	ingame_menu_loop(&menu);
 }
 
-void replay_input(void) {
-	if(global.menu) {
-		menu_input(global.menu);
-		return;
-	}
-	
+void replay_input(void) {	
 	SDL_Event event;
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;
@@ -75,10 +70,7 @@ void replay_input(void) {
 			break;
 		}
 	}
-	
-	if(global.menu)
-		return;
-	
+		
 	ReplayStage *s = global.replay.current;
 	int i;
 	
@@ -109,10 +101,6 @@ void replay_input(void) {
 }
 
 void stage_input(void) {
-	if(global.menu) {
-		menu_input(global.menu);
-		return;
-	}
 	
 	SDL_Event event;
 	while(SDL_PollEvent(&event)) {
@@ -157,8 +145,7 @@ void stage_input(void) {
 		}
 	}
 	
-	if(!global.menu)
-		player_applymovement(&global.plr);
+	player_applymovement(&global.plr);
 }
 
 void draw_hud(void) {
@@ -221,8 +208,7 @@ void draw_hud(void) {
 void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int time) {
 	if(!tconfig.intval[NO_SHADER]) {
 		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[0].fbo);
-		if(!global.menu)
-			glViewport(0,0,SCREEN_W,SCREEN_H);
+		glViewport(0,0,SCREEN_W,SCREEN_H);
 	}
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPushMatrix();	
@@ -239,7 +225,7 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	if(tconfig.intval[NO_STAGEBG] == 1)
 		global.nostagebg = True;
 	
-	if(!global.nostagebg && !global.menu)
+	if(!global.nostagebg)
 		bgdraw();
 		
 	glPopMatrix();	
@@ -247,89 +233,67 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	
 	set_ortho();
 
-	if(!global.menu) {
+	glPushMatrix();
+	glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
+	
+	if(!tconfig.intval[NO_SHADER])
+		apply_bg_shaders(shaderrules);
+
+	if(global.boss) {
 		glPushMatrix();
-		glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
+		glTranslatef(creal(global.boss->pos), cimag(global.boss->pos), 0);
 		
-		if(!tconfig.intval[NO_SHADER])
-			apply_bg_shaders(shaderrules);
-
-		if(global.boss) {
-			glPushMatrix();
-			glTranslatef(creal(global.boss->pos), cimag(global.boss->pos), 0);
-			
-			if(!(global.frames % 5)) {
-				complex offset = (frand()-0.5)*50 + (frand()-0.5)*20I;
-				create_particle3c("boss_shadow", -20I, rgba(0.2,0.35,0.5,0.5), EnemyFlareShrink, enemy_flare, 50, (-100I-offset)/(50.0+frand()*10), add_ref(global.boss));
-			}
-			
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-						
-			glRotatef(global.frames*4.0, 0, 0, -1);
-			float f = 0.8+0.1*sin(global.frames/8.0);
-			glScalef(f,f,f);
-			draw_texture(0,0,"boss_circle");
-			
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			
-			glPopMatrix();
+		if(!(global.frames % 5)) {
+			complex offset = (frand()-0.5)*50 + (frand()-0.5)*20I;
+			create_particle3c("boss_shadow", -20I, rgba(0.2,0.35,0.5,0.5), EnemyFlareShrink, enemy_flare, 50, (-100I-offset)/(50.0+frand()*10), add_ref(global.boss));
 		}
 		
-		player_draw(&global.plr);
-
-		draw_items();		
-		draw_projectiles(global.projs);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+					
+		glRotatef(global.frames*4.0, 0, 0, -1);
+		float f = 0.8+0.1*sin(global.frames/8.0);
+		glScalef(f,f,f);
+		draw_texture(0,0,"boss_circle");
 		
-		
-		draw_projectiles(global.particles);
-		draw_enemies(global.enemies);
-		draw_lasers();
-				
-		if(global.boss)
-			draw_boss(global.boss);
-
-		if(global.dialog)
-			draw_dialog(global.dialog);
-		
-		draw_stage_title(info);
-		
-		if(!tconfig.intval[NO_SHADER]) {
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glViewport(0, 0, video.current.width, video.current.height);
-			glPushMatrix();
-			if(global.shake_view)
-				glTranslatef(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames+3),0);
-
-			draw_fbo_viewport(&resources.fsec);
-
-			glPopMatrix();
-		}
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		
 		glPopMatrix();
 	}
 	
-	if(global.frames < 4*FADE_TIME)
-		fade_out(1.0 - global.frames/(float)(4*FADE_TIME));
-	if(global.timer > time - 4*FADE_TIME) {
-		fade_out((global.timer - time + 4*FADE_TIME)/(float)(4*FADE_TIME));
-	}
+	player_draw(&global.plr);
+
+	draw_items();		
+	draw_projectiles(global.projs);
 	
-	if(global.menu) {
+	
+	draw_projectiles(global.particles);
+	draw_enemies(global.enemies);
+	draw_lasers();
+			
+	if(global.boss)
+		draw_boss(global.boss);
+
+	if(global.dialog)
+		draw_dialog(global.dialog);
+	
+	draw_stage_title(info);
+	
+	if(!tconfig.intval[NO_SHADER]) {
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, video.current.width, video.current.height);
 		glPushMatrix();
-		glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
-		draw_ingame_menu(global.menu);
+		if(global.shake_view)
+			glTranslatef(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames+3),0);
+
+		draw_fbo_viewport(&resources.fsec);
+
 		glPopMatrix();
 	}
 	
+	glPopMatrix();
+		
 	draw_hud();
-	
-	// I don't remember how did it work before the massive transition hacking - and neither do I want to.
-	// So I'll just leave these new hacks here. At least they are not AS horrible as the old ones.
-	// They are still horrible, though. I hate them. HATE HATE HATE HATE HATE HATE HATE HATE HATE.
-	if(global.menu && !global.menu->abort && global.menu->quit == 1 && global.menu->selected == 1)
-		fade_out(global.menu->fade);
-	else if(global.game_over == GAMEOVER_ABORT || global.game_over == GAMEOVER_DEFEAT)
-		fade_out(1);
+	draw_transition();
 }
 
 int apply_shaderrules(ShaderRule *shaderrules, int fbonum) {
@@ -391,10 +355,7 @@ void apply_bg_shaders(ShaderRule *shaderrules) {
 		glUniform1f(uniloc(shader, "rad"), 0.24);
 		glUniform1f(uniloc(shader, "ratio"), (float)resources.fbg[fbonum].nh/resources.fbg[fbonum].nw);
 		if(global.boss->zoomcolor)
-			glUniform4f(uniloc(shader, "color"),	global.boss->zoomcolor->r,
-													global.boss->zoomcolor->g,
-													global.boss->zoomcolor->b,
-													global.boss->zoomcolor->a);
+			glUniform4fv(uniloc(shader, "color"), 1, (float *)global.boss->zoomcolor);
 		else
 			glUniform4f(uniloc(shader, "color"), 0.1, 0.2, 0.3, 1);
 	}
@@ -421,11 +382,6 @@ void apply_bg_shaders(ShaderRule *shaderrules) {
 }
 
 void stage_logic(int time) {
-	if(global.menu) {
-		ingame_menu_logic(&global.menu);
-		return;
-	}
-	
 	player_logic(&global.plr);
 	
 	process_enemies(&global.enemies);
@@ -448,6 +404,9 @@ void stage_logic(int time) {
 	if(!global.dialog && !global.boss)
 		global.timer++;
 	
+	if(global.timer == time - FADE_TIME || global.replaymode == REPLAY_PLAY && global.frames == global.replay.current->events[global.replay.current->ecount-1].frame - FADE_TIME)
+		set_transition(TransFadeBlack, FADE_TIME, FADE_TIME*2);
+	
 	if(global.timer >= time)
 		global.game_over = GAMEOVER_WIN;
 }
@@ -459,12 +418,7 @@ void stage_end(void) {
 	
 	delete_projectiles(&global.projs);
 	delete_projectiles(&global.particles);
-	
-	if(global.menu) {
-		destroy_menu(global.menu);
-		global.menu = NULL;
-	}
-	
+		
 	if(global.dialog) {
 		delete_dialog(global.dialog);
 		global.dialog = NULL;
@@ -511,7 +465,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		global.plr.bombs		= stg->plr_bombs;
 		global.plr.power		= stg->plr_power;
 		global.plr.moveflags	= stg->plr_mflags;
-				
+		
 		stg->playpos = 0;
 	}
 	
@@ -532,7 +486,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	
 	SDL_EnableKeyRepeat(0, 0);
 	while(global.game_over <= 0) {
-		if(!global.boss && !global.dialog && !global.menu)
+		if(!global.boss && !global.dialog)
 			event();
 		((global.replaymode == REPLAY_PLAY)? replay_input : stage_input)();
 		stage_logic(endtime);

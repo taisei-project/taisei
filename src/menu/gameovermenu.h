@@ -11,6 +11,6 @@
 
 #include "menu.h"
 
-MenuData *create_gameover_menu(void);
+void create_gameover_menu(MenuData *);
 
 #endif

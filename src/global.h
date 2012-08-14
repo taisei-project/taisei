@@ -102,7 +102,6 @@ typedef struct {
 	int timer;
 	
 	Boss *boss;
-	MenuData *menu;
 	Dialog *dialog;
 	
 	RefArray refs;
@@ -121,8 +120,6 @@ typedef struct {
 	
 	RandomState rand_game;
 	RandomState rand_visual;
-	
-	float whitefade;	// hack for credits --> main transition
 } Global;
 
 extern Global global;

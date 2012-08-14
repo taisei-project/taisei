@@ -17,13 +17,6 @@ void set_shotmode(void *p) {
 	global.plr.shot = (ShotMode) p;
 }
 
-void create_char_menu(MenuData *m) {
-	create_menu(m);
-	
-	add_menu_entry(m, "dialog/marisa|Kirisame Marisa|Black Magician", set_player, (void *)Marisa);
-	add_menu_entry(m, "dialog/youmu|Konpaku Youmu|Half Ghost Girl", set_player, (void *)Youmu);
-}
-
 void create_shottype_menu(MenuData *m) {
 	create_menu(m);
 	
@@ -31,9 +24,22 @@ void create_shottype_menu(MenuData *m) {
 	add_menu_entry(m, "Star Sign|Haunting Sign", set_shotmode, (void *) YoumuHoming);
 }
 
-void draw_char_menu(MenuData *menu, MenuData *mod) {
+void create_char_menu(MenuData *m) {
+	create_menu(m);
+	
+	m->flags = MF_Abortable | MF_Transient;
+	m->context = malloc(sizeof(MenuData));
+	create_shottype_menu(m->context);
+	
+	add_menu_entry(m, "dialog/marisa|Kirisame Marisa|Black Magician", set_player, (void *)Marisa);
+	add_menu_entry(m, "dialog/youmu|Konpaku Youmu|Half Ghost Girl", set_player, (void *)Youmu);
+}
+
+void draw_char_menu(MenuData *menu) {
+	MenuData *mod = ((MenuData *)menu->context);
+	
 	draw_options_menu_bg(menu);
-	draw_text(AL_Right, 220*(1-menu->fade), 30, "Player Select", _fonts.mainmenu);
+	draw_text(AL_Right, 220*(1-menu_fade(menu)), 30, "Player Select", _fonts.mainmenu);
 	
 	glPushMatrix();
 	glColor4f(0,0,0,0.7);
@@ -115,12 +121,12 @@ void draw_char_menu(MenuData *menu, MenuData *mod) {
 	}
 	
 	glColor3f(1,1,1);
-	
-	fade_out(menu->fade);
 }
 
-void char_menu_input(MenuData *menu, MenuData *mod) {
+void char_menu_input(MenuData *menu) {
 	SDL_Event event;
+	
+	MenuData *mod = menu->context;
 	
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;
@@ -137,40 +143,24 @@ void char_menu_input(MenuData *menu, MenuData *mod) {
 			} else if(sym == tconfig.intval[KEY_UP] || sym == SDLK_UP) {
 				mod->cursor--;
 			} else if((sym == tconfig.intval[KEY_SHOT] || (sym == SDLK_RETURN && !keys[SDLK_LALT] && !keys[SDLK_RALT])) && menu->entries[menu->cursor].action) {
-				menu->quit = 1;
+				close_menu(menu);
 				menu->selected = menu->cursor;
-				mod->quit = 1;
+				close_menu(mod);
 				mod->selected = mod->cursor;
-				mod->fade = 1;
-			} else if(sym == SDLK_ESCAPE && menu->type == MT_Transient) {
-				menu->quit = 1;
+			} else if(sym == SDLK_ESCAPE) {
+				close_menu(menu);
 			}
 			
 			menu->cursor = (menu->cursor % menu->ecount) + menu->ecount*(menu->cursor < 0);
 			mod->cursor = (mod->cursor % mod->ecount) + mod->ecount*(mod->cursor < 0);
-		} else if(event.type == SDL_QUIT) {
-			exit(1);
 		}
 	}
 }
 
+void free_char_menu(MenuData *menu) {
+	free(menu->context);
+}
+
 int char_menu_loop(MenuData *menu) {
-	set_ortho();
-	
-	MenuData mod;
-	create_shottype_menu(&mod);
-	
-	while(menu->quit != 2) {
-		menu_logic(menu);
-		menu_logic(&mod);
-		char_menu_input(menu, &mod);
-		
-		draw_char_menu(menu, &mod);
-		SDL_GL_SwapBuffers();
-		frame_rate(&menu->lasttime);
-	}
-	destroy_menu(menu);
-	
-	
-	return menu->selected;
+	return menu_loop(menu, char_menu_input, draw_char_menu, free_char_menu);
 }
