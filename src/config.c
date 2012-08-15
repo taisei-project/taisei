@@ -37,6 +37,22 @@ ConfigEntry configdefs[] = {
 	{CFGT_INT,					VID_HEIGHT,				"vid_height"},
 	{CFGT_STRING,				PLAYERNAME,				"playername"},
 	
+	{CFGT_INT,					GAMEPAD_ENABLED,		"gamepad_enabled"},
+	{CFGT_INT,					GAMEPAD_DEVICE,			"gamepad_device"},
+	
+	// gamepad controls
+	{CFGT_INT,					GP_UP,					"gamepad_key_up"},
+	{CFGT_INT,					GP_DOWN,				"gamepad_key_down"},
+	{CFGT_INT,					GP_LEFT,				"gamepad_key_left"},
+	{CFGT_INT,					GP_RIGHT,				"gamepad_key_right"},
+	
+	{CFGT_INT,					GP_FOCUS,				"gamepad_key_focus"},
+	{CFGT_INT,					GP_SHOT,				"gamepad_key_shot"},
+	{CFGT_INT,					GP_BOMB,				"gamepad_key_bomb"},
+	
+	{CFGT_INT,					GP_SKIP,				"gamepad_key_skip"},
+	{CFGT_INT,					GP_PAUSE,				"gamepad_key_pause"},
+	
 	{0, 0, 0}
 };
 
@@ -78,6 +94,9 @@ void config_preset(void) {
 	char *name = "Player";
 	tconfig.strval[PLAYERNAME] = malloc(strlen(name)+1);
 	strcpy(tconfig.strval[PLAYERNAME], name);
+	
+	int o; for(o = CONFIG_GPKEY_FIRST; o <= CONFIG_GPKEY_LAST; ++o)
+		tconfig.intval[o] = -1;
 }
 
 int config_sym2key(int sym) {
@@ -86,6 +105,41 @@ int config_sym2key(int sym) {
 		if(sym == tconfig.intval[i])
 			return i;
 	return -1;
+}
+
+int config_button2gpkey(int btn) {
+	int i;
+	for(i = CONFIG_GPKEY_FIRST; i <= CONFIG_GPKEY_LAST; ++i)
+		if(btn == tconfig.intval[i])
+			return i;
+	return -1;
+}
+
+/*
+ *	The following function is no less ugly than it's name...
+ *	The reason for this crap: config_button2gpkey maps the button ID to the first gamepad control option that's bound to the value of the button, similar to config_sym2key.
+ *	However, we need that in the KEY_* format to use in stuff like player and replay events.
+ *	So we have to transform them, somehow.
+ *	Since I don't think relying on the enum's layout is a better idea, here comes a dumb switch.
+ */
+ 
+int config_gpkey2key(int gpkey) {
+	switch(gpkey) {
+		case GP_UP		:	return KEY_UP		;break;
+		case GP_DOWN	:	return KEY_DOWN		;break;
+		case GP_LEFT	:	return KEY_LEFT		;break;
+		case GP_RIGHT	:	return KEY_RIGHT	;break;
+		case GP_SHOT	:	return KEY_SHOT		;break;
+		case GP_FOCUS	:	return KEY_FOCUS	;break;
+		case GP_BOMB	:	return KEY_BOMB		;break;
+		case GP_SKIP	:	return KEY_SKIP		;break;
+	}
+	
+	return -1;
+}
+
+int config_button2key(int btn) {
+	return config_gpkey2key(config_button2gpkey(btn));
 }
 
 FILE* config_open(char *filename, char *mode) {

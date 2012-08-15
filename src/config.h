@@ -21,6 +21,7 @@ extern Config tconfig;
 /*
  * <Akari> IMPORTANT: When adding new controls, ALWAYS add them RIGHT AFTER the last KEY_* constant.
  * Not doing so will likely break replays! And don't forget to update CONFIG_KEY_LAST below.
+ * Same goes for GP_*.
  */
 
 typedef enum ConfigKey {
@@ -49,7 +50,22 @@ typedef enum ConfigKey {
 	VID_WIDTH,
 	VID_HEIGHT,
 	
-	PLAYERNAME
+	PLAYERNAME,
+	
+	GAMEPAD_ENABLED,
+	GAMEPAD_DEVICE,
+	
+	// gamepad controls
+	// The UDLR ones should work without adjusting - but you can assign custom buttons to them if you really need to
+	GP_UP,
+	GP_DOWN,
+	GP_LEFT,
+	GP_RIGHT,
+	GP_FOCUS,
+	GP_SHOT,
+	GP_BOMB,
+	GP_SKIP,
+	GP_PAUSE
 } ConfigKey;
 
 typedef enum ConfigKeyType {
@@ -69,9 +85,17 @@ Config tconfig;
 
 #define CONFIG_KEY_FIRST KEY_UP
 #define CONFIG_KEY_LAST KEY_SKIP
+
+#define CONFIG_GPKEY_FIRST GP_UP
+#define CONFIG_GPKEY_LAST GP_PAUSE
+
 #define CONFIG_LOAD_BUFSIZE 256
 
 int config_sym2key(int sym);
+int config_button2gpkey(int btn);
+int config_gpkey2key(int btn);
+int config_button2key(int btn);
+
 void config_preset(void);
 void config_load(char *filename);
 void config_save(char *filename);

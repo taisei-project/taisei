@@ -43,5 +43,7 @@ typedef enum {
 
 typedef void(*EventHandler)(EventType, int, void*);
 void handle_events(EventHandler handler, EventFlags flags, void *arg);
+void event_keydown(int sym, EventHandler handler, EventFlags flags, void *arg);
+void event_keyup(int sym, EventHandler handler, EventFlags flags, void *arg);
 
 #endif

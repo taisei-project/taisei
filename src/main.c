@@ -15,6 +15,7 @@
 #include "menu/mainmenu.h"
 #include "paths/native.h"
 #include "taiseigl.h"
+#include "gamepad.h"
 
 void init_gl(void) {
 	load_gl_functions();
@@ -39,8 +40,9 @@ void taisei_shutdown(void) {
 	printf("\nshutdown:\n");
 	
 	free_resources();
-	
 	video_shutdown();
+	gamepad_shutdown();
+	
 	SDL_Quit();
 	printf("-- Good Bye.\n");
 }
@@ -82,6 +84,7 @@ int main(int argc, char** argv) {
 	}
 	
 	init_global();
+	gamepad_init();
 	printf("initialization complete.\n");
 	
 	atexit(taisei_shutdown);

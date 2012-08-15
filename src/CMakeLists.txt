@@ -14,6 +14,7 @@ set(SRCs
 	taiseigl.c
 	random.c
 	config.c
+	gamepad.c
 	stage.c
 	replay.c
 	global.c

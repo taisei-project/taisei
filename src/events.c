@@ -11,6 +11,7 @@
 #include "config.h"
 #include "global.h"
 #include "video.h"
+#include "gamepad.h"
 
 void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 	SDL_Event event;
@@ -97,6 +98,10 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 			
 			case SDL_QUIT:
 				exit(0);
+				break;
+			
+			default:
+				gamepad_event(&event, handler, flags, arg);
 				break;
 		}
 	}

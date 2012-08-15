@@ -68,8 +68,9 @@ void stage_input_event(EventType type, int key, void *arg) {
 				player_event(&global.plr, EV_PRESS, key);
 				replay_event(&global.replay, EV_PRESS, key);
 				
-				if(key == KEY_SKIP && global.dialog)
+				if(key == KEY_SKIP && global.dialog) {
 					global.dialog->skip = True;
+				}
 			}
 			break;
 		
@@ -130,7 +131,8 @@ void stage_input(void) {
 	handle_events(stage_input_event, EF_Game, NULL);
 	
 	// workaround
-	if(global.dialog && global.dialog->skip) {
+	// TODO: FIX THIS FOR GAMEPAD SOMEHOW
+	if(global.dialog && global.dialog->skip && !tconfig.intval[GAMEPAD_ENABLED]) {
 		Uint8 *keys = SDL_GetKeyState(NULL);
 			
 		if(!keys[tconfig.intval[KEY_SKIP]]) {
