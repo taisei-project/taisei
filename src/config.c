@@ -39,6 +39,9 @@ ConfigEntry configdefs[] = {
 	
 	{CFGT_INT,					GAMEPAD_ENABLED,		"gamepad_enabled"},
 	{CFGT_INT,					GAMEPAD_DEVICE,			"gamepad_device"},
+	{CFGT_INT,					GAMEPAD_AXIS_UD,		"gamepad_axis_ud"},
+	{CFGT_INT,					GAMEPAD_AXIS_LR,		"gamepad_axis_lr"},
+	{CFGT_INT,					GAMEPAD_AXIS_THRESHOLD,	"gamepad_axis_threshold"},
 	
 	// gamepad controls
 	{CFGT_INT,					GP_UP,					"gamepad_key_up"},
@@ -97,6 +100,10 @@ void config_preset(void) {
 	
 	int o; for(o = CONFIG_GPKEY_FIRST; o <= CONFIG_GPKEY_LAST; ++o)
 		tconfig.intval[o] = -1;
+	
+	tconfig.intval[GAMEPAD_AXIS_LR] = 0;
+	tconfig.intval[GAMEPAD_AXIS_UD] = 1;
+	tconfig.intval[GAMEPAD_AXIS_THRESHOLD] = 1000;
 }
 
 int config_sym2key(int sym) {

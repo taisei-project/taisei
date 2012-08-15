@@ -54,6 +54,9 @@ typedef enum ConfigKey {
 	
 	GAMEPAD_ENABLED,
 	GAMEPAD_DEVICE,
+	GAMEPAD_AXIS_UD,
+	GAMEPAD_AXIS_LR,
+	GAMEPAD_AXIS_THRESHOLD,
 	
 	// gamepad controls
 	// The UDLR ones should work without adjusting - but you can assign custom buttons to them if you really need to

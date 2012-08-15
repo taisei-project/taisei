@@ -17,9 +17,6 @@ void gamepad_restart(void);
 void gamepad_event(SDL_Event*, EventHandler, EventFlags, void*);
 
 enum {
-	AXIS_LR,
-	AXIS_UD,
-	
 	AXISVAL_LEFT  = -1,
 	AXISVAL_RIGHT =  1,
 	
@@ -29,6 +26,7 @@ enum {
 	AXISVAL_NULL  = 0
 };
 
+#define GAMEPAD_AXES 16
 #define AXISVAL(x) ((x > 0) - (x < 0))
 
 #endif

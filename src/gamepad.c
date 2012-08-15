@@ -15,9 +15,8 @@
 static struct {
 	int initialized;
 	SDL_Joystick *device;
-	int axis[2];
+	int axis[GAMEPAD_AXES];
 } gamepad;
-
 
 void gamepad_init(void) {
 	memset(&gamepad, 0, sizeof(gamepad));
@@ -67,34 +66,57 @@ void gamepad_restart(void) {
 }
 
 int gamepad_axis2gamekey(int id, int val) {
-	return id == AXIS_LR? (val == AXISVAL_LEFT ? KEY_LEFT     : KEY_RIGHT)
-						: (val == AXISVAL_UP   ? KEY_UP       : KEY_DOWN);
+	if(id == tconfig.intval[GAMEPAD_AXIS_LR])
+		return val == AXISVAL_LEFT ? KEY_LEFT : KEY_RIGHT;
+	
+	if(id == tconfig.intval[GAMEPAD_AXIS_UD])
+		return val == AXISVAL_UP   ? KEY_UP   : KEY_DOWN;
+	
+	return -1;
 }
 
 int gamepad_axis2menuevt(int id, int val) {
-	return id == AXIS_LR? (val == AXISVAL_LEFT ? E_CursorLeft : E_CursorRight)
-						: (val == AXISVAL_UP   ? E_CursorUp   : E_CursorDown);
+	if(id == tconfig.intval[GAMEPAD_AXIS_LR])
+		return val == AXISVAL_LEFT ? E_CursorLeft : E_CursorRight;
+	
+	if(id == tconfig.intval[GAMEPAD_AXIS_UD])
+		return val == AXISVAL_UP   ? E_CursorUp   : E_CursorDown;
+	
+	return -1;
 }
 
 void gamepad_axis(int id, int val, EventHandler handler, EventFlags flags, void *arg) {
 	int *a = gamepad.axis;
 	
-	int menu	= flags & EF_Menu;
-	int game	= flags & EF_Game;
+	int menu = flags & EF_Menu;
+	int game = flags & EF_Game;
+	
+	if(id >= GAMEPAD_AXES) {
+		warnx("gamepad_axis(): axis %i is out of range (%i axes supported)", id, GAMEPAD_AXES);
+		return;
+	}
 	
 	if(val) {	// simulate press
 		if(!a[id]) {
 			a[id] = val;
 			
-			if(game)
-				handler(E_PlrKeyDown, gamepad_axis2gamekey(id, val), arg);
+			if(game) {
+				int key = gamepad_axis2gamekey(id, val);
+				if(key >= 0)
+					handler(E_PlrKeyDown, key, arg);
+			}
 			
-			if(menu)
-				handler(gamepad_axis2menuevt(id, val), 0, arg);
+			if(menu) {
+				int evt = gamepad_axis2menuevt(id, val);
+				if(evt >= 0)
+					handler(evt, 0, arg);
+			}
 		}
 	} else {	// simulate release
-		if(game)
-			handler(E_PlrKeyUp, gamepad_axis2gamekey(id, a[id]), arg);
+		if(game) {
+			int key = gamepad_axis2gamekey(id, a[id]);
+			handler(E_PlrKeyUp, key, arg);
+		}
 		a[id] = AXISVAL_NULL;
 	}
 }
@@ -137,13 +159,15 @@ void gamepad_event(SDL_Event *event, EventHandler handler, EventFlags flags, voi
 		return;
 	
 	int val;
-	int sens = 1000;
+	int sens = tconfig.intval[GAMEPAD_AXIS_THRESHOLD];
 	
 	switch(event->type) {
 		case SDL_JOYAXISMOTION:
 			val = event->jaxis.value;
-			if(val < -sens || val > sens || !val)
+			if(val < -sens || val > sens || !val) {
+				printf("Axis: %i %i\n", event->jaxis.axis, val);
 				gamepad_axis(event->jaxis.axis, AXISVAL(val), handler, flags, arg);
+			}
 		break;
 		
 		case SDL_JOYBUTTONDOWN: case SDL_JOYBUTTONUP:
