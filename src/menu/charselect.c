@@ -11,12 +11,10 @@
 
 void set_player(void *p) {
 	global.plr.cha = (Character) p;
-	printf("SHIT\n");
 }
 
 void set_shotmode(void *p) {
 	global.plr.shot = (ShotMode) p;
-	printf("FUCK\n");
 }
 
 void create_shottype_menu(MenuData *m) {
