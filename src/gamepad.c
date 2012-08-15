@@ -96,6 +96,16 @@ int gamepad_axis2gameevt(int id) {
 	return -1;
 }
 
+float gamepad_axis_sens(int id) {
+	if(id == tconfig.intval[GAMEPAD_AXIS_LR])
+		return tconfig.fltval[GAMEPAD_AXIS_LR_SENS];
+	
+	if(id == tconfig.intval[GAMEPAD_AXIS_UD])
+		return tconfig.fltval[GAMEPAD_AXIS_UD_SENS];
+	
+	return 1.0;
+}
+
 void gamepad_axis(int id, int raw, EventHandler handler, EventFlags flags, void *arg) {
 	int *a   = gamepad.axis;
 	int val  = AXISVAL(raw);
@@ -109,12 +119,12 @@ void gamepad_axis(int id, int raw, EventHandler handler, EventFlags flags, void 
 		return;
 	}
 	
-	printf("axis: %i %i %i\n", id, val, raw);
+	//printf("axis: %i %i %i\n", id, val, raw);
 	
 	if(game && free) {
 		int evt = gamepad_axis2gameevt(id);
 		if(evt >= 0)
-			handler(evt, raw, arg);
+			handler(evt, clamp(raw * gamepad_axis_sens(id), -GAMEPAD_AXIS_RANGE-1, GAMEPAD_AXIS_RANGE), arg);
 	}
 	
 	if(val) {	// simulate press
@@ -148,9 +158,9 @@ void gamepad_button(int button, int state, EventHandler handler, EventFlags flag
 	int gpkey	= config_button2gpkey(button);
 	int key		= config_gpkey2key(gpkey);
 	
-	printf("button: %i %i\n", button, state);
-	printf("gpkey: %i\n", gpkey);
-	printf("key: %i\n", key);
+	//printf("button: %i %i\n", button, state);
+	//printf("gpkey: %i\n", gpkey);
+	//printf("key: %i\n", key);
 	
 	if(gpkey < 0)
 		return;

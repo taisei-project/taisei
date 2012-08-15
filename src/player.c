@@ -308,8 +308,8 @@ int player_applymovement_gamepad(Player *plr) {
 		return False;
 	
 	complex direction = (plr->axis_lr + plr->axis_ud*I) / (double)GAMEPAD_AXIS_RANGE;
-	//if(cabs(direction))
-	//	direction /= cabs(direction);
+	if(cabs(direction) > 1)
+		direction /= cabs(direction);
 	
 	double real = creal(direction);
 	double imag = cimag(direction);

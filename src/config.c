@@ -43,6 +43,8 @@ ConfigEntry configdefs[] = {
 	{CFGT_INT,					GAMEPAD_AXIS_LR,		"gamepad_axis_lr"},
 	{CFGT_INT,					GAMEPAD_AXIS_THRESHOLD,	"gamepad_axis_threshold"},
 	{CFGT_INT,					GAMEPAD_AXIS_FREE,		"gamepad_axis_free"},
+	{CFGT_FLOAT,				GAMEPAD_AXIS_UD_SENS,	"gamepad_axis_ud_free_sensitivity"},
+	{CFGT_FLOAT,				GAMEPAD_AXIS_LR_SENS,	"gamepad_axis_lr_free_sensitivity"},
 	
 	// gamepad controls
 	{CFGT_INT,					GP_UP,					"gamepad_key_up"},
@@ -69,6 +71,7 @@ ConfigEntry* config_findentry(char *name) {
 void config_preset(void) {
 	memset(tconfig.strval, 0, sizeof(tconfig.strval));
 	memset(tconfig.intval, 0, sizeof(tconfig.intval));
+	memset(tconfig.fltval, 0, sizeof(tconfig.fltval));
 	
 	tconfig.intval[KEY_UP] = SDLK_UP;
 	tconfig.intval[KEY_DOWN] = SDLK_DOWN;
@@ -106,6 +109,9 @@ void config_preset(void) {
 	tconfig.intval[GAMEPAD_AXIS_LR] = 0;
 	tconfig.intval[GAMEPAD_AXIS_UD] = 1;
 	tconfig.intval[GAMEPAD_AXIS_THRESHOLD] = 1000;
+	
+	tconfig.fltval[GAMEPAD_AXIS_UD_SENS] = 1.0;
+	tconfig.fltval[GAMEPAD_AXIS_LR_SENS] = 1.0;
 }
 
 int config_sym2key(int sym) {
@@ -179,12 +185,20 @@ char* config_strval_p(ConfigEntry *e) {
 	return tconfig.strval[e->key];
 }
 
+float config_fltval_p(ConfigEntry *e) {
+	return tconfig.fltval[e->key];
+}
+
 int config_intval(char *key) {
 	return config_intval_p(config_findentry(key));
 }
 
 char* config_strval(char *key) {
 	return config_strval_p(config_findentry(key));
+}
+
+float config_fltval(char *key) {
+	return config_fltval_p(config_findentry(key));
 }
 
 void config_save(char *filename) {
@@ -208,6 +222,9 @@ void config_save(char *filename) {
 		case CFGT_STRING:
 			fprintf(out, "%s = %s\n", e->name, config_strval_p(e));
 			break;
+		
+		case CFGT_FLOAT:
+			fprintf(out, "%s = %f\n", e->name, config_fltval_p(e));
 	} while((++e)->name);
 	
 	fclose(out);
@@ -216,7 +233,8 @@ void config_save(char *filename) {
 
 #define SYNTAXERROR { warnx("config_load(): syntax error on line %i, aborted! [%s:%i]\n", line, __FILE__, __LINE__); goto end; }
 #define BUFFERERROR { warnx("config_load(): string exceed the limit of %i, aborted! [%s:%i]", CONFIG_LOAD_BUFSIZE, __FILE__, __LINE__); goto end; }
-#define INTOF(s) ((int)strtol(s, NULL, 10))
+#define INTOF(s)   ((int)strtol(s, NULL, 10))
+#define FLOATOF(s) ((float)strtod(s, NULL))
 
 void config_set(char *key, char *val) {
 	ConfigEntry *e = config_findentry(key);
@@ -238,10 +256,15 @@ void config_set(char *key, char *val) {
 		case CFGT_STRING:
 			stralloc(&(tconfig.strval[e->key]), val);
 			break;
+		
+		case CFGT_FLOAT:
+			tconfig.fltval[e->key] = FLOATOF(val);
+			break;
 	}
 }
 
 #undef INTOF
+#undef FLOATOF
 
 void config_load(char *filename) {
 	FILE *in = config_open(filename, "r");

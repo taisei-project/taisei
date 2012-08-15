@@ -14,6 +14,7 @@
 typedef struct Config {
 	int 	intval[64];
 	char* 	strval[64];
+	float 	fltval[64];
 } Config;
 
 extern Config tconfig;
@@ -56,6 +57,8 @@ typedef enum ConfigKey {
 	GAMEPAD_DEVICE,
 	GAMEPAD_AXIS_UD,
 	GAMEPAD_AXIS_LR,
+	GAMEPAD_AXIS_UD_SENS,
+	GAMEPAD_AXIS_LR_SENS,
 	GAMEPAD_AXIS_THRESHOLD,
 	GAMEPAD_AXIS_FREE,
 	
@@ -75,7 +78,8 @@ typedef enum ConfigKey {
 typedef enum ConfigKeyType {
 	CFGT_INT,
 	CFGT_STRING,
-	CFGT_KEYBINDING
+	CFGT_KEYBINDING,
+	CFGT_FLOAT
 } ConfigKeyType;
 
 typedef struct ConfigEntry {
@@ -109,5 +113,7 @@ int config_intval(char*);
 int config_intval_p(ConfigEntry*);
 char* config_strval(char*);
 char* config_strval_p(ConfigEntry*);
+float config_fltval(char*);
+float config_fltval_p(ConfigEntry*);
 
 #endif

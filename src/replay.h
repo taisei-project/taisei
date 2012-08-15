@@ -79,8 +79,8 @@ int replay_save(Replay *rpy, char *name);
 int replay_load(Replay *rpy, char *name);
 void replay_copy(Replay *dst, Replay *src);
 
-#define REPLAY_ALLOC_INITIAL 100
-#define REPLAY_ALLOC_ADDITIONAL 100
+#define REPLAY_ALLOC_INITIAL 1000
+#define REPLAY_ALLOC_ADDITIONAL 500
 #define REPLAY_MAGICNUMBER 1337
 #define REPLAY_EXTENSION "tsr"
 #define REPLAY_READ_MAXSTRLEN 128
