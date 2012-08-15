@@ -11,10 +11,12 @@
 
 void set_player(void *p) {
 	global.plr.cha = (Character) p;
+	printf("SHIT\n");
 }
 
 void set_shotmode(void *p) {
 	global.plr.shot = (ShotMode) p;
+	printf("FUCK\n");
 }
 
 void create_shottype_menu(MenuData *m) {
@@ -136,12 +138,16 @@ void char_menu_input_event(EventType type, int state, void *arg) {
 	else if(type == E_CursorUp)
 		mod->cursor--;
 	else if(type == E_MenuAccept) {
-		close_menu(menu);
+		mod->selected = mod->cursor;
+		close_menu(mod);
 		menu->selected = menu->cursor;
 		close_menu(menu);
-		mod->selected = mod->cursor;
+		
+		// XXX: This needs a better fix
+		set_shotmode(mod->entries[mod->selected].arg);
 	} else if(type == E_MenuAbort) {
 		close_menu(menu);
+		close_menu(mod);
 	}
 	
 	menu->cursor = (menu->cursor % menu->ecount) + menu->ecount*(menu->cursor < 0);
@@ -153,7 +159,9 @@ void char_menu_input(MenuData *menu) {
 }
 
 void free_char_menu(MenuData *menu) {
-	free(menu->context);
+	MenuData *mod = menu->context;
+	destroy_menu(mod);
+	free(mod);
 }
 
 int char_menu_loop(MenuData *menu) {
