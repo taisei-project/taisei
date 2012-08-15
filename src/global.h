@@ -152,11 +152,15 @@ int strendswith(char *s, char *e);
 char* difficulty_name(Difficulty diff);
 void stralloc(char **dest, char *src);
 
+#define SIGN(x) ((x > 0) - (x < 0))
+
 // this is used by both player and replay code
 enum {
 	EV_PRESS,
 	EV_RELEASE,
-	EV_OVER		// replay-only
+	EV_OVER, // replay-only
+	EV_AXIS_LR,
+	EV_AXIS_UD,
 };
 
 #endif

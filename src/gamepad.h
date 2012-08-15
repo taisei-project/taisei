@@ -27,6 +27,7 @@ enum {
 };
 
 #define GAMEPAD_AXES 16
-#define AXISVAL(x) ((x > 0) - (x < 0))
+#define GAMEPAD_AXIS_RANGE 32767
+#define AXISVAL SIGN
 
 #endif

@@ -291,13 +291,47 @@ void player_event(Player* plr, int type, int key) {
 			}
 			
 			break;
+		
+		case EV_AXIS_LR:
+			plr->axis_lr = key;
+			break;
+			
+		case EV_AXIS_UD:
+			plr->axis_ud = key;
+			break;
 	}
+}
+
+// free-axis movement
+int player_applymovement_gamepad(Player *plr) {
+	if(!plr->axis_lr && !plr->axis_ud)
+		return False;
+	
+	complex direction = (plr->axis_lr + plr->axis_ud*I) / (double)GAMEPAD_AXIS_RANGE;
+	//if(cabs(direction))
+	//	direction /= cabs(direction);
+	
+	double real = creal(direction);
+	double imag = cimag(direction);
+	int sr = SIGN(real);
+	int si = SIGN(imag);
+	
+	player_setmoveflag(plr, KEY_UP,		si == -1);
+	player_setmoveflag(plr, KEY_DOWN,	si ==  1);
+	player_setmoveflag(plr, KEY_LEFT,	sr == -1);
+	player_setmoveflag(plr, KEY_RIGHT,	sr ==  1);
+	
+	if(direction)
+		player_move(&global.plr, direction);
+	
+	return True;
 }
 
 void player_applymovement(Player* plr) {
 	if(plr->deathtime < -1)
 		return;
 	
+	int gamepad = player_applymovement_gamepad(plr);
 	plr->moving = False;
 	
 	int up		=	plr->moveflags & MOVEFLAG_UP,
@@ -311,7 +345,10 @@ void player_applymovement(Player* plr) {
 	} else if(right && !left) {
 		plr->moving = True;
 		plr->dir = 0;
-	}	
+	}
+	
+	if(gamepad)
+		return;
 	
 	complex direction = 0;
 	
@@ -319,7 +356,7 @@ void player_applymovement(Player* plr) {
 	if(down)	direction += 1I;
 	if(left)	direction -= 1;
 	if(right)	direction += 1;
-		
+	
 	if(cabs(direction))
 		direction /= cabs(direction);
 	

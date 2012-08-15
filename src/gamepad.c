@@ -11,6 +11,7 @@
 #include "taisei_err.h"
 #include "config.h"
 #include "events.h"
+#include "global.h"
 
 static struct {
 	int initialized;
@@ -85,8 +86,20 @@ int gamepad_axis2menuevt(int id, int val) {
 	return -1;
 }
 
-void gamepad_axis(int id, int val, EventHandler handler, EventFlags flags, void *arg) {
-	int *a = gamepad.axis;
+int gamepad_axis2gameevt(int id) {
+	if(id == tconfig.intval[GAMEPAD_AXIS_LR])
+		return E_PlrAxisLR;
+	
+	if(id == tconfig.intval[GAMEPAD_AXIS_UD])
+		return E_PlrAxisUD;
+	
+	return -1;
+}
+
+void gamepad_axis(int id, int raw, EventHandler handler, EventFlags flags, void *arg) {
+	int *a   = gamepad.axis;
+	int val  = AXISVAL(raw);
+	int free = tconfig.intval[GAMEPAD_AXIS_FREE];
 	
 	int menu = flags & EF_Menu;
 	int game = flags & EF_Game;
@@ -96,11 +109,19 @@ void gamepad_axis(int id, int val, EventHandler handler, EventFlags flags, void 
 		return;
 	}
 	
+	printf("axis: %i %i %i\n", id, val, raw);
+	
+	if(game && free) {
+		int evt = gamepad_axis2gameevt(id);
+		if(evt >= 0)
+			handler(evt, raw, arg);
+	}
+	
 	if(val) {	// simulate press
 		if(!a[id]) {
 			a[id] = val;
 			
-			if(game) {
+			if(game && !free) {
 				int key = gamepad_axis2gamekey(id, val);
 				if(key >= 0)
 					handler(E_PlrKeyDown, key, arg);
@@ -164,10 +185,8 @@ void gamepad_event(SDL_Event *event, EventHandler handler, EventFlags flags, voi
 	switch(event->type) {
 		case SDL_JOYAXISMOTION:
 			val = event->jaxis.value;
-			if(val < -sens || val > sens || !val) {
-				printf("Axis: %i %i\n", event->jaxis.axis, val);
-				gamepad_axis(event->jaxis.axis, AXISVAL(val), handler, flags, arg);
-			}
+			if(val < -sens || val > sens || !val)
+				gamepad_axis(event->jaxis.axis, val, handler, flags, arg);
 		break;
 		
 		case SDL_JOYBUTTONDOWN: case SDL_JOYBUTTONUP:

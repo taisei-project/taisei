@@ -10,7 +10,7 @@
 
 #include <complex.h>
 #include "enemy.h"
-
+#include "gamepad.h"
 #include "resource/animation.h"
 
 enum {
@@ -65,6 +65,9 @@ typedef struct {
 	int movetime;
 	int prevmove;
 	int prevmovetime;
+	
+	int axis_ud;
+	int axis_lr;
 } Player;
 
 void init_player(Player*);

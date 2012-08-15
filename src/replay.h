@@ -15,7 +15,7 @@
 typedef struct ReplayEvent {
 	int frame;
 	char type;
-	char key;
+	short key;
 } ReplayEvent;
 
 typedef struct ReplayStage {

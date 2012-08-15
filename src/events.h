@@ -38,6 +38,8 @@ typedef enum {
 	// EF_Game
 	E_PlrKeyDown,
 	E_PlrKeyUp,
+	E_PlrAxisUD,
+	E_PlrAxisLR,
 	E_Pause
 } EventType;
 

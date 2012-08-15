@@ -86,6 +86,16 @@ void stage_input_event(EventType type, int key, void *arg) {
 			stage_ingamemenu();
 			break;
 		
+		case E_PlrAxisLR:
+			player_event(&global.plr, EV_AXIS_LR, key);
+			replay_event(&global.replay, EV_AXIS_LR, key);
+			break;
+		
+		case E_PlrAxisUD:
+			player_event(&global.plr, EV_AXIS_UD, key);
+			replay_event(&global.replay, EV_AXIS_UD, key);
+			break;
+		
 		default: break;
 	}
 }
@@ -477,6 +487,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	
 	player_set_power(&global.plr, power);
 	global.plr.movetime = global.plr.prevmove = global.plr.prevmovetime = 0;
+	global.plr.axis_lr = global.plr.axis_ud = 0;
 	
 	start();
 	

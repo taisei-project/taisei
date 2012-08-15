@@ -89,7 +89,7 @@ void replay_event(Replay *rpy, int type, int key) {
 	ReplayEvent *e = &(s->events[s->ecount]);
 	e->frame = global.frames;
 	e->type = (char)type;
-	e->key = (char)key;
+	e->key = (short)key;
 	s->ecount++;
 	
 	if(s->ecount >= s->capacity) {

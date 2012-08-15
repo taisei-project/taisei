@@ -42,6 +42,7 @@ ConfigEntry configdefs[] = {
 	{CFGT_INT,					GAMEPAD_AXIS_UD,		"gamepad_axis_ud"},
 	{CFGT_INT,					GAMEPAD_AXIS_LR,		"gamepad_axis_lr"},
 	{CFGT_INT,					GAMEPAD_AXIS_THRESHOLD,	"gamepad_axis_threshold"},
+	{CFGT_INT,					GAMEPAD_AXIS_FREE,		"gamepad_axis_free"},
 	
 	// gamepad controls
 	{CFGT_INT,					GP_UP,					"gamepad_key_up"},
@@ -67,6 +68,7 @@ ConfigEntry* config_findentry(char *name) {
 
 void config_preset(void) {
 	memset(tconfig.strval, 0, sizeof(tconfig.strval));
+	memset(tconfig.intval, 0, sizeof(tconfig.intval));
 	
 	tconfig.intval[KEY_UP] = SDLK_UP;
 	tconfig.intval[KEY_DOWN] = SDLK_DOWN;
