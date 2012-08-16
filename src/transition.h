@@ -24,5 +24,6 @@ void TransFadeWhite(Transition *t);
 
 void set_transition(TransitionRule rule, int dur1, int dur2);
 void draw_transition(void);
+int transition_isset(void);
 
 #endif
