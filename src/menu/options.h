@@ -24,14 +24,19 @@ typedef enum BindingType {
 	BT_IntValue,
 	BT_KeyBinding,
 	BT_StrValue,
-	BT_Resolution
+	BT_Resolution,
+	BT_Scale
 } BindingType;
 
 typedef struct OptionBinding {
 	char **values;
+	int displaysingle;
 	int valcount;
 	int valrange_min;
 	int valrange_max;
+	float scale_min;
+	float scale_max;
+	float scale_step;
 	BindingGetter getter;
 	BindingSetter setter;
 	BindingDependence dependence;

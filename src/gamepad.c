@@ -25,12 +25,15 @@ void gamepad_init(void) {
 	if(!config_intval("gamepad_enabled"))
 		return;
 	
+	if(gamepad.initialized)
+		return;
+	
 	if(SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
 		warnx("gamepad_init(): couldn't initialize SDL joystick subsystem: %s", SDL_GetError());
 		return;
 	}
 	
-	int i, cnt = SDL_NumJoysticks();
+	int i, cnt = gamepad_devicecount();
 	printf("gamepad_init: found %i devices\n", cnt);
 	for(i = 0; i < cnt; ++i)
 		printf("%i: %s\n", i, SDL_JoystickName(i));
@@ -44,11 +47,12 @@ void gamepad_init(void) {
 	
 	gamepad.device = SDL_JoystickOpen(dev);
 	if(!gamepad.device) {
-		warnx("gamepad_init(): failed to open device %i [%s]", dev, SDL_JoystickName(dev));
+		warnx("gamepad_init(): failed to open device %i [%s]", dev, gamepad_devicename(dev));
 		gamepad_shutdown();
 		return;
 	}
 	
+	printf("gamepad_init(): using device #%i: %s\n", dev, gamepad_devicename(dev));
 	SDL_JoystickEventState(SDL_ENABLE);
 	gamepad.initialized = 1;
 }
@@ -203,4 +207,29 @@ void gamepad_event(SDL_Event *event, EventHandler handler, EventFlags flags, voi
 			gamepad_button(event->jbutton.button, event->jbutton.state, handler, flags, arg);
 		break;
 	}
+}
+
+int gamepad_devicecount(void) {
+	return SDL_NumJoysticks();
+}
+
+char* gamepad_devicename(int id) {
+	return (char*)SDL_JoystickName(id);
+}
+
+void gamepad_init_bare(void) {
+	if(gamepad.initialized)
+		return;
+	
+	if(SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
+		warnx("gamepad_init(): couldn't initialize SDL joystick subsystem: %s", SDL_GetError());
+		return;
+	}
+	
+	gamepad.initialized = 2;
+}
+
+void gamepad_shutdown_bare(void) {
+	if(gamepad.initialized == 2)
+		gamepad_shutdown();
 }
