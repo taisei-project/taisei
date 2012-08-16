@@ -63,6 +63,7 @@ void gamepad_shutdown(void) {
 	SDL_JoystickEventState(SDL_IGNORE);
 	SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
 	gamepad.initialized = 0;
+	printf("gamepad_shutdown()\n");
 }
 
 void gamepad_restart(void) {

@@ -379,6 +379,10 @@ void bind_setvaluerange_fancy(OptionBinding *b, int ma) {
 	}
 }
 
+int gamepad_sens_depencence(void) {
+	return tconfig.intval[GAMEPAD_AXIS_FREE];
+}
+
 void options_sub_gamepad(void *arg) {
 	MenuData menu, *m;
 	OptionBinding *b;
@@ -407,11 +411,6 @@ void options_sub_gamepad(void *arg) {
 	
 	add_menu_separator(m);
 	
-	add_menu_entry(m, "Axis mode", do_nothing, 
-		b = bind_option(GAMEPAD_AXIS_FREE, bind_common_onoffget, bind_common_onoffset)
-	);	bind_addvalue(b, "free");
-		bind_addvalue(b, "restricted");
-	
 	add_menu_entry(m, "The UD axis", do_nothing,
 		b = bind_option(GAMEPAD_AXIS_UD, bind_common_intget, bind_common_intset)
 	);	bind_setvaluerange_fancy(b, GAMEPAD_AXES-1);
@@ -420,13 +419,18 @@ void options_sub_gamepad(void *arg) {
 		b = bind_option(GAMEPAD_AXIS_LR, bind_common_intget, bind_common_intset)
 	);	bind_setvaluerange_fancy(b, GAMEPAD_AXES-1);
 	
+	add_menu_entry(m, "Axis mode", do_nothing, 
+		b = bind_option(GAMEPAD_AXIS_FREE, bind_common_onoffget, bind_common_onoffset)
+	);	bind_addvalue(b, "free");
+		bind_addvalue(b, "restricted");
+		
 	add_menu_entry(m, "UD axis sensitivity", do_nothing,
 		b = bind_scale(GAMEPAD_AXIS_UD_SENS, -3, 3, 0.05)
-	);
+	); bind_setdependence(b, gamepad_sens_depencence);
 	
 	add_menu_entry(m, "LR axis sensitivity", do_nothing,
 		b = bind_scale(GAMEPAD_AXIS_LR_SENS, -3, 3, 0.05)
-	);
+	);	bind_setdependence(b, gamepad_sens_depencence);
 	
 	add_menu_entry(m, "Dead zone", do_nothing,
 		b = bind_scale(GAMEPAD_AXIS_DEADZONE, 0, 1, 0.01)
@@ -674,12 +678,12 @@ void draw_options_menu(MenuData *menu) {
 					draw_text(AL_Right, -((w+cw) * 0.5 + 10), 0, tmp, _fonts.standard);
 					glPushMatrix();
 					glScalef(w+cw, h, 1);
-					glColor4f(1, 1, 1, 0.1 + 0.2 * a);
+					glColor4f(1, 1, 1, (0.1 + 0.2 * a) * alpha);
 					draw_quad();
 					glPopMatrix();
 					glTranslatef(w * (pos - 0.5), 0, 0);
 					glScalef(cw, h, 0);
-					glColor4f(0.9, 0.6, 0.2, 1);
+					glColor4f(0.9, 0.6, 0.2, alpha);
 					draw_quad();
 					glPopMatrix();
 					
