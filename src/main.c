@@ -101,13 +101,18 @@ int main(int argc, char** argv) {
 			global.diff = atoi(argv[2]);
 		}
 		
-		init_player(&global.plr);
 		StageInfo* stg = stage_get(atoi(argv[1]));
 		
 		if(stg) {
 			printf("** Entering %s.\n", stg->title);
-			stg->loop();
-			return 1;
+			
+			do {
+				global.game_over = 0;
+				init_player(&global.plr);
+				stg->loop();
+			} while(global.game_over == GAMEOVER_RESTART);
+			
+			return 0;
 		}
 		
 		printf("** Invalid stage number. Quitting stage skip mode.\n");
@@ -119,5 +124,5 @@ int main(int argc, char** argv) {
 	printf("-- menu\n");	
 	main_menu_loop(&menu);
 	
-	return 1;
+	return 0;
 }

@@ -23,7 +23,7 @@
 
 void start_story(void *arg) {
 	MenuData m;
-
+	
 	init_player(&global.plr);
 	
 troll:
@@ -37,12 +37,27 @@ troll:
 	
 	replay_init(&global.replay);
 	
+	int chr = global.plr.cha;
+	int sht = global.plr.shot;
+	
+troll2:
 	if(arg)
 		((StageInfo*)arg)->loop();
 	else {
 		int i;
 		for(i = 0; stages[i].loop; ++i)
 			stages[i].loop();
+	}
+	
+	if(global.game_over == GAMEOVER_RESTART) {
+		init_player(&global.plr);
+		replay_destroy(&global.replay);
+		replay_init(&global.replay);
+		global.game_over = 0;
+		init_player(&global.plr);
+		global.plr.cha  = chr;
+		global.plr.shot = sht;
+		goto troll2;
 	}
 	
 	if(global.replay.active) {
