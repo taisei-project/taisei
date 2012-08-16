@@ -23,7 +23,6 @@ static struct {
 	CreditsEntry *entries;
 	int ecount;
 	float panelalpha;
-	float fadeout;
 	int end;
 } credits;
 
