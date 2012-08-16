@@ -13,7 +13,8 @@ typedef enum {
 	EF_Keyboard 	= 1,
 	EF_Text			= 2,
 	EF_Menu			= 4,
-	EF_Game			= 8
+	EF_Game			= 8,
+	EF_Gamepad		= 16
 } EventFlags;
 
 typedef enum {
@@ -40,7 +41,11 @@ typedef enum {
 	E_PlrKeyUp,
 	E_PlrAxisUD,
 	E_PlrAxisLR,
-	E_Pause
+	E_Pause,
+	
+	// EF_Gamepad
+	E_GamepadKeyDown,
+	E_GamepadKeyUp
 } EventType;
 
 typedef void(*EventHandler)(EventType, int, void*);

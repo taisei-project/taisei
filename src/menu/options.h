@@ -25,7 +25,8 @@ typedef enum BindingType {
 	BT_KeyBinding,
 	BT_StrValue,
 	BT_Resolution,
-	BT_Scale
+	BT_Scale,
+	BT_GamepadKeyBinding
 } BindingType;
 
 typedef struct OptionBinding {

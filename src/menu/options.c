@@ -43,8 +43,8 @@ OptionBinding* bind_get(MenuData *m, int idx) {
 	return e->arg == m? NULL : e->arg;
 }
 
-// Binds the last entry to an integer config option having limited values (BT_IntValue type binding).
-// Values are defined with bind_addvalue.
+// BT_IntValue: integer and boolean options
+// Values are defined with bind_addvalue or bind_setrange
 OptionBinding* bind_option(int cfgentry, BindingGetter getter, BindingSetter setter) {
 	OptionBinding *bind = bind_new();
 	bind->type = BT_IntValue;
@@ -56,7 +56,7 @@ OptionBinding* bind_option(int cfgentry, BindingGetter getter, BindingSetter set
 	return bind;
 }
 
-// Binds the last entry to a keybinding config option (BT_KeyBinding type binding).
+// BT_KeyBinding: keyboard action mapping options
 OptionBinding* bind_keybinding(int cfgentry) {
 	OptionBinding *bind = bind_new();
 	
@@ -66,7 +66,17 @@ OptionBinding* bind_keybinding(int cfgentry) {
 	return bind;
 }
 
-// For string values, with a "textbox" editor
+// BT_GamepadKeyBinding: gamepad action mapping options
+OptionBinding* bind_gpbinding(int cfgentry) {
+	OptionBinding *bind = bind_new();
+	
+	bind->configentry = cfgentry;
+	bind->type = BT_GamepadKeyBinding;
+	
+	return bind;
+}
+
+// BT_StrValue: with a half-assed "textbox"
 OptionBinding* bind_stroption(int cfgentry) {
 	OptionBinding *bind = bind_new();
 	bind->type = BT_StrValue;
@@ -80,7 +90,7 @@ OptionBinding* bind_stroption(int cfgentry) {
 	return bind;
 }
 
-// Super-special binding type for the resolution setting
+// BT_Resolution: super-special binding type for the resolution setting
 OptionBinding* bind_resolution(void) {
 	OptionBinding *bind = bind_new();
 	bind->type = BT_Resolution;
@@ -98,7 +108,7 @@ OptionBinding* bind_resolution(void) {
 	return bind;
 }
 
-// Float values clamped to a range
+// BT_Scale: float values clamped to a range
 OptionBinding* bind_scale(int cfgentry, float smin, float smax, float step) {
 	OptionBinding *bind = bind_new();
 	bind->type = BT_Scale;
@@ -383,6 +393,60 @@ int gamepad_sens_depencence(void) {
 	return tconfig.intval[GAMEPAD_AXIS_FREE];
 }
 
+void options_sub_gamepad_controls(void *arg) {
+	MenuData menu, *m;
+	m = &menu;
+	
+	create_options_sub(m, "Gamepad Controls");
+	
+	add_menu_entry(m, "Fire / Accept", do_nothing, 
+		bind_gpbinding(GP_SHOT)
+	);
+		
+	add_menu_entry(m, "Focus / Abort", do_nothing, 
+		bind_gpbinding(GP_FOCUS)
+	);
+	
+	add_menu_entry(m, "Bomb", do_nothing, 
+		bind_gpbinding(GP_BOMB)
+	);
+	
+	add_menu_separator(m);
+	
+	add_menu_entry(m, "Pause", do_nothing, 
+		bind_gpbinding(GP_PAUSE)
+	);
+	
+	add_menu_entry(m, "Skip dialog", do_nothing, 
+		bind_gpbinding(GP_SKIP)
+	);
+	
+	add_menu_separator(m);
+	
+	add_menu_entry(m, "Move up", do_nothing, 
+		bind_gpbinding(GP_UP)
+	);
+	
+	add_menu_entry(m, "Move down", do_nothing, 
+		bind_gpbinding(GP_DOWN)
+	);
+	
+	add_menu_entry(m, "Move left", do_nothing, 
+		bind_gpbinding(GP_LEFT)
+	);
+	
+	add_menu_entry(m, "Move right", do_nothing, 
+		bind_gpbinding(GP_RIGHT)
+	);
+	
+	add_menu_separator(m);
+	add_menu_entry(m, "Back", (MenuAction)kill_menu, m);
+	
+	options_menu_loop(m);
+	((MenuData*)arg)->frames = 0;
+	gamepad_restart();
+}
+
 void options_sub_gamepad(void *arg) {
 	MenuData menu, *m;
 	OptionBinding *b;
@@ -397,6 +461,8 @@ void options_sub_gamepad(void *arg) {
 	add_menu_entry(m, "Device", do_nothing, 
 		b = bind_option(GAMEPAD_DEVICE, bind_common_intget, bind_common_intset)
 	); b->displaysingle = True;
+	
+	add_menu_entry(m, "Customize controls...", options_sub_gamepad_controls, m);
 	
 	gamepad_init_bare();
 	int cnt = gamepad_devicecount();
@@ -423,7 +489,7 @@ void options_sub_gamepad(void *arg) {
 		b = bind_option(GAMEPAD_AXIS_FREE, bind_common_onoffget, bind_common_onoffset)
 	);	bind_addvalue(b, "free");
 		bind_addvalue(b, "restricted");
-		
+	
 	add_menu_entry(m, "UD axis sensitivity", do_nothing,
 		b = bind_scale(GAMEPAD_AXIS_UD_SENS, -3, 3, 0.05)
 	); bind_setdependence(b, gamepad_sens_depencence);
@@ -479,7 +545,7 @@ void options_sub_controls(void *arg) {
 	add_menu_entry(m, "Bomb", do_nothing, 
 		bind_keybinding(KEY_BOMB)
 	);
-		
+	
 	add_menu_separator(m);
 
 #ifndef WIN32	// TODO: remove when we're on SDL2
@@ -532,7 +598,7 @@ void create_options_menu(MenuData *m) {
 	add_menu_separator(m);
 	add_menu_entry(m, "Video options...", options_sub_video, m);
 	add_menu_entry(m, "Customize controls...", options_sub_controls, m);
-	add_menu_entry(m, "Gamepad options...", options_sub_gamepad, m);
+	add_menu_entry(m, "Gamepad & Joystick options...", options_sub_gamepad, m);
 	add_menu_separator(m);
 	
 	add_menu_entry(m, "Back", (MenuAction)kill_menu, m);
@@ -629,6 +695,19 @@ void draw_options_menu(MenuData *menu) {
 					break;
 				}
 				
+				case BT_GamepadKeyBinding: {
+					if(bind->blockinput) {
+						glColor4f(0.5, 1, 0.5, 1);
+						draw_text(AL_Right, origin, 20*i, "Press a button to assign, ESC to cancel", _fonts.standard);
+					} else if(tconfig.intval[bind->configentry] >= 0) {
+						char tmp[32];
+						snprintf(tmp, 32, "Button %i", tconfig.intval[bind->configentry] + 1);
+						draw_text(AL_Right, origin, 20*i, tmp, _fonts.standard);
+					} else
+						draw_text(AL_Right, origin, 20*i, "Unbound", _fonts.standard);
+					break;
+				}
+				
 				case BT_StrValue: {
 					if(bind->blockinput) {
 						glColor4f(0.5, 1, 0.5, 1.0);
@@ -706,36 +785,54 @@ void bind_input_event(EventType type, int state, void *arg) {
 	char *dest = b->type == BT_StrValue? *b->values : NULL;
 	
 	switch(type) {
-		case E_KeyDown:
-			if(sym != SDLK_ESCAPE)
+		case E_KeyDown: {
+			int esc = sym == SDLK_ESCAPE;
+			if(b->type == BT_GamepadKeyBinding) {
+				if(esc)
+					b->blockinput = False;
+				break;
+			}
+			
+			if(!esc)
 				tconfig.intval[b->configentry] = sym;
 			b->blockinput = False;
-		break;
+			break;
+		}
 		
-		case E_CharTyped:
+		case E_GamepadKeyDown: {
+			tconfig.intval[b->configentry] = sym;
+			b->blockinput = False;
+			break;
+		}
+		
+		case E_CharTyped: {
 			if(c != ':') {
 				char s[] = {c, 0};
 				strncat(dest, s, 128);
 			}
-		break;
+			break;
+		}
 		
-		case E_CharErased:
+		case E_CharErased: {
 			if(strlen(dest))
 				dest[strlen(dest)-1] = 0;
-		break;
+			break;
+		}
 		
-		case E_SubmitText:
+		case E_SubmitText: {
 			if(strlen(dest))
 				stralloc(&(tconfig.strval[b->configentry]), dest);
 			else
 				strncpy(dest, tconfig.strval[b->configentry], 128);
 			b->blockinput = False;
-		break;
+			break;
+		}
 		
-		case E_CancelText:
+		case E_CancelText: {
 			strncpy(dest, tconfig.strval[b->configentry], 128);
 			b->blockinput = False;
-		break;
+			break;
+		}
 		
 		default: break;
 	}
@@ -789,7 +886,7 @@ static void options_input_event(EventType type, int state, void *arg) {
 			menu->selected = menu->cursor;
 			
 			if(bind) switch(bind->type) {
-				case BT_KeyBinding:
+				case BT_KeyBinding: case BT_GamepadKeyBinding:
 					bind->blockinput = True; 
 					break;
 					
@@ -818,9 +915,18 @@ static void options_input_event(EventType type, int state, void *arg) {
 void options_menu_input(MenuData *menu) {
 	OptionBinding *b;
 	
-	if((b = bind_getinputblocking(menu)) != NULL)
-		handle_events(bind_input_event, b->type == BT_StrValue? EF_Text : EF_Keyboard, b);
-	else
+	if((b = bind_getinputblocking(menu)) != NULL) {
+		int flags = 0;
+		
+		switch(b->type) {
+			case BT_StrValue:			flags = EF_Text;					break;
+			case BT_KeyBinding:			flags = EF_Keyboard;				break;
+			case BT_GamepadKeyBinding:	flags = EF_Gamepad | EF_Keyboard;	break;
+			default: break;
+		}
+		
+		handle_events(bind_input_event, flags, b);
+	} else
 		handle_events(options_input_event, EF_Menu, menu);
 }
 

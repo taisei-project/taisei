@@ -160,15 +160,14 @@ void gamepad_axis(int id, int raw, EventHandler handler, EventFlags flags, void 
 void gamepad_button(int button, int state, EventHandler handler, EventFlags flags, void *arg) {
 	int menu	= flags & EF_Menu;
 	int game	= flags & EF_Game;
+	int gpad	= flags & EF_Gamepad;
+	
 	int gpkey	= config_button2gpkey(button);
 	int key		= config_gpkey2key(gpkey);
 	
 	//printf("button: %i %i\n", button, state);
 	//printf("gpkey: %i\n", gpkey);
 	//printf("key: %i\n", key);
-	
-	if(gpkey < 0)
-		return;
 	
 	if(state == SDL_PRESSED) {
 		if(game) {
@@ -187,7 +186,16 @@ void gamepad_button(int button, int state, EventHandler handler, EventFlags flag
 			case KEY_FOCUS:		handler(E_MenuAbort,   0, arg);		break;
 			case KEY_SHOT:		handler(E_MenuAccept,  0, arg);		break;
 		}
-	} else if(game && key >= 0) handler(E_PlrKeyUp, key, arg);
+		
+		if(gpad)
+			handler(E_GamepadKeyDown, button, arg);
+	} else {
+		if(game && key >= 0)
+			handler(E_PlrKeyUp, key, arg);
+		
+		if(gpad)
+			handler(E_GamepadKeyUp, button, arg);
+	}
 }
 
 void gamepad_event(SDL_Event *event, EventHandler handler, EventFlags flags, void *arg) {
