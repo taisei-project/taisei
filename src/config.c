@@ -117,6 +117,12 @@ void config_preset(void) {
 	
 	tconfig.fltval[GAMEPAD_AXIS_UD_SENS] = 1.0;
 	tconfig.fltval[GAMEPAD_AXIS_LR_SENS] = 1.0;
+	
+	tconfig.intval[GP_FOCUS] = 0;
+	tconfig.intval[GP_SHOT]  = 1;
+	tconfig.intval[GP_BOMB]  = 2;
+	tconfig.intval[GP_SKIP]  = 3;
+	tconfig.intval[GP_PAUSE] = 4;
 }
 
 int config_sym2key(int sym) {
