@@ -16,12 +16,17 @@ void return_to_game(void *arg) {
 void return_to_title(void *arg) {
 	global.game_over = GAMEOVER_ABORT;
 }
-	
+
+void restart_game(void *arg) {
+	global.game_over = GAMEOVER_RESTART;
+}
+
 void create_ingame_menu(MenuData *m) {
 	create_menu(m);
 	m->flags = MF_Abortable | MF_Transient;
 	m->transition = NULL;
 	add_menu_entry(m, "Return to Game", return_to_game, NULL);
+	add_menu_entry(m, "Restart the Game", restart_game, NULL)->transition = TransFadeBlack;
 	add_menu_entry(m, "Return to Title", return_to_title, NULL)->transition = TransFadeBlack;
 }
 
