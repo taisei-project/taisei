@@ -20,8 +20,8 @@ float trans_fade(Transition *t) {
 
 void TransFadeBlack(Transition *t) {
 	fade_out(trans_fade(t));
-}
-
+}	
+	
 void TransFadeWhite(Transition *t) {
 	colorfill(1,1,1,trans_fade(t));
 }
@@ -47,7 +47,5 @@ void draw_transition(void) {
 	if(transition.frames > transition.dur1 + transition.dur2)
 		memset(&transition, 0, sizeof(Transition));
 }
-
-int transition_isset(void) {
-	return !!transition.rule;
-}
+	
+		
