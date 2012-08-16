@@ -86,6 +86,10 @@ if(WERROR)
 	add_definitions(-Werror)
 endif()
 
+if(FATALERRS)
+	add_definitions(-Wfatal-errors)
+endif()
+
 set(LIBs ${LIBs}
 	${SDL_LIBRARY}
 	${PNG_LIBRARY}
