@@ -37,8 +37,6 @@ typedef struct OptionBinding {
 	BindingDependence dependence;
 	int selected;
 	int configentry;
-	int enabled;
-	char *optname;
 	BindingType type;
 	int blockinput;
 } OptionBinding;

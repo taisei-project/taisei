@@ -46,6 +46,12 @@ ConfigEntry* config_findentry(char *name) {
 	return NULL;
 }
 
+ConfigEntry* config_findentry_byid(int id) {
+	ConfigEntry *e = configdefs;
+	do if(id == e->key) return e; while((++e)->name);
+	return NULL;
+}
+
 void config_preset(void) {
 	memset(tconfig.strval, 0, sizeof(tconfig.strval));
 	

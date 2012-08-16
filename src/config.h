@@ -76,6 +76,7 @@ void config_preset(void);
 void config_load(char *filename);
 void config_save(char *filename);
 ConfigEntry* config_findentry(char *name);
+ConfigEntry* config_findentry_byid(int id);
 
 int config_intval(char*);
 int config_intval_p(ConfigEntry*);
