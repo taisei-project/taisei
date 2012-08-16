@@ -190,7 +190,7 @@ void gamepad_event(SDL_Event *event, EventHandler handler, EventFlags flags, voi
 		return;
 	
 	int val;
-	int sens = tconfig.intval[GAMEPAD_AXIS_THRESHOLD];
+	int sens = clamp(tconfig.fltval[GAMEPAD_AXIS_DEADZONE], 0, 1) * GAMEPAD_AXIS_RANGE;
 	
 	switch(event->type) {
 		case SDL_JOYAXISMOTION:

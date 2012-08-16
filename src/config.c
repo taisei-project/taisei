@@ -41,7 +41,7 @@ ConfigEntry configdefs[] = {
 	{CFGT_INT,					GAMEPAD_DEVICE,			"gamepad_device"},
 	{CFGT_INT,					GAMEPAD_AXIS_UD,		"gamepad_axis_ud"},
 	{CFGT_INT,					GAMEPAD_AXIS_LR,		"gamepad_axis_lr"},
-	{CFGT_INT,					GAMEPAD_AXIS_THRESHOLD,	"gamepad_axis_threshold"},
+	{CFGT_FLOAT,				GAMEPAD_AXIS_DEADZONE,	"gamepad_axis_deadzone"},
 	{CFGT_INT,					GAMEPAD_AXIS_FREE,		"gamepad_axis_free"},
 	{CFGT_FLOAT,				GAMEPAD_AXIS_UD_SENS,	"gamepad_axis_ud_free_sensitivity"},
 	{CFGT_FLOAT,				GAMEPAD_AXIS_LR_SENS,	"gamepad_axis_lr_free_sensitivity"},
@@ -108,7 +108,6 @@ void config_preset(void) {
 	
 	tconfig.intval[GAMEPAD_AXIS_LR] = 0;
 	tconfig.intval[GAMEPAD_AXIS_UD] = 1;
-	tconfig.intval[GAMEPAD_AXIS_THRESHOLD] = 1000;
 	
 	tconfig.fltval[GAMEPAD_AXIS_UD_SENS] = 1.0;
 	tconfig.fltval[GAMEPAD_AXIS_LR_SENS] = 1.0;
