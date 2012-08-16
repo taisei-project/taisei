@@ -310,27 +310,28 @@ void destroy_options_menu(MenuData *m) {
 		free(bind);
 	}
 	
-	config_save(CONFIG_FILE);
+	//we call this in taisei_shutdown instead
+	//config_save(CONFIG_FILE);
 }
 
 void do_nothing(void *arg) { }
 
-void create_options_menu(MenuData *m) {
-	OptionBinding *b;
-	
+void create_options_sub(MenuData *m, char *s) {
 	create_menu(m);
 	m->flags = MF_Abortable;
-	m->context = NULL;
+	m->context = s;
+}
+
+#define bind_onoff(b) bind_addvalue(b, "on"); bind_addvalue(b, "off")
+
+void options_sub_video(void *arg) {
+	MenuData menu, *m;
+	OptionBinding *b;
+	m = &menu;
 	
-	#define bind_onoff(b) bind_addvalue(b, "on"); bind_addvalue(b, "off")
+	create_options_sub(m, "Video Options");
 	
-	add_menu_entry(m, "Player Name", do_nothing,
-		b = bind_stroption(PLAYERNAME)
-	);
-	
-	add_menu_separator(m);
-	
-	add_menu_entry(m, "Video Mode", do_nothing, 
+	add_menu_entry(m, "Video mode", do_nothing, 
 		b = bind_resolution()
 	);
 	
@@ -338,17 +339,14 @@ void create_options_menu(MenuData *m) {
 		b = bind_option(FULLSCREEN, bind_common_onoffget, bind_fullscreen_set)
 	);	bind_onoff(b);
 	
-	add_menu_entry(m, "Audio", do_nothing,
-		b = bind_option(NO_AUDIO, bind_common_onoffget_inverted,
-								  bind_noaudio_set)
-	);	bind_onoff(b);
-		
 	add_menu_entry(m, "Shaders", do_nothing, 
 		b = bind_option(NO_SHADER, bind_common_onoffget_inverted,
 								   bind_noshader_set)
 	);	bind_onoff(b);
-			
-	add_menu_entry(m, "Stage Background", do_nothing, 
+	
+	add_menu_separator(m);
+	
+	add_menu_entry(m, "Stage background", do_nothing, 
 		b = bind_option(NO_STAGEBG, bind_common_intget,
 									bind_common_intset)
 	);	bind_addvalue(b, "on");
@@ -361,14 +359,32 @@ void create_options_menu(MenuData *m) {
 	);	bind_setvaluerange(b, 20, 60);
 		bind_setdependence(b, bind_stagebg_fpslimit_dependence);
 	
-	add_menu_entry(m, "Save Replays", do_nothing, 
-		b = bind_option(SAVE_RPY, bind_saverpy_get,
-								  bind_saverpy_set)
-	);	bind_addvalue(b, "on");
-		bind_addvalue(b, "off");
-		bind_addvalue(b, "ask");
+	add_menu_separator(m);
+	add_menu_entry(m, "Back", (MenuAction)kill_menu, m);
+	
+	options_menu_loop(m);
+	((MenuData*)arg)->frames = 0;
+}
+
+void options_sub_gamepad(void *arg) {
+	MenuData menu, *m;
+	//OptionBinding *b;
+	m = &menu;
+	
+	create_options_sub(m, "Gamepad Options");
 	
 	add_menu_separator(m);
+	add_menu_entry(m, "Back", (MenuAction)kill_menu, m);
+	
+	options_menu_loop(m);
+	((MenuData*)arg)->frames = 0;
+}
+
+void options_sub_controls(void *arg) {
+	MenuData menu, *m;
+	m = &menu;
+	
+	create_options_sub(m, "Controls");
 	
 	add_menu_entry(m, "Move up", do_nothing, 
 		bind_keybinding(KEY_UP)
@@ -417,7 +433,45 @@ void create_options_menu(MenuData *m) {
 	);
 	
 	add_menu_separator(m);
-	add_menu_entry(m, "Return to the main menu", (MenuAction)kill_menu, m);
+	add_menu_entry(m, "Back", (MenuAction)kill_menu, m);
+	
+	options_menu_loop(m);
+	((MenuData*)arg)->frames = 0;
+}
+
+void create_options_menu(MenuData *m) {
+	OptionBinding *b;
+	
+	create_menu(m);
+	m->flags = MF_Abortable;
+	m->context = "Options";
+	
+	add_menu_entry(m, "Player name", do_nothing,
+		b = bind_stroption(PLAYERNAME)
+	);
+	
+	add_menu_separator(m);
+	
+	add_menu_entry(m, "Save replays", do_nothing, 
+		b = bind_option(SAVE_RPY, bind_saverpy_get,
+								  bind_saverpy_set)
+	);	bind_addvalue(b, "on");
+		bind_addvalue(b, "off");
+		bind_addvalue(b, "ask");
+	
+	add_menu_entry(m, "Audio", do_nothing,
+		b = bind_option(NO_AUDIO, bind_common_onoffget_inverted,
+								  bind_noaudio_set)
+	);	bind_onoff(b);
+	
+	
+	add_menu_separator(m);
+	add_menu_entry(m, "Video options...", options_sub_video, m);
+	add_menu_entry(m, "Customize controls...", options_sub_controls, m);
+	add_menu_entry(m, "Gamepad options...", options_sub_gamepad, m);
+	add_menu_separator(m);
+	
+	add_menu_entry(m, "Back", (MenuAction)kill_menu, m);
 }
 
 // --- Drawing the menu --- //
@@ -431,7 +485,7 @@ void draw_options_menu_bg(MenuData* menu) {
 
 void draw_options_menu(MenuData *menu) {
 	draw_options_menu_bg(menu);
-	draw_menu_title(menu, "Options");
+	draw_menu_title(menu, menu->context);
 	
 	glPushMatrix();
 	glTranslatef(100, 100, 0);
@@ -442,7 +496,7 @@ void draw_options_menu(MenuData *menu) {
 	menu->drawdata[1] += ((SCREEN_W - 200) - menu->drawdata[1])/10.0;
 	menu->drawdata[2] += (20*menu->cursor - menu->drawdata[2])/10.0;
 	
-	int i, caption_drawn = 0;
+	int i, caption_drawn = 2;
 	
 	for(i = 0; i < menu->ecount; i++) {
 		MenuEntry *e = menu->entries + i;
@@ -469,6 +523,9 @@ void draw_options_menu(MenuData *menu) {
 		
 		if(bind) {
 			int j, origin = SCREEN_W - 220;
+			
+			if(caption_drawn == 2 && bind->type != BT_KeyBinding)
+				caption_drawn = 0;
 			
 			switch(bind->type) {
 				case BT_IntValue:
