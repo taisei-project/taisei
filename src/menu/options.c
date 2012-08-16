@@ -436,14 +436,7 @@ void draw_options_menu(MenuData *menu) {
 	glPushMatrix();
 	glTranslatef(100, 100, 0);
 	
-	Texture *bg = get_tex("part/smoke");
-	glPushMatrix();
-	glTranslatef(menu->drawdata[0], menu->drawdata[2], 0);
-	glScalef(menu->drawdata[1]/100.0, 0.2, 1);
-	glRotatef(menu->frames*2,0,0,1);
-	glColor4f(0,0,0,0.5);
-	draw_texture_p(0,0,bg);
-	glPopMatrix();
+	draw_menu_selector(menu->drawdata[0], menu->drawdata[2], menu->drawdata[1]/100.0, 0.2, menu->frames);
 	
 	menu->drawdata[0] += ((SCREEN_W/2 - 100) - menu->drawdata[0])/10.0;
 	menu->drawdata[1] += ((SCREEN_W - 200) - menu->drawdata[1])/10.0;
