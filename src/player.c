@@ -184,6 +184,9 @@ void player_logic(Player* plr) {
 }
 
 void player_bomb(Player *plr) {
+	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell)
+		return;
+
 	if(global.frames - plr->recovery >= 0 && (plr->bombs > 0 || plr->iddqd) && global.frames - plr->respawntime >= 60) {
 		delete_projectiles(&global.projs);
 
@@ -229,6 +232,11 @@ void player_realdeath(Player *plr) {
 
 	if(plr->bombs < PLR_START_BOMBS)
 		plr->bombs = PLR_START_BOMBS;
+	
+	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell) {
+		global.boss->current->failed = true;
+		return;
+	}
 
 	if(plr->iddqd)
 		return;

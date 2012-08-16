@@ -473,11 +473,18 @@ void draw_hud(void) {
 		draw_text(AL_Left, -6, 200, "N/A", _fonts.standard);
 		glColor4f(1, 1, 1, 1.0);
 	} else {
+		float a = 1;
+	
+		if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell)
+			a = 0.5 + 0.5 * (-min(0, global.frames - global.boss->current->starttime) / (float)ATTACK_START_DELAY);
+	
+		if(a != 1) glColor4f(a,a,a,a);
 		for(i = 0; i < global.plr.lifes; i++)
 			draw_texture(16*i,167, "star");
 
 		for(i = 0; i < global.plr.bombs; i++)
 			draw_texture(16*i,200, "star");
+		if(a != 1) glColor4f(1,1,1,1);
 	}
 
 	sprintf(buf, "%.2f", global.plr.power / 100.0);
@@ -619,15 +626,18 @@ void apply_bg_shaders(ShaderRule *shaderrules) {
 		if(global.frames - global.boss->current->starttime <= 0)
 			fbonum = apply_shaderrules(shaderrules, fbonum);
 
+		int t = global.frames - global.boss->current->starttime;
 		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[0].fbo);
-		global.boss->current->draw_rule(global.boss, global.frames - global.boss->current->starttime);
+		global.boss->current->draw_rule(global.boss, t);
+		
+		if(global.boss->current->type == AT_ExtraSpell)
+			draw_extraspell_bg(global.boss, t);
 
 		glPushMatrix();
 			glTranslatef(creal(global.boss->pos), cimag(global.boss->pos), 0);
 			glRotatef(global.frames*7.0, 0, 0, -1);
 
-			int t;
-			if((t = global.frames - global.boss->current->starttime) < 0) {
+			if(t < 0) {
 				float f = 1.0 - t/(float)ATTACK_START_DELAY;
 				glScalef(f,f,f);
 			}

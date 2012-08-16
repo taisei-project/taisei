@@ -401,12 +401,23 @@ void cirno_crystal_blizzard(Boss *c, int time) {
 	}
 }
 
+void cirno_superhardspellcard(Boss *c, int t) {
+	// HOWTO: create a super hard spellcard in a few seconds
+
+	cirno_iceplosion0(c, t);
+	cirno_iceplosion1(c, t);
+	cirno_crystal_rain(c, t);
+	cirno_icicle_fall(c, t);
+	cirno_icy(c, t);
+	cirno_perfect_freeze(c, t);
+}
+
 Boss *create_cirno(void) {
 	Boss* cirno = create_boss("Cirno", "cirno", -230 + 100.0*I);
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro_boss, NULL);
 
 	// extra spell test
-	boss_add_attack(cirno, AT_Spellcard, "Frost Sign ~ Crystal Blizzard", 60, 40000, cirno_crystal_blizzard, cirno_pfreeze_bg);
+	boss_add_attack(cirno, AT_ExtraSpell, "Frost Sign ~ Crystal Blizzard", 60, 40000, cirno_crystal_blizzard, cirno_pfreeze_bg);
 
 	boss_add_attack(cirno, AT_Normal, "Iceplosion 0", 20, 20000, cirno_iceplosion0, NULL);
 	boss_add_attack_from_info(cirno, stage1_spells+1, false);

@@ -19,7 +19,8 @@ typedef enum AttackType {
 	AT_Normal,
 	AT_Move,
 	AT_Spellcard,
-	AT_SurvivalSpell
+	AT_SurvivalSpell,
+	AT_ExtraSpell
 } AttackType;
 
 typedef struct AttackInfo {
@@ -44,6 +45,7 @@ typedef struct Attack {
 
 	int timeout;
 	int dmglimit;
+	int failed;
 
 	BossRule rule;
 	BossRule draw_rule;
@@ -69,6 +71,7 @@ typedef struct Boss {
 } Boss;
 
 Boss* create_boss(char *name, char *ani, complex pos);
+void draw_extraspell_bg(Boss *boss, int time);
 void draw_boss(Boss *boss);
 void process_boss(Boss *boss);
 

@@ -42,6 +42,21 @@ void spell_opening(Boss *b, int time) {
 	draw_boss_text(AL_Right, VIEWPORT_W, y, b->current->name);
 }
 
+void draw_extraspell_bg(Boss *boss, int time) {
+	// overlay for all extra spells
+	// needs tweaking
+	
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glColor4f(1,0.1,0,0.7);
+	fill_screen(sin(time) * 0.015, time / 50.0, 1, "stage3/wspellclouds");
+	glColor4f(1,1,1,1);
+	glBlendEquation(GL_MIN);
+	fill_screen(cos(time) * 0.015, time / 70.0, 1, "stage4/kurumibg2");
+	fill_screen(sin(time+2.1) * 0.015, time / 30.0, 1, "stage4/kurumibg2");
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendEquation(GL_FUNC_ADD);
+}
+
 void draw_boss(Boss *boss) {
 	draw_animation_p(creal(boss->pos), cimag(boss->pos) + 6*sin(global.frames/25.0), boss->anirow, boss->ani);
 	draw_boss_text(AL_Left, 10, 20, boss->name);
@@ -49,7 +64,7 @@ void draw_boss(Boss *boss) {
 	if(!boss->current)
 		return;
 
-	if(boss->current->type == AT_Spellcard || boss->current->type == AT_SurvivalSpell)
+	if(boss->current->type == AT_Spellcard || boss->current->type == AT_SurvivalSpell || boss->current->type == AT_ExtraSpell)
 		spell_opening(boss, global.frames - boss->current->starttime);
 
 	if(boss->current->type != AT_Move) {
@@ -59,12 +74,14 @@ void draw_boss(Boss *boss) {
 
 		int nextspell, lastspell;
 		for(nextspell = 0; nextspell < boss->acount - 1; nextspell++) {
-			if(boss->dmg < boss->attacks[nextspell].dmglimit && boss->attacks[nextspell].type == AT_Spellcard)
+			int t = boss->attacks[nextspell].type;
+			if(boss->dmg < boss->attacks[nextspell].dmglimit && (t == AT_Spellcard || t == AT_ExtraSpell))
 				break;
 		}
 
 		for(lastspell = nextspell; lastspell > 0; lastspell--) {
-			if(boss->dmg > boss->attacks[lastspell].dmglimit && boss->attacks[lastspell].type == AT_Spellcard)
+			int t = boss->attacks[lastspell].type;
+			if(boss->dmg > boss->attacks[lastspell].dmglimit && (t == AT_Spellcard || t == AT_ExtraSpell))
 				break;
 		}
 
@@ -99,6 +116,8 @@ void draw_boss(Boss *boss) {
 				break;
 			case AT_SurvivalSpell:
 				glColor3f(0.5,0.5,1);
+			case AT_ExtraSpell:
+				glColor3f(1.0, 0.3, 0.2);
 			default:
 				break; // never happens
 			}
@@ -127,12 +146,20 @@ void draw_boss(Boss *boss) {
 void process_boss(Boss *boss) {
 	if(boss->current) {
 		int time = global.frames - boss->current->starttime;
+		int extra = boss->current->type == AT_ExtraSpell;
+		int fail = boss->current->failed;
+		
+		// TODO: mark uncaptured normal spells as failed too (for spell bonuses and player stats)
 
 		boss->current->rule(boss, time);
 
-		if(boss->current->type != AT_Move && boss->dmg >= boss->current->dmglimit)
+		if(boss->current->type != AT_Move && boss->dmg >= boss->current->dmglimit || extra && fail)
 			time = boss->current->timeout + 1;
+		
 		if(time > boss->current->timeout) {
+			if(extra && !fail)
+				spawn_items(boss->pos, 0, 0, 0, 1);
+			
 			boss->current->rule(boss, EVENT_DEATH);
 			boss->dmg = boss->current->dmglimit + 1;
 			boss->current++;
@@ -196,7 +223,7 @@ void start_attack(Boss *b, Attack *a) {
 
 	a->starttime = global.frames + ATTACK_START_DELAY;
 	a->rule(b, EVENT_BIRTH);
-	if(a->type == AT_Spellcard || a->type == AT_SurvivalSpell)
+	if(a->type == AT_Spellcard || a->type == AT_SurvivalSpell || a->type == AT_ExtraSpell)
 		play_sound("charge_generic");
 
 	Projectile *p;
@@ -227,6 +254,7 @@ Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 	a->draw_rule = draw_rule;
 
 	a->starttime = global.frames;
+	a->failed = false;
 
 	return a;
 }
