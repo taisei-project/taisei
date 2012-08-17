@@ -21,9 +21,10 @@ void *_FREEREF;
 void *create_element(void **dest, int size) {
 	List *e = malloc(size);
 	List **d = (List **)dest;
-		
+
 	e->next = NULL;
 	e->prev = *d;
+
 	if(*d != NULL) {
 		e->next = (*d)->next;
 		if((*d)->next)

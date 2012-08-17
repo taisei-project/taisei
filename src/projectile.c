@@ -26,7 +26,18 @@ Projectile *create_projectile4c(char *name, complex pos, Color *clr, ProjRule ru
 
 Projectile *create_projectile_p(Projectile **dest, Texture *tex, complex pos, Color *clr,
 							    ProjDRule draw, ProjRule rule, complex a1, complex a2, complex a3, complex a4) {
-	Projectile *p = create_element((void **)dest, sizeof(Projectile));
+	Projectile *p, *e, **d;
+	
+	for(e = *dest; e && e->next; e = e->next)
+		if(e->prev && tex->w*tex->h > e->tex->w*e->tex->h)
+			break;
+		
+	if(e == NULL)
+		d = dest;
+	else
+		d = &e;
+		
+	p = create_element((void **)d, sizeof(Projectile));
 	
 	p->birthtime = global.frames;
 	p->pos = pos;
