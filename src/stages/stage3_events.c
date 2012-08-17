@@ -755,7 +755,7 @@ void stage3_boss_intro(Boss *boss, int time) {
 }
 
 Boss* stage3_create_boss(void) {
-	Boss *wriggle = create_boss("EX Wriggle", "wriggle", VIEWPORT_W/2 - 200I);
+	Boss *wriggle = create_boss("Wriggle EX", "wriggleex", VIEWPORT_W/2 - 200I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage3_boss_intro, NULL);
 	
 	boss_add_attack(wriggle, AT_Normal, "", 20, 15000, stage3_boss_prea1, NULL);
@@ -772,8 +772,8 @@ Boss* stage3_create_boss(void) {
 void stage3_events(void) {
 	TIMER(&global.timer);
 	
-//	AT(0)
-//		global.timer = 4300;
+// 	AT(0)
+// 		global.timer = 4300;
 	
 	FROM_TO(160, 300, 10) {
 		tsrand_fill(3);
