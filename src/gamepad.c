@@ -34,7 +34,7 @@ void gamepad_init(void) {
 	}
 	
 	int i, cnt = gamepad_devicecount();
-	printf("gamepad_init: found %i devices\n", cnt);
+	printf("gamepad_init(): found %i devices\n", cnt);
 	for(i = 0; i < cnt; ++i)
 		printf("%i: %s\n", i, SDL_JoystickName(i));
 	
@@ -58,12 +58,18 @@ void gamepad_init(void) {
 }
 
 void gamepad_shutdown(void) {
+	if(!gamepad.initialized)
+		return;
+	
+	if(gamepad.initialized != 2)
+		printf("gamepad_shutdown(): disabled the gamepad subsystem\n");
+	
 	if(gamepad.device)
 		SDL_JoystickClose(gamepad.device);
+	
 	SDL_JoystickEventState(SDL_IGNORE);
 	SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
 	gamepad.initialized = 0;
-	printf("gamepad_shutdown()\n");
 }
 
 void gamepad_restart(void) {
