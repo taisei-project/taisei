@@ -22,13 +22,17 @@ void *create_element(void **dest, int size) {
 	List *e = malloc(size);
 	List **d = (List **)dest;
 		
-	e->prev = NULL;
-	e->next = *d;
+	e->next = NULL;
+	e->prev = *d;
 	if(*d != NULL) {
-		e->prev = (*d)->prev;
-		(*d)->prev = e;
+		e->next = (*d)->next;
+		if((*d)->next)
+			((List *)(*d)->next)->prev = e;
+		
+		(*d)->next = e;				
+	} else {
+		*d = e;
 	}
-	*d = e;
 	
 	return e;
 }
