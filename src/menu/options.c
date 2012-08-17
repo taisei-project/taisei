@@ -478,11 +478,11 @@ void options_sub_gamepad(void *arg) {
 	
 	add_menu_separator(m);
 	
-	add_menu_entry(m, "The UD axis", do_nothing,
+	add_menu_entry(m, "The UD axis (Vertical)", do_nothing,
 		b = bind_option(GAMEPAD_AXIS_UD, bind_common_intget, bind_common_intset)
 	);	bind_setvaluerange_fancy(b, GAMEPAD_AXES-1);
 	
-	add_menu_entry(m, "The LR axis", do_nothing,
+	add_menu_entry(m, "The LR axis (Horizontal)", do_nothing,
 		b = bind_option(GAMEPAD_AXIS_LR, bind_common_intget, bind_common_intset)
 	);	bind_setvaluerange_fancy(b, GAMEPAD_AXES-1);
 	
