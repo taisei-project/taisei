@@ -143,6 +143,26 @@ void draw_boss(Boss *boss) {
 	}
 }
 
+void boss_rule_extra(Boss *boss, float alpha) {
+	int cnt = 10 * max(1, alpha);
+	alpha = min(2, alpha);
+	
+	int i; for(i = 0; i < cnt; ++i) {
+		float a = i*2*M_PI/cnt + global.frames / 100.0;
+		complex dir = cexp(I*(a+global.frames/50.0));
+		complex pos = boss->pos + dir * (100 + 50 * psin(alpha*global.frames/10.0+2*i)) * alpha;
+		complex vel = dir * 3;
+		
+		create_particle2c("flare", pos, rgb(1, 0.5 + 0.2 * psin(a), 0.5), FadeAdd, timeout_linear, 15, vel);
+		
+		int d = 5;
+		if(!(global.frames % d)) {
+			// Try replacing this with stain or youmu_slice
+			create_particle3c("boss_shadow", pos, rgb(1, 0.5 + 0.2 * psin(a), 0.5), GrowFadeAdd, timeout_linear, 30, vel * (1 - 2 * !(global.frames % (2*d))), 3);
+		}
+	}
+}
+
 void process_boss(Boss *boss) {
 	if(boss->current) {
 		int time = global.frames - boss->current->starttime;
@@ -153,6 +173,20 @@ void process_boss(Boss *boss) {
 
 		boss->current->rule(boss, time);
 
+		if(extra) {
+			if(time < 0)
+				boss_rule_extra(boss, 1+time/(float)ATTACK_START_DELAY_EXTRA);
+			else {
+				float o = min(0, -5 + time/30.0);
+				float s = sin(time / 90.0 + M_PI*1.2);
+				float q = (time <= 150? 1 - pow(time/250.0, 2) : min(1, time/60.0));
+				
+				boss_rule_extra(boss, max(1-time/300.0, 0.5 + 0.2 * s) * q);
+				if(o)
+					boss_rule_extra(boss, max(1-time/300.0, 0.5 + 0.2 * s) - o);
+			}
+		}
+		
 		if(boss->current->type != AT_Move && boss->dmg >= boss->current->dmglimit || extra && fail)
 			time = boss->current->timeout + 1;
 		
@@ -221,7 +255,7 @@ void start_attack(Boss *b, Attack *a) {
 #endif
 	}
 
-	a->starttime = global.frames + ATTACK_START_DELAY;
+	a->starttime = global.frames + (a->type == AT_ExtraSpell? ATTACK_START_DELAY_EXTRA : ATTACK_START_DELAY);
 	a->rule(b, EVENT_BIRTH);
 	if(a->type == AT_Spellcard || a->type == AT_SurvivalSpell || a->type == AT_ExtraSpell)
 		play_sound("charge_generic");
