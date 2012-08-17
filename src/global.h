@@ -152,6 +152,7 @@ double psin(double);
 int strendswith(char *s, char *e);
 char* difficulty_name(Difficulty diff);
 void stralloc(char **dest, char *src);
+int gamekeypressed(int key);
 
 #define SIGN(x) ((x > 0) - (x < 0))
 

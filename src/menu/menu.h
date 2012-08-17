@@ -43,6 +43,7 @@ enum MenuFlag {
 	
 	MF_InstantSelect = 4,
 	MF_ManualDrawTransition = 8, // the menu will not call draw_transition() automatically
+	MF_AlwaysProcessInput = 16 // the menu will process input even during fadeouts
 };
 
 enum MenuState{

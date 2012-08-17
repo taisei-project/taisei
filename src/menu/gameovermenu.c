@@ -35,7 +35,7 @@ void restart_game(void *arg);
 void create_gameover_menu(MenuData *m) {
 	create_menu(m);
 	
-	m->flags = MF_Transient;	
+	m->flags = MF_Transient | MF_AlwaysProcessInput;
 	m->transition = NULL;
 	m->context = "Game Over";
 	

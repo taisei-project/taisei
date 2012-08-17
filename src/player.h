@@ -87,5 +87,6 @@ void player_graze(Player*, complex, int);
 void player_setmoveflag(Player* plr, int key, int mode);
 void player_event(Player* plr,int type, int key);
 void player_applymovement(Player* plr);
+void player_input_workaround(Player *plr);
 
 #endif

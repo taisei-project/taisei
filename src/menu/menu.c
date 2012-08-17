@@ -140,7 +140,7 @@ int menu_loop(MenuData *menu, void (*input)(MenuData*), void (*draw)(MenuData*),
 	while(menu->state != MS_Dead) {
 		menu_logic(menu);
 		
-		if(menu->state != MS_FadeOut) {
+		if(menu->state != MS_FadeOut || menu->flags & MF_AlwaysProcessInput) {
 			if(input)
 				input(menu);
 			else

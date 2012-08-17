@@ -232,6 +232,22 @@ char* gamepad_devicename(int id) {
 	return (char*)SDL_JoystickName(id);
 }
 
+int gamepad_buttonpressed(int btn) {
+	return SDL_JoystickGetButton(gamepad.device, btn);
+}
+
+int gamepad_gamekeypressed(int key) {
+	if(!gamepad.initialized)
+		return 0;
+	
+	// this sucks
+	int i; for(i = CONFIG_GPKEY_FIRST; i <= CONFIG_GPKEY_LAST; ++i)
+		if(key == config_gpkey2key(i) && gamepad_buttonpressed(tconfig.intval[i]))
+			return 1;
+	
+	return 0;
+}
+
 void gamepad_init_bare(void) {
 	if(gamepad.initialized)
 		return;

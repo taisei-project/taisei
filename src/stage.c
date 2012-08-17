@@ -15,6 +15,7 @@
 #include "config.h"
 #include "player.h"
 #include "menu/ingamemenu.h"
+#include "menu/gameovermenu.h"
 #include "taisei_err.h"
 
 StageInfo stages[] = {	
@@ -52,10 +53,16 @@ void stage_start(void) {
 	global.plr.deathtime = -1;
 }
 
-void stage_ingamemenu(void) {
+void stage_pause(void) {
 	MenuData menu;
 	create_ingame_menu(&menu);
 	ingame_menu_loop(&menu);
+}
+
+void stage_gameover(void) {
+	MenuData m;
+	create_gameover_menu(&m);
+	ingame_menu_loop(&m);
 }
 
 void stage_input_event(EventType type, int key, void *arg) {
@@ -83,7 +90,7 @@ void stage_input_event(EventType type, int key, void *arg) {
 			break;
 		
 		case E_Pause:
-			stage_ingamemenu();
+			stage_pause();
 			break;
 		
 		case E_PlrAxisLR:
@@ -102,7 +109,7 @@ void stage_input_event(EventType type, int key, void *arg) {
 
 void stage_replay_event(EventType type, int state, void *arg) {
 	if(type == E_Pause)
-		stage_ingamemenu();
+		stage_pause();
 }
 
 void replay_input(void) {
@@ -141,17 +148,13 @@ void stage_input(void) {
 	handle_events(stage_input_event, EF_Game, NULL);
 	
 	// workaround
-	// TODO: FIX THIS FOR GAMEPAD SOMEHOW
-	if(global.dialog && global.dialog->skip && !tconfig.intval[GAMEPAD_ENABLED]) {
-		Uint8 *keys = SDL_GetKeyState(NULL);
-			
-		if(!keys[tconfig.intval[KEY_SKIP]]) {
-			global.dialog->skip = False;
-			replay_event(&global.replay, EV_RELEASE, KEY_SKIP);
-		}
+	if(global.dialog && global.dialog->skip && !gamekeypressed(KEY_SKIP)) {
+		global.dialog->skip = False;
+		replay_event(&global.replay, EV_RELEASE, KEY_SKIP);
 	}
 	
 	player_applymovement(&global.plr);
+	player_input_workaround(&global.plr);
 }
 
 void draw_hud(void) {

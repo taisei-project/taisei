@@ -59,4 +59,7 @@ void stage4_loop(void);
 void stage5_loop(void);
 void stage6_loop(void);
 
+void stage_pause(void);
+void stage_gameover(void);
+
 #endif

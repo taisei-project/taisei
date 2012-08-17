@@ -18,6 +18,9 @@ int gamepad_devicecount(void);
 char* gamepad_devicename(int);
 void gamepad_event(SDL_Event*, EventHandler, EventFlags, void*);
 
+int gamepad_buttonpressed(int btn);
+int gamepad_gamekeypressed(int key);
+
 // shitty workaround for the options menu. Used to list devices while the gamepad subsystem is off.
 // only initializes the SDL subsystem so you can use gamepad_devicecount/gamepad_devicename.
 // if gamepad has been initialized already, these do nothing.

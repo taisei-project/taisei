@@ -11,8 +11,7 @@
 #include "projectile.h"
 #include "global.h"
 #include "plrmodes.h"
-#include "menu/gameovermenu.h"
-#include "menu/ingamemenu.h"
+#include "stage.h"
 
 void init_player(Player* plr) {
 	memset(plr, 0, sizeof(Player));
@@ -210,11 +209,8 @@ void player_realdeath(Player *plr) {
 	if(plr->bombs < PLR_START_BOMBS)
 		plr->bombs = PLR_START_BOMBS;
 	
-	if(plr->lifes-- == 0 && global.replaymode != REPLAY_PLAY) {
-		MenuData m;
-		create_gameover_menu(&m);
-		ingame_menu_loop(&m);
-	}
+	if(plr->lifes-- == 0 && global.replaymode != REPLAY_PLAY)
+		stage_gameover();
 }
 
 void player_death(Player *plr) {
@@ -327,7 +323,7 @@ int player_applymovement_gamepad(Player *plr) {
 	return True;
 }
 
-void player_applymovement(Player* plr) {
+void player_applymovement(Player *plr) {
 	if(plr->deathtime < -1)
 		return;
 	
@@ -362,21 +358,22 @@ void player_applymovement(Player* plr) {
 	
 	if(direction)
 		player_move(&global.plr, direction);
-	
-	// workaround
-	// TODO: FIX THIS FOR GAMEPAD SOMEHOW
-	if(global.replaymode == REPLAY_RECORD && !global.dialog && !tconfig.intval[GAMEPAD_ENABLED]) {
-		Uint8 *keys = SDL_GetKeyState(NULL);
+}
+
+void player_input_workaround(Player *plr) {
+	if(!global.dialog) {
+		int shot  = gamekeypressed(KEY_SHOT);
+		int focus = gamekeypressed(KEY_FOCUS);
 		
-		if(!keys[tconfig.intval[KEY_SHOT]] && plr->fire) {
+		if(!shot && plr->fire) {
 			player_event(plr, EV_RELEASE, KEY_SHOT);
 			replay_event(&global.replay, EV_RELEASE, KEY_SHOT);
-		} else if(keys[tconfig.intval[KEY_SHOT]] && !plr->fire) {
+		} else if(shot && !plr->fire) {
 			player_event(plr, EV_PRESS, KEY_SHOT);
 			replay_event(&global.replay, EV_PRESS, KEY_SHOT);
 		}
 		
-		if(!keys[tconfig.intval[KEY_FOCUS]] && plr->focus > 0) {
+		if(!focus && plr->focus > 0) {
 			player_event(plr, EV_RELEASE, KEY_FOCUS);
 			replay_event(&global.replay, EV_RELEASE, KEY_FOCUS);
 		}
