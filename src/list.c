@@ -19,13 +19,16 @@ typedef struct {
 void *_FREEREF;
 
 void *create_element(void **dest, int size) {
-	void *e = malloc(size);
+	List *e = malloc(size);
+	List **d = (List **)dest;
 		
-	((List *)e)->prev = NULL;
-	((List *)e)->next = *dest;
-	if(*dest != NULL)
-		((List *)(*dest))->prev = e;
-	*dest = e;
+	e->prev = NULL;
+	e->next = *d;
+	if(*d != NULL) {
+		e->prev = (*d)->prev;
+		(*d)->prev = e;
+	}
+	*d = e;
 	
 	return e;
 }
