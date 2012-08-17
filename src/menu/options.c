@@ -462,6 +462,7 @@ void options_sub_gamepad(void *arg) {
 		b = bind_option(GAMEPAD_DEVICE, bind_common_intget, bind_common_intset)
 	); b->displaysingle = True;
 	
+	add_menu_separator(m);
 	add_menu_entry(m, "Customize controls...", options_sub_gamepad_controls, m);
 	
 	gamepad_init_bare();
