@@ -49,4 +49,6 @@ extern Resources resources;
 
 void load_resources(void);
 void free_resources(void);
+
+void draw_loading_screen(void);
 #endif

@@ -134,3 +134,19 @@ void free_resources(void) {
 		delete_shaders();
 	}
 }
+
+void draw_loading_screen(void) {
+	const char *prefix = get_prefix();
+	char *buf = malloc(strlen(prefix)+16);
+	Texture *tex;
+	
+	strcpy(buf, prefix);
+	strcat(buf, "gfx/loading.png");
+	
+	set_ortho();
+	
+	tex = load_texture(buf);
+	
+	draw_texture_p(SCREEN_W/2,SCREEN_H/2, tex);
+	SDL_GL_SwapBuffers();
+}

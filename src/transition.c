@@ -26,6 +26,12 @@ void TransFadeWhite(Transition *t) {
 	colorfill(1,1,1,trans_fade(t));
 }
 
+void TransLoader(Transition *t) {
+	glColor4f(1,1,1,trans_fade(t));
+	draw_texture(SCREEN_W/2,SCREEN_H/2,"loading");
+	glColor4f(1,1,1,1);
+}
+
 void set_transition(TransitionRule rule, int dur1, int dur2) {
 	if(!rule)
 		return;

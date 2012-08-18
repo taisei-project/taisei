@@ -170,6 +170,6 @@ void draw_main_menu(MenuData *menu) {
 }
 
 void main_menu_loop(MenuData *menu) {
-	set_transition(TransFadeBlack, -1, FADE_TIME);	
+	set_transition(TransLoader, -1, FADE_TIME*2);	
 	menu_loop(menu, NULL, draw_main_menu, NULL);
 }

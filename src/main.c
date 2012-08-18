@@ -31,7 +31,6 @@ void init_gl(void) {
 	init_quadvbo();
 	
 	glClear(GL_COLOR_BUFFER_BIT);
-	SDL_GL_SwapBuffers();
 }
 
 
@@ -82,6 +81,8 @@ int main(int argc, char** argv) {
 		tconfig.intval[NO_AUDIO] = 1;
 		printf("-- ALUT\n");
 	}
+	
+	draw_loading_screen();
 	
 	init_global();
 	gamepad_init();
