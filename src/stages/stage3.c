@@ -125,8 +125,8 @@ void stage3_start(void) {
 	stgstate.clr_b = 0.5;
 
 // TESTING
-//	bgcontext.cv[1] = -90;
-//	stgstate.fog_exp = 5.0;
+	bgcontext.cv[1] = -90;
+	stgstate.fog_exp = 5.0;
 }
 
 void stage3_end(void) {

@@ -185,7 +185,9 @@ void boss_kill_projectiles(void) {
 	delete_lasers();
 }
 
-void process_boss(Boss *boss) {
+void process_boss(Boss **pboss) {
+	Boss *boss = *pboss;
+	
 	if(boss->current) {
 		int time = global.frames - boss->current->starttime;
 		int extra = boss->current->type == AT_ExtraSpell;
@@ -256,8 +258,10 @@ void process_boss(Boss *boss) {
 			boss->current++;
 			if(boss->current - boss->attacks < boss->acount)
 				start_attack(boss, boss->current);
-			else
+			else {
 				boss->current = NULL;
+				boss_death(pboss);
+			}
 		}
 	}
 }

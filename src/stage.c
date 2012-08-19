@@ -730,11 +730,8 @@ void stage_logic(int time) {
 	process_lasers();
 	process_projectiles(&global.particles, false);
 
-	if(global.boss && !global.dialog) {
-		process_boss(global.boss);
-		if(global.boss->dmg > global.boss->attacks[global.boss->acount-1].dmglimit)
-			boss_death(&global.boss);
-	}
+	if(global.boss && !global.dialog)
+		process_boss(&global.boss);
 
 	if(global.dialog && global.dialog->skip && global.frames - global.dialog->page_time > 3)
 		page_dialog(&global.dialog);

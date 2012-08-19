@@ -80,7 +80,7 @@ typedef struct Boss {
 Boss* create_boss(char *name, char *ani, complex pos);
 void draw_extraspell_bg(Boss *boss, int time);
 void draw_boss(Boss *boss);
-void process_boss(Boss *boss);
+void process_boss(Boss **boss);
 
 void free_boss(Boss *boss);
 void free_attack(Attack *a);

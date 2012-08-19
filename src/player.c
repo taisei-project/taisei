@@ -24,6 +24,8 @@ void init_player(Player *plr) {
 	plr->continues = 0;
 
 	plr->points = 0;
+	
+	plr->power = 4; // for extraspell testing
 }
 
 void prepare_player_for_next_stage(Player *plr) {
