@@ -69,19 +69,19 @@ void draw_boss(Boss *boss) {
 
 	if(boss->current->type != AT_Move) {
 		char buf[16];
-		snprintf(buf, sizeof(buf),  "%.2f", (boss->current->timeout - global.frames + boss->current->starttime)/(float)FPS);
+		snprintf(buf, sizeof(buf),  "%.2f", max(0, (boss->current->timeout - global.frames + boss->current->starttime)/(float)FPS));
 		draw_boss_text(AL_Center, VIEWPORT_W - 20, 10, buf);
 
 		int nextspell, lastspell;
 		for(nextspell = 0; nextspell < boss->acount - 1; nextspell++) {
 			int t = boss->attacks[nextspell].type;
-			if(boss->dmg < boss->attacks[nextspell].dmglimit && (t == AT_Spellcard || t == AT_ExtraSpell))
+			if(boss->dmg < boss->attacks[nextspell].dmglimit && t == AT_Spellcard)
 				break;
 		}
 
 		for(lastspell = nextspell; lastspell > 0; lastspell--) {
 			int t = boss->attacks[lastspell].type;
-			if(boss->dmg > boss->attacks[lastspell].dmglimit && (t == AT_Spellcard || t == AT_ExtraSpell))
+			if(boss->dmg > boss->attacks[lastspell].dmglimit && t == AT_Spellcard)
 				break;
 		}
 
@@ -118,6 +118,7 @@ void draw_boss(Boss *boss) {
 				glColor3f(0.5,0.5,1);
 			case AT_ExtraSpell:
 				glColor3f(1.0, 0.3, 0.2);
+				break;
 			default:
 				break; // never happens
 			}
@@ -146,20 +147,33 @@ void draw_boss(Boss *boss) {
 void boss_rule_extra(Boss *boss, float alpha) {
 	int cnt = 10 * max(1, alpha);
 	alpha = min(2, alpha);
+	int lt = 1;
+	
+	if(alpha == 0) {
+		lt += 2;
+		alpha = 1 * frand();
+	}
 	
 	int i; for(i = 0; i < cnt; ++i) {
 		float a = i*2*M_PI/cnt + global.frames / 100.0;
+		
 		complex dir = cexp(I*(a+global.frames/50.0));
 		complex pos = boss->pos + dir * (100 + 50 * psin(alpha*global.frames/10.0+2*i)) * alpha;
 		complex vel = dir * 3;
 		
-		create_particle2c("flare", pos, rgb(1, 0.5 + 0.2 * psin(a), 0.5), FadeAdd, timeout_linear, 15, vel);
+		float r, g, b;
+		float v = max(0, alpha - 1);
+		float psina = psin(a);
+		
+		r = 1.0 - 0.5 * psina *    v;
+		g = 0.5 + 0.2 * psina * (1-v);
+		b = 0.5 + 0.5 * psina *    v;
+		
+		create_particle2c("flare", pos, rgb(r, g, b), FadeAdd, timeout_linear, 15*lt, vel);
 		
 		int d = 5;
-		if(!(global.frames % d)) {
-			// Try replacing this with stain or youmu_slice
-			create_particle3c("boss_shadow", pos, rgb(1, 0.5 + 0.2 * psin(a), 0.5), GrowFadeAdd, timeout_linear, 30, vel * (1 - 2 * !(global.frames % (2*d))), 3);
-		}
+		if(!(global.frames % d)) 
+			create_particle3c((frand() < v*0.5 || lt > 1)? "stain" : "boss_shadow", pos, rgb(r, g, b), GrowFadeAdd, timeout_linear, 30*lt, vel * (1 - 2 * !(global.frames % (2*d))), 2.5);
 	}
 }
 
@@ -167,18 +181,39 @@ void process_boss(Boss *boss) {
 	if(boss->current) {
 		int time = global.frames - boss->current->starttime;
 		int extra = boss->current->type == AT_ExtraSpell;
-		int fail = boss->current->failed;
+		int over = boss->current->finished && global.frames >= boss->current->endtime;
 		
 		// TODO: mark uncaptured normal spells as failed too (for spell bonuses and player stats)
 
-		boss->current->rule(boss, time);
+		if(!boss->current->endtime || !extra)
+			boss->current->rule(boss, time);
 
 		if(extra) {
-			if(time < 0)
+			float s = sin(time / 90.0 + M_PI*1.2);
+			if(boss->current->endtime) {
+				float p = (boss->current->endtime - global.frames)/(float)ATTACK_END_DELAY_EXTRA;
+				float a = max((0.5 + 0.2 * s) * p * 0.5, 5 * pow(1 - p, 3));
+				if(a < 2) {
+					global.shake_view = 3 * a;
+					boss_rule_extra(boss, a);
+					if(a > 1) {
+						boss_rule_extra(boss, a * 0.5);
+						if(a > 1.3) {
+							global.shake_view = 5 * a;
+							if(a > 1.7)
+								global.shake_view += 2 * a;
+							boss_rule_extra(boss, 0);
+							boss_rule_extra(boss, 0.1);
+						}
+					}
+				} else {
+					over = 1;
+					global.shake_view_fade = 0.15;
+				}
+			} else if(time < 0) {
 				boss_rule_extra(boss, 1+time/(float)ATTACK_START_DELAY_EXTRA);
-			else {
+			} else {
 				float o = min(0, -5 + time/30.0);
-				float s = sin(time / 90.0 + M_PI*1.2);
 				float q = (time <= 150? 1 - pow(time/250.0, 2) : min(1, time/60.0));
 				
 				boss_rule_extra(boss, max(1-time/300.0, 0.5 + 0.2 * s) * q);
@@ -187,11 +222,13 @@ void process_boss(Boss *boss) {
 			}
 		}
 		
-		if(boss->current->type != AT_Move && boss->dmg >= boss->current->dmglimit || extra && fail)
-			time = boss->current->timeout + 1;
+		if(!boss->current->endtime && (boss->current->type != AT_Move && boss->dmg >= boss->current->dmglimit || time > boss->current->timeout)) {
+			boss->current->endtime = global.frames + extra * ATTACK_END_DELAY_EXTRA;
+			boss->current->finished = FINISH_WIN;
+		}
 		
-		if(time > boss->current->timeout) {
-			if(extra && !fail)
+		if(over) {
+			if(extra && boss->current->finished == FINISH_WIN)
 				spawn_items(boss->pos, 0, 0, 0, 1);
 			
 			boss->current->rule(boss, EVENT_DEATH);
@@ -288,8 +325,8 @@ Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 	a->draw_rule = draw_rule;
 
 	a->starttime = global.frames;
-	a->failed = false;
-
+	a->endtime = 0;
+	a->finished = FINISH_NOPE;
 	return a;
 }
 

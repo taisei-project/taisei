@@ -234,7 +234,10 @@ void player_realdeath(Player *plr) {
 		plr->bombs = PLR_START_BOMBS;
 	
 	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell) {
-		global.boss->current->failed = true;
+		if(!global.boss->current->finished) {
+			global.boss->current->endtime = global.frames + ATTACK_END_DELAY_EXTRA;
+			global.boss->current->finished = FINISH_FAIL;
+		}
 		return;
 	}
 

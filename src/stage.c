@@ -473,10 +473,16 @@ void draw_hud(void) {
 		draw_text(AL_Left, -6, 200, "N/A", _fonts.standard);
 		glColor4f(1, 1, 1, 1.0);
 	} else {
-		float a = 1;
+		float a = 1, s = 0;
 	
-		if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell)
-			a = 0.5 + 0.5 * (-min(0, global.frames - global.boss->current->starttime) / (float)ATTACK_START_DELAY);
+		if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell) {
+			float fadein  = min(1, -min(0, global.frames - global.boss->current->starttime) / (float)ATTACK_START_DELAY);
+			float fadeout = (!!global.boss->current->finished) * (1 - (global.boss->current->endtime - global.frames) / (float)ATTACK_END_DELAY_EXTRA) / 0.74;
+			float fade = max(fadein, fadeout);
+
+			s = 1 - fade;
+			a = 0.5 + 0.5 * fade;
+		}
 	
 		if(a != 1) glColor4f(a,a,a,a);
 		for(i = 0; i < global.plr.lifes; i++)
@@ -485,6 +491,21 @@ void draw_hud(void) {
 		for(i = 0; i < global.plr.bombs; i++)
 			draw_texture(16*i,200, "star");
 		if(a != 1) glColor4f(1,1,1,1);
+
+		if(s) {
+			float s2 = max(0, swing(s, 3));
+			glPushMatrix();
+			glTranslatef((SCREEN_W - 615) * 0.25, 400, 0);
+			//glColor4f(1, 0.5, 0.3, 0.7 * s);
+			glColor4f(0.3, 0.6, 0.7, 0.7 * s);
+			glRotatef(-25 + 360 * (1-s2), 0, 0, 1);
+			glScalef(s2, s2, 0);
+			draw_text(AL_Center,  1,  1, "Extra Spell!", _fonts.mainmenu);
+			draw_text(AL_Center, -1, -1, "Extra Spell!", _fonts.mainmenu);
+			glColor4f(1, 1, 1, s);
+			draw_text(AL_Center, 0, 0, "Extra Spell!", _fonts.mainmenu);
+			glPopMatrix();
+		}
 	}
 
 	sprintf(buf, "%.2f", global.plr.power / 100.0);
@@ -590,8 +611,15 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		video_set_viewport();
 		glPushMatrix();
-		if(global.shake_view)
+		if(global.shake_view) {
 			glTranslatef(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames+3),0);
+			
+			if(global.shake_view_fade) {
+				global.shake_view -= global.shake_view_fade;
+				if(global.shake_view <= 0)
+					global.shake_view = global.shake_view_fade = 0;
+			}
+		}
 
 		draw_fbo_viewport(&resources.fsec);
 

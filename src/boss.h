@@ -45,13 +45,20 @@ typedef struct Attack {
 
 	int timeout;
 	int dmglimit;
-	int failed;
+	int finished;
+	int endtime;
 
 	BossRule rule;
 	BossRule draw_rule;
 
 	AttackInfo *info; // NULL for attacks created directly through boss_add_attack
 } Attack;
+
+enum {
+	FINISH_NOPE,
+	FINISH_WIN,
+	FINISH_FAIL
+};
 
 typedef struct Boss {
 	Attack *attacks;

@@ -417,13 +417,14 @@ Boss *create_cirno(void) {
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro_boss, NULL);
 
 	// extra spell test
-	boss_add_attack(cirno, AT_ExtraSpell, "Frost Sign ~ Crystal Blizzard", 60, 40000, cirno_crystal_blizzard, cirno_pfreeze_bg);
 
+	boss_add_attack(cirno, AT_ExtraSpell, "Frost Sign ~ Crystal Blizzard", 10, 40000, cirno_crystal_blizzard, cirno_pfreeze_bg);
+	/*
 	boss_add_attack(cirno, AT_Normal, "Iceplosion 0", 20, 20000, cirno_iceplosion0, NULL);
 	boss_add_attack_from_info(cirno, stage1_spells+1, false);
 	boss_add_attack(cirno, AT_Normal, "Iceplosion 1", 20, 20000, cirno_iceplosion1, NULL);
 	boss_add_attack_from_info(cirno, stage1_spells+2, false);
-
+	*/
 	start_attack(cirno, cirno->attacks);
 	return cirno;
 }
@@ -631,7 +632,8 @@ int stage1_tritoss(Enemy *e, int t) {
 
 void stage1_events(void) {
 	TIMER(&global.timer);
-	global.timer = 5000;
+	AT(0)
+		global.timer = 5000;
 	/*
 	// graze testing
  	AT(0) {
