@@ -237,6 +237,7 @@ void player_realdeath(Player *plr) {
 		if(!global.boss->current->finished) {
 			global.boss->current->endtime = global.frames + ATTACK_END_DELAY_EXTRA;
 			global.boss->current->finished = FINISH_FAIL;
+			boss_kill_projectiles();
 		}
 		return;
 	}

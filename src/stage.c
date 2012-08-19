@@ -473,12 +473,12 @@ void draw_hud(void) {
 		draw_text(AL_Left, -6, 200, "N/A", _fonts.standard);
 		glColor4f(1, 1, 1, 1.0);
 	} else {
-		float a = 1, s = 0;
+		float a = 1, s = 0, fadein = 1, fadeout = 1, fade = 1;
 	
 		if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell) {
-			float fadein  = min(1, -min(0, global.frames - global.boss->current->starttime) / (float)ATTACK_START_DELAY);
-			float fadeout = (!!global.boss->current->finished) * (1 - (global.boss->current->endtime - global.frames) / (float)ATTACK_END_DELAY_EXTRA) / 0.74;
-			float fade = max(fadein, fadeout);
+			fadein  = min(1, -min(0, global.frames - global.boss->current->starttime) / (float)ATTACK_START_DELAY);
+			fadeout = (!!global.boss->current->finished) * (1 - (global.boss->current->endtime - global.frames) / (float)ATTACK_END_DELAY_EXTRA) / 0.74;
+			fade = max(fadein, fadeout);
 
 			s = 1 - fade;
 			a = 0.5 + 0.5 * fade;
@@ -495,7 +495,7 @@ void draw_hud(void) {
 		if(s) {
 			float s2 = max(0, swing(s, 3));
 			glPushMatrix();
-			glTranslatef((SCREEN_W - 615) * 0.25, 400, 0);
+			glTranslatef((SCREEN_W - 615) * 0.25 - 615 * (1 - pow(2*fadein-1, 2)), 400, 0);
 			//glColor4f(1, 0.5, 0.3, 0.7 * s);
 			glColor4f(0.3, 0.6, 0.7, 0.7 * s);
 			glRotatef(-25 + 360 * (1-s2), 0, 0, 1);

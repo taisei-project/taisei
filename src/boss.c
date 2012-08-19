@@ -177,6 +177,14 @@ void boss_rule_extra(Boss *boss, float alpha) {
 	}
 }
 
+void boss_kill_projectiles(void) {
+	Projectile *p;
+	for(p = global.projs; p; p = p->next)
+		if(p->type == FairyProj)
+			p->type = DeadProj;
+	delete_lasers();
+}
+
 void process_boss(Boss *boss) {
 	if(boss->current) {
 		int time = global.frames - boss->current->starttime;
@@ -189,10 +197,13 @@ void process_boss(Boss *boss) {
 			boss->current->rule(boss, time);
 
 		if(extra) {
+			float base = 0.2;
+			float ampl = 0.2;
 			float s = sin(time / 90.0 + M_PI*1.2);
+			
 			if(boss->current->endtime) {
 				float p = (boss->current->endtime - global.frames)/(float)ATTACK_END_DELAY_EXTRA;
-				float a = max((0.5 + 0.2 * s) * p * 0.5, 5 * pow(1 - p, 3));
+				float a = max((base + ampl * s) * p * 0.5, 5 * pow(1 - p, 3));
 				if(a < 2) {
 					global.shake_view = 3 * a;
 					boss_rule_extra(boss, a);
@@ -216,12 +227,15 @@ void process_boss(Boss *boss) {
 				float o = min(0, -5 + time/30.0);
 				float q = (time <= 150? 1 - pow(time/250.0, 2) : min(1, time/60.0));
 				
-				boss_rule_extra(boss, max(1-time/300.0, 0.5 + 0.2 * s) * q);
+				boss_rule_extra(boss, max(1-time/300.0, base + ampl * s) * q);
 				if(o) {
-					boss_rule_extra(boss, max(1-time/300.0, 0.5 + 0.2 * s) - o);
+					boss_rule_extra(boss, max(1-time/300.0, base + ampl * s) - o);
 					if(!global.shake_view) {
 						global.shake_view = 5;
 						global.shake_view_fade = 0.9;
+					} else if(o > -0.05) {
+						global.shake_view = 10;
+						global.shake_view_fade = 0.5;
 					}
 				}
 			}
@@ -230,6 +244,7 @@ void process_boss(Boss *boss) {
 		if(!boss->current->endtime && (boss->current->type != AT_Move && boss->dmg >= boss->current->dmglimit || time > boss->current->timeout)) {
 			boss->current->endtime = global.frames + extra * ATTACK_END_DELAY_EXTRA;
 			boss->current->finished = FINISH_WIN;
+			boss_kill_projectiles();
 		}
 		
 		if(over) {
@@ -252,13 +267,7 @@ void boss_death(Boss **boss) {
 
 	free_boss(*boss);
 	*boss = NULL;
-
-	Projectile *p;
-	for(p = global.projs; p; p = p->next)
-		if(p->type == FairyProj)
-			p->type = DeadProj;
-
-	delete_lasers();
+	boss_kill_projectiles();
 }
 
 void free_boss(Boss *boss) {
