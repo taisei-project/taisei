@@ -217,8 +217,13 @@ void process_boss(Boss *boss) {
 				float q = (time <= 150? 1 - pow(time/250.0, 2) : min(1, time/60.0));
 				
 				boss_rule_extra(boss, max(1-time/300.0, 0.5 + 0.2 * s) * q);
-				if(o)
+				if(o) {
 					boss_rule_extra(boss, max(1-time/300.0, 0.5 + 0.2 * s) - o);
+					if(!global.shake_view) {
+						global.shake_view = 5;
+						global.shake_view_fade = 0.9;
+					}
+				}
 			}
 		}
 		

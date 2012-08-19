@@ -504,6 +504,7 @@ void draw_hud(void) {
 			draw_text(AL_Center, -1, -1, "Extra Spell!", _fonts.mainmenu);
 			glColor4f(1, 1, 1, s);
 			draw_text(AL_Center, 0, 0, "Extra Spell!", _fonts.mainmenu);
+		glColor4f(1, 1, 1, 1);
 			glPopMatrix();
 		}
 	}
