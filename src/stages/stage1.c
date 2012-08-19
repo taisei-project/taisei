@@ -417,8 +417,8 @@ Boss *create_cirno(void) {
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro_boss, NULL);
 
 	// extra spell test
+	boss_add_attack(cirno, AT_ExtraSpell, "Frost Sign ~ Crystal Blizzard", 60, 40000, cirno_crystal_blizzard, cirno_pfreeze_bg);
 
-	boss_add_attack(cirno, AT_ExtraSpell, "Frost Sign ~ Crystal Blizzard", 10, 40000, cirno_crystal_blizzard, cirno_pfreeze_bg);
 	/*
 	boss_add_attack(cirno, AT_Normal, "Iceplosion 0", 20, 20000, cirno_iceplosion0, NULL);
 	boss_add_attack_from_info(cirno, stage1_spells+1, false);
