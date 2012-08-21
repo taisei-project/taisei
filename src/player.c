@@ -205,8 +205,13 @@ void player_realdeath(Player *plr) {
 	plr->respawntime = global.frames;
 	plr->moveflags = 0;
 
-	create_item(plr->pos, 6-15*I, Power);
-	create_item(plr->pos, -6-15*I, Power);
+	int drop = (plr->power / 3.0) / POWER_VALUE;
+
+	for(int i = 0; i < drop; ++i) {
+		create_item(plr->pos, (10+7*frand()) * cexp(I*(1.25*M_PI+0.5*i*M_PI/drop)), Power);
+	}
+
+	player_set_power(plr, plr->power / 2.0);
 
 	plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I+30.0I;
 	plr->recovery = -(global.frames + DEATH_DELAY + 150);
