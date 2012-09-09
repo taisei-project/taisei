@@ -164,7 +164,7 @@ void take_screenshot(void)
 	strcat(outpath, outfile);
 	
 	printf("Saving screenshot as %s\n", outpath);
-	out = fopen(outpath, "w");
+	out = fopen(outpath, "wb");
 	free(outpath);
 	
 	if(!out)
