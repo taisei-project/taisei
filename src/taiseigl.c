@@ -7,10 +7,12 @@
 
 #include "taiseigl.h"
 
+#ifndef __APPLE__
 #ifdef __WIN32__
 // #include <GL/wgl.h>
 #else
 #include <GL/glx.h>
+#endif
 #endif
 
 #include <string.h>
@@ -18,6 +20,7 @@
 
 int tgl_ext[_TGLEXT_COUNT];
 
+#ifndef __APPLE__
 typedef void (*GLFuncPtr)(void);
 GLFuncPtr get_proc_address(char *name) {
 #ifdef __WIN32__
@@ -26,6 +29,7 @@ GLFuncPtr get_proc_address(char *name) {
 	return glXGetProcAddress((GLubyte *)name);
 #endif
 }
+#endif
 
 
 void check_gl_extensions(void) {
@@ -53,6 +57,7 @@ void load_gl_functions(void) {
 	glBlendEquation = (PFNGLBLENDEQUATIONPROC)get_proc_address("glBlendEquation");
 #endif
 	
+#ifndef __APPLE__
 	glBlendFuncSeparate = (PFNGLBLENDFUNCSEPARATEPROC)get_proc_address("glBlendFuncSeparate");
 	glDrawArraysInstanced = (PFNGLDRAWARRAYSINSTANCEDPROC)get_proc_address("glDrawArraysInstanced");
 
@@ -98,4 +103,5 @@ void load_gl_functions(void) {
 	glUniform2fv = (PFNGLUNIFORM2FVPROC)get_proc_address("glUniform2fv");
 	glUniform3fv = (PFNGLUNIFORM3FVPROC)get_proc_address("glUniform3fv");
 	glUniform4fv = (PFNGLUNIFORM4FVPROC)get_proc_address("glUniform4fv");
+#endif
 }

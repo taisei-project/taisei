@@ -8,9 +8,15 @@
 #ifndef TAISEIGL_H
 #define TAISEIGL_H
 
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#include <OpenGL/glext.h>
+#else
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glext.h>
+#endif
 
 enum {
 	TGLEXT_draw_instanced = 0,
@@ -27,6 +33,7 @@ PFNGLACTIVETEXTUREPROC glActiveTexture;
 PFNGLBLENDEQUATIONPROC glBlendEquation;
 #endif
 
+#ifndef __APPLE__
 PFNGLBLENDFUNCSEPARATEPROC glBlendFuncSeparate;
 PFNGLDRAWARRAYSINSTANCEDPROC glDrawArraysInstanced;
 
@@ -72,5 +79,6 @@ PFNGLUNIFORM4IPROC glUniform4i;
 PFNGLUNIFORM2FVPROC glUniform2fv;
 PFNGLUNIFORM3FVPROC glUniform3fv;
 PFNGLUNIFORM4FVPROC glUniform4fv;
+#endif
 
 #endif
