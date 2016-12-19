@@ -66,7 +66,7 @@ int stage2_great_circle(Enemy *e, int t) {
 	}
 	
 	AT(210+global.diff*25) {
-		e->args[0] = 2I;
+		e->args[0] = 2.0I;
 	}
 	
 	return 1;
@@ -104,7 +104,7 @@ int stage2_small_spin_circle(Enemy *e, int t) {
 		e->pos0 = e->pos;
 		
 	FROM_TO(50,80+global.diff*5,5)
-		create_projectile3c("ball", e->pos, rgb(0.9,0.0,0.3), spin_circle, 0.02 - 0.04*(!e->dir), e->pos0 + _i*10*((1-2*e->dir)+1I), (1-2*e->dir)+1I);
+		create_projectile3c("ball", e->pos, rgb(0.9,0.0,0.3), spin_circle, 0.02 - 0.04*(!e->dir), e->pos0 + _i*10*((1-2*e->dir)+1.0I), (1-2*e->dir)+1.0I);
 	
 	return 1;
 }
@@ -172,7 +172,7 @@ int stage2_flea(Enemy *e, int t) {
 	
 		
 	FROM_TO(10, 400, 20-global.diff*2-t/70) {
-		create_projectile2c("flea", e->pos, rgb(0.2,0.2,1), asymptotic, 1.5*cexp(2I*M_PI*frand()), 1.5);
+		create_projectile2c("flea", e->pos, rgb(0.2,0.2,1), asymptotic, 1.5*cexp(2.0I*M_PI*frand()), 1.5);
 	}
 	
 	return 1;
@@ -192,7 +192,7 @@ int stage2_accel_circle(Enemy *e, int t) {
 		
 		int i;
 		for(i = 0; i < 6; i++) {
-			create_projectile2c("ball", e->pos, rgb(0.6,0.1,0.2), accelerated, 1.5*cexp(2I*M_PI/6*i)+cexp(I*carg(global.plr.pos - e->pos)), -0.02*cexp(I*(2*M_PI/6*i+0.02*frand()*global.diff)));
+			create_projectile2c("ball", e->pos, rgb(0.6,0.1,0.2), accelerated, 1.5*cexp(2.0I*M_PI/6*i)+cexp(I*carg(global.plr.pos - e->pos)), -0.02*cexp(I*(2*M_PI/6*i+0.02*frand()*global.diff)));
 		}
 	}
 	
@@ -204,7 +204,7 @@ int stage2_accel_circle(Enemy *e, int t) {
 
 void wriggle_intro(Boss *w, int t) {
 	if(t != EVENT_DEATH)
-		w->pos = VIEWPORT_W/2 + 100I + 400*(1.0-t/(4.0*FPS))*cexp(I*(3-t*0.04));
+		w->pos = VIEWPORT_W/2 + 100.0I + 400*(1.0-t/(4.0*FPS))*cexp(I*(3-t*0.04));
 }
 
 int wriggle_bug(Projectile *p, int t) {
@@ -244,7 +244,7 @@ void wriggle_small_storm(Boss *w, int time) {
 }
 
 Boss *create_wriggle_mid(void) {
-	Boss* wriggle = create_boss("Wriggle", "wriggle", VIEWPORT_W + 150 - 30I);
+	Boss* wriggle = create_boss("Wriggle", "wriggle", VIEWPORT_W + 150 - 30.0I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 4, 0, wriggle_intro, NULL);
 	boss_add_attack(wriggle, AT_Normal, "Small Bug Storm", 20, 20000, wriggle_small_storm, NULL);
 	
@@ -258,7 +258,7 @@ void hina_intro(Boss *h, int time) {
 	AT(100)
 		global.dialog = stage2_dialog();
 	
-	GO_TO(h, VIEWPORT_W/2 + 100I, 0.05);
+	GO_TO(h, VIEWPORT_W/2 + 100.0I, 0.05);
 }
 
 void hina_cards1(Boss *h, int time) {
@@ -281,7 +281,7 @@ void hina_amulet(Boss *h, int time) {
 		return;
 	
 	if(time < 100)
-		GO_TO(h, VIEWPORT_W/2 + 200I, 0.02);
+		GO_TO(h, VIEWPORT_W/2 + 200.0I, 0.02);
 	
 	TIMER(&t);
 	
@@ -324,12 +324,12 @@ void hina_bad_pick(Boss *h, int time) {
 	if(time < 0)
 		return;
 	
-	GO_TO(h, VIEWPORT_W/5*(time/400+0.6)+ 100I, 0.02);
+	GO_TO(h, VIEWPORT_W/5*(time/400+0.6)+ 100.0I, 0.02);
 	
 	FROM_TO(100, 500, 5) {
 		
 		for(i = 1; i < 5; i++) {
-			create_projectile1c("crystal", VIEWPORT_W/5*i, rgb(0.2,0,0.2), linear, 7I);
+			create_projectile1c("crystal", VIEWPORT_W/5*i, rgb(0.2,0,0.2), linear, 7.0I);
 		}
 	}
 	
@@ -392,7 +392,7 @@ void hina_spell_bg(Boss *h, int time) {
 }
 
 Boss *create_hina(void) {
-	Boss* hina = create_boss("Kagiyama Hina", "hina", VIEWPORT_W + 150 + 100I);
+	Boss* hina = create_boss("Kagiyama Hina", "hina", VIEWPORT_W + 150 + 100.0I);
 	boss_add_attack(hina, AT_Move, "Introduction", 2, 0, hina_intro, NULL);
 	boss_add_attack(hina, AT_Normal, "Cards1", 20, 15000, hina_cards1, NULL);
 	boss_add_attack(hina, AT_Spellcard, "Shard ~ Amulet of Harm", 26, 25000, hina_amulet, hina_spell_bg);
@@ -408,30 +408,30 @@ void stage2_events(void) {
 	TIMER(&global.timer);
 		
 	AT(300) {
-		create_enemy1c(VIEWPORT_W/2-10I, 7000+500*global.diff, BigFairy, stage2_great_circle, 2I);
+		create_enemy1c(VIEWPORT_W/2-10.0I, 7000+500*global.diff, BigFairy, stage2_great_circle, 2.0I);
 	}
 	
 	FROM_TO(650-50*global.diff, 750+25*(4-global.diff), 50) {
-		create_enemy1c(VIEWPORT_W*((_i)%2)+50I, 2000, Fairy, stage2_small_spin_circle, 2-4*(_i%2)+1I);
+		create_enemy1c(VIEWPORT_W*((_i)%2)+50.0I, 2000, Fairy, stage2_small_spin_circle, 2-4*(_i%2)+1.0I);
 	}
 	
 	FROM_TO(850, 1000, 15)
-		create_enemy1c(VIEWPORT_W/2+25*(_i-5)-20I, 200, Fairy, stage2_aim, (2+frand()*0.3)*I);
+		create_enemy1c(VIEWPORT_W/2+25*(_i-5)-20.0I, 200, Fairy, stage2_aim, (2+frand()*0.3)*I);
 		
 	FROM_TO(960, 1200, 20)
 		create_enemy3c(VIEWPORT_W-80+(VIEWPORT_H+20)*I, 200, Fairy, stage2_sidebox_trail, 3 - 0.5*M_PI*I, -0.02, 90);
 	
 	FROM_TO(1140, 1400, 20)
-		create_enemy3c(200-20I, 200, Fairy, stage2_sidebox_trail, 3+0.5I*M_PI, -0.05, 70);
+		create_enemy3c(200-20.0I, 200, Fairy, stage2_sidebox_trail, 3+0.5I*M_PI, -0.05, 70);
 		
 	AT(1300)
-		create_enemy1c(150-10I, 4000, BigFairy, stage2_great_circle, 2.5I);
+		create_enemy1c(150-10.0I, 4000, BigFairy, stage2_great_circle, 2.5I);
 		
 	AT(1500)
-		create_enemy1c(VIEWPORT_W-150-10I, 4000, BigFairy, stage2_great_circle, 2.5I);
+		create_enemy1c(VIEWPORT_W-150-10.0I, 4000, BigFairy, stage2_great_circle, 2.5I);
 		
 	FROM_TO(1700, 2000, 30)
-		create_enemy1c(VIEWPORT_W*frand()-20I, 200, Fairy, stage2_flea, 1.7I);
+		create_enemy1c(VIEWPORT_W*frand()-20.0I, 200, Fairy, stage2_flea, 1.7I);
 		
 	FROM_TO(1950, 2500, 60) {
 		create_enemy3c(VIEWPORT_W-40+(VIEWPORT_H+20)*I, 200, Fairy, stage2_sidebox_trail, 5 - 0.5*M_PI*I, -0.02, 83-global.diff*3);
@@ -439,8 +439,8 @@ void stage2_events(void) {
 	}
 	
 	AT(2500) {
-		create_enemy1c(VIEWPORT_W/4-10I, 2000, Fairy, stage2_accel_circle, 2I);
-		create_enemy1c(VIEWPORT_W/4*3-10I, 2000, Fairy, stage2_accel_circle, 2I);
+		create_enemy1c(VIEWPORT_W/4-10.0I, 2000, Fairy, stage2_accel_circle, 2.0I);
+		create_enemy1c(VIEWPORT_W/4*3-10.0I, 2000, Fairy, stage2_accel_circle, 2.0I);
 	}
 		
 	AT(2800)
@@ -452,14 +452,14 @@ void stage2_events(void) {
 	}
 	
 	FROM_TO(3000, 3600, 300) {
-		create_enemy1c(VIEWPORT_W/2-60*(_i-1)-10I, 7000+500*global.diff, BigFairy, stage2_great_circle, 2I);
+		create_enemy1c(VIEWPORT_W/2-60*(_i-1)-10.0I, 7000+500*global.diff, BigFairy, stage2_great_circle, 2.0I);
 	}
 	
 	FROM_TO(3700, 4500, 40)
-		create_enemy1c(VIEWPORT_W*frand()-10I, 150, Fairy, stage2_flea, 2.5I);
+		create_enemy1c(VIEWPORT_W*frand()-10.0I, 150, Fairy, stage2_flea, 2.5I);
 		
 	FROM_TO(4000, 4600, 100)
-		create_enemy1c(VIEWPORT_W/2+100-200*frand()-10I, 2000, Fairy, stage2_accel_circle, 2I);
+		create_enemy1c(VIEWPORT_W/2+100-200*frand()-10.0I, 2000, Fairy, stage2_accel_circle, 2.0I);
 		
 	AT(5100) {
 		global.boss = create_hina();

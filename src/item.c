@@ -63,7 +63,7 @@ void delete_items(void) {
 
 void move_item(Item *i) {
 	int t = global.frames - i->birthtime;
-	complex lim = 0 + 2I;
+	complex lim = 0 + 2.0I;
 	
 	if(i->auto_collect)	
 		i->pos -= (7+i->auto_collect)*cexp(I*carg(i->pos - global.plr.pos));

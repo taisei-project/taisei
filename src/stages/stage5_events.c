@@ -78,7 +78,7 @@ int stage5_lightburst(Enemy *e, int t) {
 		int i;
 		int c = 5+global.diff;
 		for(i = 0; i < c; i++) {
-			complex n = cexp(I*carg(global.plr.pos) + 2I*M_PI/c*i);
+			complex n = cexp(I*carg(global.plr.pos) + 2.0I*M_PI/c*i);
 			create_projectile2c("ball", e->pos + 50*n*cexp(-0.4I*_i*global.diff), rgb(0.3, 0, 0.7), asymptotic, 3*n, 3);
 		}
 	}
@@ -157,7 +157,7 @@ int stage5_miner(Enemy *e, int t) {
 	
 	FROM_TO(0, 600, 5-global.diff/2) {
 		tsrand_fill(2);
-		create_projectile1c("rice", e->pos + 20*cexp(2I*M_PI*afrand(0)), rgb(0,0,cabs(e->args[0])), linear, cexp(2I*M_PI*afrand(1)));
+		create_projectile1c("rice", e->pos + 20*cexp(2.0I*M_PI*afrand(0)), rgb(0,0,cabs(e->args[0])), linear, cexp(2.0I*M_PI*afrand(1)));
 	}
 	
 	return 1;
@@ -191,7 +191,7 @@ int stage5_explosion(Enemy *e, int t) {
 void iku_mid_intro(Boss *b, int t) {
 	TIMER(&t);
 	
-	b->pos += -1-7I+10*t*(cimag(b->pos)<-200);
+	b->pos += -1-7.0I+10*t*(cimag(b->pos)<-200);
 	
 	FROM_TO(90, 110, 10) {
 		create_enemy2c(b->pos, ENEMY_IMMUNE, Swirl, stage5_explosion, -2-0.5*_i+I*_i, _i == 1);
@@ -202,7 +202,7 @@ void iku_mid_intro(Boss *b, int t) {
 }
 
 Boss *create_iku_mid(void) {
-	Boss *b = create_boss("Bombs?", "iku", VIEWPORT_W+800I);
+	Boss *b = create_boss("Bombs?", "iku", VIEWPORT_W+800.0I);
 	
 	boss_add_attack(b, AT_SurvivalSpell, "Static Bombs", 16, 10, iku_mid_intro, NULL);
 	
@@ -224,8 +224,8 @@ int stage5_lightburst2(Enemy *e, int t) {
 		int c = 5+global.diff;
 		for(i = 0; i < c; i++) {
 			tsrand_fill(2);
-			complex n = cexp(I*carg(global.plr.pos-e->pos) + 2I*M_PI/c*i);
-			create_projectile2c("bigball", e->pos + 50*n*cexp(-1I*_i*global.diff), rgb(0.3, 0, 0.7+0.3*(_i&1)), asymptotic, 2.5*n+0.25*global.diff*afrand(0)*cexp(2I*M_PI*afrand(1)), 3);
+			complex n = cexp(I*carg(global.plr.pos-e->pos) + 2.0I*M_PI/c*i);
+			create_projectile2c("bigball", e->pos + 50*n*cexp(-1.0I*_i*global.diff), rgb(0.3, 0, 0.7+0.3*(_i&1)), asymptotic, 2.5*n+0.25*global.diff*afrand(0)*cexp(2.0I*M_PI*afrand(1)), 3);
 		}
 	}
 	
@@ -254,7 +254,7 @@ int stage5_superbullet(Enemy *e, int t) {
 }
 
 void iku_intro(Boss *b, int t) {
-	GO_TO(b, VIEWPORT_W/2+300I, 0.01);
+	GO_TO(b, VIEWPORT_W/2+300.0I, 0.01);
 	
 	if(t == 100)
 		global.dialog = stage5_boss_dialog();
@@ -266,7 +266,7 @@ void iku_bolts(Boss *b, int time) {
 	
 	FROM_TO(0, 400, 2) {
 		tsrand_fill(2);
-		create_projectile2c("bigball", VIEWPORT_W*afrand(0)-15I, rgb(1,0,0), accelerated, 1-2*afrand(1)+1.7I, -0.01I)->draw = ProjDrawSub;
+		create_projectile2c("bigball", VIEWPORT_W*afrand(0)-15.0I, rgb(1,0,0), accelerated, 1-2*afrand(1)+1.7I, -0.01I)->draw = ProjDrawSub;
 	}
 		
 	FROM_TO(60, 400, 50) {
@@ -277,22 +277,22 @@ void iku_bolts(Boss *b, int time) {
 	}
 	
 	FROM_TO(0, 70, 1)
-		GO_TO(b, 100+300I, 0.02);
+		GO_TO(b, 100+300.0I, 0.02);
 		
 	FROM_TO(100, 200, 1)
-		GO_TO(b, VIEWPORT_W/2+100I, 0.02);
+		GO_TO(b, VIEWPORT_W/2+100.0I, 0.02);
 		
 	FROM_TO(230, 300, 1)
-		GO_TO(b, VIEWPORT_W-100+300I, 0.02);
+		GO_TO(b, VIEWPORT_W-100+300.0I, 0.02);
 		
 	FROM_TO(330, 400, 1)
-		GO_TO(b, VIEWPORT_W/2+100I, 0.02);
+		GO_TO(b, VIEWPORT_W/2+100.0I, 0.02);
 		
 }
 
 void iku_atmospheric(Boss *b, int time) {
 	if(time < 0) {
-		GO_TO(b, VIEWPORT_W/2+200I, 0.06);
+		GO_TO(b, VIEWPORT_W/2+200.0I, 0.06);
 		return;
 	}
 	
@@ -326,7 +326,7 @@ void iku_bolts2(Boss *b, int time) {
 	
 	FROM_TO(0, 400, 2) {
 		tsrand_fill(2);
-		create_projectile2c("bigball", VIEWPORT_W*afrand(0)-15I, rgb(1,0,0), accelerated, 1-2*afrand(1)+1.7I, -0.01I)->draw = ProjDrawSub;
+		create_projectile2c("bigball", VIEWPORT_W*afrand(0)-15.0I, rgb(1,0,0), accelerated, 1-2*afrand(1)+1.7I, -0.01I)->draw = ProjDrawSub;
 	}
 		
 	FROM_TO(0, 400, 60)
@@ -337,10 +337,10 @@ void iku_bolts2(Boss *b, int time) {
 			create_projectile1c("plainball", b->pos, rgb(0.2,0,0.8), linear, cexp(0.1I*_i));
 	
 	FROM_TO(0, 70, 1)
-		GO_TO(b, 100+200I, 0.02);
+		GO_TO(b, 100+200.0I, 0.02);
 				
 	FROM_TO(230, 300, 1)
-		GO_TO(b, VIEWPORT_W-100+200I, 0.02);
+		GO_TO(b, VIEWPORT_W-100+200.0I, 0.02);
 		
 }
 
@@ -355,7 +355,7 @@ int lightning_slave(Enemy *e, int t) {
 	e->pos += e->args[0];
 	
 	FROM_TO(0,200,20)
-		e->args[0] *= cexp(2I*M_PI*frand());
+		e->args[0] *= cexp(2.0I*M_PI*frand());
 	
 	FROM_TO(0, 200, 3)
 		if(cabs(e->pos-global.plr.pos) > 60) {
@@ -376,14 +376,14 @@ void iku_lightning(Boss *b, int time) {
 	}
 	
 	if(time < 0) {
-		GO_TO(b, VIEWPORT_W/2.0+200I, 0.03);
+		GO_TO(b, VIEWPORT_W/2.0+200.0I, 0.03);
 		return;
 	}
 	
 	TIMER(&t);	
 			
 	FROM_TO(0, 100, 1) {
-		complex n = cexp(2I*M_PI*frand());
+		complex n = cexp(2.0I*M_PI*frand());
 		float l = 200*frand()+100;
 		float s = 4+_i*0.01;
 		create_particle2c("flare", b->pos+l*n, rgb(0.7,1,1), Shrink, timeout_linear, l/s, -s*n);
@@ -392,7 +392,7 @@ void iku_lightning(Boss *b, int time) {
 	AT(150) {
 		int i;
 		for(i = 0; i < global.diff+1; i++)
-			create_enemy1c(b->pos, ENEMY_IMMUNE, NULL, lightning_slave, 10*cexp(I*carg(global.plr.pos - b->pos)+2I*M_PI/(global.diff+1)*i));
+			create_enemy1c(b->pos, ENEMY_IMMUNE, NULL, lightning_slave, 10*cexp(I*carg(global.plr.pos - b->pos)+2.0I*M_PI/(global.diff+1)*i));
 	}
 }
 
@@ -402,7 +402,7 @@ void iku_bolts3(Boss *b, int time) {
 	
 	FROM_TO(0, 400, 2) {
 		tsrand_fill(2);
-		create_projectile2c("bigball", VIEWPORT_W*afrand(0)-15I, rgb(1,0,0), accelerated, 1-2*afrand(1)+1.8I, -0.01I)->draw = ProjDrawSub;
+		create_projectile2c("bigball", VIEWPORT_W*afrand(0)-15.0I, rgb(1,0,0), accelerated, 1-2*afrand(1)+1.8I, -0.01I)->draw = ProjDrawSub;
 	}
 		
 	FROM_TO(60, 400, 60) {
@@ -418,10 +418,10 @@ void iku_bolts3(Boss *b, int time) {
 			create_projectile1c("plainball", b->pos, rgb(0.2,0,0.8), linear, cexp(0.1I*_i));
 	
 	FROM_TO(0, 70, 1)
-		GO_TO(b, 100+200I, 0.02);
+		GO_TO(b, 100+200.0I, 0.02);
 				
 	FROM_TO(230, 300, 1)
-		GO_TO(b, VIEWPORT_W-100+200I, 0.02);
+		GO_TO(b, VIEWPORT_W-100+200.0I, 0.02);
 		
 }
 
@@ -441,7 +441,7 @@ complex cathode_laser(Laser *l, float t) {
 
 void iku_cathode(Boss *b, int t) {
 	if(t < 0) {
-		GO_TO(b, VIEWPORT_W/2+200I, 0.02);
+		GO_TO(b, VIEWPORT_W/2+200.0I, 0.02);
 		return;
 	}
 	
@@ -452,15 +452,15 @@ void iku_cathode(Boss *b, int t) {
 		int c = 5+global.diff;
 		
 		for(i = 0; i < c; i++) {
-			create_projectile2c("bigball", b->pos, rgb(0.2, 0.4, 1), induction_bullet, 2*cexp(2I*M_PI*frand()), 0.01*I*(1-2*(_i&1)))->draw = ProjDrawAdd;
-			create_lasercurve2c(b->pos, 60, 200, rgb(0.4, 1, 1), cathode_laser, 2*cexp(2I*M_PI*M_PI*frand()), 0.015*I*(1-2*(_i&1)));
+			create_projectile2c("bigball", b->pos, rgb(0.2, 0.4, 1), induction_bullet, 2*cexp(2.0I*M_PI*frand()), 0.01*I*(1-2*(_i&1)))->draw = ProjDrawAdd;
+			create_lasercurve2c(b->pos, 60, 200, rgb(0.4, 1, 1), cathode_laser, 2*cexp(2.0I*M_PI*M_PI*frand()), 0.015*I*(1-2*(_i&1)));
 		}
 	}
 }
 
 void iku_induction(Boss *b, int t) {
 	if(t < 0) {
-		GO_TO(b, VIEWPORT_W/2+200I, 0.02);
+		GO_TO(b, VIEWPORT_W/2+200.0I, 0.02);
 		return;
 	}
 		
@@ -471,7 +471,7 @@ void iku_induction(Boss *b, int t) {
 		int c = 5+global.diff;
 		for(i = 0; i < c; i++) {
 			for(j = 0; j < 2; j++)
-				create_projectile2c("ball", b->pos, rgb(0, 1, 1), induction_bullet, 2*cexp(2I*M_PI/c*i+I*M_PI/2+0.6I*(_i/6)), (0.01+0.001*global.diff)*I*(1-2*j))->draw = ProjDrawAdd;			
+				create_projectile2c("ball", b->pos, rgb(0, 1, 1), induction_bullet, 2*cexp(2.0I*M_PI/c*i+I*M_PI/2+0.6I*(_i/6)), (0.01+0.001*global.diff)*I*(1-2*j))->draw = ProjDrawAdd;			
 		}
 		
 	}
@@ -480,7 +480,7 @@ void iku_induction(Boss *b, int t) {
 void iku_spell_bg(Boss *b, int t);
 
 Boss *create_iku(void) {
-	Boss *b = create_boss("Nagae Iku", "iku", VIEWPORT_W/2-200I);
+	Boss *b = create_boss("Nagae Iku", "iku", VIEWPORT_W/2-200.0I);
 	
 	boss_add_attack(b, AT_Move, "Introduction", 3, 0, iku_intro, NULL);
 	boss_add_attack(b, AT_Normal, "Bolts1", 20, 20000, iku_bolts, NULL);
@@ -498,37 +498,37 @@ void stage5_events(void) {
 	TIMER(&global.timer);
 			
 	FROM_TO(60, 120, 10)
-		create_enemy1c(VIEWPORT_W+70I+50*_i*I, 300, Fairy, stage5_greeter, -3);
+		create_enemy1c(VIEWPORT_W+70.0I+50*_i*I, 300, Fairy, stage5_greeter, -3);
 	
 	FROM_TO(270, 320, 25)
-		create_enemy1c(VIEWPORT_W/4+VIEWPORT_W/2*_i, 2000, BigFairy, stage5_lightburst, 2I);
+		create_enemy1c(VIEWPORT_W/4+VIEWPORT_W/2*_i, 2000, BigFairy, stage5_lightburst, 2.0I);
 		
 	FROM_TO(500, 600, 10) {
 		tsrand_fill(2);
-		create_enemy3c(200I*afrand(0), 500, Swirl, stage5_swirl, 4+I, 70+20*afrand(1)+200I, cexp(-0.05I));
+		create_enemy3c(200.0I*afrand(0), 500, Swirl, stage5_swirl, 4+I, 70+20*afrand(1)+200.0I, cexp(-0.05I));
 	}
 		
 	FROM_TO(700, 800, 10) {
 		tsrand_fill(3);
-		create_enemy3c(VIEWPORT_W+200I*afrand(0), 500, Swirl, stage5_swirl, -4+afrand(1)*I, 70+20*afrand(2)+200I, cexp(0.05I));
+		create_enemy3c(VIEWPORT_W+200.0I*afrand(0), 500, Swirl, stage5_swirl, -4+afrand(1)*I, 70+20*afrand(2)+200.0I, cexp(0.05I));
 	}
 		
 	FROM_TO(870, 1000, 50)
 		create_enemy1c(VIEWPORT_W/4+VIEWPORT_W/2*(_i&1), 2000, BigFairy, stage5_limiter, I);
 		
 	AT(1000)
-		create_enemy1c(VIEWPORT_W/2, 9000, BigFairy, stage5_laserfairy, 2I);
+		create_enemy1c(VIEWPORT_W/2, 9000, BigFairy, stage5_laserfairy, 2.0I);
 		
 	FROM_TO(1900, 2200, 40) {
 		tsrand_fill(2);
-		create_enemy1c(VIEWPORT_W+200I*afrand(0), 500, Swirl, stage5_miner, -3+2I*afrand(1));
+		create_enemy1c(VIEWPORT_W+200.0I*afrand(0), 500, Swirl, stage5_miner, -3+2.0I*afrand(1));
 	}
 	
 	FROM_TO(1500, 2400, 80)
-		create_enemy1c(VIEWPORT_W*(_i&1)+100I, 300, Fairy, stage5_greeter, 3-6*(_i&1));
+		create_enemy1c(VIEWPORT_W*(_i&1)+100.0I, 300, Fairy, stage5_greeter, 3-6*(_i&1));
 		
 	FROM_TO(2200, 2600, 40)
-		create_enemy1c(VIEWPORT_W/10*_i, 200, Swirl, stage5_miner, 3I);
+		create_enemy1c(VIEWPORT_W/10*_i, 200, Swirl, stage5_miner, 3.0I);
 		
 	AT(2900)
 		global.boss = create_iku_mid();
@@ -537,19 +537,19 @@ void stage5_events(void) {
 		global.dialog = stage5_post_mid_dialog();
 		
 	FROM_TO(3000, 3200, 100)
-		create_enemy1c(VIEWPORT_W/2 + VIEWPORT_W/6*(1-2*(_i&1)), 2000, BigFairy, stage5_lightburst2, -1+2*(_i&1) + 2I);
+		create_enemy1c(VIEWPORT_W/2 + VIEWPORT_W/6*(1-2*(_i&1)), 2000, BigFairy, stage5_lightburst2, -1+2*(_i&1) + 2.0I);
 		
 	FROM_TO(3300, 4000, 50)
-		create_enemy1c(200I+VIEWPORT_W*(_i&1), 1500, Fairy, stage5_superbullet, 3-6*(_i&1));
+		create_enemy1c(200.0I+VIEWPORT_W*(_i&1), 1500, Fairy, stage5_superbullet, 3-6*(_i&1));
 	
 	AT(3400) {
-		create_enemy2c(VIEWPORT_W/4, 6000, BigFairy, stage5_laserfairy, 2I, 1);
-		create_enemy2c(VIEWPORT_W/4*3, 6000, BigFairy, stage5_laserfairy, 2I, 1);
+		create_enemy2c(VIEWPORT_W/4, 6000, BigFairy, stage5_laserfairy, 2.0I, 1);
+		create_enemy2c(VIEWPORT_W/4*3, 6000, BigFairy, stage5_laserfairy, 2.0I, 1);
 	}
 	
 	FROM_TO(4200, 5000, 20) {
 		float f = frand();
-		create_enemy3c(VIEWPORT_W/2, 400, Swirl, stage5_swirl, 2*cexp(I*M_PI*f)+I, 60 + 100I, cexp(0.01I*(1-2*(f<0.5))));
+		create_enemy3c(VIEWPORT_W/2, 400, Swirl, stage5_swirl, 2*cexp(I*M_PI*f)+I, 60 + 100.0I, cexp(0.01I*(1-2*(f<0.5))));
 	}
 	
 	AT(5300)

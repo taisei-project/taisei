@@ -203,7 +203,7 @@ void player_realdeath(Player *plr) {
 	create_item(plr->pos, 6-15*I, Power);
 	create_item(plr->pos, -6-15*I, Power);
 	
-	plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I+30I;
+	plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I+30.0I;
 	plr->recovery = -(global.frames + DEATH_DELAY + 150);
 
 	if(plr->bombs < PLR_START_BOMBS)
@@ -348,8 +348,8 @@ void player_applymovement(Player *plr) {
 	
 	complex direction = 0;
 	
-	if(up)		direction -= 1I;
-	if(down)	direction += 1I;
+	if(up)		direction -= 1.0I;
+	if(down)	direction += 1.0I;
 	if(left)	direction -= 1;
 	if(right)	direction += 1;
 	
