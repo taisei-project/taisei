@@ -419,6 +419,6 @@ void petal_explosion(int n, complex pos) {
 	int i;
 	for(i = 0; i < n; i++) {
 		tsrand_fill(8);
-		create_particle4c("petal", pos, rgba(0.6,1-afrand(0)*0.4,0.5,1-0.5*afrand(1)), Petal, asymptotic, (3+5*afrand(2))*cexp(I*M_PI*2*afrand(3)), 5, afrand(4) + afrand(5)*I, afrand(6) + 360I*afrand(7));
+		create_particle4c("petal", pos, rgba(0.6,1-afrand(0)*0.4,0.5,1-0.5*afrand(1)), Petal, asymptotic, (3+5*afrand(2))*cexp(I*M_PI*2*afrand(3)), 5, afrand(4) + afrand(5)*I, afrand(6) + 360.0I*afrand(7));
 	}
 }
