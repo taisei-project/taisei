@@ -132,6 +132,8 @@ void draw_main_menu_bg(MenuData* menu) {
 void draw_main_menu(MenuData *menu) {
 	draw_main_menu_bg(menu);
 		
+	start_bgm("bgm_title");
+	
 	draw_texture(150, 100, "mainmenu/logo");
 	
 	glPushMatrix();

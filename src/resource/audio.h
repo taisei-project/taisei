@@ -22,11 +22,21 @@ typedef struct Sound {
 	char *name;
 } Sound;
 
+struct current_bgm_t {
+	char *name;
+	Sound *data;
+};
+
 Sound *load_sound(char *filename);
 void play_sound(char *name);
 void play_sound_p(Sound *snd);
 
-Sound *get_snd(char *name);
+Sound *load_bgm(char *filename);
+void start_bgm(char *name);
+void stop_bgm(void);
+
+Sound *get_snd(Sound *source, char *name);
 void delete_sounds(void);
+void delete_music(void);
 
 #endif

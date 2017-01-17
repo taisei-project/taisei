@@ -32,6 +32,8 @@ Dialog *stage6_dialog(void) {
 	dadd_msg(d, Right, "Why do you have to be so ignorant?");
 	dadd_msg(d, Right, "...\nSorry, this is more important than you!");
 	
+	start_bgm("bgm_stage6boss");
+	
 	return d;
 }
 

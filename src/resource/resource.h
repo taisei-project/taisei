@@ -23,7 +23,8 @@ typedef enum ResourceState {
 	RS_GfxLoaded = 1,
 	RS_SfxLoaded = 2,
 	RS_ShaderLoaded = 4,
-	RS_ModelsLoaded = 8
+	RS_ModelsLoaded = 8,
+	RS_BgmLoaded = 16
 } ResourceState;
 
 enum {
@@ -36,10 +37,12 @@ struct Resources {
 	Texture *textures;
 	Animation *animations;	
 	Sound *sounds;
+	Sound *music;
 	Shader *shaders;
 	Model *models;
 	
 	ALuint sndsrc[SNDSRC_COUNT];
+	ALuint bgmsrc;
 	
 	FBO fbg[2];
 	FBO fsec;

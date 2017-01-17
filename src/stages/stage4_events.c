@@ -30,7 +30,9 @@ Dialog *stage4_dialog(void) {
 		dadd_msg(d, Left, "...");
 		dadd_msg(d, Right, "So stop asking questions!\nSecrets are secret!\n...\nAnd I will beat you now!");
 	}
-		
+	
+	start_bgm("bgm_stage4boss");
+	
 	return d;
 }
 

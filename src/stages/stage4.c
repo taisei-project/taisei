@@ -192,6 +192,8 @@ void stage4_corridor_draw(Vector pos) {
 void stage4_start(void) {
 	init_stage3d(&bgcontext);
 	
+	start_bgm("bgm_stage4");
+	
 	bgcontext.cx[2] = -10000;
 	bgcontext.cv[2] = 19.7;
 	bgcontext.crot[0] = 80;

@@ -35,6 +35,8 @@ Dialog *stage1_dialog(void) {
 	
 	dadd_msg(d, Right, "I'll just freeze you!");
 	
+	start_bgm("bgm_stage1boss");
+	
 	return d;
 }
 
@@ -660,6 +662,8 @@ void stage1_events(void) {
 
 void stage1_start(void) {
 	init_stage3d(&bgcontext);
+	start_bgm("bgm_stage1");
+	
 	add_model(&bgcontext, stage1_bg_draw, stage1_bg_pos);
 	add_model(&bgcontext, stage1_smoke_draw, stage1_smoke_pos);
 	

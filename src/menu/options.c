@@ -235,14 +235,34 @@ int bind_fullscreen_set(void *b, int v) {
 	return bind_common_onoffset(b, v);
 }
 
+void unload_alut_if_needed() {
+	if (!tconfig.intval[NO_AUDIO] || !tconfig.intval[NO_MUSIC]) return;
+	
+	alutExit();
+	printf("-- Unloaded ALUT\n");
+}
+
+int reload_alut_if_needed(int needed) {
+	if (!needed) return 1;
+	
+	if(!alutInit(NULL, NULL))
+	{
+		warnx("Error initializing audio: %s", alutGetErrorString(alutGetError()));
+		tconfig.intval[NO_AUDIO] = 1;
+		tconfig.intval[NO_MUSIC] = 1;
+		return 0;
+	}
+	printf("-- ALUT\n");
+	
+	return 1;
+}
+
 int bind_noaudio_set(void *b, int v) {
 	int i = bind_common_onoffset_inverted(b, v);
 	
 	if(v)
 	{
-		alutExit();
-		printf("-- Unloaded ALUT\n");
-		
+		unload_alut_if_needed();
 		if(resources.state & RS_SfxLoaded)
 		{
 			delete_sounds();
@@ -251,15 +271,30 @@ int bind_noaudio_set(void *b, int v) {
 	}
 	else
 	{
-		if(!alutInit(NULL, NULL))
+		// reload alut only if audio was just turned on and music is off
+		if(!reload_alut_if_needed(!v && tconfig.intval[NO_MUSIC])) return 1;
+		load_resources();
+	}
+	
+	return i;
+}
+
+int bind_nomusic_set(void *b, int v) {
+	int i = bind_common_onoffset_inverted(b, v);
+	
+	if(v)
+	{
+		unload_alut_if_needed();
+		if(resources.state & RS_BgmLoaded)
 		{
-			warnx("Error initializing audio: %s", alutGetErrorString(alutGetError()));
-			tconfig.intval[NO_AUDIO] = 1;
-			return 1;	// index of "off"
+			delete_music();
+			resources.state &= ~RS_BgmLoaded;
 		}
-		tconfig.intval[NO_AUDIO] = 0;
-		printf("-- ALUT\n");
-		
+	}
+	else
+	{
+		// reload alut only if music was just turned on and audio is off
+		if(!reload_alut_if_needed(!v && tconfig.intval[NO_AUDIO])) return 1;
 		load_resources();
 	}
 	
@@ -593,6 +628,11 @@ void create_options_menu(MenuData *m) {
 	add_menu_entry(m, "Audio", do_nothing,
 		b = bind_option(NO_AUDIO, bind_common_onoffget_inverted,
 								  bind_noaudio_set)
+	);	bind_onoff(b);
+	
+	add_menu_entry(m, "Music", do_nothing,
+		b = bind_option(NO_MUSIC, bind_common_onoffget_inverted,
+								  bind_nomusic_set)
 	);	bind_onoff(b);
 	
 	

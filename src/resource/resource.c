@@ -37,8 +37,19 @@ void recurse_dir(char *path) {
 				init_animation(buf);
 			else
 				load_texture(buf);			
-		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".wav") == 0) {
-			load_sound(buf);
+		} else 
+//#if OGG_FOUND == "NO"
+//		if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".wav") == 0)
+//#else 
+		if( (strcmp(dp->d_name + strlen(dp->d_name)-4, ".wav") == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".ogg") == 0))
+//#endif
+		{
+			// BGMs should have "bgm_" prefix!
+			if(strncmp(dp->d_name, "bgm_", 4) == 0)
+				load_bgm(buf);
+			else
+				load_sound(buf);
 		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".sha") == 0) {
 			load_shader_file(buf);
 		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".obj") == 0) {
@@ -76,6 +87,17 @@ void load_resources(void) {
 		resources.state |= RS_SfxLoaded;
 	}
 	
+	if(!tconfig.intval[NO_MUSIC] && !(resources.state & RS_BgmLoaded)) {
+		printf("- music:\n");
+		
+		alGenSources(1, &resources.bgmsrc);
+		strcpy(path, get_prefix());
+		strcat(path, "bgm");
+		recurse_dir(path);
+		
+		resources.state |= RS_BgmLoaded;
+	}
+	
 	if(!tconfig.intval[NO_SHADER] && !(resources.state & RS_ShaderLoaded)) {
 		printf("- shader:\n");
 		strcpy(path, get_prefix());
@@ -108,9 +130,17 @@ void load_resources(void) {
 }
 
 void free_resources(void) {	
-	if(resources.state & RS_SfxLoaded) {
-		printf("-- freeing sounds\n");
-		delete_sounds();
+	if(resources.state & RS_SfxLoaded || resources.state & RS_BgmLoaded ) {
+		if(resources.state & RS_SfxLoaded)
+		{
+			printf("-- freeing sounds\n");
+			delete_sounds();
+		}
+		if(resources.state & RS_BgmLoaded)
+		{
+			printf("-- freeing music\n");
+			delete_music();
+		}
 		printf("-- alutExit()\n");
 		alutExit();
 	}

@@ -75,10 +75,14 @@ int main(int argc, char** argv) {
 	init_gl();
 	printf("-- GL\n");
 	
-	if(!tconfig.intval[NO_AUDIO] && !alutInit(&argc, argv))
+	if(!tconfig.intval[NO_AUDIO] || !tconfig.intval[NO_MUSIC])
 	{
-		warnx("Error initializing audio: %s", alutGetErrorString(alutGetError()));
-		tconfig.intval[NO_AUDIO] = 1;
+		if(!alutInit(&argc, argv))
+		{
+			warnx("Error initializing audio: %s", alutGetErrorString(alutGetError()));
+			tconfig.intval[NO_AUDIO] = 1;
+			tconfig.intval[NO_MUSIC] = 1;
+		}
 		printf("-- ALUT\n");
 	}
 	

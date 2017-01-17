@@ -14,6 +14,11 @@ Dependencies:
 	- OpenAL, ALUT
 	- CMake (build system)
 
+Optional:
+	- libogg (to play .ogg BGMs; you have to decode BGMs from .ogg to
+		.wav format and place them to bgm/ subdirectory to have
+		background music in Taisei without having libogg).
+
 To build and install Taisei just follow these steps.
 
 mkdir build
