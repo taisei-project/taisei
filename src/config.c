@@ -100,7 +100,6 @@ void config_preset(void) {
 	tconfig.intval[NO_SHADER] = 0;
 	tconfig.intval[NO_AUDIO] = 0;
 	tconfig.intval[NO_MUSIC] = 0;
-	
 	tconfig.intval[SFX_VOLUME] = 10;
 	tconfig.intval[BGM_VOLUME] = 10;
 	

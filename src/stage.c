@@ -295,10 +295,8 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 		page_dialog(&global.dialog);
 	}
 	
-	if (global.dialog)
-	{
+	if(global.dialog)
 		draw_dialog(global.dialog);
-	}
 	
 	draw_stage_title(info);
 	
@@ -566,7 +564,7 @@ void draw_title(int t, StageInfo *info, Alignment al, int x, int y, const char *
 	}
 	
 	draw_text(al, x, y, text, font);
-
+	
 	glColor4f(1,1,1,1);
 	glUseProgram(0);
 }
@@ -576,7 +574,7 @@ void draw_stage_title(StageInfo *info) {
 	
 	draw_title(t, info, AL_Center, VIEWPORT_W/2, VIEWPORT_H/2-40, info->title, _fonts.mainmenu);
 	draw_title(t, info, AL_Center, VIEWPORT_W/2, VIEWPORT_H/2, info->subtitle, _fonts.standard);
-
+	
 	if ((current_bgm.title != NULL) && (current_bgm.started_at >= 0))
 	{
 		draw_title(t - current_bgm.started_at, info, AL_Right, VIEWPORT_W-15, VIEWPORT_H-35, current_bgm.title, _fonts.standard);

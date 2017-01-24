@@ -122,7 +122,7 @@ int main(int argc, char** argv) {
 	
 	MenuData menu;
 	create_main_menu(&menu);
-	printf("-- menu\n");
+	printf("-- menu\n");	
 	set_sfx_volume(tconfig.intval[SFX_VOLUME]);
 	set_bgm_volume(tconfig.intval[BGM_VOLUME]);
 	start_bgm("bgm_menu");

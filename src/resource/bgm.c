@@ -114,7 +114,6 @@ Sound *load_bgm(char *filename, const char *type) {
 }
 
 void start_bgm(char *name) {
-printf("::: start_bgm(%s) called.\n", name? name : "NULL");
 	if(tconfig.intval[NO_MUSIC]) return;
 	
 	if(!name || strcmp(name, "") == 0)
@@ -171,7 +170,6 @@ void continue_bgm(void)
 }
 
 void stop_bgm(void) {
-printf("::: stop_bgm() called.\n");
 	if (tconfig.intval[NO_MUSIC] || !current_bgm.name) return;
 	
 	ALint play;
