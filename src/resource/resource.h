@@ -13,6 +13,7 @@
 #include "texture.h"
 #include "animation.h"
 #include "audio.h"
+#include "bgm.h"
 #include "shader.h"
 #include "font.h"
 #include "model.h"
@@ -40,6 +41,7 @@ struct Resources {
 	Sound *music;
 	Shader *shaders;
 	Model *models;
+	Bgm_desc *bgm_descriptions;
 	
 	ALuint sndsrc[SNDSRC_COUNT];
 	ALuint bgmsrc;

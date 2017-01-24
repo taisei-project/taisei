@@ -121,8 +121,6 @@ void credits_init(void) {
 	memset(&credits, 0, sizeof(credits));
 	init_stage3d(&bgcontext);
 	
-	start_bgm("bgm_credits");
-	
 	add_model(&bgcontext, credits_skysphere_draw, credits_skysphere_pos);
 	add_model(&bgcontext, credits_towerwall_draw, stage6_towerwall_pos);
 	

@@ -235,45 +235,36 @@ int bind_fullscreen_set(void *b, int v) {
 	return bind_common_onoffset(b, v);
 }
 
-void unload_alut_if_needed() {
-	if (!tconfig.intval[NO_AUDIO] || !tconfig.intval[NO_MUSIC]) return;
+int bind_sfxvol_intset(void *b, int v) {
+	int i = bind_common_intset(b, v);
 	
-	alutExit();
-	printf("-- Unloaded ALUT\n");
+	set_sfx_volume(v);
+	
+	return i;
 }
 
-int reload_alut_if_needed(int needed) {
-	if (!needed) return 1;
+int bind_musvol_intset(void *b, int v) {
+	int i = bind_common_intset(b, v);
 	
-	if(!alutInit(NULL, NULL))
-	{
-		warnx("Error initializing audio: %s", alutGetErrorString(alutGetError()));
-		tconfig.intval[NO_AUDIO] = 1;
-		tconfig.intval[NO_MUSIC] = 1;
-		return 0;
-	}
-	printf("-- ALUT\n");
+	set_bgm_volume(v);
 	
-	return 1;
+	return i;
 }
+
 
 int bind_noaudio_set(void *b, int v) {
 	int i = bind_common_onoffset_inverted(b, v);
 	
 	if(v)
 	{
-		unload_alut_if_needed();
-		if(resources.state & RS_SfxLoaded)
-		{
-			delete_sounds();
-			resources.state &= ~RS_SfxLoaded;
-		}
+		shutdown_sfx();
 	}
 	else
 	{
-		// reload alut only if audio was just turned on and music is off
-		if(!reload_alut_if_needed(!v && tconfig.intval[NO_MUSIC])) return 1;
+		if(!init_sfx(NULL, NULL)) return 1;
+		
 		load_resources();
+		set_sfx_volume(tconfig.intval[SFX_VOLUME]);
 	}
 	
 	return i;
@@ -284,18 +275,15 @@ int bind_nomusic_set(void *b, int v) {
 	
 	if(v)
 	{
-		unload_alut_if_needed();
-		if(resources.state & RS_BgmLoaded)
-		{
-			delete_music();
-			resources.state &= ~RS_BgmLoaded;
-		}
+		shutdown_bgm();
 	}
 	else
 	{
-		// reload alut only if music was just turned on and audio is off
-		if(!reload_alut_if_needed(!v && tconfig.intval[NO_AUDIO])) return 1;
+		if(!init_bgm(NULL, NULL)) return 1;
+		
 		load_resources();
+		set_bgm_volume(tconfig.intval[BGM_VOLUME]);
+		start_bgm("bgm_menu");
 	}
 	
 	return i;
@@ -625,16 +613,47 @@ void create_options_menu(MenuData *m) {
 		bind_addvalue(b, "off");
 		bind_addvalue(b, "ask");
 	
-	add_menu_entry(m, "Audio", do_nothing,
+	add_menu_separator(m);
+	
+	add_menu_entry(m, "Sound effects", do_nothing,
 		b = bind_option(NO_AUDIO, bind_common_onoffget_inverted,
 								  bind_noaudio_set)
 	);	bind_onoff(b);
 	
-	add_menu_entry(m, "Music", do_nothing,
+	add_menu_entry(m, "SFX volume level", do_nothing,
+		b = bind_option(SFX_VOLUME, bind_common_intget,
+								  bind_sfxvol_intset)
+	);	bind_addvalue(b, "0");
+		bind_addvalue(b, "1");
+		bind_addvalue(b, "2");
+		bind_addvalue(b, "3");
+		bind_addvalue(b, "4");
+		bind_addvalue(b, "5");
+		bind_addvalue(b, "6");
+		bind_addvalue(b, "7");
+		bind_addvalue(b, "8");
+		bind_addvalue(b, "9");
+		bind_addvalue(b, "10");
+
+	add_menu_entry(m, "Background music", do_nothing,
 		b = bind_option(NO_MUSIC, bind_common_onoffget_inverted,
 								  bind_nomusic_set)
 	);	bind_onoff(b);
 	
+	add_menu_entry(m, "Music volume level", do_nothing,
+		b = bind_option(BGM_VOLUME, bind_common_intget,
+								  bind_musvol_intset)
+	);	bind_addvalue(b, "0");
+		bind_addvalue(b, "1");
+		bind_addvalue(b, "2");
+		bind_addvalue(b, "3");
+		bind_addvalue(b, "4");
+		bind_addvalue(b, "5");
+		bind_addvalue(b, "6");
+		bind_addvalue(b, "7");
+		bind_addvalue(b, "8");
+		bind_addvalue(b, "9");
+		bind_addvalue(b, "10");
 	
 	add_menu_separator(m);
 	add_menu_entry(m, "Video options...", options_sub_video, m);
@@ -888,6 +907,7 @@ static void options_input_event(EventType type, int state, void *arg) {
 	
 	switch(type) {
 		case E_CursorDown:
+			play_ui_sound("generic_shot");
 			menu->drawdata[3] = 10;
 			do {
 				menu->cursor++;
@@ -897,6 +917,7 @@ static void options_input_event(EventType type, int state, void *arg) {
 		break;
 		
 		case E_CursorUp:
+			play_ui_sound("generic_shot");
 			menu->drawdata[3] = 10;
 			do {
 				menu->cursor--;
@@ -906,6 +927,7 @@ static void options_input_event(EventType type, int state, void *arg) {
 		break;
 		
 		case E_CursorLeft:
+			play_ui_sound("generic_shot");
 			if(bind) {
 				if(bind->type == BT_IntValue || bind->type == BT_Resolution)
 					bind_setprev(bind);
@@ -915,6 +937,7 @@ static void options_input_event(EventType type, int state, void *arg) {
 		break;
 		
 		case E_CursorRight:
+			play_ui_sound("generic_shot");
 			if(bind) {
 				if(bind->type == BT_IntValue || bind->type == BT_Resolution)
 					bind_setnext(bind);
@@ -924,6 +947,7 @@ static void options_input_event(EventType type, int state, void *arg) {
 		break;
 		
 		case E_MenuAccept:
+			play_ui_sound("shot_special1");
 			menu->selected = menu->cursor;
 			
 			if(bind) switch(bind->type) {
@@ -942,6 +966,7 @@ static void options_input_event(EventType type, int state, void *arg) {
 		break;
 		
 		case E_MenuAbort:
+			play_ui_sound("hit");
 			menu->selected = -1;
 			close_menu(menu);
 		break;

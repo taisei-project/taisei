@@ -43,6 +43,8 @@ typedef enum ConfigKey {
 	NO_SHADER,
 	NO_AUDIO,
 	NO_MUSIC,
+	SFX_VOLUME,
+	BGM_VOLUME,
 	
 	NO_STAGEBG,
 	NO_STAGEBG_FPSLIMIT,

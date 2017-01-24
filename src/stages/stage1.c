@@ -34,8 +34,7 @@ Dialog *stage1_dialog(void) {
 	}
 	
 	dadd_msg(d, Right, "I'll just freeze you!");
-	
-	start_bgm("bgm_stage1boss");
+	dadd_msg(d, BGM, "bgm_stage1boss");
 	
 	return d;
 }
@@ -655,8 +654,9 @@ void stage1_events(void) {
 	AT(4200)
 		create_enemy2c(VIEWPORT_W/2.0, 4000, BigFairy, stage1_tritoss, 2.0I, -2.6I);
 		
-	AT(5000)
+	AT(5000) {
 		global.boss = create_cirno();
+	}
 	
 }
 

@@ -16,6 +16,7 @@
 #include "paths/native.h"
 #include "taiseigl.h"
 #include "gamepad.h"
+#include "resource/bgm.h"
 
 void init_gl(void) {
 	load_gl_functions();
@@ -38,7 +39,10 @@ void taisei_shutdown(void) {
 	config_save(CONFIG_FILE);
 	printf("\nshutdown:\n");
 	
+	if (!tconfig.intval[NO_AUDIO]) shutdown_sfx();
+	if (!tconfig.intval[NO_MUSIC]) shutdown_bgm();
 	free_resources();
+	
 	video_shutdown();
 	gamepad_shutdown();
 	
@@ -75,21 +79,15 @@ int main(int argc, char** argv) {
 	init_gl();
 	printf("-- GL\n");
 	
-	if(!tconfig.intval[NO_AUDIO] || !tconfig.intval[NO_MUSIC])
-	{
-		if(!alutInit(&argc, argv))
-		{
-			warnx("Error initializing audio: %s", alutGetErrorString(alutGetError()));
-			tconfig.intval[NO_AUDIO] = 1;
-			tconfig.intval[NO_MUSIC] = 1;
-		}
-		printf("-- ALUT\n");
-	}
-	
 	draw_loading_screen();
 	
+	// Order DOES matter: init_global, then sfx/bgm, then load_resources.
 	init_global();
 	gamepad_init();
+	init_sfx(&argc, argv);
+	init_bgm(&argc, argv);
+	load_resources();
+	
 	printf("initialization complete.\n");
 	
 	atexit(taisei_shutdown);
@@ -126,7 +124,10 @@ int main(int argc, char** argv) {
 	
 	MenuData menu;
 	create_main_menu(&menu);
-	printf("-- menu\n");	
+	printf("-- menu\n");
+	set_sfx_volume(tconfig.intval[SFX_VOLUME]);
+	set_bgm_volume(tconfig.intval[BGM_VOLUME]);
+	start_bgm("bgm_menu");
 	main_menu_loop(&menu);
 	
 	return 0;

@@ -126,8 +126,6 @@ void ending_loop(void) {
 	global.frames = 0;
 	set_ortho();
 		
-	start_bgm("bgm_ending");
-	
 	while(e.pos < e.count-1) {
 		handle_events(NULL, 0, NULL);
 		

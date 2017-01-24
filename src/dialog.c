@@ -45,6 +45,7 @@ void delete_dialog(Dialog *d) {
 }
 
 void draw_dialog(Dialog *dialog) {
+	
 	glPushMatrix();
 		
 	glTranslatef(VIEWPORT_W/2.0, VIEWPORT_H*3.0/4.0, 0);

@@ -31,6 +31,8 @@ ConfigEntry configdefs[] = {
 	{CFGT_INT,					NO_SHADER,				"disable_shader"},
 	{CFGT_INT,					NO_AUDIO,				"disable_audio"},
 	{CFGT_INT,					NO_MUSIC,				"disable_bgm"},
+	{CFGT_INT,					SFX_VOLUME,				"sfx_volume"},
+	{CFGT_INT,					BGM_VOLUME,				"bgm_volume"},
 	{CFGT_INT,					NO_STAGEBG,				"disable_stagebg"},
 	{CFGT_INT,					NO_STAGEBG_FPSLIMIT,	"disable_stagebg_auto_fpslimit"},
 	{CFGT_INT,					SAVE_RPY,				"save_rpy"},
@@ -98,6 +100,9 @@ void config_preset(void) {
 	tconfig.intval[NO_SHADER] = 0;
 	tconfig.intval[NO_AUDIO] = 0;
 	tconfig.intval[NO_MUSIC] = 0;
+	
+	tconfig.intval[SFX_VOLUME] = 10;
+	tconfig.intval[BGM_VOLUME] = 10;
 	
 	tconfig.intval[NO_STAGEBG] = 0;
 	tconfig.intval[NO_STAGEBG_FPSLIMIT] = 40;

@@ -81,6 +81,7 @@ void menu_event(EventType type, int state, void *arg) {
 	
 	switch(type) {
 		case E_CursorDown:
+			play_ui_sound("generic_shot");
 			do {
 				if(++menu->cursor >= menu->ecount)
 					menu->cursor = 0;
@@ -88,6 +89,7 @@ void menu_event(EventType type, int state, void *arg) {
 		break;
 		
 		case E_CursorUp:
+			play_ui_sound("generic_shot");
 			do {
 				if(--menu->cursor < 0)
 					menu->cursor = menu->ecount - 1;
@@ -95,6 +97,7 @@ void menu_event(EventType type, int state, void *arg) {
 		break;
 		
 		case E_MenuAccept:
+			play_ui_sound("shot_special1");
 			if(menu->entries[menu->cursor].action) {
 				menu->selected = menu->cursor;
 				close_menu(menu);
@@ -102,6 +105,7 @@ void menu_event(EventType type, int state, void *arg) {
 		break;
 		
 		case E_MenuAbort:
+			play_ui_sound("hit");
 			if(menu->flags & MF_Abortable) {
 				menu->selected = -1;
 				close_menu(menu);

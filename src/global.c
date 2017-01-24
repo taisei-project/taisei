@@ -26,7 +26,7 @@ void init_global(void) {
 	tsrand_switch(&global.rand_visual);
 	
 	memset(&resources, 0, sizeof(Resources));
-	load_resources();
+	
 	printf("- fonts:\n");
 	init_fonts();
 	

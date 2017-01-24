@@ -7,8 +7,16 @@ find_package(ALUT REQUIRED)
 find_package(PNG REQUIRED)
 find_package(SDL_ttf REQUIRED)
 find_package(Freetype)
-find_package(OGG)
 find_package(ZLIB)
+find_package(OGG)
+
+if(OGG_FOUND)
+find_package(Vorbis)
+endif()
+
+if(VORBIS_FOUND)
+find_package(VorbisFile)
+endif()
 
 set(SRCs
 	main.c
@@ -64,8 +72,14 @@ set(SRCs
 	resource/font.c
 	resource/shader.c
 	resource/audio.c
+	resource/bgm.c
 	resource/model.c
 )
+
+if(VORBISFILE_FOUND)
+	set(SRCs ${SRCs} resource/ogg.c)
+	add_definitions(-DOGG_SUPPORT_ENABLED)
+endif()
 
 if(RELATIVE)
 	set(SRCs ${SRCs} paths/relative.c)	
@@ -105,10 +119,8 @@ if(FREETYPE_FOUND)
 	set(LIBs ${LIBs} ${FREETYPE_LIBRARY})
 endif()
 
-if(OGG_FOUND)
-	set(LIBs ${LIBs} ${OGG_LIBRARY})
-else()
-	set(OGG_INCLUDE_DIR "")
+if(VORBISFILE_FOUND)
+	set(LIBs ${LIBs} ${OGG_LIBRARY} ${VORBIS_LIBRARY} ${VORBISFILE_LIBRARY})
 endif()
 
 if(ZLIB_FOUND)
@@ -125,7 +137,7 @@ if(WIN32)
 	set(SRCs ${SRCs} taisei.rc)
 endif()
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${SDL_INCLUDE_DIR} ${ALUT_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${OGG_INCLUDE_DIR} ${PNG_INCLUDE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${SDL_INCLUDE_DIR} ${ALUT_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${PNG_INCLUDE_DIR})
 add_executable(taisei WIN32 ${SRCs})
 target_link_libraries(taisei ${LIBs})
 
