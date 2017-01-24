@@ -10,7 +10,7 @@
 #include <string.h>
 #include <vorbis/vorbisfile.h>
 
-inline int detect_endianness(void)
+static int detect_endianness(void)
 {
     // Returns 0 for little endian, 1 for big endian.
     union { uint16_t patterns; uint8_t endianness; } test_endianness = { .patterns = 0x0100 };
