@@ -182,21 +182,12 @@ void play_sound_p(char *name, int unconditional)
 	}
 	
 	if(res != -1) {
-//#ifdef DEBUG
-		// For debug only
-		if (res > 20) warnx("play_sound_p(): %d sources consumed", res);
-//#endif
 		alSourcei(resources.sndsrc[res],AL_BUFFER, snd->alsnd);
 		warn_alut_error("changing buffer of sfx source");
 		alSourcePlay(resources.sndsrc[res]);
 		warn_alut_error("starting playback of sfx source");
 	} else {
-//#ifdef DEBUG
-		// It is normal situation since there definitely may be more
-		// than SNDSRC_COUNT simultaneous sounds; we will spam output
-		// with tons of these warnings only in DEBUG mode.
 		warnx("play_sound_p():\n!- not enough sources");
-//#endif
 	}
 }
 

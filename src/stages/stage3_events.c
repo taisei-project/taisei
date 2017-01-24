@@ -758,6 +758,7 @@ void stage3_boss_intro(Boss *boss, int time) {
 Boss* stage3_create_boss(void) {
 	Boss *wriggle = create_boss("Wriggle EX", "wriggleex", VIEWPORT_W/2 - 200.0I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage3_boss_intro, NULL);
+	
 	boss_add_attack(wriggle, AT_Normal, "", 20, 15000, stage3_boss_prea1, NULL);
 	boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage3_boss_a1, stage3_boss_spellbg);
 	boss_add_attack(wriggle, AT_Normal, "", 20, 15000, stage3_boss_prea2, NULL);
@@ -854,5 +855,4 @@ void stage3_events(void) {
 	
 	AT(5300)
 		global.boss = stage3_create_boss();
-
 }

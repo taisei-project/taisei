@@ -291,11 +291,8 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	// BGM handling
 	if(global.dialog && global.dialog->messages[global.dialog->pos].side == BGM)
 	{
-printf("bgm dialog entry\n");
 		start_bgm(global.dialog->messages[global.dialog->pos].msg);
-printf("paging dialog\n");
 		page_dialog(&global.dialog);
-printf("dialog paged");
 	}
 	
 	if (global.dialog)
@@ -543,12 +540,11 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	SDL_EnableKeyRepeat(TS_KR_DELAY, TS_KR_INTERVAL);
 }
 
-void draw_title(int t, StageInfo *info, Alignment al, int x, int y, const char *text, TTF_Font *font)
-{
+void draw_title(int t, StageInfo *info, Alignment al, int x, int y, const char *text, TTF_Font *font) {
 	int i;
 	float f = 0;
-	
-	if(t < 30 || t > 220) return;
+	if(t < 30 || t > 220)
+		return;
 	
 	if((i = abs(t-135)) >= 50) {
 		i -= 50;

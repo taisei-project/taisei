@@ -42,7 +42,6 @@ void taisei_shutdown(void) {
 	if (!tconfig.intval[NO_AUDIO]) shutdown_sfx();
 	if (!tconfig.intval[NO_MUSIC]) shutdown_bgm();
 	free_resources();
-	
 	video_shutdown();
 	gamepad_shutdown();
 	
@@ -87,7 +86,6 @@ int main(int argc, char** argv) {
 	init_sfx(&argc, argv);
 	init_bgm(&argc, argv);
 	load_resources();
-	
 	printf("initialization complete.\n");
 	
 	atexit(taisei_shutdown);

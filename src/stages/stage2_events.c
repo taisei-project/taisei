@@ -31,12 +31,12 @@ Dialog *stage2_dialog(void) {
 	}
 	
 	dadd_msg(d, BGM, "bgm_stage2boss");
-	
 	return d;
 }
 
 Dialog *stage2_post_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", NULL);
+	
 	dadd_msg(d, Right, "Well, let's go then.");
 	
 	return d;

@@ -114,7 +114,6 @@ void stage3_start(void) {
 	init_stage3d(&bgcontext);
 	
 	start_bgm("bgm_stage3");
-	
 	bgcontext.cx[2] = -10;
 	bgcontext.crot[0] = -95;
 	bgcontext.cv[1] = 20;

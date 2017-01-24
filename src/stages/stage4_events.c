@@ -30,14 +30,14 @@ Dialog *stage4_dialog(void) {
 		dadd_msg(d, Left, "...");
 		dadd_msg(d, Right, "So stop asking questions!\nSecrets are secret!\n...\nAnd I will beat you now!");
 	}
-	
+
 	dadd_msg(d, BGM, "bgm_stage4boss");
-	
 	return d;
 }
 
 Dialog *stage4_dialog_end(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
+	
 	dadd_msg(d, Left, "Now, where is your master?");
 	dadd_msg(d, Right, "Didn't I tell you? At the end of this corridor,\nthere is a door.");
 	dadd_msg(d, Right, "Just leave me alone.");
@@ -415,7 +415,7 @@ void kurumi_boss_intro(Boss *b, int t) {
 	TIMER(&t);
 	GO_TO(b, VIEWPORT_W/2.0+200.0I, 0.01);
 	
-	AT(120)
+	AT(400)
 		global.dialog = stage4_dialog();
 }
 

@@ -33,7 +33,6 @@ Dialog *stage6_dialog(void) {
 	dadd_msg(d, Right, "...\nSorry, this is more important than you!");
 	
 	dadd_msg(d, BGM, "bgm_stage6boss");
-	
 	return d;
 }
 

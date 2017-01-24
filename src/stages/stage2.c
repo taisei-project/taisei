@@ -136,7 +136,6 @@ void stage2_start(void) {
 	bgcontext.cv[0] = 9;
 	
 	start_bgm("bgm_stage2");
-	
 	add_model(&bgcontext, stage2_bg_ground_draw, stage2_bg_pos);
 	add_model(&bgcontext, stage2_bg_leaves_draw, stage2_bg_pos);
 }

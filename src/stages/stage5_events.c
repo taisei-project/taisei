@@ -26,14 +26,14 @@ Dialog *stage5_boss_dialog(void) {
 	dadd_msg(d, Right, "I don't have time for your suspicions now.");
 	dadd_msg(d, Left, "Sounds very suspicious, actually.");
 	dadd_msg(d, Right, "Ok, let's finish this quickly.");
-	
+
 	dadd_msg(d, BGM, "bgm_stage5boss");
-	
 	return d;
 }
 
 Dialog *stage5_post_boss_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", NULL);
+	
 	dadd_msg(d, Left, "I can see the top!");
 	dadd_msg(d, Left, "Hopefully climbing all those stairs\nwas worth it.");
 		

@@ -654,16 +654,14 @@ void stage1_events(void) {
 	AT(4200)
 		create_enemy2c(VIEWPORT_W/2.0, 4000, BigFairy, stage1_tritoss, 2.0I, -2.6I);
 		
-	AT(5000) {
+	AT(5000)
 		global.boss = create_cirno();
-	}
 	
 }
 
 void stage1_start(void) {
 	init_stage3d(&bgcontext);
 	start_bgm("bgm_stage1");
-	
 	add_model(&bgcontext, stage1_bg_draw, stage1_bg_pos);
 	add_model(&bgcontext, stage1_smoke_draw, stage1_smoke_pos);
 	

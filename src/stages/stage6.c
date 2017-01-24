@@ -152,7 +152,6 @@ void stage6_start(void) {
 	fall_over = 0;
 	
 	start_bgm("bgm_stage6");
-	
 	add_model(&bgcontext, stage6_skysphere_draw, stage6_skysphere_pos);
 	add_model(&bgcontext, stage6_towertop_draw, stage6_towertop_pos);
 	add_model(&bgcontext, stage6_towerwall_draw, stage6_towerwall_pos);
