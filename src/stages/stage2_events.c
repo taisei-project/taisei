@@ -30,6 +30,7 @@ Dialog *stage2_dialog(void) {
 		dadd_msg(d, Right, "No! Don't make it more\ntroubling than it already is!");
 	}
 	
+	dadd_msg(d, BGM, "bgm_stage2boss");
 	return d;
 }
 

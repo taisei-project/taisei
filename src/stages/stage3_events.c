@@ -17,6 +17,7 @@ Dialog *stage3_dialog(void) {
 	dadd_msg(d, Left, "Ugh, it's like bugs being attracted by the light...");
 	dadd_msg(d, Right, "That's right! The light makes us strong!");
 	dadd_msg(d, Right, "This place is full of it, so feel my tremendous power!");
+	dadd_msg(d, BGM, "bgm_stage3boss");
 	
 	return d;
 }

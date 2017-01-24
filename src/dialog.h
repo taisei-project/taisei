@@ -15,7 +15,8 @@ struct DialogSpeaker;
 
 typedef enum {
 	Right,
-	Left
+	Left,
+	BGM
 } Side;
 
 typedef struct DialogMessage {	

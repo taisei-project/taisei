@@ -8,6 +8,15 @@ find_package(PNG REQUIRED)
 find_package(SDL_ttf REQUIRED)
 find_package(Freetype)
 find_package(ZLIB)
+find_package(OGG)
+
+if(OGG_FOUND)
+find_package(Vorbis)
+endif()
+
+if(VORBIS_FOUND)
+find_package(VorbisFile)
+endif()
 
 set(SRCs
 	main.c
@@ -63,8 +72,14 @@ set(SRCs
 	resource/font.c
 	resource/shader.c
 	resource/audio.c
+	resource/bgm.c
 	resource/model.c
 )
+
+if(VORBISFILE_FOUND)
+	set(SRCs ${SRCs} resource/ogg.c)
+	add_definitions(-DOGG_SUPPORT_ENABLED)
+endif()
 
 if(RELATIVE)
 	set(SRCs ${SRCs} paths/relative.c)	
@@ -102,6 +117,10 @@ set(LIBs ${LIBs}
 
 if(FREETYPE_FOUND)
 	set(LIBs ${LIBs} ${FREETYPE_LIBRARY})
+endif()
+
+if(VORBISFILE_FOUND)
+	set(LIBs ${LIBs} ${OGG_LIBRARY} ${VORBIS_LIBRARY} ${VORBISFILE_LIBRARY})
 endif()
 
 if(ZLIB_FOUND)

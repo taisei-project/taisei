@@ -51,6 +51,7 @@ void start_replay(void *arg) {
 		global.game_over = 0;
 	}
 	
+	start_bgm("bgm_menu");
 	global.game_over = 0;
 	global.replaymode = REPLAY_RECORD;
 	replay_destroy(&global.replay);

@@ -11,6 +11,7 @@
 #include <time.h>
 #include "global.h"
 #include "video.h"
+#include "resource/bgm.h"
 #include "replay.h"
 #include "config.h"
 #include "player.h"
@@ -55,14 +56,19 @@ void stage_start(void) {
 
 void stage_pause(void) {
 	MenuData menu;
+	stop_bgm();
 	create_ingame_menu(&menu);
 	ingame_menu_loop(&menu);
+	continue_bgm();
 }
 
 void stage_gameover(void) {
 	MenuData m;
+	save_bgm();
+	start_bgm("bgm_gameover");
 	create_gameover_menu(&m);
 	ingame_menu_loop(&m);
+	restore_bgm();
 }
 
 void stage_input_event(EventType type, int key, void *arg) {
@@ -282,6 +288,13 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	if(global.boss)
 		draw_boss(global.boss);
 
+	// BGM handling
+	if(global.dialog && global.dialog->messages[global.dialog->pos].side == BGM)
+	{
+		start_bgm(global.dialog->messages[global.dialog->pos].msg);
+		page_dialog(&global.dialog);
+	}
+	
 	if(global.dialog)
 		draw_dialog(global.dialog);
 	
@@ -525,8 +538,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	SDL_EnableKeyRepeat(TS_KR_DELAY, TS_KR_INTERVAL);
 }
 
-void draw_stage_title(StageInfo *info) {
-	int t = global.timer;
+void draw_title(int t, StageInfo *info, Alignment al, int x, int y, const char *text, TTF_Font *font) {
 	int i;
 	float f = 0;
 	if(t < 30 || t > 220)
@@ -551,9 +563,20 @@ void draw_stage_title(StageInfo *info) {
 		glColor4f(info->titleclr.r,info->titleclr.g,info->titleclr.b,1.0-f);
 	}
 	
-	draw_text(AL_Center, VIEWPORT_W/2, VIEWPORT_H/2-40, info->title, _fonts.mainmenu);
-	draw_text(AL_Center, VIEWPORT_W/2, VIEWPORT_H/2, info->subtitle, _fonts.standard);
+	draw_text(al, x, y, text, font);
 	
 	glColor4f(1,1,1,1);
 	glUseProgram(0);
+}
+
+void draw_stage_title(StageInfo *info) {
+	int t = global.frames;
+	
+	draw_title(t, info, AL_Center, VIEWPORT_W/2, VIEWPORT_H/2-40, info->title, _fonts.mainmenu);
+	draw_title(t, info, AL_Center, VIEWPORT_W/2, VIEWPORT_H/2, info->subtitle, _fonts.standard);
+	
+	if ((current_bgm.title != NULL) && (current_bgm.started_at >= 0))
+	{
+		draw_title(t - current_bgm.started_at, info, AL_Right, VIEWPORT_W-15, VIEWPORT_H-35, current_bgm.title, _fonts.standard);
+	}
 }

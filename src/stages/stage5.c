@@ -119,6 +119,7 @@ void stage5_start(void) {
 	init_stage3d(&bgcontext);
 	add_model(&bgcontext, stage5_stairs_draw, stage5_stairs_pos);
 	
+	start_bgm("bgm_stage5");
 	bgcontext.crot[0] = 60;
 	stagedata.rotshift = 140;
 	stagedata.rad = 2800;

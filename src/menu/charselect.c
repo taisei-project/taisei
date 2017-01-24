@@ -127,15 +127,20 @@ void char_menu_input_event(EventType type, int state, void *arg) {
 	MenuData *menu = arg;
 	MenuData *mod  = menu->context;
 	
-	if(type == E_CursorRight)
+	if(type == E_CursorRight) {
+		play_ui_sound("generic_shot");
 		menu->cursor++;
-	else if(type == E_CursorLeft)
+	} else if(type == E_CursorLeft) {
+		play_ui_sound("generic_shot");
 		menu->cursor--;
-	else if(type == E_CursorDown)
+	} else if(type == E_CursorDown) {
+		play_ui_sound("generic_shot");
 		mod->cursor++;
-	else if(type == E_CursorUp)
+	} else if(type == E_CursorUp) {
+		play_ui_sound("generic_shot");
 		mod->cursor--;
-	else if(type == E_MenuAccept) {
+	} else if(type == E_MenuAccept) {
+		play_ui_sound("shot_special1");
 		mod->selected = mod->cursor;
 		close_menu(mod);
 		menu->selected = menu->cursor;
@@ -144,6 +149,7 @@ void char_menu_input_event(EventType type, int state, void *arg) {
 		// XXX: This needs a better fix
 		set_shotmode(mod->entries[mod->selected].arg);
 	} else if(type == E_MenuAbort) {
+		play_ui_sound("hit");
 		close_menu(menu);
 		close_menu(mod);
 	}

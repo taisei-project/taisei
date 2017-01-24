@@ -79,10 +79,13 @@ troll2:
 	}
 	
 	if(global.game_over == GAMEOVER_WIN && !arg) {
+		start_bgm("bgm_ending");
 		ending_loop();
+		start_bgm("bgm_credits");
 		credits_loop();
 	}
 	
+	start_bgm("bgm_menu");
 	replay_destroy(&global.replay);
 	global.game_over = 0;
 }

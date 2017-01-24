@@ -27,6 +27,7 @@ Dialog *stage5_boss_dialog(void) {
 	dadd_msg(d, Left, "Sounds very suspicious, actually.");
 	dadd_msg(d, Right, "Ok, let's finish this quickly.");
 		
+	dadd_msg(d, BGM, "bgm_stage5boss");
 	return d;
 }
 
