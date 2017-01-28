@@ -44,6 +44,7 @@ void _delete_enemy(void **enemies, void* enemy) {
 	
 	if(e->hp <= 0 && e->hp > ENEMY_IMMUNE) {
 		int i;
+		play_sound("enemydeath");
 		for(i = 0; i < 10; i++) {
 			tsrand_fill(2);
 			create_particle2c("flare", e->pos, NULL, Fade, timeout_linear, 10, (3+afrand(0)*10)*cexp(I*afrand(1)*2*M_PI));

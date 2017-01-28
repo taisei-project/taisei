@@ -215,6 +215,7 @@ void player_realdeath(Player *plr) {
 
 void player_death(Player *plr) {
 	if(plr->deathtime == -1 && global.frames - abs(plr->recovery) > 0) {
+		play_sound("death");
 		int i;
 		for(i = 0; i < 20; i++) {
 			tsrand_fill(2);
