@@ -523,8 +523,9 @@ void KurumiAniWallSlave(Enemy *e, int t) {
 void kurumi_aniwall(Boss *b, int time) {
 	TIMER(&time);	
 	
-	AT(EVENT_DEATH)
+	AT(EVENT_DEATH) {
 		killall(global.enemies);
+	}
 	
 	if(time < 0)
 		return;
@@ -621,7 +622,10 @@ static void bwlaser(Boss *b, float arg, int slave) {
 void kurumi_blowwall(Boss *b, int time) {
 	int t = time % 600;
 	TIMER(&t);
-	
+
+	AT(EVENT_DEATH)
+		killall(global.enemies);	
+
 	if(time < 0)
 		return;
 	

@@ -144,7 +144,11 @@ void process_boss(Boss *boss) {
 }
 
 void boss_death(Boss **boss) {
+	if((*boss)->current != NULL)
+		(*boss)->current->rule(*boss, EVENT_DEATH);
+
 	petal_explosion(35, (*boss)->pos);
+
 	free_boss(*boss);
 	*boss = NULL;
 	
