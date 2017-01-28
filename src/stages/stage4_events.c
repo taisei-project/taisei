@@ -415,7 +415,7 @@ void kurumi_boss_intro(Boss *b, int t) {
 	TIMER(&t);
 	GO_TO(b, VIEWPORT_W/2.0+200.0I, 0.01);
 	
-	AT(400)
+	AT(120)
 		global.dialog = stage4_dialog();
 }
 
