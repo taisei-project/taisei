@@ -55,7 +55,7 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 						handler(E_CursorLeft, 0, arg);
 					} else if(sym == tconfig.intval[KEY_SHOT] || sym == SDLK_RETURN) {
 						handler(E_MenuAccept, 0, arg);
-					} else if(sym == SDLK_ESCAPE) {
+					} else if(sym == SDLK_ESCAPE || sym == tconfig.intval[KEY_BOMB]) {
 						handler(E_MenuAbort, 0, arg);
 					}
 				}
