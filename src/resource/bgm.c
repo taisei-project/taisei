@@ -136,6 +136,7 @@ void start_bgm(char *name) {
 			warnx("start_bgm():\n!- BGM '%s' not exist", current_bgm.name);
 			free(current_bgm.name);
 			current_bgm.name = NULL;
+			stop_bgm();
 			return;
 		}
 		alSourceRewind(resources.bgmsrc);
