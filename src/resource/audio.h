@@ -35,7 +35,7 @@ Sound *get_snd(Sound *source, char *name);
 void delete_sound(void **snds, void *snd);
 void delete_sounds(void);
 
-void set_sfx_volume(int value);
+void set_sfx_volume(float gain);
 
 int init_sfx(int *argc, char *argv[]);
 void shutdown_sfx(void);

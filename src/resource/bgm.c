@@ -201,10 +201,9 @@ void restore_bgm(void)
 	saved_bgm = NULL;
 }
 
-void set_bgm_volume(int value)
+void set_bgm_volume(float gain)
 {
 	if(tconfig.intval[NO_MUSIC]) return;
-	float gain = 0.1f * value;
 	printf("BGM volume: %f\n", gain);
 	alSourcef(resources.bgmsrc,AL_GAIN, gain);
 	warn_alut_error("changing gain of music source");

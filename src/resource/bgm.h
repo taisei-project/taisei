@@ -42,6 +42,6 @@ void load_bgm_descriptions(const char *path);
 
 void delete_music(void);
 
-void set_bgm_volume(int value);
+void set_bgm_volume(float gain);
 
 #endif

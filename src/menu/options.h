@@ -20,12 +20,15 @@ typedef int (*BindingGetter)(void*);
 typedef int (*BindingSetter)(void*, int);
 typedef int (*BindingDependence)(void);
 
+typedef void (*FloatSetter)(float);
+
 typedef enum BindingType {
 	BT_IntValue,
 	BT_KeyBinding,
 	BT_StrValue,
 	BT_Resolution,
 	BT_Scale,
+	BT_ScaleCallback,
 	BT_GamepadKeyBinding
 } BindingType;
 
@@ -40,6 +43,7 @@ typedef struct OptionBinding {
 	float scale_step;
 	BindingGetter getter;
 	BindingSetter setter;
+	FloatSetter callback;
 	BindingDependence dependence;
 	int selected;
 	int configentry;
