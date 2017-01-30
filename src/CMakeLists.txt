@@ -7,7 +7,7 @@ find_package(ALUT REQUIRED)
 find_package(PNG REQUIRED)
 find_package(SDL_ttf REQUIRED)
 find_package(Freetype)
-find_package(ZLIB)
+find_package(ZLIB REQUIRED)
 find_package(OGG)
 
 if(OGG_FOUND)
