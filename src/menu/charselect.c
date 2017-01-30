@@ -10,11 +10,11 @@
 #include "global.h"
 
 void set_player(void *p) {
-	global.plr.cha = (Character) p;
+	global.plr.cha = (Character) (uintptr_t) p;
 }
 
 void set_shotmode(void *p) {
-	global.plr.shot = (ShotMode) p;
+	global.plr.shot = (ShotMode) (uintptr_t) p;
 }
 
 void create_shottype_menu(MenuData *m) {
