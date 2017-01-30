@@ -95,6 +95,9 @@ add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall -Wno-parentheses)
 
 if(TAISEI_DEBUG)
 	add_definitions(-DDEBUG)
+	if(TAISEI_IDDQD)
+		add_definitions(-DIDDQD)
+	endif()
 endif()
 
 if(WERROR)
