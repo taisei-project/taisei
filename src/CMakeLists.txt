@@ -7,7 +7,7 @@ find_package(ALUT REQUIRED)
 find_package(PNG REQUIRED)
 find_package(SDL_ttf REQUIRED)
 find_package(Freetype)
-find_package(ZLIB)
+find_package(ZLIB REQUIRED)
 find_package(OGG)
 
 if(OGG_FOUND)
@@ -95,6 +95,9 @@ add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall -Wno-parentheses)
 
 if(TAISEI_DEBUG)
 	add_definitions(-DDEBUG)
+	if(TAISEI_IDDQD)
+		add_definitions(-DIDDQD)
+	endif()
 endif()
 
 if(WERROR)

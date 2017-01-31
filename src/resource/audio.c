@@ -191,10 +191,9 @@ void play_sound_p(char *name, int unconditional)
 	}
 }
 
-void set_sfx_volume(int value)
+void set_sfx_volume(float gain)
 {
 	if(tconfig.intval[NO_AUDIO]) return;
-	float gain = 0.1f * value;
 	printf("SFX volume: %f\n", gain);
 	int i;
 	for(i = 0; i < SNDSRC_COUNT; i++) {

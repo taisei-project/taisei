@@ -10,7 +10,7 @@
 #include "global.h"
 
 void set_difficulty(void *d) {
-	global.diff = (Difficulty) d;	
+	global.diff = (Difficulty) (uintptr_t) d;
 }
 
 void create_difficulty_menu(MenuData *m) {

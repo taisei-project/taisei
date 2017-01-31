@@ -121,6 +121,14 @@ OptionBinding* bind_scale(int cfgentry, float smin, float smax, float step) {
 	return bind;
 }
 
+// BT_ScaleCallback: float values clamped to a range with callback
+OptionBinding* bind_scale_call(int cfgentry, float smin, float smax, float step, FloatSetter callback) {
+	OptionBinding *bind = bind_scale(cfgentry, smin, smax, step);
+	bind->type = BT_ScaleCallback;
+	bind->callback = callback;
+	return bind;
+}
+
 // Returns a pointer to the first found binding that blocks input. If none found, returns NULL.
 OptionBinding* bind_getinputblocking(MenuData *m) {
 	int i;
@@ -621,39 +629,17 @@ void create_options_menu(MenuData *m) {
 	);	bind_onoff(b);
 	
 	add_menu_entry(m, "SFX volume level", do_nothing,
-		b = bind_option(SFX_VOLUME, bind_common_intget,
-								  bind_sfxvol_intset)
-	);	bind_addvalue(b, "0");
-		bind_addvalue(b, "1");
-		bind_addvalue(b, "2");
-		bind_addvalue(b, "3");
-		bind_addvalue(b, "4");
-		bind_addvalue(b, "5");
-		bind_addvalue(b, "6");
-		bind_addvalue(b, "7");
-		bind_addvalue(b, "8");
-		bind_addvalue(b, "9");
-		bind_addvalue(b, "10");
-
+		bind_scale_call(SFX_VOLUME, 0, 1, 0.1, set_sfx_volume)
+	);
+	
 	add_menu_entry(m, "Background music", do_nothing,
 		b = bind_option(NO_MUSIC, bind_common_onoffget_inverted,
 								  bind_nomusic_set)
 	);	bind_onoff(b);
 	
 	add_menu_entry(m, "Music volume level", do_nothing,
-		b = bind_option(BGM_VOLUME, bind_common_intget,
-								  bind_musvol_intset)
-	);	bind_addvalue(b, "0");
-		bind_addvalue(b, "1");
-		bind_addvalue(b, "2");
-		bind_addvalue(b, "3");
-		bind_addvalue(b, "4");
-		bind_addvalue(b, "5");
-		bind_addvalue(b, "6");
-		bind_addvalue(b, "7");
-		bind_addvalue(b, "8");
-		bind_addvalue(b, "9");
-		bind_addvalue(b, "10");
+		bind_scale_call(BGM_VOLUME, 0, 1, 0.1, set_bgm_volume)
+	);
 	
 	add_menu_separator(m);
 	add_menu_entry(m, "Video options...", options_sub_video, m);
@@ -796,7 +782,8 @@ void draw_options_menu(MenuData *menu) {
 					break;
 				}
 				
-				case BT_Scale: {
+				case BT_Scale:
+				case BT_ScaleCallback: {
 					int w  = 200;
 					int h  = 5;
 					int cw = 5;
@@ -931,8 +918,11 @@ static void options_input_event(EventType type, int state, void *arg) {
 			if(bind) {
 				if(bind->type == BT_IntValue || bind->type == BT_Resolution)
 					bind_setprev(bind);
-				else if(bind->type == BT_Scale)
+				else if((bind->type == BT_Scale) || (bind->type == BT_ScaleCallback)) {
 					tconfig.fltval[bind->configentry] = clamp(tconfig.fltval[bind->configentry] - bind->scale_step, bind->scale_min, bind->scale_max);
+					if (bind->type == BT_ScaleCallback)
+						bind->callback(tconfig.fltval[bind->configentry]);
+				}
 			}
 		break;
 		
@@ -941,8 +931,11 @@ static void options_input_event(EventType type, int state, void *arg) {
 			if(bind) {
 				if(bind->type == BT_IntValue || bind->type == BT_Resolution)
 					bind_setnext(bind);
-				else if(bind->type == BT_Scale)
+				else if((bind->type == BT_Scale) || (bind->type == BT_ScaleCallback)) {
 					tconfig.fltval[bind->configentry] = clamp(tconfig.fltval[bind->configentry] + bind->scale_step, bind->scale_min, bind->scale_max);
+					if (bind->type == BT_ScaleCallback)
+						bind->callback(tconfig.fltval[bind->configentry]);
+				}
 			}
 		break;
 		
