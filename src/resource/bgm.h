@@ -21,6 +21,7 @@ typedef struct Bgm_desc {
 struct current_bgm_t {
 	char *name;
 	char *title;
+	int isboss;
 	Sound *data;
 	int started_at;
 };

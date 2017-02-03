@@ -9,7 +9,7 @@ shoot-em-up games set in an isolated world full of Japanese folklore.
 
 Dependencies:
 	- SDL, SDL_ttf
-	- libpng
+	- libpng, ZLIB
 	- OpenGL
 	- OpenAL, ALUT
 	- CMake (build system)
@@ -46,7 +46,7 @@ your replays if you really want to publish them.
 
 Currently Taisei does not include any background music. To use this feature,
 you should have required audio files in bgm/ subdirectory.
-BGM may either be in .wav format, or in .ogg (last one apply only if you have
+BGM may either be in .wav format, or in .ogg; last one apply only if you have
 compiled Taisei with libogg, libvorbis and libvorbisfile (automatically enabled
 if cmake is able to find them).
 
@@ -54,15 +54,15 @@ Complete music pack consists of 16 bgm_*.ogg or bgm_*.wav files, where `*' mean:
 	credits		BGM for credits screen
 	ending		BGM for ending
 	gameover	BGM for game over screen
-	menu		BGM for menus, excluding in-game menu
-	stageN		N=1..6, standard stage theme (also for in-game menu)
-	stageNboss	N=1..6, boss theme for a stage (also for in-game menu)
+	menu		BGM for menus (excluding in-game menu which pauses BGM)
+	stageN		N=1..6, standard stage theme
+	stageNboss	N=1..6, boss theme for a stage
 
 If you want to specify stage/boss theme names to be shown during gameplay, you
-may do it in bgm/bgm.conf file. This file consists of lines, each of which
+may do it in bgm/bgm.conf file. This file contains some lines, each of which
 consists of bgm filename (without extension), space of tab, and theme name.
 No space/tab allowed either in beginning of line or BGM filenames listed in
-this file; can not include spaces or tabs; theme names may do.
+this file; theme names may contain them.
 
 5. Contact
 
