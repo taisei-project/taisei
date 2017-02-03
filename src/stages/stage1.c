@@ -14,7 +14,7 @@
 static Stage3D bgcontext;
 
 Dialog *stage1_dialog(void) {
-	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
+	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/cirno");
 		
 	dadd_msg(d, Right, "Hey! Who is there?");
 	

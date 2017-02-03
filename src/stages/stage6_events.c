@@ -10,7 +10,7 @@
 #include <global.h>
 
 Dialog *stage6_dialog(void) {
-	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
+	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/elly");
 	
 	dadd_msg(d, Left, "You are responsible?");
 	dadd_msg(d, Right, "Yes...");

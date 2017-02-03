@@ -18,7 +18,7 @@ Dialog *stage5_post_mid_dialog(void) {
 }
 
 Dialog *stage5_boss_dialog(void) {
-	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
+	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/iku");
 	
 	dadd_msg(d, Left, "Finally!");
 	dadd_msg(d, Right, "Stop following me!");

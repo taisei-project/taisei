@@ -12,7 +12,7 @@
 #include "laser.h"
 
 Dialog *stage4_dialog(void) {
-	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
+	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/kurumi");
 		
 	dadd_msg(d, Right, "Ah! Intruder! Stop being so persistent!");
 	
@@ -36,7 +36,7 @@ Dialog *stage4_dialog(void) {
 }
 
 Dialog *stage4_dialog_end(void) {
-	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "masterspark");
+	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/kurumi");
 	
 	dadd_msg(d, Left, "Now, where is your master?");
 	dadd_msg(d, Right, "Didn't I tell you? At the end of this corridor,\nthere is a door.");
