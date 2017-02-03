@@ -153,9 +153,16 @@ void start_bgm(char *name) {
 	warn_alut_error("checking state of music source");
 	
 	// Support drawing BGM title in game loop
-	current_bgm.started_at =
-		((current_bgm.title = get_bgm_desc(resources.bgm_descriptions, current_bgm.name)) != NULL) ?
-			global.frames : -1;
+	if ((current_bgm.title = get_bgm_desc(resources.bgm_descriptions, current_bgm.name)) != NULL)
+	{
+		current_bgm.started_at = global.frames;
+		// Boss BGM title color may differ from the one at beginning of stage
+		current_bgm.isboss = (strstr(current_bgm.name, "boss") != NULL);
+	}
+	else
+	{
+		current_bgm.started_at = -1;
+	}
 	
 	if(play != AL_PLAYING)
 	{

@@ -40,6 +40,7 @@ typedef struct StageInfo {
 	char *subtitle;
 	
 	Color titleclr;
+	Color bosstitleclr;
 } StageInfo;
 
 extern StageInfo stages[];
