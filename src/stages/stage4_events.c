@@ -357,7 +357,7 @@ void kurumi_spell_bg(Boss *b, int time) {
 }
 
 void kurumi_outro(Boss *b, int time) {
-	b->pos += -5-I;		
+	b->pos += -5-I;
 }
 
 Boss *create_kurumi_mid(void) {
@@ -405,7 +405,7 @@ int stage4_supercard(Enemy *e, int t) {
 		int i;
 		complex n = cexp(I*carg(global.plr.pos - e->pos) + 0.3I*_i);
 		for(i = -1; i <= 1 && t; i++)
-			create_projectile4c("card", e->pos + 30*n, rgb(1-_i/20.0, 0, 0.4), splitcard, 1*n, 0.4I, 100-time+70, 1.4*I*i*n);		
+			create_projectile4c("card", e->pos + 30*n, rgb(1-_i/20.0, 0, 0.4), splitcard, 1*n, 0.4I, 100-time+70, 1.4*I*i*n);
 	}
 	 
 	return 1;
@@ -521,7 +521,7 @@ void KurumiAniWallSlave(Enemy *e, int t) {
 }
 
 void kurumi_aniwall(Boss *b, int time) {
-	TIMER(&time);	
+	TIMER(&time);
 	
 	AT(EVENT_DEATH) {
 		killall(global.enemies);
@@ -623,8 +623,8 @@ void kurumi_blowwall(Boss *b, int time) {
 	int t = time % 600;
 	TIMER(&t);
 
-	AT(EVENT_DEATH)
-		killall(global.enemies);	
+	if(time == EVENT_DEATH)
+		killall(global.enemies);
 
 	if(time < 0)
 		return;

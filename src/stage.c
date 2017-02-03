@@ -19,13 +19,14 @@
 #include "menu/gameovermenu.h"
 #include "taisei_err.h"
 
-StageInfo stages[] = {	
-	{1, stage1_loop, False, "Stage 1", "Misty Lake", {1, 1, 1}},
-	{2, stage2_loop, False, "Stage 2", "Walk Along the Border", {1, 1, 1}},
-	{3, stage3_loop, False, "Stage 3", "Through the Tunnel of Light", {0, 0, 0}},
-	{4, stage4_loop, False, "Stage 4", "Forgotten Mansion", {0, 0, 0}},
-	{5, stage5_loop, False, "Stage 5", "Climbing the Tower of Babel", {1, 1, 1}},
-	{6, stage6_loop, False, "Stage 6", "Roof of the World", {1, 1, 1}},
+StageInfo stages[] = {
+//	id  loop         hidden  title      subtitle                      titleclr   bosstitleclr
+	{1, stage1_loop, False, "Stage 1", "Misty Lake",                  {1, 1, 1}, {1, 1, 1}},
+	{2, stage2_loop, False, "Stage 2", "Walk Along the Border",       {1, 1, 1}, {1, 1, 1}},
+	{3, stage3_loop, False, "Stage 3", "Through the Tunnel of Light", {0, 0, 0}, {0, 0, 0}},
+	{4, stage4_loop, False, "Stage 4", "Forgotten Mansion",           {0, 0, 0}, {1, 1, 1}},
+	{5, stage5_loop, False, "Stage 5", "Climbing the Tower of Babel", {1, 1, 1}, {1, 1, 1}},
+	{6, stage6_loop, False, "Stage 6", "Roof of the World",           {1, 1, 1}, {1, 1, 1}},
 	
 	{0, NULL, False, NULL, NULL}
 };
@@ -538,7 +539,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	SDL_EnableKeyRepeat(TS_KR_DELAY, TS_KR_INTERVAL);
 }
 
-void draw_title(int t, StageInfo *info, Alignment al, int x, int y, const char *text, TTF_Font *font) {
+void draw_title(int t, StageInfo *info, Alignment al, int x, int y, const char *text, TTF_Font *font, Color *color) {
 	int i;
 	float f = 0;
 	if(t < 30 || t > 220)
@@ -554,7 +555,7 @@ void draw_title(int t, StageInfo *info, Alignment al, int x, int y, const char *
 		glUseProgram(sha->prog);
 		glUniform1i(uniloc(sha, "trans"), 1);
 		glUniform1f(uniloc(sha, "t"), 1.0-f);
-		glUniform3fv(uniloc(sha, "color"), 1, (float *)&info->titleclr);
+		glUniform3fv(uniloc(sha, "color"), 1, (float *)color);
 		
 		glActiveTexture(GL_TEXTURE0 + 1);
 		glBindTexture(GL_TEXTURE_2D, get_tex("titletransition")->gltex);
@@ -572,11 +573,12 @@ void draw_title(int t, StageInfo *info, Alignment al, int x, int y, const char *
 void draw_stage_title(StageInfo *info) {
 	int t = global.frames;
 	
-	draw_title(t, info, AL_Center, VIEWPORT_W/2, VIEWPORT_H/2-40, info->title, _fonts.mainmenu);
-	draw_title(t, info, AL_Center, VIEWPORT_W/2, VIEWPORT_H/2, info->subtitle, _fonts.standard);
+	draw_title(t, info, AL_Center, VIEWPORT_W/2, VIEWPORT_H/2-40, info->title, _fonts.mainmenu, &info->titleclr);
+	draw_title(t, info, AL_Center, VIEWPORT_W/2, VIEWPORT_H/2, info->subtitle, _fonts.standard, &info->titleclr);
 	
 	if ((current_bgm.title != NULL) && (current_bgm.started_at >= 0))
 	{
-		draw_title(t - current_bgm.started_at, info, AL_Right, VIEWPORT_W-15, VIEWPORT_H-35, current_bgm.title, _fonts.standard);
+		draw_title(t - current_bgm.started_at, info, AL_Right, VIEWPORT_W-15, VIEWPORT_H-35, current_bgm.title, _fonts.standard,
+			current_bgm.isboss ? &info->bosstitleclr : &info->titleclr);
 	}
 }
