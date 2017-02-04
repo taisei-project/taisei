@@ -76,7 +76,7 @@ void process_items(void) {
     int v;
 	
 	float r = 30;
-	if(global.plr.focus > 0);
+	if(global.plr.focus > 0)
 		r *= 2;
 	
 	while(item != NULL) {
