@@ -87,7 +87,7 @@ static void _video_setmode(int w, int h, int fs, int fallback) {
 			return;
 		}
 
-		SDL_GetWindowSize(video.window, &video.current.width, &video.current.height);
+		SDL_GL_GetDrawableSize(video.window, &video.current.width, &video.current.height);
 		video_set_viewport();
 		return;
 	}
