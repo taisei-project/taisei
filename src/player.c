@@ -304,9 +304,14 @@ void player_event(Player* plr, int type, int key) {
 
 // free-axis movement
 int player_applymovement_gamepad(Player *plr) {
-	if(!plr->axis_lr && !plr->axis_ud)
+	if(!plr->axis_lr && !plr->axis_ud) {
+		if(plr->gamepadmove) {
+			plr->gamepadmove = False;
+			plr->moveflags = 0;
+		}
 		return False;
-	
+	}
+
 	complex direction = (plr->axis_lr + plr->axis_ud*I) / (double)GAMEPAD_AXIS_RANGE;
 	if(cabs(direction) > 1)
 		direction /= cabs(direction);
@@ -321,8 +326,10 @@ int player_applymovement_gamepad(Player *plr) {
 	player_setmoveflag(plr, KEY_LEFT,	sr == -1);
 	player_setmoveflag(plr, KEY_RIGHT,	sr ==  1);
 	
-	if(direction)
+	if(direction) {
+		plr->gamepadmove = True;
 		player_move(&global.plr, direction);
+	}
 	
 	return True;
 }

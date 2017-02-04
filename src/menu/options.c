@@ -499,11 +499,11 @@ void options_sub_gamepad(void *arg) {
 		bind_addvalue(b, "restricted");
 	
 	add_menu_entry(m, "UD axis sensitivity", do_nothing,
-		b = bind_scale(GAMEPAD_AXIS_UD_SENS, -3, 3, 0.05)
+		b = bind_scale(GAMEPAD_AXIS_UD_SENS, -2, 2, 0.05)
 	); bind_setdependence(b, gamepad_sens_depencence);
 	
 	add_menu_entry(m, "LR axis sensitivity", do_nothing,
-		b = bind_scale(GAMEPAD_AXIS_LR_SENS, -3, 3, 0.05)
+		b = bind_scale(GAMEPAD_AXIS_LR_SENS, -2, 2, 0.05)
 	);	bind_setdependence(b, gamepad_sens_depencence);
 	
 	add_menu_entry(m, "Dead zone", do_nothing,
