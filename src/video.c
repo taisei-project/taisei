@@ -56,6 +56,7 @@ void video_set_viewport(void) {
 		h = w / VIEWPORT_ASPECT_RATIO;
 	}
 
+	glClear(GL_COLOR_BUFFER_BIT);
 	glViewport((video.current.width - w) / 2, (video.current.height - h) / 2, (int)w, (int)h);
 }
 
