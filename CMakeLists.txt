@@ -2,6 +2,8 @@ project(taisei)
 
 cmake_minimum_required(VERSION 2.6)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${taisei_SOURCE_DIR}/cmake")
+
 if(WIN32)
 	add_definitions(-DRELATIVE)
 	set(RELATIVE TRUE)
