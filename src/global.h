@@ -8,7 +8,7 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
-#include <SDL/SDL.h>
+#include <SDL.h>
 
 #include "resource/audio.h"
 #include "resource/bgm.h"

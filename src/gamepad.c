@@ -6,7 +6,6 @@
  * Copyright (C) 2012, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
  */
 
-#include <SDL/SDL.h>
 #include "gamepad.h"
 #include "taisei_err.h"
 #include "config.h"
@@ -36,7 +35,7 @@ void gamepad_init(void) {
 	int i, cnt = gamepad_devicecount();
 	printf("gamepad_init(): found %i devices\n", cnt);
 	for(i = 0; i < cnt; ++i)
-		printf("%i: %s\n", i, SDL_JoystickName(i));
+		printf("%i: %s\n", i, SDL_JoystickNameForIndex(i));
 	
 	int dev = config_intval("gamepad_device");
 	if(dev < 0 || dev >= cnt) {
@@ -229,7 +228,7 @@ int gamepad_devicecount(void) {
 }
 
 char* gamepad_devicename(int id) {
-	return (char*)SDL_JoystickName(id);
+	return (char*)SDL_JoystickNameForIndex(id);
 }
 
 int gamepad_buttonpressed(int btn) {

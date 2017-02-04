@@ -9,7 +9,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include <SDL/SDL_keysym.h>
+#include <SDL_keycode.h>
 
 typedef struct Config {
 	int 	intval[64];

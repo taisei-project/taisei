@@ -6,7 +6,6 @@
  * Copyright (C) 2012, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
  */
 
-#include <SDL/SDL.h>
 #include "events.h"
 #include "config.h"
 #include "global.h"
@@ -15,17 +14,19 @@
 
 void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 	SDL_Event event;
-	Uint8 *keys = SDL_GetKeyState(NULL);
+	const Uint8 *keys = SDL_GetKeyboardState(NULL);
 	
 	int kbd 	= flags & EF_Keyboard;
 	int text	= flags & EF_Text;
 	int menu	= flags & EF_Menu;
 	int game	= flags & EF_Game;
-	
-	if(text) SDL_EnableUNICODE(True);
+
+	// TODO: rewrite text input handling to use SDL2's IME-aware input API
+	// https://wiki.libsdl.org/Tutorials/TextInput
+
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;
-		int uni = event.key.keysym.unicode;
+		int uni = sym; // event.key.keysym.unicode;
 		
 		switch(event.type) {
 			case SDL_KEYDOWN:
@@ -33,14 +34,12 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 					take_screenshot();
 					break;
 				}
-				
-#ifndef WIN32	// TODO: remove when we're on SDL2
-				if((sym == SDLK_RETURN && (keys[SDLK_LALT] || keys[SDLK_RALT])) || sym == tconfig.intval[KEY_FULLSCREEN]) {
+
+				if((sym == SDLK_RETURN && (keys[SDL_SCANCODE_LALT] || keys[SDL_SCANCODE_RALT])) || sym == tconfig.intval[KEY_FULLSCREEN]) {
 					video_toggle_fullscreen();
 					break;
 				}
-#endif
-				
+
 				if(kbd)
 					handler(E_KeyDown, sym, arg);
 				
@@ -105,5 +104,4 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 				break;
 		}
 	}
-	if(text) SDL_EnableUNICODE(False);
 }

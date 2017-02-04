@@ -9,9 +9,11 @@
 #ifndef VIDEO_H
 #define VIDEO_H
 
+#define WINDOW_TITLE "TaiseiProject"
+
 typedef struct VideoMode {
-	unsigned int width;
-	unsigned int height;
+	int width;
+	int height;
 } VideoMode;
 
 typedef struct {
@@ -19,10 +21,11 @@ typedef struct {
 	int mcount;
 	VideoMode intended;
 	VideoMode current;
+    SDL_Window *window;
+    SDL_GLContext *glcontext;
 } Video;
 
 Video video;
-SDL_Surface *display;
 
 void video_init(void);
 void video_shutdown(void);

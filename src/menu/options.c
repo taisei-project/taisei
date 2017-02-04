@@ -237,9 +237,7 @@ int bind_common_onoffset_inverted(void *b, int v) {
 // --- Binding callbacks for individual options --- //
 
 int bind_fullscreen_set(void *b, int v) {
-#ifndef WIN32	// TODO: remove when we're on SDL2
 	video_toggle_fullscreen();
-#endif
 	return bind_common_onoffset(b, v);
 }
 
@@ -321,13 +319,8 @@ void destroy_options_menu(MenuData *m) {
 		if(bind->type == BT_Resolution) {
 			if(bind->selected != -1) {
 				VideoMode *m = video.modes + bind->selected;
-				
-#ifndef WIN32	// TODO: remove when we're on SDL2
+
 				video_setmode(m->width, m->height, tconfig.intval[FULLSCREEN]);
-#else
-				video.intended.width = m->width;
-				video.intended.height = m->height;
-#endif
 				
 				tconfig.intval[VID_WIDTH]  = video.intended.width;
 				tconfig.intval[VID_HEIGHT] = video.intended.height;
@@ -563,11 +556,9 @@ void options_sub_controls(void *arg) {
 	
 	add_menu_separator(m);
 
-#ifndef WIN32	// TODO: remove when we're on SDL2
 	add_menu_entry(m, "Toggle fullscreen", do_nothing, 
 		bind_keybinding(KEY_FULLSCREEN)
 	);
-#endif
 
 	add_menu_entry(m, "Take a screenshot", do_nothing, 
 		bind_keybinding(KEY_SCREENSHOT)

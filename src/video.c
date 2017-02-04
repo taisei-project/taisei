@@ -46,32 +46,46 @@ static int video_compare_modes(const void *a, const void *b) {
 }
 
 static void _video_setmode(int w, int h, int fs, int fallback) {
-	int flags = SDL_OPENGL;
-	if(fs) flags |= SDL_FULLSCREEN;
+	Uint32 flags = SDL_WINDOW_OPENGL;
+	if(fs) flags |= SDL_WINDOW_FULLSCREEN;
 	
 	if(!fallback) {
 		video.intended.width = w;
 		video.intended.height = h;
 	}
 	
-	if(display)
-		SDL_FreeSurface(display);
-	
-	if(!(display = SDL_SetVideoMode(w, h, 32, flags))) {
-		if(fallback) {
-			errx(-1, "video_setmode(): error opening screen: %s", SDL_GetError());
+	if(video.window) {
+		SDL_DestroyWindow(video.window);
+		video.window = NULL;
+	}
+
+	if(video.glcontext) {
+		SDL_GL_DeleteContext(video.glcontext);
+		video.glcontext = NULL;
+	}
+
+	video.window = SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w, h, flags);
+
+	if(video.window) {
+		video.glcontext = SDL_GL_CreateContext(video.window);
+
+		if(!video.glcontext) {
+			errx(-1, "video_setmode(): error creating OpenGL context: %s", SDL_GetError());
 			return;
 		}
-		
-		warnx("video_setmode(): setting %dx%d failed, falling back to %dx%d", w, h, RESX, RESY);
-		_video_setmode(RESX, RESY, fs, True);
+
+		SDL_GetWindowSize(video.window, &video.current.width, &video.current.height);
+		glViewport(0, 0, video.current.width, video.current.height);
+		return;
+	}
+
+	if(fallback) {
+		errx(-1, "video_setmode(): error opening screen: %s", SDL_GetError());
+		return;
 	}
 	
-	const SDL_VideoInfo *info = SDL_GetVideoInfo();
-	video.current.width = info->current_w;
-	video.current.height = info->current_h;
-	
-	glViewport(0, 0, video.current.width, video.current.height);
+	warnx("video_setmode(): setting %dx%d failed, falling back to %dx%d", w, h, RESX, RESY);
+	_video_setmode(RESX, RESY, fs, True);
 }
 
 void video_setmode(int w, int h, int fs) {
@@ -79,7 +93,7 @@ void video_setmode(int w, int h, int fs) {
 }
 
 int video_isfullscreen(void) {
-	return !!(display->flags & SDL_FULLSCREEN);
+	return !!(SDL_GetWindowFlags(video.window) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP));
 }
 
 void video_toggle_fullscreen(void) {
@@ -87,24 +101,30 @@ void video_toggle_fullscreen(void) {
 }
 
 void video_init(void) {
-	SDL_Rect **modes;
-	int i;
-	
+	int i, s, fullscreen_available = False;
+
 	memset(&video, 0, sizeof(video));
+
+	// First, register all resolutions that are available in fullscreen
 	
-	// First register all resolutions that are available in fullscreen
-	modes = SDL_ListModes(NULL, SDL_FULLSCREEN | SDL_HWSURFACE);
-	if(!modes) {
-		warnx("video_init(): no available fullscreen modes");
-		tconfig.intval[FULLSCREEN] = False;
-	} else if(modes == (SDL_Rect**)-1) {
-		warnx("video_init(): you seem to have a weird video driver");
-	} else {
-		for(i = 0; modes[i]; ++i) {
-			video_add_mode(modes[i]->w, modes[i]->h);
+	for(s = 0; s < SDL_GetNumVideoDisplays(); ++s) {
+		for(i = 0; i < SDL_GetNumDisplayModes(s); ++i) {
+			SDL_DisplayMode mode = { SDL_PIXELFORMAT_UNKNOWN, 0, 0, 0, 0 };
+			
+			if(SDL_GetDisplayMode(s, i, &mode) != 0) {
+				warnx("SDL_GetDisplayMode failed: %s", SDL_GetError());
+			} else {
+				video_add_mode(mode.w, mode.h);
+				fullscreen_available = True;
+			}
 		}
 	}
-	
+
+	if(!fullscreen_available) {
+		warnx("video_init(): no available fullscreen modes");
+		tconfig.intval[FULLSCREEN] = False;
+	}
+
 	// Then, add some common 4:3 modes for the windowed mode if they are not there yet.
 	// This is required for some multihead setups.
 	for(i = 0; common_modes[i].width; ++i)
@@ -114,10 +134,10 @@ void video_init(void) {
 	qsort(video.modes, video.mcount, sizeof(VideoMode), video_compare_modes);
 	
 	video_setmode(tconfig.intval[VID_WIDTH], tconfig.intval[VID_HEIGHT], tconfig.intval[FULLSCREEN]);
-	SDL_WM_SetCaption("TaiseiProject", NULL); 
 }
 
 void video_shutdown(void) {
-	SDL_FreeSurface(display);
+	SDL_DestroyWindow(video.window);
+	SDL_GL_DeleteContext(video.glcontext);
 	free(video.modes);
 }

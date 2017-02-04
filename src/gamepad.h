@@ -9,6 +9,7 @@
 #ifndef GAMEPAD_H
 #define GAMEPAD_H
 
+#include <SDL.h>
 #include "events.h"
 
 void gamepad_init(void);

@@ -8,6 +8,7 @@
 
 #include "ending.h"
 #include "global.h"
+#include "video.h"
 
 void add_ending_entry(Ending *e, int dur, char *msg, char *tex) {
 	EndingEntry *entry;	
@@ -131,7 +132,7 @@ void ending_loop(void) {
 		
 		ending_draw(&e);
 		global.frames++;
-		SDL_GL_SwapBuffers();
+		SDL_GL_SwapWindow(video.window);
 		frame_rate(&global.lasttime);
 		
 		if(global.frames >= e.entries[e.pos+1].time)

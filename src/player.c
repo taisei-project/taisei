@@ -7,7 +7,6 @@
 
 #include "player.h"
 
-#include <SDL/SDL.h>
 #include "projectile.h"
 #include "global.h"
 #include "plrmodes.h"

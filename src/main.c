@@ -5,7 +5,6 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
-#include <SDL/SDL.h>
 #include <sys/stat.h>
 #include "taisei_err.h"
 
