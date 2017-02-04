@@ -102,6 +102,9 @@ static void _video_setmode(int w, int h, int fs, int fallback) {
 }
 
 void video_setmode(int w, int h, int fs) {
+	if(w == video.current.width && h == video.current.height && fs == video_isfullscreen())
+		return;
+
 	_video_setmode(w, h, fs, False);
 }
 
