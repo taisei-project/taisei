@@ -59,15 +59,14 @@ static void _video_setmode(int w, int h, int fs, int fallback) {
 		video.window = NULL;
 	}
 
-	if(video.glcontext) {
-		SDL_GL_DeleteContext(video.glcontext);
-		video.glcontext = NULL;
-	}
-
 	video.window = SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w, h, flags);
 
 	if(video.window) {
-		video.glcontext = SDL_GL_CreateContext(video.window);
+		if(video.glcontext) {
+			SDL_GL_MakeCurrent(video.window, video.glcontext);
+		} else {
+			video.glcontext = SDL_GL_CreateContext(video.window);
+		}
 
 		if(!video.glcontext) {
 			errx(-1, "video_setmode(): error creating OpenGL context: %s", SDL_GetError());
