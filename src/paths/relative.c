@@ -7,18 +7,21 @@
 
 #include "native.h"
 
-const char *get_prefix() {
+const char *get_prefix(void) {
 	return "./data/";
 }
 
-const char *get_config_path() {
+const char *get_config_path(void) {
 	return ".";
 }
 
-const char *get_screenshots_path() {
+const char *get_screenshots_path(void) {
 	return "./screenshots";
 }
 
-const char *get_replays_path() {
+const char *get_replays_path(void) {
 	return "./replays";
+}
+
+void init_paths(void) {
 }

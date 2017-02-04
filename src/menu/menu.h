@@ -11,8 +11,6 @@
 #include "transition.h"
 
 #define IMENU_BLUR 0.05
-#define TS_KR_DELAY SDL_DEFAULT_REPEAT_DELAY
-#define TS_KR_INTERVAL (SDL_DEFAULT_REPEAT_INTERVAL*2)
 
 #include "events.h"
 

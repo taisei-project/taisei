@@ -7,6 +7,7 @@
 
 #include "menu.h"
 #include "global.h"
+#include "video.h"
 
 MenuEntry *add_menu_entry(MenuData *menu, char *name, MenuAction action, void *arg) {
 	return add_menu_entry_f(menu, name, action, arg, 0);
@@ -155,7 +156,7 @@ int menu_loop(MenuData *menu, void (*input)(MenuData*), void (*draw)(MenuData*),
 		if(!(menu->flags & MF_ManualDrawTransition))
 			draw_transition();
 		
-		SDL_GL_SwapBuffers();
+		SDL_GL_SwapWindow(video.window);
 		frame_rate(&menu->lasttime);
 	}
 	

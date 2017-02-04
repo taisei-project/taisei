@@ -13,4 +13,6 @@ const char *get_config_path(void);
 const char *get_screenshots_path(void);
 const char *get_replays_path(void);
 
+void init_paths(void);
+
 #endif

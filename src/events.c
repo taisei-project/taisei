@@ -6,7 +6,6 @@
  * Copyright (C) 2012, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
  */
 
-#include <SDL/SDL.h>
 #include "events.h"
 #include "config.h"
 #include "global.h"
@@ -15,17 +14,27 @@
 
 void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 	SDL_Event event;
-	Uint8 *keys = SDL_GetKeyState(NULL);
+	const Uint8 *keys = SDL_GetKeyboardState(NULL);
 	
 	int kbd 	= flags & EF_Keyboard;
 	int text	= flags & EF_Text;
 	int menu	= flags & EF_Menu;
 	int game	= flags & EF_Game;
-	
-	if(text) SDL_EnableUNICODE(True);
+
+	// TODO: rewrite text input handling to properly support multibyte characters and IMEs
+
+	if(text) {
+		if(!SDL_IsTextInputActive()) {
+			SDL_StartTextInput();
+		}
+	} else {
+		if(SDL_IsTextInputActive()) {
+			SDL_StopTextInput();
+		}
+	}
+
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;
-		int uni = event.key.keysym.unicode;
 		
 		switch(event.type) {
 			case SDL_KEYDOWN:
@@ -33,14 +42,12 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 					take_screenshot();
 					break;
 				}
-				
-#ifndef WIN32	// TODO: remove when we're on SDL2
-				if((sym == SDLK_RETURN && (keys[SDLK_LALT] || keys[SDLK_RALT])) || sym == tconfig.intval[KEY_FULLSCREEN]) {
+
+				if((sym == SDLK_RETURN && (keys[SDL_SCANCODE_LALT] || keys[SDL_SCANCODE_RALT])) || sym == tconfig.intval[KEY_FULLSCREEN]) {
 					video_toggle_fullscreen();
 					break;
 				}
-#endif
-				
+
 				if(kbd)
 					handler(E_KeyDown, sym, arg);
 				
@@ -60,7 +67,7 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 					}
 				}
 				
-				if(game) {
+				if(game && !event.key.repeat) {
 					if(sym == SDLK_ESCAPE)
 						handler(E_Pause, 0, arg);
 					else {
@@ -77,9 +84,6 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 						handler(E_SubmitText, 0, arg);
 					else if(sym == SDLK_BACKSPACE)
 						handler(E_CharErased, 0, arg);
-					else if(uni && sym != SDLK_TAB) {
-						handler(E_CharTyped, uni, arg);
-					}
 				}
 				
 				break;
@@ -88,7 +92,7 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 				if(kbd)
 					handler(E_KeyUp, sym, arg);
 				
-				if(game) {
+				if(game && !event.key.repeat) {
 					int key = config_sym2key(sym);
 					if(key >= 0)
 						handler(E_PlrKeyUp, key, arg);
@@ -96,6 +100,30 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 				
 				break;
 			
+			case SDL_TEXTINPUT: {
+				char *c;
+
+				for(c = event.text.text; *c; ++c) {
+					handler(E_CharTyped, *c, arg);
+				}
+
+				break;
+			}
+
+			case SDL_WINDOWEVENT:
+				switch(event.window.event) {
+					case SDL_WINDOWEVENT_RESIZED:
+						video_resize(event.window.data1, event.window.data2);
+						break;
+
+					case SDL_WINDOWEVENT_FOCUS_LOST:
+						if(game) {
+							handler(E_Pause, 0, arg);
+						}
+						break;
+				}
+				break;
+
 			case SDL_QUIT:
 				exit(0);
 				break;
@@ -105,5 +133,4 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 				break;
 		}
 	}
-	if(text) SDL_EnableUNICODE(False);
 }

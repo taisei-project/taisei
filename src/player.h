@@ -65,7 +65,8 @@ typedef struct {
 	int movetime;
 	int prevmove;
 	int prevmovetime;
-	
+	int gamepadmove;
+
 	int axis_ud;
 	int axis_lr;
 } Player;

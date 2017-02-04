@@ -233,7 +233,7 @@ void config_save(char *filename) {
 			break;
 		
 		case CFGT_KEYBINDING:
-			fprintf(out, "%s = K%i\n", e->name, config_intval_p(e));
+			fprintf(out, "%s = %s\n", e->name, SDL_GetKeyName(config_intval_p(e)));
 			break;
 		
 		case CFGT_STRING:
@@ -257,7 +257,7 @@ void config_set(char *key, char *val) {
 	ConfigEntry *e = config_findentry(key);
 	
 	if(!e) {
-		warnx("config_set(): unknown key '%s'", key);
+		warnx("config_set(): unknown setting '%s'", key);
 		return;
 	}
 	
@@ -266,9 +266,18 @@ void config_set(char *key, char *val) {
 			tconfig.intval[e->key] = INTOF(val);
 			break;
 		
-		case CFGT_KEYBINDING:
-			tconfig.intval[e->key] = INTOF(val+1);
+		case CFGT_KEYBINDING: {
+			SDL_Keycode k = SDL_GetKeyFromName(val);
+
+			if(k == SDLK_UNKNOWN) {
+				warnx("config_set(): unknown key '%s'", val);
+			} else {
+				tconfig.intval[e->key] = k;
+			}
+
 			break;
+
+		}
 		
 		case CFGT_STRING:
 			stralloc(&(tconfig.strval[e->key]), val);

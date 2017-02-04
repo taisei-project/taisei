@@ -10,16 +10,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define CFG_DIR "/.taisei"
-#define SCR_DIR "/screenshots"
-#define RPY_DIR "/replays"
+#define DATA_DIR "data/"
 
+#define SCR_DIR "screenshots"
+#define RPY_DIR "replays"
+
+char *content_path;
 char *conf_path;
 char *scr_path;
 char *rpy_path;
 
 const char *get_prefix(void) {
-	return FILE_PREFIX;
+	return content_path;
 }
 
 const char *get_config_path(void) {
@@ -35,9 +37,17 @@ const char *get_replays_path(void) {
 }
 
 void init_paths(void) {
-	conf_path = malloc(strlen(CFG_DIR) + strlen(getenv("HOME")) + 1);
-	strcpy(conf_path, getenv("HOME"));
-	strcat(conf_path, CFG_DIR);
+#ifdef RELATIVE
+	char *basedir = SDL_GetBasePath();
+	content_path = malloc(strlen(basedir) + strlen(DATA_DIR) + 1);
+	strcpy(content_path, basedir);
+	strcat(content_path, DATA_DIR);
+	free(basedir);
+#else
+	content_path = FILE_PREFIX;
+#endif
+
+	conf_path = SDL_GetPrefPath("", "taisei");
 
 	scr_path = malloc(strlen(SCR_DIR) + strlen(get_config_path()) + 1);
 	strcpy(scr_path, get_config_path());

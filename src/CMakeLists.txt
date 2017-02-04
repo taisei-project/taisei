@@ -1,11 +1,11 @@
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
 
-find_package(SDL REQUIRED)
+find_package(SDL2 REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(OpenAL REQUIRED)
 find_package(ALUT REQUIRED)
 find_package(PNG REQUIRED)
-find_package(SDL_ttf REQUIRED)
+find_package(SDL2_ttf REQUIRED)
 find_package(Freetype)
 find_package(ZLIB REQUIRED)
 find_package(OGG)
@@ -81,7 +81,9 @@ if(VORBISFILE_FOUND)
 	add_definitions(-DOGG_SUPPORT_ENABLED)
 endif()
 
-if(RELATIVE)
+if(USE_SDL2_PATHS)
+    set(SRCs ${SRCs} paths/sdl.c)
+elseif(RELATIVE)
 	set(SRCs ${SRCs} paths/relative.c)	
 else()
 	set(SRCs ${SRCs} paths/static.c)
@@ -92,6 +94,10 @@ if(WIN32)
 endif()
 
 add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall -Wno-parentheses)
+
+if(RELATIVE)
+    add_definitions(-DRELATIVE)
+endif()
 
 if(TAISEI_DEBUG)
 	add_definitions(-DDEBUG)
@@ -109,9 +115,9 @@ if(FATALERRS)
 endif()
 
 set(LIBs ${LIBs}
-	${SDL_LIBRARY}
-	${PNG_LIBRARY}
-	${SDLTTF_LIBRARY}
+	${SDL2_LIBRARY}
+    ${SDL2_TTF_LIBRARIES}
+    ${PNG_LIBRARY}
 	${OPENAL_LIBRARY}
 	${ALUT_LIBRARY}
 	${OPENGL_LIBRARY}
@@ -140,7 +146,7 @@ if(WIN32)
 	set(SRCs ${SRCs} taisei.rc)
 endif()
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${SDL_INCLUDE_DIR} ${ALUT_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${PNG_INCLUDE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${SDL2_INCLUDE_DIR} ${ALUT_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${PNG_INCLUDE_DIR})
 add_executable(taisei WIN32 ${SRCs})
 target_link_libraries(taisei ${LIBs})
 

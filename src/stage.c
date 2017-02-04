@@ -7,7 +7,6 @@
 
 #include "stage.h"
 
-#include <SDL/SDL.h>
 #include <time.h>
 #include "global.h"
 #include "video.h"
@@ -303,7 +302,7 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	
 	if(!tconfig.intval[NO_SHADER]) {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, video.current.width, video.current.height);
+		video_set_viewport();
 		glPushMatrix();
 		if(global.shake_view)
 			glTranslatef(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames+3),0);
@@ -508,7 +507,6 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	
 	start();
 	
-	SDL_EnableKeyRepeat(0, 0);
 	while(global.game_over <= 0) {
 		if(!global.boss && !global.dialog)
 			event();
@@ -523,7 +521,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 				
 // 		print_state_checksum();
 		
-		SDL_GL_SwapBuffers();
+		SDL_GL_SwapWindow(video.window);
 		frame_rate(&global.lasttime);
 	}
 	
@@ -536,7 +534,6 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	tsrand_switch(&global.rand_visual);
 //	if(global.replaymode != REPLAY_PLAY)
 //		replay_destroy(&global.replay);
-	SDL_EnableKeyRepeat(TS_KR_DELAY, TS_KR_INTERVAL);
 }
 
 void draw_title(int t, StageInfo *info, Alignment al, int x, int y, const char *text, TTF_Font *font, Color *color) {

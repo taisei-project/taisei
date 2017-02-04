@@ -12,6 +12,7 @@
 #include "paths/native.h"
 #include "config.h"
 #include "taisei_err.h"
+#include "video.h"
 
 Resources resources;
 
@@ -162,5 +163,5 @@ void draw_loading_screen(void) {
 	tex = load_texture(buf);
 	
 	draw_texture_p(SCREEN_W/2,SCREEN_H/2, tex);
-	SDL_GL_SwapBuffers();
+	SDL_GL_SwapWindow(video.window);
 }

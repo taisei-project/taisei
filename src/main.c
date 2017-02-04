@@ -5,7 +5,6 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
-#include <SDL/SDL.h>
 #include <sys/stat.h>
 #include "taisei_err.h"
 
@@ -58,13 +57,18 @@ void taisei_shutdown(void) {
 int main(int argc, char** argv) {
 	if(tsrand_test())
 		return 0;
-		
+	
+	init_paths();
+
+	printf("Content path: %s\n", get_prefix());
+	printf("Userdata path: %s\n", get_config_path());
+
 	MKDIR(get_config_path());
 	MKDIR(get_screenshots_path());
 	MKDIR(get_replays_path());
-	
+
 	config_load(CONFIG_FILE);
-	
+
 	printf("initialize:\n");
 	if(SDL_Init(SDL_INIT_VIDEO) < 0)
 		errx(-1, "Error initializing SDL: %s", SDL_GetError());

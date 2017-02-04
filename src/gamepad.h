@@ -9,12 +9,14 @@
 #ifndef GAMEPAD_H
 #define GAMEPAD_H
 
+#include <SDL.h>
 #include "events.h"
 
 void gamepad_init(void);
 void gamepad_shutdown(void);
 void gamepad_restart(void);
 int gamepad_devicecount(void);
+float gamepad_axis_sens(int);
 char* gamepad_devicename(int);
 void gamepad_event(SDL_Event*, EventHandler, EventFlags, void*);
 

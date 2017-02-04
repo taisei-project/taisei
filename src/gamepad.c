@@ -6,7 +6,6 @@
  * Copyright (C) 2012, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
  */
 
-#include <SDL/SDL.h>
 #include "gamepad.h"
 #include "taisei_err.h"
 #include "config.h"
@@ -36,7 +35,7 @@ void gamepad_init(void) {
 	int i, cnt = gamepad_devicecount();
 	printf("gamepad_init(): found %i devices\n", cnt);
 	for(i = 0; i < cnt; ++i)
-		printf("%i: %s\n", i, SDL_JoystickName(i));
+		printf("%i: %s\n", i, SDL_JoystickNameForIndex(i));
 	
 	int dev = config_intval("gamepad_device");
 	if(dev < 0 || dev >= cnt) {
@@ -78,11 +77,19 @@ void gamepad_restart(void) {
 }
 
 int gamepad_axis2gamekey(int id, int val) {
-	if(id == tconfig.intval[GAMEPAD_AXIS_LR])
+	val *= SIGN(gamepad_axis_sens(id));
+
+	if(!val) {
+		return -1;
+	}
+
+	if(id == tconfig.intval[GAMEPAD_AXIS_LR]) {
 		return val == AXISVAL_LEFT ? KEY_LEFT : KEY_RIGHT;
+	}
 	
-	if(id == tconfig.intval[GAMEPAD_AXIS_UD])
+	if(id == tconfig.intval[GAMEPAD_AXIS_UD]) {
 		return val == AXISVAL_UP   ? KEY_UP   : KEY_DOWN;
+	}
 	
 	return -1;
 }
@@ -134,8 +141,19 @@ void gamepad_axis(int id, int raw, EventHandler handler, EventFlags flags, void 
 	
 	if(game && free) {
 		int evt = gamepad_axis2gameevt(id);
-		if(evt >= 0)
-			handler(evt, clamp(raw * gamepad_axis_sens(id), -GAMEPAD_AXIS_RANGE-1, GAMEPAD_AXIS_RANGE), arg);
+		if(evt >= 0) {
+			double sens = gamepad_axis_sens(id);
+			int sens_sign = SIGN(sens);
+
+			double x = raw / (double)GAMEPAD_AXIS_RANGE;
+			int in_sign = SIGN(x);
+
+			x = pow(fabs(x), 1.0 / fabs(sens)) * in_sign * sens_sign;
+			x = x ? x : 0;
+			x = clamp(x * GAMEPAD_AXIS_RANGE, -GAMEPAD_AXIS_RANGE-1, GAMEPAD_AXIS_RANGE);
+
+			handler(evt, x, arg);
+		}
 	}
 	
 	if(val) {	// simulate press
@@ -229,7 +247,7 @@ int gamepad_devicecount(void) {
 }
 
 char* gamepad_devicename(int id) {
-	return (char*)SDL_JoystickName(id);
+	return (char*)SDL_JoystickNameForIndex(id);
 }
 
 int gamepad_buttonpressed(int btn) {

@@ -1,4 +1,4 @@
-# Taisei
+ Taisei
 
 ## Introduction
 
@@ -8,7 +8,7 @@ shoot-em-up games set in an isolated world full of Japanese folklore.
 ## Installation
 
 Dependencies:
-* SDL, SDL\_ttf
+* SDL2, SDL2\_ttf
 * libpng, ZLIB
 * OpenGL
 * OpenAL, ALUT

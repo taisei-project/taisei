@@ -7,7 +7,6 @@
 
 #include "global.h"
 #include "video.h"
-#include <SDL/SDL.h>
 #include <time.h>
 #include <stdio.h>
 #include <png.h>
@@ -32,8 +31,6 @@ void init_global(void) {
 	
 	memset(&global.replay, 0, sizeof(Replay));
 	global.replaymode = REPLAY_RECORD;
-	
-	SDL_EnableKeyRepeat(TS_KR_DELAY, TS_KR_INTERVAL);
 }
 
 void print_state_checksum(void) {
@@ -245,5 +242,5 @@ void stralloc(char **dest, char *src) {
 // Inputdevice-agnostic method of checking whether a game control is pressed.
 // ALWAYS use this instead of SDL_GetKeyState if you need it.
 int gamekeypressed(int key) {
-	return SDL_GetKeyState(NULL)[tconfig.intval[key]] || gamepad_gamekeypressed(key);
+	return SDL_GetKeyboardState(NULL)[SDL_GetScancodeFromKey(tconfig.intval[key])] || gamepad_gamekeypressed(key);
 }
