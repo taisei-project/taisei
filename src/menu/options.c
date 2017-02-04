@@ -243,23 +243,6 @@ int bind_fullscreen_set(void *b, int v) {
 	return bind_common_onoffset(b, v);
 }
 
-int bind_sfxvol_intset(void *b, int v) {
-	int i = bind_common_intset(b, v);
-	
-	set_sfx_volume(v);
-	
-	return i;
-}
-
-int bind_musvol_intset(void *b, int v) {
-	int i = bind_common_intset(b, v);
-	
-	set_bgm_volume(v);
-	
-	return i;
-}
-
-
 int bind_noaudio_set(void *b, int v) {
 	int i = bind_common_onoffset_inverted(b, v);
 	
@@ -272,7 +255,7 @@ int bind_noaudio_set(void *b, int v) {
 		if(!init_sfx(NULL, NULL)) return 1;
 		
 		load_resources();
-		set_sfx_volume(tconfig.intval[SFX_VOLUME]);
+		set_sfx_volume(tconfig.fltval[SFX_VOLUME]);
 	}
 	
 	return i;
@@ -290,7 +273,7 @@ int bind_nomusic_set(void *b, int v) {
 		if(!init_bgm(NULL, NULL)) return 1;
 		
 		load_resources();
-		set_bgm_volume(tconfig.intval[BGM_VOLUME]);
+		set_bgm_volume(tconfig.fltval[BGM_VOLUME]);
 		start_bgm("bgm_menu");
 	}
 	
