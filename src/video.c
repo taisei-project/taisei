@@ -97,8 +97,8 @@ static void _video_setmode(int w, int h, int fs, int fallback) {
 		return;
 	}
 	
-	warnx("video_setmode(): setting %dx%d failed, falling back to %dx%d", w, h, RESX, RESY);
-	_video_setmode(RESX, RESY, fs, True);
+	warnx("video_setmode(): setting %dx%d (%s) failed, falling back to %dx%d (windowed)", w, h, fs ? "fullscreen" : "windowed", RESX, RESY);
+	_video_setmode(RESX, RESY, False, True);
 }
 
 void video_setmode(int w, int h, int fs) {
