@@ -67,7 +67,7 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 					}
 				}
 				
-				if(game) {
+				if(game && !event.key.repeat) {
 					if(sym == SDLK_ESCAPE)
 						handler(E_Pause, 0, arg);
 					else {
@@ -92,7 +92,7 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 				if(kbd)
 					handler(E_KeyUp, sym, arg);
 				
-				if(game) {
+				if(game && !event.key.repeat) {
 					int key = config_sym2key(sym);
 					if(key >= 0)
 						handler(E_PlrKeyUp, key, arg);
