@@ -45,6 +45,20 @@ static int video_compare_modes(const void *a, const void *b) {
 	return va->width * va->height - vb->width * vb->height;
 }
 
+void video_set_viewport(void) {
+	float w = video.current.width;
+	float h = video.current.height;
+	float r = w / h;
+
+	if(r > VIEWPORT_ASPECT_RATIO) {
+		w = h * VIEWPORT_ASPECT_RATIO;
+	} else if(r < VIEWPORT_ASPECT_RATIO) {
+		h = w / VIEWPORT_ASPECT_RATIO;
+	}
+
+	glViewport((video.current.width - w) / 2, (video.current.height - h) / 2, (int)w, (int)h);
+}
+
 static void _video_setmode(int w, int h, int fs, int fallback) {
 	Uint32 flags = SDL_WINDOW_OPENGL;
 	if(fs) flags |= SDL_WINDOW_FULLSCREEN;
@@ -74,7 +88,7 @@ static void _video_setmode(int w, int h, int fs, int fallback) {
 		}
 
 		SDL_GetWindowSize(video.window, &video.current.width, &video.current.height);
-		glViewport(0, 0, video.current.width, video.current.height);
+		video_set_viewport();
 		return;
 	}
 

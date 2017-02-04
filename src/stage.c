@@ -302,7 +302,7 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	
 	if(!tconfig.intval[NO_SHADER]) {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, video.current.width, video.current.height);
+		video_set_viewport();
 		glPushMatrix();
 		if(global.shake_view)
 			glTranslatef(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames+3),0);
