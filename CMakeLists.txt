@@ -1,11 +1,13 @@
 project(taisei)
 
 cmake_minimum_required(VERSION 2.6)
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${taisei_SOURCE_DIR}/cmake" "${taisei_SOURCE_DIR}/cmake/sdl2")
 
+if(NOT DEFINED USE_SDL2_PATHS)
+    set(USE_SDL2_PATHS BOOL TRUE)
+endif()
+
 if(WIN32)
-	add_definitions(-DRELATIVE)
 	set(RELATIVE TRUE)
 endif()
 
@@ -16,17 +18,16 @@ endif()
 add_subdirectory(src)
 
 if(RELATIVE)
+    add_definitions(-DRELATIVE)
 	set(DATA_DIR "data")
+
+    install(FILES "story.txt" DESTINATION .)
 else()
 	set(DATA_DIR "share/taisei")
-endif()
 
-if(NOT RELATIVE)  
-	install(FILES "taisei.desktop" DESTINATION "share/applications")
-	install(FILES "taisei.png" DESTINATION "share/icons/hicolor/128x128/apps")
-	install(FILES "story.txt" DESTINATION ${DATA_DIR})
-else()
-	install(FILES "story.txt" DESTINATION .)
+    install(FILES "taisei.desktop" DESTINATION "share/applications")
+    install(FILES "taisei.png" DESTINATION "share/icons/hicolor/128x128/apps")
+    install(FILES "story.txt" DESTINATION ${DATA_DIR})
 endif()
 
 install(DIRECTORY gfx DESTINATION ${DATA_DIR}

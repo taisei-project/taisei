@@ -81,7 +81,9 @@ if(VORBISFILE_FOUND)
 	add_definitions(-DOGG_SUPPORT_ENABLED)
 endif()
 
-if(RELATIVE)
+if(USE_SDL2_PATHS)
+    set(SRCs ${SRCs} paths/sdl.c)
+elseif(RELATIVE)
 	set(SRCs ${SRCs} paths/relative.c)	
 else()
 	set(SRCs ${SRCs} paths/static.c)
@@ -92,6 +94,10 @@ if(WIN32)
 endif()
 
 add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall -Wno-parentheses)
+
+if(RELATIVE)
+    add_definitions(-DRELATIVE)
+endif()
 
 if(TAISEI_DEBUG)
 	add_definitions(-DDEBUG)
