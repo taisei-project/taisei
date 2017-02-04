@@ -22,7 +22,7 @@ To build and install Taisei just follow these steps.
 ```
 mkdir build
 cd build
-cmake -DCMAKE\_INSTALL\_PREFIX=$yourprefix ..
+cmake -DCMAKE_INSTALL_PREFIX=$yourprefix ..
 make
 make install
 ```
