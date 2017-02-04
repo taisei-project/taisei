@@ -1,11 +1,11 @@
-= Taisei
+# Taisei
 
-== Introduction
+## Introduction
 
 Taisei is an open clone of the Touhou series. Touhou is a one-man project of
 shoot-em-up games set in an isolated world full of Japanese folklore.
 
-== Installation
+## Installation
 
 Dependencies:
 * SDL, SDL\_ttf
@@ -19,7 +19,7 @@ Optional:
 
 To build and install Taisei just follow these steps.
 
-```bash
+```
 mkdir build
 cd build
 cmake -DCMAKE\_INSTALL\_PREFIX=$yourprefix ..
@@ -38,19 +38,19 @@ $prefix/data/
 ($prefix/config)
 ```
 
-RELATIVE is always set when building for Windows.
+`RELATIVE` is always set when building for Windows.
 
-== NOTE ABOUT REPLAYS
+## NOTE ABOUT REPLAYS
 
 As of version 1.0 replays are not guaranteed to work between different
 operating systems or architectures (or compiler versions). Screen capture
 your replays if you really want to publish them.
 
-== NOTE ABOUT BACKGROUND MUSIC
+## NOTE ABOUT BACKGROUND MUSIC
 
 Currently Taisei does not include any background music. To use this feature,
 you should have required audio files in `bgm/` subdirectory.
-BGM may either be in .wav format, or in .ogg; last one apply only if you have
+BGM may either be in `.wav` format, or in `.ogg`; last one apply only if you have
 compiled Taisei with libogg, libvorbis and libvorbisfile (automatically enabled
 if cmake is able to find them).
 
@@ -70,8 +70,8 @@ consists of bgm filename (without extension), space of tab, and theme name.
 No space/tab allowed either in beginning of line or BGM filenames listed in
 this file; theme names may contain them.
 
-== Contact
+## Contact
 
 http://taisei-project.org/
 
-#taisei-project on Freenode
+\#taisei-project on Freenode
