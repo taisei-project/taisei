@@ -110,6 +110,20 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 				break;
 			}
 
+			case SDL_WINDOWEVENT:
+				switch(event.window.event) {
+					case SDL_WINDOWEVENT_RESIZED:
+						video_resize(event.window.data1, event.window.data2);
+						break;
+
+					case SDL_WINDOWEVENT_FOCUS_LOST:
+						if(game) {
+							handler(E_Pause, 0, arg);
+						}
+						break;
+				}
+				break;
+
 			case SDL_QUIT:
 				exit(0);
 				break;

@@ -62,7 +62,12 @@ void video_set_viewport(void) {
 
 static void _video_setmode(int w, int h, int fs, int fallback) {
 	Uint32 flags = SDL_WINDOW_OPENGL;
-	if(fs) flags |= SDL_WINDOW_FULLSCREEN;
+
+	if(fs) {
+		flags |= SDL_WINDOW_FULLSCREEN;
+	} else {
+		flags |= SDL_WINDOW_RESIZABLE;
+	}
 	
 	if(!fallback) {
 		video.intended.width = w;
@@ -115,6 +120,12 @@ int video_isfullscreen(void) {
 
 void video_toggle_fullscreen(void) {
 	video_setmode(video.intended.width, video.intended.height, !video_isfullscreen());
+}
+
+void video_resize(int w, int h) {
+	video.current.width = w;
+	video.current.height = h;
+	video_set_viewport();
 }
 
 void video_init(void) {

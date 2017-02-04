@@ -34,5 +34,6 @@ void video_setmode(int w, int h, int fs);
 void video_set_viewport(void);
 int video_isfullscreen(void);
 void video_toggle_fullscreen(void);
+void video_resize(int w, int h);
 
 #endif
