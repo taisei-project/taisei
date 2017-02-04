@@ -21,12 +21,20 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 	int menu	= flags & EF_Menu;
 	int game	= flags & EF_Game;
 
-	// TODO: rewrite text input handling to use SDL2's IME-aware input API
-	// https://wiki.libsdl.org/Tutorials/TextInput
+	// TODO: rewrite text input handling to properly support multibyte characters and IMEs
+
+	if(text) {
+		if(!SDL_IsTextInputActive()) {
+			SDL_StartTextInput();
+		}
+	} else {
+		if(SDL_IsTextInputActive()) {
+			SDL_StopTextInput();
+		}
+	}
 
 	while(SDL_PollEvent(&event)) {
 		int sym = event.key.keysym.sym;
-		int uni = sym; // event.key.keysym.unicode;
 		
 		switch(event.type) {
 			case SDL_KEYDOWN:
@@ -76,9 +84,6 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 						handler(E_SubmitText, 0, arg);
 					else if(sym == SDLK_BACKSPACE)
 						handler(E_CharErased, 0, arg);
-					else if(uni && sym != SDLK_TAB) {
-						handler(E_CharTyped, uni, arg);
-					}
 				}
 				
 				break;
@@ -95,6 +100,16 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 				
 				break;
 			
+			case SDL_TEXTINPUT: {
+				char *c;
+
+				for(c = event.text.text; *c; ++c) {
+					handler(E_CharTyped, *c, arg);
+				}
+
+				break;
+			}
+
 			case SDL_QUIT:
 				exit(0);
 				break;
