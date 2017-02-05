@@ -32,12 +32,8 @@ void draw_items(void) {
 	for(p = global.items; p; p = p->next) {
 		switch(p->type){
 			case Power:
-				if(global.plr.power < PLR_MAXPOWER) {
-					tex = get_tex("items/power");
-					break;
-				}
-				
-				p->type = Point;
+				tex = get_tex("items/power");
+				break;
 			case Point:
 				tex = get_tex("items/point");
 				break;
@@ -80,6 +76,10 @@ void process_items(void) {
 		r *= 2;
 	
 	while(item != NULL) {
+		if(item->type == Power && global.plr.power >= PLR_MAXPOWER) {
+			item->type = Point;
+		}
+
 		if(cimag(global.plr.pos) < POINT_OF_COLLECT || cabs(global.plr.pos - item->pos) < r
 		|| global.frames - global.plr.recovery < 0)
 			item->auto_collect = 1;

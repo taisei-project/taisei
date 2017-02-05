@@ -223,6 +223,7 @@ void draw_hud(void) {
 }
 
 void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int time) {
+
 	if(!tconfig.intval[NO_SHADER]) {
 		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[0].fbo);
 		glViewport(0,0,SCREEN_W,SCREEN_H);
@@ -279,13 +280,13 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	
 	player_draw(&global.plr);
 
-	draw_items();		
+	draw_items();
 	draw_projectiles(global.projs);
-	
+
 	draw_projectiles(global.particles);
 	draw_enemies(global.enemies);
 	draw_lasers();
-			
+
 	if(global.boss)
 		draw_boss(global.boss);
 
@@ -293,7 +294,7 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 		draw_dialog(global.dialog);
 	
 	draw_stage_title(info);
-	
+
 	if(!tconfig.intval[NO_SHADER]) {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		video_set_viewport();
