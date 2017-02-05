@@ -531,7 +531,12 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 // 		print_state_checksum();
 		
 		SDL_GL_SwapWindow(video.window);
-		frame_rate(&global.lasttime);
+
+		if(global.replaymode == REPLAY_PLAY && gamekeypressed(KEY_SKIP)) {
+			global.lasttime = SDL_GetTicks();
+		} else {
+			frame_rate(&global.lasttime);
+		}
 	}
 	
 	if(global.replaymode == REPLAY_RECORD) {
