@@ -28,7 +28,7 @@ typedef union float64_u {
 typedef struct ReplayEvent {
 	uint32_t frame;
 	uint8_t type;
-	uint16_t key;
+	uint16_t value;
 } ReplayEvent;
 
 typedef struct ReplayStage {
@@ -84,7 +84,7 @@ ReplayStage* replay_init_stage(Replay *rpy, StageInfo *stage, uint64_t seed, Pla
 void replay_destroy(Replay *rpy);
 void replay_destroy_stage(ReplayStage *stage);
 ReplayStage* replay_select(Replay *rpy, int stage);
-void replay_event(Replay *rpy, uint8_t type, uint16_t key);
+void replay_event(Replay *rpy, uint8_t type, int16_t value);
 
 int replay_write(Replay *rpy, SDL_RWops *file);
 int replay_read(Replay *rpy, SDL_RWops *file);

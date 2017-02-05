@@ -91,7 +91,7 @@ ReplayStage* replay_select(Replay *rpy, int stage) {
 	return rpy->current;
 }
 
-void replay_event(Replay *rpy, uint8_t type, uint16_t key) {
+void replay_event(Replay *rpy, uint8_t type, int16_t value) {
 	if(!rpy->active)
 		return;
 	
@@ -99,7 +99,7 @@ void replay_event(Replay *rpy, uint8_t type, uint16_t key) {
 	ReplayEvent *e = &(s->events[s->ecount]);
 	e->frame = global.frames;
 	e->type = type;
-	e->key = key;
+	e->value = (uint16_t)value;
 	s->ecount++;
 	
 	if(s->ecount >= s->capacity) {
@@ -121,7 +121,7 @@ void replay_write_string(SDL_RWops *file, char *str) {
 int replay_write_stage_event(ReplayEvent *evt, SDL_RWops *file) {
 	SDL_WriteLE32(file, evt->frame);
 	SDL_WriteU8(file, evt->type);
-	SDL_WriteLE16(file, evt->key);
+	SDL_WriteLE16(file, evt->value);
 
 	return True;
 }
@@ -247,7 +247,7 @@ int replay_read(Replay *rpy, SDL_RWops *file) {
 
 			evt->frame = SDL_ReadLE32(file);
 			evt->type = SDL_ReadU8(file);
-			evt->key = SDL_ReadLE16(file);
+			evt->value = SDL_ReadLE16(file);
 		}
 	}
 

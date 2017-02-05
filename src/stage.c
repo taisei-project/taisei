@@ -136,12 +136,12 @@ void replay_input(void) {
 				break;
 			
 			default:
-				if(global.dialog && e->type == EV_PRESS && (e->key == KEY_SHOT || e->key == KEY_BOMB))
+				if(global.dialog && e->type == EV_PRESS && (e->value == KEY_SHOT || e->value == KEY_BOMB))
 					page_dialog(&global.dialog);
-				else if(global.dialog && e->key == KEY_SKIP)
+				else if(global.dialog && e->value == KEY_SKIP)
 					global.dialog->skip = (e->type == EV_PRESS);
 				else
-					player_event(&global.plr, e->type, e->key);
+					player_event(&global.plr, e->type, (int16_t)e->value);
 				break;
 		}
 	}
