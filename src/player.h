@@ -24,12 +24,12 @@ enum {
 };
 
 typedef enum {
-	Youmu,
+	Youmu = 0,
 	Marisa
 } Character;
 
 typedef enum {
-	YoumuOpposite,
+	YoumuOpposite = 0,
 	YoumuHoming,
 	
 	MarisaLaser = YoumuOpposite,
