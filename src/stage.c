@@ -138,8 +138,10 @@ void replay_input(void) {
 			default:
 				if(global.dialog && e->type == EV_PRESS && (e->value == KEY_SHOT || e->value == KEY_BOMB))
 					page_dialog(&global.dialog);
-				else if(global.dialog && e->value == KEY_SKIP)
+				else if(global.dialog && (e->type == EV_PRESS || e->type == EV_RELEASE) && e->value == KEY_SKIP)
 					global.dialog->skip = (e->type == EV_PRESS);
+				else if(e->type == EV_CHECK_DESYNC)
+					global.replay.desync_check = e->value;
 				else
 					player_event(&global.plr, e->type, (int16_t)e->value);
 				break;
@@ -510,7 +512,10 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	while(global.game_over <= 0) {
 		if(!global.boss && !global.dialog)
 			event();
+
 		((global.replaymode == REPLAY_PLAY)? replay_input : stage_input)();
+		replay_check_desync(&global.replay, global.frames, (tsrand() ^ global.points) & 0xFFFF);
+
 		stage_logic(endtime);
 		
 		calc_fps(&global.fps);

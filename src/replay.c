@@ -323,3 +323,22 @@ void replay_copy(Replay *dst, Replay *src) {
 		memcpy(d->events, s->events, sizeof(ReplayEvent) * d->capacity);
 	}
 }
+
+void replay_check_desync(Replay *rpy, int time, uint16_t check) {
+	if(time % (FPS * 5)) {
+		return;
+	}
+
+	if(global.replaymode == REPLAY_RECORD) {
+#ifdef REPLAY_WRITE_DESYNC_CHECKS
+		printf("replay_check_desync(): %u\n", check);
+		replay_event(rpy, EV_CHECK_DESYNC, (int16_t)check);
+#endif
+	} else {
+		if(rpy->desync_check && rpy->desync_check != check) {
+			warnx("replay_check_desync(): Replay desync detected! %u != %u\n", rpy->desync_check, check);
+		} else {
+			printf("replay_check_desync(): %u OK\n", check);
+		}
+	}
+}

@@ -18,6 +18,10 @@
 #define REPLAY_STRUCT_VERSION 0
 #define REPLAY_MAX_NAME_LENGTH 128
 
+#ifdef DEBUG
+	#define REPLAY_WRITE_DESYNC_CHECKS
+#endif
+
 typedef union float64_u {
 	// ASSUMPTION: the "double" type is an IEEE 754 binary64
 
@@ -72,6 +76,7 @@ typedef struct Replay {
 	int active;
 	ReplayStage *current;
 	int currentidx;
+	uint16_t desync_check;
 } Replay;
 
 enum {
@@ -95,3 +100,5 @@ int replay_load(Replay *rpy, char *name);
 void replay_copy(Replay *dst, Replay *src);
 
 #endif
+
+void replay_check_desync(Replay *rpy, int time, uint16_t check);

@@ -164,6 +164,7 @@ enum {
 	EV_OVER, // replay-only
 	EV_AXIS_LR,
 	EV_AXIS_UD,
+	EV_CHECK_DESYNC, // replay-only
 };
 
 #endif
