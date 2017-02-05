@@ -19,9 +19,10 @@ Global global;
 
 void init_global(void) {
 	memset(&global, 0, sizeof(global));	
-	
-	tsrand_seed_p(&global.rand_game, time(0));
-	tsrand_seed_p(&global.rand_visual, time(0));
+
+	tsrand_init(&global.rand_game, time(0));
+	tsrand_init(&global.rand_visual, time(0));
+
 	tsrand_switch(&global.rand_visual);
 	
 	memset(&resources, 0, sizeof(Resources));

@@ -524,10 +524,12 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 
 		calc_fps(&global.fps);
 		
+		tsrand_lock(&global.rand_game);
 		tsrand_switch(&global.rand_visual);
 		stage_draw(info, draw, shaderrules, endtime);
+		tsrand_unlock(&global.rand_game);
 		tsrand_switch(&global.rand_game);
-				
+
 // 		print_state_checksum();
 		
 		SDL_GL_SwapWindow(video.window);

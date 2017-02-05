@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "global.h"
 #include "random.h"
 #include "taisei_err.h"
 
@@ -21,15 +22,26 @@ void tsrand_switch(RandomState *rnd) {
 	tsrand_current = rnd;
 }
 
+void tsrand_init(RandomState *rnd, uint32_t seed) {
+	memset(rnd, 0, sizeof(RandomState));
+	tsrand_seed_p(rnd, seed);
+}
+
 void tsrand_seed_p(RandomState *rnd, uint32_t seed) {
 	// might be not the best way to seed this
 	rnd->w = (seed >> 16u) + TSRAND_W_SEED_COEFF * (seed & 0xFFFFu);
 	rnd->z = (seed >> 16u) + TSRAND_Z_SEED_COEFF * (seed & 0xFFFFu);
 }
 
-int tsrand_p(RandomState *rnd) {
+uint32_t tsrand_p(RandomState *rnd) {
+	if(rnd->locked) {
+		warnx("Attemped to use a locked RNG state!\n");
+		return 0;
+	}
+
 	rnd->w = (rnd->w >> 16u) + TSRAND_W_COEFF * (rnd->w & 0xFFFFu);
 	rnd->z = (rnd->z >> 16u) + TSRAND_Z_COEFF * (rnd->z & 0xFFFFu);
+
 	return (uint32_t)((rnd->z << 16u) + rnd->w) % TSRAND_MAX;
 }
 
@@ -37,7 +49,7 @@ void tsrand_seed(uint32_t seed) {
 	tsrand_seed_p(tsrand_current, seed);
 }
 
-int tsrand(void) {
+uint32_t tsrand(void) {
 	return tsrand_p(tsrand_current);
 }
 
@@ -52,8 +64,9 @@ double nfrand(void) {
 int tsrand_test(void) {
 #if defined(TSRAND_FLOATTEST)
 	RandomState rnd;
+
+	tsrand_init(&rnd, time(0));
 	tsrand_switch(&rnd);
-	tsrand_seed(time(0));
 	
 	FILE *fp;
 	int i;
@@ -87,30 +100,68 @@ int tsrand_test(void) {
 
 // we use this to support multiple rands in a single statement without breaking replays across different builds
 
-static int tsrand_array[TSRAND_ARRAY_LIMIT];
+static uint32_t tsrand_array[TSRAND_ARRAY_LIMIT];
 static int tsrand_array_elems;
+static uint64_t tsrand_fillflags = 0;
 
-void tsrand_fill_p(RandomState *rnd, int amount) {
+static void tsrand_error(const char *file, uint line, const char *fmt, ...) {
+	char buf[2048] = { 0 };
+	va_list args;
+
+	va_start(args, fmt);
+	vsnprintf(buf, sizeof(buf), fmt, args);
+	va_end(args);
+
+	errx(-1, "tsrand error: %s [%s:%u]", buf, file, line);
+}
+
+#define TSRANDERR(...) tsrand_error(file, line, __VA_ARGS__)
+
+void __tsrand_fill_p(RandomState *rnd, int amount, const char *file, uint line) {
+	if(tsrand_fillflags) {
+		TSRANDERR("tsrand_fill_p: some indices left unused from the previous call");
+		return;
+	}
+
 	tsrand_array_elems = amount;
-	int i; for(i = 0; i < amount; ++i)
+	tsrand_fillflags = (1L << amount) - 1;
+
+	for(int i = 0; i < amount; ++i) {
 		tsrand_array[i] = tsrand_p(rnd);
+	}
 }
 
-void tsrand_fill(int amount) {
-	tsrand_fill_p(tsrand_current, amount);
+void __tsrand_fill(int amount, const char *file, uint line) {
+	__tsrand_fill_p(tsrand_current, amount, file, line);
 }
 
-int tsrand_a(int idx) {
-	if(idx >= tsrand_array_elems || idx < 0)
-		errx(-1, "tsrand_a: index out of range (%i / %i)", idx, tsrand_array_elems);
-	return tsrand_array[idx];
+uint32_t __tsrand_a(int idx, const char *file, uint line) {
+	if(idx >= tsrand_array_elems || idx < 0) {
+		TSRANDERR("tsrand_a: index out of range (%i / %i)", idx, tsrand_array_elems);
+		return 0;
+	}
+
+	if(tsrand_fillflags & (1L << idx)) {
+		tsrand_fillflags &= ~(1L << idx);
+		return tsrand_array[idx];
+	}
+
+	TSRANDERR("tsrand_a: index %i used multiple times", idx);
+	return 0;
 }
 
-double afrand(int idx) {
-	return tsrand_a(idx)/(double)TSRAND_MAX;
+double __afrand(int idx, const char *file, uint line) {
+	return __tsrand_a(idx, file, line) / (double)TSRAND_MAX;
 }
 
-double anfrand(int idx) {
-	return afrand(idx) * 2 - 1;
+double __anfrand(int idx, const char *file, uint line) {
+	return __afrand(idx, file, line) * 2 - 1;
 }
 
+void tsrand_lock(RandomState *rnd) {
+	rnd->locked = True;
+}
+
+void tsrand_unlock(RandomState *rnd) {
+	rnd->locked = False;
+}

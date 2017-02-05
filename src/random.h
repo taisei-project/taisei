@@ -14,28 +14,40 @@
 typedef struct RandomState {
 	uint32_t w;
 	uint32_t z;
+    int locked;
 } RandomState;
 
 int tsrand_test(void);
+
+void tsrand_init(RandomState *rnd, uint32_t seed);
 void tsrand_switch(RandomState *rnd);
 void tsrand_seed_p(RandomState *rnd, uint32_t seed);
-int tsrand_p(RandomState *rnd);
+uint32_t tsrand_p(RandomState *rnd);
 
 void tsrand_seed(uint32_t seed);
-int tsrand(void);
+uint32_t tsrand(void);
+
+void tsrand_lock(RandomState *rnd);
+void tsrand_unlock(RandomState *rnd);
 
 double frand(void);
 double nfrand(void);
 
-void tsrand_fill_p(RandomState *rnd, int amount);
-void tsrand_fill(int amount);
-int tsrand_a(int idx);
-double afrand(int idx);
-double anfrand(int idx);
+void __tsrand_fill_p(RandomState *rnd, int amount, const char *file, uint line);
+void __tsrand_fill(int amount, const char *file, uint line);
+uint32_t __tsrand_a(int idx, const char *file, uint line);
+double __afrand(int idx, const char *file, uint line);
+double __anfrand(int idx, const char *file, uint line);
+
+#define tsrand_fill_p(rnd,amount) __tsrand_fill_p(rnd, amount, __FILE__, __LINE__)
+#define tsrand_fill(amount) __tsrand_fill(amount, __FILE__, __LINE__)
+#define tsrand_a(idx) __tsrand_a(idx, __FILE__, __LINE__)
+#define afrand(idx) __afrand(idx, __FILE__, __LINE__)
+#define anfrand(idx) __anfrand(idx, __FILE__, __LINE__)
 
 #define TSRAND_MAX INT32_MAX
 
-#define TSRAND_ARRAY_LIMIT 128
+#define TSRAND_ARRAY_LIMIT 64
 #define srand USE_tsrand_seed_INSTEAD_OF_srand
 #define rand USE_tsrand_INSTEAD_OF_rand
 
