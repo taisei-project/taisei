@@ -282,7 +282,6 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	draw_items();		
 	draw_projectiles(global.projs);
 	
-	
 	draw_projectiles(global.particles);
 	draw_enemies(global.enemies);
 	draw_lasers();
@@ -290,13 +289,6 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	if(global.boss)
 		draw_boss(global.boss);
 
-	// BGM handling
-	if(global.dialog && global.dialog->messages[global.dialog->pos].side == BGM)
-	{
-		start_bgm(global.dialog->messages[global.dialog->pos].msg);
-		page_dialog(&global.dialog);
-	}
-	
 	if(global.dialog)
 		draw_dialog(global.dialog);
 	
@@ -433,6 +425,13 @@ void stage_logic(int time) {
 	
 	if(global.timer >= time)
 		global.game_over = GAMEOVER_WIN;
+
+	// BGM handling
+	if(global.dialog && global.dialog->messages[global.dialog->pos].side == BGM)
+	{
+		start_bgm(global.dialog->messages[global.dialog->pos].msg);
+		page_dialog(&global.dialog);
+	}
 }
 
 void stage_end(void) {

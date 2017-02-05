@@ -174,7 +174,9 @@ void free_attack(Attack *a) {
 	free(a->name);
 }
 
-void start_attack(Boss *b, Attack *a) {	
+void start_attack(Boss *b, Attack *a) {
+	printf("BOSS start_attack(): %s\n", a->name);
+
 	a->starttime = global.frames + ATTACK_START_DELAY;
 	a->rule(b, EVENT_BIRTH);
 	if(a->type == AT_Spellcard || a->type == AT_SurvivalSpell)
