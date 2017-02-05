@@ -518,6 +518,10 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 
 		stage_logic(endtime);
 		
+		if(global.frameskip && global.frames % global.frameskip) {
+			continue;
+		}
+
 		calc_fps(&global.fps);
 		
 		tsrand_switch(&global.rand_visual);

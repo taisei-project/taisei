@@ -103,6 +103,7 @@ typedef struct {
 	int frames;
 	int lasttime; // frame limiter
 	int timer;
+	int frameskip;
 	
 	Boss *boss;
 	Dialog *dialog;

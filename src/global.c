@@ -31,6 +31,20 @@ void init_global(void) {
 	
 	memset(&global.replay, 0, sizeof(Replay));
 	global.replaymode = REPLAY_RECORD;
+
+	char *e = getenv("TAISEI_SANIC");
+
+	if(e) {
+		global.frameskip = atoi(e);
+
+		if(global.frameskip < 0) {
+			global.frameskip = INT_MAX;
+		}
+
+		if(global.frameskip) {
+			warnx("FPS limiter disabled by environment. Gotta go fast! (frameskip = %i)", global.frameskip);
+		}
+	}
 }
 
 void print_state_checksum(void) {
@@ -54,6 +68,10 @@ void print_state_checksum(void) {
 }
 
 void frame_rate(int *lasttime) {
+	if(global.frameskip) {
+		return;
+	}
+
 	int t = *lasttime + 1000.0/FPS - SDL_GetTicks();
 	if(t > 0)
 		SDL_Delay(t);

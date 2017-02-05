@@ -159,7 +159,7 @@ Sound *get_snd(Sound *source, char *name) {
 
 void play_sound_p(char *name, int unconditional)
 {
-	if(tconfig.intval[NO_AUDIO]) return;
+	if(tconfig.intval[NO_AUDIO] || global.frameskip) return;
 	
 	Sound *snd = get_snd(resources.sounds, name);
 	if (snd == NULL) return;
