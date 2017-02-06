@@ -535,7 +535,7 @@ int iku_extra_slave(Enemy *e, int t) {
 			return 0;
 		}
 
-		if(!(t % 45)) {
+		if(!(t % (55 - 5 * global.diff))) {
 			Enemy *new = iku_extra_find_next_slave(e->pos, 75);
 
 			if(new && e != new) {
@@ -545,14 +545,16 @@ int iku_extra_slave(Enemy *e, int t) {
 
 				create_laserline_ab(e->pos, new->pos, 10, 30, e->args[2], rgb(0.3, 1, 1))->in_background = true;
 
-				int cnt = 5, i;
-				for(i = 0; i < cnt; ++i) {
-					create_projectile1c("rice", e->pos, rgb(1, 1, 0), asymptotic, 3*cexp(I*(t + i*2*M_PI/cnt)))->draw = ProjDrawAdd;
+				if(global.diff > D_Easy) {
+					int cnt = 3 + global.diff, i;
+					for(i = 0; i < cnt; ++i) {
+						create_projectile1c("rice", e->pos, rgb(1, 1, 0), asymptotic, 3*cexp(I*(t + i*2*M_PI/cnt)))->draw = ProjDrawAdd;
+					}
 				}
 			} else {
 				Enemy *o;
 				Laser *l;
-				int cnt = 10, i;
+				int cnt = 8 + global.diff, i;
 
 				global.shake_view = 0;
 				global.shake_view_fade = 0.2;
