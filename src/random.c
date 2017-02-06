@@ -105,7 +105,7 @@ static uint32_t tsrand_array[TSRAND_ARRAY_LIMIT];
 static int tsrand_array_elems;
 static uint64_t tsrand_fillflags = 0;
 
-static void tsrand_error(const char *file, uint line, const char *fmt, ...) {
+static void tsrand_error(const char *file, unsigned int line, const char *fmt, ...) {
 	char buf[2048] = { 0 };
 	va_list args;
 
@@ -118,7 +118,7 @@ static void tsrand_error(const char *file, uint line, const char *fmt, ...) {
 
 #define TSRANDERR(...) tsrand_error(file, line, __VA_ARGS__)
 
-void __tsrand_fill_p(RandomState *rnd, int amount, const char *file, uint line) {
+void __tsrand_fill_p(RandomState *rnd, int amount, const char *file, unsigned int line) {
 	if(tsrand_fillflags) {
 		TSRANDERR("tsrand_fill_p: some indices left unused from the previous call");
 		return;
@@ -132,11 +132,11 @@ void __tsrand_fill_p(RandomState *rnd, int amount, const char *file, uint line) 
 	}
 }
 
-void __tsrand_fill(int amount, const char *file, uint line) {
+void __tsrand_fill(int amount, const char *file, unsigned int line) {
 	__tsrand_fill_p(tsrand_current, amount, file, line);
 }
 
-uint32_t __tsrand_a(int idx, const char *file, uint line) {
+uint32_t __tsrand_a(int idx, const char *file, unsigned int line) {
 	if(idx >= tsrand_array_elems || idx < 0) {
 		TSRANDERR("tsrand_a: index out of range (%i / %i)", idx, tsrand_array_elems);
 		return 0;
@@ -151,11 +151,11 @@ uint32_t __tsrand_a(int idx, const char *file, uint line) {
 	return 0;
 }
 
-double __afrand(int idx, const char *file, uint line) {
+double __afrand(int idx, const char *file, unsigned int line) {
 	return __tsrand_a(idx, file, line) / (double)TSRAND_MAX;
 }
 
-double __anfrand(int idx, const char *file, uint line) {
+double __anfrand(int idx, const char *file, unsigned int line) {
 	return __afrand(idx, file, line) * 2 - 1;
 }
 

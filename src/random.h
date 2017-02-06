@@ -33,11 +33,11 @@ void tsrand_unlock(RandomState *rnd);
 double frand(void);
 double nfrand(void);
 
-void __tsrand_fill_p(RandomState *rnd, int amount, const char *file, uint line);
-void __tsrand_fill(int amount, const char *file, uint line);
-uint32_t __tsrand_a(int idx, const char *file, uint line);
-double __afrand(int idx, const char *file, uint line);
-double __anfrand(int idx, const char *file, uint line);
+void __tsrand_fill_p(RandomState *rnd, int amount, const char *file, unsigned int line);
+void __tsrand_fill(int amount, const char *file, unsigned int line);
+uint32_t __tsrand_a(int idx, const char *file, unsigned int line);
+double __afrand(int idx, const char *file, unsigned int line);
+double __anfrand(int idx, const char *file, unsigned int line);
 
 #define tsrand_fill_p(rnd,amount) __tsrand_fill_p(rnd, amount, __FILE__, __LINE__)
 #define tsrand_fill(amount) __tsrand_fill(amount, __FILE__, __LINE__)
