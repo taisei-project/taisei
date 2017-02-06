@@ -48,6 +48,24 @@ void taisei_shutdown(void) {
 	printf("-- Good Bye.\n");
 }
 
+void init_log(void) {
+#ifdef __WIN32__
+	const char *pref = get_config_path();
+	char *s;
+
+	s = malloc(strlen(pref) + strlen("stdout.txt") + 2);
+	strcpy(s, pref);
+	strcat(s, "/stdout.txt");
+
+	freopen(s, "w", stdout);
+
+	strcpy(s, pref);
+	strcat(s, "/stderr.txt");
+
+	freopen(s, "w", stderr);
+#endif
+}
+
 #ifdef __MINGW32__
 	#define MKDIR(p) mkdir(p)
 #else
@@ -59,6 +77,7 @@ int main(int argc, char** argv) {
 		return 0;
 	
 	init_paths();
+	init_log();
 
 	printf("Content path: %s\n", get_prefix());
 	printf("Userdata path: %s\n", get_config_path());
