@@ -45,9 +45,9 @@ void spell_opening(Boss *b, int time) {
 void draw_extraspell_bg(Boss *boss, int time) {
 	// overlay for all extra spells
 	// needs tweaking
-	
+
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glColor4f(1,0.1,0,0.7);
+	glColor4f(0.2,0.1,0,0.7);
 	fill_screen(sin(time) * 0.015, time / 50.0, 1, "stage3/wspellclouds");
 	glColor4f(1,1,1,1);
 	glBlendEquation(GL_MIN);

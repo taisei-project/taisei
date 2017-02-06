@@ -8,6 +8,7 @@
 #include "stage5_events.h"
 #include "stage5.h"
 #include <global.h>
+#include <float.h>
 
 void iku_spell_bg(Boss*, int);
 void iku_atmospheric(Boss*, int);
@@ -32,14 +33,14 @@ Dialog *stage5_post_mid_dialog(void) {
 
 Dialog *stage5_boss_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/iku");
-
+	/*
 	dadd_msg(d, Left, "Finally!");
 	dadd_msg(d, Right, "Stop following me!");
 	dadd_msg(d, Left, "Why? You aren’t involved in this, are you?");
 	dadd_msg(d, Right, "I don’t have time for your suspicions now.");
 	dadd_msg(d, Left, "Sounds very suspicious, actually.");
 	dadd_msg(d, Right, "Okay, let’s just get this over with.");
-
+	*/
 	dadd_msg(d, BGM, "bgm_stage5boss");
 	return d;
 }
@@ -493,10 +494,132 @@ void iku_induction(Boss *b, int t) {
 
 void iku_spell_bg(Boss *b, int t);
 
+Enemy* iku_extra_find_next_slave(complex from, double playerbias) {
+	Enemy *nearest = NULL, *e;
+	double dist, mindist = DBL_MAX;
+
+	complex org = from + playerbias * cexp(I*(carg(global.plr.pos - from)));
+	create_particle1c("flare", org, NULL, Fade, timeout, 30);
+
+	for(e = global.enemies; e; e = e->next) {
+		if(e->args[2]) {
+			continue;
+		}
+
+		dist = cabs(e->pos - org);
+
+		if(dist < mindist) {
+			nearest = e;
+			mindist = dist;
+		}
+	}
+
+	return nearest;
+}
+
+void iku_extra_slave_draw(Enemy *e, int t) {
+	Swirl(e, t);
+
+	if(e->args[2] && !(t % 5)) {
+		complex offset = (frand()-0.5)*30 + (frand()-0.5)*20.0I;
+		create_particle3c("lasercurve", offset, rgb(0, 0.5, 0.5), EnemyFlareShrink, enemy_flare, 50, (-50.0I-offset)/50.0, add_ref(e));
+	}
+}
+
+int iku_extra_slave(Enemy *e, int t) {
+	GO_TO(e, e->args[0], 0.05);
+
+	if(e->args[1]) {
+		if(creal(e->args[1]) < 2) {
+			e->args[1] += 1;
+			return 0;
+		}
+
+		if(!(t % 45)) {
+			Enemy *new = iku_extra_find_next_slave(e->pos, 75);
+
+			if(new && e != new) {
+				e->args[1] = 0;
+				e->args[2] = 600;
+				new->args[1] = 1;
+
+				create_laserline_ab(e->pos, new->pos, 10, 30, e->args[2], rgb(0.3, 1, 1))->in_background = true;
+
+				int cnt = 5, i;
+				for(i = 0; i < cnt; ++i) {
+					create_projectile1c("rice", e->pos, rgb(1, 1, 0), asymptotic, 3*cexp(I*(t + i*2*M_PI/cnt)))->draw = ProjDrawAdd;
+				}
+			} else {
+				Enemy *o;
+				Laser *l;
+				int cnt = 10, i;
+
+				global.shake_view = 0;
+				global.shake_view_fade = 0.2;
+
+				e->args[2] = 1;
+
+				for(o = global.enemies; o; o = o->next) {
+					if(!o->args[2])
+						continue;
+
+					for(i = 0; i < cnt; ++i) {
+						create_projectile1c("ball", o->pos, rgb(0, 1, 1), asymptotic, 2*cexp(I*(t + i*2*M_PI/cnt)))->draw = ProjDrawAdd;
+					}
+
+					o->args[2] = 0;
+
+					global.shake_view += 1;
+				}
+
+				for(l = global.lasers; l; l = l->next) {
+					l->deathtime = global.frames - l->birthtime + 20;
+				}
+			}
+		}
+	}
+
+	if(e->args[2]) {
+		e->args[2] -= 1;
+	}
+
+	return 0;
+}
+
+void iku_extra(Boss *b, int t) {
+	if(t < 0) {
+		GO_TO(b, VIEWPORT_W/2+50.0I, 0.02);
+		return;
+	}
+
+	TIMER(&t);
+
+	AT(0) {
+		int i, j;
+		int cnt = 5;
+		double margin = 0; // VIEWPORT_W * 0.05;
+		double step = ((VIEWPORT_W - margin * 2) / cnt);
+
+		for(i = 0; i < cnt; ++i) {
+			for(j = 0; j < cnt; ++j) {
+				complex epos = margin + step * (0.5 + i) + (step * j + 125) * I;
+				create_enemy1c(b->pos, ENEMY_IMMUNE, iku_extra_slave_draw, iku_extra_slave, epos);
+			}
+		}
+	}
+
+	AT(60) {
+		iku_extra_find_next_slave(b->pos, 50)->args[1] = 1;
+	}
+}
+
 Boss *create_iku(void) {
 	Boss *b = create_boss("Nagae Iku", "iku", VIEWPORT_W/2-200.0*I);
 
 	boss_add_attack(b, AT_Move, "Introduction", 3, 0, iku_intro, NULL);
+	boss_add_attack(b, AT_ExtraSpell, "Circuit Sign ~ Overload", 60000, 150000, iku_extra, iku_spell_bg);
+	
+	/*
 	boss_add_attack(b, AT_Normal, "Bolts1", 20, 20000, iku_bolts, NULL);
 	boss_add_attack_from_info(b, stage5_spells+0, false);
 	boss_add_attack(b, AT_Normal, "Bolts2", 25, 20000, iku_bolts2, NULL);
@@ -504,12 +627,16 @@ Boss *create_iku(void) {
 	boss_add_attack(b, AT_Normal, "Bolts3", 20, 20000, iku_bolts3, NULL);
 	boss_add_attack_from_info(b, stage5_spells+2, false);
 	boss_add_attack_from_info(b, stage5_spells+3, false);
+	*/
 
 	return b;
 }
 
 void stage5_events(void) {
 	TIMER(&global.timer);
+
+ 	AT(0)
+ 		global.timer = 5300;
 
 	FROM_TO(60, 120, 10)
 		create_enemy1c(VIEWPORT_W+70.0*I+50*_i*I, 300, Fairy, stage5_greeter, -3);

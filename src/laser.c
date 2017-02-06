@@ -139,10 +139,13 @@ void draw_laser_curve(Laser *laser) {
 	glDisable(GL_TEXTURE_2D);
 }
 
-void draw_lasers(void) {
+void draw_lasers(int bgpass) {
 	Laser *laser;
 
 	for(laser = global.lasers; laser; laser = laser->next) {
+		if(bgpass != laser->in_background)
+			continue;
+
 		if(laser->shader && !config_get_int(CONFIG_NO_SHADER) && tgl_ext[TGLEXT_draw_instanced])
 			draw_laser_curve_instanced(laser);
 		else

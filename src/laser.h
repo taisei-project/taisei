@@ -41,6 +41,8 @@ struct Laser {
 	LaserPosRule prule;
 	LaserLogicRule lrule;
 
+	int in_background;
+
 	complex args[4];
 };
 
@@ -54,7 +56,7 @@ struct Laser {
 Laser *create_laserline_ab(complex a, complex b, float width, float charge, float dur, Color *clr);
 
 Laser *create_laser(complex pos, float time, float deathtime, Color *color, LaserPosRule prule, LaserLogicRule lrule, complex a0, complex a1, complex a2, complex a3);
-void draw_lasers(void);
+void draw_lasers(int);
 void delete_lasers(void);
 void process_lasers(void);
 

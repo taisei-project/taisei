@@ -598,7 +598,7 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 
 	draw_projectiles(global.particles);
 	draw_enemies(global.enemies);
-	draw_lasers();
+	draw_lasers(false);
 
 	if(global.boss)
 		draw_boss(global.boss);
