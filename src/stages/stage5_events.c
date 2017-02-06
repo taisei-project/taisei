@@ -603,12 +603,16 @@ int iku_extra_slave(Enemy *e, int t) {
 }
 
 void iku_extra(Boss *b, int t) {
+	TIMER(&t);
+
+	AT(EVENT_DEATH) {
+		killall(global.enemies);
+	}
+
 	if(t < 0) {
 		GO_TO(b, VIEWPORT_W/2+50.0I, 0.02);
 		return;
 	}
-
-	TIMER(&t);
 
 	AT(0) {
 		int i, j;
