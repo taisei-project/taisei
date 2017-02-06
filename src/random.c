@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include "global.h"
 #include "random.h"
 #include "taisei_err.h"
@@ -72,7 +73,7 @@ int tsrand_test(void) {
 	int i;
 	
 	fp = fopen("/tmp/rand_test", "w");
-	for(i = 0; i < 10000; ++i)
+	for(i = 0; i < 1000000; ++i)
 		fprintf(fp, "%f\n", frand());
 	
 	return 1;
