@@ -575,6 +575,9 @@ int iku_extra_slave(Enemy *e, int t) {
 				for(l = global.lasers; l; l = l->next) {
 					l->deathtime = global.frames - l->birthtime + 20;
 				}
+
+				e->args[1] = 0;
+				iku_extra_find_next_slave(global.boss->pos, 50)->args[1] = 1;
 			}
 		}
 	}
