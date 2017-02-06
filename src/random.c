@@ -35,7 +35,7 @@ void tsrand_seed_p(RandomState *rnd, uint32_t seed) {
 
 uint32_t tsrand_p(RandomState *rnd) {
 	if(rnd->locked) {
-		warnx("Attemped to use a locked RNG state!\n");
+		warnx("Attempted to use a locked RNG state!\n");
 		return 0;
 	}
 
