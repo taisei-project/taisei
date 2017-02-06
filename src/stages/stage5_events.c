@@ -518,16 +518,24 @@ Enemy* iku_extra_find_next_slave(complex from, double playerbias) {
 }
 
 void iku_extra_slave_draw(Enemy *e, int t) {
+	glColor4f(1, 1, 1, 0.3 + creal(e->args[3]) * 0.7);
 	Swirl(e, t);
+	glColor4f(1, 1, 1, 1.0);
 
 	if(e->args[2] && !(t % 5)) {
 		complex offset = (frand()-0.5)*30 + (frand()-0.5)*20.0I;
-		create_particle3c("lasercurve", offset, rgb(0, 0.5, 0.5), EnemyFlareShrink, enemy_flare, 50, (-50.0I-offset)/50.0, add_ref(e));
+		create_particle3c("lasercurve", offset, e->args[1] ? rgb(1.0, 0.5, 0.0) : rgb(0.0, 0.5, 0.5), EnemyFlareShrink, enemy_flare, 50, (-50.0I-offset)/50.0, add_ref(e));
 	}
 }
 
 int iku_extra_slave(Enemy *e, int t) {
 	GO_TO(e, e->args[0], 0.05);
+
+	if(e->args[2]) {
+		e->args[3] = approach(creal(e->args[3]), 1, 0.025);
+	} else {
+		e->args[3] = approach(creal(e->args[3]), 0, 0.025);
+	}
 
 	if(e->args[1]) {
 		if(creal(e->args[1]) < 2) {
@@ -536,11 +544,14 @@ int iku_extra_slave(Enemy *e, int t) {
 		}
 
 		if(!(t % (55 - 5 * global.diff))) {
+			complex o2 = e->args[2];
+			e->args[2] = 0;
 			Enemy *new = iku_extra_find_next_slave(e->pos, 75);
+			e->args[2] = o2;
 
 			if(new && e != new) {
 				e->args[1] = 0;
-				e->args[2] = 600;
+				e->args[2] = new->args[2] = 600;
 				new->args[1] = 1;
 
 				create_laserline_ab(e->pos, new->pos, 10, 30, e->args[2], rgb(0.3, 1, 1))->in_background = true;
@@ -608,7 +619,7 @@ void iku_extra(Boss *b, int t) {
 		for(i = 0; i < cnt; ++i) {
 			for(j = 0; j < cnt; ++j) {
 				complex epos = margin + step * (0.5 + i) + (step * j + 125) * I;
-				create_enemy1c(b->pos, ENEMY_IMMUNE, iku_extra_slave_draw, iku_extra_slave, epos);
+				create_enemy4c(b->pos, ENEMY_IMMUNE, iku_extra_slave_draw, iku_extra_slave, epos, 0, 0, 1);
 			}
 		}
 	}
