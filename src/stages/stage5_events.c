@@ -558,8 +558,10 @@ int iku_extra_slave(Enemy *e, int t) {
 
 				if(global.diff > D_Easy) {
 					int cnt = floor(global.diff * 2.5), i;
+					double r = frand() * 2 * M_PI;
+
 					for(i = 0; i < cnt; ++i) {
-						create_projectile1c("rice", e->pos, rgb(1, 1, 0), asymptotic, 3*cexp(I*(i*2*M_PI/cnt)))->draw = ProjDrawAdd;
+						create_projectile1c("rice", e->pos, rgb(1, 1, 0), asymptotic, 3*cexp(I*(r+i*2*M_PI/cnt)))->draw = ProjDrawAdd;
 					}
 				}
 			} else {
