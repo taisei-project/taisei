@@ -814,13 +814,27 @@ void bind_input_event(EventType type, int state, void *arg) {
 				break;
 			}
 			
-			if(!esc)
+			if(!esc) {
+				for(int i = CONFIG_KEY_FIRST; i <= CONFIG_KEY_LAST; ++i) {
+					if(tconfig.intval[i] == sym) {
+						tconfig.intval[i] = tconfig.intval[b->configentry];
+					}
+				}
+
 				tconfig.intval[b->configentry] = sym;
+			}
+
 			b->blockinput = False;
 			break;
 		}
 		
 		case E_GamepadKeyDown: {
+			for(int i = CONFIG_GPKEY_FIRST; i <= CONFIG_GPKEY_LAST; ++i) {
+				if(tconfig.intval[i] == sym) {
+					tconfig.intval[i] = tconfig.intval[b->configentry];
+				}
+			}
+
 			tconfig.intval[b->configentry] = sym;
 			b->blockinput = False;
 			break;
