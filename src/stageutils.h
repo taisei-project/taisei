@@ -5,7 +5,7 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
-#ifndef STAGEUITLS_H
+#ifndef STAGEUTILS_H
 #define STAGEUTILS_H
 
 #include "matrix.h"

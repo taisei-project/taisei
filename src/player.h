@@ -8,7 +8,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include <complex.h>
+#include "tscomplex.h"
 #include "enemy.h"
 #include "gamepad.h"
 #include "resource/animation.h"

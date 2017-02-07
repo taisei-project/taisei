@@ -5,7 +5,10 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
+#include <complex.h>
+
 #include "stage.h"
+#include "tscomplex.h"
 
 #include <time.h>
 #include "global.h"

@@ -8,7 +8,7 @@
 #ifndef BOSS_H
 #define BOSS_H
 
-#include <complex.h>
+#include "tscomplex.h"
 
 #include <resource/animation.h>
 struct Boss;

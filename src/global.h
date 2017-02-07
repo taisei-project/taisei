@@ -10,6 +10,8 @@
 
 #include <SDL.h>
 
+#include "tscomplex.h"
+
 #include "resource/audio.h"
 #include "resource/bgm.h"
 #include "resource/shader.h"

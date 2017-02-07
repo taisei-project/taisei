@@ -165,7 +165,7 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 				a = AL_Left;
 				time_t t = rpy->stages[0].seed;
 				struct tm* timeinfo = localtime(&t);
-				strftime(tmp, 128, "%Y-%m-%d %H:%M", timeinfo);
+				strftime(tmp, sizeof(tmp), "%Y-%m-%d %H:%M", timeinfo);
 				break;
 			
 			case 1:
@@ -174,20 +174,20 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 				break;
 			
 			case 2:
-				plrmode_repr(tmp, 128, rpy->stages[0].plr_char, rpy->stages[0].plr_shot);
+				plrmode_repr(tmp, sizeof(tmp), rpy->stages[0].plr_char, rpy->stages[0].plr_shot);
 				tmp[0] = tmp[0] - 'a' + 'A';
 				break;
 			
 			case 3:
-				snprintf(tmp, 128, difficulty_name(rpy->stages[0].diff));
+				snprintf(tmp, sizeof(tmp), "%s", difficulty_name(rpy->stages[0].diff));
 				break;
 			
 			case 4:
 				a = AL_Right;
 				if(rpy->stgcount == 1)
-					snprintf(tmp, 128, "Stage %i", rpy->stages[0].stage);
+					snprintf(tmp, sizeof(tmp), "Stage %i", rpy->stages[0].stage);
 				else
-					snprintf(tmp, 128, "%i stages", rpy->stgcount);
+					snprintf(tmp, sizeof(tmp), "%i stages", rpy->stgcount);
 				break;
 		}
 		

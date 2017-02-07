@@ -195,7 +195,7 @@ Model *get_model(char *name) {
 }
 
 void draw_model_p(Model *model) {
-	GLenum flag;
+	GLenum flag = GL_NONE;
 	switch(model->fverts) {
 	case 3:
 		flag = GL_TRIANGLES;
