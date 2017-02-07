@@ -9,6 +9,7 @@
 #define GLOBAL_H
 
 #include <SDL.h>
+#include <SDL_platform.h>
 
 #include "tscomplex.h"
 

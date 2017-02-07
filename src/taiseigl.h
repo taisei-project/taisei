@@ -8,6 +8,8 @@
 #ifndef TAISEIGL_H
 #define TAISEIGL_H
 
+#include <SDL_platform.h>
+
 #ifdef __APPLE__
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
@@ -28,7 +30,7 @@ extern int tgl_ext[_TGLEXT_COUNT];
 void load_gl_functions(void);
 void check_gl_extensions(void);
 
-#ifdef __WIN32__
+#ifdef __WINDOWS__
 PFNGLACTIVETEXTUREPROC glActiveTexture;
 PFNGLBLENDEQUATIONPROC glBlendEquation;
 #endif

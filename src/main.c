@@ -49,7 +49,7 @@ void taisei_shutdown(void) {
 }
 
 void init_log(void) {
-#ifdef __WIN32__
+#ifdef __WINDOWS__
 	const char *pref = get_config_path();
 	char *s;
 
@@ -66,7 +66,7 @@ void init_log(void) {
 #endif
 }
 
-#ifdef __MINGW32__
+#ifdef __WINDOWS__
 	#define MKDIR(p) mkdir(p)
 #else
 	#define MKDIR(p) mkdir(p, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)

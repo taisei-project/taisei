@@ -8,7 +8,7 @@
 #include "taiseigl.h"
 
 #ifndef __APPLE__
-#ifdef __WIN32__
+#ifdef __WINDOWS__
 // #include <GL/wgl.h>
 #else
 #include <GL/glx.h>
@@ -23,7 +23,7 @@ int tgl_ext[_TGLEXT_COUNT];
 #ifndef __APPLE__
 typedef void (*GLFuncPtr)(void);
 GLFuncPtr get_proc_address(char *name) {
-#ifdef __WIN32__
+#ifdef __WINDOWS__
 	return (GLFuncPtr)wglGetProcAddress(name);
 #else
 	return glXGetProcAddress((GLubyte *)name);
@@ -52,7 +52,7 @@ void check_gl_extensions(void) {
 }
 
 void load_gl_functions(void) {
-#ifdef __WIN32__
+#ifdef __WINDOWS__
 	glActiveTexture = (PFNGLACTIVETEXTUREPROC)get_proc_address("glActiveTexture");
 	glBlendEquation = (PFNGLBLENDEQUATIONPROC)get_proc_address("glBlendEquation");
 #endif
