@@ -147,11 +147,7 @@ if(WIN32)
 endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${SDL2_INCLUDE_DIR} ${ALUT_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${PNG_INCLUDE_DIR})
-
-if(TAISEI_WIN32_CONSOLE)
-	add_executable(taisei ${SRCs})
-else()
-	add_executable(taisei WIN32 ${SRCs})
+add_executable(taisei ${SRCs})
 endif()
 
 target_link_libraries(taisei ${LIBs})
