@@ -123,13 +123,21 @@ void ScaleFade(Projectile *p, int t) {
 	glPopMatrix();
 }
 
+void scythe_common(Enemy *e, int t) {
+	e->args[1] += cimag(e->args[1]);
+}
+
 int scythe_mid(Enemy *e, int t) {
 	complex n;
 	
-	if(t < 0)
+	if(t < 0) {
+		scythe_common(e, t);
 		return 1;
-	if(t > 300)
+	}
+
+	if(t > 300) {
 		return ACTION_DESTROY;
+	}
 		
 	e->pos += (6-global.diff-0.005I*t)*e->args[0];
 	
@@ -139,6 +147,7 @@ int scythe_mid(Enemy *e, int t) {
 	if(global.diff > D_Normal && t&1)
 		create_projectile2c("ball", e->pos + 80*n, rgb(0, 0.2, 0.5), accelerated, n, 0.01*global.diff*cexp(I*carg(global.plr.pos - e->pos - 80*n)))->draw=ProjDrawAdd;
 	
+	scythe_common(e, t);
 	return 1;
 }
 
@@ -148,10 +157,6 @@ void Scythe(Enemy *e, int t) {
 	p->angle = creal(e->args[1]);
 
 	create_particle2c("flare", e->pos+100*creal(e->args[2])*frand()*cexp(2.0I*M_PI*frand()), rgb(1,1,0.6), GrowFadeAdd, timeout_linear, 60, -I+1);
-}
-
-void scythe_common(Enemy *e, int t) {
-	e->args[1] += cimag(e->args[1]);
 }
 
 int scythe_intro(Enemy *e, int t) {
