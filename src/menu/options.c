@@ -705,7 +705,7 @@ void draw_options_menu(MenuData *menu) {
 						glColor4f(0.5, 1, 0.5, 1);
 						draw_text(AL_Right, origin, 20*i, "Press a key to assign, ESC to cancel", _fonts.standard);
 					} else
-						draw_text(AL_Right, origin, 20*i, SDL_GetKeyName(tconfig.intval[bind->configentry]), _fonts.standard);
+						draw_text(AL_Right, origin, 20*i, SDL_GetScancodeName(tconfig.intval[bind->configentry]), _fonts.standard);
 					
 					if(!caption_drawn) {
 						glColor4f(1,1,1,0.7);
@@ -801,27 +801,41 @@ void draw_options_menu(MenuData *menu) {
 void bind_input_event(EventType type, int state, void *arg) {
 	OptionBinding *b = arg;
 	
-	int sym = state;
+	int scan = state;
 	char c = (char)(((Uint16)state) & 0x7F);
 	char *dest = b->type == BT_StrValue? *b->values : NULL;
 	
 	switch(type) {
 		case E_KeyDown: {
-			int esc = sym == SDLK_ESCAPE;
+			int esc = scan == SDL_SCANCODE_ESCAPE;
 			if(b->type == BT_GamepadKeyBinding) {
 				if(esc)
 					b->blockinput = False;
 				break;
 			}
 			
-			if(!esc)
-				tconfig.intval[b->configentry] = sym;
+			if(!esc) {
+				for(int i = CONFIG_KEY_FIRST; i <= CONFIG_KEY_LAST; ++i) {
+					if(tconfig.intval[i] == scan) {
+						tconfig.intval[i] = tconfig.intval[b->configentry];
+					}
+				}
+
+				tconfig.intval[b->configentry] = scan;
+			}
+
 			b->blockinput = False;
 			break;
 		}
 		
 		case E_GamepadKeyDown: {
-			tconfig.intval[b->configentry] = sym;
+			for(int i = CONFIG_GPKEY_FIRST; i <= CONFIG_GPKEY_LAST; ++i) {
+				if(tconfig.intval[i] == scan) {
+					tconfig.intval[i] = tconfig.intval[b->configentry];
+				}
+			}
+
+			tconfig.intval[b->configentry] = scan;
 			b->blockinput = False;
 			break;
 		}

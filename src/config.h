@@ -102,7 +102,7 @@ Config tconfig;
 
 #define CONFIG_LOAD_BUFSIZE 256
 
-int config_sym2key(int sym);
+int config_scan2key(int scan);
 int config_button2gpkey(int btn);
 int config_gpkey2key(int btn);
 int config_button2key(int btn);

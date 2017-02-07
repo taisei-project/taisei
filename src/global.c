@@ -261,5 +261,5 @@ void stralloc(char **dest, char *src) {
 // Inputdevice-agnostic method of checking whether a game control is pressed.
 // ALWAYS use this instead of SDL_GetKeyState if you need it.
 int gamekeypressed(int key) {
-	return SDL_GetKeyboardState(NULL)[SDL_GetScancodeFromKey(tconfig.intval[key])] || gamepad_gamekeypressed(key);
+	return SDL_GetKeyboardState(NULL)[tconfig.intval[key]] || gamepad_gamekeypressed(key);
 }

@@ -14,7 +14,6 @@
 
 void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 	SDL_Event event;
-	const Uint8 *keys = SDL_GetKeyboardState(NULL);
 	
 	int kbd 	= flags & EF_Keyboard;
 	int text	= flags & EF_Text;
@@ -34,66 +33,69 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 	}
 
 	while(SDL_PollEvent(&event)) {
-		int sym = event.key.keysym.sym;
+		SDL_Scancode scan = event.key.keysym.scancode;
+		SDL_Keymod mod = event.key.keysym.mod;
 		
 		switch(event.type) {
 			case SDL_KEYDOWN:
-				if(sym == tconfig.intval[KEY_SCREENSHOT]) {
+				if(scan == tconfig.intval[KEY_SCREENSHOT]) {
 					take_screenshot();
 					break;
 				}
 
-				if((sym == SDLK_RETURN && (keys[SDL_SCANCODE_LALT] || keys[SDL_SCANCODE_RALT])) || sym == tconfig.intval[KEY_FULLSCREEN]) {
+				if((scan == SDL_SCANCODE_RETURN && (mod & KMOD_ALT)) || scan == tconfig.intval[KEY_FULLSCREEN]) {
 					video_toggle_fullscreen();
 					break;
 				}
 
-				if(kbd)
-					handler(E_KeyDown, sym, arg);
+				if(kbd) {
+					handler(E_KeyDown, scan, arg);
+				}
 				
 				if(menu) {
-					if(sym == tconfig.intval[KEY_DOWN] || sym == SDLK_DOWN) {
+					if(scan == tconfig.intval[KEY_DOWN] || scan == SDL_SCANCODE_DOWN) {
 						handler(E_CursorDown, 0, arg);
-					} else if(sym == tconfig.intval[KEY_UP] || sym == SDLK_UP) {
+					} else if(scan == tconfig.intval[KEY_UP] || scan == SDL_SCANCODE_UP) {
 						handler(E_CursorUp, 0, arg);
-					} else if(sym == tconfig.intval[KEY_RIGHT] || sym == SDLK_RIGHT) {
+					} else if(scan == tconfig.intval[KEY_RIGHT] || scan == SDL_SCANCODE_RIGHT) {
 						handler(E_CursorRight, 0, arg);
-					} else if(sym == tconfig.intval[KEY_LEFT] || sym == SDLK_LEFT) {
+					} else if(scan == tconfig.intval[KEY_LEFT] || scan == SDL_SCANCODE_LEFT) {
 						handler(E_CursorLeft, 0, arg);
-					} else if(sym == tconfig.intval[KEY_SHOT] || sym == SDLK_RETURN) {
+					} else if(scan == tconfig.intval[KEY_SHOT] || scan == SDL_SCANCODE_RETURN) {
 						handler(E_MenuAccept, 0, arg);
-					} else if(sym == SDLK_ESCAPE || sym == tconfig.intval[KEY_BOMB]) {
+					} else if(scan == SDL_SCANCODE_ESCAPE || scan == tconfig.intval[KEY_BOMB]) {
 						handler(E_MenuAbort, 0, arg);
 					}
 				}
 				
 				if(game && !event.key.repeat) {
-					if(sym == SDLK_ESCAPE)
+					if(scan == SDL_SCANCODE_ESCAPE) {
 						handler(E_Pause, 0, arg);
-					else {
-						int key = config_sym2key(sym);
+					} else {
+						int key = config_scan2key(scan);
 						if(key >= 0)
 							handler(E_PlrKeyDown, key, arg);
 					}
 				}
 				
 				if(text) {
-					if(sym == SDLK_ESCAPE)
+					if(scan == SDL_SCANCODE_ESCAPE)
 						handler(E_CancelText, 0, arg);
-					else if(sym == SDLK_RETURN)
+					else if(scan == SDL_SCANCODE_RETURN)
 						handler(E_SubmitText, 0, arg);
-					else if(sym == SDLK_BACKSPACE)
+					else if(scan == SDL_SCANCODE_BACKSPACE)
 						handler(E_CharErased, 0, arg);
 				}
 				
 				break;
 			
 			case SDL_KEYUP:
-				if(kbd)
-					handler(E_KeyUp, sym, arg);
+				if(kbd) {
+					handler(E_KeyUp, scan, arg);
+				}
 				
 				if(game && !event.key.repeat) {
-					int key = config_sym2key(sym);
+					int key = config_scan2key(scan);
 					if(key >= 0)
 						handler(E_PlrKeyUp, key, arg);
 				}
