@@ -82,18 +82,18 @@ void config_preset(void) {
 	memset(tconfig.intval, 0, sizeof(tconfig.intval));
 	memset(tconfig.fltval, 0, sizeof(tconfig.fltval));
 	
-	tconfig.intval[KEY_UP] = SDLK_UP;
-	tconfig.intval[KEY_DOWN] = SDLK_DOWN;
-	tconfig.intval[KEY_LEFT] = SDLK_LEFT;
-	tconfig.intval[KEY_RIGHT] = SDLK_RIGHT;
+	tconfig.intval[KEY_UP] = SDL_SCANCODE_UP;
+	tconfig.intval[KEY_DOWN] = SDL_SCANCODE_DOWN;
+	tconfig.intval[KEY_LEFT] = SDL_SCANCODE_LEFT;
+	tconfig.intval[KEY_RIGHT] = SDL_SCANCODE_RIGHT;
 	
-	tconfig.intval[KEY_FOCUS] = SDLK_LSHIFT;
-	tconfig.intval[KEY_SHOT] = SDLK_z;
-	tconfig.intval[KEY_BOMB] = SDLK_x;
+	tconfig.intval[KEY_FOCUS] = SDL_SCANCODE_LSHIFT;
+	tconfig.intval[KEY_SHOT] = SDL_SCANCODE_Z;
+	tconfig.intval[KEY_BOMB] = SDL_SCANCODE_X;
 	
-	tconfig.intval[KEY_FULLSCREEN] = SDLK_F11;
-	tconfig.intval[KEY_SCREENSHOT] = SDLK_p;
-	tconfig.intval[KEY_SKIP] = SDLK_LCTRL;
+	tconfig.intval[KEY_FULLSCREEN] = SDL_SCANCODE_F11;
+	tconfig.intval[KEY_SCREENSHOT] = SDL_SCANCODE_P;
+	tconfig.intval[KEY_SKIP] = SDL_SCANCODE_LCTRL;
 	
 	tconfig.intval[FULLSCREEN] = 0;
 	
@@ -131,10 +131,10 @@ void config_preset(void) {
 	tconfig.intval[GP_PAUSE] = 4;
 }
 
-int config_sym2key(int sym) {
+int config_scan2key(int scan) {
 	int i;
 	for(i = CONFIG_KEY_FIRST; i <= CONFIG_KEY_LAST; ++i)
-		if(sym == tconfig.intval[i])
+		if(scan == tconfig.intval[i])
 			return i;
 	return -1;
 }
@@ -233,7 +233,7 @@ void config_save(char *filename) {
 			break;
 		
 		case CFGT_KEYBINDING:
-			fprintf(out, "%s = %s\n", e->name, SDL_GetKeyName(config_intval_p(e)));
+			fprintf(out, "%s = %s\n", e->name, SDL_GetScancodeName(config_intval_p(e)));
 			break;
 		
 		case CFGT_STRING:
@@ -267,12 +267,12 @@ void config_set(char *key, char *val) {
 			break;
 		
 		case CFGT_KEYBINDING: {
-			SDL_Keycode k = SDL_GetKeyFromName(val);
+			SDL_Scancode scan = SDL_GetScancodeFromName(val);
 
-			if(k == SDLK_UNKNOWN) {
+			if(scan == SDL_SCANCODE_UNKNOWN) {
 				warnx("config_set(): unknown key '%s'", val);
 			} else {
-				tconfig.intval[e->key] = k;
+				tconfig.intval[e->key] = scan;
 			}
 
 			break;
