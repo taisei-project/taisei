@@ -579,7 +579,7 @@ int iku_extra_slave(Enemy *e, int t) {
 						continue;
 
 					for(i = 0; i < cnt; ++i) {
-						create_projectile1c("ball", o->pos, rgb(0, 1, 1), asymptotic, 2*cexp(I*(t + i*2*M_PI/cnt)))->draw = ProjDrawAdd;
+						create_projectile2c("ball", o->pos, rgb(0, 1, 1), asymptotic, 1.5*cexp(I*(t + i*2*M_PI/cnt)), 5)->draw = ProjDrawAdd;
 					}
 
 					o->args[2] = 0;
