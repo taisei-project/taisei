@@ -148,8 +148,6 @@ endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${SDL2_INCLUDE_DIR} ${ALUT_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${PNG_INCLUDE_DIR})
 add_executable(taisei ${SRCs})
-endif()
-
 target_link_libraries(taisei ${LIBs})
 
 if(RELATIVE)
