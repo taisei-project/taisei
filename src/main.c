@@ -49,7 +49,7 @@ void taisei_shutdown(void) {
 }
 
 void init_log(void) {
-#ifdef __WINDOWS__
+#if defined(__WINDOWS__) && !defined(__WINDOWS_CONSOLE__)
 	const char *pref = get_config_path();
 	char *s;
 

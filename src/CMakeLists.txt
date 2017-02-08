@@ -146,6 +146,11 @@ if(WIN32)
 	set(SRCs ${SRCs} taisei.rc)
 endif()
 
+if(TAISEI_WIN32_CONSOLE)
+	list(REMOVE_ITEM LIBs -mwindows)
+	add_definitions(-D__WINDOWS_CONSOLE__)
+endif()
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${SDL2_INCLUDE_DIR} ${ALUT_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${PNG_INCLUDE_DIR})
 add_executable(taisei ${SRCs})
 target_link_libraries(taisei ${LIBs})
