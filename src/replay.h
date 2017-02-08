@@ -15,19 +15,12 @@
 #define REPLAY_ALLOC_INITIAL 1000
 #define REPLAY_ALLOC_ADDITIONAL 500
 #define REPLAY_EXTENSION "tsr"
-#define REPLAY_STRUCT_VERSION 0
+#define REPLAY_STRUCT_VERSION 1
 #define REPLAY_MAX_NAME_LENGTH 128
 
 #ifdef DEBUG
 	#define REPLAY_WRITE_DESYNC_CHECKS
 #endif
-
-typedef union float64_u {
-	// ASSUMPTION: the "double" type is an IEEE 754 binary64
-
-	double _double;
-	uint64_t _int;
-} float64_u;
 
 typedef struct ReplayEvent {
 	uint32_t frame;
@@ -45,11 +38,11 @@ typedef struct ReplayStage {
 	// initial player settings
 	uint8_t plr_char;
 	uint8_t plr_shot;
-	float64_u plr_pos_x;
-	float64_u plr_pos_y;
+	uint16_t plr_pos_x;
+	uint16_t plr_pos_y;
 	uint8_t plr_focus;
 	uint8_t plr_fire;
-	float64_u plr_power;
+	uint16_t plr_power;
 	uint8_t plr_lifes;
 	uint8_t plr_bombs;
 	uint8_t plr_moveflags;

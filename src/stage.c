@@ -203,7 +203,7 @@ void draw_hud(void) {
 	for(i = 0; i < global.plr.bombs; i++)
 	  draw_texture(16*i,200, "star");
 	
-	sprintf(buf, "%.2f", global.plr.power);
+	sprintf(buf, "%.2f", global.plr.power / 100.0);
 	draw_text(AL_Center, 10, 236, buf, _fonts.standard);
 	
 	sprintf(buf, "%i", global.plr.graze);
@@ -473,6 +473,11 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		if(global.replay.active)
 			replay_init_stage(&global.replay, info, seed, &global.plr);
 		printf("Random seed: %u\n", seed);
+
+		// match replay format
+		uint16_t px = floor(creal(global.plr.pos));
+		uint16_t py = floor(cimag(global.plr.pos));
+		global.plr.pos = px + I * py;
 	} else {
 		ReplayStage *stg = global.replay.current;
 		printf("REPLAY_PLAY mode: %d events, stage: \"%s\"\n", stg->ecount, stage_get(stg->stage)->title);
@@ -485,19 +490,19 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		
 		global.plr.shot			= stg->plr_shot;
 		global.plr.cha			= stg->plr_char;
-		global.plr.pos			= stg->plr_pos_x._double + I * stg->plr_pos_y._double;
+		global.plr.pos			= stg->plr_pos_x + I * stg->plr_pos_y;
 		global.plr.focus		= stg->plr_focus;
 		global.plr.fire			= stg->plr_fire;
 		global.plr.lifes		= stg->plr_lifes;
 		global.plr.bombs		= stg->plr_bombs;
-		global.plr.power		= stg->plr_power._double;
+		global.plr.power		= stg->plr_power;
 		global.plr.moveflags	= stg->plr_moveflags;
 		
 		stg->playpos = 0;
 	}
 	
 	Enemy *e = global.plr.slaves, *tmp;
-	float power = global.plr.power;
+	short power = global.plr.power;
 	global.plr.power = -1;
 			
 	while(e != 0) {

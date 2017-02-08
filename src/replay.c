@@ -11,6 +11,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "global.h"
 #include "paths/native.h"
@@ -45,8 +46,8 @@ ReplayStage* replay_init_stage(Replay *rpy, StageInfo *stage, uint64_t seed, Pla
 	s->diff	= global.diff;
 	s->points = global.points;
 	
-	s->plr_pos_x._double = creal(plr->pos);
-	s->plr_pos_y._double = cimag(plr->pos);
+	s->plr_pos_x = floor(creal(plr->pos));
+	s->plr_pos_y = floor(cimag(plr->pos));
 
 	s->plr_focus = plr->focus;
 	s->plr_fire	= plr->fire;
@@ -54,7 +55,7 @@ ReplayStage* replay_init_stage(Replay *rpy, StageInfo *stage, uint64_t seed, Pla
 	s->plr_shot	= plr->shot;
 	s->plr_lifes = plr->lifes;
 	s->plr_bombs = plr->bombs;
-	s->plr_power._double = plr->power;
+	s->plr_power = plr->power;
 	s->plr_moveflags = plr->moveflags;
 
 	printf("replay_init_stage(): created a new stage for writting\n");
@@ -135,11 +136,11 @@ int replay_write_stage(ReplayStage *stg, SDL_RWops *file) {
 	SDL_WriteLE32(file, stg->points);
 	SDL_WriteU8(file, stg->plr_char);
 	SDL_WriteU8(file, stg->plr_shot);
-	SDL_WriteLE64(file, stg->plr_pos_x._int);
-	SDL_WriteLE64(file, stg->plr_pos_y._int);
+	SDL_WriteLE16(file, stg->plr_pos_x);
+	SDL_WriteLE16(file, stg->plr_pos_y);
 	SDL_WriteU8(file, stg->plr_focus);
 	SDL_WriteU8(file, stg->plr_fire);
-	SDL_WriteLE64(file, stg->plr_power._int);
+	SDL_WriteLE16(file, stg->plr_power);
 	SDL_WriteU8(file, stg->plr_lifes);
 	SDL_WriteU8(file, stg->plr_bombs);
 	SDL_WriteU8(file, stg->plr_moveflags);
@@ -224,11 +225,11 @@ int replay_read(Replay *rpy, SDL_RWops *file) {
 		stg->points = SDL_ReadLE32(file);
 		stg->plr_char = SDL_ReadU8(file);
 		stg->plr_shot = SDL_ReadU8(file);
-		stg->plr_pos_x._int = SDL_ReadLE64(file);
-		stg->plr_pos_y._int = SDL_ReadLE64(file);
+		stg->plr_pos_x = SDL_ReadLE16(file);
+		stg->plr_pos_y = SDL_ReadLE16(file);
 		stg->plr_focus = SDL_ReadU8(file);
 		stg->plr_fire = SDL_ReadU8(file);
-		stg->plr_power._int = SDL_ReadLE64(file);
+		stg->plr_power = SDL_ReadLE16(file);
 		stg->plr_lifes = SDL_ReadU8(file);
 		stg->plr_bombs = SDL_ReadU8(file);
 		stg->plr_moveflags = SDL_ReadU8(file);

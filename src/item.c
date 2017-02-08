@@ -90,7 +90,7 @@ void process_items(void) {
 		if(v == 1) {
 			switch(item->type) {
 			case Power:
-				player_set_power(&global.plr, global.plr.power + 0.03);
+				player_set_power(&global.plr, global.plr.power + 3);
 				break;
 			case Point:
 				global.points += 100;

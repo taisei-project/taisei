@@ -43,7 +43,7 @@ typedef struct {
 	short moving;
 	
 	short dir;
-	float power;
+	short power;
 	int graze;
     
 	int lifes;
@@ -76,7 +76,7 @@ void player_draw(Player*);
 void player_logic(Player*);
 
 void player_set_char(Player*, Character);
-void player_set_power(Player *plr, float npow);
+void player_set_power(Player *plr, short npow);
 
 void player_move(Player*, complex delta);
 

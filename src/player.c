@@ -38,7 +38,7 @@ Animation *player_get_ani(Character cha) {
 	return ani;
 }
 
-void player_set_power(Player *plr, float npow) {
+void player_set_power(Player *plr, short npow) {
 	switch(plr->cha) {
 		case Youmu:
 			youmu_power(plr, npow);
