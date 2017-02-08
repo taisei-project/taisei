@@ -66,7 +66,7 @@ void init_log(void) {
 #endif
 }
 
-#ifdef __WINDOWS__
+#ifndef __POSIX__
 	#define MKDIR(p) mkdir(p)
 #else
 	#define MKDIR(p) mkdir(p, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)

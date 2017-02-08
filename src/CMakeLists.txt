@@ -152,6 +152,14 @@ if(TAISEI_WIN32_CONSOLE)
 endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${SDL2_INCLUDE_DIR} ${ALUT_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${PNG_INCLUDE_DIR})
+
+unset(POSIX CACHE)
+check_symbol_exists(_POSIX_VERSION "unistd.h" POSIX)
+
+if(POSIX)
+	add_definitions(-D__POSIX__)
+endif()
+
 add_executable(taisei ${SRCs})
 target_link_libraries(taisei ${LIBs})
 
