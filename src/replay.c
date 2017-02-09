@@ -70,6 +70,19 @@ static void replay_destroy_stage(ReplayStage *stage) {
 	memset(stage, 0, sizeof(ReplayStage));
 }
 
+void replay_destroy_events(Replay *rpy) {
+	if(rpy->stages) {
+		for(int i = 0; i < rpy->numstages; ++i) {
+			ReplayStage *stg = &rpy->stages[i];
+
+			if(stg->events) {
+				free(stg->events);
+				stg->events = NULL;
+			}
+		}
+	}
+}
+
 void replay_destroy(Replay *rpy) {
 	if(rpy->stages) {
 		for(int i = 0; i < rpy->numstages; ++i) {
@@ -278,6 +291,7 @@ static int replay_read_meta(Replay *rpy, SDL_RWops *file, size_t filesize) {
 		}
 	}
 
+	rpy->fileoffset = SDL_RWtell(file);
 	return True;
 }
 
@@ -343,6 +357,14 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 				return False;
 			}
 
+			for(int i = 0; i < rpy->numstages; ++i) {
+				if(rpy->stages[i].events) {
+					warnx("replay_read(): reading events into a replay that already had events, call replay_destroy_events() if this is intended");
+					replay_destroy_events(rpy);
+					break;
+				}
+			}
+
 			if(SDL_RWseek(file, rpy->fileoffset, RW_SEEK_SET) < 0) {
 				warnx("replay_read(): SDL_RWseek() failed: %s", SDL_GetError());
 				return False;
@@ -350,6 +372,7 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 		}
 
 		if(!replay_read_events(rpy, file, filesize)) {
+			replay_destroy_events(rpy);
 			return False;
 		}
 
@@ -414,7 +437,7 @@ int replay_load(Replay *rpy, char *name, ReplayReadMode mode) {
 	return result;
 }
 
-void replay_copy(Replay *dst, Replay *src) {
+void replay_copy(Replay *dst, Replay *src, int steal_events) {
 	int i;
 	replay_destroy(dst);
 	memcpy(dst, src, sizeof(Replay));
@@ -429,10 +452,14 @@ void replay_copy(Replay *dst, Replay *src) {
 		ReplayStage *s, *d;
 		s = &(src->stages[i]);
 		d = &(dst->stages[i]);
-		
-		d->capacity = s->numevents;
-		d->events = (ReplayEvent*)malloc(sizeof(ReplayEvent) * d->capacity);
-		memcpy(d->events, s->events, sizeof(ReplayEvent) * d->capacity);
+
+		if(steal_events) {
+			s->events = NULL;
+		} else {
+			d->capacity = s->numevents;
+			d->events = (ReplayEvent*)malloc(sizeof(ReplayEvent) * d->capacity);
+			memcpy(d->events, s->events, sizeof(ReplayEvent) * d->capacity);
+		}
 	}
 }
 

@@ -135,6 +135,7 @@ typedef enum ReplayReadMode {
 void replay_init(Replay *rpy);
 ReplayStage* replay_init_stage(Replay *rpy, StageInfo *stage, uint64_t seed, Player *plr);
 void replay_destroy(Replay *rpy);
+void replay_destroy_events(Replay *rpy);
 ReplayStage* replay_select(Replay *rpy, int stage);
 void replay_event(Replay *rpy, uint8_t type, int16_t value);
 
@@ -144,7 +145,7 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode);
 char* replay_getpath(char *name, int ext);	// must be freed
 int replay_save(Replay *rpy, char *name);
 int replay_load(Replay *rpy, char *name, ReplayReadMode mode);
-void replay_copy(Replay *dst, Replay *src);
+void replay_copy(Replay *dst, Replay *src, int steal_events);
 
 #endif
 

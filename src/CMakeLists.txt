@@ -100,7 +100,7 @@ if(RELATIVE)
 endif()
 
 if(TAISEI_DEBUG)
-	add_definitions(-DDEBUG)
+	add_definitions(-DDEBUG -ggdb)
 	if(TAISEI_IDDQD)
 		add_definitions(-DIDDQD)
 	endif()
