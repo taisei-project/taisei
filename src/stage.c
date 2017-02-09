@@ -127,7 +127,7 @@ void replay_input(void) {
 	
 	handle_events(stage_replay_event, EF_Game, NULL);
 	
-	for(i = s->playpos; i < s->ecount; ++i) {
+	for(i = s->playpos; i < s->numevents; ++i) {
 		ReplayEvent *e = &(s->events[i]);
 		
 		if(e->frame != global.frames)
@@ -424,7 +424,7 @@ void stage_logic(int time) {
 	if(!global.dialog && !global.boss)
 		global.timer++;
 	
-	if(global.timer == time - FADE_TIME || global.replaymode == REPLAY_PLAY && global.frames == global.replay.current->events[global.replay.current->ecount-1].frame - FADE_TIME)
+	if(global.timer == time - FADE_TIME || global.replaymode == REPLAY_PLAY && global.frames == global.replay.current->events[global.replay.current->numevents-1].frame - FADE_TIME)
 		set_transition(TransFadeBlack, FADE_TIME, FADE_TIME*2);
 	
 	if(global.timer >= time)
@@ -480,7 +480,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		global.plr.pos = px + I * py;
 	} else {
 		ReplayStage *stg = global.replay.current;
-		printf("REPLAY_PLAY mode: %d events, stage: \"%s\"\n", stg->ecount, stage_get(stg->stage)->title);
+		printf("REPLAY_PLAY mode: %d events, stage: \"%s\"\n", stg->numevents, stage_get(stg->stage)->title);
 		
 		tsrand_seed_p(&global.rand_game, stg->seed);
 		printf("Random seed: %u\n", stg->seed);

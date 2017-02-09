@@ -18,9 +18,7 @@
 #include "paths/native.h"
 #include "taisei_err.h"
 
-static uint8_t replay_magic_header[] = {
-	0x68, 0x6f, 0x6e, 0x6f, 0xe2, 0x9d, 0xa4, 0x75, 0x6d, 0x69
-};
+static uint8_t replay_magic_header[] = REPLAY_MAGIC_HEADER;
 
 void replay_init(Replay *rpy) {
 	memset(rpy, 0, sizeof(Replay));
@@ -35,8 +33,8 @@ void replay_init(Replay *rpy) {
 ReplayStage* replay_init_stage(Replay *rpy, StageInfo *stage, uint64_t seed, Player *plr) {
 	ReplayStage *s;
 	
-	rpy->stages = (ReplayStage*)realloc(rpy->stages, sizeof(ReplayStage) * (++rpy->stgcount));
-	s = &(rpy->stages[rpy->stgcount-1]);
+	rpy->stages = (ReplayStage*)realloc(rpy->stages, sizeof(ReplayStage) * (++rpy->numstages));
+	s = &(rpy->stages[rpy->numstages-1]);
 	memset(s, 0, sizeof(ReplayStage));
 	
 	s->capacity = REPLAY_ALLOC_INITIAL;
@@ -60,33 +58,39 @@ ReplayStage* replay_init_stage(Replay *rpy, StageInfo *stage, uint64_t seed, Pla
 	s->plr_moveflags = plr->moveflags;
 
 	printf("replay_init_stage(): created a new stage for writting\n");
-	replay_select(rpy, rpy->stgcount-1);
+	replay_select(rpy, rpy->numstages-1);
 	return s;
 }
 
-void replay_destroy_stage(ReplayStage *stage) {
-	if(stage->events)
+static void replay_destroy_stage(ReplayStage *stage) {
+	if(stage->events) {
 		free(stage->events);
+	}
+
 	memset(stage, 0, sizeof(ReplayStage));
 }
 
 void replay_destroy(Replay *rpy) {
 	if(rpy->stages) {
-		int i; for(i = 0; i < rpy->stgcount; ++i)
+		for(int i = 0; i < rpy->numstages; ++i) {
 			replay_destroy_stage(&(rpy->stages[i]));
+		}
+
 		free(rpy->stages);
 	}
 	
-	if(rpy->playername)
+	if(rpy->playername) {
 		free(rpy->playername);
+	}
 	
 	memset(rpy, 0, sizeof(Replay));
 	printf("Replay destroyed.\n");
 }
 
 ReplayStage* replay_select(Replay *rpy, int stage) {
-	if(stage < 0 || stage >= rpy->stgcount)
+	if(stage < 0 || stage >= rpy->numstages) {
 		return NULL;
+	}
 	
 	rpy->current = &(rpy->stages[stage]);
 	rpy->currentidx = stage;
@@ -94,33 +98,35 @@ ReplayStage* replay_select(Replay *rpy, int stage) {
 }
 
 void replay_event(Replay *rpy, uint8_t type, int16_t value) {
-	if(!rpy->active)
+	if(!rpy->active) {
 		return;
+	}
 	
 	ReplayStage *s = rpy->current;
-	ReplayEvent *e = &(s->events[s->ecount]);
+	ReplayEvent *e = &(s->events[s->numevents]);
 	e->frame = global.frames;
 	e->type = type;
 	e->value = (uint16_t)value;
-	s->ecount++;
+	s->numevents++;
 	
-	if(s->ecount >= s->capacity) {
+	if(s->numevents >= s->capacity) {
 		printf("Replay stage reached its capacity of %d, reallocating\n", s->capacity);
 		s->capacity *= 2;
 		s->events = (ReplayEvent*)realloc(s->events, sizeof(ReplayEvent) * s->capacity);
 		printf("The new capacity is %d\n", s->capacity);
 	}
 	
-	if(type == EV_OVER)
+	if(type == EV_OVER) {
 		printf("The replay is OVER\n");
+	}
 }
 
-void replay_write_string(SDL_RWops *file, char *str) {
+static void replay_write_string(SDL_RWops *file, char *str) {
 	SDL_WriteLE16(file, strlen(str));
 	SDL_RWwrite(file, str, 1, strlen(str));
 }
 
-int replay_write_stage_event(ReplayEvent *evt, SDL_RWops *file) {
+static int replay_write_stage_event(ReplayEvent *evt, SDL_RWops *file) {
 	SDL_WriteLE32(file, evt->frame);
 	SDL_WriteU8(file, evt->type);
 	SDL_WriteLE16(file, evt->value);
@@ -128,7 +134,7 @@ int replay_write_stage_event(ReplayEvent *evt, SDL_RWops *file) {
 	return True;
 }
 
-uint32_t replay_calc_stageinfo_checksum(ReplayStage *stg) {
+static uint32_t replay_calc_stageinfo_checksum(ReplayStage *stg) {
 	uint32_t cs = 0;
 	cs += stg->stage;
 	cs += stg->seed;
@@ -144,13 +150,11 @@ uint32_t replay_calc_stageinfo_checksum(ReplayStage *stg) {
 	cs += stg->plr_lifes;
 	cs += stg->plr_bombs;
 	cs += stg->plr_moveflags;
-	cs += stg->ecount;
+	cs += stg->numevents;
 	return cs;
 }
 
-int replay_write_stage(ReplayStage *stg, SDL_RWops *file) {
-	int i;
-
+static int replay_write_stage(ReplayStage *stg, SDL_RWops *file) {
 	SDL_WriteLE16(file, stg->stage);
 	SDL_WriteLE32(file, stg->seed);
 	SDL_WriteU8(file, stg->diff);
@@ -165,21 +169,15 @@ int replay_write_stage(ReplayStage *stg, SDL_RWops *file) {
 	SDL_WriteU8(file, stg->plr_lifes);
 	SDL_WriteU8(file, stg->plr_bombs);
 	SDL_WriteU8(file, stg->plr_moveflags);
-	SDL_WriteLE16(file, stg->ecount);
+	SDL_WriteLE16(file, stg->numevents);
 	SDL_WriteLE32(file, 1 + ~replay_calc_stageinfo_checksum(stg));
-
-	for(i = 0; i < stg->ecount; ++i) {
-		if(!replay_write_stage_event(&stg->events[i], file)) {
-			return False;
-		}
-	}
 
 	return True;
 }
 
 int replay_write(Replay *rpy, SDL_RWops *file) {
 	uint8_t *u8_p;
-	int i;
+	int i, j;
 
 	for(u8_p = replay_magic_header; *u8_p; ++u8_p) {
 		SDL_WriteU8(file, *u8_p);
@@ -187,11 +185,20 @@ int replay_write(Replay *rpy, SDL_RWops *file) {
 
 	SDL_WriteLE16(file, REPLAY_STRUCT_VERSION);
 	replay_write_string(file, rpy->playername);
-	SDL_WriteLE16(file, rpy->stgcount);
+	SDL_WriteLE16(file, rpy->numstages);
 
-	for(i = 0; i < rpy->stgcount; ++i) {
+	for(i = 0; i < rpy->numstages; ++i) {
 		if(!replay_write_stage(&rpy->stages[i], file)) {
 			return False;
+		}
+	}
+
+	for(i = 0; i < rpy->numstages; ++i) {
+		ReplayStage *stg = &rpy->stages[i];
+		for(j = 0; j < stg->numevents; ++j) {
+			if(!replay_write_stage_event(&stg->events[j], file)) {
+				return False;
+			}
 		}
 	}
 
@@ -201,7 +208,17 @@ int replay_write(Replay *rpy, SDL_RWops *file) {
 	return True;
 }
 
-void replay_read_string(SDL_RWops *file, char **ptr) {
+#ifdef REPLAY_LOAD_GARBAGE_TEST
+#define PRINTPROP(prop,fmt) printf("replay_read(): " #prop " = %" # fmt " [%li / %li]\n", prop, SDL_RWtell(file), filesize)
+#define PRINTPROP_NOASSIGN(prop,fmt) PRINTPROP(prop,fmt)
+#else
+#define PRINTPROP(prop,fmt) prop
+#define PRINTPROP_NOASSIGN(prop,fmt)
+#endif
+
+#define CHECKPROP(prop,fmt) PRINTPROP(prop,fmt); if(SDL_RWtell(file) == filesize) { warnx("replay_read(): premature EOF"); return False; }
+
+static void replay_read_string(SDL_RWops *file, char **ptr) {
 	size_t len = SDL_ReadLE16(file);
 
 	*ptr = malloc(len + 1);
@@ -210,35 +227,8 @@ void replay_read_string(SDL_RWops *file, char **ptr) {
 	SDL_RWread(file, *ptr, 1, len);
 }
 
-int replay_read(Replay *rpy, SDL_RWops *file) {
-	uint8_t *u8_p;
-	int64_t size;
-	int i, j;
-
-#ifdef REPLAY_LOAD_GARBAGE_TEST
-#define PRINTPROP(prop,fmt) printf("replay_read(): " #prop " = %" # fmt " [%li / %li]\n", prop, SDL_RWtell(file), size)
-#define PRINTPROP_NOASSIGN(prop,fmt) PRINTPROP(prop,fmt)
-#else
-#define PRINTPROP(prop,fmt) prop
-#define PRINTPROP_NOASSIGN(prop,fmt)
-#endif
-
-#define CHECKPROP(prop,fmt) PRINTPROP(prop,fmt); if(SDL_RWtell(file) == size) { warnx("replay_read(): premature EOF"); return False; }
-
-	memset(rpy, 0, sizeof(Replay));
-
-	size = SDL_RWseek(file, 0, RW_SEEK_END);
-
-	if(size <= sizeof(replay_magic_header) + 2) {
-		warnx("replay_read(): replay is too short (%i)", size);
-		return False;
-	}
-
-	SDL_RWseek(file, 0, RW_SEEK_SET);
-
-	printf("replay_read(): %li bytes\n", size);
-
-	for(u8_p = replay_magic_header; *u8_p; ++u8_p) {
+static int replay_read_meta(Replay *rpy, SDL_RWops *file, size_t filesize) {
+	for(uint8_t *u8_p = replay_magic_header; *u8_p; ++u8_p) {
 		if(SDL_ReadU8(file) != *u8_p) {
 			warnx("replay_read(): incorrect header");
 			return False;
@@ -253,17 +243,17 @@ int replay_read(Replay *rpy, SDL_RWops *file) {
 	replay_read_string(file, &rpy->playername);
 	PRINTPROP_NOASSIGN(rpy->playername, s);
 
-	CHECKPROP(rpy->stgcount = SDL_ReadLE16(file), u);
+	CHECKPROP(rpy->numstages = SDL_ReadLE16(file), u);
 
-	if(!rpy->stgcount) {
+	if(!rpy->numstages) {
 		warnx("replay_read(): no stages in replay");
 		return False;
 	}
 
-	rpy->stages = malloc(sizeof(ReplayStage) * rpy->stgcount);
-	memset(rpy->stages, 0, sizeof(ReplayStage) * rpy->stgcount);
+	rpy->stages = malloc(sizeof(ReplayStage) * rpy->numstages);
+	memset(rpy->stages, 0, sizeof(ReplayStage) * rpy->numstages);
 
-	for(i = 0; i < rpy->stgcount; ++i) {
+	for(int i = 0; i < rpy->numstages; ++i) {
 		ReplayStage *stg = &rpy->stages[i];
 
 		CHECKPROP(stg->stage = SDL_ReadLE16(file), u);
@@ -280,22 +270,30 @@ int replay_read(Replay *rpy, SDL_RWops *file) {
 		CHECKPROP(stg->plr_lifes = SDL_ReadU8(file), u);
 		CHECKPROP(stg->plr_bombs = SDL_ReadU8(file), u);
 		CHECKPROP(stg->plr_moveflags = SDL_ReadU8(file), u);
-		CHECKPROP(stg->ecount = SDL_ReadLE16(file), u);
+		CHECKPROP(stg->numevents = SDL_ReadLE16(file), u);
 
 		if(replay_calc_stageinfo_checksum(stg) + SDL_ReadLE32(file)) {
 			warnx("replay_read(): stageinfo is corrupt");
 			return False;
 		}
+	}
 
-		if(!stg->ecount) {
+	return True;
+}
+
+static int replay_read_events(Replay *rpy, SDL_RWops *file, size_t filesize) {
+	for(int i = 0; i < rpy->numstages; ++i) {
+		ReplayStage *stg = &rpy->stages[i];
+
+		if(!stg->numevents) {
 			warnx("replay_read(): no events in stage");
 			return False;
 		}
 
-		stg->events = malloc(sizeof(ReplayEvent) * stg->ecount);
-		memset(stg->events, 0, sizeof(ReplayEvent) * stg->ecount);
+		stg->events = malloc(sizeof(ReplayEvent) * stg->numevents);
+		memset(stg->events, 0, sizeof(ReplayEvent) * stg->numevents);
 
-		for(j = 0; j < stg->ecount; ++j) {
+		for(int j = 0; j < stg->numevents; ++j) {
 			ReplayEvent *evt = &stg->events[j];
 
 			CHECKPROP(evt->frame = SDL_ReadLE32(file), u);
@@ -304,18 +302,76 @@ int replay_read(Replay *rpy, SDL_RWops *file) {
 		}
 	}
 
-	// useless byte to simplify the premature EOF check, can be anything
-	SDL_ReadU8(file);
+	return True;
+}
+
+int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
+	size_t filesize;
+	mode &= REPLAY_READ_ALL;
+
+	if(!mode) {
+		errx(-1, "replay_read(): called with invalid read mode");
+		return False;
+	}
+
+	filesize = SDL_RWsize(file);
+
+	if(filesize < 0) {
+		warnx("replay_read(): SDL_RWsize() failed: %s", SDL_GetError());
+		return False;
+	}
+
+	printf("replay_read(): %li bytes\n", filesize);
+
+	if(mode & REPLAY_READ_META) {
+		memset(rpy, 0, sizeof(Replay));
+
+		if(filesize <= sizeof(replay_magic_header) + 2) {
+			warnx("replay_read(): replay file is too short (%i)", filesize);
+			return False;
+		}
+
+		if(!replay_read_meta(rpy, file, filesize)) {
+			return False;
+		}
+	}
+
+	if(mode & REPLAY_READ_EVENTS) {
+		if(!(mode & REPLAY_READ_META)) {
+			if(!rpy->fileoffset) {
+				errx(-1, "replay_read(): tried to read events before reading metadata");
+				return False;
+			}
+
+			if(SDL_RWseek(file, rpy->fileoffset, RW_SEEK_SET) < 0) {
+				warnx("replay_read(): SDL_RWseek() failed: %s", SDL_GetError());
+				return False;
+			}
+		}
+
+		if(!replay_read_events(rpy, file, filesize)) {
+			return False;
+		}
+
+		// useless byte to simplify the premature EOF check, can be anything
+		SDL_ReadU8(file);
+	}
 
 	return True;
 }
 
+#undef CHECKPROP
+#undef PRINTPROP
+
 char* replay_getpath(char *name, int ext) {
 	char *p = (char*)malloc(strlen(get_replays_path()) + strlen(name) + strlen(REPLAY_EXTENSION) + 3);
-	if(ext)
+
+	if(ext) {
 		sprintf(p, "%s/%s.%s", get_replays_path(), name, REPLAY_EXTENSION);
-	else
+	} else {
 		sprintf(p, "%s/%s", get_replays_path(), name);
+	}
+
 	return p;
 }
 
@@ -336,9 +392,9 @@ int replay_save(Replay *rpy, char *name) {
 	return result;
 }
 
-int replay_load(Replay *rpy, char *name) {
+int replay_load(Replay *rpy, char *name, ReplayReadMode mode) {
 	char *p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION));
-	printf("replay_load(): loading %s\n", p);
+	printf("replay_load(): loading %s (mode %i)\n", p, mode);
 	
 	SDL_RWops *file = SDL_RWFromFile(p, "rb");
 	free(p);
@@ -347,8 +403,8 @@ int replay_load(Replay *rpy, char *name) {
 		warnx("replay_save(): SDL_RWFromFile() failed: %s\n", SDL_GetError());
 		return False;
 	}
-		
-	int result = replay_read(rpy, file);
+
+	int result = replay_read(rpy, file, mode);
 
 	if(!result) {
 		replay_destroy(rpy);
@@ -366,15 +422,15 @@ void replay_copy(Replay *dst, Replay *src) {
 	dst->playername = (char*)malloc(strlen(src->playername)+1);
 	strcpy(dst->playername, src->playername);
 	
-	dst->stages = (ReplayStage*)malloc(sizeof(ReplayStage) * src->stgcount);
-	memcpy(dst->stages, src->stages, sizeof(ReplayStage) * src->stgcount);
+	dst->stages = (ReplayStage*)malloc(sizeof(ReplayStage) * src->numstages);
+	memcpy(dst->stages, src->stages, sizeof(ReplayStage) * src->numstages);
 	
-	for(i = 0; i < src->stgcount; ++i) {
+	for(i = 0; i < src->numstages; ++i) {
 		ReplayStage *s, *d;
 		s = &(src->stages[i]);
 		d = &(dst->stages[i]);
 		
-		d->capacity = s->ecount;
+		d->capacity = s->numevents;
 		d->events = (ReplayEvent*)malloc(sizeof(ReplayEvent) * d->capacity);
 		memcpy(d->events, s->events, sizeof(ReplayEvent) * d->capacity);
 	}
@@ -445,7 +501,7 @@ int replay_test(void) {
 
 	Replay rpy;
 
-	if(replay_read(&rpy, handle)) {
+	if(replay_read(&rpy, handle, REPLAY_READ_ALL)) {
 		errx(-1, "Succeeded loading garbage data as a replay... that shouldn't happen");
 	}
 

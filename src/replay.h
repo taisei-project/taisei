@@ -12,9 +12,25 @@
 #include "stage.h"
 #include "player.h"
 
+
+/*
+ *	All stored fields in the Replay* structures are in the order in which they appear in the file.
+ *	If a field is commented out, that means it *IS* stored in the file, just not used outside of the loading routine.
+ *
+ *	Please maintain this convention, it makes it easier to grasp the replay file structure just by looking at this header.
+ */
+
+// -{ ALWAYS UPDATE THESE WHEN YOU MAKE CHANGES TO THE FILE/STRUCT LAYOUT!
+
+// Lets us fail early on incompatible versions and garbage data
+#define REPLAY_STRUCT_VERSION 4
+
+// -}
+
 #define REPLAY_ALLOC_INITIAL 256
+
+#define REPLAY_MAGIC_HEADER { 0x68, 0x6f, 0x6e, 0x6f, 0xe2, 0x9d, 0xa4, 0x75, 0x6d, 0x69 }
 #define REPLAY_EXTENSION "tsr"
-#define REPLAY_STRUCT_VERSION 3
 #define REPLAY_USELESS_BYTE 0x69
 
 #ifdef DEBUG
@@ -23,12 +39,18 @@
 #endif
 
 typedef struct ReplayEvent {
+	/* BEGIN stored fields */
+
 	uint32_t frame;
 	uint8_t type;
 	uint16_t value;
+
+	/* END stored fields */
 } ReplayEvent;
 
 typedef struct ReplayStage {
+	/* BEGIN stored fields */
+
 	// initial game settings
 	uint16_t stage;
 	uint32_t seed;	// this also happens to be the game initiation time - and we use this property, don't break it please
@@ -47,49 +69,81 @@ typedef struct ReplayStage {
 	uint8_t plr_bombs;
 	uint8_t plr_moveflags;
 
-	// events
-	ReplayEvent *events;
-	uint16_t ecount;
+	// player input
+	uint16_t numevents;
 
-	// The fields below should not be stored
+	// checksum of all of the above -- 2's complement of value returned by replay_calc_stageinfo_checksum()
+	// uint32_t checksum;
+
+	/* END stored fields */
+
+	ReplayEvent *events;
 	int capacity;
 	int playpos;
 } ReplayStage;
 
 typedef struct Replay {
-	// metadata
+	/* BEGIN stored fields */
+
+	// each byte must be equal to the corresponding byte in replay_magic_header.
+	// uint8_t[sizeof(replay_magic_header)];
+
+	// must be equal to REPLAY_STRUCT_VERSION
 	// uint16_t version;
+
+	// How many bytes is {playername} long. The string is not null terminated in the file, but is null terminated after it's been loaded into this struct
+	// uint16_t playername_size;
+
 	char *playername;
-	
-	// stages (NOTE FOR FUTURE: stages do not represent stage runs in particular, they can and should be used to store stuff like spell practice runs, too)
-	ReplayStage *stages;
-	uint16_t stgcount;
-	
-	// The fields below should not be stored
+	uint16_t numstages;
+
+	// ReplayStage stages[{numstages}];
+
+	// ALL input events from ALL of the stages
+	// This is actually loaded into separate sub-arrays for every stage, see ReplayStage.events
+	//
+	// All input events are stored at the very end of the replay so that we can save some time and memory
+	// by only loading them when necessary without seeking around the file too much.
+	//
+	// ReplayStage input_events[];
+
+	// at least one trailing byte, value doesn't matter
+	// uint8_t useless;
+
+	/* END stored fields */
+
 	int active;
+	ReplayStage *stages;
 	ReplayStage *current;
 	int currentidx;
 	uint16_t desync_check;
+	size_t fileoffset;
 } Replay;
 
-enum {
+typedef enum {
 	REPLAY_RECORD,
 	REPLAY_PLAY
-};
+} ReplayMode;
+
+typedef enum ReplayReadMode {
+	// bitflags
+	REPLAY_READ_META = 1,
+	REPLAY_READ_EVENTS = 2,
+	REPLAY_READ_ALL = 3, // includes the other two
+} ReplayReadMode;
 
 void replay_init(Replay *rpy);
 ReplayStage* replay_init_stage(Replay *rpy, StageInfo *stage, uint64_t seed, Player *plr);
 void replay_destroy(Replay *rpy);
-void replay_destroy_stage(ReplayStage *stage);
 ReplayStage* replay_select(Replay *rpy, int stage);
 void replay_event(Replay *rpy, uint8_t type, int16_t value);
 
 int replay_write(Replay *rpy, SDL_RWops *file);
-int replay_read(Replay *rpy, SDL_RWops *file);
+int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode);
 
 char* replay_getpath(char *name, int ext);	// must be freed
 int replay_save(Replay *rpy, char *name);
-int replay_load(Replay *rpy, char *name);
+int replay_load(Replay *rpy, char *name, ReplayReadMode mode);
 void replay_copy(Replay *dst, Replay *src);
 
 #endif

@@ -121,7 +121,7 @@ typedef struct {
 	int nostagebg;
 	
 	Replay replay;
-	int replaymode;
+	ReplayMode replaymode;
 	
 	float shake_view;
 	

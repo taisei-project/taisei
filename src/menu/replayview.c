@@ -30,11 +30,11 @@ void start_replay(void *arg) {
 	replay_copy(&global.replay, (Replay*)arg);
 	global.replaymode = REPLAY_PLAY;
 	
-	if(global.replay.stgcount == 1)
+	if(global.replay.numstages == 1)
 		pickedstage = 0;
 	
 	init_player(&global.plr);
-	for(i = pickedstage; i < global.replay.stgcount; ++i) {
+	for(i = pickedstage; i < global.replay.numstages; ++i) {
 		replay_select(&global.replay, i);
 		rstg = global.replay.current;
 		gstg = stage_get(rstg->stage);
@@ -66,7 +66,7 @@ MenuData* replayview_stageselect(Replay *rpy) {
 	m->flags = MF_Transient | MF_Abortable;
 	m->transition = 0;
 	
-	for(i = 0; i < rpy->stgcount; ++i) {
+	for(i = 0; i < rpy->numstages; ++i) {
 		add_menu_entry(m, stage_get(rpy->stages[i].stage)->title, start_replay, rpy)->transition = TransFadeBlack;
 	}
 	
@@ -75,7 +75,7 @@ MenuData* replayview_stageselect(Replay *rpy) {
 
 void replayview_run(void *arg) {
 	Replay *rpy = arg;
-	if(rpy->stgcount > 1)
+	if(rpy->numstages > 1)
 		replayview->context = replayview_stageselect(rpy);
 	else
 		start_replay(rpy);
@@ -184,10 +184,10 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 			
 			case 4:
 				a = AL_Right;
-				if(rpy->stgcount == 1)
+				if(rpy->numstages == 1)
 					snprintf(tmp, sizeof(tmp), "Stage %i", rpy->stages[0].stage);
 				else
-					snprintf(tmp, sizeof(tmp), "%i stages", rpy->stgcount);
+					snprintf(tmp, sizeof(tmp), "%i stages", rpy->numstages);
 				break;
 		}
 		
@@ -225,7 +225,6 @@ static void replayview_draw(MenuData *m) {
 
 }
 
-
 int replayview_cmp(const void *a, const void *b) {
 	return ((Replay*)(((MenuEntry*)b)->arg))->stages[0].seed - ((Replay*)(((MenuEntry*)a)->arg))->stages[0].seed;
 }
@@ -248,12 +247,12 @@ int fill_replayview_menu(MenuData *m) {
 			continue;
 		
 		Replay *rpy = malloc(sizeof(Replay));
-		if(!replay_load(rpy, e->d_name)) {
+		if(!replay_load(rpy, e->d_name, REPLAY_READ_ALL)) {
 			free(rpy);
 			continue;
 		}
 		
-		add_menu_entry_f(m, " ", replayview_run, rpy, (rpy->stgcount > 1)*MF_InstantSelect)->transition = rpy->stgcount < 2 ? TransFadeBlack : NULL;
+		add_menu_entry_f(m, " ", replayview_run, rpy, (rpy->numstages > 1)*MF_InstantSelect)->transition = rpy->numstages < 2 ? TransFadeBlack : NULL;
 		++rpys;
 	}
 	

@@ -29,7 +29,7 @@ void save_rpy(void *a) {
 	strncpy(drepr, difficulty_name(rpy->stages[0].diff), 16);
 	drepr[0] += 'a' - 'A';
 	
-	if(rpy->stgcount > 1)
+	if(rpy->numstages > 1)
 		snprintf(name, 128, "taisei_%s_%s_%s", strtime, prepr, drepr);
 	else
 		snprintf(name, 128, "taisei_%s_stg%d_%s_%s", strtime, rpy->stages[0].stage, prepr, drepr);
