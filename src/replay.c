@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <time.h>
 
 #include "global.h"
 #include "paths/native.h"
@@ -104,8 +105,8 @@ void replay_event(Replay *rpy, uint8_t type, int16_t value) {
 	s->ecount++;
 	
 	if(s->ecount >= s->capacity) {
-		printf("Replay reached its capacity of %d, reallocating\n", s->capacity);
-		s->capacity += REPLAY_ALLOC_ADDITIONAL;
+		printf("Replay stage reached its capacity of %d, reallocating\n", s->capacity);
+		s->capacity *= 2;
 		s->events = (ReplayEvent*)realloc(s->events, sizeof(ReplayEvent) * s->capacity);
 		printf("The new capacity is %d\n", s->capacity);
 	}
@@ -130,7 +131,7 @@ int replay_write_stage_event(ReplayEvent *evt, SDL_RWops *file) {
 int replay_write_stage(ReplayStage *stg, SDL_RWops *file) {
 	int i;
 
-	SDL_WriteLE32(file, stg->stage);
+	SDL_WriteLE16(file, stg->stage);
 	SDL_WriteLE32(file, stg->seed);
 	SDL_WriteU8(file, stg->diff);
 	SDL_WriteLE32(file, stg->points);
@@ -144,7 +145,7 @@ int replay_write_stage(ReplayStage *stg, SDL_RWops *file) {
 	SDL_WriteU8(file, stg->plr_lifes);
 	SDL_WriteU8(file, stg->plr_bombs);
 	SDL_WriteU8(file, stg->plr_moveflags);
-	SDL_WriteLE32(file, stg->ecount);
+	SDL_WriteLE16(file, stg->ecount);
 
 	for(i = 0; i < stg->ecount; ++i) {
 		if(!replay_write_stage_event(&stg->events[i], file)) {
@@ -165,13 +166,16 @@ int replay_write(Replay *rpy, SDL_RWops *file) {
 
 	SDL_WriteLE16(file, REPLAY_STRUCT_VERSION);
 	replay_write_string(file, rpy->playername);
-	SDL_WriteLE32(file, rpy->stgcount);
+	SDL_WriteLE16(file, rpy->stgcount);
 
 	for(i = 0; i < rpy->stgcount; ++i) {
 		if(!replay_write_stage(&rpy->stages[i], file)) {
 			return False;
 		}
 	}
+
+	// useless byte to simplify the premature EOF check, can be anything
+	SDL_WriteU8(file, REPLAY_USELESS_BYTE);
 
 	return True;
 }
@@ -187,12 +191,33 @@ void replay_read_string(SDL_RWops *file, char **ptr) {
 
 int replay_read(Replay *rpy, SDL_RWops *file) {
 	uint8_t *u8_p;
+	int64_t size;
 	int i, j;
+
+#ifdef REPLAY_LOAD_GARBAGE_TEST
+#define PRINTPROP(prop,fmt) printf("replay_read(): " #prop " = %" # fmt " [%li / %li]\n", prop, SDL_RWtell(file), size)
+#define PRINTPROP_NOASSIGN(prop,fmt) PRINTPROP(prop,fmt)
+#else
+#define PRINTPROP(prop,fmt) prop
+#define PRINTPROP_NOASSIGN(prop,fmt)
+#endif
+
+#define CHECKPROP(prop,fmt) PRINTPROP(prop,fmt); if(SDL_RWtell(file) == size) { warnx("replay_read(): premature EOF"); return False; }
 
 	memset(rpy, 0, sizeof(Replay));
 
+	size = SDL_RWseek(file, 0, RW_SEEK_END);
+
+	if(size <= sizeof(replay_magic_header) + 2) {
+		warnx("replay_read(): replay is too short (%i)", size);
+		return False;
+	}
+
+	SDL_RWseek(file, 0, RW_SEEK_SET);
+
+	printf("replay_read(): %li bytes\n", size);
+
 	for(u8_p = replay_magic_header; *u8_p; ++u8_p) {
-		SDL_WriteU8(file, *u8_p);
 		if(SDL_ReadU8(file) != *u8_p) {
 			warnx("replay_read(): incorrect header");
 			return False;
@@ -205,8 +230,9 @@ int replay_read(Replay *rpy, SDL_RWops *file) {
 	}
 
 	replay_read_string(file, &rpy->playername);
+	PRINTPROP_NOASSIGN(rpy->playername, s);
 
-	rpy->stgcount = SDL_ReadLE32(file);
+	CHECKPROP(rpy->stgcount = SDL_ReadLE16(file), u);
 
 	if(!rpy->stgcount) {
 		warnx("replay_read(): no stages in replay");
@@ -219,21 +245,21 @@ int replay_read(Replay *rpy, SDL_RWops *file) {
 	for(i = 0; i < rpy->stgcount; ++i) {
 		ReplayStage *stg = &rpy->stages[i];
 
-		stg->stage = SDL_ReadLE32(file);
-		stg->seed = SDL_ReadLE32(file);
-		stg->diff = SDL_ReadU8(file);
-		stg->points = SDL_ReadLE32(file);
-		stg->plr_char = SDL_ReadU8(file);
-		stg->plr_shot = SDL_ReadU8(file);
-		stg->plr_pos_x = SDL_ReadLE16(file);
-		stg->plr_pos_y = SDL_ReadLE16(file);
-		stg->plr_focus = SDL_ReadU8(file);
-		stg->plr_fire = SDL_ReadU8(file);
-		stg->plr_power = SDL_ReadLE16(file);
-		stg->plr_lifes = SDL_ReadU8(file);
-		stg->plr_bombs = SDL_ReadU8(file);
-		stg->plr_moveflags = SDL_ReadU8(file);
-		stg->ecount = SDL_ReadLE32(file);
+		CHECKPROP(stg->stage = SDL_ReadLE16(file), u);
+		CHECKPROP(stg->seed = SDL_ReadLE32(file), u);
+		CHECKPROP(stg->diff = SDL_ReadU8(file), u);
+		CHECKPROP(stg->points = SDL_ReadLE32(file), u);
+		CHECKPROP(stg->plr_char = SDL_ReadU8(file), u);
+		CHECKPROP(stg->plr_shot = SDL_ReadU8(file), u);
+		CHECKPROP(stg->plr_pos_x = SDL_ReadLE16(file), u);
+		CHECKPROP(stg->plr_pos_y = SDL_ReadLE16(file), u);
+		CHECKPROP(stg->plr_focus = SDL_ReadU8(file), u);
+		CHECKPROP(stg->plr_fire = SDL_ReadU8(file), u);
+		CHECKPROP(stg->plr_power = SDL_ReadLE16(file), u);
+		CHECKPROP(stg->plr_lifes = SDL_ReadU8(file), u);
+		CHECKPROP(stg->plr_bombs = SDL_ReadU8(file), u);
+		CHECKPROP(stg->plr_moveflags = SDL_ReadU8(file), u);
+		CHECKPROP(stg->ecount = SDL_ReadLE16(file), u);
 
 		if(!stg->ecount) {
 			warnx("replay_read(): no events in stage");
@@ -246,11 +272,14 @@ int replay_read(Replay *rpy, SDL_RWops *file) {
 		for(j = 0; j < stg->ecount; ++j) {
 			ReplayEvent *evt = &stg->events[j];
 
-			evt->frame = SDL_ReadLE32(file);
-			evt->type = SDL_ReadU8(file);
-			evt->value = SDL_ReadLE16(file);
+			CHECKPROP(evt->frame = SDL_ReadLE32(file), u);
+			CHECKPROP(evt->type = SDL_ReadU8(file), u);
+			CHECKPROP(evt->value = SDL_ReadLE16(file), u);
 		}
 	}
+
+	// useless byte to simplify the premature EOF check, can be anything
+	SDL_ReadU8(file);
 
 	return True;
 }
@@ -342,4 +371,62 @@ void replay_check_desync(Replay *rpy, int time, uint16_t check) {
 			printf("replay_check_desync(): %u OK\n", check);
 		}
 	}
+}
+
+int replay_test(void) {
+#ifdef REPLAY_LOAD_GARBAGE_TEST
+	int sz = getenvint("TAISEI_REPLAY_LOAD_GARBAGE_TEST");
+	int headsz = sizeof(replay_magic_header) + 8; // 8 = version (uint16) + strlen (uint16) + plrname "test" (char[4])
+
+	if(sz <= 0) {
+		return 0;
+	}
+
+	uint8_t *u8_p, *buf = malloc(sz + headsz);
+	SDL_RWops *handle = SDL_RWFromMem(buf, sz + headsz);
+
+	// SDL_RWwrite(handle, replay_magic_header, 1, sizeof(replay_magic_header));
+
+	for(u8_p = replay_magic_header; *u8_p; ++u8_p) {
+		SDL_WriteU8(handle, *u8_p);
+	}
+
+	SDL_WriteLE16(handle, REPLAY_STRUCT_VERSION);
+	SDL_WriteLE16(handle, 4);
+	SDL_WriteU8(handle, 't');
+	SDL_WriteU8(handle, 'e');
+	SDL_WriteU8(handle, 's');
+	SDL_WriteU8(handle, 't');
+
+	printf("replay_test(): wrote a valid replay header\n");
+
+	RandomState rnd;
+	tsrand_init(&rnd, time(0));
+
+	for(int i = 0; i < sz; ++i) {
+		SDL_WriteU8(handle, tsrand_p(&rnd) & 0xFF);
+	}
+
+	printf("replay_test(): wrote %i bytes of garbage\n", sz);
+
+	SDL_RWseek(handle, 0, RW_SEEK_SET);
+
+	for(int i = 0; i < headsz; ++i) {
+		printf("%x ", buf[i]);
+	}
+
+	printf("\n");
+
+	Replay rpy;
+
+	if(replay_read(&rpy, handle)) {
+		errx(-1, "Succeeded loading garbage data as a replay... that shouldn't happen");
+	}
+
+	replay_destroy(rpy);
+	free(buf);
+	return 1;
+#else
+	return 0;
+#endif
 }

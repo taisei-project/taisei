@@ -172,3 +172,5 @@ enum {
 };
 
 #endif
+
+int getenvint(const char *v);

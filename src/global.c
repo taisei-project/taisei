@@ -17,6 +17,16 @@
 
 Global global;
 
+int getenvint(const char *v) {
+	char *e = getenv(v);
+
+	if(e) {
+		return atoi(e);
+	}
+
+	return 0;
+}
+
 void init_global(void) {
 	memset(&global, 0, sizeof(global));	
 
@@ -33,18 +43,12 @@ void init_global(void) {
 	memset(&global.replay, 0, sizeof(Replay));
 	global.replaymode = REPLAY_RECORD;
 
-	char *e = getenv("TAISEI_SANIC");
-
-	if(e) {
-		global.frameskip = atoi(e);
-
+	if(global.frameskip = getenvint("TAISEI_SANIC")) {
 		if(global.frameskip < 0) {
 			global.frameskip = INT_MAX;
 		}
 
-		if(global.frameskip) {
-			warnx("FPS limiter disabled by environment. Gotta go fast! (frameskip = %i)", global.frameskip);
-		}
+		warnx("FPS limiter disabled by environment. Gotta go fast! (frameskip = %i)", global.frameskip);
 	}
 }
 

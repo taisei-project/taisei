@@ -66,6 +66,18 @@ void init_log(void) {
 #endif
 }
 
+int run_tests(void) {
+	if(tsrand_test()) {
+		return 1;
+	}
+
+	if(replay_test()) {
+		return 1;
+	}
+
+	return 0;
+}
+
 #ifndef __POSIX__
 	#define MKDIR(p) mkdir(p)
 #else
@@ -73,9 +85,10 @@ void init_log(void) {
 #endif
 
 int main(int argc, char** argv) {
-	if(tsrand_test())
+	if(run_tests()) {
 		return 0;
-	
+	}
+
 	init_paths();
 	init_log();
 
