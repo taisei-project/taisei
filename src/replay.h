@@ -78,8 +78,12 @@ typedef struct ReplayStage {
 	/* END stored fields */
 
 	ReplayEvent *events;
+
+	// events allocated (may be higher than numevents)
 	int capacity;
+
 	int playpos;
+	uint16_t desync_check;
 } ReplayStage;
 
 typedef struct Replay {
@@ -97,7 +101,8 @@ typedef struct Replay {
 	char *playername;
 	uint16_t numstages;
 
-	// ReplayStage stages[{numstages}];
+	// Contains {numstages} elements when not NULL
+	ReplayStage *stages;
 
 	// ALL input events from ALL of the stages
 	// This is actually loaded into separate sub-arrays for every stage, see ReplayStage.events
@@ -112,11 +117,6 @@ typedef struct Replay {
 
 	/* END stored fields */
 
-	int active;
-	ReplayStage *stages;
-	ReplayStage *current;
-	int currentidx;
-	uint16_t desync_check;
 	size_t fileoffset;
 } Replay;
 
@@ -133,22 +133,24 @@ typedef enum ReplayReadMode {
 } ReplayReadMode;
 
 void replay_init(Replay *rpy);
-ReplayStage* replay_init_stage(Replay *rpy, StageInfo *stage, uint64_t seed, Player *plr);
+ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, Difficulty diff, uint32_t points, Player *plr);
+
 void replay_destroy(Replay *rpy);
 void replay_destroy_events(Replay *rpy);
-ReplayStage* replay_select(Replay *rpy, int stage);
-void replay_event(Replay *rpy, uint8_t type, int16_t value);
+
+void replay_stage_event(ReplayStage *stg, uint32_t frame, uint8_t type, int16_t value);
+void replay_stage_check_desync(ReplayStage *stg, int time, uint16_t check, ReplayMode mode);
 
 int replay_write(Replay *rpy, SDL_RWops *file);
 int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode);
 
-char* replay_getpath(char *name, int ext);	// must be freed
 int replay_save(Replay *rpy, char *name);
 int replay_load(Replay *rpy, char *name, ReplayReadMode mode);
+
 void replay_copy(Replay *dst, Replay *src, int steal_events);
 
-#endif
+char* replay_getpath(char *name, int ext);	// must be freed
 
-void replay_check_desync(Replay *rpy, int time, uint16_t check);
+#endif
 
 int replay_test(void);

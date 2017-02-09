@@ -79,10 +79,10 @@ void stage_input_event(EventType type, int key, void *arg) {
 		case E_PlrKeyDown:
 			if(global.dialog && (key == KEY_SHOT || key == KEY_BOMB)) {
 				page_dialog(&global.dialog);
-				replay_event(&global.replay, EV_PRESS, key);
+				replay_stage_event(global.replay_stage, global.frames, EV_PRESS, key);
 			} else {
 				player_event(&global.plr, EV_PRESS, key);
-				replay_event(&global.replay, EV_PRESS, key);
+				replay_stage_event(global.replay_stage, global.frames, EV_PRESS, key);
 				
 				if(key == KEY_SKIP && global.dialog) {
 					global.dialog->skip = True;
@@ -92,7 +92,7 @@ void stage_input_event(EventType type, int key, void *arg) {
 		
 		case E_PlrKeyUp:
 			player_event(&global.plr, EV_RELEASE, key);
-			replay_event(&global.replay, EV_RELEASE, key);
+			replay_stage_event(global.replay_stage, global.frames, EV_RELEASE, key);
 			
 			if(key == KEY_SKIP && global.dialog)
 				global.dialog->skip = False;
@@ -104,12 +104,12 @@ void stage_input_event(EventType type, int key, void *arg) {
 		
 		case E_PlrAxisLR:
 			player_event(&global.plr, EV_AXIS_LR, key);
-			replay_event(&global.replay, EV_AXIS_LR, key);
+			replay_stage_event(global.replay_stage, global.frames, EV_AXIS_LR, key);
 			break;
 		
 		case E_PlrAxisUD:
 			player_event(&global.plr, EV_AXIS_UD, key);
-			replay_event(&global.replay, EV_AXIS_UD, key);
+			replay_stage_event(global.replay_stage, global.frames, EV_AXIS_UD, key);
 			break;
 		
 		default: break;
@@ -122,7 +122,7 @@ void stage_replay_event(EventType type, int state, void *arg) {
 }
 
 void replay_input(void) {
-	ReplayStage *s = global.replay.current;
+	ReplayStage *s = global.replay_stage;
 	int i;
 	
 	handle_events(stage_replay_event, EF_Game, NULL);
@@ -144,7 +144,7 @@ void replay_input(void) {
 				else if(global.dialog && (e->type == EV_PRESS || e->type == EV_RELEASE) && e->value == KEY_SKIP)
 					global.dialog->skip = (e->type == EV_PRESS);
 				else if(e->type == EV_CHECK_DESYNC)
-					global.replay.desync_check = e->value;
+					s->desync_check = e->value;
 				else
 					player_event(&global.plr, e->type, (int16_t)e->value);
 				break;
@@ -161,7 +161,7 @@ void stage_input(void) {
 	// workaround
 	if(global.dialog && global.dialog->skip && !gamekeypressed(KEY_SKIP)) {
 		global.dialog->skip = False;
-		replay_event(&global.replay, EV_RELEASE, KEY_SKIP);
+		replay_stage_event(global.replay_stage, global.frames, EV_RELEASE, KEY_SKIP);
 	}
 	
 	player_applymovement(&global.plr);
@@ -424,15 +424,20 @@ void stage_logic(int time) {
 	if(!global.dialog && !global.boss)
 		global.timer++;
 	
-	if(global.timer == time - FADE_TIME || global.replaymode == REPLAY_PLAY && global.frames == global.replay.current->events[global.replay.current->numevents-1].frame - FADE_TIME)
+	if(global.timer == time - FADE_TIME ||
+		  (
+			global.replaymode == REPLAY_PLAY &&
+			global.frames == global.replay_stage->events[global.replay_stage->numevents-1].frame - FADE_TIME
+		  )
+		) {
 		set_transition(TransFadeBlack, FADE_TIME, FADE_TIME*2);
+	}
 	
 	if(global.timer >= time)
 		global.game_over = GAMEOVER_WIN;
 
 	// BGM handling
-	if(global.dialog && global.dialog->messages[global.dialog->pos].side == BGM)
-	{
+	if(global.dialog && global.dialog->messages[global.dialog->pos].side == BGM) {
 		start_bgm(global.dialog->messages[global.dialog->pos].msg);
 		page_dialog(&global.dialog);
 	}
@@ -470,8 +475,12 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	stage_start();
 	
 	if(global.replaymode == REPLAY_RECORD) {
-		if(global.replay.active)
-			replay_init_stage(&global.replay, info, seed, &global.plr);
+		if(tconfig.intval[SAVE_RPY]) {
+			global.replay_stage = replay_create_stage(&global.replay, info, seed, global.diff, global.points, &global.plr);
+		} else {
+			global.replay_stage = NULL;
+		}
+
 		printf("Random seed: %u\n", seed);
 
 		// match replay format
@@ -479,7 +488,12 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		uint16_t py = floor(cimag(global.plr.pos));
 		global.plr.pos = px + I * py;
 	} else {
-		ReplayStage *stg = global.replay.current;
+		if(!global.replay_stage) {
+			errx(-1, "Attemped to replay a NULL stage");
+			return;
+		}
+
+		ReplayStage *stg = global.replay_stage;
 		printf("REPLAY_PLAY mode: %d events, stage: \"%s\"\n", stg->numevents, stage_get(stg->stage)->title);
 		
 		tsrand_seed_p(&global.rand_game, stg->seed);
@@ -522,7 +536,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 			event();
 
 		((global.replaymode == REPLAY_PLAY)? replay_input : stage_input)();
-		replay_check_desync(&global.replay, global.frames, (tsrand() ^ global.points) & 0xFFFF);
+		replay_stage_check_desync(global.replay_stage, global.frames, (tsrand() ^ global.points) & 0xFFFF, global.replaymode);
 
 		stage_logic(endtime);
 		
@@ -550,14 +564,12 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	}
 	
 	if(global.replaymode == REPLAY_RECORD) {
-		replay_event(&global.replay, EV_OVER, 0);
+		replay_stage_event(global.replay_stage, global.frames, EV_OVER, 0);
 	}
 		
 	end();
 	stage_end();
 	tsrand_switch(&global.rand_visual);
-//	if(global.replaymode != REPLAY_PLAY)
-//		replay_destroy(&global.replay);
 }
 
 void draw_title(int t, StageInfo *info, Alignment al, int x, int y, const char *text, TTF_Font *font, Color *color) {

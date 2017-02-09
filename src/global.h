@@ -78,13 +78,6 @@ enum {
 	GAMEOVER_RESTART
 };
 
-typedef enum {
-	D_Easy = 1,
-	D_Normal,
-	D_Hard,
-	D_Lunatic
-} Difficulty;
-
 typedef struct {
 	int fpstime;  // frame counter
 	int fps;
@@ -122,6 +115,7 @@ typedef struct {
 	
 	Replay replay;
 	ReplayMode replaymode;
+	ReplayStage *replay_stage;
 	
 	float shake_view;
 	

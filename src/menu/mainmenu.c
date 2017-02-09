@@ -35,6 +35,7 @@ troll:
 	if(char_menu_loop(&m) == -1)
 		goto troll;
 	
+	global.replay_stage = NULL;
 	replay_init(&global.replay);
 	
 	int chr = global.plr.cha;
@@ -60,7 +61,7 @@ troll2:
 		goto troll2;
 	}
 	
-	if(global.replay.active) {
+	if(global.replay_stage) {
 		switch(tconfig.intval[SAVE_RPY]) {
 			case 0: break;
 				
@@ -76,6 +77,8 @@ troll2:
 				break;
 			}
 		}
+
+		global.replay_stage = NULL;
 	}
 	
 	if(global.game_over == GAMEOVER_WIN && !arg) {

@@ -19,6 +19,13 @@
 
 #include <projectile.h>
 
+typedef enum {
+	D_Easy = 1,
+	D_Normal,
+	D_Hard,
+	D_Lunatic
+} Difficulty;
+
 #define TIMER(ptr) int *__timep = ptr; int _i = 0, _ni = 0;  _i = _ni = _i;
 #define AT(t) if(*__timep == t) 
 #define FROM_TO(start,end,step) _ni = _ni; _i = (*__timep - (start))/(step); if(*__timep >= (start) && *__timep <= (end) && !((*__timep - (start)) % (step)))

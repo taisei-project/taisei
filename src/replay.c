@@ -22,15 +22,14 @@ static uint8_t replay_magic_header[] = REPLAY_MAGIC_HEADER;
 
 void replay_init(Replay *rpy) {
 	memset(rpy, 0, sizeof(Replay));
-	rpy->active = True;
-	
+
 	rpy->playername = malloc(strlen(tconfig.strval[PLAYERNAME]) + 1);
 	strcpy(rpy->playername, tconfig.strval[PLAYERNAME]);
 
 	printf("replay_init(): replay initialized for writting\n");
 }
 
-ReplayStage* replay_init_stage(Replay *rpy, StageInfo *stage, uint64_t seed, Player *plr) {
+ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, Difficulty diff, uint32_t points, Player *plr) {
 	ReplayStage *s;
 	
 	rpy->stages = (ReplayStage*)realloc(rpy->stages, sizeof(ReplayStage) * (++rpy->numstages));
@@ -42,8 +41,8 @@ ReplayStage* replay_init_stage(Replay *rpy, StageInfo *stage, uint64_t seed, Pla
 	
 	s->stage = stage->id;
 	s->seed	= seed;
-	s->diff	= global.diff;
-	s->points = global.points;
+	s->diff	= diff;
+	s->points = points;
 	
 	s->plr_pos_x = floor(creal(plr->pos));
 	s->plr_pos_y = floor(cimag(plr->pos));
@@ -58,7 +57,6 @@ ReplayStage* replay_init_stage(Replay *rpy, StageInfo *stage, uint64_t seed, Pla
 	s->plr_moveflags = plr->moveflags;
 
 	printf("replay_init_stage(): created a new stage for writting\n");
-	replay_select(rpy, rpy->numstages-1);
 	return s;
 }
 
@@ -100,24 +98,14 @@ void replay_destroy(Replay *rpy) {
 	printf("Replay destroyed.\n");
 }
 
-ReplayStage* replay_select(Replay *rpy, int stage) {
-	if(stage < 0 || stage >= rpy->numstages) {
-		return NULL;
-	}
-	
-	rpy->current = &(rpy->stages[stage]);
-	rpy->currentidx = stage;
-	return rpy->current;
-}
-
-void replay_event(Replay *rpy, uint8_t type, int16_t value) {
-	if(!rpy->active) {
+void replay_stage_event(ReplayStage *stg, uint32_t frame, uint8_t type, int16_t value) {
+	if(!stg) {
 		return;
 	}
-	
-	ReplayStage *s = rpy->current;
+
+	ReplayStage *s = stg;
 	ReplayEvent *e = &(s->events[s->numevents]);
-	e->frame = global.frames;
+	e->frame = frame;
 	e->type = type;
 	e->value = (uint16_t)value;
 	s->numevents++;
@@ -385,6 +373,7 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 
 #undef CHECKPROP
 #undef PRINTPROP
+#undef PRINTPROP_NOASSIGN
 
 char* replay_getpath(char *name, int ext) {
 	char *p = (char*)malloc(strlen(get_replays_path()) + strlen(name) + strlen(REPLAY_EXTENSION) + 3);
@@ -463,23 +452,24 @@ void replay_copy(Replay *dst, Replay *src, int steal_events) {
 	}
 }
 
-void replay_check_desync(Replay *rpy, int time, uint16_t check) {
-	if(time % (FPS * 5)) {
+void replay_stage_check_desync(ReplayStage *stg, int time, uint16_t check, ReplayMode mode) {
+	if(!stg || time % (FPS * 5)) {
 		return;
 	}
 
-	if(global.replaymode == REPLAY_RECORD) {
-#ifdef REPLAY_WRITE_DESYNC_CHECKS
-		printf("replay_check_desync(): %u\n", check);
-		replay_event(rpy, EV_CHECK_DESYNC, (int16_t)check);
-#endif
-	} else {
-		if(rpy->desync_check && rpy->desync_check != check) {
-			warnx("replay_check_desync(): Replay desync detected! %u != %u\n", rpy->desync_check, check);
+	if(mode == REPLAY_PLAY) {
+		if(stg->desync_check && stg->desync_check != check) {
+			warnx("replay_check_desync(): Replay desync detected! %u != %u\n", stg->desync_check, check);
 		} else {
 			printf("replay_check_desync(): %u OK\n", check);
 		}
 	}
+#ifdef REPLAY_WRITE_DESYNC_CHECKS
+	else {
+		printf("replay_stage_check_desync(): %u\n", check);
+		replay_stage_event(stg, time, EV_CHECK_DESYNC, (int16_t)check);
+	}
+#endif
 }
 
 int replay_test(void) {

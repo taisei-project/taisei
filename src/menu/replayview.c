@@ -55,8 +55,7 @@ void start_replay(void *arg) {
 	init_player(&global.plr);
 
 	for(int i = mctx->pickedstage; i < global.replay.numstages; ++i) {
-		replay_select(&global.replay, i);
-		ReplayStage *rstg = global.replay.current;
+		ReplayStage *rstg = global.replay_stage = global.replay.stages+i;
 		StageInfo *gstg = stage_get(rstg->stage);
 		
 		if(!gstg) {
@@ -77,6 +76,7 @@ void start_replay(void *arg) {
 	global.game_over = 0;
 	global.replaymode = REPLAY_RECORD;
 	replay_destroy(&global.replay);
+	global.replay_stage = NULL;
 }
 
 MenuData* replayview_sub_stageselect(ReplayviewItemContext *ictx) {
