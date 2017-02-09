@@ -128,6 +128,26 @@ int replay_write_stage_event(ReplayEvent *evt, SDL_RWops *file) {
 	return True;
 }
 
+uint32_t replay_calc_stageinfo_checksum(ReplayStage *stg) {
+	uint32_t cs = 0;
+	cs += stg->stage;
+	cs += stg->seed;
+	cs += stg->diff;
+	cs += stg->points;
+	cs += stg->plr_char;
+	cs += stg->plr_shot;
+	cs += stg->plr_pos_x;
+	cs += stg->plr_pos_y;
+	cs += stg->plr_focus;
+	cs += stg->plr_fire;
+	cs += stg->plr_power;
+	cs += stg->plr_lifes;
+	cs += stg->plr_bombs;
+	cs += stg->plr_moveflags;
+	cs += stg->ecount;
+	return cs;
+}
+
 int replay_write_stage(ReplayStage *stg, SDL_RWops *file) {
 	int i;
 
@@ -146,6 +166,7 @@ int replay_write_stage(ReplayStage *stg, SDL_RWops *file) {
 	SDL_WriteU8(file, stg->plr_bombs);
 	SDL_WriteU8(file, stg->plr_moveflags);
 	SDL_WriteLE16(file, stg->ecount);
+	SDL_WriteLE32(file, 1 + ~replay_calc_stageinfo_checksum(stg));
 
 	for(i = 0; i < stg->ecount; ++i) {
 		if(!replay_write_stage_event(&stg->events[i], file)) {
@@ -260,6 +281,11 @@ int replay_read(Replay *rpy, SDL_RWops *file) {
 		CHECKPROP(stg->plr_bombs = SDL_ReadU8(file), u);
 		CHECKPROP(stg->plr_moveflags = SDL_ReadU8(file), u);
 		CHECKPROP(stg->ecount = SDL_ReadLE16(file), u);
+
+		if(replay_calc_stageinfo_checksum(stg) + SDL_ReadLE32(file)) {
+			warnx("replay_read(): stageinfo is corrupt");
+			return False;
+		}
 
 		if(!stg->ecount) {
 			warnx("replay_read(): no events in stage");
@@ -423,7 +449,7 @@ int replay_test(void) {
 		errx(-1, "Succeeded loading garbage data as a replay... that shouldn't happen");
 	}
 
-	replay_destroy(rpy);
+	replay_destroy(&rpy);
 	free(buf);
 	return 1;
 #else

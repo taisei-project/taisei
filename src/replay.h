@@ -14,7 +14,7 @@
 
 #define REPLAY_ALLOC_INITIAL 256
 #define REPLAY_EXTENSION "tsr"
-#define REPLAY_STRUCT_VERSION 2
+#define REPLAY_STRUCT_VERSION 3
 #define REPLAY_USELESS_BYTE 0x69
 
 #ifdef DEBUG
@@ -46,11 +46,11 @@ typedef struct ReplayStage {
 	uint8_t plr_lifes;
 	uint8_t plr_bombs;
 	uint8_t plr_moveflags;
-	
+
 	// events
 	ReplayEvent *events;
 	uint16_t ecount;
-	
+
 	// The fields below should not be stored
 	int capacity;
 	int playpos;
