@@ -176,7 +176,13 @@ void free_attack(Attack *a) {
 }
 
 void start_attack(Boss *b, Attack *a) {
+#if DEBUG
 	printf("BOSS start_attack(): %s\n", a->name);
+	StageInfo *i = stage_get_by_spellcard(a->info, global.diff);
+	if(i) {
+		printf("This attack has a spell stage: %u\n", i->id);
+	}
+#endif
 
 	a->starttime = global.frames + ATTACK_START_DELAY;
 	a->rule(b, EVENT_BIRTH);

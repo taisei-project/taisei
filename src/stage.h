@@ -68,6 +68,7 @@ typedef struct StageInfo {
 
 extern StageInfo stages[];
 StageInfo* stage_get(uint16_t);
+StageInfo* stage_get_by_spellcard(AttackInfo *spell, Difficulty diff);
 void stage_init_array(void);
 
 void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event, ShaderRule *shaderrules, int endtime);

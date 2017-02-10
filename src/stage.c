@@ -241,6 +241,17 @@ StageInfo* stage_get(uint16_t n) {
 	return NULL;
 }
 
+StageInfo* stage_get_by_spellcard(AttackInfo *spell, Difficulty diff) {
+	if(!spell)
+		return NULL;
+
+	for(StageInfo *stg = stages; stg->loop; ++stg)
+		if(stg->spell == spell && stg->difficulty == diff)
+			return stg;
+
+	return NULL;
+}
+
 void stage_start(void) {
 	global.timer = 0;
 	global.frames = 0;
