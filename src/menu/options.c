@@ -98,13 +98,6 @@ OptionBinding* bind_resolution(void) {
 	bind->valcount = video.mcount;
 	bind->selected = -1;
 	
-	int i; for(i = 0; i < video.mcount; ++i) {
-		VideoMode *m = &(video.modes[i]);
-		
-		if(m->width == video.intended.width && m->height == video.intended.height)
-			bind->selected = i;
-	}
-	
 	return bind;
 }
 
