@@ -402,11 +402,18 @@ void draw_hud(void) {
 	draw_text(AL_Center, 0, 0, diff, _fonts.mainmenu);
 	glPopMatrix();
 
-	for(i = 0; i < global.plr.lifes; i++)
-	  draw_texture(16*i,167, "star");
+	if(global.stage->type == STAGE_SPELL) {
+		glColor4f(1, 1, 1, 0.7);
+		draw_text(AL_Left, -6, 167, "N/A", _fonts.standard);
+		draw_text(AL_Left, -6, 200, "N/A", _fonts.standard);
+		glColor4f(1, 1, 1, 1.0);
+	} else {
+		for(i = 0; i < global.plr.lifes; i++)
+			draw_texture(16*i,167, "star");
 
-	for(i = 0; i < global.plr.bombs; i++)
-	  draw_texture(16*i,200, "star");
+		for(i = 0; i < global.plr.bombs; i++)
+			draw_texture(16*i,200, "star");
+	}
 
 	sprintf(buf, "%.2f", global.plr.power / 100.0);
 	draw_text(AL_Center, 10, 236, buf, _fonts.standard);
@@ -699,6 +706,11 @@ void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event,
 		}
 
 		printf("Random seed: %u\n", seed);
+
+		if(info->type == STAGE_SPELL) {
+			global.plr.lifes = 1;
+			global.plr.bombs = 0;
+		}
 	} else {
 		if(!global.replay_stage) {
 			errx(-1, "Attemped to replay a NULL stage");

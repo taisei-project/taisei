@@ -39,15 +39,23 @@ void create_gameover_menu(MenuData *m) {
 
 	m->flags = MF_Transient | MF_AlwaysProcessInput;
 	m->transition = NULL;
-	m->context = "Game Over";
 
-	char s[64];
-	int c = MAX_CONTINUES - global.plr.continues;
-	snprintf(s, sizeof(s), "Continue (%i)", c);
-	add_menu_entry(m, s, c? continue_game : NULL, NULL);
-	add_menu_entry(m, "Restart the Game", restart_game, NULL)->transition = TransFadeBlack;
-	add_menu_entry(m, c? "Give up" : "Return to Title", give_up, NULL)->transition = TransFadeBlack;
+	if(global.stage->type == STAGE_SPELL) {
+		m->context = "Spell Failed";
 
-	if(!c)
-		m->cursor = 1;
+		add_menu_entry(m, "Retry", restart_game, NULL)->transition = TransFadeBlack;
+		add_menu_entry(m, "Give up", give_up, NULL)->transition = TransFadeBlack;
+	} else {
+		m->context = "Game Over";
+
+		char s[64];
+		int c = MAX_CONTINUES - global.plr.continues;
+		snprintf(s, sizeof(s), "Continue (%i)", c);
+		add_menu_entry(m, s, c? continue_game : NULL, NULL);
+		add_menu_entry(m, "Restart the Game", restart_game, NULL)->transition = TransFadeBlack;
+		add_menu_entry(m, c? "Give up" : "Return to Title", give_up, NULL)->transition = TransFadeBlack;
+
+		if(!c)
+			m->cursor = 1;
+	}
 }
