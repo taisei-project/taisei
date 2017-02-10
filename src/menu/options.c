@@ -287,6 +287,12 @@ int bind_noshader_set(void *b, int v) {
 	return i;
 }
 
+int bind_vsync_set(void *b, int v) {
+	int i = bind_common_onoffset(b, v);
+	video_update_vsync();
+	return i;
+}
+
 int bind_stagebg_fpslimit_dependence(void) {
 	return tconfig.intval[NO_STAGEBG] == 2;
 }
@@ -353,7 +359,7 @@ void options_sub_video(void *arg) {
 	
 	create_options_sub(m, "Video Options");
 	
-	add_menu_entry(m, "Video mode", do_nothing, 
+	add_menu_entry(m, "Resolution", do_nothing, 
 		b = bind_resolution()
 	);
 	
@@ -361,12 +367,16 @@ void options_sub_video(void *arg) {
 		b = bind_option(FULLSCREEN, bind_common_onoffget, bind_fullscreen_set)
 	);	bind_onoff(b);
 	
+	add_menu_entry(m, "Vertical synchronization", do_nothing,
+		b = bind_option(VSYNC, bind_common_onoffget, bind_vsync_set)
+	); bind_onoff(b);
+
+	add_menu_separator(m);
+
 	add_menu_entry(m, "Shaders", do_nothing, 
 		b = bind_option(NO_SHADER, bind_common_onoffget_inverted,
 								   bind_noshader_set)
 	);	bind_onoff(b);
-	
-	add_menu_separator(m);
 	
 	add_menu_entry(m, "Stage background", do_nothing, 
 		b = bind_option(NO_STAGEBG, bind_common_intget,

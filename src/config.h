@@ -75,7 +75,9 @@ typedef enum ConfigKey {
 	GP_SHOT,
 	GP_BOMB,
 	GP_SKIP,
-	GP_PAUSE
+	GP_PAUSE,
+
+	VSYNC,
 } ConfigKey;
 
 typedef enum ConfigKeyType {
