@@ -100,7 +100,7 @@ if(RELATIVE)
 endif()
 
 if(TAISEI_DEBUG)
-	add_definitions(-DDEBUG)
+	add_definitions(-DDEBUG -ggdb)
 	if(TAISEI_IDDQD)
 		add_definitions(-DIDDQD)
 	endif()
@@ -146,8 +146,29 @@ if(WIN32)
 	set(SRCs ${SRCs} taisei.rc)
 endif()
 
+if(TAISEI_WIN32_CONSOLE)
+	list(REMOVE_ITEM LIBs -mwindows)
+	add_definitions(-D__WINDOWS_CONSOLE__)
+endif()
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${SDL2_INCLUDE_DIR} ${ALUT_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${PNG_INCLUDE_DIR})
-add_executable(taisei WIN32 ${SRCs})
+
+unset(POSIX CACHE)
+check_symbol_exists(_POSIX_VERSION "unistd.h" POSIX)
+
+if(POSIX)
+	add_definitions(-D__POSIX__)
+endif()
+
+if (CMAKE_GENERATOR STREQUAL "Ninja" AND
+    ((CMAKE_C_COMPILER_ID STREQUAL "GNU" AND NOT CMAKE_C_COMPILER_VERSION VERSION_LESS 4.9) OR
+     (CMAKE_C_COMPILER_ID STREQUAL "Clang" AND NOT CMAKE_C_COMPILER_VERSION VERSION_LESS 3.5)))
+    # Force colored warnings in Ninja's output, if the compiler has -fdiagnostics-color support.
+    # Rationale in https://github.com/ninja-build/ninja/issues/814
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fdiagnostics-color=always")
+endif()
+
+add_executable(taisei ${SRCs})
 target_link_libraries(taisei ${LIBs})
 
 if(RELATIVE)

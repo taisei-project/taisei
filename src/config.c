@@ -62,6 +62,8 @@ ConfigEntry configdefs[] = {
 	{CFGT_INT,					GP_SKIP,				"gamepad_key_skip"},
 	{CFGT_INT,					GP_PAUSE,				"gamepad_key_pause"},
 	
+	{CFGT_INT,					VSYNC,					"vsync"},
+
 	{0, 0, 0}
 };
 
@@ -129,6 +131,8 @@ void config_preset(void) {
 	tconfig.intval[GP_BOMB]  = 2;
 	tconfig.intval[GP_SKIP]  = 3;
 	tconfig.intval[GP_PAUSE] = 4;
+
+	tconfig.intval[VSYNC] = 1;
 }
 
 int config_scan2key(int scan) {

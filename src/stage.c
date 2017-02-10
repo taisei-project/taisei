@@ -5,7 +5,10 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
+#include <complex.h>
+
 #include "stage.h"
+#include "tscomplex.h"
 
 #include <time.h>
 #include "global.h"
@@ -76,10 +79,10 @@ void stage_input_event(EventType type, int key, void *arg) {
 		case E_PlrKeyDown:
 			if(global.dialog && (key == KEY_SHOT || key == KEY_BOMB)) {
 				page_dialog(&global.dialog);
-				replay_event(&global.replay, EV_PRESS, key);
+				replay_stage_event(global.replay_stage, global.frames, EV_PRESS, key);
 			} else {
 				player_event(&global.plr, EV_PRESS, key);
-				replay_event(&global.replay, EV_PRESS, key);
+				replay_stage_event(global.replay_stage, global.frames, EV_PRESS, key);
 				
 				if(key == KEY_SKIP && global.dialog) {
 					global.dialog->skip = True;
@@ -89,7 +92,7 @@ void stage_input_event(EventType type, int key, void *arg) {
 		
 		case E_PlrKeyUp:
 			player_event(&global.plr, EV_RELEASE, key);
-			replay_event(&global.replay, EV_RELEASE, key);
+			replay_stage_event(global.replay_stage, global.frames, EV_RELEASE, key);
 			
 			if(key == KEY_SKIP && global.dialog)
 				global.dialog->skip = False;
@@ -101,12 +104,12 @@ void stage_input_event(EventType type, int key, void *arg) {
 		
 		case E_PlrAxisLR:
 			player_event(&global.plr, EV_AXIS_LR, key);
-			replay_event(&global.replay, EV_AXIS_LR, key);
+			replay_stage_event(global.replay_stage, global.frames, EV_AXIS_LR, key);
 			break;
 		
 		case E_PlrAxisUD:
 			player_event(&global.plr, EV_AXIS_UD, key);
-			replay_event(&global.replay, EV_AXIS_UD, key);
+			replay_stage_event(global.replay_stage, global.frames, EV_AXIS_UD, key);
 			break;
 		
 		default: break;
@@ -119,12 +122,12 @@ void stage_replay_event(EventType type, int state, void *arg) {
 }
 
 void replay_input(void) {
-	ReplayStage *s = global.replay.current;
+	ReplayStage *s = global.replay_stage;
 	int i;
 	
 	handle_events(stage_replay_event, EF_Game, NULL);
 	
-	for(i = s->playpos; i < s->ecount; ++i) {
+	for(i = s->playpos; i < s->numevents; ++i) {
 		ReplayEvent *e = &(s->events[i]);
 		
 		if(e->frame != global.frames)
@@ -136,12 +139,14 @@ void replay_input(void) {
 				break;
 			
 			default:
-				if(global.dialog && e->type == EV_PRESS && (e->key == KEY_SHOT || e->key == KEY_BOMB))
+				if(global.dialog && e->type == EV_PRESS && (e->value == KEY_SHOT || e->value == KEY_BOMB))
 					page_dialog(&global.dialog);
-				else if(global.dialog && e->key == KEY_SKIP)
+				else if(global.dialog && (e->type == EV_PRESS || e->type == EV_RELEASE) && e->value == KEY_SKIP)
 					global.dialog->skip = (e->type == EV_PRESS);
+				else if(e->type == EV_CHECK_DESYNC)
+					s->desync_check = e->value;
 				else
-					player_event(&global.plr, e->type, e->key);
+					player_event(&global.plr, e->type, (int16_t)e->value);
 				break;
 		}
 	}
@@ -156,7 +161,7 @@ void stage_input(void) {
 	// workaround
 	if(global.dialog && global.dialog->skip && !gamekeypressed(KEY_SKIP)) {
 		global.dialog->skip = False;
-		replay_event(&global.replay, EV_RELEASE, KEY_SKIP);
+		replay_stage_event(global.replay_stage, global.frames, EV_RELEASE, KEY_SKIP);
 	}
 	
 	player_applymovement(&global.plr);
@@ -198,7 +203,7 @@ void draw_hud(void) {
 	for(i = 0; i < global.plr.bombs; i++)
 	  draw_texture(16*i,200, "star");
 	
-	sprintf(buf, "%.2f", global.plr.power);
+	sprintf(buf, "%.2f", global.plr.power / 100.0);
 	draw_text(AL_Center, 10, 236, buf, _fonts.standard);
 	
 	sprintf(buf, "%i", global.plr.graze);
@@ -221,6 +226,7 @@ void draw_hud(void) {
 }
 
 void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int time) {
+
 	if(!tconfig.intval[NO_SHADER]) {
 		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[0].fbo);
 		glViewport(0,0,SCREEN_W,SCREEN_H);
@@ -277,29 +283,21 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	
 	player_draw(&global.plr);
 
-	draw_items();		
+	draw_items();
 	draw_projectiles(global.projs);
-	
-	
+
 	draw_projectiles(global.particles);
 	draw_enemies(global.enemies);
 	draw_lasers();
-			
+
 	if(global.boss)
 		draw_boss(global.boss);
 
-	// BGM handling
-	if(global.dialog && global.dialog->messages[global.dialog->pos].side == BGM)
-	{
-		start_bgm(global.dialog->messages[global.dialog->pos].msg);
-		page_dialog(&global.dialog);
-	}
-	
 	if(global.dialog)
 		draw_dialog(global.dialog);
 	
 	draw_stage_title(info);
-	
+
 	if(!tconfig.intval[NO_SHADER]) {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		video_set_viewport();
@@ -426,11 +424,23 @@ void stage_logic(int time) {
 	if(!global.dialog && !global.boss)
 		global.timer++;
 	
-	if(global.timer == time - FADE_TIME || global.replaymode == REPLAY_PLAY && global.frames == global.replay.current->events[global.replay.current->ecount-1].frame - FADE_TIME)
+	if(global.timer == time - FADE_TIME ||
+		  (
+			global.replaymode == REPLAY_PLAY &&
+			global.frames == global.replay_stage->events[global.replay_stage->numevents-1].frame - FADE_TIME
+		  )
+		) {
 		set_transition(TransFadeBlack, FADE_TIME, FADE_TIME*2);
+	}
 	
 	if(global.timer >= time)
 		global.game_over = GAMEOVER_WIN;
+
+	// BGM handling
+	if(global.dialog && global.dialog->messages[global.dialog->pos].side == BGM) {
+		start_bgm(global.dialog->messages[global.dialog->pos].msg);
+		page_dialog(&global.dialog);
+	}
 }
 
 void stage_end(void) {
@@ -459,40 +469,54 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		return;
 	}
 	
-	int seed = time(0);
+	uint32_t seed = (uint32_t)time(0);
 	tsrand_switch(&global.rand_game);
 	tsrand_seed_p(&global.rand_game, seed);
 	stage_start();
 	
 	if(global.replaymode == REPLAY_RECORD) {
-		if(global.replay.active)
-			replay_init_stage(&global.replay, info, seed, &global.plr);
-		printf("Random seed: %d\n", seed);
+		if(tconfig.intval[SAVE_RPY]) {
+			global.replay_stage = replay_create_stage(&global.replay, info, seed, global.diff, global.points, &global.plr);
+		} else {
+			global.replay_stage = NULL;
+		}
+
+		printf("Random seed: %u\n", seed);
+
+		// match replay format
+		uint16_t px = floor(creal(global.plr.pos));
+		uint16_t py = floor(cimag(global.plr.pos));
+		global.plr.pos = px + I * py;
 	} else {
-		ReplayStage *stg = global.replay.current;
-		printf("REPLAY_PLAY mode: %d events, stage: \"%s\"\n", stg->ecount, stage_get(stg->stage)->title);
+		if(!global.replay_stage) {
+			errx(-1, "Attemped to replay a NULL stage");
+			return;
+		}
+
+		ReplayStage *stg = global.replay_stage;
+		printf("REPLAY_PLAY mode: %d events, stage: \"%s\"\n", stg->numevents, stage_get(stg->stage)->title);
 		
 		tsrand_seed_p(&global.rand_game, stg->seed);
-		printf("Random seed: %d\n", stg->seed);
+		printf("Random seed: %u\n", stg->seed);
 		
 		global.diff				= stg->diff;
 		global.points			= stg->points;
 		
 		global.plr.shot			= stg->plr_shot;
 		global.plr.cha			= stg->plr_char;
-		global.plr.pos			= stg->plr_pos;
+		global.plr.pos			= stg->plr_pos_x + I * stg->plr_pos_y;
 		global.plr.focus		= stg->plr_focus;
 		global.plr.fire			= stg->plr_fire;
 		global.plr.lifes		= stg->plr_lifes;
 		global.plr.bombs		= stg->plr_bombs;
 		global.plr.power		= stg->plr_power;
-		global.plr.moveflags	= stg->plr_mflags;
+		global.plr.moveflags	= stg->plr_moveflags;
 		
 		stg->playpos = 0;
 	}
 	
 	Enemy *e = global.plr.slaves, *tmp;
-	float power = global.plr.power;
+	short power = global.plr.power;
 	global.plr.power = -1;
 			
 	while(e != 0) {
@@ -510,30 +534,42 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	while(global.game_over <= 0) {
 		if(!global.boss && !global.dialog)
 			event();
+
 		((global.replaymode == REPLAY_PLAY)? replay_input : stage_input)();
+		replay_stage_check_desync(global.replay_stage, global.frames, (tsrand() ^ global.points) & 0xFFFF, global.replaymode);
+
 		stage_logic(endtime);
 		
+		if(global.frameskip && global.frames % global.frameskip) {
+			continue;
+		}
+
 		calc_fps(&global.fps);
 		
+		tsrand_lock(&global.rand_game);
 		tsrand_switch(&global.rand_visual);
 		stage_draw(info, draw, shaderrules, endtime);
+		tsrand_unlock(&global.rand_game);
 		tsrand_switch(&global.rand_game);
-				
+
 // 		print_state_checksum();
 		
 		SDL_GL_SwapWindow(video.window);
-		frame_rate(&global.lasttime);
+
+		if(global.replaymode == REPLAY_PLAY && gamekeypressed(KEY_SKIP)) {
+			global.lasttime = SDL_GetTicks();
+		} else {
+			frame_rate(&global.lasttime);
+		}
 	}
 	
 	if(global.replaymode == REPLAY_RECORD) {
-		replay_event(&global.replay, EV_OVER, 0);
+		replay_stage_event(global.replay_stage, global.frames, EV_OVER, 0);
 	}
 		
 	end();
 	stage_end();
 	tsrand_switch(&global.rand_visual);
-//	if(global.replaymode != REPLAY_PLAY)
-//		replay_destroy(&global.replay);
 }
 
 void draw_title(int t, StageInfo *info, Alignment al, int x, int y, const char *text, TTF_Font *font, Color *color) {

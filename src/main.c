@@ -48,17 +48,49 @@ void taisei_shutdown(void) {
 	printf("-- Good Bye.\n");
 }
 
-#ifdef __MINGW32__
+void init_log(void) {
+#if defined(__WINDOWS__) && !defined(__WINDOWS_CONSOLE__)
+	const char *pref = get_config_path();
+	char *s;
+
+	s = malloc(strlen(pref) + strlen("stdout.txt") + 2);
+	strcpy(s, pref);
+	strcat(s, "/stdout.txt");
+
+	freopen(s, "w", stdout);
+
+	strcpy(s, pref);
+	strcat(s, "/stderr.txt");
+
+	freopen(s, "w", stderr);
+#endif
+}
+
+int run_tests(void) {
+	if(tsrand_test()) {
+		return 1;
+	}
+
+	if(replay_test()) {
+		return 1;
+	}
+
+	return 0;
+}
+
+#ifndef __POSIX__
 	#define MKDIR(p) mkdir(p)
 #else
 	#define MKDIR(p) mkdir(p, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)
 #endif
 
 int main(int argc, char** argv) {
-	if(tsrand_test())
+	if(run_tests()) {
 		return 0;
-	
+	}
+
 	init_paths();
+	init_log();
 
 	printf("Content path: %s\n", get_prefix());
 	printf("Userdata path: %s\n", get_config_path());
@@ -75,7 +107,9 @@ int main(int argc, char** argv) {
 	printf("-- SDL_Init\n");
 	
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	
+
+	init_global();
+
 	video_init();
 	printf("-- SDL viewport\n");
 	
@@ -84,9 +118,9 @@ int main(int argc, char** argv) {
 	
 	draw_loading_screen();
 	
-	// Order DOES matter: init_global, then sfx/bgm, then load_resources.
-	init_global();
 	gamepad_init();
+
+	// Order DOES matter: init_global, then sfx/bgm, then load_resources.
 	init_sfx(&argc, argv);
 	init_bgm(&argc, argv);
 	load_resources();

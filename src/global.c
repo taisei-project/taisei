@@ -17,11 +17,22 @@
 
 Global global;
 
+int getenvint(const char *v) {
+	char *e = getenv(v);
+
+	if(e) {
+		return atoi(e);
+	}
+
+	return 0;
+}
+
 void init_global(void) {
 	memset(&global, 0, sizeof(global));	
-	
-	tsrand_seed_p(&global.rand_game, time(0));
-	tsrand_seed_p(&global.rand_visual, time(0));
+
+	tsrand_init(&global.rand_game, time(0));
+	tsrand_init(&global.rand_visual, time(0));
+
 	tsrand_switch(&global.rand_visual);
 	
 	memset(&resources, 0, sizeof(Resources));
@@ -31,6 +42,14 @@ void init_global(void) {
 	
 	memset(&global.replay, 0, sizeof(Replay));
 	global.replaymode = REPLAY_RECORD;
+
+	if(global.frameskip = getenvint("TAISEI_SANIC")) {
+		if(global.frameskip < 0) {
+			global.frameskip = INT_MAX;
+		}
+
+		warnx("FPS limiter disabled by environment. Gotta go fast! (frameskip = %i)", global.frameskip);
+	}
 }
 
 void print_state_checksum(void) {
@@ -54,6 +73,10 @@ void print_state_checksum(void) {
 }
 
 void frame_rate(int *lasttime) {
+	if(global.frameskip) {
+		return;
+	}
+
 	int t = *lasttime + 1000.0/FPS - SDL_GetTicks();
 	if(t > 0)
 		SDL_Delay(t);

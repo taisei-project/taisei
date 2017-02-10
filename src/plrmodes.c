@@ -172,13 +172,13 @@ int youmu_opposite_myon(Enemy *e, int t) {
 	if(plr->fire && !(global.frames % 6) && global.plr.deathtime >= -1) {
 		int a = 20;
 		
-		if(plr->power >= 3) {
+		if(plr->power >= 300) {
 			a = 13;
 			create_projectile1c("hghost", e->pos, NULL, linear, -21*cexp(I*(carg(-e->pos0)+0.1)))->type = PlrProj+45;
 			create_projectile1c("hghost", e->pos, NULL, linear, -21*cexp(I*(carg(-e->pos0)-0.1)))->type = PlrProj+45;
 		}
 		
-		create_projectile1c("hghost", e->pos, NULL, linear, -21*cexp(I*carg(-e->pos0)))->type = PlrProj+(60+a*(int)plr->power);
+		create_projectile1c("hghost", e->pos, NULL, linear, -21*cexp(I*carg(-e->pos0)))->type = PlrProj+(60+a*(plr->power/100));
 	}
 	
 	return 1;
@@ -237,10 +237,10 @@ void youmu_shot(Player *plr) {
 				if(ref == -1)
 					ref = add_ref(NULL);
 				
-				create_projectile2c("youhoming", plr->pos, NULL, youmu_homing, -3.0I, ref)->type = PlrProj+(450+225*((int)plr->power));
+				create_projectile2c("youhoming", plr->pos, NULL, youmu_homing, -3.0I, ref)->type = PlrProj+(450+225*(plr->power/100));
 			}
 			
-			if(!plr->focus && !(global.frames % (int)round(8-plr->power*1.3))) {												
+			if(!plr->focus && !(global.frames % (int)round(8 - (plr->power / 100.0) * 1.3))) {
 				create_projectile2c("hghost", plr->pos, NULL, accelerated, 2-10.0I, -0.4I)->type = PlrProj+27;
 				create_projectile2c("hghost", plr->pos, NULL, accelerated, -10.0I, -0.4I)->type = PlrProj+27;
 				create_projectile2c("hghost", plr->pos, NULL, accelerated, -2-10.0I, -0.4I)->type = PlrProj+27;
@@ -264,7 +264,7 @@ void youmu_bomb(Player *plr) {
 	}
 }
 
-void youmu_power(Player *plr, float npow) {
+void youmu_power(Player *plr, short npow) {
 	if(plr->shot == YoumuOpposite && plr->slaves == NULL)
 		create_enemy_p(&plr->slaves, 40.0I, ENEMY_IMMUNE, YoumuOppositeMyon, youmu_opposite_myon, 0, 0, 0, 0);
 }
@@ -498,10 +498,10 @@ void marisa_bomb(Player *plr) {
 	}
 }
 
-void marisa_power(Player *plr, float npow) {
+void marisa_power(Player *plr, short npow) {
 	Enemy *e = plr->slaves, *tmp;
 	
-	if((int)plr->power == (int)npow)
+	if(plr->power / 100 == npow / 100)
 		return;
 	
 	while(e != 0) {
@@ -510,38 +510,43 @@ void marisa_power(Player *plr, float npow) {
 		if(tmp->hp == ENEMY_IMMUNE)
 			delete_enemy(&plr->slaves, tmp);
 	}
-	
+
 	switch(plr->shot) {
 	case MarisaLaser:
-		if((int)npow == 1)
+		if(npow / 100 == 1) {
 			create_enemy_p(&plr->slaves, -40.0I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -40.0I, 5, 0, 0);
+		}
 		
-		if(npow >= 2) {
+		if(npow >= 200) {
 			create_enemy_p(&plr->slaves, 25-5.0I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, 8-40.0I, 5,    M_PI/30, 0);
 			create_enemy_p(&plr->slaves, -25-5.0I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -8-40.0I, 5, -M_PI/30, 0);
 		}
 		
-		if((int)npow == 3)
+		if(npow / 100 == 3) {
 			create_enemy_p(&plr->slaves, -30.0I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -50.0I, 5, 0, 0);
+		}
 		
-		if(npow >= 4) {
+		if(npow >= 400) {
 			create_enemy_p(&plr->slaves, 17-30.0I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, 4-45.0I, 5, 0, 0);
 			create_enemy_p(&plr->slaves, -17-30.0I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -4-45.0I, 5, 0, 0);
 		}
 		break;
 	case MarisaStar:
-		if((int)npow == 1)
+		if(npow / 100 == 1) {
 			create_enemy_p(&plr->slaves, 40.0I, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, +30.0I, -2.0I, -0.1I, 5);
+		}
 		
-		if(npow >= 2) {
+		if(npow >= 200) {
 			double side = npow == 4? 0 : 0.3;
 			create_enemy_p(&plr->slaves, 30.0I+15, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, +30.0I+10, -side-2.0I, -0.1I, 5);
 			create_enemy_p(&plr->slaves, 30.0I-15, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, +30.0I-10, side-2.0I, -0.1I, 5);
 		}
 		
-		if((int)npow == 3)
+		if(npow / 100 == 3) {
 			create_enemy_p(&plr->slaves, -30.0I, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, +30.0I, -2.0I, -0.1I, 5);
-		if(npow >= 4) {
+		}
+
+		if(npow >= 400) {
 			create_enemy_p(&plr->slaves, 30, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, 25+30.0I, -0.5-2.0I, -0.1I, 5);
 			create_enemy_p(&plr->slaves, -30, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -25+30.0I, 0.5-2.0I, -0.1I, 5);
 		}

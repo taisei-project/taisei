@@ -61,7 +61,7 @@ Vector **stage1_bg_pos(Vector p, float maxrange) {
 }
 
 void stage1_smoke_draw(Vector pos) {
-	float d = abs(pos[1]-bgcontext.cx[1]);
+	float d = fabsf(pos[1]-bgcontext.cx[1]);
 	
 	glDisable(GL_DEPTH_TEST);
 	glPushMatrix();

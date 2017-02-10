@@ -60,6 +60,18 @@ void video_set_viewport(void) {
 	glViewport((video.current.width - w) / 2, (video.current.height - h) / 2, (int)w, (int)h);
 }
 
+void video_update_vsync(void) {
+	if(global.frameskip || !tconfig.intval[VSYNC]) {
+		SDL_GL_SetSwapInterval(0);
+	} else {
+		if(SDL_GL_SetSwapInterval(-1) < 0) {
+			if(SDL_GL_SetSwapInterval(1) < 0) {
+				warnx("Couldn't enable vsync: %s", SDL_GetError());
+			}
+		}
+	}
+}
+
 static void _video_setmode(int w, int h, int fs, int fallback) {
 	Uint32 flags = SDL_WINDOW_OPENGL;
 
@@ -93,6 +105,7 @@ static void _video_setmode(int w, int h, int fs, int fallback) {
 			return;
 		}
 
+		video_update_vsync();
 		SDL_GL_GetDrawableSize(video.window, &video.current.width, &video.current.height);
 		video_set_viewport();
 		return;

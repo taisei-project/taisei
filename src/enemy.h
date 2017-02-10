@@ -7,7 +7,7 @@
 
 #ifndef ENEMY_H
 #define ENEMY_H
-#include <complex.h>
+#include "tscomplex.h"
 #include "projectile.h"
 
 #undef complex

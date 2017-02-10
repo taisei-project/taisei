@@ -9,6 +9,9 @@
 #define GLOBAL_H
 
 #include <SDL.h>
+#include <SDL_platform.h>
+
+#include "tscomplex.h"
 
 #include "resource/audio.h"
 #include "resource/bgm.h"
@@ -56,7 +59,7 @@ enum {
 	DEATHBOMB_TIME = 10,
 	DEATH_DELAY = 70,
 	
-	PLR_MAXPOWER = 4,
+	PLR_MAXPOWER = 400,
 	PLR_START_LIVES = 2,
 	PLR_START_BOMBS = 3,
 	MAX_CONTINUES = 3,
@@ -74,13 +77,6 @@ enum {
 	GAMEOVER_REWATCH,
 	GAMEOVER_RESTART
 };
-
-typedef enum {
-	D_Easy = 1,
-	D_Normal,
-	D_Hard,
-	D_Lunatic
-} Difficulty;
 
 typedef struct {
 	int fpstime;  // frame counter
@@ -103,6 +99,7 @@ typedef struct {
 	int frames;
 	int lasttime; // frame limiter
 	int timer;
+	int frameskip;
 	
 	Boss *boss;
 	Dialog *dialog;
@@ -117,7 +114,8 @@ typedef struct {
 	int nostagebg;
 	
 	Replay replay;
-	int replaymode;
+	ReplayMode replaymode;
+	ReplayStage *replay_stage;
 	
 	float shake_view;
 	
@@ -164,6 +162,9 @@ enum {
 	EV_OVER, // replay-only
 	EV_AXIS_LR,
 	EV_AXIS_UD,
+	EV_CHECK_DESYNC, // replay-only
 };
 
 #endif
+
+int getenvint(const char *v);

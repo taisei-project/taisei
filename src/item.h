@@ -9,7 +9,7 @@
 #ifndef ITEM_H
 #define ITEM_H
 
-#include <complex.h>
+#include "tscomplex.h"
 
 typedef struct Item Item;
 

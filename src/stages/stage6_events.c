@@ -123,13 +123,21 @@ void ScaleFade(Projectile *p, int t) {
 	glPopMatrix();
 }
 
+void scythe_common(Enemy *e, int t) {
+	e->args[1] += cimag(e->args[1]);
+}
+
 int scythe_mid(Enemy *e, int t) {
 	complex n;
 	
-	if(t < 0)
+	if(t < 0) {
+		scythe_common(e, t);
 		return 1;
-	if(t > 300)
+	}
+
+	if(t > 300) {
 		return ACTION_DESTROY;
+	}
 		
 	e->pos += (6-global.diff-0.005I*t)*e->args[0];
 	
@@ -139,6 +147,7 @@ int scythe_mid(Enemy *e, int t) {
 	if(global.diff > D_Normal && t&1)
 		create_projectile2c("ball", e->pos + 80*n, rgb(0, 0.2, 0.5), accelerated, n, 0.01*global.diff*cexp(I*carg(global.plr.pos - e->pos - 80*n)))->draw=ProjDrawAdd;
 	
+	scythe_common(e, t);
 	return 1;
 }
 
@@ -146,14 +155,15 @@ void Scythe(Enemy *e, int t) {
 	Projectile *p = create_projectile_p(&global.particles, get_tex("stage6/scythe"), e->pos, NULL, ScaleFade, timeout, 8, e->args[2], 0, 0);
 	p->type = Particle;
 	p->angle = creal(e->args[1]);
-	e->args[1] += cimag(e->args[1]);
-	
+
 	create_particle2c("flare", e->pos+100*creal(e->args[2])*frand()*cexp(2.0I*M_PI*frand()), rgb(1,1,0.6), GrowFadeAdd, timeout_linear, 60, -I+1);
 }
 
 int scythe_intro(Enemy *e, int t) {
-	if(t < 0)
+	if(t < 0) {
+		scythe_common(e, t);
 		return 0;
+	}
 	
 	TIMER(&t);
 	
@@ -164,7 +174,8 @@ int scythe_intro(Enemy *e, int t) {
 		e->args[1] -= 0.00333333I;
 		e->args[2] -= 0.007;
 	}
-			
+
+	scythe_common(e, t);
 	return 1;
 }
 
@@ -181,8 +192,10 @@ void elly_intro(Boss *b, int t) {
 }
 
 int scythe_infinity(Enemy *e, int t) {
-	if(t < 0)
+	if(t < 0) {
+		scythe_common(e, t);
 		return 1;
+	}
 	
 	TIMER(&t);
 	FROM_TO(0, 40, 1) {
@@ -197,13 +210,16 @@ int scythe_infinity(Enemy *e, int t) {
 		
 		create_projectile2c("ball", e->pos+80*cexp(I*creal(e->args[1])), rgb(cos(creal(e->args[1])), sin(creal(e->args[1])), cos(creal(e->args[1])+2.1)), asymptotic, (1+0.2*global.diff)*cexp(I*creal(e->args[1])), 3);
 	}
-	
+
+	scythe_common(e, t);
 	return 1;
 }
 
 int scythe_reset(Enemy *e, int t) {
-	if(t < 0)
+	if(t < 0) {
+		scythe_common(e, t);
 		return 1;
+	}
 	
 	if(t == 1)
 		e->args[1] = fmod(creal(e->args[1]), 2*M_PI) + I*cimag(e->args[1]);
@@ -212,6 +228,8 @@ int scythe_reset(Enemy *e, int t) {
 	e->args[2] = max(0.6, creal(e->args[2])-0.01*t);
 	e->args[1] += (0.19-creal(e->args[1]))*0.05;
 	e->args[1] = creal(e->args[1]) + I*0.9*cimag(e->args[1]);
+
+	scythe_common(e, t);
 	return 1;
 }
 
@@ -231,8 +249,10 @@ void elly_frequency(Boss *b, int t) {
 }
 
 int scythe_newton(Enemy *e, int t) {
-	if(t < 0)
+	if(t < 0) {
+		scythe_common(e, t);
 		return 1;
+	}
 	
 	TIMER(&t);
 	
@@ -264,6 +284,7 @@ int scythe_newton(Enemy *e, int t) {
 		create_projectile1c("rice", e->pos, rgb(0.3, 1, 0.8), linear, I);
 	}
 	
+	scythe_common(e, t);
 	return 1;
 }
 
@@ -431,8 +452,10 @@ int baryon_center(Enemy *e, int t) {
 }
 
 int scythe_explode(Enemy *e, int t) {
-	if(t < 0)
+	if(t < 0) {
+		scythe_common(e, t);
 		return 0;
+	}
 	
 	if(t < 50) {
 		e->args[1] += 0.001I*t;
@@ -445,8 +468,12 @@ int scythe_explode(Enemy *e, int t) {
 	if(t == 100) {
 		petal_explosion(100, e->pos);
 		global.shake_view = 16;
+
+		scythe_common(e, t);
 		return ACTION_DESTROY;
 	}
+
+	scythe_common(e, t);
 	return 1;
 }
 
@@ -802,10 +829,15 @@ int theory_proj(Projectile *p, int t) {
 int scythe_theory(Enemy *e, int t) {
 	complex n;
 	
-	if(t < 0)
+	if(t < 0) {
+		scythe_common(e, t);
 		return 1;
-	if(t > 300)
+	}
+
+	if(t > 300) {
+		scythe_common(e, t);
 		return ACTION_DESTROY;
+	}
 		
 	e->pos += (3-0.01I*t)*e->args[0];
 	
@@ -815,7 +847,7 @@ int scythe_theory(Enemy *e, int t) {
 	FROM_TO(0, 300, 4)
 		create_projectile2c("ball", e->pos + 80*n, rgb(carg(n), 1-carg(n), 1/carg(n)), wait_proj, (0.6+0.3*global.diff)*cexp(0.6I)*n, 100)->draw=ProjDrawAdd;
 	
-			
+	scythe_common(e, t);
 	return 1;
 }
 

@@ -8,8 +8,10 @@
 #ifndef PROJECTILE
 #define PROJECTILE
 
-#include <complex.h>
+#include "tscomplex.h"
 #include "resource/texture.h"
+
+#include <complex.h>
 
 enum {
 	RULE_ARGC = 4

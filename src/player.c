@@ -38,7 +38,7 @@ Animation *player_get_ani(Character cha) {
 	return ani;
 }
 
-void player_set_power(Player *plr, float npow) {
+void player_set_power(Player *plr, short npow) {
 	switch(plr->cha) {
 		case Youmu:
 			youmu_power(plr, npow);
@@ -378,15 +378,15 @@ void player_input_workaround(Player *plr) {
 		
 		if(!shot && plr->fire) {
 			player_event(plr, EV_RELEASE, KEY_SHOT);
-			replay_event(&global.replay, EV_RELEASE, KEY_SHOT);
+			replay_stage_event(global.replay_stage, global.frames, EV_RELEASE, KEY_SHOT);
 		} else if(shot && !plr->fire) {
 			player_event(plr, EV_PRESS, KEY_SHOT);
-			replay_event(&global.replay, EV_PRESS, KEY_SHOT);
+			replay_stage_event(global.replay_stage, global.frames, EV_PRESS, KEY_SHOT);
 		}
 		
 		if(!focus && plr->focus > 0) {
 			player_event(plr, EV_RELEASE, KEY_FOCUS);
-			replay_event(&global.replay, EV_RELEASE, KEY_FOCUS);
+			replay_stage_event(global.replay_stage, global.frames, EV_RELEASE, KEY_FOCUS);
 		}
 	}
 }
