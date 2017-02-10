@@ -86,6 +86,16 @@ static void _video_setmode(int w, int h, int fs, int fallback) {
 			SDL_GL_MakeCurrent(video.window, video.glcontext);
 		} else {
 			video.glcontext = SDL_GL_CreateContext(video.window);
+
+			if(global.frameskip || getenvint("TAISEI_NO_VSYNC")) {
+				SDL_GL_SetSwapInterval(0);
+			} else {
+				if(SDL_GL_SetSwapInterval(-1) < 0) {
+					if(SDL_GL_SetSwapInterval(1) < 0) {
+						warnx("Couldn't enable vsync: %s", SDL_GetError());
+					}
+				}
+			}
 		}
 
 		if(!video.glcontext) {

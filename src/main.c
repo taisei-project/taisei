@@ -107,7 +107,9 @@ int main(int argc, char** argv) {
 	printf("-- SDL_Init\n");
 	
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	
+
+	init_global();
+
 	video_init();
 	printf("-- SDL viewport\n");
 	
@@ -116,9 +118,9 @@ int main(int argc, char** argv) {
 	
 	draw_loading_screen();
 	
-	// Order DOES matter: init_global, then sfx/bgm, then load_resources.
-	init_global();
 	gamepad_init();
+
+	// Order DOES matter: init_global, then sfx/bgm, then load_resources.
 	init_sfx(&argc, argv);
 	init_bgm(&argc, argv);
 	load_resources();
