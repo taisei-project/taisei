@@ -13,6 +13,17 @@
 
 static Stage3D bgcontext;
 
+void cirno_perfect_freeze(Boss*, int);
+void cirno_crystal_rain(Boss*, int);
+void cirno_icicle_fall(Boss*, int);
+void cirno_pfreeze_bg(Boss*, int);
+
+AttackInfo stage1_spells[] = {
+	{AT_Spellcard, "Freeze Sign ~ Perfect Freeze", 32, 20000, cirno_perfect_freeze, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0I},
+	{AT_Spellcard, "Freeze Sign ~ Crystal Rain", 28, 28000, cirno_crystal_rain, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0I},
+	{AT_Spellcard, "Doom Sign ~ Icicle Fall", 35, 40000, cirno_icicle_fall, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0I},
+};
+
 Dialog *stage1_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/cirno");
 
@@ -210,7 +221,7 @@ Boss *create_cirno_mid(void) {
 	Boss* cirno = create_boss("Cirno", "cirno", VIEWPORT_W + 220 + 30.0I);
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro, NULL);
 	boss_add_attack(cirno, AT_Normal, "Icy Storm", 20, 20000, cirno_icy, NULL);
-	boss_add_attack(cirno, AT_Spellcard, "Freeze Sign ~ Perfect Freeze", 32, 20000, cirno_perfect_freeze, cirno_pfreeze_bg);
+	boss_add_attack_from_info(cirno, stage1_spells+0, false);
 
 	start_attack(cirno, cirno->attacks);
 	return cirno;
@@ -350,9 +361,9 @@ Boss *create_cirno(void) {
 	Boss* cirno = create_boss("Cirno", "cirno", -230 + 100.0I);
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro_boss, NULL);
 	boss_add_attack(cirno, AT_Normal, "Iceplosion 0", 20, 20000, cirno_iceplosion0, NULL);
-	boss_add_attack(cirno, AT_Spellcard, "Freeze Sign ~ Crystal Rain", 28, 28000, cirno_crystal_rain, cirno_pfreeze_bg);
+	boss_add_attack_from_info(cirno, stage1_spells+1, false);
 	boss_add_attack(cirno, AT_Normal, "Iceplosion 1", 20, 20000, cirno_iceplosion1, NULL);
-	boss_add_attack(cirno, AT_Spellcard, "Doom Sign ~ Icicle Fall", 35, 40000, cirno_icicle_fall, cirno_pfreeze_bg);
+	boss_add_attack_from_info(cirno, stage1_spells+2, false);
 
 	start_attack(cirno, cirno->attacks);
 	return cirno;
@@ -676,5 +687,21 @@ void stage1_end(void) {
 
 void stage1_loop(void) {
 	ShaderRule list[] = { stage1_fog, NULL };
-	stage_loop(stage_get(1), stage1_start, stage1_end, stage1_draw, stage1_events, list, 5200);
+	stage_loop(stage1_start, stage1_end, stage1_draw, stage1_events, list, 5200);
+}
+
+void stage1_spellpractice_events(void) {
+	TIMER(&global.timer);
+
+	AT(0) {
+		Boss* cirno = create_boss("Cirno", "cirno", BOSS_DEFAULT_SPAWN_POS);
+		boss_add_attack_from_info(cirno, global.stage->spell, true);
+		start_attack(cirno, cirno->attacks);
+		global.boss = cirno;
+	}
+}
+
+void stage1_spellpractice_loop(void) {
+	ShaderRule list[] = { stage1_fog, NULL };
+	stage_loop(stage1_start, stage1_end, stage1_draw, stage1_spellpractice_events, list, 0);
 }

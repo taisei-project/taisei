@@ -161,5 +161,23 @@ void stage2_draw(void) {
 
 void stage2_loop(void) {
 	ShaderRule shaderrules[] = { stage2_fog, stage2_bloom, NULL };
-	stage_loop(stage_get(2), stage2_start, stage2_end, stage2_draw, stage2_events, shaderrules, 5240);
+	stage_loop(stage2_start, stage2_end, stage2_draw, stage2_events, shaderrules, 5240);
+}
+
+void stage2_spellpractice_events(void) {
+	TIMER(&global.timer);
+
+	AT(0) {
+		skip_background_anim(&bgcontext, stage2_draw, 180, &global.frames, NULL);
+
+		Boss* hina = create_boss("Kagiyama Hina", "hina", BOSS_DEFAULT_SPAWN_POS);
+		boss_add_attack_from_info(hina, global.stage->spell, true);
+		start_attack(hina, hina->attacks);
+		global.boss = hina;
+	}
+}
+
+void stage2_spellpractice_loop(void) {
+	ShaderRule shaderrules[] = { stage2_fog, stage2_bloom, NULL };
+	stage_loop(stage2_start, stage2_end, stage2_draw, stage2_spellpractice_events, shaderrules, 0);
 }

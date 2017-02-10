@@ -130,5 +130,20 @@ void stage5_end(void) {
 }
 
 void stage5_loop(void) {
-	stage_loop(stage_get(5), stage5_start, stage5_end, stage5_draw, stage5_events, NULL, 5700);
+	stage_loop(stage5_start, stage5_end, stage5_draw, stage5_events, NULL, 5700);
+}
+
+void stage5_spellpractice_events(void) {
+	TIMER(&global.timer);
+
+	AT(0) {
+		skip_background_anim(&bgcontext, stage5_draw, 5300, &global.timer, NULL);
+		global.boss = create_boss("Nagae Iku", "iku", BOSS_DEFAULT_SPAWN_POS);
+		boss_add_attack_from_info(global.boss, global.stage->spell, true);
+		start_attack(global.boss, global.boss->attacks);
+	}
+}
+
+void stage5_spellpractice_loop(void) {
+	stage_loop(stage5_start, stage5_end, stage5_draw, stage5_spellpractice_events, NULL, 5700);
 }

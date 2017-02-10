@@ -32,6 +32,9 @@ struct Stage3D {
 	Vector crot;
 
 	float projangle;
+
+	// hack to quickly skip through stage animations up to a specific frame
+	char nodraw;
 };
 
 void init_stage3d(Stage3D *s);
@@ -47,4 +50,7 @@ void free_stage3d(Stage3D *s);
 Vector **linear3dpos(Vector q, float maxrange, Vector p, Vector r);
 
 Vector **single3dpos(Vector q, float maxrange, Vector p);
+
+void skip_background_anim(Stage3D *s3d, void (*drawfunc)(void), int frames, int *timer, int *timer2);
+
 #endif

@@ -7,10 +7,11 @@
 
 #include "boss.h"
 #include "global.h"
+#include "stage.h"
 #include <string.h>
 #include <stdio.h>
 
-Boss *create_boss(char *name, char *ani, complex pos) {
+Boss* create_boss(char *name, char *ani, complex pos) {
 	Boss *buf = malloc(sizeof(Boss));
 	memset(buf, 0, sizeof(Boss));
 
@@ -190,7 +191,7 @@ void start_attack(Boss *b, Attack *a) {
 	delete_lasers();
 }
 
-Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule) {
+Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule) {
 	boss->attacks = realloc(boss->attacks, sizeof(Attack)*(++boss->acount));
 	Attack *a = &boss->attacks[boss->acount-1];
 
@@ -211,5 +212,21 @@ Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 
 	a->starttime = global.frames;
 
+	return a;
+}
+
+void boss_generic_move(Boss *b, int time) {
+	if(b->current->info->pos_dest != BOSS_NOMOVE) {
+		GO_TO(b, b->current->info->pos_dest, 0.1)
+	}
+}
+
+Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move) {
+	if(move) {
+		boss_add_attack(boss, AT_Move, "Generic Move", 1, 0, boss_generic_move, NULL)->info = info;
+	}
+
+	Attack *a = boss_add_attack(boss, info->type, info->name, info->timeout, info->hp, info->rule, info->draw_rule);
+	a->info = info;
 	return a;
 }

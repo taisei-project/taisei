@@ -18,13 +18,16 @@
  */
 
 #include <stdbool.h>
-#include <projectile.h>
+#include "projectile.h"
+#include "boss.h"
 
 typedef enum {
-	D_Easy = 1,
+	D_Any = 0,
+	D_Easy,
 	D_Normal,
 	D_Hard,
-	D_Lunatic
+	D_Lunatic,
+	D_Extra // reserved for later
 } Difficulty;
 
 #define TIMER(ptr) int *__timep = ptr; int _i = 0, _ni = 0;  _i = _ni = _i;
@@ -40,35 +43,48 @@ typedef enum {
 typedef void (*StageRule)(void);
 typedef void (*ShaderRule)(int);
 
+// highest bit of uint16_t, WAY higher than the amount of spells in this game can ever possibly be
+#define STAGE_SPELL_BIT 0x8000
+
+typedef enum StageType {
+	STAGE_STORY = 1,
+	STAGE_EXTRA,
+	STAGE_SPELL,
+} StageType;
+
 typedef struct StageInfo {
-	int id;
+	uint16_t id; // must match type of ReplayStage.stage in replay.h
 	StageRule loop;
-	bool hidden;
+	StageType type;
 	char *title;
 	char *subtitle;
 
 	Color titleclr;
 	Color bosstitleclr;
+
+	AttackInfo *spell;
+	Difficulty difficulty;
 } StageInfo;
 
 extern StageInfo stages[];
-StageInfo* stage_get(int);
+StageInfo* stage_get(uint16_t);
+void stage_init_array(void);
 
-void stage_loop(StageInfo *info, StageRule start, StageRule end, StageRule draw, StageRule event, ShaderRule *shaderrules, int endtime);
+void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event, ShaderRule *shaderrules, int endtime);
 
 void apply_bg_shaders(ShaderRule *shaderrules);
 
 void draw_stage_title(StageInfo *info);
 void draw_hud(void);
 
-void stage1_loop(void);
-void stage2_loop(void);
-void stage3_loop(void);
-void stage4_loop(void);
-void stage5_loop(void);
-void stage6_loop(void);
-
 void stage_pause(void);
 void stage_gameover(void);
+
+#include "stages/stage1.h"
+#include "stages/stage2.h"
+#include "stages/stage3.h"
+#include "stages/stage4.h"
+#include "stages/stage5.h"
+#include "stages/stage6.h"
 
 #endif

@@ -10,6 +10,17 @@
 #include "stage.h"
 #include "enemy.h"
 
+void hina_spell_bg(Boss*, int);
+void hina_amulet(Boss*, int);
+void hina_bad_pick(Boss*, int);
+void hina_wheel(Boss*, int);
+
+AttackInfo stage2_spells[] = {
+	{AT_Spellcard, "Shard ~ Amulet of Harm", 26, 25000, hina_amulet, hina_spell_bg, BOSS_DEFAULT_GO_POS},
+	{AT_Spellcard, "Lottery Sign ~ Bad Pick", 30, 36000, hina_bad_pick, hina_spell_bg, BOSS_DEFAULT_GO_POS},
+	{AT_Spellcard, "Lottery Sign ~ Wheel of Fortune", 20, 36000, hina_wheel, hina_spell_bg, BOSS_DEFAULT_GO_POS},
+};
+
 Dialog *stage2_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/hina");
 
@@ -396,10 +407,10 @@ Boss *create_hina(void) {
 	Boss* hina = create_boss("Kagiyama Hina", "hina", VIEWPORT_W + 150 + 100.0I);
 	boss_add_attack(hina, AT_Move, "Introduction", 2, 0, hina_intro, NULL);
 	boss_add_attack(hina, AT_Normal, "Cards1", 20, 15000, hina_cards1, NULL);
-	boss_add_attack(hina, AT_Spellcard, "Shard ~ Amulet of Harm", 26, 25000, hina_amulet, hina_spell_bg);
+	boss_add_attack_from_info(hina, stage2_spells+0, false);
 	boss_add_attack(hina, AT_Normal, "Cards2", 17, 15000, hina_cards2, NULL);
-	boss_add_attack(hina, AT_Spellcard, "Lottery Sign ~ Bad Pick", 30, 36000, hina_bad_pick, hina_spell_bg);
-	boss_add_attack(hina, AT_Spellcard, "Lottery Sign ~ Wheel of Fortune", 20, 36000, hina_wheel, hina_spell_bg);
+	boss_add_attack_from_info(hina, stage2_spells+1, false);
+	boss_add_attack_from_info(hina, stage2_spells+2, false);
 
 	start_attack(hina, hina->attacks);
 	return hina;

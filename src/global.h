@@ -98,6 +98,7 @@ typedef struct {
 	Projectile *particles;
 
 	int frames;
+	int stageuiframes;
 	int lasttime; // frame limiter
 	int timer;
 	int frameskip;
@@ -121,6 +122,8 @@ typedef struct {
 
 	RandomState rand_game;
 	RandomState rand_visual;
+
+	StageInfo *stage;
 } Global;
 
 extern Global global;
@@ -150,6 +153,7 @@ double approach(double v, double t, double d);
 double psin(double);
 bool strendswith(char *s, char *e);
 char* difficulty_name(Difficulty diff);
+void difficulty_color(Color *c, Difficulty diff);
 void stralloc(char **dest, const char *src);
 bool gamekeypressed(KeyIndex key);
 int getenvint(const char *v);

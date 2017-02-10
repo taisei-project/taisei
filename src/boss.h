@@ -22,6 +22,18 @@ typedef enum AttackType {
 	AT_SurvivalSpell
 } AttackType;
 
+typedef struct AttackInfo {
+	AttackType type;
+	char *name;
+	float timeout;
+	int hp;
+
+	BossRule rule;
+	BossRule draw_rule;
+
+	// complex pos_spawn;
+	complex pos_dest;
+} AttackInfo;
 
 typedef struct Attack {
 	char *name;
@@ -35,6 +47,8 @@ typedef struct Attack {
 
 	BossRule rule;
 	BossRule draw_rule;
+
+	AttackInfo *info; // NULL for attacks created directly through boss_add_attack
 } Attack;
 
 typedef struct Boss {
@@ -54,7 +68,7 @@ typedef struct Boss {
 	Color *zoomcolor;
 } Boss;
 
-Boss *create_boss(char *name, char *ani, complex pos);
+Boss* create_boss(char *name, char *ani, complex pos);
 void draw_boss(Boss *boss);
 void process_boss(Boss *boss);
 
@@ -63,8 +77,13 @@ void free_attack(Attack *a);
 
 void start_attack(Boss *b, Attack *a);
 
-Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule);
+Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule);
+Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move);
 
 void boss_death(Boss **boss);
+
+#define BOSS_DEFAULT_SPAWN_POS (VIEWPORT_W * 0.5 - I * VIEWPORT_H * 0.5)
+#define BOSS_DEFAULT_GO_POS (VIEWPORT_W * 0.5 + 200.0I)
+#define BOSS_NOMOVE (-3142-39942I)
 
 #endif

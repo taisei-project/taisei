@@ -15,17 +15,29 @@
 
 void start_game(MenuData *menu, void *arg) {
     MenuData m;
+    StageInfo *info = arg;
+    Difficulty stagediff;
 
     init_player(&global.plr);
 
 troll:
-    create_difficulty_menu(&m);
-    if(difficulty_menu_loop(&m) == -1)
-        return;
+    global.diff = stagediff = info ? info->difficulty : D_Any;
+
+    if(stagediff == D_Any) {
+        create_difficulty_menu(&m);
+        if(difficulty_menu_loop(&m) == -1) {
+            return;
+        }
+    }
 
     create_char_menu(&m);
-    if(char_menu_loop(&m) == -1)
+    if(char_menu_loop(&m) == -1) {
+        if(stagediff != D_Any) {
+            return;
+        }
+
         goto troll;
+    }
 
     global.replay_stage = NULL;
     replay_init(&global.replay);
@@ -34,12 +46,14 @@ troll:
     int sht = global.plr.shot;
 
 troll2:
-    if(arg)
-        ((StageInfo*)arg)->loop();
-    else {
-        int i;
-        for(i = 0; stages[i].loop; ++i)
+    if(info) {
+        global.stage = info;
+        info->loop();
+    } else {
+        for(int i = 0; stages[i].type == STAGE_STORY; ++i) {
+            global.stage = stages + i;
             stages[i].loop();
+        }
     }
 
     if(global.game_over == GAMEOVER_RESTART) {
