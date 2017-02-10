@@ -43,6 +43,10 @@ void draw_stage3d(Stage3D *s, float maxrange) {
 	for(i = 0; i < 3;i++)
 		s->cx[i] += s->cv[i];
 
+	if(s->nodraw) {
+		return;
+	}
+
 	glPushMatrix();
 
 	if(s->crot[0])
@@ -136,5 +140,31 @@ Vector **single3dpos(Vector q, float maxrange, Vector p) {
 		list[1] = NULL;
 
 		return list;
+	}
+}
+
+void skip_background_anim(Stage3D *s3d, void (*drawfunc)(void), int frames, int *timer, int *timer2) {
+	// two timers because stage 6 is so fucking special
+	// second is optional
+
+	if(s3d) {
+		s3d->nodraw = true;
+	}
+
+	int targetframes = *timer + frames;
+
+	while(++(*timer) < targetframes) {
+		if(timer2) {
+			++(*timer2);
+		}
+		drawfunc();
+	}
+
+	if(timer2) {
+		++(*timer2);
+	}
+
+	if(s3d) {
+		s3d->nodraw = false;
 	}
 }

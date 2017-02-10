@@ -56,6 +56,7 @@ void start_replay(MenuData *menu, void *arg) {
 			continue;
 		}
 
+		global.stage = gstg;
 		gstg->loop();
 
 		if(global.game_over == GAMEOVER_ABORT) {
@@ -219,10 +220,17 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 
 			case 4:
 				a = AL_Right;
-				if(rpy->numstages == 1)
-					snprintf(tmp, sizeof(tmp), "Stage %i", rpy->stages[0].stage);
-				else
+				if(rpy->numstages == 1) {
+					StageInfo *stg = stage_get(rpy->stages[0].stage);
+
+					if(stg) {
+						snprintf(tmp, sizeof(tmp), "%s", stg->title);
+					} else {
+						snprintf(tmp, sizeof(tmp), "?????");
+					}
+				} else {
 					snprintf(tmp, sizeof(tmp), "%i stages", rpy->numstages);
+				}
 				break;
 		}
 

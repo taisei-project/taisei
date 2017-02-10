@@ -86,10 +86,22 @@ int run_tests(void) {
 	#define MKDIR(p) mkdir(p, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)
 #endif
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
 	if(run_tests()) {
 		return 0;
 	}
+
+#ifdef DEBUG
+	if(argc >= 2 && argv[1] && !strcmp(argv[1], "dumpstages")) {
+		stage_init_array();
+
+		for(StageInfo *stg = stages; stg->loop; ++stg) {
+			printf("%i %s: %s\n", stg->id, stg->title, stg->subtitle);
+		}
+
+		return 0;
+	}
+#endif
 
 	init_paths();
 	init_log();
@@ -121,6 +133,7 @@ int main(int argc, char** argv) {
 	draw_loading_screen();
 
 	gamepad_init();
+	stage_init_array();
 
 	// Order DOES matter: init_global, then sfx/bgm, then load_resources.
 	init_sfx();
@@ -135,29 +148,36 @@ int main(int argc, char** argv) {
 	if(argc >= 2 && argv[1]) {
 		printf("** Entering stage skip mode: Stage %d\n", atoi(argv[1]));
 
-		global.diff = D_Easy;
+		StageInfo* stg = stage_get(atoi(argv[1]));
+
+		if(!stg) {
+			errx(-1, "Invalid stage id");
+		}
+
+		global.diff = stg->difficulty;
+
+		if(!global.diff) {
+			global.diff = D_Easy;
+		}
 
 		if(argc == 3 && argv[2]) {
 			printf("** Setting difficulty to %d.\n", atoi(argv[2]));
 			global.diff = atoi(argv[2]);
 		}
 
-		StageInfo* stg = stage_get(atoi(argv[1]));
 
-		if(stg) {
-			printf("** Entering %s.\n", stg->title);
+		printf("** Entering %s.\n", stg->title);
 
-			do {
-				global.game_over = 0;
-				init_player(&global.plr);
-				stg->loop();
-			} while(global.game_over == GAMEOVER_RESTART);
+		do {
+			global.game_over = 0;
+			init_player(&global.plr);
+			global.stage = stg;
+			stg->loop();
+		} while(global.game_over == GAMEOVER_RESTART);
 
-			return 0;
-		}
-
-		printf("** Invalid stage number. Quitting stage skip mode.\n");
+		return 0;
 	}
+
 #endif
 
 	MenuData menu;

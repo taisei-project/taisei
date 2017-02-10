@@ -11,6 +11,22 @@
 #include "stage.h"
 #include "enemy.h"
 
+void stage3_mid_spellbg(Boss*, int t);
+void stage3_boss_spellbg(Boss*, int t);
+void stage3_mid_a1(Boss*, int t);
+void stage3_mid_a2(Boss*, int t);
+void stage3_boss_a1(Boss*, int t);
+void stage3_boss_a2(Boss*, int t);
+void stage3_boss_a3(Boss*, int t);
+
+AttackInfo stage3_spells[] = {
+	{AT_Spellcard, "Venom Sign ~ Deadly Dance", 25, 25000, stage3_mid_a1, stage3_mid_spellbg, BOSS_DEFAULT_GO_POS},
+	{AT_Spellcard, "Venom Sign ~ Acid Rain", 20, 23000, stage3_mid_a2, stage3_mid_spellbg, BOSS_DEFAULT_GO_POS},
+	{AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage3_boss_a1, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
+	{AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 25, 40000, stage3_boss_a2, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
+	{AT_Spellcard, "Bug Sign ~ Phosphaenus Hemipterus", 35, 30000, stage3_boss_a3, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
+};
+
 Dialog *stage3_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/wriggle");
 
@@ -429,9 +445,9 @@ Boss* stage3_create_midboss(void) {
 	Boss *scuttle = create_boss("Scuttle", "scuttle", VIEWPORT_W/2 - 200.0I);
 	boss_add_attack(scuttle, AT_Move, "Introduction", 2, 0, stage3_mid_intro, NULL);
 	boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 30, 25000, stage3_mid_a0, NULL);
-	boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Deadly Dance", 25, 25000, stage3_mid_a1, stage3_mid_spellbg);
+	boss_add_attack_from_info(scuttle, stage3_spells+0, false);
 	if(global.diff > D_Normal)
-		boss_add_attack(scuttle, AT_Spellcard, "Venom Sign ~ Acid Rain", 20, 23000, stage3_mid_a2, stage3_mid_spellbg);
+		boss_add_attack_from_info(scuttle, stage3_spells+1, false);
 	boss_add_attack(scuttle, AT_Move, "Runaway", 2, 1, stage3_mid_outro, NULL);
 	scuttle->zoomcolor = rgb(0.4, 0.5, 0.4);
 
@@ -760,11 +776,11 @@ Boss* stage3_create_boss(void) {
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage3_boss_intro, NULL);
 
 	boss_add_attack(wriggle, AT_Normal, "", 20, 15000, stage3_boss_prea1, NULL);
-	boss_add_attack(wriggle, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage3_boss_a1, stage3_boss_spellbg);
+	boss_add_attack_from_info(wriggle, stage3_spells+2, false);
 	boss_add_attack(wriggle, AT_Normal, "", 20, 15000, stage3_boss_prea2, NULL);
-	boss_add_attack(wriggle, AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 25, 40000, stage3_boss_a2, stage3_boss_spellbg);
+	boss_add_attack_from_info(wriggle, stage3_spells+3, false);
 	boss_add_attack(wriggle, AT_Normal, "", 20, 15000, stage3_boss_prea3, NULL);
-	boss_add_attack(wriggle, AT_Spellcard, "Bug Sign ~ Phosphaenus Hemipterus", 35, 30000, stage3_boss_a3, stage3_boss_spellbg);
+	boss_add_attack_from_info(wriggle, stage3_spells+4, false);
 
 	start_attack(wriggle, wriggle->attacks);
 	return wriggle;

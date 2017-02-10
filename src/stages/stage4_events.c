@@ -11,6 +11,23 @@
 #include "enemy.h"
 #include "laser.h"
 
+void kurumi_spell_bg(Boss*, int);
+void kurumi_slaveburst(Boss*, int);
+void kurumi_redspike(Boss*, int);
+void kurumi_aniwall(Boss*, int);
+void kurumi_blowwall(Boss*, int);
+void kurumi_danmaku(Boss*, int);
+
+AttackInfo stage4_spells[] = {
+	{AT_Spellcard, "Bloodless ~ Gate of Walachia", 25, 20000, kurumi_slaveburst, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
+	{AT_Spellcard, "Bloodless ~ Dry Fountain", 30, 30000, kurumi_redspike, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
+	{AT_Spellcard, "Bloodless ~ Red Spike", 30, 30000, kurumi_redspike, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
+	{AT_Spellcard, "Limit ~ Animate Wall", 30, 40000, kurumi_aniwall, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
+	{AT_Spellcard, "Summoning ~ Demon Wall", 30, 40000, kurumi_aniwall, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
+	{AT_Spellcard, "Power Sign ~ Blow the Walls", 30, 32000, kurumi_blowwall, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
+	{AT_Spellcard, "Fear Sign ~ Bloody Danmaku", 30, 32000, kurumi_danmaku, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
+};
+
 Dialog *stage4_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/kurumi");
 
@@ -229,7 +246,7 @@ void KurumiSlave(Enemy *e, int t) {
 }
 
 void kurumi_intro(Boss *b, int t) {
-	GO_TO(b, VIEWPORT_W/2.0+200.0I, 0.01);
+	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.01);
 }
 
 int kurumi_burstslave(Enemy *e, int t) {
@@ -363,8 +380,12 @@ void kurumi_outro(Boss *b, int time) {
 Boss *create_kurumi_mid(void) {
 	Boss* b = create_boss("Kurumi", "kurumi", VIEWPORT_W/2-400.0I);
 	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_intro, NULL);
-	boss_add_attack(b, AT_Spellcard, "Bloodless ~ Gate of Walachia", 25, 20000, kurumi_slaveburst, kurumi_spell_bg);
-	boss_add_attack(b, AT_Spellcard, global.diff < D_Hard ? "Bloodless ~ Dry Fountain" : "Bloodless ~ Red Spike", 30, 30000, kurumi_redspike, kurumi_spell_bg);
+	boss_add_attack_from_info(b, stage4_spells+0, false);
+	if(global.diff < D_Hard) {
+		boss_add_attack_from_info(b, stage4_spells+1, false);
+	} else {
+		boss_add_attack_from_info(b, stage4_spells+2, false);
+	}
 	boss_add_attack(b, AT_Move, "Outro", 2, 1, kurumi_outro, NULL);
 	start_attack(b, b->attacks);
 	return b;
@@ -413,7 +434,7 @@ int stage4_supercard(Enemy *e, int t) {
 
 void kurumi_boss_intro(Boss *b, int t) {
 	TIMER(&t);
-	GO_TO(b, VIEWPORT_W/2.0+200.0I, 0.01);
+	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.01);
 
 	AT(120)
 		global.dialog = stage4_dialog();
@@ -704,11 +725,16 @@ Boss *create_kurumi(void) {
 	Boss* b = create_boss("Kurumi", "kurumi", -400.0I);
 	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_boss_intro, NULL);
 	boss_add_attack(b, AT_Normal, "Sin Breaker", 20, 20000, kurumi_sbreaker, NULL);
-	boss_add_attack(b, AT_Spellcard, global.diff < D_Hard ? "Limit ~ Animate Wall" : "Summoning ~ Demon Wall", 30, 40000, kurumi_aniwall, kurumi_spell_bg);
+	if(global.diff < D_Hard) {
+		boss_add_attack_from_info(b, stage4_spells+3, false);
+	} else {
+		boss_add_attack_from_info(b, stage4_spells+4, false);
+	}
 	boss_add_attack(b, AT_Normal, "Cold Breaker", 20, 20000, kurumi_breaker, NULL);
-	boss_add_attack(b, AT_Spellcard, "Power Sign ~ Blow the Walls", 30, 32000, kurumi_blowwall, kurumi_spell_bg);
-	if(global.diff > D_Normal)
-		boss_add_attack(b, AT_Spellcard, "Fear Sign ~ Bloody Danmaku", 30, 32000, kurumi_danmaku, kurumi_spell_bg);
+	boss_add_attack_from_info(b, stage4_spells+5, false);
+	if(global.diff > D_Normal) {
+		boss_add_attack_from_info(b, stage4_spells+6, false);
+	}
 	start_attack(b, b->attacks);
 
 	return b;

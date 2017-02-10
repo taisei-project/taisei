@@ -68,7 +68,7 @@ void stage3_bg_tunnel_draw(Vector pos) {
 		*/
 		draw_quad();
 		glPopMatrix();
-}
+	}
 
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
@@ -281,5 +281,29 @@ void stage3_draw(void) {
 
 void stage3_loop(void) {
 	ShaderRule shaderrules[] = { stage3_fog, stage3_tunnel, NULL };
-	stage_loop(stage_get(3), stage3_start, stage3_end, stage3_draw, stage3_events, shaderrules, 5700);
+	stage_loop(stage3_start, stage3_end, stage3_draw, stage3_events, shaderrules, 5700);
+}
+
+void stage3_mid_spellbg(Boss*, int t);
+
+void stage3_spellpractice_events(void) {
+	TIMER(&global.timer);
+
+	AT(0) {
+		if(global.stage->spell->draw_rule == stage3_mid_spellbg) {
+			skip_background_anim(&bgcontext, stage3_draw, 2800, &global.timer, NULL);
+			global.boss = create_boss("Scuttle", "scuttle", BOSS_DEFAULT_SPAWN_POS);
+		} else {
+			skip_background_anim(&bgcontext, stage3_draw, 5300, &global.timer, NULL);
+			global.boss = create_boss("Wriggle EX", "wriggleex", BOSS_DEFAULT_SPAWN_POS);
+		}
+
+		boss_add_attack_from_info(global.boss, global.stage->spell, true);
+		start_attack(global.boss, global.boss->attacks);
+	}
+}
+
+void stage3_spellpractice_loop(void) {
+	ShaderRule shaderrules[] = { stage3_fog, stage3_tunnel, NULL };
+	stage_loop(stage3_start, stage3_end, stage3_draw, stage3_spellpractice_events, shaderrules, 0);
 }

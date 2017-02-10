@@ -9,6 +9,19 @@
 #include "stage5.h"
 #include <global.h>
 
+void iku_spell_bg(Boss*, int);
+void iku_atmospheric(Boss*, int);
+void iku_lightning(Boss*, int);
+void iku_cathode(Boss*, int);
+void iku_induction(Boss*, int);
+
+AttackInfo stage5_spells[] = {
+	{AT_Spellcard, "High Voltage ~ Atmospheric Discharge", 30, 30000, iku_atmospheric, iku_spell_bg, BOSS_DEFAULT_GO_POS},
+	{AT_Spellcard, "Charge Sign ~ Artificial Lightning", 30, 35000, iku_lightning, iku_spell_bg, BOSS_DEFAULT_GO_POS},
+	{AT_Spellcard, "Spark Sign ~ Natural Cathode", 30, 35000, iku_cathode, iku_spell_bg, BOSS_DEFAULT_GO_POS},
+	{AT_Spellcard, "Current Sign ~ Induction", 30, 35000, iku_induction, iku_spell_bg, BOSS_DEFAULT_GO_POS},
+};
+
 Dialog *stage5_post_mid_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", NULL);
 
@@ -377,7 +390,7 @@ void iku_lightning(Boss *b, int time) {
 	}
 
 	if(time < 0) {
-		GO_TO(b, VIEWPORT_W/2.0+200.0I, 0.03);
+		GO_TO(b, BOSS_DEFAULT_GO_POS, 0.03);
 		return;
 	}
 
@@ -485,12 +498,12 @@ Boss *create_iku(void) {
 
 	boss_add_attack(b, AT_Move, "Introduction", 3, 0, iku_intro, NULL);
 	boss_add_attack(b, AT_Normal, "Bolts1", 20, 20000, iku_bolts, NULL);
-	boss_add_attack(b, AT_Spellcard, "High Voltage ~ Atmospheric Discharge", 30, 30000, iku_atmospheric, iku_spell_bg);
+	boss_add_attack_from_info(b, stage5_spells+0, false);
 	boss_add_attack(b, AT_Normal, "Bolts2", 25, 20000, iku_bolts2, NULL);
-	boss_add_attack(b, AT_Spellcard, "Charge Sign ~ Artificial Lightning", 30, 35000, iku_lightning, iku_spell_bg);
+	boss_add_attack_from_info(b, stage5_spells+1, false);
 	boss_add_attack(b, AT_Normal, "Bolts3", 20, 20000, iku_bolts3, NULL);
-	boss_add_attack(b, AT_Spellcard, "Spark Sign ~ Natural Cathode", 30, 35000, iku_cathode, iku_spell_bg);
-	boss_add_attack(b, AT_Spellcard, "Current Sign ~ Induction", 30, 35000, iku_induction, iku_spell_bg);
+	boss_add_attack_from_info(b, stage5_spells+2, false);
+	boss_add_attack_from_info(b, stage5_spells+3, false);
 
 	return b;
 }

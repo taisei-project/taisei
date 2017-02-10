@@ -9,6 +9,24 @@
 #include "stage6.h"
 #include <global.h>
 
+void elly_spellbg_classic(Boss*, int);
+void elly_spellbg_modern(Boss*, int);
+void elly_newton(Boss*, int);
+void elly_maxwell(Boss*, int);
+void elly_eigenstate(Boss*, int);
+void elly_ricci(Boss*, int);
+void elly_lhc(Boss*, int);
+void elly_theory(Boss*, int);
+
+AttackInfo stage6_spells[] = {
+	{AT_Spellcard, "Newton Sign ~ 2.5 Laws of Movement", 60, 40000, elly_newton, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
+	{AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 22000, elly_maxwell, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
+	{AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 60, 30000, elly_eigenstate, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
+	{AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 50, 40000, elly_ricci, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
+	{AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 60, 50000, elly_lhc, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
+	{AT_SurvivalSpell, "Tower of Truth ~ Theory of Everything", 70, 40000, elly_theory, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
+};
+
 Dialog *stage6_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/elly");
 
@@ -181,7 +199,18 @@ int scythe_intro(Enemy *e, int t) {
 
 void elly_intro(Boss *b, int t) {
 	TIMER(&t);
-	GO_TO(b, VIEWPORT_W/2+200.0I, 0.01);
+
+	if(global.stage->type == STAGE_SPELL) {
+		GO_TO(b, BOSS_DEFAULT_GO_POS, 0.1);
+
+		AT(0) {
+			create_enemy3c(VIEWPORT_W+200.0I, ENEMY_IMMUNE, Scythe, scythe_intro, 0, 1+0.2I, 1);
+		}
+
+		return;
+	}
+
+	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.01);
 
 	AT(200) {
 		create_enemy3c(VIEWPORT_W+200+200.0I, ENEMY_IMMUNE, Scythe, scythe_intro, 0, 1+0.2I, 1);
@@ -224,7 +253,7 @@ int scythe_reset(Enemy *e, int t) {
 	if(t == 1)
 		e->args[1] = fmod(creal(e->args[1]), 2*M_PI) + I*cimag(e->args[1]);
 
-	GO_TO(e, VIEWPORT_W/2.0+200.0I, 0.02);
+	GO_TO(e, BOSS_DEFAULT_GO_POS, 0.02);
 	e->args[2] = max(0.6, creal(e->args[2])-0.01*t);
 	e->args[1] += (0.19-creal(e->args[1]))*0.05;
 	e->args[1] = creal(e->args[1]) + I*0.9*cimag(e->args[1]);
@@ -478,6 +507,11 @@ int scythe_explode(Enemy *e, int t) {
 }
 
 void elly_unbound(Boss *b, int t) {
+	if(global.stage->type == STAGE_SPELL) {
+		t += 100;
+		GO_TO(b, BOSS_DEFAULT_GO_POS, 0.1)
+	}
+
 	TIMER(&t);
 
 	AT(0) {
@@ -916,17 +950,17 @@ Boss *create_elly(void) {
 
 	boss_add_attack(b, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
 	boss_add_attack(b, AT_Normal, "Frequency", 30, 26000, elly_frequency, NULL);
-	boss_add_attack(b, AT_Spellcard, "Newton Sign ~ 2.5 Laws of Movement", 60, 40000, elly_newton, elly_spellbg_classic);
+	boss_add_attack_from_info(b, stage6_spells+0, false);
 	boss_add_attack(b, AT_Normal, "Frequency2", 40, 23000, elly_frequency2, NULL);
-	boss_add_attack(b, AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 22000, elly_maxwell, elly_spellbg_classic);
+	boss_add_attack_from_info(b, stage6_spells+1, false);
 	boss_add_attack(b, AT_Move, "Unbound", 6, 10, elly_unbound, NULL);
-	boss_add_attack(b, AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 60, 30000, elly_eigenstate, elly_spellbg_modern);
+	boss_add_attack_from_info(b, stage6_spells+2, false);
 	boss_add_attack(b, AT_Normal, "Baryon", 40, 23000, elly_baryonattack, NULL);
-	boss_add_attack(b, AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 50, 40000, elly_ricci, elly_spellbg_modern);
+	boss_add_attack_from_info(b, stage6_spells+3, false);
 	boss_add_attack(b, AT_Normal, "Baryon", 25, 23000, elly_baryonattack2, NULL);
-	boss_add_attack(b, AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 60, 50000, elly_lhc, elly_spellbg_modern);
+	boss_add_attack_from_info(b, stage6_spells+4, false);
 	boss_add_attack(b, AT_Move, "Explode", 6, 10, elly_baryon_explode, NULL);
-	boss_add_attack(b, AT_SurvivalSpell, "Tower of Truth ~ Theory of Everything", 70, 40000, elly_theory, elly_spellbg_modern);
+	boss_add_attack_from_info(b, stage6_spells+5, false);
 	start_attack(b, b->attacks);
 
 	return b;

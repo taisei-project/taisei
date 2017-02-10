@@ -176,5 +176,61 @@ void stage6_end(void) {
 
 void stage6_loop(void) {
 // 	ShaderRule shaderrules[] = { stage6_bloom, NULL };
-	stage_loop(stage_get(6), stage6_start, stage6_end, stage6_draw, stage6_events, NULL, 3900);
+	stage_loop(stage6_start, stage6_end, stage6_draw, stage6_events, NULL, 3900);
+}
+
+void elly_intro(Boss*, int);
+void elly_unbound(Boss*, int);
+
+void stage6_spellpractice_events(void) {
+	TIMER(&global.timer);
+
+	AT(0) {
+		skip_background_anim(&bgcontext, stage6_draw, 3800, &global.timer, &global.frames);
+		global.boss = create_boss("Elly", "elly", BOSS_DEFAULT_SPAWN_POS);
+
+		// Here be dragons
+
+		ptrdiff_t spellnum = global.stage->spell - stage6_spells;
+		char go = true;
+
+		switch(spellnum) {
+			case 0: // Newton Sign ~ 2.5 Laws of Movement
+				// Scythe required - this creates it
+				boss_add_attack(global.boss, AT_Move, "Catch the Scythe", 2, 0, elly_intro, NULL);
+				go = false;
+				break;
+
+			case 1: // Maxwell Sign ~ Wave Theory
+				// Works fine on its own
+				break;
+
+			case 2: // Eigenstate ~ Many-World Interpretation
+			case 3: // Ricci Sign ~ Space Time Curvature
+			case 4: // LHC ~ Higgs Boson Uncovered
+				// Baryon required - this creates it
+				boss_add_attack(global.boss, AT_Move, "Unbound", 3, 0, elly_unbound, NULL);
+				go = false;
+				break;
+
+			case 5: // Tower of Truth ~ Theory of Everything
+				// Works fine on its own
+				// Just needs a little extra to make us fall from the tower
+				start_fall_over();
+				skip_background_anim(&bgcontext, stage6_draw, 300, &global.timer, &global.frames);
+				break;
+		}
+
+		boss_add_attack_from_info(global.boss, global.stage->spell, go);
+		start_attack(global.boss, global.boss->attacks);
+	}
+
+	if(!global.boss) {
+		killall(global.enemies);
+	}
+}
+
+void stage6_spellpractice_loop(void) {
+// 	ShaderRule shaderrules[] = { stage6_bloom, NULL };
+	stage_loop(stage6_start, stage6_end, stage6_draw, stage6_spellpractice_events, NULL, 3900);
 }
