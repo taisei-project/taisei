@@ -76,7 +76,10 @@ void process_items(void) {
 		r *= 2;
 
 	while(item != NULL) {
-		if(item->type == Power && global.plr.power >= PLR_MAXPOWER) {
+		if((item->type == Power && global.plr.power >= PLR_MAXPOWER) ||
+			// just in case we ever have some weird spell that spawns those...
+		   (global.stage->type == STAGE_SPELL && (item->type == Life || item->type == Bomb))
+		) {
 			item->type = Point;
 		}
 
