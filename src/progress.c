@@ -122,7 +122,10 @@ static void progress_read(SDL_RWops *file) {
 			case PCMD_UNLOCK_STAGES:
 				warnx("progress_read(): %i %i", cmd, cmdsize);
 				while(cur < cmdsize) {
-					stage_get(SDL_ReadLE16(vfile))->unlocked = true;
+					StageProgress *p = stage_get_progress(SDL_ReadLE16(vfile), D_Any);
+					if(p) {
+						p->unlocked = true;
+					}
 					cur += 2;
 				}
 				break;
@@ -146,7 +149,8 @@ static void progress_write(SDL_RWops *file) {
 	StageInfo *stg;
 
 	for(stg = stages; stg->loop; ++stg) {
-		if(stg->unlocked) {
+		StageProgress *p = stage_get_progress_from_info(stg, D_Any);
+		if(p && p->unlocked) {
 			++num_unlocked;
 		}
 	}
@@ -166,7 +170,8 @@ static void progress_write(SDL_RWops *file) {
 	SDL_WriteLE16(vfile, num_unlocked * 2);
 
 	for(stg = stages; stg->loop; ++stg) {
-		if(stg->unlocked) {
+		StageProgress *p = stage_get_progress_from_info(stg, D_Any);
+		if(p && p->unlocked) {
 			SDL_WriteLE16(vfile, stg->id);
 		}
 	}
@@ -189,7 +194,10 @@ static void progress_unlock_all(void) {
 	StageInfo *stg;
 
 	for(stg = stages; stg->loop; ++stg) {
-		stg->unlocked = true;
+		StageProgress *p = stage_get_progress_from_info(stg, D_Any);
+		if(p) {
+			p->unlocked = true;
+		}
 	}
 }
 #endif

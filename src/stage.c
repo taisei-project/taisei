@@ -209,7 +209,8 @@ StageInfo stages[] = {
 
 void stage_init_array(void) {
 	for(int i = 0; stages[i].loop; ++i) {
-		stages[i].unlocked = false;
+		// we will allocate this later on demand
+		stages[i].progress = NULL;
 
 		if(stages[i].type == STAGE_SPELL) {
 			char *s, *postfix = difficulty_name(stages[i].difficulty);
@@ -252,6 +253,40 @@ StageInfo* stage_get_by_spellcard(AttackInfo *spell, Difficulty diff) {
 			return stg;
 
 	return NULL;
+}
+
+StageProgress* stage_get_progress_from_info(StageInfo *stage, Difficulty diff) {
+	// D_Any stages will have a separate StageProgress for every selectable difficulty.
+	// Stages with a fixed difficulty setting (spellpractice, extra stage...) obviously get just one and the diff parameter is ignored.
+
+	// We never free anything we allocate here either. RAM's cheap right?
+	// This stuff must stay around until progress_save(), which happens on shutdown.
+	// So do NOT try to free any pointers this function returns, that will fuck everything up.
+
+	if(!stage) {
+		return NULL;
+	}
+
+	bool fixed_diff = (stage->difficulty != D_Any);
+
+	if(!fixed_diff && (diff < D_Easy || diff > D_Lunatic)) {
+		return NULL;
+	}
+
+	if(!stage->progress) {
+		size_t allocsize = sizeof(StageProgress) * (fixed_diff ? 1 : NUM_SELECTABLE_DIFFICULTIES);
+		stage->progress = malloc(allocsize);
+		memset(stage->progress, 0, allocsize);
+#ifdef DEBUG
+		printf("stage_get_progress_from_info(): allocated %lu bytes for stage %u (%s: %s)\n", allocsize, stage->id, stage->title, stage->subtitle);
+#endif
+	}
+
+	return stage->progress + (fixed_diff ? 0 : diff - D_Easy);
+}
+
+StageProgress* stage_get_progress(uint16_t id, Difficulty diff) {
+	return stage_get_progress_from_info(stage_get(id), diff);
 }
 
 void stage_start(void) {
