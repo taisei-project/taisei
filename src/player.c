@@ -214,11 +214,10 @@ void player_realdeath(Player *plr) {
 	if(plr->bombs < PLR_START_BOMBS)
 		plr->bombs = PLR_START_BOMBS;
 
-	if(!plr->iddqd) {
-		plr->lifes--;
-	}
+	if(plr->iddqd)
+		return;
 
-	if(plr->lifes == 0 && global.replaymode != REPLAY_PLAY)
+	if(plr->lifes-- == 0 && global.replaymode != REPLAY_PLAY)
 		stage_gameover();
 }
 
