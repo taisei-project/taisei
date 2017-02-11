@@ -76,10 +76,13 @@ typedef struct StageInfo {
 } StageInfo;
 
 extern StageInfo stages[];
+
 StageInfo* stage_get(uint16_t);
 StageInfo* stage_get_by_spellcard(AttackInfo *spell, Difficulty diff);
-StageProgress* stage_get_progress(uint16_t id, Difficulty diff);
-StageProgress* stage_get_progress_from_info(StageInfo *stage, Difficulty diff);
+
+StageProgress* stage_get_progress(uint16_t id, Difficulty diff, bool allocate);
+StageProgress* stage_get_progress_from_info(StageInfo *stage, Difficulty diff, bool allocate);
+
 void stage_init_array(void);
 
 void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event, ShaderRule *shaderrules, int endtime);

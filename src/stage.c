@@ -255,7 +255,7 @@ StageInfo* stage_get_by_spellcard(AttackInfo *spell, Difficulty diff) {
 	return NULL;
 }
 
-StageProgress* stage_get_progress_from_info(StageInfo *stage, Difficulty diff) {
+StageProgress* stage_get_progress_from_info(StageInfo *stage, Difficulty diff, bool allocate) {
 	// D_Any stages will have a separate StageProgress for every selectable difficulty.
 	// Stages with a fixed difficulty setting (spellpractice, extra stage...) obviously get just one and the diff parameter is ignored.
 
@@ -274,6 +274,10 @@ StageProgress* stage_get_progress_from_info(StageInfo *stage, Difficulty diff) {
 	}
 
 	if(!stage->progress) {
+		if(!allocate) {
+			return NULL;
+		}
+
 		size_t allocsize = sizeof(StageProgress) * (fixed_diff ? 1 : NUM_SELECTABLE_DIFFICULTIES);
 		stage->progress = malloc(allocsize);
 		memset(stage->progress, 0, allocsize);
@@ -285,8 +289,8 @@ StageProgress* stage_get_progress_from_info(StageInfo *stage, Difficulty diff) {
 	return stage->progress + (fixed_diff ? 0 : diff - D_Easy);
 }
 
-StageProgress* stage_get_progress(uint16_t id, Difficulty diff) {
-	return stage_get_progress_from_info(stage_get(id), diff);
+StageProgress* stage_get_progress(uint16_t id, Difficulty diff, bool allocate) {
+	return stage_get_progress_from_info(stage_get(id), diff, allocate);
 }
 
 void stage_start(void) {
