@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
@@ -16,7 +16,7 @@
 enum {
 	False = 0,
 	True = 1,
-	
+
 	MOVEFLAG_UP = 1,
 	MOVEFLAG_DOWN = 2,
 	MOVEFLAG_LEFT = 4,
@@ -31,7 +31,7 @@ typedef enum {
 typedef enum {
 	YoumuOpposite = 0,
 	YoumuHoming,
-	
+
 	MarisaLaser = YoumuOpposite,
 	MarisaStar = YoumuHoming
 } ShotMode;
@@ -41,25 +41,25 @@ typedef struct {
 	short focus;
 	short fire;
 	short moving;
-	
+
 	short dir;
 	short power;
 	int graze;
-    
+
 	int lifes;
 	int bombs;
-	
+
 	int recovery;
-	
+
 	int deathtime;
 	int respawntime;
-    
+
     int continues;
-    
+
 	Character cha;
 	ShotMode shot;
 	Enemy *slaves;
-	
+
 	int moveflags;
 	int curmove;
 	int movetime;
@@ -69,6 +69,8 @@ typedef struct {
 
 	int axis_ud;
 	int axis_lr;
+
+	char iddqd;
 } Player;
 
 void init_player(Player*);

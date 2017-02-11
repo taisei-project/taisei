@@ -84,7 +84,7 @@ endif()
 if(USE_SDL2_PATHS)
     set(SRCs ${SRCs} paths/sdl.c)
 elseif(RELATIVE)
-	set(SRCs ${SRCs} paths/relative.c)	
+	set(SRCs ${SRCs} paths/relative.c)
 else()
 	set(SRCs ${SRCs} paths/static.c)
 endif()
@@ -101,9 +101,6 @@ endif()
 
 if(TAISEI_DEBUG)
 	add_definitions(-DDEBUG -ggdb)
-	if(TAISEI_IDDQD)
-		add_definitions(-DIDDQD)
-	endif()
 endif()
 
 if(WERROR)
@@ -122,7 +119,7 @@ set(LIBs ${LIBs}
 	${ALUT_LIBRARY}
 	${OPENGL_LIBRARY}
 	m)
-	
+
 
 if(FREETYPE_FOUND)
 	set(LIBs ${LIBs} ${FREETYPE_LIBRARY})

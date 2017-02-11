@@ -1,11 +1,11 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  * Copyright (C) 2012, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
  */
- 
+
 #ifndef CONFIG_H
 #define CONFIG_H
 
@@ -33,29 +33,31 @@ typedef enum ConfigKey {
 	KEY_FOCUS,
 	KEY_SHOT,
 	KEY_BOMB,
-	
+
 	KEY_FULLSCREEN,
 	KEY_SCREENSHOT,
 	KEY_SKIP,
-	
+
+	KEY_IDDQD,	// must be present even without DEBUG!
+
 	FULLSCREEN,
-	
+
 	NO_SHADER,
 	NO_AUDIO,
 	NO_MUSIC,
 	SFX_VOLUME,
 	BGM_VOLUME,
-	
+
 	NO_STAGEBG,
 	NO_STAGEBG_FPSLIMIT,
-	
+
 	SAVE_RPY,
-	
+
 	VID_WIDTH,
 	VID_HEIGHT,
-	
+
 	PLAYERNAME,
-	
+
 	GAMEPAD_ENABLED,
 	GAMEPAD_DEVICE,
 	GAMEPAD_AXIS_UD,
@@ -64,7 +66,7 @@ typedef enum ConfigKey {
 	GAMEPAD_AXIS_LR_SENS,
 	GAMEPAD_AXIS_DEADZONE,
 	GAMEPAD_AXIS_FREE,
-	
+
 	// gamepad controls
 	// The UDLR ones should work without adjusting - but you can assign custom buttons to them if you really need to
 	GP_UP,
@@ -97,7 +99,7 @@ extern ConfigEntry configdefs[];
 Config tconfig;
 
 #define CONFIG_KEY_FIRST KEY_UP
-#define CONFIG_KEY_LAST KEY_SKIP
+#define CONFIG_KEY_LAST KEY_IDDQD
 
 #define CONFIG_GPKEY_FIRST GP_UP
 #define CONFIG_GPKEY_LAST GP_PAUSE

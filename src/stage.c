@@ -212,6 +212,10 @@ void draw_hud(void) {
 	sprintf(buf, "%i", global.points);
 	draw_text(AL_Center, 13, 49, buf, _fonts.standard);
 
+	if(global.plr.iddqd) {
+		draw_text(AL_Left, -70, 475, "GOD MODE", _fonts.mainmenu);
+	}
+
 	glPopMatrix();
 
 #ifdef DEBUG

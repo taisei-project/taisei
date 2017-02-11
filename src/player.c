@@ -173,8 +173,7 @@ void player_logic(Player* plr) {
 }
 
 void player_bomb(Player *plr) {
-	if(global.frames - plr->recovery >= 0 && plr->bombs > 0 && global.frames - plr->respawntime >= 60) {
-
+	if(global.frames - plr->recovery >= 0 && (plr->bombs > 0 || plr->iddqd) && global.frames - plr->respawntime >= 60) {
 		delete_projectiles(&global.projs);
 
 		switch(plr->cha) {
@@ -191,6 +190,10 @@ void player_bomb(Player *plr) {
 		if(plr->deathtime > 0) {
 			plr->deathtime = -1;
 			plr->bombs /= 2;
+		}
+
+		if(plr->bombs < 0) {
+			plr->bombs = 0;
 		}
 
 		plr->recovery = global.frames + BOMB_RECOVERY;
@@ -211,9 +214,9 @@ void player_realdeath(Player *plr) {
 	if(plr->bombs < PLR_START_BOMBS)
 		plr->bombs = PLR_START_BOMBS;
 
-#ifndef IDDQD
-	plr->lifes--;
-#endif
+	if(!plr->iddqd) {
+		plr->lifes--;
+	}
 
 	if(plr->lifes == 0 && global.replaymode != REPLAY_PLAY)
 		stage_gameover();
@@ -270,6 +273,14 @@ void player_event(Player* plr, int type, int key) {
 
 				case KEY_BOMB:
 					player_bomb(plr);
+					break;
+
+				case KEY_IDDQD:
+#ifndef DEBUG // no cheating for peasants
+					if(global.replaymode == REPLAY_PLAY)
+#endif
+						plr->iddqd = !plr->iddqd;
+
 					break;
 
 				default:
