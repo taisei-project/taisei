@@ -20,6 +20,7 @@
 #include <stdbool.h>
 #include "projectile.h"
 #include "boss.h"
+#include "progress.h"
 
 typedef enum {
 	D_Any = 0,
@@ -29,6 +30,8 @@ typedef enum {
 	D_Lunatic,
 	D_Extra // reserved for later
 } Difficulty;
+
+#define NUM_SELECTABLE_DIFFICULTIES D_Lunatic
 
 #define TIMER(ptr) int *__timep = ptr; int _i = 0, _ni = 0;  _i = _ni = _i;
 #define AT(t) if(*__timep == t)
@@ -67,12 +70,16 @@ typedef struct StageInfo {
 	AttackInfo *spell;
 	Difficulty difficulty;
 
-	bool unlocked;
+	// Do NOT access this directly!
+	// Use stage_get_progress or stage_get_progress_from_info, which will lazy-initialize it and pick the correct offset.
+	StageProgress *progress;
 } StageInfo;
 
 extern StageInfo stages[];
 StageInfo* stage_get(uint16_t);
 StageInfo* stage_get_by_spellcard(AttackInfo *spell, Difficulty diff);
+StageProgress* stage_get_progress(uint16_t id, Difficulty diff);
+StageProgress* stage_get_progress_from_info(StageInfo *stage, Difficulty diff);
 void stage_init_array(void);
 
 void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event, ShaderRule *shaderrules, int endtime);
