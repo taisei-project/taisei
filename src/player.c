@@ -217,6 +217,8 @@ void player_realdeath(Player *plr) {
 	if(plr->iddqd)
 		return;
 
+	player_set_power(plr, plr->power * 0.75);
+
 	if(plr->lifes-- == 0 && global.replaymode != REPLAY_PLAY)
 		stage_gameover();
 }
