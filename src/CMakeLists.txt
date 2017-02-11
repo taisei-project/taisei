@@ -20,6 +20,7 @@ set(SRCs
 	events.c
 	player.c
 	projectile.c
+	progress.c
 	enemy.c
 	item.c
 	list.c

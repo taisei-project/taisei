@@ -16,6 +16,7 @@
 #include "taiseigl.h"
 #include "gamepad.h"
 #include "resource/bgm.h"
+#include "progress.h"
 
 void init_gl(void) {
 	load_gl_functions();
@@ -36,6 +37,7 @@ void init_gl(void) {
 
 void taisei_shutdown(void) {
 	config_save(CONFIG_FILE);
+	progress_save();
 	printf("\nshutdown:\n");
 
 	if(!config_get_int(CONFIG_NO_AUDIO)) shutdown_sfx();
@@ -134,6 +136,7 @@ int main(int argc, char **argv) {
 
 	gamepad_init();
 	stage_init_array();
+	progress_load(); // stage_init_array goes first!
 
 	// Order DOES matter: init_global, then sfx/bgm, then load_resources.
 	init_sfx();

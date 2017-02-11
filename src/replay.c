@@ -318,7 +318,7 @@ static int replay_read_events(Replay *rpy, SDL_RWops *file, size_t filesize) {
 }
 
 int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
-	int64_t filesize;
+	int64_t filesize; // must be signed
 	mode &= REPLAY_READ_ALL;
 
 	if(!mode) {
