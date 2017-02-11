@@ -209,6 +209,8 @@ StageInfo stages[] = {
 
 void stage_init_array(void) {
 	for(int i = 0; stages[i].loop; ++i) {
+		stages[i].unlocked = false;
+
 		if(stages[i].type == STAGE_SPELL) {
 			char *s, *postfix = difficulty_name(stages[i].difficulty);
 

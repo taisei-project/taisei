@@ -53,17 +53,21 @@ typedef enum StageType {
 } StageType;
 
 typedef struct StageInfo {
+	//
+	// don't reorder these!
+	//
+
 	uint16_t id; // must match type of ReplayStage.stage in replay.h
 	StageRule loop;
 	StageType type;
 	char *title;
 	char *subtitle;
-
 	Color titleclr;
 	Color bosstitleclr;
-
 	AttackInfo *spell;
 	Difficulty difficulty;
+
+	bool unlocked;
 } StageInfo;
 
 extern StageInfo stages[];
