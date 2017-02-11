@@ -23,14 +23,14 @@
 
 StageInfo stages[] = {
 //	id  loop         hidden  title      subtitle                      titleclr   bosstitleclr
-	{1, stage1_loop, False, "Stage 1", "Misty Lake",                  {1, 1, 1}, {1, 1, 1}},
-	{2, stage2_loop, False, "Stage 2", "Walk Along the Border",       {1, 1, 1}, {1, 1, 1}},
-	{3, stage3_loop, False, "Stage 3", "Through the Tunnel of Light", {0, 0, 0}, {0, 0, 0}},
-	{4, stage4_loop, False, "Stage 4", "Forgotten Mansion",           {0, 0, 0}, {1, 1, 1}},
-	{5, stage5_loop, False, "Stage 5", "Climbing the Tower of Babel", {1, 1, 1}, {1, 1, 1}},
-	{6, stage6_loop, False, "Stage 6", "Roof of the World",           {1, 1, 1}, {1, 1, 1}},
+	{1, stage1_loop, false, "Stage 1", "Misty Lake",                  {1, 1, 1}, {1, 1, 1}},
+	{2, stage2_loop, false, "Stage 2", "Walk Along the Border",       {1, 1, 1}, {1, 1, 1}},
+	{3, stage3_loop, false, "Stage 3", "Through the Tunnel of Light", {0, 0, 0}, {0, 0, 0}},
+	{4, stage4_loop, false, "Stage 4", "Forgotten Mansion",           {0, 0, 0}, {1, 1, 1}},
+	{5, stage5_loop, false, "Stage 5", "Climbing the Tower of Babel", {1, 1, 1}, {1, 1, 1}},
+	{6, stage6_loop, false, "Stage 6", "Roof of the World",           {1, 1, 1}, {1, 1, 1}},
 
-	{0, NULL, False, NULL, NULL}
+	{0}
 };
 
 // NOTE: This returns the stage BY ID, not by the array index!
@@ -46,7 +46,7 @@ void stage_start(void) {
 	global.timer = 0;
 	global.frames = 0;
 	global.game_over = 0;
-	global.nostagebg = False;
+	global.nostagebg = false;
 	global.shake_view = 0;
 
 	global.fps.stagebg_fps = global.fps.show_fps = FPS;
@@ -90,7 +90,7 @@ void stage_input_event(EventType type, int key, void *arg) {
 				replay_stage_event(global.replay_stage, global.frames, EV_PRESS, key);
 
 				if(key == KEY_SKIP && global.dialog) {
-					global.dialog->skip = True;
+					global.dialog->skip = true;
 				}
 			}
 			break;
@@ -100,7 +100,7 @@ void stage_input_event(EventType type, int key, void *arg) {
 			replay_stage_event(global.replay_stage, global.frames, EV_RELEASE, key);
 
 			if(key == KEY_SKIP && global.dialog)
-				global.dialog->skip = False;
+				global.dialog->skip = false;
 			break;
 
 		case E_Pause:
@@ -165,7 +165,7 @@ void stage_input(void) {
 
 	// workaround
 	if(global.dialog && global.dialog->skip && !gamekeypressed(KEY_SKIP)) {
-		global.dialog->skip = False;
+		global.dialog->skip = false;
 		replay_stage_event(global.replay_stage, global.frames, EV_RELEASE, KEY_SKIP);
 	}
 
@@ -249,11 +249,11 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 		&& !global.nostagebg) {
 
 		printf("stage_draw(): !- Stage background has been switched off due to low frame rate. You can change that in the options.\n");
-		global.nostagebg = True;
+		global.nostagebg = true;
 	}
 
 	if(tconfig.intval[NO_STAGEBG] == 1)
-		global.nostagebg = True;
+		global.nostagebg = true;
 
 	if(!global.nostagebg)
 		bgdraw();
@@ -414,10 +414,10 @@ void stage_logic(int time) {
 	player_logic(&global.plr);
 
 	process_enemies(&global.enemies);
-	process_projectiles(&global.projs, True);
+	process_projectiles(&global.projs, true);
 	process_items();
 	process_lasers();
-	process_projectiles(&global.particles, False);
+	process_projectiles(&global.particles, false);
 
 	if(global.boss && !global.dialog) {
 		process_boss(global.boss);

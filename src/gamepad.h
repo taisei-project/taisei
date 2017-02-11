@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  * Copyright (C) 2012, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
@@ -32,10 +32,10 @@ void gamepad_shutdown_bare(void);
 enum {
 	AXISVAL_LEFT  = -1,
 	AXISVAL_RIGHT =  1,
-	
+
 	AXISVAL_UP    = -1,
 	AXISVAL_DOWN  =  1,
-	
+
 	AXISVAL_NULL  = 0
 };
 

@@ -14,7 +14,7 @@ typedef struct {
 	GLuint fbo;
 	GLuint tex;
 	GLuint depth;
-	
+
 	int nw,nh;
 } FBO;
 

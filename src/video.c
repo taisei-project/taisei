@@ -13,7 +13,7 @@
 
 static VideoMode common_modes[] = {
 	{RESX, RESY},
-	
+
 	{640, 480},
 	{800, 600},
 	{1024, 768},
@@ -21,7 +21,7 @@ static VideoMode common_modes[] = {
 	{1152, 864},
 	{1400, 1050},
 	{1440, 1080},
-	
+
 	{0, 0},
 };
 
@@ -33,7 +33,7 @@ static void video_add_mode(int width, int height) {
 				return;
 		}
 	}
-	
+
 	video.modes = (VideoMode*)realloc(video.modes, (++video.mcount) * sizeof(VideoMode));
 	video.modes[video.mcount-1].width  = width;
 	video.modes[video.mcount-1].height = height;
@@ -80,12 +80,12 @@ static void _video_setmode(int w, int h, int fs, int fallback) {
 	} else {
 		flags |= SDL_WINDOW_RESIZABLE;
 	}
-	
+
 	if(!fallback) {
 		video.intended.width = w;
 		video.intended.height = h;
 	}
-	
+
 	if(video.window) {
 		SDL_DestroyWindow(video.window);
 		video.window = NULL;
@@ -115,16 +115,16 @@ static void _video_setmode(int w, int h, int fs, int fallback) {
 		errx(-1, "video_setmode(): error opening screen: %s", SDL_GetError());
 		return;
 	}
-	
+
 	warnx("video_setmode(): setting %dx%d (%s) failed, falling back to %dx%d (windowed)", w, h, fs ? "fullscreen" : "windowed", RESX, RESY);
-	_video_setmode(RESX, RESY, False, True);
+	_video_setmode(RESX, RESY, false, true);
 }
 
 void video_setmode(int w, int h, int fs) {
 	if(w == video.current.width && h == video.current.height && fs == video_isfullscreen())
 		return;
 
-	_video_setmode(w, h, fs, False);
+	_video_setmode(w, h, fs, false);
 }
 
 int video_isfullscreen(void) {
@@ -142,38 +142,39 @@ void video_resize(int w, int h) {
 }
 
 void video_init(void) {
-	int i, s, fullscreen_available = False;
+	int i, s;
+	bool fullscreen_available = false;
 
 	memset(&video, 0, sizeof(video));
 
 	// First, register all resolutions that are available in fullscreen
-	
+
 	for(s = 0; s < SDL_GetNumVideoDisplays(); ++s) {
 		for(i = 0; i < SDL_GetNumDisplayModes(s); ++i) {
 			SDL_DisplayMode mode = { SDL_PIXELFORMAT_UNKNOWN, 0, 0, 0, 0 };
-			
+
 			if(SDL_GetDisplayMode(s, i, &mode) != 0) {
 				warnx("SDL_GetDisplayMode failed: %s", SDL_GetError());
 			} else {
 				video_add_mode(mode.w, mode.h);
-				fullscreen_available = True;
+				fullscreen_available = true;
 			}
 		}
 	}
 
 	if(!fullscreen_available) {
 		warnx("video_init(): no available fullscreen modes");
-		tconfig.intval[FULLSCREEN] = False;
+		tconfig.intval[FULLSCREEN] = false;
 	}
 
 	// Then, add some common 4:3 modes for the windowed mode if they are not there yet.
 	// This is required for some multihead setups.
 	for(i = 0; common_modes[i].width; ++i)
 		video_add_mode(common_modes[i].width, common_modes[i].height);
-	
+
 	// sort it, mainly for the options menu
 	qsort(video.modes, video.mcount, sizeof(VideoMode), video_compare_modes);
-	
+
 	video_setmode(tconfig.intval[VID_WIDTH], tconfig.intval[VID_HEIGHT], tconfig.intval[FULLSCREEN]);
 }
 

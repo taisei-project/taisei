@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  * Copyright (C) 2012, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
@@ -56,7 +56,7 @@ typedef struct ReplayStage {
 	uint32_t seed;	// this also happens to be the game initiation time - and we use this property, don't break it please
 	uint8_t diff;
 	uint32_t points;
-	
+
 	// initial player settings
 	uint8_t plr_char;
 	uint8_t plr_shot;
@@ -147,9 +147,9 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode);
 int replay_save(Replay *rpy, char *name);
 int replay_load(Replay *rpy, char *name, ReplayReadMode mode);
 
-void replay_copy(Replay *dst, Replay *src, int steal_events);
+void replay_copy(Replay *dst, Replay *src, bool steal_events);
 
-char* replay_getpath(char *name, int ext);	// must be freed
+char* replay_getpath(char *name, bool ext);	// must be freed
 
 #endif
 

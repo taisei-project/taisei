@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
@@ -23,24 +23,24 @@
 
 void start_story(void *arg) {
 	MenuData m;
-	
+
 	init_player(&global.plr);
-	
+
 troll:
 	create_difficulty_menu(&m);
 	if(difficulty_menu_loop(&m) == -1)
 		return;
-	
+
 	create_char_menu(&m);
 	if(char_menu_loop(&m) == -1)
 		goto troll;
-	
+
 	global.replay_stage = NULL;
 	replay_init(&global.replay);
-	
+
 	int chr = global.plr.cha;
 	int sht = global.plr.shot;
-	
+
 troll2:
 	if(arg)
 		((StageInfo*)arg)->loop();
@@ -49,7 +49,7 @@ troll2:
 		for(i = 0; stages[i].loop; ++i)
 			stages[i].loop();
 	}
-	
+
 	if(global.game_over == GAMEOVER_RESTART) {
 		init_player(&global.plr);
 		replay_destroy(&global.replay);
@@ -60,16 +60,16 @@ troll2:
 		global.plr.shot = sht;
 		goto troll2;
 	}
-	
+
 	if(global.replay_stage) {
 		switch(tconfig.intval[SAVE_RPY]) {
 			case 0: break;
-				
+
 			case 1: {
 				save_rpy(NULL);
 				break;
 			}
-			
+
 			case 2: {
 				MenuData m;
 				create_saverpy_menu(&m);
@@ -80,14 +80,14 @@ troll2:
 
 		global.replay_stage = NULL;
 	}
-	
+
 	if(global.game_over == GAMEOVER_WIN && !arg) {
 		start_bgm("bgm_ending");
 		ending_loop();
 		start_bgm("bgm_credits");
 		credits_loop();
 	}
-	
+
 	start_bgm("bgm_menu");
 	replay_destroy(&global.replay);
 	global.game_over = 0;
@@ -113,7 +113,7 @@ void enter_replayview(void *arg) {
 
 void create_main_menu(MenuData *m) {
 	create_menu(m);
-		
+
 	add_menu_entry(m, "Start Story", start_story, NULL);
 	add_menu_entry(m, "Start Extra", NULL, NULL);
 #ifdef DEBUG
@@ -129,7 +129,7 @@ void draw_main_menu_bg(MenuData* menu) {
 	glColor4f(1,1,1,1);
 	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubgbg");
 	glColor4f(1,1,1,0.95 + 0.05*sin(menu->frames/100.0));
-	
+
 	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubg");
 	glColor4f(1,1,1,1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -137,12 +137,12 @@ void draw_main_menu_bg(MenuData* menu) {
 
 void draw_main_menu(MenuData *menu) {
 	draw_main_menu_bg(menu);
-		
+
 	draw_texture(150, 100, "mainmenu/logo");
-	
+
 	glPushMatrix();
 	glTranslatef(0, SCREEN_H-200, 0);
-	
+
 	Texture *bg = get_tex("part/smoke");
 	glPushMatrix();
 	glTranslatef(50 + menu->drawdata[1]/2, menu->drawdata[2], 0);	// 135
@@ -151,16 +151,16 @@ void draw_main_menu(MenuData *menu) {
 	glColor4f(0,0,0,0.5);
 	draw_texture_p(0,0,bg);
 	glPopMatrix();
-	
+
 	int i;
-	
+
 	menu->drawdata[1] += (stringwidth(menu->entries[menu->cursor].name, _fonts.mainmenu) - menu->drawdata[1])/10.0;
 	menu->drawdata[2] += (35*menu->cursor - menu->drawdata[2])/10.0;
-	
+
 	for(i = 0; i < menu->ecount; i++) {
 		float s = 5*sin(menu->frames/80.0 + 20*i);
 		menu->entries[i].drawdata += 0.2 * ((i == menu->cursor) - menu->entries[i].drawdata);
-		
+
 		if(menu->entries[i].action == NULL) {
 			glColor4f(0.5,0.5,0.5,0.7);
 		} else {
@@ -168,14 +168,14 @@ void draw_main_menu(MenuData *menu) {
 			float a = 1 - menu->entries[i].drawdata;
 			glColor4f(1, 0.7 + a, 0.4 + a, 0.7);
 		}
-		
-		draw_text(AL_Left, 50 + s, 35*i, menu->entries[i].name, _fonts.mainmenu);				
+
+		draw_text(AL_Left, 50 + s, 35*i, menu->entries[i].name, _fonts.mainmenu);
 	}
-	
+
 	glPopMatrix();
 }
 
 void main_menu_loop(MenuData *menu) {
-	set_transition(TransLoader, -1, FADE_TIME*2);	
+	set_transition(TransLoader, -1, FADE_TIME*2);
 	menu_loop(menu, NULL, draw_main_menu, NULL);
 }

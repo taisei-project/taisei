@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  * Code by: Juergen Kieslich
@@ -28,10 +28,10 @@ struct Item{
 	int birthtime;
 	complex pos;
 	complex pos0;
-	
+
 	int auto_collect;
 	Type type;
-	
+
 	complex v;
 };
 

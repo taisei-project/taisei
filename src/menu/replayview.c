@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  * Copyright (C) 2012, Alexeyew Andrew <https://github.com/nexAkari>
@@ -45,7 +45,7 @@ void start_replay(void *arg) {
 		return;
 	}
 
-	replay_copy(&global.replay, ictx->replay, True);
+	replay_copy(&global.replay, ictx->replay, true);
 	global.replaymode = REPLAY_PLAY;
 
 	if(global.replay.numstages == 1){
@@ -57,21 +57,21 @@ void start_replay(void *arg) {
 	for(int i = mctx->pickedstage; i < global.replay.numstages; ++i) {
 		ReplayStage *rstg = global.replay_stage = global.replay.stages+i;
 		StageInfo *gstg = stage_get(rstg->stage);
-		
+
 		if(!gstg) {
 			printf("start_replay(): Invalid stage %d in replay at %i skipped.\n", rstg->stage, i);
 			continue;
 		}
-		
+
 		gstg->loop();
-		
+
 		if(global.game_over == GAMEOVER_ABORT) {
 			break;
 		}
 
 		global.game_over = 0;
 	}
-	
+
 	start_bgm("bgm_menu");
 	global.game_over = 0;
 	global.replaymode = REPLAY_RECORD;
@@ -127,12 +127,12 @@ static void shorten(char *s, int width) {
 	float len = strlen(s);
 	float avgw = sw / len;
 	int c = width / avgw, i;
-	
+
 	if(c > len)
 		return;
-	
+
 	s[c+1] = 0;
-	
+
 	for(i = 0; i < 3; ++i)
 		s[c - i] = '.';
 }
@@ -143,38 +143,38 @@ static void replayview_draw_stagemenu(MenuData *m) {
 
 	float alpha = 1-menu_fade(m);
 	int i;
-	
+
 	float height = (1+m->ecount) * 20;
 	float width  = 100;
-	
+
 	glPushMatrix();
 	glTranslatef(SCREEN_W*0.5, SCREEN_H*0.5, 0);
 	glScalef(width, height, 1);
 	glColor4f(0.1, 0.1, 0.1, 0.7 * alpha);
 	draw_quad();
 	glPopMatrix();
-	
+
 	glPushMatrix();
 	glTranslatef(SCREEN_W*0.5, (SCREEN_H-(m->ecount-1)*20)*0.5, 0);
-	
+
 	for(i = 0; i < m->ecount; ++i) {
 		MenuEntry *e = &(m->entries[i]);
 		float a = e->drawdata += 0.2 * ((i == m->cursor) - e->drawdata);
-		
+
 		if(e->action == NULL) {
 			glColor4f(0.5, 0.5, 0.5, 0.5 * alpha);
 		} else {
 			float ia = 1-a;
 			glColor4f(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a) * alpha);
 		}
-		
+
 		if(i == m->cursor) {
 			ctx->pickedstage = i;
 		}
-		
+
 		draw_text(AL_Center, 0, 20*i, e->name, _fonts.standard);
 	}
-	
+
 	glPopMatrix();
 }
 
@@ -195,12 +195,12 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 		char tmp[128];
 		int csize = sizes[i] * (SCREEN_W - 210)/columns;
 		int o = 0;
-		
+
 		for(j = 0; j < i; ++j)
 			o += sizes[j] * (SCREEN_W - 210)/columns;
-		
+
 		Alignment a = AL_Center;
-		
+
 		// hell yeah, another loop-switch sequence
 		switch(i) {
 			case 0:
@@ -209,21 +209,21 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 				struct tm* timeinfo = localtime(&t);
 				strftime(tmp, sizeof(tmp), "%Y-%m-%d %H:%M", timeinfo);
 				break;
-			
+
 			case 1:
 				a = AL_Center;
 				strncpy(tmp, rpy->playername, 128);
 				break;
-			
+
 			case 2:
 				plrmode_repr(tmp, sizeof(tmp), rpy->stages[0].plr_char, rpy->stages[0].plr_shot);
 				tmp[0] = tmp[0] - 'a' + 'A';
 				break;
-			
+
 			case 3:
 				snprintf(tmp, sizeof(tmp), "%s", difficulty_name(rpy->stages[0].diff));
 				break;
-			
+
 			case 4:
 				a = AL_Right;
 				if(rpy->numstages == 1)
@@ -232,14 +232,14 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 					snprintf(tmp, sizeof(tmp), "%i stages", rpy->numstages);
 				break;
 		}
-		
+
 		shorten(tmp, csize);
 		switch(a) {
 			case AL_Center:	o += csize * 0.5 - stringwidth(tmp, _fonts.standard) * 0.5;		break;
 			case AL_Right:	o += csize - stringwidth(tmp, _fonts.standard);					break;
 			default:																		break;
 		}
-		
+
 		draw_text(AL_Left, o + 10, 20*item, tmp, _fonts.standard);
 	}
 }
@@ -253,9 +253,9 @@ static void replayview_draw(MenuData *m) {
 	m->drawdata[0] = SCREEN_W/2 - 100;
 	m->drawdata[1] = (SCREEN_W - 200)*0.85;
 	m->drawdata[2] += (20*m->cursor - m->drawdata[2])/10.0;
-	
-	draw_menu_list(m, 100, 100, replayview_drawitem);	
-	
+
+	draw_menu_list(m, 100, 100, replayview_drawitem);
+
 	if(ctx->submenu) {
 		MenuData *sm = ctx->submenu;
 		menu_logic(sm);
@@ -263,7 +263,7 @@ static void replayview_draw(MenuData *m) {
 			destroy_menu(sm);
 			ctx->submenu = NULL;
 		} else {
-			replayview_draw_stagemenu(sm);			
+			replayview_draw_stagemenu(sm);
 		}
 	}
 
@@ -283,19 +283,19 @@ int fill_replayview_menu(MenuData *m) {
 	DIR *dir = opendir(get_replays_path());
 	struct dirent *e;
 	int rpys = 0;
-	
+
 	if(!dir) {
 		printf("Could't read %s\n", get_replays_path());
 		return -1;
 	}
-	
+
 	char ext[5];
 	snprintf(ext, 5, ".%s", REPLAY_EXTENSION);
-	
+
 	while((e = readdir(dir))) {
 		if(!strendswith(e->d_name, ext))
 			continue;
-		
+
 		Replay *rpy = malloc(sizeof(Replay));
 		if(!replay_load(rpy, e->d_name, REPLAY_READ_META)) {
 			free(rpy);
@@ -313,7 +313,7 @@ int fill_replayview_menu(MenuData *m) {
 		add_menu_entry_f(m, " ", replayview_run, ictx, (rpy->numstages > 1)*MF_InstantSelect)->transition = rpy->numstages < 2 ? TransFadeBlack : NULL;
 		++rpys;
 	}
-	
+
 	closedir(dir);
 	qsort(m->entries, m->ecount, sizeof(MenuEntry), replayview_cmp);
 	return rpys;

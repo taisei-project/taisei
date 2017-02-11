@@ -8,15 +8,14 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include <stdbool.h>
+
 #include "tscomplex.h"
 #include "enemy.h"
 #include "gamepad.h"
 #include "resource/animation.h"
 
 enum {
-	False = 0,
-	True = 1,
-
 	MOVEFLAG_UP = 1,
 	MOVEFLAG_DOWN = 2,
 	MOVEFLAG_LEFT = 4,
@@ -39,8 +38,8 @@ typedef enum {
 typedef struct {
 	complex pos;
 	short focus;
-	short fire;
-	short moving;
+	bool fire;
+	bool moving;
 
 	short dir;
 	short power;
@@ -87,8 +86,8 @@ void player_realdeath(Player*);
 void player_death(Player*);
 void player_graze(Player*, complex, int);
 
-void player_setmoveflag(Player* plr, int key, int mode);
-void player_event(Player* plr,int type, int key);
+void player_setmoveflag(Player* plr, int key, bool mode);
+void player_event(Player* plr, int type, int key);
 void player_applymovement(Player* plr);
 void player_input_workaround(Player *plr);
 

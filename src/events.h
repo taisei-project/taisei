@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  * Copyright (C) 2012, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
@@ -21,13 +21,13 @@ typedef enum {
 	// EF_Keyboard
 	E_KeyDown,
 	E_KeyUp,
-	
+
 	// EF_Text
 	E_CharTyped,
 	E_CharErased,
 	E_SubmitText,
 	E_CancelText,
-	
+
 	// EF_Menu
 	E_CursorUp,
 	E_CursorDown,
@@ -35,14 +35,14 @@ typedef enum {
 	E_CursorRight,
 	E_MenuAccept,
 	E_MenuAbort,
-	
+
 	// EF_Game
 	E_PlrKeyDown,
 	E_PlrKeyUp,
 	E_PlrAxisUD,
 	E_PlrAxisLR,
 	E_Pause,
-	
+
 	// EF_Gamepad
 	E_GamepadKeyDown,
 	E_GamepadKeyUp

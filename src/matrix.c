@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
@@ -35,28 +35,28 @@ void matmul(Matrix dest, Matrix a, Matrix b) {
 void matrotate(Matrix md, Matrix ms, float angle, float x, float y, float z) {
 	float c = cos(angle);
 	float s = sin(angle);
-	
+
 	Matrix a = {
 		{x*x*(1-c)+c, x*y*(1-c)-z*s, x*z*(1-c)+y*s, 0},
 		{y*x*(1-c)+z*s, y*y*(1-c)+c, y*z*(1-c)-x*s, 0},
 		{x*z*(1-c)-y*s, y*z*(1-c)+x*s, z*z*(1-c)+c, 0},
 		{0, 0, 0, 1}
 	};
-	
+
 	matmul(md, ms, a);
 }
 
 void matrotatez(Matrix md, Matrix ms, float angle) {
 	float c = cos(angle);
 	float s = sin(angle);
-	
+
 	Matrix a = {
 		{c, -s, 0, 0},
 		{s,  c, 0, 0},
 		{0,  0, 1, 0},
 		{0,  0, 0, 1}
 	};
-		
+
 	matmul(md, ms, a);
 }
 
@@ -67,7 +67,7 @@ void mattranslate(Matrix md, Matrix ms, float x, float y, float z) {
 		{0, 0, 1, z},
 		{0, 0, 0, 1}
 	};
-	
+
 	matmul(md, ms, a);
 }
 
@@ -78,14 +78,14 @@ void matscale(Matrix md, Matrix ms, float x, float y, float z) {
 		{0, 0, z, 0},
 		{0, 0, 0, 1}
 	};
-	
+
 	matmul(md, ms, a);
 }
 
 void matvec(Matrix m, Vector v) {
 	Vector tmp;
 	memcpy(tmp, v, sizeof(Vector));
-	
+
 	int i, k;
 	for(i = 0; i < 3; i++) {
 		v[i] = 0;
@@ -93,7 +93,7 @@ void matvec(Matrix m, Vector v) {
 			float t = 1;
 			if(k < 3)
 				t = tmp[k];
-			
+
 			v[i] += m[i][k] * t;
 		}
 	}
@@ -108,9 +108,9 @@ void matvecv(Matrix m, Vector *v, int n) {
 
 void normalize(Vector v) {
 	int i;
-	
+
 	float len = length(v);
-	
+
 	for(i = 0; i < 3; i++)
 		v[i] /= len;
 }

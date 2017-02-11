@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  * Copyright (C) 2011, Alexeyew Andrew <https://github.com/nexAkari>
@@ -18,7 +18,7 @@ int options_menu_loop(MenuData *m);
 
 typedef int (*BindingGetter)(void*);
 typedef int (*BindingSetter)(void*, int);
-typedef int (*BindingDependence)(void);
+typedef bool (*BindingDependence)(void);
 
 typedef void (*FloatSetter)(float);
 
@@ -34,7 +34,7 @@ typedef enum BindingType {
 
 typedef struct OptionBinding {
 	char **values;
-	int displaysingle;
+	bool displaysingle;
 	int valcount;
 	int valrange_min;
 	int valrange_max;
@@ -48,7 +48,7 @@ typedef struct OptionBinding {
 	int selected;
 	int configentry;
 	BindingType type;
-	int blockinput;
+	bool blockinput;
 } OptionBinding;
 
 void draw_options_menu_bg(MenuData*);

@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
@@ -13,6 +13,7 @@
 #undef complex
 #define complex double _Complex
 
+#include <stdbool.h>
 #include <stdarg.h>
 
 typedef struct Enemy Enemy;
@@ -27,21 +28,21 @@ enum {
 struct Enemy {
 	Enemy *next;
 	Enemy *prev;
-	
+
 	complex pos;
 	complex pos0;
-	
-	long birthtime;	
-	
+
+	long birthtime;
+
 	int dir;
-	int moving;
-	
+	bool moving;
+
 	EnemyLogicRule logic_rule;
 	EnemyDrawRule draw_rule;
-	
+
 	int hp;
-	int unbombable;
-	
+	bool unbombable;
+
 	complex args[RULE_ARGC];
 	float alpha;
 };

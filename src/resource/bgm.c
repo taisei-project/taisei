@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
@@ -25,7 +25,7 @@ int init_bgm(int *argc, char *argv[])
 {
 	if (tconfig.intval[NO_MUSIC]) return 1;
 	if (!init_alut_if_needed(argc, argv)) return 0;
-	
+
 	alGenSources(1, &resources.bgmsrc);
 	if(warn_alut_error("creating music sources"))
 	{
@@ -66,15 +66,15 @@ void delete_bgm_description(void **descs, void *desc) {
 
 void load_bgm_descriptions(const char *path) {
 	const char *fname = "/bgm.conf";
-	
+
 	char *fullname = malloc(strlen(path)+strlen(fname)+1);
 	if (fullname == NULL) return;
 	strcpy(fullname, path);
 	strcat(fullname, fname);
-	
+
 	FILE *fp = fopen(fullname, "rt");
 	if (fp == NULL) return;
-	
+
 	char line[256];
 	while(fgets(line, sizeof(line), fp))
 	{
@@ -88,10 +88,10 @@ void load_bgm_descriptions(const char *path) {
 				warnx("load_bgm_description():\n!- illegal string format. See README.");
 			continue;
 		}
-		
+
 		*(rem++)='\0';
 		Bgm_desc *desc = create_element((void **)&resources.bgm_descriptions, sizeof(Bgm_desc));
-		
+
 		desc->name  = strdup(line);
 		desc->value = malloc(strlen(rem) + 6);
 		if (!desc->name || !desc->value)
@@ -104,7 +104,7 @@ void load_bgm_descriptions(const char *path) {
 		strcat(desc->value, rem);
 		printf ("Music %s is now known as \"%s\".\n", desc->name, desc->value);
 	}
-	
+
 	fclose(fp);
 	return;
 }
@@ -115,21 +115,21 @@ Sound *load_bgm(char *filename, const char *type) {
 
 void start_bgm(char *name) {
 	if(tconfig.intval[NO_MUSIC]) return;
-	
+
 	if(!name || strcmp(name, "") == 0)
 	{
 		stop_bgm();
 		return;
 	}
-	
+
 	// if BGM has changed, change it and start from beginning
 	if (!current_bgm.name || strcmp(name, current_bgm.name))
 	{
 		current_bgm.name = realloc(current_bgm.name, strlen(name) + 1);
-		
+
 		if(current_bgm.name == NULL)
 			errx(-1,"start_bgm():\n!- realloc error with music '%s'", name);
-		
+
 		strcpy(current_bgm.name, name);
 		if((current_bgm.data = get_snd(resources.music, name)) == NULL)
 		{
@@ -146,12 +146,12 @@ void start_bgm(char *name) {
 		alSourcei(resources.bgmsrc, AL_LOOPING, AL_TRUE);
 		warn_alut_error("looping music source");
 	}
-	
+
 	// otherwise, do not change anything and continue
 	ALint play;
 	alGetSourcei(resources.bgmsrc,AL_SOURCE_STATE,&play);
 	warn_alut_error("checking state of music source");
-	
+
 	// Support drawing BGM title in game loop
 	if ((current_bgm.title = get_bgm_desc(resources.bgm_descriptions, current_bgm.name)) != NULL)
 	{
@@ -163,7 +163,7 @@ void start_bgm(char *name) {
 	{
 		current_bgm.started_at = -1;
 	}
-	
+
 	if(play != AL_PLAYING)
 	{
 		alSourcePlay(resources.bgmsrc);
@@ -179,7 +179,7 @@ void continue_bgm(void)
 
 void stop_bgm(void) {
 	if (tconfig.intval[NO_MUSIC] || !current_bgm.name) return;
-	
+
 	ALint play;
 	alGetSourcei(resources.bgmsrc,AL_SOURCE_STATE,&play);
 	warn_alut_error("checking state of music source");

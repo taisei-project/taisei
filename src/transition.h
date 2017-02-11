@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
@@ -15,7 +15,7 @@ struct Transition {
 	int frames;
 	int dur1; // first half
 	int dur2; // second half
-	
+
 	TransitionRule rule;
 };
 

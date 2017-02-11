@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  * Copyright (C) 2012, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
@@ -14,7 +14,7 @@
 typedef struct RandomState {
 	uint32_t w;
 	uint32_t z;
-    int locked;
+    bool locked;
 } RandomState;
 
 int tsrand_test(void);

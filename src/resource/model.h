@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
@@ -16,16 +16,16 @@ typedef struct ObjFileData ObjFileData;
 struct ObjFileData {
 	Vector *xs;
 	int xcount;
-	
+
 	Vector *normals;
 	int ncount;
-	
+
 	Vector *texcoords;
 	int tcount;
-	
+
 	IVector *indices;
 	int icount;
-	
+
 	int fverts;
 };
 
@@ -33,12 +33,12 @@ typedef struct Model Model;
 struct Model {
 	struct Model *next;
 	struct Model *prev;
-	
+
 	char *name;
-	
+
 	unsigned int *indices;
 	int icount;
-	
+
 	int fverts;
 };
 

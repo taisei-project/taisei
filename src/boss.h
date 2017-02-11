@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
@@ -25,31 +25,31 @@ typedef enum AttackType {
 
 typedef struct Attack {
 	char *name;
-	
+
 	AttackType type;
-	
+
 	int starttime;
-	
+
 	int timeout;
 	int dmglimit;
-		
+
 	BossRule rule;
 	BossRule draw_rule;
-} Attack;	
+} Attack;
 
-typedef struct Boss {	
+typedef struct Boss {
 	Attack *attacks;
 	Attack *current;
-	
+
 	complex pos;
-	
+
 	char *name;
-	
+
 	int acount;
-	
+
 	Animation *ani;
 	int anirow;
-			
+
 	int dmg;
 	Color *zoomcolor;
 } Boss;

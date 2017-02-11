@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
@@ -8,13 +8,14 @@
 #ifndef MENU_H
 #define MENU_H
 
+#include <stdbool.h>
 #include "transition.h"
 
 #define IMENU_BLUR 0.05
 
 #include "events.h"
 
-enum {	
+enum {
 	FADE_TIME = 15
 };
 
@@ -24,9 +25,9 @@ typedef struct {
 	char *name;
 	MenuAction action;
 	void *arg;
-	
+
 	int flags;
-	
+
 	float drawdata;
 	TransitionRule transition;
 } MenuEntry;
@@ -35,10 +36,10 @@ typedef struct {
 //	MF_InstantSelect = 4
 // };
 
-enum MenuFlag { 
+enum MenuFlag {
 	MF_Transient = 1, // whether to close on selection or not.
 	MF_Abortable = 2,
-	
+
 	MF_InstantSelect = 4,
 	MF_ManualDrawTransition = 8, // the menu will not call draw_transition() automatically
 	MF_AlwaysProcessInput = 16 // the menu will process input even during fadeouts
@@ -52,24 +53,24 @@ enum MenuState{
 
 typedef struct MenuData{
 	int flags;
-	
+
 	int cursor;
 	int selected;
-	
+
 	MenuEntry *entries;
 	int ecount;
-	
+
 	int frames;
 	int lasttime;
-		
+
 	int state;
 	int quitframe;
 	int quitdelay;
-	
+
 	TransitionRule transition;
-	
-	float drawdata[4];	
-	
+
+	float drawdata[4];
+
 	void *context;
 } MenuData;
 

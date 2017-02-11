@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
@@ -11,7 +11,7 @@
 #include "tscomplex.h"
 #include "resource/texture.h"
 
-#include <complex.h>
+#include <stdbool.h>
 
 enum {
 	RULE_ARGC = 4
@@ -31,22 +31,22 @@ typedef enum {
 typedef struct Projectile {
 	struct Projectile *next;
 	struct Projectile *prev;
-	
+
 	complex pos;
 	complex pos0;
-	
+
 	long birthtime;
-	
+
 	float angle;
-	
+
 	ProjRule rule;
 	ProjDRule draw;
 	Texture *tex;
-	
+
 	ProjType type;
-	
+
 	Color *clr;
-	
+
 	complex args[RULE_ARGC];
 	int grazed;
 } Projectile;
@@ -69,7 +69,7 @@ void delete_projectile(Projectile **dest, Projectile *proj);
 void delete_projectiles(Projectile **dest);
 void draw_projectiles(Projectile *projs);
 int collision_projectile(Projectile *p);
-void process_projectiles(Projectile **projs, char collision);
+void process_projectiles(Projectile **projs, bool collision);
 
 Projectile *get_proj(Projectile *hay, int birthtime);
 

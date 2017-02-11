@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
@@ -15,14 +15,14 @@ struct Animation;
 typedef struct Animation {
 	struct Animation *next;
 	struct Animation *prev;
-	
+
 	int rows;
 	int cols;
-	
+
 	int w,h;
-	
+
 	int speed;
-	
+
 	char *name;
 	Texture *tex;
 } Animation;

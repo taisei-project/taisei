@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
@@ -28,18 +28,18 @@ int getenvint(const char *v) {
 }
 
 void init_global(void) {
-	memset(&global, 0, sizeof(global));	
+	memset(&global, 0, sizeof(global));
 
 	tsrand_init(&global.rand_game, time(0));
 	tsrand_init(&global.rand_visual, time(0));
 
 	tsrand_switch(&global.rand_visual);
-	
+
 	memset(&resources, 0, sizeof(Resources));
-	
+
 	printf("- fonts:\n");
 	init_fonts();
-	
+
 	memset(&global.replay, 0, sizeof(Replay));
 	global.replaymode = REPLAY_RECORD;
 
@@ -57,15 +57,15 @@ void print_state_checksum(void) {
 	Player *p = &global.plr;
 	Enemy *s;
 	Projectile *pr;
-	
+
 	plr = creal(p->pos)+cimag(p->pos)+p->focus+p->fire+p->power+p->lifes+p->bombs+p->recovery+p->deathtime+p->continues+p->moveflags;
-	
+
 	for(s = global.plr.slaves; s; s = s->next) {
 		spos += creal(s->pos + s->pos0) + cimag(s->pos + s->pos0);
 		smisc += s->birthtime + s->hp + s->unbombable + s->alpha;
 		sargs += cabs(s->args[0]) + cabs(s->args[1]) + cabs(s->args[2]) + cabs(s->args[3]) + s->alpha;
 	}
-	
+
 	for(pr = global.projs; pr; pr = pr->next)
 		proj += cabs(pr->pos + pr->pos0) + pr->birthtime + pr->angle + pr->type + cabs(pr->args[0]) + cabs(pr->args[1]) + cabs(pr->args[2]) + cabs(pr->args[3]);
 
@@ -80,13 +80,13 @@ void frame_rate(int *lasttime) {
 	int t = *lasttime + 1000.0/FPS - SDL_GetTicks();
 	if(t > 0)
 		SDL_Delay(t);
-	
+
 	*lasttime = SDL_GetTicks();
 }
 
 double approach(double v, double t, double d) {
 	if(v < t) {
-		v += d; 
+		v += d;
 		if(v > t)
 			return t;
 	} else if(v > t) {
@@ -94,14 +94,14 @@ double approach(double v, double t, double d) {
 		if(v < t)
 			return t;
 	}
-	
+
 	return v;
 }
 
 void calc_fps(FPSCounter *fps) {
 	if(!fps->stagebg_fps)
 		fps->stagebg_fps = FPS;
-	
+
 	if(SDL_GetTicks() > fps->fpstime+1000) {
 		fps->show_fps = fps->fps;
 		fps->fps = 0;
@@ -109,7 +109,7 @@ void calc_fps(FPSCounter *fps) {
 	} else {
 		fps->fps++;
 	}
-	
+
 	fps->stagebg_fps = approach(fps->stagebg_fps, fps->show_fps, 0.1);
 }
 
@@ -123,17 +123,17 @@ void set_ortho(void) {
 
 void colorfill(float r, float g, float b, float a) {
 	if(a <= 0) return;
-	
+
 	glColor4f(r,g,b,a);
-	
+
 	glPushMatrix();
 	glScalef(SCREEN_W,SCREEN_H,1);
 	glTranslatef(0.5,0.5,0);
-	
+
 	draw_quad();
 	glPopMatrix();
-	
-	glColor4f(1,1,1,1);	
+
+	glColor4f(1,1,1,1);
 }
 
 void fade_out(float f) {
@@ -157,7 +157,7 @@ double clamp(double f, double lower, double upper) {
 		return lower;
 	if(f > upper)
 		return upper;
-	
+
 	return f;
 }
 
@@ -169,31 +169,31 @@ void take_screenshot(void)
 	time_t rawtime;
 	struct tm * timeinfo;
 	int w, h;
-	
+
 	w = video.current.width;
 	h = video.current.height;
-	
+
 	data = malloc(3 * w * h);
-	
+
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
 	strftime(outfile, 128, "/taisei_%Y%m%d_%H-%M-%S_%Z.png", timeinfo);
-	
+
 	outpath = malloc(strlen(outfile) + strlen(get_screenshots_path()) + 1);
 	strcpy(outpath, get_screenshots_path());
 	strcat(outpath, outfile);
-	
+
 	printf("Saving screenshot as %s\n", outpath);
 	out = fopen(outpath, "wb");
 	free(outpath);
-	
+
 	if(!out)
 	{
 		perror("fopen");
 		free(data);
 		return;
 	}
-	
+
 	glReadBuffer(GL_FRONT);
 	glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, data);
 
@@ -201,7 +201,7 @@ void take_screenshot(void)
     png_infop info_ptr;
 	png_byte **row_pointers;
 	int y;
-	
+
 	png_ptr = png_create_write_struct (PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	info_ptr = png_create_info_struct (png_ptr);
 
@@ -209,40 +209,40 @@ void take_screenshot(void)
                   PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 
 	row_pointers = png_malloc(png_ptr, h*sizeof(png_byte *));
-	
+
 	for(y = 0; y < h; y++) {
 		row_pointers[y] = png_malloc(png_ptr, 8*3*w);
-		
+
 		memcpy(row_pointers[y], data + w*3*(h-1-y), w*3);
 	}
-	
+
 	png_init_io(png_ptr, out);
 	png_set_rows(png_ptr, info_ptr, row_pointers);
 	png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
-	
+
 	for(y = 0; y < h; y++)
 		png_free(png_ptr, row_pointers[y]);
-		
+
 	png_free(png_ptr, row_pointers);
-	
+
 	png_destroy_write_struct(&png_ptr, &info_ptr);
-	
+
 	free(data);
 	fclose(out);
 }
 
-int strendswith(char *s, char *e) {
+bool strendswith(char *s, char *e) {
 	int ls = strlen(s);
 	int le = strlen(e);
-	
+
 	if(le > ls)
-		return False;
-	
+		return false;
+
 	int i; for(i = 0; i < le; ++i)
 		if(s[ls-i-1] != e[le-i-1])
-			return False;
-	
-	return True;
+			return false;
+
+	return true;
 }
 
 char* difficulty_name(Difficulty diff) {
@@ -264,6 +264,6 @@ void stralloc(char **dest, char *src) {
 
 // Inputdevice-agnostic method of checking whether a game control is pressed.
 // ALWAYS use this instead of SDL_GetKeyState if you need it.
-int gamekeypressed(int key) {
+bool gamekeypressed(int key) {
 	return SDL_GetKeyboardState(NULL)[tconfig.intval[key]] || gamepad_gamekeypressed(key);
 }

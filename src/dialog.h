@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
@@ -8,6 +8,7 @@
 #ifndef DIALOG_H
 #define DIALOG_H
 
+#include <stdbool.h>
 #include "resource/texture.h"
 
 struct DialogMessage;
@@ -19,7 +20,7 @@ typedef enum {
 	BGM
 } Side;
 
-typedef struct DialogMessage {	
+typedef struct DialogMessage {
 	Side side;
 	char *msg;
 } DialogMessage;
@@ -27,14 +28,14 @@ typedef struct DialogMessage {
 typedef struct Dialog {
 	DialogMessage *messages;
 	Texture *images[2];
-	
+
 	int count;
 	int pos;
-	
+
 	int page_time;
-	
+
 	int birthtime;
-	int skip;
+	bool skip;
 } Dialog;
 
 Dialog *create_dialog(char *left, char *right);

@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  * Copyright (C) 2012, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
@@ -11,14 +11,14 @@
 #include "video.h"
 
 void add_ending_entry(Ending *e, int dur, char *msg, char *tex) {
-	EndingEntry *entry;	
+	EndingEntry *entry;
 	e->entries = realloc(e->entries, (++e->count)*sizeof(EndingEntry));
 	entry = &e->entries[e->count-1];
-	
+
 	entry->time = e->duration;
 	e->duration += dur;
 	entry->msg = strdup(msg);
-	
+
 	if(tex)
 		entry->tex = get_tex(tex);
 	else
@@ -59,7 +59,7 @@ void good_ending_youmu(Ending *e) {
 
 void create_ending(Ending *e) {
 	memset(e, 0, sizeof(Ending));
-	
+
 	if(global.plr.continues || global.diff == D_Easy) {
 		switch(global.plr.cha) {
 		case Marisa:
@@ -69,7 +69,7 @@ void create_ending(Ending *e) {
 			bad_ending_youmu(e);
 			break;
 		}
-		
+
 		add_ending_entry(e, 400, "Try a no continue run on higher difficulties. You can do it!", NULL);
 	} else {
 		switch(global.plr.cha) {
@@ -82,13 +82,13 @@ void create_ending(Ending *e) {
 		}
 		add_ending_entry(e, 400, "Sorry, extra stage isn't done yet. ^^", NULL);
 	}
-	
+
 	if(global.diff == D_Lunatic)
 		add_ending_entry(e, 400, "Lunatic? Didn't know this was even possible. Cheater.", NULL);
-	
+
 	add_ending_entry(e, 400, "", NULL);
-}	
-	
+}
+
 void free_ending(Ending *e) {
 	int i;
 	for(i = 0; i < e->count; i++)
@@ -100,44 +100,44 @@ void ending_draw(Ending *e) {
 	float s, d;
 	int t1 = global.frames-e->entries[e->pos].time;
 	int t2 = e->entries[e->pos+1].time-global.frames;
-		
+
 	d = 1.0/ENDING_FADE_TIME;
-	
+
 	if(t1 < ENDING_FADE_TIME)
 		s = clamp(d*t1, 0.0, 1.0);
 	else
 		s = clamp(d*t2, 0.0, 1.0);
-	
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
+
 	glColor4f(1,1,1,s);
 	if(e->entries[e->pos].tex)
 		draw_texture_p(SCREEN_W/2, SCREEN_H/2, e->entries[e->pos].tex);
-	
+
 	draw_text(AL_Center, SCREEN_W/2, SCREEN_H/5*4, e->entries[e->pos].msg, _fonts.standard);
 	glColor4f(1,1,1,1);
-	
+
 	draw_transition();
 }
 
 void ending_loop(void) {
 	Ending e;
 	create_ending(&e);
-	
+
 	global.frames = 0;
 	set_ortho();
-		
+
 	while(e.pos < e.count-1) {
 		handle_events(NULL, 0, NULL);
-		
+
 		ending_draw(&e);
 		global.frames++;
 		SDL_GL_SwapWindow(video.window);
 		frame_rate(&global.lasttime);
-		
+
 		if(global.frames >= e.entries[e.pos+1].time)
 			e.pos++;
-		
+
 		if(global.frames == e.entries[e.count-1].time-ENDING_FADE_OUT)
 			set_transition(TransFadeWhite, ENDING_FADE_OUT, ENDING_FADE_OUT);
 	}

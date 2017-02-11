@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
@@ -28,7 +28,7 @@ int warn_alut_error(const char *when) {
 void unload_alut_if_needed() {
 	// ALUT will be unloaded only if there are no audio AND no music enabled
 	if(!tconfig.intval[NO_AUDIO] || !tconfig.intval[NO_MUSIC] || !alut_loaded) return;
-	
+
 	warn_alut_error("preparing to shutdown");
 	alutExit();
 	warn_alut_error("shutting down");
@@ -39,7 +39,7 @@ void unload_alut_if_needed() {
 int init_alut_if_needed(int *argc, char *argv[]) {
 	// ALUT will not be loaded if there are no audio AND no music enabled
 	if((tconfig.intval[NO_AUDIO] && tconfig.intval[NO_MUSIC]) || alut_loaded) return 1;
-	
+
 	if(!alutInit(argc, argv))
 	{
 		warn_alut_error("initializing");
@@ -49,9 +49,9 @@ int init_alut_if_needed(int *argc, char *argv[]) {
 		tconfig.intval[NO_MUSIC] = 1;
 		return 0;
 	}
-	
+
 	printf("-- ALUT\n");
-	
+
 	alut_loaded = 1;
 	return 1;
 }
@@ -60,7 +60,7 @@ int init_sfx(int *argc, char *argv[])
 {
 	if (tconfig.intval[NO_AUDIO]) return 1;
 	if (!init_alut_if_needed(argc, argv)) return 0;
-	
+
 	alGenSources(SNDSRC_COUNT, resources.sndsrc);
 	if(warn_alut_error("creating sfx sources"))
 	{
@@ -87,7 +87,7 @@ void shutdown_sfx(void)
 
 Sound *load_sound_or_bgm(char *filename, Sound **dest, const char *res_directory, const char *type) {
 	ALuint sound = 0;
-	
+
 #ifdef OGG_SUPPORT_ENABLED
 	// Try to load ogg file
 	if(strcmp(type, "ogg") == 0)
@@ -96,23 +96,23 @@ Sound *load_sound_or_bgm(char *filename, Sound **dest, const char *res_directory
 		char *buffer;
 		ALsizei size;
 		ALsizei freq;
-		
+
 		int ogg_err;
 		if((ogg_err = load_ogg(filename, &format, &buffer, &size, &freq)) != 0)
 			errx(-1,"load_sound_or_bgm():\n!- cannot load '%s' through load_ogg: error %d", filename, ogg_err);
-		
+
 		alGenBuffers(1, &sound);
 		warn_alut_error("generating audio buffer");
-		
+
 		alBufferData(sound, format, buffer, size, freq);
 		warn_alut_error("filling buffer with data");
-		
+
 		free(buffer);
 		if(!sound)
 			errx(-1,"load_sound_or_bgm():\n!- cannot forward loaded '%s' to alut: %s", filename, alutGetErrorString(alutGetError()));
 	}
 #endif
-	
+
 	// Fallback to standard ALUT wrapper
 	if(!sound)
 	{
@@ -121,22 +121,22 @@ Sound *load_sound_or_bgm(char *filename, Sound **dest, const char *res_directory
 	}
 	if(!sound)
 		errx(-1,"load_sound_or_bgm():\n!- cannot load '%s' through alut: %s", filename, alutGetErrorString(alutGetError()));
-	
+
 	Sound *snd = create_element((void **)dest, sizeof(Sound));
-	
+
 	snd->alsnd = sound;
 	snd->lastplayframe = 0;
-	
+
 	// res_directory should have trailing slash
 	char *beg = strstr(filename, res_directory) + strlen(res_directory);
 	char *end = strrchr(filename, '.');
-	
+
 	snd->name = malloc(end - beg + 1);
 	memset(snd->name, 0, end-beg + 1);
 	strncpy(snd->name, beg, end-beg);
-	
+
 	printf("-- loaded '%s' as '%s', type %s\n", filename, snd->name, type);
-	
+
 	return snd;
 }
 
@@ -150,26 +150,26 @@ Sound *get_snd(Sound *source, char *name) {
 		if(strcmp(s->name, name) == 0)
 			res = s;
 	}
-	
+
 	if(res == NULL)
 		warnx("get_snd():\n!- cannot find sound '%s'", name);
-	
+
 	return res;
 }
 
 void play_sound_p(char *name, int unconditional)
 {
 	if(tconfig.intval[NO_AUDIO] || global.frameskip) return;
-	
+
 	Sound *snd = get_snd(resources.sounds, name);
 	if (snd == NULL) return;
-	
+
 	if (!unconditional)
 	{
 		if (snd->lastplayframe == global.frames) return;
 		snd->lastplayframe = global.frames;
 	}
-	
+
 	ALuint i,res = -1;
 	ALint play;
 	for(i = 0; i < SNDSRC_COUNT; i++) {
@@ -180,7 +180,7 @@ void play_sound_p(char *name, int unconditional)
 			break;
 		}
 	}
-	
+
 	if(res != -1) {
 		alSourcei(resources.sndsrc[res],AL_BUFFER, snd->alsnd);
 		warn_alut_error("changing buffer of sfx source");

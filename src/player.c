@@ -234,7 +234,7 @@ void player_death(Player *plr) {
 	}
 }
 
-void player_setmoveflag(Player* plr, int key, int mode) {
+void player_setmoveflag(Player* plr, int key, bool mode) {
 	int flag = 0;
 
 	switch(key) {
@@ -267,7 +267,7 @@ void player_event(Player* plr, int type, int key) {
 					break;
 
 				case KEY_SHOT:
-					plr->fire = True;
+					plr->fire = true;
 					break;
 
 				case KEY_BOMB:
@@ -279,7 +279,7 @@ void player_event(Player* plr, int type, int key) {
 					break;
 
 				default:
-					player_setmoveflag(plr, key, True);
+					player_setmoveflag(plr, key, true);
 					break;
 			}
 			break;
@@ -291,11 +291,11 @@ void player_event(Player* plr, int type, int key) {
 					break;
 
 				case KEY_SHOT:
-					plr->fire = False;
+					plr->fire = false;
 					break;
 
 				default:
-					player_setmoveflag(plr, key, False);
+					player_setmoveflag(plr, key, false);
 					break;
 			}
 
@@ -312,13 +312,13 @@ void player_event(Player* plr, int type, int key) {
 }
 
 // free-axis movement
-int player_applymovement_gamepad(Player *plr) {
+bool player_applymovement_gamepad(Player *plr) {
 	if(!plr->axis_lr && !plr->axis_ud) {
 		if(plr->gamepadmove) {
-			plr->gamepadmove = False;
+			plr->gamepadmove = false;
 			plr->moveflags = 0;
 		}
-		return False;
+		return false;
 	}
 
 	complex direction = (plr->axis_lr + plr->axis_ud*I) / (double)GAMEPAD_AXIS_RANGE;
@@ -336,19 +336,19 @@ int player_applymovement_gamepad(Player *plr) {
 	player_setmoveflag(plr, KEY_RIGHT,	sr ==  1);
 
 	if(direction) {
-		plr->gamepadmove = True;
+		plr->gamepadmove = true;
 		player_move(&global.plr, direction);
 	}
 
-	return True;
+	return true;
 }
 
 void player_applymovement(Player *plr) {
 	if(plr->deathtime < -1)
 		return;
 
-	int gamepad = player_applymovement_gamepad(plr);
-	plr->moving = False;
+	bool gamepad = player_applymovement_gamepad(plr);
+	plr->moving = false;
 
 	int up		=	plr->moveflags & MOVEFLAG_UP,
 		down	=	plr->moveflags & MOVEFLAG_DOWN,
@@ -356,10 +356,10 @@ void player_applymovement(Player *plr) {
 		right	=	plr->moveflags & MOVEFLAG_RIGHT;
 
 	if(left && !right) {
-		plr->moving = True;
+		plr->moving = true;
 		plr->dir = 1;
 	} else if(right && !left) {
-		plr->moving = True;
+		plr->moving = true;
 		plr->dir = 0;
 	}
 

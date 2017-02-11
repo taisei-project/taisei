@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
@@ -20,8 +20,8 @@ float trans_fade(Transition *t) {
 
 void TransFadeBlack(Transition *t) {
 	fade_out(trans_fade(t));
-}	
-	
+}
+
 void TransFadeWhite(Transition *t) {
 	colorfill(1,1,1,trans_fade(t));
 }
@@ -35,7 +35,7 @@ void TransLoader(Transition *t) {
 void set_transition(TransitionRule rule, int dur1, int dur2) {
 	if(!rule)
 		return;
-		
+
 	memset(&transition, 0, sizeof(Transition));
 	transition.rule = rule;
 	transition.dur1 = dur1;
@@ -45,13 +45,12 @@ void set_transition(TransitionRule rule, int dur1, int dur2) {
 void draw_transition(void) {
 	if(!transition.rule)
 		return;
-	
+
 	transition.rule(&transition);
-	
+
 	transition.frames++;
-	
+
 	if(transition.frames > transition.dur1 + transition.dur2)
 		memset(&transition, 0, sizeof(Transition));
 }
-	
-		
+

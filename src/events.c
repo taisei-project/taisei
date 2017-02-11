@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  * Copyright (C) 2012, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
@@ -14,7 +14,7 @@
 
 void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 	SDL_Event event;
-	
+
 	int kbd 	= flags & EF_Keyboard;
 	int text	= flags & EF_Text;
 	int menu	= flags & EF_Menu;
@@ -35,7 +35,7 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 	while(SDL_PollEvent(&event)) {
 		SDL_Scancode scan = event.key.keysym.scancode;
 		SDL_Keymod mod = event.key.keysym.mod;
-		
+
 		switch(event.type) {
 			case SDL_KEYDOWN:
 				if(scan == tconfig.intval[KEY_SCREENSHOT]) {
@@ -51,7 +51,7 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 				if(kbd) {
 					handler(E_KeyDown, scan, arg);
 				}
-				
+
 				if(menu) {
 					if(scan == tconfig.intval[KEY_DOWN] || scan == SDL_SCANCODE_DOWN) {
 						handler(E_CursorDown, 0, arg);
@@ -67,7 +67,7 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 						handler(E_MenuAbort, 0, arg);
 					}
 				}
-				
+
 				if(game && !event.key.repeat) {
 					if(scan == SDL_SCANCODE_ESCAPE) {
 						handler(E_Pause, 0, arg);
@@ -77,7 +77,7 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 							handler(E_PlrKeyDown, key, arg);
 					}
 				}
-				
+
 				if(text) {
 					if(scan == SDL_SCANCODE_ESCAPE)
 						handler(E_CancelText, 0, arg);
@@ -86,22 +86,22 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 					else if(scan == SDL_SCANCODE_BACKSPACE)
 						handler(E_CharErased, 0, arg);
 				}
-				
+
 				break;
-			
+
 			case SDL_KEYUP:
 				if(kbd) {
 					handler(E_KeyUp, scan, arg);
 				}
-				
+
 				if(game && !event.key.repeat) {
 					int key = config_scan2key(scan);
 					if(key >= 0)
 						handler(E_PlrKeyUp, key, arg);
 				}
-				
+
 				break;
-			
+
 			case SDL_TEXTINPUT: {
 				char *c;
 
@@ -129,7 +129,7 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 			case SDL_QUIT:
 				exit(0);
 				break;
-			
+
 			default:
 				gamepad_event(&event, handler, flags, arg);
 				break;

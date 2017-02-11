@@ -88,7 +88,7 @@ int collision_projectile(Projectile *p) {
 			return 1;
 
 		if(!p->grazed && dst < grazer && global.frames - abs(global.plr.recovery) > 0) {
-			p->grazed = True;
+			p->grazed = true;
 			player_graze(&global.plr, p->pos - grazer * 0.3 * cexp(I*carg(p->pos - global.plr.pos)), 50);
 		}
 	} else if(p->type >= PlrProj) {
@@ -122,7 +122,7 @@ void draw_projectiles(Projectile *projs) {
 
 }
 
-void process_projectiles(Projectile **projs, char collision) {
+void process_projectiles(Projectile **projs, bool collision) {
 	Projectile *proj = *projs, *del = NULL;
 
 	char killed = 0;

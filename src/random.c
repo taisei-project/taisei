@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  * Copyright (C) 2012, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
@@ -68,31 +68,31 @@ int tsrand_test(void) {
 
 	tsrand_init(&rnd, time(0));
 	tsrand_switch(&rnd);
-	
+
 	FILE *fp;
 	int i;
-	
+
 	fp = fopen("/tmp/rand_test", "w");
 	for(i = 0; i < 1000000; ++i)
 		fprintf(fp, "%f\n", frand());
-	
+
 	return 1;
 #elif defined(TSRAND_SEEDTEST)
 	RandomState rnd;
 	tsrand_switch(&rnd);
-	
+
 	int seed = 1337, i, j;
 	printf("SEED: %d\n", seed);
-	
+
 	for(i = 0; i < 5; ++i) {
 		printf("RUN #%i\n", i);
 		tsrand_seed(seed);
-		
+
 		for(j = 0; j < 5; ++j) {
 			printf("-> %i\n", tsrand());
 		}
 	}
-	
+
 	return 1;
 #else
 	return 0;
@@ -160,9 +160,9 @@ double __anfrand(int idx, const char *file, unsigned int line) {
 }
 
 void tsrand_lock(RandomState *rnd) {
-	rnd->locked = True;
+	rnd->locked = true;
 }
 
 void tsrand_unlock(RandomState *rnd) {
-	rnd->locked = False;
+	rnd->locked = false;
 }

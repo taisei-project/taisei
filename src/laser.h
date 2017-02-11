@@ -20,27 +20,27 @@ typedef void (*LaserLogicRule)(Laser* l, int time);
 struct Laser {
 	struct Laser *next;
 	struct Laser *prev;
-	
+
 	complex pos;
-	
+
 	Color *color;
-	
+
 	int birthtime;
-	
+
 	float timespan;
 	float deathtime;
-	
+
 	float timeshift;
 	float speed;
 	float width;
-		
+
 	Shader *shader;
-	
+
 	float collision_step;
-	
+
 	LaserPosRule prule;
 	LaserLogicRule lrule;
-	
+
 	complex args[4];
 };
 

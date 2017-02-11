@@ -200,9 +200,9 @@ void bind_setdependence(OptionBinding *b, BindingDependence dep) {
 	b->dependence = dep;
 }
 
-int bind_isactive(OptionBinding *b) {
+bool bind_isactive(OptionBinding *b) {
 	if(!b->dependence)
-		return True;
+		return true;
 	return b->dependence();
 }
 
@@ -286,7 +286,7 @@ int bind_vsync_set(void *b, int v) {
 	return i;
 }
 
-int bind_stagebg_fpslimit_dependence(void) {
+bool bind_stagebg_fpslimit_dependence(void) {
 	return tconfig.intval[NO_STAGEBG] == 2;
 }
 
@@ -399,7 +399,7 @@ void bind_setvaluerange_fancy(OptionBinding *b, int ma) {
 	}
 }
 
-int gamepad_sens_depencence(void) {
+bool gamepad_sens_depencence(void) {
 	return tconfig.intval[GAMEPAD_AXIS_FREE];
 }
 
@@ -470,7 +470,7 @@ void options_sub_gamepad(void *arg) {
 
 	add_menu_entry(m, "Device", do_nothing,
 		b = bind_option(GAMEPAD_DEVICE, bind_common_intget, bind_common_intset)
-	); b->displaysingle = True;
+	); b->displaysingle = true;
 
 	add_menu_separator(m);
 	add_menu_entry(m, "Customize controls...", options_sub_gamepad_controls, m);
@@ -829,7 +829,7 @@ void bind_input_event(EventType type, int state, void *arg) {
 			int esc = scan == SDL_SCANCODE_ESCAPE;
 			if(b->type == BT_GamepadKeyBinding) {
 				if(esc)
-					b->blockinput = False;
+					b->blockinput = false;
 				break;
 			}
 
@@ -843,7 +843,7 @@ void bind_input_event(EventType type, int state, void *arg) {
 				tconfig.intval[b->configentry] = scan;
 			}
 
-			b->blockinput = False;
+			b->blockinput = false;
 			break;
 		}
 
@@ -855,7 +855,7 @@ void bind_input_event(EventType type, int state, void *arg) {
 			}
 
 			tconfig.intval[b->configentry] = scan;
-			b->blockinput = False;
+			b->blockinput = false;
 			break;
 		}
 
@@ -878,13 +878,13 @@ void bind_input_event(EventType type, int state, void *arg) {
 				stralloc(&(tconfig.strval[b->configentry]), dest);
 			else
 				strncpy(dest, tconfig.strval[b->configentry], 128);
-			b->blockinput = False;
+			b->blockinput = false;
 			break;
 		}
 
 		case E_CancelText: {
 			strncpy(dest, tconfig.strval[b->configentry], 128);
-			b->blockinput = False;
+			b->blockinput = false;
 			break;
 		}
 
@@ -952,12 +952,12 @@ static void options_input_event(EventType type, int state, void *arg) {
 
 			if(bind) switch(bind->type) {
 				case BT_KeyBinding: case BT_GamepadKeyBinding:
-					bind->blockinput = True;
+					bind->blockinput = true;
 					break;
 
 				case BT_StrValue:
 					bind->selected = strlen(tconfig.strval[bind->configentry]);
-					bind->blockinput = True;
+					bind->blockinput = true;
 					break;
 
 				default:

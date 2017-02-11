@@ -1,6 +1,6 @@
 /*
  * This software is licensed under the terms of the MIT-License
- * See COPYING for further information. 
+ * See COPYING for further information.
  * ---
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>, Juergen Kieslich
  */
@@ -17,7 +17,7 @@ Item *create_item(complex pos, complex v, Type type) {
 	i->birthtime = global.frames;
 	i->auto_collect = 0;
 	i->type = type;
-	
+
 	return i;
 }
 
@@ -60,8 +60,8 @@ void delete_items(void) {
 void move_item(Item *i) {
 	int t = global.frames - i->birthtime;
 	complex lim = 0 + 2.0I;
-	
-	if(i->auto_collect)	
+
+	if(i->auto_collect)
 		i->pos -= (7+i->auto_collect)*cexp(I*carg(i->pos - global.plr.pos));
 	else
 		i->pos = i->pos0 + log(t/5.0 + 1)*5*(i->v + lim) + lim*t;
@@ -70,11 +70,11 @@ void move_item(Item *i) {
 void process_items(void) {
 	Item *item = global.items, *del = NULL;
     int v;
-	
+
 	float r = 30;
 	if(global.plr.focus > 0)
 		r *= 2;
-	
+
 	while(item != NULL) {
 		if(item->type == Power && global.plr.power >= PLR_MAXPOWER) {
 			item->type = Point;
@@ -83,9 +83,9 @@ void process_items(void) {
 		if(cimag(global.plr.pos) < POINT_OF_COLLECT || cabs(global.plr.pos - item->pos) < r
 		|| global.frames - global.plr.recovery < 0)
 			item->auto_collect = 1;
-		
+
 		move_item(item);
-		
+
 		v = collision_item(item);
 		if(v == 1) {
 			switch(item->type) {
@@ -107,7 +107,7 @@ void process_items(void) {
 			}
 			play_sound("item_generic");
 		}
-		
+
 		if(v == 1 || creal(item->pos) < -9 || creal(item->pos) > VIEWPORT_W + 9
 			|| cimag(item->pos) > VIEWPORT_H + 8 ) {
 			del = item;
@@ -122,7 +122,7 @@ void process_items(void) {
 int collision_item(Item *i) {
 	if(cabs(global.plr.pos - i->pos) < 10)
 		return 1;
-	
+
 	return 0;
 }
 
@@ -135,13 +135,13 @@ void spawn_items(complex pos, int point, int power, int bomb, int life) {
 	int i;
 	for(i = 0; i < point; i++)
 		spawn_item(pos, Point);
-	
+
 	for(i = 0; i < power; i++)
 		spawn_item(pos, Power);
-	
+
 	for(i = 0; i < bomb; i++)
 		spawn_item(pos, Bomb);
-	
+
 	for(i = 0; i < life; i++)
 		spawn_item(pos, Life);
 }

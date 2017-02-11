@@ -1,7 +1,7 @@
 // Based on "Introduction to Ogg Vorbis" example code
 // by Anthony "TangentZ" Yuen
 //
-// https://www.gamedev.net/resources/_/technical/game-programming/introduction-to-ogg-vorbis-r2031 
+// https://www.gamedev.net/resources/_/technical/game-programming/introduction-to-ogg-vorbis-r2031
 
 #include <AL/al.h>
 #include <stdio.h>
@@ -24,19 +24,19 @@ int load_ogg(char *filename, ALenum *format, char **buffer, ALsizei *size, ALsiz
 	FILE *f;
 	f = fopen(filename, "rb");
 	if (f == NULL) return -1; // Error opening for reading
-	
+
 	OggVorbis_File oggFile;
 	if (ov_open(f, &oggFile, NULL, 0) != 0)
 	{
 		fclose(f);
 		return -2; // Error opening for decoding
 	}
-	
+
 	vorbis_info *pInfo;
 	pInfo = ov_info(&oggFile, -1);
 	*format = (pInfo->channels == 1) ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
 	*freq = pInfo->rate;
-	
+
 	int bitstream;
 	long bytes;
 	char array[BUFFER_SIZE];
@@ -50,7 +50,7 @@ int load_ogg(char *filename, ALenum *format, char **buffer, ALsizei *size, ALsiz
 			ov_clear(&oggFile);
 			return -3; // Error decoding
 		}
-		
+
 		*buffer = realloc(*buffer, *size + bytes);
 		if(*buffer == NULL)
 		{
@@ -58,12 +58,12 @@ int load_ogg(char *filename, ALenum *format, char **buffer, ALsizei *size, ALsiz
 			ov_clear(&oggFile);
 			return -4; // Memory limit exceeded
 		}
-		
+
 		memcpy(*buffer + *size, array, bytes);
 		*size += bytes;
 	}
 	while (bytes > 0);
-	
+
 	ov_clear(&oggFile);
 	return 0;
 }
