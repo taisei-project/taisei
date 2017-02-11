@@ -81,6 +81,11 @@ void stage_input_event(EventType type, int key, void *arg) {
 				page_dialog(&global.dialog);
 				replay_stage_event(global.replay_stage, global.frames, EV_PRESS, key);
 			} else {
+#ifndef DEBUG // no cheating for peasants
+				if(global.replaymode == REPLAY_RECORD && key == KEY_IDDQD)
+					break;
+#endif
+
 				player_event(&global.plr, EV_PRESS, key);
 				replay_stage_event(global.replay_stage, global.frames, EV_PRESS, key);
 

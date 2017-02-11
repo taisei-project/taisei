@@ -275,11 +275,7 @@ void player_event(Player* plr, int type, int key) {
 					break;
 
 				case KEY_IDDQD:
-#ifndef DEBUG // no cheating for peasants
-					if(global.replaymode == REPLAY_PLAY)
-#endif
-						plr->iddqd = !plr->iddqd;
-
+					plr->iddqd = !plr->iddqd;
 					break;
 
 				default:
