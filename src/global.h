@@ -38,6 +38,8 @@
 #include "random.h"
 #include "events.h"
 
+#include "taisei_err.h"
+
 #define FILE_PREFIX PREFIX "/share/taisei/"
 #define CONFIG_FILE "config"
 
