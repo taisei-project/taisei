@@ -760,7 +760,7 @@ void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event,
 		printf("Random seed: %u\n", seed);
 
 		if(info->type == STAGE_SPELL) {
-			global.plr.lifes = 1;
+			global.plr.lifes = 0;
 			global.plr.bombs = 0;
 		}
 	} else {
