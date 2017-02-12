@@ -20,6 +20,7 @@
 
 typedef enum ProgfileCommand {
 	PCMD_UNLOCK_STAGES,
+	PCMD_UNLOCK_STAGES_WITH_DIFFICULTY,
 } ProgfileCommand;
 
 typedef struct StageProgress {
