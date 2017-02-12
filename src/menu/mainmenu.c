@@ -13,6 +13,7 @@
 #include "stageselect.h"
 #include "replayview.h"
 #include "savereplay.h"
+#include "spellpractice.h"
 
 #include "global.h"
 #include "stage.h"
@@ -36,19 +37,45 @@ void enter_replayview(MenuData *menu, void *arg) {
 	replayview_menu_loop(&m);
 }
 
+void enter_spellpractice(MenuData *menu, void *arg) {
+	MenuData m;
+	create_spell_menu(&m);
+	spell_menu_loop(&m);
+}
+
+static MenuEntry *spell_practice_entry;
+
+void main_menu_update_spellpractice(void) {
+	MenuEntry *e = spell_practice_entry;
+	e->action = NULL;
+
+	for(StageInfo *stg = stages; stg->loop; ++stg) {
+		if(stg->type == STAGE_SPELL) {
+			StageProgress *p = stage_get_progress_from_info(stg, D_Any, false);
+			if(p && p->unlocked) {
+				e->action = enter_spellpractice;
+				return;
+			}
+		}
+	}
+}
+
 void create_main_menu(MenuData *m) {
 	create_menu(m);
 
 	add_menu_entry(m, "Start Story", start_game, NULL);
 	add_menu_entry(m, "Start Extra", NULL, NULL);
+	add_menu_entry(m, "Spell Practice", enter_spellpractice, NULL);
 #ifdef DEBUG
 	add_menu_entry(m, "Select Stage", enter_stagemenu, NULL);
 #endif
 	add_menu_entry(m, "Replays", enter_replayview, NULL);
 	add_menu_entry(m, "Options", enter_options, NULL);
 	add_menu_entry(m, "Quit", (MenuAction)kill_menu, m);
-}
 
+	spell_practice_entry = m->entries + 2;
+	main_menu_update_spellpractice();
+}
 
 void draw_main_menu_bg(MenuData* menu) {
 	glColor4f(1,1,1,1);
@@ -66,7 +93,7 @@ void draw_main_menu(MenuData *menu) {
 	draw_texture(150, 100, "mainmenu/logo");
 
 	glPushMatrix();
-	glTranslatef(0, SCREEN_H-200, 0);
+	glTranslatef(0, SCREEN_H-235, 0);
 
 	Texture *bg = get_tex("part/smoke");
 	glPushMatrix();

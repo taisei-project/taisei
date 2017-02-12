@@ -44,6 +44,7 @@ set(SRCs
 	menu/savereplay.c
 	menu/difficulty.c
 	menu/charselect.c
+	menu/spellpractice.c
 	menu/common.c
 	stages/stage1.c
 	stages/stage2.c

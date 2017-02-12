@@ -12,6 +12,7 @@
 #include "charselect.h"
 #include "ending.h"
 #include "credits.h"
+#include "mainmenu.h"
 
 void start_game(MenuData *menu, void *arg) {
     MenuData m;
@@ -96,6 +97,7 @@ troll2:
 
     start_bgm("bgm_menu");
     replay_destroy(&global.replay);
+    main_menu_update_spellpractice();
     global.game_over = 0;
 }
 
