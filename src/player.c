@@ -205,13 +205,13 @@ void player_realdeath(Player *plr) {
 	plr->respawntime = global.frames;
 	plr->moveflags = 0;
 
-	int drop = (plr->power / 3.0) / POWER_VALUE;
+	const double arc = 0.3 * M_PI;
+	int drop = max(2, (plr->power * 0.15) / POWER_VALUE);
 
 	for(int i = 0; i < drop; ++i) {
-		create_item(plr->pos, (10+7*frand()) * cexp(I*(1.25*M_PI+0.5*i*M_PI/drop)), Power);
+		double ofs = arc * (i/((double)drop - 1));
+		create_item(plr->pos, (12+3*frand()) * (cexp(I*(1.5*M_PI - 0.5*arc + ofs)) - 1I), Power);
 	}
-
-	player_set_power(plr, plr->power / 2.0);
 
 	plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I+30.0I;
 	plr->recovery = -(global.frames + DEATH_DELAY + 150);
@@ -221,6 +221,8 @@ void player_realdeath(Player *plr) {
 
 	if(plr->iddqd)
 		return;
+
+	player_set_power(plr, plr->power * 0.7);
 
 	if(plr->lifes-- == 0 && global.replaymode != REPLAY_PLAY)
 		stage_gameover();
