@@ -6,6 +6,7 @@
  */
 
 #include "menu.h"
+#include "common.h"
 #include "ingamemenu.h"
 #include "global.h"
 #include "stage.h"
@@ -55,10 +56,10 @@ void draw_ingame_menu(MenuData *menu) {
 	glPushMatrix();
 	glTranslatef(VIEWPORT_W/2, VIEWPORT_H/4, 0);
 
-	draw_menu_selector(0, menu->drawdata[0], menu->drawdata[1]/45.0, 0.25, menu->frames);
+	draw_menu_selector(0, menu->drawdata[0], menu->drawdata[1]*2, 41, menu->frames);
 
 	menu->drawdata[0] += (menu->cursor*35 - menu->drawdata[0])/7.0;
-	menu->drawdata[1] += (strlen(menu->entries[menu->cursor].name)*5 - menu->drawdata[1])/10.0;
+	menu->drawdata[1] += (stringwidth(menu->entries[menu->cursor].name, _fonts.standard) - menu->drawdata[1])/10.0;
 
 	if(menu->context) {
 		float s = 0.3 + 0.2 * sin(menu->frames/10.0);

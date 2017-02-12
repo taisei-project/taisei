@@ -16,7 +16,7 @@
 #include "paths/native.h"
 #include "plrmodes.h"
 #include "video.h"
-#include "stageselect.h"
+#include "common.h"
 
 struct ReplayviewItemContext;
 typedef struct ReplayviewItemContext ReplayviewItemContext;
@@ -251,7 +251,7 @@ static void replayview_draw(MenuData *m) {
 	draw_menu_title(m, "Replays");
 
 	m->drawdata[0] = SCREEN_W/2 - 100;
-	m->drawdata[1] = (SCREEN_W - 200)*0.85;
+	m->drawdata[1] = (SCREEN_W - 200)*1.75;
 	m->drawdata[2] += (20*m->cursor - m->drawdata[2])/10.0;
 
 	draw_menu_list(m, 100, 100, replayview_drawitem);
@@ -266,7 +266,6 @@ static void replayview_draw(MenuData *m) {
 			replayview_draw_stagemenu(sm);
 		}
 	}
-
 }
 
 int replayview_cmp(const void *a, const void *b) {

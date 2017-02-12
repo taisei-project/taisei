@@ -8,8 +8,7 @@
 #include "mainmenu.h"
 #include "menu.h"
 
-#include "difficulty.h"
-#include "charselect.h"
+#include "common.h"
 #include "options.h"
 #include "stageselect.h"
 #include "replayview.h"
@@ -17,81 +16,7 @@
 
 #include "global.h"
 #include "stage.h"
-#include "ending.h"
-#include "credits.h"
 #include "paths/native.h"
-
-void start_story(void *arg) {
-	MenuData m;
-
-	init_player(&global.plr);
-
-troll:
-	create_difficulty_menu(&m);
-	if(difficulty_menu_loop(&m) == -1)
-		return;
-
-	create_char_menu(&m);
-	if(char_menu_loop(&m) == -1)
-		goto troll;
-
-	global.replay_stage = NULL;
-	replay_init(&global.replay);
-
-	int chr = global.plr.cha;
-	int sht = global.plr.shot;
-
-troll2:
-	if(arg)
-		((StageInfo*)arg)->loop();
-	else {
-		int i;
-		for(i = 0; stages[i].loop; ++i)
-			stages[i].loop();
-	}
-
-	if(global.game_over == GAMEOVER_RESTART) {
-		init_player(&global.plr);
-		replay_destroy(&global.replay);
-		replay_init(&global.replay);
-		global.game_over = 0;
-		init_player(&global.plr);
-		global.plr.cha  = chr;
-		global.plr.shot = sht;
-		goto troll2;
-	}
-
-	if(global.replay_stage) {
-		switch(tconfig.intval[SAVE_RPY]) {
-			case 0: break;
-
-			case 1: {
-				save_rpy(NULL);
-				break;
-			}
-
-			case 2: {
-				MenuData m;
-				create_saverpy_menu(&m);
-				saverpy_menu_loop(&m);
-				break;
-			}
-		}
-
-		global.replay_stage = NULL;
-	}
-
-	if(global.game_over == GAMEOVER_WIN && !arg) {
-		start_bgm("bgm_ending");
-		ending_loop();
-		start_bgm("bgm_credits");
-		credits_loop();
-	}
-
-	start_bgm("bgm_menu");
-	replay_destroy(&global.replay);
-	global.game_over = 0;
-}
 
 void enter_options(void *arg) {
 	MenuData m;
@@ -114,7 +39,7 @@ void enter_replayview(void *arg) {
 void create_main_menu(MenuData *m) {
 	create_menu(m);
 
-	add_menu_entry(m, "Start Story", start_story, NULL);
+	add_menu_entry(m, "Start Story", start_game, NULL);
 	add_menu_entry(m, "Start Extra", NULL, NULL);
 #ifdef DEBUG
 	add_menu_entry(m, "Select Stage", enter_stagemenu, NULL);

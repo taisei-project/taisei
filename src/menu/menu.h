@@ -93,9 +93,6 @@ int menu_loop(MenuData *menu, void (*input)(MenuData*), void (*draw)(MenuData*),
 
 float menu_fade(MenuData *menu);
 
-void draw_menu_selector(float x, float y, float w, float h, float t);
-void draw_menu_title(MenuData *m, char *title);
-
 void menu_event(EventType type, int state, void *arg);
 
 #endif

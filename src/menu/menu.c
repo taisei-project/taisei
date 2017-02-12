@@ -166,18 +166,3 @@ int menu_loop(MenuData *menu, void (*input)(MenuData*), void (*draw)(MenuData*),
 
 	return menu->selected;
 }
-
-void draw_menu_selector(float x, float y, float w, float h, float t) {
-	Texture *bg = get_tex("part/smoke");
-	glPushMatrix();
-	glTranslatef(x, y, 0);
-	glScalef(w, h, 1);
-	glRotatef(t*2,0,0,1);
-	glColor4f(0,0,0,0.5);
-	draw_texture_p(0,0,bg);
-	glPopMatrix();
-}
-
-void draw_menu_title(MenuData *m, char *title) {
-	draw_text(AL_Right, (stringwidth(title, _fonts.mainmenu) + 10) * (1.0-menu_fade(m)), 30, title, _fonts.mainmenu);
-}

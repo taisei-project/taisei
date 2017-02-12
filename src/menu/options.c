@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include "menu.h"
+#include "common.h"
 #include "options.h"
 #include "global.h"
 #include "video.h"
@@ -651,10 +652,10 @@ void draw_options_menu(MenuData *menu) {
 	glPushMatrix();
 	glTranslatef(100, 100, 0);
 
-	draw_menu_selector(menu->drawdata[0], menu->drawdata[2], menu->drawdata[1]/100.0, 0.2, menu->frames);
+	draw_menu_selector(menu->drawdata[0], menu->drawdata[2], menu->drawdata[1], 34, menu->frames);
 
 	menu->drawdata[0] += ((SCREEN_W/2 - 100) - menu->drawdata[0])/10.0;
-	menu->drawdata[1] += ((SCREEN_W - 200) - menu->drawdata[1])/10.0;
+	menu->drawdata[1] += ((SCREEN_W - 200) * 1.75 - menu->drawdata[1])/10.0;
 	menu->drawdata[2] += (20*menu->cursor - menu->drawdata[2])/10.0;
 
 	int i, caption_drawn = 2;

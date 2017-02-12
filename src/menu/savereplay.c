@@ -12,6 +12,7 @@
 #include "global.h"
 #include "replay.h"
 #include "plrmodes.h"
+#include "common.h"
 
 void save_rpy(void *a) {
 	Replay *rpy = &global.replay;
@@ -51,7 +52,7 @@ void draw_saverpy_menu(MenuData *m) {
 
 	draw_options_menu_bg(m);
 
-	draw_menu_selector(SCREEN_W/2 + 100 * m->drawdata[0] - 50, SCREEN_H/2, 1, 0.5, m->frames);
+	draw_menu_selector(SCREEN_W/2 + 100 * m->drawdata[0] - 50, SCREEN_H/2, 163, 81, m->frames);
 
 	glPushMatrix();
 	glColor4f(1, 1, 1, 1);
