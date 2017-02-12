@@ -32,8 +32,11 @@
 
 	Currently implemented commands (see also the ProgfileCommand enum in progress.h):
 
-		- PCMD_UNLOCK_STAGES:	Sets the "unlocked" field to true on one or more stages.
-								Contents is an array of uint16 stage IDs.
+		- PCMD_UNLOCK_STAGES:
+			Unlocks one or more stages. Only works for stages with fixed difficulty.
+
+		- PCMD_UNLOCK_STAGES_WITH_DIFFICULTY:
+			Unlocks one or more stages, each on a specific difficulty
 
 */
 
@@ -120,13 +123,31 @@ static void progress_read(SDL_RWops *file) {
 
 		switch(cmd) {
 			case PCMD_UNLOCK_STAGES:
-				warnx("progress_read(): %i %i", cmd, cmdsize);
 				while(cur < cmdsize) {
 					StageProgress *p = stage_get_progress(SDL_ReadLE16(vfile), D_Any, true);
 					if(p) {
 						p->unlocked = true;
 					}
 					cur += 2;
+				}
+				break;
+
+			case PCMD_UNLOCK_STAGES_WITH_DIFFICULTY:
+				while(cur < cmdsize) {
+					uint16_t stg = SDL_ReadLE16(vfile);
+					uint8_t dflags = SDL_ReadU8(vfile);
+					StageInfo *info = stage_get(stg);
+
+					for(unsigned int diff = D_Easy; diff <= D_Lunatic; ++diff) {
+						if(dflags & (unsigned int)pow(2, diff - D_Easy)) {
+							StageProgress *p = stage_get_progress_from_info(info, diff, true);
+							if(p) {
+								p->unlocked = true;
+							}
+						}
+					}
+
+					cur += 3;
 				}
 				break;
 
@@ -141,39 +162,150 @@ static void progress_read(SDL_RWops *file) {
 	free(buf);
 }
 
-static void progress_write(SDL_RWops *file) {
-	SDL_RWwrite(file, progress_magic_bytes, 1, sizeof(progress_magic_bytes));
+typedef void (*cmd_preparefunc_t)(size_t*, void**);
+typedef void (*cmd_writefunc_t)(SDL_RWops*, void**);
 
-	size_t bufsize = 0;
+typedef struct cmd_writer_t {
+	cmd_preparefunc_t prepare;
+	cmd_writefunc_t write;
+	void *data;
+} cmd_writer_t;
+
+#define CMD_HEADER_SIZE 3
+
+//
+//	PCMD_UNLOCK_STAGES
+//
+
+static void progress_prepare_cmd_unlock_stages(size_t *bufsize, void **arg) {
 	int num_unlocked = 0;
-	StageInfo *stg;
 
-	for(stg = stages; stg->loop; ++stg) {
+	for(StageInfo *stg = stages; stg->loop; ++stg) {
 		StageProgress *p = stage_get_progress_from_info(stg, D_Any, false);
 		if(p && p->unlocked) {
 			++num_unlocked;
 		}
 	}
 
-	bufsize = num_unlocked * 2;
+	if(num_unlocked) {
+		*bufsize += CMD_HEADER_SIZE;
+		*bufsize += num_unlocked * 2;
+	}
+
+	*arg = (void*)(intptr_t)num_unlocked;
+}
+
+static void progress_write_cmd_unlock_stages(SDL_RWops *vfile, void **arg) {
+	int num_unlocked = (intptr_t)*arg;
+
+	if(!num_unlocked) {
+		return;
+	}
+
+	SDL_WriteU8(vfile, PCMD_UNLOCK_STAGES);
+	SDL_WriteLE16(vfile, num_unlocked * 2);
+
+	for(StageInfo *stg = stages; stg->loop; ++stg) {
+		StageProgress *p = stage_get_progress_from_info(stg, D_Any, false);
+		if(p && p->unlocked) {
+			SDL_WriteLE16(vfile, stg->id);
+		}
+	}
+}
+
+//
+//	PCMD_UNLOCK_STAGES_WITH_DIFFICULTY
+//
+
+static void progress_prepare_cmd_unlock_stages_with_difficulties(size_t *bufsize, void **arg) {
+	int num_unlocked = 0;
+
+	for(StageInfo *stg = stages; stg->loop; ++stg) {
+		if(stg->difficulty)
+			continue;
+
+		bool unlocked = false;
+
+		for(Difficulty diff = D_Easy; diff <= D_Lunatic; ++diff) {
+			StageProgress *p = stage_get_progress_from_info(stg, diff, false);
+			if(p && p->unlocked) {
+				unlocked = true;
+			}
+		}
+
+		if(unlocked) {
+			++num_unlocked;
+		}
+	}
+
+	if(num_unlocked) {
+		*bufsize += CMD_HEADER_SIZE;
+		*bufsize += num_unlocked * 3;
+	}
+
+	*arg = (void*)(intptr_t)num_unlocked;
+}
+
+static void progress_write_cmd_unlock_stages_with_difficulties(SDL_RWops *vfile, void **arg) {
+	int num_unlocked = (intptr_t)*arg;
+
+	if(!num_unlocked) {
+		return;
+	}
+
+	SDL_WriteU8(vfile, PCMD_UNLOCK_STAGES_WITH_DIFFICULTY);
+	SDL_WriteLE16(vfile, num_unlocked * 3);
+
+	for(StageInfo *stg = stages; stg->loop; ++stg) {
+		if(stg->difficulty)
+			continue;
+
+		uint8_t dflags = 0;
+
+		for(Difficulty diff = D_Easy; diff <= D_Lunatic; ++diff) {
+			StageProgress *p = stage_get_progress_from_info(stg, diff, false);
+			if(p && p->unlocked) {
+				dflags |= (unsigned int)pow(2, diff - D_Easy);
+			}
+		}
+
+		if(dflags) {
+			SDL_WriteLE16(vfile, stg->id);
+			SDL_WriteU8(vfile, dflags);
+		}
+	}
+}
+
+static void progress_write(SDL_RWops *file) {
+	size_t bufsize = 0;
+	SDL_RWwrite(file, progress_magic_bytes, 1, sizeof(progress_magic_bytes));
+
+	cmd_writer_t cmdtable[] = {
+		{progress_prepare_cmd_unlock_stages, progress_write_cmd_unlock_stages, NULL},
+		{progress_prepare_cmd_unlock_stages_with_difficulties, progress_write_cmd_unlock_stages_with_difficulties, NULL},
+		{NULL}
+	};
+
+	for(cmd_writer_t *w = cmdtable; w->prepare; ++w) {
+		w->prepare(&bufsize, &w->data);
+	}
 
 	if(!bufsize) {
 		return;
 	}
 
-	bufsize += 3;
 	uint8_t *buf = malloc(bufsize);
 	memset(buf, 0x7f, bufsize);
 	SDL_RWops *vfile = SDL_RWFromMem(buf, bufsize);
 
-	SDL_WriteU8(vfile, PCMD_UNLOCK_STAGES);
-	SDL_WriteLE16(vfile, num_unlocked * 2);
+	for(cmd_writer_t *w = cmdtable; w->prepare; ++w) {
+		w->write(vfile, &w->data);
+	}
 
-	for(stg = stages; stg->loop; ++stg) {
-		StageProgress *p = stage_get_progress_from_info(stg, D_Any, false);
-		if(p && p->unlocked) {
-			SDL_WriteLE16(vfile, stg->id);
-		}
+	if(SDL_RWtell(vfile) != bufsize) {
+		free(buf);
+		errx(-1, "progress_write(): buffer is inconsistent\n");
+		return;
 	}
 
 	uint32_t cs = progress_checksum(buf, bufsize);
@@ -194,23 +326,26 @@ static void progress_unlock_all(void) {
 	StageInfo *stg;
 
 	for(stg = stages; stg->loop; ++stg) {
-		StageProgress *p = stage_get_progress_from_info(stg, D_Any, false);
-		if(p) {
-			p->unlocked = true;
+		for(Difficulty diff = D_Any; diff <= D_Lunatic; ++diff) {
+			StageProgress *p = stage_get_progress_from_info(stg, diff, true);
+			if(p) {
+				p->unlocked = true;
+			}
 		}
 	}
 }
 #endif
 
 void progress_load(void) {
+#ifdef PROGRESS_UNLOCK_ALL
+	progress_unlock_all();
+	progress_save();
+#endif
+
 	char *p = progress_getpath();
 	SDL_RWops *file = SDL_RWFromFile(p, "rb");
 
 	if(!file) {
-#ifdef PROGRESS_UNLOCK_ALL
-		progress_unlock_all();
-#endif
-
 		warnx("progress_load(): couldn't open the progress file: %s\n", SDL_GetError());
 		free(p);
 		return;
