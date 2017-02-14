@@ -15,6 +15,9 @@
 #include "paths/native.h"
 #include "taisei_err.h"
 
+#define strlcat SDL_strlcat
+#define strlcpy SDL_strlcpy
+
 // --- Menu entry <-> config option binding stuff --- //
 
 void bind_init(OptionBinding *bind) {
@@ -85,8 +88,8 @@ OptionBinding* bind_stroption(int cfgentry) {
 
 	bind->valcount = 1;
 	bind->values = malloc(sizeof(char*));
-	*bind->values = malloc(128);
-	strncpy(*bind->values, tconfig.strval[cfgentry], 128);
+	*bind->values = malloc(OPTIONS_TEXT_INPUT_BUFSIZE);
+	strlcpy(*bind->values, tconfig.strval[cfgentry], OPTIONS_TEXT_INPUT_BUFSIZE);
 
 	return bind;
 }
@@ -863,7 +866,7 @@ void bind_input_event(EventType type, int state, void *arg) {
 		case E_CharTyped: {
 			if(c != ':') {
 				char s[] = {c, 0};
-				strncat(dest, s, 128);
+				strlcat(dest, s, OPTIONS_TEXT_INPUT_BUFSIZE);
 			}
 			break;
 		}
@@ -878,13 +881,13 @@ void bind_input_event(EventType type, int state, void *arg) {
 			if(strlen(dest))
 				stralloc(&(tconfig.strval[b->configentry]), dest);
 			else
-				strncpy(dest, tconfig.strval[b->configentry], 128);
+				strlcpy(dest, tconfig.strval[b->configentry], OPTIONS_TEXT_INPUT_BUFSIZE);
 			b->blockinput = false;
 			break;
 		}
 
 		case E_CancelText: {
-			strncpy(dest, tconfig.strval[b->configentry], 128);
+			strlcpy(dest, tconfig.strval[b->configentry], OPTIONS_TEXT_INPUT_BUFSIZE);
 			b->blockinput = false;
 			break;
 		}

@@ -16,6 +16,8 @@ void create_options_menu(MenuData *m);
 void draw_options_menu(MenuData *m);
 int options_menu_loop(MenuData *m);
 
+#define OPTIONS_TEXT_INPUT_BUFSIZE 50
+
 typedef int (*BindingGetter)(void*);
 typedef int (*BindingSetter)(void*, int);
 typedef bool (*BindingDependence)(void);
