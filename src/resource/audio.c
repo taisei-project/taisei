@@ -11,70 +11,67 @@
 #include "list.h"
 #include "taisei_err.h"
 
-#ifdef OGG_SUPPORT_ENABLED
-#include <vorbis/vorbisfile.h>
-#include "ogg.h"
-#endif
+int mixer_loaded = 0;
 
-int alut_loaded = 0;
+void unload_mixer_if_needed(void) {
+	// mixer will be unloaded only if there are no audio AND no music enabled
+	if(!tconfig.intval[NO_AUDIO] || !tconfig.intval[NO_MUSIC] || !mixer_loaded) return;
 
-int warn_alut_error(const char *when) {
-	ALenum error = alutGetError();
-	if (error == ALUT_ERROR_NO_ERROR) return 0;
-	warnx("ALUT error %d while %s: %s", error, when, alutGetErrorString(error));
-	return 1;
+	Mix_CloseAudio();
+	Mix_Quit();
+	mixer_loaded = 0;
+	printf("-- Unloaded SDL2_mixer\n");
 }
 
-void unload_alut_if_needed() {
-	// ALUT will be unloaded only if there are no audio AND no music enabled
-	if(!tconfig.intval[NO_AUDIO] || !tconfig.intval[NO_MUSIC] || !alut_loaded) return;
+int init_mixer_if_needed(void) {
+	// mixer will not be loaded if there are no audio AND no music enabled
+	if((tconfig.intval[NO_AUDIO] && tconfig.intval[NO_MUSIC]) || mixer_loaded) return 1;
 
-	warn_alut_error("preparing to shutdown");
-	alutExit();
-	warn_alut_error("shutting down");
-	alut_loaded = 0;
-	printf("-- Unloaded ALUT\n");
-}
-
-int init_alut_if_needed(int *argc, char *argv[]) {
-	// ALUT will not be loaded if there are no audio AND no music enabled
-	if((tconfig.intval[NO_AUDIO] && tconfig.intval[NO_MUSIC]) || alut_loaded) return 1;
-
-	if(!alutInit(argc, argv))
+	int formats_mask = Mix_Init(MIX_INIT_OGG | MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3);
+	if(!formats_mask)
 	{
-		warn_alut_error("initializing");
-		alutExit(); // Try to shutdown ALUT if it was partly initialized
-		warn_alut_error("shutting down");
+		Mix_Quit(); // Try to shutdown mixer if it was partly initialized
 		tconfig.intval[NO_AUDIO] = 1;
 		tconfig.intval[NO_MUSIC] = 1;
 		return 0;
 	}
 
-	printf("-- ALUT\n");
+	printf("-- SDL2_mixer\n\tSupported formats:%s%s%s%s\n",
+		(formats_mask & MIX_INIT_OGG  ? " OGG": ""),
+		(formats_mask & MIX_INIT_FLAC ? " FLAC": ""),
+		(formats_mask & MIX_INIT_MOD  ? " MOD": ""),
+		(formats_mask & MIX_INIT_MP3  ? " MP3": "")
+	);
 
-	alut_loaded = 1;
+	if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 1024) == -1)
+	{
+		warnx("Mix_OpenAudio(): %s.\n", Mix_GetError());
+	}
+
+	mixer_loaded = 1;
 	return 1;
 }
 
-int init_sfx(int *argc, char *argv[])
+int init_sfx(void)
 {
 	if (tconfig.intval[NO_AUDIO]) return 1;
-	if (!init_alut_if_needed(argc, argv)) return 0;
-
-	alGenSources(SNDSRC_COUNT, resources.sndsrc);
-	if(warn_alut_error("creating sfx sources"))
+	if (!init_mixer_if_needed()) return 0;
+	
+	int channels = Mix_AllocateChannels(SNDCHAN_COUNT);
+	if (!channels)
 	{
+		warnx("init_sfx(): unable to allocate any channels.\n");
 		tconfig.intval[NO_AUDIO] = 1;
-		unload_alut_if_needed();
+		unload_mixer_if_needed();
 		return 0;
 	}
+	if (channels < SNDCHAN_COUNT) warnx("init_sfx(): allocated only %d of %d channels.\n", channels, SNDCHAN_COUNT);
+	
 	return 1;
 }
 
 void shutdown_sfx(void)
 {
-	alDeleteSources(SNDSRC_COUNT, resources.sndsrc);
-	warn_alut_error("deleting sfx sources");
 	if(resources.state & RS_SfxLoaded)
 	{
 		printf("-- freeing sounds\n");
@@ -82,66 +79,55 @@ void shutdown_sfx(void)
 		resources.state &= ~RS_SfxLoaded;
 	}
 	tconfig.intval[NO_AUDIO] = 1;
-	unload_alut_if_needed();
+	unload_mixer_if_needed();
 }
 
-Sound *load_sound_or_bgm(char *filename, Sound **dest, const char *res_directory, const char *type) {
-	ALuint sound = 0;
+Sound *load_sound_or_bgm(char *filename, Sound **dest, sound_type_t type) {
+	Mix_Chunk *sound;
+	Mix_Music *music;
 
-#ifdef OGG_SUPPORT_ENABLED
-	// Try to load ogg file
-	if(strcmp(type, "ogg") == 0)
+	switch(type)
 	{
-		ALenum format;
-		char *buffer;
-		ALsizei size;
-		ALsizei freq;
-
-		int ogg_err;
-		if((ogg_err = load_ogg(filename, &format, &buffer, &size, &freq)) != 0)
-			errx(-1,"load_sound_or_bgm():\n!- cannot load '%s' through load_ogg: error %d", filename, ogg_err);
-
-		alGenBuffers(1, &sound);
-		warn_alut_error("generating audio buffer");
-
-		alBufferData(sound, format, buffer, size, freq);
-		warn_alut_error("filling buffer with data");
-
-		free(buffer);
-		if(!sound)
-			errx(-1,"load_sound_or_bgm():\n!- cannot forward loaded '%s' to alut: %s", filename, alutGetErrorString(alutGetError()));
+		case ST_SOUND:
+			sound = Mix_LoadWAV(filename);
+			if (!sound)
+				errx(-1,"load_sound_or_bgm():\n!- cannot load sound from '%s': %s", filename, Mix_GetError());
+			
+		case ST_MUSIC:
+			music = Mix_LoadMUS(filename);
+			if (!music)
+				errx(-1,"load_sound_or_bgm():\n!- cannot load BGM from '%s': %s", filename, Mix_GetError());
+			
+		default:
+			errx(-1,"load_sound_or_bgm():\n!- incorrect sound type specified");
 	}
-#endif
-
-	// Fallback to standard ALUT wrapper
-	if(!sound)
-	{
-		sound = alutCreateBufferFromFile(filename);
-		warn_alut_error("creating buffer from .wav file");
-	}
-	if(!sound)
-		errx(-1,"load_sound_or_bgm():\n!- cannot load '%s' through alut: %s", filename, alutGetErrorString(alutGetError()));
 
 	Sound *snd = create_element((void **)dest, sizeof(Sound));
 
-	snd->alsnd = sound;
+	snd->type = type;
+	if (type == ST_SOUND) snd->sound = sound; else snd->music = music;
 	snd->lastplayframe = 0;
 
-	// res_directory should have trailing slash
-	char *beg = strstr(filename, res_directory) + strlen(res_directory);
+	char *beg = strrchr(filename, '/'); // TODO: check portability of '/'
 	char *end = strrchr(filename, '.');
+	if (!beg || !end)
+		errx(-1,"load_sound_or_bgm():\n!- incorrect filename format");
 
+	++beg; // skip '/' between last path element and file name
 	snd->name = malloc(end - beg + 1);
+	if (!snd->name)
+		errx(-1,"load_sound_or_bgm():\n!- failed to allocate memory for sound name (is it empty?)");
+
 	memset(snd->name, 0, end-beg + 1);
 	strncpy(snd->name, beg, end-beg);
 
-	printf("-- loaded '%s' as '%s', type %s\n", filename, snd->name, type);
+	printf("-- loaded '%s' as '%s'\n", filename, snd->name);
 
 	return snd;
 }
 
-Sound *load_sound(char *filename, const char *type) {
-	return load_sound_or_bgm(filename, &resources.sounds, "sfx/", type);
+Sound *load_sound(char *filename) {
+	return load_sound_or_bgm(filename, &resources.sounds, ST_SOUND);
 }
 
 Sound *get_snd(Sound *source, char *name) {
@@ -170,42 +156,22 @@ void play_sound_p(char *name, int unconditional)
 		snd->lastplayframe = global.frames;
 	}
 
-	ALuint i,res = -1;
-	ALint play;
-	for(i = 0; i < SNDSRC_COUNT; i++) {
-		alGetSourcei(resources.sndsrc[i],AL_SOURCE_STATE,&play);
-		warn_alut_error("checking state of sfx source");
-		if(play != AL_PLAYING) {
-			res = i;
-			break;
-		}
-	}
-
-	if(res != -1) {
-		alSourcei(resources.sndsrc[res],AL_BUFFER, snd->alsnd);
-		warn_alut_error("changing buffer of sfx source");
-		alSourcePlay(resources.sndsrc[res]);
-		warn_alut_error("starting playback of sfx source");
-	} else {
-		warnx("play_sound_p():\n!- not enough sources");
-	}
+	if(Mix_PlayChannel(-1, snd->sound, 0) == -1)
+		warnx("play_sound_p(): error playing sound: %s", Mix_GetError());
 }
 
 void set_sfx_volume(float gain)
 {
 	if(tconfig.intval[NO_AUDIO]) return;
 	printf("SFX volume: %f\n", gain);
-	int i;
-	for(i = 0; i < SNDSRC_COUNT; i++) {
-		alSourcef(resources.sndsrc[i],AL_GAIN, gain);
-		warn_alut_error("changing gain of sfx source");
-	}
+	Mix_Volume(-1, gain * MIX_MAX_VOLUME);
 }
 
 void delete_sound(void **snds, void *snd) {
-	free(((Sound *)snd)->name);
-	alDeleteBuffers(1, &((Sound *)snd)->alsnd);
-	warn_alut_error("deleting source buffer");
+	Sound *ssnd = (Sound *)snd;
+	free(ssnd->name);
+	if(ssnd->type == ST_MUSIC) Mix_FreeMusic(ssnd->music);
+	else Mix_FreeChunk(ssnd->sound);
 	delete_element(snds, snd);
 }
 

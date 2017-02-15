@@ -244,7 +244,7 @@ int bind_noaudio_set(void *b, int v) {
 	}
 	else
 	{
-		if(!init_sfx(NULL, NULL)) return 1;
+		if(!init_sfx()) return 1;
 
 		load_resources();
 		set_sfx_volume(tconfig.fltval[SFX_VOLUME]);
@@ -262,7 +262,7 @@ int bind_nomusic_set(void *b, int v) {
 	}
 	else
 	{
-		if(!init_bgm(NULL, NULL)) return 1;
+		if(!init_bgm()) return 1;
 
 		load_resources();
 		set_bgm_volume(tconfig.fltval[BGM_VOLUME]);

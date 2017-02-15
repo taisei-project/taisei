@@ -39,18 +39,18 @@ void recurse_dir(char *path) {
 			else
 				load_texture(buf);
 		} else
-#ifdef OGG_SUPPORT_ENABLED
+		// That's not complete list of supported types. If you want to
+		// use aiff/voc/mod/xm/s3m/669/it/med/mid/flac/some other files
+		// - you may add their extensions here.
 		if( (strcmp(dp->d_name + strlen(dp->d_name)-4, ".wav") == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".mp3") == 0)
 		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".ogg") == 0))
-#else
-		if  (strcmp(dp->d_name + strlen(dp->d_name)-4, ".wav") == 0)
-#endif
 		{
 			// BGMs should have "bgm_" prefix!
 			if(strncmp(dp->d_name, "bgm_", 4) == 0)
-				load_bgm(buf, dp->d_name + strlen(dp->d_name)-3);
+				load_bgm(buf);
 			else
-				load_sound(buf, dp->d_name + strlen(dp->d_name)-3);
+				load_sound(buf);
 		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".sha") == 0) {
 			load_shader_file(buf);
 		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".obj") == 0) {
