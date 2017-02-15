@@ -39,6 +39,7 @@ typedef enum ConfigKey {
 	KEY_SKIP,
 
 	KEY_IDDQD,	// must be present even without DEBUG!
+	KEY_HAHAIWIN,
 
 	FULLSCREEN,
 
@@ -99,7 +100,7 @@ extern ConfigEntry configdefs[];
 Config tconfig;
 
 #define CONFIG_KEY_FIRST KEY_UP
-#define CONFIG_KEY_LAST KEY_IDDQD
+#define CONFIG_KEY_LAST KEY_HAHAIWIN
 
 #define CONFIG_GPKEY_FIRST GP_UP
 #define CONFIG_GPKEY_LAST GP_PAUSE

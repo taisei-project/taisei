@@ -584,6 +584,10 @@ void options_sub_controls(void *arg) {
 	add_menu_entry(m, "Toggle God mode", do_nothing,
 		bind_keybinding(KEY_IDDQD)
 	);
+
+	add_menu_entry(m, "Skip stage", do_nothing,
+		bind_keybinding(KEY_HAHAIWIN)
+	);
 #endif
 
 	add_menu_separator(m);

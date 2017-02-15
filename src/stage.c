@@ -75,6 +75,13 @@ void stage_gameover(void) {
 void stage_input_event(EventType type, int key, void *arg) {
 	switch(type) {
 		case E_PlrKeyDown:
+			if(key == KEY_HAHAIWIN) {
+#ifdef DEBUG
+				global.game_over = GAMEOVER_WIN;
+#endif
+				break;
+			}
+
 			if(global.dialog && (key == KEY_SHOT || key == KEY_BOMB)) {
 				page_dialog(&global.dialog);
 				replay_stage_event(global.replay_stage, global.frames, EV_PRESS, key);
