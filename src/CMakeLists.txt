@@ -2,21 +2,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
 
 find_package(SDL2 REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(OpenAL REQUIRED)
-find_package(ALUT REQUIRED)
+find_package(SDL2_mixer REQUIRED)
 find_package(PNG REQUIRED)
 find_package(SDL2_ttf REQUIRED)
 find_package(Freetype)
 find_package(ZLIB REQUIRED)
-find_package(OGG)
-
-if(OGG_FOUND)
-find_package(Vorbis)
-endif()
-
-if(VORBIS_FOUND)
-find_package(VorbisFile)
-endif()
 
 set(SRCs
 	main.c
@@ -77,11 +67,6 @@ set(SRCs
 	resource/model.c
 )
 
-if(VORBISFILE_FOUND)
-	set(SRCs ${SRCs} resource/ogg.c)
-	add_definitions(-DOGG_SUPPORT_ENABLED)
-endif()
-
 if(USE_SDL2_PATHS)
     set(SRCs ${SRCs} paths/sdl.c)
 elseif(RELATIVE)
@@ -94,7 +79,7 @@ if(WIN32)
 	set(SRCs ${SRCs} taisei_err.c)
 endif()
 
-add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall -Wno-parentheses)
+add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall -Wno-parentheses -std=gnu99)
 
 if(RELATIVE)
     add_definitions(-DRELATIVE)
@@ -114,20 +99,14 @@ endif()
 
 set(LIBs ${LIBs}
 	${SDL2_LIBRARY}
-    ${SDL2_TTF_LIBRARIES}
-    ${PNG_LIBRARY}
-	${OPENAL_LIBRARY}
-	${ALUT_LIBRARY}
+	${SDL2_TTF_LIBRARIES}
+	${PNG_LIBRARY}
+	${SDL2_MIXER_LIBRARY}
 	${OPENGL_LIBRARY}
 	m)
 
-
 if(FREETYPE_FOUND)
 	set(LIBs ${LIBs} ${FREETYPE_LIBRARY})
-endif()
-
-if(VORBISFILE_FOUND)
-	set(LIBs ${LIBs} ${OGG_LIBRARY} ${VORBIS_LIBRARY} ${VORBISFILE_LIBRARY})
 endif()
 
 if(ZLIB_FOUND)
@@ -149,7 +128,7 @@ if(TAISEI_WIN32_CONSOLE)
 	add_definitions(-D__WINDOWS_CONSOLE__)
 endif()
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${SDL2_INCLUDE_DIR} ${ALUT_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${PNG_INCLUDE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${SDL2_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${PNG_INCLUDE_DIR})
 
 unset(POSIX CACHE)
 check_symbol_exists(_POSIX_VERSION "unistd.h" POSIX)

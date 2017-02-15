@@ -12,35 +12,20 @@
 #include "taisei_err.h"
 #include "bgm.h"
 
-#ifdef OGG_SUPPORT_ENABLED
-#include <vorbis/vorbisfile.h>
-#include "ogg.h"
-#endif
-
 struct current_bgm_t current_bgm = { .name = NULL };
 
 char *saved_bgm;
 
-int init_bgm(int *argc, char *argv[])
+int init_bgm(void)
 {
 	if (tconfig.intval[NO_MUSIC]) return 1;
-	if (!init_alut_if_needed(argc, argv)) return 0;
-
-	alGenSources(1, &resources.bgmsrc);
-	if(warn_alut_error("creating music sources"))
-	{
-		tconfig.intval[NO_MUSIC] = 1;
-		unload_alut_if_needed();
-		return 0;
-	}
+	if (!init_mixer_if_needed()) return 0;
 	return 1;
 }
 
 void shutdown_bgm(void)
 {
 	current_bgm.name = NULL;
-	alDeleteSources(1, &resources.bgmsrc);
-	warn_alut_error("deleting music sources");
 	if(resources.state & RS_BgmLoaded)
 	{
 		printf("-- freeing music\n");
@@ -48,7 +33,7 @@ void shutdown_bgm(void)
 		resources.state &= ~RS_BgmLoaded;
 	}
 	tconfig.intval[NO_MUSIC] = 1;
-	unload_alut_if_needed();
+	unload_mixer_if_needed();
 }
 
 char *get_bgm_desc(Bgm_desc *source, char *name) {
@@ -110,13 +95,14 @@ void load_bgm_descriptions(const char *path) {
 	return;
 }
 
-Sound *load_bgm(char *filename, const char *type) {
-	return load_sound_or_bgm(filename, &resources.music, "bgm/", type);
+Sound *load_bgm(char *filename) {
+	return load_sound_or_bgm(filename, &resources.music, ST_MUSIC);
 }
 
 void start_bgm(char *name) {
 	if(tconfig.intval[NO_MUSIC]) return;
 
+	// start_bgm(NULL) or start_bgm("") would be equivalent to stop_bgm().
 	if(!name || strcmp(name, "") == 0)
 	{
 		stop_bgm();
@@ -126,11 +112,11 @@ void start_bgm(char *name) {
 	// if BGM has changed, change it and start from beginning
 	if (!current_bgm.name || strcmp(name, current_bgm.name))
 	{
+		Mix_HaltMusic();
+		
 		current_bgm.name = realloc(current_bgm.name, strlen(name) + 1);
-
 		if(current_bgm.name == NULL)
 			errx(-1,"start_bgm():\n!- realloc error with music '%s'", name);
-
 		strcpy(current_bgm.name, name);
 		if((current_bgm.data = get_snd(resources.music, name)) == NULL)
 		{
@@ -140,20 +126,15 @@ void start_bgm(char *name) {
 			current_bgm.name = NULL;
 			return;
 		}
-		alSourceRewind(resources.bgmsrc);
-		warn_alut_error("rewinding music source");
-		alSourcei(resources.bgmsrc, AL_BUFFER, current_bgm.data->alsnd);
-		warn_alut_error("changing buffer of music source");
-		alSourcei(resources.bgmsrc, AL_LOOPING, AL_TRUE);
-		warn_alut_error("looping music source");
 	}
 
-	// otherwise, do not change anything and continue
-	ALint play;
-	alGetSourcei(resources.bgmsrc,AL_SOURCE_STATE,&play);
-	warn_alut_error("checking state of music source");
-
-	// Support drawing BGM title in game loop
+	if(Mix_PlayingMusic()) return; // Do nothing if music already playing
+	if(Mix_PausedMusic()) {Mix_ResumeMusic(); return;} // Unpause music if paused
+	
+	if(Mix_PlayMusic(current_bgm.data->music, -1) == -1) // Start playing otherwise
+		printf("Failed starting BGM %s: %s.\n", current_bgm.name, Mix_GetError());
+	
+	// Support drawing BGM title in game loop (only when music changed!)
 	if ((current_bgm.title = get_bgm_desc(resources.bgm_descriptions, current_bgm.name)) != NULL)
 	{
 		current_bgm.started_at = global.frames;
@@ -164,30 +145,21 @@ void start_bgm(char *name) {
 	{
 		current_bgm.started_at = -1;
 	}
-
-	if(play != AL_PLAYING)
-	{
-		alSourcePlay(resources.bgmsrc);
-		warn_alut_error("starting playback of music source");
-		printf("Started %s\n", (current_bgm.title ? current_bgm.title : current_bgm.name));
-	}
+	
+	printf("Started %s\n", (current_bgm.title ? current_bgm.title : current_bgm.name));
 }
 
 void continue_bgm(void)
 {
-	start_bgm(current_bgm.name);
+	start_bgm(current_bgm.name); // In most cases it's just unpausing existing music.
 }
 
 void stop_bgm(void) {
 	if (tconfig.intval[NO_MUSIC] || !current_bgm.name) return;
 
-	ALint play;
-	alGetSourcei(resources.bgmsrc,AL_SOURCE_STATE,&play);
-	warn_alut_error("checking state of music source");
-	if(play == AL_PLAYING)
+	if(Mix_PlayingMusic())
 	{
-		alSourcePause(resources.bgmsrc);
-		warn_alut_error("pausing music source");
+		Mix_PauseMusic(); // Pause, not halt - to be unpaused in continue_bgm() if needed.
 		printf("BGM stopped.\n");
 	}
 	else
@@ -213,8 +185,7 @@ void set_bgm_volume(float gain)
 {
 	if(tconfig.intval[NO_MUSIC]) return;
 	printf("BGM volume: %f\n", gain);
-	alSourcef(resources.bgmsrc,AL_GAIN, gain);
-	warn_alut_error("changing gain of music source");
+	Mix_VolumeMusic(gain * MIX_MAX_VOLUME);
 }
 
 void delete_music(void) {

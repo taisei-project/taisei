@@ -28,10 +28,6 @@ typedef enum ResourceState {
 	RS_BgmLoaded = 16
 } ResourceState;
 
-enum {
-	SNDSRC_COUNT = 35
-};
-
 struct Resources {
 	ResourceState state;
 
@@ -42,9 +38,6 @@ struct Resources {
 	Shader *shaders;
 	Model *models;
 	Bgm_desc *bgm_descriptions;
-
-	ALuint sndsrc[SNDSRC_COUNT];
-	ALuint bgmsrc;
 
 	FBO fbg[2];
 	FBO fsec;
