@@ -43,177 +43,182 @@ StageInfo stages[] = {
 	//
 	// Spell practice stages
 	//
-	// subtitles for those are generated later by stage_init_array()
+	// titles and subtitles for those are generated later by stage_init_array()
 	//
 
 #define S STAGE_SPELL_BIT
 	// Freeze Sign ~ Perfect Freeze
-	{S|  0, stage1_spellpractice_loop, STAGE_SPELL, "Spell 1",   NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+0, D_Easy},
-	{S|  1, stage1_spellpractice_loop, STAGE_SPELL, "Spell 2",   NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+0, D_Normal},
-	{S|  2, stage1_spellpractice_loop, STAGE_SPELL, "Spell 3",   NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+0, D_Hard},
-	{S|  3, stage1_spellpractice_loop, STAGE_SPELL, "Spell 4",   NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+0, D_Lunatic},
+	{S|  0, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+0, D_Easy},
+	{S|  1, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+0, D_Normal},
+	{S|  2, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+0, D_Hard},
+	{S|  3, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+0, D_Lunatic},
 
 	// Freeze Sign ~ Crystal Rain
-	{S|  4, stage1_spellpractice_loop, STAGE_SPELL, "Spell 5",   NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+1, D_Easy},
-	{S|  5, stage1_spellpractice_loop, STAGE_SPELL, "Spell 6",   NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+1, D_Normal},
-	{S|  6, stage1_spellpractice_loop, STAGE_SPELL, "Spell 7",   NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+1, D_Hard},
-	{S|  7, stage1_spellpractice_loop, STAGE_SPELL, "Spell 8",   NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+1, D_Lunatic},
+	{S|  4, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+1, D_Easy},
+	{S|  5, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+1, D_Normal},
+	{S|  6, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+1, D_Hard},
+	{S|  7, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+1, D_Lunatic},
 
 	// Doom Sign ~ Icicle Fall
-	{S|  8, stage1_spellpractice_loop, STAGE_SPELL, "Spell 9",   NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+2, D_Easy},
-	{S|  9, stage1_spellpractice_loop, STAGE_SPELL, "Spell 10",  NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+2, D_Normal},
-	{S| 10, stage1_spellpractice_loop, STAGE_SPELL, "Spell 11",  NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+2, D_Hard},
-	{S| 11, stage1_spellpractice_loop, STAGE_SPELL, "Spell 12",  NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+2, D_Lunatic},
+	{S|  8, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+2, D_Easy},
+	{S|  9, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+2, D_Normal},
+	{S| 10, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+2, D_Hard},
+	{S| 11, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+2, D_Lunatic},
 
 	// Shard ~ Amulet of Harm
-	{S| 12, stage2_spellpractice_loop, STAGE_SPELL, "Spell 13",  NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+0, D_Easy},
-	{S| 13, stage2_spellpractice_loop, STAGE_SPELL, "Spell 14",  NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+0, D_Normal},
-	{S| 14, stage2_spellpractice_loop, STAGE_SPELL, "Spell 15",  NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+0, D_Hard},
-	{S| 15, stage2_spellpractice_loop, STAGE_SPELL, "Spell 16",  NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+0, D_Lunatic},
+	{S| 12, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+0, D_Easy},
+	{S| 13, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+0, D_Normal},
+	{S| 14, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+0, D_Hard},
+	{S| 15, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+0, D_Lunatic},
 
 	// Lottery Sign ~ Bad Pick
-	{S| 16, stage2_spellpractice_loop, STAGE_SPELL, "Spell 17",  NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+1, D_Easy},
-	{S| 17, stage2_spellpractice_loop, STAGE_SPELL, "Spell 18",  NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+1, D_Normal},
-	{S| 18, stage2_spellpractice_loop, STAGE_SPELL, "Spell 19",  NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+1, D_Hard},
-	{S| 19, stage2_spellpractice_loop, STAGE_SPELL, "Spell 20",  NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+1, D_Lunatic},
+	{S| 16, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+1, D_Easy},
+	{S| 17, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+1, D_Normal},
+	{S| 18, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+1, D_Hard},
+	{S| 19, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+1, D_Lunatic},
 
 	// Lottery Sign ~ Wheel of Fortune
-	{S| 20, stage2_spellpractice_loop, STAGE_SPELL, "Spell 21",  NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+2, D_Easy},
-	{S| 21, stage2_spellpractice_loop, STAGE_SPELL, "Spell 22",  NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+2, D_Normal},
-	{S| 22, stage2_spellpractice_loop, STAGE_SPELL, "Spell 23",  NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+2, D_Hard},
-	{S| 23, stage2_spellpractice_loop, STAGE_SPELL, "Spell 24",  NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+2, D_Lunatic},
+	{S| 20, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+2, D_Easy},
+	{S| 21, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+2, D_Normal},
+	{S| 22, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+2, D_Hard},
+	{S| 23, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+2, D_Lunatic},
 
 	// Venom Sign ~ Deadly Dance
-	{S| 24, stage3_spellpractice_loop, STAGE_SPELL, "Spell 25",  NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+0, D_Easy},
-	{S| 25, stage3_spellpractice_loop, STAGE_SPELL, "Spell 26",  NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+0, D_Normal},
-	{S| 26, stage3_spellpractice_loop, STAGE_SPELL, "Spell 27",  NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+0, D_Hard},
-	{S| 27, stage3_spellpractice_loop, STAGE_SPELL, "Spell 28",  NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+0, D_Lunatic},
+	{S| 24, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+0, D_Easy},
+	{S| 25, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+0, D_Normal},
+	{S| 26, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+0, D_Hard},
+	{S| 27, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+0, D_Lunatic},
 
 	// Venom Sign ~ Acid Rain
-	{S| 28, stage3_spellpractice_loop, STAGE_SPELL, "Spell 29",  NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+1, D_Hard},
-	{S| 29, stage3_spellpractice_loop, STAGE_SPELL, "Spell 30",  NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+1, D_Lunatic},
+	{S| 28, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+1, D_Hard},
+	{S| 29, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+1, D_Lunatic},
 
 	// Firefly Sign ~ Moonlight Rocket
-	{S| 30, stage3_spellpractice_loop, STAGE_SPELL, "Spell 31",  NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+2, D_Easy},
-	{S| 31, stage3_spellpractice_loop, STAGE_SPELL, "Spell 32",  NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+2, D_Normal},
-	{S| 32, stage3_spellpractice_loop, STAGE_SPELL, "Spell 33",  NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+2, D_Hard},
-	{S| 33, stage3_spellpractice_loop, STAGE_SPELL, "Spell 34",  NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+2, D_Lunatic},
+	{S| 30, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+2, D_Easy},
+	{S| 31, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+2, D_Normal},
+	{S| 32, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+2, D_Hard},
+	{S| 33, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+2, D_Lunatic},
 
 	// Light Source ~ Wriggle Night Ignite
-	{S| 34, stage3_spellpractice_loop, STAGE_SPELL, "Spell 35",  NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+3, D_Easy},
-	{S| 35, stage3_spellpractice_loop, STAGE_SPELL, "Spell 36",  NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+3, D_Normal},
-	{S| 36, stage3_spellpractice_loop, STAGE_SPELL, "Spell 37",  NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+3, D_Hard},
-	{S| 37, stage3_spellpractice_loop, STAGE_SPELL, "Spell 38",  NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+3, D_Lunatic},
+	{S| 34, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+3, D_Easy},
+	{S| 35, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+3, D_Normal},
+	{S| 36, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+3, D_Hard},
+	{S| 37, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+3, D_Lunatic},
 
 	// Bug Sign ~ Phosphaenus Hemipterus
-	{S| 38, stage3_spellpractice_loop, STAGE_SPELL, "Spell 39",  NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+4, D_Easy},
-	{S| 39, stage3_spellpractice_loop, STAGE_SPELL, "Spell 40",  NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+4, D_Normal},
-	{S| 40, stage3_spellpractice_loop, STAGE_SPELL, "Spell 41",  NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+4, D_Hard},
-	{S| 41, stage3_spellpractice_loop, STAGE_SPELL, "Spell 42",  NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+4, D_Lunatic},
+	{S| 38, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+4, D_Easy},
+	{S| 39, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+4, D_Normal},
+	{S| 40, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+4, D_Hard},
+	{S| 41, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+4, D_Lunatic},
 
 	// Bloodless ~ Gate of Walachia
-	{S| 42, stage4_spellpractice_loop, STAGE_SPELL, "Spell 43",  NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+0, D_Easy},
-	{S| 43, stage4_spellpractice_loop, STAGE_SPELL, "Spell 44",  NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+0, D_Normal},
-	{S| 44, stage4_spellpractice_loop, STAGE_SPELL, "Spell 45",  NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+0, D_Hard},
-	{S| 45, stage4_spellpractice_loop, STAGE_SPELL, "Spell 46",  NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+0, D_Lunatic},
+	{S| 42, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+0, D_Easy},
+	{S| 43, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+0, D_Normal},
+	{S| 44, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+0, D_Hard},
+	{S| 45, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+0, D_Lunatic},
 
 	// Bloodless ~ Dry Fountain
-	{S| 46, stage4_spellpractice_loop, STAGE_SPELL, "Spell 47",  NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+1, D_Easy},
-	{S| 47, stage4_spellpractice_loop, STAGE_SPELL, "Spell 48",  NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+1, D_Normal},
+	{S| 46, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+1, D_Easy},
+	{S| 47, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+1, D_Normal},
 
 	// Bloodless ~ Red Spike
-	{S| 48, stage4_spellpractice_loop, STAGE_SPELL, "Spell 49",  NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+2, D_Hard},
-	{S| 49, stage4_spellpractice_loop, STAGE_SPELL, "Spell 50",  NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+2, D_Lunatic},
+	{S| 48, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+2, D_Hard},
+	{S| 49, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+2, D_Lunatic},
 
 	// Limit ~ Animate Wall
-	{S| 50, stage4_spellpractice_loop, STAGE_SPELL, "Spell 51",  NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+3, D_Easy},
-	{S| 51, stage4_spellpractice_loop, STAGE_SPELL, "Spell 52",  NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+3, D_Normal},
+	{S| 50, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+3, D_Easy},
+	{S| 51, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+3, D_Normal},
 
 	// Summoning ~ Demon Wall
-	{S| 52, stage4_spellpractice_loop, STAGE_SPELL, "Spell 53",  NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+4, D_Hard},
-	{S| 53, stage4_spellpractice_loop, STAGE_SPELL, "Spell 54",  NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+4, D_Lunatic},
+	{S| 52, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+4, D_Hard},
+	{S| 53, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+4, D_Lunatic},
 
 	// Power Sign ~ Blow the Walls
-	{S| 54, stage4_spellpractice_loop, STAGE_SPELL, "Spell 55",  NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+5, D_Easy},
-	{S| 55, stage4_spellpractice_loop, STAGE_SPELL, "Spell 56",  NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+5, D_Normal},
-	{S| 56, stage4_spellpractice_loop, STAGE_SPELL, "Spell 57",  NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+5, D_Hard},
-	{S| 57, stage4_spellpractice_loop, STAGE_SPELL, "Spell 58",  NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+5, D_Lunatic},
+	{S| 54, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+5, D_Easy},
+	{S| 55, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+5, D_Normal},
+	{S| 56, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+5, D_Hard},
+	{S| 57, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+5, D_Lunatic},
 
 	// Fear Sign ~ Bloody Danmaku
-	{S| 58, stage4_spellpractice_loop, STAGE_SPELL, "Spell 59",  NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+6, D_Hard},
-	{S| 59, stage4_spellpractice_loop, STAGE_SPELL, "Spell 60",  NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+6, D_Lunatic},
+	{S| 58, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+6, D_Hard},
+	{S| 59, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+6, D_Lunatic},
 
 	// High Voltage ~ Atmospheric Discharge
-	{S| 60, stage5_spellpractice_loop, STAGE_SPELL, "Spell 61",  NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+0, D_Easy},
-	{S| 61, stage5_spellpractice_loop, STAGE_SPELL, "Spell 62",  NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+0, D_Normal},
-	{S| 62, stage5_spellpractice_loop, STAGE_SPELL, "Spell 63",  NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+0, D_Hard},
-	{S| 63, stage5_spellpractice_loop, STAGE_SPELL, "Spell 64",  NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+0, D_Lunatic},
+	{S| 60, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+0, D_Easy},
+	{S| 61, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+0, D_Normal},
+	{S| 62, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+0, D_Hard},
+	{S| 63, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+0, D_Lunatic},
 
 	// Charge Sign ~ Artificial Lightning
-	{S| 64, stage5_spellpractice_loop, STAGE_SPELL, "Spell 65",  NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+1, D_Easy},
-	{S| 65, stage5_spellpractice_loop, STAGE_SPELL, "Spell 66",  NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+1, D_Normal},
-	{S| 66, stage5_spellpractice_loop, STAGE_SPELL, "Spell 67",  NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+1, D_Hard},
-	{S| 67, stage5_spellpractice_loop, STAGE_SPELL, "Spell 68",  NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+1, D_Lunatic},
+	{S| 64, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+1, D_Easy},
+	{S| 65, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+1, D_Normal},
+	{S| 66, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+1, D_Hard},
+	{S| 67, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+1, D_Lunatic},
 
 	// Spark Sign ~ Natural Cathode
-	{S| 68, stage5_spellpractice_loop, STAGE_SPELL, "Spell 69",  NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+2, D_Easy},
-	{S| 69, stage5_spellpractice_loop, STAGE_SPELL, "Spell 70",  NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+2, D_Normal},
-	{S| 70, stage5_spellpractice_loop, STAGE_SPELL, "Spell 71",  NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+2, D_Hard},
-	{S| 71, stage5_spellpractice_loop, STAGE_SPELL, "Spell 72",  NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+2, D_Lunatic},
+	{S| 68, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+2, D_Easy},
+	{S| 69, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+2, D_Normal},
+	{S| 70, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+2, D_Hard},
+	{S| 71, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+2, D_Lunatic},
 
 	// Current Sign ~ Induction
-	{S| 72, stage5_spellpractice_loop, STAGE_SPELL, "Spell 73",  NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+3, D_Easy},
-	{S| 73, stage5_spellpractice_loop, STAGE_SPELL, "Spell 74",  NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+3, D_Normal},
-	{S| 74, stage5_spellpractice_loop, STAGE_SPELL, "Spell 75",  NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+3, D_Hard},
-	{S| 75, stage5_spellpractice_loop, STAGE_SPELL, "Spell 76",  NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+3, D_Lunatic},
+	{S| 72, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+3, D_Easy},
+	{S| 73, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+3, D_Normal},
+	{S| 74, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+3, D_Hard},
+	{S| 75, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+3, D_Lunatic},
 
 	// Newton Sign ~ 2.5 Laws of Movement
-	{S| 76, stage6_spellpractice_loop, STAGE_SPELL, "Spell 77",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+0, D_Easy},
-	{S| 77, stage6_spellpractice_loop, STAGE_SPELL, "Spell 78",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+0, D_Normal},
-	{S| 78, stage6_spellpractice_loop, STAGE_SPELL, "Spell 79",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+0, D_Hard},
-	{S| 79, stage6_spellpractice_loop, STAGE_SPELL, "Spell 80",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+0, D_Lunatic},
+	{S| 76, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+0, D_Easy},
+	{S| 77, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+0, D_Normal},
+	{S| 78, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+0, D_Hard},
+	{S| 79, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+0, D_Lunatic},
 
 	// Maxwell Sign ~ Wave Theory
-	{S| 80, stage6_spellpractice_loop, STAGE_SPELL, "Spell 81",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+1, D_Easy},
-	{S| 81, stage6_spellpractice_loop, STAGE_SPELL, "Spell 82",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+1, D_Normal},
-	{S| 82, stage6_spellpractice_loop, STAGE_SPELL, "Spell 83",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+1, D_Hard},
-	{S| 83, stage6_spellpractice_loop, STAGE_SPELL, "Spell 84",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+1, D_Lunatic},
+	{S| 80, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+1, D_Easy},
+	{S| 81, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+1, D_Normal},
+	{S| 82, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+1, D_Hard},
+	{S| 83, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+1, D_Lunatic},
 
 	// Eigenstate ~ Many-World Interpretation
-	{S| 84, stage6_spellpractice_loop, STAGE_SPELL, "Spell 85",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+2, D_Easy},
-	{S| 85, stage6_spellpractice_loop, STAGE_SPELL, "Spell 86",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+2, D_Normal},
-	{S| 86, stage6_spellpractice_loop, STAGE_SPELL, "Spell 87",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+2, D_Hard},
-	{S| 87, stage6_spellpractice_loop, STAGE_SPELL, "Spell 88",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+2, D_Lunatic},
+	{S| 84, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+2, D_Easy},
+	{S| 85, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+2, D_Normal},
+	{S| 86, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+2, D_Hard},
+	{S| 87, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+2, D_Lunatic},
 
 	// Ricci Sign ~ Space Time Curvature
-	{S| 88, stage6_spellpractice_loop, STAGE_SPELL, "Spell 89",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+3, D_Easy},
-	{S| 89, stage6_spellpractice_loop, STAGE_SPELL, "Spell 90",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+3, D_Normal},
-	{S| 90, stage6_spellpractice_loop, STAGE_SPELL, "Spell 91",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+3, D_Hard},
-	{S| 91, stage6_spellpractice_loop, STAGE_SPELL, "Spell 92",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+3, D_Lunatic},
+	{S| 88, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+3, D_Easy},
+	{S| 89, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+3, D_Normal},
+	{S| 90, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+3, D_Hard},
+	{S| 91, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+3, D_Lunatic},
 
 	// LHC ~ Higgs Boson Uncovered
-	{S| 92, stage6_spellpractice_loop, STAGE_SPELL, "Spell 93",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+4, D_Easy},
-	{S| 93, stage6_spellpractice_loop, STAGE_SPELL, "Spell 94",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+4, D_Normal},
-	{S| 94, stage6_spellpractice_loop, STAGE_SPELL, "Spell 95",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+4, D_Hard},
-	{S| 95, stage6_spellpractice_loop, STAGE_SPELL, "Spell 96",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+4, D_Lunatic},
+	{S| 92, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+4, D_Easy},
+	{S| 93, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+4, D_Normal},
+	{S| 94, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+4, D_Hard},
+	{S| 95, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+4, D_Lunatic},
 
 	// Tower of Truth ~ Theory of Everything
-	{S| 96, stage6_spellpractice_loop, STAGE_SPELL, "Spell 97",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+5, D_Easy},
-	{S| 97, stage6_spellpractice_loop, STAGE_SPELL, "Spell 98",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+5, D_Normal},
-	{S| 98, stage6_spellpractice_loop, STAGE_SPELL, "Spell 99",  NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+5, D_Hard},
-	{S| 99, stage6_spellpractice_loop, STAGE_SPELL, "Spell 100", NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+5, D_Lunatic},
+	{S| 96, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+5, D_Easy},
+	{S| 97, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+5, D_Normal},
+	{S| 98, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+5, D_Hard},
+	{S| 99, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+5, D_Lunatic},
 #undef S
 
 	{0}
 };
 
 void stage_init_array(void) {
+	int spellnum = 0;
+
 	for(int i = 0; stages[i].loop; ++i) {
 		// we will allocate this later on demand
 		stages[i].progress = NULL;
 
 		if(stages[i].type == STAGE_SPELL) {
-			char *s, *postfix = difficulty_name(stages[i].difficulty);
+			char *s, title[10], *postfix = difficulty_name(stages[i].difficulty);
+
+			snprintf(title, sizeof(title), "Spell %d", ++spellnum);
+			stralloc(&stages[i].title, title);
 
 			stages[i].subtitle = s = malloc(strlen(postfix) + strlen(stages[i].spell->name) + 4);
 			strcpy(s, stages[i].spell->name);
