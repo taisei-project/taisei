@@ -221,7 +221,7 @@ void player_realdeath(Player *plr) {
 
 	for(int i = 0; i < drop; ++i) {
 		double ofs = arc * (i/((double)drop - 1));
-		create_item(plr->pos, (12+3*frand()) * (cexp(I*(1.5*M_PI - 0.5*arc + ofs)) - 1I), Power);
+		create_item(plr->pos, (12+3*frand()) * (cexp(I*(1.5*M_PI - 0.5*arc + ofs)) - 1.0I), Power);
 	}
 
 	plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I+30.0I;
