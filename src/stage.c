@@ -215,7 +215,6 @@ void stage_init_array(void) {
 		if(stages[i].type == STAGE_SPELL) {
 			char *s, *postfix = difficulty_name(stages[i].difficulty);
 
-			// note: never free()'d
 			stages[i].subtitle = s = malloc(strlen(postfix) + strlen(stages[i].spell->name) + 4);
 			strcpy(s, stages[i].spell->name);
 			strcat(s, " ~ ");
@@ -233,6 +232,18 @@ void stage_init_array(void) {
 			}
 		}
 #endif
+	}
+}
+
+void stage_free_array(void) {
+	for(StageInfo *stg = stages; stg->loop; ++stg) {
+		if(stg->type == STAGE_SPELL) {
+			free(stg->subtitle);
+		}
+
+		if(stg->progress) {
+			free(stg->progress);
+		}
 	}
 }
 
@@ -259,7 +270,6 @@ StageProgress* stage_get_progress_from_info(StageInfo *stage, Difficulty diff, b
 	// D_Any stages will have a separate StageProgress for every selectable difficulty.
 	// Stages with a fixed difficulty setting (spellpractice, extra stage...) obviously get just one and the diff parameter is ignored.
 
-	// We never free anything we allocate here either. RAM's cheap right?
 	// This stuff must stay around until progress_save(), which happens on shutdown.
 	// So do NOT try to free any pointers this function returns, that will fuck everything up.
 
