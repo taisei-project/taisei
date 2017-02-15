@@ -91,13 +91,15 @@ Sound *load_sound_or_bgm(char *filename, Sound **dest, sound_type_t type) {
 		case ST_SOUND:
 			sound = Mix_LoadWAV(filename);
 			if (!sound)
-				errx(-1,"load_sound_or_bgm():\n!- cannot load sound from '%s': %s", filename, Mix_GetError());
-			break;
+				warnx("load_sound_or_bgm():\n!- cannot load sound from '%s': %s", filename, Mix_GetError());
+			return NULL;
+			
 		case ST_MUSIC:
 			music = Mix_LoadMUS(filename);
 			if (!music)
-				errx(-1,"load_sound_or_bgm():\n!- cannot load BGM from '%s': %s", filename, Mix_GetError());
-			break;
+				warnx("load_sound_or_bgm():\n!- cannot load BGM from '%s': %s", filename, Mix_GetError());
+			return NULL;
+			
 		default:
 			errx(-1,"load_sound_or_bgm():\n!- incorrect sound type specified");
 	}
