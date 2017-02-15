@@ -22,8 +22,9 @@ typedef struct {
 	int mcount;
 	VideoMode intended;
 	VideoMode current;
-    SDL_Window *window;
-    SDL_GLContext *glcontext;
+	VideoMode real;
+	SDL_Window *window;
+	SDL_GLContext *glcontext;
 } Video;
 
 Video video;

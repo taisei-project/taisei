@@ -168,12 +168,15 @@ void take_screenshot(void)
 	char outfile[128], *outpath;
 	time_t rawtime;
 	struct tm * timeinfo;
-	int w, h;
+	int w, h, rw, rh;
 
 	w = video.current.width;
 	h = video.current.height;
 
-	data = malloc(3 * w * h);
+	rw = video.real.width;
+	rh = video.real.height;
+
+	data = malloc(3 * rw * rh);
 
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
@@ -187,20 +190,18 @@ void take_screenshot(void)
 	out = fopen(outpath, "wb");
 	free(outpath);
 
-	if(!out)
-	{
+	if(!out) {
 		perror("fopen");
 		free(data);
 		return;
 	}
 
 	glReadBuffer(GL_FRONT);
-	glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glReadPixels(0, 0, rw, rh, GL_RGB, GL_UNSIGNED_BYTE, data);
 
 	png_structp png_ptr;
     png_infop info_ptr;
 	png_byte **row_pointers;
-	int y;
 
 	png_ptr = png_create_write_struct (PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	info_ptr = png_create_info_struct (png_ptr);
@@ -210,17 +211,17 @@ void take_screenshot(void)
 
 	row_pointers = png_malloc(png_ptr, h*sizeof(png_byte *));
 
-	for(y = 0; y < h; y++) {
+	for(int y = 0; y < h; y++) {
 		row_pointers[y] = png_malloc(png_ptr, 8*3*w);
 
-		memcpy(row_pointers[y], data + w*3*(h-1-y), w*3);
+		memcpy(row_pointers[y], data + rw*3*(h-1-y), w*3);
 	}
 
 	png_init_io(png_ptr, out);
 	png_set_rows(png_ptr, info_ptr, row_pointers);
 	png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
 
-	for(y = 0; y < h; y++)
+	for(int y = 0; y < h; y++)
 		png_free(png_ptr, row_pointers[y]);
 
 	png_free(png_ptr, row_pointers);
