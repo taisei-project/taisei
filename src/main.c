@@ -46,6 +46,7 @@ void taisei_shutdown(void) {
 	free_resources();
 	video_shutdown();
 	gamepad_shutdown();
+	stage_free_array();
 	config_uninit();
 
 	SDL_Quit();
