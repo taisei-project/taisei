@@ -38,14 +38,23 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 
 		switch(event.type) {
 			case SDL_KEYDOWN:
-				if(scan == tconfig.intval[KEY_SCREENSHOT]) {
-					take_screenshot();
-					break;
-				}
+				if(text) {
+					if(scan == SDL_SCANCODE_ESCAPE)
+						handler(E_CancelText, 0, arg);
+					else if(scan == SDL_SCANCODE_RETURN)
+						handler(E_SubmitText, 0, arg);
+					else if(scan == SDL_SCANCODE_BACKSPACE)
+						handler(E_CharErased, 0, arg);
+				} else {
+					if(scan == tconfig.intval[KEY_SCREENSHOT]) {
+						take_screenshot();
+						break;
+					}
 
-				if((scan == SDL_SCANCODE_RETURN && (mod & KMOD_ALT)) || scan == tconfig.intval[KEY_FULLSCREEN]) {
-					video_toggle_fullscreen();
-					break;
+					if((scan == SDL_SCANCODE_RETURN && (mod & KMOD_ALT)) || scan == tconfig.intval[KEY_FULLSCREEN]) {
+						video_toggle_fullscreen();
+						break;
+					}
 				}
 
 				if(kbd) {
@@ -76,15 +85,6 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 						if(key >= 0)
 							handler(E_PlrKeyDown, key, arg);
 					}
-				}
-
-				if(text) {
-					if(scan == SDL_SCANCODE_ESCAPE)
-						handler(E_CancelText, 0, arg);
-					else if(scan == SDL_SCANCODE_RETURN)
-						handler(E_SubmitText, 0, arg);
-					else if(scan == SDL_SCANCODE_BACKSPACE)
-						handler(E_CharErased, 0, arg);
 				}
 
 				break;
