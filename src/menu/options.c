@@ -875,13 +875,13 @@ void bind_input_event(EventType type, int state, void *arg) {
 		}
 
 		case E_CharErased: {
-			if(strlen(dest))
+			if(dest != NULL && strlen(dest))
 				dest[strlen(dest)-1] = 0;
 			break;
 		}
 
 		case E_SubmitText: {
-			if(strlen(dest))
+			if(dest != NULL && strlen(dest))
 				stralloc(&(tconfig.strval[b->configentry]), dest);
 			else
 				strlcpy(dest, tconfig.strval[b->configentry], OPTIONS_TEXT_INPUT_BUFSIZE);

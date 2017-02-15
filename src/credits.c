@@ -53,7 +53,7 @@ void credits_add(char *data, int time) {
 
 	for(c = data; *c; ++c)
 		if(*c == '\n') e->lines++;
-	e->data = malloc(e->lines * sizeof(char**));
+	e->data = malloc(e->lines * sizeof(char*));
 
 	for(c = data; *c; ++c) {
 		if(*c == '\n') {

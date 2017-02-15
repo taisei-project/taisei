@@ -141,4 +141,6 @@ void ending_loop(void) {
 		if(global.frames == e.entries[e.count-1].time-ENDING_FADE_OUT)
 			set_transition(TransFadeWhite, ENDING_FADE_OUT, ENDING_FADE_OUT);
 	}
+
+	free_ending(&e);
 }

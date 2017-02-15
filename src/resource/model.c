@@ -133,7 +133,7 @@ Model *load_model(char *filename) {
 	parse_obj(filename, &data);
 
 	m->fverts = data.fverts;
-	m->indices = calloc(data.icount, sizeof(int));
+	m->indices = calloc(data.icount, sizeof(unsigned int));
 	m->icount = data.icount;
 
 	verts = calloc(data.icount, sizeof(Vertex));
