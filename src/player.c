@@ -12,7 +12,7 @@
 #include "plrmodes.h"
 #include "stage.h"
 
-void init_player(Player* plr) {
+void init_player(Player *plr) {
 	memset(plr, 0, sizeof(Player));
 
 	plr->pos = VIEWPORT_W/2 + I*(VIEWPORT_H-20);
@@ -25,6 +25,18 @@ void init_player(Player* plr) {
 
 	// maybe move this to player?
 	global.points = 0;
+}
+
+void prepare_player_for_next_stage(Player *plr) {
+	plr->recovery = 0;
+	plr->respawntime = 0;
+	plr->deathtime = -1;
+	plr->graze = 0;
+	plr->movetime = 0;
+	plr->prevmove = 0;
+	plr->prevmovetime = 0;
+	plr->axis_lr = 0;
+	plr->axis_ud = 0;
 }
 
 Animation *player_get_ani(Character cha) {

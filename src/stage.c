@@ -52,9 +52,7 @@ void stage_start(void) {
 	global.fps.stagebg_fps = global.fps.show_fps = FPS;
 	global.fps.fpstime = SDL_GetTicks();
 
-	global.plr.recovery = 0;
-	global.plr.deathtime = -1;
-	global.plr.graze = 0;
+	prepare_player_for_next_stage(&global.plr);
 }
 
 void stage_pause(void) {
@@ -535,8 +533,6 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	}
 
 	player_set_power(&global.plr, power);
-	global.plr.movetime = global.plr.prevmove = global.plr.prevmovetime = 0;
-	global.plr.axis_lr = global.plr.axis_ud = 0;
 
 	start();
 

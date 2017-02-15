@@ -73,6 +73,8 @@ typedef struct {
 } Player;
 
 void init_player(Player*);
+void prepare_player_for_next_stage(Player*);
+
 void player_draw(Player*);
 void player_logic(Player*);
 
