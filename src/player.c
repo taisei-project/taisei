@@ -23,8 +23,7 @@ void init_player(Player *plr) {
 	plr->deathtime = -1;
 	plr->continues = 0;
 
-	// maybe move this to player?
-	global.points = 0;
+	plr->points = 0;
 }
 
 void prepare_player_for_next_stage(Player *plr) {
@@ -420,7 +419,7 @@ void player_input_workaround(Player *plr) {
 }
 
 void player_graze(Player *plr, complex pos, int pts) {
-	global.points += pts;
+	plr->points += pts;
 	plr->graze++;
 	play_sound("graze");
 

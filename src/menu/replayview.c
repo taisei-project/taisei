@@ -52,8 +52,6 @@ void start_replay(void *arg) {
 		mctx->pickedstage = 0;
 	}
 
-	init_player(&global.plr);
-
 	for(int i = mctx->pickedstage; i < global.replay.numstages; ++i) {
 		ReplayStage *rstg = global.replay_stage = global.replay.stages+i;
 		StageInfo *gstg = stage_get(rstg->stage);

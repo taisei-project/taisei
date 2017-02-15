@@ -43,7 +43,9 @@ typedef struct {
 
 	short dir;
 	short power;
+
 	int graze;
+	int points;
 
 	int lifes;
 	int bombs;

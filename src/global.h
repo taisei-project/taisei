@@ -108,7 +108,6 @@ typedef struct {
 	RefArray refs;
 
 	int game_over;
-	int points;
 
 	FPSCounter fps;
 
