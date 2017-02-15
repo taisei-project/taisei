@@ -1,1 +1,5 @@
+FindSDL2, FindSDL2_ttf:
 https://github.com/tcbrindle/sdl2-cmake-scripts
+
+FindSDL2_mixer:
+https://github.com/Gear2D/gear2d-components/blob/master/cmake/

@@ -26,7 +26,7 @@ struct current_bgm_t {
 	int started_at;
 };
 
-Sound *load_bgm(char *filename, const char *type);
+Sound *load_bgm(char *filename);
 
 extern struct current_bgm_t current_bgm;
 
@@ -36,7 +36,7 @@ void continue_bgm(void);
 void save_bgm(void);
 void restore_bgm(void);
 
-int init_bgm(int *argc, char *argv[]);
+int init_bgm(void);
 void shutdown_bgm(void);
 
 void load_bgm_descriptions(const char *path);

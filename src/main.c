@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
 	config_load(CONFIG_FILE);
 
 	printf("initialize:\n");
-	if(SDL_Init(SDL_INIT_VIDEO) < 0)
+	if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO) < 0)
 		errx(-1, "Error initializing SDL: %s", SDL_GetError());
 	printf("-- SDL_Init\n");
 
@@ -123,8 +123,8 @@ int main(int argc, char** argv) {
 	gamepad_init();
 
 	// Order DOES matter: init_global, then sfx/bgm, then load_resources.
-	init_sfx(&argc, argv);
-	init_bgm(&argc, argv);
+	init_sfx();
+	init_bgm();
 	load_resources();
 	printf("initialization complete.\n");
 
