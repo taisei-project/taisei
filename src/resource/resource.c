@@ -39,18 +39,26 @@ void recurse_dir(char *path) {
 			else
 				load_texture(buf);
 		} else
-#ifdef OGG_SUPPORT_ENABLED
-		if( (strcmp(dp->d_name + strlen(dp->d_name)-4, ".wav") == 0)
-		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".ogg") == 0))
-#else
-		if  (strcmp(dp->d_name + strlen(dp->d_name)-4, ".wav") == 0)
-#endif
+		// A some kind of 'indian code', but...
+		if( (strcmp(dp->d_name + strlen(dp->d_name)-4, ".wav" ) == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".ogg" ) == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".mp3" ) == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".mod" ) == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".xm"  ) == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".s3m" ) == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".669" ) == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".it"  ) == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".med" ) == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".mid" ) == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".flac") == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".aiff") == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".voc" ) == 0))
 		{
 			// BGMs should have "bgm_" prefix!
 			if(strncmp(dp->d_name, "bgm_", 4) == 0)
-				load_bgm(buf, dp->d_name + strlen(dp->d_name)-3);
+				load_bgm(buf);
 			else
-				load_sound(buf, dp->d_name + strlen(dp->d_name)-3);
+				load_sound(buf);
 		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".sha") == 0) {
 			load_shader_file(buf);
 		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".obj") == 0) {
