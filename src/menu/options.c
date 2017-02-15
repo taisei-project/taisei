@@ -481,8 +481,11 @@ void options_sub_gamepad(void *arg) {
 
 	gamepad_init_bare();
 	int cnt = gamepad_devicecount();
-	int i; for(i = 0; i < cnt; ++i)
-		bind_addvalue(b, gamepad_devicename(i));
+	int i; for(i = 0; i < cnt; ++i) {
+		char buf[50];
+		snprintf(buf, sizeof(buf), "#%i: %s", i+1, gamepad_devicename(i));
+		bind_addvalue(b, buf);
+	}
 
 	if(!i) {
 		bind_addvalue(b, "No devices available");
