@@ -128,12 +128,11 @@ void start_bgm(char *name) {
 		}
 	}
 
-	if(Mix_PlayingMusic()) return; // Do nothing if music already playing
-	if(Mix_PausedMusic()) {Mix_ResumeMusic(); return;} // Unpause music if paused
+	if(Mix_PausedMusic()) Mix_ResumeMusic(); // Unpause music if paused
+	if(Mix_PlayingMusic()) return; // Do nothing if music already playing (or was just unpaused)
 	
 	if(Mix_PlayMusic(current_bgm.data->music, -1) == -1) // Start playing otherwise
 		printf("Failed starting BGM %s: %s.\n", current_bgm.name, Mix_GetError());
-	
 	// Support drawing BGM title in game loop (only when music changed!)
 	if ((current_bgm.title = get_bgm_desc(resources.bgm_descriptions, current_bgm.name)) != NULL)
 	{
@@ -157,7 +156,7 @@ void continue_bgm(void)
 void stop_bgm(void) {
 	if (tconfig.intval[NO_MUSIC] || !current_bgm.name) return;
 
-	if(Mix_PlayingMusic())
+	if(Mix_PlayingMusic() && !Mix_PausedMusic())
 	{
 		Mix_PauseMusic(); // Pause, not halt - to be unpaused in continue_bgm() if needed.
 		printf("BGM stopped.\n");
