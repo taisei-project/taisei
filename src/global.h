@@ -152,6 +152,7 @@ bool strendswith(char *s, char *e);
 char* difficulty_name(Difficulty diff);
 void stralloc(char **dest, char *src);
 bool gamekeypressed(int key);
+int getenvint(const char *v);
 
 #define SIGN(x) ((x > 0) - (x < 0))
 
@@ -166,5 +167,3 @@ enum {
 };
 
 #endif
-
-int getenvint(const char *v);
