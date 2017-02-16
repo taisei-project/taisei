@@ -31,6 +31,7 @@ Laser *create_laser(complex pos, float time, float deathtime, Color *color, Lase
 	l->width = 10;
 	l->speed = 1;
 	l->timeshift = 0;
+	l->in_background = false;
 
 	if(l->lrule)
 		l->lrule(l, EVENT_BIRTH);
