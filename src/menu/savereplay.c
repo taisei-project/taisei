@@ -14,7 +14,7 @@
 #include "plrmodes.h"
 #include "common.h"
 
-void save_rpy(void *a) {
+void save_rpy(MenuData *menu, void *a) {
 	Replay *rpy = &global.replay;
 	char strtime[128], name[128];
 	time_t rawtime;

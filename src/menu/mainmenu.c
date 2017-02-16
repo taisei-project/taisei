@@ -18,19 +18,19 @@
 #include "stage.h"
 #include "paths/native.h"
 
-void enter_options(void *arg) {
+void enter_options(MenuData *menu, void *arg) {
 	MenuData m;
 	create_options_menu(&m);
 	options_menu_loop(&m);
 }
 
-void enter_stagemenu(void *arg) {
+void enter_stagemenu(MenuData *menu, void *arg) {
 	MenuData m;
 	create_stage_menu(&m);
 	stage_menu_loop(&m);
 }
 
-void enter_replayview(void *arg) {
+void enter_replayview(MenuData *menu, void *arg) {
 	MenuData m;
 	create_replayview_menu(&m);
 	replayview_menu_loop(&m);

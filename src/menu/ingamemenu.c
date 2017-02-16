@@ -11,14 +11,14 @@
 #include "global.h"
 #include "stage.h"
 
-void return_to_game(void *arg) {
+void return_to_game(MenuData *m, void *arg) {
 }
 
-void return_to_title(void *arg) {
+void return_to_title(MenuData *m, void *arg) {
 	global.game_over = GAMEOVER_ABORT;
 }
 
-void restart_game(void *arg) {
+void restart_game(MenuData *m, void *arg) {
 	global.game_over = GAMEOVER_RESTART;
 }
 

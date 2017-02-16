@@ -10,7 +10,7 @@
 #include "gameovermenu.h"
 #include "global.h"
 
-void continue_game(void *arg)
+void continue_game(MenuData *m, void *arg)
 {
 	printf("The game is being continued...\n");
 
@@ -28,11 +28,11 @@ void continue_game(void *arg)
 	delete_projectiles(&global.particles);
 }
 
-void give_up(void *arg) {
+void give_up(MenuData *m, void *arg) {
 	global.game_over = (MAX_CONTINUES - global.plr.continues)? GAMEOVER_ABORT : GAMEOVER_DEFEAT;
 }
 
-void restart_game(void *arg);
+void restart_game(MenuData *m, void *arg);
 
 void create_gameover_menu(MenuData *m) {
 	create_menu(m);

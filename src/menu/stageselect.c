@@ -26,7 +26,7 @@ void create_stage_menu(MenuData *m) {
 	}
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Back", (MenuAction)kill_menu, m);
+	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
 }
 
 void draw_stage_menu(MenuData *m) {
