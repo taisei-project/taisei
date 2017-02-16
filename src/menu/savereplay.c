@@ -27,7 +27,7 @@ void save_rpy(void *a) {
 
 	char prepr[16], drepr[16];
 	plrmode_repr(prepr, 16, rpy->stages[0].plr_char, rpy->stages[0].plr_shot);
-	strncpy(drepr, difficulty_name(rpy->stages[0].diff), 16);
+	strlcpy(drepr, difficulty_name(rpy->stages[0].diff), 16);
 	drepr[0] += 'a' - 'A';
 
 	if(rpy->numstages > 1)

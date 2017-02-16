@@ -75,8 +75,8 @@ char *copy_segment(char *text, char *delim, int *size) {
 		return NULL;
 
 	*size = end-beg;
-	seg = malloc(*size);
-	strncpy(seg, beg, *size);
+	seg = malloc(*size+1);
+	strlcpy(seg, beg, *size+1);
 
 	return seg;
 }
@@ -135,11 +135,11 @@ void load_shader_snippets(char *filename, char *prefix) {
 			memset(vtext, 0, vhsize + ssize + vfsize + 1);
 			memset(ftext, 0, fhsize + 1);
 
-			strncpy(vtext, vhead, vhsize);
-			strncpy(ftext, fhead, fhsize);
+			strlcpy(vtext, vhead, vhsize+1);
+			strlcpy(ftext, fhead, fhsize+1);
 
-			strncpy(vtext+vhsize, sec, ssize);
-			strncpy(vtext+vhsize+ssize, vfoot, vfsize);
+			strlcpy(vtext+vhsize, sec, ssize+1);
+			strlcpy(vtext+vhsize+ssize, vfoot, vfsize+1);
 
 		} else if(ffoot) {
 			ftext = malloc(fhsize + ssize + ffsize + 1);
@@ -148,19 +148,19 @@ void load_shader_snippets(char *filename, char *prefix) {
 			memset(ftext, 0, fhsize + ssize + ffsize + 1);
 			memset(vtext, 0, vhsize + 1);
 
-			strncpy(ftext, fhead, fhsize);
-			strncpy(vtext, vhead, vhsize);
+			strlcpy(ftext, fhead, fhsize+1);
+			strlcpy(vtext, vhead, vhsize+1);
 
-			strncpy(ftext+fhsize, sec, ssize);
-			strncpy(ftext+fhsize+ssize, ffoot, ffsize);
+			strlcpy(ftext+fhsize, sec, ssize+1);
+			strlcpy(ftext+fhsize+ssize, ffoot, ffsize+1);
 		}
 
 		nbuf = malloc(nend-name+prefixlen+1);
 		strcpy(nbuf, prefix);
-		strncat(nbuf+prefixlen, name, nend-name);
+		strlcat(nbuf+prefixlen, name, nend-name+1);
 		nbuf[nend-name+prefixlen] = 0;
 
-		load_shader(vtext, ftext, nbuf, nend-name+prefixlen);
+		load_shader(vtext, ftext, nbuf, nend-name+prefixlen+1);
 		printf("--- loaded snippet as shader '%s'\n", nbuf);
 
 		free(nbuf);
@@ -195,11 +195,11 @@ void load_shader_file(char *filename) {
 	beg = strstr(filename, "shader/") + 7;
 	end = strrchr(filename, '.');
 
-	name = malloc(end-beg + 1);
-	strncpy(name, beg, end-beg);
-	name[end-beg] = 0;
+	int sz = end - beg + 1;
+	name = malloc(sz);
+	strlcpy(name, beg, sz);
 
-	load_shader(vtext, ftext, name, end-beg);
+	load_shader(vtext, ftext, name, sz);
 
 	printf("-- loaded '%s' as '%s'\n", filename, name);
 
@@ -237,9 +237,8 @@ void load_shader(char *vtext, char *ftext, char *name, int nsize) {
 
 	print_program_info_log(sha->prog);
 
-	sha->name = malloc(nsize + 1);
-	strncpy(sha->name, name, nsize);
-	sha->name[nsize] = 0;
+	sha->name = malloc(nsize);
+	strlcpy(sha->name, name, nsize);
 
 	cache_uniforms(sha);
 }

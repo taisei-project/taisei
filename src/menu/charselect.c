@@ -53,7 +53,7 @@ void draw_char_menu(MenuData *menu) {
 	char buf[128];
 	int i;
 	for(i = 0; i < menu->ecount; i++) {
-		strncpy(buf, menu->entries[i].name, sizeof(buf));
+		strlcpy(buf, menu->entries[i].name, sizeof(buf));
 
 		char *tex = strtok(buf,"|");
 		char *name = strtok(NULL, "|");
@@ -84,7 +84,7 @@ void draw_char_menu(MenuData *menu) {
 			glColor4f(1,1,1,1-menu->entries[i].drawdata*3);
 		draw_text(AL_Center, 0, 70, title, _fonts.standard);
 
-		strncpy(buf, mod->entries[i].name, sizeof(buf));
+		strlcpy(buf, mod->entries[i].name, sizeof(buf));
 
 		char *mari = strtok(buf, "|");
 		char *youmu = strtok(NULL, "|");

@@ -15,9 +15,6 @@
 #include "paths/native.h"
 #include "taisei_err.h"
 
-#define strlcat SDL_strlcat
-#define strlcpy SDL_strlcpy
-
 // --- Menu entry <-> config option binding stuff --- //
 
 void bind_init(OptionBinding *bind) {

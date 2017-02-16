@@ -210,7 +210,7 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 
 			case 1:
 				a = AL_Center;
-				strncpy(tmp, rpy->playername, 128);
+				strlcpy(tmp, rpy->playername, sizeof(tmp));
 				break;
 
 			case 2:

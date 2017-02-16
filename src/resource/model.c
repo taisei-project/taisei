@@ -125,10 +125,9 @@ Model *load_model(char *filename) {
 	char *beg = strstr(filename, "models/") + 7;
 	char *end = strrchr(filename, '.');
 
-	m->name = malloc(end - beg + 1);
-	memset(m->name, 0, end-beg + 1);
-	strncpy(m->name, beg, end-beg);
-
+	int sz = end - beg + 1;
+	m->name = malloc(sz);
+	strlcpy(m->name, beg, sz);
 
 	parse_obj(filename, &data);
 

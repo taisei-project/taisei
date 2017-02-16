@@ -32,7 +32,7 @@ void dadd_msg(Dialog *d, Side side, char *msg) {
 	d->messages = realloc(d->messages, (++d->count)*sizeof(DialogMessage));
 	d->messages[d->count-1].side = side;
 	d->messages[d->count-1].msg = malloc(strlen(msg) + 1);
-	strncpy(d->messages[d->count-1].msg, msg, strlen(msg) + 1);
+	strlcpy(d->messages[d->count-1].msg, msg, strlen(msg) + 1);
 }
 
 void delete_dialog(Dialog *d) {

@@ -166,4 +166,10 @@ enum {
 	EV_CHECK_DESYNC, // replay-only
 };
 
+#define strlcat SDL_strlcat
+#define strlcpy SDL_strlcpy
+
+#define strncat DO_NOT_USE_strncat_USE_strlcat
+#define strncpy DO_NOT_USE_strncpy_USE_strlcpy
+
 #endif

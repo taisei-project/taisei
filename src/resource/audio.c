@@ -131,9 +131,9 @@ Sound *load_sound_or_bgm(char *filename, Sound **dest, const char *res_directory
 	char *beg = strstr(filename, res_directory) + strlen(res_directory);
 	char *end = strrchr(filename, '.');
 
-	snd->name = malloc(end - beg + 1);
-	memset(snd->name, 0, end-beg + 1);
-	strncpy(snd->name, beg, end-beg);
+	int sz = end - beg + 1;
+	snd->name = malloc(sz);
+	strlcpy(snd->name, beg, sz);
 
 	printf("-- loaded '%s' as '%s', type %s\n", filename, snd->name, type);
 
