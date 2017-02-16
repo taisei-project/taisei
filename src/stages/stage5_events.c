@@ -499,7 +499,6 @@ Enemy* iku_extra_find_next_slave(complex from, double playerbias) {
 	double dist, mindist = DBL_MAX;
 
 	complex org = from + playerbias * cexp(I*(carg(global.plr.pos - from)));
-	create_particle1c("flare", org, NULL, Fade, timeout, 30);
 
 	for(e = global.enemies; e; e = e->next) {
 		if(e->args[2]) {
@@ -619,12 +618,11 @@ void iku_extra(Boss *b, int t) {
 	AT(0) {
 		int i, j;
 		int cnt = 5;
-		double margin = 0; // VIEWPORT_W * 0.05;
-		double step = ((VIEWPORT_W - margin * 2) / cnt);
+		double step = VIEWPORT_W / (double)cnt;
 
 		for(i = 0; i < cnt; ++i) {
 			for(j = 0; j < cnt; ++j) {
-				complex epos = margin + step * (0.5 + i) + (step * j + 125) * I;
+				complex epos = step * (0.5 + i) + (step * j + 125) * I;
 				create_enemy4c(b->pos, ENEMY_IMMUNE, iku_extra_slave_draw, iku_extra_slave, epos, 0, 0, 1);
 			}
 		}
