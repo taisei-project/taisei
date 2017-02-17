@@ -318,7 +318,7 @@ static int replay_read_events(Replay *rpy, SDL_RWops *file, size_t filesize) {
 }
 
 int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
-	size_t filesize;
+	int64_t filesize;
 	mode &= REPLAY_READ_ALL;
 
 	if(!mode) {
@@ -333,7 +333,7 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 		return false;
 	}
 
-	printf("replay_read(): %li bytes\n", filesize);
+	printf("replay_read(): %li bytes\n", (long int)filesize);
 
 	if(mode & REPLAY_READ_META) {
 		memset(rpy, 0, sizeof(Replay));

@@ -139,7 +139,7 @@ void credits_draw_entry(CreditsEntry *e) {
 	bool yukkuri = false;
 	float first, other = 0, fadein = 1, fadeout = 1;
 	CreditsEntry *o;
-	Texture *ytex;
+	Texture *ytex = NULL;
 
 	for(o = credits.entries; o != e; ++o)
 		time -= o->time + CREDITS_ENTRY_FADEOUT;

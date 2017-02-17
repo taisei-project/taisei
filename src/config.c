@@ -142,7 +142,7 @@ KeyIndex config_key_from_gamepad_button(int btn) {
 static void config_set_val(ConfigIndex idx, ConfigValue v) {
 	ConfigEntry *e = config_get(idx);
 	ConfigCallback callback = e->callback;
-	bool difference;
+	bool difference = true;
 
 	switch(e->type) {
 		case CONFIG_TYPE_INT:

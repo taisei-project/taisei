@@ -85,7 +85,7 @@ void load_shader_snippets(char *filename, char *prefix) {
 	int size, vhsize, vfsize, fhsize, ffsize, ssize, prefixlen;
 	char *text, *vhead, *vfoot, *fhead, *ffoot;
 	char *sec, *name, *nend, *send;
-	char *vtext, *ftext;
+	char *vtext = NULL, *ftext = NULL;
 	char *nbuf;
 
 	printf("-- loading snippet file '%s'\n", filename);

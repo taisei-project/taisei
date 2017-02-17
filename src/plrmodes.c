@@ -566,6 +566,7 @@ int plrmode_repr(char *out, size_t outsize, Character pchar, ShotMode pshot) {
 	switch(pshot) {
 		case MarisaLaser:	sht = 'A'		;	break;
 		case MarisaStar :	sht = 'B'		;	break;
+		default			:	sht = '?'		;	break;
 	}
 
 	return snprintf(out, outsize, "%s%c", plr, sht);

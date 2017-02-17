@@ -5,8 +5,8 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
-#include "resource.h"
 #include <dirent.h>
+#include "resource.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "paths/native.h"

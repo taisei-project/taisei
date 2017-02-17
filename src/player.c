@@ -39,7 +39,7 @@ void prepare_player_for_next_stage(Player *plr) {
 }
 
 Animation *player_get_ani(Character cha) {
-	Animation *ani;
+	Animation *ani = NULL;
 	switch(cha) {
 	case Youmu:
 		ani = get_ani("youmu");
