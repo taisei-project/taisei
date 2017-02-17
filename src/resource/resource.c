@@ -49,6 +49,7 @@ void recurse_dir(char *path) {
 		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".669" ) == 0)
 		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".it"  ) == 0)
 		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".med" ) == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".mid" ) == 0)
 		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".flac") == 0)
 		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".aiff") == 0)
 		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".voc" ) == 0))
