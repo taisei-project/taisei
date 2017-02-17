@@ -226,6 +226,14 @@ bool bind_stagebg_fpslimit_dependence(void) {
 	return config_get_int(CONFIG_NO_STAGEBG) == 2;
 }
 
+bool bind_sfxvol_dependence(void) {
+	return !config_get_int(CONFIG_NO_AUDIO);
+}
+
+bool bind_bgmvol_dependence(void) {
+	return !config_get_int(CONFIG_NO_MUSIC);
+}
+
 int bind_saverpy_get(void *b) {
 	int v = config_get_int(((OptionBinding*)b)->configentry);
 
@@ -554,18 +562,20 @@ void create_options_menu(MenuData *m) {
 											bind_common_onoffset_inverted)
 	);	bind_onoff(b);
 
-	add_menu_entry(m, "SFX volume level", do_nothing,
-		bind_scale(CONFIG_SFX_VOLUME, 0, 1, 0.1)
-	);
+	add_menu_entry(m, "Volume", do_nothing,
+		b = bind_scale(CONFIG_SFX_VOLUME, 0, 1, 0.1)
+	);	bind_setdependence(b, bind_sfxvol_dependence);
+
+	add_menu_separator(m);
 
 	add_menu_entry(m, "Background music", do_nothing,
 		b = bind_option(CONFIG_NO_MUSIC,	bind_common_onoffget_inverted,
 											bind_common_onoffset_inverted)
 	);	bind_onoff(b);
 
-	add_menu_entry(m, "Music volume level", do_nothing,
-		bind_scale(CONFIG_BGM_VOLUME, 0, 1, 0.1)
-	);
+	add_menu_entry(m, "Volume", do_nothing,
+		b = bind_scale(CONFIG_BGM_VOLUME, 0, 1, 0.1)
+	);	bind_setdependence(b, bind_bgmvol_dependence);
 
 	add_menu_separator(m);
 	add_menu_entry(m, "Video options...", options_sub_video, NULL);
