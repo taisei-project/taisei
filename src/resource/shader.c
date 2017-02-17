@@ -274,7 +274,7 @@ int uniloc(Shader *sha, char *name) {
 Shader *get_shader(const char *name) {
 	Shader *s, *res = NULL;
 
-	if(tconfig.intval[NO_SHADER])
+	if(config_get_int(CONFIG_NO_SHADER))
 		return NULL;
 
 	for(s = resources.shaders; s; s = s->next) {

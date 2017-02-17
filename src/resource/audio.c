@@ -27,7 +27,7 @@ int warn_alut_error(const char *when) {
 
 void unload_alut_if_needed() {
 	// ALUT will be unloaded only if there are no audio AND no music enabled
-	if(!tconfig.intval[NO_AUDIO] || !tconfig.intval[NO_MUSIC] || !alut_loaded) return;
+	if(!config_get_int(CONFIG_NO_AUDIO) || !config_get_int(CONFIG_NO_MUSIC) || !alut_loaded) return;
 
 	warn_alut_error("preparing to shutdown");
 	alutExit();
@@ -38,15 +38,15 @@ void unload_alut_if_needed() {
 
 int init_alut_if_needed(int *argc, char *argv[]) {
 	// ALUT will not be loaded if there are no audio AND no music enabled
-	if((tconfig.intval[NO_AUDIO] && tconfig.intval[NO_MUSIC]) || alut_loaded) return 1;
+	if((config_get_int(CONFIG_NO_AUDIO) && config_get_int(CONFIG_NO_MUSIC)) || alut_loaded) return 1;
 
 	if(!alutInit(argc, argv))
 	{
 		warn_alut_error("initializing");
 		alutExit(); // Try to shutdown ALUT if it was partly initialized
 		warn_alut_error("shutting down");
-		tconfig.intval[NO_AUDIO] = 1;
-		tconfig.intval[NO_MUSIC] = 1;
+		config_set_int(CONFIG_NO_AUDIO, 1);
+		config_set_int(CONFIG_NO_MUSIC, 1);
 		return 0;
 	}
 
@@ -58,13 +58,13 @@ int init_alut_if_needed(int *argc, char *argv[]) {
 
 int init_sfx(int *argc, char *argv[])
 {
-	if (tconfig.intval[NO_AUDIO]) return 1;
+	if (config_get_int(CONFIG_NO_AUDIO)) return 1;
 	if (!init_alut_if_needed(argc, argv)) return 0;
 
 	alGenSources(SNDSRC_COUNT, resources.sndsrc);
 	if(warn_alut_error("creating sfx sources"))
 	{
-		tconfig.intval[NO_AUDIO] = 1;
+		config_set_int(CONFIG_NO_AUDIO, 1);
 		unload_alut_if_needed();
 		return 0;
 	}
@@ -81,7 +81,7 @@ void shutdown_sfx(void)
 		delete_sounds();
 		resources.state &= ~RS_SfxLoaded;
 	}
-	tconfig.intval[NO_AUDIO] = 1;
+	config_set_int(CONFIG_NO_AUDIO, 1);
 	unload_alut_if_needed();
 }
 
@@ -159,7 +159,7 @@ Sound *get_snd(Sound *source, char *name) {
 
 void play_sound_p(char *name, int unconditional)
 {
-	if(tconfig.intval[NO_AUDIO] || global.frameskip) return;
+	if(config_get_int(CONFIG_NO_AUDIO) || global.frameskip) return;
 
 	Sound *snd = get_snd(resources.sounds, name);
 	if (snd == NULL) return;
@@ -193,7 +193,7 @@ void play_sound_p(char *name, int unconditional)
 
 void set_sfx_volume(float gain)
 {
-	if(tconfig.intval[NO_AUDIO]) return;
+	if(config_get_int(CONFIG_NO_AUDIO)) return;
 	printf("SFX volume: %f\n", gain);
 	int i;
 	for(i = 0; i < SNDSRC_COUNT; i++) {

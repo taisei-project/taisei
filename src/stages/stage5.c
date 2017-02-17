@@ -38,7 +38,7 @@ void stage5_stairs_draw(Vector pos) {
 	glTranslatef(pos[0], pos[1], pos[2]);
 	glScalef(300,300,300);
 
-	if(!tconfig.intval[NO_SHADER]) {
+	if(!config_get_int(CONFIG_NO_SHADER)) {
 		Shader *sha = get_shader("tower_light");
 		glUseProgram(sha->prog);
 		glUniform3f(uniloc(sha, "lightvec"), 0, 0, 0);

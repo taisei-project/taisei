@@ -77,7 +77,7 @@ void load_resources(void) {
 		resources.state |= RS_GfxLoaded;
 	}
 
-	if(!tconfig.intval[NO_AUDIO] && !(resources.state & RS_SfxLoaded)) {
+	if(!config_get_int(CONFIG_NO_AUDIO) && !(resources.state & RS_SfxLoaded)) {
 		printf("- sounds:\n");
 		strcpy(path, get_prefix());
 		strcat(path, "sfx");
@@ -86,7 +86,7 @@ void load_resources(void) {
 		resources.state |= RS_SfxLoaded;
 	}
 
-	if(!tconfig.intval[NO_MUSIC] && !(resources.state & RS_BgmLoaded)) {
+	if(!config_get_int(CONFIG_NO_MUSIC) && !(resources.state & RS_BgmLoaded)) {
 		printf("- music:\n");
 		strcpy(path, get_prefix());
 		strcat(path, "bgm");
@@ -96,7 +96,7 @@ void load_resources(void) {
 		resources.state |= RS_BgmLoaded;
 	}
 
-	if(!tconfig.intval[NO_SHADER] && !(resources.state & RS_ShaderLoaded)) {
+	if(!config_get_int(CONFIG_NO_SHADER) && !(resources.state & RS_ShaderLoaded)) {
 		printf("- shader:\n");
 		strcpy(path, get_prefix());
 		strcat(path, "shader");

@@ -23,13 +23,13 @@ char *saved_bgm;
 
 int init_bgm(int *argc, char *argv[])
 {
-	if (tconfig.intval[NO_MUSIC]) return 1;
+	if (config_get_int(CONFIG_NO_MUSIC)) return 1;
 	if (!init_alut_if_needed(argc, argv)) return 0;
 
 	alGenSources(1, &resources.bgmsrc);
 	if(warn_alut_error("creating music sources"))
 	{
-		tconfig.intval[NO_MUSIC] = 1;
+		config_set_int(CONFIG_NO_MUSIC, 1);
 		unload_alut_if_needed();
 		return 0;
 	}
@@ -47,7 +47,7 @@ void shutdown_bgm(void)
 		delete_music();
 		resources.state &= ~RS_BgmLoaded;
 	}
-	tconfig.intval[NO_MUSIC] = 1;
+	config_set_int(CONFIG_NO_MUSIC, 1);
 	unload_alut_if_needed();
 }
 
@@ -115,7 +115,7 @@ Sound *load_bgm(char *filename, const char *type) {
 }
 
 void start_bgm(char *name) {
-	if(tconfig.intval[NO_MUSIC]) return;
+	if(config_get_int(CONFIG_NO_MUSIC)) return;
 
 	if(!name || strcmp(name, "") == 0)
 	{
@@ -179,7 +179,7 @@ void continue_bgm(void)
 }
 
 void stop_bgm(void) {
-	if (tconfig.intval[NO_MUSIC] || !current_bgm.name) return;
+	if (config_get_int(CONFIG_NO_MUSIC) || !current_bgm.name) return;
 
 	ALint play;
 	alGetSourcei(resources.bgmsrc,AL_SOURCE_STATE,&play);
@@ -211,7 +211,7 @@ void restore_bgm(void)
 
 void set_bgm_volume(float gain)
 {
-	if(tconfig.intval[NO_MUSIC]) return;
+	if(config_get_int(CONFIG_NO_MUSIC)) return;
 	printf("BGM volume: %f\n", gain);
 	alSourcef(resources.bgmsrc,AL_GAIN, gain);
 	warn_alut_error("changing gain of music source");

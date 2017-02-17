@@ -46,12 +46,12 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 					else if(scan == SDL_SCANCODE_BACKSPACE)
 						handler(E_CharErased, 0, arg);
 				} else {
-					if(scan == tconfig.intval[KEY_SCREENSHOT]) {
+					if(scan == config_get_int(CONFIG_KEY_SCREENSHOT)) {
 						take_screenshot();
 						break;
 					}
 
-					if((scan == SDL_SCANCODE_RETURN && (mod & KMOD_ALT)) || scan == tconfig.intval[KEY_FULLSCREEN]) {
+					if((scan == SDL_SCANCODE_RETURN && (mod & KMOD_ALT)) || scan == config_get_int(CONFIG_KEY_FULLSCREEN)) {
 						video_toggle_fullscreen();
 						break;
 					}
@@ -62,26 +62,26 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 				}
 
 				if(menu) {
-					if(scan == tconfig.intval[KEY_DOWN] || scan == SDL_SCANCODE_DOWN) {
+					if(scan == config_get_int(CONFIG_KEY_DOWN) || scan == SDL_SCANCODE_DOWN) {
 						handler(E_CursorDown, 0, arg);
-					} else if(scan == tconfig.intval[KEY_UP] || scan == SDL_SCANCODE_UP) {
+					} else if(scan == config_get_int(CONFIG_KEY_UP) || scan == SDL_SCANCODE_UP) {
 						handler(E_CursorUp, 0, arg);
-					} else if(scan == tconfig.intval[KEY_RIGHT] || scan == SDL_SCANCODE_RIGHT) {
+					} else if(scan == config_get_int(CONFIG_KEY_RIGHT) || scan == SDL_SCANCODE_RIGHT) {
 						handler(E_CursorRight, 0, arg);
-					} else if(scan == tconfig.intval[KEY_LEFT] || scan == SDL_SCANCODE_LEFT) {
+					} else if(scan == config_get_int(CONFIG_KEY_LEFT) || scan == SDL_SCANCODE_LEFT) {
 						handler(E_CursorLeft, 0, arg);
-					} else if(scan == tconfig.intval[KEY_SHOT] || scan == SDL_SCANCODE_RETURN) {
+					} else if(scan == config_get_int(CONFIG_KEY_SHOT) || scan == SDL_SCANCODE_RETURN) {
 						handler(E_MenuAccept, 0, arg);
-					} else if(scan == SDL_SCANCODE_ESCAPE || scan == tconfig.intval[KEY_BOMB]) {
+					} else if(scan == config_get_int(CONFIG_KEY_BOMB) || scan == SDL_SCANCODE_ESCAPE) {
 						handler(E_MenuAbort, 0, arg);
 					}
 				}
 
 				if(game && !event.key.repeat) {
-					if(scan == SDL_SCANCODE_ESCAPE) {
+					if(scan == config_get_int(CONFIG_KEY_PAUSE) || scan == SDL_SCANCODE_ESCAPE) {
 						handler(E_Pause, 0, arg);
 					} else {
-						int key = config_scan2key(scan);
+						int key = config_key_from_scancode(scan);
 						if(key >= 0)
 							handler(E_PlrKeyDown, key, arg);
 					}
@@ -95,7 +95,7 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 				}
 
 				if(game && !event.key.repeat) {
-					int key = config_scan2key(scan);
+					int key = config_key_from_scancode(scan);
 					if(key >= 0)
 						handler(E_PlrKeyUp, key, arg);
 				}

@@ -61,7 +61,7 @@ void video_set_viewport(void) {
 }
 
 void video_update_vsync(void) {
-	if(global.frameskip || !tconfig.intval[VSYNC]) {
+	if(global.frameskip || !config_get_int(CONFIG_VSYNC)) {
 		SDL_GL_SetSwapInterval(0);
 	} else {
 		if(SDL_GL_SetSwapInterval(-1) < 0) {
@@ -166,7 +166,7 @@ void video_init(void) {
 
 	if(!fullscreen_available) {
 		warnx("video_init(): no available fullscreen modes");
-		tconfig.intval[FULLSCREEN] = false;
+		config_set_int(CONFIG_FULLSCREEN, false);
 	}
 
 	// Then, add some common 4:3 modes for the windowed mode if they are not there yet.
@@ -177,7 +177,7 @@ void video_init(void) {
 	// sort it, mainly for the options menu
 	qsort(video.modes, video.mcount, sizeof(VideoMode), video_compare_modes);
 
-	video_setmode(tconfig.intval[VID_WIDTH], tconfig.intval[VID_HEIGHT], tconfig.intval[FULLSCREEN]);
+	video_setmode(config_get_int(CONFIG_VID_WIDTH), config_get_int(CONFIG_VID_HEIGHT), config_get_int(CONFIG_FULLSCREEN));
 }
 
 void video_shutdown(void) {

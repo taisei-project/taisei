@@ -38,11 +38,13 @@ void taisei_shutdown(void) {
 	config_save(CONFIG_FILE);
 	printf("\nshutdown:\n");
 
-	if (!tconfig.intval[NO_AUDIO]) shutdown_sfx();
-	if (!tconfig.intval[NO_MUSIC]) shutdown_bgm();
+	if(!config_get_int(CONFIG_NO_AUDIO)) shutdown_sfx();
+	if(!config_get_int(CONFIG_NO_MUSIC)) shutdown_bgm();
+
 	free_resources();
 	video_shutdown();
 	gamepad_shutdown();
+	config_uninit();
 
 	SDL_Quit();
 	printf("-- Good Bye.\n");
@@ -161,8 +163,8 @@ int main(int argc, char** argv) {
 	MenuData menu;
 	create_main_menu(&menu);
 	printf("-- menu\n");
-	set_sfx_volume(tconfig.fltval[SFX_VOLUME]);
-	set_bgm_volume(tconfig.fltval[BGM_VOLUME]);
+	set_sfx_volume(config_get_float(CONFIG_SFX_VOLUME));
+	set_bgm_volume(config_get_float(CONFIG_BGM_VOLUME));
 	start_bgm("bgm_menu");
 	main_menu_loop(&menu);
 

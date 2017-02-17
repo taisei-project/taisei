@@ -143,7 +143,7 @@ void draw_lasers(void) {
 	Laser *laser;
 
 	for(laser = global.lasers; laser; laser = laser->next) {
-		if(laser->shader && !tconfig.intval[NO_SHADER] && tgl_ext[TGLEXT_draw_instanced])
+		if(laser->shader && !config_get_int(CONFIG_NO_SHADER) && tgl_ext[TGLEXT_draw_instanced])
 			draw_laser_curve_instanced(laser);
 		else
 			draw_laser_curve(laser);

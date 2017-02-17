@@ -21,7 +21,7 @@ static struct {
 void gamepad_init(void) {
 	memset(&gamepad, 0, sizeof(gamepad));
 
-	if(!config_intval("gamepad_enabled"))
+	if(!config_get_int(CONFIG_GAMEPAD_ENABLED))
 		return;
 
 	if(gamepad.initialized)
@@ -37,7 +37,7 @@ void gamepad_init(void) {
 	for(i = 0; i < cnt; ++i)
 		printf("%i: %s\n", i, SDL_JoystickNameForIndex(i));
 
-	int dev = config_intval("gamepad_device");
+	int dev = config_get_int(CONFIG_GAMEPAD_DEVICE);
 	if(dev < 0 || dev >= cnt) {
 		warnx("gamepad_init(): device %i is not available\n", dev);
 		gamepad_shutdown();
@@ -83,11 +83,11 @@ int gamepad_axis2gamekey(int id, int val) {
 		return -1;
 	}
 
-	if(id == tconfig.intval[GAMEPAD_AXIS_LR]) {
+	if(id == config_get_int(CONFIG_GAMEPAD_AXIS_LR)) {
 		return val == AXISVAL_LEFT ? KEY_LEFT : KEY_RIGHT;
 	}
 
-	if(id == tconfig.intval[GAMEPAD_AXIS_UD]) {
+	if(id == config_get_int(CONFIG_GAMEPAD_AXIS_UD)) {
 		return val == AXISVAL_UP   ? KEY_UP   : KEY_DOWN;
 	}
 
@@ -95,31 +95,31 @@ int gamepad_axis2gamekey(int id, int val) {
 }
 
 int gamepad_axis2menuevt(int id, int val) {
-	if(id == tconfig.intval[GAMEPAD_AXIS_LR])
+	if(id == config_get_int(CONFIG_GAMEPAD_AXIS_LR))
 		return val == AXISVAL_LEFT ? E_CursorLeft : E_CursorRight;
 
-	if(id == tconfig.intval[GAMEPAD_AXIS_UD])
+	if(id == config_get_int(CONFIG_GAMEPAD_AXIS_UD))
 		return val == AXISVAL_UP   ? E_CursorUp   : E_CursorDown;
 
 	return -1;
 }
 
 int gamepad_axis2gameevt(int id) {
-	if(id == tconfig.intval[GAMEPAD_AXIS_LR])
+	if(id == config_get_int(CONFIG_GAMEPAD_AXIS_LR))
 		return E_PlrAxisLR;
 
-	if(id == tconfig.intval[GAMEPAD_AXIS_UD])
+	if(id == config_get_int(CONFIG_GAMEPAD_AXIS_UD))
 		return E_PlrAxisUD;
 
 	return -1;
 }
 
 float gamepad_axis_sens(int id) {
-	if(id == tconfig.intval[GAMEPAD_AXIS_LR])
-		return tconfig.fltval[GAMEPAD_AXIS_LR_SENS];
+	if(id == config_get_int(CONFIG_GAMEPAD_AXIS_LR))
+		return config_get_float(CONFIG_GAMEPAD_AXIS_LR_SENS);
 
-	if(id == tconfig.intval[GAMEPAD_AXIS_UD])
-		return tconfig.fltval[GAMEPAD_AXIS_UD_SENS];
+	if(id == config_get_int(CONFIG_GAMEPAD_AXIS_UD))
+		return config_get_float(CONFIG_GAMEPAD_AXIS_UD_SENS);
 
 	return 1.0;
 }
@@ -127,7 +127,7 @@ float gamepad_axis_sens(int id) {
 void gamepad_axis(int id, int raw, EventHandler handler, EventFlags flags, void *arg) {
 	int *a   = gamepad.axis;
 	int val  = AXISVAL(raw);
-	int free = tconfig.intval[GAMEPAD_AXIS_FREE];
+	int free = config_get_int(CONFIG_GAMEPAD_AXIS_FREE);
 
 	int menu = flags & EF_Menu;
 	int game = flags & EF_Game;
@@ -186,8 +186,8 @@ void gamepad_button(int button, int state, EventHandler handler, EventFlags flag
 	int game	= flags & EF_Game;
 	int gpad	= flags & EF_Gamepad;
 
-	int gpkey	= config_button2gpkey(button);
-	int key		= config_gpkey2key(gpkey);
+	int gpkey	= config_gamepad_key_from_gamepad_button(button);
+	int key		= config_key_from_gamepad_key(gpkey);
 
 	//printf("button: %i %i\n", button, state);
 	//printf("gpkey: %i\n", gpkey);
@@ -195,11 +195,11 @@ void gamepad_button(int button, int state, EventHandler handler, EventFlags flag
 
 	if(state == SDL_PRESSED) {
 		if(game) {
-			if(gpkey == GP_PAUSE) {
-				printf("should pause\n");
+			if(gpkey == GAMEPAD_KEY_PAUSE) {
 				handler(E_Pause, 0, arg);
-			} else if(key >= 0)
+			} else if(key >= 0) {
 				handler(E_PlrKeyDown, key, arg);
+			}
 		}
 
 		if(menu) switch(key) {
@@ -227,7 +227,7 @@ void gamepad_event(SDL_Event *event, EventHandler handler, EventFlags flags, voi
 		return;
 
 	int val;
-	int sens = clamp(tconfig.fltval[GAMEPAD_AXIS_DEADZONE], 0, 1) * GAMEPAD_AXIS_RANGE;
+	int sens = clamp(config_get_float(CONFIG_GAMEPAD_AXIS_DEADZONE), 0, 1) * GAMEPAD_AXIS_RANGE;
 
 	switch(event->type) {
 		case SDL_JOYAXISMOTION:
@@ -250,20 +250,19 @@ char* gamepad_devicename(int id) {
 	return (char*)SDL_JoystickNameForIndex(id);
 }
 
-int gamepad_buttonpressed(int btn) {
+bool gamepad_buttonpressed(int btn) {
 	return SDL_JoystickGetButton(gamepad.device, btn);
 }
 
-int gamepad_gamekeypressed(int key) {
+bool gamepad_gamekeypressed(KeyIndex key) {
 	if(!gamepad.initialized)
-		return 0;
+		return false;
 
-	// this sucks
-	int i; for(i = CONFIG_GPKEY_FIRST; i <= CONFIG_GPKEY_LAST; ++i)
-		if(key == config_gpkey2key(i) && gamepad_buttonpressed(tconfig.intval[i]))
-			return 1;
+	int gpkey = config_gamepad_key_from_key(key);
+	int cfgidx = GPKEYIDX_TO_CFGIDX(gpkey);
+	int button = config_get_int(cfgidx);
 
-	return 0;
+	return gamepad_buttonpressed(button);
 }
 
 void gamepad_init_bare(void) {

@@ -204,22 +204,22 @@ int asymptotic(Projectile *p, int t) { // v = a[0]*(a[1] + 1); a[1] -> 0
 }
 
 void _ProjDraw(Projectile *proj, int t) {
-	if(proj->clr != NULL && !tconfig.intval[NO_SHADER]) {
+	if(proj->clr != NULL && !config_get_int(CONFIG_NO_SHADER)) {
 		Shader *shader = get_shader("bullet_color");
 		glUseProgram(shader->prog);
 
 		glUniform4fv(uniloc(shader, "color"), 1, (GLfloat *)proj->clr);
 	}
 
-	if(proj->clr != NULL && tconfig.intval[NO_SHADER])
+	if(proj->clr != NULL && config_get_int(CONFIG_NO_SHADER))
 		glColor3f(0,0,0);
 
 	draw_texture_p(0,0, proj->tex);
 
-	if(proj->clr != NULL && tconfig.intval[NO_SHADER])
+	if(proj->clr != NULL && config_get_int(CONFIG_NO_SHADER))
 		glColor3f(1,1,1);
 
-	if(!tconfig.intval[NO_SHADER])
+	if(!config_get_int(CONFIG_NO_SHADER))
 		glUseProgram(0);
 }
 

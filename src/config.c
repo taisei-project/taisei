@@ -7,181 +7,136 @@
  */
 
 #include <string.h>
+#include <assert.h>
 
 #include "config.h"
 #include "global.h"
 #include "paths/native.h"
 #include "taisei_err.h"
 
-ConfigEntry configdefs[] = {
-	{CFGT_KEYBINDING,			KEY_UP,					"key_up"},
-	{CFGT_KEYBINDING,			KEY_DOWN,				"key_down"},
-	{CFGT_KEYBINDING,			KEY_LEFT,				"key_left"},
-	{CFGT_KEYBINDING,			KEY_RIGHT,				"key_right"},
+static bool config_initialized = false;
 
-	{CFGT_KEYBINDING,			KEY_FOCUS,				"key_focus"},
-	{CFGT_KEYBINDING,			KEY_SHOT,				"key_shot"},
-	{CFGT_KEYBINDING,			KEY_BOMB,				"key_bomb"},
+CONFIGDEFS_EXPORT ConfigEntry configdefs[] = {
+	#define CONFIGDEF(type,entryname,default,ufield) {type, entryname, {.ufield = default}},
+	#define CONFIGDEF_KEYBINDING(id,entryname,default) CONFIGDEF(CONFIG_TYPE_KEYBINDING, entryname, default, i)
+	#define CONFIGDEF_GPKEYBINDING(id,entryname,default) CONFIGDEF(CONFIG_TYPE_INT, entryname, default, i)
+	#define CONFIGDEF_INT(id,entryname,default) CONFIGDEF(CONFIG_TYPE_INT, entryname, default, i)
+	#define CONFIGDEF_FLOAT(id,entryname,default) CONFIGDEF(CONFIG_TYPE_FLOAT, entryname, default, f)
+	#define CONFIGDEF_STRING(id,entryname,default) CONFIGDEF(CONFIG_TYPE_STRING, entryname, NULL, s)
 
-	{CFGT_KEYBINDING,			KEY_FULLSCREEN,			"key_fullscreen"},
-	{CFGT_KEYBINDING,			KEY_SCREENSHOT,			"key_screenshot"},
-	{CFGT_KEYBINDING,			KEY_SKIP,				"key_skip"},
+	CONFIGDEFS
+	{0}
 
-	{CFGT_KEYBINDING,			KEY_IDDQD,				"key_iddqd"},
-	{CFGT_KEYBINDING,			KEY_HAHAIWIN,			"key_skipstage"},
-
-	{CFGT_INT,					FULLSCREEN,				"fullscreen"},
-	{CFGT_INT,					NO_SHADER,				"disable_shader"},
-	{CFGT_INT,					NO_AUDIO,				"disable_audio"},
-	{CFGT_INT,					NO_MUSIC,				"disable_bgm"},
-	{CFGT_FLOAT,				SFX_VOLUME,				"sfx_volume"},
-	{CFGT_FLOAT,				BGM_VOLUME,				"bgm_volume"},
-	{CFGT_INT,					NO_STAGEBG,				"disable_stagebg"},
-	{CFGT_INT,					NO_STAGEBG_FPSLIMIT,	"disable_stagebg_auto_fpslimit"},
-	{CFGT_INT,					SAVE_RPY,				"save_rpy"},
-	{CFGT_INT,					VID_WIDTH,				"vid_width"},
-	{CFGT_INT,					VID_HEIGHT,				"vid_height"},
-	{CFGT_STRING,				PLAYERNAME,				"playername"},
-
-	{CFGT_INT,					GAMEPAD_ENABLED,		"gamepad_enabled"},
-	{CFGT_INT,					GAMEPAD_DEVICE,			"gamepad_device"},
-	{CFGT_INT,					GAMEPAD_AXIS_UD,		"gamepad_axis_ud"},
-	{CFGT_INT,					GAMEPAD_AXIS_LR,		"gamepad_axis_lr"},
-	{CFGT_FLOAT,				GAMEPAD_AXIS_DEADZONE,	"gamepad_axis_deadzone"},
-	{CFGT_INT,					GAMEPAD_AXIS_FREE,		"gamepad_axis_free"},
-	{CFGT_FLOAT,				GAMEPAD_AXIS_UD_SENS,	"gamepad_axis_ud_free_sensitivity"},
-	{CFGT_FLOAT,				GAMEPAD_AXIS_LR_SENS,	"gamepad_axis_lr_free_sensitivity"},
-
-	// gamepad controls
-	{CFGT_INT,					GP_UP,					"gamepad_key_up"},
-	{CFGT_INT,					GP_DOWN,				"gamepad_key_down"},
-	{CFGT_INT,					GP_LEFT,				"gamepad_key_left"},
-	{CFGT_INT,					GP_RIGHT,				"gamepad_key_right"},
-
-	{CFGT_INT,					GP_FOCUS,				"gamepad_key_focus"},
-	{CFGT_INT,					GP_SHOT,				"gamepad_key_shot"},
-	{CFGT_INT,					GP_BOMB,				"gamepad_key_bomb"},
-
-	{CFGT_INT,					GP_SKIP,				"gamepad_key_skip"},
-	{CFGT_INT,					GP_PAUSE,				"gamepad_key_pause"},
-
-	{CFGT_INT,					VSYNC,					"vsync"},
-
-	{0, 0, 0}
+	#undef CONFIGDEF
+	#undef CONFIGDEF_KEYBINDING
+	#undef CONFIGDEF_GPKEYBINDING
+	#undef CONFIGDEF_INT
+	#undef CONFIGDEF_FLOAT
+	#undef CONFIGDEF_STRING
 };
 
-ConfigEntry* config_findentry(char *name) {
+void config_init(void) {
+	if(config_initialized) {
+		return;
+	}
+
+	#define CONFIGDEF_KEYBINDING(id,entryname,default)
+	#define CONFIGDEF_GPKEYBINDING(id,entryname,default)
+	#define CONFIGDEF_INT(id,entryname,default)
+	#define CONFIGDEF_FLOAT(id,entryname,default)
+	#define CONFIGDEF_STRING(id,entryname,default) stralloc(&configdefs[CONFIG_##id].val.s, default);
+
+	CONFIGDEFS
+
+	#undef CONFIGDEF_KEYBINDING
+	#undef CONFIGDEF_GPKEYBINDING
+	#undef CONFIGDEF_INT
+	#undef CONFIGDEF_FLOAT
+	#undef CONFIGDEF_STRING
+
+	config_initialized = true;
+}
+
+void config_uninit(void) {
+	for(ConfigEntry *e = configdefs; e->name; ++e) {
+		if(e->type == CONFIG_TYPE_STRING && e->val.s) {
+			free(e->val.s);
+			e->val.s = NULL;
+		}
+	}
+}
+
+void config_reset(void) {
+	#define CONFIGDEF(id,default,ufield) configdefs[CONFIG_##id].val.ufield = default;
+	#define CONFIGDEF_KEYBINDING(id,entryname,default) CONFIGDEF(id, default, i)
+	#define CONFIGDEF_GPKEYBINDING(id,entryname,default) CONFIGDEF(id, default, i)
+	#define CONFIGDEF_INT(id,entryname,default) CONFIGDEF(id, default, i)
+	#define CONFIGDEF_FLOAT(id,entryname,default) CONFIGDEF(id, default, f)
+	#define CONFIGDEF_STRING(id,entryname,default) stralloc(&configdefs[CONFIG_##id].val.s, default);
+
+	CONFIGDEFS
+
+	#undef CONFIGDEF
+	#undef CONFIGDEF_KEYBINDING
+	#undef CONFIGDEF_GPKEYBINDING
+	#undef CONFIGDEF_INT
+	#undef CONFIGDEF_FLOAT
+	#undef CONFIGDEF_STRING
+}
+
+#ifndef CONFIG_RAWACCESS
+ConfigEntry* config_get(ConfigIndex idx) {
+	assert(idx >= 0 && idx < CONFIGIDX_NUM);
+	return configdefs + idx;
+}
+#endif
+
+ConfigEntry* config_find_entry(char *name) {
 	ConfigEntry *e = configdefs;
 	do if(!strcmp(e->name, name)) return e; while((++e)->name);
 	return NULL;
 }
 
-ConfigEntry* config_findentry_byid(int id) {
-	ConfigEntry *e = configdefs;
-	do if(id == e->key) return e; while((++e)->name);
-	return NULL;
-}
-
-void config_preset(void) {
-	memset(tconfig.strval, 0, sizeof(tconfig.strval));
-	memset(tconfig.intval, 0, sizeof(tconfig.intval));
-	memset(tconfig.fltval, 0, sizeof(tconfig.fltval));
-
-	tconfig.intval[KEY_UP] = SDL_SCANCODE_UP;
-	tconfig.intval[KEY_DOWN] = SDL_SCANCODE_DOWN;
-	tconfig.intval[KEY_LEFT] = SDL_SCANCODE_LEFT;
-	tconfig.intval[KEY_RIGHT] = SDL_SCANCODE_RIGHT;
-
-	tconfig.intval[KEY_FOCUS] = SDL_SCANCODE_LSHIFT;
-	tconfig.intval[KEY_SHOT] = SDL_SCANCODE_Z;
-	tconfig.intval[KEY_BOMB] = SDL_SCANCODE_X;
-
-	tconfig.intval[KEY_FULLSCREEN] = SDL_SCANCODE_F11;
-	tconfig.intval[KEY_SCREENSHOT] = SDL_SCANCODE_P;
-	tconfig.intval[KEY_SKIP] = SDL_SCANCODE_LCTRL;
-
-	tconfig.intval[KEY_IDDQD] = SDL_SCANCODE_Q;
-	tconfig.intval[KEY_HAHAIWIN] = SDL_SCANCODE_E;
-
-	tconfig.intval[FULLSCREEN] = 0;
-
-	tconfig.intval[NO_SHADER] = 0;
-	tconfig.intval[NO_AUDIO] = 0;
-	tconfig.intval[NO_MUSIC] = 0;
-	tconfig.fltval[SFX_VOLUME] = 1.0;
-	tconfig.fltval[BGM_VOLUME] = 1.0;
-
-	tconfig.intval[NO_STAGEBG] = 0;
-	tconfig.intval[NO_STAGEBG_FPSLIMIT] = 40;
-
-	tconfig.intval[SAVE_RPY] = 2;
-
-	tconfig.intval[VID_WIDTH] = RESX;
-	tconfig.intval[VID_HEIGHT] = RESY;
-
-	char *name = "Player";
-	tconfig.strval[PLAYERNAME] = malloc(strlen(name)+1);
-	strcpy(tconfig.strval[PLAYERNAME], name);
-
-	for(int o = CONFIG_GPKEY_FIRST; o <= CONFIG_GPKEY_LAST; ++o)
-		tconfig.intval[o] = -1;
-
-	tconfig.intval[GAMEPAD_AXIS_LR] = 0;
-	tconfig.intval[GAMEPAD_AXIS_UD] = 1;
-
-	tconfig.fltval[GAMEPAD_AXIS_UD_SENS] = 1.0;
-	tconfig.fltval[GAMEPAD_AXIS_LR_SENS] = 1.0;
-
-	tconfig.intval[GP_FOCUS] = 0;
-	tconfig.intval[GP_SHOT]  = 1;
-	tconfig.intval[GP_BOMB]  = 2;
-	tconfig.intval[GP_SKIP]  = 3;
-	tconfig.intval[GP_PAUSE] = 4;
-
-	tconfig.intval[VSYNC] = 1;
-}
-
-int config_scan2key(int scan) {
-	int i;
-	for(i = CONFIG_KEY_FIRST; i <= CONFIG_KEY_LAST; ++i)
-		if(scan == tconfig.intval[i])
-			return i;
-	return -1;
-}
-
-int config_button2gpkey(int btn) {
-	int i;
-	for(i = CONFIG_GPKEY_FIRST; i <= CONFIG_GPKEY_LAST; ++i)
-		if(btn == tconfig.intval[i])
-			return i;
-	return -1;
-}
-
-/*
- *	The following function is no less ugly than it's name...
- *	The reason for this crap: config_button2gpkey maps the button ID to the first gamepad control option that's bound to the value of the button, similar to config_sym2key.
- *	However, we need that in the KEY_* format to use in stuff like player and replay events.
- *	So we have to transform them, somehow.
- *	Since I don't think relying on the enum's layout is a better idea, here comes a dumb switch.
- */
-
-int config_gpkey2key(int gpkey) {
-	switch(gpkey) {
-		case GP_UP		:	return KEY_UP		;break;
-		case GP_DOWN	:	return KEY_DOWN		;break;
-		case GP_LEFT	:	return KEY_LEFT		;break;
-		case GP_RIGHT	:	return KEY_RIGHT	;break;
-		case GP_SHOT	:	return KEY_SHOT		;break;
-		case GP_FOCUS	:	return KEY_FOCUS	;break;
-		case GP_BOMB	:	return KEY_BOMB		;break;
-		case GP_SKIP	:	return KEY_SKIP		;break;
+KeyIndex config_key_from_scancode(int scan) {
+	for(int i = CONFIG_KEY_FIRST; i <= CONFIG_KEY_LAST; ++i) {
+		if(configdefs[i].val.i == scan) {
+			return CFGIDX_TO_KEYIDX(i);
+		}
 	}
 
 	return -1;
 }
 
-int config_button2key(int btn) {
-	return config_gpkey2key(config_button2gpkey(btn));
+GamepadKeyIndex config_gamepad_key_from_gamepad_button(int btn) {
+	for(int i = CONFIG_GAMEPAD_KEY_FIRST; i <= CONFIG_GAMEPAD_KEY_LAST; ++i) {
+		if(configdefs[i].val.i == btn) {
+			return CFGIDX_TO_GPKEYIDX(i);
+		}
+	}
+
+	return -1;
+}
+
+KeyIndex config_key_from_gamepad_key(GamepadKeyIndex gpkey) {
+	#define CONFIGDEF_GPKEYBINDING(id,entryname,default) case GAMEPAD_##id: return id;
+	switch(gpkey) {
+		GPKEYDEFS
+		default: return -1;
+	}
+	#undef CONFIGDEF_GPKEYBINDING
+}
+
+GamepadKeyIndex config_gamepad_key_from_key(KeyIndex key) {
+	#define CONFIGDEF_GPKEYBINDING(id,entryname,default) case id: return GAMEPAD_##id;
+	switch(key) {
+		GPKEYDEFS
+		default: return -1;
+	}
+	#undef CONFIGDEF_GPKEYBINDING
+}
+
+KeyIndex config_key_from_gamepad_button(int btn) {
+	return config_key_from_gamepad_key(config_gamepad_key_from_gamepad_button(btn));
 }
 
 FILE* config_open(char *filename, char *mode) {
@@ -204,30 +159,6 @@ FILE* config_open(char *filename, char *mode) {
 	return out;
 }
 
-int config_intval_p(ConfigEntry *e) {
-	return tconfig.intval[e->key];
-}
-
-char* config_strval_p(ConfigEntry *e) {
-	return tconfig.strval[e->key];
-}
-
-float config_fltval_p(ConfigEntry *e) {
-	return tconfig.fltval[e->key];
-}
-
-int config_intval(char *key) {
-	return config_intval_p(config_findentry(key));
-}
-
-char* config_strval(char *key) {
-	return config_strval_p(config_findentry(key));
-}
-
-float config_fltval(char *key) {
-	return config_fltval_p(config_findentry(key));
-}
-
 void config_save(char *filename) {
 	FILE *out = config_open(filename, "w");
 	ConfigEntry *e = configdefs;
@@ -238,20 +169,21 @@ void config_save(char *filename) {
 	fputs("# Generated by taisei\n", out);
 
 	do switch(e->type) {
-		case CFGT_INT:
-			fprintf(out, "%s = %i\n", e->name, config_intval_p(e));
+		case CONFIG_TYPE_INT:
+			fprintf(out, "%s = %i\n", e->name, e->val.i);
 			break;
 
-		case CFGT_KEYBINDING:
-			fprintf(out, "%s = %s\n", e->name, SDL_GetScancodeName(config_intval_p(e)));
+		case CONFIG_TYPE_KEYBINDING:
+			fprintf(out, "%s = %s\n", e->name, SDL_GetScancodeName(e->val.i));
 			break;
 
-		case CFGT_STRING:
-			fprintf(out, "%s = %s\n", e->name, config_strval_p(e));
+		case CONFIG_TYPE_STRING:
+			fprintf(out, "%s = %s\n", e->name, e->val.s);
 			break;
 
-		case CFGT_FLOAT:
-			fprintf(out, "%s = %f\n", e->name, config_fltval_p(e));
+		case CONFIG_TYPE_FLOAT:
+			fprintf(out, "%s = %f\n", e->name, e->val.f);
+			break;
 	} while((++e)->name);
 
 	fclose(out);
@@ -264,7 +196,7 @@ void config_save(char *filename) {
 #define FLOATOF(s) ((float)strtod(s, NULL))
 
 void config_set(char *key, char *val) {
-	ConfigEntry *e = config_findentry(key);
+	ConfigEntry *e = config_find_entry(key);
 
 	if(!e) {
 		warnx("config_set(): unknown setting '%s'", key);
@@ -272,29 +204,28 @@ void config_set(char *key, char *val) {
 	}
 
 	switch(e->type) {
-		case CFGT_INT:
-			tconfig.intval[e->key] = INTOF(val);
+		case CONFIG_TYPE_INT:
+			e->val.i = INTOF(val);
 			break;
 
-		case CFGT_KEYBINDING: {
+		case CONFIG_TYPE_KEYBINDING: {
 			SDL_Scancode scan = SDL_GetScancodeFromName(val);
 
 			if(scan == SDL_SCANCODE_UNKNOWN) {
 				warnx("config_set(): unknown key '%s'", val);
 			} else {
-				tconfig.intval[e->key] = scan;
+				e->val.i = scan;
 			}
 
 			break;
-
 		}
 
-		case CFGT_STRING:
-			stralloc(&(tconfig.strval[e->key]), val);
+		case CONFIG_TYPE_STRING:
+			stralloc(&e->val.s, val);
 			break;
 
-		case CFGT_FLOAT:
-			tconfig.fltval[e->key] = FLOATOF(val);
+		case CONFIG_TYPE_FLOAT:
+			e->val.f = FLOATOF(val);
 			break;
 	}
 }
@@ -309,9 +240,11 @@ void config_load(char *filename) {
 	char key[CONFIG_LOAD_BUFSIZE];
 	char val[CONFIG_LOAD_BUFSIZE];
 
-	config_preset();
-	if(!in)
+	config_init();
+
+	if(!in) {
 		return;
+	}
 
 	while((c = fgetc(in)) != EOF) {
 		if(c == '#' && !i) {
