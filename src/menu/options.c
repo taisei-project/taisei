@@ -302,9 +302,11 @@ void options_sub_video(MenuData *parent, void *arg) {
 
 	add_menu_separator(m);
 
+#ifdef DEBUG
 	add_menu_entry(m, "Shaders", do_nothing,
 		b = bind_option(CONFIG_NO_SHADER, bind_common_onoffget_inverted, bind_common_onoffset_inverted)
 	);	bind_onoff(b);
+#endif
 
 	add_menu_entry(m, "Stage background", do_nothing,
 		b = bind_option(CONFIG_NO_STAGEBG, bind_common_intget, bind_common_intset)
