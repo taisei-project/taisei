@@ -13,7 +13,7 @@
 #include "ending.h"
 #include "credits.h"
 
-void start_game(void *arg) {
+void start_game(MenuData *menu, void *arg) {
     MenuData m;
 
     init_player(&global.plr);
@@ -58,7 +58,7 @@ troll2:
             case 0: break;
 
             case 1: {
-                save_rpy(NULL);
+                save_rpy(menu, NULL);
                 break;
             }
 
@@ -143,4 +143,8 @@ void animate_menu_list(MenuData *m) {
     m->drawdata[0] += (10 + w/2.0 - m->drawdata[0])/10.0;
     m->drawdata[1] += (w*2 - m->drawdata[1])/10.0;
     m->drawdata[2] += (20*m->cursor - m->drawdata[2])/10.0;
+}
+
+void menu_commonaction_close(MenuData *menu, void *arg) {
+    kill_menu(menu);
 }

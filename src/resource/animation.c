@@ -18,9 +18,9 @@ Animation *init_animation(char *filename) {
 	char *beg = strstr(filename, "gfx/") + 4;
 	char *end = strrchr(filename, '.');
 
-	char *name = malloc(end - beg + 1);
-	memset(name, 0, end - beg + 1);
-	strncpy(name, beg, end-beg);
+	int sz = end - beg + 1;
+	char *name = malloc(sz);
+	strlcpy(name, beg, sz);
 
 	char* tok;
 	strtok(name, "_");

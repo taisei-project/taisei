@@ -58,6 +58,7 @@ void load_bgm_descriptions(const char *path) {
 	strcat(fullname, fname);
 
 	FILE *fp = fopen(fullname, "rt");
+	free(fullname);
 	if (fp == NULL) return;
 
 	char line[256];

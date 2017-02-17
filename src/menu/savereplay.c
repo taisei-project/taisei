@@ -14,7 +14,7 @@
 #include "plrmodes.h"
 #include "common.h"
 
-void save_rpy(void *a) {
+void save_rpy(MenuData *menu, void *a) {
 	Replay *rpy = &global.replay;
 	char strtime[128], name[128];
 	time_t rawtime;
@@ -27,7 +27,7 @@ void save_rpy(void *a) {
 
 	char prepr[16], drepr[16];
 	plrmode_repr(prepr, 16, rpy->stages[0].plr_char, rpy->stages[0].plr_shot);
-	strncpy(drepr, difficulty_name(rpy->stages[0].diff), 16);
+	strlcpy(drepr, difficulty_name(rpy->stages[0].diff), 16);
 	drepr[0] += 'a' - 'A';
 
 	if(rpy->numstages > 1)

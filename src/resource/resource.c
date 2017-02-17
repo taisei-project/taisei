@@ -133,6 +133,8 @@ void load_resources(void) {
 
 		resources.state |= RS_ModelsLoaded;
 	}
+
+	free(path);
 }
 
 void free_resources(void) {
@@ -169,6 +171,7 @@ void draw_loading_screen(void) {
 	set_ortho();
 
 	tex = load_texture(buf);
+	free(buf);
 
 	draw_texture_p(SCREEN_W/2,SCREEN_H/2, tex);
 	SDL_GL_SwapWindow(video.window);

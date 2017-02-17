@@ -60,6 +60,19 @@ ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, D
 	return s;
 }
 
+void replay_stage_sync_player_state(ReplayStage *stg, Player *plr) {
+	plr->points = stg->points;
+	plr->shot = stg->plr_shot;
+	plr->cha = stg->plr_char;
+	plr->pos = stg->plr_pos_x + I * stg->plr_pos_y;
+	plr->focus = stg->plr_focus;
+	plr->fire = stg->plr_fire;
+	plr->lifes = stg->plr_lifes;
+	plr->bombs = stg->plr_bombs;
+	plr->power = stg->plr_power;
+	plr->moveflags = stg->plr_moveflags;
+}
+
 static void replay_destroy_stage(ReplayStage *stage) {
 	if(stage->events) {
 		free(stage->events);

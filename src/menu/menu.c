@@ -135,7 +135,7 @@ void menu_logic(MenuData *menu) {
 				menu->quitframe = 0;
 			}
 
-			menu->entries[menu->selected].action(menu->entries[menu->selected].arg);
+			menu->entries[menu->selected].action(menu, menu->entries[menu->selected].arg);
 		}
 	}
 }

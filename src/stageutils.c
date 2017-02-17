@@ -111,7 +111,7 @@ Vector **linear3dpos(Vector q, float maxrange, Vector p, Vector r) {
 		num += mod;
 	}
 
-	list = realloc(list, (++size)*sizeof(Vector));
+	list = realloc(list, (++size)*sizeof(Vector*));
 	list[size-1] = NULL;
 
 	return list;

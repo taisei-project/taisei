@@ -18,7 +18,7 @@ void create_stage_menu(MenuData *m) {
 	int i;
 
 	create_menu(m);
-	m->flags = MF_Transient | MF_Abortable;
+	m->flags = MF_Abortable;
 
 	for(i = 0; stages[i].loop; ++i) if(!stages[i].hidden) {
 		snprintf(title, STGMENU_MAX_TITLE_LENGTH, "%s", stages[i].title);
@@ -26,7 +26,7 @@ void create_stage_menu(MenuData *m) {
 	}
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Back", (MenuAction)kill_menu, m);
+	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
 }
 
 void draw_stage_menu(MenuData *m) {

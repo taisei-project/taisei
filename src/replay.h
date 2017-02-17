@@ -140,6 +140,7 @@ void replay_destroy_events(Replay *rpy);
 
 void replay_stage_event(ReplayStage *stg, uint32_t frame, uint8_t type, int16_t value);
 void replay_stage_check_desync(ReplayStage *stg, int time, uint16_t check, ReplayMode mode);
+void replay_stage_sync_player_state(ReplayStage *stg, Player *plr);
 
 int replay_write(Replay *rpy, SDL_RWops *file);
 int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode);

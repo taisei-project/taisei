@@ -115,12 +115,11 @@ Sound *load_sound_or_bgm(char *filename, Sound **dest, sound_type_t type) {
 		errx(-1,"load_sound_or_bgm():\n!- incorrect filename format");
 
 	++beg; // skip '/' between last path element and file name
-	snd->name = malloc(end - beg + 1);
+	int sz = end - beg + 1;
+	snd->name = malloc(sz);
 	if (!snd->name)
 		errx(-1,"load_sound_or_bgm():\n!- failed to allocate memory for sound name (is it empty?)");
-
-	memset(snd->name, 0, end-beg + 1);
-	strncpy(snd->name, beg, end-beg);
+	strlcpy(snd->name, beg, sz);
 
 	printf("-- loaded '%s' as %s '%s'\n", filename, ((type==ST_SOUND) ? "SFX" : "BGM"), snd->name);
 

@@ -52,9 +52,7 @@ void stage_start(void) {
 	global.fps.stagebg_fps = global.fps.show_fps = FPS;
 	global.fps.fpstime = SDL_GetTicks();
 
-	global.plr.recovery = 0;
-	global.plr.deathtime = -1;
-	global.plr.graze = 0;
+	prepare_player_for_next_stage(&global.plr);
 }
 
 void stage_pause(void) {
@@ -77,6 +75,13 @@ void stage_gameover(void) {
 void stage_input_event(EventType type, int key, void *arg) {
 	switch(type) {
 		case E_PlrKeyDown:
+			if(key == KEY_HAHAIWIN) {
+#ifdef DEBUG
+				global.game_over = GAMEOVER_WIN;
+#endif
+				break;
+			}
+
 			if(global.dialog && (key == KEY_SHOT || key == KEY_BOMB)) {
 				page_dialog(&global.dialog);
 				replay_stage_event(global.replay_stage, global.frames, EV_PRESS, key);
@@ -214,7 +219,7 @@ void draw_hud(void) {
 	sprintf(buf, "%i", global.plr.graze);
 	draw_text(AL_Left, -5, 270, buf, _fonts.standard);
 
-	sprintf(buf, "%i", global.points);
+	sprintf(buf, "%i", global.plr.points);
 	draw_text(AL_Center, 13, 49, buf, _fonts.standard);
 
 	if(global.plr.iddqd) {
@@ -485,17 +490,16 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 
 	if(global.replaymode == REPLAY_RECORD) {
 		if(tconfig.intval[SAVE_RPY]) {
-			global.replay_stage = replay_create_stage(&global.replay, info, seed, global.diff, global.points, &global.plr);
+			global.replay_stage = replay_create_stage(&global.replay, info, seed, global.diff, global.plr.points, &global.plr);
+
+			// make sure our player state is consistent with what goes into the replay
+			init_player(&global.plr);
+			replay_stage_sync_player_state(global.replay_stage, &global.plr);
 		} else {
 			global.replay_stage = NULL;
 		}
 
 		printf("Random seed: %u\n", seed);
-
-		// match replay format
-		uint16_t px = floor(creal(global.plr.pos));
-		uint16_t py = floor(cimag(global.plr.pos));
-		global.plr.pos = px + I * py;
 	} else {
 		if(!global.replay_stage) {
 			errx(-1, "Attemped to replay a NULL stage");
@@ -508,19 +512,9 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 		tsrand_seed_p(&global.rand_game, stg->seed);
 		printf("Random seed: %u\n", stg->seed);
 
-		global.diff				= stg->diff;
-		global.points			= stg->points;
-
-		global.plr.shot			= stg->plr_shot;
-		global.plr.cha			= stg->plr_char;
-		global.plr.pos			= stg->plr_pos_x + I * stg->plr_pos_y;
-		global.plr.focus		= stg->plr_focus;
-		global.plr.fire			= stg->plr_fire;
-		global.plr.lifes		= stg->plr_lifes;
-		global.plr.bombs		= stg->plr_bombs;
-		global.plr.power		= stg->plr_power;
-		global.plr.moveflags	= stg->plr_moveflags;
-
+		global.diff = stg->diff;
+		init_player(&global.plr);
+		replay_stage_sync_player_state(stg, &global.plr);
 		stg->playpos = 0;
 	}
 
@@ -535,8 +529,6 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	}
 
 	player_set_power(&global.plr, power);
-	global.plr.movetime = global.plr.prevmove = global.plr.prevmovetime = 0;
-	global.plr.axis_lr = global.plr.axis_ud = 0;
 
 	start();
 
@@ -545,7 +537,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 			event();
 
 		((global.replaymode == REPLAY_PLAY)? replay_input : stage_input)();
-		replay_stage_check_desync(global.replay_stage, global.frames, (tsrand() ^ global.points) & 0xFFFF, global.replaymode);
+		replay_stage_check_desync(global.replay_stage, global.frames, (tsrand() ^ global.plr.points) & 0xFFFF, global.replaymode);
 
 		stage_logic(endtime);
 

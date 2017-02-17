@@ -85,8 +85,8 @@ OptionBinding* bind_stroption(int cfgentry) {
 
 	bind->valcount = 1;
 	bind->values = malloc(sizeof(char*));
-	*bind->values = malloc(128);
-	strncpy(*bind->values, tconfig.strval[cfgentry], 128);
+	*bind->values = malloc(OPTIONS_TEXT_INPUT_BUFSIZE);
+	strlcpy(*bind->values, tconfig.strval[cfgentry], OPTIONS_TEXT_INPUT_BUFSIZE);
 
 	return bind;
 }
@@ -336,7 +336,7 @@ void destroy_options_menu(MenuData *m) {
 	//config_save(CONFIG_FILE);
 }
 
-void do_nothing(void *arg) { }
+static void do_nothing(MenuData *menu, void *arg) { }
 
 void create_options_sub(MenuData *m, char *s) {
 	create_menu(m);
@@ -346,7 +346,7 @@ void create_options_sub(MenuData *m, char *s) {
 
 #define bind_onoff(b) bind_addvalue(b, "on"); bind_addvalue(b, "off")
 
-void options_sub_video(void *arg) {
+void options_sub_video(MenuData *parent, void *arg) {
 	MenuData menu, *m;
 	OptionBinding *b;
 	m = &menu;
@@ -386,10 +386,10 @@ void options_sub_video(void *arg) {
 		bind_setdependence(b, bind_stagebg_fpslimit_dependence);
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Back", (MenuAction)kill_menu, m);
+	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
 
 	options_menu_loop(m);
-	((MenuData*)arg)->frames = 0;
+	parent->frames = 0;
 }
 
 void bind_setvaluerange_fancy(OptionBinding *b, int ma) {
@@ -404,7 +404,7 @@ bool gamepad_sens_depencence(void) {
 	return tconfig.intval[GAMEPAD_AXIS_FREE];
 }
 
-void options_sub_gamepad_controls(void *arg) {
+void options_sub_gamepad_controls(MenuData *parent, void *arg) {
 	MenuData menu, *m;
 	m = &menu;
 
@@ -451,14 +451,14 @@ void options_sub_gamepad_controls(void *arg) {
 	);
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Back", (MenuAction)kill_menu, m);
+	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
 
 	options_menu_loop(m);
-	((MenuData*)arg)->frames = 0;
+	parent->frames = 0;
 	gamepad_restart();
 }
 
-void options_sub_gamepad(void *arg) {
+void options_sub_gamepad(MenuData *parent, void *arg) {
 	MenuData menu, *m;
 	OptionBinding *b;
 	m = &menu;
@@ -474,12 +474,15 @@ void options_sub_gamepad(void *arg) {
 	); b->displaysingle = true;
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Customize controls...", options_sub_gamepad_controls, m);
+	add_menu_entry(m, "Customize controls...", options_sub_gamepad_controls, NULL);
 
 	gamepad_init_bare();
 	int cnt = gamepad_devicecount();
-	int i; for(i = 0; i < cnt; ++i)
-		bind_addvalue(b, gamepad_devicename(i));
+	int i; for(i = 0; i < cnt; ++i) {
+		char buf[50];
+		snprintf(buf, sizeof(buf), "#%i: %s", i+1, gamepad_devicename(i));
+		bind_addvalue(b, buf);
+	}
 
 	if(!i) {
 		bind_addvalue(b, "No devices available");
@@ -515,14 +518,14 @@ void options_sub_gamepad(void *arg) {
 	);
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Back", (MenuAction)kill_menu, m);
+	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
 
 	options_menu_loop(m);
-	((MenuData*)arg)->frames = 0;
+	parent->frames = 0;
 	gamepad_restart();
 }
 
-void options_sub_controls(void *arg) {
+void options_sub_controls(MenuData *parent, void *arg) {
 	MenuData menu, *m;
 	m = &menu;
 
@@ -578,13 +581,17 @@ void options_sub_controls(void *arg) {
 	add_menu_entry(m, "Toggle God mode", do_nothing,
 		bind_keybinding(KEY_IDDQD)
 	);
+
+	add_menu_entry(m, "Skip stage", do_nothing,
+		bind_keybinding(KEY_HAHAIWIN)
+	);
 #endif
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Back", (MenuAction)kill_menu, m);
+	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
 
 	options_menu_loop(m);
-	((MenuData*)arg)->frames = 0;
+	parent->frames = 0;
 }
 
 void create_options_menu(MenuData *m) {
@@ -628,12 +635,12 @@ void create_options_menu(MenuData *m) {
 	);
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Video options...", options_sub_video, m);
-	add_menu_entry(m, "Customize controls...", options_sub_controls, m);
-	add_menu_entry(m, "Gamepad & Joystick options...", options_sub_gamepad, m);
+	add_menu_entry(m, "Video options...", options_sub_video, NULL);
+	add_menu_entry(m, "Customize controls...", options_sub_controls, NULL);
+	add_menu_entry(m, "Gamepad & Joystick options...", options_sub_gamepad, NULL);
 	add_menu_separator(m);
 
-	add_menu_entry(m, "Back", (MenuAction)kill_menu, m);
+	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
 }
 
 // --- Drawing the menu --- //
@@ -863,28 +870,28 @@ void bind_input_event(EventType type, int state, void *arg) {
 		case E_CharTyped: {
 			if(c != ':') {
 				char s[] = {c, 0};
-				strncat(dest, s, 128);
+				strlcat(dest, s, OPTIONS_TEXT_INPUT_BUFSIZE);
 			}
 			break;
 		}
 
 		case E_CharErased: {
-			if(strlen(dest))
+			if(dest != NULL && strlen(dest))
 				dest[strlen(dest)-1] = 0;
 			break;
 		}
 
 		case E_SubmitText: {
-			if(strlen(dest))
+			if(dest != NULL && strlen(dest))
 				stralloc(&(tconfig.strval[b->configentry]), dest);
 			else
-				strncpy(dest, tconfig.strval[b->configentry], 128);
+				strlcpy(dest, tconfig.strval[b->configentry], OPTIONS_TEXT_INPUT_BUFSIZE);
 			b->blockinput = false;
 			break;
 		}
 
 		case E_CancelText: {
-			strncpy(dest, tconfig.strval[b->configentry], 128);
+			strlcpy(dest, tconfig.strval[b->configentry], OPTIONS_TEXT_INPUT_BUFSIZE);
 			b->blockinput = false;
 			break;
 		}

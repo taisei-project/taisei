@@ -19,7 +19,10 @@ enum {
 	FADE_TIME = 15
 };
 
-typedef  void (*MenuAction)(void*);
+typedef struct MenuData MenuData;
+
+typedef void (*MenuAction)(MenuData*, void*);
+typedef bool (*MenuCallback)(MenuData*);
 
 typedef struct {
 	char *name;
@@ -45,7 +48,7 @@ enum MenuFlag {
 	MF_AlwaysProcessInput = 16 // the menu will process input even during fadeouts
 };
 
-enum MenuState{
+enum MenuState {
 	MS_Normal = 0,
 	MS_FadeOut,
 	MS_Dead

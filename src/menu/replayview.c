@@ -23,21 +23,19 @@ typedef struct ReplayviewItemContext ReplayviewItemContext;
 
 // Type of MenuData.context
 typedef struct ReplayviewContext {
-	ReplayviewItemContext *commonictx;
 	MenuData *submenu;
 	int pickedstage;
 } ReplayviewContext;
 
 // Type of MenuEntry.arg (which should be renamed to context, probably...)
 typedef struct ReplayviewItemContext {
-	MenuData *menu;
 	Replay *replay;
 	char *replayname;
 } ReplayviewItemContext;
 
-void start_replay(void *arg) {
+void start_replay(MenuData *menu, void *arg) {
 	ReplayviewItemContext *ictx = arg;
-	ReplayviewContext *mctx = ictx->menu->context;
+	ReplayviewContext *mctx = menu->context;
 
 	Replay *rpy = ictx->replay;
 
@@ -51,8 +49,6 @@ void start_replay(void *arg) {
 	if(global.replay.numstages == 1){
 		mctx->pickedstage = 0;
 	}
-
-	init_player(&global.plr);
 
 	for(int i = mctx->pickedstage; i < global.replay.numstages; ++i) {
 		ReplayStage *rstg = global.replay_stage = global.replay.stages+i;
@@ -79,12 +75,12 @@ void start_replay(void *arg) {
 	global.replay_stage = NULL;
 }
 
-MenuData* replayview_sub_stageselect(ReplayviewItemContext *ictx) {
+MenuData* replayview_sub_stageselect(MenuData *menu, ReplayviewItemContext *ictx) {
 	MenuData *m = malloc(sizeof(MenuData));
 	Replay *rpy = ictx->replay;
 
 	create_menu(m);
-	m->context = ictx->menu->context;
+	m->context = menu->context;
 	m->flags = MF_Transient | MF_Abortable;
 	m->transition = 0;
 
@@ -95,15 +91,15 @@ MenuData* replayview_sub_stageselect(ReplayviewItemContext *ictx) {
 	return m;
 }
 
-void replayview_run(void *arg) {
+void replayview_run(MenuData *menu, void *arg) {
 	ReplayviewItemContext *ctx = arg;
-	ReplayviewContext *menuctx = ctx->menu->context;
+	ReplayviewContext *menuctx = menu->context;
 	Replay *rpy = ctx->replay;
 
 	if(rpy->numstages > 1) {
-		menuctx->submenu = replayview_sub_stageselect(ctx);
+		menuctx->submenu = replayview_sub_stageselect(menu, ctx);
 	} else {
-		start_replay(ctx);
+		start_replay(menu, ctx);
 	}
 }
 
@@ -212,7 +208,7 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 
 			case 1:
 				a = AL_Center;
-				strncpy(tmp, rpy->playername, 128);
+				strlcpy(tmp, rpy->playername, sizeof(tmp));
 				break;
 
 			case 2:
@@ -304,7 +300,6 @@ int fill_replayview_menu(MenuData *m) {
 		ReplayviewItemContext *ictx = malloc(sizeof(ReplayviewItemContext));
 		memset(ictx, 0, sizeof(ReplayviewItemContext));
 
-		ictx->menu = m;
 		ictx->replay = rpy;
 		ictx->replayname = malloc(strlen(e->d_name) + 1);
 		strcpy(ictx->replayname, e->d_name);
@@ -318,19 +313,11 @@ int fill_replayview_menu(MenuData *m) {
 	return rpys;
 }
 
-void replayview_abort(void *a) {
-	kill_menu(((ReplayviewItemContext*)a)->menu);
-}
-
 void create_replayview_menu(MenuData *m) {
 	create_menu(m);
 
 	ReplayviewContext *ctx = malloc(sizeof(ReplayviewContext));
 	memset(ctx, 0, sizeof(ReplayviewContext));
-
-	ctx->commonictx = malloc(sizeof(ReplayviewItemContext));
-	memset(ctx->commonictx, 0, sizeof(ReplayviewItemContext));
-	ctx->commonictx->menu = m;
 
 	m->context = ctx;
 	m->flags = MF_Abortable;
@@ -338,12 +325,12 @@ void create_replayview_menu(MenuData *m) {
 	int r = fill_replayview_menu(m);
 
 	if(!r) {
-		add_menu_entry(m, "No replays available. Play the game and record some!", replayview_abort, ctx->commonictx);
+		add_menu_entry(m, "No replays available. Play the game and record some!", menu_commonaction_close, NULL);
 	} else if(r < 0) {
-		add_menu_entry(m, "There was a problem getting the replay list :(", replayview_abort, ctx->commonictx);
+		add_menu_entry(m, "There was a problem getting the replay list :(", menu_commonaction_close, NULL);
 	} else {
 		add_menu_separator(m);
-		add_menu_entry(m, "Back", replayview_abort, ctx->commonictx);
+		add_menu_entry(m, "Back", menu_commonaction_close, NULL);
 	}
 }
 
@@ -354,13 +341,6 @@ void replayview_menu_input(MenuData *m) {
 
 void replayview_free(MenuData *m) {
 	if(m->context) {
-		ReplayviewContext *ctx = m->context;
-
-		if(ctx) {
-			replayview_freearg(ctx->commonictx);
-			ctx->commonictx = NULL;
-		}
-
 		free(m->context);
 		m->context = NULL;
 	}

@@ -93,10 +93,10 @@ void process_items(void) {
 				player_set_power(&global.plr, global.plr.power + POWER_VALUE);
 				break;
 			case Point:
-				global.points += 100;
+				global.plr.points += 100;
 				break;
 			case BPoint:
-				global.points += 1;
+				global.plr.points += 1;
 				break;
 			case Life:
 				global.plr.lifes++;

@@ -86,9 +86,9 @@ Texture *load_texture(const char *filename) {
 	char *beg = strstr(filename, "gfx/") + 4;
 	char *end = strrchr(filename, '.');
 
-	texture->name = malloc(end - beg + 1);
-	memset(texture->name, 0, end-beg + 1);
-	strncpy(texture->name, beg, end-beg);
+	int sz = end - beg + 1;
+	texture->name = malloc(sz);
+	strlcpy(texture->name, beg, sz);
 
 	printf("-- loaded '%s' as '%s'\n", filename, texture->name);
 

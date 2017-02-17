@@ -108,7 +108,6 @@ typedef struct {
 	RefArray refs;
 
 	int game_over;
-	int points;
 
 	FPSCounter fps;
 
@@ -153,6 +152,7 @@ bool strendswith(char *s, char *e);
 char* difficulty_name(Difficulty diff);
 void stralloc(char **dest, char *src);
 bool gamekeypressed(int key);
+int getenvint(const char *v);
 
 #define SIGN(x) ((x > 0) - (x < 0))
 
@@ -166,6 +166,10 @@ enum {
 	EV_CHECK_DESYNC, // replay-only
 };
 
-#endif
+#define strlcat SDL_strlcat
+#define strlcpy SDL_strlcpy
 
-int getenvint(const char *v);
+#define strncat DO_NOT_USE_strncat_USE_strlcat
+#define strncpy DO_NOT_USE_strncpy_USE_strlcpy
+
+#endif

@@ -28,6 +28,7 @@ ConfigEntry configdefs[] = {
 	{CFGT_KEYBINDING,			KEY_SKIP,				"key_skip"},
 
 	{CFGT_KEYBINDING,			KEY_IDDQD,				"key_iddqd"},
+	{CFGT_KEYBINDING,			KEY_HAHAIWIN,			"key_skipstage"},
 
 	{CFGT_INT,					FULLSCREEN,				"fullscreen"},
 	{CFGT_INT,					NO_SHADER,				"disable_shader"},
@@ -100,6 +101,7 @@ void config_preset(void) {
 	tconfig.intval[KEY_SKIP] = SDL_SCANCODE_LCTRL;
 
 	tconfig.intval[KEY_IDDQD] = SDL_SCANCODE_Q;
+	tconfig.intval[KEY_HAHAIWIN] = SDL_SCANCODE_E;
 
 	tconfig.intval[FULLSCREEN] = 0;
 

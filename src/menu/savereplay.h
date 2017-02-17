@@ -11,7 +11,7 @@
 
 #include "menu.h"
 
-void save_rpy(void*);
+void save_rpy(MenuData *menu, void*);
 void create_saverpy_menu(MenuData*);
 int saverpy_menu_loop(MenuData*);
 

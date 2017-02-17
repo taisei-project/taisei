@@ -9,11 +9,11 @@
 #include "options.h"
 #include "global.h"
 
-void set_player(void *p) {
+void set_player(MenuData *m, void *p) {
 	global.plr.cha = (Character) (uintptr_t) p;
 }
 
-void set_shotmode(void *p) {
+void set_shotmode(MenuData *m, void *p) {
 	global.plr.shot = (ShotMode) (uintptr_t) p;
 }
 
@@ -53,7 +53,7 @@ void draw_char_menu(MenuData *menu) {
 	char buf[128];
 	int i;
 	for(i = 0; i < menu->ecount; i++) {
-		strncpy(buf, menu->entries[i].name, sizeof(buf));
+		strlcpy(buf, menu->entries[i].name, sizeof(buf));
 
 		char *tex = strtok(buf,"|");
 		char *name = strtok(NULL, "|");
@@ -84,7 +84,7 @@ void draw_char_menu(MenuData *menu) {
 			glColor4f(1,1,1,1-menu->entries[i].drawdata*3);
 		draw_text(AL_Center, 0, 70, title, _fonts.standard);
 
-		strncpy(buf, mod->entries[i].name, sizeof(buf));
+		strlcpy(buf, mod->entries[i].name, sizeof(buf));
 
 		char *mari = strtok(buf, "|");
 		char *youmu = strtok(NULL, "|");
@@ -147,7 +147,7 @@ void char_menu_input_event(EventType type, int state, void *arg) {
 		close_menu(menu);
 
 		// XXX: This needs a better fix
-		set_shotmode(mod->entries[mod->selected].arg);
+		set_shotmode(mod, mod->entries[mod->selected].arg);
 	} else if(type == E_MenuAbort) {
 		play_ui_sound("hit");
 		close_menu(menu);
