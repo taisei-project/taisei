@@ -43,7 +43,7 @@ int init_mixer_if_needed(void) {
 		(formats_mask & MIX_INIT_MP3  ? " MP3": "")
 	);
 
-	if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 1024) == -1)
+	if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096) == -1)
 	{
 		warnx("Mix_OpenAudio(): %s.\n", Mix_GetError());
 	}
@@ -83,21 +83,21 @@ void shutdown_sfx(void)
 }
 
 Sound *load_sound_or_bgm(char *filename, Sound **dest, sound_type_t type) {
-	Mix_Chunk *sound;
-	Mix_Music *music;
+	Mix_Chunk *sound = NULL;
+	Mix_Music *music = NULL;
 
 	switch(type)
 	{
 		case ST_SOUND:
 			sound = Mix_LoadWAV(filename);
 			if (!sound)
-				errx(-1,"load_sound_or_bgm():\n!- cannot load sound from '%s': %s", filename, Mix_GetError());
-			break;
+				warnx("load_sound_or_bgm():\n!- cannot load sound from '%s': %s", filename, Mix_GetError());
+			return NULL;
 		case ST_MUSIC:
 			music = Mix_LoadMUS(filename);
 			if (!music)
-				errx(-1,"load_sound_or_bgm():\n!- cannot load BGM from '%s': %s", filename, Mix_GetError());
-			break;
+				warnx("load_sound_or_bgm():\n!- cannot load BGM from '%s': %s", filename, Mix_GetError());
+			return NULL;
 		default:
 			errx(-1,"load_sound_or_bgm():\n!- incorrect sound type specified");
 	}
@@ -105,7 +105,8 @@ Sound *load_sound_or_bgm(char *filename, Sound **dest, sound_type_t type) {
 	Sound *snd = create_element((void **)dest, sizeof(Sound));
 
 	snd->type = type;
-	if (type == ST_SOUND) snd->sound = sound; else snd->music = music;
+	snd->sound = sound;
+	snd->music = music;
 	snd->lastplayframe = 0;
 
 	char *beg = strrchr(filename, '/'); // TODO: check portability of '/'
@@ -120,7 +121,7 @@ Sound *load_sound_or_bgm(char *filename, Sound **dest, sound_type_t type) {
 		errx(-1,"load_sound_or_bgm():\n!- failed to allocate memory for sound name (is it empty?)");
 	strlcpy(snd->name, beg, sz);
 
-	printf("-- loaded '%s' as '%s'\n", filename, snd->name);
+	printf("-- loaded '%s' as %s '%s'\n", filename, ((type==ST_SOUND) ? "SFX" : "BGM"), snd->name);
 
 	return snd;
 }
