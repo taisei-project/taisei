@@ -10,6 +10,7 @@
 #define CONFIG_H
 
 #include <SDL_keycode.h>
+#include <stdbool.h>
 
 /*
 	Define these macros, then use CONFIGDEFS to expand them all for all config entries, or KEYDEFS for just keybindings.
@@ -148,14 +149,19 @@ typedef enum ConfigEntryType {
 	CONFIG_TYPE_FLOAT
 } ConfigEntryType;
 
+typedef union ConfigValue {
+	int i;
+	double f;
+	char *s;
+} ConfigValue;
+
+typedef void (*ConfigCallback)(ConfigIndex, ConfigValue);
+
 typedef struct ConfigEntry {
 	ConfigEntryType type;
 	char *name;
-	union {
-		int i;
-		double f;
-		char *s;
-	} val;
+	ConfigValue val;
+	ConfigCallback callback;
 } ConfigEntry;
 
 #define CONFIG_LOAD_BUFSIZE 256
@@ -171,6 +177,7 @@ void config_init(void);
 void config_uninit(void);
 void config_load(char *filename);
 void config_save(char *filename);
+void config_set_callback(ConfigIndex idx, ConfigCallback callback);
 
 #ifndef DEBUG
 	#define CONFIG_RAWACCESS
@@ -189,8 +196,8 @@ void config_save(char *filename);
 #define config_get_float(idx) (config_get(idx)->val.f)
 #define config_get_str(idx) (config_get(idx)->val.s)
 
-#define config_set_int(idx,val) (config_get_int(idx) = val)
-#define config_set_float(idx,val) (config_get_float(idx) = val)
-#define config_set_str(idx,val) stralloc(&config_get_str(idx), val)
+int config_set_int(ConfigIndex idx, int val);
+double config_set_float(ConfigIndex idx, double val);
+char* config_set_str(ConfigIndex idx, const char *val);
 
 #endif

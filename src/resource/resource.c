@@ -63,7 +63,22 @@ void recurse_dir(char *path) {
 	closedir(dir);
 }
 
+static void resources_cfg_noshader_callback(ConfigIndex idx, ConfigValue v) {
+	config_set_int(idx, v.i);
+
+	if(!v.i) {
+		load_resources();
+	}
+}
+
 void load_resources(void) {
+	static bool callbacks_set_up = false;
+
+	if(!callbacks_set_up) {
+		config_set_callback(CONFIG_NO_SHADER, resources_cfg_noshader_callback);
+		callbacks_set_up = true;
+	}
+
 	printf("load_resources():\n");
 
 	char *path = malloc(strlen(get_prefix())+32);

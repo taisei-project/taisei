@@ -52,7 +52,8 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 					}
 
 					if((scan == SDL_SCANCODE_RETURN && (mod & KMOD_ALT)) || scan == config_get_int(CONFIG_KEY_FULLSCREEN)) {
-						video_toggle_fullscreen();
+						// video_toggle_fullscreen();
+						config_set_int(CONFIG_FULLSCREEN, !config_get_int(CONFIG_FULLSCREEN));
 						break;
 					}
 				}

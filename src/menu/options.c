@@ -115,14 +115,6 @@ OptionBinding* bind_scale(int cfgentry, float smin, float smax, float step) {
 	return bind;
 }
 
-// BT_ScaleCallback: float values clamped to a range with callback
-OptionBinding* bind_scale_call(int cfgentry, float smin, float smax, float step, FloatSetter callback) {
-	OptionBinding *bind = bind_scale(cfgentry, smin, smax, step);
-	bind->type = BT_ScaleCallback;
-	bind->callback = callback;
-	return bind;
-}
-
 // Returns a pointer to the first found binding that blocks input. If none found, returns NULL.
 OptionBinding* bind_getinputblocking(MenuData *m) {
 	int i;
@@ -230,63 +222,6 @@ int bind_common_onoffset_inverted(void *b, int v) {
 
 // --- Binding callbacks for individual options --- //
 
-int bind_fullscreen_set(void *b, int v) {
-	video_toggle_fullscreen();
-	return bind_common_onoffset(b, v);
-}
-
-int bind_noaudio_set(void *b, int v) {
-	int i = bind_common_onoffset_inverted(b, v);
-
-	if(v)
-	{
-		shutdown_sfx();
-	}
-	else
-	{
-		if(!init_sfx(NULL, NULL)) return 1;
-
-		load_resources();
-		set_sfx_volume(config_get_float(CONFIG_SFX_VOLUME));
-	}
-
-	return i;
-}
-
-int bind_nomusic_set(void *b, int v) {
-	int i = bind_common_onoffset_inverted(b, v);
-
-	if(v)
-	{
-		shutdown_bgm();
-	}
-	else
-	{
-		if(!init_bgm(NULL, NULL)) return 1;
-
-		load_resources();
-		set_bgm_volume(config_get_float(CONFIG_BGM_VOLUME));
-		start_bgm("bgm_menu");
-	}
-
-	return i;
-}
-
-int bind_noshader_set(void *b, int v) {
-	int i = bind_common_onoffset_inverted(b, v);
-
-	if(!v)
-		load_resources();
-
-	return i;
-}
-
-int bind_vsync_set(void *b, int v) {
-	int i = bind_common_onoffset(b, v);
-	video_update_vsync();
-	return i;
-}
-
 bool bind_stagebg_fpslimit_dependence(void) {
 	return config_get_int(CONFIG_NO_STAGEBG) == 2;
 }
@@ -358,17 +293,17 @@ void options_sub_video(MenuData *parent, void *arg) {
 	);
 
 	add_menu_entry(m, "Fullscreen", do_nothing,
-		b = bind_option(CONFIG_FULLSCREEN, bind_common_onoffget, bind_fullscreen_set)
+		b = bind_option(CONFIG_FULLSCREEN, bind_common_onoffget, bind_common_onoffset)
 	);	bind_onoff(b);
 
 	add_menu_entry(m, "Vertical synchronization", do_nothing,
-		b = bind_option(CONFIG_VSYNC, bind_common_onoffget, bind_vsync_set)
+		b = bind_option(CONFIG_VSYNC, bind_common_onoffget, bind_common_onoffset)
 	); bind_onoff(b);
 
 	add_menu_separator(m);
 
 	add_menu_entry(m, "Shaders", do_nothing,
-		b = bind_option(CONFIG_NO_SHADER, bind_common_onoffget_inverted, bind_noshader_set)
+		b = bind_option(CONFIG_NO_SHADER, bind_common_onoffget_inverted, bind_common_onoffset_inverted)
 	);	bind_onoff(b);
 
 	add_menu_entry(m, "Stage background", do_nothing,
@@ -605,8 +540,7 @@ void create_options_menu(MenuData *m) {
 	add_menu_separator(m);
 
 	add_menu_entry(m, "Save replays", do_nothing,
-		b = bind_option(CONFIG_SAVE_RPY, bind_saverpy_get,
-								  bind_saverpy_set)
+		b = bind_option(CONFIG_SAVE_RPY, bind_saverpy_get, bind_saverpy_set)
 	);	bind_addvalue(b, "on");
 		bind_addvalue(b, "off");
 		bind_addvalue(b, "ask");
@@ -614,21 +548,21 @@ void create_options_menu(MenuData *m) {
 	add_menu_separator(m);
 
 	add_menu_entry(m, "Sound effects", do_nothing,
-		b = bind_option(CONFIG_NO_AUDIO, bind_common_onoffget_inverted,
-								  bind_noaudio_set)
+		b = bind_option(CONFIG_NO_AUDIO, 	bind_common_onoffget_inverted,
+											bind_common_onoffset_inverted)
 	);	bind_onoff(b);
 
 	add_menu_entry(m, "SFX volume level", do_nothing,
-		bind_scale_call(CONFIG_SFX_VOLUME, 0, 1, 0.1, set_sfx_volume)
+		bind_scale(CONFIG_SFX_VOLUME, 0, 1, 0.1)
 	);
 
 	add_menu_entry(m, "Background music", do_nothing,
-		b = bind_option(CONFIG_NO_MUSIC, bind_common_onoffget_inverted,
-								  bind_nomusic_set)
+		b = bind_option(CONFIG_NO_MUSIC,	bind_common_onoffget_inverted,
+											bind_common_onoffset_inverted)
 	);	bind_onoff(b);
 
 	add_menu_entry(m, "Music volume level", do_nothing,
-		bind_scale_call(CONFIG_BGM_VOLUME, 0, 1, 0.1, set_bgm_volume)
+		bind_scale(CONFIG_BGM_VOLUME, 0, 1, 0.1)
 	);
 
 	add_menu_separator(m);
@@ -780,8 +714,7 @@ void draw_options_menu(MenuData *menu) {
 					break;
 				}
 
-				case BT_Scale:
-				case BT_ScaleCallback: {
+				case BT_Scale: {
 					int w  = 200;
 					int h  = 5;
 					int cw = 5;
@@ -930,10 +863,8 @@ static void options_input_event(EventType type, int state, void *arg) {
 			if(bind) {
 				if(bind->type == BT_IntValue || bind->type == BT_Resolution)
 					bind_setprev(bind);
-				else if((bind->type == BT_Scale) || (bind->type == BT_ScaleCallback)) {
+				else if(bind->type == BT_Scale) {
 					config_set_float(bind->configentry, clamp(config_get_float(bind->configentry) - bind->scale_step, bind->scale_min, bind->scale_max));
-					if (bind->type == BT_ScaleCallback)
-						bind->callback(config_get_float(bind->configentry));
 				}
 			}
 		break;
@@ -943,10 +874,8 @@ static void options_input_event(EventType type, int state, void *arg) {
 			if(bind) {
 				if(bind->type == BT_IntValue || bind->type == BT_Resolution)
 					bind_setnext(bind);
-				else if((bind->type == BT_Scale) || (bind->type == BT_ScaleCallback)) {
+				else if(bind->type == BT_Scale) {
 					config_set_float(bind->configentry, clamp(config_get_float(bind->configentry) + bind->scale_step, bind->scale_min, bind->scale_max));
-					if (bind->type == BT_ScaleCallback)
-						bind->callback(config_get_float(bind->configentry));
 				}
 			}
 		break;

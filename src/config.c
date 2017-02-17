@@ -17,7 +17,7 @@
 static bool config_initialized = false;
 
 CONFIGDEFS_EXPORT ConfigEntry configdefs[] = {
-	#define CONFIGDEF(type,entryname,default,ufield) {type, entryname, {.ufield = default}},
+	#define CONFIGDEF(type,entryname,default,ufield) {type, entryname, {.ufield = default}, NULL},
 	#define CONFIGDEF_KEYBINDING(id,entryname,default) CONFIGDEF(CONFIG_TYPE_KEYBINDING, entryname, default, i)
 	#define CONFIGDEF_GPKEYBINDING(id,entryname,default) CONFIGDEF(CONFIG_TYPE_INT, entryname, default, i)
 	#define CONFIGDEF_INT(id,entryname,default) CONFIGDEF(CONFIG_TYPE_INT, entryname, default, i)
@@ -91,7 +91,7 @@ ConfigEntry* config_get(ConfigIndex idx) {
 }
 #endif
 
-ConfigEntry* config_find_entry(char *name) {
+static ConfigEntry* config_find_entry(char *name) {
 	ConfigEntry *e = configdefs;
 	do if(!strcmp(e->name, name)) return e; while((++e)->name);
 	return NULL;
@@ -139,7 +139,89 @@ KeyIndex config_key_from_gamepad_button(int btn) {
 	return config_key_from_gamepad_key(config_gamepad_key_from_gamepad_button(btn));
 }
 
-FILE* config_open(char *filename, char *mode) {
+static void config_set_val(ConfigIndex idx, ConfigValue v) {
+	ConfigEntry *e = config_get(idx);
+	ConfigCallback callback = e->callback;
+	bool difference;
+
+	switch(e->type) {
+		case CONFIG_TYPE_INT:
+		case CONFIG_TYPE_KEYBINDING:
+			difference = e->val.i != v.i;
+			break;
+
+		case CONFIG_TYPE_FLOAT:
+			difference = e->val.f != v.f;
+			break;
+
+		case CONFIG_TYPE_STRING:
+			difference = strcmp(e->val.s, v.s);
+			break;
+	}
+
+	if(!difference) {
+		return;
+	}
+
+	if(callback) {
+		e->callback = NULL;
+		callback(idx, v);
+		e->callback = callback;
+		return;
+	}
+
+#ifdef DEBUG
+	#define PRINTVAL(t) printf("config_set_val(): %s:" #t " = %" #t "\n", e->name, e->val.t);
+#else
+	#define PRINTVAL(t)
+#endif
+
+	switch(e->type) {
+		case CONFIG_TYPE_INT:
+		case CONFIG_TYPE_KEYBINDING:
+			e->val.i = v.i;
+			PRINTVAL(i)
+			break;
+
+		case CONFIG_TYPE_FLOAT:
+			e->val.f = v.f;
+			PRINTVAL(f)
+			break;
+
+		case CONFIG_TYPE_STRING:
+			stralloc(&e->val.s, v.s);
+			PRINTVAL(s)
+			break;
+	}
+
+#undef PRINTVAL
+}
+
+int config_set_int(ConfigIndex idx, int val) {
+	ConfigValue v = {.i = val};
+	config_set_val(idx, v);
+	return config_get_int(idx);
+}
+
+double config_set_float(ConfigIndex idx, double val) {
+	ConfigValue v = {.f = val};
+	config_set_val(idx, v);
+	return config_get_float(idx);
+}
+
+char* config_set_str(ConfigIndex idx, const char *val) {
+	ConfigValue v = {.s = (char*)val};
+	config_set_val(idx, v);
+	return config_get_str(idx);
+}
+
+void config_set_callback(ConfigIndex idx, ConfigCallback callback) {
+	ConfigEntry *e = config_get(idx);
+	assert(e->callback == NULL);
+	e->callback = callback;
+}
+
+static FILE* config_open(char *filename, char *mode) {
 	char *buf;
 	FILE *out;
 
@@ -195,7 +277,7 @@ void config_save(char *filename) {
 #define INTOF(s)   ((int)strtol(s, NULL, 10))
 #define FLOATOF(s) ((float)strtod(s, NULL))
 
-void config_set(char *key, char *val) {
+static void config_set(char *key, char *val) {
 	ConfigEntry *e = config_find_entry(key);
 
 	if(!e) {

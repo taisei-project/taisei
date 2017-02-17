@@ -21,8 +21,38 @@ struct current_bgm_t current_bgm = { .name = NULL };
 
 char *saved_bgm;
 
+static void bgm_cfg_nomusic_callback(ConfigIndex idx, ConfigValue v) {
+	config_set_int(idx, v.i);
+
+	if(v.i) {
+		shutdown_bgm();
+		return;
+	}
+
+	if(!init_bgm(NULL, NULL)) {
+		config_set_int(idx, true);
+		return;
+	}
+
+	load_resources();
+	set_bgm_volume(config_get_float(CONFIG_BGM_VOLUME));
+	start_bgm("bgm_menu"); // FIXME: start BGM that's supposed to be playing in the current context
+}
+
+static void bgm_cfg_volume_callback(ConfigIndex idx, ConfigValue v) {
+	set_bgm_volume(config_set_float(idx, v.f));
+}
+
 int init_bgm(int *argc, char *argv[])
 {
+	static bool callbacks_set_up = false;
+
+	if(!callbacks_set_up) {
+		config_set_callback(CONFIG_NO_MUSIC, bgm_cfg_nomusic_callback);
+		config_set_callback(CONFIG_BGM_VOLUME, bgm_cfg_volume_callback);
+		callbacks_set_up = true;
+	}
+
 	if (config_get_int(CONFIG_NO_MUSIC)) return 1;
 	if (!init_alut_if_needed(argc, argv)) return 0;
 
@@ -47,7 +77,6 @@ void shutdown_bgm(void)
 		delete_music();
 		resources.state &= ~RS_BgmLoaded;
 	}
-	config_set_int(CONFIG_NO_MUSIC, 1);
 	unload_alut_if_needed();
 }
 

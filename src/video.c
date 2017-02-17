@@ -9,7 +9,6 @@
 #include "global.h"
 #include "video.h"
 #include "taisei_err.h"
-#include <stdlib.h>
 
 static VideoMode common_modes[] = {
 	{RESX, RESY},
@@ -133,14 +132,27 @@ int video_isfullscreen(void) {
 	return !!(SDL_GetWindowFlags(video.window) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP));
 }
 
+void video_set_fullscreen(bool fullscreen) {
+	video_setmode(video.intended.width, video.intended.height, fullscreen);
+}
+
 void video_toggle_fullscreen(void) {
-	video_setmode(video.intended.width, video.intended.height, !video_isfullscreen());
+	video_set_fullscreen(!video_isfullscreen());
 }
 
 void video_resize(int w, int h) {
 	video.current.width = w;
 	video.current.height = h;
 	video_set_viewport();
+}
+
+static void video_cfg_fullscreen_callback(ConfigIndex idx, ConfigValue v) {
+	video_set_fullscreen(config_set_int(idx, v.i));
+}
+
+static void video_cfg_vsync_callback(ConfigIndex idx, ConfigValue v) {
+	config_set_int(idx, v.i);
+	video_update_vsync();
 }
 
 void video_init(void) {
@@ -178,6 +190,9 @@ void video_init(void) {
 	qsort(video.modes, video.mcount, sizeof(VideoMode), video_compare_modes);
 
 	video_setmode(config_get_int(CONFIG_VID_WIDTH), config_get_int(CONFIG_VID_HEIGHT), config_get_int(CONFIG_FULLSCREEN));
+
+	config_set_callback(CONFIG_FULLSCREEN, video_cfg_fullscreen_callback);
+	config_set_callback(CONFIG_VSYNC, video_cfg_vsync_callback);
 }
 
 void video_shutdown(void) {
