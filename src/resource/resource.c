@@ -39,12 +39,19 @@ void recurse_dir(char *path) {
 			else
 				load_texture(buf);
 		} else
-		// That's not complete list of supported types. If you want to
-		// use aiff/voc/mod/xm/s3m/669/it/med/mid/flac/some other files
-		// - you may add their extensions here.
-		if( (strcmp(dp->d_name + strlen(dp->d_name)-4, ".wav") == 0)
-		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".mp3") == 0)
-		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".ogg") == 0))
+		// A some kind of 'indian code', but...
+		if( (strcmp(dp->d_name + strlen(dp->d_name)-4, ".wav" ) == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".ogg" ) == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".mp3" ) == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".mod" ) == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".xm"  ) == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".s3m" ) == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".669" ) == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".it"  ) == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".med" ) == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".flac") == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".aiff") == 0)
+		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".voc" ) == 0))
 		{
 			// BGMs should have "bgm_" prefix!
 			if(strncmp(dp->d_name, "bgm_", 4) == 0)

@@ -8,14 +8,10 @@ shoot-em-up games set in an isolated world full of Japanese folklore.
 ## Installation
 
 Dependencies:
-* SDL2, SDL2\_ttf
+* SDL2, SDL2\_ttf, SDL2\_mixer
 * libpng, ZLIB
 * OpenGL
-* OpenAL, ALUT
 * CMake (build system)
-
-Optional:
-* libogg, libvorbis, libvorbisfile (to play .ogg BGMs)
 
 To build and install Taisei just follow these steps.
 
@@ -50,11 +46,11 @@ your replays if you really want to publish them.
 
 Currently Taisei does not include any background music. To use this feature,
 you should have required audio files in `bgm/` subdirectory.
-BGM may either be in `.wav` format, or in `.ogg`; last one apply only if you have
-compiled Taisei with libogg, libvorbis and libvorbisfile (automatically enabled
-if cmake is able to find them).
+BGM (as well as SFX) may be in `.wav`, `.flac`, or `.ogg` format; additionally
+you may try another formats such as `.mp3`, `.aiff`, `.mod`, `.xm`, etc. if
+your build of SDL2_mixer supports these formats.
 
-Complete music pack consists of 16 bgm\_\*.ogg or bgm\_\*.wav files, where ‘\*’ mean:
+Complete music pack consists of 16 bgm\_\*.(ogg/wav/flac) files, where ‘\*’ mean:
 ```
 	credits		BGM for credits screen
 	ending		BGM for ending
@@ -69,6 +65,16 @@ may do it in `bgm/bgm.conf` file. This file contains some lines, each of which
 consists of bgm filename (without extension), space of tab, and theme name.
 No space/tab allowed either in beginning of line or BGM filenames listed in
 this file; theme names may contain them.
+
+## Sound problems
+
+If your sound becomes glitchy, and you encounter lot of console messages like:
+`ALSA lib pcm.c:7234:(snd_pcm_recover) underrun occurred`,
+it seems like you possibly have broken ALSA configuration.
+This may be fixed by playing with parameter values of `pcm.dmixer.slave` option
+group in `/etc/asound.conf` or wherever you have your ALSA configuration.
+Commenting `period_time`, `period_size`, `buffer_size`, `rate` may give you
+the first approach to what to do.
 
 ## Contact
 
