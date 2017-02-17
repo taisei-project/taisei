@@ -6,6 +6,7 @@
  */
 
 #include "taisei_err.h"
+#include <SDL.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -13,16 +14,14 @@
 // void err(int eval, const char *fmt, ...);
 void errx(int eval, const char *fmt, ...) {
 	va_list ap;
-
-	char *buf = malloc(11+strlen(fmt));
-	strcpy(buf, "!- ERROR: ");
-	strcat(buf, fmt);
-	strcat(buf, "\n");
+	char buf[1024];
 
 	va_start(ap, fmt);
-	vprintf(buf, ap);
+	vsnprintf(buf, sizeof(buf), fmt, ap);
 	va_end(ap);
-	free(buf);
+
+	fprintf(stderr, "!- ERROR: %s\n", buf);
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Taisei error", buf, NULL);
 
 	exit(eval);
 }
@@ -37,7 +36,7 @@ void warnx(const char *fmt, ...) {
 	strcat(buf, "\n");
 
 	va_start(ap, fmt);
-	vprintf(buf, ap);
+	vfprintf(stderr, buf, ap);
 	va_end(ap);
 	free(buf);
 }
