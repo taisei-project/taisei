@@ -78,7 +78,7 @@ OptionBinding* bind_gpbinding(int cfgentry) {
 }
 
 // BT_StrValue: with a half-assed "textbox"
-OptionBinding* bind_stroption(int cfgentry) {
+OptionBinding* bind_stroption(ConfigIndex cfgentry) {
 	OptionBinding *bind = bind_new();
 	bind->type = BT_StrValue;
 	bind->configentry = cfgentry;
@@ -86,7 +86,7 @@ OptionBinding* bind_stroption(int cfgentry) {
 	bind->valcount = 1;
 	bind->values = malloc(sizeof(char*));
 	*bind->values = malloc(OPTIONS_TEXT_INPUT_BUFSIZE);
-	strlcpy(*bind->values, tconfig.strval[cfgentry], OPTIONS_TEXT_INPUT_BUFSIZE);
+	strlcpy(*bind->values, config_get_str(cfgentry), OPTIONS_TEXT_INPUT_BUFSIZE);
 
 	return bind;
 }
@@ -112,14 +112,6 @@ OptionBinding* bind_scale(int cfgentry, float smin, float smax, float step) {
 	bind->scale_max  = smax;
 	bind->scale_step = step;
 
-	return bind;
-}
-
-// BT_ScaleCallback: float values clamped to a range with callback
-OptionBinding* bind_scale_call(int cfgentry, float smin, float smax, float step, FloatSetter callback) {
-	OptionBinding *bind = bind_scale(cfgentry, smin, smax, step);
-	bind->type = BT_ScaleCallback;
-	bind->callback = callback;
 	return bind;
 }
 
@@ -210,19 +202,19 @@ bool bind_isactive(OptionBinding *b) {
 // --- Shared binding callbacks --- //
 
 int bind_common_onoffget(void *b) {
-	return !tconfig.intval[((OptionBinding*)b)->configentry];
+	return !config_get_int(((OptionBinding*)b)->configentry);
 }
 
 int bind_common_onoffset(void *b, int v) {
-	return !(tconfig.intval[((OptionBinding*)b)->configentry] = !v);
+	return !config_set_int(((OptionBinding*)b)->configentry, !v);
 }
 
 int bind_common_onoffget_inverted(void *b) {
-	return tconfig.intval[((OptionBinding*)b)->configentry];
+	return config_get_int(((OptionBinding*)b)->configentry);
 }
 
 int bind_common_onoffset_inverted(void *b, int v) {
-	return tconfig.intval[((OptionBinding*)b)->configentry] = v;
+	return config_set_int(((OptionBinding*)b)->configentry, v);
 }
 
 #define bind_common_intget bind_common_onoffget_inverted
@@ -230,69 +222,12 @@ int bind_common_onoffset_inverted(void *b, int v) {
 
 // --- Binding callbacks for individual options --- //
 
-int bind_fullscreen_set(void *b, int v) {
-	video_toggle_fullscreen();
-	return bind_common_onoffset(b, v);
-}
-
-int bind_noaudio_set(void *b, int v) {
-	int i = bind_common_onoffset_inverted(b, v);
-
-	if(v)
-	{
-		shutdown_sfx();
-	}
-	else
-	{
-		if(!init_sfx(NULL, NULL)) return 1;
-
-		load_resources();
-		set_sfx_volume(tconfig.fltval[SFX_VOLUME]);
-	}
-
-	return i;
-}
-
-int bind_nomusic_set(void *b, int v) {
-	int i = bind_common_onoffset_inverted(b, v);
-
-	if(v)
-	{
-		shutdown_bgm();
-	}
-	else
-	{
-		if(!init_bgm(NULL, NULL)) return 1;
-
-		load_resources();
-		set_bgm_volume(tconfig.fltval[BGM_VOLUME]);
-		start_bgm("bgm_menu");
-	}
-
-	return i;
-}
-
-int bind_noshader_set(void *b, int v) {
-	int i = bind_common_onoffset_inverted(b, v);
-
-	if(!v)
-		load_resources();
-
-	return i;
-}
-
-int bind_vsync_set(void *b, int v) {
-	int i = bind_common_onoffset(b, v);
-	video_update_vsync();
-	return i;
-}
-
 bool bind_stagebg_fpslimit_dependence(void) {
-	return tconfig.intval[NO_STAGEBG] == 2;
+	return config_get_int(CONFIG_NO_STAGEBG) == 2;
 }
 
 int bind_saverpy_get(void *b) {
-	int v = tconfig.intval[((OptionBinding*)b)->configentry];
+	int v = config_get_int(((OptionBinding*)b)->configentry);
 
 	if(v > 1)
 		return v;
@@ -301,8 +236,8 @@ int bind_saverpy_get(void *b) {
 
 int bind_saverpy_set(void *b, int v) {
 	if(v > 1)
-		return tconfig.intval[((OptionBinding*)b)->configentry] = v;
-	return !(tconfig.intval[((OptionBinding*)b)->configentry] = !v);
+		return config_set_int(((OptionBinding*)b)->configentry, v);
+	return !config_set_int(((OptionBinding*)b)->configentry, !v);
 }
 
 // --- Creating, destroying, filling the menu --- //
@@ -320,10 +255,10 @@ void destroy_options_menu(MenuData *m) {
 			if(bind->selected != -1) {
 				VideoMode *m = video.modes + bind->selected;
 
-				video_setmode(m->width, m->height, tconfig.intval[FULLSCREEN]);
+				video_setmode(m->width, m->height, config_get_int(CONFIG_FULLSCREEN));
 
-				tconfig.intval[VID_WIDTH]  = video.intended.width;
-				tconfig.intval[VID_HEIGHT] = video.intended.height;
+				config_set_int(CONFIG_VID_WIDTH, video.intended.width);
+				config_set_int(CONFIG_VID_HEIGHT, video.intended.height);
 			}
 			break;
 		}
@@ -358,30 +293,27 @@ void options_sub_video(MenuData *parent, void *arg) {
 	);
 
 	add_menu_entry(m, "Fullscreen", do_nothing,
-		b = bind_option(FULLSCREEN, bind_common_onoffget, bind_fullscreen_set)
+		b = bind_option(CONFIG_FULLSCREEN, bind_common_onoffget, bind_common_onoffset)
 	);	bind_onoff(b);
 
 	add_menu_entry(m, "Vertical synchronization", do_nothing,
-		b = bind_option(VSYNC, bind_common_onoffget, bind_vsync_set)
+		b = bind_option(CONFIG_VSYNC, bind_common_onoffget, bind_common_onoffset)
 	); bind_onoff(b);
 
 	add_menu_separator(m);
 
 	add_menu_entry(m, "Shaders", do_nothing,
-		b = bind_option(NO_SHADER, bind_common_onoffget_inverted,
-								   bind_noshader_set)
+		b = bind_option(CONFIG_NO_SHADER, bind_common_onoffget_inverted, bind_common_onoffset_inverted)
 	);	bind_onoff(b);
 
 	add_menu_entry(m, "Stage background", do_nothing,
-		b = bind_option(NO_STAGEBG, bind_common_intget,
-									bind_common_intset)
+		b = bind_option(CONFIG_NO_STAGEBG, bind_common_intget, bind_common_intset)
 	);	bind_addvalue(b, "on");
 		bind_addvalue(b, "off");
 		bind_addvalue(b, "auto");
 
 	add_menu_entry(m, "Minimum FPS", do_nothing,
-		b = bind_option(NO_STAGEBG_FPSLIMIT, bind_common_intget,
-											 bind_common_intset)
+		b = bind_option(CONFIG_NO_STAGEBG_FPSLIMIT, bind_common_intget, bind_common_intset)
 	);	bind_setvaluerange(b, 20, 60);
 		bind_setdependence(b, bind_stagebg_fpslimit_dependence);
 
@@ -401,7 +333,7 @@ void bind_setvaluerange_fancy(OptionBinding *b, int ma) {
 }
 
 bool gamepad_sens_depencence(void) {
-	return tconfig.intval[GAMEPAD_AXIS_FREE];
+	return config_get_int(CONFIG_GAMEPAD_AXIS_FREE);
 }
 
 void options_sub_gamepad_controls(MenuData *parent, void *arg) {
@@ -411,43 +343,43 @@ void options_sub_gamepad_controls(MenuData *parent, void *arg) {
 	create_options_sub(m, "Gamepad Controls");
 
 	add_menu_entry(m, "Fire / Accept", do_nothing,
-		bind_gpbinding(GP_SHOT)
+		bind_gpbinding(CONFIG_GAMEPAD_KEY_SHOT)
 	);
 
 	add_menu_entry(m, "Focus / Abort", do_nothing,
-		bind_gpbinding(GP_FOCUS)
+		bind_gpbinding(CONFIG_GAMEPAD_KEY_FOCUS)
 	);
 
 	add_menu_entry(m, "Bomb", do_nothing,
-		bind_gpbinding(GP_BOMB)
+		bind_gpbinding(CONFIG_GAMEPAD_KEY_BOMB)
 	);
 
 	add_menu_separator(m);
 
 	add_menu_entry(m, "Pause", do_nothing,
-		bind_gpbinding(GP_PAUSE)
+		bind_gpbinding(CONFIG_GAMEPAD_KEY_PAUSE)
 	);
 
 	add_menu_entry(m, "Skip dialog", do_nothing,
-		bind_gpbinding(GP_SKIP)
+		bind_gpbinding(CONFIG_GAMEPAD_KEY_SKIP)
 	);
 
 	add_menu_separator(m);
 
 	add_menu_entry(m, "Move up", do_nothing,
-		bind_gpbinding(GP_UP)
+		bind_gpbinding(CONFIG_GAMEPAD_KEY_UP)
 	);
 
 	add_menu_entry(m, "Move down", do_nothing,
-		bind_gpbinding(GP_DOWN)
+		bind_gpbinding(CONFIG_GAMEPAD_KEY_DOWN)
 	);
 
 	add_menu_entry(m, "Move left", do_nothing,
-		bind_gpbinding(GP_LEFT)
+		bind_gpbinding(CONFIG_GAMEPAD_KEY_LEFT)
 	);
 
 	add_menu_entry(m, "Move right", do_nothing,
-		bind_gpbinding(GP_RIGHT)
+		bind_gpbinding(CONFIG_GAMEPAD_KEY_RIGHT)
 	);
 
 	add_menu_separator(m);
@@ -466,11 +398,11 @@ void options_sub_gamepad(MenuData *parent, void *arg) {
 	create_options_sub(m, "Gamepad Options");
 
 	add_menu_entry(m, "Enable Gamepad/Joystick support", do_nothing,
-		b = bind_option(GAMEPAD_ENABLED, bind_common_onoffget, bind_common_onoffset)
+		b = bind_option(CONFIG_GAMEPAD_ENABLED, bind_common_onoffget, bind_common_onoffset)
 	);	bind_onoff(b);
 
 	add_menu_entry(m, "Device", do_nothing,
-		b = bind_option(GAMEPAD_DEVICE, bind_common_intget, bind_common_intset)
+		b = bind_option(CONFIG_GAMEPAD_DEVICE, bind_common_intget, bind_common_intset)
 	); b->displaysingle = true;
 
 	add_menu_separator(m);
@@ -493,28 +425,28 @@ void options_sub_gamepad(MenuData *parent, void *arg) {
 	add_menu_separator(m);
 
 	add_menu_entry(m, "The UD axis (Vertical)", do_nothing,
-		b = bind_option(GAMEPAD_AXIS_UD, bind_common_intget, bind_common_intset)
+		b = bind_option(CONFIG_GAMEPAD_AXIS_UD, bind_common_intget, bind_common_intset)
 	);	bind_setvaluerange_fancy(b, GAMEPAD_AXES-1);
 
 	add_menu_entry(m, "The LR axis (Horizontal)", do_nothing,
-		b = bind_option(GAMEPAD_AXIS_LR, bind_common_intget, bind_common_intset)
+		b = bind_option(CONFIG_GAMEPAD_AXIS_LR, bind_common_intget, bind_common_intset)
 	);	bind_setvaluerange_fancy(b, GAMEPAD_AXES-1);
 
 	add_menu_entry(m, "Axis mode", do_nothing,
-		b = bind_option(GAMEPAD_AXIS_FREE, bind_common_onoffget, bind_common_onoffset)
+		b = bind_option(CONFIG_GAMEPAD_AXIS_FREE, bind_common_onoffget, bind_common_onoffset)
 	);	bind_addvalue(b, "free");
 		bind_addvalue(b, "restricted");
 
 	add_menu_entry(m, "UD axis sensitivity", do_nothing,
-		b = bind_scale(GAMEPAD_AXIS_UD_SENS, -2, 2, 0.05)
+		b = bind_scale(CONFIG_GAMEPAD_AXIS_UD_SENS, -2, 2, 0.05)
 	); bind_setdependence(b, gamepad_sens_depencence);
 
 	add_menu_entry(m, "LR axis sensitivity", do_nothing,
-		b = bind_scale(GAMEPAD_AXIS_LR_SENS, -2, 2, 0.05)
+		b = bind_scale(CONFIG_GAMEPAD_AXIS_LR_SENS, -2, 2, 0.05)
 	);	bind_setdependence(b, gamepad_sens_depencence);
 
 	add_menu_entry(m, "Dead zone", do_nothing,
-		b = bind_scale(GAMEPAD_AXIS_DEADZONE, 0, 1, 0.01)
+		b = bind_scale(CONFIG_GAMEPAD_AXIS_DEADZONE, 0, 1, 0.01)
 	);
 
 	add_menu_separator(m);
@@ -532,58 +464,58 @@ void options_sub_controls(MenuData *parent, void *arg) {
 	create_options_sub(m, "Controls");
 
 	add_menu_entry(m, "Move up", do_nothing,
-		bind_keybinding(KEY_UP)
+		bind_keybinding(CONFIG_KEY_UP)
 	);
 
 	add_menu_entry(m, "Move down", do_nothing,
-		bind_keybinding(KEY_DOWN)
+		bind_keybinding(CONFIG_KEY_DOWN)
 	);
 
 	add_menu_entry(m, "Move left", do_nothing,
-		bind_keybinding(KEY_LEFT)
+		bind_keybinding(CONFIG_KEY_LEFT)
 	);
 
 	add_menu_entry(m, "Move right", do_nothing,
-		bind_keybinding(KEY_RIGHT)
+		bind_keybinding(CONFIG_KEY_RIGHT)
 	);
 
 	add_menu_separator(m);
 
 	add_menu_entry(m, "Fire", do_nothing,
-		bind_keybinding(KEY_SHOT)
+		bind_keybinding(CONFIG_KEY_SHOT)
 	);
 
 	add_menu_entry(m, "Focus", do_nothing,
-		bind_keybinding(KEY_FOCUS)
+		bind_keybinding(CONFIG_KEY_FOCUS)
 	);
 
 	add_menu_entry(m, "Bomb", do_nothing,
-		bind_keybinding(KEY_BOMB)
+		bind_keybinding(CONFIG_KEY_BOMB)
 	);
 
 	add_menu_separator(m);
 
 	add_menu_entry(m, "Toggle fullscreen", do_nothing,
-		bind_keybinding(KEY_FULLSCREEN)
+		bind_keybinding(CONFIG_KEY_FULLSCREEN)
 	);
 
 	add_menu_entry(m, "Take a screenshot", do_nothing,
-		bind_keybinding(KEY_SCREENSHOT)
+		bind_keybinding(CONFIG_KEY_SCREENSHOT)
 	);
 
 	add_menu_entry(m, "Skip dialog", do_nothing,
-		bind_keybinding(KEY_SKIP)
+		bind_keybinding(CONFIG_KEY_SKIP)
 	);
 
 #ifdef DEBUG
 	add_menu_separator(m);
 
 	add_menu_entry(m, "Toggle God mode", do_nothing,
-		bind_keybinding(KEY_IDDQD)
+		bind_keybinding(CONFIG_KEY_IDDQD)
 	);
 
 	add_menu_entry(m, "Skip stage", do_nothing,
-		bind_keybinding(KEY_HAHAIWIN)
+		bind_keybinding(CONFIG_KEY_HAHAIWIN)
 	);
 #endif
 
@@ -602,14 +534,13 @@ void create_options_menu(MenuData *m) {
 	m->context = "Options";
 
 	add_menu_entry(m, "Player name", do_nothing,
-		b = bind_stroption(PLAYERNAME)
+		b = bind_stroption(CONFIG_PLAYERNAME)
 	);
 
 	add_menu_separator(m);
 
 	add_menu_entry(m, "Save replays", do_nothing,
-		b = bind_option(SAVE_RPY, bind_saverpy_get,
-								  bind_saverpy_set)
+		b = bind_option(CONFIG_SAVE_RPY, bind_saverpy_get, bind_saverpy_set)
 	);	bind_addvalue(b, "on");
 		bind_addvalue(b, "off");
 		bind_addvalue(b, "ask");
@@ -617,21 +548,21 @@ void create_options_menu(MenuData *m) {
 	add_menu_separator(m);
 
 	add_menu_entry(m, "Sound effects", do_nothing,
-		b = bind_option(NO_AUDIO, bind_common_onoffget_inverted,
-								  bind_noaudio_set)
+		b = bind_option(CONFIG_NO_AUDIO, 	bind_common_onoffget_inverted,
+											bind_common_onoffset_inverted)
 	);	bind_onoff(b);
 
 	add_menu_entry(m, "SFX volume level", do_nothing,
-		bind_scale_call(SFX_VOLUME, 0, 1, 0.1, set_sfx_volume)
+		bind_scale(CONFIG_SFX_VOLUME, 0, 1, 0.1)
 	);
 
 	add_menu_entry(m, "Background music", do_nothing,
-		b = bind_option(NO_MUSIC, bind_common_onoffget_inverted,
-								  bind_nomusic_set)
+		b = bind_option(CONFIG_NO_MUSIC,	bind_common_onoffget_inverted,
+											bind_common_onoffset_inverted)
 	);	bind_onoff(b);
 
 	add_menu_entry(m, "Music volume level", do_nothing,
-		bind_scale_call(BGM_VOLUME, 0, 1, 0.1, set_bgm_volume)
+		bind_scale(CONFIG_BGM_VOLUME, 0, 1, 0.1)
 	);
 
 	add_menu_separator(m);
@@ -724,7 +655,7 @@ void draw_options_menu(MenuData *menu) {
 						glColor4f(0.5, 1, 0.5, 1);
 						draw_text(AL_Right, origin, 20*i, "Press a key to assign, ESC to cancel", _fonts.standard);
 					} else {
-						const char *txt = SDL_GetScancodeName(tconfig.intval[bind->configentry]);
+						const char *txt = SDL_GetScancodeName(config_get_int(bind->configentry));
 
 						if(!txt || !*txt) {
 							txt = "Unknown";
@@ -745,9 +676,9 @@ void draw_options_menu(MenuData *menu) {
 					if(bind->blockinput) {
 						glColor4f(0.5, 1, 0.5, 1);
 						draw_text(AL_Right, origin, 20*i, "Press a button to assign, ESC to cancel", _fonts.standard);
-					} else if(tconfig.intval[bind->configentry] >= 0) {
+					} else if(config_get_int(bind->configentry) >= 0) {
 						char tmp[32];
-						snprintf(tmp, 32, "Button %i", tconfig.intval[bind->configentry] + 1);
+						snprintf(tmp, 32, "Button %i", config_get_int(bind->configentry) + 1);
 						draw_text(AL_Right, origin, 20*i, tmp, _fonts.standard);
 					} else {
 						draw_text(AL_Right, origin, 20*i, "Unbound", _fonts.standard);
@@ -761,7 +692,7 @@ void draw_options_menu(MenuData *menu) {
 						if(strlen(*bind->values))
 							draw_text(AL_Right, origin, 20*i, *bind->values, _fonts.standard);
 					} else
-						draw_text(AL_Right, origin, 20*i, tconfig.strval[bind->configentry], _fonts.standard);
+						draw_text(AL_Right, origin, 20*i, config_get_str(bind->configentry), _fonts.standard);
 					break;
 				}
 
@@ -783,13 +714,12 @@ void draw_options_menu(MenuData *menu) {
 					break;
 				}
 
-				case BT_Scale:
-				case BT_ScaleCallback: {
+				case BT_Scale: {
 					int w  = 200;
 					int h  = 5;
 					int cw = 5;
 
-					float val = tconfig.fltval[bind->configentry];
+					float val = config_get_float(bind->configentry);
 
 					float ma = bind->scale_max;
 					float mi = bind->scale_min;
@@ -843,12 +773,12 @@ void bind_input_event(EventType type, int state, void *arg) {
 
 			if(!esc) {
 				for(int i = CONFIG_KEY_FIRST; i <= CONFIG_KEY_LAST; ++i) {
-					if(tconfig.intval[i] == scan) {
-						tconfig.intval[i] = tconfig.intval[b->configentry];
+					if(config_get_int(i) == scan) {
+						config_set_int(i, config_get_int(b->configentry));
 					}
 				}
 
-				tconfig.intval[b->configentry] = scan;
+				config_set_int(b->configentry, scan);
 			}
 
 			b->blockinput = false;
@@ -856,13 +786,13 @@ void bind_input_event(EventType type, int state, void *arg) {
 		}
 
 		case E_GamepadKeyDown: {
-			for(int i = CONFIG_GPKEY_FIRST; i <= CONFIG_GPKEY_LAST; ++i) {
-				if(tconfig.intval[i] == scan) {
-					tconfig.intval[i] = tconfig.intval[b->configentry];
+			for(int i = CONFIG_GAMEPAD_KEY_FIRST; i <= CONFIG_GAMEPAD_KEY_LAST; ++i) {
+				if(config_get_int(i) == scan) {
+					config_set_int(i, config_get_int(b->configentry));
 				}
 			}
 
-			tconfig.intval[b->configentry] = scan;
+			config_set_int(b->configentry, scan);
 			b->blockinput = false;
 			break;
 		}
@@ -883,15 +813,15 @@ void bind_input_event(EventType type, int state, void *arg) {
 
 		case E_SubmitText: {
 			if(dest != NULL && strlen(dest))
-				stralloc(&(tconfig.strval[b->configentry]), dest);
+				config_set_str(b->configentry, dest);
 			else
-				strlcpy(dest, tconfig.strval[b->configentry], OPTIONS_TEXT_INPUT_BUFSIZE);
+				strlcpy(dest, config_get_str(b->configentry), OPTIONS_TEXT_INPUT_BUFSIZE);
 			b->blockinput = false;
 			break;
 		}
 
 		case E_CancelText: {
-			strlcpy(dest, tconfig.strval[b->configentry], OPTIONS_TEXT_INPUT_BUFSIZE);
+			strlcpy(dest, config_get_str(b->configentry), OPTIONS_TEXT_INPUT_BUFSIZE);
 			b->blockinput = false;
 			break;
 		}
@@ -933,10 +863,8 @@ static void options_input_event(EventType type, int state, void *arg) {
 			if(bind) {
 				if(bind->type == BT_IntValue || bind->type == BT_Resolution)
 					bind_setprev(bind);
-				else if((bind->type == BT_Scale) || (bind->type == BT_ScaleCallback)) {
-					tconfig.fltval[bind->configentry] = clamp(tconfig.fltval[bind->configentry] - bind->scale_step, bind->scale_min, bind->scale_max);
-					if (bind->type == BT_ScaleCallback)
-						bind->callback(tconfig.fltval[bind->configentry]);
+				else if(bind->type == BT_Scale) {
+					config_set_float(bind->configentry, clamp(config_get_float(bind->configentry) - bind->scale_step, bind->scale_min, bind->scale_max));
 				}
 			}
 		break;
@@ -946,10 +874,8 @@ static void options_input_event(EventType type, int state, void *arg) {
 			if(bind) {
 				if(bind->type == BT_IntValue || bind->type == BT_Resolution)
 					bind_setnext(bind);
-				else if((bind->type == BT_Scale) || (bind->type == BT_ScaleCallback)) {
-					tconfig.fltval[bind->configentry] = clamp(tconfig.fltval[bind->configentry] + bind->scale_step, bind->scale_min, bind->scale_max);
-					if (bind->type == BT_ScaleCallback)
-						bind->callback(tconfig.fltval[bind->configentry]);
+				else if(bind->type == BT_Scale) {
+					config_set_float(bind->configentry, clamp(config_get_float(bind->configentry) + bind->scale_step, bind->scale_min, bind->scale_max));
 				}
 			}
 		break;
@@ -964,7 +890,7 @@ static void options_input_event(EventType type, int state, void *arg) {
 					break;
 
 				case BT_StrValue:
-					bind->selected = strlen(tconfig.strval[bind->configentry]);
+					bind->selected = strlen(config_get_str(bind->configentry));
 					bind->blockinput = true;
 					break;
 

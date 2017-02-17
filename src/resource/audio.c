@@ -19,7 +19,14 @@
 int alut_loaded = 0;
 
 int warn_alut_error(const char *when) {
-	ALenum error = alutGetError();
+	ALenum error = alGetError();
+
+	if(error != AL_NO_ERROR) {
+		warnx("AL error %d while %s", error, when);
+		return 1;
+	}
+
+	error = alutGetError();
 	if (error == ALUT_ERROR_NO_ERROR) return 0;
 	warnx("ALUT error %d while %s: %s", error, when, alutGetErrorString(error));
 	return 1;
@@ -27,7 +34,7 @@ int warn_alut_error(const char *when) {
 
 void unload_alut_if_needed() {
 	// ALUT will be unloaded only if there are no audio AND no music enabled
-	if(!tconfig.intval[NO_AUDIO] || !tconfig.intval[NO_MUSIC] || !alut_loaded) return;
+	if(!config_get_int(CONFIG_NO_AUDIO) || !config_get_int(CONFIG_NO_MUSIC) || !alut_loaded) return;
 
 	warn_alut_error("preparing to shutdown");
 	alutExit();
@@ -38,15 +45,15 @@ void unload_alut_if_needed() {
 
 int init_alut_if_needed(int *argc, char *argv[]) {
 	// ALUT will not be loaded if there are no audio AND no music enabled
-	if((tconfig.intval[NO_AUDIO] && tconfig.intval[NO_MUSIC]) || alut_loaded) return 1;
+	if((config_get_int(CONFIG_NO_AUDIO) && config_get_int(CONFIG_NO_MUSIC)) || alut_loaded) return 1;
 
 	if(!alutInit(argc, argv))
 	{
 		warn_alut_error("initializing");
 		alutExit(); // Try to shutdown ALUT if it was partly initialized
 		warn_alut_error("shutting down");
-		tconfig.intval[NO_AUDIO] = 1;
-		tconfig.intval[NO_MUSIC] = 1;
+		config_set_int(CONFIG_NO_AUDIO, 1);
+		config_set_int(CONFIG_NO_MUSIC, 1);
 		return 0;
 	}
 
@@ -56,15 +63,44 @@ int init_alut_if_needed(int *argc, char *argv[]) {
 	return 1;
 }
 
+static void sfx_cfg_noaudio_callback(ConfigIndex idx, ConfigValue v) {
+	config_set_int(idx, v.i);
+
+	if(v.i) {
+		shutdown_sfx();
+		return;
+	}
+
+	if(!init_sfx(NULL, NULL)) {
+		config_set_int(idx, true);
+		return;
+	}
+
+	load_resources();
+	set_sfx_volume(config_get_float(CONFIG_SFX_VOLUME));
+}
+
+static void sfx_cfg_volume_callback(ConfigIndex idx, ConfigValue v) {
+	set_sfx_volume(config_set_float(idx, v.f));
+}
+
 int init_sfx(int *argc, char *argv[])
 {
-	if (tconfig.intval[NO_AUDIO]) return 1;
+	static bool callbacks_set_up = false;
+
+	if(!callbacks_set_up) {
+		config_set_callback(CONFIG_NO_AUDIO, sfx_cfg_noaudio_callback);
+		config_set_callback(CONFIG_SFX_VOLUME, sfx_cfg_volume_callback);
+		callbacks_set_up = true;
+	}
+
+	if (config_get_int(CONFIG_NO_AUDIO)) return 1;
 	if (!init_alut_if_needed(argc, argv)) return 0;
 
 	alGenSources(SNDSRC_COUNT, resources.sndsrc);
 	if(warn_alut_error("creating sfx sources"))
 	{
-		tconfig.intval[NO_AUDIO] = 1;
+		config_set_int(CONFIG_NO_AUDIO, 1);
 		unload_alut_if_needed();
 		return 0;
 	}
@@ -81,7 +117,6 @@ void shutdown_sfx(void)
 		delete_sounds();
 		resources.state &= ~RS_SfxLoaded;
 	}
-	tconfig.intval[NO_AUDIO] = 1;
 	unload_alut_if_needed();
 }
 
@@ -159,7 +194,7 @@ Sound *get_snd(Sound *source, char *name) {
 
 void play_sound_p(char *name, int unconditional)
 {
-	if(tconfig.intval[NO_AUDIO] || global.frameskip) return;
+	if(config_get_int(CONFIG_NO_AUDIO) || global.frameskip) return;
 
 	Sound *snd = get_snd(resources.sounds, name);
 	if (snd == NULL) return;
@@ -193,7 +228,7 @@ void play_sound_p(char *name, int unconditional)
 
 void set_sfx_volume(float gain)
 {
-	if(tconfig.intval[NO_AUDIO]) return;
+	if(config_get_int(CONFIG_NO_AUDIO)) return;
 	printf("SFX volume: %f\n", gain);
 	int i;
 	for(i = 0; i < SNDSRC_COUNT; i++) {

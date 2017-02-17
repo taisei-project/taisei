@@ -34,7 +34,7 @@ void create_ingame_menu(MenuData *m) {
 void draw_ingame_menu_bg(float f) {
 	float rad = f*IMENU_BLUR;
 
-	if(!tconfig.intval[NO_SHADER]) {
+	if(!config_get_int(CONFIG_NO_SHADER)) {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		Shader *shader = get_shader("ingame_menu");
 		glUseProgram(shader->prog);

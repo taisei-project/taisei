@@ -10,7 +10,9 @@
 #define GAMEPAD_H
 
 #include <SDL.h>
+#include <stdbool.h>
 #include "events.h"
+#include "config.h"
 
 void gamepad_init(void);
 void gamepad_shutdown(void);
@@ -20,8 +22,8 @@ float gamepad_axis_sens(int);
 char* gamepad_devicename(int);
 void gamepad_event(SDL_Event*, EventHandler, EventFlags, void*);
 
-int gamepad_buttonpressed(int btn);
-int gamepad_gamekeypressed(int key);
+bool gamepad_buttonpressed(int btn);
+bool gamepad_gamekeypressed(KeyIndex key);
 
 // shitty workaround for the options menu. Used to list devices while the gamepad subsystem is off.
 // only initializes the SDL subsystem so you can use gamepad_devicecount/gamepad_devicename.

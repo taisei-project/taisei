@@ -22,10 +22,7 @@ static uint8_t replay_magic_header[] = REPLAY_MAGIC_HEADER;
 
 void replay_init(Replay *rpy) {
 	memset(rpy, 0, sizeof(Replay));
-
-	rpy->playername = malloc(strlen(tconfig.strval[PLAYERNAME]) + 1);
-	strcpy(rpy->playername, tconfig.strval[PLAYERNAME]);
-
+	stralloc(&rpy->playername, config_get_str(CONFIG_PLAYERNAME));
 	printf("replay_init(): replay initialized for writting\n");
 }
 

@@ -9,7 +9,6 @@
 #include "global.h"
 #include "video.h"
 #include "taisei_err.h"
-#include <stdlib.h>
 
 static VideoMode common_modes[] = {
 	{RESX, RESY},
@@ -61,7 +60,7 @@ void video_set_viewport(void) {
 }
 
 void video_update_vsync(void) {
-	if(global.frameskip || !tconfig.intval[VSYNC]) {
+	if(global.frameskip || !config_get_int(CONFIG_VSYNC)) {
 		SDL_GL_SetSwapInterval(0);
 	} else {
 		if(SDL_GL_SetSwapInterval(-1) < 0) {
@@ -133,14 +132,27 @@ int video_isfullscreen(void) {
 	return !!(SDL_GetWindowFlags(video.window) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP));
 }
 
+void video_set_fullscreen(bool fullscreen) {
+	video_setmode(video.intended.width, video.intended.height, fullscreen);
+}
+
 void video_toggle_fullscreen(void) {
-	video_setmode(video.intended.width, video.intended.height, !video_isfullscreen());
+	video_set_fullscreen(!video_isfullscreen());
 }
 
 void video_resize(int w, int h) {
 	video.current.width = w;
 	video.current.height = h;
 	video_set_viewport();
+}
+
+static void video_cfg_fullscreen_callback(ConfigIndex idx, ConfigValue v) {
+	video_set_fullscreen(config_set_int(idx, v.i));
+}
+
+static void video_cfg_vsync_callback(ConfigIndex idx, ConfigValue v) {
+	config_set_int(idx, v.i);
+	video_update_vsync();
 }
 
 void video_init(void) {
@@ -166,7 +178,7 @@ void video_init(void) {
 
 	if(!fullscreen_available) {
 		warnx("video_init(): no available fullscreen modes");
-		tconfig.intval[FULLSCREEN] = false;
+		config_set_int(CONFIG_FULLSCREEN, false);
 	}
 
 	// Then, add some common 4:3 modes for the windowed mode if they are not there yet.
@@ -177,7 +189,10 @@ void video_init(void) {
 	// sort it, mainly for the options menu
 	qsort(video.modes, video.mcount, sizeof(VideoMode), video_compare_modes);
 
-	video_setmode(tconfig.intval[VID_WIDTH], tconfig.intval[VID_HEIGHT], tconfig.intval[FULLSCREEN]);
+	video_setmode(config_get_int(CONFIG_VID_WIDTH), config_get_int(CONFIG_VID_HEIGHT), config_get_int(CONFIG_FULLSCREEN));
+
+	config_set_callback(CONFIG_FULLSCREEN, video_cfg_fullscreen_callback);
+	config_set_callback(CONFIG_VSYNC, video_cfg_vsync_callback);
 }
 
 void video_shutdown(void) {

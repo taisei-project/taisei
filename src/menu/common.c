@@ -54,7 +54,7 @@ troll2:
     }
 
     if(global.replay_stage) {
-        switch(tconfig.intval[SAVE_RPY]) {
+        switch(config_get_int(CONFIG_SAVE_RPY)) {
             case 0: break;
 
             case 1: {

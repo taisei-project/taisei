@@ -241,7 +241,7 @@ void draw_hud(void) {
 
 void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int time) {
 
-	if(!tconfig.intval[NO_SHADER]) {
+	if(!config_get_int(CONFIG_NO_SHADER)) {
 		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[0].fbo);
 		glViewport(0,0,SCREEN_W,SCREEN_H);
 	}
@@ -250,14 +250,14 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	glTranslatef(-(VIEWPORT_X+VIEWPORT_W/2.0), -(VIEWPORT_Y+VIEWPORT_H/2.0),0);
 	glEnable(GL_DEPTH_TEST);
 
-	if(tconfig.intval[NO_STAGEBG] == 2 && global.fps.stagebg_fps < tconfig.intval[NO_STAGEBG_FPSLIMIT]
+	if(config_get_int(CONFIG_NO_STAGEBG) == 2 && global.fps.stagebg_fps < config_get_int(CONFIG_NO_STAGEBG_FPSLIMIT)
 		&& !global.nostagebg) {
 
 		printf("stage_draw(): !- Stage background has been switched off due to low frame rate. You can change that in the options.\n");
 		global.nostagebg = true;
 	}
 
-	if(tconfig.intval[NO_STAGEBG] == 1)
+	if(config_get_int(CONFIG_NO_STAGEBG) == 1)
 		global.nostagebg = true;
 
 	if(!global.nostagebg)
@@ -271,7 +271,7 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	glPushMatrix();
 	glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
 
-	if(!tconfig.intval[NO_SHADER])
+	if(!config_get_int(CONFIG_NO_SHADER))
 		apply_bg_shaders(shaderrules);
 
 	if(global.boss) {
@@ -312,7 +312,7 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 
 	draw_stage_title(info);
 
-	if(!tconfig.intval[NO_SHADER]) {
+	if(!config_get_int(CONFIG_NO_SHADER)) {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		video_set_viewport();
 		glPushMatrix();
@@ -489,7 +489,7 @@ void stage_loop(StageInfo* info, StageRule start, StageRule end, StageRule draw,
 	stage_start();
 
 	if(global.replaymode == REPLAY_RECORD) {
-		if(tconfig.intval[SAVE_RPY]) {
+		if(config_get_int(CONFIG_SAVE_RPY)) {
 			global.replay_stage = replay_create_stage(&global.replay, info, seed, global.diff, global.plr.points, &global.plr);
 
 			// make sure our player state is consistent with what goes into the replay
@@ -584,7 +584,7 @@ void draw_title(int t, StageInfo *info, Alignment al, int x, int y, const char *
 		f = 1/35.0*i;
 	}
 
-	if(!tconfig.intval[NO_SHADER]) {
+	if(!config_get_int(CONFIG_NO_SHADER)) {
 		Shader *sha = get_shader("stagetitle");
 		glUseProgram(sha->prog);
 		glUniform1i(uniloc(sha, "trans"), 1);

@@ -63,7 +63,22 @@ void recurse_dir(char *path) {
 	closedir(dir);
 }
 
+static void resources_cfg_noshader_callback(ConfigIndex idx, ConfigValue v) {
+	config_set_int(idx, v.i);
+
+	if(!v.i) {
+		load_resources();
+	}
+}
+
 void load_resources(void) {
+	static bool callbacks_set_up = false;
+
+	if(!callbacks_set_up) {
+		config_set_callback(CONFIG_NO_SHADER, resources_cfg_noshader_callback);
+		callbacks_set_up = true;
+	}
+
 	printf("load_resources():\n");
 
 	char *path = malloc(strlen(get_prefix())+32);
@@ -77,7 +92,7 @@ void load_resources(void) {
 		resources.state |= RS_GfxLoaded;
 	}
 
-	if(!tconfig.intval[NO_AUDIO] && !(resources.state & RS_SfxLoaded)) {
+	if(!config_get_int(CONFIG_NO_AUDIO) && !(resources.state & RS_SfxLoaded)) {
 		printf("- sounds:\n");
 		strcpy(path, get_prefix());
 		strcat(path, "sfx");
@@ -86,7 +101,7 @@ void load_resources(void) {
 		resources.state |= RS_SfxLoaded;
 	}
 
-	if(!tconfig.intval[NO_MUSIC] && !(resources.state & RS_BgmLoaded)) {
+	if(!config_get_int(CONFIG_NO_MUSIC) && !(resources.state & RS_BgmLoaded)) {
 		printf("- music:\n");
 		strcpy(path, get_prefix());
 		strcat(path, "bgm");
@@ -96,7 +111,7 @@ void load_resources(void) {
 		resources.state |= RS_BgmLoaded;
 	}
 
-	if(!tconfig.intval[NO_SHADER] && !(resources.state & RS_ShaderLoaded)) {
+	if(!config_get_int(CONFIG_NO_SHADER) && !(resources.state & RS_ShaderLoaded)) {
 		printf("- shader:\n");
 		strcpy(path, get_prefix());
 		strcat(path, "shader");
