@@ -416,7 +416,7 @@ void options_sub_gamepad(MenuData *parent, void *arg) {
 	); b->displaysingle = true;
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Customize controls...", options_sub_gamepad_controls, NULL);
+	add_menu_entry(m, "Customize controls…", options_sub_gamepad_controls, NULL);
 
 	gamepad_init_bare();
 	int cnt = gamepad_devicecount();
@@ -578,9 +578,9 @@ void create_options_menu(MenuData *m) {
 	);	bind_setdependence(b, bind_bgmvol_dependence);
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Video options...", options_sub_video, NULL);
-	add_menu_entry(m, "Customize controls...", options_sub_controls, NULL);
-	add_menu_entry(m, "Gamepad & Joystick options...", options_sub_gamepad, NULL);
+	add_menu_entry(m, "Video options…", options_sub_video, NULL);
+	add_menu_entry(m, "Customize controls…", options_sub_controls, NULL);
+	add_menu_entry(m, "Gamepad & Joystick options…", options_sub_gamepad, NULL);
 	add_menu_separator(m);
 
 	add_menu_entry(m, "Back", menu_commonaction_close, NULL);

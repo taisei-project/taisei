@@ -20,14 +20,14 @@ Dialog *stage2_dialog(void) {
 		dadd_msg(d, Right, "The border has been broken.");
 		dadd_msg(d, Left, "Is that even possible?!");
 		dadd_msg(d, Right, "Look, there is a way outside\nright behind us.");
-		dadd_msg(d, Left, "But I've got the feeling that you\n won't let me pass, haha");
+		dadd_msg(d, Left, "But I’ve got the feeling that you\n won’t let me pass, haha");
 	} else {
-		dadd_msg(d, Left, "This must be the place...");
+		dadd_msg(d, Left, "This must be the place…");
 		dadd_msg(d, Right, "Hello? ");
 		dadd_msg(d, Left, "You came here because of the\n\"crack\", too? Where is it?");
-		dadd_msg(d, Right, "Right behind us, but...");
-		dadd_msg(d, Left, "Ok, I'll go there.");
-		dadd_msg(d, Right, "No! Don't make it more\ntroubling than it already is!");
+		dadd_msg(d, Right, "Right behind us, but…");
+		dadd_msg(d, Left, "Ok, I’ll go there.");
+		dadd_msg(d, Right, "No! Don’t make it more\ntroubling than it already is!");
 	}
 
 	dadd_msg(d, BGM, "bgm_stage2boss");
@@ -37,7 +37,7 @@ Dialog *stage2_dialog(void) {
 Dialog *stage2_post_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", NULL);
 
-	dadd_msg(d, Right, "Well, let's go then.");
+	dadd_msg(d, Right, "Well, let’s go then.");
 
 	return d;
 }

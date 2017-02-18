@@ -13,24 +13,24 @@ Dialog *stage6_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/elly");
 
 	dadd_msg(d, Left, "You are responsible?");
-	dadd_msg(d, Right, "Yes...");
+	dadd_msg(d, Right, "Yes…");
 
 	if(global.plr.cha == Marisa) {
-		dadd_msg(d, Left, "I'll masterspark you now.");
+		dadd_msg(d, Left, "I’ll masterspark you now.");
 		dadd_msg(d, Right, "What? Why do you want to fight?\nDo you even understand what I did here?");
-		dadd_msg(d, Left, "I understand that it's a huge mess!\nCracking the border, a giant mansion, a giant tower...");
+		dadd_msg(d, Left, "I understand that it’s a huge mess!\nCracking the border, a giant mansion, a giant tower…");
 		dadd_msg(d, Left, "At first I was curious. But now\nI just want to finish this! Seriously.");
 	} else {
 		dadd_msg(d, Left, "How did you manage to do all of this?");
 		dadd_msg(d, Right, "A kind person granted me an unknown power,\nand thanks to that I was able to\ncreate this little place for myself.");
 		dadd_msg(d, Left, "Why did you create *this* place for yourself?");
-		dadd_msg(d, Right, "Because it is great for research!\nAnd it's almost done! Just a matter of moments...");
+		dadd_msg(d, Right, "Because it is great for research!\nAnd it’s almost done! Just a matter of moments…");
 		dadd_msg(d, Right, "And the true potential of my power will be\nunleashed!");
-		dadd_msg(d, Left, "That means...\nI'll better finish you off quickly?");
+		dadd_msg(d, Left, "That means…\nI’ll better finish you off quickly?");
 	}
 
 	dadd_msg(d, Right, "Why do you have to be so ignorant?");
-	dadd_msg(d, Right, "...\nSorry, this is more important than you!");
+	dadd_msg(d, Right, "…\nSorry, this is more important than you!");
 
 	dadd_msg(d, BGM, "bgm_stage6boss");
 	return d;

@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Taisei is an open clone of the Touhou series. Touhou is a one-man project of
+Taisei is an open clone of the Tōhō Project series. Tōhō is a one-man project of
 shoot-em-up games set in an isolated world full of Japanese folklore.
 
 ## Installation

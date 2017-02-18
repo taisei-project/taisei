@@ -50,7 +50,7 @@
 
   Another villain threatens to turn the land of dreams into a place of terror.
   The barrier is disrupted. Unknown forces reach for control over the borders
-  themselves, throwing all of Gensokyo into chaos.
+  themselves, throwing all of Gensōkyō into chaos.
 
 ================================================================================
 ■ 2. Characters
@@ -75,7 +75,7 @@
 
     Her eyes flashed in excitement as she read on.
 
-        “[…] large gathering of curious youkai […]”
+        “[…] large gathering of curious yōkai […]”
 
     “Okay, I’ll better check it out!”, she thought, happy about having found a
     better pastime than looking after her depressingly empty shop.
@@ -83,9 +83,9 @@
     “Time to spark some ass!”
 
 
-  ○ Konpaku Youmu
+  ○ Konpaku Yōmu
 
-    Because Youmu is awesome.
+    Because Yōmu is awesome.
 
     A blossomless spring dawn in the Netherworld. Shattering noises cut through
     the gardens of passed souls. Noises not even ghosts can enjoy.
@@ -99,8 +99,8 @@
     “Of course, Yuyuko-sama. I shall slash every little clangor in this world
     until your sleep is left undisturbed!”
 
-    The fact that Hakugyokuro is closely connected to the border makes it
-    sensitive to changes of the border’s structure. Youmu was aware of that,
+    The fact that Hakugyokurō is closely connected to the border makes it
+    sensitive to changes of the border’s structure. Yōmu was aware of that,
     which led her to the decision to investigate this “border breaking” rumor
     first.
 
@@ -134,7 +134,7 @@
   ○ Stage 2 Boss
     Kagiyama Hina
 
-    Hina was the first considerably strong youkai to show up at the place of
+    Hina was the first considerably strong yōkai to show up at the place of
     action, which is why she ended up as the inofficial overseer of the growing
     crowd. Actually, the only thing she wanted was to maintain a bit of law and
     order in her forest.
@@ -144,7 +144,7 @@
   ○ Stage 3 Boss
     Wriggle
 
-    When half-youkai like Wriggle gain a reasonable amount of power, it is only
+    When half-yōkai like Wriggle gain a reasonable amount of power, it is only
     natural for them to become a bit overconfident. Fortunately, that alone
     wasn’t enough for her to become the final boss.
 
@@ -155,10 +155,10 @@
   ○ Stage 4 Boss
     Kurumi
 
-    She is a friend of Elly’s… or at least her former kouhai. Some time ago,
+    She is a friend of Elly’s… or at least her former kōhai. Some time ago,
     Elly dragged her along when she left her mansion to set out on a longer
     journey, and now they have returned. Still trying her best at keeping all
-    the curious youkai (and players) who are entering from the tunnel off
+    the curious yōkai (and players) who are entering from the tunnel off
     Elly’s back, she grew tired of being her bodyguard long ago.
 
     Somehow they’ve really taken a liking to each other.
@@ -184,7 +184,7 @@
 
     She quit her task of guarding that mation in Lotus Land Story and obtained
     a new power from the outside world: the power to manipulate relations
-    (i.e. she can do fancy maths). This enabled her to trick Gensokyo’s border*
+    (i.e. she can do fancy maths). This enabled her to trick Gensōkyō’s border*
     and create herself a new place for research using her new powers.
 
     On that high tower, she wants to research The Theory of Everything.
@@ -199,8 +199,8 @@
     Fun Fact™: Taisei actually uses complex math for projectile positioning.
 
 
-    * It’s not like the border is an absolute barrier for youkai. It is not
-      uncommon for powerful youkai to pass through there without much trouble.
+    * It’s not like the border is an absolute barrier for yōkai. It is not
+      uncommon for powerful yōkai to pass through there without much trouble.
       Some even visit the outside world regularly to hunt humans for food.
       But Elly broke it at some place and made it lead to her own place
       *somewhere inbetween*, which is unusual and shouldn’t be easily possible.

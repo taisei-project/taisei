@@ -10,7 +10,7 @@
 #include "global.h"
 #include "stage.h"
 
-/* Youmu */
+/* Yōmu */
 
 // Haunting Sign
 
