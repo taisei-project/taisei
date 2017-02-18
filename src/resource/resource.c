@@ -22,6 +22,10 @@ void recurse_dir(char *path) {
 		errx(-1, "Can't open directory '%s'", path);
 	struct dirent *dp;
 
+	char *audio_exts[] = { ".wav", ".ogg", ".mp3", ".mod", ".xm", ".s3m",
+		".669", ".it", ".med", ".mid", ".flac", ".aiff", ".voc",
+		NULL };
+
 	while((dp = readdir(dir)) != NULL) {
 		char *buf = malloc(strlen(path) + strlen(dp->d_name)+2);
 		strcpy(buf, path);
@@ -38,31 +42,24 @@ void recurse_dir(char *path) {
 				init_animation(buf);
 			else
 				load_texture(buf);
-		} else
-		// A some kind of 'indian code', but...
-		if( (strcmp(dp->d_name + strlen(dp->d_name)-4, ".wav" ) == 0)
-		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".ogg" ) == 0)
-		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".mp3" ) == 0)
-		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".mod" ) == 0)
-		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".xm"  ) == 0)
-		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".s3m" ) == 0)
-		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".669" ) == 0)
-		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".it"  ) == 0)
-		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".med" ) == 0)
-		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".mid" ) == 0)
-		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".flac") == 0)
-		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".aiff") == 0)
-		 || (strcmp(dp->d_name + strlen(dp->d_name)-4, ".voc" ) == 0))
-		{
-			// BGMs should have "bgm_" prefix!
-			if(strncmp(dp->d_name, "bgm_", 4) == 0)
-				load_bgm(buf);
-			else
-				load_sound(buf);
-		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".sha") == 0) {
-			load_shader_file(buf);
-		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".obj") == 0) {
+		} else if(strendswith(dp->d_name, ".sha")) {
+				load_shader_file(buf);
+		} else if(strendswith(dp->d_name, ".obj")) {
 			load_model(buf);
+		} else {
+			int i;
+			for (i = 0; audio_exts[i] != NULL; i++)
+			{
+				if (strendswith(dp->d_name, audio_exts[i])) {
+					// BGMs should have "bgm_" prefix!
+					if(strncmp(dp->d_name, "bgm_", 4) == 0)
+						load_bgm(buf);
+					else
+						load_sound(buf);
+
+					break;
+				}
+			}
 		}
 
 		free(buf);
