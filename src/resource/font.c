@@ -39,7 +39,7 @@ void init_fonts(void) {
 Texture *load_text(const char *text, TTF_Font *font) {
 	Texture *tex = malloc(sizeof(Texture));
 	SDL_Color clr = {255,255,255};
-	SDL_Surface *surf = TTF_RenderText_Blended(font, text, clr);
+	SDL_Surface *surf = TTF_RenderUTF8_Blended(font, text, clr);
 	assert(surf != NULL);
 
 	load_sdl_surf(surf, tex);
