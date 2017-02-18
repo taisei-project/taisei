@@ -121,7 +121,7 @@ if(TAISEI_WIN32_CONSOLE)
 	add_definitions(-D__WINDOWS_CONSOLE__)
 endif()
 
-include_directories(
+set(INCs
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${SDL2_INCLUDE_DIRS}
 	${SDL2_MIXER_INCLUDE_DIRS}
@@ -129,13 +129,20 @@ include_directories(
 	${ZLIB_INCLUDE_DIRS}
 	${OPENGL_INCLUDE_DIR}
 	${PNG_INCLUDE_DIRS}
-)
+	)
 
-unset(POSIX CACHE)
+set(CMAKE_REQUIRED_INCLUDES ${INCs})
+include_directories(${INCs})
+
 check_symbol_exists(_POSIX_VERSION "unistd.h" POSIX)
+check_symbol_exists(glDrawArraysInstanced "taiseigl.h" HAVE_glDrawArraysInstanced)
 
 if(POSIX)
 	add_definitions(-D__POSIX__)
+endif()
+
+if(NOT HAVE_glDrawArraysInstanced)
+	add_definitions(-DGL_USE_ARB_DRAW_INSTANCED)
 endif()
 
 if (CMAKE_GENERATOR STREQUAL "Ninja" AND

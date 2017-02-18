@@ -82,7 +82,7 @@ char *copy_segment(char *text, char *delim, int *size) {
 }
 
 void load_shader_snippets(char *filename, char *prefix) {
-	int size, vhsize, vfsize, fhsize, ffsize, ssize, prefixlen;
+	int size, vhsize = 0, vfsize = 0, fhsize = 0, ffsize = 0, ssize, prefixlen;
 	char *text, *vhead, *vfoot, *fhead, *ffoot;
 	char *sec, *name, *nend, *send;
 	char *vtext = NULL, *ftext = NULL;

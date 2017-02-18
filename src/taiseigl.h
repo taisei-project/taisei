@@ -83,4 +83,12 @@ PFNGLUNIFORM3FVPROC glUniform3fv;
 PFNGLUNIFORM4FVPROC glUniform4fv;
 #endif
 
+#ifdef GL_USE_ARB_DRAW_INSTANCED
+    #undef glDrawArraysInstanced
+    #undef glDrawElementsInstanced
+
+    #define glDrawArraysInstanced glDrawArraysInstancedARB
+    #define glDrawElementsInstanced glDrawElementsInstancedARB
+#endif
+
 #endif

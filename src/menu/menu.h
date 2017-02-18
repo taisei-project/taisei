@@ -24,7 +24,7 @@ typedef struct MenuData MenuData;
 typedef void (*MenuAction)(MenuData*, void*);
 typedef bool (*MenuCallback)(MenuData*);
 
-typedef struct {
+typedef struct MenuEntry {
 	char *name;
 	MenuAction action;
 	void *arg;
@@ -54,7 +54,7 @@ enum MenuState {
 	MS_Dead
 };
 
-typedef struct MenuData{
+struct MenuData{
 	int flags;
 
 	int cursor;
@@ -75,7 +75,7 @@ typedef struct MenuData{
 	float drawdata[4];
 
 	void *context;
-} MenuData;
+};
 
 MenuEntry *add_menu_entry(MenuData *menu, char *name, MenuAction action, void *arg);
 MenuEntry *add_menu_entry_f(MenuData *menu, char *name, MenuAction action, void *arg, int flags);

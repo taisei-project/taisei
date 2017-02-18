@@ -31,6 +31,11 @@ GLFuncPtr get_proc_address(char *name) {
 }
 #endif
 
+#ifdef GL_USE_ARB_DRAW_INSTANCED
+	#define DRAW_INSTANCED_EXT_NAME "GL_ARB_draw_instanced"
+#else
+	#define DRAW_INSTANCED_EXT_NAME "GL_EXT_draw_instanced"
+#endif
 
 void check_gl_extensions(void) {
 	int l;

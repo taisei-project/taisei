@@ -169,6 +169,9 @@ enum {
 #define strlcat SDL_strlcat
 #define strlcpy SDL_strlcpy
 
+#undef strncat
+#undef strncpy
+
 #define strncat DO_NOT_USE_strncat_USE_strlcat
 #define strncpy DO_NOT_USE_strncpy_USE_strlcpy
 

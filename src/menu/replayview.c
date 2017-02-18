@@ -18,9 +18,6 @@
 #include "video.h"
 #include "common.h"
 
-struct ReplayviewItemContext;
-typedef struct ReplayviewItemContext ReplayviewItemContext;
-
 // Type of MenuData.context
 typedef struct ReplayviewContext {
 	MenuData *submenu;
