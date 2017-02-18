@@ -3,16 +3,14 @@ project(taisei)
 cmake_minimum_required(VERSION 2.6)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${taisei_SOURCE_DIR}/cmake" "${taisei_SOURCE_DIR}/cmake/sdl2")
 
+include(CheckSymbolExists)
+
 if(NOT DEFINED USE_SDL2_PATHS)
     set(USE_SDL2_PATHS BOOL TRUE)
 endif()
 
 if(WIN32)
 	set(RELATIVE TRUE)
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCC)  
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 endif()
 
 add_subdirectory(src)

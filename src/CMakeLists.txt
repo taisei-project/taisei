@@ -1,12 +1,12 @@
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
 
-find_package(SDL2 REQUIRED)
+find_package(PkgConfig REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(SDL2_mixer REQUIRED)
 find_package(PNG REQUIRED)
-find_package(SDL2_ttf REQUIRED)
-find_package(Freetype)
 find_package(ZLIB REQUIRED)
+
+pkg_check_modules(SDL2 sdl2 REQUIRED)
+pkg_check_modules(SDL2_TTF SDL2_ttf REQUIRED)
+pkg_check_modules(SDL2_MIXER SDL2_mixer REQUIRED)
 
 set(SRCs
 	main.c
@@ -98,20 +98,13 @@ if(FATALERRS)
 endif()
 
 set(LIBs ${LIBs}
-	${SDL2_LIBRARY}
+	${SDL2_LIBRARIES}
 	${SDL2_TTF_LIBRARIES}
-	${PNG_LIBRARY}
-	${SDL2_MIXER_LIBRARY}
-	${OPENGL_LIBRARY}
+	${SDL2_MIXER_LIBRARIES}
+	${PNG_LIBRARIES}
+	${OPENGL_LIBRARIES}
+	${ZLIB_LIBRARIES}
 	m)
-
-if(FREETYPE_FOUND)
-	set(LIBs ${LIBs} ${FREETYPE_LIBRARY})
-endif()
-
-if(ZLIB_FOUND)
-	set(LIBs ${LIBs} ${ZLIB_LIBRARY})
-endif()
 
 if(WIN32)
 	set(LIBs ${LIBs} -ldxguid -lwinmm)
@@ -128,7 +121,17 @@ if(TAISEI_WIN32_CONSOLE)
 	add_definitions(-D__WINDOWS_CONSOLE__)
 endif()
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${SDL2_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${PNG_INCLUDE_DIR})
+include_directories(
+	${CMAKE_CURRENT_SOURCE_DIR}
+	${SDL2_INCLUDE_DIRS}
+	${SDL2_MIXER_INCLUDE_DIRS}
+	${SDL2_TTF_INCLUDE_DIRS}
+	${ZLIB_INCLUDE_DIRS}
+	${OPENGL_INCLUDE_DIR}
+	${PNG_INCLUDE_DIRS}
+)
+
+add_definitions(${PNG_DEFINITIONS})
 
 unset(POSIX CACHE)
 check_symbol_exists(_POSIX_VERSION "unistd.h" POSIX)
@@ -144,6 +147,10 @@ if (CMAKE_GENERATOR STREQUAL "Ninja" AND
     # Rationale in https://github.com/ninja-build/ninja/issues/814
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fdiagnostics-color=always")
 endif()
+
+list(SORT SRCs)
+list(REMOVE_DUPLICATES SRCs)
+list(REMOVE_DUPLICATES LIBs)
 
 add_executable(taisei ${SRCs})
 target_link_libraries(taisei ${LIBs})
