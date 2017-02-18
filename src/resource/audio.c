@@ -43,7 +43,8 @@ int init_mixer_if_needed(void) {
 		(formats_mask & MIX_INIT_MP3  ? " MP3": "")
 	);
 
-	if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096) == -1)
+	if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2,
+		config_get_int(CONFIG_MIXER_CHUNKSIZE)) == -1)
 	{
 		warnx("Mix_OpenAudio(): %s.\n", Mix_GetError());
 	}

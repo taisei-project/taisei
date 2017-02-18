@@ -71,6 +71,7 @@
 	CONFIGDEF_INT		(NO_SHADER, 				"disable_shader", 						0) \
 	CONFIGDEF_INT		(NO_AUDIO,					"disable_audio", 						0) \
 	CONFIGDEF_INT		(NO_MUSIC,					"disable_bgm", 							0) \
+	CONFIGDEF_INT		(MIXER_CHUNKSIZE,			"mixer_chunksize",						1024) \
 	CONFIGDEF_FLOAT		(SFX_VOLUME, 				"sfx_volume", 							1.0) \
 	CONFIGDEF_FLOAT		(BGM_VOLUME, 				"bgm_volume", 							1.0) \
 	CONFIGDEF_INT		(NO_STAGEBG, 				"disable_stagebg", 						0) \
