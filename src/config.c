@@ -35,6 +35,14 @@ CONFIGDEFS_EXPORT ConfigEntry configdefs[] = {
 	#undef CONFIGDEF_STRING
 };
 
+typedef struct ConfigEntryList {
+	struct ConfigEntryList *next;
+	struct ConfigEntryList *prev;
+	ConfigEntry entry;
+} ConfigEntryList;
+
+static ConfigEntryList *unknowndefs = NULL;
+
 void config_init(void) {
 	if(config_initialized) {
 		return;
@@ -57,6 +65,8 @@ void config_init(void) {
 	config_initialized = true;
 }
 
+static void config_delete_unknown_entries(void);
+
 void config_uninit(void) {
 	for(ConfigEntry *e = configdefs; e->name; ++e) {
 		if(e->type == CONFIG_TYPE_STRING && e->val.s) {
@@ -64,6 +74,8 @@ void config_uninit(void) {
 			e->val.s = NULL;
 		}
 	}
+
+	config_delete_unknown_entries();
 }
 
 void config_reset(void) {
@@ -91,7 +103,7 @@ ConfigEntry* config_get(ConfigIndex idx) {
 }
 #endif
 
-static ConfigEntry* config_find_entry(char *name) {
+static ConfigEntry* config_find_entry(const char *name) {
 	ConfigEntry *e = configdefs;
 	do if(!strcmp(e->name, name)) return e; while((++e)->name);
 	return NULL;
@@ -221,7 +233,48 @@ void config_set_callback(ConfigIndex idx, ConfigCallback callback) {
 	e->callback = callback;
 }
 
-static FILE* config_open(char *filename, char *mode) {
+static ConfigEntry* config_get_unknown_entry(const char *name) {
+	ConfigEntry *e;
+	ConfigEntryList *l;
+
+	for(l = unknowndefs; l; l = l->next) {
+		if(!strcmp(name, l->entry.name)) {
+			return &l->entry;
+		}
+	}
+
+	l = create_element((void**)&unknowndefs, sizeof(ConfigEntryList));
+	e = &l->entry;
+	memset(e, 0, sizeof(ConfigEntry));
+	stralloc(&e->name, name);
+	e->type = CONFIG_TYPE_STRING;
+
+	return e;
+}
+
+static void config_set_unknown(const char *name, const char *val) {
+	stralloc(&config_get_unknown_entry(name)->val.s, val);
+}
+
+static void config_delete_unknown_entry(void **list, void *lentry) {
+	ConfigEntry *e = &((ConfigEntryList*)lentry)->entry;
+
+	if(e->name) {
+		free(e->name);
+	}
+
+	if(e->val.s) {
+		free(e->val.s);
+	}
+
+	delete_element(list, lentry);
+}
+
+static void config_delete_unknown_entries(void) {
+	delete_all_elements((void**)&unknowndefs, config_delete_unknown_entry);
+}
+
+static FILE* config_open(const char *filename, const char *mode) {
 	char *buf;
 	FILE *out;
 
@@ -241,7 +294,7 @@ static FILE* config_open(char *filename, char *mode) {
 	return out;
 }
 
-void config_save(char *filename) {
+void config_save(const char *filename) {
 	FILE *out = config_open(filename, "w");
 	ConfigEntry *e = configdefs;
 
@@ -268,6 +321,15 @@ void config_save(char *filename) {
 			break;
 	} while((++e)->name);
 
+	if(unknowndefs) {
+		fputs("# The following options were not recognized by taisei\n", out);
+
+		for(ConfigEntryList *l = unknowndefs; l; l = l->next) {
+			e = &l->entry;
+			fprintf(out, "%s = %s\n", e->name, e->val.s);
+		}
+	}
+
 	fclose(out);
 	printf("Saved config '%s'\n", filename);
 }
@@ -277,11 +339,12 @@ void config_save(char *filename) {
 #define INTOF(s)   ((int)strtol(s, NULL, 10))
 #define FLOATOF(s) ((float)strtod(s, NULL))
 
-static void config_set(char *key, char *val) {
+static void config_set(const char *key, const char *val) {
 	ConfigEntry *e = config_find_entry(key);
 
 	if(!e) {
 		warnx("config_set(): unknown setting '%s'", key);
+		config_set_unknown(key, val);
 		return;
 	}
 
@@ -315,7 +378,7 @@ static void config_set(char *key, char *val) {
 #undef INTOF
 #undef FLOATOF
 
-void config_load(char *filename) {
+void config_load(const char *filename) {
 	FILE *in = config_open(filename, "r");
 	int c, i = 0, found, line = 0;
 	char buf[CONFIG_LOAD_BUFSIZE];

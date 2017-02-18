@@ -150,7 +150,7 @@ double approach(double v, double t, double d);
 double psin(double);
 bool strendswith(char *s, char *e);
 char* difficulty_name(Difficulty diff);
-void stralloc(char **dest, char *src);
+void stralloc(char **dest, const char *src);
 bool gamekeypressed(KeyIndex key);
 int getenvint(const char *v);
 

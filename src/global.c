@@ -256,7 +256,7 @@ char* difficulty_name(Difficulty diff) {
 	}
 }
 
-void stralloc(char **dest, char *src) {
+void stralloc(char **dest, const char *src) {
 	if(*dest)
 		free(*dest);
 	*dest = malloc(strlen(src)+1);
