@@ -1,12 +1,12 @@
 
 find_package(PkgConfig REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(PNG REQUIRED)
 find_package(ZLIB REQUIRED)
 
 pkg_check_modules(SDL2 sdl2 REQUIRED)
 pkg_check_modules(SDL2_TTF SDL2_ttf REQUIRED)
 pkg_check_modules(SDL2_MIXER SDL2_mixer REQUIRED)
+pkg_check_modules(PNG libpng REQUIRED)
 
 set(SRCs
 	main.c
@@ -130,8 +130,6 @@ include_directories(
 	${OPENGL_INCLUDE_DIR}
 	${PNG_INCLUDE_DIRS}
 )
-
-add_definitions(${PNG_DEFINITIONS})
 
 unset(POSIX CACHE)
 check_symbol_exists(_POSIX_VERSION "unistd.h" POSIX)
