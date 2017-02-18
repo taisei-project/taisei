@@ -9,7 +9,7 @@ if(NOT DEFINED USE_SDL2_PATHS)
     set(USE_SDL2_PATHS BOOL TRUE)
 endif()
 
-if(WIN32)
+if(WIN32 OR APPLE)
 	set(RELATIVE TRUE)
 endif()
 
