@@ -60,13 +60,18 @@ void video_set_viewport(void) {
 }
 
 void video_update_vsync(void) {
-	if(global.frameskip || !config_get_int(CONFIG_VSYNC)) {
+	if(global.frameskip || config_get_int(CONFIG_VSYNC) == 1) {
 		SDL_GL_SetSwapInterval(0);
 	} else {
-		if(SDL_GL_SetSwapInterval(-1) < 0) {
-			if(SDL_GL_SetSwapInterval(1) < 0) {
-				warnx("Couldn't enable vsync: %s", SDL_GetError());
-			}
+		switch (config_get_int(CONFIG_VSYNC)) {
+			case 2: // adaptive
+				if(SDL_GL_SetSwapInterval(-1) < 0) {
+			case 0: // on
+					if(SDL_GL_SetSwapInterval(1) < 0) {
+						warnx("Couldn't enable vsync: %s", SDL_GetError());
+					}
+				}
+			break;
 		}
 	}
 }

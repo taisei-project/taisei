@@ -305,8 +305,10 @@ void options_sub_video(MenuData *parent, void *arg) {
 	);	bind_onoff(b);
 
 	add_menu_entry(m, "Vertical synchronization", do_nothing,
-		b = bind_option(CONFIG_VSYNC, bind_common_onoffget, bind_common_onoffset)
-	); bind_onoff(b);
+		b = bind_option(CONFIG_VSYNC, bind_common_intget, bind_common_intset)
+	);	bind_addvalue(b, "on");
+		bind_addvalue(b, "off");
+		bind_addvalue(b, "adaptive");
 
 	add_menu_separator(m);
 
