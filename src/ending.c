@@ -29,7 +29,7 @@ void bad_ending_marisa(Ending *e) {
 	add_ending_entry(e, 300, "After her consciousness had faded while she was falling down the tower,\nMarisa found herself waking up in a clearing of the magical forest.", NULL);
 	add_ending_entry(e, 300, "She saw the sun set.", NULL);
 	add_ending_entry(e, 300, "Maybe all of this was just a daydream.", NULL);
-	add_ending_entry(e, 300, "Nevertheless, she won the fight. That’s all that counts… isn’t it?", NULL);
+	add_ending_entry(e, 300, "Nevertheless, she had won the fight. That’s all that counts… isn’t it?", NULL);
 	add_ending_entry(e, 200, "[Bad Ending 1]", NULL);
 }
 
@@ -51,7 +51,7 @@ void good_ending_marisa(Ending *e) {
 
 void good_ending_youmu(Ending *e) {
 	add_ending_entry(e, 300, "When they reached the ground, the tower and everything in that world\nbegan to fade into an endless plain of grass.", NULL);
-	add_ending_entry(e, 550, "“Always consider the trouble you cause to those around you when taking on such great endeavors,”\nYōmu said confidently.\n“That’s the first and foremost rule of Gensōkyō if you don’t want people to come for your head.”", NULL);
+	add_ending_entry(e, 550, "“Always consider the trouble you cause to those around you\nwhen taking on such great endeavors,”\nYōmu said confidently.\n“That’s the first and foremost rule of Gensōkyō\nif you don’t want people to come for your head.”", NULL);
 	add_ending_entry(e, 320, "Elly promised to fix up the the border as soon as possible.", NULL);
 	add_ending_entry(e, 350, "But before the path to this unknown place was sealed forever,\nYōmu decided to travel it once more…", NULL);
 	add_ending_entry(e, 200, "[Good Ending 2]", NULL);
