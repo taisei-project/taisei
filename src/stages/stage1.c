@@ -16,7 +16,7 @@ static Stage3D bgcontext;
 Dialog *stage1_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/cirno");
 
-	dadd_msg(d, Right, "Hey! Who is there?");
+	dadd_msg(d, Right, "Hey! Who’s there?");
 
 	if(global.plr.cha == Marisa)
 		dadd_msg(d, Left, "It’s me!");
@@ -29,11 +29,11 @@ Dialog *stage1_dialog(void) {
 		dadd_msg(d, Left, "You call me weak?");
 		dadd_msg(d, Right, "I do!");
 	} else {
-		dadd_msg(d, Left, "I’m just passing by. Any problem with that?");
+		dadd_msg(d, Left, "I’m just passing by. Got a problem with that?");
 		dadd_msg(d, Right, "Of course! You can’t do that!");
 	}
 
-	dadd_msg(d, Right, "I’ll just freeze you!");
+	dadd_msg(d, Right, "I’ll freeze you where you stand!");
 	dadd_msg(d, BGM, "bgm_stage1boss");
 
 	return d;

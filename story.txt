@@ -3,7 +3,7 @@
 
     Characterization and Story
 
-                                                                      2012-08-10
+                                                                      2017-02-18
 --------------------------------------------------------------------------------
 ================================================================================
 ■ 0. Information
@@ -61,24 +61,25 @@
 
     Because it’s a fan game after all.
 
-    Just at the beginning of spring, Marisa went to check the shop’s shelves,
-    only to notice that her cash box was as empty as the shop itself. Usually,
-    at least a few customers would show up eventually, but not that day.
+    One day, just as spring rolled around, Marisa went to check the shelves,
+    only to notice that her cash box was as empty as the shop itself.
+    It was an unusually quiet day, with hardly any customers around.
 
-    She was really bored.
+    And it was going to be a very boring day at this rate.
 
-    After a quick glance around the store, a brand new issue of the Bunbunmaru
-    Newspaper that was lying on the table caught her eyes. At least that one is
-    never late.
+    As she languidly gazed around the shop, her eyes settled on a brand new
+    issue of the Bunbunmaru Newspaper on the table. “At least that shows up
+    every day,” she thought to herself. Anything to distract her now.
 
         “News Exclusive: Border Broken?!”
 
-    Her eyes flashed in excitement as she read on.
+    The headline did not fail to grab her attention.
 
-        “[…] large gathering of curious yōkai […]”
+        “[…] large crowd of bewildered yōkai […]”
 
-    “Okay, I’ll better check it out!”, she thought, happy about having found a
-    better pastime than looking after her depressingly empty shop.
+    “I am *so* going to check that out!”, she thought, her eyes lighting up
+    in a flash of excitement and determination, happy to have found a better
+    diversion than looking after her depressingly empty shop.
 
     “Time to spark some ass!”
 
@@ -88,10 +89,10 @@
     Because Yōmu is awesome.
 
     A blossomless spring dawn in the Netherworld. Shattering noises cut through
-    the gardens of passed souls. Noises not even ghosts can enjoy.
-    This ending night was in fact nothing like a normal night. The entire
-    Netherworld was awake early, including Yuyuko-sama and of course a certain
-    half-phantom girl.
+    the gardens of passed souls. Noises even ghosts would find disconcerting.
+    This ending night was as unusual as they come. The entire Netherworld was
+    awake early, including Yuyuko-sama and of course a certain half-phantom
+    girl.
 
     “I cannot sleep like this. Can the restless not have at least this kind of
     rest? Something really needs to be done about this, or I will go insane.”
@@ -99,10 +100,9 @@
     “Of course, Yuyuko-sama. I shall slash every little clangor in this world
     until your sleep is left undisturbed!”
 
-    The fact that Hakugyokurō is closely connected to the border makes it
-    sensitive to changes of the border’s structure. Yōmu was aware of that,
-    which led her to the decision to investigate this “border breaking” rumor
-    first.
+    Hakugyokurōs close connection with the border makes it sensitive to
+    changes of the border’s structure. Yōmu, being aware of that, decided to
+    investigate this “border breaking” rumor first.
 
 
 ================================================================================
@@ -125,9 +125,9 @@
   ○ Stage 1 Boss
     Cirno
 
-    Clueless about the course of events, she still jumps into action with full
-    force. Her reckless courage may seem like foolishness to others, but she is
-    bound and determined to bend history in her favor.
+    While clueless about the course of events, she still jumps into action with
+    full force. Her reckless courage may seem like foolishness to others, but
+    she is bound and determined to bend history in her favor.
 
 
 
@@ -136,8 +136,8 @@
 
     Hina was the first considerably strong yōkai to show up at the place of
     action, which is why she ended up as the inofficial overseer of the growing
-    crowd. Actually, the only thing she wanted was to maintain a bit of law and
-    order in her forest.
+    crowd. Actually, the only thing she wanted was to maintain a modicum of law
+    and order in her forest.
 
 
 
@@ -171,8 +171,7 @@
     She slipped through the guard right after the player. No one knows what
     she is after, but there are two things she hates:
 
-    Being interrupted when she is in a hurry and always being suspected for
-    everything.
+    Being interrupted when she is in a hurry and always being under suspicion.
 
     Both happening at the same time has made her lose her temper.
     But that makes her seem even more suspicious, doesn't it?
@@ -182,7 +181,7 @@
   ○ Stage 6 Boss
     Elly
 
-    She quit her task of guarding that mation in Lotus Land Story and obtained
+    She quit her task of guarding that mansion in Lotus Land Story and obtained
     a new power from the outside world: the power to manipulate relations
     (i.e. she can do fancy maths). This enabled her to trick Gensōkyō’s border*
     and create herself a new place for research using her new powers.
@@ -191,7 +190,7 @@
 
     Maybe she didn’t even plan to use it to anyone’s harm. She certainly didn’t
     expect the location she chose for her tower to cause that much trouble.
-    But that’s what scientists are like. Research comes first.
+    But that’s the very nature of scientists. Research comes first.
 
     Her spellcards are based on physical phenomena, turning her experiments
     into powerful weapons.
@@ -199,7 +198,7 @@
     Fun Fact™: Taisei actually uses complex math for projectile positioning.
 
 
-    * It’s not like the border is an absolute barrier for yōkai. It is not
+    * It’s not like the border is an absolute barrier to yōkai. It is not
       uncommon for powerful yōkai to pass through there without much trouble.
       Some even visit the outside world regularly to hunt humans for food.
       But Elly broke it at some place and made it lead to her own place

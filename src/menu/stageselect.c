@@ -31,7 +31,7 @@ void create_stage_menu(MenuData *m) {
 
 void draw_stage_menu(MenuData *m) {
 	draw_options_menu_bg(m);
-	draw_menu_title(m, "Stage Select");
+	draw_menu_title(m, "Select Stage");
 	animate_menu_list(m);
 	draw_menu_list(m, 100, 100, NULL);
 }

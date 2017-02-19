@@ -32,14 +32,14 @@ void create_char_menu(MenuData *m) {
 	create_shottype_menu(m->context);
 
 	add_menu_entry(m, "dialog/marisa|Kirisame Marisa|Black Magician", set_player, (void *)Marisa);
-	add_menu_entry(m, "dialog/youmu|Konpaku Yōmu|Half Ghost Girl", set_player, (void *)Youmu);
+	add_menu_entry(m, "dialog/youmu|Konpaku Yōmu|Half-Phantom Girl", set_player, (void *)Youmu);
 }
 
 void draw_char_menu(MenuData *menu) {
 	MenuData *mod = ((MenuData *)menu->context);
 
 	draw_options_menu_bg(menu);
-	draw_text(AL_Right, 220*(1-menu_fade(menu)), 30, "Player Select", _fonts.mainmenu);
+	draw_text(AL_Right, 220*(1-menu_fade(menu)), 30, "Select Character", _fonts.mainmenu);
 
 	glPushMatrix();
 	glColor4f(0,0,0,0.7);

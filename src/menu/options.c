@@ -434,15 +434,15 @@ void options_sub_gamepad(MenuData *parent, void *arg) {
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, "The UD axis (Vertical)", do_nothing,
+	add_menu_entry(m, "UD axis (Vertical)", do_nothing,
 		b = bind_option(CONFIG_GAMEPAD_AXIS_UD, bind_common_intget, bind_common_intset)
 	);	bind_setvaluerange_fancy(b, GAMEPAD_AXES-1);
 
-	add_menu_entry(m, "The LR axis (Horizontal)", do_nothing,
+	add_menu_entry(m, "LR axis (Horizontal)", do_nothing,
 		b = bind_option(CONFIG_GAMEPAD_AXIS_LR, bind_common_intget, bind_common_intset)
 	);	bind_setvaluerange_fancy(b, GAMEPAD_AXES-1);
 
-	add_menu_entry(m, "Axis mode", do_nothing,
+	add_menu_entry(m, "Axes mode", do_nothing,
 		b = bind_option(CONFIG_GAMEPAD_AXIS_FREE, bind_common_onoffget, bind_common_onoffset)
 	);	bind_addvalue(b, "free");
 		bind_addvalue(b, "restricted");

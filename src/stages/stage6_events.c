@@ -12,16 +12,16 @@
 Dialog *stage6_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/elly");
 
-	dadd_msg(d, Left, "You are responsible?");
+	dadd_msg(d, Left, "You are responsible for all this?");
 	dadd_msg(d, Right, "Yes…");
 
 	if(global.plr.cha == Marisa) {
-		dadd_msg(d, Left, "I’ll masterspark you now.");
+		dadd_msg(d, Left, "I’m going to masterspark you now.");
 		dadd_msg(d, Right, "What? Why do you want to fight?\nDo you even understand what I did here?");
 		dadd_msg(d, Left, "I understand that it’s a huge mess!\nCracking the border, a giant mansion, a giant tower…");
 		dadd_msg(d, Left, "At first I was curious. But now\nI just want to finish this! Seriously.");
 	} else {
-		dadd_msg(d, Left, "How did you manage to do all of this?");
+		dadd_msg(d, Left, "How did you manage to do that?");
 		dadd_msg(d, Right, "A kind person granted me an unknown power,\nand thanks to that I was able to\ncreate this little place for myself.");
 		dadd_msg(d, Left, "Why did you create *this* place for yourself?");
 		dadd_msg(d, Right, "Because it is great for research!\nAnd it’s almost done! Just a matter of moments…");
