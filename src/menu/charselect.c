@@ -7,6 +7,7 @@
 
 #include "menu.h"
 #include "options.h"
+#include "common.h"
 #include "global.h"
 
 void set_player(MenuData *m, void *p) {
@@ -39,7 +40,7 @@ void draw_char_menu(MenuData *menu) {
 	MenuData *mod = ((MenuData *)menu->context);
 
 	draw_options_menu_bg(menu);
-	draw_text(AL_Right, 220*(1-menu_fade(menu)), 30, "Select Character", _fonts.mainmenu);
+	draw_menu_title(menu, "Select Character");
 
 	glPushMatrix();
 	glColor4f(0,0,0,0.7);
