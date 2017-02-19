@@ -121,6 +121,8 @@ endif()
 if(TAISEI_WIN32_CONSOLE)
 	list(REMOVE_ITEM LIBs -mwindows)
 	add_definitions(-D__WINDOWS_CONSOLE__)
+else()
+	add_definitions(-mwindows)
 endif()
 
 set(INCs
