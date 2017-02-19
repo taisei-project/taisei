@@ -31,6 +31,7 @@ void create_stage_menu(MenuData *m) {
 		lastdiff = stages[i].difficulty;
 	}
 
+	add_menu_separator(m);
 	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
 }
 
