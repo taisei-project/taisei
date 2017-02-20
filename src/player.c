@@ -24,8 +24,6 @@ void init_player(Player *plr) {
 	plr->continues = 0;
 
 	plr->points = 0;
-	
-	plr->power = 4; // for extraspell testing
 }
 
 void prepare_player_for_next_stage(Player *plr) {
@@ -234,8 +232,8 @@ void player_realdeath(Player *plr) {
 
 	if(plr->bombs < PLR_START_BOMBS)
 		plr->bombs = PLR_START_BOMBS;
-	
-	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell) {
+
+	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell && global.stage->type != STAGE_SPELL) {
 		if(!global.boss->current->finished) {
 			global.boss->current->endtime = global.frames + ATTACK_END_DELAY_EXTRA;
 			global.boss->current->finished = FINISH_FAIL;

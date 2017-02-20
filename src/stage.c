@@ -47,6 +47,8 @@ StageInfo stages[] = {
 	//
 
 #define S STAGE_SPELL_BIT
+#define E (STAGE_SPELL_BIT | STAGE_EXTRASPELL_BIT)
+
 	// Freeze Sign ~ Perfect Freeze
 	{S|  0, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+0, D_Easy},
 	{S|  1, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+0, D_Normal},
@@ -202,6 +204,54 @@ StageInfo stages[] = {
 	{S| 97, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+5, D_Normal},
 	{S| 98, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+5, D_Hard},
 	{S| 99, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+5, D_Lunatic},
+
+	//
+	//	Extra spells
+	//
+
+	// Frost Sign ~ Crystal Blizzard
+	{E|  0, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+3, D_Easy},
+	{E|  1, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+3, D_Normal},
+	{E|  2, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+3, D_Hard},
+	{E|  3, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+3, D_Lunatic},
+
+	// RESERVED
+	/*
+	{E|  4, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+3, D_Easy},
+	{E|  5, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+3, D_Normal},
+	{E|  6, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+3, D_Hard},
+	{E|  7, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+3, D_Lunatic},
+	*/
+
+	// Firefly Sign ~ Moonlight Wraith
+	{E|  8, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+5, D_Easy},
+	{E|  9, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+5, D_Normal},
+	{E| 10, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+5, D_Hard},
+	{E| 11, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+5, D_Lunatic},
+
+	// RESERVED
+	/*
+	{E| 12, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {1, 1, 1}, stage4_spells+7, D_Easy},
+	{E| 13, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {1, 1, 1}, stage4_spells+7, D_Normal},
+	{E| 14, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {1, 1, 1}, stage4_spells+7, D_Hard},
+	{E| 15, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {1, 1, 1}, stage4_spells+7, D_Lunatic},
+	*/
+
+	// Circuit Sign ~ Overload
+	{E| 16, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+4, D_Easy},
+	{E| 17, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+4, D_Normal},
+	{E| 18, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+4, D_Hard},
+	{E| 19, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+4, D_Lunatic},
+
+	// RESERVED
+	/*
+	{E| 20, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+6, D_Easy},
+	{E| 21, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+6, D_Normal},
+	{E| 22, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+6, D_Hard},
+	{E| 23, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+6, D_Lunatic},
+	*/
+
+#undef E
 #undef S
 
 	{0}
@@ -474,7 +524,7 @@ void draw_hud(void) {
 		glColor4f(1, 1, 1, 1.0);
 	} else {
 		float a = 1, s = 0, fadein = 1, fadeout = 1, fade = 1;
-	
+
 		if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell) {
 			fadein  = min(1, -min(0, global.frames - global.boss->current->starttime) / (float)ATTACK_START_DELAY);
 			fadeout = (!!global.boss->current->finished) * (1 - (global.boss->current->endtime - global.frames) / (float)ATTACK_END_DELAY_EXTRA) / 0.74;
@@ -483,7 +533,7 @@ void draw_hud(void) {
 			s = 1 - fade;
 			a = 0.5 + 0.5 * fade;
 		}
-	
+
 		if(a != 1) glColor4f(a,a,a,a);
 		for(i = 0; i < global.plr.lifes; i++)
 			draw_texture(16*i,167, "star");
@@ -595,8 +645,8 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 
 	draw_items();
 	draw_projectiles(global.projs);
-
 	draw_projectiles(global.particles);
+	draw_lasers(true);
 	draw_enemies(global.enemies);
 	draw_lasers(false);
 
@@ -614,7 +664,7 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 		glPushMatrix();
 		if(global.shake_view) {
 			glTranslatef(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames+3),0);
-			
+
 			if(global.shake_view_fade) {
 				global.shake_view -= global.shake_view_fade;
 				if(global.shake_view <= 0)
@@ -658,7 +708,7 @@ void apply_bg_shaders(ShaderRule *shaderrules) {
 		int t = global.frames - global.boss->current->starttime;
 		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[0].fbo);
 		global.boss->current->draw_rule(global.boss, t);
-		
+
 		if(global.boss->current->type == AT_ExtraSpell)
 			draw_extraspell_bg(global.boss, t);
 

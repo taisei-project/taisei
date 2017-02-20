@@ -148,31 +148,31 @@ void boss_rule_extra(Boss *boss, float alpha) {
 	int cnt = 10 * max(1, alpha);
 	alpha = min(2, alpha);
 	int lt = 1;
-	
+
 	if(alpha == 0) {
 		lt += 2;
 		alpha = 1 * frand();
 	}
-	
+
 	int i; for(i = 0; i < cnt; ++i) {
 		float a = i*2*M_PI/cnt + global.frames / 100.0;
-		
+
 		complex dir = cexp(I*(a+global.frames/50.0));
 		complex pos = boss->pos + dir * (100 + 50 * psin(alpha*global.frames/10.0+2*i)) * alpha;
 		complex vel = dir * 3;
-		
+
 		float r, g, b;
 		float v = max(0, alpha - 1);
 		float psina = psin(a);
-		
+
 		r = 1.0 - 0.5 * psina *    v;
 		g = 0.5 + 0.2 * psina * (1-v);
 		b = 0.5 + 0.5 * psina *    v;
-		
+
 		create_particle2c("flare", pos, rgb(r, g, b), FadeAdd, timeout_linear, 15*lt, vel);
-		
+
 		int d = 5;
-		if(!(global.frames % d)) 
+		if(!(global.frames % d))
 			create_particle3c((frand() < v*0.5 || lt > 1)? "stain" : "boss_shadow", pos, rgb(r, g, b), GrowFadeAdd, timeout_linear, 30*lt, vel * (1 - 2 * !(global.frames % (2*d))), 2.5);
 	}
 }
@@ -187,12 +187,12 @@ void boss_kill_projectiles(void) {
 
 void process_boss(Boss **pboss) {
 	Boss *boss = *pboss;
-	
+
 	if(boss->current) {
 		int time = global.frames - boss->current->starttime;
 		int extra = boss->current->type == AT_ExtraSpell;
 		int over = boss->current->finished && global.frames >= boss->current->endtime;
-		
+
 		// TODO: mark uncaptured normal spells as failed too (for spell bonuses and player stats)
 
 		if(!boss->current->endtime || !extra)
@@ -202,7 +202,7 @@ void process_boss(Boss **pboss) {
 			float base = 0.2;
 			float ampl = 0.2;
 			float s = sin(time / 90.0 + M_PI*1.2);
-			
+
 			if(boss->current->endtime) {
 				float p = (boss->current->endtime - global.frames)/(float)ATTACK_END_DELAY_EXTRA;
 				float a = max((base + ampl * s) * p * 0.5, 5 * pow(1 - p, 3));
@@ -228,7 +228,7 @@ void process_boss(Boss **pboss) {
 			} else {
 				float o = min(0, -5 + time/30.0);
 				float q = (time <= 150? 1 - pow(time/250.0, 2) : min(1, time/60.0));
-				
+
 				boss_rule_extra(boss, max(1-time/300.0, base + ampl * s) * q);
 				if(o) {
 					boss_rule_extra(boss, max(1-time/300.0, base + ampl * s) - o);
@@ -242,17 +242,17 @@ void process_boss(Boss **pboss) {
 				}
 			}
 		}
-		
+
 		if(!boss->current->endtime && (boss->current->type != AT_Move && boss->dmg >= boss->current->dmglimit || time > boss->current->timeout)) {
 			boss->current->endtime = global.frames + extra * ATTACK_END_DELAY_EXTRA;
 			boss->current->finished = FINISH_WIN;
 			boss_kill_projectiles();
 		}
-		
+
 		if(over) {
 			if(extra && boss->current->finished == FINISH_WIN)
 				spawn_items(boss->pos, 0, 0, 0, 1);
-			
+
 			boss->current->rule(boss, EVENT_DEATH);
 			boss->dmg = boss->current->dmglimit + 1;
 			boss->current++;
@@ -304,7 +304,7 @@ void start_attack(Boss *b, Attack *a) {
 			}
 		}
 #if DEBUG
-		else if(a->type == AT_Spellcard) {
+		else if(a->type == AT_Spellcard || a->type == AT_ExtraSpell) {
 			warnx("FIXME: spellcard '%s' is not available in spell practice mode!", a->name);
 		}
 #endif

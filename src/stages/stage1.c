@@ -17,11 +17,13 @@ void cirno_perfect_freeze(Boss*, int);
 void cirno_crystal_rain(Boss*, int);
 void cirno_icicle_fall(Boss*, int);
 void cirno_pfreeze_bg(Boss*, int);
+void cirno_crystal_blizzard(Boss*, int);
 
 AttackInfo stage1_spells[] = {
 	{AT_Spellcard, "Freeze Sign ~ Perfect Freeze", 32, 20000, cirno_perfect_freeze, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
 	{AT_Spellcard, "Freeze Sign ~ Crystal Rain", 28, 28000, cirno_crystal_rain, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
 	{AT_Spellcard, "Doom Sign ~ Icicle Fall", 35, 40000, cirno_icicle_fall, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
+	{AT_ExtraSpell, "Frost Sign ~ Crystal Blizzard", 60, 40000, cirno_crystal_blizzard, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
 };
 
 Dialog *stage1_dialog(void) {
@@ -414,17 +416,13 @@ void cirno_superhardspellcard(Boss *c, int t) {
 
 Boss *create_cirno(void) {
 	Boss* cirno = create_boss("Cirno", "cirno", -230 + 100.0*I);
+
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro_boss, NULL);
-
-	// extra spell test
-	boss_add_attack(cirno, AT_ExtraSpell, "Frost Sign ~ Crystal Blizzard", 60, 40000, cirno_crystal_blizzard, cirno_pfreeze_bg);
-
-	/*
 	boss_add_attack(cirno, AT_Normal, "Iceplosion 0", 20, 20000, cirno_iceplosion0, NULL);
 	boss_add_attack_from_info(cirno, stage1_spells+1, false);
 	boss_add_attack(cirno, AT_Normal, "Iceplosion 1", 20, 20000, cirno_iceplosion1, NULL);
 	boss_add_attack_from_info(cirno, stage1_spells+2, false);
-	*/
+
 	start_attack(cirno, cirno->attacks);
 	return cirno;
 }
@@ -632,8 +630,7 @@ int stage1_tritoss(Enemy *e, int t) {
 
 void stage1_events(void) {
 	TIMER(&global.timer);
-	AT(0)
-		global.timer = 5000;
+
 	/*
 	// graze testing
  	AT(0) {

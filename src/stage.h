@@ -46,8 +46,9 @@ typedef enum {
 typedef void (*StageRule)(void);
 typedef void (*ShaderRule)(int);
 
-// highest bit of uint16_t, WAY higher than the amount of spells in this game can ever possibly be
+// two highest bits of uint16_t, WAY higher than the amount of spells in this game can ever possibly be
 #define STAGE_SPELL_BIT 0x8000
+#define STAGE_EXTRASPELL_BIT 0x4000
 
 typedef enum StageType {
 	STAGE_STORY = 1,
