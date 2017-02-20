@@ -84,6 +84,6 @@ void boss_death(Boss **boss);
 
 #define BOSS_DEFAULT_SPAWN_POS (VIEWPORT_W * 0.5 - I * VIEWPORT_H * 0.5)
 #define BOSS_DEFAULT_GO_POS (VIEWPORT_W * 0.5 + 200.0I)
-#define BOSS_NOMOVE (-3142-39942I)
+#define BOSS_NOMOVE (-3142-39942.0I)
 
 #endif
