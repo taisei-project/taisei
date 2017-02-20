@@ -672,7 +672,6 @@ void stage1_events(void) {
 
 void stage1_start(void) {
 	init_stage3d(&bgcontext);
-	start_bgm("bgm_stage1");
 	add_model(&bgcontext, stage1_bg_draw, stage1_bg_pos);
 	add_model(&bgcontext, stage1_smoke_draw, stage1_smoke_pos);
 
@@ -687,7 +686,7 @@ void stage1_end(void) {
 
 void stage1_loop(void) {
 	ShaderRule list[] = { stage1_fog, NULL };
-	stage_loop(stage1_start, stage1_end, stage1_draw, stage1_events, list, 5200);
+	stage_loop(stage1_start, stage1_end, stage1_draw, stage1_events, list, 5200, "bgm_stage1");
 }
 
 void stage1_spellpractice_events(void) {
@@ -703,5 +702,5 @@ void stage1_spellpractice_events(void) {
 
 void stage1_spellpractice_loop(void) {
 	ShaderRule list[] = { stage1_fog, NULL };
-	stage_loop(stage1_start, stage1_end, stage1_draw, stage1_spellpractice_events, list, 0);
+	stage_loop(stage1_start, stage1_end, stage1_draw, stage1_spellpractice_events, list, 0, "bgm_stage1boss");
 }

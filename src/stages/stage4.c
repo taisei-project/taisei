@@ -192,7 +192,6 @@ void stage4_corridor_draw(Vector pos) {
 void stage4_start(void) {
 	init_stage3d(&bgcontext);
 
-	start_bgm("bgm_stage4");
 	bgcontext.cx[2] = -10000;
 	bgcontext.cv[2] = 19.7;
 	bgcontext.crot[0] = 80;
@@ -232,7 +231,7 @@ void stage4_draw(void) {
 
 void stage4_loop(void) {
 	ShaderRule shaderrules[] = { stage4_fog, NULL };
-	stage_loop(stage4_start, stage4_end, stage4_draw, stage4_events, shaderrules, 5550);
+	stage_loop(stage4_start, stage4_end, stage4_draw, stage4_events, shaderrules, 5550, "bgm_stage4");
 }
 
 void stage4_spellpractice_events(void) {
@@ -248,5 +247,5 @@ void stage4_spellpractice_events(void) {
 
 void stage4_spellpractice_loop(void) {
 	ShaderRule shaderrules[] = { stage4_fog, NULL };
-	stage_loop(stage4_start, stage4_end, stage4_draw, stage4_spellpractice_events, shaderrules, 0);
+	stage_loop(stage4_start, stage4_end, stage4_draw, stage4_spellpractice_events, shaderrules, 0, "bgm_stage4boss");
 }

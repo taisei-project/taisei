@@ -746,7 +746,7 @@ void stage_end(void) {
 	}
 }
 
-void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event, ShaderRule *shaderrules, int endtime) {
+void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event, ShaderRule *shaderrules, int endtime, char *bgmname) {
 	if(global.game_over == GAMEOVER_WIN) {
 		global.game_over = 0;
 	} else if(global.game_over) {
@@ -809,6 +809,7 @@ void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event,
 	player_set_power(&global.plr, power);
 
 	start();
+	start_bgm(bgmname);
 
 	if(info->type == STAGE_SPELL) {
 		endtime = 0;

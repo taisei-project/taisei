@@ -86,7 +86,7 @@ StageProgress* stage_get_progress_from_info(StageInfo *stage, Difficulty diff, b
 void stage_init_array(void);
 void stage_free_array(void);
 
-void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event, ShaderRule *shaderrules, int endtime);
+void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event, ShaderRule *shaderrules, int endtime, char *bgmname);
 
 void apply_bg_shaders(ShaderRule *shaderrules);
 
