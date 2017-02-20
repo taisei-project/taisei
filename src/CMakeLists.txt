@@ -118,13 +118,6 @@ if(WIN32)
 	set(SRCs ${SRCs} taisei.rc)
 endif()
 
-if(TAISEI_WIN32_CONSOLE)
-	list(REMOVE_ITEM LIBs -mwindows)
-	add_definitions(-D__WINDOWS_CONSOLE__)
-else()
-	set(LIBs ${LIBs} -mwindows)
-endif()
-
 set(INCs
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${SDL2_INCLUDE_DIRS}
@@ -161,7 +154,13 @@ list(SORT SRCs)
 list(REMOVE_DUPLICATES SRCs)
 list(REMOVE_DUPLICATES LIBs)
 
-add_executable(taisei ${SRCs})
+if(TAISEI_WIN32_CONSOLE)
+	list(REMOVE_ITEM LIBs -mwindows)
+	add_executable(taisei ${SRCs})
+else()
+	add_executable(taisei WIN32 ${SRCs})
+endif()
+
 target_link_libraries(taisei ${LIBs})
 
 if(RELATIVE)
