@@ -14,11 +14,13 @@ void hina_spell_bg(Boss*, int);
 void hina_amulet(Boss*, int);
 void hina_bad_pick(Boss*, int);
 void hina_wheel(Boss*, int);
+void hina_monty(Boss*, int);
 
 AttackInfo stage2_spells[] = {
 	{AT_Spellcard, "Shard ~ Amulet of Harm", 26, 25000, hina_amulet, hina_spell_bg, BOSS_DEFAULT_GO_POS},
 	{AT_Spellcard, "Lottery Sign ~ Bad Pick", 30, 36000, hina_bad_pick, hina_spell_bg, BOSS_DEFAULT_GO_POS},
 	{AT_Spellcard, "Lottery Sign ~ Wheel of Fortune", 20, 36000, hina_wheel, hina_spell_bg, BOSS_DEFAULT_GO_POS},
+	{AT_ExtraSpell, "Lottery Sign ~ Monty Hall Danmaku", 60, 60000, hina_monty, hina_spell_bg, BOSS_DEFAULT_GO_POS},
 };
 
 Dialog *stage2_dialog(void) {
@@ -382,6 +384,100 @@ void hina_wheel(Boss *h, int time) {
 			create_projectile1c("crystal", h->pos, rgb(log(1+time*1e-3),0,0.2), linear, speed*cexp(I*2*M_PI/5*(i+time/100.0+frand()*time/1700.0)));
 		}
 	}
+}
+
+void hina_monty(Boss *h, int time) {
+	int t = time % 720;
+	TIMER(&t);
+
+	static short boss_pos, bad_pos, good_pos, plr_pos;
+	static int cwidth = VIEWPORT_W / 3.0;
+	static complex targetpos;
+
+	if(time == EVENT_DEATH) {
+		return;
+	}
+
+	if(time < 0) {
+		targetpos = VIEWPORT_W/2.0 + VIEWPORT_H/2.0 * I;
+		return;
+	}
+
+	AT(0) {
+		plr_pos = creal(global.plr.pos) / cwidth;
+		bad_pos = tsrand() % 3;
+		do good_pos = tsrand() % 3; while(good_pos == bad_pos);
+
+		for(int i = 0; i < 2; ++i) {
+			int x = cwidth * (1 + i);
+			create_laserline_ab(x, x + VIEWPORT_H*I, 15, 30, 60, rgb(0.3, 1.0, 1.0));
+			create_laserline_ab(x, x + VIEWPORT_H*I, 20, 240, 600, rgb(1.0, 0.3, 1.0));
+		}
+	}
+
+	AT(120) {
+		do boss_pos = tsrand() % 3; while(boss_pos == plr_pos || boss_pos == good_pos);
+		while(bad_pos == boss_pos || bad_pos == good_pos) bad_pos = tsrand() % 3;
+		targetpos = cwidth * (0.5 + boss_pos) + VIEWPORT_H/2.0*I - 200.0I;
+	}
+
+	FROM_TO(210, 390, 60) {
+		float cnt = (2.0+global.diff) * 4;
+		for(int i = 0; i < cnt; i++) {
+			complex o = VIEWPORT_H*I + cwidth*(bad_pos + i/(double)(cnt - 1));
+			create_projectile2c("ball", o, rgb(0.7, 0, 0), accelerated, 0, 0.005*nfrand() - 0.005I * (1 + (1 * psin(i + global.frames))))->draw = ProjDrawAdd;
+
+		}
+	}
+
+	{
+		const int step = 2;
+		const int cnt = 20;
+		const int burst_dur = (cnt - 1) * step;
+		const int cycle_dur = burst_dur;
+		const int start = 210;
+		const int end = 600;
+		const int ncycles = (end - start) / cycle_dur;
+
+		FROM_TO_INT(start, start + cycle_dur * ncycles - 1, cycle_dur, burst_dur, step) {
+			printf("%i %i %i\n", t, _ni, _i);
+			double p = _ni / (double)(cnt-1);
+			double c = p;
+
+			if(_i % 2) {
+				p = 1.0 - p;
+			}
+
+			if(p > 0.5) {
+				p = 1.0 - p + 0.5;
+			}
+
+			if(p >= 0.5) {
+				p = 1.0 - (1.0 - p) * 1.25;
+			} else {
+				p = p * 1.25;
+			}
+
+			complex o = cwidth * (boss_pos + p + 0.5/(cnt-1)) + (cimag(h->pos)) * I;
+			create_projectile2c("card", o, rgb(c * 0.8, 0, (1 - c) * 0.8), accelerated, -2.5I, 0.05I);
+		}
+	}
+
+	FROM_TO(240, 390, 5) {
+		create_item(VIEWPORT_H*I + cwidth*(good_pos + frand()), -50.0I, _i % 2 ? Point : Power);
+	}
+
+	AT(600) {
+		targetpos = cwidth * (0.5 + (int)(creal(global.plr.pos) / cwidth)) + VIEWPORT_H/2.0*I;
+	}
+
+	FROM_TO(600, 720, 1) {
+		complex opos = h->pos;
+		(_i % 2 ? hina_amulet : hina_wheel)(h, t);
+		h->pos = opos;
+	}
+
+	GO_TO(h, targetpos, 0.04);
 }
 
 void hina_spell_bg(Boss *h, int time) {

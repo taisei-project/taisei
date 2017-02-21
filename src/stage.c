@@ -215,13 +215,11 @@ StageInfo stages[] = {
 	{E|  2, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+3, D_Hard},
 	{E|  3, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+3, D_Lunatic},
 
-	// RESERVED
-	/*
+	// Lottery Sign ~ Monty Hall Danmaku
 	{E|  4, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+3, D_Easy},
 	{E|  5, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+3, D_Normal},
 	{E|  6, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+3, D_Hard},
 	{E|  7, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+3, D_Lunatic},
-	*/
 
 	// Firefly Sign ~ Moonlight Wraith
 	{E|  8, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+5, D_Easy},
