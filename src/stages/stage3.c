@@ -113,7 +113,6 @@ void stage3_fog(int fbonum) {
 void stage3_start(void) {
 	init_stage3d(&bgcontext);
 
-	start_bgm("bgm_stage3");
  	bgcontext.cx[2] = -10;
 	bgcontext.crot[0] = -95;
 	bgcontext.cv[1] = 20;
@@ -281,7 +280,7 @@ void stage3_draw(void) {
 
 void stage3_loop(void) {
 	ShaderRule shaderrules[] = { stage3_fog, stage3_tunnel, NULL };
-	stage_loop(stage3_start, stage3_end, stage3_draw, stage3_events, shaderrules, 5700);
+	stage_loop(stage3_start, stage3_end, stage3_draw, stage3_events, shaderrules, 5700, "bgm_stage3");
 }
 
 void stage3_mid_spellbg(Boss*, int t);
@@ -305,5 +304,5 @@ void stage3_spellpractice_events(void) {
 
 void stage3_spellpractice_loop(void) {
 	ShaderRule shaderrules[] = { stage3_fog, stage3_tunnel, NULL };
-	stage_loop(stage3_start, stage3_end, stage3_draw, stage3_spellpractice_events, shaderrules, 0);
+	stage_loop(stage3_start, stage3_end, stage3_draw, stage3_spellpractice_events, shaderrules, 0, "bgm_stage3boss");
 }

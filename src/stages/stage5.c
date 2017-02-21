@@ -119,7 +119,6 @@ void stage5_start(void) {
 	init_stage3d(&bgcontext);
 	add_model(&bgcontext, stage5_stairs_draw, stage5_stairs_pos);
 
-	start_bgm("bgm_stage5");
 	bgcontext.crot[0] = 60;
 	stagedata.rotshift = 140;
 	stagedata.rad = 2800;
@@ -130,7 +129,7 @@ void stage5_end(void) {
 }
 
 void stage5_loop(void) {
-	stage_loop(stage5_start, stage5_end, stage5_draw, stage5_events, NULL, 5700);
+	stage_loop(stage5_start, stage5_end, stage5_draw, stage5_events, NULL, 5700, "bgm_stage5");
 }
 
 void stage5_spellpractice_events(void) {
@@ -145,5 +144,5 @@ void stage5_spellpractice_events(void) {
 }
 
 void stage5_spellpractice_loop(void) {
-	stage_loop(stage5_start, stage5_end, stage5_draw, stage5_spellpractice_events, NULL, 5700);
+	stage_loop(stage5_start, stage5_end, stage5_draw, stage5_spellpractice_events, NULL, 5700, "bgm_stage5boss");
 }
