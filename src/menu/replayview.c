@@ -40,37 +40,8 @@ void start_replay(MenuData *menu, void *arg) {
 		return;
 	}
 
-	replay_copy(&global.replay, ictx->replay, true);
-	global.replaymode = REPLAY_PLAY;
-
-	if(global.replay.numstages == 1){
-		mctx->pickedstage = 0;
-	}
-
-	for(int i = mctx->pickedstage; i < global.replay.numstages; ++i) {
-		ReplayStage *rstg = global.replay_stage = global.replay.stages+i;
-		StageInfo *gstg = stage_get(rstg->stage);
-
-		if(!gstg) {
-			printf("start_replay(): Invalid stage %d in replay at %i skipped.\n", rstg->stage, i);
-			continue;
-		}
-
-		global.stage = gstg;
-		gstg->loop();
-
-		if(global.game_over == GAMEOVER_ABORT) {
-			break;
-		}
-
-		global.game_over = 0;
-	}
-
+	replay_play(ictx->replay, mctx->pickedstage);
 	start_bgm("bgm_menu");
-	global.game_over = 0;
-	global.replaymode = REPLAY_RECORD;
-	replay_destroy(&global.replay);
-	global.replay_stage = NULL;
 }
 
 MenuData* replayview_sub_stageselect(MenuData *menu, ReplayviewItemContext *ictx) {

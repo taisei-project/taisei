@@ -106,6 +106,27 @@ int main(int argc, char **argv) {
 	}
 #endif
 
+	Replay replay = {0};
+	const char *replay_path = NULL;
+	int replay_stage = 0;
+
+	if(argc >= 2 && !strcmp(argv[1], "replay")) {
+		if(argc < 3) {
+			fprintf(stderr, "Usage: %s replay /path/to/replay.tsr [stage num]\n", argv[0]);
+			return 1;
+		}
+
+		replay_path = argv[2];
+
+		if(argc > 3) {
+			replay_stage = atoi(argv[3]);
+		}
+
+		if(!replay_load(&replay, replay_path, REPLAY_READ_ALL | REPLAY_READ_RAWPATH)) {
+			return 1;
+		}
+	}
+
 	init_paths();
 	init_log();
 
@@ -147,6 +168,12 @@ int main(int argc, char **argv) {
 
 	atexit(taisei_shutdown);
 
+	if(replay_path) {
+		replay_play(&replay, replay_stage);
+		replay_destroy(&replay);
+		return 0;
+	}
+
 #ifdef DEBUG
 	printf("** Compiled with DEBUG flag!\n");
 	if(argc >= 2 && argv[1]) {
@@ -181,7 +208,6 @@ int main(int argc, char **argv) {
 
 		return 0;
 	}
-
 #endif
 
 	MenuData menu;

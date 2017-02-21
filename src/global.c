@@ -232,7 +232,7 @@ void take_screenshot(void)
 	fclose(out);
 }
 
-bool strendswith(char *s, char *e) {
+bool strendswith(const char *s, const char *e) {
 	int ls = strlen(s);
 	int le = strlen(e);
 

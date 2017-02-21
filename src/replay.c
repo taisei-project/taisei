@@ -221,13 +221,11 @@ int replay_write(Replay *rpy, SDL_RWops *file) {
 
 #ifdef REPLAY_LOAD_GARBAGE_TEST
 #define PRINTPROP(prop,fmt) printf("replay_read(): " #prop " = %" # fmt " [%li / %li]\n", prop, SDL_RWtell(file), filesize)
-#define PRINTPROP_NOASSIGN(prop,fmt) PRINTPROP(prop,fmt)
 #else
-#define PRINTPROP(prop,fmt) prop
-#define PRINTPROP_NOASSIGN(prop,fmt)
+#define PRINTPROP(prop,fmt) (void)(prop)
 #endif
 
-#define CHECKPROP(prop,fmt) PRINTPROP(prop,fmt); if(SDL_RWtell(file) == filesize) { warnx("replay_read(): premature EOF"); return false; }
+#define CHECKPROP(prop,fmt) PRINTPROP(prop,fmt); if(filesize > 0 && SDL_RWtell(file) == filesize) { warnx("replay_read(): premature EOF"); return false; }
 
 static void replay_read_string(SDL_RWops *file, char **ptr) {
 	size_t len = SDL_ReadLE16(file);
@@ -238,7 +236,7 @@ static void replay_read_string(SDL_RWops *file, char **ptr) {
 	SDL_RWread(file, *ptr, 1, len);
 }
 
-static int replay_read_meta(Replay *rpy, SDL_RWops *file, size_t filesize) {
+static int replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 	for(uint8_t *u8_p = replay_magic_header; *u8_p; ++u8_p) {
 		if(SDL_ReadU8(file) != *u8_p) {
 			warnx("replay_read(): incorrect header");
@@ -252,7 +250,7 @@ static int replay_read_meta(Replay *rpy, SDL_RWops *file, size_t filesize) {
 	}
 
 	replay_read_string(file, &rpy->playername);
-	PRINTPROP_NOASSIGN(rpy->playername, s);
+	PRINTPROP(rpy->playername, s);
 
 	CHECKPROP(rpy->numstages = SDL_ReadLE16(file), u);
 
@@ -293,7 +291,7 @@ static int replay_read_meta(Replay *rpy, SDL_RWops *file, size_t filesize) {
 	return true;
 }
 
-static int replay_read_events(Replay *rpy, SDL_RWops *file, size_t filesize) {
+static int replay_read_events(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 	for(int i = 0; i < rpy->numstages; ++i) {
 		ReplayStage *stg = &rpy->stages[i];
 
@@ -330,15 +328,14 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 
 	if(filesize < 0) {
 		warnx("replay_read(): SDL_RWsize() failed: %s", SDL_GetError());
-		return false;
+	} else {
+		printf("replay_read(): %li bytes\n", (long int)filesize);
 	}
-
-	printf("replay_read(): %li bytes\n", (long int)filesize);
 
 	if(mode & REPLAY_READ_META) {
 		memset(rpy, 0, sizeof(Replay));
 
-		if(filesize <= sizeof(replay_magic_header) + 2) {
+		if(filesize > 0 && filesize <= sizeof(replay_magic_header) + 2) {
 			warnx("replay_read(): replay file is too short (%i)", filesize);
 			return false;
 		}
@@ -383,9 +380,8 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 
 #undef CHECKPROP
 #undef PRINTPROP
-#undef PRINTPROP_NOASSIGN
 
-char* replay_getpath(char *name, bool ext) {
+char* replay_getpath(const char *name, bool ext) {
 	char *p = (char*)malloc(strlen(get_replays_path()) + strlen(name) + strlen(REPLAY_EXTENSION) + 3);
 
 	if(ext) {
@@ -397,7 +393,7 @@ char* replay_getpath(char *name, bool ext) {
 	return p;
 }
 
-int replay_save(Replay *rpy, char *name) {
+int replay_save(Replay *rpy, const char *name) {
 	char *p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION));
 	printf("replay_save(): saving %s\n", p);
 
@@ -414,12 +410,22 @@ int replay_save(Replay *rpy, char *name) {
 	return result;
 }
 
-int replay_load(Replay *rpy, char *name, ReplayReadMode mode) {
-	char *p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION));
+int replay_load(Replay *rpy, const char *name, ReplayReadMode mode) {
+	char *p;
+
+	if(mode & REPLAY_READ_RAWPATH) {
+		p = (char*)name;
+	} else {
+		p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION));
+	}
+
 	printf("replay_load(): loading %s (mode %i)\n", p, mode);
 
 	SDL_RWops *file = SDL_RWFromFile(p, "rb");
-	free(p);
+
+	if(!(mode & REPLAY_READ_RAWPATH)) {
+		free(p);
+	}
 
 	if(!file) {
 		warnx("replay_save(): SDL_RWFromFile() failed: %s\n", SDL_GetError());
@@ -438,6 +444,7 @@ int replay_load(Replay *rpy, char *name, ReplayReadMode mode) {
 
 void replay_copy(Replay *dst, Replay *src, bool steal_events) {
 	int i;
+
 	replay_destroy(dst);
 	memcpy(dst, src, sizeof(Replay));
 
@@ -538,4 +545,50 @@ int replay_test(void) {
 #else
 	return 0;
 #endif
+}
+
+void replay_play(Replay *rpy, int firststage) {
+	if(rpy != &global.replay) {
+		replay_copy(&global.replay, rpy, true);
+	}
+
+	global.replaymode = REPLAY_PLAY;
+
+	if(global.replay.numstages == 1) {
+		firststage = 0;
+	}
+
+	for(int i = firststage; i < global.replay.numstages; ++i) {
+		ReplayStage *rstg = global.replay_stage = global.replay.stages+i;
+		StageInfo *gstg = stage_get(rstg->stage);
+
+		if(!gstg) {
+			printf("replay_play(): Invalid stage %d in replay at %i skipped.\n", rstg->stage, i);
+			continue;
+		}
+
+		global.stage = gstg;
+		gstg->loop();
+
+		if(global.game_over == GAMEOVER_ABORT) {
+			break;
+		}
+
+		global.game_over = 0;
+	}
+
+	global.game_over = 0;
+	global.replaymode = REPLAY_RECORD;
+	replay_destroy(&global.replay);
+	global.replay_stage = NULL;
+}
+
+void replay_play_path(const char *path, int firststage) {
+	replay_destroy(&global.replay);
+
+	if(!replay_load(&global.replay, path, REPLAY_READ_ALL | REPLAY_READ_RAWPATH)) {
+		return;
+	}
+
+	replay_play(&global.replay, firststage);
 }
