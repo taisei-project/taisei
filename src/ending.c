@@ -17,7 +17,8 @@ void add_ending_entry(Ending *e, int dur, char *msg, char *tex) {
 
 	entry->time = e->duration;
 	e->duration += dur;
-	entry->msg = strdup(msg);
+	entry->msg = NULL;
+	stralloc(&entry->msg, msg);
 
 	if(tex)
 		entry->tex = get_tex(tex);

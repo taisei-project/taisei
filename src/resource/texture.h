@@ -10,7 +10,6 @@
 
 #include <SDL.h>
 #include "taiseigl.h"
-#include <math.h>
 
 typedef struct {
 	float r;

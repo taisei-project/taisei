@@ -8,7 +8,6 @@
 #include "enemy.h"
 
 #include <stdlib.h>
-#include <math.h>
 #include "global.h"
 #include "projectile.h"
 #include "list.h"
@@ -143,8 +142,8 @@ void EnemyFlareShrink(Projectile *p, int t) {
 
 void BigFairy(Enemy *e, int t) {
 	if(!(t % 5)) {
-		complex offset = (frand()-0.5)*30 + (frand()-0.5)*20.0I;
-		create_particle3c("lasercurve", offset, rgb(0,0.2,0.3), EnemyFlareShrink, enemy_flare, 50, (-50.0I-offset)/50.0, add_ref(e));
+		complex offset = (frand()-0.5)*30 + (frand()-0.5)*20.0*I;
+		create_particle3c("lasercurve", offset, rgb(0,0.2,0.3), EnemyFlareShrink, enemy_flare, 50, (-50.0*I-offset)/50.0, add_ref(e));
 	}
 
 	glPushMatrix();

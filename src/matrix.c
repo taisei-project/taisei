@@ -5,9 +5,10 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
-#include "matrix.h"
 #include <string.h>
-#include <math.h>
+
+#include "global.h"
+#include "matrix.h"
 
 Matrix _identity = {
 	{1, 0, 0, 0},

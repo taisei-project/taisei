@@ -1,11 +1,11 @@
 
 find_package(PkgConfig REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(ZLIB REQUIRED)
 
 pkg_check_modules(SDL2 sdl2 REQUIRED)
 pkg_check_modules(SDL2_TTF SDL2_ttf REQUIRED)
 pkg_check_modules(SDL2_MIXER SDL2_mixer REQUIRED)
+pkg_check_modules(ZLIB zlib REQUIRED)
 pkg_check_modules(PNG libpng REQUIRED)
 
 set(SRCs
@@ -84,7 +84,7 @@ if(WIN32)
 	set(SRCs ${SRCs} taisei_err.c)
 endif()
 
-add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall -Wno-parentheses -std=gnu99)
+add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall -Wno-parentheses -Wtype-limits -std=c11 -pedantic)
 
 if(RELATIVE)
     add_definitions(-DRELATIVE)

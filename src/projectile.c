@@ -8,7 +8,6 @@
 #include "projectile.h"
 
 #include <stdlib.h>
-#include <math.h>
 #include "global.h"
 #include "list.h"
 #include "vbo.h"
@@ -62,8 +61,7 @@ void _delete_projectile(void **projs, void *proj) {
 	Projectile *p = proj;
 	p->rule(p, EVENT_DEATH);
 
-	if(p->clr)
-		free(p->clr);
+	free(p->clr);
 	del_ref(proj);
 	delete_element(projs, proj);
 }
@@ -422,6 +420,6 @@ void petal_explosion(int n, complex pos) {
 	int i;
 	for(i = 0; i < n; i++) {
 		tsrand_fill(8);
-		create_particle4c("petal", pos, rgba(0.6,1-afrand(0)*0.4,0.5,1-0.5*afrand(1)), Petal, asymptotic, (3+5*afrand(2))*cexp(I*M_PI*2*afrand(3)), 5, afrand(4) + afrand(5)*I, afrand(6) + 360.0I*afrand(7));
+		create_particle4c("petal", pos, rgba(0.6,1-afrand(0)*0.4,0.5,1-0.5*afrand(1)), Petal, asymptotic, (3+5*afrand(2))*cexp(I*M_PI*2*afrand(3)), 5, afrand(4) + afrand(5)*I, afrand(6) + 360.0*I*afrand(7));
 	}
 }

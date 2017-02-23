@@ -156,8 +156,7 @@ void _delete_laser(void **lasers, void *laser) {
 	if(l->lrule)
 		l->lrule(l, EVENT_DEATH);
 
-	if(l->color)
-		free(l->color);
+	free(l->color);
 	del_ref(laser);
 	delete_element(lasers, laser);
 }

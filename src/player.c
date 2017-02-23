@@ -143,7 +143,7 @@ void player_logic(Player* plr) {
 	process_enemies(&plr->slaves);
 	if(plr->deathtime < -1) {
 		plr->deathtime++;
-		plr->pos -= 0.7I;
+		plr->pos -= 0.7*I;
 		return;
 	}
 
@@ -221,10 +221,10 @@ void player_realdeath(Player *plr) {
 
 	for(int i = 0; i < drop; ++i) {
 		double ofs = arc * (i/((double)drop - 1));
-		create_item(plr->pos, (12+3*frand()) * (cexp(I*(1.5*M_PI - 0.5*arc + ofs)) - 1.0I), Power);
+		create_item(plr->pos, (12+3*frand()) * (cexp(I*(1.5*M_PI - 0.5*arc + ofs)) - 1.0*I), Power);
 	}
 
-	plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I+30.0I;
+	plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I+30.0*I;
 	plr->recovery = -(global.frames + DEATH_DELAY + 150);
 
 	if(plr->bombs < PLR_START_BOMBS)
@@ -386,8 +386,8 @@ void player_applymovement(Player *plr) {
 
 	complex direction = 0;
 
-	if(up)		direction -= 1.0I;
-	if(down)	direction += 1.0I;
+	if(up)		direction -= 1.0*I;
+	if(down)	direction += 1.0*I;
 	if(left)	direction -= 1;
 	if(right)	direction += 1;
 

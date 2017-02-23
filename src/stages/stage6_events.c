@@ -68,7 +68,7 @@ int stage6_hacker(Enemy *e, int t) {
 		int i;
 		for(i = 0; i < 6; i++) {
 			complex n = sin(_i*0.2)*cexp(I*0.3*(i/2-1))*(1-2*(i&1));
-			create_projectile1c("wave", e->pos + 120*n, rgb(1.0, 0.2-0.01*_i, 0.0), linear, (0.25-0.5*frand())*global.diff+creal(n)+2.0I);
+			create_projectile1c("wave", e->pos + 120*n, rgb(1.0, 0.2-0.01*_i, 0.0), linear, (0.25-0.5*frand())*global.diff+creal(n)+2.0*I);
 		}
 	}
 
@@ -91,7 +91,7 @@ int stage6_side(Enemy *e, int t) {
 		int i;
 		int c = 15+10*global.diff;
 		for(i = 0; i < c; i++) {
-			create_projectile2c("rice", e->pos+5*(i/2)*e->args[1], rgb(0, 0.5, 1), accelerated, (1.0I-2.0I*(i&1))*(0.7+0.2*global.diff), 0.001*(i/2)*e->args[1]);
+			create_projectile2c("rice", e->pos+5*(i/2)*e->args[1], rgb(0, 0.5, 1), accelerated, (1.0*I-2.0*I*(i&1))*(0.7+0.2*global.diff), 0.001*(i/2)*e->args[1]);
 		}
 	}
 
@@ -157,10 +157,10 @@ int scythe_mid(Enemy *e, int t) {
 		return ACTION_DESTROY;
 	}
 
-	e->pos += (6-global.diff-0.005I*t)*e->args[0];
+	e->pos += (6-global.diff-0.005*I*t)*e->args[0];
 
 	n = cexp(cimag(e->args[1])*I*t);
-	create_projectile2c("bigball", e->pos + 80*n, rgb(carg(n), 1-carg(n), 1/carg(n)), wait_proj, global.diff*cexp(0.6I)*n, 100)->draw=ProjDrawAdd;
+	create_projectile2c("bigball", e->pos + 80*n, rgb(carg(n), 1-carg(n), 1/carg(n)), wait_proj, global.diff*cexp(0.6*I)*n, 100)->draw=ProjDrawAdd;
 
 	if(global.diff > D_Normal && t&1)
 		create_projectile2c("ball", e->pos + 80*n, rgb(0, 0.2, 0.5), accelerated, n, 0.01*global.diff*cexp(I*carg(global.plr.pos - e->pos - 80*n)))->draw=ProjDrawAdd;
@@ -174,7 +174,7 @@ void Scythe(Enemy *e, int t) {
 	p->type = Particle;
 	p->angle = creal(e->args[1]);
 
-	create_particle2c("flare", e->pos+100*creal(e->args[2])*frand()*cexp(2.0I*M_PI*frand()), rgb(1,1,0.6), GrowFadeAdd, timeout_linear, 60, -I+1);
+	create_particle2c("flare", e->pos+100*creal(e->args[2])*frand()*cexp(2.0*I*M_PI*frand()), rgb(1,1,0.6), GrowFadeAdd, timeout_linear, 60, -I+1);
 }
 
 int scythe_intro(Enemy *e, int t) {
@@ -185,11 +185,11 @@ int scythe_intro(Enemy *e, int t) {
 
 	TIMER(&t);
 
-	GO_TO(e,VIEWPORT_W/2+200.0I, 0.05);
+	GO_TO(e,VIEWPORT_W/2+200.0*I, 0.05);
 
 
 	FROM_TO(60, 119, 1) {
-		e->args[1] -= 0.00333333I;
+		e->args[1] -= 0.00333333*I;
 		e->args[2] -= 0.007;
 	}
 
@@ -204,7 +204,7 @@ void elly_intro(Boss *b, int t) {
 		GO_TO(b, BOSS_DEFAULT_GO_POS, 0.1);
 
 		AT(0) {
-			create_enemy3c(VIEWPORT_W+200.0I, ENEMY_IMMUNE, Scythe, scythe_intro, 0, 1+0.2I, 1);
+			create_enemy3c(VIEWPORT_W+200.0*I, ENEMY_IMMUNE, Scythe, scythe_intro, 0, 1+0.2*I, 1);
 		}
 
 		return;
@@ -213,7 +213,7 @@ void elly_intro(Boss *b, int t) {
 	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.01);
 
 	AT(200) {
-		create_enemy3c(VIEWPORT_W+200+200.0I, ENEMY_IMMUNE, Scythe, scythe_intro, 0, 1+0.2I, 1);
+		create_enemy3c(VIEWPORT_W+200+200.0*I, ENEMY_IMMUNE, Scythe, scythe_intro, 0, 1+0.2*I, 1);
 	}
 
 	AT(300)
@@ -228,14 +228,14 @@ int scythe_infinity(Enemy *e, int t) {
 
 	TIMER(&t);
 	FROM_TO(0, 40, 1) {
-		GO_TO(e, VIEWPORT_W/2+200.0I, 0.01);
+		GO_TO(e, VIEWPORT_W/2+200.0*I, 0.01);
 		e->args[2] = min(0.8, creal(e->args[2])+0.0003*t*t);
 		e->args[1] = creal(e->args[1]) + I*min(0.2, cimag(e->args[1])+0.0001*t*t);
 	}
 
 	FROM_TO(40, 3000, 1) {
 		float w = min(0.15, 0.0001*(t-40));
-		e->pos = VIEWPORT_W/2 + 200.0I + 200*cos(w*(t-40)+M_PI/2.0) + I*80*sin(creal(e->args[0])*w*(t-40));
+		e->pos = VIEWPORT_W/2 + 200.0*I + 200*cos(w*(t-40)+M_PI/2.0) + I*80*sin(creal(e->args[0])*w*(t-40));
 
 		create_projectile2c("ball", e->pos+80*cexp(I*creal(e->args[1])), rgb(cos(creal(e->args[1])), sin(creal(e->args[1])), cos(creal(e->args[1])+2.1)), asymptotic, (1+0.2*global.diff)*cexp(I*creal(e->args[1])), 3);
 	}
@@ -286,10 +286,10 @@ int scythe_newton(Enemy *e, int t) {
 	TIMER(&t);
 
 	FROM_TO(0, 100, 1)
-		e->pos -= 0.2I*_i;
+		e->pos -= 0.2*I*_i;
 
 	AT(100) {
-		e->args[1] = 0.2I;
+		e->args[1] = 0.2*I;
 // 		e->args[2] = 1;
 	}
 
@@ -357,7 +357,7 @@ void elly_frequency2(Boss *b, int t) {
 	}
 
 	FROM_TO(0, 2000, 3-global.diff/2) {
-		complex n = sin(t*0.12*global.diff)*cexp(t*0.02I*global.diff);
+		complex n = sin(t*0.12*global.diff)*cexp(t*0.02*I*global.diff);
 		create_projectile2c("plainball", b->pos+80*n, rgb(0,0,0.7), asymptotic, 2*n/cabs(n), 3);
 	}
 }
@@ -383,7 +383,7 @@ void maxwell_laser_logic(Laser *l, int t) {
 	}
 
 	FROM_TO(00, 10000, 1) {
-		l->args[2] -= 0.1I+0.02I*global.diff-0.05I*(global.diff == D_Lunatic);
+		l->args[2] -= 0.1*I+0.02*I*global.diff-0.05*I*(global.diff == D_Lunatic);
 	}
 }
 
@@ -391,7 +391,7 @@ void elly_maxwell(Boss *b, int t) {
 	TIMER(&t);
 
 	FROM_TO(40, 159, 5)
-		create_laser(b->pos, 200, 10000, rgb(0,0.2,1), maxwell_laser, maxwell_laser_logic, cexp(2.0I*M_PI/24*_i)*VIEWPORT_H*0.005, 200+15.0I, 0, 0);
+		create_laser(b->pos, 200, 10000, rgb(0,0.2,1), maxwell_laser, maxwell_laser_logic, cexp(2.0*I*M_PI/24*_i)*VIEWPORT_H*0.005, 200+15.0*I, 0, 0);
 
 }
 
@@ -415,10 +415,10 @@ void Baryon(Enemy *e, int t) {
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
 
-// 	create_particle2c("flare", e->pos+40*frand()*cexp(2.0I*M_PI*frand()), rgb(0, 1, 1), GrowFadeAdd, timeout_linear, 50, 1-I);
+// 	create_particle2c("flare", e->pos+40*frand()*cexp(2.0*I*M_PI*frand()), rgb(0, 1, 1), GrowFadeAdd, timeout_linear, 50, 1-I);
 
 	if(!(t % 10))
-		create_particle1c("stain", e->pos+10*frand()*cexp(2.0I*M_PI*frand()), rgb(0, 1, 0.7), FadeAdd, timeout, 50)->angle = 2*M_PI*frand();
+		create_particle1c("stain", e->pos+10*frand()*cexp(2.0*I*M_PI*frand()), rgb(0, 1, 0.7), FadeAdd, timeout, 50)->angle = 2*M_PI*frand();
 }
 
 void BaryonCenter(Enemy *e, int t) {
@@ -454,8 +454,8 @@ void BaryonCenter(Enemy *e, int t) {
 
 	}
 	glDisable(GL_TEXTURE_2D);
-	create_particle2c("flare", e->pos+40*frand()*cexp(2.0I*M_PI*frand()), rgb(0, 1, 1), GrowFadeAdd, timeout_linear, 50, 1-I);
-	create_particle1c("stain", e->pos+40*frand()*cexp(2.0I*M_PI*frand()), rgb(0, 1, 0.2), FadeAdd, timeout, 50)->angle = 2*M_PI*frand();
+	create_particle2c("flare", e->pos+40*frand()*cexp(2.0*I*M_PI*frand()), rgb(0, 1, 1), GrowFadeAdd, timeout_linear, 50, 1-I);
+	create_particle1c("stain", e->pos+40*frand()*cexp(2.0*I*M_PI*frand()), rgb(0, 1, 0.2), FadeAdd, timeout, 50)->angle = 2*M_PI*frand();
 }
 
 int baryon_unfold(Enemy *e, int t) {
@@ -487,7 +487,7 @@ int scythe_explode(Enemy *e, int t) {
 	}
 
 	if(t < 50) {
-		e->args[1] += 0.001I*t;
+		e->args[1] += 0.001*I*t;
 		e->args[2] += 0.0015*t;
 	}
 
@@ -523,7 +523,7 @@ void elly_unbound(Boss *b, int t) {
 		int i;
 		Enemy *e, *last = NULL, *first, *middle;
 		for(i = 0; i < 6; i++) {
-			e = create_enemy3c(b->pos, ENEMY_IMMUNE, Baryon, baryon_unfold, 1.5*cexp(2.0I*M_PI/6*i), i != 0 ? add_ref(last) : 0, i);
+			e = create_enemy3c(b->pos, ENEMY_IMMUNE, Baryon, baryon_unfold, 1.5*cexp(2.0*I*M_PI/6*i), i != 0 ? add_ref(last) : 0, i);
 			if(i == 0)
 				first = e;
 			else if(i == 3)
@@ -572,9 +572,9 @@ int baryon_eigenstate(Enemy *e, int t) {
 		int c = 9;
 
 		for(i = 0; i < c; i++) {
-			complex n = cexp(2.0I*_i+I*M_PI/2+I*creal(e->args[2]));
+			complex n = cexp(2.0*I*_i+I*M_PI/2+I*creal(e->args[2]));
 			for(j = 0; j < 3; j++)
-				create_projectile4c("plainball", e->pos + 60*cexp(2.0I*M_PI/c*i), rgb(j == 0, j == 1, j == 2), eigenstate_proj, 1*n, 1, 60, 0.6I*n*(j-1)*cexp(0.4I-0.1I*global.diff))->draw = ProjDrawAdd;
+				create_projectile4c("plainball", e->pos + 60*cexp(2.0*I*M_PI/c*i), rgb(j == 0, j == 1, j == 2), eigenstate_proj, 1*n, 1, 60, 0.6*I*n*(j-1)*cexp(0.4*I-0.1*I*global.diff))->draw = ProjDrawAdd;
 
 		}
 	}
@@ -602,7 +602,7 @@ int baryon_nattack(Enemy *e, int t) {
 
 	TIMER(&t);
 
-	e->pos = global.boss->pos + (e->pos-global.boss->pos)*cexp(0.006I);
+	e->pos = global.boss->pos + (e->pos-global.boss->pos)*cexp(0.006*I);
 
 	FROM_TO(30, 10000, 7-global.diff) {
 		float a = 0.2*_i + creal(e->args[2]) + 0.006*t;
@@ -622,15 +622,15 @@ void elly_baryonattack(Boss *b, int t) {
 
 int baryon_ricci(Enemy *e, int t) {
 	if(!creal(e->args[2]) || creal(e->args[2]) > 2) {
-		GO_TO(e, creal(global.boss->pos) + creal(e->pos0-global.boss->pos)*1.5+40.0I, 0.02);
+		GO_TO(e, creal(global.boss->pos) + creal(e->pos0-global.boss->pos)*1.5+40.0*I, 0.02);
 	} else {
 		TIMER(&t);
 		FROM_TO(200, 400, 1) {
-			GO_TO(e, creal(global.boss->pos) + creal(e->pos0-global.boss->pos)*1.8 + 230.0I, 0.05);
+			GO_TO(e, creal(global.boss->pos) + creal(e->pos0-global.boss->pos)*1.8 + 230.0*I, 0.05);
 		}
 
 		FROM_TO_INT(300, 10000, 100, 200, 1)
-			GO_TO(e, creal(global.boss->pos) + creal(e->pos0-global.boss->pos)*1.8 + 230.0I + 200.0I*(_i&1), 0.02);
+			GO_TO(e, creal(global.boss->pos) + creal(e->pos0-global.boss->pos)*1.8 + 230.0*I + 200.0*I*(_i&1), 0.02);
 	}
 
 	return 1;
@@ -670,7 +670,7 @@ void elly_ricci(Boss *b, int t) {
 		int i;
 		int c = 6 + global.diff;
 		for(i = 0; i < c*2; i++)
-			create_projectile2c("plainball", fmod(VIEWPORT_W/(float)c*(i/2),VIEWPORT_W)+VIEWPORT_H*I*(i&1), rgb(0.3+0.7*(i&1), 1-0.7*(i&1), 0), ricci_proj, I-2.0I*(i&1), 200-t)->draw = ProjDrawAdd;
+			create_projectile2c("plainball", fmod(VIEWPORT_W/(float)c*(i/2),VIEWPORT_W)+VIEWPORT_H*I*(i&1), rgb(0.3+0.7*(i&1), 1-0.7*(i&1), 0), ricci_proj, I-2.0*I*(i&1), 200-t)->draw = ProjDrawAdd;
 
 	}
 }
@@ -718,10 +718,10 @@ int baryon_lhc(Enemy *e, int t) {
 	TIMER(&t1);
 
 	AT(1) {
-		e->args[3] = 100.0I+400.0I*((t/400)&1);
+		e->args[3] = 100.0*I+400.0*I*((t/400)&1);
 
 		if(g == 2 || g == 5) {
-			create_laser(e->pos, 200, 300, rgb(0.1+0.9*(g>3),0,1-0.9*(g>3)), las_linear, lhc_laser_logic, (1-2*(g>3))*VIEWPORT_W*0.005, 200+30.0I, add_ref(e), 0);
+			create_laser(e->pos, 200, 300, rgb(0.1+0.9*(g>3),0,1-0.9*(g>3)), las_linear, lhc_laser_logic, (1-2*(g>3))*VIEWPORT_W*0.005, 200+30.0*I, add_ref(e), 0);
 		}
 	}
 
@@ -741,21 +741,21 @@ void elly_lhc(Boss *b, int t) {
 	FROM_TO(280, 10000, 400) {
 		int i;
 		int c = 30+10*global.diff;
-		complex pos = VIEWPORT_W/2 + 100.0I+400.0I*((t/400)&1);
+		complex pos = VIEWPORT_W/2 + 100.0*I+400.0*I*((t/400)&1);
 
 		global.shake_view = 16;
 
 		for(i = 0; i < c; i++) {
-			complex v = 3*cexp(2.0I*M_PI*frand());
+			complex v = 3*cexp(2.0*I*M_PI*frand());
 			tsrand_fill(4);
 			create_lasercurve2c(pos, 70+20*global.diff, 300, rgb(1, 1, 1), las_accel, v, 0.02*frand()*copysign(1,creal(v)))->width=15;
-			create_projectile1c("soul", pos, rgb(0.4, 0, 1.0), linear, (1+2.5*afrand(0))*cexp(2.0I*M_PI*afrand(1)))->draw = ProjDrawAdd;
-			create_projectile1c("bigball", pos, rgb(1, 0, 0.4), linear, (1+2.5*afrand(2))*cexp(2.0I*M_PI*afrand(3)))->draw = ProjDrawAdd;
+			create_projectile1c("soul", pos, rgb(0.4, 0, 1.0), linear, (1+2.5*afrand(0))*cexp(2.0*I*M_PI*afrand(1)))->draw = ProjDrawAdd;
+			create_projectile1c("bigball", pos, rgb(1, 0, 0.4), linear, (1+2.5*afrand(2))*cexp(2.0*I*M_PI*afrand(3)))->draw = ProjDrawAdd;
 		}
 	}
 
 	FROM_TO(0, 100000,7-global.diff)
-		create_projectile2c("ball", b->pos, rgb(0, 0.4,1), asymptotic, cexp(2.0I*_i), 3)->draw = ProjDrawAdd;
+		create_projectile2c("ball", b->pos, rgb(0, 0.4,1), asymptotic, cexp(2.0*I*_i), 3)->draw = ProjDrawAdd;
 
 	FROM_TO(300, 10000, 400) {
 		global.shake_view = 0;
@@ -791,13 +791,13 @@ void elly_baryon_explode(Boss *b, int t) {
 
 	FROM_TO(0, 200, 1) {
 		tsrand_fill(2);
-		petal_explosion(1, b->pos + 100*afrand(0)*cexp(2.0I*M_PI*afrand(1)));
+		petal_explosion(1, b->pos + 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1)));
 	}
 
 	AT(200) {
 		tsrand_fill(2);
 		global.shake_view = 10;
-		petal_explosion(100, b->pos + 100*afrand(0)*cexp(2.0I*M_PI*afrand(1)));
+		petal_explosion(100, b->pos + 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1)));
 		killall(global.enemies);
 	}
 
@@ -873,13 +873,13 @@ int scythe_theory(Enemy *e, int t) {
 		return ACTION_DESTROY;
 	}
 
-	e->pos += (3-0.01I*t)*e->args[0];
+	e->pos += (3-0.01*I*t)*e->args[0];
 
 	n = cexp(cimag(e->args[1])*I*t);
 
 	TIMER(&t);
 	FROM_TO(0, 300, 4)
-		create_projectile2c("ball", e->pos + 80*n, rgb(carg(n), 1-carg(n), 1/carg(n)), wait_proj, (0.6+0.3*global.diff)*cexp(0.6I)*n, 100)->draw=ProjDrawAdd;
+		create_projectile2c("ball", e->pos + 80*n, rgb(carg(n), 1-carg(n), 1/carg(n)), wait_proj, (0.6+0.3*global.diff)*cexp(0.6*I)*n, 100)->draw=ProjDrawAdd;
 
 	scythe_common(e, t);
 	return 1;
@@ -892,7 +892,7 @@ void elly_theory(Boss *b, int time) {
 	if(time == EVENT_BIRTH)
 		global.shake_view = 10;
 	if(time < 20)
-		GO_TO(b, VIEWPORT_W/2+300.0I, 0.05);
+		GO_TO(b, VIEWPORT_W/2+300.0*I, 0.05);
 	if(time == 0)
 		global.shake_view = 0;
 
@@ -901,28 +901,28 @@ void elly_theory(Boss *b, int time) {
 	FROM_TO(0, 500, 10)
 		for(i = 0; i < 3; i++) {
 			tsrand_fill(5);
-			create_particle2c("stain", b->pos+80*afrand(0)*cexp(2.0I*M_PI*afrand(1)), rgba(1-afrand(2),0.8,0.5,1), FadeAdd, timeout, 60, 1+3*afrand(3))->angle = 2*M_PI*afrand(4);
+			create_particle2c("stain", b->pos+80*afrand(0)*cexp(2.0*I*M_PI*afrand(1)), rgba(1-afrand(2),0.8,0.5,1), FadeAdd, timeout, 60, 1+3*afrand(3))->angle = 2*M_PI*afrand(4);
 		}
 
 	FROM_TO(20, 70, 30-global.diff) {
 		int c = 20+2*global.diff;
 		for(i = 0; i < c; i++) {
-			complex n = cexp(2.0I*M_PI/c*i);
-			create_projectile2c("soul", b->pos, rgb(0.2, 0, 0.9), accelerated, n, (0.01+0.002*global.diff)*n+0.01I*n*(1-2*(_i&1)))->draw = ProjDrawAdd;
+			complex n = cexp(2.0*I*M_PI/c*i);
+			create_projectile2c("soul", b->pos, rgb(0.2, 0, 0.9), accelerated, n, (0.01+0.002*global.diff)*n+0.01*I*n*(1-2*(_i&1)))->draw = ProjDrawAdd;
 		}
 	}
 
 	FROM_TO(120, 240, 10-global.diff) {
 		int x, y;
 		int w = 2;
-		complex n = cexp(0.7I*_i+0.2I*frand());
+		complex n = cexp(0.7*I*_i+0.2*I*frand());
 		for(x = -w; x <= w; x++)
 			for(y = -w; y <= w; y++)
 				create_projectile2c("ball", b->pos + (15+5*global.diff)*(x+I*y)*n, rgb(0, 0.5, 1), accelerated, 2*n, 0.026*n);
 	}
 
 	FROM_TO(250, 299, 10) {
-		create_enemy3c(b->pos, ENEMY_IMMUNE, Scythe, scythe_theory, cexp(2.0I*M_PI/5*_i+I*(time/500)), 0.2I, 1);
+		create_enemy3c(b->pos, ENEMY_IMMUNE, Scythe, scythe_theory, cexp(2.0*I*M_PI/5*_i+I*(time/500)), 0.2*I, 1);
 	}
 
 }
@@ -946,7 +946,7 @@ void elly_spellbg_modern(Boss *b, int t) {
 }
 
 Boss *create_elly(void) {
-	Boss *b = create_boss("Elly", "elly", -200.0I);
+	Boss *b = create_boss("Elly", "elly", -200.0*I);
 
 	boss_add_attack(b, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
 	boss_add_attack(b, AT_Normal, "Frequency", 30, 26000, elly_frequency, NULL);
@@ -973,24 +973,24 @@ void stage6_events(void) {
 // 		global.timer = 3800;
 
 	AT(100)
-		create_enemy1c(VIEWPORT_W/2, 6000, BigFairy, stage6_hacker, 2.0I);
+		create_enemy1c(VIEWPORT_W/2, 6000, BigFairy, stage6_hacker, 2.0*I);
 
 	FROM_TO(500, 700, 10)
-		create_enemy2c(VIEWPORT_W*(_i&1), 2000, Fairy, stage6_side, 2.0I+0.1*(1-2*(_i&1)),1-2*(_i&1));
+		create_enemy2c(VIEWPORT_W*(_i&1), 2000, Fairy, stage6_side, 2.0*I+0.1*(1-2*(_i&1)),1-2*(_i&1));
 
 	FROM_TO(720, 940, 10) {
 		complex p = VIEWPORT_W/2+(1-2*(_i&1))*20*(_i%10);
-		create_enemy2c(p, 2000, Fairy, stage6_side, 2.0I+1*(1-2*(_i&1)),I*cexp(I*carg(global.plr.pos-p))*(1-2*(_i&1)));
+		create_enemy2c(p, 2000, Fairy, stage6_side, 2.0*I+1*(1-2*(_i&1)),I*cexp(I*carg(global.plr.pos-p))*(1-2*(_i&1)));
 	}
 
 	FROM_TO(1380, 1660, 20)
-		create_enemy2c(200.0I, 600, Fairy, stage6_flowermine, 2*cexp(0.5I*M_PI/9*_i)+1, 0);
+		create_enemy2c(200.0*I, 600, Fairy, stage6_flowermine, 2*cexp(0.5*I*M_PI/9*_i)+1, 0);
 
 	FROM_TO(1600, 2000, 20)
-		create_enemy3c(VIEWPORT_W/2, 600, Fairy, stage6_flowermine, 2*cexp(0.5I*M_PI/9*_i+I*M_PI/2)+1.0I, VIEWPORT_H/2*I+VIEWPORT_W, 1);
+		create_enemy3c(VIEWPORT_W/2, 600, Fairy, stage6_flowermine, 2*cexp(0.5*I*M_PI/9*_i+I*M_PI/2)+1.0*I, VIEWPORT_H/2*I+VIEWPORT_W, 1);
 
 	AT(2300)
-		create_enemy3c(200.0I-200, ENEMY_IMMUNE, Scythe, scythe_mid, 1, 0.2I, 1);
+		create_enemy3c(200.0*I-200, ENEMY_IMMUNE, Scythe, scythe_mid, 1, 0.2*I, 1);
 
 	AT(3800)
 		global.boss = create_elly();

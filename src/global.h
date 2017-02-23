@@ -11,6 +11,7 @@
 #include <SDL.h>
 #include <SDL_platform.h>
 #include <stdbool.h>
+#include <math.h>
 
 #include "tscomplex.h"
 
@@ -183,3 +184,13 @@ enum {
 #define strncpy DO_NOT_USE_strncpy_USE_strlcpy
 
 #endif
+
+//
+//	These definitions are common but non-standard, so we provide our own
+//
+
+#undef M_PI
+#undef M_PI_2
+
+#define M_PI 3.14159265358979323846
+#define M_PI_2 1.57079632679489661923

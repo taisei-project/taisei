@@ -161,14 +161,12 @@ void boss_death(Boss **boss) {
 void free_boss(Boss *boss) {
 	del_ref(boss);
 
-	free(boss->name);
-	int i;
-	for(i = 0; i < boss->acount; i++)
+	for(int i = 0; i < boss->acount; i++)
 		free_attack(&boss->attacks[i]);
-	if(boss->attacks)
-		free(boss->attacks);
-	if(boss->zoomcolor)
-		free(boss->zoomcolor);
+
+	free(boss->name);
+	free(boss->attacks);
+	free(boss->zoomcolor);
 }
 
 void free_attack(Attack *a) {

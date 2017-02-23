@@ -170,10 +170,8 @@ void load_shader_snippets(char *filename, char *prefix) {
 
 	free(vhead);
 	free(fhead);
-	if(vfoot)
-		free(vfoot);
-	if(ffoot)
-		free(ffoot);
+	free(vfoot);
+	free(ffoot);
 	free(text);
 }
 
