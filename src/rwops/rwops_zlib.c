@@ -42,7 +42,9 @@ typedef struct ZData {
 
 	size_t pos;
 	z_stream *stream;
+
 	SDL_RWops *wrapped;
+	bool autoclose;
 } ZData;
 
 static int64_t common_seek(SDL_RWops *rw, int64_t offset, int whence) {
@@ -80,15 +82,19 @@ static int common_close(SDL_RWops *rw) {
 
 		free(z->buffer);
 		free(z->stream);
-		free(z);
 
+		if(z->autoclose) {
+			SDL_RWclose(z->wrapped);
+		}
+
+		free(z);
 		SDL_FreeRW(rw);
 	}
 
 	return 0;
 }
 
-static SDL_RWops* common_alloc(SDL_RWops *wrapped, size_t bufsize) {
+static SDL_RWops* common_alloc(SDL_RWops *wrapped, size_t bufsize, bool autoclose) {
 	SDL_RWops *rw = SDL_AllocRW();
 
 	if(!rw) {
@@ -110,7 +116,9 @@ static SDL_RWops* common_alloc(SDL_RWops *wrapped, size_t bufsize) {
 	z->stream = calloc(1, sizeof(z_stream));
 	z->buffer_size = bufsize;
 	z->buffer = z->buffer_ptr = calloc(1, bufsize);
+
 	z->wrapped = wrapped;
+	z->autoclose = autoclose;
 
 	rw->hidden.unknown.data1 = z;
 
@@ -253,8 +261,8 @@ static size_t inflate_write(SDL_RWops *rw, const void *ptr, size_t size, size_t 
 	return 0;
 }
 
-SDL_RWops* SDL_RWWrapZReader(SDL_RWops *src, size_t bufsize) {
-	SDL_RWops *rw = common_alloc(src, bufsize);
+SDL_RWops* SDL_RWWrapZReader(SDL_RWops *src, size_t bufsize, bool autoclose) {
+	SDL_RWops *rw = common_alloc(src, bufsize, autoclose);
 
 	if(!rw) {
 		return NULL;
@@ -272,8 +280,8 @@ SDL_RWops* SDL_RWWrapZReader(SDL_RWops *src, size_t bufsize) {
 	return rw;
 }
 
-SDL_RWops* SDL_RWWrapZWriter(SDL_RWops *src, size_t bufsize) {
-	SDL_RWops *rw = common_alloc(src, bufsize);
+SDL_RWops* SDL_RWWrapZWriter(SDL_RWops *src, size_t bufsize, bool autoclose) {
+	SDL_RWops *rw = common_alloc(src, bufsize, autoclose);
 
 	if(!rw) {
 		return NULL;
@@ -311,16 +319,15 @@ int zrwops_test(void) {
 	printbuf(buffer2, sizeof(buffer2));
 
 	SDL_RWops *rwmem = SDL_RWFromMem(buffer1, sizeof(buffer1));
-	SDL_RWops *rwz = SDL_RWWrapZWriter(rwmem, chunksize);
+	SDL_RWops *rwz = SDL_RWWrapZWriter(rwmem, chunksize, false);
 	SDL_WriteLE64(rwz, 9000);
 	SDL_RWwrite(rwz, data, 1, sizeof(data));
 	SDL_RWclose(rwz);
 	SDL_RWseek(rwmem, 0, RW_SEEK_SET);
-	rwz = SDL_RWWrapZReader(rwmem, chunksize);
+	rwz = SDL_RWWrapZReader(rwmem, chunksize, true);
 	uint64_t x = SDL_ReadLE64(rwz);
 	SDL_RWread(rwz, buffer2, 1, sizeof(data));
 	SDL_RWclose(rwz);
-	SDL_RWclose(rwmem);
 
 	printbuf(data, sizeof(data));
 	printbuf(buffer1, sizeof(buffer1));

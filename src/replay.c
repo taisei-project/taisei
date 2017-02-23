@@ -208,7 +208,7 @@ int replay_write(Replay *rpy, SDL_RWops *file, bool compression) {
 
 	if(compression) {
 		abuf = SDL_RWAutoBuffer(&buf, 64);
-		vfile = SDL_RWWrapZWriter(abuf, REPLAY_COMPRESSION_CHUNK_SIZE);
+		vfile = SDL_RWWrapZWriter(abuf, REPLAY_COMPRESSION_CHUNK_SIZE, false);
 	}
 
 	replay_write_string(vfile, rpy->playername);
@@ -227,7 +227,7 @@ int replay_write(Replay *rpy, SDL_RWops *file, bool compression) {
 		SDL_WriteLE32(file, SDL_RWtell(file) + SDL_RWtell(abuf) + 4);
 		SDL_RWwrite(file, buf, SDL_RWtell(abuf), 1);
 		SDL_RWclose(abuf);
-		vfile = SDL_RWWrapZWriter(file, REPLAY_COMPRESSION_CHUNK_SIZE);
+		vfile = SDL_RWWrapZWriter(file, REPLAY_COMPRESSION_CHUNK_SIZE, false);
 	}
 
 	for(i = 0; i < rpy->numstages; ++i) {
@@ -356,7 +356,6 @@ static int replay_read_events(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 
 int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 	int64_t filesize; // must be signed
-	SDL_RWops *segment = NULL;
 	SDL_RWops *vfile = file;
 
 	mode &= REPLAY_READ_ALL;
@@ -394,15 +393,14 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 				return false;
 			}
 
-			segment = SDL_RWWrapSegment(file, 0, rpy->fileoffset);
-			vfile = SDL_RWWrapZReader(segment, REPLAY_COMPRESSION_CHUNK_SIZE);
+			vfile = SDL_RWWrapZReader(SDL_RWWrapSegment(file, 0, rpy->fileoffset, false),
+									  REPLAY_COMPRESSION_CHUNK_SIZE, true);
 			filesize = -1;
 			compression = true;
 		}
 
 		if(!replay_read_meta(rpy, vfile, filesize)) {
 			if(compression) {
-				SDL_RWclose(segment);
 				SDL_RWclose(vfile);
 			}
 
@@ -410,10 +408,7 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 		}
 
 		if(compression) {
-			SDL_RWclose(segment);
 			SDL_RWclose(vfile);
-
-			segment = NULL;
 			vfile = file;
 		} else {
 			rpy->fileoffset = SDL_RWtell(file);
@@ -444,7 +439,7 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 		bool compression = false;
 
 		if(rpy->version & REPLAY_VERSION_COMPRESSION_BIT) {
-			vfile = SDL_RWWrapZReader(file, REPLAY_COMPRESSION_CHUNK_SIZE);
+			vfile = SDL_RWWrapZReader(file, REPLAY_COMPRESSION_CHUNK_SIZE, false);
 			filesize = -1;
 			compression = true;
 		}

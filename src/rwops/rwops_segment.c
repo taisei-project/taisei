@@ -7,6 +7,7 @@ typedef struct Segment {
     SDL_RWops *wrapped;
     size_t start;
     size_t end;
+    bool autoclose;
 } Segment;
 
 #define SEGMENT(rw) ((Segment*)((rw)->hidden.unknown.data1))
@@ -136,14 +137,20 @@ static size_t segment_write(SDL_RWops *rw, const void *ptr, size_t size, size_t 
 
 static int segment_close(SDL_RWops *rw) {
     if(rw) {
-        free(SEGMENT(rw));
+        Segment *s = SEGMENT(rw);
+
+        if(s->autoclose) {
+            SDL_RWclose(s->wrapped);
+        }
+
+        free(s);
         SDL_FreeRW(rw);
     }
 
     return 0;
 }
 
-SDL_RWops* SDL_RWWrapSegment(SDL_RWops *src, size_t start, size_t end) {
+SDL_RWops* SDL_RWWrapSegment(SDL_RWops *src, size_t start, size_t end, bool autoclose) {
     assert(end > start);
 
     SDL_RWops *rw = SDL_AllocRW();
@@ -165,6 +172,7 @@ SDL_RWops* SDL_RWWrapSegment(SDL_RWops *src, size_t start, size_t end) {
     s->wrapped = src;
     s->start = start;
     s->end = end;
+    s->autoclose = autoclose;
 
     rw->hidden.unknown.data1 = s;
 
