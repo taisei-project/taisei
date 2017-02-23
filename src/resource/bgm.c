@@ -206,7 +206,8 @@ void save_bgm(void)
 void restore_bgm(void)
 {
 	start_bgm(saved_bgm);
-	stralloc(&saved_bgm, NULL);
+	free(saved_bgm);
+	saved_bgm = NULL;
 }
 
 void set_bgm_volume(float gain)
