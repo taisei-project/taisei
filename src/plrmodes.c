@@ -99,13 +99,13 @@ int youmu_slash(Enemy *e, int t) {
 
 	FROM_TO(30, 60, 10) {
 		tsrand_fill(3);
-		create_particle1c("youmu_slice", VIEWPORT_W/2.0 - 150 + 100*_i + VIEWPORT_H/2.0*I - 10-10.0I + 20*afrand(0)+20.0I*afrand(1), NULL, Slice, timeout, 200)->angle = -10.0+20.0*afrand(2);
+		create_particle1c("youmu_slice", VIEWPORT_W/2.0 - 150 + 100*_i + VIEWPORT_H/2.0*I - 10-10.0*I + 20*afrand(0)+20.0*I*afrand(1), NULL, Slice, timeout, 200)->angle = -10.0+20.0*afrand(2);
 	}
 
 	FROM_TO(40,200,1)
 		if(frand() > 0.7) {
 			tsrand_fill(6);
-			create_particle2c("blast", VIEWPORT_W*afrand(0) + (VIEWPORT_H+50)*I, rgb(afrand(1),afrand(2),afrand(3)), Shrink, timeout_linear, 80, 3*(1-2.0*afrand(4))-14.0I+afrand(5)*2.0I);
+			create_particle2c("blast", VIEWPORT_W*afrand(0) + (VIEWPORT_H+50)*I, rgb(afrand(1),afrand(2),afrand(3)), Shrink, timeout_linear, 80, 3*(1-2.0*afrand(4))-14.0*I+afrand(5)*2.0*I);
 		}
 
 	int tpar = 30;
@@ -114,7 +114,7 @@ int youmu_slash(Enemy *e, int t) {
 
 	if(t < creal(e->args[0])-60 && frand() > 0.2) {
 		tsrand_fill(3);
-		create_particle2c("smoke", VIEWPORT_W*afrand(0) + (VIEWPORT_H+100)*I, rgba(0.4,0.4,0.4,afrand(1)*0.2 - 0.2 + 0.6*(tpar/30.0)), PartDraw, spin, 300, -7.0I+afrand(2)*1.0I);
+		create_particle2c("smoke", VIEWPORT_W*afrand(0) + (VIEWPORT_H+100)*I, rgba(0.4,0.4,0.4,afrand(1)*0.2 - 0.2 + 0.6*(tpar/30.0)), PartDraw, spin, 300, -7.0*I+afrand(2)*1.0*I);
 	}
 	return 1;
 }
@@ -124,7 +124,7 @@ int youmu_slash(Enemy *e, int t) {
 void YoumuOppositeMyon(Enemy *e, int t) {
 	complex pos = e->pos;
 
-	create_particle2c("flare", pos, NULL, Shrink, timeout, 10, -e->pos+10.0I);
+	create_particle2c("flare", pos, NULL, Shrink, timeout, 10, -e->pos+10.0*I);
 }
 
 int youmu_opposite_myon(Enemy *e, int t) {
@@ -200,7 +200,7 @@ int youmu_split(Enemy *e, int t) {
 
 	FROM_TO(100,170,10) {
 		tsrand_fill(3);
-		create_particle1c("youmu_slice", VIEWPORT_W/2.0 + VIEWPORT_H/2.0*I - 200-200.0I + 400*afrand(0)+400.0I*afrand(1), NULL, Slice, timeout, 100-_i)->angle = 360.0*afrand(2);
+		create_particle1c("youmu_slice", VIEWPORT_W/2.0 + VIEWPORT_H/2.0*I - 200-200.0*I + 400*afrand(0)+400.0*I*afrand(1), NULL, Slice, timeout, 100-_i)->angle = 360.0*afrand(2);
 	}
 
 
@@ -223,8 +223,8 @@ void youmu_shot(Player *plr) {
 			play_sound("generic_shot");
 
 		if(!(global.frames % 6)) {
-			create_projectile1c("youmu", plr->pos + 10 - I*20, NULL, linear, -20.0I)->type = PlrProj+120;
-			create_projectile1c("youmu", plr->pos - 10 - I*20, NULL, linear, -20.0I)->type = PlrProj+120;
+			create_projectile1c("youmu", plr->pos + 10 - I*20, NULL, linear, -20.0*I)->type = PlrProj+120;
+			create_projectile1c("youmu", plr->pos - 10 - I*20, NULL, linear, -20.0*I)->type = PlrProj+120;
 		}
 
 		if(plr->shot == YoumuHoming) {
@@ -237,36 +237,36 @@ void youmu_shot(Player *plr) {
 				if(ref == -1)
 					ref = add_ref(NULL);
 
-				create_projectile2c("youhoming", plr->pos, NULL, youmu_homing, -3.0I, ref)->type = PlrProj+(450+225*(plr->power/100));
+				create_projectile2c("youhoming", plr->pos, NULL, youmu_homing, -3.0*I, ref)->type = PlrProj+(450+225*(plr->power/100));
 			}
 
 			if(!plr->focus && !(global.frames % (int)round(8 - (plr->power / 100.0) * 1.3))) {
-				create_projectile2c("hghost", plr->pos, NULL, accelerated, 2-10.0I, -0.4I)->type = PlrProj+27;
-				create_projectile2c("hghost", plr->pos, NULL, accelerated, -10.0I, -0.4I)->type = PlrProj+27;
-				create_projectile2c("hghost", plr->pos, NULL, accelerated, -2-10.0I, -0.4I)->type = PlrProj+27;
+				create_projectile2c("hghost", plr->pos, NULL, accelerated, 2-10.0*I, -0.4*I)->type = PlrProj+27;
+				create_projectile2c("hghost", plr->pos, NULL, accelerated, -10.0*I, -0.4*I)->type = PlrProj+27;
+				create_projectile2c("hghost", plr->pos, NULL, accelerated, -2-10.0*I, -0.4*I)->type = PlrProj+27;
 			}
 		}
 	}
 
 	if(plr->shot == YoumuOpposite && plr->slaves == NULL)
-		create_enemy_p(&plr->slaves, 40.0I, ENEMY_IMMUNE, YoumuOppositeMyon, youmu_opposite_myon, 0, 0, 0, 0);
+		create_enemy_p(&plr->slaves, 40.0*I, ENEMY_IMMUNE, YoumuOppositeMyon, youmu_opposite_myon, 0, 0, 0, 0);
 }
 
 void youmu_bomb(Player *plr) {
 	switch(plr->shot) {
 		case YoumuOpposite:
-			create_enemy_p(&plr->slaves, 40.0I, ENEMY_BOMB, NULL, youmu_split, 280,0,0,0);
+			create_enemy_p(&plr->slaves, 40.0*I, ENEMY_BOMB, NULL, youmu_split, 280,0,0,0);
 
 			break;
 		case YoumuHoming:
-			create_enemy_p(&plr->slaves, 40.0I, ENEMY_BOMB, YoumuSlash, youmu_slash, 280,0,0,0);
+			create_enemy_p(&plr->slaves, 40.0*I, ENEMY_BOMB, YoumuSlash, youmu_slash, 280,0,0,0);
 			break;
 	}
 }
 
 void youmu_power(Player *plr, short npow) {
 	if(plr->shot == YoumuOpposite && plr->slaves == NULL)
-		create_enemy_p(&plr->slaves, 40.0I, ENEMY_IMMUNE, YoumuOppositeMyon, youmu_opposite_myon, 0, 0, 0, 0);
+		create_enemy_p(&plr->slaves, 40.0*I, ENEMY_IMMUNE, YoumuOppositeMyon, youmu_opposite_myon, 0, 0, 0, 0);
 }
 
 /* Marisa */
@@ -377,7 +377,7 @@ void MasterSpark(Enemy *e, int t) {
 // 	glColor4f(0.9,1,1,fade*0.8);
 	int i;
 	for(i = 0; i < 8; i++)
-		draw_masterspark_ring(global.plr.pos - 50.0I, t%20 + 10*i, fade);
+		draw_masterspark_ring(global.plr.pos - 50.0*I, t%20 + 10*i, fade);
 
 	glColor4f(1,1,1,1);
 }
@@ -472,8 +472,8 @@ void marisa_shot(Player *plr) {
 			play_sound("generic_shot");
 
 		if(!(global.frames % 6)) {
-			create_projectile1c("marisa", plr->pos + 10 - 15.0I, NULL, linear, -20.0I)->type = PlrProj+150;
-			create_projectile1c("marisa", plr->pos - 10 - 15.0I, NULL, linear, -20.0I)->type = PlrProj+150;
+			create_projectile1c("marisa", plr->pos + 10 - 15.0*I, NULL, linear, -20.0*I)->type = PlrProj+150;
+			create_projectile1c("marisa", plr->pos - 10 - 15.0*I, NULL, linear, -20.0*I)->type = PlrProj+150;
 		}
 	}
 }
@@ -484,7 +484,7 @@ void marisa_bomb(Player *plr) {
 	switch(plr->shot) {
 	case MarisaLaser:
 		play_sound("masterspark");
-		create_enemy_p(&plr->slaves, 40.0I, ENEMY_BOMB, MasterSpark, master_spark, 280,0,0,0);
+		create_enemy_p(&plr->slaves, 40.0*I, ENEMY_BOMB, MasterSpark, master_spark, 280,0,0,0);
 		break;
 	case MarisaStar:
 		for(i = 0; i < 20; i++) {
@@ -514,41 +514,41 @@ void marisa_power(Player *plr, short npow) {
 	switch(plr->shot) {
 	case MarisaLaser:
 		if(npow / 100 == 1) {
-			create_enemy_p(&plr->slaves, -40.0I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -40.0I, 5, 0, 0);
+			create_enemy_p(&plr->slaves, -40.0*I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -40.0*I, 5, 0, 0);
 		}
 
 		if(npow >= 200) {
-			create_enemy_p(&plr->slaves, 25-5.0I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, 8-40.0I, 5,    M_PI/30, 0);
-			create_enemy_p(&plr->slaves, -25-5.0I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -8-40.0I, 5, -M_PI/30, 0);
+			create_enemy_p(&plr->slaves, 25-5.0*I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, 8-40.0*I, 5,    M_PI/30, 0);
+			create_enemy_p(&plr->slaves, -25-5.0*I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -8-40.0*I, 5, -M_PI/30, 0);
 		}
 
 		if(npow / 100 == 3) {
-			create_enemy_p(&plr->slaves, -30.0I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -50.0I, 5, 0, 0);
+			create_enemy_p(&plr->slaves, -30.0*I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -50.0*I, 5, 0, 0);
 		}
 
 		if(npow >= 400) {
-			create_enemy_p(&plr->slaves, 17-30.0I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, 4-45.0I, 5, 0, 0);
-			create_enemy_p(&plr->slaves, -17-30.0I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -4-45.0I, 5, 0, 0);
+			create_enemy_p(&plr->slaves, 17-30.0*I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, 4-45.0*I, 5, 0, 0);
+			create_enemy_p(&plr->slaves, -17-30.0*I, ENEMY_IMMUNE, MariLaserSlave, marisa_laser_slave, -4-45.0*I, 5, 0, 0);
 		}
 		break;
 	case MarisaStar:
 		if(npow / 100 == 1) {
-			create_enemy_p(&plr->slaves, 40.0I, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, +30.0I, -2.0I, -0.1I, 5);
+			create_enemy_p(&plr->slaves, 40.0*I, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, +30.0*I, -2.0*I, -0.1*I, 5);
 		}
 
 		if(npow >= 200) {
 			double side = npow == 4? 0 : 0.3;
-			create_enemy_p(&plr->slaves, 30.0I+15, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, +30.0I+10, -side-2.0I, -0.1I, 5);
-			create_enemy_p(&plr->slaves, 30.0I-15, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, +30.0I-10, side-2.0I, -0.1I, 5);
+			create_enemy_p(&plr->slaves, 30.0*I+15, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, +30.0*I+10, -side-2.0*I, -0.1*I, 5);
+			create_enemy_p(&plr->slaves, 30.0*I-15, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, +30.0*I-10, side-2.0*I, -0.1*I, 5);
 		}
 
 		if(npow / 100 == 3) {
-			create_enemy_p(&plr->slaves, -30.0I, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, +30.0I, -2.0I, -0.1I, 5);
+			create_enemy_p(&plr->slaves, -30.0*I, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, +30.0*I, -2.0*I, -0.1*I, 5);
 		}
 
 		if(npow >= 400) {
-			create_enemy_p(&plr->slaves, 30, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, 25+30.0I, -0.5-2.0I, -0.1I, 5);
-			create_enemy_p(&plr->slaves, -30, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -25+30.0I, 0.5-2.0I, -0.1I, 5);
+			create_enemy_p(&plr->slaves, 30, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, 25+30.0*I, -0.5-2.0*I, -0.1*I, 5);
+			create_enemy_p(&plr->slaves, -30, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -25+30.0*I, 0.5-2.0*I, -0.1*I, 5);
 		}
 		break;
 	}

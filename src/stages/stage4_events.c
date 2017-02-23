@@ -77,7 +77,7 @@ int stage4_splasher(Enemy *e, int t) {
 
 	FROM_TO(60, 150, 5-global.diff) {
 		tsrand_fill(4);
-		create_projectile2c(afrand(0) > 0.5 ? "rice" : "thickrice", e->pos, rgb(1,0.6-0.2*afrand(1),0.8), accelerated, e->args[0]/2+(1-2*afrand(2))+(1-2*afrand(3))*I, 0.02I);
+		create_projectile2c(afrand(0) > 0.5 ? "rice" : "thickrice", e->pos, rgb(1,0.6-0.2*afrand(1),0.8), accelerated, e->args[0]/2+(1-2*afrand(2))+(1-2*afrand(3))*I, 0.02*I);
 	}
 
 	FROM_TO(200, 300, 1)
@@ -124,13 +124,13 @@ int stage4_partcircle(Enemy *e, int t) {
 	FROM_TO(60,76,1) {
 		int i;
 		for(i = 0; i < global.diff; i++) {
-			complex n = cexp(I*M_PI/16.0*_i + I*carg(e->args[0])-I*M_PI/4.0 + 0.01I*i*(1-2*(creal(e->args[0]) > 0)));
+			complex n = cexp(I*M_PI/16.0*_i + I*carg(e->args[0])-I*M_PI/4.0 + 0.01*I*i*(1-2*(creal(e->args[0]) > 0)));
 			create_projectile2c("wave", e->pos + (30)*n, rgb(1-0.2*i,0.5,0.7), asymptotic, 1.5*n, 2+2*i);
 		}
 	}
 
 	FROM_TO(160, 200, 1)
-		e->args[0] += 0.05I;
+		e->args[0] += 0.05*I;
 
 	return 1;
 }
@@ -151,13 +151,13 @@ int stage4_cardbuster(Enemy *e, int t) {
 	FROM_TO(400, 600, 1)
 		e->pos += (e->args[2]-e->args[1])/200.0;
 
-	complex n = cexp(I*carg(global.plr.pos - e->pos) + 0.3I*_i);
+	complex n = cexp(I*carg(global.plr.pos - e->pos) + 0.3*I*_i);
 
 	FROM_TO(120, 120+20*global.diff, 1)
-		create_projectile2c("card", e->pos + 30*n, rgb(0, 1, 0), asymptotic, 1.3*n, 0.4I);
+		create_projectile2c("card", e->pos + 30*n, rgb(0, 1, 0), asymptotic, 1.3*n, 0.4*I);
 
 	FROM_TO(300, 320+20*global.diff, 1)
-		create_projectile2c("card", e->pos + 30*n, rgb(0, 1, 0.2), asymptotic, 1.3*n, 0.4I);
+		create_projectile2c("card", e->pos + 30*n, rgb(0, 1, 0.2), asymptotic, 1.3*n, 0.4*I);
 
 	return 1;
 }
@@ -170,13 +170,13 @@ int stage4_backfire(Enemy *e, int t) {
 	}
 
 	FROM_TO(0,20,1)
-		e->args[0] -= 0.05I;
+		e->args[0] -= 0.05*I;
 
 	FROM_TO(60,100,1)
-		e->args[0] += 0.05I;
+		e->args[0] += 0.05*I;
 
 	if(t > 100)
-		e->args[0] -= 0.02I;
+		e->args[0] -= 0.02*I;
 
 
 	e->pos += e->args[0];
@@ -210,7 +210,7 @@ int stage4_bigcircle(Enemy *e, int t) {
 		int i;
 		int n = 10+3*global.diff;
 		for(i = 0; i < n; i++)
-			create_projectile2c("bigball", e->pos, rgb(0,0.8-0.4*_i,0), asymptotic, 2*cexp(2.0I*M_PI/n*i+I*M_PI*_i), 3*sin(6*M_PI/n*i));
+			create_projectile2c("bigball", e->pos, rgb(0,0.8-0.4*_i,0), asymptotic, 2*cexp(2.0*I*M_PI/n*i+I*M_PI*_i), 3*sin(6*M_PI/n*i));
 	}
 	return 1;
 }
@@ -240,8 +240,8 @@ int stage4_explosive(Enemy *e, int t) {
 void KurumiSlave(Enemy *e, int t) {
 	if(!(t%2)) {
 		complex offset  = (frand()-0.5)*30;
-				offset += (frand()-0.5)*20.0I;
-		create_particle3c("lasercurve", offset, rgb(0.3,0.0,0.0), EnemyFlareShrink, enemy_flare, 50, (-50.0I-offset)/50.0, add_ref(e));
+				offset += (frand()-0.5)*20.0*I;
+		create_particle3c("lasercurve", offset, rgb(0.3,0.0,0.0), EnemyFlareShrink, enemy_flare, 50, (-50.0*I-offset)/50.0, add_ref(e));
 	}
 }
 
@@ -266,13 +266,13 @@ int kurumi_burstslave(Enemy *e, int t) {
 
 	FROM_TO(0, 600, 18-2*global.diff) {
 		float r = cimag(e->pos)/VIEWPORT_H;
-		create_projectile2c("wave", e->pos + 10.0I*e->args[0], rgb(r,0,0), accelerated, 2.0I*e->args[0], -0.01*e->args[1]);
-		create_projectile2c("wave", e->pos - 10.0I*e->args[0], rgb(r,0,0), accelerated, -2.0I*e->args[0], -0.01*e->args[1]);
+		create_projectile2c("wave", e->pos + 10.0*I*e->args[0], rgb(r,0,0), accelerated, 2.0*I*e->args[0], -0.01*e->args[1]);
+		create_projectile2c("wave", e->pos - 10.0*I*e->args[0], rgb(r,0,0), accelerated, -2.0*I*e->args[0], -0.01*e->args[1]);
 	}
 
 	FROM_TO(40, 100,1) {
 		e->args[1] -= e->args[0]*0.02;
-		e->args[1] *= cexp(0.02I);
+		e->args[1] *= cexp(0.02*I);
 	}
 
 	return 1;
@@ -293,7 +293,7 @@ void kurumi_slaveburst(Boss *b, int time) {
 		int i;
 		int n = 3+2*global.diff;
 		for(i = 0; i < n; i++) {
-			create_enemy3c(b->pos, ENEMY_IMMUNE, KurumiSlave, kurumi_burstslave, cexp(I*2*M_PI/n*i+0.2I*time/500), 0, add_ref(b));
+			create_enemy3c(b->pos, ENEMY_IMMUNE, KurumiSlave, kurumi_burstslave, cexp(I*2*M_PI/n*i+0.2*I*time/500), 0, add_ref(b));
 		}
 	}
 }
@@ -312,12 +312,12 @@ int kurumi_spikeslave(Enemy *e, int t) {
 		return ACTION_DESTROY;
 
 	e->pos += e->args[1];
-	e->args[1] *= cexp(0.01I*e->args[0]);
+	e->args[1] *= cexp(0.01*I*e->args[0]);
 
 	FROM_TO(0, 600, 18-2*global.diff) {
 		float r = cimag(e->pos)/VIEWPORT_H;
-		create_projectile2c("wave", e->pos + 10.0I*e->args[0], rgb(r,0,0), linear, 1.5I*e->args[1], -0.01*e->args[0]);
-		create_projectile2c("wave", e->pos - 10.0I*e->args[0], rgb(r,0,0), linear, -1.5I*e->args[1], -0.01*e->args[0]);
+		create_projectile2c("wave", e->pos + 10.0*I*e->args[0], rgb(r,0,0), linear, 1.5*I*e->args[1], -0.01*e->args[0]);
+		create_projectile2c("wave", e->pos - 10.0*I*e->args[0], rgb(r,0,0), linear, -1.5*I*e->args[1], -0.01*e->args[0]);
 	}
 
 	return 1;
@@ -343,12 +343,12 @@ void kurumi_redspike(Boss *b, int time) {
 			int i;
 			int n = global.diff*8;
 			for(i = 0; i < n; i++)
-				create_projectile2c("bigball", b->pos, rgb(1,0,0), asymptotic, 3*cexp(2.0I*M_PI/n*i+I*carg(global.plr.pos-b->pos)), 3)->draw=ProjDrawAdd;
+				create_projectile2c("bigball", b->pos, rgb(1,0,0), asymptotic, 3*cexp(2.0*I*M_PI/n*i+I*carg(global.plr.pos-b->pos)), 3)->draw=ProjDrawAdd;
 		}
 	} else {
 		FROM_TO(80, 500, 2+2*(global.diff == D_Hard)) {
 			tsrand_fill(2);
-			complex offset = 100*afrand(0)*cexp(2.0I*M_PI*afrand(1));
+			complex offset = 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1));
 			complex n = cexp(I*carg(global.plr.pos-b->pos-offset));
 			create_projectile2c("rice", b->pos+offset, rgb(1,0,0), accelerated, -1*n, 0.05*n)->draw=ProjDrawAdd;
 		}
@@ -378,7 +378,7 @@ void kurumi_outro(Boss *b, int time) {
 }
 
 Boss *create_kurumi_mid(void) {
-	Boss* b = create_boss("Kurumi", "kurumi", VIEWPORT_W/2-400.0I);
+	Boss* b = create_boss("Kurumi", "kurumi", VIEWPORT_W/2-400.0*I);
 	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_intro, NULL);
 	boss_add_attack_from_info(b, stage4_spells+0, false);
 	if(global.diff < D_Hard) {
@@ -424,9 +424,9 @@ int stage4_supercard(Enemy *e, int t) {
 
 	FROM_TO(70, 70+20*global.diff, 1) {
 		int i;
-		complex n = cexp(I*carg(global.plr.pos - e->pos) + 0.3I*_i);
+		complex n = cexp(I*carg(global.plr.pos - e->pos) + 0.3*I*_i);
 		for(i = -1; i <= 1 && t; i++)
-			create_projectile4c("card", e->pos + 30*n, rgb(1-_i/20.0, 0, 0.4), splitcard, 1*n, 0.4I, 100-time+70, 1.4*I*i*n);
+			create_projectile4c("card", e->pos + 30*n, rgb(1-_i/20.0, 0, 0.4), splitcard, 1*n, 0.4*I, 100-time+70, 1.4*I*i*n);
 	}
 
 	return 1;
@@ -453,10 +453,10 @@ void kurumi_breaker(Boss *b, int time) {
 	TIMER(&t);
 
 	FROM_TO(50, 400, 50-7*global.diff) {
-		complex p = b->pos + 150*sin(_i) + 100.0I*cos(_i);
+		complex p = b->pos + 150*sin(_i) + 100.0*I*cos(_i);
 
 		for(i = 0; i < c; i++) {
-			complex n = cexp(2.0I*M_PI/c*i);
+			complex n = cexp(2.0*I*M_PI/c*i);
 			create_projectile4c("rice", p, rgb(1,0,0.5), splitcard, 3*n, 0,
 									kt, 1.5*cexp(I*carg(global.plr.pos - p - 2*kt*n))-2.6*n);
 
@@ -465,7 +465,7 @@ void kurumi_breaker(Boss *b, int time) {
 
 	FROM_TO(60, 400, 100) {
 		for(i = 0; i < 20; i++)
-			create_projectile2c("bigball", b->pos, rgb(0.5,0,0.5), asymptotic, cexp(2.0I*M_PI/20.0*i), 3);
+			create_projectile2c("bigball", b->pos, rgb(0.5,0,0.5), asymptotic, cexp(2.0*I*M_PI/20.0*i), 3);
 	}
 
 }
@@ -477,7 +477,7 @@ int aniwall_bullet(Projectile *p, int t) {
 	if(t > creal(p->args[1])) {
 		if(global.diff > D_Normal) {
 			tsrand_fill(2);
-			p->args[0] += (0.1-0.2*afrand(0) + 0.1I-0.2I*afrand(1))*(global.diff-2);
+			p->args[0] += (0.1-0.2*afrand(0) + 0.1*I-0.2*I*afrand(1))*(global.diff-2);
 			p->args[0] += 0.005*cexp(I*carg(global.plr.pos - p->pos));
 		}
 
@@ -511,7 +511,7 @@ int aniwall_slave(Enemy *e, int t) {
 		if(re == 0 || re == VIEWPORT_W) {
 
 			e->args[1] = 1;
-			e->args[2] = 10.0I;
+			e->args[2] = 10.0*I;
 		}
 
 		e->pos += e->args[0]*t;
@@ -552,10 +552,10 @@ void kurumi_aniwall(Boss *b, int time) {
 		return;
 
 	AT(60) {
-		create_lasercurve2c(b->pos, 50, 80, rgb(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(0.4I));
-		create_enemy1c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, aniwall_slave, 0.2*cexp(0.4I));
-		create_lasercurve2c(b->pos, 50, 80, rgb(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(I*M_PI - 0.4I));
-		create_enemy1c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, aniwall_slave, 0.2*cexp(I*M_PI - 0.4I));
+		create_lasercurve2c(b->pos, 50, 80, rgb(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(0.4*I));
+		create_enemy1c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, aniwall_slave, 0.2*cexp(0.4*I));
+		create_lasercurve2c(b->pos, 50, 80, rgb(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(I*M_PI - 0.4*I));
+		create_enemy1c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, aniwall_slave, 0.2*cexp(I*M_PI - 0.4*I));
 	}
 }
 
@@ -571,9 +571,9 @@ void kurumi_sbreaker(Boss *b, int time) {
 	int kt = 40;
 
 	FROM_TO(50, 400, 2) {
-		complex p = b->pos + 150*sin(_i/8.0)+100.0I*cos(_i/15.0);
+		complex p = b->pos + 150*sin(_i/8.0)+100.0*I*cos(_i/15.0);
 
-		complex n = cexp(2.0I*M_PI/c*_i);
+		complex n = cexp(2.0*I*M_PI/c*_i);
 		create_projectile4c("rice", p, rgb(1,0,0.5), splitcard, 2*n, 0,
 								kt, 1.5*cexp(I*carg(global.plr.pos - p - 2*kt*n))-1.7*n);
 
@@ -581,7 +581,7 @@ void kurumi_sbreaker(Boss *b, int time) {
 
 	FROM_TO(60, 400, 100) {
 		for(i = 0; i < 20; i++)
-			create_projectile2c("bigball", b->pos, rgb(0.5,0,0.5), asymptotic, cexp(2.0I*M_PI/20.0*i), 3);
+			create_projectile2c("bigball", b->pos, rgb(0.5,0,0.5), asymptotic, cexp(2.0*I*M_PI/20.0*i), 3);
 	}
 
 }
@@ -623,7 +623,7 @@ int blowwall_slave(Enemy *e, int t) {
 			else
 				type = "plainball";
 
-			create_projectile2c(type, e->pos, rgb(1, 0.1, 0.1), asymptotic, (1+3*f)*cexp(2.0I*M_PI*frand()), 4)->draw=ProjDrawAdd;
+			create_projectile2c(type, e->pos, rgb(1, 0.1, 0.1), asymptotic, (1+3*f)*cexp(2.0*I*M_PI*frand()), 4)->draw=ProjDrawAdd;
 		}
 
 		return ACTION_DESTROY;
@@ -673,7 +673,7 @@ int kdanmaku_slave(Enemy *e, int t) {
 	if(!e->args[1])
 		e->pos += e->args[0]*t;
 	else
-		e->pos += 5.0I;
+		e->pos += 5.0*I;
 
 	if(creal(e->pos) <= 0)
 		e->pos = I*cimag(e->pos);
@@ -695,7 +695,7 @@ int kdanmaku_slave(Enemy *e, int t) {
 			for(i = 0; i < n; i++) {
 				complex p = VIEWPORT_W/(float)n*(i+frand()) + I*cimag(e->pos);
 				if(cabs(p-global.plr.pos) > 60)
-					create_projectile1c("thickrice", p, rgb(1, 0.5, 0.5), linear, 0.5*cexp(2.0I*M_PI*frand()))->draw = ProjDrawAdd;
+					create_projectile1c("thickrice", p, rgb(1, 0.5, 0.5), linear, 0.5*cexp(2.0*I*M_PI*frand()))->draw = ProjDrawAdd;
 			}
 		}
 	}
@@ -722,7 +722,7 @@ void kurumi_danmaku(Boss *b, int time) {
 
 
 Boss *create_kurumi(void) {
-	Boss* b = create_boss("Kurumi", "kurumi", -400.0I);
+	Boss* b = create_boss("Kurumi", "kurumi", -400.0*I);
 	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_boss_intro, NULL);
 	boss_add_attack(b, AT_Normal, "Sin Breaker", 20, 20000, kurumi_sbreaker, NULL);
 	if(global.diff < D_Hard) {
@@ -746,12 +746,12 @@ void stage4_events(void) {
 	TIMER(&global.timer);
 
 	AT(70) {
-		create_enemy1c(VIEWPORT_H/4*3*I, 3000, BigFairy, stage4_splasher, 3-4.0I);
-		create_enemy1c(VIEWPORT_W + VIEWPORT_H/4*3*I, 3000, BigFairy, stage4_splasher, -3-4.0I);
+		create_enemy1c(VIEWPORT_H/4*3*I, 3000, BigFairy, stage4_splasher, 3-4.0*I);
+		create_enemy1c(VIEWPORT_W + VIEWPORT_H/4*3*I, 3000, BigFairy, stage4_splasher, -3-4.0*I);
 	}
 
 	FROM_TO(300, 450, 20) {
-		create_enemy1c(VIEWPORT_W*frand(), 200, Fairy, stage4_fodder, 3.0I);
+		create_enemy1c(VIEWPORT_W*frand(), 200, Fairy, stage4_fodder, 3.0*I);
 	}
 
 	FROM_TO(500, 550, 10) {
@@ -760,8 +760,8 @@ void stage4_events(void) {
 	}
 
 	FROM_TO(600, 1400, 100) {
-		create_enemy3c(VIEWPORT_W/4.0 + VIEWPORT_W/2.0*(_i&1), 3000, BigFairy, stage4_cardbuster, VIEWPORT_W/6.0 + VIEWPORT_W/3.0*2*(_i&1)+100.0I,
-					VIEWPORT_W/4.0 + VIEWPORT_W/2.0*((_i+1)&1)+300.0I, VIEWPORT_W/2.0+VIEWPORT_H*I+200.0I);
+		create_enemy3c(VIEWPORT_W/4.0 + VIEWPORT_W/2.0*(_i&1), 3000, BigFairy, stage4_cardbuster, VIEWPORT_W/6.0 + VIEWPORT_W/3.0*2*(_i&1)+100.0*I,
+					VIEWPORT_W/4.0 + VIEWPORT_W/2.0*((_i+1)&1)+300.0*I, VIEWPORT_W/2.0+VIEWPORT_H*I+200.0*I);
 	}
 
 	AT(1800) {
@@ -770,32 +770,32 @@ void stage4_events(void) {
 	}
 
 	FROM_TO(2000, 2600, 20)
-		create_enemy1c(300.0I*frand(), 200, Fairy, stage4_fodder, 2);
+		create_enemy1c(300.0*I*frand(), 200, Fairy, stage4_fodder, 2);
 
 	FROM_TO(2000, 2400, 200)
-		create_enemy1c(VIEWPORT_W/2+200-400*frand(), 1000, BigFairy, stage4_bigcircle, 2.0I);
+		create_enemy1c(VIEWPORT_W/2+200-400*frand(), 1000, BigFairy, stage4_bigcircle, 2.0*I);
 
 	FROM_TO(2600, 2800, 10)
-		create_enemy1c(20.0I+VIEWPORT_H/3*I*frand()+VIEWPORT_W, 100, Swirl, stage4_explosive, -3);
+		create_enemy1c(20.0*I+VIEWPORT_H/3*I*frand()+VIEWPORT_W, 100, Swirl, stage4_explosive, -3);
 
 	AT(3200)
 		global.boss = create_kurumi_mid();
 
 	FROM_TO(3201, 3601, 10)
-		create_enemy1c(VIEWPORT_W*(_i&1)+VIEWPORT_H/2*I-300.0I*frand(), 200, Fairy, stage4_fodder, 2-4*(_i&1)+1.0I);
+		create_enemy1c(VIEWPORT_W*(_i&1)+VIEWPORT_H/2*I-300.0*I*frand(), 200, Fairy, stage4_fodder, 2-4*(_i&1)+1.0*I);
 
 	FROM_TO(3500, 4000, 100)
-		create_enemy3c(VIEWPORT_W/4.0 + VIEWPORT_W/2.0*(_i&1), 1000, BigFairy, stage4_cardbuster, VIEWPORT_W/6.0*(_i&1)+100.0I,
-					VIEWPORT_W/4.0+VIEWPORT_W/2.0*((_i+1)&1)+300.0I, VIEWPORT_W/2.0-200.0I);
+		create_enemy3c(VIEWPORT_W/4.0 + VIEWPORT_W/2.0*(_i&1), 1000, BigFairy, stage4_cardbuster, VIEWPORT_W/6.0*(_i&1)+100.0*I,
+					VIEWPORT_W/4.0+VIEWPORT_W/2.0*((_i+1)&1)+300.0*I, VIEWPORT_W/2.0-200.0*I);
 
 	AT(3800)
-		create_enemy1c(VIEWPORT_W/2, 7000, BigFairy, stage4_supercard, 4.0I);
+		create_enemy1c(VIEWPORT_W/2, 7000, BigFairy, stage4_supercard, 4.0*I);
 
 	FROM_TO(4300, 4600, 95-10*global.diff)
 		create_enemy1c(VIEWPORT_W*(_i&1)+100*I, 200, Swirl, stage4_backfire, frand()*(1-2*(_i&1)));
 
 	FROM_TO(4800, 5200, 10)
-		create_enemy1c(20.0I+I*VIEWPORT_H/3*frand()+VIEWPORT_W*(_i&1), 100, Swirl, stage4_explosive, (1-2*(_i&1))*3+I);
+		create_enemy1c(20.0*I+I*VIEWPORT_H/3*frand()+VIEWPORT_W*(_i&1), 100, Swirl, stage4_explosive, (1-2*(_i&1))*3+I);
 
 	AT(5300)
 		global.boss = create_kurumi();

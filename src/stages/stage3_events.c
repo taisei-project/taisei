@@ -112,7 +112,7 @@ int stage3_slavefairy(Enemy *e, int t) {
 	}
 
 	if(t >= 120)
-		e->pos += 3 * e->args[2] + 2.0I;
+		e->pos += 3 * e->args[2] + 2.0*I;
 
 	return 0;
 }
@@ -168,7 +168,7 @@ int stage3_bitchswirl(Enemy *e, int t) {
 		);
 	}
 
-	e->pos -= 5.0I * e->args[0];
+	e->pos -= 5.0*I * e->args[0];
 
 	return 0;
 }
@@ -223,7 +223,7 @@ int stage3_cornerfairy(Enemy *e, int t) {
 }
 
 void stage3_mid_intro(Boss *boss, int time) {
-	GO_TO(boss, VIEWPORT_W/2.0 + 100.0I, 0.03);
+	GO_TO(boss, VIEWPORT_W/2.0 + 100.0*I, 0.03);
 }
 
 void stage3_mid_outro(Boss *boss, int time) {
@@ -442,7 +442,7 @@ void stage3_boss_spellbg(Boss *b, int time) {
 }
 
 Boss* stage3_create_midboss(void) {
-	Boss *scuttle = create_boss("Scuttle", "scuttle", VIEWPORT_W/2 - 200.0I);
+	Boss *scuttle = create_boss("Scuttle", "scuttle", VIEWPORT_W/2 - 200.0*I);
 	boss_add_attack(scuttle, AT_Move, "Introduction", 2, 0, stage3_mid_intro, NULL);
 	boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 30, 25000, stage3_mid_a0, NULL);
 	boss_add_attack_from_info(scuttle, stage3_spells+0, false);
@@ -768,11 +768,11 @@ void stage3_boss_intro(Boss *boss, int time) {
 	if(time == 110)
 		global.dialog = stage3_dialog();
 
-	GO_TO(boss, VIEWPORT_W/2.0 + 100.0I, 0.03);
+	GO_TO(boss, VIEWPORT_W/2.0 + 100.0*I, 0.03);
 }
 
 Boss* stage3_create_boss(void) {
-	Boss *wriggle = create_boss("Wriggle EX", "wriggleex", VIEWPORT_W/2 - 200.0I);
+	Boss *wriggle = create_boss("Wriggle EX", "wriggleex", VIEWPORT_W/2 - 200.0*I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage3_boss_intro, NULL);
 
 	boss_add_attack(wriggle, AT_Normal, "", 20, 15000, stage3_boss_prea1, NULL);
@@ -814,8 +814,8 @@ void stage3_events(void) {
 	AT(2400) {
 		double offs = -50;
 
-		complex p1 = 0+0.0I;
-		complex p2 = VIEWPORT_W+0.0I;
+		complex p1 = 0+0.0*I;
+		complex p2 = VIEWPORT_W+0.0*I;
 		complex p3 = VIEWPORT_W + VIEWPORT_H*I;
 		complex p4 = 0+VIEWPORT_H*I;
 
@@ -853,8 +853,8 @@ void stage3_events(void) {
 	AT(4330) {
 		double offs = -50;
 
-		complex p1 = 0+0.0I;
-		complex p2 = VIEWPORT_W+0.0I;
+		complex p1 = 0+0.0*I;
+		complex p2 = VIEWPORT_W+0.0*I;
 		complex p3 = VIEWPORT_W + VIEWPORT_H*I;
 		complex p4 = 0+VIEWPORT_H*I;
 
@@ -865,8 +865,8 @@ void stage3_events(void) {
 	}
 
 	FROM_TO(4760, 4940, 10) {
-		create_enemy2c(VIEWPORT_W-20 - 20.0I, 50, Swirl, stage3_bitchswirl, -0.5, 1);
-		create_enemy2c(20 + -20.0I, 50, Swirl, stage3_bitchswirl, -0.5, 1);
+		create_enemy2c(VIEWPORT_W-20 - 20.0*I, 50, Swirl, stage3_bitchswirl, -0.5, 1);
+		create_enemy2c(20 + -20.0*I, 50, Swirl, stage3_bitchswirl, -0.5, 1);
 	}
 
 	AT(5300)
