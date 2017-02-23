@@ -28,11 +28,17 @@ typedef struct ZData {
 	uint8_t *buffer_ptr;
 	size_t buffer_size;
 
-	uint8_t *buffer_aux;
-
 	union {
-		size_t buffer_aux_size;
-		size_t buffer_fillsize;
+		// deflate
+		struct {
+			uint8_t *buffer_aux;
+			size_t buffer_aux_size;
+		};
+
+		// inflate
+		struct {
+			size_t buffer_fillsize;
+		};
 	};
 
 	enum {
@@ -72,11 +78,11 @@ static int common_close(SDL_RWops *rw) {
 		if(z->type == TYPE_DEFLATE) {
 			deflate_flush(z);
 			deflateEnd(z->stream);
+			free(z->buffer_aux);
 		} else {
 			inflateEnd(z->stream);
 		}
 
-		free(z->buffer_aux);
 		free(z->buffer);
 		free(z->stream);
 
