@@ -107,7 +107,8 @@ void load_bgm_descriptions(const char *path) {
 		*(rem++)='\0';
 		Bgm_desc *desc = create_element((void **)&resources.bgm_descriptions, sizeof(Bgm_desc));
 
-		desc->name  = strdup(line);
+		desc->name = NULL;
+		stralloc(&desc->name, line);
 		desc->value = malloc(strlen(rem) + 6);
 		if (!desc->name || !desc->value)
 		{
@@ -142,7 +143,7 @@ void start_bgm(char *name) {
 	if (!current_bgm.name || strcmp(name, current_bgm.name))
 	{
 		Mix_HaltMusic();
-		
+
 		current_bgm.name = realloc(current_bgm.name, strlen(name) + 1);
 		if(current_bgm.name == NULL)
 			errx(-1,"start_bgm():\n!- realloc error with music '%s'", name);
@@ -159,7 +160,7 @@ void start_bgm(char *name) {
 
 	if(Mix_PausedMusic()) Mix_ResumeMusic(); // Unpause music if paused
 	if(Mix_PlayingMusic()) return; // Do nothing if music already playing (or was just unpaused)
-	
+
 	if(Mix_PlayMusic(current_bgm.data->music, -1) == -1) // Start playing otherwise
 		printf("Failed starting BGM %s: %s.\n", current_bgm.name, Mix_GetError());
 	// Support drawing BGM title in game loop (only when music changed!)
@@ -173,7 +174,7 @@ void start_bgm(char *name) {
 	{
 		current_bgm.started_at = -1;
 	}
-	
+
 	printf("Started %s\n", (current_bgm.title ? current_bgm.title : current_bgm.name));
 }
 
@@ -198,15 +199,14 @@ void stop_bgm(void) {
 
 void save_bgm(void)
 {
-	free(saved_bgm); // Deal with consequent saves without restore.
-	saved_bgm = current_bgm.name ? strdup(current_bgm.name) : NULL;
+	// Deal with consequent saves without restore.
+	stralloc(&saved_bgm, current_bgm.name);
 }
 
 void restore_bgm(void)
 {
 	start_bgm(saved_bgm);
-	free(saved_bgm);
-	saved_bgm = NULL;
+	stralloc(&saved_bgm, NULL);
 }
 
 void set_bgm_volume(float gain)

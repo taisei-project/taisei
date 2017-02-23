@@ -194,7 +194,7 @@ static size_t deflate_write(SDL_RWops *rw, const void *ptr, size_t size, size_t 
 
 		if(available) {
 			remaining -= copysize;
-			memcpy(z->buffer_ptr, ptr + offset, copysize);
+			memcpy(z->buffer_ptr, (uint8_t*)ptr + offset, copysize);
 			printbuf(z->buffer_ptr, copysize);
 			offset += copysize;
 			z->buffer_ptr += copysize;

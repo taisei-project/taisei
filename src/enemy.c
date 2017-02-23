@@ -8,7 +8,6 @@
 #include "enemy.h"
 
 #include <stdlib.h>
-#include <math.h>
 #include "global.h"
 #include "projectile.h"
 #include "list.h"

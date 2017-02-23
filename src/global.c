@@ -271,8 +271,13 @@ void difficulty_color(Color *c, Difficulty diff) {
 void stralloc(char **dest, const char *src) {
 	if(*dest)
 		free(*dest);
-	*dest = malloc(strlen(src)+1);
-	strcpy(*dest, src);
+
+	if(src) {
+		*dest = malloc(strlen(src)+1);
+		strcpy(*dest, src);
+	} else {
+		*dest = NULL;
+	}
 }
 
 // Inputdevice-agnostic method of checking whether a game control is pressed.

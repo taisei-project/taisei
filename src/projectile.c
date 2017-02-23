@@ -8,7 +8,6 @@
 #include "projectile.h"
 
 #include <stdlib.h>
-#include <math.h>
 #include "global.h"
 #include "list.h"
 #include "vbo.h"

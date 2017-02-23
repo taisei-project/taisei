@@ -21,8 +21,8 @@ void init_vbo(VBO *vbo, int size) {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex)*size, NULL, GL_STATIC_DRAW);
 
 	glVertexPointer(3, GL_FLOAT, sizeof(Vertex), NULL);
-	glNormalPointer(GL_FLOAT, sizeof(Vertex), NULL + sizeof(Vector));
-	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), NULL + 2*sizeof(Vector));
+	glNormalPointer(GL_FLOAT, sizeof(Vertex), (uint8_t*)NULL + sizeof(Vector));
+	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), (uint8_t*)NULL + 2*sizeof(Vector));
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
