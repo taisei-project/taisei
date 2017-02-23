@@ -1,11 +1,11 @@
 
 find_package(PkgConfig REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(ZLIB REQUIRED)
 
 pkg_check_modules(SDL2 sdl2 REQUIRED)
 pkg_check_modules(SDL2_TTF SDL2_ttf REQUIRED)
 pkg_check_modules(SDL2_MIXER SDL2_mixer REQUIRED)
+pkg_check_modules(ZLIB zlib REQUIRED)
 pkg_check_modules(PNG libpng REQUIRED)
 
 set(SRCs
