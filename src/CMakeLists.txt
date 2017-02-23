@@ -4,9 +4,13 @@ find_package(OpenGL REQUIRED)
 
 pkg_check_modules(SDL2 sdl2 REQUIRED)
 pkg_check_modules(SDL2_TTF SDL2_ttf REQUIRED)
-pkg_check_modules(SDL2_MIXER SDL2_mixer REQUIRED)
 pkg_check_modules(ZLIB zlib REQUIRED)
 pkg_check_modules(PNG libpng REQUIRED)
+
+if(NOT NO_AUDIO)
+	pkg_check_modules(SDL2_MIXER SDL2_mixer REQUIRED)
+	add_definitions(-DHAVE_MIXER)
+endif()
 
 set(SRCs
 	main.c
@@ -64,8 +68,6 @@ set(SRCs
 	resource/animation.c
 	resource/font.c
 	resource/shader.c
-	resource/audio.c
-	resource/bgm.c
 	resource/model.c
 	rwops/rwops_zlib.c
 	rwops/rwops_segment.c
@@ -78,6 +80,12 @@ elseif(RELATIVE)
 	set(SRCs ${SRCs} paths/relative.c)
 else()
 	set(SRCs ${SRCs} paths/static.c)
+endif()
+
+if(NO_AUDIO)
+	set(SRCs ${SRCs} resource/audio_null.c resource/bgm_null.c)
+else()
+	set(SRCs ${SRCs} resource/audio.c resource/bgm.c)
 endif()
 
 if(WIN32)

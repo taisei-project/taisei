@@ -26,9 +26,9 @@ struct current_bgm_t {
 	int started_at;
 };
 
-Sound *load_bgm(char *filename);
-
 extern struct current_bgm_t current_bgm;
+
+Sound *load_bgm(char *filename);
 
 void start_bgm(char *name);
 void stop_bgm(void);

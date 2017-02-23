@@ -8,7 +8,12 @@
 #ifndef AUDIO_H
 #define AUDIO_H
 
+#ifdef HAVE_MIXER
 #include <SDL_mixer.h>
+#else
+typedef void Mix_Chunk;
+typedef void Mix_Music;
+#endif
 
 #define SNDCHAN_COUNT 100
 
