@@ -30,7 +30,7 @@ ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, D
 	ReplayStage *s;
 
 	rpy->stages = (ReplayStage*)realloc(rpy->stages, sizeof(ReplayStage) * (++rpy->numstages));
-	s = &(rpy->stages[rpy->numstages-1]);
+	s = rpy->stages + rpy->numstages - 1;
 	memset(s, 0, sizeof(ReplayStage));
 
 	s->capacity = REPLAY_ALLOC_INITIAL;
@@ -81,7 +81,7 @@ static void replay_destroy_stage(ReplayStage *stage) {
 void replay_destroy_events(Replay *rpy) {
 	if(rpy->stages) {
 		for(int i = 0; i < rpy->numstages; ++i) {
-			ReplayStage *stg = &rpy->stages[i];
+			ReplayStage *stg = rpy->stages + i;
 
 			if(stg->events) {
 				free(stg->events);
@@ -94,7 +94,7 @@ void replay_destroy_events(Replay *rpy) {
 void replay_destroy(Replay *rpy) {
 	if(rpy->stages) {
 		for(int i = 0; i < rpy->numstages; ++i) {
-			replay_destroy_stage(&(rpy->stages[i]));
+			replay_destroy_stage(rpy->stages + i);
 		}
 
 		free(rpy->stages);
@@ -114,7 +114,7 @@ void replay_stage_event(ReplayStage *stg, uint32_t frame, uint8_t type, int16_t 
 	}
 
 	ReplayStage *s = stg;
-	ReplayEvent *e = &(s->events[s->numevents]);
+	ReplayEvent *e = s->events + s->numevents;
 	e->frame = frame;
 	e->type = type;
 	e->value = (uint16_t)value;
@@ -215,7 +215,7 @@ int replay_write(Replay *rpy, SDL_RWops *file, bool compression) {
 	SDL_WriteLE16(vfile, rpy->numstages);
 
 	for(i = 0; i < rpy->numstages; ++i) {
-		if(!replay_write_stage(&rpy->stages[i], vfile)) {
+		if(!replay_write_stage(rpy->stages + i, vfile)) {
 			if(compression) {
 				SDL_RWclose(vfile);
 				SDL_RWclose(abuf);
@@ -234,9 +234,9 @@ int replay_write(Replay *rpy, SDL_RWops *file, bool compression) {
 	}
 
 	for(i = 0; i < rpy->numstages; ++i) {
-		ReplayStage *stg = &rpy->stages[i];
+		ReplayStage *stg = rpy->stages + i;
 		for(j = 0; j < stg->numevents; ++j) {
-			if(!replay_write_stage_event(&stg->events[j], vfile)) {
+			if(!replay_write_stage_event(stg->events + j, vfile)) {
 				if(compression) {
 					SDL_RWclose(vfile);
 				}
@@ -310,7 +310,7 @@ static int replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 	memset(rpy->stages, 0, sizeof(ReplayStage) * rpy->numstages);
 
 	for(int i = 0; i < rpy->numstages; ++i) {
-		ReplayStage *stg = &rpy->stages[i];
+		ReplayStage *stg = rpy->stages + i;
 
 		CHECKPROP(stg->stage = SDL_ReadLE16(file), u);
 		CHECKPROP(stg->seed = SDL_ReadLE32(file), u);
@@ -339,7 +339,7 @@ static int replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 
 static int replay_read_events(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 	for(int i = 0; i < rpy->numstages; ++i) {
-		ReplayStage *stg = &rpy->stages[i];
+		ReplayStage *stg = rpy->stages + i;
 
 		if(!stg->numevents) {
 			warnx("replay_read(): no events in stage");
@@ -350,7 +350,7 @@ static int replay_read_events(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 		memset(stg->events, 0, sizeof(ReplayEvent) * stg->numevents);
 
 		for(int j = 0; j < stg->numevents; ++j) {
-			ReplayEvent *evt = &stg->events[j];
+			ReplayEvent *evt = stg->events + j;
 
 			CHECKPROP(evt->frame = SDL_ReadLE32(file), u);
 			CHECKPROP(evt->type = SDL_ReadU8(file), u);
@@ -549,8 +549,8 @@ void replay_copy(Replay *dst, Replay *src, bool steal_events) {
 
 	for(i = 0; i < src->numstages; ++i) {
 		ReplayStage *s, *d;
-		s = &(src->stages[i]);
-		d = &(dst->stages[i]);
+		s = src->stages + i;
+		d = dst->stages + i;
 
 		if(steal_events) {
 			s->events = NULL;
