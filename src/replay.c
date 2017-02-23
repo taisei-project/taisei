@@ -203,10 +203,11 @@ int replay_write(Replay *rpy, SDL_RWops *file, bool compression) {
 	SDL_WriteLE16(file, version);
 
 	void *buf;
-	SDL_RWops *abuf = SDL_RWAutoBuffer(&buf, 64);
+	SDL_RWops *abuf = NULL;
 	SDL_RWops *vfile = file;
 
 	if(compression) {
+		abuf = SDL_RWAutoBuffer(&buf, 64);
 		vfile = SDL_RWWrapZWriter(abuf, REPLAY_COMPRESSION_CHUNK_SIZE);
 	}
 
@@ -224,12 +225,8 @@ int replay_write(Replay *rpy, SDL_RWops *file, bool compression) {
 	if(compression) {
 		SDL_RWclose(vfile);
 		SDL_WriteLE32(file, SDL_RWtell(file) + SDL_RWtell(abuf) + 4);
-	}
-
-	SDL_RWwrite(file, buf, SDL_RWtell(abuf), 1);
-	SDL_RWclose(abuf);
-
-	if(compression) {
+		SDL_RWwrite(file, buf, SDL_RWtell(abuf), 1);
+		SDL_RWclose(abuf);
 		vfile = SDL_RWWrapZWriter(file, REPLAY_COMPRESSION_CHUNK_SIZE);
 	}
 
