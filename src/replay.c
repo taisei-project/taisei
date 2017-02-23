@@ -216,8 +216,11 @@ int replay_write(Replay *rpy, SDL_RWops *file, bool compression) {
 
 	for(i = 0; i < rpy->numstages; ++i) {
 		if(!replay_write_stage(&rpy->stages[i], vfile)) {
-			SDL_RWclose(vfile);
-			SDL_RWclose(abuf);
+			if(compression) {
+				SDL_RWclose(vfile);
+				SDL_RWclose(abuf);
+			}
+
 			return false;
 		}
 	}
@@ -234,6 +237,10 @@ int replay_write(Replay *rpy, SDL_RWops *file, bool compression) {
 		ReplayStage *stg = &rpy->stages[i];
 		for(j = 0; j < stg->numevents; ++j) {
 			if(!replay_write_stage_event(&stg->events[j], vfile)) {
+				if(compression) {
+					SDL_RWclose(vfile);
+				}
+
 				return false;
 			}
 		}
