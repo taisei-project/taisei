@@ -76,10 +76,7 @@ static int common_close(SDL_RWops *rw) {
 			inflateEnd(z->stream);
 		}
 
-		if(z->buffer_aux) {
-			free(z->buffer_aux);
-		}
-
+		free(z->buffer_aux);
 		free(z->buffer);
 		free(z->stream);
 

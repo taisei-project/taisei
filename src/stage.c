@@ -246,9 +246,7 @@ void stage_free_array(void) {
 			free(stg->subtitle);
 		}
 
-		if(stg->progress) {
-			free(stg->progress);
-		}
+		free(stg->progress);
 	}
 }
 

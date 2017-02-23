@@ -70,27 +70,29 @@ void replay_stage_sync_player_state(ReplayStage *stg, Player *plr) {
 }
 
 static void replay_destroy_stage(ReplayStage *stage) {
-	if(stage->events) {
-		free(stage->events);
-	}
-
+	free(stage->events);
 	memset(stage, 0, sizeof(ReplayStage));
 }
 
 void replay_destroy_events(Replay *rpy) {
+	if(!rpy) {
+		return;
+	}
+
 	if(rpy->stages) {
 		for(int i = 0; i < rpy->numstages; ++i) {
 			ReplayStage *stg = rpy->stages + i;
-
-			if(stg->events) {
-				free(stg->events);
-				stg->events = NULL;
-			}
+			free(stg->events);
+			stg->events = NULL;
 		}
 	}
 }
 
 void replay_destroy(Replay *rpy) {
+	if(!rpy) {
+		return;
+	}
+
 	if(rpy->stages) {
 		for(int i = 0; i < rpy->numstages; ++i) {
 			replay_destroy_stage(rpy->stages + i);
@@ -99,9 +101,7 @@ void replay_destroy(Replay *rpy) {
 		free(rpy->stages);
 	}
 
-	if(rpy->playername) {
-		free(rpy->playername);
-	}
+	free(rpy->playername);
 
 	memset(rpy, 0, sizeof(Replay));
 	printf("Replay destroyed.\n");

@@ -61,8 +61,7 @@ void _delete_projectile(void **projs, void *proj) {
 	Projectile *p = proj;
 	p->rule(p, EVENT_DEATH);
 
-	if(p->clr)
-		free(p->clr);
+	free(p->clr);
 	del_ref(proj);
 	delete_element(projs, proj);
 }

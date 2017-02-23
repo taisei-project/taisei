@@ -74,16 +74,9 @@ void replayview_run(MenuData *menu, void *arg) {
 
 static void replayview_freearg(void *a) {
 	ReplayviewItemContext *ctx = a;
-
-	if(ctx->replay) {
-		replay_destroy(ctx->replay);
-		free(ctx->replay);
-	}
-
-	if(ctx->replayname) {
-		free(ctx->replayname);
-	}
-
+	replay_destroy(ctx->replay);
+	free(ctx->replay);
+	free(ctx->replayname);
 	free(ctx);
 }
 

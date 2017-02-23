@@ -75,8 +75,7 @@ void draw_stage3d(Stage3D *s, float maxrange) {
 }
 
 void free_stage3d(Stage3D *s) {
-	if(s->models != NULL)
-		free(s->models);
+	free(s->models);
 }
 
 Vector **linear3dpos(Vector q, float maxrange, Vector p, Vector r) {

@@ -69,7 +69,7 @@ static void config_delete_unknown_entries(void);
 
 void config_uninit(void) {
 	for(ConfigEntry *e = configdefs; e->name; ++e) {
-		if(e->type == CONFIG_TYPE_STRING && e->val.s) {
+		if(e->type == CONFIG_TYPE_STRING) {
 			free(e->val.s);
 			e->val.s = NULL;
 		}
@@ -259,13 +259,8 @@ static void config_set_unknown(const char *name, const char *val) {
 static void config_delete_unknown_entry(void **list, void *lentry) {
 	ConfigEntry *e = &((ConfigEntryList*)lentry)->entry;
 
-	if(e->name) {
-		free(e->name);
-	}
-
-	if(e->val.s) {
-		free(e->val.s);
-	}
+	free(e->name);
+	free(e->val.s);
 
 	delete_element(list, lentry);
 }

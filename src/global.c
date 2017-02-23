@@ -269,8 +269,7 @@ void difficulty_color(Color *c, Difficulty diff) {
 }
 
 void stralloc(char **dest, const char *src) {
-	if(*dest)
-		free(*dest);
+	free(*dest);
 
 	if(src) {
 		*dest = malloc(strlen(src)+1);
