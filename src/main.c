@@ -34,7 +34,6 @@ void init_gl(void) {
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-
 void taisei_shutdown(void) {
 	config_save(CONFIG_FILE);
 	progress_save();
@@ -77,6 +76,10 @@ int run_tests(void) {
 	}
 
 	if(replay_test()) {
+		return 1;
+	}
+
+	if(zrwops_test()) {
 		return 1;
 	}
 

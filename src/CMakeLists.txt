@@ -67,6 +67,9 @@ set(SRCs
 	resource/audio.c
 	resource/bgm.c
 	resource/model.c
+	rwops/rwops_zlib.c
+	rwops/rwops_segment.c
+	rwops/rwops_autobuf.c
 )
 
 if(USE_SDL2_PATHS)

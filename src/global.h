@@ -39,6 +39,7 @@
 #include "events.h"
 
 #include "taisei_err.h"
+#include "rwops/all.h"
 
 #define FILE_PREFIX PREFIX "/share/taisei/"
 #define CONFIG_FILE "config"

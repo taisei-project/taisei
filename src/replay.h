@@ -27,6 +27,10 @@
 
 // -}
 
+#define REPLAY_VERSION_COMPRESSION_BIT 0x8000
+#define REPLAY_COMPRESSION_CHUNK_SIZE 4096
+#define REPLAY_WRITE_COMPRESSED true
+
 #define REPLAY_ALLOC_INITIAL 256
 
 #define REPLAY_MAGIC_HEADER { 0x68, 0x6f, 0x6e, 0x6f, 0xe2, 0x9d, 0xa4, 0x75, 0x6d, 0x69 }
@@ -93,7 +97,11 @@ typedef struct Replay {
 	// uint8_t[sizeof(replay_magic_header)];
 
 	// must be equal to REPLAY_STRUCT_VERSION
-	// uint16_t version;
+	uint16_t version;
+
+	// Where the events begin
+	// NOTE: this is not present in uncompressed replays!
+	uint32_t fileoffset;
 
 	// How many bytes is {playername} long. The string is not null terminated in the file, but is null terminated after it's been loaded into this struct
 	// uint16_t playername_size;
@@ -116,8 +124,6 @@ typedef struct Replay {
 	// uint8_t useless;
 
 	/* END stored fields */
-
-	size_t fileoffset;
 } Replay;
 
 typedef enum {
@@ -143,7 +149,7 @@ void replay_stage_event(ReplayStage *stg, uint32_t frame, uint8_t type, int16_t 
 void replay_stage_check_desync(ReplayStage *stg, int time, uint16_t check, ReplayMode mode);
 void replay_stage_sync_player_state(ReplayStage *stg, Player *plr);
 
-int replay_write(Replay *rpy, SDL_RWops *file);
+int replay_write(Replay *rpy, SDL_RWops *file, bool compression);
 int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode);
 
 int replay_save(Replay *rpy, const char *name);

@@ -30,7 +30,7 @@ ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, D
 	ReplayStage *s;
 
 	rpy->stages = (ReplayStage*)realloc(rpy->stages, sizeof(ReplayStage) * (++rpy->numstages));
-	s = &(rpy->stages[rpy->numstages-1]);
+	s = rpy->stages + rpy->numstages - 1;
 	memset(s, 0, sizeof(ReplayStage));
 
 	s->capacity = REPLAY_ALLOC_INITIAL;
@@ -81,7 +81,7 @@ static void replay_destroy_stage(ReplayStage *stage) {
 void replay_destroy_events(Replay *rpy) {
 	if(rpy->stages) {
 		for(int i = 0; i < rpy->numstages; ++i) {
-			ReplayStage *stg = &rpy->stages[i];
+			ReplayStage *stg = rpy->stages + i;
 
 			if(stg->events) {
 				free(stg->events);
@@ -94,7 +94,7 @@ void replay_destroy_events(Replay *rpy) {
 void replay_destroy(Replay *rpy) {
 	if(rpy->stages) {
 		for(int i = 0; i < rpy->numstages; ++i) {
-			replay_destroy_stage(&(rpy->stages[i]));
+			replay_destroy_stage(rpy->stages + i);
 		}
 
 		free(rpy->stages);
@@ -114,7 +114,7 @@ void replay_stage_event(ReplayStage *stg, uint32_t frame, uint8_t type, int16_t 
 	}
 
 	ReplayStage *s = stg;
-	ReplayEvent *e = &(s->events[s->numevents]);
+	ReplayEvent *e = s->events + s->numevents;
 	e->frame = frame;
 	e->type = type;
 	e->value = (uint16_t)value;
@@ -186,7 +186,7 @@ static int replay_write_stage(ReplayStage *stg, SDL_RWops *file) {
 	return true;
 }
 
-int replay_write(Replay *rpy, SDL_RWops *file) {
+int replay_write(Replay *rpy, SDL_RWops *file, bool compression) {
 	uint8_t *u8_p;
 	int i, j;
 
@@ -194,23 +194,60 @@ int replay_write(Replay *rpy, SDL_RWops *file) {
 		SDL_WriteU8(file, *u8_p);
 	}
 
-	SDL_WriteLE16(file, REPLAY_STRUCT_VERSION);
-	replay_write_string(file, rpy->playername);
-	SDL_WriteLE16(file, rpy->numstages);
+	uint16_t version = REPLAY_STRUCT_VERSION;
+
+	if(compression) {
+		version |= REPLAY_VERSION_COMPRESSION_BIT;
+	}
+
+	SDL_WriteLE16(file, version);
+
+	void *buf;
+	SDL_RWops *abuf = NULL;
+	SDL_RWops *vfile = file;
+
+	if(compression) {
+		abuf = SDL_RWAutoBuffer(&buf, 64);
+		vfile = SDL_RWWrapZWriter(abuf, REPLAY_COMPRESSION_CHUNK_SIZE, false);
+	}
+
+	replay_write_string(vfile, rpy->playername);
+	SDL_WriteLE16(vfile, rpy->numstages);
 
 	for(i = 0; i < rpy->numstages; ++i) {
-		if(!replay_write_stage(&rpy->stages[i], file)) {
+		if(!replay_write_stage(rpy->stages + i, vfile)) {
+			if(compression) {
+				SDL_RWclose(vfile);
+				SDL_RWclose(abuf);
+			}
+
 			return false;
 		}
 	}
 
+	if(compression) {
+		SDL_RWclose(vfile);
+		SDL_WriteLE32(file, SDL_RWtell(file) + SDL_RWtell(abuf) + 4);
+		SDL_RWwrite(file, buf, SDL_RWtell(abuf), 1);
+		SDL_RWclose(abuf);
+		vfile = SDL_RWWrapZWriter(file, REPLAY_COMPRESSION_CHUNK_SIZE, false);
+	}
+
 	for(i = 0; i < rpy->numstages; ++i) {
-		ReplayStage *stg = &rpy->stages[i];
+		ReplayStage *stg = rpy->stages + i;
 		for(j = 0; j < stg->numevents; ++j) {
-			if(!replay_write_stage_event(&stg->events[j], file)) {
+			if(!replay_write_stage_event(stg->events + j, vfile)) {
+				if(compression) {
+					SDL_RWclose(vfile);
+				}
+
 				return false;
 			}
 		}
+	}
+
+	if(compression) {
+		SDL_RWclose(vfile);
 	}
 
 	// useless byte to simplify the premature EOF check, can be anything
@@ -236,7 +273,7 @@ static void replay_read_string(SDL_RWops *file, char **ptr) {
 	SDL_RWread(file, *ptr, 1, len);
 }
 
-static int replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize) {
+static int replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 	for(uint8_t *u8_p = replay_magic_header; *u8_p; ++u8_p) {
 		if(SDL_ReadU8(file) != *u8_p) {
 			warnx("replay_read(): incorrect header");
@@ -244,11 +281,21 @@ static int replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 		}
 	}
 
-	if(SDL_ReadLE16(file) != REPLAY_STRUCT_VERSION) {
+	CHECKPROP(rpy->version = SDL_ReadLE16(file), u);
+
+	if((rpy->version & ~REPLAY_VERSION_COMPRESSION_BIT) != REPLAY_STRUCT_VERSION) {
 		warnx("replay_read(): incorrect version");
 		return false;
 	}
 
+	if(rpy->version & REPLAY_VERSION_COMPRESSION_BIT) {
+		CHECKPROP(rpy->fileoffset = SDL_ReadLE32(file), u);
+	}
+
+	return true;
+}
+
+static int replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 	replay_read_string(file, &rpy->playername);
 	PRINTPROP(rpy->playername, s);
 
@@ -263,7 +310,7 @@ static int replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 	memset(rpy->stages, 0, sizeof(ReplayStage) * rpy->numstages);
 
 	for(int i = 0; i < rpy->numstages; ++i) {
-		ReplayStage *stg = &rpy->stages[i];
+		ReplayStage *stg = rpy->stages + i;
 
 		CHECKPROP(stg->stage = SDL_ReadLE16(file), u);
 		CHECKPROP(stg->seed = SDL_ReadLE32(file), u);
@@ -287,13 +334,12 @@ static int replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 		}
 	}
 
-	rpy->fileoffset = SDL_RWtell(file);
 	return true;
 }
 
 static int replay_read_events(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 	for(int i = 0; i < rpy->numstages; ++i) {
-		ReplayStage *stg = &rpy->stages[i];
+		ReplayStage *stg = rpy->stages + i;
 
 		if(!stg->numevents) {
 			warnx("replay_read(): no events in stage");
@@ -304,7 +350,7 @@ static int replay_read_events(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 		memset(stg->events, 0, sizeof(ReplayEvent) * stg->numevents);
 
 		for(int j = 0; j < stg->numevents; ++j) {
-			ReplayEvent *evt = &stg->events[j];
+			ReplayEvent *evt = stg->events + j;
 
 			CHECKPROP(evt->frame = SDL_ReadLE32(file), u);
 			CHECKPROP(evt->type = SDL_ReadU8(file), u);
@@ -317,6 +363,8 @@ static int replay_read_events(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 
 int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 	int64_t filesize; // must be signed
+	SDL_RWops *vfile = file;
+
 	mode &= REPLAY_READ_ALL;
 
 	if(!mode) {
@@ -340,8 +388,37 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 			return false;
 		}
 
-		if(!replay_read_meta(rpy, file, filesize)) {
+		if(!replay_read_header(rpy, file, filesize)) {
 			return false;
+		}
+
+		bool compression = false;
+
+		if(rpy->version & REPLAY_VERSION_COMPRESSION_BIT) {
+			if(rpy->fileoffset < SDL_RWtell(file)) {
+				warnx("replay_read(): invalid offset %li", (long int)rpy->fileoffset);
+				return false;
+			}
+
+			vfile = SDL_RWWrapZReader(SDL_RWWrapSegment(file, 0, rpy->fileoffset, false),
+									  REPLAY_COMPRESSION_CHUNK_SIZE, true);
+			filesize = -1;
+			compression = true;
+		}
+
+		if(!replay_read_meta(rpy, vfile, filesize)) {
+			if(compression) {
+				SDL_RWclose(vfile);
+			}
+
+			return false;
+		}
+
+		if(compression) {
+			SDL_RWclose(vfile);
+			vfile = file;
+		} else {
+			rpy->fileoffset = SDL_RWtell(file);
 		}
 	}
 
@@ -366,9 +443,25 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 			}
 		}
 
-		if(!replay_read_events(rpy, file, filesize)) {
+		bool compression = false;
+
+		if(rpy->version & REPLAY_VERSION_COMPRESSION_BIT) {
+			vfile = SDL_RWWrapZReader(file, REPLAY_COMPRESSION_CHUNK_SIZE, false);
+			filesize = -1;
+			compression = true;
+		}
+
+		if(!replay_read_events(rpy, vfile, filesize)) {
+			if(compression) {
+				SDL_RWclose(vfile);
+			}
+
 			replay_destroy_events(rpy);
 			return false;
+		}
+
+		if(compression) {
+			SDL_RWclose(vfile);
 		}
 
 		// useless byte to simplify the premature EOF check, can be anything
@@ -405,7 +498,7 @@ int replay_save(Replay *rpy, const char *name) {
 		return false;
 	}
 
-	int result = replay_write(rpy, file);
+	int result = replay_write(rpy, file, REPLAY_WRITE_COMPRESSED);
 	SDL_RWclose(file);
 	return result;
 }
@@ -456,8 +549,8 @@ void replay_copy(Replay *dst, Replay *src, bool steal_events) {
 
 	for(i = 0; i < src->numstages; ++i) {
 		ReplayStage *s, *d;
-		s = &(src->stages[i]);
-		d = &(dst->stages[i]);
+		s = src->stages + i;
+		d = dst->stages + i;
 
 		if(steal_events) {
 			s->events = NULL;
