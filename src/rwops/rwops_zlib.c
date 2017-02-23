@@ -293,6 +293,10 @@ SDL_RWops* SDL_RWWrapZWriter(SDL_RWops *src, size_t bufsize) {
 	return rw;
 }
 
+z_stream* SDL_RWGetZStream(SDL_RWops *rw) {
+	return ZDATA(rw)->stream;
+}
+
 int zrwops_test(void) {
 #ifdef TEST_ZRWOPS
 	const size_t chunksize = 16;
