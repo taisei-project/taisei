@@ -20,15 +20,20 @@ GLDEFS
 #undef GLDEF
 #endif
 
+typedef void (*tsglproc_ptr)();
+
 #ifndef LINK_TO_LIBGL
-static void* get_proc_address(const char *name) {
+static tsglproc_ptr get_proc_address(const char *name) {
 	void *addr = SDL_GL_GetProcAddress(name);
 
 	if(!addr) {
 		warnx("load_gl_functions(): SDL_GL_GetProcAddress(\"%s\") failed: %s", name, SDL_GetError());
 	}
 
-	return addr;
+	// shut up a stupid warning about conversion between data pointers and function pointers
+	// yes, such a conversion is not allowed by the standard, but when several major APIs
+	// (POSIX and SDL to name a few) require casting void* to a function pointer, that says something.
+	return *(tsglproc_ptr*)&addr;
 }
 #endif
 
