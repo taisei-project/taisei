@@ -101,6 +101,7 @@ int stage5_lightburst(Enemy *e, int t) {
 	return 1;
 }
 
+
 int stage5_swirl(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
@@ -202,6 +203,22 @@ int stage5_explosion(Enemy *e, int t) {
 	return 1;
 }
 
+void iku_slave_draw(Enemy *e, int t) {
+	complex offset = (frand()-0.5)*10 + (frand()-0.5)*10.0I;
+	if(e->args[2] && !(t % 5)) {
+		char *part = frand() > 0.5 ? "lightning0" : "lightning1";
+		Projectile *p = create_particle1c(part, e->pos+3*offset, rgb(1.0, 1.0, 1.0), FadeAdd, timeout, 20);
+		p->angle = frand()*2*M_PI;
+
+	}
+	if(!(t % 3)) {
+		float alpha = 1;
+		if(!e->args[2])
+			alpha *= 0.03;
+		create_particle3c("lightningball", e->pos, rgba(.1*alpha, .1*alpha, .6*alpha, 0.1*alpha), FadeAdd, enemy_flare, 50,offset*0.1,add_ref(e));
+	}
+	
+}
 
 void iku_mid_intro(Boss *b, int t) {
 	TIMER(&t);
@@ -209,7 +226,7 @@ void iku_mid_intro(Boss *b, int t) {
 	b->pos += -1-7.0*I+10*t*(cimag(b->pos)<-200);
 
 	FROM_TO(90, 110, 10) {
-		create_enemy2c(b->pos, ENEMY_IMMUNE, Swirl, stage5_explosion, -2-0.5*_i+I*_i, _i == 1);
+		create_enemy3c(b->pos, ENEMY_IMMUNE, iku_slave_draw, stage5_explosion, -2-0.5*_i+I*_i, _i == 1,1);
 	}
 
 	AT(960)
@@ -516,22 +533,6 @@ Enemy* iku_extra_find_next_slave(complex from, double playerbias) {
 	return nearest;
 }
 
-void iku_slave_draw(Enemy *e, int t) {
-	complex offset = (frand()-0.5)*10 + (frand()-0.5)*10.0I;
-	if(e->args[2] && !(t % 5)) {
-		char *part = frand() > 0.5 ? "lightning0" : "lightning1";
-		Projectile *p = create_particle1c(part, e->pos+3*offset, rgb(1.0, 1.0, 1.0), FadeAdd, timeout, 20);
-		p->angle = frand()*2*M_PI;
-
-	}
-	if(!(t % 3)) {
-		float alpha = 1;
-		if(!e->args[2])
-			alpha *= 0.03;
-		create_particle3c("lightningball", e->pos, rgba(.1*alpha, .1*alpha, .6*alpha, 0.1*alpha), FadeAdd, enemy_flare, 50,offset*0.1,add_ref(e));
-	}
-	
-}
 
 void iku_extra_slave_draw(Enemy *e, int t) {
 	glColor4f(1, 1, 1, 0.3 + creal(e->args[3]) * 0.7);
