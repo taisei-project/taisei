@@ -418,14 +418,14 @@ void hina_monty(Boss *h, int time) {
 	AT(120) {
 		do boss_pos = tsrand() % 3; while(boss_pos == plr_pos || boss_pos == good_pos);
 		while(bad_pos == boss_pos || bad_pos == good_pos) bad_pos = tsrand() % 3;
-		targetpos = cwidth * (0.5 + boss_pos) + VIEWPORT_H/2.0*I - 200.0I;
+		targetpos = cwidth * (0.5 + boss_pos) + VIEWPORT_H/2.0*I - 200.0*I;
 	}
 
 	FROM_TO(210, 390, 60) {
 		float cnt = (2.0+global.diff) * 4;
 		for(int i = 0; i < cnt; i++) {
 			complex o = VIEWPORT_H*I + cwidth*(bad_pos + i/(double)(cnt - 1));
-			create_projectile2c("ball", o, rgb(0.7, 0, 0), accelerated, 0, 0.005*nfrand() - 0.005I * (1 + (1 * psin(i + global.frames))))->draw = ProjDrawAdd;
+			create_projectile2c("ball", o, rgb(0.7, 0, 0), accelerated, 0, 0.005*nfrand() - 0.005*I * (1 + (1 * psin(i + global.frames))))->draw = ProjDrawAdd;
 
 		}
 	}
@@ -459,12 +459,12 @@ void hina_monty(Boss *h, int time) {
 			}
 
 			complex o = cwidth * (boss_pos + p + 0.5/(cnt-1)) + (cimag(h->pos)) * I;
-			create_projectile2c("card", o, rgb(c * 0.8, 0, (1 - c) * 0.8), accelerated, -2.5I, 0.05I);
+			create_projectile2c("card", o, rgb(c * 0.8, 0, (1 - c) * 0.8), accelerated, -2.5*I, 0.05*I);
 		}
 	}
 
 	FROM_TO(240, 390, 5) {
-		create_item(VIEWPORT_H*I + cwidth*(good_pos + frand()), -50.0I, _i % 2 ? Point : Power);
+		create_item(VIEWPORT_H*I + cwidth*(good_pos + frand()), -50.0*I, _i % 2 ? Point : Power);
 	}
 
 	AT(600) {

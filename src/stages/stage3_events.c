@@ -790,7 +790,7 @@ void stage3_boss_extra(Boss *boss, int time) {
 	TIMER(&time);
 
 	if(time < 0) {
-		GO_TO(boss, VIEWPORT_W/2.0+100I, 0.1);
+		GO_TO(boss, VIEWPORT_W/2.0+100*I, 0.1);
 		return;
 	}
 

@@ -374,14 +374,14 @@ void cirno_crystal_blizzard(Boss *c, int time) {
 	TIMER(&t);
 
 	if(time < 0) {
-		GO_TO(c, VIEWPORT_W/2.0+300I, 0.1);
+		GO_TO(c, VIEWPORT_W/2.0+300*I, 0.1);
 		return;
 	}
 
 	FROM_TO(60, 360, 10) {
 		int i, cnt = 14 + global.diff * 3;
 		for(i = 0; i < cnt; ++i) {
-			create_projectile2c("crystal", i*VIEWPORT_W/cnt, i % 2? rgb(0.2,0.2,0.4) : rgb(0.5,0.5,0.5), accelerated, 0, 0.02I + 0.01I * (i % 2? 1 : -1) * sin((i*3+global.frames)/30.0));
+			create_projectile2c("crystal", i*VIEWPORT_W/cnt, i % 2? rgb(0.2,0.2,0.4) : rgb(0.5,0.5,0.5), accelerated, 0, 0.02*I + 0.01*I * (i % 2? 1 : -1) * sin((i*3+global.frames)/30.0));
 		}
 	}
 

@@ -204,7 +204,7 @@ int stage5_explosion(Enemy *e, int t) {
 }
 
 void iku_slave_draw(Enemy *e, int t) {
-	complex offset = (frand()-0.5)*10 + (frand()-0.5)*10.0I;
+	complex offset = (frand()-0.5)*10 + (frand()-0.5)*10.0*I;
 	if(e->args[2] && !(t % 5)) {
 		char *part = frand() > 0.5 ? "lightning0" : "lightning1";
 		Projectile *p = create_particle1c(part, e->pos+3*offset, rgb(1.0, 1.0, 1.0), FadeAdd, timeout, 20);
@@ -540,8 +540,8 @@ void iku_extra_slave_draw(Enemy *e, int t) {
 	glColor4f(1, 1, 1, 1.0);
 
 	if(e->args[2] && !(t % 5)) {
-		complex offset = (frand()-0.5)*30 + (frand()-0.5)*20.0I;
-		create_particle3c("lasercurve", offset, e->args[1] ? rgb(1.0, 0.5, 0.0) : rgb(0.0, 0.5, 0.5), EnemyFlareShrink, enemy_flare, 50, (-50.0I-offset)/50.0, add_ref(e));
+		complex offset = (frand()-0.5)*30 + (frand()-0.5)*20.0*I;
+		create_particle3c("lasercurve", offset, e->args[1] ? rgb(1.0, 0.5, 0.0) : rgb(0.0, 0.5, 0.5), EnemyFlareShrink, enemy_flare, 50, (-50.0*I-offset)/50.0, add_ref(e));
 	}
 }
 
@@ -629,7 +629,7 @@ void iku_extra(Boss *b, int t) {
 	}
 
 	if(t < 0) {
-		GO_TO(b, VIEWPORT_W/2+50.0I, 0.02);
+		GO_TO(b, VIEWPORT_W/2+50.0*I, 0.02);
 		return;
 	}
 
