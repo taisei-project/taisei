@@ -38,15 +38,6 @@ void save_rpy(MenuData *menu, void *a) {
 	replay_save(rpy, name);
 }
 
-void create_saverpy_menu(MenuData *m) {
-	create_menu(m);
-
-	m->flags = MF_Transient;
-
-	add_menu_entry(m, "Yes",	save_rpy,		m);
-	add_menu_entry(m, "No", (MenuAction) kill_menu, m);
-}
-
 void draw_saverpy_menu(MenuData *m) {
 	int i;
 
@@ -95,6 +86,13 @@ void saverpy_menu_input(MenuData *menu) {
 	handle_events(saverpy_input_event, EF_Menu, menu);
 }
 
-int saverpy_menu_loop(MenuData *m) {
-	return menu_loop(m, saverpy_menu_input, draw_saverpy_menu, NULL);
+void create_saverpy_menu(MenuData *m) {
+	create_menu(m);
+	m->input = saverpy_menu_input;
+	m->draw = draw_saverpy_menu;
+
+	m->flags = MF_Transient;
+
+	add_menu_entry(m, "Yes", save_rpy, NULL);
+	add_menu_entry(m, "No", menu_commonaction_close, NULL);
 }

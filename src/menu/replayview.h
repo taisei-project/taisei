@@ -9,7 +9,8 @@
 #ifndef RPYVIEW_H
 #define RPYVIEW_H
 
+#include "menu.h"
+
 void create_replayview_menu(MenuData *m);
-int replayview_menu_loop(MenuData *m);
 
 #endif

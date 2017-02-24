@@ -324,16 +324,16 @@ void stage_pause(void) {
 	MenuData menu;
 	stop_bgm();
 	create_ingame_menu(&menu);
-	ingame_menu_loop(&menu);
+	menu_loop(&menu);
 	continue_bgm();
 }
 
 void stage_gameover(void) {
-	MenuData m;
+	MenuData menu;
 	save_bgm();
 	start_bgm("bgm_gameover");
-	create_gameover_menu(&m);
-	ingame_menu_loop(&m);
+	create_gameover_menu(&menu);
+	menu_loop(&menu);
 	restore_bgm();
 }
 

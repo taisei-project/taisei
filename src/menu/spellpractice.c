@@ -10,12 +10,21 @@
 #include "options.h"
 #include "global.h"
 
+void draw_spell_menu(MenuData *m) {
+	draw_options_menu_bg(m);
+	draw_menu_title(m, "Spell Practice");
+	animate_menu_list(m);
+	draw_menu_list(m, 100, 100, NULL);
+}
+
 void create_spell_menu(MenuData *m) {
 	char title[128];
 	Difficulty lastdiff = D_Any;
 
 	create_menu(m);
+	m->draw = draw_spell_menu;
 	m->flags = MF_Abortable;
+	m->transition = TransMenuDark;
 
 	for(StageInfo *stg = stages; stg->loop; ++stg) {
 		if(stg->type != STAGE_SPELL) {
@@ -44,15 +53,4 @@ void create_spell_menu(MenuData *m) {
 	while(!m->entries[m->cursor].action) {
 		++m->cursor;
 	}
-}
-
-void draw_spell_menu(MenuData *m) {
-	draw_options_menu_bg(m);
-	draw_menu_title(m, "Spell Practice");
-	animate_menu_list(m);
-	draw_menu_list(m, 100, 100, NULL);
-}
-
-int spell_menu_loop(MenuData *m) {
-	return menu_loop(m, NULL, draw_spell_menu, NULL);
 }

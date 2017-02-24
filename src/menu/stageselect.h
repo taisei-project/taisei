@@ -9,9 +9,10 @@
 #ifndef STGMENU_H
 #define STGMENU_H
 
+#include "menu.h"
+
 #define STGMENU_MAX_TITLE_LENGTH 128
 
 void create_stage_menu(MenuData *m);
-int stage_menu_loop(MenuData *m);
 
 #endif

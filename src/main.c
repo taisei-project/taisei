@@ -199,7 +199,6 @@ int main(int argc, char **argv) {
 			global.diff = atoi(argv[2]);
 		}
 
-
 		printf("** Entering %s.\n", stg->title);
 
 		do {
@@ -215,11 +214,7 @@ int main(int argc, char **argv) {
 
 	MenuData menu;
 	create_main_menu(&menu);
-	printf("-- menu\n");
-	set_sfx_volume(config_get_float(CONFIG_SFX_VOLUME));
-	set_bgm_volume(config_get_float(CONFIG_BGM_VOLUME));
-	start_bgm("bgm_menu");
-	main_menu_loop(&menu);
+	menu_loop(&menu);
 
 	return 0;
 }

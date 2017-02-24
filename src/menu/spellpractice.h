@@ -11,6 +11,5 @@
 #include "menu.h"
 
 void create_spell_menu(MenuData *m);
-int spell_menu_loop(MenuData *m);
 
 #endif

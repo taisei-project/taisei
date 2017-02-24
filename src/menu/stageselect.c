@@ -13,12 +13,21 @@
 #include "stageselect.h"
 #include "common.h"
 
+void draw_stage_menu(MenuData *m) {
+	draw_options_menu_bg(m);
+	draw_menu_title(m, "Select Stage");
+	animate_menu_list(m);
+	draw_menu_list(m, 100, 100, NULL);
+}
+
 void create_stage_menu(MenuData *m) {
 	char title[STGMENU_MAX_TITLE_LENGTH];
 	Difficulty lastdiff = D_Any;
 
 	create_menu(m);
+	m->draw = draw_stage_menu;
 	m->flags = MF_Abortable;
+	m->transition = TransMenuDark;
 
 	for(int i = 0; stages[i].loop; ++i) {
 		if(stages[i].difficulty < lastdiff || (stages[i].difficulty && !lastdiff)) {
@@ -33,15 +42,4 @@ void create_stage_menu(MenuData *m) {
 
 	add_menu_separator(m);
 	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
-}
-
-void draw_stage_menu(MenuData *m) {
-	draw_options_menu_bg(m);
-	draw_menu_title(m, "Select Stage");
-	animate_menu_list(m);
-	draw_menu_list(m, 100, 100, NULL);
-}
-
-int stage_menu_loop(MenuData *m) {
-	return menu_loop(m, NULL, draw_stage_menu, NULL);
 }

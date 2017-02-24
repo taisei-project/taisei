@@ -5,40 +5,32 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
+#include <assert.h>
 #include "menu.h"
 #include "global.h"
 #include "video.h"
 
 MenuEntry *add_menu_entry(MenuData *menu, char *name, MenuAction action, void *arg) {
-	return add_menu_entry_f(menu, name, action, arg, 0);
-}
-
-MenuEntry *add_menu_entry_f(MenuData *menu, char *name, MenuAction action, void *arg, int flags) {
 	menu->entries = realloc(menu->entries, (++menu->ecount)*sizeof(MenuEntry));
-	MenuEntry *e = &(menu->entries[menu->ecount-1]);
+	MenuEntry *e = menu->entries + menu->ecount - 1;
 	memset(e, 0, sizeof(MenuEntry));
 
-	e->name = malloc(strlen(name)+1);
-	strcpy(e->name, name);
+	stralloc(&e->name, name);
 	e->action = action;
 	e->arg = arg;
-	e->flags = flags;
 	e->transition = menu->transition;
+
 	return e;
 }
 
 void add_menu_separator(MenuData *menu) {
 	menu->entries = realloc(menu->entries, (++menu->ecount)*sizeof(MenuEntry));
-	memset(&(menu->entries[menu->ecount-1]), 0, sizeof(MenuEntry));
+	memset(menu->entries + menu->ecount - 1, 0, sizeof(MenuEntry));
 }
 
 void destroy_menu(MenuData *menu) {
-	int i;
-
-	for(i = 0; i < menu->ecount; i++) {
-		MenuEntry *e = &(menu->entries[i]);
-
-		free(e->name);
+	for(int i = 0; i < menu->ecount; i++) {
+		free(menu->entries[i].name);
 	}
 
 	free(menu->entries);
@@ -48,33 +40,50 @@ void create_menu(MenuData *menu) {
 	memset(menu, 0, sizeof(MenuData));
 
 	menu->selected = -1;
-	menu->quitdelay = FADE_TIME;
-	menu->transition = TransFadeBlack;
+	menu->transition = TransMenu; // TransFadeBlack;
+	menu->transition_in_time = FADE_TIME;
+	menu->transition_out_time = FADE_TIME;
+	menu->fade = 1.0;
+	menu->logic = menu_logic;
+	menu->input = menu_input;
+}
+
+void close_menu_finish(MenuData *menu) {
+	menu->state = MS_Dead;
+
+	if(menu->selected != -1 && menu->entries[menu->selected].action != NULL) {
+		if(!(menu->flags & MF_Transient)) {
+			menu->state = MS_Normal;
+		}
+
+		menu->entries[menu->selected].action(menu, menu->entries[menu->selected].arg);
+	}
 }
 
 void close_menu(MenuData *menu) {
 	TransitionRule trans = menu->transition;
 
-	if(menu->selected != -1)
+	assert(menu->state != MS_Dead);
+	menu->state = MS_FadeOut;
+
+	if(menu->selected != -1) {
 		trans = menu->entries[menu->selected].transition;
+	}
 
-	set_transition(trans, menu->quitdelay, menu->quitdelay);
-
-	menu->quitframe = menu->frames;
-}
-
-void kill_menu(MenuData *menu) {
-	menu->state = MS_Dead;
+	if(trans) {
+		set_transition_callback(
+			trans,
+			menu->transition_in_time,
+			menu->transition_out_time,
+			(TransitionCallback)close_menu_finish, menu
+		);
+	} else {
+		close_menu_finish(menu);
+	}
 }
 
 float menu_fade(MenuData *menu) {
-	if(menu->frames < menu->quitdelay)
-		return 1.0 - menu->frames/(float)menu->quitdelay;
-
-	if(menu->quitframe && menu->frames >= menu->quitframe)
-		return (menu->frames - menu->quitframe)/(float)menu->quitdelay;
-
-	return 0.0;
+	return transition.fade;
 }
 
 void menu_event(EventType type, int state, void *arg) {
@@ -121,48 +130,44 @@ void menu_input(MenuData *menu) {
 	handle_events(menu_event, EF_Menu, (void*)menu);
 }
 
-void menu_logic(MenuData *menu) {
-	menu->frames++;
-
-	if(menu->quitframe && menu->frames >= menu->quitframe)
-		menu->state = MS_FadeOut;
-
-	if(menu->quitframe && menu->frames >= menu->quitframe + menu->quitdelay*!(menu->state & MF_InstantSelect || menu->selected != -1 && menu->entries[menu->selected].flags & MF_InstantSelect)) {
-		menu->state = MS_Dead;
-		if(menu->selected != -1 && menu->entries[menu->selected].action != NULL) {
-			if(!(menu->flags & MF_Transient)) {
-				menu->state = MS_Normal;
-				menu->quitframe = 0;
-			}
-
-			menu->entries[menu->selected].action(menu, menu->entries[menu->selected].arg);
-		}
-	}
+void menu_no_input(MenuData *menu) {
+	handle_events(NULL, 0, NULL);
 }
 
-int menu_loop(MenuData *menu, void (*input)(MenuData*), void (*draw)(MenuData*), void (*end)(MenuData*)) {
+void menu_logic(MenuData *menu) {
+	menu->frames++;
+}
+
+int menu_loop(MenuData *menu) {
 	set_ortho();
+
+	if(menu->begin) {
+		menu->begin(menu);
+	}
+
 	while(menu->state != MS_Dead) {
-		menu_logic(menu);
+		assert(menu->logic);
+		menu->logic(menu);
 
 		if(menu->state != MS_FadeOut || menu->flags & MF_AlwaysProcessInput) {
-			if(input)
-				input(menu);
-			else
-				menu_input(menu);
-		} else handle_events(NULL, 0, NULL);
+			assert(menu->input);
+			menu->input(menu);
+		} else {
+			menu_no_input(menu);
+		}
 
-		draw(menu);
-		if(!(menu->flags & MF_ManualDrawTransition))
-			draw_transition();
+		assert(menu->draw);
+		menu->draw(menu);
+		draw_transition();
 
 		SDL_GL_SwapWindow(video.window);
 		frame_rate(&menu->lasttime);
 	}
 
-	if(end)
-		end(menu);
-	destroy_menu(menu);
+	if(menu->end) {
+		menu->end(menu);
+	}
 
+	destroy_menu(menu);
 	return menu->selected;
 }

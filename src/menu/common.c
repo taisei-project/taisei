@@ -26,13 +26,13 @@ troll:
 
     if(stagediff == D_Any) {
         create_difficulty_menu(&m);
-        if(difficulty_menu_loop(&m) == -1) {
+        if(menu_loop(&m) == -1) {
             return;
         }
     }
 
     create_char_menu(&m);
-    if(char_menu_loop(&m) == -1) {
+    if(menu_loop(&m) == -1) {
         if(stagediff != D_Any) {
             return;
         }
@@ -80,7 +80,7 @@ troll2:
             case 2: {
                 MenuData m;
                 create_saverpy_menu(&m);
-                saverpy_menu_loop(&m);
+                menu_loop(&m);
                 break;
             }
         }
@@ -162,5 +162,5 @@ void animate_menu_list(MenuData *m) {
 }
 
 void menu_commonaction_close(MenuData *menu, void *arg) {
-    kill_menu(menu);
+    menu->state = MS_Dead;
 }

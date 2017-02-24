@@ -16,7 +16,8 @@ void set_difficulty(MenuData *m, void *d) {
 
 void create_difficulty_menu(MenuData *m) {
 	create_menu(m);
-
+	m->draw = draw_difficulty_menu;
+	m->transition = TransMenuDark;
 	m->flags = MF_Transient | MF_Abortable;
 
 	add_menu_entry(m, "Easy\nfor fearful fairies", set_difficulty, (void *)D_Easy);
@@ -52,8 +53,4 @@ void draw_difficulty_menu(MenuData *menu) {
 		glColor3f(1,1,1);
 		glPopMatrix();
 	}
-}
-
-int difficulty_menu_loop(MenuData *menu) {
-	return menu_loop(menu, NULL, draw_difficulty_menu, NULL);
 }

@@ -13,6 +13,5 @@
 
 void save_rpy(MenuData *menu, void*);
 void create_saverpy_menu(MenuData*);
-int saverpy_menu_loop(MenuData*);
 
 #endif

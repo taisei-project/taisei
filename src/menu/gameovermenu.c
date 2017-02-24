@@ -8,6 +8,7 @@
 
 #include "menu.h"
 #include "gameovermenu.h"
+#include "ingamemenu.h"
 #include "global.h"
 
 void continue_game(MenuData *m, void *arg)
@@ -36,9 +37,10 @@ void restart_game(MenuData *m, void *arg);
 
 void create_gameover_menu(MenuData *m) {
 	create_menu(m);
+	m->draw = draw_ingame_menu;
 
 	m->flags = MF_Transient | MF_AlwaysProcessInput;
-	m->transition = NULL;
+	m->transition = TransEmpty;
 
 	if(global.stage->type == STAGE_SPELL) {
 		m->context = "Spell Failed";
@@ -58,4 +60,6 @@ void create_gameover_menu(MenuData *m) {
 		if(!c)
 			m->cursor = 1;
 	}
+
+	set_transition(TransEmpty, 0, m->transition_out_time);
 }

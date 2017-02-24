@@ -24,11 +24,13 @@ void restart_game(MenuData *m, void *arg) {
 
 void create_ingame_menu(MenuData *m) {
 	create_menu(m);
+	m->draw = draw_ingame_menu;
 	m->flags = MF_Abortable | MF_Transient | MF_AlwaysProcessInput;
-	m->transition = NULL;
+	m->transition = TransEmpty;
 	add_menu_entry(m, "Return to Game", return_to_game, NULL);
 	add_menu_entry(m, "Restart the Game", restart_game, NULL)->transition = TransFadeBlack;
 	add_menu_entry(m, "Return to Title", return_to_title, NULL)->transition = TransFadeBlack;
+	set_transition(TransEmpty, 0, m->transition_out_time);
 }
 
 void draw_ingame_menu_bg(float f) {
@@ -88,8 +90,4 @@ void draw_ingame_menu(MenuData *menu) {
 	glPopMatrix();
 
 	draw_hud();
-}
-
-int ingame_menu_loop(MenuData *m) {
-	return menu_loop(m, NULL, draw_ingame_menu, NULL);
 }

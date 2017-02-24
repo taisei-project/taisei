@@ -20,20 +20,28 @@ void set_shotmode(MenuData *m, void *p) {
 
 void create_shottype_menu(MenuData *m) {
 	create_menu(m);
+	m->transition = NULL;
 
 	add_menu_entry(m, "Laser Sign|Mirror Sign", set_shotmode, (void *) YoumuOpposite);
 	add_menu_entry(m, "Star Sign|Haunting Sign", set_shotmode, (void *) YoumuHoming);
 }
 
+void char_menu_input(MenuData*);
+void draw_char_menu(MenuData*);
+void free_char_menu(MenuData*);
+
 void create_char_menu(MenuData *m) {
 	create_menu(m);
-
+	m->input = char_menu_input;
+	m->draw = draw_char_menu;
+	m->end = free_char_menu;
+	m->transition = TransMenuDark;
 	m->flags = MF_Abortable | MF_Transient;
 	m->context = malloc(sizeof(MenuData));
 	create_shottype_menu(m->context);
 
-	add_menu_entry(m, "dialog/marisa|Kirisame Marisa|Black Magician", set_player, (void *)Marisa);
-	add_menu_entry(m, "dialog/youmu|Konpaku Yōmu|Half-Phantom Girl", set_player, (void *)Youmu);
+	add_menu_entry(m, "dialog/marisa|Kirisame Marisa|Black Magician", set_player, (void *)Marisa)->transition = TransFadeBlack;
+	add_menu_entry(m, "dialog/youmu|Konpaku Yōmu|Half-Phantom Girl", set_player, (void *)Youmu)->transition = TransFadeBlack;
 }
 
 void draw_char_menu(MenuData *menu) {
@@ -167,8 +175,4 @@ void free_char_menu(MenuData *menu) {
 	MenuData *mod = menu->context;
 	destroy_menu(mod);
 	free(mod);
-}
-
-int char_menu_loop(MenuData *menu) {
-	return menu_loop(menu, char_menu_input, draw_char_menu, free_char_menu);
 }

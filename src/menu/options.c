@@ -281,10 +281,16 @@ void destroy_options_menu(MenuData *m) {
 
 static void do_nothing(MenuData *menu, void *arg) { }
 
-void create_options_sub(MenuData *m, char *s) {
+void options_menu_input(MenuData*);
+
+void create_options_menu_basic(MenuData *m, char *s) {
 	create_menu(m);
+	m->transition = TransMenuDark;
 	m->flags = MF_Abortable;
 	m->context = s;
+	m->input = options_menu_input;
+	m->draw = draw_options_menu;
+	m->end = destroy_options_menu;
 }
 
 #define bind_onoff(b) bind_addvalue(b, "on"); bind_addvalue(b, "off")
@@ -294,7 +300,7 @@ void options_sub_video(MenuData *parent, void *arg) {
 	OptionBinding *b;
 	m = &menu;
 
-	create_options_sub(m, "Video Options");
+	create_options_menu_basic(m, "Video Options");
 
 	add_menu_entry(m, "Resolution", do_nothing,
 		b = bind_resolution()
@@ -332,7 +338,7 @@ void options_sub_video(MenuData *parent, void *arg) {
 	add_menu_separator(m);
 	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
 
-	options_menu_loop(m);
+	menu_loop(m);
 	parent->frames = 0;
 }
 
@@ -352,7 +358,7 @@ void options_sub_gamepad_controls(MenuData *parent, void *arg) {
 	MenuData menu, *m;
 	m = &menu;
 
-	create_options_sub(m, "Gamepad Controls");
+	create_options_menu_basic(m, "Gamepad Controls");
 
 	add_menu_entry(m, "Fire / Accept", do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_SHOT)
@@ -397,7 +403,7 @@ void options_sub_gamepad_controls(MenuData *parent, void *arg) {
 	add_menu_separator(m);
 	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
 
-	options_menu_loop(m);
+	menu_loop(m);
 	parent->frames = 0;
 	gamepad_restart();
 }
@@ -407,7 +413,7 @@ void options_sub_gamepad(MenuData *parent, void *arg) {
 	OptionBinding *b;
 	m = &menu;
 
-	create_options_sub(m, "Gamepad Options");
+	create_options_menu_basic(m, "Gamepad Options");
 
 	add_menu_entry(m, "Enable Gamepad/Joystick support", do_nothing,
 		b = bind_option(CONFIG_GAMEPAD_ENABLED, bind_common_onoffget, bind_common_onoffset)
@@ -464,7 +470,7 @@ void options_sub_gamepad(MenuData *parent, void *arg) {
 	add_menu_separator(m);
 	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
 
-	options_menu_loop(m);
+	menu_loop(m);
 	parent->frames = 0;
 	gamepad_restart();
 }
@@ -473,7 +479,7 @@ void options_sub_controls(MenuData *parent, void *arg) {
 	MenuData menu, *m;
 	m = &menu;
 
-	create_options_sub(m, "Controls");
+	create_options_menu_basic(m, "Controls");
 
 	add_menu_entry(m, "Move up", do_nothing,
 		bind_keybinding(CONFIG_KEY_UP)
@@ -534,16 +540,14 @@ void options_sub_controls(MenuData *parent, void *arg) {
 	add_menu_separator(m);
 	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
 
-	options_menu_loop(m);
+	menu_loop(m);
 	parent->frames = 0;
 }
 
 void create_options_menu(MenuData *m) {
 	OptionBinding *b;
 
-	create_menu(m);
-	m->flags = MF_Abortable;
-	m->context = "Options";
+	create_options_menu_basic(m, "Options");
 
 	add_menu_entry(m, "Player name", do_nothing,
 		b = bind_stroption(CONFIG_PLAYERNAME)
@@ -943,8 +947,3 @@ void options_menu_input(MenuData *menu) {
 	} else
 		handle_events(options_input_event, EF_Menu, menu);
 }
-
-int options_menu_loop(MenuData *menu) {
-	return menu_loop(menu, options_menu_input, draw_options_menu, destroy_options_menu);
-}
-

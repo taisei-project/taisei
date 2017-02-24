@@ -49,6 +49,9 @@ int init_mixer_if_needed(void) {
 		warnx("Mix_OpenAudio(): %s.\n", Mix_GetError());
 	}
 
+	set_sfx_volume(config_get_float(CONFIG_SFX_VOLUME));
+	set_bgm_volume(config_get_float(CONFIG_BGM_VOLUME));
+
 	mixer_loaded = 1;
 	return 1;
 }
@@ -86,7 +89,7 @@ int init_sfx(void)
 
 	if (config_get_int(CONFIG_NO_AUDIO)) return 1;
 	if (!init_mixer_if_needed()) return 0;
-	
+
 	int channels = Mix_AllocateChannels(SNDCHAN_COUNT);
 	if (!channels)
 	{
@@ -96,7 +99,7 @@ int init_sfx(void)
 		return 0;
 	}
 	if (channels < SNDCHAN_COUNT) warnx("init_sfx(): allocated only %d of %d channels.\n", channels, SNDCHAN_COUNT);
-	
+
 	return 1;
 }
 

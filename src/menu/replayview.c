@@ -22,6 +22,7 @@
 typedef struct ReplayviewContext {
 	MenuData *submenu;
 	int pickedstage;
+	double sub_fade;
 } ReplayviewContext;
 
 // Type of MenuEntry.arg (which should be renamed to context, probably...)
@@ -44,14 +45,17 @@ void start_replay(MenuData *menu, void *arg) {
 	start_bgm("bgm_menu");
 }
 
+static void replayview_draw_stagemenu(MenuData*);
+
 MenuData* replayview_sub_stageselect(MenuData *menu, ReplayviewItemContext *ictx) {
 	MenuData *m = malloc(sizeof(MenuData));
 	Replay *rpy = ictx->replay;
 
 	create_menu(m);
+	m->draw = replayview_draw_stagemenu;
 	m->context = menu->context;
 	m->flags = MF_Transient | MF_Abortable;
-	m->transition = 0;
+	m->transition = NULL;
 
 	for(int i = 0; i < rpy->numstages; ++i) {
 		add_menu_entry(m, stage_get(rpy->stages[i].stage)->title, start_replay, ictx)->transition = TransFadeBlack;
@@ -99,7 +103,7 @@ static void replayview_draw_stagemenu(MenuData *m) {
 	// this context is shared with the parent menu
 	ReplayviewContext *ctx = m->context;
 
-	float alpha = 1-menu_fade(m);
+	float alpha = 1 - ctx->sub_fade;
 	int i;
 
 	float height = (1+m->ecount) * 20;
@@ -209,6 +213,26 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 	}
 }
 
+static void replayview_logic(MenuData *m) {
+	ReplayviewContext *ctx = m->context;
+
+	if(ctx->submenu) {
+		MenuData *sm = ctx->submenu;
+
+		if(sm->state == MS_Dead) {
+			if(ctx->sub_fade == 1.0) {
+				destroy_menu(sm);
+				ctx->submenu = NULL;
+				return;
+			}
+
+			ctx->sub_fade = approach(ctx->sub_fade, 1.0, 1.0/FADE_TIME);
+		} else {
+			ctx->sub_fade = approach(ctx->sub_fade, 0.0, 1.0/FADE_TIME);
+		}
+	}
+}
+
 static void replayview_draw(MenuData *m) {
 	ReplayviewContext *ctx = m->context;
 
@@ -222,14 +246,7 @@ static void replayview_draw(MenuData *m) {
 	draw_menu_list(m, 100, 100, replayview_drawitem);
 
 	if(ctx->submenu) {
-		MenuData *sm = ctx->submenu;
-		menu_logic(sm);
-		if(sm->state == MS_Dead) {
-			destroy_menu(sm);
-			ctx->submenu = NULL;
-		} else {
-			replayview_draw_stagemenu(sm);
-		}
+		ctx->submenu->draw(ctx->submenu);
 	}
 }
 
@@ -273,7 +290,7 @@ int fill_replayview_menu(MenuData *m) {
 		ictx->replayname = malloc(strlen(e->d_name) + 1);
 		strcpy(ictx->replayname, e->d_name);
 
-		add_menu_entry_f(m, " ", replayview_run, ictx, (rpy->numstages > 1)*MF_InstantSelect)->transition = rpy->numstages < 2 ? TransFadeBlack : NULL;
+		add_menu_entry(m, " ", replayview_run, ictx)->transition = rpy->numstages < 2 ? TransFadeBlack : NULL;
 		++rpys;
 	}
 
@@ -282,8 +299,41 @@ int fill_replayview_menu(MenuData *m) {
 	return rpys;
 }
 
+void replayview_menu_input(MenuData *m) {
+	ReplayviewContext *ctx = (ReplayviewContext*)m->context;
+	MenuData *sub = ctx->submenu;
+
+	if(transition.state == TRANS_FADE_IN) {
+		menu_no_input(m);
+	} else {
+		if(sub && sub->state != MS_Dead) {
+			sub->input(sub);
+		} else {
+			menu_input(m);
+		}
+	}
+}
+
+void replayview_free(MenuData *m) {
+	if(m->context) {
+		free(m->context);
+		m->context = NULL;
+	}
+
+	for(int i = 0; i < m->ecount; i++) {
+		if(m->entries[i].action == replayview_run) {
+			replayview_freearg(m->entries[i].arg);
+		}
+	}
+}
+
 void create_replayview_menu(MenuData *m) {
 	create_menu(m);
+	m->logic = replayview_logic;
+	m->input = replayview_menu_input;
+	m->draw = replayview_draw;
+	m->end = replayview_free;
+	m->transition = TransMenuDark;
 
 	ReplayviewContext *ctx = malloc(sizeof(ReplayviewContext));
 	memset(ctx, 0, sizeof(ReplayviewContext));
@@ -302,26 +352,3 @@ void create_replayview_menu(MenuData *m) {
 		add_menu_entry(m, "Back", menu_commonaction_close, NULL);
 	}
 }
-
-void replayview_menu_input(MenuData *m) {
-	ReplayviewContext *ctx = (ReplayviewContext*)m->context;
-	menu_input(ctx->submenu ? ctx->submenu : m);
-}
-
-void replayview_free(MenuData *m) {
-	if(m->context) {
-		free(m->context);
-		m->context = NULL;
-	}
-
-	for(int i = 0; i < m->ecount; i++) {
-		if(m->entries[i].action == replayview_run) {
-			replayview_freearg(m->entries[i].arg);
-		}
-	}
-}
-
-int replayview_menu_loop(MenuData *m) {
-	return menu_loop(m, replayview_menu_input, replayview_draw, replayview_free);
-}
-

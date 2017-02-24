@@ -15,10 +15,10 @@
 void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 	SDL_Event event;
 
-	int kbd 	= flags & EF_Keyboard;
-	int text	= flags & EF_Text;
-	int menu	= flags & EF_Menu;
-	int game	= flags & EF_Game;
+	bool kbd 	= flags & EF_Keyboard;
+	bool text	= flags & EF_Text;
+	bool menu	= flags & EF_Menu;
+	bool game	= flags & EF_Game;
 
 	// TODO: rewrite text input handling to properly support multibyte characters and IMEs
 
@@ -35,6 +35,7 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 	while(SDL_PollEvent(&event)) {
 		SDL_Scancode scan = event.key.keysym.scancode;
 		SDL_Keymod mod = event.key.keysym.mod;
+		bool repeat = event.key.repeat;
 
 		switch(event.type) {
 			case SDL_KEYDOWN:
@@ -45,14 +46,13 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 						handler(E_SubmitText, 0, arg);
 					else if(scan == SDL_SCANCODE_BACKSPACE)
 						handler(E_CharErased, 0, arg);
-				} else {
+				} else if(!repeat) {
 					if(scan == config_get_int(CONFIG_KEY_SCREENSHOT)) {
 						take_screenshot();
 						break;
 					}
 
 					if((scan == SDL_SCANCODE_RETURN && (mod & KMOD_ALT)) || scan == config_get_int(CONFIG_KEY_FULLSCREEN)) {
-						// video_toggle_fullscreen();
 						config_set_int(CONFIG_FULLSCREEN, !config_get_int(CONFIG_FULLSCREEN));
 						break;
 					}
@@ -62,7 +62,7 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 					handler(E_KeyDown, scan, arg);
 				}
 
-				if(menu) {
+				if(menu && (!repeat || transition.state == TRANS_IDLE)) {
 					if(scan == config_get_int(CONFIG_KEY_DOWN) || scan == SDL_SCANCODE_DOWN) {
 						handler(E_CursorDown, 0, arg);
 					} else if(scan == config_get_int(CONFIG_KEY_UP) || scan == SDL_SCANCODE_UP) {
@@ -78,7 +78,7 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 					}
 				}
 
-				if(game && !event.key.repeat) {
+				if(game && !repeat) {
 					if(scan == config_get_int(CONFIG_KEY_PAUSE) || scan == SDL_SCANCODE_ESCAPE) {
 						handler(E_Pause, 0, arg);
 					} else {
@@ -95,7 +95,7 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 					handler(E_KeyUp, scan, arg);
 				}
 
-				if(game && !event.key.repeat) {
+				if(game && !repeat) {
 					int key = config_key_from_scancode(scan);
 					if(key >= 0)
 						handler(E_PlrKeyUp, key, arg);

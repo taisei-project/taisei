@@ -22,25 +22,25 @@
 void enter_options(MenuData *menu, void *arg) {
 	MenuData m;
 	create_options_menu(&m);
-	options_menu_loop(&m);
+	menu_loop(&m);
 }
 
 void enter_stagemenu(MenuData *menu, void *arg) {
 	MenuData m;
 	create_stage_menu(&m);
-	stage_menu_loop(&m);
+	menu_loop(&m);
 }
 
 void enter_replayview(MenuData *menu, void *arg) {
 	MenuData m;
 	create_replayview_menu(&m);
-	replayview_menu_loop(&m);
+	menu_loop(&m);
 }
 
 void enter_spellpractice(MenuData *menu, void *arg) {
 	MenuData m;
 	create_spell_menu(&m);
-	spell_menu_loop(&m);
+	menu_loop(&m);
 }
 
 static MenuEntry *spell_practice_entry;
@@ -60,8 +60,15 @@ void main_menu_update_spellpractice(void) {
 	}
 }
 
+void begin_main_menu(MenuData *m) {
+	start_bgm("bgm_menu");
+	set_transition(TransLoader, 0, FADE_TIME*2);
+}
+
 void create_main_menu(MenuData *m) {
 	create_menu(m);
+	m->draw = draw_main_menu;
+	m->begin = begin_main_menu;
 
 	add_menu_entry(m, "Start Story", start_game, NULL);
 	add_menu_entry(m, "Start Extra", NULL, NULL);
@@ -71,7 +78,7 @@ void create_main_menu(MenuData *m) {
 #endif
 	add_menu_entry(m, "Replays", enter_replayview, NULL);
 	add_menu_entry(m, "Options", enter_options, NULL);
-	add_menu_entry(m, "Quit", (MenuAction)kill_menu, m);
+	add_menu_entry(m, "Quit", menu_commonaction_close, NULL)->transition = TransFadeBlack;;
 
 	spell_practice_entry = m->entries + 2;
 	main_menu_update_spellpractice();
@@ -125,9 +132,4 @@ void draw_main_menu(MenuData *menu) {
 	}
 
 	glPopMatrix();
-}
-
-void main_menu_loop(MenuData *menu) {
-	set_transition(TransLoader, -1, FADE_TIME*2);
-	menu_loop(menu, NULL, draw_main_menu, NULL);
 }

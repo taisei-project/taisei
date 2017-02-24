@@ -23,29 +23,20 @@ typedef struct MenuData MenuData;
 
 typedef void (*MenuAction)(MenuData*, void*);
 typedef bool (*MenuCallback)(MenuData*);
+typedef void (*MenuProc)(MenuData*);
 
 typedef struct MenuEntry {
 	char *name;
 	MenuAction action;
 	void *arg;
-
-	int flags;
-
 	float drawdata;
 	TransitionRule transition;
 } MenuEntry;
 
-// enum EntryFlag {
-//	MF_InstantSelect = 4
-// };
-
 enum MenuFlag {
-	MF_Transient = 1, // whether to close on selection or not.
-	MF_Abortable = 2,
-
-	MF_InstantSelect = 4,
-	MF_ManualDrawTransition = 8, // the menu will not call draw_transition() automatically
-	MF_AlwaysProcessInput = 16 // the menu will process input even during fadeouts
+	MF_Transient = 1,			// the menu will be automatically closed on selection
+	MF_Abortable = 2,			// the menu can be closed with the escape key
+	MF_AlwaysProcessInput = 4	// the menu will process input when it's fading out
 };
 
 enum MenuState {
@@ -54,7 +45,7 @@ enum MenuState {
 	MS_Dead
 };
 
-struct MenuData{
+struct MenuData {
 	int flags;
 
 	int cursor;
@@ -67,14 +58,21 @@ struct MenuData{
 	int lasttime;
 
 	int state;
-	int quitframe;
-	int quitdelay;
+	int transition_in_time;
+	int transition_out_time;
+	float fade;
 
 	TransitionRule transition;
 
 	float drawdata[4];
 
 	void *context;
+
+	MenuProc draw;
+	MenuProc input;
+	MenuProc logic;
+	MenuProc begin;
+	MenuProc end;
 };
 
 MenuEntry *add_menu_entry(MenuData *menu, char *name, MenuAction action, void *arg);
@@ -86,13 +84,13 @@ void destroy_menu(MenuData *menu);
 
 void menu_logic(MenuData *menu);
 void menu_input(MenuData *menu);
+void menu_no_input(MenuData *menu);
 
-void close_menu(MenuData *menu); // softly close menu (should be used in most cases)
-void kill_menu(MenuData *menu); // quit action for persistent menus
+void close_menu(MenuData *menu);
 
 void menu_key_action(MenuData *menu, int sym);
 
-int menu_loop(MenuData *menu, void (*input)(MenuData*), void (*draw)(MenuData*), void (*end)(MenuData*));
+int menu_loop(MenuData *menu);
 
 float menu_fade(MenuData *menu);
 
