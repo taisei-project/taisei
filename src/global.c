@@ -37,9 +37,6 @@ void init_global(void) {
 
 	memset(&resources, 0, sizeof(Resources));
 
-	printf("- fonts:\n");
-	init_fonts();
-
 	memset(&global.replay, 0, sizeof(Replay));
 	global.replaymode = REPLAY_RECORD;
 

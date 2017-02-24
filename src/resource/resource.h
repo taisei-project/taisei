@@ -25,7 +25,8 @@ typedef enum ResourceState {
 	RS_SfxLoaded = 2,
 	RS_ShaderLoaded = 4,
 	RS_ModelsLoaded = 8,
-	RS_BgmLoaded = 16
+	RS_BgmLoaded = 16,
+	RS_FontsLoaded = 32,
 } ResourceState;
 
 struct Resources {

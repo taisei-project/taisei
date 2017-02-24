@@ -23,6 +23,7 @@
 
 #include "menu/menu.h"
 
+#include "taiseigl.h"
 #include "player.h"
 #include "projectile.h"
 #include "enemy.h"

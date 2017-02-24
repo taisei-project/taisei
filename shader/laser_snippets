@@ -1,6 +1,4 @@
 %%VSHADER-HEAD%%
-#version 120
-#extension GL_EXT_draw_instanced : enable
 
 uniform vec2 a0;
 uniform vec2 a1;
@@ -30,23 +28,23 @@ vec2 posrule(float t) {
 
 void main(void) {
 	vec2 v = gl_Vertex.xy;
-	
+
 	float t1 = gl_InstanceID-span/2;
 	float tail = span/1.9;
 
 	float s = -0.75/pow(tail,2)*(t1-tail)*(t1+tail);
-	
+
 	vec2 pos = posrule(gl_InstanceID*0.5+timeshift);
 	vec2 d = pos - posrule(gl_InstanceID*0.5+timeshift-0.1);
-	
+
 	float a = -angle(d);
 	mat2 m = mat2(cos(a), -sin(a), sin(a), cos(a));
-	
+
 	v.x *= wq*1.5*length(d);
 	v.y *= hq*s;
-	
+
 	gl_Position     = gl_ModelViewProjectionMatrix*vec4(m*v+pos, 0.0, 1.0);
-	gl_TexCoord[0]  = gl_MultiTexCoord0;	
+	gl_TexCoord[0]  = gl_MultiTexCoord0;
 }
 
 %%FSHADER-HEAD%%

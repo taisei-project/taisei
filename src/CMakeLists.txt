@@ -1,6 +1,14 @@
 
 find_package(PkgConfig REQUIRED)
-find_package(OpenGL REQUIRED)
+
+if(LINK_TO_LIBGL)
+	find_package(OpenGL REQUIRED)
+	add_definitions(-DLINK_TO_LIBGL)
+
+	# We didn't use anything from GLU except gluPerspective
+	# taiseigl now provides a simple replacement for it
+	list(FILTER OPENGL_LIBRARIES EXCLUDE REGEX ".*libGLU\\..*")
+endif()
 
 pkg_check_modules(SDL2 sdl2 REQUIRED)
 pkg_check_modules(SDL2_TTF SDL2_ttf REQUIRED)
@@ -143,14 +151,9 @@ set(CMAKE_REQUIRED_INCLUDES ${INCs})
 include_directories(${INCs})
 
 check_symbol_exists(_POSIX_VERSION "unistd.h" POSIX)
-check_symbol_exists(glDrawArraysInstanced "taiseigl.h" HAVE_glDrawArraysInstanced)
 
 if(POSIX)
 	add_definitions(-D__POSIX__)
-endif()
-
-if(NOT HAVE_glDrawArraysInstanced)
-	add_definitions(-DGL_USE_ARB_DRAW_INSTANCED)
 endif()
 
 if (CMAKE_GENERATOR STREQUAL "Ninja" AND

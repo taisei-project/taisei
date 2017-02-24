@@ -5,108 +5,118 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
+#include <assert.h>
+#include "global.h"
+
+#define TAISEIGL_NO_EXT_ABSTRACTION
 #include "taiseigl.h"
+#undef TAISEIGL_NO_EXT_ABSTRACTION
 
-#ifndef __APPLE__
-#ifdef __WINDOWS__
-// #include <GL/wgl.h>
-#else
-#include <GL/glx.h>
+struct glext_s glext;
+
+#ifndef LINK_TO_LIBGL
+#define GLDEF(glname,tsname,typename) typename tsname;
+GLDEFS
+#undef GLDEF
 #endif
-#endif
 
-#include <string.h>
-#include <stdio.h>
+#ifndef LINK_TO_LIBGL
+static void* get_proc_address(const char *name) {
+	void *addr = SDL_GL_GetProcAddress(name);
 
-int tgl_ext[_TGLEXT_COUNT];
+	if(!addr) {
+		warnx("load_gl_functions(): SDL_GL_GetProcAddress(\"%s\") failed: %s", name, SDL_GetError());
+	}
 
-#ifndef __APPLE__
-typedef void (*GLFuncPtr)(void);
-GLFuncPtr get_proc_address(char *name) {
-#ifdef __WINDOWS__
-	return (GLFuncPtr)wglGetProcAddress(name);
-#else
-	return glXGetProcAddress((GLubyte *)name);
-#endif
+	return addr;
 }
 #endif
 
-#ifdef GL_USE_ARB_DRAW_INSTANCED
-	#define DRAW_INSTANCED_EXT_NAME "GL_ARB_draw_instanced"
-#else
-	#define DRAW_INSTANCED_EXT_NAME "GL_EXT_draw_instanced"
-#endif
+static void get_gl_version(char *major, char *minor) {
+	// the glGetIntegerv way only works in >=3.0 contexts, so...
+
+	const char *vstr = (const char*)glGetString(GL_VERSION);
+	const char *dot = strchr(vstr, '.');
+
+	*major = atoi(vstr);
+	*minor = atoi(dot+1);
+}
 
 void check_gl_extensions(void) {
-	int l;
-	char *ext = (char*)glGetString(GL_EXTENSIONS);
-	char *last, *pos;
+	get_gl_version(&glext.version.major, &glext.version.minor);
 
-	last = ext;
-	pos = ext;
-	while((pos = strchr(pos, ' '))) {
-		pos++;
+	const char *glslv = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
 
-		l = pos - last - 1;
+	if(!glslv) {
+		glslv = "None";
+	}
 
-		if(strncmp(last, "GL_EXT_draw_instanced", l) == 0)
-			tgl_ext[TGLEXT_draw_instanced] = 1;
+	printf("OpenGL version: %s\n", (const char*)glGetString(GL_VERSION));
+	printf("OpenGL vendor: %s\n", (const char*)glGetString(GL_VENDOR));
+	printf("OpenGL renderer: %s\n", (const char*)glGetString(GL_RENDERER));
+	printf("GLSL version: %s\n", glslv);
 
-		last = pos;
+	glext.draw_instanced = false;
+	glext.DrawArraysInstanced = NULL;
+
+	glext.EXT_draw_instanced = SDL_GL_ExtensionSupported("GL_EXT_draw_instanced");
+	glext.ARB_draw_instanced = SDL_GL_ExtensionSupported("GL_ARB_draw_instanced");
+
+	glext.draw_instanced = glext.EXT_draw_instanced;
+
+	if(glext.draw_instanced) {
+		glext.DrawArraysInstanced = tsglDrawArraysInstancedEXT;
+		if(!glext.DrawArraysInstanced) {
+			glext.draw_instanced = false;
+		}
+	}
+
+	if(!glext.draw_instanced) {
+		glext.draw_instanced = glext.ARB_draw_instanced;
+
+		if(glext.draw_instanced) {
+			glext.DrawArraysInstanced = tsglDrawArraysInstancedARB;
+			if(!glext.DrawArraysInstanced) {
+				glext.draw_instanced = false;
+			}
+		}
+	}
+
+	if(!glext.draw_instanced) {
+		warnx(
+			"glDrawArraysInstanced is not supported. "
+			"Your video driver is probably bad, or very old, or both. "
+			"Expect terrible performance."
+		);
 	}
 }
 
+void load_gl_library(void) {
+#ifndef LINK_TO_LIBGL
+	char *lib = getenv("TAISEI_LIBGL");
+
+	if(lib && !*lib) {
+		lib = NULL;
+	}
+
+	if(SDL_GL_LoadLibrary(lib) < 0) {
+		errx(-1, "load_gl_library(): SDL_GL_LoadLibrary() failed: %s", SDL_GetError());
+		return;
+	}
+#endif
+}
+
 void load_gl_functions(void) {
-#ifdef __WINDOWS__
-	glActiveTexture = (PFNGLACTIVETEXTUREPROC)get_proc_address("glActiveTexture");
-	glBlendEquation = (PFNGLBLENDEQUATIONPROC)get_proc_address("glBlendEquation");
+#ifndef LINK_TO_LIBGL
+#define GLDEF(glname,tsname,typename) tsname = (typename)get_proc_address(#glname);
+	GLDEFS
+#undef GLDEF
 #endif
+}
 
-#ifndef __APPLE__
-	glBlendFuncSeparate = (PFNGLBLENDFUNCSEPARATEPROC)get_proc_address("glBlendFuncSeparate");
-	glDrawArraysInstanced = (PFNGLDRAWARRAYSINSTANCEDPROC)get_proc_address("glDrawArraysInstanced");
-
-	glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)get_proc_address("glBindFramebuffer");
-	glGenFramebuffers = (PFNGLGENFRAMEBUFFERSPROC)get_proc_address("glGenFramebuffers");
-	glFramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DPROC)get_proc_address("glFramebufferTexture2D");
-	glDeleteFramebuffers = (PFNGLDELETEFRAMEBUFFERSPROC)get_proc_address("glDeleteFramebuffers");
-
-	glGenBuffers = (PFNGLGENBUFFERSPROC)get_proc_address("glGenBuffers");
-	glBindBuffer = (PFNGLBINDBUFFERPROC)get_proc_address("glBindBuffer");
-	glBufferData = (PFNGLBUFFERDATAPROC)get_proc_address("glBufferData");
-	glBufferSubData = (PFNGLBUFFERSUBDATAPROC)get_proc_address("glBufferSubData");
-	glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)get_proc_address("glDeleteBuffers");
-
-	glCreateProgram = (PFNGLCREATEPROGRAMPROC)get_proc_address("glCreateProgram");
-	glLinkProgram = (PFNGLLINKPROGRAMPROC)get_proc_address("glLinkProgram");
-	glUseProgram = (PFNGLUSEPROGRAMPROC)get_proc_address("glUseProgram");
-	glGetProgramiv = (PFNGLGETPROGRAMIVPROC)get_proc_address("glGetProgramiv");
-	glGetProgramInfoLog = (PFNGLGETPROGRAMINFOLOGPROC)get_proc_address("glGetProgramInfoLog");
-	glDeleteProgram = (PFNGLDELETEPROGRAMPROC)get_proc_address("glDeleteProgram");
-
-	glCreateShader = (PFNGLCREATESHADERPROC)get_proc_address("glCreateShader");
-	glGetShaderiv = (PFNGLGETSHADERIVPROC)get_proc_address("glGetShaderiv");
-	glGetShaderInfoLog = (PFNGLGETSHADERINFOLOGPROC)get_proc_address("glGetShaderInfoLog");
-	glShaderSource = (PFNGLSHADERSOURCEPROC)get_proc_address("glShaderSource");
-	glCompileShader = (PFNGLCOMPILESHADERPROC)get_proc_address("glCompileShader");
-	glAttachShader = (PFNGLATTACHSHADERPROC)get_proc_address("glAttachShader");
-	glDeleteShader = (PFNGLDELETESHADERPROC)get_proc_address("glDeleteShader");
-
-	glGetActiveUniform = (PFNGLGETACTIVEUNIFORMPROC)get_proc_address("glGetActiveUniform");
-	glGetUniformLocation = (PFNGLGETUNIFORMLOCATIONPROC)get_proc_address("glGetUniformLocation");
-
-	glUniform1f = (PFNGLUNIFORM1FPROC)get_proc_address("glUniform1f");
-	glUniform2f = (PFNGLUNIFORM2FPROC)get_proc_address("glUniform2f");
-	glUniform3f = (PFNGLUNIFORM3FPROC)get_proc_address("glUniform3f");
-	glUniform4f = (PFNGLUNIFORM4FPROC)get_proc_address("glUniform4f");
-
-	glUniform1i = (PFNGLUNIFORM1IPROC)get_proc_address("glUniform1i");
-	glUniform2i = (PFNGLUNIFORM2IPROC)get_proc_address("glUniform2i");
-	glUniform3i = (PFNGLUNIFORM3IPROC)get_proc_address("glUniform3i");
-	glUniform4i = (PFNGLUNIFORM4IPROC)get_proc_address("glUniform4i");
-
-	glUniform2fv = (PFNGLUNIFORM2FVPROC)get_proc_address("glUniform2fv");
-	glUniform3fv = (PFNGLUNIFORM3FVPROC)get_proc_address("glUniform3fv");
-	glUniform4fv = (PFNGLUNIFORM4FVPROC)get_proc_address("glUniform4fv");
-#endif
+void gluPerspective(GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFar) {
+    GLdouble fW, fH;
+    fH = tan(fovY / 360 * M_PI) * zNear;
+    fW = fH * aspect;
+    glFrustum(-fW, fW, -fH, fH, zNear, zFar);
 }
