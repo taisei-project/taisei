@@ -123,9 +123,16 @@ set(LIBs ${LIBs}
 	${SDL2_TTF_LIBRARIES}
 	${SDL2_MIXER_LIBRARIES}
 	${PNG_LIBRARIES}
-	${OPENGL_LIBRARIES}
 	${ZLIB_LIBRARIES}
+	${OPENGL_LIBRARIES}
 	m)
+
+set(LIBDIRs
+	${SDL2_LIBRARY_DIRS}
+	${SDL2_TTF_LIBRARY_DIRS}
+	${PNG_LIBRARY_DIRS}
+	${ZLIB_LIBRARY_DIRS}
+	)
 
 if(WIN32)
 	set(LIBs ${LIBs} -ldxguid -lwinmm)
@@ -175,6 +182,7 @@ else()
 	add_executable(taisei MACOSX_BUNDLE WIN32 ${SRCs})
 endif()
 
+link_directories(${LIBDIRs})
 target_link_libraries(taisei ${LIBs})
 
 set(MACOSX_BUNDLE_BUNDLE_NAME "Taisei")
