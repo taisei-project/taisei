@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [[ "$1" != "--iknowwhatimdoing" ]]; then
     >&2 echo "This script should not be ran directly."
