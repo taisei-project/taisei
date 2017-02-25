@@ -14,8 +14,9 @@ shift
 
 EXE_PATH="$1"
 DYLIB_PATH="$2"
-OSX_ROOT="$3"
-OSX_CMD_PREFIX="$4"
+DYLIB_REL_PATH="$3"
+OSX_ROOT="$4"
+OSX_CMD_PREFIX="$5"
 
 mkdir -p "$DYLIB_PATH" || exit 2
 [[ -f "$EXE_PATH" ]] || exit 3
@@ -37,7 +38,7 @@ function handle_dylibs {
         libpath="$OSX_ROOT$lib"
         libname="${lib##*/}"
 
-        $install_name_tool "$1" -change "$lib" "@executable_path/$DYLIB_PATH/$libname" || exit 5
+        $install_name_tool "$1" -change "$lib" "@executable_path/$DYLIB_REL_PATH/$libname" || exit 5
 
         if [[ -n "${handled_libs[$libname]}" ]]; then
             continue

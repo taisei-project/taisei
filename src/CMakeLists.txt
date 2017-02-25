@@ -170,20 +170,28 @@ list(REMOVE_DUPLICATES LIBs)
 
 if(TAISEI_WIN32_CONSOLE)
 	list(REMOVE_ITEM LIBs -mwindows)
-	add_executable(taisei ${SRCs})
+	add_executable(taisei MACOSX_BUNDLE ${SRCs})
 else()
-	add_executable(taisei WIN32 ${SRCs})
+	add_executable(taisei MACOSX_BUNDLE WIN32 ${SRCs})
 endif()
 
 target_link_libraries(taisei ${LIBs})
 
-if(RELATIVE)
+set(MACOSX_BUNDLE_BUNDLE_NAME "Taisei")
+
+if(APPLE)
+	set_target_properties(taisei PROPERTIES
+		OUTPUT_NAME "Taisei"
+		MACOSX_BUNDLE_ICON_FILE "Taisei"
+		MACOSX_BUNDLE_BUNDLE_NAME "Taisei"
+	)
+
+	install(TARGETS taisei BUNDLE DESTINATION .)
+	set(OSX_INSTALLSCRIPT_PATH "${PROJECT_SOURCE_DIR}/scripts/OSXInstallDylibs.cmake")
+	configure_file("${OSX_INSTALLSCRIPT_PATH}.in" "${OSX_INSTALLSCRIPT_PATH}.out" @ONLY)
+	install(SCRIPT "${OSX_INSTALLSCRIPT_PATH}.out")
+elseif(RELATIVE)
 	install(TARGETS taisei RUNTIME DESTINATION .)
-	if(APPLE)
-		set(OSX_INSTALLSCRIPT_PATH "${PROJECT_SOURCE_DIR}/scripts/OSXInstallDylibs.cmake")
-		configure_file("${OSX_INSTALLSCRIPT_PATH}.in" "${OSX_INSTALLSCRIPT_PATH}.out" @ONLY)
-		install(SCRIPT "${OSX_INSTALLSCRIPT_PATH}.out")
-	endif()
 else()
 	install(TARGETS taisei RUNTIME DESTINATION bin)
 endif()

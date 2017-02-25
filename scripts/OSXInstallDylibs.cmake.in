@@ -6,8 +6,9 @@ endif()
 execute_process(
     COMMAND "@PROJECT_SOURCE_DIR@/scripts/osx-install-dylibs.sh"
             "--iknowwhatimdoing"
-            "./taisei"
-            "./dylibs"
+            "./Taisei.app/Contents/MacOS/Taisei"
+            "./Taisei.app/Contents/MacOS/dylibs"
+            "dylibs"
             "@TAISEI_OSX_LIB_ROOT@"
             "@TAISEI_OSX_COMMAND_PREFIX@"
     WORKING_DIRECTORY "@CMAKE_INSTALL_PREFIX@"
