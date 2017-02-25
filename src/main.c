@@ -169,6 +169,8 @@ int main(int argc, char **argv) {
 	load_resources();
 	printf("initialization complete.\n");
 
+	set_transition(TransLoader, 0, FADE_TIME*2);
+
 	atexit(taisei_shutdown);
 
 	if(replay_path) {

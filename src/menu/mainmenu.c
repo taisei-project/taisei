@@ -62,7 +62,6 @@ void main_menu_update_spellpractice(void) {
 
 void begin_main_menu(MenuData *m) {
 	start_bgm("bgm_menu");
-	set_transition(TransLoader, 0, FADE_TIME*2);
 }
 
 void create_main_menu(MenuData *m) {
