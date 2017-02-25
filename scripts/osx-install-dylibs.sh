@@ -34,7 +34,7 @@ rm -vf "$DYLIB_PATH"/*.dylib
 declare -A handled_libs
 
 function handle_dylibs {
-    for lib in $($otool -L "$1" | sed -e '/:$/d' -e 's/\s*//' -e 's/\s.*//' -e '/libSystem/d' -e '/.*\.dylib/!d' -e '/^\/usr\//d' | sort | uniq); do
+    for lib in $($otool -L "$1" | sed -e '/:$/d' -e 's/[[:blank:]]*//' -e 's/[[:blank:]].*//' -e '/libSystem/d' -e '/.*\.dylib/!d' -e '/^\/usr\//d' | sort | uniq); do
         libpath="$OSX_ROOT$lib"
         libname="${lib##*/}"
 
