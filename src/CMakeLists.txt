@@ -175,6 +175,8 @@ list(SORT SRCs)
 list(REMOVE_DUPLICATES SRCs)
 list(REMOVE_DUPLICATES LIBs)
 
+link_directories(${LIBDIRs})
+
 if(TAISEI_WIN32_CONSOLE)
 	list(REMOVE_ITEM LIBs -mwindows)
 	add_executable(taisei MACOSX_BUNDLE ${SRCs})
@@ -182,7 +184,6 @@ else()
 	add_executable(taisei MACOSX_BUNDLE WIN32 ${SRCs})
 endif()
 
-link_directories(${LIBDIRs})
 target_link_libraries(taisei ${LIBs})
 
 set(MACOSX_BUNDLE_BUNDLE_NAME "Taisei")
