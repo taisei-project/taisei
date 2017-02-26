@@ -719,7 +719,8 @@ static void stage_logic(void) {
 	if(!global.dialog && !global.boss)
 		global.timer++;
 
-	if(global.frames == global.replay_stage->events[global.replay_stage->numevents-1].frame - FADE_TIME &&
+	if(global.replaymode == REPLAY_PLAY &&
+		global.frames == global.replay_stage->events[global.replay_stage->numevents-1].frame - FADE_TIME &&
 		global.game_over != GAMEOVER_TRANSITIONING) {
 		stage_finish(GAMEOVER_DEFEAT);
 	}
