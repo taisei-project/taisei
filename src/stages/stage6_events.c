@@ -26,7 +26,7 @@ AttackInfo stage6_spells[] = {
 	{AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 50, 40000, elly_ricci, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
 	{AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 60, 50000, elly_lhc, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
 	{AT_SurvivalSpell, "Tower of Truth ~ Theory of Everything", 70, 40000, elly_theory, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
-	{AT_ExtraSpell, "Forgotten Universe ~ Curvature Domination", 70, 40000, elly_curvature, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
+	{AT_ExtraSpell, "Forgotten Universe ~ Curvature Domination", 40, 40000, elly_curvature, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
 };
 
 Dialog *stage6_dialog(void) {
@@ -820,7 +820,7 @@ int curvature_slave(Enemy *e, int t) {
 	if(t % 20 == 0) {
 			tsrand_fill(2);
 			complex pos = VIEWPORT_W*afrand(0)+I*VIEWPORT_H*afrand(1);
-			if(cabs(pos - global.plr.pos) > 50)
+			if(cabs(pos - global.plr.pos) > 100)
 				create_projectile1c("ball",pos,rgb(1, 0.4,1), linear, cexp(I*carg(global.plr.pos-pos)))->draw = ProjDrawAdd;
 	}
 
@@ -834,9 +834,10 @@ void elly_curvature(Boss *b, int t) {
 		create_enemy2c(b->pos,ENEMY_IMMUNE, 0, curvature_slave,0,global.plr.pos);
 	}
 
+	GO_TO(b, VIEWPORT_W/2+100*I+VIEWPORT_W/3*round(sin(t/200)), 0.04);
 
 	AT(EVENT_DEATH) {
-		//killall(global.enemies);
+		killall(global.enemies);
 	}
 
 }
