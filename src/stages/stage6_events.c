@@ -814,15 +814,20 @@ int curvature_slave(Enemy *e, int t) {
 		complex pos = VIEWPORT_W*afrand(0)+I*VIEWPORT_H*afrand(1);
 		if(cabs(pos - global.plr.pos) > 50) {
 			tsrand_fill(2);
-			create_projectile2c("flea",pos,rgb(0.1*afrand(0), 0.4,1), curvature_bullet, 0.5*cexp(2*M_PI*I*afrand(1)), add_ref(e))->draw = ProjDrawAdd;
+			float speed = 0.5/(1+(global.diff != D_Easy));
+			create_projectile2c("flea",pos,rgb(0.1*afrand(0), 0.4,1), curvature_bullet, speed*cexp(2*M_PI*I*afrand(1)), add_ref(e))->draw = ProjDrawAdd;
 		}
 	}
-	if(t % 20 == 0) {
+	if(t % 20 == 0 && global.diff != D_Normal) {
 			tsrand_fill(2);
 			complex pos = VIEWPORT_W*afrand(0)+I*VIEWPORT_H*afrand(1);
 			if(cabs(pos - global.plr.pos) > 100)
 				create_projectile1c("ball",pos,rgb(1, 0.4,1), linear, cexp(I*carg(global.plr.pos-pos)))->draw = ProjDrawAdd;
+
+
 	}
+	if(global.diff > D_Easy && t % 5 == 0 && global.boss)
+		create_projectile1c("bigball",global.boss->pos,rgb(.5, 0.,1), linear, 10*I*cexp(I*(t/200.-0.5)))->draw = ProjDrawAdd;
 
 	return 1;
 }
@@ -834,7 +839,10 @@ void elly_curvature(Boss *b, int t) {
 		create_enemy2c(b->pos,ENEMY_IMMUNE, 0, curvature_slave,0,global.plr.pos);
 	}
 
-	GO_TO(b, VIEWPORT_W/2+100*I+VIEWPORT_W/3*round(sin(t/200)), 0.04);
+	//if(global.diff  D_Easy)
+	//	GO_TO(b, VIEWPORT_W/2+100*I+VIEWPORT_W/3*round(sin(t/200)), 0.04);
+	//else
+	GO_TO(b, VIEWPORT_W/2+I*VIEWPORT_H/2,0.04);
 
 	AT(EVENT_DEATH) {
 		killall(global.enemies);
