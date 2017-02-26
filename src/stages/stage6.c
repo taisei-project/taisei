@@ -173,11 +173,6 @@ void stage6_end(void) {
 	free_stage3d(&bgcontext);
 }
 
-void stage6_loop(void) {
-// 	ShaderRule shaderrules[] = { stage6_bloom, NULL };
-	stage_loop(stage6_start, stage6_end, stage6_draw, stage6_events, NULL, 3900, "bgm_stage6");
-}
-
 void elly_intro(Boss*, int);
 void elly_unbound(Boss*, int);
 
@@ -222,6 +217,8 @@ void stage6_spellpractice_events(void) {
 
 		boss_add_attack_from_info(global.boss, global.stage->spell, go);
 		start_attack(global.boss, global.boss->attacks);
+
+		start_bgm("bgm_stage6boss");
 	}
 
 	if(!global.boss) {
@@ -229,7 +226,20 @@ void stage6_spellpractice_events(void) {
 	}
 }
 
-void stage6_spellpractice_loop(void) {
-// 	ShaderRule shaderrules[] = { stage6_bloom, NULL };
-	stage_loop(stage6_start, stage6_end, stage6_draw, stage6_spellpractice_events, NULL, 3900, "bgm_stage6boss");
-}
+ShaderRule stage6_shaders[] = { NULL };
+
+StageProcs stage6_procs = {
+	.begin = stage6_start,
+	.end = stage6_end,
+	.draw = stage6_draw,
+	.event = stage6_events,
+	.shader_rules = stage6_shaders,
+};
+
+StageProcs stage6_spell_procs = {
+	.begin = stage6_start,
+	.end = stage6_end,
+	.draw = stage6_draw,
+	.event = stage6_spellpractice_events,
+	.shader_rules = stage6_shaders,
+};

@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
 	if(argc >= 2 && argv[1] && !strcmp(argv[1], "dumpstages")) {
 		stage_init_array();
 
-		for(StageInfo *stg = stages; stg->loop; ++stg) {
+		for(StageInfo *stg = stages; stg->procs; ++stg) {
 			printf("%i %s: %s\n", stg->id, stg->title, stg->subtitle);
 		}
 
@@ -185,8 +185,7 @@ int main(int argc, char **argv) {
 		do {
 			global.game_over = 0;
 			init_player(&global.plr);
-			global.stage = stg;
-			stg->loop();
+			stage_loop(stg);
 		} while(global.game_over == GAMEOVER_RESTART);
 
 		return 0;

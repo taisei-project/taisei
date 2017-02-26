@@ -573,6 +573,10 @@ int stage1_tritoss(Enemy *e, int t) {
 void stage1_events(void) {
 	TIMER(&global.timer);
 
+	AT(0) {
+		start_bgm("bgm_stage1");
+	}
+
 	/*
 	// graze testing
  	AT(0) {
@@ -668,6 +672,9 @@ void stage1_events(void) {
 	AT(5000)
 		global.boss = create_cirno();
 
+	AT(5200 - FADE_TIME) {
+		stage_finish(GAMEOVER_WIN);
+	}
 }
 
 void stage1_start(void) {
@@ -684,11 +691,6 @@ void stage1_end(void) {
 	free_stage3d(&bgcontext);
 }
 
-void stage1_loop(void) {
-	ShaderRule list[] = { stage1_fog, NULL };
-	stage_loop(stage1_start, stage1_end, stage1_draw, stage1_events, list, 5200, "bgm_stage1");
-}
-
 void stage1_spellpractice_events(void) {
 	TIMER(&global.timer);
 
@@ -697,10 +699,25 @@ void stage1_spellpractice_events(void) {
 		boss_add_attack_from_info(cirno, global.stage->spell, true);
 		start_attack(cirno, cirno->attacks);
 		global.boss = cirno;
+
+		start_bgm("bgm_stage1boss");
 	}
 }
 
-void stage1_spellpractice_loop(void) {
-	ShaderRule list[] = { stage1_fog, NULL };
-	stage_loop(stage1_start, stage1_end, stage1_draw, stage1_spellpractice_events, list, 0, "bgm_stage1boss");
-}
+ShaderRule stage1_shaders[] = { stage1_fog, NULL };
+
+StageProcs stage1_procs = {
+	.begin = stage1_start,
+	.end = stage1_end,
+	.draw = stage1_draw,
+	.event = stage1_events,
+	.shader_rules = stage1_shaders,
+};
+
+StageProcs stage1_spell_procs = {
+	.begin = stage1_start,
+	.end = stage1_end,
+	.draw = stage1_draw,
+	.event = stage1_spellpractice_events,
+	.shader_rules = stage1_shaders,
+};

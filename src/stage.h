@@ -43,7 +43,7 @@ typedef enum {
 #define GO_AT(obj, start, end, vel) if(*__timep >= (start) && *__timep <= (end)) (obj)->pos += (vel);
 #define GO_TO(obj, p, f) (obj)->pos += (f)*((p) - (obj)->pos);
 
-typedef void (*StageRule)(void);
+typedef void (*StageProc)(void);
 typedef void (*ShaderRule)(int);
 
 // highest bit of uint16_t, WAY higher than the amount of spells in this game can ever possibly be
@@ -55,13 +55,21 @@ typedef enum StageType {
 	STAGE_SPELL,
 } StageType;
 
+typedef struct StageProcs {
+	StageProc begin;
+	StageProc end;
+	StageProc draw;
+	StageProc event;
+	ShaderRule *shader_rules;
+} StageProcs;
+
 typedef struct StageInfo {
 	//
 	// don't reorder these!
 	//
 
 	uint16_t id; // must match type of ReplayStage.stage in replay.h
-	StageRule loop;
+	StageProcs *procs;
 	StageType type;
 	char *title;
 	char *subtitle;
@@ -86,11 +94,9 @@ StageProgress* stage_get_progress_from_info(StageInfo *stage, Difficulty diff, b
 void stage_init_array(void);
 void stage_free_array(void);
 
-void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event, ShaderRule *shaderrules, int endtime, char *bgmname);
+void stage_loop(StageInfo *stage);
+void stage_finish(int gameover);
 
-void apply_bg_shaders(ShaderRule *shaderrules);
-
-void draw_stage_title(StageInfo *info);
 void draw_hud(void);
 
 void stage_pause(void);

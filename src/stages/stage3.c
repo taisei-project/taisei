@@ -278,11 +278,6 @@ void stage3_draw(void) {
 	draw_stage3d(&bgcontext, 7000);
 }
 
-void stage3_loop(void) {
-	ShaderRule shaderrules[] = { stage3_fog, stage3_tunnel, NULL };
-	stage_loop(stage3_start, stage3_end, stage3_draw, stage3_events, shaderrules, 5700, "bgm_stage3");
-}
-
 void stage3_mid_spellbg(Boss*, int t);
 
 void stage3_spellpractice_events(void) {
@@ -299,10 +294,25 @@ void stage3_spellpractice_events(void) {
 
 		boss_add_attack_from_info(global.boss, global.stage->spell, true);
 		start_attack(global.boss, global.boss->attacks);
+
+		start_bgm("bgm_stage3boss");
 	}
 }
 
-void stage3_spellpractice_loop(void) {
-	ShaderRule shaderrules[] = { stage3_fog, stage3_tunnel, NULL };
-	stage_loop(stage3_start, stage3_end, stage3_draw, stage3_spellpractice_events, shaderrules, 0, "bgm_stage3boss");
-}
+ShaderRule stage3_shaders[] = { stage3_fog, stage3_tunnel, NULL };
+
+StageProcs stage3_procs = {
+	.begin = stage3_start,
+	.end = stage3_end,
+	.draw = stage3_draw,
+	.event = stage3_events,
+	.shader_rules = stage3_shaders,
+};
+
+StageProcs stage3_spell_procs = {
+	.begin = stage3_start,
+	.end = stage3_end,
+	.draw = stage3_draw,
+	.event = stage3_spellpractice_events,
+	.shader_rules = stage3_shaders,
+};

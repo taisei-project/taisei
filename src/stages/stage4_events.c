@@ -745,6 +745,10 @@ Boss *create_kurumi(void) {
 void stage4_events(void) {
 	TIMER(&global.timer);
 
+	AT(0) {
+		start_bgm("bgm_stage4");
+	}
+
 	AT(70) {
 		create_enemy1c(VIEWPORT_H/4*3*I, 3000, BigFairy, stage4_splasher, 3-4.0*I);
 		create_enemy1c(VIEWPORT_W + VIEWPORT_H/4*3*I, 3000, BigFairy, stage4_splasher, -3-4.0*I);
@@ -802,4 +806,8 @@ void stage4_events(void) {
 
 	AT(5400)
 		global.dialog = stage4_dialog_end();
+
+	AT(5550 - FADE_TIME) {
+		stage_finish(GAMEOVER_WIN);
+	}
 }

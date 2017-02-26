@@ -789,8 +789,9 @@ Boss* stage3_create_boss(void) {
 void stage3_events(void) {
 	TIMER(&global.timer);
 
-// 	AT(0)
-// 		global.timer = 4300;
+	AT(0) {
+		start_bgm("bgm_stage2");
+	}
 
 	FROM_TO(160, 300, 10) {
 		tsrand_fill(3);
@@ -871,4 +872,8 @@ void stage3_events(void) {
 
 	AT(5300)
 		global.boss = stage3_create_boss();
+
+	AT(5700 - FADE_TIME) {
+		stage_finish(GAMEOVER_WIN);
+	}
 }

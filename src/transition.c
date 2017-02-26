@@ -106,13 +106,21 @@ void set_transition(TransitionRule rule, int dur1, int dur2) {
 	set_transition_callback(rule, dur1, dur2, NULL, NULL);
 }
 
-void draw_transition(void) {
+static bool check_transition(void) {
 	if(transition.state == TRANS_IDLE) {
-		return;
+		return false;
 	}
 
 	if(!transition.rule) {
 		transition.state = TRANS_IDLE;
+		return false;
+	}
+
+	return true;
+}
+
+void draw_transition(void) {
+	if(!check_transition()) {
 		return;
 	}
 
@@ -120,6 +128,12 @@ void draw_transition(void) {
 
 	if(transition.rule2 && transition.rule2 != transition.rule) {
 		transition.rule2(transition.fade);
+	}
+}
+
+void update_transition(void) {
+	if(!check_transition()) {
+		return;
 	}
 
 	if(transition.state == TRANS_FADE_IN) {
@@ -140,3 +154,7 @@ void draw_transition(void) {
 	}
 }
 
+void draw_and_update_transition(void) {
+	draw_transition();
+	update_transition();
+}

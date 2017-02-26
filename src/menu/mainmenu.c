@@ -49,7 +49,7 @@ void main_menu_update_spellpractice(void) {
 	MenuEntry *e = spell_practice_entry;
 	e->action = NULL;
 
-	for(StageInfo *stg = stages; stg->loop; ++stg) {
+	for(StageInfo *stg = stages; stg->procs; ++stg) {
 		if(stg->type == STAGE_SPELL) {
 			StageProgress *p = stage_get_progress_from_info(stg, D_Any, false);
 			if(p && p->unlocked) {

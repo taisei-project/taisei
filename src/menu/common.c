@@ -48,12 +48,10 @@ troll:
 
 troll2:
     if(info) {
-        global.stage = info;
-        info->loop();
+        stage_loop(info);
     } else {
-        for(int i = 0; stages[i].type == STAGE_STORY; ++i) {
-            global.stage = stages + i;
-            stages[i].loop();
+        for(StageInfo *s = stages; s->type == STAGE_STORY; ++s) {
+            stage_loop(s);
         }
     }
 

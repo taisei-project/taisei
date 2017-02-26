@@ -158,11 +158,6 @@ void stage2_draw(void) {
 
 }
 
-void stage2_loop(void) {
-	ShaderRule shaderrules[] = { stage2_fog, stage2_bloom, NULL };
-	stage_loop(stage2_start, stage2_end, stage2_draw, stage2_events, shaderrules, 5240, "bgm_stage2");
-}
-
 void stage2_spellpractice_events(void) {
 	TIMER(&global.timer);
 
@@ -173,10 +168,25 @@ void stage2_spellpractice_events(void) {
 		boss_add_attack_from_info(hina, global.stage->spell, true);
 		start_attack(hina, hina->attacks);
 		global.boss = hina;
+
+		start_bgm("bgm_stage2boss");
 	}
 }
 
-void stage2_spellpractice_loop(void) {
-	ShaderRule shaderrules[] = { stage2_fog, stage2_bloom, NULL };
-	stage_loop(stage2_start, stage2_end, stage2_draw, stage2_spellpractice_events, shaderrules, 0, "bgm_stage2boss");
-}
+ShaderRule stage2_shaders[] = { stage2_fog, stage2_bloom, NULL };
+
+StageProcs stage2_procs = {
+	.begin = stage2_start,
+	.end = stage2_end,
+	.draw = stage2_draw,
+	.event = stage2_events,
+	.shader_rules = stage2_shaders,
+};
+
+StageProcs stage2_spell_procs = {
+	.begin = stage2_start,
+	.end = stage2_end,
+	.draw = stage2_draw,
+	.event = stage2_spellpractice_events,
+	.shader_rules = stage2_shaders,
+};

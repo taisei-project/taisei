@@ -118,7 +118,7 @@ void ending_draw(Ending *e) {
 	draw_text(AL_Center, SCREEN_W/2, SCREEN_H/5*4, e->entries[e->pos].msg, _fonts.standard);
 	glColor4f(1,1,1,1);
 
-	draw_transition();
+	draw_and_update_transition();
 }
 
 void ending_loop(void) {

@@ -969,8 +969,9 @@ Boss *create_elly(void) {
 void stage6_events(void) {
 	TIMER(&global.timer);
 
-// 	AT(0)
-// 		global.timer = 3800;
+	AT(0) {
+		start_bgm("bgm_stage6");
+	}
 
 	AT(100)
 		create_enemy1c(VIEWPORT_W/2, 6000, BigFairy, stage6_hacker, 2.0*I);
@@ -994,4 +995,8 @@ void stage6_events(void) {
 
 	AT(3800)
 		global.boss = create_elly();
+
+	AT(3900 - FADE_TIME) {
+		stage_finish(GAMEOVER_WIN);
+	}
 }

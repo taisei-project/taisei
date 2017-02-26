@@ -229,11 +229,6 @@ void stage4_draw(void) {
 		bgcontext.cv[1] += 0.02;
 }
 
-void stage4_loop(void) {
-	ShaderRule shaderrules[] = { stage4_fog, NULL };
-	stage_loop(stage4_start, stage4_end, stage4_draw, stage4_events, shaderrules, 5550, "bgm_stage4");
-}
-
 void stage4_spellpractice_events(void) {
 	TIMER(&global.timer);
 
@@ -242,10 +237,25 @@ void stage4_spellpractice_events(void) {
 		global.boss = create_boss("Kurumi", "kurumi", BOSS_DEFAULT_SPAWN_POS);
 		boss_add_attack_from_info(global.boss, global.stage->spell, true);
 		start_attack(global.boss, global.boss->attacks);
+
+		start_bgm("bgm_stage4boss");
 	}
 }
 
-void stage4_spellpractice_loop(void) {
-	ShaderRule shaderrules[] = { stage4_fog, NULL };
-	stage_loop(stage4_start, stage4_end, stage4_draw, stage4_spellpractice_events, shaderrules, 0, "bgm_stage4boss");
-}
+ShaderRule stage4_shaders[] = { stage4_fog, NULL };
+
+StageProcs stage4_procs = {
+	.begin = stage4_start,
+	.end = stage4_end,
+	.draw = stage4_draw,
+	.event = stage4_events,
+	.shader_rules = stage4_shaders,
+};
+
+StageProcs stage4_spell_procs = {
+	.begin = stage4_start,
+	.end = stage4_end,
+	.draw = stage4_draw,
+	.event = stage4_spellpractice_events,
+	.shader_rules = stage4_shaders,
+};

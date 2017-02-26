@@ -8,12 +8,12 @@
 #ifndef STAGE6_H
 #define STAGE6_H
 
-#include "boss.h"
+#include "stage.h"
 
-void stage6_loop(void);
-void stage6_spellpractice_loop(void);
-void start_fall_over(void);
-
+extern StageProcs stage6_procs;
+extern StageProcs stage6_spell_procs;
 extern AttackInfo stage6_spells[];
+
+void start_fall_over(void);
 
 #endif

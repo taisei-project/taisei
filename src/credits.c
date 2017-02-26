@@ -214,7 +214,7 @@ void credits_draw(void) {
 		credits_draw_entry(&(credits.entries[i]));
 	glPopMatrix();
 
-	draw_transition();
+	draw_and_update_transition();
 }
 
 void credits_finish(void *arg) {

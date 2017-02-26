@@ -659,8 +659,7 @@ void replay_play(Replay *rpy, int firststage) {
 			continue;
 		}
 
-		global.stage = gstg;
-		gstg->loop();
+		stage_loop(gstg);
 
 		if(global.game_over == GAMEOVER_ABORT) {
 			break;

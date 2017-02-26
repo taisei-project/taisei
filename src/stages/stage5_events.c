@@ -511,6 +511,10 @@ Boss *create_iku(void) {
 void stage5_events(void) {
 	TIMER(&global.timer);
 
+	AT(0) {
+		start_bgm("bgm_stage5");
+	}
+
 	FROM_TO(60, 120, 10)
 		create_enemy1c(VIEWPORT_W+70.0*I+50*_i*I, 300, Fairy, stage5_greeter, -3);
 
@@ -571,4 +575,8 @@ void stage5_events(void) {
 
 	AT(5320)
 		global.dialog = stage5_post_boss_dialog();
+
+	AT(5700 - FADE_TIME) {
+		stage_finish(GAMEOVER_WIN);
+	}
 }
