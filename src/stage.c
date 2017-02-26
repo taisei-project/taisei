@@ -242,12 +242,12 @@ StageInfo stages[] = {
 	{E| 19, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+4, D_Lunatic},
 
 	// RESERVED
-	/*
-	{E| 20, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+6, D_Easy},
-	{E| 21, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+6, D_Normal},
-	{E| 22, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+6, D_Hard},
-	{E| 23, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+6, D_Lunatic},
-	*/
+	
+	{E| 20, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+6, D_Easy},
+	{E| 21, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+6, D_Normal},
+	{E| 22, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+6, D_Hard},
+	{E| 23, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+6, D_Lunatic},
+	
 
 #undef E
 #undef S
