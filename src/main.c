@@ -72,6 +72,10 @@ int run_tests(void) {
 		return 1;
 	}
 
+	if(color_test()) {
+		return 1;
+	}
+
 	return 0;
 }
 

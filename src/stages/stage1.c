@@ -165,7 +165,6 @@ int cirno_pfreeze_frogs(Projectile *p, int t) {
 	if(boss_t < 110)
 		linear(p, t);
 	else if(boss_t == 110) {
-		free(p->clr);
 		p->clr = rgb(0.7,0.7,0.7);
 	}
 

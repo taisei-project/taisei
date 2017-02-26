@@ -9,7 +9,7 @@
 #include "global.h"
 #include "list.h"
 
-Laser *create_laser(complex pos, float time, float deathtime, Color *color, LaserPosRule prule, LaserLogicRule lrule, complex a0, complex a1, complex a2, complex a3) {
+Laser *create_laser(complex pos, float time, float deathtime, Color color, LaserPosRule prule, LaserLogicRule lrule, complex a0, complex a1, complex a2, complex a3) {
 	Laser *l = create_element((void **)&global.lasers, sizeof(Laser));
 
 	l->birthtime = global.frames;
@@ -40,13 +40,14 @@ Laser *create_laser(complex pos, float time, float deathtime, Color *color, Lase
 	return l;
 }
 
-Laser *create_laserline_ab(complex a, complex b, float width, float charge, float dur, Color *clr) {
+Laser *create_laserline_ab(complex a, complex b, float width, float charge, float dur, Color clr) {
 	complex m = (b-a)*0.005;
 
 	return create_laser(a, 200, dur, clr, las_linear, static_laser, m, charge + I*width, 0, 0);
 }
 
 void draw_laser_curve_instanced(Laser *l) {
+	static float clr[4];
 	float t;
 	int c;
 
@@ -72,7 +73,8 @@ void draw_laser_curve_instanced(Laser *l) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 	glUseProgram(l->shader->prog);
-	glUniform4fv(uniloc(l->shader, "clr"), 1, (float *)l->color);
+	parse_color_array(l->color, clr);
+	glUniform4fv(uniloc(l->shader, "clr"), 1, clr);
 
 	glUniform2f(uniloc(l->shader, "pos"), creal(l->pos), cimag(l->pos));
 	glUniform2f(uniloc(l->shader, "a0"), creal(l->args[0]), cimag(l->args[0]));
@@ -98,9 +100,7 @@ void draw_laser_curve(Laser *laser) {
 	complex last;
 
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
-
-	glColor4fv((float *)laser->color);
-
+	parse_color_call(laser->color, glColor4f);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 	float t = (global.frames - laser->birthtime)*laser->speed - laser->timespan + laser->timeshift;
@@ -156,7 +156,6 @@ void _delete_laser(void **lasers, void *laser) {
 	if(l->lrule)
 		l->lrule(l, EVENT_DEATH);
 
-	free(l->color);
 	del_ref(laser);
 	delete_element(lasers, laser);
 }

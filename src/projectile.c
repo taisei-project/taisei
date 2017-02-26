@@ -12,18 +12,18 @@
 #include "list.h"
 #include "vbo.h"
 
-Projectile *create_particle4c(char *name, complex pos, Color *clr, ProjDRule draw, ProjRule rule, complex a1, complex a2, complex a3, complex a4) {
+Projectile *create_particle4c(char *name, complex pos, Color clr, ProjDRule draw, ProjRule rule, complex a1, complex a2, complex a3, complex a4) {
 	Projectile *p = create_projectile_p(&global.particles, prefix_get_tex(name, "part/"), pos, clr, draw, rule, a1, a2, a3, a4);
 
 	p->type = Particle;
 	return p;
 }
 
-Projectile *create_projectile4c(char *name, complex pos, Color *clr, ProjRule rule, complex a1, complex a2, complex a3, complex a4) {
+Projectile *create_projectile4c(char *name, complex pos, Color clr, ProjRule rule, complex a1, complex a2, complex a3, complex a4) {
 	return create_projectile_p(&global.projs, prefix_get_tex(name, "proj/"), pos, clr, ProjDraw, rule, a1, a2, a3, a4);
 }
 
-Projectile *create_projectile_p(Projectile **dest, Texture *tex, complex pos, Color *clr,
+Projectile *create_projectile_p(Projectile **dest, Texture *tex, complex pos, Color clr,
 							    ProjDRule draw, ProjRule rule, complex a1, complex a2, complex a3, complex a4) {
 	Projectile *p, *e, **d;
 
@@ -61,7 +61,6 @@ void _delete_projectile(void **projs, void *proj) {
 	Projectile *p = proj;
 	p->rule(p, EVENT_DEATH);
 
-	free(p->clr);
 	del_ref(proj);
 	delete_element(projs, proj);
 }
@@ -132,7 +131,7 @@ void process_projectiles(Projectile **projs, bool collision) {
 		if(proj->type == DeadProj && killed < 5) {
 			killed++;
 			action = ACTION_DESTROY;
-			create_particle1c("flare", proj->pos, NULL, Fade, timeout, 30);
+			create_particle1c("flare", proj->pos, 0, Fade, timeout, 30);
 			create_item(proj->pos, 0, BPoint)->auto_collect = 10;
 		}
 
@@ -140,12 +139,7 @@ void process_projectiles(Projectile **projs, bool collision) {
 			col = collision_projectile(proj);
 
 		if(col && proj->type != Particle) {
-			Color *clr = NULL;
-			if(proj->clr) {
-				clr = malloc(sizeof(Color));
-				memcpy(clr, proj->clr, sizeof(Color));
-			}
-			create_projectile_p(&global.particles, proj->tex, proj->pos, clr, DeathShrink, timeout_linear, 10, 5*cexp(proj->angle*I), 0, 0);
+			create_projectile_p(&global.particles, proj->tex, proj->pos, proj->clr, DeathShrink, timeout_linear, 10, 5*cexp(proj->angle*I), 0, 0);
 		}
 
 		if(col == 1 && global.frames - abs(global.plr.recovery) >= 0)
@@ -202,19 +196,20 @@ int asymptotic(Projectile *p, int t) { // v = a[0]*(a[1] + 1); a[1] -> 0
 }
 
 void _ProjDraw(Projectile *proj, int t) {
-	if(proj->clr != NULL && !config_get_int(CONFIG_NO_SHADER)) {
+	if(proj->clr && !config_get_int(CONFIG_NO_SHADER)) {
+		static GLfloat clr[4];
 		Shader *shader = get_shader("bullet_color");
 		glUseProgram(shader->prog);
-
-		glUniform4fv(uniloc(shader, "color"), 1, (GLfloat *)proj->clr);
+		parse_color_array(proj->clr, clr);
+		glUniform4fv(uniloc(shader, "color"), 1, clr);
 	}
 
-	if(proj->clr != NULL && config_get_int(CONFIG_NO_SHADER))
+	if(!proj->clr && config_get_int(CONFIG_NO_SHADER))
 		glColor3f(0,0,0);
 
 	draw_texture_p(0,0, proj->tex);
 
-	if(proj->clr != NULL && config_get_int(CONFIG_NO_SHADER))
+	if(proj->clr && config_get_int(CONFIG_NO_SHADER))
 		glColor3f(1,1,1);
 
 	if(!config_get_int(CONFIG_NO_SHADER))
@@ -256,8 +251,9 @@ void PartDraw(Projectile *proj, int t) {
 	glTranslatef(creal(proj->pos), cimag(proj->pos), 0);
 	glRotatef(proj->angle*180/M_PI+90, 0, 0, 1);
 
-	if(proj->clr)
-		glColor4fv((float *)proj->clr);
+	if(proj->clr) {
+		parse_color_call(proj->clr, glColor4f);
+	}
 
 	draw_texture_p(0,0, proj->tex);
 
@@ -337,7 +333,7 @@ void GrowFade(Projectile *p, int t) {
 		glScalef(s, s, 1);
 
 	if(p->clr)
-		glColor4f(p->clr->r,p->clr->g,p->clr->b,1-t/p->args[0]);
+		parse_color_call(derive_color(p->clr, CLRMASK_A, rgba(0,0,0,1-t/p->args[0])), glColor4f);
 	else if(t/p->args[0] != 0)
 		glColor4f(1,1,1,1-t/p->args[0]);
 
@@ -359,7 +355,7 @@ void Fade(Projectile *p, int t) {
 void FadeAdd(Projectile *p, int t) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-	glColor4f(p->clr->r,p->clr->g,p->clr->b, 1.0 - (float)t/p->args[0]);
+	parse_color_call(derive_color(p->clr, CLRMASK_A, rgba(0,0,0, 1.0 - (float)t/p->args[0])), glColor4f);
 	glPushMatrix();
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
 	glRotatef(180/M_PI*p->angle+90, 0, 0, 1);
@@ -402,8 +398,9 @@ void Petal(Projectile *p, int t) {
 		glTranslatef(creal(p->pos), cimag(p->pos),0);
 	glRotatef(t*4.0 + cimag(p->args[3]), x, y, z);
 
-	if(p->clr)
-		glColor4fv((float *)p->clr);
+	if(p->clr) {
+		parse_color_call(p->clr, glColor4f);
+	}
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	draw_texture_p(0,0, p->tex);

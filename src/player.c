@@ -245,7 +245,7 @@ void player_death(Player *plr) {
 		int i;
 		for(i = 0; i < 20; i++) {
 			tsrand_fill(2);
-			create_particle2c("flare", plr->pos, NULL, Shrink, timeout_linear, 40, (3+afrand(0)*7)*cexp(I*tsrand_a(1)));
+			create_particle2c("flare", plr->pos, 0, Shrink, timeout_linear, 40, (3+afrand(0)*7)*cexp(I*tsrand_a(1)));
 		}
 		create_particle2c("blast", plr->pos, rgb(1,0.5,0.3), GrowFade, timeout, 35, 2.4);
 		plr->deathtime = global.frames + DEATHBOMB_TIME;
@@ -425,6 +425,6 @@ void player_graze(Player *plr, complex pos, int pts) {
 
 	int i = 0; for(i = 0; i < 5; ++i) {
 		tsrand_fill(3);
-		create_particle2c("flare", pos, NULL, Shrink, timeout_linear, 5 + 5 * afrand(2), (1+afrand(0)*5)*cexp(I*tsrand_a(1)));
+		create_particle2c("flare", pos, 0, Shrink, timeout_linear, 5 + 5 * afrand(2), (1+afrand(0)*5)*cexp(I*tsrand_a(1)));
 	}
 }

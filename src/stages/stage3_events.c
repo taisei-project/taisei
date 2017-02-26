@@ -282,10 +282,12 @@ int stage3_mid_a0_proj(Projectile *p, int time) {
 		int cnt = 2 + global.diff, i;
 		for(i = 0; i < cnt; ++i) {
 			tsrand_fill(2);
-			create_particle3c("lasercurve", 0, rgb(max(0.3, 1.0 - p->clr->r), p->clr->g, p->clr->b), EnemyFlareShrink, enemy_flare, 100, cexp(I*(M_PI*anfrand(0))) * (1 + afrand(1)), add_ref(p));
+			Color clr = derive_color(p->clr, CLRMASK_R, rgb(max(0.3, 1.0 - color_component(p->clr, CLR_R)), 0, 0));
+
+			create_particle3c("lasercurve", 0, clr, EnemyFlareShrink, enemy_flare, 100, cexp(I*(M_PI*anfrand(0))) * (1 + afrand(1)), add_ref(p));
 
 			int jcnt = 1 + (global.diff > D_Normal), j;
-			for(j = 0; j < jcnt; ++j) create_projectile1c("thickrice", p->pos, p->clr->r == 1.0? rgb(1.0, 0.3, 0.3) : rgb(0.3, 0.3, 1.0), accelerated,
+			for(j = 0; j < jcnt; ++j) create_projectile1c("thickrice", p->pos, color_component(p->clr, CLR_R) == 1.0? rgb(1.0, 0.3, 0.3) : rgb(0.3, 0.3, 1.0), accelerated,
 				0
 				-cexp(I*(i*2*M_PI/cnt + global.frames / 15.0)) * (1.0 + 0.1 * j)
 			); //->draw = global.diff > D_Hard? ProjDrawAdd : ProjDraw;
@@ -510,7 +512,7 @@ void stage3_boss_a1_slave_part(Projectile *p, int t) {
 	Texture *tex = p->tex;
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 	float b = 1 - t / p->args[0];
-	glColor4f(p->clr->r*b, p->clr->g*b, p->clr->b*b, 1);
+	parse_color_call(multiply_colors(p->clr, rgb(b, b, b)), glColor4f);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 	glPushMatrix();
@@ -673,8 +675,8 @@ void stage3_boss_a3(Boss *boss, int time) {
 
 		float b = 0.5;
 
-		Color *c1;
-		Color *c2;
+		Color c1;
+		Color c2;
 
 		if(_i % 2) {
 			c1 = rgb(1.0, 1.0, b);

@@ -46,11 +46,11 @@ void _delete_enemy(void **enemies, void* enemy) {
 		play_sound("enemydeath");
 		for(i = 0; i < 10; i++) {
 			tsrand_fill(2);
-			create_particle2c("flare", e->pos, NULL, Fade, timeout_linear, 10, (3+afrand(0)*10)*cexp(I*afrand(1)*2*M_PI));
+			create_particle2c("flare", e->pos, 0, Fade, timeout_linear, 10, (3+afrand(0)*10)*cexp(I*afrand(1)*2*M_PI));
 		}
-		create_particle1c("blast", e->pos, NULL, Blast, timeout, 20);
-		create_particle1c("blast", e->pos, NULL, Blast, timeout, 20);
-		create_particle2c("blast", e->pos, NULL, GrowFade, timeout, 15,0);
+		create_particle1c("blast", e->pos, 0, Blast, timeout, 20);
+		create_particle1c("blast", e->pos, 0, Blast, timeout, 20);
+		create_particle2c("blast", e->pos, 0, GrowFade, timeout, 15,0);
 	}
 	e->logic_rule(enemy, EVENT_DEATH);
 	del_ref(enemy);
@@ -128,7 +128,7 @@ void EnemyFlareShrink(Projectile *p, int t) {
 		glScalef(s, s, 1);
 
 	if(p->clr)
-		glColor4fv((float *)p->clr);
+		parse_color_call(p->clr, glColor4f);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	draw_texture_p(0, 0, p->tex);
