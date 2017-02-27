@@ -231,6 +231,10 @@ void stage_gameover(void) {
 void stage_input_event(EventType type, int key, void *arg) {
 	switch(type) {
 		case E_PlrKeyDown:
+			if(key == KEY_NOBACKGROUND) {
+				break;
+			}
+
 			if(key == KEY_HAHAIWIN) {
 #ifdef DEBUG
 				stage_finish(GAMEOVER_WIN);
@@ -553,7 +557,13 @@ static void apply_bg_shaders(ShaderRule *shaderrules) {
 			glUniform4f(uniloc(shader, "color"), 0.1, 0.2, 0.3, 1);
 	}
 
-	draw_fbo_viewport(&resources.fbg[fbonum]);
+
+#ifdef DEBUG
+	if(!gamekeypressed(KEY_NOBACKGROUND))
+#endif
+	{
+		draw_fbo_viewport(&resources.fbg[fbonum]);
+	}
 
 	glUseProgram(0);
 
