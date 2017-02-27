@@ -45,7 +45,9 @@ typedef enum {
 
 	// EF_Gamepad
 	E_GamepadKeyDown,
-	E_GamepadKeyUp
+	E_GamepadKeyUp,
+	E_GamepadAxis,
+	E_GamepadAxisValue,
 } EventType;
 
 typedef void(*EventHandler)(EventType, int, void*);

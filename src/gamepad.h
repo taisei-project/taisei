@@ -41,8 +41,8 @@ enum {
 	AXISVAL_NULL  = 0
 };
 
-#define GAMEPAD_AXES 8
-#define GAMEPAD_AXIS_RANGE 32767
+#define GAMEPAD_AXIS_MAX 32767
+#define GAMEPAD_AXIS_MIN -32768
 #define AXISVAL SIGN
 
 #endif

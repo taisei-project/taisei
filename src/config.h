@@ -78,6 +78,7 @@
 	CONFIGDEF_INT		(NO_STAGEBG, 				"disable_stagebg", 						0) \
 	CONFIGDEF_INT		(NO_STAGEBG_FPSLIMIT, 		"disable_stagebg_auto_fpslimit", 		40) \
 	CONFIGDEF_INT		(SAVE_RPY, 					"save_rpy", 							2) \
+	CONFIGDEF_INT		(SPELLSTAGE_AUTORESTART,	"spellpractice_restart_on_fail",		0) \
 	KEYDEFS \
 	CONFIGDEF_INT		(GAMEPAD_ENABLED, 			"gamepad_enabled", 						0) \
 	CONFIGDEF_INT		(GAMEPAD_DEVICE, 			"gamepad_device", 						0) \

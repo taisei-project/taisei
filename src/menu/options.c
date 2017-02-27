@@ -77,6 +77,16 @@ OptionBinding* bind_gpbinding(int cfgentry) {
 	return bind;
 }
 
+// BT_GamepadAxisBinding: gamepad axis mapping options
+OptionBinding* bind_gpaxisbinding(int cfgentry) {
+	OptionBinding *bind = bind_new();
+
+	bind->configentry = cfgentry;
+	bind->type = BT_GamepadAxisBinding;
+
+	return bind;
+}
+
 // BT_StrValue: with a half-assed "textbox"
 OptionBinding* bind_stroption(ConfigIndex cfgentry) {
 	OptionBinding *bind = bind_new();
@@ -442,26 +452,26 @@ void options_sub_gamepad(MenuData *parent, void *arg) {
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, "UD axis (Vertical)", do_nothing,
-		b = bind_option(CONFIG_GAMEPAD_AXIS_UD, bind_common_intget, bind_common_intset)
-	);	bind_setvaluerange_fancy(b, GAMEPAD_AXES-1);
+	add_menu_entry(m, "X axis", do_nothing,
+		b = bind_gpaxisbinding(CONFIG_GAMEPAD_AXIS_LR)
+	);
 
-	add_menu_entry(m, "LR axis (Horizontal)", do_nothing,
-		b = bind_option(CONFIG_GAMEPAD_AXIS_LR, bind_common_intget, bind_common_intset)
-	);	bind_setvaluerange_fancy(b, GAMEPAD_AXES-1);
+	add_menu_entry(m, "Y axis", do_nothing,
+		b = bind_gpaxisbinding(CONFIG_GAMEPAD_AXIS_UD)
+	);
 
 	add_menu_entry(m, "Axes mode", do_nothing,
 		b = bind_option(CONFIG_GAMEPAD_AXIS_FREE, bind_common_onoffget, bind_common_onoffset)
 	);	bind_addvalue(b, "free");
 		bind_addvalue(b, "restricted");
 
-	add_menu_entry(m, "UD axis sensitivity", do_nothing,
-		b = bind_scale(CONFIG_GAMEPAD_AXIS_UD_SENS, -2, 2, 0.05)
-	); bind_setdependence(b, gamepad_sens_depencence);
-
-	add_menu_entry(m, "LR axis sensitivity", do_nothing,
+	add_menu_entry(m, "X axis sensitivity", do_nothing,
 		b = bind_scale(CONFIG_GAMEPAD_AXIS_LR_SENS, -2, 2, 0.05)
 	);	bind_setdependence(b, gamepad_sens_depencence);
+
+	add_menu_entry(m, "Y axis sensitivity", do_nothing,
+		b = bind_scale(CONFIG_GAMEPAD_AXIS_UD_SENS, -2, 2, 0.05)
+	); bind_setdependence(b, gamepad_sens_depencence);
 
 	add_menu_entry(m, "Dead zone", do_nothing,
 		b = bind_scale(CONFIG_GAMEPAD_AXIS_DEADZONE, 0, 1, 0.01)
@@ -564,6 +574,11 @@ void create_options_menu(MenuData *m) {
 	);	bind_addvalue(b, "on");
 		bind_addvalue(b, "off");
 		bind_addvalue(b, "ask");
+
+	add_menu_entry(m, "Auto-restart in spell practice mode", do_nothing,
+		b = bind_option(CONFIG_SPELLSTAGE_AUTORESTART, 	bind_common_onoffget,
+														bind_common_onoffset)
+	);	bind_onoff(b);
 
 	add_menu_separator(m);
 
@@ -694,13 +709,19 @@ void draw_options_menu(MenuData *menu) {
 					break;
 				}
 
-				case BT_GamepadKeyBinding: {
+				case BT_GamepadKeyBinding:
+				case BT_GamepadAxisBinding: {
+					bool is_axis = (bind->type == BT_GamepadAxisBinding);
+
 					if(bind->blockinput) {
 						glColor4f(0.5, 1, 0.5, 1);
-						draw_text(AL_Right, origin, 20*i, "Press a button to assign, ESC to cancel", _fonts.standard);
+						draw_text(AL_Right, origin, 20*i,
+							is_axis ? "Move an axis to assign, press any button to cancel"
+									: "Press a button to assign, move an axis to cancel",
+							_fonts.standard);
 					} else if(config_get_int(bind->configentry) >= 0) {
 						char tmp[32];
-						snprintf(tmp, 32, "Button %i", config_get_int(bind->configentry) + 1);
+						snprintf(tmp, 32, is_axis ? "Axis %i" : "Button %i", config_get_int(bind->configentry) + 1);
 						draw_text(AL_Right, origin, 20*i, tmp, _fonts.standard);
 					} else {
 						draw_text(AL_Right, origin, 20*i, "Unbound", _fonts.standard);
@@ -787,7 +808,7 @@ void bind_input_event(EventType type, int state, void *arg) {
 	switch(type) {
 		case E_KeyDown: {
 			int esc = scan == SDL_SCANCODE_ESCAPE;
-			if(b->type == BT_GamepadKeyBinding) {
+			if(b->type == BT_GamepadKeyBinding || b->type == BT_GamepadAxisBinding) {
 				if(esc)
 					b->blockinput = false;
 				break;
@@ -808,6 +829,12 @@ void bind_input_event(EventType type, int state, void *arg) {
 		}
 
 		case E_GamepadKeyDown: {
+			if(b->type != BT_GamepadKeyBinding) {
+				if(b->type == BT_GamepadAxisBinding)
+					b->blockinput = false;
+				break;
+			}
+
 			for(int i = CONFIG_GAMEPAD_KEY_FIRST; i <= CONFIG_GAMEPAD_KEY_LAST; ++i) {
 				if(config_get_int(i) == scan) {
 					config_set_int(i, config_get_int(b->configentry));
@@ -816,6 +843,30 @@ void bind_input_event(EventType type, int state, void *arg) {
 
 			config_set_int(b->configentry, scan);
 			b->blockinput = false;
+			break;
+		}
+
+		case E_GamepadAxis: {
+			if(b->type == BT_GamepadKeyBinding) {
+				b->blockinput = false;
+				break;
+			}
+
+			if(b->type == BT_GamepadAxisBinding) {
+				if(b->configentry == CONFIG_GAMEPAD_AXIS_UD) {
+					if(config_get_int(CONFIG_GAMEPAD_AXIS_LR) == state) {
+						config_set_int(CONFIG_GAMEPAD_AXIS_LR, config_get_int(CONFIG_GAMEPAD_AXIS_UD));
+					}
+				} else if(b->configentry == CONFIG_GAMEPAD_AXIS_LR) {
+					if(config_get_int(CONFIG_GAMEPAD_AXIS_UD) == state) {
+						config_set_int(CONFIG_GAMEPAD_AXIS_UD, config_get_int(CONFIG_GAMEPAD_AXIS_LR));
+					}
+				}
+
+				config_set_int(b->configentry, state);
+				b->blockinput = false;
+			}
+
 			break;
 		}
 
@@ -907,7 +958,9 @@ static void options_input_event(EventType type, int state, void *arg) {
 			menu->selected = menu->cursor;
 
 			if(bind) switch(bind->type) {
-				case BT_KeyBinding: case BT_GamepadKeyBinding:
+				case BT_KeyBinding:
+				case BT_GamepadKeyBinding:
+				case BT_GamepadAxisBinding:
 					bind->blockinput = true;
 					break;
 
@@ -944,6 +997,7 @@ void options_menu_input(MenuData *menu) {
 			case BT_StrValue:			flags = EF_Text;					break;
 			case BT_KeyBinding:			flags = EF_Keyboard;				break;
 			case BT_GamepadKeyBinding:	flags = EF_Gamepad | EF_Keyboard;	break;
+			case BT_GamepadAxisBinding:	flags = EF_Gamepad | EF_Keyboard;	break;
 			default: break;
 		}
 

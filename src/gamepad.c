@@ -15,7 +15,7 @@
 static struct {
 	int initialized;
 	SDL_Joystick *device;
-	int axis[GAMEPAD_AXES];
+	signed char *axis;
 } gamepad;
 
 void gamepad_init(void) {
@@ -51,6 +51,8 @@ void gamepad_init(void) {
 		return;
 	}
 
+	gamepad.axis = malloc(SDL_JoystickNumAxes(gamepad.device));
+
 	printf("gamepad_init(): using device #%i: %s\n", dev, gamepad_devicename(dev));
 	SDL_JoystickEventState(SDL_ENABLE);
 	gamepad.initialized = 1;
@@ -65,6 +67,9 @@ void gamepad_shutdown(void) {
 
 	if(gamepad.device)
 		SDL_JoystickClose(gamepad.device);
+
+	free(gamepad.axis);
+	gamepad.axis = NULL;
 
 	SDL_JoystickEventState(SDL_IGNORE);
 	SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
@@ -125,17 +130,13 @@ float gamepad_axis_sens(int id) {
 }
 
 void gamepad_axis(int id, int raw, EventHandler handler, EventFlags flags, void *arg) {
-	int *a   = gamepad.axis;
-	int val  = AXISVAL(raw);
-	int free = config_get_int(CONFIG_GAMEPAD_AXIS_FREE);
+	signed char *a   = gamepad.axis;
+	signed char val  = AXISVAL(raw);
+	bool free = config_get_int(CONFIG_GAMEPAD_AXIS_FREE);
 
-	int menu = flags & EF_Menu;
-	int game = flags & EF_Game;
-
-	if(id >= GAMEPAD_AXES) {
-		warnx("gamepad_axis(): axis %i is out of range (%i axes supported)", id, GAMEPAD_AXES);
-		return;
-	}
+	bool menu = flags & EF_Menu;
+	bool game = flags & EF_Game;
+	bool gp   = flags & EF_Gamepad;
 
 	//printf("axis: %i %i %i\n", id, val, raw);
 
@@ -145,12 +146,12 @@ void gamepad_axis(int id, int raw, EventHandler handler, EventFlags flags, void 
 			double sens = gamepad_axis_sens(id);
 			int sens_sign = SIGN(sens);
 
-			double x = raw / (double)GAMEPAD_AXIS_RANGE;
+			double x = raw / (double)GAMEPAD_AXIS_MAX;
 			int in_sign = SIGN(x);
 
 			x = pow(fabs(x), 1.0 / fabs(sens)) * in_sign * sens_sign;
 			x = x ? x : 0;
-			x = clamp(x * GAMEPAD_AXIS_RANGE, -GAMEPAD_AXIS_RANGE-1, GAMEPAD_AXIS_RANGE);
+			x = clamp(x * GAMEPAD_AXIS_MAX, GAMEPAD_AXIS_MIN, GAMEPAD_AXIS_MAX);
 
 			handler(evt, x, arg);
 		}
@@ -178,6 +179,12 @@ void gamepad_axis(int id, int raw, EventHandler handler, EventFlags flags, void 
 			handler(E_PlrKeyUp, key, arg);
 		}
 		a[id] = AXISVAL_NULL;
+	}
+
+	if(gp) {
+		 // we probably need a better way to pass more than an int to the handler...
+		handler(E_GamepadAxis, id, arg);
+		handler(E_GamepadAxisValue, raw, arg);
 	}
 }
 
@@ -227,7 +234,7 @@ void gamepad_event(SDL_Event *event, EventHandler handler, EventFlags flags, voi
 		return;
 
 	int val;
-	int sens = clamp(config_get_float(CONFIG_GAMEPAD_AXIS_DEADZONE), 0, 1) * GAMEPAD_AXIS_RANGE;
+	int sens = clamp(config_get_float(CONFIG_GAMEPAD_AXIS_DEADZONE), 0, 1) * GAMEPAD_AXIS_MAX;
 
 	switch(event->type) {
 		case SDL_JOYAXISMOTION:
@@ -259,6 +266,11 @@ bool gamepad_gamekeypressed(KeyIndex key) {
 		return false;
 
 	int gpkey = config_gamepad_key_from_key(key);
+
+	if(gpkey < 0) {
+		return false;
+	}
+
 	int cfgidx = GPKEYIDX_TO_CFGIDX(gpkey);
 	int button = config_get_int(cfgidx);
 
