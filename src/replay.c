@@ -8,6 +8,7 @@
 
 #include "replay.h"
 
+#include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -272,8 +273,9 @@ static void replay_read_string(SDL_RWops *file, char **ptr) {
 	SDL_RWread(file, *ptr, 1, len);
 }
 
-static int replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize) {
+static int replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, size_t *ofs) {
 	for(uint8_t *u8_p = replay_magic_header; *u8_p; ++u8_p) {
+		++(*ofs);
 		if(SDL_ReadU8(file) != *u8_p) {
 			warnx("replay_read(): incorrect header");
 			return false;
@@ -281,6 +283,7 @@ static int replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 	}
 
 	CHECKPROP(rpy->version = SDL_ReadLE16(file), u);
+	(*ofs) += 2;
 
 	if((rpy->version & ~REPLAY_VERSION_COMPRESSION_BIT) != REPLAY_STRUCT_VERSION) {
 		warnx("replay_read(): incorrect version");
@@ -291,6 +294,7 @@ static int replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 		CHECKPROP(rpy->fileoffset = SDL_ReadLE32(file), u);
 	}
 
+	(*ofs) += 4;
 	return true;
 }
 
@@ -387,7 +391,9 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 			return false;
 		}
 
-		if(!replay_read_header(rpy, file, filesize)) {
+		size_t ofs = 0;
+
+		if(!replay_read_header(rpy, file, filesize, &ofs)) {
 			return false;
 		}
 
@@ -399,7 +405,7 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 				return false;
 			}
 
-			vfile = SDL_RWWrapZReader(SDL_RWWrapSegment(file, 0, rpy->fileoffset, false),
+			vfile = SDL_RWWrapZReader(SDL_RWWrapSegment(file, ofs, rpy->fileoffset, false),
 									  REPLAY_COMPRESSION_CHUNK_SIZE, true);
 			filesize = -1;
 			compression = true;
