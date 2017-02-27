@@ -137,6 +137,7 @@ static void _video_setmode(int w, int h, int fs, int fallback) {
 			return;
 		}
 
+		SDL_ShowCursor(false);
 		video_update_vsync();
 		SDL_GL_GetDrawableSize(video.window, &video.current.width, &video.current.height);
 		video.real.width = video.current.width;
