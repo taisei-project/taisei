@@ -782,7 +782,6 @@ int baryon_explode(Enemy *e, int t) {
 	return 1;
 }
 
-
 int curvature_bullet(Projectile *p, int t) {
 	if(REF(p->args[1]) == 0) {
 		return 0;
@@ -800,16 +799,38 @@ int curvature_bullet(Projectile *p, int t) {
 	p->pos = global.plr.pos + (f1*v+f2*(x+I*y))/f3+p->args[0]/(1+2*(x*x+y*y)/VIEWPORT_W/VIEWPORT_W);
 
 	if(t == EVENT_DEATH)
-		free_ref(p->args[0]);
+		free_ref(p->args[1]);
 	
 	return 1;
+}
+
+int curvature_orbiter(Projectile *p, int t) {
+	const double w = 0.02;
+	if(REF(p->args[1]) != 0 && p->args[3] == 0) {
+		p->pos = ((Projectile *)REF(p->args[1]))->pos+p->args[0]*cexp(I*t*w);
+
+		p->args[2] = p->args[0]*I*w*cexp(I*t*w);
+	} else {
+		p->pos += p->args[2];
+	}	
+
+	
+	if(t == EVENT_DEATH)
+		free_ref(p->args[1]);
+
+	return 1;
+}
+
+
+static double saw(double t) {
+	return cos(t)+cos(3*t)/9+cos(5*t)/25;
 }
 
 int curvature_slave(Enemy *e, int t) {
 	e->args[0] = -(e->args[1] - global.plr.pos);
 	e->args[1] = global.plr.pos;
 	
-	if(t % 2 == 0) {
+	if(t % (2+(global.diff < D_Hard)) == 0) {
 		tsrand_fill(2);
 		complex pos = VIEWPORT_W*afrand(0)+I*VIEWPORT_H*afrand(1);
 		if(cabs(pos - global.plr.pos) > 50) {
@@ -818,11 +839,20 @@ int curvature_slave(Enemy *e, int t) {
 			create_projectile2c("flea",pos,rgb(0.1*afrand(0), 0.4,1), curvature_bullet, speed*cexp(2*M_PI*I*afrand(1)), add_ref(e))->draw = ProjDrawAdd;
 		}
 	}
-	if(global.diff > D_Easy && t % (35-2*global.diff) == 0) {
+	if(global.diff > D_Easy && t % (60-5*global.diff) == 0) {
 			tsrand_fill(2);
 			complex pos = VIEWPORT_W*afrand(0)+I*VIEWPORT_H*afrand(1);
 			if(cabs(pos - global.plr.pos) > 100)
 				create_projectile1c("ball",pos,rgb(1, 0.4,1), linear, cexp(I*carg(global.plr.pos-pos)))->draw = ProjDrawAdd;
+
+
+	}
+
+	if(global.diff == D_Lunatic && !(t%50)) {
+		Projectile *p = create_projectile1c("bigball",global.boss->pos,rgb(0.5, 0.4,1), linear, 2*I*cexp(I*M_PI/2*saw(t/200.)));
+		p->draw = ProjDrawAdd;
+		create_projectile2c("plainball",global.boss->pos,rgb(0.2, 0.4,1), curvature_orbiter, 40*cexp(I*t/400),add_ref(p))->draw = ProjDrawAdd;
+
 
 
 	}
