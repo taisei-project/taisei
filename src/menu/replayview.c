@@ -150,7 +150,7 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 
 	Replay *rpy = ictx->replay;
 
-	float sizes[] = {1.2, 1.45, 0.8, 0.8, 0.65};
+	float sizes[] = {1.2, 1.45, 0.8, 0.8, 0.75};
 	int columns = 5, i, j;
 
 	for(i = 0; i < columns; ++i) {
