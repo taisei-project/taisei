@@ -172,7 +172,7 @@ StageProgress* stage_get_progress_from_info(StageInfo *stage, Difficulty diff, b
 		stage->progress = malloc(allocsize);
 		memset(stage->progress, 0, allocsize);
 #ifdef DEBUG
-		printf("stage_get_progress_from_info(): allocated %lu bytes for stage %u (%s: %s)\n", allocsize, stage->id, stage->title, stage->subtitle);
+		printf("stage_get_progress_from_info(): allocated %lu bytes for stage %u (%s: %s)\n", (unsigned long int)allocsize, stage->id, stage->title, stage->subtitle);
 #endif
 	}
 

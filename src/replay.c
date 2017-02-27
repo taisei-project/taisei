@@ -256,7 +256,7 @@ int replay_write(Replay *rpy, SDL_RWops *file, bool compression) {
 }
 
 #ifdef REPLAY_LOAD_GARBAGE_TEST
-#define PRINTPROP(prop,fmt) printf("replay_read(): " #prop " = %" # fmt " [%li / %li]\n", prop, SDL_RWtell(file), filesize)
+#define PRINTPROP(prop,fmt) printf("replay_read(): " #prop " = %" # fmt " [%li / %li]\n", prop, (long int)SDL_RWtell(file), (long int)filesize)
 #else
 #define PRINTPROP(prop,fmt) (void)(prop)
 #endif
