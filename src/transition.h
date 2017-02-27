@@ -11,7 +11,7 @@
 #include <stdbool.h>
 
 typedef struct Transition Transition;
-typedef void (*TransitionRule)(Transition *t);
+typedef void (*TransitionRule)(double fade);
 typedef void (*TransitionCallback)(void *a);
 
 struct Transition {
@@ -28,6 +28,7 @@ struct Transition {
     } state;
 
 	TransitionRule rule;
+    TransitionRule rule2;
 
     struct {
         int dur1;
@@ -40,15 +41,17 @@ struct Transition {
 
 extern Transition transition;
 
-void TransFadeBlack(Transition *t);
-void TransFadeWhite(Transition *t);
-void TransLoader(Transition *t);
-void TransMenu(Transition *t);
-void TransMenuDark(Transition *t);
-void TransEmpty(Transition *t);
+void TransFadeBlack(double fade);
+void TransFadeWhite(double fade);
+void TransLoader(double fade);
+void TransMenu(double fade);
+void TransMenuDark(double fade);
+void TransEmpty(double fade);
 
 void set_transition(TransitionRule rule, int dur1, int dur2);
 void set_transition_callback(TransitionRule rule, int dur1, int dur2, TransitionCallback cb, void *arg);
 void draw_transition(void);
+void update_transition(void);
+void draw_and_update_transition(void);
 
 #endif

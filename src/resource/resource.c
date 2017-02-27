@@ -125,7 +125,7 @@ void load_resources(void) {
 		strcpy(path, get_prefix());
 		strcat(path, "shader/laser_snippets");
 
-		if(tgl_ext[TGLEXT_draw_instanced])
+		if(glext.draw_instanced)
 			load_shader_snippets(path, "laser_");
 
 		printf("init_fbo():\n");
@@ -144,6 +144,13 @@ void load_resources(void) {
 		recurse_dir(path);
 
 		resources.state |= RS_ModelsLoaded;
+	}
+
+	if(!(resources.state & RS_FontsLoaded)) {
+		printf("- fonts:\n");
+		init_fonts();
+
+		resources.state |= RS_FontsLoaded;
 	}
 
 	free(path);

@@ -9,6 +9,9 @@
 #include "global.h"
 #include "video.h"
 #include "taisei_err.h"
+#include "taiseigl.h"
+
+static bool libgl_loaded = false;
 
 static VideoMode common_modes[] = {
 	{RESX, RESY},
@@ -76,8 +79,31 @@ void video_update_vsync(void) {
 	}
 }
 
+static void video_init_gl(void) {
+	video.glcontext = SDL_GL_CreateContext(video.window);
+
+	load_gl_functions();
+	check_gl_extensions();
+
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_BLEND);
+	init_quadvbo();
+
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
 static void _video_setmode(int w, int h, int fs, int fallback) {
 	Uint32 flags = SDL_WINDOW_OPENGL;
+
+	if(!libgl_loaded) {
+		load_gl_library();
+		libgl_loaded = true;
+	}
 
 	if(fs) {
 		flags |= SDL_WINDOW_FULLSCREEN;
@@ -95,13 +121,15 @@ static void _video_setmode(int w, int h, int fs, int fallback) {
 		video.window = NULL;
 	}
 
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
 	video.window = SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w, h, flags);
 
 	if(video.window) {
 		if(video.glcontext) {
 			SDL_GL_MakeCurrent(video.window, video.glcontext);
 		} else {
-			video.glcontext = SDL_GL_CreateContext(video.window);
+			video_init_gl();
 		}
 
 		if(!video.glcontext) {

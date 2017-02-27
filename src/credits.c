@@ -214,7 +214,12 @@ void credits_draw(void) {
 		credits_draw_entry(&(credits.entries[i]));
 	glPopMatrix();
 
-	draw_transition();
+	draw_and_update_transition();
+}
+
+void credits_finish(void *arg) {
+	credits.end = 0;
+	set_transition(TransLoader, 0, FADE_TIME*10);
 }
 
 void credits_process(void) {
@@ -233,7 +238,7 @@ void credits_process(void) {
 	}
 
 	if(global.frames == credits.end) {
-		set_transition(TransFadeWhite, CREDITS_FADEOUT, CREDITS_FADEOUT);
+		set_transition_callback(TransFadeWhite, CREDITS_FADEOUT, CREDITS_FADEOUT, credits_finish, NULL);
 	}
 }
 
@@ -251,7 +256,7 @@ void credits_free(void) {
 
 void credits_loop(void) {
 	credits_init();
-	while(global.frames <= credits.end + CREDITS_FADEOUT) {
+	while(credits.end) {
 		handle_events(NULL, 0, NULL);
 		credits_process();
 		credits_draw();

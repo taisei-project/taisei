@@ -17,12 +17,23 @@ void iku_cathode(Boss*, int);
 void iku_induction(Boss*, int);
 void iku_extra(Boss*, int);
 
+/*
+ *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
+ */
+
 AttackInfo stage5_spells[] = {
-	{AT_Spellcard, "High Voltage ~ Atmospheric Discharge", 30, 30000, iku_atmospheric, iku_spell_bg, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "Charge Sign ~ Artificial Lightning", 30, 35000, iku_lightning, iku_spell_bg, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "Spark Sign ~ Natural Cathode", 30, 35000, iku_cathode, iku_spell_bg, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "Current Sign ~ Induction", 30, 35000, iku_induction, iku_spell_bg, BOSS_DEFAULT_GO_POS},
-	{AT_ExtraSpell, "Circuit Sign ~ Overload", 60000, 150000, iku_extra, iku_spell_bg, BOSS_DEFAULT_GO_POS},
+	{{ 0,  1,  2,  3},	AT_Spellcard, "High Voltage ~ Atmospheric Discharge", 30, 30000,
+							iku_atmospheric, iku_spell_bg, BOSS_DEFAULT_GO_POS},
+	{{ 4,  5,  6,  7},	AT_Spellcard, "Charge Sign ~ Artificial Lightning", 30, 35000,
+							iku_lightning, iku_spell_bg, BOSS_DEFAULT_GO_POS},
+	{{ 8,  9, 10, 11},	AT_Spellcard, "Spark Sign ~ Natural Cathode", 30, 35000,
+							iku_cathode, iku_spell_bg, BOSS_DEFAULT_GO_POS},
+	{{12, 13, 14, 15},	AT_Spellcard, "Current Sign ~ Induction", 30, 35000,
+							iku_induction, iku_spell_bg, BOSS_DEFAULT_GO_POS},
+	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Circuit Sign ~ Overload", 60000, 150000,
+							iku_extra, iku_spell_bg, BOSS_DEFAULT_GO_POS},
+
+	{{0}}
 };
 
 Dialog *stage5_post_mid_dialog(void) {
@@ -217,7 +228,7 @@ void iku_slave_draw(Enemy *e, int t) {
 			alpha *= 0.03;
 		create_particle3c("lightningball", e->pos, rgba(.1*alpha, .1*alpha, .6*alpha, 0.1*alpha), FadeAdd, enemy_flare, 50,offset*0.1,add_ref(e));
 	}
-	
+
 }
 
 void iku_mid_intro(Boss *b, int t) {
@@ -669,6 +680,10 @@ Boss *create_iku(void) {
 void stage5_events(void) {
 	TIMER(&global.timer);
 
+	AT(0) {
+		start_bgm("bgm_stage5");
+	}
+
 	FROM_TO(60, 120, 10)
 		create_enemy1c(VIEWPORT_W+70.0*I+50*_i*I, 300, Fairy, stage5_greeter, -3);
 
@@ -729,4 +744,8 @@ void stage5_events(void) {
 
 	AT(5320)
 		global.dialog = stage5_post_boss_dialog();
+
+	AT(5700 - FADE_TIME) {
+		stage_finish(GAMEOVER_WIN);
+	}
 }

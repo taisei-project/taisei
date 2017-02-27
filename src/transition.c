@@ -11,37 +11,43 @@
 
 Transition transition;
 
-void TransFadeBlack(Transition *t) {
-	fade_out(t->fade);
+void TransFadeBlack(double fade) {
+	fade_out(fade);
 }
 
-void TransFadeWhite(Transition *t) {
-	colorfill(1,1,1,t->fade);
+void TransFadeWhite(double fade) {
+	colorfill(1, 1, 1, fade);
 }
 
-void TransLoader(Transition *t) {
-	glColor4f(1,1,1,t->fade);
-	draw_texture(SCREEN_W/2,SCREEN_H/2,"loading");
-	glColor4f(1,1,1,1);
+void TransLoader(double fade) {
+	glColor4f(1, 1, 1, fade);
+	draw_texture(SCREEN_W/2, SCREEN_H/2, "loading");
+	glColor4f(1, 1, 1, 1);
 }
 
-void TransMenu(Transition *t) {
-	glColor4f(1,1,1,t->fade);
+void TransMenu(double fade) {
+	glColor4f(1, 1, 1, fade);
 	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubg");
 	glColor4f(1, 1, 1, 1);
 }
 
-void TransMenuDark(Transition *t) {
-	glColor4f(0.3,0.3,0.3,t->fade);
+void TransMenuDark(double fade) {
+	glColor4f(0.3, 0.3, 0.3, fade);
 	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubg");
 	glColor4f(1, 1, 1, 1);
 }
 
-void TransEmpty(Transition *t) { }
+void TransEmpty(double fade) { }
 
 static bool popq(void) {
 	if(transition.queued.rule) {
+		transition.rule2 = transition.rule;
 		transition.rule = transition.queued.rule;
+
+		if(transition.state == TRANS_IDLE || transition.rule2 == transition.rule) {
+			transition.rule2 = NULL;
+		}
+
 		transition.dur1 = transition.queued.dur1;
 		transition.dur2 = transition.queued.dur2;
 		transition.callback = transition.queued.callback;
@@ -88,6 +94,7 @@ void set_transition_callback(TransitionRule rule, int dur1, int dur2, Transition
 	if(!initialized) {
 		popq();
 		initialized = true;
+		transition.rule2 = NULL;
 	}
 
 	if(transition.state == TRANS_IDLE || rule == transition.rule) {
@@ -99,23 +106,44 @@ void set_transition(TransitionRule rule, int dur1, int dur2) {
 	set_transition_callback(rule, dur1, dur2, NULL, NULL);
 }
 
-void draw_transition(void) {
+static bool check_transition(void) {
 	if(transition.state == TRANS_IDLE) {
-		return;
+		return false;
 	}
 
 	if(!transition.rule) {
 		transition.state = TRANS_IDLE;
+		return false;
+	}
+
+	return true;
+}
+
+void draw_transition(void) {
+	if(!check_transition()) {
 		return;
 	}
 
-	transition.rule(&transition);
+	transition.rule(transition.fade);
+
+	if(transition.rule2 && transition.rule2 != transition.rule) {
+		transition.rule2(transition.fade);
+	}
+}
+
+void update_transition(void) {
+	if(!check_transition()) {
+		return;
+	}
 
 	if(transition.state == TRANS_FADE_IN) {
 		transition.fade = approach(transition.fade, 1.0, 1.0/transition.dur1);
 		if(transition.fade == 1.0) {
 			transition.state = TRANS_FADE_OUT;
 			call_callback();
+			if(popq()) {
+				call_callback();
+			}
 		}
 	} else if(transition.state == TRANS_FADE_OUT) {
 		transition.fade = transition.dur2 ? approach(transition.fade, 0.0, 1.0/transition.dur2) : 0.0;
@@ -126,3 +154,7 @@ void draw_transition(void) {
 	}
 }
 
+void draw_and_update_transition(void) {
+	draw_transition();
+	update_transition();
+}

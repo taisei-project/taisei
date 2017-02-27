@@ -9,6 +9,7 @@
 #define BOSS_H
 
 #include "tscomplex.h"
+#include "difficulty.h"
 
 #include <resource/animation.h>
 struct Boss;
@@ -24,6 +25,26 @@ typedef enum AttackType {
 } AttackType;
 
 typedef struct AttackInfo {
+	/*
+		HOW TO SET UP THE IDMAP FOR DUMMIES
+
+		The idmap is used as a template to generate spellstage IDs in stage_init_array().
+		It looks like this:
+
+			{id_easy, id_normal, id_hard, id_lunatic}
+
+		Where each of those IDs are in range of 0-127, and are unique within each stage-specific AttackInfo array.
+		A special value of -1 can be used to not generate a spellstage for specific difficulties.
+		This is useful if your spell is only available on Hard and Lunatic, or has a difficulty-dependent name, etc.
+
+		IDs of AT_ExtraSpell attacks may overlap with those of other types.
+
+		Most importantly DO NOT CHANGE ENSTABILISHED IDs unless you absolutely must.
+		Doing so is going to break replays, progress files, and anything that stores stage IDs permanently.
+		Stage IDs are an internal detail invisible to the player, so they don't need to have any kind of fancy ordering.
+	*/
+	signed char idmap[NUM_SELECTABLE_DIFFICULTIES];
+
 	AttackType type;
 	char *name;
 	float timeout;
@@ -32,7 +53,6 @@ typedef struct AttackInfo {
 	BossRule rule;
 	BossRule draw_rule;
 
-	// complex pos_spawn;
 	complex pos_dest;
 } AttackInfo;
 

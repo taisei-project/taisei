@@ -16,11 +16,21 @@ void hina_bad_pick(Boss*, int);
 void hina_wheel(Boss*, int);
 void hina_monty(Boss*, int);
 
+/*
+ *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
+ */
+
 AttackInfo stage2_spells[] = {
-	{AT_Spellcard, "Shard ~ Amulet of Harm", 26, 25000, hina_amulet, hina_spell_bg, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "Lottery Sign ~ Bad Pick", 30, 36000, hina_bad_pick, hina_spell_bg, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "Lottery Sign ~ Wheel of Fortune", 20, 36000, hina_wheel, hina_spell_bg, BOSS_DEFAULT_GO_POS},
-	{AT_ExtraSpell, "Lottery Sign ~ Monty Hall Danmaku", 60, 60000, hina_monty, hina_spell_bg, BOSS_DEFAULT_GO_POS},
+	{{ 0,  1,  2,  3},	AT_Spellcard, "Shard ~ Amulet of Harm", 26, 25000,
+							hina_amulet, hina_spell_bg, BOSS_DEFAULT_GO_POS},
+	{{ 4,  5,  6,  7},	AT_Spellcard, "Lottery Sign ~ Bad Pick", 30, 36000,
+							hina_bad_pick, hina_spell_bg, BOSS_DEFAULT_GO_POS},
+	{{ 8,  9, 10, 11},	AT_Spellcard, "Lottery Sign ~ Wheel of Fortune", 20, 36000,
+							hina_wheel, hina_spell_bg, BOSS_DEFAULT_GO_POS},
+	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Lottery Sign ~ Monty Hall Danmaku", 60, 60000,
+							hina_monty, hina_spell_bg, BOSS_DEFAULT_GO_POS},
+
+	{{0}}
 };
 
 Dialog *stage2_dialog(void) {
@@ -575,5 +585,9 @@ void stage2_events(void) {
 
 	AT(5180) {
 		global.dialog = stage2_post_dialog();
+	}
+
+	AT(5240 - FADE_TIME) {
+		stage_finish(GAMEOVER_WIN);
 	}
 }

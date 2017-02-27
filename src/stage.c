@@ -5,7 +5,7 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
-#include <complex.h>
+#include <assert.h>
 
 #include "stage.h"
 #include "tscomplex.h"
@@ -21,286 +21,133 @@
 #include "menu/gameovermenu.h"
 #include "taisei_err.h"
 
-StageInfo stages[] = {
-	//
-	// ids must be unique
-	// they don't necessarily have to be human-readable or ordered
-	// they're basically there just for replays, so don't change the already enstabilished ones unless you must
-	//
+static size_t numstages = 0;
+StageInfo *stages = NULL;
 
-	//
-	//	Story stages
-	//
+static void add_stage(uint16_t id, StageProcs *procs, StageType type, const char *title, const char *subtitle, AttackInfo *spell, Difficulty diff, Color *titleclr, Color *bosstitleclr) {
+	++numstages;
+	stages = realloc(stages, numstages * sizeof(StageInfo));
+	StageInfo *stg = stages + (numstages - 1);
+	memset(stg, 0, sizeof(StageInfo));
 
-//	id  loop         type         title      subtitle                       titleclr   bosstitleclr spell difficulty
-	{1, stage1_loop, STAGE_STORY, "Stage 1", "Misty Lake",                  {1, 1, 1}, {1, 1, 1},   NULL, D_Any},
-	{2, stage2_loop, STAGE_STORY, "Stage 2", "Walk Along the Border",       {1, 1, 1}, {1, 1, 1},   NULL, D_Any},
-	{3, stage3_loop, STAGE_STORY, "Stage 3", "Through the Tunnel of Light", {0, 0, 0}, {0, 0, 0},   NULL, D_Any},
-	{4, stage4_loop, STAGE_STORY, "Stage 4", "Forgotten Mansion",           {0, 0, 0}, {1, 1, 1},   NULL, D_Any},
-	{5, stage5_loop, STAGE_STORY, "Stage 5", "Climbing the Tower of Babel", {1, 1, 1}, {1, 1, 1},   NULL, D_Any},
-	{6, stage6_loop, STAGE_STORY, "Stage 6", "Roof of the World",           {1, 1, 1}, {1, 1, 1},   NULL, D_Any},
+	stg->id = id;
+	stg->procs = procs;
+	stg->type = type;
+	stralloc(&stg->title, title);
+	stralloc(&stg->subtitle, subtitle);
+	stg->spell = spell;
+	stg->difficulty = diff;
 
-	//
-	// Spell practice stages
-	//
-	// titles and subtitles for those are generated later by stage_init_array()
-	//
+	if(titleclr) {
+		memcpy(&stg->titleclr, titleclr, sizeof(Color));
+	}
 
-#define S STAGE_SPELL_BIT
-#define E (STAGE_SPELL_BIT | STAGE_EXTRASPELL_BIT)
+	if(bosstitleclr) {
+		memcpy(&stg->bosstitleclr, titleclr, sizeof(Color));
+	}
 
-	// Freeze Sign ~ Perfect Freeze
-	{S|  0, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+0, D_Easy},
-	{S|  1, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+0, D_Normal},
-	{S|  2, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+0, D_Hard},
-	{S|  3, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+0, D_Lunatic},
+	free(titleclr);
+	free(bosstitleclr);
 
-	// Freeze Sign ~ Crystal Rain
-	{S|  4, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+1, D_Easy},
-	{S|  5, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+1, D_Normal},
-	{S|  6, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+1, D_Hard},
-	{S|  7, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+1, D_Lunatic},
+#ifdef DEBUG
+	if(title && subtitle) {
+		fprintf(stderr, "Added stage 0x%04x: %s: %s\n", id, title, subtitle);
+	}
+#endif
+}
 
-	// Doom Sign ~ Icicle Fall
-	{S|  8, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+2, D_Easy},
-	{S|  9, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+2, D_Normal},
-	{S| 10, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+2, D_Hard},
-	{S| 11, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+2, D_Lunatic},
+static void end_stages() {
+	add_stage(0, NULL, 0, NULL, NULL, NULL, 0, NULL, NULL);
+}
 
-	// Shard ~ Amulet of Harm
-	{S| 12, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+0, D_Easy},
-	{S| 13, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+0, D_Normal},
-	{S| 14, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+0, D_Hard},
-	{S| 15, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+0, D_Lunatic},
+static void add_spellpractice_stages(int *spellnum, bool (*filter)(AttackInfo*), uint16_t spellbits) {
+	for(int i = 0 ;; ++i) {
+		StageInfo *s = stages + i;
 
-	// Lottery Sign ~ Bad Pick
-	{S| 16, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+1, D_Easy},
-	{S| 17, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+1, D_Normal},
-	{S| 18, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+1, D_Hard},
-	{S| 19, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+1, D_Lunatic},
+		if(s->type == STAGE_SPELL) {
+			break;
+		}
 
-	// Lottery Sign ~ Wheel of Fortune
-	{S| 20, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+2, D_Easy},
-	{S| 21, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+2, D_Normal},
-	{S| 22, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+2, D_Hard},
-	{S| 23, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+2, D_Lunatic},
+		for(AttackInfo *a = s->spell; a->rule; ++a) {
+			if(!filter(a)) {
+				continue;
+			}
 
-	// Venom Sign ~ Deadly Dance
-	{S| 24, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+0, D_Easy},
-	{S| 25, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+0, D_Normal},
-	{S| 26, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+0, D_Hard},
-	{S| 27, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+0, D_Lunatic},
+			for(Difficulty diff = D_Easy; diff < D_Easy + NUM_SELECTABLE_DIFFICULTIES; ++diff) {
+				if(a->idmap[diff - D_Easy] >= 0) {
+					uint16_t id = spellbits | a->idmap[diff - D_Easy] | (s->id << 8);
 
-	// Venom Sign ~ Acid Rain
-	{S| 28, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+1, D_Hard},
-	{S| 29, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+1, D_Lunatic},
+					char title[10];
+					const char *postfix = difficulty_name(diff);
 
-	// Firefly Sign ~ Moonlight Rocket
-	{S| 30, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+2, D_Easy},
-	{S| 31, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+2, D_Normal},
-	{S| 32, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+2, D_Hard},
-	{S| 33, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+2, D_Lunatic},
+					snprintf(title, sizeof(title), "Spell %d", ++(*spellnum));
 
-	// Light Source ~ Wriggle Night Ignite
-	{S| 34, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+3, D_Easy},
-	{S| 35, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+3, D_Normal},
-	{S| 36, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+3, D_Hard},
-	{S| 37, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+3, D_Lunatic},
+					char subtitle[strlen(postfix) + strlen(a->name) + 4];
+					strcpy(subtitle, a->name);
+					strcat(subtitle, " ~ ");
+					strcat(subtitle, postfix);
 
-	// Bug Sign ~ Phosphaenus Hemipterus
-	{S| 38, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+4, D_Easy},
-	{S| 39, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+4, D_Normal},
-	{S| 40, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+4, D_Hard},
-	{S| 41, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+4, D_Lunatic},
+					add_stage(id, s->procs->spellpractice_procs, STAGE_SPELL, title, subtitle, a, diff, NULL, NULL);
+					s = stages + i; // stages just got realloc'd, so we must update the pointer
+				}
+			}
+		}
+	}
+}
 
-	// Bloodless ~ Gate of Walachia
-	{S| 42, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+0, D_Easy},
-	{S| 43, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+0, D_Normal},
-	{S| 44, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+0, D_Hard},
-	{S| 45, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+0, D_Lunatic},
+static bool spellfilter_normal(AttackInfo *spell) {
+	return spell->type != AT_ExtraSpell;
+}
 
-	// Bloodless ~ Dry Fountain
-	{S| 46, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+1, D_Easy},
-	{S| 47, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+1, D_Normal},
-
-	// Bloodless ~ Red Spike
-	{S| 48, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+2, D_Hard},
-	{S| 49, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+2, D_Lunatic},
-
-	// Limit ~ Animate Wall
-	{S| 50, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+3, D_Easy},
-	{S| 51, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+3, D_Normal},
-
-	// Summoning ~ Demon Wall
-	{S| 52, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+4, D_Hard},
-	{S| 53, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+4, D_Lunatic},
-
-	// Power Sign ~ Blow the Walls
-	{S| 54, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+5, D_Easy},
-	{S| 55, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+5, D_Normal},
-	{S| 56, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+5, D_Hard},
-	{S| 57, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+5, D_Lunatic},
-
-	// Fear Sign ~ Bloody Danmaku
-	{S| 58, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+6, D_Hard},
-	{S| 59, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage4_spells+6, D_Lunatic},
-
-	// High Voltage ~ Atmospheric Discharge
-	{S| 60, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+0, D_Easy},
-	{S| 61, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+0, D_Normal},
-	{S| 62, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+0, D_Hard},
-	{S| 63, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+0, D_Lunatic},
-
-	// Charge Sign ~ Artificial Lightning
-	{S| 64, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+1, D_Easy},
-	{S| 65, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+1, D_Normal},
-	{S| 66, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+1, D_Hard},
-	{S| 67, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+1, D_Lunatic},
-
-	// Spark Sign ~ Natural Cathode
-	{S| 68, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+2, D_Easy},
-	{S| 69, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+2, D_Normal},
-	{S| 70, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+2, D_Hard},
-	{S| 71, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+2, D_Lunatic},
-
-	// Current Sign ~ Induction
-	{S| 72, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+3, D_Easy},
-	{S| 73, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+3, D_Normal},
-	{S| 74, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+3, D_Hard},
-	{S| 75, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+3, D_Lunatic},
-
-	// Newton Sign ~ 2.5 Laws of Movement
-	{S| 76, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+0, D_Easy},
-	{S| 77, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+0, D_Normal},
-	{S| 78, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+0, D_Hard},
-	{S| 79, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+0, D_Lunatic},
-
-	// Maxwell Sign ~ Wave Theory
-	{S| 80, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+1, D_Easy},
-	{S| 81, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+1, D_Normal},
-	{S| 82, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+1, D_Hard},
-	{S| 83, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+1, D_Lunatic},
-
-	// Eigenstate ~ Many-World Interpretation
-	{S| 84, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+2, D_Easy},
-	{S| 85, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+2, D_Normal},
-	{S| 86, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+2, D_Hard},
-	{S| 87, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+2, D_Lunatic},
-
-	// Ricci Sign ~ Space Time Curvature
-	{S| 88, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+3, D_Easy},
-	{S| 89, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+3, D_Normal},
-	{S| 90, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+3, D_Hard},
-	{S| 91, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+3, D_Lunatic},
-
-	// LHC ~ Higgs Boson Uncovered
-	{S| 92, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+4, D_Easy},
-	{S| 93, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+4, D_Normal},
-	{S| 94, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+4, D_Hard},
-	{S| 95, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+4, D_Lunatic},
-
-	// Tower of Truth ~ Theory of Everything
-	{S| 96, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+5, D_Easy},
-	{S| 97, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+5, D_Normal},
-	{S| 98, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+5, D_Hard},
-	{S| 99, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+5, D_Lunatic},
-
-	//
-	//	Extra spells
-	//
-
-	// Frost Sign ~ Crystal Blizzard
-	{E|  0, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+3, D_Easy},
-	{E|  1, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+3, D_Normal},
-	{E|  2, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+3, D_Hard},
-	{E|  3, stage1_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage1_spells+3, D_Lunatic},
-
-	// Lottery Sign ~ Monty Hall Danmaku
-	{E|  4, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+3, D_Easy},
-	{E|  5, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+3, D_Normal},
-	{E|  6, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+3, D_Hard},
-	{E|  7, stage2_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage2_spells+3, D_Lunatic},
-
-	// Firefly Sign ~ Moonlight Wraith
-	{E|  8, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+5, D_Easy},
-	{E|  9, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+5, D_Normal},
-	{E| 10, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+5, D_Hard},
-	{E| 11, stage3_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {0, 0, 0}, stage3_spells+5, D_Lunatic},
-
-	// RESERVED
-	/*
-	{E| 12, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {1, 1, 1}, stage4_spells+7, D_Easy},
-	{E| 13, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {1, 1, 1}, stage4_spells+7, D_Normal},
-	{E| 14, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {1, 1, 1}, stage4_spells+7, D_Hard},
-	{E| 15, stage4_spellpractice_loop, STAGE_SPELL, NULL, NULL, {0, 0, 0}, {1, 1, 1}, stage4_spells+7, D_Lunatic},
-	*/
-
-	// Circuit Sign ~ Overload
-	{E| 16, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+4, D_Easy},
-	{E| 17, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+4, D_Normal},
-	{E| 18, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+4, D_Hard},
-	{E| 19, stage5_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage5_spells+4, D_Lunatic},
-
-	// RESERVED
-	
-	{E| 20, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+6, D_Easy},
-	{E| 21, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+6, D_Normal},
-	{E| 22, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+6, D_Hard},
-	{E| 23, stage6_spellpractice_loop, STAGE_SPELL, NULL, NULL, {1, 1, 1}, {1, 1, 1}, stage6_spells+6, D_Lunatic},
-	
-
-#undef E
-#undef S
-
-	{0}
-};
+static bool spellfilter_extra(AttackInfo *spell) {
+	return spell->type == AT_ExtraSpell;
+}
 
 void stage_init_array(void) {
 	int spellnum = 0;
 
-	for(int i = 0; stages[i].loop; ++i) {
-		// we will allocate this later on demand
-		stages[i].progress = NULL;
+//           id  procs          type         title      subtitle                       spells         diff   titleclr      bosstitleclr
+	add_stage(1, &stage1_procs, STAGE_STORY, "Stage 1", "Misty Lake",                  stage1_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
+	add_stage(2, &stage2_procs, STAGE_STORY, "Stage 2", "Walk Along the Border",       stage2_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
+	add_stage(3, &stage3_procs, STAGE_STORY, "Stage 3", "Through the Tunnel of Light", stage3_spells, D_Any, rgb(0, 0, 0), rgb(0, 0, 0));
+	add_stage(4, &stage4_procs, STAGE_STORY, "Stage 4", "Forgotten Mansion",           stage4_spells, D_Any, rgb(0, 0, 0), rgb(1, 1, 1));
+	add_stage(5, &stage5_procs, STAGE_STORY, "Stage 5", "Climbing the Tower of Babel", stage5_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
+	add_stage(6, &stage6_procs, STAGE_STORY, "Stage 6", "Roof of the World",           stage6_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
 
-		if(stages[i].type == STAGE_SPELL) {
-			char *s, title[10], *postfix = difficulty_name(stages[i].difficulty);
+	// generate spellpractice stages
+	add_spellpractice_stages(&spellnum, spellfilter_normal, STAGE_SPELL_BIT);
+	add_spellpractice_stages(&spellnum, spellfilter_extra, STAGE_SPELL_BIT | STAGE_EXTRASPELL_BIT);
 
-			snprintf(title, sizeof(title), "Spell %d", ++spellnum);
-			stralloc(&stages[i].title, title);
-
-			stages[i].subtitle = s = malloc(strlen(postfix) + strlen(stages[i].spell->name) + 4);
-			strcpy(s, stages[i].spell->name);
-			strcat(s, " ~ ");
-			strcat(s, postfix);
-		}
+	end_stages();
 
 #ifdef DEBUG
+	for(int i = 0; stages[i].procs; ++i) {
 		if(stages[i].type == STAGE_SPELL && !(stages[i].id & STAGE_SPELL_BIT)) {
-			errx(-1, "Spell stage has an ID without the spell bit set: %u", stages[i].id);
+			errx(-1, "Spell stage has an ID without the spell bit set: 0x%04x", stages[i].id);
 		}
 
-		for(int j = 0; stages[j].loop; ++j) {
+		for(int j = 0; stages[j].procs; ++j) {
 			if(i != j && stages[i].id == stages[j].id) {
-				errx(-1, "Duplicate ID in stages array: %u", stages[i].id);
+				errx(-1, "Duplicate ID 0x%04x in stages array, indices: %i, %i", stages[i].id, i, j);
 			}
 		}
-#endif
 	}
+#endif
 }
 
 void stage_free_array(void) {
-	for(StageInfo *stg = stages; stg->loop; ++stg) {
-		if(stg->type == STAGE_SPELL) {
-			free(stg->subtitle);
-		}
-
+	for(StageInfo *stg = stages; stg->procs; ++stg) {
+		free(stg->title);
+		free(stg->subtitle);
 		free(stg->progress);
 	}
+
+	free(stages);
 }
 
 // NOTE: This returns the stage BY ID, not by the array index!
 StageInfo* stage_get(uint16_t n) {
-	for(StageInfo *stg = stages; stg->loop; ++stg)
+	for(StageInfo *stg = stages; stg->procs; ++stg)
 		if(stg->id == n)
 			return stg;
 	return NULL;
@@ -310,7 +157,7 @@ StageInfo* stage_get_by_spellcard(AttackInfo *spell, Difficulty diff) {
 	if(!spell)
 		return NULL;
 
-	for(StageInfo *stg = stages; stg->loop; ++stg)
+	for(StageInfo *stg = stages; stg->procs; ++stg)
 		if(stg->spell == spell && stg->difficulty == diff)
 			return stg;
 
@@ -354,7 +201,7 @@ StageProgress* stage_get_progress(uint16_t id, Difficulty diff, bool allocate) {
 	return stage_get_progress_from_info(stage_get(id), diff, allocate);
 }
 
-void stage_start(void) {
+static void stage_start(StageInfo *stage) {
 	global.timer = 0;
 	global.frames = 0;
 	global.stageuiframes = 0;
@@ -366,6 +213,11 @@ void stage_start(void) {
 	global.fps.fpstime = SDL_GetTicks();
 
 	prepare_player_for_next_stage(&global.plr);
+
+	if(stage->type == STAGE_SPELL) {
+		global.plr.lifes = 0;
+		global.plr.bombs = 0;
+	}
 }
 
 void stage_pause(void) {
@@ -378,11 +230,20 @@ void stage_pause(void) {
 
 void stage_gameover(void) {
 	MenuData menu;
-	save_bgm();
-	start_bgm("bgm_gameover");
 	create_gameover_menu(&menu);
+
+	bool interrupt_bgm = (global.stage->type != STAGE_SPELL);
+
+	if(interrupt_bgm) {
+		save_bgm();
+		start_bgm("bgm_gameover");
+	}
+
 	menu_loop(&menu);
-	restore_bgm();
+
+	if(interrupt_bgm) {
+		restore_bgm();
+	}
 }
 
 void stage_input_event(EventType type, int key, void *arg) {
@@ -390,7 +251,7 @@ void stage_input_event(EventType type, int key, void *arg) {
 		case E_PlrKeyDown:
 			if(key == KEY_HAHAIWIN) {
 #ifdef DEBUG
-				global.game_over = GAMEOVER_WIN;
+				stage_finish(GAMEOVER_WIN);
 #endif
 				break;
 			}
@@ -494,7 +355,8 @@ void stage_input(void) {
 void draw_hud(void) {
 	draw_texture(SCREEN_W/2.0, SCREEN_H/2.0, "hud");
 
-	char buf[16], *diff;
+	char buf[16];
+	const char *diff;
 	int i;
 
 	glPushMatrix();
@@ -583,12 +445,15 @@ void draw_hud(void) {
 		draw_texture(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
 }
 
-void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int time) {
+static void apply_bg_shaders(ShaderRule *shaderrules);
+static void draw_stage_title(StageInfo *info);
 
+static void stage_draw(StageInfo *stage) {
 	if(!config_get_int(CONFIG_NO_SHADER)) {
 		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[0].fbo);
 		glViewport(0,0,SCREEN_W,SCREEN_H);
 	}
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPushMatrix();
 	glTranslatef(-(VIEWPORT_X+VIEWPORT_W/2.0), -(VIEWPORT_Y+VIEWPORT_H/2.0),0);
@@ -605,7 +470,7 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 		global.nostagebg = true;
 
 	if(!global.nostagebg)
-		bgdraw();
+		stage->procs->draw();
 
 	glPopMatrix();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -616,7 +481,7 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
 
 	if(!config_get_int(CONFIG_NO_SHADER))
-		apply_bg_shaders(shaderrules);
+		apply_bg_shaders(stage->procs->shader_rules);
 
 	if(global.boss) {
 		glPushMatrix();
@@ -654,7 +519,8 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	if(global.dialog)
 		draw_dialog(global.dialog);
 
-	draw_stage_title(info);
+	if(stage->type != STAGE_SPELL)
+		draw_stage_title(stage);
 
 	if(!config_get_int(CONFIG_NO_SHADER)) {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -678,17 +544,13 @@ void stage_draw(StageInfo *info, StageRule bgdraw, ShaderRule *shaderrules, int 
 	glPopMatrix();
 
 	draw_hud();
-	draw_transition();
 }
 
-int apply_shaderrules(ShaderRule *shaderrules, int fbonum) {
-	int i;
-
+static int apply_shaderrules(ShaderRule *shaderrules, int fbonum) {
 	if(!global.nostagebg) {
-		for(i = 0; shaderrules != NULL && shaderrules[i] != NULL; i++) {
+		for(ShaderRule *rule = shaderrules; *rule; ++rule) {
 			glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[!fbonum].fbo);
-			shaderrules[i](fbonum);
-
+			(*rule)(fbonum);
 			fbonum = !fbonum;
 		}
 	}
@@ -696,7 +558,7 @@ int apply_shaderrules(ShaderRule *shaderrules, int fbonum) {
 	return fbonum;
 }
 
-void apply_bg_shaders(ShaderRule *shaderrules) {
+static void apply_bg_shaders(ShaderRule *shaderrules) {
 	int fbonum = 0;
 
 	if(global.boss && global.boss->current && global.boss->current->draw_rule) {
@@ -769,7 +631,7 @@ void apply_bg_shaders(ShaderRule *shaderrules) {
 	}
 }
 
-void stage_logic(int time) {
+static void stage_logic(void) {
 	player_logic(&global.plr);
 
 	process_enemies(&global.enemies);
@@ -790,17 +652,11 @@ void stage_logic(int time) {
 	if(!global.dialog && !global.boss)
 		global.timer++;
 
-	if(global.timer == time - FADE_TIME ||
-		  (
-			global.replaymode == REPLAY_PLAY &&
-			global.frames == global.replay_stage->events[global.replay_stage->numevents-1].frame - FADE_TIME
-		  )
-		) {
-		set_transition(TransFadeBlack, FADE_TIME, FADE_TIME*2);
+	if(global.replaymode == REPLAY_PLAY &&
+		global.frames == global.replay_stage->events[global.replay_stage->numevents-1].frame - FADE_TIME &&
+		global.game_over != GAMEOVER_TRANSITIONING) {
+		stage_finish(GAMEOVER_DEFEAT);
 	}
-
-	if(time && global.timer >= time)
-		global.game_over = GAMEOVER_WIN;
 
 	// BGM handling
 	if(global.dialog && global.dialog->messages[global.dialog->pos].side == BGM) {
@@ -809,7 +665,7 @@ void stage_logic(int time) {
 	}
 }
 
-void stage_end(void) {
+static void stage_free(void) {
 	delete_enemies(&global.enemies);
 	delete_items();
 	delete_lasers();
@@ -828,7 +684,25 @@ void stage_end(void) {
 	}
 }
 
-void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event, ShaderRule *shaderrules, int endtime, char *bgmname) {
+static void stage_finalize(void *arg) {
+	global.game_over = (intptr_t)arg;
+}
+
+void stage_finish(int gameover) {
+	assert(global.game_over != GAMEOVER_TRANSITIONING);
+	global.game_over = GAMEOVER_TRANSITIONING;
+	set_transition_callback(TransFadeBlack, FADE_TIME, FADE_TIME*2, stage_finalize, (void*)(intptr_t)gameover);
+}
+
+void stage_loop(StageInfo *stage) {
+	assert(stage);
+	assert(stage->procs);
+	assert(stage->procs->begin);
+	assert(stage->procs->end);
+	assert(stage->procs->draw);
+	assert(stage->procs->event);
+	assert(stage->procs->shader_rules);
+
 	if(global.game_over == GAMEOVER_WIN) {
 		global.game_over = 0;
 	} else if(global.game_over) {
@@ -836,16 +710,16 @@ void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event,
 	}
 
 	// I really want to separate all of the game state from the global struct sometime
-	StageInfo *info = global.stage;
+	global.stage = stage;
 
 	uint32_t seed = (uint32_t)time(0);
 	tsrand_switch(&global.rand_game);
 	tsrand_seed_p(&global.rand_game, seed);
-	stage_start();
+	stage_start(stage);
 
 	if(global.replaymode == REPLAY_RECORD) {
 		if(config_get_int(CONFIG_SAVE_RPY)) {
-			global.replay_stage = replay_create_stage(&global.replay, info, seed, global.diff, global.plr.points, &global.plr);
+			global.replay_stage = replay_create_stage(&global.replay, stage, seed, global.diff, global.plr.points, &global.plr);
 
 			// make sure our player state is consistent with what goes into the replay
 			init_player(&global.plr);
@@ -855,11 +729,6 @@ void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event,
 		}
 
 		printf("Random seed: %u\n", seed);
-
-		if(info->type == STAGE_SPELL) {
-			global.plr.lifes = 0;
-			global.plr.bombs = 0;
-		}
 	} else {
 		if(!global.replay_stage) {
 			errx(-1, "Attemped to replay a NULL stage");
@@ -890,27 +759,35 @@ void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event,
 
 	player_set_power(&global.plr, power);
 
-	start();
-	start_bgm(bgmname);
+	stage->procs->begin();
 
-	if(info->type == STAGE_SPELL) {
-		endtime = 0;
-	}
+	int transition_delay = 0;
 
 	while(global.game_over <= 0) {
-		if(!global.boss && !global.dialog)
-			event();
+		if(global.game_over != GAMEOVER_TRANSITIONING) {
+			if(!global.boss && !global.dialog) {
+				stage->procs->event();
+			}
 
-		if(!endtime && info->type == STAGE_SPELL && !global.boss) {
-			endtime = global.timer + 60;
+			if(stage->type == STAGE_SPELL && !global.boss) {
+				stage_finish(GAMEOVER_WIN);
+				transition_delay = 60;
+			}
 		}
 
 		((global.replaymode == REPLAY_PLAY) ? replay_input : stage_input)();
 		replay_stage_check_desync(global.replay_stage, global.frames, (tsrand() ^ global.plr.points) & 0xFFFF, global.replaymode);
 
-		stage_logic(endtime);
+		stage_logic();
+
+		if(transition_delay) {
+			--transition_delay;
+		}
 
 		if(global.frameskip && global.frames % global.frameskip) {
+			if(!transition_delay) {
+				update_transition();
+			}
 			continue;
 		}
 
@@ -918,11 +795,14 @@ void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event,
 
 		tsrand_lock(&global.rand_game);
 		tsrand_switch(&global.rand_visual);
-		stage_draw(info, draw, shaderrules, endtime);
+		stage_draw(stage);
 		tsrand_unlock(&global.rand_game);
 		tsrand_switch(&global.rand_game);
 
-// 		print_state_checksum();
+		draw_transition();
+		if(!transition_delay) {
+			update_transition();
+		}
 
 		SDL_GL_SwapWindow(video.window);
 
@@ -937,13 +817,12 @@ void stage_loop(StageRule start, StageRule end, StageRule draw, StageRule event,
 		replay_stage_event(global.replay_stage, global.frames, EV_OVER, 0);
 	}
 
-	end();
-	stage_end();
+	stage->procs->end();
+	stage_free();
 	tsrand_switch(&global.rand_visual);
-	global.stage = NULL;
 }
 
-void draw_title(int t, StageInfo *info, Alignment al, int x, int y, const char *text, TTF_Font *font, Color *color) {
+static void draw_title(int t, StageInfo *info, Alignment al, int x, int y, const char *text, TTF_Font *font, Color *color) {
 	int i;
 	float f = 0;
 	if(t < 30 || t > 220)
@@ -974,7 +853,7 @@ void draw_title(int t, StageInfo *info, Alignment al, int x, int y, const char *
 	glUseProgram(0);
 }
 
-void draw_stage_title(StageInfo *info) {
+static void draw_stage_title(StageInfo *info) {
 	int t = global.stageuiframes;
 
 	draw_title(t, info, AL_Center, VIEWPORT_W/2, VIEWPORT_H/2-40, info->title, _fonts.mainmenu, &info->titleclr);

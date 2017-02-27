@@ -1,0 +1,20 @@
+
+if("@TAISEI_OSX_LIB_ROOT@" STREQUAL "")
+    message(FATAL_ERROR "You must set TAISEI_OSX_LIB_ROOT, and possibly TAISEI_OSX_COMMAND_PREFIX, to use the install rule.")
+endif()
+
+execute_process(
+    COMMAND "@PROJECT_SOURCE_DIR@/scripts/osx-install-dylibs.sh"
+            "--iknowwhatimdoing"
+            "./Taisei.app/Contents/MacOS/Taisei"
+            "./Taisei.app/Contents/MacOS/dylibs"
+            "dylibs"
+            "@TAISEI_OSX_LIB_ROOT@"
+            "@TAISEI_OSX_COMMAND_PREFIX@"
+    WORKING_DIRECTORY "@CMAKE_INSTALL_PREFIX@"
+    RESULT_VARIABLE ERRCODE
+)
+
+if(NOT ERRCODE EQUAL 0)
+    message(FATAL_ERROR "OSX install script failed: ${ERRCODE}")
+endif()

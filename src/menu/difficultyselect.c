@@ -6,6 +6,7 @@
  */
 
 #include "difficulty.h"
+#include "difficultyselect.h"
 #include "options.h"
 #include "common.h"
 #include "global.h"

@@ -19,14 +19,27 @@ void elly_lhc(Boss*, int);
 void elly_theory(Boss*, int);
 void elly_curvature(Boss*, int);
 
+/*
+ *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
+ */
+
 AttackInfo stage6_spells[] = {
-	{AT_Spellcard, "Newton Sign ~ 2.5 Laws of Movement", 60, 40000, elly_newton, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 22000, elly_maxwell, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 60, 30000, elly_eigenstate, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 50, 40000, elly_ricci, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 60, 50000, elly_lhc, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
-	{AT_SurvivalSpell, "Tower of Truth ~ Theory of Everything", 70, 40000, elly_theory, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
-	{AT_ExtraSpell, "Forgotten Universe ~ Curvature Domination", 40, 40000, elly_curvature, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
+	{{ 0,  1,  2,  3},	AT_Spellcard, "Newton Sign ~ 2.5 Laws of Movement", 60, 40000,
+							elly_newton, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
+	{{ 4,  5,  6,  7},	AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 22000,
+							elly_maxwell, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
+	{{ 8,  9, 10, 11},	AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 60, 30000,
+							elly_eigenstate, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
+	{{12, 13, 14, 15},	AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 50, 40000,
+							elly_ricci, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
+	{{16, 17, 18, 19},	AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 60, 50000,
+							elly_lhc, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
+	{{20, 21, 22, 23},	AT_SurvivalSpell, "Tower of Truth ~ Theory of Everything", 70, 40000,
+							elly_theory, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
+	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Forgotten Universe ~ Curvature Domination", 40, 40000,
+							elly_curvature, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
+
+	{{0}}
 };
 
 Dialog *stage6_dialog(void) {
@@ -800,7 +813,7 @@ int curvature_bullet(Projectile *p, int t) {
 
 	if(t == EVENT_DEATH)
 		free_ref(p->args[1]);
-	
+
 	return 1;
 }
 
@@ -812,9 +825,9 @@ int curvature_orbiter(Projectile *p, int t) {
 		p->args[2] = p->args[0]*I*w*cexp(I*t*w);
 	} else {
 		p->pos += p->args[2];
-	}	
+	}
 
-	
+
 	if(t == EVENT_DEATH)
 		free_ref(p->args[1]);
 
@@ -829,7 +842,7 @@ static double saw(double t) {
 int curvature_slave(Enemy *e, int t) {
 	e->args[0] = -(e->args[1] - global.plr.pos);
 	e->args[1] = global.plr.pos;
-	
+
 	if(t % (2+(global.diff < D_Hard)) == 0) {
 		tsrand_fill(2);
 		complex pos = VIEWPORT_W*afrand(0)+I*VIEWPORT_H*afrand(1);
@@ -868,7 +881,7 @@ void elly_curvature(Boss *b, int t) {
 	}
 
 	GO_TO(b, VIEWPORT_W/2+100*I+VIEWPORT_W/3*round(sin(t/200)), 0.04);
-	
+
 	AT(EVENT_DEATH) {
 		killall(global.enemies);
 	}
@@ -1063,8 +1076,9 @@ Boss *create_elly(void) {
 void stage6_events(void) {
 	TIMER(&global.timer);
 
-// 	AT(0)
-// 		global.timer = 3800;
+	AT(0) {
+		start_bgm("bgm_stage6");
+	}
 
 	AT(100)
 		create_enemy1c(VIEWPORT_W/2, 6000, BigFairy, stage6_hacker, 2.0*I);
@@ -1088,4 +1102,8 @@ void stage6_events(void) {
 
 	AT(3800)
 		global.boss = create_elly();
+
+	AT(3900 - FADE_TIME) {
+		stage_finish(GAMEOVER_WIN);
+	}
 }

@@ -29,7 +29,7 @@ void create_stage_menu(MenuData *m) {
 	m->flags = MF_Abortable;
 	m->transition = TransMenuDark;
 
-	for(int i = 0; stages[i].loop; ++i) {
+	for(int i = 0; stages[i].procs; ++i) {
 		if(stages[i].difficulty < lastdiff || (stages[i].difficulty && !lastdiff)) {
 			add_menu_separator(m);
 		}

@@ -16,7 +16,14 @@ add_subdirectory(src)
 
 if(RELATIVE)
     add_definitions(-DRELATIVE)
-	set(DATA_DIR "data")
+
+    if(APPLE)
+        set(RES_DIR "Taisei.app/Contents/Resources")
+        set(DATA_DIR "${RES_DIR}/data")
+        install(FILES "OSX-iconset.icns" DESTINATION "${RES_DIR}" RENAME "Taisei.icns")
+    else()
+	   set(DATA_DIR "data")
+    endif()
 
     install(FILES "story.txt" DESTINATION .)
 else()

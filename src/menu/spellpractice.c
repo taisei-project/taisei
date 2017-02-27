@@ -26,7 +26,7 @@ void create_spell_menu(MenuData *m) {
 	m->flags = MF_Abortable;
 	m->transition = TransMenuDark;
 
-	for(StageInfo *stg = stages; stg->loop; ++stg) {
+	for(StageInfo *stg = stages; stg->procs; ++stg) {
 		if(stg->type != STAGE_SPELL) {
 			continue;
 		}

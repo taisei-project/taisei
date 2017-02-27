@@ -128,10 +128,6 @@ void stage5_end(void) {
 	free_stage3d(&bgcontext);
 }
 
-void stage5_loop(void) {
-	stage_loop(stage5_start, stage5_end, stage5_draw, stage5_events, NULL, 5700, "bgm_stage5");
-}
-
 void stage5_spellpractice_events(void) {
 	TIMER(&global.timer);
 
@@ -140,9 +136,26 @@ void stage5_spellpractice_events(void) {
 		global.boss = create_boss("Nagae Iku", "iku", BOSS_DEFAULT_SPAWN_POS);
 		boss_add_attack_from_info(global.boss, global.stage->spell, true);
 		start_attack(global.boss, global.boss->attacks);
+
+		start_bgm("bgm_stage5boss");
 	}
 }
 
-void stage5_spellpractice_loop(void) {
-	stage_loop(stage5_start, stage5_end, stage5_draw, stage5_spellpractice_events, NULL, 5700, "bgm_stage5boss");
-}
+ShaderRule stage5_shaders[] = { NULL };
+
+StageProcs stage5_procs = {
+	.begin = stage5_start,
+	.end = stage5_end,
+	.draw = stage5_draw,
+	.event = stage5_events,
+	.shader_rules = stage5_shaders,
+	.spellpractice_procs = &stage5_spell_procs,
+};
+
+StageProcs stage5_spell_procs = {
+	.begin = stage5_start,
+	.end = stage5_end,
+	.draw = stage5_draw,
+	.event = stage5_spellpractice_events,
+	.shader_rules = stage5_shaders,
+};

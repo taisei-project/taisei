@@ -147,7 +147,7 @@ void draw_lasers(int bgpass) {
 		if(bgpass != laser->in_background)
 			continue;
 
-		if(laser->shader && !config_get_int(CONFIG_NO_SHADER) && tgl_ext[TGLEXT_draw_instanced])
+		if(laser->shader && !config_get_int(CONFIG_NO_SHADER) && glext.draw_instanced)
 			draw_laser_curve_instanced(laser);
 		else
 			draw_laser_curve(laser);

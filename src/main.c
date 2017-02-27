@@ -13,26 +13,9 @@
 #include "stage.h"
 #include "menu/mainmenu.h"
 #include "paths/native.h"
-#include "taiseigl.h"
 #include "gamepad.h"
 #include "resource/bgm.h"
 #include "progress.h"
-
-void init_gl(void) {
-	load_gl_functions();
-	check_gl_extensions();
-
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
-
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_BLEND);
-	init_quadvbo();
-
-	glClear(GL_COLOR_BUFFER_BIT);
-}
 
 void taisei_shutdown(void) {
 	config_save(CONFIG_FILE);
@@ -101,7 +84,7 @@ int main(int argc, char **argv) {
 	if(argc >= 2 && argv[1] && !strcmp(argv[1], "dumpstages")) {
 		stage_init_array();
 
-		for(StageInfo *stg = stages; stg->loop; ++stg) {
+		for(StageInfo *stg = stages; stg->procs; ++stg) {
 			printf("%i %s: %s\n", stg->id, stg->title, stg->subtitle);
 		}
 
@@ -143,19 +126,15 @@ int main(int argc, char **argv) {
 	config_load(CONFIG_FILE);
 
 	printf("initialize:\n");
+
 	if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO) < 0)
 		errx(-1, "Error initializing SDL: %s", SDL_GetError());
 	printf("-- SDL_Init\n");
 
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
 	init_global();
 
 	video_init();
-	printf("-- SDL viewport\n");
-
-	init_gl();
-	printf("-- GL\n");
+	printf("-- Video and OpenGL\n");
 
 	draw_loading_screen();
 
@@ -167,8 +146,10 @@ int main(int argc, char **argv) {
 	init_sfx();
 	init_bgm();
 	load_resources();
-	printf("initialization complete.\n");
 
+	set_transition(TransLoader, 0, FADE_TIME*2);
+
+	printf("initialization complete.\n");
 	atexit(taisei_shutdown);
 
 	if(replay_path) {
@@ -204,8 +185,7 @@ int main(int argc, char **argv) {
 		do {
 			global.game_over = 0;
 			init_player(&global.plr);
-			global.stage = stg;
-			stg->loop();
+			stage_loop(stg);
 		} while(global.game_over == GAMEOVER_RESTART);
 
 		return 0;

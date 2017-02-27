@@ -23,6 +23,7 @@
 
 #include "menu/menu.h"
 
+#include "taiseigl.h"
 #include "player.h"
 #include "projectile.h"
 #include "enemy.h"
@@ -38,6 +39,8 @@
 #include "replay.h"
 #include "random.h"
 #include "events.h"
+#include "difficulty.h"
+#include "color.h"
 
 #include "taisei_err.h"
 #include "rwops/all.h"
@@ -81,8 +84,8 @@ enum {
 	GAMEOVER_DEFEAT = 1,
 	GAMEOVER_WIN,
 	GAMEOVER_ABORT,
-	GAMEOVER_REWATCH,
-	GAMEOVER_RESTART
+	GAMEOVER_RESTART,
+	GAMEOVER_TRANSITIONING = -1,
 };
 
 typedef struct {
@@ -159,8 +162,6 @@ double clamp(double, double, double);
 double approach(double v, double t, double d);
 double psin(double);
 bool strendswith(const char *s, const char *e);
-char* difficulty_name(Difficulty diff);
-void difficulty_color(Color *c, Difficulty diff);
 void stralloc(char **dest, const char *src);
 bool gamekeypressed(KeyIndex key);
 int getenvint(const char *v);
@@ -178,6 +179,9 @@ enum {
 	EV_AXIS_UD,
 	EV_CHECK_DESYNC, // replay-only
 };
+
+#undef strlcat
+#undef strlcpy
 
 #define strlcat SDL_strlcat
 #define strlcpy SDL_strlcpy

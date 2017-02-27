@@ -8,11 +8,10 @@
 #ifndef STAGE5_H
 #define STAGE5_H
 
-#include "boss.h"
+#include "stage.h"
 
-void stage5_loop(void);
-void stage5_spellpractice_loop(void);
-
+extern StageProcs stage5_procs;
+extern StageProcs stage5_spell_procs;
 extern AttackInfo stage5_spells[];
 
 #endif

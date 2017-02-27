@@ -5,8 +5,8 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
-#ifndef DIFFICULTY_H
-#define DIFFICULTY_H
+#ifndef DIFFICULTYMENU_H
+#define DIFFICULTYMENU_H
 
 #include "menu.h"
 

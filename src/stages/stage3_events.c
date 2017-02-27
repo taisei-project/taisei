@@ -20,13 +20,25 @@ void stage3_boss_a2(Boss*, int t);
 void stage3_boss_a3(Boss*, int t);
 void stage3_boss_extra(Boss*, int t);
 
+/*
+ *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
+ */
+
 AttackInfo stage3_spells[] = {
-	{AT_Spellcard, "Venom Sign ~ Deadly Dance", 25, 25000, stage3_mid_a1, stage3_mid_spellbg, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "Venom Sign ~ Acid Rain", 20, 23000, stage3_mid_a2, stage3_mid_spellbg, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage3_boss_a1, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 25, 40000, stage3_boss_a2, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "Bug Sign ~ Phosphaenus Hemipterus", 35, 30000, stage3_boss_a3, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
-	{AT_ExtraSpell, "Firefly Sign ~ Moonlight Wraith", 60, 150000, stage3_boss_extra, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
+	{{ 0,  1,  2,  3},	AT_Spellcard, "Venom Sign ~ Deadly Dance", 25, 25000,
+							stage3_mid_a1, stage3_mid_spellbg, BOSS_DEFAULT_GO_POS},
+	{{-1, -1,  4,  5},	AT_Spellcard, "Venom Sign ~ Acid Rain", 20, 23000,
+							stage3_mid_a2, stage3_mid_spellbg, BOSS_DEFAULT_GO_POS},
+	{{ 6,  7,  8,  9},	AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000,
+							stage3_boss_a1, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
+	{{10, 11, 12, 13},	AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 25, 40000,
+							stage3_boss_a2, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
+	{{14, 15, 16, 17},	AT_Spellcard, "Bug Sign ~ Phosphaenus Hemipterus", 35, 30000,
+							stage3_boss_a3, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
+	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Firefly Sign ~ Moonlight Wraith", 60, 150000,
+							stage3_boss_extra, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
+
+	{{0}}
 };
 
 Dialog *stage3_dialog(void) {
@@ -838,6 +850,10 @@ Boss* stage3_create_boss(void) {
 void stage3_events(void) {
 	TIMER(&global.timer);
 
+	AT(0) {
+		start_bgm("bgm_stage2");
+	}
+
 	FROM_TO(160, 300, 10) {
 		tsrand_fill(3);
 		create_enemy1c(VIEWPORT_W/2 + 20 * anfrand(0) + (VIEWPORT_H/4 + 20 * anfrand(1))*I, 200, Swirl, stage3_enterswirl, I * 3 + anfrand(2) * 3);
@@ -917,4 +933,8 @@ void stage3_events(void) {
 
 	AT(5300)
 		global.boss = stage3_create_boss();
+
+	AT(5700 - FADE_TIME) {
+		stage_finish(GAMEOVER_WIN);
+	}
 }

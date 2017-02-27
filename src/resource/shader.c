@@ -14,16 +14,44 @@
 #include "list.h"
 #include "taisei_err.h"
 
+static char snippet_header_EXT_draw_instanced[] =
+	"#version 120\n"
+	"#extension GL_EXT_draw_instanced : enable\n"
+;
+
+static char snippet_header_ARB_draw_instanced[] =
+	"#version 120\n"
+	"#extension GL_ARB_draw_instanced : enable\n"
+	"#define gl_InstanceID gl_InstanceIDARB"
+;
+
+static char snippet_header_gl31[] =
+	"#version 140\n"
+;
+
+static char* get_snippet_header(void) {
+	if(glext.EXT_draw_instanced) {
+		return snippet_header_EXT_draw_instanced;
+	} else if(glext.ARB_draw_instanced) {
+		return snippet_header_ARB_draw_instanced;
+	} else {
+		// probably won't work
+		return snippet_header_gl31;
+	}
+}
+
 void print_info_log(GLuint shader) {
 	int len = 0, alen = 0;
 	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &len);
 
 	if(len > 1) {
+		printf(" == GLSL Shader info log (shader %u) ==\n", shader);
 		char *log = malloc(len);
 		memset(log, 0, len);
-		glGetShaderInfoLog(shader, 256, &alen, log);
+		glGetShaderInfoLog(shader, len, &alen, log);
 		printf("%s\n", log);
 		free(log);
+		printf("\n == End of GLSL Shader info log (shader %u) ==\n", shader);
 	}
 }
 
@@ -32,11 +60,13 @@ void print_program_info_log(GLuint program) {
 	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len);
 
 	if(len > 1) {
+		printf(" == GLSL Program info log (program %u) ==\n", program);
 		char *log = malloc(len);
 		memset(log, 0, len);
-		glGetProgramInfoLog(program, 256, &alen, log);
+		glGetProgramInfoLog(program, len, &alen, log);
 		printf("%s\n", log);
 		free(log);
+		printf("\n == End of GLSL Program info log (program %u) ==\n", program);
 	}
 }
 
@@ -107,7 +137,6 @@ void load_shader_snippets(char *filename, char *prefix) {
 	if((vfoot == NULL) + (ffoot == NULL) != 1)
 		errx(-1, "Syntax Error: must contain exactly 1 FOOT section");
 
-
 	while((sec = strstr(sec, "%%"))) {
 		sec += 2;
 
@@ -160,7 +189,7 @@ void load_shader_snippets(char *filename, char *prefix) {
 		strlcat(nbuf+prefixlen, name, nend-name+1);
 		nbuf[nend-name+prefixlen] = 0;
 
-		load_shader(vtext, ftext, nbuf, nend-name+prefixlen+1);
+		load_shader(get_snippet_header(), NULL, vtext, ftext, nbuf, nend-name+prefixlen+1);
 		printf("--- loaded snippet as shader '%s'\n", nbuf);
 
 		free(nbuf);
@@ -197,7 +226,7 @@ void load_shader_file(char *filename) {
 	name = malloc(sz);
 	strlcpy(name, beg, sz);
 
-	load_shader(vtext, ftext, name, sz);
+	load_shader(NULL, NULL, vtext, ftext, name, sz);
 
 	printf("-- loaded '%s' as '%s'\n", filename, name);
 
@@ -205,7 +234,7 @@ void load_shader_file(char *filename) {
 	free(text);
 }
 
-void load_shader(char *vtext, char *ftext, char *name, int nsize) {
+void load_shader(char *vheader, char *fheader, char *vtext, char *ftext, char *name, int nsize) {
 	Shader *sha = create_element((void **)&resources.shaders, sizeof(Shader));
 	GLuint vshaderobj;
 	GLuint fshaderobj;
@@ -214,10 +243,20 @@ void load_shader(char *vtext, char *ftext, char *name, int nsize) {
 	vshaderobj = glCreateShader(GL_VERTEX_SHADER);
 	fshaderobj = glCreateShader(GL_FRAGMENT_SHADER);
 
-	int s = -1;
+	if(!vheader) {
+		vheader = "";
+	}
 
-	glShaderSource(vshaderobj, 1, (const GLchar **)&vtext, &s);
-	glShaderSource(fshaderobj, 1, (const GLchar **)&ftext, &s);
+	if(!fheader) {
+		fheader = "";
+	}
+
+	GLchar *v_sources[] = { vheader, vtext };
+	GLchar *f_sources[] = { fheader, ftext };
+	GLint lengths[] = { -1, -1 };
+
+	glShaderSource(vshaderobj, 2, (const GLchar**)v_sources, lengths);
+	glShaderSource(fshaderobj, 2, (const GLchar**)f_sources, lengths);
 
 	glCompileShader(vshaderobj);
 	glCompileShader(fshaderobj);

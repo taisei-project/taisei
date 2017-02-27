@@ -10,6 +10,7 @@
 #define TSRAND_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef struct RandomState {
 	uint32_t w;

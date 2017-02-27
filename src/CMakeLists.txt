@@ -1,6 +1,14 @@
 
 find_package(PkgConfig REQUIRED)
-find_package(OpenGL REQUIRED)
+
+if(LINK_TO_LIBGL)
+	find_package(OpenGL REQUIRED)
+	add_definitions(-DLINK_TO_LIBGL)
+
+	# We didn't use anything from GLU except gluPerspective
+	# taiseigl now provides a simple replacement for it
+	list(FILTER OPENGL_LIBRARIES EXCLUDE REGEX ".*libGLU\\..*")
+endif()
 
 pkg_check_modules(SDL2 sdl2 REQUIRED)
 pkg_check_modules(SDL2_TTF SDL2_ttf REQUIRED)
@@ -38,6 +46,8 @@ set(SRCs
 	matrix.c
 	video.c
 	transition.c
+	color.c
+	difficulty.c
 	menu/menu.c
 	menu/mainmenu.c
 	menu/options.c
@@ -46,7 +56,7 @@ set(SRCs
 	menu/ingamemenu.c
 	menu/gameovermenu.c
 	menu/savereplay.c
-	menu/difficulty.c
+	menu/difficultyselect.c
 	menu/charselect.c
 	menu/spellpractice.c
 	menu/common.c
@@ -115,9 +125,16 @@ set(LIBs ${LIBs}
 	${SDL2_TTF_LIBRARIES}
 	${SDL2_MIXER_LIBRARIES}
 	${PNG_LIBRARIES}
-	${OPENGL_LIBRARIES}
 	${ZLIB_LIBRARIES}
+	${OPENGL_LIBRARIES}
 	m)
+
+set(LIBDIRs
+	${SDL2_LIBRARY_DIRS}
+	${SDL2_TTF_LIBRARY_DIRS}
+	${PNG_LIBRARY_DIRS}
+	${ZLIB_LIBRARY_DIRS}
+	)
 
 if(WIN32)
 	set(LIBs ${LIBs} -ldxguid -lwinmm)
@@ -143,14 +160,9 @@ set(CMAKE_REQUIRED_INCLUDES ${INCs})
 include_directories(${INCs})
 
 check_symbol_exists(_POSIX_VERSION "unistd.h" POSIX)
-check_symbol_exists(glDrawArraysInstanced "taiseigl.h" HAVE_glDrawArraysInstanced)
 
 if(POSIX)
 	add_definitions(-D__POSIX__)
-endif()
-
-if(NOT HAVE_glDrawArraysInstanced)
-	add_definitions(-DGL_USE_ARB_DRAW_INSTANCED)
 endif()
 
 if (CMAKE_GENERATOR STREQUAL "Ninja" AND
@@ -165,16 +177,31 @@ list(SORT SRCs)
 list(REMOVE_DUPLICATES SRCs)
 list(REMOVE_DUPLICATES LIBs)
 
+link_directories(${LIBDIRs})
+
 if(TAISEI_WIN32_CONSOLE)
 	list(REMOVE_ITEM LIBs -mwindows)
-	add_executable(taisei ${SRCs})
+	add_executable(taisei MACOSX_BUNDLE ${SRCs})
 else()
-	add_executable(taisei WIN32 ${SRCs})
+	add_executable(taisei MACOSX_BUNDLE WIN32 ${SRCs})
 endif()
 
 target_link_libraries(taisei ${LIBs})
 
-if(RELATIVE)
+set(MACOSX_BUNDLE_BUNDLE_NAME "Taisei")
+
+if(APPLE)
+	set_target_properties(taisei PROPERTIES
+		OUTPUT_NAME "Taisei"
+		MACOSX_BUNDLE_ICON_FILE "Taisei"
+		MACOSX_BUNDLE_BUNDLE_NAME "Taisei"
+	)
+
+	install(TARGETS taisei BUNDLE DESTINATION .)
+	set(OSX_INSTALLSCRIPT_PATH "${PROJECT_SOURCE_DIR}/scripts/OSXInstallDylibs.cmake")
+	configure_file("${OSX_INSTALLSCRIPT_PATH}.in" "${OSX_INSTALLSCRIPT_PATH}.out" @ONLY)
+	install(SCRIPT "${OSX_INSTALLSCRIPT_PATH}.out")
+elseif(RELATIVE)
 	install(TARGETS taisei RUNTIME DESTINATION .)
 else()
 	install(TARGETS taisei RUNTIME DESTINATION bin)
