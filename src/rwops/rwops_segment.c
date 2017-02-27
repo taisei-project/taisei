@@ -2,11 +2,13 @@
 #include <assert.h>
 #include <stdbool.h>
 #include "rwops_segment.h"
+#include "taisei_err.h"
 
 typedef struct Segment {
     SDL_RWops *wrapped;
     size_t start;
     size_t end;
+    int64_t pos; // fallback for non-seekable streams
     bool autoclose;
 } Segment;
 
@@ -99,15 +101,20 @@ static int64_t segment_size(SDL_RWops *rw) {
 static size_t segment_readwrite(SDL_RWops *rw, void *ptr, size_t size, size_t maxnum, bool write) {
     Segment *s = SEGMENT(rw);
     int64_t pos = SDL_RWtell(s->wrapped);
+    size_t onum;
 
     if(pos < 0) {
-        printf("segment_readwrite: SDL_RWtell failed (%i)", (int)pos);
-        SDL_SetError("segment_readwrite: SDL_RWtell failed (%i)", (int)pos);
-        return 0;
+        warnx("segment_readwrite: SDL_RWtell failed (%i): %s", (int)pos, SDL_GetError());
+        SDL_SetError("segment_readwrite: SDL_RWtell failed (%i) %s", (int)pos, SDL_GetError());
+
+        // this could be a non-seekable stream, like /dev/stdin...
+        // let's assume nothing else uses the wrapped stream and try to guess the current position
+        // this only works if the actual positon in the stream at the time of segment creation matched s->start...
+        pos = s->pos;
     }
 
     if(pos < s->start || pos > s->end) {
-        printf("segment_readwrite: segment range violation");
+        warnx("segment_readwrite: segment range violation");
         SDL_SetError("segment_readwrite: segment range violation");
         return 0;
     }
@@ -121,10 +128,15 @@ static size_t segment_readwrite(SDL_RWops *rw, void *ptr, size_t size, size_t ma
     }
 
     if(write) {
-        return SDL_RWwrite(s->wrapped, ptr, size, maxnum);
+        onum = SDL_RWwrite(s->wrapped, ptr, size, maxnum);
     } else {
-        return SDL_RWread(s->wrapped, ptr, size, maxnum);
+        onum = SDL_RWread(s->wrapped, ptr, size, maxnum);
     }
+
+    s->pos += onum / size;
+    assert(s->pos <= s->end);
+
+    return onum;
 }
 
 static size_t segment_read(SDL_RWops *rw, void *ptr, size_t size, size_t maxnum) {
@@ -173,6 +185,9 @@ SDL_RWops* SDL_RWWrapSegment(SDL_RWops *src, size_t start, size_t end, bool auto
     s->start = start;
     s->end = end;
     s->autoclose = autoclose;
+
+    // fallback for non-seekable streams
+    s->pos = start;
 
     rw->hidden.unknown.data1 = s;
 
