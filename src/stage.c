@@ -211,6 +211,11 @@ void stage_pause(void) {
 }
 
 void stage_gameover(void) {
+	if(global.stage->type == STAGE_SPELL && config_get_int(CONFIG_SPELLSTAGE_AUTORESTART)) {
+		global.game_over = GAMEOVER_RESTART;
+		return;
+	}
+
 	MenuData menu;
 	create_gameover_menu(&menu);
 

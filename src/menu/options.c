@@ -575,6 +575,11 @@ void create_options_menu(MenuData *m) {
 		bind_addvalue(b, "off");
 		bind_addvalue(b, "ask");
 
+	add_menu_entry(m, "Auto-restart in spell practice mode", do_nothing,
+		b = bind_option(CONFIG_SPELLSTAGE_AUTORESTART, 	bind_common_onoffget,
+														bind_common_onoffset)
+	);	bind_onoff(b);
+
 	add_menu_separator(m);
 
 	add_menu_entry(m, "Sound effects", do_nothing,
