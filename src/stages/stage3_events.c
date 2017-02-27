@@ -851,7 +851,7 @@ void stage3_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		start_bgm("bgm_stage2");
+		start_bgm("bgm_stage3");
 	}
 
 	FROM_TO(160, 300, 10) {

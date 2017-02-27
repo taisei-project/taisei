@@ -525,6 +525,10 @@ Boss *create_hina(void) {
 void stage2_events(void) {
 	TIMER(&global.timer);
 
+	AT(0) {
+		start_bgm("bgm_stage2");
+	}
+
 	AT(300) {
 		create_enemy1c(VIEWPORT_W/2-10.0*I, 7000+500*global.diff, BigFairy, stage2_great_circle, 2.0*I);
 	}
