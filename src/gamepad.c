@@ -259,6 +259,11 @@ bool gamepad_gamekeypressed(KeyIndex key) {
 		return false;
 
 	int gpkey = config_gamepad_key_from_key(key);
+
+	if(gpkey < 0) {
+		return false;
+	}
+
 	int cfgidx = GPKEYIDX_TO_CFGIDX(gpkey);
 	int button = config_get_int(cfgidx);
 
