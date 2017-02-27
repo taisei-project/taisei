@@ -39,6 +39,8 @@
 #include "replay.h"
 #include "random.h"
 #include "events.h"
+#include "difficulty.h"
+#include "color.h"
 
 #include "taisei_err.h"
 #include "rwops/all.h"
@@ -157,8 +159,6 @@ double clamp(double, double, double);
 double approach(double v, double t, double d);
 double psin(double);
 bool strendswith(const char *s, const char *e);
-char* difficulty_name(Difficulty diff);
-void difficulty_color(Color *c, Difficulty diff);
 void stralloc(char **dest, const char *src);
 bool gamekeypressed(KeyIndex key);
 int getenvint(const char *v);

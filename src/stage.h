@@ -8,6 +8,12 @@
 #ifndef STAGE_H
 #define STAGE_H
 
+#include <stdbool.h>
+#include "projectile.h"
+#include "boss.h"
+#include "progress.h"
+#include "difficulty.h"
+
 /* taisei's strange macro language.
  *
  * sorry, I guess it is bad style, but I hardcode everything and in that case
@@ -16,22 +22,6 @@
  * I've just invented this thingy to keep track of my sanity.
  *
  */
-
-#include <stdbool.h>
-#include "projectile.h"
-#include "boss.h"
-#include "progress.h"
-
-typedef enum {
-	D_Any = 0,
-	D_Easy,
-	D_Normal,
-	D_Hard,
-	D_Lunatic,
-	D_Extra // reserved for later
-} Difficulty;
-
-#define NUM_SELECTABLE_DIFFICULTIES D_Lunatic
 
 #define TIMER(ptr) int *__timep = ptr; int _i = 0, _ni = 0;  _i = _ni = _i;
 #define AT(t) if(*__timep == t)
@@ -55,35 +45,34 @@ typedef enum StageType {
 	STAGE_SPELL,
 } StageType;
 
-typedef struct StageProcs {
+typedef struct StageProcs StageProcs;
+
+struct StageProcs {
 	StageProc begin;
 	StageProc end;
 	StageProc draw;
 	StageProc event;
 	ShaderRule *shader_rules;
-} StageProcs;
+	StageProcs *spellpractice_procs;
+};
 
 typedef struct StageInfo {
-	//
-	// don't reorder these!
-	//
-
 	uint16_t id; // must match type of ReplayStage.stage in replay.h
 	StageProcs *procs;
 	StageType type;
 	char *title;
 	char *subtitle;
-	Color titleclr;
-	Color bosstitleclr;
 	AttackInfo *spell;
 	Difficulty difficulty;
+	Color titleclr;
+	Color bosstitleclr;
 
 	// Do NOT access this directly!
 	// Use stage_get_progress or stage_get_progress_from_info, which will lazy-initialize it and pick the correct offset.
 	StageProgress *progress;
 } StageInfo;
 
-extern StageInfo stages[];
+extern StageInfo *stages;
 
 StageInfo* stage_get(uint16_t);
 StageInfo* stage_get_by_spellcard(AttackInfo *spell, Difficulty diff);

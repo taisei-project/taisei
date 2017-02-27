@@ -18,10 +18,19 @@ void cirno_crystal_rain(Boss*, int);
 void cirno_icicle_fall(Boss*, int);
 void cirno_pfreeze_bg(Boss*, int);
 
+/*
+ *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
+ */
+
 AttackInfo stage1_spells[] = {
-	{AT_Spellcard, "Freeze Sign ~ Perfect Freeze", 32, 20000, cirno_perfect_freeze, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
-	{AT_Spellcard, "Freeze Sign ~ Crystal Rain", 28, 28000, cirno_crystal_rain, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
-	{AT_Spellcard, "Doom Sign ~ Icicle Fall", 35, 40000, cirno_icicle_fall, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
+	{{ 0,  1,  2,  3},	AT_Spellcard, "Freeze Sign ~ Perfect Freeze", 32, 20000,
+							cirno_perfect_freeze, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
+	{{ 4,  5,  6,  7},	AT_Spellcard, "Freeze Sign ~ Crystal Rain", 28, 28000,
+							cirno_crystal_rain, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
+	{{ 8,  9, 10, 11},	AT_Spellcard, "Doom Sign ~ Icicle Fall", 35, 40000,
+							cirno_icicle_fall, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
+
+	{{0}}
 };
 
 Dialog *stage1_dialog(void) {
@@ -712,6 +721,7 @@ StageProcs stage1_procs = {
 	.draw = stage1_draw,
 	.event = stage1_events,
 	.shader_rules = stage1_shaders,
+	.spellpractice_procs = &stage1_spell_procs,
 };
 
 StageProcs stage1_spell_procs = {

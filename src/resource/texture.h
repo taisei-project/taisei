@@ -10,13 +10,7 @@
 
 #include <SDL.h>
 #include "taiseigl.h"
-
-typedef struct {
-	float r;
-	float g;
-	float b;
-	float a;
-} Color;
+#include "color.h"
 
 typedef struct Texture Texture;
 

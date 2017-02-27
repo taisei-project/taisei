@@ -46,6 +46,8 @@ set(SRCs
 	matrix.c
 	video.c
 	transition.c
+	color.c
+	difficulty.c
 	menu/menu.c
 	menu/mainmenu.c
 	menu/options.c
@@ -54,7 +56,7 @@ set(SRCs
 	menu/ingamemenu.c
 	menu/gameovermenu.c
 	menu/savereplay.c
-	menu/difficulty.c
+	menu/difficultyselect.c
 	menu/charselect.c
 	menu/spellpractice.c
 	menu/common.c

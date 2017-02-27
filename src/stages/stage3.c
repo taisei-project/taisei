@@ -307,6 +307,7 @@ StageProcs stage3_procs = {
 	.draw = stage3_draw,
 	.event = stage3_events,
 	.shader_rules = stage3_shaders,
+	.spellpractice_procs = &stage3_spell_procs,
 };
 
 StageProcs stage3_spell_procs = {

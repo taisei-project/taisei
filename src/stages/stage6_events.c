@@ -18,13 +18,25 @@ void elly_ricci(Boss*, int);
 void elly_lhc(Boss*, int);
 void elly_theory(Boss*, int);
 
+/*
+ *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
+ */
+
 AttackInfo stage6_spells[] = {
-	{AT_Spellcard, "Newton Sign ~ 2.5 Laws of Movement", 60, 40000, elly_newton, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 22000, elly_maxwell, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 60, 30000, elly_eigenstate, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 50, 40000, elly_ricci, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 60, 50000, elly_lhc, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
-	{AT_SurvivalSpell, "Tower of Truth ~ Theory of Everything", 70, 40000, elly_theory, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
+	{{ 0,  1,  2,  3},	AT_Spellcard, "Newton Sign ~ 2.5 Laws of Movement", 60, 40000,
+							elly_newton, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
+	{{ 4,  5,  6,  7},	AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 22000,
+							elly_maxwell, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
+	{{ 8,  9, 10, 11},	AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 60, 30000,
+							elly_eigenstate, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
+	{{12, 13, 14, 15},	AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 50, 40000,
+							elly_ricci, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
+	{{16, 17, 18, 19},	AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 60, 50000,
+							elly_lhc, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
+	{{20, 21, 22, 23},	AT_SurvivalSpell, "Tower of Truth ~ Theory of Everything", 70, 40000,
+							elly_theory, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
+
+	{{0}}
 };
 
 Dialog *stage6_dialog(void) {

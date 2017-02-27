@@ -15,20 +15,6 @@
 #include "list.h"
 #include "vbo.h"
 
-Color *rgba(float r, float g, float b, float a) {
-	Color *clr = malloc(sizeof(Color));
-	clr->r = r;
-	clr->g = g;
-	clr->b = b;
-	clr->a = a;
-
-	return clr;
-}
-
-Color *rgb(float r, float g, float b) {
-	return rgba(r, g, b, 1.0);
-}
-
 Texture *get_tex(char *name) {
 	Texture *t, *res = NULL;
 	for(t = resources.textures; t; t = t->next) {

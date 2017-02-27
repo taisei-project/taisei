@@ -19,12 +19,23 @@ void stage3_boss_a1(Boss*, int t);
 void stage3_boss_a2(Boss*, int t);
 void stage3_boss_a3(Boss*, int t);
 
+/*
+ *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
+ */
+
 AttackInfo stage3_spells[] = {
-	{AT_Spellcard, "Venom Sign ~ Deadly Dance", 25, 25000, stage3_mid_a1, stage3_mid_spellbg, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "Venom Sign ~ Acid Rain", 20, 23000, stage3_mid_a2, stage3_mid_spellbg, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000, stage3_boss_a1, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 25, 40000, stage3_boss_a2, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "Bug Sign ~ Phosphaenus Hemipterus", 35, 30000, stage3_boss_a3, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
+	{{ 0,  1,  2,  3},	AT_Spellcard, "Venom Sign ~ Deadly Dance", 25, 25000,
+							stage3_mid_a1, stage3_mid_spellbg, BOSS_DEFAULT_GO_POS},
+	{{-1, -1,  4,  5},	AT_Spellcard, "Venom Sign ~ Acid Rain", 20, 23000,
+							stage3_mid_a2, stage3_mid_spellbg, BOSS_DEFAULT_GO_POS},
+	{{ 6,  7,  8,  9},	AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 20000,
+							stage3_boss_a1, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
+	{{10, 11, 12, 13},	AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 25, 40000,
+							stage3_boss_a2, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
+	{{14, 15, 16, 17},	AT_Spellcard, "Bug Sign ~ Phosphaenus Hemipterus", 35, 30000,
+							stage3_boss_a3, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
+
+	{{0}}
 };
 
 Dialog *stage3_dialog(void) {

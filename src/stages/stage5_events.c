@@ -15,11 +15,21 @@ void iku_lightning(Boss*, int);
 void iku_cathode(Boss*, int);
 void iku_induction(Boss*, int);
 
+/*
+ *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
+ */
+
 AttackInfo stage5_spells[] = {
-	{AT_Spellcard, "High Voltage ~ Atmospheric Discharge", 30, 30000, iku_atmospheric, iku_spell_bg, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "Charge Sign ~ Artificial Lightning", 30, 35000, iku_lightning, iku_spell_bg, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "Spark Sign ~ Natural Cathode", 30, 35000, iku_cathode, iku_spell_bg, BOSS_DEFAULT_GO_POS},
-	{AT_Spellcard, "Current Sign ~ Induction", 30, 35000, iku_induction, iku_spell_bg, BOSS_DEFAULT_GO_POS},
+	{{ 0,  1,  2,  3},	AT_Spellcard, "High Voltage ~ Atmospheric Discharge", 30, 30000,
+							iku_atmospheric, iku_spell_bg, BOSS_DEFAULT_GO_POS},
+	{{ 4,  5,  6,  7},	AT_Spellcard, "Charge Sign ~ Artificial Lightning", 30, 35000,
+							iku_lightning, iku_spell_bg, BOSS_DEFAULT_GO_POS},
+	{{ 8,  9, 10, 11},	AT_Spellcard, "Spark Sign ~ Natural Cathode", 30, 35000,
+							iku_cathode, iku_spell_bg, BOSS_DEFAULT_GO_POS},
+	{{12, 13, 14, 15},	AT_Spellcard, "Current Sign ~ Induction", 30, 35000,
+							iku_induction, iku_spell_bg, BOSS_DEFAULT_GO_POS},
+
+	{{0}}
 };
 
 Dialog *stage5_post_mid_dialog(void) {

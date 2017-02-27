@@ -181,6 +181,7 @@ StageProcs stage2_procs = {
 	.draw = stage2_draw,
 	.event = stage2_events,
 	.shader_rules = stage2_shaders,
+	.spellpractice_procs = &stage2_spell_procs,
 };
 
 StageProcs stage2_spell_procs = {

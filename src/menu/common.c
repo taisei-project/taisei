@@ -8,7 +8,7 @@
 #include "global.h"
 #include "menu.h"
 #include "savereplay.h"
-#include "difficulty.h"
+#include "difficultyselect.h"
 #include "charselect.h"
 #include "ending.h"
 #include "credits.h"
