@@ -49,7 +49,14 @@ void delete_textures(void) {
 }
 
 Texture *load_texture(const char *filename) {
-	Texture *texture = hashtable_get_string(resources.textures, filename);
+	char *beg = strstr(filename, "gfx/") + 4;
+	char *end = strrchr(filename, '.');
+
+	int sz = end - beg + 1;
+	char name[sz];
+	strlcpy(name, beg, sz);
+
+	Texture *texture = hashtable_get_string(resources.textures, name);
 
 	// FIXME: this is for the loading screen
 	if(texture) {
@@ -63,15 +70,9 @@ Texture *load_texture(const char *filename) {
 
 	texture = malloc(sizeof(Texture));
 	load_sdl_surf(surface, texture);
+
 	free(surface->pixels);
 	SDL_FreeSurface(surface);
-
-	char *beg = strstr(filename, "gfx/") + 4;
-	char *end = strrchr(filename, '.');
-
-	int sz = end - beg + 1;
-	char name[sz];
-	strlcpy(name, beg, sz);
 
 	hashtable_set_string(resources.textures, name, (void*)texture);
 
