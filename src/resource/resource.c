@@ -162,8 +162,11 @@ void free_resources(void) {
 	printf("-- freeing textures\n");
 	delete_textures();
 
-	printf("-- freeing models\n");
+	printf("-- freeing animations\n");
 	delete_animations();
+
+	printf("-- freeing models\n");
+	delete_models();
 
 	printf("-- freeing VBOs\n");
 	delete_vbo(&_vbo);
