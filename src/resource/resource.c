@@ -76,14 +76,32 @@ static void resources_cfg_noshader_callback(ConfigIndex idx, ConfigValue v) {
 	}
 }
 
+static void init_hashtables(void) {
+	resources.textures = hashtable_new_stringkeys(RES_HASHTABLE_SIZE);
+	resources.animations = hashtable_new_stringkeys(RES_HASHTABLE_SIZE);
+	resources.sounds = hashtable_new_stringkeys(RES_HASHTABLE_SIZE);
+	resources.music = hashtable_new_stringkeys(RES_HASHTABLE_SIZE);
+	resources.shaders = hashtable_new_stringkeys(RES_HASHTABLE_SIZE);
+	resources.models = hashtable_new_stringkeys(RES_HASHTABLE_SIZE);
+	resources.bgm_descriptions = hashtable_new_stringkeys(RES_HASHTABLE_SIZE);
+}
+
+static void free_hashtables(void) {
+	hashtable_free(resources.textures);
+	hashtable_free(resources.animations);
+	hashtable_free(resources.sounds);
+	hashtable_free(resources.music);
+	hashtable_free(resources.shaders);
+	hashtable_free(resources.models);
+	hashtable_free(resources.bgm_descriptions);
+}
+
+void init_resources(void) {
+	init_hashtables();
+	config_set_callback(CONFIG_NO_SHADER, resources_cfg_noshader_callback);
+}
+
 void load_resources(void) {
-	static bool callbacks_set_up = false;
-
-	if(!callbacks_set_up) {
-		config_set_callback(CONFIG_NO_SHADER, resources_cfg_noshader_callback);
-		callbacks_set_up = true;
-	}
-
 	printf("load_resources():\n");
 
 	char *path = malloc(strlen(get_prefix())+32);
@@ -177,6 +195,13 @@ void free_resources(void) {
 		printf("-- freeing shaders\n");
 		delete_shaders();
 	}
+
+	free_hashtables();
+}
+
+void resources_delete_and_unset_all(Hashtable *ht, HTIterCallback ifunc, void *arg) {
+	hashtable_foreach(ht, ifunc, arg);
+	hashtable_unset_all(ht);
 }
 
 void draw_loading_screen(void) {

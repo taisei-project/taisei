@@ -2,24 +2,24 @@
 #include <stdlib.h>
 #include "audio.h"
 
-Sound* load_sound(char *filename) {
+Sound* load_sound(const char *filename) {
     return NULL;
 }
 
-Sound* load_sound_or_bgm(char *filename, Sound **dest, sound_type_t type) {
+Sound* load_sound_or_bgm(const char *filename, Hashtable *ht, sound_type_t type) {
     return NULL;
 }
 
-void play_sound_p(char *name, int unconditional) {
+void play_sound_p(const char *name, int unconditional) {
     return;
 }
 
-Sound* get_snd(Sound *source, char *name) {
+Sound* get_snd(Hashtable *source, const char *name) {
     return NULL;
 }
 
-void delete_sound(void **snds, void *snd) {
-    return;
+void* delete_sound(void *name, void *snd, void *arg) {
+    return NULL;
 }
 
 void delete_sounds(void) {

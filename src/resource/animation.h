@@ -13,24 +13,21 @@
 struct Animation;
 
 typedef struct Animation {
-	struct Animation *next;
-	struct Animation *prev;
-
 	int rows;
 	int cols;
 
-	int w,h;
+	int w;
+    int h;
 
 	int speed;
 
-	char *name;
 	Texture *tex;
 } Animation;
 
-Animation *init_animation(char *filename);
-Animation *get_ani(char *name);
+Animation *init_animation(const char *filename);
+Animation *get_ani(const char *name);
 void delete_animations(void);
-void draw_animation(float x, float y, int row, char *name);
+void draw_animation(float x, float y, int row, const char *name);
 void draw_animation_p(float x, float y, int row, Animation *ani);
 
 #endif

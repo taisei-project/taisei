@@ -10,14 +10,6 @@
 
 #include "audio.h"
 
-typedef struct Bgm_desc {
-	struct Bgm_desc *next;
-	struct Bgm_desc *prev;
-
-	char *name;
-	char *value;
-} Bgm_desc;
-
 struct current_bgm_t {
 	char *name;
 	char *title;
@@ -28,9 +20,9 @@ struct current_bgm_t {
 
 extern struct current_bgm_t current_bgm;
 
-Sound *load_bgm(char *filename);
+Sound *load_bgm(const char *filename);
 
-void start_bgm(char *name);
+void start_bgm(const char *name);
 void stop_bgm(void);
 void continue_bgm(void);
 void save_bgm(void);

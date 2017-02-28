@@ -12,6 +12,7 @@
 #include <assert.h>
 #include <string.h>
 #include <zlib.h>
+#include <stdio.h>
 
 typedef struct HashtableElement {
     void *next;
@@ -59,11 +60,18 @@ static void hashtable_delete_callback(void **vlist, void *velem, void *vht) {
     delete_element(vlist, velem);
 }
 
-void hashtable_free(Hashtable *ht) {
+void hashtable_unset_all(Hashtable *ht) {
     for(size_t i = 0; i < ht->table_size; ++i) {
         delete_all_elements_witharg((void**)(ht->table + i), hashtable_delete_callback, ht);
     }
+}
 
+void hashtable_free(Hashtable *ht) {
+    if(!ht) {
+        return;
+    }
+
+    hashtable_unset_all(ht);
     free(ht->table);
     free(ht);
 }
@@ -179,6 +187,28 @@ void hashtable_set_string(Hashtable *ht, const char *key, void *data) {
 void hashtable_unset_string(Hashtable *ht, const char *key) {
     hashtable_unset(ht, (void*)key);
 }
+
+/*
+ *  Misc convenience functions
+ */
+
+void* hashtable_iter_free_data(void *key, void *data, void *arg) {
+    free(data);
+    return NULL;
+}
+
+void hashtable_print_stringkeys(Hashtable *ht) {
+    printf("------ %p:\n", (void*)ht);
+    for(size_t i = 0; i < ht->table_size; ++i) {
+        for(HashtableElement *e = ht->table[i]; e; e = e->next) {
+            printf("[HT %lu] %s (%lu): %p\n", (unsigned long)i, (char*)e->key, e->hash, e->data);
+        }
+    }
+}
+
+/*
+ *  Misc convenience functions
+ */
 
 // #define HASHTABLE_TEST
 

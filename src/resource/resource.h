@@ -17,8 +17,11 @@
 #include "shader.h"
 #include "font.h"
 #include "model.h"
+#include "hashtable.h"
 
 typedef struct Resources Resources;
+
+#define RES_HASHTABLE_SIZE 64
 
 typedef enum ResourceState {
 	RS_GfxLoaded = 1,
@@ -32,13 +35,13 @@ typedef enum ResourceState {
 struct Resources {
 	ResourceState state;
 
-	Texture *textures;
-	Animation *animations;
-	Sound *sounds;
-	Sound *music;
-	Shader *shaders;
-	Model *models;
-	Bgm_desc *bgm_descriptions;
+	Hashtable *textures;
+	Hashtable *animations;
+	Hashtable *sounds;
+	Hashtable *music;
+	Hashtable *shaders;
+	Hashtable *models;
+	Hashtable *bgm_descriptions;
 
 	FBO fbg[2];
 	FBO fsec;
@@ -46,8 +49,12 @@ struct Resources {
 
 extern Resources resources;
 
+void init_resources(void);
 void load_resources(void);
 void free_resources(void);
 
 void draw_loading_screen(void);
+
+void resources_delete_and_unset_all(Hashtable *ht, HTIterCallback ifunc, void *arg);
+
 #endif

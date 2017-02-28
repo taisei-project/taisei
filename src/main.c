@@ -142,6 +142,7 @@ int main(int argc, char **argv) {
 	video_init();
 	printf("-- Video and OpenGL\n");
 
+	init_resources();
 	draw_loading_screen();
 
 	gamepad_init();

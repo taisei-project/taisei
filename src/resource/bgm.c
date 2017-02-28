@@ -65,17 +65,8 @@ void shutdown_bgm(void)
 	unload_mixer_if_needed();
 }
 
-char *get_bgm_desc(Bgm_desc *source, char *name) {
-	for(; source; source = source->next)
-		if(strcmp(source->name, name) == 0)
-			return source->value;
-	return NULL;
-}
-
-void delete_bgm_description(void **descs, void *desc) {
-	free(((Bgm_desc *)desc)->name);
-	free(((Bgm_desc *)desc)->value);
-	delete_element(descs, desc);
+char *get_bgm_desc(char *name) {
+	return (char*)hashtable_get_string(resources.bgm_descriptions, name);
 }
 
 void load_bgm_descriptions(const char *path) {
@@ -105,31 +96,25 @@ void load_bgm_descriptions(const char *path) {
 		}
 
 		*(rem++)='\0';
-		Bgm_desc *desc = create_element((void **)&resources.bgm_descriptions, sizeof(Bgm_desc));
 
-		desc->name = NULL;
-		stralloc(&desc->name, line);
-		desc->value = malloc(strlen(rem) + 6);
-		if (!desc->name || !desc->value)
-		{
-			delete_bgm_description((void**)resources.bgm_descriptions, desc);
-			warnx("load_bgm_description():\n!- strdup() failed");
-			continue;
-		}
-		strcpy(desc->value, "BGM: ");
-		strcat(desc->value, rem);
-		printf ("Music %s is now known as \"%s\".\n", desc->name, desc->value);
+		char *value = malloc(strlen(rem) + 6);
+		strcpy(value, "BGM: ");
+		strcat(value, rem);
+
+		hashtable_set_string(resources.bgm_descriptions, line, value);
+
+		printf("Music %s is now known as \"%s\".\n", line, value);
 	}
 
 	fclose(fp);
 	return;
 }
 
-Sound *load_bgm(char *filename) {
-	return load_sound_or_bgm(filename, &resources.music, ST_MUSIC);
+Sound *load_bgm(const char *filename) {
+	return load_sound_or_bgm(filename, resources.music, ST_MUSIC);
 }
 
-void start_bgm(char *name) {
+void start_bgm(const char *name) {
 	if(config_get_int(CONFIG_NO_MUSIC)) return;
 
 	// start_bgm(NULL) or start_bgm("") would be equivalent to stop_bgm().
@@ -164,7 +149,7 @@ void start_bgm(char *name) {
 	if(Mix_PlayMusic(current_bgm.data->music, -1) == -1) // Start playing otherwise
 		printf("Failed starting BGM %s: %s.\n", current_bgm.name, Mix_GetError());
 	// Support drawing BGM title in game loop (only when music changed!)
-	if ((current_bgm.title = get_bgm_desc(resources.bgm_descriptions, current_bgm.name)) != NULL)
+	if ((current_bgm.title = get_bgm_desc(current_bgm.name)) != NULL)
 	{
 		current_bgm.started_at = global.frames;
 		// Boss BGM title color may differ from the one at beginning of stage
@@ -218,6 +203,6 @@ void set_bgm_volume(float gain)
 }
 
 void delete_music(void) {
-	delete_all_elements((void **)&resources.bgm_descriptions, delete_bgm_description);
-	delete_all_elements((void **)&resources.music, delete_sound);
+	resources_delete_and_unset_all(resources.bgm_descriptions, hashtable_iter_free_data, NULL);
+	resources_delete_and_unset_all(resources.music, delete_sound, NULL);
 }

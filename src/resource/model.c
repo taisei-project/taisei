@@ -13,7 +13,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-void parse_obj(char *filename, ObjFileData *data) {
+static void parse_obj(const char *filename, ObjFileData *data) {
 	FILE *fp = fopen(filename, "rb");
 
 	char line[256];
@@ -109,12 +109,12 @@ void parse_obj(char *filename, ObjFileData *data) {
 	fclose(fp);
 }
 
-static void bad_reference_error(char *filename, char *aux, int n) {
+static void bad_reference_error(const char *filename, const char *aux, int n) {
 	errx(-1, "load_model():\n!- OBJ file '%s': Index %d: bad %s index reference\n", filename, n, aux);
 }
 
-Model *load_model(char *filename) {
-	Model *m = create_element((void **)&resources.models, sizeof(Model));
+Model *load_model(const char *filename) {
+	Model *m = malloc(sizeof(Model));
 
 	ObjFileData data;
 	unsigned int i;
@@ -126,8 +126,8 @@ Model *load_model(char *filename) {
 	char *end = strrchr(filename, '.');
 
 	int sz = end - beg + 1;
-	m->name = malloc(sz);
-	strlcpy(m->name, beg, sz);
+	char name[sz];
+	strlcpy(name, beg, sz);
 
 	parse_obj(filename, &data);
 
@@ -170,7 +170,9 @@ Model *load_model(char *filename) {
 
 	vbo_add_verts(&_vbo, verts, data.icount);
 
-	printf("-- loaded '%s' as '%s'\n", filename, m->name);
+	hashtable_set_string(resources.models, name, m);
+
+	printf("-- loaded '%s' as '%s'\n", filename, name);
 
 	free(verts);
 	free(data.xs);
@@ -180,12 +182,8 @@ Model *load_model(char *filename) {
 	return m;
 }
 
-Model *get_model(char *name) {
-	Model *m, *res = NULL;
-	for(m = resources.models; m; m = m->next) {
-		if(strcmp(m->name, name) == 0)
-			res = m;
-	}
+Model *get_model(const char *name) {
+	Model *res = hashtable_get_string(resources.models, name);
 
 	if(res == NULL)
 		errx(-1,"get_model():\n!- cannot load model '%s'", name);
@@ -215,17 +213,16 @@ void draw_model_p(Model *model) {
 	glMatrixMode(GL_MODELVIEW);
 }
 
-void draw_model(char *name) {
+void draw_model(const char *name) {
 	draw_model_p(get_model(name));
 }
 
-void delete_model(void **models, void *model) {
-	free(((Model *)model)->name);
+void* delete_model(void *name, void *model, void *arg) {
 	free(((Model *)model)->indices);
-
-	delete_element(models, model);
+	free(model);
+	return NULL;
 }
 
-void delete_models(void) { // Does not delete elements from the VBO, so doing this at runtime is leaking VBO space
-	delete_all_elements((void **)&resources.models, delete_model);
+void delete_models(void) { // Does not delete elements from the VBO, so doing this at runtime is leaking VBO spac
+	resources_delete_and_unset_all(resources.models, delete_model, NULL);
 }

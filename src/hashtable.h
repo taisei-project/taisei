@@ -27,6 +27,7 @@ void hashtable_free(Hashtable *ht);
 void* hashtable_get(Hashtable *ht, void *key);
 void hashtable_set(Hashtable *ht, void *key, void *data);
 void hashtable_unset(Hashtable *ht, void *key);
+void hashtable_unset_all(Hashtable *ht);
 void* hashtable_foreach(Hashtable *ht, HTIterCallback callback, void *arg);
 
 bool hashtable_cmpfunc_string(void *str1, void *str2);
@@ -39,6 +40,10 @@ void* hashtable_get_string(Hashtable *ht, const char *key);
 void hashtable_set_string(Hashtable *ht, const char *key, void *data);
 void hashtable_unset_string(Hashtable *ht, const char *key);
 
+void* hashtable_iter_free_data(void *key, void *data, void *arg);
+
 int hashtable_test(void);
+
+void hashtable_print_stringkeys(Hashtable *ht);
 
 #endif

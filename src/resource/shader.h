@@ -25,22 +25,17 @@ typedef struct Uniform {
 
 struct Shader;
 typedef struct Shader {
-	struct Shader *next;
-	struct Shader *prev;
-
-	char *name;
 	GLuint prog;
-
 	int unicount;
 	Uniform *uniforms;
 } Shader;
 
-void load_shader_snippets(char *filename, char *prefix);
-void load_shader_file(char *filename);
-void load_shader(char *vheader, char *fheader, char *vtext, char *ftext, char *name, int nsize);
+void load_shader_snippets(const char *filename, const char *prefix);
+void load_shader_file(const char *filename);
+void load_shader(const char *vheader, const char *fheader, const char *vtext, const char *ftext, const char *name, int nsize);
 Shader *get_shader(const char *name);
 void delete_shaders(void);
 
 void cache_uniforms(Shader *sha);
-int uniloc(Shader *sha, char *name);
+int uniloc(Shader *sha, const char *name);
 #endif
