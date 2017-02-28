@@ -198,12 +198,27 @@ void* hashtable_iter_free_data(void *key, void *data, void *arg) {
 }
 
 void hashtable_print_stringkeys(Hashtable *ht) {
+    int free_buckets = 0;
+    int max_elems = 0;
+
     printf("------ %p:\n", (void*)ht);
     for(size_t i = 0; i < ht->table_size; ++i) {
+        int elems = 0;
+        printf("[bucket %lu] %p\n", (unsigned long)i, (void*)ht->table[i]);
+
         for(HashtableElement *e = ht->table[i]; e; e = e->next) {
-            printf("[HT %lu] %s (%lu): %p\n", (unsigned long)i, (char*)e->key, e->hash, e->data);
+            printf(" -- %s (%lu): %p\n", (char*)e->key, e->hash, e->data);
+            ++elems;
+        }
+
+        if(!elems) {
+            ++free_buckets;
+        } else if(elems > max_elems) {
+            max_elems = elems;
         }
     }
+
+    printf("%i unused buckets, max %i elems per bucket\n", free_buckets, max_elems);
 }
 
 /*
