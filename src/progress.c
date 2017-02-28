@@ -160,6 +160,7 @@ static void progress_read(SDL_RWops *file) {
 	}
 
 	free(buf);
+	SDL_RWclose(vfile);
 }
 
 typedef void (*cmd_preparefunc_t)(size_t*, void**);
@@ -319,6 +320,7 @@ static void progress_write(SDL_RWops *file) {
 	}
 
 	free(buf);
+	SDL_RWclose(file);
 }
 
 #ifdef PROGRESS_UNLOCK_ALL
