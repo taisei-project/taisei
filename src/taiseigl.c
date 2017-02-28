@@ -118,6 +118,12 @@ void load_gl_library(void) {
 #endif
 }
 
+void unload_gl_library(void) {
+#ifndef LINK_TO_LIBGL
+	SDL_GL_UnloadLibrary();
+#endif
+}
+
 void load_gl_functions(void) {
 #ifndef LINK_TO_LIBGL
 #define GLDEF(glname,tsname,typename) tsname = (typename)get_proc_address(#glname);

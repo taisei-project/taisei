@@ -320,7 +320,7 @@ static void progress_write(SDL_RWops *file) {
 	}
 
 	free(buf);
-	SDL_RWclose(file);
+	SDL_RWclose(vfile);
 }
 
 #ifdef PROGRESS_UNLOCK_ALL

@@ -232,5 +232,6 @@ void video_init(void) {
 void video_shutdown(void) {
 	SDL_DestroyWindow(video.window);
 	SDL_GL_DeleteContext(video.glcontext);
+	unload_gl_library();
 	free(video.modes);
 }

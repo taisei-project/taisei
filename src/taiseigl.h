@@ -102,6 +102,7 @@ extern struct glext_s glext;
 void load_gl_library(void);
 void load_gl_functions(void);
 void check_gl_extensions(void);
+void unload_gl_library(void);
 
 #define gluPerspective tsgluPerspective
 void gluPerspective(GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFar);
