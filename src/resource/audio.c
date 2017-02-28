@@ -60,6 +60,7 @@ static void sfx_cfg_noaudio_callback(ConfigIndex idx, ConfigValue v) {
 	config_set_int(idx, v.i);
 
 	if(v.i) {
+		delete_sounds(false);
 		shutdown_sfx();
 		return;
 	}
@@ -69,7 +70,7 @@ static void sfx_cfg_noaudio_callback(ConfigIndex idx, ConfigValue v) {
 		return;
 	}
 
-	load_resources();
+	load_resources(false);
 	set_sfx_volume(config_get_float(CONFIG_SFX_VOLUME));
 }
 
@@ -105,16 +106,39 @@ int init_sfx(void)
 
 void shutdown_sfx(void)
 {
-	if(resources.state & RS_SfxLoaded)
+	if(resources.music)
 	{
-		printf("-- freeing sounds\n");
-		delete_sounds();
-		resources.state &= ~RS_SfxLoaded;
+		warnx("shutdown_sfx() will not shutdown, sounds are still loaded");
+		return;
 	}
 	unload_mixer_if_needed();
 }
 
-Sound *load_sound_or_bgm(char *filename, Sound **dest, sound_type_t type) {
+Sound *get_snd_quiet(Sound *source, char *name)
+{
+	Sound *s, *res = NULL;
+	for(s = source; s; s = s->next) {
+		if(strcmp(s->name, name) == 0)
+			res = s;
+	}
+	return res;
+}
+
+Sound *load_sound_or_bgm(char *filename, Sound **dest, sound_type_t type, bool transient) {
+	char *name = determine_name(filename);
+	if(name == NULL)
+	{
+		errx(-1, "load_sound_or_bgm(): unable to determine name of sound '%s'.", filename);
+		return NULL;
+	}
+	
+	Sound *snd = get_snd_quiet(*dest, name);
+	if (snd != NULL)
+	{
+		warnx("load_sound_or_bgm(): trying to load already loaded sound '%s' from '%s' -> skipped.", name, filename);
+		return snd;
+	}
+
 	Mix_Chunk *sound = NULL;
 	Mix_Music *music = NULL;
 
@@ -138,8 +162,10 @@ Sound *load_sound_or_bgm(char *filename, Sound **dest, sound_type_t type) {
 			errx(-1,"load_sound_or_bgm():\n!- incorrect sound type specified");
 	}
 
-	Sound *snd = create_element((void **)dest, sizeof(Sound));
+	snd = create_element((void **)dest, sizeof(Sound));
 
+	snd->name = name;
+	snd->transient = transient;
 	snd->type = type;
 	if (sound)
 		snd->sound = sound;
@@ -147,41 +173,24 @@ Sound *load_sound_or_bgm(char *filename, Sound **dest, sound_type_t type) {
 		snd->music = music;
 	snd->lastplayframe = 0;
 
-	char *beg = strrchr(filename, '/'); // TODO: check portability of '/'
-	char *end = strrchr(filename, '.');
-	if (!beg || !end)
-		errx(-1,"load_sound_or_bgm():\n!- incorrect filename format");
-
-	++beg; // skip '/' between last path element and file name
-	int sz = end - beg + 1;
-	snd->name = malloc(sz);
-	if (!snd->name)
-		errx(-1,"load_sound_or_bgm():\n!- failed to allocate memory for sound name (is it empty?)");
-	strlcpy(snd->name, beg, sz);
-
-	printf("-- loaded '%s' as %s '%s'\n", filename, ((type==ST_SOUND) ? "SFX" : "BGM"), snd->name);
+	printf("-- loaded '%s' %s as %s '%s'\n", filename, (transient ? "transiently" : "permanently"), ((type==ST_SOUND) ? "SFX" : "BGM"), snd->name);
 
 	return snd;
 }
 
-Sound *load_sound(char *filename) {
-	return load_sound_or_bgm(filename, &resources.sounds, ST_SOUND);
+Sound *load_sound(char *filename, bool transient) {
+	return load_sound_or_bgm(filename, &resources.sounds, ST_SOUND, transient);
 }
 
-Sound *get_snd(Sound *source, char *name) {
-	Sound *s, *res = NULL;
-	for(s = source; s; s = s->next) {
-		if(strcmp(s->name, name) == 0)
-			res = s;
-	}
-
+Sound *get_snd(Sound *source, char *name)
+{
+	Sound *res = get_snd_quiet(source, name);
 	if(res == NULL)
 		warnx("get_snd():\n!- cannot find sound '%s'", name);
-
 	return res;
 }
 
-void play_sound_p(char *name, int unconditional)
+void play_sound_p(char *name, bool unconditional)
 {
 	if(config_get_int(CONFIG_NO_AUDIO) || global.frameskip) return;
 
@@ -213,6 +222,6 @@ void delete_sound(void **snds, void *snd) {
 	delete_element(snds, snd);
 }
 
-void delete_sounds(void) {
-	delete_all_elements((void **)&resources.sounds, delete_sound);
+void delete_sounds(bool transient) {
+	delete_all_or_transient_elements((void **)&resources.sounds, delete_sound, transient);
 }

@@ -113,8 +113,31 @@ static void bad_reference_error(char *filename, char *aux, int n) {
 	errx(-1, "load_model():\n!- OBJ file '%s': Index %d: bad %s index reference\n", filename, n, aux);
 }
 
-Model *load_model(char *filename) {
-	Model *m = create_element((void **)&resources.models, sizeof(Model));
+Model *get_model_quiet(char *name) {
+	Model *m, *res = NULL;
+	for(m = resources.models; m; m = m->next) {
+		if(strcmp(m->name, name) == 0)
+			res = m;
+	}
+	return res;
+}
+
+Model *load_model(char *filename, bool transient) {
+	char *name = determine_name(filename);
+	if(name == NULL)
+	{
+		errx(-1, "load_model(): unable to determine name of model '%s'.", filename);
+		return NULL;
+	}
+
+	Model *m = get_model_quiet(name);
+	if (m != NULL)
+	{
+		warnx("load_model(): trying to load already loaded model '%s' from '%s' -> skipped.", name, filename);
+		return m;
+	}
+
+	m = create_element((void **)&resources.models, sizeof(Model));
 
 	ObjFileData data;
 	unsigned int i;
@@ -122,12 +145,8 @@ Model *load_model(char *filename) {
 	Vertex *verts;
 	unsigned int ioffset = _vbo.offset;
 
-	char *beg = strstr(filename, "models/") + 7;
-	char *end = strrchr(filename, '.');
-
-	int sz = end - beg + 1;
-	m->name = malloc(sz);
-	strlcpy(m->name, beg, sz);
+	m->name = name;
+	m->transient = transient;
 
 	parse_obj(filename, &data);
 
@@ -136,7 +155,6 @@ Model *load_model(char *filename) {
 	m->icount = data.icount;
 
 	verts = calloc(data.icount, sizeof(Vertex));
-
 
 	memset(verts, 0, data.icount*sizeof(Vertex));
 	for(i = 0; i < data.icount; i++) {
@@ -181,15 +199,9 @@ Model *load_model(char *filename) {
 }
 
 Model *get_model(char *name) {
-	Model *m, *res = NULL;
-	for(m = resources.models; m; m = m->next) {
-		if(strcmp(m->name, name) == 0)
-			res = m;
-	}
-
+	Model *res = get_model_quiet(name);
 	if(res == NULL)
 		errx(-1,"get_model():\n!- cannot load model '%s'", name);
-
 	return res;
 }
 
@@ -226,6 +238,6 @@ void delete_model(void **models, void *model) {
 	delete_element(models, model);
 }
 
-void delete_models(void) { // Does not delete elements from the VBO, so doing this at runtime is leaking VBO space
-	delete_all_elements((void **)&resources.models, delete_model);
+void delete_models(bool transient) { // Does not delete elements from the VBO, so doing this at runtime is leaking VBO space
+	delete_all_or_transient_elements((void **)&resources.models, delete_model, transient);
 }

@@ -8,6 +8,7 @@
 #ifndef RESOURCE_H
 #define RESOURCE_H
 
+#include <stdbool.h>
 #include "global.h"
 
 #include "texture.h"
@@ -20,18 +21,7 @@
 
 typedef struct Resources Resources;
 
-typedef enum ResourceState {
-	RS_GfxLoaded = 1,
-	RS_SfxLoaded = 2,
-	RS_ShaderLoaded = 4,
-	RS_ModelsLoaded = 8,
-	RS_BgmLoaded = 16,
-	RS_FontsLoaded = 32,
-} ResourceState;
-
 struct Resources {
-	ResourceState state;
-
 	Texture *textures;
 	Animation *animations;
 	Sound *sounds;
@@ -46,8 +36,8 @@ struct Resources {
 
 extern Resources resources;
 
-void load_resources(void);
-void free_resources(void);
+void load_resources(bool transient);
+void free_resources(bool transient);
 
 void draw_loading_screen(void);
 #endif

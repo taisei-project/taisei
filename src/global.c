@@ -254,6 +254,32 @@ void stralloc(char **dest, const char *src) {
 	}
 }
 
+char *determine_name(const char *filename)
+{
+	char *beg = strrchr(filename, '/');
+	char *end = strrchr(filename, '.');
+	if (beg == NULL || end == NULL)  return NULL;
+	++beg;
+	if (end <= beg) return NULL;
+	int sz = end - beg + 1;
+	char *name = malloc(sz);
+	strlcpy(name, beg, sz);
+	return name;
+}
+
+char *determine_name_with_path(const char *prefix, const char *filename)
+{
+	char *beg = strstr(filename, prefix);
+	char *end = strrchr(filename, '.');
+	if (beg == NULL || end == NULL)  return NULL;
+	beg += strlen(prefix);
+	if (end <= beg) return NULL;
+	int sz = end - beg + 1;
+	char *name = malloc(sz);
+	strlcpy(name, beg, sz);
+	return name;
+}
+
 // Inputdevice-agnostic method of checking whether a game control is pressed.
 // ALWAYS use this instead of SDL_GetKeyState if you need it.
 bool gamekeypressed(KeyIndex key) {

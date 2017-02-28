@@ -15,16 +15,19 @@
 #include "list.h"
 #include "vbo.h"
 
-Texture *get_tex(char *name) {
+Texture *get_tex_quiet(char *name) {
 	Texture *t, *res = NULL;
 	for(t = resources.textures; t; t = t->next) {
 		if(strcmp(t->name, name) == 0)
 			res = t;
 	}
+	return res;
+}
 
+Texture *get_tex(char *name) {
+	Texture *res = get_tex_quiet(name);
 	if(res == NULL)
 		errx(-1,"get_tex():\n!- cannot load texture '%s'", name);
-
 	return res;
 }
 
@@ -54,27 +57,36 @@ void delete_texture(void **texs, void *tex) {
 	delete_element((void **)texs, tex);
 }
 
-void delete_textures(void) {
-	delete_all_elements((void **)&resources.textures, delete_texture);
+void delete_textures(bool transient) {
+	delete_all_or_transient_elements((void **)&resources.textures, delete_texture, transient);
 }
 
-Texture *load_texture(const char *filename) {
-	SDL_Surface *surface = load_png(filename);
+Texture *load_texture(const char *filename, bool transient) {
+	char *name = determine_name_with_path("gfx/", filename);
+	if(name == NULL)
+	{
+		errx(-1, "load_texture(): unable to determine name of texture '%s'.", filename);
+		return NULL;
+	}
+	
+	Texture *texture = get_tex_quiet(name);
+	if (texture != NULL)
+	{
+		warnx("load_texture(): trying to load already loaded texture '%s' from '%s' -> skipped.", name, filename);
+		return texture;
+	}
 
+	SDL_Surface *surface = load_png(filename);
 	if(surface == NULL)
 		errx(-1,"load_texture():\n!- cannot load '%s'", filename);
 
-	Texture *texture = create_element((void **)&resources.textures, sizeof(Texture));
+	texture = create_element((void **)&resources.textures, sizeof(Texture));
 	load_sdl_surf(surface, texture);
 	free(surface->pixels);
 	SDL_FreeSurface(surface);
 
-	char *beg = strstr(filename, "gfx/") + 4;
-	char *end = strrchr(filename, '.');
-
-	int sz = end - beg + 1;
-	texture->name = malloc(sz);
-	strlcpy(texture->name, beg, sz);
+	texture->name = name;
+	texture->transient = transient;
 
 	printf("-- loaded '%s' as '%s'\n", filename, texture->name);
 

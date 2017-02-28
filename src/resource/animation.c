@@ -12,15 +12,31 @@
 
 #include "taisei_err.h"
 
-Animation *init_animation(char *filename) {
-	Animation *buf = create_element((void **)&resources.animations, sizeof(Animation));
+Animation *get_ani_quiet(char *name) {
+	Animation *a, *res = NULL;
+	for(a = resources.animations; a; a = a->next) {
+		if(strcmp(a->name, name) == 0) {
+			res = a;
+		}
+	}
+	return res;
+}
 
-	char *beg = strstr(filename, "gfx/") + 4;
-	char *end = strrchr(filename, '.');
-
-	int sz = end - beg + 1;
-	char *name = malloc(sz);
-	strlcpy(name, beg, sz);
+Animation *init_animation(char *filename, bool transient) {
+	char *name = determine_name(filename);
+	if(name == NULL)
+	{
+		errx(-1, "init_animation(): unable to determine name of animation '%s'.", filename);
+	}
+	
+	Animation *buf = get_ani_quiet(name);
+	if (buf != NULL)
+	{
+		warnx("init_animation(): trying to load already loaded animation '%s' from '%s' -> skipped.", name, filename);
+		return buf;
+	}
+	
+	buf = create_element((void **)&resources.animations, sizeof(Animation));
 
 	char* tok;
 	strtok(name, "_");
@@ -38,12 +54,12 @@ Animation *init_animation(char *filename) {
 	if((tok = strtok(NULL, "_")) == NULL)
 		errx(-1, "init_animation():\n!- bad 'name' in filename '%s'", name);
 
-
+	buf->transient = transient;
 	buf->name = malloc(strlen(tok)+1);
 	memset(buf->name, 0, strlen(tok)+1);
 	strcpy(buf->name, tok);
 
-	buf->tex = load_texture(filename);
+	buf->tex = load_texture(filename, transient);
 	buf->w = buf->tex->w/buf->cols;
 	buf->h = buf->tex->h/buf->rows;
 
@@ -53,17 +69,9 @@ Animation *init_animation(char *filename) {
 }
 
 Animation *get_ani(char *name) {
-	Animation *a;
-	Animation *res = NULL;
-	for(a = resources.animations; a; a = a->next) {
-		if(strcmp(a->name, name) == 0) {
-			res = a;
-		}
-	}
-
+	Animation *res = get_ani_quiet(name);
 	if(res == NULL)
 		errx(-1,"get_ani():\n!- cannot load animation '%s'", name);
-
 	return res;
 }
 
@@ -72,8 +80,8 @@ void delete_animation(void **anis, void *ani) {
 	delete_element(anis, ani);
 }
 
-void delete_animations(void) {
-	delete_all_elements((void **)&resources.animations, delete_animation);
+void delete_animations(bool transient) {
+	delete_all_or_transient_elements((void **)&resources.animations, delete_animation, transient);
 }
 
 void draw_animation(float x, float y, int row, char *name) {
@@ -114,4 +122,3 @@ void draw_animation_p(float x, float y, int row, Animation *ani) {
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
 }
-

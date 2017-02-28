@@ -8,6 +8,7 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
+#include <stdbool.h>
 #include <SDL.h>
 #include "taiseigl.h"
 #include "color.h"
@@ -17,6 +18,7 @@ typedef struct Texture Texture;
 struct Texture {
 	Texture *next;
 	Texture *prev;
+	bool transient;
 
 	int w, h;
 	int truew, trueh;
@@ -31,9 +33,9 @@ Texture *prefix_get_tex(char *name, char *prefix);
 SDL_Surface *load_png(const char *filename);
 
 void delete_texture(void **texs, void *tex);
-void delete_textures(void);
+void delete_textures(bool transient);
 
-Texture *load_texture(const char *filename);
+Texture *load_texture(const char *filename, bool transient);
 void load_sdl_surf(SDL_Surface *surface, Texture *texture);
 void free_texture(Texture *tex);
 

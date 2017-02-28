@@ -15,6 +15,7 @@ struct Animation;
 typedef struct Animation {
 	struct Animation *next;
 	struct Animation *prev;
+	bool transient;
 
 	int rows;
 	int cols;
@@ -27,9 +28,9 @@ typedef struct Animation {
 	Texture *tex;
 } Animation;
 
-Animation *init_animation(char *filename);
+Animation *init_animation(char *filename, bool transient);
 Animation *get_ani(char *name);
-void delete_animations(void);
+void delete_animations(bool transient);
 void draw_animation(float x, float y, int row, char *name);
 void draw_animation_p(float x, float y, int row, Animation *ani);
 

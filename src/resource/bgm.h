@@ -28,7 +28,7 @@ struct current_bgm_t {
 
 extern struct current_bgm_t current_bgm;
 
-Sound *load_bgm(char *filename);
+Sound *load_bgm(char *filename, bool transient);
 
 void start_bgm(char *name);
 void stop_bgm(void);
@@ -41,7 +41,7 @@ void shutdown_bgm(void);
 
 void load_bgm_descriptions(const char *path);
 
-void delete_music(void);
+void delete_music(bool transient);
 
 void set_bgm_volume(float gain);
 

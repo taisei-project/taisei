@@ -22,11 +22,8 @@ void taisei_shutdown(void) {
 	progress_save();
 	printf("\nshutdown:\n");
 
-	if(!config_get_int(CONFIG_NO_AUDIO)) shutdown_sfx();
-	if(!config_get_int(CONFIG_NO_MUSIC)) shutdown_bgm();
-
 	free_all_refs();
-	free_resources();
+	free_resources(false);
 	video_shutdown();
 	gamepad_shutdown();
 	stage_free_array();
@@ -146,7 +143,7 @@ int main(int argc, char **argv) {
 	// Order DOES matter: init_global, then sfx/bgm, then load_resources.
 	init_sfx();
 	init_bgm();
-	load_resources();
+	load_resources(false);
 
 	set_transition(TransLoader, 0, FADE_TIME*2);
 

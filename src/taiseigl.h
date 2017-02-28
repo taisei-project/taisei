@@ -94,7 +94,7 @@ thisfile.write_text(text)
 
 #include <SDL_platform.h>
 #include <SDL_opengl.h>
-#include <SDL_opengl_glext.h>
+#include <GL/glext.h>
 
 struct glext_s; // defined at the very bottom
 extern struct glext_s glext;
@@ -595,9 +595,9 @@ struct glext_s {
         char minor;
     } version;
 
-    int draw_instanced: 1;
-    int EXT_draw_instanced: 1;
-    int ARB_draw_instanced: 1;
+    unsigned int draw_instanced: 1;
+    unsigned int EXT_draw_instanced: 1;
+    unsigned int ARB_draw_instanced: 1;
 
     tsglDrawArraysInstanced_ptr DrawArraysInstanced;
 };

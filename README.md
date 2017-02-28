@@ -54,12 +54,12 @@ your build of SDL2_mixer supports these formats.
 
 Complete music pack consists of 16 bgm\_\*.(ogg/wav/flac) files, where ‘\*’ mean:
 ```
-	credits		BGM for credits screen
-	ending		BGM for ending
-	gameover	BGM for game over screen
-	menu		BGM for menus (excluding in-game menu which pauses BGM)
-	stageN		N=1..6, standard stage theme
-	stageNboss	N=1..6, boss theme for a stage
+	credits			BGM for credits screen
+	ending			BGM for ending
+	gameover		BGM for game over screen
+	menu			BGM for menus (excluding in-game menu which pauses BGM)
+	stageN/stageN		N=1..6, standard stage theme
+	stageN/stageNboss	N=1..6, boss theme for a stage
 ```
 
 If you want to specify stage/boss theme names to be shown during gameplay, you

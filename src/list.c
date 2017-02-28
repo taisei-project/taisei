@@ -16,6 +16,12 @@ typedef struct {
 	void *prev;
 } List;
 
+typedef struct {
+	void *next;
+	void *prev;
+	bool transient;
+} ListEx;
+
 void *_FREEREF;
 
 void *create_element(void **dest, int size) {
@@ -60,6 +66,33 @@ void delete_all_elements(void **dest, void (callback)(void **, void *)) {
 	}
 
 	*dest = NULL;
+}
+
+void delete_all_or_transient_elements(void **dest, void (callback)(void **, void *), bool transient)
+{
+	if (transient)
+	{
+		int freed = 0;
+		void *e = *dest;
+		void *tmp;
+		bool need_free;
+
+		while(e != 0) {
+			need_free = ((ListEx *)e)->transient;
+			tmp = e;
+			e = ((List *)e)->next;
+			if (need_free)
+			{
+				++freed;
+				callback(dest, tmp);
+			}
+		}
+		printf(" (%d freed)", freed);
+	}
+	else
+	{
+		delete_all_elements(dest, callback);
+	}
 }
 
 #ifdef DEBUG

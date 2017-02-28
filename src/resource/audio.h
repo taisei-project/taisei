@@ -8,6 +8,8 @@
 #ifndef AUDIO_H
 #define AUDIO_H
 
+#include <stdbool.h>
+
 #ifdef HAVE_MIXER
 #include <SDL_mixer.h>
 #else
@@ -27,6 +29,7 @@ struct Sound;
 typedef struct Sound {
 	struct Sound *next;
 	struct Sound *prev;
+	bool transient;
 
 	int lastplayframe;
 	sound_type_t type;
@@ -37,18 +40,18 @@ typedef struct Sound {
 	char *name;
 } Sound;
 
-Sound *load_sound(char *filename);
-Sound *load_sound_or_bgm(char *filename, Sound **dest, sound_type_t type);
+Sound *load_sound(char *filename, bool transient);
+Sound *load_sound_or_bgm(char *filename, Sound **dest, sound_type_t type, bool transient);
 
-#define play_sound(name) play_sound_p(name, 0);
-#define play_ui_sound(name) play_sound_p(name, 1);
+#define play_sound(name) play_sound_p(name, false);
+#define play_ui_sound(name) play_sound_p(name, true);
 
-void play_sound_p(char *name, int unconditional);
+void play_sound_p(char *name, bool unconditional);
 
 Sound *get_snd(Sound *source, char *name);
 
 void delete_sound(void **snds, void *snd);
-void delete_sounds(void);
+void delete_sounds(bool transient);
 
 void set_sfx_volume(float gain);
 
