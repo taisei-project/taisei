@@ -45,5 +45,6 @@ void* hashtable_iter_free_data(void *key, void *data, void *arg);
 int hashtable_test(void);
 
 void hashtable_print_stringkeys(Hashtable *ht);
+size_t hashtable_get_approx_overhead(Hashtable *ht);
 
 #endif

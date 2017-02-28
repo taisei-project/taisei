@@ -21,8 +21,6 @@
 
 typedef struct Resources Resources;
 
-#define RES_HASHTABLE_SIZE 64
-
 typedef enum ResourceState {
 	RS_GfxLoaded = 1,
 	RS_SfxLoaded = 2,

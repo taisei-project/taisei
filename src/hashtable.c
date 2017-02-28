@@ -1,3 +1,4 @@
+
 /*
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
@@ -197,9 +198,27 @@ void* hashtable_iter_free_data(void *key, void *data, void *arg) {
     return NULL;
 }
 
+/*
+ *  Diagnostic functions
+ */
+
+size_t hashtable_get_approx_overhead(Hashtable *ht) {
+    size_t o = sizeof(Hashtable) + sizeof(HashtableElement*) * ht->table_size;
+
+    for(size_t i = 0; i < ht->table_size; ++i) {
+        for(HashtableElement *e = ht->table[i]; e; e = e->next) {
+            o += sizeof(HashtableElement);
+        }
+    }
+
+    return o;
+}
+
 void hashtable_print_stringkeys(Hashtable *ht) {
     int free_buckets = 0;
     int max_elems = 0;
+    int total = 0;
+    int collisions = 0;
 
     printf("------ %p:\n", (void*)ht);
     for(size_t i = 0; i < ht->table_size; ++i) {
@@ -209,6 +228,11 @@ void hashtable_print_stringkeys(Hashtable *ht) {
         for(HashtableElement *e = ht->table[i]; e; e = e->next) {
             printf(" -- %s (%lu): %p\n", (char*)e->key, e->hash, e->data);
             ++elems;
+            ++total;
+        }
+
+        if(elems > 1) {
+            collisions += elems - 1;
         }
 
         if(!elems) {
@@ -218,11 +242,13 @@ void hashtable_print_stringkeys(Hashtable *ht) {
         }
     }
 
-    printf("%i unused buckets, max %i elems per bucket\n", free_buckets, max_elems);
+    printf("%i total elements, %i unused buckets, %i collisions, max %i elems per bucket, %lu approx overhead\n",
+            total, free_buckets, collisions, max_elems,
+            (unsigned long int)hashtable_get_approx_overhead(ht));
 }
 
 /*
- *  Misc convenience functions
+ *  Testing
  */
 
 // #define HASHTABLE_TEST
