@@ -16,6 +16,7 @@
 #include "gamepad.h"
 #include "resource/bgm.h"
 #include "progress.h"
+#include "hashtable.h"
 
 void taisei_shutdown(void) {
 	config_save(CONFIG_FILE);
@@ -64,6 +65,10 @@ int run_tests(void) {
 	}
 
 	if(zrwops_test()) {
+		return 1;
+	}
+
+	if(hashtable_test()) {
 		return 1;
 	}
 

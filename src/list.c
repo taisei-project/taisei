@@ -62,6 +62,19 @@ void delete_all_elements(void **dest, void (callback)(void **, void *)) {
 	*dest = NULL;
 }
 
+void delete_all_elements_witharg(void **dest, void (callback)(void **, void *, void *), void *arg) {
+	void *e = *dest;
+	void *tmp;
+
+	while(e != 0) {
+		tmp = e;
+		e = ((List *)e)->next;
+		callback(dest, tmp, arg);
+	}
+
+	*dest = NULL;
+}
+
 #ifdef DEBUG
 	// #define DEBUG_REFS
 #endif
