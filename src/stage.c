@@ -24,13 +24,14 @@
 static size_t numstages = 0;
 StageInfo *stages = NULL;
 
-static void add_stage(uint16_t id, StageProcs *procs, StageType type, const char *title, const char *subtitle, AttackInfo *spell, Difficulty diff, Color *titleclr, Color *bosstitleclr) {
+static void add_stage(uint16_t id, uint16_t resource_id, StageProcs *procs, StageType type, const char *title, const char *subtitle, AttackInfo *spell, Difficulty diff, Color *titleclr, Color *bosstitleclr) {
 	++numstages;
 	stages = realloc(stages, numstages * sizeof(StageInfo));
 	StageInfo *stg = stages + (numstages - 1);
 	memset(stg, 0, sizeof(StageInfo));
 
 	stg->id = id;
+	stg->resource_id = resource_id;
 	stg->procs = procs;
 	stg->type = type;
 	stralloc(&stg->title, title);
@@ -57,19 +58,19 @@ static void add_stage(uint16_t id, StageProcs *procs, StageType type, const char
 }
 
 static void end_stages() {
-	add_stage(0, NULL, 0, NULL, NULL, NULL, 0, NULL, NULL);
+	add_stage(0, 0, NULL, 0, NULL, NULL, NULL, 0, NULL, NULL);
 }
 
 void stage_init_array(void) {
 	int spellnum = 0;
 
-//           id  procs          type         title      subtitle                       spells         diff   titleclr      bosstitleclr
-	add_stage(1, &stage1_procs, STAGE_STORY, "Stage 1", "Misty Lake",                  stage1_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
-	add_stage(2, &stage2_procs, STAGE_STORY, "Stage 2", "Walk Along the Border",       stage2_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
-	add_stage(3, &stage3_procs, STAGE_STORY, "Stage 3", "Through the Tunnel of Light", stage3_spells, D_Any, rgb(0, 0, 0), rgb(0, 0, 0));
-	add_stage(4, &stage4_procs, STAGE_STORY, "Stage 4", "Forgotten Mansion",           stage4_spells, D_Any, rgb(0, 0, 0), rgb(1, 1, 1));
-	add_stage(5, &stage5_procs, STAGE_STORY, "Stage 5", "Climbing the Tower of Babel", stage5_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
-	add_stage(6, &stage6_procs, STAGE_STORY, "Stage 6", "Roof of the World",           stage6_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
+//	          id r_id procs         type          title      subtitle                      spells         diff   titleclr      bosstitleclr
+	add_stage(1, 1,  &stage1_procs, STAGE_STORY, "Stage 1", "Misty Lake",                  stage1_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
+	add_stage(2, 2,  &stage2_procs, STAGE_STORY, "Stage 2", "Walk Along the Border",       stage2_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
+	add_stage(3, 3,  &stage3_procs, STAGE_STORY, "Stage 3", "Through the Tunnel of Light", stage3_spells, D_Any, rgb(0, 0, 0), rgb(0, 0, 0));
+	add_stage(4, 4,  &stage4_procs, STAGE_STORY, "Stage 4", "Forgotten Mansion",           stage4_spells, D_Any, rgb(0, 0, 0), rgb(1, 1, 1));
+	add_stage(5, 5,  &stage5_procs, STAGE_STORY, "Stage 5", "Climbing the Tower of Babel", stage5_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
+	add_stage(6, 6,  &stage6_procs, STAGE_STORY, "Stage 6", "Roof of the World",           stage6_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
 
 	// generate spellpractice stages
 
@@ -93,7 +94,7 @@ void stage_init_array(void) {
 					strcat(subtitle, " ~ ");
 					strcat(subtitle, postfix);
 
-					add_stage(id, s->procs->spellpractice_procs, STAGE_SPELL, title, subtitle, a, diff, NULL, NULL);
+					add_stage(id, s->id, s->procs->spellpractice_procs, STAGE_SPELL, title, subtitle, a, diff, NULL, NULL);
 					s = stages + i; // stages just got realloc'd, so we must update the pointer
 				}
 			}
@@ -190,6 +191,9 @@ static void stage_start(StageInfo *stage) {
 	global.game_over = 0;
 	global.nostagebg = false;
 	global.shake_view = 0;
+
+	// relies on already initialized global.stage->resource_id
+	load_resources(true);
 
 	global.fps.stagebg_fps = global.fps.show_fps = FPS;
 	global.fps.fpstime = SDL_GetTicks();
@@ -647,6 +651,7 @@ static void stage_free(void) {
 		free_boss(global.boss);
 		global.boss = NULL;
 	}
+	free_resources(true);
 }
 
 static void stage_finalize(void *arg) {

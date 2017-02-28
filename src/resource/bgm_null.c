@@ -42,7 +42,7 @@ void load_bgm_descriptions(const char *path) {
     return;
 }
 
-void delete_music(void) {
+void delete_music(bool transient) {
     return;
 }
 

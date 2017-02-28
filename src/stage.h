@@ -58,6 +58,7 @@ struct StageProcs {
 
 typedef struct StageInfo {
 	uint16_t id; // must match type of ReplayStage.stage in replay.h
+	uint16_t resource_id; // id of "base" stage (for example, spell stage of boss of N-th stage should have N here, as N-th stage itself)
 	StageProcs *procs;
 	StageType type;
 	char *title;

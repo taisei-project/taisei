@@ -54,7 +54,7 @@ Vector **stage4_fountain_pos(Vector pos, float maxrange) {
 
 void stage4_fountain_draw(Vector pos) {
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, get_tex("stage2/border")->gltex);
+	glBindTexture(GL_TEXTURE_2D, get_tex("stage4/border")->gltex);
 
 	glPushMatrix();
 	glTranslatef(pos[0], pos[1], pos[2]);

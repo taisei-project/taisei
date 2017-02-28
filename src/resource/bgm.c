@@ -11,6 +11,7 @@
 #include "list.h"
 #include "taisei_err.h"
 #include "bgm.h"
+#include "paths/native.h"
 
 struct current_bgm_t current_bgm = { .name = NULL };
 
@@ -20,6 +21,7 @@ static void bgm_cfg_nomusic_callback(ConfigIndex idx, ConfigValue v) {
 	config_set_int(idx, v.i);
 
 	if(v.i) {
+		delete_music(false);
 		shutdown_bgm();
 		return;
 	}
@@ -29,7 +31,7 @@ static void bgm_cfg_nomusic_callback(ConfigIndex idx, ConfigValue v) {
 		return;
 	}
 
-	load_resources();
+	load_resources(false);
 	set_bgm_volume(config_get_float(CONFIG_BGM_VOLUME));
 	start_bgm("bgm_menu"); // FIXME: start BGM that's supposed to be playing in the current context
 }
@@ -55,13 +57,12 @@ int init_bgm(void)
 
 void shutdown_bgm(void)
 {
-	current_bgm.name = NULL;
-	if(resources.state & RS_BgmLoaded)
+	if(resources.music)
 	{
-		printf("-- freeing music\n");
-		delete_music();
-		resources.state &= ~RS_BgmLoaded;
+		warnx("shutdown_bgm() will not shutdown, music is still loaded");
+		return;
 	}
+	current_bgm.name = NULL;
 	unload_mixer_if_needed();
 }
 
@@ -81,14 +82,24 @@ void delete_bgm_description(void **descs, void *desc) {
 void load_bgm_descriptions(const char *path) {
 	const char *fname = "/bgm.conf";
 
-	char *fullname = malloc(strlen(path)+strlen(fname)+1);
-	if (fullname == NULL) return;
-	strcpy(fullname, path);
+	char *fullname = malloc(strlen(get_prefix())+strlen(path)+strlen(fname)+1);
+	if (fullname == NULL)
+	{
+		warnx("load_bgm_descriptions():\n!- malloc failure.");
+		return;
+	}
+	strcpy(fullname, get_prefix());
+	strcat(fullname, path);
 	strcat(fullname, fname);
+	printf("-- loading BGM descriptions from '%s'.", fullname);
 
 	FILE *fp = fopen(fullname, "rt");
 	free(fullname);
-	if (fp == NULL) return;
+	if (fp == NULL)
+	{
+		warnx("load_bgm_descriptions():\n!- can't open file.");
+		return;
+	}
 
 	char line[256];
 	while(fgets(line, sizeof(line), fp))
@@ -100,7 +111,7 @@ void load_bgm_descriptions(const char *path) {
 		if    ((rem = strchr(line,' ' )) == NULL)
 		{
 			if (strlen(line) > 0)
-				warnx("load_bgm_description():\n!- illegal string format. See README.");
+				warnx("load_bgm_descriptions():\n!- illegal string format. See README.");
 			continue;
 		}
 
@@ -113,7 +124,7 @@ void load_bgm_descriptions(const char *path) {
 		if (!desc->name || !desc->value)
 		{
 			delete_bgm_description((void**)resources.bgm_descriptions, desc);
-			warnx("load_bgm_description():\n!- strdup() failed");
+			warnx("load_bgm_descriptions():\n!- strdup() failed");
 			continue;
 		}
 		strcpy(desc->value, "BGM: ");
@@ -125,8 +136,8 @@ void load_bgm_descriptions(const char *path) {
 	return;
 }
 
-Sound *load_bgm(char *filename) {
-	return load_sound_or_bgm(filename, &resources.music, ST_MUSIC);
+Sound *load_bgm(char *filename, bool transient) {
+	return load_sound_or_bgm(filename, &resources.music, ST_MUSIC, transient);
 }
 
 void start_bgm(char *name) {
@@ -158,7 +169,11 @@ void start_bgm(char *name) {
 		}
 	}
 
-	if(Mix_PausedMusic()) Mix_ResumeMusic(); // Unpause music if paused
+	if(Mix_PausedMusic())
+	{
+		printf("BGM resumed.\n");
+		Mix_ResumeMusic(); // Unpause music if paused
+	}
 	if(Mix_PlayingMusic()) return; // Do nothing if music already playing (or was just unpaused)
 
 	if(Mix_PlayMusic(current_bgm.data->music, -1) == -1) // Start playing otherwise
@@ -217,7 +232,10 @@ void set_bgm_volume(float gain)
 	Mix_VolumeMusic(gain * MIX_MAX_VOLUME);
 }
 
-void delete_music(void) {
-	delete_all_elements((void **)&resources.bgm_descriptions, delete_bgm_description);
-	delete_all_elements((void **)&resources.music, delete_sound);
+void delete_music(bool transient) {
+	if(!transient)
+	{
+		delete_all_elements((void **)&resources.bgm_descriptions, delete_bgm_description);
+	}
+	delete_all_or_transient_elements((void **)&resources.music, delete_sound, transient);
 }

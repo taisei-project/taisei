@@ -189,7 +189,7 @@ void load_shader_snippets(char *filename, char *prefix) {
 		strlcat(nbuf+prefixlen, name, nend-name+1);
 		nbuf[nend-name+prefixlen] = 0;
 
-		load_shader(get_snippet_header(), NULL, vtext, ftext, nbuf, nend-name+prefixlen+1);
+		load_shader(get_snippet_header(), NULL, vtext, ftext, nbuf, nend-name+prefixlen+1, false);
 		printf("--- loaded snippet as shader '%s'\n", nbuf);
 
 		free(nbuf);
@@ -204,29 +204,25 @@ void load_shader_snippets(char *filename, char *prefix) {
 	free(text);
 }
 
-void load_shader_file(char *filename) {
+void load_shader_file(char *filename, bool transient) {
 	int size;
 	char *text, *vtext, *ftext, *delim;
-	char *beg, *end, *name;
+	char *name = determine_name(filename);
+	if(name == NULL)
+		errx(-1, "load_shader_file(): unable to determine name of shader '%s'.", filename);
 
 	text = read_all(filename, &size);
 
 	vtext = text;
 	delim = strstr(text, DELIM);
 	if(delim == NULL)
-		errx(-1, "Expected '%s' delimiter.", DELIM);
+		errx(-1, "load_shader_file(): Expected '%s' delimiter.", DELIM);
 
 	*delim = 0;
 	ftext = delim + DELIM_SIZE;
 
-	beg = strstr(filename, "shader/") + 7;
-	end = strrchr(filename, '.');
-
-	int sz = end - beg + 1;
-	name = malloc(sz);
-	strlcpy(name, beg, sz);
-
-	load_shader(NULL, NULL, vtext, ftext, name, sz);
+	
+	load_shader(NULL, NULL, vtext, ftext, name, strlen(name) + 1, transient);
 
 	printf("-- loaded '%s' as '%s'\n", filename, name);
 
@@ -234,8 +230,15 @@ void load_shader_file(char *filename) {
 	free(text);
 }
 
-void load_shader(char *vheader, char *fheader, char *vtext, char *ftext, char *name, int nsize) {
-	Shader *sha = create_element((void **)&resources.shaders, sizeof(Shader));
+void load_shader(char *vheader, char *fheader, char *vtext, char *ftext, char *name, int nsize, bool transient) {
+	Shader *sha = get_shader(name);
+	if (sha != NULL)
+	{
+		warnx("load_shader(): trying to load already loaded shader '%s' -> skipped.", name);
+		return;
+	}
+
+	sha = create_element((void **)&resources.shaders, sizeof(Shader));
 	GLuint vshaderobj;
 	GLuint fshaderobj;
 
@@ -275,6 +278,7 @@ void load_shader(char *vheader, char *fheader, char *vtext, char *ftext, char *n
 	print_program_info_log(sha->prog);
 
 	sha->name = malloc(nsize);
+	sha->transient = transient;
 	strlcpy(sha->name, name, nsize);
 
 	cache_uniforms(sha);
@@ -336,6 +340,6 @@ void delete_shader(void **shas, void *sha) {
 	delete_element(shas, sha);
 }
 
-void delete_shaders(void) {
-	delete_all_elements((void **)&resources.shaders, delete_shader);
+void delete_shaders(bool transient) {
+	delete_all_or_transient_elements((void **)&resources.shaders, delete_shader, transient);
 }

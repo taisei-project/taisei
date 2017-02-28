@@ -160,6 +160,8 @@ double approach(double v, double t, double d);
 double psin(double);
 bool strendswith(const char *s, const char *e);
 void stralloc(char **dest, const char *src);
+char *determine_name(const char *filename);
+char *determine_name_with_path(const char *prefix, const char *filename);
 bool gamekeypressed(KeyIndex key);
 int getenvint(const char *v);
 

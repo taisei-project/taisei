@@ -8,6 +8,8 @@
 #ifndef LIST_H
 #define LIST_H
 
+#include <stdbool.h>
+
 /* I got annoyed of the code doubling caused by simple linked lists,
  * so i do some void-magic here to save the lines.
  */
@@ -15,6 +17,7 @@
 void *create_element(void **dest, int size);
 void delete_element(void **dest, void *e);
 void delete_all_elements(void **dest, void (callback)(void **, void *));
+void delete_all_or_transient_elements(void **dest, void (callback)(void **, void *), bool transient);
 
 typedef struct {
 	void *ptr;

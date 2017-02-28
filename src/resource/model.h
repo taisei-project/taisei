@@ -8,6 +8,7 @@
 #ifndef MODEL_H
 #define MODEL_H
 
+#include <stdbool.h>
 #include "matrix.h"
 
 typedef int IVector[3];
@@ -33,6 +34,7 @@ typedef struct Model Model;
 struct Model {
 	struct Model *next;
 	struct Model *prev;
+	bool transient;
 
 	char *name;
 
@@ -42,12 +44,12 @@ struct Model {
 	int fverts;
 };
 
-Model *load_model(char *filename);
+Model *load_model(char *filename, bool transient);
 
 Model *get_model(char *name);
 
 void draw_model_p(Model *model);
 void draw_model(char *name);
-void delete_models(void); // Does not delete elements from the VBO, so doing this at runtime is leaking VBO space
+void delete_models(bool transient); // Does not delete elements from the VBO, so doing this at runtime is leaking VBO space
 
 #endif

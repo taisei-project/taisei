@@ -6,7 +6,7 @@ Sound* load_sound(char *filename) {
     return NULL;
 }
 
-Sound* load_sound_or_bgm(char *filename, Sound **dest, sound_type_t type) {
+Sound* load_sound_or_bgm(char *filename, Sound **dest, sound_type_t type, bool transient) {
     return NULL;
 }
 
@@ -22,7 +22,7 @@ void delete_sound(void **snds, void *snd) {
     return;
 }
 
-void delete_sounds(void) {
+void delete_sounds(bool transient) {
     return;
 }
 
