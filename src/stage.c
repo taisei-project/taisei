@@ -488,10 +488,12 @@ static void stage_draw(StageInfo *stage) {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		video_set_viewport();
 		glPushMatrix();
-		if(global.shake_view)
+
+		if(global.shake_view) {
 			glTranslatef(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames+3),0);
 			glScalef(1+2*global.shake_view/VIEWPORT_W,1+2*global.shake_view/VIEWPORT_H,1);
 			glTranslatef(-global.shake_view,-global.shake_view,0);
+		}
 
 		draw_fbo_viewport(&resources.fsec);
 
