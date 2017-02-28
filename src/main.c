@@ -25,6 +25,7 @@ void taisei_shutdown(void) {
 	if(!config_get_int(CONFIG_NO_AUDIO)) shutdown_sfx();
 	if(!config_get_int(CONFIG_NO_MUSIC)) shutdown_bgm();
 
+	free_all_refs();
 	free_resources();
 	video_shutdown();
 	gamepad_shutdown();

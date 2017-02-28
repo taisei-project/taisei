@@ -785,6 +785,7 @@ void stage_loop(StageInfo *stage) {
 	stage->procs->end();
 	stage_free();
 	tsrand_switch(&global.rand_visual);
+	free_all_refs();
 }
 
 static void draw_title(int t, StageInfo *info, Alignment al, int x, int y, const char *text, TTF_Font *font, Color *color) {
