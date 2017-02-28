@@ -396,15 +396,80 @@ void hina_wheel(Boss *h, int time) {
 	}
 }
 
+int hina_monty_slave(Enemy *s, int time) {
+	if(time < 0) {
+		return 1;
+	}
+
+	if(time > 60 && !(time % (int)(max(2, (120 - 0.5 * time))))) {
+		create_projectile2c("crystal", s->pos, rgb(0.5 + 0.5 * psin(time*0.2), 0.3, 1.0 - 0.5 * psin(time*0.2)),
+							asymptotic, 5*I + 1 * (sin(time) + I * cos(time)), 4);
+
+		create_projectile2c("crystal", s->pos, rgb(0.5 + 0.5 * psin(time*0.2), 0.3, 1.0 - 0.5 * psin(time*0.2)),
+							asymptotic, -0.5*I + 1 * (sin(time) + I * cos(time)), 4);
+	}
+
+	return 1;
+}
+
+void hina_monty_slave_draw(Enemy *s, int time) {
+	Swirl(s, time);
+
+	if(!config_get_int(CONFIG_NO_SHADER)) {
+		Texture *soul = get_tex("proj/soul");
+		Shader *shader = get_shader("bullet_color");
+		double scale = fabs(swing(clamp(time / 60.0, 0, 1), 3)) * 1.25;
+
+		float clr1[] = {1.0, 0.0, 0.0, 1.0};
+		float clr2[] = {0.0, 0.0, 1.0, 1.0};
+		float clr3[] = {psin(time*0.05), 0.0, 1.0 - psin(time*0.05), 1.0};
+
+		glUseProgram(shader->prog);
+
+		glPushMatrix();
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+
+		glTranslatef(creal(s->pos), cimag(s->pos), 0);
+
+		glUniform4fv(uniloc(shader, "color"), 1, clr1);
+		glPushMatrix();
+		glRotatef(time, 0, 0, 1);
+		glScalef(scale * (0.6 + 0.6 * psin(time*0.1)), scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), 0);
+		draw_texture_p(0, 0, soul);
+		glPopMatrix();
+
+		glUniform4fv(uniloc(shader, "color"), 1, clr2);
+		glPushMatrix();
+		glRotatef(time, 0, 0, 1);
+		glScalef(scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0);
+		draw_texture_p(0, 0, soul);
+		glPopMatrix();
+
+		glUniform4fv(uniloc(shader, "color"), 1, clr3);
+		glPushMatrix();
+		glRotatef(-time, 0, 0, 1);
+		// glScalef(scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0);
+		glScalef(scale, scale, 0);
+		draw_texture_p(0, 0, soul);
+		glPopMatrix();
+
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+		glPopMatrix();
+
+		glUseProgram(0);
+	}
+}
+
 void hina_monty(Boss *h, int time) {
 	int t = time % 720;
 	TIMER(&t);
 
-	static short boss_pos, bad_pos, good_pos, plr_pos;
+	static short slave_pos, bad_pos, good_pos, plr_pos;
 	static int cwidth = VIEWPORT_W / 3.0;
 	static complex targetpos;
 
 	if(time == EVENT_DEATH) {
+		killall(global.enemies);
 		return;
 	}
 
@@ -423,12 +488,26 @@ void hina_monty(Boss *h, int time) {
 			create_laserline_ab(x, x + VIEWPORT_H*I, 15, 30, 60, rgb(0.3, 1.0, 1.0));
 			create_laserline_ab(x, x + VIEWPORT_H*I, 20, 240, 600, rgb(1.0, 0.3, 1.0));
 		}
+
+		if(global.enemies)
+			global.enemies->hp = 0;
 	}
 
 	AT(120) {
-		do boss_pos = tsrand() % 3; while(boss_pos == plr_pos || boss_pos == good_pos);
-		while(bad_pos == boss_pos || bad_pos == good_pos) bad_pos = tsrand() % 3;
-		targetpos = cwidth * (0.5 + boss_pos) + VIEWPORT_H/2.0*I - 200.0*I;
+		do slave_pos = tsrand() % 3; while(slave_pos == plr_pos || slave_pos == good_pos);
+		while(bad_pos == slave_pos || bad_pos == good_pos) bad_pos = tsrand() % 3;
+
+		complex o = cwidth * (0.5 + slave_pos) + VIEWPORT_H/2.0*I - 200.0*I;
+
+		create_laserline_ab(h->pos, o, 15, 30, 60, rgb(1.0, 0.3, 0.3));
+	}
+
+	AT(140) {
+		create_enemy4c(cwidth * (0.5 + slave_pos) + VIEWPORT_H/2.0*I - 200.0*I, ENEMY_IMMUNE, hina_monty_slave_draw, hina_monty_slave, 0, 0, 0, 1);
+	}
+
+	AT(190) {
+		targetpos = cwidth * (0.5 + good_pos) + VIEWPORT_H/2.0*I - 200.0*I;
 	}
 
 	FROM_TO(210, 390, 60) {
@@ -446,7 +525,7 @@ void hina_monty(Boss *h, int time) {
 		const int burst_dur = (cnt - 1) * step;
 		const int cycle_dur = burst_dur;
 		const int start = 210;
-		const int end = 600;
+		const int end = 540;
 		const int ncycles = (end - start) / cycle_dur;
 
 		FROM_TO_INT(start, start + cycle_dur * ncycles - 1, cycle_dur, burst_dur, step) {
@@ -465,10 +544,10 @@ void hina_monty(Boss *h, int time) {
 			if(p >= 0.5) {
 				p = 1.0 - (1.0 - p) * 1.25;
 			} else {
-				p = p * 1.25;
+				p = p * 1.2;
 			}
 
-			complex o = cwidth * (boss_pos + p + 0.5/(cnt-1)) + (cimag(h->pos)) * I;
+			complex o = cwidth * (p + 0.5/(cnt-1) - 0.5) + h->pos;
 			create_projectile2c("card", o, rgb(c * 0.8, 0, (1 - c) * 0.8), accelerated, -2.5*I, 0.05*I);
 		}
 	}
@@ -481,11 +560,13 @@ void hina_monty(Boss *h, int time) {
 		targetpos = cwidth * (0.5 + (int)(creal(global.plr.pos) / cwidth)) + VIEWPORT_H/2.0*I;
 	}
 
+	/*
 	FROM_TO(600, 720, 1) {
 		complex opos = h->pos;
 		(_i % 2 ? hina_amulet : hina_wheel)(h, t);
 		h->pos = opos;
 	}
+	*/
 
 	GO_TO(h, targetpos, 0.04);
 }
