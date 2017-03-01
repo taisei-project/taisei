@@ -244,6 +244,10 @@ bool bind_bgmvol_dependence(void) {
 	return !config_get_int(CONFIG_NO_MUSIC);
 }
 
+bool bind_resizable_dependence(void) {
+	return !config_get_int(CONFIG_FULLSCREEN);
+}
+
 int bind_saverpy_get(void *b) {
 	int v = config_get_int(((OptionBinding*)b)->configentry);
 
@@ -273,7 +277,10 @@ void destroy_options_menu(MenuData *m) {
 			if(bind->selected != -1) {
 				VideoMode *m = video.modes + bind->selected;
 
-				video_setmode(m->width, m->height, config_get_int(CONFIG_FULLSCREEN));
+				video_setmode(m->width, m->height,
+					config_get_int(CONFIG_FULLSCREEN),
+					config_get_int(CONFIG_VID_RESIZABLE)
+				);
 
 				config_set_int(CONFIG_VID_WIDTH, video.intended.width);
 				config_set_int(CONFIG_VID_HEIGHT, video.intended.height);
@@ -320,6 +327,11 @@ void options_sub_video(MenuData *parent, void *arg) {
 		b = bind_option(CONFIG_FULLSCREEN, bind_common_onoffget, bind_common_onoffset)
 	);	bind_onoff(b);
 
+	add_menu_entry(m, "Resizable window", do_nothing,
+		b = bind_option(CONFIG_VID_RESIZABLE, bind_common_onoffget, bind_common_onoffset)
+	);	bind_onoff(b);
+		bind_setdependence(b, bind_resizable_dependence);
+
 	add_menu_entry(m, "Vertical synchronization", do_nothing,
 		b = bind_option(CONFIG_VSYNC, bind_common_intget, bind_common_intset)
 	);	bind_addvalue(b, "on");
@@ -344,6 +356,7 @@ void options_sub_video(MenuData *parent, void *arg) {
 		b = bind_option(CONFIG_NO_STAGEBG_FPSLIMIT, bind_common_intget, bind_common_intset)
 	);	bind_setvaluerange(b, 20, 60);
 		bind_setdependence(b, bind_stagebg_fpslimit_dependence);
+		b->pad++;
 
 	add_menu_separator(m);
 	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
@@ -468,10 +481,12 @@ void options_sub_gamepad(MenuData *parent, void *arg) {
 	add_menu_entry(m, "X axis sensitivity", do_nothing,
 		b = bind_scale(CONFIG_GAMEPAD_AXIS_LR_SENS, -2, 2, 0.05)
 	);	bind_setdependence(b, gamepad_sens_depencence);
+		b->pad++;
 
 	add_menu_entry(m, "Y axis sensitivity", do_nothing,
 		b = bind_scale(CONFIG_GAMEPAD_AXIS_UD_SENS, -2, 2, 0.05)
-	); bind_setdependence(b, gamepad_sens_depencence);
+	); 	bind_setdependence(b, gamepad_sens_depencence);
+		b->pad++;
 
 	add_menu_entry(m, "Dead zone", do_nothing,
 		b = bind_scale(CONFIG_GAMEPAD_AXIS_DEADZONE, 0, 1, 0.01)
@@ -590,6 +605,7 @@ void create_options_menu(MenuData *m) {
 	add_menu_entry(m, "Volume", do_nothing,
 		b = bind_scale(CONFIG_SFX_VOLUME, 0, 1, 0.1)
 	);	bind_setdependence(b, bind_sfxvol_dependence);
+		b->pad++;
 
 	add_menu_separator(m);
 
@@ -601,6 +617,7 @@ void create_options_menu(MenuData *m) {
 	add_menu_entry(m, "Volume", do_nothing,
 		b = bind_scale(CONFIG_BGM_VOLUME, 0, 1, 0.1)
 	);	bind_setdependence(b, bind_bgmvol_dependence);
+		b->pad++;
 
 	add_menu_separator(m);
 	add_menu_entry(m, "Video options…", options_sub_video, NULL);
@@ -654,9 +671,7 @@ void draw_options_menu(MenuData *menu) {
 			glColor4f(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a) * alpha);
 		}
 
-		draw_text(AL_Left,
-					((bind && bind->dependence)? 20 : 0)	// hack hack hack
-					+ 20 - e->drawdata, 20*i, e->name, _fonts.standard);
+		draw_text(AL_Left, (1 + (bind ? bind->pad : 0)) * 20 - e->drawdata, 20*i, e->name, _fonts.standard);
 
 		if(bind) {
 			int j, origin = SCREEN_W - 220;

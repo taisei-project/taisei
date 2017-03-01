@@ -68,6 +68,7 @@
 	CONFIGDEF_INT		(FULLSCREEN, 				"fullscreen", 							0) \
 	CONFIGDEF_INT		(VID_WIDTH, 				"vid_width", 							RESX) \
 	CONFIGDEF_INT		(VID_HEIGHT, 				"vid_height", 							RESY) \
+	CONFIGDEF_INT		(VID_RESIZABLE,				"vid_resizable",						0) \
 	CONFIGDEF_INT		(VSYNC, 					"vsync", 								2) \
 	CONFIGDEF_INT		(NO_SHADER, 				"disable_shader", 						0) \
 	CONFIGDEF_INT		(NO_AUDIO,					"disable_audio", 						0) \

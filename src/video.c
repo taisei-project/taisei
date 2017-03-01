@@ -97,18 +97,10 @@ static void video_init_gl(void) {
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-static void _video_setmode(int w, int h, int fs, int fallback) {
-	Uint32 flags = SDL_WINDOW_OPENGL;
-
+static void _video_setmode(int w, int h, uint32_t flags, bool fallback) {
 	if(!libgl_loaded) {
 		load_gl_library();
 		libgl_loaded = true;
-	}
-
-	if(fs) {
-		flags |= SDL_WINDOW_FULLSCREEN;
-	} else {
-		flags |= SDL_WINDOW_RESIZABLE;
 	}
 
 	if(!fallback) {
@@ -151,23 +143,39 @@ static void _video_setmode(int w, int h, int fs, int fallback) {
 		return;
 	}
 
-	warnx("video_setmode(): setting %dx%d (%s) failed, falling back to %dx%d (windowed)", w, h, fs ? "fullscreen" : "windowed", RESX, RESY);
-	_video_setmode(RESX, RESY, false, true);
+	warnx("video_setmode(): setting %dx%d (%s) failed, falling back to %dx%d (windowed)", w, h,
+			(flags & SDL_WINDOW_FULLSCREEN) ? "fullscreen" : "windowed", RESX, RESY);
+	_video_setmode(RESX, RESY, flags & ~SDL_WINDOW_FULLSCREEN, true);
 }
 
-void video_setmode(int w, int h, int fs) {
-	if(w == video.current.width && h == video.current.height && fs == video_isfullscreen())
-		return;
+void video_setmode(int w, int h, bool fs, bool resizable) {
+	if(	w == video.current.width &&
+		h == video.current.height &&
+		fs == video_isfullscreen() &&
+		resizable == video_isresizable()
+	) return;
 
-	_video_setmode(w, h, fs, false);
+	uint32_t flags = SDL_WINDOW_OPENGL;
+
+	if(fs) {
+		flags |= SDL_WINDOW_FULLSCREEN;
+	} else if(flags & SDL_WINDOW_RESIZABLE) {
+		flags |= SDL_WINDOW_RESIZABLE;
+	}
+
+	_video_setmode(w, h, flags, false);
 }
 
-int video_isfullscreen(void) {
-	return !!(SDL_GetWindowFlags(video.window) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP));
+bool video_isresizable(void) {
+	return SDL_GetWindowFlags(video.window) & SDL_WINDOW_RESIZABLE;
+}
+
+bool video_isfullscreen(void) {
+	return SDL_GetWindowFlags(video.window) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP);
 }
 
 void video_set_fullscreen(bool fullscreen) {
-	video_setmode(video.intended.width, video.intended.height, fullscreen);
+	video_setmode(video.intended.width, video.intended.height, fullscreen, video_isresizable());
 }
 
 void video_toggle_fullscreen(void) {
@@ -187,6 +195,10 @@ static void video_cfg_fullscreen_callback(ConfigIndex idx, ConfigValue v) {
 static void video_cfg_vsync_callback(ConfigIndex idx, ConfigValue v) {
 	config_set_int(idx, v.i);
 	video_update_vsync();
+}
+
+static void video_cfg_resizable_callback(ConfigIndex idx, ConfigValue v) {
+	SDL_SetWindowResizable(video.window, config_set_int(idx, v.i));
 }
 
 void video_init(void) {
@@ -223,10 +235,16 @@ void video_init(void) {
 	// sort it, mainly for the options menu
 	qsort(video.modes, video.mcount, sizeof(VideoMode), video_compare_modes);
 
-	video_setmode(config_get_int(CONFIG_VID_WIDTH), config_get_int(CONFIG_VID_HEIGHT), config_get_int(CONFIG_FULLSCREEN));
+	video_setmode(
+		config_get_int(CONFIG_VID_WIDTH),
+		config_get_int(CONFIG_VID_HEIGHT),
+		config_get_int(CONFIG_FULLSCREEN),
+		config_get_int(CONFIG_VID_RESIZABLE)
+	);
 
 	config_set_callback(CONFIG_FULLSCREEN, video_cfg_fullscreen_callback);
 	config_set_callback(CONFIG_VSYNC, video_cfg_vsync_callback);
+	config_set_callback(CONFIG_VID_RESIZABLE, video_cfg_resizable_callback);
 }
 
 void video_shutdown(void) {
