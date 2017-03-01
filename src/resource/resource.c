@@ -77,12 +77,13 @@ static void resources_cfg_noshader_callback(ConfigIndex idx, ConfigValue v) {
 }
 
 static void init_hashtables(void) {
-	resources.textures = hashtable_new_stringkeys(256);
-	resources.animations = hashtable_new_stringkeys(32);
+	// sizes carefully pulled out of my ass to reduce collisions a bit
+	resources.textures = hashtable_new_stringkeys(227);
+	resources.animations = hashtable_new_stringkeys(23);
 	resources.sounds = hashtable_new_stringkeys(16);
 	resources.music = hashtable_new_stringkeys(16);
-	resources.shaders = hashtable_new_stringkeys(32);
-	resources.models = hashtable_new_stringkeys(16);
+	resources.shaders = hashtable_new_stringkeys(29);
+	resources.models = hashtable_new_stringkeys(17);
 	resources.bgm_descriptions = hashtable_new_stringkeys(16);
 }
 
