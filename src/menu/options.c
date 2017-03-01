@@ -109,6 +109,13 @@ OptionBinding* bind_resolution(void) {
 	bind->valcount = video.mcount;
 	bind->selected = -1;
 
+	for(int i = 0; i < video.mcount; ++i) {
+		VideoMode *m = video.modes + i;
+		if(m->width == video.current.width && m->height == video.current.height) {
+			bind->selected = i;
+		}
+	}
+
 	return bind;
 }
 
@@ -262,6 +269,16 @@ int bind_saverpy_set(void *b, int v) {
 	return !config_set_int(((OptionBinding*)b)->configentry, !v);
 }
 
+int bind_resolution_set(void *b, int v) {
+	if(v >= 0) {
+		VideoMode *m = video.modes + v;
+		config_set_int(CONFIG_VID_WIDTH, m->width);
+		config_set_int(CONFIG_VID_HEIGHT, m->height);
+	}
+
+	return v;
+}
+
 // --- Creating, destroying, filling the menu --- //
 
 void destroy_options_menu(MenuData *m) {
@@ -321,7 +338,7 @@ void options_sub_video(MenuData *parent, void *arg) {
 
 	add_menu_entry(m, "Resolution", do_nothing,
 		b = bind_resolution()
-	);
+	);	b->setter = bind_resolution_set;
 
 	add_menu_entry(m, "Fullscreen", do_nothing,
 		b = bind_option(CONFIG_FULLSCREEN, bind_common_onoffget, bind_common_onoffset)
@@ -762,7 +779,7 @@ void draw_options_menu(MenuData *menu) {
 						w = video.intended.width;
 						h = video.intended.height;
 					} else {
-						VideoMode *m = &(video.modes[bind->selected]);
+						VideoMode *m = video.modes + bind->selected;
 						w = m->width;
 						h = m->height;
 					}

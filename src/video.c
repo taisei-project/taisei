@@ -189,6 +189,8 @@ void video_resize(int w, int h) {
 }
 
 static void video_cfg_fullscreen_callback(ConfigIndex idx, ConfigValue v) {
+	video.intended.width = config_get_int(CONFIG_VID_WIDTH);
+	video.intended.height = config_get_int(CONFIG_VID_HEIGHT);
 	video_set_fullscreen(config_set_int(idx, v.i));
 }
 
