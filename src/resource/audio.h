@@ -8,9 +8,6 @@
 #ifndef AUDIO_H
 #define AUDIO_H
 
-#undef HAVE_MIXER
-#define HAVE_MIXER
-
 #ifdef HAVE_MIXER
 #include <SDL_mixer.h>
 #else
