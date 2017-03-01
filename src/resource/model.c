@@ -223,6 +223,6 @@ void* delete_model(void *name, void *model, void *arg) {
 	return NULL;
 }
 
-void delete_models(void) { // Does not delete elements from the VBO, so doing this at runtime is leaking VBO spac
+void delete_models(void) { // Does not delete elements from the VBO, so doing this at runtime is leaking VBO space
 	resources_delete_and_unset_all(resources.models, delete_model, NULL);
 }

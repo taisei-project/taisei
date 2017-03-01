@@ -201,8 +201,6 @@ void set_sfx_volume(float gain)
 	Mix_Volume(-1, gain * MIX_MAX_VOLUME);
 }
 
-#include <assert.h>
-
 void* delete_sound(void *name, void *snd, void *arg) {
 	Sound *ssnd = (Sound *)snd;
 
