@@ -158,7 +158,7 @@ bool hashtable_cmpfunc_string(void *str1, void *str2) {
 hash_t hashtable_hashfunc_string(void *vstr) {
     const char *str = vstr;
     size_t len = strlen(str);
-    return adler32_z(0, (const Bytef*)str, len);
+    return adler32(0, (const Bytef*)str, (uInt)len);
 }
 
 void hashtable_copyfunc_string(void **dst, void *src) {
