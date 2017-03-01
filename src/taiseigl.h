@@ -595,9 +595,9 @@ struct glext_s {
         char minor;
     } version;
 
-    int draw_instanced: 1;
-    int EXT_draw_instanced: 1;
-    int ARB_draw_instanced: 1;
+    unsigned int draw_instanced: 1;
+    unsigned int EXT_draw_instanced: 1;
+    unsigned int ARB_draw_instanced: 1;
 
     tsglDrawArraysInstanced_ptr DrawArraysInstanced;
 };

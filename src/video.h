@@ -12,6 +12,7 @@
 #define WINDOW_TITLE "TaiseiProject"
 #define VIEWPORT_ASPECT_RATIO (4.0f/3.0f)
 
+#include <SDL.h>
 #include <stdbool.h>
 
 typedef struct VideoMode {
@@ -33,9 +34,10 @@ Video video;
 
 void video_init(void);
 void video_shutdown(void);
-void video_setmode(int w, int h, int fs);
+void video_setmode(int w, int h, bool fs, bool resizable);
 void video_set_viewport(void);
-int video_isfullscreen(void);
+bool video_isfullscreen(void);
+bool video_isresizable(void);
 void video_set_fullscreen(bool);
 void video_toggle_fullscreen(void);
 void video_resize(int w, int h);
