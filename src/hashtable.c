@@ -226,7 +226,7 @@ void hashtable_print_stringkeys(Hashtable *ht) {
         printf("[bucket %lu] %p\n", (unsigned long)i, (void*)ht->table[i]);
 
         for(HashtableElement *e = ht->table[i]; e; e = e->next) {
-            printf(" -- %s (%lu): %p\n", (char*)e->key, e->hash, e->data);
+            printf(" -- %s (%lu): %p\n", (char*)e->key, (unsigned long)e->hash, e->data);
             ++elems;
             ++total;
         }
@@ -260,7 +260,7 @@ void hashtable_print_stringkeys(Hashtable *ht) {
 static void hashtable_printstrings(Hashtable *ht) {
     for(size_t i = 0; i < ht->table_size; ++i) {
         for(HashtableElement *e = ht->table[i]; e; e = e->next) {
-            printf("[HT %lu] %s (%lu): %s\n", (unsigned long)i, (char*)e->key, e->hash, (char*)e->data);
+            printf("[HT %lu] %s (%lu): %s\n", (unsigned long)i, (char*)e->key, (unsigned long)e->hash, (char*)e->data);
         }
     }
 }

@@ -14,7 +14,7 @@
 #include <stdlib.h>
 
 typedef struct Hashtable Hashtable;
-typedef uint64_t hash_t;
+typedef uint32_t hash_t;
 
 typedef bool (*HTCmpFunc)(void *key1, void *key2);
 typedef hash_t (*HTHashFunc)(void *key);
