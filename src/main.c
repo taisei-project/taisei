@@ -16,6 +16,7 @@
 #include "gamepad.h"
 #include "resource/bgm.h"
 #include "progress.h"
+#include "hashtable.h"
 
 void taisei_shutdown(void) {
 	config_save(CONFIG_FILE);
@@ -64,6 +65,10 @@ int run_tests(void) {
 	}
 
 	if(zrwops_test()) {
+		return 1;
+	}
+
+	if(hashtable_test()) {
 		return 1;
 	}
 
@@ -137,6 +142,7 @@ int main(int argc, char **argv) {
 	video_init();
 	printf("-- Video and OpenGL\n");
 
+	init_resources();
 	draw_loading_screen();
 
 	gamepad_init();
@@ -160,6 +166,18 @@ int main(int argc, char **argv) {
 	}
 
 #ifdef DEBUG
+
+	if(argc >= 2 && argv[1] && !strcmp(argv[1], "dumprestables")) {
+		hashtable_print_stringkeys(resources.textures);
+		hashtable_print_stringkeys(resources.animations);
+		hashtable_print_stringkeys(resources.sounds);
+		hashtable_print_stringkeys(resources.music);
+		hashtable_print_stringkeys(resources.shaders);
+		hashtable_print_stringkeys(resources.models);
+		hashtable_print_stringkeys(resources.bgm_descriptions);
+		return 0;
+	}
+
 	printf("** Compiled with DEBUG flag!\n");
 	if(argc >= 2 && argv[1]) {
 		printf("** Entering stage skip mode: Stage %d\n", atoi(argv[1]));

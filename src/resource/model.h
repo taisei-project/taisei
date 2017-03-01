@@ -12,8 +12,7 @@
 
 typedef int IVector[3];
 
-typedef struct ObjFileData ObjFileData;
-struct ObjFileData {
+typedef struct ObjFileData {
 	Vector *xs;
 	int xcount;
 
@@ -27,27 +26,19 @@ struct ObjFileData {
 	int icount;
 
 	int fverts;
-};
+} ObjFileData;
 
-typedef struct Model Model;
-struct Model {
-	struct Model *next;
-	struct Model *prev;
-
-	char *name;
-
+typedef struct Model {
 	unsigned int *indices;
 	int icount;
-
 	int fverts;
-};
+} Model;
 
-Model *load_model(char *filename);
-
-Model *get_model(char *name);
+Model *load_model(const char *filename);
+Model *get_model(const char *name);
 
 void draw_model_p(Model *model);
-void draw_model(char *name);
+void draw_model(const char *name);
 void delete_models(void); // Does not delete elements from the VBO, so doing this at runtime is leaking VBO space
 
 #endif

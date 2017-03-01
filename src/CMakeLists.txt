@@ -36,6 +36,7 @@ set(SRCs
 	enemy.c
 	item.c
 	list.c
+	hashtable.c
 	boss.c
 	plrmodes.c
 	laser.c

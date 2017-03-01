@@ -114,7 +114,7 @@ void shutdown_sfx(void)
 	unload_mixer_if_needed();
 }
 
-Sound *load_sound_or_bgm(char *filename, Sound **dest, sound_type_t type) {
+Sound *load_sound_or_bgm(const char *filename, Hashtable *ht, sound_type_t type) {
 	Mix_Chunk *sound = NULL;
 	Mix_Music *music = NULL;
 
@@ -138,7 +138,7 @@ Sound *load_sound_or_bgm(char *filename, Sound **dest, sound_type_t type) {
 			errx(-1,"load_sound_or_bgm():\n!- incorrect sound type specified");
 	}
 
-	Sound *snd = create_element((void **)dest, sizeof(Sound));
+	Sound *snd = malloc(sizeof(Sound));
 
 	snd->type = type;
 	if (sound)
@@ -154,26 +154,22 @@ Sound *load_sound_or_bgm(char *filename, Sound **dest, sound_type_t type) {
 
 	++beg; // skip '/' between last path element and file name
 	int sz = end - beg + 1;
-	snd->name = malloc(sz);
-	if (!snd->name)
-		errx(-1,"load_sound_or_bgm():\n!- failed to allocate memory for sound name (is it empty?)");
-	strlcpy(snd->name, beg, sz);
+	char name[sz];
+	strlcpy(name, beg, sz);
 
-	printf("-- loaded '%s' as %s '%s'\n", filename, ((type==ST_SOUND) ? "SFX" : "BGM"), snd->name);
+	hashtable_set_string(ht, name, snd);
+
+	printf("-- loaded '%s' as %s '%s'\n", filename, ((type==ST_SOUND) ? "SFX" : "BGM"), name);
 
 	return snd;
 }
 
-Sound *load_sound(char *filename) {
-	return load_sound_or_bgm(filename, &resources.sounds, ST_SOUND);
+Sound *load_sound(const char *filename) {
+	return load_sound_or_bgm(filename, resources.sounds, ST_SOUND);
 }
 
-Sound *get_snd(Sound *source, char *name) {
-	Sound *s, *res = NULL;
-	for(s = source; s; s = s->next) {
-		if(strcmp(s->name, name) == 0)
-			res = s;
-	}
+Sound *get_snd(Hashtable *source, const char *name) {
+	Sound *res = hashtable_get_string(resources.sounds, name);
 
 	if(res == NULL)
 		warnx("get_snd():\n!- cannot find sound '%s'", name);
@@ -181,7 +177,7 @@ Sound *get_snd(Sound *source, char *name) {
 	return res;
 }
 
-void play_sound_p(char *name, int unconditional)
+void play_sound_p(const char *name, int unconditional)
 {
 	if(config_get_int(CONFIG_NO_AUDIO) || global.frameskip) return;
 
@@ -205,14 +201,19 @@ void set_sfx_volume(float gain)
 	Mix_Volume(-1, gain * MIX_MAX_VOLUME);
 }
 
-void delete_sound(void **snds, void *snd) {
+void* delete_sound(void *name, void *snd, void *arg) {
 	Sound *ssnd = (Sound *)snd;
-	free(ssnd->name);
-	if(ssnd->type == ST_MUSIC) Mix_FreeMusic(ssnd->music);
-	else Mix_FreeChunk(ssnd->sound);
-	delete_element(snds, snd);
+
+	if(ssnd->type == ST_MUSIC) {
+		Mix_FreeMusic(ssnd->music);
+	} else if(ssnd->type == ST_SOUND) {
+		Mix_FreeChunk(ssnd->sound);
+	}
+
+	free(snd);
+	return NULL;
 }
 
 void delete_sounds(void) {
-	delete_all_elements((void **)&resources.sounds, delete_sound);
+	resources_delete_and_unset_all(resources.sounds, delete_sound, NULL);
 }
