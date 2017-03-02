@@ -246,6 +246,7 @@ void process_boss(Boss **pboss) {
 		if(!boss->current->endtime && (boss->current->type != AT_Move && boss->dmg >= boss->current->dmglimit || time > boss->current->timeout)) {
 			boss->current->endtime = global.frames + extra * ATTACK_END_DELAY_EXTRA;
 			boss->current->finished = FINISH_WIN;
+			boss->current->rule(boss, EVENT_DEATH);
 			boss_kill_projectiles();
 		}
 
@@ -253,7 +254,6 @@ void process_boss(Boss **pboss) {
 			if(extra && boss->current->finished == FINISH_WIN)
 				spawn_items(boss->pos, 0, 0, 0, 1);
 
-			boss->current->rule(boss, EVENT_DEATH);
 			boss->dmg = boss->current->dmglimit + 1;
 			boss->current++;
 			if(boss->current - boss->attacks < boss->acount)
