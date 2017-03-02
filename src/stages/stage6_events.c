@@ -848,7 +848,7 @@ int curvature_slave(Enemy *e, int t) {
 		if(cabs(pos - global.plr.pos) > 50) {
 			tsrand_fill(2);
 			float speed = 0.5/(1+(global.diff < D_Hard));
-			create_projectile2c("flea",pos,rgb(0.1*afrand(0), 0.4,1), curvature_bullet, speed*cexp(2*M_PI*I*afrand(1)), add_ref(e))->draw = ProjDrawAdd;
+			create_projectile2c("flea",pos,rgb(0.1*afrand(0), 0.6,1), curvature_bullet, speed*cexp(2*M_PI*I*afrand(1)), add_ref(e));
 		}
 	}
 	if(global.diff > D_Easy && t % (60-8*global.diff) == 0) {
