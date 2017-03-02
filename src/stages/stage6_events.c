@@ -818,7 +818,7 @@ int curvature_bullet(Projectile *p, int t) {
 }
 
 int curvature_orbiter(Projectile *p, int t) {
-	const double w = 0.02;
+	const double w = 0.03;
 	if(REF(p->args[1]) != 0 && p->args[3] == 0) {
 		p->pos = ((Projectile *)REF(p->args[1]))->pos+p->args[0]*cexp(I*t*w);
 
@@ -833,7 +833,6 @@ int curvature_orbiter(Projectile *p, int t) {
 
 	return 1;
 }
-
 
 static double saw(double t) {
 	return cos(t)+cos(3*t)/9+cos(5*t)/25;
@@ -852,7 +851,7 @@ int curvature_slave(Enemy *e, int t) {
 			create_projectile2c("flea",pos,rgb(0.1*afrand(0), 0.4,1), curvature_bullet, speed*cexp(2*M_PI*I*afrand(1)), add_ref(e))->draw = ProjDrawAdd;
 		}
 	}
-	if(global.diff > D_Easy && t % (60-5*global.diff) == 0) {
+	if(global.diff > D_Easy && t % (60-8*global.diff) == 0) {
 			tsrand_fill(2);
 			complex pos = VIEWPORT_W*afrand(0)+I*VIEWPORT_H*afrand(1);
 			if(cabs(pos - global.plr.pos) > 100)
@@ -861,10 +860,12 @@ int curvature_slave(Enemy *e, int t) {
 
 	}
 
-	if(global.diff == D_Lunatic && !(t%50)) {
-		Projectile *p = create_projectile1c("bigball",global.boss->pos,rgb(0.5, 0.4,1), linear, 2*I*cexp(I*M_PI/2*saw(t/200.)));
+	if(global.diff >= D_Hard && !(t%20)) {
+		Projectile *p = create_projectile1c("bigball",global.boss->pos,rgb(0.5, 0.4,1), linear, 4*I*cexp(I*M_PI*2/5*saw(t/100.)));
 		p->draw = ProjDrawAdd;
-		create_projectile2c("plainball",global.boss->pos,rgb(0.2, 0.4,1), curvature_orbiter, 40*cexp(I*t/400),add_ref(p))->draw = ProjDrawAdd;
+		if(global.diff == D_Lunatic) {
+			create_projectile2c("plainball",global.boss->pos,rgb(0.2, 0.4,1), curvature_orbiter, 40*cexp(I*t/400),add_ref(p))->draw = ProjDrawAdd;
+		}
 
 
 
