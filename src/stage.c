@@ -20,6 +20,7 @@
 #include "menu/ingamemenu.h"
 #include "menu/gameovermenu.h"
 #include "taisei_err.h"
+#include "audio.h"
 
 static size_t numstages = 0;
 StageInfo *stages = NULL;
@@ -191,6 +192,8 @@ static void stage_start(StageInfo *stage) {
 		global.plr.lifes = 0;
 		global.plr.bombs = 0;
 	}
+
+	reset_sounds();
 }
 
 void stage_pause(void) {
@@ -198,7 +201,7 @@ void stage_pause(void) {
 	stop_bgm();
 	create_ingame_menu(&menu);
 	menu_loop(&menu);
-	continue_bgm();
+	resume_bgm();
 }
 
 void stage_gameover(void) {
@@ -400,10 +403,8 @@ static void apply_bg_shaders(ShaderRule *shaderrules);
 static void draw_stage_title(StageInfo *info);
 
 static void stage_draw(StageInfo *stage) {
-	if(!config_get_int(CONFIG_NO_SHADER)) {
-		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[0].fbo);
-		glViewport(0,0,SCREEN_W,SCREEN_H);
-	}
+	glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[0].fbo);
+	glViewport(0,0,SCREEN_W,SCREEN_H);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPushMatrix();
@@ -431,8 +432,7 @@ static void stage_draw(StageInfo *stage) {
 	glPushMatrix();
 	glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
 
-	if(!config_get_int(CONFIG_NO_SHADER))
-		apply_bg_shaders(stage->procs->shader_rules);
+	apply_bg_shaders(stage->procs->shader_rules);
 
 	if(global.boss) {
 		glPushMatrix();
@@ -473,21 +473,19 @@ static void stage_draw(StageInfo *stage) {
 	if(stage->type != STAGE_SPELL)
 		draw_stage_title(stage);
 
-	if(!config_get_int(CONFIG_NO_SHADER)) {
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		video_set_viewport();
-		glPushMatrix();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	video_set_viewport();
+	glPushMatrix();
 
-		if(global.shake_view) {
-			glTranslatef(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames+3),0);
-			glScalef(1+2*global.shake_view/VIEWPORT_W,1+2*global.shake_view/VIEWPORT_H,1);
-			glTranslatef(-global.shake_view,-global.shake_view,0);
-		}
-
-		draw_fbo_viewport(&resources.fsec);
-
-		glPopMatrix();
+	if(global.shake_view) {
+		glTranslatef(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames+3),0);
+		glScalef(1+2*global.shake_view/VIEWPORT_W,1+2*global.shake_view/VIEWPORT_H,1);
+		glTranslatef(-global.shake_view,-global.shake_view,0);
 	}
+
+	draw_fbo_viewport(&resources.fsec);
+
+	glPopMatrix();
 
 	glPopMatrix();
 
@@ -791,22 +789,18 @@ static void draw_title(int t, Alignment al, int x, int y, const char *text, TTF_
 		f = 1/35.0*i;
 	}
 
-	if(!config_get_int(CONFIG_NO_SHADER)) {
-		float clr[4];
-		parse_color_array(color, clr);
+	float clr[4];
+	parse_color_array(color, clr);
 
-		Shader *sha = get_shader("stagetitle");
-		glUseProgram(sha->prog);
-		glUniform1i(uniloc(sha, "trans"), 1);
-		glUniform1f(uniloc(sha, "t"), 1.0-f);
-		glUniform3fv(uniloc(sha, "color"), 1, clr);
+	Shader *sha = get_shader("stagetitle");
+	glUseProgram(sha->prog);
+	glUniform1i(uniloc(sha, "trans"), 1);
+	glUniform1f(uniloc(sha, "t"), 1.0-f);
+	glUniform3fv(uniloc(sha, "color"), 1, clr);
 
-		glActiveTexture(GL_TEXTURE0 + 1);
-		glBindTexture(GL_TEXTURE_2D, get_tex("titletransition")->gltex);
-		glActiveTexture(GL_TEXTURE0);
-	} else {
-		parse_color_call(derive_color(color, CLRMASK_A, rgba(0, 0, 0, 1.0 - f)), glColor4f);
-	}
+	glActiveTexture(GL_TEXTURE0 + 1);
+	glBindTexture(GL_TEXTURE_2D, get_tex("titletransition")->gltex);
+	glActiveTexture(GL_TEXTURE0);
 
 	draw_text(al, x, y, text, font);
 

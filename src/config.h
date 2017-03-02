@@ -70,9 +70,6 @@
 	CONFIGDEF_INT		(VID_HEIGHT, 				"vid_height", 							RESY) \
 	CONFIGDEF_INT		(VID_RESIZABLE,				"vid_resizable",						0) \
 	CONFIGDEF_INT		(VSYNC, 					"vsync", 								2) \
-	CONFIGDEF_INT		(NO_SHADER, 				"disable_shader", 						0) \
-	CONFIGDEF_INT		(NO_AUDIO,					"disable_audio", 						0) \
-	CONFIGDEF_INT		(NO_MUSIC,					"disable_bgm", 							0) \
 	CONFIGDEF_INT		(MIXER_CHUNKSIZE,			"mixer_chunksize",						1024) \
 	CONFIGDEF_FLOAT		(SFX_VOLUME, 				"sfx_volume", 							1.0) \
 	CONFIGDEF_FLOAT		(BGM_VOLUME, 				"bgm_volume", 							1.0) \

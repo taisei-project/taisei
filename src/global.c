@@ -243,6 +243,26 @@ bool strendswith(const char *s, const char *e) {
 	return true;
 }
 
+bool strstartswith(const char *s, const char *p) {
+	int ls = strlen(s);
+	int lp = strlen(p);
+
+	if(ls < lp)
+		return false;
+
+	return !strncmp(s, p, lp);
+}
+
+bool strendswith_any(const char *s, const char **earray) {
+	for(const char **e = earray; *e; ++e) {
+		if(strendswith(s, *e)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void stralloc(char **dest, const char *src) {
 	free(*dest);
 
@@ -254,6 +274,73 @@ void stralloc(char **dest, const char *src) {
 	}
 }
 
+char* strjoin(const char *first, ...) {
+	va_list args;
+	size_t size = strlen(first) + 1;
+	char *str = malloc(size);
+
+	strcpy(str, first);
+	va_start(args, first);
+
+	for(;;) {
+		char *next = va_arg(args, char*);
+
+		if(!next) {
+			break;
+		}
+
+		size += strlen(next);
+		str = realloc(str, size);
+		strcat(str, next);
+	}
+
+	va_end(args);
+	return str;
+}
+
+char* read_all(const char *filename, int *outsize) {
+	char *text;
+	size_t size;
+
+	FILE *file = fopen(filename, "r");
+	if(file == NULL)
+		errx(-1, "Error opening '%s'", filename);
+
+	fseek(file, 0, SEEK_END);
+	size = ftell(file);
+	fseek(file, 0, SEEK_SET);
+
+	text = malloc(size+1);
+	fread(text, size, 1, file);
+	text[size] = 0;
+
+	fclose(file);
+
+	if(outsize) {
+		*outsize = size;
+	}
+
+	return text;
+}
+
+char* copy_segment(const char *text, const char *delim, int *size) {
+	char *seg, *beg, *end;
+
+	beg = strstr(text, delim);
+	if(!beg)
+		return NULL;
+	beg += strlen(delim);
+
+	end = strstr(beg, "%%");
+	if(!end)
+		return NULL;
+
+	*size = end-beg;
+	seg = malloc(*size+1);
+	strlcpy(seg, beg, *size+1);
+
+	return seg;
+}
 // Inputdevice-agnostic method of checking whether a game control is pressed.
 // ALWAYS use this instead of SDL_GetKeyState if you need it.
 bool gamekeypressed(KeyIndex key) {

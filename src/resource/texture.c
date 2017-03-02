@@ -15,95 +15,73 @@
 #include "taisei_err.h"
 #include "vbo.h"
 
-Texture *get_tex(const char *name) {
-	Texture *res = hashtable_get_string(resources.textures, name);
+static SDL_Surface* load_png(const char *filename);
 
-	if(res == NULL)
-		errx(-1,"get_tex():\n!- cannot load texture '%s'", name);
-
-	return res;
+char* texture_path(const char *name) {
+	return strjoin(get_prefix(), TEX_PATH_PREFIX, name, TEX_EXTENSION, NULL);
 }
 
-Texture *prefix_get_tex(const char *name, const char *prefix) {
-	const char *src;
-
-	if((src = strrchr(name, '/')))
-		src++;
-	else
-		src = name;
-
-	char buf[strlen(src) + strlen(prefix) + 1];
-	strcpy(buf, prefix);
-	strcat(buf, src);
-
-	return get_tex(buf);
+bool check_texture_path(const char *path) {
+	return strendswith(path, TEX_EXTENSION);
 }
 
-static void* delete_texture(void *name, void *tex, void *arg) {
-	free_texture((Texture*)tex);
-	return NULL;
-}
+void* load_texture(const char *path) {
+	SDL_Surface *surface = load_png(path);
 
-void delete_textures(void) {
-	resources_delete_and_unset_all(resources.textures, delete_texture, NULL);
-}
-
-Texture *load_texture(const char *filename) {
-	char *beg = strstr(filename, "gfx/") + 4;
-	char *end = strrchr(filename, '.');
-
-	int sz = end - beg + 1;
-	char name[sz];
-	strlcpy(name, beg, sz);
-
-	Texture *texture = hashtable_get_string(resources.textures, name);
-
-	// FIXME: this is for the loading screen
-	if(texture) {
-		return texture;
+	if(surface == NULL) {
+		return NULL;
 	}
 
-	SDL_Surface *surface = load_png(filename);
+	Texture *texture = malloc(sizeof(Texture));
 
-	if(surface == NULL)
-		errx(-1,"load_texture():\n!- cannot load '%s'", filename);
-
-	texture = malloc(sizeof(Texture));
 	load_sdl_surf(surface, texture);
-
 	free(surface->pixels);
 	SDL_FreeSurface(surface);
-
-	hashtable_set_string(resources.textures, name, (void*)texture);
-
-	printf("-- loaded '%s' as '%s'\n", filename, name);
 
 	return texture;
 }
 
-SDL_Surface *load_png(const char *filename) {
+Texture* get_tex(const char *name) {
+	return get_resource(RES_TEXTURE, name, RESF_REQUIRED)->texture;
+}
+
+Texture* prefix_get_tex(const char *name, const char *prefix) {
+	char *full = strjoin(prefix, name, NULL);
+	Texture *tex = get_tex(full);
+	free(full);
+	return tex;
+}
+
+static SDL_Surface* load_png(const char *filename) {
+#define PNGFAIL(msg) { warnx("load_png(): couldn't load '%s': %s", msg); return NULL; }
+
 	FILE *fp = fopen(filename, "rb");
-	if(!fp)
-		errx(-1, "Error loading '%s'", filename);
+
+	if(!fp) {
+		PNGFAIL("fopen() failed")
+	}
 
 	png_structp png_ptr;
-	if(!(png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL)))
-		errx(-1,"Error loading '%s'", filename);
+	if(!(png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL))) {
+		fclose(fp);
+		PNGFAIL("png_create_read_struct() failed")
+	}
 
 	png_infop info_ptr;
 	if(!(info_ptr = png_create_info_struct(png_ptr))) {
+		fclose(fp);
 		png_destroy_read_struct(&png_ptr, NULL, NULL);
-		errx(-1,"Error loading '%s'", filename);
+		PNGFAIL("png_create_info_struct() failed")
 	}
 
 	png_infop end_info;
 	if(!(end_info = png_create_info_struct(png_ptr))) {
+		fclose(fp);
 		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-		errx(-1,"Error loading '%s'", filename);
+		PNGFAIL("png_create_info_struct() failed")
 	}
 
 	png_init_io(png_ptr, fp);
-
 	png_read_png(png_ptr, info_ptr, 0, NULL);
 
 	int width = png_get_image_width(png_ptr, info_ptr);
@@ -114,8 +92,7 @@ SDL_Surface *load_png(const char *filename) {
 
 	Uint32 *pixels = malloc(sizeof(Uint32)*width*height);
 
-	int i;
-	for(i = 0; i < height; i++)
+	for(int i = 0; i < height; i++)
 		memcpy(&pixels[i*width], row_pointers[i], sizeof(Uint32)*width);
 
 	Uint32 rmask, gmask, bmask, amask;
@@ -133,14 +110,17 @@ SDL_Surface *load_png(const char *filename) {
 #endif
 
 	SDL_Surface *res = SDL_CreateRGBSurfaceFrom(pixels, width, height, depth*4, 0, rmask, gmask, bmask, amask);
-	if(!res)
-		errx(-1,"Error loading '%s'", filename);
+
+	if(!res) {
+		fclose(fp);
+		PNGFAIL(SDL_GetError())
+	}
 
 	fclose(fp);
-
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 
 	return res;
+#undef PNGFAIL
 }
 
 void load_sdl_surf(SDL_Surface *surface, Texture *texture) {

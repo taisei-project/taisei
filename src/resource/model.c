@@ -13,6 +13,92 @@
 #include <string.h>
 #include <stdlib.h>
 
+static void bad_reference_error(const char *filename, const char *aux, int n) {
+	warnx("load_model():\n!- OBJ file '%s': Index %d: bad %s index reference\n", filename, n, aux);
+}
+
+static void parse_obj(const char *filename, ObjFileData *data);
+static void free_obj(ObjFileData *data);
+
+char* model_path(const char *name) {
+	return strjoin(get_prefix(), MDL_PATH_PREFIX, name, MDL_EXTENSION, NULL);
+}
+
+bool check_model_path(const char *path) {
+	return strendswith(path, MDL_EXTENSION);
+}
+
+void* load_model(const char *path) {
+	Model *m = malloc(sizeof(Model));
+
+	ObjFileData data;
+	unsigned int i;
+
+	Vertex *verts;
+	unsigned int ioffset = _vbo.offset;
+
+	parse_obj(path, &data);
+
+	m->fverts = data.fverts;
+	m->indices = calloc(data.icount, sizeof(unsigned int));
+	m->icount = data.icount;
+
+	verts = calloc(data.icount, sizeof(Vertex));
+
+#define BADREF(...) { bad_reference_error(__VA_ARGS__); free(verts); free_obj(&data); return NULL; }
+
+	memset(verts, 0, data.icount*sizeof(Vertex));
+	for(i = 0; i < data.icount; i++) {
+		int xi, ni, ti;
+
+		xi = data.indices[i][0]-1;
+		if(xi < 0 || xi >= data.xcount)
+			BADREF(path, "vertex", i);
+
+		memcpy(verts[i].x, data.xs[xi], sizeof(Vector));
+
+		if(data.tcount) {
+			ti = data.indices[i][1]-1;
+			if(ti < 0 || ti >= data.tcount)
+				BADREF(path, "texcoord", i);
+
+			verts[i].s = data.texcoords[ti][0];
+			verts[i].t = data.texcoords[ti][1];
+		}
+
+		if(data.ncount) {
+			ni = data.indices[i][2]-1;
+			if(ni < 0 || ni >= data.ncount)
+				BADREF(path, "normal", ni);
+
+			memcpy(verts[i].n, data.normals[ni], sizeof(Vector));
+		}
+
+		m->indices[i] = i+ioffset;
+	}
+
+#undef BADREF
+
+	vbo_add_verts(&_vbo, verts, data.icount);
+
+	free(verts);
+	free_obj(&data);
+
+	return m;
+}
+
+void unload_model(void *model) { // Does not delete elements from the VBO, so doing this at runtime is leaking VBO space
+	free(((Model*)model)->indices);
+	free(model);
+}
+
+static void free_obj(ObjFileData *data) {
+	free(data->xs);
+	free(data->normals);
+	free(data->texcoords);
+	free(data->indices);
+}
+
 static void parse_obj(const char *filename, ObjFileData *data) {
 	FILE *fp = fopen(filename, "rb");
 
@@ -109,100 +195,12 @@ static void parse_obj(const char *filename, ObjFileData *data) {
 	fclose(fp);
 }
 
-static void bad_reference_error(const char *filename, const char *aux, int n) {
-	errx(-1, "load_model():\n!- OBJ file '%s': Index %d: bad %s index reference\n", filename, n, aux);
-}
-
-Model *load_model(const char *filename) {
-	Model *m = malloc(sizeof(Model));
-
-	ObjFileData data;
-	unsigned int i;
-
-	Vertex *verts;
-	unsigned int ioffset = _vbo.offset;
-
-	char *beg = strstr(filename, "models/") + 7;
-	char *end = strrchr(filename, '.');
-
-	int sz = end - beg + 1;
-	char name[sz];
-	strlcpy(name, beg, sz);
-
-	parse_obj(filename, &data);
-
-	m->fverts = data.fverts;
-	m->indices = calloc(data.icount, sizeof(unsigned int));
-	m->icount = data.icount;
-
-	verts = calloc(data.icount, sizeof(Vertex));
-
-
-	memset(verts, 0, data.icount*sizeof(Vertex));
-	for(i = 0; i < data.icount; i++) {
-		int xi, ni, ti;
-
-		xi = data.indices[i][0]-1;
-		if(xi < 0 || xi >= data.xcount)
-			bad_reference_error(filename, "vertex", i);
-
-		memcpy(verts[i].x, data.xs[xi], sizeof(Vector));
-
-		if(data.tcount) {
-			ti = data.indices[i][1]-1;
-			if(ti < 0 || ti >= data.tcount)
-				bad_reference_error(filename, "texcoord", i);
-
-			verts[i].s = data.texcoords[ti][0];
-			verts[i].t = data.texcoords[ti][1];
-		}
-
-		if(data.ncount) {
-			ni = data.indices[i][2]-1;
-			if(ni < 0 || ni >= data.ncount)
-				bad_reference_error(filename, "normal", ni);
-
-			memcpy(verts[i].n, data.normals[ni], sizeof(Vector));
-		}
-
-		m->indices[i] = i+ioffset;
-	}
-
-	vbo_add_verts(&_vbo, verts, data.icount);
-
-	hashtable_set_string(resources.models, name, m);
-
-	printf("-- loaded '%s' as '%s'\n", filename, name);
-
-	free(verts);
-	free(data.xs);
-	free(data.normals);
-	free(data.texcoords);
-	free(data.indices);
-	return m;
-}
-
-Model *get_model(const char *name) {
-	Model *res = hashtable_get_string(resources.models, name);
-
-	if(res == NULL)
-		errx(-1,"get_model():\n!- cannot load model '%s'", name);
-
-	return res;
+Model* get_model(const char *name) {
+	return get_resource(RES_MODEL, name, RESF_REQUIRED)->model;
 }
 
 void draw_model_p(Model *model) {
-	GLenum flag = GL_NONE;
-	switch(model->fverts) {
-	case 3:
-		flag = GL_TRIANGLES;
-		break;
-	case 4:
-		flag = GL_QUADS;
-		break;
-	default:
-		errx(-1, "draw_model_p():\n!- Model '%s': invalid face vertex count");
-	}
+	GLenum flag = model->fverts == 3 ? GL_TRIANGLES : GL_QUADS;
 
 	glMatrixMode(GL_TEXTURE);
 	glScalef(1,-1,1); // every texture in taisei is actually read vertically mirrored. and I noticed that just now.
@@ -215,14 +213,4 @@ void draw_model_p(Model *model) {
 
 void draw_model(const char *name) {
 	draw_model_p(get_model(name));
-}
-
-void* delete_model(void *name, void *model, void *arg) {
-	free(((Model *)model)->indices);
-	free(model);
-	return NULL;
-}
-
-void delete_models(void) { // Does not delete elements from the VBO, so doing this at runtime is leaking VBO space
-	resources_delete_and_unset_all(resources.models, delete_model, NULL);
 }

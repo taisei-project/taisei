@@ -9,6 +9,7 @@
 force_funcs = [
     'glDrawArraysInstancedEXT',
     'glDrawArraysInstancedARB',
+    'glGetShaderiv',
 ]
 
 import sys, re

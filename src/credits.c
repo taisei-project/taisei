@@ -96,11 +96,10 @@ void credits_towerwall_draw(Vector pos) {
 	glEnable(GL_TEXTURE_2D);
 
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towerwall")->gltex);
-	if(!config_get_int(CONFIG_NO_SHADER)) {
-		Shader *s = get_shader("tower_wall");
-		glUseProgram(s->prog);
-		glUniform1i(uniloc(s, "lendiv"), 2800.0 + 300.0 * sin(global.frames / 77.7));
-	}
+
+	Shader *s = get_shader("tower_wall");
+	glUseProgram(s->prog);
+	glUniform1i(uniloc(s, "lendiv"), 2800.0 + 300.0 * sin(global.frames / 77.7));
 
 	glPushMatrix();
 	glTranslatef(pos[0], pos[1], pos[2]);

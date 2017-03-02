@@ -12,38 +12,83 @@
 
 #include "texture.h"
 #include "animation.h"
-#include "audio.h"
+#include "sfx.h"
 #include "bgm.h"
 #include "shader.h"
 #include "font.h"
 #include "model.h"
 #include "hashtable.h"
+#include "assert.h"
+#include "paths/native.h"
 
-typedef struct Resources Resources;
+typedef enum ResourceType {
+	RES_TEXTURE,
+	RES_ANIM,
+	RES_SFX,
+	RES_BGM,
+	RES_SHADER,
+	RES_MODEL,
+	RES_NUMTYPES,
+} ResourceType;
 
-typedef enum ResourceState {
-	RS_GfxLoaded = 1,
-	RS_SfxLoaded = 2,
-	RS_ShaderLoaded = 4,
-	RS_ModelsLoaded = 8,
-	RS_BgmLoaded = 16,
-	RS_FontsLoaded = 32,
-} ResourceState;
+typedef enum ResourceFlags {
+	RESF_REQUIRED = 1,
+	RESF_OVERRIDE = 2,
+	// RESF_PERMANENT = 4;
+} ResourceFlags;
 
-struct Resources {
-	ResourceState state;
+// Converts a full path into an abstract resource name to be used as the hashtable key.
+// This method is optional, the default strategy is to take the path minus the prefix and extension.
+// The returned name must be free()'d.
+typedef char* (*ResourceNameFunc)(const char *path);
 
-	Hashtable *textures;
-	Hashtable *animations;
-	Hashtable *sounds;
-	Hashtable *music;
-	Hashtable *shaders;
-	Hashtable *models;
-	Hashtable *bgm_descriptions;
+// Converts an abstract resource name into a full path from which a resource with that name could be loaded.
+// The path may not actually exist or be usable. The load function (see below) shall deal with such cases.
+// The returned path must be free()'d.
+// May return NULL on failure, but does not have to.
+typedef char* (*ResourceFindFunc)(const char *name);
 
+// Tells whether the resource handler should attempt to load a file, specified by a full path.
+typedef bool (*ResourceCheckFunc)(const char *path);
+
+// Loads a resource at path and returns a pointer to it.
+// Must return NULL and not crash the program on failure.
+typedef void* (*ResourceLoadFunc)(const char *path);
+
+// Unloads a resource, freeing all allocated to it memory.
+typedef void (*ResourceUnloadFunc)(void *res);
+
+typedef struct ResourceHandler {
+	ResourceType type;
+	ResourceNameFunc name;
+	ResourceFindFunc find;
+	ResourceCheckFunc check;
+	ResourceLoadFunc load;
+	ResourceUnloadFunc unload;
+	Hashtable *mapping;
+	char subdir[32];
+} ResourceHandler;
+
+typedef struct Resource {
+	ResourceType type;
+	ResourceFlags flags;
+
+	union {
+		void *data;
+		Texture *texture;
+		Animation *animation;
+		Sound *sound;
+		Music *music;
+		Shader *shader;
+		Model *model;
+	};
+} Resource;
+
+typedef struct Resources {
+	ResourceHandler handlers[RES_NUMTYPES];
 	FBO fbg[2];
 	FBO fsec;
-};
+} Resources;
 
 extern Resources resources;
 
@@ -51,8 +96,17 @@ void init_resources(void);
 void load_resources(void);
 void free_resources(void);
 
+Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags);
+Resource* insert_resource(ResourceType type, const char *name, void *data, ResourceFlags flags, const char *source);
+
 void draw_loading_screen(void);
 
 void resources_delete_and_unset_all(Hashtable *ht, HTIterCallback ifunc, void *arg);
+
+void resource_util_strip_ext(char *path);
+char* resource_util_basename(const char *prefix, const char *path);
+const char* resource_util_filename(const char *path);
+
+void print_resource_hashtables(void);
 
 #endif

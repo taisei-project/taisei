@@ -17,7 +17,6 @@ pkg_check_modules(PNG libpng REQUIRED)
 
 if(NOT NO_AUDIO)
 	pkg_check_modules(SDL2_MIXER SDL2_mixer REQUIRED)
-	add_definitions(-DHAVE_MIXER)
 endif()
 
 set(SRCs
@@ -50,6 +49,7 @@ set(SRCs
 	transition.c
 	color.c
 	difficulty.c
+	audio_common.c
 	menu/menu.c
 	menu/mainmenu.c
 	menu/options.c
@@ -96,9 +96,17 @@ else()
 endif()
 
 if(NO_AUDIO)
-	set(SRCs ${SRCs} resource/audio_null.c resource/bgm_null.c)
+	set(SRCs ${SRCs}
+		audio_null.c
+		resource/bgm_null.c
+		resource/sfx_null.c
+	)
 else()
-	set(SRCs ${SRCs} resource/audio.c resource/bgm.c)
+	set(SRCs ${SRCs}
+		audio_mixer.c
+		resource/bgm_mixer.c
+		resource/sfx_mixer.c
+	)
 endif()
 
 if(WIN32)
@@ -126,7 +134,6 @@ endif()
 set(LIBs ${LIBs}
 	${SDL2_LIBRARIES}
 	${SDL2_TTF_LIBRARIES}
-	${SDL2_MIXER_LIBRARIES}
 	${PNG_LIBRARIES}
 	${ZLIB_LIBRARIES}
 	${OPENGL_LIBRARIES}
@@ -152,12 +159,18 @@ endif()
 set(INCs
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${SDL2_INCLUDE_DIRS}
-	${SDL2_MIXER_INCLUDE_DIRS}
 	${SDL2_TTF_INCLUDE_DIRS}
 	${ZLIB_INCLUDE_DIRS}
 	${OPENGL_INCLUDE_DIR}
 	${PNG_INCLUDE_DIRS}
 	)
+
+# stupid cmake caching SHIT
+if(NOT NO_AUDIO)
+	set(INCs ${INCs} ${SDL2_MIXER_INCLUDE_DIRS})
+	set(LIBs ${LIBs} ${SDL2_MIXER_LIBRARIES})
+	set(LIBDIRs ${LIBDIRs} ${SDL2_MIXER_LIBRARY_DIRS})
+endif()
 
 set(CMAKE_REQUIRED_INCLUDES ${INCs})
 include_directories(${INCs})

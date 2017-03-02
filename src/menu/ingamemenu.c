@@ -36,17 +36,15 @@ void create_ingame_menu(MenuData *m) {
 void draw_ingame_menu_bg(float f) {
 	float rad = f*IMENU_BLUR;
 
-	if(!config_get_int(CONFIG_NO_SHADER)) {
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		Shader *shader = get_shader("ingame_menu");
-		glUseProgram(shader->prog);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	Shader *shader = get_shader("ingame_menu");
+	glUseProgram(shader->prog);
 
-		glUniform1f(uniloc(shader, "rad"), rad);
+	glUniform1f(uniloc(shader, "rad"), rad);
 
-		draw_fbo_viewport(&resources.fsec);
+	draw_fbo_viewport(&resources.fsec);
 
-		glUseProgram(0);
-	}
+	glUseProgram(0);
 }
 
 void draw_ingame_menu(MenuData *menu) {

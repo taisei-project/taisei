@@ -15,8 +15,7 @@ static Stage3D bgcontext;
 
 void stage2_bg_leaves_draw(Vector pos) {
 	glEnable(GL_TEXTURE_2D);
-	if(!config_get_int(CONFIG_NO_SHADER))
-		glUseProgram(get_shader("alpha_depth")->prog);
+	glUseProgram(get_shader("alpha_depth")->prog);
 
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
@@ -37,8 +36,7 @@ void stage2_bg_leaves_draw(Vector pos) {
 
 	glPopMatrix();
 
-	if(!config_get_int(CONFIG_NO_SHADER))
-		glUseProgram(0);
+	glUseProgram(0);
 
 	glDisable(GL_TEXTURE_2D);
 

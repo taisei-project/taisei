@@ -16,7 +16,7 @@
 #include "tscomplex.h"
 #include "color.h"
 
-#include "resource/audio.h"
+#include "resource/sfx.h"
 #include "resource/bgm.h"
 #include "resource/shader.h"
 #include "resource/font.h"
@@ -42,6 +42,7 @@
 #include "events.h"
 #include "difficulty.h"
 #include "color.h"
+#include "audio.h"
 
 #include "taisei_err.h"
 #include "rwops/all.h"
@@ -160,9 +161,14 @@ double clamp(double, double, double);
 double approach(double v, double t, double d);
 double psin(double);
 bool strendswith(const char *s, const char *e);
+bool strstartswith(const char *s, const char *p);
+bool strendswith_any(const char *s, const char **earray);
 void stralloc(char **dest, const char *src);
+char* strjoin(const char *first, ...);
 bool gamekeypressed(KeyIndex key);
 int getenvint(const char *v);
+char* read_all(const char *filename, int *size);
+char* copy_segment(const char *text, const char *delim, int *size);
 
 #define SIGN(x) ((x > 0) - (x < 0))
 
