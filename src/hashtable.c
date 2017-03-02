@@ -109,6 +109,7 @@ void hashtable_set(Hashtable *ht, void *key, void *data) {
                 ht->free_func(e->key);
             }
             delete_element((void**)&elems, e);
+            break;
         }
     }
 
