@@ -51,7 +51,7 @@ Animation *init_animation(const char *filename) {
 
 	hashtable_set_string(resources.animations, refname, buf);
 
-	printf("-- initialized animation '%s'\n", name);
+	printf("-- initialized animation '%s'\n", refname);
 	return buf;
 }
 
