@@ -25,6 +25,7 @@ set(SRCs
 	taiseigl.c
 	random.c
 	config.c
+	color.c
 	gamepad.c
 	stage.c
 	replay.c

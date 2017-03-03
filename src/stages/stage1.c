@@ -130,7 +130,6 @@ void stage1_reed_draw(Vector pos) {
 	glPushMatrix();
 	glTranslatef(pos[0]+200*sin(pos[1]), pos[1], d);
 	glRotatef(90,1,0,0);
-//glRotatef(90,0,0,1);
 	glScalef(80,80,80);
 	glColor4f(0.,0.05,0.05,1);
 	
@@ -138,14 +137,13 @@ void stage1_reed_draw(Vector pos) {
 	glTranslatef(0,-d/80,0);
 	glScalef(1,-1,1);
 	glTranslatef(0,d/80,0);
-	//glDisable(GL_CULL_FACE);
 	glDepthFunc(GL_GREATER);
 	glDepthMask(GL_FALSE);
 	glColor4f(0.,0.05,0.05,0.5);
 	draw_model("reeds");
 	glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LEQUAL);
-	//glEnable(GL_CULL_FACE);
+
 	glColor4f(1,1,1,1);
 	glPopMatrix();
 

@@ -99,7 +99,7 @@ int youmu_slash(Enemy *e, int t) {
 
 	FROM_TO(30, 60, 10) {
 		tsrand_fill(3);
-		create_particle1c("youmu_slice", VIEWPORT_W/2.0 - 150 + 100*_i + VIEWPORT_H/2.0*I - 10-10.0*I + 20*afrand(0)+20.0*I*afrand(1), NULL, Slice, timeout, 200)->angle = -10.0+20.0*afrand(2);
+		create_particle1c("youmu_slice", VIEWPORT_W/2.0 - 150 + 100*_i + VIEWPORT_H/2.0*I - 10-10.0*I + 20*afrand(0)+20.0*I*afrand(1), 0, Slice, timeout, 200)->angle = -10.0+20.0*afrand(2);
 	}
 
 	FROM_TO(40,200,1)
@@ -124,7 +124,7 @@ int youmu_slash(Enemy *e, int t) {
 void YoumuOppositeMyon(Enemy *e, int t) {
 	complex pos = e->pos;
 
-	create_particle2c("flare", pos, NULL, Shrink, timeout, 10, -e->pos+10.0*I)->type = PlrProj;
+	create_particle2c("flare", pos, 0, Shrink, timeout, 10, -e->pos+10.0*I)->type = PlrProj;
 }
 
 int youmu_opposite_myon(Enemy *e, int t) {
@@ -174,11 +174,11 @@ int youmu_opposite_myon(Enemy *e, int t) {
 
 		if(plr->power >= 300) {
 			a = 13;
-			create_projectile1c("hghost", e->pos, NULL, linear, -21*cexp(I*(carg(-e->pos0)+0.1)))->type = PlrProj+45;
-			create_projectile1c("hghost", e->pos, NULL, linear, -21*cexp(I*(carg(-e->pos0)-0.1)))->type = PlrProj+45;
+			create_projectile1c("hghost", e->pos, 0, linear, -21*cexp(I*(carg(-e->pos0)+0.1)))->type = PlrProj+45;
+			create_projectile1c("hghost", e->pos, 0, linear, -21*cexp(I*(carg(-e->pos0)-0.1)))->type = PlrProj+45;
 		}
 
-		create_projectile1c("hghost", e->pos, NULL, linear, -21*cexp(I*carg(-e->pos0)))->type = PlrProj+(60+a*(plr->power/100));
+		create_projectile1c("hghost", e->pos, 0, linear, -21*cexp(I*carg(-e->pos0)))->type = PlrProj+(60+a*(plr->power/100));
 	}
 
 	return 1;
@@ -200,7 +200,7 @@ int youmu_split(Enemy *e, int t) {
 
 	FROM_TO(100,170,10) {
 		tsrand_fill(3);
-		create_particle1c("youmu_slice", VIEWPORT_W/2.0 + VIEWPORT_H/2.0*I - 200-200.0*I + 400*afrand(0)+400.0*I*afrand(1), NULL, Slice, timeout, 100-_i)->angle = 360.0*afrand(2);
+		create_particle1c("youmu_slice", VIEWPORT_W/2.0 + VIEWPORT_H/2.0*I - 200-200.0*I + 400*afrand(0)+400.0*I*afrand(1), 0, Slice, timeout, 100-_i)->angle = 360.0*afrand(2);
 	}
 
 
@@ -223,8 +223,8 @@ void youmu_shot(Player *plr) {
 			play_sound("generic_shot");
 
 		if(!(global.frames % 6)) {
-			create_projectile1c("youmu", plr->pos + 10 - I*20, NULL, linear, -20.0*I)->type = PlrProj+120;
-			create_projectile1c("youmu", plr->pos - 10 - I*20, NULL, linear, -20.0*I)->type = PlrProj+120;
+			create_projectile1c("youmu", plr->pos + 10 - I*20, 0, linear, -20.0*I)->type = PlrProj+120;
+			create_projectile1c("youmu", plr->pos - 10 - I*20, 0, linear, -20.0*I)->type = PlrProj+120;
 		}
 
 		if(plr->shot == YoumuHoming) {
@@ -237,13 +237,13 @@ void youmu_shot(Player *plr) {
 				if(ref == -1)
 					ref = add_ref(NULL);
 
-				create_projectile2c("youhoming", plr->pos, NULL, youmu_homing, -3.0*I, ref)->type = PlrProj+(450+225*(plr->power/100));
+				create_projectile2c("youhoming", plr->pos, 0, youmu_homing, -3.0*I, ref)->type = PlrProj+(450+225*(plr->power/100));
 			}
 
 			if(!plr->focus && !(global.frames % (int)round(8 - (plr->power / 100.0) * 1.3))) {
-				create_projectile2c("hghost", plr->pos, NULL, accelerated, 2-10.0*I, -0.4*I)->type = PlrProj+27;
-				create_projectile2c("hghost", plr->pos, NULL, accelerated, -10.0*I, -0.4*I)->type = PlrProj+27;
-				create_projectile2c("hghost", plr->pos, NULL, accelerated, -2-10.0*I, -0.4*I)->type = PlrProj+27;
+				create_projectile2c("hghost", plr->pos, 0, accelerated, 2-10.0*I, -0.4*I)->type = PlrProj+27;
+				create_projectile2c("hghost", plr->pos, 0, accelerated, -10.0*I, -0.4*I)->type = PlrProj+27;
+				create_projectile2c("hghost", plr->pos, 0, accelerated, -2-10.0*I, -0.4*I)->type = PlrProj+27;
 			}
 		}
 	}
@@ -309,13 +309,13 @@ int mari_laser(Projectile *p, int t) {
 int marisa_laser_slave(Enemy *e, int t) {
 	if(global.plr.fire && global.frames - global.plr.recovery >= 0 && global.plr.deathtime >= -1) {
 		if(!(global.frames % 4))
-			create_projectile_p(&global.projs, get_tex("proj/marilaser"), 0, NULL, MariLaser, mari_laser, 0, add_ref(e),e->args[2],0)->type = PlrProj+e->args[1]*4;
+			create_projectile_p(&global.projs, get_tex("proj/marilaser"), 0, 0, MariLaser, mari_laser, 0, add_ref(e),e->args[2],0)->type = PlrProj+e->args[1]*4;
 
 		if(!(global.frames % 3)) {
 			float s = 0.5 + 0.3*sin(global.frames/7.0);
 			create_particle3c("marilaser_part0", 0, rgb(1-s,0.5,s), PartDraw, mari_laser, 0, add_ref(e), e->args[2]);
 		}
-		create_particle1c("lasercurve", e->pos, NULL, Fade, timeout, 4)->type = PlrProj;
+		create_particle1c("lasercurve", e->pos, 0, Fade, timeout, 4)->type = PlrProj;
 	}
 
 	e->pos = global.plr.pos + (1 - abs(global.plr.focus)/30.0)*e->pos0 + (abs(global.plr.focus)/30.0)*e->args[0];
@@ -423,12 +423,12 @@ void MariStarTrail(Projectile *p, int t) {
 
 void MariStarBomb(Projectile *p, int t) {
 	MariStar(p, t);
-	create_particle1c("maristar_orbit", p->pos, NULL, GrowFadeAdd, timeout, 40);
+	create_particle1c("maristar_orbit", p->pos, 0, GrowFadeAdd, timeout, 40);
 }
 
 int marisa_star_projectile(Projectile *p, int t) {
 	int r = accelerated(p, t);
-	create_projectile_p(&global.particles, get_tex("proj/maristar"), p->pos, NULL, MariStarTrail, timeout, 10, 0, 0, 0)->type = PlrProj;
+	create_projectile_p(&global.particles, get_tex("proj/maristar"), p->pos, 0, MariStarTrail, timeout, 10, 0, 0, 0)->type = PlrProj;
 	return r;
 }
 
@@ -437,7 +437,7 @@ int marisa_star_slave(Enemy *e, int t) {
 
 	if(global.plr.fire && global.frames - global.plr.recovery >= 0 && global.plr.deathtime >= -1) {
 		if(!(global.frames % 20))
-			create_projectile_p(&global.projs, get_tex("proj/maristar"), e->pos, NULL, MariStar, marisa_star_projectile, e->args[1] * 2 * (1 - 1.5 * focus), e->args[2], 0, 0)->type = PlrProj+e->args[3]*20;
+			create_projectile_p(&global.projs, get_tex("proj/maristar"), e->pos, 0, MariStar, marisa_star_projectile, e->args[1] * 2 * (1 - 1.5 * focus), e->args[2], 0, 0)->type = PlrProj+e->args[3]*20;
 	}
 
 	e->pos = global.plr.pos + (1 - focus)*e->pos0 + focus*e->args[0];
@@ -472,8 +472,8 @@ void marisa_shot(Player *plr) {
 			play_sound("generic_shot");
 
 		if(!(global.frames % 6)) {
-			create_projectile1c("marisa", plr->pos + 10 - 15.0*I, NULL, linear, -20.0*I)->type = PlrProj+150;
-			create_projectile1c("marisa", plr->pos - 10 - 15.0*I, NULL, linear, -20.0*I)->type = PlrProj+150;
+			create_projectile1c("marisa", plr->pos + 10 - 15.0*I, 0, linear, -20.0*I)->type = PlrProj+150;
+			create_projectile1c("marisa", plr->pos - 10 - 15.0*I, 0, linear, -20.0*I)->type = PlrProj+150;
 		}
 	}
 }
@@ -490,7 +490,7 @@ void marisa_bomb(Player *plr) {
 		for(i = 0; i < 20; i++) {
 			r = frand()*40 + 100;
 			phi = frand()*2*M_PI;
-			create_particle1c("maristar_orbit", plr->pos + r*cexp(I*phi), NULL, MariStarBomb, marisa_star_orbit, I*r*cexp(I*(phi+frand()*0.5))/10);
+			create_particle1c("maristar_orbit", plr->pos + r*cexp(I*phi), 0, MariStarBomb, marisa_star_orbit, I*r*cexp(I*(phi+frand()*0.5))/10);
 		}
 		break;
 	default:

@@ -10,6 +10,7 @@
 
 #include "tscomplex.h"
 #include "resource/texture.h"
+#include "color.h"
 
 #include <stdbool.h>
 
@@ -45,7 +46,7 @@ typedef struct Projectile {
 
 	ProjType type;
 
-	Color *clr;
+	Color clr;
 
 	complex args[RULE_ARGC];
 	int grazed;
@@ -59,9 +60,9 @@ typedef struct Projectile {
 #define create_projectile2c(n,p,c,r,a1,a2) create_projectile4c(n,p,c,r,a1,a2,0,0)
 #define create_projectile1c(n,p,c,r,a1) create_projectile4c(n,p,c,r,a1,0,0,0)
 
-Projectile *create_particle4c(char *name, complex pos, Color *clr, ProjDRule draw, ProjRule rule, complex a1, complex a2, complex a3, complex a4);
-Projectile *create_projectile4c(char *name, complex pos, Color *clr, ProjRule rule, complex a1, complex a2, complex a3, complex a4);
-Projectile *create_projectile_p(Projectile **dest, Texture *tex, complex pos, Color *clr, ProjDRule draw, ProjRule rule, complex a1, complex a2, complex a3, complex a4);
+Projectile *create_particle4c(char *name, complex pos, Color clr, ProjDRule draw, ProjRule rule, complex a1, complex a2, complex a3, complex a4);
+Projectile *create_projectile4c(char *name, complex pos, Color clr, ProjRule rule, complex a1, complex a2, complex a3, complex a4);
+Projectile *create_projectile_p(Projectile **dest, Texture *tex, complex pos, Color clr, ProjDRule draw, ProjRule rule, complex a1, complex a2, complex a3, complex a4);
 void delete_projectile(Projectile **dest, Projectile *proj);
 void delete_projectiles(Projectile **dest);
 void draw_projectiles(Projectile *projs);

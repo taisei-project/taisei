@@ -10,7 +10,6 @@
 
 #include <SDL.h>
 #include "taiseigl.h"
-#include "color.h"
 
 typedef struct Texture Texture;
 
