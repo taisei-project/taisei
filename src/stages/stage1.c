@@ -51,7 +51,10 @@ void stage1_bg_draw(Vector pos) {
 	glTranslatef(-VIEWPORT_W/2,0,0);
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
-	draw_projectiles(global.particles);
+	for(Projectile *p = global.particles; p; p = p->next) {
+		if(p->type != PlrProj)
+			p->draw(p,global.frames - p->birthtime);
+	}
 	draw_enemies(global.enemies);
 	if(global.boss)
 		draw_boss(global.boss);

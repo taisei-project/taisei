@@ -124,7 +124,7 @@ int youmu_slash(Enemy *e, int t) {
 void YoumuOppositeMyon(Enemy *e, int t) {
 	complex pos = e->pos;
 
-	create_particle2c("flare", pos, 0, Shrink, timeout, 10, -e->pos+10.0*I);
+	create_particle2c("flare", pos, 0, Shrink, timeout, 10, -e->pos+10.0*I)->type = PlrProj;
 }
 
 int youmu_opposite_myon(Enemy *e, int t) {
@@ -428,7 +428,7 @@ void MariStarBomb(Projectile *p, int t) {
 
 int marisa_star_projectile(Projectile *p, int t) {
 	int r = accelerated(p, t);
-	create_projectile_p(&global.particles, get_tex("proj/maristar"), p->pos, 0, MariStarTrail, timeout, 10, 0, 0, 0)->type = Particle;
+	create_projectile_p(&global.particles, get_tex("proj/maristar"), p->pos, 0, MariStarTrail, timeout, 10, 0, 0, 0)->type = PlrProj;
 	return r;
 }
 
