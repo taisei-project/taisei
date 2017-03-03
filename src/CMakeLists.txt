@@ -63,6 +63,7 @@ set(SRCs
 	menu/spellpractice.c
 	menu/common.c
 	stages/stage1.c
+	stages/stage1_events.c
 	stages/stage2.c
 	stages/stage2_events.c
 	stages/stage3.c
