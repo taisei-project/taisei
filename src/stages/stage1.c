@@ -51,8 +51,6 @@ void stage1_bg_draw(Vector pos) {
 	glTranslatef(-VIEWPORT_W/2,0,0);
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
-	if(global.diff == D_Lunatic)
-		draw_projectiles(global.projs);
 	draw_projectiles(global.particles);
 	draw_enemies(global.enemies);
 	if(global.boss)
