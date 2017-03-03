@@ -109,6 +109,7 @@ void stage2_fog(int fbonum) {
 	glUniform1f(uniloc(shader, "start"),0.2);
 	glUniform1f(uniloc(shader, "end"),0.8);
 	glUniform1f(uniloc(shader, "exponent"),3.0);
+	glUniform1f(uniloc(shader, "sphereness"),0);
 	glActiveTexture(GL_TEXTURE0 + 2);
 	glBindTexture(GL_TEXTURE_2D, resources.fbg[fbonum].depth);
 	glActiveTexture(GL_TEXTURE0);
