@@ -6,21 +6,17 @@
  */
 
 #include <png.h>
+#include <assert.h>
 
 #include "texture.h"
 #include "resource.h"
 #include "global.h"
 #include "paths/native.h"
 #include "taisei_err.h"
-#include "list.h"
 #include "vbo.h"
 
-Texture *get_tex(char *name) {
-	Texture *t, *res = NULL;
-	for(t = resources.textures; t; t = t->next) {
-		if(strcmp(t->name, name) == 0)
-			res = t;
-	}
+Texture *get_tex(const char *name) {
+	Texture *res = hashtable_get_string(resources.textures, name);
 
 	if(res == NULL)
 		errx(-1,"get_tex():\n!- cannot load texture '%s'", name);
@@ -28,55 +24,59 @@ Texture *get_tex(char *name) {
 	return res;
 }
 
-Texture *prefix_get_tex(char *name, char *prefix) {
-	char *src;
+Texture *prefix_get_tex(const char *name, const char *prefix) {
+	const char *src;
 
 	if((src = strrchr(name, '/')))
 		src++;
 	else
 		src = name;
 
-	char *buf = malloc(strlen(src) + strlen(prefix) + 1);
+	char buf[strlen(src) + strlen(prefix) + 1];
 	strcpy(buf, prefix);
 	strcat(buf, src);
 
-	Texture *tex = get_tex(buf);
-	free(buf);
-
-	return tex;
+	return get_tex(buf);
 }
 
-void delete_texture(void **texs, void *tex) {
-	Texture *t = (Texture *)tex;
-	free(t->name);
-	glDeleteTextures(1, &t->gltex);
-
-	delete_element((void **)texs, tex);
+static void* delete_texture(void *name, void *tex, void *arg) {
+	free_texture((Texture*)tex);
+	return NULL;
 }
 
 void delete_textures(void) {
-	delete_all_elements((void **)&resources.textures, delete_texture);
+	resources_delete_and_unset_all(resources.textures, delete_texture, NULL);
 }
 
 Texture *load_texture(const char *filename) {
+	char *beg = strstr(filename, "gfx/") + 4;
+	char *end = strrchr(filename, '.');
+
+	int sz = end - beg + 1;
+	char name[sz];
+	strlcpy(name, beg, sz);
+
+	Texture *texture = hashtable_get_string(resources.textures, name);
+
+	// FIXME: this is for the loading screen
+	if(texture) {
+		return texture;
+	}
+
 	SDL_Surface *surface = load_png(filename);
 
 	if(surface == NULL)
 		errx(-1,"load_texture():\n!- cannot load '%s'", filename);
 
-	Texture *texture = create_element((void **)&resources.textures, sizeof(Texture));
+	texture = malloc(sizeof(Texture));
 	load_sdl_surf(surface, texture);
+
 	free(surface->pixels);
 	SDL_FreeSurface(surface);
 
-	char *beg = strstr(filename, "gfx/") + 4;
-	char *end = strrchr(filename, '.');
+	hashtable_set_string(resources.textures, name, (void*)texture);
 
-	int sz = end - beg + 1;
-	texture->name = malloc(sz);
-	strlcpy(texture->name, beg, sz);
-
-	printf("-- loaded '%s' as '%s'\n", filename, texture->name);
+	printf("-- loaded '%s' as '%s'\n", filename, name);
 
 	return texture;
 }
@@ -188,7 +188,7 @@ void free_texture(Texture *tex) {
 	free(tex);
 }
 
-void draw_texture(float x, float y, char *name) {
+void draw_texture(float x, float y, const char *name) {
 	draw_texture_p(x, y, get_tex(name));
 }
 
@@ -222,7 +222,7 @@ void draw_texture_p(float x, float y, Texture *tex) {
 	glDisable(GL_TEXTURE_2D);
 }
 
-void fill_screen(float xoff, float yoff, float ratio, char *name) {
+void fill_screen(float xoff, float yoff, float ratio, const char *name) {
 	fill_screen_p(xoff, yoff, ratio, get_tex(name));
 }
 

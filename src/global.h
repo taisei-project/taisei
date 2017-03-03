@@ -14,6 +14,7 @@
 #include <math.h>
 
 #include "tscomplex.h"
+#include "color.h"
 
 #include "resource/audio.h"
 #include "resource/bgm.h"

@@ -41,6 +41,13 @@ static void get_gl_version(char *major, char *minor) {
 	// the glGetIntegerv way only works in >=3.0 contexts, so...
 
 	const char *vstr = (const char*)glGetString(GL_VERSION);
+
+	if(!vstr) {
+		*major = 1;
+		*minor = 1;
+		return;
+	}
+
 	const char *dot = strchr(vstr, '.');
 
 	*major = atoi(vstr);
@@ -108,6 +115,12 @@ void load_gl_library(void) {
 		errx(-1, "load_gl_library(): SDL_GL_LoadLibrary() failed: %s", SDL_GetError());
 		return;
 	}
+#endif
+}
+
+void unload_gl_library(void) {
+#ifndef LINK_TO_LIBGL
+	SDL_GL_UnloadLibrary();
 #endif
 }
 

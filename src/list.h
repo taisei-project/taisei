@@ -15,6 +15,7 @@
 void *create_element(void **dest, int size);
 void delete_element(void **dest, void *e);
 void delete_all_elements(void **dest, void (callback)(void **, void *));
+void delete_all_elements_witharg(void **dest, void (callback)(void **, void *, void *), void *arg);
 
 typedef struct {
 	void *ptr;
@@ -32,4 +33,5 @@ extern void *_FREEREF;
 int add_ref(void *ptr);
 void del_ref(void *ptr);
 void free_ref(int i);
+void free_all_refs(void);
 #endif

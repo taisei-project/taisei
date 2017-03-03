@@ -5,11 +5,11 @@
 
 struct current_bgm_t current_bgm;
 
-Sound *load_bgm(char *filename) {
+Sound *load_bgm(const char *filename) {
     return NULL;
 }
 
-void start_bgm(char *name) {
+void start_bgm(const char *name) {
     return;
 }
 

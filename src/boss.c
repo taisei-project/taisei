@@ -282,7 +282,6 @@ void free_boss(Boss *boss) {
 
 	free(boss->name);
 	free(boss->attacks);
-	free(boss->zoomcolor);
 }
 
 void free_attack(Attack *a) {

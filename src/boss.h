@@ -10,8 +10,9 @@
 
 #include "tscomplex.h"
 #include "difficulty.h"
+#include "resource/animation.h"
+#include "color.h"
 
-#include <resource/animation.h>
 struct Boss;
 
 typedef void (*BossRule)(struct Boss*, int time);
@@ -94,7 +95,7 @@ typedef struct Boss {
 	int anirow;
 
 	int dmg;
-	Color *zoomcolor;
+	Color zoomcolor;
 } Boss;
 
 Boss* create_boss(char *name, char *ani, complex pos);

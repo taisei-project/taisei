@@ -25,6 +25,7 @@ set(SRCs
 	taiseigl.c
 	random.c
 	config.c
+	color.c
 	gamepad.c
 	stage.c
 	replay.c
@@ -36,6 +37,7 @@ set(SRCs
 	enemy.c
 	item.c
 	list.c
+	hashtable.c
 	boss.c
 	plrmodes.c
 	laser.c

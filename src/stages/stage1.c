@@ -168,7 +168,6 @@ int cirno_pfreeze_frogs(Projectile *p, int t) {
 	if(boss_t < 110)
 		linear(p, t);
 	else if(boss_t == 110) {
-		free(p->clr);
 		p->clr = rgb(0.7,0.7,0.7);
 	}
 
@@ -371,7 +370,7 @@ void cirno_icicle_fall(Boss *c, int time) {
 
 int cirno_crystal_blizzard_proj(Projectile *p, int time) {
 	if(!(time % 7))
-		create_particle1c("stain", p->pos, NULL, GrowFadeAdd, timeout, 20)->angle = global.frames * 15;
+		create_particle1c("stain", p->pos, 0, GrowFadeAdd, timeout, 20)->angle = global.frames * 15;
 
 	if(time > 100 + global.diff * 100)
 		p->args[0] *= 1.03;

@@ -185,7 +185,7 @@ int scythe_mid(Enemy *e, int t) {
 }
 
 void Scythe(Enemy *e, int t) {
-	Projectile *p = create_projectile_p(&global.particles, get_tex("stage6/scythe"), e->pos, NULL, ScaleFade, timeout, 8, e->args[2], 0, 0);
+	Projectile *p = create_projectile_p(&global.particles, get_tex("stage6/scythe"), e->pos, 0, ScaleFade, timeout, 8, e->args[2], 0, 0);
 	p->type = Particle;
 	p->angle = creal(e->args[1]);
 
@@ -319,7 +319,7 @@ int scythe_newton(Enemy *e, int t) {
 		for(p = global.projs; p; p = p->next) {
 			if(p->type == FairyProj && cabs(p->pos-e->pos) < 50) {
 				p->args[1] = 0.01*global.diff*cexp(I*f);
-				p->clr->r = frand();
+				p->clr = derive_color(p->clr, CLRMASK_R, rgba(frand(), 0, 0, 0));
 			}
 		}
 	}
@@ -669,7 +669,7 @@ int ricci_proj(Projectile *p, int t) {
 	}
 
 	p->angle = carg(p->args[0]);
-	p->clr->b = cabs(p->args[0])*0.5;
+	p->clr = derive_color(p->clr, CLRMASK_B, rgb(0, 0, cabs(p->args[0])*0.5));
 
 	return 1;
 }
@@ -958,10 +958,7 @@ int theory_proj(Projectile *p, int t) {
 			break;
 		}
 
-		p->clr->r = cos(p->angle);
-		p->clr->g = sin(p->angle);
-		p->clr->b = cos(p->angle+2.1);
-
+		p->clr = rgb(cos(p->angle), sin(p->angle), cos(p->angle+2.1));
 		p->args[1] += I;
 	}
 

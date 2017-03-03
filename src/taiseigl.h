@@ -102,6 +102,7 @@ extern struct glext_s glext;
 void load_gl_library(void);
 void load_gl_functions(void);
 void check_gl_extensions(void);
+void unload_gl_library(void);
 
 #define gluPerspective tsgluPerspective
 void gluPerspective(GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFar);
@@ -594,9 +595,9 @@ struct glext_s {
         char minor;
     } version;
 
-    int draw_instanced: 1;
-    int EXT_draw_instanced: 1;
-    int ARB_draw_instanced: 1;
+    unsigned int draw_instanced: 1;
+    unsigned int EXT_draw_instanced: 1;
+    unsigned int ARB_draw_instanced: 1;
 
     tsglDrawArraysInstanced_ptr DrawArraysInstanced;
 };

@@ -70,7 +70,7 @@ void print_program_info_log(GLuint program) {
 	}
 }
 
-char *read_all(char *filename, int *size) {
+char *read_all(const char *filename, int *size) {
 	char *text;
 	FILE *file = fopen(filename, "r");
 	if(file == NULL)
@@ -92,7 +92,7 @@ char *read_all(char *filename, int *size) {
 	return text;
 }
 
-char *copy_segment(char *text, char *delim, int *size) {
+char *copy_segment(const char *text, const char *delim, int *size) {
 	char *seg, *beg, *end;
 
 	beg = strstr(text, delim);
@@ -111,7 +111,7 @@ char *copy_segment(char *text, char *delim, int *size) {
 	return seg;
 }
 
-void load_shader_snippets(char *filename, char *prefix) {
+void load_shader_snippets(const char *filename, const char *prefix) {
 	int size, vhsize = 0, vfsize = 0, fhsize = 0, ffsize = 0, ssize, prefixlen;
 	char *text, *vhead, *vfoot, *fhead, *ffoot;
 	char *sec, *name, *nend, *send;
@@ -204,7 +204,7 @@ void load_shader_snippets(char *filename, char *prefix) {
 	free(text);
 }
 
-void load_shader_file(char *filename) {
+void load_shader_file(const char *filename) {
 	int size;
 	char *text, *vtext, *ftext, *delim;
 	char *beg, *end, *name;
@@ -234,8 +234,8 @@ void load_shader_file(char *filename) {
 	free(text);
 }
 
-void load_shader(char *vheader, char *fheader, char *vtext, char *ftext, char *name, int nsize) {
-	Shader *sha = create_element((void **)&resources.shaders, sizeof(Shader));
+void load_shader(const char *vheader, const char *fheader, const char *vtext, const char *ftext, const char *name, int nsize) {
+	Shader *sha = malloc(sizeof(Shader));
 	GLuint vshaderobj;
 	GLuint fshaderobj;
 
@@ -251,8 +251,8 @@ void load_shader(char *vheader, char *fheader, char *vtext, char *ftext, char *n
 		fheader = "";
 	}
 
-	GLchar *v_sources[] = { vheader, vtext };
-	GLchar *f_sources[] = { fheader, ftext };
+	const GLchar *v_sources[] = { vheader, vtext };
+	const GLchar *f_sources[] = { fheader, ftext };
 	GLint lengths[] = { -1, -1 };
 
 	glShaderSource(vshaderobj, 2, (const GLchar**)v_sources, lengths);
@@ -274,10 +274,9 @@ void load_shader(char *vheader, char *fheader, char *vtext, char *ftext, char *n
 
 	print_program_info_log(sha->prog);
 
-	sha->name = malloc(nsize);
-	strlcpy(sha->name, name, nsize);
-
 	cache_uniforms(sha);
+
+	hashtable_set_string(resources.shaders, name, sha);
 }
 
 void cache_uniforms(Shader *sha) {
@@ -299,7 +298,7 @@ void cache_uniforms(Shader *sha) {
 	}
 }
 
-int uniloc(Shader *sha, char *name) {
+int uniloc(Shader *sha, const char *name) {
 	int i;
 	for(i = 0; i < sha->unicount; i++)
 		if(strcmp(sha->uniforms[i].name, name) == 0)
@@ -309,33 +308,24 @@ int uniloc(Shader *sha, char *name) {
 }
 
 Shader *get_shader(const char *name) {
-	Shader *s, *res = NULL;
-
 	if(config_get_int(CONFIG_NO_SHADER))
 		return NULL;
 
-	for(s = resources.shaders; s; s = s->next) {
-		if(strcmp(s->name, name) == 0)
-			res = s;
-	}
-
-	return res;
+	return hashtable_get_string(resources.shaders, name);
 }
 
-void delete_shader(void **shas, void *sha) {
-	free(((Shader *)sha)->name);
-	glDeleteProgram(((Shader*)sha)->prog);
+void* delete_shader(void *name, void *vsha, void *arg) {
+	Shader *sha = vsha;
+	glDeleteProgram((sha)->prog);
 
-	int i;
-	for(i = 0; i < ((Shader *)sha)->unicount; i++)
-		free(((Shader *)sha)->uniforms[i].name);
+	for(int i = 0; i < sha->unicount; i++)
+		free(sha->uniforms[i].name);
+	free(sha->uniforms);
 
-	if(((Shader *)sha)->uniforms)
-		free(((Shader *)sha)->uniforms);
-
-	delete_element(shas, sha);
+	free(sha);
+	return NULL;
 }
 
 void delete_shaders(void) {
-	delete_all_elements((void **)&resources.shaders, delete_shader);
+	resources_delete_and_unset_all(resources.shaders, delete_shader, NULL);
 }

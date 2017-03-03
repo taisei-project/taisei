@@ -46,6 +46,7 @@ typedef struct OptionBinding {
 	int configentry;
 	BindingType type;
 	bool blockinput;
+	int pad;
 } OptionBinding;
 
 void draw_options_menu_bg(MenuData*);

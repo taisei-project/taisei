@@ -19,13 +19,13 @@ const char* difficulty_name(Difficulty diff) {
     }
 }
 
-void difficulty_color(Color *c, Difficulty diff) {
+Color difficulty_color(Difficulty diff) {
     switch(diff) {
-        case D_Easy:    c->r = 0.5; c->g = 1.0; c->b = 0.5; break;
-        case D_Normal:  c->r = 0.5; c->g = 0.5; c->b = 1.0; break;
-        case D_Hard:    c->r = 1.0; c->g = 0.5; c->b = 0.5; break;
-        case D_Lunatic: c->r = 1.0; c->g = 0.5; c->b = 1.0; break;
-        case D_Extra:   c->r = 0.5; c->g = 1.0; c->b = 1.0; break;
-        default:        c->r = 0.5; c->g = 0.5; c->b = 0.5; break;
+        case D_Easy:    return rgb(0.5, 1.0, 0.5);
+        case D_Normal:  return rgb(0.5, 0.5, 1.0);
+        case D_Hard:    return rgb(1.0, 0.5, 0.5);
+        case D_Lunatic: return rgb(1.0, 0.5, 1.0);
+        case D_Extra:   return rgb(0.5, 1.0, 1.0);
+        default:        return rgb(0.5, 0.5, 0.5);
     }
 }

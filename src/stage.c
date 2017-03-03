@@ -24,7 +24,7 @@
 static size_t numstages = 0;
 StageInfo *stages = NULL;
 
-static void add_stage(uint16_t id, StageProcs *procs, StageType type, const char *title, const char *subtitle, AttackInfo *spell, Difficulty diff, Color *titleclr, Color *bosstitleclr) {
+static void add_stage(uint16_t id, StageProcs *procs, StageType type, const char *title, const char *subtitle, AttackInfo *spell, Difficulty diff, Color titleclr, Color bosstitleclr) {
 	++numstages;
 	stages = realloc(stages, numstages * sizeof(StageInfo));
 	StageInfo *stg = stages + (numstages - 1);
@@ -37,17 +37,8 @@ static void add_stage(uint16_t id, StageProcs *procs, StageType type, const char
 	stralloc(&stg->subtitle, subtitle);
 	stg->spell = spell;
 	stg->difficulty = diff;
-
-	if(titleclr) {
-		memcpy(&stg->titleclr, titleclr, sizeof(Color));
-	}
-
-	if(bosstitleclr) {
-		memcpy(&stg->bosstitleclr, titleclr, sizeof(Color));
-	}
-
-	free(titleclr);
-	free(bosstitleclr);
+	stg->titleclr = titleclr;
+	stg->bosstitleclr = titleclr;
 
 #ifdef DEBUG
 	if(title && subtitle) {
@@ -57,7 +48,7 @@ static void add_stage(uint16_t id, StageProcs *procs, StageType type, const char
 }
 
 static void end_stages() {
-	add_stage(0, NULL, 0, NULL, NULL, NULL, 0, NULL, NULL);
+	add_stage(0, NULL, 0, NULL, NULL, NULL, 0, 0, 0);
 }
 
 static void add_spellpractice_stages(int *spellnum, bool (*filter)(AttackInfo*), uint16_t spellbits) {
@@ -87,7 +78,7 @@ static void add_spellpractice_stages(int *spellnum, bool (*filter)(AttackInfo*),
 					strcat(subtitle, " ~ ");
 					strcat(subtitle, postfix);
 
-					add_stage(id, s->procs->spellpractice_procs, STAGE_SPELL, title, subtitle, a, diff, NULL, NULL);
+					add_stage(id, s->procs->spellpractice_procs, STAGE_SPELL, title, subtitle, a, diff, 0, 0);
 					s = stages + i; // stages just got realloc'd, so we must update the pointer
 				}
 			}
@@ -375,9 +366,7 @@ void draw_hud(void) {
 	glTranslatef((SCREEN_W - 615) * 0.25, 20, 0);
 	glScalef(0.6, 0.6, 0);
 
-	Color clr;
-	difficulty_color(&clr, global.diff);
-	glColor4f(clr.r, clr.g, clr.b, 0.7f);
+	parse_color_call(derive_color(difficulty_color(global.diff), CLRMASK_A, rgba(0, 0, 0, 0.7f)), glColor4f);
 
 	diff = difficulty_name(global.diff);
 	draw_text(AL_Center, 1, 1, diff, _fonts.mainmenu);
@@ -535,6 +524,7 @@ static void stage_draw(StageInfo *stage) {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		video_set_viewport();
 		glPushMatrix();
+
 		if(global.shake_view) {
 			glTranslatef(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames+3),0);
 			glScalef(1+2*global.shake_view/VIEWPORT_W,1+2*global.shake_view/VIEWPORT_H,1);
@@ -615,10 +605,13 @@ static void apply_bg_shaders(ShaderRule *shaderrules) {
 		glUniform1f(uniloc(shader, "blur_rad"), 0.2+0.025*sin(global.frames/15.0));
 		glUniform1f(uniloc(shader, "rad"), 0.24);
 		glUniform1f(uniloc(shader, "ratio"), (float)resources.fbg[fbonum].nh/resources.fbg[fbonum].nw);
-		if(global.boss->zoomcolor)
-			glUniform4fv(uniloc(shader, "color"), 1, (float *)global.boss->zoomcolor);
-		else
+		if(global.boss->zoomcolor) {
+			static float clr[4];
+			parse_color_array(global.boss->zoomcolor, clr);
+			glUniform4fv(uniloc(shader, "color"), 1, clr);
+		} else {
 			glUniform4f(uniloc(shader, "color"), 0.1, 0.2, 0.3, 1);
+		}
 	}
 
 
@@ -837,9 +830,10 @@ void stage_loop(StageInfo *stage) {
 	stage->procs->end();
 	stage_free();
 	tsrand_switch(&global.rand_visual);
+	free_all_refs();
 }
 
-static void draw_title(int t, StageInfo *info, Alignment al, int x, int y, const char *text, TTF_Font *font, Color *color) {
+static void draw_title(int t, Alignment al, int x, int y, const char *text, TTF_Font *font, Color color) {
 	int i;
 	float f = 0;
 	if(t < 30 || t > 220)
@@ -851,17 +845,20 @@ static void draw_title(int t, StageInfo *info, Alignment al, int x, int y, const
 	}
 
 	if(!config_get_int(CONFIG_NO_SHADER)) {
+		float clr[4];
+		parse_color_array(color, clr);
+
 		Shader *sha = get_shader("stagetitle");
 		glUseProgram(sha->prog);
 		glUniform1i(uniloc(sha, "trans"), 1);
 		glUniform1f(uniloc(sha, "t"), 1.0-f);
-		glUniform3fv(uniloc(sha, "color"), 1, (float *)color);
+		glUniform3fv(uniloc(sha, "color"), 1, clr);
 
 		glActiveTexture(GL_TEXTURE0 + 1);
 		glBindTexture(GL_TEXTURE_2D, get_tex("titletransition")->gltex);
 		glActiveTexture(GL_TEXTURE0);
 	} else {
-		glColor4f(info->titleclr.r,info->titleclr.g,info->titleclr.b,1.0-f);
+		parse_color_call(derive_color(color, CLRMASK_A, rgba(0, 0, 0, 1.0 - f)), glColor4f);
 	}
 
 	draw_text(al, x, y, text, font);
@@ -873,12 +870,12 @@ static void draw_title(int t, StageInfo *info, Alignment al, int x, int y, const
 static void draw_stage_title(StageInfo *info) {
 	int t = global.stageuiframes;
 
-	draw_title(t, info, AL_Center, VIEWPORT_W/2, VIEWPORT_H/2-40, info->title, _fonts.mainmenu, &info->titleclr);
-	draw_title(t, info, AL_Center, VIEWPORT_W/2, VIEWPORT_H/2, info->subtitle, _fonts.standard, &info->titleclr);
+	draw_title(t, AL_Center, VIEWPORT_W/2, VIEWPORT_H/2-40, info->title, _fonts.mainmenu, info->titleclr);
+	draw_title(t, AL_Center, VIEWPORT_W/2, VIEWPORT_H/2, info->subtitle, _fonts.standard, info->titleclr);
 
 	if ((current_bgm.title != NULL) && (current_bgm.started_at >= 0))
 	{
-		draw_title(t - current_bgm.started_at, info, AL_Right, VIEWPORT_W-15, VIEWPORT_H-35, current_bgm.title, _fonts.standard,
-			current_bgm.isboss ? &info->bosstitleclr : &info->titleclr);
+		draw_title(t - current_bgm.started_at, AL_Right, VIEWPORT_W-15, VIEWPORT_H-35, current_bgm.title, _fonts.standard,
+			current_bgm.isboss ? info->bosstitleclr : info->titleclr);
 	}
 }

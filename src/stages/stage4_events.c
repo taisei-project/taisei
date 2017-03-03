@@ -407,7 +407,7 @@ Boss *create_kurumi_mid(void) {
 int splitcard(Projectile *p, int t) {
 	if(t == creal(p->args[2])) {
 		p->args[0] += p->args[3];
-		p->clr->b = -p->clr->b;
+		p->clr = derive_color(p->clr, CLRMASK_B, rgb(0, 0, -color_component(p->clr, CLR_B)));
 	}
 
 	return asymptotic(p, t);
@@ -497,7 +497,7 @@ int aniwall_bullet(Projectile *p, int t) {
 		p->pos += p->args[0];
 	}
 
-	p->clr->r = cimag(p->pos)/VIEWPORT_H;
+	p->clr = derive_color(p->clr, CLRMASK_R, rgb(cimag(p->pos)/VIEWPORT_H, 0, 0));
 
 	return 1;
 }
