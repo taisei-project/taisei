@@ -147,6 +147,7 @@ typedef void (APIENTRY *tsglDeleteProgram_ptr)(GLuint program);
 typedef void (APIENTRY *tsglDeleteShader_ptr)(GLuint shader);
 typedef void (GLAPIENTRY *tsglDeleteTextures_ptr)(GLsizei n, const GLuint *textures);
 typedef void (GLAPIENTRY *tsglDepthFunc_ptr)(GLenum func);
+typedef void (GLAPIENTRY *tsglDepthMask_ptr)(GLboolean flag);
 typedef void (GLAPIENTRY *tsglDisable_ptr)(GLenum cap);
 typedef void (GLAPIENTRY *tsglDrawArrays_ptr)(GLenum mode, GLint first, GLsizei count);
 typedef void (APIENTRY *tsglDrawArraysInstanced_ptr)(GLenum mode, GLint first, GLsizei count, GLsizei instancecount);
@@ -223,6 +224,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glDeleteShader
 #undef glDeleteTextures
 #undef glDepthFunc
+#undef glDepthMask
 #undef glDisable
 #undef glDrawArrays
 #undef glDrawArraysInstanced
@@ -300,6 +302,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glDeleteShader tsglDeleteShader
 #define glDeleteTextures tsglDeleteTextures
 #define glDepthFunc tsglDepthFunc
+#define glDepthMask tsglDepthMask
 #define glDisable tsglDisable
 #define glDrawArrays tsglDrawArrays
 #define glDrawArraysInstanced tsglDrawArraysInstanced
@@ -379,6 +382,7 @@ GLDEF(glDeleteProgram, tsglDeleteProgram, tsglDeleteProgram_ptr) \
 GLDEF(glDeleteShader, tsglDeleteShader, tsglDeleteShader_ptr) \
 GLDEF(glDeleteTextures, tsglDeleteTextures, tsglDeleteTextures_ptr) \
 GLDEF(glDepthFunc, tsglDepthFunc, tsglDepthFunc_ptr) \
+GLDEF(glDepthMask, tsglDepthMask, tsglDepthMask_ptr) \
 GLDEF(glDisable, tsglDisable, tsglDisable_ptr) \
 GLDEF(glDrawArrays, tsglDrawArrays, tsglDrawArrays_ptr) \
 GLDEF(glDrawArraysInstanced, tsglDrawArraysInstanced, tsglDrawArraysInstanced_ptr) \
@@ -462,6 +466,7 @@ GLAPI void APIENTRY glDeleteProgram (GLuint program);
 GLAPI void APIENTRY glDeleteShader (GLuint shader);
 GLAPI void GLAPIENTRY glDeleteTextures( GLsizei n, const GLuint *textures);
 GLAPI void GLAPIENTRY glDepthFunc( GLenum func );
+GLAPI void GLAPIENTRY glDepthMask( GLboolean flag );
 GLAPI void GLAPIENTRY glDisable( GLenum cap );
 GLAPI void GLAPIENTRY glDrawArrays( GLenum mode, GLint first, GLsizei count );
 GLAPI void APIENTRY glDrawArraysInstanced (GLenum mode, GLint first, GLsizei count, GLsizei instancecount);
@@ -538,6 +543,7 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglDeleteShader glDeleteShader
 #define tsglDeleteTextures glDeleteTextures
 #define tsglDepthFunc glDepthFunc
+#define tsglDepthMask glDepthMask
 #define tsglDisable glDisable
 #define tsglDrawArrays glDrawArrays
 #define tsglDrawArraysInstanced glDrawArraysInstanced

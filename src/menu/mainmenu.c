@@ -96,7 +96,7 @@ void draw_main_menu_bg(MenuData* menu) {
 void draw_main_menu(MenuData *menu) {
 	draw_main_menu_bg(menu);
 
-	draw_texture(150, 100, "mainmenu/logo");
+	draw_texture(150.5, 100, "mainmenu/logo");
 
 	glPushMatrix();
 	glTranslatef(0, SCREEN_H-235, 0);
