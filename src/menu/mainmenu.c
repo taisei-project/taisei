@@ -85,8 +85,8 @@ void create_main_menu(MenuData *m) {
 
 void draw_main_menu_bg(MenuData* menu) {
 	glColor4f(1,1,1,1);
-	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubgbg");
-	glColor4f(1,1,1,0.95 + 0.05*sin(menu->frames/100.0));
+	//draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubgbg");
+	//glColor4f(1,1,1,0.95 + 0.05*sin(menu->frames/100.0));
 
 	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubg");
 	glColor4f(1,1,1,1);
@@ -120,7 +120,7 @@ void draw_main_menu(MenuData *menu) {
 		menu->entries[i].drawdata += 0.2 * ((i == menu->cursor) - menu->entries[i].drawdata);
 
 		if(menu->entries[i].action == NULL) {
-			glColor4f(0.5,0.5,0.5,0.7);
+			glColor4f(0.2,0.3,0.5,0.7);
 		} else {
 			//glColor4f(1,1,1,0.7);
 			float a = 1 - menu->entries[i].drawdata;
@@ -131,4 +131,34 @@ void draw_main_menu(MenuData *menu) {
 	}
 
 	glPopMatrix();
+
+	glColor4f(1,1,1,1);
+	for(int i = 0; i < 50; i++) { // who needs persistent state for a particle system?
+		int period = 900;
+		int t = menu->frames+100*i + 30*sin(35*i);
+		int cycle = t/period;
+		float posx = SCREEN_W+300+100*sin(100345*i)+200*sin(1003*i+13537*cycle)-(0.6+0.01*sin(35*i))*(t%period);
+		float posy = 50+ 50*sin(503*i+14677*cycle)+0.8*(t%period);
+		float rx = sin(56*i+2147*cycle);
+		float ry = sin(913*i+137*cycle);
+		float rz = sin(1303*i+89631*cycle);
+		float r = sqrt(rx*rx+ry*ry+rz*rz);
+		rx /= r;
+		ry /= r;
+		rz /= r;
+		if(posx > SCREEN_W+20 || posy < -20 || posy > SCREEN_H+20)
+			continue;
+
+		glDisable(GL_CULL_FACE);
+		glPushMatrix();
+		glTranslatef(posx,posy,0);
+		glScalef(0.2,0.2,0.2);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		glRotatef(2*(t%period),rx,ry,rz);
+		draw_texture(0,0,"part/petal");
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_CULL_FACE);
+		glPopMatrix();
+	}
+
 }

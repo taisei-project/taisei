@@ -18,3 +18,15 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+The photos used in the Spellcard and menu backgrounds are generally in the
+public domain or CC0 and were not taken by us. Here are some honorary mentions.
+
+* The picture in the loading screen is the Ganges Delta taken by a NASA satellite.
+ http://earthobservatory.nasa.gov/IOTD/view.php?id=7028
+
+* The mountains in the main menu background are by Luca Zanon.
+ https://unsplash.com/photos/X0OoHrPvgXE
+
+* For the old ones, sadly I didn’t keep a list. You may find them by doing an
+  image search. Check out the taisei-rawmedia repository for the raw files.
