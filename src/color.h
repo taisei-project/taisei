@@ -11,13 +11,13 @@
 
 #include <stdint.h>
 
-#define CLR_R 48L
-#define CLR_G 32L
-#define CLR_B 16L
-#define CLR_A 0L
+#define CLR_R 48LL
+#define CLR_G 32LL
+#define CLR_B 16LL
+#define CLR_A 0LL
 
-#define CLR_CMASK 0xffffL
-#define CLR_ONEVALUE 0xffL
+#define CLR_CMASK 0xffffLL
+#define CLR_ONEVALUE 0xffLL
 
 #define CLRMASK_R (CLR_CMASK << CLR_R)
 #define CLRMASK_G (CLR_CMASK << CLR_G)
