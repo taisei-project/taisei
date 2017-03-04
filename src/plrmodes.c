@@ -423,7 +423,7 @@ void MariStarTrail(Projectile *p, int t) {
 
 void MariStarBomb(Projectile *p, int t) {
 	MariStar(p, t);
-	create_particle1c("maristar_orbit", p->pos, 0, GrowFadeAdd, timeout, 40);
+	create_particle1c("maristar_orbit", p->pos, 0, GrowFadeAdd, timeout, 40)->type = PlrProj;
 }
 
 int marisa_star_projectile(Projectile *p, int t) {
@@ -490,7 +490,7 @@ void marisa_bomb(Player *plr) {
 		for(i = 0; i < 20; i++) {
 			r = frand()*40 + 100;
 			phi = frand()*2*M_PI;
-			create_particle1c("maristar_orbit", plr->pos + r*cexp(I*phi), 0, MariStarBomb, marisa_star_orbit, I*r*cexp(I*(phi+frand()*0.5))/10);
+			create_particle1c("maristar_orbit", plr->pos + r*cexp(I*phi), 0, MariStarBomb, marisa_star_orbit, I*r*cexp(I*(phi+frand()*0.5))/10)->type=PlrProj;
 		}
 		break;
 	default:
