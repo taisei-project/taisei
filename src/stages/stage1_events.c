@@ -236,6 +236,8 @@ int cirno_icicles(Projectile *p, int t) {
 		p->pos += p->args[0]*pow(0.9,t);
 	} else if(t == turn) {
 		p->args[0] = 2.5*cexp(I*(carg(p->args[0])-M_PI/2.0+M_PI*(creal(p->args[0]) > 0)));
+		if(global.diff > D_Normal)
+			p->args[0] += 0.05*nfrand();
 	} else if(t > turn) {
 		p->pos += p->args[0];
 	}
@@ -254,13 +256,34 @@ void cirno_icicle_fall(Boss *c, int time) {
 
 	GO_TO(c, VIEWPORT_W/2.0+120.0*I, 0.01);
 
-	FROM_TO(20,200,30) {
-		int i;
-		for(i = 2; i < 5; i++) {
+	FROM_TO(20,200,30-3*global.diff) {
+		for(float i = 2-0.2*global.diff; i < 5; i+=1./(1+global.diff)) {
 			create_projectile1c("crystal", c->pos, rgb(0.3,0.3,0.9), cirno_icicles, 6*i*cexp(I*(-0.1+0.1*_i)));
 			create_projectile1c("crystal", c->pos, rgb(0.3,0.3,0.9), cirno_icicles, 6*i*cexp(I*(M_PI+0.1-0.1*_i)));
 		}
 	}
+
+	if(global.diff > D_Easy) {
+		FROM_TO(120,200,3) {
+			float f = frand()*_i;
+
+			create_projectile2c("ball", c->pos, rgb(0.,0.,0.3), accelerated, 0.2*(-2*I-1.5+f),-0.02*I);
+			create_projectile2c("ball", c->pos, rgb(0.,0.,0.3), accelerated, 0.2*(-2*I+1.5-f),-0.02*I);
+		}
+	}
+	if(global.diff > D_Normal) {
+		FROM_TO(300,400,10) {
+			float x = VIEWPORT_W/2+VIEWPORT_W/2*(0.3+_i/10.);
+			float angle1 = M_PI/10*frand();
+			float angle2 = M_PI/10*frand();
+			for(float i = 1; i < 5; i++) {
+				create_projectile2c("ball", x, rgb(0.,0.,0.3), accelerated, i*I*0.5*cexp(I*angle1),0.001*I-(global.diff == D_Lunatic)*0.001*frand());
+				create_projectile2c("ball", VIEWPORT_W-x, rgb(0.,0.,0.3), accelerated, i*I*0.5*cexp(-I*angle2),0.001*I+(global.diff == D_Lunatic)*0.001*frand());
+			}
+		}
+	}
+
+
 }
 
 Boss *create_cirno(void) {
