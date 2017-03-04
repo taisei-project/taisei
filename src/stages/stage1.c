@@ -146,7 +146,6 @@ void stage1_reed_draw(Vector pos) {
 
 	glColor4f(1,1,1,1);
 	glPopMatrix();
-
 }
 
 void stage1_start(void) {
