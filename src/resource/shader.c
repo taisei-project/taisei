@@ -246,7 +246,7 @@ static Shader* load_shader(const char *vheader, const char *fheader, const char 
 
 	glLinkProgram(sha->prog);
 
-	print_info_log(fshaderobj, glGetProgramiv, glGetProgramInfoLog, "Program");
+	print_info_log(sha->prog, glGetProgramiv, glGetProgramInfoLog, "Program");
 
 	cache_uniforms(sha);
 
