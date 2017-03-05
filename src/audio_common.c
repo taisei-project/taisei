@@ -17,7 +17,7 @@ static char *saved_bgm;
 static Hashtable *bgm_descriptions;
 CurrentBGM current_bgm = { .name = NULL };
 
-static void play_sound_internal(const char *name, int unconditional) {
+static void play_sound_internal(const char *name, bool unconditional) {
     if(!audio_backend_initialized() || global.frameskip) {
         return;
     }
