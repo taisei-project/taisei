@@ -35,12 +35,8 @@ char* animation_name(const char *filename) {
 		newname = ++c;
 	}
 
-	char buf[strlen(newname)+1];
-	strcpy(buf, newname);
+	newname = strdup(newname);
 	free(name);
-	newname = NULL;
-	stralloc(&newname, buf);
-
 	return newname;
 }
 

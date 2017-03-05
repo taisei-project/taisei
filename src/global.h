@@ -165,6 +165,8 @@ bool strstartswith(const char *s, const char *p);
 bool strendswith_any(const char *s, const char **earray);
 void stralloc(char **dest, const char *src);
 char* strjoin(const char *first, ...);
+#undef strdup
+#define strdup(s) strjoin(s, NULL)
 bool gamekeypressed(KeyIndex key);
 int getenvint(const char *v);
 char* read_all(const char *filename, int *size);
