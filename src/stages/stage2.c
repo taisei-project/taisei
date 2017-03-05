@@ -31,7 +31,7 @@ void stage2_bg_leaves_draw(Vector pos) {
 	glTranslatef(pos[0]-360,pos[1],pos[2]+500);
 	glRotatef(-160,0,1,0);
 	glTranslatef(-150,0,0);
-	glScalef(1000,3000,1);
+	glScalef(1000,2000,1);
 
 	draw_quad();
 
@@ -46,32 +46,55 @@ void stage2_bg_leaves_draw(Vector pos) {
 	glLoadIdentity();
 	glMatrixMode(GL_MODELVIEW);
 }
-void stage2_bg_ground_draw(Vector pos) {
+
+static void stage2_bg_grass_draw(Vector pos) {
 	glEnable(GL_TEXTURE_2D);
+	glDisable(GL_DEPTH_TEST);
+	glBindTexture(GL_TEXTURE_2D, get_tex("stage2/roadgrass")->gltex);
 
 	glPushMatrix();
-	glTranslatef(pos[0]+60,pos[1],pos[2]);
-	glScalef(1500,3000,1000);
+	glTranslatef(pos[0]+250,pos[1],pos[2]);
+	glTranslatef(0,0,40);
+	glRotatef(pos[2]/2-14,0,1,0);
 
-	Texture *road = get_tex("stage2/road");
+	glScalef(-500,2000,1);
+	draw_quad();
+
+	glPopMatrix();
+
+	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_TEXTURE_2D);
+
+}
+
+static void stage2_bg_ground_draw(Vector pos) {
+	glEnable(GL_TEXTURE_2D);
+	glPushMatrix();
+	glTranslatef(pos[0]-50,pos[1],pos[2]);
+	glScalef(-1000,1000,1);
+
+	Texture *road = get_tex("stage2/roadstones");
 
 	glBindTexture(GL_TEXTURE_2D, road->gltex);
 
-	glMatrixMode(GL_TEXTURE);
-		glLoadIdentity();
-		glScalef(1,2,1);
-	glMatrixMode(GL_MODELVIEW);
-
-	glRotatef(-180,1,0,0);
-
+	glColor4f(0.08,0.,0.1,1);
+	glDisable(GL_TEXTURE_2D);
 	draw_quad();
+	glTranslatef(0,0,+1);
+	glEnable(GL_TEXTURE_2D);
+	glColor4f(0.5,0.5,0.5,1);
+	draw_quad();
+	glColor4f(1,1,1,1);
+	glTranslatef(0,0,+10);
+	draw_quad();
+
+
+	glPopMatrix();
 
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
 	glTranslatef(global.frames/100.0,1*sin(global.frames/100.0),0);
 	glMatrixMode(GL_MODELVIEW);
-
-	glPopMatrix();
 
 	glPushMatrix();
 
@@ -80,7 +103,7 @@ void stage2_bg_ground_draw(Vector pos) {
 
 	glTranslatef(pos[0]+410,pos[1],pos[2]+600);
 	glRotatef(90,0,1,0);
-	glScalef(1200,3000,1);
+	glScalef(1200,1000,1);
 
 	draw_quad();
 
@@ -95,12 +118,26 @@ void stage2_bg_ground_draw(Vector pos) {
 
 Vector **stage2_bg_pos(Vector pos, float maxrange) {
 	Vector p = {0, 0, 0};
-	Vector r = {0, 3000, 0};
+	Vector r = {0, 1000, 0};
 
 	return linear3dpos(pos, maxrange, p, r);
 }
 
-void stage2_fog(int fbonum) {
+Vector **stage2_bg_grass_pos(Vector pos, float maxrange) {
+	Vector p = {0, 0, 0};
+	Vector r = {0, 2000, 0};
+
+	return linear3dpos(pos, maxrange, p, r);
+}
+
+Vector **stage2_bg_grass_pos2(Vector pos, float maxrange) {
+	Vector p = {0, 1234, 40};
+	Vector r = {0, 2000, 0};
+
+	return linear3dpos(pos, maxrange, p, r);
+}
+
+static void stage2_fog(int fbonum) {
 	Shader *shader = get_shader("zbuf_fog");
 
 	glUseProgram(shader->prog);
@@ -118,7 +155,7 @@ void stage2_fog(int fbonum) {
 	glUseProgram(0);
 }
 
-void stage2_bloom(int fbonum) {
+static void stage2_bloom(int fbonum) {
 	Shader *shader = get_shader("bloom");
 
 	glUseProgram(shader->prog);
@@ -137,6 +174,8 @@ void stage2_start(void) {
 	bgcontext.cv[0] = 9;
 
 	add_model(&bgcontext, stage2_bg_ground_draw, stage2_bg_pos);
+	add_model(&bgcontext, stage2_bg_grass_draw, stage2_bg_grass_pos);
+	add_model(&bgcontext, stage2_bg_grass_draw, stage2_bg_grass_pos2);
 	add_model(&bgcontext, stage2_bg_leaves_draw, stage2_bg_pos);
 }
 
@@ -151,7 +190,7 @@ void stage2_draw(void) {
 
 	FROM_TO(0,180,1) {
 		bgcontext.cv[0] -= 0.05;
-		bgcontext.cv[1] += 0.1;
+		bgcontext.cv[1] += 0.05;
 		bgcontext.crot[2] += 0.5;
 	}
 
