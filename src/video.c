@@ -111,6 +111,7 @@ static void APIENTRY video_gl_debug(
 	}
 
 	warnx("[OpenGL debug, %s, %s] %i: %s", strtype, strsev, id, message);
+	assert(type != GL_DEBUG_TYPE_ERROR);
 }
 
 static void APIENTRY video_gl_debug_enable(void) {
