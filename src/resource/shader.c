@@ -194,7 +194,7 @@ static void cache_uniforms(Shader *sha) {
 	GLenum tmpt;
 	GLint unicount;
 
-	sha->uniforms = hashtable_new_stringkeys(17);
+	sha->uniforms = hashtable_new_stringkeys(13);
 
 	glGetProgramiv(sha->prog, GL_ACTIVE_UNIFORMS, &unicount);
 	glGetProgramiv(sha->prog, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxlen);
@@ -203,21 +203,11 @@ static void cache_uniforms(Shader *sha) {
 
 	for(i = 0; i < unicount; i++) {
 		glGetActiveUniform(sha->prog, i, maxlen, NULL, &tmpi, &tmpt, name);
-		GLint loc = glGetUniformLocation(sha->prog, name);
-
-		// don't cache builtin uniforms
-		if(loc < 0) {
-			continue;
-		}
-
-		// a 0 value indicates a non-existing element in the hashtable
-		// however, 0 is also a perfectly valid uniform location
-		// we distinguish 0 locations from invalid ones by storing them as -1
-		if(loc == 0) {
-			loc = -1;
-		}
-
-		hashtable_set_string(sha->uniforms, name, (void*)(intptr_t)loc);
+		// This +1 increment kills two youkai with one spellcard.
+		// 1. We can't store 0 in the hashtable, because that's the NULL/nonexistent value.
+		//    But 0 is a valid uniform location, so we need to store that in some way.
+		// 2. glGetUniformLocation returns -1 for builtin uniforms, which we don't want to cache anyway.
+		hashtable_set_string(sha->uniforms, name, (void*)(intptr_t)(glGetUniformLocation(sha->prog, name) + 1));
 	}
 
 #ifdef DEBUG_GL
@@ -271,17 +261,7 @@ static Shader* load_shader(const char *vheader, const char *fheader, const char 
 }
 
 int uniloc(Shader *sha, const char *name) {
-	int loc = (intptr_t)hashtable_get_string(sha->uniforms, name);
-
-	// 0 and -1 are swapped in the hashtable to distinguish 0-location uniforms from non-existent ones
-	// see the comment in cache_uniforms() above
-	if(loc == -1) {
-		loc = 0;
-	} else if(loc == 0) {
-		loc = -1;
-	}
-
-	return loc;
+	return (intptr_t)hashtable_get_string(sha->uniforms, name) - 1;
 }
 
 Shader* get_shader(const char *name) {
