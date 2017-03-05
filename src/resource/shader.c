@@ -206,6 +206,10 @@ static void cache_uniforms(Shader *sha) {
 		GLint loc = glGetUniformLocation(sha->prog, name);
 		hashtable_set_string(sha->uniforms, name, (void*)(intptr_t)loc);
 	}
+
+#ifdef DEBUG_GL
+	hashtable_print_stringkeys(sha->uniforms);
+#endif
 }
 
 static Shader* load_shader(const char *vheader, const char *fheader, const char *vtext, const char *ftext) {

@@ -40,7 +40,6 @@ void stage6_towerwall_draw(Vector pos) {
 
 	Shader *s = get_shader("tower_wall");
 	glUseProgram(s->prog);
-	glUniform1i(uniloc(s, "lendiv"), 3000.0);
 
 	glPushMatrix();
 	glTranslatef(pos[0], pos[1], pos[2]);
