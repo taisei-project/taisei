@@ -118,6 +118,10 @@ void gluPerspective(GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFa
 #define GLAPIENTRY
 #endif
 
+#ifdef DEBUG
+#define DEBUG_GL
+#endif
+
 /*
  *
  *      From here on it's mostly generated code (by the embedded python script)

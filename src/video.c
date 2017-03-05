@@ -78,9 +78,6 @@ void video_update_vsync(void) {
 		}
 	}
 }
-#ifdef DEBUG
-	#define DEBUG_GL
-#endif
 
 #ifdef DEBUG_GL
 static void APIENTRY video_gl_debug(

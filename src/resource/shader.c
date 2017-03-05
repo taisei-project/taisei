@@ -204,6 +204,19 @@ static void cache_uniforms(Shader *sha) {
 	for(i = 0; i < unicount; i++) {
 		glGetActiveUniform(sha->prog, i, maxlen, NULL, &tmpi, &tmpt, name);
 		GLint loc = glGetUniformLocation(sha->prog, name);
+
+		// don't cache builtin uniforms
+		if(loc < 0) {
+			continue;
+		}
+
+		// a 0 value indicates a non-existing element in the hashtable
+		// however, 0 is also a perfectly valid uniform location
+		// we distinguish 0 locations from invalid ones by storing them as -1
+		if(loc == 0) {
+			loc = -1;
+		}
+
 		hashtable_set_string(sha->uniforms, name, (void*)(intptr_t)loc);
 	}
 
@@ -258,7 +271,17 @@ static Shader* load_shader(const char *vheader, const char *fheader, const char 
 }
 
 int uniloc(Shader *sha, const char *name) {
-	return (intptr_t)hashtable_get_string(sha->uniforms, name);
+	int loc = (intptr_t)hashtable_get_string(sha->uniforms, name);
+
+	// 0 and -1 are swapped in the hashtable to distinguish 0-location uniforms from non-existent ones
+	// see the comment in cache_uniforms() above
+	if(loc == -1) {
+		loc = 0;
+	} else if(loc == 0) {
+		loc = -1;
+	}
+
+	return loc;
 }
 
 Shader* get_shader(const char *name) {
