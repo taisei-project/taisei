@@ -78,12 +78,63 @@ void video_update_vsync(void) {
 		}
 	}
 }
+#ifdef DEBUG
+	#define DEBUG_GL
+#endif
+
+#ifdef DEBUG_GL
+static void APIENTRY video_gl_debug(
+	GLenum source,
+	GLenum type,
+	GLuint id,
+	GLenum severity,
+	GLsizei length,
+	const GLchar *message,
+	const void *arg
+) {
+	char *strtype = "unknown";
+	char *strsev = "unknown";
+
+	switch(type) {
+		case GL_DEBUG_TYPE_ERROR: strtype = "error"; break;
+		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: strtype = "deprecated"; break;
+		case GL_DEBUG_TYPE_PORTABILITY: strtype = "portability"; break;
+		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: strtype = "undefined"; break;
+		case GL_DEBUG_TYPE_PERFORMANCE: strtype = "performance"; break;
+		case GL_DEBUG_TYPE_OTHER: strtype = "other"; break;
+	}
+
+	switch(severity) {
+		case GL_DEBUG_SEVERITY_LOW: strsev = "low"; break;
+		case GL_DEBUG_SEVERITY_MEDIUM: strsev = "medium"; break;
+		case GL_DEBUG_SEVERITY_HIGH: strsev = "high"; break;
+	}
+
+	warnx("[OpenGL debug, %s, %s] %i: %s", strtype, strsev, id, message);
+}
+
+static void APIENTRY video_gl_debug_enable(void) {
+	GLuint unused = 0;
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+	glDebugMessageCallback(video_gl_debug, NULL);
+	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, &unused, true);
+}
+#endif
 
 static void video_init_gl(void) {
 	video.glcontext = SDL_GL_CreateContext(video.window);
 
 	load_gl_functions();
 	check_gl_extensions();
+
+#ifdef DEBUG_GL
+	if(glext.version.major >= 4 && glext.version.minor >= 3) {
+		video_gl_debug_enable();
+	} else {
+		warnx("Can't enable debugging, OpenGL context is too old (>=4.3 required, %i.%i current)",
+				glext.version.major, glext.version.minor);
+	}
+#endif
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
@@ -114,6 +165,10 @@ static void _video_setmode(int w, int h, uint32_t flags, bool fallback) {
 	}
 
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+#ifdef DEBUG_GL
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+#endif
 
 	video.window = SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w, h, flags);
 

@@ -10,6 +10,8 @@ force_funcs = [
     'glDrawArraysInstancedEXT',
     'glDrawArraysInstancedARB',
     'glGetShaderiv',
+    'glGetShaderInfoLog',
+    'glGetProgramInfoLog',
 ]
 
 import sys, re
@@ -137,11 +139,12 @@ typedef void (GLAPIENTRY *tsglClear_ptr)(GLbitfield mask);
 typedef void (GLAPIENTRY *tsglClearColor_ptr)(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
 typedef void (GLAPIENTRY *tsglColor3f_ptr)(GLfloat red, GLfloat green, GLfloat blue);
 typedef void (GLAPIENTRY *tsglColor4f_ptr)(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
-typedef void (GLAPIENTRY *tsglColor4fv_ptr)(const GLfloat *v);
 typedef void (APIENTRY *tsglCompileShader_ptr)(GLuint shader);
 typedef GLuint (APIENTRY *tsglCreateProgram_ptr)(void);
 typedef GLuint (APIENTRY *tsglCreateShader_ptr)(GLenum type);
 typedef void (GLAPIENTRY *tsglCullFace_ptr)(GLenum mode);
+typedef void (APIENTRY *tsglDebugMessageCallback_ptr)(GLDEBUGPROC callback, const void *userParam);
+typedef void (APIENTRY *tsglDebugMessageControl_ptr)(GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint *ids, GLboolean enabled);
 typedef void (APIENTRY *tsglDeleteBuffers_ptr)(GLsizei n, const GLuint *buffers);
 typedef void (APIENTRY *tsglDeleteFramebuffers_ptr)(GLsizei n, const GLuint *framebuffers);
 typedef void (APIENTRY *tsglDeleteProgram_ptr)(GLuint program);
@@ -214,11 +217,12 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glClearColor
 #undef glColor3f
 #undef glColor4f
-#undef glColor4fv
 #undef glCompileShader
 #undef glCreateProgram
 #undef glCreateShader
 #undef glCullFace
+#undef glDebugMessageCallback
+#undef glDebugMessageControl
 #undef glDeleteBuffers
 #undef glDeleteFramebuffers
 #undef glDeleteProgram
@@ -292,11 +296,12 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glClearColor tsglClearColor
 #define glColor3f tsglColor3f
 #define glColor4f tsglColor4f
-#define glColor4fv tsglColor4fv
 #define glCompileShader tsglCompileShader
 #define glCreateProgram tsglCreateProgram
 #define glCreateShader tsglCreateShader
 #define glCullFace tsglCullFace
+#define glDebugMessageCallback tsglDebugMessageCallback
+#define glDebugMessageControl tsglDebugMessageControl
 #define glDeleteBuffers tsglDeleteBuffers
 #define glDeleteFramebuffers tsglDeleteFramebuffers
 #define glDeleteProgram tsglDeleteProgram
@@ -372,11 +377,12 @@ GLDEF(glClear, tsglClear, tsglClear_ptr) \
 GLDEF(glClearColor, tsglClearColor, tsglClearColor_ptr) \
 GLDEF(glColor3f, tsglColor3f, tsglColor3f_ptr) \
 GLDEF(glColor4f, tsglColor4f, tsglColor4f_ptr) \
-GLDEF(glColor4fv, tsglColor4fv, tsglColor4fv_ptr) \
 GLDEF(glCompileShader, tsglCompileShader, tsglCompileShader_ptr) \
 GLDEF(glCreateProgram, tsglCreateProgram, tsglCreateProgram_ptr) \
 GLDEF(glCreateShader, tsglCreateShader, tsglCreateShader_ptr) \
 GLDEF(glCullFace, tsglCullFace, tsglCullFace_ptr) \
+GLDEF(glDebugMessageCallback, tsglDebugMessageCallback, tsglDebugMessageCallback_ptr) \
+GLDEF(glDebugMessageControl, tsglDebugMessageControl, tsglDebugMessageControl_ptr) \
 GLDEF(glDeleteBuffers, tsglDeleteBuffers, tsglDeleteBuffers_ptr) \
 GLDEF(glDeleteFramebuffers, tsglDeleteFramebuffers, tsglDeleteFramebuffers_ptr) \
 GLDEF(glDeleteProgram, tsglDeleteProgram, tsglDeleteProgram_ptr) \
@@ -456,11 +462,12 @@ GLAPI void GLAPIENTRY glClear( GLbitfield mask );
 GLAPI void GLAPIENTRY glClearColor( GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha );
 GLAPI void GLAPIENTRY glColor3f( GLfloat red, GLfloat green, GLfloat blue );
 GLAPI void GLAPIENTRY glColor4f( GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha );
-GLAPI void GLAPIENTRY glColor4fv( const GLfloat *v );
 GLAPI void APIENTRY glCompileShader (GLuint shader);
 GLAPI GLuint APIENTRY glCreateProgram (void);
 GLAPI GLuint APIENTRY glCreateShader (GLenum type);
 GLAPI void GLAPIENTRY glCullFace( GLenum mode );
+GLAPI void APIENTRY glDebugMessageCallback (GLDEBUGPROC callback, const void *userParam);
+GLAPI void APIENTRY glDebugMessageControl (GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint *ids, GLboolean enabled);
 GLAPI void APIENTRY glDeleteBuffers (GLsizei n, const GLuint *buffers);
 GLAPI void APIENTRY glDeleteFramebuffers (GLsizei n, const GLuint *framebuffers);
 GLAPI void APIENTRY glDeleteProgram (GLuint program);
@@ -533,11 +540,12 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglClearColor glClearColor
 #define tsglColor3f glColor3f
 #define tsglColor4f glColor4f
-#define tsglColor4fv glColor4fv
 #define tsglCompileShader glCompileShader
 #define tsglCreateProgram glCreateProgram
 #define tsglCreateShader glCreateShader
 #define tsglCullFace glCullFace
+#define tsglDebugMessageCallback glDebugMessageCallback
+#define tsglDebugMessageControl glDebugMessageControl
 #define tsglDeleteBuffers glDeleteBuffers
 #define tsglDeleteFramebuffers glDeleteFramebuffers
 #define tsglDeleteProgram glDeleteProgram
