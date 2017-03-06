@@ -45,7 +45,6 @@ ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, D
 	s->plr_pos_y = floor(cimag(plr->pos));
 
 	s->plr_focus = plr->focus;
-	s->plr_fire	= !!(plr->inputflags & INFLAG_SHOT);  // legacy, please remove in next struct version
 	s->plr_char	= plr->cha;
 	s->plr_shot	= plr->shot;
 	s->plr_lifes = plr->lifes;
@@ -67,10 +66,6 @@ void replay_stage_sync_player_state(ReplayStage *stg, Player *plr) {
 	plr->bombs = stg->plr_bombs;
 	plr->power = stg->plr_power;
 	plr->inputflags = stg->plr_inputflags;
-
-	// legacy, please remove in next struct version
-	if(stg->plr_fire)
-		plr->inputflags |= INFLAG_SHOT;
 }
 
 static void replay_destroy_stage(ReplayStage *stage) {
@@ -159,7 +154,6 @@ static uint32_t replay_calc_stageinfo_checksum(ReplayStage *stg) {
 	cs += stg->plr_pos_x;
 	cs += stg->plr_pos_y;
 	cs += stg->plr_focus;
-	cs += stg->plr_fire; // legacy, please remove in next struct version
 	cs += stg->plr_power;
 	cs += stg->plr_lifes;
 	cs += stg->plr_bombs;
@@ -178,7 +172,6 @@ static int replay_write_stage(ReplayStage *stg, SDL_RWops *file) {
 	SDL_WriteLE16(file, stg->plr_pos_x);
 	SDL_WriteLE16(file, stg->plr_pos_y);
 	SDL_WriteU8(file, stg->plr_focus);
-	SDL_WriteU8(file, stg->plr_fire); // legacy, please remove in next struct version
 	SDL_WriteLE16(file, stg->plr_power);
 	SDL_WriteU8(file, stg->plr_lifes);
 	SDL_WriteU8(file, stg->plr_bombs);
@@ -327,7 +320,6 @@ static int replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 		CHECKPROP(stg->plr_pos_x = SDL_ReadLE16(file), u);
 		CHECKPROP(stg->plr_pos_y = SDL_ReadLE16(file), u);
 		CHECKPROP(stg->plr_focus = SDL_ReadU8(file), u);
-		CHECKPROP(stg->plr_fire = SDL_ReadU8(file), u);
 		CHECKPROP(stg->plr_power = SDL_ReadLE16(file), u);
 		CHECKPROP(stg->plr_lifes = SDL_ReadU8(file), u);
 		CHECKPROP(stg->plr_bombs = SDL_ReadU8(file), u);
