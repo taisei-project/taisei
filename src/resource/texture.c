@@ -53,7 +53,7 @@ Texture* prefix_get_tex(const char *name, const char *prefix) {
 }
 
 static SDL_Surface* load_png(const char *filename) {
-#define PNGFAIL(msg) { warnx("load_png(): couldn't load '%s': %s", msg); return NULL; }
+#define PNGFAIL(msg) { warnx("load_png(): couldn't load '%s': %s", filename, msg); return NULL; }
 
 	FILE *fp = fopen(filename, "rb");
 

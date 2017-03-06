@@ -551,7 +551,7 @@ int aniwall_slave(Enemy *e, int t) {
 
 void KurumiAniWallSlave(Enemy *e, int t) {
 	if(e->args[1])
-		create_particle1c("part/lasercurve", e->pos, rgb(1,1,1), FadeAdd, timeout, 30);
+		create_particle1c("lasercurve", e->pos, rgb(1,1,1), FadeAdd, timeout, 30);
 }
 
 void kurumi_aniwall(Boss *b, int time) {
