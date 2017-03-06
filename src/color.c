@@ -33,7 +33,7 @@ void parse_color(Color clr, float *r, float *g, float *b, float *a) {
     *a = (ColorComponent)((clr >> CLR_A) & CLR_CMASK) * conv;
 }
 
-void parse_color_call(Color clr, void(*func)(float r, float g, float b, float a)) {
+void parse_color_call(Color clr, tsglColor4f_ptr func) {
     float r, g, b, a;
     parse_color(clr, &r, &g, &b, &a);
     func(r, g, b, a);

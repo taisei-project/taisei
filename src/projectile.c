@@ -139,7 +139,11 @@ void process_projectiles(Projectile **projs, bool collision) {
 			col = collision_projectile(proj);
 
 		if(col && proj->type != Particle) {
-			create_projectile_p(&global.particles, proj->tex, proj->pos, proj->clr, DeathShrink, timeout_linear, 10, 5*cexp(proj->angle*I), 0, 0);
+			Projectile *p = create_projectile_p(&global.particles, proj->tex, proj->pos, proj->clr, DeathShrink, timeout_linear, 10, 5*cexp(proj->angle*I), 0, 0);
+
+			if(proj->type > PlrProj) {
+				p->type = PlrProj;
+			}
 		}
 
 		if(col == 1 && global.frames - abs(global.plr.recovery) >= 0)

@@ -23,7 +23,7 @@
 // -{ ALWAYS UPDATE THESE WHEN YOU MAKE CHANGES TO THE FILE/STRUCT LAYOUT!
 
 // Lets us fail early on incompatible versions and garbage data
-#define REPLAY_STRUCT_VERSION 4
+#define REPLAY_STRUCT_VERSION 5
 
 // -}
 
@@ -67,11 +67,10 @@ typedef struct ReplayStage {
 	uint16_t plr_pos_x;
 	uint16_t plr_pos_y;
 	uint8_t plr_focus;
-	uint8_t plr_fire;
 	uint16_t plr_power;
 	uint8_t plr_lifes;
 	uint8_t plr_bombs;
-	uint8_t plr_moveflags;
+	uint8_t plr_inputflags;
 
 	// player input
 	uint16_t numevents;

@@ -55,7 +55,7 @@ void print_state_checksum(void) {
 	Enemy *s;
 	Projectile *pr;
 
-	plr = creal(p->pos)+cimag(p->pos)+p->focus+p->fire+p->power+p->lifes+p->bombs+p->recovery+p->deathtime+p->continues+p->moveflags;
+	plr = creal(p->pos)+cimag(p->pos)+p->focus+p->power+p->lifes+p->bombs+p->recovery+p->deathtime+p->continues+p->inputflags;
 
 	for(s = global.plr.slaves; s; s = s->next) {
 		spos += creal(s->pos + s->pos0) + cimag(s->pos + s->pos0);

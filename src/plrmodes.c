@@ -137,8 +137,8 @@ int youmu_opposite_myon(Enemy *e, int t) {
 	float arg = carg(e->pos0);
 	float rad = cabs(e->pos0);
 
-	if(plr->focus < 1) {
-		if(plr->moveflags && !creal(e->args[0]))
+	if(!(plr->inputflags & INFLAG_FOCUS)) {
+		if(plr->inputflags && !creal(e->args[0]))
 			arg -= (carg(e->pos0)-carg(e->pos-plr->pos))*2;
 
 		//if(global.frames - plr->prevmovetime <= 10 && global.frames == plr->movetime) {
@@ -146,16 +146,16 @@ int youmu_opposite_myon(Enemy *e, int t) {
 			int new = plr->curmove;
 			int old = plr->prevmove;
 
-			if(new == MOVEFLAG_UP && old == MOVEFLAG_DOWN) {
+			if(new == INFLAG_UP && old == INFLAG_DOWN) {
 				arg = M_PI/2;
 				e->args[0] = plr->movetime;
-			} else if(new == MOVEFLAG_DOWN && old == MOVEFLAG_UP) {
+			} else if(new == INFLAG_DOWN && old == INFLAG_UP) {
 				arg = 3*M_PI/2;
 				e->args[0] = plr->movetime;
-			} else if(new == MOVEFLAG_LEFT && old == MOVEFLAG_RIGHT) {
+			} else if(new == INFLAG_LEFT && old == INFLAG_RIGHT) {
 				arg = 0;
 				e->args[0] = plr->movetime;
-			} else if(new == MOVEFLAG_RIGHT && old == MOVEFLAG_LEFT) {
+			} else if(new == INFLAG_RIGHT && old == INFLAG_LEFT) {
 				arg = M_PI;
 				e->args[0] = plr->movetime;
 			}
@@ -169,7 +169,7 @@ int youmu_opposite_myon(Enemy *e, int t) {
 	complex target = plr->pos + e->pos0;
 	e->pos += cexp(I*carg(target - e->pos)) * min(10, 0.07 * cabs(target - e->pos));
 
-	if(plr->fire && !(global.frames % 6) && global.plr.deathtime >= -1) {
+	if(plr->inputflags & INFLAG_SHOT && !(global.frames % 6) && global.plr.deathtime >= -1) {
 		int a = 20;
 
 		if(plr->power >= 300) {
@@ -217,8 +217,7 @@ int youmu_split(Enemy *e, int t) {
 // Youmu Generic
 
 void youmu_shot(Player *plr) {
-	if(plr->fire) {
-
+	if(plr->inputflags & INFLAG_SHOT) {
 		if(!(global.frames % 4))
 			play_sound("generic_shot");
 
@@ -228,7 +227,7 @@ void youmu_shot(Player *plr) {
 		}
 
 		if(plr->shot == YoumuHoming) {
-			if(plr->focus && !(global.frames % 45)) {
+			if(plr->inputflags & INFLAG_FOCUS && !(global.frames % 45)) {
 				int ref = -1;
 				if(global.boss != NULL)
 					ref = add_ref(global.boss);
@@ -240,7 +239,7 @@ void youmu_shot(Player *plr) {
 				create_projectile2c("youhoming", plr->pos, 0, youmu_homing, -3.0*I, ref)->type = PlrProj+(450+225*(plr->power/100));
 			}
 
-			if(!plr->focus && !(global.frames % (int)round(8 - (plr->power / 100.0) * 1.3))) {
+			if(!(plr->inputflags & INFLAG_FOCUS) && !(global.frames % (int)round(8 - (plr->power / 100.0) * 1.3))) {
 				create_projectile2c("hghost", plr->pos, 0, accelerated, 2-10.0*I, -0.4*I)->type = PlrProj+27;
 				create_projectile2c("hghost", plr->pos, 0, accelerated, -10.0*I, -0.4*I)->type = PlrProj+27;
 				create_projectile2c("hghost", plr->pos, 0, accelerated, -2-10.0*I, -0.4*I)->type = PlrProj+27;
@@ -296,7 +295,7 @@ int mari_laser(Projectile *p, int t) {
 		return ACTION_DESTROY;
 
 	float angle = creal(p->args[2]);
-	float factor = (1-abs(global.plr.focus)/30.0) * !!angle;
+	float factor = (1-global.plr.focus/30.0) * !!angle;
 	complex dir = -cexp(I*((angle+0.025*sin(global.frames/50.0)*(angle > 0? 1 : -1))*factor + M_PI/2));
 	p->args[0] = 20*dir;
 	linear(p, t);
@@ -307,18 +306,18 @@ int mari_laser(Projectile *p, int t) {
 }
 
 int marisa_laser_slave(Enemy *e, int t) {
-	if(global.plr.fire && global.frames - global.plr.recovery >= 0 && global.plr.deathtime >= -1) {
+	if(global.plr.inputflags & INFLAG_SHOT && global.frames - global.plr.recovery >= 0 && global.plr.deathtime >= -1) {
 		if(!(global.frames % 4))
 			create_projectile_p(&global.projs, get_tex("proj/marilaser"), 0, 0, MariLaser, mari_laser, 0, add_ref(e),e->args[2],0)->type = PlrProj+e->args[1]*4;
 
 		if(!(global.frames % 3)) {
 			float s = 0.5 + 0.3*sin(global.frames/7.0);
-			create_particle3c("marilaser_part0", 0, rgb(1-s,0.5,s), PartDraw, mari_laser, 0, add_ref(e), e->args[2]);
+			create_particle3c("marilaser_part0", 0, rgb(1-s,0.5,s), PartDraw, mari_laser, 0, add_ref(e), e->args[2])->type=PlrProj;
 		}
 		create_particle1c("lasercurve", e->pos, 0, Fade, timeout, 4)->type = PlrProj;
 	}
 
-	e->pos = global.plr.pos + (1 - abs(global.plr.focus)/30.0)*e->pos0 + (abs(global.plr.focus)/30.0)*e->args[0];
+	e->pos = global.plr.pos + (1 - global.plr.focus/30.0)*e->pos0 + (global.plr.focus/30.0)*e->args[0];
 
 	return 1;
 }
@@ -433,9 +432,9 @@ int marisa_star_projectile(Projectile *p, int t) {
 }
 
 int marisa_star_slave(Enemy *e, int t) {
-	double focus = abs(global.plr.focus)/30.0;
+	double focus = global.plr.focus/30.0;
 
-	if(global.plr.fire && global.frames - global.plr.recovery >= 0 && global.plr.deathtime >= -1) {
+	if(global.plr.inputflags & INFLAG_SHOT && global.frames - global.plr.recovery >= 0 && global.plr.deathtime >= -1) {
 		if(!(global.frames % 20))
 			create_projectile_p(&global.projs, get_tex("proj/maristar"), e->pos, 0, MariStar, marisa_star_projectile, e->args[1] * 2 * (1 - 1.5 * focus), e->args[2], 0, 0)->type = PlrProj+e->args[3]*20;
 	}
@@ -467,7 +466,7 @@ int marisa_star_orbit(Projectile *p, int t) { // a[0]: x' a[1]: x''
 // Generic Marisa
 
 void marisa_shot(Player *plr) {
-	if(plr->fire) {
+	if(plr->inputflags & INFLAG_SHOT) {
 		if(!(global.frames % 4))
 			play_sound("generic_shot");
 
