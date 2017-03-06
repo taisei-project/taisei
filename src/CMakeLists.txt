@@ -115,9 +115,6 @@ if(WIN32)
 endif()
 
 if(DEFINED TAISEI_DEBUG)
-	message(WARNING "TAISEI_DEBUG is deprecated, please unset it and use CMAKE_BUILD_TYPE instead.\n"
-					"Example:\ncmake ${PROJECT_SOURCE_DIR} -UTAISEI_DEBUG -DCMAKE_BUILD_TYPE=Debug")
-
 	if(TAISEI_DEBUG)
 		set(CMAKE_BUILD_TYPE "Debug")
 	else()
@@ -129,6 +126,8 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "")
 	set(CMAKE_BUILD_TYPE "Release")
 	message(WARNING "CMAKE_BUILD_TYPE was not set, assuming ${CMAKE_BUILD_TYPE}.")
 endif()
+
+message(STATUS "Build configuration: ${CMAKE_BUILD_TYPE}")
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb -DDEBUG")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -s")
