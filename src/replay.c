@@ -45,13 +45,12 @@ ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, D
 	s->plr_pos_y = floor(cimag(plr->pos));
 
 	s->plr_focus = plr->focus;
-	s->plr_fire	= plr->fire;
 	s->plr_char	= plr->cha;
 	s->plr_shot	= plr->shot;
 	s->plr_lifes = plr->lifes;
 	s->plr_bombs = plr->bombs;
 	s->plr_power = plr->power;
-	s->plr_moveflags = plr->moveflags;
+	s->plr_inputflags = plr->inputflags;
 
 	printf("replay_init_stage(): created a new stage for writting\n");
 	return s;
@@ -63,11 +62,10 @@ void replay_stage_sync_player_state(ReplayStage *stg, Player *plr) {
 	plr->cha = stg->plr_char;
 	plr->pos = stg->plr_pos_x + I * stg->plr_pos_y;
 	plr->focus = stg->plr_focus;
-	plr->fire = stg->plr_fire;
 	plr->lifes = stg->plr_lifes;
 	plr->bombs = stg->plr_bombs;
 	plr->power = stg->plr_power;
-	plr->moveflags = stg->plr_moveflags;
+	plr->inputflags = stg->plr_inputflags;
 }
 
 static void replay_destroy_stage(ReplayStage *stage) {
@@ -156,11 +154,10 @@ static uint32_t replay_calc_stageinfo_checksum(ReplayStage *stg) {
 	cs += stg->plr_pos_x;
 	cs += stg->plr_pos_y;
 	cs += stg->plr_focus;
-	cs += stg->plr_fire;
 	cs += stg->plr_power;
 	cs += stg->plr_lifes;
 	cs += stg->plr_bombs;
-	cs += stg->plr_moveflags;
+	cs += stg->plr_inputflags;
 	cs += stg->numevents;
 	return cs;
 }
@@ -175,11 +172,10 @@ static int replay_write_stage(ReplayStage *stg, SDL_RWops *file) {
 	SDL_WriteLE16(file, stg->plr_pos_x);
 	SDL_WriteLE16(file, stg->plr_pos_y);
 	SDL_WriteU8(file, stg->plr_focus);
-	SDL_WriteU8(file, stg->plr_fire);
 	SDL_WriteLE16(file, stg->plr_power);
 	SDL_WriteU8(file, stg->plr_lifes);
 	SDL_WriteU8(file, stg->plr_bombs);
-	SDL_WriteU8(file, stg->plr_moveflags);
+	SDL_WriteU8(file, stg->plr_inputflags);
 	SDL_WriteLE16(file, stg->numevents);
 	SDL_WriteLE32(file, 1 + ~replay_calc_stageinfo_checksum(stg));
 
@@ -324,11 +320,10 @@ static int replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 		CHECKPROP(stg->plr_pos_x = SDL_ReadLE16(file), u);
 		CHECKPROP(stg->plr_pos_y = SDL_ReadLE16(file), u);
 		CHECKPROP(stg->plr_focus = SDL_ReadU8(file), u);
-		CHECKPROP(stg->plr_fire = SDL_ReadU8(file), u);
 		CHECKPROP(stg->plr_power = SDL_ReadLE16(file), u);
 		CHECKPROP(stg->plr_lifes = SDL_ReadU8(file), u);
 		CHECKPROP(stg->plr_bombs = SDL_ReadU8(file), u);
-		CHECKPROP(stg->plr_moveflags = SDL_ReadU8(file), u);
+		CHECKPROP(stg->plr_inputflags = SDL_ReadU8(file), u);
 		CHECKPROP(stg->numevents = SDL_ReadLE16(file), u);
 
 		if(replay_calc_stageinfo_checksum(stg) + SDL_ReadLE32(file)) {
