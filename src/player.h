@@ -13,11 +13,19 @@
 #include "gamepad.h"
 #include "resource/animation.h"
 
+typedef enum {
+	// do not reorder these or you'll break replays
+
+	INFLAG_UP = 1,
+	INFLAG_DOWN = 2,
+	INFLAG_LEFT = 4,
+	INFLAG_RIGHT = 8,
+	INFLAG_FOCUS = 16,
+	INFLAG_SHOT = 32,
+} PlrInputFlag;
+
 enum {
-	MOVEFLAG_UP = 1,
-	MOVEFLAG_DOWN = 2,
-	MOVEFLAG_LEFT = 4,
-	MOVEFLAG_RIGHT = 8
+	INFLAGS_MOVE = INFLAG_UP | INFLAG_DOWN | INFLAG_LEFT | INFLAG_RIGHT
 };
 
 typedef enum {
@@ -36,7 +44,6 @@ typedef enum {
 typedef struct {
 	complex pos;
 	short focus;
-	bool fire;
 	bool moving;
 
 	short dir;
@@ -59,7 +66,7 @@ typedef struct {
 	ShotMode shot;
 	Enemy *slaves;
 
-	int moveflags;
+	int inputflags;
 	int curmove;
 	int movetime;
 	int prevmove;
@@ -98,7 +105,7 @@ void player_realdeath(Player*);
 void player_death(Player*);
 void player_graze(Player*, complex, int);
 
-void player_setmoveflag(Player* plr, int key, bool mode);
+void player_setinputflag(Player *plr, KeyIndex key, bool mode);
 void player_event(Player* plr, int type, int key);
 void player_applymovement(Player* plr);
 void player_input_workaround(Player *plr);
