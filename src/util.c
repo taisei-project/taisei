@@ -118,15 +118,8 @@ char* copy_segment(const char *text, const char *delim, int *size) {
 }
 
 void strip_trailing_slashes(char *buf) {
-    char *c;
-
-    while(true) {
-        c = strchr(buf, '\0') - 1;
-        if(*c == '/' || *c == '\\')
-            *c = '\0';
-        else
-            break;
-    }
+    for(char *c = buf + strlen(buf) - 1; c >= buf && (*c == '/' || *c == '\\'); c--)
+        *c = 0;
 }
 
 //
