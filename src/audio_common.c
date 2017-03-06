@@ -147,7 +147,7 @@ void start_bgm(const char *name) {
         stralloc(&current_bgm.name, name);
 
         if((current_bgm.music = get_music(name)) == NULL) {
-            warnx("start_bgm(): BGM '%s' does not not exist", current_bgm.name);
+            warnx("start_bgm(): BGM '%s' does not exist", current_bgm.name);
             stop_bgm();
             free(current_bgm.name);
             current_bgm.name = NULL;
