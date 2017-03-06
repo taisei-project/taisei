@@ -33,7 +33,7 @@ void* load_music(const char *path) {
 	Music *mus = calloc(1, sizeof(Music));
 	mus->impl = music;
 
-	return music;
+	return mus;
 }
 
 void unload_music(void *vmus) {
