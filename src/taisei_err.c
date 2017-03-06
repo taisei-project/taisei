@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "global.h"
 
 // void err(int eval, const char *fmt, ...);
 void errx(int eval, const char *fmt, ...) {
@@ -30,10 +31,7 @@ void errx(int eval, const char *fmt, ...) {
 void warnx(const char *fmt, ...) {
 	va_list ap;
 
-	char *buf = malloc(14+strlen(fmt));
-	strcpy(buf, "!- WARNING: ");
-	strcat(buf, fmt);
-	strcat(buf, "\n");
+	char *buf = strjoin("!- WARNING: ", fmt, "\n", NULL);
 
 	va_start(ap, fmt);
 	vfprintf(stderr, buf, ap);

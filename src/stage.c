@@ -48,7 +48,7 @@ static void add_stage(uint16_t id, StageProcs *procs, StageType type, const char
 #endif
 }
 
-static void end_stages() {
+static void end_stages(void) {
 	add_stage(0, NULL, 0, NULL, NULL, NULL, 0, 0, 0);
 }
 
@@ -75,18 +75,14 @@ void stage_init_array(void) {
 				if(a->idmap[diff - D_Easy] >= 0) {
 					uint16_t id = STAGE_SPELL_BIT | a->idmap[diff - D_Easy] | (s->id << 8);
 
-					char title[10];
-					const char *postfix = difficulty_name(diff);
-
-					snprintf(title, sizeof(title), "Spell %d", ++spellnum);
-
-					char subtitle[strlen(postfix) + strlen(a->name) + 4];
-					strcpy(subtitle, a->name);
-					strcat(subtitle, " ~ ");
-					strcat(subtitle, postfix);
+					char *title = strfmt("Spell %d", ++spellnum);
+					char *subtitle = strjoin(a->name, " ~ ", difficulty_name(diff), NULL);
 
 					add_stage(id, s->procs->spellpractice_procs, STAGE_SPELL, title, subtitle, a, diff, 0, 0);
 					s = stages + i; // stages just got realloc'd, so we must update the pointer
+
+					free(title);
+					free(subtitle);
 				}
 			}
 		}

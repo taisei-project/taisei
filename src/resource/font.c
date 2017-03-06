@@ -14,9 +14,7 @@
 struct Fonts _fonts;
 
 TTF_Font *load_font(char *name, int size) {
-	char *buf = malloc(strlen(get_prefix()) + strlen(name)+1);
-	strcpy(buf, get_prefix());
-	strcat(buf, name);
+	char *buf = strjoin(get_prefix(), name, NULL);
 
 	TTF_Font *f =  TTF_OpenFont(buf, size);
 	if(!f)

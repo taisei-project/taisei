@@ -205,9 +205,7 @@ void resource_util_strip_ext(char *path) {
 
 char* resource_util_basename(const char *prefix, const char *path) {
 	const char *baseprefix = get_prefix();
-	char fullprefix[strlen(baseprefix) + strlen(prefix) + 1];
-	strcpy(fullprefix, baseprefix);
-	strcat(fullprefix, prefix);
+	char *fullprefix = strjoin(baseprefix, prefix, NULL);
 
 	assert(strstartswith(path, fullprefix));
 
@@ -215,6 +213,7 @@ char* resource_util_basename(const char *prefix, const char *path) {
 	stralloc(&out, path + strlen(fullprefix));
 	resource_util_strip_ext(out);
 
+	free(fullprefix);
 	return out;
 }
 

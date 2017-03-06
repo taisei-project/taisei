@@ -179,9 +179,7 @@ void take_screenshot(void)
 	timeinfo = localtime(&rawtime);
 	strftime(outfile, 128, "/taisei_%Y%m%d_%H-%M-%S_%Z.png", timeinfo);
 
-	outpath = malloc(strlen(outfile) + strlen(get_screenshots_path()) + 1);
-	strcpy(outpath, get_screenshots_path());
-	strcat(outpath, outfile);
+	outpath = strjoin(get_screenshots_path(), outfile, NULL);
 
 	printf("Saving screenshot as %s\n", outpath);
 	out = fopen(outpath, "wb");
@@ -296,6 +294,29 @@ char* strjoin(const char *first, ...) {
 
 	va_end(args);
 	return str;
+}
+
+char* strfmt(const char *fmt, ...) {
+	size_t written = 0;
+	size_t fmtlen = strlen(fmt);
+	size_t asize = 1;
+	char *out = NULL;
+
+	while(asize * 2 <= fmtlen)
+		asize *= 2;
+
+	do {
+		asize *= 2;
+		out = realloc(out, asize);
+		va_list args;
+
+		va_start(args, fmt);
+		written = vsnprintf(out, asize, fmt, args);
+		va_end(args);
+
+	} while(written >= asize);
+
+	return realloc(out, strlen(out) + 1);
 }
 
 char* read_all(const char *filename, int *outsize) {

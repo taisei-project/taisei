@@ -41,16 +41,13 @@ void init_log(void) {
 	const char *pref = get_config_path();
 	char *s;
 
-	s = malloc(strlen(pref) + strlen("stdout.txt") + 2);
-	strcpy(s, pref);
-	strcat(s, "/stdout.txt");
-
+	s = strfmt("%s/%s", pref, "stdout.txt");
 	freopen(s, "w", stdout);
+	free(s);
 
-	strcpy(s, pref);
-	strcat(s, "/stderr.txt");
-
+	s = strfmt("%s/%s", pref, "stderr.txt");
 	freopen(s, "w", stderr);
+	free(s);
 #endif
 }
 
