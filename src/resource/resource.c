@@ -192,15 +192,9 @@ void init_resources(void) {
 }
 
 void resource_util_strip_ext(char *path) {
-	char *dot = path, *finaldot = NULL;
-
-	while(dot = strchr(dot, '.')) {
-		finaldot = dot++;
-	}
-
-	if(finaldot) {
-		*finaldot = 0;
-	}
+	char *dot = strrchr(path, '.');
+	if(dot > strrchr(path, '/'))
+		*dot = 0;
 }
 
 char* resource_util_basename(const char *prefix, const char *path) {
@@ -213,14 +207,10 @@ char* resource_util_basename(const char *prefix, const char *path) {
 }
 
 const char* resource_util_filename(const char *path) {
-	char *sep = (char*)path, *finalsep = NULL;
+	char *sep = strrchr(path, '/');
 
-	while(sep = strchr(sep, '/')) {
-		finalsep = sep++;
-	}
-
-	if(finalsep) {
-		return finalsep + 1;
+	if(sep) {
+		return sep + 1;
 	}
 
 	return path;
