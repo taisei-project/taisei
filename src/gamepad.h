@@ -43,6 +43,6 @@ enum {
 
 #define GAMEPAD_AXIS_MAX 32767
 #define GAMEPAD_AXIS_MIN -32768
-#define AXISVAL SIGN
+#define AXISVAL sign
 
 #endif

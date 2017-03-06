@@ -69,8 +69,7 @@ double max(double, double) __attribute__((const));
 double clamp(double, double, double) __attribute__((const));
 double approach(double v, double t, double d) __attribute__((const));
 double psin(double) __attribute__((const));
-
-#define SIGN(x) ((x > 0) - (x < 0))
+int sign(double) __attribute__((const));
 
 //
 // gl/video utils

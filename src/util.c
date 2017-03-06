@@ -161,6 +161,10 @@ double clamp(double f, double lower, double upper) {
     return f;
 }
 
+int sign(double x) {
+    return (x > 0) - (x < 0);
+}
+
 //
 // gl/video utils
 //
