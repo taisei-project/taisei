@@ -314,6 +314,14 @@ void player_event(Player* plr, int type, int key) {
 					plr->iddqd = !plr->iddqd;
 					break;
 
+				case KEY_POWERUP:
+					player_set_power(plr, plr->power + 100);
+					break;
+
+				case KEY_POWERDOWN:
+					player_set_power(plr, plr->power - 100);
+					break;
+
 				default:
 					player_setinputflag(plr, key, true);
 					break;

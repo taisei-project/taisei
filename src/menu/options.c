@@ -567,6 +567,14 @@ void options_sub_controls(MenuData *parent, void *arg) {
 		bind_keybinding(CONFIG_KEY_HAHAIWIN)
 	);
 
+	add_menu_entry(m, "Power up", do_nothing,
+		bind_keybinding(CONFIG_KEY_POWERUP)
+	);
+
+	add_menu_entry(m, "Power down", do_nothing,
+		bind_keybinding(CONFIG_KEY_POWERDOWN)
+	);
+
 	add_menu_entry(m, "Disable background rendering (HoM effect)", do_nothing,
 		bind_keybinding(CONFIG_KEY_NOBACKGROUND)
 	);

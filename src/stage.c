@@ -234,15 +234,17 @@ void stage_input_event(EventType type, int key, void *arg) {
 				break;
 			}
 
+#ifndef DEBUG // no cheating for peasants
+			if(	key == KEY_IDDQD ||
+				key == KEY_POWERUP ||
+				key == KEY_POWERDOWN)
+				break;
+#endif
+
 			if(global.dialog && (key == KEY_SHOT || key == KEY_BOMB)) {
 				page_dialog(&global.dialog);
 				replay_stage_event(global.replay_stage, global.frames, EV_PRESS, key);
 			} else {
-#ifndef DEBUG // no cheating for peasants
-				if(global.replaymode == REPLAY_RECORD && key == KEY_IDDQD)
-					break;
-#endif
-
 				player_event(&global.plr, EV_PRESS, key);
 				replay_stage_event(global.replay_stage, global.frames, EV_PRESS, key);
 
@@ -395,6 +397,13 @@ void draw_hud(void) {
 		draw_text(AL_Left, 0, SCREEN_H - 0.5 * stringheight(buf, _fonts.standard), buf, _fonts.standard);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	}
+
+#ifdef PLR_DPS_STATS
+	else {
+		sprintf(buf, "Avg DPS: %f", global.plr.total_dmg / (global.frames / (double)FPS));
+		draw_text(AL_Left, 0, SCREEN_H - 0.5 * stringheight(buf, _fonts.standard), buf, _fonts.standard);
+	}
+#endif
 }
 
 static void apply_bg_shaders(ShaderRule *shaderrules);

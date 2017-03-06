@@ -8,6 +8,10 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#ifdef DEBUG
+	#define PLR_DPS_STATS
+#endif
+
 #include "util.h"
 #include "enemy.h"
 #include "gamepad.h"
@@ -77,6 +81,10 @@ typedef struct {
 	int axis_lr;
 
 	char iddqd;
+
+#ifdef PLR_DPS_STATS
+	int total_dmg;
+#endif
 } Player;
 
 // this is used by both player and replay code
