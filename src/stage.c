@@ -194,7 +194,7 @@ static void stage_start(StageInfo *stage) {
 
 void stage_pause(void) {
 	MenuData menu;
-	stop_bgm();
+	stop_bgm(false);
 	create_ingame_menu(&menu);
 	menu_loop(&menu);
 	resume_bgm();
@@ -762,6 +762,10 @@ void stage_loop(StageInfo *stage) {
 		} else {
 			frame_rate(&global.lasttime);
 		}
+	}
+
+	if(global.game_over == GAMEOVER_RESTART && global.stage->type != STAGE_SPELL) {
+		stop_bgm(true);
 	}
 
 	if(global.replaymode == REPLAY_RECORD) {

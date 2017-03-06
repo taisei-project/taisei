@@ -110,13 +110,18 @@ void resume_bgm(void) {
     start_bgm(current_bgm.name); // In most cases it just unpauses existing music.
 }
 
-void stop_bgm(void) {
+void stop_bgm(bool force) {
     if(!current_bgm.name) {
         return;
     }
 
     if(audio_backend_music_is_playing() && !audio_backend_music_is_paused()) {
-        audio_backend_music_pause(); // Pause, not halt - to be unpaused in continue_bgm() if needed.
+        if(force) {
+            audio_backend_music_stop();
+        } else {
+            audio_backend_music_pause();
+        }
+
         printf("BGM stopped.\n");
     } else {
         printf("stop_bgm(): No BGM was playing.\n");
@@ -136,7 +141,7 @@ void restore_bgm(void) {
 
 void start_bgm(const char *name) {
     if(!name || !*name) {
-        stop_bgm();
+        stop_bgm(false);
         return;
     }
 
@@ -148,7 +153,7 @@ void start_bgm(const char *name) {
 
         if((current_bgm.music = get_music(name)) == NULL) {
             warnx("start_bgm(): BGM '%s' does not exist", current_bgm.name);
-            stop_bgm();
+            stop_bgm(true);
             free(current_bgm.name);
             current_bgm.name = NULL;
             return;
