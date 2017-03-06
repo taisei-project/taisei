@@ -313,7 +313,7 @@ int marisa_laser_slave(Enemy *e, int t) {
 
 		if(!(global.frames % 3)) {
 			float s = 0.5 + 0.3*sin(global.frames/7.0);
-			create_particle3c("marilaser_part0", 0, rgb(1-s,0.5,s), PartDraw, mari_laser, 0, add_ref(e), e->args[2]);
+			create_particle3c("marilaser_part0", 0, rgb(1-s,0.5,s), PartDraw, mari_laser, 0, add_ref(e), e->args[2])->type=PlrProj;
 		}
 		create_particle1c("lasercurve", e->pos, 0, Fade, timeout, 4)->type = PlrProj;
 	}

@@ -22,15 +22,14 @@ void stage2_bg_leaves_draw(Vector pos) {
 	glScalef(-1,1,1);
 	glMatrixMode(GL_MODELVIEW);
 
-	glPushMatrix();
-
 	Texture *leaves = get_tex("stage2/leaves");
 	glBindTexture(GL_TEXTURE_2D, leaves->gltex);
 
+	glPushMatrix();
 	glTranslatef(pos[0]-360,pos[1],pos[2]+500);
 	glRotatef(-160,0,1,0);
-	glTranslatef(-150,0,0);
-	glScalef(1000,2000,1);
+	glTranslatef(-50,0,0);
+	glScalef(1000,3000,1);
 
 	draw_quad();
 
@@ -51,13 +50,11 @@ static void stage2_bg_grass_draw(Vector pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage2/roadgrass")->gltex);
 
 	glPushMatrix();
-	glTranslatef(pos[0]+250,pos[1],pos[2]);
-	glTranslatef(0,0,40);
+	glTranslatef(pos[0]+250,pos[1],pos[2]+40);
 	glRotatef(pos[2]/2-14,0,1,0);
 
 	glScalef(-500,2000,1);
 	draw_quad();
-
 	glPopMatrix();
 
 	glEnable(GL_DEPTH_TEST);
@@ -78,7 +75,6 @@ static void stage2_bg_ground_draw(Vector pos) {
 	glColor4f(0.08,0.,0.1,1);
 	glDisable(GL_TEXTURE_2D);
 	draw_quad();
-	glTranslatef(0,0,+1);
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(0.5,0.5,0.5,1);
 	draw_quad();
