@@ -29,7 +29,7 @@ bool check_animation_path(const char *path) {
 
 char* animation_name(const char *filename) {
 	char *name = resource_util_basename(ANI_PATH_PREFIX, filename);
-	char *c = name, *newname;
+	char *c = name, *newname = NULL;
 
 	while(c = strchr(c, '_')) {
 		newname = ++c;

@@ -7,8 +7,8 @@
 
 #include <assert.h>
 
+#include "util.h"
 #include "stage.h"
-#include "tscomplex.h"
 
 #include <time.h>
 #include "global.h"

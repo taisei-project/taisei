@@ -13,7 +13,7 @@
 #include <stdbool.h>
 #include <math.h>
 
-#include "tscomplex.h"
+#include "util.h"
 #include "color.h"
 
 #include "resource/sfx.h"
@@ -43,7 +43,6 @@
 #include "difficulty.h"
 #include "color.h"
 #include "audio.h"
-
 #include "taisei_err.h"
 #include "rwops/all.h"
 
@@ -89,13 +88,6 @@ enum {
 };
 
 typedef struct {
-	int fpstime;  // frame counter
-	int fps;
-	int show_fps;
-	double stagebg_fps;
-} FPSCounter;
-
-typedef struct {
 	Difficulty diff;
 	Player plr;
 
@@ -137,74 +129,6 @@ typedef struct {
 
 extern Global global;
 
-void print_state_checksum(void);
-
 void init_global(void);
 
-void frame_rate(int *lasttime);
-void calc_fps(FPSCounter *fps);
-void set_ortho(void);
-void colorfill(float r, float g, float b, float a);
-void fade_out(float f);
-void take_screenshot(void);
-
-// needed for mingw compatibility:
-#undef min
-#undef max
-
-// NOTE: do NOT convert these to macros please.
-// max(frand(), 0.5);
-// min(huge_costly_expression, another_huge_costly_expression)
-double min(double, double);
-double max(double, double);
-double clamp(double, double, double);
-double approach(double v, double t, double d);
-double psin(double);
-bool strendswith(const char *s, const char *e);
-bool strstartswith(const char *s, const char *p);
-bool strendswith_any(const char *s, const char **earray);
-void stralloc(char **dest, const char *src);
-char* strjoin(const char *first, ...);
-char* strfmt(const char *fmt, ...);
-#undef strdup
-#define strdup(s) strjoin(s, NULL)
-bool gamekeypressed(KeyIndex key);
-int getenvint(const char *v);
-char* read_all(const char *filename, int *size);
-char* copy_segment(const char *text, const char *delim, int *size);
-
-#define SIGN(x) ((x > 0) - (x < 0))
-
-// this is used by both player and replay code
-enum {
-	EV_PRESS,
-	EV_RELEASE,
-	EV_OVER, // replay-only
-	EV_AXIS_LR,
-	EV_AXIS_UD,
-	EV_CHECK_DESYNC, // replay-only
-};
-
-#undef strlcat
-#undef strlcpy
-
-#define strlcat SDL_strlcat
-#define strlcpy SDL_strlcpy
-
-#undef strncat
-#undef strncpy
-
-#define strncat DO_NOT_USE_strncat_USE_strlcat
-#define strncpy DO_NOT_USE_strncpy_USE_strlcpy
-
 #endif
-
-//
-//	These definitions are common but non-standard, so we provide our own
-//
-
-#undef M_PI
-#undef M_PI_2
-
-#define M_PI 3.14159265358979323846
-#define M_PI_2 1.57079632679489661923

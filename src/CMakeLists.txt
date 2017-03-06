@@ -21,6 +21,7 @@ endif()
 
 set(SRCs
 	main.c
+	util.c
 	taiseigl.c
 	random.c
 	config.c

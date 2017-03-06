@@ -6,6 +6,8 @@
  * Copyright (C) 2012, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
  */
 
+#include <png.h>
+
 #include "global.h"
 #include "video.h"
 #include "taisei_err.h"
@@ -217,6 +219,74 @@ void video_setmode(int w, int h, bool fs, bool resizable) {
 	}
 
 	_video_setmode(w, h, flags, false);
+}
+
+void video_take_screenshot(void) {
+	FILE *out;
+	char *data;
+	char outfile[128], *outpath;
+	time_t rawtime;
+	struct tm * timeinfo;
+	int w, h, rw, rh;
+
+	w = video.current.width;
+	h = video.current.height;
+
+	rw = video.real.width;
+	rh = video.real.height;
+
+	data = malloc(3 * rw * rh);
+
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	strftime(outfile, 128, "/taisei_%Y%m%d_%H-%M-%S_%Z.png", timeinfo);
+
+	outpath = strjoin(get_screenshots_path(), outfile, NULL);
+
+	printf("Saving screenshot as %s\n", outpath);
+	out = fopen(outpath, "wb");
+	free(outpath);
+
+	if(!out) {
+		perror("fopen");
+		free(data);
+		return;
+	}
+
+	glReadBuffer(GL_FRONT);
+	glReadPixels(0, 0, rw, rh, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+	png_structp png_ptr;
+    png_infop info_ptr;
+	png_byte **row_pointers;
+
+	png_ptr = png_create_write_struct (PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	info_ptr = png_create_info_struct (png_ptr);
+
+	png_set_IHDR(png_ptr, info_ptr, w, h, 8, PNG_COLOR_TYPE_RGB,
+                  PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+
+	row_pointers = png_malloc(png_ptr, h*sizeof(png_byte *));
+
+	for(int y = 0; y < h; y++) {
+		row_pointers[y] = png_malloc(png_ptr, 8*3*w);
+
+		memcpy(row_pointers[y], data + rw*3*(h-1-y), w*3);
+	}
+
+	png_init_io(png_ptr, out);
+	png_set_rows(png_ptr, info_ptr, row_pointers);
+	png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
+
+	for(int y = 0; y < h; y++)
+		png_free(png_ptr, row_pointers[y]);
+
+	png_free(png_ptr, row_pointers);
+
+	png_destroy_write_struct(&png_ptr, &info_ptr);
+
+	free(data);
+	fclose(out);
 }
 
 bool video_isresizable(void) {
