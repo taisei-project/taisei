@@ -348,8 +348,8 @@ void stage_input(void) {
 		replay_stage_event(global.replay_stage, global.frames, EV_RELEASE, KEY_SKIP);
 	}
 
-	player_applymovement(&global.plr);
 	player_input_workaround(&global.plr);
+	player_applymovement(&global.plr);
 }
 
 void draw_hud(void) {
