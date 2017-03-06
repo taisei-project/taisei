@@ -19,7 +19,7 @@ char* sound_path(const char *name) {
 }
 
 bool check_sound_path(const char *path) {
-	return audio_mixer_check_sound_path(path, false);
+	return strstartswith(path, SFX_PATH_PREFIX) && audio_mixer_check_sound_path(path, false);
 }
 
 void* load_sound(const char *path) {

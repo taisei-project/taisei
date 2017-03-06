@@ -19,7 +19,7 @@ char* music_path(const char *name) {
 }
 
 bool check_music_path(const char *path) {
-	return audio_mixer_check_sound_path(path, true);
+	return strstartswith(path, BGM_PATH_PREFIX) && audio_mixer_check_sound_path(path, true);
 }
 
 void* load_music(const char *path) {
