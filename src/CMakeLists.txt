@@ -192,7 +192,6 @@ endif()
 
 list(SORT SRCs)
 list(REMOVE_DUPLICATES SRCs)
-list(REMOVE_DUPLICATES LIBs)
 
 link_directories(${LIBDIRs})
 
