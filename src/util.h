@@ -36,6 +36,7 @@ bool strendswith_any(const char *s, const char **earray)  __attribute__((pure));
 void stralloc(char **dest, const char *src);
 char* strjoin(const char *first, ...) __attribute__((sentinel));
 char* strfmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+void strip_trailing_slashes(char *buf);
 #undef strdup
 #define strdup SDL_strdup
 

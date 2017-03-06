@@ -37,18 +37,21 @@ typedef enum ResourceFlags {
 	// RESF_PERMANENT = 4;
 } ResourceFlags;
 
-// Converts a full path into an abstract resource name to be used as the hashtable key.
+// All paths are relative to the current working directory, which can assumed to be the resources directory,
+// unless mentioned otherwise.
+
+// Converts a path into an abstract resource name to be used as the hashtable key.
 // This method is optional, the default strategy is to take the path minus the prefix and extension.
 // The returned name must be free()'d.
 typedef char* (*ResourceNameFunc)(const char *path);
 
-// Converts an abstract resource name into a full path from which a resource with that name could be loaded.
+// Converts an abstract resource name into a path from which a resource with that name could be loaded.
 // The path may not actually exist or be usable. The load function (see below) shall deal with such cases.
 // The returned path must be free()'d.
 // May return NULL on failure, but does not have to.
 typedef char* (*ResourceFindFunc)(const char *name);
 
-// Tells whether the resource handler should attempt to load a file, specified by a full path.
+// Tells whether the resource handler should attempt to load a file, specified by a path.
 typedef bool (*ResourceCheckFunc)(const char *path);
 
 // Loads a resource at path and returns a pointer to it.

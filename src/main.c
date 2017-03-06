@@ -6,6 +6,7 @@
  */
 
 #include <sys/stat.h>
+#include <errno.h>
 #include "taisei_err.h"
 
 #include "global.h"
@@ -128,6 +129,14 @@ int main(int argc, char **argv) {
 	MKDIR(get_config_path());
 	MKDIR(get_screenshots_path());
 	MKDIR(get_replays_path());
+
+	if(chdir(get_prefix())) {
+		errx(-1, "chdir() failed: %s", strerror(errno));
+	} else {
+		char cwd[1024]; // i don't care if this is not enough for you, getcwd is garbage
+		getcwd(cwd, sizeof(cwd));
+		printf("Changed working directory to %s\n", cwd);
+	}
 
 	config_load(CONFIG_FILE);
 

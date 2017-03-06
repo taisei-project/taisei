@@ -21,7 +21,7 @@ char* animation_path(const char *name) {
 }
 
 bool check_animation_path(const char *path) {
-	char *base = strjoin(get_prefix(), TEX_PATH_PREFIX, "ani_", NULL);
+	char *base = strjoin(TEX_PATH_PREFIX, "ani_", NULL);
 	bool result = strstartswith(path, base) && strendswith(path, TEX_EXTENSION);
 	free(base);
 	return result;

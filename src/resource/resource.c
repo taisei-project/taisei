@@ -204,16 +204,11 @@ void resource_util_strip_ext(char *path) {
 }
 
 char* resource_util_basename(const char *prefix, const char *path) {
-	const char *baseprefix = get_prefix();
-	char *fullprefix = strjoin(baseprefix, prefix, NULL);
+	assert(strstartswith(path, prefix));
 
-	assert(strstartswith(path, fullprefix));
-
-	char *out = NULL;
-	stralloc(&out, path + strlen(fullprefix));
+	char *out = strdup(path + strlen(prefix));
 	resource_util_strip_ext(out);
 
-	free(fullprefix);
 	return out;
 }
 
@@ -261,17 +256,8 @@ static void recurse_dir(const char *path) {
 }
 
 static void recurse_dir_rel(const char *relpath) {
-	char *path = strjoin(get_prefix(), relpath, NULL);
-	char *c;
-
-	while(true) {
-		c = strchr(path, '\0') - 1;
-		if(*c == '/' || *c == '\\')
-			*c = '\0';
-		else
-			break;
-	}
-
+	char *path = strdup(relpath);
+	strip_trailing_slashes(path);
 	recurse_dir(path);
 	free(path);
 }
@@ -305,9 +291,7 @@ void load_resources(void) {
 	init_fonts();
 
 	if(glext.draw_instanced) {
-		char *p = strjoin(get_prefix(), "shader/laser_snippets", NULL);
-		load_shader_snippets(p, "laser_");
-		free(p);
+		load_shader_snippets("shader/laser_snippets", "laser_");
 	}
 
 	init_fbo(&resources.fbg[0]);

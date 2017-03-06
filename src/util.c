@@ -117,6 +117,18 @@ char* copy_segment(const char *text, const char *delim, int *size) {
     return seg;
 }
 
+void strip_trailing_slashes(char *buf) {
+    char *c;
+
+    while(true) {
+        c = strchr(buf, '\0') - 1;
+        if(*c == '/' || *c == '\\')
+            *c = '\0';
+        else
+            break;
+    }
+}
+
 //
 // math utils
 //
