@@ -67,11 +67,11 @@ typedef struct ReplayStage {
 	uint16_t plr_pos_x;
 	uint16_t plr_pos_y;
 	uint8_t plr_focus;
-	uint8_t plr_fire;
+	uint8_t plr_fire; // legacy, please remove in next struct version
 	uint16_t plr_power;
 	uint8_t plr_lifes;
 	uint8_t plr_bombs;
-	uint8_t plr_moveflags;
+	uint8_t plr_inputflags;
 
 	// player input
 	uint16_t numevents;

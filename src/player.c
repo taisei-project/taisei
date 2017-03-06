@@ -72,7 +72,10 @@ void player_set_power(Player *plr, short npow) {
 }
 
 void player_move(Player *plr, complex delta) {
-	float speed = 0.01*VIEWPORT_W/((plr->focus > 0)+1);
+	float speed = 0.01*VIEWPORT_W;
+
+	if(plr->inputflags & INFLAG_FOCUS)
+		speed /= 2.0;
 
 	if(plr->cha == Marisa && plr->shot == MarisaLaser && global.frames - plr->recovery < 0)
 		speed /= 5.0;
@@ -94,11 +97,11 @@ void player_draw(Player* plr) {
 	glPushMatrix();
 		glTranslatef(creal(plr->pos), cimag(plr->pos), 0);
 
-		if(plr->focus != 0) {
+		if(plr->focus) {
 			glPushMatrix();
 				glRotatef(global.frames*10, 0, 0, 1);
 				glScalef(1, 1, 1);
-				glColor4f(1,1,1,0.2);
+				glColor4f(1, 1, 1, 0.2 * (clamp(plr->focus, 0, 15) / 15.0));
 				draw_texture(0, 0, "fairy_circle");
 				glColor4f(1,1,1,1);
 			glPopMatrix();
@@ -127,12 +130,12 @@ void player_draw(Player* plr) {
 
 		glEnable(GL_CULL_FACE);
 
-		if(plr->focus != 0) {
+		if(plr->focus) {
 			glPushMatrix();
-				glColor4f(1,1,1,fabs((float)plr->focus/30.0f));
+				glColor4f(1, 1, 1, plr->focus / 30.0);
 				glRotatef(global.frames, 0, 0, -1);
 				draw_texture(0, 0, "focus");
-				glColor4f(1,1,1,1);
+				glColor4f(1, 1, 1, 1);
 			glPopMatrix();
 		}
 
@@ -147,19 +150,16 @@ void player_logic(Player* plr) {
 		return;
 	}
 
-	if(plr->focus < 0 || (plr->focus > 0 && plr->focus < 30))
-		plr->focus++;
-
+	plr->focus = approach(plr->focus, (plr->inputflags & INFLAG_FOCUS) ? 30 : 0, 1);
 
 	switch(plr->cha) {
-	case Youmu:
-		youmu_shot(plr);
-		break;
-	case Marisa:
-		marisa_shot(plr);
-		break;
+		case Youmu:
+			youmu_shot(plr);
+			break;
+		case Marisa:
+			marisa_shot(plr);
+			break;
 	}
-
 
 	if(global.frames == plr->deathtime)
 		player_realdeath(plr);
@@ -214,7 +214,7 @@ void player_bomb(Player *plr) {
 void player_realdeath(Player *plr) {
 	plr->deathtime = -DEATH_DELAY-1;
 	plr->respawntime = global.frames;
-	plr->moveflags = 0;
+	plr->inputflags &= ~INFLAGS_MOVE;
 
 	const double arc = 0.3 * M_PI;
 	int drop = max(2, (plr->power * 0.15) / POWER_VALUE);
@@ -252,27 +252,36 @@ void player_death(Player *plr) {
 	}
 }
 
-void player_setmoveflag(Player* plr, int key, bool mode) {
-	int flag = 0;
-
+static PlrInputFlag key_to_inflag(KeyIndex key) {
 	switch(key) {
-		case KEY_UP:	flag = MOVEFLAG_UP; 	break;
-		case KEY_DOWN:	flag = MOVEFLAG_DOWN;	break;
-		case KEY_LEFT:	flag = MOVEFLAG_LEFT;	break;
-		case KEY_RIGHT:	flag = MOVEFLAG_RIGHT;	break;
+		case KEY_UP:    return INFLAG_UP;    break;
+		case KEY_DOWN:  return INFLAG_DOWN;  break;
+		case KEY_LEFT:  return INFLAG_LEFT;  break;
+		case KEY_RIGHT: return INFLAG_RIGHT; break;
+		case KEY_FOCUS: return INFLAG_FOCUS; break;
+		case KEY_SHOT:  return INFLAG_SHOT;  break;
+		default:        return 0;
+	}
+}
+
+void player_setinputflag(Player *plr, KeyIndex key, bool mode) {
+	PlrInputFlag flag = key_to_inflag(key);
+
+	if(!flag) {
+		return;
 	}
 
-	if(!flag)
-		return;
-
 	if(mode) {
-		plr->prevmove = plr->curmove;
-		plr->prevmovetime = plr->movetime;
-		plr->curmove = flag;
-		plr->moveflags |= flag;
-		plr->movetime = global.frames;
+		if(flag & INFLAGS_MOVE) {
+			plr->prevmove = plr->curmove;
+			plr->prevmovetime = plr->movetime;
+			plr->curmove = flag;
+			plr->movetime = global.frames;
+		}
+
+		plr->inputflags |= flag;
 	} else {
-		plr->moveflags &= ~flag;
+		plr->inputflags &= ~flag;
 	}
 }
 
@@ -280,14 +289,6 @@ void player_event(Player* plr, int type, int key) {
 	switch(type) {
 		case EV_PRESS:
 			switch(key) {
-				case KEY_FOCUS:
-					plr->focus = 1;
-					break;
-
-				case KEY_SHOT:
-					plr->fire = true;
-					break;
-
 				case KEY_BOMB:
 					player_bomb(plr);
 					break;
@@ -297,26 +298,13 @@ void player_event(Player* plr, int type, int key) {
 					break;
 
 				default:
-					player_setmoveflag(plr, key, true);
+					player_setinputflag(plr, key, true);
 					break;
 			}
 			break;
 
 		case EV_RELEASE:
-			switch(key) {
-				case KEY_FOCUS:
-					plr->focus = -30;  // that's for the transparency timer
-					break;
-
-				case KEY_SHOT:
-					plr->fire = false;
-					break;
-
-				default:
-					player_setmoveflag(plr, key, false);
-					break;
-			}
-
+			player_setinputflag(plr, key, false);
 			break;
 
 		case EV_AXIS_LR:
@@ -334,7 +322,7 @@ bool player_applymovement_gamepad(Player *plr) {
 	if(!plr->axis_lr && !plr->axis_ud) {
 		if(plr->gamepadmove) {
 			plr->gamepadmove = false;
-			plr->moveflags = 0;
+			plr->inputflags &= ~INFLAGS_MOVE;
 		}
 		return false;
 	}
@@ -348,10 +336,10 @@ bool player_applymovement_gamepad(Player *plr) {
 	int sr = SIGN(real);
 	int si = SIGN(imag);
 
-	player_setmoveflag(plr, KEY_UP,		si == -1);
-	player_setmoveflag(plr, KEY_DOWN,	si ==  1);
-	player_setmoveflag(plr, KEY_LEFT,	sr == -1);
-	player_setmoveflag(plr, KEY_RIGHT,	sr ==  1);
+	player_setinputflag(plr, KEY_UP,    si == -1);
+	player_setinputflag(plr, KEY_DOWN,  si ==  1);
+	player_setinputflag(plr, KEY_LEFT,  sr == -1);
+	player_setinputflag(plr, KEY_RIGHT, sr ==  1);
 
 	if(direction) {
 		plr->gamepadmove = true;
@@ -368,10 +356,10 @@ void player_applymovement(Player *plr) {
 	bool gamepad = player_applymovement_gamepad(plr);
 	plr->moving = false;
 
-	int up		=	plr->moveflags & MOVEFLAG_UP,
-		down	=	plr->moveflags & MOVEFLAG_DOWN,
-		left	=	plr->moveflags & MOVEFLAG_LEFT,
-		right	=	plr->moveflags & MOVEFLAG_RIGHT;
+	int up		=	plr->inputflags & INFLAG_UP,
+		down	=	plr->inputflags & INFLAG_DOWN,
+		left	=	plr->inputflags & INFLAG_LEFT,
+		right	=	plr->inputflags & INFLAG_RIGHT;
 
 	if(left && !right) {
 		plr->moving = true;
@@ -399,21 +387,26 @@ void player_applymovement(Player *plr) {
 }
 
 void player_input_workaround(Player *plr) {
-	if(!global.dialog) {
-		int shot  = gamekeypressed(KEY_SHOT);
-		int focus = gamekeypressed(KEY_FOCUS);
+	for(KeyIndex key = KEYIDX_FIRST; key <= KEYIDX_LAST; ++key) {
+		int flag = key_to_inflag(key);
 
-		if(!shot && plr->fire) {
-			player_event(plr, EV_RELEASE, KEY_SHOT);
-			replay_stage_event(global.replay_stage, global.frames, EV_RELEASE, KEY_SHOT);
-		} else if(shot && !plr->fire) {
-			player_event(plr, EV_PRESS, KEY_SHOT);
-			replay_stage_event(global.replay_stage, global.frames, EV_PRESS, KEY_SHOT);
-		}
+		if(flag) {
+			int event = -1;
+			bool flagset = plr->inputflags & flag;
+			bool keyheld = gamekeypressed(key);
 
-		if(!focus && plr->focus > 0) {
-			player_event(plr, EV_RELEASE, KEY_FOCUS);
-			replay_stage_event(global.replay_stage, global.frames, EV_RELEASE, KEY_FOCUS);
+			if(flagset && !keyheld) {
+				// something ate the release event (most likely the ingame menu)
+				event = EV_RELEASE;
+			} else if(!flagset && keyheld) {
+				// something ate the press event (most likely the ingame menu)
+				event = EV_PRESS;
+			}
+
+			if(event != -1) {
+				player_event(plr, event, key);
+				replay_stage_event(global.replay_stage, global.frames, event, key);
+			}
 		}
 	}
 }
