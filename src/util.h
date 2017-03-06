@@ -8,6 +8,14 @@
 #include <zlib.h> // compiling under mingw may fail without this...
 
 //
+// compatibility
+//
+
+#ifndef __GNUC__ // clang defines this too
+#define __attribute__
+#endif
+
+//
 // string utils
 //
 
@@ -22,12 +30,12 @@
 #define strncpy DO_NOT_USE_strncpy_USE_strlcpy
 
 char* copy_segment(const char *text, const char *delim, int *size);
-bool strendswith(const char *s, const char *e);
-bool strstartswith(const char *s, const char *p);
-bool strendswith_any(const char *s, const char **earray);
+bool strendswith(const char *s, const char *e)  __attribute__((pure));
+bool strstartswith(const char *s, const char *p)  __attribute__((pure));
+bool strendswith_any(const char *s, const char **earray)  __attribute__((pure));
 void stralloc(char **dest, const char *src);
-char* strjoin(const char *first, ...);
-char* strfmt(const char *fmt, ...);
+char* strjoin(const char *first, ...) __attribute__((sentinel));
+char* strfmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 #undef strdup
 #define strdup SDL_strdup
 
@@ -55,11 +63,11 @@ char* strfmt(const char *fmt, ...);
 #undef min
 #undef max
 
-double min(double, double);
-double max(double, double);
-double clamp(double, double, double);
-double approach(double v, double t, double d);
-double psin(double);
+double min(double, double) __attribute__((const));
+double max(double, double) __attribute__((const));
+double clamp(double, double, double) __attribute__((const));
+double approach(double v, double t, double d) __attribute__((const));
+double psin(double) __attribute__((const));
 
 #define SIGN(x) ((x > 0) - (x < 0))
 
@@ -90,6 +98,6 @@ char* read_all(const char *filename, int *size);
 // misc utils
 //
 
-int getenvint(const char *v);
+int getenvint(const char *v) __attribute__((pure));
 
 #endif
