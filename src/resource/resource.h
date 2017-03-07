@@ -102,10 +102,6 @@ void free_resources(void);
 Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags);
 Resource* insert_resource(ResourceType type, const char *name, void *data, ResourceFlags flags, const char *source);
 
-void draw_loading_screen(void);
-
-void resources_delete_and_unset_all(Hashtable *ht, HTIterCallback ifunc, void *arg);
-
 void resource_util_strip_ext(char *path);
 char* resource_util_basename(const char *prefix, const char *path);
 const char* resource_util_filename(const char *path);

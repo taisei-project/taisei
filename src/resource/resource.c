@@ -314,12 +314,6 @@ void free_resources(void) {
 	delete_fbo(&resources.fsec);
 }
 
-void draw_loading_screen(void) {
-	set_ortho();
-	draw_texture(SCREEN_W/2, SCREEN_H/2, "loading");
-	SDL_GL_SwapWindow(video.window);
-}
-
 void print_resource_hashtables(void) {
 	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
 		hashtable_print_stringkeys(get_handler(type)->mapping);
