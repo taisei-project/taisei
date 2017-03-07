@@ -385,6 +385,9 @@ void player_applymovement(Player *plr) {
 }
 
 void player_input_workaround(Player *plr) {
+	if(global.dialog)
+		return;
+
 	for(KeyIndex key = KEYIDX_FIRST; key <= KEYIDX_LAST; ++key) {
 		int flag = key_to_inflag(key);
 
