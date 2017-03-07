@@ -100,9 +100,9 @@ void audio_backend_set_bgm_volume(float gain) {
 		Mix_VolumeMusic(gain * MIX_MAX_VOLUME);
 }
 
-char* audio_mixer_sound_path(const char *name) {
+char* audio_mixer_sound_path(const char *prefix, const char *name) {
 	for(const char **ext = mixer_audio_exts; *ext; ++ext) {
-		char *p = strjoin(SFX_PATH_PREFIX, name, *ext, NULL);
+		char *p = strjoin(prefix, name, *ext, NULL);
 		struct stat statbuf;
 
 		if(!stat(p, &statbuf)) {

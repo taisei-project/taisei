@@ -11,11 +11,11 @@
 #include "resource.h"
 #include "sfx.h"
 
-char* audio_mixer_sound_path(const char *name);
+char* audio_mixer_sound_path(const char *prefix, const char *name);
 bool audio_mixer_check_sound_path(const char *path, bool isbgm);
 
 char* sound_path(const char *name) {
-	return audio_mixer_sound_path(name);
+	return audio_mixer_sound_path(SFX_PATH_PREFIX, name);
 }
 
 bool check_sound_path(const char *path) {
