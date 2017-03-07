@@ -30,7 +30,7 @@ AttackInfo stage5_spells[] = {
 							iku_cathode, iku_spell_bg, BOSS_DEFAULT_GO_POS},
 	{{12, 13, 14, 15},	AT_Spellcard, "Current Sign ~ Induction", 30, 35000,
 							iku_induction, iku_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Circuit Sign ~ Overload", 60000, 150000,
+	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Circuit Sign ~ Overload", 60, 40000,
 							iku_extra, iku_spell_bg, BOSS_DEFAULT_GO_POS},
 
 	{{0}}
