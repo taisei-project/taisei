@@ -5,6 +5,7 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
+#include <dirent.h>
 #include "animation.h"
 #include "texture.h"
 #include "global.h"
@@ -14,9 +15,27 @@
 #include "taisei_err.h"
 
 char* animation_path(const char *name) {
-	// stub
-	// we could scan the gfx/ directory and find the first matching animation here
-	// ...or we could describe animations with simple text files instead of encoding them in texture file names
+	DIR *dir = opendir("gfx/");
+	if(dir == NULL)
+		return NULL;
+
+	struct dirent *dp;
+
+	while((dp = readdir(dir)) != NULL) {
+		char *filepath = strjoin("gfx/", dp->d_name, NULL);
+		char *tmpname = NULL;
+
+		if(check_animation_path(filepath)) {
+			if(!strcmp(tmpname = animation_name(filepath), name)) {
+				free(tmpname);
+				return filepath;
+			}
+		}
+
+		free(filepath);
+		free(tmpname);
+	}
+
 	return NULL;
 }
 

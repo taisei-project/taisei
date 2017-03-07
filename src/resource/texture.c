@@ -18,7 +18,7 @@
 static SDL_Surface* load_png(const char *filename);
 
 char* texture_path(const char *name) {
-	return strjoin(get_prefix(), TEX_PATH_PREFIX, name, TEX_EXTENSION, NULL);
+	return strjoin(TEX_PATH_PREFIX, name, TEX_EXTENSION, NULL);
 }
 
 bool check_texture_path(const char *path) {

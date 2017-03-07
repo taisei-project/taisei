@@ -21,7 +21,7 @@ static void parse_obj(const char *filename, ObjFileData *data);
 static void free_obj(ObjFileData *data);
 
 char* model_path(const char *name) {
-	return strjoin(get_prefix(), MDL_PATH_PREFIX, name, MDL_EXTENSION, NULL);
+	return strjoin(MDL_PATH_PREFIX, name, MDL_EXTENSION, NULL);
 }
 
 bool check_model_path(const char *path) {

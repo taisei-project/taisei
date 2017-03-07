@@ -30,7 +30,7 @@ static char snippet_header_gl31[] =
 ;
 
 char* shader_path(const char *name) {
-	return strjoin(get_prefix(), SHA_PATH_PREFIX, name, SHA_EXTENSION, NULL);
+	return strjoin(SHA_PATH_PREFIX, name, SHA_EXTENSION, NULL);
 }
 
 bool check_shader_path(const char *path) {

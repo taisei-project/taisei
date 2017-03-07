@@ -277,7 +277,10 @@ static void scan_resources(void) {
 }
 
 void load_resources(void) {
-	scan_resources();
+	if(!getenvint("TAISEI_NOSCAN")) {
+		scan_resources();
+	}
+
 	init_fonts();
 
 	if(glext.draw_instanced) {
