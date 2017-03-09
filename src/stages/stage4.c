@@ -208,6 +208,18 @@ void stage4_start(void) {
 	add_model(&bgcontext, stage4_corridor_draw, stage4_corridor_pos);
 }
 
+void stage4_preload(void) {
+	get_resource(RES_BGM,     "bgm_stage4",       RESF_TRANSIENT);
+	get_resource(RES_BGM,     "bgm_stage4boss",   RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage2/border",    RESF_REQUIRED | RESF_TRANSIENT); // Stage 2 is intentional!
+	get_resource(RES_TEXTURE, "stage4/kurumibg1", RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage4/kurumibg2", RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage4/lake",      RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage4/mansion",   RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage4/planks",    RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage4/wall",      RESF_REQUIRED | RESF_TRANSIENT);
+}
+
 void stage4_end(void) {
 	free_stage3d(&bgcontext);
 }
@@ -247,6 +259,7 @@ ShaderRule stage4_shaders[] = { stage4_fog, NULL };
 
 StageProcs stage4_procs = {
 	.begin = stage4_start,
+	.preload = stage4_preload,
 	.end = stage4_end,
 	.draw = stage4_draw,
 	.event = stage4_events,

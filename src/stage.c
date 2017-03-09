@@ -626,6 +626,8 @@ static void stage_free(void) {
 		free_boss(global.boss);
 		global.boss = NULL;
 	}
+
+	free_resources(RESF_TRANSIENT);
 }
 
 static void stage_finalize(void *arg) {
@@ -689,6 +691,12 @@ void stage_loop(StageInfo *stage) {
 		init_player(&global.plr);
 		replay_stage_sync_player_state(stg, &global.plr);
 		stg->playpos = 0;
+	}
+
+	if (stage->procs->preload)
+	{
+		printf("Loading resources for stage:\n");
+		stage->procs->preload();
 	}
 
 	Enemy *e = global.plr.slaves, *tmp;

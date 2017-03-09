@@ -49,6 +49,7 @@ typedef struct StageProcs StageProcs;
 
 struct StageProcs {
 	StageProc begin;
+	StageProc preload;
 	StageProc end;
 	StageProc draw;
 	StageProc event;

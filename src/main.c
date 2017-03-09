@@ -26,7 +26,7 @@ void taisei_shutdown(void) {
 	printf("\nshutdown:\n");
 
 	free_all_refs();
-	free_resources();
+	free_resources(0);
 	audio_shutdown();
 	video_shutdown();
 	gamepad_shutdown();
