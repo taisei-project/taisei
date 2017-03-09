@@ -122,6 +122,16 @@ void stage5_start(void) {
 	stagedata.rad = 2800;
 }
 
+void stage5_preload(void) {
+	get_resource(RES_BGM,     "bgm_stage5",             RESF_TRANSIENT);
+	get_resource(RES_BGM,     "bgm_stage5boss",         RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage5/noise",           RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage5/spell_bg",        RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage5/spell_clouds",    RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage5/spell_lightning", RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage5/tower",           RESF_REQUIRED | RESF_TRANSIENT);
+}
+
 void stage5_end(void) {
 	free_stage3d(&bgcontext);
 }
@@ -143,6 +153,7 @@ ShaderRule stage5_shaders[] = { NULL };
 
 StageProcs stage5_procs = {
 	.begin = stage5_start,
+	.preload = stage5_preload,
 	.end = stage5_end,
 	.draw = stage5_draw,
 	.event = stage5_events,

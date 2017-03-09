@@ -159,6 +159,14 @@ void stage1_start(void) {
 	bgcontext.cv[1] = 4;
 }
 
+void stage1_preload(void) {
+	get_resource(RES_BGM,     "bgm_stage1",       RESF_TRANSIENT);
+	get_resource(RES_BGM,     "bgm_stage1boss",   RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage1/cirnobg",   RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage1/fog",       RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage1/snowlayer", RESF_REQUIRED | RESF_TRANSIENT);
+}
+
 void stage1_end(void) {
 	free_stage3d(&bgcontext);
 }
@@ -180,6 +188,7 @@ ShaderRule stage1_shaders[] = { stage1_fog, NULL };
 
 StageProcs stage1_procs = {
 	.begin = stage1_start,
+	.preload = stage1_preload,
 	.end = stage1_end,
 	.draw = stage1_draw,
 	.event = stage1_events,
