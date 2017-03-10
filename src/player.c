@@ -259,7 +259,7 @@ void player_death(Player *plr) {
 			tsrand_fill(2);
 			create_particle2c("flare", plr->pos, 0, Shrink, timeout_linear, 40, (3+afrand(0)*7)*cexp(I*tsrand_a(1)))->type=PlrProj;
 		}
-		create_particle2c("blast", plr->pos, rgb(1,0.5,0.3), GrowFade, timeout, 35, 2.4)->type=PlrProj;
+		create_particle2c("blast", plr->pos, rgba(1,0.3,0.3,0.5), GrowFadeAdd, timeout, 35, 2.4)->type=PlrProj;
 		plr->deathtime = global.frames + DEATHBOMB_TIME;
 	}
 }

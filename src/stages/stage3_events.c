@@ -176,7 +176,7 @@ int stage3_bitchswirl(Enemy *e, int t) {
 	}
 
 	FROM_TO(0, 120, 20) {
-		create_projectile2c("flea", e->pos, rgb(1.0, 0.5, 0.5), accelerated,
+		create_projectile2c("flea", e->pos, rgb(.7, 0.0, 0.5), accelerated,
 			2*cexp(I*carg(global.plr.pos - e->pos)),
 			0.005*cexp(I*(M_PI*2 * frand()))
 		);

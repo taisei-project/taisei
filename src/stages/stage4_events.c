@@ -90,7 +90,7 @@ int stage4_splasher(Enemy *e, int t) {
 
 	FROM_TO(60, 150, 5-global.diff) {
 		tsrand_fill(4);
-		create_projectile2c(afrand(0) > 0.5 ? "rice" : "thickrice", e->pos, rgb(1,0.6-0.2*afrand(1),0.8), accelerated, e->args[0]/2+(1-2*afrand(2))+(1-2*afrand(3))*I, 0.02*I);
+		create_projectile2c(afrand(0) > 0.5 ? "rice" : "thickrice", e->pos, rgb(0.8,0.3-0.1*afrand(1),0.5), accelerated, e->args[0]/2+(1-2*afrand(2))+(1-2*afrand(3))*I, 0.02*I);
 	}
 
 	FROM_TO(200, 300, 1)
