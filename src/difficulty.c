@@ -21,11 +21,12 @@ const char* difficulty_name(Difficulty diff) {
 
 const char* difficulty_tex(Difficulty diff) {
     switch(diff) {
-        case D_Easy:    return "difficulty/easy";      break;
-        case D_Normal:  return "difficulty/normal";    break;
-        case D_Hard:    return "difficulty/hard";      break;
-        case D_Lunatic: return "difficulty/lunatic";   break;
-        case D_Extra:   return "difficulty/lunatic";     break;
+        case D_Easy:    return "difficulty/easy";
+        case D_Normal:  return "difficulty/normal";
+        case D_Hard:    return "difficulty/hard";
+        case D_Lunatic: return "difficulty/lunatic";
+        case D_Extra:   return "difficulty/lunatic";
+	default: return "difficulty/unknown"; // This texture is not supposed to exist.
     }
 }
 
