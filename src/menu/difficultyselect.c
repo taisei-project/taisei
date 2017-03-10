@@ -21,30 +21,29 @@ void create_difficulty_menu(MenuData *m) {
 	m->transition = TransMenuDark;
 	m->flags = MF_Transient | MF_Abortable;
 
-	add_menu_entry(m, "“What is danmaku?”\nCasual level", set_difficulty, (void *)D_Easy);
-	add_menu_entry(m, "“How good am I?”\nA good challenge", set_difficulty, (void *)D_Normal);
-	add_menu_entry(m, "“Why can’t I do this?”\nNot a good challenge", set_difficulty, (void *)D_Hard);
-	add_menu_entry(m, "“What is pain?”\nA health risk", set_difficulty, (void *)D_Lunatic);
+	add_menu_entry(m, "“All those bullets confuse me!”\nYou will be stuck here forever", set_difficulty, (void *)D_Easy);
+	add_menu_entry(m, "“So this isn’t about shooting things?”\nSomewhat challenging", set_difficulty, (void *)D_Normal);
+	add_menu_entry(m, "“Why can’t I beat this?”\nActually challenging", set_difficulty, (void *)D_Hard);
+	add_menu_entry(m, "“What is pain?”\nAsian mode", set_difficulty, (void *)D_Lunatic);
 }
 
 void draw_difficulty_menu(MenuData *menu) {
 	draw_options_menu_bg(menu);
 	draw_menu_title(menu, "Select Difficulty");
 
-	char *difftex[] = { "difficulty/easy", "difficulty/normal", "difficulty/hard", "difficulty/lunatic" };
 
-	menu->drawdata[0] = approach(menu->drawdata[0],menu->cursor,0.1);
+	menu->drawdata[0] += (menu->cursor-menu->drawdata[0])*0.1;
 	
 	glColor4f(0.1*menu->drawdata[0],0,0,0.7);
 	glPushMatrix();
-	glTranslatef(SCREEN_W/2+50 - 25*menu->drawdata[0], SCREEN_H/3 + 90*(0.7*menu->drawdata[0]),0);
-	glRotatef(4*menu->drawdata[0],0,0,1);
+	glTranslatef(SCREEN_W/2+30 - 25*menu->drawdata[0], SCREEN_H/3 + 90*(0.7*menu->drawdata[0]),0);
+	glRotatef(4*menu->drawdata[0]-4,0,0,1);
 	glPushMatrix();
-	glScalef(SCREEN_W*1.5,100,1);
+	glScalef(SCREEN_W*1.5,120,1);
 	draw_quad();
 	glPopMatrix();
 	glColor3f(1,1,1);
-	draw_text(AL_Left, 100+25*menu->drawdata[0], -12, menu->entries[menu->cursor].name, _fonts.standard);
+	draw_text(AL_Left, 40+35*menu->drawdata[0], -12, menu->entries[menu->cursor].name, _fonts.standard);
 
 	glPopMatrix();
 
@@ -58,7 +57,7 @@ void draw_difficulty_menu(MenuData *menu) {
 		//glColor4f(0,0,0,1);
 
 		glColor3f(1,1,1);
-		draw_texture(0,0,difftex[i]);
+		draw_texture(0,0,difficulty_tex(D_Easy+i));
 		glPopMatrix();
 	}
 }
