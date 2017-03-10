@@ -88,6 +88,18 @@ Color mix_colors(Color c1, Color c2, double a) {
     return rgba(f1*c1a[0]+f2*c2a[0], f1*c1a[1]+f2*c2a[1], f1*c1a[2]+f2*c2a[2], f1*c1a[3]+f2*c2a[3]);
 }
 
+Color approach_color(Color src, Color dst, double delta) {
+    float c1a[4], c2a[4];
+    parse_color_array(src, c1a);
+    parse_color_array(dst, c2a);
+    return rgba(
+        c1a[0] + (c2a[0] - c1a[0]) * delta,
+        c1a[1] + (c2a[1] - c1a[1]) * delta,
+        c1a[2] + (c2a[2] - c1a[2]) * delta,
+        c1a[3] + (c2a[3] - c1a[3]) * delta
+    );
+}
+
 // #define COLOR_TEST
 
 int color_test(void) {
