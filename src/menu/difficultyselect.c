@@ -37,10 +37,10 @@ void draw_difficulty_menu(MenuData *menu) {
 	
 	glColor4f(0.1*menu->drawdata[0],0,0,0.7);
 	glPushMatrix();
-	glTranslatef(SCREEN_W/2+50 - 25*menu->drawdata[0], SCREEN_H/3 + 90*(0.7*menu->drawdata[0]),0);
-	glRotatef(4*menu->drawdata[0],0,0,1);
+	glTranslatef(SCREEN_W/2+30 - 25*menu->drawdata[0], SCREEN_H/3 + 90*(0.7*menu->drawdata[0]),0);
+	glRotatef(4*menu->drawdata[0]-4,0,0,1);
 	glPushMatrix();
-	glScalef(SCREEN_W*1.5,100,1);
+	glScalef(SCREEN_W*1.5,120,1);
 	draw_quad();
 	glPopMatrix();
 	glColor3f(1,1,1);
