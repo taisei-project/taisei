@@ -127,8 +127,11 @@ void stage3_draw(void) {
 	stgstate.tunnel_angle += stgstate.tunnel_avel;
  	bgcontext.crot[2] = -(creal(global.plr.pos)-VIEWPORT_W/2)/80.0;
 #if 1
-	FROM_TO(0, 160, 1)
+	FROM_TO(0, 160, 1) {
 		bgcontext.cv[1] -= 0.5/2;
+		stgstate.clr_r -= 0.2 / 160.0;
+		stgstate.clr_b -= 0.1 / 160.0;
+	}
 
 	FROM_TO(0, 500, 1)
 		stgstate.fog_exp += 5.0 / 500.0;
@@ -172,7 +175,7 @@ void stage3_draw(void) {
 
 	FROM_TO(2000, 2740, 1) {
 		stgstate.tunnel_side -= 100.0 / 740.0;
-		stgstate.fog_exp -= 1.0 / 740.0;
+		//stgstate.fog_exp -= 1.0 / 740.0;
 		bgcontext.crot[0] += 11 / 740.0;
 	}
 
@@ -223,7 +226,7 @@ void stage3_draw(void) {
 		stgstate.tunnel_updn -= 40 / 1000.0;
 		stgstate.clr_r -= 0.5 / 1000.0;
 		bgcontext.crot[0] += 7 / 1000.0;
-		stgstate.fog_exp -= 3.0 / 1000.0;
+		//stgstate.fog_exp -= 3.0 / 1000.0;
 	}
 
 	// 5300 - BOSS
