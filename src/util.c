@@ -291,7 +291,7 @@ bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data) 
 
                             callback(key, val, data);
                             break;
-                        } else {
+                        } else if(c != '\r') {
                             buf[i++] = c;
                             if(i == bufsize)
                                 BUFFERERROR
