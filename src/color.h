@@ -37,6 +37,8 @@ Color derive_color(Color src, Color mask, Color mod);
 Color multiply_colors(Color c1, Color c2);
 Color add_colors(Color c1, Color c2);
 Color subtract_colors(Color c1, Color c2);
+Color mix_colors(Color c1, Color c2, double a);
+Color approach_color(Color src, Color dst, double delta);
 float color_component(Color clr, unsigned int ofs);
 
 int color_test(void);

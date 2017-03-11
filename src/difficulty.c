@@ -19,6 +19,17 @@ const char* difficulty_name(Difficulty diff) {
     }
 }
 
+const char* difficulty_tex(Difficulty diff) {
+    switch(diff) {
+        case D_Easy:    return "difficulty/easy";
+        case D_Normal:  return "difficulty/normal";
+        case D_Hard:    return "difficulty/hard";
+        case D_Lunatic: return "difficulty/lunatic";
+        case D_Extra:   return "difficulty/lunatic";
+	default: return "difficulty/unknown"; // This texture is not supposed to exist.
+    }
+}
+
 Color difficulty_color(Difficulty diff) {
     switch(diff) {
         case D_Easy:    return rgb(0.5, 1.0, 0.5);

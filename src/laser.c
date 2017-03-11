@@ -274,6 +274,7 @@ complex las_sine(Laser *l, float t) {				// [0] = velocity; [1] = sine amplitude
 complex las_sine_expanding(Laser *l, float t) {	// [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
 	if(t == EVENT_BIRTH) {
 		l->shader = get_shader("laser_sine_expanding");
+		l->collision_step = 3;
 		return 0;
 	}
 

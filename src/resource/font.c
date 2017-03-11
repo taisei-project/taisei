@@ -60,15 +60,22 @@ void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *fo
 
 	switch(align) {
 	case AL_Center:
-		draw_texture_p(x, y, tex);
 		break;
 	case AL_Left:
-		draw_texture_p(x + tex->w/2.0, y, tex);
+		x += tex->w/2;
 		break;
 	case AL_Right:
-		draw_texture_p(x - tex->w/2.0, y, tex);
+		x -= tex->w/2;
 		break;
 	}
+	
+	// if textures are odd pixeled, align them for ideal sharpness.
+	if(tex->w&1)
+		x += 0.5;
+	if(tex->h&1)
+		y += 0.5;
+
+	draw_texture_p(x, y, tex);
 
 	free_texture(tex);
 	free(buf);

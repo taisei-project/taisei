@@ -337,23 +337,16 @@ void draw_hud(void) {
 	draw_texture(SCREEN_W/2.0, SCREEN_H/2.0, "hud");
 
 	char buf[16];
-	const char *diff;
 	int i;
 
 	glPushMatrix();
 	glTranslatef(615,0,0);
 
 	glPushMatrix();
-	glTranslatef((SCREEN_W - 615) * 0.25, 20, 0);
+	glTranslatef((SCREEN_W - 615) * 0.25, SCREEN_H-170, 0);
 	glScalef(0.6, 0.6, 0);
 
-	parse_color_call(derive_color(difficulty_color(global.diff), CLRMASK_A, rgba(0, 0, 0, 0.7f)), glColor4f);
-
-	diff = difficulty_name(global.diff);
-	draw_text(AL_Center, 1, 1, diff, _fonts.mainmenu);
-	draw_text(AL_Center, 2, 2, diff, _fonts.mainmenu);
-	glColor4f(1,1,1,1);
-	draw_text(AL_Center, 0, 0, diff, _fonts.mainmenu);
+	draw_texture(0,0,difficulty_tex(global.diff));
 	glPopMatrix();
 
 	if(global.stage->type == STAGE_SPELL) {

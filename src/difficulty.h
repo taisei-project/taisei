@@ -25,6 +25,7 @@ typedef enum {
 #define NUM_SELECTABLE_DIFFICULTIES D_Lunatic
 
 const char* difficulty_name(Difficulty diff);
+const char* difficulty_tex(Difficulty diff);
 Color difficulty_color(Difficulty diff);
 
 #endif
