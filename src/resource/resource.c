@@ -163,7 +163,7 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 	ResourceHandler *handler = get_handler(type);
 	Resource *res = hashtable_get_string(handler->mapping, name);
 
-	if(!res) {
+	if(!res || flags & RESF_OVERRIDE) {
 		res = load_resource(handler, NULL, name, flags);
 	}
 
