@@ -255,7 +255,7 @@ char* read_all(const char *filename, int *outsize) {
 bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data) {
     const size_t bufsize = 128;
 
-#define SYNTAXERROR { warnx("%s(): syntax error on line %i, aborted! [%s:%i]\n", __func__, line, __FILE__, __LINE__); return false; }
+#define SYNTAXERROR { warnx("%s(): syntax error on line %i, aborted! [%s:%i]", __func__, line, __FILE__, __LINE__); return false; }
 #define BUFFERERROR { warnx("%s(): string exceed the limit of %i, aborted! [%s:%i]", __func__, bufsize, __FILE__, __LINE__); return false; }
 
     int i = 0, found, line = 0;

@@ -35,7 +35,6 @@ void* load_animation(const char *filename, unsigned int flags) {
 	ani->cols = atoi((char*)hashtable_get_string(ht, "cols"));
 	ani->speed = atoi((char*)hashtable_get_string(ht, "speed"));
 	hashtable_foreach(ht, hashtable_iter_free_data, NULL);
-	hashtable_print_stringkeys(ht);
 	hashtable_free(ht);
 
 	if(ani->rows < 1) ANIFAIL("rows")

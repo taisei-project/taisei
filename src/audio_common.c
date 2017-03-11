@@ -68,42 +68,13 @@ static void bgm_cfg_volume_callback(ConfigIndex idx, ConfigValue v) {
 
 static void load_bgm_descriptions(void) {
     char *fullname = strjoin(get_prefix(), "bgm/bgm.conf", NULL);
-    FILE *fp = fopen(fullname, "rt");
+    bgm_descriptions = parse_keyvalue_file(fullname, 16);
     free(fullname);
-
-    bgm_descriptions = hashtable_new_stringkeys(16);
-
-    if(fp == NULL) {
-        return;
-    }
-
-    char line[256];
-    while(fgets(line, sizeof(line), fp)) {
-        char *rem;
-
-        while((rem = strchr(line,'\n')) != NULL) *rem = '\0';
-        while((rem = strchr(line,'\r')) != NULL) *rem = '\0';
-        while((rem = strchr(line,'\t')) != NULL) *rem = ' ';
-
-        if((rem = strchr(line,' ' )) == NULL) {
-            if(strlen(line) > 0)
-                warnx("load_bgm_description(): illegal string format. See README.");
-            continue;
-        }
-
-        *(rem++)='\0';
-
-        char *value = strjoin("BGM: ", rem, NULL);
-        hashtable_set_string(bgm_descriptions, line, value);
-        printf("Music %s is now known as \"%s\".\n", line, value);
-    }
-
-    fclose(fp);
     return;
 }
 
 static inline char* get_bgm_desc(char *name) {
-    return (char*)hashtable_get_string(bgm_descriptions, name);
+    return bgm_descriptions ? (char*)hashtable_get_string(bgm_descriptions, name) : NULL;
 }
 
 void resume_bgm(void) {
@@ -193,6 +164,9 @@ void audio_init(void) {
 
 void audio_shutdown(void) {
     audio_backend_shutdown();
-    hashtable_foreach(bgm_descriptions, hashtable_iter_free_data, NULL);
-    hashtable_free(bgm_descriptions);
+
+    if(bgm_descriptions) {
+        hashtable_foreach(bgm_descriptions, hashtable_iter_free_data, NULL);
+        hashtable_free(bgm_descriptions);
+    }
 }
