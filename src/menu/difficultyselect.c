@@ -31,10 +31,12 @@ void draw_difficulty_menu(MenuData *menu) {
 	draw_options_menu_bg(menu);
 	draw_menu_title(menu, "Select Difficulty");
 
+	static Color clr = 0;
 
 	menu->drawdata[0] += (menu->cursor-menu->drawdata[0])*0.1;
-	
-	glColor4f(0.1*menu->drawdata[0],0,0,0.7);
+	clr = approach_color(clr, difficulty_color(menu->cursor + D_Easy), 0.1);
+	parse_color_call(multiply_colors(clr, rgba(0.1, 0.1, 0.1, 0.7)), glColor4f);
+
 	glPushMatrix();
 	glTranslatef(SCREEN_W/2+30 - 25*menu->drawdata[0], SCREEN_H/3 + 90*(0.7*menu->drawdata[0]),0);
 	glRotatef(4*menu->drawdata[0]-4,0,0,1);
@@ -50,7 +52,7 @@ void draw_difficulty_menu(MenuData *menu) {
 	int i;
 	for(i = 0; i < menu->ecount; i++) {
 		menu->entries[i].drawdata += 0.2 * (30*(i == menu->cursor) - menu->entries[i].drawdata);
-	
+
 		glPushMatrix();
 		glTranslatef(SCREEN_W/2 - (int)menu->entries[i].drawdata+25*i-50, SCREEN_H/3 + 90*(i-0.3*menu->drawdata[0]),0);
 

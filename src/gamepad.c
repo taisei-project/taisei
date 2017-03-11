@@ -82,7 +82,7 @@ void gamepad_restart(void) {
 }
 
 int gamepad_axis2gamekey(int id, int val) {
-	val *= SIGN(gamepad_axis_sens(id));
+	val *= sign(gamepad_axis_sens(id));
 
 	if(!val) {
 		return -1;
@@ -144,10 +144,10 @@ void gamepad_axis(int id, int raw, EventHandler handler, EventFlags flags, void 
 		int evt = gamepad_axis2gameevt(id);
 		if(evt >= 0) {
 			double sens = gamepad_axis_sens(id);
-			int sens_sign = SIGN(sens);
+			int sens_sign = sign(sens);
 
 			double x = raw / (double)GAMEPAD_AXIS_MAX;
-			int in_sign = SIGN(x);
+			int in_sign = sign(x);
 
 			x = pow(fabs(x), 1.0 / fabs(sens)) * in_sign * sens_sign;
 			x = x ? x : 0;

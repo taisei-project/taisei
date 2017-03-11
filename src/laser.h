@@ -8,7 +8,7 @@
 #ifndef LASER_H
 #define LASER_H
 
-#include "tscomplex.h"
+#include "util.h"
 #include "projectile.h"
 #include "resource/shader.h"
 

@@ -1,4 +1,3 @@
-
 /*
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
@@ -30,7 +29,14 @@ struct Hashtable {
     HTHashFunc hash_func;
     HTCopyFunc copy_func;
     HTFreeFunc free_func;
+    ListContainer *deferred_unsets;
 };
+
+typedef struct HashtableIterator {
+    Hashtable *hashtable;
+    size_t bucketnum;
+    HashtableElement *elem;
+} HashtableIterator;
 
 /*
  *  Generic functions
@@ -46,6 +52,9 @@ Hashtable* hashtable_new(size_t size, HTCmpFunc cmp_func, HTHashFunc hash_func, 
     ht->hash_func = hash_func;
     ht->copy_func = copy_func;
     ht->free_func = free_func;
+    ht->deferred_unsets = NULL;
+
+    assert(ht->hash_func != NULL);
 
     return ht;
 }
@@ -62,6 +71,8 @@ static void hashtable_delete_callback(void **vlist, void *velem, void *vht) {
 }
 
 void hashtable_unset_all(Hashtable *ht) {
+    assert(ht != NULL);
+
     for(size_t i = 0; i < ht->table_size; ++i) {
         delete_all_elements_witharg((void**)(ht->table + i), hashtable_delete_callback, ht);
     }
@@ -77,7 +88,7 @@ void hashtable_free(Hashtable *ht) {
     free(ht);
 }
 
-static inline bool hashtable_compare(Hashtable *ht, void *key1, void *key2) {
+static bool hashtable_compare(Hashtable *ht, void *key1, void *key2) {
     if(ht->cmp_func) {
         return ht->cmp_func(key1, key2);
     }
@@ -86,6 +97,8 @@ static inline bool hashtable_compare(Hashtable *ht, void *key1, void *key2) {
 }
 
 void* hashtable_get(Hashtable *ht, void *key) {
+    assert(ht != NULL);
+
     hash_t hash = ht->hash_func(key);
     HashtableElement *elems = ht->table[hash % ht->table_size];
 
@@ -99,6 +112,8 @@ void* hashtable_get(Hashtable *ht, void *key) {
 }
 
 void hashtable_set(Hashtable *ht, void *key, void *data) {
+    assert(ht != NULL);
+
     hash_t hash = ht->hash_func(key);
     size_t idx = hash % ht->table_size;
     HashtableElement *elems = ht->table[idx], *elem;
@@ -133,7 +148,36 @@ void hashtable_unset(Hashtable *ht, void *key) {
     hashtable_set(ht, key, NULL);
 }
 
+void hashtable_unset_deferred(Hashtable *ht, void *key) {
+    assert(ht != NULL);
+
+    ListContainer *c = create_element((void**)&ht->deferred_unsets, sizeof(ListContainer));
+
+    if(ht->copy_func) {
+        ht->copy_func(&c->data, key);
+    } else {
+        c->data = key;
+    }
+}
+
+void hashtable_unset_deferred_now(Hashtable *ht) {
+    ListContainer *next;
+    assert(ht != NULL);
+
+    for(ListContainer *c = ht->deferred_unsets; c; c = next) {
+        next = c->next;
+        hashtable_unset(ht, c->data);
+        delete_element((void**)&ht->deferred_unsets, c);
+    }
+}
+
+/*
+ *  Iteration functions
+ */
+
 void* hashtable_foreach(Hashtable *ht, HTIterCallback callback, void *arg) {
+    assert(ht != NULL);
+
     void *ret = NULL;
 
     for(size_t i = 0; i < ht->table_size; ++i) {
@@ -146,6 +190,44 @@ void* hashtable_foreach(Hashtable *ht, HTIterCallback callback, void *arg) {
     }
 
     return ret;
+}
+
+HashtableIterator* hashtable_iter(Hashtable *ht) {
+    assert(ht != NULL);
+    HashtableIterator *iter = malloc(sizeof(HashtableIterator));
+    iter->hashtable = ht;
+    iter->bucketnum = (size_t)-1;
+    return iter;
+}
+
+bool hashtable_iter_next(HashtableIterator *iter, void **out_key, void **out_data) {
+    Hashtable *ht = iter->hashtable;
+
+    if(iter->bucketnum == (size_t)-1) {
+        iter->bucketnum = 0;
+        iter->elem = ht->table[iter->bucketnum];
+    } else {
+        iter->elem = iter->elem->next;
+    }
+
+    while(!iter->elem) {
+        if(++iter->bucketnum == ht->table_size) {
+            free(iter);
+            return false;
+        }
+
+        iter->elem = ht->table[iter->bucketnum];
+    }
+
+    if(out_key) {
+        *out_key = iter->elem->key;
+    }
+
+    if(out_data) {
+        *out_data = iter->elem->data;
+    }
+
+    return true;
 }
 
 /*
@@ -206,10 +288,8 @@ void* hashtable_iter_free_data(void *key, void *data, void *arg) {
 size_t hashtable_get_approx_overhead(Hashtable *ht) {
     size_t o = sizeof(Hashtable) + sizeof(HashtableElement*) * ht->table_size;
 
-    for(size_t i = 0; i < ht->table_size; ++i) {
-        for(HashtableElement *e = ht->table[i]; e; e = e->next) {
-            o += sizeof(HashtableElement);
-        }
+    for(HashtableIterator *i = hashtable_iter(ht); hashtable_iter_next(i, NULL, NULL);) {
+        o += sizeof(HashtableElement);
     }
 
     return o;

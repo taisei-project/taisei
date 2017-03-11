@@ -8,33 +8,18 @@
 #ifndef BGM_H
 #define BGM_H
 
-#include "audio.h"
+#include <stdbool.h>
 
-struct current_bgm_t {
-	char *name;
-	char *title;
-	int isboss;
-	Sound *data;
-	int started_at;
-};
+typedef struct Music {
+    // can put some meta properties in here
+    void *impl;
+} Music;
 
-extern struct current_bgm_t current_bgm;
+char* music_path(const char *name);
+bool check_music_path(const char *path);
+void* load_music(const char *path);
+void unload_music(void *snd);
 
-Sound *load_bgm(const char *filename);
-
-void start_bgm(const char *name);
-void stop_bgm(void);
-void continue_bgm(void);
-void save_bgm(void);
-void restore_bgm(void);
-
-int init_bgm(void);
-void shutdown_bgm(void);
-
-void load_bgm_descriptions(const char *path);
-
-void delete_music(void);
-
-void set_bgm_volume(float gain);
+#define BGM_PATH_PREFIX "bgm/"
 
 #endif

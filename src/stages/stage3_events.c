@@ -623,13 +623,28 @@ int stage3_boss_a2_laserbullet(Projectile *p, int time) {
 	return 1;
 }
 
+void stage3_boss_a2_warnlaser_logic(Laser *l, int time) {
+	if(time == EVENT_BIRTH) {
+		l->width = 0;
+		return;
+	}
+
+	l->width = laser_charge(l, time, 90, 10);
+	l->color = mix_colors(rgb(1, 0.2, 0.2), rgb(0.2, 0.2, 1), time / l->deathtime);
+}
+
+void stage3_boss_a2_warnlaser(Laser *l) {
+	float f = 6;
+	create_laser(l->pos, 90, 120, 0, l->prule, stage3_boss_a2_warnlaser_logic, f*l->args[0], l->args[1], f*l->args[2], l->args[3]);
+}
+
 void stage3_boss_a2(Boss *boss, int time) {
 	TIMER(&time)
 
 	float dfactor = global.diff / (float)D_Lunatic;
 	int i, j;
 
-	AT(EVENT_DEATH) {
+	if(time == EVENT_DEATH) {
 		killall(global.enemies);
 		return;
 	}
@@ -647,20 +662,21 @@ void stage3_boss_a2(Boss *boss, int time) {
 		float lt = 100 * dfactor;
 
 		float a = _ni*M_PI/2.5 + _i + time;
-
-		//float b = 0.45;
-		//float clr = psin(time / 30.0) * (1.0 - b);
-
-		//create_lasercurve2c(boss->pos, dt*2, dt, rgb(0.5, 1.0, 0.5), las_accel, 0, 0.1 * cexp(I*a));
-
-		float b = 0.4;
+		float b = 0.3;
 		float c = 0.3;
 
-		Laser *l1 = create_lasercurve3c(boss->pos, lt,			dt, rgb(b, b, 1.0), las_sine_expanding, 2 * cexp(I*a), M_PI/4, 0.05);
-		Laser *l2 = create_lasercurve3c(boss->pos, lt * 1.5,	dt, rgb(1.0, b, b), las_sine_expanding, 2 * cexp(I*a), M_PI/4, 0.05 - 0.002 * min(global.diff, D_Hard));
-		Laser *l3 = create_lasercurve3c(boss->pos, lt,			dt, rgb(b, b, 1.0), las_sine_expanding, 2 * cexp(I*a), M_PI/4, 0.05 - 0.004 * min(global.diff, D_Hard));
+		complex vel = 2 * cexp(I*a);
+		double amp = M_PI/5;
+		double freq = 0.05;
 
-		l2->width = 15;
+		Laser *l1 = create_lasercurve3c(boss->pos, lt, dt, rgb(b, b, 1.0), las_sine_expanding, vel, amp, freq);
+		stage3_boss_a2_warnlaser(l1);
+
+		Laser *l2 = create_lasercurve3c(boss->pos, lt * 1.5, dt, rgb(1.0, b, b), las_sine_expanding, vel, amp, freq - 0.002 * min(global.diff, D_Hard));
+		stage3_boss_a2_warnlaser(l2);
+
+		Laser *l3 = create_lasercurve3c(boss->pos, lt, dt, rgb(b, b, 1.0), las_sine_expanding, vel, amp, freq - 0.004 * min(global.diff, D_Hard));
+		stage3_boss_a2_warnlaser(l3);
 
 		int i; for(i = 0; i < 5 + 15 * dfactor; ++i) {
 			create_projectile2c("plainball",	boss->pos, rgb(c, c, 1.0), stage3_boss_a2_laserbullet, add_ref(l1), i)->draw = ProjDrawAdd;

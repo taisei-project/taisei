@@ -8,34 +8,29 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#endif
+#include <stdbool.h>
+#include "taiseigl.h"
+#include "hashtable.h"
 
-#define DELIM "%% -- FRAG"
-#define DELIM_SIZE 10
-
-struct Uniform;
-typedef struct Uniform {
-	char *name;
-	GLint location;
-} Uniform;
-
-struct Shader;
 typedef struct Shader {
 	GLuint prog;
-	int unicount;
-	Uniform *uniforms;
+	Hashtable *uniforms;
 } Shader;
 
-void load_shader_snippets(const char *filename, const char *prefix);
-void load_shader_file(const char *filename);
-void load_shader(const char *vheader, const char *fheader, const char *vtext, const char *ftext, const char *name, int nsize);
-Shader *get_shader(const char *name);
-void delete_shaders(void);
+char* shader_path(const char *name);
+bool check_shader_path(const char *path);
+void* load_shader_file(const char *path);
+void unload_shader(void *vsha);
 
-void cache_uniforms(Shader *sha);
+void load_shader_snippets(const char *filename, const char *prefix);
+Shader* get_shader(const char *name);
+
 int uniloc(Shader *sha, const char *name);
+
+#define SHA_PATH_PREFIX "shader/"
+#define SHA_EXTENSION ".sha"
+
+#define SHA_DELIM "%% -- FRAG"
+#define SHA_DELIM_SIZE (sizeof(SHA_DELIM) - 1)
+
 #endif

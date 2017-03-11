@@ -16,6 +16,7 @@
 #include "spellpractice.h"
 
 #include "global.h"
+#include "video.h"
 #include "stage.h"
 #include "paths/native.h"
 
@@ -161,4 +162,10 @@ void draw_main_menu(MenuData *menu) {
 		glPopMatrix();
 	}
 
+}
+
+void draw_loading_screen(void) {
+	set_ortho();
+	draw_texture(SCREEN_W/2, SCREEN_H/2, "loading");
+	SDL_GL_SwapWindow(video.window);
 }

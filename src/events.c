@@ -48,7 +48,7 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 						handler(E_CharErased, 0, arg);
 				} else if(!repeat) {
 					if(scan == config_get_int(CONFIG_KEY_SCREENSHOT)) {
-						take_screenshot();
+						video_take_screenshot();
 						break;
 					}
 
@@ -136,4 +136,10 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 				break;
 		}
 	}
+}
+
+// Inputdevice-agnostic method of checking whether a game control is pressed.
+// ALWAYS use this instead of SDL_GetKeyState if you need it.
+bool gamekeypressed(KeyIndex key) {
+	return SDL_GetKeyboardState(NULL)[config_get_int(KEYIDX_TO_CFGIDX(key))] || gamepad_gamekeypressed(key);
 }

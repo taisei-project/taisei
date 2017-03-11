@@ -8,9 +8,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include <stdbool.h>
-
-#include "tscomplex.h"
+#include "util.h"
 #include "enemy.h"
 #include "gamepad.h"
 #include "resource/animation.h"
@@ -80,6 +78,16 @@ typedef struct {
 
 	char iddqd;
 } Player;
+
+// this is used by both player and replay code
+enum {
+	EV_PRESS,
+	EV_RELEASE,
+	EV_OVER, // replay-only
+	EV_AXIS_LR,
+	EV_AXIS_UD,
+	EV_CHECK_DESYNC, // replay-only
+};
 
 void init_player(Player*);
 void prepare_player_for_next_stage(Player*);

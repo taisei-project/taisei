@@ -69,6 +69,10 @@ void draw_laser_curve_instanced(Laser *l) {
 		t = 0;
 	}
 
+	if(c < 0) {
+		return;
+	}
+
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -147,7 +151,7 @@ void draw_lasers(int bgpass) {
 		if(bgpass != laser->in_background)
 			continue;
 
-		if(laser->shader && !config_get_int(CONFIG_NO_SHADER) && glext.draw_instanced)
+		if(laser->shader && glext.draw_instanced)
 			draw_laser_curve_instanced(laser);
 		else
 			draw_laser_curve(laser);
@@ -274,6 +278,7 @@ complex las_sine(Laser *l, float t) {				// [0] = velocity; [1] = sine amplitude
 complex las_sine_expanding(Laser *l, float t) {	// [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
 	if(t == EVENT_BIRTH) {
 		l->shader = get_shader("laser_sine_expanding");
+		l->collision_step = 3;
 		return 0;
 	}
 

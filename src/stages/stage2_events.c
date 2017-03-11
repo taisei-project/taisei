@@ -417,49 +417,47 @@ int hina_monty_slave(Enemy *s, int time) {
 void hina_monty_slave_draw(Enemy *s, int time) {
 	Swirl(s, time);
 
-	if(!config_get_int(CONFIG_NO_SHADER)) {
-		Texture *soul = get_tex("proj/soul");
-		Shader *shader = get_shader("bullet_color");
-		double scale = fabs(swing(clamp(time / 60.0, 0, 1), 3)) * 1.25;
+	Texture *soul = get_tex("proj/soul");
+	Shader *shader = get_shader("bullet_color");
+	double scale = fabs(swing(clamp(time / 60.0, 0, 1), 3)) * 1.25;
 
-		float clr1[] = {1.0, 0.0, 0.0, 1.0};
-		float clr2[] = {0.0, 0.0, 1.0, 1.0};
-		float clr3[] = {psin(time*0.05), 0.0, 1.0 - psin(time*0.05), 1.0};
+	float clr1[] = {1.0, 0.0, 0.0, 1.0};
+	float clr2[] = {0.0, 0.0, 1.0, 1.0};
+	float clr3[] = {psin(time*0.05), 0.0, 1.0 - psin(time*0.05), 1.0};
 
-		glUseProgram(shader->prog);
+	glUseProgram(shader->prog);
 
-		glPushMatrix();
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+	glPushMatrix();
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 
-		glTranslatef(creal(s->pos), cimag(s->pos), 0);
+	glTranslatef(creal(s->pos), cimag(s->pos), 0);
 
-		glUniform4fv(uniloc(shader, "color"), 1, clr1);
-		glPushMatrix();
-		glRotatef(time, 0, 0, 1);
-		glScalef(scale * (0.6 + 0.6 * psin(time*0.1)), scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), 0);
-		draw_texture_p(0, 0, soul);
-		glPopMatrix();
+	glUniform4fv(uniloc(shader, "color"), 1, clr1);
+	glPushMatrix();
+	glRotatef(time, 0, 0, 1);
+	glScalef(scale * (0.6 + 0.6 * psin(time*0.1)), scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), 0);
+	draw_texture_p(0, 0, soul);
+	glPopMatrix();
 
-		glUniform4fv(uniloc(shader, "color"), 1, clr2);
-		glPushMatrix();
-		glRotatef(time, 0, 0, 1);
-		glScalef(scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0);
-		draw_texture_p(0, 0, soul);
-		glPopMatrix();
+	glUniform4fv(uniloc(shader, "color"), 1, clr2);
+	glPushMatrix();
+	glRotatef(time, 0, 0, 1);
+	glScalef(scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0);
+	draw_texture_p(0, 0, soul);
+	glPopMatrix();
 
-		glUniform4fv(uniloc(shader, "color"), 1, clr3);
-		glPushMatrix();
-		glRotatef(-time, 0, 0, 1);
-		// glScalef(scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0);
-		glScalef(scale, scale, 0);
-		draw_texture_p(0, 0, soul);
-		glPopMatrix();
+	glUniform4fv(uniloc(shader, "color"), 1, clr3);
+	glPushMatrix();
+	glRotatef(-time, 0, 0, 1);
+	// glScalef(scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0);
+	glScalef(scale, scale, 0);
+	draw_texture_p(0, 0, soul);
+	glPopMatrix();
 
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-		glPopMatrix();
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	glPopMatrix();
 
-		glUseProgram(0);
-	}
+	glUseProgram(0);
 }
 
 void hina_monty(Boss *h, int time) {

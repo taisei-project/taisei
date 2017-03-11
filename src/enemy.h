@@ -7,14 +7,9 @@
 
 #ifndef ENEMY_H
 #define ENEMY_H
-#include "tscomplex.h"
+
+#include "util.h"
 #include "projectile.h"
-
-#undef complex
-#define complex double _Complex
-
-#include <stdbool.h>
-#include <stdarg.h>
 
 typedef struct Enemy Enemy;
 typedef int (*EnemyLogicRule)(struct Enemy*, int t);

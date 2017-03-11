@@ -35,15 +35,7 @@ const char *get_replays_path(void) {
 }
 
 void init_paths(void) {
-	conf_path = malloc(strlen(CFG_DIR) + strlen(getenv("HOME")) + 1);
-	strcpy(conf_path, getenv("HOME"));
-	strcat(conf_path, CFG_DIR);
-
-	scr_path = malloc(strlen(SCR_DIR) + strlen(get_config_path()) + 1);
-	strcpy(scr_path, get_config_path());
-	strcat(scr_path, SCR_DIR);
-
-	rpy_path = malloc(strlen(RPY_DIR) + strlen(get_config_path()) + 1);
-	strcpy(rpy_path, get_config_path());
-	strcat(rpy_path, RPY_DIR);
+	conf_path = strjoin(getenv("HOME"), CFG_DIR, NULL);
+	scr_path = strjoin(conf_path, SCR_DIR, NULL);
+	rpy_path = strjoin(conf_path, RPY_DIR, NULL);
 }

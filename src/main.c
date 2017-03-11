@@ -6,10 +6,12 @@
  */
 
 #include <sys/stat.h>
+#include <errno.h>
 #include "taisei_err.h"
 
 #include "global.h"
 #include "video.h"
+#include "audio.h"
 #include "stage.h"
 #include "menu/mainmenu.h"
 #include "paths/native.h"
@@ -23,11 +25,9 @@ void taisei_shutdown(void) {
 	progress_save();
 	printf("\nshutdown:\n");
 
-	if(!config_get_int(CONFIG_NO_AUDIO)) shutdown_sfx();
-	if(!config_get_int(CONFIG_NO_MUSIC)) shutdown_bgm();
-
 	free_all_refs();
 	free_resources();
+	audio_shutdown();
 	video_shutdown();
 	gamepad_shutdown();
 	stage_free_array();
@@ -42,16 +42,13 @@ void init_log(void) {
 	const char *pref = get_config_path();
 	char *s;
 
-	s = malloc(strlen(pref) + strlen("stdout.txt") + 2);
-	strcpy(s, pref);
-	strcat(s, "/stdout.txt");
-
+	s = strfmt("%s/%s", pref, "stdout.txt");
 	freopen(s, "w", stdout);
+	free(s);
 
-	strcpy(s, pref);
-	strcat(s, "/stderr.txt");
-
+	s = strfmt("%s/%s", pref, "stderr.txt");
 	freopen(s, "w", stderr);
+	free(s);
 #endif
 }
 
@@ -133,30 +130,37 @@ int main(int argc, char **argv) {
 	MKDIR(get_screenshots_path());
 	MKDIR(get_replays_path());
 
+	if(chdir(get_prefix())) {
+		errx(-1, "chdir() failed: %s", strerror(errno));
+	} else {
+		char cwd[1024]; // i don't care if this is not enough for you, getcwd is garbage
+		getcwd(cwd, sizeof(cwd));
+		printf("Changed working directory to %s\n", cwd);
+	}
+
 	config_load(CONFIG_FILE);
 
 	printf("initialize:\n");
 
-	if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO) < 0)
+	if(SDL_Init(SDL_INIT_VIDEO) < 0)
 		errx(-1, "Error initializing SDL: %s", SDL_GetError());
-	printf("-- SDL_Init\n");
+	printf("-- SDL\n");
 
 	init_global();
 
 	video_init();
 	printf("-- Video and OpenGL\n");
 
+	audio_init();
+	printf("-- Audio\n");
+
 	init_resources();
 	draw_loading_screen();
 
+	load_resources();
 	gamepad_init();
 	stage_init_array();
 	progress_load(); // stage_init_array goes first!
-
-	// Order DOES matter: init_global, then sfx/bgm, then load_resources.
-	init_sfx();
-	init_bgm();
-	load_resources();
 
 	set_transition(TransLoader, 0, FADE_TIME*2);
 
@@ -172,13 +176,7 @@ int main(int argc, char **argv) {
 #ifdef DEBUG
 
 	if(argc >= 2 && argv[1] && !strcmp(argv[1], "dumprestables")) {
-		hashtable_print_stringkeys(resources.textures);
-		hashtable_print_stringkeys(resources.animations);
-		hashtable_print_stringkeys(resources.sounds);
-		hashtable_print_stringkeys(resources.music);
-		hashtable_print_stringkeys(resources.shaders);
-		hashtable_print_stringkeys(resources.models);
-		hashtable_print_stringkeys(resources.bgm_descriptions);
+		print_resource_hashtables();
 		return 0;
 	}
 

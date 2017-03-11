@@ -270,20 +270,13 @@ static void config_delete_unknown_entries(void) {
 }
 
 static FILE* config_open(const char *filename, const char *mode) {
-	char *buf;
-	FILE *out;
+	char *buf = strjoin(get_config_path(), "/", filename, NULL);
+	FILE *out = fopen(buf, mode);
 
-	buf = malloc(strlen(filename) + strlen(get_config_path()) + 2);
-	strcpy(buf, get_config_path());
-	strcat(buf, "/");
-	strcat(buf, filename);
-
-	out = fopen(buf, mode);
 	free(buf);
 
 	if(!out) {
 		warnx("config_open(): couldn't open '%s'", filename);
-		return NULL;
 	}
 
 	return out;
