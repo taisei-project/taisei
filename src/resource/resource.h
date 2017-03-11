@@ -113,6 +113,7 @@ void free_resources(bool all);
 
 Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags);
 Resource* insert_resource(ResourceType type, const char *name, void *data, ResourceFlags flags, const char *source);
+void preload_resource(ResourceType type, const char *name, ResourceFlags flags);
 
 void resource_util_strip_ext(char *path);
 char* resource_util_basename(const char *prefix, const char *path);

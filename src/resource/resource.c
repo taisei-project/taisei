@@ -174,6 +174,10 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 	return res;
 }
 
+void preload_resource(ResourceType type, const char *name, ResourceFlags flags) {
+	get_resource(type, name, flags);
+}
+
 bool istransient_filepath(const char *path) {
 	char *fnstart = strrchr(path, '/');
 	if (fnstart == NULL) return false;
