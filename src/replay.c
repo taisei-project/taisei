@@ -673,6 +673,7 @@ void replay_play(Replay *rpy, int firststage) {
 	global.replaymode = REPLAY_RECORD;
 	replay_destroy(&global.replay);
 	global.replay_stage = NULL;
+	free_resources(RESF_TRANSIENT);
 }
 
 void replay_play_path(const char *path, int firststage) {

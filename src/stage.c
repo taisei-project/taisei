@@ -626,8 +626,6 @@ static void stage_free(void) {
 		free_boss(global.boss);
 		global.boss = NULL;
 	}
-
-	free_resources(RESF_TRANSIENT);
 }
 
 static void stage_finalize(void *arg) {

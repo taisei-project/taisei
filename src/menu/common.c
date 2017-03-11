@@ -66,6 +66,8 @@ troll2:
         goto troll2;
     }
 
+    free_resources(RESF_TRANSIENT);
+
     if(global.replay_stage) {
         switch(config_get_int(CONFIG_SAVE_RPY)) {
             case 0: break;
