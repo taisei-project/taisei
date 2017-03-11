@@ -174,14 +174,26 @@ void stage2_start(void) {
 }
 
 void stage2_preload(void) {
-	preload_resource(RES_BGM,     "bgm_stage2",        RESF_OPTIONAL);
-	preload_resource(RES_BGM,     "bgm_stage2boss",    RESF_OPTIONAL);
-	preload_resource(RES_TEXTURE, "stage2/border",     RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage2/leaves",     RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage2/roadgrass",  RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage2/roadstones", RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage2/spellbg1",   RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage2/spellbg2",   RESF_DEFAULT);
+	preload_resources(RES_BGM, RESF_OPTIONAL, "bgm_stage2", "bgm_stage2boss", NULL);
+	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+		"stage2/border",
+		"stage2/leaves",
+		"stage2/roadgrass",
+		"stage2/roadstones",
+		"stage2/spellbg1",
+		"stage2/spellbg2",
+		"dialog/hina",
+	NULL);
+	preload_resources(RES_SHADER, RESF_DEFAULT,
+		"bloom",
+		"zbuf_fog",
+		"alpha_depth",
+	NULL);
+	preload_resources(RES_ANIM, RESF_DEFAULT,
+		"wriggle",
+		"hina",
+		"fire",
+	NULL);
 }
 
 void stage2_end(void) {

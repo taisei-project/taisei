@@ -160,11 +160,22 @@ void stage1_start(void) {
 }
 
 void stage1_preload(void) {
-	preload_resource(RES_BGM,     "bgm_stage1",       RESF_OPTIONAL);
-	preload_resource(RES_BGM,     "bgm_stage1boss",   RESF_OPTIONAL);
-	preload_resource(RES_TEXTURE, "stage1/cirnobg",   RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage1/fog",       RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage1/snowlayer", RESF_DEFAULT);
+	preload_resources(RES_BGM, RESF_OPTIONAL, "bgm_stage1", "bgm_stage1boss", NULL);
+	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+		"stage1/cirnobg",
+		"stage1/fog",
+		"stage1/snowlayer",
+		"dialog/cirno",
+	NULL);
+	preload_resources(RES_MODEL, RESF_DEFAULT,
+		"reeds",
+	NULL);
+	preload_resources(RES_SHADER, RESF_DEFAULT,
+		"zbuf_fog",
+	NULL);
+	preload_resources(RES_ANIM, RESF_DEFAULT,
+		"cirno",
+	NULL);
 }
 
 void stage1_end(void) {

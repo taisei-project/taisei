@@ -168,18 +168,31 @@ void stage6_start(void) {
 }
 
 void stage6_preload(void) {
-	preload_resource(RES_BGM,     "bgm_stage6",              RESF_OPTIONAL);
-	preload_resource(RES_BGM,     "bgm_stage6boss",          RESF_OPTIONAL);
-	preload_resource(RES_TEXTURE, "stage6/baryon_connector", RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage6/baryon",           RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage6/scythecircle",     RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage6/scythe",           RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage6/sky",              RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage6/spellbg_chalk",    RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage6/spellbg_classic",  RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage6/spellbg_modern",   RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage6/towertop",         RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage6/towerwall",        RESF_DEFAULT);
+	preload_resources(RES_BGM, RESF_OPTIONAL, "bgm_stage6", "bgm_stage6boss", NULL);
+	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+		"stage6/baryon_connector",
+		"stage6/baryon",
+		"stage6/scythecircle",
+		"stage6/scythe",
+		"stage6/sky",
+		"stage6/spellbg_chalk",
+		"stage6/spellbg_classic",
+		"stage6/spellbg_modern",
+		"stage6/towertop",
+		"stage6/towerwall",
+		"dialog/elly",
+	NULL);
+	preload_resources(RES_SHADER, RESF_DEFAULT,
+		"tower_wall",
+	NULL);
+	preload_resources(RES_ANIM, RESF_DEFAULT,
+		"elly",
+	NULL);
+	preload_resources(RES_MODEL, RESF_DEFAULT,
+		"towerwall",
+		"towertop",
+		"skysphere",
+	NULL);
 }
 
 void stage6_end(void) {

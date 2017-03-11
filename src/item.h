@@ -46,6 +46,8 @@ void process_items(void);
 void spawn_item(complex pos, Type type);
 void spawn_items(complex pos, int point, int power, int bomb, int life);
 
+void items_preload(void);
+
 #define POWER_VALUE 3
 
 #endif

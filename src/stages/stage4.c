@@ -209,15 +209,27 @@ void stage4_start(void) {
 }
 
 void stage4_preload(void) {
-	preload_resource(RES_BGM,     "bgm_stage4",       RESF_OPTIONAL);
-	preload_resource(RES_BGM,     "bgm_stage4boss",   RESF_OPTIONAL);
-	preload_resource(RES_TEXTURE, "stage2/border",    RESF_DEFAULT); // Stage 2 is intentional!
-	preload_resource(RES_TEXTURE, "stage4/kurumibg1", RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage4/kurumibg2", RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage4/lake",      RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage4/mansion",   RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage4/planks",    RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage4/wall",      RESF_DEFAULT);
+	preload_resources(RES_BGM, RESF_OPTIONAL, "bgm_stage4", "bgm_stage4boss", NULL);
+	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+		"stage2/border", // Stage 2 is intentional!
+		"stage4/kurumibg1",
+		"stage4/kurumibg2",
+		"stage4/lake",
+		"stage4/mansion",
+		"stage4/planks",
+		"stage4/wall",
+		"dialog/kurumi",
+	NULL);
+	preload_resources(RES_SHADER, RESF_DEFAULT,
+		"zbuf_fog",
+	NULL);
+	preload_resources(RES_ANIM, RESF_DEFAULT,
+		"kurumi",
+	NULL);
+	preload_resources(RES_MODEL, RESF_DEFAULT,
+		"mansion",
+		"lake",
+	NULL);
 }
 
 void stage4_end(void) {

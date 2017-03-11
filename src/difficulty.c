@@ -7,6 +7,7 @@
  */
 
 #include "difficulty.h"
+#include "resource/resource.h"
 
 const char* difficulty_name(Difficulty diff) {
     switch(diff) {
@@ -38,5 +39,11 @@ Color difficulty_color(Difficulty diff) {
         case D_Lunatic: return rgb(1.0, 0.5, 1.0);
         case D_Extra:   return rgb(0.5, 1.0, 1.0);
         default:        return rgb(0.5, 0.5, 0.5);
+    }
+}
+
+void difficulty_preload(void) {
+    for(Difficulty diff = D_Easy; diff < NUM_SELECTABLE_DIFFICULTIES + D_Easy; ++diff) {
+        preload_resource(RES_TEXTURE, difficulty_tex(diff), RESF_PERMANENT);
     }
 }

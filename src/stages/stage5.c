@@ -123,13 +123,24 @@ void stage5_start(void) {
 }
 
 void stage5_preload(void) {
-	preload_resource(RES_BGM,     "bgm_stage5",             RESF_OPTIONAL);
-	preload_resource(RES_BGM,     "bgm_stage5boss",         RESF_OPTIONAL);
-	preload_resource(RES_TEXTURE, "stage5/noise",           RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage5/spell_bg",        RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage5/spell_clouds",    RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage5/spell_lightning", RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage5/tower",           RESF_DEFAULT);
+	preload_resources(RES_BGM, RESF_OPTIONAL, "bgm_stage5", "bgm_stage5boss", NULL);
+	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+		"stage5/noise",
+		"stage5/spell_bg",
+		"stage5/spell_clouds",
+		"stage5/spell_lightning",
+		"stage5/tower",
+		"dialog/iku",
+	NULL);
+	preload_resources(RES_SHADER, RESF_DEFAULT,
+		"tower_light",
+	NULL);
+	preload_resources(RES_ANIM, RESF_DEFAULT,
+		"iku",
+	NULL);
+	preload_resources(RES_MODEL, RESF_DEFAULT,
+		"tower",
+	NULL);
 }
 
 void stage5_end(void) {

@@ -25,7 +25,7 @@ bool check_texture_path(const char *path) {
 	return strendswith(path, TEX_EXTENSION);
 }
 
-void* load_texture(const char *path) {
+void* load_texture(const char *path, unsigned int flags) {
 	SDL_Surface *surface = load_png(path);
 
 	if(surface == NULL) {

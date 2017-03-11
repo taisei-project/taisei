@@ -419,3 +419,39 @@ void petal_explosion(int n, complex pos) {
 		create_particle4c("petal", pos, rgba(0.6,1-afrand(0)*0.4,0.5,1-0.5*afrand(1)), Petal, asymptotic, (3+5*afrand(2))*cexp(I*M_PI*2*afrand(3)), 5, afrand(4) + afrand(5)*I, afrand(6) + 360.0*I*afrand(7));
 	}
 }
+
+void projectiles_preload(void) {
+	preload_resources(RES_TEXTURE, RESF_PERMANENT,
+		"part/blast",
+		"part/boss_shadow",
+		"part/flare",
+		"part/lasercurve",
+		"part/marilaser_part0",
+		"part/maristar_orbit",
+		"part/petal",
+		"part/smoke",
+		"part/stain",
+		"part/youmu_slice",
+		"proj/ball",
+		"proj/bigball",
+		"proj/bullet",
+		"proj/card",
+		"proj/crystal",
+		"proj/flea",
+		"proj/hghost",
+		"proj/marilaser",
+		"proj/marisa",
+		"proj/maristar",
+		"proj/plainball",
+		"proj/rice",
+		"proj/soul",
+		"proj/thickrice",
+		"proj/wave",
+		"proj/youhoming",
+		"proj/youmu",
+	NULL);
+
+	preload_resources(RES_SHADER, RESF_PERMANENT,
+		"bullet_color",
+	NULL);
+}

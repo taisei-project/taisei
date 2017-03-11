@@ -28,7 +28,7 @@ bool check_model_path(const char *path) {
 	return strendswith(path, MDL_EXTENSION);
 }
 
-void* load_model(const char *path) {
+void* load_model(const char *path, unsigned int flags) {
 	Model *m = malloc(sizeof(Model));
 
 	ObjFileData data;

@@ -638,6 +638,30 @@ void stage_finish(int gameover) {
 	set_transition_callback(TransFadeBlack, FADE_TIME, FADE_TIME*2, stage_finalize, (void*)(intptr_t)gameover);
 }
 
+static void stage_preload(void) {
+	difficulty_preload();
+	projectiles_preload();
+	player_preload();
+	items_preload();
+	boss_preload();
+
+	if(global.stage->type != STAGE_SPELL)
+		enemies_preload();
+
+	global.stage->procs->preload();
+
+	preload_resources(RES_TEXTURE, RESF_PERMANENT,
+		"hud",
+		"star",
+		"titletransition",
+	NULL);
+
+	preload_resources(RES_SHADER, RESF_PERMANENT,
+		"stagetitle",
+		"ingame_menu",
+	NULL);
+}
+
 void stage_loop(StageInfo *stage) {
 	assert(stage);
 	assert(stage->procs);
@@ -657,7 +681,7 @@ void stage_loop(StageInfo *stage) {
 	// I really want to separate all of the game state from the global struct sometime
 	global.stage = stage;
 
-	stage->procs->preload();
+	stage_preload();
 
 	uint32_t seed = (uint32_t)time(0);
 	tsrand_switch(&global.rand_game);

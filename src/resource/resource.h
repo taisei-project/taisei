@@ -35,6 +35,7 @@ typedef enum ResourceFlags {
 	RESF_OVERRIDE = 1,
 	RESF_OPTIONAL = 2,
 	RESF_PERMANENT = 4,
+	RESF_PRELOAD = 8,
 } ResourceFlags;
 
 #define RESF_DEFAULT 0
@@ -56,28 +57,18 @@ typedef char* (*ResourceFindFunc)(const char *name);
 // Tells whether the resource handler should attempt to load a file, specified by a path.
 typedef bool (*ResourceCheckFunc)(const char *path);
 
-// Tells whether the resource specified by a path is transient.
-typedef bool (*ResourceTransientFunc)(const char *path);
-
 // Loads a resource at path and returns a pointer to it.
 // Must return NULL and not crash the program on failure.
-typedef void* (*ResourceLoadFunc)(const char *path);
+typedef void* (*ResourceLoadFunc)(const char *path, unsigned int flags);
 
 // Unloads a resource, freeing all allocated to it memory.
 typedef void (*ResourceUnloadFunc)(void *res);
-
-// ResourceTransientFunc callback: resource treated as transient if its path contains "stage".
-bool istransient_filepath(const char *path);
-
-// ResourceTransientFunc callback: resource treated as transient if its filename contains "stage".
-bool istransient_filename(const char *path);
 
 typedef struct ResourceHandler {
 	ResourceType type;
 	ResourceNameFunc name;
 	ResourceFindFunc find;
 	ResourceCheckFunc check;
-	ResourceTransientFunc istransient;
 	ResourceLoadFunc load;
 	ResourceUnloadFunc unload;
 	Hashtable *mapping;
@@ -114,6 +105,7 @@ void free_resources(bool all);
 Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags);
 Resource* insert_resource(ResourceType type, const char *name, void *data, ResourceFlags flags, const char *source);
 void preload_resource(ResourceType type, const char *name, ResourceFlags flags);
+void preload_resources(ResourceType type, ResourceFlags flags, const char *firstname, ...) __attribute__((sentinel));
 
 void resource_util_strip_ext(char *path);
 char* resource_util_basename(const char *prefix, const char *path);

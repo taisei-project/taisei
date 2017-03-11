@@ -38,5 +38,6 @@ void add_ending_entry(Ending *e, int time, char *msg, char *tex);
 void create_ending(Ending *e);
 void ending_loop(void);
 void free_ending(Ending *e);
+void ending_preload(void);
 
 #endif

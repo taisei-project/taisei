@@ -117,13 +117,24 @@ void stage3_start(void) {
 }
 
 void stage3_preload(void) {
-	preload_resource(RES_BGM,     "bgm_stage3",          RESF_OPTIONAL);
-	preload_resource(RES_BGM,     "bgm_stage3boss",      RESF_OPTIONAL);
-	preload_resource(RES_TEXTURE, "stage3/border",       RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage3/spellbg1",     RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage3/wspellbg",     RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage3/wspellclouds", RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, "stage3/wspellswarm",  RESF_DEFAULT);
+	preload_resources(RES_BGM, RESF_OPTIONAL, "bgm_stage3", "bgm_stage3boss", NULL);
+	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+		"stage3/border",
+		"stage3/spellbg1",
+		"stage3/spellbg2",
+		"stage3/wspellbg",
+		"stage3/wspellclouds",
+		"stage3/wspellswarm",
+		"dialog/wriggle",
+	NULL);
+	preload_resources(RES_SHADER, RESF_DEFAULT,
+		"tunnel",
+		"zbuf_fog",
+	NULL);
+	preload_resources(RES_ANIM, RESF_DEFAULT,
+		"scuttle",
+		"wriggleex",
+	NULL);
 }
 
 void stage3_end(void) {

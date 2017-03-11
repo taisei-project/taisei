@@ -101,6 +101,8 @@ Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move);
 
 void boss_death(Boss **boss);
 
+void boss_preload(void);
+
 #define BOSS_DEFAULT_SPAWN_POS (VIEWPORT_W * 0.5 - I * VIEWPORT_H * 0.5)
 #define BOSS_DEFAULT_GO_POS (VIEWPORT_W * 0.5 + 200.0*I)
 #define BOSS_NOMOVE (-3142-39942.0*I)

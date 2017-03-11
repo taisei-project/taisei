@@ -59,7 +59,7 @@ char* animation_name(const char *filename) {
 	return newname;
 }
 
-void* load_animation(const char *filename) {
+void* load_animation(const char *filename, unsigned int flags) {
 	Animation *ani = malloc(sizeof(Animation));
 
 	char *basename = resource_util_basename(ANI_PATH_PREFIX, filename);
@@ -87,7 +87,7 @@ void* load_animation(const char *filename) {
 		return NULL;
 	}
 
-	ani->tex = get_tex(basename);
+	ani->tex = get_resource(RES_TEXTURE, basename, flags)->texture;
 
 	if(!ani->tex) {
 		warnx("load_animation(): couldn't get texture '%s'", basename);

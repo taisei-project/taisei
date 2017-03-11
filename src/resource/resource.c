@@ -13,6 +13,7 @@
 #include "config.h"
 #include "taisei_err.h"
 #include "video.h"
+#include "menu/mainmenu.h"
 
 Resources resources;
 
@@ -37,7 +38,6 @@ static void register_handler(
 	ResourceNameFunc name,
 	ResourceFindFunc find,
 	ResourceCheckFunc check,
-	ResourceTransientFunc istransient,
 	size_t tablesize)
 {
 	assert(type >= 0 && type < RES_NUMTYPES);
@@ -49,7 +49,6 @@ static void register_handler(
 	h->name = name;
 	h->find = find;
 	h->check = check;
-	h->istransient = istransient;
 	h->mapping = hashtable_new_stringkeys(tablesize);
 	strcpy(h->subdir, subdir);
 }
@@ -83,7 +82,9 @@ Resource* insert_resource(ResourceType type, const char *name, void *data, Resou
 
 	hashtable_set_string(handler->mapping, name, res);
 
-	printf("Loaded %s '%s' from '%s'\n", resource_type_names[handler->type], name, source);
+	printf("Loaded %s '%s' from '%s' (%s)\n", resource_type_names[handler->type], name, source,
+		(flags & RESF_PERMANENT) ? "permanent" : "transient");
+
 	return res;
 }
 
@@ -133,7 +134,7 @@ static Resource* load_resource(ResourceHandler *handler, const char *path, const
 		}
 	}
 
-	raw = handler->load(path);
+	raw = handler->load(path, flags);
 
 	if(!raw) {
 		name = name ? name : "<name unknown>";
@@ -164,10 +165,20 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 	Resource *res = hashtable_get_string(handler->mapping, name);
 
 	if(!res || flags & RESF_OVERRIDE) {
+		if(!(flags & (RESF_PRELOAD | RESF_OVERRIDE))) {
+			warnx("get_resource(): %s '%s' was not preloaded", resource_type_names[type], name);
+
+			if(!(flags & RESF_OPTIONAL) && getenvint("TAISEI_PRELOAD_REQUIRED")) {
+				warnx("Aborting due to TAISEI_PRELOAD_REQUIRED");
+				abort();
+			}
+		}
+
 		res = load_resource(handler, NULL, name, flags);
 	}
 
-	if(flags & RESF_PERMANENT) {
+	if(res && flags & RESF_PERMANENT && !(res->flags & RESF_PERMANENT)) {
+		printf("Promoted %s '%s' to permanent\n", resource_type_names[type], name);
 		res->flags |= RESF_PERMANENT;
 	}
 
@@ -175,47 +186,47 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 }
 
 void preload_resource(ResourceType type, const char *name, ResourceFlags flags) {
-	get_resource(type, name, flags);
+	if(!getenvint("TAISEI_NOPRELOAD")) {
+		get_resource(type, name, flags | RESF_PRELOAD);
+	}
 }
 
-bool istransient_filepath(const char *path) {
-	char *fnstart = strrchr(path, '/');
-	if (fnstart == NULL) return false;
-	char *stgstart = strstr(path, "stage");
-	return fnstart && stgstart && (stgstart < fnstart);
-}
+void preload_resources(ResourceType type, ResourceFlags flags, const char *firstname, ...) {
+	va_list args;
+	va_start(args, firstname);
 
-bool istransient_filename(const char *path) {
-	char *fnstart = strrchr(path, '/');
-	if (fnstart == NULL) return false;
-	return strstr(fnstart, "stage");
+	for(const char *name = firstname; name; name = va_arg(args, const char*)) {
+		preload_resource(type, name, flags);
+	}
+
+	va_end(args);
 }
 
 void init_resources(void) {
 	// hashtable sizes were carefully pulled out of my ass to reduce collisions a bit
 
 	register_handler(
-		RES_TEXTURE, TEX_PATH_PREFIX, load_texture, (ResourceUnloadFunc)free_texture, NULL, texture_path, check_texture_path, istransient_filepath, 227
+		RES_TEXTURE, TEX_PATH_PREFIX, load_texture, (ResourceUnloadFunc)free_texture, NULL, texture_path, check_texture_path, 227
 	);
 
 	register_handler(
-		RES_ANIM, ANI_PATH_PREFIX, load_animation, free, animation_name, animation_path, check_animation_path, NULL, 23
+		RES_ANIM, ANI_PATH_PREFIX, load_animation, free, animation_name, animation_path, check_animation_path, 23
 	);
 
 	register_handler(
-		RES_SHADER, SHA_PATH_PREFIX, load_shader_file, unload_shader, NULL, shader_path, check_shader_path, NULL, 29
+		RES_SHADER, SHA_PATH_PREFIX, load_shader_file, unload_shader, NULL, shader_path, check_shader_path, 29
 	);
 
 	register_handler(
-		RES_MODEL, MDL_PATH_PREFIX, load_model, unload_model, NULL, model_path, check_model_path, NULL, 17
+		RES_MODEL, MDL_PATH_PREFIX, load_model, unload_model, NULL, model_path, check_model_path, 17
 	);
 
 	register_handler(
-		RES_SFX, SFX_PATH_PREFIX, load_sound, unload_sound, NULL, sound_path, check_sound_path, NULL, 16
+		RES_SFX, SFX_PATH_PREFIX, load_sound, unload_sound, NULL, sound_path, check_sound_path, 16
 	);
 
 	register_handler(
-		RES_BGM, BGM_PATH_PREFIX, load_music, unload_music, NULL, music_path, check_music_path, istransient_filename, 16
+		RES_BGM, BGM_PATH_PREFIX, load_music, unload_music, NULL, music_path, check_music_path, 16
 	);
 }
 
@@ -244,77 +255,14 @@ const char* resource_util_filename(const char *path) {
 	return path;
 }
 
-static void recurse_dir(const char *path) {
-	DIR *dir = opendir(path);
-	if(dir == NULL)
-		errx(-1, "Can't open directory '%s'", path);
-
-	struct dirent *dp;
-
-	while((dp = readdir(dir)) != NULL) {
-		char *filepath = strjoin(path, "/", dp->d_name, NULL);
-		struct stat statbuf;
-
-		stat(filepath, &statbuf);
-
-		if(S_ISDIR(statbuf.st_mode) && *dp->d_name != '.') {
-			recurse_dir(filepath);
-		} else for(int rtype = 0; rtype < RES_NUMTYPES; ++rtype) {
-			ResourceHandler *handler = get_handler(rtype);
-
-			// NULL transient handler treats this resource type as permanent
-			if((!handler->istransient || !handler->istransient(filepath)) && handler->check(filepath)) {
-				load_resource(handler, filepath, NULL, 0);
-			}
-		}
-
-		free(filepath);
-	}
-
-	closedir(dir);
-}
-
-static void recurse_dir_rel(const char *relpath) {
-	char *path = strdup(relpath);
-	strip_trailing_slashes(path);
-	recurse_dir(path);
-	free(path);
-}
-
-static void scan_resources(void) {
-	ListContainer *visited = NULL;
-
-	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
-		ResourceHandler *handler = get_handler(type);
-		ListContainer *c;
-		bool skip = false;
-
-		for(c = visited; c; c = c->next) {
-			if(!strcmp((char*)c->data, handler->subdir)) {
-				skip = true;
-				break;
-			}
-		}
-
-		if(!skip) {
-			recurse_dir_rel(handler->subdir);
-			create_container(&visited)->data = handler->subdir;
-		}
-	}
-
-	delete_all_elements((void**)&visited, delete_element);
-}
-
 void load_resources(void) {
-	if(!getenvint("TAISEI_NOSCAN")) {
-		scan_resources();
-	}
-
 	init_fonts();
 
 	if(glext.draw_instanced) {
-		load_shader_snippets("shader/laser_snippets", "laser_");
+		load_shader_snippets("shader/laser_snippets", "laser_", RESF_PERMANENT);
 	}
+
+	menu_preload();
 
 	init_fbo(&resources.fbg[0]);
 	init_fbo(&resources.fbg[1]);
@@ -335,8 +283,11 @@ void free_resources(bool all) {
 			if(!all && res->flags & RESF_PERMANENT)
 				continue;
 
+			ResourceFlags flags = res->flags;
 			unload_resource(res);
-			printf("Unloaded %s '%s'\n", resource_type_names[type], name);
+			printf("Unloaded %s '%s' (%s)\n", resource_type_names[type], name,
+				(flags & RESF_PERMANENT) ? "permanent" : "transient"
+			);
 
 			if(!all) {
 				hashtable_unset_deferred(handler->mapping, name);
