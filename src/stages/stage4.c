@@ -209,15 +209,15 @@ void stage4_start(void) {
 }
 
 void stage4_preload(void) {
-	get_resource(RES_BGM,     "bgm_stage4",       RESF_TRANSIENT);
-	get_resource(RES_BGM,     "bgm_stage4boss",   RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage2/border",    RESF_REQUIRED | RESF_TRANSIENT); // Stage 2 is intentional!
-	get_resource(RES_TEXTURE, "stage4/kurumibg1", RESF_REQUIRED | RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage4/kurumibg2", RESF_REQUIRED | RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage4/lake",      RESF_REQUIRED | RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage4/mansion",   RESF_REQUIRED | RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage4/planks",    RESF_REQUIRED | RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage4/wall",      RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_BGM,     "bgm_stage4",       RESF_OPTIONAL);
+	get_resource(RES_BGM,     "bgm_stage4boss",   RESF_OPTIONAL);
+	get_resource(RES_TEXTURE, "stage2/border",    RESF_DEFAULT); // Stage 2 is intentional!
+	get_resource(RES_TEXTURE, "stage4/kurumibg1", RESF_DEFAULT);
+	get_resource(RES_TEXTURE, "stage4/kurumibg2", RESF_DEFAULT);
+	get_resource(RES_TEXTURE, "stage4/lake",      RESF_DEFAULT);
+	get_resource(RES_TEXTURE, "stage4/mansion",   RESF_DEFAULT);
+	get_resource(RES_TEXTURE, "stage4/planks",    RESF_DEFAULT);
+	get_resource(RES_TEXTURE, "stage4/wall",      RESF_DEFAULT);
 }
 
 void stage4_end(void) {

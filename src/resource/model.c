@@ -196,7 +196,7 @@ static void parse_obj(const char *filename, ObjFileData *data) {
 }
 
 Model* get_model(const char *name) {
-	return get_resource(RES_MODEL, name, RESF_REQUIRED)->model;
+	return get_resource(RES_MODEL, name, RESF_DEFAULT)->model;
 }
 
 void draw_model_p(Model *model) {

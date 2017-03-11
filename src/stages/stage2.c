@@ -174,14 +174,14 @@ void stage2_start(void) {
 }
 
 void stage2_preload(void) {
-	get_resource(RES_BGM,     "bgm_stage2",        RESF_TRANSIENT);
-	get_resource(RES_BGM,     "bgm_stage2boss",    RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage2/border",     RESF_REQUIRED | RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage2/leaves",     RESF_REQUIRED | RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage2/roadgrass",  RESF_REQUIRED | RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage2/roadstones", RESF_REQUIRED | RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage2/spellbg1",   RESF_REQUIRED | RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage2/spellbg2",   RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_BGM,     "bgm_stage2",        RESF_OPTIONAL);
+	get_resource(RES_BGM,     "bgm_stage2boss",    RESF_OPTIONAL);
+	get_resource(RES_TEXTURE, "stage2/border",     RESF_DEFAULT);
+	get_resource(RES_TEXTURE, "stage2/leaves",     RESF_DEFAULT);
+	get_resource(RES_TEXTURE, "stage2/roadgrass",  RESF_DEFAULT);
+	get_resource(RES_TEXTURE, "stage2/roadstones", RESF_DEFAULT);
+	get_resource(RES_TEXTURE, "stage2/spellbg1",   RESF_DEFAULT);
+	get_resource(RES_TEXTURE, "stage2/spellbg2",   RESF_DEFAULT);
 }
 
 void stage2_end(void) {

@@ -123,13 +123,13 @@ void stage5_start(void) {
 }
 
 void stage5_preload(void) {
-	get_resource(RES_BGM,     "bgm_stage5",             RESF_TRANSIENT);
-	get_resource(RES_BGM,     "bgm_stage5boss",         RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage5/noise",           RESF_REQUIRED | RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage5/spell_bg",        RESF_REQUIRED | RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage5/spell_clouds",    RESF_REQUIRED | RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage5/spell_lightning", RESF_REQUIRED | RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage5/tower",           RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_BGM,     "bgm_stage5",             RESF_OPTIONAL);
+	get_resource(RES_BGM,     "bgm_stage5boss",         RESF_OPTIONAL);
+	get_resource(RES_TEXTURE, "stage5/noise",           RESF_DEFAULT);
+	get_resource(RES_TEXTURE, "stage5/spell_bg",        RESF_DEFAULT);
+	get_resource(RES_TEXTURE, "stage5/spell_clouds",    RESF_DEFAULT);
+	get_resource(RES_TEXTURE, "stage5/spell_lightning", RESF_DEFAULT);
+	get_resource(RES_TEXTURE, "stage5/tower",           RESF_DEFAULT);
 }
 
 void stage5_end(void) {

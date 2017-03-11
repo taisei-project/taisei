@@ -32,10 +32,12 @@ typedef enum ResourceType {
 } ResourceType;
 
 typedef enum ResourceFlags {
-	RESF_REQUIRED = 1,
-	RESF_OVERRIDE = 2,
-	RESF_TRANSIENT = 4
+	RESF_OVERRIDE = 1,
+	RESF_OPTIONAL = 2,
+	RESF_PERMANENT = 4,
 } ResourceFlags;
+
+#define RESF_DEFAULT 0
 
 // All paths are relative to the current working directory, which can assumed to be the resources directory,
 // unless mentioned otherwise.
@@ -107,7 +109,7 @@ extern Resources resources;
 
 void init_resources(void);
 void load_resources(void);
-void free_resources(ResourceFlags flags);
+void free_resources(bool all);
 
 Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags);
 Resource* insert_resource(ResourceType type, const char *name, void *data, ResourceFlags flags, const char *source);

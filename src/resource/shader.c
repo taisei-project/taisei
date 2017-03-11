@@ -265,5 +265,5 @@ int uniloc(Shader *sha, const char *name) {
 }
 
 Shader* get_shader(const char *name) {
-	return get_resource(RES_SHADER, name, RESF_REQUIRED)->shader;
+	return get_resource(RES_SHADER, name, RESF_DEFAULT)->shader;
 }

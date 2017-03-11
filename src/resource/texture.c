@@ -42,7 +42,7 @@ void* load_texture(const char *path) {
 }
 
 Texture* get_tex(const char *name) {
-	return get_resource(RES_TEXTURE, name, RESF_REQUIRED)->texture;
+	return get_resource(RES_TEXTURE, name, RESF_DEFAULT)->texture;
 }
 
 Texture* prefix_get_tex(const char *name, const char *prefix) {

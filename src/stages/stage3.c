@@ -117,13 +117,13 @@ void stage3_start(void) {
 }
 
 void stage3_preload(void) {
-	get_resource(RES_BGM,     "bgm_stage3",          RESF_TRANSIENT);
-	get_resource(RES_BGM,     "bgm_stage3boss",      RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage3/border",       RESF_REQUIRED | RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage3/spellbg1",     RESF_REQUIRED | RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage3/wspellbg",     RESF_REQUIRED | RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage3/wspellclouds", RESF_REQUIRED | RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage3/wspellswarm",  RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_BGM,     "bgm_stage3",          RESF_OPTIONAL);
+	get_resource(RES_BGM,     "bgm_stage3boss",      RESF_OPTIONAL);
+	get_resource(RES_TEXTURE, "stage3/border",       RESF_DEFAULT);
+	get_resource(RES_TEXTURE, "stage3/spellbg1",     RESF_DEFAULT);
+	get_resource(RES_TEXTURE, "stage3/wspellbg",     RESF_DEFAULT);
+	get_resource(RES_TEXTURE, "stage3/wspellclouds", RESF_DEFAULT);
+	get_resource(RES_TEXTURE, "stage3/wspellswarm",  RESF_DEFAULT);
 }
 
 void stage3_end(void) {

@@ -67,6 +67,11 @@ Resource* insert_resource(ResourceType type, const char *name, void *data, Resou
 	Resource *oldres = hashtable_get_string(handler->mapping, name);
 	Resource *res = malloc(sizeof(Resource));
 
+	if(type == RES_MODEL) {
+		// FIXME: models can't be safely unloaded at runtime
+		flags |= RESF_PERMANENT;
+	}
+
 	res->type = handler->type;
 	res->flags = flags;
 	res->data = data;
@@ -104,7 +109,7 @@ static Resource* load_resource(ResourceHandler *handler, const char *path, const
 		path = allocated_path = handler->find(name);
 
 		if(!path) {
-			if(flags & RESF_REQUIRED) {
+			if(!(flags & RESF_OPTIONAL)) {
 				errx(-1, "load_resource(): required %s '%s' couldn't be located", typename, name);
 			} else {
 				warnx("load_resource(): failed to locate %s '%s'", typename, name);
@@ -134,7 +139,7 @@ static Resource* load_resource(ResourceHandler *handler, const char *path, const
 		name = name ? name : "<name unknown>";
 		path = path ? path : "<path unknown>";
 
-		if(flags & RESF_REQUIRED) {
+		if(!(flags & RESF_OPTIONAL)) {
 			errx(-1, "load_resource(): required %s '%s' couldn't be loaded (%s)", typename, name, path);
 		} else {
 			warnx("load_resource(): failed to load %s '%s' (%s)", typename, name, path);
@@ -160,6 +165,10 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 
 	if(!res) {
 		res = load_resource(handler, NULL, name, flags);
+	}
+
+	if(flags & RESF_PERMANENT) {
+		res->flags |= RESF_PERMANENT;
 	}
 
 	return res;
@@ -308,7 +317,7 @@ void load_resources(void) {
 	init_fbo(&resources.fsec);
 }
 
-void free_resources(ResourceFlags flags) {
+void free_resources(bool all) {
 	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
 		ResourceHandler *handler = get_handler(type);
 
@@ -319,20 +328,27 @@ void free_resources(ResourceFlags flags) {
 		Resource *res;
 
 		for(HashtableIterator *i = hashtable_iter(handler->mapping); hashtable_iter_next(i, (void**)&name, (void**)&res);) {
-			if ((flags & RESF_TRANSIENT) && !(res->flags & RESF_TRANSIENT)) continue;
+			if(!all && res->flags & RESF_PERMANENT)
+				continue;
+
 			unload_resource(res);
 			printf("Unloaded %s '%s'\n", resource_type_names[type], name);
-			if (flags & RESF_TRANSIENT) hashtable_unset_deferred(handler->mapping, name);
+
+			if(!all) {
+				hashtable_unset_deferred(handler->mapping, name);
+			}
 		}
 
-		if (flags & RESF_TRANSIENT) {
+		if(all) {
+			hashtable_free(handler->mapping);
+		} else {
 			hashtable_unset_deferred_now(handler->mapping);
 		}
-		else {
-			hashtable_free(handler->mapping);
-		}
 	}
-	if (flags & RESF_TRANSIENT) return;
+
+	if(!all) {
+		return;
+	}
 
 	delete_vbo(&_vbo);
 

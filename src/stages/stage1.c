@@ -160,11 +160,11 @@ void stage1_start(void) {
 }
 
 void stage1_preload(void) {
-	get_resource(RES_BGM,     "bgm_stage1",       RESF_TRANSIENT);
-	get_resource(RES_BGM,     "bgm_stage1boss",   RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage1/cirnobg",   RESF_REQUIRED | RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage1/fog",       RESF_REQUIRED | RESF_TRANSIENT);
-	get_resource(RES_TEXTURE, "stage1/snowlayer", RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_BGM,     "bgm_stage1",       RESF_OPTIONAL);
+	get_resource(RES_BGM,     "bgm_stage1boss",   RESF_OPTIONAL);
+	get_resource(RES_TEXTURE, "stage1/cirnobg",   RESF_DEFAULT);
+	get_resource(RES_TEXTURE, "stage1/fog",       RESF_DEFAULT);
+	get_resource(RES_TEXTURE, "stage1/snowlayer", RESF_DEFAULT);
 }
 
 void stage1_end(void) {

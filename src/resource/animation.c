@@ -105,7 +105,7 @@ void* load_animation(const char *filename) {
 }
 
 Animation *get_ani(const char *name) {
-	return get_resource(RES_ANIM, name, RESF_REQUIRED)->animation;
+	return get_resource(RES_ANIM, name, RESF_DEFAULT)->animation;
 }
 
 void draw_animation(float x, float y, int row, const char *name) {

@@ -49,12 +49,12 @@ void reset_sounds(void) {
 }
 
 Sound* get_sound(const char *name) {
-    Resource *res = get_resource(RES_SFX, name, 0);
+    Resource *res = get_resource(RES_SFX, name, RESF_OPTIONAL);
     return res ? res->sound : NULL;
 }
 
 Music* get_music(const char *name) {
-    Resource *res = get_resource(RES_BGM, name, 0);
+    Resource *res = get_resource(RES_BGM, name, RESF_OPTIONAL);
     return res ? res->music : NULL;
 }
 
