@@ -17,11 +17,11 @@ pkg_check_modules(PNG libpng REQUIRED)
 
 if(NOT NO_AUDIO)
 	pkg_check_modules(SDL2_MIXER SDL2_mixer REQUIRED)
-	add_definitions(-DHAVE_MIXER)
 endif()
 
 set(SRCs
 	main.c
+	util.c
 	taiseigl.c
 	random.c
 	config.c
@@ -50,6 +50,7 @@ set(SRCs
 	transition.c
 	color.c
 	difficulty.c
+	audio_common.c
 	menu/menu.c
 	menu/mainmenu.c
 	menu/options.c
@@ -96,23 +97,45 @@ else()
 endif()
 
 if(NO_AUDIO)
-	set(SRCs ${SRCs} resource/audio_null.c resource/bgm_null.c)
+	set(SRCs ${SRCs}
+		audio_null.c
+		resource/bgm_null.c
+		resource/sfx_null.c
+	)
 else()
-	set(SRCs ${SRCs} resource/audio.c resource/bgm.c)
+	set(SRCs ${SRCs}
+		audio_mixer.c
+		resource/bgm_mixer.c
+		resource/sfx_mixer.c
+	)
 endif()
 
 if(WIN32)
 	set(SRCs ${SRCs} taisei_err.c)
 endif()
 
+if(DEFINED TAISEI_DEBUG)
+	if(TAISEI_DEBUG)
+		set(CMAKE_BUILD_TYPE "Debug")
+	else()
+		set(CMAKE_BUILD_TYPE "Release")
+	endif()
+endif()
+
+if("${CMAKE_BUILD_TYPE}" STREQUAL "")
+	set(CMAKE_BUILD_TYPE "Release")
+	message(WARNING "CMAKE_BUILD_TYPE was not set, assuming ${CMAKE_BUILD_TYPE}.")
+endif()
+
+message(STATUS "Build configuration: ${CMAKE_BUILD_TYPE}")
+
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb -DDEBUG")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -s")
+
 add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall -Wno-parentheses -Wtype-limits -std=c11 -pedantic)
 
 if(RELATIVE)
     add_definitions(-DRELATIVE)
-endif()
-
-if(TAISEI_DEBUG)
-	add_definitions(-DDEBUG -ggdb)
 endif()
 
 if(WERROR)
@@ -126,7 +149,6 @@ endif()
 set(LIBs ${LIBs}
 	${SDL2_LIBRARIES}
 	${SDL2_TTF_LIBRARIES}
-	${SDL2_MIXER_LIBRARIES}
 	${PNG_LIBRARIES}
 	${ZLIB_LIBRARIES}
 	${OPENGL_LIBRARIES}
@@ -152,12 +174,18 @@ endif()
 set(INCs
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${SDL2_INCLUDE_DIRS}
-	${SDL2_MIXER_INCLUDE_DIRS}
 	${SDL2_TTF_INCLUDE_DIRS}
 	${ZLIB_INCLUDE_DIRS}
 	${OPENGL_INCLUDE_DIR}
 	${PNG_INCLUDE_DIRS}
 	)
+
+# stupid cmake caching SHIT
+if(NOT NO_AUDIO)
+	set(INCs ${INCs} ${SDL2_MIXER_INCLUDE_DIRS})
+	set(LIBs ${LIBs} ${SDL2_MIXER_LIBRARIES})
+	set(LIBDIRs ${LIBDIRs} ${SDL2_MIXER_LIBRARY_DIRS})
+endif()
 
 set(CMAKE_REQUIRED_INCLUDES ${INCs})
 include_directories(${INCs})

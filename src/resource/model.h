@@ -8,6 +8,7 @@
 #ifndef MODEL_H
 #define MODEL_H
 
+#include <stdbool.h>
 #include "matrix.h"
 
 typedef int IVector[3];
@@ -34,11 +35,17 @@ typedef struct Model {
 	int fverts;
 } Model;
 
-Model *load_model(const char *filename);
-Model *get_model(const char *name);
+char* model_path(const char *name);
+bool check_model_path(const char *path);
+void* load_model(const char *path);
+void unload_model(void*); // Does not delete elements from the VBO, so doing this at runtime is leaking VBO space
+
+Model* get_model(const char *name);
 
 void draw_model_p(Model *model);
 void draw_model(const char *name);
-void delete_models(void); // Does not delete elements from the VBO, so doing this at runtime is leaking VBO space
+
+#define MDL_PATH_PREFIX "models/"
+#define MDL_EXTENSION ".obj"
 
 #endif

@@ -24,10 +24,16 @@ typedef struct Animation {
 	Texture *tex;
 } Animation;
 
-Animation *init_animation(const char *filename);
+char* animation_path(const char *name);
+bool check_animation_path(const char *path);
+void* load_animation(const char *filename);
+char* animation_name(const char *filename);
+
 Animation *get_ani(const char *name);
-void delete_animations(void);
+
 void draw_animation(float x, float y, int row, const char *name);
 void draw_animation_p(float x, float y, int row, Animation *ani);
+
+#define ANI_PATH_PREFIX TEX_PATH_PREFIX
 
 #endif

@@ -8,7 +8,7 @@
 #ifndef BOSS_H
 #define BOSS_H
 
-#include "tscomplex.h"
+#include "util.h"
 #include "difficulty.h"
 #include "resource/animation.h"
 #include "color.h"

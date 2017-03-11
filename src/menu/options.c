@@ -218,20 +218,20 @@ bool bind_isactive(OptionBinding *b) {
 
 // --- Shared binding callbacks --- //
 
-int bind_common_onoffget(void *b) {
-	return !config_get_int(((OptionBinding*)b)->configentry);
+int bind_common_onoffget(OptionBinding *b) {
+	return !config_get_int(b->configentry);
 }
 
-int bind_common_onoffset(void *b, int v) {
-	return !config_set_int(((OptionBinding*)b)->configentry, !v);
+int bind_common_onoffset(OptionBinding *b, int v) {
+	return !config_set_int(b->configentry, !v);
 }
 
-int bind_common_onoffget_inverted(void *b) {
-	return config_get_int(((OptionBinding*)b)->configentry);
+int bind_common_onoffget_inverted(OptionBinding *b) {
+	return config_get_int(b->configentry);
 }
 
-int bind_common_onoffset_inverted(void *b, int v) {
-	return config_set_int(((OptionBinding*)b)->configentry, v);
+int bind_common_onoffset_inverted(OptionBinding *b, int v) {
+	return config_set_int(b->configentry, v);
 }
 
 #define bind_common_intget bind_common_onoffget_inverted
@@ -243,33 +243,29 @@ bool bind_stagebg_fpslimit_dependence(void) {
 	return config_get_int(CONFIG_NO_STAGEBG) == 2;
 }
 
-bool bind_sfxvol_dependence(void) {
-	return !config_get_int(CONFIG_NO_AUDIO);
-}
-
-bool bind_bgmvol_dependence(void) {
-	return !config_get_int(CONFIG_NO_MUSIC);
+bool bind_audio_dependence(void) {
+	return audio_backend_initialized();
 }
 
 bool bind_resizable_dependence(void) {
 	return !config_get_int(CONFIG_FULLSCREEN);
 }
 
-int bind_saverpy_get(void *b) {
-	int v = config_get_int(((OptionBinding*)b)->configentry);
+int bind_saverpy_get(OptionBinding *b) {
+	int v = config_get_int(b->configentry);
 
 	if(v > 1)
 		return v;
 	return !v;
 }
 
-int bind_saverpy_set(void *b, int v) {
+int bind_saverpy_set(OptionBinding *b, int v) {
 	if(v > 1)
-		return config_set_int(((OptionBinding*)b)->configentry, v);
-	return !config_set_int(((OptionBinding*)b)->configentry, !v);
+		return config_set_int(b->configentry, v);
+	return !config_set_int(b->configentry, !v);
 }
 
-int bind_resolution_set(void *b, int v) {
+int bind_resolution_set(OptionBinding *b, int v) {
 	if(v >= 0) {
 		VideoMode *m = video.modes + v;
 		config_set_int(CONFIG_VID_WIDTH, m->width);
@@ -356,12 +352,6 @@ void options_sub_video(MenuData *parent, void *arg) {
 		bind_addvalue(b, "adaptive");
 
 	add_menu_separator(m);
-
-#ifdef DEBUG
-	add_menu_entry(m, "Shaders", do_nothing,
-		b = bind_option(CONFIG_NO_SHADER, bind_common_onoffget_inverted, bind_common_onoffset_inverted)
-	);	bind_onoff(b);
-#endif
 
 	add_menu_entry(m, "Stage background", do_nothing,
 		b = bind_option(CONFIG_NO_STAGEBG, bind_common_intget, bind_common_intset)
@@ -614,27 +604,13 @@ void create_options_menu(MenuData *m) {
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, "Sound effects", do_nothing,
-		b = bind_option(CONFIG_NO_AUDIO, 	bind_common_onoffget_inverted,
-											bind_common_onoffset_inverted)
-	);	bind_onoff(b);
-
-	add_menu_entry(m, "Volume", do_nothing,
+	add_menu_entry(m, "SFX Volume", do_nothing,
 		b = bind_scale(CONFIG_SFX_VOLUME, 0, 1, 0.1)
-	);	bind_setdependence(b, bind_sfxvol_dependence);
-		b->pad++;
+	);	bind_setdependence(b, bind_audio_dependence);
 
-	add_menu_separator(m);
-
-	add_menu_entry(m, "Background music", do_nothing,
-		b = bind_option(CONFIG_NO_MUSIC,	bind_common_onoffget_inverted,
-											bind_common_onoffset_inverted)
-	);	bind_onoff(b);
-
-	add_menu_entry(m, "Volume", do_nothing,
+	add_menu_entry(m, "BGM Volume", do_nothing,
 		b = bind_scale(CONFIG_BGM_VOLUME, 0, 1, 0.1)
-	);	bind_setdependence(b, bind_bgmvol_dependence);
-		b->pad++;
+	);	bind_setdependence(b, bind_audio_dependence);
 
 	add_menu_separator(m);
 	add_menu_entry(m, "Video options…", options_sub_video, NULL);

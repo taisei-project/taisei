@@ -16,211 +16,309 @@
 
 Resources resources;
 
-void recurse_dir(char *path) {
+static const char *resource_type_names[] = {
+	"texture",
+	"animation",
+	"sound",
+	"bgm",
+	"shader",
+	"model",
+};
+
+static inline ResourceHandler* get_handler(ResourceType type) {
+	return resources.handlers + type;
+}
+
+static void register_handler(
+	ResourceType type,
+	const char *subdir,	// trailing slash assumed
+	ResourceLoadFunc load,
+	ResourceUnloadFunc unload,
+	ResourceNameFunc name,
+	ResourceFindFunc find,
+	ResourceCheckFunc check,
+	size_t tablesize)
+{
+	assert(type >= 0 && type < RES_NUMTYPES);
+
+	ResourceHandler *h = get_handler(type);
+	h->type = type;
+	h->load = load;
+	h->unload = unload;
+	h->name = name;
+	h->find = find;
+	h->check = check;
+	h->mapping = hashtable_new_stringkeys(tablesize);
+	strcpy(h->subdir, subdir);
+}
+
+static void unload_resource(Resource *res) {
+	get_handler(res->type)->unload(res->data);
+	free(res);
+}
+
+Resource* insert_resource(ResourceType type, const char *name, void *data, ResourceFlags flags, const char *source) {
+	assert(name != NULL);
+	assert(source != NULL);
+
+	ResourceHandler *handler = get_handler(type);
+	Resource *oldres = hashtable_get_string(handler->mapping, name);
+	Resource *res = malloc(sizeof(Resource));
+
+	res->type = handler->type;
+	res->flags = flags;
+	res->data = data;
+
+	if(oldres) {
+		warnx("insert_resource(): replacing a previously loaded %s '%s'", resource_type_names[type], name);
+		unload_resource(oldres);
+	}
+
+	hashtable_set_string(handler->mapping, name, res);
+
+	printf("Loaded %s '%s' from '%s'\n", resource_type_names[handler->type], name, source);
+	return res;
+}
+
+static char* get_name(ResourceHandler *handler, const char *path) {
+	if(handler->name) {
+		return handler->name(path);
+	}
+
+	return resource_util_basename(handler->subdir, path);
+}
+
+static Resource* load_resource(ResourceHandler *handler, const char *path, const char *name, ResourceFlags flags) {
+	Resource *res;
+	void *raw;
+
+	const char *typename = resource_type_names[handler->type];
+	char *allocated_path = NULL;
+	char *allocated_name = NULL;
+
+	assert(path || name);
+
+	if(!path) {
+		path = allocated_path = handler->find(name);
+
+		if(!path) {
+			if(flags & RESF_REQUIRED) {
+				errx(-1, "load_resource(): required %s '%s' couldn't be located", typename, name);
+			} else {
+				warnx("load_resource(): failed to locate %s '%s'", typename, name);
+			}
+
+			return NULL;
+		}
+	} else if(!name) {
+		name = allocated_name = get_name(handler, path);
+	}
+
+	assert(handler->check(path));
+
+	if(!(flags & RESF_OVERRIDE)) {
+		res = hashtable_get_string(handler->mapping, name);
+
+		if(res) {
+			warnx("load_resource(): %s '%s' is already loaded", typename, name);
+			free(allocated_name);
+			return res;
+		}
+	}
+
+	raw = handler->load(path);
+
+	if(!raw) {
+		name = name ? name : "<name unknown>";
+		path = path ? path : "<path unknown>";
+
+		if(flags & RESF_REQUIRED) {
+			errx(-1, "load_resource(): required %s '%s' couldn't be loaded (%s)", typename, name, path);
+		} else {
+			warnx("load_resource(): failed to load %s '%s' (%s)", typename, name, path);
+		}
+
+		free(allocated_path);
+		free(allocated_name);
+
+		return NULL;
+	}
+
+	res = insert_resource(handler->type, name, raw, flags, path);
+
+	free(allocated_path);
+	free(allocated_name);
+
+	return res;
+}
+
+Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags) {
+	ResourceHandler *handler = get_handler(type);
+	Resource *res = hashtable_get_string(handler->mapping, name);
+
+	if(!res) {
+		res = load_resource(handler, NULL, name, flags);
+	}
+
+	return res;
+}
+
+void init_resources(void) {
+	// hashtable sizes were carefully pulled out of my ass to reduce collisions a bit
+
+	register_handler(
+		RES_TEXTURE, TEX_PATH_PREFIX, load_texture, (ResourceUnloadFunc)free_texture, NULL, texture_path, check_texture_path, 227
+	);
+
+	register_handler(
+		RES_ANIM, ANI_PATH_PREFIX, load_animation, free, animation_name, animation_path, check_animation_path, 23
+	);
+
+	register_handler(
+		RES_SHADER, SHA_PATH_PREFIX, load_shader_file, unload_shader, NULL, shader_path, check_shader_path, 29
+	);
+
+	register_handler(
+		RES_MODEL, MDL_PATH_PREFIX, load_model, unload_model, NULL, model_path, check_model_path, 17
+	);
+
+	register_handler(
+		RES_SFX, SFX_PATH_PREFIX, load_sound, unload_sound, NULL, sound_path, check_sound_path, 16
+	);
+
+	register_handler(
+		RES_BGM, BGM_PATH_PREFIX, load_music, unload_music, NULL, music_path, check_music_path, 16
+	);
+}
+
+void resource_util_strip_ext(char *path) {
+	char *dot = strrchr(path, '.');
+	if(dot > strrchr(path, '/'))
+		*dot = 0;
+}
+
+char* resource_util_basename(const char *prefix, const char *path) {
+	assert(strstartswith(path, prefix));
+
+	char *out = strdup(path + strlen(prefix));
+	resource_util_strip_ext(out);
+
+	return out;
+}
+
+const char* resource_util_filename(const char *path) {
+	char *sep = strrchr(path, '/');
+
+	if(sep) {
+		return sep + 1;
+	}
+
+	return path;
+}
+
+static void recurse_dir(const char *path) {
 	DIR *dir = opendir(path);
 	if(dir == NULL)
 		errx(-1, "Can't open directory '%s'", path);
+
 	struct dirent *dp;
 
-	char *audio_exts[] = { ".wav", ".ogg", ".mp3", ".mod", ".xm", ".s3m",
-		".669", ".it", ".med", ".mid", ".flac", ".aiff", ".voc",
-		NULL };
-
 	while((dp = readdir(dir)) != NULL) {
-		char *buf = malloc(strlen(path) + strlen(dp->d_name)+2);
-		strcpy(buf, path);
-		strcat(buf, "/");
-		strcat(buf, dp->d_name);
-
+		char *filepath = strjoin(path, "/", dp->d_name, NULL);
 		struct stat statbuf;
-		stat(buf, &statbuf);
 
-		if(S_ISDIR(statbuf.st_mode) && dp->d_name[0] != '.') {
-			recurse_dir(buf);
-		} else if(strcmp(dp->d_name + strlen(dp->d_name)-4, ".png") == 0) {
-			if(strncmp(dp->d_name, "ani_", 4) == 0)
-				init_animation(buf);
-			else
-				load_texture(buf);
-		} else if(strendswith(dp->d_name, ".sha")) {
-				load_shader_file(buf);
-		} else if(strendswith(dp->d_name, ".obj")) {
-			load_model(buf);
-		} else {
-			int i;
-			for (i = 0; audio_exts[i] != NULL; i++)
-			{
-				if (strendswith(dp->d_name, audio_exts[i])) {
-					// BGMs should have "bgm_" prefix!
-					if(strncmp(dp->d_name, "bgm_", 4) == 0)
-						load_bgm(buf);
-					else
-						load_sound(buf);
+		stat(filepath, &statbuf);
 
-					break;
-				}
+		if(S_ISDIR(statbuf.st_mode) && *dp->d_name != '.') {
+			recurse_dir(filepath);
+		} else for(int rtype = 0; rtype < RES_NUMTYPES; ++rtype) {
+			ResourceHandler *handler = get_handler(rtype);
+
+			if(handler->check(filepath)) {
+				load_resource(handler, filepath, NULL, 0);
 			}
 		}
 
-		free(buf);
+		free(filepath);
 	}
 
 	closedir(dir);
 }
 
-static void resources_cfg_noshader_callback(ConfigIndex idx, ConfigValue v) {
-	config_set_int(idx, v.i);
-
-	if(!v.i) {
-		load_resources();
-	}
-}
-
-static void init_hashtables(void) {
-	// sizes carefully pulled out of my ass to reduce collisions a bit
-	resources.textures = hashtable_new_stringkeys(227);
-	resources.animations = hashtable_new_stringkeys(23);
-	resources.sounds = hashtable_new_stringkeys(16);
-	resources.music = hashtable_new_stringkeys(16);
-	resources.shaders = hashtable_new_stringkeys(29);
-	resources.models = hashtable_new_stringkeys(17);
-	resources.bgm_descriptions = hashtable_new_stringkeys(16);
-}
-
-static void free_hashtables(void) {
-	hashtable_free(resources.textures);
-	hashtable_free(resources.animations);
-	hashtable_free(resources.sounds);
-	hashtable_free(resources.music);
-	hashtable_free(resources.shaders);
-	hashtable_free(resources.models);
-	hashtable_free(resources.bgm_descriptions);
-}
-
-void init_resources(void) {
-	init_hashtables();
-	config_set_callback(CONFIG_NO_SHADER, resources_cfg_noshader_callback);
-}
-
-void load_resources(void) {
-	printf("load_resources():\n");
-
-	char *path = malloc(strlen(get_prefix())+32);
-
-	if(!(resources.state & RS_GfxLoaded)) {
-		printf("- textures:\n");
-		strcpy(path, get_prefix());
-		strcat(path, "gfx");
-		recurse_dir(path);
-
-		resources.state |= RS_GfxLoaded;
-	}
-
-	if(!config_get_int(CONFIG_NO_AUDIO) && !(resources.state & RS_SfxLoaded)) {
-		printf("- sounds:\n");
-		strcpy(path, get_prefix());
-		strcat(path, "sfx");
-		recurse_dir(path);
-
-		resources.state |= RS_SfxLoaded;
-	}
-
-	if(!config_get_int(CONFIG_NO_MUSIC) && !(resources.state & RS_BgmLoaded)) {
-		printf("- music:\n");
-		strcpy(path, get_prefix());
-		strcat(path, "bgm");
-		load_bgm_descriptions(path);
-		recurse_dir(path);
-
-		resources.state |= RS_BgmLoaded;
-	}
-
-	if(!config_get_int(CONFIG_NO_SHADER) && !(resources.state & RS_ShaderLoaded)) {
-		printf("- shader:\n");
-		strcpy(path, get_prefix());
-		strcat(path, "shader");
-		recurse_dir(path);
-
-		strcpy(path, get_prefix());
-		strcat(path, "shader/laser_snippets");
-
-		if(glext.draw_instanced)
-			load_shader_snippets(path, "laser_");
-
-		printf("init_fbo():\n");
-		init_fbo(&resources.fbg[0]);
-		init_fbo(&resources.fbg[1]);
-		init_fbo(&resources.fsec);
-		printf("-- finished\n");
-
-		resources.state |= RS_ShaderLoaded;
-	}
-
-	if(!(resources.state & RS_ModelsLoaded)) {
-		printf("- models:\n");
-		strcpy(path, get_prefix());
-		strcat(path, "models");
-		recurse_dir(path);
-
-		resources.state |= RS_ModelsLoaded;
-	}
-
-	if(!(resources.state & RS_FontsLoaded)) {
-		printf("- fonts:\n");
-		init_fonts();
-
-		resources.state |= RS_FontsLoaded;
-	}
-
+static void recurse_dir_rel(const char *relpath) {
+	char *path = strdup(relpath);
+	strip_trailing_slashes(path);
+	recurse_dir(path);
 	free(path);
 }
 
-void free_resources(void) {
-	// Music and sounds are freed by corresponding functions
+static void scan_resources(void) {
+	ListContainer *visited = NULL;
 
-	printf("-- freeing textures\n");
-	delete_textures();
+	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
+		ResourceHandler *handler = get_handler(type);
+		ListContainer *c;
+		bool skip = false;
 
-	printf("-- freeing animations\n");
-	delete_animations();
+		for(c = visited; c; c = c->next) {
+			if(!strcmp((char*)c->data, handler->subdir)) {
+				skip = true;
+				break;
+			}
+		}
 
-	printf("-- freeing models\n");
-	delete_models();
-
-	printf("-- freeing VBOs\n");
-	delete_vbo(&_vbo);
-
-	if(resources.state & RS_ShaderLoaded) {
-		printf("-- freeing FBOs\n");
-		delete_fbo(&resources.fbg[0]);
-		delete_fbo(&resources.fbg[1]);
-		delete_fbo(&resources.fsec);
-
-		printf("-- freeing shaders\n");
-		delete_shaders();
+		if(!skip) {
+			recurse_dir_rel(handler->subdir);
+			create_container(&visited)->data = handler->subdir;
+		}
 	}
 
-	free_hashtables();
+	delete_all_elements((void**)&visited, delete_element);
 }
 
-void resources_delete_and_unset_all(Hashtable *ht, HTIterCallback ifunc, void *arg) {
-	hashtable_foreach(ht, ifunc, arg);
-	hashtable_unset_all(ht);
+void load_resources(void) {
+	if(!getenvint("TAISEI_NOSCAN")) {
+		scan_resources();
+	}
+
+	init_fonts();
+
+	if(glext.draw_instanced) {
+		load_shader_snippets("shader/laser_snippets", "laser_");
+	}
+
+	init_fbo(&resources.fbg[0]);
+	init_fbo(&resources.fbg[1]);
+	init_fbo(&resources.fsec);
 }
 
-void draw_loading_screen(void) {
-	const char *prefix = get_prefix();
-	char *buf = malloc(strlen(prefix)+16);
-	Texture *tex;
+void free_resources(void) {
+	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
+		ResourceHandler *handler = get_handler(type);
 
-	strcpy(buf, prefix);
-	strcat(buf, "gfx/loading.png");
+		if(!handler->mapping)
+			continue;
 
-	set_ortho();
+		char *name;
+		Resource *res;
 
-	tex = load_texture(buf);
-	free(buf);
+		for(HashtableIterator *i = hashtable_iter(handler->mapping); hashtable_iter_next(i, (void**)&name, (void**)&res);) {
+			unload_resource(res);
+			printf("Unloaded %s '%s'\n", resource_type_names[type], name);
+		}
 
-	draw_texture_p(SCREEN_W/2,SCREEN_H/2, tex);
-	SDL_GL_SwapWindow(video.window);
+		hashtable_free(handler->mapping);
+	}
+
+	delete_vbo(&_vbo);
+
+	delete_fbo(&resources.fbg[0]);
+	delete_fbo(&resources.fbg[1]);
+	delete_fbo(&resources.fsec);
+}
+
+void print_resource_hashtables(void) {
+	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
+		hashtable_print_stringkeys(get_handler(type)->mapping);
+	}
 }

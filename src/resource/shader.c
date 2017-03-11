@@ -29,6 +29,47 @@ static char snippet_header_gl31[] =
 	"#version 140\n"
 ;
 
+char* shader_path(const char *name) {
+	return strjoin(SHA_PATH_PREFIX, name, SHA_EXTENSION, NULL);
+}
+
+bool check_shader_path(const char *path) {
+	return strendswith(path, SHA_EXTENSION);
+}
+
+static Shader* load_shader(const char *vheader, const char *fheader, const char *vtext, const char *ftext);
+
+void* load_shader_file(const char *path) {
+	char *text, *vtext, *ftext, *delim;
+
+	text = read_all(path, NULL);
+
+	vtext = text;
+	delim = strstr(text, SHA_DELIM);
+
+	if(delim == NULL) {
+		warnx("load_shader_file(): expected '%s' delimiter.", SHA_DELIM);
+		free(text);
+		return NULL;
+	}
+
+	*delim = 0;
+	ftext = delim + SHA_DELIM_SIZE;
+
+	Shader *sha = load_shader(NULL, NULL, vtext, ftext);
+
+	free(text);
+
+	return sha;
+}
+
+void unload_shader(void *vsha) {
+	Shader *sha = vsha;
+	glDeleteProgram((sha)->prog);
+	hashtable_free(sha->uniforms);
+	free(sha);
+}
+
 static char* get_snippet_header(void) {
 	if(glext.EXT_draw_instanced) {
 		return snippet_header_EXT_draw_instanced;
@@ -38,77 +79,6 @@ static char* get_snippet_header(void) {
 		// probably won't work
 		return snippet_header_gl31;
 	}
-}
-
-void print_info_log(GLuint shader) {
-	int len = 0, alen = 0;
-	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &len);
-
-	if(len > 1) {
-		printf(" == GLSL Shader info log (shader %u) ==\n", shader);
-		char *log = malloc(len);
-		memset(log, 0, len);
-		glGetShaderInfoLog(shader, len, &alen, log);
-		printf("%s\n", log);
-		free(log);
-		printf("\n == End of GLSL Shader info log (shader %u) ==\n", shader);
-	}
-}
-
-void print_program_info_log(GLuint program) {
-	int len = 0, alen = 0;
-	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len);
-
-	if(len > 1) {
-		printf(" == GLSL Program info log (program %u) ==\n", program);
-		char *log = malloc(len);
-		memset(log, 0, len);
-		glGetProgramInfoLog(program, len, &alen, log);
-		printf("%s\n", log);
-		free(log);
-		printf("\n == End of GLSL Program info log (program %u) ==\n", program);
-	}
-}
-
-char *read_all(const char *filename, int *size) {
-	char *text;
-	FILE *file = fopen(filename, "r");
-	if(file == NULL)
-		errx(-1, "Error opening '%s'", filename);
-
-	fseek(file, 0, SEEK_END);
-	*size = ftell(file);
-	fseek(file, 0, SEEK_SET);
-
-	if(*size == 0)
-		errx(-1, "File empty!");
-
-	text = malloc(*size+1);
-	fread(text, *size, 1, file);
-	text[*size] = 0;
-
-	fclose(file);
-
-	return text;
-}
-
-char *copy_segment(const char *text, const char *delim, int *size) {
-	char *seg, *beg, *end;
-
-	beg = strstr(text, delim);
-	if(!beg)
-		return NULL;
-	beg += strlen(delim);
-
-	end = strstr(beg, "%%");
-	if(!end)
-		return NULL;
-
-	*size = end-beg;
-	seg = malloc(*size+1);
-	strlcpy(seg, beg, *size+1);
-
-	return seg;
 }
 
 void load_shader_snippets(const char *filename, const char *prefix) {
@@ -189,8 +159,8 @@ void load_shader_snippets(const char *filename, const char *prefix) {
 		strlcat(nbuf+prefixlen, name, nend-name+1);
 		nbuf[nend-name+prefixlen] = 0;
 
-		load_shader(get_snippet_header(), NULL, vtext, ftext, nbuf, nend-name+prefixlen+1);
-		printf("--- loaded snippet as shader '%s'\n", nbuf);
+		Shader *sha = load_shader(get_snippet_header(), NULL, vtext, ftext);
+		insert_resource(RES_SHADER, nbuf, sha, 0, filename);
 
 		free(nbuf);
 		free(vtext);
@@ -204,37 +174,48 @@ void load_shader_snippets(const char *filename, const char *prefix) {
 	free(text);
 }
 
-void load_shader_file(const char *filename) {
-	int size;
-	char *text, *vtext, *ftext, *delim;
-	char *beg, *end, *name;
+static void print_info_log(GLuint shader, tsglGetShaderiv_ptr lenfunc, tsglGetShaderInfoLog_ptr logfunc, const char *type) {
+	int len = 0, alen = 0;
+	lenfunc(shader, GL_INFO_LOG_LENGTH, &len);
 
-	text = read_all(filename, &size);
-
-	vtext = text;
-	delim = strstr(text, DELIM);
-	if(delim == NULL)
-		errx(-1, "Expected '%s' delimiter.", DELIM);
-
-	*delim = 0;
-	ftext = delim + DELIM_SIZE;
-
-	beg = strstr(filename, "shader/") + 7;
-	end = strrchr(filename, '.');
-
-	int sz = end - beg + 1;
-	name = malloc(sz);
-	strlcpy(name, beg, sz);
-
-	load_shader(NULL, NULL, vtext, ftext, name, sz);
-
-	printf("-- loaded '%s' as '%s'\n", filename, name);
-
-	free(name);
-	free(text);
+	if(len > 1) {
+		printf(" == GLSL %s info log (%u) ==\n", type, shader);
+		char log[len];
+		memset(log, 0, len);
+		logfunc(shader, len, &alen, log);
+		printf("%s\n", log);
+		printf("\n == End of GLSL %s info log (%u) ==\n", type, shader);
+	}
 }
 
-void load_shader(const char *vheader, const char *fheader, const char *vtext, const char *ftext, const char *name, int nsize) {
+static void cache_uniforms(Shader *sha) {
+	int i, maxlen = 0;
+	GLint tmpi;
+	GLenum tmpt;
+	GLint unicount;
+
+	sha->uniforms = hashtable_new_stringkeys(13);
+
+	glGetProgramiv(sha->prog, GL_ACTIVE_UNIFORMS, &unicount);
+	glGetProgramiv(sha->prog, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxlen);
+
+	char name[maxlen];
+
+	for(i = 0; i < unicount; i++) {
+		glGetActiveUniform(sha->prog, i, maxlen, NULL, &tmpi, &tmpt, name);
+		// This +1 increment kills two youkai with one spellcard.
+		// 1. We can't store 0 in the hashtable, because that's the NULL/nonexistent value.
+		//    But 0 is a valid uniform location, so we need to store that in some way.
+		// 2. glGetUniformLocation returns -1 for builtin uniforms, which we don't want to cache anyway.
+		hashtable_set_string(sha->uniforms, name, (void*)(intptr_t)(glGetUniformLocation(sha->prog, name) + 1));
+	}
+
+#ifdef DEBUG_GL
+	hashtable_print_stringkeys(sha->uniforms);
+#endif
+}
+
+static Shader* load_shader(const char *vheader, const char *fheader, const char *vtext, const char *ftext) {
 	Shader *sha = malloc(sizeof(Shader));
 	GLuint vshaderobj;
 	GLuint fshaderobj;
@@ -261,8 +242,8 @@ void load_shader(const char *vheader, const char *fheader, const char *vtext, co
 	glCompileShader(vshaderobj);
 	glCompileShader(fshaderobj);
 
-	print_info_log(vshaderobj);
-	print_info_log(fshaderobj);
+	print_info_log(vshaderobj, glGetShaderiv, glGetShaderInfoLog, "Vertex Shader");
+	print_info_log(fshaderobj, glGetShaderiv, glGetShaderInfoLog, "Fragment Shader");
 
 	glAttachShader(sha->prog, vshaderobj);
 	glAttachShader(sha->prog, fshaderobj);
@@ -272,60 +253,17 @@ void load_shader(const char *vheader, const char *fheader, const char *vtext, co
 
 	glLinkProgram(sha->prog);
 
-	print_program_info_log(sha->prog);
+	print_info_log(sha->prog, glGetProgramiv, glGetProgramInfoLog, "Program");
 
 	cache_uniforms(sha);
 
-	hashtable_set_string(resources.shaders, name, sha);
-}
-
-void cache_uniforms(Shader *sha) {
-	int i, maxlen = 0;
-	GLint tmpi;
-	GLenum tmpt;
-
-	glGetProgramiv(sha->prog, GL_ACTIVE_UNIFORMS, &sha->unicount);
-	glGetProgramiv(sha->prog, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxlen);
-
-	sha->uniforms = calloc(sizeof(Uniform), sha->unicount);
-
-	for(i = 0; i < sha->unicount; i++) {
-		sha->uniforms[i].name = malloc(maxlen);
-		memset(sha->uniforms[i].name, 0, maxlen);
-
-		glGetActiveUniform(sha->prog, i, maxlen, NULL, &tmpi, &tmpt, sha->uniforms[i].name);
-		sha->uniforms[i].location = glGetUniformLocation(sha->prog, sha->uniforms[i].name);
-	}
+	return sha;
 }
 
 int uniloc(Shader *sha, const char *name) {
-	int i;
-	for(i = 0; i < sha->unicount; i++)
-		if(strcmp(sha->uniforms[i].name, name) == 0)
-			return sha->uniforms[i].location;
-
-	return -1;
+	return (intptr_t)hashtable_get_string(sha->uniforms, name) - 1;
 }
 
-Shader *get_shader(const char *name) {
-	if(config_get_int(CONFIG_NO_SHADER))
-		return NULL;
-
-	return hashtable_get_string(resources.shaders, name);
-}
-
-void* delete_shader(void *name, void *vsha, void *arg) {
-	Shader *sha = vsha;
-	glDeleteProgram((sha)->prog);
-
-	for(int i = 0; i < sha->unicount; i++)
-		free(sha->uniforms[i].name);
-	free(sha->uniforms);
-
-	free(sha);
-	return NULL;
-}
-
-void delete_shaders(void) {
-	resources_delete_and_unset_all(resources.shaders, delete_shader, NULL);
+Shader* get_shader(const char *name) {
+	return get_resource(RES_SHADER, name, RESF_REQUIRED)->shader;
 }

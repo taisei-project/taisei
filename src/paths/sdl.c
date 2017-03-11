@@ -39,21 +39,13 @@ const char *get_replays_path(void) {
 void init_paths(void) {
 #ifdef RELATIVE
 	char *basedir = SDL_GetBasePath();
-	content_path = malloc(strlen(basedir) + strlen(DATA_DIR) + 1);
-	strcpy(content_path, basedir);
-	strcat(content_path, DATA_DIR);
+	content_path = strjoin(basedir, DATA_DIR, NULL);
 	free(basedir);
 #else
 	content_path = FILE_PREFIX;
 #endif
 
 	conf_path = SDL_GetPrefPath("", "taisei");
-
-	scr_path = malloc(strlen(SCR_DIR) + strlen(get_config_path()) + 1);
-	strcpy(scr_path, get_config_path());
-	strcat(scr_path, SCR_DIR);
-
-	rpy_path = malloc(strlen(RPY_DIR) + strlen(get_config_path()) + 1);
-	strcpy(rpy_path, get_config_path());
-	strcat(rpy_path, RPY_DIR);
+	scr_path = strjoin(conf_path, SCR_DIR, NULL);
+	rpy_path = strjoin(conf_path, RPY_DIR, NULL);
 }

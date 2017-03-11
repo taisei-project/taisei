@@ -68,6 +68,10 @@ void draw_laser_curve_instanced(Laser *l) {
 		t = 0;
 	}
 
+	if(c < 0) {
+		return;
+	}
+
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -143,7 +147,7 @@ void draw_lasers(void) {
 	Laser *laser;
 
 	for(laser = global.lasers; laser; laser = laser->next) {
-		if(laser->shader && !config_get_int(CONFIG_NO_SHADER) && glext.draw_instanced)
+		if(laser->shader && glext.draw_instanced)
 			draw_laser_curve_instanced(laser);
 		else
 			draw_laser_curve(laser);

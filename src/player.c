@@ -331,10 +331,8 @@ bool player_applymovement_gamepad(Player *plr) {
 	if(cabs(direction) > 1)
 		direction /= cabs(direction);
 
-	double real = creal(direction);
-	double imag = cimag(direction);
-	int sr = SIGN(real);
-	int si = SIGN(imag);
+	int sr = sign(creal(direction));
+	int si = sign(cimag(direction));
 
 	player_setinputflag(plr, KEY_UP,    si == -1);
 	player_setinputflag(plr, KEY_DOWN,  si ==  1);

@@ -8,7 +8,7 @@
 #ifndef PROJECTILE
 #define PROJECTILE
 
-#include "tscomplex.h"
+#include "util.h"
 #include "resource/texture.h"
 #include "color.h"
 

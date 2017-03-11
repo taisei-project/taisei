@@ -17,6 +17,14 @@ void delete_element(void **dest, void *e);
 void delete_all_elements(void **dest, void (callback)(void **, void *));
 void delete_all_elements_witharg(void **dest, void (callback)(void **, void *, void *), void *arg);
 
+typedef struct ListContainer {
+    void *next;
+    void *prev;
+    void *data;
+} ListContainer;
+
+ListContainer* create_container(ListContainer **dest);
+
 typedef struct {
 	void *ptr;
 	int refs;

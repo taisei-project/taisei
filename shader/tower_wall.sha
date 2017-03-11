@@ -6,7 +6,7 @@ varying vec4 d;
 void main(void) {
 	d = gl_ModelViewMatrix * gl_Vertex;
 	gl_Position = gl_ProjectionMatrix * d;
-		
+
 	TexCoord0 = gl_TextureMatrix[0] * gl_MultiTexCoord0;
 }
 
@@ -14,13 +14,12 @@ void main(void) {
 #version 110
 
 uniform sampler2D tex;
-uniform float lendiv;
 
 varying vec4 d;
 varying vec4 TexCoord0;
 
 void main(void) {
-	vec4 texel = texture2D(tex, TexCoord0.xy);	
+	vec4 texel = texture2D(tex, TexCoord0.xy);
 	float f = min(1.0, length(d)/3000.0);
 	gl_FragColor = mix(vec4(1.0), texel, 1.0-f);
 }

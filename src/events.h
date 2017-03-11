@@ -9,6 +9,8 @@
 #ifndef EVENTS_H
 #define EVENTS_H
 
+#include "config.h"
+
 typedef enum {
 	EF_Keyboard 	= 1,
 	EF_Text			= 2,
@@ -52,5 +54,6 @@ typedef enum {
 
 typedef void(*EventHandler)(EventType, int, void*);
 void handle_events(EventHandler handler, EventFlags flags, void *arg);
+bool gamekeypressed(KeyIndex key);
 
 #endif

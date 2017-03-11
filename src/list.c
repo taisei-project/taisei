@@ -38,6 +38,10 @@ void *create_element(void **dest, int size) {
 	return e;
 }
 
+ListContainer* create_container(ListContainer **dest) {
+	return create_element((void**)dest, sizeof(ListContainer));
+}
+
 void delete_element(void **dest, void *e) {
 	if(((List *)e)->prev != NULL)
 		((List *)((List *)e)->prev)->next = ((List *)e)->next;

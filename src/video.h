@@ -42,5 +42,6 @@ void video_set_fullscreen(bool);
 void video_toggle_fullscreen(void);
 void video_resize(int w, int h);
 void video_update_vsync(void);
+void video_take_screenshot(void);
 
 #endif

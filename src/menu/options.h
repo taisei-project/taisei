@@ -16,8 +16,10 @@ void draw_options_menu(MenuData *m);
 
 #define OPTIONS_TEXT_INPUT_BUFSIZE 50
 
-typedef int (*BindingGetter)(void*);
-typedef int (*BindingSetter)(void*, int);
+typedef struct OptionBinding OptionBinding;
+
+typedef int (*BindingGetter)(OptionBinding*);
+typedef int (*BindingSetter)(OptionBinding*, int);
 typedef bool (*BindingDependence)(void);
 
 typedef enum BindingType {
