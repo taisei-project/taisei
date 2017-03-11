@@ -22,15 +22,21 @@ bool check_animation_path(const char *path) {
 }
 
 void* load_animation(const char *filename, unsigned int flags) {
-	Animation *ani = malloc(sizeof(Animation));
-
 	char *basename = resource_util_basename(ANI_PATH_PREFIX, filename);
 	char name[strlen(basename) + 1];
 	strcpy(name, basename);
 
-#define ANIFAIL(what) { warnx("load_animation(): bad '" what "' in animation '%s'", basename); free(basename); return NULL; }
-
 	Hashtable *ht = parse_keyvalue_file(filename, 5);
+
+	if(!ht) {
+		warnx("load_animation(): parse_keyvalue_file() failed");
+		free(basename);
+		return NULL;
+	}
+
+#define ANIFAIL(what) { warnx("load_animation(): bad '" what "' in animation '%s'", basename); free(ani); free(basename); return NULL; }
+
+	Animation *ani = malloc(sizeof(Animation));
 	ani->rows = atoi((char*)hashtable_get_string(ht, "rows"));
 	ani->cols = atoi((char*)hashtable_get_string(ht, "cols"));
 	ani->speed = atoi((char*)hashtable_get_string(ht, "speed"));
@@ -43,6 +49,7 @@ void* load_animation(const char *filename, unsigned int flags) {
 	if(ani->speed == 0) {
 		warnx("load_animation(): animation speed of %s == 0. relativity?", name);
 		free(basename);
+		free(ani);
 		return NULL;
 	}
 
