@@ -6,6 +6,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <zlib.h> // compiling under mingw may fail without this...
+#include <SDL.h>
+#include "hashtable.h"
 
 //
 // compatibility
@@ -92,7 +94,13 @@ void fade_out(float f);
 // i/o utils
 //
 
+typedef void (*KVCallback)(const char *key, const char *value, void *data);
+
 char* read_all(const char *filename, int *size);
+bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data);
+bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *data);
+Hashtable* parse_keyvalue_stream(SDL_RWops *strm);
+Hashtable* parse_keyvalue_file(const char *filename);
 
 //
 // misc utils

@@ -269,8 +269,12 @@ static void config_delete_unknown_entries(void) {
 	delete_all_elements((void**)&unknowndefs, config_delete_unknown_entry);
 }
 
+static char* config_path(const char *filename) {
+	return strjoin(get_config_path(), "/", filename, NULL);
+}
+
 static FILE* config_open(const char *filename, const char *mode) {
-	char *buf = strjoin(get_config_path(), "/", filename, NULL);
+	char *buf = config_path(filename);
 	FILE *out = fopen(buf, mode);
 
 	free(buf);
@@ -327,7 +331,7 @@ void config_save(const char *filename) {
 #define INTOF(s)   ((int)strtol(s, NULL, 10))
 #define FLOATOF(s) ((float)strtod(s, NULL))
 
-static void config_set(const char *key, const char *val) {
+static void config_set(const char *key, const char *val, void *data) {
 	ConfigEntry *e = config_find_entry(key);
 
 	if(!e) {
@@ -367,67 +371,10 @@ static void config_set(const char *key, const char *val) {
 #undef FLOATOF
 
 void config_load(const char *filename) {
-	FILE *in = config_open(filename, "r");
-	int c, i = 0, found, line = 0;
-	char buf[CONFIG_LOAD_BUFSIZE];
-	char key[CONFIG_LOAD_BUFSIZE];
-	char val[CONFIG_LOAD_BUFSIZE];
-
+	char *path = config_path(filename);
 	config_init();
-
-	if(!in) {
-		return;
-	}
-
-	while((c = fgetc(in)) != EOF) {
-		if(c == '#' && !i) {
-			i = 0;
-			while(fgetc(in) != '\n');
-		} else if(c == ' ') {
-			if(!i) SYNTAXERROR
-
-			buf[i] = 0;
-			i = 0;
-			strcpy(key, buf);
-
-			found = 0;
-			while((c = fgetc(in)) != EOF) {
-				if(c == '=') {
-					if(++found > 1) SYNTAXERROR
-				} else if(c != ' ') {
-					if(!found || c == '\n') SYNTAXERROR
-
-					do {
-						if(c == '\n') {
-							if(!i) SYNTAXERROR
-
-							buf[i] = 0;
-							i = 0;
-							strcpy(val, buf);
-							found = 0;
-							++line;
-
-							config_set(key, val);
-							break;
-						} else {
-							buf[i++] = c;
-							if(i == CONFIG_LOAD_BUFSIZE)
-								BUFFERERROR
-						}
-					} while((c = fgetc(in)) != EOF);
-
-					break;
-				}
-			} if(found) SYNTAXERROR
-		} else {
-			buf[i++] = c;
-			if(i == CONFIG_LOAD_BUFSIZE)
-				BUFFERERROR
-		}
-	}
-
-end:
-	fclose(in);
+	parse_keyvalue_file_cb(path, config_set, NULL);
+	free(path);
 }
 
 #undef SYNTAXERROR

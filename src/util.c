@@ -252,6 +252,107 @@ char* read_all(const char *filename, int *outsize) {
     return text;
 }
 
+bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data) {
+    const size_t bufsize = 128;
+
+#define SYNTAXERROR { warnx("%s(): syntax error on line %i, aborted! [%s:%i]\n", __func__, line, __FILE__, __LINE__); return false; }
+#define BUFFERERROR { warnx("%s(): string exceed the limit of %i, aborted! [%s:%i]", __func__, bufsize, __FILE__, __LINE__); return false; }
+
+    int i = 0, found, line = 0;
+    char c, buf[bufsize], key[bufsize], val[bufsize];
+
+    while(c = (char)SDL_ReadU8(strm)) {
+        if(c == '#' && !i) {
+            i = 0;
+            while((char)SDL_ReadU8(strm) != '\n');
+        } else if(c == ' ') {
+            if(!i) SYNTAXERROR
+
+            buf[i] = 0;
+            i = 0;
+            strcpy(key, buf);
+
+            found = 0;
+            while(c = (char)SDL_ReadU8(strm)) {
+                if(c == '=') {
+                    if(++found > 1) SYNTAXERROR
+                } else if(c != ' ') {
+                    if(!found || c == '\n') SYNTAXERROR
+
+                    do {
+                        if(c == '\n') {
+                            if(!i) SYNTAXERROR
+
+                            buf[i] = 0;
+                            i = 0;
+                            strcpy(val, buf);
+                            found = 0;
+                            ++line;
+
+                            callback(key, val, data);
+                            break;
+                        } else {
+                            buf[i++] = c;
+                            if(i == bufsize)
+                                BUFFERERROR
+                        }
+                    } while(c = (char)SDL_ReadU8(strm));
+
+                    break;
+                }
+            } if(found) SYNTAXERROR
+        } else {
+            buf[i++] = c;
+            if(i == bufsize)
+                BUFFERERROR
+        }
+    }
+
+    return true;
+
+#undef SYNTAXERROR
+#undef BUFFERERROR
+}
+
+bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *data) {
+    SDL_RWops *strm = SDL_RWFromFile(filename, "r");
+
+    if(!strm) {
+        warnx("parse_keyvalue_file_cb(): SDL_RWFromFile() failed: %s", SDL_GetError());
+        return false;
+    }
+
+    bool status = parse_keyvalue_stream_cb(strm, callback, data);
+    SDL_RWclose(strm);
+    return status;
+}
+
+static void kvcallback_hashtable(const char *key, const char *val, Hashtable *ht) {
+    hashtable_set_string(ht, key, (void*)val);
+}
+
+Hashtable* parse_keyvalue_stream(SDL_RWops *strm) {
+    Hashtable *ht = hashtable_new_stringkeys(37);
+
+    if(!parse_keyvalue_stream_cb(strm, (KVCallback)kvcallback_hashtable, ht)) {
+        free(ht);
+        ht = NULL;
+    }
+
+    return ht;
+}
+
+Hashtable* parse_keyvalue_file(const char *filename) {
+    Hashtable *ht = hashtable_new_stringkeys(37);
+
+    if(!parse_keyvalue_file_cb(filename, (KVCallback)kvcallback_hashtable, ht)) {
+        free(ht);
+        ht = NULL;
+    }
+
+    return ht;
+}
+
 //
 // misc utils
 //
