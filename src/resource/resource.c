@@ -210,7 +210,7 @@ void init_resources(void) {
 	);
 
 	register_handler(
-		RES_ANIM, ANI_PATH_PREFIX, load_animation, free, animation_name, animation_path, check_animation_path, 23
+		RES_ANIM, ANI_PATH_PREFIX, load_animation, free, NULL, animation_path, check_animation_path, 23
 	);
 
 	register_handler(

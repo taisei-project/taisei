@@ -328,7 +328,7 @@ bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *dat
 }
 
 static void kvcallback_hashtable(const char *key, const char *val, Hashtable *ht) {
-    hashtable_set_string(ht, key, (void*)val);
+    hashtable_set_string(ht, key, strdup((void*)val));
 }
 
 Hashtable* parse_keyvalue_stream(SDL_RWops *strm) {
