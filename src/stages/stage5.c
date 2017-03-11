@@ -162,6 +162,7 @@ StageProcs stage5_procs = {
 };
 
 StageProcs stage5_spell_procs = {
+	.preload = stage5_preload,
 	.begin = stage5_start,
 	.end = stage5_end,
 	.draw = stage5_draw,

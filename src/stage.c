@@ -641,6 +641,7 @@ void stage_finish(int gameover) {
 void stage_loop(StageInfo *stage) {
 	assert(stage);
 	assert(stage->procs);
+	assert(stage->procs->preload);
 	assert(stage->procs->begin);
 	assert(stage->procs->end);
 	assert(stage->procs->draw);
@@ -655,6 +656,8 @@ void stage_loop(StageInfo *stage) {
 
 	// I really want to separate all of the game state from the global struct sometime
 	global.stage = stage;
+
+	stage->procs->preload();
 
 	uint32_t seed = (uint32_t)time(0);
 	tsrand_switch(&global.rand_game);
@@ -689,12 +692,6 @@ void stage_loop(StageInfo *stage) {
 		init_player(&global.plr);
 		replay_stage_sync_player_state(stg, &global.plr);
 		stg->playpos = 0;
-	}
-
-	if (stage->procs->preload)
-	{
-		printf("Loading resources for stage:\n");
-		stage->procs->preload();
 	}
 
 	Enemy *e = global.plr.slaves, *tmp;

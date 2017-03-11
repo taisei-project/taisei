@@ -60,7 +60,7 @@ void stage1_bg_draw(Vector pos) {
 		draw_boss(global.boss);
 	glPopMatrix();
 	glEnable(GL_CULL_FACE);
-	
+
 	glPushMatrix();
 	glScalef(1200,3000,1);
 	glColor4f(0,0.1,.1,0.8);
@@ -133,7 +133,7 @@ void stage1_reed_draw(Vector pos) {
 //glRotatef(90,0,0,1);
 	glScalef(80,80,80);
 	glColor4f(0.,0.05,0.05,1);
-	
+
 	draw_model("reeds");
 	glTranslatef(0,-d/80,0);
 	glScalef(1,-1,1);
@@ -197,6 +197,7 @@ StageProcs stage1_procs = {
 };
 
 StageProcs stage1_spell_procs = {
+	.preload = stage1_preload,
 	.begin = stage1_start,
 	.end = stage1_end,
 	.draw = stage1_draw,
