@@ -5,7 +5,6 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
-#include <dirent.h>
 #include "animation.h"
 #include "texture.h"
 #include "global.h"

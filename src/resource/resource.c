@@ -5,7 +5,6 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
-#include <dirent.h>
 #include "resource.h"
 #include <sys/types.h>
 #include <sys/stat.h>
