@@ -167,6 +167,21 @@ void stage6_start(void) {
 
 }
 
+void stage6_preload(void) {
+	get_resource(RES_BGM,     "bgm_stage6",              RESF_TRANSIENT);
+	get_resource(RES_BGM,     "bgm_stage6boss",          RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage6/baryon_connector", RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage6/baryon",           RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage6/scythecircle",     RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage6/scythe",           RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage6/sky",              RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage6/spellbg_chalk",    RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage6/spellbg_classic",  RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage6/spellbg_modern",   RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage6/towertop",         RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage6/towerwall",        RESF_REQUIRED | RESF_TRANSIENT);
+}
+
 void stage6_end(void) {
 	free_stage3d(&bgcontext);
 }
@@ -228,6 +243,7 @@ ShaderRule stage6_shaders[] = { NULL };
 
 StageProcs stage6_procs = {
 	.begin = stage6_start,
+	.preload = stage6_preload,
 	.end = stage6_end,
 	.draw = stage6_draw,
 	.event = stage6_events,

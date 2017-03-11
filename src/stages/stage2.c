@@ -173,6 +173,17 @@ void stage2_start(void) {
 	add_model(&bgcontext, stage2_bg_leaves_draw, stage2_bg_pos);
 }
 
+void stage2_preload(void) {
+	get_resource(RES_BGM,     "bgm_stage2",        RESF_TRANSIENT);
+	get_resource(RES_BGM,     "bgm_stage2boss",    RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage2/border",     RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage2/leaves",     RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage2/roadgrass",  RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage2/roadstones", RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage2/spellbg1",   RESF_REQUIRED | RESF_TRANSIENT);
+	get_resource(RES_TEXTURE, "stage2/spellbg2",   RESF_REQUIRED | RESF_TRANSIENT);
+}
+
 void stage2_end(void) {
 	free_stage3d(&bgcontext);
 }
@@ -211,6 +222,7 @@ ShaderRule stage2_shaders[] = { stage2_fog, stage2_bloom, NULL };
 
 StageProcs stage2_procs = {
 	.begin = stage2_start,
+	.preload = stage2_preload,
 	.end = stage2_end,
 	.draw = stage2_draw,
 	.event = stage2_events,
