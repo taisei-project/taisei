@@ -331,8 +331,8 @@ static void kvcallback_hashtable(const char *key, const char *val, Hashtable *ht
     hashtable_set_string(ht, key, strdup((void*)val));
 }
 
-Hashtable* parse_keyvalue_stream(SDL_RWops *strm) {
-    Hashtable *ht = hashtable_new_stringkeys(37);
+Hashtable* parse_keyvalue_stream(SDL_RWops *strm, size_t tablesize) {
+    Hashtable *ht = hashtable_new_stringkeys(tablesize);
 
     if(!parse_keyvalue_stream_cb(strm, (KVCallback)kvcallback_hashtable, ht)) {
         free(ht);
@@ -342,8 +342,8 @@ Hashtable* parse_keyvalue_stream(SDL_RWops *strm) {
     return ht;
 }
 
-Hashtable* parse_keyvalue_file(const char *filename) {
-    Hashtable *ht = hashtable_new_stringkeys(37);
+Hashtable* parse_keyvalue_file(const char *filename, size_t tablesize) {
+    Hashtable *ht = hashtable_new_stringkeys(tablesize);
 
     if(!parse_keyvalue_file_cb(filename, (KVCallback)kvcallback_hashtable, ht)) {
         free(ht);

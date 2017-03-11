@@ -99,8 +99,8 @@ typedef void (*KVCallback)(const char *key, const char *value, void *data);
 char* read_all(const char *filename, int *size);
 bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data);
 bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *data);
-Hashtable* parse_keyvalue_stream(SDL_RWops *strm);
-Hashtable* parse_keyvalue_file(const char *filename);
+Hashtable* parse_keyvalue_stream(SDL_RWops *strm, size_t tablesize);
+Hashtable* parse_keyvalue_file(const char *filename, size_t tablesize);
 
 //
 // misc utils

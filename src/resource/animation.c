@@ -31,11 +31,12 @@ void* load_animation(const char *filename, unsigned int flags) {
 
 #define ANIFAIL(what) { warnx("load_animation(): bad '" what "' in animation '%s'", basename); free(basename); return NULL; }
 
-	Hashtable *ht = parse_keyvalue_file(filename);
+	Hashtable *ht = parse_keyvalue_file(filename, 5);
 	ani->rows = atoi((char*)hashtable_get_string(ht, "rows"));
 	ani->cols = atoi((char*)hashtable_get_string(ht, "cols"));
 	ani->speed = atoi((char*)hashtable_get_string(ht, "speed"));
 	hashtable_foreach(ht, hashtable_iter_free_data, NULL);
+	hashtable_print_stringkeys(ht);
 	hashtable_free(ht);
 
 	if(ani->rows < 1) ANIFAIL("rows")
