@@ -273,7 +273,7 @@ void video_take_screenshot(void) {
 		memcpy(row_pointers[y], data + rw*3*(h-1-y), w*3);
 	}
 
-	png_init_rwops(png_ptr, out);
+	png_init_rwops_write(png_ptr, out);
 	png_set_rows(png_ptr, info_ptr, row_pointers);
 	png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
 

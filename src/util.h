@@ -97,7 +97,8 @@ bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data);
 bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *data);
 Hashtable* parse_keyvalue_stream(SDL_RWops *strm, size_t tablesize);
 Hashtable* parse_keyvalue_file(const char *filename, size_t tablesize);
-void png_init_rwops(png_structp png, SDL_RWops *rwops);
+void png_init_rwops_read(png_structp png, SDL_RWops *rwops);
+void png_init_rwops_write(png_structp png, SDL_RWops *rwops);
 
 char* SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize);
 

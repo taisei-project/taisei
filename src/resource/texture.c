@@ -75,7 +75,7 @@ static SDL_Surface* load_png_p(const char *filename, SDL_RWops *rwops) {
 		PNGFAIL("png_create_info_struct() failed")
 	}
 
-	png_init_rwops(png_ptr, rwops);
+	png_init_rwops_read(png_ptr, rwops);
 	png_read_info(png_ptr, info_ptr);
 
 	int colortype = png_get_color_type(png_ptr,info_ptr);

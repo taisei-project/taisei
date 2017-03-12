@@ -365,9 +365,12 @@ static void png_rwops_read_data(png_structp png_ptr, png_bytep data, png_size_t 
     SDL_RWread(out, data, length, 1);
 }
 
-void png_init_rwops(png_structp png, SDL_RWops *rwops) {
-    png_set_write_fn(png, rwops, png_rwops_write_data, png_rwops_flush_data);
+void png_init_rwops_read(png_structp png, SDL_RWops *rwops) {
     png_set_read_fn(png, rwops, png_rwops_read_data);
+}
+
+void png_init_rwops_write(png_structp png, SDL_RWops *rwops) {
+    png_set_write_fn(png, rwops, png_rwops_write_data, png_rwops_flush_data);
 }
 
 char* SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize) {
