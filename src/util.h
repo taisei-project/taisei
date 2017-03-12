@@ -33,6 +33,7 @@ bool strstartswith(const char *s, const char *p)  __attribute__((pure));
 bool strendswith_any(const char *s, const char **earray)  __attribute__((pure));
 void stralloc(char **dest, const char *src);
 char* strjoin(const char *first, ...) __attribute__((sentinel));
+char* vstrfmt(const char *fmt, va_list args);
 char* strfmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 void strip_trailing_slashes(char *buf);
 #undef strdup
@@ -101,6 +102,7 @@ void png_init_rwops_read(png_structp png, SDL_RWops *rwops);
 void png_init_rwops_write(png_structp png, SDL_RWops *rwops);
 
 char* SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize);
+size_t SDL_RWprintf(SDL_RWops *rwops, const char* fmt, ...) __attribute__((format(printf, 2, 3)));
 
 //
 // misc utils

@@ -75,7 +75,7 @@ char* strjoin(const char *first, ...) {
     return str;
 }
 
-char* strfmt(const char *fmt, ...) {
+char* vstrfmt(const char *fmt, va_list args) {
     size_t written = 0;
     size_t fmtlen = strlen(fmt);
     size_t asize = 1;
@@ -87,15 +87,22 @@ char* strfmt(const char *fmt, ...) {
     do {
         asize *= 2;
         out = realloc(out, asize);
-        va_list args;
-
-        va_start(args, fmt);
-        written = vsnprintf(out, asize, fmt, args);
-        va_end(args);
+        va_list nargs;
+        va_copy(nargs, args);
+        written = vsnprintf(out, asize, fmt, nargs);
+        va_end(nargs);
 
     } while(written >= asize);
 
     return realloc(out, strlen(out) + 1);
+}
+
+char* strfmt(const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    char *str = vstrfmt(fmt, args);
+    va_end(args);
+    return str;
 }
 
 char* copy_segment(const char *text, const char *delim, int *size) {
@@ -387,6 +394,18 @@ char* SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize) {
 
     *ptr = 0;
     return buf;
+}
+
+size_t SDL_RWprintf(SDL_RWops *rwops, const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    char *str = vstrfmt(fmt, args);
+    va_end(args);
+
+    size_t ret = SDL_RWwrite(rwops, str, 1, strlen(str));
+    free(str);
+
+    return ret;
 }
 
 //
