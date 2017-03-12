@@ -15,5 +15,6 @@ void draw_main_menu_bg(MenuData *m);
 void draw_main_menu(MenuData *m);
 void main_menu_update_spellpractice(void);
 void draw_loading_screen(void);
+void menu_preload(void);
 
 #endif

@@ -32,10 +32,13 @@ typedef enum ResourceType {
 } ResourceType;
 
 typedef enum ResourceFlags {
-	RESF_REQUIRED = 1,
-	RESF_OVERRIDE = 2,
-	// RESF_PERMANENT = 4;
+	RESF_OVERRIDE = 1,
+	RESF_OPTIONAL = 2,
+	RESF_PERMANENT = 4,
+	RESF_PRELOAD = 8,
 } ResourceFlags;
+
+#define RESF_DEFAULT 0
 
 // All paths are relative to the current working directory, which can assumed to be the resources directory,
 // unless mentioned otherwise.
@@ -56,7 +59,7 @@ typedef bool (*ResourceCheckFunc)(const char *path);
 
 // Loads a resource at path and returns a pointer to it.
 // Must return NULL and not crash the program on failure.
-typedef void* (*ResourceLoadFunc)(const char *path);
+typedef void* (*ResourceLoadFunc)(const char *path, unsigned int flags);
 
 // Unloads a resource, freeing all allocated to it memory.
 typedef void (*ResourceUnloadFunc)(void *res);
@@ -97,10 +100,12 @@ extern Resources resources;
 
 void init_resources(void);
 void load_resources(void);
-void free_resources(void);
+void free_resources(bool all);
 
 Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags);
 Resource* insert_resource(ResourceType type, const char *name, void *data, ResourceFlags flags, const char *source);
+void preload_resource(ResourceType type, const char *name, ResourceFlags flags);
+void preload_resources(ResourceType type, ResourceFlags flags, const char *firstname, ...) __attribute__((sentinel));
 
 void resource_util_strip_ext(char *path);
 char* resource_util_basename(const char *prefix, const char *path);

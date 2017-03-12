@@ -17,7 +17,7 @@ typedef struct Sound {
 
 char* sound_path(const char *name);
 bool check_sound_path(const char *path);
-void* load_sound(const char *path);
+void* load_sound(const char *path, unsigned int flags);
 void unload_sound(void *snd);
 
 #define SFX_PATH_PREFIX "sfx/"

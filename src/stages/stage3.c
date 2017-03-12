@@ -116,6 +116,27 @@ void stage3_start(void) {
 //	stgstate.fog_exp = 5.0;
 }
 
+void stage3_preload(void) {
+	preload_resources(RES_BGM, RESF_OPTIONAL, "bgm_stage3", "bgm_stage3boss", NULL);
+	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+		"stage3/border",
+		"stage3/spellbg1",
+		"stage3/spellbg2",
+		"stage3/wspellbg",
+		"stage3/wspellclouds",
+		"stage3/wspellswarm",
+		"dialog/wriggle",
+	NULL);
+	preload_resources(RES_SHADER, RESF_DEFAULT,
+		"tunnel",
+		"zbuf_fog",
+	NULL);
+	preload_resources(RES_ANIM, RESF_DEFAULT,
+		"scuttle",
+		"wriggleex",
+	NULL);
+}
+
 void stage3_end(void) {
 	free_stage3d(&bgcontext);
 }
@@ -279,6 +300,7 @@ ShaderRule stage3_shaders[] = { stage3_fog, stage3_tunnel, NULL };
 
 StageProcs stage3_procs = {
 	.begin = stage3_start,
+	.preload = stage3_preload,
 	.end = stage3_end,
 	.draw = stage3_draw,
 	.event = stage3_events,
@@ -287,6 +309,7 @@ StageProcs stage3_procs = {
 };
 
 StageProcs stage3_spell_procs = {
+	.preload = stage3_preload,
 	.begin = stage3_start,
 	.end = stage3_end,
 	.draw = stage3_draw,

@@ -60,7 +60,7 @@ void stage1_bg_draw(Vector pos) {
 		draw_boss(global.boss);
 	glPopMatrix();
 	glEnable(GL_CULL_FACE);
-	
+
 	glPushMatrix();
 	glScalef(1200,3000,1);
 	glColor4f(0,0.1,.1,0.8);
@@ -133,7 +133,7 @@ void stage1_reed_draw(Vector pos) {
 //glRotatef(90,0,0,1);
 	glScalef(80,80,80);
 	glColor4f(0.,0.05,0.05,1);
-	
+
 	draw_model("reeds");
 	glTranslatef(0,-d/80,0);
 	glScalef(1,-1,1);
@@ -159,6 +159,25 @@ void stage1_start(void) {
 	bgcontext.cv[1] = 4;
 }
 
+void stage1_preload(void) {
+	preload_resources(RES_BGM, RESF_OPTIONAL, "bgm_stage1", "bgm_stage1boss", NULL);
+	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+		"stage1/cirnobg",
+		"stage1/fog",
+		"stage1/snowlayer",
+		"dialog/cirno",
+	NULL);
+	preload_resources(RES_MODEL, RESF_DEFAULT,
+		"reeds",
+	NULL);
+	preload_resources(RES_SHADER, RESF_DEFAULT,
+		"zbuf_fog",
+	NULL);
+	preload_resources(RES_ANIM, RESF_DEFAULT,
+		"cirno",
+	NULL);
+}
+
 void stage1_end(void) {
 	free_stage3d(&bgcontext);
 }
@@ -180,6 +199,7 @@ ShaderRule stage1_shaders[] = { stage1_fog, NULL };
 
 StageProcs stage1_procs = {
 	.begin = stage1_start,
+	.preload = stage1_preload,
 	.end = stage1_end,
 	.draw = stage1_draw,
 	.event = stage1_events,
@@ -188,6 +208,7 @@ StageProcs stage1_procs = {
 };
 
 StageProcs stage1_spell_procs = {
+	.preload = stage1_preload,
 	.begin = stage1_start,
 	.end = stage1_end,
 	.draw = stage1_draw,

@@ -26,8 +26,7 @@ typedef struct Animation {
 
 char* animation_path(const char *name);
 bool check_animation_path(const char *path);
-void* load_animation(const char *filename);
-char* animation_name(const char *filename);
+void* load_animation(const char *filename, unsigned int flags);
 
 Animation *get_ani(const char *name);
 
@@ -35,5 +34,6 @@ void draw_animation(float x, float y, int row, const char *name);
 void draw_animation_p(float x, float y, int row, Animation *ani);
 
 #define ANI_PATH_PREFIX TEX_PATH_PREFIX
+#define ANI_EXTENSION ".ani"
 
 #endif

@@ -39,7 +39,7 @@ bool check_shader_path(const char *path) {
 
 static Shader* load_shader(const char *vheader, const char *fheader, const char *vtext, const char *ftext);
 
-void* load_shader_file(const char *path) {
+void* load_shader_file(const char *path, unsigned int flags) {
 	char *text, *vtext, *ftext, *delim;
 
 	text = read_all(path, NULL);
@@ -81,7 +81,7 @@ static char* get_snippet_header(void) {
 	}
 }
 
-void load_shader_snippets(const char *filename, const char *prefix) {
+void load_shader_snippets(const char *filename, const char *prefix, unsigned int flags) {
 	int size, vhsize = 0, vfsize = 0, fhsize = 0, ffsize = 0, ssize, prefixlen;
 	char *text, *vhead, *vfoot, *fhead, *ffoot;
 	char *sec, *name, *nend, *send;
@@ -160,7 +160,7 @@ void load_shader_snippets(const char *filename, const char *prefix) {
 		nbuf[nend-name+prefixlen] = 0;
 
 		Shader *sha = load_shader(get_snippet_header(), NULL, vtext, ftext);
-		insert_resource(RES_SHADER, nbuf, sha, 0, filename);
+		insert_resource(RES_SHADER, nbuf, sha, flags, filename);
 
 		free(nbuf);
 		free(vtext);
@@ -265,5 +265,5 @@ int uniloc(Shader *sha, const char *name) {
 }
 
 Shader* get_shader(const char *name) {
-	return get_resource(RES_SHADER, name, RESF_REQUIRED)->shader;
+	return get_resource(RES_SHADER, name, RESF_DEFAULT)->shader;
 }

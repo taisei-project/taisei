@@ -27,5 +27,6 @@ typedef enum {
 const char* difficulty_name(Difficulty diff);
 const char* difficulty_tex(Difficulty diff);
 Color difficulty_color(Difficulty diff);
+void difficulty_preload(void);
 
 #endif

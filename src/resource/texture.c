@@ -25,7 +25,7 @@ bool check_texture_path(const char *path) {
 	return strendswith(path, TEX_EXTENSION);
 }
 
-void* load_texture(const char *path) {
+void* load_texture(const char *path, unsigned int flags) {
 	SDL_Surface *surface = load_png(path);
 
 	if(surface == NULL) {
@@ -42,7 +42,7 @@ void* load_texture(const char *path) {
 }
 
 Texture* get_tex(const char *name) {
-	return get_resource(RES_TEXTURE, name, RESF_REQUIRED)->texture;
+	return get_resource(RES_TEXTURE, name, RESF_DEFAULT)->texture;
 }
 
 Texture* prefix_get_tex(const char *name, const char *prefix) {

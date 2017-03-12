@@ -245,3 +245,19 @@ Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move) {
 	a->info = info;
 	return a;
 }
+
+void boss_preload(void) {
+	preload_resources(RES_SFX, RESF_OPTIONAL,
+		"charge_generic",
+	NULL);
+
+	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+		"boss_spellcircle0",
+		"boss_circle",
+		"boss_indicator",
+	NULL);
+
+	preload_resources(RES_SHADER, RESF_DEFAULT,
+		"boss_zoom",
+	NULL);
+}

@@ -21,7 +21,7 @@ struct Texture {
 };
 
 char* texture_path(const char *name);
-void* load_texture(const char *path);
+void* load_texture(const char *path, unsigned int flags);
 bool check_texture_path(const char *path);
 
 void load_sdl_surf(SDL_Surface *surface, Texture *texture);

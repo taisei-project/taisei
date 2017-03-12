@@ -121,8 +121,14 @@ void ending_draw(Ending *e) {
 	draw_and_update_transition();
 }
 
+void ending_preload(void) {
+	preload_resource(RES_BGM, "bgm_ending", RESF_OPTIONAL);
+}
+
 void ending_loop(void) {
 	Ending e;
+
+	ending_preload();
 	create_ending(&e);
 
 	global.frames = 0;

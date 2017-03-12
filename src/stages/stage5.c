@@ -122,6 +122,27 @@ void stage5_start(void) {
 	stagedata.rad = 2800;
 }
 
+void stage5_preload(void) {
+	preload_resources(RES_BGM, RESF_OPTIONAL, "bgm_stage5", "bgm_stage5boss", NULL);
+	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+		"stage5/noise",
+		"stage5/spell_bg",
+		"stage5/spell_clouds",
+		"stage5/spell_lightning",
+		"stage5/tower",
+		"dialog/iku",
+	NULL);
+	preload_resources(RES_SHADER, RESF_DEFAULT,
+		"tower_light",
+	NULL);
+	preload_resources(RES_ANIM, RESF_DEFAULT,
+		"iku",
+	NULL);
+	preload_resources(RES_MODEL, RESF_DEFAULT,
+		"tower",
+	NULL);
+}
+
 void stage5_end(void) {
 	free_stage3d(&bgcontext);
 }
@@ -143,6 +164,7 @@ ShaderRule stage5_shaders[] = { NULL };
 
 StageProcs stage5_procs = {
 	.begin = stage5_start,
+	.preload = stage5_preload,
 	.end = stage5_end,
 	.draw = stage5_draw,
 	.event = stage5_events,
@@ -151,6 +173,7 @@ StageProcs stage5_procs = {
 };
 
 StageProcs stage5_spell_procs = {
+	.preload = stage5_preload,
 	.begin = stage5_start,
 	.end = stage5_end,
 	.draw = stage5_draw,
