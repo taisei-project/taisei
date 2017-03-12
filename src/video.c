@@ -221,8 +221,17 @@ void video_setmode(int w, int h, bool fs, bool resizable) {
 	_video_setmode(w, h, flags, false);
 }
 
+static void png_rwops_write_data(png_structp png_ptr, png_bytep data, png_size_t length) {
+	SDL_RWops *out = png_get_io_ptr(png_ptr);
+	SDL_RWwrite(out, data, length, 1);
+}
+
+static void png_rwops_flush_data(png_structp png_ptr) {
+	// no flush operation in SDL_RWops
+}
+
 void video_take_screenshot(void) {
-	FILE *out;
+	SDL_RWops *out;
 	char *data;
 	char outfile[128], *outpath;
 	time_t rawtime;
@@ -242,9 +251,8 @@ void video_take_screenshot(void) {
 	strftime(outfile, 128, "/taisei_%Y%m%d_%H-%M-%S_%Z.png", timeinfo);
 
 	outpath = strjoin(get_screenshots_path(), outfile, NULL);
-
 	printf("Saving screenshot as %s\n", outpath);
-	out = fopen(outpath, "wb");
+	out = SDL_RWFromFile(outpath, "w");
 	free(outpath);
 
 	if(!out) {
@@ -274,7 +282,7 @@ void video_take_screenshot(void) {
 		memcpy(row_pointers[y], data + rw*3*(h-1-y), w*3);
 	}
 
-	png_init_io(png_ptr, out);
+	png_set_write_fn(png_ptr, out, png_rwops_write_data, png_rwops_flush_data);
 	png_set_rows(png_ptr, info_ptr, row_pointers);
 	png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
 
@@ -286,7 +294,7 @@ void video_take_screenshot(void) {
 	png_destroy_write_struct(&png_ptr, &info_ptr);
 
 	free(data);
-	fclose(out);
+	SDL_RWclose(out);
 }
 
 bool video_isresizable(void) {
