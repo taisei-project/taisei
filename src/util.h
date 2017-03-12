@@ -26,11 +26,6 @@
 #define strlcat SDL_strlcat
 #define strlcpy SDL_strlcpy
 
-#undef strncat
-#undef strncpy
-#define strncat DO_NOT_USE_strncat_USE_strlcat
-#define strncpy DO_NOT_USE_strncpy_USE_strlcpy
-
 char* copy_segment(const char *text, const char *delim, int *size);
 bool strendswith(const char *s, const char *e)  __attribute__((pure));
 bool strstartswith(const char *s, const char *p)  __attribute__((pure));
@@ -107,5 +102,18 @@ Hashtable* parse_keyvalue_file(const char *filename, size_t tablesize);
 //
 
 int getenvint(const char *v) __attribute__((pure));
+
+//
+// safeguards against some dangerous practices
+//
+
+#undef fopen
+FILE* fopen() __attribute__((deprecated("Use SDL_RWFromFile instead")));
+
+#undef strncat
+char* strncat() __attribute__((deprecated("This function likely doesn't do what you expect, use strlcat")));
+
+#undef strncpy
+char* strncpy() __attribute__((deprecated("This function likely doesn't do what you expect, use strlcpy")));
 
 #endif
