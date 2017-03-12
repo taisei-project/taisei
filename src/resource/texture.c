@@ -82,18 +82,35 @@ static SDL_Surface* load_png(const char *filename) {
 	}
 
 	png_init_io(png_ptr, fp);
-	png_read_png(png_ptr, info_ptr, 0, NULL);
+	png_read_info(png_ptr, info_ptr);
 
+	int colortype = png_get_color_type(png_ptr,info_ptr);
+
+	if(colortype == PNG_COLOR_TYPE_PALETTE)
+		png_set_expand(png_ptr);
+	if (colortype == PNG_COLOR_TYPE_GRAY ||
+			colortype == PNG_COLOR_TYPE_GRAY_ALPHA)
+		png_set_gray_to_rgb(png_ptr);
+	if(!(colortype & PNG_COLOR_MASK_ALPHA))
+		png_set_filler(png_ptr, 0xff, PNG_FILLER_AFTER);
+
+	png_read_update_info(png_ptr, info_ptr);
+	
 	int width = png_get_image_width(png_ptr, info_ptr);
 	int height = png_get_image_height(png_ptr, info_ptr);
 	int depth = png_get_bit_depth(png_ptr, info_ptr);
 
-	png_bytep *row_pointers = png_get_rows(png_ptr, info_ptr);
+	
+	png_bytep row_pointers[height];
 
 	Uint32 *pixels = malloc(sizeof(Uint32)*width*height);
 
 	for(int i = 0; i < height; i++)
-		memcpy(&pixels[i*width], row_pointers[i], sizeof(Uint32)*width);
+		row_pointers[i] = (png_bytep)(pixels+i*width);
+	
+	png_read_image(png_ptr, row_pointers);
+	png_read_end(png_ptr, end_info);
+
 
 	Uint32 rmask, gmask, bmask, amask;
 
