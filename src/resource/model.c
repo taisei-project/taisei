@@ -100,7 +100,12 @@ static void free_obj(ObjFileData *data) {
 }
 
 static void parse_obj(const char *filename, ObjFileData *data) {
-	FILE *fp = fopen(filename, "rb");
+	SDL_RWops *rw = SDL_RWFromFile(filename, "r");
+
+	if(!rw) {
+		warnx("%s(): SDL_RWFromFile() failed: %s", __func__, SDL_GetError());
+		return;
+	}
 
 	char line[256];
 	Vector buf;
@@ -109,7 +114,7 @@ static void parse_obj(const char *filename, ObjFileData *data) {
 
 	memset(data, 0, sizeof(ObjFileData));
 
-	while(fgets(line, sizeof(line), fp)) {
+	while(SDL_RWgets(rw, line, sizeof(line))) {
 		linen++;
 
 		char *first;
@@ -192,7 +197,7 @@ static void parse_obj(const char *filename, ObjFileData *data) {
 		}
 	}
 
-	fclose(fp);
+	SDL_RWclose(rw);
 }
 
 Model* get_model(const char *name) {

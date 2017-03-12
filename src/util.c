@@ -370,6 +370,22 @@ void png_init_rwops(png_structp png, SDL_RWops *rwops) {
     png_set_read_fn(png, rwops, png_rwops_read_data);
 }
 
+char* SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize) {
+    char c, *ptr = buf, *end = buf + bufsize - 1;
+    assert(end > ptr);
+
+    while((c = SDL_ReadU8(rwops)) && ptr <= end) {
+        if((*ptr++ = c) == '\n')
+            break;
+    }
+
+    if(ptr == buf)
+        return NULL;
+
+    *ptr = 0;
+    return buf;
+}
+
 //
 // misc utils
 //
