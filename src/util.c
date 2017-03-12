@@ -351,6 +351,25 @@ Hashtable* parse_keyvalue_file(const char *filename, size_t tablesize) {
     return ht;
 }
 
+static void png_rwops_write_data(png_structp png_ptr, png_bytep data, png_size_t length) {
+    SDL_RWops *out = png_get_io_ptr(png_ptr);
+    SDL_RWwrite(out, data, length, 1);
+}
+
+static void png_rwops_flush_data(png_structp png_ptr) {
+    // no flush operation in SDL_RWops
+}
+
+static void png_rwops_read_data(png_structp png_ptr, png_bytep data, png_size_t length) {
+    SDL_RWops *out = png_get_io_ptr(png_ptr);
+    SDL_RWread(out, data, length, 1);
+}
+
+void png_init_rwops(png_structp png, SDL_RWops *rwops) {
+    png_set_write_fn(png, rwops, png_rwops_write_data, png_rwops_flush_data);
+    png_set_read_fn(png, rwops, png_rwops_read_data);
+}
+
 //
 // misc utils
 //

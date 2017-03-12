@@ -52,36 +52,30 @@ Texture* prefix_get_tex(const char *name, const char *prefix) {
 	return tex;
 }
 
-static SDL_Surface* load_png(const char *filename) {
+static SDL_Surface* load_png_p(const char *filename, SDL_RWops *rwops) {
 #define PNGFAIL(msg) { warnx("load_png(): couldn't load '%s': %s", filename, msg); return NULL; }
-
-	FILE *fp = fopen(filename, "rb");
-
-	if(!fp) {
-		PNGFAIL("fopen() failed")
+	if(!rwops) {
+		PNGFAIL(SDL_GetError())
 	}
 
 	png_structp png_ptr;
 	if(!(png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL))) {
-		fclose(fp);
 		PNGFAIL("png_create_read_struct() failed")
 	}
 
 	png_infop info_ptr;
 	if(!(info_ptr = png_create_info_struct(png_ptr))) {
-		fclose(fp);
 		png_destroy_read_struct(&png_ptr, NULL, NULL);
 		PNGFAIL("png_create_info_struct() failed")
 	}
 
 	png_infop end_info;
 	if(!(end_info = png_create_info_struct(png_ptr))) {
-		fclose(fp);
 		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 		PNGFAIL("png_create_info_struct() failed")
 	}
 
-	png_init_io(png_ptr, fp);
+	png_init_rwops(png_ptr, rwops);
 	png_read_info(png_ptr, info_ptr);
 
 	int colortype = png_get_color_type(png_ptr,info_ptr);
@@ -95,19 +89,19 @@ static SDL_Surface* load_png(const char *filename) {
 		png_set_filler(png_ptr, 0xff, PNG_FILLER_AFTER);
 
 	png_read_update_info(png_ptr, info_ptr);
-	
+
 	int width = png_get_image_width(png_ptr, info_ptr);
 	int height = png_get_image_height(png_ptr, info_ptr);
 	int depth = png_get_bit_depth(png_ptr, info_ptr);
 
-	
+
 	png_bytep row_pointers[height];
 
 	Uint32 *pixels = malloc(sizeof(Uint32)*width*height);
 
 	for(int i = 0; i < height; i++)
 		row_pointers[i] = (png_bytep)(pixels+i*width);
-	
+
 	png_read_image(png_ptr, row_pointers);
 	png_read_end(png_ptr, end_info);
 
@@ -129,15 +123,20 @@ static SDL_Surface* load_png(const char *filename) {
 	SDL_Surface *res = SDL_CreateRGBSurfaceFrom(pixels, width, height, depth*4, 0, rmask, gmask, bmask, amask);
 
 	if(!res) {
-		fclose(fp);
 		PNGFAIL(SDL_GetError())
 	}
 
-	fclose(fp);
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 
 	return res;
 #undef PNGFAIL
+}
+
+static SDL_Surface* load_png(const char *filename) {
+	SDL_RWops *rwops = SDL_RWFromFile(filename, "r");
+	SDL_Surface *surf = load_png_p(filename, rwops);
+	SDL_RWclose(rwops);
+	return surf;
 }
 
 void load_sdl_surf(SDL_Surface *surface, Texture *texture) {

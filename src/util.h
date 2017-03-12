@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <zlib.h> // compiling under mingw may fail without this...
+#include <png.h>
 #include <SDL.h>
 #include "hashtable.h"
 
@@ -96,6 +97,7 @@ bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data);
 bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *data);
 Hashtable* parse_keyvalue_stream(SDL_RWops *strm, size_t tablesize);
 Hashtable* parse_keyvalue_file(const char *filename, size_t tablesize);
+void png_init_rwops(png_structp png, SDL_RWops *rwops);
 
 //
 // misc utils

@@ -221,15 +221,6 @@ void video_setmode(int w, int h, bool fs, bool resizable) {
 	_video_setmode(w, h, flags, false);
 }
 
-static void png_rwops_write_data(png_structp png_ptr, png_bytep data, png_size_t length) {
-	SDL_RWops *out = png_get_io_ptr(png_ptr);
-	SDL_RWwrite(out, data, length, 1);
-}
-
-static void png_rwops_flush_data(png_structp png_ptr) {
-	// no flush operation in SDL_RWops
-}
-
 void video_take_screenshot(void) {
 	SDL_RWops *out;
 	char *data;
@@ -282,7 +273,7 @@ void video_take_screenshot(void) {
 		memcpy(row_pointers[y], data + rw*3*(h-1-y), w*3);
 	}
 
-	png_set_write_fn(png_ptr, out, png_rwops_write_data, png_rwops_flush_data);
+	png_init_rwops(png_ptr, out);
 	png_set_rows(png_ptr, info_ptr, row_pointers);
 	png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
 
