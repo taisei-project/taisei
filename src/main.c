@@ -7,6 +7,7 @@
 
 #include <sys/stat.h>
 #include <errno.h>
+#include <locale.h>
 #include "taisei_err.h"
 
 #include "global.h"
@@ -83,6 +84,8 @@ int run_tests(void) {
 #endif
 
 int main(int argc, char **argv) {
+	setlocale(LC_ALL, "C");
+
 	if(run_tests()) {
 		return 0;
 	}
