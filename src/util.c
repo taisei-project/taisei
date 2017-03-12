@@ -231,19 +231,17 @@ char* read_all(const char *filename, int *outsize) {
     char *text;
     size_t size;
 
-    FILE *file = fopen(filename, "r");
+    SDL_RWops *file = SDL_RWFromFile(filename, "r");
     if(file == NULL)
         errx(-1, "Error opening '%s'", filename);
 
-    fseek(file, 0, SEEK_END);
-    size = ftell(file);
-    fseek(file, 0, SEEK_SET);
+    size = SDL_RWsize(file);
 
     text = malloc(size+1);
-    fread(text, size, 1, file);
+    SDL_RWread(file, text, size, 1);
     text[size] = 0;
 
-    fclose(file);
+    SDL_RWclose(file);
 
     if(outsize) {
         *outsize = size;
