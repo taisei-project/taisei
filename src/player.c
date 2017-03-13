@@ -436,7 +436,7 @@ void player_preload(void) {
 	preload_resources(RES_SFX, flags | RESF_OPTIONAL,
 		"graze",
 		"death",
-		"shot",
+		"generic_shot",
 		"masterspark",
 	NULL);
 
