@@ -93,6 +93,7 @@ troll2:
         ending_loop();
         start_bgm("bgm_credits");
         credits_loop();
+        free_resources(false);
     }
 
     start_bgm("bgm_menu");
