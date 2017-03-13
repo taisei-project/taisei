@@ -21,6 +21,7 @@ endif()
 
 set(SRCs
 	main.c
+	log.c
 	util.c
 	taiseigl.c
 	random.c
@@ -110,10 +111,6 @@ else()
 	)
 endif()
 
-if(WIN32)
-	set(SRCs ${SRCs} taisei_err.c)
-endif()
-
 if(DEFINED TAISEI_DEBUG)
 	if(TAISEI_DEBUG)
 		set(CMAKE_BUILD_TYPE "Debug")
@@ -144,6 +141,10 @@ endif()
 
 if(FATALERRS)
 	add_definitions(-Wfatal-errors)
+endif()
+
+if(WIN32 OR APPLE)
+	add_definitions(-DLOG_ERROR_MSGBOX)
 endif()
 
 set(LIBs ${LIBs}

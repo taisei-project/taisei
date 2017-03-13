@@ -7,7 +7,6 @@
  */
 
 #include "gamepad.h"
-#include "taisei_err.h"
 #include "config.h"
 #include "events.h"
 #include "global.h"
@@ -28,32 +27,32 @@ void gamepad_init(void) {
 		return;
 
 	if(SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
-		warnx("gamepad_init(): couldn't initialize SDL joystick subsystem: %s", SDL_GetError());
+		log_warn("SDL_InitSubSystem() failed: %s", SDL_GetError());
 		return;
 	}
 
 	int i, cnt = gamepad_devicecount();
-	printf("gamepad_init(): found %i devices\n", cnt);
+	log_info("Found %i devices", cnt);
 	for(i = 0; i < cnt; ++i)
-		printf("%i: %s\n", i, SDL_JoystickNameForIndex(i));
+		log_info("Device #%i: %s", i, SDL_JoystickNameForIndex(i));
 
 	int dev = config_get_int(CONFIG_GAMEPAD_DEVICE);
 	if(dev < 0 || dev >= cnt) {
-		warnx("gamepad_init(): device %i is not available\n", dev);
+		log_warn("Device #%i is not available", dev);
 		gamepad_shutdown();
 		return;
 	}
 
 	gamepad.device = SDL_JoystickOpen(dev);
 	if(!gamepad.device) {
-		warnx("gamepad_init(): failed to open device %i [%s]", dev, gamepad_devicename(dev));
+		log_warn("Failed to open device %i: %s", dev, SDL_GetError());
 		gamepad_shutdown();
 		return;
 	}
 
 	gamepad.axis = malloc(SDL_JoystickNumAxes(gamepad.device));
 
-	printf("gamepad_init(): using device #%i: %s\n", dev, gamepad_devicename(dev));
+	log_info("Using device #%i: %s", dev, gamepad_devicename(dev));
 	SDL_JoystickEventState(SDL_ENABLE);
 	gamepad.initialized = 1;
 }
@@ -63,7 +62,7 @@ void gamepad_shutdown(void) {
 		return;
 
 	if(gamepad.initialized != 2)
-		printf("gamepad_shutdown(): disabled the gamepad subsystem\n");
+		log_info("Disabled the gamepad subsystem");
 
 	if(gamepad.device)
 		SDL_JoystickClose(gamepad.device);
@@ -282,7 +281,7 @@ void gamepad_init_bare(void) {
 		return;
 
 	if(SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
-		warnx("gamepad_init(): couldn't initialize SDL joystick subsystem: %s", SDL_GetError());
+		log_warn("SDL_InitSubSystem() failed: %s", SDL_GetError());
 		return;
 	}
 

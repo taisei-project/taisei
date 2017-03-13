@@ -266,7 +266,7 @@ int fill_replayview_menu(MenuData *m) {
 	int rpys = 0;
 
 	if(!dir) {
-		printf("Could't read %s\n", get_replays_path());
+		log_warn("Could't read %s", get_replays_path());
 		return -1;
 	}
 

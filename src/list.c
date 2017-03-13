@@ -84,7 +84,7 @@ void delete_all_elements_witharg(void **dest, void (callback)(void **, void *, v
 #endif
 
 #ifdef DEBUG_REFS
-	#define REFLOG(...) fprintf(stderr, __VA_ARGS__);
+	#define REFLOG(...) log_debug(__VA_ARGS__);
 #else
 	#define REFLOG(...)
 #endif
@@ -95,7 +95,7 @@ int add_ref(void *ptr) {
 	for(i = 0; i < global.refs.count; i++) {
 		if(global.refs.ptrs[i].ptr == ptr) {
 			global.refs.ptrs[i].refs++;
-			REFLOG("increased refcount for %p (ref %i): %i\n", ptr, i, global.refs.ptrs[i].refs);
+			REFLOG("increased refcount for %p (ref %i): %i", ptr, i, global.refs.ptrs[i].refs);
 			return i;
 		} else if(firstfree < 0 && global.refs.ptrs[i].ptr == FREEREF) {
 			firstfree = i;
@@ -105,14 +105,14 @@ int add_ref(void *ptr) {
 	if(firstfree >= 0) {
 		global.refs.ptrs[firstfree].ptr = ptr;
 		global.refs.ptrs[firstfree].refs = 1;
-		REFLOG("found free ref for %p: %i\n", ptr, firstfree);
+		REFLOG("found free ref for %p: %i", ptr, firstfree);
 		return firstfree;
 	}
 
 	global.refs.ptrs = realloc(global.refs.ptrs, (++global.refs.count)*sizeof(Reference));
 	global.refs.ptrs[global.refs.count - 1].ptr = ptr;
 	global.refs.ptrs[global.refs.count - 1].refs = 1;
-	REFLOG("new ref for %p: %i\n", ptr, global.refs.count - 1);
+	REFLOG("new ref for %p: %i", ptr, global.refs.count - 1);
 
 	return global.refs.count - 1;
 }
@@ -130,12 +130,12 @@ void free_ref(int i) {
 		return;
 
 	global.refs.ptrs[i].refs--;
-	REFLOG("decreased refcount for %p (ref %i): %i\n", global.refs.ptrs[i].ptr, i, global.refs.ptrs[i].refs);
+	REFLOG("decreased refcount for %p (ref %i): %i", global.refs.ptrs[i].ptr, i, global.refs.ptrs[i].refs);
 
 	if(global.refs.ptrs[i].refs <= 0) {
 		global.refs.ptrs[i].ptr = FREEREF;
 		global.refs.ptrs[i].refs = 0;
-		REFLOG("ref %i is now free\n", i);
+		REFLOG("ref %i is now free", i);
 	}
 }
 
@@ -151,7 +151,7 @@ void free_all_refs(void) {
 	}
 
 	if(inuse) {
-		warnx("free_all_refs(): %i refs were still in use (%i unique, %i total allocated)", inuse, inuse_unique, global.refs.count);
+		log_warn("%i refs were still in use (%i unique, %i total allocated)", inuse, inuse_unique, global.refs.count);
 	}
 
 	free(global.refs.ptrs);

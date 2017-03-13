@@ -7,7 +7,7 @@
 
 #include "vbo.h"
 #include <string.h>
-#include "taisei_err.h"
+#include "log.h"
 
 VBO _vbo;
 
@@ -33,7 +33,7 @@ void init_vbo(VBO *vbo, int size) {
 
 void vbo_add_verts(VBO *vbo, Vertex *verts, int count) {
 	if(vbo->offset + count > vbo->size)
-		errx(-1, "vbo_add_verts():\n !- Cannot add Vertices: VBO too small!\n");
+		log_err("Cannot add Vertices: VBO too small!");
 
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof(Vertex)*vbo->offset, sizeof(Vertex)*count, verts);
 

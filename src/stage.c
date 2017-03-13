@@ -19,8 +19,8 @@
 #include "player.h"
 #include "menu/ingamemenu.h"
 #include "menu/gameovermenu.h"
-#include "taisei_err.h"
 #include "audio.h"
+#include "log.h"
 
 static size_t numstages = 0;
 StageInfo *stages = NULL;
@@ -43,7 +43,7 @@ static void add_stage(uint16_t id, StageProcs *procs, StageType type, const char
 
 #ifdef DEBUG
 	if(title && subtitle) {
-		fprintf(stderr, "Added stage 0x%04x: %s: %s\n", id, title, subtitle);
+		log_debug("Added stage 0x%04x: %s: %s", id, title, subtitle);
 	}
 #endif
 }
@@ -93,12 +93,12 @@ void stage_init_array(void) {
 #ifdef DEBUG
 	for(int i = 0; stages[i].procs; ++i) {
 		if(stages[i].type == STAGE_SPELL && !(stages[i].id & STAGE_SPELL_BIT)) {
-			errx(-1, "Spell stage has an ID without the spell bit set: 0x%04x", stages[i].id);
+			log_err("Spell stage has an ID without the spell bit set: 0x%04x", stages[i].id);
 		}
 
 		for(int j = 0; stages[j].procs; ++j) {
 			if(i != j && stages[i].id == stages[j].id) {
-				errx(-1, "Duplicate ID 0x%04x in stages array, indices: %i, %i", stages[i].id, i, j);
+				log_err("Duplicate ID 0x%04x in stages array, indices: %i, %i", stages[i].id, i, j);
 			}
 		}
 	}
@@ -159,9 +159,8 @@ StageProgress* stage_get_progress_from_info(StageInfo *stage, Difficulty diff, b
 		size_t allocsize = sizeof(StageProgress) * (fixed_diff ? 1 : NUM_SELECTABLE_DIFFICULTIES);
 		stage->progress = malloc(allocsize);
 		memset(stage->progress, 0, allocsize);
-#ifdef DEBUG
-		printf("stage_get_progress_from_info(): allocated %lu bytes for stage %u (%s: %s)\n", (unsigned long int)allocsize, stage->id, stage->title, stage->subtitle);
-#endif
+
+		log_debug("Allocated %lu bytes for stage %u (%s: %s)", (unsigned long int)allocsize, stage->id, stage->title, stage->subtitle);
 	}
 
 	return stage->progress + (fixed_diff ? 0 : diff - D_Easy);
@@ -403,7 +402,7 @@ static void stage_draw(StageInfo *stage) {
 	if(config_get_int(CONFIG_NO_STAGEBG) == 2 && global.fps.stagebg_fps < config_get_int(CONFIG_NO_STAGEBG_FPSLIMIT)
 		&& !global.nostagebg) {
 
-		printf("stage_draw(): !- Stage background has been switched off due to low frame rate. You can change that in the options.\n");
+		log_warn("Stage background has been switched off due to low frame rate. You can change that in the options.");
 		global.nostagebg = true;
 	}
 
@@ -699,18 +698,18 @@ void stage_loop(StageInfo *stage) {
 			global.replay_stage = NULL;
 		}
 
-		printf("Random seed: %u\n", seed);
+		log_debug("Random seed: %u", seed);
 	} else {
 		if(!global.replay_stage) {
-			errx(-1, "Attemped to replay a NULL stage");
+			log_err("Attemped to replay a NULL stage");
 			return;
 		}
 
 		ReplayStage *stg = global.replay_stage;
-		printf("REPLAY_PLAY mode: %d events, stage: \"%s\"\n", stg->numevents, stage_get(stg->stage)->title);
+		log_debug("REPLAY_PLAY mode: %d events, stage: \"%s\"", stg->numevents, stage_get(stg->stage)->title);
 
 		tsrand_seed_p(&global.rand_game, stg->seed);
-		printf("Random seed: %u\n", stg->seed);
+		log_debug("Random seed: %u", stg->seed);
 
 		global.diff = stg->diff;
 		init_player(&global.plr);

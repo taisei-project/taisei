@@ -10,7 +10,6 @@
 
 #include "global.h"
 #include "video.h"
-#include "taisei_err.h"
 #include "taiseigl.h"
 
 static bool libgl_loaded = false;
@@ -73,7 +72,7 @@ void video_update_vsync(void) {
 				if(SDL_GL_SetSwapInterval(-1) < 0) {
 			case 0: // on
 					if(SDL_GL_SetSwapInterval(1) < 0) {
-						warnx("Couldn't enable vsync: %s", SDL_GetError());
+						log_warn("SDL_GL_SetSwapInterval() failed: %s", SDL_GetError());
 					}
 				}
 			break;
@@ -93,10 +92,11 @@ static void APIENTRY video_gl_debug(
 ) {
 	char *strtype = "unknown";
 	char *strsev = "unknown";
+	LogLevel lvl = LOG_DEBUG;
 
 	switch(type) {
-		case GL_DEBUG_TYPE_ERROR: strtype = "error"; break;
-		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: strtype = "deprecated"; break;
+		case GL_DEBUG_TYPE_ERROR: strtype = "error"; lvl = LOG_ERR; break;
+		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: strtype = "deprecated"; lvl = LOG_WARN; break;
 		case GL_DEBUG_TYPE_PORTABILITY: strtype = "portability"; break;
 		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: strtype = "undefined"; break;
 		case GL_DEBUG_TYPE_PERFORMANCE: strtype = "performance"; break;
@@ -109,8 +109,7 @@ static void APIENTRY video_gl_debug(
 		case GL_DEBUG_SEVERITY_HIGH: strsev = "high"; break;
 	}
 
-	warnx("[OpenGL debug, %s, %s] %i: %s", strtype, strsev, id, message);
-	assert(type != GL_DEBUG_TYPE_ERROR);
+	log_custom(lvl, "[OpenGL debug, %s, %s] %i: %s", strtype, strsev, id, message);
 }
 
 static void APIENTRY video_gl_debug_enable(void) {
@@ -131,7 +130,7 @@ static void video_init_gl(void) {
 	if(glext.version.major >= 4 && glext.version.minor >= 3) {
 		video_gl_debug_enable();
 	} else {
-		warnx("Can't enable debugging, OpenGL context is too old (>=4.3 required, %i.%i current)",
+		log_warn("Can't enable debugging, OpenGL context is too old (>=4.3 required, %i.%i current)",
 				glext.version.major, glext.version.minor);
 	}
 #endif
@@ -180,7 +179,7 @@ static void _video_setmode(int w, int h, uint32_t flags, bool fallback) {
 		}
 
 		if(!video.glcontext) {
-			errx(-1, "video_setmode(): error creating OpenGL context: %s", SDL_GetError());
+			log_err("Error creating OpenGL context: %s", SDL_GetError());
 			return;
 		}
 
@@ -194,11 +193,11 @@ static void _video_setmode(int w, int h, uint32_t flags, bool fallback) {
 	}
 
 	if(fallback) {
-		errx(-1, "video_setmode(): error opening screen: %s", SDL_GetError());
+		log_err("Error opening screen: %s", SDL_GetError());
 		return;
 	}
 
-	warnx("video_setmode(): setting %dx%d (%s) failed, falling back to %dx%d (windowed)", w, h,
+	log_warn("Setting %dx%d (%s) failed, falling back to %dx%d (windowed)", w, h,
 			(flags & SDL_WINDOW_FULLSCREEN) ? "fullscreen" : "windowed", RESX, RESY);
 	_video_setmode(RESX, RESY, flags & ~SDL_WINDOW_FULLSCREEN, true);
 }
@@ -242,7 +241,7 @@ void video_take_screenshot(void) {
 	strftime(outfile, 128, "/taisei_%Y%m%d_%H-%M-%S_%Z.png", timeinfo);
 
 	outpath = strjoin(get_screenshots_path(), outfile, NULL);
-	printf("Saving screenshot as %s\n", outpath);
+	log_info("Saving screenshot as %s", outpath);
 	out = SDL_RWFromFile(outpath, "w");
 	free(outpath);
 
@@ -259,8 +258,9 @@ void video_take_screenshot(void) {
     png_infop info_ptr;
 	png_byte **row_pointers;
 
-	png_ptr = png_create_write_struct (PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-	info_ptr = png_create_info_struct (png_ptr);
+	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	png_setup_error_handlers(png_ptr);
+	info_ptr = png_create_info_struct(png_ptr);
 
 	png_set_IHDR(png_ptr, info_ptr, w, h, 8, PNG_COLOR_TYPE_RGB,
                   PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
@@ -338,7 +338,7 @@ void video_init(void) {
 			SDL_DisplayMode mode = { SDL_PIXELFORMAT_UNKNOWN, 0, 0, 0, 0 };
 
 			if(SDL_GetDisplayMode(s, i, &mode) != 0) {
-				warnx("SDL_GetDisplayMode failed: %s", SDL_GetError());
+				log_warn("SDL_GetDisplayMode() failed: %s", SDL_GetError());
 			} else {
 				video_add_mode(mode.w, mode.h);
 				fullscreen_available = true;
@@ -347,7 +347,7 @@ void video_init(void) {
 	}
 
 	if(!fullscreen_available) {
-		warnx("video_init(): no available fullscreen modes");
+		log_warn("No available fullscreen modes");
 		config_set_int(CONFIG_FULLSCREEN, false);
 	}
 

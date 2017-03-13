@@ -10,7 +10,6 @@
 #include <sys/stat.h>
 #include "paths/native.h"
 #include "config.h"
-#include "taisei_err.h"
 #include "video.h"
 #include "menu/mainmenu.h"
 
@@ -75,13 +74,13 @@ Resource* insert_resource(ResourceType type, const char *name, void *data, Resou
 	res->data = data;
 
 	if(oldres) {
-		warnx("insert_resource(): replacing a previously loaded %s '%s'", resource_type_names[type], name);
+		log_warn("Replacing a previously loaded %s '%s'", resource_type_names[type], name);
 		unload_resource(oldres);
 	}
 
 	hashtable_set_string(handler->mapping, name, res);
 
-	printf("Loaded %s '%s' from '%s' (%s)\n", resource_type_names[handler->type], name, source,
+	log_info("Loaded %s '%s' from '%s' (%s)", resource_type_names[handler->type], name, source,
 		(flags & RESF_PERMANENT) ? "permanent" : "transient");
 
 	return res;
@@ -110,9 +109,9 @@ static Resource* load_resource(ResourceHandler *handler, const char *path, const
 
 		if(!path) {
 			if(!(flags & RESF_OPTIONAL)) {
-				errx(-1, "load_resource(): required %s '%s' couldn't be located", typename, name);
+				log_err("Required %s '%s' couldn't be located", typename, name);
 			} else {
-				warnx("load_resource(): failed to locate %s '%s'", typename, name);
+				log_warn("Failed to locate %s '%s'", typename, name);
 			}
 
 			return NULL;
@@ -127,7 +126,7 @@ static Resource* load_resource(ResourceHandler *handler, const char *path, const
 		res = hashtable_get_string(handler->mapping, name);
 
 		if(res) {
-			warnx("load_resource(): %s '%s' is already loaded", typename, name);
+			log_warn("%s '%s' is already loaded", typename, name);
 			free(allocated_name);
 			return res;
 		}
@@ -140,9 +139,9 @@ static Resource* load_resource(ResourceHandler *handler, const char *path, const
 		path = path ? path : "<path unknown>";
 
 		if(!(flags & RESF_OPTIONAL)) {
-			errx(-1, "load_resource(): required %s '%s' couldn't be loaded (%s)", typename, name, path);
+			log_err("Required %s '%s' couldn't be loaded (%s)", typename, name, path);
 		} else {
-			warnx("load_resource(): failed to load %s '%s' (%s)", typename, name, path);
+			log_warn("Failed to load %s '%s' (%s)", typename, name, path);
 		}
 
 		free(allocated_path);
@@ -165,11 +164,10 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 
 	if(!res || flags & RESF_OVERRIDE) {
 		if(!(flags & (RESF_PRELOAD | RESF_OVERRIDE))) {
-			warnx("get_resource(): %s '%s' was not preloaded", resource_type_names[type], name);
+			log_warn("%s '%s' was not preloaded", resource_type_names[type], name);
 
 			if(!(flags & RESF_OPTIONAL) && getenvint("TAISEI_PRELOAD_REQUIRED")) {
-				warnx("Aborting due to TAISEI_PRELOAD_REQUIRED");
-				abort();
+				log_err("Aborting due to TAISEI_PRELOAD_REQUIRED");
 			}
 		}
 
@@ -177,7 +175,7 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 	}
 
 	if(res && flags & RESF_PERMANENT && !(res->flags & RESF_PERMANENT)) {
-		printf("Promoted %s '%s' to permanent\n", resource_type_names[type], name);
+		log_debug("Promoted %s '%s' to permanent", resource_type_names[type], name);
 		res->flags |= RESF_PERMANENT;
 	}
 
@@ -284,7 +282,7 @@ void free_resources(bool all) {
 
 			ResourceFlags flags = res->flags;
 			unload_resource(res);
-			printf("Unloaded %s '%s' (%s)\n", resource_type_names[type], name,
+			log_info("Unloaded %s '%s' (%s)", resource_type_names[type], name,
 				(flags & RESF_PERMANENT) ? "permanent" : "transient"
 			);
 

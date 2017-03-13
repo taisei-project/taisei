@@ -4,6 +4,7 @@
 #include <zlib.h>
 #include <assert.h>
 #include "rwops_zlib.h"
+#include "util.h"
 
 #define MIN_CHUNK_SIZE 8
 
@@ -18,7 +19,7 @@
 #endif
 
 #ifdef DEBUG_ZRWOPS
-	#define PRINT(...) printf(__VA_ARGS__)
+	#define PRINT(...) tsfprintf(stdout, __VA_ARGS__)
 #else
 	#define PRINT(...)
 #endif
@@ -130,11 +131,11 @@ static SDL_RWops* common_alloc(SDL_RWops *wrapped, size_t bufsize, bool autoclos
 
 #ifdef DEBUG_ZRWOPS
 static void printbuf(void *buf, size_t size) {
-	printf("[ ");
+	tsfprintf(stdout, "[ ");
 	for(unsigned int i = 0; i < size; ++i) {
-		printf("%02x ", ((uint8_t*)buf)[i]);
+		tsfprintf(stdout, "%02x ", ((uint8_t*)buf)[i]);
 	}
-	printf("]\n");
+	tsfprintf(stdout, "]\n");
 }
 #else
 #define printbuf(buf,size)
@@ -336,7 +337,7 @@ int zrwops_test(void) {
 	printbuf(buffer1, sizeof(buffer1));
 	printbuf(buffer2, sizeof(buffer2));
 
-	printf("%lu %s\n", x, buffer2);
+	log_info("%lu %s\n", x, buffer2);
 
 	assert(!memcmp(data, buffer2, sizeof(data)));
 	return 1;

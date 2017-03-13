@@ -8,7 +8,6 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <locale.h>
-#include "taisei_err.h"
 
 #include "global.h"
 #include "video.h"
@@ -20,11 +19,13 @@
 #include "resource/bgm.h"
 #include "progress.h"
 #include "hashtable.h"
+#include "log.h"
 
 void taisei_shutdown(void) {
+	log_info("Shutting down");
+
 	config_save(CONFIG_FILE);
 	progress_save();
-	printf("\nshutdown:\n");
 
 	free_all_refs();
 	free_resources(true);
@@ -35,25 +36,27 @@ void taisei_shutdown(void) {
 	config_uninit();
 
 	SDL_Quit();
-	printf("-- Good Bye.\n");
+
+	log_info("Good bye");
+	log_shutdown();
 }
 
 void init_log(void) {
-#if defined(__WINDOWS__) && !defined(__WINDOWS_CONSOLE__)
 	const char *pref = get_config_path();
-	char *s;
+	char *logpath = strfmt("%s/%s", pref, "log.txt");
 
-	s = strfmt("%s/%s", pref, "stdout.txt");
-	freopen(s, "w", stdout);
-	free(s);
+	log_init(LOG_DEFAULT_LEVELS);
+	log_add_output(LOG_SPAM, SDL_RWFromFP(stdout, false));
+	log_add_output(LOG_ALERT, SDL_RWFromFP(stderr, false));
+	log_add_output(LOG_ALL, SDL_RWFromFile(logpath, "w"));
 
-	s = strfmt("%s/%s", pref, "stderr.txt");
-	freopen(s, "w", stderr);
-	free(s);
-#endif
+	free(logpath);
 }
 
 int run_tests(void) {
+	log_init(LOG_DEFAULT_LEVELS);
+	log_add_output(LOG_ALL, SDL_RWFromFP(stdout, false));
+
 	if(tsrand_test()) {
 		return 1;
 	}
@@ -74,6 +77,7 @@ int run_tests(void) {
 		return 1;
 	}
 
+	log_shutdown();
 	return 0;
 }
 
@@ -95,7 +99,7 @@ int main(int argc, char **argv) {
 		stage_init_array();
 
 		for(StageInfo *stg = stages; stg->procs; ++stg) {
-			printf("%i %s: %s\n", stg->id, stg->title, stg->subtitle);
+			tsfprintf(stdout, "%i %s: %s\n", stg->id, stg->title, stg->subtitle);
 		}
 
 		return 0;
@@ -108,7 +112,7 @@ int main(int argc, char **argv) {
 
 	if(argc >= 2 && !strcmp(argv[1], "replay")) {
 		if(argc < 3) {
-			fprintf(stderr, "Usage: %s replay /path/to/replay.tsr [stage num]\n", argv[0]);
+			tsfprintf(stderr, "Usage: %s replay /path/to/replay.tsr [stage num]\n", argv[0]);
 			return 1;
 		}
 
@@ -126,40 +130,31 @@ int main(int argc, char **argv) {
 	init_paths();
 	init_log();
 
-	printf("Content path: %s\n", get_prefix());
-	printf("Userdata path: %s\n", get_config_path());
+	log_info("Content path: %s", get_prefix());
+	log_info("Userdata path: %s", get_config_path());
 
 	MKDIR(get_config_path());
 	MKDIR(get_screenshots_path());
 	MKDIR(get_replays_path());
 
 	if(chdir(get_prefix())) {
-		errx(-1, "chdir() failed: %s", strerror(errno));
+		log_err("chdir() failed: %s", strerror(errno));
 	} else {
 		char cwd[1024]; // i don't care if this is not enough for you, getcwd is garbage
 		getcwd(cwd, sizeof(cwd));
-		printf("Changed working directory to %s\n", cwd);
+		log_info("Changed working directory to %s", cwd);
 	}
 
 	config_load(CONFIG_FILE);
 
-	printf("initialize:\n");
-
 	if(SDL_Init(SDL_INIT_VIDEO) < 0)
-		errx(-1, "Error initializing SDL: %s", SDL_GetError());
-	printf("-- SDL\n");
+		log_err("SDL_Init() failed: %s", SDL_GetError());
 
 	init_global();
-
 	video_init();
-	printf("-- Video and OpenGL\n");
-
 	audio_init();
-	printf("-- Audio\n");
-
 	init_resources();
 	draw_loading_screen();
-
 	load_resources();
 	gamepad_init();
 	stage_init_array();
@@ -167,7 +162,8 @@ int main(int argc, char **argv) {
 
 	set_transition(TransLoader, 0, FADE_TIME*2);
 
-	printf("initialization complete.\n");
+	log_info("Initialization complete");
+
 	atexit(taisei_shutdown);
 
 	if(replay_path) {
@@ -183,28 +179,27 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
-	printf("** Compiled with DEBUG flag!\n");
+	log_warn("Compiled with DEBUG flag!");
+
 	if(argc >= 2 && argv[1]) {
-		printf("** Entering stage skip mode: Stage %d\n", atoi(argv[1]));
+		log_info("Entering stage skip mode: Stage %d", atoi(argv[1]));
 
 		StageInfo* stg = stage_get(atoi(argv[1]));
 
 		if(!stg) {
-			errx(-1, "Invalid stage id");
+			log_err("Invalid stage id");
 		}
 
 		global.diff = stg->difficulty;
 
-		if(!global.diff) {
+		if(argc == 3 && argv[2]) {
+			global.diff = atoi(argv[2]);
+			log_info("Setting difficulty to %s", difficulty_name(global.diff));
+		} else if(!global.diff) {
 			global.diff = D_Easy;
 		}
 
-		if(argc == 3 && argv[2]) {
-			printf("** Setting difficulty to %d.\n", atoi(argv[2]));
-			global.diff = atoi(argv[2]);
-		}
-
-		printf("** Entering %s.\n", stg->title);
+		log_info("Entering %s", stg->title);
 
 		do {
 			global.game_over = 0;

@@ -173,22 +173,20 @@ void free_attack(Attack *a) {
 }
 
 void start_attack(Boss *b, Attack *a) {
-#if DEBUG
-	printf("BOSS start_attack(): %s\n", a->name);
-#endif
+	log_debug("%s", a->name);
 
 	if(global.replaymode == REPLAY_RECORD && global.stage->type == STAGE_STORY && !global.plr.continues) {
 		StageInfo *i = stage_get_by_spellcard(a->info, global.diff);
 		if(i) {
 			StageProgress *p = stage_get_progress_from_info(i, global.diff, true);
 			if(p && !p->unlocked) {
-				printf("Spellcard unlocked! %s: %s\n", i->title, i->subtitle);
+				log_info("Spellcard unlocked! %s: %s", i->title, i->subtitle);
 				p->unlocked = true;
 			}
 		}
 #if DEBUG
 		else if(a->type == AT_Spellcard) {
-			warnx("FIXME: spellcard '%s' is not available in spell practice mode!", a->name);
+			log_warn("FIXME: spellcard '%s' is not available in spell practice mode!", a->name);
 		}
 #endif
 	}

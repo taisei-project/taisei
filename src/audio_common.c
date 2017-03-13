@@ -93,9 +93,9 @@ void stop_bgm(bool force) {
             audio_backend_music_pause();
         }
 
-        printf("BGM stopped.\n");
+        log_info("BGM stopped");
     } else {
-        printf("stop_bgm(): No BGM was playing.\n");
+        log_info("No BGM was playing");
     }
 }
 
@@ -123,7 +123,7 @@ void start_bgm(const char *name) {
         stralloc(&current_bgm.name, name);
 
         if((current_bgm.music = get_music(name)) == NULL) {
-            warnx("start_bgm(): BGM '%s' does not exist", current_bgm.name);
+            log_warn("BGM '%s' does not exist", current_bgm.name);
             stop_bgm(true);
             free(current_bgm.name);
             current_bgm.name = NULL;
@@ -152,7 +152,7 @@ void start_bgm(const char *name) {
         current_bgm.started_at = -1;
     }
 
-    printf("Started %s\n", (current_bgm.title ? current_bgm.title : current_bgm.name));
+    log_info("Started %s", (current_bgm.title ? current_bgm.title : current_bgm.name));
 }
 
 void audio_init(void) {
