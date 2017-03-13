@@ -566,7 +566,7 @@ void replay_stage_check_desync(ReplayStage *stg, int time, uint16_t check, Repla
 
 	if(mode == REPLAY_PLAY) {
 		if(stg->desync_check && stg->desync_check != check) {
-			log_warn("Replay desync detected! %u != %u\n", stg->desync_check, check);
+			log_warn("Replay desync detected! %u != %u", stg->desync_check, check);
 		} else {
 			log_debug("%u OK", check);
 		}
