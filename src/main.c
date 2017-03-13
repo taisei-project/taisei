@@ -35,9 +35,9 @@ void taisei_shutdown(void) {
 	stage_free_array();
 	config_uninit();
 
+	log_info("Good bye");
 	SDL_Quit();
 
-	log_info("Good bye");
 	log_shutdown();
 }
 

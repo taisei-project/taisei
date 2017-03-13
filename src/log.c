@@ -31,18 +31,10 @@ static const char* level_prefix(LogLevel lvl) {
     return prefmap[idx];
 }
 
-static void write_timestamp(char buf[11]) {
-    time_t t = time(0);
-    struct tm* timeinfo = localtime(&t);
-    strftime(buf, 9, "%H:%M:%S", timeinfo);
-}
-
 static char* format_log_string(LogLevel lvl, const char *funcname, const char *fmt, va_list args) {
     const char *pref = level_prefix(lvl);
     char *msg = vstrfmt(fmt, args);
-    char timestamp[11];
-    write_timestamp(timestamp);
-    char *final = strjoin(timestamp, " ", pref, ": ", funcname, "(): ", msg, LOG_EOL, NULL);
+    char *final = strfmt("%-9d %s: %s(): %s%s", SDL_GetTicks(), pref, funcname, msg, LOG_EOL);
     free(msg);
 
     // TODO: maybe convert all \n in the message to LOG_EOL
