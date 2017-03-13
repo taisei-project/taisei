@@ -136,8 +136,11 @@ bool resource_sdl_event(SDL_Event *evt) {
 		return true;
 	}
 
-	hashtable_unset(data->handler->async_load_data, data->name);
+	char name[strlen(data->name) + 1];
+	strcpy(name, data->name);
+
 	load_resource_finish(data->opaque, data->handler, data->path, data->name, data->path, data->name, data->flags);
+	hashtable_unset(data->handler->async_load_data, name);
 	free(data);
 
 	return true;
