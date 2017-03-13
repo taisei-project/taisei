@@ -14,6 +14,7 @@
 #include "menu/mainmenu.h"
 
 Resources resources;
+static SDL_threadID main_thread_id;
 
 static const char *resource_type_names[] = {
 	"texture",
@@ -168,7 +169,8 @@ static void update_async_load_state(void) {
 }
 
 static bool resource_check_async_load(ResourceHandler *handler, const char *name) {
-	update_async_load_state();
+	if(SDL_ThreadID() == main_thread_id)
+		update_async_load_state();
 	ResourceAsyncLoadData *data = hashtable_get_string(handler->async_load_data, name);
 	return data;
 }
@@ -347,6 +349,8 @@ void init_resources(void) {
 	register_handler(
 		RES_BGM, BGM_PATH_PREFIX, load_music_begin, load_music_end, unload_music, NULL, music_path, check_music_path, 16
 	);
+
+	main_thread_id = SDL_ThreadID();
 }
 
 void resource_util_strip_ext(char *path) {
@@ -396,6 +400,7 @@ void free_resources(bool all) {
 
 		char *name;
 		Resource *res;
+		ListContainer *unset_list = NULL;
 
 		for(HashtableIterator *i = hashtable_iter(handler->mapping); hashtable_iter_next(i, (void**)&name, (void**)&res);) {
 			if(!all && res->flags & RESF_PERMANENT)
@@ -408,14 +413,14 @@ void free_resources(bool all) {
 			);
 
 			if(!all) {
-				hashtable_unset_deferred(handler->mapping, name);
+				hashtable_unset_deferred(handler->mapping, name, &unset_list);
 			}
 		}
 
 		if(all) {
 			hashtable_free(handler->mapping);
 		} else {
-			hashtable_unset_deferred_now(handler->mapping);
+			hashtable_unset_deferred_now(handler->mapping, &unset_list);
 		}
 	}
 

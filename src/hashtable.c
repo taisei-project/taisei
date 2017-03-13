@@ -31,8 +31,13 @@ struct Hashtable {
     HTHashFunc hash_func;
     HTCopyFunc copy_func;
     HTFreeFunc free_func;
-    ListContainer *deferred_unsets;
-    SDL_mutex *mutex;
+    SDL_atomic_t cur_operation;
+};
+
+enum {
+    HT_OP_NONE,
+    HT_OP_READ,
+    HT_OP_WRITE,
 };
 
 typedef struct HashtableIterator {
@@ -55,22 +60,38 @@ Hashtable* hashtable_new(size_t size, HTCmpFunc cmp_func, HTHashFunc hash_func, 
     ht->hash_func = hash_func;
     ht->copy_func = copy_func;
     ht->free_func = free_func;
-    ht->deferred_unsets = NULL;
-    ht->mutex = SDL_CreateMutex();
 
+    SDL_AtomicSet(&ht->cur_operation, HT_OP_NONE);
     assert(ht->hash_func != NULL);
 
     return ht;
 }
+static bool hashtable_try_enter_state(Hashtable *ht, int state, bool mutex) {
+    SDL_atomic_t *ptr = &ht->cur_operation;
+
+    if(!mutex) {
+        SDL_AtomicCAS(ptr, state, HT_OP_NONE);
+    }
+
+    return SDL_AtomicCAS(ptr, HT_OP_NONE, state);
+}
+
+static void hashtable_enter_state(Hashtable *ht, int state, bool mutex) {
+    while(!hashtable_try_enter_state(ht, state, mutex));
+}
+
+static void hashtable_idle_state(Hashtable *ht) {
+    SDL_AtomicSet(&ht->cur_operation, HT_OP_NONE);
+}
 
 void hashtable_lock(Hashtable *ht) {
     assert(ht != NULL);
-    SDL_LockMutex(ht->mutex);
+    hashtable_enter_state(ht, HT_OP_READ, false);
 }
 
 void hashtable_unlock(Hashtable *ht) {
     assert(ht != NULL);
-    SDL_UnlockMutex(ht->mutex);
+    hashtable_idle_state(ht);
 }
 
 static void hashtable_delete_callback(void **vlist, void *velem, void *vht) {
@@ -87,9 +108,13 @@ static void hashtable_delete_callback(void **vlist, void *velem, void *vht) {
 void hashtable_unset_all(Hashtable *ht) {
     assert(ht != NULL);
 
+    hashtable_enter_state(ht, HT_OP_WRITE, true);
+
     for(size_t i = 0; i < ht->table_size; ++i) {
         delete_all_elements_witharg((void**)(ht->table + i), hashtable_delete_callback, ht);
     }
+
+    hashtable_idle_state(ht);
 }
 
 void hashtable_free(Hashtable *ht) {
@@ -99,7 +124,6 @@ void hashtable_free(Hashtable *ht) {
 
     hashtable_unset_all(ht);
 
-    SDL_DestroyMutex(ht->mutex);
     free(ht->table);
     free(ht);
 }
@@ -116,17 +140,17 @@ void* hashtable_get(Hashtable *ht, void *key) {
     assert(ht != NULL);
 
     hash_t hash = ht->hash_func(key);
-    hashtable_lock(ht);
+    hashtable_enter_state(ht, HT_OP_READ, false);
     HashtableElement *elems = ht->table[hash % ht->table_size];
 
     for(HashtableElement *e = elems; e; e = e->next) {
         if(hash == e->hash && hashtable_compare(ht, key, e->key)) {
-            hashtable_unlock(ht);
+            hashtable_idle_state(ht);
             return e->data;
         }
     }
 
-    hashtable_unlock(ht);
+    hashtable_idle_state(ht);
     return NULL;
 }
 
@@ -136,7 +160,7 @@ void hashtable_set(Hashtable *ht, void *key, void *data) {
     hash_t hash = ht->hash_func(key);
     size_t idx = hash % ht->table_size;
 
-    hashtable_lock(ht);
+    hashtable_enter_state(ht, HT_OP_WRITE, true);
 
     HashtableElement *elems = ht->table[idx], *elem;
 
@@ -165,42 +189,34 @@ void hashtable_set(Hashtable *ht, void *key, void *data) {
 
     ht->table[idx] = elems;
 
-    hashtable_unlock(ht);
+    hashtable_idle_state(ht);
 }
 
 void hashtable_unset(Hashtable *ht, void *key) {
     hashtable_set(ht, key, NULL);
 }
 
-void hashtable_unset_deferred(Hashtable *ht, void *key) {
+void hashtable_unset_deferred(Hashtable *ht, void *key, ListContainer **list) {
     assert(ht != NULL);
 
-    hashtable_lock(ht);
-
-    ListContainer *c = create_element((void**)&ht->deferred_unsets, sizeof(ListContainer));
+    ListContainer *c = create_element((void**)list, sizeof(ListContainer));
 
     if(ht->copy_func) {
         ht->copy_func(&c->data, key);
     } else {
         c->data = key;
     }
-
-    hashtable_unlock(ht);
 }
 
-void hashtable_unset_deferred_now(Hashtable *ht) {
+void hashtable_unset_deferred_now(Hashtable *ht, ListContainer **list) {
     ListContainer *next;
     assert(ht != NULL);
 
-    hashtable_lock(ht);
-
-    for(ListContainer *c = ht->deferred_unsets; c; c = next) {
+    for(ListContainer *c = *list; c; c = next) {
         next = c->next;
         hashtable_unset(ht, c->data);
-        delete_element((void**)&ht->deferred_unsets, c);
+        delete_element((void**)list, c);
     }
-
-    hashtable_unlock(ht);
 }
 
 /*
@@ -212,7 +228,7 @@ void* hashtable_foreach(Hashtable *ht, HTIterCallback callback, void *arg) {
 
     void *ret = NULL;
 
-    hashtable_lock(ht);
+    hashtable_enter_state(ht, HT_OP_READ, false);
 
     for(size_t i = 0; i < ht->table_size; ++i) {
         for(HashtableElement *e = ht->table[i]; e; e = e->next) {
@@ -223,7 +239,7 @@ void* hashtable_foreach(Hashtable *ht, HTIterCallback callback, void *arg) {
         }
     }
 
-    hashtable_unlock(ht);
+    hashtable_idle_state(ht);
 
     return ret;
 }

@@ -13,6 +13,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "list.h"
+
 typedef struct Hashtable Hashtable;
 typedef struct HashtableIterator HashtableIterator;
 typedef uint32_t hash_t;
@@ -28,8 +30,8 @@ void hashtable_free(Hashtable *ht);
 void* hashtable_get(Hashtable *ht, void *key);
 void hashtable_set(Hashtable *ht, void *key, void *data);
 void hashtable_unset(Hashtable *ht, void *key);
-void hashtable_unset_deferred(Hashtable *ht, void *key);
-void hashtable_unset_deferred_now(Hashtable *ht);
+void hashtable_unset_deferred(Hashtable *ht, void *key, ListContainer **list);
+void hashtable_unset_deferred_now(Hashtable *ht, ListContainer **list);
 void hashtable_unset_all(Hashtable *ht);
 
 void* hashtable_foreach(Hashtable *ht, HTIterCallback callback, void *arg);
