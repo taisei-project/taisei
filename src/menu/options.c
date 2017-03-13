@@ -13,7 +13,6 @@
 #include "global.h"
 #include "video.h"
 #include "paths/native.h"
-#include "taisei_err.h"
 
 // --- Menu entry <-> config option binding stuff --- //
 

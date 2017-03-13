@@ -12,7 +12,6 @@
 #include "resource.h"
 #include "global.h"
 #include "paths/native.h"
-#include "taisei_err.h"
 #include "vbo.h"
 
 static SDL_Surface* load_png(const char *filename);
@@ -53,7 +52,7 @@ Texture* prefix_get_tex(const char *name, const char *prefix) {
 }
 
 static SDL_Surface* load_png_p(const char *filename, SDL_RWops *rwops) {
-#define PNGFAIL(msg) { warnx("load_png(): couldn't load '%s': %s", filename, msg); return NULL; }
+#define PNGFAIL(msg) { log_warn("Couldn't load '%s': %s", filename, msg); return NULL; }
 	if(!rwops) {
 		PNGFAIL(SDL_GetError())
 	}
@@ -62,6 +61,8 @@ static SDL_Surface* load_png_p(const char *filename, SDL_RWops *rwops) {
 	if(!(png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL))) {
 		PNGFAIL("png_create_read_struct() failed")
 	}
+
+	png_setup_error_handlers(png_ptr);
 
 	png_infop info_ptr;
 	if(!(info_ptr = png_create_info_struct(png_ptr))) {

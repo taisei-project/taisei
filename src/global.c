@@ -6,14 +6,6 @@
  */
 
 #include "global.h"
-#include "video.h"
-#include <time.h>
-#include <stdio.h>
-#include <png.h>
-#include "paths/native.h"
-#include "resource/resource.h"
-#include "taisei_err.h"
-#include "replay.h"
 
 Global global;
 
@@ -35,6 +27,6 @@ void init_global(void) {
 			global.frameskip = INT_MAX;
 		}
 
-		warnx("FPS limiter disabled by environment. Gotta go fast! (frameskip = %i)", global.frameskip);
+		log_warn("FPS limiter disabled by environment. Gotta go fast! (frameskip = %i)", global.frameskip);
 	}
 }

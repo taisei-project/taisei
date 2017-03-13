@@ -12,7 +12,6 @@
 #include "config.h"
 #include "global.h"
 #include "paths/native.h"
-#include "taisei_err.h"
 
 static bool config_initialized = false;
 
@@ -182,11 +181,7 @@ static void config_set_val(ConfigIndex idx, ConfigValue v) {
 		return;
 	}
 
-#ifdef DEBUG
-	#define PRINTVAL(t) printf("config_set_val(): %s:" #t " = %" #t "\n", e->name, e->val.t);
-#else
-	#define PRINTVAL(t)
-#endif
+#define PRINTVAL(t) log_debug("%s:" #t " = %" #t, e->name, e->val.t);
 
 	switch(e->type) {
 		case CONFIG_TYPE_INT:
@@ -280,7 +275,7 @@ static SDL_RWops* config_open(const char *filename, const char *mode) {
 	free(buf);
 
 	if(!out) {
-		warnx("config_open(): SDL_RWFromFile() failed: %s", SDL_GetError());
+		log_warn("SDL_RWFromFile() failed: %s", SDL_GetError());
 	}
 
 	return out;
@@ -323,11 +318,9 @@ void config_save(const char *filename) {
 	}
 
 	SDL_RWclose(out);
-	printf("Saved config '%s'\n", filename);
+	log_info("Saved config '%s'", filename);
 }
 
-#define SYNTAXERROR { warnx("config_load(): syntax error on line %i, aborted! [%s:%i]\n", line, __FILE__, __LINE__); goto end; }
-#define BUFFERERROR { warnx("config_load(): string exceed the limit of %i, aborted! [%s:%i]", CONFIG_LOAD_BUFSIZE, __FILE__, __LINE__); goto end; }
 #define INTOF(s)   ((int)strtol(s, NULL, 10))
 #define FLOATOF(s) ((float)strtod(s, NULL))
 
@@ -335,7 +328,7 @@ static void config_set(const char *key, const char *val, void *data) {
 	ConfigEntry *e = config_find_entry(key);
 
 	if(!e) {
-		warnx("config_set(): unknown setting '%s'", key);
+		log_warn("Unknown setting '%s'", key);
 		config_set_unknown(key, val);
 		return;
 	}
@@ -349,7 +342,7 @@ static void config_set(const char *key, const char *val, void *data) {
 			SDL_Scancode scan = SDL_GetScancodeFromName(val);
 
 			if(scan == SDL_SCANCODE_UNKNOWN) {
-				warnx("config_set(): unknown key '%s'", val);
+				log_warn("Unknown key '%s'", val);
 			} else {
 				e->val.i = scan;
 			}

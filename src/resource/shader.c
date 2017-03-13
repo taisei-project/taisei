@@ -12,7 +12,6 @@
 #include "resource.h"
 #include "config.h"
 #include "list.h"
-#include "taisei_err.h"
 
 static char snippet_header_EXT_draw_instanced[] =
 	"#version 120\n"
@@ -48,7 +47,7 @@ void* load_shader_file(const char *path, unsigned int flags) {
 	delim = strstr(text, SHA_DELIM);
 
 	if(delim == NULL) {
-		warnx("load_shader_file(): expected '%s' delimiter.", SHA_DELIM);
+		log_warn("Expected '%s' delimiter.", SHA_DELIM);
 		free(text);
 		return NULL;
 	}
@@ -88,7 +87,7 @@ void load_shader_snippets(const char *filename, const char *prefix, unsigned int
 	char *vtext = NULL, *ftext = NULL;
 	char *nbuf;
 
-	printf("-- loading snippet file '%s'\n", filename);
+	log_info("Loading snippet file '%s' with prefix '%s'", filename, prefix);
 
 	prefixlen = strlen(prefix);
 
@@ -103,9 +102,9 @@ void load_shader_snippets(const char *filename, const char *prefix, unsigned int
 	ffoot = copy_segment(text, "%%FSHADER-FOOT%%", &ffsize);
 
 	if(!vhead || !fhead)
-		errx(-1, "Syntax Error: missing HEAD section(s).");
+		log_fatal("Syntax Error: missing HEAD section(s)");
 	if((vfoot == NULL) + (ffoot == NULL) != 1)
-		errx(-1, "Syntax Error: must contain exactly 1 FOOT section");
+		log_fatal("Syntax Error: must contain exactly 1 FOOT section");
 
 	while((sec = strstr(sec, "%%"))) {
 		sec += 2;
@@ -113,7 +112,7 @@ void load_shader_snippets(const char *filename, const char *prefix, unsigned int
 		name = sec;
 		nend = strstr(name, "%%");
 		if(!nend)
-			errx(-1, "Syntax Error: expected '%%'");
+			log_fatal("Syntax Error: expected '%%'");
 
 		sec = nend + 2;
 
@@ -179,12 +178,12 @@ static void print_info_log(GLuint shader, tsglGetShaderiv_ptr lenfunc, tsglGetSh
 	lenfunc(shader, GL_INFO_LOG_LENGTH, &len);
 
 	if(len > 1) {
-		printf(" == GLSL %s info log (%u) ==\n", type, shader);
 		char log[len];
 		memset(log, 0, len);
 		logfunc(shader, len, &alen, log);
-		printf("%s\n", log);
-		printf("\n == End of GLSL %s info log (%u) ==\n", type, shader);
+
+		log_warn("\n == GLSL %s info log (%u) ==\n%s\n == End of GLSL %s info log (%u) ==",
+					type, shader, log, type, shader);
 	}
 }
 

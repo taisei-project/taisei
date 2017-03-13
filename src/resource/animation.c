@@ -11,8 +11,6 @@
 #include "resource.h"
 #include "list.h"
 
-#include "taisei_err.h"
-
 char* animation_path(const char *name) {
 	return strjoin(ANI_PATH_PREFIX, name, ANI_EXTENSION, NULL);
 }
@@ -29,12 +27,12 @@ void* load_animation(const char *filename, unsigned int flags) {
 	Hashtable *ht = parse_keyvalue_file(filename, 5);
 
 	if(!ht) {
-		warnx("load_animation(): parse_keyvalue_file() failed");
+		log_warn("parse_keyvalue_file() failed");
 		free(basename);
 		return NULL;
 	}
 
-#define ANIFAIL(what) { warnx("load_animation(): bad '" what "' in animation '%s'", basename); free(ani); free(basename); return NULL; }
+#define ANIFAIL(what) { log_warn("Bad '" what "' in animation '%s'", basename); free(ani); free(basename); return NULL; }
 
 	Animation *ani = malloc(sizeof(Animation));
 	ani->rows = atoi((char*)hashtable_get_string(ht, "rows"));
@@ -47,7 +45,7 @@ void* load_animation(const char *filename, unsigned int flags) {
 	if(ani->cols < 1) ANIFAIL("cols")
 
 	if(ani->speed == 0) {
-		warnx("load_animation(): animation speed of %s == 0. relativity?", name);
+		log_warn("Animation speed of %s == 0. relativity?", name);
 		free(basename);
 		free(ani);
 		return NULL;
@@ -56,7 +54,7 @@ void* load_animation(const char *filename, unsigned int flags) {
 	ani->tex = get_resource(RES_TEXTURE, basename, flags)->texture;
 
 	if(!ani->tex) {
-		warnx("load_animation(): couldn't get texture '%s'", basename);
+		log_warn("Couldn't get texture '%s'", basename);
 		free(basename);
 		return NULL;
 	}

@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include "rwops_segment.h"
-#include "taisei_err.h"
+#include "util.h"
 
 typedef struct Segment {
     SDL_RWops *wrapped;
@@ -104,7 +104,7 @@ static size_t segment_readwrite(SDL_RWops *rw, void *ptr, size_t size, size_t ma
     size_t onum;
 
     if(pos < 0) {
-        warnx("segment_readwrite: SDL_RWtell failed (%i): %s", (int)pos, SDL_GetError());
+        log_debug("SDL_RWtell failed (%i): %s", (int)pos, SDL_GetError());
         SDL_SetError("segment_readwrite: SDL_RWtell failed (%i) %s", (int)pos, SDL_GetError());
 
         // this could be a non-seekable stream, like /dev/stdin...
@@ -114,7 +114,7 @@ static size_t segment_readwrite(SDL_RWops *rw, void *ptr, size_t size, size_t ma
     }
 
     if(pos < s->start || pos > s->end) {
-        warnx("segment_readwrite: segment range violation");
+        log_warn("Segment range violation");
         SDL_SetError("segment_readwrite: segment range violation");
         return 0;
     }

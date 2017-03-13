@@ -3,11 +3,13 @@
 #define TSUTIL_H
 
 #include <stdbool.h>
-#include <string.h>
+#include <stdnoreturn.h>
 #include <stdio.h>
+#include <string.h>
 #include <zlib.h> // compiling under mingw may fail without this...
 #include <png.h>
 #include <SDL.h>
+#include "log.h"
 #include "hashtable.h"
 
 //
@@ -104,23 +106,46 @@ void png_init_rwops_write(png_structp png, SDL_RWops *rwops);
 char* SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize);
 size_t SDL_RWprintf(SDL_RWops *rwops, const char* fmt, ...) __attribute__((format(printf, 2, 3)));
 
+// This is for the very few legitimate uses for printf/fprintf that shouldn't be replaced with log_*
+void tsfprintf(FILE *out, const char *restrict fmt, ...) __attribute__((format(printf, 2, 3)));
+
 //
 // misc utils
 //
 
 int getenvint(const char *v) __attribute__((pure));
+void png_setup_error_handlers(png_structp png);
 
 //
-// safeguards against some dangerous practices
+// safeguards against some dangerous or otherwise undesirable practices
 //
 
 #undef fopen
-FILE* fopen() __attribute__((deprecated("Use SDL_RWFromFile instead")));
+FILE* fopen() __attribute__((deprecated(
+    "Use SDL_RWFromFile instead")));
 
 #undef strncat
-char* strncat() __attribute__((deprecated("This function likely doesn't do what you expect, use strlcat")));
+char* strncat() __attribute__((deprecated(
+    "This function likely doesn't do what you expect, use strlcat")));
 
 #undef strncpy
-char* strncpy() __attribute__((deprecated("This function likely doesn't do what you expect, use strlcpy")));
+char* strncpy() __attribute__((deprecated(
+    "This function likely doesn't do what you expect, use strlcpy")));
+
+#undef errx
+noreturn void errx(int, const char*, ...) __attribute__((deprecated(
+    "Use log_fatal instead")));
+
+#undef warnx
+void warnx(const char*, ...) __attribute__((deprecated(
+    "Use log_warn instead")));
+
+#undef printf
+int printf(const char*, ...) __attribute__((deprecated(
+    "Use log_info instead")));
+
+#undef fprintf
+int fprintf(FILE*, const char*, ...) __attribute__((deprecated(
+    "Use log_warn instead (or SDL_RWops if you want to write to a file)")));
 
 #endif

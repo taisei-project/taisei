@@ -239,8 +239,8 @@ char* read_all(const char *filename, int *outsize) {
     size_t size;
 
     SDL_RWops *file = SDL_RWFromFile(filename, "r");
-    if(file == NULL)
-        errx(-1, "Error opening '%s'", filename);
+    if(!file)
+        log_fatal("SDL_RWFromFile() failed: %s", SDL_GetError());
 
     size = SDL_RWsize(file);
 
@@ -260,8 +260,8 @@ char* read_all(const char *filename, int *outsize) {
 bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data) {
     const size_t bufsize = 128;
 
-#define SYNTAXERROR { warnx("%s(): syntax error on line %i, aborted! [%s:%i]", __func__, line, __FILE__, __LINE__); return false; }
-#define BUFFERERROR { warnx("%s(): string exceed the limit of %i, aborted! [%s:%i]", __func__, bufsize, __FILE__, __LINE__); return false; }
+#define SYNTAXERROR { log_warn("Syntax error on line %i, aborted! [%s:%i]", line, __FILE__, __LINE__); return false; }
+#define BUFFERERROR { log_warn("String exceed the limit of %li, aborted! [%s:%i]", (long int)bufsize, __FILE__, __LINE__); return false; }
 
     int i = 0, found, line = 0;
     char c, buf[bufsize], key[bufsize], val[bufsize];
@@ -323,7 +323,7 @@ bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *dat
     SDL_RWops *strm = SDL_RWFromFile(filename, "r");
 
     if(!strm) {
-        warnx("parse_keyvalue_file_cb(): SDL_RWFromFile() failed: %s", SDL_GetError());
+        log_warn("SDL_RWFromFile() failed: %s", SDL_GetError());
         return false;
     }
 
@@ -408,6 +408,13 @@ size_t SDL_RWprintf(SDL_RWops *rwops, const char* fmt, ...) {
     return ret;
 }
 
+void tsfprintf(FILE *out, const char *restrict fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    vfprintf(out, fmt, args);
+    va_end(args);
+}
+
 //
 // misc utils
 //
@@ -420,4 +427,17 @@ int getenvint(const char *v) {
     }
 
     return 0;
+}
+
+noreturn static void png_error_handler(png_structp png_ptr, png_const_charp error_msg) {
+    log_warn("PNG error: %s", error_msg);
+    png_longjmp(png_ptr, 1);
+}
+
+static void png_warning_handler(png_structp png_ptr, png_const_charp warning_msg) {
+    log_warn("PNG warning: %s", warning_msg);
+}
+
+void png_setup_error_handlers(png_structp png) {
+    png_set_error_fn(png, NULL, png_error_handler, png_warning_handler);
 }
