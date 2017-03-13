@@ -33,6 +33,8 @@ void hashtable_unset_deferred_now(Hashtable *ht);
 void hashtable_unset_all(Hashtable *ht);
 
 void* hashtable_foreach(Hashtable *ht, HTIterCallback callback, void *arg);
+
+// THIS IS NOT THREAD-SAFE. You have to use hashtable_lock/unlock to make it so.
 HashtableIterator* hashtable_iter(Hashtable *ht);
 bool hashtable_iter_next(HashtableIterator *iter, void **out_key, void **out_data);
 
@@ -53,5 +55,8 @@ int hashtable_test(void);
 
 void hashtable_print_stringkeys(Hashtable *ht);
 size_t hashtable_get_approx_overhead(Hashtable *ht);
+
+void hashtable_lock(Hashtable *ht);
+void hashtable_unlock(Hashtable *ht);
 
 #endif

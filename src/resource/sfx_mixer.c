@@ -22,7 +22,7 @@ bool check_sound_path(const char *path) {
 	return strstartswith(path, SFX_PATH_PREFIX) && audio_mixer_check_sound_path(path, false);
 }
 
-void* load_sound(const char *path, unsigned int flags) {
+void* load_sound_begin(const char *path, unsigned int flags) {
 	Mix_Chunk *sound = Mix_LoadWAV(path);
 
 	if(!sound) {
@@ -34,6 +34,10 @@ void* load_sound(const char *path, unsigned int flags) {
 	snd->impl = sound;
 
 	return snd;
+}
+
+void* load_sound_end(void *opaque, const char *path, unsigned int flags) {
+	return opaque;
 }
 
 void unload_sound(void *vsnd) {

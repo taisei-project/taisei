@@ -8,11 +8,13 @@
 
 #include "hashtable.h"
 #include "list.h"
+#include "log.h"
 
 #include <assert.h>
 #include <string.h>
 #include <zlib.h>
 #include <stdio.h>
+#include <SDL_mutex.h>
 
 typedef struct HashtableElement {
     void *next;
@@ -30,6 +32,7 @@ struct Hashtable {
     HTCopyFunc copy_func;
     HTFreeFunc free_func;
     ListContainer *deferred_unsets;
+    SDL_mutex *mutex;
 };
 
 typedef struct HashtableIterator {
@@ -53,10 +56,21 @@ Hashtable* hashtable_new(size_t size, HTCmpFunc cmp_func, HTHashFunc hash_func, 
     ht->copy_func = copy_func;
     ht->free_func = free_func;
     ht->deferred_unsets = NULL;
+    ht->mutex = SDL_CreateMutex();
 
     assert(ht->hash_func != NULL);
 
     return ht;
+}
+
+void hashtable_lock(Hashtable *ht) {
+    assert(ht != NULL);
+    SDL_LockMutex(ht->mutex);
+}
+
+void hashtable_unlock(Hashtable *ht) {
+    assert(ht != NULL);
+    SDL_UnlockMutex(ht->mutex);
 }
 
 static void hashtable_delete_callback(void **vlist, void *velem, void *vht) {
@@ -84,6 +98,8 @@ void hashtable_free(Hashtable *ht) {
     }
 
     hashtable_unset_all(ht);
+
+    SDL_DestroyMutex(ht->mutex);
     free(ht->table);
     free(ht);
 }
@@ -100,14 +116,17 @@ void* hashtable_get(Hashtable *ht, void *key) {
     assert(ht != NULL);
 
     hash_t hash = ht->hash_func(key);
+    hashtable_lock(ht);
     HashtableElement *elems = ht->table[hash % ht->table_size];
 
     for(HashtableElement *e = elems; e; e = e->next) {
         if(hash == e->hash && hashtable_compare(ht, key, e->key)) {
+            hashtable_unlock(ht);
             return e->data;
         }
     }
 
+    hashtable_unlock(ht);
     return NULL;
 }
 
@@ -116,6 +135,9 @@ void hashtable_set(Hashtable *ht, void *key, void *data) {
 
     hash_t hash = ht->hash_func(key);
     size_t idx = hash % ht->table_size;
+
+    hashtable_lock(ht);
+
     HashtableElement *elems = ht->table[idx], *elem;
 
     for(HashtableElement *e = elems; e; e = e->next) {
@@ -142,6 +164,8 @@ void hashtable_set(Hashtable *ht, void *key, void *data) {
     }
 
     ht->table[idx] = elems;
+
+    hashtable_unlock(ht);
 }
 
 void hashtable_unset(Hashtable *ht, void *key) {
@@ -151,6 +175,8 @@ void hashtable_unset(Hashtable *ht, void *key) {
 void hashtable_unset_deferred(Hashtable *ht, void *key) {
     assert(ht != NULL);
 
+    hashtable_lock(ht);
+
     ListContainer *c = create_element((void**)&ht->deferred_unsets, sizeof(ListContainer));
 
     if(ht->copy_func) {
@@ -158,17 +184,23 @@ void hashtable_unset_deferred(Hashtable *ht, void *key) {
     } else {
         c->data = key;
     }
+
+    hashtable_unlock(ht);
 }
 
 void hashtable_unset_deferred_now(Hashtable *ht) {
     ListContainer *next;
     assert(ht != NULL);
 
+    hashtable_lock(ht);
+
     for(ListContainer *c = ht->deferred_unsets; c; c = next) {
         next = c->next;
         hashtable_unset(ht, c->data);
         delete_element((void**)&ht->deferred_unsets, c);
     }
+
+    hashtable_unlock(ht);
 }
 
 /*
@@ -180,6 +212,8 @@ void* hashtable_foreach(Hashtable *ht, HTIterCallback callback, void *arg) {
 
     void *ret = NULL;
 
+    hashtable_lock(ht);
+
     for(size_t i = 0; i < ht->table_size; ++i) {
         for(HashtableElement *e = ht->table[i]; e; e = e->next) {
             ret = callback(e->key, e->data, arg);
@@ -188,6 +222,8 @@ void* hashtable_foreach(Hashtable *ht, HTIterCallback callback, void *arg) {
             }
         }
     }
+
+    hashtable_unlock(ht);
 
     return ret;
 }

@@ -38,6 +38,7 @@ char* strjoin(const char *first, ...) __attribute__((sentinel));
 char* vstrfmt(const char *fmt, va_list args);
 char* strfmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 void strip_trailing_slashes(char *buf);
+char* strtok_r(char *str, const char *delim, char **nextp);
 #undef strdup
 #define strdup SDL_strdup
 
@@ -147,5 +148,9 @@ int printf(const char*, ...) __attribute__((deprecated(
 #undef fprintf
 int fprintf(FILE*, const char*, ...) __attribute__((deprecated(
     "Use log_warn instead (or SDL_RWops if you want to write to a file)")));
+
+#undef strtok
+char* strtok() __attribute__((deprecated(
+    "Use strtok_r instead")));
 
 #endif

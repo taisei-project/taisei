@@ -24,10 +24,14 @@ bool check_texture_path(const char *path) {
 	return strendswith(path, TEX_EXTENSION);
 }
 
-void* load_texture(const char *path, unsigned int flags) {
-	SDL_Surface *surface = load_png(path);
+void* load_texture_begin(const char *path, unsigned int flags) {
+	return load_png(path);
+}
 
-	if(surface == NULL) {
+void* load_texture_end(void *opaque, const char *path, unsigned int flags) {
+	SDL_Surface *surface = opaque;
+
+	if(!surface) {
 		return NULL;
 	}
 

@@ -23,61 +23,94 @@ bool check_model_path(const char *path) {
 	return strendswith(path, MDL_EXTENSION);
 }
 
-void* load_model(const char *path, unsigned int flags) {
-	Model *m = malloc(sizeof(Model));
-
-	ObjFileData data;
-	unsigned int i;
-
+typedef struct ModelLoadData {
+	ObjFileData *obj;
 	Vertex *verts;
-	unsigned int ioffset = _vbo.offset;
+	Model *model;
+} ModelLoadData;
 
-	parse_obj(path, &data);
+void* load_model_begin(const char *path, unsigned int flags) {
+	Model *m = malloc(sizeof(Model));
+	ObjFileData *data = malloc(sizeof(ObjFileData));
+	Vertex *verts;
 
-	m->fverts = data.fverts;
-	m->indices = calloc(data.icount, sizeof(unsigned int));
-	m->icount = data.icount;
+	parse_obj(path, data);
 
-	verts = calloc(data.icount, sizeof(Vertex));
+	m->fverts = data->fverts;
+	m->indices = calloc(data->icount, sizeof(unsigned int));
+	m->icount = data->icount;
 
-#define BADREF(filename,aux,n) { log_warn("OBJ file '%s': Index %d: bad %s index reference\n", filename, n, aux); free(verts); free_obj(&data); return NULL; }
+	verts = calloc(data->icount, sizeof(Vertex));
 
-	memset(verts, 0, data.icount*sizeof(Vertex));
-	for(i = 0; i < data.icount; i++) {
+#define BADREF(filename,aux,n) { \
+	log_warn("OBJ file '%s': Index %d: bad %s index reference\n", filename, n, aux); \
+	free(m->indices); \
+	free(m); \
+	free(verts); \
+	free_obj(data); \
+	free(data); \
+	return NULL; \
+}
+
+	memset(verts, 0, data->icount*sizeof(Vertex));
+	for(unsigned int i = 0; i < data->icount; i++) {
 		int xi, ni, ti;
 
-		xi = data.indices[i][0]-1;
-		if(xi < 0 || xi >= data.xcount)
+		xi = data->indices[i][0]-1;
+		if(xi < 0 || xi >= data->xcount)
 			BADREF(path, "vertex", i);
 
-		memcpy(verts[i].x, data.xs[xi], sizeof(Vector));
+		memcpy(verts[i].x, data->xs[xi], sizeof(Vector));
 
-		if(data.tcount) {
-			ti = data.indices[i][1]-1;
-			if(ti < 0 || ti >= data.tcount)
+		if(data->tcount) {
+			ti = data->indices[i][1]-1;
+			if(ti < 0 || ti >= data->tcount)
 				BADREF(path, "texcoord", i);
 
-			verts[i].s = data.texcoords[ti][0];
-			verts[i].t = data.texcoords[ti][1];
+			verts[i].s = data->texcoords[ti][0];
+			verts[i].t = data->texcoords[ti][1];
 		}
 
-		if(data.ncount) {
-			ni = data.indices[i][2]-1;
-			if(ni < 0 || ni >= data.ncount)
+		if(data->ncount) {
+			ni = data->indices[i][2]-1;
+			if(ni < 0 || ni >= data->ncount)
 				BADREF(path, "normal", ni);
 
-			memcpy(verts[i].n, data.normals[ni], sizeof(Vector));
+			memcpy(verts[i].n, data->normals[ni], sizeof(Vector));
 		}
 
-		m->indices[i] = i+ioffset;
+		m->indices[i] = i;
 	}
 
 #undef BADREF
 
-	vbo_add_verts(&_vbo, verts, data.icount);
+	ModelLoadData *ldata = malloc(sizeof(ModelLoadData));
+	ldata->obj = data;
+	ldata->verts = verts;
+	ldata->model = m;
 
-	free(verts);
-	free_obj(&data);
+	return ldata;
+}
+
+void* load_model_end(void *opaque, const char *path, unsigned int flags) {
+	ModelLoadData *ldata = opaque;
+	unsigned int ioffset = _vbo.offset;
+
+	if(!ldata) {
+		return NULL;
+	}
+
+	for(int i = 0; i < ldata->obj->icount; ++i) {
+		ldata->model->indices[i] += ioffset;
+	}
+
+	vbo_add_verts(&_vbo, ldata->verts, ldata->obj->icount);
+
+	free(ldata->verts);
+	free_obj(ldata->obj);
+	free(ldata->obj);
+	Model *m = ldata->model;
+	free(ldata);
 
 	return m;
 }
@@ -102,7 +135,7 @@ static void parse_obj(const char *filename, ObjFileData *data) {
 		return;
 	}
 
-	char line[256];
+	char line[256], *save;
 	Vector buf;
 	char mode;
 	int linen = 0;
@@ -113,7 +146,7 @@ static void parse_obj(const char *filename, ObjFileData *data) {
 		linen++;
 
 		char *first;
-		first = strtok(line, " \n");
+		first = strtok_r(line, " \n", &save);
 
 		if(strcmp(first, "v") == 0)
 			mode = 'v';
@@ -127,10 +160,11 @@ static void parse_obj(const char *filename, ObjFileData *data) {
 			mode = 0;
 
 		if(mode != 0 && mode != 'f') {
-			buf[0] = atof(strtok(NULL, " \n"));
-			buf[1] = atof(strtok(NULL, " \n"));
+			buf[0] = atof(strtok_r(NULL, " \n", &save));
+			char *wtf = strtok_r(NULL, " \n", &save);
+			buf[1] = atof(wtf);
 			if(mode != 't')
-				buf[2] = atof(strtok(NULL, " \n"));
+				buf[2] = atof(strtok_r(NULL, " \n", &save));
 
 			switch(mode) {
 			case 'v':
@@ -152,7 +186,7 @@ static void parse_obj(const char *filename, ObjFileData *data) {
 			IVector ibuf;
 			memset(ibuf, 0, sizeof(ibuf));
 
-			while((segment = strtok(NULL, " \n"))) {
+			while((segment = strtok_r(NULL, " \n", &save))) {
 				seg = segment;
 				j++;
 

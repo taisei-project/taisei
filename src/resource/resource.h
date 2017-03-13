@@ -57,9 +57,15 @@ typedef char* (*ResourceFindFunc)(const char *name);
 // Tells whether the resource handler should attempt to load a file, specified by a path.
 typedef bool (*ResourceCheckFunc)(const char *path);
 
-// Loads a resource at path and returns a pointer to it.
-// Must return NULL and not crash the program on failure.
-typedef void* (*ResourceLoadFunc)(const char *path, unsigned int flags);
+// Begins loading a resource specified by path.
+// May be called asynchronously.
+// The return value is not interpreted in any way, it's just passed to the corresponding ResourceEndLoadFunc later.
+typedef void* (*ResourceBeginLoadFunc)(const char *path, unsigned int flags);
+
+// Finishes loading a resource and returns a pointer to it.
+// Will be called from the main thread only.
+// On failure, must return NULL and not crash the program.
+typedef void* (*ResourceEndLoadFunc)(void *opaque, const char *path, unsigned int flags);
 
 // Unloads a resource, freeing all allocated to it memory.
 typedef void (*ResourceUnloadFunc)(void *res);
@@ -69,9 +75,11 @@ typedef struct ResourceHandler {
 	ResourceNameFunc name;
 	ResourceFindFunc find;
 	ResourceCheckFunc check;
-	ResourceLoadFunc load;
+	ResourceBeginLoadFunc begin_load;
+	ResourceEndLoadFunc end_load;
 	ResourceUnloadFunc unload;
 	Hashtable *mapping;
+	Hashtable *async_load_data;
 	char subdir[32];
 } ResourceHandler;
 
@@ -112,5 +120,7 @@ char* resource_util_basename(const char *prefix, const char *path);
 const char* resource_util_filename(const char *path);
 
 void print_resource_hashtables(void);
+
+bool resource_sdl_event(SDL_Event *evt);
 
 #endif
