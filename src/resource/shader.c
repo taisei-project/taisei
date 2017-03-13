@@ -102,9 +102,9 @@ void load_shader_snippets(const char *filename, const char *prefix, unsigned int
 	ffoot = copy_segment(text, "%%FSHADER-FOOT%%", &ffsize);
 
 	if(!vhead || !fhead)
-		log_err("Syntax Error: missing HEAD section(s)");
+		log_fatal("Syntax Error: missing HEAD section(s)");
 	if((vfoot == NULL) + (ffoot == NULL) != 1)
-		log_err("Syntax Error: must contain exactly 1 FOOT section");
+		log_fatal("Syntax Error: must contain exactly 1 FOOT section");
 
 	while((sec = strstr(sec, "%%"))) {
 		sec += 2;
@@ -112,7 +112,7 @@ void load_shader_snippets(const char *filename, const char *prefix, unsigned int
 		name = sec;
 		nend = strstr(name, "%%");
 		if(!nend)
-			log_err("Syntax Error: expected '%%'");
+			log_fatal("Syntax Error: expected '%%'");
 
 		sec = nend + 2;
 

@@ -93,12 +93,12 @@ void stage_init_array(void) {
 #ifdef DEBUG
 	for(int i = 0; stages[i].procs; ++i) {
 		if(stages[i].type == STAGE_SPELL && !(stages[i].id & STAGE_SPELL_BIT)) {
-			log_err("Spell stage has an ID without the spell bit set: 0x%04x", stages[i].id);
+			log_fatal("Spell stage has an ID without the spell bit set: 0x%04x", stages[i].id);
 		}
 
 		for(int j = 0; stages[j].procs; ++j) {
 			if(i != j && stages[i].id == stages[j].id) {
-				log_err("Duplicate ID 0x%04x in stages array, indices: %i, %i", stages[i].id, i, j);
+				log_fatal("Duplicate ID 0x%04x in stages array, indices: %i, %i", stages[i].id, i, j);
 			}
 		}
 	}
@@ -701,7 +701,7 @@ void stage_loop(StageInfo *stage) {
 		log_debug("Random seed: %u", seed);
 	} else {
 		if(!global.replay_stage) {
-			log_err("Attemped to replay a NULL stage");
+			log_fatal("Attemped to replay a NULL stage");
 			return;
 		}
 

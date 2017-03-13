@@ -144,7 +144,7 @@ if(FATALERRS)
 endif()
 
 if(WIN32 OR APPLE)
-	add_definitions(-DLOG_ERROR_MSGBOX)
+	add_definitions(-DLOG_FATAL_MSGBOX)
 endif()
 
 set(LIBs ${LIBs}

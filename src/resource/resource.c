@@ -109,7 +109,7 @@ static Resource* load_resource(ResourceHandler *handler, const char *path, const
 
 		if(!path) {
 			if(!(flags & RESF_OPTIONAL)) {
-				log_err("Required %s '%s' couldn't be located", typename, name);
+				log_fatal("Required %s '%s' couldn't be located", typename, name);
 			} else {
 				log_warn("Failed to locate %s '%s'", typename, name);
 			}
@@ -139,7 +139,7 @@ static Resource* load_resource(ResourceHandler *handler, const char *path, const
 		path = path ? path : "<path unknown>";
 
 		if(!(flags & RESF_OPTIONAL)) {
-			log_err("Required %s '%s' couldn't be loaded (%s)", typename, name, path);
+			log_fatal("Required %s '%s' couldn't be loaded (%s)", typename, name, path);
 		} else {
 			log_warn("Failed to load %s '%s' (%s)", typename, name, path);
 		}
@@ -167,7 +167,7 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 			log_warn("%s '%s' was not preloaded", resource_type_names[type], name);
 
 			if(!(flags & RESF_OPTIONAL) && getenvint("TAISEI_PRELOAD_REQUIRED")) {
-				log_err("Aborting due to TAISEI_PRELOAD_REQUIRED");
+				log_fatal("Aborting due to TAISEI_PRELOAD_REQUIRED");
 			}
 		}
 

@@ -175,7 +175,7 @@ static void parse_obj(const char *filename, ObjFileData *data) {
 				}
 
 				if(jj == 0 || jj > 3 || segment[0] == '/')
-					log_err("OBJ file '%s:%d': Parsing error: Corrupt face definition", filename,linen);
+					log_fatal("OBJ file '%s:%d': Parsing error: Corrupt face definition", filename,linen);
 
 				data->indices = realloc(data->indices, sizeof(IVector)*(++data->icount));
 				memcpy(data->indices[data->icount-1], ibuf, sizeof(IVector));
@@ -185,10 +185,10 @@ static void parse_obj(const char *filename, ObjFileData *data) {
 				data->fverts = j;
 
 			if(data->fverts != j)
-				log_err("OBJ file '%s:%d': Parsing error: face vertex count must stay the same in the whole file", filename, linen);
+				log_fatal("OBJ file '%s:%d': Parsing error: face vertex count must stay the same in the whole file", filename, linen);
 
 			if(data->fverts != 3 && data->fverts != 4)
-				log_err("OBJ file '%s:%d': Parsing error: face vertex count must be either 3 or 4", filename, linen);
+				log_fatal("OBJ file '%s:%d': Parsing error: face vertex count must be either 3 or 4", filename, linen);
 		}
 	}
 

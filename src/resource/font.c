@@ -17,7 +17,7 @@ TTF_Font *load_font(char *name, int size) {
 
 	TTF_Font *f =  TTF_OpenFont(buf, size);
 	if(!f)
-		log_err("Failed to load font '%s'", buf);
+		log_fatal("Failed to load font '%s'", buf);
 
 	log_info("Loaded '%s'", buf);
 

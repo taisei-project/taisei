@@ -304,7 +304,7 @@ static void progress_write(SDL_RWops *file) {
 
 	if(SDL_RWtell(vfile) != bufsize) {
 		free(buf);
-		log_err("Buffer is inconsistent");
+		log_fatal("Buffer is inconsistent");
 		return;
 	}
 
@@ -313,7 +313,7 @@ static void progress_write(SDL_RWops *file) {
 	SDL_RWwrite(file, &cs, 4, 1);
 
 	if(!SDL_RWwrite(file, buf, bufsize, 1)) {
-		log_err("SDL_RWwrite() failed: %s", SDL_GetError());
+		log_fatal("SDL_RWwrite() failed: %s", SDL_GetError());
 		free(buf);
 		return;
 	}

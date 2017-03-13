@@ -95,7 +95,7 @@ static void APIENTRY video_gl_debug(
 	LogLevel lvl = LOG_DEBUG;
 
 	switch(type) {
-		case GL_DEBUG_TYPE_ERROR: strtype = "error"; lvl = LOG_ERR; break;
+		case GL_DEBUG_TYPE_ERROR: strtype = "error"; lvl = LOG_FATAL; break;
 		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: strtype = "deprecated"; lvl = LOG_WARN; break;
 		case GL_DEBUG_TYPE_PORTABILITY: strtype = "portability"; break;
 		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: strtype = "undefined"; break;
@@ -179,7 +179,7 @@ static void _video_setmode(int w, int h, uint32_t flags, bool fallback) {
 		}
 
 		if(!video.glcontext) {
-			log_err("Error creating OpenGL context: %s", SDL_GetError());
+			log_fatal("Error creating OpenGL context: %s", SDL_GetError());
 			return;
 		}
 
@@ -193,7 +193,7 @@ static void _video_setmode(int w, int h, uint32_t flags, bool fallback) {
 	}
 
 	if(fallback) {
-		log_err("Error opening screen: %s", SDL_GetError());
+		log_fatal("Error opening screen: %s", SDL_GetError());
 		return;
 	}
 

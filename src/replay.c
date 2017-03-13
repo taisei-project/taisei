@@ -365,7 +365,7 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 	mode &= REPLAY_READ_ALL;
 
 	if(!mode) {
-		log_err("Called with invalid read mode");
+		log_fatal("Called with invalid read mode");
 	}
 
 	filesize = SDL_RWsize(file);
@@ -423,7 +423,7 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 	if(mode & REPLAY_READ_EVENTS) {
 		if(!(mode & REPLAY_READ_META)) {
 			if(!rpy->fileoffset) {
-				log_err("Tried to read events before reading metadata");
+				log_fatal("Tried to read events before reading metadata");
 			}
 
 			for(int i = 0; i < rpy->numstages; ++i) {
@@ -626,7 +626,7 @@ int replay_test(void) {
 	Replay rpy;
 
 	if(replay_read(&rpy, handle, REPLAY_READ_ALL)) {
-		log_err("Succeeded loading garbage data as a replay... that shouldn't happen");
+		log_fatal("Succeeded loading garbage data as a replay... that shouldn't happen");
 	}
 
 	replay_destroy(&rpy);

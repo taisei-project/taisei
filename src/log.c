@@ -51,7 +51,7 @@ static char* format_log_string(LogLevel lvl, const char *funcname, const char *f
 }
 
 noreturn static void log_abort(const char *msg) {
-#ifdef LOG_ERROR_MSGBOX
+#ifdef LOG_FATAL_MSGBOX
     if(msg) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Taisei error", msg, NULL);
     }
@@ -88,7 +88,7 @@ static void log_internal(LogLevel lvl, const char *funcname, const char *fmt, va
 
     free(str);
 
-    if(lvl & LOG_ERR) {
+    if(lvl & LOG_FATAL) {
         log_abort(str);
     }
 }
@@ -106,8 +106,8 @@ noreturn void _taisei_log_fatal(LogLevel lvl, const char *funcname, const char *
     log_internal(lvl, funcname, fmt, args);
     va_end(args);
 
-    // should usually not get here, log_internal will abort earlier if lvl is LOG_ERR
-    // that is unless LOG_ERR is disabled for some reason
+    // should usually not get here, log_internal will abort earlier if lvl is LOG_FATAL
+    // that is unless LOG_FATAL is disabled for some reason
     log_abort(NULL);
 }
 

@@ -10,10 +10,10 @@ typedef enum LogLevel {
     LOG_DEBUG = 1,
     LOG_INFO = 2,
     LOG_WARN = 4,
-    LOG_ERR = 8,
+    LOG_FATAL = 8,
 
     LOG_SPAM = LOG_DEBUG | LOG_INFO,
-    LOG_ALERT = LOG_WARN | LOG_ERR,
+    LOG_ALERT = LOG_WARN | LOG_FATAL,
     LOG_ALL = LOG_SPAM | LOG_ALERT,
 } LogLevel;
 
@@ -33,7 +33,7 @@ void log_add_output(LogLevel levels, SDL_RWops *output);
 
 #define log_info(...) _taisei_log(LOG_INFO, __func__, __VA_ARGS__)
 #define log_warn(...) _taisei_log(LOG_WARN, __func__, __VA_ARGS__)
-#define log_err(...) _taisei_log_fatal(LOG_ERR, __func__, __VA_ARGS__)
+#define log_fatal(...) _taisei_log_fatal(LOG_FATAL, __func__, __VA_ARGS__)
 #define log_custom(lvl, ...) _taisei_log(lvl, __func__, __VA_ARGS__)
 
 //

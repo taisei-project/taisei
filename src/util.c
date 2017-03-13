@@ -240,7 +240,7 @@ char* read_all(const char *filename, int *outsize) {
 
     SDL_RWops *file = SDL_RWFromFile(filename, "r");
     if(!file)
-        log_err("SDL_RWFromFile() failed: %s", SDL_GetError());
+        log_fatal("SDL_RWFromFile() failed: %s", SDL_GetError());
 
     size = SDL_RWsize(file);
 

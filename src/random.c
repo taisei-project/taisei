@@ -112,7 +112,7 @@ static void tsrand_error(const char *file, const char *func, unsigned int line, 
 	vsnprintf(buf, sizeof(buf), fmt, args);
 	va_end(args);
 
-	log_err("%s(): %s [%s:%u]", func, buf, file, line);
+	log_fatal("%s(): %s [%s:%u]", func, buf, file, line);
 }
 
 #define TSRANDERR(...) tsrand_error(file, __func__, line, __VA_ARGS__)

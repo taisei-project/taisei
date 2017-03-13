@@ -134,7 +134,7 @@ char* strncpy() __attribute__((deprecated(
 
 #undef errx
 noreturn void errx(int, const char*, ...) __attribute__((deprecated(
-    "Use log_err instead")));
+    "Use log_fatal instead")));
 
 #undef warnx
 void warnx(const char*, ...) __attribute__((deprecated(

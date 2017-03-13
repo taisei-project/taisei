@@ -112,7 +112,7 @@ void load_gl_library(void) {
 	}
 
 	if(SDL_GL_LoadLibrary(lib) < 0) {
-		log_err("SDL_GL_LoadLibrary() failed: %s", SDL_GetError());
+		log_fatal("SDL_GL_LoadLibrary() failed: %s", SDL_GetError());
 	}
 #endif
 }

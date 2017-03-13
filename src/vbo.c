@@ -33,7 +33,7 @@ void init_vbo(VBO *vbo, int size) {
 
 void vbo_add_verts(VBO *vbo, Vertex *verts, int count) {
 	if(vbo->offset + count > vbo->size)
-		log_err("Cannot add Vertices: VBO too small!");
+		log_fatal("Cannot add Vertices: VBO too small!");
 
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof(Vertex)*vbo->offset, sizeof(Vertex)*count, verts);
 

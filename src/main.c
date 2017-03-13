@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
 	MKDIR(get_replays_path());
 
 	if(chdir(get_prefix())) {
-		log_err("chdir() failed: %s", strerror(errno));
+		log_fatal("chdir() failed: %s", strerror(errno));
 	} else {
 		char cwd[1024]; // i don't care if this is not enough for you, getcwd is garbage
 		getcwd(cwd, sizeof(cwd));
@@ -148,7 +148,7 @@ int main(int argc, char **argv) {
 	config_load(CONFIG_FILE);
 
 	if(SDL_Init(SDL_INIT_VIDEO) < 0)
-		log_err("SDL_Init() failed: %s", SDL_GetError());
+		log_fatal("SDL_Init() failed: %s", SDL_GetError());
 
 	init_global();
 	video_init();
@@ -187,7 +187,7 @@ int main(int argc, char **argv) {
 		StageInfo* stg = stage_get(atoi(argv[1]));
 
 		if(!stg) {
-			log_err("Invalid stage id");
+			log_fatal("Invalid stage id");
 		}
 
 		global.diff = stg->difficulty;
