@@ -29,7 +29,7 @@ static const char *level_prefix_map[] = { "D", "I", "W", "E" };
 
 static const char* level_prefix(LogLevel lvl) {
     int idx = SDL_MostSignificantBitIndex32(lvl);
-    assert(idx >= 0 && idx < sizeof(level_prefix_map));
+    assert(idx >= 0 && idx < sizeof(level_prefix_map) / sizeof(char*));
     return level_prefix_map[idx];
 }
 
