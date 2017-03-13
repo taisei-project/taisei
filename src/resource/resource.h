@@ -32,10 +32,9 @@ typedef enum ResourceType {
 } ResourceType;
 
 typedef enum ResourceFlags {
-	RESF_OVERRIDE = 1,
-	RESF_OPTIONAL = 2,
-	RESF_PERMANENT = 4,
-	RESF_PRELOAD = 8,
+	RESF_OPTIONAL = 1,
+	RESF_PERMANENT = 2,
+	RESF_PRELOAD = 4,
 } ResourceFlags;
 
 #define RESF_DEFAULT 0

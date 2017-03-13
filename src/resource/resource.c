@@ -221,14 +221,12 @@ static Resource* load_resource(ResourceHandler *handler, const char *path, const
 		resource_wait_for_async_load(handler, name);
 	}
 
-	if(!(flags & RESF_OVERRIDE)) {
-		res = hashtable_get_string(handler->mapping, name);
+	res = hashtable_get_string(handler->mapping, name);
 
-		if(res) {
-			log_warn("%s '%s' is already loaded", typename, name);
-			free(allocated_name);
-			return res;
-		}
+	if(res) {
+		log_warn("%s '%s' is already loaded", typename, name);
+		free(allocated_name);
+		return res;
 	}
 
 	if(async) {
@@ -275,8 +273,8 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 	resource_wait_for_async_load(handler, name);
 	Resource *res = hashtable_get_string(handler->mapping, name);
 
-	if(!res || flags & RESF_OVERRIDE) {
-		if(!(flags & (RESF_PRELOAD | RESF_OVERRIDE))) {
+	if(!res) {
+		if(!(flags & RESF_PRELOAD)) {
 			log_warn("%s '%s' was not preloaded", resource_type_names[type], name);
 
 			if(!(flags & RESF_OPTIONAL) && getenvint("TAISEI_PRELOAD_REQUIRED")) {
