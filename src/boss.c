@@ -207,6 +207,7 @@ void start_attack(Boss *b, Attack *a) {
 Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule) {
 	boss->attacks = realloc(boss->attacks, sizeof(Attack)*(++boss->acount));
 	Attack *a = &boss->attacks[boss->acount-1];
+	memset(a, 0, sizeof(Attack));
 
 	boss->current = &boss->attacks[0];
 
