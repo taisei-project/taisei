@@ -14,6 +14,7 @@ typedef enum LogLevel {
 
     LOG_SPAM = LOG_DEBUG | LOG_INFO,
     LOG_ALERT = LOG_WARN | LOG_FATAL,
+
     LOG_ALL = LOG_SPAM | LOG_ALERT,
 } LogLevel;
 
@@ -21,9 +22,30 @@ typedef enum LogLevel {
     #define LOG_DEFAULT_LEVELS LOG_ALL
 #endif
 
+#ifndef LOG_DEFAULT_LEVELS_FILE
+    #define LOG_DEFAULT_LEVELS_FILE LOG_ALL
+#endif
+
+#ifndef LOG_DEFAULT_LEVELS_CONSOLE
+    #ifdef DEBUG
+        #define LOG_DEFAULT_LEVELS_CONSOLE LOG_ALL
+    #else
+        #define LOG_DEFAULT_LEVELS_CONSOLE LOG_ALERT
+    #endif
+#endif
+
+#ifndef LOG_DEFAULT_LEVELS_STDOUT
+    #define LOG_DEFAULT_LEVELS_STDOUT LOG_SPAM
+#endif
+
+#ifndef LOG_DEFAULT_LEVELS_STDERR
+    #define LOG_DEFAULT_LEVELS_STDERR LOG_ALERT
+#endif
+
 void log_init(LogLevel lvls);
 void log_shutdown(void);
 void log_add_output(LogLevel levels, SDL_RWops *output);
+LogLevel log_parse_levels(LogLevel lvls, const char *lvlmod);
 
 #ifdef DEBUG
     #define log_debug(...) _taisei_log(LOG_DEBUG, __func__, __VA_ARGS__)

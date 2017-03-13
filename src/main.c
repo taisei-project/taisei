@@ -45,10 +45,15 @@ void init_log(void) {
 	const char *pref = get_config_path();
 	char *logpath = strfmt("%s/%s", pref, "log.txt");
 
+	LogLevel lvls_console = log_parse_levels(LOG_DEFAULT_LEVELS_CONSOLE, getenv("TAISEI_LOGLVLS_CONSOLE"));
+	LogLevel lvls_stdout = lvls_console & log_parse_levels(LOG_DEFAULT_LEVELS_STDOUT, getenv("TAISEI_LOGLVLS_STDOUT"));
+	LogLevel lvls_stderr = lvls_console & log_parse_levels(LOG_DEFAULT_LEVELS_STDERR, getenv("TAISEI_LOGLVLS_STDERR"));
+	LogLevel lvls_file = log_parse_levels(LOG_DEFAULT_LEVELS_FILE, getenv("TAISEI_LOGLVLS_FILE"));
+
 	log_init(LOG_DEFAULT_LEVELS);
-	log_add_output(LOG_SPAM, SDL_RWFromFP(stdout, false));
-	log_add_output(LOG_ALERT, SDL_RWFromFP(stderr, false));
-	log_add_output(LOG_ALL, SDL_RWFromFile(logpath, "w"));
+	log_add_output(lvls_stdout, SDL_RWFromFP(stdout, false));
+	log_add_output(lvls_stderr, SDL_RWFromFP(stderr, false));
+	log_add_output(lvls_file, SDL_RWFromFile(logpath, "w"));
 
 	free(logpath);
 }

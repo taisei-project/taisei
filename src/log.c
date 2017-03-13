@@ -24,11 +24,13 @@ static Logger *loggers = NULL;
 static unsigned int enabled_log_levels;
 static SDL_mutex *log_mutex;
 
+// order must much the LogLevel enum after LOG_NONE
+static const char *level_prefix_map[] = { "D", "I", "W", "E" };
+
 static const char* level_prefix(LogLevel lvl) {
-    static const char *prefmap[] = { "D", "I", "W", "E" };
     int idx = SDL_MostSignificantBitIndex32(lvl);
-    assert(idx >= 0 && idx < sizeof(prefmap));
-    return prefmap[idx];
+    assert(idx >= 0 && idx < sizeof(level_prefix_map));
+    return level_prefix_map[idx];
 }
 
 static char* format_log_string(LogLevel lvl, const char *funcname, const char *fmt, va_list args) {
@@ -129,4 +131,40 @@ void log_add_output(LogLevel levels, SDL_RWops *output) {
     Logger *l = create_element((void**)&loggers, sizeof(Logger));
     l->levels = levels;
     l->out = output;
+}
+
+static LogLevel chr2lvl(char c) {
+    c = toupper(c);
+
+    for(int i = 0; i < sizeof(level_prefix_map) / sizeof(char*); ++i) {
+        if(c == level_prefix_map[i][0]) {
+            return (1 << i);
+        } else if(c == 'A') {
+            return LOG_ALL;
+        }
+    }
+
+    return 0;
+}
+
+LogLevel log_parse_levels(LogLevel lvls, const char *lvlmod) {
+    if(!lvlmod) {
+        return lvls;
+    }
+
+    bool enable = true;
+
+    for(const char *c = lvlmod; *c; ++c) {
+        if(*c == '+') {
+            enable = true;
+        } else if(*c == '-') {
+            enable = false;
+        } else if(enable) {
+            lvls |= chr2lvl(*c);
+        } else {
+            lvls &= ~chr2lvl(*c);
+        }
+    }
+
+    return lvls;
 }
