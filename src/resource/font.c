@@ -8,7 +8,6 @@
 #include "font.h"
 #include "global.h"
 #include "paths/native.h"
-#include <assert.h>
 
 struct Fonts _fonts;
 

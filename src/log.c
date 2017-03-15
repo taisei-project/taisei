@@ -1,5 +1,4 @@
 
-#include <assert.h>
 #include <SDL_bits.h>
 #include <SDL_mutex.h>
 
@@ -34,7 +33,7 @@ static const char *level_prefix_map[] = { "D", "I", "W", "E" };
 
 static const char* level_prefix(LogLevel lvl) {
     int idx = SDL_MostSignificantBitIndex32(lvl);
-    assert(idx >= 0 && idx < sizeof(level_prefix_map) / sizeof(char*));
+    assert_nolog(idx >= 0 && idx < sizeof(level_prefix_map) / sizeof(char*));
     return level_prefix_map[idx];
 }
 
@@ -169,6 +168,10 @@ void log_shutdown(void) {
     delete_all_elements((void**)&loggers, delete_logger);
     SDL_DestroyMutex(log_mutex);
     log_mutex = NULL;
+}
+
+bool log_initialized(void) {
+    return log_mutex;
 }
 
 void log_add_output(LogLevel levels, SDL_RWops *output) {

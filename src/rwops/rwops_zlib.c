@@ -2,7 +2,6 @@
 #include <SDL.h>
 #include <stdint.h>
 #include <zlib.h>
-#include <assert.h>
 #include "rwops_zlib.h"
 #include "util.h"
 

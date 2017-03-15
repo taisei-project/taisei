@@ -18,7 +18,6 @@
 #include "font.h"
 #include "model.h"
 #include "hashtable.h"
-#include "assert.h"
 #include "paths/native.h"
 
 typedef enum ResourceType {

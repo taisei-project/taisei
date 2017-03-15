@@ -60,6 +60,7 @@ void log_shutdown(void);
 void log_add_output(LogLevel levels, SDL_RWops *output);
 void log_backtrace(LogLevel lvl);
 LogLevel log_parse_levels(LogLevel lvls, const char *lvlmod);
+bool log_initialized(void);
 
 #ifdef DEBUG
     #define log_debug(...) _taisei_log(LOG_DEBUG, false, __func__, __VA_ARGS__)

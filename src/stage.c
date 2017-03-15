@@ -5,8 +5,6 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
-#include <assert.h>
-
 #include "util.h"
 #include "stage.h"
 

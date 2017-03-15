@@ -115,6 +115,18 @@ void tsfprintf(FILE *out, const char *restrict fmt, ...) __attribute__((format(p
 
 int getenvint(const char *v) __attribute__((pure));
 void png_setup_error_handlers(png_structp png);
+noreturn void _ts_assert_fail(const char *cond, const char *func, const char *file, int line, bool use_log);
+
+#undef assert
+
+#ifdef NDEBUG
+    #define _assert(cond,uselog)
+#else
+    #define _assert(cond,uselog) ((cond) ? (void)0 : _ts_assert_fail(#cond, __func__, __FILE__, __LINE__, uselog))
+#endif
+
+#define assert(cond) _assert(cond, true)
+#define assert_nolog(cond) _assert(cond, false)
 
 //
 // safeguards against some dangerous or otherwise undesirable practices

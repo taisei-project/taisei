@@ -6,7 +6,6 @@
  */
 
 #include <png.h>
-#include <assert.h>
 
 #include "texture.h"
 #include "resource.h"

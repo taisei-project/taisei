@@ -7,7 +7,6 @@
  */
 
 #include <string.h>
-#include <assert.h>
 
 #include "config.h"
 #include "global.h"
