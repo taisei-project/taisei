@@ -49,8 +49,9 @@ void init_log(void) {
 	LogLevel lvls_stdout = lvls_console & log_parse_levels(LOG_DEFAULT_LEVELS_STDOUT, getenv("TAISEI_LOGLVLS_STDOUT"));
 	LogLevel lvls_stderr = lvls_console & log_parse_levels(LOG_DEFAULT_LEVELS_STDERR, getenv("TAISEI_LOGLVLS_STDERR"));
 	LogLevel lvls_file = log_parse_levels(LOG_DEFAULT_LEVELS_FILE, getenv("TAISEI_LOGLVLS_FILE"));
+	LogLevel lvls_backtrace = log_parse_levels(LOG_DEFAULT_LEVELS_BACKTRACE, getenv("TAISEI_LOGLVLS_BACKTRACE"));
 
-	log_init(LOG_DEFAULT_LEVELS);
+	log_init(LOG_DEFAULT_LEVELS, lvls_backtrace);
 	log_add_output(lvls_stdout, SDL_RWFromFP(stdout, false));
 	log_add_output(lvls_stderr, SDL_RWFromFP(stderr, false));
 	log_add_output(lvls_file, SDL_RWFromFile(logpath, "w"));
@@ -59,9 +60,6 @@ void init_log(void) {
 }
 
 int run_tests(void) {
-	log_init(LOG_DEFAULT_LEVELS);
-	log_add_output(LOG_ALL, SDL_RWFromFP(stdout, false));
-
 	if(tsrand_test()) {
 		return 1;
 	}
@@ -82,7 +80,6 @@ int run_tests(void) {
 		return 1;
 	}
 
-	log_shutdown();
 	return 0;
 }
 
@@ -94,10 +91,6 @@ int run_tests(void) {
 
 int main(int argc, char **argv) {
 	setlocale(LC_ALL, "C");
-
-	if(run_tests()) {
-		return 0;
-	}
 
 #ifdef DEBUG
 	if(argc >= 2 && argv[1] && !strcmp(argv[1], "dumpstages")) {
@@ -134,6 +127,10 @@ int main(int argc, char **argv) {
 
 	init_paths();
 	init_log();
+
+	if(run_tests()) {
+		return 0;
+	}
 
 	log_info("Content path: %s", get_prefix());
 	log_info("Userdata path: %s", get_config_path());

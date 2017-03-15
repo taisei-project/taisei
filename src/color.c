@@ -6,7 +6,6 @@
  * Copyright (C) 2012, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
  */
 
-#include <assert.h>
 #include <stdio.h>
 #include "color.h"
 
