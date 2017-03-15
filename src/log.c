@@ -3,6 +3,10 @@
 #include <SDL_bits.h>
 #include <SDL_mutex.h>
 
+#ifdef LOG_ENABLE_BACKTRACE
+    #include <execinfo.h>
+#endif
+
 #include "log.h"
 #include "util.h"
 #include "list.h"
@@ -22,6 +26,7 @@ typedef struct Logger {
 
 static Logger *loggers = NULL;
 static unsigned int enabled_log_levels;
+static unsigned int backtrace_log_levels;
 static SDL_mutex *log_mutex;
 
 // order must much the LogLevel enum after LOG_NONE
@@ -56,7 +61,7 @@ noreturn static void log_abort(const char *msg) {
     abort();
 }
 
-static void log_internal(LogLevel lvl, const char *funcname, const char *fmt, va_list args) {
+static void log_internal(LogLevel lvl, bool is_backtrace, const char *funcname, const char *fmt, va_list args) {
     assert(fmt[strlen(fmt)-1] != '\n');
 
     char *str = NULL;
@@ -74,30 +79,73 @@ static void log_internal(LogLevel lvl, const char *funcname, const char *fmt, va
                 slen = strlen(str);
             }
 
-            SDL_LockMutex(log_mutex);
-            SDL_RWwrite(l->out, str, 1, slen);
-            SDL_UnlockMutex(log_mutex);
+            // log_backtrace locks the mutex by itself, then recursively calls log_internal
+            if(is_backtrace) {
+                SDL_RWwrite(l->out, str, 1, slen);
+            } else {
+                SDL_LockMutex(log_mutex);
+                SDL_RWwrite(l->out, str, 1, slen);
+                SDL_UnlockMutex(log_mutex);
+            }
         }
     }
 
     free(str);
+
+    if(is_backtrace) {
+        return;
+    }
+
+    if(lvl & backtrace_log_levels) {
+        log_backtrace(lvl);
+    }
 
     if(lvl & LOG_FATAL) {
         log_abort(str);
     }
 }
 
-void _taisei_log(LogLevel lvl, const char *funcname, const char *fmt, ...) {
+static char** get_backtrace(int *num) {
+#ifdef LOG_ENABLE_BACKTRACE
+    void *ptrs[*num];
+    *num = backtrace(ptrs, *num);
+    return backtrace_symbols(ptrs, *num);
+#else
+    char **dummy = malloc(sizeof(char*));
+    *num = 1;
+    *dummy = "[Backtrace support is not available in this build]";
+    return dummy;
+#endif
+}
+
+void log_backtrace(LogLevel lvl) {
+    int num = LOG_BACKTRACE_SIZE;
+    char **symbols = get_backtrace(&num);
+
+    SDL_LockMutex(log_mutex);
+    _taisei_log(lvl, true, __func__, "*** BACKTRACE ***");
+
+    for(int i = 0; i < num; ++i) {
+        _taisei_log(lvl, true, __func__, "> %s", symbols[i]);
+    }
+
+    _taisei_log(lvl, true, __func__, "*** END OF BACKTRACE ***");
+    SDL_UnlockMutex(log_mutex);
+
+    free(symbols);
+}
+
+void _taisei_log(LogLevel lvl, bool is_backtrace, const char *funcname, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
-    log_internal(lvl, funcname, fmt, args);
+    log_internal(lvl, is_backtrace, funcname, fmt, args);
     va_end(args);
 }
 
 noreturn void _taisei_log_fatal(LogLevel lvl, const char *funcname, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
-    log_internal(lvl, funcname, fmt, args);
+    log_internal(lvl, false, funcname, fmt, args);
     va_end(args);
 
     // should usually not get here, log_internal will abort earlier if lvl is LOG_FATAL
@@ -111,8 +159,9 @@ static void delete_logger(void **loggers, void *logger) {
     delete_element(loggers, logger);
 }
 
-void log_init(LogLevel lvls) {
+void log_init(LogLevel lvls, LogLevel backtrace_lvls) {
     enabled_log_levels = lvls;
+    backtrace_log_levels = lvls & backtrace_lvls;
     log_mutex = SDL_CreateMutex();
 }
 
@@ -123,7 +172,11 @@ void log_shutdown(void) {
 }
 
 void log_add_output(LogLevel levels, SDL_RWops *output) {
-    if(!output || !(levels & enabled_log_levels)) {
+    if(!output) {
+        return;
+    }
+
+    if(!(levels & enabled_log_levels)) {
         SDL_RWclose(output);
         return;
     }

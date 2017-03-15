@@ -196,6 +196,13 @@ if(POSIX)
 	add_definitions(-D__POSIX__)
 endif()
 
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+	check_symbol_exists(backtrace "execinfo.h" HAVE_BACKTRACE)
+	if(HAVE_BACKTRACE)
+		add_definitions(-DLOG_ENABLE_BACKTRACE)
+	endif()
+endif()
+
 if (CMAKE_GENERATOR STREQUAL "Ninja" AND
     ((CMAKE_C_COMPILER_ID STREQUAL "GNU" AND NOT CMAKE_C_COMPILER_VERSION VERSION_LESS 4.9) OR
      (CMAKE_C_COMPILER_ID STREQUAL "Clang" AND NOT CMAKE_C_COMPILER_VERSION VERSION_LESS 3.5)))
