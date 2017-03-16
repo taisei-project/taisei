@@ -396,6 +396,14 @@ void hina_wheel(Boss *h, int time) {
 	}
 }
 
+static int timeout_deadproj_linear(Projectile *p, int time) {
+	if(time > creal(p->args[0]))
+		p->type = DeadProj;
+	p->pos += p->args[1];
+	p->angle = carg(p->args[1]);
+	return 1;
+}
+
 int hina_monty_slave(Enemy *s, int time) {
 	if(time < 0) {
 		return 1;
@@ -407,7 +415,7 @@ int hina_monty_slave(Enemy *s, int time) {
 
 		if(global.diff > D_Easy) {
 			create_projectile2c("crystal", s->pos, rgb(0.5 + 0.5 * psin(time*0.2), 0.3, 1.0 - 0.5 * psin(time*0.2)),
-								asymptotic, -0.5*I + 1 * (sin(time) + I * cos(time)), 4);
+								timeout_deadproj_linear, 500, -0.5*I + 1 * (sin(time) + I * cos(time)));
 		}
 	}
 
@@ -510,13 +518,13 @@ void hina_monty(Boss *h, int time) {
 		targetpos = cwidth * (0.5 + good_pos) + VIEWPORT_H/2.0*I - 200.0*I;
 	}
 
-	FROM_TO(220, 360 + 60 * max(0, (double)global.diff - D_Easy), 60 - 15 * (global.diff > D_Hard)) {
+	FROM_TO(220, 360 + 60 * max(0, (double)global.diff - D_Easy), 60) {
 		float cnt = (2.0+global.diff) * 5;
 		for(int i = 0; i < cnt; i++) {
 			bool top = ((global.diff > D_Hard) && (_i % 2));
 			complex o = !top*VIEWPORT_H*I + cwidth*(bad_pos + i/(double)(cnt - 1));
 			create_projectile2c("ball", o, top ? rgb(0, 0, 0.7) : rgb(0.7, 0, 0), accelerated, 0,
-				(top ? -0.5 : 1) * 0.001*(1+global.diff) * (sin((M_PI * 4 * i / (cnt - 1))) - I*(1 + psin(i + global.frames)))
+				(top ? -0.5 : 1) * 0.004 * (sin((M_PI * 4 * i / (cnt - 1)))*0.1*global.diff - I*(1 + psin(i + global.frames)))
 			)->draw = ProjDrawAdd;
 		}
 	}
