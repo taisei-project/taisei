@@ -49,12 +49,12 @@ void reset_sounds(void) {
 }
 
 Sound* get_sound(const char *name) {
-    Resource *res = get_resource(RES_SFX, name, 0);
+    Resource *res = get_resource(RES_SFX, name, RESF_OPTIONAL);
     return res ? res->sound : NULL;
 }
 
 Music* get_music(const char *name) {
-    Resource *res = get_resource(RES_BGM, name, 0);
+    Resource *res = get_resource(RES_BGM, name, RESF_OPTIONAL);
     return res ? res->music : NULL;
 }
 
@@ -68,42 +68,13 @@ static void bgm_cfg_volume_callback(ConfigIndex idx, ConfigValue v) {
 
 static void load_bgm_descriptions(void) {
     char *fullname = strjoin(get_prefix(), "bgm/bgm.conf", NULL);
-    FILE *fp = fopen(fullname, "rt");
+    bgm_descriptions = parse_keyvalue_file(fullname, 16);
     free(fullname);
-
-    bgm_descriptions = hashtable_new_stringkeys(16);
-
-    if(fp == NULL) {
-        return;
-    }
-
-    char line[256];
-    while(fgets(line, sizeof(line), fp)) {
-        char *rem;
-
-        while((rem = strchr(line,'\n')) != NULL) *rem = '\0';
-        while((rem = strchr(line,'\r')) != NULL) *rem = '\0';
-        while((rem = strchr(line,'\t')) != NULL) *rem = ' ';
-
-        if((rem = strchr(line,' ' )) == NULL) {
-            if(strlen(line) > 0)
-                warnx("load_bgm_description(): illegal string format. See README.");
-            continue;
-        }
-
-        *(rem++)='\0';
-
-        char *value = strjoin("BGM: ", rem, NULL);
-        hashtable_set_string(bgm_descriptions, line, value);
-        printf("Music %s is now known as \"%s\".\n", line, value);
-    }
-
-    fclose(fp);
     return;
 }
 
 static inline char* get_bgm_desc(char *name) {
-    return (char*)hashtable_get_string(bgm_descriptions, name);
+    return bgm_descriptions ? (char*)hashtable_get_string(bgm_descriptions, name) : NULL;
 }
 
 void resume_bgm(void) {
@@ -122,9 +93,9 @@ void stop_bgm(bool force) {
             audio_backend_music_pause();
         }
 
-        printf("BGM stopped.\n");
+        log_info("BGM stopped");
     } else {
-        printf("stop_bgm(): No BGM was playing.\n");
+        log_info("No BGM was playing");
     }
 }
 
@@ -152,7 +123,7 @@ void start_bgm(const char *name) {
         stralloc(&current_bgm.name, name);
 
         if((current_bgm.music = get_music(name)) == NULL) {
-            warnx("start_bgm(): BGM '%s' does not exist", current_bgm.name);
+            log_warn("BGM '%s' does not exist", current_bgm.name);
             stop_bgm(true);
             free(current_bgm.name);
             current_bgm.name = NULL;
@@ -181,7 +152,7 @@ void start_bgm(const char *name) {
         current_bgm.started_at = -1;
     }
 
-    printf("Started %s\n", (current_bgm.title ? current_bgm.title : current_bgm.name));
+    log_info("Started %s", (current_bgm.title ? current_bgm.title : current_bgm.name));
 }
 
 void audio_init(void) {
@@ -193,6 +164,9 @@ void audio_init(void) {
 
 void audio_shutdown(void) {
     audio_backend_shutdown();
-    hashtable_foreach(bgm_descriptions, hashtable_iter_free_data, NULL);
-    hashtable_free(bgm_descriptions);
+
+    if(bgm_descriptions) {
+        hashtable_foreach(bgm_descriptions, hashtable_iter_free_data, NULL);
+        hashtable_free(bgm_descriptions);
+    }
 }

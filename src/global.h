@@ -43,7 +43,6 @@
 #include "difficulty.h"
 #include "color.h"
 #include "audio.h"
-#include "taisei_err.h"
 #include "rwops/all.h"
 
 #define FILE_PREFIX PREFIX "/share/taisei/"

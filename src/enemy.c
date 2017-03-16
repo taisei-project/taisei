@@ -224,3 +224,18 @@ void process_enemies(Enemy **enemies) {
 		}
 	}
 }
+
+void enemies_preload(void) {
+	preload_resources(RES_ANIM, RESF_DEFAULT,
+		"fairy",
+		"bigfairy",
+	NULL);
+
+	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+		"swirl",
+	NULL);
+
+	preload_resources(RES_SFX, RESF_OPTIONAL,
+		"enemydeath",
+	NULL);
+}

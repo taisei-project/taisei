@@ -5,92 +5,56 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
-#include <dirent.h>
 #include "animation.h"
 #include "texture.h"
 #include "global.h"
 #include "resource.h"
 #include "list.h"
 
-#include "taisei_err.h"
-
 char* animation_path(const char *name) {
-	DIR *dir = opendir("gfx/");
-	if(dir == NULL)
-		return NULL;
-
-	struct dirent *dp;
-
-	while((dp = readdir(dir)) != NULL) {
-		char *filepath = strjoin("gfx/", dp->d_name, NULL);
-		char *tmpname = NULL;
-
-		if(check_animation_path(filepath)) {
-			if(!strcmp(tmpname = animation_name(filepath), name)) {
-				free(tmpname);
-				return filepath;
-			}
-		}
-
-		free(filepath);
-		free(tmpname);
-	}
-
-	return NULL;
+	return strjoin(ANI_PATH_PREFIX, name, ANI_EXTENSION, NULL);
 }
 
 bool check_animation_path(const char *path) {
-	char *base = strjoin(TEX_PATH_PREFIX, "ani_", NULL);
-	bool result = strstartswith(path, base) && strendswith(path, TEX_EXTENSION);
-	free(base);
-	return result;
+	return strendswith(path, ANI_EXTENSION);
 }
 
-char* animation_name(const char *filename) {
-	char *name = resource_util_basename(ANI_PATH_PREFIX, filename);
-	char *c = name, *newname = NULL;
-
-	while(c = strchr(c, '_')) {
-		newname = ++c;
-	}
-
-	newname = strdup(newname);
-	free(name);
-	return newname;
-}
-
-void* load_animation(const char *filename) {
-	Animation *ani = malloc(sizeof(Animation));
-
+void* load_animation(const char *filename, unsigned int flags) {
 	char *basename = resource_util_basename(ANI_PATH_PREFIX, filename);
 	char name[strlen(basename) + 1];
 	strcpy(name, basename);
 
-	char *tok;
-	strtok(name, "_");
+	Hashtable *ht = parse_keyvalue_file(filename, 5);
 
-#define ANIFAIL(what) { warnx("load_animation(): bad '" what "' in filename '%s'", basename); free(basename); return NULL; }
-
-	if((tok = strtok(NULL, "_")) == NULL)
-		ANIFAIL("rows")
-	ani->rows = atoi(tok);
-	if((tok = strtok(NULL, "_")) == NULL)
-		ANIFAIL("cols")
-	ani->cols = atoi(tok);
-	if((tok = strtok(NULL, "_")) == NULL)
-		ANIFAIL("speed")
-	ani->speed = atoi(tok);
-
-	if(ani->speed == 0) {
-		warnx("load_animation(): animation speed of %s == 0. relativity?", name);
+	if(!ht) {
+		log_warn("parse_keyvalue_file() failed");
 		free(basename);
 		return NULL;
 	}
 
-	ani->tex = get_tex(basename);
+#define ANIFAIL(what) { log_warn("Bad '" what "' in animation '%s'", basename); free(ani); free(basename); return NULL; }
+
+	Animation *ani = malloc(sizeof(Animation));
+	ani->rows = atoi((char*)hashtable_get_string(ht, "rows"));
+	ani->cols = atoi((char*)hashtable_get_string(ht, "cols"));
+	ani->speed = atoi((char*)hashtable_get_string(ht, "speed"));
+	hashtable_foreach(ht, hashtable_iter_free_data, NULL);
+	hashtable_free(ht);
+
+	if(ani->rows < 1) ANIFAIL("rows")
+	if(ani->cols < 1) ANIFAIL("cols")
+
+	if(ani->speed == 0) {
+		log_warn("Animation speed of %s == 0. relativity?", name);
+		free(basename);
+		free(ani);
+		return NULL;
+	}
+
+	ani->tex = get_resource(RES_TEXTURE, basename, flags)->texture;
 
 	if(!ani->tex) {
-		warnx("load_animation(): couldn't get texture '%s'", basename);
+		log_warn("Couldn't get texture '%s'", basename);
 		free(basename);
 		return NULL;
 	}
@@ -105,7 +69,7 @@ void* load_animation(const char *filename) {
 }
 
 Animation *get_ani(const char *name) {
-	return get_resource(RES_ANIM, name, RESF_REQUIRED)->animation;
+	return get_resource(RES_ANIM, name, RESF_DEFAULT)->animation;
 }
 
 void draw_animation(float x, float y, int row, const char *name) {

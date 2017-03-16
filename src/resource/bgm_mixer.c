@@ -22,11 +22,11 @@ bool check_music_path(const char *path) {
 	return strstartswith(path, BGM_PATH_PREFIX) && audio_mixer_check_sound_path(path, true);
 }
 
-void* load_music(const char *path) {
+void* load_music(const char *path, unsigned int flags) {
 	Mix_Music *music = Mix_LoadMUS(path);
 
 	if(!music) {
-		warnx("load_music(): Mix_LoadMUS() failed: %s", Mix_GetError());
+		log_warn("Mix_LoadMUS() failed: %s", Mix_GetError());
 		return NULL;
 	}
 

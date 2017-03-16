@@ -8,8 +8,6 @@
 #include "font.h"
 #include "global.h"
 #include "paths/native.h"
-#include <assert.h>
-#include "taisei_err.h"
 
 struct Fonts _fonts;
 
@@ -18,9 +16,9 @@ TTF_Font *load_font(char *name, int size) {
 
 	TTF_Font *f =  TTF_OpenFont(buf, size);
 	if(!f)
-		errx(-1, "failed to load font '%s'", buf);
+		log_fatal("Failed to load font '%s'", buf);
 
-	printf("-- loaded '%s'\n", buf);
+	log_info("Loaded '%s'", buf);
 
 	free(buf);
 	return f;
@@ -68,7 +66,7 @@ void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *fo
 		x -= tex->w/2;
 		break;
 	}
-	
+
 	// if textures are odd pixeled, align them for ideal sharpness.
 	if(tex->w&1)
 		x += 0.5;

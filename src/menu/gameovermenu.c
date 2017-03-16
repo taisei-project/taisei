@@ -13,7 +13,7 @@
 
 void continue_game(MenuData *m, void *arg)
 {
-	printf("The game is being continued...\n");
+	log_info("The game is being continued...");
 
 	if(global.replaymode == REPLAY_RECORD) { // actually... I'd be strange if REPLAY_PLAY ever got there
 		replay_destroy(&global.replay);      // 19:39:29 [@  laochailan] no. no fame for continue users >:D

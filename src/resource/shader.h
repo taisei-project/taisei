@@ -19,10 +19,10 @@ typedef struct Shader {
 
 char* shader_path(const char *name);
 bool check_shader_path(const char *path);
-void* load_shader_file(const char *path);
+void* load_shader_file(const char *path, unsigned int flags);
 void unload_shader(void *vsha);
 
-void load_shader_snippets(const char *filename, const char *prefix);
+void load_shader_snippets(const char *filename, const char *prefix, unsigned int flags);
 Shader* get_shader(const char *name);
 
 int uniloc(Shader *sha, const char *name);

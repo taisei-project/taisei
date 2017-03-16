@@ -110,4 +110,6 @@ void player_event(Player* plr, int type, int key);
 void player_applymovement(Player* plr);
 void player_input_workaround(Player *plr);
 
+void player_preload(void);
+
 #endif

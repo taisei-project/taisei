@@ -17,7 +17,7 @@ typedef struct Music {
 
 char* music_path(const char *name);
 bool check_music_path(const char *path);
-void* load_music(const char *path);
+void* load_music(const char *path, unsigned int flags);
 void unload_music(void *snd);
 
 #define BGM_PATH_PREFIX "bgm/"

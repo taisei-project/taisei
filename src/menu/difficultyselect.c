@@ -54,7 +54,7 @@ void draw_difficulty_menu(MenuData *menu) {
 		menu->entries[i].drawdata += 0.2 * (30*(i == menu->cursor) - menu->entries[i].drawdata);
 
 		glPushMatrix();
-		glTranslatef(SCREEN_W/2 - (int)menu->entries[i].drawdata+25*i-50, SCREEN_H/3 + 90*(i-0.3*menu->drawdata[0]),0);
+		glTranslatef(SCREEN_W/2 + SCREEN_W*sign((i&1)-0.5)*(i!=menu->cursor)*menu_fade(menu) - (int)menu->entries[i].drawdata+25*i-50, SCREEN_H/3 + 90*(i-0.3*menu->drawdata[0]),0);
 
 		//glColor4f(0,0,0,1);
 

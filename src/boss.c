@@ -289,22 +289,20 @@ void free_attack(Attack *a) {
 }
 
 void start_attack(Boss *b, Attack *a) {
-#if DEBUG
-	printf("BOSS start_attack(): %s\n", a->name);
-#endif
+	log_debug("%s", a->name);
 
 	if(global.replaymode == REPLAY_RECORD && global.stage->type == STAGE_STORY && !global.plr.continues) {
 		StageInfo *i = stage_get_by_spellcard(a->info, global.diff);
 		if(i) {
 			StageProgress *p = stage_get_progress_from_info(i, global.diff, true);
 			if(p && !p->unlocked) {
-				printf("Spellcard unlocked! %s: %s\n", i->title, i->subtitle);
+				log_info("Spellcard unlocked! %s: %s", i->title, i->subtitle);
 				p->unlocked = true;
 			}
 		}
 #if DEBUG
 		else if(a->type == AT_Spellcard || a->type == AT_ExtraSpell) {
-			warnx("FIXME: spellcard '%s' is not available in spell practice mode!", a->name);
+			log_warn("FIXME: spellcard '%s' is not available in spell practice mode!", a->name);
 		}
 #endif
 	}
@@ -325,6 +323,7 @@ void start_attack(Boss *b, Attack *a) {
 Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule) {
 	boss->attacks = realloc(boss->attacks, sizeof(Attack)*(++boss->acount));
 	Attack *a = &boss->attacks[boss->acount-1];
+	memset(a, 0, sizeof(Attack));
 
 	boss->current = &boss->attacks[0];
 
@@ -361,4 +360,20 @@ Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move) {
 	Attack *a = boss_add_attack(boss, info->type, info->name, info->timeout, info->hp, info->rule, info->draw_rule);
 	a->info = info;
 	return a;
+}
+
+void boss_preload(void) {
+	preload_resources(RES_SFX, RESF_OPTIONAL,
+		"charge_generic",
+	NULL);
+
+	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+		"boss_spellcircle0",
+		"boss_circle",
+		"boss_indicator",
+	NULL);
+
+	preload_resources(RES_SHADER, RESF_DEFAULT,
+		"boss_zoom",
+	NULL);
 }

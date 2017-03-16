@@ -148,3 +148,17 @@ void spawn_items(complex pos, int point, int power, int bomb, int life) {
 	for(i = 0; i < life; i++)
 		spawn_item(pos, Life);
 }
+
+void items_preload(void) {
+	preload_resources(RES_TEXTURE, RESF_PERMANENT,
+		"items/power",
+		"items/point",
+		"items/life",
+		"items/bomb",
+		"items/bullet_point",
+	NULL);
+
+	preload_resources(RES_SFX, RESF_OPTIONAL,
+		"item_generic",
+	NULL);
+}

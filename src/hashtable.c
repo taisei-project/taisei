@@ -8,8 +8,8 @@
 
 #include "hashtable.h"
 #include "list.h"
+#include "util.h"
 
-#include <assert.h>
 #include <string.h>
 #include <zlib.h>
 #include <stdio.h>
@@ -301,13 +301,13 @@ void hashtable_print_stringkeys(Hashtable *ht) {
     int total = 0;
     int collisions = 0;
 
-    printf("------ %p:\n", (void*)ht);
+    log_debug("------ %p:", (void*)ht);
     for(size_t i = 0; i < ht->table_size; ++i) {
         int elems = 0;
-        printf("[bucket %lu] %p\n", (unsigned long)i, (void*)ht->table[i]);
+        log_debug("[bucket %lu] %p", (unsigned long)i, (void*)ht->table[i]);
 
         for(HashtableElement *e = ht->table[i]; e; e = e->next) {
-            printf(" -- %s (%lu): %p\n", (char*)e->key, (unsigned long)e->hash, e->data);
+            log_debug(" -- %s (%lu): %p", (char*)e->key, (unsigned long)e->hash, e->data);
             ++elems;
             ++total;
         }
@@ -323,7 +323,7 @@ void hashtable_print_stringkeys(Hashtable *ht) {
         }
     }
 
-    printf("%i total elements, %i unused buckets, %i collisions, max %i elems per bucket, %lu approx overhead\n",
+    log_debug("%i total elements, %i unused buckets, %i collisions, max %i elems per bucket, %lu approx overhead",
             total, free_buckets, collisions, max_elems,
             (unsigned long int)hashtable_get_approx_overhead(ht));
 }
@@ -341,7 +341,7 @@ void hashtable_print_stringkeys(Hashtable *ht) {
 static void hashtable_printstrings(Hashtable *ht) {
     for(size_t i = 0; i < ht->table_size; ++i) {
         for(HashtableElement *e = ht->table[i]; e; e = e->next) {
-            printf("[HT %lu] %s (%lu): %s\n", (unsigned long)i, (char*)e->key, (unsigned long)e->hash, (char*)e->data);
+            log_info("[HT %lu] %s (%lu): %s\n", (unsigned long)i, (char*)e->key, (unsigned long)e->hash, (char*)e->data);
         }
     }
 }
@@ -365,7 +365,7 @@ int hashtable_test(void) {
     }
 
     hashtable_printstrings(ht);
-    printf("-----\n");
+    log_info("-----\n");
     hashtable_set_string(ht, "12345", "asdfg");
     hashtable_unset_string(ht, "test");
     hashtable_set_string(ht, "herp", "deeeeeerp");

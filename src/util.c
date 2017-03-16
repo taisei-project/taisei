@@ -75,7 +75,7 @@ char* strjoin(const char *first, ...) {
     return str;
 }
 
-char* strfmt(const char *fmt, ...) {
+char* vstrfmt(const char *fmt, va_list args) {
     size_t written = 0;
     size_t fmtlen = strlen(fmt);
     size_t asize = 1;
@@ -87,15 +87,22 @@ char* strfmt(const char *fmt, ...) {
     do {
         asize *= 2;
         out = realloc(out, asize);
-        va_list args;
-
-        va_start(args, fmt);
-        written = vsnprintf(out, asize, fmt, args);
-        va_end(args);
+        va_list nargs;
+        va_copy(nargs, args);
+        written = vsnprintf(out, asize, fmt, nargs);
+        va_end(nargs);
 
     } while(written >= asize);
 
     return realloc(out, strlen(out) + 1);
+}
+
+char* strfmt(const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    char *str = vstrfmt(fmt, args);
+    va_end(args);
+    return str;
 }
 
 char* copy_segment(const char *text, const char *delim, int *size) {
@@ -243,19 +250,17 @@ char* read_all(const char *filename, int *outsize) {
     char *text;
     size_t size;
 
-    FILE *file = fopen(filename, "r");
-    if(file == NULL)
-        errx(-1, "Error opening '%s'", filename);
+    SDL_RWops *file = SDL_RWFromFile(filename, "r");
+    if(!file)
+        log_fatal("SDL_RWFromFile() failed: %s", SDL_GetError());
 
-    fseek(file, 0, SEEK_END);
-    size = ftell(file);
-    fseek(file, 0, SEEK_SET);
+    size = SDL_RWsize(file);
 
     text = malloc(size+1);
-    fread(text, size, 1, file);
+    SDL_RWread(file, text, size, 1);
     text[size] = 0;
 
-    fclose(file);
+    SDL_RWclose(file);
 
     if(outsize) {
         *outsize = size;
@@ -264,9 +269,171 @@ char* read_all(const char *filename, int *outsize) {
     return text;
 }
 
+bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data) {
+    static const size_t bufsize = 256;
+    static const char separator[] = "= ";
+
+    char buffer[bufsize];
+    int lineno = 0;
+    int errors = 0;
+
+    loopstart: while(SDL_RWgets(strm, buffer, bufsize)) {
+        char *ptr = buffer;
+        char *sep, *key, *val;
+
+        ++lineno;
+
+        while(isspace(*ptr)) {
+            if(!*(++ptr)) {
+                // blank line
+                goto loopstart;
+            }
+        }
+
+        if(*ptr == '#') {
+            // comment
+            continue;
+        }
+
+        sep = strstr(ptr, separator);
+
+        if(!sep) {
+            ++errors;
+            log_warn("Syntax error on line %i: missing separator", lineno);
+            continue;
+        }
+
+        // split it up
+        *sep = 0;
+        key = ptr;
+        val = sep + sizeof(separator) - 1;
+
+        // the separator may be preceeded by any kind of whitespace, so strip it from the key
+        while(isspace(*(ptr = strchr(key, 0) - 1))) {
+            *ptr = 0;
+        }
+
+        // strip any kind of line endings from the value
+        while(strchr("\r\n", *(ptr = strchr(val, 0) - 1))) {
+            *ptr = 0;
+        }
+
+        callback(key, val, data);
+    }
+
+    return !errors;
+}
+
+bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *data) {
+    SDL_RWops *strm = SDL_RWFromFile(filename, "r");
+
+    if(!strm) {
+        log_warn("SDL_RWFromFile() failed: %s", SDL_GetError());
+        return false;
+    }
+
+    bool status = parse_keyvalue_stream_cb(strm, callback, data);
+    SDL_RWclose(strm);
+    return status;
+}
+
+static void kvcallback_hashtable(const char *key, const char *val, Hashtable *ht) {
+    hashtable_set_string(ht, key, strdup((void*)val));
+}
+
+Hashtable* parse_keyvalue_stream(SDL_RWops *strm, size_t tablesize) {
+    Hashtable *ht = hashtable_new_stringkeys(tablesize);
+
+    if(!parse_keyvalue_stream_cb(strm, (KVCallback)kvcallback_hashtable, ht)) {
+        free(ht);
+        ht = NULL;
+    }
+
+    return ht;
+}
+
+Hashtable* parse_keyvalue_file(const char *filename, size_t tablesize) {
+    Hashtable *ht = hashtable_new_stringkeys(tablesize);
+
+    if(!parse_keyvalue_file_cb(filename, (KVCallback)kvcallback_hashtable, ht)) {
+        free(ht);
+        ht = NULL;
+    }
+
+    return ht;
+}
+
+static void png_rwops_write_data(png_structp png_ptr, png_bytep data, png_size_t length) {
+    SDL_RWops *out = png_get_io_ptr(png_ptr);
+    SDL_RWwrite(out, data, length, 1);
+}
+
+static void png_rwops_flush_data(png_structp png_ptr) {
+    // no flush operation in SDL_RWops
+}
+
+static void png_rwops_read_data(png_structp png_ptr, png_bytep data, png_size_t length) {
+    SDL_RWops *out = png_get_io_ptr(png_ptr);
+    SDL_RWread(out, data, length, 1);
+}
+
+void png_init_rwops_read(png_structp png, SDL_RWops *rwops) {
+    png_set_read_fn(png, rwops, png_rwops_read_data);
+}
+
+void png_init_rwops_write(png_structp png, SDL_RWops *rwops) {
+    png_set_write_fn(png, rwops, png_rwops_write_data, png_rwops_flush_data);
+}
+
+char* SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize) {
+    char c, *ptr = buf, *end = buf + bufsize - 1;
+    assert(end > ptr);
+
+    while((c = SDL_ReadU8(rwops)) && ptr <= end) {
+        if((*ptr++ = c) == '\n')
+            break;
+    }
+
+    if(ptr == buf)
+        return NULL;
+
+    *ptr = 0;
+    return buf;
+}
+
+size_t SDL_RWprintf(SDL_RWops *rwops, const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    char *str = vstrfmt(fmt, args);
+    va_end(args);
+
+    size_t ret = SDL_RWwrite(rwops, str, 1, strlen(str));
+    free(str);
+
+    return ret;
+}
+
+void tsfprintf(FILE *out, const char *restrict fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    vfprintf(out, fmt, args);
+    va_end(args);
+}
+
 //
 // misc utils
 //
+
+void _ts_assert_fail(const char *cond, const char *func, const char *file, int line, bool use_log) {
+    use_log = use_log && log_initialized();
+
+    if(use_log) {
+        log_fatal("%s:%i: %s(): assertion `%s` failed", file, line, func, cond);
+    } else {
+        tsfprintf(stderr, "%s:%i: %s(): assertion `%s` failed", file, line, func, cond);
+        abort();
+    }
+}
 
 int getenvint(const char *v) {
     char *e = getenv(v);
@@ -276,4 +443,17 @@ int getenvint(const char *v) {
     }
 
     return 0;
+}
+
+noreturn static void png_error_handler(png_structp png_ptr, png_const_charp error_msg) {
+    log_warn("PNG error: %s", error_msg);
+    png_longjmp(png_ptr, 1);
+}
+
+static void png_warning_handler(png_structp png_ptr, png_const_charp warning_msg) {
+    log_warn("PNG warning: %s", warning_msg);
+}
+
+void png_setup_error_handlers(png_structp png) {
+    png_set_error_fn(png, NULL, png_error_handler, png_warning_handler);
 }

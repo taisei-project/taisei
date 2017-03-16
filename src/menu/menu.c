@@ -5,7 +5,6 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
-#include <assert.h>
 #include "menu.h"
 #include "global.h"
 #include "video.h"

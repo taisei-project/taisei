@@ -253,7 +253,18 @@ void credits_free(void) {
 	free(credits.entries);
 }
 
+void credits_preload(void) {
+	preload_resource(RES_BGM, "bgm_credits", RESF_OPTIONAL);
+	preload_resource(RES_SHADER, "tower_wall", RESF_DEFAULT);
+	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+		"stage6/sky",
+		"stage6/towerwall",
+		"yukkureimu",
+	NULL);
+}
+
 void credits_loop(void) {
+	credits_preload();
 	credits_init();
 	while(credits.end) {
 		handle_events(NULL, 0, NULL);

@@ -6,13 +6,11 @@
  */
 
 #include <png.h>
-#include <assert.h>
 
 #include "texture.h"
 #include "resource.h"
 #include "global.h"
 #include "paths/native.h"
-#include "taisei_err.h"
 #include "vbo.h"
 
 static SDL_Surface* load_png(const char *filename);
@@ -25,7 +23,7 @@ bool check_texture_path(const char *path) {
 	return strendswith(path, TEX_EXTENSION);
 }
 
-void* load_texture(const char *path) {
+void* load_texture(const char *path, unsigned int flags) {
 	SDL_Surface *surface = load_png(path);
 
 	if(surface == NULL) {
@@ -42,7 +40,7 @@ void* load_texture(const char *path) {
 }
 
 Texture* get_tex(const char *name) {
-	return get_resource(RES_TEXTURE, name, RESF_REQUIRED)->texture;
+	return get_resource(RES_TEXTURE, name, RESF_DEFAULT)->texture;
 }
 
 Texture* prefix_get_tex(const char *name, const char *prefix) {
@@ -52,48 +50,61 @@ Texture* prefix_get_tex(const char *name, const char *prefix) {
 	return tex;
 }
 
-static SDL_Surface* load_png(const char *filename) {
-#define PNGFAIL(msg) { warnx("load_png(): couldn't load '%s': %s", filename, msg); return NULL; }
-
-	FILE *fp = fopen(filename, "rb");
-
-	if(!fp) {
-		PNGFAIL("fopen() failed")
+static SDL_Surface* load_png_p(const char *filename, SDL_RWops *rwops) {
+#define PNGFAIL(msg) { log_warn("Couldn't load '%s': %s", filename, msg); return NULL; }
+	if(!rwops) {
+		PNGFAIL(SDL_GetError())
 	}
 
 	png_structp png_ptr;
 	if(!(png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL))) {
-		fclose(fp);
 		PNGFAIL("png_create_read_struct() failed")
 	}
 
+	png_setup_error_handlers(png_ptr);
+
 	png_infop info_ptr;
 	if(!(info_ptr = png_create_info_struct(png_ptr))) {
-		fclose(fp);
 		png_destroy_read_struct(&png_ptr, NULL, NULL);
 		PNGFAIL("png_create_info_struct() failed")
 	}
 
 	png_infop end_info;
 	if(!(end_info = png_create_info_struct(png_ptr))) {
-		fclose(fp);
 		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 		PNGFAIL("png_create_info_struct() failed")
 	}
 
-	png_init_io(png_ptr, fp);
-	png_read_png(png_ptr, info_ptr, 0, NULL);
+	png_init_rwops_read(png_ptr, rwops);
+	png_read_info(png_ptr, info_ptr);
+
+	int colortype = png_get_color_type(png_ptr,info_ptr);
+
+	if(colortype == PNG_COLOR_TYPE_PALETTE)
+		png_set_expand(png_ptr);
+	if (colortype == PNG_COLOR_TYPE_GRAY ||
+			colortype == PNG_COLOR_TYPE_GRAY_ALPHA)
+		png_set_gray_to_rgb(png_ptr);
+	if(!(colortype & PNG_COLOR_MASK_ALPHA))
+		png_set_filler(png_ptr, 0xff, PNG_FILLER_AFTER);
+
+	png_read_update_info(png_ptr, info_ptr);
 
 	int width = png_get_image_width(png_ptr, info_ptr);
 	int height = png_get_image_height(png_ptr, info_ptr);
 	int depth = png_get_bit_depth(png_ptr, info_ptr);
 
-	png_bytep *row_pointers = png_get_rows(png_ptr, info_ptr);
+
+	png_bytep row_pointers[height];
 
 	Uint32 *pixels = malloc(sizeof(Uint32)*width*height);
 
 	for(int i = 0; i < height; i++)
-		memcpy(&pixels[i*width], row_pointers[i], sizeof(Uint32)*width);
+		row_pointers[i] = (png_bytep)(pixels+i*width);
+
+	png_read_image(png_ptr, row_pointers);
+	png_read_end(png_ptr, end_info);
+
 
 	Uint32 rmask, gmask, bmask, amask;
 
@@ -112,15 +123,20 @@ static SDL_Surface* load_png(const char *filename) {
 	SDL_Surface *res = SDL_CreateRGBSurfaceFrom(pixels, width, height, depth*4, 0, rmask, gmask, bmask, amask);
 
 	if(!res) {
-		fclose(fp);
 		PNGFAIL(SDL_GetError())
 	}
 
-	fclose(fp);
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 
 	return res;
 #undef PNGFAIL
+}
+
+static SDL_Surface* load_png(const char *filename) {
+	SDL_RWops *rwops = SDL_RWFromFile(filename, "r");
+	SDL_Surface *surf = load_png_p(filename, rwops);
+	SDL_RWclose(rwops);
+	return surf;
 }
 
 void load_sdl_surf(SDL_Surface *surface, Texture *texture) {

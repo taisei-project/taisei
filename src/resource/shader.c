@@ -12,7 +12,6 @@
 #include "resource.h"
 #include "config.h"
 #include "list.h"
-#include "taisei_err.h"
 
 static char snippet_header_EXT_draw_instanced[] =
 	"#version 120\n"
@@ -39,7 +38,7 @@ bool check_shader_path(const char *path) {
 
 static Shader* load_shader(const char *vheader, const char *fheader, const char *vtext, const char *ftext);
 
-void* load_shader_file(const char *path) {
+void* load_shader_file(const char *path, unsigned int flags) {
 	char *text, *vtext, *ftext, *delim;
 
 	text = read_all(path, NULL);
@@ -48,7 +47,7 @@ void* load_shader_file(const char *path) {
 	delim = strstr(text, SHA_DELIM);
 
 	if(delim == NULL) {
-		warnx("load_shader_file(): expected '%s' delimiter.", SHA_DELIM);
+		log_warn("Expected '%s' delimiter.", SHA_DELIM);
 		free(text);
 		return NULL;
 	}
@@ -81,14 +80,14 @@ static char* get_snippet_header(void) {
 	}
 }
 
-void load_shader_snippets(const char *filename, const char *prefix) {
+void load_shader_snippets(const char *filename, const char *prefix, unsigned int flags) {
 	int size, vhsize = 0, vfsize = 0, fhsize = 0, ffsize = 0, ssize, prefixlen;
 	char *text, *vhead, *vfoot, *fhead, *ffoot;
 	char *sec, *name, *nend, *send;
 	char *vtext = NULL, *ftext = NULL;
 	char *nbuf;
 
-	printf("-- loading snippet file '%s'\n", filename);
+	log_info("Loading snippet file '%s' with prefix '%s'", filename, prefix);
 
 	prefixlen = strlen(prefix);
 
@@ -103,9 +102,9 @@ void load_shader_snippets(const char *filename, const char *prefix) {
 	ffoot = copy_segment(text, "%%FSHADER-FOOT%%", &ffsize);
 
 	if(!vhead || !fhead)
-		errx(-1, "Syntax Error: missing HEAD section(s).");
+		log_fatal("Syntax Error: missing HEAD section(s)");
 	if((vfoot == NULL) + (ffoot == NULL) != 1)
-		errx(-1, "Syntax Error: must contain exactly 1 FOOT section");
+		log_fatal("Syntax Error: must contain exactly 1 FOOT section");
 
 	while((sec = strstr(sec, "%%"))) {
 		sec += 2;
@@ -113,7 +112,7 @@ void load_shader_snippets(const char *filename, const char *prefix) {
 		name = sec;
 		nend = strstr(name, "%%");
 		if(!nend)
-			errx(-1, "Syntax Error: expected '%%'");
+			log_fatal("Syntax Error: expected '%%'");
 
 		sec = nend + 2;
 
@@ -160,7 +159,7 @@ void load_shader_snippets(const char *filename, const char *prefix) {
 		nbuf[nend-name+prefixlen] = 0;
 
 		Shader *sha = load_shader(get_snippet_header(), NULL, vtext, ftext);
-		insert_resource(RES_SHADER, nbuf, sha, 0, filename);
+		insert_resource(RES_SHADER, nbuf, sha, flags, filename);
 
 		free(nbuf);
 		free(vtext);
@@ -179,12 +178,12 @@ static void print_info_log(GLuint shader, tsglGetShaderiv_ptr lenfunc, tsglGetSh
 	lenfunc(shader, GL_INFO_LOG_LENGTH, &len);
 
 	if(len > 1) {
-		printf(" == GLSL %s info log (%u) ==\n", type, shader);
 		char log[len];
 		memset(log, 0, len);
 		logfunc(shader, len, &alen, log);
-		printf("%s\n", log);
-		printf("\n == End of GLSL %s info log (%u) ==\n", type, shader);
+
+		log_warn("\n == GLSL %s info log (%u) ==\n%s\n == End of GLSL %s info log (%u) ==",
+					type, shader, log, type, shader);
 	}
 }
 
@@ -265,5 +264,5 @@ int uniloc(Shader *sha, const char *name) {
 }
 
 Shader* get_shader(const char *name) {
-	return get_resource(RES_SHADER, name, RESF_REQUIRED)->shader;
+	return get_resource(RES_SHADER, name, RESF_DEFAULT)->shader;
 }

@@ -64,4 +64,6 @@ void BigFairy(Enemy*, int t);
 int enemy_flare(Projectile *p, int t);
 void EnemyFlareShrink(Projectile *p, int t);
 
+void enemies_preload(void);
+
 #endif

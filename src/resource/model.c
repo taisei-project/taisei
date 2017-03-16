@@ -8,14 +8,9 @@
 #include "model.h"
 #include "list.h"
 #include "resource.h"
-#include "taisei_err.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
-static void bad_reference_error(const char *filename, const char *aux, int n) {
-	warnx("load_model():\n!- OBJ file '%s': Index %d: bad %s index reference\n", filename, n, aux);
-}
 
 static void parse_obj(const char *filename, ObjFileData *data);
 static void free_obj(ObjFileData *data);
@@ -28,7 +23,7 @@ bool check_model_path(const char *path) {
 	return strendswith(path, MDL_EXTENSION);
 }
 
-void* load_model(const char *path) {
+void* load_model(const char *path, unsigned int flags) {
 	Model *m = malloc(sizeof(Model));
 
 	ObjFileData data;
@@ -45,7 +40,7 @@ void* load_model(const char *path) {
 
 	verts = calloc(data.icount, sizeof(Vertex));
 
-#define BADREF(...) { bad_reference_error(__VA_ARGS__); free(verts); free_obj(&data); return NULL; }
+#define BADREF(filename,aux,n) { log_warn("OBJ file '%s': Index %d: bad %s index reference\n", filename, n, aux); free(verts); free_obj(&data); return NULL; }
 
 	memset(verts, 0, data.icount*sizeof(Vertex));
 	for(i = 0; i < data.icount; i++) {
@@ -100,7 +95,12 @@ static void free_obj(ObjFileData *data) {
 }
 
 static void parse_obj(const char *filename, ObjFileData *data) {
-	FILE *fp = fopen(filename, "rb");
+	SDL_RWops *rw = SDL_RWFromFile(filename, "r");
+
+	if(!rw) {
+		log_warn("SDL_RWFromFile() failed: %s", SDL_GetError());
+		return;
+	}
 
 	char line[256];
 	Vector buf;
@@ -109,7 +109,7 @@ static void parse_obj(const char *filename, ObjFileData *data) {
 
 	memset(data, 0, sizeof(ObjFileData));
 
-	while(fgets(line, sizeof(line), fp)) {
+	while(SDL_RWgets(rw, line, sizeof(line))) {
 		linen++;
 
 		char *first;
@@ -175,7 +175,7 @@ static void parse_obj(const char *filename, ObjFileData *data) {
 				}
 
 				if(jj == 0 || jj > 3 || segment[0] == '/')
-					errx(-1, "parse_obj():\n!- OBJ file '%s:%d': Parsing error: Corrupt face definition\n", filename,linen);
+					log_fatal("OBJ file '%s:%d': Parsing error: Corrupt face definition", filename,linen);
 
 				data->indices = realloc(data->indices, sizeof(IVector)*(++data->icount));
 				memcpy(data->indices[data->icount-1], ibuf, sizeof(IVector));
@@ -185,18 +185,18 @@ static void parse_obj(const char *filename, ObjFileData *data) {
 				data->fverts = j;
 
 			if(data->fverts != j)
-				errx(-1, "parse_obj():\n!- OBJ file '%s:%d': Parsing error: face vertex count must stay the same in the whole file\n", filename, linen);
+				log_fatal("OBJ file '%s:%d': Parsing error: face vertex count must stay the same in the whole file", filename, linen);
 
 			if(data->fverts != 3 && data->fverts != 4)
-				errx(-1, "parse_obj():\n!- OBJ file '%s:%d': Parsing error: face vertex count must be either 3 or 4\n", filename, linen);
+				log_fatal("OBJ file '%s:%d': Parsing error: face vertex count must be either 3 or 4", filename, linen);
 		}
 	}
 
-	fclose(fp);
+	SDL_RWclose(rw);
 }
 
 Model* get_model(const char *name) {
-	return get_resource(RES_MODEL, name, RESF_REQUIRED)->model;
+	return get_resource(RES_MODEL, name, RESF_DEFAULT)->model;
 }
 
 void draw_model_p(Model *model) {

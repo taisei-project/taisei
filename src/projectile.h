@@ -98,4 +98,6 @@ int timeout_linear(Projectile *p, int t);
 void Petal(Projectile *p, int t);
 void petal_explosion(int n, complex pos);
 
+void projectiles_preload(void);
+
 #endif

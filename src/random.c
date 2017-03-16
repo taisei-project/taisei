@@ -11,7 +11,6 @@
 #include <time.h>
 #include "global.h"
 #include "random.h"
-#include "taisei_err.h"
 
 /*
  *	Multiply-with-carry algorithm
@@ -36,7 +35,7 @@ void tsrand_seed_p(RandomState *rnd, uint32_t seed) {
 
 uint32_t tsrand_p(RandomState *rnd) {
 	if(rnd->locked) {
-		warnx("Attempted to use a locked RNG state!\n");
+		log_warn("Attempted to use a locked RNG state");
 		return 0;
 	}
 
@@ -105,7 +104,7 @@ static uint32_t tsrand_array[TSRAND_ARRAY_LIMIT];
 static int tsrand_array_elems;
 static uint64_t tsrand_fillflags = 0;
 
-static void tsrand_error(const char *file, unsigned int line, const char *fmt, ...) {
+static void tsrand_error(const char *file, const char *func, unsigned int line, const char *fmt, ...) {
 	char buf[2048] = { 0 };
 	va_list args;
 
@@ -113,14 +112,14 @@ static void tsrand_error(const char *file, unsigned int line, const char *fmt, .
 	vsnprintf(buf, sizeof(buf), fmt, args);
 	va_end(args);
 
-	errx(-1, "tsrand error: %s [%s:%u]", buf, file, line);
+	log_fatal("%s(): %s [%s:%u]", func, buf, file, line);
 }
 
-#define TSRANDERR(...) tsrand_error(file, line, __VA_ARGS__)
+#define TSRANDERR(...) tsrand_error(file, __func__, line, __VA_ARGS__)
 
 void __tsrand_fill_p(RandomState *rnd, int amount, const char *file, unsigned int line) {
 	if(tsrand_fillflags) {
-		TSRANDERR("tsrand_fill_p: some indices left unused from the previous call");
+		TSRANDERR("Some indices left unused from the previous call");
 		return;
 	}
 
@@ -138,7 +137,7 @@ void __tsrand_fill(int amount, const char *file, unsigned int line) {
 
 uint32_t __tsrand_a(int idx, const char *file, unsigned int line) {
 	if(idx >= tsrand_array_elems || idx < 0) {
-		TSRANDERR("tsrand_a: index out of range (%i / %i)", idx, tsrand_array_elems);
+		TSRANDERR("Index out of range (%i / %i)", idx, tsrand_array_elems);
 		return 0;
 	}
 
@@ -147,7 +146,7 @@ uint32_t __tsrand_a(int idx, const char *file, unsigned int line) {
 		return tsrand_array[idx];
 	}
 
-	TSRANDERR("tsrand_a: index %i used multiple times", idx);
+	TSRANDERR("Index %i used multiple times", idx);
 	return 0;
 }
 

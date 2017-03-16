@@ -405,38 +405,25 @@ void stage3_mid_a2(Boss *boss, int time) {
 }
 
 void stage3_mid_spellbg(Boss *h, int time) {
-	float b = (0.3 + 0.2 * (sin(time / 50.0) * sin(time / 25.0f + M_PI)));
 	float a = 1.0;
 
 	if(time < 0)
 		a += (time / (float)ATTACK_START_DELAY);
 	float s = 0.3 + 0.7 * a;
 
-	glColor4f(b*0.7, b*0.7, b*0.7, a);
-	//int t = abs(time);
-
-	fill_screen(-time/50.0 + 0.5, time/100.0+0.5, s, "stage3/spellbg1");
-
+	glColor4f(.1, .1, .1, a);
+	draw_texture(VIEWPORT_W/2, VIEWPORT_H/2, "stage3/spellbg2");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	/*
-	float ff = max(0, min(1, time * 0.01)) * 0.7;
-	glColor4f(ff, ff, ff, ff);
+	
+	fill_screen(-time/200.0 + 0.5, time/400.0+0.5, s, "stage3/spellbg1");
 
-	int i; for(i = 0; i < 5; ++i)
-		fill_screen(sin(t / (10.0 + i * 0.5)) * 0.01, cos(t / (11.0 + i * 0.3)) * 0.01, s, "stage3/spellbg2");
-	glColor4f(b*0.7, b*0.7, b*0.7, a);
-	*/
-	fill_screen(time/50.0 + 0.5, time/90.0+0.5, s, "stage3/spellbg1");
-	fill_screen(-time/55.0 + 0.5, -time/100.0+0.5, s, "stage3/spellbg1");
-	fill_screen(time/55.0 + 0.5, -time/90.0+0.5, s, "stage3/spellbg1");
-	/*
-	glColor4f(0.7, 0, 0, a * 0.7);
-	fill_screen(time/99.0 + 0.5, -time/30.0+0.5, s*0.5, "stage3/spellbg1");
-	fill_screen(time/37.0 + 0.5, -time/53.0+0.5, s*0.5, "stage3/spellbg1");
-	*/
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glColor4f(1, 1, 1, 0.1);
+	fill_screen(time/300.0 + 0.5, -time/340.0+0.5, s*0.5, "stage3/spellbg1");
+	fill_screen(time/220.0 + 0.5, -time/400.0+0.5, s*0.5, "stage3/spellbg1");
+	
 
 	glColor4f(1, 1, 1, 1);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void stage3_boss_spellbg(Boss *b, int time) {

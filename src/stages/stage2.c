@@ -173,6 +173,29 @@ void stage2_start(void) {
 	add_model(&bgcontext, stage2_bg_leaves_draw, stage2_bg_pos);
 }
 
+void stage2_preload(void) {
+	preload_resources(RES_BGM, RESF_OPTIONAL, "bgm_stage2", "bgm_stage2boss", NULL);
+	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+		"stage2/border",
+		"stage2/leaves",
+		"stage2/roadgrass",
+		"stage2/roadstones",
+		"stage2/spellbg1",
+		"stage2/spellbg2",
+		"dialog/hina",
+	NULL);
+	preload_resources(RES_SHADER, RESF_DEFAULT,
+		"bloom",
+		"zbuf_fog",
+		"alpha_depth",
+	NULL);
+	preload_resources(RES_ANIM, RESF_DEFAULT,
+		"wriggle",
+		"hina",
+		"fire",
+	NULL);
+}
+
 void stage2_end(void) {
 	free_stage3d(&bgcontext);
 }
@@ -211,6 +234,7 @@ ShaderRule stage2_shaders[] = { stage2_fog, stage2_bloom, NULL };
 
 StageProcs stage2_procs = {
 	.begin = stage2_start,
+	.preload = stage2_preload,
 	.end = stage2_end,
 	.draw = stage2_draw,
 	.event = stage2_events,
@@ -219,6 +243,7 @@ StageProcs stage2_procs = {
 };
 
 StageProcs stage2_spell_procs = {
+	.preload = stage2_preload,
 	.begin = stage2_start,
 	.end = stage2_end,
 	.draw = stage2_draw,

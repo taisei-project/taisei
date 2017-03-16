@@ -66,6 +66,8 @@ troll2:
         goto troll2;
     }
 
+    free_resources(false);
+
     if(global.replay_stage) {
         switch(config_get_int(CONFIG_SAVE_RPY)) {
             case 0: break;
@@ -91,6 +93,7 @@ troll2:
         ending_loop();
         start_bgm("bgm_credits");
         credits_loop();
+        free_resources(false);
     }
 
     start_bgm("bgm_menu");

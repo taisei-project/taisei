@@ -9,7 +9,6 @@
 
 #include "progress.h"
 #include "paths/native.h"
-#include "taisei_err.h"
 #include "stage.h"
 
 /*
@@ -73,18 +72,18 @@ static void progress_read(SDL_RWops *file) {
 	int64_t filesize = SDL_RWsize(file);
 
 	if(filesize < 0) {
-		warnx("progress_read(): SDL_RWsize() failed: %s", SDL_GetError());
+		log_warn("SDL_RWsize() failed: %s", SDL_GetError());
 		return;
 	}
 
 	if(filesize > PROGRESS_MAXFILESIZE) {
-		warnx("progress_read(): progress file is huge (%i bytes, %i max)", filesize, PROGRESS_MAXFILESIZE);
+		log_warn("Progress file is huge (%li bytes, %i max)", (long)filesize, PROGRESS_MAXFILESIZE);
 		return;
 	}
 
 	for(int i = 0; i < sizeof(progress_magic_bytes); ++i) {
 		if(SDL_ReadU8(file) != progress_magic_bytes[i]) {
-			warnx("progress_read(): invalid header");
+			log_warn("Invalid header");
 			return;
 		}
 	}
@@ -101,7 +100,7 @@ static void progress_read(SDL_RWops *file) {
 	uint8_t *buf = malloc(bufsize);
 
 	if(!SDL_RWread(file, buf, bufsize, 1)) {
-		warnx("progress_read(): SDL_RWread() failed: %s", SDL_GetError());
+		log_warn("SDL_RWread() failed: %s", SDL_GetError());
 		free(buf);
 		return;
 	}
@@ -110,7 +109,7 @@ static void progress_read(SDL_RWops *file) {
 	uint32_t checksum = progress_checksum(buf, bufsize);
 
 	if(checksum != checksum_fromfile) {
-		warnx("progress_read(): bad checksum: %x != %x", checksum, checksum_fromfile);
+		log_warn("Bad checksum: %x != %x", checksum, checksum_fromfile);
 		SDL_RWclose(vfile);
 		free(buf);
 		return;
@@ -152,7 +151,7 @@ static void progress_read(SDL_RWops *file) {
 				break;
 
 			default:
-				warnx("progress_read(): unknown command %i, skipping %u bytes", cmd, cmdsize);
+				log_warn("Unknown command %i, skipping %u bytes", cmd, cmdsize);
 				while(cur++ < cmdsize)
 					SDL_ReadU8(vfile);
 				break;
@@ -305,7 +304,7 @@ static void progress_write(SDL_RWops *file) {
 
 	if(SDL_RWtell(vfile) != bufsize) {
 		free(buf);
-		errx(-1, "progress_write(): buffer is inconsistent\n");
+		log_fatal("Buffer is inconsistent");
 		return;
 	}
 
@@ -314,7 +313,7 @@ static void progress_write(SDL_RWops *file) {
 	SDL_RWwrite(file, &cs, 4, 1);
 
 	if(!SDL_RWwrite(file, buf, bufsize, 1)) {
-		warnx("progress_write(): SDL_RWread() failed: %s", SDL_GetError());
+		log_fatal("SDL_RWwrite() failed: %s", SDL_GetError());
 		free(buf);
 		return;
 	}
@@ -348,7 +347,7 @@ void progress_load(void) {
 	SDL_RWops *file = SDL_RWFromFile(p, "rb");
 
 	if(!file) {
-		warnx("progress_load(): couldn't open the progress file: %s\n", SDL_GetError());
+		log_warn("Couldn't open the progress file: %s", SDL_GetError());
 		free(p);
 		return;
 	}
@@ -363,7 +362,7 @@ void progress_save(void) {
 	SDL_RWops *file = SDL_RWFromFile(p, "wb");
 
 	if(!file) {
-		warnx("progress_save(): couldn't open the progress file: %s\n", SDL_GetError());
+		log_warn("Couldn't open the progress file: %s", SDL_GetError());
 		free(p);
 		return;
 	}

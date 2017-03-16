@@ -3,9 +3,14 @@
 #define TSUTIL_H
 
 #include <stdbool.h>
-#include <string.h>
+#include <stdnoreturn.h>
 #include <stdio.h>
+#include <string.h>
 #include <zlib.h> // compiling under mingw may fail without this...
+#include <png.h>
+#include <SDL.h>
+#include "log.h"
+#include "hashtable.h"
 
 //
 // compatibility
@@ -24,17 +29,13 @@
 #define strlcat SDL_strlcat
 #define strlcpy SDL_strlcpy
 
-#undef strncat
-#undef strncpy
-#define strncat DO_NOT_USE_strncat_USE_strlcat
-#define strncpy DO_NOT_USE_strncpy_USE_strlcpy
-
 char* copy_segment(const char *text, const char *delim, int *size);
 bool strendswith(const char *s, const char *e)  __attribute__((pure));
 bool strstartswith(const char *s, const char *p)  __attribute__((pure));
 bool strendswith_any(const char *s, const char **earray)  __attribute__((pure));
 void stralloc(char **dest, const char *src);
 char* strjoin(const char *first, ...) __attribute__((sentinel));
+char* vstrfmt(const char *fmt, va_list args);
 char* strfmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 void strip_trailing_slashes(char *buf);
 #undef strdup
@@ -93,12 +94,71 @@ void fade_out(float f);
 // i/o utils
 //
 
+typedef void (*KVCallback)(const char *key, const char *value, void *data);
+
 char* read_all(const char *filename, int *size);
+bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data);
+bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *data);
+Hashtable* parse_keyvalue_stream(SDL_RWops *strm, size_t tablesize);
+Hashtable* parse_keyvalue_file(const char *filename, size_t tablesize);
+void png_init_rwops_read(png_structp png, SDL_RWops *rwops);
+void png_init_rwops_write(png_structp png, SDL_RWops *rwops);
+
+char* SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize);
+size_t SDL_RWprintf(SDL_RWops *rwops, const char* fmt, ...) __attribute__((format(printf, 2, 3)));
+
+// This is for the very few legitimate uses for printf/fprintf that shouldn't be replaced with log_*
+void tsfprintf(FILE *out, const char *restrict fmt, ...) __attribute__((format(printf, 2, 3)));
 
 //
 // misc utils
 //
 
 int getenvint(const char *v) __attribute__((pure));
+void png_setup_error_handlers(png_structp png);
+noreturn void _ts_assert_fail(const char *cond, const char *func, const char *file, int line, bool use_log);
+
+#undef assert
+
+#ifdef NDEBUG
+    #define _assert(cond,uselog)
+#else
+    #define _assert(cond,uselog) ((cond) ? (void)0 : _ts_assert_fail(#cond, __func__, __FILE__, __LINE__, uselog))
+#endif
+
+#define assert(cond) _assert(cond, true)
+#define assert_nolog(cond) _assert(cond, false)
+
+//
+// safeguards against some dangerous or otherwise undesirable practices
+//
+
+#undef fopen
+FILE* fopen() __attribute__((deprecated(
+    "Use SDL_RWFromFile instead")));
+
+#undef strncat
+char* strncat() __attribute__((deprecated(
+    "This function likely doesn't do what you expect, use strlcat")));
+
+#undef strncpy
+char* strncpy() __attribute__((deprecated(
+    "This function likely doesn't do what you expect, use strlcpy")));
+
+#undef errx
+noreturn void errx(int, const char*, ...) __attribute__((deprecated(
+    "Use log_fatal instead")));
+
+#undef warnx
+void warnx(const char*, ...) __attribute__((deprecated(
+    "Use log_warn instead")));
+
+#undef printf
+int printf(const char*, ...) __attribute__((deprecated(
+    "Use log_info instead")));
+
+#undef fprintf
+int fprintf(FILE*, const char*, ...) __attribute__((deprecated(
+    "Use log_warn instead (or SDL_RWops if you want to write to a file)")));
 
 #endif

@@ -21,6 +21,7 @@ endif()
 
 set(SRCs
 	main.c
+	log.c
 	util.c
 	taiseigl.c
 	random.c
@@ -110,10 +111,6 @@ else()
 	)
 endif()
 
-if(WIN32)
-	set(SRCs ${SRCs} taisei_err.c)
-endif()
-
 if(DEFINED TAISEI_DEBUG)
 	if(TAISEI_DEBUG)
 		set(CMAKE_BUILD_TYPE "Debug")
@@ -130,7 +127,6 @@ endif()
 message(STATUS "Build configuration: ${CMAKE_BUILD_TYPE}")
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb -DDEBUG")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -s")
 
 add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall -Wno-parentheses -Wtype-limits -std=c11 -pedantic)
 
@@ -144,6 +140,10 @@ endif()
 
 if(FATALERRS)
 	add_definitions(-Wfatal-errors)
+endif()
+
+if(WIN32 OR APPLE)
+	add_definitions(-DLOG_FATAL_MSGBOX)
 endif()
 
 set(LIBs ${LIBs}
@@ -194,6 +194,13 @@ check_symbol_exists(_POSIX_VERSION "unistd.h" POSIX)
 
 if(POSIX)
 	add_definitions(-D__POSIX__)
+endif()
+
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+	check_symbol_exists(backtrace "execinfo.h" HAVE_BACKTRACE)
+	if(HAVE_BACKTRACE)
+		add_definitions(-DLOG_ENABLE_BACKTRACE)
+	endif()
 endif()
 
 if (CMAKE_GENERATOR STREQUAL "Ninja" AND

@@ -167,6 +167,34 @@ void stage6_start(void) {
 
 }
 
+void stage6_preload(void) {
+	preload_resources(RES_BGM, RESF_OPTIONAL, "bgm_stage6", "bgm_stage6boss", NULL);
+	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+		"stage6/baryon_connector",
+		"stage6/baryon",
+		"stage6/scythecircle",
+		"stage6/scythe",
+		"stage6/sky",
+		"stage6/spellbg_chalk",
+		"stage6/spellbg_classic",
+		"stage6/spellbg_modern",
+		"stage6/towertop",
+		"stage6/towerwall",
+		"dialog/elly",
+	NULL);
+	preload_resources(RES_SHADER, RESF_DEFAULT,
+		"tower_wall",
+	NULL);
+	preload_resources(RES_ANIM, RESF_DEFAULT,
+		"elly",
+	NULL);
+	preload_resources(RES_MODEL, RESF_DEFAULT,
+		"towerwall",
+		"towertop",
+		"skysphere",
+	NULL);
+}
+
 void stage6_end(void) {
 	free_stage3d(&bgcontext);
 }
@@ -228,6 +256,7 @@ ShaderRule stage6_shaders[] = { NULL };
 
 StageProcs stage6_procs = {
 	.begin = stage6_start,
+	.preload = stage6_preload,
 	.end = stage6_end,
 	.draw = stage6_draw,
 	.event = stage6_events,
@@ -236,6 +265,7 @@ StageProcs stage6_procs = {
 };
 
 StageProcs stage6_spell_procs = {
+	.preload = stage6_preload,
 	.begin = stage6_start,
 	.end = stage6_end,
 	.draw = stage6_draw,

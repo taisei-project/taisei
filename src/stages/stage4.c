@@ -208,6 +208,30 @@ void stage4_start(void) {
 	add_model(&bgcontext, stage4_corridor_draw, stage4_corridor_pos);
 }
 
+void stage4_preload(void) {
+	preload_resources(RES_BGM, RESF_OPTIONAL, "bgm_stage4", "bgm_stage4boss", NULL);
+	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+		"stage2/border", // Stage 2 is intentional!
+		"stage4/kurumibg1",
+		"stage4/kurumibg2",
+		"stage4/lake",
+		"stage4/mansion",
+		"stage4/planks",
+		"stage4/wall",
+		"dialog/kurumi",
+	NULL);
+	preload_resources(RES_SHADER, RESF_DEFAULT,
+		"zbuf_fog",
+	NULL);
+	preload_resources(RES_ANIM, RESF_DEFAULT,
+		"kurumi",
+	NULL);
+	preload_resources(RES_MODEL, RESF_DEFAULT,
+		"mansion",
+		"lake",
+	NULL);
+}
+
 void stage4_end(void) {
 	free_stage3d(&bgcontext);
 }
@@ -247,6 +271,7 @@ ShaderRule stage4_shaders[] = { stage4_fog, NULL };
 
 StageProcs stage4_procs = {
 	.begin = stage4_start,
+	.preload = stage4_preload,
 	.end = stage4_end,
 	.draw = stage4_draw,
 	.event = stage4_events,
@@ -255,6 +280,7 @@ StageProcs stage4_procs = {
 };
 
 StageProcs stage4_spell_procs = {
+	.preload = stage4_preload,
 	.begin = stage4_start,
 	.end = stage4_end,
 	.draw = stage4_draw,

@@ -165,7 +165,32 @@ void draw_main_menu(MenuData *menu) {
 }
 
 void draw_loading_screen(void) {
+	preload_resource(RES_TEXTURE, "loading", RESF_PERMANENT);
 	set_ortho();
 	draw_texture(SCREEN_W/2, SCREEN_H/2, "loading");
 	SDL_GL_SwapWindow(video.window);
+}
+
+void menu_preload(void) {
+	difficulty_preload();
+
+	preload_resources(RES_TEXTURE, RESF_PERMANENT,
+		"mainmenu/mainmenubg",
+		"mainmenu/logo",
+		"part/smoke",
+		"part/petal",
+		"dialog/marisa",
+		"dialog/youmu",
+		"charselect_arrow",
+	NULL);
+
+	preload_resources(RES_SFX, RESF_PERMANENT | RESF_OPTIONAL,
+		"generic_shot",
+		"shot_special1",
+		"hit",
+	NULL);
+
+	preload_resources(RES_BGM, RESF_PERMANENT | RESF_OPTIONAL,
+		"bgm_menu",
+	NULL);
 }

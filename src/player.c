@@ -434,3 +434,26 @@ void player_graze(Player *plr, complex pos, int pts) {
 		create_particle2c("flare", pos, 0, Shrink, timeout_linear, 5 + 5 * afrand(2), (1+afrand(0)*5)*cexp(I*tsrand_a(1)))->type=PlrProj;
 	}
 }
+
+void player_preload(void) {
+	const int flags = RESF_DEFAULT;
+
+	preload_resources(RES_TEXTURE, flags,
+		"focus",
+		"fairy_circle",
+		"masterspark",
+		"masterspark_ring",
+	NULL);
+
+	preload_resources(RES_SFX, flags | RESF_OPTIONAL,
+		"graze",
+		"death",
+		"generic_shot",
+		"masterspark",
+	NULL);
+
+	preload_resources(RES_ANIM, flags,
+		"youmu",
+		"marisa",
+	NULL);
+}

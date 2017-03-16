@@ -5,7 +5,6 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
-#include <assert.h>
 #include "global.h"
 
 #define TAISEIGL_NO_EXT_ABSTRACTION
@@ -27,7 +26,7 @@ static tsglproc_ptr get_proc_address(const char *name) {
 	void *addr = SDL_GL_GetProcAddress(name);
 
 	if(!addr) {
-		warnx("load_gl_functions(): SDL_GL_GetProcAddress(\"%s\") failed: %s", name, SDL_GetError());
+		log_warn("SDL_GL_GetProcAddress(\"%s\") failed: %s", name, SDL_GetError());
 	}
 
 	// shut up a stupid warning about conversion between data pointers and function pointers
@@ -63,10 +62,10 @@ void check_gl_extensions(void) {
 		glslv = "None";
 	}
 
-	printf("OpenGL version: %s\n", (const char*)glGetString(GL_VERSION));
-	printf("OpenGL vendor: %s\n", (const char*)glGetString(GL_VENDOR));
-	printf("OpenGL renderer: %s\n", (const char*)glGetString(GL_RENDERER));
-	printf("GLSL version: %s\n", glslv);
+	log_info("OpenGL version: %s", (const char*)glGetString(GL_VERSION));
+	log_info("OpenGL vendor: %s", (const char*)glGetString(GL_VENDOR));
+	log_info("OpenGL renderer: %s", (const char*)glGetString(GL_RENDERER));
+	log_info("GLSL version: %s", glslv);
 
 	glext.draw_instanced = false;
 	glext.DrawArraysInstanced = NULL;
@@ -95,7 +94,7 @@ void check_gl_extensions(void) {
 	}
 
 	if(!glext.draw_instanced) {
-		warnx(
+		log_warn(
 			"glDrawArraysInstanced is not supported. "
 			"Your video driver is probably bad, or very old, or both. "
 			"Expect terrible performance."
@@ -112,8 +111,7 @@ void load_gl_library(void) {
 	}
 
 	if(SDL_GL_LoadLibrary(lib) < 0) {
-		errx(-1, "load_gl_library(): SDL_GL_LoadLibrary() failed: %s", SDL_GetError());
-		return;
+		log_fatal("SDL_GL_LoadLibrary() failed: %s", SDL_GetError());
 	}
 #endif
 }
