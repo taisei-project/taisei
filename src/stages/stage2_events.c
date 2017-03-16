@@ -533,7 +533,7 @@ void hina_monty(Boss *h, int time) {
 		FROM_TO_INT(start, start + cycle_dur * ncycles - 1, cycle_dur, burst_dur, step) {
 			double p = _ni / (double)(cnt-1);
 			double c = p;
-			double m = 0.60 + 0.025 * global.diff;
+			double m = 0.60 + 0.01 * global.diff;
 
 			p *= m;
 			if(_i % 2) {
