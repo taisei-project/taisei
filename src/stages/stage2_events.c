@@ -401,7 +401,7 @@ int hina_monty_slave(Enemy *s, int time) {
 		return 1;
 	}
 
-	if(time > 60 && !(time % (int)(max(2 + (global.diff < D_Normal), (120 - 0.5 * time))))) {
+	if(time > 60 && time < 720-140 + 20*(global.diff-D_Lunatic) && !(time % (int)(max(2 + (global.diff < D_Normal), (120 - 0.5 * time))))) {
 		create_projectile2c("crystal", s->pos, rgb(0.5 + 0.5 * psin(time*0.2), 0.3, 1.0 - 0.5 * psin(time*0.2)),
 							asymptotic, 5*I + 1 * (sin(time) + I * cos(time)), 4);
 
@@ -510,22 +510,22 @@ void hina_monty(Boss *h, int time) {
 		targetpos = cwidth * (0.5 + good_pos) + VIEWPORT_H/2.0*I - 200.0*I;
 	}
 
-	FROM_TO(210, 390 + 60 * max(0, (double)global.diff - D_Easy), 60 - 15 * (global.diff > D_Hard)) {
+	FROM_TO(220, 360 + 60 * max(0, (double)global.diff - D_Easy), 60 - 15 * (global.diff > D_Hard)) {
 		float cnt = (2.0+global.diff) * 5;
 		for(int i = 0; i < cnt; i++) {
 			bool top = ((global.diff > D_Hard) && (_i % 2));
 			complex o = !top*VIEWPORT_H*I + cwidth*(bad_pos + i/(double)(cnt - 1));
 			create_projectile2c("ball", o, top ? rgb(0, 0, 0.7) : rgb(0.7, 0, 0), accelerated, 0,
-				(top ? -0.5 : 1) * 0.004 * (sin((M_PI * 4 * i / (cnt - 1))) - I*(1 + psin(i + global.frames)))
+				(top ? -0.5 : 1) * 0.001*(1+global.diff) * (sin((M_PI * 4 * i / (cnt - 1))) - I*(1 + psin(i + global.frames)))
 			)->draw = ProjDrawAdd;
 		}
 	}
 
 	{
 		const int step = 2;
-		const int cnt = 20;
+		const int cnt = 10;
 		const int burst_dur = (cnt - 1) * step;
-		const int cycle_dur = burst_dur;
+		const int cycle_dur = burst_dur+10*(D_Hard-global.diff);
 		const int start = 210;
 		const int end = 540;
 		const int ncycles = (end - start) / cycle_dur;
@@ -533,24 +533,18 @@ void hina_monty(Boss *h, int time) {
 		FROM_TO_INT(start, start + cycle_dur * ncycles - 1, cycle_dur, burst_dur, step) {
 			double p = _ni / (double)(cnt-1);
 			double c = p;
-			double m = 1.2 + (0.025 * max(0, (double)global.diff - D_Normal));
+			double m = 0.60 + 0.025 * global.diff;
 
+			p *= m;
 			if(_i % 2) {
 				p = 1.0 - p;
 			}
 
-			if(p > 0.5) {
-				p = 1.0 - p + 0.5;
-			}
-
-			if(p >= 0.5) {
-				p = 1.0 - (1.0 - p) * m;
-			} else {
-				p = p * m;
-			}
-
 			complex o = cwidth * (p + 0.5/(cnt-1) - 0.5) + h->pos;
-			create_projectile2c("card", o, rgb(c * 0.8, 0, (1 - c) * 0.8), accelerated, -2.5*I, 0.05*I);
+			if(global.diff > D_Normal)
+				create_projectile2c("card", o, rgb(c * 0.8, 0, (1 - c) * 0.8), accelerated, -2.5*I, 0.05*I);
+			else
+				create_projectile1c("card", o, rgb(c * 0.8, 0, (1 - c) * 0.8), linear, 2.5*I);
 		}
 	}
 
@@ -562,7 +556,7 @@ void hina_monty(Boss *h, int time) {
 		targetpos = cwidth * (0.5 + slave_pos) + VIEWPORT_H/2.0*I;
 	}
 
-	GO_TO(h, targetpos, 0.04);
+	GO_TO(h, targetpos, 0.06);
 }
 
 void hina_spell_bg(Boss *h, int time) {
