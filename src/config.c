@@ -365,9 +365,8 @@ static void config_set(const char *key, const char *val, void *data) {
 void config_load(const char *filename) {
 	char *path = config_path(filename);
 	config_init();
-	parse_keyvalue_file_cb(path, config_set, NULL);
+	if(!parse_keyvalue_file_cb(path, config_set, NULL)) {
+		log_warn("Errors occured while parsing the configuration file");
+	}
 	free(path);
 }
-
-#undef SYNTAXERROR
-#undef BUFFERERROR

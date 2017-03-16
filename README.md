@@ -52,21 +52,18 @@ BGM (as well as SFX) may be in `.wav`, `.flac`, or `.ogg` format; additionally
 you may try another formats such as `.mp3`, `.aiff`, `.mod`, `.xm`, etc. if
 your build of SDL2_mixer supports these formats.
 
-Complete music pack consists of 16 bgm\_\*.(ogg/wav/flac) files, where ‘\*’ mean:
+Complete music pack consists of 16 bgm\_\*.(ogg/wav/flac) files, where ‘\*’ means:
 ```
-	credits		BGM for credits screen
-	ending		BGM for ending
-	gameover	BGM for game over screen
-	menu		BGM for menus (excluding in-game menu which pauses BGM)
-	stageN		N=1..6, standard stage theme
-	stageNboss	N=1..6, boss theme for a stage
+    credits     BGM for credits screen
+    ending      BGM for ending
+    gameover    BGM for game over screen
+    menu        BGM for menus (excluding in-game menu which pauses BGM)
+    stageN      N=1..6, standard stage theme
+    stageNboss  N=1..6, boss theme for a stage
 ```
 
 If you want to specify stage/boss theme names to be shown during gameplay, you
-may do it in `bgm/bgm.conf` file. This file contains some lines, each of which
-consists of bgm filename (without extension), space of tab, and theme name.
-No space/tab allowed either in beginning of line or BGM filenames listed in
-this file; theme names may contain them.
+may do it by editing the [`bgm/bgm.conf`](bgm/bgm.conf) file.
 
 ## Sound problems
 
