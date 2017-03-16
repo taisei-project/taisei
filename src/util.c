@@ -293,65 +293,58 @@ char* read_all(const char *filename, int *outsize) {
 }
 
 bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data) {
-    const size_t bufsize = 128;
+    static const size_t bufsize = 256;
+    static const char separator[] = "= ";
 
-#define SYNTAXERROR { log_warn("Syntax error on line %i, aborted! [%s:%i]", line, __FILE__, __LINE__); return false; }
-#define BUFFERERROR { log_warn("String exceed the limit of %li, aborted! [%s:%i]", (long int)bufsize, __FILE__, __LINE__); return false; }
+    char buffer[bufsize];
+    int lineno = 0;
+    int errors = 0;
 
-    int i = 0, found, line = 0;
-    char c, buf[bufsize], key[bufsize], val[bufsize];
+    loopstart: while(SDL_RWgets(strm, buffer, bufsize)) {
+        char *ptr = buffer;
+        char *sep, *key, *val;
 
-    while(c = (char)SDL_ReadU8(strm)) {
-        if(c == '#' && !i) {
-            i = 0;
-            while((char)SDL_ReadU8(strm) != '\n');
-        } else if(c == ' ') {
-            if(!i) SYNTAXERROR
+        ++lineno;
 
-            buf[i] = 0;
-            i = 0;
-            strcpy(key, buf);
-
-            found = 0;
-            while(c = (char)SDL_ReadU8(strm)) {
-                if(c == '=') {
-                    if(++found > 1) SYNTAXERROR
-                } else if(c != ' ') {
-                    if(!found || c == '\n') SYNTAXERROR
-
-                    do {
-                        if(c == '\n') {
-                            if(!i) SYNTAXERROR
-
-                            buf[i] = 0;
-                            i = 0;
-                            strcpy(val, buf);
-                            found = 0;
-                            ++line;
-
-                            callback(key, val, data);
-                            break;
-                        } else if(c != '\r') {
-                            buf[i++] = c;
-                            if(i == bufsize)
-                                BUFFERERROR
-                        }
-                    } while(c = (char)SDL_ReadU8(strm));
-
-                    break;
-                }
-            } if(found) SYNTAXERROR
-        } else {
-            buf[i++] = c;
-            if(i == bufsize)
-                BUFFERERROR
+        while(isspace(*ptr)) {
+            if(!*(++ptr)) {
+                // blank line
+                goto loopstart;
+            }
         }
+
+        if(*ptr == '#') {
+            // comment
+            continue;
+        }
+
+        sep = strstr(ptr, separator);
+
+        if(!sep) {
+            ++errors;
+            log_warn("Syntax error on line %i: missing separator", lineno);
+            continue;
+        }
+
+        // split it up
+        *sep = 0;
+        key = ptr;
+        val = sep + sizeof(separator) - 1;
+
+        // the separator may be preceeded by any kind of whitespace, so strip it from the key
+        while(isspace(*(ptr = strchr(key, 0) - 1))) {
+            *ptr = 0;
+        }
+
+        // strip any kind of line endings from the value
+        while(strchr("\r\n", *(ptr = strchr(val, 0) - 1))) {
+            *ptr = 0;
+        }
+
+        callback(key, val, data);
     }
 
-    return true;
-
-#undef SYNTAXERROR
-#undef BUFFERERROR
+    return !errors;
 }
 
 bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *data) {
