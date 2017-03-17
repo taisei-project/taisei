@@ -112,6 +112,7 @@ static int load_resource_async_thread(void *vdata) {
 	ResourceAsyncLoadData *data = vdata;
 	SDL_Event evt;
 
+	SDL_SetThreadPriority(SDL_THREAD_PRIORITY_LOW);
 	data->opaque = data->handler->begin_load(data->path, data->flags);
 
 	SDL_zero(evt);
