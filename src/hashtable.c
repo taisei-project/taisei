@@ -31,6 +31,7 @@ struct Hashtable {
     HTCopyFunc copy_func;
     HTFreeFunc free_func;
     SDL_atomic_t cur_operation;
+    SDL_atomic_t num_operations;
 };
 
 enum {
@@ -61,6 +62,8 @@ Hashtable* hashtable_new(size_t size, HTCmpFunc cmp_func, HTHashFunc hash_func, 
     ht->free_func = free_func;
 
     SDL_AtomicSet(&ht->cur_operation, HT_OP_NONE);
+    SDL_AtomicSet(&ht->num_operations, 0);
+
     assert(ht->hash_func != NULL);
 
     return ht;
@@ -76,11 +79,13 @@ static bool hashtable_try_enter_state(Hashtable *ht, int state, bool mutex) {
 }
 
 static void hashtable_enter_state(Hashtable *ht, int state, bool mutex) {
-    while(!hashtable_try_enter_state(ht, state, mutex));
+    while(!hashtable_try_enter_state(ht, state, mutex) || (mutex && SDL_AtomicGet(&ht->num_operations)));
+    SDL_AtomicIncRef(&ht->num_operations);
 }
 
 static void hashtable_idle_state(Hashtable *ht) {
-    SDL_AtomicSet(&ht->cur_operation, HT_OP_NONE);
+    if(SDL_AtomicDecRef(&ht->num_operations))
+        SDL_AtomicSet(&ht->cur_operation, HT_OP_NONE);
 }
 
 void hashtable_lock(Hashtable *ht) {
