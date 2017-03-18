@@ -234,7 +234,7 @@ void gamepad_event(SDL_Event *event, EventHandler handler, EventFlags flags, voi
 
 	int val;
 	int vsign;
-	float deadzone = config_get_float(CONFIG_GAMEPAD_AXIS_DEADZONE);
+	float deadzone = clamp(config_get_float(CONFIG_GAMEPAD_AXIS_DEADZONE), 0, 0.999);
 	int minval = clamp(deadzone, 0, 1) * GAMEPAD_AXIS_MAX;
 
 	switch(event->type) {
