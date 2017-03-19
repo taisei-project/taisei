@@ -172,7 +172,7 @@ void player_logic(Player* plr) {
 
 		Projectile *p;
 		for(p = global.projs; p; p = p->next)
-			if(p->type >= FairyProj)
+			if(p->type < PlrProj)
 				p->type = DeadProj;
 
 		if(global.boss && global.boss->current) {
