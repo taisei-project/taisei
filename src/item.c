@@ -9,8 +9,19 @@
 #include "global.h"
 #include "list.h"
 
-Item *create_item(complex pos, complex v, Type type) {
-	Item *i = create_element((void **)&global.items, sizeof(Item));
+Item *create_item(complex pos, complex v, ItemType type) {
+	Item *e, **d, **dest = &global.items;
+
+	for(e = *dest; e && e->next; e = e->next)
+		if(e->prev && type < e->type)
+			break;
+
+	if(e == NULL)
+		d = dest;
+	else
+		d = &e;
+
+	Item *i = create_element((void **)d, sizeof(Item));
 	i->pos = pos;
 	i->pos0 = pos;
 	i->v = v;
@@ -20,7 +31,6 @@ Item *create_item(complex pos, complex v, Type type) {
 
 	return i;
 }
-
 
 void delete_item(Item *item) {
 	delete_element((void **)&global.items, item);
@@ -129,7 +139,7 @@ int collision_item(Item *i) {
 	return 0;
 }
 
-void spawn_item(complex pos, Type type) {
+void spawn_item(complex pos, ItemType type) {
 	tsrand_fill(2);
 	create_item(pos, 5*cexp(I*tsrand_a(0)/afrand(1)*M_PI*2), type);
 }
