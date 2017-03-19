@@ -200,7 +200,9 @@ void player_bomb(Player *plr) {
 
 		if(plr->deathtime > 0) {
 			plr->deathtime = -1;
-			plr->bombs /= 2;
+
+			if(plr->bombs)
+				plr->bombs--;
 		}
 
 		if(plr->bombs < 0) {
@@ -226,9 +228,7 @@ void player_realdeath(Player *plr) {
 
 	plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I+30.0*I;
 	plr->recovery = -(global.frames + DEATH_DELAY + 150);
-
-	if(plr->bombs < PLR_START_BOMBS)
-		plr->bombs = PLR_START_BOMBS;
+	plr->bombs = PLR_START_BOMBS;
 
 	if(plr->iddqd)
 		return;
