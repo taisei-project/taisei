@@ -108,7 +108,7 @@ void draw_menu_selector(float x, float y, float w, float h, float t) {
     glTranslatef(x, y, 0);
     glScalef(w / bg->w, h / bg->h, 1);
     glRotatef(t*2,0,0,1);
-    glColor4f(0,0,0,0.5);
+    glColor4f(0,0,0,0.5 * (1 - transition.fade));
     draw_texture_p(0,0,bg);
     glPopMatrix();
 }
