@@ -92,6 +92,9 @@ void player_move(Player *plr, complex delta) {
 }
 
 void player_draw(Player* plr) {
+	if(plr->deathtime > global.frames)
+		return;
+
 	draw_enemies(plr->slaves);
 
 	glPushMatrix();
