@@ -52,6 +52,15 @@ Animation *player_get_ani(Character cha) {
 	return ani;
 }
 
+static void player_full_power(Player *plr) {
+	play_sound("full_power");
+
+	Projectile *p;
+	for(p = global.projs; p; p = p->next)
+		if(p->type < PlrProj)
+			p->type = DeadProj;
+}
+
 void player_set_power(Player *plr, short npow) {
 	switch(plr->cha) {
 		case Youmu:
@@ -62,6 +71,7 @@ void player_set_power(Player *plr, short npow) {
 			break;
 	}
 
+	int oldpow = plr->power;
 	plr->power = npow;
 
 	if(plr->power > PLR_MAXPOWER)
@@ -69,6 +79,10 @@ void player_set_power(Player *plr, short npow) {
 
 	if(plr->power < 0)
 		plr->power = 0;
+
+	if(plr->power == PLR_MAXPOWER && oldpow < PLR_MAXPOWER) {
+		player_full_power(plr);
+	}
 }
 
 void player_move(Player *plr, complex delta) {
@@ -441,6 +455,7 @@ void player_preload(void) {
 		"death",
 		"generic_shot",
 		"masterspark",
+		"full_power",
 	NULL);
 
 	preload_resources(RES_ANIM, flags,
