@@ -44,7 +44,6 @@ void spell_opening(Boss *b, int time) {
 
 void draw_extraspell_bg(Boss *boss, int time) {
 	// overlay for all extra spells
-	// needs tweaking
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glColor4f(0.2,0.1,0,0.7);
@@ -376,4 +375,13 @@ void boss_preload(void) {
 	preload_resources(RES_SHADER, RESF_DEFAULT,
 		"boss_zoom",
 	NULL);
+
+	StageInfo *s = global.stage;
+
+	if(s->type != STAGE_SPELL || s->spell->type == AT_ExtraSpell) {
+		preload_resources(RES_TEXTURE, RESF_DEFAULT,
+			"stage3/wspellclouds",
+			"stage4/kurumibg2",
+		NULL);
+	}
 }

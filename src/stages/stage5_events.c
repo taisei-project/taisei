@@ -220,15 +220,14 @@ void iku_slave_draw(Enemy *e, int t) {
 		char *part = frand() > 0.5 ? "lightning0" : "lightning1";
 		Projectile *p = create_particle1c(part, e->pos+3*offset, rgb(1.0, 1.0, 1.0), FadeAdd, timeout, 20);
 		p->angle = frand()*2*M_PI;
-
 	}
+
 	if(!(t % 3)) {
 		float alpha = 1;
 		if(!e->args[2])
 			alpha *= 0.03;
 		create_particle3c("lightningball", e->pos, rgba(.1*alpha, .1*alpha, .6*alpha, 0.1*alpha), FadeAdd, enemy_flare, 50,offset*0.1,add_ref(e));
 	}
-
 }
 
 void iku_mid_intro(Boss *b, int t) {

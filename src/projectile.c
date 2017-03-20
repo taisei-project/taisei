@@ -422,6 +422,9 @@ void petal_explosion(int n, complex pos) {
 
 void projectiles_preload(void) {
 	preload_resources(RES_TEXTURE, RESF_PERMANENT,
+		// XXX: maybe split this up into stage-specific preloads too?
+		// some of these are ubiquitous, but some only appear in very specific parts.
+
 		"part/blast",
 		"part/boss_shadow",
 		"part/flare",
@@ -432,6 +435,9 @@ void projectiles_preload(void) {
 		"part/smoke",
 		"part/stain",
 		"part/youmu_slice",
+		"part/lightning0",
+		"part/lightning1",
+		"part/lightningball",
 		"proj/ball",
 		"proj/bigball",
 		"proj/bullet",
