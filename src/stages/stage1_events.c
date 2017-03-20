@@ -40,20 +40,19 @@ void cirno_icy(Boss *c, int time) {
 		return;
 
 	FROM_TO(0, 200, 5-global.diff) {
-		tsrand_fill(6);
-		create_projectile2c("crystal", VIEWPORT_W/2.0 + 10*_i*(0.5-afrand(0)) + cimag(c->pos)*I, rgb(0.2,0.5,0.4+0.5*afrand(1)), accelerated, 1.7*cexp(I*_i/10.0)*(1-2*(_i&1)), 0.0001*I*_i + (0.0025 - global.diff*0.005*afrand(2)));
-		create_projectile2c("crystal", VIEWPORT_W/2.0 + 10*_i*(0.5-afrand(3)) + cimag(c->pos)*I, rgb(0.2,0.5,0.4+0.5*afrand(4)), accelerated, 1.7*cexp(I*_i/10.0)*(1-2*(_i&1)), 0.0001*I*_i + (0.0025 - global.diff*0.005*afrand(5)));
+		for(int d = 0; d < 2; d++) {
+		tsrand_fill(3);
+		create_projectile2c("crystal", VIEWPORT_W/2.0 + 10*_i*(0.5-afrand(0)) + cimag(c->pos)*I, rgb(0.2,0.5,0.4+0.5*afrand(1)), accelerated, 1.7*cexp(I*_i/10.0)*(1-2*(_i&1)), 0.0001*I*_i + 2.*global.diff*global.diff/D_Lunatic/D_Lunatic*(0.0025 - 0.005*afrand(2)));
+		}
 	}
 }
 
 
 int cirno_pfreeze_frogs(Projectile *p, int t) {
-	if(t == EVENT_DEATH)
-		free_ref(p->args[1]);
 	if(t < 0)
 		return 1;
 
-	Boss *parent = REF(p->args[1]);
+	Boss *parent = global.boss;
 
 	if(parent == NULL)
 		return ACTION_DESTROY;
@@ -95,7 +94,7 @@ void cirno_perfect_freeze(Boss *c, int time) {
 		int i;
 		int n = global.diff;
 		for(i = 0; i < n; i++)
-			create_projectile2c("ball", c->pos, rgb(r, g, b), cirno_pfreeze_frogs, 4*cexp(I*tsrand()), add_ref(global.boss));
+			create_projectile1c("ball", c->pos, rgb(r, g, b), cirno_pfreeze_frogs, 4*cexp(I*tsrand()));
 	}
 
 	GO_AT(c, 160, 190, 2 + 1.0*I);
@@ -158,8 +157,8 @@ void cirno_iceplosion0(Boss *c, int time) {
 		}
 	}
 
-	FROM_TO(40,100,1) {
-		create_projectile2c("crystal", c->pos, rgb(0.3,0.3,0.8), accelerated, 2*cexp(2.0*I*M_PI*frand()) + 2.0*I, 0.002*cexp(I*(M_PI/10.0*(_i%20))));
+	FROM_TO(40,100,1+2*(global.diff<D_Hard)) {
+		create_projectile2c("crystal", c->pos, rgb(0.3,0.3,0.8), accelerated, global.diff/4.*cexp(2.0*I*M_PI*frand()) + 2.0*I, 0.002*cexp(I*(M_PI/10.0*(_i%20))));
 	}
 
 	FROM_TO(150, 300, 30-5*global.diff) {
@@ -180,7 +179,7 @@ void cirno_crystal_rain(Boss *c, int time) {
 
 	if(frand() > 0.9-0.1*global.diff) {
 		tsrand_fill(2);
-		create_projectile2c("crystal", VIEWPORT_W*afrand(0), rgb(0.2,0.2,0.4), accelerated, 1.0*I, 0.01*I + (0.01+0.003*global.diff)*anfrand(1));
+		create_projectile2c("crystal", VIEWPORT_W*afrand(0), rgb(0.2,0.2,0.4), accelerated, 1.0*I, 0.01*I + (-0.003+0.005*global.diff)*anfrand(1));
 	}
 
 	FROM_TO(100, 400, 120-20*global.diff) {
@@ -212,9 +211,9 @@ void cirno_iceplosion1(Boss *c, int time) {
 		}
 	}
 
-	FROM_TO(40,100,2) {
-		create_projectile2c("crystal", c->pos + 100, rgb(0.3,0.3,0.8), accelerated, 1.5*cexp(2.0*I*M_PI*frand()) - 0.4 + 2.0*I, 0.002*cexp(I*(M_PI/10.0*(_i%20))));
-		create_projectile2c("crystal", c->pos - 100, rgb(0.3,0.3,0.8), accelerated, 1.5*cexp(2.0*I*M_PI*frand()) + 0.4 + 2.0*I, 0.002*cexp(I*(M_PI/10.0*(_i%20))));
+	FROM_TO(40,100,2+2*(global.diff<D_Hard)) {
+		create_projectile2c("crystal", c->pos + 100, rgb(0.3,0.3,0.8), accelerated, 1.5*cexp(2.0*I*M_PI*frand()) - 0.4 + 2.0*I*global.diff/4., 0.002*cexp(I*(M_PI/10.0*(_i%20))));
+		create_projectile2c("crystal", c->pos - 100, rgb(0.3,0.3,0.8), accelerated, 1.5*cexp(2.0*I*M_PI*frand()) + 0.4 + 2.0*I*global.diff/4., 0.002*cexp(I*(M_PI/10.0*(_i%20))));
 	}
 
 	FROM_TO(150, 300, 30) {
@@ -310,7 +309,7 @@ int stage1_burst(Enemy *e, int time) {
 
 	AT(60) {
 		int i = 0;
-		int n = global.diff+1;
+		int n = 1.5*global.diff-1;
 
 		for(i = -n; i <= n; i++) {
 			create_projectile2c("crystal", e->pos, rgb(0.2, 0.3, 0.5), asymptotic, (2+0.1*global.diff)*cexp(I*(carg(global.plr.pos - e->pos) + 0.2*i)), 5);
@@ -338,14 +337,14 @@ int stage1_circletoss(Enemy *e, int time) {
 
 	e->pos += e->args[0];
 
-	FROM_TO(60,100,2) {
+	FROM_TO(60,100,2+(global.diff<D_Hard)) {
 		e->args[0] = 0.5*e->args[0];
 		create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, 2*cexp(I*M_PI/10*_i), _i/2.0);
 	}
 
 
 	if(global.diff > D_Easy) {
-		FROM_TO_INT(90,500,150,15+5*global.diff,1) {
+		FROM_TO_INT(90,500,150,5+7*global.diff,1) {
 			tsrand_fill(2);
 			create_projectile2c("thickrice", e->pos, rgb(0.2, 0.4, 0.8), asymptotic, (1+afrand(0)*2)*cexp(I*carg(global.plr.pos - e->pos)+0.05*I*global.diff*anfrand(1)), 3);
 		}
@@ -368,7 +367,7 @@ int stage1_sinepass(Enemy *e, int time) {
 	e->args[1] -= cimag(e->pos-e->pos0)*0.03*I;
 	e->pos += e->args[1]*0.4 + e->args[0];
 
-	if(frand() > 0.993-0.002*global.diff)
+	if(frand() > 0.997-0.005*(global.diff-1))
 		create_projectile1c("ball", e->pos, rgb(0.8,0.8,0.4), linear, (1+0.2*global.diff+frand())*cexp(I*carg(global.plr.pos - e->pos)));
 
 	return 1;
@@ -386,7 +385,7 @@ int stage1_drop(Enemy *e, int t) {
 	e->pos = e->pos0 + e->args[0]*t + e->args[1]*t*t;
 
 	FROM_TO(10,1000,1)
-		if(frand() > 0.995-0.006*global.diff)
+		if(frand() > 0.997-0.007*(global.diff-1))
 			create_projectile1c("ball", e->pos, rgb(0.8,0.8,0.4), linear, (1+0.3*global.diff+frand())*cexp(I*carg(global.plr.pos - e->pos)));
 
 	return 1;
@@ -402,8 +401,8 @@ int stage1_circle(Enemy *e, int t) {
 	FROM_TO(0, 150, 1)
 		e->pos += (e->args[0] - e->pos)*0.02;
 
-	FROM_TO_INT(150, 550, 40, 40, 2)
-		create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, (2+0.1*global.diff)*cexp(I*M_PI/10*_ni), _ni/2.0);
+	FROM_TO_INT(150, 550, 40, 40, 2+2*(global.diff<D_Hard))
+		create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, (1.7+0.2*global.diff)*cexp(I*M_PI/10*_ni), _ni/2.0);
 
 	FROM_TO(560,1000,1)
 		e->pos += e->args[1];
@@ -421,9 +420,9 @@ int stage1_multiburst(Enemy *e, int t) {
 	FROM_TO(0, 50, 1)
 		e->pos += 2.0*I;
 
-	FROM_TO_INT(60, 300, 70, 40, 12-global.diff) {
+	FROM_TO_INT(60, 300, 70, 40, 18-2*global.diff) {
 		int i;
-		int n = 1+global.diff/2;
+		int n = global.diff-1;
 		for(i = -n; i <= n; i++)
 			create_projectile1c("crystal", e->pos, rgb(0.2, 0.3, 0.5), linear, 2.5*cexp(I*(carg(global.plr.pos - e->pos) + i/5.0)));
 	}
@@ -486,7 +485,7 @@ int stage1_tritoss(Enemy *e, int t) {
 	}
 
 	FROM_TO(480, 800, 300) {
-		int i, n = 20 + global.diff*2;
+		int i, n = 15 + global.diff*3;
 		for(i = 0; i < n; i++) {
 			create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, 1.5*cexp(I*2*M_PI/n*i), 2.0);
 			create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, 3*cexp(I*2*M_PI/n*i), 3.0);
