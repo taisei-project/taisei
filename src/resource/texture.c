@@ -135,7 +135,11 @@ static SDL_Surface* load_png_p(const char *filename, SDL_RWops *rwops) {
 static SDL_Surface* load_png(const char *filename) {
 	SDL_RWops *rwops = SDL_RWFromFile(filename, "r");
 	SDL_Surface *surf = load_png_p(filename, rwops);
-	SDL_RWclose(rwops);
+
+	if(rwops) {
+		SDL_RWclose(rwops);
+	}
+
 	return surf;
 }
 
