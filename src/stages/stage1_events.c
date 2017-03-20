@@ -414,7 +414,7 @@ int stage1_multiburst(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
 		spawn_items(e->pos, 3,2,0,0);
-		return 1;n
+		return 1;
 	}
 
 	FROM_TO(0, 50, 1)
