@@ -99,9 +99,9 @@ void cirno_perfect_freeze(Boss *c, int time) {
 
 	GO_AT(c, 160, 190, 2 + 1.0*I);
 
-	FROM_TO(160, 220, 6-global.diff) {
-		create_projectile2c("rice", c->pos + 60, rgb(0.3, 0.4, 0.9), asymptotic, (2.5+0.5*global.diff)*cexp(I*(carg(global.plr.pos - c->pos) + 0.5*nfrand())), 2.5);
-		create_projectile2c("rice", c->pos - 60, rgb(0.3, 0.4, 0.9), asymptotic, (2.5+0.5*global.diff)*cexp(I*(carg(global.plr.pos - c->pos) + 0.5*nfrand())), 2.5);
+	FROM_TO(160, 220, 6-global.diff/2) {
+		create_projectile2c("rice", c->pos + 60, rgb(0.3, 0.4, 0.9), asymptotic, (2.+0.4*global.diff)*cexp(I*(carg(global.plr.pos - c->pos) + 0.5*nfrand())), 2.5);
+		create_projectile2c("rice", c->pos - 60, rgb(0.3, 0.4, 0.9), asymptotic, (2.+0.4*global.diff)*cexp(I*(carg(global.plr.pos - c->pos) + 0.5*nfrand())), 2.5);
 	}
 
 	GO_AT(c, 190, 220, -2);
