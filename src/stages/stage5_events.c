@@ -545,9 +545,7 @@ Enemy* iku_extra_find_next_slave(complex from, double playerbias) {
 
 
 void iku_extra_slave_draw(Enemy *e, int t) {
-	glColor4f(1, 1, 1, 0.3 + creal(e->args[3]) * 0.7);
 	iku_slave_draw(e, t);
-	glColor4f(1, 1, 1, 1.0);
 
 	if(e->args[2] && !(t % 5)) {
 		complex offset = (frand()-0.5)*30 + (frand()-0.5)*20.0*I;
@@ -555,14 +553,68 @@ void iku_extra_slave_draw(Enemy *e, int t) {
 	}
 }
 
+int iku_extra_trigger_bullet(Projectile *p, int t) {
+	if(t == EVENT_DEATH) {
+		free_ref(p->args[1]);
+		return 1;
+	}
+
+	Enemy *target = REF(p->args[1]);
+
+	if(!target) {
+		return ACTION_DESTROY;
+	}
+
+	if(creal(p->args[2]) < 0) {
+		linear(p, t);
+		if(cabs(p->pos - target->pos) < 5) {
+			p->pos = target->pos;
+			target->args[1] = 1;
+			p->args[2] = 55 - 5 * global.diff;
+			target->args[3] = global.frames + p->args[2];
+		}
+	} else {
+		p->args[2] = approach(creal(p->args[2]), 0, 1);
+	}
+
+	if(creal(p->args[2]) == 0) {
+		int cnt = 6 + 2 * global.diff;
+		for(int i = 0; i < cnt; ++i) {
+			complex dir = cexp(I*(t + i*2*M_PI/cnt));
+			create_projectile2c("bigball", p->pos, rgb(1, 0.5, 0), asymptotic, 1.1*dir, 5)->draw = ProjDrawAdd;
+			create_projectile2c("bigball", p->pos, rgb(0, 0.5, 1), asymptotic, dir, 10)->draw = ProjDrawAdd;
+		}
+		global.shake_view += 5;
+		global.shake_view_fade = 0.2;
+		return ACTION_DESTROY;
+	}
+
+	p->angle = global.frames + t;
+
+	char *part = frand() > 0.5 ? "lightning0" : "lightning1";
+	complex ofs = nfrand();
+	ofs += I * nfrand();
+	Projectile *prt = create_particle2c(part, p->pos + 3 * ofs, rgb(1.0, 0.7 + 0.2 * nfrand(), 0.4), GrowFadeAdd, timeout, 20, 2.4);
+	prt->angle = frand() * 2 * M_PI;
+
+	return 1;
+}
+
+void iku_extra_fire_trigger_bullet(void) {
+	Enemy *e = iku_extra_find_next_slave(global.boss->pos, 250);
+
+	if(!e) {
+		return;
+	}
+
+	Boss *b = global.boss;
+
+	create_projectile3c("soul", b->pos, rgb(0.2, 0.2, 1.0), iku_extra_trigger_bullet,
+		3*cexp(I*carg(e->pos - b->pos)), add_ref(e), -1);
+}
+
 int iku_extra_slave(Enemy *e, int t) {
 	GO_TO(e, e->args[0], 0.05);
-
-	if(e->args[2]) {
-		e->args[3] = approach(creal(e->args[3]), 1, 0.025);
-	} else {
-		e->args[3] = approach(creal(e->args[3]), 0, 0.025);
-	}
 
 	if(e->args[1]) {
 		if(creal(e->args[1]) < 2) {
@@ -570,7 +622,7 @@ int iku_extra_slave(Enemy *e, int t) {
 			return 0;
 		}
 
-		if(!(t % (55 - 5 * global.diff))) {
+		if(global.frames == creal(e->args[3])) {
 			complex o2 = e->args[2];
 			e->args[2] = 0;
 			Enemy *new = iku_extra_find_next_slave(e->pos, 75);
@@ -580,6 +632,7 @@ int iku_extra_slave(Enemy *e, int t) {
 				e->args[1] = 0;
 				e->args[2] = new->args[2] = 600;
 				new->args[1] = 1;
+				new->args[3] = global.frames + 55 - 5 * global.diff;
 
 				create_laserline_ab(e->pos, new->pos, 10, 30, e->args[2], rgb(0.3, 1, 1))->in_background = true;
 
@@ -588,7 +641,7 @@ int iku_extra_slave(Enemy *e, int t) {
 					double r = frand() * 2 * M_PI;
 
 					for(i = 0; i < cnt; ++i) {
-						create_projectile1c("rice", e->pos, rgb(1, 1, 0), asymptotic, 3*cexp(I*(r+i*2*M_PI/cnt)))->draw = ProjDrawAdd;
+						create_projectile2c("rice", e->pos, rgb(1, 1, 0), asymptotic, 2*cexp(I*(r+i*2*M_PI/cnt)), 2)->draw = ProjDrawAdd;
 					}
 				}
 			} else {
@@ -609,6 +662,7 @@ int iku_extra_slave(Enemy *e, int t) {
 						create_projectile2c("ball", o->pos, rgb(0, 1, 1), asymptotic, 1.5*cexp(I*(t + i*2*M_PI/cnt)), 5)->draw = ProjDrawAdd;
 					}
 
+					o->args[1] = 0;
 					o->args[2] = 0;
 
 					global.shake_view += 1;
@@ -618,8 +672,7 @@ int iku_extra_slave(Enemy *e, int t) {
 					l->deathtime = global.frames - l->birthtime + 20;
 				}
 
-				e->args[1] = 0;
-				iku_extra_find_next_slave(global.boss->pos, 50)->args[1] = 1;
+				iku_extra_fire_trigger_bullet();
 			}
 		}
 	}
@@ -657,7 +710,7 @@ void iku_extra(Boss *b, int t) {
 	}
 
 	AT(60) {
-		iku_extra_find_next_slave(b->pos, 50)->args[1] = 1;
+		iku_extra_fire_trigger_bullet();
 	}
 }
 
