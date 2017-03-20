@@ -83,12 +83,6 @@ int run_tests(void) {
 	return 0;
 }
 
-#ifndef __POSIX__
-	#define MKDIR(p) mkdir(p)
-#else
-	#define MKDIR(p) mkdir(p, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)
-#endif
-
 int main(int argc, char **argv) {
 	setlocale(LC_ALL, "C");
 

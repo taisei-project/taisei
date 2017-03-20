@@ -128,6 +128,12 @@ noreturn void _ts_assert_fail(const char *cond, const char *func, const char *fi
 #define assert(cond) _assert(cond, true)
 #define assert_nolog(cond) _assert(cond, false)
 
+#ifndef __POSIX__
+    #define MKDIR(p) mkdir(p)
+#else
+    #define MKDIR(p) mkdir(p, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)
+#endif
+
 //
 // safeguards against some dangerous or otherwise undesirable practices
 //
