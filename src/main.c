@@ -83,6 +83,28 @@ int run_tests(void) {
 	return 0;
 }
 
+static void init_sdl(void) {
+	SDL_version v;
+
+	if(SDL_Init(SDL_INIT_VIDEO) < 0)
+		log_fatal("SDL_Init() failed: %s", SDL_GetError());
+
+	log_info("SDL initialized");
+
+	SDL_VERSION(&v);
+	log_info("Compiled against SDL %u.%u.%u", v.major, v.minor, v.patch);
+
+	SDL_GetVersion(&v);
+	log_info("Using SDL %u.%u.%u", v.major, v.minor, v.patch);
+}
+
+static void log_lib_versions(void) {
+	log_info("Compiled against zlib %s", ZLIB_VERSION);
+	log_info("Using zlib %s", zlibVersion());
+	log_info("Compiled against libpng %s", PNG_LIBPNG_VER_STRING);
+	log_info("Using libpng %s", png_get_header_ver(NULL));
+}
+
 int main(int argc, char **argv) {
 	setlocale(LC_ALL, "C");
 
@@ -143,14 +165,13 @@ int main(int argc, char **argv) {
 
 	config_load(CONFIG_FILE);
 
-	if(SDL_Init(SDL_INIT_VIDEO) < 0)
-		log_fatal("SDL_Init() failed: %s", SDL_GetError());
-
+	log_lib_versions();
+	init_sdl();
 	init_global();
 	video_init();
-	audio_init();
 	init_resources();
 	draw_loading_screen();
+	audio_init();
 	load_resources();
 	gamepad_init();
 	stage_init_array();

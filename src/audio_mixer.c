@@ -74,6 +74,15 @@ void audio_backend_init(void) {
 	}
 
 	log_info("Audio subsystem initialized (SDL2_Mixer)");
+
+	SDL_version v;
+	const SDL_version *lv;
+
+	SDL_MIXER_VERSION(&v);
+	log_info("Compiled against SDL_mixer %u.%u.%u", v.major, v.minor, v.patch);
+
+	lv = Mix_Linked_Version();
+	log_info("Using SDL_mixer %u.%u.%u", lv->major, lv->minor, lv->patch);
 }
 
 void audio_backend_shutdown(void) {

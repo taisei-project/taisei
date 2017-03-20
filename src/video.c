@@ -218,6 +218,13 @@ void video_setmode(int w, int h, bool fs, bool resizable) {
 	}
 
 	_video_setmode(w, h, flags, false);
+
+	log_info("Changed mode to %ix%i%s%s",
+		video.current.width,
+		video.current.height,
+		video_isfullscreen() ? ", fullscreen" : ", windowed",
+		video_isresizable() ? ", resizable" : ""
+	);
 }
 
 void video_take_screenshot(void) {
@@ -369,6 +376,8 @@ void video_init(void) {
 	config_set_callback(CONFIG_FULLSCREEN, video_cfg_fullscreen_callback);
 	config_set_callback(CONFIG_VSYNC, video_cfg_vsync_callback);
 	config_set_callback(CONFIG_VID_RESIZABLE, video_cfg_resizable_callback);
+
+	log_info("Video subsystem initialized");
 }
 
 void video_shutdown(void) {
