@@ -21,6 +21,7 @@
 typedef enum ProgfileCommand {
 	PCMD_UNLOCK_STAGES,
 	PCMD_UNLOCK_STAGES_WITH_DIFFICULTY,
+    PCMD_HISCORE,
 } ProgfileCommand;
 
 typedef struct StageProgress {
@@ -31,6 +32,12 @@ typedef struct StageProgress {
 	// short num_played;
 	// short num_cleared;
 } StageProgress;
+
+typedef struct GlobalProgress {
+    uint32_t hiscore;
+} GlobalProgress;
+
+extern GlobalProgress progress;
 
 void progress_load(void);
 void progress_save(void);
