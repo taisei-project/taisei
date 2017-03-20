@@ -331,7 +331,7 @@ int stage1_burst(Enemy *e, int time) {
 int stage1_circletoss(Enemy *e, int time) {
 	TIMER(&time);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 2,2,0,0);
+		spawn_items(e->pos, 2,1,0,0);
 		return 1;
 	}
 
@@ -360,7 +360,7 @@ int stage1_sinepass(Enemy *e, int time) {
 	TIMER(&time);
 	AT(EVENT_DEATH) {
 		tsrand_fill(2);
-		spawn_items(e->pos, afrand(0)>0.5, afrand(1)>0.2,0,0);
+		spawn_items(e->pos, afrand(0)>0.5, afrand(1)>0.8,0,0);
 		return 1;
 	}
 
@@ -376,7 +376,7 @@ int stage1_sinepass(Enemy *e, int time) {
 int stage1_drop(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 2,1,0,0);
+		spawn_items(e->pos, 2,frand()>0.8,0,0);
 		return 1;
 	}
 	if(t < 0)
@@ -394,7 +394,7 @@ int stage1_drop(Enemy *e, int t) {
 int stage1_circle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 3,4,0,0);
+		spawn_items(e->pos, 3,2,0,0);
 		return 1;
 	}
 
@@ -413,8 +413,8 @@ int stage1_circle(Enemy *e, int t) {
 int stage1_multiburst(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 3,4,0,0);
-		return 1;
+		spawn_items(e->pos, 3,2,0,0);
+		return 1;n
 	}
 
 	FROM_TO(0, 50, 1)
@@ -467,7 +467,7 @@ int stage1_instantcircle(Enemy *e, int t) {
 int stage1_tritoss(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 5,5,0,0);
+		spawn_items(e->pos, 5,2,0,0);
 		return 1;
 	}
 
