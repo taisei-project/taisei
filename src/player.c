@@ -52,6 +52,15 @@ Animation *player_get_ani(Character cha) {
 	return ani;
 }
 
+static void player_full_power(Player *plr) {
+	play_sound("full_power");
+
+	Projectile *p;
+	for(p = global.projs; p; p = p->next)
+		if(p->type < PlrProj)
+			p->type = DeadProj;
+}
+
 void player_set_power(Player *plr, short npow) {
 	switch(plr->cha) {
 		case Youmu:
@@ -62,6 +71,7 @@ void player_set_power(Player *plr, short npow) {
 			break;
 	}
 
+	int oldpow = plr->power;
 	plr->power = npow;
 
 	if(plr->power > PLR_MAXPOWER)
@@ -69,6 +79,10 @@ void player_set_power(Player *plr, short npow) {
 
 	if(plr->power < 0)
 		plr->power = 0;
+
+	if(plr->power == PLR_MAXPOWER && oldpow < PLR_MAXPOWER) {
+		player_full_power(plr);
+	}
 }
 
 void player_move(Player *plr, complex delta) {
@@ -92,6 +106,9 @@ void player_move(Player *plr, complex delta) {
 }
 
 void player_draw(Player* plr) {
+	if(plr->deathtime > global.frames)
+		return;
+
 	draw_enemies(plr->slaves);
 
 	glPushMatrix();
@@ -172,7 +189,7 @@ void player_logic(Player* plr) {
 
 		Projectile *p;
 		for(p = global.projs; p; p = p->next)
-			if(p->type >= FairyProj)
+			if(p->type < PlrProj)
 				p->type = DeadProj;
 
 		if(global.boss && global.boss->current) {
@@ -203,7 +220,9 @@ void player_bomb(Player *plr) {
 
 		if(plr->deathtime > 0) {
 			plr->deathtime = -1;
-			plr->bombs /= 2;
+
+			if(plr->bombs)
+				plr->bombs--;
 		}
 
 		if(plr->bombs < 0) {
@@ -229,9 +248,7 @@ void player_realdeath(Player *plr) {
 
 	plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I+30.0*I;
 	plr->recovery = -(global.frames + DEATH_DELAY + 150);
-
-	if(plr->bombs < PLR_START_BOMBS)
-		plr->bombs = PLR_START_BOMBS;
+	plr->bombs = PLR_START_BOMBS;
 
 	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell && global.stage->type != STAGE_SPELL) {
 		if(!global.boss->current->finished) {
@@ -450,6 +467,7 @@ void player_preload(void) {
 		"death",
 		"generic_shot",
 		"masterspark",
+		"full_power",
 	NULL);
 
 	preload_resources(RES_ANIM, flags,

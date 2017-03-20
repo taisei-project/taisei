@@ -407,13 +407,16 @@ void draw_hud(void) {
 	}
 
 	sprintf(buf, "%.2f", global.plr.power / 100.0);
-	draw_text(AL_Center, 10, 236, buf, _fonts.standard);
+	draw_text(AL_Left, -6, 236, buf, _fonts.standard);
 
 	sprintf(buf, "%i", global.plr.graze);
-	draw_text(AL_Left, -5, 270, buf, _fonts.standard);
+	draw_text(AL_Left, -6, 270, buf, _fonts.standard);
 
 	sprintf(buf, "%i", global.plr.points);
-	draw_text(AL_Center, 13, 49, buf, _fonts.standard);
+	draw_text(AL_Left, 8, 49, buf, _fonts.standard);
+
+	sprintf(buf, "%i", progress.hiscore);
+	draw_text(AL_Left, 8, 83, buf, _fonts.standard);
 
 	if(global.plr.iddqd) {
 		draw_text(AL_Left, -70, 475, "GOD MODE", _fonts.mainmenu);
@@ -800,6 +803,10 @@ void stage_loop(StageInfo *stage) {
 		replay_stage_check_desync(global.replay_stage, global.frames, (tsrand() ^ global.plr.points) & 0xFFFF, global.replaymode);
 
 		stage_logic();
+
+		if(global.replaymode == REPLAY_RECORD && global.plr.points > progress.hiscore) {
+			progress.hiscore = global.plr.points;
+		}
 
 		if(transition_delay) {
 			--transition_delay;
