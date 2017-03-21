@@ -21,7 +21,7 @@ static Stage3D bgcontext;
 AttackInfo stage1_spells[] = {
 	{{ 0,  1,  2,  3},	AT_Spellcard, "Freeze Sign ~ Perfect Freeze", 32, 20000,
 							cirno_perfect_freeze, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
-	{{ 4,  5,  6,  7},	AT_Spellcard, "Freeze Sign ~ Crystal Rain", 28, 28000,
+	{{ 4,  5,  6,  7},	AT_Spellcard, "Freeze Sign ~ Crystal Rain", 28, 33000,
 							cirno_crystal_rain, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
 	{{ 8,  9, 10, 11},	AT_Spellcard, "Doom Sign ~ Icicle Fall", 35, 40000,
 							cirno_icicle_fall, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
