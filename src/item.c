@@ -86,7 +86,7 @@ void process_items(void) {
 		r *= 2;
 
 	while(item != NULL) {
-		if((item->type == Power && global.plr.power >= PLR_MAXPOWER) ||
+		if((item->type == Power && global.plr.power >= PLR_MAX_POWER) ||
 			// just in case we ever have some weird spell that spawns those...
 		   (global.stage->type == STAGE_SPELL && (item->type == Life || item->type == Bomb))
 		) {
@@ -101,6 +101,8 @@ void process_items(void) {
 
 		v = collision_item(item);
 		if(v == 1) {
+			const char *snd = "item_generic";
+
 			switch(item->type) {
 			case Power:
 				player_set_power(&global.plr, global.plr.power + POWER_VALUE);
@@ -112,13 +114,18 @@ void process_items(void) {
 				global.plr.points += 1;
 				break;
 			case Life:
-				global.plr.lifes++;
+				player_add_lives(&global.plr, 1);
+				snd = NULL;
 				break;
 			case Bomb:
-				global.plr.bombs++;
+				player_add_bombs(&global.plr, 1);
+				snd = NULL;
 				break;
 			}
-			play_sound("item_generic");
+
+			if(snd) {
+				play_sound("item_generic");
+			}
 		}
 
 		if(v == 1 || creal(item->pos) < -9 || creal(item->pos) > VIEWPORT_W + 9

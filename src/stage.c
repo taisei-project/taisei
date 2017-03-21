@@ -182,7 +182,7 @@ static void stage_start(StageInfo *stage) {
 	prepare_player_for_next_stage(&global.plr);
 
 	if(stage->type == STAGE_SPELL) {
-		global.plr.lifes = 0;
+		global.plr.lives = 0;
 		global.plr.bombs = 0;
 	}
 
@@ -336,11 +336,53 @@ void stage_input(void) {
 	player_applymovement(&global.plr);
 }
 
+static void draw_star(int x, int y, float fill, float alpha) {
+	Texture *star = get_tex("star");
+	Shader *shader = get_shader("circleclipped_indicator");
+
+	float clr[4];
+	Color fill_clr = rgba(1.0f, 1.0f, 1.0f, 1.0f * alpha);
+	Color back_clr = rgba(0.5f, 0.5f, 1.0f, 0.2f * alpha);
+
+	if(fill >= 1 || fill <= 0) {
+		parse_color_call(fill > 0 ? fill_clr : back_clr, glColor4f);
+		draw_texture_p(x, y, star);
+		glColor4f(1, 1, 1, 1);
+		return;
+	}
+
+	glUseProgram(shader->prog);
+	glUniform1f(uniloc(shader, "fill"), fill);
+	glUniform1f(uniloc(shader, "tcfactor"), star->truew / (float)star->w);
+	parse_color_array(fill_clr, clr);
+	glUniform4fv(uniloc(shader, "fill_color"), 1, clr);
+	parse_color_array(back_clr, clr);
+	glUniform4fv(uniloc(shader, "back_color"), 1, clr);
+	draw_texture_p(x, y, star);
+	glUseProgram(0);
+}
+
+static void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxfrags, float alpha) {
+	static const int star_width = 20;
+	int i = 0;
+
+	while(i < numstars) {
+		draw_star(x + star_width * i++, y, 1, alpha);
+	}
+
+	if(numfrags) {
+		draw_star(x + star_width * i++, y, numfrags / (float)maxfrags, alpha);
+	}
+
+	while(i < maxstars) {
+		draw_star(x + star_width * i++, y, 0, alpha);
+	}
+}
+
 void draw_hud(void) {
 	draw_texture(SCREEN_W/2.0, SCREEN_H/2.0, "hud");
 
 	char buf[16];
-	int i;
 
 	glPushMatrix();
 	glTranslatef(615,0,0);
@@ -358,15 +400,15 @@ void draw_hud(void) {
 		draw_text(AL_Left, -6, 200, "N/A", _fonts.standard);
 		glColor4f(1, 1, 1, 1.0);
 	} else {
-		for(i = 0; i < global.plr.lifes; i++)
-			draw_texture(16*i,167, "star");
-
-		for(i = 0; i < global.plr.bombs; i++)
-			draw_texture(16*i,200, "star");
+		draw_stars(0, 167, global.plr.lives, global.plr.life_fragments, PLR_MAX_LIVES, PLR_MAX_LIFE_FRAGMENTS, 1);
+		draw_stars(0, 200, global.plr.bombs, global.plr.bomb_fragments, PLR_MAX_BOMBS, PLR_MAX_BOMB_FRAGMENTS, 1);
 	}
 
 	sprintf(buf, "%.2f", global.plr.power / 100.0);
 	draw_text(AL_Left, -6, 236, buf, _fonts.standard);
+
+	// uncomment to represent power with stars
+	// draw_stars(0, 236, global.plr.power / 100, global.plr.power % 100, PLR_MAX_POWER / 100, 100, 1);
 
 	sprintf(buf, "%i", global.plr.graze);
 	draw_text(AL_Left, -6, 270, buf, _fonts.standard);
@@ -668,6 +710,7 @@ static void stage_preload(void) {
 	preload_resources(RES_SHADER, RESF_PERMANENT,
 		"stagetitle",
 		"ingame_menu",
+		"circleclipped_indicator",
 	NULL);
 }
 

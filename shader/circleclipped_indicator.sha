@@ -1,0 +1,37 @@
+#version 110
+
+varying vec4 TexCoord0;
+
+void main(void) {
+    gl_Position = ftransform();
+    gl_FrontColor = gl_Color;
+
+    TexCoord0 = gl_TextureMatrix[0] * gl_MultiTexCoord0;
+}
+
+%% -- FRAG
+#version 110
+#define PI 3.1415926535897932384626433832795
+
+uniform sampler2D tex;
+uniform float fill;
+uniform float tcfactor;
+uniform vec4 fill_color;
+uniform vec4 back_color;
+
+varying vec4 TexCoord0;
+
+bool tc_in_sector(vec2 tc, float fill) {
+    float a = tan(PI * (2.0 * fill - 0.5));
+    float y = a * (tc.x - 0.5) + 0.5;
+    bool f = tc.y < y;
+    return tc.x > 0.5 ? (fill > 0.5 ? true : f) : (fill > 0.5 ? !f : false);
+}
+
+void main(void) {
+    vec2 tc = TexCoord0.xy;
+    vec4 texel = texture2D(tex, tc);
+    tc *= tcfactor;
+    texel *= mix(back_color, fill_color, float(tc_in_sector(tc, fill)));
+    gl_FragColor = texel;
+}
