@@ -454,8 +454,10 @@ int stage1_instantcircle(Enemy *e, int t) {
 	}
 
 	AT(170) {
-		for(i = 0; i < 20+3*global.diff; i++)
-			create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, 3*cexp(I*2*M_PI/(20.0+global.diff)*i), 3.0);
+		if(global.diff > D_Easy) {
+			for(i = 0; i < 20+3*global.diff; i++)
+				create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, 3*cexp(I*2*M_PI/(20.0+global.diff)*i), 3.0);
+		}
 	}
 
 	if(t > 200)
@@ -488,7 +490,8 @@ int stage1_tritoss(Enemy *e, int t) {
 		int i, n = 15 + global.diff*3;
 		for(i = 0; i < n; i++) {
 			create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, 1.5*cexp(I*2*M_PI/n*i), 2.0);
-			create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, 3*cexp(I*2*M_PI/n*i), 3.0);
+			if(global.diff > D_Easy)
+				create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, 3*cexp(I*2*M_PI/n*i), 3.0);
 		}
 	}
 
