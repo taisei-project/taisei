@@ -386,15 +386,15 @@ void draw_hud(void) {
 	sprintf(buf, "%i fps", global.fps.show_fps);
 	draw_text(AL_Right, SCREEN_W, SCREEN_H - 0.5 * stringheight(buf, _fonts.standard), buf, _fonts.standard);
 
+	if(global.boss)
+		draw_texture(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
+
 	if(global.replaymode == REPLAY_PLAY) {
 		sprintf(buf, "Replay: %s (%i fps)", global.replay.playername, global.replay_stage->fps);
 		glColor4f(0.5f, 0.5f, 0.5f, 0.5f);
 		draw_text(AL_Left, 0, SCREEN_H - 0.5 * stringheight(buf, _fonts.standard), buf, _fonts.standard);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	}
-
-	if(global.boss)
-		draw_texture(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
 }
 
 static void apply_bg_shaders(ShaderRule *shaderrules);
