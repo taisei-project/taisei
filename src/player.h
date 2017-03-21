@@ -87,6 +87,7 @@ enum {
 	EV_AXIS_LR,
 	EV_AXIS_UD,
 	EV_CHECK_DESYNC, // replay-only
+	EV_FPS, // replay-only
 };
 
 void init_player(Player*);
