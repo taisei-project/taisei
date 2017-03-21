@@ -21,6 +21,10 @@ varying vec4 TexCoord0;
 
 void main(void) {
 	vec2 pos = TexCoord0.xy;
+	vec2 f = pos-vec2(0.5,0.5);
+	pos += (f*0.05*sin(10.0*(length(f)+t)))*(1.0-t);
+
+	pos = clamp(pos,0.0,1.0);
 	vec4 texel = texture2D(tex, pos);
 		
 	texel.a *= clamp((texture2D(trans, pos).r+0.5)*2.5*t-0.5, 0.0, 1.0);

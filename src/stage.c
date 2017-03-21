@@ -290,7 +290,7 @@ void replay_input(void) {
 	handle_events(stage_replay_event, EF_Game, NULL);
 
 	for(i = s->playpos; i < s->numevents; ++i) {
-		ReplayEvent *e = &(s->events[i]);
+		ReplayEvent *e = s->events + i;
 
 		if(e->frame != global.frames)
 			break;
@@ -300,13 +300,19 @@ void replay_input(void) {
 				global.game_over = GAMEOVER_DEFEAT;
 				break;
 
+			case EV_CHECK_DESYNC:
+				s->desync_check = e->value;
+				break;
+
+			case EV_FPS:
+				s->fps = e->value;
+				break;
+
 			default:
 				if(global.dialog && e->type == EV_PRESS && (e->value == KEY_SHOT || e->value == KEY_BOMB))
 					page_dialog(&global.dialog);
 				else if(global.dialog && (e->type == EV_PRESS || e->type == EV_RELEASE) && e->value == KEY_SKIP)
 					global.dialog->skip = (e->type == EV_PRESS);
-				else if(e->type == EV_CHECK_DESYNC)
-					s->desync_check = e->value;
 				else
 					player_event(&global.plr, e->type, (int16_t)e->value);
 				break;
@@ -377,15 +383,18 @@ void draw_hud(void) {
 
 	glPopMatrix();
 
-#ifdef DEBUG
-	sprintf(buf, "%i fps / %i stgframes", global.fps.show_fps, global.timer);
-#else
 	sprintf(buf, "%i fps", global.fps.show_fps);
-#endif
-	draw_text(AL_Right, SCREEN_W, SCREEN_H-20, buf, _fonts.standard);
+	draw_text(AL_Right, SCREEN_W, SCREEN_H - 0.5 * stringheight(buf, _fonts.standard), buf, _fonts.standard);
 
 	if(global.boss)
 		draw_texture(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
+
+	if(global.replaymode == REPLAY_PLAY) {
+		sprintf(buf, "Replay: %s (%i fps)", global.replay.playername, global.replay_stage->fps);
+		glColor4f(0.5f, 0.5f, 0.5f, 0.5f);
+		draw_text(AL_Left, 0, SCREEN_H - 0.5 * stringheight(buf, _fonts.standard), buf, _fonts.standard);
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	}
 }
 
 static void apply_bg_shaders(ShaderRule *shaderrules);
@@ -766,7 +775,9 @@ void stage_loop(StageInfo *stage) {
 			continue;
 		}
 
-		calc_fps(&global.fps);
+		if(calc_fps(&global.fps) && global.replaymode == REPLAY_RECORD) {
+			replay_stage_event(global.replay_stage, global.frames, EV_FPS, global.fps.show_fps);
+		}
 
 		tsrand_lock(&global.rand_game);
 		tsrand_switch(&global.rand_visual);
@@ -826,7 +837,7 @@ static void draw_title(int t, Alignment al, int x, int y, const char *text, TTF_
 	glBindTexture(GL_TEXTURE_2D, get_tex("titletransition")->gltex);
 	glActiveTexture(GL_TEXTURE0);
 
-	draw_text(al, x, y, text, font);
+	draw_text(al, x+10*f*f, y+10*f*f, text, font);
 
 	glColor4f(1,1,1,1);
 	glUseProgram(0);

@@ -85,7 +85,9 @@ typedef struct ReplayStage {
 	// events allocated (may be higher than numevents)
 	int capacity;
 
+	// used during playback
 	int playpos;
+	int fps;
 	uint16_t desync_check;
 } ReplayStage;
 
