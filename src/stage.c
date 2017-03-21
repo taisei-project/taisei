@@ -837,7 +837,7 @@ static void draw_title(int t, Alignment al, int x, int y, const char *text, TTF_
 	glBindTexture(GL_TEXTURE_2D, get_tex("titletransition")->gltex);
 	glActiveTexture(GL_TEXTURE0);
 
-	draw_text(al, x, y, text, font);
+	draw_text(al, x+10*f*f, y+10*f*f, text, font);
 
 	glColor4f(1,1,1,1);
 	glUseProgram(0);
