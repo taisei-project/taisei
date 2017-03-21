@@ -342,7 +342,7 @@ static void draw_star(int x, int y, float fill, float alpha) {
 
 	float clr[4];
 	Color fill_clr = rgba(1.0f, 1.0f, 1.0f, 1.0f * alpha);
-	Color back_clr = rgba(0.5f, 0.5f, 1.0f, 0.2f * alpha);
+	Color back_clr = rgba(0.2f, 0.6f, 1.0f, 0.2f * alpha);
 
 	if(fill >= 1 || fill <= 0) {
 		parse_color_call(fill > 0 ? fill_clr : back_clr, glColor4f);
