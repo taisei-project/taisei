@@ -331,6 +331,10 @@ void player_event(Player* plr, int type, int key) {
 		case EV_AXIS_UD:
 			plr->axis_ud = key;
 			break;
+
+		default:
+			log_warn("Unknown event type %d (value=%d)", type, key);
+			break;
 	}
 }
 
