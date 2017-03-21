@@ -275,6 +275,7 @@ void Blast(Projectile *p, int t) {
 	if(t != p->args[0])
 		glScalef(t/p->args[0], t/p->args[0], 1);
 	glColor4f(0.3,0.6,1,1 - t/p->args[0]);
+	draw_texture_p(0,0,p->tex);
 	glScalef(0.5+creal(p->args[2]),0.5+creal(p->args[2]),1);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 	draw_texture_p(0,0,p->tex);
