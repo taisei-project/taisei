@@ -21,17 +21,11 @@ uniform vec4 back_color;
 
 varying vec4 TexCoord0;
 
-bool tc_in_sector(vec2 tc, float fill) {
-    float a = tan(PI * (2.0 * fill - 0.5));
-    float y = a * (tc.x - 0.5) + 0.5;
-    bool f = tc.y < y;
-    return tc.x > 0.5 ? (fill > 0.5 ? true : f) : (fill > 0.5 ? !f : false);
-}
-
 void main(void) {
     vec2 tc = TexCoord0.xy;
     vec4 texel = texture2D(tex, tc);
     tc *= tcfactor;
-    texel *= mix(back_color, fill_color, float(tc_in_sector(tc, fill)));
+    tc -= vec2(0.5);
+    texel *= mix(back_color, fill_color, float(-atan(tc.x,-tc.y) > PI*(2.0*fill-1.0)));
     gl_FragColor = texel;
 }
