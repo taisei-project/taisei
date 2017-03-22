@@ -75,10 +75,15 @@ int stage2_great_circle(Enemy *e, int t) {
 		e->args[0] *= 0.5;
 
 	FROM_TO(70, 190+global.diff*25, 5-global.diff/2) {
-		int n, c = 7;
+		int n, c = 5+2*(global.diff>D_Normal);
+		
+		const double partdist = 0.04*global.diff;
+		const double bunchdist = 0.5;
+		const int c2 = 5;
 
+		
 		for(n = 0; n < c; n++) {
-			complex dir = cexp(I*(2*M_PI/c*n+0.0001*(_i%5-3)+0.5*_i/5));
+			complex dir = cexp(I*(2*M_PI/c*n+partdist*(_i%c2-c2/2)+bunchdist*(_i/c2)));
 			create_projectile2c("rice", e->pos+30*dir, rgb(0.6,0.0,0.3), asymptotic, 1.5*dir, _i%5);
 
 			if(global.diff > D_Easy && _i%7 == 0)
@@ -125,7 +130,7 @@ int stage2_small_spin_circle(Enemy *e, int t) {
 		e->pos0 = e->pos;
 
 	FROM_TO(50,80+global.diff*5,5)
-		create_projectile3c("ball", e->pos, rgb(0.9,0.0,0.3), spin_circle, 0.02 - 0.04*(!e->dir), e->pos0 + _i*10*((1-2*e->dir)+1.0*I), (1-2*e->dir)+1.0*I);
+		create_projectile3c("ball", e->pos, rgb(0.9,0.0,0.3), spin_circle, 0.02 - 0.04*(!e->dir), e->pos0 + 10*((1-2*e->dir)+1.0*I), (1-2*e->dir)+.5*I);
 
 	return 1;
 }
@@ -192,8 +197,9 @@ int stage2_flea(Enemy *e, int t) {
 		e->args[1] -= 0.2;
 
 
-	FROM_TO(10, 400, 20-global.diff*2-t/70) {
-		create_projectile2c("flea", e->pos, rgb(0.2,0.2,1), asymptotic, 1.5*cexp(2.0*I*M_PI*frand()), 1.5);
+	FROM_TO(10, 400, 30-global.diff*3-t/70) {
+		if(global.diff == D_Easy)
+			create_projectile2c("flea", e->pos, rgb(0.3,0.2,1), asymptotic, 1.5*cexp(2.0*I*M_PI*frand()), 1.5);
 	}
 
 	return 1;
@@ -208,7 +214,7 @@ int stage2_accel_circle(Enemy *e, int t) {
 
 	e->pos += e->args[0];
 
-	FROM_TO(60,250, 10) {
+	FROM_TO(60,250, 20-10*(global.diff<D_Hard)) {
 		e->args[0] *= 0.5;
 
 		int i;
@@ -336,8 +342,26 @@ void hina_cards2(Boss *h, int time) {
 	}
 }
 
+#define SLOTS 5
+
+static int bad_pick_bullet(Projectile *p, int t) {
+	if(t < 0)
+		return 1;
+
+	p->pos += p->args[0];
+	p->args[0] += p->args[1];
+
+	// reflection
+	int slot = (int)(creal(p->pos)/(VIEWPORT_W/SLOTS)+1)-1; // correct rounding for slot == -1
+	int targetslot = creal(p->args[2])+0.5;
+	if(slot != targetslot)
+		p->args[0] = copysign(creal(p->args[0]),targetslot-slot)+I*cimag(p->args[0]);
+
+	return 1;
+}
+
 void hina_bad_pick(Boss *h, int time) {
-	int t = time % 400;
+	int t = time % 500;
 	int i, j;
 
 	TIMER(&t);
@@ -345,29 +369,42 @@ void hina_bad_pick(Boss *h, int time) {
 	if(time < 0)
 		return;
 
-	GO_TO(h, VIEWPORT_W/5*(time/400+0.6)+ 100.0*I, 0.02);
+	GO_TO(h, VIEWPORT_W/SLOTS*((113*(time/500))%SLOTS+0.5)+ 100.0*I, 0.02);
 
 	FROM_TO(100, 500, 5) {
 
-		for(i = 1; i < 5; i++) {
-			create_projectile1c("crystal", VIEWPORT_W/5*i, rgb(0.2,0,0.2), linear, 7.0*I);
+		for(i = 1; i < SLOTS; i++) {
+			create_projectile1c("crystal", VIEWPORT_W/SLOTS*i, rgb(0.5,0,0.6), linear, 7.0*I);
+		}
+		if(global.diff >= D_Hard) {
+			double shift = 0;
+			if(global.diff == D_Lunatic) 
+				shift = 0.3*max(0,t-200);
+			for(i = 1; i < SLOTS; i++) {
+				double height = VIEWPORT_H/SLOTS*i+shift;
+				if(height > VIEWPORT_H-40)
+					height -= VIEWPORT_H-40;
+				create_projectile1c("crystal", (i&1)*VIEWPORT_W+I*height, rgb(0.5,0,0.6), linear, 5.0*(1-2*(i&1)));
+			}
 		}
 	}
 
 	AT(200) {
-		int win = tsrand()%5;
-		for(i = 0; i < 5; i++) {
+		int win = tsrand()%SLOTS;
+		for(i = 0; i < SLOTS; i++) {
 			if(i == win)
 				continue;
 
-			float cnt = (2.0+global.diff) * 5;
+			float cnt = (1+min(D_Hard,global.diff)) * 5;
 			for(j = 0; j < cnt; j++) {
-				complex o = VIEWPORT_W/5*(i + j/(cnt-1));
-				create_projectile2c("ball", o, rgb(0.7,0,0.0), accelerated, 0, 0.005*nfrand() + 0.01*I * (1 + (1 * psin(i + j + global.frames))))->draw = ProjDrawAdd;
+				complex o = VIEWPORT_W/SLOTS*(i + j/(cnt-1));
+				create_projectile3c("ball", o, rgb(0.7,0,0.0), bad_pick_bullet, 0, 0.005*nfrand() + 0.005*I * (1 + psin(i + j + global.frames)),i)->draw = ProjDrawAdd;
 			}
 		}
 	}
 }
+
+#undef SLOTS
 
 void hina_wheel(Boss *h, int time) {
 	int t = time % 400;
@@ -458,12 +495,14 @@ void stage2_events(void) {
 	FROM_TO(1700, 2000, 30)
 		create_enemy1c(VIEWPORT_W*frand()-20.0*I, 200, Fairy, stage2_flea, 1.7*I);
 
-	FROM_TO(1950, 2500, 60) {
-		create_enemy3c(VIEWPORT_W-40+(VIEWPORT_H+20)*I, 200, Fairy, stage2_sidebox_trail, 5 - 0.5*M_PI*I, -0.02, 83-global.diff*3);
-		create_enemy3c(40+(VIEWPORT_H+20)*I, 200, Fairy, stage2_sidebox_trail, 5 - 0.5*M_PI*I, 0.02, 80-global.diff*3);
+	if(global.diff > D_Easy) {
+		FROM_TO(1950, 2500, 60) {
+			create_enemy3c(VIEWPORT_W-40+(VIEWPORT_H+20)*I, 200, Fairy, stage2_sidebox_trail, 5 - 0.5*M_PI*I, -0.02, 83-global.diff*3);
+			create_enemy3c(40+(VIEWPORT_H+20)*I, 200, Fairy, stage2_sidebox_trail, 5 - 0.5*M_PI*I, 0.02, 80-global.diff*3);
+		}
 	}
 
-	AT(2500) {
+	AT(2300) {
 		create_enemy1c(VIEWPORT_W/4-10.0*I, 2000, Fairy, stage2_accel_circle, 2.0*I);
 		create_enemy1c(VIEWPORT_W/4*3-10.0*I, 2000, Fairy, stage2_accel_circle, 2.0*I);
 	}
