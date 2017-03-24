@@ -483,7 +483,13 @@ static void stage_draw(StageInfo *stage) {
 
 		glRotatef(global.frames*4.0, 0, 0, -1);
 		float f = 0.8+0.1*sin(global.frames/8.0);
+		if(boss_is_dying(global.boss)) {
+			float t = (global.frames - global.boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
+			f -= t*(t-0.7)/(1-t);
+		}
+
 		glScalef(f,f,f);
+
 		draw_texture(0,0,"boss_circle");
 
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -612,6 +618,12 @@ static void apply_zoom_shader() {
 		float t = (global.frames - global.boss->current->starttime + ATTACK_START_DELAY)/(float)ATTACK_START_DELAY;
 		spellcard_sup = 1-1/(0.1*t*t+1);
 	}
+
+	if(boss_is_dying(global.boss)) {
+		float t = (global.frames - global.boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
+		spellcard_sup = 1-t*t;
+	}
+
 	glUniform1f(uniloc(shader, "blur_rad"), spellcard_sup*(0.2+0.025*sin(global.frames/15.0)));
 	glUniform1f(uniloc(shader, "rad"), 0.24);
 	glUniform1f(uniloc(shader, "ratio"), (float)resources.fbg[0].nh/resources.fbg[0].nw);
@@ -649,8 +661,9 @@ static void apply_bg_shaders(ShaderRule *shaderrules) {
 			float delay = ATTACK_START_DELAY;
 			if(b->current->type == AT_ExtraSpell)
 				delay = ATTACK_START_DELAY_EXTRA;
+			float duration = ATTACK_START_DELAY_EXTRA;
 			
-			glUniform1f(uniloc(shader, "t"), t/delay+1);
+			glUniform1f(uniloc(shader, "t"), (t+delay)/duration);
 		} else if(b->current->endtime) {
 			int tn = global.frames - b->current->endtime;
 			Shader *shader = get_shader("spellcard_outro");

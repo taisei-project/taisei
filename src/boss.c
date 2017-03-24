@@ -198,6 +198,10 @@ void boss_kill_projectiles(void) {
 	delete_lasers();
 }
 
+bool boss_is_dying(Boss *boss) {
+	return boss->current && boss->current->endtime && boss->current - boss->attacks >= boss->acount-1;
+}
+
 void process_boss(Boss **pboss) {
 	Boss *boss = *pboss;
 
@@ -268,8 +272,7 @@ void process_boss(Boss **pboss) {
 		boss_kill_projectiles();
 	}
 
-	// boss is dieing
-	if(boss->current->endtime && boss->current - boss->attacks >= boss->acount-1) {
+	if(boss_is_dying(boss)) {
 		float t = (global.frames-boss->current->endtime)/(float)BOSS_DEATH_DELAY+1;
 		complex pos = boss->pos;
 		Color c = rgba(sin(5*t),cos(5*t),0.5,t);
