@@ -20,7 +20,7 @@ void continue_game(MenuData *m, void *arg)
 		global.replay_stage = NULL;
 	}
 
-	global.plr.lifes = PLR_START_LIVES;
+	global.plr.lives = PLR_START_LIVES;
 	global.plr.continues += 1;
 
 	delete_projectiles(&global.projs);

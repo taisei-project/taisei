@@ -45,8 +45,10 @@ ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, D
 	s->plr_focus = plr->focus;
 	s->plr_char	= plr->cha;
 	s->plr_shot	= plr->shot;
-	s->plr_lifes = plr->lifes;
+	s->plr_lives = plr->lives;
+	s->plr_life_fragments = plr->life_fragments;
 	s->plr_bombs = plr->bombs;
+	s->plr_bomb_fragments = plr->bomb_fragments;
 	s->plr_power = plr->power;
 	s->plr_inputflags = plr->inputflags;
 
@@ -60,8 +62,10 @@ void replay_stage_sync_player_state(ReplayStage *stg, Player *plr) {
 	plr->cha = stg->plr_char;
 	plr->pos = stg->plr_pos_x + I * stg->plr_pos_y;
 	plr->focus = stg->plr_focus;
-	plr->lifes = stg->plr_lifes;
+	plr->lives = stg->plr_lives;
+	plr->life_fragments = stg->plr_life_fragments;
 	plr->bombs = stg->plr_bombs;
+	plr->bomb_fragments = stg->plr_bomb_fragments;
 	plr->power = stg->plr_power;
 	plr->inputflags = stg->plr_inputflags;
 }
@@ -153,8 +157,10 @@ static uint32_t replay_calc_stageinfo_checksum(ReplayStage *stg) {
 	cs += stg->plr_pos_y;
 	cs += stg->plr_focus;
 	cs += stg->plr_power;
-	cs += stg->plr_lifes;
+	cs += stg->plr_lives;
+	cs += stg->plr_life_fragments;
 	cs += stg->plr_bombs;
+	cs += stg->plr_bomb_fragments;
 	cs += stg->plr_inputflags;
 	cs += stg->numevents;
 	return cs;
@@ -171,8 +177,10 @@ static int replay_write_stage(ReplayStage *stg, SDL_RWops *file) {
 	SDL_WriteLE16(file, stg->plr_pos_y);
 	SDL_WriteU8(file, stg->plr_focus);
 	SDL_WriteLE16(file, stg->plr_power);
-	SDL_WriteU8(file, stg->plr_lifes);
+	SDL_WriteU8(file, stg->plr_lives);
+	SDL_WriteU8(file, stg->plr_life_fragments);
 	SDL_WriteU8(file, stg->plr_bombs);
+	SDL_WriteU8(file, stg->plr_bomb_fragments);
 	SDL_WriteU8(file, stg->plr_inputflags);
 	SDL_WriteLE16(file, stg->numevents);
 	SDL_WriteLE32(file, 1 + ~replay_calc_stageinfo_checksum(stg));
@@ -319,8 +327,10 @@ static int replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 		CHECKPROP(stg->plr_pos_y = SDL_ReadLE16(file), u);
 		CHECKPROP(stg->plr_focus = SDL_ReadU8(file), u);
 		CHECKPROP(stg->plr_power = SDL_ReadLE16(file), u);
-		CHECKPROP(stg->plr_lifes = SDL_ReadU8(file), u);
+		CHECKPROP(stg->plr_lives = SDL_ReadU8(file), u);
+		CHECKPROP(stg->plr_life_fragments = SDL_ReadU8(file), u);
 		CHECKPROP(stg->plr_bombs = SDL_ReadU8(file), u);
+		CHECKPROP(stg->plr_bomb_fragments = SDL_ReadU8(file), u);
 		CHECKPROP(stg->plr_inputflags = SDL_ReadU8(file), u);
 		CHECKPROP(stg->numevents = SDL_ReadLE16(file), u);
 
