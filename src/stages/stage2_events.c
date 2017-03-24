@@ -268,7 +268,7 @@ void wriggle_small_storm(Boss *w, int time) {
 }
 
 Boss *create_wriggle_mid(void) {
-	Boss* wriggle = create_boss("Wriggle", "wriggle", VIEWPORT_W + 150 - 30.0*I);
+	Boss* wriggle = create_boss("Wriggle", "wriggle", "dialog/wriggle", VIEWPORT_W + 150 - 30.0*I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 4, 0, wriggle_intro, NULL);
 	boss_add_attack(wriggle, AT_Normal, "Small Bug Storm", 20, 20000, wriggle_small_storm, NULL);
 
@@ -587,7 +587,7 @@ void hina_spell_bg(Boss *h, int time) {
 }
 
 Boss *create_hina(void) {
-	Boss* hina = create_boss("Kagiyama Hina", "hina", VIEWPORT_W + 150 + 100.0*I);
+	Boss* hina = create_boss("Kagiyama Hina", "hina", "dialog/hina", VIEWPORT_W + 150 + 100.0*I);
 	boss_add_attack(hina, AT_Move, "Introduction", 2, 0, hina_intro, NULL);
 	boss_add_attack(hina, AT_Normal, "Cards1", 20, 15000, hina_cards1, NULL);
 	boss_add_attack_from_info(hina, stage2_spells+0, false);

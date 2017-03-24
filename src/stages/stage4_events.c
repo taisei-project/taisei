@@ -391,7 +391,7 @@ void kurumi_outro(Boss *b, int time) {
 }
 
 Boss *create_kurumi_mid(void) {
-	Boss* b = create_boss("Kurumi", "kurumi", VIEWPORT_W/2-400.0*I);
+	Boss* b = create_boss("Kurumi", "kurumi", "dialog/kurumi", VIEWPORT_W/2-400.0*I);
 	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_intro, NULL);
 	boss_add_attack_from_info(b, stage4_spells+0, false);
 	if(global.diff < D_Hard) {
@@ -735,7 +735,7 @@ void kurumi_danmaku(Boss *b, int time) {
 
 
 Boss *create_kurumi(void) {
-	Boss* b = create_boss("Kurumi", "kurumi", -400.0*I);
+	Boss* b = create_boss("Kurumi", "kurumi", "dialog/kurumi", -400.0*I);
 	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_boss_intro, NULL);
 	boss_add_attack(b, AT_Normal, "Sin Breaker", 20, 20000, kurumi_sbreaker, NULL);
 	if(global.diff < D_Hard) {

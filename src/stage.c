@@ -546,59 +546,138 @@ static int apply_shaderrules(ShaderRule *shaderrules, int fbonum) {
 	return fbonum;
 }
 
+static void draw_spellbg(int t) {
+	Boss *b = global.boss;
+	b->current->draw_rule(b, t);
+
+	if(b->current->type == AT_ExtraSpell)
+		draw_extraspell_bg(b, t);
+
+	glPushMatrix();
+	glTranslatef(creal(b->pos), cimag(b->pos), 0);
+	glRotatef(global.frames*7.0, 0, 0, -1);
+
+	if(t < 0) {
+		float f = 1.0 - t/(float)ATTACK_START_DELAY;
+		glScalef(f,f,f);
+	}
+
+	draw_texture(0,0,"boss_spellcircle0");
+	glPopMatrix();
+
+	int strw = stringwidth(b->current->name,_fonts.standard);
+	int strh = stringheight(b->current->name,_fonts.standard);
+	float f = -t/(float)ATTACK_START_DELAY;
+	Texture *tex = load_text(b->current->name, _fonts.standard);	
+	glPushMatrix();
+	glTranslatef(VIEWPORT_W/2,VIEWPORT_H/2,0);
+	glRotatef(20,0,0,1);
+	glScalef(2,2,1.);
+	glTranslatef(-VIEWPORT_W/2,-VIEWPORT_H/2,0);
+	glColor4f(1,1,1,0.5*(1-f*f));
+	fill_screen_p(global.frames/1000., 0.,1.5*VIEWPORT_H/strh,strh/(float)strw,tex);
+	fill_screen_p(-global.frames/1000.+0.4, global.frames/1000.,1.5*VIEWPORT_H/strh,strh/(float)strw,tex);
+	glPopMatrix();
+
+	free_texture(tex);
+	glColor4f(1,1,1,1);
+
+	if(t < ATTACK_START_DELAY && b->dialog) {
+		glPushMatrix();
+		float f = -0.5*t/(float)ATTACK_START_DELAY+0.5;
+		glColor4f(1,1,1,f);
+		draw_texture_p(VIEWPORT_W*3/4-10*f*f,VIEWPORT_H*2/3-10*f*f,b->dialog);
+		glColor4f(1,1,1,1);
+		glPopMatrix();
+	}
+}
+
+static void apply_zoom_shader() {
+	Shader *shader = get_shader("boss_zoom");
+	glUseProgram(shader->prog);
+
+	complex fpos = VIEWPORT_H*I + conj(global.boss->pos) + (VIEWPORT_X + VIEWPORT_Y*I);
+	complex pos = fpos + 15*cexp(I*global.frames/4.5);
+
+	glUniform2f(uniloc(shader, "blur_orig"),
+			creal(pos)/resources.fbg[0].nw, cimag(pos)/resources.fbg[0].nh);
+	glUniform2f(uniloc(shader, "fix_orig"),
+			creal(fpos)/resources.fbg[0].nw, cimag(fpos)/resources.fbg[0].nh);
+
+	float spellcard_sup = 1;
+	// This factor is used to surpress the effect near the start of spell cards.
+	// This is necessary so it doesn’t distort the awesome spinning background effect.
+
+	if(global.boss->current && global.boss->current->draw_rule) {
+		float t = (global.frames - global.boss->current->starttime + ATTACK_START_DELAY)/(float)ATTACK_START_DELAY;
+		spellcard_sup = 0;//1-1/(0.1*t*t+1);
+	}
+	glUniform1f(uniloc(shader, "blur_rad"), spellcard_sup*(0.2+0.025*sin(global.frames/15.0)));
+	glUniform1f(uniloc(shader, "rad"), 0.24);
+	glUniform1f(uniloc(shader, "ratio"), (float)resources.fbg[0].nh/resources.fbg[0].nw);
+	if(global.boss->zoomcolor) {
+		static float clr[4];
+		parse_color_array(global.boss->zoomcolor, clr);
+		glUniform4fv(uniloc(shader, "color"), 1, clr);
+	} else {
+		glUniform4f(uniloc(shader, "color"), 0.1, 0.2, 0.3, 1);
+	}
+}
+
 static void apply_bg_shaders(ShaderRule *shaderrules) {
 	int fbonum = 0;
 
-	if(global.boss && global.boss->current && global.boss->current->draw_rule) {
-		if(global.frames - global.boss->current->starttime <= 0)
+	Boss *b = global.boss;
+	if(b && b->current && b->current->draw_rule) {
+		int t = global.frames - b->current->starttime;
+		if(t < 4*ATTACK_START_DELAY || b->current->endtime)
 			fbonum = apply_shaderrules(shaderrules, fbonum);
 
-		int t = global.frames - global.boss->current->starttime;
-		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[0].fbo);
-		global.boss->current->draw_rule(global.boss, t);
+		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[!fbonum].fbo);
+		draw_spellbg(t);
+		
+		complex pos = VIEWPORT_H*I + conj(b->pos) + (VIEWPORT_X + VIEWPORT_Y*I);
+		float ratio = (float)resources.fbg[fbonum].nh/resources.fbg[fbonum].nw;
 
-		if(global.boss->current->type == AT_ExtraSpell)
-			draw_extraspell_bg(global.boss, t);
+		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[fbonum].fbo);
+		if(t<4*ATTACK_START_DELAY) {
+			Shader *shader = get_shader("spellcard_intro");
+			glUseProgram(shader->prog);
+			glUniform1f(uniloc(shader, "ratio"),ratio);
+			glUniform2f(uniloc(shader, "origin"),
+					creal(pos)/resources.fbg[fbonum].nw, cimag(pos)/resources.fbg[fbonum].nh);
+			float delay = ATTACK_START_DELAY;
+			if(b->current->type == AT_ExtraSpell)
+				delay = ATTACK_START_DELAY_EXTRA;
+			
+			glUniform1f(uniloc(shader, "t"), t/delay+1);
+		} else if(b->current->endtime) {
+			int tn = global.frames - b->current->endtime;
+			Shader *shader = get_shader("spellcard_outro");
+			glUseProgram(shader->prog);
+			float delay = ATTACK_END_DELAY;
+			if(b->current->type == AT_ExtraSpell)
+				delay = ATTACK_END_DELAY_EXTRA;
 
-		glPushMatrix();
-			glTranslatef(creal(global.boss->pos), cimag(global.boss->pos), 0);
-			glRotatef(global.frames*7.0, 0, 0, -1);
+			glUniform1f(uniloc(shader, "ratio"),ratio);
+			glUniform2f(uniloc(shader, "origin"),
+					creal(pos)/resources.fbg[fbonum].nw, cimag(pos)/resources.fbg[fbonum].nh);
+			
+			glUniform1f(uniloc(shader, "t"), tn/delay+1);
 
-			if(t < 0) {
-				float f = 1.0 - t/(float)ATTACK_START_DELAY;
-				glScalef(f,f,f);
-			}
-
-			draw_texture(0,0,"boss_spellcircle0");
-		glPopMatrix();
-
+		} else {
+			glUseProgram(0);
+		}
+		draw_fbo_viewport(&resources.fbg[!fbonum]);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glUseProgram(0);
 	} else
 		fbonum = apply_shaderrules(shaderrules, fbonum);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, resources.fsec.fbo);
 
 	if(global.boss) { // Boss background shader
-		Shader *shader = get_shader("boss_zoom");
-		glUseProgram(shader->prog);
-
-		complex fpos = VIEWPORT_H*I + conj(global.boss->pos) + (VIEWPORT_X + VIEWPORT_Y*I);
-		complex pos = fpos + 15*cexp(I*global.frames/4.5);
-
-		glUniform2f(uniloc(shader, "blur_orig"),
-					creal(pos)/resources.fbg[fbonum].nw, cimag(pos)/resources.fbg[fbonum].nh);
-		glUniform2f(uniloc(shader, "fix_orig"),
-					creal(fpos)/resources.fbg[fbonum].nw, cimag(fpos)/resources.fbg[fbonum].nh);
-		glUniform1f(uniloc(shader, "blur_rad"), 0.2+0.025*sin(global.frames/15.0));
-		glUniform1f(uniloc(shader, "rad"), 0.24);
-		glUniform1f(uniloc(shader, "ratio"), (float)resources.fbg[fbonum].nh/resources.fbg[fbonum].nw);
-		if(global.boss->zoomcolor) {
-			static float clr[4];
-			parse_color_array(global.boss->zoomcolor, clr);
-			glUniform4fv(uniloc(shader, "color"), 1, clr);
-		} else {
-			glUniform4f(uniloc(shader, "color"), 0.1, 0.2, 0.3, 1);
-		}
+		apply_zoom_shader();
 	}
 
 

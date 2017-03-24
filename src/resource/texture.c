@@ -223,10 +223,10 @@ void draw_texture_p(float x, float y, Texture *tex) {
 }
 
 void fill_screen(float xoff, float yoff, float ratio, const char *name) {
-	fill_screen_p(xoff, yoff, ratio, get_tex(name));
+	fill_screen_p(xoff, yoff, ratio, 1, get_tex(name));
 }
 
-void fill_screen_p(float xoff, float yoff, float ratio, Texture *tex) {
+void fill_screen_p(float xoff, float yoff, float ratio, float aspect, Texture *tex) {
 	glEnable(GL_TEXTURE_2D);
 
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
@@ -238,6 +238,7 @@ void fill_screen_p(float xoff, float yoff, float ratio, Texture *tex) {
 		rw = ((float)tex->w)/tex->truew;
 		rh = ((float)tex->h)/tex->trueh;
 	}
+	rw *= aspect;
 
 	glMatrixMode(GL_TEXTURE);
 		glLoadIdentity();

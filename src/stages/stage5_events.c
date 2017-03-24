@@ -244,7 +244,7 @@ void iku_mid_intro(Boss *b, int t) {
 }
 
 Boss *create_iku_mid(void) {
-	Boss *b = create_boss("Bombs?", "iku", VIEWPORT_W+800.0*I);
+	Boss *b = create_boss("Bombs?", "iku", 0, VIEWPORT_W+800.0*I);
 
 	boss_add_attack(b, AT_SurvivalSpell, "Static Bombs", 16, 10, iku_mid_intro, NULL);
 
@@ -715,7 +715,7 @@ void iku_extra(Boss *b, int t) {
 }
 
 Boss *create_iku(void) {
-	Boss *b = create_boss("Nagae Iku", "iku", VIEWPORT_W/2-200.0*I);
+	Boss *b = create_boss("Nagae Iku", "iku", "dialog/iku", VIEWPORT_W/2-200.0*I);
 
 	boss_add_attack(b, AT_Move, "Introduction", 3, 0, iku_intro, NULL);
 	boss_add_attack(b, AT_Normal, "Bolts1", 20, 20000, iku_bolts, NULL);

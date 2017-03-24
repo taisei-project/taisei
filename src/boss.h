@@ -57,6 +57,12 @@ typedef struct AttackInfo {
 	complex pos_dest;
 } AttackInfo;
 
+typedef enum {
+	FINISH_NOPE,
+	FINISH_WIN,
+	FINISH_FAIL
+} FinishType;
+
 typedef struct Attack {
 	char *name;
 
@@ -66,7 +72,7 @@ typedef struct Attack {
 
 	int timeout;
 	int dmglimit;
-	int finished;
+	FinishType finished;
 	int endtime;
 
 	BossRule rule;
@@ -74,12 +80,6 @@ typedef struct Attack {
 
 	AttackInfo *info; // NULL for attacks created directly through boss_add_attack
 } Attack;
-
-enum {
-	FINISH_NOPE,
-	FINISH_WIN,
-	FINISH_FAIL
-};
 
 typedef struct Boss {
 	Attack *attacks;
@@ -92,13 +92,14 @@ typedef struct Boss {
 	int acount;
 
 	Animation *ani;
+	Texture *dialog; // Used in spellcard intros
 	int anirow;
 
 	int dmg;
 	Color zoomcolor;
 } Boss;
 
-Boss* create_boss(char *name, char *ani, complex pos);
+Boss* create_boss(char *name, char *ani, char *dialog, complex pos);
 void draw_extraspell_bg(Boss *boss, int time);
 void draw_boss(Boss *boss);
 void process_boss(Boss **boss);

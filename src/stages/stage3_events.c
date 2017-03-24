@@ -445,7 +445,7 @@ void stage3_boss_spellbg(Boss *b, int time) {
 }
 
 Boss* stage3_create_midboss(void) {
-	Boss *scuttle = create_boss("Scuttle", "scuttle", VIEWPORT_W/2 - 200.0*I);
+	Boss *scuttle = create_boss("Scuttle", "scuttle", 0, VIEWPORT_W/2 - 200.0*I);
 	boss_add_attack(scuttle, AT_Move, "Introduction", 2, 0, stage3_mid_intro, NULL);
 	boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 30, 25000, stage3_mid_a0, NULL);
 	boss_add_attack_from_info(scuttle, stage3_spells+0, false);
@@ -839,7 +839,7 @@ void stage3_boss_extra(Boss *boss, int time) {
 }
 
 Boss* stage3_create_boss(void) {
-	Boss *wriggle = create_boss("Wriggle EX", "wriggleex", VIEWPORT_W/2 - 200.0*I);
+	Boss *wriggle = create_boss("Wriggle EX", "wriggleex", "dialog/wriggle", VIEWPORT_W/2 - 200.0*I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage3_boss_intro, NULL);
 	boss_add_attack(wriggle, AT_Normal, "", 20, 15000, stage3_boss_prea1, NULL);
 	boss_add_attack_from_info(wriggle, stage3_spells+2, false);

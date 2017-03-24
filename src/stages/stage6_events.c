@@ -1051,7 +1051,7 @@ void elly_spellbg_modern(Boss *b, int t) {
 }
 
 Boss *create_elly(void) {
-	Boss *b = create_boss("Elly", "elly", -200.0*I);
+	Boss *b = create_boss("Elly", "elly", "dialog/elly", -200.0*I);
 
 	boss_add_attack(b, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
 	boss_add_attack(b, AT_Normal, "Frequency", 30, 26000, elly_frequency, NULL);

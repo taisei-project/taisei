@@ -11,7 +11,7 @@
 #include <string.h>
 #include <stdio.h>
 
-Boss* create_boss(char *name, char *ani, complex pos) {
+Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 	Boss *buf = malloc(sizeof(Boss));
 	memset(buf, 0, sizeof(Boss));
 
@@ -20,6 +20,8 @@ Boss* create_boss(char *name, char *ani, complex pos) {
 	buf->pos = pos;
 
 	buf->ani = get_ani(ani);
+	if(dialog)
+		buf->dialog = get_tex(dialog);
 
 	return buf;
 }
@@ -32,14 +34,23 @@ void draw_boss_text(Alignment align, float x, float y, const char *text) {
 }
 
 void spell_opening(Boss *b, int time) {
-	float y = VIEWPORT_H - 15;
-	if(time > 40 && time <= 100)
-		y -= (VIEWPORT_H-50)/60.0*(time-40);
-	if(time > 100) {
-		y = 35;
-	}
+	complex x0 = VIEWPORT_W/2+I*VIEWPORT_H/2;
+	float f = clamp((time-40.)/60.,0,1);
+	
+	complex x = x0 + (VIEWPORT_W+I*35 - x0) * f*(f+1)*0.5;
 
-	draw_boss_text(AL_Right, VIEWPORT_W, y, b->current->name);
+	int strw = stringwidth(b->current->name,_fonts.standard);
+	
+	glPushMatrix();
+	glTranslatef(creal(x),cimag(x),0);
+	float scale = f+1.*(1-f)*(1-f)*(1-f);
+	glScalef(scale,scale,1);
+	draw_boss_text(AL_Right, strw/2*(1-f), 0, b->current->name);
+	glPopMatrix();
+
+	
+	glUseProgram(0);
+
 }
 
 void draw_extraspell_bg(Boss *boss, int time) {
@@ -243,7 +254,8 @@ void process_boss(Boss **pboss) {
 		}
 
 		if(!boss->current->endtime && (boss->current->type != AT_Move && boss->dmg >= boss->current->dmglimit || time > boss->current->timeout)) {
-			boss->current->endtime = global.frames + extra * ATTACK_END_DELAY_EXTRA;
+			int delay = extra ? ATTACK_END_DELAY_EXTRA : ATTACK_END_DELAY;
+			boss->current->endtime = global.frames + delay;
 			boss->current->finished = FINISH_WIN;
 			boss->current->rule(boss, EVENT_DEATH);
 			boss_kill_projectiles();
@@ -308,8 +320,13 @@ void start_attack(Boss *b, Attack *a) {
 
 	a->starttime = global.frames + (a->type == AT_ExtraSpell? ATTACK_START_DELAY_EXTRA : ATTACK_START_DELAY);
 	a->rule(b, EVENT_BIRTH);
-	if(a->type == AT_Spellcard || a->type == AT_SurvivalSpell || a->type == AT_ExtraSpell)
+	if(a->type == AT_Spellcard || a->type == AT_SurvivalSpell || a->type == AT_ExtraSpell) {
 		play_sound("charge_generic");
+		for(int i = 0; i < 10+10*(a->type == AT_ExtraSpell); i++) {
+			tsrand_fill(4);
+			create_particle2c("stain", VIEWPORT_W/2 + VIEWPORT_W/4*anfrand(0)+I*VIEWPORT_H/2+I*anfrand(1)*30, rgb(0.2,0.3,0.4), GrowFadeAdd, timeout_linear, 50, sign(anfrand(2))*10*(1+afrand(3)));
+		}
+	}
 
 	Projectile *p;
 	for(p = global.projs; p; p = p->next)
@@ -327,8 +344,7 @@ Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 	boss->current = &boss->attacks[0];
 
 	a->type = type;
-	a->name = malloc(strlen(name)+1);
-	strcpy(a->name, name);
+	a->name = strdup(name);
 	a->timeout = timeout * FPS;
 
 	int dmg = 0;
@@ -374,6 +390,8 @@ void boss_preload(void) {
 
 	preload_resources(RES_SHADER, RESF_DEFAULT,
 		"boss_zoom",
+		"spellcard_intro",
+		"spellcard_outro",
 	NULL);
 
 	StageInfo *s = global.stage;
