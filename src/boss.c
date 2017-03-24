@@ -45,7 +45,10 @@ void spell_opening(Boss *b, int time) {
 	glTranslatef(creal(x),cimag(x),0);
 	float scale = f+1.*(1-f)*(1-f)*(1-f);
 	glScalef(scale,scale,1);
+	glRotatef(360*f,1,1,0);
+	glDisable(GL_CULL_FACE);
 	draw_boss_text(AL_Right, strw/2*(1-f), 0, b->current->name);
+	glEnable(GL_CULL_FACE);
 	glPopMatrix();
 
 	
@@ -198,83 +201,97 @@ void boss_kill_projectiles(void) {
 void process_boss(Boss **pboss) {
 	Boss *boss = *pboss;
 
-	if(boss->current) {
-		int time = global.frames - boss->current->starttime;
-		int extra = boss->current->type == AT_ExtraSpell;
-		int over = boss->current->finished && global.frames >= boss->current->endtime;
+	if(!boss->current)
+		return;
 
-		// TODO: mark uncaptured normal spells as failed too (for spell bonuses and player stats)
+	int time = global.frames - boss->current->starttime;
+	bool extra = boss->current->type == AT_ExtraSpell;
+	bool over = boss->current->finished && global.frames >= boss->current->endtime;
 
-		if(!boss->current->endtime || !extra)
-			boss->current->rule(boss, time);
+	// TODO: mark uncaptured normal spells as failed too (for spell bonuses and player stats)
 
-		if(extra) {
-			float base = 0.2;
-			float ampl = 0.2;
-			float s = sin(time / 90.0 + M_PI*1.2);
+	if(!boss->current->endtime)
+		boss->current->rule(boss, time);
 
-			if(boss->current->endtime) {
-				float p = (boss->current->endtime - global.frames)/(float)ATTACK_END_DELAY_EXTRA;
-				float a = max((base + ampl * s) * p * 0.5, 5 * pow(1 - p, 3));
-				if(a < 2) {
-					global.shake_view = 3 * a;
-					boss_rule_extra(boss, a);
-					if(a > 1) {
-						boss_rule_extra(boss, a * 0.5);
-						if(a > 1.3) {
-							global.shake_view = 5 * a;
-							if(a > 1.7)
-								global.shake_view += 2 * a;
-							boss_rule_extra(boss, 0);
-							boss_rule_extra(boss, 0.1);
-						}
+	if(extra) {
+		float base = 0.2;
+		float ampl = 0.2;
+		float s = sin(time / 90.0 + M_PI*1.2);
+
+		if(boss->current->endtime) {
+			float p = (boss->current->endtime - global.frames)/(float)ATTACK_END_DELAY_EXTRA;
+			float a = max((base + ampl * s) * p * 0.5, 5 * pow(1 - p, 3));
+			if(a < 2) {
+				global.shake_view = 3 * a;
+				boss_rule_extra(boss, a);
+				if(a > 1) {
+					boss_rule_extra(boss, a * 0.5);
+					if(a > 1.3) {
+						global.shake_view = 5 * a;
+						if(a > 1.7)
+							global.shake_view += 2 * a;
+						boss_rule_extra(boss, 0);
+						boss_rule_extra(boss, 0.1);
 					}
-				} else {
-					over = 1;
-					global.shake_view_fade = 0.15;
 				}
-			} else if(time < 0) {
-				boss_rule_extra(boss, 1+time/(float)ATTACK_START_DELAY_EXTRA);
 			} else {
-				float o = min(0, -5 + time/30.0);
-				float q = (time <= 150? 1 - pow(time/250.0, 2) : min(1, time/60.0));
-
-				boss_rule_extra(boss, max(1-time/300.0, base + ampl * s) * q);
-				if(o) {
-					boss_rule_extra(boss, max(1-time/300.0, base + ampl * s) - o);
-					if(!global.shake_view) {
-						global.shake_view = 5;
-						global.shake_view_fade = 0.9;
-					} else if(o > -0.05) {
-						global.shake_view = 10;
-						global.shake_view_fade = 0.5;
-					}
-				}
+				over = 1;
+				global.shake_view_fade = 0.15;
 			}
-		}
+		} else if(time < 0) {
+			boss_rule_extra(boss, 1+time/(float)ATTACK_START_DELAY_EXTRA);
+		} else {
+			float o = min(0, -5 + time/30.0);
+			float q = (time <= 150? 1 - pow(time/250.0, 2) : min(1, time/60.0));
 
-		if(!boss->current->endtime && (boss->current->type != AT_Move && boss->dmg >= boss->current->dmglimit || time > boss->current->timeout)) {
-			int delay = extra ? ATTACK_END_DELAY_EXTRA : ATTACK_END_DELAY;
-			boss->current->endtime = global.frames + delay;
-			boss->current->finished = FINISH_WIN;
-			boss->current->rule(boss, EVENT_DEATH);
-			boss_kill_projectiles();
-		}
-
-		if(over) {
-			if(extra && boss->current->finished == FINISH_WIN)
-				spawn_items(boss->pos, 0, 0, 0, 1);
-
-			boss->dmg = boss->current->dmglimit + 1;
-			boss->current++;
-			if(boss->current - boss->attacks < boss->acount)
-				start_attack(boss, boss->current);
-			else {
-				boss->current = NULL;
-				boss_death(pboss);
+			boss_rule_extra(boss, max(1-time/300.0, base + ampl * s) * q);
+			if(o) {
+				boss_rule_extra(boss, max(1-time/300.0, base + ampl * s) - o);
+				if(!global.shake_view) {
+					global.shake_view = 5;
+					global.shake_view_fade = 0.9;
+				} else if(o > -0.05) {
+					global.shake_view = 10;
+					global.shake_view_fade = 0.5;
+				}
 			}
 		}
 	}
+
+	if(!boss->current->endtime && (boss->current->type != AT_Move && boss->dmg >= boss->current->dmglimit || time > boss->current->timeout)) {
+		int delay = extra ? ATTACK_END_DELAY_EXTRA : ATTACK_END_DELAY;
+		if(boss->current-boss->attacks >= boss->acount-1)
+			delay = BOSS_DEATH_DELAY;
+		boss->current->endtime = global.frames + delay;
+		boss->current->finished = FINISH_WIN;
+		boss->current->rule(boss, EVENT_DEATH);
+		boss_kill_projectiles();
+	}
+
+	// boss is dieing
+	if(boss->current->endtime && boss->current - boss->attacks >= boss->acount-1) {
+		float t = (global.frames-boss->current->endtime)/(float)BOSS_DEATH_DELAY+1;
+		complex pos = boss->pos;
+		Color c = rgba(sin(5*t),cos(5*t),0.5,t);
+		tsrand_fill(6);
+		create_particle4c("petal", pos, c, Petal, asymptotic, sign(anfrand(5))*(3+t*5*afrand(0))*cexp(I*M_PI*8*t), 5+I, afrand(2) + afrand(3)*I, afrand(4) + 360.0*I*afrand(1));
+		
+	}
+
+	if(over) {
+		if(extra && boss->current->finished == FINISH_WIN)
+			spawn_items(boss->pos, 0, 0, 0, 1);
+
+		boss->dmg = boss->current->dmglimit + 1;
+		boss->current++;
+		if(boss->current - boss->attacks < boss->acount)
+			start_attack(boss, boss->current);
+		else {
+			boss->current = NULL;
+			boss_death(pboss);
+		}
+	}
+
 }
 
 void boss_death(Boss **boss) {

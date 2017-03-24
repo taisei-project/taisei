@@ -390,6 +390,9 @@ void Petal(Projectile *p, int t) {
 	float y = cimag(p->args[2]);
 	float z = creal(p->args[3]);
 
+	float r = sqrt(x*x+y*y+z*z);
+	x /= r; y /= r; z /= r;
+
 	glDisable(GL_CULL_FACE);
 
 	glPushMatrix();
@@ -415,8 +418,10 @@ void Petal(Projectile *p, int t) {
 void petal_explosion(int n, complex pos) {
 	int i;
 	for(i = 0; i < n; i++) {
-		tsrand_fill(8);
-		create_particle4c("petal", pos, rgba(0.6,1-afrand(0)*0.4,0.5,1-0.5*afrand(1)), Petal, asymptotic, (3+5*afrand(2))*cexp(I*M_PI*2*afrand(3)), 5, afrand(4) + afrand(5)*I, afrand(6) + 360.0*I*afrand(7));
+		tsrand_fill(6);
+		float t = frand();
+		Color c = rgba(sin(5*t),cos(5*t),0.5,t);
+		create_particle4c("petal", pos, c, Petal, asymptotic, (3+5*afrand(2))*cexp(I*M_PI*2*afrand(3)), 5, afrand(4) + afrand(5)*I, afrand(1) + 360.0*I*afrand(0));
 	}
 }
 

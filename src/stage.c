@@ -576,7 +576,7 @@ static void draw_spellbg(int t) {
 	glTranslatef(-VIEWPORT_W/2,-VIEWPORT_H/2,0);
 	glColor4f(1,1,1,0.5*(1-f*f));
 	fill_screen_p(global.frames/1000., 0.,1.5*VIEWPORT_H/strh,strh/(float)strw,tex);
-	fill_screen_p(-global.frames/1000.+0.4, global.frames/1000.,1.5*VIEWPORT_H/strh,strh/(float)strw,tex);
+	fill_screen_p(-global.frames/500.+0.5, global.frames/1000.+0.5,1.5*VIEWPORT_H/strh,strh/(float)strw,tex);
 	glPopMatrix();
 
 	free_texture(tex);
@@ -610,7 +610,7 @@ static void apply_zoom_shader() {
 
 	if(global.boss->current && global.boss->current->draw_rule) {
 		float t = (global.frames - global.boss->current->starttime + ATTACK_START_DELAY)/(float)ATTACK_START_DELAY;
-		spellcard_sup = 0;//1-1/(0.1*t*t+1);
+		spellcard_sup = 1-1/(0.1*t*t+1);
 	}
 	glUniform1f(uniloc(shader, "blur_rad"), spellcard_sup*(0.2+0.025*sin(global.frames/15.0)));
 	glUniform1f(uniloc(shader, "rad"), 0.24);
@@ -663,7 +663,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules) {
 			glUniform2f(uniloc(shader, "origin"),
 					creal(pos)/resources.fbg[fbonum].nw, cimag(pos)/resources.fbg[fbonum].nh);
 			
-			glUniform1f(uniloc(shader, "t"), tn/delay+1);
+			glUniform1f(uniloc(shader, "t"), max(0,tn/delay+1));
 
 		} else {
 			glUseProgram(0);

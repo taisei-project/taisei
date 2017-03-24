@@ -27,7 +27,7 @@ void main(void) {
 	float r = length(pos);
 	float phi = atan(pos.y,pos.x)+t/10.0;
 	float rmin = (1.+0.3*sin(t*20.0+10.*phi))*step(0.,t)*t*t;
-	gl_FragColor = mix(clr, vec4(1.0) - vec4(clr.rgb,0.), step(r,rmin+.1+0.1*sin(10.*r)));
+	gl_FragColor = mix(clr, vec4(1.0) - vec4(clr.rgb,0.), step(r,rmin+t*(.1+0.1*sin(10.*r))));
 
 	gl_FragColor.a = float(r > rmin);
 }
