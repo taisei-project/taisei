@@ -16,14 +16,16 @@ typedef struct Item Item;
 typedef enum {
 	// from least important to most important
 	// this affects the draw order
-	BPoint,
+	BPoint = 1,
 	Point,
 	Power,
+	BombFrag,
+	LifeFrag,
 	Bomb,
 	Life,
 } ItemType;
 
-struct Item{
+struct Item {
 	Item *next;
 	Item *prev;
 

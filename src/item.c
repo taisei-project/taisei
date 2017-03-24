@@ -53,6 +53,12 @@ void draw_items(void) {
 			case Bomb:
 				tex = get_tex("items/bomb");
 				break;
+			case LifeFrag:
+				tex = get_tex("items/lifefrag");
+				break;
+			case BombFrag:
+				tex = get_tex("items/bombfrag");
+				break;
 			case BPoint:
 				tex = get_tex("items/bullet_point");
 				break;
@@ -101,30 +107,31 @@ void process_items(void) {
 
 		v = collision_item(item);
 		if(v == 1) {
-			const char *snd = "item_generic";
-
 			switch(item->type) {
 			case Power:
 				player_set_power(&global.plr, global.plr.power + POWER_VALUE);
+				play_sound("item_generic");
 				break;
 			case Point:
 				global.plr.points += 100;
+				play_sound("item_generic");
 				break;
 			case BPoint:
 				global.plr.points += 1;
+				play_sound("item_generic");
 				break;
 			case Life:
 				player_add_lives(&global.plr, 1);
-				snd = NULL;
 				break;
 			case Bomb:
 				player_add_bombs(&global.plr, 1);
-				snd = NULL;
 				break;
-			}
-
-			if(snd) {
-				play_sound("item_generic");
+			case LifeFrag:
+				player_add_life_fragments(&global.plr, 1);
+				break;
+			case BombFrag:
+				player_add_bomb_fragments(&global.plr, 1);
+				break;
 			}
 		}
 
@@ -172,6 +179,8 @@ void items_preload(void) {
 		"items/point",
 		"items/life",
 		"items/bomb",
+		"items/lifefrag",
+		"items/bombfrag",
 		"items/bullet_point",
 	NULL);
 
