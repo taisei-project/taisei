@@ -403,7 +403,7 @@ void youmu_shot(Player *plr) {
 					create_projectile4c("hghost", plr->pos, 0, youmu_homing, -10.0*I, 0.25 + 0.1*I, 60, VIEWPORT_W*0.5)->type = PlrProj+120;
 				}
 
-				for(int p = 1; p <= PLR_MAXPOWER/100; ++p) {
+				for(int p = 1; p <= PLR_MAX_POWER/100; ++p) {
 					youmu_homing_power_shot(plr, p);
 				}
 			}
