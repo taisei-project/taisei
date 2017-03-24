@@ -69,7 +69,7 @@ Dialog *stage6_dialog(void) {
 int stage6_hacker(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 3, 4, 0, 0);
+		spawn_items(e->pos, Point, 4, Power, 3, NULL);
 		return 1;
 	}
 
@@ -92,7 +92,7 @@ int stage6_hacker(Enemy *e, int t) {
 int stage6_side(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 3, 4, 0, 0);
+		spawn_items(e->pos, Point, 4, Power, 3, NULL);
 		return 1;
 	}
 
@@ -122,7 +122,7 @@ int wait_proj(Projectile *p, int t) {
 int stage6_flowermine(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 4, 3, 0, 0);
+		spawn_items(e->pos, Point, 4, Power, 3, NULL);
 		return 1;
 	}
 

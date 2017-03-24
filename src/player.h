@@ -17,6 +17,18 @@
 #include "gamepad.h"
 #include "resource/animation.h"
 
+enum {
+	PLR_MAX_POWER = 400,
+	PLR_MAX_LIVES = 9,
+	PLR_MAX_BOMBS = 9,
+
+	PLR_MAX_LIFE_FRAGMENTS = 5,
+	PLR_MAX_BOMB_FRAGMENTS = 5,
+
+	PLR_START_LIVES = 2,
+	PLR_START_BOMBS = 3,
+};
+
 typedef enum {
 	// do not reorder these or you'll break replays
 
@@ -56,8 +68,11 @@ typedef struct {
 	int graze;
 	int points;
 
-	int lifes;
+	int lives;
 	int bombs;
+
+	int life_fragments;
+	int bomb_fragments;
 
 	int recovery;
 
@@ -118,6 +133,11 @@ void player_setinputflag(Player *plr, KeyIndex key, bool mode);
 void player_event(Player* plr, int type, int key);
 void player_applymovement(Player* plr);
 void player_input_workaround(Player *plr);
+
+void player_add_life_fragments(Player *plr, int frags);
+void player_add_bomb_fragments(Player *plr, int frags);
+void player_add_lives(Player *plr, int lives);
+void player_add_bombs(Player *plr, int bombs);
 
 void player_preload(void);
 

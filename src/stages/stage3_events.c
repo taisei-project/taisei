@@ -53,7 +53,7 @@ int stage3_enterswirl(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 1, 1, 0, 0);
+		spawn_items(e->pos, Point, 1, Power, 1, NULL);
 
 		float r, g;
 		if(frand() > 0.5) {
@@ -94,7 +94,7 @@ int stage3_slavefairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 1, 3, 0, 0);
+		spawn_items(e->pos, Point, 1, Power, 3, NULL);
 		return 1;
 	}
 
@@ -132,9 +132,9 @@ int stage3_bigfairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 5, 5, 0, 0);
+		spawn_items(e->pos, Point, 5, Power, 5, NULL);
 		if(e->args[0] && global.timer > 2800)
-			spawn_items(e->pos, 0, 0, 1, 0);
+			spawn_items(e->pos, Bomb, 1, NULL);
 		return 1;
 	}
 
@@ -168,7 +168,7 @@ int stage3_bitchswirl(Enemy *e, int t) {
 	}
 
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 1, 1, 0, 0);
+		spawn_items(e->pos, Point, 1, Power, 1, NULL);
 		return -1;
 	}
 
@@ -188,7 +188,7 @@ int stage3_cornerfairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 5, 5, 0, 0);
+		spawn_items(e->pos, Point, 5, Power, 5, NULL);
 		return -1;
 	}
 
@@ -239,7 +239,7 @@ void stage3_mid_intro(Boss *boss, int time) {
 
 void stage3_mid_outro(Boss *boss, int time) {
 	if(time == 0) {
-		spawn_items(boss->pos, 10, 10, 0, 1);
+		spawn_items(boss->pos, Point, 10, Power, 10, Life, 1, NULL);
 		Projectile *p;
 		for(p = global.projs; p; p = p->next)
 			p->type = DeadProj;
@@ -411,13 +411,13 @@ void stage3_mid_spellbg(Boss *h, int time) {
 	glColor4f(.1, .1, .1, a);
 	draw_texture(VIEWPORT_W/2, VIEWPORT_H/2, "stage3/spellbg2");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	
+
 	fill_screen(-time/200.0 + 0.5, time/400.0+0.5, s, "stage3/spellbg1");
 
 	glColor4f(1, 1, 1, 0.1);
 	fill_screen(time/300.0 + 0.5, -time/340.0+0.5, s*0.5, "stage3/spellbg1");
 	fill_screen(time/220.0 + 0.5, -time/400.0+0.5, s*0.5, "stage3/spellbg1");
-	
+
 
 	glColor4f(1, 1, 1, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -546,7 +546,7 @@ int stage3_boss_a1_slave(Enemy *e, int time) {
 
 	AT(EVENT_DEATH) {
 		free_ref(e->args[0]);
-		spawn_items(e->pos, 1, 1, 0, 0);
+		spawn_items(e->pos, Point, 1, Power, 1, NULL);
 		return 1;
 	}
 
@@ -740,7 +740,7 @@ int stage3_boss_prea1_slave(Enemy *e, int time) {
 
 	AT(EVENT_DEATH) {
 		free_ref(e->args[0]);
-		spawn_items(e->pos, 1, 1, 0, 0);
+		spawn_items(e->pos, Point, 1, Power, 1, NULL);
 		return 1;
 	}
 

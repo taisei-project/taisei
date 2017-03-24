@@ -4,13 +4,15 @@ cmake_minimum_required(VERSION 2.6)
 
 include(CheckSymbolExists)
 
-if(NOT DEFINED USE_SDL2_PATHS)
-    set(USE_SDL2_PATHS BOOL TRUE)
+if(WIN32 OR APPLE)
+	set(RELATIVE_DEFAULT ON)
+else()
+	set(RELATIVE_DEFAULT OFF)
 endif()
 
-if(WIN32 OR APPLE)
-	set(RELATIVE TRUE)
-endif()
+option(RELATIVE "Use only relative paths to the executable and install everything in the same directory." ${RELATIVE_DEFAULT})
+option(USE_SDL2_PATHS "Use the SDL2 filesystem API to determine where to save settings." ON)
+option(NO_AUDIO "Build without audio support" OFF)
 
 add_subdirectory(src)
 
