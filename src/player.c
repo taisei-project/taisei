@@ -17,7 +17,7 @@ void init_player(Player *plr) {
 
 	plr->pos = VIEWPORT_W/2 + I*(VIEWPORT_H-20);
 
-	plr->lifes = PLR_START_LIVES;
+	plr->lives = PLR_START_LIVES;
 	plr->bombs = PLR_START_BOMBS;
 
 	plr->deathtime = -1;
@@ -74,13 +74,13 @@ void player_set_power(Player *plr, short npow) {
 	int oldpow = plr->power;
 	plr->power = npow;
 
-	if(plr->power > PLR_MAXPOWER)
-		plr->power = PLR_MAXPOWER;
+	if(plr->power > PLR_MAX_POWER)
+		plr->power = PLR_MAX_POWER;
 
 	if(plr->power < 0)
 		plr->power = 0;
 
-	if(plr->power == PLR_MAXPOWER && oldpow < PLR_MAXPOWER) {
+	if(plr->power == PLR_MAX_POWER && oldpow < PLR_MAX_POWER) {
 		player_full_power(plr);
 	}
 }
@@ -249,6 +249,7 @@ void player_realdeath(Player *plr) {
 	plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I+30.0*I;
 	plr->recovery = -(global.frames + DEATH_DELAY + 150);
 	plr->bombs = PLR_START_BOMBS;
+	plr->bomb_fragments = 0;
 
 	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell && global.stage->type != STAGE_SPELL) {
 		if(!global.boss->current->finished) {
@@ -264,7 +265,7 @@ void player_realdeath(Player *plr) {
 
 	player_set_power(plr, plr->power * 0.7);
 
-	if(plr->lifes-- == 0 && global.replaymode != REPLAY_PLAY)
+	if(plr->lives-- == 0 && global.replaymode != REPLAY_PLAY)
 		stage_gameover();
 }
 
@@ -342,6 +343,10 @@ void player_event(Player* plr, int type, int key) {
 
 		case EV_AXIS_UD:
 			plr->axis_ud = key;
+			break;
+
+		default:
+			log_warn("Unknown event type %d (value=%d)", type, key);
 			break;
 	}
 }
@@ -452,6 +457,54 @@ void player_graze(Player *plr, complex pos, int pts) {
 	}
 }
 
+static void player_add_fragments(Player *plr, int frags, int *pwhole, int *pfrags, int maxfrags, int maxwhole, const char *fragsnd, const char *upsnd) {
+	if(*pwhole >= maxwhole) {
+		return;
+	}
+
+	*pfrags += frags;
+	int up = *pfrags / maxfrags;
+
+	*pwhole += up;
+	*pfrags %= maxfrags;
+
+	if(up) {
+		play_sound(upsnd);
+	}
+
+	if(frags) {
+		// FIXME: when we have the extra life/bomb sounds,
+		//        don't play this if upsnd was just played.
+		play_sound(fragsnd);
+	}
+
+	if(*pwhole > maxwhole) {
+		*pwhole = maxwhole;
+	}
+}
+
+void player_add_life_fragments(Player *plr, int frags) {
+	player_add_fragments(plr, frags, &plr->lives, &plr->life_fragments, PLR_MAX_LIFE_FRAGMENTS, PLR_MAX_LIVES,
+		"item_generic", // FIXME: replacement needed
+		"extra_life"
+	);
+}
+
+void player_add_bomb_fragments(Player *plr, int frags) {
+	player_add_fragments(plr, frags, &plr->bombs, &plr->bomb_fragments, PLR_MAX_BOMB_FRAGMENTS, PLR_MAX_BOMBS,
+		"item_generic",  // FIXME: replacement needed
+		"extra_bomb"
+	);
+}
+
+void player_add_lives(Player *plr, int lives) {
+	player_add_life_fragments(plr, PLR_MAX_LIFE_FRAGMENTS);
+}
+
+void player_add_bombs(Player *plr, int bombs) {
+	player_add_bomb_fragments(plr, PLR_MAX_BOMB_FRAGMENTS);
+}
+
 void player_preload(void) {
 	const int flags = RESF_DEFAULT;
 
@@ -468,6 +521,8 @@ void player_preload(void) {
 		"generic_shot",
 		"masterspark",
 		"full_power",
+		"extra_life",
+		"extra_bomb",
 	NULL);
 
 	preload_resources(RES_ANIM, flags,

@@ -85,7 +85,7 @@ typedef struct {
 } FPSCounter;
 
 void frame_rate(int *lasttime);
-void calc_fps(FPSCounter *fps);
+bool calc_fps(FPSCounter *fps);
 void set_ortho(void);
 void colorfill(float r, float g, float b, float a);
 void fade_out(float f);

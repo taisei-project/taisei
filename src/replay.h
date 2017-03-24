@@ -68,8 +68,10 @@ typedef struct ReplayStage {
 	uint16_t plr_pos_y;
 	uint8_t plr_focus;
 	uint16_t plr_power;
-	uint8_t plr_lifes;
+	uint8_t plr_lives;
+	uint8_t plr_life_fragments;
 	uint8_t plr_bombs;
+	uint8_t plr_bomb_fragments;
 	uint8_t plr_inputflags;
 
 	// player input
@@ -85,7 +87,9 @@ typedef struct ReplayStage {
 	// events allocated (may be higher than numevents)
 	int capacity;
 
+	// used during playback
 	int playpos;
+	int fps;
 	uint16_t desync_check;
 } ReplayStage;
 

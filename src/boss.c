@@ -36,11 +36,11 @@ void draw_boss_text(Alignment align, float x, float y, const char *text) {
 void spell_opening(Boss *b, int time) {
 	complex x0 = VIEWPORT_W/2+I*VIEWPORT_H/2;
 	float f = clamp((time-40.)/60.,0,1);
-	
+
 	complex x = x0 + (VIEWPORT_W+I*35 - x0) * f*(f+1)*0.5;
 
 	int strw = stringwidth(b->current->name,_fonts.standard);
-	
+
 	glPushMatrix();
 	glTranslatef(creal(x),cimag(x),0);
 	float scale = f+1.*(1-f)*(1-f)*(1-f);
@@ -51,7 +51,7 @@ void spell_opening(Boss *b, int time) {
 	glEnable(GL_CULL_FACE);
 	glPopMatrix();
 
-	
+
 	glUseProgram(0);
 
 }
@@ -278,12 +278,12 @@ void process_boss(Boss **pboss) {
 		Color c = rgba(sin(5*t),cos(5*t),0.5,t);
 		tsrand_fill(6);
 		create_particle4c("petal", pos, c, Petal, asymptotic, sign(anfrand(5))*(3+t*5*afrand(0))*cexp(I*M_PI*8*t), 5+I, afrand(2) + afrand(3)*I, afrand(4) + 360.0*I*afrand(1));
-		
+
 	}
 
 	if(over) {
 		if(extra && boss->current->finished == FINISH_WIN)
-			spawn_items(boss->pos, 0, 0, 0, 1);
+			spawn_items(boss->pos, Life, 1, NULL);
 
 		boss->dmg = boss->current->dmglimit + 1;
 		boss->current++;

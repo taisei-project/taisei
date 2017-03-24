@@ -78,7 +78,7 @@ Dialog *stage4_dialog_end(void) {
 int stage4_splasher(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 1,3,1,0);
+		spawn_items(e->pos, Point, 1, Power, 3, Bomb, 1, NULL);
 		return 1;
 	}
 
@@ -102,7 +102,7 @@ int stage4_splasher(Enemy *e, int t) {
 int stage4_fodder(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 0,1,0,0);
+		spawn_items(e->pos, Power, 1, NULL);
 		return 1;
 	}
 
@@ -124,7 +124,7 @@ int stage4_fodder(Enemy *e, int t) {
 int stage4_partcircle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 2,1,0,0);
+		spawn_items(e->pos, Point, 2, Power, 1, NULL);
 		return 1;
 	}
 
@@ -151,7 +151,7 @@ int stage4_partcircle(Enemy *e, int t) {
 int stage4_cardbuster(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 1,2,0,0);
+		spawn_items(e->pos, Point, 1, Power, 2, NULL);
 		return 1;
 	}
 
@@ -178,7 +178,7 @@ int stage4_cardbuster(Enemy *e, int t) {
 int stage4_backfire(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 3,2,0,0);
+		spawn_items(e->pos, Point, 3, Power, 2, NULL);
 		return 1;
 	}
 
@@ -207,7 +207,7 @@ int stage4_backfire(Enemy *e, int t) {
 int stage4_bigcircle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 1,3,0,0);
+		spawn_items(e->pos, Point, 1, Power, 3, NULL);
 
 		return 1;
 	}
@@ -232,7 +232,7 @@ int stage4_explosive(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
 		int i;
-		spawn_items(e->pos, 0,1,0,0);
+		spawn_items(e->pos, Power, 1, NULL);
 
 		int n = 5*global.diff;
 		for(i = 0; i < n; i++) {
@@ -418,7 +418,7 @@ int stage4_supercard(Enemy *e, int t) {
 
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 2,3,0,0);
+		spawn_items(e->pos, Point, 2, Power, 3, NULL);
 		return 1;
 	}
 

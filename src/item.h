@@ -16,14 +16,16 @@ typedef struct Item Item;
 typedef enum {
 	// from least important to most important
 	// this affects the draw order
-	BPoint,
+	BPoint = 1,
 	Point,
 	Power,
+	BombFrag,
+	LifeFrag,
 	Bomb,
 	Life,
 } ItemType;
 
-struct Item{
+struct Item {
 	Item *next;
 	Item *prev;
 
@@ -46,7 +48,7 @@ int collision_item(Item *p);
 void process_items(void);
 
 void spawn_item(complex pos, ItemType type);
-void spawn_items(complex pos, int point, int power, int bomb, int life);
+void spawn_items(complex pos, ItemType first_type, int first_num, ...) __attribute__((sentinel));
 
 void items_preload(void);
 

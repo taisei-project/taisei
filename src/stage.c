@@ -200,7 +200,7 @@ static void stage_start(StageInfo *stage) {
 	prepare_player_for_next_stage(&global.plr);
 
 	if(stage->type == STAGE_SPELL) {
-		global.plr.lifes = 0;
+		global.plr.lives = 0;
 		global.plr.bombs = 0;
 	}
 
@@ -308,7 +308,7 @@ void replay_input(void) {
 	handle_events(stage_replay_event, EF_Game, NULL);
 
 	for(i = s->playpos; i < s->numevents; ++i) {
-		ReplayEvent *e = &(s->events[i]);
+		ReplayEvent *e = s->events + i;
 
 		if(e->frame != global.frames)
 			break;
@@ -318,13 +318,19 @@ void replay_input(void) {
 				global.game_over = GAMEOVER_DEFEAT;
 				break;
 
+			case EV_CHECK_DESYNC:
+				s->desync_check = e->value;
+				break;
+
+			case EV_FPS:
+				s->fps = e->value;
+				break;
+
 			default:
 				if(global.dialog && e->type == EV_PRESS && (e->value == KEY_SHOT || e->value == KEY_BOMB))
 					page_dialog(&global.dialog);
 				else if(global.dialog && (e->type == EV_PRESS || e->type == EV_RELEASE) && e->value == KEY_SKIP)
 					global.dialog->skip = (e->type == EV_PRESS);
-				else if(e->type == EV_CHECK_DESYNC)
-					s->desync_check = e->value;
 				else
 					player_event(&global.plr, e->type, (int16_t)e->value);
 				break;
@@ -348,11 +354,59 @@ void stage_input(void) {
 	player_applymovement(&global.plr);
 }
 
+static void draw_star(int x, int y, float fill, float alpha) {
+	Texture *star = get_tex("star");
+	Shader *shader = get_shader("circleclipped_indicator");
+
+	float clr[4];
+
+	Color amul = rgba(alpha, alpha, alpha, alpha);
+	Color fill_clr = multiply_colors(rgba(1.0f, 1.0f, 1.0f, 1.0f), amul);
+	Color back_clr = multiply_colors(rgba(0.2f, 0.6f, 1.0f, 0.2f), amul);
+
+	if(fill < 1) {
+		fill_clr = mix_colors(derive_color(back_clr, CLRMASK_A, alpha), fill_clr, 0.35f);
+	}
+
+	if(fill >= 1 || fill <= 0) {
+		parse_color_call(fill > 0 ? fill_clr : back_clr, glColor4f);
+		draw_texture_p(x, y, star);
+		glColor4f(1, 1, 1, 1);
+		return;
+	}
+
+	glUseProgram(shader->prog);
+	glUniform1f(uniloc(shader, "fill"), fill);
+	glUniform1f(uniloc(shader, "tcfactor"), star->truew / (float)star->w);
+	parse_color_array(fill_clr, clr);
+	glUniform4fv(uniloc(shader, "fill_color"), 1, clr);
+	parse_color_array(back_clr, clr);
+	glUniform4fv(uniloc(shader, "back_color"), 1, clr);
+	draw_texture_p(x, y, star);
+	glUseProgram(0);
+}
+
+static void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxfrags, float alpha) {
+	static const int star_width = 20;
+	int i = 0;
+
+	while(i < numstars) {
+		draw_star(x + star_width * i++, y, 1, alpha);
+	}
+
+	if(numfrags) {
+		draw_star(x + star_width * i++, y, numfrags / (float)maxfrags, alpha);
+	}
+
+	while(i < maxstars) {
+		draw_star(x + star_width * i++, y, 0, alpha);
+	}
+}
+
 void draw_hud(void) {
 	draw_texture(SCREEN_W/2.0, SCREEN_H/2.0, "hud");
 
 	char buf[16];
-	int i;
 
 	glPushMatrix();
 	glTranslatef(615,0,0);
@@ -381,13 +435,8 @@ void draw_hud(void) {
 			a = 0.5 + 0.5 * fade;
 		}
 
-		if(a != 1) glColor4f(a,a,a,a);
-		for(i = 0; i < global.plr.lifes; i++)
-			draw_texture(16*i,167, "star");
-
-		for(i = 0; i < global.plr.bombs; i++)
-			draw_texture(16*i,200, "star");
-		if(a != 1) glColor4f(1,1,1,1);
+		draw_stars(0, 167, global.plr.lives, global.plr.life_fragments, PLR_MAX_LIVES, PLR_MAX_LIFE_FRAGMENTS, a);
+		draw_stars(0, 200, global.plr.bombs, global.plr.bomb_fragments, PLR_MAX_BOMBS, PLR_MAX_BOMB_FRAGMENTS, a);
 
 		if(s) {
 			float s2 = max(0, swing(s, 3));
@@ -406,8 +455,10 @@ void draw_hud(void) {
 		}
 	}
 
-	sprintf(buf, "%.2f", global.plr.power / 100.0);
-	draw_text(AL_Left, -6, 236, buf, _fonts.standard);
+	// sprintf(buf, "%.2f", global.plr.power / 100.0);
+	// draw_text(AL_Left, -6, 236, buf, _fonts.standard);
+
+	draw_stars(0, 236, global.plr.power / 100, global.plr.power % 100, PLR_MAX_POWER / 100, 100, 1);
 
 	sprintf(buf, "%i", global.plr.graze);
 	draw_text(AL_Left, -6, 270, buf, _fonts.standard);
@@ -424,15 +475,18 @@ void draw_hud(void) {
 
 	glPopMatrix();
 
-#ifdef DEBUG
-	sprintf(buf, "%i fps / %i stgframes", global.fps.show_fps, global.timer);
-#else
 	sprintf(buf, "%i fps", global.fps.show_fps);
-#endif
-	draw_text(AL_Right, SCREEN_W, SCREEN_H-20, buf, _fonts.standard);
+	draw_text(AL_Right, SCREEN_W, SCREEN_H - 0.5 * stringheight(buf, _fonts.standard), buf, _fonts.standard);
 
 	if(global.boss)
 		draw_texture(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
+
+	if(global.replaymode == REPLAY_PLAY) {
+		sprintf(buf, "Replay: %s (%i fps)", global.replay.playername, global.replay_stage->fps);
+		glColor4f(0.5f, 0.5f, 0.5f, 0.5f);
+		draw_text(AL_Left, 0, SCREEN_H - 0.5 * stringheight(buf, _fonts.standard), buf, _fonts.standard);
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	}
 }
 
 static void apply_bg_shaders(ShaderRule *shaderrules);
@@ -574,7 +628,7 @@ static void draw_spellbg(int t) {
 	int strw = stringwidth(b->current->name,_fonts.standard);
 	int strh = stringheight(b->current->name,_fonts.standard);
 	float f = -t/(float)ATTACK_START_DELAY;
-	Texture *tex = load_text(b->current->name, _fonts.standard);	
+	Texture *tex = load_text(b->current->name, _fonts.standard);
 	glPushMatrix();
 	glTranslatef(VIEWPORT_W/2,VIEWPORT_H/2,0);
 	glRotatef(20,0,0,1);
@@ -647,7 +701,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules) {
 
 		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[!fbonum].fbo);
 		draw_spellbg(t);
-		
+
 		complex pos = VIEWPORT_H*I + conj(b->pos) + (VIEWPORT_X + VIEWPORT_Y*I);
 		float ratio = (float)resources.fbg[fbonum].nh/resources.fbg[fbonum].nw;
 
@@ -662,7 +716,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules) {
 			if(b->current->type == AT_ExtraSpell)
 				delay = ATTACK_START_DELAY_EXTRA;
 			float duration = ATTACK_START_DELAY_EXTRA;
-			
+
 			glUniform1f(uniloc(shader, "t"), (t+delay)/duration);
 		} else if(b->current->endtime) {
 			int tn = global.frames - b->current->endtime;
@@ -675,7 +729,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules) {
 			glUniform1f(uniloc(shader, "ratio"),ratio);
 			glUniform2f(uniloc(shader, "origin"),
 					creal(pos)/resources.fbg[fbonum].nw, cimag(pos)/resources.fbg[fbonum].nh);
-			
+
 			glUniform1f(uniloc(shader, "t"), max(0,tn/delay+1));
 
 		} else {
@@ -804,6 +858,7 @@ static void stage_preload(void) {
 	preload_resources(RES_SHADER, RESF_PERMANENT,
 		"stagetitle",
 		"ingame_menu",
+		"circleclipped_indicator",
 	NULL);
 }
 
@@ -911,7 +966,9 @@ void stage_loop(StageInfo *stage) {
 			continue;
 		}
 
-		calc_fps(&global.fps);
+		if(calc_fps(&global.fps) && global.replaymode == REPLAY_RECORD) {
+			replay_stage_event(global.replay_stage, global.frames, EV_FPS, global.fps.show_fps);
+		}
 
 		tsrand_lock(&global.rand_game);
 		tsrand_switch(&global.rand_visual);
@@ -971,7 +1028,7 @@ static void draw_title(int t, Alignment al, int x, int y, const char *text, TTF_
 	glBindTexture(GL_TEXTURE_2D, get_tex("titletransition")->gltex);
 	glActiveTexture(GL_TEXTURE0);
 
-	draw_text(al, x, y, text, font);
+	draw_text(al, x+10*f*f, y+10*f*f, text, font);
 
 	glColor4f(1,1,1,1);
 	glUseProgram(0);
