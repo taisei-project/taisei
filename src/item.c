@@ -9,8 +9,19 @@
 #include "global.h"
 #include "list.h"
 
-Item *create_item(complex pos, complex v, Type type) {
-	Item *i = create_element((void **)&global.items, sizeof(Item));
+Item *create_item(complex pos, complex v, ItemType type) {
+	Item *e, **d, **dest = &global.items;
+
+	for(e = *dest; e && e->next; e = e->next)
+		if(e->prev && type < e->type)
+			break;
+
+	if(e == NULL)
+		d = dest;
+	else
+		d = &e;
+
+	Item *i = create_element((void **)d, sizeof(Item));
 	i->pos = pos;
 	i->pos0 = pos;
 	i->v = v;
@@ -20,7 +31,6 @@ Item *create_item(complex pos, complex v, Type type) {
 
 	return i;
 }
-
 
 void delete_item(Item *item) {
 	delete_element((void **)&global.items, item);
@@ -42,6 +52,12 @@ void draw_items(void) {
 				break;
 			case Bomb:
 				tex = get_tex("items/bomb");
+				break;
+			case LifeFrag:
+				tex = get_tex("items/lifefrag");
+				break;
+			case BombFrag:
+				tex = get_tex("items/bombfrag");
 				break;
 			case BPoint:
 				tex = get_tex("items/bullet_point");
@@ -76,7 +92,7 @@ void process_items(void) {
 		r *= 2;
 
 	while(item != NULL) {
-		if((item->type == Power && global.plr.power >= PLR_MAXPOWER) ||
+		if((item->type == Power && global.plr.power >= PLR_MAX_POWER) ||
 			// just in case we ever have some weird spell that spawns those...
 		   (global.stage->type == STAGE_SPELL && (item->type == Life || item->type == Bomb))
 		) {
@@ -94,21 +110,29 @@ void process_items(void) {
 			switch(item->type) {
 			case Power:
 				player_set_power(&global.plr, global.plr.power + POWER_VALUE);
+				play_sound("item_generic");
 				break;
 			case Point:
 				global.plr.points += 100;
+				play_sound("item_generic");
 				break;
 			case BPoint:
 				global.plr.points += 1;
+				play_sound("item_generic");
 				break;
 			case Life:
-				global.plr.lifes++;
+				player_add_lives(&global.plr, 1);
 				break;
 			case Bomb:
-				global.plr.bombs++;
+				player_add_bombs(&global.plr, 1);
+				break;
+			case LifeFrag:
+				player_add_life_fragments(&global.plr, 1);
+				break;
+			case BombFrag:
+				player_add_bomb_fragments(&global.plr, 1);
 				break;
 			}
-			play_sound("item_generic");
 		}
 
 		if(v == 1 || creal(item->pos) < -9 || creal(item->pos) > VIEWPORT_W + 9
@@ -129,24 +153,28 @@ int collision_item(Item *i) {
 	return 0;
 }
 
-void spawn_item(complex pos, Type type) {
+void spawn_item(complex pos, ItemType type) {
 	tsrand_fill(2);
 	create_item(pos, 5*cexp(I*tsrand_a(0)/afrand(1)*M_PI*2), type);
 }
 
-void spawn_items(complex pos, int point, int power, int bomb, int life) {
-	int i;
-	for(i = 0; i < point; i++)
-		spawn_item(pos, Point);
+void spawn_items(complex pos, ItemType first_type, int first_num, ...) {
+	for(int i = 0; i < first_num; ++i) {
+		spawn_item(pos, first_type);
+	}
 
-	for(i = 0; i < power; i++)
-		spawn_item(pos, Power);
+	va_list args;
+	va_start(args, first_num);
 
-	for(i = 0; i < bomb; i++)
-		spawn_item(pos, Bomb);
+	ItemType type;
+	while(type = va_arg(args, ItemType)) {
+		int num = va_arg(args, int);
+		for(int i = 0; i < num; ++i) {
+			spawn_item(pos, type);
+		}
+	}
 
-	for(i = 0; i < life; i++)
-		spawn_item(pos, Life);
+	va_end(args);
 }
 
 void items_preload(void) {
@@ -155,6 +183,8 @@ void items_preload(void) {
 		"items/point",
 		"items/life",
 		"items/bomb",
+		"items/lifefrag",
+		"items/bombfrag",
 		"items/bullet_point",
 	NULL);
 

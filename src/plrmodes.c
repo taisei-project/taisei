@@ -10,6 +10,11 @@
 #include "global.h"
 #include "stage.h"
 
+static bool should_shoot(bool extra) {
+	return (global.plr.inputflags & INFLAG_SHOT) &&
+			(!extra || (global.frames - global.plr.recovery >= 0 && global.plr.deathtime >= -1));
+}
+
 /* Yōmu */
 
 // Haunting Sign
@@ -169,7 +174,7 @@ int youmu_opposite_myon(Enemy *e, int t) {
 	complex target = plr->pos + e->pos0;
 	e->pos += cexp(I*carg(target - e->pos)) * min(10, 0.07 * cabs(target - e->pos));
 
-	if(plr->inputflags & INFLAG_SHOT && !(global.frames % 6) && global.plr.deathtime >= -1) {
+	if(should_shoot(true) && !(global.frames % 6) && global.plr.deathtime >= -1) {
 		int a = 20;
 
 		if(plr->power >= 300) {
@@ -217,7 +222,7 @@ int youmu_split(Enemy *e, int t) {
 // Youmu Generic
 
 void youmu_shot(Player *plr) {
-	if(plr->inputflags & INFLAG_SHOT) {
+	if(should_shoot(false)) {
 		if(!(global.frames % 4))
 			play_sound("generic_shot");
 
@@ -226,7 +231,7 @@ void youmu_shot(Player *plr) {
 			create_projectile1c("youmu", plr->pos - 10 - I*20, 0, linear, -20.0*I)->type = PlrProj+120;
 		}
 
-		if(plr->shot == YoumuHoming) {
+		if(plr->shot == YoumuHoming && should_shoot(true)) {
 			if(plr->inputflags & INFLAG_FOCUS && !(global.frames % 45)) {
 				int ref = -1;
 				if(global.boss != NULL)
@@ -306,7 +311,7 @@ int mari_laser(Projectile *p, int t) {
 }
 
 int marisa_laser_slave(Enemy *e, int t) {
-	if(global.plr.inputflags & INFLAG_SHOT && global.frames - global.plr.recovery >= 0 && global.plr.deathtime >= -1) {
+	if(should_shoot(true)) {
 		if(!(global.frames % 4))
 			create_projectile_p(&global.projs, get_tex("proj/marilaser"), 0, 0, MariLaser, mari_laser, 0, add_ref(e),e->args[2],0)->type = PlrProj+e->args[1]*4;
 
@@ -434,7 +439,7 @@ int marisa_star_projectile(Projectile *p, int t) {
 int marisa_star_slave(Enemy *e, int t) {
 	double focus = global.plr.focus/30.0;
 
-	if(global.plr.inputflags & INFLAG_SHOT && global.frames - global.plr.recovery >= 0 && global.plr.deathtime >= -1) {
+	if(should_shoot(true)) {
 		if(!(global.frames % 20))
 			create_projectile_p(&global.projs, get_tex("proj/maristar"), e->pos, 0, MariStar, marisa_star_projectile, e->args[1] * 2 * (1 - 1.5 * focus), e->args[2], 0, 0)->type = PlrProj+e->args[3]*20;
 	}
@@ -466,7 +471,7 @@ int marisa_star_orbit(Projectile *p, int t) { // a[0]: x' a[1]: x''
 // Generic Marisa
 
 void marisa_shot(Player *plr) {
-	if(plr->inputflags & INFLAG_SHOT) {
+	if(should_shoot(false)) {
 		if(!(global.frames % 4))
 			play_sound("generic_shot");
 

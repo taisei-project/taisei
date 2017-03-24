@@ -33,7 +33,7 @@ void create_ingame_menu(MenuData *m) {
 	set_transition(TransEmpty, 0, m->transition_out_time);
 }
 
-void draw_ingame_menu_bg(float f) {
+void draw_ingame_menu_bg(MenuData *menu, float f) {
 	float rad = f*IMENU_BLUR;
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -41,6 +41,7 @@ void draw_ingame_menu_bg(float f) {
 	glUseProgram(shader->prog);
 
 	glUniform1f(uniloc(shader, "rad"), rad);
+	glUniform1f(uniloc(shader, "phase"), menu->frames / 100.0);
 
 	draw_fbo_viewport(&resources.fsec);
 
@@ -51,7 +52,7 @@ void draw_ingame_menu(MenuData *menu) {
 	glPushMatrix();
 		glTranslatef(VIEWPORT_X, VIEWPORT_Y, 0);
 
-	draw_ingame_menu_bg(1.0-menu_fade(menu));
+	draw_ingame_menu_bg(menu, 1.0-menu_fade(menu));
 
 	glPushMatrix();
 	glTranslatef(VIEWPORT_W/2, VIEWPORT_H/4, 0);

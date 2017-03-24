@@ -53,7 +53,7 @@ int stage3_enterswirl(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 1, 1, 0, 0);
+		spawn_items(e->pos, Point, 1, Power, 1, NULL);
 
 		float r, g;
 		if(frand() > 0.5) {
@@ -94,7 +94,7 @@ int stage3_slavefairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 1, 3, 0, 0);
+		spawn_items(e->pos, Point, 1, Power, 3, NULL);
 		return 1;
 	}
 
@@ -132,9 +132,9 @@ int stage3_bigfairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 5, 5, 0, 0);
+		spawn_items(e->pos, Point, 5, Power, 5, NULL);
 		if(e->args[0] && global.timer > 2800)
-			spawn_items(e->pos, 0, 0, 1, 0);
+			spawn_items(e->pos, Bomb, 1, NULL);
 		return 1;
 	}
 
@@ -168,7 +168,7 @@ int stage3_bitchswirl(Enemy *e, int t) {
 	}
 
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 1, 1, 0, 0);
+		spawn_items(e->pos, Point, 1, Power, 1, NULL);
 		return -1;
 	}
 
@@ -188,7 +188,7 @@ int stage3_cornerfairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 5, 5, 0, 0);
+		spawn_items(e->pos, Point, 5, Power, 5, NULL);
 		return -1;
 	}
 
@@ -239,7 +239,7 @@ void stage3_mid_intro(Boss *boss, int time) {
 
 void stage3_mid_outro(Boss *boss, int time) {
 	if(time == 0) {
-		spawn_items(boss->pos, 10, 10, 0, 1);
+		spawn_items(boss->pos, Point, 10, Power, 10, Life, 1, NULL);
 		Projectile *p;
 		for(p = global.projs; p; p = p->next)
 			p->type = DeadProj;
@@ -411,13 +411,13 @@ void stage3_mid_spellbg(Boss *h, int time) {
 	glColor4f(.1, .1, .1, a);
 	draw_texture(VIEWPORT_W/2, VIEWPORT_H/2, "stage3/spellbg2");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	
+
 	fill_screen(-time/200.0 + 0.5, time/400.0+0.5, s, "stage3/spellbg1");
 
 	glColor4f(1, 1, 1, 0.1);
 	fill_screen(time/300.0 + 0.5, -time/340.0+0.5, s*0.5, "stage3/spellbg1");
 	fill_screen(time/220.0 + 0.5, -time/400.0+0.5, s*0.5, "stage3/spellbg1");
-	
+
 
 	glColor4f(1, 1, 1, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -454,6 +454,29 @@ Boss* stage3_create_midboss(void) {
 	start_attack(scuttle, scuttle->attacks);
 	return scuttle;
 }
+
+void wriggle_slave_draw(Enemy *e, int time) {
+	if(time < 0)
+		return;
+
+	glPushMatrix();
+	glTranslatef(creal(e->pos),cimag(e->pos),0);
+	glRotatef(7*time,0,0,1);
+	glColor4f(0.8,1,0.4,1);
+	glScalef(0.7,0.7,1);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	draw_texture(0,0,"fairy_circle");
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glColor3f(1,1,1);
+	glPopMatrix();
+	
+	if(time % 5 == 0) {
+		tsrand_fill(2);
+		create_particle3c("lasercurve", 5*cexp(2*I*M_PI*afrand(0)), rgba(1,1,0.8,0.6), EnemyFlareShrink, enemy_flare, 60, 0.3*cexp(2*M_PI*I*afrand(1)),add_ref(e));
+	}
+}
+
 
 int stage3_boss_a1_laserbullet(Projectile *p, int time) {
 	if(time == EVENT_DEATH) {
@@ -523,7 +546,7 @@ int stage3_boss_a1_slave(Enemy *e, int time) {
 
 	AT(EVENT_DEATH) {
 		free_ref(e->args[0]);
-		spawn_items(e->pos, 1, 1, 0, 0);
+		spawn_items(e->pos, Point, 1, Power, 1, NULL);
 		return 1;
 	}
 
@@ -571,7 +594,7 @@ void stage3_boss_a1(Boss *boss, int time) {
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2.5, 0.05)
 	else if(time == 0) {
 		for(j = -1; j < 2; j += 2) for(i = 0; i < cnt; ++i)
-			create_enemy3c(boss->pos, ENEMY_IMMUNE, Swirl, stage3_boss_a1_slave, add_ref(boss), i*2*M_PI/cnt, j);
+			create_enemy3c(boss->pos, ENEMY_IMMUNE, wriggle_slave_draw, stage3_boss_a1_slave, add_ref(boss), i*2*M_PI/cnt, j);
 	}
 }
 
@@ -627,7 +650,7 @@ void stage3_boss_a2(Boss *boss, int time) {
 	}
 
 	AT(0) for(j = -1; j < 2; j += 2) for(i = 0; i < 7; ++i)
-		create_enemy4c(boss->pos, ENEMY_IMMUNE, Swirl, stage3_boss_a1_slave, add_ref(boss), i*2*M_PI/7, j, 1);
+		create_enemy4c(boss->pos, ENEMY_IMMUNE, wriggle_slave_draw, stage3_boss_a1_slave, add_ref(boss), i*2*M_PI/7, j, 1);
 
 	FROM_TO_INT(0, 1000000, 180, 120, 10) {
 		float dt = 200;
@@ -717,7 +740,7 @@ int stage3_boss_prea1_slave(Enemy *e, int time) {
 
 	AT(EVENT_DEATH) {
 		free_ref(e->args[0]);
-		spawn_items(e->pos, 1, 1, 0, 0);
+		spawn_items(e->pos, Point, 1, Power, 1, NULL);
 		return 1;
 	}
 
@@ -746,7 +769,7 @@ void stage3_boss_pre_common(Boss *boss, int time, int level) {
 	int i, j, cnt = 3 + global.diff;
 
 	AT(0) for(j = -1; j < 2; j += 2) for(i = 0; i < cnt; ++i)
-		create_enemy4c(boss->pos, ENEMY_IMMUNE, Swirl, stage3_boss_prea1_slave, add_ref(boss), i*2*M_PI/cnt, j, level);
+		create_enemy4c(boss->pos, ENEMY_IMMUNE, wriggle_slave_draw, stage3_boss_prea1_slave, add_ref(boss), i*2*M_PI/cnt, j, level);
 
 	AT(EVENT_DEATH) {
 		killall(global.enemies);

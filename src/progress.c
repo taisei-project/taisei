@@ -37,6 +37,8 @@
 		- PCMD_UNLOCK_STAGES_WITH_DIFFICULTY:
 			Unlocks one or more stages, each on a specific difficulty
 
+		- PCMD_HISCORE
+			Sets the "Hi-Score" (highest score ever attained in one game session)
 */
 
 /*
@@ -53,6 +55,8 @@
 		  As long as this can stop a l33th4XxXxX0r1998 armed with notepad.exe or a hex editor, I'm happy.
 
 */
+
+GlobalProgress progress;
 
 static uint8_t progress_magic_bytes[] = {
 	0x00, 0x67, 0x74, 0x66, 0x6f, 0xe3, 0x83, 0x84
@@ -148,6 +152,10 @@ static void progress_read(SDL_RWops *file) {
 
 					cur += 3;
 				}
+				break;
+
+			case PCMD_HISCORE:
+				progress.hiscore = SDL_ReadLE32(vfile);
 				break;
 
 			default:
@@ -276,6 +284,20 @@ static void progress_write_cmd_unlock_stages_with_difficulties(SDL_RWops *vfile,
 	}
 }
 
+//
+//	PCMD_HISCORE
+//
+
+static void progress_prepare_cmd_hiscore(size_t *bufsize, void **arg) {
+	*bufsize += CMD_HEADER_SIZE + sizeof(uint32_t);
+}
+
+static void progress_write_cmd_hiscore(SDL_RWops *vfile, void **arg) {
+	SDL_WriteU8(vfile, PCMD_HISCORE);
+	SDL_WriteLE16(vfile, sizeof(uint32_t));
+	SDL_WriteLE32(vfile, progress.hiscore);
+}
+
 static void progress_write(SDL_RWops *file) {
 	size_t bufsize = 0;
 	SDL_RWwrite(file, progress_magic_bytes, 1, sizeof(progress_magic_bytes));
@@ -283,6 +305,7 @@ static void progress_write(SDL_RWops *file) {
 	cmd_writer_t cmdtable[] = {
 		{progress_prepare_cmd_unlock_stages, progress_write_cmd_unlock_stages, NULL},
 		{progress_prepare_cmd_unlock_stages_with_difficulties, progress_write_cmd_unlock_stages_with_difficulties, NULL},
+		{progress_prepare_cmd_hiscore, progress_write_cmd_hiscore, NULL},
 		{NULL}
 	};
 
@@ -338,6 +361,8 @@ static void progress_unlock_all(void) {
 #endif
 
 void progress_load(void) {
+	memset(&progress, 0, sizeof(GlobalProgress));
+
 #ifdef PROGRESS_UNLOCK_ALL
 	progress_unlock_all();
 	progress_save();

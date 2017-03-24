@@ -233,13 +233,23 @@ void gamepad_event(SDL_Event *event, EventHandler handler, EventFlags flags, voi
 		return;
 
 	int val;
-	int sens = clamp(config_get_float(CONFIG_GAMEPAD_AXIS_DEADZONE), 0, 1) * GAMEPAD_AXIS_MAX;
+	int vsign;
+	float deadzone = clamp(config_get_float(CONFIG_GAMEPAD_AXIS_DEADZONE), 0, 0.999);
+	int minval = clamp(deadzone, 0, 1) * GAMEPAD_AXIS_MAX;
 
 	switch(event->type) {
 		case SDL_JOYAXISMOTION:
 			val = event->jaxis.value;
-			if(val < -sens || val > sens || !val)
-				gamepad_axis(event->jaxis.axis, val, handler, flags, arg);
+			vsign = sign(val);
+			val = abs(val);
+
+			if(val < minval) {
+				val = 0;
+			} else {
+				val = vsign * clamp((val - minval) / (1.0 - deadzone), 0, GAMEPAD_AXIS_MAX);
+			}
+
+			gamepad_axis(event->jaxis.axis, val, handler, flags, arg);
 		break;
 
 		case SDL_JOYBUTTONDOWN: case SDL_JOYBUTTONUP:
