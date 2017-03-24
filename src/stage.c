@@ -341,8 +341,13 @@ static void draw_star(int x, int y, float fill, float alpha) {
 	Shader *shader = get_shader("circleclipped_indicator");
 
 	float clr[4];
+
 	Color fill_clr = rgba(1.0f, 1.0f, 1.0f, 1.0f * alpha);
 	Color back_clr = rgba(0.2f, 0.6f, 1.0f, 0.2f * alpha);
+
+	if(fill < 1) {
+		fill_clr = mix_colors(derive_color(back_clr, CLRMASK_A, alpha), fill_clr, 0.35f);
+	}
 
 	if(fill >= 1 || fill <= 0) {
 		parse_color_call(fill > 0 ? fill_clr : back_clr, glColor4f);
@@ -404,11 +409,10 @@ void draw_hud(void) {
 		draw_stars(0, 200, global.plr.bombs, global.plr.bomb_fragments, PLR_MAX_BOMBS, PLR_MAX_BOMB_FRAGMENTS, 1);
 	}
 
-	sprintf(buf, "%.2f", global.plr.power / 100.0);
-	draw_text(AL_Left, -6, 236, buf, _fonts.standard);
+	// sprintf(buf, "%.2f", global.plr.power / 100.0);
+	// draw_text(AL_Left, -6, 236, buf, _fonts.standard);
 
-	// uncomment to represent power with stars
-	// draw_stars(0, 236, global.plr.power / 100, global.plr.power % 100, PLR_MAX_POWER / 100, 100, 1);
+	draw_stars(0, 236, global.plr.power / 100, global.plr.power % 100, PLR_MAX_POWER / 100, 100, 1);
 
 	sprintf(buf, "%i", global.plr.graze);
 	draw_text(AL_Left, -6, 270, buf, _fonts.standard);
