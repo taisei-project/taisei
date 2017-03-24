@@ -65,7 +65,7 @@ Dialog *stage2_post_dialog(void) {
 int stage2_great_circle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 5,4,0,0);
+		spawn_items(e->pos, Point, 5, Power, 4, NULL);
 		return 1;
 	}
 
@@ -112,7 +112,7 @@ int spin_circle(Projectile *p, int t) { // a[0]: angular velocity, a[1]: center,
 int stage2_small_spin_circle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 2,0,0,0);
+		spawn_items(e->pos, Point, 2, NULL);
 		return 1;
 	}
 
@@ -138,7 +138,7 @@ int stage2_small_spin_circle(Enemy *e, int t) {
 int stage2_aim(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 0,2,0,0);
+		spawn_items(e->pos, Power, 2, NULL);
 		return 1;
 	}
 
@@ -160,7 +160,7 @@ int stage2_aim(Enemy *e, int t) {
 int stage2_sidebox_trail(Enemy *e, int t) { // creal(a[0]): velocity, cimag(a[0]): angle, a[1]: d angle/dt, a[2]: time of acceleration
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 1,1,0,0);
+		spawn_items(e->pos, Point, 1, Power, 1, NULL);
 		return 1;
 	}
 
@@ -184,7 +184,7 @@ int stage2_sidebox_trail(Enemy *e, int t) { // creal(a[0]): velocity, cimag(a[0]
 int stage2_flea(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 2,0,0,0);
+		spawn_items(e->pos, Point, 2, NULL);
 		return 1;
 	}
 
@@ -208,7 +208,7 @@ int stage2_flea(Enemy *e, int t) {
 int stage2_accel_circle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 1,3,0,0);
+		spawn_items(e->pos, Point, 1, Power, 3, NULL);
 		return 1;
 	}
 

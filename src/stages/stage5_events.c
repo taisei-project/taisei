@@ -67,7 +67,7 @@ Dialog *stage5_post_boss_dialog(void) {
 int stage5_greeter(Enemy *e, int t) {
 	TIMER(&t)
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 2,2,0,0);
+		spawn_items(e->pos, Point, 2, Power, 2, NULL);
 		return 1;
 	}
 
@@ -91,7 +91,7 @@ int stage5_greeter(Enemy *e, int t) {
 int stage5_lightburst(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 4, 1, 0, 0);
+		spawn_items(e->pos, Point, 4, Power, 1, NULL);
 		return 1;
 	}
 
@@ -113,7 +113,7 @@ int stage5_lightburst(Enemy *e, int t) {
 int stage5_swirl(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 1, 0, 0, 0);
+		spawn_items(e->pos, Point, 1, NULL);
 		return 1;
 	}
 
@@ -133,7 +133,7 @@ int stage5_swirl(Enemy *e, int t) {
 int stage5_limiter(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 4, 2, 0, 0);
+		spawn_items(e->pos, Point, 4, Power, 2, NULL);
 		return 1;
 	}
 
@@ -151,7 +151,7 @@ int stage5_limiter(Enemy *e, int t) {
 int stage5_laserfairy(Enemy *e, int t) {
 	TIMER(&t)
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 5, 5, 0, 0);
+		spawn_items(e->pos, Point, 5, Power, 5, NULL);
 		return 1;
 	}
 
@@ -173,7 +173,7 @@ int stage5_laserfairy(Enemy *e, int t) {
 int stage5_miner(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 2, 0, 0, 0);
+		spawn_items(e->pos, Point, 2, NULL);
 		return 1;
 	}
 
@@ -190,7 +190,7 @@ int stage5_miner(Enemy *e, int t) {
 int stage5_explosion(Enemy *e, int t) {
 	TIMER(&t)
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 5, 5, 0, creal(e->args[1]));
+		spawn_items(e->pos, Point, 5, Power, 5, Life, creal(e->args[1]), NULL);
 		return 1;
 	}
 
@@ -236,7 +236,7 @@ Boss *create_iku_mid(void) {
 int stage5_lightburst2(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 4, 3, 0, 0);
+		spawn_items(e->pos, Point, 4, Power, 3, NULL);
 		return 1;
 	}
 
@@ -259,7 +259,7 @@ int stage5_lightburst2(Enemy *e, int t) {
 int stage5_superbullet(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, 4, 3, 0, 0);
+		spawn_items(e->pos, Point, 4, Power, 3, NULL);
 		return 1;
 	}
 
