@@ -26,6 +26,6 @@ void main(void) {
     vec4 texel = texture2D(tex, tc);
     tc *= tcfactor;
     tc -= vec2(0.5);
-    texel *= mix(back_color, fill_color, float(-atan(tc.x,-tc.y) > PI*(2.0*fill-1.0)));
+    texel *= mix(back_color, fill_color, float(atan(tc.x,-tc.y) < PI*(2.0*fill-1.0)));
     gl_FragColor = texel;
 }
