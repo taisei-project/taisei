@@ -158,19 +158,23 @@ void spawn_item(complex pos, ItemType type) {
 	create_item(pos, 5*cexp(I*tsrand_a(0)/afrand(1)*M_PI*2), type);
 }
 
-void spawn_items(complex pos, int point, int power, int bomb, int life) {
-	int i;
-	for(i = 0; i < point; i++)
-		spawn_item(pos, Point);
+void spawn_items(complex pos, ItemType first_type, int first_num, ...) {
+	for(int i = 0; i < first_num; ++i) {
+		spawn_item(pos, first_type);
+	}
 
-	for(i = 0; i < power; i++)
-		spawn_item(pos, Power);
+	va_list args;
+	va_start(args, first_num);
 
-	for(i = 0; i < bomb; i++)
-		spawn_item(pos, Bomb);
+	ItemType type;
+	while(type = va_arg(args, ItemType)) {
+		int num = va_arg(args, int);
+		for(int i = 0; i < num; ++i) {
+			spawn_item(pos, type);
+		}
+	}
 
-	for(i = 0; i < life; i++)
-		spawn_item(pos, Life);
+	va_end(args);
 }
 
 void items_preload(void) {
