@@ -281,7 +281,7 @@ void fill_screen_p(float xoff, float yoff, float ratio, float aspect, Texture *t
 // As with fill_screen, the texture’s dimensions must be powers of two for the
 // loop to be gapless.
 //
-void loop_tex_line(complex a, complex b, float w, float t, const char *texture) {
+void loop_tex_line_p(complex a, complex b, float w, float t, Texture *texture) {
 	complex d = b-a;
 	complex c = (b+a)/2;
 	glPushMatrix();
@@ -291,10 +291,11 @@ void loop_tex_line(complex a, complex b, float w, float t, const char *texture) 
 
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
-	glTranslatef(t,0, 0);
+	glTranslatef(t, 0, 0);
 	glMatrixMode(GL_MODELVIEW);
 
-	glBindTexture(GL_TEXTURE_2D, get_tex(texture)->gltex);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, texture->gltex);
 
 	draw_quad();
 
@@ -303,4 +304,8 @@ void loop_tex_line(complex a, complex b, float w, float t, const char *texture) 
 	glMatrixMode(GL_MODELVIEW);
 
 	glPopMatrix();
+}
+
+void loop_tex_line(complex a, complex b, float w, float t, const char *texture) {
+	loop_tex_line_p(a, b, w, t, get_tex(texture));
 }

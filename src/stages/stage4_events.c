@@ -17,6 +17,7 @@ void kurumi_redspike(Boss*, int);
 void kurumi_aniwall(Boss*, int);
 void kurumi_blowwall(Boss*, int);
 void kurumi_danmaku(Boss*, int);
+void kurumi_extra(Boss*, int);
 
 /*
  *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
@@ -37,6 +38,8 @@ AttackInfo stage4_spells[] = {
 							kurumi_blowwall, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
 	{{-1, -1, 16, 17},	AT_Spellcard, "Fear Sign ~ Bloody Danmaku", 30, 32000,
 							kurumi_danmaku, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
+	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Summoning ~ Bloodlust", 60, 30000,
+							kurumi_extra, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
 
 	{{0}}
 };
@@ -730,6 +733,209 @@ void kurumi_danmaku(Boss *b, int time) {
 		create_lasercurve2c(b->pos, 50, 100, rgb(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(I*carg(VIEWPORT_W-b->pos)));
 		create_enemy3c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, kdanmaku_slave, 0.2*cexp(I*carg(-b->pos)), 0, 1);
 		create_enemy3c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, kdanmaku_slave, 0.2*cexp(I*carg(VIEWPORT_W-b->pos)), 0, 0);
+	}
+}
+
+void kurumi_extra_shield_pos(Enemy *e, int time) {
+	double dst = 75 + 100 * max((60 - time) / 60.0, 0);
+	double spd = cimag(e->args[0]) * min(time / 120.0, 1);
+	e->args[0] += spd;
+	e->pos = global.boss->pos + dst * cexp(I*creal(e->args[0]));
+}
+
+bool kurumi_extra_shield_expire(Enemy *e, int time) {
+	if(time > creal(e->args[1])) {
+		e->hp = 0;
+		return true;
+	}
+
+	return false;
+}
+
+int kurumi_extra_dead_shield_proj(Projectile *p, int time) {
+	if(time < 0) {
+		return 1;
+	}
+
+	p->clr = mix_colors(
+		rgb(0.2, 0.1, 0.5),
+		rgb(2.0, 0.0, 0.0),
+	min(time / 60.0f, 1.0f));
+
+	return asymptotic(p, time);
+}
+
+void kurumi_extra_shield_draw(Enemy *e, int time) {
+	/*
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glColor4f(1,1,1,1);
+	glColor4f(1.0, 0.5, 0.5, 0.1);
+	loop_tex_line(e->pos, global.plr.pos, 16, time * 0.01, "part/sinewave");
+	glColor4f(0.4, 0.2, 0.2, 0.1);
+	loop_tex_line(e->pos, global.plr.pos, 18, time * 0.0043, "part/sinewave");
+	glColor4f(0.5, 0.2, 0.5, 0.1);
+	loop_tex_line(e->pos, global.plr.pos, 24, time * 0.003, "part/sinewave");
+	glColor4f(1,1,1,1);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	*/
+
+	Swirl(e, time);
+}
+
+int kurumi_extra_dead_shield(Enemy *e, int time) {
+	if(time < 0) {
+		return 1;
+	}
+
+	if(!(time % 6)) {
+		// complex dir = cexp(I*(M_PI * 0.5 * nfrand() + carg(global.plr.pos - e->pos)));
+		// complex dir = cexp(I*(carg(global.plr.pos - e->pos)));
+		complex dir = cexp(I*creal(e->args[0]));
+		create_projectile2c("rice", e->pos, 0, kurumi_extra_dead_shield_proj, 2*dir, 10);
+	}
+
+	time += cimag(e->args[1]);
+
+	kurumi_extra_shield_pos(e, time);
+
+	if(kurumi_extra_shield_expire(e, time)) {
+		int cnt = 10;
+		for(int i = 0; i < cnt; ++i) {
+			complex dir = cexp(I*M_PI*2*i/(double)cnt);
+			tsrand_fill(2);
+			create_projectile2c("ball", e->pos, 0, kurumi_extra_dead_shield_proj, 1.5 * (1 + afrand(0)) * dir, 4 + anfrand(1))->draw = ProjDrawAdd;
+		}
+	}
+
+	return 1;
+}
+
+int kurumi_extra_shield(Enemy *e, int time) {
+	if(time == EVENT_DEATH) {
+		if(!boss_is_dying(global.boss)) {
+			create_enemy2c(e->pos, ENEMY_IMMUNE, KurumiSlave, kurumi_extra_dead_shield, e->args[0], e->args[1]);
+		}
+		return 1;
+	}
+
+	if(time < 0) {
+		return 1;
+	}
+
+	e->args[1] = creal(e->args[1]) + time*I;
+
+	kurumi_extra_shield_pos(e, time);
+	kurumi_extra_shield_expire(e, time);
+
+	return 1;
+}
+
+int kurumi_extra_bigfairy1(Enemy *e, int time) {
+	if(time < 0) {
+		return 1;
+	}
+
+	GO_TO(e, e->args[0], 0.02);
+
+	return 1;
+}
+
+void kurumi_extra_drainer_draw(Projectile *p, int time) {
+	complex org = p->pos;
+	complex targ = p->args[1];
+	double a = 0.5 * creal(p->args[2]);
+
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glColor4f(1.0, 0.5, 0.5, a);
+	loop_tex_line_p(org, targ, 16, time * 0.01, p->tex);
+	glColor4f(0.4, 0.2, 0.2, a);
+	loop_tex_line_p(org, targ, 18, time * 0.0043, p->tex);
+	glColor4f(0.5, 0.2, 0.5, a);
+	loop_tex_line_p(org, targ, 24, time * 0.003, p->tex);
+	glColor4f(1,1,1,1);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+int kurumi_extra_drainer(Projectile *p, int time) {
+	if(time == EVENT_DEATH) {
+		free_ref(p->args[0]);
+		return 1;
+	}
+
+	if(time < 0) {
+		return 1;
+	}
+
+	Enemy *e = REF(p->args[0]);
+	p->pos = global.boss->pos;
+
+	if(e) {
+		p->args[1] = e->pos;
+		p->args[2] = approach(p->args[2], 1, 0.5);
+
+		int drain = clamp(20, 0, e->hp);
+		e->hp -= drain;
+		global.boss->dmg = max(0, global.boss->dmg - drain * 2);
+	} else {
+		p->args[2] = approach(p->args[2], 0, 0.5);
+		if(!creal(p->args[2])) {
+			return ACTION_DESTROY;
+		}
+	}
+
+	return 1;
+}
+
+void kurumi_extra_create_drainer(Enemy *e) {
+	create_particle1c("sinewave", e->pos, 0, kurumi_extra_drainer_draw, kurumi_extra_drainer, add_ref(e));
+}
+
+void kurumi_extra(Boss *b, int time) {
+	int t = time % 1200;
+	TIMER(&t);
+
+	if(time == EVENT_DEATH) {
+		killall(global.enemies);
+		return;
+	}
+
+	GO_TO(b, VIEWPORT_W * 0.5 + VIEWPORT_H * 0.28 * I, 0.01)
+
+	AT(0) {
+		int cnt = 12;
+		for(int i = 0; i < cnt; ++i) {
+			double a = M_PI * 2 * i / (double)cnt;
+			int hp = 750;
+			create_enemy2c(b->pos, hp, kurumi_extra_shield_draw, kurumi_extra_shield, a + 0.05*I, 800);
+			create_enemy2c(b->pos, hp, kurumi_extra_shield_draw, kurumi_extra_shield, a - 0.05*I, 800);
+		}
+	}
+
+	AT(60) {
+		double ofs = VIEWPORT_W * 0.4;
+		complex pos = 0.5 * VIEWPORT_W + I * (VIEWPORT_H + 0 * 32);
+		complex targ = pos - VIEWPORT_H * 0.7 * I;
+		create_enemy1c(pos + ofs, 6000, BigFairy, kurumi_extra_bigfairy1, targ + ofs);
+		create_enemy1c(pos - ofs, 6000, BigFairy, kurumi_extra_bigfairy1, targ - ofs);
+	}
+
+	FROM_TO(90, 400, 10) {
+		create_enemy1c(VIEWPORT_W*(_i&1)+VIEWPORT_H/2*I-300.0*I*frand(), 200, Fairy, stage4_fodder, 2-4*(_i&1)+1.0*I);
+	}
+
+	FROM_TO(400, 700, 50) {
+		int d = _i&1;
+		create_enemy1c(VIEWPORT_W*d, 1000, Fairy, stage4_partcircle, 2*cexp(I*M_PI/2.0*(0.2+0.6*frand()+d)));
+	}
+
+	AT(800) {
+		for(Enemy *e = global.enemies; e; e = e->next) {
+			if(e->logic_rule == kurumi_extra_shield || e->logic_rule == kurumi_extra_dead_shield) {
+				continue;
+			}
+
+			kurumi_extra_create_drainer(e);
+		}
 	}
 }
 
