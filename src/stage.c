@@ -446,7 +446,7 @@ void draw_hud(void) {
 
 #ifdef PLR_DPS_STATS
 	else {
-		sprintf(buf, "Avg DPS: %f", global.plr.total_dmg / (global.frames / (double)FPS));
+		snprintf(buf, sizeof(buf), "Avg DPS: %f", global.plr.total_dmg / (global.frames / (double)FPS));
 		draw_text(AL_Left, 0, SCREEN_H - 0.5 * stringheight(buf, _fonts.standard), buf, _fonts.standard);
 	}
 #endif
