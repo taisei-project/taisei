@@ -159,7 +159,16 @@ static void load_resource_async(ResourceHandler *handler, char *path, char *name
 	data->name = name;
 	data->flags = flags;
 
-	SDL_DetachThread(SDL_CreateThread(load_resource_async_thread, __func__, data));
+	SDL_Thread *thread = SDL_CreateThread(load_resource_async_thread, __func__, data);
+
+	if(thread) {
+		SDL_DetachThread(thread);
+	} else {
+		log_warn("SDL_CreateThread() failed: %s", SDL_GetError());
+		log_warn("Falling back to synchronous loading. Use TAISEI_NOASYNC=1 to suppress this warning.");
+		load_resource_async_thread(data);
+	}
+
 }
 
 static void update_async_load_state(void) {
