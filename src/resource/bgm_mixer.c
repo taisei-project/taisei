@@ -22,7 +22,7 @@ bool check_music_path(const char *path) {
 	return strstartswith(path, BGM_PATH_PREFIX) && audio_mixer_check_sound_path(path, true);
 }
 
-void* load_music(const char *path, unsigned int flags) {
+void* load_music_begin(const char *path, unsigned int flags) {
 	Mix_Music *music = Mix_LoadMUS(path);
 
 	if(!music) {
@@ -34,6 +34,10 @@ void* load_music(const char *path, unsigned int flags) {
 	mus->impl = music;
 
 	return mus;
+}
+
+void* load_music_end(void *opaque, const char *path, unsigned int flags) {
+	return opaque;
 }
 
 void unload_music(void *vmus) {

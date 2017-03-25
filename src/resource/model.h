@@ -37,7 +37,8 @@ typedef struct Model {
 
 char* model_path(const char *name);
 bool check_model_path(const char *path);
-void* load_model(const char *path, unsigned int flags);
+void* load_model_begin(const char *path, unsigned int flags);
+void* load_model_end(void *opaque, const char *path, unsigned int flags);
 void unload_model(void*); // Does not delete elements from the VBO, so doing this at runtime is leaking VBO space
 
 Model* get_model(const char *name);
