@@ -44,12 +44,7 @@ void* load_model_begin(const char *path, unsigned int flags) {
 
 #define BADREF(filename,aux,n) { \
 	log_warn("OBJ file '%s': Index %d: bad %s index reference\n", filename, n, aux); \
-	free(m->indices); \
-	free(m); \
-	free(verts); \
-	free_obj(data); \
-	free(data); \
-	return NULL; \
+	goto fail; \
 }
 
 	memset(verts, 0, data->icount*sizeof(Vertex));
@@ -90,6 +85,14 @@ void* load_model_begin(const char *path, unsigned int flags) {
 	ldata->model = m;
 
 	return ldata;
+
+fail:
+	free(m->indices);
+	free(m);
+	free(verts);
+	free_obj(data);
+	free(data);
+	return NULL;
 }
 
 void* load_model_end(void *opaque, const char *path, unsigned int flags) {
