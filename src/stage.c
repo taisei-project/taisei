@@ -446,6 +446,31 @@ void draw_hud(void) {
 static void apply_bg_shaders(ShaderRule *shaderrules);
 static void draw_stage_title(StageInfo *info);
 
+static void postprocess(FBO *fbo) {
+	static bool initialized = false;
+	static Shader *shader = NULL;
+
+	if(!initialized) {
+		Resource *res = get_resource(RES_SHADER, "postprocess", RESF_OPTIONAL | RESF_PRELOAD | RESF_PERMANENT);
+
+		if(res) {
+			shader = res->shader;
+		}
+
+		initialized = true;
+	}
+
+	if(!shader) {
+		draw_fbo_viewport(fbo);
+		return;
+	}
+
+	glUseProgram(shader->prog);
+	glUniform1i(uniloc(shader, "frames"), global.frames);
+	draw_fbo_viewport(fbo);
+	glUseProgram(0);
+}
+
 static void stage_draw(StageInfo *stage) {
 	glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[0].fbo);
 	glViewport(0,0,SCREEN_W,SCREEN_H);
@@ -527,7 +552,7 @@ static void stage_draw(StageInfo *stage) {
 		glTranslatef(-global.shake_view,-global.shake_view,0);
 	}
 
-	draw_fbo_viewport(&resources.fsec);
+	postprocess(&resources.fsec);
 
 	glPopMatrix();
 
