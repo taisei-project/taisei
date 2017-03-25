@@ -105,6 +105,12 @@ static void log_lib_versions(void) {
 	log_info("Using libpng %s", png_get_header_ver(NULL));
 }
 
+static void log_args(int argc, char **argv) {
+	for(int i = 0; i < argc; ++i) {
+		log_debug("argv[%i] = %s ", i, argv[i]);
+	}
+}
+
 int main(int argc, char **argv) {
 	setlocale(LC_ALL, "C");
 
@@ -143,6 +149,7 @@ int main(int argc, char **argv) {
 
 	init_paths();
 	init_log();
+	log_args(argc, argv);
 
 	if(run_tests()) {
 		return 0;
@@ -198,7 +205,9 @@ int main(int argc, char **argv) {
 
 	log_warn("Compiled with DEBUG flag!");
 
-	if(argc >= 2 && argv[1]) {
+	if(argc >= 2 && argv[1] &&
+		!strstartswith(argv[1], "-psn_") // OSX passes this when started up from an application bundle
+	) {
 		log_info("Entering stage skip mode: Stage %d", atoi(argv[1]));
 
 		StageInfo* stg = stage_get(atoi(argv[1]));

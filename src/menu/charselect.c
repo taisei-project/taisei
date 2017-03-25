@@ -63,10 +63,11 @@ void draw_char_menu(MenuData *menu) {
 	int i;
 	for(i = 0; i < menu->ecount; i++) {
 		strlcpy(buf, menu->entries[i].name, sizeof(buf));
+		char *save;
 
-		char *tex = strtok(buf,"|");
-		char *name = strtok(NULL, "|");
-		char *title = strtok(NULL, "|");
+		char *tex = strtok_r(buf,"|", &save);
+		char *name = strtok_r(NULL, "|", &save);
+		char *title = strtok_r(NULL, "|", &save);
 
 		if(!(tex && name && title))
 			continue;
@@ -95,8 +96,8 @@ void draw_char_menu(MenuData *menu) {
 
 		strlcpy(buf, mod->entries[i].name, sizeof(buf));
 
-		char *mari = strtok(buf, "|");
-		char *youmu = strtok(NULL, "|");
+		char *mari = strtok_r(buf, "|", &save);
+		char *youmu = strtok_r(NULL, "|", &save);
 
 		char *use = menu->entries[menu->cursor].arg == (void *)Marisa ? mari : youmu;
 

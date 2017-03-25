@@ -33,6 +33,10 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 	}
 
 	while(SDL_PollEvent(&event)) {
+		if(resource_sdl_event(&event)) {
+			continue;
+		}
+
 		SDL_Scancode scan = event.key.keysym.scancode;
 		SDL_Keymod mod = event.key.keysym.mod;
 		bool repeat = event.key.repeat;

@@ -19,7 +19,8 @@ typedef struct Shader {
 
 char* shader_path(const char *name);
 bool check_shader_path(const char *path);
-void* load_shader_file(const char *path, unsigned int flags);
+void* load_shader_begin(const char *path, unsigned int flags);
+void* load_shader_end(void *opaque, const char *path, unsigned int flags);
 void unload_shader(void *vsha);
 
 void load_shader_snippets(const char *filename, const char *prefix, unsigned int flags);
