@@ -38,7 +38,13 @@ bool check_shader_path(const char *path) {
 
 static Shader* load_shader(const char *vheader, const char *fheader, const char *vtext, const char *ftext);
 
-void* load_shader_file(const char *path, unsigned int flags) {
+typedef struct ShaderLoadData {
+	char *text;
+	char *vtext;
+	char *ftext;
+} ShaderLoadData;
+
+void* load_shader_begin(const char *path, unsigned int flags) {
 	char *text, *vtext, *ftext, *delim;
 
 	text = read_all(path, NULL);
@@ -55,9 +61,25 @@ void* load_shader_file(const char *path, unsigned int flags) {
 	*delim = 0;
 	ftext = delim + SHA_DELIM_SIZE;
 
-	Shader *sha = load_shader(NULL, NULL, vtext, ftext);
+	ShaderLoadData *data = malloc(sizeof(ShaderLoadData));
+	data->text = text;
+	data->vtext = vtext;
+	data->ftext = ftext;
 
-	free(text);
+	return data;
+}
+
+void* load_shader_end(void *opaque, const char *path, unsigned int flags) {
+	ShaderLoadData *data = opaque;
+
+	if(!data) {
+		return NULL;
+	}
+
+	Shader *sha = load_shader(NULL, NULL, data->vtext, data->ftext);
+
+	free(data->text);
+	free(data);
 
 	return sha;
 }
@@ -210,7 +232,7 @@ static void cache_uniforms(Shader *sha) {
 	}
 
 #ifdef DEBUG_GL
-	hashtable_print_stringkeys(sha->uniforms);
+	// hashtable_print_stringkeys(sha->uniforms);
 #endif
 }
 

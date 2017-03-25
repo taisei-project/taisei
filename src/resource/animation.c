@@ -19,7 +19,12 @@ bool check_animation_path(const char *path) {
 	return strendswith(path, ANI_EXTENSION);
 }
 
-void* load_animation(const char *filename, unsigned int flags) {
+typedef struct AnimationLoadData {
+	Animation *ani;
+	char *basename;
+} AnimationLoadData;
+
+void* load_animation_begin(const char *filename, unsigned int flags) {
 	char *basename = resource_util_basename(ANI_PATH_PREFIX, filename);
 	char name[strlen(basename) + 1];
 	strcpy(name, basename);
@@ -32,8 +37,6 @@ void* load_animation(const char *filename, unsigned int flags) {
 		return NULL;
 	}
 
-#define ANIFAIL(what) { log_warn("Bad '" what "' in animation '%s'", basename); free(ani); free(basename); return NULL; }
-
 	Animation *ani = malloc(sizeof(Animation));
 	ani->rows = atoi((char*)hashtable_get_string(ht, "rows"));
 	ani->cols = atoi((char*)hashtable_get_string(ht, "cols"));
@@ -41,8 +44,10 @@ void* load_animation(const char *filename, unsigned int flags) {
 	hashtable_foreach(ht, hashtable_iter_free_data, NULL);
 	hashtable_free(ht);
 
+#define ANIFAIL(what) { log_warn("Bad '" what "' in animation '%s'", basename); free(ani); free(basename); return NULL; }
 	if(ani->rows < 1) ANIFAIL("rows")
 	if(ani->cols < 1) ANIFAIL("cols")
+#undef ANIFAIL
 
 	if(ani->speed == 0) {
 		log_warn("Animation speed of %s == 0. relativity?", name);
@@ -51,21 +56,36 @@ void* load_animation(const char *filename, unsigned int flags) {
 		return NULL;
 	}
 
-	ani->tex = get_resource(RES_TEXTURE, basename, flags)->texture;
+	AnimationLoadData *data = malloc(sizeof(AnimationLoadData));
+	data->ani = ani;
+	data->basename = basename;
+	return data;
+}
+
+void* load_animation_end(void *opaque, const char *filename, unsigned int flags) {
+	AnimationLoadData *data = opaque;
+
+	if(!data) {
+		return NULL;
+	}
+
+	Animation *ani = data->ani;
+	ani->tex = get_resource(RES_TEXTURE, data->basename, flags)->texture;
 
 	if(!ani->tex) {
-		log_warn("Couldn't get texture '%s'", basename);
-		free(basename);
+		log_warn("Couldn't get texture '%s'", data->basename);
+		free(data->basename);
+		free(data);
 		return NULL;
 	}
 
 	ani->w = ani->tex->w / ani->cols;
 	ani->h = ani->tex->h / ani->rows;
 
-	free(basename);
-	return (void*)ani;
+	free(data->basename);
+	free(data);
 
-#undef ANIFAIL
+	return ani;
 }
 
 Animation *get_ani(const char *name) {
