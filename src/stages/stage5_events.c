@@ -190,7 +190,7 @@ int stage5_miner(Enemy *e, int t) {
 int stage5_explosion(Enemy *e, int t) {
 	TIMER(&t)
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, Point, 5, Power, 5, Life, creal(e->args[1]), NULL);
+		spawn_items(e->pos, Point, 5, Power, 5, Life, (int)creal(e->args[1]), NULL);
 		return 1;
 	}
 
