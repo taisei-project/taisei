@@ -199,7 +199,7 @@ void boss_kill_projectiles(void) {
 }
 
 bool boss_is_dying(Boss *boss) {
-	return boss->current && boss->current->endtime && boss->current - boss->attacks >= boss->acount-1;
+	return boss->current && boss->current->endtime && boss->current->type != AT_Move && boss->current - boss->attacks >= boss->acount-1;
 }
 
 void process_boss(Boss **pboss) {
@@ -266,6 +266,8 @@ void process_boss(Boss **pboss) {
 		int delay = extra ? ATTACK_END_DELAY_EXTRA : ATTACK_END_DELAY;
 		if(boss->current-boss->attacks >= boss->acount-1)
 			delay = BOSS_DEATH_DELAY;
+		if(boss->current->type == AT_Move) // do not delay if the boss is running away at the end
+			delay = 0;
 		boss->current->endtime = global.frames + delay;
 		boss->current->finished = FINISH_WIN;
 		boss->current->rule(boss, EVENT_DEATH);
@@ -275,7 +277,7 @@ void process_boss(Boss **pboss) {
 	if(boss_is_dying(boss)) {
 		float t = (global.frames-boss->current->endtime)/(float)BOSS_DEATH_DELAY+1;
 		complex pos = boss->pos;
-		Color c = rgba(sin(5*t),cos(5*t),0.5,t);
+		Color c = rgba(0.1+sin(10*t),0.1+cos(10*t),0.5,t);
 		tsrand_fill(6);
 		create_particle4c("petal", pos, c, Petal, asymptotic, sign(anfrand(5))*(3+t*5*afrand(0))*cexp(I*M_PI*8*t), 5+I, afrand(2) + afrand(3)*I, afrand(4) + 360.0*I*afrand(1));
 
@@ -298,7 +300,8 @@ void process_boss(Boss **pboss) {
 }
 
 void boss_death(Boss **boss) {
-	petal_explosion(35, (*boss)->pos);
+	if((*boss)->acount && (*boss)->attacks[(*boss)->acount-1].type != AT_Move)
+		petal_explosion(35, (*boss)->pos);
 
 	free_boss(*boss);
 	*boss = NULL;
