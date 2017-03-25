@@ -465,8 +465,13 @@ static void postprocess(FBO *fbo) {
 		return;
 	}
 
+	float w = 1.0f / fbo->nw;
+	float h = 1.0f / fbo->nh;
+
 	glUseProgram(shader->prog);
 	glUniform1i(uniloc(shader, "frames"), global.frames);
+	glUniform2f(uniloc(shader, "view_ofs"), VIEWPORT_X * w, VIEWPORT_Y * h);
+	glUniform2f(uniloc(shader, "view_scale"), VIEWPORT_W * w, VIEWPORT_H * h);
 	draw_fbo_viewport(fbo);
 	glUseProgram(0);
 }
