@@ -13,8 +13,6 @@
 #include "paths/native.h"
 #include "vbo.h"
 
-static SDL_Surface* load_png(const char *filename);
-
 char* texture_path(const char *name) {
 	return strjoin(TEX_PATH_PREFIX, name, TEX_EXTENSION, NULL);
 }
@@ -23,14 +21,45 @@ bool check_texture_path(const char *path) {
 	return strendswith(path, TEX_EXTENSION);
 }
 
+typedef struct ImageData {
+	int width;
+	int height;
+	int depth;
+	Uint32 *pixels;
+} ImageData;
+
+static ImageData* load_png(const char *filename);
+
 void* load_texture_begin(const char *path, unsigned int flags) {
 	return load_png(path);
 }
 
 void* load_texture_end(void *opaque, const char *path, unsigned int flags) {
-	SDL_Surface *surface = opaque;
+	SDL_Surface *surface;
+	ImageData *img = opaque;
+	Uint32 rmask, gmask, bmask, amask;
+
+	if(!img) {
+		return NULL;
+	}
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+	rmask = 0xff000000;
+	gmask = 0x00ff0000;
+	bmask = 0x0000ff00;
+	amask = 0x000000ff;
+#else
+	rmask = 0x000000ff;
+	gmask = 0x0000ff00;
+	bmask = 0x00ff0000;
+	amask = 0xff000000;
+#endif
+
+	surface = SDL_CreateRGBSurfaceFrom(img->pixels, img->width, img->height, img->depth * 4, 0, rmask, gmask, bmask, amask);
 
 	if(!surface) {
+		log_warn("SDL_CreateRGBSurfaceFrom(): failed: %s", SDL_GetError());
+		free(img);
 		return NULL;
 	}
 
@@ -39,6 +68,7 @@ void* load_texture_end(void *opaque, const char *path, unsigned int flags) {
 	load_sdl_surf(surface, texture);
 	free(surface->pixels);
 	SDL_FreeSurface(surface);
+	free(img);
 
 	return texture;
 }
@@ -54,7 +84,7 @@ Texture* prefix_get_tex(const char *name, const char *prefix) {
 	return tex;
 }
 
-static SDL_Surface* load_png_p(const char *filename, SDL_RWops *rwops) {
+static ImageData* load_png_p(const char *filename, SDL_RWops *rwops) {
 #define PNGFAIL(msg) { log_warn("Couldn't load '%s': %s", filename, msg); return NULL; }
 	if(!rwops) {
 		PNGFAIL(SDL_GetError())
@@ -98,7 +128,6 @@ static SDL_Surface* load_png_p(const char *filename, SDL_RWops *rwops) {
 	int height = png_get_image_height(png_ptr, info_ptr);
 	int depth = png_get_bit_depth(png_ptr, info_ptr);
 
-
 	png_bytep row_pointers[height];
 
 	Uint32 *pixels = malloc(sizeof(Uint32)*width*height);
@@ -108,43 +137,27 @@ static SDL_Surface* load_png_p(const char *filename, SDL_RWops *rwops) {
 
 	png_read_image(png_ptr, row_pointers);
 	png_read_end(png_ptr, end_info);
-
-
-	Uint32 rmask, gmask, bmask, amask;
-
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    rmask = 0xff000000;
-    gmask = 0x00ff0000;
-    bmask = 0x0000ff00;
-    amask = 0x000000ff;
-#else
-    rmask = 0x000000ff;
-    gmask = 0x0000ff00;
-    bmask = 0x00ff0000;
-    amask = 0xff000000;
-#endif
-
-	SDL_Surface *res = SDL_CreateRGBSurfaceFrom(pixels, width, height, depth*4, 0, rmask, gmask, bmask, amask);
-
-	if(!res) {
-		PNGFAIL(SDL_GetError())
-	}
-
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 
-	return res;
+	ImageData *img = malloc(sizeof(ImageData));
+	img->width = width;
+	img->height = height;
+	img->depth = depth;
+	img->pixels = pixels;
+
+	return img;
 #undef PNGFAIL
 }
 
-static SDL_Surface* load_png(const char *filename) {
+static ImageData* load_png(const char *filename) {
 	SDL_RWops *rwops = SDL_RWFromFile(filename, "r");
-	SDL_Surface *surf = load_png_p(filename, rwops);
+	ImageData *img = load_png_p(filename, rwops);
 
 	if(rwops) {
 		SDL_RWclose(rwops);
 	}
 
-	return surf;
+	return img;
 }
 
 void load_sdl_surf(SDL_Surface *surface, Texture *texture) {
