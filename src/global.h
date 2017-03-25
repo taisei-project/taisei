@@ -121,6 +121,7 @@ typedef struct {
 	RandomState rand_visual;
 
 	StageInfo *stage;
+	int continues;
 } Global;
 
 extern Global global;

@@ -21,14 +21,15 @@ void continue_game(MenuData *m, void *arg)
 	}
 
 	global.plr.lives = PLR_START_LIVES;
-	global.plr.continues += 1;
+	global.plr.life_fragments = 0;
+	global.continues += 1;
 
 	delete_projectiles(&global.projs);
 	delete_projectiles(&global.particles);
 }
 
 void give_up(MenuData *m, void *arg) {
-	global.game_over = (MAX_CONTINUES - global.plr.continues)? GAMEOVER_ABORT : GAMEOVER_DEFEAT;
+	global.game_over = (MAX_CONTINUES - global.continues)? GAMEOVER_ABORT : GAMEOVER_DEFEAT;
 }
 
 void restart_game(MenuData *m, void *arg);
@@ -49,7 +50,7 @@ void create_gameover_menu(MenuData *m) {
 		m->context = "Game Over";
 
 		char s[64];
-		int c = MAX_CONTINUES - global.plr.continues;
+		int c = MAX_CONTINUES - global.continues;
 		snprintf(s, sizeof(s), "Continue (%i)", c);
 		add_menu_entry(m, s, c? continue_game : NULL, NULL);
 		add_menu_entry(m, "Restart the Game", restart_game, NULL)->transition = TransFadeBlack;
