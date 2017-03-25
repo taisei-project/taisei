@@ -481,15 +481,8 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 #undef PRINTPROP
 
 char* replay_getpath(const char *name, bool ext) {
-	char *p = (char*)malloc(strlen(get_replays_path()) + strlen(name) + strlen(REPLAY_EXTENSION) + 3);
-
-	if(ext) {
-		sprintf(p, "%s/%s.%s", get_replays_path(), name, REPLAY_EXTENSION);
-	} else {
-		sprintf(p, "%s/%s", get_replays_path(), name);
-	}
-
-	return p;
+	return ext ? 	strfmt("%s/%s.%s", get_replays_path(), name, REPLAY_EXTENSION) :
+					strfmt("%s/%s", get_replays_path(), name);
 }
 
 int replay_save(Replay *rpy, const char *name) {
