@@ -48,7 +48,11 @@ int collision_item(Item *p);
 void process_items(void);
 
 void spawn_item(complex pos, ItemType type);
-void spawn_items(complex pos, ItemType first_type, int first_num, ...) __attribute__((sentinel));
+
+// The varargs are: ItemType type1, int num1, ItemType type2, int num2, ..., NULL
+// e.g.: Point 10, Power 3, LifeFrag 2, Bomb 1, NULL
+// WARNING: if you pass a float or double as the amount, it will not work! You must explicitly cast it to an int.
+void spawn_items(complex pos, ...) __attribute__((sentinel));
 
 void items_preload(void);
 
