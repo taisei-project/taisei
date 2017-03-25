@@ -435,8 +435,9 @@ void player_input_workaround(Player *plr) {
 }
 
 void player_graze(Player *plr, complex pos, int pts) {
-	plr->points += pts;
 	plr->graze++;
+
+	player_add_points(&global.plr, pts);
 	play_sound("graze");
 
 	int i = 0; for(i = 0; i < 5; ++i) {
@@ -491,6 +492,25 @@ void player_add_lives(Player *plr, int lives) {
 
 void player_add_bombs(Player *plr, int bombs) {
 	player_add_bomb_fragments(plr, PLR_MAX_BOMB_FRAGMENTS);
+}
+
+
+static void try_spawn_bonus_item(Player *plr, ItemType type, unsigned int oldpoints, unsigned int reqpoints) {
+	int items = plr->points / reqpoints - oldpoints / reqpoints;
+
+	if(items > 0) {
+		complex p = creal(plr->pos);
+		create_item(p, -5*I, type);
+		spawn_items(p, type, --items, NULL);
+	}
+}
+
+void player_add_points(Player *plr, unsigned int points) {
+	unsigned int old = plr->points;
+	plr->points += points;
+
+	try_spawn_bonus_item(plr, LifeFrag, old, PLR_SCORE_PER_LIFE_FRAG);
+	try_spawn_bonus_item(plr, BombFrag, old, PLR_SCORE_PER_BOMB_FRAG);
 }
 
 void player_preload(void) {
