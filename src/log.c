@@ -89,9 +89,8 @@ static void log_internal(LogLevel lvl, bool is_backtrace, const char *funcname, 
         }
     }
 
-    free(str);
-
     if(is_backtrace) {
+        free(str);
         return;
     }
 
@@ -102,6 +101,8 @@ static void log_internal(LogLevel lvl, bool is_backtrace, const char *funcname, 
     if(lvl & LOG_FATAL) {
         log_abort(str);
     }
+
+    free(str);
 }
 
 static char** get_backtrace(int *num) {
