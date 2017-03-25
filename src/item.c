@@ -158,13 +158,9 @@ void spawn_item(complex pos, ItemType type) {
 	create_item(pos, 5*cexp(I*tsrand_a(0)/afrand(1)*M_PI*2), type);
 }
 
-void spawn_items(complex pos, ItemType first_type, int first_num, ...) {
-	for(int i = 0; i < first_num; ++i) {
-		spawn_item(pos, first_type);
-	}
-
+void spawn_items(complex pos, ...) {
 	va_list args;
-	va_start(args, first_num);
+	va_start(args, pos);
 
 	ItemType type;
 	while(type = va_arg(args, ItemType)) {
