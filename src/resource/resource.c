@@ -186,7 +186,6 @@ static bool resource_check_async_load(ResourceHandler *handler, const char *name
 }
 
 static void resource_wait_for_async_load(ResourceHandler *handler, const char *name) {
-	// XXX: is there a better way than a busy loop?
 	while(resource_check_async_load(handler, name));
 }
 
