@@ -241,6 +241,9 @@ void video_take_screenshot(void) {
 	rw = video.real.width;
 	rh = video.real.height;
 
+	rw = max(rw, w);
+	rh = max(rh, h);
+
 	data = malloc(3 * rw * rh);
 
 	time(&rawtime);
@@ -253,7 +256,7 @@ void video_take_screenshot(void) {
 	free(outpath);
 
 	if(!out) {
-		perror("fopen");
+		log_warn("SDL_RWFromFile() failed: %s", SDL_GetError());
 		free(data);
 		return;
 	}
