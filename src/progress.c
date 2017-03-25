@@ -63,9 +63,7 @@ static uint8_t progress_magic_bytes[] = {
 };
 
 static char* progress_getpath(void) {
-	char *p = malloc(strlen(get_config_path()) + strlen(PROGRESS_FILENAME) + 2);
-	sprintf(p, "%s/%s", get_config_path(), PROGRESS_FILENAME);
-	return p;
+	return strfmt("%s/%s", get_config_path(), PROGRESS_FILENAME);
 }
 
 static uint32_t progress_checksum(uint8_t *buf, size_t num) {

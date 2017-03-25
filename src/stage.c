@@ -389,7 +389,7 @@ static void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, i
 void draw_hud(void) {
 	draw_texture(SCREEN_W/2.0, SCREEN_H/2.0, "hud");
 
-	char buf[16];
+	char buf[64];
 
 	glPushMatrix();
 	glTranslatef(615,0,0);
@@ -411,18 +411,18 @@ void draw_hud(void) {
 		draw_stars(0, 200, global.plr.bombs, global.plr.bomb_fragments, PLR_MAX_BOMBS, PLR_MAX_BOMB_FRAGMENTS, 1);
 	}
 
-	// sprintf(buf, "%.2f", global.plr.power / 100.0);
+	// snprintf(buf, sizeof(buf), "%.2f", global.plr.power / 100.0);
 	// draw_text(AL_Left, -6, 236, buf, _fonts.standard);
 
 	draw_stars(0, 236, global.plr.power / 100, global.plr.power % 100, PLR_MAX_POWER / 100, 100, 1);
 
-	sprintf(buf, "%i", global.plr.graze);
+	snprintf(buf, sizeof(buf), "%i", global.plr.graze);
 	draw_text(AL_Left, -6, 270, buf, _fonts.standard);
 
-	sprintf(buf, "%i", global.plr.points);
+	snprintf(buf, sizeof(buf), "%i", global.plr.points);
 	draw_text(AL_Left, 8, 49, buf, _fonts.standard);
 
-	sprintf(buf, "%i", progress.hiscore);
+	snprintf(buf, sizeof(buf), "%i", progress.hiscore);
 	draw_text(AL_Left, 8, 83, buf, _fonts.standard);
 
 	if(global.plr.iddqd) {
@@ -431,14 +431,14 @@ void draw_hud(void) {
 
 	glPopMatrix();
 
-	sprintf(buf, "%i fps", global.fps.show_fps);
+	snprintf(buf, sizeof(buf), "%i fps", global.fps.show_fps);
 	draw_text(AL_Right, SCREEN_W, SCREEN_H - 0.5 * stringheight(buf, _fonts.standard), buf, _fonts.standard);
 
 	if(global.boss)
 		draw_texture(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
 
 	if(global.replaymode == REPLAY_PLAY) {
-		sprintf(buf, "Replay: %s (%i fps)", global.replay.playername, global.replay_stage->fps);
+		snprintf(buf, sizeof(buf), "Replay: %s (%i fps)", global.replay.playername, global.replay_stage->fps);
 		glColor4f(0.5f, 0.5f, 0.5f, 0.5f);
 		draw_text(AL_Left, 0, SCREEN_H - 0.5 * stringheight(buf, _fonts.standard), buf, _fonts.standard);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
