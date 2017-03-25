@@ -34,6 +34,8 @@ void draw_texture_p(float x, float y, Texture *tex);
 void fill_screen(float xoff, float yoff, float ratio, const char *name);
 void fill_screen_p(float xoff, float yoff, float ratio, float aspect, Texture *tex);
 
+void loop_tex_line(_Complex double a, _Complex double b, float w, float t, const char *texture);
+
 Texture* get_tex(const char *name);
 Texture* prefix_get_tex(const char *name, const char *prefix);
 
