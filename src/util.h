@@ -171,4 +171,8 @@ int fprintf(FILE*, const char*, ...) __attribute__((deprecated(
 char* strtok() __attribute__((deprecated(
     "Use strtok_r instead")));
 
+#undef sprintf
+int sprintf(char *, const char*, ...) __attribute__((deprecated(
+    "Use snprintf or strfmt instead")));
+
 #endif
