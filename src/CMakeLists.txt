@@ -84,6 +84,7 @@ set(SRCs
 	resource/font.c
 	resource/shader.c
 	resource/model.c
+	resource/postprocess.c
 	rwops/rwops_zlib.c
 	rwops/rwops_segment.c
 	rwops/rwops_autobuf.c

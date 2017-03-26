@@ -446,34 +446,13 @@ void draw_hud(void) {
 static void apply_bg_shaders(ShaderRule *shaderrules);
 static void draw_stage_title(StageInfo *info);
 
-static void postprocess(FBO *fbo) {
-	static bool initialized = false;
-	static Shader *shader = NULL;
-
-	if(!initialized) {
-		Resource *res = get_resource(RES_SHADER, "postprocess", RESF_OPTIONAL | RESF_PRELOAD | RESF_PERMANENT);
-
-		if(res) {
-			shader = res->shader;
-		}
-
-		initialized = true;
-	}
-
-	if(!shader) {
-		draw_fbo_viewport(fbo);
-		return;
-	}
-
+static void postprocess_prepare(FBO *fbo, Shader *s) {
 	float w = 1.0f / fbo->nw;
 	float h = 1.0f / fbo->nh;
 
-	glUseProgram(shader->prog);
-	glUniform1i(uniloc(shader, "frames"), global.frames);
-	glUniform2f(uniloc(shader, "view_ofs"), VIEWPORT_X * w, VIEWPORT_Y * h);
-	glUniform2f(uniloc(shader, "view_scale"), VIEWPORT_W * w, VIEWPORT_H * h);
-	draw_fbo_viewport(fbo);
-	glUseProgram(0);
+	glUniform1i(uniloc(s, "frames"), global.frames);
+	glUniform2f(uniloc(s, "view_ofs"), VIEWPORT_X * w, VIEWPORT_Y * h);
+	glUniform2f(uniloc(s, "view_scale"), VIEWPORT_W * w, VIEWPORT_H * h);
 }
 
 static void stage_draw(StageInfo *stage) {
@@ -547,8 +526,11 @@ static void stage_draw(StageInfo *stage) {
 	if(stage->type != STAGE_SPELL)
 		draw_stage_title(stage);
 
+	FBO *ppfbo = postprocess(resources.stage_postprocess, &resources.fsec, resources.fbg, postprocess_prepare, draw_fbo_viewport);
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	video_set_viewport();
+
 	glPushMatrix();
 
 	if(global.shake_view) {
@@ -557,12 +539,10 @@ static void stage_draw(StageInfo *stage) {
 		glTranslatef(-global.shake_view,-global.shake_view,0);
 	}
 
-	postprocess(&resources.fsec);
-
+	draw_fbo_viewport(ppfbo);
 	glPopMatrix();
 
 	glPopMatrix();
-
 	draw_hud();
 }
 

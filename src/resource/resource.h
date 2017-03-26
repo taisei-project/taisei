@@ -17,6 +17,7 @@
 #include "shader.h"
 #include "font.h"
 #include "model.h"
+#include "postprocess.h"
 #include "hashtable.h"
 #include "paths/native.h"
 
@@ -100,6 +101,7 @@ typedef struct Resources {
 	ResourceHandler handlers[RES_NUMTYPES];
 	FBO fbg[2];
 	FBO fsec;
+	PostprocessShader *stage_postprocess;
 } Resources;
 
 extern Resources resources;

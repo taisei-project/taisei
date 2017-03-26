@@ -399,6 +399,8 @@ void load_resources(void) {
 	init_fbo(&resources.fbg[0]);
 	init_fbo(&resources.fbg[1]);
 	init_fbo(&resources.fsec);
+
+	resources.stage_postprocess = postprocess_load("shader/postprocess.conf");
 }
 
 void free_resources(bool all) {
@@ -438,6 +440,8 @@ void free_resources(bool all) {
 	}
 
 	delete_vbo(&_vbo);
+
+	postprocess_unload(&resources.stage_postprocess);
 
 	delete_fbo(&resources.fbg[0]);
 	delete_fbo(&resources.fbg[1]);
