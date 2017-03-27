@@ -127,7 +127,7 @@ endif()
 
 message(STATUS "Build configuration: ${CMAKE_BUILD_TYPE}")
 
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb -DDEBUG")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb -DDEBUG -fsanitize=undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer")
 
 add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall -Wno-parentheses -Wtype-limits -std=c11 -pedantic)
 
