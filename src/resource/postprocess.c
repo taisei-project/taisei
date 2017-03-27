@@ -26,7 +26,12 @@ static void postprocess_load_callback(const char *key, const char *value, void *
         current = create_element((void**)slist, sizeof(PostprocessShader));
         current->uniforms = NULL;
         current->shader = get_resource(RES_SHADER, value, RESF_PRELOAD | RESF_PERMANENT)->shader;
+        log_debug("Shader added: %s (prog: %u)", value, current->shader->prog);
         return;
+    }
+
+    for(PostprocessShader *c = current; c; c = c->next) {
+        current = c;
     }
 
     if(!current) {
@@ -91,6 +96,12 @@ static void postprocess_load_callback(const char *key, const char *value, void *
     uni->amount = asize;
     uni->values.v = vbuf.v;
     uni->func = get_uniform_func(utype, usize);
+
+    log_debug("Uniform added: (name: %s; loc: %i; prog: %u; type: %i; size: %i; num: %i)", name, uni->loc, current->shader->prog, uni->type, uni->size, uni->amount);
+
+    for(int i = 0; i < uni->size * uni->amount; ++i) {
+        log_debug("u[%i] = (f: %f; i: %i; u: %u)", i, uni->values.f[i], uni->values.i[i], uni->values.u[i]);
+    }
 }
 
 PostprocessShader* postprocess_load(const char *path) {
