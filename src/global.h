@@ -96,7 +96,7 @@ typedef struct {
 
 	int frames;
 	int stageuiframes;
-	int lasttime; // frame limiter
+	uint64_t lasttime; // frame limiter
 	int timer;
 	int frameskip;
 

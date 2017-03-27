@@ -211,16 +211,19 @@ int sign(double x) {
 // gl/video utils
 //
 
-void frame_rate(int *lasttime) {
+void frame_rate(uint64_t *lasttime) {
     if(global.frameskip) {
         return;
     }
 
-    int t = *lasttime + 1000.0/FPS - SDL_GetTicks();
-    if(t > 0)
-        SDL_Delay(t);
+    double passed = (double)(SDL_GetPerformanceCounter() - *lasttime) / SDL_GetPerformanceFrequency();
+    double delay = 1.0 / FPS - passed;
 
-    *lasttime = SDL_GetTicks();
+    if(delay > 0) {
+        SDL_Delay((uint32_t)(delay * 1000.0));
+    }
+
+    *lasttime = SDL_GetPerformanceCounter();
 }
 
 bool calc_fps(FPSCounter *fps) {
@@ -229,8 +232,8 @@ bool calc_fps(FPSCounter *fps) {
     if(!fps->stagebg_fps)
         fps->stagebg_fps = FPS;
 
-    if(SDL_GetTicks() > fps->fpstime+1000) {
-        fps->show_fps = fps->fps;
+    if(SDL_GetTicks() > fps->fpstime+5000) {
+        fps->show_fps = fps->fps / 5;
         fps->fps = 0;
         fps->fpstime = SDL_GetTicks();
         updated = true;
