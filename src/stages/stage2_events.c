@@ -214,7 +214,7 @@ int stage2_accel_circle(Enemy *e, int t) {
 
 	e->pos += e->args[0];
 
-	FROM_TO(60,250, 20-10*(global.diff<D_Hard)) {
+	FROM_TO(60,250, 20+10*(global.diff<D_Hard)) {
 		e->args[0] *= 0.5;
 
 		int i;
@@ -396,7 +396,7 @@ void hina_bad_pick(Boss *h, int time) {
 			if(i == win)
 				continue;
 
-			float cnt = (1+min(D_Hard,global.diff)) * 5;
+			float cnt = (1+min(D_Normal,global.diff)) * 5;
 			for(j = 0; j < cnt; j++) {
 				complex o = VIEWPORT_W/SLOTS*(i + j/(cnt-1));
 				create_projectile3c("ball", o, rgb(0.7,0,0.0), bad_pick_bullet, 0, 0.005*nfrand() + 0.005*I * (1 + psin(i + j + global.frames)),i)->draw = ProjDrawAdd;
@@ -512,7 +512,8 @@ void stage2_events(void) {
 		global.boss = create_wriggle_mid();
 
 	FROM_TO(2900, 3400, 50) {
-		create_enemy3c(VIEWPORT_W-80+(VIEWPORT_H+20)*I, 200, Fairy, stage2_sidebox_trail, 3 - 0.5*M_PI*I, -0.02, 90);
+		if(global.diff > D_Normal)
+			create_enemy3c(VIEWPORT_W-80+(VIEWPORT_H+20)*I, 200, Fairy, stage2_sidebox_trail, 3 - 0.5*M_PI*I, -0.02, 90);
 		create_enemy3c(80+(VIEWPORT_H+20)*I, 200, Fairy, stage2_sidebox_trail, 3 - 0.5*M_PI*I, 0.02, 90);
 	}
 
@@ -523,7 +524,7 @@ void stage2_events(void) {
 	FROM_TO(3700, 4500, 40)
 		create_enemy1c(VIEWPORT_W*frand()-10.0*I, 150, Fairy, stage2_flea, 2.5*I);
 
-	FROM_TO(4000, 4600, 100)
+	FROM_TO(4000, 4600, 100+100*(global.diff<D_Hard))
 		create_enemy1c(VIEWPORT_W/2+100-200*frand()-10.0*I, 2000, Fairy, stage2_accel_circle, 2.0*I);
 
 	AT(5100) {
