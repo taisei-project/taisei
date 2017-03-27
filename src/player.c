@@ -503,8 +503,10 @@ void player_add_points(Player *plr, unsigned int points) {
 	unsigned int old = plr->points;
 	plr->points += points;
 
-	try_spawn_bonus_item(plr, LifeFrag, old, PLR_SCORE_PER_LIFE_FRAG);
-	try_spawn_bonus_item(plr, BombFrag, old, PLR_SCORE_PER_BOMB_FRAG);
+	if(global.stage->type != STAGE_SPELL) {
+		try_spawn_bonus_item(plr, LifeFrag, old, PLR_SCORE_PER_LIFE_FRAG);
+		try_spawn_bonus_item(plr, BombFrag, old, PLR_SCORE_PER_BOMB_FRAG);
+	}
 }
 
 void player_preload(void) {
