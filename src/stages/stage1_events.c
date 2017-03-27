@@ -597,7 +597,7 @@ void stage1_events(void) {
 	AT(5000)
 		global.boss = create_cirno();
 
-	AT(5200 - FADE_TIME) {
+	AT(5400 - FADE_TIME) {
 		stage_finish(GAMEOVER_WIN);
 	}
 }
