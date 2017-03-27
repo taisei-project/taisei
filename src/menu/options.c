@@ -238,10 +238,6 @@ int bind_common_onoffset_inverted(OptionBinding *b, int v) {
 
 // --- Binding callbacks for individual options --- //
 
-bool bind_stagebg_fpslimit_dependence(void) {
-	return config_get_int(CONFIG_NO_STAGEBG) == 2;
-}
-
 bool bind_audio_dependence(void) {
 	return audio_backend_initialized();
 }
@@ -354,15 +350,7 @@ void options_sub_video(MenuData *parent, void *arg) {
 
 	add_menu_entry(m, "Stage background", do_nothing,
 		b = bind_option(CONFIG_NO_STAGEBG, bind_common_intget, bind_common_intset)
-	);	bind_addvalue(b, "on");
-		bind_addvalue(b, "off");
-		bind_addvalue(b, "auto");
-
-	add_menu_entry(m, "Minimum FPS", do_nothing,
-		b = bind_option(CONFIG_NO_STAGEBG_FPSLIMIT, bind_common_intget, bind_common_intset)
-	);	bind_setvaluerange(b, 20, 60);
-		bind_setdependence(b, bind_stagebg_fpslimit_dependence);
-		b->pad++;
+	);	bind_onoff(b);
 
 	add_menu_separator(m);
 	add_menu_entry(m, "Back", menu_commonaction_close, NULL);

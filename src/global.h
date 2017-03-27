@@ -109,8 +109,6 @@ typedef struct {
 
 	FPSCounter fps;
 
-	bool nostagebg;
-
 	Replay replay;
 	ReplayMode replaymode;
 	ReplayStage *replay_stage;

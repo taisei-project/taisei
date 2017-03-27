@@ -173,7 +173,6 @@ static void stage_start(StageInfo *stage) {
 	global.frames = 0;
 	global.stageuiframes = 0;
 	global.game_over = 0;
-	global.nostagebg = false;
 	global.shake_view = 0;
 
 	global.fps.stagebg_fps = global.fps.show_fps = FPS;
@@ -464,17 +463,7 @@ static void stage_draw(StageInfo *stage) {
 	glTranslatef(-(VIEWPORT_X+VIEWPORT_W/2.0), -(VIEWPORT_Y+VIEWPORT_H/2.0),0);
 	glEnable(GL_DEPTH_TEST);
 
-	if(config_get_int(CONFIG_NO_STAGEBG) == 2 && global.fps.stagebg_fps < config_get_int(CONFIG_NO_STAGEBG_FPSLIMIT)
-		&& !global.nostagebg) {
-
-		log_warn("Stage background has been switched off due to low frame rate. You can change that in the options.");
-		global.nostagebg = true;
-	}
-
-	if(config_get_int(CONFIG_NO_STAGEBG) == 1)
-		global.nostagebg = true;
-
-	if(!global.nostagebg)
+	if(!config_get_int(CONFIG_NO_STAGEBG))
 		stage->procs->draw();
 
 	glPopMatrix();
@@ -547,7 +536,7 @@ static void stage_draw(StageInfo *stage) {
 }
 
 static int apply_shaderrules(ShaderRule *shaderrules, int fbonum) {
-	if(!global.nostagebg) {
+	if(!config_get_int(CONFIG_NO_STAGEBG)) {
 		for(ShaderRule *rule = shaderrules; *rule; ++rule) {
 			glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[!fbonum].fbo);
 			(*rule)(fbonum);
