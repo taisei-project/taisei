@@ -61,7 +61,7 @@ void good_ending_youmu(Ending *e) {
 void create_ending(Ending *e) {
 	memset(e, 0, sizeof(Ending));
 
-	if(global.plr.continues || global.diff == D_Easy) {
+	if(global.continues || global.diff == D_Easy) {
 		switch(global.plr.cha) {
 		case Marisa:
 			bad_ending_marisa(e);

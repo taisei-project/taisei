@@ -19,6 +19,7 @@ void start_game(MenuData *menu, void *arg) {
     StageInfo *info = arg;
     Difficulty stagediff;
 
+    global.continues = 0;
     init_player(&global.plr);
 
 troll:

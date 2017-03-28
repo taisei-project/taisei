@@ -6,13 +6,15 @@
 
 # You can force the script to pick up functions that are not directly called in the code here
 
-force_funcs = [
+force_funcs = {
     'glDrawArraysInstancedEXT',
     'glDrawArraysInstancedARB',
     'glGetShaderiv',
     'glGetShaderInfoLog',
     'glGetProgramInfoLog',
-]
+}
+
+force_funcs |= {"glUniform%i%sv" % (i, s) for i in range(1, 5) for s in ('f', 'i', 'ui')}
 
 import sys, re
 from pathlib import Path as P
@@ -38,7 +40,7 @@ for src in srcdir.glob('**/*.c'):
     for func in regex_glcall.findall(src.read_text()):
         glfuncs.add(func)
 
-glfuncs = sorted(list(glfuncs) + force_funcs)
+glfuncs = sorted(list(glfuncs) + list(force_funcs))
 
 typedefs = []
 prototypes = []
@@ -195,12 +197,24 @@ typedef void (GLAPIENTRY *tsglTexParameterf_ptr)(GLenum target, GLenum pname, GL
 typedef void (GLAPIENTRY *tsglTexParameteri_ptr)(GLenum target, GLenum pname, GLint param);
 typedef void (GLAPIENTRY *tsglTranslatef_ptr)(GLfloat x, GLfloat y, GLfloat z);
 typedef void (APIENTRY *tsglUniform1f_ptr)(GLint location, GLfloat v0);
+typedef void (APIENTRY *tsglUniform1fv_ptr)(GLint location, GLsizei count, const GLfloat *value);
 typedef void (APIENTRY *tsglUniform1i_ptr)(GLint location, GLint v0);
+typedef void (APIENTRY *tsglUniform1iv_ptr)(GLint location, GLsizei count, const GLint *value);
+typedef void (APIENTRY *tsglUniform1uiv_ptr)(GLint location, GLsizei count, const GLuint *value);
 typedef void (APIENTRY *tsglUniform2f_ptr)(GLint location, GLfloat v0, GLfloat v1);
+typedef void (APIENTRY *tsglUniform2fv_ptr)(GLint location, GLsizei count, const GLfloat *value);
+typedef void (APIENTRY *tsglUniform2iv_ptr)(GLint location, GLsizei count, const GLint *value);
+typedef void (APIENTRY *tsglUniform2uiv_ptr)(GLint location, GLsizei count, const GLuint *value);
 typedef void (APIENTRY *tsglUniform3f_ptr)(GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
 typedef void (APIENTRY *tsglUniform3fv_ptr)(GLint location, GLsizei count, const GLfloat *value);
+typedef void (APIENTRY *tsglUniform3fv_ptr)(GLint location, GLsizei count, const GLfloat *value);
+typedef void (APIENTRY *tsglUniform3iv_ptr)(GLint location, GLsizei count, const GLint *value);
+typedef void (APIENTRY *tsglUniform3uiv_ptr)(GLint location, GLsizei count, const GLuint *value);
 typedef void (APIENTRY *tsglUniform4f_ptr)(GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
 typedef void (APIENTRY *tsglUniform4fv_ptr)(GLint location, GLsizei count, const GLfloat *value);
+typedef void (APIENTRY *tsglUniform4fv_ptr)(GLint location, GLsizei count, const GLfloat *value);
+typedef void (APIENTRY *tsglUniform4iv_ptr)(GLint location, GLsizei count, const GLint *value);
+typedef void (APIENTRY *tsglUniform4uiv_ptr)(GLint location, GLsizei count, const GLuint *value);
 typedef void (APIENTRY *tsglUseProgram_ptr)(GLuint program);
 typedef void (GLAPIENTRY *tsglVertexPointer_ptr)(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr);
 typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLsizei height);
@@ -273,12 +287,24 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glTexParameteri
 #undef glTranslatef
 #undef glUniform1f
+#undef glUniform1fv
 #undef glUniform1i
+#undef glUniform1iv
+#undef glUniform1uiv
 #undef glUniform2f
+#undef glUniform2fv
+#undef glUniform2iv
+#undef glUniform2uiv
 #undef glUniform3f
 #undef glUniform3fv
+#undef glUniform3fv
+#undef glUniform3iv
+#undef glUniform3uiv
 #undef glUniform4f
 #undef glUniform4fv
+#undef glUniform4fv
+#undef glUniform4iv
+#undef glUniform4uiv
 #undef glUseProgram
 #undef glVertexPointer
 #undef glViewport
@@ -352,12 +378,24 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glTexParameteri tsglTexParameteri
 #define glTranslatef tsglTranslatef
 #define glUniform1f tsglUniform1f
+#define glUniform1fv tsglUniform1fv
 #define glUniform1i tsglUniform1i
+#define glUniform1iv tsglUniform1iv
+#define glUniform1uiv tsglUniform1uiv
 #define glUniform2f tsglUniform2f
+#define glUniform2fv tsglUniform2fv
+#define glUniform2iv tsglUniform2iv
+#define glUniform2uiv tsglUniform2uiv
 #define glUniform3f tsglUniform3f
 #define glUniform3fv tsglUniform3fv
+#define glUniform3fv tsglUniform3fv
+#define glUniform3iv tsglUniform3iv
+#define glUniform3uiv tsglUniform3uiv
 #define glUniform4f tsglUniform4f
 #define glUniform4fv tsglUniform4fv
+#define glUniform4fv tsglUniform4fv
+#define glUniform4iv tsglUniform4iv
+#define glUniform4uiv tsglUniform4uiv
 #define glUseProgram tsglUseProgram
 #define glVertexPointer tsglVertexPointer
 #define glViewport tsglViewport
@@ -433,12 +471,24 @@ GLDEF(glTexParameterf, tsglTexParameterf, tsglTexParameterf_ptr) \
 GLDEF(glTexParameteri, tsglTexParameteri, tsglTexParameteri_ptr) \
 GLDEF(glTranslatef, tsglTranslatef, tsglTranslatef_ptr) \
 GLDEF(glUniform1f, tsglUniform1f, tsglUniform1f_ptr) \
+GLDEF(glUniform1fv, tsglUniform1fv, tsglUniform1fv_ptr) \
 GLDEF(glUniform1i, tsglUniform1i, tsglUniform1i_ptr) \
+GLDEF(glUniform1iv, tsglUniform1iv, tsglUniform1iv_ptr) \
+GLDEF(glUniform1uiv, tsglUniform1uiv, tsglUniform1uiv_ptr) \
 GLDEF(glUniform2f, tsglUniform2f, tsglUniform2f_ptr) \
+GLDEF(glUniform2fv, tsglUniform2fv, tsglUniform2fv_ptr) \
+GLDEF(glUniform2iv, tsglUniform2iv, tsglUniform2iv_ptr) \
+GLDEF(glUniform2uiv, tsglUniform2uiv, tsglUniform2uiv_ptr) \
 GLDEF(glUniform3f, tsglUniform3f, tsglUniform3f_ptr) \
 GLDEF(glUniform3fv, tsglUniform3fv, tsglUniform3fv_ptr) \
+GLDEF(glUniform3fv, tsglUniform3fv, tsglUniform3fv_ptr) \
+GLDEF(glUniform3iv, tsglUniform3iv, tsglUniform3iv_ptr) \
+GLDEF(glUniform3uiv, tsglUniform3uiv, tsglUniform3uiv_ptr) \
 GLDEF(glUniform4f, tsglUniform4f, tsglUniform4f_ptr) \
 GLDEF(glUniform4fv, tsglUniform4fv, tsglUniform4fv_ptr) \
+GLDEF(glUniform4fv, tsglUniform4fv, tsglUniform4fv_ptr) \
+GLDEF(glUniform4iv, tsglUniform4iv, tsglUniform4iv_ptr) \
+GLDEF(glUniform4uiv, tsglUniform4uiv, tsglUniform4uiv_ptr) \
 GLDEF(glUseProgram, tsglUseProgram, tsglUseProgram_ptr) \
 GLDEF(glVertexPointer, tsglVertexPointer, tsglVertexPointer_ptr) \
 GLDEF(glViewport, tsglViewport, tsglViewport_ptr)
@@ -518,12 +568,24 @@ GLAPI void GLAPIENTRY glTexParameterf( GLenum target, GLenum pname, GLfloat para
 GLAPI void GLAPIENTRY glTexParameteri( GLenum target, GLenum pname, GLint param );
 GLAPI void GLAPIENTRY glTranslatef( GLfloat x, GLfloat y, GLfloat z );
 GLAPI void APIENTRY glUniform1f (GLint location, GLfloat v0);
+GLAPI void APIENTRY glUniform1fv (GLint location, GLsizei count, const GLfloat *value);
 GLAPI void APIENTRY glUniform1i (GLint location, GLint v0);
+GLAPI void APIENTRY glUniform1iv (GLint location, GLsizei count, const GLint *value);
+GLAPI void APIENTRY glUniform1uiv (GLint location, GLsizei count, const GLuint *value);
 GLAPI void APIENTRY glUniform2f (GLint location, GLfloat v0, GLfloat v1);
+GLAPI void APIENTRY glUniform2fv (GLint location, GLsizei count, const GLfloat *value);
+GLAPI void APIENTRY glUniform2iv (GLint location, GLsizei count, const GLint *value);
+GLAPI void APIENTRY glUniform2uiv (GLint location, GLsizei count, const GLuint *value);
 GLAPI void APIENTRY glUniform3f (GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
 GLAPI void APIENTRY glUniform3fv (GLint location, GLsizei count, const GLfloat *value);
+GLAPI void APIENTRY glUniform3fv (GLint location, GLsizei count, const GLfloat *value);
+GLAPI void APIENTRY glUniform3iv (GLint location, GLsizei count, const GLint *value);
+GLAPI void APIENTRY glUniform3uiv (GLint location, GLsizei count, const GLuint *value);
 GLAPI void APIENTRY glUniform4f (GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
 GLAPI void APIENTRY glUniform4fv (GLint location, GLsizei count, const GLfloat *value);
+GLAPI void APIENTRY glUniform4fv (GLint location, GLsizei count, const GLfloat *value);
+GLAPI void APIENTRY glUniform4iv (GLint location, GLsizei count, const GLint *value);
+GLAPI void APIENTRY glUniform4uiv (GLint location, GLsizei count, const GLuint *value);
 GLAPI void APIENTRY glUseProgram (GLuint program);
 GLAPI void GLAPIENTRY glVertexPointer( GLint size, GLenum type, GLsizei stride, const GLvoid *ptr );
 GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei height );
@@ -596,12 +658,24 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglTexParameteri glTexParameteri
 #define tsglTranslatef glTranslatef
 #define tsglUniform1f glUniform1f
+#define tsglUniform1fv glUniform1fv
 #define tsglUniform1i glUniform1i
+#define tsglUniform1iv glUniform1iv
+#define tsglUniform1uiv glUniform1uiv
 #define tsglUniform2f glUniform2f
+#define tsglUniform2fv glUniform2fv
+#define tsglUniform2iv glUniform2iv
+#define tsglUniform2uiv glUniform2uiv
 #define tsglUniform3f glUniform3f
 #define tsglUniform3fv glUniform3fv
+#define tsglUniform3fv glUniform3fv
+#define tsglUniform3iv glUniform3iv
+#define tsglUniform3uiv glUniform3uiv
 #define tsglUniform4f glUniform4f
 #define tsglUniform4fv glUniform4fv
+#define tsglUniform4fv glUniform4fv
+#define tsglUniform4iv glUniform4iv
+#define tsglUniform4uiv glUniform4uiv
 #define tsglUseProgram glUseProgram
 #define tsglVertexPointer glVertexPointer
 #define tsglViewport glViewport
