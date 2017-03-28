@@ -51,6 +51,9 @@ void fontrenderer_free(FontRenderer *f) {
 void fontrenderer_draw(FontRenderer *f, const char *text,TTF_Font *font) {
 	SDL_Color clr = {255,255,255};
 	SDL_Surface *surf = TTF_RenderUTF8_Blended(font, text, clr);
+	if(surf == 0) {
+		log_fatal("SDL_ttf: %s", TTF_GetError());
+	}
 	assert(surf != NULL);
 
 	if(surf->w > FONTREN_MAXW || surf->h > FONTREN_MAXH) {

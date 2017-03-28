@@ -107,7 +107,10 @@ static void APIENTRY video_gl_debug(
 		case GL_DEBUG_SEVERITY_LOW: strsev = "low"; break;
 		case GL_DEBUG_SEVERITY_MEDIUM: strsev = "medium"; break;
 		case GL_DEBUG_SEVERITY_HIGH: strsev = "high"; break;
-		case GL_DEBUG_SEVERITY_NOTIFICATION: if(type == GL_DEBUG_TYPE_OTHER) return; break;
+		case GL_DEBUG_SEVERITY_NOTIFICATION: strsev = "notify";
+						     if(type == GL_DEBUG_TYPE_OTHER)
+							     return;
+						     break;
 	}
 
 	log_custom(lvl, "[OpenGL debug, %s, %s] %i: %s", strtype, strsev, id, message);
