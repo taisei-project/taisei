@@ -102,6 +102,7 @@ typedef struct Resources {
 	FBO fbg[2];
 	FBO fsec;
 	PostprocessShader *stage_postprocess;
+	FontRenderer fontren;
 } Resources;
 
 extern Resources resources;

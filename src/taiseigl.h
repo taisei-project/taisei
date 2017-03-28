@@ -180,6 +180,7 @@ typedef const GLubyte * (GLAPIENTRY *tsglGetString_ptr)(GLenum name);
 typedef GLint (APIENTRY *tsglGetUniformLocation_ptr)(GLuint program, const GLchar *name);
 typedef void (APIENTRY *tsglLinkProgram_ptr)(GLuint program);
 typedef void (GLAPIENTRY *tsglLoadIdentity_ptr)(void);
+typedef void * (APIENTRY *tsglMapBuffer_ptr)(GLenum target, GLenum access);
 typedef void (GLAPIENTRY *tsglMatrixMode_ptr)(GLenum mode);
 typedef void (GLAPIENTRY *tsglNormalPointer_ptr)(GLenum type, GLsizei stride, const GLvoid *ptr);
 typedef void (GLAPIENTRY *tsglOrtho_ptr)(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble near_val, GLdouble far_val);
@@ -195,6 +196,7 @@ typedef void (GLAPIENTRY *tsglTexCoordPointer_ptr)(GLint size, GLenum type, GLsi
 typedef void (GLAPIENTRY *tsglTexImage2D_ptr)(GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
 typedef void (GLAPIENTRY *tsglTexParameterf_ptr)(GLenum target, GLenum pname, GLfloat param);
 typedef void (GLAPIENTRY *tsglTexParameteri_ptr)(GLenum target, GLenum pname, GLint param);
+typedef void (GLAPIENTRY *tsglTexSubImage2D_ptr)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels);
 typedef void (GLAPIENTRY *tsglTranslatef_ptr)(GLfloat x, GLfloat y, GLfloat z);
 typedef void (APIENTRY *tsglUniform1f_ptr)(GLint location, GLfloat v0);
 typedef void (APIENTRY *tsglUniform1fv_ptr)(GLint location, GLsizei count, const GLfloat *value);
@@ -215,6 +217,7 @@ typedef void (APIENTRY *tsglUniform4fv_ptr)(GLint location, GLsizei count, const
 typedef void (APIENTRY *tsglUniform4fv_ptr)(GLint location, GLsizei count, const GLfloat *value);
 typedef void (APIENTRY *tsglUniform4iv_ptr)(GLint location, GLsizei count, const GLint *value);
 typedef void (APIENTRY *tsglUniform4uiv_ptr)(GLint location, GLsizei count, const GLuint *value);
+typedef GLboolean (APIENTRY *tsglUnmapBuffer_ptr)(GLenum target);
 typedef void (APIENTRY *tsglUseProgram_ptr)(GLuint program);
 typedef void (GLAPIENTRY *tsglVertexPointer_ptr)(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr);
 typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLsizei height);
@@ -270,6 +273,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glGetUniformLocation
 #undef glLinkProgram
 #undef glLoadIdentity
+#undef glMapBuffer
 #undef glMatrixMode
 #undef glNormalPointer
 #undef glOrtho
@@ -285,6 +289,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glTexImage2D
 #undef glTexParameterf
 #undef glTexParameteri
+#undef glTexSubImage2D
 #undef glTranslatef
 #undef glUniform1f
 #undef glUniform1fv
@@ -305,6 +310,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glUniform4fv
 #undef glUniform4iv
 #undef glUniform4uiv
+#undef glUnmapBuffer
 #undef glUseProgram
 #undef glVertexPointer
 #undef glViewport
@@ -361,6 +367,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glGetUniformLocation tsglGetUniformLocation
 #define glLinkProgram tsglLinkProgram
 #define glLoadIdentity tsglLoadIdentity
+#define glMapBuffer tsglMapBuffer
 #define glMatrixMode tsglMatrixMode
 #define glNormalPointer tsglNormalPointer
 #define glOrtho tsglOrtho
@@ -376,6 +383,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glTexImage2D tsglTexImage2D
 #define glTexParameterf tsglTexParameterf
 #define glTexParameteri tsglTexParameteri
+#define glTexSubImage2D tsglTexSubImage2D
 #define glTranslatef tsglTranslatef
 #define glUniform1f tsglUniform1f
 #define glUniform1fv tsglUniform1fv
@@ -396,6 +404,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glUniform4fv tsglUniform4fv
 #define glUniform4iv tsglUniform4iv
 #define glUniform4uiv tsglUniform4uiv
+#define glUnmapBuffer tsglUnmapBuffer
 #define glUseProgram tsglUseProgram
 #define glVertexPointer tsglVertexPointer
 #define glViewport tsglViewport
@@ -454,6 +463,7 @@ GLDEF(glGetString, tsglGetString, tsglGetString_ptr) \
 GLDEF(glGetUniformLocation, tsglGetUniformLocation, tsglGetUniformLocation_ptr) \
 GLDEF(glLinkProgram, tsglLinkProgram, tsglLinkProgram_ptr) \
 GLDEF(glLoadIdentity, tsglLoadIdentity, tsglLoadIdentity_ptr) \
+GLDEF(glMapBuffer, tsglMapBuffer, tsglMapBuffer_ptr) \
 GLDEF(glMatrixMode, tsglMatrixMode, tsglMatrixMode_ptr) \
 GLDEF(glNormalPointer, tsglNormalPointer, tsglNormalPointer_ptr) \
 GLDEF(glOrtho, tsglOrtho, tsglOrtho_ptr) \
@@ -469,6 +479,7 @@ GLDEF(glTexCoordPointer, tsglTexCoordPointer, tsglTexCoordPointer_ptr) \
 GLDEF(glTexImage2D, tsglTexImage2D, tsglTexImage2D_ptr) \
 GLDEF(glTexParameterf, tsglTexParameterf, tsglTexParameterf_ptr) \
 GLDEF(glTexParameteri, tsglTexParameteri, tsglTexParameteri_ptr) \
+GLDEF(glTexSubImage2D, tsglTexSubImage2D, tsglTexSubImage2D_ptr) \
 GLDEF(glTranslatef, tsglTranslatef, tsglTranslatef_ptr) \
 GLDEF(glUniform1f, tsglUniform1f, tsglUniform1f_ptr) \
 GLDEF(glUniform1fv, tsglUniform1fv, tsglUniform1fv_ptr) \
@@ -489,6 +500,7 @@ GLDEF(glUniform4fv, tsglUniform4fv, tsglUniform4fv_ptr) \
 GLDEF(glUniform4fv, tsglUniform4fv, tsglUniform4fv_ptr) \
 GLDEF(glUniform4iv, tsglUniform4iv, tsglUniform4iv_ptr) \
 GLDEF(glUniform4uiv, tsglUniform4uiv, tsglUniform4uiv_ptr) \
+GLDEF(glUnmapBuffer, tsglUnmapBuffer, tsglUnmapBuffer_ptr) \
 GLDEF(glUseProgram, tsglUseProgram, tsglUseProgram_ptr) \
 GLDEF(glVertexPointer, tsglVertexPointer, tsglVertexPointer_ptr) \
 GLDEF(glViewport, tsglViewport, tsglViewport_ptr)
@@ -551,6 +563,7 @@ GLAPI const GLubyte * GLAPIENTRY glGetString( GLenum name );
 GLAPI GLint APIENTRY glGetUniformLocation (GLuint program, const GLchar *name);
 GLAPI void APIENTRY glLinkProgram (GLuint program);
 GLAPI void GLAPIENTRY glLoadIdentity( void );
+GLAPI void *APIENTRY glMapBuffer (GLenum target, GLenum access);
 GLAPI void GLAPIENTRY glMatrixMode( GLenum mode );
 GLAPI void GLAPIENTRY glNormalPointer( GLenum type, GLsizei stride, const GLvoid *ptr );
 GLAPI void GLAPIENTRY glOrtho( GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble near_val, GLdouble far_val );
@@ -566,6 +579,7 @@ GLAPI void GLAPIENTRY glTexCoordPointer( GLint size, GLenum type, GLsizei stride
 GLAPI void GLAPIENTRY glTexImage2D( GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels );
 GLAPI void GLAPIENTRY glTexParameterf( GLenum target, GLenum pname, GLfloat param );
 GLAPI void GLAPIENTRY glTexParameteri( GLenum target, GLenum pname, GLint param );
+GLAPI void GLAPIENTRY glTexSubImage2D( GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels );
 GLAPI void GLAPIENTRY glTranslatef( GLfloat x, GLfloat y, GLfloat z );
 GLAPI void APIENTRY glUniform1f (GLint location, GLfloat v0);
 GLAPI void APIENTRY glUniform1fv (GLint location, GLsizei count, const GLfloat *value);
@@ -586,6 +600,7 @@ GLAPI void APIENTRY glUniform4fv (GLint location, GLsizei count, const GLfloat *
 GLAPI void APIENTRY glUniform4fv (GLint location, GLsizei count, const GLfloat *value);
 GLAPI void APIENTRY glUniform4iv (GLint location, GLsizei count, const GLint *value);
 GLAPI void APIENTRY glUniform4uiv (GLint location, GLsizei count, const GLuint *value);
+GLAPI GLboolean APIENTRY glUnmapBuffer (GLenum target);
 GLAPI void APIENTRY glUseProgram (GLuint program);
 GLAPI void GLAPIENTRY glVertexPointer( GLint size, GLenum type, GLsizei stride, const GLvoid *ptr );
 GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei height );
@@ -641,6 +656,7 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglGetUniformLocation glGetUniformLocation
 #define tsglLinkProgram glLinkProgram
 #define tsglLoadIdentity glLoadIdentity
+#define tsglMapBuffer glMapBuffer
 #define tsglMatrixMode glMatrixMode
 #define tsglNormalPointer glNormalPointer
 #define tsglOrtho glOrtho
@@ -656,6 +672,7 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglTexImage2D glTexImage2D
 #define tsglTexParameterf glTexParameterf
 #define tsglTexParameteri glTexParameteri
+#define tsglTexSubImage2D glTexSubImage2D
 #define tsglTranslatef glTranslatef
 #define tsglUniform1f glUniform1f
 #define tsglUniform1fv glUniform1fv
@@ -676,6 +693,7 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglUniform4fv glUniform4fv
 #define tsglUniform4iv glUniform4iv
 #define tsglUniform4uiv glUniform4uiv
+#define tsglUnmapBuffer glUnmapBuffer
 #define tsglUseProgram glUseProgram
 #define tsglVertexPointer glVertexPointer
 #define tsglViewport glViewport

@@ -404,6 +404,7 @@ void load_resources(void) {
 }
 
 void free_resources(bool all) {
+	free_fonts();
 	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
 		ResourceHandler *handler = get_handler(type);
 
