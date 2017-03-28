@@ -15,9 +15,23 @@
 
 #include "list.h"
 
+#define HT_MIN_SIZE 15
+#define HT_MAX_SIZE 4095
+#define HT_COLLISION_TOLERANCE 5
+#define HT_DYNAMIC_SIZE 0
+#define HT_RESIZE_STEP 1
+
 typedef struct Hashtable Hashtable;
 typedef struct HashtableIterator HashtableIterator;
+typedef struct HashtableStats HashtableStats;
 typedef uint32_t hash_t;
+
+struct HashtableStats {
+    unsigned int free_buckets;
+    unsigned int collisions;
+    unsigned int max_per_bucket;
+    unsigned int num_elements;
+};
 
 typedef bool (*HTCmpFunc)(void *key1, void *key2);
 typedef hash_t (*HTHashFunc)(void *key);
@@ -52,11 +66,14 @@ void hashtable_unset_string(Hashtable *ht, const char *key);
 void hashtable_unset_deferred_string(Hashtable *ht, const char *key);
 
 void* hashtable_iter_free_data(void *key, void *data, void *arg);
+bool hashtable_cmpfunc_ptr(void *p1, void *p2);
+void hashtable_copyfunc_ptr(void **dst, void *src);
 
 int hashtable_test(void);
 
 void hashtable_print_stringkeys(Hashtable *ht);
 size_t hashtable_get_approx_overhead(Hashtable *ht);
+void hashtable_get_stats(Hashtable *ht, HashtableStats *stats);
 
 void hashtable_lock(Hashtable *ht);
 void hashtable_unlock(Hashtable *ht);

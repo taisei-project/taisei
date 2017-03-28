@@ -116,6 +116,8 @@ void tsfprintf(FILE *out, const char *restrict fmt, ...) __attribute__((format(p
 
 int getenvint(const char *v) __attribute__((pure));
 void png_setup_error_handlers(png_structp png);
+uint32_t crc32str(uint32_t crc, const char *str);
+
 noreturn void _ts_assert_fail(const char *cond, const char *func, const char *file, int line, bool use_log);
 
 #undef assert
