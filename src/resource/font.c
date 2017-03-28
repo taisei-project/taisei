@@ -51,6 +51,9 @@ void fontrenderer_free(FontRenderer *f) {
 void fontrenderer_draw(FontRenderer *f, const char *text,TTF_Font *font) {
 	SDL_Color clr = {255,255,255};
 	SDL_Surface *surf = TTF_RenderUTF8_Blended(font, text, clr);
+	if(surf == 0) {
+		log_fatal("SDL_ttf: %s", TTF_GetError());
+	}
 	assert(surf != NULL);
 
 	if(surf->w > FONTREN_MAXW || surf->h > FONTREN_MAXH) {
@@ -64,14 +67,14 @@ void fontrenderer_draw(FontRenderer *f, const char *text,TTF_Font *font) {
 
 	glBufferData(GL_PIXEL_UNPACK_BUFFER, FONTREN_MAXW*FONTREN_MAXH*4, NULL, GL_STREAM_DRAW);
 
-	// zero pad the texture
-	int winw = surf->w+1; // zero pad the texture
+	// the written texture zero padded to avoid bits of previously drawn text bleeding in
+	int winw = surf->w+1;
 	int winh = surf->h+1;
 
 	uint32_t *pixels = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
 	for(int y = 0; y < surf->h; y++) {
 		memcpy(pixels+y*winw, ((uint8_t *)surf->pixels)+y*surf->pitch, surf->w*4);
-		pixels[y*winw+surf->w]=0; // set the border to zero to avoid previously drawn text bleeding in.
+		pixels[y*winw+surf->w]=0;
 	}
 	memset(pixels+(winh-1)*winw,0,winw*4);
 	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);

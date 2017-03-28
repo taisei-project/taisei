@@ -404,7 +404,6 @@ void load_resources(void) {
 }
 
 void free_resources(bool all) {
-	free_fonts();
 	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
 		ResourceHandler *handler = get_handler(type);
 
@@ -447,6 +446,8 @@ void free_resources(bool all) {
 	delete_fbo(&resources.fbg[0]);
 	delete_fbo(&resources.fbg[1]);
 	delete_fbo(&resources.fsec);
+
+	free_fonts();
 }
 
 void print_resource_hashtables(void) {
