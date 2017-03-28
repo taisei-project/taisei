@@ -303,7 +303,7 @@ void stage3_mid_a0(Boss *boss, int time) {
 	int i;
 	TIMER(&time)
 
-	GO_TO(boss, creal(global.plr.pos) + I*cimag(boss->pos), 0.03)
+	GO_TO(boss, VIEWPORT_W/2+VIEWPORT_W*2/5*sin(time/300) + I*cimag(boss->pos), 0.03)
 
 	FROM_TO_INT(0, 90000, 60 + 10 * (D_Lunatic - global.diff), 0, 1) {
 		int cnt = 30 - 4 * (D_Lunatic - global.diff);
