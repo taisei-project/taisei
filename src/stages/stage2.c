@@ -153,7 +153,9 @@ static void stage2_bloom(int fbonum) {
 	Shader *shader = get_shader("bloom");
 
 	glUseProgram(shader->prog);
-	glUniform1f(uniloc(shader, "intensity"),0.05);
+	glUniform1i(uniloc(shader, "samples"), 10);
+	glUniform1f(uniloc(shader, "intensity"), 0.05);
+	glUniform1f(uniloc(shader, "radius"), 0.03);
 	draw_fbo_viewport(&resources.fbg[fbonum]);
 	glUseProgram(0);
 }

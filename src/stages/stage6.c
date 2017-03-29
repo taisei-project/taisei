@@ -16,6 +16,11 @@
 static Stage3D bgcontext;
 static int fall_over;
 
+enum {
+	NUM_STARS = 100
+};
+static float starpos[3*NUM_STARS];
+
 Vector **stage6_towerwall_pos(Vector pos, float maxrange) {
 	Vector p = {0, 0, -220};
 	Vector r = {0, 0, 300};
@@ -43,7 +48,7 @@ void stage6_towerwall_draw(Vector pos) {
 
 	glPushMatrix();
 	glTranslatef(pos[0], pos[1], pos[2]);
-// 	glRotatef(90, 1,0,0);
+//	glRotatef(90, 1,0,0);
 	glScalef(30,30,30);
 	draw_model("towerwall");
 	glPopMatrix();
@@ -79,16 +84,32 @@ Vector **stage6_skysphere_pos(Vector pos, float maxrange) {
 void stage6_skysphere_draw(Vector pos) {
 	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_DEPTH_TEST);
+	Shader *s = get_shader("stage6_sky");
+	glUseProgram(s->prog);
+
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/sky")->gltex);
 
 	glPushMatrix();
 	glTranslatef(pos[0], pos[1], pos[2]-30);
 	glScalef(150,150,150);
 	draw_model("skysphere");
-	glPopMatrix();
 
-	glEnable(GL_DEPTH_TEST);
+	glUseProgram(0);
 	glDisable(GL_TEXTURE_2D);
+
+	for(int i = 0; i < NUM_STARS; i++) {
+		glPushMatrix();
+		float x = starpos[3*i+0], y = starpos[3*i+1], z = starpos[3*i+2];
+		glColor4f(0.9,0.9,1,0.8*z);
+		glTranslatef(x,y,z);
+		glRotatef(180/M_PI*acos(starpos[3*i+2]),-y,x,0);
+		glScalef(1./4000,1./4000,1./4000);
+		draw_texture(0,0,"part/lasercurve");
+		glPopMatrix();
+	}
+	glPopMatrix();
+	glColor4f(1,1,1,1);
+	glEnable(GL_DEPTH_TEST);
 }
 
 void stage6_draw(void) {
@@ -152,6 +173,19 @@ void stage6_start(void) {
 	add_model(&bgcontext, stage6_skysphere_draw, stage6_skysphere_pos);
 	add_model(&bgcontext, stage6_towertop_draw, stage6_towertop_pos);
 	add_model(&bgcontext, stage6_towerwall_draw, stage6_towerwall_pos);
+
+	for(int i = 0; i < NUM_STARS; i++) {
+		float x,y,z,r;
+		do {
+			x = nfrand();
+			y = nfrand();
+			z = frand();
+			r = sqrt(x*x+y*y+z*z);
+		} while(0 < r < 1);
+		starpos[3*i+0]= x/r;
+		starpos[3*i+1]= y/r;
+		starpos[3*i+2]= z/r;
+	}
 
 	bgcontext.cx[1] = -230;
 	bgcontext.crot[0] = 90;

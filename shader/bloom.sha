@@ -3,7 +3,7 @@
 void main(void) {
 	gl_Position     = ftransform();
 	gl_FrontColor   = gl_Color;
-	gl_TexCoord[0]  = gl_MultiTexCoord0;	
+	gl_TexCoord[0]  = gl_MultiTexCoord0;
 }
 
 %% -- FRAG
@@ -12,15 +12,19 @@ void main(void) {
 
 uniform sampler2D tex;
 uniform float intensity;
+uniform float radius;
+uniform int samples;
+
+#define PI 3.1415926535897932384626433832795
 
 void main(void) {
 	vec2 pos = vec2(gl_TexCoord[0]);
-	
 	vec4 sum = vec4(0.0);
-	
-	for(int a = 0; a < 10; a++) {
-		sum += texture2D(tex, pos + vec2(cos(0.628*float(a)),sin(0.628*float(a)))*0.03);;
-	}	
-	
-	gl_FragColor = texture2D(tex, pos) + intensity*sum*sum/10.0;
+	float afactor = PI * 2.0 / float(samples);
+
+	for(int a = 0; a < samples; a++) {
+		sum += texture2D(tex, pos + vec2(cos(afactor*float(a)), sin(afactor*float(a))) * radius);
+	}
+
+	gl_FragColor = texture2D(tex, pos) + intensity*sum*sum/float(samples);
 }

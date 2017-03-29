@@ -49,6 +49,10 @@ void* load_shader_begin(const char *path, unsigned int flags) {
 
 	text = read_all(path, NULL);
 
+	if(!text) {
+		return NULL;
+	}
+
 	vtext = text;
 	delim = strstr(text, SHA_DELIM);
 
@@ -114,6 +118,10 @@ void load_shader_snippets(const char *filename, const char *prefix, unsigned int
 	prefixlen = strlen(prefix);
 
 	text = read_all(filename, &size);
+
+	if(!text) {
+		return;
+	}
 
 	sec = text;
 

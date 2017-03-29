@@ -19,6 +19,7 @@ void start_game(MenuData *menu, void *arg) {
     StageInfo *info = arg;
     Difficulty stagediff;
 
+    global.continues = 0;
     init_player(&global.plr);
 
 troll:
@@ -50,10 +51,6 @@ troll2:
     if(info) {
         stage_loop(info);
     } else {
-        for(StageInfo *s = stages; s->type == STAGE_STORY; ++s) {
-            s->procs->preload();
-        }
-
         for(StageInfo *s = stages; s->type == STAGE_STORY; ++s) {
             stage_loop(s);
         }

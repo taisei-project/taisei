@@ -113,11 +113,11 @@ void process_items(void) {
 				play_sound("item_generic");
 				break;
 			case Point:
-				global.plr.points += 100;
+				player_add_points(&global.plr, 100);
 				play_sound("item_generic");
 				break;
 			case BPoint:
-				global.plr.points += 1;
+				player_add_points(&global.plr, 1);
 				play_sound("item_generic");
 				break;
 			case Life:

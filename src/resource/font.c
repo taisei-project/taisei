@@ -24,24 +24,83 @@ TTF_Font *load_font(char *name, int size) {
 	return f;
 }
 
+void fontrenderer_init(FontRenderer *f) {
+	glGenBuffers(1,&f->pbo);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, f->pbo);
+	glBufferData(GL_PIXEL_UNPACK_BUFFER, FONTREN_MAXW*FONTREN_MAXH*4, NULL, GL_STREAM_DRAW);
+	glGenTextures(1,&f->tex.gltex);
+
+	f->tex.truew = FONTREN_MAXW;
+	f->tex.trueh = FONTREN_MAXH;
+
+	glBindTexture(GL_TEXTURE_2D,f->tex.gltex);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, f->tex.truew, f->tex.trueh, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+}
+
+void fontrenderer_free(FontRenderer *f) {
+	glDeleteBuffers(1,&f->pbo);
+	glDeleteTextures(1,&f->tex.gltex);
+}
+
+void fontrenderer_draw(FontRenderer *f, const char *text,TTF_Font *font) {
+	SDL_Color clr = {255,255,255};
+	SDL_Surface *surf = TTF_RenderUTF8_Blended(font, text, clr);
+	if(surf == 0) {
+		log_fatal("SDL_ttf: %s", TTF_GetError());
+	}
+	assert(surf != NULL);
+
+	if(surf->w > FONTREN_MAXW || surf->h > FONTREN_MAXH) {
+		log_fatal("Text drawn (%dx%d) is too big for the internal buffer (%dx%d).", surf->pitch, surf->h, FONTREN_MAXW, FONTREN_MAXH);
+	}
+	f->tex.w = surf->w;
+	f->tex.h = surf->h;
+
+	glBindTexture(GL_TEXTURE_2D,f->tex.gltex);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, f->pbo);
+
+	glBufferData(GL_PIXEL_UNPACK_BUFFER, FONTREN_MAXW*FONTREN_MAXH*4, NULL, GL_STREAM_DRAW);
+
+	// the written texture zero padded to avoid bits of previously drawn text bleeding in
+	int winw = surf->w+1;
+	int winh = surf->h+1;
+
+	uint32_t *pixels = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+	for(int y = 0; y < surf->h; y++) {
+		memcpy(pixels+y*winw, ((uint8_t *)surf->pixels)+y*surf->pitch, surf->w*4);
+		pixels[y*winw+surf->w]=0;
+	}
+	memset(pixels+(winh-1)*winw,0,winw*4);
+	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+	glTexSubImage2D(GL_TEXTURE_2D,0,0,0,winw,winh,GL_RGBA,GL_UNSIGNED_BYTE,0);
+
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+
+	SDL_FreeSurface(surf);
+}
+
+
 void init_fonts(void) {
 	TTF_Init();
-
+	fontrenderer_init(&resources.fontren);
 	_fonts.standard = load_font("gfx/LinBiolinum.ttf", 20);
 	_fonts.mainmenu = load_font("gfx/immortal.ttf", 35);
 
 }
 
-Texture *load_text(const char *text, TTF_Font *font) {
-	Texture *tex = malloc(sizeof(Texture));
-	SDL_Color clr = {255,255,255};
-	SDL_Surface *surf = TTF_RenderUTF8_Blended(font, text, clr);
-	assert(surf != NULL);
+void free_fonts(void) {
+	fontrenderer_free(&resources.fontren);
+	TTF_CloseFont(_fonts.standard);
+	TTF_CloseFont(_fonts.mainmenu);
 
-	load_sdl_surf(surf, tex);
-	SDL_FreeSurface(surf);
-
-	return tex;
+	TTF_Quit();
 }
 
 void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *font) {
@@ -54,7 +113,8 @@ void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *fo
 		*nl = '\0';
 	}
 
-	Texture *tex = load_text(buf, font);
+	fontrenderer_draw(&resources.fontren, buf, font);
+	Texture *tex = &resources.fontren.tex;
 
 	switch(align) {
 	case AL_Center:
@@ -73,9 +133,9 @@ void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *fo
 	if(tex->h&1)
 		y += 0.5;
 
+	glEnable(GL_TEXTURE_2D);
 	draw_texture_p(x, y, tex);
 
-	free_texture(tex);
 	free(buf);
 }
 

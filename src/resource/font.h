@@ -17,9 +17,28 @@ typedef enum {
 	AL_Right
 } Alignment;
 
+
+// Size of the buffer used by the font renderer. No text larger than this can be drawn. 
+enum {
+	FONTREN_MAXW = 512,
+	FONTREN_MAXH = 512
+};
+
+typedef struct FontRenderer FontRenderer;
+struct FontRenderer {
+	Texture tex;
+	GLuint pbo;
+};
+
+void fontrenderer_init(FontRenderer *f);
+void fontrenderer_free(FontRenderer *f);
+void fontrenderer_draw(FontRenderer *f, const char *text,TTF_Font *font);
+
 Texture *load_text(const char *text, TTF_Font *font);
 void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *font);
 void init_fonts(void);
+void free_fonts(void);
+
 int stringwidth(char *s, TTF_Font *font);
 int stringheight(char *s, TTF_Font *font);
 int charwidth(char c, TTF_Font *font);

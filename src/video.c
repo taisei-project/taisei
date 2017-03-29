@@ -107,6 +107,10 @@ static void APIENTRY video_gl_debug(
 		case GL_DEBUG_SEVERITY_LOW: strsev = "low"; break;
 		case GL_DEBUG_SEVERITY_MEDIUM: strsev = "medium"; break;
 		case GL_DEBUG_SEVERITY_HIGH: strsev = "high"; break;
+		case GL_DEBUG_SEVERITY_NOTIFICATION: strsev = "notify";
+						     if(type == GL_DEBUG_TYPE_OTHER)
+							     return;
+						     break;
 	}
 
 	log_custom(lvl, "[OpenGL debug, %s, %s] %i: %s", strtype, strsev, id, message);
@@ -241,6 +245,9 @@ void video_take_screenshot(void) {
 	rw = video.real.width;
 	rh = video.real.height;
 
+	rw = max(rw, w);
+	rh = max(rh, h);
+
 	data = malloc(3 * rw * rh);
 
 	time(&rawtime);
@@ -253,7 +260,7 @@ void video_take_screenshot(void) {
 	free(outpath);
 
 	if(!out) {
-		perror("fopen");
+		log_warn("SDL_RWFromFile() failed: %s", SDL_GetError());
 		free(data);
 		return;
 	}

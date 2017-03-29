@@ -325,7 +325,7 @@ void free_attack(Attack *a) {
 void start_attack(Boss *b, Attack *a) {
 	log_debug("%s", a->name);
 
-	if(global.replaymode == REPLAY_RECORD && global.stage->type == STAGE_STORY && !global.plr.continues) {
+	if(global.replaymode == REPLAY_RECORD && global.stage->type == STAGE_STORY && !global.continues) {
 		StageInfo *i = stage_get_by_spellcard(a->info, global.diff);
 		if(i) {
 			StageProgress *p = stage_get_progress_from_info(i, global.diff, true);
