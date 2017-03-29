@@ -382,7 +382,7 @@ void youmu_shot(Player *plr) {
 		if(!(global.frames % 4))
 			play_sound("generic_shot");
 
-		if(!(global.frames % 6) && (plr->shot != YoumuHoming || !(plr->inputflags & INFLAG_FOCUS))) {
+		if(!(global.frames % 6)) {
 			create_projectile1c("youmu", plr->pos + 10 - I*20, 0, linear, -20.0*I)->type = PlrProj+120;
 			create_projectile1c("youmu", plr->pos - 10 - I*20, 0, linear, -20.0*I)->type = PlrProj+120;
 		}
@@ -392,8 +392,8 @@ void youmu_shot(Player *plr) {
 				int pwr = plr->power / 100;
 
 				if(!(global.frames % (45 - 4 * pwr))) {
-					int pcnt = 30;
-					int pdmg = 100 - 5 * pwr;
+					int pcnt = 11 + pwr * 4;
+					int pdmg = 120 - 18 * 4 * (1 - pow(1 - pwr / 4.0, 1.5));
 					complex aim = 0.75;
 
 					create_projectile4c("youhoming", plr->pos, 0, youmu_trap, -30.0*I, 120, pcnt+pdmg*I, aim)->type = PlrProj+1000;
