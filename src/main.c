@@ -26,6 +26,7 @@ void taisei_shutdown(void) {
 
 	config_save(CONFIG_FILE);
 	progress_save();
+	progress_unload();
 
 	free_all_refs();
 	free_resources(true);
