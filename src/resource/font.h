@@ -18,9 +18,9 @@ typedef enum {
 } Alignment;
 
 
-// Size of the buffer used by the font renderer. No text larger than this can be drawn. 
+// Size of the buffer used by the font renderer. No text larger than this can be drawn.
 enum {
-	FONTREN_MAXW = 512,
+	FONTREN_MAXW = 1024,
 	FONTREN_MAXH = 512
 };
 
