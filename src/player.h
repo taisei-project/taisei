@@ -27,6 +27,9 @@ enum {
 
 	PLR_START_LIVES = 2,
 	PLR_START_BOMBS = 3,
+
+	PLR_SCORE_PER_LIFE_FRAG = 50000,
+	PLR_SCORE_PER_BOMB_FRAG = 20000,
 };
 
 typedef enum {
@@ -66,7 +69,7 @@ typedef struct {
 	short power;
 
 	int graze;
-	int points;
+	unsigned int points;
 
 	int lives;
 	int bombs;
@@ -78,8 +81,6 @@ typedef struct {
 
 	int deathtime;
 	int respawntime;
-
-    int continues;
 
 	Character cha;
 	ShotMode shot;
@@ -138,6 +139,7 @@ void player_add_life_fragments(Player *plr, int frags);
 void player_add_bomb_fragments(Player *plr, int frags);
 void player_add_lives(Player *plr, int lives);
 void player_add_bombs(Player *plr, int bombs);
+void player_add_points(Player *plr, unsigned int points);
 
 void player_preload(void);
 

@@ -533,7 +533,8 @@ void elly_unbound(Boss *b, int t) {
 
 	AT(100) {
 		int i;
-		Enemy *e, *last = NULL, *first, *middle;
+		Enemy *e, *last = NULL, *first = NULL, *middle = NULL;
+
 		for(i = 0; i < 6; i++) {
 			e = create_enemy3c(b->pos, ENEMY_IMMUNE, Baryon, baryon_unfold, 1.5*cexp(2.0*I*M_PI/6*i), i != 0 ? add_ref(last) : 0, i);
 			if(i == 0)

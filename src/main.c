@@ -130,6 +130,9 @@ int main(int argc, char **argv) {
 	const char *replay_path = NULL;
 	int replay_stage = 0;
 
+	init_paths();
+	init_log();
+
 	if(argc >= 2 && !strcmp(argv[1], "replay")) {
 		if(argc < 3) {
 			tsfprintf(stderr, "Usage: %s replay /path/to/replay.tsr [stage num]\n", argv[0]);
@@ -147,8 +150,6 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	init_paths();
-	init_log();
 	log_args(argc, argv);
 
 	if(run_tests()) {

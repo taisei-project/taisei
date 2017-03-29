@@ -100,7 +100,7 @@ void stage3_fog(int fbonum) {
 void stage3_start(void) {
 	init_stage3d(&bgcontext);
 
- 	bgcontext.cx[2] = -10;
+	bgcontext.cx[2] = -10;
 	bgcontext.crot[0] = -95;
 	bgcontext.cv[1] = 10;
 
@@ -146,7 +146,7 @@ void stage3_draw(void) {
 
 	set_perspective(&bgcontext, 300, 5000);
 	stgstate.tunnel_angle += stgstate.tunnel_avel;
- 	bgcontext.crot[2] = -(creal(global.plr.pos)-VIEWPORT_W/2)/80.0;
+	bgcontext.crot[2] = -(creal(global.plr.pos)-VIEWPORT_W/2)/80.0;
 #if 1
 	FROM_TO(0, 160, 1) {
 		bgcontext.cv[1] -= 0.5/2;
@@ -155,7 +155,7 @@ void stage3_draw(void) {
 	}
 
 	FROM_TO(0, 500, 1)
-		stgstate.fog_exp += 5.0 / 500.0;
+		stgstate.fog_exp += 3.0 / 500.0;
 
 	FROM_TO(400, 500, 1) {
 		stgstate.tunnel_avel += 0.005;
@@ -201,7 +201,7 @@ void stage3_draw(void) {
 	}
 
 	FROM_TO(2740, 2799, 1) {
-		stgstate.fog_exp += 3.0 / 60.0;
+		stgstate.fog_exp += 1.0 / 60.0;
 		bgcontext.cv[1] += 1.0/2;
 		stgstate.tunnel_avel -= 0.7 / 60.0;
 		bgcontext.crot[0] -= 11 / 60.0;
@@ -247,27 +247,26 @@ void stage3_draw(void) {
 		stgstate.tunnel_updn -= 40 / 1000.0;
 		stgstate.clr_r -= 0.5 / 1000.0;
 		bgcontext.crot[0] += 7 / 1000.0;
-		//stgstate.fog_exp -= 3.0 / 1000.0;
+		stgstate.fog_exp -= 1.5 / 1000.0;
 	}
-
-	// 5300 - BOSS
 
 	FROM_TO(5099, 5299, 1) {
 		bgcontext.cv[1] += 90 / 200.0/2;
 		stgstate.tunnel_avel -= 1.1 / 200.0;
 		bgcontext.crot[0] -= 15 / 200.0;
-		stgstate.fog_exp += 3.0 / 200.0;
+		//stgstate.fog_exp += 3.0 / 200.0;
 	}
+
+	// 5300 - BOSS
 
 	FROM_TO(5301, 5500, 1) {
 		bgcontext.cv[1] -= 70 / 200.0/2;
 		stgstate.clr_r += 1.1 / 200.0;
-		stgstate.clr_b -= 0.6 / 200.0;
 	}
 
 	FROM_TO(5301, 5700, 1) {
 		bgcontext.crot[0] -= 10 / 400.0;
-		stgstate.fog_exp -= 4.0 / 400.0;
+		stgstate.fog_exp -= 2.0 / 400.0;
 		//stgstate.tunnel_avel -= 0.5 / 200.0;
 	}
 #endif

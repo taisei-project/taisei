@@ -84,7 +84,7 @@ typedef struct {
     double stagebg_fps;
 } FPSCounter;
 
-void frame_rate(int *lasttime);
+void frame_rate(uint64_t *lasttime);
 bool calc_fps(FPSCounter *fps);
 void set_ortho(void);
 void colorfill(float r, float g, float b, float a);
@@ -116,6 +116,8 @@ void tsfprintf(FILE *out, const char *restrict fmt, ...) __attribute__((format(p
 
 int getenvint(const char *v) __attribute__((pure));
 void png_setup_error_handlers(png_structp png);
+uint32_t crc32str(uint32_t crc, const char *str);
+
 noreturn void _ts_assert_fail(const char *cond, const char *func, const char *file, int line, bool use_log);
 
 #undef assert

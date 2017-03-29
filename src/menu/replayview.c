@@ -295,7 +295,11 @@ int fill_replayview_menu(MenuData *m) {
 	}
 
 	closedir(dir);
-	qsort(m->entries, m->ecount, sizeof(MenuEntry), replayview_cmp);
+
+	if(m->entries) {
+		qsort(m->entries, m->ecount, sizeof(MenuEntry), replayview_cmp);
+	}
+
 	return rpys;
 }
 

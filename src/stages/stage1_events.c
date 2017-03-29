@@ -28,6 +28,8 @@ Dialog *stage1_dialog(void) {
 }
 
 void cirno_intro(Boss *c, int time) {
+	if(time < 0)
+		return;
 
 	GO_TO(c, VIEWPORT_W/2.0 + 100.0*I, 0.035);
 }
@@ -40,11 +42,20 @@ void cirno_icy(Boss *c, int time) {
 		return;
 
 	FROM_TO(0, 200, 5-global.diff) {
+		Color clr = rgb(0.1,0.2,0.4+0.4*frand());
 		for(int d = 0; d < 2; d++) {
-		tsrand_fill(3);
-		create_projectile2c("crystal", VIEWPORT_W/2.0 + 10*_i*(0.5-afrand(0)) + cimag(c->pos)*I, rgb(0.2,0.5,0.4+0.5*afrand(1)), accelerated, 1.7*cexp(I*_i/10.0)*(1-2*(_i&1)), 0.0001*I*_i + 2.*global.diff*global.diff/D_Lunatic/D_Lunatic*(0.0025 - 0.005*afrand(2)));
+			int sign = 1 - 2*d;
+			tsrand_fill(2);
+			create_projectile2c("crystal", VIEWPORT_W/2.0 + 5*_i*sign*afrand(0)/(float)global.diff + cimag(c->pos)*I, clr, accelerated, 1.7*cexp(I*_i*sign/10.0)*(1-2*(_i&1)), 0.0001*I*_i + 2.*global.diff*global.diff/D_Lunatic/D_Lunatic*(0.0025 - 0.005*afrand(1)));
 		}
 	}
+}
+
+void cirno_mid_outro(Boss *c, int time) {
+	if(time < 0)
+		return;
+
+	GO_TO(c, -300.0*I, 0.035);
 }
 
 
@@ -586,7 +597,7 @@ void stage1_events(void) {
 	AT(5000)
 		global.boss = create_cirno();
 
-	AT(5200 - FADE_TIME) {
+	AT(5400 - FADE_TIME) {
 		stage_finish(GAMEOVER_WIN);
 	}
 }

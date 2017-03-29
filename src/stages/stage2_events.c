@@ -20,7 +20,7 @@ void hina_wheel(Boss*, int);
  */
 
 AttackInfo stage2_spells[] = {
-	{{ 0,  1,  2,  3},	AT_Spellcard, "Shard ~ Amulet of Harm", 26, 25000,
+	{{ 0,  1,  2,  3},	AT_Spellcard, "Shard ~ Amulet of Harm", 26, 36000,
 							hina_amulet, hina_spell_bg, BOSS_DEFAULT_GO_POS},
 	{{ 4,  5,  6,  7},	AT_Spellcard, "Lottery Sign ~ Bad Pick", 30, 36000,
 							hina_bad_pick, hina_spell_bg, BOSS_DEFAULT_GO_POS},
@@ -76,12 +76,12 @@ int stage2_great_circle(Enemy *e, int t) {
 
 	FROM_TO(70, 190+global.diff*25, 5-global.diff/2) {
 		int n, c = 5+2*(global.diff>D_Normal);
-		
+
 		const double partdist = 0.04*global.diff;
 		const double bunchdist = 0.5;
 		const int c2 = 5;
 
-		
+
 		for(n = 0; n < c; n++) {
 			complex dir = cexp(I*(2*M_PI/c*n+partdist*(_i%c2-c2/2)+bunchdist*(_i/c2)));
 			create_projectile2c("rice", e->pos+30*dir, rgb(0.6,0.0,0.3), asymptotic, 1.5*dir, _i%5);
@@ -214,7 +214,7 @@ int stage2_accel_circle(Enemy *e, int t) {
 
 	e->pos += e->args[0];
 
-	FROM_TO(60,250, 20-10*(global.diff<D_Hard)) {
+	FROM_TO(60,250, 20+10*(global.diff<D_Hard)) {
 		e->args[0] *= 0.5;
 
 		int i;
@@ -312,12 +312,13 @@ void hina_amulet(Boss *h, int time) {
 
 	TIMER(&t);
 
-	FROM_TO(0,30*global.diff,1) {
+	complex d = global.plr.pos - h->pos;
+	FROM_TO(0,200*(global.diff+0.5)/(D_Lunatic+0.5),1) {
 			float f = _i/30.0;
-			complex n = cexp(I*2*M_PI*f+0.7*time/200*I);
+			complex n = cexp(I*2*M_PI*f+I*carg(d)+0.7*time/200*I)/sqrt(0.5+global.diff);
 
-			create_projectile2c("crystal", h->pos+30*log(1+_i/2.0)*n, rgb(0.8,0,0), accelerated, 2*n*I, -0.01*n);
-			create_projectile2c("crystal", h->pos+30*log(1+_i/2.0)*n, rgb(0.8,0,0.5), accelerated, -2*n*I, -0.01*n);
+			create_projectile2c("ball", h->pos+30*log(1+_i/2.0)*n, rgb(0.8,0,0), accelerated, 2*n*I, -0.01*n);
+			create_projectile2c(global.diff == D_Easy ? "ball" : "crystal", h->pos+30*log(1+_i/2.0)*n, rgb(0.8,0,0.5), accelerated, -2*n*I, -0.01*n);
 	}
 }
 
@@ -378,7 +379,7 @@ void hina_bad_pick(Boss *h, int time) {
 		}
 		if(global.diff >= D_Hard) {
 			double shift = 0;
-			if(global.diff == D_Lunatic) 
+			if(global.diff == D_Lunatic)
 				shift = 0.3*max(0,t-200);
 			for(i = 1; i < SLOTS; i++) {
 				double height = VIEWPORT_H/SLOTS*i+shift;
@@ -395,7 +396,7 @@ void hina_bad_pick(Boss *h, int time) {
 			if(i == win)
 				continue;
 
-			float cnt = (1+min(D_Hard,global.diff)) * 5;
+			float cnt = (1+min(D_Normal,global.diff)) * 5;
 			for(j = 0; j < cnt; j++) {
 				complex o = VIEWPORT_W/SLOTS*(i + j/(cnt-1));
 				create_projectile3c("ball", o, rgb(0.7,0,0.0), bad_pick_bullet, 0, 0.005*nfrand() + 0.005*I * (1 + psin(i + j + global.frames)),i)->draw = ProjDrawAdd;
@@ -511,7 +512,8 @@ void stage2_events(void) {
 		global.boss = create_wriggle_mid();
 
 	FROM_TO(2900, 3400, 50) {
-		create_enemy3c(VIEWPORT_W-80+(VIEWPORT_H+20)*I, 200, Fairy, stage2_sidebox_trail, 3 - 0.5*M_PI*I, -0.02, 90);
+		if(global.diff > D_Normal)
+			create_enemy3c(VIEWPORT_W-80+(VIEWPORT_H+20)*I, 200, Fairy, stage2_sidebox_trail, 3 - 0.5*M_PI*I, -0.02, 90);
 		create_enemy3c(80+(VIEWPORT_H+20)*I, 200, Fairy, stage2_sidebox_trail, 3 - 0.5*M_PI*I, 0.02, 90);
 	}
 
@@ -522,7 +524,7 @@ void stage2_events(void) {
 	FROM_TO(3700, 4500, 40)
 		create_enemy1c(VIEWPORT_W*frand()-10.0*I, 150, Fairy, stage2_flea, 2.5*I);
 
-	FROM_TO(4000, 4600, 100)
+	FROM_TO(4000, 4600, 100+100*(global.diff<D_Hard))
 		create_enemy1c(VIEWPORT_W/2+100-200*frand()-10.0*I, 2000, Fairy, stage2_accel_circle, 2.0*I);
 
 	AT(5100) {
@@ -533,7 +535,7 @@ void stage2_events(void) {
 		global.dialog = stage2_post_dialog();
 	}
 
-	AT(5240 - FADE_TIME) {
+	AT(5340 - FADE_TIME) {
 		stage_finish(GAMEOVER_WIN);
 	}
 }

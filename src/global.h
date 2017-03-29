@@ -69,10 +69,10 @@ enum {
 
 	MAX_CONTINUES = 3,
 
-	ACTION_DESTROY,
-
 	EVENT_DEATH = -8999,
 	EVENT_BIRTH,
+	ACTION_DESTROY,
+
 
 	FPS = 60,
 
@@ -96,7 +96,7 @@ typedef struct {
 
 	int frames;
 	int stageuiframes;
-	int lasttime; // frame limiter
+	uint64_t lasttime; // frame limiter
 	int timer;
 	int frameskip;
 
@@ -109,8 +109,6 @@ typedef struct {
 
 	FPSCounter fps;
 
-	bool nostagebg;
-
 	Replay replay;
 	ReplayMode replaymode;
 	ReplayStage *replay_stage;
@@ -121,6 +119,7 @@ typedef struct {
 	RandomState rand_visual;
 
 	StageInfo *stage;
+	int continues;
 } Global;
 
 extern Global global;
