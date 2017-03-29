@@ -605,6 +605,32 @@ static int apply_shaderrules(ShaderRule *shaderrules, int fbonum) {
 	return fbonum;
 }
 
+static void draw_wall_of_text(float f, const char *txt) {
+	fontrenderer_draw(&resources.fontren, txt,_fonts.standard);
+	Texture *tex = &resources.fontren.tex;
+	int strw = tex->w;
+	int strh = tex->h;
+	glPushMatrix();
+	glTranslatef(VIEWPORT_W/2,VIEWPORT_H/2,0);
+	glScalef(VIEWPORT_W,VIEWPORT_H,1.);
+
+	Shader *shader = get_shader("spellcard_walloftext");
+	glUseProgram(shader->prog);
+	glUniform1f(uniloc(shader, "w"), strw/(float)tex->truew);
+	glUniform1f(uniloc(shader, "h"), strh/(float)tex->trueh);
+	glUniform1f(uniloc(shader, "ratio"), (float)VIEWPORT_H/VIEWPORT_W);
+	glUniform2f(uniloc(shader, "origin"), creal(global.boss->pos)/VIEWPORT_H,cimag(global.boss->pos)/VIEWPORT_W);
+	glUniform1f(uniloc(shader, "t"), f);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, tex->gltex);
+	draw_quad();
+	glUseProgram(0);
+
+	glPopMatrix();
+
+
+}
+
 static void draw_spellbg(int t) {
 	Boss *b = global.boss;
 	b->current->draw_rule(b, t);
@@ -624,27 +650,16 @@ static void draw_spellbg(int t) {
 	draw_texture(0,0,"boss_spellcircle0");
 	glPopMatrix();
 
-	int strw = stringwidth(b->current->name,_fonts.standard);
-	int strh = stringheight(b->current->name,_fonts.standard);
-	float f = -t/(float)ATTACK_START_DELAY;
-	Texture *tex = load_text(b->current->name, _fonts.standard);
-	glPushMatrix();
-	glTranslatef(VIEWPORT_W/2,VIEWPORT_H/2,0);
-	glRotatef(20,0,0,1);
-	glScalef(2,2,1.);
-	glTranslatef(-VIEWPORT_W/2,-VIEWPORT_H/2,0);
-	glColor4f(1,1,1,0.5*(1-f*f));
-	fill_screen_p(global.frames/1000., 0.,1.5*VIEWPORT_H/strh,strh/(float)strw,tex);
-	fill_screen_p(-global.frames/500.+0.5, global.frames/1000.+0.5,1.5*VIEWPORT_H/strh,strh/(float)strw,tex);
-	glPopMatrix();
-
-	free_texture(tex);
-	glColor4f(1,1,1,1);
+	float delay = 0;
+	if(b->current->type == AT_ExtraSpell)
+		delay = ATTACK_START_DELAY_EXTRA-ATTACK_START_DELAY;
+	float f = -(t+delay)/ATTACK_START_DELAY;
+	draw_wall_of_text(f, b->current->name);
 
 	if(t < ATTACK_START_DELAY && b->dialog) {
 		glPushMatrix();
 		float f = -0.5*t/(float)ATTACK_START_DELAY+0.5;
-		glColor4f(1,1,1,f);
+		glColor4f(1,1,1,-f*f+2*f);
 		draw_texture_p(VIEWPORT_W*3/4-10*f*f,VIEWPORT_H*2/3-10*f*f,b->dialog);
 		glColor4f(1,1,1,1);
 		glPopMatrix();
