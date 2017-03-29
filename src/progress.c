@@ -70,6 +70,14 @@ static uint32_t progress_checksum(uint8_t *buf, size_t num) {
 	return crc32(0xB16B00B5, buf, num);
 }
 
+typedef struct UnknownCmd {
+	struct UnknownCmd *next;
+	struct UnknownCmd *prev;
+	uint8_t cmd;
+	uint16_t size;
+	uint8_t *data;
+} UnknownCmd;
+
 static void progress_read(SDL_RWops *file) {
 	int64_t filesize = SDL_RWsize(file);
 
@@ -157,9 +165,14 @@ static void progress_read(SDL_RWops *file) {
 				break;
 
 			default:
-				log_warn("Unknown command %i, skipping %u bytes", cmd, cmdsize);
-				while(cur++ < cmdsize)
-					SDL_ReadU8(vfile);
+				log_warn("Unknown command %i (%u bytes). Will preserve as-is and not interpret.", cmd, cmdsize);
+
+				UnknownCmd *c = create_element((void**)&progress.unknown, sizeof(UnknownCmd));
+				c->cmd = cmd;
+				c->size = cmdsize;
+				c->data = malloc(sizeof(cmdsize));
+				SDL_RWread(vfile, c->data, c->size, 1);
+
 				break;
 		}
 	}
@@ -296,6 +309,38 @@ static void progress_write_cmd_hiscore(SDL_RWops *vfile, void **arg) {
 	SDL_WriteLE32(vfile, progress.hiscore);
 }
 
+//
+//	Copy unhandled commands from the original file
+//
+
+static void progress_prepare_cmd_unknown(size_t *bufsize, void **arg) {
+	for(UnknownCmd *c = progress.unknown; c; c = c->next) {
+		*bufsize += CMD_HEADER_SIZE + c->size;
+	}
+}
+
+static void progress_write_cmd_unknown(SDL_RWops *vfile, void **arg) {
+	for(UnknownCmd *c = progress.unknown; c; c = c->next) {
+		SDL_WriteU8(vfile, c->cmd);
+		SDL_WriteLE16(vfile, c->size);
+		SDL_RWwrite(vfile, c->data, c->size, 1);
+	}
+}
+
+//
+//	Test
+//
+
+__attribute__((unused)) static void progress_prepare_cmd_test(size_t *bufsize, void **arg) {
+	*bufsize += CMD_HEADER_SIZE + sizeof(uint32_t);
+}
+
+__attribute__((unused)) static void progress_write_cmd_test(SDL_RWops *vfile, void **arg) {
+	SDL_WriteU8(vfile, 0x7f);
+	SDL_WriteLE16(vfile, sizeof(uint32_t));
+	SDL_WriteLE32(vfile, 0xdeadbeef);
+}
+
 static void progress_write(SDL_RWops *file) {
 	size_t bufsize = 0;
 	SDL_RWwrite(file, progress_magic_bytes, 1, sizeof(progress_magic_bytes));
@@ -304,6 +349,8 @@ static void progress_write(SDL_RWops *file) {
 		{progress_prepare_cmd_unlock_stages, progress_write_cmd_unlock_stages, NULL},
 		{progress_prepare_cmd_unlock_stages_with_difficulties, progress_write_cmd_unlock_stages_with_difficulties, NULL},
 		{progress_prepare_cmd_hiscore, progress_write_cmd_hiscore, NULL},
+		// {progress_prepare_cmd_test, progress_write_cmd_test, NULL},
+		{progress_prepare_cmd_unknown, progress_write_cmd_unknown, NULL},
 		{NULL}
 	};
 
@@ -393,4 +440,14 @@ void progress_save(void) {
 	free(p);
 	progress_write(file);
 	SDL_RWclose(file);
+}
+
+static void delete_unknown_cmd(void **dest, void *elem) {
+	UnknownCmd *cmd = elem;
+	free(cmd->data);
+	delete_element(dest, cmd);
+}
+
+void progress_unload(void) {
+	delete_all_elements((void**)&progress.unknown, delete_unknown_cmd);
 }
