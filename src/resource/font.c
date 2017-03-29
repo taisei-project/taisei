@@ -57,7 +57,7 @@ void fontrenderer_draw(FontRenderer *f, const char *text,TTF_Font *font) {
 	assert(surf != NULL);
 
 	if(surf->w > FONTREN_MAXW || surf->h > FONTREN_MAXH) {
-		log_fatal("Text drawn (%dx%d) is too big for the internal buffer (%dx%d).", surf->pitch, surf->h, FONTREN_MAXW, FONTREN_MAXH);
+		log_fatal("Text drawn (%dx%d) is too big for the internal buffer (%dx%d). The text is: [%s]", surf->pitch, surf->h, FONTREN_MAXW, FONTREN_MAXH, text);
 	}
 	f->tex.w = surf->w;
 	f->tex.h = surf->h;
