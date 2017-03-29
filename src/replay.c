@@ -189,14 +189,10 @@ static int replay_write_stage(ReplayStage *stg, SDL_RWops *file) {
 }
 
 int replay_write(Replay *rpy, SDL_RWops *file, bool compression) {
-	uint8_t *u8_p;
+	uint16_t version = REPLAY_STRUCT_VERSION;
 	int i, j;
 
-	for(u8_p = replay_magic_header; *u8_p; ++u8_p) {
-		SDL_WriteU8(file, *u8_p);
-	}
-
-	uint16_t version = REPLAY_STRUCT_VERSION;
+	SDL_RWwrite(file, replay_magic_header, sizeof(replay_magic_header), 1);
 
 	if(compression) {
 		version |= REPLAY_VERSION_COMPRESSION_BIT;
@@ -276,12 +272,14 @@ static void replay_read_string(SDL_RWops *file, char **ptr) {
 }
 
 static int replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, size_t *ofs) {
-	for(uint8_t *u8_p = replay_magic_header; *u8_p; ++u8_p) {
-		++(*ofs);
-		if(SDL_ReadU8(file) != *u8_p) {
-			log_warn("Incorrect header");
-			return false;
-		}
+	uint8_t header[sizeof(replay_magic_header)];
+	(*ofs) += sizeof(header);
+
+	SDL_RWread(file, header, sizeof(header), 1);
+
+	if(memcmp(header, replay_magic_header, sizeof(header))) {
+		log_warn("Incorrect header");
+		return false;
 	}
 
 	CHECKPROP(rpy->version = SDL_ReadLE16(file), u);
@@ -590,14 +588,10 @@ int replay_test(void) {
 		return 0;
 	}
 
-	uint8_t *u8_p, *buf = malloc(sz + headsz);
+	uint8_t *buf = malloc(sz + headsz);
 	SDL_RWops *handle = SDL_RWFromMem(buf, sz + headsz);
 
-	// SDL_RWwrite(handle, replay_magic_header, 1, sizeof(replay_magic_header));
-
-	for(u8_p = replay_magic_header; *u8_p; ++u8_p) {
-		SDL_WriteU8(handle, *u8_p);
-	}
+	SDL_RWwrite(handle, replay_magic_header, sizeof(replay_magic_header), 1);
 
 	SDL_WriteLE16(handle, REPLAY_STRUCT_VERSION);
 	SDL_WriteLE16(handle, 4);

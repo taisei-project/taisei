@@ -127,6 +127,8 @@ static int load_resource_async_thread(void *vdata) {
 static Resource* load_resource_finish(void *opaque, ResourceHandler *handler, const char *path, const char *name, char *allocated_path, char *allocated_name, ResourceFlags flags);
 
 bool resource_sdl_event(SDL_Event *evt) {
+	assert(SDL_ThreadID() == main_thread_id);
+
 	if(evt->type != sdlevent_finalize_load) {
 		return false;
 	}
@@ -134,7 +136,6 @@ bool resource_sdl_event(SDL_Event *evt) {
 	ResourceAsyncLoadData *data = evt->user.data1;
 
 	if(!data) {
-		free(data);
 		return true;
 	}
 
@@ -333,30 +334,28 @@ void preload_resources(ResourceType type, ResourceFlags flags, const char *first
 }
 
 void init_resources(void) {
-	// hashtable sizes were carefully pulled out of my ass to reduce collisions a bit
-
 	register_handler(
-		RES_TEXTURE, TEX_PATH_PREFIX, load_texture_begin, load_texture_end, (ResourceUnloadFunc)free_texture, NULL, texture_path, check_texture_path, 227
+		RES_TEXTURE, TEX_PATH_PREFIX, load_texture_begin, load_texture_end, (ResourceUnloadFunc)free_texture, NULL, texture_path, check_texture_path, HT_DYNAMIC_SIZE
 	);
 
 	register_handler(
-		RES_ANIM, ANI_PATH_PREFIX, load_animation_begin, load_animation_end, free, NULL, animation_path, check_animation_path, 23
+		RES_ANIM, ANI_PATH_PREFIX, load_animation_begin, load_animation_end, free, NULL, animation_path, check_animation_path, HT_DYNAMIC_SIZE
 	);
 
 	register_handler(
-		RES_SHADER, SHA_PATH_PREFIX, load_shader_begin, load_shader_end, unload_shader, NULL, shader_path, check_shader_path, 29
+		RES_SHADER, SHA_PATH_PREFIX, load_shader_begin, load_shader_end, unload_shader, NULL, shader_path, check_shader_path, HT_DYNAMIC_SIZE
 	);
 
 	register_handler(
-		RES_MODEL, MDL_PATH_PREFIX, load_model_begin, load_model_end, unload_model, NULL, model_path, check_model_path, 17
+		RES_MODEL, MDL_PATH_PREFIX, load_model_begin, load_model_end, unload_model, NULL, model_path, check_model_path, HT_DYNAMIC_SIZE
 	);
 
 	register_handler(
-		RES_SFX, SFX_PATH_PREFIX, load_sound_begin, load_sound_end, unload_sound, NULL, sound_path, check_sound_path, 16
+		RES_SFX, SFX_PATH_PREFIX, load_sound_begin, load_sound_end, unload_sound, NULL, sound_path, check_sound_path, HT_DYNAMIC_SIZE
 	);
 
 	register_handler(
-		RES_BGM, BGM_PATH_PREFIX, load_music_begin, load_music_end, unload_music, NULL, music_path, check_music_path, 16
+		RES_BGM, BGM_PATH_PREFIX, load_music_begin, load_music_end, unload_music, NULL, music_path, check_music_path, HT_DYNAMIC_SIZE
 	);
 
 	main_thread_id = SDL_ThreadID();

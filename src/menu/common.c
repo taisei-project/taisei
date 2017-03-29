@@ -52,10 +52,6 @@ troll2:
         stage_loop(info);
     } else {
         for(StageInfo *s = stages; s->type == STAGE_STORY; ++s) {
-            s->procs->preload();
-        }
-
-        for(StageInfo *s = stages; s->type == STAGE_STORY; ++s) {
             stage_loop(s);
         }
     }
