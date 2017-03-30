@@ -26,7 +26,7 @@ void stage3_boss_a3(Boss*, int t);
 AttackInfo stage3_spells[] = {
 	{{ 0,  1,  2,  3},	AT_Spellcard, "Venom Sign ~ Deadly Dance", 25, 30000,
 							stage3_mid_a1, stage3_mid_spellbg, BOSS_DEFAULT_GO_POS},
-	{{-1, -1,  4,  5},	AT_Spellcard, "Venom Sign ~ Acid Rain", 20, 30000,
+	{{-1, -1,  4,  5},	AT_Spellcard, "Venom Sign ~ Acid Rain", 30, 45000,
 							stage3_mid_a2, stage3_mid_spellbg, BOSS_DEFAULT_GO_POS},
 	{{ 6,  7,  8,  9},	AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 35000,
 							stage3_boss_a1, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
@@ -146,7 +146,7 @@ int stage3_slavefairy2(Enemy *e, int t) {
 		GO_TO(e, e->args[0], 0.03)
 
 	FROM_TO(30, lifetime, 1) {
-		complex dir = cexp(I*_i/global.diff);
+		complex dir = cexp(I*_i/sqrt(global.diff));
 		create_projectile1c("wave",e->pos,_i&1 ? rgb(1.0,0.3,0.3): rgb(0.3,0.3,1.0), linear, 2*dir);
 		if(global.diff > D_Normal && _i % 3 == 0) {
 			create_projectile1c("rice",e->pos,_i&1==0 ? rgb(1.0,0.3,0.3): rgb(0.3,0.3,1.0), linear, -2*dir);
@@ -237,14 +237,13 @@ int stage3_cornerfairy(Enemy *e, int t) {
 		GO_TO(e, e->args[1], 0.025 * min((t - 120) / 42.0, 1))
 		int d = 5; //(D_Lunatic - global.diff + 3);
 		if(!(t % d)) {
-			int i, cnt = 6 + global.diff * 2.5;
+			int i, cnt = 7+global.diff;
 
 			for(i = 0; i < cnt; ++i) {
-				float c = 0.5 + 0.5 * sin(t / 15.0);
+				float c = psin(t / 15.0);
 
 				create_projectile2c((global.diff > D_Easy && cabs(e->args[2]))? "wave" : "thickrice", e->pos, cabs(e->args[2])? rgb(0.5 - c*0.2, 0.3 + c*0.7, 1.0) : rgb(1.0 - c*0.5, 0.6, 0.5 + c*0.5), asymptotic,
-					//2*cexp(I*(carg(global.plr.pos - e->pos) + i)),
-					(global.diff > D_Normal? 2 : 1.5)*cexp(I*((2*i*M_PI/cnt)+carg((VIEWPORT_W+I*VIEWPORT_H)/2 - e->pos))),
+					(1.2+0.3*global.diff)*cexp(I*((2*i*M_PI/cnt)+carg((VIEWPORT_W+I*VIEWPORT_H)/2 - e->pos))),
 					1.5
 				);
 
@@ -261,7 +260,7 @@ int stage3_cornerfairy(Enemy *e, int t) {
 	}
 
 	AT(260)
-		e->hp = 0;
+		return ACTION_DESTROY;
 
 	return 0;
 }
@@ -312,18 +311,18 @@ int stage3_mid_a0_proj(Projectile *p, int time) {
 		p->args[1] = 3;
 		p->args[0] = (3 + 2 * global.diff / (float)D_Lunatic) * cexp(I*carg(global.plr.pos - p->pos));
 
-		int cnt = 2 + global.diff, i;
+		int cnt = 3, i;
 		for(i = 0; i < cnt; ++i) {
 			tsrand_fill(2);
 			Color clr = rgba(1.0,0.8,0.8,0.8);
 
 			create_particle3c("lasercurve", 0, clr, EnemyFlareShrink, enemy_flare, 100, cexp(I*(M_PI*anfrand(0))) * (1 + afrand(1)), add_ref(p));
 
-			int jcnt = 1 + (global.diff > D_Normal), j;
-			for(j = 0; j < jcnt; ++j) create_projectile1c("thickrice", p->pos, color_component(p->clr, CLR_R) == 1.0? rgb(1.0, 0.3, 0.3) : rgb(0.3, 0.3, 1.0), accelerated,
-				0
-				-cexp(I*(i*2*M_PI/cnt + global.frames / 15.0)) * (1.0 + 0.1 * j)
-			); //->draw = global.diff > D_Hard? ProjDrawAdd : ProjDraw;
+			float offset = global.frames/15.0;
+			if(global.diff > D_Hard && global.boss)
+				offset = M_PI+carg(global.plr.pos-global.boss->pos);
+			create_projectile1c("thickrice", p->pos, rgb(0.4, 0.3, 1.0), linear,-cexp(I*(i*2*M_PI/cnt + offset)) * (1.0 + (global.diff > D_Normal))
+			);
 		}
 	}
 
@@ -336,10 +335,10 @@ void stage3_mid_a0(Boss *boss, int time) {
 	int i;
 	TIMER(&time)
 
-	GO_TO(boss, VIEWPORT_W/2+VIEWPORT_W*2/5*sin(time/300) + I*cimag(boss->pos), 0.01)
+	GO_TO(boss, VIEWPORT_W/2+VIEWPORT_W/3*sin(time/300) + I*cimag(boss->pos), 0.01)
 
-	FROM_TO_INT(0, 90000, 60 + 10 * (D_Lunatic - global.diff), 0, 1) {
-		int cnt = 30 - 4 * (D_Lunatic - global.diff);
+	FROM_TO_INT(0, 90000, 72 + 6 * (D_Lunatic - global.diff), 0, 1) {
+		int cnt = 24 - 2 * (D_Lunatic - global.diff);
 
 		for(i = 0; i < cnt; ++i) {
 			complex v = (2 - psin((max(3, global.diff+1)*2*M_PI*i/(float)cnt) + time)) * cexp(I*2*M_PI/cnt*i);
@@ -393,43 +392,50 @@ void stage3_mid_a1(Boss *boss, int time) {
 }
 
 int stage3_mid_poison2(Projectile *p, int time) {
-	int result = linear(p, time);
-
 	if(time < 0)
 		return 1;
 
-	int d = 30 - global.diff * 3;
-	if(!(time % d) && p->type != DeadProj) {
-		float a = p->args[2];
-		float t = p->args[3] + time;
-		p->args[1] = !p->args[1];
-
-		create_projectile2c((time % (2*d))? "thickrice" : "rice", p->pos, rgb(0.3 + 0.7 * psin(a/3.0 + t/20.0), 1.0, 0.3), accelerated,
-				0,
-				-0.01 * p->args[0]
-		);
+	if(cabs(global.plr.pos-p->pos) > 100) {
+		p->args[2]+=1;
+	} else {
+		p->args[2]-=1;
+		if(creal(p->args[2]) < 0)
+			p->args[2] = 0;
 	}
 
-	return result;
+	int turntime = rint(creal(p->args[0]));
+	int t = rint(creal(p->args[2]));
+	if(t < turntime) {
+		float f = t/(float)turntime;
+		p->clr=rgb(0.3-0.3*f,1.0-0.5*f,0.3+0.7*f);
+	}
+
+	if(t == turntime && global.boss) {
+		p->args[1] = global.boss->pos-p->pos;
+		p->args[1] *= 2/cabs(p->args[1]);
+		p->angle = carg(p->args[1]);
+		p->tex = get_tex("proj/rice");
+	}
+	p->pos += p->args[1];
+	return 1;
 }
 
 void stage3_mid_a2(Boss *boss, int time) {
 	TIMER(&time)
 
-	if(time < 0)
-		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/6, 0.05)
+	if(time < 0) {
+		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.05)
+		return;
+	}
 
-	FROM_TO_INT(30, 9000, 35 - (int)rint(global.diff * 1.35), 1, 1) {
-		int i, cnt = 5 + global.diff;
+	//GO_TO(boss, VIEWPORT_H/2*I+VIEWPORT_W/2-100*I*sin(time/200.),0.05)
+
+	FROM_TO(30, 9000, 2) {
+		int i, cnt = 1+global.diff/2;
 		for(i = 0; i < cnt; ++i) {
-			float a = M_PI/cnt * i * 2;
+			complex pos = 250*cexp(I*(_i*0.3+2*M_PI/cnt*i))*tanh(sin(_i/200.));
+			create_projectile2c("ball",boss->pos+pos,rgb(0.3,1.0,0.3),stage3_mid_poison2,100,pos/cabs(pos));
 
-			create_projectile4c("soul", boss->pos, (_i % 2)? rgb(0.3, 0.3, 1.0) : rgb(1.0, 0.3, 0.3), stage3_mid_poison2,
-				2 * cexp(I * (a + ((global.diff == D_Hard)? 7.2 : 7.3) * time + M_PI * (_i % 2))),
-				0,
-				a,
-				time
-			)->draw = ProjDrawAdd;
 		}
 	}
 }
@@ -875,10 +881,10 @@ void stage3_events(void) {
 	}
 	FROM_TO(400,1000,10) {
 		if(global.enemies == 0) {
-			int cnt = 2*global.diff;
+			int cnt = 1+global.diff/2;
 			for(int i = 0; i <= cnt;i++) {
-				complex pos1 = VIEWPORT_W/2+VIEWPORT_W/3*nfrand() + VIEWPORT_H/3*I;
-				complex pos2 = pos1+30*(i-cnt/2);
+				complex pos1 = VIEWPORT_W/2+VIEWPORT_W/3*nfrand() + VIEWPORT_H/5*I;
+				complex pos2 = VIEWPORT_W/2+50*(i-cnt/2)+VIEWPORT_H/3*I;
 				create_enemy3c(pos1, 700, Fairy, stage3_slavefairy, pos2, i&1,0.5*(i-cnt/2));
 			}
 		}
@@ -895,16 +901,15 @@ void stage3_events(void) {
 
 	FROM_TO(1800,2200,10) {
 		if(global.enemies == 0) {
-			int cnt = 2*global.diff;
+			int cnt = 2;
 			for(int i = 0; i <= cnt;i++) {
-				complex pos1 = VIEWPORT_W/2+VIEWPORT_W/3*nfrand() + VIEWPORT_H/3*I;
-				complex pos2 = pos1+30*(i-cnt/2);
+				complex pos1 = VIEWPORT_W/2+VIEWPORT_W/3*nfrand() + VIEWPORT_H/5*I;
+				complex pos2 = VIEWPORT_W/2+50*(i-cnt/2)+VIEWPORT_H/3*I;
 				create_enemy3c(pos1, 700, Fairy, stage3_slavefairy2, pos2, i&1,0.5*(i-cnt/2));
 			}
 		}
 	}
 
-	//FROM_TO(2400, 2620, 130) {
 	AT(2400) {
 		double offs = -50;
 

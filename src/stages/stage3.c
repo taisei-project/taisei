@@ -203,6 +203,8 @@ void stage3_draw(void) {
 	FROM_TO(2740, 2799, 1) {
 		stgstate.fog_exp += 1.0 / 60.0;
 		bgcontext.cv[1] += 1.0/2;
+		stgstate.clr_r -= 0.3 / 60.0;
+		stgstate.clr_g += 0.5 / 60.0;
 		stgstate.tunnel_avel -= 0.7 / 60.0;
 		bgcontext.crot[0] -= 11 / 60.0;
 	}
@@ -210,6 +212,8 @@ void stage3_draw(void) {
 	// 2800 - MIDBOSS
 
 	FROM_TO(2900, 3100, 1) {
+		stgstate.clr_r += 0.3 / 200.0;
+		stgstate.clr_g -= 0.5 / 200.0;
 		bgcontext.cv[1] -= 90 / 200.0/2;
 		stgstate.tunnel_avel -= 1 / 200.0;
 		stgstate.fog_exp -= 1.0 / 200.0;
