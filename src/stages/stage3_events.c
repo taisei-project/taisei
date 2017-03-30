@@ -65,8 +65,8 @@ int stage3_enterswirl(Enemy *e, int t) {
 		}
 
 		float a; for(a = 0; a < M_PI * 2; a += 1.3 - global.diff * 0.2) {
-			complex dir = sin(a) + I * cos(a);
-			float spd = 1 + 0.5 * sin(10 * a);
+			complex dir = cexp(I*a);
+			float spd = (1 + 0.5 * sin(10 * a)*sqrt(global.diff/D_Lunatic));
 
 			create_projectile2c(e->args[1]? "ball" : "rice", e->pos, rgb(r, g, 1.0), accelerated,
 				dir * 2,
@@ -107,12 +107,12 @@ int stage3_slavefairy(Enemy *e, int t) {
 		GO_TO(e, e->args[0], 0.03)
 
 	FROM_TO_INT(30, 120, 5 - global.diff, 1, 1) {
-		float a = global.timer * 0.5;
+		float a = _i * 0.5;
 		if(_i % 2)
 			a = -a;
-		complex dir = sin(a) + I * cos(a);
+		complex dir = cexp(I*a);
 
-		create_projectile2c("wave", e->pos + dir * 10, (global.timer % 2)? rgb(1.0, 0.3, 0.3) : rgb(0.3, 0.3, 1.0), accelerated,
+		create_projectile2c("wave", e->pos + dir * 10, (_i % 2)? rgb(1.0, 0.3, 0.3) : rgb(0.3, 0.3, 1.0), accelerated,
 			dir * 2,
 			dir * -0.035
 		);
@@ -128,12 +128,43 @@ int stage3_slavefairy(Enemy *e, int t) {
 	return 0;
 }
 
+int stage3_slavefairy2(Enemy *e, int t) {
+	TIMER(&t)
+
+	AT(EVENT_DEATH) {
+		spawn_items(e->pos, Point, 1, Power, 3, NULL);
+		return 1;
+	}
+
+	AT(EVENT_BIRTH) {
+		e->alpha = 0;
+		e->unbombable = true;
+	}
+
+	int lifetime = 100+20*global.diff;
+	if(t < lifetime)
+		GO_TO(e, e->args[0], 0.03)
+
+	FROM_TO(30, lifetime, 1) {
+		complex dir = cexp(I*_i/global.diff);
+		create_projectile1c("wave",e->pos,_i&1 ? rgb(1.0,0.3,0.3): rgb(0.3,0.3,1.0), linear, 2*dir);
+		if(global.diff > D_Normal && _i % 3 == 0) {
+			create_projectile1c("rice",e->pos,_i&1==0 ? rgb(1.0,0.3,0.3): rgb(0.3,0.3,1.0), linear, -2*dir);
+		}
+	}
+
+	if(t >= lifetime)
+		e->pos += 3 * e->args[2] + 2.0*I;
+	return 1;
+}
+
+
 int stage3_bigfairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_DEATH) {
 		spawn_items(e->pos, Point, 5, Power, 5, NULL);
-		if(e->args[0] && global.timer > 2800)
+		if(creal(e->args[0]) && global.timer > 2800)
 			spawn_items(e->pos, Bomb, 1, NULL);
 		return 1;
 	}
@@ -143,14 +174,16 @@ int stage3_bigfairy(Enemy *e, int t) {
 		e->unbombable = true;
 	}
 
+	EnemyLogicRule slave = cimag(e->args[0]) ? stage3_slavefairy2 : stage3_slavefairy;
+
 	FROM_TO(30, 600, 270) {
-		create_enemy3c(e->pos, 900, Fairy, stage3_slavefairy, e->pos + 70 + 50 * I, e->args[0], +1);
-		create_enemy3c(e->pos, 900, Fairy, stage3_slavefairy, e->pos - 70 + 50 * I, e->args[0], -1);
+		create_enemy3c(e->pos, 900, Fairy, slave, e->pos + 70 + 50 * I, e->args[0], +1);
+		create_enemy3c(e->pos, 900, Fairy, slave, e->pos - 70 + 50 * I, e->args[0], -1);
 	}
 
 	FROM_TO(120, 600, 270) {
-		create_enemy3c(e->pos, 900, Fairy, stage3_slavefairy, e->pos + 70 - 50 * I, e->args[0], +1);
-		create_enemy3c(e->pos, 900, Fairy, stage3_slavefairy, e->pos - 70 - 50 * I, e->args[0], -1);
+		create_enemy3c(e->pos, 900, Fairy, slave, e->pos + 70 - 50 * I, e->args[0], +1);
+		create_enemy3c(e->pos, 900, Fairy, slave, e->pos - 70 - 50 * I, e->args[0], -1);
 	}
 
 	AT(600-30*(D_Lunatic-global.diff))
@@ -303,7 +336,7 @@ void stage3_mid_a0(Boss *boss, int time) {
 	int i;
 	TIMER(&time)
 
-	GO_TO(boss, VIEWPORT_W/2+VIEWPORT_W*2/5*sin(time/300) + I*cimag(boss->pos), 0.03)
+	GO_TO(boss, VIEWPORT_W/2+VIEWPORT_W*2/5*sin(time/300) + I*cimag(boss->pos), 0.01)
 
 	FROM_TO_INT(0, 90000, 60 + 10 * (D_Lunatic - global.diff), 0, 1) {
 		int cnt = 30 - 4 * (D_Lunatic - global.diff);
@@ -449,7 +482,7 @@ Boss* stage3_create_midboss(void) {
 	if(global.diff > D_Normal)
 		boss_add_attack_from_info(scuttle, stage3_spells+1, false);
 	boss_add_attack(scuttle, AT_Move, "Runaway", 2, 1, stage3_mid_outro, NULL);
-	scuttle->zoomcolor = rgb(0.4, 0.5, 0.4);
+	scuttle->zoomcolor = rgb(0.4, 0.1, 0.4);
 
 	start_attack(scuttle, scuttle->attacks);
 	return scuttle;
@@ -838,7 +871,17 @@ void stage3_events(void) {
 	}
 
 	AT(400) {
-		create_enemy1c(VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 10000, BigFairy, stage3_bigfairy, 0);
+		create_enemy1c(VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 10000, BigFairy, stage3_bigfairy, 0+1*I);
+	}
+	FROM_TO(400,1000,10) {
+		if(global.enemies == 0) {
+			int cnt = 2*global.diff;
+			for(int i = 0; i <= cnt;i++) {
+				complex pos1 = VIEWPORT_W/2+VIEWPORT_W/3*nfrand() + VIEWPORT_H/3*I;
+				complex pos2 = pos1+30*(i-cnt/2);
+				create_enemy3c(pos1, 700, Fairy, stage3_slavefairy, pos2, i&1,0.5*(i-cnt/2));
+			}
+		}
 	}
 
 	FROM_TO(1100, 1300-30*(D_Lunatic-global.diff), 10) {
@@ -854,9 +897,9 @@ void stage3_events(void) {
 		if(global.enemies == 0) {
 			int cnt = 2*global.diff;
 			for(int i = 0; i <= cnt;i++) {
-				complex pos1 = VIEWPORT_W/2+60*(i-cnt/2) + VIEWPORT_H/3*I;
+				complex pos1 = VIEWPORT_W/2+VIEWPORT_W/3*nfrand() + VIEWPORT_H/3*I;
 				complex pos2 = pos1+30*(i-cnt/2);
-				create_enemy3c(pos1, 700, Fairy, stage3_slavefairy, pos2, i&1,0.5*(i-cnt/2));
+				create_enemy3c(pos1, 700, Fairy, stage3_slavefairy2, pos2, i&1,0.5*(i-cnt/2));
 			}
 		}
 	}
@@ -898,7 +941,7 @@ void stage3_events(void) {
 		create_enemy1c(VIEWPORT_W/3 + (VIEWPORT_H/5)*I, 10000, BigFairy, stage3_bigfairy, 2);
 	}
 
-	FROM_TO(3500, 3600, 20+4*(D_Lunatic-global.diff)) {
+	FROM_TO(3700, 3800, 20+4*(D_Lunatic-global.diff)) {
 		create_enemy2c(20 + (VIEWPORT_H+20)*I, 50, Swirl, stage3_bitchswirl, 1, 1);
 	}
 
