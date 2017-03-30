@@ -564,19 +564,29 @@ void MariStar(Projectile *p, int t) {
 	glPushMatrix();
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
 	glRotatef(t*10, 0, 0, 1);
-	draw_texture_p(0, 0, p->tex);
+
+	if(p->clr) {
+		parse_color_call(p->clr, glColor4f);
+		draw_texture_p(0, 0, p->tex);
+		glColor4f(1, 1, 1, 1);
+	} else {
+		draw_texture_p(0, 0, p->tex);
+	}
+
 	glPopMatrix();
 }
 
 void MariStarTrail(Projectile *p, int t) {
 	float s = 1 - t / creal(p->args[0]);
 
+	Color clr = derive_color(p->clr, CLRMASK_A, rgba(0, 0, 0, s*0.5));
+
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glPushMatrix();
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
 	glRotatef(t*10, 0, 0, 1);
 	glScalef(s, s, 1);
-	glColor4f(1,1,1,s*0.5);
+	parse_color_call(clr, glColor4f);
 	draw_texture_p(0, 0, p->tex);
 	glColor4f(1,1,1,1);
 	glPopMatrix();
@@ -589,11 +599,14 @@ void MariStarBomb(Projectile *p, int t) {
 }
 
 int marisa_star_projectile(Projectile *p, int t) {
+	float c = 0.3 * psin(t * 0.2);
+	p->clr = rgb(1 - c, 0.7 + 0.3 * psin(t * 0.1), 0.9 + c/3);
+
 	int r = accelerated(p, t);
-	create_projectile_p(&global.particles, get_tex("proj/maristar"), p->pos, 0, MariStarTrail, timeout, 10, 0, 0, 0)->type = PlrProj;
+	create_projectile_p(&global.particles, get_tex("proj/maristar"), p->pos, p->clr, MariStarTrail, timeout, 10, 0, 0, 0)->type = PlrProj;
 
 	if(t == EVENT_DEATH) {
-		Projectile *impact = create_projectile_p(&global.particles, get_tex("proj/maristar"), p->pos, 0, GrowFadeAdd, timeout, 40, 2, 0, 0);
+		Projectile *impact = create_projectile_p(&global.particles, get_tex("proj/maristar"), p->pos, p->clr, GrowFadeAdd, timeout, 40, 2, 0, 0);
 		impact->type = PlrProj;
 		impact->angle = frand() * 2 * M_PI;
 	}
@@ -604,15 +617,15 @@ int marisa_star_projectile(Projectile *p, int t) {
 int marisa_star_slave(Enemy *e, int t) {
 	double focus = global.plr.focus/30.0;
 
-	if(should_shoot(true) && !(global.frames % 20)) {
+	if(should_shoot(true) && !(global.frames % 15)) {
 		complex v = e->args[1] * 2;
 		complex a = e->args[2];
 
 		v = creal(v) * (1 - 5 * focus) + I * cimag(v) * (1 - 2.5 * focus);
 		a = creal(a) * focus * -0.0525 + I * cimag(a) * 2;
 
-		create_projectile_p(&global.projs, get_tex("proj/maristar"), e->pos, 0, MariStar, marisa_star_projectile,
-							v, a, 0, 0)->type = PlrProj+e->args[3]*20;
+		create_projectile_p(&global.projs, get_tex("proj/maristar"), e->pos, rgb(1, 0.5, 1), MariStar, marisa_star_projectile,
+							v, a, 0, 0)->type = PlrProj+e->args[3]*15;
 	}
 
 	e->pos = global.plr.pos + (1 - focus)*e->pos0 + focus*e->args[0];
@@ -717,9 +730,8 @@ void marisa_power(Player *plr, short npow) {
 		}
 
 		if(npow >= 200) {
-			double side = npow == 4? 0 : 0.3;
-			create_enemy_p(&plr->slaves, 30.0*I+15, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, +30.0*I+10, -side-2.0*I, 1-0.1*I, dmg);
-			create_enemy_p(&plr->slaves, 30.0*I-15, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, +30.0*I-10, side-2.0*I, -1-0.1*I, dmg);
+			create_enemy_p(&plr->slaves, 30.0*I+15, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, +30.0*I+10, -0.3-2.0*I,  1-0.1*I, dmg);
+			create_enemy_p(&plr->slaves, 30.0*I-15, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, +30.0*I-10,  0.3-2.0*I, -1-0.1*I, dmg);
 		}
 
 		if(npow / 100 == 3) {
@@ -727,8 +739,8 @@ void marisa_power(Player *plr, short npow) {
 		}
 
 		if(npow >= 400) {
-			create_enemy_p(&plr->slaves, 30, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, 25+30.0*I, -0.5-2.0*I, 2-0.1*I, dmg);
-			create_enemy_p(&plr->slaves, -30, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -25+30.0*I, 0.5-2.0*I, -2-0.1*I, dmg);
+			create_enemy_p(&plr->slaves,  30, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave,  25+30.0*I, -0.6-2.0*I,  2-0.1*I, dmg);
+			create_enemy_p(&plr->slaves, -30, ENEMY_IMMUNE, MariLaserSlave, marisa_star_slave, -25+30.0*I,  0.6-2.0*I, -2-0.1*I, dmg);
 		}
 		break;
 	}

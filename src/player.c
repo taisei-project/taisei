@@ -56,6 +56,8 @@ static void player_full_power(Player *plr) {
 }
 
 void player_set_power(Player *plr, short npow) {
+	npow = clamp(npow, 0, PLR_MAX_POWER);
+
 	switch(plr->cha) {
 		case Youmu:
 			youmu_power(plr, npow);
@@ -67,12 +69,6 @@ void player_set_power(Player *plr, short npow) {
 
 	int oldpow = plr->power;
 	plr->power = npow;
-
-	if(plr->power > PLR_MAX_POWER)
-		plr->power = PLR_MAX_POWER;
-
-	if(plr->power < 0)
-		plr->power = 0;
 
 	if(plr->power == PLR_MAX_POWER && oldpow < PLR_MAX_POWER) {
 		player_full_power(plr);

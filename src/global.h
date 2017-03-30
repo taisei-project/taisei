@@ -73,7 +73,6 @@ enum {
 	EVENT_BIRTH,
 	ACTION_DESTROY,
 
-
 	FPS = 60,
 
 	GAMEOVER_DEFEAT = 1,
