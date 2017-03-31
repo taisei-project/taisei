@@ -246,6 +246,12 @@ void YoumuOppositeMyon(Enemy *e, int t) {
 	create_particle2c("flare", pos, 0, myon_particle_draw, myon_particle_rule, 20, v*dir)->type = PlrProj;
 }
 
+static void youmu_opposite_myon_proj(char *tex, complex pos, double speed, double angle, double aoffs, double upfactor, int dmg) {
+	complex dir = cexp(I*(M_PI/2 + aoffs)) * upfactor + cexp(I * (angle + aoffs)) * (1 - upfactor);
+	dir = dir / cabs(dir);
+	create_projectile1c(tex, pos, 0, linear, speed*dir)->type = PlrProj+dmg;
+}
+
 int youmu_opposite_myon(Enemy *e, int t) {
 	if(t == EVENT_BIRTH)
 		e->pos = e->pos0 + global.plr.pos;
@@ -293,34 +299,38 @@ int youmu_opposite_myon(Enemy *e, int t) {
 	if(should_shoot(true) && !(global.frames % 6) && global.plr.deathtime >= -1) {
 		int v1 = -21;
 		int v2 = -10;
+
 		double r1 = (psin(global.frames * 2) * 0.5 + 0.5) * 0.1;
 		double r2 = (psin(global.frames * 1.2) * 0.5 + 0.5) * 0.1;
+
+		double a = carg(-e->pos0);
+		double u = 1 - nfocus;
 
 		int p = plr->power / 100;
 		int dmg_center = 160 - 30 * p;
 		int dmg_side = 23 + 2 * p;
 
 		if(plr->power >= 100) {
-			create_projectile1c("youmu", e->pos, 0, linear, v1*cexp(I*(carg(-e->pos0)+r1)))->type = PlrProj+dmg_side;
-			create_projectile1c("youmu", e->pos, 0, linear, v1*cexp(I*(carg(-e->pos0)-r1)))->type = PlrProj+dmg_side;
+			youmu_opposite_myon_proj("youmu",  e->pos, v1, a,  r1*1, u, dmg_side);
+			youmu_opposite_myon_proj("youmu",  e->pos, v1, a, -r1*1, u, dmg_side);
 		}
 
 		if(plr->power >= 200) {
-			create_projectile1c("hghost", e->pos, 0, linear, v2*cexp(I*(carg(-e->pos0)+r2*2)))->type = PlrProj+dmg_side;
-			create_projectile1c("hghost", e->pos, 0, linear, v2*cexp(I*(carg(-e->pos0)-r2*2)))->type = PlrProj+dmg_side;
+			youmu_opposite_myon_proj("hghost", e->pos, v2, a,  r2*2, 0, dmg_side);
+			youmu_opposite_myon_proj("hghost", e->pos, v2, a, -r2*2, 0, dmg_side);
 		}
 
 		if(plr->power >= 300) {
-			create_projectile1c("youmu", e->pos, 0, linear, v1*cexp(I*(carg(-e->pos0)+r1*3)))->type = PlrProj+dmg_side;
-			create_projectile1c("youmu", e->pos, 0, linear, v1*cexp(I*(carg(-e->pos0)-r1*3)))->type = PlrProj+dmg_side;
+			youmu_opposite_myon_proj("youmu",  e->pos, v1, a,  r1*3, u, dmg_side);
+			youmu_opposite_myon_proj("youmu",  e->pos, v1, a, -r1*3, u, dmg_side);
 		}
 
 		if(plr->power >= 400) {
-			create_projectile1c("hghost", e->pos, 0, linear, v2*cexp(I*(carg(-e->pos0)+r2*4)))->type = PlrProj+dmg_side;
-			create_projectile1c("hghost", e->pos, 0, linear, v2*cexp(I*(carg(-e->pos0)-r2*4)))->type = PlrProj+dmg_side;
+			youmu_opposite_myon_proj("hghost", e->pos, v2, a,  r2*4, 0, dmg_side);
+			youmu_opposite_myon_proj("hghost", e->pos, v2, a, -r2*4, 0, dmg_side);
 		}
 
-		create_projectile1c("hghost", e->pos, 0, linear, v2*cexp(I*carg(-e->pos0)))->type = PlrProj+dmg_center;
+		youmu_opposite_myon_proj("hghost", e->pos, v2, a, 0, 0, dmg_center);
 	}
 
 	return 1;
