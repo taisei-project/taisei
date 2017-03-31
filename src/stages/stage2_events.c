@@ -92,19 +92,9 @@ int stage2_great_circle(Enemy *e, int t) {
 	}
 
 	AT(210+global.diff*25) {
+		e->hp = min(e->hp,200);
 		e->args[0] = 2.0*I;
 	}
-
-	return 1;
-}
-
-int spin_circle(Projectile *p, int t) { // a[0]: angular velocity, a[1]: center, a[2]: center speed
-	if(t < 0)
-		return 1;
-
-	p->pos += p->args[0]*cimag(p->args[1]-p->pos) - p->args[0]*creal(p->args[1]-p->pos)*I;
-
-	p->args[1] += p->args[2];
 
 	return 1;
 }
@@ -129,8 +119,9 @@ int stage2_small_spin_circle(Enemy *e, int t) {
 	AT(50)
 		e->pos0 = e->pos;
 
-	FROM_TO(50,80+global.diff*5,5)
-		create_projectile3c("ball", e->pos, rgb(0.9,0.0,0.3), spin_circle, 0.02 - 0.04*(!e->dir), e->pos0 + 10*((1-2*e->dir)+1.0*I), (1-2*e->dir)+.5*I);
+	FROM_TO(30,80+global.diff*5,5-global.diff/2) {
+		create_projectile1c("ball", e->pos, rgb(0.9,0.0,0.3), linear, pow(global.diff,0.7)*(conj(e->pos-VIEWPORT_W/2)/100 + ((1-2*e->dir)+3.0*I)));
+	}
 
 	return 1;
 }
@@ -471,11 +462,11 @@ void stage2_events(void) {
 	}
 
 	AT(300) {
-		create_enemy1c(VIEWPORT_W/2-10.0*I, 7000+500*global.diff, BigFairy, stage2_great_circle, 2.0*I);
+		create_enemy1c(VIEWPORT_W/2-10.0*I, 7500, BigFairy, stage2_great_circle, 2.0*I);
 	}
 
 	FROM_TO(650-50*global.diff, 750+25*(4-global.diff), 50) {
-		create_enemy1c(VIEWPORT_W*((_i)%2)+50.0*I, 2000, Fairy, stage2_small_spin_circle, 2-4*(_i%2)+1.0*I);
+		create_enemy1c(VIEWPORT_W*((_i)%2), 1000, Fairy, stage2_small_spin_circle, 2-4*(_i%2)+1.0*I);
 	}
 
 	FROM_TO(850, 1000, 15)
