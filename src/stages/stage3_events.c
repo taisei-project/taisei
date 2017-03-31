@@ -391,6 +391,24 @@ void stage3_mid_a1(Boss *boss, int time) {
 	}
 }
 
+void stage3_mid_poison2_draw(Projectile *p, int time) {
+	float f = 1-min(time/60.0,1);
+	glPushMatrix();
+	glTranslatef(creal(p->pos), cimag(p->pos), 0);
+	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
+	_ProjDraw(p,time);
+	if(f > 0) {
+		p->tex = get_tex("proj/ball");
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+		glScalef(f,f,f);
+		_ProjDraw(p,time);
+		glScalef(1/f,1/f,1/f);
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+		p->tex = get_tex("proj/rice");
+	}
+	glPopMatrix();
+}
+
 int stage3_mid_poison2(Projectile *p, int time) {
 	if(time < 0)
 		return 1;
@@ -414,6 +432,8 @@ int stage3_mid_poison2(Projectile *p, int time) {
 		p->args[1] = global.boss->pos-p->pos;
 		p->args[1] *= 2/cabs(p->args[1]);
 		p->angle = carg(p->args[1]);
+		p->birthtime = global.frames;
+		p->draw = stage3_mid_poison2_draw;
 		p->tex = get_tex("proj/rice");
 	}
 	p->pos += p->args[1];
@@ -428,14 +448,12 @@ void stage3_mid_a2(Boss *boss, int time) {
 		return;
 	}
 
-	//GO_TO(boss, VIEWPORT_H/2*I+VIEWPORT_W/2-100*I*sin(time/200.),0.05)
-
-	FROM_TO(30, 9000, 2) {
-		int i, cnt = 1+global.diff/2;
+	bool lun = global.diff == D_Lunatic;
+	FROM_TO(30, 9000, 3-lun) {
+		int i, cnt = 2;
 		for(i = 0; i < cnt; ++i) {
-			complex pos = 250*cexp(I*(_i*0.3+2*M_PI/cnt*i))*tanh(sin(_i/200.));
+			complex pos = 230*cexp(I*(_i*(0.3+0.01*lun)+2*M_PI/cnt*i))*tanh(sin(_i/200./(1+lun)));
 			create_projectile2c("ball",boss->pos+pos,rgb(0.3,1.0,0.3),stage3_mid_poison2,100,pos/cabs(pos));
-
 		}
 	}
 }
