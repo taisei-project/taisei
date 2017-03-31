@@ -241,9 +241,10 @@ int stage3_cornerfairy(Enemy *e, int t) {
 
 			for(i = 0; i < cnt; ++i) {
 				float c = psin(t / 15.0);
+				bool wave = global.diff > D_Easy && cabs(e->args[2]);
 
-				create_projectile2c((global.diff > D_Easy && cabs(e->args[2]))? "wave" : "thickrice", e->pos, cabs(e->args[2])? rgb(0.5 - c*0.2, 0.3 + c*0.7, 1.0) : rgb(1.0 - c*0.5, 0.6, 0.5 + c*0.5), asymptotic,
-					(1.2+0.3*global.diff)*cexp(I*((2*i*M_PI/cnt)+carg((VIEWPORT_W+I*VIEWPORT_H)/2 - e->pos))),
+				create_projectile2c(wave ? "wave" : "thickrice", e->pos, cabs(e->args[2])? rgb(0.5 - c*0.2, 0.3 + c*0.7, 1.0) : rgb(1.0 - c*0.5, 0.6, 0.5 + c*0.5), asymptotic,
+					(1.2+0.3*global.diff-0.6*wave*!!(e->args[2]))*cexp(I*((2*i*M_PI/cnt)+carg((VIEWPORT_W+I*VIEWPORT_H)/2 - e->pos))),
 					1.5
 				);
 
@@ -338,7 +339,7 @@ void stage3_mid_a0(Boss *boss, int time) {
 	GO_TO(boss, VIEWPORT_W/2+VIEWPORT_W/3*sin(time/300) + I*cimag(boss->pos), 0.01)
 
 	FROM_TO_INT(0, 90000, 72 + 6 * (D_Lunatic - global.diff), 0, 1) {
-		int cnt = 24 - 2 * (D_Lunatic - global.diff);
+		int cnt = 21 - 1 * (D_Lunatic - global.diff);
 
 		for(i = 0; i < cnt; ++i) {
 			complex v = (2 - psin((max(3, global.diff+1)*2*M_PI*i/(float)cnt) + time)) * cexp(I*2*M_PI/cnt*i);
@@ -373,7 +374,7 @@ void stage3_mid_a1(Boss *boss, int time) {
 		}
 
 		if(global.diff > D_Easy && !(time % 35)) {
-			int cnt = global.diff * 3;
+			int cnt = global.diff * 2;
 			for(i = 0; i < cnt; ++i) create_projectile2c("ball", boss->pos, rgb(1.0, 1.0, 0.3), asymptotic,
 				(0.5 + 3 * psin(time + M_PI/3*2*i)) * cexp(I*(time / 20.0 + M_PI/cnt*i*2)),
 				1.5
@@ -552,7 +553,7 @@ int stage3_boss_a1_laserbullet(Projectile *p, int time) {
 			l->width = 15;
 			create_projectile3c("ball", p->pos, rgb(1.0, 0.5, 0.5), stage3_boss_a1_laserbullet, add_ref(l), deathtime - 1, 0);
 		} else {
-			int cnt = max(3 + global.diff, 5), i;
+			int cnt = 4, i;
 
 			for(i = 0; i < cnt; ++i) {
 				create_projectile2c("thickrice", p->pos, (i % 2)? rgb(1.0, 0.5, 0.5) : rgb(0.5, 0.5, 1.0), asymptotic,
@@ -607,7 +608,7 @@ int stage3_boss_a1_slave(Enemy *e, int time) {
 		return 1;
 	}
 
-	GO_TO(e, boss->pos + 150 * sin(time / 100.0) * dir, 0.03)
+	GO_TO(e, boss->pos + 100 * sin(time / 100.0) * dir, 0.03)
 
 	if(!(time % 2)) {
 		float c = 0.5 * psin(time / 25.0);
