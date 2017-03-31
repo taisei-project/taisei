@@ -92,6 +92,7 @@ int stage2_great_circle(Enemy *e, int t) {
 	}
 
 	AT(210+global.diff*25) {
+		e->hp = min(e->hp,200);
 		e->args[0] = 2.0*I;
 	}
 
@@ -461,11 +462,11 @@ void stage2_events(void) {
 	}
 
 	AT(300) {
-		create_enemy1c(VIEWPORT_W/2-10.0*I, 7000+500*global.diff, BigFairy, stage2_great_circle, 2.0*I);
+		create_enemy1c(VIEWPORT_W/2-10.0*I, 7500, BigFairy, stage2_great_circle, 2.0*I);
 	}
 
 	FROM_TO(650-50*global.diff, 750+25*(4-global.diff), 50) {
-		create_enemy1c(VIEWPORT_W*((_i)%2), 2000, Fairy, stage2_small_spin_circle, 2-4*(_i%2)+1.0*I);
+		create_enemy1c(VIEWPORT_W*((_i)%2), 1000, Fairy, stage2_small_spin_circle, 2-4*(_i%2)+1.0*I);
 	}
 
 	FROM_TO(850, 1000, 15)
