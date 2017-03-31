@@ -517,6 +517,14 @@ static void stage_draw(StageInfo *stage) {
 
 	FBO *ppfbo = postprocess(resources.stage_postprocess, &resources.fsec, resources.fbg, postprocess_prepare, draw_fbo_viewport);
 
+	if(ppfbo != &resources.fsec) {
+		// ensure that fsec is the most up to date fbo, because the ingame menu derives the background from it.
+		// it would be more efficient to somehow pass ppfbo to it and avoid the copy, but this is simpler.
+		glBindFramebuffer(GL_FRAMEBUFFER, resources.fsec.fbo);
+		draw_fbo_viewport(ppfbo);
+		ppfbo = &resources.fsec;
+	}
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	video_set_viewport();
 
