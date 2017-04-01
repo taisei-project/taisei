@@ -204,7 +204,7 @@ static void resource_wait_for_all_async_loads(ResourceHandler *handler) {
 static Resource* load_resource(ResourceHandler *handler, const char *path, const char *name, ResourceFlags flags, bool async) {
 	Resource *res;
 
-	const char *typename = resource_type_names[handler->type];
+	const char *loltypename = resource_type_names[handler->type];
 	char *allocated_path = NULL;
 	char *allocated_name = NULL;
 
@@ -215,9 +215,9 @@ static Resource* load_resource(ResourceHandler *handler, const char *path, const
 
 		if(!path) {
 			if(!(flags & RESF_OPTIONAL)) {
-				log_fatal("Required %s '%s' couldn't be located", typename, name);
+				log_fatal("Required %s '%s' couldn't be located", loltypename, name);
 			} else {
-				log_warn("Failed to locate %s '%s'", typename, name);
+				log_warn("Failed to locate %s '%s'", loltypename, name);
 			}
 
 			return NULL;
@@ -239,7 +239,7 @@ static Resource* load_resource(ResourceHandler *handler, const char *path, const
 	res = hashtable_get_string(handler->mapping, name);
 
 	if(res) {
-		log_warn("%s '%s' is already loaded", typename, name);
+		log_warn("%s '%s' is already loaded", loltypename, name);
 		free(allocated_name);
 		return res;
 	}
@@ -256,7 +256,7 @@ static Resource* load_resource(ResourceHandler *handler, const char *path, const
 }
 
 static Resource* load_resource_finish(void *opaque, ResourceHandler *handler, const char *path, const char *name, char *allocated_path, char *allocated_name, ResourceFlags flags) {
-	const char *typename = resource_type_names[handler->type];
+	const char *loltypename = resource_type_names[handler->type];
 	void *raw = handler->end_load(opaque, path, flags);
 
 	if(!raw) {
@@ -264,9 +264,9 @@ static Resource* load_resource_finish(void *opaque, ResourceHandler *handler, co
 		path = path ? path : "<path unknown>";
 
 		if(!(flags & RESF_OPTIONAL)) {
-			log_fatal("Required %s '%s' couldn't be loaded (%s)", typename, name, path);
+			log_fatal("Required %s '%s' couldn't be loaded (%s)", loltypename, name, path);
 		} else {
-			log_warn("Failed to load %s '%s' (%s)", typename, name, path);
+			log_warn("Failed to load %s '%s' (%s)", loltypename, name, path);
 		}
 
 		free(allocated_path);

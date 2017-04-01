@@ -14,6 +14,12 @@ typedef struct Transition Transition;
 typedef void (*TransitionRule)(double fade);
 typedef void (*TransitionCallback)(void *a);
 
+typedef enum TransitionState {
+    TRANS_IDLE,
+    TRANS_FADE_IN,
+    TRANS_FADE_OUT,
+} TransitionState;
+
 struct Transition {
     double fade;
 	int dur1; // first half
@@ -21,11 +27,7 @@ struct Transition {
     TransitionCallback callback;
     void *arg;
 
-    enum {
-        TRANS_IDLE,
-        TRANS_FADE_IN,
-        TRANS_FADE_OUT,
-    } state;
+    TransitionState state;
 
 	TransitionRule rule;
     TransitionRule rule2;

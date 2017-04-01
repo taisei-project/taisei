@@ -23,7 +23,7 @@ CONFIGDEFS_EXPORT ConfigEntry configdefs[] = {
 	#define CONFIGDEF_STRING(id,entryname,default) CONFIGDEF(CONFIG_TYPE_STRING, entryname, NULL, s)
 
 	CONFIGDEFS
-	{0}
+	{CONFIG_TYPE_INVALID}
 
 	#undef CONFIGDEF
 	#undef CONFIGDEF_KEYBINDING
@@ -114,7 +114,7 @@ KeyIndex config_key_from_scancode(int scan) {
 		}
 	}
 
-	return -1;
+	return KEYIDX_INVALID;
 }
 
 GamepadKeyIndex config_gamepad_key_from_gamepad_button(int btn) {
@@ -124,14 +124,14 @@ GamepadKeyIndex config_gamepad_key_from_gamepad_button(int btn) {
 		}
 	}
 
-	return -1;
+	return GPKEYIDX_INVALID;
 }
 
 KeyIndex config_key_from_gamepad_key(GamepadKeyIndex gpkey) {
 	#define CONFIGDEF_GPKEYBINDING(id,entryname,default) case GAMEPAD_##id: return id;
 	switch(gpkey) {
 		GPKEYDEFS
-		default: return -1;
+		default: return KEYIDX_INVALID;
 	}
 	#undef CONFIGDEF_GPKEYBINDING
 }
@@ -140,7 +140,7 @@ GamepadKeyIndex config_gamepad_key_from_key(KeyIndex key) {
 	#define CONFIGDEF_GPKEYBINDING(id,entryname,default) case id: return GAMEPAD_##id;
 	switch(key) {
 		GPKEYDEFS
-		default: return -1;
+		default: return GPKEYIDX_INVALID;
 	}
 	#undef CONFIGDEF_GPKEYBINDING
 }
@@ -237,7 +237,7 @@ static ConfigEntry* config_get_unknown_entry(const char *name) {
 		}
 	}
 
-	l = create_element((void**)&unknowndefs, sizeof(ConfigEntryList));
+	l = reinterpret_cast<ConfigEntryList*>(create_element(reinterpret_cast<void**>(&unknowndefs), sizeof(ConfigEntryList)));
 	e = &l->entry;
 	memset(e, 0, sizeof(ConfigEntry));
 	stralloc(&e->name, name);
@@ -295,7 +295,7 @@ void config_save(const char *filename) {
 			break;
 
 		case CONFIG_TYPE_KEYBINDING:
-			SDL_RWprintf(out, "%s = %s\n", e->name, SDL_GetScancodeName(e->val.i));
+			SDL_RWprintf(out, "%s = %s\n", e->name, SDL_GetScancodeName(static_cast<SDL_Scancode>(e->val.i)));
 			break;
 
 		case CONFIG_TYPE_STRING:

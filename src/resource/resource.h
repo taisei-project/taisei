@@ -21,23 +21,20 @@
 #include "hashtable.h"
 #include "paths/native.h"
 
-typedef enum ResourceType {
-	RES_TEXTURE,
-	RES_ANIM,
-	RES_SFX,
-	RES_BGM,
-	RES_SHADER,
-	RES_MODEL,
-	RES_NUMTYPES,
-} ResourceType;
-
-typedef enum ResourceFlags {
-	RESF_OPTIONAL = 1,
-	RESF_PERMANENT = 2,
-	RESF_PRELOAD = 4,
-} ResourceFlags;
+#define RES_TEXTURE 0
+#define RES_ANIM 1
+#define RES_SFX 2
+#define RES_BGM 3
+#define RES_SHADER 4
+#define RES_MODEL 5
+#define RES_NUMTYPES 6
+typedef int ResourceType;
 
 #define RESF_DEFAULT 0
+#define RESF_OPTIONAL 1
+#define RESF_PERMANENT 2
+#define RESF_PRELOAD 4
+typedef int ResourceFlags;
 
 // All paths are relative to the current working directory, which can assumed to be the resources directory,
 // unless mentioned otherwise.

@@ -2,8 +2,6 @@
 #ifndef TSUTIL_H
 #define TSUTIL_H
 
-#include <stdbool.h>
-#include <stdnoreturn.h>
 #include <stdio.h>
 #include <string.h>
 #include <zlib.h> // compiling under mingw may fail without this...
@@ -57,10 +55,10 @@ char* strtok_r(char *str, const char *delim, char **nextp);
 // This is a workaround to properly specify the type of our "complex" variables...
 // Taisei code always uses just "complex" when it actually means "complex double", which is not really correct...
 // gcc doesn't seem to care, other compilers do (e.g. clang)
-#ifdef complex
-    #undef complex
-    #define complex _Complex double
-#endif
+
+#undef complex
+#define complex _Complex double
+
 
 // needed for mingw compatibility:
 #undef min
@@ -72,6 +70,8 @@ double clamp(double, double, double) __attribute__((const));
 double approach(double v, double t, double d) __attribute__((const));
 double psin(double) __attribute__((const));
 int sign(double) __attribute__((const));
+double atan(complex c) __attribute__((const));
+double pow(complex c, int p) __attribute__((const));
 
 //
 // gl/video utils
@@ -108,7 +108,7 @@ char* SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize);
 size_t SDL_RWprintf(SDL_RWops *rwops, const char* fmt, ...) __attribute__((format(printf, 2, 3)));
 
 // This is for the very few legitimate uses for printf/fprintf that shouldn't be replaced with log_*
-void tsfprintf(FILE *out, const char *restrict fmt, ...) __attribute__((format(printf, 2, 3)));
+void tsfprintf(FILE *out, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
 
 //
 // misc utils
@@ -118,7 +118,7 @@ int getenvint(const char *v) __attribute__((pure));
 void png_setup_error_handlers(png_structp png);
 uint32_t crc32str(uint32_t crc, const char *str);
 
-noreturn void _ts_assert_fail(const char *cond, const char *func, const char *file, int line, bool use_log);
+[[noreturn]] void _ts_assert_fail(const char *cond, const char *func, const char *file, int line, bool use_log);
 
 #undef assert
 
@@ -154,7 +154,7 @@ char* strncpy() __attribute__((deprecated(
     "This function likely doesn't do what you expect, use strlcpy")));
 
 #undef errx
-noreturn void errx(int, const char*, ...) __attribute__((deprecated(
+[[noreturn]] void errx(int, const char*, ...) __attribute__((deprecated(
     "Use log_fatal instead")));
 
 #undef warnx

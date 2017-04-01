@@ -43,7 +43,7 @@ Color difficulty_color(Difficulty diff) {
 }
 
 void difficulty_preload(void) {
-    for(Difficulty diff = D_Easy; diff < NUM_SELECTABLE_DIFFICULTIES + D_Easy; ++diff) {
+    for(Difficulty diff = D_Easy; diff < NUM_SELECTABLE_DIFFICULTIES + D_Easy; diff = static_cast<Difficulty>(static_cast<int>(diff) + 1)) {
         preload_resource(RES_TEXTURE, difficulty_tex(diff), RESF_PERMANENT);
     }
 }

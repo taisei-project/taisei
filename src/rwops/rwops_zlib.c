@@ -23,6 +23,9 @@
 	#define PRINT(...)
 #endif
 
+#define TYPE_DEFLATE 0
+#define TYPE_INFLATE 1
+
 typedef struct ZData {
 	uint8_t *buffer;
 	uint8_t *buffer_ptr;
@@ -41,10 +44,7 @@ typedef struct ZData {
 		};
 	};
 
-	enum {
-		TYPE_DEFLATE,
-		TYPE_INFLATE,
-	} type;
+	int type;
 
 	size_t pos;
 	z_stream *stream;

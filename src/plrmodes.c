@@ -56,9 +56,9 @@ void Slice(Projectile *p, int t) {
 		p->args[2] += 1;
 	}
 
-	float f = p->args[1]/p->args[0]*20.0;
+	float f = creal(p->args[1]/p->args[0]*20.0);
 
-	glColor4f(1,1,1,1.0 - p->args[2]/p->args[0]*20.0);
+	glColor4f(1,1,1,1.0 - creal(p->args[2]/p->args[0]*20.0));
 
 	glPushMatrix();
 	glTranslatef(creal(p->pos), cimag(p->pos),0);
@@ -83,7 +83,7 @@ int spin(Projectile *p, int t) {
 		return 1;
 
 	p->args[3] += 0.06;
-	p->angle = p->args[3];
+	p->angle = creal(p->args[3]);
 
 	return i;
 }
@@ -148,19 +148,19 @@ int youmu_opposite_myon(Enemy *e, int t) {
 
 		//if(global.frames - plr->prevmovetime <= 10 && global.frames == plr->movetime) {
 		if(global.frames == plr->movetime) {
-			int new = plr->curmove;
+			int lolnew = plr->curmove;
 			int old = plr->prevmove;
 
-			if(new == INFLAG_UP && old == INFLAG_DOWN) {
+			if(lolnew == INFLAG_UP && old == INFLAG_DOWN) {
 				arg = M_PI/2;
 				e->args[0] = plr->movetime;
-			} else if(new == INFLAG_DOWN && old == INFLAG_UP) {
+			} else if(lolnew == INFLAG_DOWN && old == INFLAG_UP) {
 				arg = 3*M_PI/2;
 				e->args[0] = plr->movetime;
-			} else if(new == INFLAG_LEFT && old == INFLAG_RIGHT) {
+			} else if(lolnew == INFLAG_LEFT && old == INFLAG_RIGHT) {
 				arg = 0;
 				e->args[0] = plr->movetime;
-			} else if(new == INFLAG_RIGHT && old == INFLAG_LEFT) {
+			} else if(lolnew == INFLAG_RIGHT && old == INFLAG_LEFT) {
 				arg = M_PI;
 				e->args[0] = plr->movetime;
 			}
@@ -313,7 +313,7 @@ int mari_laser(Projectile *p, int t) {
 int marisa_laser_slave(Enemy *e, int t) {
 	if(should_shoot(true)) {
 		if(!(global.frames % 4))
-			create_projectile_p(&global.projs, get_tex("proj/marilaser"), 0, 0, MariLaser, mari_laser, 0, add_ref(e),e->args[2],0)->type = PlrProj+e->args[1]*4;
+			create_projectile_p(&global.projs, get_tex("proj/marilaser"), 0, 0, MariLaser, mari_laser, 0, add_ref(e),e->args[2],0)->type = PlrProj+creal(e->args[1])*4;
 
 		if(!(global.frames % 3)) {
 			float s = 0.5 + 0.3*sin(global.frames/7.0);
@@ -358,13 +358,13 @@ static void draw_masterspark_ring(complex base, int t, float fade) {
 void MasterSpark(Enemy *e, int t) {
 	glPushMatrix();
 
-	float angle = 9 - t/e->args[0]*6.0, fade = 1;
+	float angle = 9 - t/creal(e->args[0])*6.0, fade = 1;
 
 	if(t < creal(e->args[0]/6))
-		fade = t/e->args[0]*6;
+		fade = t/creal(e->args[0])*6;
 
 	if(t > creal(e->args[0])/4*3)
-		fade = 1-t/e->args[0]*4 + 3;
+		fade = 1-t/creal(e->args[0])*4 + 3;
 
 	glColor4f(1,0.85,1,fade);
 	glTranslatef(creal(global.plr.pos), cimag(global.plr.pos), 0);
@@ -441,7 +441,7 @@ int marisa_star_slave(Enemy *e, int t) {
 
 	if(should_shoot(true)) {
 		if(!(global.frames % 20))
-			create_projectile_p(&global.projs, get_tex("proj/maristar"), e->pos, 0, MariStar, marisa_star_projectile, e->args[1] * 2 * (1 - 1.5 * focus), e->args[2], 0, 0)->type = PlrProj+e->args[3]*20;
+			create_projectile_p(&global.projs, get_tex("proj/maristar"), e->pos, 0, MariStar, marisa_star_projectile, creal(e->args[1]) * 2 * (1 - 1.5 * focus), e->args[2], 0, 0)->type = PlrProj+creal(e->args[3])*20;
 	}
 
 	e->pos = global.plr.pos + (1 - focus)*e->pos0 + focus*e->args[0];

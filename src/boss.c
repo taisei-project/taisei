@@ -12,10 +12,10 @@
 #include <stdio.h>
 
 Boss* create_boss(char *name, char *ani, complex pos) {
-	Boss *buf = malloc(sizeof(Boss));
+	Boss *buf = (Boss*)malloc(sizeof(Boss));
 	memset(buf, 0, sizeof(Boss));
 
-	buf->name = malloc(strlen(name) + 1);
+	buf->name = (char*)malloc(strlen(name) + 1);
 	strcpy(buf->name, name);
 	buf->pos = pos;
 
@@ -205,14 +205,14 @@ void start_attack(Boss *b, Attack *a) {
 }
 
 Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule) {
-	boss->attacks = realloc(boss->attacks, sizeof(Attack)*(++boss->acount));
+	boss->attacks = (Attack*)realloc(boss->attacks, sizeof(Attack)*(++boss->acount));
 	Attack *a = &boss->attacks[boss->acount-1];
 	memset(a, 0, sizeof(Attack));
 
 	boss->current = &boss->attacks[0];
 
 	a->type = type;
-	a->name = malloc(strlen(name)+1);
+	a->name = (char*)malloc(strlen(name)+1);
 	strcpy(a->name, name);
 	a->timeout = timeout * FPS;
 

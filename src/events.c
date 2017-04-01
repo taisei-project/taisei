@@ -11,6 +11,7 @@
 #include "global.h"
 #include "video.h"
 #include "gamepad.h"
+#include "transition.h"
 
 void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 	SDL_Event event;
@@ -38,7 +39,7 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 		}
 
 		SDL_Scancode scan = event.key.keysym.scancode;
-		SDL_Keymod mod = event.key.keysym.mod;
+		SDL_Keymod mod = static_cast<SDL_Keymod>(event.key.keysym.mod);
 		bool repeat = event.key.repeat;
 
 		switch(event.type) {

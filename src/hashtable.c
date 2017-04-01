@@ -16,8 +16,8 @@
 #include <SDL_mutex.h>
 
 typedef struct HashtableElement {
-    void *next;
-    void *prev;
+    struct HashtableElement *next;
+    struct HashtableElement *prev;
     void *data;
     void *key;
     hash_t hash;
@@ -63,7 +63,7 @@ static size_t constraint_size(size_t size) {
 }
 
 Hashtable* hashtable_new(size_t size, HTCmpFunc cmp_func, HTHashFunc hash_func, HTCopyFunc copy_func, HTFreeFunc free_func) {
-    Hashtable *ht = malloc(sizeof(Hashtable));
+    Hashtable *ht = reinterpret_cast<Hashtable*>(malloc(sizeof(Hashtable)));
 
     if(size == HT_DYNAMIC_SIZE) {
         size = constraint_size(0);
@@ -81,7 +81,7 @@ Hashtable* hashtable_new(size_t size, HTCmpFunc cmp_func, HTHashFunc hash_func, 
         copy_func = hashtable_copyfunc_ptr;
     }
 
-    ht->table = calloc(size, sizeof(HashtableElement*));
+    ht->table = reinterpret_cast<HashtableElement**>(calloc(size, sizeof(HashtableElement*)));
     ht->table_size = size;
     ht->num_elements = 0;
     ht->cmp_func = cmp_func;
@@ -128,8 +128,8 @@ void hashtable_unlock(Hashtable *ht) {
 }
 
 static void hashtable_delete_callback(void **vlist, void *velem, void *vht) {
-    Hashtable *ht = vht;
-    HashtableElement *elem = velem;
+    Hashtable *ht = reinterpret_cast<Hashtable*>(vht);
+    HashtableElement *elem = reinterpret_cast<HashtableElement*>(velem);
 
     if(ht->free_func) {
         ht->free_func(elem->key);
@@ -213,7 +213,7 @@ static bool hashtable_set_internal(Hashtable *ht, HashtableElement **table, size
             collisions_updated = !collisions_updated;
         }
 
-        elem = create_element((void**)&elems, sizeof(HashtableElement));
+        elem = reinterpret_cast<HashtableElement*>(create_element((void**)&elems, sizeof(HashtableElement)));
         ht->copy_func(&elem->key, key);
         elem->hash = ht->hash_func(elem->key);
         elem->data = data;
@@ -226,7 +226,7 @@ static bool hashtable_set_internal(Hashtable *ht, HashtableElement **table, size
 }
 
 static int hashtable_check_collisions_with_new_size(Hashtable *ht, size_t size) {
-    int *ctable = calloc(sizeof(int), size);
+    int *ctable = reinterpret_cast<int*>(calloc(sizeof(int), size));
     int cols = 0;
 
     for(size_t i = 0; i < ht->table_size; ++i) {
@@ -274,7 +274,7 @@ static void hashtable_resize_internal(Hashtable *ht, size_t new_size) {
         return;
     }
 
-    HashtableElement **new_table = calloc(new_size, sizeof(HashtableElement*));
+    HashtableElement **new_table = reinterpret_cast<HashtableElement**>(calloc(new_size, sizeof(HashtableElement*)));
 
     for(size_t i = 0; i < ht->table_size; ++i) {
         for(HashtableElement *e = ht->table[i]; e; e = e->next) {
@@ -320,7 +320,7 @@ void hashtable_unset(Hashtable *ht, void *key) {
 
 void hashtable_unset_deferred(Hashtable *ht, void *key, ListContainer **list) {
     assert(ht != NULL);
-    ListContainer *c = create_element((void**)list, sizeof(ListContainer));
+    ListContainer *c = reinterpret_cast<ListContainer*>(create_element((void**)list, sizeof(ListContainer)));
     ht->copy_func(&c->data, key);
 }
 
@@ -362,7 +362,7 @@ void* hashtable_foreach(Hashtable *ht, HTIterCallback callback, void *arg) {
 
 HashtableIterator* hashtable_iter(Hashtable *ht) {
     assert(ht != NULL);
-    HashtableIterator *iter = malloc(sizeof(HashtableIterator));
+    HashtableIterator *iter = reinterpret_cast<HashtableIterator*>(malloc(sizeof(HashtableIterator)));
     iter->hashtable = ht;
     iter->bucketnum = (size_t)-1;
     return iter;
@@ -412,7 +412,7 @@ hash_t hashtable_hashfunc_string(void *vstr) {
 
 void hashtable_copyfunc_string(void **dst, void *src) {
     *dst = malloc(strlen((char*)src) + 1);
-    strcpy(*dst, src);
+    strcpy(reinterpret_cast<char*>(*dst), reinterpret_cast<const char*>(src));
 }
 
 // #define hashtable_freefunc_string free

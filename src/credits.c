@@ -46,19 +46,19 @@ void credits_add(char *data, int time) {
 	char *c, buf[256];
 	int l = 0, i = 0;
 
-	credits.entries = realloc(credits.entries, (++credits.ecount) * sizeof(CreditsEntry));
+	credits.entries = reinterpret_cast<CreditsEntry*>(realloc(credits.entries, (++credits.ecount) * sizeof(CreditsEntry)));
 	e = &(credits.entries[credits.ecount-1]);
 	e->time = time;
 	e->lines = 1;
 
 	for(c = data; *c; ++c)
 		if(*c == '\n') e->lines++;
-	e->data = malloc(e->lines * sizeof(char*));
+	e->data = reinterpret_cast<char**>(malloc(e->lines * sizeof(char*)));
 
 	for(c = data; *c; ++c) {
 		if(*c == '\n') {
 			buf[i] = 0;
-			e->data[l] = malloc(strlen(buf) + 1);
+			e->data[l] = reinterpret_cast<char*>(malloc(strlen(buf) + 1));
 			strcpy(e->data[l], buf);
 			i = 0;
 			++l;
@@ -68,7 +68,7 @@ void credits_add(char *data, int time) {
 	}
 
 	buf[i] = 0;
-	e->data[l] = malloc(strlen(buf) + 1);
+	e->data[l] = reinterpret_cast<char*>(malloc(strlen(buf) + 1));
 	strcpy(e->data[l], buf);
 	credits.end += time + CREDITS_ENTRY_FADEOUT;
 }
@@ -267,7 +267,7 @@ void credits_loop(void) {
 	credits_preload();
 	credits_init();
 	while(credits.end) {
-		handle_events(NULL, 0, NULL);
+		handle_events(NULL, static_cast<EventFlags>(0), NULL);
 		credits_process();
 		credits_draw();
 		global.frames++;

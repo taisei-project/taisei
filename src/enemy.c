@@ -52,7 +52,7 @@ void _delete_enemy(void **enemies, void* enemy) {
 		create_particle1c("blast", e->pos, 0, Blast, timeout, 20);
 		create_particle2c("blast", e->pos, 0, GrowFade, timeout, 15,0);
 	}
-	e->logic_rule(enemy, EVENT_DEATH);
+	e->logic_rule(e, EVENT_DEATH);
 	del_ref(enemy);
 
 	delete_element((void **)enemies, enemy);
@@ -116,7 +116,7 @@ void EnemyFlareShrink(Projectile *p, int t) {
 		return;
 
 	glPushMatrix();
-	float s = 2.0-t/p->args[0]*2;
+	float s = creal(2.0-t/p->args[0]*2);
 
 	if(e->pos + p->pos)
 		glTranslatef(creal(e->pos + p->pos), cimag(e->pos + p->pos), 0);

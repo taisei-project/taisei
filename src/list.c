@@ -19,8 +19,8 @@ typedef struct {
 void *_FREEREF;
 
 void *create_element(void **dest, int size) {
-	List *e = malloc(size);
-	List **d = (List **)dest;
+	List *e = reinterpret_cast<List*>(malloc(size));
+	List **d = reinterpret_cast<List**>(dest);
 
 	e->next = NULL;
 	e->prev = *d;
@@ -39,7 +39,7 @@ void *create_element(void **dest, int size) {
 }
 
 ListContainer* create_container(ListContainer **dest) {
-	return create_element((void**)dest, sizeof(ListContainer));
+	return reinterpret_cast<ListContainer*>(create_element(reinterpret_cast<void**>(dest), sizeof(ListContainer)));
 }
 
 void delete_element(void **dest, void *e) {
@@ -109,7 +109,7 @@ int add_ref(void *ptr) {
 		return firstfree;
 	}
 
-	global.refs.ptrs = realloc(global.refs.ptrs, (++global.refs.count)*sizeof(Reference));
+	global.refs.ptrs = reinterpret_cast<Reference*>(realloc(global.refs.ptrs, (++global.refs.count)*sizeof(Reference)));
 	global.refs.ptrs[global.refs.count - 1].ptr = ptr;
 	global.refs.ptrs[global.refs.count - 1].refs = 1;
 	REFLOG("new ref for %p: %i", ptr, global.refs.count - 1);
@@ -125,7 +125,8 @@ void del_ref(void *ptr) {
 			global.refs.ptrs[i].ptr = NULL;
 }
 
-void free_ref(int i) {
+void free_ref(complex c) {
+	int i = static_cast<int>(creal(c));
 	if(i < 0)
 		return;
 

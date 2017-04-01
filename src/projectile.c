@@ -273,8 +273,8 @@ void Blast(Projectile *p, int t) {
 		glTranslatef(creal(p->pos), cimag(p->pos), 0);
 	glRotatef(creal(p->args[1]), cimag(p->args[1]), creal(p->args[2]), cimag(p->args[2]));
 	if(t != p->args[0])
-		glScalef(t/p->args[0], t/p->args[0], 1);
-	glColor4f(0.3,0.6,1,1 - t/p->args[0]);
+		glScalef(t/creal(p->args[0]), t/creal(p->args[0]), 1);
+	glColor4f(0.3,0.6,1,1 - t/creal(p->args[0]));
 	draw_texture_p(0,0,p->tex);
 	glScalef(0.5+creal(p->args[2]),0.5+creal(p->args[2]),1);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
@@ -287,7 +287,7 @@ void Blast(Projectile *p, int t) {
 
 void Shrink(Projectile *p, int t) {
 	glPushMatrix();
-	float s = 2.0-t/p->args[0]*2;
+	float s = 2.0-t/creal(p->args[0])*2;
 
 	if(p->pos)
 		glTranslatef(creal(p->pos), cimag(p->pos), 0);
@@ -309,7 +309,7 @@ void ShrinkAdd(Projectile *p, int t) {
 
 void DeathShrink(Projectile *p, int t) {
 	glPushMatrix();
-	float s = 2.0-t/p->args[0]*2;
+	float s = 2.0-t/creal(p->args[0])*2;
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
 	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
 
@@ -331,14 +331,14 @@ void GrowFade(Projectile *p, int t) {
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
 	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
 
-	float s = t/p->args[0]*(1+p->args[1]);
+	float s = t/creal(p->args[0])*(1+creal(p->args[1]));
 	if(s != 1)
 		glScalef(s, s, 1);
 
 	if(p->clr)
-		parse_color_call(derive_color(p->clr, CLRMASK_A, rgba(0,0,0,1-t/p->args[0])), glColor4f);
+		parse_color_call(derive_color(p->clr, CLRMASK_A, rgba(0,0,0,1-t/creal(p->args[0]))), glColor4f);
 	else if(t/p->args[0] != 0)
-		glColor4f(1,1,1,1-t/p->args[0]);
+		glColor4f(1,1,1,1-t/creal(p->args[0]));
 
 	draw_texture_p(0,0,p->tex);
 
@@ -348,7 +348,7 @@ void GrowFade(Projectile *p, int t) {
 
 void Fade(Projectile *p, int t) {
 	if(t/creal(p->args[0]) != 0)
-		glColor4f(1,1,1, 1.0 - (float)t/p->args[0]);
+		glColor4f(1,1,1, 1.0 - (float)t/creal(p->args[0]));
 	ProjDraw(p, t);
 
 	if(t/creal(p->args[0]) != 0)
@@ -358,7 +358,7 @@ void Fade(Projectile *p, int t) {
 void FadeAdd(Projectile *p, int t) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-	parse_color_call(derive_color(p->clr, CLRMASK_A, rgba(0,0,0, 1.0 - (float)t/p->args[0])), glColor4f);
+	parse_color_call(derive_color(p->clr, CLRMASK_A, rgba(0,0,0, 1.0 - (float)t/creal(p->args[0]))), glColor4f);
 	glPushMatrix();
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
 	glRotatef(180/M_PI*p->angle+90, 0, 0, 1);

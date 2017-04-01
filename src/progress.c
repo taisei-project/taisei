@@ -245,7 +245,7 @@ static void progress_prepare_cmd_unlock_stages_with_difficulties(size_t *bufsize
 
 		bool unlocked = false;
 
-		for(Difficulty diff = D_Easy; diff <= D_Lunatic; ++diff) {
+		for(Difficulty diff = D_Easy; diff <= D_Lunatic; diff = static_cast<Difficulty>(static_cast<int>(diff) + 1)) {
 			StageProgress *p = stage_get_progress_from_info(stg, diff, false);
 			if(p && p->unlocked) {
 				unlocked = true;
@@ -281,7 +281,7 @@ static void progress_write_cmd_unlock_stages_with_difficulties(SDL_RWops *vfile,
 
 		uint8_t dflags = 0;
 
-		for(Difficulty diff = D_Easy; diff <= D_Lunatic; ++diff) {
+		for(Difficulty diff = D_Easy; diff <= D_Lunatic; diff = static_cast<Difficulty>(static_cast<int>(diff) + 1)) {
 			StageProgress *p = stage_get_progress_from_info(stg, diff, false);
 			if(p && p->unlocked) {
 				dflags |= (unsigned int)pow(2, diff - D_Easy);

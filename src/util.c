@@ -139,7 +139,7 @@ void strip_trailing_slashes(char *buf) {
  *     (Declaration that it's public domain):
  *      http://groups.google.com/group/comp.lang.c/msg/7c7b39328fefab9c
  */
-
+/*
 char* strtok_r(char *str, const char *delim, char **nextp) {
     char *ret;
 
@@ -163,7 +163,7 @@ char* strtok_r(char *str, const char *delim, char **nextp) {
     *nextp = str;
     return ret;
 }
-
+*/
 //
 // math utils
 //
@@ -205,6 +205,14 @@ double clamp(double f, double lower, double upper) {
 
 int sign(double x) {
     return (x > 0) - (x < 0);
+}
+
+double atan(complex c) {
+    return atan(creal(c));
+}
+
+double pow(complex c, int p) {
+    return pow(creal(c), static_cast<double>(p));
 }
 
 //
@@ -447,7 +455,7 @@ size_t SDL_RWprintf(SDL_RWops *rwops, const char* fmt, ...) {
     return ret;
 }
 
-void tsfprintf(FILE *out, const char *restrict fmt, ...) {
+void tsfprintf(FILE *out, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     vfprintf(out, fmt, args);
@@ -479,7 +487,7 @@ int getenvint(const char *v) {
     return 0;
 }
 
-noreturn static void png_error_handler(png_structp png_ptr, png_const_charp error_msg) {
+[[noreturn]] static void png_error_handler(png_structp png_ptr, png_const_charp error_msg) {
     log_warn("PNG error: %s", error_msg);
     png_longjmp(png_ptr, 1);
 }

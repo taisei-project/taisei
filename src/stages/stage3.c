@@ -299,20 +299,20 @@ void stage3_spellpractice_events(void) {
 ShaderRule stage3_shaders[] = { stage3_fog, stage3_tunnel, NULL };
 
 StageProcs stage3_procs = {
-	.begin = stage3_start,
-	.preload = stage3_preload,
-	.end = stage3_end,
-	.draw = stage3_draw,
-	.event = stage3_events,
-	.shader_rules = stage3_shaders,
-	.spellpractice_procs = &stage3_spell_procs,
+	stage3_start,
+	stage3_preload,
+	stage3_end,
+	stage3_draw,
+	stage3_events,
+	stage3_shaders,
+	&stage3_spell_procs,
 };
 
 StageProcs stage3_spell_procs = {
-	.preload = stage3_preload,
-	.begin = stage3_start,
-	.end = stage3_end,
-	.draw = stage3_draw,
-	.event = stage3_spellpractice_events,
-	.shader_rules = stage3_shaders,
+	stage3_start,
+	stage3_preload,
+	stage3_end,
+	stage3_draw,
+	stage3_spellpractice_events,
+	stage3_shaders,
 };

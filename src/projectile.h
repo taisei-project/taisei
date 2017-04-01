@@ -22,12 +22,12 @@ struct Projectile;
 typedef int (*ProjRule)(struct Projectile *p, int t);
 typedef void (*ProjDRule)(struct Projectile *p, int t);
 
-typedef enum {
-	FairyProj,
-	DeadProj,
-	Particle,
-	PlrProj
-} ProjType;
+#define FairyProj 0
+#define DeadProj 1
+#define Particle 2
+#define PlrProj 3
+
+typedef int ProjType;
 
 typedef struct Projectile {
 	struct Projectile *next;
