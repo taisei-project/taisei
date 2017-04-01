@@ -241,7 +241,7 @@ void stage6_spellpractice_events(void) {
 
 	AT(0) {
 		skip_background_anim(&bgcontext, stage6_draw, 3800, &global.timer, &global.frames);
-		global.boss = create_boss("Elly", "elly", BOSS_DEFAULT_SPAWN_POS);
+		global.boss = create_boss("Elly", "elly", "dialog/elly", BOSS_DEFAULT_SPAWN_POS);
 
 		// Here be dragons
 

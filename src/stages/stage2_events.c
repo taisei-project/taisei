@@ -14,6 +14,7 @@ void hina_spell_bg(Boss*, int);
 void hina_amulet(Boss*, int);
 void hina_bad_pick(Boss*, int);
 void hina_wheel(Boss*, int);
+void hina_monty(Boss*, int);
 
 /*
  *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
@@ -26,6 +27,8 @@ AttackInfo stage2_spells[] = {
 							hina_bad_pick, hina_spell_bg, BOSS_DEFAULT_GO_POS},
 	{{ 8,  9, 10, 11},	AT_Spellcard, "Lottery Sign ~ Wheel of Fortune", 20, 36000,
 							hina_wheel, hina_spell_bg, BOSS_DEFAULT_GO_POS},
+	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Lottery Sign ~ Monty Hall Danmaku", 60, 60000,
+							hina_monty, hina_spell_bg, BOSS_DEFAULT_GO_POS},
 
 	{{0}}
 };
@@ -265,7 +268,7 @@ void wriggle_small_storm(Boss *w, int time) {
 }
 
 Boss *create_wriggle_mid(void) {
-	Boss* wriggle = create_boss("Wriggle", "wriggle", VIEWPORT_W + 150 - 30.0*I);
+	Boss* wriggle = create_boss("Wriggle", "wriggle", "dialog/wriggle", VIEWPORT_W + 150 - 30.0*I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 4, 0, wriggle_intro, NULL);
 	boss_add_attack(wriggle, AT_Normal, "Small Bug Storm", 20, 20000, wriggle_small_storm, NULL);
 
@@ -393,6 +396,177 @@ void hina_wheel(Boss *h, int time) {
 	}
 }
 
+static int timeout_deadproj_linear(Projectile *p, int time) {
+	if(time > creal(p->args[0]))
+		p->type = DeadProj;
+	p->pos += p->args[1];
+	p->angle = carg(p->args[1]);
+	return 1;
+}
+
+int hina_monty_slave(Enemy *s, int time) {
+	if(time < 0) {
+		return 1;
+	}
+
+	if(time > 60 && time < 720-140 + 20*(global.diff-D_Lunatic) && !(time % (int)(max(2 + (global.diff < D_Normal), (120 - 0.5 * time))))) {
+		create_projectile2c("crystal", s->pos, rgb(0.5 + 0.5 * psin(time*0.2), 0.3, 1.0 - 0.5 * psin(time*0.2)),
+							asymptotic, 5*I + 1 * (sin(time) + I * cos(time)), 4);
+
+		if(global.diff > D_Easy) {
+			create_projectile2c("crystal", s->pos, rgb(0.5 + 0.5 * psin(time*0.2), 0.3, 1.0 - 0.5 * psin(time*0.2)),
+								timeout_deadproj_linear, 500, -0.5*I + 1 * (sin(time) + I * cos(time)));
+		}
+	}
+
+	return 1;
+}
+
+void hina_monty_slave_draw(Enemy *s, int time) {
+	Swirl(s, time);
+
+	Texture *soul = get_tex("proj/soul");
+	Shader *shader = get_shader("bullet_color");
+	double scale = fabs(swing(clamp(time / 60.0, 0, 1), 3)) * 1.25;
+
+	float clr1[] = {1.0, 0.0, 0.0, 1.0};
+	float clr2[] = {0.0, 0.0, 1.0, 1.0};
+	float clr3[] = {psin(time*0.05), 0.0, 1.0 - psin(time*0.05), 1.0};
+
+	glUseProgram(shader->prog);
+
+	glPushMatrix();
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+
+	glTranslatef(creal(s->pos), cimag(s->pos), 0);
+
+	glUniform4fv(uniloc(shader, "color"), 1, clr1);
+	glPushMatrix();
+	glRotatef(time, 0, 0, 1);
+	glScalef(scale * (0.6 + 0.6 * psin(time*0.1)), scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), 0);
+	draw_texture_p(0, 0, soul);
+	glPopMatrix();
+
+	glUniform4fv(uniloc(shader, "color"), 1, clr2);
+	glPushMatrix();
+	glRotatef(time, 0, 0, 1);
+	glScalef(scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0);
+	draw_texture_p(0, 0, soul);
+	glPopMatrix();
+
+	glUniform4fv(uniloc(shader, "color"), 1, clr3);
+	glPushMatrix();
+	glRotatef(-time, 0, 0, 1);
+	// glScalef(scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0);
+	glScalef(scale, scale, 0);
+	draw_texture_p(0, 0, soul);
+	glPopMatrix();
+
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	glPopMatrix();
+
+	glUseProgram(0);
+}
+
+void hina_monty(Boss *h, int time) {
+	int t = time % 720;
+	TIMER(&t);
+
+	static short slave_pos, bad_pos, good_pos, plr_pos;
+	static int cwidth = VIEWPORT_W / 3.0;
+	static complex targetpos;
+
+	if(time == EVENT_DEATH) {
+		killall(global.enemies);
+		return;
+	}
+
+	if(time < 0) {
+		targetpos = VIEWPORT_W/2.0 + VIEWPORT_H/2.0 * I;
+		return;
+	}
+
+	AT(0) {
+		plr_pos = creal(global.plr.pos) / cwidth;
+		bad_pos = tsrand() % 3;
+		do good_pos = tsrand() % 3; while(good_pos == bad_pos);
+
+		for(int i = 0; i < 2; ++i) {
+			int x = cwidth * (1 + i);
+			create_laserline_ab(x, x + VIEWPORT_H*I, 15, 30, 60, rgb(0.3, 1.0, 1.0));
+			create_laserline_ab(x, x + VIEWPORT_H*I, 20, 240, 600, rgb(1.0, 0.3, 1.0));
+		}
+
+		if(global.enemies)
+			global.enemies->hp = 0;
+	}
+
+	AT(120) {
+		do slave_pos = tsrand() % 3; while(slave_pos == plr_pos || slave_pos == good_pos);
+		while(bad_pos == slave_pos || bad_pos == good_pos) bad_pos = tsrand() % 3;
+
+		complex o = cwidth * (0.5 + slave_pos) + VIEWPORT_H/2.0*I - 200.0*I;
+
+		create_laserline_ab(h->pos, o, 15, 30, 60, rgb(1.0, 0.3, 0.3));
+	}
+
+	AT(140) {
+		create_enemy4c(cwidth * (0.5 + slave_pos) + VIEWPORT_H/2.0*I - 200.0*I, ENEMY_IMMUNE, hina_monty_slave_draw, hina_monty_slave, 0, 0, 0, 1);
+	}
+
+	AT(190) {
+		targetpos = cwidth * (0.5 + good_pos) + VIEWPORT_H/2.0*I - 200.0*I;
+	}
+
+	FROM_TO(220, 360 + 60 * max(0, (double)global.diff - D_Easy), 60) {
+		float cnt = (2.0+global.diff) * 5;
+		for(int i = 0; i < cnt; i++) {
+			bool top = ((global.diff > D_Hard) && (_i % 2));
+			complex o = !top*VIEWPORT_H*I + cwidth*(bad_pos + i/(double)(cnt - 1));
+			create_projectile2c("ball", o, top ? rgb(0, 0, 0.7) : rgb(0.7, 0, 0), accelerated, 0,
+				(top ? -0.5 : 1) * 0.004 * (sin((M_PI * 4 * i / (cnt - 1)))*0.1*global.diff - I*(1 + psin(i + global.frames)))
+			)->draw = ProjDrawAdd;
+		}
+	}
+
+	{
+		const int step = 2;
+		const int cnt = 10;
+		const int burst_dur = (cnt - 1) * step;
+		const int cycle_dur = burst_dur+10*(D_Hard-global.diff);
+		const int start = 210;
+		const int end = 540;
+		const int ncycles = (end - start) / cycle_dur;
+
+		FROM_TO_INT(start, start + cycle_dur * ncycles - 1, cycle_dur, burst_dur, step) {
+			double p = _ni / (double)(cnt-1);
+			double c = p;
+			double m = 0.60 + 0.01 * global.diff;
+
+			p *= m;
+			if(_i % 2) {
+				p = 1.0 - p;
+			}
+
+			complex o = cwidth * (p + 0.5/(cnt-1) - 0.5) + h->pos;
+			if(global.diff > D_Normal)
+				create_projectile2c("card", o, rgb(c * 0.8, 0, (1 - c) * 0.8), accelerated, -2.5*I, 0.05*I);
+			else
+				create_projectile1c("card", o, rgb(c * 0.8, 0, (1 - c) * 0.8), linear, 2.5*I);
+		}
+	}
+
+	FROM_TO(240, 390, 5) {
+		create_item(VIEWPORT_H*I + cwidth*(good_pos + frand()), -50.0*I, _i % 2 ? Point : Power);
+	}
+
+	AT(600) {
+		targetpos = cwidth * (0.5 + slave_pos) + VIEWPORT_H/2.0*I;
+	}
+
+	GO_TO(h, targetpos, 0.06);
+}
+
 void hina_spell_bg(Boss *h, int time) {
 
 	glPushMatrix();
@@ -413,7 +587,7 @@ void hina_spell_bg(Boss *h, int time) {
 }
 
 Boss *create_hina(void) {
-	Boss* hina = create_boss("Kagiyama Hina", "hina", VIEWPORT_W + 150 + 100.0*I);
+	Boss* hina = create_boss("Kagiyama Hina", "hina", "dialog/hina", VIEWPORT_W + 150 + 100.0*I);
 	boss_add_attack(hina, AT_Move, "Introduction", 2, 0, hina_intro, NULL);
 	boss_add_attack(hina, AT_Normal, "Cards1", 20, 15000, hina_cards1, NULL);
 	boss_add_attack_from_info(hina, stage2_spells+0, false);

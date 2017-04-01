@@ -11,6 +11,7 @@
 #include <SDL.h>
 #include <stdbool.h>
 #include "taiseigl.h"
+#include "util.h"
 
 typedef struct Texture Texture;
 
@@ -32,7 +33,10 @@ void draw_texture(float x, float y, const char *name);
 void draw_texture_p(float x, float y, Texture *tex);
 
 void fill_screen(float xoff, float yoff, float ratio, const char *name);
-void fill_screen_p(float xoff, float yoff, float ratio, Texture *tex);
+void fill_screen_p(float xoff, float yoff, float ratio, float aspect, Texture *tex);
+
+void loop_tex_line_p(complex a, complex b, float w, float t, Texture *texture);
+void loop_tex_line(complex a, complex b, float w, float t, const char *texture);
 
 Texture* get_tex(const char *name);
 Texture* prefix_get_tex(const char *name, const char *prefix);

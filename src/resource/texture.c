@@ -240,10 +240,10 @@ void draw_texture_p(float x, float y, Texture *tex) {
 }
 
 void fill_screen(float xoff, float yoff, float ratio, const char *name) {
-	fill_screen_p(xoff, yoff, ratio, get_tex(name));
+	fill_screen_p(xoff, yoff, ratio, 1, get_tex(name));
 }
 
-void fill_screen_p(float xoff, float yoff, float ratio, Texture *tex) {
+void fill_screen_p(float xoff, float yoff, float ratio, float aspect, Texture *tex) {
 	glEnable(GL_TEXTURE_2D);
 
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
@@ -255,6 +255,7 @@ void fill_screen_p(float xoff, float yoff, float ratio, Texture *tex) {
 		rw = ((float)tex->w)/tex->truew;
 		rh = ((float)tex->h)/tex->trueh;
 	}
+	rw *= aspect;
 
 	glMatrixMode(GL_TEXTURE);
 		glLoadIdentity();
@@ -273,4 +274,38 @@ void fill_screen_p(float xoff, float yoff, float ratio, Texture *tex) {
 	glMatrixMode(GL_TEXTURE);
 		glLoadIdentity();
 	glMatrixMode(GL_MODELVIEW);
+}
+
+// draws a thin, w-width rectangle from point A to point B with a texture that
+// moving along the line.
+// As with fill_screen, the texture’s dimensions must be powers of two for the
+// loop to be gapless.
+//
+void loop_tex_line_p(complex a, complex b, float w, float t, Texture *texture) {
+	complex d = b-a;
+	complex c = (b+a)/2;
+	glPushMatrix();
+	glTranslatef(creal(c),cimag(c),0);
+	glRotatef(180/M_PI*carg(d),0,0,1);
+	glScalef(cabs(d),w,1);
+
+	glMatrixMode(GL_TEXTURE);
+	glLoadIdentity();
+	glTranslatef(t, 0, 0);
+	glMatrixMode(GL_MODELVIEW);
+
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, texture->gltex);
+
+	draw_quad();
+
+	glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+
+	glPopMatrix();
+}
+
+void loop_tex_line(complex a, complex b, float w, float t, const char *texture) {
+	loop_tex_line_p(a, b, w, t, get_tex(texture));
 }

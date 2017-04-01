@@ -195,6 +195,9 @@ void player_logic(Player* plr) {
 }
 
 void player_bomb(Player *plr) {
+	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell)
+		return;
+
 	if(global.frames - plr->recovery >= 0 && (plr->bombs > 0 || plr->iddqd) && global.frames - plr->respawntime >= 60) {
 		delete_projectiles(&global.projs);
 
@@ -241,6 +244,15 @@ void player_realdeath(Player *plr) {
 	plr->recovery = -(global.frames + DEATH_DELAY + 150);
 	plr->bombs = PLR_START_BOMBS;
 	plr->bomb_fragments = 0;
+
+	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell && global.stage->type != STAGE_SPELL) {
+		if(!global.boss->current->finished) {
+			global.boss->current->endtime = global.frames + ATTACK_END_DELAY_EXTRA;
+			global.boss->current->finished = FINISH_FAIL;
+			boss_kill_projectiles();
+		}
+		return;
+	}
 
 	if(plr->iddqd)
 		return;

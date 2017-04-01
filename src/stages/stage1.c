@@ -25,6 +25,8 @@ AttackInfo stage1_spells[] = {
 							cirno_crystal_rain, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
 	{{ 8,  9, 10, 11},	AT_Spellcard, "Doom Sign ~ Icicle Fall", 35, 40000,
 							cirno_icicle_fall, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
+	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Frost Sign ~ Crystal Blizzard", 60, 40000,
+							cirno_crystal_blizzard, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
 
 	{{0}}
 };
@@ -186,7 +188,7 @@ void stage1_spellpractice_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		Boss* cirno = create_boss("Cirno", "cirno", BOSS_DEFAULT_SPAWN_POS);
+		Boss* cirno = create_boss("Cirno", "cirno", "dialog/cirno", BOSS_DEFAULT_SPAWN_POS);
 		boss_add_attack_from_info(cirno, global.stage->spell, true);
 		start_attack(cirno, cirno->attacks);
 		global.boss = cirno;

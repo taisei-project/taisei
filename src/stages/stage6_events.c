@@ -17,6 +17,7 @@ void elly_eigenstate(Boss*, int);
 void elly_ricci(Boss*, int);
 void elly_lhc(Boss*, int);
 void elly_theory(Boss*, int);
+void elly_curvature(Boss*, int);
 
 /*
  *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
@@ -35,6 +36,8 @@ AttackInfo stage6_spells[] = {
 							elly_lhc, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
 	{{20, 21, 22, 23},	AT_SurvivalSpell, "Tower of Truth ~ Theory of Everything", 70, 40000,
 							elly_theory, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
+	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Forgotten Universe ~ Curvature Domination", 40, 40000,
+							elly_curvature, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
 
 	{{0}}
 };
@@ -793,6 +796,99 @@ int baryon_explode(Enemy *e, int t) {
 	return 1;
 }
 
+int curvature_bullet(Projectile *p, int t) {
+	if(REF(p->args[1]) == 0) {
+		return 0;
+	}
+	float vx, vy, x, y;
+	complex v = ((Enemy *)REF(p->args[1]))->args[0]*0.00005;
+	vx = creal(v);
+	vy = cimag(v);
+	x = creal(p->pos-global.plr.pos);
+	y = cimag(p->pos-global.plr.pos);
+
+	float f1 = (1+2*(vx*x+vy*y)+x*x+y*y);
+	float f2 = (1-vx*vx+vy*vy);
+	float f3 = f1-f2*(x*x+y*y);
+	p->pos = global.plr.pos + (f1*v+f2*(x+I*y))/f3+p->args[0]/(1+2*(x*x+y*y)/VIEWPORT_W/VIEWPORT_W);
+
+	if(t == EVENT_DEATH)
+		free_ref(p->args[1]);
+
+	return 1;
+}
+
+int curvature_orbiter(Projectile *p, int t) {
+	const double w = 0.03;
+	if(REF(p->args[1]) != 0 && p->args[3] == 0) {
+		p->pos = ((Projectile *)REF(p->args[1]))->pos+p->args[0]*cexp(I*t*w);
+
+		p->args[2] = p->args[0]*I*w*cexp(I*t*w);
+	} else {
+		p->pos += p->args[2];
+	}
+
+
+	if(t == EVENT_DEATH)
+		free_ref(p->args[1]);
+
+	return 1;
+}
+
+static double saw(double t) {
+	return cos(t)+cos(3*t)/9+cos(5*t)/25;
+}
+
+int curvature_slave(Enemy *e, int t) {
+	e->args[0] = -(e->args[1] - global.plr.pos);
+	e->args[1] = global.plr.pos;
+
+	if(t % (2+(global.diff < D_Hard)) == 0) {
+		tsrand_fill(2);
+		complex pos = VIEWPORT_W*afrand(0)+I*VIEWPORT_H*afrand(1);
+		if(cabs(pos - global.plr.pos) > 50) {
+			tsrand_fill(2);
+			float speed = 0.5/(1+(global.diff < D_Hard));
+			create_projectile2c("flea",pos,rgb(0.1*afrand(0), 0.6,1), curvature_bullet, speed*cexp(2*M_PI*I*afrand(1)), add_ref(e));
+		}
+	}
+	if(global.diff > D_Easy && t % (60-8*global.diff) == 0) {
+			tsrand_fill(2);
+			complex pos = VIEWPORT_W*afrand(0)+I*VIEWPORT_H*afrand(1);
+			if(cabs(pos - global.plr.pos) > 100)
+				create_projectile1c("ball",pos,rgb(1, 0.4,1), linear, cexp(I*carg(global.plr.pos-pos)))->draw = ProjDrawAdd;
+
+
+	}
+
+	if(global.diff >= D_Hard && !(t%20)) {
+		Projectile *p = create_projectile1c("bigball",global.boss->pos,rgb(0.5, 0.4,1), linear, 4*I*cexp(I*M_PI*2/5*saw(t/100.)));
+		p->draw = ProjDrawAdd;
+		if(global.diff == D_Lunatic) {
+			create_projectile2c("plainball",global.boss->pos,rgb(0.2, 0.4,1), curvature_orbiter, 40*cexp(I*t/400),add_ref(p))->draw = ProjDrawAdd;
+		}
+
+
+
+	}
+
+	return 1;
+}
+
+void elly_curvature(Boss *b, int t) {
+	TIMER(&t);
+
+	AT(50) {
+		create_enemy2c(b->pos,ENEMY_IMMUNE, 0, curvature_slave,0,global.plr.pos);
+	}
+
+	GO_TO(b, VIEWPORT_W/2+100*I+VIEWPORT_W/3*round(sin(t/200)), 0.04);
+
+	AT(EVENT_DEATH) {
+		killall(global.enemies);
+	}
+
+}
 void elly_baryon_explode(Boss *b, int t) {
 	TIMER(&t);
 
@@ -956,7 +1052,7 @@ void elly_spellbg_modern(Boss *b, int t) {
 }
 
 Boss *create_elly(void) {
-	Boss *b = create_boss("Elly", "elly", -200.0*I);
+	Boss *b = create_boss("Elly", "elly", "dialog/elly", -200.0*I);
 
 	boss_add_attack(b, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
 	boss_add_attack(b, AT_Normal, "Frequency", 30, 26000, elly_frequency, NULL);
