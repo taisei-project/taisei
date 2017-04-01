@@ -207,6 +207,18 @@ int sign(double x) {
     return (x > 0) - (x < 0);
 }
 
+double swing(double x, double s) {
+    if(x <= 0.5) {
+        x *= 2;
+        return x * x * ((s + 1) * x - s) / 2;
+    }
+
+    x--;
+    x *= 2;
+
+    return x * x * ((s + 1) * x + s) / 2 + 1;
+}
+
 //
 // gl/video utils
 //

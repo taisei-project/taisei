@@ -30,7 +30,7 @@ typedef struct {
 	SDL_GLContext *glcontext;
 } Video;
 
-Video video;
+extern Video video;
 
 void video_init(void);
 void video_shutdown(void);

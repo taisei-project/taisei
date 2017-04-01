@@ -31,6 +31,7 @@ Laser *create_laser(complex pos, float time, float deathtime, Color color, Laser
 	l->width = 10;
 	l->speed = 1;
 	l->timeshift = 0;
+	l->in_background = false;
 
 	if(l->lrule)
 		l->lrule(l, EVENT_BIRTH);
@@ -143,10 +144,13 @@ void draw_laser_curve(Laser *laser) {
 	glDisable(GL_TEXTURE_2D);
 }
 
-void draw_lasers(void) {
+void draw_lasers(int bgpass) {
 	Laser *laser;
 
 	for(laser = global.lasers; laser; laser = laser->next) {
+		if(bgpass != laser->in_background)
+			continue;
+
 		if(laser->shader && glext.draw_instanced)
 			draw_laser_curve_instanced(laser);
 		else

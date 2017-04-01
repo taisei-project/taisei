@@ -50,30 +50,24 @@ static void end_stages(void) {
 	add_stage(0, NULL, 0, NULL, NULL, NULL, 0, 0, 0);
 }
 
-void stage_init_array(void) {
-	int spellnum = 0;
-
-//           id  procs          type         title      subtitle                       spells         diff   titleclr      bosstitleclr
-	add_stage(1, &stage1_procs, STAGE_STORY, "Stage 1", "Misty Lake",                  stage1_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
-	add_stage(2, &stage2_procs, STAGE_STORY, "Stage 2", "Walk Along the Border",       stage2_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
-	add_stage(3, &stage3_procs, STAGE_STORY, "Stage 3", "Through the Tunnel of Light", stage3_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
-	add_stage(4, &stage4_procs, STAGE_STORY, "Stage 4", "Forgotten Mansion",           stage4_spells, D_Any, rgb(0, 0, 0), rgb(1, 1, 1));
-	add_stage(5, &stage5_procs, STAGE_STORY, "Stage 5", "Climbing the Tower of Babel", stage5_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
-	add_stage(6, &stage6_procs, STAGE_STORY, "Stage 6", "Roof of the World",           stage6_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
-
-	// generate spellpractice stages
-
-	int mainstages = numstages;
-
-	for(int i = 0; i < mainstages; ++i) {
+static void add_spellpractice_stages(int *spellnum, bool (*filter)(AttackInfo*), uint16_t spellbits) {
+	for(int i = 0 ;; ++i) {
 		StageInfo *s = stages + i;
 
+		if(s->type == STAGE_SPELL) {
+			break;
+		}
+
 		for(AttackInfo *a = s->spell; a->rule; ++a) {
+			if(!filter(a)) {
+				continue;
+			}
+
 			for(Difficulty diff = D_Easy; diff < D_Easy + NUM_SELECTABLE_DIFFICULTIES; ++diff) {
 				if(a->idmap[diff - D_Easy] >= 0) {
-					uint16_t id = STAGE_SPELL_BIT | a->idmap[diff - D_Easy] | (s->id << 8);
+					uint16_t id = spellbits | a->idmap[diff - D_Easy] | (s->id << 8);
 
-					char *title = strfmt("Spell %d", ++spellnum);
+					char *title = strfmt("Spell %d", ++(*spellnum));
 					char *subtitle = strjoin(a->name, " ~ ", difficulty_name(diff), NULL);
 
 					add_stage(id, s->procs->spellpractice_procs, STAGE_SPELL, title, subtitle, a, diff, 0, 0);
@@ -85,6 +79,30 @@ void stage_init_array(void) {
 			}
 		}
 	}
+}
+
+static bool spellfilter_normal(AttackInfo *spell) {
+	return spell->type != AT_ExtraSpell;
+}
+
+static bool spellfilter_extra(AttackInfo *spell) {
+	return spell->type == AT_ExtraSpell;
+}
+
+void stage_init_array(void) {
+	int spellnum = 0;
+
+//           id  procs          type         title      subtitle                       spells         diff   titleclr      bosstitleclr
+	add_stage(1, &stage1_procs, STAGE_STORY, "Stage 1", "Misty Lake",                  stage1_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
+	add_stage(2, &stage2_procs, STAGE_STORY, "Stage 2", "Walk Along the Border",       stage2_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
+	add_stage(3, &stage3_procs, STAGE_STORY, "Stage 3", "Through the Tunnel of Light", stage3_spells, D_Any, rgb(1, 1, 1), rgb(0, 0, 0));
+	add_stage(4, &stage4_procs, STAGE_STORY, "Stage 4", "Forgotten Mansion",           stage4_spells, D_Any, rgb(0, 0, 0), rgb(1, 1, 1));
+	add_stage(5, &stage5_procs, STAGE_STORY, "Stage 5", "Climbing the Tower of Babel", stage5_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
+	add_stage(6, &stage6_procs, STAGE_STORY, "Stage 6", "Roof of the World",           stage6_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
+
+	// generate spellpractice stages
+	add_spellpractice_stages(&spellnum, spellfilter_normal, STAGE_SPELL_BIT);
+	add_spellpractice_stages(&spellnum, spellfilter_extra, STAGE_SPELL_BIT | STAGE_EXTRASPELL_BIT);
 
 	end_stages();
 
@@ -341,8 +359,9 @@ static void draw_star(int x, int y, float fill, float alpha) {
 
 	float clr[4];
 
-	Color fill_clr = rgba(1.0f, 1.0f, 1.0f, 1.0f * alpha);
-	Color back_clr = rgba(0.2f, 0.6f, 1.0f, 0.2f * alpha);
+	Color amul = rgba(alpha, alpha, alpha, alpha);
+	Color fill_clr = multiply_colors(rgba(1.0f, 1.0f, 1.0f, 1.0f), amul);
+	Color back_clr = multiply_colors(rgba(0.2f, 0.6f, 1.0f, 0.2f), amul);
 
 	if(fill < 1) {
 		fill_clr = mix_colors(derive_color(back_clr, CLRMASK_A, alpha), fill_clr, 0.35f);
@@ -404,8 +423,35 @@ void draw_hud(void) {
 		draw_text(AL_Left, -6, 200, "N/A", _fonts.standard);
 		glColor4f(1, 1, 1, 1.0);
 	} else {
-		draw_stars(0, 167, global.plr.lives, global.plr.life_fragments, PLR_MAX_LIVES, PLR_MAX_LIFE_FRAGMENTS, 1);
-		draw_stars(0, 200, global.plr.bombs, global.plr.bomb_fragments, PLR_MAX_BOMBS, PLR_MAX_BOMB_FRAGMENTS, 1);
+		float a = 1, s = 0, fadein = 1, fadeout = 1, fade = 1;
+
+		if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell) {
+			fadein  = min(1, -min(0, global.frames - global.boss->current->starttime) / (float)ATTACK_START_DELAY);
+			fadeout = (!!global.boss->current->finished) * (1 - (global.boss->current->endtime - global.frames) / (float)ATTACK_END_DELAY_EXTRA) / 0.74;
+			fade = max(fadein, fadeout);
+
+			s = 1 - fade;
+			a = 0.5 + 0.5 * fade;
+		}
+
+		draw_stars(0, 167, global.plr.lives, global.plr.life_fragments, PLR_MAX_LIVES, PLR_MAX_LIFE_FRAGMENTS, a);
+		draw_stars(0, 200, global.plr.bombs, global.plr.bomb_fragments, PLR_MAX_BOMBS, PLR_MAX_BOMB_FRAGMENTS, a);
+
+		if(s) {
+			float s2 = max(0, swing(s, 3));
+			glPushMatrix();
+			glTranslatef((SCREEN_W - 615) * 0.25 - 615 * (1 - pow(2*fadein-1, 2)), 400, 0);
+			//glColor4f(1, 0.5, 0.3, 0.7 * s);
+			glColor4f(0.3, 0.6, 0.7, 0.7 * s);
+			glRotatef(-25 + 360 * (1-s2), 0, 0, 1);
+			glScalef(s2, s2, 0);
+			draw_text(AL_Center,  1,  1, "Extra Spell!", _fonts.mainmenu);
+			draw_text(AL_Center, -1, -1, "Extra Spell!", _fonts.mainmenu);
+			glColor4f(1, 1, 1, s);
+			draw_text(AL_Center, 0, 0, "Extra Spell!", _fonts.mainmenu);
+		glColor4f(1, 1, 1, 1);
+			glPopMatrix();
+		}
 	}
 
 	// snprintf(buf, sizeof(buf), "%.2f", global.plr.power / 100.0);
@@ -489,7 +535,13 @@ static void stage_draw(StageInfo *stage) {
 
 		glRotatef(global.frames*4.0, 0, 0, -1);
 		float f = 0.8+0.1*sin(global.frames/8.0);
+		if(boss_is_dying(global.boss)) {
+			float t = (global.frames - global.boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
+			f -= t*(t-0.7)/(1-t);
+		}
+
 		glScalef(f,f,f);
+
 		draw_texture(0,0,"boss_circle");
 
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -501,10 +553,10 @@ static void stage_draw(StageInfo *stage) {
 
 	draw_items();
 	draw_projectiles(global.projs);
-
 	draw_projectiles(global.particles);
+	draw_lasers(true);
 	draw_enemies(global.enemies);
-	draw_lasers();
+	draw_lasers(false);
 
 	if(global.boss)
 		draw_boss(global.boss);
@@ -517,6 +569,14 @@ static void stage_draw(StageInfo *stage) {
 
 	FBO *ppfbo = postprocess(resources.stage_postprocess, &resources.fsec, resources.fbg, postprocess_prepare, draw_fbo_viewport);
 
+	if(ppfbo != &resources.fsec) {
+		// ensure that fsec is the most up to date fbo, because the ingame menu derives the background from it.
+		// it would be more efficient to somehow pass ppfbo to it and avoid the copy, but this is simpler.
+		glBindFramebuffer(GL_FRAMEBUFFER, resources.fsec.fbo);
+		draw_fbo_viewport(ppfbo);
+		ppfbo = &resources.fsec;
+	}
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	video_set_viewport();
 
@@ -526,6 +586,12 @@ static void stage_draw(StageInfo *stage) {
 		glTranslatef(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames+3),0);
 		glScalef(1+2*global.shake_view/VIEWPORT_W,1+2*global.shake_view/VIEWPORT_H,1);
 		glTranslatef(-global.shake_view,-global.shake_view,0);
+
+		if(global.shake_view_fade) {
+			global.shake_view -= global.shake_view_fade;
+			if(global.shake_view <= 0)
+				global.shake_view = global.shake_view_fade = 0;
+		}
 	}
 
 	draw_fbo_viewport(ppfbo);
@@ -547,56 +613,160 @@ static int apply_shaderrules(ShaderRule *shaderrules, int fbonum) {
 	return fbonum;
 }
 
+static void draw_wall_of_text(float f, const char *txt) {
+	fontrenderer_draw(&resources.fontren, txt,_fonts.standard);
+	Texture *tex = &resources.fontren.tex;
+	int strw = tex->w;
+	int strh = tex->h;
+	glPushMatrix();
+	glTranslatef(VIEWPORT_W/2,VIEWPORT_H/2,0);
+	glScalef(VIEWPORT_W,VIEWPORT_H,1.);
+
+	Shader *shader = get_shader("spellcard_walloftext");
+	glUseProgram(shader->prog);
+	glUniform1f(uniloc(shader, "w"), strw/(float)tex->truew);
+	glUniform1f(uniloc(shader, "h"), strh/(float)tex->trueh);
+	glUniform1f(uniloc(shader, "ratio"), (float)VIEWPORT_H/VIEWPORT_W);
+	glUniform2f(uniloc(shader, "origin"), creal(global.boss->pos)/VIEWPORT_H,cimag(global.boss->pos)/VIEWPORT_W);
+	glUniform1f(uniloc(shader, "t"), f);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, tex->gltex);
+	draw_quad();
+	glUseProgram(0);
+
+	glPopMatrix();
+
+
+}
+
+static void draw_spellbg(int t) {
+	Boss *b = global.boss;
+	b->current->draw_rule(b, t);
+
+	if(b->current->type == AT_ExtraSpell)
+		draw_extraspell_bg(b, t);
+
+	glPushMatrix();
+	glTranslatef(creal(b->pos), cimag(b->pos), 0);
+	glRotatef(global.frames*7.0, 0, 0, -1);
+
+	if(t < 0) {
+		float f = 1.0 - t/(float)ATTACK_START_DELAY;
+		glScalef(f,f,f);
+	}
+
+	draw_texture(0,0,"boss_spellcircle0");
+	glPopMatrix();
+
+	float delay = 0;
+	if(b->current->type == AT_ExtraSpell)
+		delay = ATTACK_START_DELAY_EXTRA-ATTACK_START_DELAY;
+	float f = -(t+delay)/ATTACK_START_DELAY;
+	draw_wall_of_text(f, b->current->name);
+
+	if(t < ATTACK_START_DELAY && b->dialog) {
+		glPushMatrix();
+		float f = -0.5*t/(float)ATTACK_START_DELAY+0.5;
+		glColor4f(1,1,1,-f*f+2*f);
+		draw_texture_p(VIEWPORT_W*3/4-10*f*f,VIEWPORT_H*2/3-10*f*f,b->dialog);
+		glColor4f(1,1,1,1);
+		glPopMatrix();
+	}
+}
+
+static void apply_zoom_shader() {
+	Shader *shader = get_shader("boss_zoom");
+	glUseProgram(shader->prog);
+
+	complex fpos = VIEWPORT_H*I + conj(global.boss->pos) + (VIEWPORT_X + VIEWPORT_Y*I);
+	complex pos = fpos + 15*cexp(I*global.frames/4.5);
+
+	glUniform2f(uniloc(shader, "blur_orig"),
+			creal(pos)/resources.fbg[0].nw, cimag(pos)/resources.fbg[0].nh);
+	glUniform2f(uniloc(shader, "fix_orig"),
+			creal(fpos)/resources.fbg[0].nw, cimag(fpos)/resources.fbg[0].nh);
+
+	float spellcard_sup = 1;
+	// This factor is used to surpress the effect near the start of spell cards.
+	// This is necessary so it doesn’t distort the awesome spinning background effect.
+
+	if(global.boss->current && global.boss->current->draw_rule) {
+		float t = (global.frames - global.boss->current->starttime + ATTACK_START_DELAY)/(float)ATTACK_START_DELAY;
+		spellcard_sup = 1-1/(0.1*t*t+1);
+	}
+
+	if(boss_is_dying(global.boss)) {
+		float t = (global.frames - global.boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
+		spellcard_sup = 1-t*t;
+	}
+
+	glUniform1f(uniloc(shader, "blur_rad"), spellcard_sup*(0.2+0.025*sin(global.frames/15.0)));
+	glUniform1f(uniloc(shader, "rad"), 0.24);
+	glUniform1f(uniloc(shader, "ratio"), (float)resources.fbg[0].nh/resources.fbg[0].nw);
+	if(global.boss->zoomcolor) {
+		static float clr[4];
+		parse_color_array(global.boss->zoomcolor, clr);
+		glUniform4fv(uniloc(shader, "color"), 1, clr);
+	} else {
+		glUniform4f(uniloc(shader, "color"), 0.1, 0.2, 0.3, 1);
+	}
+}
+
 static void apply_bg_shaders(ShaderRule *shaderrules) {
 	int fbonum = 0;
 
-	if(global.boss && global.boss->current && global.boss->current->draw_rule) {
-		if(global.frames - global.boss->current->starttime <= 0)
+	Boss *b = global.boss;
+	if(b && b->current && b->current->draw_rule) {
+		int t = global.frames - b->current->starttime;
+		if(t < 4*ATTACK_START_DELAY || b->current->endtime)
 			fbonum = apply_shaderrules(shaderrules, fbonum);
 
-		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[0].fbo);
-		global.boss->current->draw_rule(global.boss, global.frames - global.boss->current->starttime);
+		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[!fbonum].fbo);
+		draw_spellbg(t);
 
-		glPushMatrix();
-			glTranslatef(creal(global.boss->pos), cimag(global.boss->pos), 0);
-			glRotatef(global.frames*7.0, 0, 0, -1);
+		complex pos = VIEWPORT_H*I + conj(b->pos) + (VIEWPORT_X + VIEWPORT_Y*I);
+		float ratio = (float)resources.fbg[fbonum].nh/resources.fbg[fbonum].nw;
 
-			int t;
-			if((t = global.frames - global.boss->current->starttime) < 0) {
-				float f = 1.0 - t/(float)ATTACK_START_DELAY;
-				glScalef(f,f,f);
-			}
+		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[fbonum].fbo);
+		if(t<4*ATTACK_START_DELAY) {
+			Shader *shader = get_shader("spellcard_intro");
+			glUseProgram(shader->prog);
+			glUniform1f(uniloc(shader, "ratio"),ratio);
+			glUniform2f(uniloc(shader, "origin"),
+					creal(pos)/resources.fbg[fbonum].nw, cimag(pos)/resources.fbg[fbonum].nh);
+			float delay = ATTACK_START_DELAY;
+			if(b->current->type == AT_ExtraSpell)
+				delay = ATTACK_START_DELAY_EXTRA;
+			float duration = ATTACK_START_DELAY_EXTRA;
 
-			draw_texture(0,0,"boss_spellcircle0");
-		glPopMatrix();
+			glUniform1f(uniloc(shader, "t"), (t+delay)/duration);
+		} else if(b->current->endtime) {
+			int tn = global.frames - b->current->endtime;
+			Shader *shader = get_shader("spellcard_outro");
+			glUseProgram(shader->prog);
+			float delay = ATTACK_END_DELAY;
+			if(b->current->type == AT_ExtraSpell)
+				delay = ATTACK_END_DELAY_EXTRA;
 
+			glUniform1f(uniloc(shader, "ratio"),ratio);
+			glUniform2f(uniloc(shader, "origin"),
+					creal(pos)/resources.fbg[fbonum].nw, cimag(pos)/resources.fbg[fbonum].nh);
+
+			glUniform1f(uniloc(shader, "t"), max(0,tn/delay+1));
+
+		} else {
+			glUseProgram(0);
+		}
+		draw_fbo_viewport(&resources.fbg[!fbonum]);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glUseProgram(0);
 	} else
 		fbonum = apply_shaderrules(shaderrules, fbonum);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, resources.fsec.fbo);
 
 	if(global.boss) { // Boss background shader
-		Shader *shader = get_shader("boss_zoom");
-		glUseProgram(shader->prog);
-
-		complex fpos = VIEWPORT_H*I + conj(global.boss->pos) + (VIEWPORT_X + VIEWPORT_Y*I);
-		complex pos = fpos + 15*cexp(I*global.frames/4.5);
-
-		glUniform2f(uniloc(shader, "blur_orig"),
-					creal(pos)/resources.fbg[fbonum].nw, cimag(pos)/resources.fbg[fbonum].nh);
-		glUniform2f(uniloc(shader, "fix_orig"),
-					creal(fpos)/resources.fbg[fbonum].nw, cimag(fpos)/resources.fbg[fbonum].nh);
-		glUniform1f(uniloc(shader, "blur_rad"), 0.2+0.025*sin(global.frames/15.0));
-		glUniform1f(uniloc(shader, "rad"), 0.24);
-		glUniform1f(uniloc(shader, "ratio"), (float)resources.fbg[fbonum].nh/resources.fbg[fbonum].nw);
-		if(global.boss->zoomcolor) {
-			static float clr[4];
-			parse_color_array(global.boss->zoomcolor, clr);
-			glUniform4fv(uniloc(shader, "color"), 1, clr);
-		} else {
-			glUniform4f(uniloc(shader, "color"), 0.1, 0.2, 0.3, 1);
-		}
+		apply_zoom_shader();
 	}
 
 
@@ -635,11 +805,8 @@ static void stage_logic(void) {
 	process_lasers();
 	process_projectiles(&global.particles, false);
 
-	if(global.boss && !global.dialog) {
-		process_boss(global.boss);
-		if(global.boss->dmg > global.boss->attacks[global.boss->acount-1].dmglimit)
-			boss_death(&global.boss);
-	}
+	if(global.boss && !global.dialog)
+		process_boss(&global.boss);
 
 	if(global.dialog && global.dialog->skip && global.frames - global.dialog->page_time > 3)
 		page_dialog(&global.dialog);

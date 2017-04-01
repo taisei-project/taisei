@@ -110,10 +110,6 @@ void stage3_start(void) {
 	stgstate.clr_r = 1.0;
 	stgstate.clr_g = 0.0;
 	stgstate.clr_b = 0.5;
-
-// TESTING
-//	bgcontext.cv[1] = -90;
-//	stgstate.fog_exp = 5.0;
 }
 
 void stage3_preload(void) {
@@ -286,10 +282,10 @@ void stage3_spellpractice_events(void) {
 	AT(0) {
 		if(global.stage->spell->draw_rule == stage3_mid_spellbg) {
 			skip_background_anim(&bgcontext, stage3_draw, 2800, &global.timer, NULL);
-			global.boss = create_boss("Scuttle", "scuttle", BOSS_DEFAULT_SPAWN_POS);
+			global.boss = create_boss("Scuttle", "scuttle", 0, BOSS_DEFAULT_SPAWN_POS);
 		} else {
 			skip_background_anim(&bgcontext, stage3_draw, 5300, &global.timer, NULL);
-			global.boss = create_boss("Wriggle EX", "wriggleex", BOSS_DEFAULT_SPAWN_POS);
+			global.boss = create_boss("Wriggle EX", "wriggleex", "dialog/wriggle", BOSS_DEFAULT_SPAWN_POS);
 		}
 
 		boss_add_attack_from_info(global.boss, global.stage->spell, true);

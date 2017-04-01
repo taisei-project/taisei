@@ -40,7 +40,7 @@ for src in srcdir.glob('**/*.c'):
     for func in regex_glcall.findall(src.read_text()):
         glfuncs.add(func)
 
-glfuncs = sorted(list(glfuncs) + list(force_funcs))
+glfuncs = sorted(glfuncs | force_funcs)
 
 typedefs = []
 prototypes = []
@@ -209,11 +209,9 @@ typedef void (APIENTRY *tsglUniform2iv_ptr)(GLint location, GLsizei count, const
 typedef void (APIENTRY *tsglUniform2uiv_ptr)(GLint location, GLsizei count, const GLuint *value);
 typedef void (APIENTRY *tsglUniform3f_ptr)(GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
 typedef void (APIENTRY *tsglUniform3fv_ptr)(GLint location, GLsizei count, const GLfloat *value);
-typedef void (APIENTRY *tsglUniform3fv_ptr)(GLint location, GLsizei count, const GLfloat *value);
 typedef void (APIENTRY *tsglUniform3iv_ptr)(GLint location, GLsizei count, const GLint *value);
 typedef void (APIENTRY *tsglUniform3uiv_ptr)(GLint location, GLsizei count, const GLuint *value);
 typedef void (APIENTRY *tsglUniform4f_ptr)(GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
-typedef void (APIENTRY *tsglUniform4fv_ptr)(GLint location, GLsizei count, const GLfloat *value);
 typedef void (APIENTRY *tsglUniform4fv_ptr)(GLint location, GLsizei count, const GLfloat *value);
 typedef void (APIENTRY *tsglUniform4iv_ptr)(GLint location, GLsizei count, const GLint *value);
 typedef void (APIENTRY *tsglUniform4uiv_ptr)(GLint location, GLsizei count, const GLuint *value);
@@ -302,11 +300,9 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glUniform2uiv
 #undef glUniform3f
 #undef glUniform3fv
-#undef glUniform3fv
 #undef glUniform3iv
 #undef glUniform3uiv
 #undef glUniform4f
-#undef glUniform4fv
 #undef glUniform4fv
 #undef glUniform4iv
 #undef glUniform4uiv
@@ -396,11 +392,9 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glUniform2uiv tsglUniform2uiv
 #define glUniform3f tsglUniform3f
 #define glUniform3fv tsglUniform3fv
-#define glUniform3fv tsglUniform3fv
 #define glUniform3iv tsglUniform3iv
 #define glUniform3uiv tsglUniform3uiv
 #define glUniform4f tsglUniform4f
-#define glUniform4fv tsglUniform4fv
 #define glUniform4fv tsglUniform4fv
 #define glUniform4iv tsglUniform4iv
 #define glUniform4uiv tsglUniform4uiv
@@ -492,11 +486,9 @@ GLDEF(glUniform2iv, tsglUniform2iv, tsglUniform2iv_ptr) \
 GLDEF(glUniform2uiv, tsglUniform2uiv, tsglUniform2uiv_ptr) \
 GLDEF(glUniform3f, tsglUniform3f, tsglUniform3f_ptr) \
 GLDEF(glUniform3fv, tsglUniform3fv, tsglUniform3fv_ptr) \
-GLDEF(glUniform3fv, tsglUniform3fv, tsglUniform3fv_ptr) \
 GLDEF(glUniform3iv, tsglUniform3iv, tsglUniform3iv_ptr) \
 GLDEF(glUniform3uiv, tsglUniform3uiv, tsglUniform3uiv_ptr) \
 GLDEF(glUniform4f, tsglUniform4f, tsglUniform4f_ptr) \
-GLDEF(glUniform4fv, tsglUniform4fv, tsglUniform4fv_ptr) \
 GLDEF(glUniform4fv, tsglUniform4fv, tsglUniform4fv_ptr) \
 GLDEF(glUniform4iv, tsglUniform4iv, tsglUniform4iv_ptr) \
 GLDEF(glUniform4uiv, tsglUniform4uiv, tsglUniform4uiv_ptr) \
@@ -592,11 +584,9 @@ GLAPI void APIENTRY glUniform2iv (GLint location, GLsizei count, const GLint *va
 GLAPI void APIENTRY glUniform2uiv (GLint location, GLsizei count, const GLuint *value);
 GLAPI void APIENTRY glUniform3f (GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
 GLAPI void APIENTRY glUniform3fv (GLint location, GLsizei count, const GLfloat *value);
-GLAPI void APIENTRY glUniform3fv (GLint location, GLsizei count, const GLfloat *value);
 GLAPI void APIENTRY glUniform3iv (GLint location, GLsizei count, const GLint *value);
 GLAPI void APIENTRY glUniform3uiv (GLint location, GLsizei count, const GLuint *value);
 GLAPI void APIENTRY glUniform4f (GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
-GLAPI void APIENTRY glUniform4fv (GLint location, GLsizei count, const GLfloat *value);
 GLAPI void APIENTRY glUniform4fv (GLint location, GLsizei count, const GLfloat *value);
 GLAPI void APIENTRY glUniform4iv (GLint location, GLsizei count, const GLint *value);
 GLAPI void APIENTRY glUniform4uiv (GLint location, GLsizei count, const GLuint *value);
@@ -685,11 +675,9 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglUniform2uiv glUniform2uiv
 #define tsglUniform3f glUniform3f
 #define tsglUniform3fv glUniform3fv
-#define tsglUniform3fv glUniform3fv
 #define tsglUniform3iv glUniform3iv
 #define tsglUniform3uiv glUniform3uiv
 #define tsglUniform4f glUniform4f
-#define tsglUniform4fv glUniform4fv
 #define tsglUniform4fv glUniform4fv
 #define tsglUniform4iv glUniform4iv
 #define tsglUniform4uiv glUniform4uiv

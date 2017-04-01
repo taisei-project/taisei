@@ -21,7 +21,8 @@ typedef enum AttackType {
 	AT_Normal,
 	AT_Move,
 	AT_Spellcard,
-	AT_SurvivalSpell
+	AT_SurvivalSpell,
+	AT_ExtraSpell
 } AttackType;
 
 typedef struct AttackInfo {
@@ -36,6 +37,8 @@ typedef struct AttackInfo {
 		Where each of those IDs are in range of 0-127, and are unique within each stage-specific AttackInfo array.
 		A special value of -1 can be used to not generate a spellstage for specific difficulties.
 		This is useful if your spell is only available on Hard and Lunatic, or has a difficulty-dependent name, etc.
+
+		IDs of AT_ExtraSpell attacks may overlap with those of other types.
 
 		Most importantly DO NOT CHANGE ENSTABILISHED IDs unless you absolutely must.
 		Doing so is going to break replays, progress files, and anything that stores stage IDs permanently.
@@ -54,6 +57,12 @@ typedef struct AttackInfo {
 	complex pos_dest;
 } AttackInfo;
 
+typedef enum {
+	FINISH_NOPE,
+	FINISH_WIN,
+	FINISH_FAIL
+} FinishType;
+
 typedef struct Attack {
 	char *name;
 
@@ -63,6 +72,8 @@ typedef struct Attack {
 
 	int timeout;
 	int dmglimit;
+	FinishType finished;
+	int endtime;
 
 	BossRule rule;
 	BossRule draw_rule;
@@ -81,15 +92,17 @@ typedef struct Boss {
 	int acount;
 
 	Animation *ani;
+	Texture *dialog; // Used in spellcard intros
 	int anirow;
 
 	int dmg;
 	Color zoomcolor;
 } Boss;
 
-Boss* create_boss(char *name, char *ani, complex pos);
+Boss* create_boss(char *name, char *ani, char *dialog, complex pos);
+void draw_extraspell_bg(Boss *boss, int time);
 void draw_boss(Boss *boss);
-void process_boss(Boss *boss);
+void process_boss(Boss **boss);
 
 void free_boss(Boss *boss);
 void free_attack(Attack *a);
@@ -99,7 +112,9 @@ void start_attack(Boss *b, Attack *a);
 Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule);
 Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move);
 
+bool boss_is_dying(Boss *boss); // true if the last attack is over but the BOSS_DEATH_DELAY has not elapsed.
 void boss_death(Boss **boss);
+void boss_kill_projectiles(void);
 
 void boss_preload(void);
 

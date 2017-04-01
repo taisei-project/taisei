@@ -228,6 +228,10 @@ static void cache_uniforms(Shader *sha) {
 	glGetProgramiv(sha->prog, GL_ACTIVE_UNIFORMS, &unicount);
 	glGetProgramiv(sha->prog, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxlen);
 
+	if(maxlen < 1) {
+		return;
+	}
+
 	char name[maxlen];
 
 	for(i = 0; i < unicount; i++) {

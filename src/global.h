@@ -62,7 +62,11 @@ enum {
 	VIEWPORT_H = 560,
 
 	POINT_OF_COLLECT = VIEWPORT_H/4,
-	ATTACK_START_DELAY = 40,
+	ATTACK_START_DELAY = 60,
+	ATTACK_START_DELAY_EXTRA = 150,
+	ATTACK_END_DELAY = 20,
+	ATTACK_END_DELAY_EXTRA = 150,
+	BOSS_DEATH_DELAY = 150,
 	BOMB_RECOVERY = 300,
 	DEATHBOMB_TIME = 12,
 	DEATH_DELAY = 70,
@@ -114,6 +118,7 @@ typedef struct {
 	ReplayStage *replay_stage;
 
 	float shake_view;
+	float shake_view_fade;
 
 	RandomState rand_game;
 	RandomState rand_visual;

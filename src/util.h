@@ -72,6 +72,7 @@ double clamp(double, double, double) __attribute__((const));
 double approach(double v, double t, double d) __attribute__((const));
 double psin(double) __attribute__((const));
 int sign(double) __attribute__((const));
+double swing(double x, double s) __attribute__((const));
 
 //
 // gl/video utils

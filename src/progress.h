@@ -11,8 +11,6 @@
 #include <stdbool.h>
 #include <SDL.h>
 
-#include "list.h"
-
 #define PROGRESS_FILENAME "progress.dat"
 #define PROGRESS_MAXFILESIZE 4096
 
