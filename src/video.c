@@ -12,6 +12,7 @@
 #include "video.h"
 #include "taiseigl.h"
 
+Video video;
 static bool libgl_loaded = false;
 
 static VideoMode common_modes[] = {

@@ -134,7 +134,7 @@ void cirno_pfreeze_bg(Boss *c, int time) {
 }
 
 Boss *create_cirno_mid(void) {
-	Boss* cirno = create_boss("Cirno", "cirno", VIEWPORT_W + 220 + 30.0*I);
+	Boss* cirno = create_boss("Cirno", "cirno", "dialog/cirno", VIEWPORT_W + 220 + 30.0*I);
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro, NULL);
 	boss_add_attack(cirno, AT_Normal, "Icy Storm", 20, 20000, cirno_icy, NULL);
 	boss_add_attack_from_info(cirno, stage1_spells+0, false);
@@ -296,8 +296,63 @@ void cirno_icicle_fall(Boss *c, int time) {
 
 }
 
+int cirno_crystal_blizzard_proj(Projectile *p, int time) {
+	if(!(time % 7))
+		create_particle1c("stain", p->pos, 0, GrowFadeAdd, timeout, 20)->angle = global.frames * 15;
+
+	if(time > 100 + global.diff * 100)
+		p->args[0] *= 1.03;
+
+	return asymptotic(p, time);
+}
+
+void cirno_crystal_blizzard(Boss *c, int time) {
+	int t = time % 700;
+	TIMER(&t);
+
+	if(time < 0) {
+		GO_TO(c, VIEWPORT_W/2.0+300*I, 0.1);
+		return;
+	}
+
+	FROM_TO(60, 360, 10) {
+		int i, cnt = 14 + global.diff * 3;
+		for(i = 0; i < cnt; ++i) {
+			create_projectile2c("crystal", i*VIEWPORT_W/cnt, i % 2? rgb(0.2,0.2,0.4) : rgb(0.5,0.5,0.5), accelerated, 0, 0.02*I + 0.01*I * (i % 2? 1 : -1) * sin((i*3+global.frames)/30.0));
+		}
+	}
+
+	FROM_TO(330, 700, 1) {
+		GO_TO(c, global.plr.pos, 0.01);
+
+		if(!(time % (1 + D_Lunatic - global.diff))) {
+			tsrand_fill(2);
+			create_projectile2c("wave", c->pos, rgb(0.2, 0.2, 0.4), cirno_crystal_blizzard_proj,
+				20 * (0.1 + 0.1 * anfrand(0)) * cexp(I*(carg(global.plr.pos - c->pos) + anfrand(1) * 0.2)), 5
+			)->draw = ProjDrawAdd;
+		}
+
+		if(!(time % 7)) {
+			int i, cnt = global.diff - 1;
+			for(i = 0; i < cnt; ++i)
+				create_projectile2c("ball", c->pos, rgb(0.1, 0.1, 0.5), accelerated, 0, 0.01 * cexp(I*(global.frames/20.0 + 2*i*M_PI/cnt)))->draw = ProjDrawAdd;
+		}
+	}
+}
+
+void cirno_superhardspellcard(Boss *c, int t) {
+	// HOWTO: create a super hard spellcard in a few seconds
+
+	cirno_iceplosion0(c, t);
+	cirno_iceplosion1(c, t);
+	cirno_crystal_rain(c, t);
+	cirno_icicle_fall(c, t);
+	cirno_icy(c, t);
+	cirno_perfect_freeze(c, t);
+}
+
 Boss *create_cirno(void) {
-	Boss* cirno = create_boss("Cirno", "cirno", -230 + 100.0*I);
+	Boss* cirno = create_boss("Cirno", "cirno", "dialog/cirno", -230 + 100.0*I);
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro_boss, NULL);
 	boss_add_attack(cirno, AT_Normal, "Iceplosion 0", 20, 20000, cirno_iceplosion0, NULL);
 	boss_add_attack_from_info(cirno, stage1_spells+1, false);

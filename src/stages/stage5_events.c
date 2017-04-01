@@ -8,12 +8,14 @@
 #include "stage5_events.h"
 #include "stage5.h"
 #include <global.h>
+#include <float.h>
 
 void iku_spell_bg(Boss*, int);
 void iku_atmospheric(Boss*, int);
 void iku_lightning(Boss*, int);
 void iku_cathode(Boss*, int);
 void iku_induction(Boss*, int);
+void iku_extra(Boss*, int);
 
 /*
  *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
@@ -28,6 +30,8 @@ AttackInfo stage5_spells[] = {
 							iku_cathode, iku_spell_bg, BOSS_DEFAULT_GO_POS},
 	{{12, 13, 14, 15},	AT_Spellcard, "Current Sign ~ Induction", 30, 35000,
 							iku_induction, iku_spell_bg, BOSS_DEFAULT_GO_POS},
+	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Circuit Sign ~ Overload", 60, 40000,
+							iku_extra, iku_spell_bg, BOSS_DEFAULT_GO_POS},
 
 	{{0}}
 };
@@ -42,14 +46,12 @@ Dialog *stage5_post_mid_dialog(void) {
 
 Dialog *stage5_boss_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/iku");
-
 	dadd_msg(d, Left, "Finally!");
 	dadd_msg(d, Right, "Stop following me!");
 	dadd_msg(d, Left, "Why? You aren’t involved in this, are you?");
 	dadd_msg(d, Right, "I don’t have time for your suspicions now.");
 	dadd_msg(d, Left, "Sounds very suspicious, actually.");
 	dadd_msg(d, Right, "Okay, let’s just get this over with.");
-
 	dadd_msg(d, BGM, "bgm_stage5boss");
 	return d;
 }
@@ -109,6 +111,7 @@ int stage5_lightburst(Enemy *e, int t) {
 
 	return 1;
 }
+
 
 int stage5_swirl(Enemy *e, int t) {
 	TIMER(&t);
@@ -211,6 +214,21 @@ int stage5_explosion(Enemy *e, int t) {
 	return 1;
 }
 
+void iku_slave_draw(Enemy *e, int t) {
+	complex offset = (frand()-0.5)*10 + (frand()-0.5)*10.0*I;
+	if(e->args[2] && !(t % 5)) {
+		char *part = frand() > 0.5 ? "lightning0" : "lightning1";
+		Projectile *p = create_particle1c(part, e->pos+3*offset, rgb(1.0, 1.0, 1.0), FadeAdd, timeout, 20);
+		p->angle = frand()*2*M_PI;
+	}
+
+	if(!(t % 3)) {
+		float alpha = 1;
+		if(!e->args[2])
+			alpha *= 0.03;
+		create_particle3c("lightningball", e->pos, rgba(.1*alpha, .1*alpha, .6*alpha, 0.1*alpha), FadeAdd, enemy_flare, 50,offset*0.1,add_ref(e));
+	}
+}
 
 void iku_mid_intro(Boss *b, int t) {
 	TIMER(&t);
@@ -218,7 +236,7 @@ void iku_mid_intro(Boss *b, int t) {
 	b->pos += -1-7.0*I+10*t*(cimag(b->pos)<-200);
 
 	FROM_TO(90, 110, 10) {
-		create_enemy2c(b->pos, ENEMY_IMMUNE, Swirl, stage5_explosion, -2-0.5*_i+I*_i, _i == 1);
+		create_enemy3c(b->pos, ENEMY_IMMUNE, iku_slave_draw, stage5_explosion, -2-0.5*_i+I*_i, _i == 1,1);
 	}
 
 	AT(960)
@@ -226,7 +244,7 @@ void iku_mid_intro(Boss *b, int t) {
 }
 
 Boss *create_iku_mid(void) {
-	Boss *b = create_boss("Bombs?", "iku", VIEWPORT_W+800.0*I);
+	Boss *b = create_boss("Bombs?", "iku", 0, VIEWPORT_W+800.0*I);
 
 	boss_add_attack(b, AT_SurvivalSpell, "Static Bombs", 16, 10, iku_mid_intro, NULL);
 
@@ -503,8 +521,201 @@ void iku_induction(Boss *b, int t) {
 
 void iku_spell_bg(Boss *b, int t);
 
+Enemy* iku_extra_find_next_slave(complex from, double playerbias) {
+	Enemy *nearest = NULL, *e;
+	double dist, mindist = DBL_MAX;
+
+	complex org = from + playerbias * cexp(I*(carg(global.plr.pos - from)));
+
+	for(e = global.enemies; e; e = e->next) {
+		if(e->args[2]) {
+			continue;
+		}
+
+		dist = cabs(e->pos - org);
+
+		if(dist < mindist) {
+			nearest = e;
+			mindist = dist;
+		}
+	}
+
+	return nearest;
+}
+
+
+void iku_extra_slave_draw(Enemy *e, int t) {
+	iku_slave_draw(e, t);
+
+	if(e->args[2] && !(t % 5)) {
+		complex offset = (frand()-0.5)*30 + (frand()-0.5)*20.0*I;
+		create_particle3c("lasercurve", offset, e->args[1] ? rgb(1.0, 0.5, 0.0) : rgb(0.0, 0.5, 0.5), EnemyFlareShrink, enemy_flare, 50, (-50.0*I-offset)/50.0, add_ref(e));
+	}
+}
+
+int iku_extra_trigger_bullet(Projectile *p, int t) {
+	if(t == EVENT_DEATH) {
+		free_ref(p->args[1]);
+		return 1;
+	}
+
+	Enemy *target = REF(p->args[1]);
+
+	if(!target) {
+		return ACTION_DESTROY;
+	}
+
+	if(creal(p->args[2]) < 0) {
+		linear(p, t);
+		if(cabs(p->pos - target->pos) < 5) {
+			p->pos = target->pos;
+			target->args[1] = 1;
+			p->args[2] = 55 - 5 * global.diff;
+			target->args[3] = global.frames + p->args[2];
+		}
+	} else {
+		p->args[2] = approach(creal(p->args[2]), 0, 1);
+	}
+
+	if(creal(p->args[2]) == 0) {
+		int cnt = 6 + 2 * global.diff;
+		for(int i = 0; i < cnt; ++i) {
+			complex dir = cexp(I*(t + i*2*M_PI/cnt));
+			create_projectile2c("bigball", p->pos, rgb(1, 0.5, 0), asymptotic, 1.1*dir, 5)->draw = ProjDrawAdd;
+			create_projectile2c("bigball", p->pos, rgb(0, 0.5, 1), asymptotic, dir, 10)->draw = ProjDrawAdd;
+		}
+		global.shake_view += 5;
+		global.shake_view_fade = 0.2;
+		return ACTION_DESTROY;
+	}
+
+	p->angle = global.frames + t;
+
+	char *part = frand() > 0.5 ? "lightning0" : "lightning1";
+	complex ofs = nfrand();
+	ofs += I * nfrand();
+	Projectile *prt = create_particle2c(part, p->pos + 3 * ofs, rgb(1.0, 0.7 + 0.2 * nfrand(), 0.4), GrowFadeAdd, timeout, 20, 2.4);
+	prt->angle = frand() * 2 * M_PI;
+
+	return 1;
+}
+
+void iku_extra_fire_trigger_bullet(void) {
+	Enemy *e = iku_extra_find_next_slave(global.boss->pos, 250);
+
+	if(!e) {
+		return;
+	}
+
+	Boss *b = global.boss;
+
+	create_projectile3c("soul", b->pos, rgb(0.2, 0.2, 1.0), iku_extra_trigger_bullet,
+		3*cexp(I*carg(e->pos - b->pos)), add_ref(e), -1);
+}
+
+int iku_extra_slave(Enemy *e, int t) {
+	GO_TO(e, e->args[0], 0.05);
+
+	if(e->args[1]) {
+		if(creal(e->args[1]) < 2) {
+			e->args[1] += 1;
+			return 0;
+		}
+
+		if(global.frames == creal(e->args[3])) {
+			complex o2 = e->args[2];
+			e->args[2] = 0;
+			Enemy *new = iku_extra_find_next_slave(e->pos, 75);
+			e->args[2] = o2;
+
+			if(new && e != new) {
+				e->args[1] = 0;
+				e->args[2] = new->args[2] = 600;
+				new->args[1] = 1;
+				new->args[3] = global.frames + 55 - 5 * global.diff;
+
+				create_laserline_ab(e->pos, new->pos, 10, 30, e->args[2], rgb(0.3, 1, 1))->in_background = true;
+
+				if(global.diff > D_Easy) {
+					int cnt = floor(global.diff * 2.5), i;
+					double r = frand() * 2 * M_PI;
+
+					for(i = 0; i < cnt; ++i) {
+						create_projectile2c("rice", e->pos, rgb(1, 1, 0), asymptotic, 2*cexp(I*(r+i*2*M_PI/cnt)), 2)->draw = ProjDrawAdd;
+					}
+				}
+			} else {
+				Enemy *o;
+				Laser *l;
+				int cnt = 6 + 2 * global.diff, i;
+
+				global.shake_view = 0;
+				global.shake_view_fade = 0.2;
+
+				e->args[2] = 1;
+
+				for(o = global.enemies; o; o = o->next) {
+					if(!o->args[2])
+						continue;
+
+					for(i = 0; i < cnt; ++i) {
+						create_projectile2c("ball", o->pos, rgb(0, 1, 1), asymptotic, 1.5*cexp(I*(t + i*2*M_PI/cnt)), 5)->draw = ProjDrawAdd;
+					}
+
+					o->args[1] = 0;
+					o->args[2] = 0;
+
+					global.shake_view += 1;
+				}
+
+				for(l = global.lasers; l; l = l->next) {
+					l->deathtime = global.frames - l->birthtime + 20;
+				}
+
+				iku_extra_fire_trigger_bullet();
+			}
+		}
+	}
+
+	if(e->args[2]) {
+		e->args[2] -= 1;
+	}
+
+	return 0;
+}
+
+void iku_extra(Boss *b, int t) {
+	TIMER(&t);
+
+	AT(EVENT_DEATH) {
+		killall(global.enemies);
+	}
+
+	if(t < 0) {
+		GO_TO(b, VIEWPORT_W/2+50.0*I, 0.02);
+		return;
+	}
+
+	AT(0) {
+		int i, j;
+		int cnt = 5;
+		double step = VIEWPORT_W / (double)cnt;
+
+		for(i = 0; i < cnt; ++i) {
+			for(j = 0; j < cnt; ++j) {
+				complex epos = step * (0.5 + i) + (step * j + 125) * I;
+				create_enemy4c(b->pos, ENEMY_IMMUNE, iku_extra_slave_draw, iku_extra_slave, epos, 0, 0, 1);
+			}
+		}
+	}
+
+	AT(60) {
+		iku_extra_fire_trigger_bullet();
+	}
+}
+
 Boss *create_iku(void) {
-	Boss *b = create_boss("Nagae Iku", "iku", VIEWPORT_W/2-200.0*I);
+	Boss *b = create_boss("Nagae Iku", "iku", "dialog/iku", VIEWPORT_W/2-200.0*I);
 
 	boss_add_attack(b, AT_Move, "Introduction", 3, 0, iku_intro, NULL);
 	boss_add_attack(b, AT_Normal, "Bolts1", 20, 20000, iku_bolts, NULL);
