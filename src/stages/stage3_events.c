@@ -456,8 +456,10 @@ void stage3_mid_a2(Boss *boss, int time) {
 	FROM_TO(30, 9000, 3-lun) {
 		int i, cnt = 2;
 		for(i = 0; i < cnt; ++i) {
-			complex pos = 230*cexp(I*(_i*0.301+2*M_PI/cnt*i))*tanh(sin(_i/200.*(1+lun)));
-			create_projectile2c("ball",boss->pos+pos,rgb(0.3,1.0,0.3),stage3_mid_poison2,100,cexp(I*(!lun)*0.6)*pos/cabs(pos));
+			float r = tanh(sin(_i/200.));
+			float v = lun*cos(_i/200.)/pow(cosh(atanh(r)),2);
+			complex pos = 230*cexp(I*(_i*0.301+2*M_PI/cnt*i))*r;
+			create_projectile2c(lun && !(i%10) ? "bigball" : "ball",boss->pos+pos,rgb(0.3,1.0,0.3),stage3_mid_poison2,100,cexp(I*(!lun)*0.6)*pos/cabs(pos)*(1+v));
 		}
 	}
 }
