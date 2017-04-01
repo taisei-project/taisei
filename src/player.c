@@ -404,7 +404,7 @@ void player_input_workaround(Player *plr) {
 	if(global.dialog)
 		return;
 
-	for(KeyIndex key = KEYIDX_FIRST; key <= KEYIDX_LAST; ++key) {
+	for(KeyIndex key = KEYIDX_FIRST; key <= KEYIDX_LAST; key = static_cast<KeyIndex>(static_cast<int>(key) + 1)) {
 		int flag = key_to_inflag(key);
 
 		if(flag) {

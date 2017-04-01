@@ -48,7 +48,7 @@ static char* format_log_string(LogLevel lvl, const char *funcname, const char *f
     return final;
 }
 
-noreturn static void log_abort(const char *msg) {
+[[noreturn]] static void log_abort(const char *msg) {
 #ifdef LOG_FATAL_MSGBOX
     if(msg) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Taisei error", msg, NULL);
@@ -65,7 +65,7 @@ static void log_internal(LogLevel lvl, bool is_backtrace, const char *funcname, 
 
     char *str = NULL;
     size_t slen = 0;
-    lvl &= enabled_log_levels;
+    lvl = static_cast<LogLevel>(lvl & static_cast<LogLevel>(enabled_log_levels));
 
     if(lvl == LOG_NONE) {
         return;
@@ -94,7 +94,7 @@ static void log_internal(LogLevel lvl, bool is_backtrace, const char *funcname, 
         return;
     }
 
-    if(lvl & backtrace_log_levels) {
+    if(lvl & static_cast<LogLevel>(backtrace_log_levels)) {
         log_backtrace(lvl);
     }
 
@@ -111,7 +111,7 @@ static char** get_backtrace(int *num) {
     *num = backtrace(ptrs, *num);
     return backtrace_symbols(ptrs, *num);
 #else
-    char **dummy = malloc(sizeof(char*));
+    char **dummy = reinterpret_cast<char**>(malloc(sizeof(char*)));
     *num = 1;
     *dummy = "[Backtrace support is not available in this build]";
     return dummy;
@@ -142,7 +142,7 @@ void _taisei_log(LogLevel lvl, bool is_backtrace, const char *funcname, const ch
     va_end(args);
 }
 
-noreturn void _taisei_log_fatal(LogLevel lvl, const char *funcname, const char *fmt, ...) {
+[[noreturn]] void _taisei_log_fatal(LogLevel lvl, const char *funcname, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     log_internal(lvl, false, funcname, fmt, args);
@@ -154,14 +154,14 @@ noreturn void _taisei_log_fatal(LogLevel lvl, const char *funcname, const char *
 }
 
 static void delete_logger(void **loggers, void *logger) {
-    Logger *l = logger;
+    Logger *l = reinterpret_cast<Logger*>(logger);
     SDL_RWclose(l->out);
     delete_element(loggers, logger);
 }
 
 void log_init(LogLevel lvls, LogLevel backtrace_lvls) {
-    enabled_log_levels = lvls;
-    backtrace_log_levels = lvls & backtrace_lvls;
+    enabled_log_levels = static_cast<unsigned int>(lvls);
+    backtrace_log_levels = static_cast<unsigned int>(lvls & static_cast<LogLevel>(backtrace_lvls));
     log_mutex = SDL_CreateMutex();
 }
 
@@ -185,7 +185,7 @@ void log_add_output(LogLevel levels, SDL_RWops *output) {
         return;
     }
 
-    Logger *l = create_element((void**)&loggers, sizeof(Logger));
+    Logger *l = reinterpret_cast<Logger*>(create_element((void**)&loggers, sizeof(Logger)));
     l->levels = levels;
     l->out = output;
 }
@@ -195,13 +195,13 @@ static LogLevel chr2lvl(char c) {
 
     for(int i = 0; i < sizeof(level_prefix_map) / sizeof(char*); ++i) {
         if(c == level_prefix_map[i][0]) {
-            return (1 << i);
+            return static_cast<LogLevel>(1 << i);
         } else if(c == 'A') {
             return LOG_ALL;
         }
     }
 
-    return 0;
+    return static_cast<LogLevel>(0);
 }
 
 LogLevel log_parse_levels(LogLevel lvls, const char *lvlmod) {
@@ -217,9 +217,9 @@ LogLevel log_parse_levels(LogLevel lvls, const char *lvlmod) {
         } else if(*c == '-') {
             enable = false;
         } else if(enable) {
-            lvls |= chr2lvl(*c);
+            lvls = static_cast<LogLevel>(lvls | chr2lvl(*c));
         } else {
-            lvls &= ~chr2lvl(*c);
+            lvls = static_cast<LogLevel>(lvls * ~chr2lvl(*c));
         }
     }
 

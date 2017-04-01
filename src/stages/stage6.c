@@ -289,20 +289,20 @@ void stage6_spellpractice_events(void) {
 ShaderRule stage6_shaders[] = { NULL };
 
 StageProcs stage6_procs = {
-	.begin = stage6_start,
-	.preload = stage6_preload,
-	.end = stage6_end,
-	.draw = stage6_draw,
-	.event = stage6_events,
-	.shader_rules = stage6_shaders,
-	.spellpractice_procs = &stage6_spell_procs,
+	stage6_start,
+	stage6_preload,
+	stage6_end,
+	stage6_draw,
+	stage6_events,
+	stage6_shaders,
+	&stage6_spell_procs,
 };
 
 StageProcs stage6_spell_procs = {
-	.preload = stage6_preload,
-	.begin = stage6_start,
-	.end = stage6_end,
-	.draw = stage6_draw,
-	.event = stage6_spellpractice_events,
-	.shader_rules = stage6_shaders,
+	stage6_start,
+	stage6_preload,
+	stage6_end,
+	stage6_draw,
+	stage6_spellpractice_events,
+	stage6_shaders,
 };

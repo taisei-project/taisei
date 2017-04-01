@@ -18,8 +18,8 @@ void delete_all_elements(void **dest, void (callback)(void **, void *));
 void delete_all_elements_witharg(void **dest, void (callback)(void **, void *, void *), void *arg);
 
 typedef struct ListContainer {
-    void *next;
-    void *prev;
+    struct ListContainer *next;
+    struct ListContainer *prev;
     void *data;
 } ListContainer;
 
@@ -37,9 +37,9 @@ typedef struct {
 
 extern void *_FREEREF;
 #define FREEREF &_FREEREF
-#define REF(p) (global.refs.ptrs[(int)(p)].ptr)
+#define REF(p) (global.refs.ptrs[static_cast<int>(creal(p))].ptr)
 int add_ref(void *ptr);
 void del_ref(void *ptr);
-void free_ref(int i);
+void free_ref(_Complex double i);
 void free_all_refs(void);
 #endif

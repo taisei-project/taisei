@@ -255,8 +255,8 @@ int stage3_mid_poison(Projectile *p, int time) {
 		return 1;
 
 	if(!(time % (57 - global.diff * 3)) && p->type != DeadProj) {
-		float a = p->args[2];
-		float t = p->args[3] + time;
+		float a = creal(p->args[2]);
+		float t = creal(p->args[3] + time);
 
 		create_projectile2c((frand() > 0.5)? "thickrice" : "rice", p->pos, rgb(0.3, 0.7 + 0.3 * psin(a/3.0 + t/20.0), 0.3), accelerated,
 				0,
@@ -367,9 +367,9 @@ int stage3_mid_poison2(Projectile *p, int time) {
 
 	int d = 30 - global.diff * 3;
 	if(!(time % d) && p->type != DeadProj) {
-		float a = p->args[2];
-		float t = p->args[3] + time;
-		p->args[1] = !p->args[1];
+		float a = creal(p->args[2]);
+		float t = creal(p->args[3] + time);
+		p->args[1] = !creal(p->args[1]);
 
 		create_projectile2c((time % (2*d))? "thickrice" : "rice", p->pos, rgb(0.3 + 0.7 * psin(a/3.0 + t/20.0), 1.0, 0.3), accelerated,
 				0,
@@ -470,7 +470,7 @@ void wriggle_slave_draw(Enemy *e, int time) {
 
 	glColor3f(1,1,1);
 	glPopMatrix();
-	
+
 	if(time % 5 == 0) {
 		tsrand_fill(2);
 		create_particle3c("lasercurve", 5*cexp(2*I*M_PI*afrand(0)), rgba(1,1,0.8,0.6), EnemyFlareShrink, enemy_flare, 60, 0.3*cexp(2*M_PI*I*afrand(1)),add_ref(e));
@@ -521,7 +521,7 @@ int stage3_boss_a1_laserbullet(Projectile *p, int time) {
 void stage3_boss_a1_slave_part(Projectile *p, int t) {
 	Texture *tex = p->tex;
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
-	float b = 1 - t / p->args[0];
+	float b = 1 - t / creal(p->args[0]);
 	parse_color_call(multiply_colors(p->clr, rgb(b, b, b)), glColor4f);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
@@ -537,7 +537,7 @@ void stage3_boss_a1_slave_part(Projectile *p, int t) {
 int stage3_boss_a1_slave(Enemy *e, int time) {
 	TIMER(&time)
 
-	float angle = e->args[2] * (time / 70.0 + e->args[1]);
+	float angle = creal(e->args[2] * (time / 70.0 + e->args[1]));
 	complex dir = cexp(I*angle);
 	Boss *boss = (Boss*)REF(e->args[0]);
 
@@ -613,7 +613,7 @@ int stage3_boss_a2_laserbullet(Projectile *p, int time) {
 	if(!laser)
 		return ACTION_DESTROY;
 
-	p->pos = laser->prule(laser, time - p->args[1]);
+	p->pos = laser->prule(laser, creal(time - p->args[1]));
 
 	return 1;
 }
@@ -730,8 +730,8 @@ void stage3_boss_a3(Boss *boss, int time) {
 int stage3_boss_prea1_slave(Enemy *e, int time) {
 	TIMER(&time)
 
-	int level = e->args[3];
-	float angle = e->args[2] * (time / 70.0 + e->args[1]);
+	int level = creal(e->args[3]);
+	float angle = creal(e->args[2] * (time / 70.0 + e->args[1]));
 	complex dir = cexp(I*angle);
 	Boss *boss = (Boss*)REF(e->args[0]);
 

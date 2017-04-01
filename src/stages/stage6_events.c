@@ -144,7 +144,7 @@ void ScaleFade(Projectile *p, int t) {
 	glScalef(creal(p->args[1]), creal(p->args[1]), 1);
 	glRotatef(180/M_PI*p->angle, 0, 0, 1);
 	if(t/creal(p->args[0]) != 0)
-		glColor4f(1,1,1, 1.0 - (float)t/p->args[0]);
+		glColor4f(1,1,1, 1.0 - (float)t/creal(p->args[0]));
 
 	draw_texture_p(0, 0, p->tex);
 

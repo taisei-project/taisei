@@ -12,7 +12,7 @@
 
 void add_ending_entry(Ending *e, int dur, char *msg, char *tex) {
 	EndingEntry *entry;
-	e->entries = realloc(e->entries, (++e->count)*sizeof(EndingEntry));
+	e->entries = reinterpret_cast<EndingEntry*>(realloc(e->entries, (++e->count)*sizeof(EndingEntry)));
 	entry = &e->entries[e->count-1];
 
 	entry->time = e->duration;
@@ -135,7 +135,7 @@ void ending_loop(void) {
 	set_ortho();
 
 	while(e.pos < e.count-1) {
-		handle_events(NULL, 0, NULL);
+		handle_events(NULL, static_cast<EventFlags>(0), NULL);
 
 		ending_draw(&e);
 		global.frames++;

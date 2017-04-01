@@ -69,7 +69,7 @@ void stage_init_array(void) {
 		StageInfo *s = stages + i;
 
 		for(AttackInfo *a = s->spell; a->rule; ++a) {
-			for(Difficulty diff = D_Easy; diff < D_Easy + NUM_SELECTABLE_DIFFICULTIES; ++diff) {
+			for(Difficulty diff = D_Easy; diff < D_Easy + NUM_SELECTABLE_DIFFICULTIES; diff = static_cast<Difficulty>(static_cast<int>(diff) + 1)) {
 				if(a->idmap[diff - D_Easy] >= 0) {
 					uint16_t id = STAGE_SPELL_BIT | a->idmap[diff - D_Easy] | (s->id << 8);
 

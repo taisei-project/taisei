@@ -10,7 +10,7 @@
 #include "list.h"
 
 Laser *create_laser(complex pos, float time, float deathtime, Color color, LaserPosRule prule, LaserLogicRule lrule, complex a0, complex a1, complex a2, complex a3) {
-	Laser *l = create_element((void **)&global.lasers, sizeof(Laser));
+	Laser *l = reinterpret_cast<Laser*>(create_element((void **)&global.lasers, sizeof(Laser)));
 
 	l->birthtime = global.frames;
 	l->timespan = time;
@@ -155,7 +155,7 @@ void draw_lasers(void) {
 }
 
 void _delete_laser(void **lasers, void *laser) {
-	Laser *l = laser;
+	Laser *l = reinterpret_cast<Laser*>(laser);
 
 	if(l->lrule)
 		l->lrule(l, EVENT_DEATH);
@@ -196,8 +196,8 @@ int collision_line(complex a, complex b, complex c, float r) {
 	m = b-a;
 	a -= c;
 
-	la = a*conj(a);
-	lm = m*conj(m);
+	la = creal(a*conj(a));
+	lm = creal(m*conj(m));
 
 	d = -(creal(a)*creal(m)+cimag(a)*cimag(m))/lm;
 
@@ -267,7 +267,7 @@ complex las_sine(Laser *l, float t) {				// [0] = velocity; [1] = sine amplitude
 		return 0;
 	}
 
-	double s = (l->args[2] * t + l->args[3]);
+	double s = creal(l->args[2] * t + l->args[3]);
 	return l->pos + cexp(I * (carg(l->args[0]) + l->args[1] * sin(s) / s)) * t * cabs(l->args[0]);
 }
 
@@ -278,7 +278,7 @@ complex las_sine_expanding(Laser *l, float t) {	// [0] = velocity; [1] = sine am
 		return 0;
 	}
 
-	double s = (l->args[2] * t + l->args[3]);
+	double s = creal(l->args[2] * t + l->args[3]);
 	return l->pos + cexp(I * (carg(l->args[0]) + l->args[1] * sin(s))) * t * cabs(l->args[0]);
 }
 

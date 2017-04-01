@@ -198,20 +198,20 @@ void stage1_spellpractice_events(void) {
 ShaderRule stage1_shaders[] = { stage1_fog, NULL };
 
 StageProcs stage1_procs = {
-	.begin = stage1_start,
-	.preload = stage1_preload,
-	.end = stage1_end,
-	.draw = stage1_draw,
-	.event = stage1_events,
-	.shader_rules = stage1_shaders,
-	.spellpractice_procs = &stage1_spell_procs,
+	stage1_start,
+	stage1_preload,
+	stage1_end,
+	stage1_draw,
+	stage1_events,
+	stage1_shaders,
+	&stage1_spell_procs,
 };
 
 StageProcs stage1_spell_procs = {
-	.preload = stage1_preload,
-	.begin = stage1_start,
-	.end = stage1_end,
-	.draw = stage1_draw,
-	.event = stage1_spellpractice_events,
-	.shader_rules = stage1_shaders,
+	stage1_start,
+	stage1_preload,
+	stage1_end,
+	stage1_draw,
+	stage1_spellpractice_events,
+	stage1_shaders,
 };

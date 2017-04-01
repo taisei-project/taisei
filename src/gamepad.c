@@ -50,7 +50,7 @@ void gamepad_init(void) {
 		return;
 	}
 
-	gamepad.axis = malloc(SDL_JoystickNumAxes(gamepad.device));
+	gamepad.axis = reinterpret_cast<signed char*>(malloc(SDL_JoystickNumAxes(gamepad.device)));
 
 	log_info("Using device #%i: %s", dev, gamepad_devicename(dev));
 	SDL_JoystickEventState(SDL_ENABLE);
@@ -152,7 +152,7 @@ void gamepad_axis(int id, int raw, EventHandler handler, EventFlags flags, void 
 			x = x ? x : 0;
 			x = clamp(x * GAMEPAD_AXIS_MAX, GAMEPAD_AXIS_MIN, GAMEPAD_AXIS_MAX);
 
-			handler(evt, x, arg);
+			handler(static_cast<EventType>(evt), x, arg);
 		}
 	}
 
@@ -169,7 +169,7 @@ void gamepad_axis(int id, int raw, EventHandler handler, EventFlags flags, void 
 			if(menu) {
 				int evt = gamepad_axis2menuevt(id, val);
 				if(evt >= 0)
-					handler(evt, 0, arg);
+					handler(static_cast<EventType>(evt), static_cast<EventType>(0), arg);
 			}
 		}
 	} else {	// simulate release
@@ -193,7 +193,7 @@ void gamepad_button(int button, int state, EventHandler handler, EventFlags flag
 	int gpad	= flags & EF_Gamepad;
 
 	int gpkey	= config_gamepad_key_from_gamepad_button(button);
-	int key		= config_key_from_gamepad_key(gpkey);
+	int key		= static_cast<int>(config_key_from_gamepad_key(static_cast<GamepadKeyIndex>(gpkey)));
 
 	//printf("button: %i %i\n", button, state);
 	//printf("gpkey: %i\n", gpkey);

@@ -53,8 +53,8 @@ void init_log(void) {
 	LogLevel lvls_backtrace = log_parse_levels(LOG_DEFAULT_LEVELS_BACKTRACE, getenv("TAISEI_LOGLVLS_BACKTRACE"));
 
 	log_init(LOG_DEFAULT_LEVELS, lvls_backtrace);
-	log_add_output(lvls_stdout, SDL_RWFromFP(stdout, false));
-	log_add_output(lvls_stderr, SDL_RWFromFP(stderr, false));
+	log_add_output(lvls_stdout, SDL_RWFromFP(stdout, static_cast<SDL_bool>(false)));
+	log_add_output(lvls_stderr, SDL_RWFromFP(stderr, static_cast<SDL_bool>(false)));
 	log_add_output(lvls_file, SDL_RWFromFile(logpath, "w"));
 
 	free(logpath);

@@ -21,7 +21,7 @@ Item *create_item(complex pos, complex v, ItemType type) {
 	else
 		d = &e;
 
-	Item *i = create_element((void **)d, sizeof(Item));
+	Item *i = reinterpret_cast<Item*>(create_element((void **)d, sizeof(Item)));
 	i->pos = pos;
 	i->pos0 = pos;
 	i->v = v;
@@ -163,7 +163,7 @@ void spawn_items(complex pos, ...) {
 	va_start(args, pos);
 
 	ItemType type;
-	while(type = va_arg(args, ItemType)) {
+	while(type = static_cast<ItemType>(va_arg(args, int))) {
 		int num = va_arg(args, int);
 		for(int i = 0; i < num; ++i) {
 			spawn_item(pos, type);

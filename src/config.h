@@ -111,6 +111,8 @@ typedef enum ConfigIndex {
 #define CONFIGIDX_LAST (CONFIGIDX_NUM - 1)
 
 typedef enum KeyIndex {
+	KEYIDX_INVALID = -1,
+
 	#define CONFIGDEF_KEYBINDING(id,entryname,default) id,
 
 	KEYDEFS
@@ -121,12 +123,14 @@ typedef enum KeyIndex {
 
 #define KEYIDX_FIRST 0
 #define KEYIDX_LAST (KEYIDX_NUM - 1)
-#define CFGIDX_TO_KEYIDX(idx) (idx - CONFIG_KEY_FIRST + KEYIDX_FIRST)
-#define KEYIDX_TO_CFGIDX(idx) (idx + CONFIG_KEY_FIRST - KEYIDX_FIRST)
+#define CFGIDX_TO_KEYIDX(idx) static_cast<KeyIndex>(static_cast<int>(idx) - static_cast<int>(CONFIG_KEY_FIRST) + KEYIDX_FIRST)
+#define KEYIDX_TO_CFGIDX(idx) static_cast<KeyIndex>(static_cast<int>(idx) + static_cast<int>(CONFIG_KEY_FIRST) - KEYIDX_FIRST)
 #define CONFIG_KEY_FIRST CONFIG_KEY_UP
-#define CONFIG_KEY_LAST (CONFIG_KEY_FIRST + KEYIDX_LAST - KEYIDX_FIRST)
+#define CONFIG_KEY_LAST static_cast<KeyIndex>(static_cast<int>(CONFIG_KEY_FIRST) + KEYIDX_LAST - KEYIDX_FIRST)
 
 typedef enum GamepadKeyIndex {
+	GPKEYIDX_INVALID = -1,
+
 	#define CONFIGDEF_GPKEYBINDING(id,entryname,default) GAMEPAD_##id,
 
 	GPKEYDEFS
@@ -137,12 +141,13 @@ typedef enum GamepadKeyIndex {
 
 #define GAMEPAD_KEYIDX_FIRST 0
 #define GAMEPAD_KEYIDX_LAST (GAMEPAD_KEYIDX_NUM - 1)
-#define CFGIDX_TO_GPKEYIDX(idx) (idx - CONFIG_GAMEPAD_KEY_FIRST + GAMEPAD_KEYIDX_FIRST)
-#define GPKEYIDX_TO_CFGIDX(idx) (idx + CONFIG_GAMEPAD_KEY_FIRST - GAMEPAD_KEYIDX_FIRST)
+#define CFGIDX_TO_GPKEYIDX(idx) static_cast<GamepadKeyIndex>(static_cast<int>(idx) - static_cast<int>(CONFIG_GAMEPAD_KEY_FIRST) + GAMEPAD_KEYIDX_FIRST)
+#define GPKEYIDX_TO_CFGIDX(idx) static_cast<GamepadKeyIndex>(static_cast<int>(idx) + static_cast<int>(CONFIG_GAMEPAD_KEY_FIRST) - GAMEPAD_KEYIDX_FIRST)
 #define CONFIG_GAMEPAD_KEY_FIRST CONFIG_GAMEPAD_KEY_UP
-#define CONFIG_GAMEPAD_KEY_LAST (CONFIG_GAMEPAD_KEY_FIRST + GAMEPAD_KEYIDX_LAST - GAMEPAD_KEYIDX_FIRST)
+#define CONFIG_GAMEPAD_KEY_LAST static_cast<GamepadKeyIndex>(static_cast<int>(CONFIG_GAMEPAD_KEY_FIRST) + GAMEPAD_KEYIDX_LAST - GAMEPAD_KEYIDX_FIRST)
 
 typedef enum ConfigEntryType {
+	CONFIG_TYPE_INVALID,
 	CONFIG_TYPE_INT,
 	CONFIG_TYPE_STRING,
 	CONFIG_TYPE_KEYBINDING,

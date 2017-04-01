@@ -11,7 +11,7 @@
 #include <string.h>
 
 Dialog *create_dialog(char *left, char *right) {
-	Dialog *d = malloc(sizeof(Dialog));
+	Dialog *d = reinterpret_cast<Dialog*>(malloc(sizeof(Dialog)));
 	memset(d, 0, sizeof(Dialog));
 
 	if(left)
@@ -29,9 +29,9 @@ void dset_image(Dialog *d, Side side, char *name) {
 }
 
 void dadd_msg(Dialog *d, Side side, char *msg) {
-	d->messages = realloc(d->messages, (++d->count)*sizeof(DialogMessage));
+	d->messages = reinterpret_cast<DialogMessage*>(realloc(d->messages, (++d->count)*sizeof(DialogMessage)));
 	d->messages[d->count-1].side = side;
-	d->messages[d->count-1].msg = malloc(strlen(msg) + 1);
+	d->messages[d->count-1].msg = reinterpret_cast<char*>(malloc(strlen(msg) + 1));
 	strlcpy(d->messages[d->count-1].msg, msg, strlen(msg) + 1);
 }
 

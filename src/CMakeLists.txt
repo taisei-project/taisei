@@ -112,6 +112,8 @@ else()
 	)
 endif()
 
+set_source_files_properties(${SRCs} PROPERTIES LANGUAGE CXX)
+
 if(DEFINED TAISEI_DEBUG)
 	if(TAISEI_DEBUG)
 		set(CMAKE_BUILD_TYPE "Debug")
@@ -132,7 +134,7 @@ set(DEBUG_FLAGS "-ggdb -fsanitize=undefined -fsanitize-recover=float-divide-by-z
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DDEBUG ${DEBUG_FLAGS}")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} ${DEBUG_FLAGS}")
 
-add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall -Wno-parentheses -Wtype-limits -std=c11 -pedantic)
+add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall -Wno-parentheses -Wtype-limits -std=gnu++11 -pedantic -fpermissive)
 
 if(RELATIVE)
     add_definitions(-DRELATIVE)
