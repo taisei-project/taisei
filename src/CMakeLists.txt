@@ -29,6 +29,7 @@ set(SRCs
 	color.c
 	gamepad.c
 	stage.c
+	stagetext.c
 	replay.c
 	global.c
 	events.c

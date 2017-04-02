@@ -48,17 +48,13 @@ void fontrenderer_free(FontRenderer *f) {
 	glDeleteTextures(1,&f->tex.gltex);
 }
 
-void fontrenderer_draw(FontRenderer *f, const char *text,TTF_Font *font) {
-	SDL_Color clr = {255,255,255};
-	SDL_Surface *surf = TTF_RenderUTF8_Blended(font, text, clr);
-	if(surf == 0) {
-		log_fatal("SDL_ttf: %s", TTF_GetError());
-	}
+static bool fontrenderer_try_draw_prerendered(FontRenderer *f, SDL_Surface *surf) {
 	assert(surf != NULL);
 
 	if(surf->w > FONTREN_MAXW || surf->h > FONTREN_MAXH) {
-		log_fatal("Text drawn (\"%s\" %dx%d) is too big for the internal buffer (%dx%d).", text, surf->w, surf->h, FONTREN_MAXW, FONTREN_MAXH);
+		return false;
 	}
+
 	f->tex.w = surf->w;
 	f->tex.h = surf->h;
 
@@ -76,12 +72,38 @@ void fontrenderer_draw(FontRenderer *f, const char *text,TTF_Font *font) {
 		memcpy(pixels+y*winw, ((uint8_t *)surf->pixels)+y*surf->pitch, surf->w*4);
 		pixels[y*winw+surf->w]=0;
 	}
+
 	memset(pixels+(winh-1)*winw,0,winw*4);
 	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 	glTexSubImage2D(GL_TEXTURE_2D,0,0,0,winw,winh,GL_RGBA,GL_UNSIGNED_BYTE,0);
 
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
+	return true;
+}
+
+void fontrenderer_draw_prerendered(FontRenderer *f, SDL_Surface *surf) {
+	if(!fontrenderer_try_draw_prerendered(f, surf)) {
+		log_fatal("Text drawn (<%p> %dx%d) is too big for the internal buffer (%dx%d).", (void*)surf, surf->w, surf->h, FONTREN_MAXW, FONTREN_MAXH);
+	}
+}
+
+SDL_Surface* fontrender_render(const char *text, TTF_Font *font) {
+	SDL_Surface *surf = TTF_RenderUTF8_Blended(font, text, (SDL_Color){255, 255, 255});
+
+	if(!surf) {
+		log_fatal("TTF_RenderUTF8_Blended() failed: %s", TTF_GetError());
+	}
+
+	return surf;
+}
+
+void fontrenderer_draw(FontRenderer *f, const char *text, TTF_Font *font) {
+	SDL_Surface *surf = fontrender_render(text, font);
+
+	if(!fontrenderer_try_draw_prerendered(f, surf)) {
+		log_fatal("Text drawn (\"%s\" %dx%d) is too big for the internal buffer (%dx%d).", text, surf->w, surf->h, FONTREN_MAXW, FONTREN_MAXH);
+	}
 
 	SDL_FreeSurface(surf);
 }
@@ -103,19 +125,7 @@ void free_fonts(void) {
 	TTF_Quit();
 }
 
-void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *font) {
-	char *nl;
-	char *buf = malloc(strlen(text)+1);
-	strcpy(buf, text);
-
-	if((nl = strchr(buf, '\n')) != NULL && strlen(nl) > 1) {
-		draw_text(align, x, y + 20, nl+1, font);
-		*nl = '\0';
-	}
-
-	fontrenderer_draw(&resources.fontren, buf, font);
-	Texture *tex = &resources.fontren.tex;
-
+static void draw_text_texture(Alignment align, float x, float y, Texture *tex) {
 	switch(align) {
 	case AL_Center:
 		break;
@@ -135,7 +145,25 @@ void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *fo
 
 	glEnable(GL_TEXTURE_2D);
 	draw_texture_p(x, y, tex);
+}
 
+void draw_text_prerendered(Alignment align, float x, float y, SDL_Surface *surf) {
+	fontrenderer_draw_prerendered(&resources.fontren, surf);
+	draw_text_texture(align, x, y, &resources.fontren.tex);
+}
+
+void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *font) {
+	char *nl;
+	char *buf = malloc(strlen(text)+1);
+	strcpy(buf, text);
+
+	if((nl = strchr(buf, '\n')) != NULL && strlen(nl) > 1) {
+		draw_text(align, x, y + 20, nl+1, font);
+		*nl = '\0';
+	}
+
+	fontrenderer_draw(&resources.fontren, buf, font);
+	draw_text_texture(align, x, y, &resources.fontren.tex);
 	free(buf);
 }
 

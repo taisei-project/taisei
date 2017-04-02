@@ -19,6 +19,7 @@
 #include "menu/gameovermenu.h"
 #include "audio.h"
 #include "log.h"
+#include "stagetext.h"
 
 static size_t numstages = 0;
 StageInfo *stages = NULL;
@@ -567,6 +568,8 @@ static void stage_draw(StageInfo *stage) {
 	if(stage->type != STAGE_SPELL)
 		draw_stage_title(stage);
 
+	stagetext_draw();
+
 	FBO *ppfbo = postprocess(resources.stage_postprocess, &resources.fsec, resources.fbg, postprocess_prepare, draw_fbo_viewport);
 
 	if(ppfbo != &resources.fsec) {
@@ -847,6 +850,8 @@ static void stage_free(void) {
 		free_boss(global.boss);
 		global.boss = NULL;
 	}
+
+	stagetext_free();
 }
 
 static void stage_finalize(void *arg) {
@@ -955,6 +960,8 @@ void stage_loop(StageInfo *stage) {
 	stage->procs->begin();
 
 	int transition_delay = 0;
+
+	// stagetext_table_test();
 
 	while(global.game_over <= 0) {
 		if(global.game_over != GAMEOVER_TRANSITIONING) {

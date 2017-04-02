@@ -32,10 +32,13 @@ struct FontRenderer {
 
 void fontrenderer_init(FontRenderer *f);
 void fontrenderer_free(FontRenderer *f);
-void fontrenderer_draw(FontRenderer *f, const char *text,TTF_Font *font);
+void fontrenderer_draw(FontRenderer *f, const char *text, TTF_Font *font);
+void fontrenderer_draw_prerendered(FontRenderer *f, SDL_Surface *surf);
+SDL_Surface* fontrender_render(const char *text, TTF_Font *font);
 
 Texture *load_text(const char *text, TTF_Font *font);
 void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *font);
+void draw_text_prerendered(Alignment align, float x, float y, SDL_Surface *surf);
 void init_fonts(void);
 void free_fonts(void);
 
