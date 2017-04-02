@@ -479,7 +479,7 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 #undef PRINTPROP
 
 char* replay_getpath(const char *name, bool ext) {
-	return ext ? 	strfmt("%s/%s.%s", get_replays_path(), name, REPLAY_EXTENSION) :
+	return ext ? strfmt("%s/%s.%s", get_replays_path(), name, REPLAY_EXTENSION) :
 					strfmt("%s/%s", get_replays_path(), name);
 }
 
@@ -510,8 +510,15 @@ int replay_load(Replay *rpy, const char *name, ReplayReadMode mode) {
 	}
 
 	log_info("replay_load(): loading %s (mode %i)", p, mode);
-
-	SDL_RWops *file = SDL_RWFromFile(p, "rb");
+	SDL_RWops *file;
+#ifndef __WINDOWS__
+	if(!strcmp(name,"-"))
+		file = SDL_RWFromFP(stdin,false);
+	else
+		file = SDL_RWFromFile(p, "rb");
+#else
+	file = SDL_RWFromFile(p, "rb");
+#endif
 
 	if(!(mode & REPLAY_READ_RAWPATH)) {
 		free(p);
@@ -633,23 +640,24 @@ int replay_test(void) {
 #endif
 }
 
-void replay_play(Replay *rpy, int firststage) {
+void replay_play(Replay *rpy, int firststageid) {
 	if(rpy != &global.replay) {
 		replay_copy(&global.replay, rpy, true);
 	}
 
 	global.replaymode = REPLAY_PLAY;
 
-	if(global.replay.numstages == 1) {
-		firststage = 0;
-	}
-
-	for(int i = firststage; i < global.replay.numstages; ++i) {
+	bool skip = true;
+	for(int i = 0; i < global.replay.numstages; ++i) {
 		ReplayStage *rstg = global.replay_stage = global.replay.stages+i;
+		if(rstg->stage == firststageid)
+			skip = false;
+		if(skip)
+			continue;
 		StageInfo *gstg = stage_get(rstg->stage);
 
 		if(!gstg) {
-			log_warn("Invalid stage %d in replay at %i skipped.\n", rstg->stage, i);
+			log_warn("Invalid stage %x in replay at %i skipped.", rstg->stage, i);
 			continue;
 		}
 
@@ -661,6 +669,9 @@ void replay_play(Replay *rpy, int firststage) {
 
 		global.game_over = 0;
 	}
+
+	if(skip == true)
+		log_warn("Stage %x was not found in the replay", firststageid);
 
 	global.game_over = 0;
 	global.replaymode = REPLAY_RECORD;

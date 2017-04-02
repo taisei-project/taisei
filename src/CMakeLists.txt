@@ -21,6 +21,7 @@ endif()
 
 set(SRCs
 	main.c
+	cli.c
 	log.c
 	util.c
 	taiseigl.c
