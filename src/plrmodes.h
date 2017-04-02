@@ -31,5 +31,6 @@ void marisa_power(Player *plr, short npow);
 
 /* Misc */
 int plrmode_repr(char *out, size_t outsize, Character pchar, ShotMode pshot);
+int plrmode_parse(const char *name, Character *cha, ShotMode *shot);
 
 #endif

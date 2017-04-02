@@ -177,6 +177,7 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
+#ifdef DEBUG
 	if(a.type == CLI_DumpResTables) {
 		print_resource_hashtables();
 		return 0;
@@ -203,12 +204,14 @@ int main(int argc, char **argv) {
 		do {
 			global.game_over = 0;
 			init_player(&global.plr);
+			global.plr.cha = a.plrcha;
+			global.plr.shot = a.plrshot;
 			stage_loop(stg);
 		} while(global.game_over == GAMEOVER_RESTART);
 
 		return 0;
 	}
-
+#endif
 	MenuData menu;
 	create_main_menu(&menu);
 	menu_loop(&menu);

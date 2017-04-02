@@ -575,3 +575,19 @@ int plrmode_repr(char *out, size_t outsize, Character pchar, ShotMode pshot) {
 
 	return snprintf(out, outsize, "%s%c", plr, sht);
 }
+
+// Inverse of plrmode_repr. Sets cha/shot according to name. Returns 0 iff the name is valid.
+int plrmode_parse(const char *name, Character *cha, ShotMode *shot) {
+	if(!strcmp(name,"marisaA")) {
+		*cha = Marisa; *shot = MarisaLaser;
+	} else if(!strcmp(name,"marisaB")) {
+		*cha = Marisa; *shot = MarisaStar;
+	} else if(!strcmp(name,"youmuA")) {
+		*cha = Youmu; *shot = YoumuOpposite;
+	} else if(!strcmp(name,"youmuB")) {
+		*cha = Youmu; *shot = YoumuHoming;
+	} else {
+		return 1;
+	}
+	return 0;
+}
