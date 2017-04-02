@@ -24,21 +24,21 @@ void kurumi_extra(Boss*, int);
  */
 
 AttackInfo stage4_spells[] = {
-	{{ 0,  1,  2,  3},	AT_Spellcard, "Bloodless ~ Gate of Walachia", 25, 20000,
+	{{ 0,  1,  2,  3},	AT_Spellcard, "Bloodless ~ Gate of Walachia", 25, 40000,
 							kurumi_slaveburst, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{ 4,  5, -1, -1},	AT_Spellcard, "Bloodless ~ Dry Fountain", 30, 30000,
+	{{ 4,  5, -1, -1},	AT_Spellcard, "Bloodless ~ Dry Fountain", 30, 40000,
 							kurumi_redspike, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{-1, -1,  6,  7},	AT_Spellcard, "Bloodless ~ Red Spike", 30, 30000,
+	{{-1, -1,  6,  7},	AT_Spellcard, "Bloodless ~ Red Spike", 30, 44000,
 							kurumi_redspike, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{ 8,  9, -1, -1},	AT_Spellcard, "Limit ~ Animate Wall", 30, 40000,
+	{{ 8,  9, -1, -1},	AT_Spellcard, "Limit ~ Animate Wall", 30, 45000,
 							kurumi_aniwall, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{-1, -1, 10, 11},	AT_Spellcard, "Summoning ~ Demon Wall", 30, 40000,
+	{{-1, -1, 10, 11},	AT_Spellcard, "Summoning ~ Demon Wall", 30, 50000,
 							kurumi_aniwall, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{12, 13, 14, 15},	AT_Spellcard, "Power Sign ~ Blow the Walls", 30, 32000,
+	{{12, 13, 14, 15},	AT_Spellcard, "Power Sign ~ Blow the Walls", 30, 52000,
 							kurumi_blowwall, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{-1, -1, 16, 17},	AT_Spellcard, "Fear Sign ~ Bloody Danmaku", 30, 32000,
+	{{-1, -1, 16, 17},	AT_Spellcard, "Fear Sign ~ Bloody Danmaku", 30, 55000,
 							kurumi_danmaku, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Summoning ~ Bloodlust", 60, 30000,
+	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Summoning ~ Bloodlust", 60, 50000,
 							kurumi_extra, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
 
 	{{0}}
@@ -91,7 +91,7 @@ int stage4_splasher(Enemy *e, int t) {
 	FROM_TO(0, 50, 1)
 		e->pos += e->args[0]*(1-t/50.0);
 
-	FROM_TO(60, 150, 5-global.diff) {
+	FROM_TO(66-6*global.diff, 150, 5-global.diff) {
 		tsrand_fill(4);
 		create_projectile2c(afrand(0) > 0.5 ? "rice" : "thickrice", e->pos, rgb(0.8,0.3-0.1*afrand(1),0.5), accelerated, e->args[0]/2+(1-2*afrand(2))+(1-2*afrand(3))*I, 0.02*I);
 	}
@@ -139,7 +139,7 @@ int stage4_partcircle(Enemy *e, int t) {
 		int i;
 		for(i = 0; i < global.diff; i++) {
 			complex n = cexp(I*M_PI/16.0*_i + I*carg(e->args[0])-I*M_PI/4.0 + 0.01*I*i*(1-2*(creal(e->args[0]) > 0)));
-			create_projectile2c("wave", e->pos + (30)*n, rgb(1-0.2*i,0.5,0.7), asymptotic, 1.5*n, 2+2*i);
+			create_projectile2c("wave", e->pos + (30)*n, rgb(1-0.2*i,0.5,0.7), asymptotic, 2*n, 2+2*i);
 		}
 	}
 
@@ -223,8 +223,11 @@ int stage4_bigcircle(Enemy *e, int t) {
 	FROM_TO(80,80+20*global.diff,20) {
 		int i;
 		int n = 10+3*global.diff;
-		for(i = 0; i < n; i++)
-			create_projectile2c("bigball", e->pos, rgb(0,0.8-0.4*_i,0), asymptotic, 2*cexp(2.0*I*M_PI/n*i+I*M_PI*_i), 3*sin(6*M_PI/n*i));
+		for(i = 0; i < n; i++) {
+			create_projectile2c("bigball", e->pos, rgb(0,0.8-0.4*_i,0), asymptotic, 2*cexp(2.0*I*M_PI/n*i+I*3*_i), 3*sin(6*M_PI/n*i))->draw=ProjDrawAdd;
+			if(global.diff > D_Easy)
+				create_projectile2c("ball", e->pos, rgb(0,0.4*_i,0.4), asymptotic, 2*cexp(I*3*_i), 5*sin(6*M_PI/n*i))->draw=ProjDrawAdd;
+		}
 	}
 	return 1;
 }
@@ -950,13 +953,13 @@ void kurumi_extra(Boss *b, int time) {
 Boss *create_kurumi(void) {
 	Boss* b = create_boss("Kurumi", "kurumi", "dialog/kurumi", -400.0*I);
 	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_boss_intro, NULL);
-	boss_add_attack(b, AT_Normal, "Sin Breaker", 20, 20000, kurumi_sbreaker, NULL);
+	boss_add_attack(b, AT_Normal, "Sin Breaker", 20, 30000, kurumi_sbreaker, NULL);
 	if(global.diff < D_Hard) {
 		boss_add_attack_from_info(b, stage4_spells+3, false);
 	} else {
 		boss_add_attack_from_info(b, stage4_spells+4, false);
 	}
-	boss_add_attack(b, AT_Normal, "Cold Breaker", 20, 20000, kurumi_breaker, NULL);
+	boss_add_attack(b, AT_Normal, "Cold Breaker", 20, 30000, kurumi_breaker, NULL);
 	boss_add_attack_from_info(b, stage4_spells+5, false);
 	if(global.diff > D_Normal) {
 		boss_add_attack_from_info(b, stage4_spells+6, false);
