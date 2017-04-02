@@ -115,9 +115,7 @@ int stage4_fodder(Enemy *e, int t) {
 	e->pos += e->args[0];
 
 	FROM_TO(100, 200, 22-global.diff*3) {
-		if(global.diff > D_Easy) {
-			create_projectile2c("ball", e->pos, rgb(1, 0.3, 0.5), asymptotic, 2*cexp(I*M_PI*2*frand()), 3);
-		}
+		create_projectile2c("ball", e->pos, rgb(1, 0.3, 0.5), asymptotic, 2*cexp(I*M_PI*2*frand()), 3);
 	}
 
 	return 1;
@@ -238,8 +236,11 @@ int stage4_explosive(Enemy *e, int t) {
 		spawn_items(e->pos, Power, 1, NULL);
 
 		int n = 5*global.diff;
+		complex phase = global.plr.pos-e->pos;
+		phase /= cabs(phase);
+
 		for(i = 0; i < n; i++) {
-			create_projectile2c("ball", e->pos, rgb(0, 0, 1-0.6*(i&1)), asymptotic, 1.4*cexp(I*2*M_PI*i/(float)n), 2);
+			create_projectile2c("ball", e->pos, rgb(0, 0, 1-0.6*(i&1)), asymptotic, 1.4*cexp(I*2*M_PI*i/(float)n)*phase, 2);
 		}
 
 		return 1;
@@ -500,7 +501,9 @@ int aniwall_bullet(Projectile *p, int t) {
 		p->pos += p->args[0];
 	}
 
-	p->clr = derive_color(p->clr, CLRMASK_R, rgb(cimag(p->pos)/VIEWPORT_H, 0, 0));
+	float r, g, b, a;
+	parse_color(p->clr,&r,&g,&b,&a);
+	p->clr = rgb(cimag(p->pos)/VIEWPORT_H, g, b);
 
 	return 1;
 }
@@ -544,8 +547,9 @@ int aniwall_slave(Enemy *e, int t) {
 
 
 		if(!(t % 7-global.diff-2*(global.diff > D_Normal))) {
-			complex v = e->args[2]/cabs(e->args[2])*I*copysign(1,creal(e->args[0]));
-			create_projectile2c("ball", e->pos, rgb(1,0,0), aniwall_bullet, 1*v, 40);
+			complex v = e->args[2]/cabs(e->args[2])*I*sign(creal(e->args[0]));
+			if(cimag(v) > -0.1 || global.diff != D_Easy)
+				create_projectile2c("ball", e->pos+I*v*20*nfrand(), rgb(1,0,0), aniwall_bullet, 1*v, 40);
 		}
 	}
 
@@ -564,10 +568,13 @@ void kurumi_aniwall(Boss *b, int time) {
 		killall(global.enemies);
 	}
 
+	GO_TO(b, VIEWPORT_W/2 + VIEWPORT_W/3*sin(time/200) + I*cimag(b->pos),0.03)
+
+
 	if(time < 0)
 		return;
 
-	AT(60) {
+	AT(0) {
 		create_lasercurve2c(b->pos, 50, 80, rgb(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(0.4*I));
 		create_enemy1c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, aniwall_slave, 0.2*cexp(0.4*I));
 		create_lasercurve2c(b->pos, 50, 80, rgb(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(I*M_PI - 0.4*I));
