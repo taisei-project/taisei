@@ -119,6 +119,26 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
+	// commandline arguments should be parsed as early as possible
+	CLIAction a;
+	cli_args(argc, argv, &a); // stage_init_array goes first!
+
+	if(a.type == CLI_Quit)
+		return 1;
+
+	if(a.type == CLI_DumpStages) {
+		stage_init_array();
+		for(StageInfo *stg = stages; stg->procs; ++stg) {
+			tsfprintf(stdout, "%x %s: %s\n", stg->id, stg->title, stg->subtitle);
+		}
+		stage_free_array();
+		return 0;
+	} else if(a.type == CLI_PlayReplay) {
+		if(!replay_load(&replay, a.filename, REPLAY_READ_ALL | REPLAY_READ_RAWPATH)) {
+			return 1;
+		}
+	}
+
 	log_info("Content path: %s", get_prefix());
 	log_info("Userdata path: %s", get_config_path());
 
@@ -137,23 +157,6 @@ int main(int argc, char **argv) {
 	config_load(CONFIG_FILE);
 
 	log_lib_versions();
-	stage_init_array();
-
-	CLIAction a;
-	cli_args(argc, argv, &a); // stage_init_array goes first!
-	if(a.type == CLI_Quit)
-		return 1;
-
-	if(a.type == CLI_DumpStages) {
-		for(StageInfo *stg = stages; stg->procs; ++stg) {
-			tsfprintf(stdout, "%x %s: %s\n", stg->id, stg->title, stg->subtitle);
-		}
-		return 0;
-	} else if(a.type == CLI_PlayReplay) {
-		if(!replay_load(&replay, a.filename, REPLAY_READ_ALL | REPLAY_READ_RAWPATH)) {
-			return 1;
-		}
-	}
 
 	init_sdl();
 	init_global();
@@ -163,6 +166,7 @@ int main(int argc, char **argv) {
 	audio_init();
 	load_resources();
 	gamepad_init();
+	stage_init_array();
 	progress_load(); // stage_init_array goes first!
 
 	set_transition(TransLoader, 0, FADE_TIME*2);
