@@ -39,12 +39,6 @@ static void add_stage(uint16_t id, StageProcs *procs, StageType type, const char
 	stg->difficulty = diff;
 	stg->titleclr = titleclr;
 	stg->bosstitleclr = titleclr;
-
-#ifdef DEBUG
-	if(title && subtitle) {
-		log_debug("Added stage 0x%04x: %s: %s", id, title, subtitle);
-	}
-#endif
 }
 
 static void end_stages(void) {
