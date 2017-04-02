@@ -149,11 +149,13 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		}
 	}
 
-	if(stageid != -1 && a->type != CLI_PlayReplay && a->type != CLI_SelectStage)
-		log_warn("--sid was ignored");
-
-	if(stageid != -1 && !stage_get(stageid))
-		log_fatal("Invalid stage id: %x",stageid);
+	if(stageid != -1) {
+		if(a->type != CLI_PlayReplay && a->type != CLI_SelectStage) {
+			log_warn("--sid was ignored");
+		} else if(!stage_get(stageid)) {
+			log_fatal("Invalid stage id: %x", stageid);
+		}
+	}
 
 	if(a->type != CLI_SelectStage && (cha != INVALID_CHAR || shot != INVALID_SHOT))
 		log_warn("--shotmode was ignored");

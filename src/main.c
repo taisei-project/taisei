@@ -119,6 +119,8 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
+	stage_init_array(); // cli_args depends on this
+
 	// commandline arguments should be parsed as early as possible
 	CLIAction a;
 	cli_args(argc, argv, &a); // stage_init_array goes first!
@@ -127,11 +129,9 @@ int main(int argc, char **argv) {
 		return 1;
 
 	if(a.type == CLI_DumpStages) {
-		stage_init_array();
 		for(StageInfo *stg = stages; stg->procs; ++stg) {
 			tsfprintf(stdout, "%x %s: %s\n", stg->id, stg->title, stg->subtitle);
 		}
-		stage_free_array();
 		return 0;
 	} else if(a.type == CLI_PlayReplay) {
 		if(!replay_load(&replay, a.filename, REPLAY_READ_ALL | REPLAY_READ_RAWPATH)) {
@@ -166,8 +166,7 @@ int main(int argc, char **argv) {
 	audio_init();
 	load_resources();
 	gamepad_init();
-	stage_init_array();
-	progress_load(); // stage_init_array goes first!
+	progress_load();
 
 	set_transition(TransLoader, 0, FADE_TIME*2);
 
