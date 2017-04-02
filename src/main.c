@@ -20,6 +20,7 @@
 #include "progress.h"
 #include "hashtable.h"
 #include "log.h"
+#include "cli.h"
 
 void taisei_shutdown(void) {
 	log_info("Shutting down");
@@ -106,52 +107,13 @@ static void log_lib_versions(void) {
 	log_info("Using libpng %s", png_get_header_ver(NULL));
 }
 
-static void log_args(int argc, char **argv) {
-	for(int i = 0; i < argc; ++i) {
-		log_debug("argv[%i] = %s ", i, argv[i]);
-	}
-}
-
 int main(int argc, char **argv) {
 	setlocale(LC_ALL, "C");
 
-#ifdef DEBUG
-	if(argc >= 2 && argv[1] && !strcmp(argv[1], "dumpstages")) {
-		stage_init_array();
-
-		for(StageInfo *stg = stages; stg->procs; ++stg) {
-			tsfprintf(stdout, "%i %s: %s\n", stg->id, stg->title, stg->subtitle);
-		}
-
-		return 0;
-	}
-#endif
-
 	Replay replay = {0};
-	const char *replay_path = NULL;
-	int replay_stage = 0;
 
 	init_paths();
 	init_log();
-
-	if(argc >= 2 && !strcmp(argv[1], "replay")) {
-		if(argc < 3) {
-			tsfprintf(stderr, "Usage: %s replay /path/to/replay.tsr [stage num]\n", argv[0]);
-			return 1;
-		}
-
-		replay_path = argv[2];
-
-		if(argc > 3) {
-			replay_stage = atoi(argv[3]);
-		}
-
-		if(!replay_load(&replay, replay_path, REPLAY_READ_ALL | REPLAY_READ_RAWPATH)) {
-			return 1;
-		}
-	}
-
-	log_args(argc, argv);
 
 	if(run_tests()) {
 		return 0;
@@ -175,6 +137,24 @@ int main(int argc, char **argv) {
 	config_load(CONFIG_FILE);
 
 	log_lib_versions();
+	stage_init_array();
+
+	CLIAction a;
+	cli_args(argc, argv, &a); // stage_init_array goes first!
+	if(a.type == CLI_Quit)
+		return 1;
+
+	if(a.type == CLI_DumpStages) {
+		for(StageInfo *stg = stages; stg->procs; ++stg) {
+			tsfprintf(stdout, "%x %s: %s\n", stg->id, stg->title, stg->subtitle);
+		}
+		return 0;
+	} else if(a.type == CLI_PlayReplay) {
+		if(!replay_load(&replay, a.filename, REPLAY_READ_ALL | REPLAY_READ_RAWPATH)) {
+			return 1;
+		}
+	}
+
 	init_sdl();
 	init_global();
 	video_init();
@@ -183,7 +163,6 @@ int main(int argc, char **argv) {
 	audio_init();
 	load_resources();
 	gamepad_init();
-	stage_init_array();
 	progress_load(); // stage_init_array goes first!
 
 	set_transition(TransLoader, 0, FADE_TIME*2);
@@ -192,36 +171,28 @@ int main(int argc, char **argv) {
 
 	atexit(taisei_shutdown);
 
-	if(replay_path) {
-		replay_play(&replay, replay_stage);
+	if(a.type == CLI_PlayReplay) {
+		replay_play(&replay, a.stageid);
 		replay_destroy(&replay);
 		return 0;
 	}
 
-#ifdef DEBUG
-
-	if(argc >= 2 && argv[1] && !strcmp(argv[1], "dumprestables")) {
+	if(a.type == CLI_DumpResTables) {
 		print_resource_hashtables();
 		return 0;
 	}
 
 	log_warn("Compiled with DEBUG flag!");
 
-	if(argc >= 2 && argv[1] &&
-		!strstartswith(argv[1], "-psn_") // OSX passes this when started up from an application bundle
-	) {
-		log_info("Entering stage skip mode: Stage %d", atoi(argv[1]));
-
-		StageInfo* stg = stage_get(atoi(argv[1]));
-
-		if(!stg) {
-			log_fatal("Invalid stage id");
-		}
+	if(a.type == CLI_SelectStage) {
+		log_info("Entering stage skip mode: Stage %x", a.stageid);
+		StageInfo* stg = stage_get(a.stageid);
+		assert(stg); // properly checked before this
 
 		global.diff = stg->difficulty;
 
-		if(argc == 3 && argv[2]) {
-			global.diff = atoi(argv[2]);
+		if(a.diff) {
+			global.diff = a.diff;
 			log_info("Setting difficulty to %s", difficulty_name(global.diff));
 		} else if(!global.diff) {
 			global.diff = D_Easy;
@@ -237,7 +208,6 @@ int main(int argc, char **argv) {
 
 		return 0;
 	}
-#endif
 
 	MenuData menu;
 	create_main_menu(&menu);
