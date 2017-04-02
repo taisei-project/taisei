@@ -44,6 +44,7 @@
 #include "color.h"
 #include "audio.h"
 #include "rwops/all.h"
+#include "cli.h"
 
 #define FILE_PREFIX PREFIX "/share/taisei/"
 #define CONFIG_FILE "config"
@@ -128,6 +129,6 @@ typedef struct {
 
 extern Global global;
 
-void init_global(void);
+void init_global(CLIAction *cli);
 
 #endif

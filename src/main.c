@@ -159,7 +159,7 @@ int main(int argc, char **argv) {
 	log_lib_versions();
 
 	init_sdl();
-	init_global();
+	init_global(&a);
 	video_init();
 	init_resources();
 	draw_loading_screen();
