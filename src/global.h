@@ -98,7 +98,6 @@ typedef struct {
 	Projectile *particles;
 
 	int frames;
-	int stageuiframes;
 	uint64_t lasttime; // frame limiter
 	int timer;
 	int frameskip;
