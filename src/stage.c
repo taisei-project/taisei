@@ -184,7 +184,6 @@ StageProgress* stage_get_progress(uint16_t id, Difficulty diff, bool allocate) {
 static void stage_start(StageInfo *stage) {
 	global.timer = 0;
 	global.frames = 0;
-	global.stageuiframes = 0;
 	global.game_over = 0;
 	global.shake_view = 0;
 
@@ -484,7 +483,7 @@ void draw_hud(void) {
 }
 
 static void apply_bg_shaders(ShaderRule *shaderrules);
-static void draw_stage_title(StageInfo *info);
+static void display_stage_title(StageInfo *info);
 
 static void postprocess_prepare(FBO *fbo, Shader *s) {
 	float w = 1.0f / fbo->nw;
@@ -558,9 +557,6 @@ static void stage_draw(StageInfo *stage) {
 
 	if(global.dialog)
 		draw_dialog(global.dialog);
-
-	if(stage->type != STAGE_SPELL)
-		draw_stage_title(stage);
 
 	stagetext_draw();
 
@@ -809,7 +805,6 @@ static void stage_logic(void) {
 		page_dialog(&global.dialog);
 
 	global.frames++;
-	global.stageuiframes++;
 
 	if(!global.dialog && !global.boss)
 		global.timer++;
@@ -955,8 +950,6 @@ void stage_loop(StageInfo *stage) {
 
 	int transition_delay = 0;
 
-	// stagetext_table_test();
-
 	while(global.game_over <= 0) {
 		if(global.game_over != GAMEOVER_TRANSITIONING) {
 			if(!global.boss && !global.dialog) {
@@ -967,6 +960,11 @@ void stage_loop(StageInfo *stage) {
 				stage_finish(GAMEOVER_WIN);
 				transition_delay = 60;
 			}
+		}
+
+		if(!global.timer && stage->type != STAGE_SPELL) {
+			// must be done here to let the event function start a BGM first
+			display_stage_title(stage);
 		}
 
 		((global.replaymode == REPLAY_PLAY) ? replay_input : stage_input)();
@@ -1027,45 +1025,12 @@ void stage_loop(StageInfo *stage) {
 	free_all_refs();
 }
 
-static void draw_title(int t, Alignment al, int x, int y, const char *text, TTF_Font *font, Color color) {
-	int i;
-	float f = 0;
-	if(t < 30 || t > 220)
-		return;
+static void display_stage_title(StageInfo *info) {
+	stagetext_add(info->title,    VIEWPORT_W/2 + I * (VIEWPORT_H/2-40), AL_Center, _fonts.mainmenu, info->titleclr, 50, 85, 35, 35);
+	stagetext_add(info->subtitle, VIEWPORT_W/2 + I * (VIEWPORT_H/2),    AL_Center, _fonts.standard, info->titleclr, 60, 85, 35, 35);
 
-	if((i = abs(t-135)) >= 50) {
-		i -= 50;
-		f = 1/35.0*i;
-	}
-
-	float clr[4];
-	parse_color_array(color, clr);
-
-	Shader *sha = get_shader("stagetitle");
-	glUseProgram(sha->prog);
-	glUniform1i(uniloc(sha, "trans"), 1);
-	glUniform1f(uniloc(sha, "t"), 1.0-f);
-	glUniform3fv(uniloc(sha, "color"), 1, clr);
-
-	glActiveTexture(GL_TEXTURE0 + 1);
-	glBindTexture(GL_TEXTURE_2D, get_tex("titletransition")->gltex);
-	glActiveTexture(GL_TEXTURE0);
-
-	draw_text(al, x+10*f*f, y+10*f*f, text, font);
-
-	glColor4f(1,1,1,1);
-	glUseProgram(0);
-}
-
-static void draw_stage_title(StageInfo *info) {
-	int t = global.stageuiframes;
-
-	draw_title(t, AL_Center, VIEWPORT_W/2, VIEWPORT_H/2-40, info->title, _fonts.mainmenu, info->titleclr);
-	draw_title(t, AL_Center, VIEWPORT_W/2, VIEWPORT_H/2, info->subtitle, _fonts.standard, info->titleclr);
-
-	if ((current_bgm.title != NULL) && (current_bgm.started_at >= 0))
-	{
-		draw_title(t - current_bgm.started_at, AL_Right, VIEWPORT_W-15, VIEWPORT_H-35, current_bgm.title, _fonts.standard,
-			current_bgm.isboss ? info->bosstitleclr : info->titleclr);
+	if(current_bgm.title && current_bgm.started_at >= 0) {
+		stagetext_add(current_bgm.title, VIEWPORT_W-15 + I * (VIEWPORT_H-20), AL_Right, _fonts.standard,
+			current_bgm.isboss ? info->bosstitleclr : info->titleclr, 70, 85, 35, 35);
 	}
 }
