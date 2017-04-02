@@ -48,12 +48,8 @@ void fontrenderer_free(FontRenderer *f) {
 	glDeleteTextures(1,&f->tex.gltex);
 }
 
-static bool fontrenderer_try_draw_prerendered(FontRenderer *f, SDL_Surface *surf) {
+void fontrenderer_draw_prerendered(FontRenderer *f, SDL_Surface *surf) {
 	assert(surf != NULL);
-
-	if(surf->w > FONTREN_MAXW || surf->h > FONTREN_MAXH) {
-		return false;
-	}
 
 	f->tex.w = surf->w;
 	f->tex.h = surf->h;
@@ -78,14 +74,6 @@ static bool fontrenderer_try_draw_prerendered(FontRenderer *f, SDL_Surface *surf
 	glTexSubImage2D(GL_TEXTURE_2D,0,0,0,winw,winh,GL_RGBA,GL_UNSIGNED_BYTE,0);
 
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-
-	return true;
-}
-
-void fontrenderer_draw_prerendered(FontRenderer *f, SDL_Surface *surf) {
-	if(!fontrenderer_try_draw_prerendered(f, surf)) {
-		log_fatal("Text drawn (<%p> %dx%d) is too big for the internal buffer (%dx%d).", (void*)surf, surf->w, surf->h, FONTREN_MAXW, FONTREN_MAXH);
-	}
 }
 
 SDL_Surface* fontrender_render(const char *text, TTF_Font *font) {
@@ -95,19 +83,18 @@ SDL_Surface* fontrender_render(const char *text, TTF_Font *font) {
 		log_fatal("TTF_RenderUTF8_Blended() failed: %s", TTF_GetError());
 	}
 
+	if(surf->w > FONTREN_MAXW || surf->h > FONTREN_MAXH) {
+		log_fatal("Text (%s %dx%d) is too big for the internal buffer (%dx%d).", text, surf->w, surf->h, FONTREN_MAXW, FONTREN_MAXH);
+	}
+
 	return surf;
 }
 
 void fontrenderer_draw(FontRenderer *f, const char *text, TTF_Font *font) {
 	SDL_Surface *surf = fontrender_render(text, font);
-
-	if(!fontrenderer_try_draw_prerendered(f, surf)) {
-		log_fatal("Text drawn (\"%s\" %dx%d) is too big for the internal buffer (%dx%d).", text, surf->w, surf->h, FONTREN_MAXW, FONTREN_MAXH);
-	}
-
+	fontrenderer_draw_prerendered(f, surf);
 	SDL_FreeSurface(surf);
 }
-
 
 void init_fonts(void) {
 	TTF_Init();
