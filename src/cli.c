@@ -40,7 +40,6 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 	/*	{{"sname", required_argument, 0, 'n'}, "Select stage by %s", "NAME"},*/
 		{{"shotmode", required_argument, 0, 's'}, "Select a shotmode (marisaA/youmuA/marisaB/youmuB)", "SMODE"},
 		{{"dumpstages", no_argument, 0, 'u'}, "Print a list of all stages in the game", 0},
-		{{"dumprestables", no_argument, 0, 't'}, "Print information about the resource hashtables", 0},
 #endif
 		{{"help", no_argument, 0, 'h'}, "Display this help."},
 		{{0,0,0,0},0,0}
@@ -64,6 +63,11 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 	}
 	*ptr = 0;
 
+	// on OS X, programs get passed some strange parameter when they are run from bundles.
+	for(int i = 0; i < argc; i++) {
+		if(strstartswith(argv[i],"-psn_"))
+			argv[i][0] = 0;
+	}
 
 	int c;
 	int stageid = -1;
@@ -92,12 +96,9 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		case 'u':
 			a->type = CLI_DumpStages;
 			break;
-		case 't':
-			a->type = CLI_DumpResTables;
-			break;
 		case 'd':
 			for(int i = D_Easy ; i <= NUM_SELECTABLE_DIFFICULTIES; i++) {
-				if(strcmp(optarg,difficulty_name(i)) == 0) {
+				if(strcasecmp(optarg,difficulty_name(i)) == 0) {
 					a->diff = i;
 					break;
 				}

@@ -448,9 +448,3 @@ void free_resources(bool all) {
 
 	free_fonts();
 }
-
-void print_resource_hashtables(void) {
-	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
-		hashtable_print_stringkeys(get_handler(type)->mapping);
-	}
-}

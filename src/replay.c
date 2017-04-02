@@ -479,7 +479,7 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 #undef PRINTPROP
 
 char* replay_getpath(const char *name, bool ext) {
-	return ext ? 	strfmt("%s/%s.%s", get_replays_path(), name, REPLAY_EXTENSION) :
+	return ext ? strfmt("%s/%s.%s", get_replays_path(), name, REPLAY_EXTENSION) :
 					strfmt("%s/%s", get_replays_path(), name);
 }
 
@@ -510,8 +510,15 @@ int replay_load(Replay *rpy, const char *name, ReplayReadMode mode) {
 	}
 
 	log_info("replay_load(): loading %s (mode %i)", p, mode);
-
-	SDL_RWops *file = SDL_RWFromFile(p, "rb");
+	SDL_RWops *file;
+#ifndef __WINDOWS__
+	if(!strcmp(name,"-"))
+		file = SDL_RWFromFP(stdin,false);
+	else
+		file = SDL_RWFromFile(p, "rb");
+#else
+	file = SDL_RWFromFile(p, "rb");
+#endif
 
 	if(!(mode & REPLAY_READ_RAWPATH)) {
 		free(p);

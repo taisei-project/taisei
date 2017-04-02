@@ -8,10 +8,7 @@ typedef enum {
 	CLI_PlayReplay,
 	CLI_SelectStage,
 	CLI_DumpStages,
-	CLI_DumpResTables,
 	CLI_Quit,
-
-	CLI_ARGC = 4
 } CLIActionType;
 
 typedef struct CLIAction CLIAction;

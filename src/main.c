@@ -178,11 +178,6 @@ int main(int argc, char **argv) {
 	}
 
 #ifdef DEBUG
-	if(a.type == CLI_DumpResTables) {
-		print_resource_hashtables();
-		return 0;
-	}
-
 	log_warn("Compiled with DEBUG flag!");
 
 	if(a.type == CLI_SelectStage) {
