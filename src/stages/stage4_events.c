@@ -168,10 +168,10 @@ int stage4_cardbuster(Enemy *e, int t) {
 	complex n = cexp(I*carg(global.plr.pos - e->pos) + 0.3*I*_i);
 
 	FROM_TO(120, 120+20*global.diff, 1)
-		create_projectile2c("card", e->pos + 30*n, rgb(0, 1, 0), asymptotic, 1.3*n, 0.4*I);
+		create_projectile2c("card", e->pos + 30*n, rgb(0, 1, 0), asymptotic, (1.1+0.2*global.diff)*n, 0.4*I);
 
 	FROM_TO(300, 320+20*global.diff, 1)
-		create_projectile2c("card", e->pos + 30*n, rgb(0, 1, 0.2), asymptotic, 1.3*n, 0.4*I);
+		create_projectile2c("card", e->pos + 30*n, rgb(0, 1, 0.2), asymptotic, (1.1+0.2*global.diff)*n, 0.4*I);
 
 	return 1;
 }
@@ -220,13 +220,13 @@ int stage4_bigcircle(Enemy *e, int t) {
 		e->pos -= e->args[0];
 
 
-	FROM_TO(80,80+20*global.diff,20) {
+	FROM_TO(80,100+30*global.diff,20) {
 		int i;
 		int n = 10+3*global.diff;
 		for(i = 0; i < n; i++) {
 			create_projectile2c("bigball", e->pos, rgb(0,0.8-0.4*_i,0), asymptotic, 2*cexp(2.0*I*M_PI/n*i+I*3*_i), 3*sin(6*M_PI/n*i))->draw=ProjDrawAdd;
 			if(global.diff > D_Easy)
-				create_projectile2c("ball", e->pos, rgb(0,0.4*_i,0.4), asymptotic, 2*cexp(I*3*_i), 5*sin(6*M_PI/n*i))->draw=ProjDrawAdd;
+				create_projectile2c("ball", e->pos, rgb(0,0.3*_i,0.4), asymptotic, (1.5+global.diff*0.2)*cexp(I*3*(i+frand())), I*5*sin(6*M_PI/n*i))->draw=ProjDrawAdd;
 		}
 	}
 	return 1;
@@ -243,7 +243,7 @@ int stage4_explosive(Enemy *e, int t) {
 		phase /= cabs(phase);
 
 		for(i = 0; i < n; i++) {
-			create_projectile2c("ball", e->pos, rgb(0, 0, 1-0.6*(i&1)), asymptotic, 1.4*cexp(I*2*M_PI*i/(float)n)*phase, 2);
+			create_projectile2c("ball", e->pos, rgb(0.1, 0.2, 1-0.6*(i&1)), asymptotic, (1.1+0.3*global.diff)*cexp(I*2*M_PI*(i+frand())/(float)n)*phase, 2);
 		}
 
 		return 1;
@@ -251,7 +251,7 @@ int stage4_explosive(Enemy *e, int t) {
 
 	e->pos += e->args[0];
 
-	if(!(t % 30) && global.diff > D_Normal && frand() < 0.1)
+	if(!(t % 30) && global.diff >= D_Normal && frand() < 0.1)
 		e->hp = 0;
 
 	return 1;
@@ -363,10 +363,10 @@ void kurumi_redspike(Boss *b, int time) {
 			int i;
 			int n = global.diff*8;
 			for(i = 0; i < n; i++)
-				create_projectile2c("bigball", b->pos, rgb(1,0,0), asymptotic, 3*cexp(2.0*I*M_PI/n*i+I*carg(global.plr.pos-b->pos)), 3)->draw=ProjDrawAdd;
+				create_projectile2c("bigball", b->pos, rgb(1,0,0), asymptotic, (1+0.1*(global.diff == D_Normal))*3*cexp(2.0*I*M_PI/n*i+I*carg(global.plr.pos-b->pos)), 3)->draw=ProjDrawAdd;
 		}
 	} else {
-		FROM_TO(80, 500, 2+2*(global.diff == D_Hard)) {
+		FROM_TO_INT(80, 500, 40,200,2+2*(global.diff == D_Hard)) {
 			tsrand_fill(2);
 			complex offset = 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1));
 			complex n = cexp(I*carg(global.plr.pos-b->pos-offset));
@@ -485,7 +485,7 @@ void kurumi_breaker(Boss *b, int time) {
 
 	FROM_TO(60, 400, 100) {
 		for(i = 0; i < 20; i++)
-			create_projectile2c("bigball", b->pos, rgb(0.5,0,0.5), asymptotic, cexp(2.0*I*M_PI/20.0*i), 3);
+			create_projectile2c("bigball", b->pos, rgb(0.5,0,0.5), asymptotic, cexp(2.0*I*M_PI/20.0*i), 3)->draw=ProjDrawAdd;
 	}
 
 }
@@ -497,8 +497,8 @@ int aniwall_bullet(Projectile *p, int t) {
 	if(t > creal(p->args[1])) {
 		if(global.diff > D_Normal) {
 			tsrand_fill(2);
-			p->args[0] += (0.1-0.2*afrand(0) + 0.1*I-0.2*I*afrand(1))*(global.diff-2);
-			p->args[0] += 0.005*cexp(I*carg(global.plr.pos - p->pos));
+			p->args[0] += 0.1*(0.1-0.2*afrand(0) + 0.1*I-0.2*I*afrand(1))*(global.diff-2);
+			p->args[0] += 0.002*cexp(I*carg(global.plr.pos - p->pos));
 		}
 
 		p->pos += p->args[0];
@@ -551,7 +551,7 @@ int aniwall_slave(Enemy *e, int t) {
 
 		if(!(t % 7-global.diff-2*(global.diff > D_Normal))) {
 			complex v = e->args[2]/cabs(e->args[2])*I*sign(creal(e->args[0]));
-			if(cimag(v) > -0.1 || global.diff != D_Easy)
+			if(cimag(v) > -0.1 || global.diff >= D_Normal)
 				create_projectile2c("ball", e->pos+I*v*20*nfrand(), rgb(1,0,0), aniwall_bullet, 1*v, 40);
 		}
 	}
@@ -607,7 +607,7 @@ void kurumi_sbreaker(Boss *b, int time) {
 
 	FROM_TO(60, 400, 100) {
 		for(i = 0; i < 20; i++)
-			create_projectile2c("bigball", b->pos, rgb(0.5,0,0.5), asymptotic, cexp(2.0*I*M_PI/20.0*i), 3);
+			create_projectile2c("bigball", b->pos, rgb(0.5,0,0.5), asymptotic, cexp(2.0*I*M_PI/20.0*i), 3)->draw=ProjDrawAdd;
 	}
 
 }
@@ -1008,7 +1008,7 @@ void stage4_events(void) {
 	FROM_TO(2000, 2400, 200)
 		create_enemy1c(VIEWPORT_W/2+200-400*frand(), 1000, BigFairy, stage4_bigcircle, 2.0*I);
 
-	FROM_TO(2600, 2800, 10)
+	FROM_TO(2600, 3000, 10)
 		create_enemy1c(20.0*I+VIEWPORT_H/3*I*frand()+VIEWPORT_W, 100, Swirl, stage4_explosive, -3);
 
 	AT(3200)
