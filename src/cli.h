@@ -17,6 +17,7 @@ struct CLIAction {
 	char *filename;
 	int stageid;
 	int diff;
+	int frameskip;
 
 	Character plrcha;
 	ShotMode plrshot;

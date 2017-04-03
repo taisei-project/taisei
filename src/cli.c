@@ -14,10 +14,10 @@ static void print_help(struct TsOption* opts) {
 	tsfprintf(stdout, "Usage: taisei [OPTIONS]\nTaisei is an open source Touhou clone.\n\nOptions:\n");
 	int margin = 20;
 	for(struct TsOption *opt = opts; opt->opt.name; opt++) {
-		tsfprintf(stdout, "  -%c, --%s ",opt->opt.val,opt->opt.name);
+		tsfprintf(stdout, "  -%c, --%s ", opt->opt.val,opt->opt.name);
 		int length = margin-(int)strlen(opt->opt.name);
 		if(opt->argname) {
-			tsfprintf(stdout, opt->argname);
+			tsfprintf(stdout, "%s", opt->argname);
 			length -= (int)strlen(opt->argname);
 		}
 		for(int i = 0; i < length; i++)
@@ -25,8 +25,8 @@ static void print_help(struct TsOption* opts) {
 		if(opt->argname)
 			tsfprintf(stdout, opt->help, opt->argname);
 		else
-			tsfprintf(stdout, opt->help);
-		tsfprintf(stdout,"\n");
+			tsfprintf(stdout, "%s", opt->help);
+		tsfprintf(stdout, "\n");
 	}
 }
 
@@ -39,6 +39,7 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		{{"diff", required_argument, 0, 'd'}, "Select a difficulty (Easy/Normal/Hard/Lunatic)", "DIFF"},
 	/*	{{"sname", required_argument, 0, 'n'}, "Select stage by %s", "NAME"},*/
 		{{"shotmode", required_argument, 0, 's'}, "Select a shotmode (marisaA/youmuA/marisaB/youmuB)", "SMODE"},
+		{{"frameskip", optional_argument, 0, 'f'}, "Disable FPS limiter, render only every %s frame", "FRAME"},
 		{{"dumpstages", no_argument, 0, 'u'}, "Print a list of all stages in the game", 0},
 #endif
 		{{"help", no_argument, 0, 'h'}, "Display this help."},
@@ -56,9 +57,15 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		opts[i] = taisei_opts[i].opt;
 		*ptr = opts[i].val;
 		ptr++;
+
 		if(opts[i].has_arg != no_argument) {
 			*ptr = ':';
 			ptr++;
+
+			if(opts[i].has_arg == optional_argument) {
+				*ptr = ':';
+				ptr++;
+			}
 		}
 	}
 	*ptr = 0;
@@ -71,15 +78,23 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 
 	int c;
 	int stageid = -1;
-	Character cha = -1;
-	ShotMode shot = -1;
-	while((c = getopt_long(argc, argv, optc ,opts, 0)) != -1) {
-		char *endptr;
+
+	#define INVALID_CHAR ((Character)-1)
+	#define INVALID_SHOT ((ShotMode)-1)
+
+	// these may be unsigned depending on the compiler.
+	Character cha = INVALID_CHAR;
+	ShotMode shot = INVALID_SHOT;
+
+	while((c = getopt_long(argc, argv, optc, opts, 0)) != -1) {
+		char *endptr = NULL;
+
 		switch(c) {
 		case 'h':
 		case '?':
 			print_help(taisei_opts);
-			a->type = CLI_Quit;
+			// a->type = CLI_Quit;
+			exit(1);
 			break;
 		case 'r':
 			a->type = CLI_PlayReplay;
@@ -89,39 +104,63 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 			a->type = CLI_SelectStage;
 			break;
 		case 'i':
-			stageid = strtol(optarg,&endptr, 16);
-			if(*optarg == 0 || *endptr != 0)
-				log_fatal("stage id '%s' is not a number", optarg);
+			stageid = strtol(optarg, &endptr, 16);
+			if(!*optarg || endptr == optarg)
+				log_fatal("Stage id '%s' is not a number", optarg);
 			break;
 		case 'u':
 			a->type = CLI_DumpStages;
 			break;
 		case 'd':
+			a->diff = D_Any;
 			for(int i = D_Easy ; i <= NUM_SELECTABLE_DIFFICULTIES; i++) {
-				if(strcasecmp(optarg,difficulty_name(i)) == 0) {
+				if(strcasecmp(optarg, difficulty_name(i)) == 0) {
 					a->diff = i;
 					break;
 				}
 			}
+
+			if(a->diff == D_Any) {
+				log_fatal("Invalid difficulty '%s'", optarg);
+			}
+
 			break;
 		case 's':
 			if(plrmode_parse(optarg,&cha,&shot))
 				log_fatal("Invalid shotmode '%s'",optarg);
+			break;
+		case 'f':
+			a->frameskip = 1;
+
+			if(optarg) {
+				a->frameskip = strtol(optarg, &endptr, 10);
+
+				if(endptr == optarg) {
+					log_fatal("Frameskip value '%s' is not a number", optarg);
+				}
+
+				if(a->frameskip < 0) {
+					a->frameskip = INT_MAX;
+				}
+			}
 			break;
 		default:
 			log_fatal("Unknown option (this shouldn’t happen)");
 		}
 	}
 
-	if(stageid != -1 && a->type != CLI_PlayReplay && a->type != CLI_SelectStage)
-		log_warn("--sid was ignored");
-	if(stageid != -1 && !stage_get(stageid))
-		log_fatal("Invalid stage id: %x",stageid);
+	if(stageid != -1) {
+		if(a->type != CLI_PlayReplay && a->type != CLI_SelectStage) {
+			log_warn("--sid was ignored");
+		} else if(!stage_get(stageid)) {
+			log_fatal("Invalid stage id: %x", stageid);
+		}
+	}
 
-	if(a->type != CLI_SelectStage && (cha != -1 || shot != -1))
+	if(a->type != CLI_SelectStage && (cha != INVALID_CHAR || shot != INVALID_SHOT))
 		log_warn("--shotmode was ignored");
 
-	if(cha != -1 && shot != -1) {
+	if(cha != INVALID_CHAR && shot != INVALID_SHOT) {
 		a->plrcha = cha;
 		a->plrshot = shot;
 	}
