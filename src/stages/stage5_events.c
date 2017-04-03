@@ -125,7 +125,7 @@ int stage5_swirl(Enemy *e, int t) {
 
 	e->pos += e->args[0];
 
-	FROM_TO(0, 400, 20-global.diff*3) {
+	FROM_TO(0, 400, 26-global.diff*4) {
 		create_projectile2c("bullet", e->pos, rgb(0.3, 0.4, 0.5), asymptotic, 2*e->args[0]*I/cabs(e->args[0]), 3);
 		create_projectile2c("bullet", e->pos, rgb(0.3, 0.4, 0.5), asymptotic, -2*e->args[0]*I/cabs(e->args[0]), 3);
 	}
@@ -208,7 +208,7 @@ int stage5_explosion(Enemy *e, int t) {
 		create_projectile2c("rice", e->pos, rgb(1,0,0), asymptotic, -2*cexp(-0.3*I*_i+frand()*I), 3);
 	}
 
-	FROM_TO(500, 800, 80-5*global.diff)
+	FROM_TO(500, 800, 100-10*global.diff)
 		create_laserline(e->pos, 10*cexp(I*carg(global.plr.pos-e->pos)+0.04*I*(1-2*frand())), 60, 120, rgb(1, 0.3, 1));
 
 	return 1;
@@ -246,7 +246,7 @@ void iku_mid_intro(Boss *b, int t) {
 Boss *create_iku_mid(void) {
 	Boss *b = create_boss("Bombs?", "iku", 0, VIEWPORT_W+800.0*I);
 
-	boss_add_attack(b, AT_SurvivalSpell, "Static Bombs", 16, 10, iku_mid_intro, NULL);
+	boss_add_attack(b, AT_SurvivalSpell, "Discharge Bombs", 16, 10, iku_mid_intro, NULL);
 
 	return b;
 }
@@ -263,7 +263,7 @@ int stage5_lightburst2(Enemy *e, int t) {
 
 	FROM_TO(20, 170, 5) {
 		int i;
-		int c = 5+global.diff;
+		int c = 4+global.diff;
 		for(i = 0; i < c; i++) {
 			tsrand_fill(2);
 			complex n = cexp(I*carg(global.plr.pos-e->pos) + 2.0*I*M_PI/c*i);
@@ -296,10 +296,16 @@ int stage5_superbullet(Enemy *e, int t) {
 }
 
 void iku_intro(Boss *b, int t) {
-	GO_TO(b, VIEWPORT_W/2+300.0*I, 0.01);
+	GO_TO(b, VIEWPORT_W/2+300.0*I, 0.02);
 
 	if(t == 100)
 		global.dialog = stage5_boss_dialog();
+}
+
+static void cloud_common(void) {
+	tsrand_fill(4);
+	float v = (afrand(2)+afrand(3))*0.5+1.0;
+	create_projectile2c("bigball", VIEWPORT_W*afrand(0)-15.0*I, rgba(0.8,0.2,0,0.2), accelerated, 1-2*afrand(1)+v*I, -0.01*I)->draw = ProjDrawSub;
 }
 
 void iku_bolts(Boss *b, int time) {
@@ -307,8 +313,7 @@ void iku_bolts(Boss *b, int time) {
 	TIMER(&t);
 
 	FROM_TO(0, 400, 2) {
-		tsrand_fill(2);
-		create_projectile2c("bigball", VIEWPORT_W*afrand(0)-15.0*I, rgb(1,0,0), accelerated, 1-2*afrand(1)+1.7*I, -0.01*I)->draw = ProjDrawSub;
+		cloud_common();
 	}
 
 	FROM_TO(60, 400, 50) {
@@ -359,7 +364,7 @@ void iku_atmospheric(Boss *b, int time) {
 }
 
 complex bolts2_laser(Laser *l, float t) {
-	return creal(l->args[0])+I*cimag(l->pos) + copysign(1,cimag(l->args[0]-l->pos))*0.06*I*t*t + (20+4*global.diff)*sin(t*0.1+creal(l->args[0]));
+	return creal(l->args[0])+I*cimag(l->pos) + sign(cimag(l->args[0]-l->pos))*0.06*I*t*t + (20+4*global.diff)*sin(t*0.25*global.diff+creal(l->args[0]));
 }
 
 void iku_bolts2(Boss *b, int time) {
@@ -367,8 +372,7 @@ void iku_bolts2(Boss *b, int time) {
 	TIMER(&t);
 
 	FROM_TO(0, 400, 2) {
-		tsrand_fill(2);
-		create_projectile2c("bigball", VIEWPORT_W*afrand(0)-15.0*I, rgb(1,0,0), accelerated, 1-2*afrand(1)+1.7*I, -0.01*I)->draw = ProjDrawSub;
+		cloud_common();
 	}
 
 	FROM_TO(0, 400, 60)
@@ -443,8 +447,7 @@ void iku_bolts3(Boss *b, int time) {
 	TIMER(&t);
 
 	FROM_TO(0, 400, 2) {
-		tsrand_fill(2);
-		create_projectile2c("bigball", VIEWPORT_W*afrand(0)-15.0*I, rgb(1,0,0), accelerated, 1-2*afrand(1)+1.8*I, -0.01*I)->draw = ProjDrawSub;
+		cloud_common();
 	}
 
 	FROM_TO(60, 400, 60) {
@@ -752,7 +755,7 @@ void stage5_events(void) {
 		create_enemy3c(VIEWPORT_W+200.0*I*afrand(0), 500, Swirl, stage5_swirl, -4+afrand(1)*I, 70+20*afrand(2)+200.0*I, cexp(0.05*I));
 	}
 
-	FROM_TO(870, 1000, 50)
+	FROM_TO(870+50*(global.diff==D_Easy), 1000, 50)
 		create_enemy1c(VIEWPORT_W/4+VIEWPORT_W/2*(_i&1), 2000, BigFairy, stage5_limiter, I);
 
 	AT(1000)
@@ -767,7 +770,7 @@ void stage5_events(void) {
 		create_enemy1c(VIEWPORT_W*(_i&1)+100.0*I, 300, Fairy, stage5_greeter, 3-6*(_i&1));
 
 	FROM_TO(2200, 2600, 40)
-		create_enemy1c(VIEWPORT_W/10*_i, 200, Swirl, stage5_miner, 3.0*I);
+		create_enemy1c(VIEWPORT_W/10*_i, 200, Swirl, stage5_miner, 3.0*I+(global.diff<D_Hard));
 
 	AT(2900)
 		global.boss = create_iku_mid();
@@ -797,7 +800,7 @@ void stage5_events(void) {
 	AT(5320)
 		global.dialog = stage5_post_boss_dialog();
 
-	AT(5700 - FADE_TIME) {
+	AT(5550 - FADE_TIME) {
 		stage_finish(GAMEOVER_WIN);
 	}
 }
