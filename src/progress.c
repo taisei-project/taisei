@@ -170,7 +170,7 @@ static void progress_read(SDL_RWops *file) {
 				UnknownCmd *c = create_element((void**)&progress.unknown, sizeof(UnknownCmd));
 				c->cmd = cmd;
 				c->size = cmdsize;
-				c->data = malloc(sizeof(cmdsize));
+				c->data = malloc(cmdsize);
 				SDL_RWread(vfile, c->data, c->size, 1);
 
 				break;

@@ -9,7 +9,7 @@ shoot-em-up games set in an isolated world full of Japanese folklore.
 
 Dependencies:
 * SDL2, SDL2\_ttf, SDL2\_mixer
-* libpng
+* libpng >= 1.5.0
 * zlib
 * OpenGL
 * CMake (build system)
