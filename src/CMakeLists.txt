@@ -13,7 +13,7 @@ endif()
 pkg_check_modules(SDL2 sdl2 REQUIRED)
 pkg_check_modules(SDL2_TTF SDL2_ttf REQUIRED)
 pkg_check_modules(ZLIB zlib REQUIRED)
-pkg_check_modules(PNG libpng REQUIRED)
+pkg_check_modules(PNG libpng 1.5 REQUIRED)
 
 if(NOT NO_AUDIO)
 	pkg_check_modules(SDL2_MIXER SDL2_mixer REQUIRED)
@@ -124,7 +124,7 @@ endif()
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
 	set(CMAKE_BUILD_TYPE "Release")
-	message(WARNING "CMAKE_BUILD_TYPE was not set, assuming ${CMAKE_BUILD_TYPE}.")
+	#message(WARNING "CMAKE_BUILD_TYPE was not set, assuming ${CMAKE_BUILD_TYPE}.")
 endif()
 
 message(STATUS "Build configuration: ${CMAKE_BUILD_TYPE}")
