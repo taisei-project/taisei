@@ -99,7 +99,7 @@ thisfile.write_text(text)
 
 #include <SDL_platform.h>
 #include <SDL_opengl.h>
-#include <SDL_opengl_glext.h>
+// #include <SDL_opengl_glext.h>
 
 struct glext_s; // defined at the very bottom
 extern struct glext_s glext;
