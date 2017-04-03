@@ -259,14 +259,14 @@ int stage4_explosive(Enemy *e, int t) {
 
 void KurumiSlave(Enemy *e, int t) {
 	if(!(t%2)) {
-		complex offset  = (frand()-0.5)*30;
-				offset += (frand()-0.5)*20.0*I;
+		complex offset = (frand()-0.5)*30;
+		offset += (frand()-0.5)*20.0*I;
 		create_particle3c("lasercurve", offset, rgb(0.3,0.0,0.0), EnemyFlareShrink, enemy_flare, 50, (-50.0*I-offset)/50.0, add_ref(e));
 	}
 }
 
 void kurumi_intro(Boss *b, int t) {
-	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.01);
+	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.03);
 }
 
 int kurumi_burstslave(Enemy *e, int t) {
@@ -571,7 +571,8 @@ void kurumi_aniwall(Boss *b, int time) {
 		killall(global.enemies);
 	}
 
-	GO_TO(b, VIEWPORT_W/2 + VIEWPORT_W/3*sin(time/200) + I*cimag(b->pos),0.03)
+	if(global.diff > D_Easy)
+		GO_TO(b, VIEWPORT_W/2 + VIEWPORT_W/3*sin(time/200) + I*cimag(b->pos),0.03)
 
 
 	if(time < 0)
@@ -589,14 +590,15 @@ void kurumi_sbreaker(Boss *b, int time) {
 	if(time < 0)
 		return;
 
-	int t = time % 400;
+	int dur = 300+50*global.diff;
+	int t = time % dur;
 	int i;
 	TIMER(&t);
 
 	int c = 10+global.diff*2;
 	int kt = 40;
 
-	FROM_TO(50, 400, 2) {
+	FROM_TO(50, dur, 2+(global.diff < D_Hard)) {
 		complex p = b->pos + 150*sin(_i/8.0)+100.0*I*cos(_i/15.0);
 
 		complex n = cexp(2.0*I*M_PI/c*_i);
@@ -605,7 +607,7 @@ void kurumi_sbreaker(Boss *b, int time) {
 
 	}
 
-	FROM_TO(60, 400, 100) {
+	FROM_TO(60, dur, 100) {
 		for(i = 0; i < 20; i++)
 			create_projectile2c("bigball", b->pos, rgb(0.5,0,0.5), asymptotic, cexp(2.0*I*M_PI/20.0*i), 3)->draw=ProjDrawAdd;
 	}
