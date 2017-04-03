@@ -650,7 +650,7 @@ void replay_play(Replay *rpy, int firststageid) {
 	bool skip = true;
 	for(int i = 0; i < global.replay.numstages; ++i) {
 		ReplayStage *rstg = global.replay_stage = global.replay.stages+i;
-		if(rstg->stage == firststageid)
+		if(rstg->stage == firststageid || firststageid == -1)
 			skip = false;
 		if(skip)
 			continue;
