@@ -26,6 +26,19 @@
 #define TIMER(ptr) int *__timep = ptr; int _i = 0, _ni = 0;  _i = _ni = _i;
 #define AT(t) if(*__timep == t)
 #define FROM_TO(start,end,step) _ni = _ni; _i = (*__timep - (start))/(step); if(*__timep >= (start) && *__timep <= (end) && !((*__timep - (start)) % (step)))
+
+// Like FROM_TO just with two different intervals:
+// A pause interval step and an action interval dur. For dur frames something
+// happens, then for step frames there is a break of step frames.
+//
+// Lastly, istep is the step inside the action interval. For istep = 2, only
+// every second frame of dur is executed.
+//
+// Finally an example for step = 4, dur = 5, and istep = 2:
+//
+// A_A_A____A_A_A____A_A_A____...
+//
+// where A denotes a frame in which the body of FROM_TO_INT gets executed.
 #define FROM_TO_INT(start, end, step, dur, istep) \
 		_i = (*__timep - (start))/(step+dur); _ni = ((*__timep - (start)) % (step+dur))/istep; \
 		if(*__timep >= (start) && *__timep <= (end) && (*__timep - (start)) % ((dur) + (step)) <= dur && !((*__timep - (start)) % (istep)))
