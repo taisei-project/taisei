@@ -370,7 +370,7 @@ void iku_atmospheric(Boss *b, int time) {
 }
 
 complex bolts2_laser(Laser *l, float t) {
-	return creal(l->args[0])+I*cimag(l->pos) + sign(cimag(l->args[0]-l->pos))*0.06*I*t*t + (20+4*global.diff)*sin(t*0.25*global.diff+creal(l->args[0]));
+	return creal(l->args[0])+I*cimag(l->pos) + sign(cimag(l->args[0]-l->pos))*0.06*I*t*t + (20+4*global.diff)*sin(t*0.1+creal(l->args[0]));
 }
 
 void iku_bolts2(Boss *b, int time) {
