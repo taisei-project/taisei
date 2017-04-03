@@ -29,7 +29,7 @@
 
 // Like FROM_TO just with two different intervals:
 // A pause interval step and an action interval dur. For dur frames something
-// happens, then for step frames there is a break of step frames.
+// happens, then for step frames there is a break.
 //
 // Lastly, istep is the step inside the action interval. For istep = 2, only
 // every second frame of dur is executed.
