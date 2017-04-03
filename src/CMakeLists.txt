@@ -129,10 +129,14 @@ endif()
 
 message(STATUS "Build configuration: ${CMAKE_BUILD_TYPE}")
 
-set(DEBUG_FLAGS "-ggdb")
+set(DEBUG_FLAGS "-ggdb -fno-omit-frame-pointer")
 
 if(DEBUG_USE_UBSAN)
-	set(DEBUG_FLAGS "${DEBUG_FLAGS} -fsanitize=undefined -fno-omit-frame-pointer")
+	set(DEBUG_FLAGS "${DEBUG_FLAGS} -fsanitize=undefined")
+endif()
+
+if(DEBUG_USE_ASAN)
+	set(DEBUG_FLAGS "${DEBUG_FLAGS} -fsanitize=address")
 endif()
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DDEBUG ${DEBUG_FLAGS}")
