@@ -11,6 +11,7 @@
 
 #include <stdint.h>
 #include "taiseigl.h"
+#include "util.h"
 
 #define CLR_R 48LL
 #define CLR_G 32LL
@@ -28,8 +29,9 @@
 typedef uint64_t Color;
 typedef int16_t ColorComponent;
 
-Color rgba(float r, float g, float b, float a);
-Color rgb(float r, float g, float b);
+Color rgba(float r, float g, float b, float a) __attribute__((const));
+Color rgb(float r, float g, float b) __attribute__((const));
+
 void parse_color(Color clr, float *r, float *g, float *b, float *a);
 void parse_color_call(Color clr, tsglColor4f_ptr func);
 void parse_color_array(Color clr, float array[4]);

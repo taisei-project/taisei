@@ -149,6 +149,23 @@ void player_draw(Player* plr) {
 	glPopMatrix();
 }
 
+static void player_fail_spell(Player *plr) {
+	if(	!global.boss ||
+		!global.boss->current ||
+		global.boss->current->finished ||
+		global.boss->current->failtime ||
+		global.stage->type == STAGE_SPELL
+	) {
+		return;
+	}
+
+	global.boss->current->failtime = global.frames;
+
+	if(global.boss->current->type == AT_ExtraSpell) {
+		boss_finish_current_attack(global.boss);
+	}
+}
+
 void player_logic(Player* plr) {
 	process_enemies(&plr->slaves);
 	if(plr->deathtime < -1) {
@@ -187,6 +204,8 @@ void player_logic(Player* plr) {
 			if(at != AT_Move && at != AT_SurvivalSpell)
 				global.boss->dmg += 30;
 		}
+
+		player_fail_spell(plr);
 	}
 }
 
@@ -195,6 +214,7 @@ void player_bomb(Player *plr) {
 		return;
 
 	if(global.frames - plr->recovery >= 0 && (plr->bombs > 0 || plr->iddqd) && global.frames - plr->respawntime >= 60) {
+		player_fail_spell(plr);
 		delete_projectiles(&global.projs);
 
 		switch(plr->cha) {
@@ -241,18 +261,10 @@ void player_realdeath(Player *plr) {
 	plr->bombs = PLR_START_BOMBS;
 	plr->bomb_fragments = 0;
 
-	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell && global.stage->type != STAGE_SPELL) {
-		if(!global.boss->current->finished) {
-			global.boss->current->endtime = global.frames + ATTACK_END_DELAY_EXTRA;
-			global.boss->current->finished = FINISH_FAIL;
-			boss_kill_projectiles();
-		}
-		return;
-	}
-
 	if(plr->iddqd)
 		return;
 
+	player_fail_spell(plr);
 	player_set_power(plr, plr->power * 0.7);
 
 	if(plr->lives-- == 0 && global.replaymode != REPLAY_PLAY)

@@ -54,6 +54,8 @@ void stagetext_begin_table(StageTextTable *tbl, const char *title, Color titlecl
 void stagetext_end_table(StageTextTable *tbl);
 void stagetext_table_add(StageTextTable *tbl, const char *title, const char *val);
 void stagetext_table_add_numeric(StageTextTable *tbl, const char *title, int n);
+void stagetext_table_add_numeric_nonzero(StageTextTable *tbl, const char *title, int n);
+void stagetext_table_add_separator(StageTextTable *tbl);
 
 void stagetext_table_test(void);
 

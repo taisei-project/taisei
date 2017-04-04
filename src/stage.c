@@ -423,7 +423,7 @@ void draw_hud(void) {
 
 		if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell) {
 			fadein  = min(1, -min(0, global.frames - global.boss->current->starttime) / (float)ATTACK_START_DELAY);
-			fadeout = (!!global.boss->current->finished) * (1 - (global.boss->current->endtime - global.frames) / (float)ATTACK_END_DELAY_EXTRA) / 0.74;
+			fadeout = global.boss->current->finished * (1 - (global.boss->current->endtime - global.frames) / (float)ATTACK_END_DELAY_EXTRA) / 0.74;
 			fade = max(fadein, fadeout);
 
 			s = 1 - fade;
@@ -445,7 +445,7 @@ void draw_hud(void) {
 			draw_text(AL_Center, -1, -1, "Extra Spell!", _fonts.mainmenu);
 			glColor4f(1, 1, 1, s);
 			draw_text(AL_Center, 0, 0, "Extra Spell!", _fonts.mainmenu);
-		glColor4f(1, 1, 1, 1);
+			glColor4f(1, 1, 1, 1);
 			glPopMatrix();
 		}
 	}
@@ -965,7 +965,7 @@ void stage_loop(StageInfo *stage) {
 				stage->procs->event();
 			}
 
-			if(stage->type == STAGE_SPELL && !global.boss) {
+			if(stage->type == STAGE_SPELL && !global.boss && global.game_over != GAMEOVER_RESTART) {
 				stage_finish(GAMEOVER_WIN);
 				transition_delay = 60;
 			}
