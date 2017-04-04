@@ -217,6 +217,12 @@ static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
 	}
 
 	int total = time_bonus + surv_bonus + endurance_bonus + clear_bonus;
+	float diff_bonus = 0.6 + 0.2 * global.diff;
+	total *= diff_bonus;
+
+	char diff_bonus_text[6];
+	snprintf(diff_bonus_text, sizeof(diff_bonus_text), "x%.2f", diff_bonus);
+
 	player_add_points(plr, total);
 
 	StageTextTable tbl;
@@ -227,6 +233,7 @@ static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
 	stagetext_table_add_numeric_nonzero(&tbl, "Survival bonus", surv_bonus);
 	stagetext_table_add_numeric_nonzero(&tbl, "Endurance bonus", endurance_bonus);
 	stagetext_table_add_separator(&tbl);
+	stagetext_table_add(&tbl, "Diff. multiplier", diff_bonus_text);
 	stagetext_table_add_numeric(&tbl, "Total", total);
 	stagetext_end_table(&tbl);
 }
