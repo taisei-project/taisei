@@ -336,7 +336,7 @@ void process_boss(Boss **pboss) {
 	}
 
 	if(over) {
-		if(global.stage->type == STAGE_SPELL && boss->current->type != AT_Move) {
+		if(global.stage->type == STAGE_SPELL && boss->current->type != AT_Move && boss->current->failtime) {
 			stage_gameover();
 		}
 
