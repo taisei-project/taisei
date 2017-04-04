@@ -8,8 +8,7 @@
 #include "boss.h"
 #include "global.h"
 #include "stage.h"
-#include <string.h>
-#include <stdio.h>
+#include "stagetext.h"
 
 Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 	Boss *buf = malloc(sizeof(Boss));
@@ -34,7 +33,7 @@ void draw_boss_text(Alignment align, float x, float y, const char *text) {
 }
 
 void spell_opening(Boss *b, int time) {
-	complex x0 = VIEWPORT_W/2+I*VIEWPORT_H/2;
+	complex x0 = VIEWPORT_W/2+I*VIEWPORT_H/3.5;
 	float f = clamp((time-40.)/60.,0,1);
 
 	complex x = x0 + (VIEWPORT_W+I*35 - x0) * f*(f+1)*0.5;
@@ -68,6 +67,15 @@ void draw_extraspell_bg(Boss *boss, int time) {
 	fill_screen(sin(time+2.1) * 0.015, time / 30.0, 1, "stage4/kurumibg2");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glBlendEquation(GL_FUNC_ADD);
+}
+
+Color boss_healthbar_color(AttackType atype) {
+	switch(atype) {
+	default: case AT_Normal:        return rgb(1.00, 1.00, 1.00);
+	         case AT_Spellcard:     return rgb(1.00, 0.65, 0.65);
+	         case AT_SurvivalSpell: return rgb(0.50, 0.50, 1.00);
+	         case AT_ExtraSpell:    return rgb(1.00, 0.30, 0.20);
+	}
 }
 
 void draw_boss(Boss *boss) {
@@ -120,21 +128,7 @@ void draw_boss(Boss *boss) {
 			if(boss->dmg > boss->attacks[i].dmglimit)
 				continue;
 
-			switch(boss->attacks[i].type) {
-			case AT_Normal:
-				glColor3f(1,1,1);
-				break;
-			case AT_Spellcard:
-				glColor3f(1,0.65,0.65);
-				break;
-			case AT_SurvivalSpell:
-				glColor3f(0.5,0.5,1);
-			case AT_ExtraSpell:
-				glColor3f(1.0, 0.3, 0.2);
-				break;
-			default:
-				break; // never happens
-			}
+			parse_color_call(boss_healthbar_color(boss->attacks[i].type), glColor4f);
 
 			glPushMatrix();
 			glTranslatef(-(boss->attacks[i].dmglimit+boss->dmg)*0.5, 1, 0);
@@ -202,6 +196,62 @@ bool boss_is_dying(Boss *boss) {
 	return boss->current && boss->current->endtime && boss->current->type != AT_Move && boss->current - boss->attacks >= boss->acount-1;
 }
 
+static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
+	bool fail = a->failtime;
+	const char *title = fail ? "Spell failed..." : "Spell cleared!";
+
+	int time_left = max(0, a->starttime + a->timeout - global.frames);
+
+	double sv = a->scorevalue;
+
+	int clear_bonus = 0.5 * sv * !fail;
+	int time_bonus = sv * (time_left / (double)a->timeout);
+	int endurance_bonus = 0;
+
+	if(fail) {
+		time_bonus /= 4;
+		endurance_bonus = sv * 0.1 * ((a->failtime - a->starttime) / (double)a->timeout);
+	}
+
+	int total = time_bonus + endurance_bonus + clear_bonus;
+	player_add_points(plr, total);
+
+	StageTextTable tbl;
+	stagetext_begin_table(&tbl, title, rgb(1, 1, 1), rgb(1, 1, 1), VIEWPORT_W/2, 0,
+		ATTACK_END_DELAY_SPELL * 2, ATTACK_END_DELAY_SPELL / 2, ATTACK_END_DELAY_SPELL);
+	stagetext_table_add_numeric_nonzero(&tbl, "Clear bonus", clear_bonus);
+	stagetext_table_add_numeric(&tbl, "Time bonus", time_bonus);
+	stagetext_table_add_numeric_nonzero(&tbl, "Endurance bonus", endurance_bonus);
+	stagetext_table_add_separator(&tbl);
+	stagetext_table_add_numeric(&tbl, "Total", total);
+	stagetext_end_table(&tbl);
+}
+
+void boss_finish_current_attack(Boss *boss) {
+	int delay;
+
+	if(boss->current-boss->attacks >= boss->acount-1) {
+		delay = BOSS_DEATH_DELAY;
+	} else switch(boss->current->type) {
+		// FIXME: what should it be for AT_SurvivalSpell?
+		case AT_Spellcard:  delay = ATTACK_END_DELAY_SPELL; break;
+		case AT_ExtraSpell: delay = ATTACK_END_DELAY_EXTRA; break;
+		case AT_Move:       delay = 0;                      break;
+		default:            delay = ATTACK_END_DELAY;       break;
+	}
+
+	boss->current->endtime = global.frames + delay;
+	boss->current->finished = true;
+	boss->current->rule(boss, EVENT_DEATH);
+
+	boss_kill_projectiles();
+
+	AttackType t = boss->current->type;
+	if(t == AT_Spellcard || t == AT_ExtraSpell || t == AT_SurvivalSpell) {
+		boss_give_spell_bonus(boss, boss->current, &global.plr);
+	}
+}
+
 void process_boss(Boss **pboss) {
 	Boss *boss = *pboss;
 
@@ -262,16 +312,14 @@ void process_boss(Boss **pboss) {
 		}
 	}
 
-	if(!boss->current->endtime && (boss->current->type != AT_Move && boss->dmg >= boss->current->dmglimit || time > boss->current->timeout)) {
-		int delay = extra ? ATTACK_END_DELAY_EXTRA : ATTACK_END_DELAY;
-		if(boss->current-boss->attacks >= boss->acount-1)
-			delay = BOSS_DEATH_DELAY;
-		if(boss->current->type == AT_Move) // do not delay if the boss is running away at the end
-			delay = 0;
-		boss->current->endtime = global.frames + delay;
-		boss->current->finished = FINISH_WIN;
-		boss->current->rule(boss, EVENT_DEATH);
-		boss_kill_projectiles();
+	bool timedout = time > boss->current->timeout;
+
+	if(!boss->current->endtime && (boss->current->type != AT_Move && boss->dmg >= boss->current->dmglimit || timedout)) {
+		if(timedout) {
+			boss->current->failtime = global.frames;
+		}
+
+		boss_finish_current_attack(boss);
 	}
 
 	if(boss_is_dying(boss)) {
@@ -284,7 +332,11 @@ void process_boss(Boss **pboss) {
 	}
 
 	if(over) {
-		if(extra && boss->current->finished == FINISH_WIN)
+		if(global.stage->type == STAGE_SPELL && boss->current->type != AT_Move) {
+			stage_gameover();
+		}
+
+		if(extra && boss->current->finished && !boss->current->failtime)
 			spawn_items(boss->pos, Life, 1, NULL);
 
 		boss->dmg = boss->current->dmglimit + 1;
@@ -296,7 +348,6 @@ void process_boss(Boss **pboss) {
 			boss_death(pboss);
 		}
 	}
-
 }
 
 void boss_death(Boss **boss) {
@@ -379,8 +430,10 @@ Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 	a->draw_rule = draw_rule;
 
 	a->starttime = global.frames;
-	a->endtime = 0;
-	a->finished = FINISH_NOPE;
+
+	// FIXME: figure out a better value/formula, i pulled this out of my ass
+	a->scorevalue = 500.0 + hp * 0.2;
+
 	return a;
 }
 

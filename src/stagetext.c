@@ -137,6 +137,12 @@ void stagetext_table_add_numeric(StageTextTable *tbl, const char *title, int n) 
     stagetext_table_push(tbl, txt, true);
 }
 
+void stagetext_table_add_numeric_nonzero(StageTextTable *tbl, const char *title, int n) {
+    if(n) {
+        stagetext_table_add_numeric(tbl, title, n);
+    }
+}
+
 void stagetext_table_add_separator(StageTextTable *tbl) {
     tbl->pos += I * 0.5 * stringheight("Love Live", _fonts.standard);
 }

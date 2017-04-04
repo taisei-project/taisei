@@ -57,12 +57,6 @@ typedef struct AttackInfo {
 	complex pos_dest;
 } AttackInfo;
 
-typedef enum {
-	FINISH_NOPE,
-	FINISH_WIN,
-	FINISH_FAIL
-} FinishType;
-
 typedef struct Attack {
 	char *name;
 
@@ -72,8 +66,11 @@ typedef struct Attack {
 
 	int timeout;
 	int dmglimit;
-	FinishType finished;
 	int endtime;
+
+	bool finished;
+	int failtime;
+	double scorevalue;
 
 	BossRule rule;
 	BossRule draw_rule;
@@ -111,6 +108,8 @@ void start_attack(Boss *b, Attack *a);
 
 Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule);
 Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move);
+
+void boss_finish_current_attack(Boss *boss);
 
 bool boss_is_dying(Boss *boss); // true if the last attack is over but the BOSS_DEATH_DELAY has not elapsed.
 void boss_death(Boss **boss);
