@@ -488,12 +488,24 @@ void iku_bolts3(Boss *b, int time) {
 }
 
 
-int induction_bullet(Projectile *p, int t) {
-	if(t < 0)
-		return 1;
+static complex induction_bullet_traj(Projectile *p, float t) {
+	return p->pos0 + p->args[0]*t*cexp(p->args[1]*t);
+}
 
-	t*=sqrt(global.diff);
-	p->pos = p->pos0 + p->args[0]*t*cexp(p->args[1]*t);
+int induction_bullet(Projectile *p, int time) {
+	if(time < 0)
+		return 1;
+	float t = time*(sqrt(global.diff)-1.4*(global.diff==D_Lunatic));
+
+	if(global.diff == D_Lunatic) {
+		t = 230-t;
+		complex pos = induction_bullet_traj(p,t);
+		if(fabs(creal(pos)/VIEWPORT_W-0.5) > 0.5 || fabs(cimag(pos)/VIEWPORT_H-0.5) > 0.5)
+			return 1;
+		if(t < 0)
+			return ACTION_DESTROY;
+	}
+	p->pos = induction_bullet_traj(p,t);
 	p->angle = carg(p->args[0]*cexp(p->args[1]*t)*(1+p->args[1]*t));
 	return 1;
 }
@@ -529,11 +541,12 @@ void iku_induction(Boss *b, int t) {
 	FROM_TO(0, 1800, 8) {
 		int i,j;
 		int c = 6;
-		int c2 = 6;
+		int c2 = 6-(global.diff/4);
 		for(i = 0; i < c; i++) {
 			for(j = 0; j < 2; j++) {
 				Color clr = rgb(1-1/(1+0.1*(_i%c2)), 0.5-0.1*(_i%c2), 1);
-				create_projectile2c("ball", b->pos, clr, induction_bullet, 2*cexp(2.0*I*M_PI/c*i+I*M_PI/2+0.6*I*(_i/c2)), (0.01+0.001*global.diff)*I*(1-2*j)-0.0002*(global.diff-D_Easy))->draw = ProjDrawAdd;
+				float shift = 0.6*(_i/c2);
+				create_projectile2c("ball", b->pos, clr, induction_bullet, 2*cexp(2.0*I*M_PI/c*i+I*M_PI/2+I*shift), (0.01+0.001*global.diff)*I*(1-2*j)-0.0002*(global.diff-D_Easy))->draw = ProjDrawAdd;
 			}
 		}
 
