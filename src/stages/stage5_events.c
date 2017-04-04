@@ -422,6 +422,10 @@ int lightning_slave(Enemy *e, int t) {
 static int zigzag_bullet(Projectile *p, int t) {
 	int l = 50;
 	p->pos = p->pos0+(fabs(((2*t)%l)-l/2)*I+t)*2*p->args[0];
+
+	if(t%2 == 0)
+		create_particle1c("lightningball", p->pos, rgb(0.1,0.1,0.6), FadeAdd, timeout, 15);
+
 	return 1;
 }
 
