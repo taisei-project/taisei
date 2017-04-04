@@ -77,7 +77,7 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 	}
 
 	int c;
-	int stageid = -1;
+	uint16_t stageid = 0;
 
 	#define INVALID_CHAR ((Character)-1)
 	#define INVALID_SHOT ((ShotMode)-1)
@@ -149,7 +149,7 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		}
 	}
 
-	if(stageid != -1) {
+	if(stageid) {
 		if(a->type != CLI_PlayReplay && a->type != CLI_SelectStage) {
 			log_warn("--sid was ignored");
 		} else if(!stage_get(stageid)) {
@@ -167,7 +167,7 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 
 	a->stageid = stageid;
 
-	if(a->type == CLI_SelectStage && stageid == -1)
+	if(a->type == CLI_SelectStage && stageid)
 		log_fatal("StageSelect mode, but no stage id was given");
 
 	return 0;
