@@ -162,8 +162,10 @@ void replay_copy(Replay *dst, Replay *src, bool steal_events);
 
 char* replay_getpath(const char *name, bool ext);	// must be freed
 
-void replay_play(Replay *rpy, int firststage);
-void replay_play_path(const char *path, int firststage);
+void replay_play(Replay *rpy, int firstidx);
+void replay_play_path(const char *path, int firstidx);
+
+int replay_find_stage_idx(Replay *rpy, uint8_t stageid);
 
 #endif
 
