@@ -22,9 +22,9 @@ void iku_extra(Boss*, int);
  */
 
 AttackInfo stage5_spells[] = {
-	{{ 0,  1,  2,  3},	AT_Spellcard, "High Voltage ~ Atmospheric Discharge", 30, 42000,
+	{{ 0,  1,  2,  3},	AT_Spellcard, "High Voltage ~ Atmospheric Discharge", 30, 40000,
 							iku_atmospheric, iku_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{ 4,  5,  6,  7},	AT_Spellcard, "Charge Sign ~ Artificial Lightning", 30, 45000,
+	{{ 4,  5,  6,  7},	AT_Spellcard, "Charge Sign ~ Artificial Lightning", 30, 42000,
 							iku_lightning, iku_spell_bg, BOSS_DEFAULT_GO_POS},
 	{{ 8,  9, 10, 11},	AT_Spellcard, "Spark Sign ~ Natural Cathode", 30, 50000,
 							iku_cathode, iku_spell_bg, BOSS_DEFAULT_GO_POS},
@@ -263,7 +263,7 @@ int stage5_lightburst2(Enemy *e, int t) {
 
 	FROM_TO(20, 170, 5) {
 		int i;
-		int c = 4+global.diff;
+		int c = 4+global.diff-(global.diff==D_Easy);
 		for(i = 0; i < c; i++) {
 			tsrand_fill(2);
 			complex n = cexp(I*carg(global.plr.pos-e->pos) + 2.0*I*M_PI/c*i);
@@ -370,7 +370,7 @@ void iku_atmospheric(Boss *b, int time) {
 }
 
 complex bolts2_laser(Laser *l, float t) {
-	return creal(l->args[0])+I*cimag(l->pos) + sign(cimag(l->args[0]-l->pos))*0.06*I*t*t + (20+4*global.diff)*sin(t*0.1+creal(l->args[0]));
+	return creal(l->args[0])+I*cimag(l->pos) + sign(cimag(l->args[0]-l->pos))*0.06*I*t*t + (20+4*global.diff)*sin(t*0.025*global.diff+creal(l->args[0]));
 }
 
 void iku_bolts2(Boss *b, int time) {
@@ -412,7 +412,8 @@ int lightning_slave(Enemy *e, int t) {
 	FROM_TO(0, 200, 3)
 		if(cabs(e->pos-global.plr.pos) > 60) {
 			tsrand_fill(2);
-			create_projectile2c("wave", e->pos, rgb(0, 1, 1), accelerated, 0.5*e->args[0]/cabs(e->args[0])*I, 0.001*(1-2*afrand(0)+I*afrand(1)))->draw = ProjDrawAdd;
+			Color clr = rgb(1-1/(1+0.01*_i), 0.5-0.01*_i, 1);
+			create_projectile2c("wave", e->pos, clr, accelerated, 0.5*e->args[0]/cabs(e->args[0])*I, 0.001*(1-2*afrand(0)+I*afrand(1)))->draw = ProjDrawAdd;
 		}
 
 	return 1;
@@ -491,6 +492,7 @@ int induction_bullet(Projectile *p, int t) {
 	if(t < 0)
 		return 1;
 
+	t*=sqrt(global.diff);
 	p->pos = p->pos0 + p->args[0]*t*cexp(p->args[1]*t);
 	p->angle = carg(p->args[0]*cexp(p->args[1]*t)*(1+p->args[1]*t));
 	return 1;
@@ -501,10 +503,7 @@ complex cathode_laser(Laser *l, float t) {
 }
 
 void iku_cathode(Boss *b, int t) {
-	if(t < 0) {
-		GO_TO(b, VIEWPORT_W/2+200.0*I, 0.02);
-		return;
-	}
+	GO_TO(b, VIEWPORT_W/2+200.0*I, 0.02);
 
 	TIMER(&t)
 
@@ -521,7 +520,7 @@ void iku_cathode(Boss *b, int t) {
 
 void iku_induction(Boss *b, int t) {
 	if(t < 0) {
-		GO_TO(b, VIEWPORT_W/2+200.0*I, 0.02);
+		GO_TO(b, VIEWPORT_W/2+200.0*I, 0.03);
 		return;
 	}
 
@@ -529,10 +528,13 @@ void iku_induction(Boss *b, int t) {
 
 	FROM_TO(0, 1800, 8) {
 		int i,j;
-		int c = 5+global.diff;
+		int c = 6;
+		int c2 = 6;
 		for(i = 0; i < c; i++) {
-			for(j = 0; j < 2; j++)
-				create_projectile2c("ball", b->pos, rgb(0, 1, 1), induction_bullet, 2*cexp(2.0*I*M_PI/c*i+I*M_PI/2+0.6*I*(_i/6)), (0.01+0.001*global.diff)*I*(1-2*j))->draw = ProjDrawAdd;
+			for(j = 0; j < 2; j++) {
+				Color clr = rgb(1-1/(1+0.1*(_i%c2)), 0.5-0.1*(_i%c2), 1);
+				create_projectile2c("ball", b->pos, clr, induction_bullet, 2*cexp(2.0*I*M_PI/c*i+I*M_PI/2+0.6*I*(_i/c2)), (0.01+0.001*global.diff)*I*(1-2*j)-0.0002*(global.diff-D_Easy))->draw = ProjDrawAdd;
+			}
 		}
 
 	}
@@ -786,7 +788,7 @@ void stage5_events(void) {
 		create_enemy1c(VIEWPORT_W*(_i&1)+100.0*I, 300, Fairy, stage5_greeter, 3-6*(_i&1));
 
 	FROM_TO(2200, 2600, 60-5*global.diff)
-		create_enemy1c(VIEWPORT_W/10*_i, 200, Swirl, stage5_miner, 3.0*I);
+		create_enemy1c(VIEWPORT_W/(6+global.diff)*_i, 200, Swirl, stage5_miner, 3.0*I);
 
 	AT(2900)
 		global.boss = create_iku_mid();
@@ -797,7 +799,7 @@ void stage5_events(void) {
 	FROM_TO(3000, 3200, 100)
 		create_enemy1c(VIEWPORT_W/2 + VIEWPORT_W/6*(1-2*(_i&1)), 2000, BigFairy, stage5_lightburst2, -1+2*(_i&1) + 2.0*I);
 
-	FROM_TO(3300, 4000, 50)
+	FROM_TO(3300, 4000, 90-10*global.diff)
 		create_enemy1c(200.0*I+VIEWPORT_W*(_i&1), 1500, Fairy, stage5_superbullet, 3-6*(_i&1));
 
 	AT(3400) {
