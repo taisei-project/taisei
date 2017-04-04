@@ -419,6 +419,11 @@ int lightning_slave(Enemy *e, int t) {
 	return 1;
 }
 
+static int zigzag_bullet(Projectile *p, int t) {
+	int l = 50;
+	p->pos = p->pos0+(fabs(((2*t)%l)-l/2)*I+t)*2*p->args[0];
+	return 1;
+}
 
 void iku_lightning(Boss *b, int time) {
 	int t = time % 141;
@@ -443,6 +448,13 @@ void iku_lightning(Boss *b, int time) {
 		float s = 4+_i*0.01;
 		float alpha = 0.5;
 		create_particle2c("lightningball", b->pos+l*n, rgb(0.1*alpha,0.1*alpha,0.6*alpha), FadeAdd, timeout_linear, l/s, -s*n);
+	}
+
+	if(global.diff == D_Lunatic && time > 0 && !(time%100)) {
+		int c = 7;
+		for(int i = 0; i<c; i++)
+			create_projectile1c("bigball", b->pos, rgb(0.5,0.1,1), zigzag_bullet, cexp(2*M_PI*I/c*i+I*carg(global.plr.pos-b->pos)))->draw = ProjDrawAdd;
+
 	}
 
 	AT(100) {
