@@ -413,7 +413,7 @@ int lightning_slave(Enemy *e, int t) {
 		if(cabs(e->pos-global.plr.pos) > 60) {
 			tsrand_fill(2);
 			Color clr = rgb(1-1/(1+0.01*_i), 0.5-0.01*_i, 1);
-			create_projectile2c("wave", e->pos, clr, accelerated, 0.5*e->args[0]/cabs(e->args[0])*I, 0.001*(1-2*afrand(0)+I*afrand(1)))->draw = ProjDrawAdd;
+			create_projectile2c("wave", e->pos, clr, accelerated, (0.5+0.3*(_i&1)*(global.diff==D_Lunatic))*e->args[0]/cabs(e->args[0])*I, 0.001*global.diff*(1-2*afrand(0)+I*afrand(1)))->draw = ProjDrawAdd;
 		}
 
 	return 1;
