@@ -640,20 +640,34 @@ int replay_test(void) {
 #endif
 }
 
-void replay_play(Replay *rpy, int firststageid) {
+int replay_find_stage_idx(Replay *rpy, uint8_t stageid) {
+	assert(rpy != NULL);
+	assert(rpy->stages != NULL);
+
+	for(int i = 0; i < rpy->numstages; ++i) {
+		if(rpy->stages[i].stage == stageid) {
+			return i;
+		}
+	}
+
+	log_warn("Stage %x was not found in the replay", stageid);
+	return -1;
+}
+
+void replay_play(Replay *rpy, int firstidx) {
 	if(rpy != &global.replay) {
 		replay_copy(&global.replay, rpy, true);
 	}
 
+	if(firstidx >= global.replay.numstages || firstidx < 0) {
+		log_warn("No stage #%i in the replay", firstidx);
+		return;
+	}
+
 	global.replaymode = REPLAY_PLAY;
 
-	bool skip = true;
-	for(int i = 0; i < global.replay.numstages; ++i) {
+	for(int i = firstidx; i < global.replay.numstages; ++i) {
 		ReplayStage *rstg = global.replay_stage = global.replay.stages+i;
-		if(rstg->stage == firststageid || firststageid == -1)
-			skip = false;
-		if(skip)
-			continue;
 		StageInfo *gstg = stage_get(rstg->stage);
 
 		if(!gstg) {
@@ -670,9 +684,6 @@ void replay_play(Replay *rpy, int firststageid) {
 		global.game_over = 0;
 	}
 
-	if(skip == true)
-		log_warn("Stage %x was not found in the replay", firststageid);
-
 	global.game_over = 0;
 	global.replaymode = REPLAY_RECORD;
 	replay_destroy(&global.replay);
@@ -680,12 +691,12 @@ void replay_play(Replay *rpy, int firststageid) {
 	free_resources(false);
 }
 
-void replay_play_path(const char *path, int firststage) {
+void replay_play_path(const char *path, int firstidx) {
 	replay_destroy(&global.replay);
 
 	if(!replay_load(&global.replay, path, REPLAY_READ_ALL | REPLAY_READ_RAWPATH)) {
 		return;
 	}
 
-	replay_play(&global.replay, firststage);
+	replay_play(&global.replay, firstidx);
 }

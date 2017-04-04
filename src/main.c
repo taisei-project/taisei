@@ -111,6 +111,7 @@ int main(int argc, char **argv) {
 	setlocale(LC_ALL, "C");
 
 	Replay replay = {0};
+	int replay_idx = 0;
 
 	init_paths();
 	init_log();
@@ -135,6 +136,11 @@ int main(int argc, char **argv) {
 		return 0;
 	} else if(a.type == CLI_PlayReplay) {
 		if(!replay_load(&replay, a.filename, REPLAY_READ_ALL | REPLAY_READ_RAWPATH)) {
+			return 1;
+		}
+
+		replay_idx = a.stageid ? replay_find_stage_idx(&replay, a.stageid) : 0;
+		if(replay_idx < 0) {
 			return 1;
 		}
 	}
@@ -175,7 +181,7 @@ int main(int argc, char **argv) {
 	atexit(taisei_shutdown);
 
 	if(a.type == CLI_PlayReplay) {
-		replay_play(&replay, a.stageid);
+		replay_play(&replay, replay_idx);
 		replay_destroy(&replay);
 		return 0;
 	}
