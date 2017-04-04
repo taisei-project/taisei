@@ -207,22 +207,33 @@ static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
 	int clear_bonus = 0.5 * sv * !fail;
 	int time_bonus = sv * (time_left / (double)a->timeout);
 	int endurance_bonus = 0;
+	int surv_bonus = 0;
 
 	if(fail) {
 		time_bonus /= 4;
 		endurance_bonus = sv * 0.1 * ((a->failtime - a->starttime) / (double)a->timeout);
+	} else if(a->type == AT_SurvivalSpell) {
+		surv_bonus = sv * (1.0 + 0.02 * (a->timeout / (double)FPS));
 	}
 
-	int total = time_bonus + endurance_bonus + clear_bonus;
+	int total = time_bonus + surv_bonus + endurance_bonus + clear_bonus;
+	float diff_bonus = 0.6 + 0.2 * global.diff;
+	total *= diff_bonus;
+
+	char diff_bonus_text[6];
+	snprintf(diff_bonus_text, sizeof(diff_bonus_text), "x%.2f", diff_bonus);
+
 	player_add_points(plr, total);
 
 	StageTextTable tbl;
 	stagetext_begin_table(&tbl, title, rgb(1, 1, 1), rgb(1, 1, 1), VIEWPORT_W/2, 0,
 		ATTACK_END_DELAY_SPELL * 2, ATTACK_END_DELAY_SPELL / 2, ATTACK_END_DELAY_SPELL);
 	stagetext_table_add_numeric_nonzero(&tbl, "Clear bonus", clear_bonus);
-	stagetext_table_add_numeric(&tbl, "Time bonus", time_bonus);
+	stagetext_table_add_numeric_nonzero(&tbl, "Time bonus", time_bonus);
+	stagetext_table_add_numeric_nonzero(&tbl, "Survival bonus", surv_bonus);
 	stagetext_table_add_numeric_nonzero(&tbl, "Endurance bonus", endurance_bonus);
 	stagetext_table_add_separator(&tbl);
+	stagetext_table_add(&tbl, "Diff. multiplier", diff_bonus_text);
 	stagetext_table_add_numeric(&tbl, "Total", total);
 	stagetext_end_table(&tbl);
 }
@@ -315,7 +326,7 @@ void process_boss(Boss **pboss) {
 	bool timedout = time > boss->current->timeout;
 
 	if(!boss->current->endtime && (boss->current->type != AT_Move && boss->dmg >= boss->current->dmglimit || timedout)) {
-		if(timedout) {
+		if(timedout && boss->current->type != AT_SurvivalSpell) {
 			boss->current->failtime = global.frames;
 		}
 
@@ -332,7 +343,7 @@ void process_boss(Boss **pboss) {
 	}
 
 	if(over) {
-		if(global.stage->type == STAGE_SPELL && boss->current->type != AT_Move) {
+		if(global.stage->type == STAGE_SPELL && boss->current->type != AT_Move && boss->current->failtime) {
 			stage_gameover();
 		}
 
