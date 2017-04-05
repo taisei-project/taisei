@@ -454,7 +454,7 @@ int stage4_supercard(Enemy *e, int t) {
 
 void kurumi_boss_intro(Boss *b, int t) {
 	TIMER(&t);
-	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.01);
+	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.015);
 
 	AT(120)
 		global.dialog = stage4_dialog();
@@ -469,6 +469,8 @@ void kurumi_breaker(Boss *b, int time) {
 
 	if(time < 0)
 		return;
+
+	GO_TO(b, VIEWPORT_W/2 + VIEWPORT_W/3*sin(time/220) + I*cimag(b->pos), 0.02);
 
 	TIMER(&t);
 
