@@ -33,6 +33,7 @@ Laser *create_laser(complex pos, float time, float deathtime, Color color, Laser
 	l->timeshift = 0;
 	l->in_background = false;
 	l->dead = false;
+	l->unclearable = false;
 
 	if(l->lrule)
 		l->lrule(l, EVENT_BIRTH);
@@ -178,11 +179,12 @@ void process_lasers(void) {
 
 	while(laser != NULL) {
 		if(laser->dead) {
-			laser->timespan *= 0.93;
+			laser->timespan *= 0.9;
 			bool kill_now = laser->timespan < 5;
 
-			if(!((global.frames - laser->birthtime) % 24) || kill_now) {
-				complex p = laser->prule(laser, global.frames - laser->birthtime)*laser->speed + laser->timeshift;
+			if(!((global.frames - laser->birthtime) % 2) || kill_now) {
+				double t = max(0, (global.frames - laser->birthtime)*laser->speed - laser->timespan + laser->timeshift);
+				complex p = laser->prule(laser, t);
 				double x = creal(p);
 				double y = cimag(p);
 
