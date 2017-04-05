@@ -675,8 +675,10 @@ void kurumi_blowwall(Boss *b, int time) {
 	if(time == EVENT_DEATH)
 		killall(global.enemies);
 
-	if(time < 0)
+	if(time < 0) {
+		GO_TO(b, BOSS_DEFAULT_GO_POS, 0.04)
 		return;
+	}
 
 	AT(50)
 		bwlaser(b, 0.4, 1);
