@@ -897,7 +897,7 @@ void stage3_boss_extra(Boss *boss, int time) {
 	AT(0) {
 		int i, j, cnt = 1 + global.diff;
 		for(j = -1; j < 2; j += 2) for(i = 0; i < cnt; ++i)
-			create_enemy3c(boss->pos, ENEMY_IMMUNE, Swirl, stage3_boss_a1_slave, add_ref(boss), i*2*M_PI/cnt, j);
+			create_enemy3c(boss->pos, ENEMY_IMMUNE, wriggle_slave_draw, stage3_boss_a1_slave, add_ref(boss), i*2*M_PI/cnt, j);
 		return;
 	}
 

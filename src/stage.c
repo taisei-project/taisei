@@ -664,7 +664,8 @@ static void draw_spellbg(int t) {
 	if(b->current->type == AT_ExtraSpell)
 		delay = ATTACK_START_DELAY_EXTRA-ATTACK_START_DELAY;
 	float f = -(t+delay)/ATTACK_START_DELAY;
-	draw_wall_of_text(f, b->current->name);
+	if(f > 0)
+		draw_wall_of_text(f, b->current->name);
 
 	if(t < ATTACK_START_DELAY && b->dialog) {
 		glPushMatrix();
@@ -676,7 +677,10 @@ static void draw_spellbg(int t) {
 	}
 }
 
-static void apply_zoom_shader() {
+static void apply_zoom_shader(void) {
+	if(config_get_int(CONFIG_NO_STAGEBG))
+		return;
+
 	Shader *shader = get_shader("boss_zoom");
 	glUseProgram(shader->prog);
 
