@@ -28,7 +28,9 @@ AttackInfo stage5_spells[] = {
 							iku_lightning, iku_spell_bg, BOSS_DEFAULT_GO_POS},
 	{{ 8,  9, 10, 11},	AT_Spellcard, "Spark Sign ~ Natural Cathode", 30, 50000,
 							iku_cathode, iku_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{12, 13, 14, 15},	AT_Spellcard, "Current Sign ~ Induction", 30, 50000,
+	{{12, 13, -1, -1},	AT_Spellcard, "Current Sign ~ Induction Field", 30, 50000,
+							iku_induction, iku_spell_bg, BOSS_DEFAULT_GO_POS},
+	{{-1, -1, 14, 15},	AT_Spellcard, "Current Sign ~ Inductive Resonance", 30, 50000,
 							iku_induction, iku_spell_bg, BOSS_DEFAULT_GO_POS},
 	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Circuit Sign ~ Overload", 60, 40000,
 							iku_extra, iku_spell_bg, BOSS_DEFAULT_GO_POS},
@@ -511,9 +513,10 @@ static complex induction_bullet_traj(Projectile *p, float t) {
 int induction_bullet(Projectile *p, int time) {
 	if(time < 0)
 		return 1;
-	float t = time*(sqrt(global.diff)-1.4*(global.diff==D_Lunatic));
+	float t = time*sqrt(global.diff);
 
-	if(global.diff == D_Lunatic) {
+	if(global.diff > D_Normal) {
+		t = time*0.6;
 		t = 230-t;
 		complex pos = induction_bullet_traj(p,t);
 		if(fabs(creal(pos)/VIEWPORT_W-0.5) > 0.5 || fabs(cimag(pos)/VIEWPORT_H-0.5) > 0.5)
@@ -562,7 +565,10 @@ void iku_induction(Boss *b, int t) {
 			for(j = 0; j < 2; j++) {
 				Color clr = rgb(1-1/(1+0.1*(_i%c2)), 0.5-0.1*(_i%c2), 1);
 				float shift = 0.6*(_i/c2);
-				create_projectile2c("ball", b->pos, clr, induction_bullet, 2*cexp(2.0*I*M_PI/c*i+I*M_PI/2+I*shift), (0.01+0.001*global.diff)*I*(1-2*j)-0.0002*(global.diff-D_Easy))->draw = ProjDrawAdd;
+				float a = -0.0002*(global.diff-D_Easy);
+				if(global.diff == D_Hard)
+					a += 0.0005;
+				create_projectile2c("ball", b->pos, clr, induction_bullet, 2*cexp(2.0*I*M_PI/c*i+I*M_PI/2+I*shift), (0.01+0.001*global.diff)*I*(1-2*j)+a)->draw = ProjDrawAdd;
 			}
 		}
 
