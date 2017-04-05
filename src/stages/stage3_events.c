@@ -243,9 +243,6 @@ void stage3_mid_intro(Boss *boss, int time) {
 void stage3_mid_outro(Boss *boss, int time) {
 	if(time == 0) {
 		spawn_items(boss->pos, Point, 10, Power, 10, Life, 1, NULL);
-		Projectile *p;
-		for(p = global.projs; p; p = p->next)
-			p->type = DeadProj;
 	}
 
 	boss->pos += pow(max(0, time)/30.0, 2) * cexp(I*(3*M_PI/2 + 0.5 * sin(time / 20.0)));

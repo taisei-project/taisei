@@ -184,14 +184,6 @@ void boss_rule_extra(Boss *boss, float alpha) {
 	}
 }
 
-void boss_kill_projectiles(void) {
-	Projectile *p;
-	for(p = global.projs; p; p = p->next)
-		if(p->type == FairyProj)
-			p->type = DeadProj;
-	delete_lasers();
-}
-
 bool boss_is_dying(Boss *boss) {
 	return boss->current && boss->current->endtime && boss->current->type != AT_Move && boss->current - boss->attacks >= boss->acount-1;
 }
@@ -255,7 +247,7 @@ void boss_finish_current_attack(Boss *boss) {
 	boss->current->finished = true;
 	boss->current->rule(boss, EVENT_DEATH);
 
-	boss_kill_projectiles();
+	stage_clear_hazards(true);
 
 	AttackType t = boss->current->type;
 	if(t == AT_Spellcard || t == AT_ExtraSpell || t == AT_SurvivalSpell) {
@@ -367,7 +359,7 @@ void boss_death(Boss **boss) {
 
 	free_boss(*boss);
 	*boss = NULL;
-	boss_kill_projectiles();
+	stage_clear_hazards(true);
 }
 
 void free_boss(Boss *boss) {
@@ -413,12 +405,7 @@ void start_attack(Boss *b, Attack *a) {
 		}
 	}
 
-	Projectile *p;
-	for(p = global.projs; p; p = p->next)
-		if(p->type == FairyProj)
-			p->type = DeadProj;
-
-	delete_lasers();
+	stage_clear_hazards(true);
 }
 
 Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule) {

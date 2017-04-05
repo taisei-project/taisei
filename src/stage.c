@@ -826,6 +826,18 @@ static void stage_logic(void) {
 	}
 }
 
+void stage_clear_hazards(bool force) {
+	for(Projectile *p = global.projs; p; p = p->next) {
+		if(p->type == FairyProj)
+			p->type = DeadProj;
+	}
+
+	for(Laser *l = global.lasers; l; l = l->next) {
+		if(!l->unclearable || force)
+			l->dead = true;
+	}
+}
+
 static void stage_free(void) {
 	delete_enemies(&global.enemies);
 	delete_items();

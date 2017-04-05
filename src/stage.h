@@ -93,6 +93,8 @@ void draw_hud(void);
 void stage_pause(void);
 void stage_gameover(void);
 
+void stage_clear_hazards(bool force);
+
 #include "stages/stage1.h"
 #include "stages/stage2.h"
 #include "stages/stage3.h"
