@@ -780,7 +780,7 @@ Boss *create_iku(void) {
 	boss_add_attack_from_info(b, stage5_spells+1, false);
 	boss_add_attack(b, AT_Normal, "Bolts3", 20, 20000, iku_bolts3, NULL);
 	boss_add_attack_from_info(b, stage5_spells+2, false);
-	boss_add_attack_from_info(b, stage5_spells+3, false);
+	boss_add_attack_from_info(b, stage5_spells+(3 + (global.diff > D_Normal)), false);
 
 	return b;
 }
