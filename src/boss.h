@@ -112,6 +112,8 @@ Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move);
 void boss_finish_current_attack(Boss *boss);
 
 bool boss_is_dying(Boss *boss); // true if the last attack is over but the BOSS_DEATH_DELAY has not elapsed.
+bool boss_is_fleeing(Boss *boss);
+
 void boss_death(Boss **boss);
 void boss_kill_projectiles(void);
 

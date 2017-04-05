@@ -196,6 +196,10 @@ bool boss_is_dying(Boss *boss) {
 	return boss->current && boss->current->endtime && boss->current->type != AT_Move && boss->current - boss->attacks >= boss->acount-1;
 }
 
+bool boss_is_fleeing(Boss *boss) {
+	return boss->current && boss->current->type == AT_Move && boss->current - boss->attacks >= boss->acount-1;
+}
+
 static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
 	bool fail = a->failtime;
 	const char *title = fail ? "Spell failed..." : "Spell cleared!";

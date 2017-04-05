@@ -819,7 +819,7 @@ static void stage_logic(void) {
 
 	global.frames++;
 
-	if(!global.dialog && !global.boss)
+	if(!global.dialog && (!global.boss || boss_is_fleeing(global.boss)))
 		global.timer++;
 
 	if(global.replaymode == REPLAY_PLAY &&
@@ -965,7 +965,7 @@ void stage_loop(StageInfo *stage) {
 
 	while(global.game_over <= 0) {
 		if(global.game_over != GAMEOVER_TRANSITIONING) {
-			if(!global.boss && !global.dialog) {
+			if((!global.boss || boss_is_fleeing(global.boss)) && !global.dialog) {
 				stage->procs->event();
 			}
 
