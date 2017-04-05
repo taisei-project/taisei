@@ -48,11 +48,7 @@ Animation *player_get_ani(Character cha) {
 
 static void player_full_power(Player *plr) {
 	play_sound("full_power");
-
-	Projectile *p;
-	for(p = global.projs; p; p = p->next)
-		if(p->type < PlrProj)
-			p->type = DeadProj;
+	stage_clear_hazards(false);
 }
 
 void player_set_power(Player *plr, short npow) {
@@ -194,17 +190,13 @@ void player_logic(Player* plr) {
 			if(!en->unbombable && en->hp > ENEMY_IMMUNE)
 				en->hp -= 300;
 
-		Projectile *p;
-		for(p = global.projs; p; p = p->next)
-			if(p->type < PlrProj)
-				p->type = DeadProj;
-
 		if(global.boss && global.boss->current) {
 			AttackType at = global.boss->current->type;
 			if(at != AT_Move && at != AT_SurvivalSpell)
 				global.boss->dmg += 30;
 		}
 
+		stage_clear_hazards(false);
 		player_fail_spell(plr);
 	}
 }

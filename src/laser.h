@@ -44,6 +44,9 @@ struct Laser {
 	int in_background;
 
 	complex args[4];
+
+	bool unclearable;
+	bool dead;
 };
 
 #define create_lasercurve1c(p, time, deathtime, clr, rule, a0) create_laser(p, time, deathtime, clr, rule, 0, a0, 0, 0, 0)

@@ -32,6 +32,7 @@ Laser *create_laser(complex pos, float time, float deathtime, Color color, Laser
 	l->speed = 1;
 	l->timeshift = 0;
 	l->in_background = false;
+	l->dead = false;
 
 	if(l->lrule)
 		l->lrule(l, EVENT_BIRTH);
@@ -176,17 +177,39 @@ void process_lasers(void) {
 	Laser *laser = global.lasers, *del = NULL;
 
 	while(laser != NULL) {
-		if(collision_laser_curve(laser))
-			player_death(&global.plr);
+		if(laser->dead) {
+			laser->timespan *= 0.93;
+			bool kill_now = laser->timespan < 5;
 
-		if(laser->lrule)
-			laser->lrule(laser, global.frames - laser->birthtime);
+			if(!((global.frames - laser->birthtime) % 24) || kill_now) {
+				complex p = laser->prule(laser, global.frames - laser->birthtime)*laser->speed + laser->timeshift;
+				double x = creal(p);
+				double y = cimag(p);
+
+				if(x > 0 && x < VIEWPORT_W && y > 0 && y < VIEWPORT_H) {
+					create_particle1c("flare", p, 0, Fade, timeout, 30);
+					create_item(p, 0, BPoint)->auto_collect = 10;
+				}
+
+				if(kill_now) {
+					create_particle1c("flare", p, 0, GrowFade, timeout, 20);
+					laser->deathtime = 0;
+				}
+			}
+		} else {
+			if(collision_laser_curve(laser)) {
+				player_death(&global.plr);
+			}
+
+			if(laser->lrule) {
+				laser->lrule(laser, global.frames - laser->birthtime);
+			}
+		}
 
 		if(global.frames - laser->birthtime > laser->deathtime + laser->timespan*laser->speed) {
 			del = laser;
 			laser = laser->next;
 			_delete_laser((void **)&global.lasers, del);
-			if(laser == NULL) break;
 		} else {
 			laser = laser->next;
 		}
