@@ -133,11 +133,18 @@ void cirno_pfreeze_bg(Boss *c, int time) {
 	glColor4f(1,1,1,1);
 }
 
+void cirno_mid_flee(Boss *c, int time) {
+	if(time >= 0) {
+		GO_TO(c, -250 + 30 * I, 0.02)
+	}
+}
+
 Boss *create_cirno_mid(void) {
 	Boss* cirno = create_boss("Cirno", "cirno", "dialog/cirno", VIEWPORT_W + 220 + 30.0*I);
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro, NULL);
 	boss_add_attack(cirno, AT_Normal, "Icy Storm", 20, 20000, cirno_icy, NULL);
 	boss_add_attack_from_info(cirno, stage1_spells+0, false);
+	boss_add_attack(cirno, AT_Move, "Flee", 5, 0, cirno_mid_flee, NULL);
 
 	start_attack(cirno, cirno->attacks);
 	return cirno;

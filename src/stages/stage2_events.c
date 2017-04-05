@@ -264,10 +264,17 @@ void wriggle_small_storm(Boss *w, int time) {
 	}
 }
 
+void wiggle_mid_flee(Boss *w, int t) {
+	if(t >= 0) {
+		GO_TO(w, VIEWPORT_W/2 - 3.0 * t - 300 * I, 0.01)
+	}
+}
+
 Boss *create_wriggle_mid(void) {
 	Boss* wriggle = create_boss("Wriggle", "wriggle", "dialog/wriggle", VIEWPORT_W + 150 - 30.0*I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 4, 0, wriggle_intro, NULL);
 	boss_add_attack(wriggle, AT_Normal, "Small Bug Storm", 20, 20000, wriggle_small_storm, NULL);
+	boss_add_attack(wriggle, AT_Move, "Flee", 5, 0, wiggle_mid_flee, NULL);;
 
 	start_attack(wriggle, wriggle->attacks);
 	return wriggle;
