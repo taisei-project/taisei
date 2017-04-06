@@ -876,6 +876,16 @@ void stage_finish(int gameover) {
 	assert(global.game_over != GAMEOVER_TRANSITIONING);
 	global.game_over = GAMEOVER_TRANSITIONING;
 	set_transition_callback(TransFadeBlack, FADE_TIME, FADE_TIME*2, stage_finalize, (void*)(intptr_t)gameover);
+
+	if(global.replaymode == REPLAY_PLAY) {
+		return;
+	}
+
+	StageProgress *p = stage_get_progress_from_info(global.stage, global.diff, true);
+
+	if(p) {
+		++p->num_cleared;
+	}
 }
 
 static void stage_preload(void) {
@@ -941,6 +951,15 @@ void stage_loop(StageInfo *stage) {
 		}
 
 		log_debug("Random seed: %u", seed);
+
+		StageProgress *p = stage_get_progress_from_info(stage, global.diff, true);
+
+		if(p) {
+			log_debug("You played this stage %u times", p->num_played);
+			log_debug("You cleared this stage %u times", p->num_cleared);
+
+			++p->num_played;
+		}
 	} else {
 		if(!global.replay_stage) {
 			log_fatal("Attemped to replay a NULL stage");

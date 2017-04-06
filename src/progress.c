@@ -39,6 +39,9 @@
 
 		- PCMD_HISCORE
 			Sets the "Hi-Score" (highest score ever attained in one game session)
+
+		- PCMD_STAGE_PLAYINFO
+			Sets the times played and times cleared counters for a list of stage/difficulty combinations
 */
 
 /*
@@ -173,6 +176,19 @@ static void progress_read(SDL_RWops *file) {
 				c->data = malloc(cmdsize);
 				SDL_RWread(vfile, c->data, c->size, 1);
 
+				break;
+
+			case PCMD_STAGE_PLAYINFO:
+				while(cur < cmdsize) {
+					uint16_t stg = SDL_ReadLE16(vfile); cur += sizeof(uint16_t);
+					Difficulty diff = SDL_ReadU8(vfile); cur += sizeof(uint8_t);
+					StageProgress *p = stage_get_progress(stg, diff, true);
+
+					assert(p != NULL);
+
+					p->num_played = SDL_ReadLE32(vfile); cur += sizeof(uint32_t);
+					p->num_cleared = SDL_ReadLE32(vfile); cur += sizeof(uint32_t);
+				}
 				break;
 		}
 	}
@@ -310,6 +326,80 @@ static void progress_write_cmd_hiscore(SDL_RWops *vfile, void **arg) {
 }
 
 //
+//	PCMD_STAGE_PLAYINFO
+//
+
+struct cmd_stage_playinfo_data_elem {
+	struct cmd_stage_playinfo_data_elem *next;
+	struct cmd_stage_playinfo_data_elem *prev;
+	uint16_t stage;
+	uint8_t diff;
+	uint32_t num_played;
+	uint32_t num_cleared;
+};
+
+struct cmd_stage_playinfo_data {
+	size_t size;
+	struct cmd_stage_playinfo_data_elem *elems;
+};
+
+static void progress_prepare_cmd_stage_playinfo(size_t *bufsize, void **arg) {
+	struct cmd_stage_playinfo_data *data = malloc(sizeof(struct cmd_stage_playinfo_data));
+	memset(data, 0, sizeof(struct cmd_stage_playinfo_data));
+
+	for(StageInfo *stg = stages; stg->procs; ++stg) {
+		Difficulty d_first, d_last;
+
+		if(stg->difficulty == D_Any) {
+			d_first = D_Easy;
+			d_last = D_Lunatic;
+		} else {
+			d_first = d_last = D_Any;
+		}
+
+		for(Difficulty d = d_first; d <= d_last; ++d) {
+			StageProgress *p = stage_get_progress_from_info(stg, d, false);
+
+			if(p && (p->num_played || p->num_cleared)) {
+				struct cmd_stage_playinfo_data_elem *e = create_element((void**)&data->elems, sizeof(struct cmd_stage_playinfo_data_elem));
+				e->stage = stg->id;					data->size += sizeof(uint16_t);
+				e->diff = d;						data->size += sizeof(uint8_t);
+				e->num_played = p->num_played;		data->size += sizeof(uint32_t);
+				e->num_cleared = p->num_cleared;	data->size += sizeof(uint32_t);
+			}
+		}
+	}
+
+	*arg = data;
+
+	if(data->size) {
+		*bufsize += CMD_HEADER_SIZE + data->size;
+	}
+}
+
+static void progress_write_cmd_stage_playinfo(SDL_RWops *vfile, void **arg) {
+	struct cmd_stage_playinfo_data *data = *arg;
+
+	if(!data->size) {
+		goto cleanup;
+	}
+
+	SDL_WriteU8(vfile, PCMD_STAGE_PLAYINFO);
+	SDL_WriteLE16(vfile, data->size);
+
+	for(struct cmd_stage_playinfo_data_elem *e = data->elems; e; e = e->next) {
+		SDL_WriteLE16(vfile, e->stage);
+		SDL_WriteU8(vfile, e->diff);
+		SDL_WriteLE32(vfile, e->num_played);
+		SDL_WriteLE32(vfile, e->num_cleared);
+	}
+
+cleanup:
+	delete_all_elements((void**)&data->elems, delete_element);
+	free(data);
+}
+
+//
 //	Copy unhandled commands from the original file
 //
 
@@ -349,6 +439,7 @@ static void progress_write(SDL_RWops *file) {
 		{progress_prepare_cmd_unlock_stages, progress_write_cmd_unlock_stages, NULL},
 		{progress_prepare_cmd_unlock_stages_with_difficulties, progress_write_cmd_unlock_stages_with_difficulties, NULL},
 		{progress_prepare_cmd_hiscore, progress_write_cmd_hiscore, NULL},
+		{progress_prepare_cmd_stage_playinfo, progress_write_cmd_stage_playinfo, NULL},
 		// {progress_prepare_cmd_test, progress_write_cmd_test, NULL},
 		{progress_prepare_cmd_unknown, progress_write_cmd_unknown, NULL},
 		{NULL}
