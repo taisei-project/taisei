@@ -15,22 +15,26 @@
 #define PROGRESS_MAXFILESIZE 4096
 
 #ifdef DEBUG
-	// #define PROGRESS_UNLOCK_ALL
+    // #define PROGRESS_UNLOCK_ALL
 #endif
 
 typedef enum ProgfileCommand {
-	PCMD_UNLOCK_STAGES,
-	PCMD_UNLOCK_STAGES_WITH_DIFFICULTY,
-    PCMD_HISCORE,
+// do not reorder this!
+
+    PCMD_UNLOCK_STAGES                     = 0x00,
+    PCMD_UNLOCK_STAGES_WITH_DIFFICULTY     = 0x01,
+    PCMD_HISCORE                           = 0x02,
+    PCMD_STAGE_PLAYINFO                    = 0x03,
 } ProgfileCommand;
 
 typedef struct StageProgress {
-	// keep this struct small if you can, it leaks
-	// see stage_get_progress_from_info() in stage.c for more information
+    // keep this struct small if you can
+    // see stage_get_progress_from_info() in stage.c for more information
 
-	bool unlocked;
-	// short num_played;
-	// short num_cleared;
+    unsigned int unlocked : 1;
+
+    uint32_t num_played;
+    uint32_t num_cleared;
 } StageProgress;
 
 struct UnknownCmd;

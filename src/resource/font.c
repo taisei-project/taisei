@@ -101,14 +101,14 @@ void init_fonts(void) {
 	fontrenderer_init(&resources.fontren);
 	_fonts.standard = load_font("gfx/LinBiolinum.ttf", 20);
 	_fonts.mainmenu = load_font("gfx/immortal.ttf", 35);
-
+	_fonts.small    = load_font("gfx/LinBiolinum.ttf", 14);
 }
 
 void free_fonts(void) {
 	fontrenderer_free(&resources.fontren);
 	TTF_CloseFont(_fonts.standard);
 	TTF_CloseFont(_fonts.mainmenu);
-
+	TTF_CloseFont(_fonts.small);
 	TTF_Quit();
 }
 

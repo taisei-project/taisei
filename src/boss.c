@@ -25,11 +25,19 @@ Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 	return buf;
 }
 
+void draw_boss_text_ex(Alignment align, float x, float y, const char *text, TTF_Font *fnt, float alpha) {
+	glColor4f(0,0,0,alpha);
+	draw_text(align, x+1, y+1, text, fnt);
+	glColor4f(1,1,1,alpha);
+	draw_text(align, x, y, text, fnt);
+
+	if(alpha < 1) {
+		glColor4f(1,1,1,1);
+	}
+}
+
 void draw_boss_text(Alignment align, float x, float y, const char *text) {
-	glColor4f(0,0,0,1);
-	draw_text(align, x+1, y+1, text, _fonts.standard);
-	glColor4f(1,1,1,1);
-	draw_text(align, x, y, text, _fonts.standard);
+	draw_boss_text_ex(align, x, y, text, _fonts.standard, 1);
 }
 
 void spell_opening(Boss *b, int time) {
@@ -78,6 +86,34 @@ Color boss_healthbar_color(AttackType atype) {
 	}
 }
 
+static StageProgress* get_spellstage_progress(Attack *a, StageInfo **out_stginfo, bool write) {
+	if(out_stginfo) {
+		*out_stginfo = NULL;
+	}
+
+	if(!write || (global.replaymode == REPLAY_RECORD && global.stage->type == STAGE_STORY)) {
+		StageInfo *i = stage_get_by_spellcard(a->info, global.diff);
+		if(i) {
+			StageProgress *p = stage_get_progress_from_info(i, global.diff, write);
+
+			if(out_stginfo) {
+				*out_stginfo = i;
+			}
+
+			if(p) {
+				return p;
+			}
+		}
+#if DEBUG
+		else if(a->type == AT_Spellcard || a->type == AT_ExtraSpell) {
+			log_warn("FIXME: spellcard '%s' is not available in spell practice mode!", a->name);
+		}
+#endif
+	}
+
+	return NULL;
+}
+
 void draw_boss(Boss *boss) {
 	draw_animation_p(creal(boss->pos), cimag(boss->pos) + 6*sin(global.frames/25.0), boss->anirow, boss->ani);
 	draw_boss_text(AL_Left, 10, 20, boss->name);
@@ -90,8 +126,20 @@ void draw_boss(Boss *boss) {
 
 	if(boss->current->type != AT_Move) {
 		char buf[16];
+
 		snprintf(buf, sizeof(buf),  "%.2f", max(0, (boss->current->timeout - global.frames + boss->current->starttime)/(float)FPS));
 		draw_boss_text(AL_Center, VIEWPORT_W - 20, 10, buf);
+
+		StageProgress *p = get_spellstage_progress(boss->current, NULL, false);
+		if(p) {
+			float a = clamp((global.frames - boss->current->starttime - 60) / 60.0, 0, 1);
+			snprintf(buf, sizeof(buf), "%u / %u", p->num_cleared, p->num_played);
+			draw_boss_text_ex(AL_Right,
+				VIEWPORT_W + stringwidth(buf, _fonts.small) * pow(1 - a, 2),
+				35 + stringheight(buf, _fonts.small),
+				buf, _fonts.small, a
+			);
+		}
 
 		int nextspell, lastspell;
 		for(nextspell = 0; nextspell < boss->acount - 1; nextspell++) {
@@ -252,6 +300,14 @@ void boss_finish_current_attack(Boss *boss) {
 	AttackType t = boss->current->type;
 	if(t == AT_Spellcard || t == AT_ExtraSpell || t == AT_SurvivalSpell) {
 		boss_give_spell_bonus(boss, boss->current, &global.plr);
+
+		if(!boss->current->failtime) {
+			StageProgress *p = get_spellstage_progress(boss->current, NULL, true);
+
+			if(p) {
+				++p->num_cleared;
+			}
+		}
 	}
 }
 
@@ -379,20 +435,16 @@ void free_attack(Attack *a) {
 void start_attack(Boss *b, Attack *a) {
 	log_debug("%s", a->name);
 
-	if(global.replaymode == REPLAY_RECORD && global.stage->type == STAGE_STORY && !global.continues) {
-		StageInfo *i = stage_get_by_spellcard(a->info, global.diff);
-		if(i) {
-			StageProgress *p = stage_get_progress_from_info(i, global.diff, true);
-			if(p && !p->unlocked) {
-				log_info("Spellcard unlocked! %s: %s", i->title, i->subtitle);
-				p->unlocked = true;
-			}
+	StageInfo *i;
+	StageProgress *p = get_spellstage_progress(a, &i, true);
+
+	if(p) {
+		++p->num_played;
+
+		if(!p->unlocked && !global.continues) {
+			log_info("Spellcard unlocked! %s: %s", i->title, i->subtitle);
+			p->unlocked = true;
 		}
-#if DEBUG
-		else if(a->type == AT_Spellcard || a->type == AT_ExtraSpell) {
-			log_warn("FIXME: spellcard '%s' is not available in spell practice mode!", a->name);
-		}
-#endif
 	}
 
 	a->starttime = global.frames + (a->type == AT_ExtraSpell? ATTACK_START_DELAY_EXTRA : ATTACK_START_DELAY);

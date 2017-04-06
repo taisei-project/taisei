@@ -49,6 +49,7 @@ int charwidth(char c, TTF_Font *font);
 struct Fonts {
 	TTF_Font *standard;
 	TTF_Font *mainmenu;
+	TTF_Font *small;
 };
 
 extern struct Fonts _fonts;

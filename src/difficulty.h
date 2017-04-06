@@ -11,8 +11,6 @@
 
 #include "color.h"
 
-struct Color;
-
 typedef enum {
     D_Any = 0,
     D_Easy,
