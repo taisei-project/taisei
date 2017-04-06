@@ -7,7 +7,7 @@ static StageText *textlist = NULL;
 
 StageText* stagetext_add(const char *text, complex pos, Alignment align, TTF_Font *font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
     StageText *t = create_element((void**)&textlist, sizeof(StageText));
-    t->rendered_text = fontrender_render(text, font);
+    t->rendered_text = fontrender_render(&resources.fontren, text, font);
     t->pos = pos;
     t->align = align;
 
@@ -26,7 +26,7 @@ void stagetext_numeric_predraw(StageText *txt, int t, float a) {
     char buf[32];
     SDL_FreeSurface(txt->rendered_text);
     snprintf(buf, sizeof(buf), "%i", (int)((intptr_t)txt->custom.data1 * pow(a, 5)));
-    txt->rendered_text = fontrender_render(buf, (TTF_Font*)txt->custom.data2);
+    txt->rendered_text = fontrender_render(&resources.fontren, buf, (TTF_Font*)txt->custom.data2);
 }
 
 StageText* stagetext_add_numeric(int n, complex pos, Alignment align, TTF_Font *font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
@@ -90,7 +90,7 @@ static void stagetext_table_push(StageTextTable *tbl, StageText *txt, bool updat
     c->data = txt;
 
     if(update_pos) {
-        tbl->pos += txt->rendered_text->h * I;
+        tbl->pos += txt->rendered_text->h / resources.fontren.quality * I;
     }
 
     tbl->delay += 5;

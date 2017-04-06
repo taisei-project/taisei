@@ -281,7 +281,8 @@ void MariLaser(Projectile *p, int t) {
 		return;
 
 	if(cimag(p->pos) - cimag(global.plr.pos) < 90) {
-		glScissor(VIEWPORT_X, SCREEN_H - VIEWPORT_Y- cimag(((Enemy *)REF(p->args[1]))->pos)+1, VIEWPORT_W+VIEWPORT_X, VIEWPORT_H);
+		float f = resources.fbo.fg[0].nh/(float)SCREEN_H;
+		glScissor(0, resources.fbo.fg[0].nh - f * (cimag(((Enemy *)REF(p->args[1]))->pos) + 20), resources.fbo.fg[0].nw, resources.fbo.fg[0].nh);
 		glEnable(GL_SCISSOR_TEST);
 	}
 

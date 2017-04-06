@@ -18,28 +18,31 @@ typedef enum {
 } Alignment;
 
 
-// Size of the buffer used by the font renderer. No text larger than this can be drawn.
+// Size of the buffer used by the font renderer at quality == 1.0.
+// No text larger than this can be drawn.
 enum {
 	FONTREN_MAXW = 1024,
-	FONTREN_MAXH = 512
+	FONTREN_MAXH = 256,
 };
 
 typedef struct FontRenderer FontRenderer;
 struct FontRenderer {
 	Texture tex;
 	GLuint pbo;
+	float quality;
 };
 
-void fontrenderer_init(FontRenderer *f);
+void fontrenderer_init(FontRenderer *f, float quality);
 void fontrenderer_free(FontRenderer *f);
 void fontrenderer_draw(FontRenderer *f, const char *text, TTF_Font *font);
 void fontrenderer_draw_prerendered(FontRenderer *f, SDL_Surface *surf);
-SDL_Surface* fontrender_render(const char *text, TTF_Font *font);
+SDL_Surface* fontrender_render(FontRenderer *f, const char *text, TTF_Font *font);
 
 Texture *load_text(const char *text, TTF_Font *font);
 void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *font);
 void draw_text_prerendered(Alignment align, float x, float y, SDL_Surface *surf);
-void init_fonts(void);
+void init_fonts(float quality);
+void reinit_fonts(float quality);
 void free_fonts(void);
 
 int stringwidth(char *s, TTF_Font *font);

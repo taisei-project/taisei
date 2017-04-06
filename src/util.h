@@ -73,6 +73,8 @@ double approach(double v, double t, double d) __attribute__((const));
 double psin(double) __attribute__((const));
 int sign(double) __attribute__((const));
 double swing(double x, double s) __attribute__((const));
+unsigned int topow2(unsigned int x) __attribute__((const));
+float ftopow2(float x) __attribute__((const));
 
 //
 // gl/video utils
@@ -88,6 +90,7 @@ typedef struct {
 void frame_rate(uint64_t *lasttime);
 bool calc_fps(FPSCounter *fps);
 void set_ortho(void);
+void set_ortho_ex(float w, float h);
 void colorfill(float r, float g, float b, float a);
 void fade_out(float f);
 

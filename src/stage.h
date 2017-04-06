@@ -95,6 +95,8 @@ void stage_gameover(void);
 
 void stage_clear_hazards(bool force);
 
+void stage_draw_foreground(void);
+
 #include "stages/stage1.h"
 #include "stages/stage2.h"
 #include "stages/stage3.h"

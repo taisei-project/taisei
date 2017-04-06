@@ -482,40 +482,19 @@ void draw_hud(void) {
 	}
 }
 
-static void apply_bg_shaders(ShaderRule *shaderrules);
+static int apply_bg_shaders(ShaderRule *shaderrules, int fbonum);
 static void display_stage_title(StageInfo *info);
 
 static void postprocess_prepare(FBO *fbo, Shader *s) {
-	float w = 1.0f / fbo->nw;
-	float h = 1.0f / fbo->nh;
+	float w = (1.0f / fbo->nw) * fbo->scale;
+	float h = (1.0f / fbo->nh) * fbo->scale;
 
 	glUniform1i(uniloc(s, "frames"), global.frames);
 	glUniform2f(uniloc(s, "view_ofs"), VIEWPORT_X * w, VIEWPORT_Y * h);
 	glUniform2f(uniloc(s, "view_scale"), VIEWPORT_W * w, VIEWPORT_H * h);
 }
 
-static void stage_draw(StageInfo *stage) {
-	glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[0].fbo);
-	glViewport(0,0,SCREEN_W,SCREEN_H);
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glPushMatrix();
-	glTranslatef(-(VIEWPORT_X+VIEWPORT_W/2.0), -(VIEWPORT_Y+VIEWPORT_H/2.0),0);
-	glEnable(GL_DEPTH_TEST);
-
-	if(!config_get_int(CONFIG_NO_STAGEBG))
-		stage->procs->draw();
-
-	glPopMatrix();
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	set_ortho();
-
-	glPushMatrix();
-	glTranslatef(VIEWPORT_X,VIEWPORT_Y,0);
-
-	apply_bg_shaders(stage->procs->shader_rules);
-
+static void stage_draw_objects(void) {
 	if(global.boss) {
 		glPushMatrix();
 		glTranslatef(creal(global.boss->pos), cimag(global.boss->pos), 0);
@@ -526,20 +505,18 @@ static void stage_draw(StageInfo *stage) {
 		}
 
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
 		glRotatef(global.frames*4.0, 0, 0, -1);
+
 		float f = 0.8+0.1*sin(global.frames/8.0);
+
 		if(boss_is_dying(global.boss)) {
 			float t = (global.frames - global.boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
 			f -= t*(t-0.7)/(1-t);
 		}
 
 		glScalef(f,f,f);
-
-		draw_texture(0,0,"boss_circle");
-
+		draw_texture(0, 0, "boss_circle");
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 		glPopMatrix();
 	}
 
@@ -559,51 +536,138 @@ static void stage_draw(StageInfo *stage) {
 		draw_dialog(global.dialog);
 
 	stagetext_draw();
-
-	FBO *ppfbo = postprocess(resources.stage_postprocess, &resources.fsec, resources.fbg, postprocess_prepare, draw_fbo_viewport);
-
-	if(ppfbo != &resources.fsec) {
-		// ensure that fsec is the most up to date fbo, because the ingame menu derives the background from it.
-		// it would be more efficient to somehow pass ppfbo to it and avoid the copy, but this is simpler.
-		glBindFramebuffer(GL_FRAMEBUFFER, resources.fsec.fbo);
-		draw_fbo_viewport(ppfbo);
-		ppfbo = &resources.fsec;
-	}
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	video_set_viewport();
-
-	glPushMatrix();
-
-	if(global.shake_view) {
-		glTranslatef(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames+3),0);
-		glScalef(1+2*global.shake_view/VIEWPORT_W,1+2*global.shake_view/VIEWPORT_H,1);
-		glTranslatef(-global.shake_view,-global.shake_view,0);
-
-		if(global.shake_view_fade) {
-			global.shake_view -= global.shake_view_fade;
-			if(global.shake_view <= 0)
-				global.shake_view = global.shake_view_fade = 0;
-		}
-	}
-
-	draw_fbo_viewport(ppfbo);
-	glPopMatrix();
-
-	glPopMatrix();
-	draw_hud();
 }
 
-static int apply_shaderrules(ShaderRule *shaderrules, int fbonum) {
-	if(!config_get_int(CONFIG_NO_STAGEBG)) {
-		for(ShaderRule *rule = shaderrules; *rule; ++rule) {
-			glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[!fbonum].fbo);
-			(*rule)(fbonum);
-			fbonum = !fbonum;
+static FBO* stage_render_bg(StageInfo *stage) {
+	float aspect = (float)SCREEN_W/SCREEN_H;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo.bg[0].fbo);
+	glViewport(0, 0, resources.fbo.bg[0].nw * aspect, resources.fbo.bg[0].nh);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glPushMatrix();
+		glTranslatef(-(VIEWPORT_X+VIEWPORT_W/2.0), -(VIEWPORT_Y+VIEWPORT_H/2.0),0);
+		glEnable(GL_DEPTH_TEST);
+		stage->procs->draw();
+	glPopMatrix();
+
+	int num = apply_bg_shaders(stage->procs->shader_rules, 0);
+	return &resources.fbo.bg[num];
+}
+
+static void apply_zoom_shader(void);
+
+void stage_draw_foreground(void) {
+	float s = (float)SCREEN_H/resources.fbo.fg[0].nh;
+
+	// draw the foreground FBO
+	glPushMatrix();
+		// apply the screenshake effect
+		if(global.shake_view) {
+			glTranslatef(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames*1.1+3),0);
+			glScalef(1+2*global.shake_view/VIEWPORT_W,1+2*global.shake_view/VIEWPORT_H,1);
+			glTranslatef(-global.shake_view,-global.shake_view,0);
+
+			if(global.shake_view_fade) {
+				global.shake_view -= global.shake_view_fade;
+				if(global.shake_view <= 0)
+					global.shake_view = global.shake_view_fade = 0;
+			}
 		}
+
+		glScalef(s, s, 1);
+		draw_fbo(&resources.fbo.fg[0]);
+	glPopMatrix();
+}
+
+static void stage_draw(StageInfo *stage) {
+	float s = (float)SCREEN_H/resources.fbo.fg[0].nh;
+	float aspect = (float)SCREEN_W/SCREEN_H;
+
+#ifdef DEBUG
+	bool key_nobg = gamekeypressed(KEY_NOBACKGROUND);
+#else
+	bool key_nobg = false;
+#endif
+
+	bool draw_bg = !config_get_int(CONFIG_NO_STAGEBG) && !key_nobg;
+	FBO *fbg = NULL;
+
+	if(draw_bg) {
+		// render the 3D background
+		fbg = stage_render_bg(stage);
 	}
 
-	return fbonum;
+	// switch to foreground FBO
+	glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo.fg[0].fbo);
+	glViewport(0, 0, resources.fbo.fg[0].nw * aspect, resources.fbo.fg[0].nh);
+	set_ortho_ex(SCREEN_W, SCREEN_H);
+
+	if(draw_bg) {
+		// enable boss background distortion
+		if(global.boss) {
+			apply_zoom_shader();
+		}
+
+		// draw the 3D background
+		glPushMatrix();
+			float s2 = s * (resources.fbo.fg[0].scale / fbg->scale);
+			glScalef(s2, s2, 1);
+			draw_fbo(fbg);
+		glPopMatrix();
+
+		// disable boss background distortion
+		glUseProgram(0);
+
+		// fade the background during bomb
+		if(global.frames - global.plr.recovery < 0) {
+			float t = BOMB_RECOVERY - global.plr.recovery + global.frames;
+			float fade = 1;
+
+			if(t < BOMB_RECOVERY/6)
+				fade = t/BOMB_RECOVERY*6;
+
+			if(t > BOMB_RECOVERY/4*3)
+				fade = 1-t/BOMB_RECOVERY*4 + 3;
+
+			glPushMatrix();
+			fade_out(fade*0.6);
+			glPopMatrix();
+		}
+	} else if(!key_nobg) {
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
+
+	// draw the 2D objects
+	set_ortho_ex(s * resources.fbo.fg[0].nw * aspect, s * resources.fbo.fg[0].nh);
+	glPushMatrix();
+		glTranslatef(VIEWPORT_X, VIEWPORT_Y, 0);
+		stage_draw_objects();
+	glPopMatrix();
+
+	// apply custom postprocessing shaders
+	FBO *ppfbo = postprocess(
+		resources.stage_postprocess,
+		resources.fbo.fg,
+		resources.fbo.fg+1,
+		postprocess_prepare,
+		draw_fbo_viewport
+	);
+
+	// update the primary foreground FBO if needed
+	if(ppfbo != resources.fbo.fg) {
+		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo.fg[0].fbo);
+		draw_fbo_viewport(ppfbo);
+	}
+
+	// switch to main framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	video_set_viewport();
+	set_ortho();
+
+	// finally, draw stuff to the actual screen
+	stage_draw_foreground();
+	draw_hud();
 }
 
 static void draw_wall_of_text(float f, const char *txt) {
@@ -611,16 +675,20 @@ static void draw_wall_of_text(float f, const char *txt) {
 	Texture *tex = &resources.fontren.tex;
 	int strw = tex->w;
 	int strh = tex->h;
+
+	float w = SCREEN_W;
+	float h = SCREEN_H;
+
 	glPushMatrix();
-	glTranslatef(VIEWPORT_W/2,VIEWPORT_H/2,0);
-	glScalef(VIEWPORT_W,VIEWPORT_H,1.);
+	glTranslatef(w/2, h/2, 0);
+	glScalef(w, h, 1.0);
 
 	Shader *shader = get_shader("spellcard_walloftext");
 	glUseProgram(shader->prog);
 	glUniform1f(uniloc(shader, "w"), strw/(float)tex->truew);
 	glUniform1f(uniloc(shader, "h"), strh/(float)tex->trueh);
-	glUniform1f(uniloc(shader, "ratio"), (float)VIEWPORT_H/VIEWPORT_W);
-	glUniform2f(uniloc(shader, "origin"), creal(global.boss->pos)/VIEWPORT_H,cimag(global.boss->pos)/VIEWPORT_W);
+	glUniform1f(uniloc(shader, "ratio"), h/w);
+	glUniform2f(uniloc(shader, "origin"), creal(global.boss->pos)/h, cimag(global.boss->pos)/w);
 	glUniform1f(uniloc(shader, "t"), f);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
@@ -628,11 +696,12 @@ static void draw_wall_of_text(float f, const char *txt) {
 	glUseProgram(0);
 
 	glPopMatrix();
-
-
 }
 
 static void draw_spellbg(int t) {
+	glPushMatrix();
+	glTranslatef(VIEWPORT_X, VIEWPORT_Y, 0);
+
 	Boss *b = global.boss;
 	b->current->draw_rule(b, t);
 
@@ -666,22 +735,30 @@ static void draw_spellbg(int t) {
 		glColor4f(1,1,1,1);
 		glPopMatrix();
 	}
+
+	glPopMatrix();
 }
 
 static void apply_zoom_shader(void) {
-	if(config_get_int(CONFIG_NO_STAGEBG))
-		return;
-
 	Shader *shader = get_shader("boss_zoom");
 	glUseProgram(shader->prog);
 
-	complex fpos = VIEWPORT_H*I + conj(global.boss->pos) + (VIEWPORT_X + VIEWPORT_Y*I);
-	complex pos = fpos + 15*cexp(I*global.frames/4.5);
+	// XXX: no idea why this works the way it does. the VIEWPORT_X offsets are just weird.
+	// i do not understand why VIEWPORT_X needs to be multiplied by M_PI (and only in the first case)
+	// i found that out by trial and error, and it's most likely a coincidence and is inexact
+	// the output appears correct and i don't feel like attempting to screw with the shader,
+	// so i will just leave it this way until lao educates my dumb ass
+	//
+	// I am truly sorry.
+
+	complex fpos = VIEWPORT_H*I + conj(global.boss->pos) + (VIEWPORT_X*M_PI + VIEWPORT_Y*I);
+	complex pos = VIEWPORT_H*I + conj(global.boss->pos) + (VIEWPORT_X + VIEWPORT_Y*I);
+	pos += 15*cexp(I*global.frames/4.5);
 
 	glUniform2f(uniloc(shader, "blur_orig"),
-			creal(pos)/resources.fbg[0].nw, cimag(pos)/resources.fbg[0].nh);
+			creal(pos)/SCREEN_H, cimag(pos)/SCREEN_H);
 	glUniform2f(uniloc(shader, "fix_orig"),
-			creal(fpos)/resources.fbg[0].nw, cimag(fpos)/resources.fbg[0].nh);
+			creal(fpos)/SCREEN_W, cimag(fpos)/SCREEN_H);
 
 	float spellcard_sup = 1;
 	// This factor is used to surpress the effect near the start of spell cards.
@@ -697,9 +774,10 @@ static void apply_zoom_shader(void) {
 		spellcard_sup = 1-t*t;
 	}
 
-	glUniform1f(uniloc(shader, "blur_rad"), spellcard_sup*(0.2+0.025*sin(global.frames/15.0)));
+	glUniform1f(uniloc(shader, "blur_rad"), 1.5 * spellcard_sup*(0.2+0.025*sin(global.frames/15.0)));
 	glUniform1f(uniloc(shader, "rad"), 0.24);
-	glUniform1f(uniloc(shader, "ratio"), (float)resources.fbg[0].nh/resources.fbg[0].nw);
+	glUniform1f(uniloc(shader, "ratio"), (float)resources.fbo.bg[0].nh/resources.fbo.bg[0].nw);
+
 	if(global.boss->zoomcolor) {
 		static float clr[4];
 		parse_color_array(global.boss->zoomcolor, clr);
@@ -709,28 +787,50 @@ static void apply_zoom_shader(void) {
 	}
 }
 
-static void apply_bg_shaders(ShaderRule *shaderrules) {
-	int fbonum = 0;
+static int apply_shaderrules(ShaderRule *shaderrules, int fbonum) {
+	for(ShaderRule *rule = shaderrules; *rule; ++rule) {
+		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo.bg[!fbonum].fbo);
+		(*rule)(fbonum);
+		fbonum = !fbonum;
+	}
 
+	return fbonum;
+}
+
+static int apply_bg_shaders(ShaderRule *shaderrules, int fbonum) {
 	Boss *b = global.boss;
 	if(b && b->current && b->current->draw_rule) {
 		int t = global.frames - b->current->starttime;
-		if(t < 4*ATTACK_START_DELAY || b->current->endtime)
-			fbonum = apply_shaderrules(shaderrules, fbonum);
 
-		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[!fbonum].fbo);
+		int o = fbonum;
+		if(t < 4*ATTACK_START_DELAY || b->current->endtime) {
+			fbonum = apply_shaderrules(shaderrules, fbonum);
+		}
+
+		if(fbonum == o) {
+			glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo.bg[!fbonum].fbo);
+			draw_fbo_viewport(resources.fbo.bg + fbonum);
+			fbonum = !fbonum;
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo.bg[!fbonum].fbo);
 		draw_spellbg(t);
 
-		complex pos = VIEWPORT_H*I + conj(b->pos) + (VIEWPORT_X + VIEWPORT_Y*I);
-		float ratio = (float)resources.fbg[fbonum].nh/resources.fbg[fbonum].nw;
+		// XXX: this seems to fit but it makes no sense
+		// just like in apply_zoom_shader
+		float magic = M_PI;
 
-		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbg[fbonum].fbo);
+		complex pos = VIEWPORT_H*I + conj(b->pos) + (VIEWPORT_X*magic + VIEWPORT_Y*I);
+		float ratio = (float)resources.fbo.bg[fbonum].nh/resources.fbo.bg[fbonum].nw;
+
+		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo.bg[fbonum].fbo);
 		if(t<4*ATTACK_START_DELAY) {
 			Shader *shader = get_shader("spellcard_intro");
 			glUseProgram(shader->prog);
-			glUniform1f(uniloc(shader, "ratio"),ratio);
-			glUniform2f(uniloc(shader, "origin"),
-					creal(pos)/resources.fbg[fbonum].nw, cimag(pos)/resources.fbg[fbonum].nh);
+
+			glUniform1f(uniloc(shader, "ratio"), ratio);
+			glUniform2f(uniloc(shader, "origin"), creal(pos)/SCREEN_W, cimag(pos)/SCREEN_H);
+
 			float delay = ATTACK_START_DELAY;
 			if(b->current->type == AT_ExtraSpell)
 				delay = ATTACK_START_DELAY_EXTRA;
@@ -741,56 +841,32 @@ static void apply_bg_shaders(ShaderRule *shaderrules) {
 			int tn = global.frames - b->current->endtime;
 			Shader *shader = get_shader("spellcard_outro");
 			glUseProgram(shader->prog);
-			float delay = ATTACK_END_DELAY;
-			if(b->current->type == AT_ExtraSpell)
-				delay = ATTACK_END_DELAY_EXTRA;
 
-			glUniform1f(uniloc(shader, "ratio"),ratio);
-			glUniform2f(uniloc(shader, "origin"),
-					creal(pos)/resources.fbg[fbonum].nw, cimag(pos)/resources.fbg[fbonum].nh);
+
+			float delay = ATTACK_END_DELAY;
+
+			if(boss_is_dying(b)) {
+				delay = BOSS_DEATH_DELAY;
+			} else if(b->current->type == AT_ExtraSpell) {
+				delay = ATTACK_END_DELAY_EXTRA;
+			}
+
+			glUniform1f(uniloc(shader, "ratio"), ratio);
+			glUniform2f(uniloc(shader, "origin"), creal(pos)/SCREEN_W, cimag(pos)/SCREEN_H);
 
 			glUniform1f(uniloc(shader, "t"), max(0,tn/delay+1));
 
 		} else {
 			glUseProgram(0);
 		}
-		draw_fbo_viewport(&resources.fbg[!fbonum]);
+
+		draw_fbo_viewport(&resources.fbo.bg[!fbonum]);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glUseProgram(0);
 	} else
 		fbonum = apply_shaderrules(shaderrules, fbonum);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, resources.fsec.fbo);
-
-	if(global.boss) { // Boss background shader
-		apply_zoom_shader();
-	}
-
-
-#ifdef DEBUG
-	if(!gamekeypressed(KEY_NOBACKGROUND))
-#endif
-	{
-		draw_fbo_viewport(&resources.fbg[fbonum]);
-	}
-
-	glUseProgram(0);
-
-	if(global.frames - global.plr.recovery < 0) {
-		float t = BOMB_RECOVERY - global.plr.recovery + global.frames;
-		float fade = 1;
-
-		if(t < BOMB_RECOVERY/6)
-			fade = t/BOMB_RECOVERY*6;
-
-		if(t > BOMB_RECOVERY/4*3)
-			fade = 1-t/BOMB_RECOVERY*4 + 3;
-
-		glPushMatrix();
-		glTranslatef(-30,-30,0);
-		fade_out(fade*0.6);
-		glPopMatrix();
-	}
+	return fbonum;
 }
 
 static void stage_logic(void) {
