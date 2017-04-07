@@ -16,6 +16,16 @@ enum {
 	ENDING_FADE_TIME = 60,
 };
 
+enum {
+    // do not reorder these or change the values
+    ENDING_BAD_1,
+    ENDING_BAD_2,
+    ENDING_GOOD_1,
+    ENDING_GOOD_2,
+
+    NUM_ENDINGS,
+};
+
 typedef struct EndingEntry EndingEntry;
 struct EndingEntry {
 	char *msg;

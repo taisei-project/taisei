@@ -42,6 +42,9 @@
 
 		- PCMD_STAGE_PLAYINFO
 			Sets the times played and times cleared counters for a list of stage/difficulty combinations
+
+		- PCMD_ENDINGS
+			Sets the the number of times an ending was achieved for a list of endings
 */
 
 /*
@@ -167,6 +170,41 @@ static void progress_read(SDL_RWops *file) {
 				progress.hiscore = SDL_ReadLE32(vfile);
 				break;
 
+			case PCMD_STAGE_PLAYINFO:
+				while(cur < cmdsize) {
+					uint16_t stg = SDL_ReadLE16(vfile); cur += sizeof(uint16_t);
+					Difficulty diff = SDL_ReadU8(vfile); cur += sizeof(uint8_t);
+					StageProgress *p = stage_get_progress(stg, diff, true);
+
+					assert(p != NULL);
+
+					uint32_t np = SDL_ReadLE32(vfile); cur += sizeof(uint32_t);
+					uint32_t nc = SDL_ReadLE32(vfile); cur += sizeof(uint32_t);
+
+					if(p) {
+						p->num_played = np;
+						p->num_cleared = nc;
+					} else {
+						// won't get here in debug builds due to the assertion above,
+						// but this case should still be handled gracefully in release builds.
+						log_warn("Invalid stage %x ignored", stg);
+					}
+				}
+				break;
+
+			case PCMD_ENDINGS:
+				while(cur < cmdsize) {
+					uint8_t ending = SDL_ReadU8(vfile); cur += sizeof(uint8_t);
+					uint32_t num_achieved = SDL_ReadLE32(vfile); cur += sizeof(uint32_t);
+
+					if(ending < NUM_ENDINGS) {
+						progress.achieved_endings[ending] = num_achieved;
+					} else {
+						log_warn("Invalid ending %u ignored", ending);
+					}
+				}
+				break;
+
 			default:
 				log_warn("Unknown command %i (%u bytes). Will preserve as-is and not interpret.", cmd, cmdsize);
 
@@ -176,19 +214,6 @@ static void progress_read(SDL_RWops *file) {
 				c->data = malloc(cmdsize);
 				SDL_RWread(vfile, c->data, c->size, 1);
 
-				break;
-
-			case PCMD_STAGE_PLAYINFO:
-				while(cur < cmdsize) {
-					uint16_t stg = SDL_ReadLE16(vfile); cur += sizeof(uint16_t);
-					Difficulty diff = SDL_ReadU8(vfile); cur += sizeof(uint8_t);
-					StageProgress *p = stage_get_progress(stg, diff, true);
-
-					assert(p != NULL);
-
-					p->num_played = SDL_ReadLE32(vfile); cur += sizeof(uint32_t);
-					p->num_cleared = SDL_ReadLE32(vfile); cur += sizeof(uint32_t);
-				}
 				break;
 		}
 	}
@@ -400,6 +425,45 @@ cleanup:
 }
 
 //
+//	PCMD_ENDINGS
+//
+
+static void progress_prepare_cmd_endings(size_t *bufsize, void **arg) {
+	int n = 0;
+	*arg = 0;
+
+	for(int i = 0; i < NUM_ENDINGS; ++i) {
+		if(progress.achieved_endings[i]) {
+			++n;
+		}
+	}
+
+	if(n) {
+		uint16_t sz = n * (sizeof(uint8_t) + sizeof(uint32_t));
+		*arg = (void*)(uintptr_t)sz;
+		*bufsize += CMD_HEADER_SIZE + sz;
+	}
+}
+
+static void progress_write_cmd_endings(SDL_RWops *vfile, void **arg) {
+	uint16_t sz = (uintptr_t)*arg;
+
+	if(!sz) {
+		return;
+	}
+
+	SDL_WriteU8(vfile, PCMD_ENDINGS);
+	SDL_WriteLE16(vfile, sz);
+
+	for(int i = 0; i < NUM_ENDINGS; ++i) {
+		if(progress.achieved_endings[i]) {
+			SDL_WriteU8(vfile, i);
+			SDL_WriteLE32(vfile, progress.achieved_endings[i]);
+		}
+	}
+}
+
+//
 //	Copy unhandled commands from the original file
 //
 
@@ -440,13 +504,16 @@ static void progress_write(SDL_RWops *file) {
 		{progress_prepare_cmd_unlock_stages_with_difficulties, progress_write_cmd_unlock_stages_with_difficulties, NULL},
 		{progress_prepare_cmd_hiscore, progress_write_cmd_hiscore, NULL},
 		{progress_prepare_cmd_stage_playinfo, progress_write_cmd_stage_playinfo, NULL},
+		{progress_prepare_cmd_endings, progress_write_cmd_endings, NULL},
 		// {progress_prepare_cmd_test, progress_write_cmd_test, NULL},
 		{progress_prepare_cmd_unknown, progress_write_cmd_unknown, NULL},
 		{NULL}
 	};
 
 	for(cmd_writer_t *w = cmdtable; w->prepare; ++w) {
+		size_t oldsize = bufsize;
 		w->prepare(&bufsize, &w->data);
+		log_debug("prepare %i: %i", (int)(w - cmdtable), (int)(bufsize - oldsize));
 	}
 
 	if(!bufsize) {
@@ -458,7 +525,9 @@ static void progress_write(SDL_RWops *file) {
 	SDL_RWops *vfile = SDL_RWFromMem(buf, bufsize);
 
 	for(cmd_writer_t *w = cmdtable; w->prepare; ++w) {
+		size_t oldpos = SDL_RWtell(vfile);
 		w->write(vfile, &w->data);
+		log_debug("write %i: %i", (int)(w - cmdtable), (int)(SDL_RWtell(vfile) - oldpos));
 	}
 
 	if(SDL_RWtell(vfile) != bufsize) {
