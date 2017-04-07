@@ -9,16 +9,14 @@
 #include "global.h"
 
 static float sanitize_scale(float scale) {
-	return clamp(scale, 0.25, 4.0);
+	return ftopow2(clamp(scale, 0.25, 4.0));
 }
 
 void init_fbo(FBO *fbo, float scale) {
 	glGenTextures(1, &fbo->tex);
 	glBindTexture(GL_TEXTURE_2D, fbo->tex);
 
-	scale = sanitize_scale(scale);
-
-	fbo->scale = ftopow2(scale);
+	fbo->scale = scale = sanitize_scale(scale);
 	fbo->nw = topow2(scale * SCREEN_W);
 	fbo->nh = topow2(scale * SCREEN_H);
 

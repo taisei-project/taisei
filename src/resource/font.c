@@ -26,12 +26,11 @@ TTF_Font* load_font(char *name, int size) {
 }
 
 static float sanitize_scale(float scale) {
-	return clamp(scale, 0.5, 4.0);
+	return ftopow2(clamp(scale, 0.5, 4.0));
 }
 
 void fontrenderer_init(FontRenderer *f, float quality) {
-	quality = sanitize_scale(quality);
-	f->quality = quality = ftopow2(quality);
+	f->quality = quality = sanitize_scale(quality);
 
 	int w = FONTREN_MAXW * quality;
 	int h = FONTREN_MAXH * quality;
