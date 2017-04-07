@@ -249,25 +249,26 @@ void stage6_spellpractice_events(void) {
 		char go = true;
 
 		switch(spellnum) {
-			case 0: // Newton Sign ~ 2.5 Laws of Movement
+			case 0: // Newton Sign ~ Occam’s Razor
+			case 1: // Kepler Sign ~ Orbital Clockwork
 				// Scythe required - this creates it
 				boss_add_attack(global.boss, AT_Move, "Catch the Scythe", 2, 0, elly_intro, NULL);
 				go = false;
 				break;
 
-			case 1: // Maxwell Sign ~ Wave Theory
+			case 2: // Maxwell Sign ~ Wave Theory
 				// Works fine on its own
 				break;
 
-			case 2: // Eigenstate ~ Many-World Interpretation
-			case 3: // Ricci Sign ~ Space Time Curvature
-			case 4: // LHC ~ Higgs Boson Uncovered
+			case 3: // Eigenstate ~ Many-World Interpretation
+			case 4: // Ricci Sign ~ Space Time Curvature
+			case 5: // LHC ~ Higgs Boson Uncovered
 				// Baryon required - this creates it
 				boss_add_attack(global.boss, AT_Move, "Unbound", 3, 0, elly_unbound, NULL);
 				go = false;
 				break;
 
-			case 5: // Tower of Truth ~ Theory of Everything
+			case 6: // Tower of Truth ~ Theory of Everything
 				// Works fine on its own
 				// Just needs a little extra to make us fall from the tower
 				start_fall_over();

@@ -25,7 +25,9 @@ void elly_curvature(Boss*, int);
  */
 
 AttackInfo stage6_spells[] = {
-	{{ 0,  1,  2,  3},	AT_Spellcard, "Kepler Sign ~ Orbital Clockwork", 60, 40000,
+	{{ 0,  1,  2,  3},	AT_Spellcard, "Newton Sign ~ Occam’s razor", 60, 40000,
+							elly_newton, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
+	{{24, 25, 26, 27},	AT_Spellcard, "Kepler Sign ~ Orbital Clockwork", 60, 40000,
 							elly_kepler, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
 	{{ 4,  5,  6,  7},	AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 22000,
 							elly_maxwell, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
@@ -37,7 +39,7 @@ AttackInfo stage6_spells[] = {
 							elly_lhc, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
 	{{20, 21, 22, 23},	AT_SurvivalSpell, "Tower of Truth ~ Theory of Everything", 70, 40000,
 							elly_theory, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
-	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Forgotten Universe ~ Curvature Domination", 40, 40000,
+	{{0, 1, 2, 3},	AT_ExtraSpell, "Forgotten Universe ~ Curvature Domination", 40, 40000,
 							elly_curvature, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
 
 	{{0}}
@@ -448,7 +450,7 @@ void elly_kepler(Boss *b, int t) {
 		int c = 2+global.diff/3;
 		for(int i = 0; i < c; i++) {
 			complex n = cexp(I*2*M_PI/c*i+I*0.6*_i);
-			create_projectile3c("soul",b->pos,rgb(0.3,0.8,1),kepler_bullet,(40+10*global.diff)*n,0,(1.4+0.1*global.diff)*n);
+			create_projectile3c("soul",b->pos,rgb(0.3,0.8,1),kepler_bullet,50*n,0,(1.4+0.1*global.diff)*n);
 		}
 
 	}
