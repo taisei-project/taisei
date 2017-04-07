@@ -4,10 +4,6 @@ find_package(PkgConfig REQUIRED)
 if(LINK_TO_LIBGL)
 	find_package(OpenGL REQUIRED)
 	add_definitions(-DLINK_TO_LIBGL)
-
-	# We didn't use anything from GLU except gluPerspective
-	# taiseigl now provides a simple replacement for it
-	list(FILTER OPENGL_LIBRARIES EXCLUDE REGEX ".*libGLU\\..*")
 endif()
 
 pkg_check_modules(SDL2 sdl2 REQUIRED)
@@ -166,7 +162,7 @@ set(LIBs ${LIBs}
 	${SDL2_TTF_LIBRARIES}
 	${PNG_LIBRARIES}
 	${ZLIB_LIBRARIES}
-	${OPENGL_LIBRARIES}
+	${OPENGL_gl_LIBRARY}
 	m)
 
 set(LIBDIRs
