@@ -515,7 +515,7 @@ int induction_bullet(Projectile *p, int time) {
 		return 1;
 	float t = time*sqrt(global.diff);
 
-	if(global.diff > D_Normal) {
+	if(global.diff > D_Normal && !p->args[2]) {
 		t = time*0.6;
 		t = 230-t;
 		complex pos = induction_bullet_traj(p,t);
@@ -543,7 +543,7 @@ void iku_cathode(Boss *b, int t) {
 		int c = 5+global.diff;
 
 		for(i = 0; i < c; i++) {
-			create_projectile2c("bigball", b->pos, rgb(0.2, 0.4, 1), induction_bullet, 2*cexp(2.0*I*M_PI*frand()), 0.01*I*(1-2*(_i&1)))->draw = ProjDrawAdd;
+			create_projectile3c("bigball", b->pos, rgb(0.2, 0.4, 1), induction_bullet, 2*cexp(2.0*I*M_PI*frand()), 0.01*I*(1-2*(_i&1)),1)->draw = ProjDrawAdd;
 			create_lasercurve2c(b->pos, 60, 200, rgb(0.4, 1, 1), cathode_laser, 2*cexp(2.0*I*M_PI*M_PI*frand()), 0.015*I*(1-2*(_i&1)));
 		}
 	}
