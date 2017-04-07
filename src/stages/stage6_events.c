@@ -12,6 +12,7 @@
 void elly_spellbg_classic(Boss*, int);
 void elly_spellbg_modern(Boss*, int);
 void elly_kepler(Boss*, int);
+void elly_newton(Boss*, int);
 void elly_maxwell(Boss*, int);
 void elly_eigenstate(Boss*, int);
 void elly_ricci(Boss*, int);
@@ -292,7 +293,7 @@ void elly_frequency(Boss *b, int t) {
 
 }
 
-int scythe_kepler(Enemy *e, int t) {
+int scythe_newton(Enemy *e, int t) {
 	if(t < 0) {
 		scythe_common(e, t);
 		return 1;
@@ -327,6 +328,53 @@ int scythe_kepler(Enemy *e, int t) {
 	FROM_TO(100, 10000, 5-global.diff) {
 		create_projectile1c("rice", e->pos, rgb(0.3, 1, 0.8), linear, I);
 	}
+
+	scythe_common(e, t);
+	return 1;
+}
+
+void elly_newton(Boss *b, int t) {
+	TIMER(&t);
+
+	AT(0) {
+		global.enemies->birthtime = global.frames;
+		global.enemies->logic_rule = scythe_newton;
+	}
+
+	AT(EVENT_DEATH) {
+		global.enemies->birthtime = global.frames;
+		global.enemies->logic_rule = scythe_reset;
+	}
+
+	FROM_TO(0, 100000, 20) {
+		float a = 2.7*_i;
+		int x, y;
+		int w = 3;
+
+		for(x = -w; x <= w; x++) {
+			for(y = -w; y <= w; y++) {
+				create_projectile2c("plainball", b->pos+(x+I*y)*(18)*cexp(I*a), rgb(0, 0.2, 0.6), accelerated, 2*cexp(I*a), 0);
+			}
+		}
+	}
+}
+
+int scythe_kepler(Enemy *e, int t) {
+	if(t < 0) {
+		scythe_common(e, t);
+		return 1;
+	}
+
+	TIMER(&t);
+
+	AT(20) {
+		e->args[1] = 0.2*I;
+	}
+
+	FROM_TO(20, 10000, 1) {
+		GO_TO(e, global.boss->pos + 100*cexp(I*_i*0.01),0.03);
+	}
+
 
 	scythe_common(e, t);
 	return 1;
@@ -372,7 +420,7 @@ int kepler_bullet(Projectile *p, int t) {
 	p->pos = newpos;
 	p->args[3] = vel;
 
-	if(t%30 == 0) {
+	if(t%(30-5*global.diff) == 0) {
 		p->args[1]+=1*I;
 		if(tier <= 3 && cimag(p->args[1])*(tier+1) < 4) {
 			create_projectile3c("ball",p->pos,rgb(0.3+0.3*tier,0.6-0.3*tier,1),kepler_bullet,cabs(p->args[0])*cexp(I*2*M_PI*frand()),tier+1,add_ref(p));
@@ -387,7 +435,8 @@ void elly_kepler(Boss *b, int t) {
 
 	AT(0) {
 		global.enemies->birthtime = global.frames;
-		//global.enemies->logic_rule = scythe_kepler;
+		global.enemies->logic_rule = scythe_kepler;
+		create_projectile3c("soul",b->pos,rgb(0.3,0.8,1),kepler_bullet,50+10*global.diff,0,0);
 	}
 
 	AT(EVENT_DEATH) {
@@ -396,10 +445,10 @@ void elly_kepler(Boss *b, int t) {
 	}
 
 	FROM_TO(0, 100000, 20) {
-		int c = 2;
+		int c = 2+global.diff/3;
 		for(int i = 0; i < c; i++) {
 			complex n = cexp(I*2*M_PI/c*i+I*0.6*_i);
-			create_projectile3c("soul",b->pos,rgb(0.3,0.8,1),kepler_bullet,50*n,0,1.5*n);
+			create_projectile3c("soul",b->pos,rgb(0.3,0.8,1),kepler_bullet,(40+10*global.diff)*n,0,(1.4+0.1*global.diff)*n);
 		}
 
 	}
