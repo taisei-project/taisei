@@ -11,7 +11,7 @@
 
 void elly_spellbg_classic(Boss*, int);
 void elly_spellbg_modern(Boss*, int);
-void elly_newton(Boss*, int);
+void elly_kepler(Boss*, int);
 void elly_maxwell(Boss*, int);
 void elly_eigenstate(Boss*, int);
 void elly_ricci(Boss*, int);
@@ -24,8 +24,8 @@ void elly_curvature(Boss*, int);
  */
 
 AttackInfo stage6_spells[] = {
-	{{ 0,  1,  2,  3},	AT_Spellcard, "Newton Sign ~ 2.5 Laws of Movement", 60, 40000,
-							elly_newton, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
+	{{ 0,  1,  2,  3},	AT_Spellcard, "Kepler Sign ~ Orbital Clockwork", 60, 40000,
+							elly_kepler, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
 	{{ 4,  5,  6,  7},	AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 22000,
 							elly_maxwell, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
 	{{ 8,  9, 10, 11},	AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 60, 30000,
@@ -292,7 +292,7 @@ void elly_frequency(Boss *b, int t) {
 
 }
 
-int scythe_newton(Enemy *e, int t) {
+int scythe_kepler(Enemy *e, int t) {
 	if(t < 0) {
 		scythe_common(e, t);
 		return 1;
@@ -332,12 +332,62 @@ int scythe_newton(Enemy *e, int t) {
 	return 1;
 }
 
-void elly_newton(Boss *b, int t) {
+int kepler_bullet(Projectile *p, int t) {
+	TIMER(&t);
+	int tier = creal(p->args[1]);
+	if(t < 0)
+		return 1;
+	AT(0) {
+		char *tex;
+		switch(tier) {
+			case 0: tex = "proj/soul"; break;
+			case 1: tex = "proj/bigball"; break;
+			case 2: tex = "proj/ball"; break;
+			default: tex = "proj/flea";
+		}
+		p->tex = get_tex(tex);
+
+	}
+	AT(EVENT_DEATH) {
+		if(tier != 0)
+			free_ref(p->args[2]);
+	}
+
+	complex pos = p->pos0;
+
+	if(tier != 0) {
+		Projectile *parent = (Projectile *) REF(creal(p->args[2]));
+
+		if(parent == 0) {
+			p->pos += p->args[3];
+			return 1;
+		}
+		pos = parent->pos;
+	} else {
+		pos += t*p->args[2];
+	}
+
+	complex newpos = pos + tanh(t/90.)*p->args[0]*cexp(I*t*0.5/cabs(p->args[0]));
+	complex vel = newpos-p->pos;
+	p->pos = newpos;
+	p->args[3] = vel;
+
+	if(t%30 == 0) {
+		p->args[1]+=1*I;
+		if(tier <= 3 && cimag(p->args[1])*(tier+1) < 4) {
+			create_projectile3c("ball",p->pos,rgb(0.3+0.3*tier,0.6-0.3*tier,1),kepler_bullet,cabs(p->args[0])*cexp(I*2*M_PI*frand()),tier+1,add_ref(p));
+		}
+	}
+	return 1;
+}
+
+
+void elly_kepler(Boss *b, int t) {
 	TIMER(&t);
 
 	AT(0) {
 		global.enemies->birthtime = global.frames;
-		global.enemies->logic_rule = scythe_newton;
+		//global.enemies->logic_rule = scythe_kepler;
 	}
 
 	AT(EVENT_DEATH) {
@@ -346,15 +396,12 @@ void elly_newton(Boss *b, int t) {
 	}
 
 	FROM_TO(0, 100000, 20) {
-		float a = 2.7*_i;
-		int x, y;
-		int w = 3;
-
-		for(x = -w; x <= w; x++) {
-			for(y = -w; y <= w; y++) {
-				create_projectile2c("plainball", b->pos+(x+I*y)*(18)*cexp(I*a), rgb(0, 0.2, 0.6), accelerated, 2*cexp(I*a), 0);
-			}
+		int c = 2;
+		for(int i = 0; i < c; i++) {
+			complex n = cexp(I*2*M_PI/c*i+I*0.6*_i);
+			create_projectile3c("soul",b->pos,rgb(0.3,0.8,1),kepler_bullet,50*n,0,1.5*n);
 		}
+
 	}
 }
 
