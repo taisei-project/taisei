@@ -145,6 +145,8 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	free_cli_action(&a);
+
 	log_info("Content path: %s", get_prefix());
 	log_info("Userdata path: %s", get_config_path());
 
