@@ -9,6 +9,12 @@
 #include "ending.h"
 #include "global.h"
 #include "video.h"
+#include "progress.h"
+
+static void track_ending(int ending) {
+	assert(ending >= 0 && ending < NUM_ENDINGS);
+	progress.achieved_endings[ending]++;
+}
 
 void add_ending_entry(Ending *e, int dur, char *msg, char *tex) {
 	EndingEntry *entry;
@@ -32,6 +38,7 @@ void bad_ending_marisa(Ending *e) {
 	add_ending_entry(e, 300, "Maybe all of this was just a daydream.", NULL);
 	add_ending_entry(e, 300, "Nevertheless, she had won the fight. That’s all that counts… isn’t it?", NULL);
 	add_ending_entry(e, 200, "[Bad Ending 1]", NULL);
+	track_ending(ENDING_BAD_1);
 }
 
 void bad_ending_youmu(Ending *e) {
@@ -40,6 +47,7 @@ void bad_ending_youmu(Ending *e) {
 	add_ending_entry(e, 400, "Yōmu was relieved, but she felt that the real mystery of the land\nbehind the tunnel was left unsolved forever.", NULL);
 	add_ending_entry(e, 300, "This feeling of discontent would haunt her for a long time to come…", NULL);
 	add_ending_entry(e, 200, "[Bad Ending 2]", NULL);
+	track_ending(ENDING_BAD_2);
 }
 
 void good_ending_marisa(Ending *e) {
@@ -48,6 +56,7 @@ void good_ending_marisa(Ending *e) {
 	add_ending_entry(e, 350, "Who was the real culprit? What were their motives?", NULL);
 	add_ending_entry(e, 350, "She craved to find out…", NULL);
 	add_ending_entry(e, 200, "[Good Ending 1]", NULL);
+	track_ending(ENDING_GOOD_1);
 }
 
 void good_ending_youmu(Ending *e) {
@@ -56,6 +65,7 @@ void good_ending_youmu(Ending *e) {
 	add_ending_entry(e, 320, "Elly promised to fix up the the border as soon as possible.", NULL);
 	add_ending_entry(e, 350, "But before the path to this unknown place was sealed forever,\nYōmu decided to travel it once more…", NULL);
 	add_ending_entry(e, 200, "[Good Ending 2]", NULL);
+	track_ending(ENDING_GOOD_2);
 }
 
 void create_ending(Ending *e) {

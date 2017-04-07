@@ -10,6 +10,7 @@
 
 #include <stdbool.h>
 #include <SDL.h>
+#include "ending.h"
 
 #define PROGRESS_FILENAME "progress.dat"
 #define PROGRESS_MAXFILESIZE 4096
@@ -25,6 +26,7 @@ typedef enum ProgfileCommand {
     PCMD_UNLOCK_STAGES_WITH_DIFFICULTY     = 0x01,
     PCMD_HISCORE                           = 0x02,
     PCMD_STAGE_PLAYINFO                    = 0x03,
+    PCMD_ENDINGS                           = 0x04,
 } ProgfileCommand;
 
 typedef struct StageProgress {
@@ -41,6 +43,7 @@ struct UnknownCmd;
 
 typedef struct GlobalProgress {
     uint32_t hiscore;
+    uint32_t achieved_endings[NUM_ENDINGS];
     struct UnknownCmd *unknown;
 } GlobalProgress;
 
