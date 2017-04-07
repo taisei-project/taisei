@@ -148,11 +148,13 @@ static void draw_text_texture(Alignment align, float x, float y, Texture *tex) {
 	switch(align) {
 	case AL_Center:
 		break;
+
+	// tex->w/2 is integer division and must be done first
 	case AL_Left:
-		x += m*tex->w/2;
+		x += m*(tex->w/2);
 		break;
 	case AL_Right:
-		x -= m*tex->w/2;
+		x -= m*(tex->w/2);
 		break;
 	}
 
