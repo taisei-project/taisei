@@ -743,22 +743,13 @@ static void apply_zoom_shader(void) {
 	Shader *shader = get_shader("boss_zoom");
 	glUseProgram(shader->prog);
 
-	// XXX: no idea why this works the way it does. the VIEWPORT_X offsets are just weird.
-	// i do not understand why VIEWPORT_X needs to be multiplied by M_PI (and only in the first case)
-	// i found that out by trial and error, and it's most likely a coincidence and is inexact
-	// the output appears correct and i don't feel like attempting to screw with the shader,
-	// so i will just leave it this way until lao educates my dumb ass
-	//
-	// I am truly sorry.
-
-	complex fpos = VIEWPORT_H*I + conj(global.boss->pos) + (VIEWPORT_X*M_PI + VIEWPORT_Y*I);
-	complex pos = VIEWPORT_H*I + conj(global.boss->pos) + (VIEWPORT_X + VIEWPORT_Y*I);
-	pos += 15*cexp(I*global.frames/4.5);
+	complex fpos = VIEWPORT_H*I + conj(global.boss->pos) + (VIEWPORT_X + VIEWPORT_Y*I);
+	complex pos = fpos + 15*cexp(I*global.frames/4.5);
 
 	glUniform2f(uniloc(shader, "blur_orig"),
 			creal(pos)/SCREEN_H, cimag(pos)/SCREEN_H);
 	glUniform2f(uniloc(shader, "fix_orig"),
-			creal(fpos)/SCREEN_W, cimag(fpos)/SCREEN_H);
+			creal(fpos)/SCREEN_H, cimag(fpos)/SCREEN_H);
 
 	float spellcard_sup = 1;
 	// This factor is used to surpress the effect near the start of spell cards.
@@ -816,11 +807,7 @@ static int apply_bg_shaders(ShaderRule *shaderrules, int fbonum) {
 		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo.bg[!fbonum].fbo);
 		draw_spellbg(t);
 
-		// XXX: this seems to fit but it makes no sense
-		// just like in apply_zoom_shader
-		float magic = M_PI;
-
-		complex pos = VIEWPORT_H*I + conj(b->pos) + (VIEWPORT_X*magic + VIEWPORT_Y*I);
+		complex pos = VIEWPORT_H*I + conj(b->pos) + (VIEWPORT_X + VIEWPORT_Y*I);
 		float ratio = (float)resources.fbo.bg[fbonum].nh/resources.fbo.bg[fbonum].nw;
 
 		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo.bg[fbonum].fbo);
@@ -829,7 +816,7 @@ static int apply_bg_shaders(ShaderRule *shaderrules, int fbonum) {
 			glUseProgram(shader->prog);
 
 			glUniform1f(uniloc(shader, "ratio"), ratio);
-			glUniform2f(uniloc(shader, "origin"), creal(pos)/SCREEN_W, cimag(pos)/SCREEN_H);
+			glUniform2f(uniloc(shader, "origin"), creal(pos)/SCREEN_H, cimag(pos)/SCREEN_H);
 
 			float delay = ATTACK_START_DELAY;
 			if(b->current->type == AT_ExtraSpell)
@@ -852,7 +839,7 @@ static int apply_bg_shaders(ShaderRule *shaderrules, int fbonum) {
 			}
 
 			glUniform1f(uniloc(shader, "ratio"), ratio);
-			glUniform2f(uniloc(shader, "origin"), creal(pos)/SCREEN_W, cimag(pos)/SCREEN_H);
+			glUniform2f(uniloc(shader, "origin"), creal(pos)/SCREEN_H, cimag(pos)/SCREEN_H);
 
 			glUniform1f(uniloc(shader, "t"), max(0,tn/delay+1));
 
