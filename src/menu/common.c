@@ -19,7 +19,6 @@ void start_game(MenuData *menu, void *arg) {
     StageInfo *info = arg;
     Difficulty stagediff;
 
-    global.continues = 0;
     init_player(&global.plr);
 
 troll:
@@ -48,6 +47,8 @@ troll:
     int sht = global.plr.shot;
 
 troll2:
+    global.continues = 0;
+
     if(info) {
         stage_loop(info);
     } else {
