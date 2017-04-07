@@ -25,7 +25,7 @@ void stage3_boss_extra(Boss*, int t);
  */
 
 AttackInfo stage3_spells[] = {
-	{{ 0,  1,  2,  3},	AT_Spellcard, "Venom Sign ~ Deadly Dance", 25, 30000,
+	{{ 0,  1,  2,  3},	AT_Spellcard, "Venom Sign ~ Deadly Dance", 25, 40000,
 							stage3_mid_a1, stage3_mid_spellbg, BOSS_DEFAULT_GO_POS},
 	{{-1, -1,  4,  5},	AT_Spellcard, "Venom Sign ~ Acid Rain", 30, 45000,
 							stage3_mid_a2, stage3_mid_spellbg, BOSS_DEFAULT_GO_POS},
@@ -358,8 +358,9 @@ void stage3_mid_a1(Boss *boss, int time) {
 	FROM_TO(0, 120, 1)
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.03)
 
-	if(time > 120) {
-		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2 + sin(time/50.0) * time/6.5 * cexp(I * M_PI_2 * time/100.0), 0.03)
+	if(time > 30) {
+		float t = time * 1.5 * (1.0 + 0.15 * global.diff);
+		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2 + sin(t/50.0) * t/6.5 * cexp(I * M_PI_2 * t/100.0), 0.03)
 
 		if(!(time % 70)) {
 			for(i = 0; i < 15; ++i) {
@@ -380,14 +381,14 @@ void stage3_mid_a1(Boss *boss, int time) {
 				1.5
 			);
 		}
+	}
 
-		if(!(time % 3)) {
-			for(i = -1; i < 2; i += 2) {
-				float c = psin(time/10.0);
-				create_projectile1c("crystal", boss->pos, rgba(0.3 + c * 0.7, 0.6 - c * 0.3, 0.3, 0.7), linear,
-					10 * cexp(I*(carg(global.plr.pos - boss->pos) + (M_PI/4.0 * i * (1-time/2500.0)) * (1 - 0.5 * psin(time/15.0))))
-				);
-			}
+	if(!(time % 3)) {
+		for(i = -1; i < 2; i += 2) {
+			float c = psin(time/10.0);
+			create_projectile1c("crystal", boss->pos, rgba(0.3 + c * 0.7, 0.6 - c * 0.3, 0.3, 0.7), linear,
+				10 * cexp(I*(carg(global.plr.pos - boss->pos) + (M_PI/4.0 * i * (1-time/2500.0)) * (1 - 0.5 * psin(time/15.0))))
+			);
 		}
 	}
 }
