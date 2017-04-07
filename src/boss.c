@@ -377,12 +377,16 @@ void process_boss(Boss **pboss) {
 
 	bool timedout = time > boss->current->timeout;
 
-	if(!boss->current->endtime && (boss->current->type != AT_Move && boss->dmg >= boss->current->dmglimit || timedout)) {
-		if(timedout && boss->current->type != AT_SurvivalSpell) {
-			boss->current->failtime = global.frames;
+	if((boss->current->type != AT_Move && boss->dmg >= boss->current->dmglimit) || timedout) {
+		if(!boss->current->endtime) {
+			if(timedout && boss->current->type != AT_SurvivalSpell) {
+				boss->current->failtime = global.frames;
+			}
+
+			boss_finish_current_attack(boss);
 		}
 
-		boss_finish_current_attack(boss);
+		stage_clear_hazards(true);
 	}
 
 	if(boss_is_dying(boss)) {
@@ -391,7 +395,6 @@ void process_boss(Boss **pboss) {
 		Color c = rgba(0.1+sin(10*t),0.1+cos(10*t),0.5,t);
 		tsrand_fill(6);
 		create_particle4c("petal", pos, c, Petal, asymptotic, sign(anfrand(5))*(3+t*5*afrand(0))*cexp(I*M_PI*8*t), 5+I, afrand(2) + afrand(3)*I, afrand(4) + 360.0*I*afrand(1));
-
 	}
 
 	if(over) {
