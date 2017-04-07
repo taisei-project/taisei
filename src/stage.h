@@ -101,8 +101,6 @@ void stage_free_array(void);
 void stage_loop(StageInfo *stage);
 void stage_finish(int gameover);
 
-void draw_hud(void);
-
 void stage_pause(void);
 void stage_gameover(void);
 

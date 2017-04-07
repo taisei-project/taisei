@@ -219,6 +219,19 @@ double swing(double x, double s) {
     return x * x * ((s + 1) * x + s) / 2 + 1;
 }
 
+unsigned int topow2(unsigned int x) {
+    int y = 1;
+    while(y < x) y *= 2;
+    return y;
+}
+
+float ftopow2(float x) {
+    // XXX: obviously this isn't the smallest possible power of two, but for our purposes, it could as well be.
+    float y = 0.0625;
+    while(y < x) y *= 2;
+    return y;
+}
+
 //
 // gl/video utils
 //
@@ -258,12 +271,16 @@ bool calc_fps(FPSCounter *fps) {
     return updated;
 }
 
-void set_ortho(void) {
+void set_ortho_ex(float w, float h) {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, SCREEN_W, SCREEN_H, 0, -100, 100);
+    glOrtho(0, w, h, 0, -100, 100);
     glMatrixMode(GL_MODELVIEW);
     glDisable(GL_DEPTH_TEST);
+}
+
+void set_ortho(void) {
+    set_ortho_ex(SCREEN_W, SCREEN_H);
 }
 
 void colorfill(float r, float g, float b, float a) {

@@ -8,15 +8,19 @@
 #include "fbo.h"
 #include "global.h"
 
-void init_fbo(FBO *fbo) {
+static float sanitize_scale(float scale) {
+	return ftopow2(clamp(scale, 0.25, 4.0));
+}
+
+void init_fbo(FBO *fbo, float scale) {
 	glGenTextures(1, &fbo->tex);
 	glBindTexture(GL_TEXTURE_2D, fbo->tex);
 
-	fbo->nw = 2;
-	fbo->nh = 2;
+	fbo->scale = scale = sanitize_scale(scale);
+	fbo->nw = topow2(scale * SCREEN_W);
+	fbo->nh = topow2(scale * SCREEN_H);
 
-	while(fbo->nw < VIEWPORT_W+VIEWPORT_X) fbo->nw *= 2;
-	while(fbo->nh < VIEWPORT_H+VIEWPORT_Y) fbo->nh *= 2;
+	log_debug("FBO %p: q=%f, w=%i, h=%i", (void*)fbo, fbo->scale, fbo->nw, fbo->nh);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -44,28 +48,39 @@ void init_fbo(FBO *fbo) {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void reinit_fbo(FBO *fbo, float scale) {
+	if(fbo->scale != sanitize_scale(scale)) {
+		delete_fbo(fbo);
+		init_fbo(fbo, scale);
+	}
+}
+
 void delete_fbo(FBO *fbo) {
 	glDeleteFramebuffers(1, &fbo->fbo);
 	glDeleteTextures(1, &fbo->depth);
 	glDeleteTextures(1, &fbo->tex);
 }
 
-void draw_fbo_viewport(FBO *fbo) {
+void draw_fbo(FBO *fbo) {
 	glPushMatrix();
-	glTranslatef(-VIEWPORT_X,VIEWPORT_H+VIEWPORT_Y-fbo->nh,0);
+		glScalef(fbo->nw, fbo->nh, 1);
+		glTranslatef(0.5, 0.5, 0);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, fbo->tex);
+		glDrawArrays(GL_QUADS, 4, 4);
+		glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
+}
 
-	glEnable(GL_TEXTURE_2D);
+void draw_fbo_viewport(FBO *fbo) {
+	// assumption: rendering into another, identical FBO
 
-	glTranslatef(fbo->nw/2,fbo->nw/2,0);
-	glScalef(fbo->nw, fbo->nh, 1);
+	glViewport(0, 0, fbo->nw * ((float)SCREEN_W/SCREEN_H), fbo->nh);
+	set_ortho();
 
-	glBindTexture(GL_TEXTURE_2D, fbo->tex);
-
-// 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glDrawArrays(GL_QUADS, 4, 4);
-// 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	glDisable(GL_TEXTURE_2D);
-
+	glPushMatrix();
+		float s = (float)SCREEN_H/fbo->nh;
+		glScalef(s, s, 1);
+		draw_fbo(fbo);
 	glPopMatrix();
 }

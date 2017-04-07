@@ -99,10 +99,13 @@ typedef struct Resource {
 
 typedef struct Resources {
 	ResourceHandler handlers[RES_NUMTYPES];
-	FBO fbg[2];
-	FBO fsec;
 	PostprocessShader *stage_postprocess;
 	FontRenderer fontren;
+
+	struct {
+		FBO bg[2];
+		FBO fg[2];
+	} fbo;
 } Resources;
 
 extern Resources resources;

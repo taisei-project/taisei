@@ -114,10 +114,10 @@ void stage1_fog(int fbonum) {
 	glUniform1f(uniloc(shader, "exponent"),3.0);
 	glUniform1f(uniloc(shader, "sphereness"),.2);
 	glActiveTexture(GL_TEXTURE0 + 1);
-	glBindTexture(GL_TEXTURE_2D, resources.fbg[fbonum].depth);
+	glBindTexture(GL_TEXTURE_2D, resources.fbo.bg[fbonum].depth);
 	glActiveTexture(GL_TEXTURE0);
 
-	draw_fbo_viewport(&resources.fbg[fbonum]);
+	draw_fbo_viewport(&resources.fbo.bg[fbonum]);
 	glUseProgram(0);
 }
 

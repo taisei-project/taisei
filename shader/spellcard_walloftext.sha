@@ -25,7 +25,7 @@ float smoothstep(float x) {
 }
 
 void main(void) {
-	float n = 15.;
+	float n = 8.;
 	vec2 pos = (vec2(gl_TexCoord[0])-origin*vec2(ratio,1.0))*n;
 	pos.x /= ratio;
 	pos = vec2(n*atan(pos.x,pos.y),length(pos)+n*t*0.1);

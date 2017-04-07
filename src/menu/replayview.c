@@ -84,19 +84,15 @@ static void replayview_freearg(void *a) {
 	free(ctx);
 }
 
-static void shorten(char *s, int width) {
-	float sw = stringwidth(s, _fonts.standard);
-	float len = strlen(s);
-	float avgw = sw / len;
-	int c = width / avgw, i;
+static void shorten(char *s, float width) {
+	while(stringwidth(s, _fonts.standard) > width) {
+		s[strlen(s) - 1] = 0;
 
-	if(c > len)
-		return;
-
-	s[c+1] = 0;
-
-	for(i = 0; i < 3; ++i)
-		s[c - i] = '.';
+		int l = strlen(s);
+		for(int i = 0; i < 3; ++i) {
+			s[l - i - 1] = '.';
+		}
+	}
 }
 
 static void replayview_draw_stagemenu(MenuData *m) {
@@ -155,8 +151,8 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 
 	for(i = 0; i < columns; ++i) {
 		char tmp[128];
-		int csize = sizes[i] * (SCREEN_W - 210)/columns;
-		int o = 0;
+		float csize = sizes[i] * (SCREEN_W - 210)/columns;
+		float o = 0;
 
 		for(j = 0; j < i; ++j)
 			o += sizes[j] * (SCREEN_W - 210)/columns;

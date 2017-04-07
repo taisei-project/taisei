@@ -386,8 +386,17 @@ const char* resource_util_filename(const char *path) {
 	return path;
 }
 
+static void fbo_quality_callback(ConfigIndex idx, ConfigValue v) {
+	FBO *fbos = idx == CONFIG_FG_QUALITY ? resources.fbo.fg : resources.fbo.bg;
+	reinit_fbo(fbos+0, v.f);
+	reinit_fbo(fbos+1, v.f);
+	config_set_float(idx, fbos->scale);
+}
+
 void load_resources(void) {
-	init_fonts();
+	static bool callbacks_set_up = false;
+
+	init_fonts(config_get_float(CONFIG_TEXT_QUALITY));
 
 	if(glext.draw_instanced) {
 		load_shader_snippets("shader/laser_snippets", "laser_", RESF_PERMANENT);
@@ -395,11 +404,21 @@ void load_resources(void) {
 
 	menu_preload();
 
-	init_fbo(&resources.fbg[0]);
-	init_fbo(&resources.fbg[1]);
-	init_fbo(&resources.fsec);
+	float fgq = config_get_float(CONFIG_FG_QUALITY);
+	float bgq = config_get_float(CONFIG_BG_QUALITY);
+
+	init_fbo(&resources.fbo.bg[0], bgq);
+	init_fbo(&resources.fbo.bg[1], bgq);
+	init_fbo(&resources.fbo.fg[0], fgq);
+	init_fbo(&resources.fbo.fg[1], fgq);
 
 	resources.stage_postprocess = postprocess_load("shader/postprocess.conf");
+
+	if(!callbacks_set_up) {
+		config_set_callback(CONFIG_FG_QUALITY, fbo_quality_callback);
+		config_set_callback(CONFIG_BG_QUALITY, fbo_quality_callback);
+		callbacks_set_up = true;
+	}
 }
 
 void free_resources(bool all) {
@@ -442,9 +461,10 @@ void free_resources(bool all) {
 
 	postprocess_unload(&resources.stage_postprocess);
 
-	delete_fbo(&resources.fbg[0]);
-	delete_fbo(&resources.fbg[1]);
-	delete_fbo(&resources.fsec);
+	delete_fbo(&resources.fbo.bg[0]);
+	delete_fbo(&resources.fbo.bg[1]);
+	delete_fbo(&resources.fbo.fg[0]);
+	delete_fbo(&resources.fbo.fg[1]);
 
 	free_fonts();
 }

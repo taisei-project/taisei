@@ -131,6 +131,14 @@ OptionBinding* bind_scale(int cfgentry, float smin, float smax, float step) {
 	return bind;
 }
 
+OptionBinding* bind_quality(int cfgentry) {
+	OptionBinding *bind = bind_new();
+	bind->type = BT_Quality;
+	bind->configentry = cfgentry;
+
+	return bind;
+}
+
 // Returns a pointer to the first found binding that blocks input. If none found, returns NULL.
 OptionBinding* bind_getinputblocking(MenuData *m) {
 	int i;
@@ -246,6 +254,10 @@ bool bind_resizable_dependence(void) {
 	return !config_get_int(CONFIG_FULLSCREEN);
 }
 
+bool bind_bgquality_dependence(void) {
+	return !config_get_int(CONFIG_NO_STAGEBG);
+}
+
 int bind_saverpy_get(OptionBinding *b) {
 	int v = config_get_int(b->configentry);
 
@@ -351,6 +363,20 @@ void options_sub_video(MenuData *parent, void *arg) {
 	add_menu_entry(m, "Stage background", do_nothing,
 		b = bind_option(CONFIG_NO_STAGEBG, bind_common_intget, bind_common_intset)
 	);	bind_onoff(b);
+
+	add_menu_separator(m);
+
+	add_menu_entry(m, "Stage viewport quality", do_nothing,
+		b = bind_quality(CONFIG_FG_QUALITY)
+	);
+
+	add_menu_entry(m, "Stage background quality", do_nothing,
+		b = bind_quality(CONFIG_BG_QUALITY)
+	);  b->dependence = bind_bgquality_dependence;
+
+	add_menu_entry(m, "Text quality", do_nothing,
+		b = bind_quality(CONFIG_TEXT_QUALITY)
+	);
 
 	add_menu_separator(m);
 	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
@@ -792,6 +818,13 @@ void draw_options_menu(MenuData *menu) {
 
 					break;
 				}
+
+				case BT_Quality: {
+					char tmp[16];
+					snprintf(tmp, 16, "%i%%", (int)(100 * config_get_float(bind->configentry)));
+					draw_text(AL_Right, origin, 20*i, tmp, _fonts.standard);
+					break;
+				}
 			}
 		}
 	}
@@ -937,10 +970,22 @@ static void options_input_event(EventType type, int state, void *arg) {
 		case E_CursorLeft:
 			play_ui_sound("generic_shot");
 			if(bind) {
-				if(bind->type == BT_IntValue || bind->type == BT_Resolution)
-					bind_setprev(bind);
-				else if(bind->type == BT_Scale) {
-					config_set_float(bind->configentry, clamp(config_get_float(bind->configentry) - bind->scale_step, bind->scale_min, bind->scale_max));
+				switch(bind->type) {
+					case BT_IntValue:
+					case BT_Resolution:
+						bind_setprev(bind);
+						break;
+
+					case BT_Scale:
+						config_set_float(bind->configentry, clamp(config_get_float(bind->configentry) - bind->scale_step, bind->scale_min, bind->scale_max));
+						break;
+
+					case BT_Quality:
+						config_set_float(bind->configentry, config_get_float(bind->configentry) / 2.0);
+						break;
+
+					default:
+						break;
 				}
 			}
 		break;
@@ -948,10 +993,22 @@ static void options_input_event(EventType type, int state, void *arg) {
 		case E_CursorRight:
 			play_ui_sound("generic_shot");
 			if(bind) {
-				if(bind->type == BT_IntValue || bind->type == BT_Resolution)
-					bind_setnext(bind);
-				else if(bind->type == BT_Scale) {
-					config_set_float(bind->configentry, clamp(config_get_float(bind->configentry) + bind->scale_step, bind->scale_min, bind->scale_max));
+				switch(bind->type) {
+					case BT_IntValue:
+					case BT_Resolution:
+						bind_setnext(bind);
+						break;
+
+					case BT_Scale:
+						config_set_float(bind->configentry, clamp(config_get_float(bind->configentry) + bind->scale_step, bind->scale_min, bind->scale_max));
+						break;
+
+					case BT_Quality:
+						config_set_float(bind->configentry, config_get_float(bind->configentry) * 2.0);
+						break;
+
+					default:
+						break;
 				}
 			}
 		break;

@@ -146,7 +146,7 @@ FBO* postprocess(PostprocessShader *ppshaders, FBO *primfbo, FBO *auxfbo, Postpr
         }
 
         fbonum = !fbonum;
-        draw_fbo_viewport(fbos[fbonum]);
+        draw(fbos[fbonum]);
         glUseProgram(0);
     }
 

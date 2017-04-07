@@ -9,7 +9,8 @@
 #include "common.h"
 #include "ingamemenu.h"
 #include "global.h"
-#include "stage.h"
+#include "stagedraw.h"
+#include "video.h"
 
 void return_to_game(MenuData *m, void *arg) {
 }
@@ -37,24 +38,24 @@ void draw_ingame_menu_bg(MenuData *menu, float f) {
 	float rad = f*IMENU_BLUR;
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	video_set_viewport();
+	set_ortho();
+
 	Shader *shader = get_shader("ingame_menu");
 	glUseProgram(shader->prog);
-
 	glUniform1f(uniloc(shader, "rad"), rad);
 	glUniform1f(uniloc(shader, "phase"), menu->frames / 100.0);
-
-	draw_fbo_viewport(&resources.fsec);
-
+	stage_draw_foreground();
 	glUseProgram(0);
 }
 
 void draw_ingame_menu(MenuData *menu) {
 	glPushMatrix();
-		glTranslatef(VIEWPORT_X, VIEWPORT_Y, 0);
 
 	draw_ingame_menu_bg(menu, 1.0-menu_fade(menu));
 
 	glPushMatrix();
+	glTranslatef(VIEWPORT_X, VIEWPORT_Y, 0);
 	glTranslatef(VIEWPORT_W/2, VIEWPORT_H/4, 0);
 
 	draw_menu_selector(0, menu->drawdata[0], menu->drawdata[1]*2, 41, menu->frames);
@@ -88,5 +89,5 @@ void draw_ingame_menu(MenuData *menu) {
 	glPopMatrix();
 	glPopMatrix();
 
-	draw_hud();
+	stage_draw_hud();
 }

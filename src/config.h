@@ -78,6 +78,9 @@
 	CONFIGDEF_INT		(NO_STAGEBG, 				"disable_stagebg", 						0) \
 	CONFIGDEF_INT		(SAVE_RPY, 					"save_rpy", 							2) \
 	CONFIGDEF_INT		(SPELLSTAGE_AUTORESTART,	"spellpractice_restart_on_fail",		0) \
+	CONFIGDEF_FLOAT		(TEXT_QUALITY,				"text_quality",							1.0) \
+	CONFIGDEF_FLOAT		(FG_QUALITY,				"fg_quality",							1.0) \
+	CONFIGDEF_FLOAT		(BG_QUALITY,				"bg_quality",							1.0) \
 	KEYDEFS \
 	CONFIGDEF_INT		(GAMEPAD_ENABLED, 			"gamepad_enabled", 						0) \
 	CONFIGDEF_INT		(GAMEPAD_DEVICE, 			"gamepad_device", 						0) \

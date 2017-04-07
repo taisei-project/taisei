@@ -15,12 +15,14 @@ typedef struct {
 	GLuint tex;
 	GLuint depth;
 
-	int nw,nh;
+	int nw, nh;
+	float scale;
 } FBO;
 
-void init_fbo(FBO *fbo);
+void init_fbo(FBO *fbo, float scale);
+void reinit_fbo(FBO *fbo, float scale);
+void draw_fbo(FBO *fbo);
 void draw_fbo_viewport(FBO *fbo);
-
 void delete_fbo(FBO *fbo);
 
 #endif
