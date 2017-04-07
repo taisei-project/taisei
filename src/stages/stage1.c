@@ -103,9 +103,6 @@ Vector **stage1_smoke_pos(Vector p, float maxrange) {
 }
 
 void stage1_fog(int fbonum) {
-	//draw_fbo_viewport(&resources.fbo.bg[fbonum]);
-	//return;
-
 	Shader *shader = get_shader("zbuf_fog");
 
 	glUseProgram(shader->prog);
