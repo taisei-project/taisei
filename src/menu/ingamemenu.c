@@ -9,7 +9,7 @@
 #include "common.h"
 #include "ingamemenu.h"
 #include "global.h"
-#include "stage.h"
+#include "stagedraw.h"
 #include "video.h"
 
 void return_to_game(MenuData *m, void *arg) {
@@ -89,5 +89,5 @@ void draw_ingame_menu(MenuData *menu) {
 	glPopMatrix();
 	glPopMatrix();
 
-	draw_hud();
+	stage_draw_hud();
 }

@@ -88,14 +88,10 @@ void stage_free_array(void);
 void stage_loop(StageInfo *stage);
 void stage_finish(int gameover);
 
-void draw_hud(void);
-
 void stage_pause(void);
 void stage_gameover(void);
 
 void stage_clear_hazards(bool force);
-
-void stage_draw_foreground(void);
 
 #include "stages/stage1.h"
 #include "stages/stage2.h"
