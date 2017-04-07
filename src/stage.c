@@ -498,6 +498,10 @@ void stage_loop(StageInfo *stage) {
 	stage_start(stage);
 
 	if(global.replaymode == REPLAY_RECORD) {
+		if(stage->type == STAGE_SPELL) {
+			global.plr.power = PLR_SPELLPRACTICE_POWER;
+		}
+
 		if(config_get_int(CONFIG_SAVE_RPY)) {
 			global.replay_stage = replay_create_stage(&global.replay, stage, seed, global.diff, global.plr.points, &global.plr);
 
