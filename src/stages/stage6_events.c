@@ -320,15 +320,24 @@ int scythe_newton(Enemy *e, int t) {
 		float f = carg(global.plr.pos-e->pos);
 		Projectile *p;
 		for(p = global.projs; p; p = p->next) {
-			if(p->type == FairyProj && cabs(p->pos-e->pos) < 50) {
-				p->args[1] = 0.01*global.diff*cexp(I*f);
-				p->clr = derive_color(p->clr, CLRMASK_R, rgba(frand(), 0, 0, 0));
+			if(p->type == FairyProj && cabs(p->pos-e->pos) < 50 && cabs(global.plr.pos-e->pos) > 50 && p->args[2] == 0) {
+				//p->args[0] /= 2;
+				if(global.diff > D_Normal && frand() > 0.7-0.2*(global.diff == D_Lunatic)) {
+					p->args[0] = cexp(I*f);
+					p->clr = rgb(1,0,0.5);
+					p->args[1] = 0.01*I;
+				} else {
+					p->args[0] = 2*cexp(I*2*M_PI*frand());
+					p->clr = rgba(frand(), 0, 1, 0.8);
+				}
+				p->args[2] = 1;
 			}
 		}
 	}
 
 	FROM_TO(100, 10000, 5-global.diff) {
-		create_projectile1c("rice", e->pos, rgb(0.3, 1, 0.8), linear, I);
+		if(cabs(global.plr.pos-e->pos) > 50)
+			create_projectile3c("rice", e->pos, rgb(0.3, 1, 0.8), linear, I,0,1);
 	}
 
 	scythe_common(e, t);
@@ -349,13 +358,13 @@ void elly_newton(Boss *b, int t) {
 	}
 
 	FROM_TO(0, 100000, 20) {
-		float a = 2.7*_i;
+		float a = 2.7*_i+carg(global.plr.pos-b->pos);
 		int x, y;
-		int w = 3;
+		float w = min(D_Hard,global.diff)/2.0+1.5;
 
 		for(x = -w; x <= w; x++) {
 			for(y = -w; y <= w; y++) {
-				create_projectile2c("plainball", b->pos+(x+I*y)*(18)*cexp(I*a), rgb(0, 0.2, 0.6), accelerated, 2*cexp(I*a), 0);
+				create_projectile2c("ball", b->pos+(x+I*y)*(18)*cexp(I*a), rgb(0, 0.5, 1), accelerated, 2*cexp(I*a), 0);
 			}
 		}
 	}
