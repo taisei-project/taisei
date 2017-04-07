@@ -13,13 +13,13 @@
 #include "taiseigl.h"
 #include "util.h"
 
-#define CLR_R 48LL
-#define CLR_G 32LL
-#define CLR_B 16LL
-#define CLR_A 0LL
+#define CLR_R 48ULL
+#define CLR_G 32ULL
+#define CLR_B 16ULL
+#define CLR_A 0ULL
 
-#define CLR_CMASK 0xffffLL
-#define CLR_ONEVALUE 0xffLL
+#define CLR_CMASK 0xffffULL
+#define CLR_ONEVALUE 0xffULL
 
 #define CLRMASK_R (CLR_CMASK << CLR_R)
 #define CLRMASK_G (CLR_CMASK << CLR_G)
