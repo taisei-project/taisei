@@ -10,7 +10,7 @@
 #define VIDEO_H
 
 #define WINDOW_TITLE "TaiseiProject"
-#define VIEWPORT_ASPECT_RATIO (4.0f/3.0f)
+#define VIDEO_ASPECT_RATIO ((double)SCREEN_W/SCREEN_H)
 
 #include <SDL.h>
 #include <stdbool.h>

@@ -559,7 +559,7 @@ void stage_loop(StageInfo *stage) {
 	while(global.game_over <= 0) {
 		if(global.game_over != GAMEOVER_TRANSITIONING) {
 			if((!global.boss || boss_is_fleeing(global.boss)) && !global.dialog) {
-				stage->procs->event();
+				// stage->procs->event();
 			}
 
 			if(stage->type == STAGE_SPELL && !global.boss && global.game_over != GAMEOVER_RESTART) {

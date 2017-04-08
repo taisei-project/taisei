@@ -367,11 +367,11 @@ void options_sub_video(MenuData *parent, void *arg) {
 	add_menu_separator(m);
 
 	add_menu_entry(m, "Stage viewport quality", do_nothing,
-		b = bind_quality(CONFIG_FG_QUALITY)
+		b = bind_scale(CONFIG_FG_QUALITY, 0.1, 1.0, 0.05)
 	);
 
 	add_menu_entry(m, "Stage background quality", do_nothing,
-		b = bind_quality(CONFIG_BG_QUALITY)
+		b = bind_scale(CONFIG_BG_QUALITY, 0.1, 1.0, 0.05)
 	);  b->dependence = bind_bgquality_dependence;
 
 	add_menu_entry(m, "Text quality", do_nothing,

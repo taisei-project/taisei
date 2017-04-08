@@ -9,7 +9,8 @@
 #include "global.h"
 
 static float sanitize_scale(float scale) {
-	return ftopow2(clamp(scale, 0.25, 4.0));
+	// return ftopow2(clamp(scale, 0.25, 4.0));
+	return max(0.1, scale);
 }
 
 void init_fbo(FBO *fbo, float scale) {
@@ -49,6 +50,12 @@ void init_fbo(FBO *fbo, float scale) {
 }
 
 void reinit_fbo(FBO *fbo, float scale) {
+	if(!fbo->scale) {
+		// fbo was never initialized
+		init_fbo(fbo, scale);
+		return;
+	}
+
 	if(fbo->scale != sanitize_scale(scale)) {
 		delete_fbo(fbo);
 		init_fbo(fbo, scale);
@@ -78,6 +85,5 @@ void draw_fbo_viewport(FBO *fbo) {
 
 	glViewport(0, 0, fbo->scale*SCREEN_W, fbo->scale*SCREEN_H);
 	set_ortho();
-
 	draw_fbo(fbo);
 }

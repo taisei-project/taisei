@@ -108,11 +108,12 @@ void stage1_fog(int fbonum) {
 	glUseProgram(shader->prog);
 	glUniform1i(uniloc(shader, "tex"), 0);
 	glUniform1i(uniloc(shader, "depth"), 1);
-	glUniform4f(uniloc(shader, "fog_color"),0.8, 0.8, 0.8, 1.0);
-	glUniform1f(uniloc(shader, "start"),0.0);
-	glUniform1f(uniloc(shader, "end"),.8);
-	glUniform1f(uniloc(shader, "exponent"),3.0);
-	glUniform1f(uniloc(shader, "sphereness"),.2);
+	glUniform4f(uniloc(shader, "fog_color"), 0.8, 0.8, 0.8, 1.0);
+	glUniform1f(uniloc(shader, "start"), 0.0);
+	glUniform1f(uniloc(shader, "end"), 0.8);
+	glUniform1f(uniloc(shader, "exponent"), 3.0);
+	glUniform1f(uniloc(shader, "sphereness"), 0.2);
+	glUniform1f(uniloc(shader, "sphereness_ofs"), 0.3);
 	glActiveTexture(GL_TEXTURE0 + 1);
 	glBindTexture(GL_TEXTURE_2D, resources.fbo.bg[fbonum].depth);
 	glActiveTexture(GL_TEXTURE0);
