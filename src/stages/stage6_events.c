@@ -321,11 +321,13 @@ int scythe_newton(Enemy *e, int t) {
 		Projectile *p;
 		for(p = global.projs; p; p = p->next) {
 			if(p->type == FairyProj && cabs(p->pos-e->pos) < 50 && cabs(global.plr.pos-e->pos) > 50 && p->args[2] == 0) {
+				e->args[3] += 1;
 				//p->args[0] /= 2;
-				if(global.diff > D_Normal && frand() > 0.7-0.2*(global.diff == D_Lunatic)) {
+				if(global.diff > D_Normal && (int)(creal(e->args[3])+0.5) % (15-5*(global.diff == D_Lunatic)) == 0) {
 					p->args[0] = cexp(I*f);
 					p->clr = rgb(1,0,0.5);
-					p->args[1] = 0.01*I;
+					p->tex = get_tex("proj/bullet");
+					p->args[1] = 0.005*I;
 				} else {
 					p->args[0] = 2*cexp(I*2*M_PI*frand());
 					p->clr = rgba(frand(), 0, 1, 0.8);
@@ -335,7 +337,7 @@ int scythe_newton(Enemy *e, int t) {
 		}
 	}
 
-	FROM_TO(100, 10000, 5-global.diff) {
+	FROM_TO(100, 10000, 5-global.diff/2) {
 		if(cabs(global.plr.pos-e->pos) > 50)
 			create_projectile3c("rice", e->pos, rgb(0.3, 1, 0.8), linear, I,0,1);
 	}
@@ -357,7 +359,7 @@ void elly_newton(Boss *b, int t) {
 		global.enemies->logic_rule = scythe_reset;
 	}
 
-	FROM_TO(0, 100000, 20) {
+	FROM_TO(0, 100000, 20+10*(global.diff>D_Normal)) {
 		float a = 2.7*_i+carg(global.plr.pos-b->pos);
 		int x, y;
 		float w = min(D_Hard,global.diff)/2.0+1.5;
@@ -393,10 +395,8 @@ int scythe_kepler(Enemy *e, int t) {
 
 int kepler_bullet(Projectile *p, int t) {
 	TIMER(&t);
-	int tier = creal(p->args[1]);
-	if(t < 0)
-		return 1;
-	AT(0) {
+	int tier = round(creal(p->args[1]));
+	AT(1) {
 		char *tex;
 		switch(tier) {
 			case 0: tex = "proj/soul"; break;
@@ -411,6 +411,8 @@ int kepler_bullet(Projectile *p, int t) {
 		if(tier != 0)
 			free_ref(p->args[2]);
 	}
+	if(t < 0)
+		return 1;
 
 	complex pos = p->pos0;
 
@@ -426,15 +428,21 @@ int kepler_bullet(Projectile *p, int t) {
 		pos += t*p->args[2];
 	}
 
-	complex newpos = pos + tanh(t/90.)*p->args[0]*cexp(I*t*0.5/cabs(p->args[0]));
+	complex newpos = pos + tanh(t/90.)*p->args[0]*cexp((1-2*(tier&1))*I*t*0.5/cabs(p->args[0]));
 	complex vel = newpos-p->pos;
 	p->pos = newpos;
 	p->args[3] = vel;
 
 	if(t%(30-5*global.diff) == 0) {
 		p->args[1]+=1*I;
-		if(tier <= 3 && cimag(p->args[1])*(tier+1) < 4) {
-			create_projectile3c("ball",p->pos,rgb(0.3+0.3*tier,0.6-0.3*tier,1),kepler_bullet,cabs(p->args[0])*cexp(I*2*M_PI*frand()),tier+1,add_ref(p));
+		int tau = global.frames-global.boss->current->starttime;
+		complex phase = cexp(I*0.2*tau*tau);
+		int n = global.diff/2+3+(frand()>0.3);
+		if(global.diff == D_Easy)
+			n=7;
+
+		if(tier <= 1+min(2,global.diff-1) && cimag(p->args[1])*(tier+1) < n) {
+			create_projectile3c("flea",p->pos,rgb(0.3+0.3*tier,0.6-0.3*tier,1),kepler_bullet,cabs(p->args[0])*phase,tier+1,add_ref(p));
 		}
 	}
 	return 1;
@@ -456,7 +464,7 @@ void elly_kepler(Boss *b, int t) {
 	}
 
 	FROM_TO(0, 100000, 20) {
-		int c = 2+global.diff/3;
+		int c = 2;
 		for(int i = 0; i < c; i++) {
 			complex n = cexp(I*2*M_PI/c*i+I*0.6*_i);
 			create_projectile3c("soul",b->pos,rgb(0.3,0.8,1),kepler_bullet,50*n,0,(1.4+0.1*global.diff)*n);
