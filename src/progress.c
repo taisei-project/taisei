@@ -511,7 +511,7 @@ static void progress_write(SDL_RWops *file) {
 	};
 
 	for(cmd_writer_t *w = cmdtable; w->prepare; ++w) {
-		size_t oldsize = bufsize;
+		size_t oldsize __attribute__((unused)) = bufsize;
 		w->prepare(&bufsize, &w->data);
 		log_debug("prepare %i: %i", (int)(w - cmdtable), (int)(bufsize - oldsize));
 	}
@@ -525,7 +525,7 @@ static void progress_write(SDL_RWops *file) {
 	SDL_RWops *vfile = SDL_RWFromMem(buf, bufsize);
 
 	for(cmd_writer_t *w = cmdtable; w->prepare; ++w) {
-		size_t oldpos = SDL_RWtell(vfile);
+		size_t oldpos __attribute__((unused)) = SDL_RWtell(vfile);
 		w->write(vfile, &w->data);
 		log_debug("write %i: %i", (int)(w - cmdtable), (int)(SDL_RWtell(vfile) - oldpos));
 	}
