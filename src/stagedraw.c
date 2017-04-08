@@ -317,11 +317,7 @@ void stage_draw_scene(StageInfo *stage) {
 		}
 
 		// draw the 3D background
-		glPushMatrix();
-			//float s2 = fbg->scale/scale;
-			//glScalef(s2, s2, 1);
-			draw_fbo(fbg);
-		glPopMatrix();
+		draw_fbo(fbg);
 
 		// disable boss background distortion
 		glUseProgram(0);
