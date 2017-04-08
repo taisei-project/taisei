@@ -255,7 +255,7 @@ static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
 
 	if(fail) {
 		time_bonus /= 4;
-		endurance_bonus = sv * 0.1 * ((a->failtime - a->starttime) / (double)a->timeout);
+		endurance_bonus = sv * 0.1 * (max(0, a->failtime - a->starttime) / (double)a->timeout);
 	} else if(a->type == AT_SurvivalSpell) {
 		surv_bonus = sv * (1.0 + 0.02 * (a->timeout / (double)FPS));
 	}
