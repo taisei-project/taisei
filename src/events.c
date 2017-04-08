@@ -67,18 +67,32 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 				}
 
 				if(menu && (!repeat || transition.state == TRANS_IDLE)) {
-					if(scan == config_get_int(CONFIG_KEY_DOWN) || scan == SDL_SCANCODE_DOWN) {
-						handler(E_CursorDown, 0, arg);
-					} else if(scan == config_get_int(CONFIG_KEY_UP) || scan == SDL_SCANCODE_UP) {
-						handler(E_CursorUp, 0, arg);
-					} else if(scan == config_get_int(CONFIG_KEY_RIGHT) || scan == SDL_SCANCODE_RIGHT) {
-						handler(E_CursorRight, 0, arg);
-					} else if(scan == config_get_int(CONFIG_KEY_LEFT) || scan == SDL_SCANCODE_LEFT) {
-						handler(E_CursorLeft, 0, arg);
-					} else if(scan == config_get_int(CONFIG_KEY_SHOT) || scan == SDL_SCANCODE_RETURN) {
-						handler(E_MenuAccept, 0, arg);
-					} else if(scan == config_get_int(CONFIG_KEY_BOMB) || scan == SDL_SCANCODE_ESCAPE) {
-						handler(E_MenuAbort, 0, arg);
+					struct eventmap_t { int scancode; int event; } map[] = {
+						// order matters
+						// handle all the hardcoded controls first to prevent accidentally overriding them with unusable ones
+
+						{ SDL_SCANCODE_DOWN, E_CursorDown },
+						{ SDL_SCANCODE_UP, E_CursorUp },
+						{ SDL_SCANCODE_RIGHT, E_CursorRight },
+						{ SDL_SCANCODE_LEFT, E_CursorLeft },
+						{ SDL_SCANCODE_RETURN, E_MenuAccept },
+						{ SDL_SCANCODE_ESCAPE, E_MenuAbort },
+
+						{ config_get_int(CONFIG_KEY_DOWN), E_CursorDown },
+						{ config_get_int(CONFIG_KEY_UP), E_CursorUp },
+						{ config_get_int(CONFIG_KEY_RIGHT), E_CursorRight },
+						{ config_get_int(CONFIG_KEY_LEFT), E_CursorLeft },
+						{ config_get_int(CONFIG_KEY_SHOT), E_MenuAccept },
+						{ config_get_int(CONFIG_KEY_BOMB), E_MenuAbort },
+
+						{SDL_SCANCODE_UNKNOWN, -1}
+					};
+
+					for(struct eventmap_t *m = map; m->scancode != SDL_SCANCODE_UNKNOWN; ++m) {
+						if(scan == m->scancode) {
+							handler(m->event, 0, arg);
+							break;
+						}
 					}
 				}
 
