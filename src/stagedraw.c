@@ -187,7 +187,7 @@ static void apply_zoom_shader(void) {
 		spellcard_sup = 1-t*t;
 	}
 
-	glUniform1f(uniloc(shader, "blur_rad"), 1.5* spellcard_sup*(0.2+0.025*sin(global.frames/15.0)));
+	glUniform1f(uniloc(shader, "blur_rad"), spellcard_sup*(0.2+0.025*sin(global.frames/15.0)));
 	glUniform1f(uniloc(shader, "rad"), 0.24);
 	glUniform1f(uniloc(shader, "ratio"), (float)resources.fbo.bg[0].nh/resources.fbo.bg[0].nw);
 
