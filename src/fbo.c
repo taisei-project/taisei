@@ -63,8 +63,9 @@ void delete_fbo(FBO *fbo) {
 
 void draw_fbo(FBO *fbo) {
 	glPushMatrix();
+		glScalef(1/fbo->scale, 1/fbo->scale, 1);
+		glTranslatef(fbo->nw/2, -fbo->nh/2+fbo->scale*SCREEN_H, 0);
 		glScalef(fbo->nw, fbo->nh, 1);
-		glTranslatef(0.5, 0.5, 0);
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, fbo->tex);
 		glDrawArrays(GL_QUADS, 4, 4);
@@ -75,12 +76,8 @@ void draw_fbo(FBO *fbo) {
 void draw_fbo_viewport(FBO *fbo) {
 	// assumption: rendering into another, identical FBO
 
-	glViewport(0, 0, fbo->nw * ((float)SCREEN_W/SCREEN_H), fbo->nh);
+	glViewport(0, 0, fbo->scale*SCREEN_W, fbo->scale*SCREEN_H);
 	set_ortho();
 
-	glPushMatrix();
-		float s = (float)SCREEN_H/fbo->nh;
-		glScalef(s, s, 1);
-		draw_fbo(fbo);
-	glPopMatrix();
+	draw_fbo(fbo);
 }
