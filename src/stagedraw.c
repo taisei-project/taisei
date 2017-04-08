@@ -308,7 +308,7 @@ void stage_draw_scene(StageInfo *stage) {
 	glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo.fg[0].fbo);
 	float scale = resources.fbo.fg[0].scale;
 	glViewport(0, 0, scale*SCREEN_W, scale*SCREEN_H);
-	set_ortho_ex(SCREEN_W, SCREEN_H);
+	set_ortho();
 
 	if(draw_bg) {
 		// enable boss background distortion
@@ -346,7 +346,7 @@ void stage_draw_scene(StageInfo *stage) {
 	}
 
 	// draw the 2D objects
-	set_ortho_ex(SCREEN_W, SCREEN_H);
+	set_ortho();
 	glPushMatrix();
 		glTranslatef(VIEWPORT_X, VIEWPORT_Y, 0);
 		stage_draw_objects();
