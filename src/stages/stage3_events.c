@@ -27,7 +27,7 @@ void stage3_boss_extra(Boss*, int t);
 AttackInfo stage3_spells[] = {
 	{{ 0,  1,  2,  3},	AT_Spellcard, "Venom Sign ~ Deadly Dance", 25, 40000,
 							stage3_mid_a1, stage3_mid_spellbg, BOSS_DEFAULT_GO_POS},
-	{{-1, -1,  4,  5},	AT_Spellcard, "Venom Sign ~ Acid Rain", 30, 45000,
+	{{-1, -1,  4,  5},	AT_Spellcard, "Venom Sign ~ Acid Rain", 30, 50000,
 							stage3_mid_a2, stage3_mid_spellbg, BOSS_DEFAULT_GO_POS},
 	{{ 6,  7,  8,  9},	AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 35000,
 							stage3_boss_a1, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
@@ -451,13 +451,13 @@ void stage3_mid_a2(Boss *boss, int time) {
 	}
 
 	bool lun = global.diff == D_Lunatic;
-	FROM_TO(30, 9000, 3-lun) {
+	FROM_TO(30, 9000, 2) {
 		int i, cnt = 2;
 		for(i = 0; i < cnt; ++i) {
 			float r = tanh(sin(_i/200.));
-			float v = lun*cos(_i/200.)/pow(cosh(atanh(r)),2);
+			float v = lun ? cos(_i/150.)/pow(cosh(atanh(r)),2) : 0.5;
 			complex pos = 230*cexp(I*(_i*0.301+2*M_PI/cnt*i))*r;
-			create_projectile2c(lun && !(i%10) ? "bigball" : "ball",boss->pos+pos,rgb(0.3,1.0,0.3),stage3_mid_poison2,100,cexp(I*(!lun)*0.6)*pos/cabs(pos)*(1+v));
+			create_projectile2c(lun && !(i%10) ? "bigball" : "ball",boss->pos+pos,rgb(0.3,1.0,0.3),stage3_mid_poison2,100-25*(!lun),cexp(I*(!lun)*0.6)*pos/cabs(pos)*(1+v));
 		}
 	}
 }
