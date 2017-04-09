@@ -359,7 +359,7 @@ void stage3_mid_a1(Boss *boss, int time) {
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.03)
 
 	if(time > 30) {
-		float t = time * 1.5 * (1.0 + 0.15 * global.diff);
+		float t = time * 1.5 * (0.4 + 0.3 * global.diff);
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2 + sin(t/50.0) * t/6.5 * cexp(I * M_PI_2 * t/100.0), 0.03)
 
 		if(!(time % 70)) {
