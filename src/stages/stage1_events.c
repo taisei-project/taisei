@@ -207,16 +207,21 @@ void cirno_crystal_rain(Boss *c, int time) {
 	if(time < 0)
 		return;
 
+	int hdiff = max(0, (int)global.diff - D_Normal);
+
 	if(frand() > 0.95-0.1*global.diff) {
 		tsrand_fill(2);
 		create_projectile2c("crystal", VIEWPORT_W*afrand(0), rgb(0.2,0.2,0.4), accelerated, 1.0*I, 0.01*I + (-0.005+0.005*global.diff)*anfrand(1));
 	}
 
-	FROM_TO(100, 400, 120-20*global.diff) {
+	FROM_TO(100, 400, 120-20*global.diff - 10 * hdiff) {
 		float i;
-		float n = (global.diff-1)/2.0;
-		for(i = -n; i <= n; i++)
-			create_projectile2c("bigball", c->pos, rgb(0.2,0.2,0.9), asymptotic, 2*cexp(I*carg(global.plr.pos-c->pos)+0.3*I*i), 2.3);
+		bool odd = (hdiff? (_i&1) : 0);
+		float n = (global.diff-1+hdiff*4 + odd)/2.0;
+
+		for(i = -n; i <= n; i++) {
+			create_projectile2c(odd? "plainball" : "bigball", c->pos, rgb(0.2,0.2,0.9), asymptotic, 2*cexp(I*carg(global.plr.pos-c->pos)+0.3*I*i), 2.3);
+		}
 	}
 
 	GO_AT(c, 20, 70, 1+0.6*I);
