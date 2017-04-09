@@ -922,11 +922,11 @@ void stage3_boss_extra(Boss *boss, int time) {
 Boss* stage3_create_boss(void) {
 	Boss *wriggle = create_boss("Wriggle EX", "wriggleex", "dialog/wriggle", VIEWPORT_W/2 - 200.0*I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage3_boss_intro, NULL);
-	boss_add_attack(wriggle, AT_Normal, "", 20, 15000, stage3_boss_prea1, NULL);
+	boss_add_attack(wriggle, AT_Normal, "", 20, 20000, stage3_boss_prea1, NULL);
 	boss_add_attack_from_info(wriggle, stage3_spells+2, false);
-	boss_add_attack(wriggle, AT_Normal, "", 20, 15000, stage3_boss_prea2, NULL);
+	boss_add_attack(wriggle, AT_Normal, "", 20, 20000, stage3_boss_prea2, NULL);
 	boss_add_attack_from_info(wriggle, stage3_spells+3, false);
-	boss_add_attack(wriggle, AT_Normal, "", 20, 15000, stage3_boss_prea3, NULL);
+	boss_add_attack(wriggle, AT_Normal, "", 20, 20000, stage3_boss_prea3, NULL);
 	boss_add_attack_from_info(wriggle, stage3_spells+4, false);
 
 	start_attack(wriggle, wriggle->attacks);
