@@ -14,7 +14,7 @@
 
 void init_player(Player *plr) {
 	memset(plr, 0, sizeof(Player));
-	plr->pos = VIEWPORT_W/2 + I*(VIEWPORT_H-20);
+	plr->pos = VIEWPORT_W/2 + I*(VIEWPORT_H-64);
 	plr->lives = PLR_START_LIVES;
 	plr->bombs = PLR_START_BOMBS;
 	plr->deathtime = -1;

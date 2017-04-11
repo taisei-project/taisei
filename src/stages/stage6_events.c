@@ -1175,14 +1175,15 @@ Boss *create_elly(void) {
 	boss_add_attack_from_info(b, stage6_spells+0, false);
 	boss_add_attack(b, AT_Normal, "Frequency2", 40, 23000, elly_frequency2, NULL);
 	boss_add_attack_from_info(b, stage6_spells+1, false);
-	boss_add_attack(b, AT_Move, "Unbound", 6, 10, elly_unbound, NULL);
 	boss_add_attack_from_info(b, stage6_spells+2, false);
-	boss_add_attack(b, AT_Normal, "Baryon", 40, 23000, elly_baryonattack, NULL);
+	boss_add_attack(b, AT_Move, "Unbound", 6, 10, elly_unbound, NULL);
 	boss_add_attack_from_info(b, stage6_spells+3, false);
-	boss_add_attack(b, AT_Normal, "Baryon", 25, 23000, elly_baryonattack2, NULL);
+	boss_add_attack(b, AT_Normal, "Baryon", 40, 23000, elly_baryonattack, NULL);
 	boss_add_attack_from_info(b, stage6_spells+4, false);
-	boss_add_attack(b, AT_Move, "Explode", 6, 10, elly_baryon_explode, NULL);
+	boss_add_attack(b, AT_Normal, "Baryon", 25, 23000, elly_baryonattack2, NULL);
 	boss_add_attack_from_info(b, stage6_spells+5, false);
+	boss_add_attack(b, AT_Move, "Explode", 6, 10, elly_baryon_explode, NULL);
+	boss_add_attack_from_info(b, stage6_spells+6, false);
 	start_attack(b, b->attacks);
 
 	return b;
