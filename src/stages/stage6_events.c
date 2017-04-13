@@ -86,7 +86,7 @@ int stage6_hacker(Enemy *e, int t) {
 		int i;
 		for(i = 0; i < 6; i++) {
 			complex n = sin(_i*0.2)*cexp(I*0.3*(i/2-1))*(1-2*(i&1));
-			create_projectile1c("wave", e->pos + 120*n, rgb(1.0, 0.2-0.01*_i, 0.0), linear, (0.25-0.5*frand())*global.diff+creal(n)+2.0*I);
+			create_projectile1c("wave", e->pos + 120*n, rgb(1.0, 0.2-0.01*_i, 0.0), linear, (0.25-0.5*psin(global.frames+_i*46752+16463*i+467*sin(global.frames*_i*i)))*global.diff+creal(n)+2.0*I);
 		}
 	}
 
@@ -109,8 +109,9 @@ int stage6_side(Enemy *e, int t) {
 		int i;
 		int c = 15+10*global.diff;
 		for(i = 0; i < c; i++) {
-			create_projectile2c("rice", e->pos+5*(i/2)*e->args[1], rgb(0, 0.5, 1), accelerated, (1.0*I-2.0*I*(i&1))*(0.7+0.2*global.diff), 0.001*(i/2)*e->args[1]);
+			create_projectile2c((i%2 == 0) ? "rice" : "flea", e->pos+5*(i/2)*e->args[1], rgb(0.1*cabs(e->args[2]), 0.5, 1), accelerated, (1.0*I-2.0*I*(i&1))*(0.7+0.2*global.diff), 0.001*(i/2)*e->args[1]);
 		}
+		e->hp /= 4;
 	}
 
 	return 1;
@@ -138,7 +139,7 @@ int stage6_flowermine(Enemy *e, int t) {
 		e->args[0] += 0.07*cexp(I*carg(e->args[1]-e->pos));
 
 	FROM_TO(0, 1000, 7-global.diff) {
-		create_projectile2c("rice", e->pos + 40*cexp(I*0.6*_i+I*carg(e->args[0])), rgb(0.3, 0.8, creal(e->args[2])), wait_proj, I*cexp(I*0.6*_i)*(0.7+0.3*global.diff), 200)->angle = 0.6*_i;
+		create_projectile2c("rice", e->pos + 40*cexp(I*0.6*_i+I*carg(e->args[0])), rgb(1-psin(_i), 0.3, psin(_i)), wait_proj, I*cexp(I*0.6*_i)*(0.7+0.3*global.diff), 200)->angle = 0.6*_i;
 	}
 
 	return 1;
@@ -178,7 +179,7 @@ int scythe_mid(Enemy *e, int t) {
 	e->pos += (6-global.diff-0.005*I*t)*e->args[0];
 
 	n = cexp(cimag(e->args[1])*I*t);
-	create_projectile2c("bigball", e->pos + 80*n, rgb(carg(n), 1-carg(n), 1/carg(n)), wait_proj, global.diff*cexp(0.6*I)*n, 100)->draw=ProjDrawAdd;
+	create_projectile2c("bigball", e->pos + 80*n, rgb(0.2, 0.5-0.5*cimag(n), 0.5+0.5*creal(n)), wait_proj, global.diff*cexp(0.6*I)*n, 100)->draw=ProjDrawAdd;
 
 	if(global.diff > D_Normal && t&1)
 		create_projectile2c("ball", e->pos + 80*n, rgb(0, 0.2, 0.5), accelerated, n, 0.01*global.diff*cexp(I*carg(global.plr.pos - e->pos - 80*n)))->draw=ProjDrawAdd;
@@ -188,11 +189,11 @@ int scythe_mid(Enemy *e, int t) {
 }
 
 void Scythe(Enemy *e, int t) {
-	Projectile *p = create_projectile_p(&global.particles, get_tex("stage6/scythe"), e->pos, 0, ScaleFade, timeout, 8, e->args[2], 0, 0);
+	Projectile *p = create_projectile_p(&global.particles, get_tex("stage6/scythe"), e->pos+I*6*sin(global.frames/25.0), 0, ScaleFade, timeout, 8, e->args[2], 0, 0);
 	p->type = Particle;
 	p->angle = creal(e->args[1]);
 
-	create_particle2c("flare", e->pos+100*creal(e->args[2])*frand()*cexp(2.0*I*M_PI*frand()), rgb(1,1,0.6), GrowFadeAdd, timeout_linear, 60, -I+1);
+	create_particle2c("lasercurve", e->pos+100*creal(e->args[2])*frand()*cexp(2.0*I*M_PI*frand()), rgb(1,0.1,1), GrowFadeAdd, timeout_linear, 60, -I+1);
 }
 
 int scythe_intro(Enemy *e, int t) {
@@ -1200,11 +1201,11 @@ void stage6_events(void) {
 		create_enemy1c(VIEWPORT_W/2, 6000, BigFairy, stage6_hacker, 2.0*I);
 
 	FROM_TO(500, 700, 10)
-		create_enemy2c(VIEWPORT_W*(_i&1), 2000, Fairy, stage6_side, 2.0*I+0.1*(1-2*(_i&1)),1-2*(_i&1));
+		create_enemy3c(VIEWPORT_W*(_i&1), 2000, Fairy, stage6_side, 2.0*I+0.1*(1-2*(_i&1)),1-2*(_i&1),_i);
 
 	FROM_TO(720, 940, 10) {
 		complex p = VIEWPORT_W/2+(1-2*(_i&1))*20*(_i%10);
-		create_enemy2c(p, 2000, Fairy, stage6_side, 2.0*I+1*(1-2*(_i&1)),I*cexp(I*carg(global.plr.pos-p))*(1-2*(_i&1)));
+		create_enemy3c(p, 2000, Fairy, stage6_side, 2.0*I+1*(1-2*(_i&1)),I*cexp(I*carg(global.plr.pos-p))*(1-2*(_i&1)),_i*psin(_i));
 	}
 
 	FROM_TO(1380, 1660, 20)
