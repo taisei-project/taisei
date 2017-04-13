@@ -318,8 +318,13 @@ void hina_amulet(Boss *h, int time) {
 			float f = _i/30.0;
 			complex n = cexp(I*2*M_PI*f+I*carg(d)+0.7*time/200*I)/sqrt(0.5+global.diff);
 
-			create_projectile2c("ball", h->pos+30*log(1+_i/2.0)*n, rgb(0.8,0,0), accelerated, 2*n*I, -0.01*n);
-			create_projectile2c(global.diff == D_Easy ? "ball" : "crystal", h->pos+30*log(1+_i/2.0)*n, rgb(0.8,0,0.5), accelerated, -2*n*I, -0.01*n);
+			float speed = 1.0 + 0.75 * max(0, (int)global.diff - D_Normal);
+			float accel = 1.0 + 1.20 * max(0, (int)global.diff - D_Normal);
+
+			complex p = h->pos+30*log(1+_i/2.0)*n;
+
+			create_projectile2c("ball", p, rgb(0.8,0,0), accelerated, speed * 2*n*I, accel * -0.01*n);
+			create_projectile2c(global.diff == D_Easy ? "ball" : "crystal", p, rgb(0.8,0,0.5), accelerated, speed * -2*n*I, accel * -0.01*n);
 	}
 }
 
