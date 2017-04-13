@@ -441,7 +441,7 @@ int kepler_bullet(Projectile *p, int t) {
 		if(global.diff == D_Easy)
 			n=7;
 
-		if(tier <= 1+min(2,global.diff-1) && cimag(p->args[1])*(tier+1) < n) {
+		if(tier <= 1+(global.diff>D_Hard) && cimag(p->args[1])*(tier+1) < n) {
 			create_projectile3c("flea",p->pos,rgb(0.3+0.3*tier,0.6-0.3*tier,1),kepler_bullet,cabs(p->args[0])*phase,tier+1,add_ref(p));
 		}
 	}
