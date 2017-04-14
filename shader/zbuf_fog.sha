@@ -16,17 +16,16 @@ uniform float start;
 uniform float end;
 uniform float exponent;
 uniform float sphereness;
-uniform float sphereness_ofs;
 
 uniform vec4 fog_color;
 
 void main(void) {
 	vec2 pos = vec2(gl_TexCoord[0]);
 
-	float z = pow(texture2D(depth,pos).x+sphereness*length(pos-vec2(sphereness_ofs,0.0)), exponent);
+	float z = pow(texture2D(depth,(gl_TextureMatrix[0]*vec4(pos,0.0,1.0)).xy).x+sphereness*length(pos-vec2(0.5,0.0)), exponent);
 
 
 	float f = clamp((end - z)/(end-start),0.0,1.0);
 
-	gl_FragColor = f*texture2D(tex, pos) + (1.0-f)*fog_color;
+	gl_FragColor = f*texture2D(tex, (gl_TextureMatrix[0]*vec4(pos,0.0,1.0)).xy) + (1.0-f)*fog_color;
 }

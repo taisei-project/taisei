@@ -27,7 +27,9 @@ void set_perspective_viewport(Stage3D *s, float n, float f, int vx, int vy, int 
 	glMatrixMode(GL_PROJECTION);
 
 	glLoadIdentity();
-	glTranslatef(-(vw/2.0)/SCREEN_W, 0, 0);
+	float facw = SCREEN_W/(float)VIEWPORT_W;
+	float fach = SCREEN_H/(float)VIEWPORT_H;
+	glScalef(facw,fach,1);
 	gluPerspective(s->projangle, 1, n, f);
 	glTranslatef(vx+vw/2.0, vy+vh/2.0, 0);
 
