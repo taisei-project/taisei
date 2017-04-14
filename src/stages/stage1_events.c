@@ -110,9 +110,21 @@ void cirno_perfect_freeze(Boss *c, int time) {
 
 	GO_AT(c, 160, 190, 2 + 1.0*I);
 
-	FROM_TO(160, 220, 6-global.diff/2) {
-		create_projectile2c("rice", c->pos + 60, rgb(0.3, 0.4, 0.9), asymptotic, (2.+0.4*global.diff)*cexp(I*(carg(global.plr.pos - c->pos) + 0.5*nfrand())), 2.5);
-		create_projectile2c("rice", c->pos - 60, rgb(0.3, 0.4, 0.9), asymptotic, (2.+0.4*global.diff)*cexp(I*(carg(global.plr.pos - c->pos) + 0.5*nfrand())), 2.5);
+	int d = max(0, global.diff - D_Normal);
+
+	FROM_TO(160 - 50*d, 220 + 30*d, 6-global.diff/2) {
+		float r1, r2;
+
+		if(global.diff > D_Normal) {
+			r1 = sin(time/M_PI*5.3) * cos(2*time/M_PI*5.3);
+			r2 = cos(time/M_PI*5.3) * sin(2*time/M_PI*5.3);
+		} else {
+			r1 = nfrand();
+			r2 = nfrand();
+		}
+
+		create_projectile2c("rice", c->pos + 60, rgb(0.3, 0.4, 0.9), asymptotic, (2.+0.4*global.diff)*cexp(I*(carg(global.plr.pos - c->pos) + 0.5*r1)), 2.5);
+		create_projectile2c("rice", c->pos - 60, rgb(0.3, 0.4, 0.9), asymptotic, (2.+0.4*global.diff)*cexp(I*(carg(global.plr.pos - c->pos) + 0.5*r2)), 2.5);
 	}
 
 	GO_AT(c, 190, 220, -2);
@@ -195,16 +207,21 @@ void cirno_crystal_rain(Boss *c, int time) {
 	if(time < 0)
 		return;
 
+	int hdiff = max(0, (int)global.diff - D_Normal);
+
 	if(frand() > 0.95-0.1*global.diff) {
 		tsrand_fill(2);
 		create_projectile2c("crystal", VIEWPORT_W*afrand(0), rgb(0.2,0.2,0.4), accelerated, 1.0*I, 0.01*I + (-0.005+0.005*global.diff)*anfrand(1));
 	}
 
-	FROM_TO(100, 400, 120-20*global.diff) {
+	FROM_TO(100, 400, 120-20*global.diff - 10 * hdiff) {
 		float i;
-		float n = (global.diff-1)/2.0;
-		for(i = -n; i <= n; i++)
-			create_projectile2c("bigball", c->pos, rgb(0.2,0.2,0.9), asymptotic, 2*cexp(I*carg(global.plr.pos-c->pos)+0.3*I*i), 2.3);
+		bool odd = (hdiff? (_i&1) : 0);
+		float n = (global.diff-1+hdiff*4 + odd)/2.0;
+
+		for(i = -n; i <= n; i++) {
+			create_projectile2c(odd? "plainball" : "bigball", c->pos, rgb(0.2,0.2,0.9), asymptotic, 2*cexp(I*carg(global.plr.pos-c->pos)+0.3*I*i), 2.3);
+		}
 	}
 
 	GO_AT(c, 20, 70, 1+0.6*I);
