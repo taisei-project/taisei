@@ -25,7 +25,9 @@ AttackInfo stage2_spells[] = {
 							hina_amulet, hina_spell_bg, BOSS_DEFAULT_GO_POS},
 	{{ 4,  5,  6,  7},	AT_Spellcard, "Lottery Sign ~ Bad Pick", 30, 36000,
 							hina_bad_pick, hina_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{ 8,  9, 10, 11},	AT_Spellcard, "Lottery Sign ~ Wheel of Fortune", 20, 36000,
+	{{ 8,  9, -1, -1},	AT_Spellcard, "Lottery Sign ~ Wheel of Fortune", 20, 36000,
+							hina_wheel, hina_spell_bg, BOSS_DEFAULT_GO_POS},
+	{{-1, -1, 10, 11},	AT_Spellcard, "Lottery Sign ~ Wheel of Fortune", 25, 36000,
 							hina_wheel, hina_spell_bg, BOSS_DEFAULT_GO_POS},
 	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Lottery Sign ~ Monty Hall Danmaku", 60, 60000,
 							hina_monty, hina_spell_bg, BOSS_DEFAULT_GO_POS},
@@ -417,22 +419,36 @@ void hina_wheel(Boss *h, int time) {
 	int t = time % 400;
 	TIMER(&t);
 
+	static int dir = 0;
+
 	if(time < 0)
 		return;
 
 	GO_TO(h, VIEWPORT_W/2+VIEWPORT_H/2*I, 0.02);
 
-	if(time < 60)
-		return;
+	if(time < 60) {
+		if(time == 0) {
+			if(global.diff > D_Normal) {
+				dir = 1 - 2 * (tsrand()%2);
+			} else {
+				dir = 1;
+			}
+		}
 
-	FROM_TO(0, 400, 5-global.diff) {
+		return;
+	}
+
+	FROM_TO(0, 400, 5-(int)min(global.diff, D_Normal)) {
 		int i;
 		float speed = 10;
 		if(time > 500)
 			speed = 1+9*exp(-(time-500)/100.0);
 
-		for(i = 1; i < 6; i++) {
-			create_projectile1c("crystal", h->pos, rgb(log(1+time*1e-3),0,0.2), linear, speed*cexp(I*2*M_PI/5*(i+time/100.0+frand()*time/1700.0)));
+		float d = max(0, (int)global.diff - D_Normal);
+
+		for(i = 1; i < 6+d; i++) {
+			float a = dir * 2*M_PI/(5+d)*(i+(1 + 0.4 * d)*time/100.0+(1 + 0.2 * d)*frand()*time/1700.0);
+			create_projectile1c("crystal", h->pos, rgb(log(1+time*1e-3),0,0.2), linear, speed*cexp(I*a));
 		}
 	}
 }
@@ -634,7 +650,7 @@ Boss *create_hina(void) {
 	boss_add_attack_from_info(hina, stage2_spells+0, false);
 	boss_add_attack(hina, AT_Normal, "Cards2", 17, 15000, hina_cards2, NULL);
 	boss_add_attack_from_info(hina, stage2_spells+1, false);
-	boss_add_attack_from_info(hina, stage2_spells+2, false);
+	boss_add_attack_from_info(hina, stage2_spells+2 + (global.diff > D_Normal), false);
 
 	start_attack(hina, hina->attacks);
 	return hina;
