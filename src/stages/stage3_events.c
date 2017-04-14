@@ -683,10 +683,12 @@ int stage3_boss_a2_laserbullet(Projectile *p, int time) {
 
 	Laser *laser = (Laser*)REF(p->args[0]);
 
-	if(!laser)
-		return ACTION_DESTROY;
+	if(laser) {
+		p->args[3] = laser->prule(laser, time - p->args[1]) - p->pos;
+	}
 
-	p->pos = laser->prule(laser, time - p->args[1]);
+	p->angle = carg(p->args[3]);
+	p->pos = p->pos + p->args[3];
 
 	return 1;
 }
@@ -767,36 +769,53 @@ void stage3_boss_a3(Boss *boss, int time) {
 	}
 
 	int d = 4 - min(global.diff, D_Hard);
-	FROM_TO_INT(0, 1000000, 100, 60, d) {
-		float a = _ni*2*M_PI/(15.0/d) + _i + time*2;
+	int t = 25 * (3 - max((int)global.diff - D_Normal, 0));
+
+	FROM_TO_INT(0, 1000000, 60 + t, 60, d) {
+		float rspeed = global.diff > D_Normal ? 4 : 1; // 1.0 +  // 23 * max((float)global.diff - D_Normal, 0);
+		float a = _ni*2*M_PI/(15.0/d) + _i + time*2*rspeed;
 		float dt = 150;
 		float lt = 100;
+		float s = 1.0;
 
-		float b = 0.5;
-
-		Color c1;
-		Color c2;
+		float b = 0.35;
+		Color c1, c2, c3;
 
 		if(_i % 2) {
-			c1 = rgb(1.0, 1.0, b);
-			c2 = rgb(b, 1.0, b);
+			c1 = rgb(1, 1, b);
+			c2 = rgb(b, 1, b);
+			c3 = rgb(1, b, b*0.5);
+			s *= 0.8;
 		} else {
-			c1 = rgb(1.0, b, b);
-			c2 = rgb(b, b, 1.0);
+			c1 = rgb(1, b, b);
+			c2 = rgb(b, b, 1);
+			c3 = rgb(b*0.75, 1, 1);
+			lt *= 0.5;
+
+			a *= -1;
 		}
 
-		create_lasercurve3c(boss->pos, lt, dt, c1, las_sine, 3 * cexp(I*a), M_PI/4, 0.05*global.diff/D_Lunatic);
-		create_lasercurve4c(boss->pos, lt, dt, c2, las_sine, 3 * cexp(I*a), M_PI/4, 0.05*global.diff/D_Lunatic, M_PI);
+		Laser *l;
 
-		if(global.diff > D_Hard)
-			create_lasercurve2c(boss->pos, lt, dt, rgb(b, 1.0, 1.0), las_accel, 0, 0.1 * cexp(I*(a + M_PI)));
+		l = create_lasercurve3c(boss->pos, lt, dt, c1, las_sine, s * 3 * cexp(I*a), M_PI/4, s*0.05);
+		create_projectile2c("thickrice",	boss->pos, c1, stage3_boss_a2_laserbullet, add_ref(l), 0)->draw = ProjDrawAdd;
+		l = create_lasercurve4c(boss->pos, lt, dt, c2, las_sine, s * 3 * cexp(I*a), M_PI/4, s*0.05, M_PI);
+		create_projectile2c("thickrice",	boss->pos, c2, stage3_boss_a2_laserbullet, add_ref(l), 0)->draw = ProjDrawAdd;
+
+		if(global.diff >= D_Normal) {
+			dt *= 0.7;
+			l = create_lasercurve3c(boss->pos, dt*0.75, dt, c3, las_turning, 10 * cexp(I*(a)), 2 * cexp(I*(a + M_PI/2)), 30*I);
+			create_projectile2c("rice",	boss->pos, rgb(1.0, 0, 1.0), stage3_boss_a2_laserbullet, add_ref(l), 0)->draw = ProjDrawAdd;
+		}
 	}
 
-	int cnt = 35;
-	FROM_TO_INT(120, 1000000, 60, cnt*2, 1) {
-		create_projectile2c("wave", boss->pos, (_ni % 2)? rgb(1.0, 0.5, 0.5) : rgb(0.5, 0.5, 1.0), (_ni % 2)? asymptotic : linear,
-			cexp(I*2*_ni*M_PI/cnt), 10
-		)->draw = ProjDrawAdd;
+	if(global.diff < D_Hard) {
+		int cnt = 35;
+		FROM_TO_INT(120, 1000000, 60, cnt*2, 1) {
+			create_projectile2c("wave", boss->pos, (_ni % 2)? rgb(1.0, 0.5, 0.5) : rgb(0.5, 0.5, 1.0), (_ni % 2)? asymptotic : linear,
+				cexp(I*2*_ni*M_PI/cnt), 10
+			)->draw = ProjDrawAdd;
+		}
 	}
 }
 
