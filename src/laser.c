@@ -255,7 +255,12 @@ int collision_laser_curve(Laser *l) {
 
 	for(t += l->collision_step; t + l->collision_step <= s && t + l->collision_step <= l->deathtime + l->timeshift; t += l->collision_step) {
 		pos = l->prule(l,t);
-		if(collision_line(last, pos, global.plr.pos, l->width*0.5))
+
+		float t1 = t - ((global.frames - l->birthtime)*l->speed - l->timespan/2 + l->timeshift);
+		float tail = l->timespan/1.9;
+		float s = -0.75/pow(tail,2)*(t1-tail)*(t1+tail);
+
+		if(collision_line(last, pos, global.plr.pos, s*l->width*0.5))
 			return 1;
 		else if(!(global.frames % 5) && global.frames - abs(global.plr.recovery) > 0 && collision_line(last, pos, global.plr.pos, l->width*1.8))
 			player_graze(&global.plr, pos, 7);
@@ -293,6 +298,7 @@ complex las_accel(Laser *l, float t) {
 complex las_sine(Laser *l, float t) {				// [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
 	if(t == EVENT_BIRTH) {
 		l->shader = get_shader("laser_sine");
+		l->collision_step = 3;
 		return 0;
 	}
 
@@ -309,6 +315,26 @@ complex las_sine_expanding(Laser *l, float t) {	// [0] = velocity; [1] = sine am
 
 	double s = (l->args[2] * t + l->args[3]);
 	return l->pos + cexp(I * (carg(l->args[0]) + l->args[1] * sin(s))) * t * cabs(l->args[0]);
+}
+
+complex las_turning(Laser *l, float t) { // [0] = vel0; [1] = vel1; [2] r: turn begin time, i: turn end time
+	if(t == EVENT_BIRTH) {
+		l->shader = get_shader("laser_turning");
+		return 0;
+	}
+
+	complex v0 = l->args[0];
+	complex v1 = l->args[1];
+	float begin = creal(l->args[2]);
+	float end = cimag(l->args[2]);
+
+	float a = clamp((t - begin) / (end - begin), 0, 1);
+	a = 1.0 - (0.5 + 0.5 * cos(a * M_PI));
+	a = 1.0 - pow(1.0 - a, 2);
+
+	complex v = v1 * a + v0 * (1 - a);
+
+	return l->pos + v * t;
 }
 
 float laser_charge(Laser *l, int t, float charge, float width) {
