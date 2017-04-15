@@ -164,15 +164,16 @@ static void video_update_quality(void) {
 
 	float fg = q * config_get_float(CONFIG_FG_QUALITY);
 	float bg = q * config_get_float(CONFIG_BG_QUALITY);
+	float text = q * config_get_float(CONFIG_TEXT_QUALITY);
 
-	log_debug("q:%f, fg:%f, bg:%f", q, fg, bg);
+	log_debug("q:%f, fg:%f, bg:%f, text:%f", q, fg, bg, text);
 
 	reinit_fbo(&resources.fbo.bg[0], bg);
 	reinit_fbo(&resources.fbo.bg[1], bg);
 	reinit_fbo(&resources.fbo.fg[0], fg);
 	reinit_fbo(&resources.fbo.fg[1], fg);
 
-	reload_fonts(q * config_get_float(CONFIG_TEXT_QUALITY));
+	reload_fonts(text);
 }
 
 static void _video_setmode(int w, int h, uint32_t flags, bool fallback) {
