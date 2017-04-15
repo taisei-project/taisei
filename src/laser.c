@@ -255,7 +255,14 @@ int collision_laser_curve(Laser *l) {
 
 	for(t += l->collision_step; t + l->collision_step <= s && t + l->collision_step <= l->deathtime + l->timeshift; t += l->collision_step) {
 		pos = l->prule(l,t);
-		if(collision_line(last, pos, global.plr.pos, l->width*0.5))
+
+		float t1 = t - ((global.frames - l->birthtime)*l->speed - l->timespan/2 + l->timeshift);
+		float tail = l->timespan/1.9;
+		float s = -0.75/pow(tail,2)*(t1-tail)*(t1+tail);
+
+		log_debug("%f", s);
+
+		if(collision_line(last, pos, global.plr.pos, s*l->width*0.5))
 			return 1;
 		else if(!(global.frames % 5) && global.frames - abs(global.plr.recovery) > 0 && collision_line(last, pos, global.plr.pos, l->width*1.8))
 			player_graze(&global.plr, pos, 7);
