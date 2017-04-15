@@ -171,6 +171,8 @@ static void video_update_quality(void) {
 	reinit_fbo(&resources.fbo.bg[1], bg);
 	reinit_fbo(&resources.fbo.fg[0], fg);
 	reinit_fbo(&resources.fbo.fg[1], fg);
+
+	reload_fonts(q * config_get_float(CONFIG_TEXT_QUALITY));
 }
 
 static void _video_setmode(int w, int h, uint32_t flags, bool fallback) {
@@ -415,6 +417,7 @@ void video_init(void) {
 	config_set_callback(CONFIG_VID_RESIZABLE, video_cfg_resizable_callback);
 	config_set_callback(CONFIG_FG_QUALITY, video_quality_callback);
 	config_set_callback(CONFIG_BG_QUALITY, video_quality_callback);
+	config_set_callback(CONFIG_TEXT_QUALITY, video_quality_callback);
 
 	log_info("Video subsystem initialized");
 }

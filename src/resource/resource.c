@@ -387,14 +387,11 @@ const char* resource_util_filename(const char *path) {
 }
 
 void load_resources(void) {
-	init_fonts(config_get_float(CONFIG_TEXT_QUALITY));
-
 	if(glext.draw_instanced) {
 		load_shader_snippets("shader/laser_snippets", "laser_", RESF_PERMANENT);
 	}
 
 	menu_preload();
-
 	resources.stage_postprocess = postprocess_load("shader/postprocess.conf");
 }
 
@@ -435,13 +432,9 @@ void free_resources(bool all) {
 	}
 
 	delete_vbo(&_vbo);
-
 	postprocess_unload(&resources.stage_postprocess);
-
 	delete_fbo(&resources.fbo.bg[0]);
 	delete_fbo(&resources.fbo.bg[1]);
 	delete_fbo(&resources.fbo.fg[0]);
 	delete_fbo(&resources.fbo.fg[1]);
-
-	free_fonts();
 }

@@ -31,6 +31,7 @@ void taisei_shutdown(void) {
 
 	free_all_refs();
 	free_resources(true);
+	uninit_fonts();
 	audio_shutdown();
 	video_shutdown();
 	gamepad_shutdown();
@@ -168,6 +169,7 @@ int main(int argc, char **argv) {
 
 	init_sdl();
 	init_global(&a);
+	init_fonts();
 	video_init();
 	init_resources();
 	draw_loading_screen();
@@ -218,6 +220,7 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 #endif
+
 	MenuData menu;
 	create_main_menu(&menu);
 	menu_loop(&menu);
