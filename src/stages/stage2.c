@@ -131,7 +131,7 @@ Vector **stage2_bg_grass_pos2(Vector pos, float maxrange) {
 	return linear3dpos(pos, maxrange, p, r);
 }
 
-static void stage2_fog(int fbonum) {
+static void stage2_fog(FBO *fbo) {
 	Shader *shader = get_shader("zbuf_fog");
 
 	glUseProgram(shader->prog);
@@ -142,21 +142,21 @@ static void stage2_fog(int fbonum) {
 	glUniform1f(uniloc(shader, "exponent"),3.0);
 	glUniform1f(uniloc(shader, "sphereness"),0);
 	glActiveTexture(GL_TEXTURE0 + 2);
-	glBindTexture(GL_TEXTURE_2D, resources.fbo.bg[fbonum].depth);
+	glBindTexture(GL_TEXTURE_2D, fbo->depth);
 	glActiveTexture(GL_TEXTURE0);
 
-	draw_fbo_viewport(&resources.fbo.bg[fbonum]);
+	draw_fbo_viewport(fbo);
 	glUseProgram(0);
 }
 
-static void stage2_bloom(int fbonum) {
+static void stage2_bloom(FBO *fbo) {
 	Shader *shader = get_shader("bloom");
 
 	glUseProgram(shader->prog);
 	glUniform1i(uniloc(shader, "samples"), 10);
 	glUniform1f(uniloc(shader, "intensity"), 0.05);
 	glUniform1f(uniloc(shader, "radius"), 0.03);
-	draw_fbo_viewport(&resources.fbo.bg[fbonum]);
+	draw_fbo_viewport(fbo);
 	glUseProgram(0);
 }
 

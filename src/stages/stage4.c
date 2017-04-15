@@ -13,7 +13,7 @@
 
 static Stage3D bgcontext;
 
-void stage4_fog(int fbonum) {
+void stage4_fog(FBO *fbo) {
 	Shader *shader = get_shader("zbuf_fog");
 
 	float f = 0;
@@ -30,10 +30,10 @@ void stage4_fog(int fbonum) {
 	glUniform1f(uniloc(shader, "exponent"),4.0);
 	glUniform1f(uniloc(shader, "sphereness"),0);
 	glActiveTexture(GL_TEXTURE0 + 2);
-	glBindTexture(GL_TEXTURE_2D, resources.fbo.bg[fbonum].depth);
+	glBindTexture(GL_TEXTURE_2D, fbo->depth);
 	glActiveTexture(GL_TEXTURE0);
 
-	draw_fbo_viewport(&resources.fbo.bg[fbonum]);
+	draw_fbo_viewport(fbo);
 	glUseProgram(0);
 }
 

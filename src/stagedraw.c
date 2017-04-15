@@ -13,7 +13,7 @@
 static int apply_shaderrules(ShaderRule *shaderrules, int fbonum) {
 	for(ShaderRule *rule = shaderrules; *rule; ++rule) {
 		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo.bg[!fbonum].fbo);
-		(*rule)(fbonum);
+		(*rule)(resources.fbo.bg + fbonum);
 		fbonum = !fbonum;
 	}
 
