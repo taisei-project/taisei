@@ -203,13 +203,13 @@ void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *fo
 
 int stringwidth(char *s, TTF_Font *font) {
 	int w;
-	TTF_SizeText(font, s, &w, NULL);
+	TTF_SizeUTF8(font, s, &w, NULL);
 	return w / resources.fontren.quality;
 }
 
 int stringheight(char *s, TTF_Font *font) {
 	int h;
-	TTF_SizeText(font, s, NULL, &h);
+	TTF_SizeUTF8(font, s, NULL, &h);
 	return h / resources.fontren.quality;
 }
 
