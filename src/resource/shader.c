@@ -300,3 +300,14 @@ int uniloc(Shader *sha, const char *name) {
 Shader* get_shader(const char *name) {
 	return get_resource(RES_SHADER, name, RESF_DEFAULT)->shader;
 }
+
+Shader* get_shader_optional(const char *name) {
+	Resource *r = get_resource(RES_SHADER, name, RESF_OPTIONAL);
+
+	if(!r) {
+		log_warn("Shader %s could not be loaded", name);
+		return NULL;
+	}
+
+	return r->shader;
+}

@@ -278,7 +278,7 @@ int collision_laser_curve(Laser *l) {
 
 complex las_linear(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
-		l->shader = get_shader("laser_linear");
+		l->shader = get_shader_optional("laser_linear");
 		l->collision_step = l->timespan;
 		return 0;
 	}
@@ -288,7 +288,7 @@ complex las_linear(Laser *l, float t) {
 
 complex las_accel(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
-		l->shader = get_shader("laser_accelerated");
+		l->shader = get_shader_optional("laser_accelerated");
 		return 0;
 	}
 
@@ -297,7 +297,7 @@ complex las_accel(Laser *l, float t) {
 
 complex las_sine(Laser *l, float t) {				// [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
 	if(t == EVENT_BIRTH) {
-		l->shader = get_shader("laser_sine");
+		l->shader = get_shader_optional("laser_sine");
 		l->collision_step = 3;
 		return 0;
 	}
@@ -308,7 +308,7 @@ complex las_sine(Laser *l, float t) {				// [0] = velocity; [1] = sine amplitude
 
 complex las_sine_expanding(Laser *l, float t) {	// [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
 	if(t == EVENT_BIRTH) {
-		l->shader = get_shader("laser_sine_expanding");
+		l->shader = get_shader_optional("laser_sine_expanding");
 		l->collision_step = 3;
 		return 0;
 	}
@@ -319,7 +319,7 @@ complex las_sine_expanding(Laser *l, float t) {	// [0] = velocity; [1] = sine am
 
 complex las_turning(Laser *l, float t) { // [0] = vel0; [1] = vel1; [2] r: turn begin time, i: turn end time
 	if(t == EVENT_BIRTH) {
-		l->shader = get_shader("laser_turning");
+		l->shader = get_shader_optional("laser_turning");
 		return 0;
 	}
 

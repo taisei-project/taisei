@@ -24,7 +24,9 @@ void* load_shader_end(void *opaque, const char *path, unsigned int flags);
 void unload_shader(void *vsha);
 
 void load_shader_snippets(const char *filename, const char *prefix, unsigned int flags);
+
 Shader* get_shader(const char *name);
+Shader* get_shader_optional(const char *name);
 
 int uniloc(Shader *sha, const char *name);
 
