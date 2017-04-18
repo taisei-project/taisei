@@ -75,8 +75,6 @@ static bool extension_supported(const char *ext) {
 
 			arg = NULL;
 		}
-
-		abort();
 	}
 
 	return SDL_GL_ExtensionSupported(ext);
