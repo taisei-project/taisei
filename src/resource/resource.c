@@ -120,7 +120,6 @@ static int load_resource_async_thread(void *vdata) {
 	evt.user.data1 = data;
 	SDL_PushEvent(&evt);
 
-	log_debug("Thread is exiting");
 	return 0;
 }
 

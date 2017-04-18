@@ -171,8 +171,6 @@ StageProgress* stage_get_progress_from_info(StageInfo *stage, Difficulty diff, b
 		size_t allocsize = sizeof(StageProgress) * (fixed_diff ? 1 : NUM_SELECTABLE_DIFFICULTIES);
 		stage->progress = malloc(allocsize);
 		memset(stage->progress, 0, allocsize);
-
-		log_debug("Allocated %lu bytes for stage %u (%s: %s)", (unsigned long int)allocsize, stage->id, stage->title, stage->subtitle);
 	}
 
 	return stage->progress + (fixed_diff ? 0 : diff - D_Easy);
