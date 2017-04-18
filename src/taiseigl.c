@@ -102,20 +102,20 @@ void check_gl_extensions(void) {
 	glext.EXT_draw_instanced = extension_supported("GL_EXT_draw_instanced");
 	glext.ARB_draw_instanced = extension_supported("GL_ARB_draw_instanced");
 
-	glext.draw_instanced = glext.EXT_draw_instanced;
+	glext.draw_instanced = glext.ARB_draw_instanced;
 
 	if(glext.draw_instanced) {
-		glext.DrawArraysInstanced = tsglDrawArraysInstancedEXT;
+		glext.DrawArraysInstanced = tsglDrawArraysInstancedARB;
 		if(!glext.DrawArraysInstanced) {
 			glext.draw_instanced = false;
 		}
 	}
 
 	if(!glext.draw_instanced) {
-		glext.draw_instanced = glext.ARB_draw_instanced;
+		glext.draw_instanced = glext.EXT_draw_instanced;
 
 		if(glext.draw_instanced) {
-			glext.DrawArraysInstanced = tsglDrawArraysInstancedARB;
+			glext.DrawArraysInstanced = tsglDrawArraysInstancedEXT;
 			if(!glext.DrawArraysInstanced) {
 				glext.draw_instanced = false;
 			}
