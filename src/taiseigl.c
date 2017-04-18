@@ -53,6 +53,35 @@ static void get_gl_version(char *major, char *minor) {
 	*minor = atoi(dot+1);
 }
 
+static bool extension_supported(const char *ext) {
+	const char *overrides = getenv("TAISEI_GL_EXT_OVERRIDES");
+
+	if(overrides) {
+		char buf[strlen(overrides)+1], *save, *arg, *e;
+		strcpy(buf, overrides);
+		arg = buf;
+
+		while(e = strtok_r(arg, " ", &save)) {
+			bool r = true;
+
+			if(*e == '-') {
+				++e;
+				r = false;
+			}
+
+			if(!strcmp(e, ext)) {
+				return r;
+			}
+
+			arg = NULL;
+		}
+
+		abort();
+	}
+
+	return SDL_GL_ExtensionSupported(ext);
+}
+
 void check_gl_extensions(void) {
 	get_gl_version(&glext.version.major, &glext.version.minor);
 
@@ -70,8 +99,8 @@ void check_gl_extensions(void) {
 	glext.draw_instanced = false;
 	glext.DrawArraysInstanced = NULL;
 
-	glext.EXT_draw_instanced = SDL_GL_ExtensionSupported("GL_EXT_draw_instanced");
-	glext.ARB_draw_instanced = SDL_GL_ExtensionSupported("GL_ARB_draw_instanced");
+	glext.EXT_draw_instanced = extension_supported("GL_EXT_draw_instanced");
+	glext.ARB_draw_instanced = extension_supported("GL_ARB_draw_instanced");
 
 	glext.draw_instanced = glext.EXT_draw_instanced;
 
