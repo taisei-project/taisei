@@ -108,10 +108,12 @@ static void APIENTRY video_gl_debug(
 		case GL_DEBUG_SEVERITY_LOW: strsev = "low"; break;
 		case GL_DEBUG_SEVERITY_MEDIUM: strsev = "medium"; break;
 		case GL_DEBUG_SEVERITY_HIGH: strsev = "high"; break;
-		case GL_DEBUG_SEVERITY_NOTIFICATION: strsev = "notify";
-						     if(type == GL_DEBUG_TYPE_OTHER)
-							     return;
-						     break;
+		case GL_DEBUG_SEVERITY_NOTIFICATION: strsev = "notify"; break;
+	}
+
+	if(type == GL_DEBUG_TYPE_OTHER && severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
+		// too verbose, spits a message every time some text is drawn
+		return;
 	}
 
 	log_custom(lvl, "[OpenGL debug, %s, %s] %i: %s", strtype, strsev, id, message);
@@ -122,6 +124,7 @@ static void APIENTRY video_gl_debug_enable(void) {
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	glDebugMessageCallback(video_gl_debug, NULL);
 	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, &unused, true);
+	log_info("Enabled OpenGL debugging");
 }
 #endif
 
@@ -132,11 +135,10 @@ static void video_init_gl(void) {
 	check_gl_extensions();
 
 #ifdef DEBUG_GL
-	if(glext.version.major >= 4 && glext.version.minor >= 3) {
+	if(glext.debug_output) {
 		video_gl_debug_enable();
 	} else {
-		log_warn("Can't enable debugging, OpenGL context is too old (>=4.3 required, %i.%i current)",
-				glext.version.major, glext.version.minor);
+		log_warn("OpenGL debugging is not supported by the implementation");
 	}
 #endif
 

@@ -80,7 +80,56 @@ static bool extension_supported(const char *ext) {
 	return SDL_GL_ExtensionSupported(ext);
 }
 
+static void check_glext_draw_instanced(void) {
+	if(glext.draw_instanced = (
+		(glext.ARB_draw_instanced = extension_supported("GL_ARB_draw_instanced")) &&
+		(glext.DrawArraysInstanced = tsglDrawArraysInstancedARB)
+	)) {
+		log_debug("Using GL_ARB_draw_instanced");
+		return;
+	} else {
+		glext.ARB_draw_instanced = false;
+	}
+
+	if(glext.draw_instanced = (
+		(glext.EXT_draw_instanced = extension_supported("GL_EXT_draw_instanced")) &&
+		(glext.DrawArraysInstanced = tsglDrawArraysInstancedARB)
+	)) {
+		log_debug("Using GL_EXT_draw_instanced");
+		return;
+	} else {
+		glext.EXT_draw_instanced = false;
+	}
+
+	log_warn(
+		"glDrawArraysInstanced is not supported. "
+		"Your video driver is probably bad, or very old, or both. "
+		"Expect terrible performance."
+	);
+}
+
+static void check_glext_debug_output(void) {
+	if(glext.debug_output = (
+		extension_supported("GL_ARB_debug_output") &&
+		(glext.DebugMessageCallback = tsglDebugMessageCallbackARB) &&
+		(glext.DebugMessageControl = tsglDebugMessageControlARB)
+	)) {
+		log_debug("Using GL_ARB_debug_output");
+		return;
+	}
+
+	if(glext.debug_output = (
+		extension_supported("GL_KHR_debug") &&
+		(glext.DebugMessageCallback = tsglDebugMessageCallback) &&
+		(glext.DebugMessageControl = tsglDebugMessageControl)
+	)) {
+		log_debug("Using GL_KHR_debug");
+		return;
+	}
+}
+
 void check_gl_extensions(void) {
+	memset(&glext, 0, sizeof(glext));
 	get_gl_version(&glext.version.major, &glext.version.minor);
 
 	const char *glslv = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
@@ -93,40 +142,10 @@ void check_gl_extensions(void) {
 	log_info("OpenGL vendor: %s", (const char*)glGetString(GL_VENDOR));
 	log_info("OpenGL renderer: %s", (const char*)glGetString(GL_RENDERER));
 	log_info("GLSL version: %s", glslv);
+	log_debug("Supported extensions: %s", (const char*)glGetString(GL_EXTENSIONS));
 
-	glext.draw_instanced = false;
-	glext.DrawArraysInstanced = NULL;
-
-	glext.EXT_draw_instanced = extension_supported("GL_EXT_draw_instanced");
-	glext.ARB_draw_instanced = extension_supported("GL_ARB_draw_instanced");
-
-	glext.draw_instanced = glext.ARB_draw_instanced;
-
-	if(glext.draw_instanced) {
-		glext.DrawArraysInstanced = tsglDrawArraysInstancedARB;
-		if(!glext.DrawArraysInstanced) {
-			glext.draw_instanced = false;
-		}
-	}
-
-	if(!glext.draw_instanced) {
-		glext.draw_instanced = glext.EXT_draw_instanced;
-
-		if(glext.draw_instanced) {
-			glext.DrawArraysInstanced = tsglDrawArraysInstancedEXT;
-			if(!glext.DrawArraysInstanced) {
-				glext.draw_instanced = false;
-			}
-		}
-	}
-
-	if(!glext.draw_instanced) {
-		log_warn(
-			"glDrawArraysInstanced is not supported. "
-			"Your video driver is probably bad, or very old, or both. "
-			"Expect terrible performance."
-		);
-	}
+	check_glext_draw_instanced();
+	check_glext_debug_output();
 }
 
 void load_gl_library(void) {

@@ -12,6 +12,8 @@ force_funcs = {
     'glGetShaderiv',
     'glGetShaderInfoLog',
     'glGetProgramInfoLog',
+    'glDebugMessageControlARB',
+    'glDebugMessageCallbackARB',
 }
 
 force_funcs |= {"glUniform%i%sv" % (i, s) for i in range(1, 5) for s in ('f', 'i', 'ui')}
@@ -150,7 +152,9 @@ typedef GLuint (APIENTRY *tsglCreateProgram_ptr)(void);
 typedef GLuint (APIENTRY *tsglCreateShader_ptr)(GLenum type);
 typedef void (GLAPIENTRY *tsglCullFace_ptr)(GLenum mode);
 typedef void (APIENTRY *tsglDebugMessageCallback_ptr)(GLDEBUGPROC callback, const void *userParam);
+typedef void (APIENTRY *tsglDebugMessageCallbackARB_ptr)(GLDEBUGPROCARB callback, const void *userParam);
 typedef void (APIENTRY *tsglDebugMessageControl_ptr)(GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint *ids, GLboolean enabled);
+typedef void (APIENTRY *tsglDebugMessageControlARB_ptr)(GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint *ids, GLboolean enabled);
 typedef void (APIENTRY *tsglDeleteBuffers_ptr)(GLsizei n, const GLuint *buffers);
 typedef void (APIENTRY *tsglDeleteFramebuffers_ptr)(GLsizei n, const GLuint *framebuffers);
 typedef void (APIENTRY *tsglDeleteProgram_ptr)(GLuint program);
@@ -241,7 +245,9 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glCreateShader
 #undef glCullFace
 #undef glDebugMessageCallback
+#undef glDebugMessageCallbackARB
 #undef glDebugMessageControl
+#undef glDebugMessageControlARB
 #undef glDeleteBuffers
 #undef glDeleteFramebuffers
 #undef glDeleteProgram
@@ -333,7 +339,9 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glCreateShader tsglCreateShader
 #define glCullFace tsglCullFace
 #define glDebugMessageCallback tsglDebugMessageCallback
+#define glDebugMessageCallbackARB tsglDebugMessageCallbackARB
 #define glDebugMessageControl tsglDebugMessageControl
+#define glDebugMessageControlARB tsglDebugMessageControlARB
 #define glDeleteBuffers tsglDeleteBuffers
 #define glDeleteFramebuffers tsglDeleteFramebuffers
 #define glDeleteProgram tsglDeleteProgram
@@ -427,7 +435,9 @@ GLDEF(glCreateProgram, tsglCreateProgram, tsglCreateProgram_ptr) \
 GLDEF(glCreateShader, tsglCreateShader, tsglCreateShader_ptr) \
 GLDEF(glCullFace, tsglCullFace, tsglCullFace_ptr) \
 GLDEF(glDebugMessageCallback, tsglDebugMessageCallback, tsglDebugMessageCallback_ptr) \
+GLDEF(glDebugMessageCallbackARB, tsglDebugMessageCallbackARB, tsglDebugMessageCallbackARB_ptr) \
 GLDEF(glDebugMessageControl, tsglDebugMessageControl, tsglDebugMessageControl_ptr) \
+GLDEF(glDebugMessageControlARB, tsglDebugMessageControlARB, tsglDebugMessageControlARB_ptr) \
 GLDEF(glDeleteBuffers, tsglDeleteBuffers, tsglDeleteBuffers_ptr) \
 GLDEF(glDeleteFramebuffers, tsglDeleteFramebuffers, tsglDeleteFramebuffers_ptr) \
 GLDEF(glDeleteProgram, tsglDeleteProgram, tsglDeleteProgram_ptr) \
@@ -525,7 +535,9 @@ GLAPI GLuint APIENTRY glCreateProgram (void);
 GLAPI GLuint APIENTRY glCreateShader (GLenum type);
 GLAPI void GLAPIENTRY glCullFace( GLenum mode );
 GLAPI void APIENTRY glDebugMessageCallback (GLDEBUGPROC callback, const void *userParam);
+GLAPI void APIENTRY glDebugMessageCallbackARB (GLDEBUGPROCARB callback, const void *userParam);
 GLAPI void APIENTRY glDebugMessageControl (GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint *ids, GLboolean enabled);
+GLAPI void APIENTRY glDebugMessageControlARB (GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint *ids, GLboolean enabled);
 GLAPI void APIENTRY glDeleteBuffers (GLsizei n, const GLuint *buffers);
 GLAPI void APIENTRY glDeleteFramebuffers (GLsizei n, const GLuint *framebuffers);
 GLAPI void APIENTRY glDeleteProgram (GLuint program);
@@ -616,7 +628,9 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglCreateShader glCreateShader
 #define tsglCullFace glCullFace
 #define tsglDebugMessageCallback glDebugMessageCallback
+#define tsglDebugMessageCallbackARB glDebugMessageCallbackARB
 #define tsglDebugMessageControl glDebugMessageControl
+#define tsglDebugMessageControlARB glDebugMessageControlARB
 #define tsglDeleteBuffers glDeleteBuffers
 #define tsglDeleteFramebuffers glDeleteFramebuffers
 #define tsglDeleteProgram glDeleteProgram
@@ -695,10 +709,13 @@ struct glext_s {
     } version;
 
     unsigned int draw_instanced: 1;
+    unsigned int debug_output: 1;
     unsigned int EXT_draw_instanced: 1;
     unsigned int ARB_draw_instanced: 1;
 
     tsglDrawArraysInstanced_ptr DrawArraysInstanced;
+    tsglDebugMessageControl_ptr DebugMessageControl;
+    tsglDebugMessageCallback_ptr DebugMessageCallback;
 };
 
 #endif // !TAISEIGL_H
@@ -707,9 +724,15 @@ struct glext_s {
 
 #ifndef TAISEIGL_NO_EXT_ABSTRACTION
     #undef glDrawArraysInstanced
+    #undef glDebugMessageControl
+    #undef glDebugMessageCallback
     #define glDrawArraysInstanced (glext.DrawArraysInstanced)
+    #define glDebugMessageControl (glext.DebugMessageControl)
+    #define glDebugMessageCallback (glext.DebugMessageCallback)
 #elif defined(LINK_TO_LIBGL)
     #undef glDrawArraysInstanced
+    #undef glDebugMessageControl
+    #undef glDebugMessageCallback
 #endif // !TAISEIGL_NO_EXT_ABSTRACTION
 
 // Don't even think about touching the construct below
