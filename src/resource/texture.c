@@ -10,7 +10,6 @@
 #include "texture.h"
 #include "resource.h"
 #include "global.h"
-#include "paths/native.h"
 #include "vbo.h"
 
 char* texture_path(const char *name) {
@@ -86,10 +85,6 @@ Texture* prefix_get_tex(const char *name, const char *prefix) {
 
 static ImageData* load_png_p(const char *filename, SDL_RWops *rwops) {
 #define PNGFAIL(msg) { log_warn("Couldn't load '%s': %s", filename, msg); return NULL; }
-	if(!rwops) {
-		PNGFAIL(SDL_GetError())
-	}
-
 	png_structp png_ptr;
 	if(!(png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL))) {
 		PNGFAIL("png_create_read_struct() failed")
@@ -150,13 +145,16 @@ static ImageData* load_png_p(const char *filename, SDL_RWops *rwops) {
 }
 
 static ImageData* load_png(const char *filename) {
-	SDL_RWops *rwops = SDL_RWFromFile(filename, "r");
-	ImageData *img = load_png_p(filename, rwops);
+	SDL_RWops *rwops = vfs_open(filename, VFS_MODE_READ);
 
-	if(rwops) {
-		SDL_RWclose(rwops);
+	if(!rwops) {
+		log_warn("VFS error: %s", vfs_get_error());
+		return NULL;
 	}
 
+	ImageData *img = load_png_p(filename, rwops);
+
+	SDL_RWclose(rwops);
 	return img;
 }
 

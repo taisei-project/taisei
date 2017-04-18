@@ -131,10 +131,10 @@ static void free_obj(ObjFileData *data) {
 }
 
 static void parse_obj(const char *filename, ObjFileData *data) {
-	SDL_RWops *rw = SDL_RWFromFile(filename, "r");
+	SDL_RWops *rw = vfs_open(filename, VFS_MODE_READ);
 
 	if(!rw) {
-		log_warn("SDL_RWFromFile() failed: %s", SDL_GetError());
+		log_warn("VFS error: %s", vfs_get_error());
 		return;
 	}
 

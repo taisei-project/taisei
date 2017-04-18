@@ -30,7 +30,7 @@ Shader* get_shader_optional(const char *name);
 
 int uniloc(Shader *sha, const char *name);
 
-#define SHA_PATH_PREFIX "shader/"
+#define SHA_PATH_PREFIX "res/shader/"
 #define SHA_EXTENSION ".sha"
 
 #define SHA_DELIM "%% -- FRAG"

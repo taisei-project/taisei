@@ -46,9 +46,6 @@
 #include "rwops/all.h"
 #include "cli.h"
 
-#define FILE_PREFIX PREFIX "/share/taisei/"
-#define CONFIG_FILE "config"
-
 enum {
 	// defaults
 	RESX = 800,

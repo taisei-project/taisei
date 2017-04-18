@@ -8,7 +8,6 @@
 #include <zlib.h>
 
 #include "progress.h"
-#include "paths/native.h"
 #include "stage.h"
 
 /*
@@ -67,10 +66,6 @@ GlobalProgress progress;
 static uint8_t progress_magic_bytes[] = {
 	0x00, 0x67, 0x74, 0x66, 0x6f, 0xe3, 0x83, 0x84
 };
-
-static char* progress_getpath(void) {
-	return strfmt("%s/%s", get_config_path(), PROGRESS_FILENAME);
-}
 
 static uint32_t progress_checksum(uint8_t *buf, size_t num) {
 	return crc32(0xB16B00B5, buf, num);
@@ -573,31 +568,25 @@ void progress_load(void) {
 	progress_save();
 #endif
 
-	char *p = progress_getpath();
-	SDL_RWops *file = SDL_RWFromFile(p, "rb");
+	SDL_RWops *file = vfs_open(PROGRESS_FILE, VFS_MODE_READ);
 
 	if(!file) {
-		log_warn("Couldn't open the progress file: %s", SDL_GetError());
-		free(p);
+		log_warn("Couldn't open the progress file: %s", vfs_get_error());
 		return;
 	}
 
-	free(p);
 	progress_read(file);
 	SDL_RWclose(file);
 }
 
 void progress_save(void) {
-	char *p = progress_getpath();
-	SDL_RWops *file = SDL_RWFromFile(p, "wb");
+	SDL_RWops *file = vfs_open(PROGRESS_FILE, VFS_MODE_WRITE);
 
 	if(!file) {
-		log_warn("Couldn't open the progress file: %s", SDL_GetError());
-		free(p);
+		log_warn("Couldn't open the progress file: %s", vfs_get_error());
 		return;
 	}
 
-	free(p);
 	progress_write(file);
 	SDL_RWclose(file);
 }

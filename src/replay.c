@@ -14,7 +14,6 @@
 #include <time.h>
 
 #include "global.h"
-#include "paths/native.h"
 
 static uint8_t replay_magic_header[] = REPLAY_MAGIC_HEADER;
 
@@ -137,7 +136,7 @@ static void replay_write_string(SDL_RWops *file, char *str) {
 	SDL_RWwrite(file, str, 1, strlen(str));
 }
 
-static int replay_write_stage_event(ReplayEvent *evt, SDL_RWops *file) {
+static bool replay_write_stage_event(ReplayEvent *evt, SDL_RWops *file) {
 	SDL_WriteLE32(file, evt->frame);
 	SDL_WriteU8(file, evt->type);
 	SDL_WriteLE16(file, evt->value);
@@ -166,7 +165,7 @@ static uint32_t replay_calc_stageinfo_checksum(ReplayStage *stg) {
 	return cs;
 }
 
-static int replay_write_stage(ReplayStage *stg, SDL_RWops *file) {
+static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file) {
 	SDL_WriteLE16(file, stg->stage);
 	SDL_WriteLE32(file, stg->seed);
 	SDL_WriteU8(file, stg->diff);
@@ -188,7 +187,7 @@ static int replay_write_stage(ReplayStage *stg, SDL_RWops *file) {
 	return true;
 }
 
-int replay_write(Replay *rpy, SDL_RWops *file, bool compression) {
+bool replay_write(Replay *rpy, SDL_RWops *file, bool compression) {
 	uint16_t version = REPLAY_STRUCT_VERSION;
 	int i, j;
 
@@ -271,7 +270,7 @@ static void replay_read_string(SDL_RWops *file, char **ptr) {
 	SDL_RWread(file, *ptr, 1, len);
 }
 
-static int replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, size_t *ofs) {
+static bool replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, size_t *ofs) {
 	uint8_t header[sizeof(replay_magic_header)];
 	(*ofs) += sizeof(header);
 
@@ -298,7 +297,7 @@ static int replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, si
 	return true;
 }
 
-static int replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize) {
+static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 	replay_read_string(file, &rpy->playername);
 	PRINTPROP(rpy->playername, s);
 
@@ -341,7 +340,7 @@ static int replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 	return true;
 }
 
-static int replay_read_events(Replay *rpy, SDL_RWops *file, int64_t filesize) {
+static bool replay_read_events(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 	for(int i = 0; i < rpy->numstages; ++i) {
 		ReplayStage *stg = rpy->stages + i;
 
@@ -365,8 +364,8 @@ static int replay_read_events(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 	return true;
 }
 
-int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
-	int64_t filesize; // must be signed
+bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
+	ssize_t filesize; // must be signed
 	SDL_RWops *vfile = file;
 
 	mode &= REPLAY_READ_ALL;
@@ -478,58 +477,73 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 #undef CHECKPROP
 #undef PRINTPROP
 
-char* replay_getpath(const char *name, bool ext) {
-	return ext ? strfmt("%s/%s.%s", get_replays_path(), name, REPLAY_EXTENSION) :
-					strfmt("%s/%s", get_replays_path(), name);
+static char* replay_getpath(const char *name, bool ext) {
+	return ext ?	strfmt("storage/replays/%s.%s", name, REPLAY_EXTENSION) :
+					strfmt("storage/replays/%s", 	name);
 }
 
-int replay_save(Replay *rpy, const char *name) {
+bool replay_save(Replay *rpy, const char *name) {
 	char *p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION));
-	log_info("Saving %s", p);
+	char *sp = vfs_syspath_or_repr(p);
+	log_info("Saving %s", sp);
+	free(sp);
 
-	SDL_RWops *file = SDL_RWFromFile(p, "wb");
+	SDL_RWops *file = vfs_open(p, VFS_MODE_WRITE);
 	free(p);
 
 	if(!file) {
-		log_warn("SDL_RWFromFile() failed: %s", SDL_GetError());
+		log_warn("VFS error: %s", vfs_get_error());
 		return false;
 	}
 
-	int result = replay_write(rpy, file, REPLAY_WRITE_COMPRESSED);
+	bool result = replay_write(rpy, file, REPLAY_WRITE_COMPRESSED);
 	SDL_RWclose(file);
 	return result;
 }
 
-int replay_load(Replay *rpy, const char *name, ReplayReadMode mode) {
-	char *p;
+bool replay_load(Replay *rpy, const char *name, ReplayReadMode mode) {
+	char *p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION));
+	char *sp = vfs_syspath_or_repr(p);
+	log_info("Loading %s (mode %i)", sp, mode);
+	free(sp);
 
-	if(mode & REPLAY_READ_RAWPATH) {
-		p = (char*)name;
-	} else {
-		p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION));
+	SDL_RWops *file = vfs_open(p, VFS_MODE_READ);
+	free(p);
+
+	if(!file) {
+		log_warn("VFS error: %s", vfs_get_error());
+		return false;
 	}
 
-	log_info("replay_load(): loading %s (mode %i)", p, mode);
+	bool result = replay_read(rpy, file, mode);
+
+	if(!result) {
+		replay_destroy(rpy);
+	}
+
+	SDL_RWclose(file);
+	return result;
+}
+
+bool replay_load_syspath(Replay *rpy, const char *path, ReplayReadMode mode) {
+	log_info("Loading %s (mode %i)", path, mode);
 	SDL_RWops *file;
+
 #ifndef __WINDOWS__
-	if(!strcmp(name,"-"))
+	if(!strcmp(path, "-"))
 		file = SDL_RWFromFP(stdin,false);
 	else
-		file = SDL_RWFromFile(p, "rb");
+		file = SDL_RWFromFile(path, "rb");
 #else
-	file = SDL_RWFromFile(p, "rb");
+	file = SDL_RWFromFile(path, "rb");
 #endif
-
-	if(!(mode & REPLAY_READ_RAWPATH)) {
-		free(p);
-	}
 
 	if(!file) {
 		log_warn("SDL_RWFromFile() failed: %s", SDL_GetError());
 		return false;
 	}
 
-	int result = replay_read(rpy, file, mode);
+	bool result = replay_read(rpy, file, mode);
 
 	if(!result) {
 		replay_destroy(rpy);
@@ -689,14 +703,4 @@ void replay_play(Replay *rpy, int firstidx) {
 	replay_destroy(&global.replay);
 	global.replay_stage = NULL;
 	free_resources(false);
-}
-
-void replay_play_path(const char *path, int firstidx) {
-	replay_destroy(&global.replay);
-
-	if(!replay_load(&global.replay, path, REPLAY_READ_ALL | REPLAY_READ_RAWPATH)) {
-		return;
-	}
-
-	replay_play(&global.replay, firstidx);
 }

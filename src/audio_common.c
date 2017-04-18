@@ -67,9 +67,7 @@ static void bgm_cfg_volume_callback(ConfigIndex idx, ConfigValue v) {
 }
 
 static void load_bgm_descriptions(void) {
-    char *fullname = strjoin(get_prefix(), "bgm/bgm.conf", NULL);
-    bgm_descriptions = parse_keyvalue_file(fullname, 16);
-    free(fullname);
+    bgm_descriptions = parse_keyvalue_file(BGM_PATH_PREFIX "bgm.conf", HT_DYNAMIC_SIZE);
     return;
 }
 

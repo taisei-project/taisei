@@ -87,15 +87,13 @@ set(SRCs
 	rwops/rwops_zlib.c
 	rwops/rwops_segment.c
 	rwops/rwops_autobuf.c
+	vfs/private.c
+	vfs/public.c
+	vfs/pathutil.c
+	vfs/syspath_posix.c # TODO: write a win32 version of this
+	vfs/union.c
+	vfs/vdir.c
 )
-
-if(USE_SDL2_PATHS)
-    set(SRCs ${SRCs} paths/sdl.c)
-elseif(RELATIVE)
-	set(SRCs ${SRCs} paths/relative.c)
-else()
-	set(SRCs ${SRCs} paths/static.c)
-endif()
 
 if(NO_AUDIO)
 	set(SRCs ${SRCs}

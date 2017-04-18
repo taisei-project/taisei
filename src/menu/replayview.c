@@ -6,14 +6,12 @@
  * Copyright (C) 2012, Alexeyew Andrew <https://github.com/nexAkari>
  */
 
-#include <dirent.h>
 #include <time.h>
 #include "global.h"
 #include "menu.h"
 #include "options.h"
 #include "mainmenu.h"
 #include "replayview.h"
-#include "paths/native.h"
 #include "plrmodes.h"
 #include "video.h"
 #include "common.h"
@@ -257,24 +255,24 @@ int replayview_cmp(const void *a, const void *b) {
 }
 
 int fill_replayview_menu(MenuData *m) {
-	DIR *dir = opendir(get_replays_path());
-	struct dirent *e;
+	VFSDir *dir = vfs_dir_open("storage/replays");
+	const char *filename;
 	int rpys = 0;
 
 	if(!dir) {
-		log_warn("Could't read %s", get_replays_path());
+		log_warn("VFS error: %s", vfs_get_error());
 		return -1;
 	}
 
 	char ext[5];
 	snprintf(ext, 5, ".%s", REPLAY_EXTENSION);
 
-	while((e = readdir(dir))) {
-		if(!strendswith(e->d_name, ext))
+	while((filename = vfs_dir_read(dir))) {
+		if(!strendswith(filename, ext))
 			continue;
 
 		Replay *rpy = malloc(sizeof(Replay));
-		if(!replay_load(rpy, e->d_name, REPLAY_READ_META)) {
+		if(!replay_load(rpy, filename, REPLAY_READ_META)) {
 			free(rpy);
 			continue;
 		}
@@ -283,14 +281,13 @@ int fill_replayview_menu(MenuData *m) {
 		memset(ictx, 0, sizeof(ReplayviewItemContext));
 
 		ictx->replay = rpy;
-		ictx->replayname = malloc(strlen(e->d_name) + 1);
-		strcpy(ictx->replayname, e->d_name);
+		ictx->replayname = strdup(filename);
 
 		add_menu_entry(m, " ", replayview_run, ictx)->transition = rpy->numstages < 2 ? TransFadeBlack : NULL;
 		++rpys;
 	}
 
-	closedir(dir);
+	vfs_dir_close(dir);
 
 	if(m->entries) {
 		qsort(m->entries, m->ecount, sizeof(MenuEntry), replayview_cmp);

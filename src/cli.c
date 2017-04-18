@@ -41,6 +41,7 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		{{"shotmode", required_argument, 0, 's'}, "Select a shotmode (marisaA/youmuA/marisaB/youmuB)", "SMODE"},
 		{{"frameskip", optional_argument, 0, 'f'}, "Disable FPS limiter, render only every %s frame", "FRAME"},
 		{{"dumpstages", no_argument, 0, 'u'}, "Print a list of all stages in the game", 0},
+		{{"vfs-tree", required_argument, 0, 't'}, "Print the virtual filesystem tree starting from %s", "PATH"},
 #endif
 		{{"help", no_argument, 0, 'h'}, "Display this help."},
 		{{0,0,0,0},0,0}
@@ -143,6 +144,10 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 					a->frameskip = INT_MAX;
 				}
 			}
+			break;
+		case 't':
+			a->type = CLI_DumpVFSTree,
+			a->filename = strdup(optarg ? optarg : "");
 			break;
 		default:
 			log_fatal("Unknown option (this shouldn’t happen)");

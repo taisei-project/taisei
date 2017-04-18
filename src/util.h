@@ -11,6 +11,7 @@
 #include <SDL.h>
 #include "log.h"
 #include "hashtable.h"
+#include "vfs/public.h"
 
 //
 // compatibility
@@ -39,6 +40,7 @@ char* vstrfmt(const char *fmt, va_list args);
 char* strfmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 void strip_trailing_slashes(char *buf);
 char* strtok_r(char *str, const char *delim, char **nextp);
+char* strappend(char **dst, char *src);
 #undef strdup
 #define strdup SDL_strdup
 
@@ -135,19 +137,13 @@ noreturn void _ts_assert_fail(const char *cond, const char *func, const char *fi
 #define assert(cond) _assert(cond, true)
 #define assert_nolog(cond) _assert(cond, false)
 
-#ifndef __POSIX__
-    #define MKDIR(p) mkdir(p)
-#else
-    #define MKDIR(p) mkdir(p, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)
-#endif
-
 //
 // safeguards against some dangerous or otherwise undesirable practices
 //
 
 #undef fopen
 FILE* fopen() __attribute__((deprecated(
-    "Use SDL_RWFromFile instead")));
+    "Use vfs_open or SDL_RWFromFile instead")));
 
 #undef strncat
 char* strncat() __attribute__((deprecated(

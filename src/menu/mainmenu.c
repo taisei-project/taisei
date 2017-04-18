@@ -18,7 +18,6 @@
 #include "global.h"
 #include "video.h"
 #include "stage.h"
-#include "paths/native.h"
 
 void enter_options(MenuData *menu, void *arg) {
 	MenuData m;
