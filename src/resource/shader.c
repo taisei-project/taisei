@@ -96,10 +96,10 @@ void unload_shader(void *vsha) {
 }
 
 static char* get_snippet_header(void) {
-	if(glext.EXT_draw_instanced) {
-		return snippet_header_EXT_draw_instanced;
-	} else if(glext.ARB_draw_instanced) {
+	if(glext.ARB_draw_instanced) {
 		return snippet_header_ARB_draw_instanced;
+	} else if(glext.EXT_draw_instanced) {
+		return snippet_header_EXT_draw_instanced;
 	} else {
 		// probably won't work
 		return snippet_header_gl31;
