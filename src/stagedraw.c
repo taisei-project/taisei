@@ -69,10 +69,10 @@ static void draw_spellbg(int t) {
 	draw_texture(0,0,"boss_spellcircle0");
 	glPopMatrix();
 
-	float delay = 0;
+	float delay = ATTACK_START_DELAY;
 	if(b->current->type == AT_ExtraSpell)
-		delay = ATTACK_START_DELAY_EXTRA-ATTACK_START_DELAY;
-	float f = -(t+delay)/ATTACK_START_DELAY;
+		delay = ATTACK_START_DELAY_EXTRA;
+	float f = (-t+ATTACK_START_DELAY)/(delay+ATTACK_START_DELAY);
 	if(f > 0)
 		draw_wall_of_text(f, b->current->name);
 
