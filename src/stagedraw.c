@@ -270,7 +270,8 @@ void stage_draw_foreground(void) {
 	// CAUTION: Very intricate pixel perfect scaling that will ruin your day.
 	float facw = (float)vw/SCREEN_W;
 	float fach = (float)vh/SCREEN_H;
-	float scale = resources.fbo.fg[0].scale;
+	// confer video_update_quality to understand why this is fach. fach is equal to facw up to roundoff error.
+	float scale = fach;
 
 	// draw the foreground FBO
 	glPushMatrix();

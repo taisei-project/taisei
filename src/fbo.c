@@ -69,6 +69,8 @@ void delete_fbo(FBO *fbo) {
 }
 
 void draw_fbo(FBO *fbo) {
+	// this floor is very important, because the size of the fbo is integer
+	// and rendering it perfectly is necessary for non-blurry graphics.
 	float wq = floor(fbo->scale*VIEWPORT_W)/(float)fbo->nw;
 	float hq = floor(fbo->scale*VIEWPORT_H)/(float)fbo->nh;
 	glMatrixMode(GL_TEXTURE);
