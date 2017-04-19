@@ -22,7 +22,6 @@ void main(void) {
 	vec4 sum = vec4(0.0);
 	float afactor = PI * 2.0 / float(samples);
 
-	float realsamples = 0.0;
 	for(int a = 0; a < samples; a++) {
 		vec2 npos = pos + vec2(cos(afactor*float(a)), sin(afactor*float(a))) * radius;
 		sum += texture2D(tex, (gl_TextureMatrix[0]*vec4(clamp(npos,0.0,0.9),0.0,1.0)).xy);
