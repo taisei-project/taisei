@@ -13,11 +13,15 @@ struct Fonts _fonts;
 
 TTF_Font* load_font(char *name, int size) {
 	char *buf = strjoin(get_prefix(), name, NULL);
-	size *= resources.fontren.quality;
+
+	// XXX: what would be the best rounding strategy here?
+	size = rint(size * resources.fontren.quality);
 
 	TTF_Font *f =  TTF_OpenFont(buf, size);
-	if(!f)
-		log_fatal("Failed to load font '%s'", buf);
+
+	if(!f) {
+		log_fatal("Failed to load font '%s' @ %i: %s", buf, size, TTF_GetError());
+	}
 
 	log_info("Loaded '%s' @ %i", buf, size);
 
@@ -26,14 +30,15 @@ TTF_Font* load_font(char *name, int size) {
 }
 
 static float sanitize_scale(float scale) {
-	return ftopow2(clamp(scale, 0.5, 4.0));
+	return max(0.1, scale);
 }
 
 void fontrenderer_init(FontRenderer *f, float quality) {
 	f->quality = quality = sanitize_scale(quality);
 
-	int w = FONTREN_MAXW * quality;
-	int h = FONTREN_MAXH * quality;
+	float r = ftopow2(quality);
+	int w = FONTREN_MAXW * r;
+	int h = FONTREN_MAXH * r;
 
 	glGenBuffers(1,&f->pbo);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, f->pbo);
@@ -51,6 +56,8 @@ void fontrenderer_init(FontRenderer *f, float quality) {
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, f->tex.truew, f->tex.trueh, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+	log_debug("q=%f, w=%i, h=%i", f->quality, f->tex.truew, f->tex.trueh);
 }
 
 void fontrenderer_free(FontRenderer *f) {
@@ -106,30 +113,33 @@ void fontrenderer_draw(FontRenderer *f, const char *text, TTF_Font *font) {
 	SDL_FreeSurface(surf);
 }
 
-static void text_quality_callback(ConfigIndex idx, ConfigValue v) {
-    reinit_fonts(v.f);
-    config_set_float(idx, resources.fontren.quality);
+void init_fonts(void) {
+	TTF_Init();
+	memset(&resources.fontren, 0, sizeof(resources.fontren));
 }
 
-void init_fonts(float quality) {
-	static bool callbacks_set_up = false;
+void uninit_fonts(void) {
+	free_fonts();
+	TTF_Quit();
+}
 
-	TTF_Init();
+void load_fonts(float quality) {
 	fontrenderer_init(&resources.fontren, quality);
 	_fonts.standard = load_font("gfx/LinBiolinum.ttf", 20);
 	_fonts.mainmenu = load_font("gfx/immortal.ttf", 35);
 	_fonts.small    = load_font("gfx/LinBiolinum.ttf", 14);
-
-	if(!callbacks_set_up) {
-		config_set_callback(CONFIG_TEXT_QUALITY, text_quality_callback);
-		callbacks_set_up = true;
-	}
 }
 
-void reinit_fonts(float quality) {
+void reload_fonts(float quality) {
+	if(!resources.fontren.quality) {
+		// never loaded
+		load_fonts(quality);
+		return;
+	}
+
 	if(resources.fontren.quality != sanitize_scale(quality)) {
 		free_fonts();
-		init_fonts(quality);
+		load_fonts(quality);
 	}
 }
 
@@ -138,7 +148,6 @@ void free_fonts(void) {
 	TTF_CloseFont(_fonts.standard);
 	TTF_CloseFont(_fonts.mainmenu);
 	TTF_CloseFont(_fonts.small);
-	TTF_Quit();
 }
 
 static void draw_text_texture(Alignment align, float x, float y, Texture *tex) {
@@ -194,13 +203,13 @@ void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *fo
 
 int stringwidth(char *s, TTF_Font *font) {
 	int w;
-	TTF_SizeText(font, s, &w, NULL);
+	TTF_SizeUTF8(font, s, &w, NULL);
 	return w / resources.fontren.quality;
 }
 
 int stringheight(char *s, TTF_Font *font) {
 	int h;
-	TTF_SizeText(font, s, NULL, &h);
+	TTF_SizeUTF8(font, s, NULL, &h);
 	return h / resources.fontren.quality;
 }
 

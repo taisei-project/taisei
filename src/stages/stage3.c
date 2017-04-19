@@ -64,21 +64,21 @@ void stage3_bg_tunnel_draw(Vector pos) {
 	glDisable(GL_TEXTURE_2D);
 }
 
-void stage3_tunnel(int fbonum) {
+void stage3_tunnel(FBO *fbo) {
 	Shader *shader = get_shader("tunnel");
 
 	glColor4f(1,1,1,1);
 	glUseProgram(shader->prog);
 	glUniform3f(uniloc(shader, "color"),stgstate.clr_r,stgstate.clr_g,stgstate.clr_b);
 	glActiveTexture(GL_TEXTURE0 + 2);
-	glBindTexture(GL_TEXTURE_2D, resources.fbo.bg[fbonum].depth);
+	glBindTexture(GL_TEXTURE_2D, fbo->depth);
 	glActiveTexture(GL_TEXTURE0);
 
-	draw_fbo_viewport(&resources.fbo.bg[fbonum]);
+	draw_fbo_viewport(fbo);
 	glUseProgram(0);
 }
 
-void stage3_fog(int fbonum) {
+void stage3_fog(FBO *fbo) {
 	Shader *shader = get_shader("zbuf_fog");
 
 	glColor4f(1,1,1,1);
@@ -90,10 +90,10 @@ void stage3_fog(int fbonum) {
 	glUniform1f(uniloc(shader, "exponent"), stgstate.fog_exp/2);
 	glUniform1f(uniloc(shader, "sphereness"),0);
 	glActiveTexture(GL_TEXTURE0 + 2);
-	glBindTexture(GL_TEXTURE_2D, resources.fbo.bg[fbonum].depth);
+	glBindTexture(GL_TEXTURE_2D, fbo->depth);
 	glActiveTexture(GL_TEXTURE0);
 
-	draw_fbo_viewport(&resources.fbo.bg[fbonum]);
+	draw_fbo_viewport(fbo);
 	glUseProgram(0);
 }
 

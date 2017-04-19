@@ -10,7 +10,7 @@
 #define VIDEO_H
 
 #define WINDOW_TITLE "TaiseiProject"
-#define VIEWPORT_ASPECT_RATIO (4.0f/3.0f)
+#define VIDEO_ASPECT_RATIO ((double)SCREEN_W/SCREEN_H)
 
 #include <SDL.h>
 #include <stdbool.h>
@@ -35,6 +35,7 @@ extern Video video;
 void video_init(void);
 void video_shutdown(void);
 void video_setmode(int w, int h, bool fs, bool resizable);
+void video_get_viewport_size(int *width, int *height);
 void video_set_viewport(void);
 bool video_isfullscreen(void);
 bool video_isresizable(void);

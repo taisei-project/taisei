@@ -49,19 +49,27 @@ static int video_compare_modes(const void *a, const void *b) {
 	return va->width * va->height - vb->width * vb->height;
 }
 
-void video_set_viewport(void) {
+void video_get_viewport_size(int *width, int *height) {
 	float w = video.current.width;
 	float h = video.current.height;
 	float r = w / h;
 
-	if(r > VIEWPORT_ASPECT_RATIO) {
-		w = h * VIEWPORT_ASPECT_RATIO;
-	} else if(r < VIEWPORT_ASPECT_RATIO) {
-		h = w / VIEWPORT_ASPECT_RATIO;
+	if(r > VIDEO_ASPECT_RATIO) {
+		w = h * VIDEO_ASPECT_RATIO;
+	} else if(r < VIDEO_ASPECT_RATIO) {
+		h = w / VIDEO_ASPECT_RATIO;
 	}
+	*width = w;
+	*height = h;
+}
+
+
+void video_set_viewport(void) {
+	int w, h;
+	video_get_viewport_size(&w,&h);
 
 	glClear(GL_COLOR_BUFFER_BIT);
-	glViewport((video.current.width - w) / 2, (video.current.height - h) / 2, (int)w, (int)h);
+	glViewport((video.current.width - w) / 2, (video.current.height - h) / 2, w, h);
 }
 
 void video_update_vsync(void) {
@@ -154,6 +162,25 @@ static void video_init_gl(void) {
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
+static void video_update_quality(void) {
+	int vw, vh;
+	video_get_viewport_size(&vw,&vh);
+	float q = (float)vh / SCREEN_H;
+
+	float fg = q * config_get_float(CONFIG_FG_QUALITY);
+	float bg = q * config_get_float(CONFIG_BG_QUALITY);
+	float text = q * config_get_float(CONFIG_TEXT_QUALITY);
+
+	log_debug("q:%f, fg:%f, bg:%f, text:%f", q, fg, bg, text);
+
+	reinit_fbo(&resources.fbo.bg[0], bg);
+	reinit_fbo(&resources.fbo.bg[1], bg);
+	reinit_fbo(&resources.fbo.fg[0], fg);
+	reinit_fbo(&resources.fbo.fg[1], fg);
+
+	reload_fonts(text);
+}
+
 static void _video_setmode(int w, int h, uint32_t flags, bool fallback) {
 	if(!libgl_loaded) {
 		load_gl_library();
@@ -196,6 +223,7 @@ static void _video_setmode(int w, int h, uint32_t flags, bool fallback) {
 		video.real.width = video.current.width;
 		video.real.height = video.current.height;
 		video_set_viewport();
+		video_update_quality();
 		return;
 	}
 
@@ -325,6 +353,7 @@ void video_resize(int w, int h) {
 	video.current.width = w;
 	video.current.height = h;
 	video_set_viewport();
+	video_update_quality();
 }
 
 static void video_cfg_fullscreen_callback(ConfigIndex idx, ConfigValue v) {
@@ -342,11 +371,17 @@ static void video_cfg_resizable_callback(ConfigIndex idx, ConfigValue v) {
 	SDL_SetWindowResizable(video.window, config_set_int(idx, v.i));
 }
 
+static void video_quality_callback(ConfigIndex idx, ConfigValue v) {
+	config_set_float(idx, v.f);
+	video_update_quality();
+}
+
 void video_init(void) {
 	int i, s;
 	bool fullscreen_available = false;
 
 	memset(&video, 0, sizeof(video));
+	memset(&resources.fbo, 0, sizeof(resources.fbo));
 
 	// First, register all resolutions that are available in fullscreen
 
@@ -386,6 +421,9 @@ void video_init(void) {
 	config_set_callback(CONFIG_FULLSCREEN, video_cfg_fullscreen_callback);
 	config_set_callback(CONFIG_VSYNC, video_cfg_vsync_callback);
 	config_set_callback(CONFIG_VID_RESIZABLE, video_cfg_resizable_callback);
+	config_set_callback(CONFIG_FG_QUALITY, video_quality_callback);
+	config_set_callback(CONFIG_BG_QUALITY, video_quality_callback);
+	config_set_callback(CONFIG_TEXT_QUALITY, video_quality_callback);
 
 	log_info("Video subsystem initialized");
 }

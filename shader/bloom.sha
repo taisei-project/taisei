@@ -23,8 +23,10 @@ void main(void) {
 	float afactor = PI * 2.0 / float(samples);
 
 	for(int a = 0; a < samples; a++) {
-		sum += texture2D(tex, pos + vec2(cos(afactor*float(a)), sin(afactor*float(a))) * radius);
+		vec2 npos = pos + vec2(cos(afactor*float(a)), sin(afactor*float(a))) * radius;
+		sum += texture2D(tex, (gl_TextureMatrix[0]*vec4(clamp(npos,0.0,0.9),0.0,1.0)).xy);
 	}
+	sum /= float(samples);
 
-	gl_FragColor = texture2D(tex, pos) + intensity*sum*sum/float(samples);
+	gl_FragColor = texture2D(tex, (gl_TextureMatrix[0]*vec4(pos,0.0,1.0)).xy) + intensity*sum*sum*10.0;
 }

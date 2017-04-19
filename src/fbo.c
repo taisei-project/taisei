@@ -9,7 +9,8 @@
 #include "global.h"
 
 static float sanitize_scale(float scale) {
-	return ftopow2(clamp(scale, 0.25, 4.0));
+	// return ftopow2(clamp(scale, 0.25, 4.0));
+	return max(0.1, scale);
 }
 
 void init_fbo(FBO *fbo, float scale) {
@@ -17,8 +18,8 @@ void init_fbo(FBO *fbo, float scale) {
 	glBindTexture(GL_TEXTURE_2D, fbo->tex);
 
 	fbo->scale = scale = sanitize_scale(scale);
-	fbo->nw = topow2(scale * SCREEN_W);
-	fbo->nh = topow2(scale * SCREEN_H);
+	fbo->nw = topow2(scale * VIEWPORT_W);
+	fbo->nh = topow2(scale * VIEWPORT_H);
 
 	log_debug("FBO %p: q=%f, w=%i, h=%i", (void*)fbo, fbo->scale, fbo->nw, fbo->nh);
 
@@ -49,6 +50,12 @@ void init_fbo(FBO *fbo, float scale) {
 }
 
 void reinit_fbo(FBO *fbo, float scale) {
+	if(!fbo->scale) {
+		// fbo was never initialized
+		init_fbo(fbo, scale);
+		return;
+	}
+
 	if(fbo->scale != sanitize_scale(scale)) {
 		delete_fbo(fbo);
 		init_fbo(fbo, scale);
@@ -62,22 +69,33 @@ void delete_fbo(FBO *fbo) {
 }
 
 void draw_fbo(FBO *fbo) {
+	// this floor is very important, because the size of the fbo is integer
+	// and rendering it perfectly is necessary for non-blurry graphics.
+	float wq = floor(fbo->scale*VIEWPORT_W)/(float)fbo->nw;
+	float hq = floor(fbo->scale*VIEWPORT_H)/(float)fbo->nh;
+	glMatrixMode(GL_TEXTURE);
+	glLoadIdentity();
+	glScalef(wq, hq, 1);
+	glMatrixMode(GL_MODELVIEW);
+
 	glPushMatrix();
-		glScalef(1/fbo->scale, 1/fbo->scale, 1);
-		glTranslatef(fbo->nw/2, -fbo->nh/2+fbo->scale*SCREEN_H, 0);
-		glScalef(fbo->nw, fbo->nh, 1);
+		glTranslatef(VIEWPORT_W/2., VIEWPORT_H/2., 0);
+		glScalef(VIEWPORT_W, VIEWPORT_H, 1);
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, fbo->tex);
 		glDrawArrays(GL_QUADS, 4, 4);
 		glDisable(GL_TEXTURE_2D);
 	glPopMatrix();
+
+	glMatrixMode(GL_TEXTURE);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
 }
 
 void draw_fbo_viewport(FBO *fbo) {
 	// assumption: rendering into another, identical FBO
 
-	glViewport(0, 0, fbo->scale*SCREEN_W, fbo->scale*SCREEN_H);
-	set_ortho();
-
+	glViewport(0, 0, fbo->scale*VIEWPORT_W, fbo->scale*VIEWPORT_H);
+	set_ortho_ex(VIEWPORT_W,VIEWPORT_H);
 	draw_fbo(fbo);
 }

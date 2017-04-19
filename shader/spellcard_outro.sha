@@ -21,7 +21,7 @@ float smoothstep(float x) {
 
 void main(void) {
 	vec2 pos = vec2(gl_TexCoord[0]);
-	vec4 clr = texture2D(tex, pos);
+	vec4 clr = texture2D(tex, (gl_TextureMatrix[0] * vec4(pos,0.0,1.0)).xy);
 	pos -= origin;
 	pos.y *= ratio;
 	float r = length(pos);

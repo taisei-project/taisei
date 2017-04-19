@@ -131,14 +131,6 @@ OptionBinding* bind_scale(int cfgentry, float smin, float smax, float step) {
 	return bind;
 }
 
-OptionBinding* bind_quality(int cfgentry) {
-	OptionBinding *bind = bind_new();
-	bind->type = BT_Quality;
-	bind->configentry = cfgentry;
-
-	return bind;
-}
-
 // Returns a pointer to the first found binding that blocks input. If none found, returns NULL.
 OptionBinding* bind_getinputblocking(MenuData *m) {
 	int i;
@@ -367,15 +359,15 @@ void options_sub_video(MenuData *parent, void *arg) {
 	add_menu_separator(m);
 
 	add_menu_entry(m, "Stage viewport quality", do_nothing,
-		b = bind_quality(CONFIG_FG_QUALITY)
+		b = bind_scale(CONFIG_FG_QUALITY, 0.1, 1.0, 0.05)
 	);
 
 	add_menu_entry(m, "Stage background quality", do_nothing,
-		b = bind_quality(CONFIG_BG_QUALITY)
+		b = bind_scale(CONFIG_BG_QUALITY, 0.1, 1.0, 0.05)
 	);  b->dependence = bind_bgquality_dependence;
 
 	add_menu_entry(m, "Text quality", do_nothing,
-		b = bind_quality(CONFIG_TEXT_QUALITY)
+		b = bind_scale(CONFIG_TEXT_QUALITY, 0.1, 1.0, 0.05)
 	);
 
 	add_menu_separator(m);
@@ -818,13 +810,6 @@ void draw_options_menu(MenuData *menu) {
 
 					break;
 				}
-
-				case BT_Quality: {
-					char tmp[16];
-					snprintf(tmp, 16, "%i%%", (int)(100 * config_get_float(bind->configentry)));
-					draw_text(AL_Right, origin, 20*i, tmp, _fonts.standard);
-					break;
-				}
 			}
 		}
 	}
@@ -980,10 +965,6 @@ static void options_input_event(EventType type, int state, void *arg) {
 						config_set_float(bind->configentry, clamp(config_get_float(bind->configentry) - bind->scale_step, bind->scale_min, bind->scale_max));
 						break;
 
-					case BT_Quality:
-						config_set_float(bind->configentry, config_get_float(bind->configentry) / 2.0);
-						break;
-
 					default:
 						break;
 				}
@@ -1001,10 +982,6 @@ static void options_input_event(EventType type, int state, void *arg) {
 
 					case BT_Scale:
 						config_set_float(bind->configentry, clamp(config_get_float(bind->configentry) + bind->scale_step, bind->scale_min, bind->scale_max));
-						break;
-
-					case BT_Quality:
-						config_set_float(bind->configentry, config_get_float(bind->configentry) * 2.0);
 						break;
 
 					default:

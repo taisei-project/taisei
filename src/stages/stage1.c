@@ -102,22 +102,22 @@ Vector **stage1_smoke_pos(Vector p, float maxrange) {
 	return linear3dpos(p, maxrange/2.0, q, r);
 }
 
-void stage1_fog(int fbonum) {
+void stage1_fog(FBO *fbo) {
 	Shader *shader = get_shader("zbuf_fog");
 
 	glUseProgram(shader->prog);
 	glUniform1i(uniloc(shader, "tex"), 0);
 	glUniform1i(uniloc(shader, "depth"), 1);
-	glUniform4f(uniloc(shader, "fog_color"),0.8, 0.8, 0.8, 1.0);
-	glUniform1f(uniloc(shader, "start"),0.0);
-	glUniform1f(uniloc(shader, "end"),.8);
-	glUniform1f(uniloc(shader, "exponent"),3.0);
-	glUniform1f(uniloc(shader, "sphereness"),.2);
+	glUniform4f(uniloc(shader, "fog_color"), 0.8, 0.8, 0.8, 1.0);
+	glUniform1f(uniloc(shader, "start"), 0.0);
+	glUniform1f(uniloc(shader, "end"), 0.8);
+	glUniform1f(uniloc(shader, "exponent"), 3.0);
+	glUniform1f(uniloc(shader, "sphereness"), 0.2);
 	glActiveTexture(GL_TEXTURE0 + 1);
-	glBindTexture(GL_TEXTURE_2D, resources.fbo.bg[fbonum].depth);
+	glBindTexture(GL_TEXTURE_2D, fbo->depth);
 	glActiveTexture(GL_TEXTURE0);
 
-	draw_fbo_viewport(&resources.fbo.bg[fbonum]);
+	draw_fbo_viewport(fbo);
 	glUseProgram(0);
 }
 
