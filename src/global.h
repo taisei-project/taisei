@@ -89,7 +89,7 @@ enum {
 };
 
 typedef struct {
-	Difficulty diff;
+	int8_t diff; // this holds values of type Difficulty, but should be signed to prevent obscure overflow errors
 	Player plr;
 
 	Projectile *projs;
