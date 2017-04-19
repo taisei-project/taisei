@@ -264,9 +264,19 @@ static void postprocess_prepare(FBO *fbo, Shader *s) {
 }
 
 void stage_draw_foreground(void) {
+	int vw, vh;
+	video_get_viewport_size(&vw,&vh);
+
+	// CAUTION: Very intricate pixel perfect scaling that will ruin your day.
+	float facw = (float)vw/SCREEN_W;
+	float fach = (float)vh/SCREEN_H;
+	float scale = resources.fbo.fg[0].scale;
+
 	// draw the foreground FBO
 	glPushMatrix();
-		glTranslatef(VIEWPORT_X, VIEWPORT_Y, 0);
+		glScalef(1/facw,1/fach,1);
+		glTranslatef(floorf(facw*VIEWPORT_X), floorf(fach*VIEWPORT_Y), 0);
+		glScalef(floorf(scale*VIEWPORT_W)/VIEWPORT_W,floorf(scale*VIEWPORT_H)/VIEWPORT_H,1);
 		// apply the screenshake effect
 		if(global.shake_view) {
 			glTranslatef(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames*1.1+3),0);
@@ -279,9 +289,9 @@ void stage_draw_foreground(void) {
 					global.shake_view = global.shake_view_fade = 0;
 			}
 		}
-
 		draw_fbo(&resources.fbo.fg[0]);
 	glPopMatrix();
+	set_ortho();
 }
 
 void stage_draw_scene(StageInfo *stage) {

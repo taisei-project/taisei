@@ -49,7 +49,7 @@ static int video_compare_modes(const void *a, const void *b) {
 	return va->width * va->height - vb->width * vb->height;
 }
 
-void video_set_viewport(void) {
+void video_get_viewport_size(int *width, int *height) {
 	float w = video.current.width;
 	float h = video.current.height;
 	float r = w / h;
@@ -59,9 +59,17 @@ void video_set_viewport(void) {
 	} else if(r < VIDEO_ASPECT_RATIO) {
 		h = w / VIDEO_ASPECT_RATIO;
 	}
+	*width = w;
+	*height = h;
+}
+
+
+void video_set_viewport(void) {
+	int w, h;
+	video_get_viewport_size(&w,&h);
 
 	glClear(GL_COLOR_BUFFER_BIT);
-	glViewport((video.current.width - w) / 2, (video.current.height - h) / 2, (int)w, (int)h);
+	glViewport((video.current.width - w) / 2, (video.current.height - h) / 2, w, h);
 }
 
 void video_update_vsync(void) {
@@ -153,14 +161,9 @@ static void video_init_gl(void) {
 }
 
 static void video_update_quality(void) {
-	float q;
-	float r = (float)video.current.width / video.current.height;
-
-	if(r >= VIDEO_ASPECT_RATIO) {
-		q = (float)video.current.height / SCREEN_H;
-	} else {
-		q = (float)video.current.width / SCREEN_W;
-	}
+	int vw, vh;
+	video_get_viewport_size(&vw,&vh);
+	float q = (float)vh / SCREEN_H;
 
 	float fg = q * config_get_float(CONFIG_FG_QUALITY);
 	float bg = q * config_get_float(CONFIG_BG_QUALITY);

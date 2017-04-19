@@ -10,8 +10,7 @@
 
 static float sanitize_scale(float scale) {
 	// return ftopow2(clamp(scale, 0.25, 4.0));
-	scale = max(0.1, scale);
-	return ((int)(scale*VIEWPORT_W*VIEWPORT_H+0.9999))/(float)VIEWPORT_W/VIEWPORT_H;
+	return max(0.1, scale);
 }
 
 void init_fbo(FBO *fbo, float scale) {
@@ -70,15 +69,15 @@ void delete_fbo(FBO *fbo) {
 }
 
 void draw_fbo(FBO *fbo) {
-	float wq = (fbo->scale*VIEWPORT_W)/(float)fbo->nw;
-	float hq = (fbo->scale*VIEWPORT_H)/(float)fbo->nh;
+	float wq = floor(fbo->scale*VIEWPORT_W)/(float)fbo->nw;
+	float hq = floor(fbo->scale*VIEWPORT_H)/(float)fbo->nh;
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
 	glScalef(wq, hq, 1);
 	glMatrixMode(GL_MODELVIEW);
 
 	glPushMatrix();
-		glTranslatef(VIEWPORT_W/2, VIEWPORT_H/2, 0);
+		glTranslatef(VIEWPORT_W/2., VIEWPORT_H/2., 0);
 		glScalef(VIEWPORT_W, VIEWPORT_H, 1);
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, fbo->tex);
