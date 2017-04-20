@@ -241,6 +241,18 @@ void ProjDraw(Projectile *proj, int t) {
 	glPopMatrix();
 }
 
+void ProjDrawNoFlareAdd(Projectile *proj, int t) {
+	glPushMatrix();
+	glTranslatef(creal(proj->pos), cimag(proj->pos), 0);
+	glRotatef(proj->angle*180/M_PI+90, 0, 0, 1);
+
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+	_ProjDraw(proj, t);
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+
+	glPopMatrix();
+}
+
 void ProjDrawAdd(Projectile *proj, int t) {
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 	ProjDraw(proj, t);

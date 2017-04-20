@@ -19,6 +19,7 @@
 
 #ifndef __GNUC__ // clang defines this too
 #define __attribute__(...)
+#define __extension__
 #endif
 
 //

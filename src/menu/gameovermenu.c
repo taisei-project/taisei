@@ -11,8 +11,7 @@
 #include "ingamemenu.h"
 #include "global.h"
 
-void continue_game(MenuData *m, void *arg)
-{
+static void continue_game(MenuData *m, void *arg) {
 	log_info("The game is being continued...");
 
 	if(global.replaymode == REPLAY_RECORD) { // actually... I'd be strange if REPLAY_PLAY ever got there
@@ -28,11 +27,9 @@ void continue_game(MenuData *m, void *arg)
 	delete_projectiles(&global.particles);
 }
 
-void give_up(MenuData *m, void *arg) {
+static void give_up(MenuData *m, void *arg) {
 	global.game_over = (MAX_CONTINUES - global.continues)? GAMEOVER_ABORT : GAMEOVER_DEFEAT;
 }
-
-void restart_game(MenuData *m, void *arg);
 
 void create_gameover_menu(MenuData *m) {
 	create_menu(m);

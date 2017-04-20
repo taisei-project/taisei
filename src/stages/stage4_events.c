@@ -573,8 +573,7 @@ void kurumi_aniwall(Boss *b, int time) {
 		killall(global.enemies);
 	}
 
-	if(global.diff > D_Easy)
-		GO_TO(b, VIEWPORT_W/2 + VIEWPORT_W/3*sin(time/200) + I*cimag(b->pos),0.03)
+	GO_TO(b, VIEWPORT_W/2 + VIEWPORT_W/3*sin(time/200) + I*cimag(b->pos),0.03)
 
 
 	if(time < 0)

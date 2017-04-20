@@ -14,6 +14,8 @@ option(RELATIVE "Use only relative paths to the executable and install everythin
 option(NO_AUDIO "Build without audio support" OFF)
 option(DEBUG_USE_UBSAN "Enable the Undefined Behaviour Sanitizer (UBSan) in debug builds. Only disable if the compiler or target platform doesn't support it." ON)
 option(DEBUG_USE_ASAN "Enable the Address Sanitizer (ASan) and leak detection in debug builds." OFF)
+option(RELEASE_USE_LTO "Enable Link Time Optimization in release builds." ON)
+option(USE_COTIRE "Use cotire (COmpile TIme REducer) to speed up builds" OFF)
 
 add_subdirectory(src)
 
