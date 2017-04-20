@@ -127,6 +127,7 @@ endif()
 message(STATUS "Build configuration: ${CMAKE_BUILD_TYPE}")
 
 set(DEBUG_FLAGS "-ggdb -fno-omit-frame-pointer")
+set(RELEASE_FLAGS "-DNDEBUG")
 
 if(DEBUG_USE_UBSAN)
 	set(DEBUG_FLAGS "${DEBUG_FLAGS} -fsanitize=undefined")
@@ -136,8 +137,14 @@ if(DEBUG_USE_ASAN)
 	set(DEBUG_FLAGS "${DEBUG_FLAGS} -fsanitize=address")
 endif()
 
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DDEBUG ${DEBUG_FLAGS}")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} ${DEBUG_FLAGS}")
+if(RELEASE_USE_LTO)
+	set(RELEASE_FLAGS "${RELEASE_FLAGS} -flto")
+endif()
+
+set(CMAKE_C_FLAGS_DEBUG "${DEBUG_FLAGS} -DDEBUG")
+set(CMAKE_C_FLAGS_RELEASE "${RELEASE_FLAGS} -O3")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "${RELEASE_FLAGS} -O2 ${DEBUG_FLAGS}")
+set(CMAKE_C_FLAGS_MINSIZEREL "${RELEASE_FLAGS} -Os")
 
 add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall -Wno-parentheses -Wtype-limits -std=c11 -pedantic)
 

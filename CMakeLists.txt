@@ -15,6 +15,7 @@ option(USE_SDL2_PATHS "Use the SDL2 filesystem API to determine where to save se
 option(NO_AUDIO "Build without audio support" OFF)
 option(DEBUG_USE_UBSAN "Enable the Undefined Behaviour Sanitizer (UBSan) in debug builds. Only disable if the compiler or target platform doesn't support it." ON)
 option(DEBUG_USE_ASAN "Enable the Address Sanitizer (ASan) and leak detection in debug builds." OFF)
+option(RELEASE_USE_LTO "Enable Link Time Optimization in release builds." ON)
 
 add_subdirectory(src)
 
