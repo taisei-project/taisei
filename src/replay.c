@@ -680,6 +680,10 @@ void replay_play(Replay *rpy, int firstidx) {
 			break;
 		}
 
+		if(global.game_over == GAMEOVER_RESTART) {
+			--i;
+		}
+
 		global.game_over = 0;
 	}
 

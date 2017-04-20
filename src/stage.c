@@ -202,7 +202,13 @@ static void stage_start(StageInfo *stage) {
 void stage_pause(void) {
 	MenuData menu;
 	stop_bgm(false);
-	create_ingame_menu(&menu);
+
+	if(global.replaymode == REPLAY_PLAY) {
+		create_ingame_menu_replay(&menu);
+	} else {
+		create_ingame_menu(&menu);
+	}
+
 	menu_loop(&menu);
 	resume_bgm();
 }

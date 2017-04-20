@@ -11,8 +11,11 @@
 #include "menu.h"
 
 void draw_ingame_menu_bg(MenuData *menu, float f);
+void draw_ingame_menu(MenuData *menu);
 
 void create_ingame_menu(MenuData *menu);
-void draw_ingame_menu(MenuData *menu);
+void create_ingame_menu_replay(MenuData *m);
+
+void restart_game(MenuData *m, void *arg);
 
 #endif
