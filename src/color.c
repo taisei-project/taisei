@@ -111,11 +111,11 @@ int color_test(void) {
     clr2 = rgba(clra[0], clra[1], clra[2], clra[3]);
 
     clr3 = derive_color(clr1, CLRMASK_A, rgba(0, 0, 0, -1.0));
-    printf("1: %016llx (%f %f %f %f)\n", (unsigned long long int)clr1,
+    printf("1: %016"PRIxMAX" (%f %f %f %f)\n", (uintmax_t)clr1,
         color_component(clr1, CLR_R), color_component(clr1, CLR_G), color_component(clr1, CLR_B), color_component(clr1, CLR_A));
-    printf("2: %016llx (%f %f %f %f)\n", (unsigned long long int)clr2,
+    printf("2: %016"PRIxMAX" (%f %f %f %f)\n", (uintmax_t)clr2,
         color_component(clr2, CLR_R), color_component(clr2, CLR_G), color_component(clr2, CLR_B), color_component(clr2, CLR_A));
-    printf("3: %016llx (%f %f %f %f)\n", (unsigned long long int)clr3,
+    printf("3: %016"PRIxMAX" (%f %f %f %f)\n", (uintmax_t)clr3,
         color_component(clr3, CLR_R), color_component(clr3, CLR_G), color_component(clr3, CLR_B), color_component(clr3, CLR_A));
 
     assert(clr1 == clr2);

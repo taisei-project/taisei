@@ -93,7 +93,7 @@ static void progress_read(SDL_RWops *file) {
 	}
 
 	if(filesize > PROGRESS_MAXFILESIZE) {
-		log_warn("Progress file is huge (%li bytes, %i max)", (long)filesize, PROGRESS_MAXFILESIZE);
+		log_warn("Progress file is huge (%"PRIi64" bytes, %i max)", filesize, PROGRESS_MAXFILESIZE);
 		return;
 	}
 

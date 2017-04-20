@@ -62,16 +62,24 @@ void log_backtrace(LogLevel lvl);
 LogLevel log_parse_levels(LogLevel lvls, const char *lvlmod);
 bool log_initialized(void);
 
+#ifdef __WINDOWS__
+    // hack to supporess warnings about MS format string extensions, like %I64.
+    // taisei of course never uses them directly, but MinGW uses them in stdint.h format macros.
+    #define LOG_PREFIX __extension__
+#else
+    #define LOG_PREFIX
+#endif
+
 #ifdef DEBUG
-    #define log_debug(...) _taisei_log(LOG_DEBUG, false, __func__, __VA_ARGS__)
+    #define log_debug(...) LOG_PREFIX _taisei_log(LOG_DEBUG, false, __func__, __VA_ARGS__)
 #else
     #define log_debug(...)
 #endif
 
-#define log_info(...) _taisei_log(LOG_INFO, false, __func__, __VA_ARGS__)
-#define log_warn(...) _taisei_log(LOG_WARN, false, __func__, __VA_ARGS__)
-#define log_fatal(...) _taisei_log_fatal(LOG_FATAL, __func__, __VA_ARGS__)
-#define log_custom(lvl, ...) _taisei_log(lvl, false, __func__, __VA_ARGS__)
+#define log_info(...) LOG_PREFIX _taisei_log(LOG_INFO, false, __func__, __VA_ARGS__)
+#define log_warn(...) LOG_PREFIX _taisei_log(LOG_WARN, false, __func__, __VA_ARGS__)
+#define log_fatal(...) LOG_PREFIX _taisei_log_fatal(LOG_FATAL, __func__, __VA_ARGS__)
+#define log_custom(lvl, ...) LOG_PREFIX _taisei_log(lvl, false, __func__, __VA_ARGS__)
 
 //
 // don't call these directly, use the macros

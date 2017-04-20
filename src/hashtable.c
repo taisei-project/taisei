@@ -253,7 +253,7 @@ static size_t hashtable_find_optimal_size(Hashtable *ht) {
         int cols = hashtable_check_collisions_with_new_size(ht, s);
 
         if(cols < col_tolerance) {
-            log_debug("Optimal size for %p is %llu (%i collisions)", (void*)ht, (unsigned long long)s, cols);
+            log_debug("Optimal size for %p is %"PRIuMAX" (%i collisions)", (void*)ht, (uintmax_t)s, cols);
             return s;
         }
 
@@ -263,7 +263,7 @@ static size_t hashtable_find_optimal_size(Hashtable *ht) {
         }
     }
 
-    log_debug("Optimal size for %p is %llu (%i collisions)", (void*)ht, (unsigned long long)best_size, min_cols);
+    log_debug("Optimal size for %p is %"PRIuMAX" (%i collisions)", (void*)ht, (uintmax_t)best_size, min_cols);
     return best_size;
 }
 
@@ -287,8 +287,8 @@ static void hashtable_resize_internal(Hashtable *ht, size_t new_size) {
 
     ht->table = new_table;
 
-    log_debug("Resized hashtable at %p: %llu -> %llu",
-        (void*)ht, (unsigned long long)ht->table_size, (unsigned long long)new_size);
+    log_debug("Resized hashtable at %p: %"PRIuMAX" -> %"PRIuMAX"",
+        (void*)ht, (uintmax_t)ht->table_size, (uintmax_t)new_size);
 
     ht->table_size = new_size;
 }
@@ -501,10 +501,10 @@ void hashtable_print_stringkeys(Hashtable *ht) {
 
     log_debug("------ %p:", (void*)ht);
     for(size_t i = 0; i < ht->table_size; ++i) {
-        log_debug("[bucket %lu] %p", (unsigned long)i, (void*)ht->table[i]);
+        log_debug("[bucket %"PRIuMAX"] %p", (uintmax_t)i, (void*)ht->table[i]);
 
         for(HashtableElement *e = ht->table[i]; e; e = e->next) {
-            log_debug(" -- %s (%lu): %p", (char*)e->key, (unsigned long)e->hash, e->data);
+            log_debug(" -- %s (%"PRIuMAX"): %p", (char*)e->key, (uintmax_t)e->hash, e->data);
         }
     }
 
@@ -526,7 +526,7 @@ void hashtable_print_stringkeys(Hashtable *ht) {
 static void hashtable_printstrings(Hashtable *ht) {
     for(size_t i = 0; i < ht->table_size; ++i) {
         for(HashtableElement *e = ht->table[i]; e; e = e->next) {
-            log_info("[HT %lu] %s (%lu): %s\n", (unsigned long)i, (char*)e->key, (unsigned long)e->hash, (char*)e->data);
+            log_info("[HT %"PRIuMAX"] %s (%"PRIuMAX"): %s\n", (uintmax_t)i, (char*)e->key, (uintmax_t)e->hash, (char*)e->data);
         }
     }
 }

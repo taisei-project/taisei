@@ -254,7 +254,7 @@ int replay_write(Replay *rpy, SDL_RWops *file, bool compression) {
 }
 
 #ifdef REPLAY_LOAD_GARBAGE_TEST
-#define PRINTPROP(prop,fmt) log_debug(#prop " = %" # fmt " [%li / %li]", prop, (long int)SDL_RWtell(file), (long int)filesize)
+#define PRINTPROP(prop,fmt) log_debug(#prop " = %" # fmt " [%"PRIi64" / %"PRIi64"]", prop, SDL_RWtell(file), filesize)
 #else
 #define PRINTPROP(prop,fmt) (void)(prop)
 #endif
@@ -379,14 +379,14 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 	if(filesize < 0) {
 		log_warn("SDL_RWsize() failed: %s", SDL_GetError());
 	} else {
-		log_debug("%li bytes", (long int)filesize);
+		log_debug("%"PRIi64" bytes", filesize);
 	}
 
 	if(mode & REPLAY_READ_META) {
 		memset(rpy, 0, sizeof(Replay));
 
 		if(filesize > 0 && filesize <= sizeof(replay_magic_header) + 2) {
-			log_warn("Replay file is too short (%li)", (long int)filesize);
+			log_warn("Replay file is too short (%"PRIi64")", filesize);
 			return false;
 		}
 
@@ -400,7 +400,7 @@ int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 
 		if(rpy->version & REPLAY_VERSION_COMPRESSION_BIT) {
 			if(rpy->fileoffset < SDL_RWtell(file)) {
-				log_warn("Invalid offset %li", (long int)rpy->fileoffset);
+				log_warn("Invalid offset %"PRIi32"", rpy->fileoffset);
 				return false;
 			}
 
