@@ -20,7 +20,6 @@ static uint8_t replay_magic_header[] = REPLAY_MAGIC_HEADER;
 
 void replay_init(Replay *rpy) {
 	memset(rpy, 0, sizeof(Replay));
-	stralloc(&rpy->playername, config_get_str(CONFIG_PLAYERNAME));
 	log_debug("Replay at %p initialized for writing", (void*)rpy);
 }
 
@@ -209,7 +208,7 @@ int replay_write(Replay *rpy, SDL_RWops *file, bool compression) {
 		vfile = SDL_RWWrapZWriter(abuf, REPLAY_COMPRESSION_CHUNK_SIZE, false);
 	}
 
-	replay_write_string(vfile, rpy->playername);
+	replay_write_string(vfile, config_get_str(CONFIG_PLAYERNAME));
 	SDL_WriteLE16(vfile, rpy->numstages);
 
 	for(i = 0; i < rpy->numstages; ++i) {
