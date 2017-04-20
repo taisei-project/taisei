@@ -86,10 +86,15 @@ bool vfs_mkdir(const char *path) {
     char p[strlen(path)+1];
     path = vfs_path_normalize(path, p);
     VFSNode *node = vfs_locate(vfs_root, path);
+    bool ok = false;
 
     if(node && node->funcs->mkdir) {
-        return node->funcs->mkdir(node, NULL);
+        ok = node->funcs->mkdir(node, NULL);
+        vfs_locate_cleanup(vfs_root, node);
+        return ok;
     }
+
+    vfs_locate_cleanup(vfs_root, node);
 
     char *parent, *subdir;
     vfs_path_split_right(p, &parent, &subdir);
@@ -97,7 +102,9 @@ bool vfs_mkdir(const char *path) {
 
     if(node) {
         if(node->funcs->mkdir) {
-            return node->funcs->mkdir(node, subdir);
+            ok = node->funcs->mkdir(node, subdir);
+            node->funcs->mkdir(node, subdir);
+            return ok;
         } else {
             vfs_set_error("Node '%s' does not support creation of subdirectories", parent);
         }
@@ -105,6 +112,7 @@ bool vfs_mkdir(const char *path) {
         vfs_set_error("Node '%s' does not exist", parent);
     }
 
+    vfs_locate_cleanup(vfs_root, node);
     return false;
 }
 
@@ -129,8 +137,8 @@ static char* vfs_syspath_node(VFSNode *node, const char *path) {
 }
 
 static char* vfs_syspath_internal(const char *path, bool repr) {
-    char p[strlen(path)+1];
-    path = vfs_path_normalize(path, p);
+    char buf[strlen(path)+1];
+    path = vfs_path_normalize(path, buf);
     VFSNode *node = vfs_locate(vfs_root, path);
 
     if(node) {
@@ -140,6 +148,7 @@ static char* vfs_syspath_internal(const char *path, bool repr) {
             p = vfs_repr(node);
         }
 
+        vfs_locate_cleanup(vfs_root, node);
         return p;
     }
 

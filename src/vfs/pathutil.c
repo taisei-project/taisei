@@ -16,7 +16,7 @@ char* vfs_path_normalize(const char *path, char *out) {
 
             do {
                 ++p;
-            } while(strchr(VFS_PATH_SEPS, *p));
+            } while(p < path_end && strchr(VFS_PATH_SEPS, *p));
         } else if(*p == '.' && strchr(VFS_PATH_SEPS, *(p + 1))) {
             p += 2;
         } else if(!strncmp(p, "..", 2) && strchr(VFS_PATH_SEPS, *(p + 2))) {
