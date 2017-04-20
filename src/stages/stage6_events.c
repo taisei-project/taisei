@@ -33,7 +33,7 @@ AttackInfo stage6_spells[] = {
 							elly_maxwell, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
 	{{ 8,  9, 10, 11},	AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 60, 30000,
 							elly_eigenstate, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
-	{{12, 13, 14, 15},	AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 50, 40000,
+	{{12, 13, 14, 15},	AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 50, 55000,
 							elly_ricci, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
 	{{16, 17, 18, 19},	AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 60, 50000,
 							elly_lhc, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
@@ -674,7 +674,7 @@ void elly_unbound(Boss *b, int t) {
 		global.shake_view = max(0, 16-0.1*(t-120));
 }
 
-void set_baryon_rule(EnemyLogicRule r) {
+static void set_baryon_rule(EnemyLogicRule r) {
 	Enemy *e;
 	for(e = global.enemies; e; e = e->next) {
 		if(e->draw_rule == Baryon) {
@@ -754,40 +754,52 @@ void elly_baryonattack(Boss *b, int t) {
 }
 
 int baryon_ricci(Enemy *e, int t) {
-	if(!creal(e->args[2]) || creal(e->args[2]) > 2) {
-		GO_TO(e, creal(global.boss->pos) + creal(e->pos0-global.boss->pos)*1.5+40.0*I, 0.02);
+	int num = creal(e->args[2])+0.5;
+	if(num % 2 == 0) {
+		GO_TO(e, global.boss->pos,0.03);
 	} else {
-		TIMER(&t);
-		FROM_TO(200, 400, 1) {
-			GO_TO(e, creal(global.boss->pos) + creal(e->pos0-global.boss->pos)*1.8 + 230.0*I, 0.05);
-		}
+		GO_TO(e, global.boss->pos + 200*cexp(I*2*M_PI*(1./6*creal(e->args[2]))+0.001*I*t), 0.03);
 
-		FROM_TO_INT(300, 10000, 100, 200, 1)
-			GO_TO(e, creal(global.boss->pos) + creal(e->pos0-global.boss->pos)*1.8 + 230.0*I + 200.0*I*(_i&1), 0.02);
+		/*FROM_TO_INT(300, 10000, 100, 200, 1)
+			GO_TO(e, creal(global.boss->pos) + creal(e->pos0-global.boss->pos)*1.8 + 230.0*I + 200.0*I*(_i&1), 0.02);*/
 	}
 
 	return 1;
 }
 
+static double waveform(double x) {
+	if(x < 0)
+		return 0;
+	return 1*sin(1*x)*(exp(10*(sin(x)-0.9)));
+
+}
+
 int ricci_proj(Projectile *p, int t) {
 	if(t < 0)
 		return 1;
-	p->pos += p->args[0];
 
-	if(t > creal(p->args[1])) {
-		Enemy *e;
-		for(e = global.enemies; e; e = e->next) {
-			if(cimag(e->pos) < 200)
-				continue;
+	int time = global.frames-global.boss->current->starttime;
+	float c = 3;
 
-			float f = max(20,cabs(e->pos-p->pos));
-
-			p->args[0] += 70*pow(f, -3)*(e->pos-p->pos);
+	complex shift = 0;
+	Enemy *e;
+	int i = 0;
+	p->pos = p->pos0 + p->args[0]*t;
+	for(e = global.enemies; e; e = e->next, i++) {
+		complex d = e->pos-p->pos;
+		int starttime = 0+70*i;
+		if((int)(creal(e->args[2])+0.5) & 1) {
+			shift += waveform(0.005*(-cabs(d)+c*(time-starttime)))*I*d/cabs(d);
 		}
 	}
 
+	p->pos = p->pos0 + p->args[0]*t+10*shift;
+
 	p->angle = carg(p->args[0]);
-	p->clr = derive_color(p->clr, CLRMASK_B, rgb(0, 0, cabs(p->args[0])*0.5));
+
+	float r,g,b,a;
+	parse_color(p->clr,&r,&g,&b, &a);
+	p->clr = rgb(r,g,cabs(shift));
 
 	return 1;
 }
@@ -799,11 +811,18 @@ void elly_ricci(Boss *b, int t) {
 	AT(EVENT_DEATH)
 		set_baryon_rule(baryon_reset);
 
-	FROM_TO(80, 100000, 50-global.diff) {
+	FROM_TO(80, 100000, 20) {
 		int i;
-		int c = 6 + global.diff;
-		for(i = 0; i < c*2; i++)
-			create_projectile2c("plainball", fmod(VIEWPORT_W/(float)c*(i/2),VIEWPORT_W)+VIEWPORT_H*I*(i&1), rgb(0.3+0.7*(i&1), 1-0.7*(i&1), 0), ricci_proj, I-2.0*I*(i&1), 200-t)->draw = ProjDrawAdd;
+		int c = 9 + global.diff;
+		bool left = (_i/(20/(1+_i/20)))%2;
+		for(i = 0; i < c*2; i++) {
+			complex pos = fmod(VIEWPORT_W/(float)c*(i/2),VIEWPORT_W)+VIEWPORT_H*I*(i&1);
+			if(left)
+				pos = fmod(VIEWPORT_H/(float)c*(i/2),VIEWPORT_H)*I+VIEWPORT_W*(i&1);
+
+			Projectile *p = create_projectile2c("flea", pos, rgb(0.3+0.7*(i&1), 1-0.7*(i&1), 0), ricci_proj, 2.*(I-2.0*I*(i&1))*(left ? -I : 1), 200-t);
+			p->draw = ProjDrawNoFlareAdd;
+		}
 
 	}
 }
