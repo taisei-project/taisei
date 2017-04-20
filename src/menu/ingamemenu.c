@@ -11,26 +11,34 @@
 #include "global.h"
 #include "stagedraw.h"
 #include "video.h"
+#include "options.h"
 
-void return_to_game(MenuData *m, void *arg) {
-}
-
-void return_to_title(MenuData *m, void *arg) {
+static void return_to_title(MenuData *m, void *arg) {
 	global.game_over = GAMEOVER_ABORT;
+	menu_commonaction_close(m, arg);
 }
 
 void restart_game(MenuData *m, void *arg) {
 	global.game_over = GAMEOVER_RESTART;
+	menu_commonaction_close(m, arg);
+}
+
+static void enter_options(MenuData *m, void *arg) {
+	MenuData opts;
+	create_options_menu(&opts);
+	menu_loop(&opts);
 }
 
 void create_ingame_menu(MenuData *m) {
 	create_menu(m);
 	m->draw = draw_ingame_menu;
-	m->flags = MF_Abortable | MF_Transient | MF_AlwaysProcessInput;
+	m->flags = MF_Abortable | MF_AlwaysProcessInput;
 	m->transition = TransEmpty;
-	add_menu_entry(m, "Return to Game", return_to_game, NULL);
+	add_menu_entry(m, "Options", enter_options, NULL)->transition = TransMenuDark;
+	add_menu_entry(m, "Return to Game", menu_commonaction_close, NULL);
 	add_menu_entry(m, "Restart the Game", restart_game, NULL)->transition = TransFadeBlack;
 	add_menu_entry(m, "Return to Title", return_to_title, NULL)->transition = TransFadeBlack;
+	m->cursor = 1;
 	set_transition(TransEmpty, 0, m->transition_out_time);
 }
 
@@ -79,8 +87,9 @@ void draw_ingame_menu(MenuData *menu) {
 			}
 
 			glColor4f(t-s,t-s,t-s/2, 1-menu_fade(menu));
-		} else
-			glColor4f(0.5, 0.5, 0.5, 0.5);
+		} else {
+			glColor4f(0.5, 0.5, 0.5, 0.5 * (1-menu_fade(menu)));
+		}
 
 		draw_text(AL_Center, 0, i*35, menu->entries[i].name, _fonts.standard);
 	}
