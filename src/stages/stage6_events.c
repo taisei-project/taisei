@@ -667,7 +667,7 @@ void elly_unbound(Boss *b, int t) {
 
 		first->args[1] = add_ref(last);
 
-		e = create_enemy2c(b->pos, ENEMY_IMMUNE, BaryonCenter, baryon_center, 0, add_ref(first) + I*add_ref(middle));
+		create_enemy2c(b->pos, ENEMY_IMMUNE, BaryonCenter, baryon_center, 0, add_ref(first) + I*add_ref(middle));
 	}
 
 	if(t > 120)
