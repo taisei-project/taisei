@@ -1,0 +1,3 @@
+[submodule "cotire"]
+	path = cotire
+	url = https://github.com/sakra/cotire

@@ -333,14 +333,13 @@ char* read_all(const char *filename, int *outsize) {
 }
 
 bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data) {
-    static const size_t bufsize = 256;
     static const char separator[] = "= ";
 
-    char buffer[bufsize];
+    char buffer[256];
     int lineno = 0;
     int errors = 0;
 
-    loopstart: while(SDL_RWgets(strm, buffer, bufsize)) {
+    loopstart: while(SDL_RWgets(strm, buffer, sizeof(buffer))) {
         char *ptr = buffer;
         char *sep, *key, *val;
 

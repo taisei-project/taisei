@@ -1,4 +1,10 @@
 
+if(USE_COTIRE)
+	set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/cotire/CMake")
+	cmake_policy(SET CMP0011 NEW)
+	include(cotire)
+endif()
+
 find_package(PkgConfig REQUIRED)
 
 if(LINK_TO_LIBGL)
@@ -260,4 +266,8 @@ elseif(RELATIVE)
 	install(TARGETS taisei RUNTIME DESTINATION .)
 else()
 	install(TARGETS taisei RUNTIME DESTINATION bin)
+endif()
+
+if(USE_COTIRE)
+	cotire(taisei)
 endif()
