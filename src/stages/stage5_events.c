@@ -359,7 +359,7 @@ void iku_atmospheric(Boss *b, int time) {
 		int c = 6+global.diff;
 
 		for(i = -c*0.5; i <= c*0.5; i++) {
-			create_projectile2c("ball", p1+(p2-p1)/c*i, rgb(1-1/(1+fabs(0.1*i)), 0.5-0.1*fabs(i), 1), accelerated, 0, (0.004+0.001*global.diff)*cexp(I*carg(p2-p1)+I*M_PI/2+0.2*I*i))->draw = ProjDrawAdd;
+			create_projectile2c("ball", p1+(p2-p1)/c*i, rgb(1-1/(1+fabs(0.1*i)), 0.5-0.1*abs(i), 1), accelerated, 0, (0.004+0.001*global.diff)*cexp(I*carg(p2-p1)+I*M_PI/2+0.2*I*i))->draw = ProjDrawAdd;
 		}
 	}
 
@@ -423,7 +423,7 @@ int lightning_slave(Enemy *e, int t) {
 
 static int zigzag_bullet(Projectile *p, int t) {
 	int l = 50;
-	p->pos = p->pos0+(fabs(((2*t)%l)-l/2)*I+t)*2*p->args[0];
+	p->pos = p->pos0+(abs(((2*t)%l)-l/2)*I+t)*2*p->args[0];
 
 	if(t%2 == 0)
 		create_particle1c("lightningball", p->pos, rgb(0.1,0.1,0.6), FadeAdd, timeout, 15);
