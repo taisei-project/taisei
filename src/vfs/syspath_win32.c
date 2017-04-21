@@ -25,7 +25,26 @@ static void vfs_syspath_free(VFSNode *node) {
 }
 
 static void _vfs_set_error_win32(const char *file, int line) {
-    vfs_set_error("win32 error: %lu [%s:%i]", GetLastError(), file, line);
+    DWORD err = GetLastError();
+    LPVOID buf = NULL;
+
+    FormatMessage(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER |
+        FORMAT_MESSAGE_FROM_SYSTEM |
+        FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL,
+        err,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        (LPWSTR)&buf,
+        0, NULL
+    );
+
+    log_debug("%p", buf);
+
+    char *errstr = WIN_StringToUTF8(buf);
+    LocalFree(buf);
+    vfs_set_error("Win32 error %lu: %s [%s:%i]", err, errstr, file, line);
+    free(errstr);
 }
 
 #define vfs_set_error_win32() _vfs_set_error_win32(__FILE__, __LINE__)
