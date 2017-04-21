@@ -84,13 +84,6 @@ static char* vfs_syspath_syspath(VFSNode *node) {
     return strdup(node->syspath.path);
 }
 
-// TODO: get rid of this when the win32 version of this module is implemented
-#ifndef __POSIX__
-    #define mkdir(p,m) mkdir(p)
-#else
-    #define mkdir(p,m) mkdir(p, m)
-#endif
-
 static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
     if(!subdir) {
         subdir = "";
@@ -104,6 +97,8 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
 
         if(n && vfs_query_node(n).is_dir) {
             ok = true;
+        } else {
+            vfs_set_error("%s already exists, and is not a directory", p);
         }
 
         if(node != n) {

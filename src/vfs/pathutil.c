@@ -44,7 +44,7 @@ char* vfs_path_normalize_alloc(const char *path) {
     return vfs_path_normalize(path, strdup(path));
 }
 
-char* vfs_normalize_path_inplace(char *path) {
+char* vfs_path_normalize_inplace(char *path) {
     char buf[strlen(path)+1];
     strcpy(buf, path);
     vfs_path_normalize(path, buf);

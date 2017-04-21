@@ -96,10 +96,17 @@ set(SRCs
 	vfs/private.c
 	vfs/public.c
 	vfs/pathutil.c
-	vfs/syspath_posix.c # TODO: write a win32 version of this
 	vfs/union.c
 	vfs/vdir.c
 )
+
+if(WIN32)
+	set(SRCs ${SRCs}
+		vfs/syspath_win32.c)
+else()
+	set(SRCs ${SRCs}
+		vfs/syspath_posix.c)
+endif()
 
 if(NO_AUDIO)
 	set(SRCs ${SRCs}

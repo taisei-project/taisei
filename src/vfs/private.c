@@ -85,7 +85,8 @@ VFSNode* vfs_locate(VFSNode *root, const char *path) {
 #ifndef NDEBUG
     char buf[strlen(path)+1];
     strcpy(buf, path);
-    assert(!strcmp(path, vfs_path_normalize(path, buf)));
+    vfs_path_normalize(path, buf);
+    assert(!strcmp(path, buf));
 #endif
 
     if(!*path) {
@@ -188,11 +189,17 @@ char* vfs_repr(VFSNode *node) {
 
 void vfs_print_tree_recurse(SDL_RWops *dest, VFSNode *root, char *prefix) {
     void *o = NULL;
-    char *newprefix = strfmt("%s%s%s", prefix, root->name, vfs_query_node(root).is_dir ? (char[]){VFS_PATH_SEP, 0} : "");
+    bool is_dir = vfs_query_node(root).is_dir;
+    char *newprefix = strfmt("%s%s%s", prefix, root->name, is_dir ? (char[]){VFS_PATH_SEP, 0} : "");
     char *r;
 
     SDL_RWprintf(dest, "%s = %s\n", newprefix, r = vfs_repr(root));
     free(r);
+
+    if(!is_dir) {
+        free(newprefix);
+        return;
+    }
 
     for(const char *n; n = vfs_iter(root, &o);) {
         VFSNode *node = vfs_locate(root, n);

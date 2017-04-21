@@ -40,6 +40,16 @@ bool strendswith_any(const char *s, const char **earray) {
     return false;
 }
 
+bool strstartswith_any(const char *s, const char **earray) {
+    for(const char **e = earray; *e; ++e) {
+        if(strendswith(s, *e)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void stralloc(char **dest, const char *src) {
     free(*dest);
 

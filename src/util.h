@@ -32,9 +32,10 @@
 #define strlcpy SDL_strlcpy
 
 char* copy_segment(const char *text, const char *delim, int *size);
-bool strendswith(const char *s, const char *e)  __attribute__((pure));
-bool strstartswith(const char *s, const char *p)  __attribute__((pure));
-bool strendswith_any(const char *s, const char **earray)  __attribute__((pure));
+bool strendswith(const char *s, const char *e) __attribute__((pure));
+bool strstartswith(const char *s, const char *p) __attribute__((pure));
+bool strendswith_any(const char *s, const char **earray) __attribute__((pure));
+bool strstartswith_any(const char *s, const char **earray) __attribute__((pure));
 void stralloc(char **dest, const char *src);
 char* strjoin(const char *first, ...) __attribute__((sentinel));
 char* vstrfmt(const char *fmt, va_list args);

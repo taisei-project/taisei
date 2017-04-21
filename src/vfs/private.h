@@ -60,6 +60,7 @@ typedef struct VFSNode {
 
         struct {
             char *path;
+            wchar_t *wpath;
         } syspath;
 
         struct {
