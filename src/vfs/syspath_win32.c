@@ -83,7 +83,6 @@ static const char* vfs_syspath_iter(VFSNode *node, void **opaque) {
     if(!*opaque) {
         char *pattern = strjoin(node->syspath.path, "\\*.*", NULL);
         wchar_t *wpattern = WIN_UTF8ToString(pattern);
-        log_debug("begin search: %s", pattern);
         free(pattern);
         search_handle = FindFirstFile(wpattern, &fdata);
         free(wpattern);
