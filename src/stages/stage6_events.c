@@ -530,7 +530,10 @@ void elly_maxwell(Boss *b, int t) {
 void Baryon(Enemy *e, int t) {
 	Enemy *n;
 
+	float alpha = 1/(exp((cabs(global.plr.pos-e->pos)-100)/10)+1);
+	glColor4f(1.0,1.0,1.0,1.0-alpha);
 	draw_texture(creal(e->pos), cimag(e->pos), "stage6/baryon");
+	glColor4f(1.0,1.0,1.0,1.0);
 
 	n = REF(e->args[1]);
 	if(!n)
@@ -753,56 +756,100 @@ void elly_baryonattack(Boss *b, int t) {
 		set_baryon_rule(baryon_reset);
 }
 
+#define SAFE_RADIUS 100
+
+static int ricci_proj2(Projectile *p, int t) {
+	TIMER(&t);
+	AT(EVENT_DEATH)
+		free_ref(p->args[1]);
+	if(t<0)
+		return 1;
+
+	Enemy *e = (Enemy *)REF(p->args[1]);
+	if(e == 0)
+		return ACTION_DESTROY;
+	p->pos = e->pos+p->pos0+p->args[0]*t;
+	p->angle = carg(p->args[0]);
+	if(cabs(p->pos0+p->args[0]*t) > 1.1*SAFE_RADIUS)
+		return ACTION_DESTROY;
+	return 1;
+}
+
 int baryon_ricci(Enemy *e, int t) {
 	int num = creal(e->args[2])+0.5;
-	if(num % 2 == 0) {
-		GO_TO(e, global.boss->pos,0.03);
-	} else {
-		GO_TO(e, global.boss->pos + 200*cexp(I*2*M_PI*(1./6*creal(e->args[2]))+0.001*I*t), 0.03);
+	if(num % 2 == 1) {
+		GO_TO(e, global.boss->pos,0.1);
+	} else if(num == 0) {
+		complex d = global.plr.pos - e->pos;
+		complex d2 = global.plr.pos - global.boss->pos;
+		if(t < 100) {
+			GO_TO(e, global.boss->pos + d2, 0.1);
+			e->args[3] = I+1;
+		}
 
-		/*FROM_TO_INT(300, 10000, 100, 200, 1)
-			GO_TO(e, creal(global.boss->pos) + creal(e->pos0-global.boss->pos)*1.8 + 230.0*I + 200.0*I*(_i&1), 0.02);*/
+		complex dc = e->pos - VIEWPORT_W/2-VIEWPORT_H*I*2/3;
+		if(abs(creal(dc)) > VIEWPORT_W/2-1.5*SAFE_RADIUS)
+			e->args[3] = copysign(creal(e->args[3]),-creal(dc))+I*cimag(e->args[3]);
+		if(abs(cimag(d)) < VIEWPORT_H/3-1.1*SAFE_RADIUS)
+			e->args[3] = creal(e->args[3]) + I*copysign(cimag(e->args[3]),-cimag(dc));
+
+
+		e->pos += 0.5*e->args[3];
+
+	} else {
+		e->pos = global.boss->pos+(global.enemies->pos-global.boss->pos)*cexp(I*2*M_PI*(1./6*creal(e->args[2])));
+	}
+
+	if(num % 2 == 0) {
+		TIMER(&t);
+		FROM_TO(50,100000,10) {
+			int c = 10;
+			complex n = cexp(2*M_PI/c*I*_i);
+			create_projectile2c("bullet", SAFE_RADIUS*n,rgb(0,0,0.5),ricci_proj2,-n,add_ref(e));
+		}
 	}
 
 	return 1;
 }
 
-static double waveform(double x) {
-	if(x < 0)
-		return 0;
-	return 1*sin(1*x)*(exp(10*(sin(x)-0.9)));
-
-}
-
-int ricci_proj(Projectile *p, int t) {
+static int ricci_proj(Projectile *p, int t) {
 	if(t < 0)
 		return 1;
 
 	int time = global.frames-global.boss->current->starttime;
-	float c = 3;
-
 	complex shift = 0;
 	Enemy *e;
 	int i = 0;
 	p->pos = p->pos0 + p->args[0]*t;
+
+	double radius = SAFE_RADIUS;
+	double influence = 0;
+
 	for(e = global.enemies; e; e = e->next, i++) {
-		complex d = e->pos-p->pos;
-		int starttime = 0+70*i;
-		if((int)(creal(e->args[2])+0.5) & 1) {
-			shift += waveform(0.005*(-cabs(d)+c*(time-starttime)))*I*d/cabs(d);
+		if(e->draw_rule != Baryon) {
+			i--;
+			continue;
+		}
+		if(i % 2 == 0) {
+			complex d = e->pos-p->pos;
+			double r = cabs(d)/(1.0-0.1*sin(3*carg(d)+0.01*time));
+			double range = 1/(exp((r-radius)/50)+1);
+			shift += -1.1*(radius-r)/r*d*range;
+			influence += range;
 		}
 	}
 
-	p->pos = p->pos0 + p->args[0]*t+10*shift;
+	p->pos = p->pos0 + p->args[0]*t+shift;
 
 	p->angle = carg(p->args[0]);
 
 	float r,g,b,a;
 	parse_color(p->clr,&r,&g,&b, &a);
-	p->clr = rgb(r,g,cabs(shift));
+	p->clr = rgba(r,g,cabs(shift)/20.,1-0.8*clamp(influence,0,1));
 
 	return 1;
 }
+
 
 void elly_ricci(Boss *b, int t) {
 	TIMER(&t);
@@ -811,21 +858,20 @@ void elly_ricci(Boss *b, int t) {
 	AT(EVENT_DEATH)
 		set_baryon_rule(baryon_reset);
 
-	FROM_TO(80, 100000, 20) {
+	FROM_TO(80, 100000, 10) {
 		int i;
-		int c = 9 + global.diff;
-		bool left = (_i/(20/(1+_i/20)))%2;
-		for(i = 0; i < c*2; i++) {
-			complex pos = fmod(VIEWPORT_W/(float)c*(i/2),VIEWPORT_W)+VIEWPORT_H*I*(i&1);
-			if(left)
-				pos = fmod(VIEWPORT_H/(float)c*(i/2),VIEWPORT_H)*I+VIEWPORT_W*(i&1);
+		int c = 15;
+		for(i = 0; i < c; i++) {
+			complex pos = fmod(VIEWPORT_W/(float)c*(i+0.5*_i),VIEWPORT_W);
 
-			Projectile *p = create_projectile2c("flea", pos, rgb(0.3+0.7*(i&1), 1-0.7*(i&1), 0), ricci_proj, 2.*(I-2.0*I*(i&1))*(left ? -I : 1), 200-t);
+			Projectile *p = create_projectile1c("ball", pos, rgb(0.5, 0.0, 0), ricci_proj, 4.*I);
 			p->draw = ProjDrawNoFlareAdd;
 		}
 
 	}
 }
+
+#undef SAFE_RADIUS
 
 void elly_baryonattack2(Boss *b, int t) {
 	TIMER(&t);
