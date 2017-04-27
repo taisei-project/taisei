@@ -100,15 +100,31 @@ static void init_sdl(void) {
 	log_info("Using SDL %u.%u.%u", v.major, v.minor, v.patch);
 }
 
-static void get_core_paths(char **res, char **storage) {
+static char* get_default_res_path(void) {
+	char *res;
+
 #ifdef RELATIVE
-	*res = SDL_GetBasePath();
-	strappend(res, "data/");
+	res = SDL_GetBasePath();
+	strappend(&res, "data/");
 #else
-	*res = strdup(STATIC_RESOURCE_PREFIX);
+	res = strdup(STATIC_RESOURCE_PREFIX);
 #endif
 
-	*storage = SDL_GetPrefPath("", "taisei");
+	return res;
+}
+
+static void get_core_paths(char **res, char **storage) {
+	if((*res = getenv("TAISEI_RES_PATH")) && **res) {
+		*res = strdup(*res);
+	} else {
+		*res = get_default_res_path();
+	}
+
+	if((*storage = getenv("TAISEI_STORAGE_PATH")) && **storage) {
+		*storage = strdup(*storage);
+	} else {
+		*storage = SDL_GetPrefPath("", "taisei");
+	}
 }
 
 static void init_vfs(bool silent) {
