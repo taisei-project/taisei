@@ -84,7 +84,7 @@ static int64_t segment_seek(SDL_RWops *rw, int64_t offset, int whence) {
 
 static int64_t segment_size(SDL_RWops *rw) {
     Segment *s = SEGMENT(rw);
-    int64_t size = SDL_RWsize(rw);
+    int64_t size = SDL_RWsize(s->wrapped);
 
     if(size < 0) {
         return size;

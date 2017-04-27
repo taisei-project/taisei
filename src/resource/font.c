@@ -13,7 +13,7 @@ struct Fonts _fonts;
 TTF_Font* load_font(char *vfspath, int size) {
 	char *syspath = vfs_repr(vfspath, true);
 
-	SDL_RWops *rwops = vfs_open(vfspath, VFS_MODE_READ);
+	SDL_RWops *rwops = vfs_open(vfspath, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
 	if(!rwops) {
 		log_fatal("VFS error: %s", vfs_get_error());

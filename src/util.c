@@ -330,7 +330,7 @@ char* read_all(const char *filename, int *outsize) {
     char *text;
     size_t size;
 
-    SDL_RWops *file = vfs_open(filename, VFS_MODE_READ);
+    SDL_RWops *file = vfs_open(filename, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
     if(!file) {
         log_warn("VFS error: %s", vfs_get_error());

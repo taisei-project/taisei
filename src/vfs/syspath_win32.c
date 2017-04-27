@@ -13,11 +13,13 @@
 
 #include "syspath.h"
 
+char vfs_syspath_prefered_separator = '\\';
+
 // taken from SDL
 #define WIN_StringToUTF8(S) SDL_iconv_string("UTF-8", "UTF-16LE", (char *)(S), (SDL_wcslen(S)+1)*sizeof(WCHAR))
 #define WIN_UTF8ToString(S) (WCHAR *)SDL_iconv_string("UTF-16LE", "UTF-8", (char *)(S), SDL_strlen(S)+1)
 
-static bool vfs_syspath_init_internal(VFSNode *node, char *path, char *name);
+static bool vfs_syspath_init_internal(VFSNode *node, char *path);
 
 static void vfs_syspath_free(VFSNode *node) {
     free(node->syspath.path);
@@ -71,6 +73,7 @@ static VFSInfo vfs_syspath_query(VFSNode *node) {
 }
 
 static SDL_RWops* vfs_syspath_open(VFSNode *node, VFSOpenMode mode) {
+    mode &= VFS_MODE_RWMASK;
     SDL_RWops *rwops = SDL_RWFromFile(node->syspath.path, mode == VFS_MODE_WRITE ? "w" : "r");
 
     if(!rwops) {
@@ -81,13 +84,13 @@ static SDL_RWops* vfs_syspath_open(VFSNode *node, VFSOpenMode mode) {
 }
 
 static VFSNode* vfs_syspath_locate(VFSNode *node, const char *path) {
-    VFSNode *n = vfs_alloc();
+    VFSNode *n = vfs_alloc(true);
     char buf[strlen(path)+1], *base, *name;
     strcpy(buf, path);
     vfs_path_split_right(buf, &base, &name);
 
-    if(!vfs_syspath_init_internal(n, strfmt("%s%c%s", node->syspath.path, '\\', path), strdup(name))) {
-        vfs_free(n);
+    if(!vfs_syspath_init_internal(n, strfmt("%s%c%s", node->syspath.path, '\\', path))) {
+        vfs_freetemp(n);
         return NULL;
     }
 
@@ -190,7 +193,7 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
         }
 
         if(node != n) {
-            vfs_locate_cleanup(vfs_root, n);
+            vfs_freetemp(vfs_root, n);
         }
     }
 
@@ -255,7 +258,7 @@ static bool vfs_syspath_validate(char *path) {
     return true;
 }
 
-static bool vfs_syspath_init_internal(VFSNode *node, char *path, char *name) {
+static bool vfs_syspath_init_internal(VFSNode *node, char *path) {
     vfs_syspath_normalize(path);
 
     if(!vfs_syspath_validate(path)) {
@@ -266,11 +269,10 @@ static bool vfs_syspath_init_internal(VFSNode *node, char *path, char *name) {
     node->funcs = &vfs_funcs_syspath;
     node->syspath.path = path;
     node->syspath.wpath = WIN_UTF8ToString(path);
-    node->name = name;
 
     return true;
 }
 
 bool vfs_syspath_init(VFSNode *node, const char *path) {
-    return vfs_syspath_init_internal(node, strdup(path), NULL);
+    return vfs_syspath_init_internal(node, strdup(path));
 }

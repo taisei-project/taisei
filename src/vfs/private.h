@@ -6,6 +6,8 @@
  *  This file should not be included by code outside of the vfs/ directory
  */
 
+#include <zip.h>
+
 #include "util.h"
 
 #include "public.h"
@@ -17,13 +19,17 @@ typedef enum VFSNodeType {
     VNODE_VDIR,
     VNODE_SYSPATH,
     VNODE_UNION,
+    VNODE_ZIPFILE,
+    VNODE_ZIPPATH,
 } VFSNodeType;
 
 typedef char* (*VFSReprFunc)(VFSNode*);
 typedef void (*VFSFreeFunc)(VFSNode*);
 typedef VFSInfo (*VFSQueryFunc)(VFSNode*);
-typedef bool (*VFSMountFunc)(VFSNode *mountroot, const char *subname, VFSNode *mountee);
 typedef char* (*VFSSysPathFunc)(VFSNode*);
+
+typedef bool (*VFSMountFunc)(VFSNode *mountroot, const char *subname, VFSNode *mountee);
+typedef bool (*VFSUnmountFunc)(VFSNode *mountroot, const char *subname);
 
 typedef VFSNode* (*VFSLocateFunc)(VFSNode *dirnode, const char* path);
 typedef const char* (*VFSIterFunc)(VFSNode *dirnode, void **opaque);
@@ -37,6 +43,7 @@ typedef struct VFSNodeFuncs {
     VFSFreeFunc free;
     VFSQueryFunc query;
     VFSMountFunc mount;
+    VFSUnmountFunc unmount;
     VFSSysPathFunc syspath;
     VFSLocateFunc locate;
     VFSIterFunc iter;
@@ -47,11 +54,12 @@ typedef struct VFSNodeFuncs {
 
 typedef struct VFSNode {
     VFSNodeType type;
-    VFSNode *parent;
     VFSNodeFuncs *funcs;
-    char *name;
+    SDL_atomic_t refcount;
 
     union {
+        void *data;
+
         // TODO: maybe somehow separate this
 
         struct {
@@ -74,21 +82,22 @@ typedef struct VFSNode {
 
 extern VFSNode *vfs_root;
 
-VFSNode* vfs_alloc(void);
-void vfs_free(VFSNode *node);
+VFSNode* vfs_alloc(bool temp);
+void vfs_incref(VFSNode *node);
+bool vfs_decref(VFSNode *node);
+bool vfs_freetemp(VFSNode *node);
+bool vfs_makeperm(VFSNode *node);
 char* vfs_repr_node(VFSNode *node, bool try_syspath);
 
 VFSNode* vfs_locate(VFSNode *root, const char *path);
-void vfs_locate_cleanup(VFSNode *root, VFSNode *node);
 VFSInfo vfs_query_node(VFSNode *node);
 bool vfs_mount(VFSNode *root, const char *mountpoint, VFSNode *subtree);
 const char* vfs_iter(VFSNode *node, void **opaque);
 void vfs_iter_stop(VFSNode *node, void **opaque);
-VFSNode* vfs_find_root(VFSNode *node);
 
 void vfs_set_error(char *fmt, ...) __attribute__((format(printf, 1, 2)));
 void vfs_set_error_from_sdl(void);
 
-void vfs_print_tree_recurse(SDL_RWops *dest, VFSNode *root, char *prefix);
+void vfs_print_tree_recurse(SDL_RWops *dest, VFSNode *root, char *prefix, const char *name);
 
 #endif

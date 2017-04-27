@@ -16,6 +16,7 @@ pkg_check_modules(SDL2 sdl2 REQUIRED)
 pkg_check_modules(SDL2_TTF SDL2_ttf REQUIRED)
 pkg_check_modules(ZLIB zlib REQUIRED)
 pkg_check_modules(PNG libpng>=1.5 REQUIRED)
+pkg_check_modules(ZIP libzip REQUIRED)
 
 if(NOT NO_AUDIO)
 	pkg_check_modules(SDL2_MIXER SDL2_mixer REQUIRED)
@@ -93,11 +94,14 @@ set(SRCs
 	rwops/rwops_zlib.c
 	rwops/rwops_segment.c
 	rwops/rwops_autobuf.c
+	rwops/rwops_zipfile.c
 	vfs/private.c
 	vfs/public.c
 	vfs/pathutil.c
 	vfs/union.c
 	vfs/vdir.c
+	vfs/zipfile.c
+	vfs/zippath.c
 )
 
 if(WIN32)
@@ -178,16 +182,18 @@ endif()
 set(LIBs ${LIBs}
 	${SDL2_LIBRARIES}
 	${SDL2_TTF_LIBRARIES}
-	${PNG_LIBRARIES}
 	${ZLIB_LIBRARIES}
+	${ZIP_LIBRARIES}
+	${PNG_LIBRARIES}
 	${OPENGL_gl_LIBRARY}
 	m)
 
 set(LIBDIRs
 	${SDL2_LIBRARY_DIRS}
 	${SDL2_TTF_LIBRARY_DIRS}
-	${PNG_LIBRARY_DIRS}
 	${ZLIB_LIBRARY_DIRS}
+	${ZIP_LIBRARY_DIRS}
+	${PNG_LIBRARY_DIRS}
 	)
 
 if(WIN32)
@@ -205,8 +211,9 @@ set(INCs
 	${SDL2_INCLUDE_DIRS}
 	${SDL2_TTF_INCLUDE_DIRS}
 	${ZLIB_INCLUDE_DIRS}
-	${OPENGL_INCLUDE_DIR}
+	${ZIP_INCLUDE_DIRS}
 	${PNG_INCLUDE_DIRS}
+	${OPENGL_INCLUDE_DIR}
 	)
 
 # stupid cmake caching SHIT

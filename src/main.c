@@ -142,13 +142,16 @@ static void init_vfs(bool silent) {
 		const char *dest;	const char *syspath;							bool mkdir;
 	} mpts[] = {
 		{"storage",			storage_path,									true},
-		{"res",				res_path,										false},
-		{"res",				p = strfmt("%s/resources", storage_path),		true},
+		{"resdirs",			res_path,										false},
+		{"resdirs",			p = strfmt("%s/resources", storage_path),		true},
 		{NULL}
 	};
 
 	vfs_init();
+
 	vfs_create_union_mountpoint("res");
+	vfs_create_union_mountpoint("resdirs");
+	vfs_create_union_mountpoint("respkgs");
 
 	for(struct mpoint_t *mp = mpts; mp->dest; ++mp) {
 		if(!vfs_mount_syspath(mp->dest, mp->syspath, mp->mkdir)) {
@@ -162,6 +165,34 @@ static void init_vfs(bool silent) {
 	free(p);
 	free(res_path);
 	free(storage_path);
+
+	VFSDir *dir = vfs_dir_open("resdirs");
+
+	if(!dir) {
+		log_fatal("VFS error: %s", vfs_get_error());
+	}
+
+	for(const char *entry; entry = vfs_dir_read(dir);) {
+		if(strendswith(entry, ".zip")) {
+			log_info("Adding package: %s", entry);
+
+			char *tmp = strfmt("resdirs/%s", entry);
+
+			if(!vfs_mount_zipfile("respkgs", tmp)) {
+				log_warn("VFS error: %s", vfs_get_error());
+			}
+
+			free(tmp);
+		}
+	}
+
+	vfs_dir_close(dir);
+
+	vfs_mount_alias("res", "respkgs");
+	vfs_mount_alias("res", "resdirs");
+
+	vfs_unmount("resdirs");
+	vfs_unmount("respkgs");
 }
 
 static void log_lib_versions(void) {
@@ -222,6 +253,7 @@ int main(int argc, char **argv) {
 		}
 
 		SDL_RWclose(rwops);
+		vfs_uninit();
 		return 0;
 	}
 

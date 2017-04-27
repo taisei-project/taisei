@@ -6,7 +6,7 @@ static bool vfs_union_mount_internal(VFSNode *unode, const char *mountpoint, VFS
 static void vfs_union_delete_callback(void **list, void *elem) {
     ListContainer *c = elem;
     VFSNode *n = c->data;
-    vfs_free(n);
+    vfs_decref(n);
     delete_element(list, elem);
 }
 
@@ -15,7 +15,7 @@ static void vfs_union_free(VFSNode *node) {
 }
 
 static VFSNode* vfs_union_locate(VFSNode *node, const char *path) {
-    VFSNode *u = vfs_alloc();
+    VFSNode *u = vfs_alloc(true);
     vfs_union_init(u); // uniception!
 
     VFSInfo prim_info = VFSINFO_ERROR;
@@ -46,17 +46,15 @@ static VFSNode* vfs_union_locate(VFSNode *node, const char *path) {
             // in those cases it's just a useless wrapper, so let's just return the primary member directly
             VFSNode *n = u->vunion.members.primary;
 
-            // remove the primary member from the 'all' list to prevent vfs_free from wrecking it
+            // remove the primary member from the 'all' list to prevent vfs_freetemp from wrecking it
             delete_element((void**)&u->vunion.members.all, u->vunion.members.all);
 
-            vfs_free(u);
+            vfs_freetemp(u);
             return n;
         }
-
-        u->name = strdup(u->vunion.members.primary->name);
     } else {
         // all in vain...
-        vfs_free(u);
+        vfs_freetemp(u);
         u = NULL;
     }
 
@@ -133,7 +131,7 @@ static bool vfs_union_mount_internal(VFSNode *unode, const char *mountpoint, VFS
             vfs_set_error("Mountee doesn't represent a usable resource: %s", r);
             free(r);
         } else {
-            vfs_free(mountee);
+            vfs_decref(mountee);
         }
 
         return false;
@@ -208,7 +206,7 @@ static char* vfs_union_syspath(VFSNode *node) {
 
     if(n) {
         if(n->funcs->syspath) {
-            return n->funcs->syspath(node);
+            return n->funcs->syspath(n);
         } else {
             vfs_set_error("Primary union member doesn't represent a real filesystem path");
         }

@@ -1,29 +1,12 @@
 
 #include "vdir.h"
 
-static void vfs_vdir_detach_node(VFSNode *vdir, VFSNode *node, bool unset) {
-    assert(node->parent == vdir);
-
-    if(unset) {
-        hashtable_unset_string(vdir->vdir.contents, node->name);
-    }
-
-    free(node->name);
-    node->name = NULL;
-}
-
 static void vfs_vdir_attach_node(VFSNode *vdir, const char *name, VFSNode *node) {
-    assert(node->parent == NULL);
-    assert(node->name == NULL);
-
     VFSNode *oldnode = hashtable_get_string(vdir->vdir.contents, name);
 
     if(oldnode) {
-        vfs_vdir_detach_node(vdir, oldnode, true);
+        vfs_decref(oldnode);
     }
-
-    node->name = strdup(name);
-    node->parent = vdir;
 
     hashtable_set_string(vdir->vdir.contents, name, node);
 }
@@ -39,7 +22,8 @@ static VFSNode* vfs_vdir_locate(VFSNode *vdir, const char *path) {
     vfs_path_split_left(mutpath, &primpath, &subpath);
 
     if(node = hashtable_get_string(vdir->vdir.contents, mutpath)) {
-        return vfs_locate(node, subpath);
+        VFSNode *r = vfs_locate(node, subpath);
+        return r;
     }
 
     return NULL;
@@ -79,8 +63,7 @@ static void vfs_vdir_free(VFSNode *vdir) {
     VFSNode *child;
 
     for(i = hashtable_iter(ht); hashtable_iter_next(i, NULL, (void**)&child);) {
-        vfs_vdir_detach_node(vdir, child, false);
-        vfs_free(child);
+        vfs_decref(child);
     }
 
     hashtable_free(ht);
@@ -88,11 +71,37 @@ static void vfs_vdir_free(VFSNode *vdir) {
 
 static bool vfs_vdir_mount(VFSNode *vdir, const char *mountpoint, VFSNode *subtree) {
     if(!mountpoint) {
-        // merge attempt, unsupported
+        vfs_set_error("Virtual directories don't support merging");
         return false;
     }
 
     vfs_vdir_attach_node(vdir, mountpoint, subtree);
+    return true;
+}
+
+static bool vfs_vdir_unmount(VFSNode *vdir, const char *mountpoint) {
+    VFSNode *mountee;
+
+    if(!(mountee = hashtable_get_string(vdir->vdir.contents, mountpoint))) {
+        vfs_set_error("Mountpoint '%s' doesn't exist", mountpoint);
+        return false;
+    }
+
+    hashtable_unset_string(vdir->vdir.contents, mountpoint);
+    vfs_decref(mountee);
+    return true;
+}
+
+static bool vfs_vdir_mkdir(VFSNode *node, const char *subdir) {
+    if(!subdir) {
+        vfs_set_error("Virtual directory trying to create itself? How did you even get here?");
+        return false;
+    }
+
+    VFSNode *subnode = vfs_alloc(false);
+    vfs_vdir_init(subnode);
+    vfs_vdir_mount(node, subdir, subnode);
+
     return true;
 }
 
@@ -105,9 +114,11 @@ static VFSNodeFuncs vfs_funcs_vdir = {
     .query = vfs_vdir_query,
     .free = vfs_vdir_free,
     .mount = vfs_vdir_mount,
+    .unmount = vfs_vdir_unmount,
     .locate = vfs_vdir_locate,
     .iter = vfs_vdir_iter,
     .iter_stop = vfs_vdir_iter_stop,
+    .mkdir = vfs_vdir_mkdir,
 };
 
 void vfs_vdir_init(VFSNode *node) {

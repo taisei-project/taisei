@@ -16,7 +16,10 @@ typedef struct VFSInfo {
 typedef enum VFSOpenMode {
     VFS_MODE_READ = 1,
     VFS_MODE_WRITE = 2,
+    VFS_MODE_SEEKABLE  = 4,
 } VFSOpenMode;
+
+#define VFS_MODE_RWMASK (VFS_MODE_READ | VFS_MODE_WRITE)
 
 typedef struct VFSDir VFSDir;
 
@@ -26,7 +29,10 @@ bool vfs_mkdir(const char *path);
 void vfs_mkdir_required(const char *path);
 
 bool vfs_create_union_mountpoint(const char *mountpoint);
+bool vfs_mount_alias(const char *dst, const char *src);
 bool vfs_mount_syspath(const char *mountpoint, const char *fspath, bool mkdir);
+bool vfs_mount_zipfile(const char *mountpoint, const char *zippath);
+bool vfs_unmount(const char *path);
 
 VFSDir* vfs_dir_open(const char *path);
 void vfs_dir_close(VFSDir *dir);

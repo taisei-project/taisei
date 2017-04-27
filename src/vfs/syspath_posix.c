@@ -7,7 +7,9 @@
 
 #include "syspath.h"
 
-static void vfs_syspath_init_internal(VFSNode *node, char *path, char *name);
+char vfs_syspath_prefered_separator = '/';
+
+static void vfs_syspath_init_internal(VFSNode *node, char *path);
 
 static void vfs_syspath_free(VFSNode *node) {
     free(node->syspath.path);
@@ -26,6 +28,7 @@ static VFSInfo vfs_syspath_query(VFSNode *node) {
 }
 
 static SDL_RWops* vfs_syspath_open(VFSNode *node, VFSOpenMode mode) {
+    mode &= VFS_MODE_RWMASK;
     SDL_RWops *rwops = SDL_RWFromFile(node->syspath.path, mode == VFS_MODE_WRITE ? "w" : "r");
 
     if(!rwops) {
@@ -36,11 +39,8 @@ static SDL_RWops* vfs_syspath_open(VFSNode *node, VFSOpenMode mode) {
 }
 
 static VFSNode* vfs_syspath_locate(VFSNode *node, const char *path) {
-    VFSNode *n = vfs_alloc();
-    char buf[strlen(path)+1], *base, *name;
-    strcpy(buf, path);
-    vfs_path_split_right(buf, &base, &name);
-    vfs_syspath_init_internal(n, strfmt("%s%c%s", node->syspath.path, VFS_PATH_SEP, path), strdup(name));
+    VFSNode *n = vfs_alloc(true);
+    vfs_syspath_init_internal(n, strfmt("%s%c%s", node->syspath.path, VFS_PATH_SEP, path));
     return n;
 }
 
@@ -102,7 +102,7 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
         }
 
         if(node != n) {
-            vfs_locate_cleanup(vfs_root, n);
+            vfs_freetemp(n);
         }
     }
 
@@ -126,14 +126,13 @@ static VFSNodeFuncs vfs_funcs_syspath = {
     .open = vfs_syspath_open,
 };
 
-static void vfs_syspath_init_internal(VFSNode *node, char *path, char *name) {
+static void vfs_syspath_init_internal(VFSNode *node, char *path) {
     node->type = VNODE_SYSPATH;
     node->funcs = &vfs_funcs_syspath;
     node->syspath.path = path;
-    node->name = name;
 }
 
 bool vfs_syspath_init(VFSNode *node, const char *path) {
-    vfs_syspath_init_internal(node, strdup(path), NULL);
+    vfs_syspath_init_internal(node, strdup(path));
     return true;
 }
