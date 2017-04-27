@@ -552,15 +552,15 @@ int stage3_boss_a1_laserbullet(Projectile *p, int time) {
 			complex accel = (0.1 + 0.2 * (global.diff / (float)D_Lunatic)) * cexp(I*carg(dist));
 			float deathtime = sqrt(2*cabs(dist)/cabs(accel));
 
-			Laser *l = create_lasercurve2c(p->pos, 2 * deathtime, deathtime, rgb(1.0, 0.5, 0.5), las_accel, 0, accel);
+			Laser *l = create_lasercurve2c(p->pos, deathtime, deathtime, rgb(0.4, 0.9, 1.0), las_accel, 0, accel);
 			l->width = 15;
-			create_projectile3c("ball", p->pos, rgb(1.0, 0.5, 0.5), stage3_boss_a1_laserbullet, add_ref(l), deathtime - 1, 0);
+			create_projectile_p(&global.projs, p->tex, p->pos, p->clr, p->draw, stage3_boss_a1_laserbullet, add_ref(l), deathtime - 1, 0, 0);
 		} else {
-			int cnt = 4, i;
+			int cnt = floor(2 + frand() * global.diff), i;
 
 			for(i = 0; i < cnt; ++i) {
-				create_projectile2c("thickrice", p->pos, (i % 2)? rgb(1.0, 0.5, 0.5) : rgb(0.5, 0.5, 1.0), asymptotic,
-					(0.1 + frand()) * cexp(I*(2*i*M_PI/cnt+time)), 3
+				create_projectile2c("thickrice", p->pos, (i % 2) ? rgb(1.0, 0.4, 0.6) : rgb(0.6, 0.4, 1.0), asymptotic,
+					(0.1 + frand()) * cexp(I*(2*i*M_PI/cnt+time)), 5
 				)->draw = ProjDrawAdd;
 			}
 		}
@@ -631,12 +631,16 @@ int stage3_boss_a1_slave(Enemy *e, int time) {
 		return 1;
 	}
 
+	// moonlight rocket rockets
 	if(!creal(e->args[3]) && !(time % 140)) {
-		float dt = 70;
+		Laser *l;
+		float dt = 60;
 
-		Laser *l = create_lasercurve3c(e->pos, dt, dt, rgb(1.0, 1.0, 0.5), las_sine, 2.5*dir, M_PI/4, 0.2);
-		create_lasercurve4c(e->pos, dt, dt, rgb(0.5, 1.0, 0.5), las_sine_expanding, 2.5*dir, M_PI/20, 0.2, M_PI);
-		create_projectile3c("ball", e->pos, rgb(1.0, 0.5, 0.5), stage3_boss_a1_laserbullet, add_ref(l), dt-1, 1);
+		l = create_lasercurve4c(e->pos, dt, dt, rgb(1.0, 1.0, 0.5), las_sine_expanding, 2.5*dir, M_PI/20, 0.2, 0);
+		create_projectile3c("ball", e->pos, rgb(1.0, 0.4, 0.6), stage3_boss_a1_laserbullet, add_ref(l), dt-1, 1);
+
+		l = create_lasercurve4c(e->pos, dt, dt, rgb(0.5, 1.0, 0.5), las_sine_expanding, 2.5*dir, M_PI/20, 0.2, M_PI);
+		create_projectile3c("ball", e->pos, rgb(1.0, 0.4, 0.6), stage3_boss_a1_laserbullet, add_ref(l), dt-1, 1);
 	}
 
 	// night ignite balls
@@ -748,7 +752,7 @@ void stage3_boss_a2(Boss *boss, int time) {
 		Laser *l3 = create_lasercurve3c(boss->pos, lt, dt, rgb(b, b, 1.0), las_sine_expanding, vel, amp, freq - 0.004 * min(global.diff, D_Hard));
 		stage3_boss_a2_warnlaser(l3);
 
-		int i; for(i = 0; i < 5 + 15 * dfactor; ++i) {
+		for(int i = 0; i < 5 + 15 * dfactor; ++i) {
 			create_projectile2c("plainball",	boss->pos, rgb(c, c, 1.0), stage3_boss_a2_laserbullet, add_ref(l1), i)->draw = ProjDrawAdd;
 			create_projectile2c("bigball",		boss->pos, rgb(1.0, c, c), stage3_boss_a2_laserbullet, add_ref(l2), i)->draw = ProjDrawAdd;
 			create_projectile2c("plainball",	boss->pos, rgb(c, c, 1.0), stage3_boss_a2_laserbullet, add_ref(l3), i)->draw = ProjDrawAdd;

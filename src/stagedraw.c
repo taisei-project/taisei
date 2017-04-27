@@ -257,10 +257,6 @@ static void stage_draw_objects(void) {
 
 static void postprocess_prepare(FBO *fbo, Shader *s) {
 	glUniform1i(uniloc(s, "frames"), global.frames);
-
-	// deprecated, use gl_TextureMatrix[0]
-	glUniform2f(uniloc(s, "view_ofs"), 0, 0);
-	glUniform2f(uniloc(s, "view_scale"), 1, 1);
 }
 
 void stage_draw_foreground(void) {
