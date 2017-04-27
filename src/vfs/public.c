@@ -129,46 +129,19 @@ void vfs_mkdir_required(const char *path) {
     }
 }
 
-static char* vfs_syspath_node(VFSNode *node, const char *path) {
-    assert(node->funcs);
-    char *p = NULL;
-
-    if(node->funcs->syspath) {
-        // expected to set error on failure
-        p = node->funcs->syspath(node);
-    } else {
-        vfs_set_error("Node '%s' does not represent a real filesystem path", path);
-    }
-
-    return p;
-}
-
-static char* vfs_syspath_internal(const char *path, bool repr) {
+char* vfs_repr(const char *path, bool try_syspath) {
     char buf[strlen(path)+1];
     path = vfs_path_normalize(path, buf);
     VFSNode *node = vfs_locate(vfs_root, path);
 
     if(node) {
-        char *p = vfs_syspath_node(node, path);
-
-        if(!p && repr) {
-            p = vfs_repr(node);
-        }
-
+        char *p = vfs_repr_node(node, try_syspath);
         vfs_locate_cleanup(vfs_root, node);
         return p;
     }
 
     vfs_set_error("Node '%s' does not exist", path);
     return NULL;
-}
-
-char* vfs_syspath(const char *path) {
-    return vfs_syspath_internal(path, false);
-}
-
-char* vfs_syspath_or_repr(const char *path) {
-    return vfs_syspath_internal(path, true);
 }
 
 bool vfs_print_tree(SDL_RWops *dest, char *path) {

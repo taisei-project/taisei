@@ -271,7 +271,7 @@ static Resource* load_resource_finish(void *opaque, ResourceHandler *handler, co
 		return NULL;
 	}
 
-	char *sp = vfs_syspath_or_repr(path);
+	char *sp = vfs_repr(path, true);
 	Resource *res = insert_resource(handler->type, name, raw, flags, sp);
 	free(sp);
 

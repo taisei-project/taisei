@@ -171,13 +171,20 @@ VFSNode* vfs_find_root(VFSNode *node) {
     return root;
 }
 
-char* vfs_repr(VFSNode *node) {
+char* vfs_repr_node(VFSNode *node, bool try_syspath) {
     assert(node != NULL);
     assert(node->funcs != NULL);
     assert(node->funcs->repr != NULL);
+    char *r;
+
+    if(try_syspath && node->funcs->syspath) {
+        if(r = node->funcs->syspath(node)) {
+            return r;
+        }
+    }
 
     VFSInfo i = vfs_query_node(node);
-    char *r, *o = node->funcs->repr(node);
+    char *o = node->funcs->repr(node);
 
     r = strfmt("<%s (t:%i e:%i x:%i d:%i)>", o,
         node->type, i.error, i.exists, i.is_dir
@@ -193,7 +200,7 @@ void vfs_print_tree_recurse(SDL_RWops *dest, VFSNode *root, char *prefix) {
     char *newprefix = strfmt("%s%s%s", prefix, root->name, is_dir ? (char[]){VFS_PATH_SEP, 0} : "");
     char *r;
 
-    SDL_RWprintf(dest, "%s = %s\n", newprefix, r = vfs_repr(root));
+    SDL_RWprintf(dest, "%s = %s\n", newprefix, r = vfs_repr_node(root, false));
     free(r);
 
     if(!is_dir) {

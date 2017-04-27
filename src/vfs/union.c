@@ -129,7 +129,9 @@ static VFSInfo vfs_union_query(VFSNode *node) {
 static bool vfs_union_mount_internal(VFSNode *unode, const char *mountpoint, VFSNode *mountee, VFSInfo info, bool seterror) {
     if(!info.exists) {
         if(seterror) {
-            vfs_set_error("Mountee doesn't represent a usable resource");
+            char *r = vfs_repr_node(mountee, true);
+            vfs_set_error("Mountee doesn't represent a usable resource: %s", r);
+            free(r);
         } else {
             vfs_free(mountee);
         }
@@ -138,7 +140,9 @@ static bool vfs_union_mount_internal(VFSNode *unode, const char *mountpoint, VFS
     }
 
     if(seterror && !info.is_dir) {
-        vfs_set_error("Mountee is not a directory");
+        char *r = vfs_repr_node(mountee, true);
+        vfs_set_error("Mountee is not a directory: %s", r);
+        free(r);
         return false;
     }
 
@@ -159,7 +163,7 @@ static bool vfs_union_mount_internal(VFSNode *unode, const char *mountpoint, VFS
 
 static bool vfs_union_mount(VFSNode *unode, const char *mountpoint, VFSNode *mountee) {
     if(mountpoint) {
-        vfs_set_error("Attempted to use a named mountpoint on a union");
+        vfs_set_error("Attempted to use a named mountpoint '%s' on a union", mountpoint);
         return false;
     }
 
@@ -188,7 +192,7 @@ static char* vfs_union_repr(VFSNode *node) {
     for(ListContainer *c = node->vunion.members.all; c; c = c->next) {
         VFSNode *n = c->data;
 
-        strappend(&mlist, r = vfs_repr(n));
+        strappend(&mlist, r = vfs_repr_node(n, false));
         free(r);
 
         if(c->next) {

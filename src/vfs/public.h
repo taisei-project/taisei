@@ -32,8 +32,7 @@ VFSDir* vfs_dir_open(const char *path);
 void vfs_dir_close(VFSDir *dir);
 const char* vfs_dir_read(VFSDir *dir);
 
-char* vfs_syspath(const char *path);
-char* vfs_syspath_or_repr(const char *path);
+char* vfs_repr(const char *path, bool try_syspath);
 bool vfs_print_tree(SDL_RWops *dest, char *path);
 
 // these are defined in private.c, but need to be accessible from external code

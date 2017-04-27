@@ -310,7 +310,7 @@ void config_save(void) {
 
 	SDL_RWclose(out);
 
-	char *sp = vfs_syspath_or_repr(CONFIG_FILE);
+	char *sp = vfs_repr(CONFIG_FILE, true);
 	log_info("Saved config '%s'", sp);
 	free(sp);
 }
@@ -360,7 +360,7 @@ static void config_set(const char *key, const char *val, void *data) {
 void config_load(void) {
 	config_init();
 
-	char *sp = vfs_syspath_or_repr(CONFIG_FILE);
+	char *sp = vfs_repr(CONFIG_FILE, true);
 	log_info("Loading configuration from %s", sp);
 	free(sp);
 

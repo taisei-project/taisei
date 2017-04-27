@@ -483,7 +483,7 @@ static char* replay_getpath(const char *name, bool ext) {
 
 bool replay_save(Replay *rpy, const char *name) {
 	char *p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION));
-	char *sp = vfs_syspath_or_repr(p);
+	char *sp = vfs_repr(p, true);
 	log_info("Saving %s", sp);
 	free(sp);
 
@@ -502,7 +502,7 @@ bool replay_save(Replay *rpy, const char *name) {
 
 bool replay_load(Replay *rpy, const char *name, ReplayReadMode mode) {
 	char *p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION));
-	char *sp = vfs_syspath_or_repr(p);
+	char *sp = vfs_repr(p, true);
 	log_info("Loading %s (mode %i)", sp, mode);
 	free(sp);
 

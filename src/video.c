@@ -286,7 +286,7 @@ void video_take_screenshot(void) {
 	strftime(outfile, 128, "taisei_%Y%m%d_%H-%M-%S_%Z.png", timeinfo);
 
 	outpath = strjoin("storage/screenshots/", outfile, NULL);
-	syspath = vfs_syspath_or_repr(outpath);
+	syspath = vfs_repr(outpath, true);
 	log_info("Saving screenshot as %s", syspath);
 	free(syspath);
 

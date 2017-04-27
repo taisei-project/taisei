@@ -76,7 +76,8 @@ extern VFSNode *vfs_root;
 
 VFSNode* vfs_alloc(void);
 void vfs_free(VFSNode *node);
-char* vfs_repr(VFSNode *node);
+char* vfs_repr_node(VFSNode *node, bool try_syspath);
+
 VFSNode* vfs_locate(VFSNode *root, const char *path);
 void vfs_locate_cleanup(VFSNode *root, VFSNode *node);
 VFSInfo vfs_query_node(VFSNode *node);
