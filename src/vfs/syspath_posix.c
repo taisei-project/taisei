@@ -133,6 +133,7 @@ static void vfs_syspath_init_internal(VFSNode *node, char *path, char *name) {
     node->name = name;
 }
 
-void vfs_syspath_init(VFSNode *node, const char *path) {
+bool vfs_syspath_init(VFSNode *node, const char *path) {
     vfs_syspath_init_internal(node, strdup(path), NULL);
+    return true;
 }

@@ -22,12 +22,19 @@ bool vfs_create_union_mountpoint(const char *mountpoint) {
 
 bool vfs_mount_syspath(const char *mountpoint, const char *fspath, bool mkdir) {
     VFSNode *rdir = vfs_alloc();
-    vfs_syspath_init(rdir, fspath);
+
+    if(!vfs_syspath_init(rdir, fspath)) {
+        vfs_set_error("Can't initialize path: %s", vfs_get_error());
+        vfs_free(rdir);
+        return false;
+    }
+
     assert(rdir->funcs);
     assert(rdir->funcs->mkdir);
 
     if(mkdir && !rdir->funcs->mkdir(rdir, NULL)) {
         vfs_set_error("Can't create directory: %s", vfs_get_error());
+        vfs_free(rdir);
         return false;
     }
 

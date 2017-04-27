@@ -17,7 +17,7 @@
 #define WIN_StringToUTF8(S) SDL_iconv_string("UTF-8", "UTF-16LE", (char *)(S), (SDL_wcslen(S)+1)*sizeof(WCHAR))
 #define WIN_UTF8ToString(S) (WCHAR *)SDL_iconv_string("UTF-16LE", "UTF-8", (char *)(S), SDL_strlen(S)+1)
 
-static void vfs_syspath_init_internal(VFSNode *node, char *path, char *name);
+static bool vfs_syspath_init_internal(VFSNode *node, char *path, char *name);
 
 static void vfs_syspath_free(VFSNode *node) {
     free(node->syspath.path);
@@ -85,7 +85,12 @@ static VFSNode* vfs_syspath_locate(VFSNode *node, const char *path) {
     char buf[strlen(path)+1], *base, *name;
     strcpy(buf, path);
     vfs_path_split_right(buf, &base, &name);
-    vfs_syspath_init_internal(n, strfmt("%s%c%s", node->syspath.path, '\\', path), strdup(name));
+
+    if(!vfs_syspath_init_internal(n, strfmt("%s%c%s", node->syspath.path, '\\', path), strdup(name))) {
+        vfs_free(n);
+        return NULL;
+    }
+
     return n;
 }
 
@@ -241,15 +246,31 @@ static void vfs_syspath_normalize(char *path) {
     strcpy(path, buf);
 }
 
-static void vfs_syspath_init_internal(VFSNode *node, char *path, char *name) {
+static bool vfs_syspath_validate(char *path) {
+    if(strchr(path, ':')) {
+        vfs_set_error("Path '%s' contains forbidden character ':'", path);
+        return false;
+    }
+
+    return true;
+}
+
+static bool vfs_syspath_init_internal(VFSNode *node, char *path, char *name) {
     vfs_syspath_normalize(path);
+
+    if(!vfs_syspath_validate(path)) {
+        return false;
+    }
+
     node->type = VNODE_SYSPATH;
     node->funcs = &vfs_funcs_syspath;
     node->syspath.path = path;
     node->syspath.wpath = WIN_UTF8ToString(path);
     node->name = name;
+
+    return true;
 }
 
-void vfs_syspath_init(VFSNode *node, const char *path) {
-    vfs_syspath_init_internal(node, strdup(path), NULL);
+bool vfs_syspath_init(VFSNode *node, const char *path) {
+    return vfs_syspath_init_internal(node, strdup(path), NULL);
 }

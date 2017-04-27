@@ -4,6 +4,6 @@
 
 #include "private.h"
 
-void vfs_syspath_init(VFSNode *node, const char *path);
+bool vfs_syspath_init(VFSNode *node, const char *path);
 
 #endif
