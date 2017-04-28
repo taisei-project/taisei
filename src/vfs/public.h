@@ -38,6 +38,11 @@ VFSDir* vfs_dir_open(const char *path);
 void vfs_dir_close(VFSDir *dir);
 const char* vfs_dir_read(VFSDir *dir);
 
+char** vfs_dir_list_sorted(const char *path, size_t *out_size, int (*compare)(const char**, const char**), bool (*filter)(const char*));
+void vfs_dir_list_free(char **list, size_t size);
+int vfs_dir_list_order_ascending(const char **a, const char **b);
+int vfs_dir_list_order_descending(const char **a, const char **b);
+
 char* vfs_repr(const char *path, bool try_syspath);
 bool vfs_print_tree(SDL_RWops *dest, char *path);
 

@@ -127,6 +127,17 @@ static void get_core_paths(char **res, char **storage) {
 	}
 }
 
+static bool filter_zip_ext(const char *str) {
+	char buf[strlen(str) + 1];
+	memset(buf, 0, sizeof(buf));
+
+	for(char *p = buf; *str; ++p, ++str) {
+		*p = tolower(*str);
+	}
+
+	return strendswith(buf, ".zip");
+}
+
 static void init_vfs(bool silent) {
 	char *res_path, *storage_path;
 	get_core_paths(&res_path, &storage_path);
@@ -166,27 +177,27 @@ static void init_vfs(bool silent) {
 	free(res_path);
 	free(storage_path);
 
-	VFSDir *dir = vfs_dir_open("resdirs");
+	size_t numzips = 0;
+	char **ziplist = vfs_dir_list_sorted("resdirs", &numzips, vfs_dir_list_order_ascending, filter_zip_ext);
 
-	if(!dir) {
+	if(!ziplist) {
 		log_fatal("VFS error: %s", vfs_get_error());
 	}
 
-	for(const char *entry; entry = vfs_dir_read(dir);) {
-		if(strendswith(entry, ".zip")) {
-			log_info("Adding package: %s", entry);
+	for(size_t i = 0; i < numzips; ++i) {
+		const char *entry = ziplist[i];
+		log_info("Adding package: %s", entry);
 
-			char *tmp = strfmt("resdirs/%s", entry);
+		char *tmp = strfmt("resdirs/%s", entry);
 
-			if(!vfs_mount_zipfile("respkgs", tmp)) {
-				log_warn("VFS error: %s", vfs_get_error());
-			}
-
-			free(tmp);
+		if(!vfs_mount_zipfile("respkgs", tmp)) {
+			log_warn("VFS error: %s", vfs_get_error());
 		}
+
+		free(tmp);
 	}
 
-	vfs_dir_close(dir);
+	vfs_dir_list_free(ziplist, numzips);
 
 	vfs_mount_alias("res", "respkgs");
 	vfs_mount_alias("res", "resdirs");

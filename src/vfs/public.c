@@ -282,3 +282,61 @@ const char* vfs_dir_read(VFSDir *dir) {
 
     return NULL;
 }
+
+char** vfs_dir_list_sorted(const char *path, size_t *out_size, int (*compare)(const char**, const char**), bool (*filter)(const char*)) {
+    char **results = NULL;
+    VFSDir *dir = vfs_dir_open(path);
+
+    assert(out_size != NULL);
+    assert(compare != NULL);
+
+    if(!dir) {
+        return results;
+    }
+
+    size_t real_size = 8;
+    results = malloc(sizeof(char*) * real_size);
+    *out_size = 0;
+
+    for(const char *e; e = vfs_dir_read(dir);) {
+        if(filter && !filter(e)) {
+            continue;
+        }
+
+        results[(*out_size)++] = strdup(e);
+        log_debug("Added %s", results[(*out_size)-1]);
+
+        if(*out_size >= real_size) {
+            real_size *= 2;
+            results = realloc(results, sizeof(char*) * real_size);
+        }
+    }
+
+    vfs_dir_close(dir);
+
+    if(*out_size) {
+        qsort(results, *out_size, sizeof(char*), (int (*)(const void*, const void*)) compare);
+    }
+
+    return results;
+}
+
+void vfs_dir_list_free(char **list, size_t size) {
+    if(!list) {
+        return;
+    }
+
+    for(size_t i = 0; i < size; ++i) {
+        free(list[i]);
+    }
+
+    free(list);
+}
+
+int vfs_dir_list_order_ascending(const char **a, const char **b) {
+    return strcmp(*a, *b);
+}
+
+int vfs_dir_list_order_descending(const char **a, const char **b) {
+    return strcmp(*b, *a);
+}
