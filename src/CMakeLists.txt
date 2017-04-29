@@ -135,8 +135,19 @@ message(STATUS "Build configuration: ${CMAKE_BUILD_TYPE}")
 set(DEBUG_FLAGS "-ggdb -fno-omit-frame-pointer")
 set(RELEASE_FLAGS "-DNDEBUG")
 
-if(DEBUG_USE_UBSAN)
-	set(DEBUG_FLAGS "${DEBUG_FLAGS} -fsanitize=undefined")
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
+	# "Debug build" is a build where ${DEBUG_FLAGS} are used.
+	set(DEBUG_BUILD TRUE)
+endif()
+
+if(DEBUG_USE_UBSAN AND DEFINED DEBUG_BUILD)
+	include(CheckCCompilerFlag)
+	CHECK_C_COMPILER_FLAG("-fsanitize=undefined" COMPILER_SUPPORTS_UBSAN)
+	if(COMPILER_SUPPORTS_UBSAN)
+		set(DEBUG_FLAGS "${DEBUG_FLAGS} -fsanitize=undefined")
+	else()
+		message(STATUS "  DEBUG_USE_UBSAN not supported by compiler, turned off.")
+	endif()
 endif()
 
 if(DEBUG_USE_ASAN)
