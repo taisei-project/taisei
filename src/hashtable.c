@@ -331,6 +331,11 @@ void hashtable_unset_deferred_now(Hashtable *ht, ListContainer **list) {
     for(ListContainer *c = *list; c; c = next) {
         next = c->next;
         hashtable_unset(ht, c->data);
+
+        if(ht->free_func) {
+            ht->free_func(c->data);
+        }
+
         delete_element((void**)list, c);
     }
 }
