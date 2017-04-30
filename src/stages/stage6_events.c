@@ -33,7 +33,7 @@ AttackInfo stage6_spells[] = {
 							elly_maxwell, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
 	{{ 8,  9, 10, 11},	AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 60, 30000,
 							elly_eigenstate, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
-	{{12, 13, 14, 15},	AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 50, 55000,
+	{{12, 13, 14, 15},	AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 50, 48000,
 							elly_ricci, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
 	{{16, 17, 18, 19},	AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 60, 50000,
 							elly_lhc, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
@@ -530,8 +530,8 @@ void elly_maxwell(Boss *b, int t) {
 void Baryon(Enemy *e, int t) {
 	Enemy *n;
 
-	float alpha = 1/(exp((cabs(global.plr.pos-e->pos)-100)/10)+1);
-	glColor4f(1.0,1.0,1.0,1.0-alpha);
+	float alpha = 1- 0.8/(exp((cabs(global.plr.pos-e->pos)-100)/10)+1);
+	glColor4f(1.0,1.0,1.0,alpha);
 	draw_texture(creal(e->pos), cimag(e->pos), "stage6/baryon");
 	glColor4f(1.0,1.0,1.0,1.0);
 
@@ -553,7 +553,7 @@ void Baryon(Enemy *e, int t) {
 // 	create_particle2c("flare", e->pos+40*frand()*cexp(2.0*I*M_PI*frand()), rgb(0, 1, 1), GrowFadeAdd, timeout_linear, 50, 1-I);
 
 	if(!(t % 10))
-		create_particle1c("stain", e->pos+10*frand()*cexp(2.0*I*M_PI*frand()), rgb(0, 1, 0.7), FadeAdd, timeout, 50)->angle = 2*M_PI*frand();
+		create_particle1c("stain", e->pos+10*frand()*cexp(2.0*I*M_PI*frand()), rgb(0, 1*alpha, 0.7*alpha), FadeAdd, timeout, 50)->angle = 2*M_PI*frand();
 }
 
 void BaryonCenter(Enemy *e, int t) {
@@ -780,29 +780,22 @@ int baryon_ricci(Enemy *e, int t) {
 	if(num % 2 == 1) {
 		GO_TO(e, global.boss->pos,0.1);
 	} else if(num == 0) {
-		complex d = global.plr.pos - e->pos;
-		complex d2 = global.plr.pos - global.boss->pos;
-		if(t < 100) {
-			GO_TO(e, global.boss->pos + d2, 0.1);
-			e->args[3] = I+1;
+		if(t < 150) {
+			GO_TO(e, global.plr.pos, 0.1);
+		} else {
+
+			complex d = e->pos - VIEWPORT_W/2-VIEWPORT_H*I*2/3 + 100*sin(t/500.)+70*I*cos(t*3./500.);
+			e->pos += -0.5*d/cabs(d);
 		}
-
-		complex dc = e->pos - VIEWPORT_W/2-VIEWPORT_H*I*2/3;
-		if(abs(creal(dc)) > VIEWPORT_W/2-1.5*SAFE_RADIUS)
-			e->args[3] = copysign(creal(e->args[3]),-creal(dc))+I*cimag(e->args[3]);
-		if(abs(cimag(d)) < VIEWPORT_H/3-1.1*SAFE_RADIUS)
-			e->args[3] = creal(e->args[3]) + I*copysign(cimag(e->args[3]),-cimag(dc));
-
-
-		e->pos += 0.5*e->args[3];
 
 	} else {
 		e->pos = global.boss->pos+(global.enemies->pos-global.boss->pos)*cexp(I*2*M_PI*(1./6*creal(e->args[2])));
 	}
 
 	if(num % 2 == 0) {
-		TIMER(&t);
-		FROM_TO(50,100000,10) {
+		int time = global.frames-global.boss->current->starttime;
+		TIMER(&time);
+		FROM_TO(150,100000,10) {
 			int c = 10;
 			complex n = cexp(2*M_PI/c*I*_i);
 			create_projectile2c("bullet", SAFE_RADIUS*n,rgb(0,0,0.5),ricci_proj2,-n,add_ref(e));
@@ -845,7 +838,7 @@ static int ricci_proj(Projectile *p, int t) {
 
 	float r,g,b,a;
 	parse_color(p->clr,&r,&g,&b, &a);
-	p->clr = rgba(r,g,cabs(shift)/20.,1-0.8*clamp(influence,0,1));
+	p->clr = rgba(r,g,cabs(shift)/20.,max(0,tanh((time-80)/100.))*clamp(influence,0.2,1));
 
 	return 1;
 }
@@ -858,13 +851,27 @@ void elly_ricci(Boss *b, int t) {
 	AT(EVENT_DEATH)
 		set_baryon_rule(baryon_reset);
 
-	FROM_TO(80, 100000, 10) {
-		int i;
-		int c = 15;
-		for(i = 0; i < c; i++) {
+	int c = 15;
+	float v = 4;
+	int interval = 10;
+
+	AT(70) {
+		float offset = v*interval;
+		for(int y = 0; y < VIEWPORT_H/offset; y++) {
+			for(int i = 0; i < c; i++) {
+				complex pos = fmod(VIEWPORT_W/(float)c*(i+0.5*_i),VIEWPORT_W)+offset*y*I;
+
+				Projectile *p = create_projectile1c("ball", pos, rgba(0.5, 0.0, 0,0), ricci_proj, v*I);
+				p->draw = ProjDrawNoFlareAdd;
+			}
+		}
+
+	}
+	FROM_TO(70, 100000, interval) {
+		for(int i = 0; i < c; i++) {
 			complex pos = fmod(VIEWPORT_W/(float)c*(i+0.5*_i),VIEWPORT_W);
 
-			Projectile *p = create_projectile1c("ball", pos, rgb(0.5, 0.0, 0), ricci_proj, 4.*I);
+			Projectile *p = create_projectile1c("ball", pos, rgba(0.5, 0.0, 0,0), ricci_proj, v*I);
 			p->draw = ProjDrawNoFlareAdd;
 		}
 
