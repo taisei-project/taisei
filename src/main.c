@@ -127,21 +127,28 @@ int main(int argc, char **argv) {
 	CLIAction a;
 	cli_args(argc, argv, &a); // stage_init_array goes first!
 
-	if(a.type == CLI_Quit)
+	if(a.type == CLI_Quit) {
+		free_cli_action(&a);
 		return 1;
+	}
 
 	if(a.type == CLI_DumpStages) {
 		for(StageInfo *stg = stages; stg->procs; ++stg) {
 			tsfprintf(stdout, "%x %s: %s\n", stg->id, stg->title, stg->subtitle);
 		}
+
+		free_cli_action(&a);
 		return 0;
 	} else if(a.type == CLI_PlayReplay) {
 		if(!replay_load(&replay, a.filename, REPLAY_READ_ALL | REPLAY_READ_RAWPATH)) {
+			free_cli_action(&a);
 			return 1;
 		}
 
 		replay_idx = a.stageid ? replay_find_stage_idx(&replay, a.stageid) : 0;
+
 		if(replay_idx < 0) {
+			free_cli_action(&a);
 			return 1;
 		}
 	}
