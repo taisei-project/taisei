@@ -4,11 +4,14 @@
 
 static VFSZipFileTLS* vfs_zipfile_get_tls(VFSNode *node, bool create);
 
+#define LOG_SDL_ERROR log_debug("SDL error: %s", SDL_GetError())
+
 static zip_int64_t vfs_zipfile_srcfunc(void *userdata, void *data, zip_uint64_t len, zip_source_cmd_t cmd) {
     VFSNode *zipnode = userdata;
     VFSZipFileData *zdata = zipnode->data;
     VFSZipFileTLS *tls = vfs_zipfile_get_tls(zipnode, false);
     VFSNode *source = zdata->source;
+    zip_int64_t ret = -1;
 
     if(!tls) {
         return -1;
@@ -23,6 +26,8 @@ static zip_int64_t vfs_zipfile_srcfunc(void *userdata, void *data, zip_uint64_t 
             tls->stream = source->funcs->open(source, VFS_MODE_READ);
 
             if(!tls->stream) {
+                LOG_SDL_ERROR;
+                zip_error_set(&tls->error, ZIP_ER_OPEN, 0);
                 return -1;
             }
 
@@ -55,19 +60,39 @@ static zip_int64_t vfs_zipfile_srcfunc(void *userdata, void *data, zip_uint64_t 
         }
 
         case ZIP_SOURCE_READ: {
-            zip_int64_t r;
-            r = SDL_RWread(tls->stream, data, 1, len);
-            return r;
+            ret = SDL_RWread(tls->stream, data, 1, len);
+
+            if(!ret) {
+                LOG_SDL_ERROR;
+                zip_error_set(&tls->error, ZIP_ER_READ, 0);
+                ret = -1;
+            }
+
+            return ret;
         }
 
         case ZIP_SOURCE_SEEK: {
             struct zip_source_args_seek *s;
             s = ZIP_SOURCE_GET_ARGS(struct zip_source_args_seek, data, len, &tls->error);
-            return SDL_RWseek(tls->stream, s->offset, s->whence);
+            ret = SDL_RWseek(tls->stream, s->offset, s->whence);
+
+            if(ret < 0) {
+                LOG_SDL_ERROR;
+                zip_error_set(&tls->error, ZIP_ER_SEEK, 0);
+            }
+
+            return ret;
         }
 
         case ZIP_SOURCE_TELL: {
-            return SDL_RWtell(tls->stream);
+            ret = SDL_RWtell(tls->stream);
+
+            if(ret < 0) {
+                LOG_SDL_ERROR;
+                zip_error_set(&tls->error, ZIP_ER_TELL, 0);
+            }
+
+            return ret;
         }
 
         case ZIP_SOURCE_ERROR: {
@@ -83,6 +108,7 @@ static zip_int64_t vfs_zipfile_srcfunc(void *userdata, void *data, zip_uint64_t 
         }
 
         default: {
+            zip_error_set(&tls->error, ZIP_ER_INTERNAL, 0);
             return -1;
         }
     }
