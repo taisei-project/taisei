@@ -333,28 +333,3 @@ bool vfs_zipfile_init(VFSNode *node, VFSNode *source) {
     vfs_zipfile_init_pathmap(node);
     return true;
 }
-
-#include "syspath.h"
-
-static void vfs_zipfile_test_zip(VFSNode *zipnode) {
-    vfs_mount(vfs_root, "zip", zipnode);
-}
-
-void vfs_zipfile_test(void) {
-    VFSNode *srcnode = vfs_alloc(false);
-    VFSNode *zipnode = vfs_alloc(false);
-
-    log_debug("syspath");
-    if(!vfs_syspath_init(srcnode, "/tmp/ts/test.zip")) {
-        log_fatal("wtf");
-    }
-    log_debug("ok");
-
-    log_debug("zipfile");
-    if(!vfs_zipfile_init(zipnode, srcnode)) {
-        log_fatal("wtf 2");
-    }
-    log_debug("ok");
-
-    vfs_zipfile_test_zip(zipnode);
-}
