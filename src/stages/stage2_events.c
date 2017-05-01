@@ -46,13 +46,14 @@ Dialog *stage2_dialog(void) {
 		dadd_msg(d, Left, "Is that even possible?!");
 		dadd_msg(d, Right, "Look, there is a way outside\nright behind us.");
 		dadd_msg(d, Left, "But I’ve got a feeling that you\nwon’t let me pass, haha!");
+		dadd_msg(d, Right, "You are my prey after all!");
 	} else {
 		dadd_msg(d, Left, "This must be the place…");
 		dadd_msg(d, Right, "Hello? ");
 		dadd_msg(d, Left, "You came here because of the\n“crack”, too? Where is it?");
 		dadd_msg(d, Right, "Right behind us, but…");
 		dadd_msg(d, Left, "Okay, if you’ll excuse me…");
-		dadd_msg(d, Right, "No! Don’t make it more\ntroubling than it already is!");
+		dadd_msg(d, Right, "No! Messing around with it\nis going to cause trouble!\nI don’t want trouble at my place.");
 	}
 
 	dadd_msg(d, BGM, "bgm_stage2boss");
@@ -62,7 +63,7 @@ Dialog *stage2_dialog(void) {
 Dialog *stage2_post_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", NULL);
 
-	dadd_msg(d, Right, "Well, let’s go then.");
+	dadd_msg(d, Left, "Well, let’s go then.");
 
 	return d;
 }
