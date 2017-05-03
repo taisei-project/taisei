@@ -248,7 +248,7 @@ void video_setmode(int w, int h, bool fs, bool resizable) {
 
 	if(fs) {
 		flags |= SDL_WINDOW_FULLSCREEN;
-	} else if(flags & SDL_WINDOW_RESIZABLE) {
+	} else if(resizable) {
 		flags |= SDL_WINDOW_RESIZABLE;
 	}
 
@@ -342,7 +342,7 @@ bool video_isfullscreen(void) {
 }
 
 void video_set_fullscreen(bool fullscreen) {
-	video_setmode(video.intended.width, video.intended.height, fullscreen, video_isresizable());
+	video_setmode(video.intended.width, video.intended.height, fullscreen, config_get_int(CONFIG_VID_RESIZABLE));
 }
 
 void video_toggle_fullscreen(void) {
