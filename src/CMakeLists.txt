@@ -12,7 +12,7 @@ if(LINK_TO_LIBGL)
 	add_definitions(-DLINK_TO_LIBGL)
 endif()
 
-pkg_check_modules(SDL2 sdl2 REQUIRED)
+pkg_check_modules(SDL2 sdl2>=2.0.5 REQUIRED)
 pkg_check_modules(SDL2_TTF SDL2_ttf REQUIRED)
 pkg_check_modules(ZLIB zlib REQUIRED)
 pkg_check_modules(PNG libpng>=1.5 REQUIRED)
