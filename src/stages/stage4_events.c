@@ -52,14 +52,14 @@ Dialog *stage4_dialog(void) {
 	if(global.plr.cha == Marisa) {
 		dadd_msg(d, Left, "What? I mean, where am I?");
 		dadd_msg(d, Right, "You are in the…");
-		dadd_msg(d, Right, "STOP! I will never tell intruders like you!");
+		dadd_msg(d, Right, "Ha! you almost got me!\nI will never tell intruders like you!");
 		dadd_msg(d, Left, "…in the mansion of the\nevil mastermind, right?");
 		dadd_msg(d, Right, "AHH! Anyway! You won’t reach\nthe end of this corridor!");
 	} else {
 		dadd_msg(d, Left, "So you are the owner of this place?");
 		dadd_msg(d, Right, "No, I’m just the guardian!");
 		dadd_msg(d, Left, "What is there to be guarded?");
-		dadd_msg(d, Right, "My master… I mean, that’s a secret!");
+		dadd_msg(d, Right, "My master… I mean– that’s a secret!");
 		dadd_msg(d, Left, "…");
 		dadd_msg(d, Right, "So stop asking questions!\nSecrets are secret!\n…\nAnd I will beat you now!");
 	}
@@ -72,7 +72,7 @@ Dialog *stage4_dialog_end(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/kurumi");
 
 	dadd_msg(d, Left, "Now, where is your master?");
-	dadd_msg(d, Right, "Didn’t I tell you? At the end of this corridor,\nthere is a door.");
+	dadd_msg(d, Right, "At the end of this corridor,\nthere is a door.");
 	dadd_msg(d, Right, "Just leave me alone.");
 
 	return d;

@@ -44,9 +44,16 @@ AttackInfo stage3_spells[] = {
 Dialog *stage3_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/wriggle");
 
-	dadd_msg(d, Left, "Ugh, it’s like bugs being attracted by the light…");
-	dadd_msg(d, Right, "That’s right! The light makes us strong!");
-	dadd_msg(d, Right, "And this place is filled with it!\nFeel my tremendous power!");
+	if(global.plr.cha == Marisa) {
+		dadd_msg(d, Left, "Ugh, it’s like bugs being attracted by the light…");
+		dadd_msg(d, Right, "That’s right! The light makes us strong!");
+		dadd_msg(d, Right, "And this place is filled with it!\nFeel my tremendous power!");
+	} else {
+		dadd_msg(d, Left, "Eww, I can’t stand bugs.");
+		dadd_msg(d, Right, "Don’t discriminate! We are A-class yōkai!\nVery dangerous!");
+		dadd_msg(d, Left, "You mean very delusional?\nI usually step on you.");
+		dadd_msg(d, Right, "Then let me teach you a lesson –\nwith my danmaku more frightening\nthan giant feet!");
+	}
 	dadd_msg(d, BGM, "bgm_stage3boss");
 
 	return d;

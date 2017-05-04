@@ -166,7 +166,7 @@ void player_logic(Player* plr) {
 	process_enemies(&plr->slaves);
 	if(plr->deathtime < -1) {
 		plr->deathtime++;
-		plr->pos -= 0.7*I;
+		plr->pos -= I;
 		return;
 	}
 

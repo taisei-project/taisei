@@ -48,12 +48,21 @@ Dialog *stage5_post_mid_dialog(void) {
 
 Dialog *stage5_boss_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/iku");
-	dadd_msg(d, Left, "Finally!");
-	dadd_msg(d, Right, "Stop following me!");
-	dadd_msg(d, Left, "Why? You aren’t involved in this, are you?");
-	dadd_msg(d, Right, "I don’t have time for your suspicions now.");
-	dadd_msg(d, Left, "Sounds very suspicious, actually.");
-	dadd_msg(d, Right, "Okay, let’s just get this over with.");
+	if(global.plr.cha == Marisa) {
+		dadd_msg(d, Left, "Finally!");
+		dadd_msg(d, Right, "Stop following me!");
+		dadd_msg(d, Left, "Why? You aren’t involved in this, are you?");
+		dadd_msg(d, Right, "I don’t have time for your suspicions now.");
+		dadd_msg(d, Left, "Sounds very suspicious, actually.");
+		dadd_msg(d, Right, "Okay, let’s just get this over with.");
+	} else {
+		dadd_msg(d, Left, "There you are!");
+		dadd_msg(d, Right, "Stop following me!");
+		dadd_msg(d, Left, "You look very suspicious to me…");
+		dadd_msg(d, Right, "I’m trying to get to the root of this just\nlike you.");
+		dadd_msg(d, Left, "What kind of story is that? You attacked me!");
+		dadd_msg(d, Right, "Listen, I don’t have time for this…");
+	}
 	dadd_msg(d, BGM, "bgm_stage5boss");
 	return d;
 }
@@ -62,7 +71,12 @@ Dialog *stage5_post_boss_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", NULL);
 
 	dadd_msg(d, Left, "I can see the top!");
-	dadd_msg(d, Left, "Hopefully climbing all those stairs\nwas worth it.");
+	if(global.plr.cha == Marisa) {
+		dadd_msg(d, Left, "Hopefully climbing all those stairs\nwas worth it.");
+	} else {
+		dadd_msg(d, Left, "Looks like she really wasn’t behind this…\nWell this tower looks magnificent though!");
+		dadd_msg(d, Left, "It’s the type of tower that never comes\nwithout an evil genius at its top.");
+	}
 
 	return d;
 }
