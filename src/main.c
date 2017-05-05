@@ -88,7 +88,7 @@ static int run_tests(void) {
 static void init_sdl(void) {
 	SDL_version v;
 
-	if(SDL_Init(SDL_INIT_VIDEO) < 0)
+	if(SDL_Init(SDL_INIT_EVENTS) < 0)
 		log_fatal("SDL_Init() failed: %s", SDL_GetError());
 
 	log_info("SDL initialized");

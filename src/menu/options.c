@@ -288,7 +288,7 @@ void destroy_options_menu(MenuData *m) {
 			if(bind->selected != -1) {
 				VideoMode *m = video.modes + bind->selected;
 
-				video_setmode(m->width, m->height,
+				video_set_mode(m->width, m->height,
 					config_get_int(CONFIG_FULLSCREEN),
 					config_get_int(CONFIG_VID_RESIZABLE)
 				);
@@ -302,9 +302,6 @@ void destroy_options_menu(MenuData *m) {
 		bind_free(bind);
 		free(bind);
 	}
-
-	//we call this in taisei_shutdown instead
-	//config_save(CONFIG_FILE);
 }
 
 static void do_nothing(MenuData *menu, void *arg) { }

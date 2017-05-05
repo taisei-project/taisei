@@ -34,7 +34,7 @@ extern Video video;
 
 void video_init(void);
 void video_shutdown(void);
-void video_setmode(int w, int h, bool fs, bool resizable);
+void video_set_mode(int w, int h, bool fs, bool resizable);
 void video_get_viewport_size(int *width, int *height);
 void video_set_viewport(void);
 bool video_isfullscreen(void);

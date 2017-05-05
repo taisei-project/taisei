@@ -181,7 +181,7 @@ static void video_update_quality(void) {
 	reload_fonts(text);
 }
 
-static void _video_setmode(int w, int h, uint32_t flags, bool fallback) {
+static void video_set_mode_internal(int w, int h, uint32_t flags, bool fallback) {
 	if(!libgl_loaded) {
 		load_gl_library();
 		libgl_loaded = true;
@@ -234,10 +234,10 @@ static void _video_setmode(int w, int h, uint32_t flags, bool fallback) {
 
 	log_warn("Setting %dx%d (%s) failed, falling back to %dx%d (windowed)", w, h,
 			(flags & SDL_WINDOW_FULLSCREEN) ? "fullscreen" : "windowed", RESX, RESY);
-	_video_setmode(RESX, RESY, flags & ~SDL_WINDOW_FULLSCREEN, true);
+	video_set_mode_internal(RESX, RESY, flags & ~SDL_WINDOW_FULLSCREEN, true);
 }
 
-void video_setmode(int w, int h, bool fs, bool resizable) {
+void video_set_mode(int w, int h, bool fs, bool resizable) {
 	if(	w == video.current.width &&
 		h == video.current.height &&
 		fs == video_isfullscreen() &&
@@ -252,7 +252,7 @@ void video_setmode(int w, int h, bool fs, bool resizable) {
 		flags |= SDL_WINDOW_RESIZABLE;
 	}
 
-	_video_setmode(w, h, flags, false);
+	video_set_mode_internal(w, h, flags, false);
 
 	log_info("Changed mode to %ix%i%s%s",
 		video.current.width,
@@ -345,7 +345,7 @@ bool video_isfullscreen(void) {
 }
 
 void video_set_fullscreen(bool fullscreen) {
-	video_setmode(video.intended.width, video.intended.height, fullscreen, config_get_int(CONFIG_VID_RESIZABLE));
+	video_set_mode(video.intended.width, video.intended.height, fullscreen, config_get_int(CONFIG_VID_RESIZABLE));
 }
 
 void video_toggle_fullscreen(void) {
@@ -379,17 +379,66 @@ static void video_quality_callback(ConfigIndex idx, ConfigValue v) {
 	video_update_quality();
 }
 
+static void video_init_sdl(void) {
+	char *force_driver = getenv("TAISEI_VIDEO_DRIVER");
+
+	if(force_driver && *force_driver) {
+		log_debug("Driver '%s' forced by environment", force_driver);
+
+		if(!strcasecmp(force_driver, "sdldefault")) {
+			force_driver = NULL;
+		}
+
+		if(SDL_VideoInit(force_driver)) {
+			log_fatal("SDL_VideoInit() failed: %s", SDL_GetError());
+		}
+
+		return;
+	}
+
+	// Initialize the SDL video subsystem with the correct driver
+	// On Wayland/Mir systems, an X compatibility layer will likely be present
+	// SDL will prioritize it by default, and we don't want that
+
+	int drivers = SDL_GetNumVideoDrivers();
+	bool initialized = false;
+
+	for(int i = 0; i < drivers; ++i) {
+		const char *driver = SDL_GetVideoDriver(i);
+		if(!strcmp(driver, "x11") || !strcmp(driver, "dummy")) {
+			continue;
+		}
+
+		if(SDL_VideoInit(driver)) {
+			log_debug("Driver '%s' failed: %s", driver, SDL_GetError());
+		} else {
+			initialized = true;
+			break;
+		}
+	}
+
+	if(!initialized) {
+		log_debug("Falling back to the default driver");
+
+		if(SDL_VideoInit(NULL)) {
+			log_fatal("SDL_VideoInit() failed: %s", SDL_GetError());
+		}
+	}
+}
+
 void video_init(void) {
-	int i, s;
 	bool fullscreen_available = false;
 
 	memset(&video, 0, sizeof(video));
 	memset(&resources.fbo, 0, sizeof(resources.fbo));
 
-	// First, register all resolutions that are available in fullscreen
+	video_init_sdl();
+	log_info("Using driver '%s'", SDL_GetCurrentVideoDriver());
 
-	for(s = 0; s < SDL_GetNumVideoDisplays(); ++s) {
-		for(i = 0; i < SDL_GetNumDisplayModes(s); ++i) {
+	// Register all resolutions that are available in fullscreen
+
+	for(int s = 0; s < SDL_GetNumVideoDisplays(); ++s) {
+		for(int i = 0; i < SDL_GetNumDisplayModes(s); ++i) {
 			SDL_DisplayMode mode = { SDL_PIXELFORMAT_UNKNOWN, 0, 0, 0, 0 };
 
 			if(SDL_GetDisplayMode(s, i, &mode) != 0) {
@@ -408,13 +457,14 @@ void video_init(void) {
 
 	// Then, add some common 4:3 modes for the windowed mode if they are not there yet.
 	// This is required for some multihead setups.
-	for(i = 0; common_modes[i].width; ++i)
+	for(int i = 0; common_modes[i].width; ++i) {
 		video_add_mode(common_modes[i].width, common_modes[i].height);
+	}
 
 	// sort it, mainly for the options menu
 	qsort(video.modes, video.mcount, sizeof(VideoMode), video_compare_modes);
 
-	video_setmode(
+	video_set_mode(
 		config_get_int(CONFIG_VID_WIDTH),
 		config_get_int(CONFIG_VID_HEIGHT),
 		config_get_int(CONFIG_FULLSCREEN),
@@ -436,4 +486,5 @@ void video_shutdown(void) {
 	SDL_GL_DeleteContext(video.glcontext);
 	unload_gl_library();
 	free(video.modes);
+	SDL_VideoQuit();
 }
