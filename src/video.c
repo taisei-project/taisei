@@ -376,17 +376,66 @@ static void video_quality_callback(ConfigIndex idx, ConfigValue v) {
 	video_update_quality();
 }
 
+static void video_init_sdl(void) {
+	char *force_driver = getenv("TAISEI_VIDEO_DRIVER");
+
+	if(force_driver && *force_driver) {
+		log_debug("Driver '%s' forced by environment", force_driver);
+
+		if(!strcasecmp(force_driver, "sdldefault")) {
+			force_driver = NULL;
+		}
+
+		if(SDL_VideoInit(force_driver)) {
+			log_fatal("SDL_VideoInit() failed: %s", SDL_GetError());
+		}
+
+		return;
+	}
+
+	// Initialize the SDL video subsystem with the correct driver
+	// On Wayland/Mir systems, an X compatibility layer will likely be present
+	// SDL will prioritize it by default, and we don't want that
+
+	int drivers = SDL_GetNumVideoDrivers();
+	bool initialized = false;
+
+	for(int i = 0; i < drivers; ++i) {
+		const char *driver = SDL_GetVideoDriver(i);
+		if(!strcmp(driver, "x11") || !strcmp(driver, "dummy")) {
+			continue;
+		}
+
+		if(SDL_VideoInit(driver)) {
+			log_debug("Driver '%s' failed: %s", driver, SDL_GetError());
+		} else {
+			initialized = true;
+			break;
+		}
+	}
+
+	if(!initialized) {
+		log_debug("Falling back to the default driver");
+
+		if(SDL_VideoInit(NULL)) {
+			log_fatal("SDL_VideoInit() failed: %s", SDL_GetError());
+		}
+	}
+}
+
 void video_init(void) {
-	int i, s;
 	bool fullscreen_available = false;
 
 	memset(&video, 0, sizeof(video));
 	memset(&resources.fbo, 0, sizeof(resources.fbo));
 
-	// First, register all resolutions that are available in fullscreen
+	video_init_sdl();
+	log_info("Using driver '%s'", SDL_GetCurrentVideoDriver());
 
-	for(s = 0; s < SDL_GetNumVideoDisplays(); ++s) {
-		for(i = 0; i < SDL_GetNumDisplayModes(s); ++i) {
+	// Register all resolutions that are available in fullscreen
+
+	for(int s = 0; s < SDL_GetNumVideoDisplays(); ++s) {
+		for(int i = 0; i < SDL_GetNumDisplayModes(s); ++i) {
 			SDL_DisplayMode mode = { SDL_PIXELFORMAT_UNKNOWN, 0, 0, 0, 0 };
 
 			if(SDL_GetDisplayMode(s, i, &mode) != 0) {
@@ -405,8 +454,9 @@ void video_init(void) {
 
 	// Then, add some common 4:3 modes for the windowed mode if they are not there yet.
 	// This is required for some multihead setups.
-	for(i = 0; common_modes[i].width; ++i)
+	for(int i = 0; common_modes[i].width; ++i) {
 		video_add_mode(common_modes[i].width, common_modes[i].height);
+	}
 
 	// sort it, mainly for the options menu
 	qsort(video.modes, video.mcount, sizeof(VideoMode), video_compare_modes);
@@ -433,4 +483,5 @@ void video_shutdown(void) {
 	SDL_GL_DeleteContext(video.glcontext);
 	unload_gl_library();
 	free(video.modes);
+	SDL_VideoQuit();
 }
