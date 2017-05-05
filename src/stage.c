@@ -401,6 +401,7 @@ void stage_clear_hazards(bool force) {
 
 static void stage_free(void) {
 	delete_enemies(&global.enemies);
+	delete_enemies(&global.plr.slaves);
 	delete_items();
 	delete_lasers();
 
