@@ -289,7 +289,7 @@ void destroy_options_menu(MenuData *m) {
 			if(bind->selected != -1) {
 				VideoMode *m = video.modes + bind->selected;
 
-				video_setmode(m->width, m->height,
+				video_set_mode(m->width, m->height,
 					config_get_int(CONFIG_FULLSCREEN),
 					config_get_int(CONFIG_VID_RESIZABLE)
 				);

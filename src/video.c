@@ -181,7 +181,7 @@ static void video_update_quality(void) {
 	reload_fonts(text);
 }
 
-static void _video_setmode(int w, int h, uint32_t flags, bool fallback) {
+static void video_set_mode_internal(int w, int h, uint32_t flags, bool fallback) {
 	if(!libgl_loaded) {
 		load_gl_library();
 		libgl_loaded = true;
@@ -234,10 +234,10 @@ static void _video_setmode(int w, int h, uint32_t flags, bool fallback) {
 
 	log_warn("Setting %dx%d (%s) failed, falling back to %dx%d (windowed)", w, h,
 			(flags & SDL_WINDOW_FULLSCREEN) ? "fullscreen" : "windowed", RESX, RESY);
-	_video_setmode(RESX, RESY, flags & ~SDL_WINDOW_FULLSCREEN, true);
+	video_set_mode_internal(RESX, RESY, flags & ~SDL_WINDOW_FULLSCREEN, true);
 }
 
-void video_setmode(int w, int h, bool fs, bool resizable) {
+void video_set_mode(int w, int h, bool fs, bool resizable) {
 	if(	w == video.current.width &&
 		h == video.current.height &&
 		fs == video_isfullscreen() &&
@@ -252,7 +252,7 @@ void video_setmode(int w, int h, bool fs, bool resizable) {
 		flags |= SDL_WINDOW_RESIZABLE;
 	}
 
-	_video_setmode(w, h, flags, false);
+	video_set_mode_internal(w, h, flags, false);
 
 	log_info("Changed mode to %ix%i%s%s",
 		video.current.width,
@@ -342,7 +342,7 @@ bool video_isfullscreen(void) {
 }
 
 void video_set_fullscreen(bool fullscreen) {
-	video_setmode(video.intended.width, video.intended.height, fullscreen, config_get_int(CONFIG_VID_RESIZABLE));
+	video_set_mode(video.intended.width, video.intended.height, fullscreen, config_get_int(CONFIG_VID_RESIZABLE));
 }
 
 void video_toggle_fullscreen(void) {
@@ -461,7 +461,7 @@ void video_init(void) {
 	// sort it, mainly for the options menu
 	qsort(video.modes, video.mcount, sizeof(VideoMode), video_compare_modes);
 
-	video_setmode(
+	video_set_mode(
 		config_get_int(CONFIG_VID_WIDTH),
 		config_get_int(CONFIG_VID_HEIGHT),
 		config_get_int(CONFIG_FULLSCREEN),
