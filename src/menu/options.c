@@ -303,9 +303,6 @@ void destroy_options_menu(MenuData *m) {
 		bind_free(bind);
 		free(bind);
 	}
-
-	//we call this in taisei_shutdown instead
-	//config_save(CONFIG_FILE);
 }
 
 static void do_nothing(MenuData *menu, void *arg) { }
