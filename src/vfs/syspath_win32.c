@@ -250,7 +250,9 @@ static void vfs_syspath_normalize(char *path) {
 }
 
 static bool vfs_syspath_validate(char *path) {
-    if(strchr(path, ':')) {
+    char *c;
+
+    if((c = strchr(path, ':')) && !(isalpha(*path) && c == (path + 1))) {
         vfs_set_error("Path '%s' contains forbidden character ':'", path);
         return false;
     }
