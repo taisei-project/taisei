@@ -193,7 +193,7 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
         }
 
         if(node != n) {
-            vfs_freetemp(vfs_root, n);
+            vfs_freetemp(n);
         }
     }
 
