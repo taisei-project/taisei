@@ -178,19 +178,21 @@ set(CMAKE_C_FLAGS_RELEASE "${RELEASE_FLAGS} -O3")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "${RELEASE_FLAGS} -O2 ${DEBUG_FLAGS}")
 set(CMAKE_C_FLAGS_MINSIZEREL "${RELEASE_FLAGS} -Os")
 
-add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -Wall -Wno-parentheses -Wtype-limits -std=c11 -pedantic)
+set(WARNINGS "-Wall -Wpedantic -Wno-parentheses -Wtype-limits -Wstrict-prototypes -Wlong-long -Wnull-dereference -Winit-self")
 
 if(RELATIVE)
     add_definitions(-DRELATIVE)
 endif()
 
 if(WERROR)
-	add_definitions(-Werror)
+	set(WARNINGS "${WARNINGS} -Werror")
 endif()
 
 if(FATALERRS)
-	add_definitions(-Wfatal-errors)
+	set(WARNINGS "${WARNINGS} -Wfatal-errors")
 endif()
+
+add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -std=c11 ${WARNINGS})
 
 if(WIN32 OR APPLE)
 	add_definitions(-DLOG_FATAL_MSGBOX)

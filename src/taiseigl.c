@@ -19,7 +19,7 @@ GLDEFS
 #undef GLDEF
 #endif
 
-typedef void (*tsglproc_ptr)();
+typedef void (*tsglproc_ptr)(void);
 
 #ifndef LINK_TO_LIBGL
 static tsglproc_ptr get_proc_address(const char *name) {
