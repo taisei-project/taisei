@@ -17,8 +17,11 @@
 //
 
 #ifndef __GNUC__ // clang defines this too
-#define __attribute__(...)
-#define __extension__
+    #define __attribute__(...)
+    #define __extension__
+    #define PRAGMA(p)
+#else
+    #define PRAGMA(p) _Pragma(#p)
 #endif
 
 //
@@ -146,6 +149,9 @@ noreturn void _ts_assert_fail(const char *cond, const char *func, const char *fi
 // safeguards against some dangerous or otherwise undesirable practices
 //
 
+PRAGMA(GCC diagnostic push)
+PRAGMA(GCC diagnostic ignored "-Wstrict-prototypes")
+
 #undef fopen
 FILE* fopen() __attribute__((deprecated(
     "Use SDL_RWFromFile instead")));
@@ -181,5 +187,7 @@ char* strtok() __attribute__((deprecated(
 #undef sprintf
 int sprintf(char *, const char*, ...) __attribute__((deprecated(
     "Use snprintf or strfmt instead")));
+
+PRAGMA(GCC diagnostic pop)
 
 #endif
