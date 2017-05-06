@@ -174,7 +174,7 @@ static char* vfs_zipfile_repr(VFSNode *node) {
 static VFSNode* vfs_zipfile_locate(VFSNode *node, const char *path) {
     VFSZipFileTLS *tls = vfs_zipfile_get_tls(node, true);
     VFSZipFileData *zdata = node->data;
-    zip_int64_t idx = (zip_int64_t)((uintptr_t)hashtable_get_string(zdata->pathmap, path) - 1);
+    zip_int64_t idx = (zip_int64_t)((intptr_t)hashtable_get_string(zdata->pathmap, path) - 1);
 
     if(idx < 0) {
         idx = zip_name_locate(tls->zip, path, 0);
@@ -285,7 +285,7 @@ static void vfs_zipfile_init_pathmap(VFSNode *node) {
         }
 
         if(strcmp(original, normalized)) {
-            hashtable_set_string(zdata->pathmap, normalized, (void*)((uintptr_t)i + 1));
+            hashtable_set_string(zdata->pathmap, normalized, (void*)((intptr_t)i + 1));
         }
     }
 }

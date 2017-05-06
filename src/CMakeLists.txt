@@ -141,7 +141,13 @@ endif()
 
 message(STATUS "Build configuration: ${CMAKE_BUILD_TYPE}")
 
-set(DEBUG_FLAGS "-ggdb -fno-omit-frame-pointer")
+if(WIN32)
+	set(DEBUG_FLAGS "-gstabs")
+else()
+	set(DEBUG_FLAGS "-ggdb")
+endif()
+
+set(DEBUG_FLAGS "${DEBUG_FLAGS} -fno-omit-frame-pointer")
 set(RELEASE_FLAGS "-DNDEBUG")
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
