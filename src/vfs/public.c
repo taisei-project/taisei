@@ -151,7 +151,7 @@ VFSInfo vfs_query(const char *path) {
 
     if(node) {
         // expected to set error on failure
-        // not that e.g. a file not existing on a real filesystem
+        // note that e.g. a file not existing on a real filesystem
         // is not an error condition. If we can't tell whether it
         // exists or not, that is an error.
 
