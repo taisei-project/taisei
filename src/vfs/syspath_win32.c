@@ -250,9 +250,14 @@ static void vfs_syspath_normalize(char *path) {
 }
 
 static bool vfs_syspath_validate(char *path) {
-    char *c;
+    char *c = strchr(path, ':');
 
-    if((c = strchr(path, ':')) && !(isalpha(*path) && c == (path + 1))) {
+    if(c && c == (path + 1) && isalpha(*path)) {
+        // drive letters are OK
+        c = strchr(c + 1, ':');
+    }
+
+    if(c) {
         vfs_set_error("Path '%s' contains forbidden character ':'", path);
         return false;
     }
