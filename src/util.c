@@ -42,7 +42,7 @@ bool strendswith_any(const char *s, const char **earray) {
 
 bool strstartswith_any(const char *s, const char **earray) {
     for(const char **e = earray; *e; ++e) {
-        if(strendswith(s, *e)) {
+        if(strstartswith(s, *e)) {
             return true;
         }
     }
