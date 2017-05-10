@@ -140,9 +140,10 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug" OR "${CMAKE_BUILD_TYPE}" STREQUAL "Rel
 	set(DEBUG_BUILD TRUE)
 endif()
 
+include("../scripts/CheckCCompilerAndLinkerFlag.cmake")
+
 if(DEBUG_USE_UBSAN AND DEFINED DEBUG_BUILD)
-	include(CheckCCompilerFlag)
-	CHECK_C_COMPILER_FLAG("-fsanitize=undefined" COMPILER_SUPPORTS_UBSAN)
+	CHECK_C_COMPILER_AND_LINKER_FLAG("-fsanitize=undefined" "-fsanitize=undefined" COMPILER_SUPPORTS_UBSAN)
 	if(COMPILER_SUPPORTS_UBSAN)
 		set(DEBUG_FLAGS "${DEBUG_FLAGS} -fsanitize=undefined")
 	else()
@@ -150,8 +151,13 @@ if(DEBUG_USE_UBSAN AND DEFINED DEBUG_BUILD)
 	endif()
 endif()
 
-if(DEBUG_USE_ASAN)
-	set(DEBUG_FLAGS "${DEBUG_FLAGS} -fsanitize=address")
+if(DEBUG_USE_ASAN AND DEFINED DEBUG_BUILD)
+	CHECK_C_COMPILER_AND_LINKER_FLAG("-fsanitize=address" "-fsanitize=address" COMPILER_SUPPORTS_ASAN)
+	if(COMPILER_SUPPORTS_ASAN)
+		set(DEBUG_FLAGS "${DEBUG_FLAGS} -fsanitize=address")
+	else()
+		message(STATUS "  DEBUG_USE_ASAN not supported by compiler, turned off.")
+	endif()
 endif()
 
 if(RELEASE_USE_LTO)
