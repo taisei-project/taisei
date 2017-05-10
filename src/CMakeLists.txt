@@ -97,6 +97,7 @@ set(SRCs
 	rwops/rwops_zipfile.c
 	vfs/private.c
 	vfs/public.c
+	vfs/setup.c
 	vfs/pathutil.c
 	vfs/union.c
 	vfs/vdir.c

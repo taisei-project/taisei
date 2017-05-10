@@ -18,9 +18,7 @@
 #include "hashtable.h"
 #include "log.h"
 #include "cli.h"
-#include "vfs/public.h"
-
-#define STATIC_RESOURCE_PREFIX PREFIX "/share/taisei/"
+#include "vfs/setup.h"
 
 static void taisei_shutdown(void) {
 	log_info("Shutting down");
@@ -100,112 +98,6 @@ static void init_sdl(void) {
 	log_info("Using SDL %u.%u.%u", v.major, v.minor, v.patch);
 }
 
-static char* get_default_res_path(void) {
-	char *res;
-
-#ifdef RELATIVE
-	res = SDL_GetBasePath();
-	strappend(&res, "data/");
-#else
-	res = strdup(STATIC_RESOURCE_PREFIX);
-#endif
-
-	return res;
-}
-
-static void get_core_paths(char **res, char **storage) {
-	if((*res = getenv("TAISEI_RES_PATH")) && **res) {
-		*res = strdup(*res);
-	} else {
-		*res = get_default_res_path();
-	}
-
-	if((*storage = getenv("TAISEI_STORAGE_PATH")) && **storage) {
-		*storage = strdup(*storage);
-	} else {
-		*storage = SDL_GetPrefPath("", "taisei");
-	}
-}
-
-static bool filter_zip_ext(const char *str) {
-	char buf[strlen(str) + 1];
-	memset(buf, 0, sizeof(buf));
-
-	for(char *p = buf; *str; ++p, ++str) {
-		*p = tolower(*str);
-	}
-
-	return strendswith(buf, ".zip");
-}
-
-static void init_vfs(bool silent) {
-	char *res_path, *storage_path;
-	get_core_paths(&res_path, &storage_path);
-
-	if(!silent) {
-		log_info("Resource path: %s", res_path);
-		log_info("Storage path: %s", storage_path);
-	}
-
-	char *p = NULL;
-
-	struct mpoint_t {
-		const char *dest;	const char *syspath;							bool mkdir;
-	} mpts[] = {
-		{"storage",			storage_path,									true},
-		{"resdirs",			res_path,										false},
-		{"resdirs",			p = strfmt("%s/resources", storage_path),		true},
-		{NULL}
-	};
-
-	vfs_init();
-
-	vfs_create_union_mountpoint("res");
-	vfs_create_union_mountpoint("resdirs");
-	vfs_create_union_mountpoint("respkgs");
-
-	for(struct mpoint_t *mp = mpts; mp->dest; ++mp) {
-		if(!vfs_mount_syspath(mp->dest, mp->syspath, mp->mkdir)) {
-			log_fatal("Failed to mount '%s': %s", mp->dest, vfs_get_error());
-		}
-	}
-
-	vfs_mkdir_required("storage/replays");
-	vfs_mkdir_required("storage/screenshots");
-
-	free(p);
-	free(res_path);
-	free(storage_path);
-
-	size_t numzips = 0;
-	char **ziplist = vfs_dir_list_sorted("resdirs", &numzips, vfs_dir_list_order_ascending, filter_zip_ext);
-
-	if(!ziplist) {
-		log_fatal("VFS error: %s", vfs_get_error());
-	}
-
-	for(size_t i = 0; i < numzips; ++i) {
-		const char *entry = ziplist[i];
-		log_info("Adding package: %s", entry);
-
-		char *tmp = strfmt("resdirs/%s", entry);
-
-		if(!vfs_mount_zipfile("respkgs", tmp)) {
-			log_warn("VFS error: %s", vfs_get_error());
-		}
-
-		free(tmp);
-	}
-
-	vfs_dir_list_free(ziplist, numzips);
-
-	vfs_mount_alias("res", "respkgs");
-	vfs_mount_alias("res", "resdirs");
-
-	vfs_unmount("resdirs");
-	vfs_unmount("respkgs");
-}
-
 static void log_lib_versions(void) {
 	log_info("Compiled against zlib %s", ZLIB_VERSION);
 	log_info("Using zlib %s", zlibVersion());
@@ -256,7 +148,7 @@ int main(int argc, char **argv) {
 			return 1;
 		}
 	} else if(a.type == CLI_DumpVFSTree) {
-		init_vfs(true);
+		vfs_setup(true);
 
 		SDL_RWops *rwops = SDL_RWFromFP(stdout, false);
 
@@ -277,7 +169,7 @@ int main(int argc, char **argv) {
 	}
 
 	free_cli_action(&a);
-	init_vfs(false);
+	vfs_setup(false);
 	init_log_file();
 
 	config_load();
