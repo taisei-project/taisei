@@ -169,7 +169,21 @@ set(CMAKE_C_FLAGS_RELEASE "${RELEASE_FLAGS} -O3")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "${RELEASE_FLAGS} -O2 ${DEBUG_FLAGS}")
 set(CMAKE_C_FLAGS_MINSIZEREL "${RELEASE_FLAGS} -Os")
 
-set(WARNINGS "-Wall -Wpedantic -Wno-parentheses -Wtype-limits -Wstrict-prototypes -Wlong-long -Wnull-dereference -Winit-self")
+set(WARNINGS "-Wall -Wno-parentheses -Wtype-limits -Wstrict-prototypes -Wlong-long -Winit-self")
+
+CHECK_C_COMPILER_AND_LINKER_FLAG("-Wpedantic" "" COMPILER_WARN_PEDANTIC)
+if(COMPILER_WARN_PEDANTIC)
+	set(WARNINGS "${WARNINGS} -Wpedantic")
+else()
+	message(STATUS "  -Wpedantic not supported by compiler, will not be used.")
+endif()
+
+CHECK_C_COMPILER_AND_LINKER_FLAG("-Wnull-dereference" "" COMPILER_WARN_NULLDEREF)
+if(COMPILER_WARN_NULLDEREF)
+	set(WARNINGS "${WARNINGS} -Wnull-dereference")
+else()
+	message(STATUS "  -Wnull-dereference not supported by compiler, will not be used.")
+endif()
 
 if(RELATIVE)
     add_definitions(-DRELATIVE)
