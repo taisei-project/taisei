@@ -218,21 +218,20 @@ static VFSNodeFuncs vfs_funcs_syspath = {
     .open = vfs_syspath_open,
 };
 
-static void vfs_syspath_normalize(char *path) {
+void vfs_syspath_normalize(char *buf, size_t bufsize, const char *path) {
     // here we just remove redundant separators and convert forward slashes to back slashes.
     // no need to bother with . and ..
 
     // paths starting with two separators are a special case however (network shares)
     // and are handled appropriately.
 
-    char buf[strlen(path)+1];
     char *bufptr = buf;
-    char *pathptr = path;
+    const char *pathptr = path;
     bool skip = false;
 
-    memset(buf, 0, sizeof(buf));
+    memset(buf, 0, bufsize);
 
-    while(*pathptr) {
+    while(*pathptr && bufptr < (buf + bufsize - 1)) {
         if(!skip) {
             *bufptr++ = (*pathptr == '/' ? '\\' : *pathptr);
         }
@@ -245,8 +244,6 @@ static void vfs_syspath_normalize(char *path) {
 
         ++pathptr;
     }
-
-    strcpy(path, buf);
 }
 
 static bool vfs_syspath_validate(char *path) {
@@ -266,7 +263,7 @@ static bool vfs_syspath_validate(char *path) {
 }
 
 static bool vfs_syspath_init_internal(VFSNode *node, char *path) {
-    vfs_syspath_normalize(path);
+    vfs_syspath_normalize_inplace(path);
 
     if(!vfs_syspath_validate(path)) {
         return false;

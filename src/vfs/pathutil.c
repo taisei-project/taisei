@@ -1,5 +1,6 @@
 
 #include "private.h"
+#include "syspath.h"
 
 char* vfs_path_normalize(const char *path, char *out) {
     const char *p = path;
@@ -92,4 +93,12 @@ void vfs_path_root_prefix(char *path) {
     } else {
         *path = VFS_PATH_SEP;
     }
+}
+
+char* vfs_syspath_normalize_inplace(char *path) {
+    char buf[strlen(path)+1];
+    strcpy(buf, path);
+    vfs_syspath_normalize(buf, sizeof(buf), path);
+    strcpy(path, buf);
+    return path;
 }

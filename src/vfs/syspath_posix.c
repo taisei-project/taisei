@@ -126,7 +126,25 @@ static VFSNodeFuncs vfs_funcs_syspath = {
     .open = vfs_syspath_open,
 };
 
+void vfs_syspath_normalize(char *buf, size_t bufsize, const char *path) {
+    char *bufptr = buf;
+    const char *pathptr = path;
+    bool skip = false;
+
+    memset(buf, 0, bufsize);
+
+    while(*pathptr && bufptr < (buf + bufsize - 1)) {
+        if(!skip) {
+            *bufptr++ = *pathptr;
+        }
+
+        skip = (pathptr[0] == '/' && pathptr[1] == '/');
+        ++pathptr;
+    }
+}
+
 static void vfs_syspath_init_internal(VFSNode *node, char *path) {
+    vfs_syspath_normalize_inplace(path);
     node->type = VNODE_SYSPATH;
     node->funcs = &vfs_funcs_syspath;
     node->syspath.path = path;

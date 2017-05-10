@@ -204,6 +204,7 @@ char* vfs_repr_node(VFSNode *node, bool try_syspath) {
 
     if(try_syspath && node->funcs->syspath) {
         if(r = node->funcs->syspath(node)) {
+            vfs_syspath_normalize_inplace(r);
             return r;
         }
     }

@@ -19,4 +19,6 @@ void vfs_path_split_left(char *path, char **lpath, char **rpath);
 void vfs_path_split_right(char *path, char **lpath, char **rpath);
 void vfs_path_root_prefix(char *path);
 
+char* vfs_syspath_normalize_inplace(char *path);
+
 #endif
