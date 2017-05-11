@@ -19,7 +19,6 @@ option(RELEASE_USE_LTO "Enable Link Time Optimization in release builds." ON)
 option(USE_COTIRE "Use cotire (COmpile TIme REducer) to speed up builds" OFF)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/scripts")
-message("${CMAKE_MODULE_PATH}")
 
 add_subdirectory(src)
 
