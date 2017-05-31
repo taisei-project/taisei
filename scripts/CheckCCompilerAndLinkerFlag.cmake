@@ -41,7 +41,7 @@
 #  License text for the above reference.)
 
 include(CheckCSourceCompiles)
-include(CMakeCheckCompilerFlagCommonPatterns)
+include(CMakeCheckCompilerFlagCommonPatterns OPTIONAL)
 
 macro (CHECK_C_COMPILER_AND_LINKER_FLAG _CFLAG _LDFLAG _RESULT)
    set(SAFE_CMAKE_REQUIRED_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS}")
@@ -55,7 +55,9 @@ macro (CHECK_C_COMPILER_AND_LINKER_FLAG _CFLAG _LDFLAG _RESULT)
      set(_CheckCCompilerAndLinkerFlag_SAVED_${v} "$ENV{${v}}")
      set(ENV{${v}} C)
    endforeach()
-   CHECK_COMPILER_FLAG_COMMON_PATTERNS(_CheckCCompilerAndLinkerFlag_COMMON_PATTERNS)
+   if(COMMAND CHECK_COMPILER_FLAG_COMMON_PATTERNS)
+     CHECK_COMPILER_FLAG_COMMON_PATTERNS(_CheckCCompilerAndLinkerFlag_COMMON_PATTERNS)
+   endif()
    CHECK_C_SOURCE_COMPILES("int main(void) { return 0; }" ${_RESULT}
      # Some compilers do not fail with a bad flag
      FAIL_REGEX "command line option .* is valid for .* but not for C" # GNU
