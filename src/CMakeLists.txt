@@ -140,18 +140,14 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug" OR "${CMAKE_BUILD_TYPE}" STREQUAL "Rel
 	set(DEBUG_BUILD TRUE)
 endif()
 
+include(CheckAndSetFlags)
+
 if(DEBUG_USE_UBSAN AND DEFINED DEBUG_BUILD)
-	include(CheckCCompilerFlag)
-	CHECK_C_COMPILER_FLAG("-fsanitize=undefined" COMPILER_SUPPORTS_UBSAN)
-	if(COMPILER_SUPPORTS_UBSAN)
-		set(DEBUG_FLAGS "${DEBUG_FLAGS} -fsanitize=undefined")
-	else()
-		message(STATUS "  DEBUG_USE_UBSAN not supported by compiler, turned off.")
-	endif()
+	CHECK_AND_SET_FLAGS(COMPILER_SUPPORTS_UBSAN "-fsanitize=undefined" DEBUG_FLAGS "-fsanitize=undefined")
 endif()
 
-if(DEBUG_USE_ASAN)
-	set(DEBUG_FLAGS "${DEBUG_FLAGS} -fsanitize=address")
+if(DEBUG_USE_ASAN AND DEFINED DEBUG_BUILD)
+	CHECK_AND_SET_FLAGS(COMPILER_SUPPORTS_ASAN "-fsanitize=address" DEBUG_FLAGS "-fsanitize=address")
 endif()
 
 if(RELEASE_USE_LTO)
@@ -163,7 +159,9 @@ set(CMAKE_C_FLAGS_RELEASE "${RELEASE_FLAGS} -O3")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "${RELEASE_FLAGS} -O2 ${DEBUG_FLAGS}")
 set(CMAKE_C_FLAGS_MINSIZEREL "${RELEASE_FLAGS} -Os")
 
-set(WARNINGS "-Wall -Wpedantic -Wno-parentheses -Wtype-limits -Wstrict-prototypes -Wlong-long -Wnull-dereference -Winit-self")
+set(WARNINGS "-Wall -Wno-parentheses -Wtype-limits -Wstrict-prototypes -Wlong-long -Winit-self")
+CHECK_AND_SET_FLAGS(COMPILER_WARN_PEDANTIC "-Wpedantic" WARNINGS)
+CHECK_AND_SET_FLAGS(COMPILER_WARN_NULLDEREF "-Wnull-dereference" WARNINGS)
 
 if(RELATIVE)
     add_definitions(-DRELATIVE)
