@@ -17,6 +17,8 @@ option(DEBUG_USE_ASAN "Enable the Address Sanitizer (ASan) and leak detection in
 option(RELEASE_USE_LTO "Enable Link Time Optimization in release builds." ON)
 option(USE_COTIRE "Use cotire (COmpile TIme REducer) to speed up builds" OFF)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/scripts")
+
 add_subdirectory(src)
 
 if(RELATIVE)

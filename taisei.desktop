@@ -2,8 +2,9 @@
 Type=Application
 Version=1.0
 Name=Taisei
+GenericName=Bullet hell shoot ’em up game
 Icon=taisei
 Exec=taisei
 Terminal=false
-Categories=Game;
+Categories=Game;ArcadeGame
 Comment=An open-source Tōhō clone.
