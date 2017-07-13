@@ -690,7 +690,7 @@ void draw_options_menu(MenuData *menu) {
 						char tmp[16];	// who'd use a 16-digit number here anyway?
 						snprintf(tmp, 16, "%d", bind_getvalue(bind));
 						draw_text(AL_Right, origin, 20*i, tmp, _fonts.standard);
-					} else for(j = bind->displaysingle? val : bind->valcount-1; (j+1)*(!bind->displaysingle || j == val); --j) {
+					} else for(j = bind->displaysingle? val : bind->valcount-1; (j+1) && (!bind->displaysingle || j == val); --j) {
 						if(j != bind->valcount-1 && !bind->displaysingle)
 							origin -= stringwidth(bind->values[j+1], _fonts.standard) + 5;
 
