@@ -1,0 +1,13 @@
+
+message(STATUS "Optimizing game data")
+message(STATUS "Note: this will take a long time. Pass -DPACKAGE_DATA_LEANIFY=OFF to CMake if you want to skip this step.")
+
+execute_process(
+    COMMAND @LEANIFY_COMMAND@ @GAME_RESOURCES_ZIP@
+    WORKING_DIRECTORY @CMAKE_CURRENT_SOURCE_DIR@
+    RESULT_VARIABLE ERR
+)
+
+if(NOT ${ERR} EQUAL 0)
+    message(FATAL_ERROR "Failed to optimize \"@GAME_RESOURCES_ZIP@\" (error code: ${ERR})")
+endif()

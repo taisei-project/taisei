@@ -35,6 +35,7 @@ option(DEBUG_USE_ASAN "Enable the Address Sanitizer (ASan) and leak detection in
 option(RELEASE_USE_LTO "Enable Link Time Optimization in release builds." ON)
 option(USE_COTIRE "Use cotire (COmpile TIme REducer) to speed up builds." OFF)
 option(PACKAGE_DATA "Package the game's assets into a compressed archive instead of bundling plain files." ON)
+option(PACKAGE_DATA_LEANIFY "Optimize the assets archive for size. This process can be very slow. Requires Leanify (https://github.com/JayXon/Leanify) and PACKAGE_DATA=ON." OFF)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/scripts")
 
@@ -77,6 +78,22 @@ if(PACKAGE_DATA)
         @ONLY)
 
     install(SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/package_data.cmake)
+
+    if(PACKAGE_DATA_LEANIFY)
+        find_program(LEANIFY_COMMAND "leanify")
+
+        if(NOT LEANIFY_COMMAND)
+            message(FATAL_ERROR "'leanify' not found. Either install it from https://github.com/JayXon/Leanify or pass -DPACKAGE_DATA_LEANIFY=OFF to CMake.")
+        else()
+            configure_file(
+                "${BUILDSCRIPTS_DIR}/leanify_data.cmake.in"
+                "${CMAKE_CURRENT_BINARY_DIR}/leanify_data.cmake"
+                @ONLY)
+
+            install(SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/leanify_data.cmake)
+        endif()
+    endif()
+
     install(FILES ${GAME_RESOURCES_ZIP} DESTINATION ${DATA_DIR})
 else()
     foreach(dir ${GAME_RESOURCES_DIRS})
