@@ -70,7 +70,7 @@ set(GAME_RESOURCES_DIRS
 )
 
 if(PACKAGE_DATA)
-    set(GAME_RESOURCES_ZIP "${CMAKE_CURRENT_BINARY_DIR}/taisei-gamedata.zip")
+    set(GAME_RESOURCES_ZIP "${CMAKE_CURRENT_BINARY_DIR}/00-taisei.zip")
 
     configure_file(
         "${BUILDSCRIPTS_DIR}/package_data.cmake.in"
