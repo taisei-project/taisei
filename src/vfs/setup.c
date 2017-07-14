@@ -113,6 +113,12 @@ void vfs_setup(bool silent) {
                 log_fatal("Failed to mount '%s': %s", mp->syspath, vfs_get_error());
             }
 
+            if(!vfs_query("tmp").is_dir) {
+                log_warn("'%s' is not a directory", mp->syspath);
+                vfs_unmount("tmp");
+                continue;
+            }
+
             // load all ZIPs from this directory into the respkgs union
             load_packages("tmp", "respkgs");
 
