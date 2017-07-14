@@ -1,0 +1,12 @@
+
+message(STATUS "Compressing game data")
+
+execute_process(
+    COMMAND @CMAKE_COMMAND@ -E tar cfv @GAME_RESOURCES_ZIP@ --format=zip @GAME_RESOURCES_DIRS@
+    WORKING_DIRECTORY @CMAKE_CURRENT_SOURCE_DIR@
+    RESULT_VARIABLE ERR
+)
+
+if(NOT ${ERR} EQUAL 0)
+    message(FATAL_ERROR "Failed to package \"@GAME_RESOURCES_ZIP@\" (error code: ${ERR})")
+endif()
