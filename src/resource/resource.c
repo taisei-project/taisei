@@ -6,9 +6,6 @@
  */
 
 #include "resource.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include "paths/native.h"
 #include "config.h"
 #include "video.h"
 #include "menu/mainmenu.h"
@@ -274,7 +271,9 @@ static Resource* load_resource_finish(void *opaque, ResourceHandler *handler, co
 		return NULL;
 	}
 
-	Resource *res = insert_resource(handler->type, name, raw, flags, path);
+	char *sp = vfs_repr(path, true);
+	Resource *res = insert_resource(handler->type, name, raw, flags, sp);
+	free(sp);
 
 	free(allocated_path);
 	free(allocated_name);
@@ -387,11 +386,11 @@ const char* resource_util_filename(const char *path) {
 
 void load_resources(void) {
 	if(glext.draw_instanced) {
-		load_shader_snippets("shader/laser_snippets", "laser_", RESF_PERMANENT);
+		load_shader_snippets(SHA_PATH_PREFIX "laser_snippets", "laser_", RESF_PERMANENT);
 	}
 
 	menu_preload();
-	resources.stage_postprocess = postprocess_load("shader/postprocess.conf");
+	resources.stage_postprocess = postprocess_load(SHA_PATH_PREFIX "postprocess.conf");
 }
 
 void free_resources(bool all) {
@@ -408,9 +407,9 @@ void free_resources(bool all) {
 			if(!all && res->flags & RESF_PERMANENT)
 				continue;
 
-			ResourceFlags flags = res->flags;
+			ResourceFlags flags __attribute__((unused)) = res->flags;
 			unload_resource(res);
-			log_info("Unloaded %s '%s' (%s)", resource_type_names[type], name,
+			log_debug("Unloaded %s '%s' (%s)", resource_type_names[type], name,
 				(flags & RESF_PERMANENT) ? "permanent" : "transient"
 			);
 

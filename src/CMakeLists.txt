@@ -16,6 +16,7 @@ pkg_check_modules(SDL2 sdl2>=2.0.5 REQUIRED)
 pkg_check_modules(SDL2_TTF SDL2_ttf REQUIRED)
 pkg_check_modules(ZLIB zlib REQUIRED)
 pkg_check_modules(PNG libpng>=1.5 REQUIRED)
+pkg_check_modules(ZIP libzip REQUIRED)
 
 if(NOT NO_AUDIO)
 	pkg_check_modules(SDL2_MIXER SDL2_mixer REQUIRED)
@@ -93,14 +94,23 @@ set(SRCs
 	rwops/rwops_zlib.c
 	rwops/rwops_segment.c
 	rwops/rwops_autobuf.c
+	rwops/rwops_zipfile.c
+	vfs/private.c
+	vfs/public.c
+	vfs/setup.c
+	vfs/pathutil.c
+	vfs/union.c
+	vfs/vdir.c
+	vfs/zipfile.c
+	vfs/zippath.c
 )
 
-if(USE_SDL2_PATHS)
-    set(SRCs ${SRCs} paths/sdl.c)
-elseif(RELATIVE)
-	set(SRCs ${SRCs} paths/relative.c)
+if(WIN32)
+	set(SRCs ${SRCs}
+		vfs/syspath_win32.c)
 else()
-	set(SRCs ${SRCs} paths/static.c)
+	set(SRCs ${SRCs}
+		vfs/syspath_posix.c)
 endif()
 
 if(NO_AUDIO)
@@ -117,22 +127,13 @@ else()
 	)
 endif()
 
-if(DEFINED TAISEI_DEBUG)
-	if(TAISEI_DEBUG)
-		set(CMAKE_BUILD_TYPE "Debug")
-	else()
-		set(CMAKE_BUILD_TYPE "Release")
-	endif()
+if(WIN32)
+	set(DEBUG_FLAGS "-gstabs")
+else()
+	set(DEBUG_FLAGS "-ggdb")
 endif()
 
-if("${CMAKE_BUILD_TYPE}" STREQUAL "")
-	set(CMAKE_BUILD_TYPE "Release")
-	#message(WARNING "CMAKE_BUILD_TYPE was not set, assuming ${CMAKE_BUILD_TYPE}.")
-endif()
-
-message(STATUS "Build configuration: ${CMAKE_BUILD_TYPE}")
-
-set(DEBUG_FLAGS "-ggdb -fno-omit-frame-pointer")
+set(DEBUG_FLAGS "${DEBUG_FLAGS} -fno-omit-frame-pointer")
 set(RELEASE_FLAGS "-DNDEBUG")
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
@@ -184,16 +185,18 @@ endif()
 set(LIBs ${LIBs}
 	${SDL2_LIBRARIES}
 	${SDL2_TTF_LIBRARIES}
-	${PNG_LIBRARIES}
 	${ZLIB_LIBRARIES}
+	${ZIP_LIBRARIES}
+	${PNG_LIBRARIES}
 	${OPENGL_gl_LIBRARY}
 	m)
 
 set(LIBDIRs
 	${SDL2_LIBRARY_DIRS}
 	${SDL2_TTF_LIBRARY_DIRS}
-	${PNG_LIBRARY_DIRS}
 	${ZLIB_LIBRARY_DIRS}
+	${ZIP_LIBRARY_DIRS}
+	${PNG_LIBRARY_DIRS}
 	)
 
 if(WIN32)
@@ -211,8 +214,9 @@ set(INCs
 	${SDL2_INCLUDE_DIRS}
 	${SDL2_TTF_INCLUDE_DIRS}
 	${ZLIB_INCLUDE_DIRS}
-	${OPENGL_INCLUDE_DIR}
+	${ZIP_INCLUDE_DIRS}
 	${PNG_INCLUDE_DIRS}
+	${OPENGL_INCLUDE_DIR}
 	)
 
 # stupid cmake caching SHIT
@@ -270,9 +274,8 @@ if(APPLE)
 	)
 
 	install(TARGETS taisei BUNDLE DESTINATION .)
-	set(OSX_INSTALLSCRIPT_PATH "${PROJECT_SOURCE_DIR}/scripts/OSXInstallDylibs.cmake")
-	configure_file("${OSX_INSTALLSCRIPT_PATH}.in" "${OSX_INSTALLSCRIPT_PATH}.out" @ONLY)
-	install(SCRIPT "${OSX_INSTALLSCRIPT_PATH}.out")
+	configure_file("${BUILDSCRIPTS_DIR}/OSXInstallDylibs.cmake.in" "${CMAKE_CURRENT_BINARY_DIR}/OSXInstallDylibs.cmake" @ONLY)
+	install(SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/OSXInstallDylibs.cmake")
 elseif(RELATIVE)
 	install(TARGETS taisei RUNTIME DESTINATION .)
 else()

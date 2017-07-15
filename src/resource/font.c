@@ -7,25 +7,30 @@
 
 #include "font.h"
 #include "global.h"
-#include "paths/native.h"
 
 struct Fonts _fonts;
 
-TTF_Font* load_font(char *name, int size) {
-	char *buf = strjoin(get_prefix(), name, NULL);
+TTF_Font* load_font(char *vfspath, int size) {
+	char *syspath = vfs_repr(vfspath, true);
+
+	SDL_RWops *rwops = vfs_open(vfspath, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+
+	if(!rwops) {
+		log_fatal("VFS error: %s", vfs_get_error());
+	}
 
 	// XXX: what would be the best rounding strategy here?
 	size = rint(size * resources.fontren.quality);
 
-	TTF_Font *f =  TTF_OpenFont(buf, size);
+	TTF_Font *f = TTF_OpenFontRW(rwops, true, size);
 
 	if(!f) {
-		log_fatal("Failed to load font '%s' @ %i: %s", buf, size, TTF_GetError());
+		log_fatal("Failed to load font '%s' @ %i: %s", syspath, size, TTF_GetError());
 	}
 
-	log_info("Loaded '%s' @ %i", buf, size);
+	log_info("Loaded '%s' @ %i", syspath, size);
 
-	free(buf);
+	free(syspath);
 	return f;
 }
 
@@ -125,9 +130,9 @@ void uninit_fonts(void) {
 
 void load_fonts(float quality) {
 	fontrenderer_init(&resources.fontren, quality);
-	_fonts.standard = load_font("gfx/LinBiolinum.ttf", 20);
-	_fonts.mainmenu = load_font("gfx/immortal.ttf", 35);
-	_fonts.small    = load_font("gfx/LinBiolinum.ttf", 14);
+	_fonts.standard = load_font("res/gfx/LinBiolinum.ttf", 20);
+	_fonts.mainmenu = load_font("res/gfx/immortal.ttf", 35);
+	_fonts.small    = load_font("res/gfx/LinBiolinum.ttf", 14);
 }
 
 void reload_fonts(float quality) {

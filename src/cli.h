@@ -8,6 +8,7 @@ typedef enum {
 	CLI_PlayReplay,
 	CLI_SelectStage,
 	CLI_DumpStages,
+	CLI_DumpVFSTree,
 	CLI_Quit,
 } CLIActionType;
 

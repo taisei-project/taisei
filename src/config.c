@@ -10,7 +10,6 @@
 
 #include "config.h"
 #include "global.h"
-#include "paths/native.h"
 
 static bool config_initialized = false;
 
@@ -263,25 +262,18 @@ static void config_delete_unknown_entries(void) {
 	delete_all_elements((void**)&unknowndefs, config_delete_unknown_entry);
 }
 
-static char* config_path(const char *filename) {
-	return strjoin(get_config_path(), "/", filename, NULL);
-}
-
-static SDL_RWops* config_open(const char *filename, const char *mode) {
-	char *buf = config_path(filename);
-	SDL_RWops *out = SDL_RWFromFile(buf, mode);
-
-	free(buf);
+static SDL_RWops* config_open(const char *filename, VFSOpenMode mode) {
+	SDL_RWops *out = vfs_open(CONFIG_FILE, mode);
 
 	if(!out) {
-		log_warn("SDL_RWFromFile() failed: %s", SDL_GetError());
+		log_warn("VFS error: %s", vfs_get_error());
 	}
 
 	return out;
 }
 
-void config_save(const char *filename) {
-	SDL_RWops *out = config_open(filename, "w");
+void config_save(void) {
+	SDL_RWops *out = config_open(CONFIG_FILE, VFS_MODE_WRITE);
 	ConfigEntry *e = configdefs;
 
 	if(!out)
@@ -317,7 +309,10 @@ void config_save(const char *filename) {
 	}
 
 	SDL_RWclose(out);
-	log_info("Saved config '%s'", filename);
+
+	char *sp = vfs_repr(CONFIG_FILE, true);
+	log_info("Saved config '%s'", sp);
+	free(sp);
 }
 
 #define INTOF(s)   ((int)strtol(s, NULL, 10))
@@ -362,12 +357,14 @@ static void config_set(const char *key, const char *val, void *data) {
 #undef INTOF
 #undef FLOATOF
 
-void config_load(const char *filename) {
-	char *path = config_path(filename);
+void config_load(void) {
 	config_init();
-	log_info("Loading configuration from %s", path);
-	if(!parse_keyvalue_file_cb(path, config_set, NULL)) {
+
+	char *sp = vfs_repr(CONFIG_FILE, true);
+	log_info("Loading configuration from %s", sp);
+	free(sp);
+
+	if(!parse_keyvalue_file_cb(CONFIG_FILE, config_set, NULL)) {
 		log_warn("Errors occured while parsing the configuration file");
 	}
-	free(path);
 }

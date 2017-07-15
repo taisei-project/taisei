@@ -271,7 +271,6 @@ SDL_RWops* SDL_RWWrapZReader(SDL_RWops *src, size_t bufsize, bool autoclose) {
 		return NULL;
 	}
 
-	rw->type = TYPE_INFLATE;
 	rw->read = inflate_read;
 	rw->write = inflate_write;
 
@@ -290,7 +289,6 @@ SDL_RWops* SDL_RWWrapZWriter(SDL_RWops *src, size_t bufsize, bool autoclose) {
 		return NULL;
 	}
 
-	rw->type = TYPE_DEFLATE;
 	rw->read = deflate_read;
 	rw->write = deflate_write;
 

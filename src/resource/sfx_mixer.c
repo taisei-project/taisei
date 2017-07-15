@@ -23,7 +23,14 @@ bool check_sound_path(const char *path) {
 }
 
 void* load_sound_begin(const char *path, unsigned int flags) {
-	Mix_Chunk *sound = Mix_LoadWAV(path);
+	SDL_RWops *rwops = vfs_open(path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+
+	if(!rwops) {
+		log_warn("VFS error: %s", vfs_get_error());
+		return NULL;
+	}
+
+	Mix_Chunk *sound = Mix_LoadWAV_RW(rwops, true);
 
 	if(!sound) {
 		log_warn("Mix_LoadWAV() failed: %s", Mix_GetError());

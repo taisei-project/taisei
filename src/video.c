@@ -265,7 +265,7 @@ void video_set_mode(int w, int h, bool fs, bool resizable) {
 void video_take_screenshot(void) {
 	SDL_RWops *out;
 	char *data;
-	char outfile[128], *outpath;
+	char outfile[128], *outpath, *syspath;
 	time_t rawtime;
 	struct tm * timeinfo;
 	int w, h, rw, rh;
@@ -283,15 +283,18 @@ void video_take_screenshot(void) {
 
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
-	strftime(outfile, 128, "/taisei_%Y%m%d_%H-%M-%S_%Z.png", timeinfo);
+	strftime(outfile, 128, "taisei_%Y%m%d_%H-%M-%S_%Z.png", timeinfo);
 
-	outpath = strjoin(get_screenshots_path(), outfile, NULL);
-	log_info("Saving screenshot as %s", outpath);
-	out = SDL_RWFromFile(outpath, "w");
+	outpath = strjoin("storage/screenshots/", outfile, NULL);
+	syspath = vfs_repr(outpath, true);
+	log_info("Saving screenshot as %s", syspath);
+	free(syspath);
+
+	out = vfs_open(outpath, VFS_MODE_WRITE);
 	free(outpath);
 
 	if(!out) {
-		log_warn("SDL_RWFromFile() failed: %s", SDL_GetError());
+		log_warn("VFS error: %s", vfs_get_error());
 		free(data);
 		return;
 	}

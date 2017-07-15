@@ -12,7 +12,6 @@
 #include "options.h"
 #include "global.h"
 #include "video.h"
-#include "paths/native.h"
 
 // --- Menu entry <-> config option binding stuff --- //
 

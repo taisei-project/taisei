@@ -5,7 +5,8 @@
 
 typedef struct Buffer {
     SDL_RWops *memrw;
-    void **data;
+    void *data;
+    void **ptr;
     size_t size;
 } Buffer;
 
@@ -14,8 +15,12 @@ static void auto_realloc(Buffer *b, size_t newsize) {
     SDL_RWclose(b->memrw);
 
     b->size = newsize;
-    *b->data = realloc(*b->data, b->size);
-    b->memrw = SDL_RWFromMem(*b->data, b->size);
+    b->data = realloc(b->data, b->size);
+    b->memrw = SDL_RWFromMem(b->data, b->size);
+
+    if(b->ptr) {
+        *b->ptr = &b->data;
+    }
 
     if(pos > 0) {
         SDL_RWseek(b->memrw, pos, RW_SEEK_SET);
@@ -26,7 +31,7 @@ static int auto_close(SDL_RWops *rw) {
     if(rw) {
         Buffer *b = BUFFER(rw);
         SDL_RWclose(b->memrw);
-        free(*b->data);
+        free(b->data);
         free(b);
         SDL_FreeRW(rw);
     }
@@ -76,11 +81,16 @@ SDL_RWops* SDL_RWAutoBuffer(void **ptr, size_t initsize) {
     rw->write = auto_write;
     rw->close = auto_close;
 
-    Buffer *b = malloc(sizeof(Buffer));
+    Buffer *b = calloc(1, sizeof(Buffer));
+
     b->size = initsize;
-    b->data = ptr;
-    *b->data = malloc(b->size);
-    b->memrw = SDL_RWFromMem(*b->data, b->size);
+    b->data = malloc(b->size);
+    b->ptr = ptr;
+    b->memrw = SDL_RWFromMem(b->data, b->size);
+
+    if(ptr) {
+        *ptr = b->data;
+    }
 
     rw->hidden.unknown.data1 = b;
 

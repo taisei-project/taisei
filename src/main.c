@@ -5,8 +5,6 @@
  * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
  */
 
-#include <sys/stat.h>
-#include <errno.h>
 #include <locale.h>
 
 #include "global.h"
@@ -14,18 +12,18 @@
 #include "audio.h"
 #include "stage.h"
 #include "menu/mainmenu.h"
-#include "paths/native.h"
 #include "gamepad.h"
 #include "resource/bgm.h"
 #include "progress.h"
 #include "hashtable.h"
 #include "log.h"
 #include "cli.h"
+#include "vfs/setup.h"
 
-void taisei_shutdown(void) {
+static void taisei_shutdown(void) {
 	log_info("Shutting down");
 
-	config_save(CONFIG_FILE);
+	config_save();
 	progress_save();
 	progress_unload();
 
@@ -37,6 +35,7 @@ void taisei_shutdown(void) {
 	gamepad_shutdown();
 	stage_free_array();
 	config_uninit();
+	vfs_uninit();
 
 	log_info("Good bye");
 	SDL_Quit();
@@ -44,25 +43,23 @@ void taisei_shutdown(void) {
 	log_shutdown();
 }
 
-void init_log(void) {
-	const char *pref = get_config_path();
-	char *logpath = strfmt("%s/%s", pref, "log.txt");
-
+static void init_log(void) {
 	LogLevel lvls_console = log_parse_levels(LOG_DEFAULT_LEVELS_CONSOLE, getenv("TAISEI_LOGLVLS_CONSOLE"));
 	LogLevel lvls_stdout = lvls_console & log_parse_levels(LOG_DEFAULT_LEVELS_STDOUT, getenv("TAISEI_LOGLVLS_STDOUT"));
 	LogLevel lvls_stderr = lvls_console & log_parse_levels(LOG_DEFAULT_LEVELS_STDERR, getenv("TAISEI_LOGLVLS_STDERR"));
-	LogLevel lvls_file = log_parse_levels(LOG_DEFAULT_LEVELS_FILE, getenv("TAISEI_LOGLVLS_FILE"));
 	LogLevel lvls_backtrace = log_parse_levels(LOG_DEFAULT_LEVELS_BACKTRACE, getenv("TAISEI_LOGLVLS_BACKTRACE"));
 
 	log_init(LOG_DEFAULT_LEVELS, lvls_backtrace);
 	log_add_output(lvls_stdout, SDL_RWFromFP(stdout, false));
 	log_add_output(lvls_stderr, SDL_RWFromFP(stderr, false));
-	log_add_output(lvls_file, SDL_RWFromFile(logpath, "w"));
-
-	free(logpath);
 }
 
-int run_tests(void) {
+static void init_log_file(void) {
+	LogLevel lvls_file = log_parse_levels(LOG_DEFAULT_LEVELS_FILE, getenv("TAISEI_LOGLVLS_FILE"));
+	log_add_output(lvls_file, vfs_open("storage/log.txt", VFS_MODE_WRITE));
+}
+
+static int run_tests(void) {
 	if(tsrand_test()) {
 		return 1;
 	}
@@ -114,7 +111,6 @@ int main(int argc, char **argv) {
 	Replay replay = {0};
 	int replay_idx = 0;
 
-	init_paths();
 	init_log();
 
 	if(run_tests()) {
@@ -140,7 +136,7 @@ int main(int argc, char **argv) {
 		free_cli_action(&a);
 		return 0;
 	} else if(a.type == CLI_PlayReplay) {
-		if(!replay_load(&replay, a.filename, REPLAY_READ_ALL | REPLAY_READ_RAWPATH)) {
+		if(!replay_load_syspath(&replay, a.filename, REPLAY_READ_ALL)) {
 			free_cli_action(&a);
 			return 1;
 		}
@@ -151,26 +147,32 @@ int main(int argc, char **argv) {
 			free_cli_action(&a);
 			return 1;
 		}
+	} else if(a.type == CLI_DumpVFSTree) {
+		vfs_setup(true);
+
+		SDL_RWops *rwops = SDL_RWFromFP(stdout, false);
+
+		if(!rwops) {
+			log_fatal("SDL_RWFromFP() failed: %s", SDL_GetError());
+		}
+
+		if(!vfs_print_tree(rwops, a.filename)) {
+			log_warn("VFS error: %s", vfs_get_error());
+			SDL_RWclose(rwops);
+			return 1;
+		}
+
+		SDL_RWclose(rwops);
+		vfs_uninit();
+		free_cli_action(&a);
+		return 0;
 	}
 
 	free_cli_action(&a);
+	vfs_setup(false);
+	init_log_file();
 
-	log_info("Content path: %s", get_prefix());
-	log_info("Userdata path: %s", get_config_path());
-
-	MKDIR(get_config_path());
-	MKDIR(get_screenshots_path());
-	MKDIR(get_replays_path());
-
-	if(chdir(get_prefix())) {
-		log_fatal("chdir() failed: %s", strerror(errno));
-	} else {
-		char cwd[1024]; // i don't care if this is not enough for you, getcwd is garbage
-		getcwd(cwd, sizeof(cwd));
-		log_info("Changed working directory to %s", cwd);
-	}
-
-	config_load(CONFIG_FILE);
+	config_load();
 
 	log_lib_versions();
 

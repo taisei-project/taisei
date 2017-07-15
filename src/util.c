@@ -40,6 +40,16 @@ bool strendswith_any(const char *s, const char **earray) {
     return false;
 }
 
+bool strstartswith_any(const char *s, const char **earray) {
+    for(const char **e = earray; *e; ++e) {
+        if(strstartswith(s, *e)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void stralloc(char **dest, const char *src) {
     free(*dest);
 
@@ -127,6 +137,16 @@ char* copy_segment(const char *text, const char *delim, int *size) {
 void strip_trailing_slashes(char *buf) {
     for(char *c = buf + strlen(buf) - 1; c >= buf && (*c == '/' || *c == '\\'); c--)
         *c = 0;
+}
+
+char* strappend(char **dst, char *src) {
+    if(!*dst) {
+        return *dst = strdup(src);
+    }
+
+    *dst = realloc(*dst, strlen(*dst) + strlen(src) + 1);
+    strcat(*dst, src);
+    return *dst;
 }
 
 /*
@@ -310,10 +330,10 @@ char* read_all(const char *filename, int *outsize) {
     char *text;
     size_t size;
 
-    SDL_RWops *file = SDL_RWFromFile(filename, "r");
+    SDL_RWops *file = vfs_open(filename, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
     if(!file) {
-        log_warn("SDL_RWFromFile() failed: %s", SDL_GetError());
+        log_warn("VFS error: %s", vfs_get_error());
         return NULL;
     }
 
@@ -387,10 +407,10 @@ bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data) 
 }
 
 bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *data) {
-    SDL_RWops *strm = SDL_RWFromFile(filename, "r");
+    SDL_RWops *strm = vfs_open(filename, VFS_MODE_READ);
 
     if(!strm) {
-        log_warn("SDL_RWFromFile() failed: %s", SDL_GetError());
+        log_warn("VFS error: %s", vfs_get_error());
         return false;
     }
 

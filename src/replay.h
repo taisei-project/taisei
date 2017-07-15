@@ -139,7 +139,6 @@ typedef enum ReplayReadMode {
 	REPLAY_READ_META = 1,
 	REPLAY_READ_EVENTS = 2,
 	REPLAY_READ_ALL = 3, // includes the other two
-	REPLAY_READ_RAWPATH = 4, // only used by replay_load()
 } ReplayReadMode;
 
 void replay_init(Replay *rpy);
@@ -152,18 +151,16 @@ void replay_stage_event(ReplayStage *stg, uint32_t frame, uint8_t type, int16_t 
 void replay_stage_check_desync(ReplayStage *stg, int time, uint16_t check, ReplayMode mode);
 void replay_stage_sync_player_state(ReplayStage *stg, Player *plr);
 
-int replay_write(Replay *rpy, SDL_RWops *file, bool compression);
-int replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode);
+bool replay_write(Replay *rpy, SDL_RWops *file, bool compression);
+bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode);
 
-int replay_save(Replay *rpy, const char *name);
-int replay_load(Replay *rpy, const char *name, ReplayReadMode mode);
+bool replay_save(Replay *rpy, const char *name);
+bool replay_load(Replay *rpy, const char *name, ReplayReadMode mode);
+bool replay_load_syspath(Replay *rpy, const char *path, ReplayReadMode mode);
 
 void replay_copy(Replay *dst, Replay *src, bool steal_events);
 
-char* replay_getpath(const char *name, bool ext);	// must be freed
-
 void replay_play(Replay *rpy, int firstidx);
-void replay_play_path(const char *path, int firstidx);
 
 int replay_find_stage_idx(Replay *rpy, uint8_t stageid);
 

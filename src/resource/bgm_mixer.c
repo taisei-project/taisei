@@ -23,7 +23,14 @@ bool check_music_path(const char *path) {
 }
 
 void* load_music_begin(const char *path, unsigned int flags) {
-	Mix_Music *music = Mix_LoadMUS(path);
+	SDL_RWops *rwops = vfs_open(path, VFS_MODE_READ);
+
+	if(!rwops) {
+		log_warn("VFS error: %s", vfs_get_error());
+		return NULL;
+	}
+
+	Mix_Music *music = Mix_LoadMUS_RW(rwops, true);
 
 	if(!music) {
 		log_warn("Mix_LoadMUS() failed: %s", Mix_GetError());

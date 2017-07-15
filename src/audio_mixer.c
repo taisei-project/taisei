@@ -6,8 +6,6 @@
  */
 
 #include <SDL_mixer.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 
 #include "audio.h"
 #include "global.h"
@@ -111,9 +109,8 @@ void audio_backend_set_bgm_volume(float gain) {
 char* audio_mixer_sound_path(const char *prefix, const char *name) {
 	for(const char **ext = mixer_audio_exts; *ext; ++ext) {
 		char *p = strjoin(prefix, name, *ext, NULL);
-		struct stat statbuf;
 
-		if(!stat(p, &statbuf)) {
+		if(vfs_query(p).exists) {
 			return p;
 		}
 
