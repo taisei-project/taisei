@@ -391,30 +391,6 @@ void options_sub_gamepad_controls(MenuData *parent, void *arg) {
 
 	create_options_menu_basic(m, "Gamepad Controls");
 
-	add_menu_entry(m, "Fire / Accept", do_nothing,
-		bind_gpbinding(CONFIG_GAMEPAD_KEY_SHOT)
-	);
-
-	add_menu_entry(m, "Focus / Abort", do_nothing,
-		bind_gpbinding(CONFIG_GAMEPAD_KEY_FOCUS)
-	);
-
-	add_menu_entry(m, "Bomb", do_nothing,
-		bind_gpbinding(CONFIG_GAMEPAD_KEY_BOMB)
-	);
-
-	add_menu_separator(m);
-
-	add_menu_entry(m, "Pause", do_nothing,
-		bind_gpbinding(CONFIG_GAMEPAD_KEY_PAUSE)
-	);
-
-	add_menu_entry(m, "Skip dialog", do_nothing,
-		bind_gpbinding(CONFIG_GAMEPAD_KEY_SKIP)
-	);
-
-	add_menu_separator(m);
-
 	add_menu_entry(m, "Move up", do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_UP)
 	);
@@ -429,6 +405,26 @@ void options_sub_gamepad_controls(MenuData *parent, void *arg) {
 
 	add_menu_entry(m, "Move right", do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_RIGHT)
+	);
+
+	add_menu_separator(m);
+
+	add_menu_entry(m, "Fire", do_nothing,
+		bind_gpbinding(CONFIG_GAMEPAD_KEY_SHOT)
+	);
+
+	add_menu_entry(m, "Focus", do_nothing,
+		bind_gpbinding(CONFIG_GAMEPAD_KEY_FOCUS)
+	);
+
+	add_menu_entry(m, "Bomb", do_nothing,
+		bind_gpbinding(CONFIG_GAMEPAD_KEY_BOMB)
+	);
+
+	add_menu_separator(m);
+
+	add_menu_entry(m, "Skip dialog", do_nothing,
+		bind_gpbinding(CONFIG_GAMEPAD_KEY_SKIP)
 	);
 
 	add_menu_separator(m);
@@ -733,13 +729,13 @@ void draw_options_menu(MenuData *menu) {
 					if(bind->blockinput) {
 						glColor4f(0.5, 1, 0.5, 1);
 						draw_text(AL_Right, origin, 20*i,
-							is_axis ? "Move an axis to assign, press any button to cancel"
-									: "Press a button to assign, move an axis to cancel",
+							is_axis ? "Move an axis to assign, Back to cancel"
+									: "Press a button to assign, Back to cancel",
 							_fonts.standard);
 					} else if(config_get_int(bind->configentry) >= 0) {
-						char tmp[32];
-						snprintf(tmp, 32, is_axis ? "Axis %i" : "Button %i", config_get_int(bind->configentry) + 1);
-						draw_text(AL_Right, origin, 20*i, tmp, _fonts.standard);
+						int id = config_get_int(bind->configentry);
+						const char *name = (is_axis ? gamepad_axis_name(id) : gamepad_button_name(id));
+						draw_text(AL_Right, origin, 20*i, name, _fonts.standard);
 					} else {
 						draw_text(AL_Right, origin, 20*i, "Unbound", _fonts.standard);
 					}
@@ -850,6 +846,9 @@ void bind_input_event(EventType type, int state, void *arg) {
 				if(b->type == BT_GamepadAxisBinding)
 					b->blockinput = false;
 				break;
+			} else if(scan == SDL_CONTROLLER_BUTTON_BACK || scan == SDL_CONTROLLER_BUTTON_START) {
+				b->blockinput = false;
+				break;
 			}
 
 			for(int i = CONFIG_GAMEPAD_KEY_FIRST; i <= CONFIG_GAMEPAD_KEY_LAST; ++i) {
@@ -864,11 +863,6 @@ void bind_input_event(EventType type, int state, void *arg) {
 		}
 
 		case E_GamepadAxis: {
-			if(b->type == BT_GamepadKeyBinding) {
-				b->blockinput = false;
-				break;
-			}
-
 			if(b->type == BT_GamepadAxisBinding) {
 				if(b->configentry == CONFIG_GAMEPAD_AXIS_UD) {
 					if(config_get_int(CONFIG_GAMEPAD_AXIS_LR) == state) {

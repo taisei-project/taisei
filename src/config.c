@@ -16,7 +16,7 @@ static bool config_initialized = false;
 CONFIGDEFS_EXPORT ConfigEntry configdefs[] = {
 	#define CONFIGDEF(type,entryname,default,ufield) {type, entryname, {.ufield = default}, NULL},
 	#define CONFIGDEF_KEYBINDING(id,entryname,default) CONFIGDEF(CONFIG_TYPE_KEYBINDING, entryname, default, i)
-	#define CONFIGDEF_GPKEYBINDING(id,entryname,default) CONFIGDEF(CONFIG_TYPE_INT, entryname, default, i)
+	#define CONFIGDEF_GPKEYBINDING(id,entryname,default) CONFIGDEF(CONFIG_TYPE_GPKEYBINDING, entryname, default, i)
 	#define CONFIGDEF_INT(id,entryname,default) CONFIGDEF(CONFIG_TYPE_INT, entryname, default, i)
 	#define CONFIGDEF_FLOAT(id,entryname,default) CONFIGDEF(CONFIG_TYPE_FLOAT, entryname, default, f)
 	#define CONFIGDEF_STRING(id,entryname,default) CONFIGDEF(CONFIG_TYPE_STRING, entryname, NULL, s)
@@ -156,6 +156,7 @@ static void config_set_val(ConfigIndex idx, ConfigValue v) {
 	switch(e->type) {
 		case CONFIG_TYPE_INT:
 		case CONFIG_TYPE_KEYBINDING:
+		case CONFIG_TYPE_GPKEYBINDING:
 			difference = e->val.i != v.i;
 			break;
 
@@ -184,6 +185,7 @@ static void config_set_val(ConfigIndex idx, ConfigValue v) {
 	switch(e->type) {
 		case CONFIG_TYPE_INT:
 		case CONFIG_TYPE_KEYBINDING:
+		case CONFIG_TYPE_GPKEYBINDING:
 			e->val.i = v.i;
 			PRINTVAL(i)
 			break;
@@ -290,6 +292,10 @@ void config_save(void) {
 			SDL_RWprintf(out, "%s = %s\n", e->name, SDL_GetScancodeName(e->val.i));
 			break;
 
+		case CONFIG_TYPE_GPKEYBINDING:
+			SDL_RWprintf(out, "%s = %s\n", e->name, SDL_GameControllerGetStringForButton(e->val.i));
+			break;
+
 		case CONFIG_TYPE_STRING:
 			SDL_RWprintf(out, "%s = %s\n", e->name, e->val.s);
 			break;
@@ -339,6 +345,18 @@ static void config_set(const char *key, const char *val, void *data) {
 				log_warn("Unknown key '%s'", val);
 			} else {
 				e->val.i = scan;
+			}
+
+			break;
+		}
+
+		case CONFIG_TYPE_GPKEYBINDING: {
+			SDL_GameControllerButton btn = SDL_GameControllerGetButtonFromString(val);
+
+			if(btn == SDL_CONTROLLER_BUTTON_INVALID) {
+				log_warn("Unknown gamepad key '%s'", val);
+			} else {
+				e->val.i = btn;
 			}
 
 			break;
