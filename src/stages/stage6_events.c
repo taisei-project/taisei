@@ -29,7 +29,7 @@ AttackInfo stage6_spells[] = {
 							elly_newton, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
 	{{24, 25, 26, 27},	AT_Spellcard, "Kepler Sign ~ Orbital Clockwork", 60, 40000,
 							elly_kepler, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
-	{{ 4,  5,  6,  7},	AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 22000,
+	{{ 4,  5,  6,  7},	AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 26000,
 							elly_maxwell, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
 	{{ 8,  9, 10, 11},	AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 60, 30000,
 							elly_eigenstate, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
