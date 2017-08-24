@@ -1249,7 +1249,7 @@ Boss *create_elly(void) {
 	boss_add_attack(b, AT_Normal, "Frequency2", 40, 23000, elly_frequency2, NULL);
 	boss_add_attack_from_info(b, stage6_spells+1, false);
 	boss_add_attack_from_info(b, stage6_spells+2, false);
-	boss_add_attack(b, AT_Move, "Unbound", 6, 10, elly_unbound, NULL);
+	boss_add_attack(b, AT_Move, "Unbound", 3, 10, elly_unbound, NULL);
 	boss_add_attack_from_info(b, stage6_spells+3, false);
 	boss_add_attack(b, AT_Normal, "Baryon", 40, 23000, elly_baryonattack, NULL);
 	boss_add_attack_from_info(b, stage6_spells+4, false);
