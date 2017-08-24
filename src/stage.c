@@ -39,7 +39,7 @@ static void add_stage(uint16_t id, StageProcs *procs, StageType type, const char
 	stg->spell = spell;
 	stg->difficulty = diff;
 	stg->titleclr = titleclr;
-	stg->bosstitleclr = titleclr;
+	stg->bosstitleclr = bosstitleclr;
 }
 
 static void end_stages(void) {
