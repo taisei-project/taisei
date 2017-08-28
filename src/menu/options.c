@@ -85,6 +85,40 @@ OptionBinding* bind_gpaxisbinding(int cfgentry) {
 	return bind;
 }
 
+static int bind_gpdev_get(OptionBinding *b) {
+	return gamepad_numfromguid(config_get_str(b->configentry));
+}
+
+static int bind_gpdev_set(OptionBinding *b, int v) {
+	char guid[33] = {0};
+	gamepad_deviceguid(v, guid, sizeof(guid));
+
+	if(*guid) {
+		config_set_str(b->configentry, guid);
+		b->selected = v;
+	}
+
+	return b->selected;
+}
+
+// BT_GamepadDevice: dynamic device list
+OptionBinding* bind_gpdevice(int cfgentry) {
+	OptionBinding *bind = bind_new();
+
+	bind->configentry = cfgentry;
+	bind->type = BT_GamepadDevice;
+
+	bind->getter = bind_gpdev_get;
+	bind->setter = bind_gpdev_set;
+
+	bind->valrange_min = 0;
+	bind->valrange_max = 0; // updated later
+
+	bind->selected = gamepad_numfromguid(config_get_str(bind->configentry));
+
+	return bind;
+}
+
 // BT_StrValue: with a half-assed "textbox"
 OptionBinding* bind_stroption(ConfigIndex cfgentry) {
 	OptionBinding *bind = bind_new();
@@ -180,13 +214,14 @@ int bind_getvalue(OptionBinding *b) {
 
 // Selects the next to current value of a BT_IntValue type binding
 int bind_setnext(OptionBinding *b) {
-	int s = b->selected +1;
+	int s = b->selected + 1;
 
 	if(b->valrange_max) {
 		if(s > b->valrange_max)
 			s = b->valrange_min;
-	} else if(s >= b->valcount)
+	} else if(s >= b->valcount) {
 		s = 0;
+	}
 
 	return bind_setvalue(b, s);
 }
@@ -198,8 +233,9 @@ int bind_setprev(OptionBinding *b) {
 	if(b->valrange_max) {
 		if(s < b->valrange_min)
 			s = b->valrange_max;
-	} else if(s < 0)
+	} else if(s < 0) {
 		s = b->valcount - 1;
+	}
 
 	return bind_setvalue(b, s);
 }
@@ -381,8 +417,12 @@ void bind_setvaluerange_fancy(OptionBinding *b, int ma) {
 	}
 }
 
-bool gamepad_sens_depencence(void) {
+static bool gamepad_sens_depencence(void) {
 	return config_get_int(CONFIG_GAMEPAD_AXIS_FREE);
+}
+
+static bool gamepad_enabled_depencence(void) {
+	return config_get_int(CONFIG_GAMEPAD_ENABLED);
 }
 
 void options_sub_gamepad_controls(MenuData *parent, void *arg) {
@@ -432,7 +472,6 @@ void options_sub_gamepad_controls(MenuData *parent, void *arg) {
 
 	menu_loop(m);
 	parent->frames = 0;
-	gamepad_restart();
 }
 
 void options_sub_gamepad(MenuData *parent, void *arg) {
@@ -447,25 +486,11 @@ void options_sub_gamepad(MenuData *parent, void *arg) {
 	);	bind_onoff(b);
 
 	add_menu_entry(m, "Device", do_nothing,
-		b = bind_option(CONFIG_GAMEPAD_DEVICE, bind_common_intget, bind_common_intset)
-	); b->displaysingle = true;
+		b = bind_gpdevice(CONFIG_GAMEPAD_DEVICE)
+	);	bind_setdependence(b, gamepad_enabled_depencence);
 
 	add_menu_separator(m);
 	add_menu_entry(m, "Customize controls…", options_sub_gamepad_controls, NULL);
-
-	gamepad_init_bare();
-	int cnt = gamepad_devicecount();
-	int i; for(i = 0; i < cnt; ++i) {
-		char buf[50];
-		snprintf(buf, sizeof(buf), "#%i: %s", i+1, gamepad_devicename(i));
-		bind_addvalue(b, buf);
-	}
-
-	if(!i) {
-		bind_addvalue(b, "No devices available");
-		b->selected = 0;
-	}
-	gamepad_shutdown_bare();
 
 	add_menu_separator(m);
 
@@ -499,9 +524,16 @@ void options_sub_gamepad(MenuData *parent, void *arg) {
 	add_menu_separator(m);
 	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
 
+	char *gpdev = strdup(config_get_str(CONFIG_GAMEPAD_DEVICE));
+
 	menu_loop(m);
 	parent->frames = 0;
-	gamepad_restart();
+
+	if(config_get_int(CONFIG_GAMEPAD_ENABLED) && strcasecmp(config_get_str(CONFIG_GAMEPAD_DEVICE), gpdev)) {
+		gamepad_restart();
+	}
+
+	free(gpdev);
 }
 
 void options_sub_controls(MenuData *parent, void *arg) {
@@ -719,6 +751,36 @@ void draw_options_menu(MenuData *menu) {
 						draw_text(AL_Center, (SCREEN_W - 200)/2, 20*(i-1), "Controls", _fonts.standard);
 						caption_drawn = 1;
 					}
+					break;
+				}
+
+				case BT_GamepadDevice: {
+					if(bind_isactive(bind)) {
+						// XXX: I'm not exactly a huge fan of fixing up state in drawing code, but it seems the way to go for now...
+						bind->valrange_max = gamepad_devicecount() - 1;
+
+						if(bind->selected < 0 || bind->selected > bind->valrange_max) {
+							bind->selected = gamepad_currentdevice();
+
+							if(bind->selected < 0) {
+								bind->selected = 0;
+							}
+						}
+
+						char *txt;
+						char buf[64];
+
+						if(bind->valrange_max > 0) {
+							snprintf(buf, sizeof(buf), "#%i: %s", bind->selected + 1, gamepad_devicename(bind->selected));
+							shorten_text_up_to_width(buf, (SCREEN_W - 220) / 2, _fonts.standard);
+							txt = buf;
+						} else {
+							txt = "No devices available";
+						}
+
+						draw_text(AL_Right, origin, 20*i, txt, _fonts.standard);
+					}
+
 					break;
 				}
 
@@ -946,6 +1008,7 @@ static void options_input_event(EventType type, int state, void *arg) {
 			play_ui_sound("generic_shot");
 			if(bind) {
 				switch(bind->type) {
+					case BT_GamepadDevice:
 					case BT_IntValue:
 					case BT_Resolution:
 						bind_setprev(bind);
@@ -965,6 +1028,7 @@ static void options_input_event(EventType type, int state, void *arg) {
 			play_ui_sound("generic_shot");
 			if(bind) {
 				switch(bind->type) {
+					case BT_GamepadDevice:
 					case BT_IntValue:
 					case BT_Resolution:
 						bind_setnext(bind);

@@ -84,7 +84,7 @@
 	CONFIGDEF_FLOAT		(BG_QUALITY,				"bg_quality",							1.0) \
 	KEYDEFS \
 	CONFIGDEF_INT		(GAMEPAD_ENABLED, 			"gamepad_enabled", 						0) \
-	CONFIGDEF_INT		(GAMEPAD_DEVICE, 			"gamepad_device", 						0) \
+	CONFIGDEF_STRING	(GAMEPAD_DEVICE, 			"gamepad_device", 						"default") \
 	CONFIGDEF_INT		(GAMEPAD_AXIS_UD, 			"gamepad_axis_ud", 						1) \
 	CONFIGDEF_INT		(GAMEPAD_AXIS_LR, 			"gamepad_axis_lr", 						0) \
 	CONFIGDEF_INT		(GAMEPAD_AXIS_FREE, 		"gamepad_axis_free", 					1) \

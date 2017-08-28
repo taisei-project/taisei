@@ -224,3 +224,14 @@ int charwidth(char c, TTF_Font *font) {
 	s[1] = 0;
 	return stringwidth(s, font);
 }
+
+void shorten_text_up_to_width(char *s, float width, TTF_Font *font) {
+	while(stringwidth(s, font) > width) {
+		s[strlen(s) - 1] = 0;
+
+		int l = strlen(s);
+		for(int i = 0; i < 3; ++i) {
+			s[l - i - 1] = '.';
+		}
+	}
+}

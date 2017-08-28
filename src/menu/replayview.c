@@ -82,17 +82,6 @@ static void replayview_freearg(void *a) {
 	free(ctx);
 }
 
-static void shorten(char *s, float width) {
-	while(stringwidth(s, _fonts.standard) > width) {
-		s[strlen(s) - 1] = 0;
-
-		int l = strlen(s);
-		for(int i = 0; i < 3; ++i) {
-			s[l - i - 1] = '.';
-		}
-	}
-}
-
 static void replayview_draw_stagemenu(MenuData *m) {
 	// this context is shared with the parent menu
 	ReplayviewContext *ctx = m->context;
@@ -196,7 +185,8 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 				break;
 		}
 
-		shorten(tmp, csize);
+		shorten_text_up_to_width(tmp, csize, _fonts.standard);
+
 		switch(a) {
 			case AL_Center:	o += csize * 0.5 - stringwidth(tmp, _fonts.standard) * 0.5;		break;
 			case AL_Right:	o += csize - stringwidth(tmp, _fonts.standard);					break;

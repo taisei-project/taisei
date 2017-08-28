@@ -12,7 +12,8 @@
 #include "global.h"
 
 static struct {
-	int initialized;
+	bool initialized;
+	int current_devnum;
 	SDL_GameController *device;
 	SDL_JoystickID instance;
 	signed char *axis;
@@ -42,14 +43,88 @@ static void gamepad_update_device_list(void) {
 		}
 
 		*idmap_ptr = i;
-		log_info("Gamepad device #%"PRIuMAX": %s", (uintmax_t)(idmap_ptr - gamepad.devices.id_map), SDL_GameControllerNameForIndex(i));
+		int num = (int)(uintmax_t)(idmap_ptr - gamepad.devices.id_map);
 		++idmap_ptr;
+		gamepad.devices.count = (uintptr_t)(idmap_ptr - gamepad.devices.id_map);
+
+		char guid[33] = {0};
+		gamepad_deviceguid(num, guid, sizeof(guid));
+		log_info("Gamepad device '%s' (#%i): %s", guid, num, SDL_GameControllerNameForIndex(i));
+	}
+}
+
+static int gamepad_find_device_by_guid(const char *guid_str, char *guid_out, size_t guid_out_sz, int *out_localdevnum) {
+	for(int i = 0; i < gamepad.devices.count; ++i) {
+		*guid_out = 0;
+
+		SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(gamepad.devices.id_map[i]);
+		SDL_JoystickGetGUIDString(guid, guid_out, guid_out_sz);
+
+		if(!*guid_out) {
+			log_warn("Failed to read GUID of device %i: %s", gamepad.devices.id_map[i], SDL_GetError());
+			continue;
+		}
+
+		if(!strcasecmp(guid_str, guid_out) || !strcasecmp(guid_str, "default")) {
+			*out_localdevnum = i;
+			return gamepad.devices.id_map[i];
+		}
 	}
 
-	gamepad.devices.count = (uintptr_t)(idmap_ptr - gamepad.devices.id_map);
+	*out_localdevnum = -1;
+	return -1;
+}
+
+static int gamepad_find_device(char *guid_out, size_t guid_out_sz, int *out_localdevnum) {
+	int dev;
+	const char *want_guid = config_get_str(CONFIG_GAMEPAD_DEVICE);
+
+	dev = gamepad_find_device_by_guid(want_guid, guid_out, guid_out_sz, out_localdevnum);
+
+	if(dev >= 0) {
+		return dev;
+	}
+
+	if(strcasecmp(want_guid, "default")) {
+		log_warn("Requested device '%s' is not available, trying first usable", want_guid);
+		dev = gamepad_find_device_by_guid("default", guid_out, guid_out_sz, out_localdevnum);
+
+		if(dev >= 0) {
+			return dev;
+		}
+	}
+
+	*out_localdevnum = -1;
+	strcpy(guid_out, want_guid);
+
+	return -1;
+}
+
+static void gamepad_cfg_enabled_callback(ConfigIndex idx, ConfigValue v) {
+	config_set_int(idx, v.i);
+
+	if(v.i) {
+		gamepad_init();
+	} else {
+		gamepad_shutdown();
+	}
+}
+
+static void gamepad_setup_cfg_callbacks(void) {
+	static bool done = false;
+
+	if(done) {
+		return;
+	}
+
+	done = true;
+
+	config_set_callback(CONFIG_GAMEPAD_ENABLED, gamepad_cfg_enabled_callback);
 }
 
 void gamepad_init(void) {
+	gamepad_setup_cfg_callbacks();
+
 	if(!config_get_int(CONFIG_GAMEPAD_ENABLED) || gamepad.initialized) {
 		return;
 	}
@@ -61,16 +136,19 @@ void gamepad_init(void) {
 
 	gamepad_update_device_list();
 
-	int dev = config_get_int(CONFIG_GAMEPAD_DEVICE);
-	if(dev < 0 || dev >= gamepad.devices.count) {
-		log_warn("Device #%i is not available", dev);
+	char guid[33];
+	int dev = gamepad_find_device(guid, sizeof(guid), &gamepad.current_devnum);
+
+	if(dev < 0) {
+		log_warn("Device '%s' is not available", guid);
 		gamepad_shutdown();
 		return;
 	}
 
 	gamepad.device = SDL_GameControllerOpen(dev);
+
 	if(!gamepad.device) {
-		log_warn("Failed to open device %i: %s", dev, SDL_GetError());
+		log_warn("Failed to open device '%s' (#%i): %s", guid, dev, SDL_GetError());
 		gamepad_shutdown();
 		return;
 	}
@@ -79,10 +157,11 @@ void gamepad_init(void) {
 	gamepad.instance = SDL_JoystickInstanceID(joy);
 	gamepad.axis = malloc(max(SDL_JoystickNumAxes(joy), 1));
 
-	log_info("Using device #%i: %s", dev, gamepad_devicename(dev));
+	log_info("Using device '%s' (#%i): %s", guid, dev, gamepad_devicename(dev));
 	SDL_GameControllerEventState(SDL_ENABLE);
 
-	gamepad.initialized = 1;
+	config_set_str(CONFIG_GAMEPAD_DEVICE, guid);
+	gamepad.initialized = true;
 }
 
 void gamepad_shutdown(void) {
@@ -90,9 +169,7 @@ void gamepad_shutdown(void) {
 		return;
 	}
 
-	if(gamepad.initialized != 2) {
-		log_info("Disabled the gamepad subsystem");
-	}
+	log_info("Disabled the gamepad subsystem");
 
 	if(gamepad.device) {
 		SDL_GameControllerClose(gamepad.device);
@@ -311,12 +388,42 @@ int gamepad_devicecount(void) {
 	return gamepad.devices.count;
 }
 
-const char* gamepad_devicename(int id) {
-	if(id < 0 || id >= gamepad.devices.count) {
+const char* gamepad_devicename(int num) {
+	if(num < 0 || num >= gamepad.devices.count) {
 		return NULL;
 	}
 
-	return SDL_GameControllerNameForIndex(gamepad.devices.id_map[id]);
+	return SDL_GameControllerNameForIndex(gamepad.devices.id_map[num]);
+}
+
+const void gamepad_deviceguid(int num, char *guid_str, size_t guid_str_sz) {
+	if(num < 0 || num >= gamepad.devices.count) {
+		return;
+	}
+
+	SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(gamepad.devices.id_map[num]);
+	SDL_JoystickGetGUIDString(guid, guid_str, guid_str_sz);
+}
+
+int gamepad_numfromguid(const char *guid_str) {
+	for(int i = 0; i < gamepad.devices.count; ++i) {
+		char guid[33] = {0};
+		gamepad_deviceguid(i, guid, sizeof(guid));
+
+		if(!strcasecmp(guid_str, guid)) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+int gamepad_currentdevice(void) {
+	if(gamepad.initialized) {
+		return gamepad.current_devnum;
+	}
+
+	return -1;
 }
 
 bool gamepad_buttonpressed(SDL_GameControllerButton btn) {
@@ -337,26 +444,6 @@ bool gamepad_gamekeypressed(KeyIndex key) {
 	int button = config_get_int(cfgidx);
 
 	return gamepad_buttonpressed(button);
-}
-
-void gamepad_init_bare(void) {
-	if(gamepad.initialized) {
-		return;
-	}
-
-	if(SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) < 0) {
-		log_warn("SDL_InitSubSystem() failed: %s", SDL_GetError());
-		return;
-	}
-
-	gamepad_update_device_list();
-	gamepad.initialized = 2;
-}
-
-void gamepad_shutdown_bare(void) {
-	if(gamepad.initialized == 2) {
-		gamepad_shutdown();
-	}
 }
 
 const char* gamepad_button_name(SDL_GameControllerButton btn) {

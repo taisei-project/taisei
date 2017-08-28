@@ -30,6 +30,7 @@ typedef enum BindingType {
 	BT_Scale,
 	BT_GamepadKeyBinding,
 	BT_GamepadAxisBinding,
+	BT_GamepadDevice,
 } BindingType;
 
 typedef struct OptionBinding {

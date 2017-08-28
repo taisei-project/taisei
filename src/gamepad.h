@@ -17,10 +17,14 @@
 void gamepad_init(void);
 void gamepad_shutdown(void);
 void gamepad_restart(void);
-int gamepad_devicecount(void);
 float gamepad_axis_sens(int);
-const char* gamepad_devicename(int);
 void gamepad_event(SDL_Event*, EventHandler, EventFlags, void*);
+
+int gamepad_devicecount(void);
+const char* gamepad_devicename(int);
+const void gamepad_deviceguid(int num, char *guid_str, size_t guid_str_sz);
+int gamepad_numfromguid(const char *guid_str);
+int gamepad_currentdevice(void);
 
 bool gamepad_buttonpressed(int btn);
 bool gamepad_gamekeypressed(KeyIndex key);
