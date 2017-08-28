@@ -227,10 +227,16 @@ int charwidth(char c, TTF_Font *font) {
 
 void shorten_text_up_to_width(char *s, float width, TTF_Font *font) {
 	while(stringwidth(s, font) > width) {
-		s[strlen(s) - 1] = 0;
-
 		int l = strlen(s);
-		for(int i = 0; i < 3; ++i) {
+
+		if(l <= 1) {
+			return;
+		}
+
+		--l;
+		s[l] = 0;
+
+		for(int i = 0; i < min(3, l); ++i) {
 			s[l - i - 1] = '.';
 		}
 	}
