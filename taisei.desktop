@@ -6,5 +6,5 @@ GenericName=Bullet hell shoot ’em up game
 Icon=taisei
 Exec=taisei
 Terminal=false
-Categories=Game;ArcadeGame
+Categories=Game;ArcadeGame;
 Comment=An open-source Tōhō clone.
