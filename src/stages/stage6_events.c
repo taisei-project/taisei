@@ -33,7 +33,7 @@ AttackInfo stage6_spells[] = {
 							elly_maxwell, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
 	{{ 8,  9, 10, 11},	AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 60, 30000,
 							elly_eigenstate, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
-	{{12, 13, 14, 15},	AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 50, 48000,
+	{{12, 13, 14, 15},	AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 50, 100000,
 							elly_ricci, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
 	{{16, 17, 18, 19},	AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 60, 50000,
 							elly_lhc, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
@@ -530,7 +530,8 @@ void elly_maxwell(Boss *b, int t) {
 void Baryon(Enemy *e, int t) {
 	Enemy *n;
 
-	float alpha = 1- 0.8/(exp((cabs(global.plr.pos-e->pos)-100)/10)+1);
+	float alpha = 1 - 0.8/(exp((cabs(global.plr.pos-e->pos)-100)/10)+1);
+
 	glColor4f(1.0,1.0,1.0,alpha);
 	draw_texture(creal(e->pos), cimag(e->pos), "stage6/baryon");
 	glColor4f(1.0,1.0,1.0,1.0);
@@ -756,22 +757,56 @@ void elly_baryonattack(Boss *b, int t) {
 		set_baryon_rule(baryon_reset);
 }
 
-#define SAFE_RADIUS 100
+#define SAFE_RADIUS_DELAY 300
+#define SAFE_RADIUS_BASE 100
+#define SAFE_RADIUS_STRETCH 100
+#define SAFE_RADIUS_MIN 60
+#define SAFE_RADIUS_MAX 150
+#define SAFE_RADIUS_SPEED 0.015
+#define SAFE_RADIUS_PHASE 3*M_PI/2
+#define SAFE_RADIUS_PHASE_FUNC(o) (-carg(o->args[0]) + SAFE_RADIUS_PHASE + max(0, time - SAFE_RADIUS_DELAY) * SAFE_RADIUS_SPEED)
+#define SAFE_RADIUS_PHASE_NORMALIZED(o) (fmod(SAFE_RADIUS_PHASE_FUNC(o), 2*M_PI) / (2*M_PI))
+#define SAFE_RADIUS(o) smoothreclamp(SAFE_RADIUS_BASE + SAFE_RADIUS_STRETCH * sin(SAFE_RADIUS_PHASE_FUNC(o)), SAFE_RADIUS_BASE - SAFE_RADIUS_STRETCH, SAFE_RADIUS_BASE + SAFE_RADIUS_STRETCH, SAFE_RADIUS_MIN, SAFE_RADIUS_MAX)
+
+static int ricci_proj3(Projectile *p, int t) {
+	if(t > 60) {
+		create_particle1c("flare", p->pos, 0, Fade, timeout, 30);
+		return ACTION_DESTROY;
+	}
+
+	return accelerated(p, t);
+}
 
 static int ricci_proj2(Projectile *p, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH)
-		free_ref(p->args[1]);
-	if(t<0)
-		return 1;
 
-	Enemy *e = (Enemy *)REF(p->args[1]);
-	if(e == 0)
+	AT(EVENT_DEATH) {
+		int c = 10;
+
+		for(int i = 0; i < c; ++i) {
+			complex v = cexp(2*M_PI*I * (0.25 + 1.0/c*i));
+			create_projectile2c("flea", p->pos, rgb(0, 0.1, 0.5), ricci_proj3, 4.5 * v, -0.15 * v);
+		}
+
+		free_ref(p->args[1]);
+		return 1;
+	}
+
+	if(t < 0) {
+		return 1;
+	}
+
+	Enemy *e = (Enemy*)REF(p->args[1]);
+
+	if(!e) {
 		return ACTION_DESTROY;
-	p->pos = e->pos+p->pos0+p->args[0]*t;
-	p->angle = carg(p->args[0]);
-	if(cabs(p->pos0+p->args[0]*t) > 1.1*SAFE_RADIUS)
+	}
+
+	p->pos = e->pos + p->pos0;
+
+	if(t > 30)
 		return ACTION_DESTROY;
+
 	return 1;
 }
 
@@ -784,7 +819,7 @@ int baryon_ricci(Enemy *e, int t) {
 			GO_TO(e, global.plr.pos, 0.1);
 		} else {
 
-			complex d = e->pos - VIEWPORT_W/2-VIEWPORT_H*I*2/3 + 100*sin(t/500.)+70*I*cos(t*3./500.);
+			complex d = e->pos - VIEWPORT_W/2-VIEWPORT_H*I*2/3 + 100*sin(t/200.)+70*I*cos(t*3./500.);
 			e->pos += -0.5*d/cabs(d);
 		}
 
@@ -792,13 +827,18 @@ int baryon_ricci(Enemy *e, int t) {
 		e->pos = global.boss->pos+(global.enemies->pos-global.boss->pos)*cexp(I*2*M_PI*(1./6*creal(e->args[2])));
 	}
 
-	if(num % 2 == 0) {
+	if(num % 2 == 0 && t > 500) {
 		int time = global.frames-global.boss->current->starttime;
 		TIMER(&time);
-		FROM_TO(150,100000,10) {
-			int c = 10;
-			complex n = cexp(2*M_PI/c*I*_i);
-			create_projectile2c("bullet", SAFE_RADIUS*n,rgb(0,0,0.5),ricci_proj2,-n,add_ref(e));
+
+		float phase = SAFE_RADIUS_PHASE_NORMALIZED(e);
+
+		if(phase < 0.25 || phase > 0.9) {
+			FROM_TO(150,100000,10) {
+				int c = 3;
+				complex n = cexp(2*M_PI*I * (0.25 + 1.0/c*_i));
+				create_projectile2c("ball", 15*n, rgb(0,0.5,0.1),ricci_proj2,-n,add_ref(e))->draw = ProjDrawAdd;
+			}
 		}
 	}
 
@@ -809,13 +849,16 @@ static int ricci_proj(Projectile *p, int t) {
 	if(t < 0)
 		return 1;
 
+	if(!global.boss)
+		return EVENT_DEATH;
+
 	int time = global.frames-global.boss->current->starttime;
+
 	complex shift = 0;
 	Enemy *e;
 	int i = 0;
 	p->pos = p->pos0 + p->args[0]*t;
 
-	double radius = SAFE_RADIUS;
 	double influence = 0;
 
 	for(e = global.enemies; e; e = e->next, i++) {
@@ -824,8 +867,9 @@ static int ricci_proj(Projectile *p, int t) {
 			continue;
 		}
 		if(i % 2 == 0) {
+			double radius = SAFE_RADIUS(e);
 			complex d = e->pos-p->pos;
-			double r = cabs(d)/(1.0-0.1*sin(3*carg(d)+0.01*time));
+			double r = cabs(d)/(1.0-0.15*sin(6*carg(d)+0.01*time));
 			double range = 1/(exp((r-radius)/50)+1);
 			shift += -1.1*(radius-r)/r*d*range;
 			influence += range;
@@ -838,7 +882,9 @@ static int ricci_proj(Projectile *p, int t) {
 
 	float r,g,b,a;
 	parse_color(p->clr,&r,&g,&b, &a);
-	p->clr = rgba(r,g,cabs(shift)/20.,max(0,tanh((time-80)/100.))*clamp(influence,0.2,1));
+	a = 0.5 + 0.5 * max(0,tanh((time-80)/100.))*clamp(influence,0.2,1);
+	a *= min(1, t / 20.0f);
+	p->clr = rgba(r,g,cabs(shift)/20., a);
 
 	return 1;
 }
@@ -852,33 +898,32 @@ void elly_ricci(Boss *b, int t) {
 		set_baryon_rule(baryon_reset);
 
 	int c = 15;
-	float v = 4;
-	int interval = 10;
+	float v = 3;
+	int interval = 5;
 
-	AT(70) {
-		float offset = v*interval;
-		for(int y = 0; y < VIEWPORT_H/offset; y++) {
-			for(int i = 0; i < c; i++) {
-				complex pos = fmod(VIEWPORT_W/(float)c*(i+0.5*_i),VIEWPORT_W)+offset*y*I;
-
-				Projectile *p = create_projectile1c("ball", pos, rgba(0.5, 0.0, 0,0), ricci_proj, v*I);
-				p->draw = ProjDrawNoFlareAdd;
-			}
-		}
-
-	}
-	FROM_TO(70, 100000, interval) {
+	FROM_TO(30, 100000, interval) {
 		for(int i = 0; i < c; i++) {
-			complex pos = fmod(VIEWPORT_W/(float)c*(i+0.5*_i),VIEWPORT_W);
+			int w = VIEWPORT_W;
+			complex pos = 0.5 * w/(float)c + fmod(w/(float)c*(i+0.5*_i),w) + (VIEWPORT_H+10)*I;
 
-			Projectile *p = create_projectile1c("ball", pos, rgba(0.5, 0.0, 0,0), ricci_proj, v*I);
+			Projectile *p = create_projectile1c("ball", pos, rgba(0.5, 0.0, 0,0), ricci_proj, -v*I);
 			p->draw = ProjDrawNoFlareAdd;
+			p->maxviewportdist = SAFE_RADIUS_MAX;
 		}
 
 	}
 }
 
 #undef SAFE_RADIUS
+#undef SAFE_RADIUS_DELAY
+#undef SAFE_RADIUS_BASE
+#undef SAFE_RADIUS_STRETCH
+#undef SAFE_RADIUS_MIN
+#undef SAFE_RADIUS_MAX
+#undef SAFE_RADIUS_SPEED
+#undef SAFE_RADIUS_PHASE
+#undef SAFE_RADIUS_PHASE_FUNC
+#undef SAFE_RADIUS_PHASE_NORMALIZED
 
 void elly_baryonattack2(Boss *b, int t) {
 	TIMER(&t);

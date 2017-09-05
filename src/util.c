@@ -252,6 +252,15 @@ float ftopow2(float x) {
     return y;
 }
 
+float smooth(float x) {
+    return 1.0 - (0.5 * cos(M_PI * x) + 0.5);
+}
+
+float smoothreclamp(float x, float old_min, float old_max, float new_min, float new_max) {
+    x = (x - old_min) / (old_max - old_min);
+    return new_min + (new_max - new_min) * smooth(x);
+}
+
 //
 // gl/video utils
 //

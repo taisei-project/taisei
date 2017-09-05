@@ -48,6 +48,7 @@ Projectile *create_projectile_p(Projectile **dest, Texture *tex, complex pos, Co
 	p->type = FairyProj;
 	p->clr = clr;
 	p->grazed = 0;
+	p->maxviewportdist = 0;
 
 	p->args[0] = a1;
 	p->args[1] = a2;
@@ -159,8 +160,10 @@ void process_projectiles(Projectile **projs, bool collision) {
 		if(col == 1 && global.frames - abs(global.plr.recovery) >= 0)
 				player_death(&global.plr);
 
-		int e = 0;
-		if(proj->type == Particle || proj->type >= PlrProj) {
+		int e = proj->maxviewportdist;
+
+		if(e < 300 && (proj->type == Particle || proj->type >= PlrProj)) {
+			// XXX: maybe have them set it manually?
 			e = 300;
 		}
 

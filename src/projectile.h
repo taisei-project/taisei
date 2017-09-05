@@ -50,6 +50,8 @@ typedef struct Projectile {
 
 	complex args[RULE_ARGC];
 	int grazed;
+
+	int maxviewportdist;
 } Projectile;
 
 #define create_particle3c(n,p,c,d,r,a1,a2,a3) create_particle4c(n,p,c,d,r,a1,a2,a3,0)

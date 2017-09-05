@@ -82,6 +82,8 @@ int sign(double) __attribute__((const));
 double swing(double x, double s) __attribute__((const));
 unsigned int topow2(unsigned int x) __attribute__((const));
 float ftopow2(float x) __attribute__((const));
+float smooth(float x);
+float smoothreclamp(float x, float old_min, float old_max, float new_min, float new_max);
 
 //
 // gl/video utils
