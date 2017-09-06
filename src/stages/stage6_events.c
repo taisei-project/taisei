@@ -674,7 +674,7 @@ void elly_unbound(Boss *b, int t) {
 	}
 
 	if(t > 120)
-		global.shake_view = max(0, 16-0.1*(t-120));
+		global.shake_view = max(0, 16-0.26*(t-120));
 }
 
 static void set_baryon_rule(EnemyLogicRule r) {
