@@ -726,7 +726,7 @@ int baryon_reset(Enemy *e, int t) {
 void elly_eigenstate(Boss *b, int t) {
 	TIMER(&t);
 
-	AT(EVENT_BIRTH)
+	AT(0)
 		set_baryon_rule(baryon_eigenstate);
 	AT(EVENT_DEATH)
 		set_baryon_rule(baryon_reset);
