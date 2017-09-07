@@ -780,22 +780,7 @@ int kurumi_extra_dead_shield_proj(Projectile *p, int time) {
 	return asymptotic(p, time);
 }
 
-void kurumi_extra_shield_draw(Enemy *e, int time) {
-	/*
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glColor4f(1,1,1,1);
-	glColor4f(1.0, 0.5, 0.5, 0.1);
-	loop_tex_line(e->pos, global.plr.pos, 16, time * 0.01, "part/sinewave");
-	glColor4f(0.4, 0.2, 0.2, 0.1);
-	loop_tex_line(e->pos, global.plr.pos, 18, time * 0.0043, "part/sinewave");
-	glColor4f(0.5, 0.2, 0.5, 0.1);
-	loop_tex_line(e->pos, global.plr.pos, 24, time * 0.003, "part/sinewave");
-	glColor4f(1,1,1,1);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	*/
 
-	Swirl(e, time);
-}
 
 int kurumi_extra_dead_shield(Enemy *e, int time) {
 	if(time < 0) {
@@ -827,7 +812,7 @@ int kurumi_extra_dead_shield(Enemy *e, int time) {
 
 int kurumi_extra_shield(Enemy *e, int time) {
 	if(time == EVENT_DEATH) {
-		if(!boss_is_dying(global.boss)) {
+		if(!boss_is_dying(global.boss) && e->args[2] == 0) {
 			create_enemy2c(e->pos, ENEMY_IMMUNE, KurumiSlave, kurumi_extra_dead_shield, e->args[0], e->args[1]);
 		}
 		return 1;
@@ -888,9 +873,11 @@ int kurumi_extra_drainer(Projectile *p, int time) {
 		p->args[1] = e->pos;
 		p->args[2] = approach(p->args[2], 1, 0.5);
 
-		int drain = clamp(20, 0, e->hp);
-		e->hp -= drain;
-		global.boss->dmg = max(0, global.boss->dmg - drain * 2);
+		if(time > 40) {
+			int drain = clamp(4, 0, e->hp);
+			e->hp -= drain;
+			global.boss->dmg = max(0, global.boss->dmg - drain * 2);
+		}
 	} else {
 		p->args[2] = approach(p->args[2], 0, 0.5);
 		if(!creal(p->args[2])) {
@@ -905,8 +892,88 @@ void kurumi_extra_create_drainer(Enemy *e) {
 	create_particle1c("sinewave", e->pos, 0, kurumi_extra_drainer_draw, kurumi_extra_drainer, add_ref(e));
 }
 
+void kurumi_swirl_draw(Enemy *e, int time) {
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+	Swirl(e, time);
+	glBlendEquation(GL_FUNC_ADD);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void kurumi_fairy_draw(Enemy *e, int time) {
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glUseProgram(get_shader("negative")->prog);
+	Fairy(e, time);
+	glUseProgram(0);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void kurumi_bigfairy_draw(Enemy *e, int time) {
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glUseProgram(get_shader("negative")->prog);
+	BigFairy(e, time);
+	glUseProgram(0);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+int kurumi_fairy(Enemy *e, int t) {
+	TIMER(&t);
+	AT(EVENT_DEATH) {
+		spawn_items(e->pos, Power, 1, NULL);
+		return 1;
+	}
+
+	if(e->hp == ENEMY_IMMUNE && t > 50)
+		e->hp = 500;
+
+	if(creal(e->args[0]-e->pos) != 0)
+		e->moving = true;
+	e->dir = creal(e->args[0]-e->pos) < 0;
+
+	FROM_TO(0,90,1) {
+		GO_TO(e,e->args[0],0.1)
+	}
+
+	/*FROM_TO(100, 200, 22-global.diff*3) {
+		create_projectile2c("ball", e->pos, rgb(1, 0.3, 0.5), asymptotic, 2*cexp(I*M_PI*2*frand()), 3);
+	}*/
+
+	int attacktime = creal(e->args[1]);
+	int flytime = cimag(e->args[1]);
+	FROM_TO(attacktime-20,attacktime+20,20) {
+		int corners = 5;
+		double len = 50;
+		int count = 5;
+		complex vel = cexp(I*frand()*2*M_PI)*2;
+		for(int i = 0; i < corners; i++) {
+			for(int j = 0; j < count; j++) {
+				complex pos = len/2/tan(2*M_PI/corners)*I+(j/(double)count-0.5)*len;
+				pos *= cexp(I*2*M_PI/corners*i);
+				create_projectile1c("flea", e->pos+pos, rgb(1, 0.3, 0.5), linear, vel+0.1*I*pos/cabs(pos));
+			}
+		}
+	}
+	AT(attacktime) {
+		e->args[0] = global.plr.pos-e->pos;
+
+		kurumi_extra_create_drainer(e);
+	}
+	FROM_TO(attacktime,attacktime+flytime,1) {
+		e->pos += e->args[0]/flytime;
+	}
+	if(t > attacktime + flytime + 20 && global.boss) {
+		GO_TO(e,global.boss->pos,0.04)
+	}
+
+	return 1;
+}
+
 void kurumi_extra(Boss *b, int time) {
-	int t = time % 1200;
+	int length = 600;
+	int t = time % length;
+	int direction = (time/length)%2;
+
+	int shieldlimit = b->current->dmglimit - 1000;
 	TIMER(&t);
 
 	if(time == EVENT_DEATH) {
@@ -914,42 +981,80 @@ void kurumi_extra(Boss *b, int time) {
 		return;
 	}
 
-	GO_TO(b, VIEWPORT_W * 0.5 + VIEWPORT_H * 0.28 * I, 0.01)
+	if(time < 120)
+		GO_TO(b, VIEWPORT_W * 0.5 + VIEWPORT_H * 0.28 * I, 0.01)
 
-	AT(0) {
+	if(t == 0 && b->dmg < shieldlimit) {
 		int cnt = 12;
 		for(int i = 0; i < cnt; ++i) {
 			double a = M_PI * 2 * i / (double)cnt;
-			int hp = 750;
-			create_enemy2c(b->pos, hp, kurumi_extra_shield_draw, kurumi_extra_shield, a + 0.05*I, 800);
-			create_enemy2c(b->pos, hp, kurumi_extra_shield_draw, kurumi_extra_shield, a - 0.05*I, 800);
+			int hp = 350;
+			create_enemy2c(b->pos, hp, kurumi_swirl_draw, kurumi_extra_shield, a + 0.05*I, 800);
+			create_enemy2c(b->pos, hp, kurumi_swirl_draw, kurumi_extra_shield, a - 0.05*I, 800);
 		}
 	}
 
-	AT(60) {
+	int flashtime = 50;
+	FROM_TO(90,90+flashtime,1) {
+		for(int j = 0; j < 10; j++) {
+			complex pos1 = VIEWPORT_W-VIEWPORT_W/(double)flashtime*_i+100*frand()+I;
+			create_particle2c("stain", pos1,rgb(1,0,0.3),ProjDrawSub,timeout_linear,100,-1*I)->angle=frand()*2*M_PI;
+
+		}
+		create_particle2c("stain", b->pos,rgb(1,0,0.3),ProjDrawSub,timeout_linear,100,-20*I+(1-2*frand())*10);
+	}
+	AT(90) {
+		int cnt = 20;
+		for(int i = 0; i < cnt; i++) {
+			b->dmg += 600;
+			if(b->dmg > shieldlimit)
+				b->dmg = shieldlimit;
+			tsrand_fill(2);
+			complex pos = VIEWPORT_W/2*afrand(0)+I*afrand(1)*VIEWPORT_H*2/3;
+			if(direction)
+				pos = VIEWPORT_W-creal(pos)+I*cimag(pos);
+			// immune so they don’t get killed while they are still offscreen.
+			create_enemy2c(pos-300*(1-2*direction),ENEMY_IMMUNE,kurumi_fairy_draw,kurumi_fairy,pos,100+20*i+100*I);
+		}
+	}
+
+	complex sidepos = VIEWPORT_W * (0.5+0.3*(1-2*direction)) + VIEWPORT_H * 0.28 * I;
+	FROM_TO(90,120,1) {
+		GO_TO(b, sidepos,0.1)
+	}
+
+	FROM_TO(190,200,1) {
+		GO_TO(b, sidepos+30*I,0.1)
+	}
+
+	FROM_TO(300,500,1) {
+		GO_TO(b,VIEWPORT_W * 0.5 + VIEWPORT_H * 0.28 * I,0.1)
+	}
+
+	/*AT(60) {
 		double ofs = VIEWPORT_W * 0.4;
 		complex pos = 0.5 * VIEWPORT_W + I * (VIEWPORT_H + 0 * 32);
 		complex targ = pos - VIEWPORT_H * 0.7 * I;
-		create_enemy1c(pos + ofs, 6000, BigFairy, kurumi_extra_bigfairy1, targ + ofs);
-		create_enemy1c(pos - ofs, 6000, BigFairy, kurumi_extra_bigfairy1, targ - ofs);
-	}
+		create_enemy1c(pos + ofs, 6000, kurumi_bigfairy_draw, kurumi_extra_bigfairy1, targ + ofs);
+		create_enemy1c(pos - ofs, 6000, kurumi_bigfairy_draw, kurumi_extra_bigfairy1, targ - ofs);
+	}*/
 
-	FROM_TO(90, 400, 10) {
-		create_enemy1c(VIEWPORT_W*(_i&1)+VIEWPORT_H/2*I-300.0*I*frand(), 200, Fairy, stage4_fodder, 2-4*(_i&1)+1.0*I);
-	}
+	/*FROM_TO(90, 400, 10) {
+		create_enemy1c(VIEWPORT_W*(_i&1)+VIEWPORT_H/2*I-300.0*I*frand(), 200, kurumi_fairy_draw, kurumi_fairy_logic, 2-4*(_i&1)+1.0*I);
+	}*/
 
-	FROM_TO(400, 700, 50) {
+	/*FROM_TO(400, 700, 50) {
 		int d = _i&1;
-		create_enemy1c(VIEWPORT_W*d, 1000, Fairy, stage4_partcircle, 2*cexp(I*M_PI/2.0*(0.2+0.6*frand()+d)));
-	}
+		create_enemy1c(VIEWPORT_W*d, 1000, kurumi_fairy_draw, stage4_partcircle, 2*cexp(I*M_PI/2.0*(0.2+0.6*frand()+d)));
+	}*/
 
-	AT(800) {
+	if(t == length || b->dmg >= shieldlimit) {
 		for(Enemy *e = global.enemies; e; e = e->next) {
 			if(e->logic_rule == kurumi_extra_shield || e->logic_rule == kurumi_extra_dead_shield) {
+				e->args[2] = 1; // discharge extra shield
+				e->hp = 0;
 				continue;
 			}
-
-			kurumi_extra_create_drainer(e);
 		}
 	}
 }

@@ -1,0 +1,25 @@
+#version 110
+
+varying vec4 TexCoord0;
+
+void main(void) {
+	gl_Position = ftransform();
+	gl_FrontColor = gl_Color;
+		
+	TexCoord0 = gl_TextureMatrix[0] * gl_MultiTexCoord0;
+}
+
+%% -- FRAG
+#version 110
+
+uniform sampler2D tex;
+uniform vec4 color;
+
+varying vec4 TexCoord0;
+
+void main(void) {
+	vec4 texel = texture2D(tex, vec2(TexCoord0.xy));
+	vec4 mixclr = 1.0-texel;
+	mixclr.a = texel.a;
+	gl_FragColor = mixclr;
+}
