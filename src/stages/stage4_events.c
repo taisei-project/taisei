@@ -38,7 +38,7 @@ AttackInfo stage4_spells[] = {
 							kurumi_blowwall, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
 	{{-1, -1, 16, 17},	AT_Spellcard, "Fear Sign ~ Bloody Danmaku", 30, 55000,
 							kurumi_danmaku, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Summoning ~ Bloodlust", 60, 50000,
+	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Blood Magic ~ Vlad’s Army", 60, 50000,
 							kurumi_extra, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
 
 	{{0}}
@@ -834,8 +834,25 @@ int kurumi_extra_bigfairy1(Enemy *e, int time) {
 	if(time < 0) {
 		return 1;
 	}
+	TIMER(&time);
 
-	GO_TO(e, e->args[0], 0.02);
+	int escapetime = 300+5000*(global.diff == D_Lunatic);
+	if(time < escapetime) {
+		GO_TO(e, e->args[0], 0.02);
+	} else  {
+		GO_TO(e, e->args[0]-I*VIEWPORT_H,0.01)
+	}
+
+	FROM_TO(50,escapetime,60) {
+		int count = 5;
+		complex phase = cexp(I*2*M_PI*frand());
+		for(int i = 0; i < count; i++) {
+			complex arg = cexp(I*2*M_PI*i/count);
+			if(global.diff == D_Lunatic)
+				arg *= phase;
+			create_lasercurve2c(e->pos,20,200,rgb(1,0.3,0.7),las_accel,arg,0.1*arg);
+		}
+	}
 
 	return 1;
 }
@@ -900,7 +917,7 @@ void kurumi_swirl_draw(Enemy *e, int time) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-void kurumi_fairy_draw(Enemy *e, int time) {
+void kurumi_extra_fairy_draw(Enemy *e, int time) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glUseProgram(get_shader("negative")->prog);
 	Fairy(e, time);
@@ -916,10 +933,10 @@ void kurumi_bigfairy_draw(Enemy *e, int time) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-int kurumi_fairy(Enemy *e, int t) {
+int kurumi_extra_fairy(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, Power, 1, NULL);
+		spawn_items(e->pos, Point, 1, NULL);
 		return 1;
 	}
 
@@ -941,15 +958,26 @@ int kurumi_fairy(Enemy *e, int t) {
 	int attacktime = creal(e->args[1]);
 	int flytime = cimag(e->args[1]);
 	FROM_TO(attacktime-20,attacktime+20,20) {
-		int corners = 5;
-		double len = 50;
-		int count = 5;
-		complex vel = cexp(I*frand()*2*M_PI)*2;
-		for(int i = 0; i < corners; i++) {
+		complex vel = cexp(I*frand()*2*M_PI)*(2+0.1*(global.diff-D_Easy));
+		if(e->args[2] == 0) { // attack type
+			int corners = 5;
+			double len = 50;
+			int count = 5;
+			for(int i = 0; i < corners; i++) {
+				for(int j = 0; j < count; j++) {
+					complex pos = len/2/tan(2*M_PI/corners)*I+(j/(double)count-0.5)*len;
+					pos *= cexp(I*2*M_PI/corners*i);
+					create_projectile1c("flea", e->pos+pos, rgb(1, 0.3, 0.5), linear, vel+0.1*I*pos/cabs(pos));
+				}
+			}
+		} else {
+			int count = 30;
+			double rad = 20;
 			for(int j = 0; j < count; j++) {
-				complex pos = len/2/tan(2*M_PI/corners)*I+(j/(double)count-0.5)*len;
-				pos *= cexp(I*2*M_PI/corners*i);
-				create_projectile1c("flea", e->pos+pos, rgb(1, 0.3, 0.5), linear, vel+0.1*I*pos/cabs(pos));
+				double x = (j/(double)count-0.5)*2*M_PI;
+				complex pos = 0.5*cos(x)+sin(2*x) + (0.5*sin(x)+cos(2*x))*I;
+				pos*=vel/cabs(vel);
+				create_projectile1c("flea", e->pos+rad*pos, rgb(0.5, 0.3, 1), linear, vel+0.1*pos);
 			}
 		}
 	}
@@ -960,6 +988,12 @@ int kurumi_fairy(Enemy *e, int t) {
 	}
 	FROM_TO(attacktime,attacktime+flytime,1) {
 		e->pos += e->args[0]/flytime;
+	}
+
+	FROM_TO(attacktime,attacktime+flytime,20-global.diff*3) {
+		if(global.diff>D_Easy) {
+			create_projectile1c("ball", e->pos, rgba(0.1+0.07*_i, 0.3, 1-0.05*_i,0.8), timeout, 50)->draw=ProjDrawAdd;
+		}
 	}
 	if(t > attacktime + flytime + 20 && global.boss) {
 		GO_TO(e,global.boss->pos,0.04)
@@ -988,21 +1022,12 @@ void kurumi_extra(Boss *b, int time) {
 		int cnt = 12;
 		for(int i = 0; i < cnt; ++i) {
 			double a = M_PI * 2 * i / (double)cnt;
-			int hp = 350;
+			int hp = 500;
 			create_enemy2c(b->pos, hp, kurumi_swirl_draw, kurumi_extra_shield, a + 0.05*I, 800);
 			create_enemy2c(b->pos, hp, kurumi_swirl_draw, kurumi_extra_shield, a - 0.05*I, 800);
 		}
 	}
 
-	int flashtime = 50;
-	FROM_TO(90,90+flashtime,1) {
-		for(int j = 0; j < 10; j++) {
-			complex pos1 = VIEWPORT_W-VIEWPORT_W/(double)flashtime*_i+100*frand()+I;
-			create_particle2c("stain", pos1,rgb(1,0,0.3),ProjDrawSub,timeout_linear,100,-1*I)->angle=frand()*2*M_PI;
-
-		}
-		create_particle2c("stain", b->pos,rgb(1,0,0.3),ProjDrawSub,timeout_linear,100,-20*I+(1-2*frand())*10);
-	}
 	AT(90) {
 		int cnt = 20;
 		for(int i = 0; i < cnt; i++) {
@@ -1014,7 +1039,7 @@ void kurumi_extra(Boss *b, int time) {
 			if(direction)
 				pos = VIEWPORT_W-creal(pos)+I*cimag(pos);
 			// immune so they don’t get killed while they are still offscreen.
-			create_enemy2c(pos-300*(1-2*direction),ENEMY_IMMUNE,kurumi_fairy_draw,kurumi_fairy,pos,100+20*i+100*I);
+			create_enemy3c(pos-300*(1-2*direction),ENEMY_IMMUNE,kurumi_extra_fairy_draw,kurumi_extra_fairy,pos,100+20*i+100*(1.1-0.05*global.diff)*I,direction);
 		}
 	}
 
@@ -1031,26 +1056,28 @@ void kurumi_extra(Boss *b, int time) {
 		GO_TO(b,VIEWPORT_W * 0.5 + VIEWPORT_H * 0.28 * I,0.1)
 	}
 
-	/*AT(60) {
-		double ofs = VIEWPORT_W * 0.4;
-		complex pos = 0.5 * VIEWPORT_W + I * (VIEWPORT_H + 0 * 32);
-		complex targ = pos - VIEWPORT_H * 0.7 * I;
-		create_enemy1c(pos + ofs, 6000, kurumi_bigfairy_draw, kurumi_extra_bigfairy1, targ + ofs);
-		create_enemy1c(pos - ofs, 6000, kurumi_bigfairy_draw, kurumi_extra_bigfairy1, targ - ofs);
-	}*/
+	if(global.diff >= D_Hard) {
+		AT(500) {
+			double ofs = VIEWPORT_W * 0.4;
+			complex pos = 0.5 * VIEWPORT_W + I * (VIEWPORT_H + 0 * 32);
+			complex targ = pos - VIEWPORT_H * 0.7 * I;
+			create_enemy1c(pos + ofs, 3500, kurumi_bigfairy_draw, kurumi_extra_bigfairy1, targ + ofs);
+			create_enemy1c(pos - ofs, 3500, kurumi_bigfairy_draw, kurumi_extra_bigfairy1, targ - ofs);
+		}
+	}
 
 	/*FROM_TO(90, 400, 10) {
-		create_enemy1c(VIEWPORT_W*(_i&1)+VIEWPORT_H/2*I-300.0*I*frand(), 200, kurumi_fairy_draw, kurumi_fairy_logic, 2-4*(_i&1)+1.0*I);
+		create_enemy1c(VIEWPORT_W*(_i&1)+VIEWPORT_H/2*I-300.0*I*frand(), 200, kurumi_extra_fairy_draw, kurumi_extra_fairy_logic, 2-4*(_i&1)+1.0*I);
 	}*/
 
 	/*FROM_TO(400, 700, 50) {
 		int d = _i&1;
-		create_enemy1c(VIEWPORT_W*d, 1000, kurumi_fairy_draw, stage4_partcircle, 2*cexp(I*M_PI/2.0*(0.2+0.6*frand()+d)));
+		create_enemy1c(VIEWPORT_W*d, 1000, kurumi_extra_fairy_draw, stage4_partcircle, 2*cexp(I*M_PI/2.0*(0.2+0.6*frand()+d)));
 	}*/
 
-	if(t == length || b->dmg >= shieldlimit) {
+	if((t == length-20 && global.diff < D_Lunatic)|| b->dmg >= shieldlimit) {
 		for(Enemy *e = global.enemies; e; e = e->next) {
-			if(e->logic_rule == kurumi_extra_shield || e->logic_rule == kurumi_extra_dead_shield) {
+			if(e->logic_rule == kurumi_extra_shield) {
 				e->args[2] = 1; // discharge extra shield
 				e->hp = 0;
 				continue;
