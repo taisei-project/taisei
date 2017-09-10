@@ -836,7 +836,7 @@ int kurumi_extra_bigfairy1(Enemy *e, int time) {
 	}
 	TIMER(&time);
 
-	int escapetime = 300+5000*(global.diff == D_Lunatic);
+	int escapetime = 600+4000*(global.diff == D_Lunatic);
 	if(time < escapetime) {
 		GO_TO(e, e->args[0], 0.02);
 	} else  {
@@ -1058,24 +1058,14 @@ void kurumi_extra(Boss *b, int time) {
 
 	if(global.diff >= D_Hard) {
 		AT(500) {
-			double ofs = VIEWPORT_W * 0.4;
-			complex pos = 0.5 * VIEWPORT_W + I * (VIEWPORT_H + 0 * 32);
-			complex targ = pos - VIEWPORT_H * 0.7 * I;
-			create_enemy1c(pos + ofs, 3500, kurumi_bigfairy_draw, kurumi_extra_bigfairy1, targ + ofs);
-			create_enemy1c(pos - ofs, 3500, kurumi_bigfairy_draw, kurumi_extra_bigfairy1, targ - ofs);
+			double ofs = VIEWPORT_W * 0.5;
+			complex pos = 0.5 * VIEWPORT_W + I * (VIEWPORT_H - 100);
+			complex targ = 0.5 *VIEWPORT_W + VIEWPORT_H * 0.3 * I;
+			create_enemy1c(pos + ofs, 3300, kurumi_bigfairy_draw, kurumi_extra_bigfairy1, targ + 0.8*ofs);
+			create_enemy1c(pos - ofs, 3300, kurumi_bigfairy_draw, kurumi_extra_bigfairy1, targ - 0.8*ofs);
 		}
 	}
-
-	/*FROM_TO(90, 400, 10) {
-		create_enemy1c(VIEWPORT_W*(_i&1)+VIEWPORT_H/2*I-300.0*I*frand(), 200, kurumi_extra_fairy_draw, kurumi_extra_fairy_logic, 2-4*(_i&1)+1.0*I);
-	}*/
-
-	/*FROM_TO(400, 700, 50) {
-		int d = _i&1;
-		create_enemy1c(VIEWPORT_W*d, 1000, kurumi_extra_fairy_draw, stage4_partcircle, 2*cexp(I*M_PI/2.0*(0.2+0.6*frand()+d)));
-	}*/
-
-	if((t == length-20 && global.diff < D_Lunatic)|| b->dmg >= shieldlimit) {
+	if((t == length-20 && global.diff == D_Easy)|| b->dmg >= shieldlimit) {
 		for(Enemy *e = global.enemies; e; e = e->next) {
 			if(e->logic_rule == kurumi_extra_shield) {
 				e->args[2] = 1; // discharge extra shield
