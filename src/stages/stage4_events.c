@@ -851,6 +851,7 @@ int kurumi_extra_bigfairy1(Enemy *e, int time) {
 			if(global.diff == D_Lunatic)
 				arg *= phase;
 			create_lasercurve2c(e->pos,20,200,rgb(1,0.3,0.7),las_accel,arg,0.1*arg);
+			create_projectile2c("bullet",e->pos,rgb(1,0.3,0.7),accelerated,arg,0.1*arg);
 		}
 	}
 
