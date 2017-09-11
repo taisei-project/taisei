@@ -14,6 +14,8 @@
 #include "replayview.h"
 #include "savereplay.h"
 #include "spellpractice.h"
+#include "stagepractice.h"
+#include "difficultyselect.h"
 
 #include "global.h"
 #include "video.h"
@@ -43,18 +45,42 @@ void enter_spellpractice(MenuData *menu, void *arg) {
 	menu_loop(&m);
 }
 
+void enter_stagepractice(MenuData *menu, void *arg) {
+	MenuData m;
+
+	do {
+		create_difficulty_menu(&m);
+
+		if(menu_loop(&m) < 0) {
+			return;
+		}
+
+		create_stgpract_menu(&m, global.diff);
+		menu_loop(&m);
+	} while(m.selected < 0 || m.selected == m.ecount - 1);
+}
+
 static MenuEntry *spell_practice_entry;
+static MenuEntry *stage_practice_entry;
 
-void main_menu_update_spellpractice(void) {
-	MenuEntry *e = spell_practice_entry;
-	e->action = NULL;
+void main_menu_update_practice_menus(void) {
+	spell_practice_entry->action = NULL;
+	stage_practice_entry->action = NULL;
 
-	for(StageInfo *stg = stages; stg->procs; ++stg) {
+	for(StageInfo *stg = stages; stg->procs && (!spell_practice_entry->action || !stage_practice_entry->action); ++stg) {
 		if(stg->type == STAGE_SPELL) {
 			StageProgress *p = stage_get_progress_from_info(stg, D_Any, false);
+
 			if(p && p->unlocked) {
-				e->action = enter_spellpractice;
-				return;
+				spell_practice_entry->action = enter_spellpractice;
+			}
+		} else if(stg->type == STAGE_STORY) {
+			for(Difficulty d = D_Easy; d <= D_Lunatic; ++d) {
+				StageProgress *p = stage_get_progress_from_info(stg, d, false);
+
+				if(p && p->unlocked) {
+					stage_practice_entry->action = enter_stagepractice;
+				}
 			}
 		}
 	}
@@ -71,6 +97,7 @@ void create_main_menu(MenuData *m) {
 
 	add_menu_entry(m, "Start Story", start_game, NULL);
 	add_menu_entry(m, "Start Extra", NULL, NULL);
+	add_menu_entry(m, "Stage Practice", enter_stagepractice, NULL);
 	add_menu_entry(m, "Spell Practice", enter_spellpractice, NULL);
 #ifdef DEBUG
 	add_menu_entry(m, "Select Stage", enter_stagemenu, NULL);
@@ -79,8 +106,9 @@ void create_main_menu(MenuData *m) {
 	add_menu_entry(m, "Options", enter_options, NULL);
 	add_menu_entry(m, "Quit", menu_commonaction_close, NULL)->transition = TransFadeBlack;;
 
-	spell_practice_entry = m->entries + 2;
-	main_menu_update_spellpractice();
+	stage_practice_entry = m->entries + 2;
+	spell_practice_entry = m->entries + 3;
+	main_menu_update_practice_menus();
 }
 
 void draw_main_menu_bg(MenuData* menu) {
@@ -99,7 +127,7 @@ void draw_main_menu(MenuData *menu) {
 	draw_texture(150.5, 100, "mainmenu/logo");
 
 	glPushMatrix();
-	glTranslatef(0, SCREEN_H-235, 0);
+	glTranslatef(0, SCREEN_H-270, 0);
 
 	Texture *bg = get_tex("part/smoke");
 	glPushMatrix();

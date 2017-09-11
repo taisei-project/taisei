@@ -194,6 +194,11 @@ static void stage_start(StageInfo *stage) {
 	if(stage->type == STAGE_SPELL) {
 		global.plr.lives = 0;
 		global.plr.bombs = 0;
+		global.plr.power = PLR_SPELLPRACTICE_POWER;
+	} else if(global.is_practice_mode) {
+		global.plr.lives = PLR_STGPRACTICE_LIVES;
+		global.plr.bombs = PLR_STGPRACTICE_BOMBS;
+		global.plr.power = PLR_STGPRACTICE_POWER;
 	}
 
 	reset_sounds();
@@ -503,10 +508,6 @@ void stage_loop(StageInfo *stage) {
 	stage_start(stage);
 
 	if(global.replaymode == REPLAY_RECORD) {
-		if(stage->type == STAGE_SPELL) {
-			global.plr.power = PLR_SPELLPRACTICE_POWER;
-		}
-
 		if(config_get_int(CONFIG_SAVE_RPY) && !global.continues) {
 			global.replay_stage = replay_create_stage(&global.replay, stage, seed, global.diff, global.plr.points, &global.plr);
 
@@ -526,6 +527,10 @@ void stage_loop(StageInfo *stage) {
 			log_debug("You cleared this stage %u times", p->num_cleared);
 
 			++p->num_played;
+
+			if(!global.continues) {
+				p->unlocked = true;
+			}
 		}
 	} else {
 		if(!global.replay_stage) {

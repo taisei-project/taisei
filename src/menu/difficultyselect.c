@@ -25,6 +25,15 @@ void create_difficulty_menu(MenuData *m) {
 	add_menu_entry(m, "“So this isn’t about shooting things?”\nSomewhat challenging", set_difficulty, (void *)D_Normal);
 	add_menu_entry(m, "“Why can’t I beat this?”\nActually challenging", set_difficulty, (void *)D_Hard);
 	add_menu_entry(m, "“What is pain?”\nAsian mode", set_difficulty, (void *)D_Lunatic);
+
+	for(int i = 0; i < m->ecount; ++i) {
+		Difficulty d = (Difficulty)(uintptr_t)m->entries[i].arg;
+
+		if(global.diff == d) {
+			m->cursor = i;
+			break;
+		}
+	}
 }
 
 void draw_difficulty_menu(MenuData *menu) {

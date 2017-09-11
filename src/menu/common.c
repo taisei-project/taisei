@@ -14,31 +14,37 @@
 #include "credits.h"
 #include "mainmenu.h"
 
-void start_game(MenuData *menu, void *arg) {
+static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty_menu) {
     MenuData m;
-    StageInfo *info = arg;
     Difficulty stagediff;
+    bool restart;
 
     init_player(&global.plr);
 
-troll:
-    global.diff = stagediff = info ? info->difficulty : D_Any;
+    do {
+        restart = false;
+        stagediff = info ? info->difficulty : D_Any;
 
-    if(stagediff == D_Any) {
-        create_difficulty_menu(&m);
+        if(stagediff == D_Any) {
+            if(difficulty_menu) {
+                create_difficulty_menu(&m);
+                if(menu_loop(&m) == -1) {
+                    return;
+                }
+            }
+        } else {
+            global.diff = stagediff;
+        }
+
+        create_char_menu(&m);
         if(menu_loop(&m) == -1) {
-            return;
-        }
-    }
+            if(stagediff != D_Any || !difficulty_menu) {
+                return;
+            }
 
-    create_char_menu(&m);
-    if(menu_loop(&m) == -1) {
-        if(stagediff != D_Any) {
-            return;
+            restart = true;
         }
-
-        goto troll;
-    }
+    } while(restart);
 
     global.replay_stage = NULL;
     replay_init(&global.replay);
@@ -46,27 +52,32 @@ troll:
     int chr = global.plr.cha;
     int sht = global.plr.shot;
 
-troll2:
-    global.continues = 0;
+    do {
+        restart = false;
+        global.continues = 0;
 
-    if(info) {
-        stage_loop(info);
-    } else {
-        for(StageInfo *s = stages; s->type == STAGE_STORY; ++s) {
-            stage_loop(s);
+        if(info) {
+            global.is_practice_mode = (info->type != STAGE_EXTRA);
+            stage_loop(info);
+        } else {
+            global.is_practice_mode = false;
+            for(StageInfo *s = stages; s->type == STAGE_STORY; ++s) {
+                stage_loop(s);
+            }
         }
-    }
 
-    if(global.game_over == GAMEOVER_RESTART) {
-        init_player(&global.plr);
-        replay_destroy(&global.replay);
-        replay_init(&global.replay);
-        global.game_over = 0;
-        init_player(&global.plr);
-        global.plr.cha  = chr;
-        global.plr.shot = sht;
-        goto troll2;
-    }
+        if(global.game_over == GAMEOVER_RESTART) {
+            init_player(&global.plr);
+            replay_destroy(&global.replay);
+            replay_init(&global.replay);
+            global.game_over = 0;
+            init_player(&global.plr);
+            global.plr.cha  = chr;
+            global.plr.shot = sht;
+
+            restart = true;
+        }
+    } while(restart);
 
     free_resources(false);
 
@@ -90,7 +101,7 @@ troll2:
         global.replay_stage = NULL;
     }
 
-    if(global.game_over == GAMEOVER_WIN && !arg) {
+    if(global.game_over == GAMEOVER_WIN && !info) {
         start_bgm("bgm_ending");
         ending_loop();
         start_bgm("bgm_credits");
@@ -100,8 +111,16 @@ troll2:
 
     start_bgm("bgm_menu");
     replay_destroy(&global.replay);
-    main_menu_update_spellpractice();
+    main_menu_update_practice_menus();
     global.game_over = 0;
+}
+
+void start_game(MenuData *m, void *arg) {
+    start_game_internal(m, (StageInfo*)arg, true);
+}
+
+void start_game_no_difficulty_menu(MenuData *m, void *arg) {
+    start_game_internal(m, (StageInfo*)arg, false);
 }
 
 void draw_menu_selector(float x, float y, float w, float h, float t) {

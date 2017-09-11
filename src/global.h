@@ -122,6 +122,8 @@ typedef struct {
 
 	StageInfo *stage;
 	int continues;
+
+	bool is_practice_mode;
 } Global;
 
 extern Global global;
