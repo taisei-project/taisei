@@ -19,7 +19,7 @@ static void auto_realloc(Buffer *b, size_t newsize) {
     b->memrw = SDL_RWFromMem(b->data, b->size);
 
     if(b->ptr) {
-        *b->ptr = &b->data;
+        *b->ptr = b->data;
     }
 
     if(pos > 0) {
