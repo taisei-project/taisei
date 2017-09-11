@@ -33,7 +33,7 @@ AttackInfo stage6_spells[] = {
 							elly_maxwell, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
 	{{ 8,  9, 10, 11},	AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 60, 30000,
 							elly_eigenstate, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
-	{{12, 13, 14, 15},	AT_Spellcard, "Ricci Sign ~ Space Time Curvature", 50, 100000,
+	{{12, 13, 14, 15},	AT_Spellcard, "Ricci Sign ~ Spacetime Curvature", 50, 100000,
 							elly_ricci, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
 	{{16, 17, 18, 19},	AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 60, 50000,
 							elly_lhc, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
@@ -768,25 +768,50 @@ void elly_baryonattack(Boss *b, int t) {
 #define SAFE_RADIUS_PHASE_NORMALIZED(o) (fmod(SAFE_RADIUS_PHASE_FUNC(o), 2*M_PI) / (2*M_PI))
 #define SAFE_RADIUS(o) smoothreclamp(SAFE_RADIUS_BASE + SAFE_RADIUS_STRETCH * sin(SAFE_RADIUS_PHASE_FUNC(o)), SAFE_RADIUS_BASE - SAFE_RADIUS_STRETCH, SAFE_RADIUS_BASE + SAFE_RADIUS_STRETCH, SAFE_RADIUS_MIN, SAFE_RADIUS_MAX)
 
-static int ricci_proj3(Projectile *p, int t) {
-	if(t > 60) {
-		create_particle1c("flare", p->pos, 0, Fade, timeout, 30);
-		return ACTION_DESTROY;
+static void ricci_laser_logic(Laser *l, int t) {
+	if(t == EVENT_BIRTH) {
+		// remember maximum radius, start at 0 actual radius
+		l->args[1] = 0 + creal(l->args[1]) * I;
+		return;
 	}
 
-	return accelerated(p, t);
+	if(t == EVENT_DEATH) {
+		free_ref(l->args[2]);
+		return;
+	}
+
+	Enemy *e = (Enemy*)REF(l->args[2]);
+
+	if(e) {
+		// attach to baryon
+		l->pos = e->pos + l->args[3];
+	}
+
+	if(t > 0) {
+		// expand then shrink radius
+		l->args[1] = cimag(l->args[1]) * (I + sin(M_PI * t / (l->deathtime + l->timespan)));
+	}
+
+	return;
 }
 
 static int ricci_proj2(Projectile *p, int t) {
 	TIMER(&t);
 
 	AT(EVENT_DEATH) {
-		int c = 10;
+		Enemy *e = (Enemy*)REF(p->args[1]);
 
-		for(int i = 0; i < c; ++i) {
-			complex v = cexp(2*M_PI*I * (0.25 + 1.0/c*i));
-			create_projectile2c("flea", p->pos, rgb(0, 0.1, 0.5), ricci_proj3, 4.5 * v, -0.15 * v);
+		if(!e) {
+			return 1;
 		}
+
+		double rad = SAFE_RADIUS_MAX * (0.6 - 0.2 * (double)(D_Lunatic - global.diff) / 3);
+
+		create_laser(p->pos, 12, 60, rgb(0.2, 1, 0.5), las_circle, ricci_laser_logic,  6*M_PI +  0*I, rad, add_ref(e), p->pos - e->pos);
+		create_laser(p->pos, 12, 60, rgb(0.2, 0.4, 1), las_circle, ricci_laser_logic,  6*M_PI + 30*I, rad, add_ref(e), p->pos - e->pos);
+
+		create_laser(p->pos, 1,  60, rgb(1.0, 0.0, 0), las_circle, ricci_laser_logic, -6*M_PI +  0*I, rad, add_ref(e), p->pos - e->pos)->width = 15;
+		create_laser(p->pos, 1,  60, rgb(1.0, 0.0, 0), las_circle, ricci_laser_logic, -6*M_PI + 30*I, rad, add_ref(e), p->pos - e->pos)->width = 15;
 
 		free_ref(p->args[1]);
 		return 1;
@@ -818,8 +843,8 @@ int baryon_ricci(Enemy *e, int t) {
 		if(t < 150) {
 			GO_TO(e, global.plr.pos, 0.1);
 		} else {
-
-			complex d = e->pos - VIEWPORT_W/2-VIEWPORT_H*I*2/3 + 100*sin(t/200.)+70*I*cos(t*3./500.);
+			float s = 1.00 + 0.25 * (global.diff - D_Easy);
+			complex d = e->pos - VIEWPORT_W/2-VIEWPORT_H*I*2/3 + 100*sin(s*t/200.)+25*I*cos(s*t*3./500.);
 			e->pos += -0.5*d/cabs(d);
 		}
 
@@ -869,7 +894,8 @@ static int ricci_proj(Projectile *p, int t) {
 		if(i % 2 == 0) {
 			double radius = SAFE_RADIUS(e);
 			complex d = e->pos-p->pos;
-			double r = cabs(d)/(1.0-0.15*sin(6*carg(d)+0.01*time));
+			float s = 1.00 + 0.25 * (global.diff - D_Easy);
+			double r = cabs(d)/(1.0-0.15*sin(6*carg(d)+0.01*s*time));
 			double range = 1/(exp((r-radius)/50)+1);
 			shift += -1.1*(radius-r)/r*d*range;
 			influence += range;

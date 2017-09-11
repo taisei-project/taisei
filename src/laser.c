@@ -337,6 +337,21 @@ complex las_turning(Laser *l, float t) { // [0] = vel0; [1] = vel1; [2] r: turn 
 	return l->pos + v * t;
 }
 
+complex las_circle(Laser *l, float t) {
+	if(t == EVENT_BIRTH) {
+		l->shader = get_shader_optional("laser_circle");
+		l->collision_step = 3;
+		return 0;
+	}
+
+	// XXX: should turn speed be in rad/sec or rad/frame? currently rad/sec.
+	double turn_speed = creal(l->args[0]) / 60;
+	double time_ofs = cimag(l->args[0]);
+	double radius = creal(l->args[1]);
+
+	return l->pos + radius * cexp(I * (t + time_ofs) * turn_speed);
+}
+
 float laser_charge(Laser *l, int t, float charge, float width) {
 	if(t < charge - 10)
 		return 1.7;

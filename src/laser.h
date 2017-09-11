@@ -71,6 +71,7 @@ complex las_accel(Laser *l, float t);
 complex las_sine(Laser *l, float t);
 complex las_sine_expanding(Laser *l, float t);
 complex las_turning(Laser *l, float t);
+complex las_circle(Laser *l, float t);
 
 float laser_charge(Laser *l, int t, float charge, float width);
 void static_laser(Laser *l, int t);

@@ -80,3 +80,9 @@ float a = clamp((t - begin) / (end - begin), 0.0, 1.0);
 a = 1.0 - (0.5 + 0.5 * cos(a * pi));
 a = 1.0 - pow(1.0 - a, 2);
 return pos + mix(v0, v1, a) * t;
+%%circle%%
+// XXX: should turn speed be in rad/sec or rad/frame? currently rad/sec.
+float turn_speed = a0.x / 60;
+float time_ofs = a0.y;
+float radius = a1.x;
+return pos + radius * dir((t + time_ofs) * turn_speed);
