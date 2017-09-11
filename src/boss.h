@@ -94,6 +94,8 @@ typedef struct Boss {
 
 	int dmg;
 	Color zoomcolor;
+
+	AttackInfo *extraspell;
 } Boss;
 
 Boss* create_boss(char *name, char *ani, char *dialog, complex pos);
@@ -118,6 +120,8 @@ void boss_death(Boss **boss);
 void boss_kill_projectiles(void);
 
 void boss_preload(void);
+
+void boss_set_extra_spell(Boss *boss, AttackInfo *spellstage);
 
 #define BOSS_DEFAULT_SPAWN_POS (VIEWPORT_W * 0.5 - I * VIEWPORT_H * 0.5)
 #define BOSS_DEFAULT_GO_POS (VIEWPORT_W * 0.5 + 200.0*I)

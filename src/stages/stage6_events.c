@@ -1328,6 +1328,7 @@ Boss *create_elly(void) {
 	boss_add_attack_from_info(b, stage6_spells+5, false);
 	boss_add_attack(b, AT_Move, "Explode", 6, 10, elly_baryon_explode, NULL);
 	boss_add_attack_from_info(b, stage6_spells+6, false);
+	boss_set_extra_spell(b, stage6_spells+7);
 	start_attack(b, b->attacks);
 
 	return b;

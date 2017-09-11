@@ -382,6 +382,7 @@ Boss *create_cirno(void) {
 	boss_add_attack_from_info(cirno, stage1_spells+1, false);
 	boss_add_attack(cirno, AT_Normal, "Iceplosion 1", 20, 20000, cirno_iceplosion1, NULL);
 	boss_add_attack_from_info(cirno, stage1_spells+2, false);
+	boss_set_extra_spell(cirno, stage1_spells+3);
 
 	start_attack(cirno, cirno->attacks);
 	return cirno;

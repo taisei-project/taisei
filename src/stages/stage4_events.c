@@ -1092,6 +1092,8 @@ Boss *create_kurumi(void) {
 	if(global.diff > D_Normal) {
 		boss_add_attack_from_info(b, stage4_spells+6, false);
 	}
+
+	boss_set_extra_spell(b, stage4_spells+7);
 	start_attack(b, b->attacks);
 
 	return b;

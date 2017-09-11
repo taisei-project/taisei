@@ -87,10 +87,6 @@ Color boss_healthbar_color(AttackType atype) {
 }
 
 static StageProgress* get_spellstage_progress(Attack *a, StageInfo **out_stginfo, bool write) {
-	if(out_stginfo) {
-		*out_stginfo = NULL;
-	}
-
 	if(!write || (global.replaymode == REPLAY_RECORD && global.stage->type == STAGE_STORY)) {
 		StageInfo *i = stage_get_by_spellcard(a->info, global.diff);
 		if(i) {
@@ -311,6 +307,9 @@ void boss_finish_current_attack(Boss *boss) {
 			if(p) {
 				++p->num_cleared;
 			}
+		} else {
+			// see boss_death for explanation
+			boss->extraspell = NULL;
 		}
 	}
 }
@@ -420,6 +419,27 @@ void boss_death(Boss **boss) {
 	if((*boss)->acount && (*boss)->attacks[(*boss)->acount-1].type != AT_Move)
 		petal_explosion(35, (*boss)->pos);
 
+	if((*boss)->extraspell && !global.continues) {
+		// unlock the relevant extra spell in spell practice mode if every spell of this boss has been cleared
+		// this is a temporary mechanic to make extra spells accessible until we integrate them into core game
+
+		StageInfo *i;
+		AttackInfo *spell = (*boss)->extraspell;
+
+		Attack dummy;
+		memset(&dummy, 0, sizeof(dummy));
+		dummy.info = spell;
+		dummy.name = spell->name;
+		dummy.type = AT_ExtraSpell;
+
+		StageProgress *p = get_spellstage_progress(&dummy, &i, true);
+
+		if(p && !p->unlocked) {
+			log_info("Extra Spell unlocked! %s: %s", i->title, i->subtitle);
+			p->unlocked = true;
+		}
+	}
+
 	free_boss(*boss);
 	*boss = NULL;
 	stage_clear_hazards(true);
@@ -493,6 +513,13 @@ Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 	a->scorevalue = 500.0 + hp * 0.2;
 
 	return a;
+}
+
+void boss_set_extra_spell(Boss *boss, AttackInfo *spell) {
+	assert(boss != NULL);
+	assert(spell != NULL);
+	assert(spell->type == AT_ExtraSpell);
+	boss->extraspell = spell;
 }
 
 void boss_generic_move(Boss *b, int time) {

@@ -958,6 +958,7 @@ Boss* stage3_create_boss(void) {
 	boss_add_attack_from_info(wriggle, stage3_spells+3, false);
 	boss_add_attack(wriggle, AT_Normal, "", 20, 20000, stage3_boss_prea3, NULL);
 	boss_add_attack_from_info(wriggle, stage3_spells+4, false);
+	boss_set_extra_spell(wriggle, stage3_spells+5);
 
 	start_attack(wriggle, wriggle->attacks);
 	return wriggle;

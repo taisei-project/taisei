@@ -652,6 +652,7 @@ Boss *create_hina(void) {
 	boss_add_attack(hina, AT_Normal, "Cards2", 17, 15000, hina_cards2, NULL);
 	boss_add_attack_from_info(hina, stage2_spells+1, false);
 	boss_add_attack_from_info(hina, stage2_spells+2 + (global.diff > D_Normal), false);
+	boss_set_extra_spell(hina, stage2_spells+4);
 
 	start_attack(hina, hina->attacks);
 	return hina;
