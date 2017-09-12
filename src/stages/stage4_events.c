@@ -837,7 +837,7 @@ int kurumi_extra_bigfairy1(Enemy *e, int time) {
 	}
 	TIMER(&time);
 
-	int escapetime = 600+4000*(global.diff == D_Lunatic);
+	int escapetime = 400+4000*(global.diff == D_Lunatic);
 	if(time < escapetime) {
 		GO_TO(e, e->args[0], 0.02);
 	} else  {
@@ -1005,7 +1005,7 @@ int kurumi_extra_fairy(Enemy *e, int t) {
 }
 
 void kurumi_extra(Boss *b, int time) {
-	int length = 600;
+	int length = 400;
 	int t = time % length;
 	int direction = (time/length)%2;
 
@@ -1054,12 +1054,12 @@ void kurumi_extra(Boss *b, int time) {
 		GO_TO(b, sidepos+30*I,0.1)
 	}
 
-	FROM_TO(300,500,1) {
+	FROM_TO(300,400,1) {
 		GO_TO(b,VIEWPORT_W * 0.5 + VIEWPORT_H * 0.28 * I,0.1)
 	}
 
 	if(global.diff >= D_Hard) {
-		AT(500) {
+		AT(300) {
 			double ofs = VIEWPORT_W * 0.5;
 			complex pos = 0.5 * VIEWPORT_W + I * (VIEWPORT_H - 100);
 			complex targ = 0.5 *VIEWPORT_W + VIEWPORT_H * 0.3 * I;
