@@ -2,8 +2,8 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (C) 2011, Lukas Weber <laochailan@web.de>
- * Copyright (C) 2012, Alexeyew Andrew <http://akari.thebadasschoobs.org/>
+ * Copyright (c) 2011-2017, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
 #include "credits.h"
@@ -29,7 +29,7 @@ static struct {
 void credits_fill(void) {
 	credits_add("Taisei Project\nbrought to you by…", 200);
 	credits_add("laochailan\nLukas Weber\nlaochailan@web.de", 300);
-	credits_add("Akari\nAndrew Alexeyew\nhttp://akari.thebadasschoobs.org", 300);
+	credits_add("Akari\nAndrei Alexeyev\nakari@alienslab.net", 300);
 	credits_add("lachs0r\nMartin Herkt\nlachs0r@hong-mailing.de", 300);
 	credits_add("aiju\nJulius Schmidt\nhttp://aiju.de", 300);
 	credits_add("Special Thanks", 300);
