@@ -191,9 +191,7 @@ void player_logic(Player* plr) {
 			if(!en->unbombable && en->hp > ENEMY_IMMUNE)
 				en->hp -= 300;
 
-		if(global.boss && global.boss->current) {
-			AttackType at = global.boss->current->type;
-			if(at != AT_Move && at != AT_SurvivalSpell)
+		if(global.boss && boss_is_vulnerable(global.boss)) {
 				global.boss->dmg += 30;
 		}
 

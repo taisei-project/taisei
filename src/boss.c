@@ -237,6 +237,10 @@ bool boss_is_fleeing(Boss *boss) {
 	return boss->current && boss->current->type == AT_Move && boss->current - boss->attacks >= boss->acount-1;
 }
 
+bool boss_is_vulnerable(Boss *boss) {
+	return boss->current && boss->current->type != AT_Move && boss->current->type != AT_SurvivalSpell && boss->current->starttime < global.frames && !boss->current->finished;
+}
+
 static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
 	bool fail = a->failtime;
 	const char *title = fail ? "Spell failed..." : "Spell cleared!";
@@ -292,6 +296,7 @@ void boss_finish_current_attack(Boss *boss) {
 		default:            delay = ATTACK_END_DELAY;       break;
 	}
 
+	boss->dmg = boss->current->dmglimit + 1;
 	boss->current->endtime = global.frames + delay;
 	boss->current->finished = true;
 	boss->current->rule(boss, EVENT_DEATH);
@@ -324,8 +329,6 @@ void process_boss(Boss **pboss) {
 	int time = global.frames - boss->current->starttime;
 	bool extra = boss->current->type == AT_ExtraSpell;
 	bool over = boss->current->finished && global.frames >= boss->current->endtime;
-
-	// TODO: mark uncaptured normal spells as failed too (for spell bonuses and player stats)
 
 	if(!boss->current->endtime)
 		boss->current->rule(boss, time);
@@ -405,7 +408,6 @@ void process_boss(Boss **pboss) {
 		if(extra && boss->current->finished && !boss->current->failtime)
 			spawn_items(boss->pos, Life, 1, NULL);
 
-		boss->dmg = boss->current->dmglimit + 1;
 		boss->current++;
 		if(boss->current - boss->attacks < boss->acount)
 			start_attack(boss, boss->current);

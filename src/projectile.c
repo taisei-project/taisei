@@ -109,7 +109,7 @@ int collision_projectile(Projectile *p) {
 		}
 
 		if(global.boss && cabs(global.boss->pos - p->pos) < 42
-		&& global.boss->current->type != AT_Move && global.boss->current->type != AT_SurvivalSpell && global.boss->current->starttime < global.frames) {
+		&& boss_is_vulnerable(global.boss)) {
 			player_add_points(&global.plr, damage * 0.2);
 			global.boss->dmg += damage;
 
