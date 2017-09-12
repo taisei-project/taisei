@@ -765,8 +765,9 @@ void elly_baryonattack(Boss *b, int t) {
 #define SAFE_RADIUS_MAX 150
 #define SAFE_RADIUS_SPEED 0.015
 #define SAFE_RADIUS_PHASE 3*M_PI/2
-#define SAFE_RADIUS_PHASE_FUNC(o) (-carg(o->args[0]) + SAFE_RADIUS_PHASE + max(0, time - SAFE_RADIUS_DELAY) * SAFE_RADIUS_SPEED)
-#define SAFE_RADIUS_PHASE_NORMALIZED(o) (fmod(SAFE_RADIUS_PHASE_FUNC(o), 2*M_PI) / (2*M_PI))
+#define SAFE_RADIUS_PHASE_FUNC(o) ((int)(creal(e->args[2])+0.5) * M_PI/3 + SAFE_RADIUS_PHASE + max(0, time - SAFE_RADIUS_DELAY) * SAFE_RADIUS_SPEED)
+#define SAFE_RADIUS_PHASE_NORMALIZED(o) (fmod(SAFE_RADIUS_PHASE_FUNC(o) - SAFE_RADIUS_PHASE, 2*M_PI) / (2*M_PI))
+#define SAFE_RADIUS_PHASE_NUM(o) ((int)((SAFE_RADIUS_PHASE_FUNC(o) - SAFE_RADIUS_PHASE) / (2*M_PI)))
 #define SAFE_RADIUS(o) smoothreclamp(SAFE_RADIUS_BASE + SAFE_RADIUS_STRETCH * sin(SAFE_RADIUS_PHASE_FUNC(o)), SAFE_RADIUS_BASE - SAFE_RADIUS_STRETCH, SAFE_RADIUS_BASE + SAFE_RADIUS_STRETCH, SAFE_RADIUS_MIN, SAFE_RADIUS_MAX)
 
 static void ricci_laser_logic(Laser *l, int t) {
@@ -811,8 +812,8 @@ static int ricci_proj2(Projectile *p, int t) {
 		create_laser(p->pos, 12, 60, rgb(0.2, 1, 0.5), las_circle, ricci_laser_logic,  6*M_PI +  0*I, rad, add_ref(e), p->pos - e->pos);
 		create_laser(p->pos, 12, 60, rgb(0.2, 0.4, 1), las_circle, ricci_laser_logic,  6*M_PI + 30*I, rad, add_ref(e), p->pos - e->pos);
 
-		create_laser(p->pos, 1,  60, rgb(1.0, 0.0, 0), las_circle, ricci_laser_logic, -6*M_PI +  0*I, rad, add_ref(e), p->pos - e->pos)->width = 15;
-		create_laser(p->pos, 1,  60, rgb(1.0, 0.0, 0), las_circle, ricci_laser_logic, -6*M_PI + 30*I, rad, add_ref(e), p->pos - e->pos)->width = 15;
+		create_laser(p->pos, 1,  60, rgb(1.0, 0.0, 0), las_circle, ricci_laser_logic, -6*M_PI +  0*I, rad, add_ref(e), p->pos - e->pos)->width = 10;
+		create_laser(p->pos, 1,  60, rgb(1.0, 0.0, 0), las_circle, ricci_laser_logic, -6*M_PI + 30*I, rad, add_ref(e), p->pos - e->pos)->width = 10;
 
 		free_ref(p->args[1]);
 		return 1;
@@ -853,13 +854,13 @@ int baryon_ricci(Enemy *e, int t) {
 		e->pos = global.boss->pos+(global.enemies->pos-global.boss->pos)*cexp(I*2*M_PI*(1./6*creal(e->args[2])));
 	}
 
-	if(num % 2 == 0 && t > 500) {
-		int time = global.frames-global.boss->current->starttime;
-		TIMER(&time);
+	int time = global.frames - global.boss->current->starttime;
 
+	if(num % 2 == 0 && SAFE_RADIUS_PHASE_NUM(e) > 0) {
+		TIMER(&time);
 		float phase = SAFE_RADIUS_PHASE_NORMALIZED(e);
 
-		if(phase < 0.25 || phase > 0.9) {
+		if(phase < 0.55 && phase > 0.15) {
 			FROM_TO(150,100000,10) {
 				int c = 3;
 				complex n = cexp(2*M_PI*I * (0.25 + 1.0/c*_i));
@@ -896,7 +897,8 @@ static int ricci_proj(Projectile *p, int t) {
 			double radius = SAFE_RADIUS(e);
 			complex d = e->pos-p->pos;
 			float s = 1.00 + 0.25 * (global.diff - D_Easy);
-			double r = cabs(d)/(1.0-0.15*sin(6*carg(d)+0.01*s*time));
+			int gaps = SAFE_RADIUS_PHASE_NUM(e) + 5;
+			double r = cabs(d)/(1.0-0.15*sin(gaps*carg(d)+0.01*s*time));
 			double range = 1/(exp((r-radius)/50)+1);
 			shift += -1.1*(radius-r)/r*d*range;
 			influence += range;
@@ -937,7 +939,6 @@ void elly_ricci(Boss *b, int t) {
 			p->draw = ProjDrawNoFlareAdd;
 			p->maxviewportdist = SAFE_RADIUS_MAX;
 		}
-
 	}
 }
 
@@ -951,6 +952,7 @@ void elly_ricci(Boss *b, int t) {
 #undef SAFE_RADIUS_PHASE
 #undef SAFE_RADIUS_PHASE_FUNC
 #undef SAFE_RADIUS_PHASE_NORMALIZED
+#undef SAFE_RADIUS_PHASE_NUM
 
 void elly_baryonattack2(Boss *b, int t) {
 	TIMER(&t);
