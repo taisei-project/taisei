@@ -20,7 +20,7 @@
 
 struct stage1_spells_s stage1_spells = {
 	.mid = {
-		.perfect_freeze		= {{ 0,  1,  2,  3}, AT_Spellcard, "Freeze Sign ~ Perfect Freeze", 32, 20000,
+		.perfect_freeze		= {{ 0,  1,  2,  3}, AT_Spellcard, "Freeze Sign ~ Perfect Freeze", 32, 24000,
 							cirno_perfect_freeze, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
 	},
 

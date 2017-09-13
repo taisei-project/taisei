@@ -922,11 +922,11 @@ void stage3_boss_extra(Boss *boss, int time) {
 Boss* stage3_create_boss(void) {
 	Boss *wriggle = create_boss("Wriggle EX", "wriggleex", "dialog/wriggle", VIEWPORT_W/2 - 200.0*I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage3_boss_intro, NULL);
-	boss_add_attack(wriggle, AT_Normal, "", 20, 20000, stage3_boss_prea1, NULL);
+	boss_add_attack(wriggle, AT_Normal, "", 20, 30000, stage3_boss_prea1, NULL);
 	boss_add_attack_from_info(wriggle, &stage3_spells.boss.moonlight_rocket, false);
-	boss_add_attack(wriggle, AT_Normal, "", 20, 20000, stage3_boss_prea2, NULL);
+	boss_add_attack(wriggle, AT_Normal, "", 20, 32000, stage3_boss_prea2, NULL);
 	boss_add_attack_from_info(wriggle, &stage3_spells.boss.wriggle_night_ignite, false);
-	boss_add_attack(wriggle, AT_Normal, "", 20, 20000, stage3_boss_prea3, NULL);
+	boss_add_attack(wriggle, AT_Normal, "", 20, 34000, stage3_boss_prea3, NULL);
 	boss_add_attack_from_info(wriggle, &stage3_spells.boss.unspellable_spell_name, false);
 	boss_add_attack_from_info(wriggle, &stage3_spells.extra.moonlight_wraith, false);
 

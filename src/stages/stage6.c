@@ -20,25 +20,25 @@
 
 struct stage6_spells_s stage6_spells = {
 	.scythe = {
-		.occams_razor				= {{ 0,  1,  2,  3}, AT_Spellcard, "Newton Sign ~ Occam’s razor", 60, 40000,
+		.occams_razor				= {{ 0,  1,  2,  3}, AT_Spellcard, "Newton Sign ~ Occam’s razor", 50, 60000,
 										elly_newton, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
-		.orbital_clockwork			= {{24, 25, 26, 27}, AT_Spellcard, "Kepler Sign ~ Orbital Clockwork", 60, 40000,
+		.orbital_clockwork			= {{24, 25, 26, 27}, AT_Spellcard, "Kepler Sign ~ Orbital Clockwork", 45, 60000,
 										elly_kepler, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
-		.wave_theory				= {{ 4,  5,  6,  7}, AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 26000,
+		.wave_theory				= {{ 4,  5,  6,  7}, AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 30000,
 										elly_maxwell, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
 	},
 
 	.baryon = {
-		.many_world_interpretation	= {{ 8,  9, 10, 11}, AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 60, 30000,
+		.many_world_interpretation	= {{ 8,  9, 10, 11}, AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 40, 60000,
 										elly_eigenstate, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
-		.spacetime_curvature		= {{12, 13, 14, 15}, AT_Spellcard, "Ricci Sign ~ Spacetime Curvature", 50, 100000,
+		.spacetime_curvature		= {{12, 13, 14, 15}, AT_Spellcard, "Ricci Sign ~ Spacetime Curvature", 50, 90000,
 										elly_ricci, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
-		.higgs_boson_uncovered		= {{16, 17, 18, 19}, AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 60, 50000,
+		.higgs_boson_uncovered		= {{16, 17, 18, 19}, AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 50, 60000,
 										elly_lhc, elly_spellbg_modern, BOSS_DEFAULT_GO_POS}
 	},
 
 	.extra = {
-		.curvature_domination		= {{ 0,  1,  2,  3}, AT_ExtraSpell, "Forgotten Universe ~ Curvature Domination", 40, 40000,
+		.curvature_domination		= {{ 0,  1,  2,  3}, AT_ExtraSpell, "Forgotten Universe ~ Curvature Domination", 60, 60000,
 										elly_curvature, elly_spellbg_modern, BOSS_DEFAULT_GO_POS}
 	},
 

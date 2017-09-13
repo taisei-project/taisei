@@ -1057,13 +1057,13 @@ void kurumi_extra(Boss *b, int time) {
 Boss *create_kurumi(void) {
 	Boss* b = create_boss("Kurumi", "kurumi", "dialog/kurumi", -400.0*I);
 	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_boss_intro, NULL);
-	boss_add_attack(b, AT_Normal, "Sin Breaker", 20, 30000, kurumi_sbreaker, NULL);
+	boss_add_attack(b, AT_Normal, "Sin Breaker", 20, 33000, kurumi_sbreaker, NULL);
 	if(global.diff < D_Hard) {
 		boss_add_attack_from_info(b, &stage4_spells.boss.animate_wall, false);
 	} else {
 		boss_add_attack_from_info(b, &stage4_spells.boss.demon_wall, false);
 	}
-	boss_add_attack(b, AT_Normal, "Cold Breaker", 20, 30000, kurumi_breaker, NULL);
+	boss_add_attack(b, AT_Normal, "Cold Breaker", 20, 36000, kurumi_breaker, NULL);
 	boss_add_attack_from_info(b, &stage4_spells.boss.blow_the_walls, false);
 	if(global.diff > D_Normal) {
 		boss_add_attack_from_info(b, &stage4_spells.boss.bloody_danmaku, false);

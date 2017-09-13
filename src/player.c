@@ -93,6 +93,7 @@ void player_move(Player *plr, complex delta) {
 }
 
 void player_draw(Player* plr) {
+	// FIXME: death animation?
 	if(plr->deathtime > global.frames)
 		return;
 
@@ -239,27 +240,31 @@ void player_realdeath(Player *plr) {
 	plr->respawntime = global.frames;
 	plr->inputflags &= ~INFLAGS_MOVE;
 
-	const double arc = 0.3 * M_PI;
-	int drop = max(2, (plr->power * 0.15) / POWER_VALUE);
-
-	for(int i = 0; i < drop; ++i) {
-		double ofs = arc * (i/((double)drop - 1));
-		create_item(plr->pos, (12+3*frand()) * (cexp(I*(1.5*M_PI - 0.5*arc + ofs)) - 1.0*I), Power);
-	}
+	complex death_origin = plr->pos;
 
 	plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I+30.0*I;
 	plr->recovery = -(global.frames + DEATH_DELAY + 150);
-	plr->bombs = PLR_START_BOMBS;
-	plr->bomb_fragments = 0;
 
 	if(plr->iddqd)
 		return;
 
 	player_fail_spell(plr);
-	player_set_power(plr, plr->power * 0.7);
 
-	if(plr->lives-- == 0 && global.replaymode != REPLAY_PLAY)
+	if(global.stage->type != STAGE_SPELL && global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell) {
+		// deaths in extra spells "don't count"
+		return;
+	}
+
+	int drop = max(2, (plr->power * 0.15) / POWER_VALUE);
+	spawn_items(death_origin, Power, drop, NULL);
+
+	player_set_power(plr, plr->power * 0.7);
+	plr->bombs = PLR_START_BOMBS;
+	plr->bomb_fragments = 0;
+
+	if(plr->lives-- == 0 && global.replaymode != REPLAY_PLAY) {
 		stage_gameover();
+	}
 }
 
 void player_death(Player *plr) {

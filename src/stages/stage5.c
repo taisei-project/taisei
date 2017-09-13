@@ -20,11 +20,11 @@
 
 struct stage5_spells_s stage5_spells = {
 	.boss = {
-		.atmospheric_discharge	= {{ 0,  1,  2,  3}, AT_Spellcard, "High Voltage ~ Atmospheric Discharge", 30, 40000,
+		.atmospheric_discharge	= {{ 0,  1,  2,  3}, AT_Spellcard, "High Voltage ~ Atmospheric Discharge", 30, 44000,
 									iku_atmospheric, iku_spell_bg, BOSS_DEFAULT_GO_POS},
-		.artificial_lightning	= {{ 4,  5,  6,  7}, AT_Spellcard, "Charge Sign ~ Artificial Lightning", 30, 42000,
+		.artificial_lightning	= {{ 4,  5,  6,  7}, AT_Spellcard, "Charge Sign ~ Artificial Lightning", 45, 60000,
 									iku_lightning, iku_spell_bg, BOSS_DEFAULT_GO_POS},
-		.natural_cathode		= {{ 8,  9, 10, 11}, AT_Spellcard, "Spark Sign ~ Natural Cathode", 30, 50000,
+		.natural_cathode		= {{ 8,  9, 10, 11}, AT_Spellcard, "Spark Sign ~ Natural Cathode", 30, 44000,
 									iku_cathode, iku_spell_bg, BOSS_DEFAULT_GO_POS},
 		.induction_field		= {{12, 13, -1, -1}, AT_Spellcard, "Current Sign ~ Induction Field", 30, 50000,
 									iku_induction, iku_spell_bg, BOSS_DEFAULT_GO_POS},
@@ -32,7 +32,7 @@ struct stage5_spells_s stage5_spells = {
 									iku_induction, iku_spell_bg, BOSS_DEFAULT_GO_POS},
 	},
 
-	.extra.overload				= {{ 0,  1,  2,  3}, AT_ExtraSpell, "Circuit Sign ~ Overload", 60, 40000,
+	.extra.overload				= {{ 0,  1,  2,  3}, AT_ExtraSpell, "Circuit Sign ~ Overload", 60, 44000,
 									iku_extra, iku_spell_bg, BOSS_DEFAULT_GO_POS},
 };
 

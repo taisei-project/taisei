@@ -368,6 +368,24 @@ void boss_finish_current_attack(Boss *boss) {
 		} else {
 			boss->failed_spells++;
 		}
+
+		if(t != AT_SurvivalSpell) {
+			double i_base = 6.0, i_pwr = 1.0, i_pts = 1.0;
+
+			if(t == AT_ExtraSpell) {
+				i_pwr *= 1.25;
+				i_pts *= 2.0;
+			}
+
+			if(!boss->current->failtime) {
+				i_base *= 2.0;
+			}
+
+			spawn_items(boss->pos,
+				Power, (int)(i_base * i_pwr),
+				Point, (int)(i_base * i_pts),
+			NULL);
+		}
 	}
 
 	boss->current->endtime = global.frames + attack_end_delay(boss);
@@ -456,10 +474,6 @@ void process_boss(Boss **pboss) {
 	if(over) {
 		if(global.stage->type == STAGE_SPELL && boss->current->type != AT_Move && boss->current->failtime) {
 			stage_gameover();
-		}
-
-		if(extra && boss->current->finished && !boss->current->failtime) {
-			spawn_items(boss->pos, Point, 20, NULL);
 		}
 
 		for(;;) {
@@ -554,7 +568,11 @@ Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 	a->starttime = global.frames;
 
 	// FIXME: figure out a better value/formula, i pulled this out of my ass
-	a->scorevalue = 500.0 + hp * 0.2;
+	a->scorevalue = 2000.0 + hp * 0.6;
+
+	if(a->type == AT_ExtraSpell) {
+		a->scorevalue *= 1.25;
+	}
 
 	return a;
 }

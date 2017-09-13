@@ -221,7 +221,7 @@ int scythe_infinity(Enemy *e, int t) {
 		float w = min(0.15, 0.0001*(t-40));
 		e->pos = VIEWPORT_W/2 + 200.0*I + 200*cos(w*(t-40)+M_PI/2.0) + I*80*sin(creal(e->args[0])*w*(t-40));
 
-		create_projectile2c("ball", e->pos+80*cexp(I*creal(e->args[1])), rgb(cos(creal(e->args[1])), sin(creal(e->args[1])), cos(creal(e->args[1])+2.1)), asymptotic, (1+0.2*global.diff)*cexp(I*creal(e->args[1])), 3);
+		create_projectile2c("ball", e->pos+80*cexp(I*creal(e->args[1])), rgb(cos(creal(e->args[1])), sin(creal(e->args[1])), cos(creal(e->args[1])+2.1)), asymptotic, (1+0.4*global.diff)*cexp(I*creal(e->args[1])), 3 + 0.2 * global.diff);
 	}
 
 	scythe_common(e, t);
@@ -706,20 +706,13 @@ int baryon_nattack(Enemy *e, int t) {
 
 	e->pos = global.boss->pos + (e->pos-global.boss->pos)*cexp(0.006*I);
 
-	FROM_TO(30, 10000, 7-global.diff) {
+	FROM_TO(30, 10000, (7 - global.diff)) {
 		float a = 0.2*_i + creal(e->args[2]) + 0.006*t;
-		create_projectile2c("ball", e->pos+40*cexp(I*a), rgb(cos(a), sin(a), cos(a+2.1)), asymptotic, (1+0.2*global.diff)*cexp(I*a), 3);
+		float ca = a + t/60.0f;
+		create_projectile2c("ball", e->pos+40*cexp(I*a), rgb(cos(ca), sin(ca), cos(ca+2.1)), asymptotic, (1+0.2*global.diff)*cexp(I*a), 3);
 	}
 
 	return 1;
-}
-
-void elly_baryonattack(Boss *b, int t) {
-	TIMER(&t);
-	AT(0)
-		set_baryon_rule(baryon_nattack);
-	AT(EVENT_DEATH)
-		set_baryon_rule(baryon_reset);
 }
 
 #define SAFE_RADIUS_DELAY 300
@@ -918,6 +911,14 @@ void elly_ricci(Boss *b, int t) {
 #undef SAFE_RADIUS_PHASE_NORMALIZED
 #undef SAFE_RADIUS_PHASE_NUM
 
+void elly_baryonattack(Boss *b, int t) {
+	TIMER(&t);
+	AT(0)
+		set_baryon_rule(baryon_nattack);
+	AT(EVENT_DEATH)
+		set_baryon_rule(baryon_reset);
+}
+
 void elly_baryonattack2(Boss *b, int t) {
 	TIMER(&t);
 	AT(0)
@@ -926,13 +927,27 @@ void elly_baryonattack2(Boss *b, int t) {
 		set_baryon_rule(baryon_reset);
 
 	FROM_TO(100, 100000, 200-5*global.diff) {
-		int x, y;
-		int w = 1+(global.diff > D_Normal);
-		complex n = cexp(I*carg(global.plr.pos-b->pos));
 
-		for(x = -w; x <= w; x++)
-			for(y = -w; y <= w; y++)
-				create_projectile2c("bigball", b->pos+30*(x+I*y)*n, rgb(0,0.2,0.9), asymptotic, n, 3);
+		if(_i % 2) {
+			int cnt = 5;
+			for(int i = 0; i < cnt; ++i) {
+				float a = M_PI/4;
+				a = a * (i/(float)cnt) - a/2;
+				complex n = cexp(I*(a+carg(global.plr.pos-b->pos)));
+
+				for(int j = 0; j < 3; ++j) {
+					create_projectile2c("bigball", b->pos, rgb(0,0.2,0.9), asymptotic, n, 2 * j)->draw = ProjDrawAdd;
+				}
+			}
+		} else {
+			int x, y;
+			int w = 1+(global.diff > D_Normal);
+			complex n = cexp(I*carg(global.plr.pos-b->pos));
+
+			for(x = -w; x <= w; x++)
+				for(y = -w; y <= w; y++)
+					create_projectile2c("bigball", b->pos+25*(x+I*y)*n, rgb(0,0.2,0.9), asymptotic, n, 3)->draw = ProjDrawAdd;
+		}
 	}
 }
 
@@ -1282,16 +1297,16 @@ Boss *create_elly(void) {
 	Boss *b = create_boss("Elly", "elly", "dialog/elly", -200.0*I);
 
 	boss_add_attack(b, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
-	boss_add_attack(b, AT_Normal, "Frequency", 30, 26000, elly_frequency, NULL);
+	boss_add_attack(b, AT_Normal, "Frequency", 40, 50000, elly_frequency, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.scythe.occams_razor, false);
-	boss_add_attack(b, AT_Normal, "Frequency2", 40, 23000, elly_frequency2, NULL);
+	boss_add_attack(b, AT_Normal, "Frequency2", 40, 50000, elly_frequency2, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.scythe.orbital_clockwork, false);
 	boss_add_attack_from_info(b, &stage6_spells.scythe.wave_theory, false);
 	boss_add_attack(b, AT_Move, "Unbound", 3, 10, elly_unbound, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.many_world_interpretation, false);
-	boss_add_attack(b, AT_Normal, "Baryon", 40, 23000, elly_baryonattack, NULL);
+	boss_add_attack(b, AT_Normal, "Baryon", 40, 50000, elly_baryonattack, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.spacetime_curvature, false);
-	boss_add_attack(b, AT_Normal, "Baryon", 25, 23000, elly_baryonattack2, NULL);
+	boss_add_attack(b, AT_Normal, "Baryon", 40, 50000, elly_baryonattack2, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.higgs_boson_uncovered, false);
 	boss_add_attack(b, AT_Move, "Explode", 6, 10, elly_baryon_explode, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.extra.curvature_domination, false);
