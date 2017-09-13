@@ -601,7 +601,7 @@ void replay_stage_check_desync(ReplayStage *stg, int time, uint16_t check, Repla
 
 int replay_test(void) {
 #ifdef REPLAY_LOAD_GARBAGE_TEST
-	int sz = getenvint("TAISEI_REPLAY_LOAD_GARBAGE_TEST");
+	int sz = getenvint("TAISEI_REPLAY_LOAD_GARBAGE_TEST", 0);
 	int headsz = sizeof(replay_magic_header) + 8; // 8 = version (uint16) + strlen (uint16) + plrname "test" (char[4])
 
 	if(sz <= 0) {

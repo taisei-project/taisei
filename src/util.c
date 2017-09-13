@@ -533,14 +533,14 @@ void _ts_assert_fail(const char *cond, const char *func, const char *file, int l
     }
 }
 
-int getenvint(const char *v) {
+int getenvint(const char *v, int defaultval) {
     char *e = getenv(v);
 
     if(e) {
         return atoi(e);
     }
 
-    return 0;
+    return defaultval;
 }
 
 noreturn static void png_error_handler(png_structp png_ptr, png_const_charp error_msg) {

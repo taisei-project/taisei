@@ -68,7 +68,7 @@ Resource* insert_resource(ResourceType type, const char *name, void *data, Resou
 	Resource *oldres = hashtable_get_string(handler->mapping, name);
 	Resource *res = malloc(sizeof(Resource));
 
-	if(type == RES_MODEL) {
+	if(type == RES_MODEL || getenvint("TAISEI_NOUNLOAD", false)) {
 		// FIXME: models can't be safely unloaded at runtime
 		flags |= RESF_PERMANENT;
 	}
@@ -291,7 +291,7 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 		if(!(flags & RESF_PRELOAD)) {
 			log_warn("%s '%s' was not preloaded", resource_type_names[type], name);
 
-			if(!(flags & RESF_OPTIONAL) && getenvint("TAISEI_PRELOAD_REQUIRED")) {
+			if(!(flags & RESF_OPTIONAL) && getenvint("TAISEI_PRELOAD_REQUIRED", false)) {
 				log_fatal("Aborting due to TAISEI_PRELOAD_REQUIRED");
 			}
 		}
@@ -308,7 +308,7 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 }
 
 void preload_resource(ResourceType type, const char *name, ResourceFlags flags) {
-	if(getenvint("TAISEI_NOPRELOAD"))
+	if(getenvint("TAISEI_NOPRELOAD", false))
 		return;
 
 	ResourceHandler *handler = get_handler(type);
@@ -318,7 +318,7 @@ void preload_resource(ResourceType type, const char *name, ResourceFlags flags) 
 		return;
 	}
 
-	load_resource(handler, NULL, name, flags | RESF_PRELOAD, !getenvint("TAISEI_NOASYNC"));
+	load_resource(handler, NULL, name, flags | RESF_PRELOAD, !getenvint("TAISEI_NOASYNC", false));
 }
 
 void preload_resources(ResourceType type, ResourceFlags flags, const char *firstname, ...) {
