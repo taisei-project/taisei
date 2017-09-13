@@ -163,7 +163,7 @@ Boss *create_cirno_mid(void) {
 	Boss* cirno = create_boss("Cirno", "cirno", "dialog/cirno", VIEWPORT_W + 220 + 30.0*I);
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro, NULL);
 	boss_add_attack(cirno, AT_Normal, "Icy Storm", 20, 20000, cirno_icy, NULL);
-	boss_add_attack_from_info(cirno, stage1_spells+0, false);
+	boss_add_attack_from_info(cirno, &stage1_spells.mid.perfect_freeze, false);
 	boss_add_attack(cirno, AT_Move, "Flee", 5, 0, cirno_mid_flee, NULL);
 
 	start_attack(cirno, cirno->attacks);
@@ -387,10 +387,10 @@ Boss *create_cirno(void) {
 	Boss* cirno = create_boss("Cirno", "cirno", "dialog/cirno", -230 + 100.0*I);
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro_boss, NULL);
 	boss_add_attack(cirno, AT_Normal, "Iceplosion 0", 20, 20000, cirno_iceplosion0, NULL);
-	boss_add_attack_from_info(cirno, stage1_spells+1, false);
+	boss_add_attack_from_info(cirno, &stage1_spells.boss.crystal_rain, false);
 	boss_add_attack(cirno, AT_Normal, "Iceplosion 1", 20, 20000, cirno_iceplosion1, NULL);
-	boss_add_attack_from_info(cirno, stage1_spells+2, false);
-	boss_set_extra_spell(cirno, stage1_spells+3);
+	boss_add_attack_from_info(cirno, &stage1_spells.boss.icicle_fall, false);
+	boss_add_attack_from_info(cirno, &stage1_spells.extra.crystal_blizzard, false);
 
 	start_attack(cirno, cirno->attacks);
 	return cirno;

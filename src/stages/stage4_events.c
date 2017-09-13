@@ -20,31 +20,6 @@ void kurumi_blowwall(Boss*, int);
 void kurumi_danmaku(Boss*, int);
 void kurumi_extra(Boss*, int);
 
-/*
- *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
- */
-
-AttackInfo stage4_spells[] = {
-	{{ 0,  1,  2,  3},	AT_Spellcard, "Bloodless ~ Gate of Walachia", 25, 40000,
-							kurumi_slaveburst, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{ 4,  5, -1, -1},	AT_Spellcard, "Bloodless ~ Dry Fountain", 30, 40000,
-							kurumi_redspike, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{-1, -1,  6,  7},	AT_Spellcard, "Bloodless ~ Red Spike", 30, 44000,
-							kurumi_redspike, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{ 8,  9, -1, -1},	AT_Spellcard, "Limit ~ Animate Wall", 30, 45000,
-							kurumi_aniwall, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{-1, -1, 10, 11},	AT_Spellcard, "Summoning ~ Demon Wall", 30, 50000,
-							kurumi_aniwall, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{12, 13, 14, 15},	AT_Spellcard, "Power Sign ~ Blow the Walls", 30, 52000,
-							kurumi_blowwall, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{-1, -1, 16, 17},	AT_Spellcard, "Fear Sign ~ Bloody Danmaku", 30, 55000,
-							kurumi_danmaku, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Blood Magic ~ Vlad’s Army", 60, 50000,
-							kurumi_extra, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
-
-	{{0}}
-};
-
 Dialog *stage4_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/kurumi");
 
@@ -401,11 +376,11 @@ void kurumi_outro(Boss *b, int time) {
 Boss *create_kurumi_mid(void) {
 	Boss* b = create_boss("Kurumi", "kurumi", "dialog/kurumi", VIEWPORT_W/2-400.0*I);
 	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_intro, NULL);
-	boss_add_attack_from_info(b, stage4_spells+0, false);
+	boss_add_attack_from_info(b, &stage4_spells.mid.gate_of_walachia, false);
 	if(global.diff < D_Hard) {
-		boss_add_attack_from_info(b, stage4_spells+1, false);
+		boss_add_attack_from_info(b, &stage4_spells.mid.dry_fountain, false);
 	} else {
-		boss_add_attack_from_info(b, stage4_spells+2, false);
+		boss_add_attack_from_info(b, &stage4_spells.mid.red_spike, false);
 	}
 	boss_add_attack(b, AT_Move, "Outro", 2, 1, kurumi_outro, NULL);
 	start_attack(b, b->attacks);
@@ -1084,17 +1059,17 @@ Boss *create_kurumi(void) {
 	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_boss_intro, NULL);
 	boss_add_attack(b, AT_Normal, "Sin Breaker", 20, 30000, kurumi_sbreaker, NULL);
 	if(global.diff < D_Hard) {
-		boss_add_attack_from_info(b, stage4_spells+3, false);
+		boss_add_attack_from_info(b, &stage4_spells.boss.animate_wall, false);
 	} else {
-		boss_add_attack_from_info(b, stage4_spells+4, false);
+		boss_add_attack_from_info(b, &stage4_spells.boss.demon_wall, false);
 	}
 	boss_add_attack(b, AT_Normal, "Cold Breaker", 20, 30000, kurumi_breaker, NULL);
-	boss_add_attack_from_info(b, stage4_spells+5, false);
+	boss_add_attack_from_info(b, &stage4_spells.boss.blow_the_walls, false);
 	if(global.diff > D_Normal) {
-		boss_add_attack_from_info(b, stage4_spells+6, false);
+		boss_add_attack_from_info(b, &stage4_spells.boss.bloody_danmaku, false);
 	}
 
-	boss_set_extra_spell(b, stage4_spells+7);
+	boss_add_attack_from_info(b, &stage4_spells.extra.vlads_army, false);
 	start_attack(b, b->attacks);
 
 	return b;

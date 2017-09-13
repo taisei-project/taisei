@@ -11,8 +11,27 @@
 
 #include "stage.h"
 
+extern struct stage5_spells_s {
+    // this struct must contain only fields of type AttackInfo
+    // order of fields affects the visual spellstage number, but not its real internal ID
+
+    struct {
+        AttackInfo atmospheric_discharge;
+        AttackInfo artificial_lightning;
+        AttackInfo natural_cathode;
+        AttackInfo induction_field;
+        AttackInfo inductive_resonance;
+    } boss;
+
+    struct {
+        AttackInfo overload;
+    } extra;
+
+    // required for iteration
+    AttackInfo null;
+} stage5_spells;
+
 extern StageProcs stage5_procs;
 extern StageProcs stage5_spell_procs;
-extern AttackInfo stage5_spells[];
 
 #endif

@@ -11,36 +11,6 @@
 #include "stage.h"
 #include "enemy.h"
 
-void stage3_mid_spellbg(Boss*, int t);
-void stage3_boss_spellbg(Boss*, int t);
-void stage3_mid_a1(Boss*, int t);
-void stage3_mid_a2(Boss*, int t);
-void stage3_boss_a1(Boss*, int t);
-void stage3_boss_a2(Boss*, int t);
-void stage3_boss_a3(Boss*, int t);
-void stage3_boss_extra(Boss*, int t);
-
-/*
- *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
- */
-
-AttackInfo stage3_spells[] = {
-	{{ 0,  1,  2,  3},	AT_Spellcard, "Venom Sign ~ Deadly Dance", 25, 40000,
-							stage3_mid_a1, stage3_mid_spellbg, BOSS_DEFAULT_GO_POS},
-	{{-1, -1,  4,  5},	AT_Spellcard, "Venom Sign ~ Acid Rain", 30, 50000,
-							stage3_mid_a2, stage3_mid_spellbg, BOSS_DEFAULT_GO_POS},
-	{{ 6,  7,  8,  9},	AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 35000,
-							stage3_boss_a1, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
-	{{10, 11, 12, 13},	AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 25, 40000,
-							stage3_boss_a2, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
-	{{14, 15, 16, 17},	AT_Spellcard, "Bug Sign ~ Phosphaenus Hemipterus", 35, 40000,
-							stage3_boss_a3, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
-	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Firefly Sign ~ Moonlight Wraith", 60, 150000,
-							stage3_boss_extra, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
-
-	{{0}}
-};
-
 Dialog *stage3_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/wriggle");
 
@@ -513,9 +483,9 @@ Boss* stage3_create_midboss(void) {
 	Boss *scuttle = create_boss("Scuttle", "scuttle", 0, VIEWPORT_W/2 - 200.0*I);
 	boss_add_attack(scuttle, AT_Move, "Introduction", 2, 0, stage3_mid_intro, NULL);
 	boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 30, 25000, stage3_mid_a0, NULL);
-	boss_add_attack_from_info(scuttle, stage3_spells+0, false);
+	boss_add_attack_from_info(scuttle, &stage3_spells.mid.deadly_dance, false);
 	if(global.diff > D_Normal)
-		boss_add_attack_from_info(scuttle, stage3_spells+1, false);
+		boss_add_attack_from_info(scuttle, &stage3_spells.mid.acid_rain, false);
 	boss_add_attack(scuttle, AT_Move, "Runaway", 2, 1, stage3_mid_outro, NULL);
 	scuttle->zoomcolor = rgb(0.4, 0.1, 0.4);
 
@@ -953,12 +923,12 @@ Boss* stage3_create_boss(void) {
 	Boss *wriggle = create_boss("Wriggle EX", "wriggleex", "dialog/wriggle", VIEWPORT_W/2 - 200.0*I);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage3_boss_intro, NULL);
 	boss_add_attack(wriggle, AT_Normal, "", 20, 20000, stage3_boss_prea1, NULL);
-	boss_add_attack_from_info(wriggle, stage3_spells+2, false);
+	boss_add_attack_from_info(wriggle, &stage3_spells.boss.moonlight_rocket, false);
 	boss_add_attack(wriggle, AT_Normal, "", 20, 20000, stage3_boss_prea2, NULL);
-	boss_add_attack_from_info(wriggle, stage3_spells+3, false);
+	boss_add_attack_from_info(wriggle, &stage3_spells.boss.wriggle_night_ignite, false);
 	boss_add_attack(wriggle, AT_Normal, "", 20, 20000, stage3_boss_prea3, NULL);
-	boss_add_attack_from_info(wriggle, stage3_spells+4, false);
-	boss_set_extra_spell(wriggle, stage3_spells+5);
+	boss_add_attack_from_info(wriggle, &stage3_spells.boss.unspellable_spell_name, false);
+	boss_add_attack_from_info(wriggle, &stage3_spells.extra.moonlight_wraith, false);
 
 	start_attack(wriggle, wriggle->attacks);
 	return wriggle;

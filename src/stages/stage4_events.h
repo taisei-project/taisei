@@ -9,6 +9,16 @@
 #ifndef STAGE4_EVENTS_H
 #define STAGE4_EVENTS_H
 
+#include "boss.h"
+
+void kurumi_spell_bg(Boss*, int);
+void kurumi_slaveburst(Boss*, int);
+void kurumi_redspike(Boss*, int);
+void kurumi_aniwall(Boss*, int);
+void kurumi_blowwall(Boss*, int);
+void kurumi_danmaku(Boss*, int);
+void kurumi_extra(Boss*, int);
+
 void stage4_events(void);
 
 #endif

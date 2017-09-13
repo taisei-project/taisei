@@ -11,34 +11,6 @@
 #include <global.h>
 #include <float.h>
 
-void iku_spell_bg(Boss*, int);
-void iku_atmospheric(Boss*, int);
-void iku_lightning(Boss*, int);
-void iku_cathode(Boss*, int);
-void iku_induction(Boss*, int);
-void iku_extra(Boss*, int);
-
-/*
- *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
- */
-
-AttackInfo stage5_spells[] = {
-	{{ 0,  1,  2,  3},	AT_Spellcard, "High Voltage ~ Atmospheric Discharge", 30, 40000,
-							iku_atmospheric, iku_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{ 4,  5,  6,  7},	AT_Spellcard, "Charge Sign ~ Artificial Lightning", 30, 42000,
-							iku_lightning, iku_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{ 8,  9, 10, 11},	AT_Spellcard, "Spark Sign ~ Natural Cathode", 30, 50000,
-							iku_cathode, iku_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{12, 13, -1, -1},	AT_Spellcard, "Current Sign ~ Induction Field", 30, 50000,
-							iku_induction, iku_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{-1, -1, 14, 15},	AT_Spellcard, "Current Sign ~ Inductive Resonance", 30, 50000,
-							iku_induction, iku_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Circuit Sign ~ Overload", 60, 40000,
-							iku_extra, iku_spell_bg, BOSS_DEFAULT_GO_POS},
-
-	{{0}}
-};
-
 Dialog *stage5_post_mid_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", NULL);
 
@@ -790,13 +762,19 @@ Boss *create_iku(void) {
 
 	boss_add_attack(b, AT_Move, "Introduction", 3, 0, iku_intro, NULL);
 	boss_add_attack(b, AT_Normal, "Bolts1", 20, 20000, iku_bolts, NULL);
-	boss_add_attack_from_info(b, stage5_spells+0, false);
+	boss_add_attack_from_info(b, &stage5_spells.boss.atmospheric_discharge, false);
 	boss_add_attack(b, AT_Normal, "Bolts2", 25, 20000, iku_bolts2, NULL);
-	boss_add_attack_from_info(b, stage5_spells+1, false);
+	boss_add_attack_from_info(b, &stage5_spells.boss.artificial_lightning, false);
 	boss_add_attack(b, AT_Normal, "Bolts3", 20, 20000, iku_bolts3, NULL);
-	boss_add_attack_from_info(b, stage5_spells+2, false);
-	boss_add_attack_from_info(b, stage5_spells+(3 + (global.diff > D_Normal)), false);
-	boss_set_extra_spell(b, stage5_spells+5);
+	boss_add_attack_from_info(b, &stage5_spells.boss.natural_cathode, false);
+
+	if(global.diff < D_Hard) {
+		boss_add_attack_from_info(b, &stage5_spells.boss.induction_field, false);
+	} else {
+		boss_add_attack_from_info(b, &stage5_spells.boss.inductive_resonance, false);
+	}
+
+	boss_add_attack_from_info(b, &stage5_spells.extra.overload, false);
 
 	return b;
 }

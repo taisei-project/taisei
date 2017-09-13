@@ -7,12 +7,40 @@
  */
 
 #include "stage3.h"
+#include "stage3_events.h"
+
 #include "global.h"
 #include "stage.h"
 #include "stageutils.h"
-#include "stage3_events.h"
 
-typedef struct Stage3State {
+/*
+ *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
+ *  To add, remove, or reorder spells, see this stage's header file.
+ */
+
+struct stage3_spells_s stage3_spells = {
+	.mid = {
+		.deadly_dance			= {{ 0,  1,  2,  3}, AT_Spellcard, "Venom Sign ~ Deadly Dance", 25, 40000,
+								stage3_mid_a1, stage3_mid_spellbg, BOSS_DEFAULT_GO_POS},
+		.acid_rain				= {{-1, -1,  4,  5}, AT_Spellcard, "Venom Sign ~ Acid Rain", 30, 50000,
+									stage3_mid_a2, stage3_mid_spellbg, BOSS_DEFAULT_GO_POS},
+	},
+
+	.boss = {
+		.moonlight_rocket		= {{ 6,  7,  8,  9}, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 35000,
+									stage3_boss_a1, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
+		.wriggle_night_ignite	= {{10, 11, 12, 13}, AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 25, 40000,
+									stage3_boss_a2, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
+		.unspellable_spell_name	= {{14, 15, 16, 17}, AT_Spellcard, "Bug Sign ~ Phosphaenus Hemipterus", 35, 40000,
+									stage3_boss_a3, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
+	},
+
+	.extra.moonlight_wraith		= {{ 0,  1,  2,  3}, AT_ExtraSpell, "Firefly Sign ~ Moonlight Wraith", 60, 150000,
+								stage3_boss_extra, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
+};
+
+static Stage3D bgcontext;
+static struct {
 	float clr_r;
 	float clr_g;
 	float clr_b;
@@ -23,10 +51,7 @@ typedef struct Stage3State {
 	float tunnel_avel;
 	float tunnel_updn;
 	float tunnel_side;
-} Stage3State;
-
-static Stage3D bgcontext;
-static Stage3State stgstate;
+} stgstate;
 
 Vector **stage3_bg_pos(Vector pos, float maxrange) {
 	//Vector p = {100 * cos(global.frames / 52.0), 100, 50 * sin(global.frames / 50.0)};
@@ -106,7 +131,7 @@ void stage3_start(void) {
 
 	add_model(&bgcontext, stage3_bg_tunnel_draw, stage3_bg_pos);
 
-	memset(&stgstate, 0, sizeof(Stage3State));
+	memset(&stgstate, 0, sizeof(stgstate));
 	stgstate.clr_r = 1.0;
 	stgstate.clr_g = 0.0;
 	stgstate.clr_b = 0.5;

@@ -9,6 +9,14 @@
 #ifndef STAGE2_EVENTS_H
 #define STAGE2_EVENTS_H
 
+#include "boss.h"
+
+void hina_spell_bg(Boss*, int);
+void hina_amulet(Boss*, int);
+void hina_bad_pick(Boss*, int);
+void hina_wheel(Boss*, int);
+void hina_monty(Boss*, int);
+
 void stage2_events(void);
 
 #endif

@@ -7,10 +7,41 @@
  */
 
 #include "stage4.h"
+#include "stage4_events.h"
+
 #include "global.h"
 #include "stage.h"
 #include "stageutils.h"
-#include "stage4_events.h"
+
+/*
+ *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
+ *  To add, remove, or reorder spells, see this stage's header file.
+ */
+
+struct stage4_spells_s stage4_spells = {
+	.mid = {
+		.gate_of_walachia	= {{ 0,  1,  2,  3}, AT_Spellcard, "Bloodless ~ Gate of Walachia", 25, 40000,
+								kurumi_slaveburst, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
+		.dry_fountain		= {{ 4,  5, -1, -1}, AT_Spellcard, "Bloodless ~ Dry Fountain", 30, 40000,
+								kurumi_redspike, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
+		.red_spike			= {{-1, -1,  6,  7}, AT_Spellcard, "Bloodless ~ Red Spike", 30, 44000,
+								kurumi_redspike, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
+	},
+
+	.boss = {
+		.animate_wall		= {{ 8,  9, -1, -1}, AT_Spellcard, "Limit ~ Animate Wall", 30, 45000,
+								kurumi_aniwall, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
+		.demon_wall			= {{-1, -1, 10, 11}, AT_Spellcard, "Summoning ~ Demon Wall", 30, 50000,
+								kurumi_aniwall, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
+		.blow_the_walls		= {{12, 13, 14, 15}, AT_Spellcard, "Power Sign ~ Blow the Walls", 30, 52000,
+								kurumi_blowwall, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
+		.bloody_danmaku		= {{-1, -1, 16, 17}, AT_Spellcard, "Fear Sign ~ Bloody Danmaku", 30, 55000,
+								kurumi_danmaku, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
+	},
+
+	.extra.vlads_army		= {{ 0,  1,  2,  3}, AT_ExtraSpell, "Blood Magic ~ Vlad’s Army", 60, 50000,
+								kurumi_extra, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
+};
 
 static Stage3D bgcontext;
 

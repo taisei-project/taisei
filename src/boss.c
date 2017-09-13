@@ -111,6 +111,32 @@ static StageProgress* get_spellstage_progress(Attack *a, StageInfo **out_stginfo
 	return NULL;
 }
 
+static bool boss_should_skip_attack(Boss *boss, Attack *a) {
+	// if we failed any spells on this boss up to this point, skip any extra spells,
+	// as well as any attacks associated with them.
+	//
+	// (for example, the "Generic move" that might have been automatically added by
+	// boss_add_attack_from_info. this is what the a->info->type check is for.)
+
+	return boss->failed_spells && (a->type == AT_ExtraSpell || (a->info && a->info->type == AT_ExtraSpell));
+}
+
+static Attack* boss_get_final_attack(Boss *boss) {
+	Attack *final;
+	for(final = boss->attacks + boss->acount - 1; final >= boss->attacks && boss_should_skip_attack(boss, final); --final);
+	return final >= boss->attacks ? final : NULL;
+}
+
+static Attack* boss_get_next_attack(Boss *boss) {
+	Attack *next;
+	for(next = boss->current + 1; next < boss->attacks + boss->acount && boss_should_skip_attack(boss, next); ++next);
+	return next < boss->attacks + boss->acount ? next : NULL;
+}
+
+static bool boss_attack_is_final(Boss *boss, Attack *a) {
+	return boss_get_final_attack(boss) == a;
+}
+
 void draw_boss(Boss *boss) {
 	draw_animation_p(creal(boss->pos), cimag(boss->pos) + 6*sin(global.frames/25.0), boss->anirow, boss->ani);
 	draw_boss_text(AL_Left, 10, 20, boss->name);
@@ -137,6 +163,15 @@ void draw_boss(Boss *boss) {
 				buf, _fonts.small, a
 			);
 		}
+
+		// FIXME: i don't understand what the fuck is going on in this code
+		//        i'm tired and don't want to deal with it any longer
+		//        lao, please make this weird-ass healthbar system behave with skipped attacks (extra spells)
+		//
+		//        and there's also this thing where when a spell is finished, it immediately displays the health bar for the next one,
+		//        without waiting for the end delay. maybe that only happens without a normal attack inbetween, but i'm not sure.
+		//
+		//        -- Akari
 
 		int nextspell, lastspell;
 		for(nextspell = 0; nextspell < boss->acount - 1; nextspell++) {
@@ -230,11 +265,11 @@ void boss_rule_extra(Boss *boss, float alpha) {
 }
 
 bool boss_is_dying(Boss *boss) {
-	return boss->current && boss->current->endtime && boss->current->type != AT_Move && boss->current - boss->attacks >= boss->acount-1;
+	return boss->current && boss->current->endtime && boss->current->type != AT_Move && boss_attack_is_final(boss, boss->current);
 }
 
 bool boss_is_fleeing(Boss *boss) {
-	return boss->current && boss->current->type == AT_Move && boss->current - boss->attacks >= boss->acount-1;
+	return boss->current && boss->current->type == AT_Move && boss_attack_is_final(boss, boss->current);
 }
 
 bool boss_is_vulnerable(Boss *boss) {
@@ -242,8 +277,11 @@ bool boss_is_vulnerable(Boss *boss) {
 }
 
 static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
-	bool fail = a->failtime;
-	const char *title = fail ? "Spell failed..." : "Spell cleared!";
+	bool fail = a->failtime, extra = a->type == AT_ExtraSpell;
+
+	const char *title = extra ?
+						(fail ? "Extra Spell failed..." : "Extra Spell cleared!"):
+						(fail ?       "Spell failed..." :       "Spell cleared!");
 
 	int time_left = max(0, a->starttime + a->timeout - global.frames);
 
@@ -283,21 +321,34 @@ static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
 	stagetext_end_table(&tbl);
 }
 
-void boss_finish_current_attack(Boss *boss) {
-	int delay;
-
-	if(boss->current-boss->attacks >= boss->acount-1) {
-		delay = BOSS_DEATH_DELAY;
-	} else switch(boss->current->type) {
-		// FIXME: what should it be for AT_SurvivalSpell?
-		case AT_Spellcard:  delay = ATTACK_END_DELAY_SPELL; break;
-		case AT_ExtraSpell: delay = ATTACK_END_DELAY_EXTRA; break;
-		case AT_Move:       delay = 0;                      break;
-		default:            delay = ATTACK_END_DELAY;       break;
+static int attack_end_delay(Boss *boss) {
+	if(boss_attack_is_final(boss, boss->current)) {
+		return BOSS_DEATH_DELAY;
 	}
 
+	int delay = 0;
+
+	switch(boss->current->type) {
+		case AT_Spellcard:  	delay = ATTACK_END_DELAY_SPELL;	break;
+		case AT_SurvivalSpell:	delay = ATTACK_END_DELAY_SURV;	break;
+		case AT_ExtraSpell: 	delay = ATTACK_END_DELAY_EXTRA;	break;
+		case AT_Move:       	delay = ATTACK_END_DELAY_MOVE;	break;
+		default:            	delay = ATTACK_END_DELAY;		break;
+	}
+
+	if(delay) {
+		Attack *next = boss_get_next_attack(boss);
+
+		if(next && next->type == AT_ExtraSpell) {
+			delay += ATTACK_END_DELAY_PRE_EXTRA;
+		}
+	}
+
+	return delay;
+}
+
+void boss_finish_current_attack(Boss *boss) {
 	boss->dmg = boss->current->dmglimit + 1;
-	boss->current->endtime = global.frames + delay;
 	boss->current->finished = true;
 	boss->current->rule(boss, EVENT_DEATH);
 
@@ -314,10 +365,11 @@ void boss_finish_current_attack(Boss *boss) {
 				++p->num_cleared;
 			}
 		} else {
-			// see boss_death for explanation
-			boss->extraspell = NULL;
+			boss->failed_spells++;
 		}
 	}
+
+	boss->current->endtime = global.frames + attack_end_delay(boss);
 }
 
 void process_boss(Boss **pboss) {
@@ -405,43 +457,33 @@ void process_boss(Boss **pboss) {
 			stage_gameover();
 		}
 
-		if(extra && boss->current->finished && !boss->current->failtime)
-			spawn_items(boss->pos, Life, 1, NULL);
+		if(extra && boss->current->finished && !boss->current->failtime) {
+			spawn_items(boss->pos, Point, 20, NULL);
+		}
 
-		boss->current++;
-		if(boss->current - boss->attacks < boss->acount)
+		for(;;) {
+			boss->current++;
+
+			if(boss->current - boss->attacks >= boss->acount) {
+				// no more attacks, die
+				boss->current = NULL;
+				boss_death(pboss);
+				break;
+			}
+
+			if(boss_should_skip_attack(boss, boss->current)) {
+				continue;
+			}
+
 			start_attack(boss, boss->current);
-		else {
-			boss->current = NULL;
-			boss_death(pboss);
+			break;
 		}
 	}
 }
 
 void boss_death(Boss **boss) {
-	if((*boss)->acount && (*boss)->attacks[(*boss)->acount-1].type != AT_Move)
+	if((*boss)->acount && boss_get_final_attack(*boss)->type != AT_Move)
 		petal_explosion(35, (*boss)->pos);
-
-	if((*boss)->extraspell && !global.continues) {
-		// unlock the relevant extra spell in spell practice mode if every spell of this boss has been cleared
-		// this is a temporary mechanic to make extra spells accessible until we integrate them into core game
-
-		StageInfo *i;
-		AttackInfo *spell = (*boss)->extraspell;
-
-		Attack dummy;
-		memset(&dummy, 0, sizeof(dummy));
-		dummy.info = spell;
-		dummy.name = spell->name;
-		dummy.type = AT_ExtraSpell;
-
-		StageProgress *p = get_spellstage_progress(&dummy, &i, true);
-
-		if(p && !p->unlocked) {
-			log_info("Extra Spell unlocked! %s: %s", i->title, i->subtitle);
-			p->unlocked = true;
-		}
-	}
 
 	free_boss(*boss);
 	*boss = NULL;
@@ -516,13 +558,6 @@ Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 	a->scorevalue = 500.0 + hp * 0.2;
 
 	return a;
-}
-
-void boss_set_extra_spell(Boss *boss, AttackInfo *spell) {
-	assert(boss != NULL);
-	assert(spell != NULL);
-	assert(spell->type == AT_ExtraSpell);
-	boss->extraspell = spell;
 }
 
 void boss_generic_move(Boss *b, int time) {

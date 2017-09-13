@@ -9,6 +9,15 @@
 #ifndef STAGE5_EVENTS_H
 #define STAGE5_EVENTS_H
 
+#include "boss.h"
+
+void iku_spell_bg(Boss*, int);
+void iku_atmospheric(Boss*, int);
+void iku_lightning(Boss*, int);
+void iku_cathode(Boss*, int);
+void iku_induction(Boss*, int);
+void iku_extra(Boss*, int);
+
 void stage5_events(void);
 
 #endif

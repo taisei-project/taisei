@@ -10,42 +10,6 @@
 #include "stage6.h"
 #include <global.h>
 
-void elly_spellbg_classic(Boss*, int);
-void elly_spellbg_modern(Boss*, int);
-void elly_kepler(Boss*, int);
-void elly_newton(Boss*, int);
-void elly_maxwell(Boss*, int);
-void elly_eigenstate(Boss*, int);
-void elly_ricci(Boss*, int);
-void elly_lhc(Boss*, int);
-void elly_theory(Boss*, int);
-void elly_curvature(Boss*, int);
-
-/*
- *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
- */
-
-AttackInfo stage6_spells[] = {
-	{{ 0,  1,  2,  3},	AT_Spellcard, "Newton Sign ~ Occam’s razor", 60, 40000,
-							elly_newton, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
-	{{24, 25, 26, 27},	AT_Spellcard, "Kepler Sign ~ Orbital Clockwork", 60, 40000,
-							elly_kepler, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
-	{{ 4,  5,  6,  7},	AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 26000,
-							elly_maxwell, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
-	{{ 8,  9, 10, 11},	AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 60, 30000,
-							elly_eigenstate, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
-	{{12, 13, 14, 15},	AT_Spellcard, "Ricci Sign ~ Spacetime Curvature", 50, 100000,
-							elly_ricci, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
-	{{16, 17, 18, 19},	AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 60, 50000,
-							elly_lhc, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
-	{{20, 21, 22, 23},	AT_SurvivalSpell, "Tower of Truth ~ Theory of Everything", 70, 40000,
-							elly_theory, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
-	{{0, 1, 2, 3},	AT_ExtraSpell, "Forgotten Universe ~ Curvature Domination", 40, 40000,
-							elly_curvature, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
-
-	{{0}}
-};
-
 Dialog *stage6_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/elly");
 
@@ -1319,19 +1283,19 @@ Boss *create_elly(void) {
 
 	boss_add_attack(b, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
 	boss_add_attack(b, AT_Normal, "Frequency", 30, 26000, elly_frequency, NULL);
-	boss_add_attack_from_info(b, stage6_spells+0, false);
+	boss_add_attack_from_info(b, &stage6_spells.scythe.occams_razor, false);
 	boss_add_attack(b, AT_Normal, "Frequency2", 40, 23000, elly_frequency2, NULL);
-	boss_add_attack_from_info(b, stage6_spells+1, false);
-	boss_add_attack_from_info(b, stage6_spells+2, false);
+	boss_add_attack_from_info(b, &stage6_spells.scythe.orbital_clockwork, false);
+	boss_add_attack_from_info(b, &stage6_spells.scythe.wave_theory, false);
 	boss_add_attack(b, AT_Move, "Unbound", 3, 10, elly_unbound, NULL);
-	boss_add_attack_from_info(b, stage6_spells+3, false);
+	boss_add_attack_from_info(b, &stage6_spells.baryon.many_world_interpretation, false);
 	boss_add_attack(b, AT_Normal, "Baryon", 40, 23000, elly_baryonattack, NULL);
-	boss_add_attack_from_info(b, stage6_spells+4, false);
+	boss_add_attack_from_info(b, &stage6_spells.baryon.spacetime_curvature, false);
 	boss_add_attack(b, AT_Normal, "Baryon", 25, 23000, elly_baryonattack2, NULL);
-	boss_add_attack_from_info(b, stage6_spells+5, false);
+	boss_add_attack_from_info(b, &stage6_spells.baryon.higgs_boson_uncovered, false);
 	boss_add_attack(b, AT_Move, "Explode", 6, 10, elly_baryon_explode, NULL);
-	boss_add_attack_from_info(b, stage6_spells+6, false);
-	boss_set_extra_spell(b, stage6_spells+7);
+	boss_add_attack_from_info(b, &stage6_spells.extra.curvature_domination, false);
+	boss_add_attack_from_info(b, &stage6_spells.final.theory_of_everything, false);
 	start_attack(b, b->attacks);
 
 	return b;

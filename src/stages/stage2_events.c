@@ -11,31 +11,6 @@
 #include "stage.h"
 #include "enemy.h"
 
-void hina_spell_bg(Boss*, int);
-void hina_amulet(Boss*, int);
-void hina_bad_pick(Boss*, int);
-void hina_wheel(Boss*, int);
-void hina_monty(Boss*, int);
-
-/*
- *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
- */
-
-AttackInfo stage2_spells[] = {
-	{{ 0,  1,  2,  3},	AT_Spellcard, "Shard ~ Amulet of Harm", 26, 36000,
-							hina_amulet, hina_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{ 4,  5,  6,  7},	AT_Spellcard, "Lottery Sign ~ Bad Pick", 30, 36000,
-							hina_bad_pick, hina_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{ 8,  9, -1, -1},	AT_Spellcard, "Lottery Sign ~ Wheel of Fortune", 20, 36000,
-							hina_wheel, hina_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{-1, -1, 10, 11},	AT_Spellcard, "Lottery Sign ~ Wheel of Fortune", 25, 36000,
-							hina_wheel, hina_spell_bg, BOSS_DEFAULT_GO_POS},
-	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Lottery Sign ~ Monty Hall Danmaku", 60, 60000,
-							hina_monty, hina_spell_bg, BOSS_DEFAULT_GO_POS},
-
-	{{0}}
-};
-
 Dialog *stage2_dialog(void) {
 	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/hina");
 
@@ -649,11 +624,17 @@ Boss *create_hina(void) {
 	Boss* hina = create_boss("Kagiyama Hina", "hina", "dialog/hina", VIEWPORT_W + 150 + 100.0*I);
 	boss_add_attack(hina, AT_Move, "Introduction", 2, 0, hina_intro, NULL);
 	boss_add_attack(hina, AT_Normal, "Cards1", 20, 15000, hina_cards1, NULL);
-	boss_add_attack_from_info(hina, stage2_spells+0, false);
+	boss_add_attack_from_info(hina, &stage2_spells.boss.amulet_of_harm, false);
 	boss_add_attack(hina, AT_Normal, "Cards2", 17, 15000, hina_cards2, NULL);
-	boss_add_attack_from_info(hina, stage2_spells+1, false);
-	boss_add_attack_from_info(hina, stage2_spells+2 + (global.diff > D_Normal), false);
-	boss_set_extra_spell(hina, stage2_spells+4);
+	boss_add_attack_from_info(hina, &stage2_spells.boss.bad_pick, false);
+
+	if(global.diff < D_Hard) {
+		boss_add_attack_from_info(hina, &stage2_spells.boss.wheel_of_fortune_easy, false);
+	} else {
+		boss_add_attack_from_info(hina, &stage2_spells.boss.wheel_of_fortune_hard, false);
+	}
+
+	boss_add_attack_from_info(hina, &stage2_spells.extra.monty_hall_danmaku, false);
 
 	start_attack(hina, hina->attacks);
 	return hina;

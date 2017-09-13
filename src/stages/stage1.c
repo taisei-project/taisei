@@ -7,30 +7,35 @@
  */
 
 #include "stage1.h"
+#include "stage1_events.h"
 
 #include "global.h"
 #include "stage.h"
 #include "stageutils.h"
-#include "stage1_events.h"
-
-static Stage3D bgcontext;
 
 /*
  *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
+ *  To add, remove, or reorder spells, see this stage's header file.
  */
 
-AttackInfo stage1_spells[] = {
-	{{ 0,  1,  2,  3},	AT_Spellcard, "Freeze Sign ~ Perfect Freeze", 32, 20000,
+struct stage1_spells_s stage1_spells = {
+	.mid = {
+		.perfect_freeze		= {{ 0,  1,  2,  3}, AT_Spellcard, "Freeze Sign ~ Perfect Freeze", 32, 20000,
 							cirno_perfect_freeze, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
-	{{ 4,  5,  6,  7},	AT_Spellcard, "Freeze Sign ~ Crystal Rain", 28, 33000,
-							cirno_crystal_rain, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
-	{{ 8,  9, 10, 11},	AT_Spellcard, "Doom Sign ~ Icicle Fall", 35, 40000,
-							cirno_icicle_fall, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
-	{{ 0,  1,  2,  3},	AT_ExtraSpell, "Frost Sign ~ Crystal Blizzard", 60, 40000,
-							cirno_crystal_blizzard, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
+	},
 
-	{{0}}
+	.boss = {
+		.crystal_rain		= {{ 4,  5,  6,  7}, AT_Spellcard, "Freeze Sign ~ Crystal Rain", 28, 33000,
+							cirno_crystal_rain, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
+		.icicle_fall		= {{ 8,  9, 10, 11}, AT_Spellcard, "Doom Sign ~ Icicle Fall", 35, 40000,
+								cirno_icicle_fall, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
+	},
+
+	.extra.crystal_blizzard	= {{ 0,  1,  2,  3}, AT_ExtraSpell, "Frost Sign ~ Crystal Blizzard", 60, 40000,
+							cirno_crystal_blizzard, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
 };
+
+static Stage3D bgcontext;
 
 void stage1_bg_draw(Vector pos) {
 	glPushMatrix();

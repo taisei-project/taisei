@@ -437,40 +437,41 @@ void stage_draw_hud(void) {
 	draw_texture(0,0,difficulty_tex(global.diff));
 	glPopMatrix();
 
+	float a = 1, s = 0, fadein = 1, fadeout = 1, fade = 1;
+
+	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell) {
+		fadein  = min(1, -min(0, global.frames - global.boss->current->starttime) / (float)ATTACK_START_DELAY);
+		fadeout = global.boss->current->finished * (1 - (global.boss->current->endtime - global.frames) / (float)ATTACK_END_DELAY_EXTRA) / 0.74;
+		fade = max(fadein, fadeout);
+
+		s = 1 - fade;
+		a = 0.5 + 0.5 * fade;
+	}
+
 	if(global.stage->type == STAGE_SPELL) {
 		glColor4f(1, 1, 1, 0.7);
 		draw_text(AL_Left, -6, 167, "N/A", _fonts.standard);
 		draw_text(AL_Left, -6, 200, "N/A", _fonts.standard);
 		glColor4f(1, 1, 1, 1.0);
 	} else {
-		float a = 1, s = 0, fadein = 1, fadeout = 1, fade = 1;
-
-		if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell) {
-			fadein  = min(1, -min(0, global.frames - global.boss->current->starttime) / (float)ATTACK_START_DELAY);
-			fadeout = global.boss->current->finished * (1 - (global.boss->current->endtime - global.frames) / (float)ATTACK_END_DELAY_EXTRA) / 0.74;
-			fade = max(fadein, fadeout);
-
-			s = 1 - fade;
-			a = 0.5 + 0.5 * fade;
-		}
-
 		draw_stars(0, 167, global.plr.lives, global.plr.life_fragments, PLR_MAX_LIVES, PLR_MAX_LIFE_FRAGMENTS, a);
 		draw_stars(0, 200, global.plr.bombs, global.plr.bomb_fragments, PLR_MAX_BOMBS, PLR_MAX_BOMB_FRAGMENTS, a);
+	}
 
-		if(s) {
-			float s2 = max(0, swing(s, 3));
-			glPushMatrix();
-			glTranslatef((SCREEN_W - 615) * 0.25 - 615 * (1 - pow(2*fadein-1, 2)), 400, 0);
-			glColor4f(0.3, 0.6, 0.7, 0.7 * s);
-			glRotatef(-25 + 360 * (1-s2), 0, 0, 1);
-			glScalef(s2, s2, 0);
-			draw_text(AL_Center,  1,  1, "Extra Spell!", _fonts.mainmenu);
-			draw_text(AL_Center, -1, -1, "Extra Spell!", _fonts.mainmenu);
-			glColor4f(1, 1, 1, s);
-			draw_text(AL_Center, 0, 0, "Extra Spell!", _fonts.mainmenu);
-			glColor4f(1, 1, 1, 1);
-			glPopMatrix();
-		}
+
+	if(s) {
+		float s2 = max(0, swing(s, 3));
+		glPushMatrix();
+		glTranslatef((SCREEN_W - 615) * 0.25 - 615 * (1 - pow(2*fadein-1, 2)), 340, 0);
+		glColor4f(0.3, 0.6, 0.7, 0.7 * s);
+		glRotatef(-25 + 360 * (1-s2), 0, 0, 1);
+		glScalef(s2, s2, 0);
+		draw_text(AL_Center,  1,  1, "Extra Spell!", _fonts.mainmenu);
+		draw_text(AL_Center, -1, -1, "Extra Spell!", _fonts.mainmenu);
+		glColor4f(1, 1, 1, s);
+		draw_text(AL_Center, 0, 0, "Extra Spell!", _fonts.mainmenu);
+		glColor4f(1, 1, 1, 1);
+		glPopMatrix();
 	}
 
 	// snprintf(buf, sizeof(buf), "%.2f", global.plr.power / 100.0);

@@ -14,6 +14,18 @@
 #include "resource/animation.h"
 #include "color.h"
 
+enum {
+	ATTACK_START_DELAY = 60,
+	ATTACK_START_DELAY_EXTRA = 150,
+	ATTACK_END_DELAY = 20,
+	ATTACK_END_DELAY_MOVE = 0,
+	ATTACK_END_DELAY_SPELL = 60,
+	ATTACK_END_DELAY_SURV = 20,
+	ATTACK_END_DELAY_EXTRA = 150,
+	ATTACK_END_DELAY_PRE_EXTRA = 60,
+	BOSS_DEATH_DELAY = 150,
+};
+
 struct Boss;
 
 typedef void (*BossRule)(struct Boss*, int time);
@@ -96,7 +108,7 @@ typedef struct Boss {
 	int dmg;
 	Color zoomcolor;
 
-	AttackInfo *extraspell;
+	int failed_spells;
 } Boss;
 
 Boss* create_boss(char *name, char *ani, char *dialog, complex pos);
@@ -122,8 +134,6 @@ void boss_death(Boss **boss);
 void boss_kill_projectiles(void);
 
 void boss_preload(void);
-
-void boss_set_extra_spell(Boss *boss, AttackInfo *spellstage);
 
 #define BOSS_DEFAULT_SPAWN_POS (VIEWPORT_W * 0.5 - I * VIEWPORT_H * 0.5)
 #define BOSS_DEFAULT_GO_POS (VIEWPORT_W * 0.5 + 200.0*I)

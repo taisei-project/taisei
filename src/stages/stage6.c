@@ -11,8 +11,42 @@
 
 #include "stage.h"
 #include "stageutils.h"
-
 #include "global.h"
+
+/*
+ *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
+ *  To add, remove, or reorder spells, see this stage's header file.
+ */
+
+struct stage6_spells_s stage6_spells = {
+	.scythe = {
+		.occams_razor				= {{ 0,  1,  2,  3}, AT_Spellcard, "Newton Sign ~ Occam’s razor", 60, 40000,
+										elly_newton, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
+		.orbital_clockwork			= {{24, 25, 26, 27}, AT_Spellcard, "Kepler Sign ~ Orbital Clockwork", 60, 40000,
+										elly_kepler, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
+		.wave_theory				= {{ 4,  5,  6,  7}, AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 26000,
+										elly_maxwell, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
+	},
+
+	.baryon = {
+		.many_world_interpretation	= {{ 8,  9, 10, 11}, AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 60, 30000,
+										elly_eigenstate, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
+		.spacetime_curvature		= {{12, 13, 14, 15}, AT_Spellcard, "Ricci Sign ~ Spacetime Curvature", 50, 100000,
+										elly_ricci, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
+		.higgs_boson_uncovered		= {{16, 17, 18, 19}, AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 60, 50000,
+										elly_lhc, elly_spellbg_modern, BOSS_DEFAULT_GO_POS}
+	},
+
+	.extra = {
+		.curvature_domination		= {{ 0,  1,  2,  3}, AT_ExtraSpell, "Forgotten Universe ~ Curvature Domination", 40, 40000,
+										elly_curvature, elly_spellbg_modern, BOSS_DEFAULT_GO_POS}
+	},
+
+	.final = {
+		.theory_of_everything		= {{20, 21, 22, 23}, AT_SurvivalSpell, "Tower of Truth ~ Theory of Everything", 70, 40000,
+										elly_theory, elly_spellbg_modern, BOSS_DEFAULT_GO_POS}
+	},
+};
 
 static Stage3D bgcontext;
 static int fall_over;
@@ -244,37 +278,18 @@ void stage6_spellpractice_events(void) {
 		skip_background_anim(&bgcontext, stage6_draw, 3800, &global.timer, &global.frames);
 		global.boss = create_boss("Elly", "elly", "dialog/elly", BOSS_DEFAULT_SPAWN_POS);
 
-		// Here be dragons
-
-		ptrdiff_t spellnum = global.stage->spell - stage6_spells;
+		AttackInfo *s = global.stage->spell;
 		char go = true;
 
-		switch(spellnum) {
-			case 0: // Newton Sign ~ Occam’s Razor
-			case 1: // Kepler Sign ~ Orbital Clockwork
-				// Scythe required - this creates it
-				boss_add_attack(global.boss, AT_Move, "Catch the Scythe", 2, 0, elly_intro, NULL);
-				go = false;
-				break;
-
-			case 2: // Maxwell Sign ~ Wave Theory
-				// Works fine on its own
-				break;
-
-			case 3: // Eigenstate ~ Many-World Interpretation
-			case 4: // Ricci Sign ~ Space Time Curvature
-			case 5: // LHC ~ Higgs Boson Uncovered
-				// Baryon required - this creates it
-				boss_add_attack(global.boss, AT_Move, "Unbound", 3, 0, elly_unbound, NULL);
-				go = false;
-				break;
-
-			case 6: // Tower of Truth ~ Theory of Everything
-				// Works fine on its own
-				// Just needs a little extra to make us fall from the tower
-				start_fall_over();
-				skip_background_anim(&bgcontext, stage6_draw, 300, &global.timer, &global.frames);
-				break;
+		if(STG6_SPELL_NEEDS_SCYTHE(s)) {
+			boss_add_attack(global.boss, AT_Move, "Catch the Scythe", 2, 0, elly_intro, NULL);
+			go = false;
+		} else if(STG6_SPELL_NEEDS_BARYON(s)) {
+			boss_add_attack(global.boss, AT_Move, "Unbound", 3, 0, elly_unbound, NULL);
+			go = false;
+		} else if(s == &stage6_spells.final.theory_of_everything) {
+			start_fall_over();
+			skip_background_anim(&bgcontext, stage6_draw, 300, &global.timer, &global.frames);
 		}
 
 		boss_add_attack_from_info(global.boss, global.stage->spell, go);
