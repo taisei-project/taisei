@@ -591,6 +591,7 @@ void boss_preload(void) {
 		"boss_zoom",
 		"spellcard_intro",
 		"spellcard_outro",
+		"spellcard_walloftext",
 	NULL);
 
 	StageInfo *s = global.stage;

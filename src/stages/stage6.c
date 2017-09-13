@@ -253,6 +253,7 @@ void stage6_preload(void) {
 	NULL);
 	preload_resources(RES_SHADER, RESF_DEFAULT,
 		"tower_wall",
+		"stage6_sky",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"elly",
