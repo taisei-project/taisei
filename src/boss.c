@@ -137,6 +137,10 @@ static bool boss_attack_is_final(Boss *boss, Attack *a) {
 	return boss_get_final_attack(boss) == a;
 }
 
+static bool attack_is_over(Attack *a) {
+	return a->hp <= 0 && global.frames > a->endtime;
+}
+
 void draw_boss(Boss *boss) {
 	draw_animation_p(creal(boss->pos), cimag(boss->pos) + 6*sin(global.frames/25.0), boss->anirow, boss->ani);
 	draw_boss_text(AL_Left, 10, 20, boss->name);
@@ -164,66 +168,63 @@ void draw_boss(Boss *boss) {
 			);
 		}
 
-		// FIXME: i don't understand what the fuck is going on in this code
-		//        i'm tired and don't want to deal with it any longer
-		//        lao, please make this weird-ass healthbar system behave with skipped attacks (extra spells)
-		//
-		//        and there's also this thing where when a spell is finished, it immediately displays the health bar for the next one,
-		//        without waiting for the end delay. maybe that only happens without a normal attack inbetween, but i'm not sure.
-		//
-		//        -- Akari
-
-		int nextspell, lastspell;
+		int maxhpspan = 0;
+		int hpspan = 0;
+		int nextspell, prevspell;
 		for(nextspell = 0; nextspell < boss->acount - 1; nextspell++) {
+			if(boss_should_skip_attack(boss,&boss->attacks[nextspell]))
+				continue;
 			int t = boss->attacks[nextspell].type;
-			if(boss->dmg < boss->attacks[nextspell].dmglimit && t == AT_Spellcard)
+			if(!attack_is_over(&boss->attacks[nextspell]) && t == AT_Spellcard)
 				break;
 		}
 
-		for(lastspell = nextspell; lastspell > 0; lastspell--) {
-			int t = boss->attacks[lastspell].type;
-			if(boss->dmg > boss->attacks[lastspell].dmglimit && t == AT_Spellcard)
-				break;
-		}
 
-		int dmgoffset = boss->attacks[lastspell].dmglimit;
-		int dmgspan = boss->attacks[nextspell].dmglimit - boss->attacks[lastspell].dmglimit;
+		for(prevspell = nextspell; prevspell > 0; prevspell--) {
+			if(boss_should_skip_attack(boss,&boss->attacks[prevspell]))
+				continue;
+
+			int t = boss->attacks[prevspell].type;
+			if(attack_is_over(&boss->attacks[prevspell]) && t == AT_Spellcard)
+				break;
+			maxhpspan += boss->attacks[prevspell].maxhp;
+			hpspan += boss->attacks[prevspell].hp;
+		}
 
 		glPushMatrix();
-		glTranslatef(VIEWPORT_W-50, 4, 0);
-		glScalef((VIEWPORT_W-60)/(float)dmgspan,1,1);
-		glTranslatef(dmgoffset,0,0);
-		int i;
+		glTranslatef(10,2,0);
+		glScalef((VIEWPORT_W-60)/(float)maxhpspan,1,1);
 
+		// background shadow
+		glPushMatrix();
 		glColor4f(0,0,0,0.65);
-
-		glPushMatrix();
-		glTranslatef(-(boss->attacks[nextspell].dmglimit+boss->dmg-2)*0.5, 2, 0);
-		glScalef(boss->attacks[nextspell].dmglimit-boss->dmg+2, 4, 1);
-
+		glScalef(hpspan+2, 4, 1);
+		glTranslatef(0.5, 0.5, 0);
 		draw_quad();
 		glPopMatrix();
 
-		for(i = nextspell; i >= 0; i--) {
-			if(boss->dmg > boss->attacks[i].dmglimit)
+		// actual health bar
+		for(int i = nextspell; i > prevspell; i--) {
+			if(boss_should_skip_attack(boss,&boss->attacks[i]))
 				continue;
 
 			parse_color_call(boss_healthbar_color(boss->attacks[i].type), glColor4f);
 
 			glPushMatrix();
-			glTranslatef(-(boss->attacks[i].dmglimit+boss->dmg)*0.5, 1, 0);
-			glScalef(boss->attacks[i].dmglimit-boss->dmg, 2, 1);
-
+			glScalef(boss->attacks[i].hp, 2, 1);
+			glTranslatef(+0.5, 0.5, 0);
 			draw_quad();
 			glPopMatrix();
+			glTranslatef(boss->attacks[i].hp, 0, 0);
 		}
 
 		glPopMatrix();
 
+		// remaining spells
 		glColor4f(1,1,1,0.7);
 
 		int x = 0;
-		for(i = boss->acount-1; i > nextspell; i--)
+		for(int i = boss->acount-1; i > nextspell; i--)
 			if(boss->attacks[i].type == AT_Spellcard)
 				draw_texture(x += 22, 40, "star");
 
@@ -348,7 +349,7 @@ static int attack_end_delay(Boss *boss) {
 }
 
 void boss_finish_current_attack(Boss *boss) {
-	boss->dmg = boss->current->dmglimit + 1;
+	boss->current->hp = 0;
 	boss->current->finished = true;
 	boss->current->rule(boss, EVENT_DEATH);
 
@@ -432,7 +433,7 @@ void process_boss(Boss **pboss) {
 
 	bool timedout = time > boss->current->timeout;
 
-	if((boss->current->type != AT_Move && boss->dmg >= boss->current->dmglimit) || timedout) {
+	if((boss->current->type != AT_Move && boss->current->hp <= 0) || timedout) {
 		if(!boss->current->endtime) {
 			if(timedout && boss->current->type != AT_SurvivalSpell) {
 				boss->current->failtime = global.frames;
@@ -544,11 +545,9 @@ Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 	a->name = strdup(name);
 	a->timeout = timeout * FPS;
 
-	int dmg = 0;
-	if(boss->acount > 1)
-		dmg = boss->attacks[boss->acount - 2].dmglimit;
+	a->maxhp = hp;
+	a->hp = hp;
 
-	a->dmglimit = dmg + hp;
 	a->rule = rule;
 	a->draw_rule = draw_rule;
 

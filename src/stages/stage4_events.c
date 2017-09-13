@@ -870,7 +870,7 @@ int kurumi_extra_drainer(Projectile *p, int time) {
 		if(time > 40) {
 			int drain = clamp(4, 0, e->hp);
 			e->hp -= drain;
-			global.boss->dmg = max(0, global.boss->dmg - drain * 2);
+			global.boss->current->hp = min(global.boss->current->maxhp, global.boss->current->hp + drain * 2);
 		}
 	} else {
 		p->args[2] = approach(p->args[2], 0, 0.5);
@@ -984,7 +984,7 @@ void kurumi_extra(Boss *b, int time) {
 	int t = time % length;
 	int direction = (time/length)%2;
 
-	int shieldlimit = b->current->dmglimit - 1000;
+	int shieldlimit = 1000;
 	TIMER(&t);
 
 	if(time == EVENT_DEATH) {
@@ -995,7 +995,7 @@ void kurumi_extra(Boss *b, int time) {
 	if(time < 120)
 		GO_TO(b, VIEWPORT_W * 0.5 + VIEWPORT_H * 0.28 * I, 0.01)
 
-	if(t == 0 && b->dmg < shieldlimit) {
+	if(t == 0 && b->current->hp >= shieldlimit) {
 		int cnt = 12;
 		for(int i = 0; i < cnt; ++i) {
 			double a = M_PI * 2 * i / (double)cnt;
@@ -1008,9 +1008,9 @@ void kurumi_extra(Boss *b, int time) {
 	AT(90) {
 		int cnt = 20;
 		for(int i = 0; i < cnt; i++) {
-			b->dmg += 600;
-			if(b->dmg > shieldlimit)
-				b->dmg = shieldlimit;
+			b->current->hp -= 600;
+			if(b->current->hp < shieldlimit)
+				b->current->hp = shieldlimit;
 			tsrand_fill(2);
 			complex pos = VIEWPORT_W/2*afrand(0)+I*afrand(1)*VIEWPORT_H*2/3;
 			if(direction)
@@ -1042,7 +1042,7 @@ void kurumi_extra(Boss *b, int time) {
 			create_enemy1c(pos - ofs, 3300, kurumi_bigfairy_draw, kurumi_extra_bigfairy1, targ - 0.8*ofs);
 		}
 	}
-	if((t == length-20 && global.diff == D_Easy)|| b->dmg >= shieldlimit) {
+	if((t == length-20 && global.diff == D_Easy)|| b->current->hp < shieldlimit) {
 		for(Enemy *e = global.enemies; e; e = e->next) {
 			if(e->logic_rule == kurumi_extra_shield) {
 				e->args[2] = 1; // discharge extra shield

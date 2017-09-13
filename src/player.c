@@ -192,7 +192,7 @@ void player_logic(Player* plr) {
 				en->hp -= 300;
 
 		if(global.boss && boss_is_vulnerable(global.boss)) {
-				global.boss->dmg += 30;
+			global.boss->current->hp -= 30;
 		}
 
 		stage_clear_hazards(false);

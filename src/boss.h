@@ -78,7 +78,10 @@ typedef struct Attack {
 	int starttime;
 
 	int timeout;
-	int dmglimit;
+
+	int maxhp;
+	int hp;
+
 	int endtime;
 
 	bool finished;
@@ -105,7 +108,6 @@ typedef struct Boss {
 	Texture *dialog; // Used in spellcard intros
 	int anirow;
 
-	int dmg;
 	Color zoomcolor;
 
 	int failed_spells;
