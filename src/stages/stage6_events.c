@@ -833,8 +833,11 @@ static int ricci_proj(Projectile *p, int t) {
 	if(t < 0)
 		return 1;
 
+	if(t == 1)
+		p->grazed = true;
+
 	if(!global.boss)
-		return EVENT_DEATH;
+		return ACTION_DESTROY;
 
 	int time = global.frames-global.boss->current->starttime;
 
