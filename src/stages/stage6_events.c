@@ -939,7 +939,7 @@ void elly_baryonattack2(Boss *b, int t) {
 				complex n = cexp(I*(a+carg(global.plr.pos-b->pos)));
 
 				for(int j = 0; j < 3; ++j) {
-					create_projectile2c("bigball", b->pos, rgb(0,0.2,0.9), asymptotic, n, 2 * j)->draw = ProjDrawAdd;
+					create_projectile2c("bigball", b->pos, rgb(0,0.2,0.9), asymptotic, n, 2 * j);
 				}
 			}
 		} else {
@@ -949,7 +949,7 @@ void elly_baryonattack2(Boss *b, int t) {
 
 			for(x = -w; x <= w; x++)
 				for(y = -w; y <= w; y++)
-					create_projectile2c("bigball", b->pos+25*(x+I*y)*n, rgb(0,0.2,0.9), asymptotic, n, 3)->draw = ProjDrawAdd;
+					create_projectile2c("bigball", b->pos+25*(x+I*y)*n, rgb(0,0.2,0.9), asymptotic, n, 3);
 		}
 	}
 }
