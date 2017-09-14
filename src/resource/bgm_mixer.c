@@ -49,7 +49,7 @@ void* load_music_end(void *opaque, const char *path, unsigned int flags) {
 }
 
 void unload_music(void *vmus) {
-	Sound *mus = vmus;
+	Music *mus = vmus;
 	Mix_FreeMusic((Mix_Music*)mus->impl);
 	free(mus);
 }
