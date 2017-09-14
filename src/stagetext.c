@@ -74,12 +74,14 @@ static void stagetext_draw_single(StageText *txt) {
     glUseProgram(sha->prog);
     glUniform1i(uniloc(sha, "trans"), 1);
     glUniform1f(uniloc(sha, "t"), 1.0 - f);
-    glUniform3fv(uniloc(sha, "color"), 1, txt->clr);
 
     glActiveTexture(GL_TEXTURE0 + 1);
     glBindTexture(GL_TEXTURE_2D, get_tex("titletransition")->gltex);
     glActiveTexture(GL_TEXTURE0);
 
+    glUniform3f(uniloc(sha, "color"), 0,0,0);
+    draw_text_prerendered(txt->align, creal(txt->pos)+10*f*f+1, cimag(txt->pos)+10*f*f+1, txt->rendered_text);
+    glUniform3fv(uniloc(sha, "color"), 1, txt->clr);
     draw_text_prerendered(txt->align, creal(txt->pos)+10*f*f, cimag(txt->pos)+10*f*f, txt->rendered_text);
 
     glUseProgram(0);
