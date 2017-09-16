@@ -500,9 +500,12 @@ void boss_death(Boss **boss) {
 	if((*boss)->acount && boss_get_final_attack(*boss)->type != AT_Move)
 		petal_explosion(35, (*boss)->pos);
 
+	if(!boss_is_fleeing(*boss)) {
+		stage_clear_hazards(true);
+	}
+
 	free_boss(*boss);
 	*boss = NULL;
-	stage_clear_hazards(true);
 }
 
 void free_boss(Boss *boss) {
