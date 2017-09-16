@@ -1314,7 +1314,7 @@ Boss *create_elly(void) {
 	boss_add_attack(b, AT_Move, "Explode", 6, 10, elly_baryon_explode, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.extra.curvature_domination, false);
 	boss_add_attack_from_info(b, &stage6_spells.final.theory_of_everything, false);
-	start_attack(b, b->attacks);
+	boss_start_attack(b, b->attacks);
 
 	return b;
 }

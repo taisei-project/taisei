@@ -177,7 +177,7 @@ void stage5_spellpractice_events(void) {
 		skip_background_anim(&bgcontext, stage5_draw, 5300, &global.timer, NULL);
 		global.boss = create_boss("Nagae Iku", "iku", "dialog/iku", BOSS_DEFAULT_SPAWN_POS);
 		boss_add_attack_from_info(global.boss, global.stage->spell, true);
-		start_attack(global.boss, global.boss->attacks);
+		boss_start_attack(global.boss, global.boss->attacks);
 
 		start_bgm("bgm_stage5boss");
 	}

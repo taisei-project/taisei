@@ -383,7 +383,7 @@ Boss *create_kurumi_mid(void) {
 		boss_add_attack_from_info(b, &stage4_spells.mid.red_spike, false);
 	}
 	boss_add_attack(b, AT_Move, "Outro", 2, 1, kurumi_outro, NULL);
-	start_attack(b, b->attacks);
+	boss_start_attack(b, b->attacks);
 	return b;
 }
 
@@ -1070,7 +1070,7 @@ Boss *create_kurumi(void) {
 	}
 
 	boss_add_attack_from_info(b, &stage4_spells.extra.vlads_army, false);
-	start_attack(b, b->attacks);
+	boss_start_attack(b, b->attacks);
 
 	return b;
 }

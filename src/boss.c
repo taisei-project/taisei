@@ -490,7 +490,7 @@ void process_boss(Boss **pboss) {
 				continue;
 			}
 
-			start_attack(boss, boss->current);
+			boss_start_attack(boss, boss->current);
 			break;
 		}
 	}
@@ -508,6 +508,10 @@ void boss_death(Boss **boss) {
 	*boss = NULL;
 }
 
+static void free_attack(Attack *a) {
+	free(a->name);
+}
+
 void free_boss(Boss *boss) {
 	del_ref(boss);
 
@@ -519,11 +523,7 @@ void free_boss(Boss *boss) {
 	free(boss);
 }
 
-void free_attack(Attack *a) {
-	free(a->name);
-}
-
-void start_attack(Boss *b, Attack *a) {
+void boss_start_attack(Boss *b, Attack *a) {
 	log_debug("%s", a->name);
 
 	StageInfo *i;

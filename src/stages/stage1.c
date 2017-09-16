@@ -196,7 +196,7 @@ void stage1_spellpractice_events(void) {
 	AT(0) {
 		Boss* cirno = create_boss("Cirno", "cirno", "dialog/cirno", BOSS_DEFAULT_SPAWN_POS);
 		boss_add_attack_from_info(cirno, global.stage->spell, true);
-		start_attack(cirno, cirno->attacks);
+		boss_start_attack(cirno, cirno->attacks);
 		global.boss = cirno;
 
 		start_bgm("bgm_stage1boss");

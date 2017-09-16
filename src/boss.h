@@ -114,18 +114,16 @@ typedef struct Boss {
 } Boss;
 
 Boss* create_boss(char *name, char *ani, char *dialog, complex pos);
-void draw_extraspell_bg(Boss *boss, int time);
-void draw_boss(Boss *boss);
+void free_boss(Boss *boss);
 void process_boss(Boss **boss);
 
-void free_boss(Boss *boss);
-void free_attack(Attack *a);
-
-void start_attack(Boss *b, Attack *a);
+void draw_extraspell_bg(Boss *boss, int time);
+void draw_boss(Boss *boss);
 
 Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule);
 Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move);
 
+void boss_start_attack(Boss *b, Attack *a);
 void boss_finish_current_attack(Boss *boss);
 
 bool boss_is_dying(Boss *boss); // true if the last attack is over but the BOSS_DEATH_DELAY has not elapsed.

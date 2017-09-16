@@ -255,7 +255,7 @@ Boss *create_wriggle_mid(void) {
 	boss_add_attack(wriggle, AT_Normal, "Small Bug Storm", 20, 26000, wriggle_small_storm, NULL);
 	boss_add_attack(wriggle, AT_Move, "Flee", 5, 0, wiggle_mid_flee, NULL);;
 
-	start_attack(wriggle, wriggle->attacks);
+	boss_start_attack(wriggle, wriggle->attacks);
 	return wriggle;
 }
 
@@ -636,7 +636,7 @@ Boss *create_hina(void) {
 
 	boss_add_attack_from_info(hina, &stage2_spells.extra.monty_hall_danmaku, false);
 
-	start_attack(hina, hina->attacks);
+	boss_start_attack(hina, hina->attacks);
 	return hina;
 }
 

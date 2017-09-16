@@ -489,7 +489,7 @@ Boss* stage3_create_midboss(void) {
 	boss_add_attack(scuttle, AT_Move, "Runaway", 2, 1, stage3_mid_outro, NULL);
 	scuttle->zoomcolor = rgb(0.4, 0.1, 0.4);
 
-	start_attack(scuttle, scuttle->attacks);
+	boss_start_attack(scuttle, scuttle->attacks);
 	return scuttle;
 }
 
@@ -930,7 +930,7 @@ Boss* stage3_create_boss(void) {
 	boss_add_attack_from_info(wriggle, &stage3_spells.boss.unspellable_spell_name, false);
 	boss_add_attack_from_info(wriggle, &stage3_spells.extra.moonlight_wraith, false);
 
-	start_attack(wriggle, wriggle->attacks);
+	boss_start_attack(wriggle, wriggle->attacks);
 	return wriggle;
 }
 

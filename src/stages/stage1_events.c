@@ -166,7 +166,7 @@ Boss *create_cirno_mid(void) {
 	boss_add_attack_from_info(cirno, &stage1_spells.mid.perfect_freeze, false);
 	boss_add_attack(cirno, AT_Move, "Flee", 5, 0, cirno_mid_flee, NULL);
 
-	start_attack(cirno, cirno->attacks);
+	boss_start_attack(cirno, cirno->attacks);
 	return cirno;
 }
 
@@ -392,7 +392,7 @@ Boss *create_cirno(void) {
 	boss_add_attack_from_info(cirno, &stage1_spells.boss.icicle_fall, false);
 	boss_add_attack_from_info(cirno, &stage1_spells.extra.crystal_blizzard, false);
 
-	start_attack(cirno, cirno->attacks);
+	boss_start_attack(cirno, cirno->attacks);
 	return cirno;
 }
 

@@ -314,7 +314,7 @@ void stage3_spellpractice_events(void) {
 		}
 
 		boss_add_attack_from_info(global.boss, global.stage->spell, true);
-		start_attack(global.boss, global.boss->attacks);
+		boss_start_attack(global.boss, global.boss->attacks);
 
 		start_bgm("bgm_stage3boss");
 	}
