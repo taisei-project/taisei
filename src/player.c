@@ -12,6 +12,7 @@
 #include "global.h"
 #include "plrmodes.h"
 #include "stage.h"
+#include "stagetext.h"
 
 void init_player(Player *plr) {
 	memset(plr, 0, sizeof(Player));
@@ -50,6 +51,7 @@ Animation *player_get_ani(Character cha) {
 static void player_full_power(Player *plr) {
 	play_sound("full_power");
 	stage_clear_hazards(false);
+	stagetext_add("Full Power!", VIEWPORT_W * 0.5 + VIEWPORT_H * 0.33 * I, AL_Center, _fonts.mainmenu, rgb(1, 1, 1), 0, 60, 20, 20);
 }
 
 void player_set_power(Player *plr, short npow) {
