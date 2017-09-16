@@ -22,7 +22,7 @@ void gamepad_event(SDL_Event*, EventHandler, EventFlags, void*);
 
 int gamepad_devicecount(void);
 const char* gamepad_devicename(int);
-const void gamepad_deviceguid(int num, char *guid_str, size_t guid_str_sz);
+void gamepad_deviceguid(int num, char *guid_str, size_t guid_str_sz);
 int gamepad_numfromguid(const char *guid_str);
 int gamepad_currentdevice(void);
 

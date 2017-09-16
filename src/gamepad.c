@@ -396,7 +396,7 @@ const char* gamepad_devicename(int num) {
 	return SDL_GameControllerNameForIndex(gamepad.devices.id_map[num]);
 }
 
-const void gamepad_deviceguid(int num, char *guid_str, size_t guid_str_sz) {
+void gamepad_deviceguid(int num, char *guid_str, size_t guid_str_sz) {
 	if(num < 0 || num >= gamepad.devices.count) {
 		return;
 	}
