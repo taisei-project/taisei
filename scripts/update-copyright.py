@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import pathlib, sys, re
+import pathlib, sys, re, itertools
 
 header = r"""\1/*
  * This software is licensed under the terms of the MIT-License
@@ -15,5 +15,5 @@ header = r"""\1/*
 header_regex = re.compile(r'^(#if 0.*?\s#endif\s*)?(\s*/\*.*?\*/)?\s*', re.MULTILINE | re.DOTALL)
 
 if __name__ == '__main__':
-    for path in (pathlib.Path(sys.argv[0]).parent.parent / 'src').glob('**/*.[ch]'):
+    for path in itertools.chain(*((pathlib.Path(sys.argv[0]).parent.parent / 'src').glob(p) for p in ('**/*.[ch]', '**/*.[ch].in'))):
         path.write_text(header_regex.sub(header, path.read_text(), 1))

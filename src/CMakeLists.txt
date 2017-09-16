@@ -1,4 +1,7 @@
 
+include(CheckSymbolExists)
+include(CheckAndSetFlags)
+
 if(USE_COTIRE)
 	set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/cotire/CMake")
 	cmake_policy(SET CMP0011 NEW)
@@ -21,6 +24,11 @@ pkg_check_modules(ZIP libzip REQUIRED)
 if(NOT NO_AUDIO)
 	pkg_check_modules(SDL2_MIXER SDL2_mixer REQUIRED)
 endif()
+
+configure_file(
+	"${CMAKE_CURRENT_SOURCE_DIR}/version.c.in"
+	"${CMAKE_CURRENT_SOURCE_DIR}/version.c"
+)
 
 set(SRCs
 	main.c
@@ -105,6 +113,7 @@ set(SRCs
 	vfs/vdir.c
 	vfs/zipfile.c
 	vfs/zippath.c
+	version.c
 )
 
 if(WIN32)
@@ -142,8 +151,6 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug" OR "${CMAKE_BUILD_TYPE}" STREQUAL "Rel
 	# "Debug build" is a build where ${DEBUG_FLAGS} are used.
 	set(DEBUG_BUILD TRUE)
 endif()
-
-include(CheckAndSetFlags)
 
 if(DEBUG_USE_UBSAN AND DEFINED DEBUG_BUILD)
 	CHECK_AND_SET_FLAGS(COMPILER_SUPPORTS_UBSAN "-fsanitize=undefined" DEBUG_FLAGS "-fsanitize=undefined")
@@ -273,6 +280,13 @@ if(APPLE)
 		OUTPUT_NAME "Taisei"
 		MACOSX_BUNDLE_ICON_FILE "Taisei"
 		MACOSX_BUNDLE_BUNDLE_NAME "Taisei"
+		MACOSX_BUNDLE_GUI_IDENTIFIER "org.taisei-project.taisei"
+		MACOSX_BUNDLE_COPYRIGHT "© 2011-2017, Taisei Project"
+
+		# XXX: this is not really a correct usage, but it should be ok,
+		# for as long as we don't publish it to AppStore anyway.
+		MACOSX_BUNDLE_BUNDLE_VERSION "${TAISEI_REVISION}"
+		MACOSX_BUNDLE_SHORT_VERSION_STRING "${TAISEI_VERSION}"
 	)
 
 	install(TARGETS taisei BUNDLE DESTINATION .)

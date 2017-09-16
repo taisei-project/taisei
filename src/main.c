@@ -20,6 +20,7 @@
 #include "log.h"
 #include "cli.h"
 #include "vfs/setup.h"
+#include "version.h"
 
 static void taisei_shutdown(void) {
 	log_info("Shutting down");
@@ -118,6 +119,7 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
+	log_info("%s %s", TAISEI_VERSION_FULL, TAISEI_VERSION_BUILD_TYPE);
 	stage_init_array(); // cli_args depends on this
 
 	// commandline arguments should be parsed as early as possible

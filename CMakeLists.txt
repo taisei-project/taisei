@@ -1,8 +1,18 @@
 project(taisei C)
-
 cmake_minimum_required(VERSION 3.2)
 
-include(CheckSymbolExists)
+set(BUILDSCRIPTS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
+
+list(APPEND CMAKE_MODULE_PATH "${BUILDSCRIPTS_DIR}/cmake-modules")
+list(APPEND CMAKE_MODULE_PATH "${BUILDSCRIPTS_DIR}/cmake-modules/git")
+
+include(GetGitRevisionDescription)
+
+git_describe(TAISEI_VERSION)
+git_revision(TAISEI_REVISION)
+
+string(SUBSTRING ${TAISEI_VERSION} 1 32 TAISEI_VERSION) # erase the leading v
+set(TAISEI_VERSION_FULL_STR "Taisei v${TAISEI_VERSION} (rev. ${TAISEI_REVISION})")
 
 if(DEFINED TAISEI_DEBUG)
     # XXX: avoid using this unless you absolutely have to
@@ -18,9 +28,8 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "")
     #message(WARNING "CMAKE_BUILD_TYPE was not set, assuming ${CMAKE_BUILD_TYPE}.")
 endif()
 
+message(STATUS ${TAISEI_VERSION_FULL_STR})
 message(STATUS "Build configuration: ${CMAKE_BUILD_TYPE}")
-
-set(BUILDSCRIPTS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
 
 if(WIN32 OR APPLE)
 	set(RELATIVE_DEFAULT ON)
@@ -36,8 +45,6 @@ option(RELEASE_USE_LTO "Enable Link Time Optimization in release builds." ON)
 option(USE_COTIRE "Use cotire (COmpile TIme REducer) to speed up builds." OFF)
 option(PACKAGE_DATA "Package the game's assets into a compressed archive instead of bundling plain files." ON)
 option(PACKAGE_DATA_LEANIFY "Optimize the assets archive for size. This process can be very slow. Requires Leanify (https://github.com/JayXon/Leanify) and PACKAGE_DATA=ON." OFF)
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/scripts")
 
 add_subdirectory(src)
 
