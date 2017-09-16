@@ -143,6 +143,10 @@ static bool attack_is_over(Attack *a) {
 
 void draw_boss(Boss *boss) {
 	draw_animation_p(creal(boss->pos), cimag(boss->pos) + 6*sin(global.frames/25.0), boss->anirow, boss->ani);
+
+	if(boss->current->type == AT_Move && global.frames - boss->current->starttime > 0 && boss_attack_is_final(boss, boss->current))
+		return;
+
 	draw_boss_text(AL_Left, 10, 20, boss->name);
 
 	if(!boss->current)
@@ -349,13 +353,16 @@ static int attack_end_delay(Boss *boss) {
 }
 
 void boss_finish_current_attack(Boss *boss) {
+	AttackType t = boss->current->type;
+
 	boss->current->hp = 0;
 	boss->current->finished = true;
 	boss->current->rule(boss, EVENT_DEATH);
 
-	stage_clear_hazards(true);
+	if(t != AT_Move) {
+		stage_clear_hazards(true);
+	}
 
-	AttackType t = boss->current->type;
 	if(t == AT_Spellcard || t == AT_ExtraSpell || t == AT_SurvivalSpell) {
 		boss_give_spell_bonus(boss, boss->current, &global.plr);
 
@@ -458,9 +465,12 @@ void process_boss(Boss **pboss) {
 			}
 
 			boss_finish_current_attack(boss);
+		} else if(boss->current->type != AT_Move || !boss_attack_is_final(boss, boss->current)) {
+			// XXX: do we actually need to call this for AT_Move attacks at all?
+			//      it should be harmless, but probably unnecessary.
+			//      i'll be conservative and leave it in for now.
+			stage_clear_hazards(true);
 		}
-
-		stage_clear_hazards(true);
 	}
 
 	if(boss_is_dying(boss)) {
@@ -497,10 +507,13 @@ void process_boss(Boss **pboss) {
 }
 
 void boss_death(Boss **boss) {
-	if((*boss)->acount && boss_get_final_attack(*boss)->type != AT_Move)
-		petal_explosion(35, (*boss)->pos);
+	bool fleed = boss_get_final_attack(*boss)->type == AT_Move;
 
-	if(!boss_is_fleeing(*boss)) {
+	if((*boss)->acount && !fleed) {
+		petal_explosion(35, (*boss)->pos);
+	}
+
+	if(!fleed) {
 		stage_clear_hazards(true);
 	}
 
