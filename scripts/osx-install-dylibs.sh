@@ -12,13 +12,17 @@ fi
 
 shift
 
-EXE_PATH="$1"
-DYLIB_PATH="$2"
-DYLIB_REL_PATH="$3"
-OSX_ROOT="$4"
-OSX_CMD_PREFIX="$5"
+EXE_PATH="$1"; shift
+DYLIB_PATH="$1"; shift
+DYLIB_INTERMEDIATE_PATH="$1"; shift
+DYLIB_REL_PATH="$1"; shift
+OSX_ROOT="$1"; shift
+OSX_CMD_PREFIX="$1"; shift
+GENERATED_SCRIPT_PATH="$1"; shift
 
 mkdir -p "$DYLIB_PATH" || exit 2
+mkdir -p "$DYLIB_INTERMEDIATE_PATH" || exit 7
+
 [[ -f "$EXE_PATH" ]] || exit 3
 [[ -d "$OSX_ROOT" ]] || exit 4
 
@@ -29,7 +33,7 @@ install_name_tool="${OSX_CMD_PREFIX}install_name_tool"
 
 $otool --version
 
-rm -vf "$DYLIB_PATH"/*.dylib
+rm -vf "$DYLIB_INTERMEDIATE_PATH"/*.dylib "$DYLIB_PATH"/*.dylib
 
 declare -A handled_libs
 
@@ -44,13 +48,11 @@ function handle_dylibs {
             continue
         fi
 
-        cp -v "$libpath" "$DYLIB_PATH/$libname" || exit 6
+        cp -v "$libpath" "$DYLIB_INTERMEDIATE_PATH/$libname" || exit 6
 
         handled_libs[$libname]=1
-        handle_dylibs "$DYLIB_PATH/$libname"
+        handle_dylibs "$DYLIB_INTERMEDIATE_PATH/$libname"
     done
-
-    $otool -L "$1"
 }
 
 handle_dylibs "$EXE_PATH"
