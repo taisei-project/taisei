@@ -13,6 +13,8 @@ find_package(PkgConfig REQUIRED)
 if(LINK_TO_LIBGL)
 	find_package(OpenGL REQUIRED)
 	add_definitions(-DLINK_TO_LIBGL)
+	set(_OPENGL_GL_LIBRARY "${OPENGL_gl_LIBRARY}")
+	set(_OPENGL_GL_LIBRARY "${OPENGL_INCLUDE_DIR}")
 endif()
 
 pkg_check_modules(SDL2 sdl2>=2.0.5 REQUIRED)
@@ -197,7 +199,7 @@ set(LIBs ${LIBs}
 	${ZLIB_LIBRARIES}
 	${ZIP_LIBRARIES}
 	${PNG_LIBRARIES}
-	${OPENGL_gl_LIBRARY}
+	${_OPENGL_GL_LIBRARY}
 	m)
 
 set(LIBDIRs
@@ -225,7 +227,7 @@ set(INCs
 	${ZLIB_INCLUDE_DIRS}
 	${ZIP_INCLUDE_DIRS}
 	${PNG_INCLUDE_DIRS}
-	${OPENGL_INCLUDE_DIR}
+	${_OPENGL_INCLUDE_DIR}
 	)
 
 # stupid cmake caching SHIT
