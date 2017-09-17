@@ -9,10 +9,25 @@ list(APPEND CMAKE_MODULE_PATH "${BUILDSCRIPTS_DIR}/cmake-modules/git")
 include(GetGitRevisionDescription)
 
 git_describe(TAISEI_VERSION)
-git_revision(TAISEI_REVISION)
+set(TAISEI_VERSION_FALLBACK "1.1")
 
-string(SUBSTRING ${TAISEI_VERSION} 1 32 TAISEI_VERSION) # erase the leading v
-set(TAISEI_VERSION_FULL_STR "Taisei v${TAISEI_VERSION} (rev. ${TAISEI_REVISION})")
+if(TAISEI_VERSION STREQUAL "GIT-NOTFOUND")
+    message(WARNING "Git is not installed. Version information will be less accurate.")
+    set(TAISEI_VERSION "")
+elseif(TAISEI_VERSION STREQUAL "HEAD-HASH-NOTFOUND")
+    message(WARNING "Source tree doesn't seem to be in a git repository. Version information will be less accurate.")
+    set(TAISEI_VERSION "")
+endif()
+
+if(TAISEI_VERSION)
+    git_revision(TAISEI_REVISION)
+    string(SUBSTRING ${TAISEI_VERSION} 1 32 TAISEI_VERSION) # erase the leading v
+    set(TAISEI_VERSION_FULL_STR "Taisei v${TAISEI_VERSION} (rev. ${TAISEI_REVISION})")
+else()
+    set(TAISEI_VERSION "${TAISEI_VERSION_FALLBACK}")
+    set(TAISEI_REVISION 0)
+    set(TAISEI_VERSION_FULL_STR "Taisei v${TAISEI_VERSION}")
+endif()
 
 if(DEFINED TAISEI_DEBUG)
     # XXX: avoid using this unless you absolutely have to

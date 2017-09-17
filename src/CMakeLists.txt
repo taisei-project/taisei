@@ -27,7 +27,7 @@ endif()
 
 configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/version.c.in"
-	"${CMAKE_CURRENT_SOURCE_DIR}/version.c"
+	"${CMAKE_CURRENT_BINARY_DIR}/version.c"
 )
 
 set(SRCs
@@ -113,7 +113,7 @@ set(SRCs
 	vfs/vdir.c
 	vfs/zipfile.c
 	vfs/zippath.c
-	version.c
+	"${CMAKE_CURRENT_BINARY_DIR}/version.c"
 )
 
 if(WIN32)
