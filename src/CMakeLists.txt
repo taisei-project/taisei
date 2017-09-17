@@ -282,11 +282,8 @@ if(APPLE)
 		MACOSX_BUNDLE_BUNDLE_NAME "Taisei"
 		MACOSX_BUNDLE_GUI_IDENTIFIER "org.taisei-project.taisei"
 		MACOSX_BUNDLE_COPYRIGHT "© 2011-2017, Taisei Project"
-
-		# XXX: this is not really a correct usage, but it should be ok,
-		# for as long as we don't publish it to AppStore anyway.
-		MACOSX_BUNDLE_BUNDLE_VERSION "${TAISEI_REVISION}"
-		MACOSX_BUNDLE_SHORT_VERSION_STRING "${TAISEI_VERSION}"
+		MACOSX_BUNDLE_BUNDLE_VERSION "${TAISEI_VERSION_SIMPLE}.${TAISEI_REVISION}"
+		MACOSX_BUNDLE_SHORT_VERSION_STRING "${TAISEI_VERSION_SIMPLE}"
 	)
 
 	install(TARGETS taisei BUNDLE DESTINATION .)

@@ -2,7 +2,7 @@
 message(STATUS "Compressing game data")
 
 execute_process(
-    COMMAND @CMAKE_COMMAND@ -E tar cfv @GAME_RESOURCES_ZIP@ --format=zip @GAME_RESOURCES_DIRS@
+    COMMAND @CMAKE_COMMAND@ -E tar cf @GAME_RESOURCES_ZIP@ --format=zip @GAME_RESOURCES_DIRS@
     WORKING_DIRECTORY @CMAKE_CURRENT_SOURCE_DIR@
     RESULT_VARIABLE ERR
 )

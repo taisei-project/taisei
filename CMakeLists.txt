@@ -8,6 +8,10 @@ list(APPEND CMAKE_MODULE_PATH "${BUILDSCRIPTS_DIR}/cmake-modules/git")
 
 include(GetGitRevisionDescription)
 
+#
+#   Set up version variables
+#
+
 git_describe(TAISEI_VERSION)
 set(TAISEI_VERSION_FALLBACK "1.1")
 
@@ -28,6 +32,38 @@ else()
     set(TAISEI_REVISION 0)
     set(TAISEI_VERSION_FULL_STR "Taisei v${TAISEI_VERSION}")
 endif()
+
+string(REGEX REPLACE "-.*" "" VERSION_TMP ${TAISEI_VERSION})
+string(REPLACE "." ";" VERSION_TMP ${VERSION_TMP})
+
+list(LENGTH VERSION_TMP VERSION_TMP_LEN)
+
+while(VERSION_TMP_LEN LESS 3)
+    list(APPEND VERSION_TMP 0)
+    list(LENGTH VERSION_TMP VERSION_TMP_LEN)
+endwhile()
+
+list(GET VERSION_TMP 0 TAISEI_VERSION_MAJOR)
+list(GET VERSION_TMP 1 TAISEI_VERSION_MINOR)
+list(GET VERSION_TMP 2 TAISEI_VERSION_PATCH)
+
+# Let's never use letters in version numbers again, ok?
+string(REGEX MATCH "[a-z]" PATCH_CHAR ${TAISEI_VERSION_MINOR})
+if(PATCH_CHAR)
+    string(FIND "abcdefghjklmnopqrstuvwxyz" ${PATCH_CHAR} PATCH_NUM)
+    math(EXPR PATCH_NUM "${PATCH_NUM} + 1")
+
+    if(PATCH_NUM)
+        math(EXPR TAISEI_VERSION_PATCH "${TAISEI_VERSION_PATCH} + ${PATCH_NUM}")
+        string(REGEX MATCH "[0-9]+" TAISEI_VERSION_MINOR ${TAISEI_VERSION_MINOR})
+    endif()
+endif()
+
+set(TAISEI_VERSION_SIMPLE ${TAISEI_VERSION_MAJOR}.${TAISEI_VERSION_MINOR}.${TAISEI_VERSION_PATCH})
+
+#
+#   End of the version insanity
+#
 
 if(DEFINED TAISEI_DEBUG)
     # XXX: avoid using this unless you absolutely have to
@@ -60,6 +96,7 @@ option(RELEASE_USE_LTO "Enable Link Time Optimization in release builds." ON)
 option(USE_COTIRE "Use cotire (COmpile TIme REducer) to speed up builds." OFF)
 option(PACKAGE_DATA "Package the game's assets into a compressed archive instead of bundling plain files." ON)
 option(PACKAGE_DATA_LEANIFY "Optimize the assets archive for size. This process can be very slow. Requires Leanify (https://github.com/JayXon/Leanify) and PACKAGE_DATA=ON." OFF)
+option(USE_CPACK "Add a 'package' target, used to prepare a release for binary distribution. Currently only used to create Windows installers. Requires CPack and NSIS." OFF)
 
 add_subdirectory(src)
 
@@ -122,6 +159,15 @@ else()
     foreach(dir ${GAME_RESOURCES_DIRS})
         install(DIRECTORY ${dir} DESTINATION ${DATA_DIR})
     endforeach()
+endif()
+
+if(WIN32)
+    # XXX: this is supposedly for dynamic-link builds, untested due to MXE being an ass
+    include(InstallRequiredSystemLibraries)
+endif()
+
+if(USE_CPACK)
+    include("${BUILDSCRIPTS_DIR}/CPackSettings.cmake")
 endif()
 
 # uninstall target
