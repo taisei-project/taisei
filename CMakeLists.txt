@@ -75,6 +75,7 @@ if(RELATIVE)
     endif()
 
     install(FILES "story.txt" DESTINATION .)
+    install(FILES "COPYING" DESTINATION . RENAME "COPYING.txt")
 else()
 	set(DATA_DIR "share/taisei")
 

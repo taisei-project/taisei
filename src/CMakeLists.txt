@@ -301,6 +301,15 @@ if(APPLE)
 
 	install(SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/OSXInstallDylibs.cmake")
 	install(DIRECTORY "${DYLIBS_DIR_INTERMEDIATE}" DESTINATION "${OSX_BINARY_DIR}")
+
+	add_custom_target(dmg
+		COMMAND "${BUILDSCRIPTS_DIR}/osx-gen-dmg.sh"
+				"${CMAKE_INSTALL_PREFIX}"
+				"${CMAKE_CURRENT_BINARY_DIR}/${MACOSX_BUNDLE_BUNDLE_NAME}-${TAISEI_VERSION}.dmg"
+		DEPENDS install
+		VERBATIM
+	)
+
 elseif(RELATIVE)
 	install(TARGETS taisei RUNTIME DESTINATION .)
 else()
