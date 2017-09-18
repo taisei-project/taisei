@@ -8,6 +8,6 @@ if [[ -z "$IN" ]] || [[ -z "$OUT" ]] || [[ ! -d "$IN" ]]; then
     exit 1
 fi
 
-ln -sv /Applications "$IN/Applications" || exit 1
+ln -svf /Applications "$IN/Applications" || exit 1
 genisoimage -V Taisei -D -R -apple -no-pad -o "$OUT" "$IN" || exit $?
 rm -v "$IN/Applications"

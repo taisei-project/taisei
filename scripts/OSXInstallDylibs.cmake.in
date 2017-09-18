@@ -1,8 +1,8 @@
 
 message(STATUS "Installing dynamic libraries")
 
-if("@TAISEI_OSX_LIB_ROOT@" STREQUAL "")
-    message(FATAL_ERROR "You must set TAISEI_OSX_LIB_ROOT, and possibly TAISEI_OSX_COMMAND_PREFIX, to use the install rule.")
+if("@OSX_LIB_PATH@" STREQUAL "")
+    message(FATAL_ERROR "You must set at least OSX_LIB_PATH to use the install rule.")
 endif()
 
 execute_process(
@@ -12,8 +12,9 @@ execute_process(
             "@DYLIBS_DIR_FINAL@"
             "@DYLIBS_DIR_INTERMEDIATE@"
             "@DYLIBS_DIR_NAME@"
-            "@TAISEI_OSX_LIB_ROOT@"
-            "@TAISEI_OSX_COMMAND_PREFIX@"
+            "@OSX_LIB_PATH@"
+            "@OSX_TOOL_PATH@"
+            "@OSX_TOOL_PREFIX@"
     WORKING_DIRECTORY "@CMAKE_INSTALL_PREFIX@"
     RESULT_VARIABLE ERRCODE
 )
