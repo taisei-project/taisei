@@ -21,6 +21,7 @@
 #include "global.h"
 #include "video.h"
 #include "stage.h"
+#include "version.h"
 
 void enter_options(MenuData *menu, void *arg) {
 	MenuData m;
@@ -190,12 +191,14 @@ void draw_main_menu(MenuData *menu) {
 		glPopMatrix();
 	}
 
+	draw_text(AL_Right,SCREEN_W-5,SCREEN_H-10,TAISEI_VERSION,_fonts.small);
 }
 
 void draw_loading_screen(void) {
 	preload_resource(RES_TEXTURE, "loading", RESF_PERMANENT);
 	set_ortho();
 	draw_texture(SCREEN_W/2, SCREEN_H/2, "loading");
+	draw_text(AL_Right,SCREEN_W-5,SCREEN_H-10,TAISEI_VERSION,_fonts.small);
 	SDL_GL_SwapWindow(video.window);
 }
 
