@@ -134,12 +134,8 @@ OptionBinding* bind_stroption(ConfigIndex cfgentry) {
 }
 
 // BT_Resolution: super-special binding type for the resolution setting
-OptionBinding* bind_resolution(void) {
-	OptionBinding *bind = bind_new();
-	bind->type = BT_Resolution;
-
+void bind_resolution_update(OptionBinding *bind) {
 	bind->valcount = video.mcount;
-	bind->selected = -1;
 
 	for(int i = 0; i < video.mcount; ++i) {
 		VideoMode *m = video.modes + i;
@@ -147,7 +143,13 @@ OptionBinding* bind_resolution(void) {
 			bind->selected = i;
 		}
 	}
+}
 
+OptionBinding* bind_resolution(void) {
+	OptionBinding *bind = bind_new();
+	bind->type = BT_Resolution;
+	bind->selected = -1;
+	bind_resolution_update(bind);
 	return bind;
 }
 
@@ -285,6 +287,10 @@ bool bind_bgquality_dependence(void) {
 	return !config_get_int(CONFIG_NO_STAGEBG);
 }
 
+bool bind_resolution_dependence(void) {
+	return video_can_change_resolution();
+}
+
 int bind_saverpy_get(OptionBinding *b) {
 	int v = config_get_int(b->configentry);
 
@@ -363,13 +369,14 @@ void options_sub_video(MenuData *parent, void *arg) {
 
 	create_options_menu_basic(m, "Video Options");
 
-	add_menu_entry(m, "Resolution", do_nothing,
-		b = bind_resolution()
-	);	b->setter = bind_resolution_set;
-
 	add_menu_entry(m, "Fullscreen", do_nothing,
 		b = bind_option(CONFIG_FULLSCREEN, bind_common_onoffget, bind_common_onoffset)
 	);	bind_onoff(b);
+
+	add_menu_entry(m, "Resolution", do_nothing,
+		b = bind_resolution()
+	);	b->setter = bind_resolution_set;
+		b->dependence = bind_resolution_dependence;
 
 	add_menu_entry(m, "Resizable window", do_nothing,
 		b = bind_option(CONFIG_VID_RESIZABLE, bind_common_onoffget, bind_common_onoffset)
@@ -871,9 +878,40 @@ void draw_options_menu(MenuData *menu) {
 	glPopMatrix();
 }
 
-// --- Input processing --- //
+// --- Input/event processing --- //
 
-void bind_input_event(EventType type, int state, void *arg) {
+static void notify_bindings(EventType type, int state, MenuData *menu) {
+	// FIXME: this won't be called when input is blocked (we need a better event system)
+
+	if(type != E_VideoModeChanged) {
+		return;
+	}
+
+	for(int i = 0; i < menu->ecount; ++i) {
+		OptionBinding *bind = bind_get(menu, i);
+
+		if(!bind) {
+			continue;
+		}
+
+		switch(bind->type) {
+			case BT_Resolution:
+				bind_resolution_update(bind);
+				break;
+
+			case BT_IntValue:
+				if(bind->configentry == CONFIG_FULLSCREEN) {
+					bind->selected = video_isfullscreen();
+				}
+				break;
+
+			default:
+				break;
+		}
+	}
+}
+
+static void bind_input_event(EventType type, int state, void *arg) {
 	OptionBinding *b = arg;
 
 	int scan = state;
@@ -983,6 +1021,8 @@ static void options_input_event(EventType type, int state, void *arg) {
 	MenuData *menu = arg;
 	OptionBinding *bind = bind_get(menu, menu->cursor);
 
+	notify_bindings(type, state, menu);
+
 	switch(type) {
 		case E_CursorDown:
 			play_ui_sound("generic_shot");
@@ -1080,19 +1120,21 @@ static void options_input_event(EventType type, int state, void *arg) {
 
 void options_menu_input(MenuData *menu) {
 	OptionBinding *b;
+	EventFlags flags = EF_Video;
 
 	if((b = bind_getinputblocking(menu)) != NULL) {
 		int flags = 0;
 
 		switch(b->type) {
-			case BT_StrValue:			flags = EF_Text;					break;
-			case BT_KeyBinding:			flags = EF_Keyboard;				break;
-			case BT_GamepadKeyBinding:	flags = EF_Gamepad | EF_Keyboard;	break;
-			case BT_GamepadAxisBinding:	flags = EF_Gamepad | EF_Keyboard;	break;
+			case BT_StrValue:			flags |= EF_Text;					break;
+			case BT_KeyBinding:			flags |= EF_Keyboard;				break;
+			case BT_GamepadKeyBinding:	flags |= EF_Gamepad | EF_Keyboard;	break;
+			case BT_GamepadAxisBinding:	flags |= EF_Gamepad | EF_Keyboard;	break;
 			default: break;
 		}
 
 		handle_events(bind_input_event, flags, b);
-	} else
-		handle_events(options_input_event, EF_Menu, menu);
+	} else {
+		handle_events(options_input_event, flags | EF_Menu, menu);
+	}
 }

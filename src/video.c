@@ -181,6 +181,13 @@ static void video_update_quality(void) {
 	reload_fonts(text);
 }
 
+static void video_dispatch_mode_changed_event(void) {
+	SDL_Event evt;
+	SDL_zero(evt);
+	evt.type = sdl_custom_events.video_mode_changed;
+	SDL_PushEvent(&evt);
+}
+
 static void video_set_mode_internal(int w, int h, uint32_t flags, bool fallback) {
 	if(!libgl_loaded) {
 		load_gl_library();
@@ -224,6 +231,7 @@ static void video_set_mode_internal(int w, int h, uint32_t flags, bool fallback)
 		video.real.height = video.current.height;
 		video_set_viewport();
 		video_update_quality();
+		video_dispatch_mode_changed_event();
 		return;
 	}
 
@@ -233,8 +241,8 @@ static void video_set_mode_internal(int w, int h, uint32_t flags, bool fallback)
 	}
 
 	log_warn("Setting %dx%d (%s) failed, falling back to %dx%d (windowed)", w, h,
-			(flags & SDL_WINDOW_FULLSCREEN) ? "fullscreen" : "windowed", RESX, RESY);
-	video_set_mode_internal(RESX, RESY, flags & ~SDL_WINDOW_FULLSCREEN, true);
+			(flags & FULLSCREEN_FLAGS) ? "fullscreen" : "windowed", RESX, RESY);
+	video_set_mode_internal(RESX, RESY, flags & ~FULLSCREEN_FLAGS, true);
 }
 
 void video_set_mode(int w, int h, bool fs, bool resizable) {
@@ -247,7 +255,11 @@ void video_set_mode(int w, int h, bool fs, bool resizable) {
 	uint32_t flags = SDL_WINDOW_OPENGL;
 
 	if(fs) {
-		flags |= SDL_WINDOW_FULLSCREEN;
+		if(config_get_int(CONFIG_FULLSCREEN_DESKTOP)) {
+			flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+		} else {
+			flags |= SDL_WINDOW_FULLSCREEN;
+		}
 	} else if(resizable) {
 		flags |= SDL_WINDOW_RESIZABLE;
 	}
@@ -341,7 +353,11 @@ bool video_isresizable(void) {
 }
 
 bool video_isfullscreen(void) {
-	return SDL_GetWindowFlags(video.window) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP);
+	return SDL_GetWindowFlags(video.window) & FULLSCREEN_FLAGS;
+}
+
+bool video_can_change_resolution(void) {
+	return !(SDL_GetWindowFlags(video.window) & SDL_WINDOW_FULLSCREEN_DESKTOP);
 }
 
 void video_set_fullscreen(bool fullscreen) {

@@ -12,6 +12,18 @@
 #include "video.h"
 #include "gamepad.h"
 
+struct sdl_custom_events_s sdl_custom_events;
+
+void events_init(void) {
+	uint32_t *events = (uint32_t*)&sdl_custom_events;
+	uint32_t id = SDL_RegisterEvents(NUM_CUSTOM_EVENTS);
+
+	for(int i = 0; i < NUM_CUSTOM_EVENTS; ++i, ++id) {
+		events[i] = id;
+		log_debug("User event registered: %u", events[i]);
+	}
+}
+
 void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 	SDL_Event event;
 
@@ -19,6 +31,7 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 	bool text	= flags & EF_Text;
 	bool menu	= flags & EF_Menu;
 	bool game	= flags & EF_Game;
+	bool video  = flags & EF_Video;
 
 	// TODO: rewrite text input handling to properly support multibyte characters and IMEs
 
@@ -33,7 +46,16 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 	}
 
 	while(SDL_PollEvent(&event)) {
-		if(resource_sdl_event(&event)) {
+		if(IS_CUSTOM_EVENT(event.type)) {
+			log_debug("Custom event %u: %"PRIxMAX" %"PRIxMAX, event.type, (uintmax_t)event.user.data1, (uintmax_t)event.user.data2);
+
+			if(event.type == sdl_custom_events.video_mode_changed) {
+				if(video) {
+					handler(E_VideoModeChanged, 0, arg);
+				}
+			}
+
+			resource_sdl_event(&event);
 			continue;
 		}
 
@@ -134,6 +156,9 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 			case SDL_WINDOWEVENT:
 				switch(event.window.event) {
 					case SDL_WINDOWEVENT_RESIZED:
+						if(video) {
+							handler(E_VideoModeChanged, 0, arg);
+						}
 						video_resize(event.window.data1, event.window.data2);
 						break;
 

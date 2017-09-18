@@ -15,6 +15,9 @@
 #include <SDL.h>
 #include <stdbool.h>
 
+#define FULLSCREEN_FLAGS (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)
+#define PREFERED_FULLSCREEN_FLAG SDL_WINDOW_FULLSCREEN_DESKTOP
+
 typedef struct VideoMode {
 	int width;
 	int height;
@@ -39,6 +42,7 @@ void video_get_viewport_size(int *width, int *height);
 void video_set_viewport(void);
 bool video_isfullscreen(void);
 bool video_isresizable(void);
+bool video_can_change_resolution(void);
 void video_set_fullscreen(bool);
 void video_toggle_fullscreen(void);
 void video_resize(int w, int h);

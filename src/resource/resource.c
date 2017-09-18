@@ -10,6 +10,7 @@
 #include "config.h"
 #include "video.h"
 #include "menu/mainmenu.h"
+#include "events.h"
 
 Resources resources;
 static SDL_threadID main_thread_id;
@@ -26,8 +27,6 @@ static const char *resource_type_names[] = {
 static inline ResourceHandler* get_handler(ResourceType type) {
 	return resources.handlers + type;
 }
-
-static uint32_t sdlevent_finalize_load;
 
 static void register_handler(
 	ResourceType type,
@@ -114,7 +113,7 @@ static int load_resource_async_thread(void *vdata) {
 	data->opaque = data->handler->begin_load(data->path, data->flags);
 
 	SDL_zero(evt);
-	evt.type = sdlevent_finalize_load;
+	evt.type = sdl_custom_events.resource_load_finished;
 	evt.user.data1 = data;
 	SDL_PushEvent(&evt);
 
@@ -126,7 +125,7 @@ static Resource* load_resource_finish(void *opaque, ResourceHandler *handler, co
 bool resource_sdl_event(SDL_Event *evt) {
 	assert(SDL_ThreadID() == main_thread_id);
 
-	if(evt->type != sdlevent_finalize_load) {
+	if(evt->type != sdl_custom_events.resource_load_finished) {
 		return false;
 	}
 
@@ -171,7 +170,7 @@ static void load_resource_async(ResourceHandler *handler, char *path, char *name
 
 static void update_async_load_state(void) {
 	SDL_Event evt;
-	while(SDL_PeepEvents(&evt, 1, SDL_GETEVENT, sdlevent_finalize_load, sdlevent_finalize_load)) {
+	while(SDL_PeepEvents(&evt, 1, SDL_GETEVENT, sdl_custom_events.resource_load_finished, sdl_custom_events.resource_load_finished)) {
 		resource_sdl_event(&evt);
 	}
 }
