@@ -13,6 +13,7 @@
 #include "gamepad.h"
 
 struct sdl_custom_events_s sdl_custom_events;
+static uint32_t keyrepeat_paused_until;
 
 void events_init(void) {
 	uint32_t *events = (uint32_t*)&sdl_custom_events;
@@ -22,6 +23,12 @@ void events_init(void) {
 		events[i] = id;
 		log_debug("User event registered: %u", events[i]);
 	}
+}
+
+void events_pause_keyrepeat(void) {
+	// for whatever stupid bizarre reason, keyrepeat skips the delay after the window toggles fullscreen on some systems
+	// this ugly hack is a workaround for that
+	keyrepeat_paused_until = SDL_GetTicks() + 250;
 }
 
 void handle_events(EventHandler handler, EventFlags flags, void *arg) {
@@ -62,6 +69,12 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 		SDL_Scancode scan = event.key.keysym.scancode;
 		SDL_Keymod mod = event.key.keysym.mod;
 		bool repeat = event.key.repeat;
+		uint32_t timenow;
+
+		if((event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) && repeat && (timenow = SDL_GetTicks()) < keyrepeat_paused_until) {
+			log_debug("Prevented a potentially bogus key repeat: %i %i %i %i %i", event.type - SDL_KEYDOWN, scan, mod, repeat, keyrepeat_paused_until - timenow);
+			continue;
+		}
 
 		switch(event.type) {
 			case SDL_KEYDOWN:
@@ -156,9 +169,6 @@ void handle_events(EventHandler handler, EventFlags flags, void *arg) {
 			case SDL_WINDOWEVENT:
 				switch(event.window.event) {
 					case SDL_WINDOWEVENT_RESIZED:
-						if(video) {
-							handler(E_VideoModeChanged, 0, arg);
-						}
 						video_resize(event.window.data1, event.window.data2);
 						break;
 

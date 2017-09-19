@@ -69,6 +69,7 @@ extern struct sdl_custom_events_s {
 typedef void(*EventHandler)(EventType, int, void*);
 
 void events_init(void);
+void events_pause_keyrepeat(void);
 void handle_events(EventHandler handler, EventFlags flags, void *arg);
 bool gamekeypressed(KeyIndex key);
 

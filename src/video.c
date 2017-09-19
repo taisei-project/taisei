@@ -188,15 +188,59 @@ static void video_dispatch_mode_changed_event(void) {
 	SDL_PushEvent(&evt);
 }
 
-static void video_set_mode_internal(int w, int h, uint32_t flags, bool fallback) {
+static uint32_t get_fullscreen_flag(void) {
+	if(config_get_int(CONFIG_FULLSCREEN_DESKTOP)) {
+		return SDL_WINDOW_FULLSCREEN_DESKTOP;
+	} else {
+		return SDL_WINDOW_FULLSCREEN;
+	}
+}
+
+static void video_check_fullscreen_sanity(void) {
+	SDL_DisplayMode mode;
+
+	if(SDL_GetCurrentDisplayMode(SDL_GetWindowDisplayIndex(video.window), &mode)) {
+		log_warn("SDL_GetCurrentDisplayMode failed: %s", SDL_GetError());
+		return;
+	}
+
+	if(video.current.width != mode.w || video.current.height != mode.h) {
+		log_warn("BUG: window is not actually fullscreen after modesetting. Video mode: %ix%i, window size: %ix%i",
+			mode.w, mode.h, video.current.width, video.current.height);
+	}
+}
+
+static void video_update_mode_settings(void) {
+	SDL_ShowCursor(false);
+	video_update_vsync();
+	SDL_GL_GetDrawableSize(video.window, &video.current.width, &video.current.height);
+	video.real.width = video.current.width;
+	video.real.height = video.current.height;
+	video_set_viewport();
+	video_update_quality();
+	video_dispatch_mode_changed_event();
+
+	if(video_isfullscreen() && !config_get_int(CONFIG_FULLSCREEN_DESKTOP)) {
+		video_check_fullscreen_sanity();
+	}
+}
+
+static const char* modeflagsstr(uint32_t flags) {
+	if(WINFLAGS_IS_FAKE_FULLSCREEN(flags)) {
+		return "fake fullscreen";
+	} else if(WINFLAGS_IS_REAL_FULLSCREEN(flags)) {
+		return "true fullscreen";
+	} else if(flags & SDL_WINDOW_RESIZABLE) {
+		return "windowed, resizable";
+	} else {
+		return "windowed";
+	}
+}
+
+static void video_new_window_internal(int w, int h, uint32_t flags, bool fallback) {
 	if(!libgl_loaded) {
 		load_gl_library();
 		libgl_loaded = true;
-	}
-
-	if(!fallback) {
-		video.intended.width = w;
-		video.intended.height = h;
 	}
 
 	if(video.window) {
@@ -224,54 +268,85 @@ static void video_set_mode_internal(int w, int h, uint32_t flags, bool fallback)
 			return;
 		}
 
-		SDL_ShowCursor(false);
-		video_update_vsync();
-		SDL_GL_GetDrawableSize(video.window, &video.current.width, &video.current.height);
-		video.real.width = video.current.width;
-		video.real.height = video.current.height;
-		video_set_viewport();
-		video_update_quality();
-		video_dispatch_mode_changed_event();
+		video_update_mode_settings();
 		return;
 	}
 
 	if(fallback) {
-		log_fatal("Error opening screen: %s", SDL_GetError());
+		log_fatal("Failed to create window with mode %ix%i (%s): %s", w, h, modeflagsstr(flags), SDL_GetError());
 		return;
 	}
 
-	log_warn("Setting %dx%d (%s) failed, falling back to %dx%d (windowed)", w, h,
-			(flags & FULLSCREEN_FLAGS) ? "fullscreen" : "windowed", RESX, RESY);
-	video_set_mode_internal(RESX, RESY, flags & ~FULLSCREEN_FLAGS, true);
+	log_fatal("Failed to create window with mode %ix%i (%s): %s", w, h, modeflagsstr(flags), SDL_GetError());
+	video_new_window_internal(RESX, RESY, flags & ~SDL_WINDOW_FULLSCREEN_DESKTOP, true);
 }
 
-void video_set_mode(int w, int h, bool fs, bool resizable) {
-	if(	w == video.current.width &&
-		h == video.current.height &&
-		fs == video_isfullscreen() &&
-		resizable == video_isresizable()
-	) return;
-
+static void video_new_window(int w, int h, bool fs, bool resizable) {
 	uint32_t flags = SDL_WINDOW_OPENGL;
 
 	if(fs) {
-		if(config_get_int(CONFIG_FULLSCREEN_DESKTOP)) {
-			flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-		} else {
-			flags |= SDL_WINDOW_FULLSCREEN;
-		}
+		flags |= get_fullscreen_flag();
 	} else if(resizable) {
 		flags |= SDL_WINDOW_RESIZABLE;
 	}
 
-	video_set_mode_internal(w, h, flags, false);
+	video_new_window_internal(w, h, flags, false);
 
-	log_info("Changed mode to %ix%i%s%s",
+	log_info("Created a new window: %ix%i (%s)",
 		video.current.width,
 		video.current.height,
-		video_isfullscreen() ? ", fullscreen" : ", windowed",
-		video_isresizable() ? ", resizable" : ""
+		modeflagsstr(SDL_GetWindowFlags(video.window))
 	);
+}
+
+static bool video_set_display_mode(int w, int h) {
+	SDL_DisplayMode closest, target = { .w = w, .h = h };
+	int display = SDL_GetWindowDisplayIndex(video.window);
+
+	if(!SDL_GetClosestDisplayMode(display, &target, &closest)) {
+		log_warn("No available display modes for %ix%i on display %i", w, h, display);
+		return false;
+	}
+
+	if(closest.w != w || closest.h != h) {
+		log_warn("Can't use %ix%i, closest available is %ix%i", w, h, closest.w, closest.h);
+	}
+
+	if(SDL_SetWindowDisplayMode(video.window, &closest)) {
+		log_warn("Failed to set display mode for %ix%i on display %i: %s", closest.w, closest.h, display, SDL_GetError());
+		return false;
+	}
+
+	return true;
+}
+
+void video_set_mode(int w, int h, bool fs, bool resizable) {
+	video.intended.width = w;
+	video.intended.height = h;
+
+	if(!video.window) {
+		video_new_window(w, h, fs, resizable);
+		return;
+	}
+
+	if(w != video.current.width || h != video.current.height) {
+		if(fs && !config_get_int(CONFIG_FULLSCREEN_DESKTOP)) {
+			video_set_display_mode(w, h);
+			video_set_fullscreen(fs);
+			video_update_mode_settings();
+		} else {
+			// XXX: I would like to use SDL_SetWindowSize for size changes, but apparently it's impossible to reliably detect
+			//		when it fails to actually resize the window. For example, a tiling WM (awesome) may be getting in its way
+			//		and we'd never know. SDL_GL_GetDrawableSize/SDL_GetWindowSize aren't helping as of SDL 2.0.5.
+			//
+			//		There's not much to be done about it. We're at mercy of SDL here and SDL is at mercy of the WM.
+			video_new_window(w, h, fs, resizable);
+			return;
+		}
+	}
+
+	video_set_fullscreen(fs);
+	SDL_SetWindowResizable(video.window, resizable);
 }
 
 void video_take_screenshot(void) {
@@ -353,15 +428,21 @@ bool video_isresizable(void) {
 }
 
 bool video_isfullscreen(void) {
-	return SDL_GetWindowFlags(video.window) & FULLSCREEN_FLAGS;
+	return WINFLAGS_IS_FULLSCREEN(SDL_GetWindowFlags(video.window));
 }
 
 bool video_can_change_resolution(void) {
-	return !(SDL_GetWindowFlags(video.window) & SDL_WINDOW_FULLSCREEN_DESKTOP);
+	return !video_isfullscreen() || !config_get_int(CONFIG_FULLSCREEN_DESKTOP);
 }
 
 void video_set_fullscreen(bool fullscreen) {
-	video_set_mode(video.intended.width, video.intended.height, fullscreen, config_get_int(CONFIG_VID_RESIZABLE));
+	uint32_t flags = fullscreen ? get_fullscreen_flag() : 0;
+
+	if(!SDL_SetWindowFullscreen(video.window, flags)) {
+		events_pause_keyrepeat();
+	} else {
+		log_warn("Failed to switch to %s mode: %s", modeflagsstr(flags), SDL_GetError());
+	}
 }
 
 void video_toggle_fullscreen(void) {
@@ -373,6 +454,7 @@ void video_resize(int w, int h) {
 	video.current.height = h;
 	video_set_viewport();
 	video_update_quality();
+	video_dispatch_mode_changed_event();
 }
 
 static void video_cfg_fullscreen_callback(ConfigIndex idx, ConfigValue v) {
