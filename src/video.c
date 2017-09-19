@@ -344,7 +344,7 @@ void video_set_mode(int w, int h, bool fs, bool resizable) {
 			video_set_display_mode(w, h);
 			video_set_fullscreen(fs);
 			video_update_mode_settings();
-		} else {
+		} else if(fs == video_is_fullscreen()) {
 			// XXX: I would like to use SDL_SetWindowSize for size changes, but apparently it's impossible to reliably detect
 			//		when it fails to actually resize the window. For example, a tiling WM (awesome) may be getting in its way
 			//		and we'd never know. SDL_GL_GetDrawableSize/SDL_GetWindowSize aren't helping as of SDL 2.0.5.

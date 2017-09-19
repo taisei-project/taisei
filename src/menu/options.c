@@ -338,7 +338,6 @@ void destroy_options_menu(MenuData *m) {
 				config_set_int(CONFIG_VID_WIDTH, video.intended.width);
 				config_set_int(CONFIG_VID_HEIGHT, video.intended.height);
 			}
-			break;
 		}
 
 		bind_free(bind);
