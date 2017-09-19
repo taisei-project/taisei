@@ -901,7 +901,7 @@ static void notify_bindings(EventType type, int state, MenuData *menu) {
 
 			case BT_IntValue:
 				if(bind->configentry == CONFIG_FULLSCREEN) {
-					bind->selected = video_isfullscreen();
+					bind->selected = video_is_fullscreen();
 				}
 				break;
 

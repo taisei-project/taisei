@@ -72,7 +72,7 @@ void video_set_viewport(void) {
 	glViewport((video.current.width - w) / 2, (video.current.height - h) / 2, w, h);
 }
 
-void video_update_vsync(void) {
+static void video_update_vsync(void) {
 	if(global.frameskip || config_get_int(CONFIG_VSYNC) == 1) {
 		SDL_GL_SetSwapInterval(0);
 	} else {
@@ -220,7 +220,7 @@ static void video_update_mode_settings(void) {
 	video_update_quality();
 	video_dispatch_mode_changed_event();
 
-	if(video_isfullscreen() && !config_get_int(CONFIG_FULLSCREEN_DESKTOP)) {
+	if(video_is_fullscreen() && !config_get_int(CONFIG_FULLSCREEN_DESKTOP)) {
 		video_check_fullscreen_sanity();
 	}
 }
@@ -318,6 +318,16 @@ static bool video_set_display_mode(int w, int h) {
 	}
 
 	return true;
+}
+
+static void video_set_fullscreen(bool fullscreen) {
+	uint32_t flags = fullscreen ? get_fullscreen_flag() : 0;
+
+	if(!SDL_SetWindowFullscreen(video.window, flags)) {
+		events_pause_keyrepeat();
+	} else {
+		log_warn("Failed to switch to %s mode: %s", modeflagsstr(flags), SDL_GetError());
+	}
 }
 
 void video_set_mode(int w, int h, bool fs, bool resizable) {
@@ -423,30 +433,16 @@ void video_take_screenshot(void) {
 	SDL_RWclose(out);
 }
 
-bool video_isresizable(void) {
+bool video_is_resizable(void) {
 	return SDL_GetWindowFlags(video.window) & SDL_WINDOW_RESIZABLE;
 }
 
-bool video_isfullscreen(void) {
+bool video_is_fullscreen(void) {
 	return WINFLAGS_IS_FULLSCREEN(SDL_GetWindowFlags(video.window));
 }
 
 bool video_can_change_resolution(void) {
-	return !video_isfullscreen() || !config_get_int(CONFIG_FULLSCREEN_DESKTOP);
-}
-
-void video_set_fullscreen(bool fullscreen) {
-	uint32_t flags = fullscreen ? get_fullscreen_flag() : 0;
-
-	if(!SDL_SetWindowFullscreen(video.window, flags)) {
-		events_pause_keyrepeat();
-	} else {
-		log_warn("Failed to switch to %s mode: %s", modeflagsstr(flags), SDL_GetError());
-	}
-}
-
-void video_toggle_fullscreen(void) {
-	video_set_fullscreen(!video_isfullscreen());
+	return !video_is_fullscreen() || !config_get_int(CONFIG_FULLSCREEN_DESKTOP);
 }
 
 void video_resize(int w, int h) {
