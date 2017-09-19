@@ -54,7 +54,7 @@ static void player_full_power(Player *plr) {
 	stagetext_add("Full Power!", VIEWPORT_W * 0.5 + VIEWPORT_H * 0.33 * I, AL_Center, _fonts.mainmenu, rgb(1, 1, 1), 0, 60, 20, 20);
 }
 
-void player_set_power(Player *plr, short npow) {
+void player_set_power(Player *plr, short npow, bool handle_fullpower) {
 	npow = clamp(npow, 0, PLR_MAX_POWER);
 
 	switch(plr->cha) {
@@ -69,7 +69,7 @@ void player_set_power(Player *plr, short npow) {
 	int oldpow = plr->power;
 	plr->power = npow;
 
-	if(plr->power == PLR_MAX_POWER && oldpow < PLR_MAX_POWER) {
+	if(plr->power == PLR_MAX_POWER && oldpow < PLR_MAX_POWER && handle_fullpower) {
 		player_full_power(plr);
 	}
 }
@@ -260,7 +260,7 @@ void player_realdeath(Player *plr) {
 	int drop = max(2, (plr->power * 0.15) / POWER_VALUE);
 	spawn_items(death_origin, Power, drop, NULL);
 
-	player_set_power(plr, plr->power * 0.7);
+	player_set_power(plr, plr->power * 0.7,true);
 	plr->bombs = PLR_START_BOMBS;
 	plr->bomb_fragments = 0;
 
@@ -328,11 +328,11 @@ void player_event(Player* plr, int type, int key) {
 					break;
 
 				case KEY_POWERUP:
-					player_set_power(plr, plr->power + 100);
+					player_set_power(plr, plr->power + 100,true);
 					break;
 
 				case KEY_POWERDOWN:
-					player_set_power(plr, plr->power - 100);
+					player_set_power(plr, plr->power - 100,true);
 					break;
 
 				default:

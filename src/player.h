@@ -128,7 +128,7 @@ void player_draw(Player*);
 void player_logic(Player*);
 
 void player_set_char(Player*, Character);
-void player_set_power(Player *plr, short npow);
+void player_set_power(Player *plr, short npow, bool handle_fullpower);
 
 void player_move(Player*, complex delta);
 

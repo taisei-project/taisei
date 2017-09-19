@@ -556,17 +556,11 @@ void stage_loop(StageInfo *stage) {
 		stg->playpos = 0;
 	}
 
-	Enemy *e = global.plr.slaves, *tmp;
+	// TODO: remove handle_fullpower from player_set_power and get rid of this hack
 	short power = global.plr.power;
 	global.plr.power = -1;
-
-	while(e != 0) {
-		tmp = e;
-		e = e->next;
-		delete_enemy(&global.plr.slaves, tmp);
-	}
-
-	player_set_power(&global.plr, power);
+	delete_enemies(&global.plr.slaves);
+	player_set_power(&global.plr, power,false);
 
 	stage->procs->begin();
 
