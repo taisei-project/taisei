@@ -326,7 +326,7 @@ void destroy_options_menu(MenuData *m) {
 		if(!bind)
 			continue;
 
-		if(bind->type == BT_Resolution) {
+		if(bind->type == BT_Resolution && video_can_change_resolution()) {
 			if(bind->selected != -1) {
 				VideoMode *m = video.modes + bind->selected;
 
