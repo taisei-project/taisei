@@ -290,19 +290,14 @@ void frame_rate(uint64_t *lasttime) {
 bool calc_fps(FPSCounter *fps) {
     bool updated = false;
 
-    if(!fps->stagebg_fps)
-        fps->stagebg_fps = FPS;
-
-    if(SDL_GetTicks() > fps->fpstime+5000) {
-        fps->show_fps = fps->fps / 5;
+    if(SDL_GetTicks() > fps->fpstime+1000) {
+        fps->show_fps = fps->fps;
         fps->fps = 0;
         fps->fpstime = SDL_GetTicks();
         updated = true;
     } else {
         fps->fps++;
     }
-
-    fps->stagebg_fps = approach(fps->stagebg_fps, fps->show_fps, 0.1);
 
     return updated;
 }

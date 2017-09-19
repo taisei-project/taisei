@@ -100,7 +100,6 @@ typedef struct {
     int fpstime;  // frame counter
     int fps;
     int show_fps;
-    double stagebg_fps;
 } FPSCounter;
 
 void frame_rate(uint64_t *lasttime);

@@ -187,7 +187,7 @@ static void stage_start(StageInfo *stage) {
 	global.game_over = 0;
 	global.shake_view = 0;
 
-	global.fps.stagebg_fps = global.fps.show_fps = FPS;
+	global.fps.show_fps = FPS;
 	global.fps.fpstime = SDL_GetTicks();
 
 	prepare_player_for_next_stage(&global.plr);
