@@ -8,12 +8,12 @@ shoot-em-up games set in an isolated world full of Japanese folklore.
 ## Installation
 
 Dependencies:
-* SDL2, SDL2\_ttf, SDL2\_mixer
+* SDL2 >= 2.0.5, SDL2\_ttf, SDL2\_mixer
 * zlib
 * libzip
 * libpng >= 1.5.0
-* OpenGL
-* CMake (build system)
+* OpenGL >= 2.1
+* CMake >= 3.2 (build system)
 * pkg-config (build dependency)
 
 To build and install Taisei just follow these steps.
@@ -34,16 +34,9 @@ like
 ```
 $prefix/taisei
 $prefix/data/
-($prefix/config)
 ```
 
-`RELATIVE` is always set when building for Windows.
-
-## NOTE ABOUT REPLAYS
-
-As of version 1.0 replays are not guaranteed to work between different
-operating systems or architectures (or compiler versions). Screen capture
-your replays if you really want to publish them.
+`RELATIVE` is always set when building for Windows or macOS.
 
 ## NOTE ABOUT BACKGROUND MUSIC
 
@@ -66,7 +59,7 @@ Complete music pack consists of 16 bgm\_\*.(ogg/wav/flac) files, where ‘\*’ 
 If you want to specify stage/boss theme names to be shown during gameplay, you
 may do it by editing the [`bgm/bgm.conf`](bgm/bgm.conf) file.
 
-## Sound problems
+## Sound problems (Linux)
 
 If your sound becomes glitchy, and you encounter lot of console messages like:
 `ALSA lib pcm.c:7234:(snd_pcm_recover) underrun occurred`,
