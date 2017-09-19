@@ -106,17 +106,16 @@ void replay_destroy(Replay *rpy) {
 	log_debug("Replay at %p destroyed", (void*)rpy);
 }
 
-void replay_stage_event(ReplayStage *stg, uint32_t frame, uint8_t type, int16_t value) {
+void replay_stage_event(ReplayStage *stg, uint32_t frame, uint8_t type, uint16_t value) {
 	if(!stg) {
 		return;
 	}
 
 	ReplayStage *s = stg;
-	ReplayEvent *e = s->events + s->numevents;
+	ReplayEvent *e = s->events + s->numevents++;
 	e->frame = frame;
 	e->type = type;
-	e->value = (uint16_t)value;
-	s->numevents++;
+	e->value = value;
 
 	if(s->numevents >= s->capacity) {
 		log_debug("Replay stage reached its capacity of %d, reallocating", s->capacity);
@@ -587,6 +586,7 @@ void replay_stage_check_desync(ReplayStage *stg, int time, uint16_t check, Repla
 	if(mode == REPLAY_PLAY) {
 		if(stg->desync_check && stg->desync_check != check) {
 			log_warn("Replay desync detected! %u != %u", stg->desync_check, check);
+			stg->desynced = true;
 		} else {
 			log_debug("%u OK", check);
 		}

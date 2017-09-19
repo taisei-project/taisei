@@ -14,6 +14,8 @@
 #include "stage.h"
 #include "stagetext.h"
 
+#include <SDL_bits.h>
+
 void init_player(Player *plr) {
 	memset(plr, 0, sizeof(Player));
 	plr->pos = VIEWPORT_W/2 + I*(VIEWPORT_H-64);
@@ -54,7 +56,7 @@ static void player_full_power(Player *plr) {
 	stagetext_add("Full Power!", VIEWPORT_W * 0.5 + VIEWPORT_H * 0.33 * I, AL_Center, _fonts.mainmenu, rgb(1, 1, 1), 0, 60, 20, 20);
 }
 
-void player_set_power(Player *plr, short npow, bool handle_fullpower) {
+bool player_set_power(Player *plr, short npow, bool handle_fullpower) {
 	npow = clamp(npow, 0, PLR_MAX_POWER);
 
 	switch(plr->cha) {
@@ -72,6 +74,8 @@ void player_set_power(Player *plr, short npow, bool handle_fullpower) {
 	if(plr->power == PLR_MAX_POWER && oldpow < PLR_MAX_POWER && handle_fullpower) {
 		player_full_power(plr);
 	}
+
+	return oldpow != plr->power;
 }
 
 void player_move(Player *plr, complex delta) {
@@ -203,9 +207,9 @@ void player_logic(Player* plr) {
 	}
 }
 
-void player_bomb(Player *plr) {
+bool player_bomb(Player *plr) {
 	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell)
-		return;
+		return false;
 
 	if(global.frames - plr->recovery >= 0 && (plr->bombs > 0 || plr->iddqd) && global.frames - plr->respawntime >= 60) {
 		player_fail_spell(plr);
@@ -234,7 +238,11 @@ void player_bomb(Player *plr) {
 		}
 
 		plr->recovery = global.frames + BOMB_RECOVERY;
+
+		return true;
 	}
+
+	return false;
 }
 
 void player_realdeath(Player *plr) {
@@ -290,37 +298,74 @@ static PlrInputFlag key_to_inflag(KeyIndex key) {
 		case KEY_RIGHT: return INFLAG_RIGHT; break;
 		case KEY_FOCUS: return INFLAG_FOCUS; break;
 		case KEY_SHOT:  return INFLAG_SHOT;  break;
+		case KEY_SKIP:  return INFLAG_SKIP;  break;
 		default:        return 0;
 	}
 }
 
-void player_setinputflag(Player *plr, KeyIndex key, bool mode) {
-	PlrInputFlag flag = key_to_inflag(key);
+bool player_updateinputflags(Player *plr, PlrInputFlag flags) {
+	if(flags == plr->inputflags) {
+		return false;
+	}
 
-	if(!flag) {
-		return;
+	PlrInputFlag newmove = INFLAGS_MOVE & flags & ~plr->inputflags;
+
+	if(newmove) {
+		plr->prevmove = plr->curmove;
+		plr->prevmovetime = plr->movetime;
+		plr->curmove = (1 << (unsigned)SDL_MostSignificantBitIndex32(flags));
+		plr->movetime = global.frames;
+	}
+
+	plr->inputflags = flags;
+	return true;
+}
+
+bool player_updateinputflags_moveonly(Player *plr, PlrInputFlag flags) {
+	return player_updateinputflags(plr, (flags & INFLAGS_MOVE) | (plr->inputflags & ~INFLAGS_MOVE));
+}
+
+bool player_setinputflag(Player *plr, KeyIndex key, bool mode) {
+	PlrInputFlag newflags = plr->inputflags;
+	PlrInputFlag keyflag = key_to_inflag(key);
+
+	if(!keyflag) {
+		return false;
 	}
 
 	if(mode) {
-		if(flag & INFLAGS_MOVE) {
-			plr->prevmove = plr->curmove;
-			plr->prevmovetime = plr->movetime;
-			plr->curmove = flag;
-			plr->movetime = global.frames;
-		}
-
-		plr->inputflags |= flag;
+		newflags |= keyflag;
 	} else {
-		plr->inputflags &= ~flag;
+		newflags &= ~keyflag;
 	}
+
+	return player_updateinputflags(plr, newflags);
 }
 
-void player_event(Player* plr, int type, int key) {
+static bool player_set_axis(int *aptr, uint16_t value) {
+	int16_t new = (int16_t)value;
+
+	if(*aptr == new) {
+		return false;
+	}
+
+	*aptr = new;
+	return true;
+}
+
+bool player_event(Player *plr, uint8_t type, uint16_t value) {
+	bool useful = true;
+
 	switch(type) {
 		case EV_PRESS:
-			switch(key) {
+			if(global.dialog && (value == KEY_SHOT || value == KEY_BOMB)) {
+				page_dialog(&global.dialog);
+				break;
+			}
+
+			switch(value) {
 				case KEY_BOMB:
-					player_bomb(plr);
+					useful = player_bomb(plr);
 					break;
 
 				case KEY_IDDQD:
@@ -328,35 +373,55 @@ void player_event(Player* plr, int type, int key) {
 					break;
 
 				case KEY_POWERUP:
-					player_set_power(plr, plr->power + 100,true);
+					useful = player_set_power(plr, plr->power + 100, true);
 					break;
 
 				case KEY_POWERDOWN:
-					player_set_power(plr, plr->power - 100,true);
+					useful = player_set_power(plr, plr->power - 100, true);
 					break;
 
 				default:
-					player_setinputflag(plr, key, true);
+					useful = player_setinputflag(plr, value, true);
 					break;
 			}
 			break;
 
 		case EV_RELEASE:
-			player_setinputflag(plr, key, false);
+			player_setinputflag(plr, value, false);
 			break;
 
 		case EV_AXIS_LR:
-			plr->axis_lr = key;
+			useful = player_set_axis(&plr->axis_lr, value);
 			break;
 
 		case EV_AXIS_UD:
-			plr->axis_ud = key;
+			useful = player_set_axis(&plr->axis_ud, value);
+			break;
+
+		case EV_INFLAGS:
+			useful = player_updateinputflags(plr, value);
 			break;
 
 		default:
-			log_warn("Unknown event type %d (value=%d)", type, key);
+			log_warn("Can not handle event: [%i:%02x:%04x]", global.frames, type, value);
+			useful = false;
 			break;
 	}
+
+	return useful;
+}
+
+bool player_event_with_replay(Player *plr, uint8_t type, uint16_t value) {
+	assert(global.replaymode == REPLAY_RECORD);
+
+	if(player_event(plr, type, value)) {
+		replay_stage_event(global.replay_stage, global.frames, type, value);
+		return true;
+	} else {
+		log_debug("Useless event discarded: [%i:%02x:%04x]", global.frames, type, value);
+	}
+
+	return false;
 }
 
 // free-axis movement
@@ -376,10 +441,12 @@ bool player_applymovement_gamepad(Player *plr) {
 	int sr = sign(creal(direction));
 	int si = sign(cimag(direction));
 
-	player_setinputflag(plr, KEY_UP,    si == -1);
-	player_setinputflag(plr, KEY_DOWN,  si ==  1);
-	player_setinputflag(plr, KEY_LEFT,  sr == -1);
-	player_setinputflag(plr, KEY_RIGHT, sr ==  1);
+	player_updateinputflags_moveonly(plr,
+		(INFLAG_UP    * (si == -1)) |
+		(INFLAG_DOWN  * (si ==  1)) |
+		(INFLAG_LEFT  * (sr == -1)) |
+		(INFLAG_RIGHT * (sr ==  1))
+	);
 
 	if(direction) {
 		plr->gamepadmove = true;
@@ -426,30 +493,41 @@ void player_applymovement(Player *plr) {
 		player_move(&global.plr, direction);
 }
 
-void player_input_workaround(Player *plr) {
-	if(global.dialog)
-		return;
+void player_fix_input(Player *plr) {
+	// correct input state to account for any events we might have missed,
+	// usually because the pause menu ate them up
+
+	PlrInputFlag newflags = plr->inputflags;
 
 	for(KeyIndex key = KEYIDX_FIRST; key <= KEYIDX_LAST; ++key) {
 		int flag = key_to_inflag(key);
 
-		if(flag) {
-			int event = -1;
+		if(flag && !(plr->gamepadmove && (flag & INFLAGS_MOVE))) {
 			bool flagset = plr->inputflags & flag;
 			bool keyheld = gamekeypressed(key);
 
 			if(flagset && !keyheld) {
-				// something ate the release event (most likely the ingame menu)
-				event = EV_RELEASE;
+				newflags &= ~flag;
 			} else if(!flagset && keyheld) {
-				// something ate the press event (most likely the ingame menu)
-				event = EV_PRESS;
+				newflags |= flag;
 			}
+		}
+	}
 
-			if(event != -1) {
-				player_event(plr, event, key);
-				replay_stage_event(global.replay_stage, global.frames, event, key);
-			}
+	if(newflags != plr->inputflags) {
+		player_event_with_replay(plr, EV_INFLAGS, newflags);
+	}
+
+	if(config_get_int(CONFIG_GAMEPAD_AXIS_FREE)) {
+		int axis_lr = gamepad_get_player_axis_value(PLRAXIS_LR);
+		int axis_ud = gamepad_get_player_axis_value(PLRAXIS_UD);
+
+		if(plr->axis_lr != axis_lr) {
+			player_event_with_replay(plr, EV_AXIS_LR, axis_lr);
+		}
+
+		if(plr->axis_ud != axis_ud) {
+			player_event_with_replay(plr, EV_AXIS_UD, axis_ud);
 		}
 	}
 }

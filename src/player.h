@@ -48,6 +48,7 @@ typedef enum {
 	INFLAG_RIGHT = 8,
 	INFLAG_FOCUS = 16,
 	INFLAG_SHOT = 32,
+	INFLAG_SKIP = 64,
 } PlrInputFlag;
 
 enum {
@@ -119,6 +120,7 @@ enum {
 	EV_AXIS_UD,
 	EV_CHECK_DESYNC, // replay-only
 	EV_FPS, // replay-only
+	EV_INFLAGS,
 };
 
 void init_player(Player*);
@@ -128,19 +130,18 @@ void player_draw(Player*);
 void player_logic(Player*);
 
 void player_set_char(Player*, Character);
-void player_set_power(Player *plr, short npow, bool handle_fullpower);
+bool player_set_power(Player *plr, short npow, bool handle_fullpower);
 
 void player_move(Player*, complex delta);
 
-void player_bomb(Player*);
 void player_realdeath(Player*);
 void player_death(Player*);
 void player_graze(Player*, complex, int);
 
-void player_setinputflag(Player *plr, KeyIndex key, bool mode);
-void player_event(Player* plr, int type, int key);
+bool player_event(Player* plr, uint8_t type, uint16_t value);
+bool player_event_with_replay(Player *plr, uint8_t type, uint16_t value);
 void player_applymovement(Player* plr);
-void player_input_workaround(Player *plr);
+void player_fix_input(Player *plr);
 
 void player_add_life_fragments(Player *plr, int frags);
 void player_add_bomb_fragments(Player *plr, int frags);

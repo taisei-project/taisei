@@ -37,8 +37,9 @@
 #define REPLAY_EXTENSION "tsr"
 #define REPLAY_USELESS_BYTE 0x69
 
+#define REPLAY_WRITE_DESYNC_CHECKS
+
 #ifdef DEBUG
-	#define REPLAY_WRITE_DESYNC_CHECKS
 	#define REPLAY_LOAD_GARBAGE_TEST
 #endif
 
@@ -91,6 +92,7 @@ typedef struct ReplayStage {
 	int playpos;
 	int fps;
 	uint16_t desync_check;
+	bool desynced;
 } ReplayStage;
 
 typedef struct Replay {
@@ -147,7 +149,7 @@ ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, D
 void replay_destroy(Replay *rpy);
 void replay_destroy_events(Replay *rpy);
 
-void replay_stage_event(ReplayStage *stg, uint32_t frame, uint8_t type, int16_t value);
+void replay_stage_event(ReplayStage *stg, uint32_t frame, uint8_t type, uint16_t value);
 void replay_stage_check_desync(ReplayStage *stg, int time, uint16_t check, ReplayMode mode);
 void replay_stage_sync_player_state(ReplayStage *stg, Player *plr);
 

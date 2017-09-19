@@ -14,6 +14,21 @@
 #include "events.h"
 #include "config.h"
 
+enum {
+    AXISVAL_LEFT  = -1,
+    AXISVAL_RIGHT =  1,
+
+    AXISVAL_UP    = -1,
+    AXISVAL_DOWN  =  1,
+
+    AXISVAL_NULL  = 0
+};
+
+typedef enum {
+    PLRAXIS_LR, // aka X
+    PLRAXIS_UD, // aka Y
+} GamepadPlrAxis;
+
 void gamepad_init(void);
 void gamepad_shutdown(void);
 void gamepad_restart(void);
@@ -32,21 +47,7 @@ bool gamepad_gamekeypressed(KeyIndex key);
 const char* gamepad_button_name(SDL_GameControllerButton btn);
 const char* gamepad_axis_name(SDL_GameControllerAxis btn);
 
-// shitty workaround for the options menu. Used to list devices while the gamepad subsystem is off.
-// only initializes the SDL subsystem so you can use gamepad_devicecount/gamepad_devicename.
-// if gamepad has been initialized already, these do nothing.
-void gamepad_init_bare(void);
-void gamepad_shutdown_bare(void);
-
-enum {
-	AXISVAL_LEFT  = -1,
-	AXISVAL_RIGHT =  1,
-
-	AXISVAL_UP    = -1,
-	AXISVAL_DOWN  =  1,
-
-	AXISVAL_NULL  = 0
-};
+int gamepad_get_player_axis_value(GamepadPlrAxis paxis);
 
 #define GAMEPAD_AXIS_MAX 32767
 #define GAMEPAD_AXIS_MIN -32768

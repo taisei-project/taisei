@@ -502,9 +502,20 @@ void stage_draw_hud(void) {
 
 	if(global.replaymode == REPLAY_PLAY) {
 		snprintf(buf, sizeof(buf), "Replay: %s (%i fps)", global.replay.playername, global.replay_stage->fps);
-		glColor4f(0.5f, 0.5f, 0.5f, 0.5f);
-		draw_text(AL_Left, 0, SCREEN_H - 0.5 * stringheight(buf, _fonts.standard), buf, _fonts.standard);
+		int x = 0, y = SCREEN_H - 0.5 * stringheight(buf, _fonts.standard);
+
+		glColor4f(0.5f, 0.5f, 0.5f, 0.6f);
+		draw_text(AL_Left, x, y, buf, _fonts.standard);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
+		if(global.replay_stage->desynced) {
+			x += stringwidth(buf, _fonts.standard);
+			strlcpy(buf, " (DESYNCED)", sizeof(buf));
+
+			glColor4f(1.0f, 0.2f, 0.2f, 0.6f);
+			draw_text(AL_Left, x, y, buf, _fonts.standard);
+			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+		}
 	}
 #ifdef PLR_DPS_STATS
 	else {

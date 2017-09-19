@@ -36,7 +36,6 @@ typedef struct Dialog {
 	int page_time;
 
 	int birthtime;
-	bool skip;
 } Dialog;
 
 Dialog *create_dialog(char *left, char *right);

@@ -263,25 +263,11 @@ void stage_input_event(EventType type, int key, void *arg) {
 				break;
 #endif
 
-			if(global.dialog && (key == KEY_SHOT || key == KEY_BOMB)) {
-				page_dialog(&global.dialog);
-				replay_stage_event(global.replay_stage, global.frames, EV_PRESS, key);
-			} else {
-				player_event(&global.plr, EV_PRESS, key);
-				replay_stage_event(global.replay_stage, global.frames, EV_PRESS, key);
-
-				if(key == KEY_SKIP && global.dialog) {
-					global.dialog->skip = true;
-				}
-			}
+			player_event_with_replay(&global.plr, EV_PRESS, key);
 			break;
 
 		case E_PlrKeyUp:
-			player_event(&global.plr, EV_RELEASE, key);
-			replay_stage_event(global.replay_stage, global.frames, EV_RELEASE, key);
-
-			if(key == KEY_SKIP && global.dialog)
-				global.dialog->skip = false;
+			player_event_with_replay(&global.plr, EV_RELEASE, key);
 			break;
 
 		case E_Pause:
@@ -289,13 +275,11 @@ void stage_input_event(EventType type, int key, void *arg) {
 			break;
 
 		case E_PlrAxisLR:
-			player_event(&global.plr, EV_AXIS_LR, key);
-			replay_stage_event(global.replay_stage, global.frames, EV_AXIS_LR, key);
+			player_event_with_replay(&global.plr, EV_AXIS_LR, (uint16_t)key);
 			break;
 
 		case E_PlrAxisUD:
-			player_event(&global.plr, EV_AXIS_UD, key);
-			replay_stage_event(global.replay_stage, global.frames, EV_AXIS_UD, key);
+			player_event_with_replay(&global.plr, EV_AXIS_UD, (uint16_t)key);
 			break;
 
 		default: break;
@@ -333,12 +317,7 @@ void replay_input(void) {
 				break;
 
 			default:
-				if(global.dialog && e->type == EV_PRESS && (e->value == KEY_SHOT || e->value == KEY_BOMB))
-					page_dialog(&global.dialog);
-				else if(global.dialog && (e->type == EV_PRESS || e->type == EV_RELEASE) && e->value == KEY_SKIP)
-					global.dialog->skip = (e->type == EV_PRESS);
-				else
-					player_event(&global.plr, e->type, (int16_t)e->value);
+				player_event(&global.plr, e->type, (int16_t)e->value);
 				break;
 		}
 	}
@@ -349,14 +328,7 @@ void replay_input(void) {
 
 void stage_input(void) {
 	handle_events(stage_input_event, EF_Game, NULL);
-
-	// workaround
-	if(global.dialog && global.dialog->skip && !gamekeypressed(KEY_SKIP)) {
-		global.dialog->skip = false;
-		replay_stage_event(global.replay_stage, global.frames, EV_RELEASE, KEY_SKIP);
-	}
-
-	player_input_workaround(&global.plr);
+	player_fix_input(&global.plr);
 	player_applymovement(&global.plr);
 }
 
@@ -372,7 +344,7 @@ static void stage_logic(void) {
 	if(global.boss && !global.dialog)
 		process_boss(&global.boss);
 
-	if(global.dialog && global.dialog->skip && global.frames - global.dialog->page_time > 3)
+	if(global.dialog && (global.plr.inputflags & INFLAG_SKIP) && global.frames - global.dialog->page_time > 3)
 		page_dialog(&global.dialog);
 
 	global.frames++;

@@ -763,7 +763,7 @@ void draw_options_menu(MenuData *menu) {
 				case BT_GamepadDevice: {
 					if(bind_isactive(bind)) {
 						// XXX: I'm not exactly a huge fan of fixing up state in drawing code, but it seems the way to go for now...
-						bind->valrange_max = gamepad_devicecount() - 1;
+						bind->valrange_max = gamepad_devicecount();
 
 						if(bind->selected < 0 || bind->selected > bind->valrange_max) {
 							bind->selected = gamepad_currentdevice();

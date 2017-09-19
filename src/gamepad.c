@@ -207,6 +207,24 @@ int gamepad_axis2gamekey(SDL_GameControllerAxis id, int val) {
 	return -1;
 }
 
+SDL_GameControllerAxis gamepad_gamekey2axis(KeyIndex key) {
+	switch(key) {
+		case KEY_UP:	case KEY_DOWN:	return config_get_int(CONFIG_GAMEPAD_AXIS_UD);
+		case KEY_LEFT:	case KEY_RIGHT:	return config_get_int(CONFIG_GAMEPAD_AXIS_LR);
+		default:						return SDL_CONTROLLER_AXIS_INVALID;
+	}
+}
+
+int gamepad_gamekey2axisval(KeyIndex key) {
+	switch(key) {
+		case KEY_UP:	return AXISVAL_UP;
+		case KEY_DOWN:	return AXISVAL_DOWN;
+		case KEY_LEFT:	return AXISVAL_LEFT;
+		case KEY_RIGHT:	return AXISVAL_RIGHT;
+		default:		return AXISVAL_NULL;
+	}
+}
+
 int gamepad_axis2menuevt(SDL_GameControllerAxis id, int val) {
 	if(id == SDL_CONTROLLER_AXIS_LEFTX || id == SDL_CONTROLLER_AXIS_RIGHTX)
 		return val == AXISVAL_LEFT ? E_CursorLeft : E_CursorRight;
@@ -237,31 +255,71 @@ float gamepad_axis_sens(SDL_GameControllerAxis id) {
 	return 1.0;
 }
 
+static int gamepad_axis_process_value_deadzone(int raw) {
+	int val, vsign;
+	float deadzone = clamp(config_get_float(CONFIG_GAMEPAD_AXIS_DEADZONE), 0.01, 0.999);
+	int minval = clamp(deadzone, 0, 1) * GAMEPAD_AXIS_MAX;
+
+	val = raw;
+	vsign = sign(val);
+	val = abs(val);
+
+	if(val < minval) {
+		val = 0;
+	} else {
+		val = vsign * clamp((val - minval) / (1.0 - deadzone), 0, GAMEPAD_AXIS_MAX);
+	}
+
+	return val;
+}
+
+static int gamepad_axis_process_value(SDL_GameControllerAxis id, int raw) {
+	double sens = gamepad_axis_sens(id);
+	int sens_sign = sign(sens);
+
+	raw = gamepad_axis_process_value_deadzone(raw);
+
+	double x = raw / (double)GAMEPAD_AXIS_MAX;
+	int in_sign = sign(x);
+
+	x = pow(fabs(x), 1.0 / fabs(sens)) * in_sign * sens_sign;
+	x = x ? x : 0;
+	x = clamp(x * GAMEPAD_AXIS_MAX, GAMEPAD_AXIS_MIN, GAMEPAD_AXIS_MAX);
+
+	return (int)x;
+}
+
+int gamepad_get_player_axis_value(GamepadPlrAxis paxis) {
+	SDL_GameControllerAxis id;
+
+	if(!gamepad.initialized) {
+		return 0;
+	}
+
+	if(paxis == PLRAXIS_LR) {
+		id = config_get_int(CONFIG_GAMEPAD_AXIS_LR);
+	} else if(paxis == PLRAXIS_UD) {
+		id = config_get_int(CONFIG_GAMEPAD_AXIS_UD);
+	} else {
+		return INT_MAX;
+	}
+
+	return gamepad_axis_process_value(id, SDL_GameControllerGetAxis(gamepad.device, id));
+}
+
 void gamepad_axis(SDL_GameControllerAxis id, int raw, EventHandler handler, EventFlags flags, void *arg) {
 	signed char *a   = gamepad.axis;
-	signed char val  = AXISVAL(raw);
+	signed char val  = AXISVAL(gamepad_axis_process_value_deadzone(raw));
 	bool free = config_get_int(CONFIG_GAMEPAD_AXIS_FREE);
 
 	bool menu = flags & EF_Menu;
 	bool game = flags & EF_Game;
 	bool gp   = flags & EF_Gamepad;
 
-	//printf("axis: %i %i %i\n", id, val, raw);
-
 	if(game && free) {
 		int evt = gamepad_axis2gameevt(id);
 		if(evt >= 0) {
-			double sens = gamepad_axis_sens(id);
-			int sens_sign = sign(sens);
-
-			double x = raw / (double)GAMEPAD_AXIS_MAX;
-			int in_sign = sign(x);
-
-			x = pow(fabs(x), 1.0 / fabs(sens)) * in_sign * sens_sign;
-			x = x ? x : 0;
-			x = clamp(x * GAMEPAD_AXIS_MAX, GAMEPAD_AXIS_MIN, GAMEPAD_AXIS_MAX);
-
-			handler(evt, x, arg);
+			handler(evt, gamepad_axis_process_value(id, raw), arg);
 		}
 	}
 
@@ -283,11 +341,12 @@ void gamepad_axis(SDL_GameControllerAxis id, int raw, EventHandler handler, Even
 				}
 			}
 		}
-	} else {	// simulate release
+	} else if(a[id]) {	// simulate release
 		if(game) {
 			int key = gamepad_axis2gamekey(id, a[id]);
 			handler(E_PlrKeyUp, key, arg);
 		}
+
 		a[id] = AXISVAL_NULL;
 	}
 
@@ -353,25 +412,10 @@ void gamepad_event(SDL_Event *event, EventHandler handler, EventFlags flags, voi
 	if(!gamepad.initialized)
 		return;
 
-	int val;
-	int vsign;
-	float deadzone = clamp(config_get_float(CONFIG_GAMEPAD_AXIS_DEADZONE), 0, 0.999);
-	int minval = clamp(deadzone, 0, 1) * GAMEPAD_AXIS_MAX;
-
 	switch(event->type) {
 		case SDL_CONTROLLERAXISMOTION:
 			if(event->caxis.which == gamepad.instance) {
-				val = event->caxis.value;
-				vsign = sign(val);
-				val = abs(val);
-
-				if(val < minval) {
-					val = 0;
-				} else {
-					val = vsign * clamp((val - minval) / (1.0 - deadzone), 0, GAMEPAD_AXIS_MAX);
-				}
-
-				gamepad_axis(event->caxis.axis, val, handler, flags, arg);
+				gamepad_axis(event->caxis.axis, event->caxis.value, handler, flags, arg);
 			}
 		break;
 
@@ -433,6 +477,14 @@ bool gamepad_buttonpressed(SDL_GameControllerButton btn) {
 bool gamepad_gamekeypressed(KeyIndex key) {
 	if(!gamepad.initialized)
 		return false;
+
+	if(!config_get_int(CONFIG_GAMEPAD_AXIS_FREE)) {
+		SDL_GameControllerAxis axis = gamepad_gamekey2axis(key);
+
+		if(axis != SDL_CONTROLLER_AXIS_INVALID && gamepad.axis[axis] == gamepad_gamekey2axisval(key)) {
+			return true;
+		}
+	}
 
 	int gpkey = config_gamepad_key_from_key(key);
 
