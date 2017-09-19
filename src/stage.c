@@ -64,7 +64,12 @@ static void add_spellpractice_stages(int *spellnum, bool (*filter)(AttackInfo*),
 				if(a->idmap[diff - D_Easy] >= 0) {
 					uint16_t id = spellbits | a->idmap[diff - D_Easy] | (s->id << 8);
 
-					char *title = strfmt("Spell %d", ++(*spellnum));
+					char *title;
+					if(a->type == AT_ExtraSpell)
+						title = strfmt("Extra Spell %d", ++(*spellnum));
+					else
+						title = strfmt("Spell %d", ++(*spellnum));
+
 					char *subtitle = strjoin(a->name, " ~ ", difficulty_name(diff), NULL);
 
 					add_stage(id, s->procs->spellpractice_procs, STAGE_SPELL, title, subtitle, a, diff, 0, 0);
