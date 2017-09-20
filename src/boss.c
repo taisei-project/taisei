@@ -261,11 +261,9 @@ void boss_rule_extra(Boss *boss, float alpha) {
 		g = 0.5 + 0.2 * psina * (1-v);
 		b = 0.5 + 0.5 * psina *    v;
 
-		create_particle2c("flare", pos, rgb(r, g, b), FadeAdd, timeout_linear, 15*lt, vel);
-
 		int d = 5;
 		if(!(global.frames % d))
-			create_particle3c((frand() < v*0.5 || lt > 1)? "stain" : "boss_shadow", pos, rgb(r, g, b), GrowFadeAdd, timeout_linear, 30*lt, vel * (1 - 2 * !(global.frames % (2*d))), 2.5);
+			create_particle3c((frand() < v*0.3 || lt > 1)? "stain" : "boss_shadow", pos, rgb(r, g, b), GrowFadeAdd, timeout_linear, 30*lt, vel * (1 - 2 * !(global.frames % (2*d))), 2.5);
 	}
 }
 
@@ -555,7 +553,7 @@ void boss_start_attack(Boss *b, Attack *a) {
 	a->rule(b, EVENT_BIRTH);
 	if(a->type == AT_Spellcard || a->type == AT_SurvivalSpell || a->type == AT_ExtraSpell) {
 		play_sound("charge_generic");
-		for(int i = 0; i < 10+10*(a->type == AT_ExtraSpell); i++) {
+		for(int i = 0; i < 10+5*(a->type == AT_ExtraSpell); i++) {
 			tsrand_fill(4);
 			create_particle2c("stain", VIEWPORT_W/2 + VIEWPORT_W/4*anfrand(0)+I*VIEWPORT_H/2+I*anfrand(1)*30, rgb(0.2,0.3,0.4), GrowFadeAdd, timeout_linear, 50, sign(anfrand(2))*10*(1+afrand(3)));
 		}
