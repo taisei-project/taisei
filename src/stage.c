@@ -187,8 +187,7 @@ static void stage_start(StageInfo *stage) {
 	global.game_over = 0;
 	global.shake_view = 0;
 
-	global.fps.show_fps = FPS;
-	global.fps.fpstime = SDL_GetTicks();
+	fpscounter_reset(&global.fps);
 
 	prepare_player_for_next_stage(&global.plr);
 
@@ -570,7 +569,7 @@ void stage_loop(StageInfo *stage) {
 			continue;
 		}
 
-		if(calc_fps(&global.fps) && global.replaymode == REPLAY_RECORD) {
+		if(fpscounter_update(&global.fps) && global.replaymode == REPLAY_RECORD) {
 			replay_stage_event(global.replay_stage, global.frames, EV_FPS, global.fps.show_fps);
 		}
 
@@ -590,7 +589,7 @@ void stage_loop(StageInfo *stage) {
 		if(global.replaymode == REPLAY_PLAY && gamekeypressed(KEY_SKIP)) {
 			global.lasttime = SDL_GetTicks();
 		} else {
-			frame_rate(&global.lasttime);
+			limit_frame_rate(&global.lasttime);
 		}
 	}
 

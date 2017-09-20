@@ -272,7 +272,7 @@ float smoothreclamp(float x, float old_min, float old_max, float new_min, float 
 // gl/video utils
 //
 
-void frame_rate(uint64_t *lasttime) {
+void limit_frame_rate(uint64_t *lasttime) {
     if(global.frameskip) {
         return;
     }
@@ -287,7 +287,13 @@ void frame_rate(uint64_t *lasttime) {
     *lasttime = SDL_GetPerformanceCounter();
 }
 
-bool calc_fps(FPSCounter *fps) {
+void fpscounter_reset(FPSCounter *fps) {
+        fps->show_fps = FPS;
+	fps->fps = 0;
+        fps->fpstime = SDL_GetTicks();
+}
+
+bool fpscounter_update(FPSCounter *fps) {
     bool updated = false;
 
     if(SDL_GetTicks() > fps->fpstime+1000) {

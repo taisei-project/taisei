@@ -102,8 +102,9 @@ typedef struct {
     int show_fps;
 } FPSCounter;
 
-void frame_rate(uint64_t *lasttime);
-bool calc_fps(FPSCounter *fps);
+void limit_frame_rate(uint64_t *lasttime);
+void fpscounter_reset(FPSCounter *fps);
+bool fpscounter_update(FPSCounter *fps);
 void set_ortho(void);
 void set_ortho_ex(float w, float h);
 void colorfill(float r, float g, float b, float a);

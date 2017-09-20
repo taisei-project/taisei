@@ -161,7 +161,7 @@ int menu_loop(MenuData *menu) {
 		draw_and_update_transition();
 
 		SDL_GL_SwapWindow(video.window);
-		frame_rate(&menu->lasttime);
+		limit_frame_rate(&menu->lasttime);
 	}
 
 	if(menu->end) {

@@ -272,7 +272,7 @@ void credits_loop(void) {
 		credits_draw();
 		global.frames++;
 		SDL_GL_SwapWindow(video.window);
-		frame_rate(&global.lasttime);
+		limit_frame_rate(&global.lasttime);
 	}
 	credits_free();
 }
