@@ -1,0 +1,23 @@
+
+find_program(UNIX2DOS unix2dos)
+
+if(NOT UNIX2DOS)
+    message(FATAL_ERROR "unix2dos not found, please install it (probably comes with dos2unix)")
+endif()
+
+set(DOC_PREFIX "$ENV{DESTDIR}@CMAKE_INSTALL_PREFIX@/@DOC_DIR@")
+set(DOC_FILES "@DOC_FILES@")
+
+message(STATUS "Fixing line breaks in documentation")
+
+foreach(FILE IN LISTS DOC_FILES)
+    execute_process(
+        COMMAND "${UNIX2DOS}" "${DOC_PREFIX}/${FILE}"
+        WORKING_DIRECTORY "@CMAKE_INSTALL_PREFIX@"
+        RESULT_VARIABLE ERRCODE
+    )
+
+    if(NOT ERRCODE EQUAL 0)
+        message(FATAL_ERROR "${UNIX2DOS} exited with error ${ERRCODE}")
+    endif()
+endforeach()

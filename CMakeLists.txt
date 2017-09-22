@@ -108,23 +108,36 @@ add_subdirectory(src)
 
 if(RELATIVE)
     add_definitions(-DRELATIVE)
+    set(DOC_DIR .)
 
     if(APPLE)
         set(RES_DIR "Taisei.app/Contents/Resources")
         set(DATA_DIR "${RES_DIR}/data")
         install(FILES "OSX-iconset.icns" DESTINATION "${RES_DIR}" RENAME "Taisei.icns")
     else()
-	   set(DATA_DIR "data")
+        set(DATA_DIR "data")
     endif()
-
-    install(FILES "story.txt" DESTINATION .)
-    install(FILES "COPYING" DESTINATION . RENAME "COPYING.txt")
 else()
 	set(DATA_DIR "share/taisei")
+    set(DOC_DIR "share/doc/taisei")
 
     install(FILES "taisei.desktop" DESTINATION "share/applications")
     install(FILES "taisei.png" DESTINATION "share/icons/hicolor/128x128/apps")
-    install(FILES "story.txt" DESTINATION ${DATA_DIR})
+endif()
+
+install(FILES "STORY.txt" DESTINATION "${DOC_DIR}")
+install(FILES "COPYING" DESTINATION "${DOC_DIR}" RENAME "COPYING.txt")
+install(FILES "README_installed.txt" DESTINATION "${DOC_DIR}" RENAME "README.txt")
+
+if(WIN32)
+    set(DOC_FILES "STORY.txt" "COPYING.txt" "README.txt")
+
+    configure_file(
+        "${BUILDSCRIPTS_DIR}/Win32FixDocs.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/Win32FixDocs.cmake"
+        @ONLY)
+
+    install(SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/Win32FixDocs.cmake")
 endif()
 
 set(GAME_RESOURCES_DIRS
@@ -143,7 +156,7 @@ if(PACKAGE_DATA)
         "${CMAKE_CURRENT_BINARY_DIR}/package_data.cmake"
         @ONLY)
 
-    install(SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/package_data.cmake)
+    install(SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/package_data.cmake")
 
     if(PACKAGE_DATA_LEANIFY)
         find_program(LEANIFY_COMMAND "leanify")
