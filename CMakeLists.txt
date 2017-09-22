@@ -167,6 +167,8 @@ else()
     endforeach()
 endif()
 
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/gamecontrollerdb/gamecontrollerdb.txt DESTINATION ${DATA_DIR})
+
 if(WIN32)
     # XXX: this is supposedly for dynamic-link builds, untested due to MXE being an ass
     include(InstallRequiredSystemLibraries)

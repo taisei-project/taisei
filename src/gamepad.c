@@ -24,6 +24,73 @@ static struct {
 	} devices;
 } gamepad;
 
+static int gamepad_load_mappings(const char *vpath, int warn_noexist) {
+	char *repr = vfs_repr(vpath, true);
+	char *errstr = NULL;
+	const char *const_errstr = NULL;
+
+	SDL_RWops *mappings = vfs_open(vpath, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+	int num_loaded = -1;
+	LogLevel loglvl = LOG_WARN;
+
+	// Yay for gotos!
+
+	if(!mappings) {
+		if(!warn_noexist) {
+			VFSInfo vinfo = vfs_query(vpath);
+
+			if(!vinfo.error && !vinfo.exists && !vinfo.is_dir) {
+				loglvl = LOG_INFO;
+				const_errstr = errstr = strfmt("Custom mappings file '%s' does not exist (this is ok)", repr);
+				goto cleanup;
+			}
+		}
+
+		const_errstr = vfs_get_error();
+		goto cleanup;
+	}
+
+	if((num_loaded = SDL_GameControllerAddMappingsFromRW(mappings, true)) < 0) {
+		const_errstr = SDL_GetError();
+	}
+
+cleanup:
+	if(const_errstr) {
+		log_custom(loglvl, "Couldn't load mappings: %s", const_errstr);
+	} else if(num_loaded >= 0) {
+		log_info("Loaded %i mappings from '%s'", num_loaded, repr);
+	}
+
+	free(repr);
+	free(errstr);
+	return num_loaded;
+}
+
+static void gamepad_load_all_mappings(void) {
+	gamepad_load_mappings("res/gamecontrollerdb.txt", true);
+	gamepad_load_mappings("storage/gamecontrollerdb.txt", false);
+}
+
+static const char* gamepad_devicename_unmapped(int idx) {
+	const char *name = SDL_GameControllerNameForIndex(idx);
+
+	if(!strcasecmp(name, "Xinput Controller")) {
+		// HACK: let's try to get a more descriptive name...
+		name = SDL_JoystickNameForIndex(idx);
+	}
+
+	return name;
+}
+
+const char* gamepad_devicename(int num) {
+	if(num < 0 || num >= gamepad.devices.count) {
+		return NULL;
+	}
+
+	return gamepad_devicename_unmapped(gamepad.devices.id_map[num]);
+}
+
+
 static void gamepad_update_device_list(void) {
 	int cnt = SDL_NumJoysticks();
 	log_info("Updating gamepad devices list");
@@ -32,13 +99,26 @@ static void gamepad_update_device_list(void) {
 	memset(&gamepad.devices, 0, sizeof(gamepad.devices));
 
 	if(!cnt) {
+		log_info("No joysticks attached");
 		return;
 	}
 
 	int *idmap_ptr = gamepad.devices.id_map = malloc(sizeof(int) * cnt);
 
 	for(int i = 0; i < cnt; ++i) {
+		SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(i);
+		char guid_str[33] = { 0 };
+		SDL_JoystickGetGUIDString(guid, guid_str, sizeof(guid_str));
+
+		if(!*guid_str) {
+			log_warn("Failed to read GUID of joystick at index %i: %s", i, SDL_GetError());
+			continue;
+		}
+
 		if(!SDL_IsGameController(i)) {
+			log_warn("Joystick at index %i (name: \"%s\"; guid: %s) is not recognized as a game controller by SDL. "
+					 "Most likely it just doesn't have a mapping. See https://git.io/vdvdV for solutions",
+				i, SDL_JoystickNameForIndex(i), guid_str);
 			continue;
 		}
 
@@ -47,9 +127,12 @@ static void gamepad_update_device_list(void) {
 		++idmap_ptr;
 		gamepad.devices.count = (uintptr_t)(idmap_ptr - gamepad.devices.id_map);
 
-		char guid[33] = {0};
-		gamepad_deviceguid(num, guid, sizeof(guid));
-		log_info("Gamepad device '%s' (#%i): %s", guid, num, SDL_GameControllerNameForIndex(i));
+		log_info("Found device '%s' (#%i): %s", guid_str, num, gamepad_devicename_unmapped(i));
+	}
+
+	if(!gamepad.devices.count) {
+		log_info("No usable devices");
+		return;
 	}
 }
 
@@ -59,11 +142,6 @@ static int gamepad_find_device_by_guid(const char *guid_str, char *guid_out, siz
 
 		SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(gamepad.devices.id_map[i]);
 		SDL_JoystickGetGUIDString(guid, guid_out, guid_out_sz);
-
-		if(!*guid_out) {
-			log_warn("Failed to read GUID of device %i: %s", gamepad.devices.id_map[i], SDL_GetError());
-			continue;
-		}
 
 		if(!strcasecmp(guid_str, guid_out) || !strcasecmp(guid_str, "default")) {
 			*out_localdevnum = i;
@@ -134,6 +212,7 @@ void gamepad_init(void) {
 		return;
 	}
 
+	gamepad_load_all_mappings();
 	gamepad_update_device_list();
 
 	char guid[33];
@@ -430,14 +509,6 @@ void gamepad_event(SDL_Event *event, EventHandler handler, EventFlags flags, voi
 
 int gamepad_devicecount(void) {
 	return gamepad.devices.count;
-}
-
-const char* gamepad_devicename(int num) {
-	if(num < 0 || num >= gamepad.devices.count) {
-		return NULL;
-	}
-
-	return SDL_GameControllerNameForIndex(gamepad.devices.id_map[num]);
 }
 
 void gamepad_deviceguid(int num, char *guid_str, size_t guid_str_sz) {
