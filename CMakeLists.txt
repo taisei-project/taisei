@@ -12,24 +12,35 @@ include(GetGitRevisionDescription)
 #   Set up version variables
 #
 
-git_describe(TAISEI_VERSION)
 set(TAISEI_VERSION_FALLBACK "1.1")
 
-if(TAISEI_VERSION STREQUAL "GIT-NOTFOUND")
-    message(WARNING "Git is not installed. Version information will be less accurate.")
-    set(TAISEI_VERSION "")
-elseif(TAISEI_VERSION STREQUAL "HEAD-HASH-NOTFOUND")
-    message(WARNING "Source tree doesn't seem to be in a git repository. Version information will be less accurate.")
-    set(TAISEI_VERSION "")
+if(TAISEI_VERSION_OVERRIDE AND TAISEI_REVISION_OVERRIDE)
+    set(TAISEI_VERSION "${TAISEI_VERSION_OVERRIDE}")
+    set(TAISEI_REVISION "${TAISEI_REVISION_OVERRIDE}")
+    message(STATUS "Version information manually overriden: v${TAISEI_VERSION} (rev. ${TAISEI_REVISION})")
+else()
+    git_describe(TAISEI_VERSION)
+
+    if(TAISEI_VERSION STREQUAL "GIT-NOTFOUND")
+        message(WARNING "Git is not installed. Version information will be less accurate.")
+        set(TAISEI_VERSION "")
+    elseif(TAISEI_VERSION STREQUAL "HEAD-HASH-NOTFOUND")
+        message(WARNING "Source tree doesn't seem to be in a git repository. Version information will be less accurate.")
+        set(TAISEI_VERSION "")
+    endif()
+
+    if(TAISEI_VERSION)
+        git_revision(TAISEI_REVISION)
+        string(SUBSTRING ${TAISEI_VERSION} 1 32 TAISEI_VERSION) # erase the leading v
+    else()
+        set(TAISEI_VERSION "${TAISEI_VERSION_FALLBACK}")
+        set(TAISEI_REVISION 0)
+    endif()
 endif()
 
-if(TAISEI_VERSION)
-    git_revision(TAISEI_REVISION)
-    string(SUBSTRING ${TAISEI_VERSION} 1 32 TAISEI_VERSION) # erase the leading v
+if(TAISEI_REVISION)
     set(TAISEI_VERSION_FULL_STR "Taisei v${TAISEI_VERSION} (rev. ${TAISEI_REVISION})")
 else()
-    set(TAISEI_VERSION "${TAISEI_VERSION_FALLBACK}")
-    set(TAISEI_REVISION 0)
     set(TAISEI_VERSION_FULL_STR "Taisei v${TAISEI_VERSION}")
 endif()
 
