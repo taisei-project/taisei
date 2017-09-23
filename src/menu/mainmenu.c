@@ -191,7 +191,9 @@ void draw_main_menu(MenuData *menu) {
 		glPopMatrix();
 	}
 
-	draw_text(AL_Right,SCREEN_W-5,SCREEN_H-10,TAISEI_VERSION,_fonts.small);
+	char version[32];
+	snprintf(version, sizeof(version), "v%s", TAISEI_VERSION);
+	draw_text(AL_Right,SCREEN_W-5,SCREEN_H-10,version,_fonts.small);
 }
 
 void draw_loading_screen(void) {

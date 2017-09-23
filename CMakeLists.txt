@@ -14,63 +14,70 @@ include(GetGitRevisionDescription)
 
 set(TAISEI_VERSION_FALLBACK "1.1")
 
-if(TAISEI_VERSION_OVERRIDE AND TAISEI_REVISION_OVERRIDE)
-    set(TAISEI_VERSION "${TAISEI_VERSION_OVERRIDE}")
-    set(TAISEI_REVISION "${TAISEI_REVISION_OVERRIDE}")
-    message(STATUS "Version information manually overriden: v${TAISEI_VERSION} (rev. ${TAISEI_REVISION})")
+function(taisei_parse_version version_string)
+    string(STRIP ${version_string} version_string)
+    set(version_string_orig ${version_string})
+    string(SUBSTRING ${version_string} 0 1 first_char)
+
+    if(first_char STREQUAL "v")
+        string(SUBSTRING ${version_string} 1 32 version_string)
+    endif()
+
+    string(REPLACE "+" "-" version_string ${version_string})
+    string(REGEX REPLACE "-.*" "" version_string_tmp ${version_string})
+    string(REGEX MATCH "-[0-9]+" version_string_extra ${version_string})
+
+    set(TAISEI_VERSION ${version_string} PARENT_SCOPE)
+    set(TAISEI_VERSION_FULL_STR "Taisei v${version_string}" PARENT_SCOPE)
+
+    set(version_string ${version_string_tmp})
+
+    string(REPLACE "." ";" version_string_tmp ${version_string})
+
+    list(LENGTH version_string_tmp version_numelems)
+
+    if(version_numelems GREATER 3)
+        message(FATAL_ERROR "Too many dot-separated elements in version string ${version_string_orig}, please use the following format: [v]major[.minor[.patch]][-tweak[extrainfo]]")
+    endif()
+
+    while(version_numelems LESS 3)
+        list(APPEND version_string_tmp 0)
+        list(LENGTH version_string_tmp version_numelems)
+    endwhile()
+
+    list(GET version_string_tmp 0 major)
+    list(GET version_string_tmp 1 minor)
+    list(GET version_string_tmp 2 patch)
+
+    set(TAISEI_VERSION_SIMPLE ${major}.${minor}.${patch} PARENT_SCOPE)
+
+    set(TAISEI_VERSION_MAJOR ${major} PARENT_SCOPE)
+    set(TAISEI_VERSION_MINOR ${minor} PARENT_SCOPE)
+    set(TAISEI_VERSION_PATCH ${patch} PARENT_SCOPE)
+    set(TAISEI_VERSION_TWEAK 0 PARENT_SCOPE)
+
+    if(version_string_extra)
+        string(SUBSTRING ${version_string_extra} 1 32 version_string_extra)
+        set(TAISEI_VERSION_TWEAK ${version_string_extra} PARENT_SCOPE)
+    endif()
+endfunction()
+
+if(TAISEI_VERSION_OVERRIDE)
+    taisei_parse_version(${TAISEI_VERSION_OVERRIDE})
+    message(STATUS "Version information manually overriden: v${TAISEI_VERSION}")
 else()
-    git_describe(TAISEI_VERSION)
+    git_describe(TAISEI_VERSION --match "v[0-9.]*" --exclude "*[a-z]" --exclude "*-*")
 
     if(TAISEI_VERSION STREQUAL "GIT-NOTFOUND")
         message(WARNING "Git is not installed. Version information will be less accurate.")
-        set(TAISEI_VERSION "")
+        set(TAISEI_VERSION ${TAISEI_VERSION_FALLBACK})
     elseif(TAISEI_VERSION STREQUAL "HEAD-HASH-NOTFOUND")
         message(WARNING "Source tree doesn't seem to be in a git repository. Version information will be less accurate.")
-        set(TAISEI_VERSION "")
+        set(TAISEI_VERSION ${TAISEI_VERSION_FALLBACK})
     endif()
 
-    if(TAISEI_VERSION)
-        git_revision(TAISEI_REVISION)
-        string(SUBSTRING ${TAISEI_VERSION} 1 32 TAISEI_VERSION) # erase the leading v
-    else()
-        set(TAISEI_VERSION "${TAISEI_VERSION_FALLBACK}")
-        set(TAISEI_REVISION 0)
-    endif()
+    taisei_parse_version(${TAISEI_VERSION})
 endif()
-
-if(TAISEI_REVISION)
-    set(TAISEI_VERSION_FULL_STR "Taisei v${TAISEI_VERSION} (rev. ${TAISEI_REVISION})")
-else()
-    set(TAISEI_VERSION_FULL_STR "Taisei v${TAISEI_VERSION}")
-endif()
-
-string(REGEX REPLACE "-.*" "" VERSION_TMP ${TAISEI_VERSION})
-string(REPLACE "." ";" VERSION_TMP ${VERSION_TMP})
-
-list(LENGTH VERSION_TMP VERSION_TMP_LEN)
-
-while(VERSION_TMP_LEN LESS 3)
-    list(APPEND VERSION_TMP 0)
-    list(LENGTH VERSION_TMP VERSION_TMP_LEN)
-endwhile()
-
-list(GET VERSION_TMP 0 TAISEI_VERSION_MAJOR)
-list(GET VERSION_TMP 1 TAISEI_VERSION_MINOR)
-list(GET VERSION_TMP 2 TAISEI_VERSION_PATCH)
-
-# Let's never use letters in version numbers again, ok?
-string(REGEX MATCH "[a-z]" PATCH_CHAR ${TAISEI_VERSION_MINOR})
-if(PATCH_CHAR)
-    string(FIND "abcdefghjklmnopqrstuvwxyz" ${PATCH_CHAR} PATCH_NUM)
-    math(EXPR PATCH_NUM "${PATCH_NUM} + 1")
-
-    if(PATCH_NUM)
-        math(EXPR TAISEI_VERSION_PATCH "${TAISEI_VERSION_PATCH} + ${PATCH_NUM}")
-        string(REGEX MATCH "[0-9]+" TAISEI_VERSION_MINOR ${TAISEI_VERSION_MINOR})
-    endif()
-endif()
-
-set(TAISEI_VERSION_SIMPLE ${TAISEI_VERSION_MAJOR}.${TAISEI_VERSION_MINOR}.${TAISEI_VERSION_PATCH})
 
 #
 #   End of the version insanity

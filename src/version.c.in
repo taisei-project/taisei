@@ -6,12 +6,13 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
+#include <version.h>
+
 const char *const TAISEI_VERSION = "${TAISEI_VERSION}";
 const char *const TAISEI_VERSION_FULL = "${TAISEI_VERSION_FULL_STR}";
 const char *const TAISEI_VERSION_BUILD_TYPE = "${CMAKE_BUILD_TYPE}";
 
-const unsigned int TAISEI_VERSION_MAJOR = ${TAISEI_VERSION_MAJOR};
-const unsigned int TAISEI_VERSION_MINOR = ${TAISEI_VERSION_MINOR};
-const unsigned int TAISEI_VERSION_PATCH = ${TAISEI_VERSION_PATCH};
-
-const unsigned int TAISEI_VERSION_REVISION = ${TAISEI_REVISION};
+const uint8_t  TAISEI_VERSION_MAJOR = ${TAISEI_VERSION_MAJOR};
+const uint8_t  TAISEI_VERSION_MINOR = ${TAISEI_VERSION_MINOR};
+const uint8_t  TAISEI_VERSION_PATCH = ${TAISEI_VERSION_PATCH};
+const uint16_t TAISEI_VERSION_TWEAK = ${TAISEI_VERSION_TWEAK};

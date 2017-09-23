@@ -9,14 +9,15 @@
 #ifndef TSVERSION_H
 #define TSVERSION_H
 
+#include <stdint.h>
+
 extern const char *const TAISEI_VERSION;
 extern const char *const TAISEI_VERSION_FULL;
 extern const char *const TAISEI_VERSION_BUILD_TYPE;
 
-extern const unsigned int TAISEI_VERSION_MAJOR;
-extern const unsigned int TAISEI_VERSION_MINOR;
-extern const unsigned int TAISEI_VERSION_PATCH;
-
-extern const unsigned int TAISEI_VERSION_REVISION;
+extern const uint8_t  TAISEI_VERSION_MAJOR;
+extern const uint8_t  TAISEI_VERSION_MINOR;
+extern const uint8_t  TAISEI_VERSION_PATCH;
+extern const uint16_t TAISEI_VERSION_TWEAK;
 
 #endif
