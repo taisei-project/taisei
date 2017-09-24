@@ -34,7 +34,6 @@ void credits_fill(void) {
 	credits_add("aiju\nJulius Schmidt\nhttp://aiju.de", 300);
 	credits_add("Special Thanks", 300);
 	credits_add("ZUN\nfor Tōhō Project\nhttp://www16.big.or.jp/~zun/", 300);
-//	credits_add("Burj Khalifa\nfor the Burj Khalifa photo\nhttp://www.burjkhalifa.ae/", 300);
 	credits_add("Mochizuki Ado\nfor a nice yukkuri image", 300);
 	credits_add("…and You!\nfor playing", 300);
 	credits_add("Visit Us\nhttp://taisei-project.org\n \nAnd join our IRC channel\n#taisei-project at irc.freenode.net", 500);
@@ -126,7 +125,6 @@ void credits_init(void) {
 	bgcontext.cx[0] = 0;
 	bgcontext.cx[1] = 600;
 	bgcontext.crot[0] = 0;
-	bgcontext.crot[1] = 10;
 
 	global.frames = 0;
 	credits_fill();
