@@ -66,7 +66,7 @@ if(TAISEI_VERSION_OVERRIDE)
     taisei_parse_version(${TAISEI_VERSION_OVERRIDE})
     message(STATUS "Version information manually overriden: v${TAISEI_VERSION}")
 else()
-    git_describe(TAISEI_VERSION --match "v[0-9.]*" --exclude "*[a-z]" --exclude "*-*")
+    git_describe(TAISEI_VERSION --match "v[0-9]*[!a-z]")
 
     if(TAISEI_VERSION STREQUAL "GIT-NOTFOUND")
         message(WARNING "Git is not installed. Version information will be less accurate.")
