@@ -329,7 +329,7 @@ void cirno_icicle_fall(Boss *c, int time) {
 }
 
 int cirno_crystal_blizzard_proj(Projectile *p, int time) {
-	if(!(time % 7))
+	if(!(time % 12))
 		create_particle1c("stain", p->pos, 0, GrowFadeAdd, timeout, 20)->angle = global.frames * 15;
 
 	if(time > 100 + global.diff * 100)
