@@ -44,6 +44,10 @@ Laser *create_laser(complex pos, float time, float deathtime, Color color, Laser
 	return l;
 }
 
+Laser *create_laserline(complex pos, complex dir, float charge, float dur, Color clr) {
+	return create_laserline_ab(pos, (pos)+(dir)*VIEWPORT_H*1.4/cabs(dir), cabs(dir), charge, dur, clr);
+}
+
 Laser *create_laserline_ab(complex a, complex b, float width, float charge, float dur, Color clr) {
 	complex m = (b-a)*0.005;
 
