@@ -279,9 +279,10 @@ void limit_frame_rate(uint64_t *lasttime) {
 
     double passed = (double)(SDL_GetPerformanceCounter() - *lasttime) / SDL_GetPerformanceFrequency();
     double delay = 1.0 / FPS - passed;
+    uint32_t delay_ms = (uint32_t)(delay * 1000.0);
 
-    if(delay > 0) {
-        SDL_Delay((uint32_t)(delay * 1000.0));
+    if(delay > 0 && delay_ms > 0) {
+        SDL_Delay(delay_ms);
     }
 
     *lasttime = SDL_GetPerformanceCounter();
