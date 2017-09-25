@@ -40,7 +40,7 @@
 #define REPLAY_WRITE_DESYNC_CHECKS
 
 #ifdef DEBUG
-	#define REPLAY_LOAD_GARBAGE_TEST
+	// #define REPLAY_LOAD_GARBAGE_TEST
 #endif
 
 typedef struct ReplayEvent {
@@ -154,7 +154,7 @@ void replay_stage_check_desync(ReplayStage *stg, int time, uint16_t check, Repla
 void replay_stage_sync_player_state(ReplayStage *stg, Player *plr);
 
 bool replay_write(Replay *rpy, SDL_RWops *file, bool compression);
-bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode);
+bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *source);
 
 bool replay_save(Replay *rpy, const char *name);
 bool replay_load(Replay *rpy, const char *name, ReplayReadMode mode);

@@ -103,7 +103,6 @@ void replay_destroy(Replay *rpy) {
 	free(rpy->playername);
 
 	memset(rpy, 0, sizeof(Replay));
-	log_debug("Replay at %p destroyed", (void*)rpy);
 }
 
 void replay_stage_event(ReplayStage *stg, uint32_t frame, uint8_t type, uint16_t value) {
@@ -257,7 +256,7 @@ bool replay_write(Replay *rpy, SDL_RWops *file, bool compression) {
 #define PRINTPROP(prop,fmt) (void)(prop)
 #endif
 
-#define CHECKPROP(prop,fmt) PRINTPROP(prop,fmt); if(filesize > 0 && SDL_RWtell(file) == filesize) { log_warn("Premature EOF"); return false; }
+#define CHECKPROP(prop,fmt) PRINTPROP(prop,fmt); if(filesize > 0 && SDL_RWtell(file) == filesize) { log_warn("%s: Premature EOF", source); return false; }
 
 static void replay_read_string(SDL_RWops *file, char **ptr) {
 	size_t len = SDL_ReadLE16(file);
@@ -268,14 +267,14 @@ static void replay_read_string(SDL_RWops *file, char **ptr) {
 	SDL_RWread(file, *ptr, 1, len);
 }
 
-static bool replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, size_t *ofs) {
+static bool replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, size_t *ofs, const char *source) {
 	uint8_t header[sizeof(replay_magic_header)];
 	(*ofs) += sizeof(header);
 
 	SDL_RWread(file, header, sizeof(header), 1);
 
 	if(memcmp(header, replay_magic_header, sizeof(header))) {
-		log_warn("Incorrect header");
+		log_warn("%s: Incorrect header", source);
 		return false;
 	}
 
@@ -283,7 +282,7 @@ static bool replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, s
 	(*ofs) += 2;
 
 	if((rpy->version & ~REPLAY_VERSION_COMPRESSION_BIT) != REPLAY_STRUCT_VERSION) {
-		log_warn("Incorrect version");
+		log_warn("%s: Incorrect version", source);
 		return false;
 	}
 
@@ -295,14 +294,14 @@ static bool replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, s
 	return true;
 }
 
-static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize) {
+static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, const char *source) {
 	replay_read_string(file, &rpy->playername);
 	PRINTPROP(rpy->playername, s);
 
 	CHECKPROP(rpy->numstages = SDL_ReadLE16(file), u);
 
 	if(!rpy->numstages) {
-		log_warn("No stages in replay");
+		log_warn("%s: No stages in replay", source);
 		return false;
 	}
 
@@ -330,7 +329,7 @@ static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 		CHECKPROP(stg->numevents = SDL_ReadLE16(file), u);
 
 		if(replay_calc_stageinfo_checksum(stg) + SDL_ReadLE32(file)) {
-			log_warn("Stageinfo is corrupt");
+			log_warn("%s: Stageinfo is corrupt", source);
 			return false;
 		}
 	}
@@ -338,12 +337,12 @@ static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 	return true;
 }
 
-static bool replay_read_events(Replay *rpy, SDL_RWops *file, int64_t filesize) {
+static bool replay_read_events(Replay *rpy, SDL_RWops *file, int64_t filesize, const char *source) {
 	for(int i = 0; i < rpy->numstages; ++i) {
 		ReplayStage *stg = rpy->stages + i;
 
 		if(!stg->numevents) {
-			log_warn("No events in stage");
+			log_warn("%s: No events in stage", source);
 			return false;
 		}
 
@@ -362,35 +361,36 @@ static bool replay_read_events(Replay *rpy, SDL_RWops *file, int64_t filesize) {
 	return true;
 }
 
-bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
+bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *source) {
 	int64_t filesize; // must be signed
 	SDL_RWops *vfile = file;
 
-	mode &= REPLAY_READ_ALL;
-
-	if(!mode) {
-		log_fatal("Called with invalid read mode");
+	if(!source) {
+		source = "<unknown>";
 	}
 
+	if(!(mode & REPLAY_READ_ALL) ) {
+		log_fatal("%s: Called with invalid read mode %x", source, mode);
+	}
+
+	mode &= REPLAY_READ_ALL;
 	filesize = SDL_RWsize(file);
 
 	if(filesize < 0) {
-		log_warn("SDL_RWsize() failed: %s", SDL_GetError());
-	} else {
-		log_debug("%"PRIi64" bytes", filesize);
+		log_warn("%s: SDL_RWsize() failed: %s", source, SDL_GetError());
 	}
 
 	if(mode & REPLAY_READ_META) {
 		memset(rpy, 0, sizeof(Replay));
 
 		if(filesize > 0 && filesize <= sizeof(replay_magic_header) + 2) {
-			log_warn("Replay file is too short (%"PRIi64")", filesize);
+			log_warn("%s: Replay file is too short (%"PRIi64")", source, filesize);
 			return false;
 		}
 
 		size_t ofs = 0;
 
-		if(!replay_read_header(rpy, file, filesize, &ofs)) {
+		if(!replay_read_header(rpy, file, filesize, &ofs, source)) {
 			return false;
 		}
 
@@ -398,7 +398,7 @@ bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 
 		if(rpy->version & REPLAY_VERSION_COMPRESSION_BIT) {
 			if(rpy->fileoffset < SDL_RWtell(file)) {
-				log_warn("Invalid offset %"PRIi32"", rpy->fileoffset);
+				log_warn("%s: Invalid offset %"PRIi32"", source, rpy->fileoffset);
 				return false;
 			}
 
@@ -408,7 +408,7 @@ bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 			compression = true;
 		}
 
-		if(!replay_read_meta(rpy, vfile, filesize)) {
+		if(!replay_read_meta(rpy, vfile, filesize, source)) {
 			if(compression) {
 				SDL_RWclose(vfile);
 			}
@@ -427,19 +427,19 @@ bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 	if(mode & REPLAY_READ_EVENTS) {
 		if(!(mode & REPLAY_READ_META)) {
 			if(!rpy->fileoffset) {
-				log_fatal("Tried to read events before reading metadata");
+				log_fatal("%s: Tried to read events before reading metadata", source);
 			}
 
 			for(int i = 0; i < rpy->numstages; ++i) {
 				if(rpy->stages[i].events) {
-					log_warn("Reading events into a replay that already had events, call replay_destroy_events() if this is intended");
+					log_warn("%s: BUG: Reading events into a replay that already had events, call replay_destroy_events() if this is intended", source);
 					replay_destroy_events(rpy);
 					break;
 				}
 			}
 
 			if(SDL_RWseek(file, rpy->fileoffset, RW_SEEK_SET) < 0) {
-				log_warn("SDL_RWseek() failed: %s", SDL_GetError());
+				log_warn("%s: SDL_RWseek() failed: %s", source, SDL_GetError());
 				return false;
 			}
 		}
@@ -452,7 +452,7 @@ bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode) {
 			compression = true;
 		}
 
-		if(!replay_read_events(rpy, vfile, filesize)) {
+		if(!replay_read_events(rpy, vfile, filesize, source)) {
 			if(compression) {
 				SDL_RWclose(vfile);
 			}
@@ -499,32 +499,49 @@ bool replay_save(Replay *rpy, const char *name) {
 	return result;
 }
 
+static const char* replay_mode_string(ReplayReadMode mode) {
+	if(mode & REPLAY_READ_ALL) {
+		return "full";
+	}
+
+	if(mode & REPLAY_READ_META) {
+		return "meta";
+	}
+
+	if(mode & REPLAY_READ_EVENTS) {
+		return "events";
+	}
+
+	log_fatal("Bad mode %i", mode);
+}
+
 bool replay_load(Replay *rpy, const char *name, ReplayReadMode mode) {
 	char *p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION));
 	char *sp = vfs_repr(p, true);
-	log_info("Loading %s (mode %i)", sp, mode);
-	free(sp);
+	log_info("Loading %s (%s)", sp, replay_mode_string(mode));
 
 	SDL_RWops *file = vfs_open(p, VFS_MODE_READ);
 	free(p);
 
 	if(!file) {
 		log_warn("VFS error: %s", vfs_get_error());
+		free(sp);
 		return false;
 	}
 
-	bool result = replay_read(rpy, file, mode);
+	bool result = replay_read(rpy, file, mode, sp);
 
 	if(!result) {
 		replay_destroy(rpy);
 	}
 
+	free(sp);
 	SDL_RWclose(file);
 	return result;
 }
 
 bool replay_load_syspath(Replay *rpy, const char *path, ReplayReadMode mode) {
-	log_info("Loading %s (mode %i)", path, mode);
+	log_info("Loading %s (%s)", path, replay_mode_string(mode));
 	SDL_RWops *file;
 
 #ifndef __WINDOWS__
@@ -541,7 +558,7 @@ bool replay_load_syspath(Replay *rpy, const char *path, ReplayReadMode mode) {
 		return false;
 	}
 
-	bool result = replay_read(rpy, file, mode);
+	bool result = replay_read(rpy, file, mode, path);
 
 	if(!result) {
 		replay_destroy(rpy);
@@ -593,7 +610,7 @@ void replay_stage_check_desync(ReplayStage *stg, int time, uint16_t check, Repla
 	}
 #ifdef REPLAY_WRITE_DESYNC_CHECKS
 	else {
-		log_debug("%u", check);
+		// log_debug("%u", check);
 		replay_stage_event(stg, time, EV_CHECK_DESYNC, (int16_t)check);
 	}
 #endif
