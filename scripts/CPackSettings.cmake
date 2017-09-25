@@ -1,5 +1,14 @@
 
-set(CPACK_GENERATOR "NSIS")
+
+if(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
+    # XXX: not a huge issue, but this seems to have no effect
+    #      at least on my system, it still creates a 32-bit installer
+    set(NSIS "NSIS64")
+else()
+    set(NSIS "NSIS")
+endif()
+
+set(CPACK_GENERATOR "${NSIS};7Z")
 set(CPACK_PACKAGE_NAME "Taisei")
 set(CPACK_PACKAGE_VENDOR "Taisei Project")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "An open-source Tōhō Project fangame")

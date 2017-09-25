@@ -143,12 +143,9 @@ else()
     install(FILES "taisei.png" DESTINATION "share/icons/hicolor/128x128/apps")
 endif()
 
-install(FILES "STORY.txt" DESTINATION "${DOC_DIR}")
-install(FILES "COPYING" DESTINATION "${DOC_DIR}" RENAME "COPYING.txt")
-install(FILES "README_installed.txt" DESTINATION "${DOC_DIR}" RENAME "README.txt")
-
 if(WIN32)
-    set(DOC_FILES "STORY.txt" "COPYING.txt" "README.txt")
+    set(DOC_FILES "STORY.txt" "COPYING" "README_installed.txt")
+    set(DOC_TMP_DIR "${CMAKE_CURRENT_BINARY_DIR}/win32docs")
 
     configure_file(
         "${BUILDSCRIPTS_DIR}/Win32FixDocs.cmake.in"
@@ -156,7 +153,14 @@ if(WIN32)
         @ONLY)
 
     install(SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/Win32FixDocs.cmake")
+    set(DOC_SRC_DIR "${DOC_TMP_DIR}")
+else()
+    set(DOC_SRC_DIR ".")
 endif()
+
+install(FILES "${DOC_SRC_DIR}/STORY.txt" DESTINATION "${DOC_DIR}")
+install(FILES "${DOC_SRC_DIR}/COPYING" DESTINATION "${DOC_DIR}" RENAME "COPYING.txt")
+install(FILES "${DOC_SRC_DIR}/README_installed.txt" DESTINATION "${DOC_DIR}" RENAME "README.txt")
 
 set(GAME_RESOURCES_DIRS
     "gfx"
