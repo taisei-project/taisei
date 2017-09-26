@@ -184,17 +184,23 @@ static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file) {
 	return true;
 }
 
-bool replay_write(Replay *rpy, SDL_RWops *file, bool compression) {
-	uint16_t version = REPLAY_STRUCT_VERSION;
+bool replay_write(Replay *rpy, SDL_RWops *file, uint16_t version) {
+	uint16_t base_version = (version & ~REPLAY_VERSION_COMPRESSION_BIT);
+	bool compression = (version & REPLAY_VERSION_COMPRESSION_BIT);
 	int i, j;
 
 	SDL_RWwrite(file, replay_magic_header, sizeof(replay_magic_header), 1);
-
-	if(compression) {
-		version |= REPLAY_VERSION_COMPRESSION_BIT;
-	}
-
 	SDL_WriteLE16(file, version);
+
+	if(base_version >= REPLAY_STRUCT_VERSION_TS102000_REV0) {
+		TaiseiVersion v;
+		TAISEI_VERSION_GET_CURRENT(&v);
+
+		if(taisei_version_write(file, &v) != TAISEI_VERSION_SIZE) {
+			log_warn("Failed to write game version: %s", SDL_GetError());
+			return false;
+		}
+	}
 
 	void *buf;
 	SDL_RWops *abuf = NULL;
@@ -281,16 +287,44 @@ static bool replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, s
 	CHECKPROP(rpy->version = SDL_ReadLE16(file), u);
 	(*ofs) += 2;
 
-	if((rpy->version & ~REPLAY_VERSION_COMPRESSION_BIT) != REPLAY_STRUCT_VERSION) {
-		log_warn("%s: Incorrect version", source);
-		return false;
+	uint16_t base_version = (rpy->version & ~REPLAY_VERSION_COMPRESSION_BIT);
+	bool compression = (rpy->version & REPLAY_VERSION_COMPRESSION_BIT);
+	bool gamev_assumed = false;
+
+	switch(base_version) {
+		case REPLAY_STRUCT_VERSION_TS101000: {
+			// legacy format with no versioning, assume v1.1
+			TAISEI_VERSION_SET(&rpy->game_version, 1, 1, 0, 0);
+			gamev_assumed = true;
+			break;
+		}
+
+		case REPLAY_STRUCT_VERSION_TS102000_REV0: {
+			if(taisei_version_read(file, &rpy->game_version) != TAISEI_VERSION_SIZE) {
+				log_warn("%s: Failed to read game version", source);
+				return false;
+			}
+
+			(*ofs) += TAISEI_VERSION_SIZE;
+			break;
+		}
+
+		default: {
+			log_warn("%s: Unknown struct version %u", source, base_version);
+			return false;
+		}
 	}
 
-	if(rpy->version & REPLAY_VERSION_COMPRESSION_BIT) {
+	char *gamev = taisei_version_tostring(&rpy->game_version);
+	log_info("Struct version %u (%scompressed), game version %s%s",
+		base_version, compression ? "" : "un", gamev, gamev_assumed ? " (assumed)" : "");
+	free(gamev);
+
+	if(compression) {
 		CHECKPROP(rpy->fileoffset = SDL_ReadLE32(file), u);
+		(*ofs) += 4;
 	}
 
-	(*ofs) += 4;
 	return true;
 }
 
@@ -494,13 +528,13 @@ bool replay_save(Replay *rpy, const char *name) {
 		return false;
 	}
 
-	bool result = replay_write(rpy, file, REPLAY_WRITE_COMPRESSED);
+	bool result = replay_write(rpy, file, REPLAY_STRUCT_VERSION_WRITE);
 	SDL_RWclose(file);
 	return result;
 }
 
 static const char* replay_mode_string(ReplayReadMode mode) {
-	if(mode & REPLAY_READ_ALL) {
+	if((mode & REPLAY_READ_ALL) == REPLAY_READ_ALL) {
 		return "full";
 	}
 
@@ -630,7 +664,7 @@ int replay_test(void) {
 
 	SDL_RWwrite(handle, replay_magic_header, sizeof(replay_magic_header), 1);
 
-	SDL_WriteLE16(handle, REPLAY_STRUCT_VERSION);
+	SDL_WriteLE16(handle, REPLAY_STRUCT_VERSION_TS101000);
 	SDL_WriteLE16(handle, 4);
 	SDL_WriteU8(handle, 't');
 	SDL_WriteU8(handle, 'e');

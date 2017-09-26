@@ -11,6 +11,7 @@
 
 #include "stage.h"
 #include "player.h"
+#include "version.h"
 
 
 /*
@@ -20,16 +21,25 @@
  *	Please maintain this convention, it makes it easier to grasp the replay file structure just by looking at this header.
  */
 
-// -{ ALWAYS UPDATE THESE WHEN YOU MAKE CHANGES TO THE FILE/STRUCT LAYOUT!
 
-// Lets us fail early on incompatible versions and garbage data
-#define REPLAY_STRUCT_VERSION 5
+// The struct version is a numeric designation given to the replay file format.
+// Always bump it when making incompatible changes to the layout.
+// If dropping support for a version, comment out its #define and remove all related code.
 
-// -}
+/* BEGIN supported struct versions */
+	// Taisei v1.1 legacy format
+	#define REPLAY_STRUCT_VERSION_TS101000 5
+
+	// Taisei v1.2 revision 0: like v1.1, but with game version information
+	#define REPLAY_STRUCT_VERSION_TS102000_REV0 6
+/* END supported struct versions */
 
 #define REPLAY_VERSION_COMPRESSION_BIT 0x8000
 #define REPLAY_COMPRESSION_CHUNK_SIZE 4096
-#define REPLAY_WRITE_COMPRESSED true
+
+// What struct version to use when saving recorded replays
+// XXX: the v1.1 format is used currently; change it and remove this line with the first gameplay change.
+#define REPLAY_STRUCT_VERSION_WRITE (REPLAY_STRUCT_VERSION_TS101000 | REPLAY_VERSION_COMPRESSION_BIT)
 
 #define REPLAY_ALLOC_INITIAL 256
 
@@ -104,6 +114,13 @@ typedef struct Replay {
 	// must be equal to REPLAY_STRUCT_VERSION
 	uint16_t version;
 
+	/* BEGIN REPLAY_STRUCT_VERSION_TS102000_REV0 and above */
+
+	// Game version this replay was recorded on
+	TaiseiVersion game_version;
+
+	/* END REPLAY_STRUCT_VERSION_TS102000_REV0 and above */
+
 	// Where the events begin
 	// NOTE: this is not present in uncompressed replays!
 	uint32_t fileoffset;
@@ -153,7 +170,7 @@ void replay_stage_event(ReplayStage *stg, uint32_t frame, uint8_t type, uint16_t
 void replay_stage_check_desync(ReplayStage *stg, int time, uint16_t check, ReplayMode mode);
 void replay_stage_sync_player_state(ReplayStage *stg, Player *plr);
 
-bool replay_write(Replay *rpy, SDL_RWops *file, bool compression);
+bool replay_write(Replay *rpy, SDL_RWops *file, uint16_t version);
 bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *source);
 
 bool replay_save(Replay *rpy, const char *name);

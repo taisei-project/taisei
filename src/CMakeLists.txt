@@ -28,8 +28,8 @@ if(NOT NO_AUDIO)
 endif()
 
 configure_file(
-	"${CMAKE_CURRENT_SOURCE_DIR}/version.c.in"
-	"${CMAKE_CURRENT_BINARY_DIR}/version.c"
+	"${CMAKE_CURRENT_SOURCE_DIR}/version_auto.c.in"
+	"${CMAKE_CURRENT_BINARY_DIR}/version_auto.c"
 )
 
 set(SRCs
@@ -115,7 +115,8 @@ set(SRCs
 	vfs/vdir.c
 	vfs/zipfile.c
 	vfs/zippath.c
-	"${CMAKE_CURRENT_BINARY_DIR}/version.c"
+	version.c
+	"${CMAKE_CURRENT_BINARY_DIR}/version_auto.c"
 )
 
 if(WIN32)
