@@ -206,6 +206,7 @@ static void replayview_logic(MenuData *m) {
 		if(sm->state == MS_Dead) {
 			if(ctx->sub_fade == 1.0) {
 				destroy_menu(sm);
+				free(sm);
 				ctx->submenu = NULL;
 				return;
 			}
