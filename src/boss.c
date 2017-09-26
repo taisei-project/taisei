@@ -195,6 +195,10 @@ void draw_boss(Boss *boss) {
 			hpspan += boss->attacks[prevspell].hp;
 		}
 
+		if(!maxhpspan) {
+			return;
+		}
+
 		glPushMatrix();
 		glTranslatef(10,2,0);
 		glScalef((VIEWPORT_W-60)/(float)maxhpspan,1,1);

@@ -173,9 +173,15 @@ void draw_main_menu(MenuData *menu) {
 		float ry = sin(913*i+137*cycle);
 		float rz = sin(1303*i+89631*cycle);
 		float r = sqrt(rx*rx+ry*ry+rz*rz);
+
+		if(!r) {
+			continue;
+		}
+
 		rx /= r;
 		ry /= r;
 		rz /= r;
+
 		if(posx > SCREEN_W+20 || posy < -20 || posy > SCREEN_H+20)
 			continue;
 

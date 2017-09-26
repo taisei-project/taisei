@@ -12,16 +12,25 @@
 static const float conv = 1.0f / CLR_ONEVALUE;
 
 Color rgba(float r, float g, float b, float a) {
-    return ((((Color)(CLR_ONEVALUE * (r)) & CLR_CMASK) << CLR_R) + \
-            (((Color)(CLR_ONEVALUE * (g)) & CLR_CMASK) << CLR_G) + \
-            (((Color)(CLR_ONEVALUE * (b)) & CLR_CMASK) << CLR_B) + \
-            (((Color)(CLR_ONEVALUE * (a)) & CLR_CMASK) << CLR_A));
+    assert(!r || isnormal(r));
+    assert(!g || isnormal(g));
+    assert(!b || isnormal(b));
+    assert(!a || isnormal(a));
+
+    return ((((Color)(ColorComponent)(CLR_ONEVALUE * (r)) & CLR_CMASK) << CLR_R) + \
+            (((Color)(ColorComponent)(CLR_ONEVALUE * (g)) & CLR_CMASK) << CLR_G) + \
+            (((Color)(ColorComponent)(CLR_ONEVALUE * (b)) & CLR_CMASK) << CLR_B) + \
+            (((Color)(ColorComponent)(CLR_ONEVALUE * (a)) & CLR_CMASK) << CLR_A));
 }
 
 Color rgb(float r, float g, float b) {
-    return ((((Color)(CLR_ONEVALUE * (r)) & CLR_CMASK) << CLR_R) + \
-            (((Color)(CLR_ONEVALUE * (g)) & CLR_CMASK) << CLR_G) + \
-            (((Color)(CLR_ONEVALUE * (b)) & CLR_CMASK) << CLR_B) + \
+    assert(!r || isnormal(r));
+    assert(!g || isnormal(g));
+    assert(!b || isnormal(b));
+
+    return ((((Color)(ColorComponent)(CLR_ONEVALUE * (r)) & CLR_CMASK) << CLR_R) + \
+            (((Color)(ColorComponent)(CLR_ONEVALUE * (g)) & CLR_CMASK) << CLR_G) + \
+            (((Color)(ColorComponent)(CLR_ONEVALUE * (b)) & CLR_CMASK) << CLR_B) + \
             (CLR_ONEVALUE << CLR_A));
 }
 

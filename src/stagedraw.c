@@ -229,7 +229,7 @@ static void stage_draw_objects(void) {
 
 		if(boss_is_dying(global.boss)) {
 			float t = (global.frames - global.boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
-			f -= t*(t-0.7)/(1-t);
+			f -= t*(t-0.7)/max(0.01, 1-t);
 		}
 
 		glScalef(f,f,f);

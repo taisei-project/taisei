@@ -680,6 +680,10 @@ void stage3_boss_a2_warnlaser_logic(Laser *l, int time) {
 		return;
 	}
 
+	if(time < 0) {
+		return;
+	}
+
 	l->width = laser_charge(l, time, 90, 10);
 	l->color = mix_colors(rgb(1, 0.2, 0.2), rgb(0.2, 0.2, 1), time / l->deathtime);
 }

@@ -233,6 +233,10 @@ int collision_line(complex a, complex b, complex c, float r) {
 	la = a*conj(a);
 	lm = m*conj(m);
 
+	if(!lm) {
+		return 0;
+	}
+
 	d = -(creal(a)*creal(m)+cimag(a)*cimag(m))/lm;
 
 	s = d*d - (la - r*r)/lm;
