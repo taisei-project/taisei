@@ -139,8 +139,7 @@ else()
 	set(DATA_DIR "share/taisei")
     set(DOC_DIR "share/doc/taisei")
 
-    install(FILES "taisei.desktop" DESTINATION "share/applications")
-    install(FILES "taisei.png" DESTINATION "share/icons/hicolor/128x128/apps")
+    install(DIRECTORY "xdg/" DESTINATION ".")
 endif()
 
 if(WIN32)

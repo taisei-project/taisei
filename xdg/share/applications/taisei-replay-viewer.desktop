@@ -1,10 +1,13 @@
 [Desktop Entry]
 Type=Application
-Version=1.0
-Name=Taisei
+Version=1.1
+Name=Taisei (replay viewer)
 GenericName=Bullet hell shoot ’em up game
 Icon=taisei
-Exec=taisei
 Terminal=false
+NoDisplay=true
+TryExec=taisei
+Exec=taisei --replay %f
 Categories=Game;ArcadeGame;
 Comment=An open-source Tōhō clone.
+MimeType=application/x-taisei-replay;
