@@ -73,13 +73,13 @@ void video_set_viewport(void) {
 }
 
 static void video_update_vsync(void) {
-	if(global.frameskip || config_get_int(CONFIG_VSYNC) == 1) {
+	if(global.frameskip || config_get_int(CONFIG_VSYNC) == 0) {
 		SDL_GL_SetSwapInterval(0);
 	} else {
 		switch (config_get_int(CONFIG_VSYNC)) {
 			case 2: // adaptive
 				if(SDL_GL_SetSwapInterval(-1) < 0) {
-			case 0: // on
+			case 1: // on
 					if(SDL_GL_SetSwapInterval(1) < 0) {
 						log_warn("SDL_GL_SetSwapInterval() failed: %s", SDL_GetError());
 					}

@@ -254,24 +254,38 @@ bool bind_isactive(OptionBinding *b) {
 
 // --- Shared binding callbacks --- //
 
-int bind_common_onoffget(OptionBinding *b) {
+int bind_common_onoff_get(OptionBinding *b) {
 	return !config_get_int(b->configentry);
 }
 
-int bind_common_onoffset(OptionBinding *b, int v) {
+int bind_common_onoff_set(OptionBinding *b, int v) {
 	return !config_set_int(b->configentry, !v);
 }
 
-int bind_common_onoffget_inverted(OptionBinding *b) {
+int bind_common_onoff_inverted_get(OptionBinding *b) {
 	return config_get_int(b->configentry);
 }
 
-int bind_common_onoffset_inverted(OptionBinding *b, int v) {
+int bind_common_onoff_inverted_set(OptionBinding *b, int v) {
 	return config_set_int(b->configentry, v);
 }
 
-#define bind_common_intget bind_common_onoffget_inverted
-#define bind_common_intset bind_common_onoffset_inverted
+int bind_common_onoffplus_get(OptionBinding *b) {
+	int v = config_get_int(b->configentry);
+
+	if(v > 1)
+		return v;
+	return !v;
+}
+
+int bind_common_onoffplus_set(OptionBinding *b, int v) {
+	if(v > 1)
+		return config_set_int(b->configentry, v);
+	return !config_set_int(b->configentry, !v);
+}
+
+#define bind_common_int_get bind_common_onoff_inverted_get
+#define bind_common_int_set bind_common_onoff_inverted_set
 
 // --- Binding callbacks for individual options --- //
 
@@ -289,20 +303,6 @@ bool bind_bgquality_dependence(void) {
 
 bool bind_resolution_dependence(void) {
 	return video_can_change_resolution();
-}
-
-int bind_saverpy_get(OptionBinding *b) {
-	int v = config_get_int(b->configentry);
-
-	if(v > 1)
-		return v;
-	return !v;
-}
-
-int bind_saverpy_set(OptionBinding *b, int v) {
-	if(v > 1)
-		return config_set_int(b->configentry, v);
-	return !config_set_int(b->configentry, !v);
 }
 
 int bind_resolution_set(OptionBinding *b, int v) {
@@ -369,7 +369,7 @@ void options_sub_video(MenuData *parent, void *arg) {
 	create_options_menu_basic(m, "Video Options");
 
 	add_menu_entry(m, "Fullscreen", do_nothing,
-		b = bind_option(CONFIG_FULLSCREEN, bind_common_onoffget, bind_common_onoffset)
+		b = bind_option(CONFIG_FULLSCREEN, bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 
 	add_menu_entry(m, "Resolution", do_nothing,
@@ -378,12 +378,12 @@ void options_sub_video(MenuData *parent, void *arg) {
 		b->dependence = bind_resolution_dependence;
 
 	add_menu_entry(m, "Resizable window", do_nothing,
-		b = bind_option(CONFIG_VID_RESIZABLE, bind_common_onoffget, bind_common_onoffset)
+		b = bind_option(CONFIG_VID_RESIZABLE, bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 		bind_setdependence(b, bind_resizable_dependence);
 
 	add_menu_entry(m, "Vertical synchronization", do_nothing,
-		b = bind_option(CONFIG_VSYNC, bind_common_intget, bind_common_intset)
+		b = bind_option(CONFIG_VSYNC, bind_common_onoffplus_get, bind_common_onoffplus_set)
 	);	bind_addvalue(b, "on");
 		bind_addvalue(b, "off");
 		bind_addvalue(b, "adaptive");
@@ -391,7 +391,7 @@ void options_sub_video(MenuData *parent, void *arg) {
 	add_menu_separator(m);
 
 	add_menu_entry(m, "Stage background", do_nothing,
-		b = bind_option(CONFIG_NO_STAGEBG, bind_common_intget, bind_common_intset)
+		b = bind_option(CONFIG_NO_STAGEBG, bind_common_int_get, bind_common_int_set)
 	);	bind_onoff(b);
 
 	add_menu_separator(m);
@@ -488,7 +488,7 @@ void options_sub_gamepad(MenuData *parent, void *arg) {
 	create_options_menu_basic(m, "Gamepad Options");
 
 	add_menu_entry(m, "Enable Gamepad/Joystick support", do_nothing,
-		b = bind_option(CONFIG_GAMEPAD_ENABLED, bind_common_onoffget, bind_common_onoffset)
+		b = bind_option(CONFIG_GAMEPAD_ENABLED, bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 
 	add_menu_entry(m, "Device", do_nothing,
@@ -509,7 +509,7 @@ void options_sub_gamepad(MenuData *parent, void *arg) {
 	);
 
 	add_menu_entry(m, "Axes mode", do_nothing,
-		b = bind_option(CONFIG_GAMEPAD_AXIS_FREE, bind_common_onoffget, bind_common_onoffset)
+		b = bind_option(CONFIG_GAMEPAD_AXIS_FREE, bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_addvalue(b, "free");
 		bind_addvalue(b, "restricted");
 
@@ -635,14 +635,14 @@ void create_options_menu(MenuData *m) {
 	add_menu_separator(m);
 
 	add_menu_entry(m, "Save replays", do_nothing,
-		b = bind_option(CONFIG_SAVE_RPY, bind_saverpy_get, bind_saverpy_set)
+		b = bind_option(CONFIG_SAVE_RPY, bind_common_onoffplus_get, bind_common_onoffplus_set)
 	);	bind_addvalue(b, "on");
 		bind_addvalue(b, "off");
 		bind_addvalue(b, "ask");
 
 	add_menu_entry(m, "Auto-restart in spell practice mode", do_nothing,
-		b = bind_option(CONFIG_SPELLSTAGE_AUTORESTART, 	bind_common_onoffget,
-														bind_common_onoffset)
+		b = bind_option(CONFIG_SPELLSTAGE_AUTORESTART, 	bind_common_onoff_get,
+														bind_common_onoff_set)
 	);	bind_onoff(b);
 
 	add_menu_separator(m);
