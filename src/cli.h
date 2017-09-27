@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef CLI_H
-#define CLI_H
+#pragma once
 
 #include "player.h"
 
@@ -35,4 +34,4 @@ struct CLIAction {
 int cli_args(int argc, char **argv, CLIAction *a);
 void free_cli_action(CLIAction *a);
 
-#endif
+

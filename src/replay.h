@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef REPLAY_H
-#define REPLAY_H
+#pragma once
 
 #include "stage.h"
 #include "player.h"
@@ -183,6 +182,6 @@ void replay_play(Replay *rpy, int firstidx);
 
 int replay_find_stage_idx(Replay *rpy, uint8_t stageid);
 
-#endif
+
 
 int replay_test(void);

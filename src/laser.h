@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef LASER_H
-#define LASER_H
+#pragma once
 
 #include "util.h"
 #include "projectile.h"
@@ -77,4 +76,4 @@ complex las_circle(Laser *l, float t);
 float laser_charge(Laser *l, int t, float charge, float width);
 void static_laser(Laser *l, int t);
 
-#endif
+

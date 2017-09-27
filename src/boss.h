@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef BOSS_H
-#define BOSS_H
+#pragma once
 
 #include "util.h"
 #include "difficulty.h"
@@ -139,4 +138,4 @@ void boss_preload(void);
 #define BOSS_DEFAULT_GO_POS (VIEWPORT_W * 0.5 + 200.0*I)
 #define BOSS_NOMOVE (-3142-39942.0*I)
 
-#endif
+

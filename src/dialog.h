@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef DIALOG_H
-#define DIALOG_H
+#pragma once
 
 #include <stdbool.h>
 #include "resource/texture.h"
@@ -46,4 +45,4 @@ void delete_dialog(Dialog *d);
 void draw_dialog(Dialog *dialog);
 void page_dialog(Dialog **d);
 
-#endif
+

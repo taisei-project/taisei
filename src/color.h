@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef TSCOLOR_H
-#define TSCOLOR_H
+#pragma once
 
 #include <stdint.h>
 #include "taiseigl.h"
@@ -45,4 +44,4 @@ float color_component(Color clr, unsigned int ofs);
 
 int color_test(void);
 
-#endif
+

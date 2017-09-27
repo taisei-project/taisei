@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef POSTPROCESS_H
-#define POSTPROCESS_H
+#pragma once
 
 #include "list.h"
 #include "hashtable.h"
@@ -57,4 +56,4 @@ PostprocessShader* postprocess_load(const char *path);
 void postprocess_unload(PostprocessShader **list);
 FBO* postprocess(PostprocessShader *ppshaders, FBO *fbo1, FBO *fbo2, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw);
 
-#endif
+

@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef SHADER_H
-#define SHADER_H
+#pragma once
 
 #include <stdbool.h>
 #include "taiseigl.h"
@@ -37,4 +36,4 @@ int uniloc(Shader *sha, const char *name);
 #define SHA_DELIM "%% -- FRAG"
 #define SHA_DELIM_SIZE (sizeof(SHA_DELIM) - 1)
 
-#endif
+

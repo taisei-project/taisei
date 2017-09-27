@@ -6,12 +6,11 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef STGPRACTMENU_H
-#define STGPRACTMENU_H
+#pragma once
 
 #include "menu.h"
 #include "difficulty.h"
 
 void create_stgpract_menu(MenuData *m, Difficulty diff);
 
-#endif
+

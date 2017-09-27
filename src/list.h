@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef LIST_H
-#define LIST_H
+#pragma once
 
 /* I got annoyed of the code doubling caused by simple linked lists,
  * so i do some void-magic here to save the lines.
@@ -43,4 +42,4 @@ int add_ref(void *ptr);
 void del_ref(void *ptr);
 void free_ref(int i);
 void free_all_refs(void);
-#endif
+

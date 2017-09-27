@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef GLOBAL_H
-#define GLOBAL_H
+#pragma once
 
 #include <SDL.h>
 #include <SDL_platform.h>
@@ -125,4 +124,4 @@ extern Global global;
 
 void init_global(CLIAction *cli);
 
-#endif
+

@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef FONT_H
-#define FONT_H
+#pragma once
 
 #include <SDL_ttf.h>
 #include "texture.h"
@@ -62,4 +61,4 @@ struct Fonts {
 
 extern struct Fonts _fonts;
 
-#endif
+

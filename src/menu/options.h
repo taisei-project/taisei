@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef OPTMENU_H
-#define OPTMENU_H
+#pragma once
 
 #include "menu.h"
 
@@ -54,5 +53,5 @@ typedef struct OptionBinding {
 
 void draw_options_menu_bg(MenuData*);
 
-#endif
+
 

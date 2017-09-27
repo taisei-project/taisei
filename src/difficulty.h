@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef DIFFICULTY_H
-#define DIFFICULTY_H
+#pragma once
 
 #include "color.h"
 
@@ -27,4 +26,4 @@ const char* difficulty_tex(Difficulty diff);
 Color difficulty_color(Difficulty diff);
 void difficulty_preload(void);
 
-#endif
+

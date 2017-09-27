@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef STAGE3_H
-#define STAGE3_H
+#pragma once
 
 #include "stage.h"
 
@@ -37,4 +36,4 @@ extern struct stage3_spells_s {
 extern StageProcs stage3_procs;
 extern StageProcs stage3_spell_procs;
 
-#endif
+

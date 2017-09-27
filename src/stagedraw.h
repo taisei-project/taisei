@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef STAGEDRAW_H
-#define STAGEDRAW_H
+#pragma once
 
 #include "stage.h"
 
@@ -15,4 +14,4 @@ void stage_draw_hud(void);
 void stage_draw_foreground(void);
 void stage_draw_scene(StageInfo *stage);
 
-#endif
+

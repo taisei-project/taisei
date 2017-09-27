@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef MENUCOMMON_H
-#define MENUCOMMON_H
+#pragma once
 
 #include "menu.h"
 
@@ -19,4 +18,4 @@ void draw_menu_list(MenuData *m, float x, float y, void (*draw)(void*, int, int)
 void animate_menu_list(MenuData *m);
 void menu_commonaction_close(MenuData *menu, void *arg);
 
-#endif
+

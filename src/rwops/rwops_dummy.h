@@ -6,12 +6,11 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef RWDUMMY_H
-#define RWDUMMY_H
+#pragma once
 
 #include <SDL.h>
 #include <stdbool.h>
 
 SDL_RWops* SDL_RWWrapDummy(SDL_RWops *src, bool autoclose);
 
-#endif
+

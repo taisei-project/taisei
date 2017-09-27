@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef STAGEUTILS_H
-#define STAGEUTILS_H
+#pragma once
 
 #include "matrix.h"
 
@@ -54,4 +53,4 @@ Vector **single3dpos(Vector q, float maxrange, Vector p);
 
 void skip_background_anim(Stage3D *s3d, void (*drawfunc)(void), int frames, int *timer, int *timer2);
 
-#endif
+

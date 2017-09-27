@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef TSHASHTABLE_H
-#define TSHASHTABLE_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -78,4 +77,4 @@ void hashtable_get_stats(Hashtable *ht, HashtableStats *stats);
 void hashtable_lock(Hashtable *ht);
 void hashtable_unlock(Hashtable *ht);
 
-#endif
+

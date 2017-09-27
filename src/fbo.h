@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef FBO_H
-#define FBO_H
+#pragma once
 
 #include "taiseigl.h"
 
@@ -26,4 +25,4 @@ void draw_fbo(FBO *fbo);
 void draw_fbo_viewport(FBO *fbo);
 void delete_fbo(FBO *fbo);
 
-#endif
+

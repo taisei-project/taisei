@@ -6,11 +6,10 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef RPYVIEW_H
-#define RPYVIEW_H
+#pragma once
 
 #include "menu.h"
 
 void create_replayview_menu(MenuData *m);
 
-#endif
+

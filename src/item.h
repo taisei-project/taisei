@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef ITEM_H
-#define ITEM_H
+#pragma once
 
 #include "util.h"
 
@@ -58,4 +57,4 @@ void items_preload(void);
 
 #define POWER_VALUE 3
 
-#endif
+

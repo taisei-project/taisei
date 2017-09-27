@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef AUDIO_H
-#define AUDIO_H
+#pragma once
 
 #include "resource/sfx.h"
 #include "resource/bgm.h"
@@ -51,4 +50,4 @@ void resume_bgm(void);
 void save_bgm(void);
 void restore_bgm(void);
 
-#endif
+

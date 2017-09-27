@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef BGM_H
-#define BGM_H
+#pragma once
 
 #include <stdbool.h>
 
@@ -24,4 +23,4 @@ void unload_music(void *snd);
 
 #define BGM_PATH_PREFIX "res/bgm/"
 
-#endif
+

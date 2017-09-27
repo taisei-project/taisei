@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef MENU_H
-#define MENU_H
+#pragma once
 
 #include <stdbool.h>
 #include "transition.h"
@@ -97,4 +96,4 @@ float menu_fade(MenuData *menu);
 
 void menu_event(EventType type, int state, void *arg);
 
-#endif
+

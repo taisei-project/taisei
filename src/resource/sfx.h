@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef SFX_H
-#define SFX_H
+#pragma once
 
 #include <stdbool.h>
 
@@ -24,4 +23,4 @@ void unload_sound(void *snd);
 
 #define SFX_PATH_PREFIX "res/sfx/"
 
-#endif
+

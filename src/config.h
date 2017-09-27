@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef CONFIG_H
-#define CONFIG_H
+#pragma once
 
 #include <SDL_keycode.h>
 #include <stdbool.h>
@@ -211,4 +210,4 @@ int config_set_int(ConfigIndex idx, int val);
 double config_set_float(ConfigIndex idx, double val);
 char* config_set_str(ConfigIndex idx, const char *val);
 
-#endif
+

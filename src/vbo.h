@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef VBO_H
-#define VBO_H
+#pragma once
 
 #include "matrix.h"
 #include "resource/texture.h"
@@ -42,4 +41,4 @@ void init_quadvbo(void);
 void draw_quad(void);
 void delete_vbo(VBO *vbo);
 
-#endif
+

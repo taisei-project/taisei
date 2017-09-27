@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef VIDEO_H
-#define VIDEO_H
+#pragma once
 
 #define WINDOW_TITLE "TaiseiProject"
 #define VIDEO_ASPECT_RATIO ((double)SCREEN_W/SCREEN_H)
@@ -47,4 +46,4 @@ bool video_can_change_resolution(void);
 void video_resize(int w, int h);
 void video_take_screenshot(void);
 
-#endif
+

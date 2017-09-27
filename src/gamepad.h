@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef GAMEPAD_H
-#define GAMEPAD_H
+#pragma once
 
 #include <SDL.h>
 #include <stdbool.h>
@@ -53,4 +52,4 @@ int gamepad_get_player_axis_value(GamepadPlrAxis paxis);
 #define GAMEPAD_AXIS_MIN -32768
 #define AXISVAL sign
 
-#endif
+
