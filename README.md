@@ -61,7 +61,7 @@ There are a few ways to generate a custom mapping:
 * You can use the [`controllermap`](https://aur.archlinux.org/packages/controllermap) utility, which [comes with SDL source code](https://hg.libsdl.org/SDL/file/68a767ae3a88/test/controllermap.c).
 * If you use Steam, you can configure your controller there. Then you can add Taisei as a non-Steam game; run it from Steam and everything should *just work™*. In case you don't want to do that, find `config/config.vdf` in your Steam installation directory, and look for the `SDL_GamepadBind` variable. It contains a list of SDL mappings separated by line breaks.
 * You can also try the [SDL2 Gamepad Tool by General Arcade](http://www.generalarcade.com/gamepadtool/). This program is free to use, but not open source.
-* Finally, you can try to write a mapping by hand. You will probably have to refer to the SDL documentation. See [gamecontrollerdb/gamecontrollerdb.txt](gamecontrollerdb.txt) for some more examples.
+* Finally, you can try to write a mapping by hand. You will probably have to refer to the SDL documentation. See [misc/gamecontrollerdb/gamecontrollerdb.txt](gamecontrollerdb.txt) for some more examples.
 
 Once you have your mapping, there are two ways to make Taisei use it:
 * Create a file named `gamecontrollerdb.txt` where your config, replays and screenshots are, and put each mapping on a new line.
@@ -90,7 +90,7 @@ Complete music pack consists of 16 bgm\_\*.(ogg/wav/flac) files, where ‘\*’ 
 ```
 
 If you want to specify stage/boss theme names to be shown during gameplay, you
-may do it by editing the [`bgm/bgm.conf`](bgm/bgm.conf) file.
+may do it by editing the [`resources/bgm/bgm.conf`](bgm/bgm.conf) file.
 
 ## Sound problems (Linux)
 

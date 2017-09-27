@@ -2,6 +2,8 @@ project(taisei C)
 cmake_minimum_required(VERSION 3.2)
 
 set(BUILDSCRIPTS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
+set(MISC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/misc")
+set(ICONS_DIR "${MISC_DIR}/icons")
 
 list(APPEND CMAKE_MODULE_PATH "${BUILDSCRIPTS_DIR}/cmake-modules")
 list(APPEND CMAKE_MODULE_PATH "${BUILDSCRIPTS_DIR}/cmake-modules/git")
@@ -131,7 +133,7 @@ if(RELATIVE)
     if(APPLE)
         set(RES_DIR "Taisei.app/Contents/Resources")
         set(DATA_DIR "${RES_DIR}/data")
-        install(FILES "OSX-iconset.icns" DESTINATION "${RES_DIR}" RENAME "Taisei.icns")
+        install(FILES "${ICONS_DIR}/taisei.icns" DESTINATION "${RES_DIR}" RENAME "Taisei.icns")
     else()
         set(DATA_DIR "data")
     endif()
@@ -143,7 +145,7 @@ else()
 endif()
 
 if(WIN32)
-    set(DOC_FILES "STORY.txt" "COPYING" "README_installed.txt")
+    set(DOC_FILES "STORY.txt" "COPYING" "misc/README_installed.txt")
     set(DOC_TMP_DIR "${CMAKE_CURRENT_BINARY_DIR}/win32docs")
 
     configure_file(
@@ -159,15 +161,7 @@ endif()
 
 install(FILES "${DOC_SRC_DIR}/STORY.txt" DESTINATION "${DOC_DIR}")
 install(FILES "${DOC_SRC_DIR}/COPYING" DESTINATION "${DOC_DIR}" RENAME "COPYING.txt")
-install(FILES "${DOC_SRC_DIR}/README_installed.txt" DESTINATION "${DOC_DIR}" RENAME "README.txt")
-
-set(GAME_RESOURCES_DIRS
-    "gfx"
-    "sfx"
-    "bgm"
-    "shader"
-    "models"
-)
+install(FILES "${DOC_SRC_DIR}/misc/README_installed.txt" DESTINATION "${DOC_DIR}" RENAME "README.txt")
 
 if(PACKAGE_DATA)
     set(GAME_RESOURCES_ZIP "${CMAKE_CURRENT_BINARY_DIR}/00-taisei.zip")
@@ -196,12 +190,10 @@ if(PACKAGE_DATA)
 
     install(FILES ${GAME_RESOURCES_ZIP} DESTINATION ${DATA_DIR})
 else()
-    foreach(dir ${GAME_RESOURCES_DIRS})
-        install(DIRECTORY ${dir} DESTINATION ${DATA_DIR})
-    endforeach()
+    install(DIRECTORY "resources/" DESTINATION ${DATA_DIR})
 endif()
 
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/gamecontrollerdb/gamecontrollerdb.txt DESTINATION ${DATA_DIR})
+install(FILES ${MISC_DIR}/gamecontrollerdb/gamecontrollerdb.txt DESTINATION ${DATA_DIR})
 
 if(WIN32)
     # XXX: this is supposedly for dynamic-link builds, untested due to MXE being an ass

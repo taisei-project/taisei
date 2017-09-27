@@ -3,7 +3,7 @@ include(CheckSymbolExists)
 include(CheckAndSetFlags)
 
 if(USE_COTIRE)
-	set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/cotire/CMake")
+	set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${BUILDSCRIPTS_DIR}/cmake-modules/cotire/CMake")
 	cmake_policy(SET CMP0011 NEW)
 	include(cotire)
 endif()
