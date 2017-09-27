@@ -21,9 +21,9 @@
 struct stage3_spells_s stage3_spells = {
 	.mid = {
 		.deadly_dance			= {{ 0,  1,  2,  3}, AT_Spellcard, "Venom Sign ~ Deadly Dance", 25, 50000,
-								stage3_mid_a1, stage3_mid_spellbg, BOSS_DEFAULT_GO_POS},
+								scuttle_dance, scuttle_spellbg, BOSS_DEFAULT_GO_POS},
 		.acid_rain				= {{-1, -1,  4,  5}, AT_Spellcard, "Venom Sign ~ Acid Rain", 30, 50000,
-									stage3_mid_a2, stage3_mid_spellbg, BOSS_DEFAULT_GO_POS},
+									scuttle_acid, scuttle_spellbg, BOSS_DEFAULT_GO_POS},
 	},
 
 	.boss = {
@@ -299,13 +299,13 @@ void stage3_draw(void) {
 	draw_stage3d(&bgcontext, 7000);
 }
 
-void stage3_mid_spellbg(Boss*, int t);
+void scuttle_spellbg(Boss*, int t);
 
 void stage3_spellpractice_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		if(global.stage->spell->draw_rule == stage3_mid_spellbg) {
+		if(global.stage->spell->draw_rule == scuttle_spellbg) {
 			skip_background_anim(&bgcontext, stage3_draw, 2800, &global.timer, NULL);
 			global.boss = create_boss("Scuttle", "scuttle", 0, BOSS_DEFAULT_SPAWN_POS);
 		} else {

@@ -11,10 +11,10 @@
 
 #include "boss.h"
 
-void stage3_mid_spellbg(Boss*, int t);
+void scuttle_spellbg(Boss*, int t);
 void stage3_boss_spellbg(Boss*, int t);
-void stage3_mid_a1(Boss*, int t);
-void stage3_mid_a2(Boss*, int t);
+void scuttle_dance(Boss*, int t);
+void scuttle_acid(Boss*, int t);
 void stage3_boss_a1(Boss*, int t);
 void stage3_boss_a2(Boss*, int t);
 void stage3_boss_a3(Boss*, int t);

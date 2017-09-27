@@ -246,11 +246,11 @@ int stage3_cornerfairy(Enemy *e, int t) {
 	return 0;
 }
 
-void stage3_mid_intro(Boss *boss, int time) {
+void scuttle_intro(Boss *boss, int time) {
 	GO_TO(boss, VIEWPORT_W/2.0 + 100.0*I, 0.03);
 }
 
-void stage3_mid_outro(Boss *boss, int time) {
+void scuttle_outro(Boss *boss, int time) {
 	if(time == 0) {
 		spawn_items(boss->pos, Point, 10, Power, 10, Life, 1, NULL);
 	}
@@ -258,7 +258,7 @@ void stage3_mid_outro(Boss *boss, int time) {
 	boss->pos += pow(max(0, time)/30.0, 2) * cexp(I*(3*M_PI/2 + 0.5 * sin(time / 20.0)));
 }
 
-int stage3_mid_poison(Projectile *p, int time) {
+int scuttle_poison(Projectile *p, int time) {
 	int result = accelerated(p, time);
 
 	if(time < 0)
@@ -277,7 +277,7 @@ int stage3_mid_poison(Projectile *p, int time) {
 	return result;
 }
 
-int stage3_mid_a0_proj(Projectile *p, int time) {
+int scuttle_a0_proj(Projectile *p, int time) {
 	#define A0_PROJ_START 120
 	#define A0_PROJ_CHARGE 20
 	TIMER(&time)
@@ -309,7 +309,7 @@ int stage3_mid_a0_proj(Projectile *p, int time) {
 	#undef A0_PROJ_CHARGE
 }
 
-void stage3_mid_a0(Boss *boss, int time) {
+void scuttle_a0(Boss *boss, int time) {
 	int i;
 	TIMER(&time)
 
@@ -320,7 +320,7 @@ void stage3_mid_a0(Boss *boss, int time) {
 
 		for(i = 0; i < cnt; ++i) {
 			complex v = (2 - psin((max(3, global.diff+1)*2*M_PI*i/(float)cnt) + time)) * cexp(I*2*M_PI/cnt*i);
-			create_projectile2c("wave", boss->pos - v * 50, _i % 2? rgb(0.7, 0.3, 0.0) : rgb(0.3, .7, 0.0), stage3_mid_a0_proj,
+			create_projectile2c("wave", boss->pos - v * 50, _i % 2? rgb(0.7, 0.3, 0.0) : rgb(0.3, .7, 0.0), scuttle_a0_proj,
 				v,
 				2.0
 			);
@@ -328,7 +328,7 @@ void stage3_mid_a0(Boss *boss, int time) {
 	}
 }
 
-void stage3_mid_a1(Boss *boss, int time) {
+void scuttle_dance(Boss *boss, int time) {
 	int i;
 	TIMER(&time)
 
@@ -336,13 +336,14 @@ void stage3_mid_a1(Boss *boss, int time) {
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.03)
 
 	if(time > 30) {
-		float t = time * 1.5 * (0.4 + 0.3 * global.diff);
-		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2 + sin(t/50.0) * t/6.5 * cexp(I * M_PI_2 * t/100.0), 0.03)
+		double t = time * 1.5 * (0.4 + 0.3 * global.diff);
+		double moverad = min(160,time/4.5);
+		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2 + sin(t/50.0) * moverad * cexp(I * M_PI_2 * t/100.0), 0.03)
 
 		if(!(time % 70)) {
 			for(i = 0; i < 15; ++i) {
-				float a = M_PI/(5 + global.diff) * i * 2;
-				create_projectile4c("wave", boss->pos, rgb(0.3, 0.3 + 0.7 * psin(a*3 + time/50.0), 0.3), stage3_mid_poison,
+				double a = M_PI/(5 + global.diff) * i * 2;
+				create_projectile4c("wave", boss->pos, rgb(0.3, 0.3 + 0.7 * psin(a*3 + time/50.0), 0.3), scuttle_poison,
 					0,
 					0.02 * cexp(I*(a+time/10.0)),
 					a,
@@ -362,7 +363,7 @@ void stage3_mid_a1(Boss *boss, int time) {
 
 	if(!(time % 3)) {
 		for(i = -1; i < 2; i += 2) {
-			float c = psin(time/10.0);
+			double c = psin(time/10.0);
 			create_projectile1c("crystal", boss->pos, rgba(0.3 + c * 0.7, 0.6 - c * 0.3, 0.3, 0.7), linear,
 				10 * cexp(I*(carg(global.plr.pos - boss->pos) + (M_PI/4.0 * i * (1-time/2500.0)) * (1 - 0.5 * psin(time/15.0))))
 			);
@@ -370,7 +371,7 @@ void stage3_mid_a1(Boss *boss, int time) {
 	}
 }
 
-void stage3_mid_poison2_draw(Projectile *p, int time) {
+void scuttle_poison2_draw(Projectile *p, int time) {
 	float f = 1-min(time/60.0,1);
 	glPushMatrix();
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
@@ -388,7 +389,7 @@ void stage3_mid_poison2_draw(Projectile *p, int time) {
 	glPopMatrix();
 }
 
-int stage3_mid_poison2(Projectile *p, int time) {
+int scuttle_poison2(Projectile *p, int time) {
 	if(time < 0)
 		return 1;
 
@@ -412,14 +413,14 @@ int stage3_mid_poison2(Projectile *p, int time) {
 		p->args[1] *= 2/cabs(p->args[1]);
 		p->angle = carg(p->args[1]);
 		p->birthtime = global.frames;
-		p->draw = stage3_mid_poison2_draw;
+		p->draw = scuttle_poison2_draw;
 		p->tex = get_tex("proj/rice");
 	}
 	p->pos += p->args[1];
 	return 1;
 }
 
-void stage3_mid_a2(Boss *boss, int time) {
+void scuttle_acid(Boss *boss, int time) {
 	TIMER(&time)
 
 	if(time < 0) {
@@ -434,12 +435,12 @@ void stage3_mid_a2(Boss *boss, int time) {
 			float r = tanh(sin(_i/200.));
 			float v = lun ? cos(_i/150.)/pow(cosh(atanh(r)),2) : 0.5;
 			complex pos = 230*cexp(I*(_i*0.301+2*M_PI/cnt*i))*r;
-			create_projectile2c(lun && !(i%10) ? "bigball" : "ball",boss->pos+pos,rgb(0.3,1.0,0.3),stage3_mid_poison2,100-25*(!lun),cexp(I*(!lun)*0.6)*pos/cabs(pos)*(1+v));
+			create_projectile2c(lun && !(i%10) ? "bigball" : "ball",boss->pos+pos,rgb(0.3,1.0,0.3),scuttle_poison2,100-25*(!lun),cexp(I*(!lun)*0.6)*pos/cabs(pos)*(1+v));
 		}
 	}
 }
 
-void stage3_mid_spellbg(Boss *h, int time) {
+void scuttle_spellbg(Boss *h, int time) {
 	float a = 1.0;
 
 	if(time < 0)
@@ -481,12 +482,12 @@ void stage3_boss_spellbg(Boss *b, int time) {
 
 Boss* stage3_create_midboss(void) {
 	Boss *scuttle = create_boss("Scuttle", "scuttle", 0, VIEWPORT_W/2 - 200.0*I);
-	boss_add_attack(scuttle, AT_Move, "Introduction", 2, 0, stage3_mid_intro, NULL);
-	boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 30, 25000, stage3_mid_a0, NULL);
+	boss_add_attack(scuttle, AT_Move, "Introduction", 2, 0, scuttle_intro, NULL);
+	boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 30, 25000, scuttle_a0, NULL);
 	boss_add_attack_from_info(scuttle, &stage3_spells.mid.deadly_dance, false);
 	if(global.diff > D_Normal)
 		boss_add_attack_from_info(scuttle, &stage3_spells.mid.acid_rain, false);
-	boss_add_attack(scuttle, AT_Move, "Runaway", 2, 1, stage3_mid_outro, NULL);
+	boss_add_attack(scuttle, AT_Move, "Runaway", 2, 1, scuttle_outro, NULL);
 	scuttle->zoomcolor = rgb(0.4, 0.1, 0.4);
 
 	boss_start_attack(scuttle, scuttle->attacks);
