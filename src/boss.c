@@ -142,7 +142,13 @@ static bool attack_is_over(Attack *a) {
 }
 
 void draw_boss(Boss *boss) {
+	float red = 0.5*exp(-0.5*(global.frames-boss->lastdamageframe));
+	if(red > 1)
+		red = 0;
+
+	glColor4f(1,1-red,1-red/2,1);
 	draw_animation_p(creal(boss->pos), cimag(boss->pos) + 6*sin(global.frames/25.0), boss->anirow, boss->ani);
+	glColor4f(1,1,1,1);
 
 	if(boss->current->type == AT_Move && global.frames - boss->current->starttime > 0 && boss_attack_is_final(boss, boss->current))
 		return;
@@ -281,6 +287,15 @@ bool boss_is_fleeing(Boss *boss) {
 
 bool boss_is_vulnerable(Boss *boss) {
 	return boss->current && boss->current->type != AT_Move && boss->current->type != AT_SurvivalSpell && boss->current->starttime < global.frames && !boss->current->finished;
+}
+
+bool boss_damage(Boss *boss, int dmg) {
+	if(!boss || !boss->current || !boss_is_vulnerable(boss))
+		return false;
+	if(dmg > 0 && global.frames-boss->lastdamageframe > 2)
+		boss->lastdamageframe = global.frames;
+	boss->current->hp -= dmg;
+	return true;
 }
 
 static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {

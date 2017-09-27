@@ -108,16 +108,16 @@ int collision_projectile(Projectile *p) {
 			e = e->next;
 		}
 
-		if(global.boss && cabs(global.boss->pos - p->pos) < 42
-		&& boss_is_vulnerable(global.boss)) {
-			player_add_points(&global.plr, damage * 0.2);
-			global.boss->current->hp -= damage;
+		if(global.boss && cabs(global.boss->pos - p->pos) < 42) {
+			if(boss_damage(global.boss, damage)) {
+				player_add_points(&global.plr, damage * 0.2);
 
-			#ifdef PLR_DPS_STATS
-				global.plr.total_dmg += damage;
-			#endif
+				#ifdef PLR_DPS_STATS
+					global.plr.total_dmg += damage;
+				#endif
 
-			return 2;
+				return 2;
+			}
 		}
 	}
 	return 0;

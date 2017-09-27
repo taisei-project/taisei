@@ -111,6 +111,7 @@ typedef struct Boss {
 	Color zoomcolor;
 
 	int failed_spells;
+	int lastdamageframe; // used to make the boss blink on damage taken
 } Boss;
 
 Boss* create_boss(char *name, char *ani, char *dialog, complex pos);
@@ -129,6 +130,8 @@ void boss_finish_current_attack(Boss *boss);
 bool boss_is_dying(Boss *boss); // true if the last attack is over but the BOSS_DEATH_DELAY has not elapsed.
 bool boss_is_fleeing(Boss *boss);
 bool boss_is_vulnerable(Boss *boss);
+
+bool boss_damage(Boss *boss, int dmg); // subtract dmg hitpoints from hp returns true on success
 
 void boss_death(Boss **boss);
 void boss_kill_projectiles(void);

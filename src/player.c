@@ -198,8 +198,8 @@ void player_logic(Player* plr) {
 			if(!en->unbombable && en->hp > ENEMY_IMMUNE)
 				en->hp -= 300;
 
-		if(global.boss && boss_is_vulnerable(global.boss)) {
-			global.boss->current->hp -= 30;
+		if(global.boss) {
+			boss_damage(global.boss, 30);
 		}
 
 		stage_clear_hazards(false);

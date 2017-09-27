@@ -497,8 +497,14 @@ void stage_draw_hud(void) {
 	snprintf(buf, sizeof(buf), "%i fps", global.fps.show_fps);
 	draw_text(AL_Right, SCREEN_W, SCREEN_H - 0.5 * stringheight(buf, _fonts.standard), buf, _fonts.standard);
 
-	if(global.boss)
+	if(global.boss) {
+		float red = 0.5*exp(-0.5*(global.frames-global.boss->lastdamageframe)); // hit indicator
+		if(red > 1)
+			red = 0;
+		glColor4f(1,1,1,1-red);
 		draw_texture(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
+		glColor4f(1,1,1,1);
+	}
 
 	if(global.replaymode == REPLAY_PLAY) {
 		snprintf(buf, sizeof(buf), "Replay: %s (%i fps)", global.replay.playername, global.replay_stage->fps);
