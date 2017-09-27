@@ -10,10 +10,10 @@ shoot-em-up games set in an isolated world full of Japanese folklore.
 Dependencies:
 * SDL2 >= 2.0.5, SDL2\_ttf, SDL2\_mixer
 * zlib
-* libzip
+* libzip >= 1.0
 * libpng >= 1.5.0
 * OpenGL >= 2.1
-* CMake >= 3.2 (build system)
+* CMake >= 3.3 (build system)
 * pkg-config (build dependency)
 
 To build and install Taisei just follow these steps.
