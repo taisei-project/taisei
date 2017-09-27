@@ -218,7 +218,18 @@ if(WIN32)
 	enable_language(RC)
 	set(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> -O coff -o <OBJECT> <SOURCE>")
 
-	set(SRCs ${SRCs} taisei.rc)
+	if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+		set(RELEASE_BUILD TRUE)
+	endif()
+
+	# DEBUG_BUILD is also used in the template and is defined above
+
+	configure_file(
+		"${CMAKE_CURRENT_SOURCE_DIR}/taisei.rc.in"
+		"${CMAKE_CURRENT_BINARY_DIR}/taisei.rc"
+	)
+
+	set(SRCs ${SRCs} "${CMAKE_CURRENT_BINARY_DIR}/taisei.rc")
 endif()
 
 set(INCs
