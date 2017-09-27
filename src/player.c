@@ -254,6 +254,7 @@ void player_realdeath(Player *plr) {
 
 	plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I+30.0*I;
 	plr->recovery = -(global.frames + DEATH_DELAY + 150);
+	stage_clear_hazards(false);
 
 	if(plr->iddqd)
 		return;
@@ -271,6 +272,7 @@ void player_realdeath(Player *plr) {
 	player_set_power(plr, plr->power * 0.7,true);
 	plr->bombs = PLR_START_BOMBS;
 	plr->bomb_fragments = 0;
+
 
 	if(plr->lives-- == 0 && global.replaymode != REPLAY_PLAY) {
 		stage_gameover();
