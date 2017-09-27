@@ -38,8 +38,7 @@
 #define REPLAY_COMPRESSION_CHUNK_SIZE 4096
 
 // What struct version to use when saving recorded replays
-// XXX: the v1.1 format is used currently; change it and remove this line with the first gameplay change.
-#define REPLAY_STRUCT_VERSION_WRITE (REPLAY_STRUCT_VERSION_TS101000 | REPLAY_VERSION_COMPRESSION_BIT)
+#define REPLAY_STRUCT_VERSION_WRITE (REPLAY_STRUCT_VERSION_TS102000_REV0 | REPLAY_VERSION_COMPRESSION_BIT)
 
 #define REPLAY_ALLOC_INITIAL 256
 
