@@ -358,6 +358,13 @@ void iku_atmospheric(Boss *b, int time) {
 	}
 }
 
+complex bolts2_laser(Laser *l, float t) {
+	if(t == EVENT_BIRTH) {
+		return 0;
+	}
+	return creal(l->args[0])+I*cimag(l->pos) + sign(cimag(l->args[0]-l->pos))*0.06*I*t*t + (20+4*global.diff)*sin(t*0.025*global.diff+creal(l->args[0]));
+}
+
 void iku_bolts2(Boss *b, int time) {
 	int t = time % 400;
 	TIMER(&t);
@@ -367,7 +374,7 @@ void iku_bolts2(Boss *b, int time) {
 	}
 
 	FROM_TO(0, 400, 60)
-		create_lasercurve2c(creal(global.plr.pos), 100, 200, rgb(0.3,1,1), las_accel, global.diff*I,0.04*global.diff*I);
+		create_lasercurve1c(creal(global.plr.pos), 100, 200, rgb(0.3,1,1), bolts2_laser, global.plr.pos);
 
 	FROM_TO(0, 400, 5-global.diff)
 		if(frand() < 0.9)
