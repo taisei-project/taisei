@@ -66,7 +66,7 @@ typedef struct ReplayStage {
 	/* BEGIN stored fields */
 
 	// initial game settings
-	uint16_t stage; // must match type of StageInfo.id in replay.h
+	uint16_t stage; // must match type of StageInfo.id in stage.h
 	uint32_t seed;	// this also happens to be the game initiation time - and we use this property, don't break it please
 	uint8_t diff;
 	uint32_t points;
