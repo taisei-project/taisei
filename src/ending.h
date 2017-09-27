@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef ENDING_H
-#define ENDING_H
+#pragma once
 
 #include "resource/texture.h"
 
@@ -50,4 +49,4 @@ void ending_loop(void);
 void free_ending(Ending *e);
 void ending_preload(void);
 
-#endif
+

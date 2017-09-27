@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef STAGE5_EVENTS_H
-#define STAGE5_EVENTS_H
+#pragma once
 
 #include "boss.h"
 
@@ -20,4 +19,4 @@ void iku_extra(Boss*, int);
 
 void stage5_events(void);
 
-#endif
+

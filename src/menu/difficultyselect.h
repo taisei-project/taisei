@@ -6,12 +6,11 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef DIFFICULTYMENU_H
-#define DIFFICULTYMENU_H
+#pragma once
 
 #include "menu.h"
 
 void create_difficulty_menu(MenuData *menu);
 void draw_difficulty_menu(MenuData *m);
 
-#endif
+

@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef TSUTIL_H
-#define TSUTIL_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdnoreturn.h>
@@ -196,4 +195,4 @@ int sprintf(char *, const char*, ...) __attribute__((deprecated(
 
 PRAGMA(GCC diagnostic pop)
 
-#endif
+

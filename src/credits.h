@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef CREDITS_H
-#define CREDITS_H
+#pragma once
 
 void credits_loop(void);
 void credits_add(char*, int);
@@ -19,4 +18,4 @@ void credits_preload(void);
 
 #define CREDITS_FADEOUT 120
 
-#endif
+

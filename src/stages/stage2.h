@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef STAGE2_H
-#define STAGE2_H
+#pragma once
 
 #include "stage.h"
 
@@ -33,4 +32,4 @@ extern struct stage2_spells_s {
 extern StageProcs stage2_procs;
 extern StageProcs stage2_spell_procs;
 
-#endif
+

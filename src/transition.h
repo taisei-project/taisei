@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef TRANSITION_H
-#define TRANSITION_H
+#pragma once
 
 #include <stdbool.h>
 
@@ -55,4 +54,4 @@ void draw_transition(void);
 void update_transition(void);
 void draw_and_update_transition(void);
 
-#endif
+

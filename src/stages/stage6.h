@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef STAGE6_H
-#define STAGE6_H
+#pragma once
 
 #include "stage.h"
 
@@ -54,4 +53,4 @@ extern StageProcs stage6_spell_procs;
 
 void start_fall_over(void);
 
-#endif
+

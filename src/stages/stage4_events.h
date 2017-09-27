@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef STAGE4_EVENTS_H
-#define STAGE4_EVENTS_H
+#pragma once
 
 #include "boss.h"
 
@@ -21,4 +20,4 @@ void kurumi_extra(Boss*, int);
 
 void stage4_events(void);
 
-#endif
+

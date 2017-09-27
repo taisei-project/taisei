@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef PLAYER_H
-#define PLAYER_H
+#pragma once
 
 #ifdef DEBUG
 	#define PLR_DPS_STATS
@@ -151,4 +150,4 @@ void player_add_points(Player *plr, unsigned int points);
 
 void player_preload(void);
 
-#endif
+

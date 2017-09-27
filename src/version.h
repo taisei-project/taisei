@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef TSVERSION_H
-#define TSVERSION_H
+#pragma once
 
 #include "util.h"
 
@@ -56,4 +55,4 @@ char* taisei_version_tostring(TaiseiVersion *version);
 size_t taisei_version_read(SDL_RWops *rwops, TaiseiVersion *version);
 size_t taisei_version_write(SDL_RWops *rwops, TaiseiVersion *version);
 
-#endif
+

@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef TSRAND_H
-#define TSRAND_H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -61,4 +60,4 @@ double __anfrand(int idx, const char *file, unsigned int line);
 #define TSRAND_Z_COEFF 29379
 #define TSRAND_Z_SEED_COEFF 31083
 
-#endif
+

@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef EVENTS_H
-#define EVENTS_H
+#pragma once
 
 #include "config.h"
 
@@ -73,4 +72,4 @@ void events_pause_keyrepeat(void);
 void handle_events(EventHandler handler, EventFlags flags, void *arg);
 bool gamekeypressed(KeyIndex key);
 
-#endif
+

@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef RESOURCE_H
-#define RESOURCE_H
+#pragma once
 
 #include "global.h"
 
@@ -122,4 +121,4 @@ const char* resource_util_filename(const char *path);
 
 bool resource_sdl_event(SDL_Event *evt);
 
-#endif
+

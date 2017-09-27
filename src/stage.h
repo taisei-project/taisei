@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef STAGE_H
-#define STAGE_H
+#pragma once
 
 #include <stdbool.h>
 #include "projectile.h"
@@ -115,4 +114,4 @@ void stage_clear_hazards(bool force);
 #include "stages/stage5.h"
 #include "stages/stage6.h"
 
-#endif
+

@@ -6,12 +6,11 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef SAVERPYMENU_H
-#define SAVERPYMENU_H
+#pragma once
 
 #include "menu.h"
 
 void save_rpy(MenuData *menu, void*);
 void create_saverpy_menu(MenuData*);
 
-#endif
+

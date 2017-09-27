@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef MODEL_H
-#define MODEL_H
+#pragma once
 
 #include <stdbool.h>
 #include "matrix.h"
@@ -50,4 +49,4 @@ void draw_model(const char *name);
 #define MDL_PATH_PREFIX "res/models/"
 #define MDL_EXTENSION ".obj"
 
-#endif
+

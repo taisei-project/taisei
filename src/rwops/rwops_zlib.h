@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef ZWROPS_H
-#define ZWROPS_H
+#pragma once
 
 #include <SDL.h>
 #include <zlib.h>
@@ -19,4 +18,4 @@ z_stream* SDL_RWGetZStream(SDL_RWops *src);
 
 int zrwops_test(void);
 
-#endif
+

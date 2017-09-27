@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef STAGE2_EVENTS_H
-#define STAGE2_EVENTS_H
+#pragma once
 
 #include "boss.h"
 
@@ -19,4 +18,4 @@ void hina_monty(Boss*, int);
 
 void stage2_events(void);
 
-#endif
+

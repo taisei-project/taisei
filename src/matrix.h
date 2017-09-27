@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef MATRIX_H
-#define MATRIX_H
+#pragma once
 
 typedef float Matrix[4][4];
 
@@ -29,4 +28,4 @@ void matvecv(Matrix m, Vector *vs, int size);
 void normalize(Vector v);
 float length(Vector v);
 
-#endif
+

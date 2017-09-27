@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef MAINMENU_H
-#define MAINMENU_H
+#pragma once
 
 #include "menu.h"
 
@@ -18,4 +17,4 @@ void main_menu_update_practice_menus(void);
 void draw_loading_screen(void);
 void menu_preload(void);
 
-#endif
+

@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef TEXTURE_H
-#define TEXTURE_H
+#pragma once
 
 #include <SDL.h>
 #include <stdbool.h>
@@ -45,4 +44,4 @@ Texture* prefix_get_tex(const char *name, const char *prefix);
 #define TEX_PATH_PREFIX "res/gfx/"
 #define TEX_EXTENSION ".png"
 
-#endif
+

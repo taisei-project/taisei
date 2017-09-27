@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef STAGETXT_H
-#define STAGETXT_H
+#pragma once
 
 #include "util.h"
 #include "color.h"
@@ -66,4 +65,4 @@ void stagetext_table_add_separator(StageTextTable *tbl);
 
 void stagetext_table_test(void);
 
-#endif
+

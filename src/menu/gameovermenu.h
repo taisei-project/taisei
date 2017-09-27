@@ -6,11 +6,10 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef GAMEOVERMENU_H
-#define GAMEOVERMENU_H
+#pragma once
 
 #include "menu.h"
 
 void create_gameover_menu(MenuData *);
 
-#endif
+

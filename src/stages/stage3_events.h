@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef STAGE3_EVENTS_H
-#define STAGE3_EVENTS_H
+#pragma once
 
 #include "boss.h"
 
@@ -22,4 +21,4 @@ void stage3_boss_extra(Boss*, int t);
 
 void stage3_events(void);
 
-#endif
+

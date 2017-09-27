@@ -6,11 +6,10 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef SPELLMENU_H
-#define SPELLMENU_H
+#pragma once
 
 #include "menu.h"
 
 void create_spell_menu(MenuData *m);
 
-#endif
+

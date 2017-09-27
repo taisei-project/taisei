@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef RWZIP_H
-#define RWZIP_H
+#pragma once
 
 #include <SDL.h>
 #include <zip.h>
@@ -15,4 +14,4 @@
 
 SDL_RWops* SDL_RWFromZipFile(zip_file_t *zipfile, bool autoclose);
 
-#endif
+

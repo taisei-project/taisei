@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef INGAMEMENU_H
-#define INGAMEMENU_H
+#pragma once
 
 #include "menu.h"
 
@@ -19,4 +18,4 @@ void create_ingame_menu_replay(MenuData *m);
 
 void restart_game(MenuData *m, void *arg);
 
-#endif
+

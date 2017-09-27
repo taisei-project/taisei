@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef PROGRESS_H
-#define PROGRESS_H
+#pragma once
 
 #include <stdbool.h>
 #include <SDL.h>
@@ -54,4 +53,4 @@ void progress_load(void);
 void progress_save(void);
 void progress_unload(void);
 
-#endif
+

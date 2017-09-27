@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef ANIMATION_H
-#define ANIMATION_H
+#pragma once
 
 #include "texture.h"
 
@@ -38,4 +37,4 @@ void draw_animation_p(float x, float y, int row, Animation *ani);
 #define ANI_PATH_PREFIX TEX_PATH_PREFIX
 #define ANI_EXTENSION ".ani"
 
-#endif
+

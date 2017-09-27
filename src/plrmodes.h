@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef PLRMODES_H
-#define PLRMODES_H
+#pragma once
 
 #include "enemy.h"
 #include "projectile.h"
@@ -34,4 +33,4 @@ void marisa_power(Player *plr, short npow);
 int plrmode_repr(char *out, size_t outsize, Character pchar, ShotMode pshot);
 int plrmode_parse(const char *name, Character *cha, ShotMode *shot);
 
-#endif
+

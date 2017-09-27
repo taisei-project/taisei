@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef ENEMY_H
-#define ENEMY_H
+#pragma once
 
 #include "util.h"
 #include "projectile.h"
@@ -67,4 +66,4 @@ void EnemyFlareShrink(Projectile *p, int t);
 
 void enemies_preload(void);
 
-#endif
+

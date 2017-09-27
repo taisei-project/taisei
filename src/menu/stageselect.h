@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef STGMENU_H
-#define STGMENU_H
+#pragma once
 
 #include "menu.h"
 
@@ -15,4 +14,4 @@
 
 void create_stage_menu(MenuData *m);
 
-#endif
+

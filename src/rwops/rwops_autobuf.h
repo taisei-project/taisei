@@ -6,11 +6,10 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef RWAUTO_H
-#define RWAUTO_H
+#pragma once
 
 #include <SDL.h>
 
 SDL_RWops* SDL_RWAutoBuffer(void **ptr, size_t initsize);
 
-#endif
+
