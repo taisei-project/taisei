@@ -42,19 +42,51 @@ void cirno_intro(Boss *c, int time) {
 	GO_TO(c, VIEWPORT_W/2.0 + 100.0*I, 0.035);
 }
 
-void cirno_icy(Boss *c, int time) {
-	int t = time % 280;
+int cirno_snowflake_proj(Projectile *p, int time) {
+	if(time < 0)
+		return 1;
+
+	if(time < 200-20*global.diff)
+		p->pos += p->args[0];
+	else
+		p->pos += cabs(p->args[0])*cexp(I*p->angle);
+	return 1;
+}
+
+void cirno_icy(Boss *b, int time) {
+	int interval = 60-3*global.diff;
+	int t = time % interval;
+	int run = time/interval;
 	TIMER(&t);
+
+	int size = 5+3*sin(337*run);
 
 	if(time < 0)
 		return;
+	complex vel = (1+0.1*global.diff)*cexp(I*fmod(200*run,M_PI));
+	int c = 6;
+	double dr = 15;
 
-	FROM_TO(0, 200, 5-global.diff) {
-		Color clr = rgb(0.1,0.2,0.4+0.4*frand());
-		for(int d = 0; d < 2; d++) {
-			int sign = 1 - 2*d;
-			tsrand_fill(2);
-			create_projectile2c("crystal", VIEWPORT_W/2.0 + 5*_i*sign*afrand(0)/(float)global.diff + cimag(c->pos)*I, clr, accelerated, 1.7*cexp(I*_i*sign/10.0)*(1-2*(_i&1)), 0.0001*I*_i + 2.*global.diff*global.diff/D_Lunatic/D_Lunatic*(0.0025 - 0.005*afrand(1)));
+	FROM_TO(0,3*size,3) {
+		for(int i = 0; i < c; i++) {
+			double ang = 2*M_PI/c*i+run*515;
+			complex phase = cexp(I*ang);
+
+			complex pos = b->pos+vel*t+dr*_i*phase;
+			create_projectile1c("crystal", pos+6*I*phase, rgb(0.0,0.3*size/5,1), cirno_snowflake_proj, vel)->angle=ang+M_PI/4;
+			create_projectile1c("crystal", pos-6*I*phase, rgb(0.0,0.3*size/5,1), cirno_snowflake_proj, vel)->angle=ang-M_PI/4;
+
+			int split = 3;
+			if(_i > split) {
+				complex pos0 = b->pos+vel*t+dr*split*phase;
+				for(int j = -1; j <= 1; j+=2) {
+					complex phase2 = cexp(I*M_PI/4*j)*phase;
+					complex pos = pos0+(dr*(_i-split))*phase2;
+					create_projectile1c("crystal", pos, rgb(0.0,0.3*size/5,1), cirno_snowflake_proj, vel)->angle=ang+M_PI/4*j;
+				}
+			}
+
+
 		}
 	}
 }
