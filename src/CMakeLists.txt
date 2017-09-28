@@ -38,7 +38,7 @@ if(NOT NO_AUDIO)
 endif()
 
 if(DISABLE_ZIP)
-	set(PACKAGE_DATA OFF)
+	set(PACKAGE_DATA OFF PARENT_SCOPE)
 	add_definitions(-DDISABLE_ZIP)
 endif()
 
