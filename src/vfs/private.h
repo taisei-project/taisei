@@ -13,7 +13,9 @@
  *  This file should not be included by code outside of the vfs/ directory
  */
 
+#ifndef DISABLE_ZIP
 #include <zip.h>
+#endif
 
 #include "util.h"
 
@@ -26,8 +28,10 @@ typedef enum VFSNodeType {
     VNODE_VDIR,
     VNODE_SYSPATH,
     VNODE_UNION,
+#ifndef DISABLE_ZIP
     VNODE_ZIPFILE,
     VNODE_ZIPPATH,
+#endif
 } VFSNodeType;
 
 typedef char* (*VFSReprFunc)(VFSNode*);

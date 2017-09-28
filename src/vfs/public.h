@@ -38,7 +38,11 @@ void vfs_mkdir_required(const char *path);
 bool vfs_create_union_mountpoint(const char *mountpoint);
 bool vfs_mount_alias(const char *dst, const char *src);
 bool vfs_mount_syspath(const char *mountpoint, const char *fspath, bool mkdir);
+
+#ifndef DISABLE_ZIP
 bool vfs_mount_zipfile(const char *mountpoint, const char *zippath);
+#endif
+
 bool vfs_unmount(const char *path);
 
 VFSDir* vfs_dir_open(const char *path);

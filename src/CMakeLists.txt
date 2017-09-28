@@ -10,6 +10,11 @@ endif()
 
 find_package(PkgConfig REQUIRED)
 
+if(CMAKE_VERSION VERSION_LESS 3.3)
+	message(STATUS "  Version of cmake is too old, data packaging will not be used.")
+	set(DISABLE_ZIP ON)
+endif()
+
 if(LINK_TO_LIBGL)
 	find_package(OpenGL REQUIRED)
 	add_definitions(-DLINK_TO_LIBGL)
@@ -21,10 +26,20 @@ pkg_check_modules(SDL2 sdl2>=2.0.5 REQUIRED)
 pkg_check_modules(SDL2_TTF SDL2_ttf REQUIRED)
 pkg_check_modules(ZLIB zlib REQUIRED)
 pkg_check_modules(PNG libpng>=1.5 REQUIRED)
-pkg_check_modules(ZIP libzip>=1.0 REQUIRED)
+pkg_check_modules(ZIP libzip>=1.0)
+
+if(NOT ZIP_FOUND)
+	message(STATUS "  No suitable libzip found, data packaging will not be used.")
+	set(DISABLE_ZIP ON)
+endif()
 
 if(NOT NO_AUDIO)
 	pkg_check_modules(SDL2_MIXER SDL2_mixer REQUIRED)
+endif()
+
+if(DISABLE_ZIP)
+	set(PACKAGE_DATA OFF)
+	add_definitions(-DDISABLE_ZIP)
 endif()
 
 configure_file(
@@ -106,18 +121,23 @@ set(SRCs
 	rwops/rwops_zlib.c
 	rwops/rwops_segment.c
 	rwops/rwops_autobuf.c
-	rwops/rwops_zipfile.c
 	vfs/private.c
 	vfs/public.c
 	vfs/setup.c
 	vfs/pathutil.c
 	vfs/union.c
 	vfs/vdir.c
-	vfs/zipfile.c
-	vfs/zippath.c
 	version.c
 	"${CMAKE_CURRENT_BINARY_DIR}/version_auto.c"
 )
+
+if(NOT DISABLE_ZIP)
+	set(SRCs ${SRCs}
+		rwops/rwops_zipfile.c
+		vfs/zipfile.c
+		vfs/zippath.c)
+
+endif()
 
 if(WIN32)
 	set(SRCs ${SRCs}
@@ -177,7 +197,7 @@ CHECK_AND_SET_FLAGS(COMPILER_WARN_PEDANTIC "-Wpedantic" WARNINGS)
 CHECK_AND_SET_FLAGS(COMPILER_WARN_NULLDEREF "-Wnull-dereference" WARNINGS)
 
 if(RELATIVE)
-    add_definitions(-DRELATIVE)
+	add_definitions(-DRELATIVE)
 endif()
 
 if(WERROR)

@@ -1,5 +1,5 @@
 project(taisei C)
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.0.2)
 
 set(BUILDSCRIPTS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
 set(MISC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/misc")
@@ -22,7 +22,7 @@ function(taisei_parse_version version_string)
     string(SUBSTRING ${version_string} 0 1 first_char)
 
     if(first_char STREQUAL "v")
-        string(SUBSTRING ${version_string} 1 32 version_string)
+        string(SUBSTRING ${version_string} 1 -1 version_string)
     endif()
 
     string(REPLACE "+" "-" version_string ${version_string})
@@ -59,7 +59,7 @@ function(taisei_parse_version version_string)
     set(TAISEI_VERSION_TWEAK 0 PARENT_SCOPE)
 
     if(version_string_extra)
-        string(SUBSTRING ${version_string_extra} 1 32 version_string_extra)
+        string(SUBSTRING ${version_string_extra} 1 -1 version_string_extra)
         set(TAISEI_VERSION_TWEAK ${version_string_extra} PARENT_SCOPE)
     endif()
 endfunction()
@@ -110,6 +110,7 @@ endif()
 
 option(RELATIVE "Use only relative paths to the executable and install everything in the same directory." ${RELATIVE_DEFAULT})
 option(NO_AUDIO "Build without audio support" OFF)
+option(DISABLE_ZIP "Build without .zip file support" OFF)
 option(DEBUG_USE_UBSAN "Enable the Undefined Behaviour Sanitizer (UBSan) in debug builds. Only disable if the compiler or target platform doesn't support it." ON)
 option(DEBUG_USE_ASAN "Enable the Address Sanitizer (ASan) and leak detection in debug builds." OFF)
 option(RELEASE_USE_LTO "Enable Link Time Optimization in release builds." ON)
