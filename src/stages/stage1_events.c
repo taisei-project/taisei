@@ -54,7 +54,7 @@ int cirno_snowflake_proj(Projectile *p, int time) {
 }
 
 void cirno_icy(Boss *b, int time) {
-	int interval = 60-3*global.diff;
+	int interval = 70-5*global.diff;
 	int t = time % interval;
 	int run = time/interval;
 	TIMER(&t);
@@ -73,8 +73,8 @@ void cirno_icy(Boss *b, int time) {
 			complex phase = cexp(I*ang);
 
 			complex pos = b->pos+vel*t+dr*_i*phase;
-			create_projectile1c("crystal", pos+6*I*phase, rgb(0.0,0.3*size/5,1), cirno_snowflake_proj, vel)->angle=ang+M_PI/4;
-			create_projectile1c("crystal", pos-6*I*phase, rgb(0.0,0.3*size/5,1), cirno_snowflake_proj, vel)->angle=ang-M_PI/4;
+			create_projectile1c("crystal", pos+6*I*phase, rgb(0.0,0.1+0.1*size/5,0.8), cirno_snowflake_proj, vel)->angle=ang+M_PI/4;
+			create_projectile1c("crystal", pos-6*I*phase, rgb(0.0,0.1+0.1*size/5,0.8), cirno_snowflake_proj, vel)->angle=ang-M_PI/4;
 
 			int split = 3;
 			if(_i > split) {
