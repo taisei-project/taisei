@@ -28,11 +28,11 @@ In addition to the variables listed here, those processed by our runtime depende
 
 * **TAISEI_NOASYNC** *(default: `0`)*: if `1`, disables asynchronous loading. Increases loading times, might slightly reduce CPU and memory usage during loads. Generally not recommended unless you encounter a race condition bug, in which case you should report it.
 
-* **TAISEI_NOUNLOAD** *(default: 0)*: if `1`, loaded resources are never unloaded. Increases memory usage, reduces filesystem reads and loading times over time.
+* **TAISEI_NOUNLOAD** *(default: `0`)*: if `1`, loaded resources are never unloaded. Increases memory usage, reduces filesystem reads and loading times over time.
 
-* **TAISEI_NOPRELOAD** *(default: 0)*: if `1`, disables preloading. All resources are only loaded as they are needed. Reduces loading times and memory usage, but may cause stuttering during gameplay.
+* **TAISEI_NOPRELOAD** *(default: `0`)*: if `1`, disables preloading. All resources are only loaded as they are needed. Reduces loading times and memory usage, but may cause stuttering during gameplay.
 
-* **TAISEI_PRELOAD_REQUIRED** *(default: 0)*: if `1`, the game will crash with an error message when it attempts to use a resource that hasn't been previously preloaded. Useful for developers to debug missing preloads. Doesn't affect optional resources.
+* **TAISEI_PRELOAD_REQUIRED** *(default: `0`)*: if `1`, the game will crash with an error message when it attempts to use a resource that hasn't been previously preloaded. Useful for developers to debug missing preloads. Doesn't affect optional resources.
 
 ### Video and OpenGL
 
