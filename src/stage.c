@@ -241,14 +241,17 @@ void stage_gameover(void) {
 	}
 }
 
-void stage_input_event(EventType type, int key, void *arg) {
+bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {
+	TaiseiEvent type = TAISEI_EVENT(event->type);
+	int32_t code = event->user.code;
+
 	switch(type) {
-		case E_PlrKeyDown:
-			if(key == KEY_NOBACKGROUND) {
+		case TE_GAME_KEY_DOWN:
+			if(code == KEY_NOBACKGROUND) {
 				break;
 			}
 
-			if(key == KEY_HAHAIWIN) {
+			if(code == KEY_HAHAIWIN) {
 #ifdef DEBUG
 				stage_finish(GAMEOVER_WIN);
 #endif
@@ -256,45 +259,53 @@ void stage_input_event(EventType type, int key, void *arg) {
 			}
 
 #ifndef DEBUG // no cheating for peasants
-			if(	key == KEY_IDDQD ||
-				key == KEY_POWERUP ||
-				key == KEY_POWERDOWN)
+			if(	code == KEY_IDDQD ||
+				code == KEY_POWERUP ||
+				code == KEY_POWERDOWN)
 				break;
 #endif
 
-			player_event_with_replay(&global.plr, EV_PRESS, key);
+			player_event_with_replay(&global.plr, EV_PRESS, code);
 			break;
 
-		case E_PlrKeyUp:
-			player_event_with_replay(&global.plr, EV_RELEASE, key);
+		case TE_GAME_KEY_UP:
+			player_event_with_replay(&global.plr, EV_RELEASE, code);
 			break;
 
-		case E_Pause:
+		case TE_GAME_PAUSE:
 			stage_pause();
 			break;
 
-		case E_PlrAxisLR:
-			player_event_with_replay(&global.plr, EV_AXIS_LR, (uint16_t)key);
+		case TE_GAME_AXIS_LR:
+			player_event_with_replay(&global.plr, EV_AXIS_LR, (uint16_t)code);
 			break;
 
-		case E_PlrAxisUD:
-			player_event_with_replay(&global.plr, EV_AXIS_UD, (uint16_t)key);
+		case TE_GAME_AXIS_UD:
+			player_event_with_replay(&global.plr, EV_AXIS_UD, (uint16_t)code);
 			break;
 
 		default: break;
 	}
+
+	return false;
 }
 
-void stage_replay_event(EventType type, int state, void *arg) {
-	if(type == E_Pause)
+bool stage_input_handler_replay(SDL_Event *event, void *arg) {
+	if(event->type == MAKE_TAISEI_EVENT(TE_GAME_PAUSE)) {
 		stage_pause();
+	}
+
+	return false;
 }
 
 void replay_input(void) {
 	ReplayStage *s = global.replay_stage;
 	int i;
 
-	handle_events(stage_replay_event, EF_Game, NULL);
+	events_poll((EventHandler[]){
+		{ .proc = stage_input_handler_replay },
+		{NULL}
+	}, EFLAG_GAME);
 
 	for(i = s->playpos; i < s->numevents; ++i) {
 		ReplayEvent *e = s->events + i;
@@ -326,7 +337,10 @@ void replay_input(void) {
 }
 
 void stage_input(void) {
-	handle_events(stage_input_event, EF_Game, NULL);
+	events_poll((EventHandler[]){
+		{ .proc = stage_input_handler_gameplay },
+		{NULL}
+	}, EFLAG_GAME);
 	player_fix_input(&global.plr);
 	player_applymovement(&global.plr);
 }

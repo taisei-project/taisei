@@ -181,13 +181,6 @@ static void video_update_quality(void) {
 	reload_fonts(text);
 }
 
-static void video_dispatch_mode_changed_event(void) {
-	SDL_Event evt;
-	SDL_zero(evt);
-	evt.type = sdl_custom_events.video_mode_changed;
-	SDL_PushEvent(&evt);
-}
-
 static uint32_t get_fullscreen_flag(void) {
 	if(config_get_int(CONFIG_FULLSCREEN_DESKTOP)) {
 		return SDL_WINDOW_FULLSCREEN_DESKTOP;
@@ -218,7 +211,7 @@ static void video_update_mode_settings(void) {
 	video.real.height = video.current.height;
 	video_set_viewport();
 	video_update_quality();
-	video_dispatch_mode_changed_event();
+	events_emit(TE_VIDEO_MODE_CHANGED, 0, NULL, NULL);
 
 	if(video_is_fullscreen() && !config_get_int(CONFIG_FULLSCREEN_DESKTOP)) {
 		video_check_fullscreen_sanity();
@@ -445,14 +438,6 @@ bool video_can_change_resolution(void) {
 	return !video_is_fullscreen() || !config_get_int(CONFIG_FULLSCREEN_DESKTOP);
 }
 
-void video_resize(int w, int h) {
-	video.current.width = w;
-	video.current.height = h;
-	video_set_viewport();
-	video_update_quality();
-	video_dispatch_mode_changed_event();
-}
-
 static void video_cfg_fullscreen_callback(ConfigIndex idx, ConfigValue v) {
 	video_set_mode(
 		config_get_int(CONFIG_VID_WIDTH),
@@ -523,6 +508,28 @@ static void video_init_sdl(void) {
 	}
 }
 
+static void video_handle_resize(int w, int h) {
+	video.current.width = w;
+	video.current.height = h;
+	video_set_viewport();
+	video_update_quality();
+	events_emit(TE_VIDEO_MODE_CHANGED, 0, NULL, NULL);
+}
+
+static bool video_handle_window_event(SDL_Event *event, void *arg) {
+	switch(event->window.event) {
+		case SDL_WINDOWEVENT_RESIZED:
+			video_handle_resize(event->window.data1, event->window.data2);
+			break;
+
+		case SDL_WINDOWEVENT_FOCUS_LOST:
+			events_emit(TE_GAME_PAUSE, 0, NULL, NULL);
+			break;
+	}
+
+	return true;
+}
+
 void video_init(void) {
 	bool fullscreen_available = false;
 
@@ -575,6 +582,13 @@ void video_init(void) {
 	config_set_callback(CONFIG_BG_QUALITY, video_quality_callback);
 	config_set_callback(CONFIG_TEXT_QUALITY, video_quality_callback);
 
+	EventHandler h = {
+		.proc = video_handle_window_event,
+		.priority = EPRIO_SYSTEM,
+		.event_type = SDL_WINDOWEVENT,
+	};
+
+	events_register_handler(&h);
 	log_info("Video subsystem initialized");
 }
 
@@ -584,4 +598,5 @@ void video_shutdown(void) {
 	unload_gl_library();
 	free(video.modes);
 	SDL_VideoQuit();
+	events_unregister_handler(video_handle_window_event);
 }

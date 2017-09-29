@@ -86,11 +86,12 @@ float menu_fade(MenuData *menu) {
 	return transition.fade;
 }
 
-void menu_event(EventType type, int state, void *arg) {
+bool menu_input_handler(SDL_Event *event, void *arg) {
 	MenuData *menu = arg;
+	TaiseiEvent te = TAISEI_EVENT(event->type);
 
-	switch(type) {
-		case E_CursorDown:
+	switch(te) {
+		case TE_MENU_CURSOR_DOWN:
 			play_ui_sound("generic_shot");
 			do {
 				if(++menu->cursor >= menu->ecount)
@@ -98,7 +99,7 @@ void menu_event(EventType type, int state, void *arg) {
 			} while(menu->entries[menu->cursor].action == NULL);
 		break;
 
-		case E_CursorUp:
+		case TE_MENU_CURSOR_UP:
 			play_ui_sound("generic_shot");
 			do {
 				if(--menu->cursor < 0)
@@ -106,7 +107,7 @@ void menu_event(EventType type, int state, void *arg) {
 			} while(menu->entries[menu->cursor].action == NULL);
 		break;
 
-		case E_MenuAccept:
+		case TE_MENU_ACCEPT:
 			play_ui_sound("shot_special1");
 			if(menu->entries[menu->cursor].action) {
 				menu->selected = menu->cursor;
@@ -114,7 +115,7 @@ void menu_event(EventType type, int state, void *arg) {
 			}
 		break;
 
-		case E_MenuAbort:
+		case TE_MENU_ABORT:
 			play_ui_sound("hit");
 			if(menu->flags & MF_Abortable) {
 				menu->selected = -1;
@@ -124,14 +125,19 @@ void menu_event(EventType type, int state, void *arg) {
 
 		default: break;
 	}
+
+	return false;
 }
 
 void menu_input(MenuData *menu) {
-	handle_events(menu_event, EF_Menu, (void*)menu);
+	events_poll((EventHandler[]){
+		{ .proc = menu_input_handler, .arg = menu },
+		{NULL}
+	}, EFLAG_MENU);
 }
 
 void menu_no_input(MenuData *menu) {
-	handle_events(NULL, 0, NULL);
+	events_poll(NULL, 0);
 }
 
 void menu_logic(MenuData *menu) {

@@ -94,6 +94,4 @@ int menu_loop(MenuData *menu);
 
 float menu_fade(MenuData *menu);
 
-void menu_event(EventType type, int state, void *arg);
-
-
+bool menu_input_handler(SDL_Event *event, void *arg);

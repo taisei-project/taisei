@@ -107,27 +107,18 @@ typedef struct ResourceAsyncLoadData {
 
 static int load_resource_async_thread(void *vdata) {
 	ResourceAsyncLoadData *data = vdata;
-	SDL_Event evt;
 
 	SDL_SetThreadPriority(SDL_THREAD_PRIORITY_LOW);
 	data->opaque = data->handler->begin_load(data->path, data->flags);
-
-	SDL_zero(evt);
-	evt.type = sdl_custom_events.resource_load_finished;
-	evt.user.data1 = data;
-	SDL_PushEvent(&evt);
+	events_emit(TE_RESOURCE_ASYNC_LOADED, 0, data, NULL);
 
 	return 0;
 }
 
 static Resource* load_resource_finish(void *opaque, ResourceHandler *handler, const char *path, const char *name, char *allocated_path, char *allocated_name, ResourceFlags flags);
 
-bool resource_sdl_event(SDL_Event *evt) {
+static bool resource_asyncload_handler(SDL_Event *evt, void *arg) {
 	assert(SDL_ThreadID() == main_thread_id);
-
-	if(evt->type != sdl_custom_events.resource_load_finished) {
-		return false;
-	}
 
 	ResourceAsyncLoadData *data = evt->user.data1;
 
@@ -170,14 +161,18 @@ static void load_resource_async(ResourceHandler *handler, char *path, char *name
 
 static void update_async_load_state(void) {
 	SDL_Event evt;
-	while(SDL_PeepEvents(&evt, 1, SDL_GETEVENT, sdl_custom_events.resource_load_finished, sdl_custom_events.resource_load_finished)) {
-		resource_sdl_event(&evt);
+	uint32_t etype = MAKE_TAISEI_EVENT(TE_RESOURCE_ASYNC_LOADED);
+
+	while(SDL_PeepEvents(&evt, 1, SDL_GETEVENT, etype, etype)) {
+		resource_asyncload_handler(&evt, NULL);
 	}
 }
 
 static bool resource_check_async_load(ResourceHandler *handler, const char *name) {
-	if(SDL_ThreadID() == main_thread_id)
+	if(SDL_ThreadID() == main_thread_id) {
 		update_async_load_state();
+	}
+
 	ResourceAsyncLoadData *data = hashtable_get_string(handler->async_load_data, name);
 	return data;
 }
@@ -357,6 +352,16 @@ void init_resources(void) {
 	);
 
 	main_thread_id = SDL_ThreadID();
+
+	if(!getenvint("TAISEI_NOASYNC", 0)) {
+		EventHandler h = {
+			.proc = resource_asyncload_handler,
+			.priority = EPRIO_SYSTEM,
+			.event_type = MAKE_TAISEI_EVENT(TE_RESOURCE_ASYNC_LOADED),
+		};
+
+		events_register_handler(&h);
+	}
 }
 
 void resource_util_strip_ext(char *path) {
@@ -435,4 +440,8 @@ void free_resources(bool all) {
 	delete_fbo(&resources.fbo.bg[1]);
 	delete_fbo(&resources.fbo.fg[0]);
 	delete_fbo(&resources.fbo.fg[1]);
+
+	if(!getenvint("TAISEI_NOASYNC", 0)) {
+		events_unregister_handler(resource_asyncload_handler);
+	}
 }

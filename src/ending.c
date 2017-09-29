@@ -145,7 +145,7 @@ void ending_loop(void) {
 	set_ortho();
 
 	while(e.pos < e.count-1) {
-		handle_events(NULL, 0, NULL);
+		events_poll(NULL, 0);
 
 		ending_draw(&e);
 		global.frames++;

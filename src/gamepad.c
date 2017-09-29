@@ -24,6 +24,8 @@ static struct {
 	} devices;
 } gamepad;
 
+static bool gamepad_event_handler(SDL_Event *event, void *arg);
+
 static int gamepad_load_mappings(const char *vpath, int warn_noexist) {
 	char *repr = vfs_repr(vpath, true);
 	char *errstr = NULL;
@@ -240,6 +242,12 @@ void gamepad_init(void) {
 	SDL_GameControllerEventState(SDL_ENABLE);
 
 	config_set_str(CONFIG_GAMEPAD_DEVICE, guid);
+
+	events_register_handler(&(EventHandler){
+		.proc = gamepad_event_handler,
+		.priority = EPRIO_TRANSLATION,
+	});
+
 	gamepad.initialized = true;
 }
 
@@ -261,6 +269,7 @@ void gamepad_shutdown(void) {
 	SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER);
 
 	memset(&gamepad, 0, sizeof(gamepad));
+	events_unregister_handler(gamepad_event_handler);
 }
 
 void gamepad_restart(void) {
@@ -304,22 +313,22 @@ int gamepad_gamekey2axisval(KeyIndex key) {
 	}
 }
 
-int gamepad_axis2menuevt(SDL_GameControllerAxis id, int val) {
+static int gamepad_axis2menuevt(SDL_GameControllerAxis id, int val) {
 	if(id == SDL_CONTROLLER_AXIS_LEFTX || id == SDL_CONTROLLER_AXIS_RIGHTX)
-		return val == AXISVAL_LEFT ? E_CursorLeft : E_CursorRight;
+		return val == AXISVAL_LEFT ? TE_MENU_CURSOR_LEFT : TE_MENU_CURSOR_RIGHT;
 
 	if(id == SDL_CONTROLLER_AXIS_LEFTY || id == SDL_CONTROLLER_AXIS_RIGHTY)
-		return val == AXISVAL_UP   ? E_CursorUp   : E_CursorDown;
+		return val == AXISVAL_UP   ? TE_MENU_CURSOR_UP : TE_MENU_CURSOR_DOWN;
 
 	return -1;
 }
 
-int gamepad_axis2gameevt(SDL_GameControllerAxis id) {
+static int gamepad_axis2gameevt(SDL_GameControllerAxis id) {
 	if(id == config_get_int(CONFIG_GAMEPAD_AXIS_LR))
-		return E_PlrAxisLR;
+		return TE_GAME_AXIS_LR;
 
 	if(id == config_get_int(CONFIG_GAMEPAD_AXIS_UD))
-		return E_PlrAxisUD;
+		return TE_GAME_AXIS_UD;
 
 	return -1;
 }
@@ -386,125 +395,113 @@ int gamepad_get_player_axis_value(GamepadPlrAxis paxis) {
 	return gamepad_axis_process_value(id, SDL_GameControllerGetAxis(gamepad.device, id));
 }
 
-void gamepad_axis(SDL_GameControllerAxis id, int raw, EventHandler handler, EventFlags flags, void *arg) {
+void gamepad_axis(SDL_GameControllerAxis id, int raw) {
 	signed char *a   = gamepad.axis;
 	signed char val  = AXISVAL(gamepad_axis_process_value_deadzone(raw));
-	bool free = config_get_int(CONFIG_GAMEPAD_AXIS_FREE);
+	bool restricted = !config_get_int(CONFIG_GAMEPAD_AXIS_FREE);
 
-	bool menu = flags & EF_Menu;
-	bool game = flags & EF_Game;
-	bool gp   = flags & EF_Gamepad;
+	events_emit(TE_GAMEPAD_AXIS, id, (void*)(intptr_t)raw, NULL);
 
-	if(game && free) {
+	if(!restricted) {
 		int evt = gamepad_axis2gameevt(id);
 		if(evt >= 0) {
-			handler(evt, gamepad_axis_process_value(id, raw), arg);
+			events_emit(evt, gamepad_axis_process_value(id, raw), NULL, NULL);
 		}
 	}
 
 	if(val) {	// simulate press
 		if(!a[id]) {
 			a[id] = val;
+			int key = gamepad_axis2gamekey(id, val);
 
-			if(game && !free) {
-				int key = gamepad_axis2gamekey(id, val);
-				if(key >= 0) {
-					handler(E_PlrKeyDown, key, arg);
+			if(key >= 0) {
+				if(restricted) {
+					events_emit(TE_GAME_KEY_DOWN, key, NULL, NULL);
 				}
-			}
 
-			if(menu) {
 				int evt = gamepad_axis2menuevt(id, val);
 				if(evt >= 0) {
-					handler(evt, 0, arg);
+					events_emit(evt, 0, NULL, NULL);
 				}
 			}
+
 		}
 	} else if(a[id]) {	// simulate release
-		if(game) {
+		if(restricted) {
 			int key = gamepad_axis2gamekey(id, a[id]);
-			handler(E_PlrKeyUp, key, arg);
+
+			if(key >= 0) {
+				events_emit(TE_GAME_KEY_UP, key, NULL, NULL);
+			}
 		}
 
 		a[id] = AXISVAL_NULL;
 	}
-
-	if(gp) {
-		 // we probably need a better way to pass more than an int to the handler...
-		handler(E_GamepadAxis, id, arg);
-		handler(E_GamepadAxisValue, raw, arg);
-	}
 }
 
-void gamepad_button(SDL_GameControllerButton button, int state, EventHandler handler, EventFlags flags, void *arg) {
-	int menu	= flags & EF_Menu;
-	int game	= flags & EF_Game;
-	int gpad	= flags & EF_Gamepad;
-
+void gamepad_button(SDL_GameControllerButton button, int state) {
 	int gpkey	= config_gamepad_key_from_gamepad_button(button);
 	int key		= config_key_from_gamepad_key(gpkey);
 
 	if(state == SDL_PRESSED) {
-		if(game) switch(button) {
+		events_emit(TE_GAMEPAD_BUTTON_DOWN, button, NULL, NULL);
+
+		switch(button) {
 			case SDL_CONTROLLER_BUTTON_START:
+				events_emit(TE_MENU_ACCEPT, 0, NULL, NULL);
+				events_emit(TE_GAME_PAUSE, 0, NULL, NULL);
+				break;
+
 			case SDL_CONTROLLER_BUTTON_BACK:
-				handler(E_Pause, 0, arg); break;
+				events_emit(TE_MENU_ABORT, 0, NULL, NULL);
+				events_emit(TE_GAME_PAUSE, 0, NULL, NULL);
+				break;
+
+			case SDL_CONTROLLER_BUTTON_DPAD_UP:		events_emit(TE_MENU_CURSOR_UP, 0, NULL, NULL);		break;
+			case SDL_CONTROLLER_BUTTON_DPAD_DOWN:	events_emit(TE_MENU_CURSOR_DOWN, 0, NULL, NULL);	break;
+			case SDL_CONTROLLER_BUTTON_DPAD_LEFT:	events_emit(TE_MENU_CURSOR_LEFT, 0, NULL, NULL);	break;
+			case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:	events_emit(TE_MENU_CURSOR_RIGHT, 0, NULL, NULL);	break;
+
+			case SDL_CONTROLLER_BUTTON_A:
+				events_emit(TE_MENU_ACCEPT, 0, NULL, NULL);
+
+			case SDL_CONTROLLER_BUTTON_B:
+				events_emit(TE_MENU_ABORT, 0, NULL, NULL);
 
 			default:
 				if(key >= 0) {
-					handler(E_PlrKeyDown, key, arg);
+					events_emit(TE_GAME_KEY_DOWN, key, NULL, NULL);
 				} break;
 		}
 
-		if(menu) switch(button) {
-			case SDL_CONTROLLER_BUTTON_DPAD_UP:		handler(E_CursorUp,    0, arg);		break;
-			case SDL_CONTROLLER_BUTTON_DPAD_DOWN:	handler(E_CursorDown,  0, arg);		break;
-			case SDL_CONTROLLER_BUTTON_DPAD_LEFT:	handler(E_CursorLeft,  0, arg);		break;
-			case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:	handler(E_CursorRight, 0, arg);		break;
-
-			case SDL_CONTROLLER_BUTTON_A:
-			case SDL_CONTROLLER_BUTTON_START:
-				handler(E_MenuAccept,  0, arg);	break;
-
-			case SDL_CONTROLLER_BUTTON_B:
-			case SDL_CONTROLLER_BUTTON_BACK:
-				handler(E_MenuAbort,   0, arg);	break;
-
-			default: break;
-		}
-
-		if(gpad) {
-			handler(E_GamepadKeyDown, button, arg);
-		}
 	} else {
-		if(game && key >= 0) {
-			handler(E_PlrKeyUp, key, arg);
-		}
+		events_emit(TE_GAMEPAD_BUTTON_UP, button, NULL, NULL);
 
-		if(gpad) {
-			handler(E_GamepadKeyUp, button, arg);
+		if(key >= 0) {
+			events_emit(TE_GAME_KEY_UP, key, NULL, NULL);
 		}
 	}
 }
 
-void gamepad_event(SDL_Event *event, EventHandler handler, EventFlags flags, void *arg) {
-	if(!gamepad.initialized)
-		return;
+static bool gamepad_event_handler(SDL_Event *event, void *arg) {
+	assert(gamepad.initialized);
 
 	switch(event->type) {
 		case SDL_CONTROLLERAXISMOTION:
 			if(event->caxis.which == gamepad.instance) {
-				gamepad_axis(event->caxis.axis, event->caxis.value, handler, flags, arg);
+				gamepad_axis(event->caxis.axis, event->caxis.value);
 			}
-		break;
+		return true;
 
 		case SDL_CONTROLLERBUTTONDOWN:
 		case SDL_CONTROLLERBUTTONUP:
 			if(event->cbutton.which == gamepad.instance) {
-				gamepad_button(event->cbutton.button, event->cbutton.state, handler, flags, arg);
+				gamepad_button(event->cbutton.button, event->cbutton.state);
 			}
-		break;
+		return true;
 	}
+
+	return false;
 }
 
 int gamepad_devicecount(void) {

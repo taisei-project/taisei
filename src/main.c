@@ -38,6 +38,7 @@ static void taisei_shutdown(void) {
 	stage_free_array();
 	config_uninit();
 	vfs_uninit();
+	events_shutdown();
 
 	log_info("Good bye");
 	SDL_Quit();
@@ -181,8 +182,8 @@ int main(int argc, char **argv) {
 
 	init_sdl();
 	init_global(&a);
-	init_fonts();
 	events_init();
+	init_fonts();
 	video_init();
 	init_resources();
 	draw_loading_screen();
