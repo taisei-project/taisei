@@ -27,3 +27,10 @@ void init_global(CLIAction *cli) {
 		log_warn("FPS limiter disabled. Gotta go fast! (frameskip = %i)", global.frameskip);
 	}
 }
+
+// Inputdevice-agnostic method of checking whether a game control is pressed.
+// ALWAYS use this instead of SDL_GetKeyState if you need it.
+// XXX: Move this somewhere?
+bool gamekeypressed(KeyIndex key) {
+	return SDL_GetKeyboardState(NULL)[config_get_int(KEYIDX_TO_CFGIDX(key))] || gamepad_gamekeypressed(key);
+}

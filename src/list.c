@@ -12,24 +12,21 @@
 #include <stdio.h>
 #include "global.h"
 
-typedef struct {
-	void *next;
-	void *prev;
-} List;
-
 void *_FREEREF;
 
-void *create_element(void **dest, int size) {
-	List *e = malloc(size);
+void *create_element(void **dest, size_t size) {
+	assert(dest != NULL);
+	assert(size > 0);
+
+	List *e = calloc(1, size);
 	List **d = (List **)dest;
 
-	e->next = NULL;
 	e->prev = *d;
 
 	if(*d != NULL) {
 		e->next = (*d)->next;
 		if((*d)->next)
-			((List *)(*d)->next)->prev = e;
+			(*d)->next->prev = e;
 
 		(*d)->next = e;
 	} else {
@@ -39,8 +36,55 @@ void *create_element(void **dest, int size) {
 	return e;
 }
 
+void* create_element_at_priority(void **list_head, size_t size, int prio, int (*prio_func)(void*)) {
+	assert(list_head != NULL);
+	assert(size > 0);
+	assert(prio_func != NULL);
+
+	List *elem = calloc(1, size);
+
+	if(!*list_head) {
+		*list_head = elem;
+		log_debug("PRIO: %i", prio);
+		return elem;
+	}
+
+	List *dest = *list_head;
+
+	for(List *e = dest; e && prio_func(e) <= prio; e = e->next) {
+		dest = e;
+	}
+
+	if(dest == *list_head && prio_func(dest) > prio) {
+		elem->next = dest;
+		elem->prev = dest->prev;
+
+		if(elem->prev) {
+			elem->prev->next = elem;
+		}
+
+		dest->prev = elem;
+		*list_head = elem;
+	} else {
+		elem->prev = dest;
+		elem->next = dest->next;
+
+		if(dest->next) {
+			dest->next->prev = elem;
+		}
+
+		dest->next = elem;
+	}
+
+	return elem;
+}
+
 ListContainer* create_container(ListContainer **dest) {
 	return create_element((void**)dest, sizeof(ListContainer));
+}
+
+ListContainer* create_container_at_priority(ListContainer **list_head, int prio, int (*prio_func)(void*)) {
+	return create_element_at_priority((void**)list_head, sizeof(ListContainer), prio, prio_func);
 }
 
 void delete_element(void **dest, void *e) {

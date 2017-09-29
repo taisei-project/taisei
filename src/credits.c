@@ -265,7 +265,7 @@ void credits_loop(void) {
 	credits_preload();
 	credits_init();
 	while(credits.end) {
-		handle_events(NULL, 0, NULL);
+		events_poll(NULL, 0);
 		credits_process();
 		credits_draw();
 		global.frames++;

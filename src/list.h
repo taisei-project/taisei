@@ -12,18 +12,27 @@
  * so i do some void-magic here to save the lines.
  */
 
-void *create_element(void **dest, int size);
+#include <stdlib.h>
+
+void* create_element(void **dest, size_t size);
+void* create_element_at_priority(void **list_head, size_t size, int prio, int (*prio_func)(void*));
 void delete_element(void **dest, void *e);
 void delete_all_elements(void **dest, void (callback)(void **, void *));
 void delete_all_elements_witharg(void **dest, void (callback)(void **, void *, void *), void *arg);
 
+typedef struct List {
+    struct List *next;
+    struct List *prev;
+} List;
+
 typedef struct ListContainer {
-    void *next;
-    void *prev;
+    struct ListContainer *next;
+    struct ListContainer *prev;
     void *data;
 } ListContainer;
 
 ListContainer* create_container(ListContainer **dest);
+ListContainer* create_container_at_priority(ListContainer **list_head, int prio, int (*prio_func)(void*));
 
 typedef struct {
 	void *ptr;

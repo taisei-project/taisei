@@ -124,4 +124,5 @@ extern Global global;
 
 void init_global(CLIAction *cli);
 
-
+// XXX: Move this somewhere?
+bool gamekeypressed(KeyIndex key);

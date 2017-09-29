@@ -879,12 +879,8 @@ void draw_options_menu(MenuData *menu) {
 
 // --- Input/event processing --- //
 
-static void notify_bindings(EventType type, int state, MenuData *menu) {
-	// FIXME: this won't be called when input is blocked (we need a better event system)
-
-	if(type != E_VideoModeChanged) {
-		return;
-	}
+static bool options_vidmode_change_handler(SDL_Event *event, void *arg) {
+	MenuData *menu = arg;
 
 	for(int i = 0; i < menu->ecount; ++i) {
 		OptionBinding *bind = bind_get(menu, i);
@@ -908,153 +904,145 @@ static void notify_bindings(EventType type, int state, MenuData *menu) {
 				break;
 		}
 	}
+
+	return false;
 }
 
-static void bind_input_event(EventType type, int state, void *arg) {
+static bool options_input_handler_for_binding(SDL_Event *event, void *arg) {
+	if(!arg) {
+		return false;
+	}
+
 	OptionBinding *b = arg;
+	uint32_t t = event->type;
 
-	int scan = state;
-	char c = (char)(((Uint16)state) & 0x7F);
-	char *dest = b->type == BT_StrValue? *b->values : NULL;
+	if(t == SDL_KEYDOWN) {
+		SDL_Scancode scan = event->key.keysym.scancode;
+		bool esc = scan == SDL_SCANCODE_ESCAPE;
 
-	switch(type) {
-		case E_KeyDown: {
-			int esc = scan == SDL_SCANCODE_ESCAPE;
-			if(b->type == BT_GamepadKeyBinding || b->type == BT_GamepadAxisBinding) {
-				if(esc)
-					b->blockinput = false;
-				break;
+		if(b->type != BT_KeyBinding) {
+			if(esc) {
+				b->blockinput = false;
 			}
 
-			if(!esc) {
-				for(int i = CONFIG_KEY_FIRST; i <= CONFIG_KEY_LAST; ++i) {
-					if(config_get_int(i) == scan) {
-						config_set_int(i, config_get_int(b->configentry));
-					}
-				}
-
-				config_set_int(b->configentry, scan);
-			}
-
-			b->blockinput = false;
-			break;
+			return true;
 		}
 
-		case E_GamepadKeyDown: {
-			if(b->type != BT_GamepadKeyBinding) {
-				if(b->type == BT_GamepadAxisBinding)
-					b->blockinput = false;
-				break;
-			} else if(scan == SDL_CONTROLLER_BUTTON_BACK || scan == SDL_CONTROLLER_BUTTON_START) {
-				b->blockinput = false;
-				break;
-			}
-
-			for(int i = CONFIG_GAMEPAD_KEY_FIRST; i <= CONFIG_GAMEPAD_KEY_LAST; ++i) {
+		if(!esc) {
+			for(int i = CONFIG_KEY_FIRST; i <= CONFIG_KEY_LAST; ++i) {
 				if(config_get_int(i) == scan) {
 					config_set_int(i, config_get_int(b->configentry));
 				}
 			}
 
 			config_set_int(b->configentry, scan);
-			b->blockinput = false;
-			break;
 		}
 
-		case E_GamepadAxis: {
-			if(b->type == BT_GamepadAxisBinding) {
-				if(b->configentry == CONFIG_GAMEPAD_AXIS_UD) {
-					if(config_get_int(CONFIG_GAMEPAD_AXIS_LR) == state) {
-						config_set_int(CONFIG_GAMEPAD_AXIS_LR, config_get_int(CONFIG_GAMEPAD_AXIS_UD));
-					}
-				} else if(b->configentry == CONFIG_GAMEPAD_AXIS_LR) {
-					if(config_get_int(CONFIG_GAMEPAD_AXIS_UD) == state) {
-						config_set_int(CONFIG_GAMEPAD_AXIS_UD, config_get_int(CONFIG_GAMEPAD_AXIS_LR));
-					}
-				}
+		b->blockinput = false;
+		return true;
+	}
 
-				config_set_int(b->configentry, state);
+	if(t == MAKE_TAISEI_EVENT(TE_GAMEPAD_BUTTON_DOWN)) {
+		SDL_GameControllerButton button = event->user.code;
+
+		if(b->type != BT_GamepadKeyBinding) {
+			if(b->type == BT_GamepadAxisBinding) {
 				b->blockinput = false;
 			}
 
-			break;
+			return true;
 		}
 
-		case E_CharTyped: {
-			if(c != ':') {
-				char s[] = {c, 0};
-				strlcat(dest, s, OPTIONS_TEXT_INPUT_BUFSIZE);
+		if(button == SDL_CONTROLLER_BUTTON_BACK || button == SDL_CONTROLLER_BUTTON_START) {
+			b->blockinput = false;
+			return true;
+		}
+
+		for(int i = CONFIG_GAMEPAD_KEY_FIRST; i <= CONFIG_GAMEPAD_KEY_LAST; ++i) {
+			if(config_get_int(i) == button) {
+				config_set_int(i, config_get_int(b->configentry));
 			}
-			break;
 		}
 
-		case E_CharErased: {
-			if(dest != NULL && strlen(dest))
-				dest[strlen(dest)-1] = 0;
-			break;
-		}
-
-		case E_SubmitText: {
-			if(dest != NULL && strlen(dest))
-				config_set_str(b->configentry, dest);
-			else
-				strlcpy(dest, config_get_str(b->configentry), OPTIONS_TEXT_INPUT_BUFSIZE);
-			b->blockinput = false;
-			break;
-		}
-
-		case E_CancelText: {
-			strlcpy(dest, config_get_str(b->configentry), OPTIONS_TEXT_INPUT_BUFSIZE);
-			b->blockinput = false;
-			break;
-		}
-
-		default: break;
+		config_set_int(b->configentry, button);
+		b->blockinput = false;
+		return true;
 	}
+
+	if(t == MAKE_TAISEI_EVENT(TE_GAMEPAD_AXIS)) {
+		SDL_GameControllerAxis axis = event->user.code;
+
+		if(b->type == BT_GamepadAxisBinding) {
+			if(b->configentry == CONFIG_GAMEPAD_AXIS_UD) {
+				if(config_get_int(CONFIG_GAMEPAD_AXIS_LR) == axis) {
+					config_set_int(CONFIG_GAMEPAD_AXIS_LR, config_get_int(CONFIG_GAMEPAD_AXIS_UD));
+				}
+			} else if(b->configentry == CONFIG_GAMEPAD_AXIS_LR) {
+				if(config_get_int(CONFIG_GAMEPAD_AXIS_UD) == axis) {
+					config_set_int(CONFIG_GAMEPAD_AXIS_UD, config_get_int(CONFIG_GAMEPAD_AXIS_LR));
+				}
+			}
+
+			config_set_int(b->configentry, axis);
+			b->blockinput = false;
+		}
+
+		return true;
+	}
+
+	// FIXME: Implement text input
+
+	return true;
 }
 
 // raw access to arg is safe there after the bind_get check
-#define SHOULD_SKIP (!menu->entries[menu->cursor].action || (bind_get(menu, menu->cursor) && !bind_isactive(menu->entries[menu->cursor].arg)))
+#define SHOULD_SKIP
 
-static void options_input_event(EventType type, int state, void *arg) {
+static bool options_input_handler(SDL_Event *event, void *arg) {
 	MenuData *menu = arg;
 	OptionBinding *bind = bind_get(menu, menu->cursor);
-
-	notify_bindings(type, state, menu);
+	TaiseiEvent type = TAISEI_EVENT(event->type);
 
 	switch(type) {
-		case E_CursorDown:
+		case TE_MENU_CURSOR_UP:
+		case TE_MENU_CURSOR_DOWN:
 			play_ui_sound("generic_shot");
 			menu->drawdata[3] = 10;
 			do {
-				menu->cursor++;
-				if(menu->cursor >= menu->ecount)
+				menu->cursor += (type == TE_MENU_CURSOR_UP ? -1 : 1);
+
+				if(menu->cursor >= menu->ecount) {
 					menu->cursor = 0;
-			} while SHOULD_SKIP;
-		break;
+				}
 
-		case E_CursorUp:
-			play_ui_sound("generic_shot");
-			menu->drawdata[3] = 10;
-			do {
-				menu->cursor--;
-				if(menu->cursor < 0)
+				if(menu->cursor < 0) {
 					menu->cursor = menu->ecount - 1;
-			} while SHOULD_SKIP;
+				}
+
+				bind = bind_get(menu, menu->cursor);
+			} while(!menu->entries[menu->cursor].action || (bind && !bind_isactive(bind)));
 		break;
 
-		case E_CursorLeft:
+		case TE_MENU_CURSOR_LEFT:
+		case TE_MENU_CURSOR_RIGHT:
 			play_ui_sound("generic_shot");
+			bool next = (type == TE_MENU_CURSOR_RIGHT);
+
 			if(bind) {
 				switch(bind->type) {
 					case BT_GamepadDevice:
 					case BT_IntValue:
 					case BT_Resolution:
-						bind_setprev(bind);
+						(next ? bind_setnext : bind_setprev)(bind);
 						break;
 
 					case BT_Scale:
-						config_set_float(bind->configentry, clamp(config_get_float(bind->configentry) - bind->scale_step, bind->scale_min, bind->scale_max));
+						config_set_float(bind->configentry,
+							clamp(
+								config_get_float(bind->configentry) + bind->scale_step * (next ? 1 : -1),
+								bind->scale_min, bind->scale_max
+							)
+						);
 						break;
 
 					default:
@@ -1063,27 +1051,7 @@ static void options_input_event(EventType type, int state, void *arg) {
 			}
 		break;
 
-		case E_CursorRight:
-			play_ui_sound("generic_shot");
-			if(bind) {
-				switch(bind->type) {
-					case BT_GamepadDevice:
-					case BT_IntValue:
-					case BT_Resolution:
-						bind_setnext(bind);
-						break;
-
-					case BT_Scale:
-						config_set_float(bind->configentry, clamp(config_get_float(bind->configentry) + bind->scale_step, bind->scale_min, bind->scale_max));
-						break;
-
-					default:
-						break;
-				}
-			}
-		break;
-
-		case E_MenuAccept:
+		case TE_MENU_ACCEPT:
 			play_ui_sound("shot_special1");
 			menu->selected = menu->cursor;
 
@@ -1104,7 +1072,7 @@ static void options_input_event(EventType type, int state, void *arg) {
 			} else close_menu(menu);
 		break;
 
-		case E_MenuAbort:
+		case TE_MENU_ABORT:
 			play_ui_sound("hit");
 			menu->selected = -1;
 			close_menu(menu);
@@ -1114,26 +1082,38 @@ static void options_input_event(EventType type, int state, void *arg) {
 	}
 
 	menu->cursor = (menu->cursor % menu->ecount) + menu->ecount*(menu->cursor < 0);
+	return false;
 }
 #undef SHOULD_SKIP
 
 void options_menu_input(MenuData *menu) {
 	OptionBinding *b;
-	EventFlags flags = EF_Video;
+	EventFlags flags = EFLAG_MENU;
 
 	if((b = bind_getinputblocking(menu)) != NULL) {
-		int flags = 0;
-
-		switch(b->type) {
-			case BT_StrValue:			flags |= EF_Text;					break;
-			case BT_KeyBinding:			flags |= EF_Keyboard;				break;
-			case BT_GamepadKeyBinding:	flags |= EF_Gamepad | EF_Keyboard;	break;
-			case BT_GamepadAxisBinding:	flags |= EF_Gamepad | EF_Keyboard;	break;
-			default: break;
+		if(b->type == BT_StrValue) {
+			flags |= EFLAG_TEXT;
 		}
-
-		handle_events(bind_input_event, flags, b);
-	} else {
-		handle_events(options_input_event, flags | EF_Menu, menu);
 	}
+
+	events_poll((EventHandler[]){
+		{
+			.proc = options_vidmode_change_handler,
+			.arg = menu,
+			.priority = EPRIO_SYSTEM,
+			.event_type = MAKE_TAISEI_EVENT(TE_VIDEO_MODE_CHANGED),
+		},
+		{
+			.proc = options_input_handler_for_binding,
+			.arg = b,
+			.priority = EPRIO_CAPTURE,
+		},
+		{
+			.proc = options_input_handler,
+			.arg = menu,
+			.priority = EPRIO_NORMAL,
+		},
+
+		{NULL}
+	}, flags);
 }

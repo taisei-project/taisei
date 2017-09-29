@@ -73,17 +73,22 @@ void draw_saverpy_menu(MenuData *m) {
 	glPopMatrix();
 }
 
-void saverpy_input_event(EventType type, int state, void *arg) {
-	if(type == E_CursorLeft)
-		menu_event(E_CursorUp, state, arg);
-	else if(type == E_CursorRight)
-		menu_event(E_CursorDown, state, arg);
-	else
-		menu_event(type, state, arg);
+bool savepry_input_handler(SDL_Event *event, void *arg) {
+	if(event->type == MAKE_TAISEI_EVENT(TE_MENU_CURSOR_UP)) {
+		event->type = MAKE_TAISEI_EVENT(TE_MENU_CURSOR_LEFT);
+	} else if(event->type == MAKE_TAISEI_EVENT(TE_MENU_CURSOR_UP)) {
+		event->type = MAKE_TAISEI_EVENT(TE_MENU_CURSOR_RIGHT);
+	}
+
+	return false;
 }
 
 void saverpy_menu_input(MenuData *menu) {
-	handle_events(saverpy_input_event, EF_Menu, menu);
+	events_poll((EventHandler[]){
+		{ .proc = savepry_input_handler, .arg = menu },
+		{ .proc = menu_input_handler, .arg = menu },
+		{NULL}
+	}, EFLAG_MENU);
 }
 
 void create_saverpy_menu(MenuData *m) {

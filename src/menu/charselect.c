@@ -134,23 +134,24 @@ void draw_char_menu(MenuData *menu) {
 	glColor3f(1,1,1);
 }
 
-void char_menu_input_event(EventType type, int state, void *arg) {
+bool char_menu_input_handler(SDL_Event *event, void *arg) {
 	MenuData *menu = arg;
 	MenuData *mod  = menu->context;
+	TaiseiEvent type = TAISEI_EVENT(event->type);
 
-	if(type == E_CursorRight) {
+	if(type == TE_MENU_CURSOR_RIGHT) {
 		play_ui_sound("generic_shot");
 		menu->cursor++;
-	} else if(type == E_CursorLeft) {
+	} else if(type == TE_MENU_CURSOR_LEFT) {
 		play_ui_sound("generic_shot");
 		menu->cursor--;
-	} else if(type == E_CursorDown) {
+	} else if(type == TE_MENU_CURSOR_DOWN) {
 		play_ui_sound("generic_shot");
 		mod->cursor++;
-	} else if(type == E_CursorUp) {
+	} else if(type == TE_MENU_CURSOR_UP) {
 		play_ui_sound("generic_shot");
 		mod->cursor--;
-	} else if(type == E_MenuAccept) {
+	} else if(type == TE_MENU_ACCEPT) {
 		play_ui_sound("shot_special1");
 		mod->selected = mod->cursor;
 		close_menu(mod);
@@ -159,7 +160,7 @@ void char_menu_input_event(EventType type, int state, void *arg) {
 
 		// XXX: This needs a better fix
 		set_shotmode(mod, mod->entries[mod->selected].arg);
-	} else if(type == E_MenuAbort) {
+	} else if(type == TE_MENU_ABORT) {
 		play_ui_sound("hit");
 		close_menu(menu);
 		close_menu(mod);
@@ -167,10 +168,15 @@ void char_menu_input_event(EventType type, int state, void *arg) {
 
 	menu->cursor = (menu->cursor % menu->ecount) + menu->ecount*(menu->cursor < 0);
 	mod->cursor = (mod->cursor % mod->ecount) + mod->ecount*(mod->cursor < 0);
+
+	return false;
 }
 
 void char_menu_input(MenuData *menu) {
-	handle_events(char_menu_input_event, EF_Menu, menu);
+	events_poll((EventHandler[]){
+		{ .proc = char_menu_input_handler, .arg = menu },
+		{NULL}
+	}, EFLAG_MENU);
 }
 
 void free_char_menu(MenuData *menu) {
