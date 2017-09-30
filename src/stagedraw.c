@@ -479,6 +479,17 @@ void stage_draw_hud(void) {
 
 	draw_stars(0, 236, global.plr.power / 100, global.plr.power % 100, PLR_MAX_POWER / 100, 100, 1);
 
+	int ofs;
+	snprintf(buf, sizeof(buf), ".%02i", global.plr.power % 100);
+	ofs = stringwidth(buf, _fonts.standard);
+
+	glColor4f(0.5, 0.5, 0.5, 1);
+	draw_text(AL_Right, 170, 236, buf, _fonts.standard);
+	glColor4f(1.0, 1.0, 1.0, 1);
+
+	snprintf(buf, sizeof(buf), "%i", global.plr.power / 100);
+	draw_text(AL_Right, 170 - ofs, 236, buf, _fonts.standard);
+
 	snprintf(buf, sizeof(buf), "%i", global.plr.graze);
 	draw_text(AL_Left, -6, 270, buf, _fonts.standard);
 
