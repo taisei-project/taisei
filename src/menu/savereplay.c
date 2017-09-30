@@ -74,10 +74,10 @@ void draw_saverpy_menu(MenuData *m) {
 }
 
 bool savepry_input_handler(SDL_Event *event, void *arg) {
-	if(event->type == MAKE_TAISEI_EVENT(TE_MENU_CURSOR_UP)) {
-		event->type = MAKE_TAISEI_EVENT(TE_MENU_CURSOR_LEFT);
-	} else if(event->type == MAKE_TAISEI_EVENT(TE_MENU_CURSOR_UP)) {
-		event->type = MAKE_TAISEI_EVENT(TE_MENU_CURSOR_RIGHT);
+	if(event->type == MAKE_TAISEI_EVENT(TE_MENU_CURSOR_LEFT)) {
+		event->type = MAKE_TAISEI_EVENT(TE_MENU_CURSOR_UP);
+	} else if(event->type == MAKE_TAISEI_EVENT(TE_MENU_CURSOR_RIGHT)) {
+		event->type = MAKE_TAISEI_EVENT(TE_MENU_CURSOR_DOWN);
 	}
 
 	return false;
