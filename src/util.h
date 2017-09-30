@@ -55,6 +55,11 @@ char* strappend(char **dst, char *src);
 #undef strdup
 #define strdup SDL_strdup
 
+uint32_t* ucs4chr(const uint32_t *ucs4, uint32_t chr);
+size_t ucs4len(const uint32_t *ucs4);
+uint32_t* utf8_to_ucs4(const char *utf8);
+char* ucs4_to_utf8(const uint32_t *ucs4);
+
 //
 // math utils
 //

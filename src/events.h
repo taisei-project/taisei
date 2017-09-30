@@ -36,6 +36,8 @@ typedef enum {
 
 	TE_VIDEO_MODE_CHANGED,
 
+	TE_CLIPBOARD_PASTE,
+
 	NUM_TAISEI_EVENTS
 } TaiseiEvent;
 
