@@ -464,9 +464,11 @@ void gamepad_button(SDL_GameControllerButton button, int state) {
 
 			case SDL_CONTROLLER_BUTTON_A:
 				events_emit(TE_MENU_ACCEPT, 0, NULL, NULL);
+				break;
 
 			case SDL_CONTROLLER_BUTTON_B:
 				events_emit(TE_MENU_ABORT, 0, NULL, NULL);
+				break;
 
 			default:
 				if(key >= 0) {
