@@ -11,6 +11,7 @@
 
 #include "resource.h"
 #include "sfx.h"
+#include "audio_mixer.h"
 
 char* audio_mixer_sound_path(const char *prefix, const char *name);
 bool audio_mixer_check_sound_path(const char *path, bool isbgm);
@@ -39,8 +40,9 @@ void* load_sound_begin(const char *path, unsigned int flags) {
 	}
 
 	Sound *snd = calloc(1, sizeof(Sound));
-	snd->impl = sound;
-
+	snd->impl = calloc(1,sizeof(MixerInternalSound));
+	((MixerInternalSound*)snd->impl)->ch = sound;
+	((MixerInternalSound*)snd->impl)->loopchan = -1;
 	return snd;
 }
 
@@ -50,6 +52,7 @@ void* load_sound_end(void *opaque, const char *path, unsigned int flags) {
 
 void unload_sound(void *vsnd) {
 	Sound *snd = vsnd;
-	Mix_FreeChunk((Mix_Chunk*)snd->impl);
+	Mix_FreeChunk(((MixerInternalSound *)snd->impl)->ch);
+	free(snd->impl);
 	free(snd);
 }

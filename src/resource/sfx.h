@@ -12,6 +12,7 @@
 
 typedef struct Sound {
 	int lastplayframe;
+	bool islooping;
 	void *impl;
 } Sound;
 

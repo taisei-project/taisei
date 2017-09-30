@@ -67,7 +67,7 @@ void cirno_icy(Boss *b, int time) {
 	int c = 6;
 	double dr = 15;
 
-	FROM_TO(0,3*size,3) {
+	FROM_TO_SND("shot1_loop",0,3*size,3) {
 		for(int i = 0; i < c; i++) {
 			double ang = 2*M_PI/c*i+run*515;
 			complex phase = cexp(I*ang);
@@ -137,7 +137,7 @@ void cirno_perfect_freeze(Boss *c, int time) {
 	FROM_TO(-40, 0, 1)
 		GO_TO(c, VIEWPORT_W/2.0 + 100.0*I, 0.04);
 
-	FROM_TO(20,80,1) {
+	FROM_TO_SND("shot1_loop",20,80,1) {
 		float r = frand();
 		float g = frand();
 		float b = frand();
@@ -152,7 +152,7 @@ void cirno_perfect_freeze(Boss *c, int time) {
 
 	int d = max(0, global.diff - D_Normal);
 
-	FROM_TO(160 - 50*d, 220 + 30*d, 6-global.diff/2) {
+	FROM_TO_SND("shot1_loop", 160 - 50*d, 220 + 30*d, 6-global.diff/2) {
 		float r1, r2;
 
 		if(global.diff > D_Normal) {
@@ -219,7 +219,7 @@ void cirno_iceplosion0(Boss *c, int time) {
 	if(time < 0)
 		return;
 
-	FROM_TO(20,30,2) {
+	FROM_TO_SND("shot1_loop",20,30,2) {
 		int i;
 		int n = 8+global.diff;
 		for(i = 0; i < n; i++) {
@@ -227,13 +227,14 @@ void cirno_iceplosion0(Boss *c, int time) {
 		}
 	}
 
-	FROM_TO(40,100,1+2*(global.diff<D_Hard)) {
+	FROM_TO_SND("shot1_loop",40,100,1+2*(global.diff<D_Hard)) {
 		create_projectile2c("crystal", c->pos, rgb(0.3,0.3,0.8), accelerated, global.diff/4.*cexp(2.0*I*M_PI*frand()) + 2.0*I, 0.002*cexp(I*(M_PI/10.0*(_i%20))));
 	}
 
 	FROM_TO(150, 300, 30-5*global.diff) {
 		float dif = M_PI*2*frand();
 		int i;
+		play_sound("shot1");
 		for(i = 0; i < 20; i++) {
 			create_projectile2c("plainball", c->pos, rgb(0.04*_i,0.04*_i,0.4+0.04*_i), asymptotic, (3+_i/4.0)*cexp(I*(2*M_PI/8.0*i + dif)), 2.5);
 		}
@@ -247,6 +248,7 @@ void cirno_crystal_rain(Boss *c, int time) {
 	if(time < 0)
 		return;
 
+	PLAY_FOR("shot1_loop",0,499);
 	int hdiff = max(0, (int)global.diff - D_Normal);
 
 	if(frand() > 0.95-0.1*global.diff) {
@@ -259,6 +261,7 @@ void cirno_crystal_rain(Boss *c, int time) {
 		bool odd = (hdiff? (_i&1) : 0);
 		float n = (global.diff-1+hdiff*4 + odd)/2.0;
 
+		play_sound("shot1");
 		for(i = -n; i <= n; i++) {
 			create_projectile2c(odd? "plainball" : "bigball", c->pos, rgb(0.2,0.2,0.9), asymptotic, 2*cexp(I*carg(global.plr.pos-c->pos)+0.3*I*i), 2.3);
 		}
@@ -279,14 +282,14 @@ void cirno_iceplosion1(Boss *c, int time) {
 	if(time < 0)
 		GO_TO(c, VIEWPORT_W/2.0 + 100.0*I, 0.02);
 
-	FROM_TO(20,30,2) {
+	FROM_TO_SND("shot1_loop",20,30,2) {
 		int i;
 		for(i = 0; i < 15+global.diff; i++) {
 			create_projectile2c("plainball", c->pos, rgb(0,0,0.5), asymptotic, (3+_i/3.0)*cexp(I*((2)*M_PI/8.0*i + (0.1+0.03*global.diff)*(1 - 2*frand()))), _i*0.7);
 		}
 	}
 
-	FROM_TO(40,100,2+2*(global.diff<D_Hard)) {
+	FROM_TO_SND("shot1_loop",40,100,2+2*(global.diff<D_Hard)) {
 		create_projectile2c("crystal", c->pos + 100, rgb(0.3,0.3,0.8), accelerated, 1.5*cexp(2.0*I*M_PI*frand()) - 0.4 + 2.0*I*global.diff/4., 0.002*cexp(I*(M_PI/10.0*(_i%20))));
 		create_projectile2c("crystal", c->pos - 100, rgb(0.3,0.3,0.8), accelerated, 1.5*cexp(2.0*I*M_PI*frand()) + 0.4 + 2.0*I*global.diff/4., 0.002*cexp(I*(M_PI/10.0*(_i%20))));
 	}
@@ -294,6 +297,8 @@ void cirno_iceplosion1(Boss *c, int time) {
 	FROM_TO(150, 300, 30) {
 		float dif = M_PI*2*frand();
 		int i;
+
+		play_sound("shot1");
 		for(i = 0; i < 20; i++) {
 			create_projectile2c("plainball", c->pos, rgb(0.04*_i,0.04*_i,0.4+0.04*_i), asymptotic, (3+_i/3.0)*cexp(I*(2*M_PI/8.0*i + dif)), 2.5);
 		}
@@ -331,6 +336,7 @@ void cirno_icicle_fall(Boss *c, int time) {
 	GO_TO(c, VIEWPORT_W/2.0+120.0*I, 0.01);
 
 	FROM_TO(20,200,30-3*global.diff) {
+		play_sound("shot1");
 		for(float i = 2-0.2*global.diff; i < 5; i+=1./(1+global.diff)) {
 			create_projectile1c("crystal", c->pos, rgb(0.3,0.3,0.9), cirno_icicles, 6*i*cexp(I*(-0.1+0.1*_i)));
 			create_projectile1c("crystal", c->pos, rgb(0.3,0.3,0.9), cirno_icicles, 6*i*cexp(I*(M_PI+0.1-0.1*_i)));
@@ -338,7 +344,7 @@ void cirno_icicle_fall(Boss *c, int time) {
 	}
 
 	if(global.diff > D_Easy) {
-		FROM_TO(120,200,3) {
+		FROM_TO_SND("shot1_loop",120,200,3) {
 			float f = frand()*_i;
 
 			create_projectile2c("ball", c->pos, rgb(0.,0.,0.3), accelerated, 0.2*(-2*I-1.5+f),-0.02*I);
@@ -347,6 +353,7 @@ void cirno_icicle_fall(Boss *c, int time) {
 	}
 	if(global.diff > D_Normal) {
 		FROM_TO(300,400,10) {
+			play_sound("shot1");
 			float x = VIEWPORT_W/2+VIEWPORT_W/2*(0.3+_i/10.);
 			float angle1 = M_PI/10*frand();
 			float angle2 = M_PI/10*frand();
@@ -380,13 +387,14 @@ void cirno_crystal_blizzard(Boss *c, int time) {
 	}
 
 	FROM_TO(60, 360, 10) {
+		play_sound("shot1");
 		int i, cnt = 14 + global.diff * 3;
 		for(i = 0; i < cnt; ++i) {
 			create_projectile2c("crystal", i*VIEWPORT_W/cnt, i % 2? rgb(0.2,0.2,0.4) : rgb(0.5,0.5,0.5), accelerated, 0, 0.02*I + 0.01*I * (i % 2? 1 : -1) * sin((i*3+global.frames)/30.0));
 		}
 	}
 
-	FROM_TO(330, 700, 1) {
+	FROM_TO_SND("shot1_loop",330, 700, 1) {
 		GO_TO(c, global.plr.pos, 0.01);
 
 		if(!(time % (1 + D_Lunatic - global.diff))) {
@@ -397,6 +405,7 @@ void cirno_crystal_blizzard(Boss *c, int time) {
 		}
 
 		if(!(time % 7)) {
+			play_sound("shot1");
 			int i, cnt = global.diff - 1;
 			for(i = 0; i < cnt; ++i)
 				create_projectile2c("ball", c->pos, rgb(0.1, 0.1, 0.5), accelerated, 0, 0.01 * cexp(I*(global.frames/20.0 + 2*i*M_PI/cnt)))->draw = ProjDrawAdd;
@@ -442,6 +451,7 @@ int stage1_burst(Enemy *e, int time) {
 		int i = 0;
 		int n = 1.5*global.diff-1;
 
+		play_sound("shot1");
 		for(i = -n; i <= n; i++) {
 			create_projectile2c("crystal", e->pos, rgb(0.2, 0.3, 0.5), asymptotic, (2+0.1*global.diff)*cexp(I*(carg(global.plr.pos - e->pos) + 0.2*i)), 5);
 		}
@@ -468,14 +478,16 @@ int stage1_circletoss(Enemy *e, int time) {
 
 	e->pos += e->args[0];
 
-	FROM_TO(60,100,2+(global.diff<D_Hard)) {
+	int inter = 2+(global.diff<D_Hard);
+	int dur = 40;
+	FROM_TO_SND("shot1_loop",60,60+dur,inter) {
 		e->args[0] = 0.5*e->args[0];
-		create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, 2*cexp(I*M_PI/10*_i), _i/2.0);
+		create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, 2*cexp(I*2*M_PI*inter/dur*_i), _i/2.0);
 	}
 
 
 	if(global.diff > D_Easy) {
-		FROM_TO_INT(90,500,150,5+7*global.diff,1) {
+		FROM_TO_INT_SND("shot1_loop",90,500,150,5+7*global.diff,1) {
 			tsrand_fill(2);
 			create_projectile2c("thickrice", e->pos, rgb(0.2, 0.4, 0.8), asymptotic, (1+afrand(0)*2)*cexp(I*carg(global.plr.pos - e->pos)+0.05*I*global.diff*anfrand(1)), 3);
 		}
@@ -498,8 +510,10 @@ int stage1_sinepass(Enemy *e, int time) {
 	e->args[1] -= cimag(e->pos-e->pos0)*0.03*I;
 	e->pos += e->args[1]*0.4 + e->args[0];
 
-	if(frand() > 0.997-0.005*(global.diff-1))
+	if(frand() > 0.997-0.005*(global.diff-1)) {
+		play_sound("shot1");
 		create_projectile1c("ball", e->pos, rgb(0.8,0.8,0.4), linear, (1+0.2*global.diff+frand())*cexp(I*carg(global.plr.pos - e->pos)));
+	}
 
 	return 1;
 }
@@ -515,9 +529,12 @@ int stage1_drop(Enemy *e, int t) {
 
 	e->pos = e->pos0 + e->args[0]*t + e->args[1]*t*t;
 
-	FROM_TO(10,1000,1)
-		if(frand() > 0.997-0.007*(global.diff-1))
+	FROM_TO(10,1000,1) {
+		if(frand() > 0.997-0.007*(global.diff-1)) {
+			play_sound("shot1");
 			create_projectile1c("ball", e->pos, rgb(0.8,0.8,0.4), linear, (1+0.3*global.diff+frand())*cexp(I*carg(global.plr.pos - e->pos)));
+		}
+	}
 
 	return 1;
 }
@@ -532,8 +549,9 @@ int stage1_circle(Enemy *e, int t) {
 	FROM_TO(0, 150, 1)
 		e->pos += (e->args[0] - e->pos)*0.02;
 
-	FROM_TO_INT(150, 550, 40, 40, 2+2*(global.diff<D_Hard))
+	FROM_TO_INT_SND("shot1_loop",150, 550, 40, 40, 2+2*(global.diff<D_Hard)) {
 		create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, (1.7+0.2*global.diff)*cexp(I*M_PI/10*_ni), _ni/2.0);
+	}
 
 	FROM_TO(560,1000,1)
 		e->pos += e->args[1];
@@ -552,6 +570,7 @@ int stage1_multiburst(Enemy *e, int t) {
 		e->pos += 2.0*I;
 
 	FROM_TO_INT(60, 300, 70, 40, 18-2*global.diff) {
+		play_sound("shot1");
 		int i;
 		int n = global.diff-1;
 		for(i = -n; i <= n; i++)
@@ -580,11 +599,13 @@ int stage1_instantcircle(Enemy *e, int t) {
 	int i;
 
 	AT(150) {
+		play_sound("shot1");
 		for(i = 0; i < 20+2*global.diff; i++)
 			create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, 1.5*cexp(I*2*M_PI/(20.0+global.diff)*i), 2.0);
 	}
 
 	AT(170) {
+		play_sound("shot1");
 		if(global.diff > D_Easy) {
 			for(i = 0; i < 20+3*global.diff; i++)
 				create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, 3*cexp(I*2*M_PI/(20.0+global.diff)*i), 3.0);
@@ -609,6 +630,7 @@ int stage1_tritoss(Enemy *e, int t) {
 	}
 
 	FROM_TO(120, 800,8-global.diff) {
+		play_sound("shot1");
 		float a = M_PI/30.0*((_i/7)%30)+0.1*nfrand();
 		int i;
 		int n = 3+global.diff/2;
@@ -618,6 +640,7 @@ int stage1_tritoss(Enemy *e, int t) {
 	}
 
 	FROM_TO(480, 800, 300) {
+		play_sound("shot1");
 		int i, n = 15 + global.diff*3;
 		for(i = 0; i < n; i++) {
 			create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, 1.5*cexp(I*2*M_PI/n*i), 2.0);

@@ -340,6 +340,8 @@ static void stage_logic(void) {
 	process_lasers();
 	process_projectiles(&global.particles, false);
 
+	update_sounds();
+
 	if(global.boss && !global.dialog)
 		process_boss(&global.boss);
 

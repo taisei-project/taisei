@@ -47,6 +47,14 @@
 #define GO_AT(obj, start, end, vel) if(*__timep >= (start) && *__timep <= (end)) (obj)->pos += (vel);
 #define GO_TO(obj, p, f) (obj)->pos += (f)*((p) - (obj)->pos);
 
+// This is newest addition to the macro zoo! It allows you to loop a sound like
+// you loop your French- I mean your danmaku code. Nothing strange going on here.
+#define PLAY_FOR(name,start, end) FROM_TO(start,end,2) { play_loop(name); }
+
+// easy to soundify versions of FROM_TO and friends. Note how I made FROM_TO_INT even more complicated!
+#define FROM_TO_SND(snd,start,end,step) PLAY_FOR(snd,start,end); FROM_TO(start,end,step)
+#define FROM_TO_INT_SND(snd,start,end,step,dur,istep) FROM_TO_INT(start,end,step,dur,2) { play_loop(snd); }FROM_TO_INT(start,end,step,dur,istep)
+
 typedef void (*StageProc)(void);
 typedef void (*ShaderRule)(FBO*);
 

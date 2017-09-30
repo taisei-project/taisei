@@ -9,6 +9,7 @@
 #include <SDL_mixer.h>
 
 #include "audio.h"
+#include "audio_mixer.h"
 #include "global.h"
 #include "list.h"
 
@@ -21,6 +22,7 @@ static bool mixer_loaded = false;
 const char *mixer_audio_exts[] = { ".wav", ".ogg", ".mp3", ".mod", ".xm", ".s3m",
 		".669", ".it", ".med", ".mid", ".flac", ".aiff", ".voc",
 		NULL };
+
 
 void audio_backend_init(void) {
 	if(mixer_loaded) {
@@ -169,11 +171,40 @@ bool audio_backend_sound_play(void *impl) {
 	if(!mixer_loaded)
 		return false;
 
-	bool result = (Mix_PlayChannel(-1, (Mix_Chunk*)impl, 0) != -1);
+	bool result = (Mix_PlayChannel(-1, ((MixerInternalSound*)impl)->ch, 0) != -1);
 
 	if(!result) {
 		log_warn("Mix_PlayChannel() failed: %s", Mix_GetError());
 	}
 
 	return result;
+}
+
+bool audio_backend_sound_loop(void *impl) {
+	if(!mixer_loaded)
+		return false;
+
+	MixerInternalSound *snd = (MixerInternalSound *)impl;
+	snd->loopchan = Mix_PlayChannel(-1, snd->ch, -1);
+
+	if(snd->loopchan == -1) {
+		log_warn("Mix_PlayChannel() failed: %s", Mix_GetError());
+		return false;
+	}
+
+	return true;
+
+}
+
+bool audio_backend_sound_stop_loop(void *impl) {
+	if(!mixer_loaded)
+		return false;
+
+	MixerInternalSound *snd = (MixerInternalSound *)impl;
+	if(snd->loopchan == -1)
+		return false;
+	Mix_HaltChannel(snd->loopchan);
+
+	return true;
+
 }

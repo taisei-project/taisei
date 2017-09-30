@@ -20,3 +20,6 @@ void audio_backend_music_stop(void) {}
 void audio_backend_music_pause(void) {}
 bool audio_backend_music_play(void *impl) { return false; }
 bool audio_backend_sound_play(void *impl) { return false; }
+
+bool audio_backend_sound_loop(void *impl) {return false;}
+bool audio_backend_sound_stop_loop(void *impl) {return false;}
