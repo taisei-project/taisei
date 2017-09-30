@@ -82,13 +82,6 @@ static EventPriority real_priority(EventPriority prio) {
 	return prio;
 }
 
-static void events_print_handlers(ListContainer *list) {
-	for(ListContainer *c = list; c; c = c->next) {
-		EventHandler *h = c->data;
-		log_debug(" * %p %u", *(void**)&h->proc, h->priority);
-	}
-}
-
 static bool events_invoke_handlers(SDL_Event *event, ListContainer *h_list, EventHandler *h_array) {
 	// invoke handlers from two sources (a list and an array) in the correct order according to priority
 	// list items take precedence
@@ -184,7 +177,6 @@ void events_register_handler(EventHandler *handler) {
 	create_container_at_priority(&global_handlers, handler_alloc->priority, handler_container_prio_func)->data = handler_alloc;
 
 	log_debug("Registered handler: %p %u", *(void**)&handler_alloc->proc, handler_alloc->priority);
-	events_print_handlers(global_handlers);
 }
 
 void events_unregister_handler(EventHandlerProc proc) {
