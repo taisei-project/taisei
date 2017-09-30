@@ -262,17 +262,19 @@ void events_pause_keyrepeat(void) {
 
 static bool events_handler_quit(SDL_Event *event, void *arg);
 static bool events_handler_keyrepeat_workaround(SDL_Event *event, void *arg);
+static bool events_handler_clipboard(SDL_Event *event, void *arg);
 static bool events_handler_hotkeys(SDL_Event *event, void *arg);
 static bool events_handler_key_down(SDL_Event *event, void *arg);
 static bool events_handler_key_up(SDL_Event *event, void *arg);
-// static bool events_handler_text_input(SDL_Event *event, void *arg);
+
 
 static EventHandler default_handlers[] = {
-	{ .proc = events_handler_quit,					.priority = EPRIO_SYSTEM,		.event_type = SDL_QUIT},
-	{ .proc = events_handler_keyrepeat_workaround,	.priority = EPRIO_CAPTURE,		.event_type = SDL_KEYDOWN},
-	{ .proc = events_handler_hotkeys,				.priority = EPRIO_HOTKEYS,		.event_type = SDL_KEYDOWN},
-	{ .proc = events_handler_key_down,				.priority = EPRIO_TRANSLATION,	.event_type = SDL_KEYDOWN},
-	{ .proc = events_handler_key_up,				.priority = EPRIO_TRANSLATION,	.event_type = SDL_KEYUP},
+	{ .proc = events_handler_quit,					.priority = EPRIO_SYSTEM,		.event_type = SDL_QUIT },
+	{ .proc = events_handler_keyrepeat_workaround,	.priority = EPRIO_CAPTURE,		.event_type = SDL_KEYDOWN },
+	{ .proc = events_handler_clipboard,				.priority = EPRIO_CAPTURE,		.event_type = SDL_KEYDOWN },
+	{ .proc = events_handler_hotkeys,				.priority = EPRIO_HOTKEYS,		.event_type = SDL_KEYDOWN },
+	{ .proc = events_handler_key_down,				.priority = EPRIO_TRANSLATION,	.event_type = SDL_KEYDOWN },
+	{ .proc = events_handler_key_up,				.priority = EPRIO_TRANSLATION,	.event_type = SDL_KEYUP },
 
 	{NULL}
 };
@@ -300,6 +302,23 @@ static bool events_handler_keyrepeat_workaround(SDL_Event *event, void *arg) {
 		log_debug("Prevented a potentially bogus key repeat: %i %i %u",
 			event->key.keysym.scancode, event->key.keysym.mod, keyrepeat_paused_until - timenow);
 		return true;
+	}
+
+	return false;
+}
+
+static bool events_handler_clipboard(SDL_Event *event, void *arg) {
+	if(!SDL_IsTextInputActive()) {
+		return false;
+	}
+
+	if(event->key.keysym.mod & KMOD_CTRL && event->key.keysym.scancode == SDL_SCANCODE_V) {
+		if(SDL_HasClipboardText()) {
+			memset(event, 0, sizeof(SDL_Event));
+			event->type = MAKE_TAISEI_EVENT(TE_CLIPBOARD_PASTE);
+		} else {
+			return true;
+		}
 	}
 
 	return false;

@@ -124,11 +124,7 @@ OptionBinding* bind_stroption(ConfigIndex cfgentry) {
 	OptionBinding *bind = bind_new();
 	bind->type = BT_StrValue;
 	bind->configentry = cfgentry;
-
-	bind->valcount = 1;
-	bind->values = malloc(sizeof(char*));
-	*bind->values = malloc(OPTIONS_TEXT_INPUT_BUFSIZE);
-	strlcpy(*bind->values, config_get_str(cfgentry), OPTIONS_TEXT_INPUT_BUFSIZE);
+	stralloc(&bind->strvalue, config_get_str(cfgentry));
 
 	return bind;
 }
@@ -813,10 +809,12 @@ void draw_options_menu(MenuData *menu) {
 				case BT_StrValue: {
 					if(bind->blockinput) {
 						glColor4f(0.5, 1, 0.5, 1.0);
-						if(strlen(*bind->values))
-							draw_text(AL_Right, origin, 20*i, *bind->values, _fonts.standard);
-					} else
+						if(*bind->strvalue) {
+							draw_text(AL_Right, origin, 20*i, bind->strvalue, _fonts.standard);
+						}
+					} else {
 						draw_text(AL_Right, origin, 20*i, config_get_str(bind->configentry), _fonts.standard);
+					}
 					break;
 				}
 
@@ -908,13 +906,17 @@ static bool options_vidmode_change_handler(SDL_Event *event, void *arg) {
 	return false;
 }
 
-static bool options_input_handler_for_binding(SDL_Event *event, void *arg) {
+static bool options_rebind_input_handler(SDL_Event *event, void *arg) {
 	if(!arg) {
 		return false;
 	}
 
 	OptionBinding *b = arg;
 	uint32_t t = event->type;
+
+	if(b->type == BT_StrValue) {
+		return false;
+	}
 
 	if(t == SDL_KEYDOWN) {
 		SDL_Scancode scan = event->key.keysym.scancode;
@@ -990,13 +992,96 @@ static bool options_input_handler_for_binding(SDL_Event *event, void *arg) {
 		return true;
 	}
 
-	// FIXME: Implement text input
-
 	return true;
 }
 
-// raw access to arg is safe there after the bind_get check
-#define SHOULD_SKIP
+static bool options_text_input_handler(SDL_Event *event, void *arg) {
+	OptionBinding *b = arg;
+
+	if(!b || b->type != BT_StrValue) {
+		return false;
+	}
+
+	uint32_t t = event->type;
+
+	if(t == SDL_TEXTINPUT || t == MAKE_TAISEI_EVENT(TE_CLIPBOARD_PASTE)) {
+		const size_t max_len = 32;
+		const char *snd = "generic_shot";
+		char *text, *text_allocated = NULL;
+
+		if(t == SDL_TEXTINPUT) {
+			text = event->text.text;
+		} else {
+			text = text_allocated = SDL_GetClipboardText();
+		}
+
+		assert(text != NULL);
+		strappend(&b->strvalue, text);
+
+		if(strlen(b->strvalue) > max_len) {
+			/*
+			 * EFFICIENT AS FUCK
+			 */
+
+			uint32_t *u = utf8_to_ucs4(b->strvalue);
+			size_t ulen = ucs4len(u);
+
+			if(ulen > max_len) {
+				*(u + max_len) = 0;
+				free(b->strvalue);
+				b->strvalue = ucs4_to_utf8(u);
+				snd = "hit";
+			}
+
+			free(u);
+		}
+
+		free(text_allocated);
+		play_ui_sound(snd);
+		return true;
+	}
+
+	if(t == SDL_KEYDOWN) {
+		SDL_Scancode scan = event->key.keysym.scancode;
+
+		if(scan == SDL_SCANCODE_ESCAPE) {
+			play_ui_sound("hit");
+			stralloc(&b->strvalue, config_get_str(b->configentry));
+			b->blockinput = false;
+		} else if(scan == SDL_SCANCODE_RETURN) {
+			if(*b->strvalue) {
+				play_ui_sound("shot_special1");
+			} else {
+				play_ui_sound("hit");
+				stralloc(&b->strvalue, "Player");
+			}
+
+			config_set_str(b->configentry, b->strvalue);
+			b->blockinput = false;
+		} else if(scan == SDL_SCANCODE_BACKSPACE) {
+			/*
+			 * MORE EFFICIENT THAN FUCK
+			 */
+
+			uint32_t *u = utf8_to_ucs4(b->strvalue);
+
+			if(*u) {
+				play_ui_sound("generic_shot");
+				*(ucs4chr(u, 0) - 1) = 0;
+			} else {
+				play_ui_sound("hit");
+			}
+
+			free(b->strvalue);
+			b->strvalue = ucs4_to_utf8(u);
+			free(u);
+		}
+
+		return true;
+	}
+
+	return true;
+}
 
 static bool options_input_handler(SDL_Event *event, void *arg) {
 	MenuData *menu = arg;
@@ -1063,7 +1148,6 @@ static bool options_input_handler(SDL_Event *event, void *arg) {
 					break;
 
 				case BT_StrValue:
-					bind->selected = strlen(config_get_str(bind->configentry));
 					bind->blockinput = true;
 					break;
 
@@ -1104,7 +1188,12 @@ void options_menu_input(MenuData *menu) {
 			.event_type = MAKE_TAISEI_EVENT(TE_VIDEO_MODE_CHANGED),
 		},
 		{
-			.proc = options_input_handler_for_binding,
+			.proc = options_text_input_handler,
+			.arg = b,
+			.priority = EPRIO_CAPTURE,
+		},
+		{
+			.proc = options_rebind_input_handler,
 			.arg = b,
 			.priority = EPRIO_CAPTURE,
 		},

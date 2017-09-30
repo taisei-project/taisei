@@ -13,8 +13,6 @@
 void create_options_menu(MenuData *m);
 void draw_options_menu(MenuData *m);
 
-#define OPTIONS_TEXT_INPUT_BUFSIZE 50
-
 typedef struct OptionBinding OptionBinding;
 
 typedef int (*BindingGetter)(OptionBinding*);
@@ -33,7 +31,10 @@ typedef enum BindingType {
 } BindingType;
 
 typedef struct OptionBinding {
-	char **values;
+	union {
+		char **values;
+		char *strvalue;
+	};
 	bool displaysingle;
 	int valcount;
 	int valrange_min;

@@ -156,6 +156,36 @@ char* strappend(char **dst, char *src) {
     return *dst;
 }
 
+uint32_t* ucs4chr(const uint32_t *ucs4, uint32_t chr) {
+    for(; *ucs4 != chr; ++ucs4) {
+        if(!*ucs4) {
+            return NULL;
+        }
+    }
+
+    return (uint32_t*)ucs4;
+}
+
+size_t ucs4len(const uint32_t *ucs4) {
+    size_t len;
+    for(len = 0; *ucs4; ++len, ++ucs4);
+    return len;
+}
+
+uint32_t* utf8_to_ucs4(const char *utf8) {
+    assert(utf8 != NULL);
+    uint32_t *ucs4 = (uint32_t*)SDL_iconv_string("UCS-4", "UTF-8", utf8, strlen(utf8) + 1);
+    assert(ucs4 != NULL);
+    return ucs4;
+}
+
+char* ucs4_to_utf8(const uint32_t *ucs4) {
+    assert(ucs4 != NULL);
+    char *utf8 = SDL_iconv_string("UTF-8", "UCS-4", (const char*)ucs4, sizeof(uint32_t) * (ucs4len(ucs4) + 1));
+    assert(utf8 != NULL);
+    return utf8;
+}
+
 /*
  * public domain strtok_r() by Charlie Gordon
  *
