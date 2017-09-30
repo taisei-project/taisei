@@ -158,6 +158,7 @@ static void player_fail_spell(Player *plr) {
 		!global.boss->current ||
 		global.boss->current->finished ||
 		global.boss->current->failtime ||
+		global.boss->current->starttime >= global.frames ||
 		global.stage->type == STAGE_SPELL
 	) {
 		return;

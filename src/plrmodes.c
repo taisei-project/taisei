@@ -179,6 +179,10 @@ int youmu_slash(Enemy *e, int t) {
 	if(t < 0)
 		return 1;
 
+	if(global.frames - global.plr.recovery > 0) {
+		return ACTION_DESTROY;
+	}
+
 	TIMER(&t);
 
 	AT(0)
@@ -343,6 +347,10 @@ int youmu_split(Enemy *e, int t) {
 
 	if(t > creal(e->args[0]))
 		return ACTION_DESTROY;
+
+	if(global.frames - global.plr.recovery > 0) {
+		return ACTION_DESTROY;
+	}
 
 	TIMER(&t);
 
@@ -562,7 +570,7 @@ int master_spark(Enemy *e, int t) {
 		return 1;
 	}
 
-	if(t > creal(e->args[0])) {
+	if(t > creal(e->args[0]) || global.frames - global.plr.recovery > 0) {
 		global.shake_view = 0;
 		return ACTION_DESTROY;
 	}
@@ -651,7 +659,7 @@ int marisa_star_orbit(Projectile *p, int t) { // a[0]: x' a[1]: x''
 	if(t < 0)
 		return 1;
 
-	if(t > 300)
+	if(t > 300 || global.frames - global.plr.recovery > 0)
 		return ACTION_DESTROY;
 
 	float r = cabs(p->pos0 - p->pos);
