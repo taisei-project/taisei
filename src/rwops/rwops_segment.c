@@ -117,6 +117,8 @@ static size_t segment_readwrite(SDL_RWops *rw, void *ptr, size_t size, size_t ma
         // let's assume nothing else uses the wrapped stream and try to guess the current position
         // this only works if the actual positon in the stream at the time of segment creation matched s->start...
         pos = s->pos;
+    } else {
+        s->pos = pos;
     }
 
     if(pos < s->start || pos > s->end) {
