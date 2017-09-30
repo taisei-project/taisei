@@ -492,6 +492,10 @@ void projectiles_preload(void) {
 		"proj/youmu",
 	NULL);
 
+	preload_resources(RES_SFX, RESF_PERMANENT,
+		"shot1",
+		"shot1_loop",
+	NULL);
 	preload_resources(RES_SHADER, RESF_PERMANENT,
 		"bullet_color",
 	NULL);

@@ -24,7 +24,7 @@ static void play_sound_internal(const char *name, bool unconditional) {
 
 	Sound *snd = get_sound(name);
 
-	if(!snd || (!unconditional && snd->lastplayframe + LOOPTIMEOUTFRAMES/2 <= global.frames) || snd->islooping) {
+	if(!snd || (!unconditional && snd->lastplayframe + 3 >= global.frames) || snd->islooping) {
 		return;
 	}
 
