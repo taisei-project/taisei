@@ -43,6 +43,7 @@ void audio_init(void);
 void audio_shutdown(void);
 
 void play_sound(const char *name);
+void play_sound_cooldown(const char *name, int cooldown);
 void play_loop(const char *name);
 void play_ui_sound(const char *name);
 void reset_sounds(void);
