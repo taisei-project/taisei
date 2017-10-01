@@ -306,20 +306,24 @@ static PlrInputFlag key_to_inflag(KeyIndex key) {
 	}
 }
 
+void player_updatemovevars(Player *plr, PlrInputFlag flags) {
+	PlrInputFlag newmove = INFLAGS_MOVE & flags & ~plr->inputflags;
+
+	if(newmove) {
+		newmove = (1 << (unsigned)SDL_MostSignificantBitIndex32(newmove));
+		plr->prevmove = plr->curmove;
+		plr->prevmovetime = plr->movetime;
+		plr->curmove = newmove;
+		plr->movetime = global.frames;
+	}
+}
+
 bool player_updateinputflags(Player *plr, PlrInputFlag flags) {
 	if(flags == plr->inputflags) {
 		return false;
 	}
 
-	PlrInputFlag newmove = INFLAGS_MOVE & flags & ~plr->inputflags;
-
-	if(newmove) {
-		plr->prevmove = plr->curmove;
-		plr->prevmovetime = plr->movetime;
-		plr->curmove = (1 << (unsigned)SDL_MostSignificantBitIndex32(flags));
-		plr->movetime = global.frames;
-	}
-
+	player_updatemovevars(plr, flags);
 	plr->inputflags = flags;
 	return true;
 }
@@ -342,7 +346,13 @@ bool player_setinputflag(Player *plr, KeyIndex key, bool mode) {
 		newflags &= ~keyflag;
 	}
 
-	return player_updateinputflags(plr, newflags);
+	if(newflags == plr->inputflags) {
+		return false;
+	}
+
+	player_updatemovevars(plr, keyflag);
+	plr->inputflags = newflags;
+	return true;
 }
 
 static bool player_set_axis(int *aptr, uint16_t value) {
