@@ -1,9 +1,9 @@
 #version 110
 
 void main(void) {
- gl_Position     = ftransform();
- gl_FrontColor   = gl_Color;
- gl_TexCoord[0]  = gl_MultiTexCoord0;
+	gl_Position     = ftransform();
+	gl_FrontColor   = gl_Color;
+	gl_TexCoord[0]  = gl_MultiTexCoord0;
 }
 
 %% -- FRAG
@@ -21,16 +21,19 @@ uniform vec4 color;
 void main(void) {
 	vec2 pos = vec2(gl_TexCoord[0]);
 	pos -= blur_orig;
-	
+
 	vec2 pos1 = pos;
 	pos1.y *= ratio;
-	
+
 	pos *= min(length(pos1)/blur_rad,1.0);
-		
-	gl_FragColor = texture2D(tex, (gl_TextureMatrix[0] * vec4(pos + blur_orig,0.0,1.0)).xy);
-	
+	pos += blur_orig;
+	pos = clamp(pos, 0.005, 0.995);
+	pos = (gl_TextureMatrix[0] * vec4(pos,0.0,1.0)).xy;
+
+	gl_FragColor = texture2D(tex, pos);
+
 	pos1 = vec2(gl_TexCoord[0]) - fix_orig;
 	pos1.y *= ratio;
-	
+
 	gl_FragColor *= pow(color,vec4(3.0*max(0.0,rad - length(pos1))));
 }
