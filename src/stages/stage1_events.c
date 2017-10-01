@@ -151,7 +151,10 @@ void cirno_perfect_freeze(Boss *c, int time) {
 	GO_AT(c, 160, 190, 2 + 1.0*I);
 
 	int d = max(0, global.diff - D_Normal);
-
+	AT(160-50*d)
+		c->anirow = 1;
+	AT(220+30*d)
+		c->anirow = 0;
 	FROM_TO_SND("shot1_loop", 160 - 50*d, 220 + 30*d, 6-global.diff/2) {
 		float r1, r2;
 
@@ -219,6 +222,10 @@ void cirno_iceplosion0(Boss *c, int time) {
 	if(time < 0)
 		return;
 
+	AT(20)
+		c->anirow = 1;
+	AT(30)
+		c->anirow = 0;
 	FROM_TO_SND("shot1_loop",20,30,2) {
 		int i;
 		int n = 8+global.diff;
@@ -256,6 +263,10 @@ void cirno_crystal_rain(Boss *c, int time) {
 		create_projectile2c("crystal", VIEWPORT_W*afrand(0), rgb(0.2,0.2,0.4), accelerated, 1.0*I, 0.01*I + (-0.005+0.005*global.diff)*anfrand(1));
 	}
 
+	AT(100)
+		c->anirow = 1;
+	AT(400)
+		c->anirow = 0;
 	FROM_TO(100, 400, 120-20*global.diff - 10 * hdiff) {
 		float i;
 		bool odd = (hdiff? (_i&1) : 0);
