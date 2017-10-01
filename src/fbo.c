@@ -100,3 +100,9 @@ void draw_fbo_viewport(FBO *fbo) {
 	set_ortho_ex(VIEWPORT_W,VIEWPORT_H);
 	draw_fbo(fbo);
 }
+
+void swap_fbos(FBO **fbo1, FBO **fbo2) {
+    FBO *temp = *fbo1;
+    *fbo1 = *fbo2;
+    *fbo2 = temp;
+}

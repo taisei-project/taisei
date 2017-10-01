@@ -376,6 +376,8 @@ void boss_finish_current_attack(Boss *boss) {
 	boss->current->finished = true;
 	boss->current->rule(boss, EVENT_DEATH);
 
+	boss->anirow = 0; // reset to standard animation
+
 	if(t != AT_Move) {
 		stage_clear_hazards(true);
 	}

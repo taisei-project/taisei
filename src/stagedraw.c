@@ -11,14 +11,18 @@
 #include "stagetext.h"
 #include "video.h"
 
-static int apply_shaderrules(ShaderRule *shaderrules, int fbonum) {
-	for(ShaderRule *rule = shaderrules; *rule; ++rule) {
-		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo.bg[!fbonum].fbo);
-		(*rule)(resources.fbo.bg + fbonum);
-		fbonum = !fbonum;
+static void apply_shader_rules(ShaderRule *shaderrules, FBO **fbo0, FBO **fbo1) {
+	if(!shaderrules) {
+		return;
 	}
 
-	return fbonum;
+	for(ShaderRule *rule = shaderrules; *rule; ++rule) {
+		glBindFramebuffer(GL_FRAMEBUFFER, (*fbo1)->fbo);
+		(*rule)(*fbo0);
+		swap_fbos(fbo0, fbo1);
+	}
+
+	return;
 }
 
 static void draw_wall_of_text(float f, const char *txt) {
@@ -89,29 +93,29 @@ static void draw_spellbg(int t) {
 	glPopMatrix();
 }
 
-static int apply_bg_shaders(ShaderRule *shaderrules, int fbonum) {
+static void apply_bg_shaders(ShaderRule *shaderrules, FBO **fbo0, FBO **fbo1) {
 	Boss *b = global.boss;
 	if(b && b->current && b->current->draw_rule) {
 		int t = global.frames - b->current->starttime;
 
-		int o = fbonum;
+		FBO *fbo0_orig = *fbo0;
 		if(t < 4*ATTACK_START_DELAY || b->current->endtime) {
-			fbonum = apply_shaderrules(shaderrules, fbonum);
+			apply_shader_rules(shaderrules, fbo0, fbo1);
 		}
 
-		if(fbonum == o) {
-			glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo.bg[!fbonum].fbo);
-			draw_fbo_viewport(resources.fbo.bg + fbonum);
-			fbonum = !fbonum;
+		if(*fbo0 == fbo0_orig) {
+			glBindFramebuffer(GL_FRAMEBUFFER, (*fbo1)->fbo);
+			draw_fbo_viewport(*fbo0);
+			swap_fbos(fbo0, fbo1);
 		}
 
-		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo.bg[!fbonum].fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, (*fbo1)->fbo);
 		draw_spellbg(t);
 
 		complex pos = b->pos;
 		float ratio = (float)VIEWPORT_H/VIEWPORT_W;
 
-		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo.bg[fbonum].fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, (*fbo0)->fbo);
 		if(t<4*ATTACK_START_DELAY) {
 			Shader *shader = get_shader("spellcard_intro");
 			glUseProgram(shader->prog);
@@ -148,13 +152,12 @@ static int apply_bg_shaders(ShaderRule *shaderrules, int fbonum) {
 			glUseProgram(0);
 		}
 
-		draw_fbo_viewport(&resources.fbo.bg[!fbonum]);
+		draw_fbo_viewport(*fbo1);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glUseProgram(0);
-	} else
-		fbonum = apply_shaderrules(shaderrules, fbonum);
-
-	return fbonum;
+	} else {
+		apply_shader_rules(shaderrules, fbo0, fbo1);
+	}
 }
 
 static void apply_zoom_shader(void) {
@@ -208,8 +211,11 @@ static FBO* stage_render_bg(StageInfo *stage) {
 		stage->procs->draw();
 	glPopMatrix();
 
-	int num = apply_bg_shaders(stage->procs->shader_rules, 0);
-	return &resources.fbo.bg[num];
+	FBO *fbo0 = resources.fbo.bg;
+	FBO *fbo1 = resources.fbo.bg + 1;
+
+	apply_bg_shaders(stage->procs->shader_rules, &fbo0, &fbo1);
+	return fbo0;
 }
 
 static void stage_draw_objects(void) {
@@ -348,19 +354,25 @@ void stage_draw_scene(StageInfo *stage) {
 	set_ortho_ex(VIEWPORT_W,VIEWPORT_H);
 	stage_draw_objects();
 
-	// apply custom postprocessing shaders
-	FBO *ppfbo = postprocess(
+	// apply postprocessing shaders
+	FBO *fbo0 = resources.fbo.fg, *fbo1 = resources.fbo.fg+1;
+
+	// stage postprocessing
+	apply_shader_rules(global.stage->procs->postprocess_rules, &fbo0, &fbo1);
+
+	// custom postprocessing
+	postprocess(
 		resources.stage_postprocess,
-		resources.fbo.fg,
-		resources.fbo.fg+1,
+		&fbo0,
+		&fbo1,
 		postprocess_prepare,
 		draw_fbo_viewport
 	);
 
 	// update the primary foreground FBO if needed
-	if(ppfbo != resources.fbo.fg) {
+	if(fbo0 != resources.fbo.fg) {
 		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo.fg[0].fbo);
-		draw_fbo_viewport(ppfbo);
+		draw_fbo_viewport(fbo0);
 	}
 
 	// switch to main framebuffer

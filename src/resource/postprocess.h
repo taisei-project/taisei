@@ -52,8 +52,18 @@ struct PostprocessShaderUniform {
 typedef void (*PostprocessDrawFuncPtr)(FBO*);
 typedef void (*PostprocessPrepareFuncPtr)(FBO*, Shader*);
 
-PostprocessShader* postprocess_load(const char *path);
+char* postprocess_path(const char *path);
+
+PostprocessShader* postprocess_load(const char *path, unsigned int flags);
 void postprocess_unload(PostprocessShader **list);
-FBO* postprocess(PostprocessShader *ppshaders, FBO *fbo1, FBO *fbo2, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw);
+void postprocess(PostprocessShader *ppshaders, FBO **primfbo, FBO **auxfbo, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw);
 
+/*
+ *  Glue for resources api
+ */
 
+char* postprocess_path(const char *name);
+bool check_postprocess_path(const char *path);
+void* load_postprocess_begin(const char *path, unsigned int flags);
+void* load_postprocess_end(void *opaque, const char *path, unsigned int flags);
+void unload_postprocess(void*);

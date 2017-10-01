@@ -24,5 +24,4 @@ void reinit_fbo(FBO *fbo, float scale);
 void draw_fbo(FBO *fbo);
 void draw_fbo_viewport(FBO *fbo);
 void delete_fbo(FBO *fbo);
-
-
+void swap_fbos(FBO **fbo1, FBO **fbo2);

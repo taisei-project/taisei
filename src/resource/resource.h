@@ -27,6 +27,7 @@ typedef enum ResourceType {
 	RES_BGM,
 	RES_SHADER,
 	RES_MODEL,
+	RES_POSTPROCESS,
 	RES_NUMTYPES,
 } ResourceType;
 
@@ -90,6 +91,7 @@ typedef struct Resource {
 		Music *music;
 		Shader *shader;
 		Model *model;
+		PostprocessShader *postprocess;
 	};
 } Resource;
 

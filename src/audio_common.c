@@ -17,7 +17,7 @@ static char *saved_bgm;
 static Hashtable *bgm_descriptions;
 CurrentBGM current_bgm = { .name = NULL };
 
-static void play_sound_internal(const char *name, bool unconditional) {
+static void play_sound_internal(const char *name, bool unconditional, int cooldown) {
 	if(!audio_backend_initialized() || global.frameskip) {
 		return;
 	}
@@ -28,16 +28,20 @@ static void play_sound_internal(const char *name, bool unconditional) {
 		return;
 	}
 
-	snd->lastplayframe = global.frames;
+	snd->lastplayframe = global.frames + cooldown;
 	audio_backend_sound_play(snd->impl);
 }
 
 void play_sound(const char *name) {
-	play_sound_internal(name, false);
+	play_sound_internal(name, false, 0);
+}
+
+void play_sound_cooldown(const char *name, int cooldown) {
+	play_sound_internal(name, false, cooldown);
 }
 
 void play_ui_sound(const char *name) {
-	play_sound_internal(name, true);
+	play_sound_internal(name, true, 0);
 }
 
 void play_loop(const char *name) {

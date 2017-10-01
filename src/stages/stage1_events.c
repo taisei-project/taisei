@@ -46,10 +46,20 @@ int cirno_snowflake_proj(Projectile *p, int time) {
 	if(time < 0)
 		return 1;
 
-	if(time < 200-20*global.diff)
+	int split_time = 200-20*global.diff;
+
+	if(time < split_time) {
 		p->pos += p->args[0];
-	else
+	} else {
+		if(time == split_time) {
+			play_sound_cooldown("shot_special1", 30);
+			create_particle1c("stain", p->pos, 0, GrowFadeAdd, timeout, 5)->angle = p->angle;
+			p->clr = mix_colors(p->clr, rgb(0.5, 0.5, 0.5), 0.5);
+		}
+
 		p->pos += cabs(p->args[0])*cexp(I*p->angle);
+	}
+
 	return 1;
 }
 
@@ -119,6 +129,8 @@ int cirno_pfreeze_frogs(Projectile *p, int t) {
 	if(t == 240) {
 		p->pos0 = p->pos;
 		p->args[0] = (1.8+0.2*global.diff)*cexp(I*2*M_PI*frand());
+		create_particle1c("stain", p->pos, 0, GrowFadeAdd, timeout, 30)->angle = p->angle;
+		play_sound("shot1");
 	}
 
 	if(t > 240)
@@ -226,7 +238,11 @@ void cirno_iceplosion0(Boss *c, int time) {
 		c->anirow = 1;
 	AT(30)
 		c->anirow = 0;
-	FROM_TO_SND("shot1_loop",20,30,2) {
+	AT(20) {
+		play_sound("shot_special1");
+	}
+
+	FROM_TO(20,30,2) {
 		int i;
 		int n = 8+global.diff;
 		for(i = 0; i < n; i++) {
@@ -255,7 +271,12 @@ void cirno_crystal_rain(Boss *c, int time) {
 	if(time < 0)
 		return;
 
-	PLAY_FOR("shot1_loop",0,499);
+	// PLAY_FOR("shot1_loop",0,499);
+
+	if(!(time % 10)) {
+		play_sound("shot1");
+	}
+
 	int hdiff = max(0, (int)global.diff - D_Normal);
 
 	if(frand() > 0.95-0.1*global.diff) {
@@ -272,7 +293,7 @@ void cirno_crystal_rain(Boss *c, int time) {
 		bool odd = (hdiff? (_i&1) : 0);
 		float n = (global.diff-1+hdiff*4 + odd)/2.0;
 
-		play_sound("shot1");
+		play_sound("shot_special1");
 		for(i = -n; i <= n; i++) {
 			create_projectile2c(odd? "plainball" : "bigball", c->pos, rgb(0.2,0.2,0.9), asymptotic, 2*cexp(I*carg(global.plr.pos-c->pos)+0.3*I*i), 2.3);
 		}
@@ -293,7 +314,15 @@ void cirno_iceplosion1(Boss *c, int time) {
 	if(time < 0)
 		GO_TO(c, VIEWPORT_W/2.0 + 100.0*I, 0.02);
 
-	FROM_TO_SND("shot1_loop",20,30,2) {
+	AT(20) {
+		play_sound("shot_special1");
+	}
+	AT(20)
+		c->anirow = 1;
+	AT(30)
+		c->anirow = 0;
+
+	FROM_TO(20,30,2) {
 		int i;
 		for(i = 0; i < 15+global.diff; i++) {
 			create_projectile2c("plainball", c->pos, rgb(0,0,0.5), asymptotic, (3+_i/3.0)*cexp(I*((2)*M_PI/8.0*i + (0.1+0.03*global.diff)*(1 - 2*frand()))), _i*0.7);
@@ -346,6 +375,10 @@ void cirno_icicle_fall(Boss *c, int time) {
 
 	GO_TO(c, VIEWPORT_W/2.0+120.0*I, 0.01);
 
+	AT(20)
+		c->anirow = 1;
+	AT(200)
+		c->anirow = 0;
 	FROM_TO(20,200,30-3*global.diff) {
 		play_sound("shot1");
 		for(float i = 2-0.2*global.diff; i < 5; i+=1./(1+global.diff)) {
@@ -405,6 +438,10 @@ void cirno_crystal_blizzard(Boss *c, int time) {
 		}
 	}
 
+	AT(330)
+		c->anirow = 1;
+	AT(700)
+		c->anirow = 0;
 	FROM_TO_SND("shot1_loop",330, 700, 1) {
 		GO_TO(c, global.plr.pos, 0.01);
 
@@ -610,14 +647,15 @@ int stage1_instantcircle(Enemy *e, int t) {
 	int i;
 
 	AT(150) {
-		play_sound("shot1");
-		for(i = 0; i < 20+2*global.diff; i++)
+		play_sound("shot_special1");
+		for(i = 0; i < 20+2*global.diff; i++) {
 			create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, 1.5*cexp(I*2*M_PI/(20.0+global.diff)*i), 2.0);
+		}
 	}
 
 	AT(170) {
-		play_sound("shot1");
 		if(global.diff > D_Easy) {
+			play_sound("shot_special1");
 			for(i = 0; i < 20+3*global.diff; i++)
 				create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, 3*cexp(I*2*M_PI/(20.0+global.diff)*i), 3.0);
 		}
