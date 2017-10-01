@@ -42,7 +42,7 @@ $prefix/data/
 
 Taisei stores all data in a platform-specific directory:
 
-* On **Windows**, this will probably be `%APPDATA%\Roaming\taisei`
+* On **Windows**, this will probably be `%APPDATA%\taisei`
 * On **macOS**, it's `$HOME/Library/Application Support/taisei`
 * On **Linux**, **\*BSD**, and most other **Unix**-like systems, it's `$XDG_DATA_HOME/taisei` or `$HOME/.local/share/taisei`
 
