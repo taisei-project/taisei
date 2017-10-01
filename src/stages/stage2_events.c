@@ -203,7 +203,7 @@ int stage2_accel_circle(Enemy *e, int t) {
 
 		int i;
 		for(i = 0; i < 6; i++) {
-			play_sound("sho1"); // XXX: this needs a different sound. shot_special1 seems too loud/excessive
+			play_sound("shot1"); // XXX: this needs a different sound. shot_special1 seems too loud/excessive
 			create_projectile2c("ball", e->pos, rgb(0.6,0.1,0.2), accelerated, 1.5*cexp(2.0*I*M_PI/6*i)+cexp(I*carg(global.plr.pos - e->pos)), -0.02*cexp(I*(2*M_PI/6*i+0.02*frand()*global.diff)));
 		}
 	}
