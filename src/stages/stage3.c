@@ -122,6 +122,31 @@ void stage3_fog(FBO *fbo) {
 	glUseProgram(0);
 }
 
+void stage3_glitch(FBO *fbo) {
+	Shader *shader = get_shader("glitch");
+
+	glColor4f(1,1,1,1);
+	float strength;
+
+	if(global.boss && global.boss->current && global.boss->current->type == AT_Spellcard && !strcmp(global.boss->name, "Scuttle")) {
+		strength = 0.05 * pow(max(0, (global.frames - global.boss->current->starttime) / (double)global.boss->current->timeout), 2.0);
+		log_debug("%f", strength);
+	} else {
+		strength = 0.0;
+	}
+
+	if(strength > 0) {
+		glUseProgram(shader->prog);
+		glUniform1f(uniloc(shader, "strength"), strength);
+		glUniform1i(uniloc(shader, "frames"), global.frames + tsrand() % 30);
+	} else {
+		glUseProgram(0);
+	}
+
+	draw_fbo_viewport(fbo);
+	glUseProgram(0);
+}
+
 void stage3_start(void) {
 	init_stage3d(&bgcontext);
 
@@ -151,6 +176,7 @@ void stage3_preload(void) {
 	preload_resources(RES_SHADER, RESF_DEFAULT,
 		"tunnel",
 		"zbuf_fog",
+		"glitch",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"scuttle",
@@ -321,6 +347,7 @@ void stage3_spellpractice_events(void) {
 }
 
 ShaderRule stage3_shaders[] = { stage3_fog, stage3_tunnel, NULL };
+ShaderRule stage3_postprocess[] = { stage3_glitch, NULL };
 
 StageProcs stage3_procs = {
 	.begin = stage3_start,
@@ -329,6 +356,7 @@ StageProcs stage3_procs = {
 	.draw = stage3_draw,
 	.event = stage3_events,
 	.shader_rules = stage3_shaders,
+	.postprocess_rules = stage3_postprocess,
 	.spellpractice_procs = &stage3_spell_procs,
 };
 
@@ -339,4 +367,5 @@ StageProcs stage3_spell_procs = {
 	.draw = stage3_draw,
 	.event = stage3_spellpractice_events,
 	.shader_rules = stage3_shaders,
+	.postprocess_rules = stage3_postprocess,
 };

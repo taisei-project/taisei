@@ -25,14 +25,20 @@ static PostprocessShaderUniformFuncPtr get_uniform_func(PostprocessShaderUniform
     return lists[type][size - 1];
 }
 
+typedef struct PostprocessLoadData {
+    PostprocessShader *list;
+    ResourceFlags resflags;
+} PostprocessLoadData;
+
 static void postprocess_load_callback(const char *key, const char *value, void *data) {
-    PostprocessShader **slist = data;
+    PostprocessLoadData *ldata = data;
+    PostprocessShader **slist = &ldata->list;
     PostprocessShader *current = *slist;
 
     if(!strcmp(key, "@shader")) {
         current = create_element((void**)slist, sizeof(PostprocessShader));
         current->uniforms = NULL;
-        current->shader = get_resource(RES_SHADER, value, RESF_PRELOAD | RESF_PERMANENT)->shader;
+        current->shader = get_resource(RES_SHADER, value, ldata->resflags)->shader;
         log_debug("Shader added: %s (prog: %u)", value, current->shader->prog);
         return;
     }
@@ -111,9 +117,13 @@ static void postprocess_load_callback(const char *key, const char *value, void *
     }
 }
 
-PostprocessShader* postprocess_load(const char *path) {
-    PostprocessShader *list = NULL;
-    parse_keyvalue_file_cb(path, postprocess_load_callback, &list);
+PostprocessShader* postprocess_load(const char *path, ResourceFlags flags) {
+    flags &= ~RESF_OPTIONAL;
+    PostprocessLoadData *ldata = calloc(1, sizeof(PostprocessLoadData));
+    ldata->resflags = flags;
+    parse_keyvalue_file_cb(path, postprocess_load_callback, ldata);
+    PostprocessShader *list = ldata->list;
+    free(ldata);
     return list;
 }
 
@@ -133,30 +143,55 @@ void postprocess_unload(PostprocessShader **list) {
     delete_all_elements((void**)list, delete_shader);
 }
 
-FBO* postprocess(PostprocessShader *ppshaders, FBO *primfbo, FBO *auxfbo, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw) {
-    FBO *fbos[] = { primfbo, auxfbo };
-
+void postprocess(PostprocessShader *ppshaders, FBO **primfbo, FBO **auxfbo, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw) {
     if(!ppshaders) {
-        return primfbo;
+        return;
     }
 
-    int fbonum = 1;
+    swap_fbos(primfbo, auxfbo);
+
     for(PostprocessShader *pps = ppshaders; pps; pps = pps->next) {
         Shader *s = pps->shader;
 
-        glBindFramebuffer(GL_FRAMEBUFFER, fbos[fbonum]->fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, (*primfbo)->fbo);
         glUseProgram(s->prog);
-        prepare(fbos[fbonum], s);
+
+        if(prepare) {
+            prepare(*primfbo, s);
+        }
 
         for(PostprocessShaderUniform *u = pps->uniforms; u; u = u->next) {
             u->func(u->loc, u->amount, u->values.v);
         }
 
-        fbonum = !fbonum;
-        draw(fbos[fbonum]);
+        swap_fbos(primfbo, auxfbo);
+        draw(*primfbo);
         glUseProgram(0);
     }
 
-    fbonum = !fbonum;
-    return fbos[fbonum];
+    swap_fbos(primfbo, auxfbo);
+}
+
+/*
+ *  Glue for resources api
+ */
+
+char* postprocess_path(const char *name) {
+    return strjoin(SHA_PATH_PREFIX, name, ".pp", NULL);
+}
+
+bool check_postprocess_path(const char *path) {
+    return strendswith(path, SHA_EXTENSION);
+}
+
+void* load_postprocess_begin(const char *path, unsigned int flags) {
+    return (void*)true;
+}
+
+void* load_postprocess_end(void *opaque, const char *path, unsigned int flags) {
+    return postprocess_load(path, flags);
+}
+
+void unload_postprocess(void *vlist) {
+    postprocess_unload((PostprocessShader**)&vlist);
 }

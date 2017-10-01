@@ -22,6 +22,7 @@ static const char *resource_type_names[] = {
 	"bgm",
 	"shader",
 	"model",
+	"postprocessing pipeline",
 };
 
 static inline ResourceHandler* get_handler(ResourceType type) {
@@ -351,6 +352,10 @@ void init_resources(void) {
 		RES_BGM, BGM_PATH_PREFIX, load_music_begin, load_music_end, unload_music, NULL, music_path, check_music_path, HT_DYNAMIC_SIZE
 	);
 
+	register_handler(
+		RES_POSTPROCESS, SHA_PATH_PREFIX, load_postprocess_begin, load_postprocess_end, unload_postprocess, NULL, postprocess_path, check_postprocess_path, HT_DYNAMIC_SIZE
+	);
+
 	main_thread_id = SDL_ThreadID();
 
 	if(!getenvint("TAISEI_NOASYNC", 0)) {
@@ -395,7 +400,7 @@ void load_resources(void) {
 	}
 
 	menu_preload();
-	resources.stage_postprocess = postprocess_load(SHA_PATH_PREFIX "postprocess.conf");
+	resources.stage_postprocess = postprocess_load(SHA_PATH_PREFIX "postprocess.conf", RESF_PERMANENT | RESF_PRELOAD);
 }
 
 void free_resources(bool all) {

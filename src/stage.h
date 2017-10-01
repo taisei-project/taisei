@@ -77,6 +77,7 @@ struct StageProcs {
 	StageProc draw;
 	StageProc event;
 	ShaderRule *shader_rules;
+	ShaderRule *postprocess_rules;
 	StageProcs *spellpractice_procs;
 };
 
