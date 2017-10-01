@@ -24,11 +24,11 @@ static void play_sound_internal(const char *name, bool unconditional, int cooldo
 
 	Sound *snd = get_sound(name);
 
-	if(!snd || (!unconditional && snd->lastplayframe + 3 >= global.frames) || snd->islooping) {
+	if(!snd || (!unconditional && snd->lastplayframe + 3 + cooldown >= global.frames) || snd->islooping) {
 		return;
 	}
 
-	snd->lastplayframe = global.frames + cooldown;
+	snd->lastplayframe = global.frames;
 	audio_backend_sound_play(snd->impl);
 }
 

@@ -689,7 +689,7 @@ int stage1_tritoss(Enemy *e, int t) {
 	}
 
 	FROM_TO(480, 800, 300) {
-		play_sound("shot1");
+		play_sound("shot_special1");
 		int i, n = 15 + global.diff*3;
 		for(i = 0; i < n; i++) {
 			create_projectile2c("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, 1.5*cexp(I*2*M_PI/n*i), 2.0);

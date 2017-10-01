@@ -56,7 +56,7 @@ int stage2_great_circle(Enemy *e, int t) {
 	FROM_TO(50,70,1)
 		e->args[0] *= 0.5;
 
-	FROM_TO(70, 190+global.diff*25, 5-global.diff/2) {
+	FROM_TO_SND("shot1_loop", 70, 190+global.diff*25, 5-global.diff/2) {
 		int n, c = 5+2*(global.diff>D_Normal);
 
 		const double partdist = 0.04*global.diff;
@@ -68,8 +68,10 @@ int stage2_great_circle(Enemy *e, int t) {
 			complex dir = cexp(I*(2*M_PI/c*n+partdist*(_i%c2-c2/2)+bunchdist*(_i/c2)));
 			create_projectile2c("rice", e->pos+30*dir, rgb(0.6,0.0,0.3), asymptotic, 1.5*dir, _i%5);
 
-			if(global.diff > D_Easy && _i%7 == 0)
+			if(global.diff > D_Easy && _i%7 == 0) {
+				play_sound("shot1");
 				create_projectile1c("bigball", e->pos+30*dir, rgb(0.3,0.0,0.6), linear, 1.7*dir*cexp(0.3*I*frand()));
+			}
 		}
 	}
 
@@ -102,6 +104,10 @@ int stage2_small_spin_circle(Enemy *e, int t) {
 		e->pos0 = e->pos;
 
 	FROM_TO(30,80+global.diff*5,5-global.diff/2) {
+		if(_i % 2) {
+			play_sound("shot1");
+		}
+
 		create_projectile1c("ball", e->pos, rgb(0.9,0.0,0.3), linear, pow(global.diff,0.7)*(conj(e->pos-VIEWPORT_W/2)/100 + ((1-2*e->dir)+3.0*I)));
 	}
 
@@ -122,6 +128,7 @@ int stage2_aim(Enemy *e, int t) {
 
 	AT(90) {
 		if(global.diff > D_Normal) {
+			play_sound("shot1");
 			create_projectile2c("plainball", e->pos, rgb(0.6,0.0,0.8), asymptotic, 5*cexp(I*carg(global.plr.pos-e->pos)), -1);
 			create_projectile1c("plainball", e->pos, rgb(0.2,0.0,0.1), linear, 3*cexp(I*carg(global.plr.pos-e->pos)));
 		}
@@ -143,6 +150,8 @@ int stage2_sidebox_trail(Enemy *e, int t) { // creal(a[0]): velocity, cimag(a[0]
 		e->args[0] += creal(e->args[1])*I;
 
 	FROM_TO(10,200,30-global.diff*4) {
+		play_sound_cooldown("shot1", 5);
+
 		float f = 0;
 		if(global.diff > D_Normal)
 			f = 0.03*global.diff*frand();
@@ -171,8 +180,10 @@ int stage2_flea(Enemy *e, int t) {
 
 
 	FROM_TO(10, 400, 30-global.diff*3-t/70) {
-		if(global.diff == D_Easy)
+		if(global.diff == D_Easy) {
+			play_sound("shot1");
 			create_projectile2c("flea", e->pos, rgb(0.3,0.2,1), asymptotic, 1.5*cexp(2.0*I*M_PI*frand()), 1.5);
+		}
 	}
 
 	return 1;
@@ -192,6 +203,7 @@ int stage2_accel_circle(Enemy *e, int t) {
 
 		int i;
 		for(i = 0; i < 6; i++) {
+			play_sound("sho1"); // XXX: this needs a different sound. shot_special1 seems too loud/excessive
 			create_projectile2c("ball", e->pos, rgb(0.6,0.1,0.2), accelerated, 1.5*cexp(2.0*I*M_PI/6*i)+cexp(I*carg(global.plr.pos - e->pos)), -0.02*cexp(I*(2*M_PI/6*i+0.02*frand()*global.diff)));
 		}
 	}
@@ -214,9 +226,11 @@ int wriggle_bug(Projectile *p, int t) {
 	p->pos += p->args[0];
 	p->angle = carg(p->args[0]);
 
-
-	if(t > 70 && frand() < 0.01)
+	if(t > 70 && frand() < 0.01) {
+		play_loop("shot1");
 		p->args[0] *= cexp(I*M_PI/3);
+		create_particle2c("flare", p->pos, 0, GrowFade, timeout, 15, 5);
+	}
 
 	return 1;
 }
@@ -228,7 +242,7 @@ void wriggle_small_storm(Boss *w, int time) {
 	if(time < 0)
 		return;
 
-	FROM_TO(0,400,5-global.diff) {
+	FROM_TO_SND("shot1_loop", 0,400,5-global.diff) {
 		create_projectile1c("rice", w->pos, rgb(1,0.5,0.2), wriggle_bug, 2*cexp(I*_i*2*M_PI/20));
 		create_projectile1c("rice", w->pos, rgb(1,0.5,0.2), wriggle_bug, 2*cexp(I*_i*2*M_PI/20+I*M_PI));
 	}
@@ -238,8 +252,10 @@ void wriggle_small_storm(Boss *w, int time) {
 
 	if(!(t%200)) {
 		int i;
-		for(i = 0; i < 10+global.diff; i++)
+		for(i = 0; i < 10+global.diff; i++) {
+			play_sound("shot_special1");
 			create_projectile2c("bigball", w->pos, rgb(0.1,0.3,0.0), asymptotic, 2*cexp(I*i*2*M_PI/(10+global.diff)), 2);
+		}
 	}
 }
 
@@ -276,6 +292,7 @@ void hina_cards1(Boss *h, int time) {
 		return;
 
 	FROM_TO(0, 500, 2-(global.diff > D_Normal)) {
+		play_sound_cooldown("shot1", 4);
 		create_projectile2c("card", h->pos+50*cexp(I*t/10), rgb(0.8,0.0,0.0),  asymptotic, (1.6+0.4*global.diff)*cexp(I*t/5.0), 3);
 		create_projectile2c("card", h->pos-50*cexp(I*t/10), rgb(0.0,0.0,0.8),  asymptotic, -(1.6+0.4*global.diff)*cexp(I*t/5.0), 3);
 	}
@@ -293,17 +310,17 @@ void hina_amulet(Boss *h, int time) {
 	TIMER(&t);
 
 	complex d = global.plr.pos - h->pos;
-	FROM_TO(0,200*(global.diff+0.5)/(D_Lunatic+0.5),1) {
-			float f = _i/30.0;
-			complex n = cexp(I*2*M_PI*f+I*carg(d)+0.7*time/200*I)/sqrt(0.5+global.diff);
+	FROM_TO_SND("shot1_loop", 0,200*(global.diff+0.5)/(D_Lunatic+0.5),1) {
+		float f = _i/30.0;
+		complex n = cexp(I*2*M_PI*f+I*carg(d)+0.7*time/200*I)/sqrt(0.5+global.diff);
 
-			float speed = 1.0 + 0.75 * max(0, (int)global.diff - D_Normal);
-			float accel = 1.0 + 1.20 * max(0, (int)global.diff - D_Normal);
+		float speed = 1.0 + 0.75 * max(0, (int)global.diff - D_Normal);
+		float accel = 1.0 + 1.20 * max(0, (int)global.diff - D_Normal);
 
-			complex p = h->pos+30*log(1+_i/2.0)*n;
+		complex p = h->pos+30*log(1+_i/2.0)*n;
 
-			create_projectile2c("ball", p, rgb(0.8,0,0), accelerated, speed * 2*n*I, accel * -0.01*n);
-			create_projectile2c(global.diff == D_Easy ? "ball" : "crystal", p, rgb(0.8,0,0.5), accelerated, speed * -2*n*I, accel * -0.01*n);
+		create_projectile2c("ball", p, rgb(0.8,0,0), accelerated, speed * 2*n*I, accel * -0.01*n);
+		create_projectile2c(global.diff == D_Easy ? "ball" : "crystal", p, rgb(0.8,0,0.5), accelerated, speed * -2*n*I, accel * -0.01*n);
 	}
 }
 
@@ -323,6 +340,7 @@ void hina_cards2(Boss *h, int time) {
 	AT(100) {
 		int i;
 		for(i = 0; i < 30; i++) {
+			play_sound("shot_special1");
 			create_projectile2c("bigball", h->pos, rgb(0.7, 0, 0.7), asymptotic, 2*cexp(I*2*M_PI*i/20.0), 3);
 		}
 	}
@@ -358,6 +376,7 @@ void hina_bad_pick(Boss *h, int time) {
 	GO_TO(h, VIEWPORT_W/SLOTS*((113*(time/500))%SLOTS+0.5)+ 100.0*I, 0.02);
 
 	FROM_TO(100, 500, 5) {
+		play_sound_cooldown("shot1", 4);
 
 		for(i = 1; i < SLOTS; i++) {
 			create_projectile1c("crystal", VIEWPORT_W/SLOTS*i, rgb(0.5,0,0.6), linear, 7.0*I);
@@ -376,6 +395,8 @@ void hina_bad_pick(Boss *h, int time) {
 	}
 
 	AT(200) {
+		play_sound("shot_special1");
+
 		int win = tsrand()%SLOTS;
 		for(i = 0; i < SLOTS; i++) {
 			if(i == win)
@@ -415,7 +436,7 @@ void hina_wheel(Boss *h, int time) {
 		return;
 	}
 
-	FROM_TO(0, 400, 5-(int)min(global.diff, D_Normal)) {
+	FROM_TO_SND("shot1_loop", 0, 400, 5-(int)min(global.diff, D_Normal)) {
 		int i;
 		float speed = 10;
 		if(time > 500)
