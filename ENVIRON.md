@@ -20,7 +20,7 @@ In addition to the variables listed here, those processed by our runtime depende
 
 
 * **TAISEI_STORAGE_PATH** *(default: unset)*: if set, overrides the default **storage directory** path. This is where Taisei saves your configuration, progress, screenshots and replays. Taisei also loads custom data from the `resources` subdirectory in there, if any, in addition to the stock assets. The custom resources shadow the default ones if the names clash. The default path is platform specific, and is equivalent to the return value of `SDL_GetPrefPath("", "taisei")`:
-    * On **Windows**, it's `%APPDATA%\Roaming\taisei`.
+    * On **Windows**, it's `%APPDATA%\taisei`.
     * On **macOS**, it's `$HOME/Library/Application Support/taisei`.
     * On **Linux**, **\*BSD**, and most other **Unix**-like systems, it's `$XDG_DATA_HOME/taisei` or `$HOME/.local/share/taisei`.
 
