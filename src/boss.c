@@ -532,7 +532,15 @@ void process_boss(Boss **pboss) {
 }
 
 void boss_death(Boss **boss) {
-	bool fleed = boss_get_final_attack(*boss)->type == AT_Move;
+	Attack *a = boss_get_final_attack(*boss);
+	bool fleed = false;
+
+	if(!a) {
+		// XXX: why does this happen?
+		log_debug("FIXME: boss had no final attacK?");
+	} else {
+		fleed = a->type == AT_Move;
+	}
 
 	if((*boss)->acount && !fleed) {
 		petal_explosion(35, (*boss)->pos);

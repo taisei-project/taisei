@@ -465,6 +465,8 @@ int hina_monty_slave(Enemy *s, int time) {
 	}
 
 	if(time > 60 && time < 720-140 + 20*(global.diff-D_Lunatic) && !(time % (int)(max(2 + (global.diff < D_Normal), (120 - 0.5 * time))))) {
+		play_loop("shot1_loop");
+
 		create_projectile2c("crystal", s->pos, rgb(0.5 + 0.5 * psin(time*0.2), 0.3, 1.0 - 0.5 * psin(time*0.2)),
 							asymptotic, 5*I + 1 * (sin(time) + I * cos(time)), 4);
 
@@ -546,14 +548,17 @@ void hina_monty(Boss *h, int time) {
 		bad_pos = tsrand() % 3;
 		do good_pos = tsrand() % 3; while(good_pos == bad_pos);
 
+		play_sound("laser1");
+
 		for(int i = 0; i < 2; ++i) {
 			int x = cwidth * (1 + i);
 			create_laserline_ab(x, x + VIEWPORT_H*I, 15, 30, 60, rgb(0.3, 1.0, 1.0));
 			create_laserline_ab(x, x + VIEWPORT_H*I, 20, 240, 600, rgb(1.0, 0.3, 1.0));
 		}
 
-		if(global.enemies)
+		if(global.enemies) {
 			global.enemies->hp = 0;
+		}
 	}
 
 	AT(120) {
@@ -562,10 +567,12 @@ void hina_monty(Boss *h, int time) {
 
 		complex o = cwidth * (0.5 + slave_pos) + VIEWPORT_H/2.0*I - 200.0*I;
 
+		play_sound("laser1");
 		create_laserline_ab(h->pos, o, 15, 30, 60, rgb(1.0, 0.3, 0.3));
 	}
 
 	AT(140) {
+		play_sound("shot_special1");
 		create_enemy4c(cwidth * (0.5 + slave_pos) + VIEWPORT_H/2.0*I - 200.0*I, ENEMY_IMMUNE, hina_monty_slave_draw, hina_monty_slave, 0, 0, 0, 1);
 	}
 
@@ -573,7 +580,14 @@ void hina_monty(Boss *h, int time) {
 		targetpos = cwidth * (0.5 + good_pos) + VIEWPORT_H/2.0*I - 200.0*I;
 	}
 
+	AT(240) {
+		// main laser barrier activation
+		play_sound("laser1");
+	}
+
 	FROM_TO(220, 360 + 60 * max(0, (double)global.diff - D_Easy), 60) {
+		play_sound("shot_special1");
+
 		float cnt = (2.0+global.diff) * 5;
 		for(int i = 0; i < cnt; i++) {
 			bool top = ((global.diff > D_Hard) && (_i % 2));
@@ -594,6 +608,8 @@ void hina_monty(Boss *h, int time) {
 		const int ncycles = (end - start) / cycle_dur;
 
 		FROM_TO_INT(start, start + cycle_dur * ncycles - 1, cycle_dur, burst_dur, step) {
+			play_sound("shot1");
+
 			double p = _ni / (double)(cnt-1);
 			double c = p;
 			double m = 0.60 + 0.01 * global.diff;
