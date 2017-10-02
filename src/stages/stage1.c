@@ -168,7 +168,7 @@ void stage1_start(void) {
 }
 
 void stage1_preload(void) {
-	preload_resources(RES_BGM, RESF_OPTIONAL, "bgm_stage1", "bgm_stage1boss", NULL);
+	preload_resources(RES_BGM, RESF_OPTIONAL, "stage1", "stage1boss", NULL);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
 		"stage1/cirnobg",
 		"stage1/fog",
@@ -199,7 +199,7 @@ void stage1_spellpractice_events(void) {
 		boss_start_attack(cirno, cirno->attacks);
 		global.boss = cirno;
 
-		start_bgm("bgm_stage1boss");
+		start_bgm("stage1boss");
 	}
 }
 

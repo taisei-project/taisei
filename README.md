@@ -79,7 +79,7 @@ BGM (as well as SFX) may be in `.wav`, `.flac`, or `.ogg` format; additionally
 you may try other formats such as `.mp3`, `.aiff`, `.mod`, `.xm`, etc. if your
 build of SDL2_mixer supports these formats.
 
-Complete music pack consists of 16 bgm\_\*.(ogg/wav/flac) files, where ‘\*’ means:
+The complete music pack consists of 16 tracks:
 ```
     credits     BGM for credits screen
     ending      BGM for ending

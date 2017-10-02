@@ -89,7 +89,7 @@ void main_menu_update_practice_menus(void) {
 }
 
 void begin_main_menu(MenuData *m) {
-	start_bgm("bgm_menu");
+	start_bgm("menu");
 }
 
 void create_main_menu(MenuData *m) {
@@ -230,6 +230,6 @@ void menu_preload(void) {
 	NULL);
 
 	preload_resources(RES_BGM, RESF_PERMANENT | RESF_OPTIONAL,
-		"bgm_menu",
+		"menu",
 	NULL);
 }

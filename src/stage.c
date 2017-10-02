@@ -231,7 +231,7 @@ void stage_gameover(void) {
 
 	if(interrupt_bgm) {
 		save_bgm();
-		start_bgm("bgm_gameover");
+		start_bgm("gameover");
 	}
 
 	menu_loop(&menu);

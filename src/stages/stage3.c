@@ -163,7 +163,7 @@ void stage3_start(void) {
 }
 
 void stage3_preload(void) {
-	preload_resources(RES_BGM, RESF_OPTIONAL, "bgm_stage3", "bgm_stage3boss", NULL);
+	preload_resources(RES_BGM, RESF_OPTIONAL, "stage3", "stage3boss", NULL);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
 		"stage3/border",
 		"stage3/spellbg1",
@@ -342,7 +342,7 @@ void stage3_spellpractice_events(void) {
 		boss_add_attack_from_info(global.boss, global.stage->spell, true);
 		boss_start_attack(global.boss, global.boss->attacks);
 
-		start_bgm("bgm_stage3boss");
+		start_bgm("stage3boss");
 	}
 }
 

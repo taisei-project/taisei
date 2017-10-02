@@ -237,7 +237,7 @@ void stage6_start(void) {
 }
 
 void stage6_preload(void) {
-	preload_resources(RES_BGM, RESF_OPTIONAL, "bgm_stage6", "bgm_stage6boss", NULL);
+	preload_resources(RES_BGM, RESF_OPTIONAL, "stage6", "stage6boss", NULL);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
 		"stage6/baryon_connector",
 		"stage6/baryon",
@@ -296,7 +296,7 @@ void stage6_spellpractice_events(void) {
 		boss_add_attack_from_info(global.boss, global.stage->spell, go);
 		boss_start_attack(global.boss, global.boss->attacks);
 
-		start_bgm("bgm_stage6boss");
+		start_bgm("stage6boss");
 	}
 
 	if(!global.boss) {

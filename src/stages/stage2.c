@@ -199,7 +199,7 @@ void stage2_start(void) {
 }
 
 void stage2_preload(void) {
-	preload_resources(RES_BGM, RESF_OPTIONAL, "bgm_stage2", "bgm_stage2boss", NULL);
+	preload_resources(RES_BGM, RESF_OPTIONAL, "stage2", "stage2boss", NULL);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
 		"stage2/border",
 		"stage2/leaves",
@@ -251,7 +251,7 @@ void stage2_spellpractice_events(void) {
 		boss_start_attack(hina, hina->attacks);
 		global.boss = hina;
 
-		start_bgm("bgm_stage2boss");
+		start_bgm("stage2boss");
 	}
 }
 

@@ -36,7 +36,7 @@ Dialog *stage5_boss_dialog(void) {
 		dadd_msg(d, Left, "What kind of story is that? You attacked me!");
 		dadd_msg(d, Right, "Listen, I don’t have time for this…");
 	}
-	dadd_msg(d, BGM, "bgm_stage5boss");
+	dadd_msg(d, BGM, "stage5boss");
 	return d;
 }
 
@@ -786,7 +786,7 @@ void stage5_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		start_bgm("bgm_stage5");
+		start_bgm("stage5");
 	}
 
 	FROM_TO(60, 120, 10)

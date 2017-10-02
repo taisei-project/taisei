@@ -252,7 +252,7 @@ void credits_free(void) {
 }
 
 void credits_preload(void) {
-	preload_resource(RES_BGM, "bgm_credits", RESF_OPTIONAL);
+	preload_resource(RES_BGM, "credits", RESF_OPTIONAL);
 	preload_resource(RES_SHADER, "tower_wall", RESF_DEFAULT);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
 		"stage6/sky",

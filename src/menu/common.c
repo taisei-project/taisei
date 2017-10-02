@@ -103,14 +103,14 @@ static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty
     }
 
     if(global.game_over == GAMEOVER_WIN && !info) {
-        start_bgm("bgm_ending");
+        start_bgm("ending");
         ending_loop();
-        start_bgm("bgm_credits");
+        start_bgm("credits");
         credits_loop();
         free_resources(false);
     }
 
-    start_bgm("bgm_menu");
+    start_bgm("menu");
     replay_destroy(&global.replay);
     main_menu_update_practice_menus();
     global.game_over = 0;

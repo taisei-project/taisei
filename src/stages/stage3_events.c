@@ -24,7 +24,7 @@ Dialog *stage3_dialog(void) {
 		dadd_msg(d, Left, "You mean very delusional?\nI usually step on you.");
 		dadd_msg(d, Right, "Then let me teach you a lesson –\nwith my danmaku more frightening\nthan giant feet!");
 	}
-	dadd_msg(d, BGM, "bgm_stage3boss");
+	dadd_msg(d, BGM, "stage3boss");
 
 	return d;
 }
@@ -943,7 +943,7 @@ void stage3_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		start_bgm("bgm_stage3");
+		start_bgm("stage3");
 	}
 
 	FROM_TO(160, 300, 10) {

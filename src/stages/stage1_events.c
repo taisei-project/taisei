@@ -30,7 +30,7 @@ Dialog *stage1_dialog(void) {
 	}
 
 	dadd_msg(d, Right, "I’ll freeze you where you stand!");
-	dadd_msg(d, BGM, "bgm_stage1boss");
+	dadd_msg(d, BGM, "stage1boss");
 
 	return d;
 }
@@ -708,7 +708,7 @@ void stage1_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		start_bgm("bgm_stage1");
+		start_bgm("stage1");
 	}
 
 	// opening. projectile bursts

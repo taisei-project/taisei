@@ -241,7 +241,7 @@ void stage4_start(void) {
 }
 
 void stage4_preload(void) {
-	preload_resources(RES_BGM, RESF_OPTIONAL, "bgm_stage4", "bgm_stage4boss", NULL);
+	preload_resources(RES_BGM, RESF_OPTIONAL, "stage4", "stage4boss", NULL);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
 		"stage2/border", // Stage 2 is intentional!
 		"stage4/kurumibg1",
@@ -295,7 +295,7 @@ void stage4_spellpractice_events(void) {
 		boss_add_attack_from_info(global.boss, global.stage->spell, true);
 		boss_start_attack(global.boss, global.boss->attacks);
 
-		start_bgm("bgm_stage4boss");
+		start_bgm("stage4boss");
 	}
 }
 

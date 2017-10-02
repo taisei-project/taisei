@@ -146,7 +146,7 @@ void stage5_start(void) {
 }
 
 void stage5_preload(void) {
-	preload_resources(RES_BGM, RESF_OPTIONAL, "bgm_stage5", "bgm_stage5boss", NULL);
+	preload_resources(RES_BGM, RESF_OPTIONAL, "stage5", "stage5boss", NULL);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
 		"stage5/noise",
 		"stage5/spell_bg",
@@ -179,7 +179,7 @@ void stage5_spellpractice_events(void) {
 		boss_add_attack_from_info(global.boss, global.stage->spell, true);
 		boss_start_attack(global.boss, global.boss->attacks);
 
-		start_bgm("bgm_stage5boss");
+		start_bgm("stage5boss");
 	}
 }
 

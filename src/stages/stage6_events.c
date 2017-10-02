@@ -33,7 +33,7 @@ Dialog *stage6_dialog(void) {
 	dadd_msg(d, Right, "Why do you have to be so ignorant?");
 	dadd_msg(d, Right, "…\nSorry, this is more important than you!");
 
-	dadd_msg(d, BGM, "bgm_stage6boss");
+	dadd_msg(d, BGM, "stage6boss");
 	return d;
 }
 
@@ -1323,7 +1323,7 @@ void stage6_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		start_bgm("bgm_stage6");
+		start_bgm("stage6");
 	}
 
 	AT(100)

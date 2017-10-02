@@ -32,7 +32,7 @@ Dialog *stage2_dialog(void) {
 		dadd_msg(d, Right, "No! Messing around with it\nis going to cause trouble!\nI don’t want trouble at my place.");
 	}
 
-	dadd_msg(d, BGM, "bgm_stage2boss");
+	dadd_msg(d, BGM, "stage2boss");
 	return d;
 }
 
@@ -681,7 +681,7 @@ void stage2_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		start_bgm("bgm_stage2");
+		start_bgm("stage2");
 	}
 
 	AT(300) {

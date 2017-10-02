@@ -40,7 +40,7 @@ Dialog *stage4_dialog(void) {
 		dadd_msg(d, Right, "So stop asking questions!\nSecrets are secret!\n…\nAnd I will beat you now!");
 	}
 
-	dadd_msg(d, BGM, "bgm_stage4boss");
+	dadd_msg(d, BGM, "stage4boss");
 	return d;
 }
 
@@ -1081,7 +1081,7 @@ void stage4_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		start_bgm("bgm_stage4");
+		start_bgm("stage4");
 	}
 
 	AT(70) {

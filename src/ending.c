@@ -132,7 +132,7 @@ void ending_draw(Ending *e) {
 }
 
 void ending_preload(void) {
-	preload_resource(RES_BGM, "bgm_ending", RESF_OPTIONAL);
+	preload_resource(RES_BGM, "ending", RESF_OPTIONAL);
 }
 
 void ending_loop(void) {

@@ -40,7 +40,7 @@ void start_replay(MenuData *menu, void *arg) {
 	}
 
 	replay_play(ictx->replay, mctx->pickedstage);
-	start_bgm("bgm_menu");
+	start_bgm("menu");
 }
 
 static void replayview_draw_stagemenu(MenuData*);
