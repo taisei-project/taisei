@@ -10,9 +10,9 @@ endif()
 
 find_package(PkgConfig REQUIRED)
 
-if(CMAKE_VERSION VERSION_LESS 3.3)
-	message(STATUS "  Version of cmake is too old, data packaging will not be used.")
-	set(DISABLE_ZIP ON)
+if(CMAKE_VERSION VERSION_LESS 3.3 AND PACKAGE_DATA)
+	message(WARNING "Your version of CMake is too old, so packaging of data will not be used. Upgrade CMake to at least version 3.3 to enable packaging or specify PACKAGE_DATA=OFF to avoid this warning.")
+	set(PACKAGE_DATA OFF PARENT_SCOPE)
 endif()
 
 if(LINK_TO_LIBGL)
@@ -28,8 +28,8 @@ pkg_check_modules(ZLIB zlib REQUIRED)
 pkg_check_modules(PNG libpng>=1.5 REQUIRED)
 pkg_check_modules(ZIP libzip>=1.0)
 
-if(NOT ZIP_FOUND)
-	message(STATUS "  No suitable libzip found, data packaging will not be used.")
+if(NOT ZIP_FOUND AND NOT DISABLE_ZIP)
+	message(WARNING "You have no suitable libzip, so packaging of data will not be used and ZIP support will be disabled. Install at least libzip 1.0 to enable ZIP support or specify DISABLE_ZIP=ON to avoid this warning.")
 	set(DISABLE_ZIP ON)
 endif()
 
