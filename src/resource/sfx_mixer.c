@@ -13,11 +13,8 @@
 #include "sfx.h"
 #include "audio_mixer.h"
 
-char* audio_mixer_sound_path(const char *prefix, const char *name);
-bool audio_mixer_check_sound_path(const char *path, bool isbgm);
-
 char* sound_path(const char *name) {
-	return audio_mixer_sound_path(SFX_PATH_PREFIX, name);
+	return audio_mixer_sound_path(SFX_PATH_PREFIX, name, true);
 }
 
 bool check_sound_path(const char *path) {
@@ -35,7 +32,7 @@ void* load_sound_begin(const char *path, unsigned int flags) {
 	Mix_Chunk *sound = Mix_LoadWAV_RW(rwops, true);
 
 	if(!sound) {
-		log_warn("Mix_LoadWAV() failed: %s", Mix_GetError());
+		log_warn("Mix_LoadWAV_RW() failed: %s", Mix_GetError());
 		return NULL;
 	}
 

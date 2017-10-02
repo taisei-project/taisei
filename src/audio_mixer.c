@@ -19,7 +19,7 @@
 
 static bool mixer_loaded = false;
 
-const char *mixer_audio_exts[] = { ".wav", ".ogg", ".mp3", ".mod", ".xm", ".s3m",
+const char *mixer_audio_exts[] = { ".bgm", ".wav", ".ogg", ".mp3", ".mod", ".xm", ".s3m",
 		".669", ".it", ".med", ".mid", ".flac", ".aiff", ".voc",
 		NULL };
 
@@ -109,8 +109,8 @@ void audio_backend_set_bgm_volume(float gain) {
 		Mix_VolumeMusic(gain * MIX_MAX_VOLUME);
 }
 
-char* audio_mixer_sound_path(const char *prefix, const char *name) {
-	for(const char **ext = mixer_audio_exts; *ext; ++ext) {
+char* audio_mixer_sound_path(const char *prefix, const char *name, bool isbgm) {
+	for(const char **ext = mixer_audio_exts + !isbgm; *ext; ++ext) {
 		char *p = strjoin(prefix, name, *ext, NULL);
 
 		if(vfs_query(p).exists) {
@@ -124,16 +124,31 @@ char* audio_mixer_sound_path(const char *prefix, const char *name) {
 }
 
 bool audio_mixer_check_sound_path(const char *path, bool isbgm) {
-	if(strstartswith(resource_util_filename(path), "bgm_") == isbgm) {
-		return strendswith_any(path, mixer_audio_exts);
-	}
+	return strendswith_any(path, mixer_audio_exts + !isbgm);
+}
 
-	return false;
+static Mix_Music *next_loop;
+
+static void mixer_music_finished(void) {
+	// XXX: there may be a race condition in here
+	// probably should protect next_loop with a mutex
+
+	log_debug("Intro stopped playing");
+
+	if(next_loop) {
+		if(Mix_PlayMusic(next_loop, -1) == -1) {
+			log_warn("Mix_PlayMusic() failed: %s", Mix_GetError());
+		} else {
+			next_loop = NULL;
+		}
+	}
 }
 
 void audio_backend_music_stop(void) {
-	if(mixer_loaded)
+	if(mixer_loaded) {
+		Mix_HookMusicFinished(NULL);
 		Mix_HaltMusic();
+	}
 }
 
 bool audio_backend_music_is_paused(void) {
@@ -145,20 +160,40 @@ bool audio_backend_music_is_playing(void) {
 }
 
 void audio_backend_music_resume(void) {
-	if(mixer_loaded)
+	if(mixer_loaded) {
+		Mix_HookMusicFinished(mixer_music_finished);
 		Mix_ResumeMusic();
+	}
 }
 
 void audio_backend_music_pause(void) {
-	if(mixer_loaded)
+	if(mixer_loaded) {
+		Mix_HookMusicFinished(NULL);
 		Mix_PauseMusic();
+	}
 }
 
 bool audio_backend_music_play(void *impl) {
 	if(!mixer_loaded)
 		return false;
 
-	bool result = (Mix_PlayMusic((Mix_Music*)impl, -1) != -1);
+	MixerInternalMusic *imus = impl;
+	Mix_Music *mmus;
+	int loops;
+
+	if(imus->intro) {
+		next_loop = imus->loop;
+		mmus = imus->intro;
+		loops = 0;
+		assert(next_loop != NULL);
+		Mix_HookMusicFinished(mixer_music_finished);
+	} else {
+		mmus = imus->loop;
+		loops = -1;
+		Mix_HookMusicFinished(NULL);
+	}
+
+	bool result = (Mix_PlayMusic(mmus, loops) != -1);
 
 	if(!result) {
 		log_warn("Mix_PlayMusic() failed: %s", Mix_GetError());
@@ -193,7 +228,6 @@ bool audio_backend_sound_loop(void *impl) {
 	}
 
 	return true;
-
 }
 
 bool audio_backend_sound_stop_loop(void *impl) {

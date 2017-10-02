@@ -10,20 +10,22 @@
 #include <SDL_mixer.h>
 
 #include "resource.h"
-#include "sfx.h"
-
-char* audio_mixer_sound_path(const char *prefix, const char *name);
-bool audio_mixer_check_sound_path(const char *path, bool isbgm);
+#include "bgm.h"
+#include "audio_mixer.h"
 
 char* music_path(const char *name) {
-	return audio_mixer_sound_path(BGM_PATH_PREFIX, name);
+	return audio_mixer_sound_path(BGM_PATH_PREFIX, name, true);
 }
 
 bool check_music_path(const char *path) {
 	return strstartswith(path, BGM_PATH_PREFIX) && audio_mixer_check_sound_path(path, true);
 }
 
-void* load_music_begin(const char *path, unsigned int flags) {
+static Mix_Music* load_mix_music(const char *path) {
+	if(!path) {
+		return NULL;
+	}
+
 	SDL_RWops *rwops = vfs_open(path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
 	if(!rwops) {
@@ -38,8 +40,35 @@ void* load_music_begin(const char *path, unsigned int flags) {
 		return NULL;
 	}
 
+	return music;
+}
+
+void* load_music_begin(const char *path, unsigned int flags) {
 	Music *mus = calloc(1, sizeof(Music));
-	mus->impl = music;
+	MixerInternalMusic *imus = calloc(1, sizeof(MixerInternalMusic));
+	mus->impl = imus;
+
+	if(strendswith(path, ".bgm")) {
+		Hashtable *bgm = parse_keyvalue_file(path, 8);
+
+		if(!bgm) {
+			log_warn("Failed to parse bgm config '%s'", path);
+		} else {
+			imus->intro = load_mix_music(hashtable_get_string(bgm, "intro"));
+			imus->loop = load_mix_music(hashtable_get_string(bgm, "loop"));
+			hashtable_foreach(bgm, hashtable_iter_free_data, NULL);
+			hashtable_free(bgm);
+		}
+	} else {
+		imus->loop = load_mix_music(path);
+	}
+
+	if(!imus->loop) {
+		assert(imus->intro == NULL);
+		free(imus);
+		mus = NULL;
+		log_warn("Failed to load bgm '%s'", path);
+	}
 
 	return mus;
 }
@@ -50,6 +79,9 @@ void* load_music_end(void *opaque, const char *path, unsigned int flags) {
 
 void unload_music(void *vmus) {
 	Music *mus = vmus;
-	Mix_FreeMusic((Mix_Music*)mus->impl);
+	MixerInternalMusic *imus = mus->impl;
+	Mix_FreeMusic(imus->intro);
+	Mix_FreeMusic(imus->loop);
+	free(mus->impl);
 	free(mus);
 }
