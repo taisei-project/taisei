@@ -30,9 +30,18 @@ static void vfs_tls_free(void *vtls) {
 
 static vfs_tls_t* vfs_tls_get(void) {
     if(vfs_tls_id) {
-        return SDL_TLSGet(vfs_tls_id);
+        vfs_tls_t *tls = SDL_TLSGet(vfs_tls_id);
+
+        if(!tls) {
+            SDL_TLSSet(vfs_tls_id, calloc(1, sizeof(vfs_tls_t)), vfs_tls_free);
+            tls = SDL_TLSGet(vfs_tls_id);
+        }
+
+        assert(tls != NULL);
+        return tls;
     }
 
+    assert(vfs_tls_fallback != NULL);
     return vfs_tls_fallback;
 }
 
@@ -43,7 +52,6 @@ void vfs_init(void) {
     vfs_tls_id = SDL_TLSCreate();
 
     if(vfs_tls_id) {
-        SDL_TLSSet(vfs_tls_id, calloc(1, sizeof(vfs_tls_t)), vfs_tls_free);
         vfs_tls_fallback = NULL;
     } else {
         log_warn("SDL_TLSCreate(): failed: %s", SDL_GetError());
