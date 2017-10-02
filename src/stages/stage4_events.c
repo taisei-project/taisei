@@ -1081,7 +1081,7 @@ void stage4_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		start_bgm("stage4");
+		stage_start_bgm("stage4");
 	}
 
 	AT(70) {

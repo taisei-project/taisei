@@ -89,8 +89,6 @@ typedef struct StageInfo {
 	char *subtitle;
 	AttackInfo *spell;
 	Difficulty difficulty;
-	Color titleclr;
-	Color bosstitleclr;
 
 	// Do NOT access this directly!
 	// Use stage_get_progress or stage_get_progress_from_info, which will lazy-initialize it and pick the correct offset.
@@ -115,6 +113,8 @@ void stage_pause(void);
 void stage_gameover(void);
 
 void stage_clear_hazards(bool force);
+
+void stage_start_bgm(const char *bgm);
 
 #include "stages/stage1.h"
 #include "stages/stage2.h"

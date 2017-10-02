@@ -708,7 +708,7 @@ void stage1_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		start_bgm("stage1");
+		stage_start_bgm("stage1");
 	}
 
 	// opening. projectile bursts

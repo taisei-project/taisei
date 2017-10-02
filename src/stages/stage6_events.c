@@ -1323,7 +1323,7 @@ void stage6_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		start_bgm("stage6");
+		stage_start_bgm("stage6");
 	}
 
 	AT(100)

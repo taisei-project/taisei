@@ -786,7 +786,7 @@ void stage5_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		start_bgm("stage5");
+		stage_start_bgm("stage5");
 	}
 
 	FROM_TO(60, 120, 10)

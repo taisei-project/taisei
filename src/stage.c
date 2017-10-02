@@ -26,7 +26,7 @@
 static size_t numstages = 0;
 StageInfo *stages = NULL;
 
-static void add_stage(uint16_t id, StageProcs *procs, StageType type, const char *title, const char *subtitle, AttackInfo *spell, Difficulty diff, Color titleclr, Color bosstitleclr) {
+static void add_stage(uint16_t id, StageProcs *procs, StageType type, const char *title, const char *subtitle, AttackInfo *spell, Difficulty diff) {
 	++numstages;
 	stages = realloc(stages, numstages * sizeof(StageInfo));
 	StageInfo *stg = stages + (numstages - 1);
@@ -39,12 +39,10 @@ static void add_stage(uint16_t id, StageProcs *procs, StageType type, const char
 	stralloc(&stg->subtitle, subtitle);
 	stg->spell = spell;
 	stg->difficulty = diff;
-	stg->titleclr = titleclr;
-	stg->bosstitleclr = bosstitleclr;
 }
 
 static void end_stages(void) {
-	add_stage(0, NULL, 0, NULL, NULL, NULL, 0, 0, 0);
+	add_stage(0, NULL, 0, NULL, NULL, NULL, 0);
 }
 
 static void add_spellpractice_stages(int *spellnum, bool (*filter)(AttackInfo*), uint16_t spellbits) {
@@ -67,7 +65,7 @@ static void add_spellpractice_stages(int *spellnum, bool (*filter)(AttackInfo*),
 					char *title = strfmt("Spell %d", ++(*spellnum));
 					char *subtitle = strjoin(a->name, " ~ ", difficulty_name(diff), NULL);
 
-					add_stage(id, s->procs->spellpractice_procs, STAGE_SPELL, title, subtitle, a, diff, 0, 0);
+					add_stage(id, s->procs->spellpractice_procs, STAGE_SPELL, title, subtitle, a, diff);
 					s = stages + i; // stages just got realloc'd, so we must update the pointer
 
 					free(title);
@@ -89,13 +87,13 @@ static bool spellfilter_extra(AttackInfo *spell) {
 void stage_init_array(void) {
 	int spellnum = 0;
 
-//           id  procs          type         title      subtitle                       spells                       diff   titleclr      bosstitleclr
-	add_stage(1, &stage1_procs, STAGE_STORY, "Stage 1", "Misty Lake",                  (AttackInfo*)&stage1_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
-	add_stage(2, &stage2_procs, STAGE_STORY, "Stage 2", "Walk Along the Border",       (AttackInfo*)&stage2_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
-	add_stage(3, &stage3_procs, STAGE_STORY, "Stage 3", "Through the Tunnel of Light", (AttackInfo*)&stage3_spells, D_Any, rgb(1, 1, 1), rgb(0, 0, 0));
-	add_stage(4, &stage4_procs, STAGE_STORY, "Stage 4", "Forgotten Mansion",           (AttackInfo*)&stage4_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
-	add_stage(5, &stage5_procs, STAGE_STORY, "Stage 5", "Climbing the Tower of Babel", (AttackInfo*)&stage5_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
-	add_stage(6, &stage6_procs, STAGE_STORY, "Stage 6", "Roof of the World",           (AttackInfo*)&stage6_spells, D_Any, rgb(1, 1, 1), rgb(1, 1, 1));
+//           id  procs          type         title      subtitle                       spells                       diff
+	add_stage(1, &stage1_procs, STAGE_STORY, "Stage 1", "Misty Lake",                  (AttackInfo*)&stage1_spells, D_Any);
+	add_stage(2, &stage2_procs, STAGE_STORY, "Stage 2", "Walk Along the Border",       (AttackInfo*)&stage2_spells, D_Any);
+	add_stage(3, &stage3_procs, STAGE_STORY, "Stage 3", "Through the Tunnel of Light", (AttackInfo*)&stage3_spells, D_Any);
+	add_stage(4, &stage4_procs, STAGE_STORY, "Stage 4", "Forgotten Mansion",           (AttackInfo*)&stage4_spells, D_Any);
+	add_stage(5, &stage5_procs, STAGE_STORY, "Stage 5", "Climbing the Tower of Babel", (AttackInfo*)&stage5_spells, D_Any);
+	add_stage(6, &stage6_procs, STAGE_STORY, "Stage 6", "Roof of the World",           (AttackInfo*)&stage6_spells, D_Any);
 
 	// generate spellpractice stages
 	add_spellpractice_stages(&spellnum, spellfilter_normal, STAGE_SPELL_BIT);
@@ -375,7 +373,7 @@ static void stage_logic(void) {
 
 	// BGM handling
 	if(global.dialog && global.dialog->messages[global.dialog->pos].side == BGM) {
-		start_bgm(global.dialog->messages[global.dialog->pos].msg);
+		stage_start_bgm(global.dialog->messages[global.dialog->pos].msg);
 		page_dialog(&global.dialog);
 	}
 }
@@ -460,16 +458,18 @@ static void stage_preload(void) {
 }
 
 static void display_stage_title(StageInfo *info) {
-	stagetext_add(info->title,    VIEWPORT_W/2 + I * (VIEWPORT_H/2-40), AL_Center, _fonts.mainmenu, info->titleclr, 50, 85, 35, 35);
-	stagetext_add(info->subtitle, VIEWPORT_W/2 + I * (VIEWPORT_H/2),    AL_Center, _fonts.standard, info->titleclr, 60, 85, 35, 35);
+	stagetext_add(info->title,    VIEWPORT_W/2 + I * (VIEWPORT_H/2-40), AL_Center, _fonts.mainmenu, rgb(1, 1, 1), 50, 85, 35, 35);
+	stagetext_add(info->subtitle, VIEWPORT_W/2 + I * (VIEWPORT_H/2),    AL_Center, _fonts.standard, rgb(1, 1, 1), 60, 85, 35, 35);
+
+}
+
+void stage_start_bgm(const char *bgm) {
+	start_bgm(bgm);
 
 	if(current_bgm.title && current_bgm.started_at >= 0) {
 		char txt[strlen(current_bgm.title) + 6];
-		strcpy(txt, "BGM: ");
-		strcat(txt, current_bgm.title);
-
-		stagetext_add(txt, VIEWPORT_W-15 + I * (VIEWPORT_H-20), AL_Right, _fonts.standard,
-			current_bgm.isboss ? info->bosstitleclr : info->titleclr, 70, 85, 35, 35);
+		snprintf(txt, sizeof(txt), "BGM: %s", current_bgm.title);
+		stagetext_add(txt, VIEWPORT_W-15 + I * (VIEWPORT_H-20), AL_Right, _fonts.standard, rgb(1, 1, 1), 30, 85, 35, 35);
 	}
 }
 
