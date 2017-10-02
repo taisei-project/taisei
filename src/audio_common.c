@@ -122,6 +122,8 @@ void stop_bgm(bool force) {
 		return;
 	}
 
+	current_bgm.started_at = -1;
+
 	if(audio_backend_music_is_playing() && !audio_backend_music_is_paused()) {
 		if(force) {
 			audio_backend_music_stop();

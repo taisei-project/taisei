@@ -464,7 +464,11 @@ static void display_stage_title(StageInfo *info) {
 	stagetext_add(info->subtitle, VIEWPORT_W/2 + I * (VIEWPORT_H/2),    AL_Center, _fonts.standard, info->titleclr, 60, 85, 35, 35);
 
 	if(current_bgm.title && current_bgm.started_at >= 0) {
-		stagetext_add(current_bgm.title, VIEWPORT_W-15 + I * (VIEWPORT_H-20), AL_Right, _fonts.standard,
+		char txt[strlen(current_bgm.title) + 6];
+		strcpy(txt, "BGM: ");
+		strcat(txt, current_bgm.title);
+
+		stagetext_add(txt, VIEWPORT_W-15 + I * (VIEWPORT_H-20), AL_Right, _fonts.standard,
 			current_bgm.isboss ? info->bosstitleclr : info->titleclr, 70, 85, 35, 35);
 	}
 }
