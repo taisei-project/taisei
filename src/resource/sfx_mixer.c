@@ -36,8 +36,17 @@ void* load_sound_begin(const char *path, unsigned int flags) {
 		return NULL;
 	}
 
+	char resname[strlen(path) - sizeof(SFX_PATH_PREFIX) + 1];
+	strcpy(resname, path + sizeof(SFX_PATH_PREFIX) - 1);
+	char *dot = strrchr(resname, '.');
+	assert(dot != NULL);
+	*dot = 0;
+
+	Mix_VolumeChunk(sound, get_default_sfx_volume(resname));
+	log_debug("%s volume: %i", resname, Mix_VolumeChunk(sound, -1));
+
 	Sound *snd = calloc(1, sizeof(Sound));
-	snd->impl = calloc(1,sizeof(MixerInternalSound));
+	snd->impl = calloc(1, sizeof(MixerInternalSound));
 	((MixerInternalSound*)snd->impl)->ch = sound;
 	((MixerInternalSound*)snd->impl)->loopchan = -1;
 	return snd;

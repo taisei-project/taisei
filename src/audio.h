@@ -12,6 +12,7 @@
 #include "resource/bgm.h"
 
 #define LOOPTIMEOUTFRAMES 10
+#define DEFAULT_SFX_VOLUME 100
 
 typedef struct CurrentBGM {
     char *name;
@@ -35,7 +36,6 @@ void audio_backend_music_stop(void);
 void audio_backend_music_pause(void);
 bool audio_backend_music_play(void *impl);
 bool audio_backend_sound_play(void *impl);
-
 bool audio_backend_sound_loop(void *impl);
 bool audio_backend_sound_stop_loop(void *impl);
 
@@ -49,6 +49,8 @@ void play_ui_sound(const char *name);
 void reset_sounds(void);
 
 void update_sounds(void); // checks if loops need to be stopped
+
+int get_default_sfx_volume(const char *sfx);
 
 Sound* get_sound(const char *name);
 Music* get_music(const char *music);

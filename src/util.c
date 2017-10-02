@@ -475,7 +475,7 @@ Hashtable* parse_keyvalue_stream(SDL_RWops *strm, size_t tablesize) {
     Hashtable *ht = hashtable_new_stringkeys(tablesize);
 
     if(!parse_keyvalue_stream_cb(strm, (KVCallback)kvcallback_hashtable, ht)) {
-        free(ht);
+        hashtable_free(ht);
         ht = NULL;
     }
 
@@ -486,7 +486,7 @@ Hashtable* parse_keyvalue_file(const char *filename, size_t tablesize) {
     Hashtable *ht = hashtable_new_stringkeys(tablesize);
 
     if(!parse_keyvalue_file_cb(filename, (KVCallback)kvcallback_hashtable, ht)) {
-        free(ht);
+        hashtable_free(ht);
         ht = NULL;
     }
 

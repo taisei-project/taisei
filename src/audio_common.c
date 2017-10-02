@@ -15,6 +15,7 @@
 
 static char *saved_bgm;
 static Hashtable *bgm_descriptions;
+static Hashtable *sfx_volumes;
 CurrentBGM current_bgm = { .name = NULL };
 
 static void play_sound_internal(const char *name, bool unconditional, int cooldown) {
@@ -104,9 +105,25 @@ static void bgm_cfg_volume_callback(ConfigIndex idx, ConfigValue v) {
 	audio_backend_set_bgm_volume(config_set_float(idx, v.f));
 }
 
-static void load_bgm_descriptions(void) {
+static void store_sfx_volume(const char *key, const char *val, Hashtable *ht) {
+	int vol = atoi(val);
+
+	if(vol < 0 || vol > 128) {
+		log_warn("Volume %i for sfx %s is out of range; must be within [0, 128]", vol, key);
+		vol = vol < 0 ? 0 : 128;
+	}
+
+	log_debug("Default volume for %s is now %i", key, vol);
+
+	if(vol != DEFAULT_SFX_VOLUME) {
+		hashtable_set_string(ht, key, (void*)(intptr_t)vol);
+	}
+}
+
+static void load_config_files(void) {
 	bgm_descriptions = parse_keyvalue_file(BGM_PATH_PREFIX "bgm.conf", HT_DYNAMIC_SIZE);
-	return;
+	sfx_volumes = hashtable_new_stringkeys(HT_DYNAMIC_SIZE);
+	parse_keyvalue_file_cb(SFX_PATH_PREFIX "volumes.conf", (KVCallback)store_sfx_volume, sfx_volumes);
 }
 
 static inline char* get_bgm_desc(char *name) {
@@ -118,6 +135,16 @@ static inline char* get_bgm_desc(char *name) {
 	}
 
 	return bgm_descriptions ? (char*)hashtable_get_string(bgm_descriptions, name) : NULL;
+}
+
+int get_default_sfx_volume(const char *sfx) {
+	void *v = hashtable_get_string(sfx_volumes, sfx);
+
+	if(v != NULL) {
+		return (intptr_t)v;
+	}
+
+	return DEFAULT_SFX_VOLUME;
 }
 
 void resume_bgm(void) {
@@ -201,8 +228,8 @@ void start_bgm(const char *name) {
 }
 
 void audio_init(void) {
+	load_config_files();
 	audio_backend_init();
-	load_bgm_descriptions();
 	config_set_callback(CONFIG_SFX_VOLUME, sfx_cfg_volume_callback);
 	config_set_callback(CONFIG_BGM_VOLUME, bgm_cfg_volume_callback);
 }
@@ -213,5 +240,11 @@ void audio_shutdown(void) {
 	if(bgm_descriptions) {
 		hashtable_foreach(bgm_descriptions, hashtable_iter_free_data, NULL);
 		hashtable_free(bgm_descriptions);
+		bgm_descriptions = NULL;
+	}
+
+	if(sfx_volumes) {
+		hashtable_free(sfx_volumes);
+		sfx_volumes = NULL;
 	}
 }
