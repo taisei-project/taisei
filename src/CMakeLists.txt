@@ -184,6 +184,11 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug" OR "${CMAKE_BUILD_TYPE}" STREQUAL "Rel
 	set(DEBUG_BUILD TRUE)
 endif()
 
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Release" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
+	# "Release build" is a build where ${RELEASE_FLAGS} are used.
+	set(RELEASE_BUILD TRUE)
+endif()
+
 if(DEBUG_USE_UBSAN AND DEFINED DEBUG_BUILD)
 	CHECK_AND_SET_FLAGS(COMPILER_SUPPORTS_UBSAN "-fsanitize=undefined" DEBUG_FLAGS "-fsanitize=undefined")
 endif()
@@ -192,7 +197,7 @@ if(DEBUG_USE_ASAN AND DEFINED DEBUG_BUILD)
 	CHECK_AND_SET_FLAGS(COMPILER_SUPPORTS_ASAN "-fsanitize=address" DEBUG_FLAGS "-fsanitize=address")
 endif()
 
-if(RELEASE_USE_LTO AND NOT DEFINED BEBUG_BUILD)
+if(RELEASE_USE_LTO AND DEFINED RELEASE_BUILD)
 	CHECK_AND_SET_FLAGS(COMPILER_SUPPORTS_LTO "-flto" RELEASE_FLAGS)
 endif()
 
@@ -247,12 +252,6 @@ if(WIN32)
 	string(REPLACE "gcc" "windres" CMAKE_RC_COMPILER_INIT ${CMAKE_C_COMPILER})
 	enable_language(RC)
 	set(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> -O coff -o <OBJECT> <SOURCE>")
-
-	if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-		set(RELEASE_BUILD TRUE)
-	endif()
-
-	# DEBUG_BUILD is also used in the template and is defined above
 
 	configure_file(
 		"${CMAKE_CURRENT_SOURCE_DIR}/taisei.rc.in"
