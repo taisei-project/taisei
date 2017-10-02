@@ -110,6 +110,13 @@ static void load_bgm_descriptions(void) {
 }
 
 static inline char* get_bgm_desc(char *name) {
+	Music *music = get_music(name);
+	assert(music != NULL);
+
+	if(music->title) {
+		return music->title;
+	}
+
 	return bgm_descriptions ? (char*)hashtable_get_string(bgm_descriptions, name) : NULL;
 }
 

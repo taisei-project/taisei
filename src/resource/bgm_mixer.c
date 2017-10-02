@@ -56,6 +56,12 @@ void* load_music_begin(const char *path, unsigned int flags) {
 		} else {
 			imus->intro = load_mix_music(hashtable_get_string(bgm, "intro"));
 			imus->loop = load_mix_music(hashtable_get_string(bgm, "loop"));
+			mus->title = hashtable_get_string(bgm, "title");
+
+			if(mus->title) {
+				mus->title = strdup(mus->title);
+			}
+
 			hashtable_foreach(bgm, hashtable_iter_free_data, NULL);
 			hashtable_free(bgm);
 		}
@@ -83,5 +89,6 @@ void unload_music(void *vmus) {
 	Mix_FreeMusic(imus->intro);
 	Mix_FreeMusic(imus->loop);
 	free(mus->impl);
+	free(mus->title);
 	free(mus);
 }

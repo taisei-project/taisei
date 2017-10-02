@@ -11,7 +11,7 @@
 #include <stdbool.h>
 
 typedef struct Music {
-    // can put some meta properties in here
+    char *title;
     void *impl;
 } Music;
 
