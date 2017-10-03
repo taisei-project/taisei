@@ -227,19 +227,32 @@ void stage_gameover(void) {
 	MenuData menu;
 	create_gameover_menu(&menu);
 
+	// XXX: The save_bgm and restore_bgm code is broken.
+	// Disabled it for now, as we don't have a gameover BGM yet
+	// When we do, it needs to be fixed.
+	// It should be probably implemented by the backend, it has a better idea
+	// about how to manage its own state than the audio frontend code.
+
+	/*
 	bool interrupt_bgm = (global.stage->type != STAGE_SPELL);
 
 	if(interrupt_bgm) {
 		save_bgm();
 		start_bgm("gameover");
 	}
+	*/
 
+	stop_bgm(false);
 	stop_looping_sounds();
 	menu_loop(&menu);
 
+	/*
 	if(interrupt_bgm) {
 		restore_bgm();
 	}
+	*/
+
+	resume_bgm();
 }
 
 bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {

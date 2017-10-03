@@ -59,7 +59,5 @@ Music* get_music(const char *music);
 void start_bgm(const char *name);
 void stop_bgm(bool force);
 void resume_bgm(void);
-void save_bgm(void);
-void restore_bgm(void);
-
-
+void save_bgm(void); // XXX: this is broken
+void restore_bgm(void); // XXX: this is broken

@@ -182,11 +182,12 @@ void stop_bgm(bool force) {
 }
 
 void save_bgm(void) {
-	// Deal with consequent saves without restore.
+	// XXX: this is broken
 	stralloc(&saved_bgm, current_bgm.name);
 }
 
 void restore_bgm(void) {
+	// XXX: this is broken
 	start_bgm(saved_bgm);
 	free(saved_bgm);
 	saved_bgm = NULL;
