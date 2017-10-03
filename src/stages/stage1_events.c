@@ -164,9 +164,9 @@ void cirno_perfect_freeze(Boss *c, int time) {
 
 	int d = max(0, global.diff - D_Normal);
 	AT(160-50*d)
-		c->anirow = 1;
+		c->ani.stdrow = 1;
 	AT(220+30*d)
-		c->anirow = 0;
+		c->ani.stdrow = 0;
 	FROM_TO_SND("shot1_loop", 160 - 50*d, 220 + 30*d, 6-global.diff/2) {
 		float r1, r2;
 
@@ -235,9 +235,9 @@ void cirno_iceplosion0(Boss *c, int time) {
 		return;
 
 	AT(20)
-		c->anirow = 1;
+		c->ani.stdrow = 1;
 	AT(30)
-		c->anirow = 0;
+		c->ani.stdrow = 0;
 	AT(20) {
 		play_sound("shot_special1");
 	}
@@ -285,9 +285,9 @@ void cirno_crystal_rain(Boss *c, int time) {
 	}
 
 	AT(100)
-		c->anirow = 1;
+		c->ani.stdrow = 1;
 	AT(400)
-		c->anirow = 0;
+		c->ani.stdrow = 0;
 	FROM_TO(100, 400, 120-20*global.diff - 10 * hdiff) {
 		float i;
 		bool odd = (hdiff? (_i&1) : 0);
@@ -318,9 +318,9 @@ void cirno_iceplosion1(Boss *c, int time) {
 		play_sound("shot_special1");
 	}
 	AT(20)
-		c->anirow = 1;
+		c->ani.stdrow = 1;
 	AT(30)
-		c->anirow = 0;
+		c->ani.stdrow = 0;
 
 	FROM_TO(20,30,2) {
 		int i;
@@ -468,7 +468,7 @@ void cirno_snow_halation(Boss *c, int time) {
 	AT(60) {
 		center = global.plr.pos;
 		rotation = (M_PI/2.0) * (1 + time / 300);
-		c->anirow = 1;
+		c->ani.stdrow = 1;
 	}
 
 	const int interval = 3;
@@ -487,7 +487,7 @@ void cirno_snow_halation(Boss *c, int time) {
 	}
 
 	AT(80 + interval * projs/2) {
-		c->anirow = 0;
+		c->ani.stdrow = 0;
 	}
 }
 
@@ -522,9 +522,9 @@ void cirno_icicle_fall(Boss *c, int time) {
 	GO_TO(c, VIEWPORT_W/2.0+120.0*I, 0.01);
 
 	AT(20)
-		c->anirow = 1;
+		c->ani.stdrow = 1;
 	AT(200)
-		c->anirow = 0;
+		c->ani.stdrow = 0;
 	FROM_TO(20,200,30-3*global.diff) {
 		play_sound("shot1");
 		for(float i = 2-0.2*global.diff; i < 5; i+=1./(1+global.diff)) {
@@ -585,9 +585,9 @@ void cirno_crystal_blizzard(Boss *c, int time) {
 	}
 
 	AT(330)
-		c->anirow = 1;
+		c->ani.stdrow = 1;
 	AT(700)
-		c->anirow = 0;
+		c->ani.stdrow = 0;
 	FROM_TO_SND("shot1_loop",330, 700, 1) {
 		GO_TO(c, global.plr.pos, 0.01);
 

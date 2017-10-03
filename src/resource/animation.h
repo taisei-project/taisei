@@ -17,7 +17,7 @@ typedef struct Animation {
 	int cols;
 
 	int w;
-    int h;
+	int h;
 
 	int speed;
 
@@ -31,8 +31,8 @@ void* load_animation_end(void *opaque, const char *filename, unsigned int flags)
 
 Animation *get_ani(const char *name);
 
-void draw_animation(float x, float y, int row, const char *name);
-void draw_animation_p(float x, float y, int row, Animation *ani);
+void draw_animation(float x, float y, int col, int row, const char *name);
+void draw_animation_p(float x, float y, int col, int row, Animation *ani);
 
 #define ANI_PATH_PREFIX TEX_PATH_PREFIX
 #define ANI_EXTENSION ".ani"

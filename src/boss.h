@@ -10,7 +10,7 @@
 
 #include "util.h"
 #include "difficulty.h"
-#include "resource/animation.h"
+#include "aniplayer.h"
 #include "color.h"
 
 enum {
@@ -103,9 +103,8 @@ typedef struct Boss {
 
 	int acount;
 
-	Animation *ani;
+	AniPlayer ani;
 	Texture *dialog; // Used in spellcard intros
-	int anirow;
 
 	Color zoomcolor;
 

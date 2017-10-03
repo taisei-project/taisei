@@ -15,6 +15,7 @@
 #include <stdlib.h>
 
 void* create_element(void **dest, size_t size);
+void* create_element_at_end(void **dest, size_t size);
 void* create_element_at_priority(void **list_head, size_t size, int prio, int (*prio_func)(void*));
 void delete_element(void **dest, void *e);
 void delete_all_elements(void **dest, void (callback)(void **, void *));

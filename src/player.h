@@ -15,6 +15,7 @@
 #include "util.h"
 #include "enemy.h"
 #include "gamepad.h"
+#include "aniplayer.h"
 #include "resource/animation.h"
 
 enum {
@@ -70,9 +71,7 @@ typedef enum {
 typedef struct {
 	complex pos;
 	short focus;
-	bool moving;
 
-	short dir;
 	short power;
 
 	int graze;
@@ -88,6 +87,8 @@ typedef struct {
 
 	int deathtime;
 	int respawntime;
+
+	AniPlayer ani;
 
 	Character cha;
 	ShotMode shot;

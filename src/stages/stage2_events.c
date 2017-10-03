@@ -651,7 +651,7 @@ void hina_spell_bg(Boss *h, int time) {
 	draw_texture(0, 0, "stage2/spellbg2");
 	glPopMatrix();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	draw_animation(creal(h->pos), cimag(h->pos), 0, "fire");
+	play_animation(get_ani("fire"),creal(h->pos), cimag(h->pos), 0);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 

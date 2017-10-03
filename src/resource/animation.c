@@ -8,7 +8,6 @@
 
 #include "animation.h"
 #include "texture.h"
-#include "global.h"
 #include "resource.h"
 #include "list.h"
 
@@ -93,11 +92,11 @@ Animation *get_ani(const char *name) {
 	return get_resource(RES_ANIM, name, RESF_DEFAULT)->animation;
 }
 
-void draw_animation(float x, float y, int row, const char *name) {
-	draw_animation_p(x, y, row, get_ani(name));
+void draw_animation(float x, float y, int col, int row, const char *name) {
+	draw_animation_p(x, y, col, row, get_ani(name));
 }
 
-void draw_animation_p(float x, float y, int row, Animation *ani) {
+void draw_animation_p(float x, float y, int col, int row, Animation *ani) {
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, ani->tex->gltex);
 
@@ -114,7 +113,6 @@ void draw_animation_p(float x, float y, int row, Animation *ani) {
 		glPushMatrix();
 		glScalef(s,t,1);
 
-		int col = global.frames/ani->speed % ani->cols;
 		if(col || row)
 			glTranslatef(col, row, 0);
 	glMatrixMode(GL_MODELVIEW);

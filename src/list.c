@@ -36,6 +36,21 @@ void *create_element(void **dest, size_t size) {
 	return e;
 }
 
+void* create_element_at_end(void **dest, size_t size) {
+	assert(dest != NULL);
+
+	if(*dest == NULL) {
+		return create_element((void **)dest,size);
+	}
+
+	List *end = NULL;
+	for(List *e = *dest; e; e = e->next) {
+		end = e;
+	}
+
+	return create_element((void **)&end,size);
+}
+
 void* create_element_at_priority(void **list_head, size_t size, int prio, int (*prio_func)(void*)) {
 	assert(list_head != NULL);
 	assert(size > 0);

@@ -12,6 +12,7 @@
 #include "global.h"
 #include "projectile.h"
 #include "list.h"
+#include "aniplayer.h"
 
 Enemy *create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyDrawRule draw_rule, EnemyLogicRule logic_rule,
 				  complex a1, complex a2, complex a3, complex a4) {
@@ -162,7 +163,7 @@ void BigFairy(Enemy *e, int t) {
 		glCullFace(GL_FRONT);
 		glScalef(-1,1,1);
 	}
-	draw_animation(0, 0, e->moving, "bigfairy");
+	play_animation(get_ani("bigfairy"),0, 0, e->moving);
 	glPopMatrix();
 
 	if(e->dir)
@@ -186,7 +187,7 @@ void Fairy(Enemy *e, int t) {
 		glCullFace(GL_FRONT);
 		glScalef(-1,1,1);
 	}
-	draw_animation(0, 0, e->moving, "fairy");
+	play_animation(get_ani("fairy"),0, 0, e->moving);
 	glPopMatrix();
 
 	glPopMatrix();

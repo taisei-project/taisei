@@ -19,7 +19,7 @@ Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 	strcpy(buf->name, name);
 	buf->pos = pos;
 
-	buf->ani = get_ani(ani);
+	aniplayer_create(&buf->ani, get_ani(ani));
 	if(dialog)
 		buf->dialog = get_tex(dialog);
 
@@ -147,7 +147,7 @@ void draw_boss(Boss *boss) {
 		red = 0;
 
 	glColor4f(1,1-red,1-red/2,1);
-	draw_animation_p(creal(boss->pos), cimag(boss->pos) + 6*sin(global.frames/25.0), boss->anirow, boss->ani);
+	aniplayer_play(&boss->ani,creal(boss->pos), cimag(boss->pos) + 6*sin(global.frames/25.0));
 	glColor4f(1,1,1,1);
 
 	if(boss->current->type == AT_Move && global.frames - boss->current->starttime > 0 && boss_attack_is_final(boss, boss->current))
@@ -376,7 +376,7 @@ void boss_finish_current_attack(Boss *boss) {
 	boss->current->finished = true;
 	boss->current->rule(boss, EVENT_DEATH);
 
-	boss->anirow = 0; // reset to standard animation
+	aniplayer_reset(&boss->ani);
 
 	if(t != AT_Move) {
 		stage_clear_hazards(true);
@@ -419,6 +419,8 @@ void boss_finish_current_attack(Boss *boss) {
 
 void process_boss(Boss **pboss) {
 	Boss *boss = *pboss;
+
+	aniplayer_update(&boss->ani);
 
 	if(!boss->current)
 		return;
@@ -564,6 +566,7 @@ void free_boss(Boss *boss) {
 	for(int i = 0; i < boss->acount; i++)
 		free_attack(&boss->attacks[i]);
 
+	aniplayer_free(&boss->ani);
 	free(boss->name);
 	free(boss->attacks);
 	free(boss);

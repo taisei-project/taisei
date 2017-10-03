@@ -49,6 +49,7 @@ set(SRCs
 	global.c
 	events.c
 	player.c
+	aniplayer.c
 	projectile.c
 	progress.c
 	enemy.c

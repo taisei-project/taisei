@@ -16,26 +16,6 @@
 
 #include <SDL_bits.h>
 
-void init_player(Player *plr) {
-	memset(plr, 0, sizeof(Player));
-	plr->pos = VIEWPORT_W/2 + I*(VIEWPORT_H-64);
-	plr->lives = PLR_START_LIVES;
-	plr->bombs = PLR_START_BOMBS;
-	plr->deathtime = -1;
-}
-
-void prepare_player_for_next_stage(Player *plr) {
-	plr->recovery = 0;
-	plr->respawntime = 0;
-	plr->deathtime = -1;
-	plr->graze = 0;
-	plr->movetime = 0;
-	plr->prevmove = 0;
-	plr->prevmovetime = 0;
-	plr->axis_lr = 0;
-	plr->axis_ud = 0;
-}
-
 Animation *player_get_ani(Character cha) {
 	Animation *ani = NULL;
 	switch(cha) {
@@ -48,6 +28,28 @@ Animation *player_get_ani(Character cha) {
 	}
 
 	return ani;
+}
+
+void init_player(Player *plr) {
+	memset(plr, 0, sizeof(Player));
+	plr->pos = VIEWPORT_W/2 + I*(VIEWPORT_H-64);
+	plr->lives = PLR_START_LIVES;
+	plr->bombs = PLR_START_BOMBS;
+	plr->deathtime = -1;
+
+	aniplayer_create(&plr->ani, player_get_ani(plr->cha));
+}
+
+void prepare_player_for_next_stage(Player *plr) {
+	plr->recovery = 0;
+	plr->respawntime = 0;
+	plr->deathtime = -1;
+	plr->graze = 0;
+	plr->movetime = 0;
+	plr->prevmove = 0;
+	plr->prevmovetime = 0;
+	plr->axis_lr = 0;
+	plr->axis_ud = 0;
 }
 
 static void player_full_power(Player *plr) {
@@ -99,6 +101,8 @@ void player_move(Player *plr, complex delta) {
 }
 
 void player_draw(Player* plr) {
+	plr->ani.ani = player_get_ani(plr->cha); // because plr->cha is not set at init
+
 	// FIXME: death animation?
 	if(plr->deathtime > global.frames)
 		return;
@@ -118,11 +122,6 @@ void player_draw(Player* plr) {
 			glPopMatrix();
 		}
 
-		glDisable(GL_CULL_FACE);
-		if(plr->dir) {
-			glPushMatrix();
-			glScalef(-1,1,1);
-		}
 
 		int clr_changed = 0;
 
@@ -131,15 +130,10 @@ void player_draw(Player* plr) {
 			clr_changed = 1;
 		}
 
-		draw_animation_p(0, 0, !plr->moving, player_get_ani(plr->cha));
+		aniplayer_play(&plr->ani,0,0);
 
 		if(clr_changed)
 			glColor3f(1,1,1);
-
-		if(plr->dir)
-			glPopMatrix();
-
-		glEnable(GL_CULL_FACE);
 
 		if(plr->focus) {
 			glPushMatrix();
@@ -173,6 +167,7 @@ static void player_fail_spell(Player *plr) {
 
 void player_logic(Player* plr) {
 	process_enemies(&plr->slaves);
+	aniplayer_update(&plr->ani);
 	if(plr->deathtime < -1) {
 		plr->deathtime++;
 		plr->pos -= I;
@@ -473,12 +468,17 @@ bool player_applymovement_gamepad(Player *plr) {
 	return true;
 }
 
+static void player_ani_moving(Player *plr, bool moving, bool dir) {
+	plr->ani.stdrow = !moving;
+	plr->ani.mirrored = dir;
+}
+
 void player_applymovement(Player *plr) {
 	if(plr->deathtime < -1)
 		return;
 
 	bool gamepad = player_applymovement_gamepad(plr);
-	plr->moving = false;
+	player_ani_moving(plr,false,false);
 
 	int up		=	plr->inputflags & INFLAG_UP,
 		down	=	plr->inputflags & INFLAG_DOWN,
@@ -486,11 +486,9 @@ void player_applymovement(Player *plr) {
 		right	=	plr->inputflags & INFLAG_RIGHT;
 
 	if(left && !right) {
-		plr->moving = true;
-		plr->dir = 1;
+		player_ani_moving(plr,true,true);
 	} else if(right && !left) {
-		plr->moving = true;
-		plr->dir = 0;
+		player_ani_moving(plr,true,false);
 	}
 
 	if(gamepad)
