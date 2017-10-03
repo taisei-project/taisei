@@ -274,9 +274,13 @@ void player_realdeath(Player *plr) {
 	plr->bombs = PLR_START_BOMBS;
 	plr->bomb_fragments = 0;
 
-
 	if(plr->lives-- == 0 && global.replaymode != REPLAY_PLAY) {
 		stage_gameover();
+
+		if(plr->lives > 0) {
+			// game continued
+			spawn_items(death_origin, Power, (int)ceil(PLR_MAX_POWER/(double)POWER_VALUE), NULL);
+		}
 	}
 }
 
