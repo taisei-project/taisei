@@ -130,7 +130,6 @@ void stage3_glitch(FBO *fbo) {
 
 	if(global.boss && global.boss->current && global.boss->current->type == AT_Spellcard && !strcmp(global.boss->name, "Scuttle")) {
 		strength = 0.05 * pow(max(0, (global.frames - global.boss->current->starttime) / (double)global.boss->current->timeout), 2.0);
-		log_debug("%f", strength);
 	} else {
 		strength = 0.0;
 	}
