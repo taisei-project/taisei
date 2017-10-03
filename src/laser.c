@@ -363,7 +363,7 @@ complex las_circle(Laser *l, float t) {
 
 float laser_charge(Laser *l, int t, float charge, float width) {
 	if(t < charge - 10)
-		return 1.7;
+		return 2 * t / min(30, charge - 10);
 
 	if(t >= charge - 10 && t < l->deathtime - 20) {
 		float w = 1.7 + width/20*(t-charge+10);

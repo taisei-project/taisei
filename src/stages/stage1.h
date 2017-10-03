@@ -20,6 +20,7 @@ extern struct stage1_spells_s {
 
     struct {
         AttackInfo crystal_rain;
+        AttackInfo snow_halation;
         AttackInfo icicle_fall;
     } boss;
 

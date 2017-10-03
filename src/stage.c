@@ -380,7 +380,7 @@ static void stage_logic(void) {
 
 void stage_clear_hazards(bool force) {
 	for(Projectile *p = global.projs; p; p = p->next) {
-		if(p->type == FairyProj)
+		if(p->type == FairyProj || p->type == FakeProj)
 			p->type = DeadProj;
 	}
 

@@ -345,6 +345,152 @@ void cirno_iceplosion1(Boss *c, int time) {
 	}
 }
 
+static Color halation_color(float phase) {
+	if(phase < 0.5) {
+		return mix_colors(
+			rgb(0.4, 0.4, 0.3),
+			rgb(0.4, 0.4, 0.75),
+			phase * phase
+		);
+	} else {
+		return mix_colors(
+			rgb(1.0, 0.3, 0.2),
+			rgb(0.4, 0.4, 0.3),
+			(phase - 0.5) * 2
+		);
+	}
+}
+
+static void halation_laser(Laser *l, int time) {
+	static_laser(l, time);
+
+	if(time >= 0) {
+		l->color = halation_color(l->width / cimag(l->args[1]));
+	}
+}
+
+static complex halation_calc_orb_pos(complex center, float rotation, int proj, int projs) {
+	double f = (double)((proj % projs)+0.5)/projs;
+	return 200 * cexp(I*(rotation + f * 2 * M_PI)) + center;
+}
+
+static int halation_orb(Projectile *p, int time) {
+	if(time == EVENT_DEATH) {
+		return 1;
+	}
+
+	if(time < 0) {
+		return 1;
+	}
+
+	if(!(time % 4)) {
+		create_particle1c("stain", p->pos, 0, GrowFadeAdd, timeout, 20)->angle = global.frames * 15;
+	}
+
+	complex center = p->args[0];
+	double rotation = p->args[1];
+	int id = creal(p->args[2]);
+	int count = cimag(p->args[2]);
+	int halate_time = creal(p->args[3]);
+	int phase_time = 60;
+
+	complex pos0 = halation_calc_orb_pos(center, rotation, id, count);
+	complex pos1 = halation_calc_orb_pos(center, rotation, id + count/2, count);
+	complex pos2 = halation_calc_orb_pos(center, rotation, id + count/2 - 1, count);
+	complex pos3 = halation_calc_orb_pos(center, rotation, id + count/2 - 2, count);
+
+	GO_TO(p, pos2, 0.1);
+
+	if(p->type == DeadProj) {
+		return 1;
+	}
+
+	if(time == halate_time) {
+		create_laserline_ab(pos2, pos3, 15, phase_time * 0.5, phase_time * 2.0, p->clr);
+		create_laserline_ab(pos0, pos2, 15, phase_time, phase_time * 1.5, p->clr)->lrule = halation_laser;
+	} if(time == halate_time + phase_time * 0.5) {
+		play_sound("laser1");
+	} else if(time == halate_time + phase_time) {
+		play_sound("shot1");
+		create_laserline_ab(pos0, pos1, 12, phase_time, phase_time * 1.5, p->clr)->lrule = halation_laser;
+	} else if(time == halate_time + phase_time * 2) {
+		play_sound("shot1");
+		create_laserline_ab(pos0, pos3, 15, phase_time, phase_time * 1.5, p->clr)->lrule = halation_laser;
+		create_laserline_ab(pos1, pos3, 15, phase_time, phase_time * 1.5, p->clr)->lrule = halation_laser;
+	} else if(time == halate_time + phase_time * 3) {
+		play_sound("shot1");
+		create_laserline_ab(pos0, pos1, 12, phase_time, phase_time * 1.5, p->clr)->lrule = halation_laser;
+		create_laserline_ab(pos0, pos2, 15, phase_time, phase_time * 1.5, p->clr)->lrule = halation_laser;
+	} else if(time == halate_time + phase_time * 4) {
+		play_sound("shot1");
+		play_sound("shot_special1");
+
+		Color colors[] = {
+			// i *will* revert your commit if you change this, no questions asked.
+			rgb(226/255.0, 115/255.0,  45/255.0),
+			rgb( 54/255.0, 179/255.0, 221/255.0),
+			rgb(140/255.0, 147/255.0, 149/255.0),
+			rgb( 22/255.0,  96/255.0, 165/255.0),
+			rgb(241/255.0, 197/255.0,  31/255.0),
+			rgb(204/255.0,  53/255.0,  84/255.0),
+			rgb(116/255.0,  71/255.0, 145/255.0),
+			rgb( 84/255.0, 171/255.0,  72/255.0),
+			rgb(213/255.0,  78/255.0, 141/255.0),
+		};
+
+		int pcount = sizeof(colors)/sizeof(Color);
+		float rot = frand() * 2 * M_PI;
+
+		for(int i = 0; i < pcount; ++i) {
+			create_projectile2c("crystal", p->pos, colors[i], asymptotic, cexp(I*(rot + M_PI * 2 * (float)(i+1)/pcount)), 3);
+		}
+
+		return ACTION_DESTROY;
+	}
+
+	return 1;
+}
+
+void cirno_snow_halation(Boss *c, int time) {
+	int t = time % 300;
+	TIMER(&t);
+
+	if(time < 0) {
+		return;
+	}
+
+	GO_TO(c, VIEWPORT_W/2.0+100.0*I, 0.05);
+
+	// TODO: get rid of the "static" nonsense already! #ArgsForBossAttacks2017
+	static complex center;
+	static float rotation;
+
+	AT(60) {
+		center = global.plr.pos;
+		rotation = (M_PI/2.0) * (1 + time / 300);
+		c->anirow = 1;
+	}
+
+	const int interval = 3;
+	const int projs = 10 + 4 * (global.diff - D_Hard);
+
+	FROM_TO_SND("shot1_loop", 60, 60 + interval * (projs/2 - 1), interval) {
+		int halate_time = 35 - _i * interval;
+
+		for(int p = _i*2; p <= _i*2 + 1; ++p) {
+			complex pos = halation_calc_orb_pos(center, rotation, p, projs);
+			Projectile *orb = create_projectile4c("plainball", pos, halation_color(0), halation_orb, center, rotation, p + I * projs, halate_time);
+			orb->draw = ProjDrawAdd;
+			orb->type = FakeProj;
+			orb->maxviewportdist = 200;
+		}
+	}
+
+	AT(80 + interval * projs/2) {
+		c->anirow = 0;
+	}
+}
+
 int cirno_icicles(Projectile *p, int t) {
 	int turn = 60;
 
@@ -478,6 +624,11 @@ Boss *create_cirno(void) {
 	boss_add_attack(cirno, AT_Normal, "Iceplosion 0", 20, 22000, cirno_iceplosion0, NULL);
 	boss_add_attack_from_info(cirno, &stage1_spells.boss.crystal_rain, false);
 	boss_add_attack(cirno, AT_Normal, "Iceplosion 1", 20, 22000, cirno_iceplosion1, NULL);
+
+	if(global.diff > D_Normal) {
+		boss_add_attack_from_info(cirno, &stage1_spells.boss.snow_halation, false);
+	}
+
 	boss_add_attack_from_info(cirno, &stage1_spells.boss.icicle_fall, false);
 	boss_add_attack_from_info(cirno, &stage1_spells.extra.crystal_blizzard, false);
 
