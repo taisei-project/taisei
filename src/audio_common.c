@@ -82,7 +82,17 @@ void update_sounds(void) {
 		if(snd->sound->islooping && global.frames > snd->sound->lastplayframe + LOOPTIMEOUTFRAMES) {
 			snd->sound->islooping = false;
 			audio_backend_sound_stop_loop(snd->sound->impl);
-			log_debug("channel stopped");
+		}
+	}
+}
+
+void stop_looping_sounds(void) {
+	Resource *snd;
+	for(HashtableIterator *i = hashtable_iter(resources.handlers[RES_SFX].mapping);
+			hashtable_iter_next(i, 0, (void**)&snd);) {
+		if(snd->sound->islooping) {
+			snd->sound->islooping = false;
+			audio_backend_sound_stop_loop(snd->sound->impl);
 		}
 	}
 }

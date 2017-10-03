@@ -49,6 +49,7 @@ void play_ui_sound(const char *name);
 void reset_sounds(void);
 
 void update_sounds(void); // checks if loops need to be stopped
+void stop_looping_sounds(void); // force-stops all loops
 
 int get_default_sfx_volume(const char *sfx);
 

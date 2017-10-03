@@ -204,6 +204,7 @@ static void stage_start(StageInfo *stage) {
 
 void stage_pause(void) {
 	MenuData menu;
+
 	stop_bgm(false);
 
 	if(global.replaymode == REPLAY_PLAY) {
@@ -212,6 +213,7 @@ void stage_pause(void) {
 		create_ingame_menu(&menu);
 	}
 
+	stop_looping_sounds();
 	menu_loop(&menu);
 	resume_bgm();
 }
@@ -232,6 +234,7 @@ void stage_gameover(void) {
 		start_bgm("gameover");
 	}
 
+	stop_looping_sounds();
 	menu_loop(&menu);
 
 	if(interrupt_bgm) {
