@@ -281,6 +281,8 @@ void hina_intro(Boss *h, int time) {
 	AT(100)
 		global.dialog = stage2_dialog();
 
+	aniplayer_queue(&h->ani,0,2,0);
+	aniplayer_queue(&h->ani,1,0,0);
 	GO_TO(h, VIEWPORT_W/2 + 100.0*I, 0.05);
 }
 
@@ -291,6 +293,7 @@ void hina_cards1(Boss *h, int time) {
 	if(time < 0)
 		return;
 
+	h->ani.stdrow = 1;
 	FROM_TO(0, 500, 2-(global.diff > D_Normal)) {
 		play_sound_cooldown("shot1", 4);
 		create_projectile2c("card", h->pos+50*cexp(I*t/10), rgb(0.8,0.0,0.0),  asymptotic, (1.6+0.4*global.diff)*cexp(I*t/5.0), 3);
@@ -310,7 +313,9 @@ void hina_amulet(Boss *h, int time) {
 	TIMER(&t);
 
 	complex d = global.plr.pos - h->pos;
+	h->ani.stdrow = 0;
 	FROM_TO_SND("shot1_loop", 0,200*(global.diff+0.5)/(D_Lunatic+0.5),1) {
+		h->ani.stdrow = 1;
 		float f = _i/30.0;
 		complex n = cexp(I*2*M_PI*f+I*carg(d)+0.7*time/200*I)/sqrt(0.5+global.diff);
 
@@ -395,6 +400,7 @@ void hina_bad_pick(Boss *h, int time) {
 	}
 
 	AT(200) {
+		aniplayer_queue(&h->ani,1,1,0);
 		play_sound("shot_special1");
 
 		int win = tsrand()%SLOTS;
@@ -424,6 +430,7 @@ void hina_wheel(Boss *h, int time) {
 
 	GO_TO(h, VIEWPORT_W/2+VIEWPORT_H/2*I, 0.02);
 
+	h->ani.stdrow = 1;
 	if(time < 60) {
 		if(time == 0) {
 			if(global.diff > D_Normal) {
@@ -569,6 +576,7 @@ void hina_monty(Boss *h, int time) {
 
 		play_sound("laser1");
 		create_laserline_ab(h->pos, o, 15, 30, 60, rgb(1.0, 0.3, 0.3));
+		aniplayer_queue(&h->ani,1,0,0);
 	}
 
 	AT(140) {
@@ -607,6 +615,10 @@ void hina_monty(Boss *h, int time) {
 		const int end = 540;
 		const int ncycles = (end - start) / cycle_dur;
 
+		AT(start)
+			h->ani.stdrow = 1;
+		AT(end)
+			h->ani.stdrow = 0;
 		FROM_TO_INT(start, start + cycle_dur * ncycles - 1, cycle_dur, burst_dur, step) {
 			play_sound("shot1");
 

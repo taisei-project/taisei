@@ -21,7 +21,8 @@ struct AniSequence{
 	struct AniSequence *prev;
 
 	int row;
-	int clocks; // number of frames this sequence will be drawn
+	int duration; // number of frames this sequence will be drawn
+	int clock;
 	int delay; // after the sequence has played loops times before the next one is started.
 
 	bool mirrored;

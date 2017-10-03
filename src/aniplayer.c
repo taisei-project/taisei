@@ -30,14 +30,14 @@ void aniplayer_reset(AniPlayer *plr) { // resets to a neutral state with empty q
 }
 
 AniSequence *aniplayer_queue(AniPlayer *plr, int row, int loops, int delay) {
-	AniSequence *s = create_element_at_end((void **)plr->queue,sizeof(AniSequence));
+	AniSequence *s = create_element_at_end((void **)&plr->queue,sizeof(AniSequence));
 	plr->queuesize++;
 	s->row = row;
 
 	if(loops < 0)
 		log_fatal("Negative number of loops passed: %d",loops);
 
-	s->clocks = (loops+1)*plr->ani->cols*plr->ani->speed;
+	s->duration = (loops+1)*plr->ani->cols*plr->ani->speed;
 	s->delay = delay;
 
 	return s;
@@ -47,8 +47,8 @@ void aniplayer_update(AniPlayer *plr) {
 	plr->clock++;
 	if(plr->queue) {
 		AniSequence *s = plr->queue;
-		if(s->clocks > 0) {
-			s->clocks--;
+		if(s->clock < s->duration) {
+			s->clock++;
 		} else if(s->delay > 0) {
 			s->delay--;
 		} else {
@@ -65,7 +65,7 @@ void aniplayer_play(AniPlayer *plr, float x, float y) {
 	bool mirror = plr->mirrored;
 	if(plr->queue) {
 		AniSequence *s = plr->queue;
-		col = ((2*s->backwards-1)*s->clocks/plr->ani->speed) % plr->ani->cols;
+		col = ((1-2*s->backwards)*s->clock/plr->ani->speed+s->duration) % plr->ani->cols;
 		row = s->row;
 
 		mirror = s->mirrored;
