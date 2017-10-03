@@ -30,7 +30,9 @@ void credits_fill(void) {
 	credits_add("Taisei Project\nbrought to you by…", 200);
 	credits_add("laochailan\nLukas Weber\nlaochailan@web.de", 300);
 	credits_add("Akari\nAndrei Alexeyev\nakari@alienslab.net", 300);
+	credits_add("Tuck V\nDiscord @Tuck#1679\nMusic", 300);
 	credits_add("lachs0r\nMartin Herkt\nlachs0r@hong-mailing.de", 300);
+	credits_add("makise-homura\nIgor Molchanov\nElbrus compatible™", 300);
 	credits_add("aiju\nJulius Schmidt\nhttp://aiju.de", 300);
 	credits_add("Special Thanks", 300);
 	credits_add("ZUN\nfor Tōhō Project\nhttp://www16.big.or.jp/~zun/", 300);
