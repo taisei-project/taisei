@@ -339,7 +339,7 @@ void loop_at_fps(bool (*frame_func)(void*), bool (*limiter_cond_func)(void*), vo
     long double next_frame_time = real_time;
     long double target_frame_time = ((long double)1.0) / fps;
 
-    int32_t delay = getenvint("TAISEI_FRAMELIMITER_SLEEP", 10);
+    int32_t delay = getenvint("TAISEI_FRAMELIMITER_SLEEP", 0);
     bool exact_delay = getenvint("TAISEI_FRAMELIMITER_SLEEP_EXACT", 1);
 
     while(true) {
