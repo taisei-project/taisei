@@ -69,6 +69,7 @@ set(SRCs
 	color.c
 	difficulty.c
 	audio_common.c
+	hirestime.c
 	menu/menu.c
 	menu/mainmenu.c
 	menu/options.c
@@ -213,6 +214,7 @@ set(LIBDIRs
 	)
 
 if(WIN32)
+	add_definitions(-D__USE_MINGW_ANSI_STDIO)
 	set(LIBs ${LIBs} -ldxguid -lwinmm)
 
 	string(REPLACE "gcc" "windres" CMAKE_RC_COMPILER_INIT ${CMAKE_C_COMPILER})

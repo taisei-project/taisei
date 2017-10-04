@@ -39,6 +39,7 @@ static void taisei_shutdown(void) {
 	config_uninit();
 	vfs_uninit();
 	events_shutdown();
+	time_shutdown();
 
 	log_info("Good bye");
 	SDL_Quit();
@@ -182,6 +183,7 @@ int main(int argc, char **argv) {
 	log_lib_versions();
 
 	init_sdl();
+	time_init();
 	init_global(&a);
 	events_init();
 	init_fonts();

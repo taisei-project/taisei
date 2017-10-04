@@ -55,7 +55,6 @@ struct MenuData {
 	int ecount;
 
 	int frames;
-	uint64_t lasttime;
 
 	int state;
 	int transition_in_time;

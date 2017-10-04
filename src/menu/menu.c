@@ -144,6 +144,27 @@ void menu_logic(MenuData *menu) {
 	menu->frames++;
 }
 
+static bool menu_frame(void *arg) {
+	MenuData *menu = arg;
+
+	menu->logic(menu);
+
+	if(menu->state != MS_FadeOut || menu->flags & MF_AlwaysProcessInput) {
+		assert(menu->input);
+		menu->input(menu);
+	} else {
+		menu_no_input(menu);
+	}
+
+	assert(menu->draw);
+	menu->draw(menu);
+	draw_and_update_transition();
+
+	SDL_GL_SwapWindow(video.window);
+
+	return menu->state != MS_Dead;
+}
+
 int menu_loop(MenuData *menu) {
 	set_ortho();
 
@@ -151,24 +172,8 @@ int menu_loop(MenuData *menu) {
 		menu->begin(menu);
 	}
 
-	while(menu->state != MS_Dead) {
-		assert(menu->logic);
-		menu->logic(menu);
-
-		if(menu->state != MS_FadeOut || menu->flags & MF_AlwaysProcessInput) {
-			assert(menu->input);
-			menu->input(menu);
-		} else {
-			menu_no_input(menu);
-		}
-
-		assert(menu->draw);
-		menu->draw(menu);
-		draw_and_update_transition();
-
-		SDL_GL_SwapWindow(video.window);
-		limit_frame_rate(&menu->lasttime);
-	}
+	assert(menu->logic != NULL);
+	loop_at_fps(menu_frame, NULL, menu, FPS);
 
 	if(menu->end) {
 		menu->end(menu);

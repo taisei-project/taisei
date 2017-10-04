@@ -302,41 +302,80 @@ float smoothreclamp(float x, float old_min, float old_max, float new_min, float 
 // gl/video utils
 //
 
-void limit_frame_rate(uint64_t *lasttime) {
-    if(global.frameskip) {
-        return;
-    }
-
-    double passed = (double)(SDL_GetPerformanceCounter() - *lasttime) / SDL_GetPerformanceFrequency();
-    double delay = max(0, 1.0 / FPS - passed);
-    int32_t delay_ms = (int32_t)rint(delay * 1000.0);
-
-    if(delay_ms > 0) {
-        SDL_Delay(delay_ms);
-    }
-
-    *lasttime = SDL_GetPerformanceCounter();
-}
-
 void fpscounter_reset(FPSCounter *fps) {
-        fps->show_fps = FPS;
-	fps->fps = 0;
-        fps->fpstime = SDL_GetTicks();
-}
+    long double frametime = 1.0 / FPS;
+    const int log_size = sizeof(fps->frametimes)/sizeof(long double);
 
-bool fpscounter_update(FPSCounter *fps) {
-    bool updated = false;
-
-    if(SDL_GetTicks() > fps->fpstime+1000) {
-        fps->show_fps = fps->fps;
-        fps->fps = 0;
-        fps->fpstime = SDL_GetTicks();
-        updated = true;
-    } else {
-        fps->fps++;
+    for(int i = 0; i < log_size; ++i) {
+        fps->frametimes[i] = frametime;
     }
 
-    return updated;
+    fps->fps = 1.0 / frametime;
+    fps->last_update_time = time_get();
+}
+
+void fpscounter_update(FPSCounter *fps) {
+    const int log_size = sizeof(fps->frametimes)/sizeof(long double);
+    double frametime = time_get() - fps->last_update_time;
+
+    memmove(fps->frametimes, fps->frametimes + 1, (log_size - 1) * sizeof(long double));
+    fps->frametimes[log_size - 1] = frametime;
+
+    long double avg = 0.0;
+
+    for(int i = 0; i < log_size; ++i) {
+        avg += fps->frametimes[i];
+    }
+
+    fps->fps = 1.0 / (avg / log_size);
+    fps->last_update_time = time_get();
+}
+
+void loop_at_fps(bool (*frame_func)(void*), bool (*limiter_cond_func)(void*), void *arg, uint32_t fps) {
+    assert(frame_func != NULL);
+    assert(fps > 0);
+
+    long double real_time = time_get();
+    long double next_frame_time = real_time;
+    long double target_frame_time = ((long double)1.0) / fps;
+
+    int32_t delay = getenvint("TAISEI_FRAMELIMITER_SLEEP", 10);
+    bool exact_delay = getenvint("TAISEI_FRAMELIMITER_SLEEP_EXACT", 1);
+
+    while(true) {
+        real_time = time_get();
+
+        if(real_time < next_frame_time) {
+            continue;
+        }
+
+        if(!frame_func(arg)) {
+            return;
+        }
+
+        if(!limiter_cond_func || limiter_cond_func(arg)) {
+            next_frame_time = real_time + target_frame_time;
+
+            if(delay > 0) {
+                int32_t realdelay = delay;
+                int32_t mindelay = (int32_t)(1000 * (next_frame_time - time_get()));
+
+                if(realdelay > mindelay) {
+                    if(exact_delay) {
+                        log_debug("Delay of %i ignored. Minimum is %i but TAISEI_FRAMELIMITER_SLEEP_EXACT is active", realdelay, mindelay);
+                        realdelay = 0;
+                    } else {
+                        log_debug("Delay reduced from %i to %i", realdelay, mindelay);
+                        realdelay = mindelay;
+                    }
+                }
+
+                if(realdelay > 0) {
+                    SDL_Delay(realdelay);
+                }
+            }
+        }
+    }
 }
 
 void set_ortho_ex(float w, float h) {
@@ -568,7 +607,7 @@ void _ts_assert_fail(const char *cond, const char *func, const char *file, int l
 int getenvint(const char *v, int defaultval) {
     char *e = getenv(v);
 
-    if(e) {
+    if(e && *e) {
         return atoi(e);
     }
 

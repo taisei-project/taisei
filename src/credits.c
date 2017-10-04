@@ -263,16 +263,18 @@ void credits_preload(void) {
 	NULL);
 }
 
+static bool credits_frame(void *arg) {
+	events_poll(NULL, 0);
+	credits_process();
+	credits_draw();
+	global.frames++;
+	SDL_GL_SwapWindow(video.window);
+	return !credits.end;
+}
+
 void credits_loop(void) {
 	credits_preload();
 	credits_init();
-	while(credits.end) {
-		events_poll(NULL, 0);
-		credits_process();
-		credits_draw();
-		global.frames++;
-		SDL_GL_SwapWindow(video.window);
-		limit_frame_rate(&global.lasttime);
-	}
+	loop_at_fps(credits_frame, NULL, NULL, FPS);
 	credits_free();
 }

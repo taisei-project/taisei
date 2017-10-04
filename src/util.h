@@ -15,21 +15,10 @@
 #include <zlib.h> // compiling under mingw may fail without this...
 #include <png.h>
 #include <SDL.h>
-#include "log.h"
 #include "hashtable.h"
 #include "vfs/public.h"
-
-//
-// compatibility
-//
-
-#ifndef __GNUC__ // clang defines this too
-    #define __attribute__(...)
-    #define __extension__
-    #define PRAGMA(p)
-#else
-    #define PRAGMA(p) _Pragma(#p)
-#endif
+#include "log.h"
+#include "compat.h"
 
 //
 // string utils
@@ -48,7 +37,7 @@ bool strstartswith_any(const char *s, const char **earray) __attribute__((pure))
 void stralloc(char **dest, const char *src);
 char* strjoin(const char *first, ...) __attribute__((sentinel));
 char* vstrfmt(const char *fmt, va_list args);
-char* strfmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+char* strfmt(const char *fmt, ...) __attribute__((format(FORMAT_ATTR, 1, 2)));
 void strip_trailing_slashes(char *buf);
 char* strtok_r(char *str, const char *delim, char **nextp);
 char* strappend(char **dst, char *src);
@@ -101,14 +90,14 @@ float smoothreclamp(float x, float old_min, float old_max, float new_min, float 
 //
 
 typedef struct {
-    int fpstime;  // frame counter
-    int fps;
-    int show_fps;
+    long double frametimes[120]; // size = number of frames to average
+    double fps; // average fps over the last X frames
+    long double last_update_time; // internal; last time the average was recalculated
 } FPSCounter;
 
-void limit_frame_rate(uint64_t *lasttime);
+void loop_at_fps(bool (*frame_func)(void*), bool (*limiter_cond_func)(void*), void *arg, uint32_t fps);
 void fpscounter_reset(FPSCounter *fps);
-bool fpscounter_update(FPSCounter *fps);
+void fpscounter_update(FPSCounter *fps);
 void set_ortho(void);
 void set_ortho_ex(float w, float h);
 void colorfill(float r, float g, float b, float a);
@@ -129,10 +118,10 @@ void png_init_rwops_read(png_structp png, SDL_RWops *rwops);
 void png_init_rwops_write(png_structp png, SDL_RWops *rwops);
 
 char* SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize);
-size_t SDL_RWprintf(SDL_RWops *rwops, const char* fmt, ...) __attribute__((format(printf, 2, 3)));
+size_t SDL_RWprintf(SDL_RWops *rwops, const char* fmt, ...) __attribute__((format(FORMAT_ATTR, 2, 3)));
 
 // This is for the very few legitimate uses for printf/fprintf that shouldn't be replaced with log_*
-void tsfprintf(FILE *out, const char *restrict fmt, ...) __attribute__((format(printf, 2, 3)));
+void tsfprintf(FILE *out, const char *restrict fmt, ...) __attribute__((format(FORMAT_ATTR, 2, 3)));
 
 //
 // misc utils
@@ -199,5 +188,3 @@ int sprintf(char *, const char*, ...) __attribute__((deprecated(
     "Use snprintf or strfmt instead")));
 
 PRAGMA(GCC diagnostic pop)
-
-
