@@ -135,29 +135,31 @@ void ending_preload(void) {
 	preload_resource(RES_BGM, "bgm_ending", RESF_OPTIONAL);
 }
 
-void ending_loop(void) {
-	Ending e;
+static bool ending_frame(void *arg) {
+	Ending *e = arg;
 
-	ending_preload();
-	create_ending(&e);
+	events_poll(NULL, 0);
+	ending_draw(e);
+	global.frames++;
+	SDL_GL_SwapWindow(video.window);
 
-	global.frames = 0;
-	set_ortho();
-
-	while(e.pos < e.count-1) {
-		events_poll(NULL, 0);
-
-		ending_draw(&e);
-		global.frames++;
-		SDL_GL_SwapWindow(video.window);
-		limit_frame_rate(&global.lasttime);
-
-		if(global.frames >= e.entries[e.pos+1].time)
-			e.pos++;
-
-		if(global.frames == e.entries[e.count-1].time-ENDING_FADE_OUT)
-			set_transition(TransFadeWhite, ENDING_FADE_OUT, ENDING_FADE_OUT);
+	if(global.frames >= e->entries[e->pos+1].time) {
+		e->pos++;
 	}
 
+	if(global.frames == e->entries[e->count-1].time-ENDING_FADE_OUT) {
+		set_transition(TransFadeWhite, ENDING_FADE_OUT, ENDING_FADE_OUT);
+	}
+
+	return e->pos >= e->count - 1;
+}
+
+void ending_loop(void) {
+	Ending e;
+	ending_preload();
+	create_ending(&e);
+	global.frames = 0;
+	set_ortho();
+	loop_at_fps(ending_frame, NULL, &e, FPS);
 	free_ending(&e);
 }

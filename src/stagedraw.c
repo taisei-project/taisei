@@ -505,7 +505,12 @@ void stage_draw_hud(void) {
 
 	glPopMatrix();
 
-	snprintf(buf, sizeof(buf), "%i fps", global.fps.show_fps);
+#ifdef DEBUG
+	snprintf(buf, sizeof(buf), "%.16f fps", global.fps.fps);
+#else
+	snprintf(buf, sizeof(buf), "%.2f fps", global.fps.fps);
+#endif
+
 	draw_text(AL_Right, SCREEN_W, SCREEN_H - 0.5 * stringheight(buf, _fonts.standard), buf, _fonts.standard);
 
 	if(global.boss)

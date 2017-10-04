@@ -102,7 +102,7 @@ bool vfs_mount(VFSNode *root, const char *mountpoint, VFSNode *subtree);
 const char* vfs_iter(VFSNode *node, void **opaque);
 void vfs_iter_stop(VFSNode *node, void **opaque);
 
-void vfs_set_error(char *fmt, ...) __attribute__((format(printf, 1, 2)));
+void vfs_set_error(char *fmt, ...) __attribute__((format(FORMAT_ATTR, 1, 2)));
 void vfs_set_error_from_sdl(void);
 
 void vfs_print_tree_recurse(SDL_RWops *dest, VFSNode *root, char *prefix, const char *name);

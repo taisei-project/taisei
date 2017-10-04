@@ -42,6 +42,14 @@ In addition to the variables listed here, those processed by our runtime depende
 
 * **TAISEI_GL_EXT_OVERRIDES** *(default: unset)*: Space-separated list of OpenGL extensions that are assumed to be supported, even if the driver says they aren't. Prefix an extension with `-` to invert this behaviour. Might be used to work around bugs in some weird/ancient/broken drivers, but your chances are slim. Also note that Taisei assumes many extensions to be available on any sane OpenGL 2.1+ implementation and doesn't test for them, so you can't disable code that uses those this way.
 
+### Timing
+
+* **TAISEI_HIRES_TIMER** *(default value: `1`)*: if `1`, try to use the system's high resolution timer to limit the game's framerate. Disabling this is not recommended; it will likely make Taisei run slower or faster than intended and the reported FPS will be less accurate.
+
+* **TAISEI_FRAMELIMITER_SLEEP** *(default value: `10`)*: if over `0`, try to sleep this many milliseconds after every frame if it was processed quickly enough. This reduces CPU usage by having the game spend less time in a busy loop, but may hurt framerate stability if set too high, especially if the high resolution timer is disabled or not available. The default value should be reasonable.
+
+* **TAISEI_FRAMELIMITER_SLEEP_EXACT** *(default value: `1`)*: if `1`, the framerate limiter will either try to sleep the exact amount of time set in `TAISEI_FRAMELIMITER_SLEEP`, or none at all. Mitigates the aforementioned framerate stability issues by effectively making `TAISEI_FRAMELIMITER_SLEEP` do nothing if the value is too high for your system. This should be a safe default.
+
 ### Logging
 
 Taisei's logging system currently has four basic levels and works by dispatching messages to a few output handlers. Each handler has a level filter, which is configured by a separate environment variable. All of those variables work the same way: their value looks like an IRC mode string, and represents a modification of the handler's default settings. If this doesn't make sense, take a look at the *Examples* section.

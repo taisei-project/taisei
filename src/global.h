@@ -45,6 +45,8 @@
 #include "audio.h"
 #include "rwops/all.h"
 #include "cli.h"
+#include "hirestime.h"
+#include "log.h"
 
 enum {
 	// defaults
@@ -90,9 +92,9 @@ typedef struct {
 
 	Projectile *particles;
 
-	int frames;
-	uint64_t lasttime; // frame limiter
-	int timer;
+	int frames; // stage global timer
+	int timer; // stage event timer (freezes on bosses, dialogs, etc.)
+
 	int frameskip;
 
 	Boss *boss;

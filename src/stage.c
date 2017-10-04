@@ -187,8 +187,6 @@ static void stage_start(StageInfo *stage) {
 	global.game_over = 0;
 	global.shake_view = 0;
 
-	fpscounter_reset(&global.fps);
-
 	prepare_player_for_next_stage(&global.plr);
 
 	if(stage->type == STAGE_SPELL) {
@@ -467,6 +465,85 @@ static void display_stage_title(StageInfo *info) {
 	}
 }
 
+typedef struct StageFrameState {
+	StageInfo *stage;
+	int transition_delay;
+	uint16_t last_replay_fps;
+} StageFrameState;
+
+static bool stage_fpslimit_condition(void *arg) {
+	return (global.replaymode != REPLAY_PLAY || !gamekeypressed(KEY_SKIP)) && !global.frameskip;
+}
+
+static bool stage_frame(void *arg) {
+	StageFrameState *fstate = arg;
+	StageInfo *stage = fstate->stage;
+
+	((global.replaymode == REPLAY_PLAY) ? replay_input : stage_input)();
+
+	if(global.game_over != GAMEOVER_TRANSITIONING) {
+		if((!global.boss || boss_is_fleeing(global.boss)) && !global.dialog) {
+			stage->procs->event();
+		}
+
+		if(stage->type == STAGE_SPELL && !global.boss && global.game_over != GAMEOVER_RESTART) {
+			stage_finish(GAMEOVER_WIN);
+			fstate->transition_delay = 60;
+		}
+	}
+
+	if(!global.timer && stage->type != STAGE_SPELL) {
+		// must be done here to let the event function start a BGM first
+		display_stage_title(stage);
+	}
+
+	replay_stage_check_desync(global.replay_stage, global.frames, (tsrand() ^ global.plr.points) & 0xFFFF, global.replaymode);
+	stage_logic();
+
+	if(global.replaymode == REPLAY_RECORD && global.plr.points > progress.hiscore) {
+		progress.hiscore = global.plr.points;
+	}
+
+	if(fstate->transition_delay) {
+		--fstate->transition_delay;
+	}
+
+	if(global.frameskip && global.frames % global.frameskip) {
+		if(!fstate->transition_delay) {
+			update_transition();
+		}
+
+		return true;
+	}
+
+	fpscounter_update(&global.fps);
+
+	if(global.replaymode == REPLAY_RECORD) {
+		uint16_t replay_fps = (uint16_t)rint(global.fps.fps);
+
+		if(replay_fps != fstate->last_replay_fps) {
+			replay_stage_event(global.replay_stage, global.frames, EV_FPS, replay_fps);
+			fstate->last_replay_fps = replay_fps;
+		}
+	}
+
+	tsrand_lock(&global.rand_game);
+	tsrand_switch(&global.rand_visual);
+	stage_draw_scene(stage);
+	tsrand_unlock(&global.rand_game);
+	tsrand_switch(&global.rand_game);
+
+	draw_transition();
+
+	if(!fstate->transition_delay) {
+		update_transition();
+	}
+
+	SDL_GL_SwapWindow(video.window);
+
+	return global.game_over <= 0;
+}
+
 void stage_loop(StageInfo *stage) {
 	assert(stage);
 	assert(stage->procs);
@@ -544,68 +621,9 @@ void stage_loop(StageInfo *stage) {
 
 	stage->procs->begin();
 
-	int transition_delay = 0;
-
-	while(global.game_over <= 0) {
-		if(global.game_over != GAMEOVER_TRANSITIONING) {
-			if((!global.boss || boss_is_fleeing(global.boss)) && !global.dialog) {
-				stage->procs->event();
-			}
-
-			if(stage->type == STAGE_SPELL && !global.boss && global.game_over != GAMEOVER_RESTART) {
-				stage_finish(GAMEOVER_WIN);
-				transition_delay = 60;
-			}
-		}
-
-		if(!global.timer && stage->type != STAGE_SPELL) {
-			// must be done here to let the event function start a BGM first
-			display_stage_title(stage);
-		}
-
-		((global.replaymode == REPLAY_PLAY) ? replay_input : stage_input)();
-		replay_stage_check_desync(global.replay_stage, global.frames, (tsrand() ^ global.plr.points) & 0xFFFF, global.replaymode);
-
-		stage_logic();
-
-		if(global.replaymode == REPLAY_RECORD && global.plr.points > progress.hiscore) {
-			progress.hiscore = global.plr.points;
-		}
-
-		if(transition_delay) {
-			--transition_delay;
-		}
-
-		if(global.frameskip && global.frames % global.frameskip) {
-			if(!transition_delay) {
-				update_transition();
-			}
-			continue;
-		}
-
-		if(fpscounter_update(&global.fps) && global.replaymode == REPLAY_RECORD) {
-			replay_stage_event(global.replay_stage, global.frames, EV_FPS, global.fps.show_fps);
-		}
-
-		tsrand_lock(&global.rand_game);
-		tsrand_switch(&global.rand_visual);
-		stage_draw_scene(stage);
-		tsrand_unlock(&global.rand_game);
-		tsrand_switch(&global.rand_game);
-
-		draw_transition();
-		if(!transition_delay) {
-			update_transition();
-		}
-
-		SDL_GL_SwapWindow(video.window);
-
-		if(global.replaymode == REPLAY_PLAY && gamekeypressed(KEY_SKIP)) {
-			global.lasttime = SDL_GetTicks();
-		} else {
-			limit_frame_rate(&global.lasttime);
-		}
-	}
+	StageFrameState fstate = { .stage = stage };
+	fpscounter_reset(&global.fps);
+	loop_at_fps(stage_frame, stage_fpslimit_condition, &fstate, FPS);
 
 	if(global.game_over == GAMEOVER_RESTART && global.stage->type != STAGE_SPELL) {
 		stop_bgm(true);
