@@ -24,6 +24,7 @@ struct AniSequence{
 	int duration; // number of frames this sequence will be drawn
 	int clock;
 	int delay; // after the sequence has played loops times before the next one is started.
+	int speed; // overrides ani->speed if > 0
 
 	bool mirrored;
 	bool backwards;
@@ -46,6 +47,7 @@ void aniplayer_free(AniPlayer *plr);
 void aniplayer_reset(AniPlayer *plr); // resets to a neutral state with empty queue.
 
 AniSequence *aniplayer_queue(AniPlayer *plr, int row, int loops, int delay); // 0 loops: played one time
+AniSequence *aniplayer_queue_pro(AniPlayer *plr, int row, int start, int duration, int delay, int speed); // self-documenting pro version
 void aniplayer_update(AniPlayer *plr); // makes the inner clocks tick
 void aniplayer_play(AniPlayer *plr, float x, float y);
 

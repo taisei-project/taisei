@@ -43,6 +43,18 @@ AniSequence *aniplayer_queue(AniPlayer *plr, int row, int loops, int delay) {
 	return s;
 }
 
+AniSequence *aniplayer_queue_pro(AniPlayer *plr, int row, int start, int end, int delay, int speed) {
+	AniSequence *s = aniplayer_queue(plr,row,0,delay);
+	// i bet you didn’t expect the _pro function calling the plain one
+	s->speed = speed;
+
+	if(speed <= 0)
+		speed = plr->ani->speed;
+	s->duration = end*speed;
+	s->clock = start*speed;
+	return s;
+}
+
 void aniplayer_update(AniPlayer *plr) {
 	plr->clock++;
 	if(plr->queue) {
@@ -62,10 +74,15 @@ void aniplayer_update(AniPlayer *plr) {
 void aniplayer_play(AniPlayer *plr, float x, float y) {
 	int col = (plr->clock/plr->ani->speed) % plr->ani->cols;
 	int row = plr->stdrow;
+	int speed = plr->ani->speed;
 	bool mirror = plr->mirrored;
 	if(plr->queue) {
 		AniSequence *s = plr->queue;
-		col = ((1-2*s->backwards)*s->clock/plr->ani->speed+s->duration) % plr->ani->cols;
+		if(s->speed > 0)
+			speed = s->speed;
+		col = (s->clock/speed) % plr->ani->cols;
+		if(s->backwards)
+			col = ((s->duration-s->clock)/speed) % plr->ani->cols;
 		row = s->row;
 
 		mirror = s->mirrored;

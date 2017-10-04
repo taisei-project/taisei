@@ -214,9 +214,17 @@ int stage2_accel_circle(Enemy *e, int t) {
 	return 1;
 }
 
+static void wriggle_ani_flyin(Boss *w) {
+	aniplayer_queue_pro(&w->ani,1,3,3,120,0);
+	aniplayer_queue_pro(&w->ani,1,3,21,0,7);
+	aniplayer_queue_pro(&w->ani,1,3,33,0,3);
+	aniplayer_queue_pro(&w->ani,1,3,12,0,0);
+}
+
 void wriggle_intro(Boss *w, int t) {
-	if(t != EVENT_DEATH)
-		w->pos = VIEWPORT_W/2 + 100.0*I + 400*(1.0-t/(4.0*FPS))*cexp(I*(3-t*0.04));
+	if(t < 0)
+		return;
+	w->pos = VIEWPORT_W/2 + 100.0*I + 300*(1.0-t/(4.0*FPS))*cexp(I*(3-t*0.04));
 }
 
 int wriggle_bug(Projectile *p, int t) {
@@ -252,14 +260,16 @@ void wriggle_small_storm(Boss *w, int time) {
 
 	if(!(t%200)) {
 		int i;
+		aniplayer_queue(&w->ani,1,0,0)->speed=4;
+		play_sound("shot_special1");
 		for(i = 0; i < 10+global.diff; i++) {
-			play_sound("shot_special1");
 			create_projectile2c("bigball", w->pos, rgb(0.1,0.3,0.0), asymptotic, 2*cexp(I*i*2*M_PI/(10+global.diff)), 2);
 		}
 	}
 }
 
 void wiggle_mid_flee(Boss *w, int t) {
+	w->ani.stdrow = 1;
 	if(t >= 0) {
 		GO_TO(w, VIEWPORT_W/2 - 3.0 * t - 300 * I, 0.01)
 	}
@@ -267,6 +277,7 @@ void wiggle_mid_flee(Boss *w, int t) {
 
 Boss *create_wriggle_mid(void) {
 	Boss* wriggle = create_boss("Wriggle", "wriggle", "dialog/wriggle", VIEWPORT_W + 150 - 30.0*I);
+	wriggle_ani_flyin(wriggle);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 4, 0, wriggle_intro, NULL);
 	boss_add_attack(wriggle, AT_Normal, "Small Bug Storm", 20, 26000, wriggle_small_storm, NULL);
 	boss_add_attack(wriggle, AT_Move, "Flee", 5, 0, wiggle_mid_flee, NULL);;
