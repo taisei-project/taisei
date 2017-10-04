@@ -33,11 +33,11 @@ void stagetext_numeric_predraw(StageText *txt, int t, float a) {
     char buf[32];
     SDL_FreeSurface(txt->rendered_text);
     snprintf(buf, sizeof(buf), "%i", (int)((intptr_t)txt->custom.data1 * pow(a, 5)));
-    txt->rendered_text = fontrender_render(&resources.fontren, buf, (TTF_Font*)txt->custom.data2);
+    txt->rendered_text = fontrender_render(&resources.fontren, buf, *(TTF_Font**)txt->custom.data2);
 }
 
-StageText* stagetext_add_numeric(int n, complex pos, Alignment align, TTF_Font *font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
-    StageText *t = stagetext_add("0", pos, align, font, clr, delay, lifetime, fadeintime, fadeouttime);
+StageText* stagetext_add_numeric(int n, complex pos, Alignment align, TTF_Font **font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
+    StageText *t = stagetext_add("0", pos, align, *font, clr, delay, lifetime, fadeintime, fadeouttime);
     t->custom.data1 = (void*)(intptr_t)n;
     t->custom.data2 = (void*)font;
     t->custom.predraw = stagetext_numeric_predraw;
@@ -142,7 +142,7 @@ void stagetext_table_add(StageTextTable *tbl, const char *title, const char *val
 
 void stagetext_table_add_numeric(StageTextTable *tbl, const char *title, int n) {
     stagetext_table_add_label(tbl, title);
-    StageText *txt = stagetext_add_numeric(n, tbl->pos + tbl->width * 0.5, AL_Right, _fonts.standard, tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
+    StageText *txt = stagetext_add_numeric(n, tbl->pos + tbl->width * 0.5, AL_Right, &_fonts.standard, tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
     stagetext_table_push(tbl, txt, true);
 }
 
