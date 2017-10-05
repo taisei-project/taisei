@@ -134,7 +134,6 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBO **fbo0, FBO **fbo1) {
 			Shader *shader = get_shader("spellcard_outro");
 			glUseProgram(shader->prog);
 
-
 			float delay = ATTACK_END_DELAY;
 
 			if(boss_is_dying(b)) {

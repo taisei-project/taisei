@@ -341,6 +341,12 @@ static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
 	stagetext_table_add(&tbl, "Diff. multiplier", diff_bonus_text);
 	stagetext_table_add_numeric(&tbl, "Total", total);
 	stagetext_end_table(&tbl);
+
+	play_sound("spellend");
+
+	if(!fail) {
+		play_sound("spellclear");
+	}
 }
 
 static int attack_end_delay(Boss *boss) {
