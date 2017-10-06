@@ -26,19 +26,18 @@ Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 	return buf;
 }
 
-void draw_boss_text_ex(Alignment align, float x, float y, const char *text, TTF_Font *fnt, float alpha) {
-	glColor4f(0,0,0,alpha);
+void draw_boss_text(Alignment align, float x, float y, const char *text, TTF_Font *fnt, Color clr) {
+	Color black = rgb(0, 0, 0);
+	Color white = rgb(1, 1, 1);
+
+	parse_color_call(derive_color(black, CLRMASK_A, clr), glColor4f);
 	draw_text(align, x+1, y+1, text, fnt);
-	glColor4f(1,1,1,alpha);
+	parse_color_call(clr, glColor4f);
 	draw_text(align, x, y, text, fnt);
 
-	if(alpha < 1) {
-		glColor4f(1,1,1,1);
+	if(clr != white) {
+		parse_color_call(white, glColor4f);
 	}
-}
-
-void draw_boss_text(Alignment align, float x, float y, const char *text) {
-	draw_boss_text_ex(align, x, y, text, _fonts.standard, 1);
 }
 
 void spell_opening(Boss *b, int time) {
@@ -55,13 +54,11 @@ void spell_opening(Boss *b, int time) {
 	glScalef(scale,scale,1);
 	glRotatef(360*f,1,1,0);
 	glDisable(GL_CULL_FACE);
-	draw_boss_text(AL_Right, strw/2*(1-f), 0, b->current->name);
+	draw_boss_text(AL_Right, strw/2*(1-f), 0, b->current->name, _fonts.standard, rgb(1, 1, 1));
 	glEnable(GL_CULL_FACE);
 	glPopMatrix();
 
-
 	glUseProgram(0);
-
 }
 
 void draw_extraspell_bg(Boss *boss, int time) {
@@ -153,7 +150,7 @@ void draw_boss(Boss *boss) {
 	if(boss->current->type == AT_Move && global.frames - boss->current->starttime > 0 && boss_attack_is_final(boss, boss->current))
 		return;
 
-	draw_boss_text(AL_Left, 10, 20, boss->name);
+	draw_boss_text(AL_Left, 10, 20, boss->name, _fonts.standard, rgb(1, 1, 1));
 
 	if(!boss->current)
 		return;
@@ -163,18 +160,28 @@ void draw_boss(Boss *boss) {
 
 	if(boss->current->type != AT_Move) {
 		char buf[16];
+		float remaining = max(0, (boss->current->timeout - global.frames + boss->current->starttime)/(float)FPS);
+		Color textclr;
 
-		snprintf(buf, sizeof(buf),  "%.2f", max(0, (boss->current->timeout - global.frames + boss->current->starttime)/(float)FPS));
-		draw_boss_text(AL_Center, VIEWPORT_W - 20, 10, buf);
+		if(remaining < 6) {
+			textclr = rgb(1.0, 0.2, 0.2);
+		} else if(remaining < 11) {
+			textclr = rgb(1.0, 1.0, 0.2);
+		} else {
+			textclr = rgb(1.0, 1.0, 1.0);
+		}
+
+		snprintf(buf, sizeof(buf),  "%.2f", remaining);
+		draw_boss_text(AL_Center, VIEWPORT_W - 24, 10, buf, _fonts.standard, textclr);
 
 		StageProgress *p = get_spellstage_progress(boss->current, NULL, false);
 		if(p) {
 			float a = clamp((global.frames - boss->current->starttime - 60) / 60.0, 0, 1);
 			snprintf(buf, sizeof(buf), "%u / %u", p->num_cleared, p->num_played);
-			draw_boss_text_ex(AL_Right,
+			draw_boss_text(AL_Right,
 				VIEWPORT_W + stringwidth(buf, _fonts.small) * pow(1 - a, 2),
 				35 + stringheight(buf, _fonts.small),
-				buf, _fonts.small, a
+				buf, _fonts.small, rgba(1, 1, 1, a)
 			);
 		}
 
@@ -441,8 +448,16 @@ void process_boss(Boss **pboss) {
 		log_debug("Attack started!");
 	}
 
-	if(!boss->current->endtime)
+
+	if(!boss->current->endtime) {
+		int remaining = boss->current->timeout - time;
+
+		if(boss->current->type != AT_Move && remaining <= 11*FPS && remaining > 0 && !(time % FPS)) {
+			play_sound(remaining <= 6*FPS ? "timeout2" : "timeout1");
+		}
+
 		boss->current->rule(boss, time);
+	}
 
 	if(extra) {
 		float base = 0.2;
@@ -654,6 +669,10 @@ Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move) {
 void boss_preload(void) {
 	preload_resources(RES_SFX, RESF_OPTIONAL,
 		"charge_generic",
+		"spellend",
+		"spellclear",
+		"timeout1",
+		"timeout2",
 	NULL);
 
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
