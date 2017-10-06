@@ -95,11 +95,8 @@ typedef struct {
 	Enemy *slaves;
 
 	int inputflags;
-	int curmove;
-	int movetime;
-	int prevmove;
-	int prevmovetime;
-	int gamepadmove;
+	bool gamepadmove;
+	complex lastmovedir;
 
 	int axis_ud;
 	int axis_lr;

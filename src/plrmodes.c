@@ -264,42 +264,25 @@ int youmu_opposite_myon(Enemy *e, int t) {
 		return 1;
 
 	Player *plr = &global.plr;
-	float arg = carg(e->pos0);
 	float rad = cabs(e->pos0);
 
 	double nfocus = plr->focus / 30.0;
 
 	if(!(plr->inputflags & INFLAG_FOCUS)) {
-		if(plr->inputflags && !creal(e->args[0]))
-			arg -= (carg(e->pos0)-carg(e->pos-plr->pos))*2;
-
-		//if(global.frames - plr->prevmovetime <= 10 && global.frames == plr->movetime) {
-		if(global.frames == plr->movetime) {
-			int new = plr->curmove;
-			int old = plr->prevmove;
-
-			if(new == INFLAG_UP && old == INFLAG_DOWN) {
-				arg = M_PI/2;
-				e->args[0] = plr->movetime;
-			} else if(new == INFLAG_DOWN && old == INFLAG_UP) {
-				arg = 3*M_PI/2;
-				e->args[0] = plr->movetime;
-			} else if(new == INFLAG_LEFT && old == INFLAG_RIGHT) {
-				arg = 0;
-				e->args[0] = plr->movetime;
-			} else if(new == INFLAG_RIGHT && old == INFLAG_LEFT) {
-				arg = M_PI;
-				e->args[0] = plr->movetime;
-			}
+		if((plr->inputflags & INFLAGS_MOVE)) {
+			e->pos0 = rad * -plr->lastmovedir;
+		} else {
+			e->pos0 = e->pos - plr->pos;
+			e->pos0 *= rad / cabs(e->pos0);
 		}
 	}
 
-	if(creal(e->args[0]) && plr->movetime != creal(e->args[0]))
-		e->args[0] = 0;
-
-	e->pos0 = rad * cexp(I*arg);
 	complex target = plr->pos + e->pos0;
 	e->pos += cexp(I*carg(target - e->pos)) * min(10, 0.07 * max(0, cabs(target - e->pos) - VIEWPORT_W * 0.5 * nfocus));
+
+	if(!(plr->inputflags & INFLAG_FOCUS)) {
+		e->args[0] = plr->pos - e->pos;
+	}
 
 	if(should_shoot(true) && !(global.frames % 6) && global.plr.deathtime >= -1) {
 		int v1 = -21;
@@ -308,7 +291,7 @@ int youmu_opposite_myon(Enemy *e, int t) {
 		double r1 = (psin(global.frames * 2) * 0.5 + 0.5) * 0.1;
 		double r2 = (psin(global.frames * 1.2) * 0.5 + 0.5) * 0.1;
 
-		double a = carg(-e->pos0);
+		double a = carg(e->args[0]);
 		double u = 1 - nfocus;
 
 		int p = plr->power / 100;

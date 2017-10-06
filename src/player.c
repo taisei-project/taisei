@@ -45,9 +45,6 @@ void prepare_player_for_next_stage(Player *plr) {
 	plr->respawntime = 0;
 	plr->deathtime = -1;
 	plr->graze = 0;
-	plr->movetime = 0;
-	plr->prevmove = 0;
-	plr->prevmovetime = 0;
 	plr->axis_lr = 0;
 	plr->axis_ud = 0;
 }
@@ -94,10 +91,16 @@ void player_move(Player *plr, complex delta) {
 
 	Animation *ani = player_get_ani(plr->cha);
 
-	short xfac = fabs(creal(npos)) < fabs(creal(opos)) || fabs(creal(npos)) < VIEWPORT_W/2.0 - ani->w/2;
-	short yfac = fabs(cimag(npos)) < fabs(cimag(opos)) || fabs(cimag(npos)) < VIEWPORT_H/2.0 - ani->h/2;
+	bool xfac = fabs(creal(npos)) < fabs(creal(opos)) || fabs(creal(npos)) < VIEWPORT_W/2.0 - ani->w/2;
+	bool yfac = fabs(cimag(npos)) < fabs(cimag(opos)) || fabs(cimag(npos)) < VIEWPORT_H/2.0 - ani->h/2;
 
+	complex lastpos = plr->pos;
 	plr->pos += (creal(delta)*xfac + cimag(delta)*yfac*I)*speed;
+	complex realdir = plr->pos - lastpos;
+
+	if(cabs(realdir)) {
+		plr->lastmovedir = realdir / cabs(realdir);
+	}
 }
 
 void player_draw(Player* plr) {
@@ -305,24 +308,11 @@ static PlrInputFlag key_to_inflag(KeyIndex key) {
 	}
 }
 
-void player_updatemovevars(Player *plr, PlrInputFlag flags) {
-	PlrInputFlag newmove = INFLAGS_MOVE & flags & ~plr->inputflags;
-
-	if(newmove) {
-		newmove = (1 << (unsigned)SDL_MostSignificantBitIndex32(newmove));
-		plr->prevmove = plr->curmove;
-		plr->prevmovetime = plr->movetime;
-		plr->curmove = newmove;
-		plr->movetime = global.frames;
-	}
-}
-
 bool player_updateinputflags(Player *plr, PlrInputFlag flags) {
 	if(flags == plr->inputflags) {
 		return false;
 	}
 
-	player_updatemovevars(plr, flags);
 	plr->inputflags = flags;
 	return true;
 }
@@ -345,13 +335,7 @@ bool player_setinputflag(Player *plr, KeyIndex key, bool mode) {
 		newflags &= ~keyflag;
 	}
 
-	if(newflags == plr->inputflags) {
-		return false;
-	}
-
-	player_updatemovevars(plr, keyflag);
-	plr->inputflags = newflags;
-	return true;
+	return player_updateinputflags(plr, newflags);
 }
 
 static bool player_set_axis(int *aptr, uint16_t value) {
