@@ -11,26 +11,76 @@
 #include "enemy.h"
 #include "projectile.h"
 #include "player.h"
+#include "ending.h"
 
-/* Youmu */
+typedef enum {
+    /* do not reorder - screws replays */
 
-void youmu_opposite_draw(Enemy *e, int t);
-void youmu_opposite_logic(Enemy *e, int t);
+    PLR_CHAR_MARISA = 0,
+    PLR_CHAR_YOUMU = 1,
+    // PLR_CHAR_REIMU = 2,
 
-int youmu_homing(Projectile *p, int t);
+    NUM_CHARACTERS,
+} CharacterID;
 
-void youmu_shot(Player *plr);
-void youmu_bomb(Player *plr);
-void youmu_power(Player *plr, short npow);
+typedef enum {
+    /* do not reorder - screws replays */
 
-/* Marisa */
+    PLR_SHOT_MARISA_LASER = 0,
+    PLR_SHOT_MARISA_STAR = 1,
 
-void marisa_shot(Player *plr);
-void marisa_bomb(Player *plr);
-void marisa_power(Player *plr, short npow);
+    PLR_SHOT_YOUMU_MIRROR = 0,
+    PLR_SHOT_YOUMU_HAUNTING = 1,
 
-/* Misc */
-int plrmode_repr(char *out, size_t outsize, Character pchar, ShotMode pshot);
-int plrmode_parse(const char *name, Character *cha, ShotMode *shot);
+    NUM_SHOT_MODES_PER_CHARACTER,
+} ShotModeID;
 
+typedef void (*PlrCharEndingProc)(Ending *e);
 
+typedef struct PlayerCharacter {
+    char id;
+    const char *lower_name;
+    const char *proper_name;
+    const char *full_name;
+    const char *title;
+    const char *dialog_sprite_name;
+    const char *player_sprite_name;
+
+    struct {
+        PlrCharEndingProc good;
+        PlrCharEndingProc bad;
+    } ending;
+} PlayerCharacter;
+
+typedef void (*PlayerModeThinkProc)(Player *plr);
+typedef void (*PlayerModeShotProc)(Player *plr);
+typedef void (*PlayerModeBombProc)(Player *plr);
+typedef void (*PlayerModePowerProc)(Player *plr, short npow);
+typedef double (*PlayerModeSpeedModProc)(Player *plr, double speed);
+typedef void (*PlayerModePreloadProc)(Player *plr);
+
+typedef struct PlayerMode {
+    const char *name;
+    PlayerCharacter *character;
+    ShotModeID shot_mode;
+
+    struct {
+        PlayerModeThinkProc think;
+        PlayerModeShotProc shot;
+        PlayerModeBombProc bomb;
+        PlayerModePowerProc power;
+        PlayerModeSpeedModProc speed_mod;
+        PlayerModePreloadProc preload;
+    } procs;
+} PlayerMode;
+
+enum {
+    NUM_PLAYER_MODES = NUM_CHARACTERS * NUM_SHOT_MODES_PER_CHARACTER,
+};
+
+PlayerCharacter* plrchar_get(CharacterID id);
+void plrchar_preload(PlayerCharacter *pc);
+
+PlayerMode* plrmode_find(CharacterID charid, ShotModeID shotid);
+int plrmode_repr(char *out, size_t outsize, PlayerMode *mode);
+PlayerMode* plrmode_parse(const char *name);

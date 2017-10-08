@@ -58,6 +58,12 @@ set(SRCs
 	hashtable.c
 	boss.c
 	plrmodes.c
+	plrmodes/marisa.c
+	plrmodes/marisa_a.c
+	plrmodes/marisa_b.c
+	plrmodes/youmu.c
+	plrmodes/youmu_a.c
+	plrmodes/youmu_b.c
 	laser.c
 	dialog.c
 	fbo.c

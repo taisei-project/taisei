@@ -10,23 +10,33 @@
 #include "global.h"
 
 Dialog *stage1_dialog(void) {
-	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/cirno");
+	PlayerCharacter *pc = global.plr.mode->character;
+	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/cirno");
 
 	dadd_msg(d, Right, "Hey! Who’s there?");
 
-	if(global.plr.cha == Marisa)
-		dadd_msg(d, Left, "It’s me!");
-	else
-		dadd_msg(d, Left, "Just someone?");
+	switch(pc->id) {
+		case PLR_CHAR_MARISA:
+			dadd_msg(d, Left, "It’s me!");
+			break;
+
+		case PLR_CHAR_YOUMU:
+			dadd_msg(d, Left, "Just someone?");
+			break;
+	}
 
 	dadd_msg(d, Right, "How dare you pass the lake of the fairies?!\nIt’s a dangerous place for weak humans!");
 
-	if(global.plr.cha == Marisa) {
-		dadd_msg(d, Left, "You call me weak?");
-		dadd_msg(d, Right, "I do!");
-	} else {
-		dadd_msg(d, Left, "I’m just passing by. Got a problem with that?");
-		dadd_msg(d, Right, "Of course! You can’t do that!");
+	switch(pc->id) {
+		case PLR_CHAR_MARISA:
+			dadd_msg(d, Left, "You call me weak?");
+			dadd_msg(d, Right, "I do!");
+			break;
+
+		case PLR_CHAR_YOUMU:
+			dadd_msg(d, Left, "I’m just passing by. Got a problem with that?");
+			dadd_msg(d, Right, "Of course! You can’t do that!");
+			break;
 	}
 
 	dadd_msg(d, Right, "I’ll freeze you where you stand!");

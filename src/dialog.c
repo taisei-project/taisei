@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-Dialog *create_dialog(char *left, char *right) {
+Dialog *create_dialog(const char *left, const char *right) {
 	Dialog *d = malloc(sizeof(Dialog));
 	memset(d, 0, sizeof(Dialog));
 
@@ -25,11 +25,11 @@ Dialog *create_dialog(char *left, char *right) {
 	return d;
 }
 
-void dset_image(Dialog *d, Side side, char *name) {
+void dset_image(Dialog *d, Side side, const char *name) {
 	d->images[side] = get_tex(name);
 }
 
-void dadd_msg(Dialog *d, Side side, char *msg) {
+void dadd_msg(Dialog *d, Side side, const char *msg) {
 	d->messages = realloc(d->messages, (++d->count)*sizeof(DialogMessage));
 	d->messages[d->count-1].side = side;
 	d->messages[d->count-1].msg = malloc(strlen(msg) + 1);

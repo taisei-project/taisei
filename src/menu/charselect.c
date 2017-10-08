@@ -11,20 +11,25 @@
 #include "common.h"
 #include "global.h"
 
+// static to preserve between menu restarts
+static CharacterID selected_charid;
+static ShotModeID selected_shotid;
+
 void set_player(MenuData *m, void *p) {
-	global.plr.cha = (Character) (uintptr_t) p;
+	selected_charid = (CharacterID)(uintptr_t)p;
 }
 
 void set_shotmode(MenuData *m, void *p) {
-	global.plr.shot = (ShotMode) (uintptr_t) p;
+	selected_shotid = (ShotModeID)(uintptr_t)p;
 }
 
 void create_shottype_menu(MenuData *m) {
 	create_menu(m);
 	m->transition = NULL;
 
-	add_menu_entry(m, "Laser Sign|Mirror Sign", set_shotmode, (void *) YoumuOpposite);
-	add_menu_entry(m, "Star Sign|Haunting Sign", set_shotmode, (void *) YoumuHoming);
+	for(uintptr_t i = 0; i < NUM_SHOT_MODES_PER_CHARACTER; ++i) {
+		add_menu_entry(m, NULL, set_shotmode, (void*)i);
+	}
 }
 
 void char_menu_input(MenuData*);
@@ -41,8 +46,9 @@ void create_char_menu(MenuData *m) {
 	m->context = malloc(sizeof(MenuData));
 	create_shottype_menu(m->context);
 
-	add_menu_entry(m, "dialog/marisa|Kirisame Marisa|Black Magician", set_player, (void *)Marisa)->transition = TransFadeBlack;
-	add_menu_entry(m, "dialog/youmu|Konpaku Yōmu|Half-Phantom Girl", set_player, (void *)Youmu)->transition = TransFadeBlack;
+	for(uintptr_t i = 0; i < NUM_CHARACTERS; ++i) {
+		add_menu_entry(m, NULL, set_player, (void*)i)->transition = TransFadeBlack;
+	}
 }
 
 void draw_char_menu(MenuData *menu) {
@@ -55,23 +61,22 @@ void draw_char_menu(MenuData *menu) {
 	glColor4f(0,0,0,0.7);
 	glTranslatef(SCREEN_W/4*3, SCREEN_H/2, 0);
 	glScalef(300, SCREEN_H, 1);
-
 	draw_quad();
-
 	glPopMatrix();
 
-	char buf[128];
-	int i;
-	for(i = 0; i < menu->ecount; i++) {
-		strlcpy(buf, menu->entries[i].name, sizeof(buf));
-		char *save;
+	CharacterID current_char;
 
-		char *tex = strtok_r(buf,"|", &save);
-		char *name = strtok_r(NULL, "|", &save);
-		char *title = strtok_r(NULL, "|", &save);
+	for(int i = 0; i < menu->ecount; i++) {
+		PlayerCharacter *pchar = plrchar_get((CharacterID)(uintptr_t)menu->entries[i].arg);
+		assert(pchar != NULL);
 
-		if(!(tex && name && title))
-			continue;
+		const char *tex = pchar->dialog_sprite_name;
+		const char *name = pchar->full_name;
+		const char *title = pchar->title;
+
+		if(menu->cursor == i) {
+			current_char = pchar->id;
+		}
 
 		menu->entries[i].drawdata += 0.08*(1.0*(menu->cursor != i) - menu->entries[i].drawdata);
 
@@ -91,29 +96,36 @@ void draw_char_menu(MenuData *menu) {
 		draw_text(AL_Center, 0, 0, name, _fonts.mainmenu);
 		glPopMatrix();
 
-		if(menu->entries[i].drawdata)
+		if(menu->entries[i].drawdata) {
 			glColor4f(1,1,1,1-menu->entries[i].drawdata*3);
-		draw_text(AL_Center, 0, 70, title, _fonts.standard);
-
-		strlcpy(buf, mod->entries[i].name, sizeof(buf));
-
-		char *mari = strtok_r(buf, "|", &save);
-		char *youmu = strtok_r(NULL, "|", &save);
-
-		char *use = menu->entries[menu->cursor].arg == (void *)Marisa ? mari : youmu;
-
-		if(menu->entries[i].drawdata)
+		} else {
 			glColor4f(1,1,1,1);
+		}
 
-		if(mod->cursor == i)
-			glColor4f(0.9,0.6,0.2,1);
-		draw_text(AL_Center, 0, 200+40*i, use, _fonts.standard);
-
+		draw_text(AL_Center, 0, 70, title, _fonts.standard);
 		glPopMatrix();
 	}
+
+	glPushMatrix();
+	glTranslatef(SCREEN_W/4*3, SCREEN_H/3, 0);
+
+	for(int i = 0; i < mod->ecount; i++) {
+		PlayerMode *mode = plrmode_find(current_char, (ShotModeID)(uintptr_t)mod->entries[i].arg);
+		assert(mode != NULL);
+
+		if(mod->cursor == i) {
+			glColor4f(0.9,0.6,0.2,1);
+		} else {
+			glColor4f(1,1,1,1);
+		}
+
+		draw_text(AL_Center, 0, 200+40*i, mode->name, _fonts.standard);
+	}
+
+	glPopMatrix();
 	glColor4f(1,1,1,0.3*sin(menu->frames/20.0)+0.5);
 
-	for(i = 0; i <= 1; i++) {
+	for(int i = 0; i <= 1; i++) {
 		glPushMatrix();
 
 		glTranslatef(60 + (SCREEN_W/2 - 30)*i, SCREEN_H/2+80, 0);
@@ -180,6 +192,7 @@ void char_menu_input(MenuData *menu) {
 }
 
 void free_char_menu(MenuData *menu) {
+	global.plr.mode = plrmode_find(selected_charid, selected_shotid);
 	MenuData *mod = menu->context;
 	destroy_menu(mod);
 	free(mod);

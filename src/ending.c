@@ -32,6 +32,10 @@ void add_ending_entry(Ending *e, int dur, char *msg, char *tex) {
 		entry->tex = NULL;
 }
 
+/*
+ * These ending callbacks are referenced in plrmodes/ code
+ */
+
 void bad_ending_marisa(Ending *e) {
 	add_ending_entry(e, 300, "After her consciousness had faded while she was falling down the tower,\nMarisa found herself waking up in a clearing of the magical forest.", NULL);
 	add_ending_entry(e, 300, "She saw the sun set.", NULL);
@@ -72,25 +76,10 @@ void create_ending(Ending *e) {
 	memset(e, 0, sizeof(Ending));
 
 	if(global.continues || global.diff == D_Easy) {
-		switch(global.plr.cha) {
-		case Marisa:
-			bad_ending_marisa(e);
-			break;
-		case Youmu:
-			bad_ending_youmu(e);
-			break;
-		}
-
+		global.plr.mode->character->ending.bad(e);
 		add_ending_entry(e, 400, "Try a no continue run on higher difficulties. You can do it!", NULL);
 	} else {
-		switch(global.plr.cha) {
-		case Marisa:
-			good_ending_marisa(e);
-			break;
-		case Youmu:
-			good_ending_youmu(e);
-			break;
-		}
+		global.plr.mode->character->ending.good(e);
 		add_ending_entry(e, 400, "Sorry, extra stage isn’t done yet. ^^", NULL);
 	}
 

@@ -185,7 +185,7 @@ static void stage_start(StageInfo *stage) {
 	global.game_over = 0;
 	global.shake_view = 0;
 
-	prepare_player_for_next_stage(&global.plr);
+	player_stage_pre_init(&global.plr);
 
 	if(stage->type == STAGE_SPELL) {
 		global.plr.lives = 0;
@@ -599,7 +599,7 @@ void stage_loop(StageInfo *stage) {
 			global.replay_stage = replay_create_stage(&global.replay, stage, seed, global.diff, global.plr.points, &global.plr);
 
 			// make sure our player state is consistent with what goes into the replay
-			init_player(&global.plr);
+			player_init(&global.plr);
 			replay_stage_sync_player_state(global.replay_stage, &global.plr);
 		} else {
 			global.replay_stage = NULL;
@@ -632,17 +632,12 @@ void stage_loop(StageInfo *stage) {
 		log_debug("Random seed: %u", stg->seed);
 
 		global.diff = stg->diff;
-		init_player(&global.plr);
+		player_init(&global.plr);
 		replay_stage_sync_player_state(stg, &global.plr);
 		stg->playpos = 0;
 	}
 
-	// TODO: remove handle_fullpower from player_set_power and get rid of this hack
-	short power = global.plr.power;
-	global.plr.power = -1;
-	delete_enemies(&global.plr.slaves);
-	player_set_power(&global.plr, power,false);
-
+	player_stage_post_init(&global.plr);
 	stage->procs->begin();
 
 	StageFrameState fstate = { .stage = stage };

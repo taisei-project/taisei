@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "player.h"
+#include "plrmodes.h"
 
 typedef enum {
 	CLI_RunNormally = 0,
@@ -26,9 +26,7 @@ struct CLIAction {
 	int stageid;
 	int diff;
 	int frameskip;
-
-	Character plrcha;
-	ShotMode plrshot;
+	PlayerMode *plrmode;
 };
 
 int cli_args(int argc, char **argv, CLIAction *a);

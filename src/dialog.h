@@ -37,9 +37,9 @@ typedef struct Dialog {
 	int birthtime;
 } Dialog;
 
-Dialog *create_dialog(char *left, char *right);
-void dset_image(Dialog *d, Side side, char *name);
-void dadd_msg(Dialog *d, Side side, char *msg);
+Dialog *create_dialog(const char *left, const char *right);
+void dset_image(Dialog *d, Side side, const char *name);
+void dadd_msg(Dialog *d, Side side, const char *msg);
 void delete_dialog(Dialog *d);
 
 void draw_dialog(Dialog *dialog);

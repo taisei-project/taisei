@@ -20,7 +20,7 @@ static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty
     Difficulty stagediff;
     bool restart;
 
-    init_player(&global.plr);
+    player_init(&global.plr);
 
     do {
         restart = false;
@@ -49,9 +49,7 @@ static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty
 
     global.replay_stage = NULL;
     replay_init(&global.replay);
-
-    int chr = global.plr.cha;
-    int sht = global.plr.shot;
+    PlayerMode *mode = global.plr.mode;
 
     do {
         restart = false;
@@ -68,13 +66,12 @@ static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty
         }
 
         if(global.game_over == GAMEOVER_RESTART) {
-            init_player(&global.plr);
+            player_init(&global.plr);
             replay_destroy(&global.replay);
             replay_init(&global.replay);
             global.game_over = 0;
-            init_player(&global.plr);
-            global.plr.cha  = chr;
-            global.plr.shot = sht;
+            player_init(&global.plr);
+            global.plr.mode = mode;
 
             restart = true;
         }

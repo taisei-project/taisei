@@ -228,9 +228,12 @@ int main(int argc, char **argv) {
 
 		do {
 			global.game_over = 0;
-			init_player(&global.plr);
-			global.plr.cha = a.plrcha;
-			global.plr.shot = a.plrshot;
+			player_init(&global.plr);
+
+			if(a.plrmode) {
+				global.plr.mode = a.plrmode;
+			}
+
 			stage_loop(stg);
 		} while(global.game_over == GAMEOVER_RESTART);
 

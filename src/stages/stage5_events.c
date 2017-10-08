@@ -12,7 +12,8 @@
 #include <float.h>
 
 Dialog *stage5_post_mid_dialog(void) {
-	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", NULL);
+	PlayerCharacter *pc = global.plr.mode->character;
+	Dialog *d = create_dialog(pc->dialog_sprite_name, NULL);
 
 	dadd_msg(d, Left, "Hey! Stop!");
 
@@ -20,15 +21,17 @@ Dialog *stage5_post_mid_dialog(void) {
 }
 
 Dialog *stage5_boss_dialog(void) {
-	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/iku");
-	if(global.plr.cha == Marisa) {
+	PlayerCharacter *pc = global.plr.mode->character;
+	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/iku");
+
+	if(pc->id == PLR_CHAR_MARISA) {
 		dadd_msg(d, Left, "Finally!");
 		dadd_msg(d, Right, "Stop following me!");
 		dadd_msg(d, Left, "Why? You aren’t involved in this, are you?");
 		dadd_msg(d, Right, "I don’t have time for your suspicions now.");
 		dadd_msg(d, Left, "Sounds very suspicious, actually.");
 		dadd_msg(d, Right, "Okay, let’s just get this over with.");
-	} else {
+	} else if(pc->id == PLR_CHAR_YOUMU) {
 		dadd_msg(d, Left, "There you are!");
 		dadd_msg(d, Right, "Stop following me!");
 		dadd_msg(d, Left, "You look very suspicious to me…");
@@ -41,12 +44,13 @@ Dialog *stage5_boss_dialog(void) {
 }
 
 Dialog *stage5_post_boss_dialog(void) {
-	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", NULL);
+	PlayerCharacter *pc = global.plr.mode->character;
+	Dialog *d = create_dialog(pc->dialog_sprite_name, NULL);
 
 	dadd_msg(d, Left, "I can see the top!");
-	if(global.plr.cha == Marisa) {
+	if(pc->id == PLR_CHAR_MARISA) {
 		dadd_msg(d, Left, "Hopefully climbing all those stairs\nwas worth it.");
-	} else {
+	} else if(pc->id == PLR_CHAR_YOUMU) {
 		dadd_msg(d, Left, "Looks like she really wasn’t behind this…\nWell this tower looks magnificent though!");
 		dadd_msg(d, Left, "It’s the type of tower that never comes\nwithout an evil genius at its top.");
 	}

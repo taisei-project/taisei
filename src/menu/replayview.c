@@ -161,7 +161,7 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 				break;
 
 			case 2:
-				plrmode_repr(tmp, sizeof(tmp), rpy->stages[0].plr_char, rpy->stages[0].plr_shot);
+				plrmode_repr(tmp, sizeof(tmp), plrmode_find(rpy->stages[0].plr_char, rpy->stages[0].plr_shot));
 				tmp[0] = tmp[0] - 'a' + 'A';
 				break;
 

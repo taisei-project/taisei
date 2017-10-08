@@ -26,7 +26,7 @@ void save_rpy(MenuData *menu, void *a) {
 	strftime(strtime, 128, "%Y%m%d_%H-%M-%S_%Z", timeinfo);
 
 	char prepr[16], drepr[16];
-	plrmode_repr(prepr, 16, rpy->stages[0].plr_char, rpy->stages[0].plr_shot);
+	plrmode_repr(prepr, 16, plrmode_find(rpy->stages[0].plr_char, rpy->stages[0].plr_shot));
 	strlcpy(drepr, difficulty_name(rpy->stages[0].diff), 16);
 	drepr[0] += 'a' - 'A';
 

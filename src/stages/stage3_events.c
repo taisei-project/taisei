@@ -12,13 +12,14 @@
 #include "enemy.h"
 
 Dialog *stage3_dialog(void) {
-	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/wriggle");
+	PlayerCharacter *pc = global.plr.mode->character;
+	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/wriggle");
 
-	if(global.plr.cha == Marisa) {
+	if(pc->id == PLR_CHAR_MARISA) {
 		dadd_msg(d, Left, "Ugh, it’s like bugs being attracted by the light…");
 		dadd_msg(d, Right, "That’s right! The light makes us strong!");
 		dadd_msg(d, Right, "And this place is filled with it!\nFeel my tremendous power!");
-	} else {
+	} else if(pc->id == PLR_CHAR_YOUMU) {
 		dadd_msg(d, Left, "Eww, I can’t stand bugs.");
 		dadd_msg(d, Right, "Don’t discriminate! We are A-class yōkai!\nVery dangerous!");
 		dadd_msg(d, Left, "You mean very delusional?\nI usually step on you.");
