@@ -30,13 +30,7 @@ void player_stage_pre_init(Player *plr) {
 	plr->graze = 0;
 	plr->axis_lr = 0;
 	plr->axis_ud = 0;
-
-	assert(plr->mode != NULL);
-	plrchar_preload(plr->mode->character);
-
-	if(plr->mode->procs.preload) {
-		plr->mode->procs.preload(plr);
-	}
+	plrmode_preload(plr->mode);
 }
 
 void player_stage_post_init(Player *plr) {

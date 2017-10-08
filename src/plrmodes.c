@@ -102,3 +102,12 @@ PlayerMode* plrmode_parse(const char *name) {
 
 	return plrmode_find(char_id, shot_id);
 }
+
+void plrmode_preload(PlayerMode *mode) {
+	assert(mode != NULL);
+	plrchar_preload(mode->character);
+
+	if(mode->procs.preload) {
+		mode->procs.preload();
+	}
+}

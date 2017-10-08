@@ -210,15 +210,21 @@ static void youmu_haunting_shot(Player *plr) {
 }
 
 static void youmu_haunting_bomb(Player *plr) {
-    play_sound("haunt");
+    play_sound("bomb_youmu_b");
     create_enemy_p(&plr->slaves, 40.0*I, ENEMY_BOMB, YoumuSlash, youmu_slash, 280,0,0,0);
 }
 
-static void youmu_haunting_preload(Player *plr) {
+static void youmu_haunting_preload(void) {
     const int flags = RESF_DEFAULT;
 
+    preload_resources(RES_TEXTURE, flags,
+        "proj/youmu",
+        "part/youmu_slice",
+
+    NULL);
+
     preload_resources(RES_SFX, flags | RESF_OPTIONAL,
-        "haunt",
+        "bomb_youmu_b",
     NULL);
 }
 
