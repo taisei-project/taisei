@@ -24,7 +24,7 @@
 # Example:
 #   CHECK_AND_SET_FLAGS(NDR_SUP "-Wnull-dereference" DBG_CFLAGS)
 #     - adds "-Wnull-dereference" to DBG_CFLAGS if build of test source
-#       succeeds with this flags passed compile stage call of cc.
+#       succeeds with this flags passed to compile stage call of cc.
 #
 #   CHECK_AND_SET_FLAGS(ST_SUP "-fsanitize=thread -fPIE" DBG_CF "-pie" DBG_LDF)
 #     - adds "-fsanitize=thread -fPIE" to DBG_CF and "-pie" to DBG_LDF
