@@ -627,6 +627,7 @@ void player_preload(void) {
 		"death",
 		"generic_shot",
 		"masterspark",
+		"haunt",
 		"full_power",
 		"extra_life",
 		"extra_bomb",

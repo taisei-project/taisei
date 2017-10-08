@@ -421,6 +421,7 @@ void youmu_bomb(Player *plr) {
 
 			break;
 		case YoumuHoming:
+			play_sound("haunt");
 			create_enemy_p(&plr->slaves, 40.0*I, ENEMY_BOMB, YoumuSlash, youmu_slash, 280,0,0,0);
 			break;
 	}
