@@ -22,7 +22,7 @@ Dialog *stage2_dialog(void) {
 		dadd_msg(d, Left, "Is that even possible?!");
 		dadd_msg(d, Right, "Look, there is a way outside\nright behind us.");
 		dadd_msg(d, Left, "But I’ve got a feeling that you\nwon’t let me pass, haha!");
-		dadd_msg(d, Right, "You are my prey after all!");
+		dadd_msg(d, Right, "First let me see if I can collect some misfortune from you!");
 	} else {
 		dadd_msg(d, Left, "This must be the place…");
 		dadd_msg(d, Right, "Hello? ");

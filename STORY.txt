@@ -144,7 +144,7 @@
   ○ Stage 3 Boss
     Wriggle
 
-    When half-yōkai like Wriggle gain a reasonable amount of power, it is only
+    When bug-yōkai like Wriggle gain a reasonable amount of power, it is only
     natural for them to become a bit overconfident. Fortunately, that alone
     wasn’t enough for her to become the final boss.
 
@@ -181,10 +181,11 @@
   ○ Stage 6 Boss
     Elly
 
-    She quit her task of guarding that mansion in Lotus Land Story and obtained
-    a new power from the outside world: the power to manipulate relations
-    (i.e. she can do fancy maths). This enabled her to trick Gensōkyō’s border*
-    and create herself a new place for research using her new powers.
+    She quit her task of guarding that mansion in Lotus Land Story for unknown
+    reasons and obtained a new power and character from the outside world: the
+    power to manipulate relations (i.e. she can do fancy maths). This enabled
+    her to trick Gensōkyō’s border* and create herself a new place for research
+    using her new powers.
 
     On that high tower, she wants to research The Theory of Everything.
 
