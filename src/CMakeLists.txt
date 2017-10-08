@@ -10,11 +10,6 @@ endif()
 
 find_package(PkgConfig REQUIRED)
 
-if(CMAKE_VERSION VERSION_LESS 3.3 AND PACKAGE_DATA)
-	message(WARNING "Your version of CMake is too old, so packaging of data will not be used. Upgrade CMake to at least version 3.3 to enable packaging or specify PACKAGE_DATA=OFF to avoid this warning.")
-	set(PACKAGE_DATA OFF PARENT_SCOPE)
-endif()
-
 if(LINK_TO_LIBGL)
 	find_package(OpenGL REQUIRED)
 	add_definitions(-DLINK_TO_LIBGL)
@@ -26,20 +21,10 @@ pkg_check_modules(SDL2 sdl2>=2.0.5 REQUIRED)
 pkg_check_modules(SDL2_TTF SDL2_ttf REQUIRED)
 pkg_check_modules(ZLIB zlib REQUIRED)
 pkg_check_modules(PNG libpng>=1.5 REQUIRED)
-pkg_check_modules(ZIP libzip>=1.0)
-
-if(NOT ZIP_FOUND AND NOT DISABLE_ZIP)
-	message(WARNING "You have no suitable libzip, so packaging of data will not be used and ZIP support will be disabled. Install at least libzip 1.0 to enable ZIP support or specify DISABLE_ZIP=ON to avoid this warning.")
-	set(DISABLE_ZIP ON)
-endif()
+pkg_check_modules(ZIP libzip>=1.0 REQUIRED)
 
 if(NOT NO_AUDIO)
 	pkg_check_modules(SDL2_MIXER SDL2_mixer REQUIRED)
-endif()
-
-if(DISABLE_ZIP)
-	set(PACKAGE_DATA OFF PARENT_SCOPE)
-	add_definitions(-DDISABLE_ZIP)
 endif()
 
 configure_file(
@@ -123,23 +108,18 @@ set(SRCs
 	rwops/rwops_zlib.c
 	rwops/rwops_segment.c
 	rwops/rwops_autobuf.c
+	rwops/rwops_zipfile.c
 	vfs/private.c
 	vfs/public.c
 	vfs/setup.c
 	vfs/pathutil.c
 	vfs/union.c
 	vfs/vdir.c
+	vfs/zipfile.c
+	vfs/zippath.c
 	version.c
 	"${CMAKE_CURRENT_BINARY_DIR}/version_auto.c"
 )
-
-if(NOT DISABLE_ZIP)
-	set(SRCs ${SRCs}
-		rwops/rwops_zipfile.c
-		vfs/zipfile.c
-		vfs/zippath.c)
-
-endif()
 
 if(WIN32)
 	set(SRCs ${SRCs}
@@ -177,11 +157,6 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug" OR "${CMAKE_BUILD_TYPE}" STREQUAL "Rel
 	set(DEBUG_BUILD TRUE)
 endif()
 
-if("${CMAKE_BUILD_TYPE}" STREQUAL "Release" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
-	# "Release build" is a build where ${RELEASE_FLAGS} are used.
-	set(RELEASE_BUILD TRUE)
-endif()
-
 if(DEBUG_USE_UBSAN AND DEFINED DEBUG_BUILD)
 	CHECK_AND_SET_FLAGS(COMPILER_SUPPORTS_UBSAN "-fsanitize=undefined" DEBUG_FLAGS "-fsanitize=undefined")
 endif()
@@ -190,8 +165,8 @@ if(DEBUG_USE_ASAN AND DEFINED DEBUG_BUILD)
 	CHECK_AND_SET_FLAGS(COMPILER_SUPPORTS_ASAN "-fsanitize=address" DEBUG_FLAGS "-fsanitize=address")
 endif()
 
-if(RELEASE_USE_LTO AND DEFINED RELEASE_BUILD)
-	CHECK_AND_SET_FLAGS(COMPILER_SUPPORTS_LTO "-flto" RELEASE_FLAGS)
+if(RELEASE_USE_LTO)
+	set(RELEASE_FLAGS "${RELEASE_FLAGS} -flto")
 endif()
 
 set(CMAKE_C_FLAGS_DEBUG "${DEBUG_FLAGS} -DDEBUG")
@@ -204,7 +179,7 @@ CHECK_AND_SET_FLAGS(COMPILER_WARN_PEDANTIC "-Wpedantic" WARNINGS)
 CHECK_AND_SET_FLAGS(COMPILER_WARN_NULLDEREF "-Wnull-dereference" WARNINGS)
 
 if(RELATIVE)
-	add_definitions(-DRELATIVE)
+    add_definitions(-DRELATIVE)
 endif()
 
 if(WERROR)
@@ -245,6 +220,12 @@ if(WIN32)
 	string(REPLACE "gcc" "windres" CMAKE_RC_COMPILER_INIT ${CMAKE_C_COMPILER})
 	enable_language(RC)
 	set(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> -O coff -o <OBJECT> <SOURCE>")
+
+	if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+		set(RELEASE_BUILD TRUE)
+	endif()
+
+	# DEBUG_BUILD is also used in the template and is defined above
 
 	configure_file(
 		"${CMAKE_CURRENT_SOURCE_DIR}/taisei.rc.in"

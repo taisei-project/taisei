@@ -38,7 +38,6 @@ static void get_core_paths(char **res, char **storage) {
     }
 }
 
-#ifndef DISABLE_ZIP
 static bool filter_zip_ext(const char *str) {
     char buf[strlen(str) + 1];
     memset(buf, 0, sizeof(buf));
@@ -76,7 +75,6 @@ static void load_packages(const char *dir, const char *unionmp) {
 
     vfs_dir_list_free(ziplist, numzips);
 }
-#endif
 
 void vfs_setup(bool silent) {
     char *res_path, *storage_path;
@@ -128,10 +126,8 @@ void vfs_setup(bool silent) {
                 continue;
             }
 
-#ifndef DISABLE_ZIP
             // load all ZIPs from this directory into the respkgs union
             load_packages("tmp", "respkgs");
-#endif
 
             // now mount it to the intended destination, and remove the temporary mountpoint
             vfs_mount_alias(mp->dest, "tmp");
