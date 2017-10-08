@@ -23,8 +23,7 @@ static void continue_game(MenuData *m, void *arg) {
 	global.plr.life_fragments = 0;
 	global.continues += 1;
 
-	delete_projectiles(&global.projs);
-	delete_projectiles(&global.particles);
+	stage_clear_hazards(false);
 }
 
 static void give_up(MenuData *m, void *arg) {
