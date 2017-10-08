@@ -16,6 +16,7 @@ void aniplayer_create(AniPlayer *plr, Animation *ani) {
 }
 
 void aniplayer_free(AniPlayer *plr) {
+	plr->queuesize = 0; // prevent aniplayer_reset from messing with the queue, since we're going to wipe all of it anyway
 	delete_all_elements((void **)&plr->queue,delete_element);
 	aniplayer_reset(plr);
 }
