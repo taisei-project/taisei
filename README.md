@@ -74,9 +74,7 @@ Also note that we currently only handle input from analog axes and digital butto
 ## Background music
 
 Currently Taisei does not include any background music. To use this feature,
-you should have the required audio files in the `bgm/` subdirectory of global
-resource directory (for example, `$prefix/share/taisei/bgm/`), or better,
-in user-specific resource directory (`$HOME/.local/share/taisei/resources/bgm/`).
+you should have the required audio files in the `bgm/` subdirectory.
 BGM (as well as SFX) may be in `.wav`, `.flac`, or `.ogg` format; additionally
 you may try other formats such as `.mp3`, `.aiff`, `.mod`, `.xm`, etc. if your
 build of SDL2_mixer supports these formats.
@@ -92,11 +90,7 @@ The complete music pack consists of 16 tracks:
 ```
 
 If you want to specify stage/boss theme names to be shown during gameplay, you
-may do it by editing the [`resources/bgm/bgm.conf`](bgm/bgm.conf) file. It can
-be done either before building Taisei (then modified file will be packed along
-with other game resources if `PACKAGE_DATA` is on), or after installation (then
-modified `bgm.conf` will override packed one; in that case it should be placed
-in any of the `bgm/` directories mentioned above).
+may do it by editing the [`resources/bgm/bgm.conf`](bgm/bgm.conf) file.
 
 ## Sound problems (Linux)
 
