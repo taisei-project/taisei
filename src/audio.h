@@ -24,6 +24,12 @@ typedef struct CurrentBGM {
 
 extern CurrentBGM current_bgm;
 
+typedef enum {
+    SNDGROUP_ALL,
+    SNDGROUP_MAIN,
+    SNDGROUP_UI,
+} AudioBackendSoundGroup;
+
 void audio_backend_init(void);
 void audio_backend_shutdown(void);
 bool audio_backend_initialized(void);
@@ -35,9 +41,12 @@ void audio_backend_music_resume(void);
 void audio_backend_music_stop(void);
 void audio_backend_music_pause(void);
 bool audio_backend_music_play(void *impl);
-bool audio_backend_sound_play(void *impl);
-bool audio_backend_sound_loop(void *impl);
+bool audio_backend_sound_play(void *impl, AudioBackendSoundGroup group);
+bool audio_backend_sound_loop(void *impl, AudioBackendSoundGroup group);
 bool audio_backend_sound_stop_loop(void *impl);
+bool audio_backend_sound_pause_all(AudioBackendSoundGroup group);
+bool audio_backend_sound_resume_all(AudioBackendSoundGroup group);
+bool audio_backend_sound_stop_all(AudioBackendSoundGroup group);
 
 void audio_init(void);
 void audio_shutdown(void);
@@ -47,9 +56,10 @@ void play_sound_cooldown(const char *name, int cooldown);
 void play_loop(const char *name);
 void play_ui_sound(const char *name);
 void reset_sounds(void);
-
+void pause_sounds(void);
+void resume_sounds(void);
+void stop_sounds(void);
 void update_sounds(void); // checks if loops need to be stopped
-void stop_looping_sounds(void); // force-stops all loops
 
 int get_default_sfx_volume(const char *sfx);
 

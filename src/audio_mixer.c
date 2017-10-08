@@ -16,8 +16,16 @@
 #define AUDIO_FREQ 44100
 #define AUDIO_FORMAT MIX_DEFAULT_FORMAT
 #define AUDIO_CHANNELS 100
+#define UI_CHANNELS 4
+#define UI_CHANNEL_GROUP 0
+#define MAIN_CHANNEL_GROUP 1
 
 static bool mixer_loaded = false;
+
+static struct {
+	unsigned char first;
+	unsigned char num;
+} groups[2];
 
 const char *mixer_audio_exts[] = { ".bgm", ".wav", ".ogg", ".mp3", ".mod", ".xm", ".s3m",
 		".669", ".it", ".med", ".mid", ".flac", ".aiff", ".voc",
@@ -46,6 +54,7 @@ void audio_backend_init(void) {
 	}
 
 	int channels = Mix_AllocateChannels(AUDIO_CHANNELS);
+
 	if(!channels) {
 		log_warn("Unable to allocate any channels");
 		Mix_CloseAudio();
@@ -54,8 +63,38 @@ void audio_backend_init(void) {
 	}
 
 	if(channels < AUDIO_CHANNELS) {
-		log_warn("Allocated only %d of %d channels", channels, AUDIO_CHANNELS);
+		log_warn("Allocated only %d out of %d channels", channels, AUDIO_CHANNELS);
 	}
+
+	int wanted_ui_channels = UI_CHANNELS;
+
+	if(wanted_ui_channels > channels / 2) {
+		wanted_ui_channels = channels / 2;
+		log_warn("Will not reserve more than %i channels for UI sounds (wanted %i channels)", wanted_ui_channels, UI_CHANNELS);
+	}
+
+	int ui_channels;
+
+	if((ui_channels = Mix_GroupChannels(0, wanted_ui_channels - 1, UI_CHANNEL_GROUP)) != wanted_ui_channels) {
+		log_warn("Assigned only %d out of %d channels to the UI group", ui_channels, wanted_ui_channels);
+	}
+
+	int wanted_main_channels = channels - ui_channels, main_channels;
+
+	if((main_channels = Mix_GroupChannels(ui_channels, ui_channels + wanted_main_channels - 1, MAIN_CHANNEL_GROUP)) != wanted_main_channels) {
+		log_warn("Assigned only %d out of %d channels to the main group", main_channels, wanted_main_channels);
+	}
+
+	int unused_channels = channels - ui_channels - main_channels;
+
+	if(unused_channels) {
+		log_warn("%i channels not used", unused_channels);
+	}
+
+	groups[UI_CHANNEL_GROUP].first = 0;
+	groups[UI_CHANNEL_GROUP].num = ui_channels;
+	groups[MAIN_CHANNEL_GROUP].first = ui_channels;
+	groups[MAIN_CHANNEL_GROUP].num = main_channels;
 
 	mixer_loaded = true;
 
@@ -87,10 +126,10 @@ void audio_backend_init(void) {
 }
 
 void audio_backend_shutdown(void) {
+	mixer_loaded = false;
 	Mix_CloseAudio();
 	Mix_Quit();
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
-	mixer_loaded = false;
 
 	log_info("Audio subsystem uninitialized (SDL2_Mixer)");
 }
@@ -202,11 +241,33 @@ bool audio_backend_music_play(void *impl) {
 	return result;
 }
 
-bool audio_backend_sound_play(void *impl) {
+static int translate_group(AudioBackendSoundGroup group, int defmixgroup) {
+	switch(group) {
+		case SNDGROUP_MAIN:	return MAIN_CHANNEL_GROUP;
+		case SNDGROUP_UI:	return UI_CHANNEL_GROUP;
+		default:			return defmixgroup;
+	}
+}
+
+static int pick_channel(AudioBackendSoundGroup group, int defmixgroup) {
+	int mixgroup = translate_group(group, MAIN_CHANNEL_GROUP);
+	int channel = -1;
+
+	if((channel = Mix_GroupAvailable(mixgroup)) < 0) {
+		// all channels busy? try to override the oldest playing sound
+		if((channel = Mix_GroupOldest(mixgroup)) < 0) {
+			log_warn("No suitable channel available in group %i to play the sample on", mixgroup);
+		}
+	}
+
+	return channel;
+}
+
+bool audio_backend_sound_play(void *impl, AudioBackendSoundGroup group) {
 	if(!mixer_loaded)
 		return false;
 
-	bool result = (Mix_PlayChannel(-1, ((MixerInternalSound*)impl)->ch, 0) != -1);
+	bool result = (Mix_PlayChannel(pick_channel(group, MAIN_CHANNEL_GROUP), ((MixerInternalSound*)impl)->ch, 0) != -1);
 
 	if(!result) {
 		log_warn("Mix_PlayChannel() failed: %s", Mix_GetError());
@@ -215,12 +276,12 @@ bool audio_backend_sound_play(void *impl) {
 	return result;
 }
 
-bool audio_backend_sound_loop(void *impl) {
+bool audio_backend_sound_loop(void *impl, AudioBackendSoundGroup group) {
 	if(!mixer_loaded)
 		return false;
 
 	MixerInternalSound *snd = (MixerInternalSound *)impl;
-	snd->loopchan = Mix_PlayChannel(-1, snd->ch, -1);
+	snd->loopchan = Mix_PlayChannel(pick_channel(group, MAIN_CHANNEL_GROUP), snd->ch, -1);
 
 	if(snd->loopchan == -1) {
 		log_warn("Mix_PlayChannel() failed: %s", Mix_GetError());
@@ -241,4 +302,61 @@ bool audio_backend_sound_stop_loop(void *impl) {
 
 	return true;
 
+}
+
+bool audio_backend_sound_pause_all(AudioBackendSoundGroup group) {
+	if(!mixer_loaded) {
+		return false;
+	}
+
+	int mixgroup = translate_group(group, -1);
+
+	if(mixgroup == -1) {
+		Mix_Pause(-1);
+	} else {
+		// why is there no Mix_PauseGroup?
+
+		for(int i = groups[mixgroup].first; i < groups[mixgroup].first + groups[mixgroup].num; ++i) {
+			Mix_Pause(i);
+		}
+	}
+
+	return true;
+}
+
+
+bool audio_backend_sound_resume_all(AudioBackendSoundGroup group) {
+	if(!mixer_loaded) {
+		return false;
+	}
+
+	int mixgroup = translate_group(group, -1);
+
+	if(mixgroup == -1) {
+		Mix_Resume(-1);
+	} else {
+		// why is there no Mix_ResumeGroup?
+
+		for(int i = groups[mixgroup].first; i < groups[mixgroup].first + groups[mixgroup].num; ++i) {
+			Mix_Resume(i);
+		}
+	}
+
+	return true;
+}
+
+bool audio_backend_sound_stop_all(AudioBackendSoundGroup group) {
+	if(!mixer_loaded) {
+		return false;
+	}
+
+	int mixgroup = translate_group(group, -1);
+
+	if(mixgroup == -1) {
+		Mix_HaltChannel(-1);
+	} else {
+		Mix_HaltGroup(mixgroup);
+	}
+
+	return true;
 }

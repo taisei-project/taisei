@@ -18,19 +18,19 @@ static Hashtable *bgm_descriptions;
 static Hashtable *sfx_volumes;
 CurrentBGM current_bgm = { .name = NULL };
 
-static void play_sound_internal(const char *name, bool unconditional, int cooldown) {
+static void play_sound_internal(const char *name, bool is_ui, int cooldown) {
 	if(!audio_backend_initialized() || global.frameskip) {
 		return;
 	}
 
 	Sound *snd = get_sound(name);
 
-	if(!snd || (!unconditional && snd->lastplayframe + 3 + cooldown >= global.frames) || snd->islooping) {
+	if(!snd || (!is_ui && snd->lastplayframe + 3 + cooldown >= global.frames) || snd->islooping) {
 		return;
 	}
 
 	snd->lastplayframe = global.frames;
-	audio_backend_sound_play(snd->impl);
+	audio_backend_sound_play(snd->impl, is_ui ? SNDGROUP_UI : SNDGROUP_MAIN);
 }
 
 void play_sound(const char *name) {
@@ -55,13 +55,13 @@ void play_loop(const char *name) {
 	if(!snd) {
 		return;
 	}
+
 	snd->lastplayframe = global.frames;
 	if(!snd->islooping) {
-		audio_backend_sound_loop(snd->impl);
+		audio_backend_sound_loop(snd->impl, SNDGROUP_MAIN);
 		snd->islooping = true;
 	}
 }
-
 
 void reset_sounds(void) {
 	Resource *snd;
@@ -69,8 +69,8 @@ void reset_sounds(void) {
 			hashtable_iter_next(i, 0, (void**)&snd);) {
 		snd->sound->lastplayframe = 0;
 		if(snd->sound->islooping) {
-			audio_backend_sound_stop_loop(snd->sound->impl);
 			snd->sound->islooping = false;
+			audio_backend_sound_stop_loop(snd->sound->impl);
 		}
 	}
 }
@@ -86,15 +86,16 @@ void update_sounds(void) {
 	}
 }
 
-void stop_looping_sounds(void) {
-	Resource *snd;
-	for(HashtableIterator *i = hashtable_iter(resources.handlers[RES_SFX].mapping);
-			hashtable_iter_next(i, 0, (void**)&snd);) {
-		if(snd->sound->islooping) {
-			snd->sound->islooping = false;
-			audio_backend_sound_stop_loop(snd->sound->impl);
-		}
-	}
+void pause_sounds(void) {
+	audio_backend_sound_pause_all(SNDGROUP_MAIN);
+}
+
+void resume_sounds(void) {
+	audio_backend_sound_resume_all(SNDGROUP_MAIN);
+}
+
+void stop_sounds(void) {
+	audio_backend_sound_stop_all(SNDGROUP_MAIN);
 }
 
 Sound* get_sound(const char *name) {
