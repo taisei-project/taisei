@@ -9,9 +9,7 @@
 #include "private.h"
 #include "union.h"
 #include "syspath.h"
-#ifndef DISABLE_ZIP
 #include "zipfile.h"
-#endif
 
 typedef struct VFSDir {
     VFSNode *node;
@@ -56,7 +54,6 @@ bool vfs_mount_syspath(const char *mountpoint, const char *fspath, bool mkdir) {
     return true;
 }
 
-#ifndef DISABLE_ZIP
 bool vfs_mount_zipfile(const char *mountpoint, const char *zippath) {
     char p[strlen(zippath)+1];
     zippath = vfs_path_normalize(zippath, p);
@@ -82,7 +79,6 @@ bool vfs_mount_zipfile(const char *mountpoint, const char *zippath) {
 
     return true;
 }
-#endif
 
 bool vfs_mount_alias(const char *dst, const char *src) {
     char dstbuf[strlen(dst)+1];
