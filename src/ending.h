@@ -49,4 +49,10 @@ void ending_loop(void);
 void free_ending(Ending *e);
 void ending_preload(void);
 
-
+/*
+ * These ending callbacks are referenced in plrmodes/ code
+ */
+void bad_ending_marisa(Ending *e);
+void bad_ending_youmu(Ending *e);
+void good_ending_marisa(Ending *e);
+void good_ending_youmu(Ending *e);

@@ -21,17 +21,18 @@ void kurumi_danmaku(Boss*, int);
 void kurumi_extra(Boss*, int);
 
 Dialog *stage4_dialog(void) {
-	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/kurumi");
+	PlayerCharacter *pc = global.plr.mode->character;
+	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/kurumi");
 
 	dadd_msg(d, Right, "Ah! Intruder! Stop being so persistent!");
 
-	if(global.plr.cha == Marisa) {
+	if(pc->id == PLR_CHAR_MARISA) {
 		dadd_msg(d, Left, "What? I mean, where am I?");
 		dadd_msg(d, Right, "You are in the…");
 		dadd_msg(d, Right, "Ha! you almost got me!\nI will never tell intruders like you!");
 		dadd_msg(d, Left, "…in the mansion of the\nevil mastermind, right?");
 		dadd_msg(d, Right, "AHH! Anyway! You won’t reach\nthe end of this corridor!");
-	} else {
+	} else if(pc->id == PLR_CHAR_YOUMU) {
 		dadd_msg(d, Left, "So you are the owner of this place?");
 		dadd_msg(d, Right, "No, I’m just the guardian!");
 		dadd_msg(d, Left, "What is there to be guarded?");
@@ -45,7 +46,8 @@ Dialog *stage4_dialog(void) {
 }
 
 Dialog *stage4_dialog_end(void) {
-	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/kurumi");
+	PlayerCharacter *pc = global.plr.mode->character;
+	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/kurumi");
 
 	dadd_msg(d, Left, "Now, where is your master?");
 	dadd_msg(d, Right, "At the end of this corridor,\nthere is a door.");

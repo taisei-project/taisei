@@ -41,8 +41,8 @@ ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, D
 	s->plr_pos_y = floor(cimag(plr->pos));
 
 	s->plr_focus = plr->focus;
-	s->plr_char	= plr->cha;
-	s->plr_shot	= plr->shot;
+	s->plr_char	= plr->mode->character->id;
+	s->plr_shot	= plr->mode->shot_mode;
 	s->plr_lives = plr->lives;
 	s->plr_life_fragments = plr->life_fragments;
 	s->plr_bombs = plr->bombs;
@@ -56,8 +56,7 @@ ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, D
 
 void replay_stage_sync_player_state(ReplayStage *stg, Player *plr) {
 	plr->points = stg->points;
-	plr->shot = stg->plr_shot;
-	plr->cha = stg->plr_char;
+	plr->mode = plrmode_find(stg->plr_char, stg->plr_shot);
 	plr->pos = stg->plr_pos_x + I * stg->plr_pos_y;
 	plr->focus = stg->plr_focus;
 	plr->lives = stg->plr_lives;
@@ -739,6 +738,7 @@ void replay_play(Replay *rpy, int firstidx) {
 			continue;
 		}
 
+		global.plr.mode = plrmode_find(rstg->plr_char, rstg->plr_shot);
 		stage_loop(gstg);
 
 		if(global.game_over == GAMEOVER_ABORT) {

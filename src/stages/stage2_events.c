@@ -12,9 +12,10 @@
 #include "enemy.h"
 
 Dialog *stage2_dialog(void) {
-	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/hina");
+	PlayerCharacter *pc = global.plr.mode->character;
+	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/hina");
 
-	if(global.plr.cha == Marisa) {
+	if(pc->id == PLR_CHAR_MARISA) {
 		dadd_msg(d, Left, "Ha! What are you doing here?\nYou the culprit?");
 		dadd_msg(d, Right, "Huh? No, you? Everone is going crazy, you know?\nThat’s why I’m here.");
 		dadd_msg(d, Left, "Why? What happened?");
@@ -23,7 +24,7 @@ Dialog *stage2_dialog(void) {
 		dadd_msg(d, Right, "Look, there is a way outside\nright behind us.");
 		dadd_msg(d, Left, "But I’ve got a feeling that you\nwon’t let me pass, haha!");
 		dadd_msg(d, Right, "First let me see if I can collect some misfortune from you!");
-	} else {
+	} else if(pc->id == PLR_CHAR_YOUMU) {
 		dadd_msg(d, Left, "This must be the place…");
 		dadd_msg(d, Right, "Hello? ");
 		dadd_msg(d, Left, "You came here because of the\n“crack”, too? Where is it?");
@@ -37,7 +38,8 @@ Dialog *stage2_dialog(void) {
 }
 
 Dialog *stage2_post_dialog(void) {
-	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", NULL);
+	PlayerCharacter *pc = global.plr.mode->character;
+	Dialog *d = create_dialog(pc->dialog_sprite_name, NULL);
 
 	dadd_msg(d, Left, "Well, let’s go then.");
 

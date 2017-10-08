@@ -87,13 +87,7 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 
 	int c;
 	uint16_t stageid = 0;
-
-	#define INVALID_CHAR ((Character)-1)
-	#define INVALID_SHOT ((ShotMode)-1)
-
-	// these may be unsigned depending on the compiler.
-	Character cha = INVALID_CHAR;
-	ShotMode shot = INVALID_SHOT;
+	PlayerMode *plrmode = NULL;
 
 	while((c = getopt_long(argc, argv, optc, opts, 0)) != -1) {
 		char *endptr = NULL;
@@ -135,8 +129,8 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 
 			break;
 		case 's':
-			if(plrmode_parse(optarg,&cha,&shot))
-				log_fatal("Invalid shotmode '%s'",optarg);
+			if(!(plrmode = plrmode_parse(optarg)))
+				log_fatal("Invalid shotmode '%s'", optarg);
 			break;
 		case 'f':
 			a->frameskip = 1;
@@ -170,12 +164,12 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		}
 	}
 
-	if(a->type != CLI_SelectStage && (cha != INVALID_CHAR || shot != INVALID_SHOT))
-		log_warn("--shotmode was ignored");
-
-	if(cha != INVALID_CHAR && shot != INVALID_SHOT) {
-		a->plrcha = cha;
-		a->plrshot = shot;
+	if(plrmode) {
+		if(a->type == CLI_SelectStage) {
+			a->plrmode = plrmode;
+		} else {
+			log_warn("--shotmode was ignored");
+		}
 	}
 
 	a->stageid = stageid;

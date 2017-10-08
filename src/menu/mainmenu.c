@@ -22,6 +22,7 @@
 #include "video.h"
 #include "stage.h"
 #include "version.h"
+#include "plrmodes.h"
 
 void enter_options(MenuData *menu, void *arg) {
 	MenuData m;
@@ -218,8 +219,6 @@ void menu_preload(void) {
 		"mainmenu/logo",
 		"part/smoke",
 		"part/petal",
-		"dialog/marisa",
-		"dialog/youmu",
 		"charselect_arrow",
 	NULL);
 
@@ -232,4 +231,8 @@ void menu_preload(void) {
 	preload_resources(RES_BGM, RESF_PERMANENT | RESF_OPTIONAL,
 		"menu",
 	NULL);
+
+	for(int i = 0; i < NUM_CHARACTERS; ++i) {
+		preload_resource(RES_TEXTURE, plrchar_get(i)->dialog_sprite_name, RESF_PERMANENT);
+	}
 }

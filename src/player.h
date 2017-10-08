@@ -55,53 +55,34 @@ enum {
 	INFLAGS_MOVE = INFLAG_UP | INFLAG_DOWN | INFLAG_LEFT | INFLAG_RIGHT
 };
 
-typedef enum {
-	Youmu = 0,
-	Marisa
-} Character;
-
-typedef enum {
-	YoumuOpposite = 0,
-	YoumuHoming,
-
-	MarisaLaser = YoumuOpposite,
-	MarisaStar = YoumuHoming
-} ShotMode;
-
 typedef struct {
 	complex pos;
 	short focus;
-
-	short power;
 
 	int graze;
 	unsigned int points;
 
 	int lives;
 	int bombs;
-
 	int life_fragments;
 	int bomb_fragments;
+	short power;
 
 	int recovery;
-
 	int deathtime;
 	int respawntime;
 
+	struct PlayerMode *mode;
 	AniPlayer ani;
-
-	Character cha;
-	ShotMode shot;
 	Enemy *slaves;
 
 	int inputflags;
 	bool gamepadmove;
 	complex lastmovedir;
-
 	int axis_ud;
 	int axis_lr;
 
-	char iddqd;
+	bool iddqd;
 
 #ifdef PLR_DPS_STATS
 	int total_dmg;
@@ -120,13 +101,24 @@ enum {
 	EV_INFLAGS,
 };
 
-void init_player(Player*);
-void prepare_player_for_next_stage(Player*);
+// This is called first before we even enter stage_loop.
+// It's also called right before syncing player state from a replay stage struct, if a replay is being watched or recorded, before every stage.
+// The entire state is reset here, and defaults for story mode are set.
+void player_init(Player *plr);
+
+// This is called early in stage_loop, before creating or reading replay stage data.
+// State that is not supposed to be preserved between stages is reset here, and any plrmode-specific resources are preloaded.
+void player_stage_pre_init(Player *plr);
+
+// This is called right before the stage's begin proc. After that, the actual game loop starts.
+void player_stage_post_init(Player *plr);
+
+// Yes, that's 3 different initialization functions right here.
 
 void player_draw(Player*);
 void player_logic(Player*);
+bool player_should_shoot(Player *plr, bool extra);
 
-void player_set_char(Player*, Character);
 bool player_set_power(Player *plr, short npow, bool handle_fullpower);
 
 void player_move(Player*, complex delta);
@@ -147,5 +139,3 @@ void player_add_bombs(Player *plr, int bombs);
 void player_add_points(Player *plr, unsigned int points);
 
 void player_preload(void);
-
-

@@ -14,39 +14,44 @@
 #include "stage.h"
 #include "stagetext.h"
 
-#include <SDL_bits.h>
-
-Animation *player_get_ani(Character cha) {
-	Animation *ani = NULL;
-	switch(cha) {
-	case Youmu:
-		ani = get_ani("youmu");
-		break;
-	case Marisa:
-		ani = get_ani("marisa");
-		break;
-	}
-
-	return ani;
-}
-
-void init_player(Player *plr) {
+void player_init(Player *plr) {
 	memset(plr, 0, sizeof(Player));
 	plr->pos = VIEWPORT_W/2 + I*(VIEWPORT_H-64);
 	plr->lives = PLR_START_LIVES;
 	plr->bombs = PLR_START_BOMBS;
 	plr->deathtime = -1;
-
-	aniplayer_create(&plr->ani, player_get_ani(plr->cha));
+	plr->mode = plrmode_find(0, 0);
 }
 
-void prepare_player_for_next_stage(Player *plr) {
+void player_stage_pre_init(Player *plr) {
 	plr->recovery = 0;
 	plr->respawntime = 0;
 	plr->deathtime = -1;
 	plr->graze = 0;
 	plr->axis_lr = 0;
 	plr->axis_ud = 0;
+
+	assert(plr->mode != NULL);
+	plrchar_preload(plr->mode->character);
+
+	if(plr->mode->procs.preload) {
+		plr->mode->procs.preload(plr);
+	}
+}
+
+void player_stage_post_init(Player *plr) {
+	// TODO: remove handle_fullpower from player_set_power and get rid of this hack
+	short power = global.plr.power;
+	global.plr.power = -1;
+	delete_enemies(&global.plr.slaves);
+	player_set_power(&global.plr, power, false);
+
+	assert(plr->mode != NULL);
+	aniplayer_create(&plr->ani, get_ani(plr->mode->character->player_sprite_name));
+
+	// ensure the essential callbacks are there. other code tests only for the optional ones
+	assert(plr->mode->procs.shot != NULL);
+	assert(plr->mode->procs.bomb != NULL);
 }
 
 static void player_full_power(Player *plr) {
@@ -58,13 +63,8 @@ static void player_full_power(Player *plr) {
 bool player_set_power(Player *plr, short npow, bool handle_fullpower) {
 	npow = clamp(npow, 0, PLR_MAX_POWER);
 
-	switch(plr->cha) {
-		case Youmu:
-			youmu_power(plr, npow);
-			break;
-		case Marisa:
-			marisa_power(plr, npow);
-			break;
+	if(plr->mode->procs.power) {
+		plr->mode->procs.power(plr, npow);
 	}
 
 	int oldpow = plr->power;
@@ -80,16 +80,18 @@ bool player_set_power(Player *plr, short npow, bool handle_fullpower) {
 void player_move(Player *plr, complex delta) {
 	float speed = 0.01*VIEWPORT_W;
 
-	if(plr->inputflags & INFLAG_FOCUS)
+	if(plr->inputflags & INFLAG_FOCUS) {
 		speed /= 2.0;
+	}
 
-	if(plr->cha == Marisa && plr->shot == MarisaLaser && global.frames - plr->recovery < 0)
-		speed /= 5.0;
+	if(plr->mode->procs.speed_mod) {
+		speed = plr->mode->procs.speed_mod(plr, speed);
+	}
 
 	complex opos = plr->pos - VIEWPORT_W/2.0 - VIEWPORT_H/2.0*I;
 	complex npos = opos + delta*speed;
 
-	Animation *ani = player_get_ani(plr->cha);
+	Animation *ani = plr->ani.ani;
 
 	bool xfac = fabs(creal(npos)) < fabs(creal(opos)) || fabs(creal(npos)) < VIEWPORT_W/2.0 - ani->w/2;
 	bool yfac = fabs(cimag(npos)) < fabs(cimag(opos)) || fabs(cimag(npos)) < VIEWPORT_H/2.0 - ani->h/2;
@@ -104,8 +106,6 @@ void player_move(Player *plr, complex delta) {
 }
 
 void player_draw(Player* plr) {
-	plr->ani.ani = player_get_ani(plr->cha); // because plr->cha is not set at init
-
 	// FIXME: death animation?
 	if(plr->deathtime > global.frames)
 		return;
@@ -168,6 +168,11 @@ static void player_fail_spell(Player *plr) {
 	}
 }
 
+bool player_should_shoot(Player *plr, bool extra) {
+	return (plr->inputflags & INFLAG_SHOT) &&
+			(!extra || (global.frames - plr->recovery >= 0 && plr->deathtime >= -1));
+}
+
 void player_logic(Player* plr) {
 	process_enemies(&plr->slaves);
 	aniplayer_update(&plr->ani);
@@ -179,13 +184,12 @@ void player_logic(Player* plr) {
 
 	plr->focus = approach(plr->focus, (plr->inputflags & INFLAG_FOCUS) ? 30 : 0, 1);
 
-	switch(plr->cha) {
-		case Youmu:
-			youmu_shot(plr);
-			break;
-		case Marisa:
-			marisa_shot(plr);
-			break;
+	if(plr->mode->procs.think) {
+		plr->mode->procs.think(plr);
+	}
+
+	if(player_should_shoot(plr, false)) {
+		plr->mode->procs.shot(plr);
 	}
 
 	if(global.frames == plr->deathtime)
@@ -212,17 +216,8 @@ bool player_bomb(Player *plr) {
 
 	if(global.frames - plr->recovery >= 0 && (plr->bombs > 0 || plr->iddqd) && global.frames - plr->respawntime >= 60) {
 		player_fail_spell(plr);
-		delete_projectiles(&global.projs);
-
-		switch(plr->cha) {
-		case Marisa:
-			marisa_bomb(plr);
-			break;
-		case Youmu:
-			youmu_bomb(plr);
-			break;
-		}
-
+		stage_clear_hazards(false);
+		plr->mode->procs.bomb(plr);
 		plr->bombs--;
 
 		if(plr->deathtime > 0) {
@@ -618,23 +613,14 @@ void player_preload(void) {
 	preload_resources(RES_TEXTURE, flags,
 		"focus",
 		"fairy_circle",
-		"masterspark",
-		"masterspark_ring",
 	NULL);
 
 	preload_resources(RES_SFX, flags | RESF_OPTIONAL,
 		"graze",
 		"death",
 		"generic_shot",
-		"masterspark",
-		"haunt",
 		"full_power",
 		"extra_life",
 		"extra_bomb",
-	NULL);
-
-	preload_resources(RES_ANIM, flags,
-		"youmu",
-		"marisa",
 	NULL);
 }

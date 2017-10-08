@@ -11,17 +11,18 @@
 #include <global.h>
 
 Dialog *stage6_dialog(void) {
-	Dialog *d = create_dialog(global.plr.cha == Marisa ? "dialog/marisa" : "dialog/youmu", "dialog/elly");
+	PlayerCharacter *pc = global.plr.mode->character;
+	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/elly");
 
 	dadd_msg(d, Left, "You are responsible for all this?");
 	dadd_msg(d, Right, "Yes…");
 
-	if(global.plr.cha == Marisa) {
+	if(pc->id == PLR_CHAR_MARISA) {
 		dadd_msg(d, Left, "I’m going to masterspark you now!");
 		dadd_msg(d, Right, "What? Why do you want to fight?\nDon’t you even want to hear what\nI have to say?");
 		dadd_msg(d, Left, "I understand that it’s a huge mess!\nCracking the border, a giant mansion, a giant tower…");
 		dadd_msg(d, Left, "At first I was curious. But now\nI just want to finish this! Seriously.");
-	} else {
+	} else if(pc->id == PLR_CHAR_YOUMU) {
 		dadd_msg(d, Left, "Who are you and what is this?");
 		dadd_msg(d, Right, "A kind person granted me an unknown power,\nand thanks to that I was able to\ncreate this little place for myself.");
 		dadd_msg(d, Left, "Why did you create *this* kind of place for yourself?");
