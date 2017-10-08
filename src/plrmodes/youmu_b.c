@@ -6,6 +6,8 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
+#include <float.h>
+
 #include "global.h"
 #include "plrmodes.h"
 #include "youmu.h"
