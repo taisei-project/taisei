@@ -152,6 +152,7 @@ static int youmu_split(Enemy *e, int t) {
 }
 
 static void youmu_mirror_bomb(Player *plr) {
+    play_sound("bomb_youmu_a");
     create_enemy_p(&plr->slaves, 40.0*I, ENEMY_BOMB, NULL, youmu_split, 280,0,0,0);
 }
 
@@ -163,6 +164,19 @@ static void youmu_mirror_think(Player *plr) {
     }
 }
 
+static void youmu_mirror_preload(void) {
+    const int flags = RESF_DEFAULT;
+
+    preload_resources(RES_TEXTURE, flags,
+        "proj/youmu",
+        "part/youmu_slice",
+    NULL);
+
+    preload_resources(RES_SFX, flags | RESF_OPTIONAL,
+        "bomb_youmu_a",
+    NULL);
+}
+
 PlayerMode plrmode_youmu_a = {
     .name = "Mirror Sign",
     .character = &character_youmu,
@@ -171,5 +185,6 @@ PlayerMode plrmode_youmu_a = {
         .bomb = youmu_mirror_bomb,
         .shot = youmu_common_shot,
         .think = youmu_mirror_think,
+        .preload = youmu_mirror_preload,
     },
 };

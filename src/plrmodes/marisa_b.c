@@ -102,6 +102,7 @@ static int marisa_star_orbit(Projectile *p, int t) { // a[0]: x' a[1]: x''
 }
 
 static void marisa_star_bomb(Player *plr) {
+    play_sound("bomb_marisa_b");
     for(int i = 0; i < 20; i++) {
         float r = frand()*40 + 100;
         float phi = frand()*2*M_PI;
@@ -143,6 +144,20 @@ static void marisa_star_power(Player *plr, short npow) {
     }
 }
 
+static void marisa_star_preload(void) {
+    const int flags = RESF_DEFAULT;
+
+    preload_resources(RES_TEXTURE, flags,
+        "proj/marisa",
+        "proj/maristar",
+        "part/maristar_orbit",
+    NULL);
+
+    preload_resources(RES_SFX, flags | RESF_OPTIONAL,
+        "bomb_marisa_b",
+    NULL);
+}
+
 PlayerMode plrmode_marisa_b = {
     .name = "Star Sign",
     .character = &character_marisa,
@@ -151,5 +166,6 @@ PlayerMode plrmode_marisa_b = {
         .bomb = marisa_star_bomb,
         .shot = marisa_common_shot,
         .power = marisa_star_power,
+        .preload = marisa_star_preload,
     },
 };

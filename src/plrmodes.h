@@ -57,7 +57,7 @@ typedef void (*PlayerModeShotProc)(Player *plr);
 typedef void (*PlayerModeBombProc)(Player *plr);
 typedef void (*PlayerModePowerProc)(Player *plr, short npow);
 typedef double (*PlayerModeSpeedModProc)(Player *plr, double speed);
-typedef void (*PlayerModePreloadProc)(Player *plr);
+typedef void (*PlayerModePreloadProc)(void);
 
 typedef struct PlayerMode {
     const char *name;
@@ -84,3 +84,4 @@ void plrchar_preload(PlayerCharacter *pc);
 PlayerMode* plrmode_find(CharacterID charid, ShotModeID shotid);
 int plrmode_repr(char *out, size_t outsize, PlayerMode *mode);
 PlayerMode* plrmode_parse(const char *name);
+void plrmode_preload(PlayerMode *mode);

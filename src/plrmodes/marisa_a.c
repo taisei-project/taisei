@@ -124,7 +124,7 @@ static int masterspark(Enemy *e, int t) {
 }
 
 static void marisa_laser_bomb(Player *plr) {
-    play_sound("masterspark");
+    play_sound("bomb_marisa_a");
     create_enemy_p(&plr->slaves, 40.0*I, ENEMY_BOMB, masterspark_draw, masterspark, 280,0,0,0);
 }
 
@@ -169,16 +169,19 @@ static double marisa_laser_speed_mod(Player *plr, double speed) {
     return speed;
 }
 
-static void marisa_laser_preload(Player *plr) {
+static void marisa_laser_preload(void) {
     const int flags = RESF_DEFAULT;
 
     preload_resources(RES_TEXTURE, flags,
+        "part/marilaser_part0",
+        "proj/marilaser",
+        "proj/marisa",
         "masterspark",
         "masterspark_ring",
     NULL);
 
     preload_resources(RES_SFX, flags | RESF_OPTIONAL,
-        "masterspark",
+        "bomb_marisa_a",
     NULL);
 }
 
