@@ -331,6 +331,11 @@ void scuttle_a0(Boss *boss, int time) {
 void scuttle_dance(Boss *boss, int time) {
 	int i;
 	TIMER(&time)
+	if(time<0)
+		return;
+
+	boss->ani.stdrow=1;
+
 
 	FROM_TO(0, 120, 1)
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.03)
@@ -427,6 +432,7 @@ void scuttle_acid(Boss *boss, int time) {
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.05)
 		return;
 	}
+	boss->ani.stdrow=1;
 
 	bool lun = global.diff == D_Lunatic;
 	FROM_TO(30, 9000, 2) {
