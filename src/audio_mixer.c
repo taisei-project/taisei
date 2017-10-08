@@ -190,12 +190,19 @@ void audio_backend_music_stop(void) {
 	}
 }
 
+void audio_backend_music_fade(double fadetime) {
+	if(mixer_loaded) {
+		Mix_HookMusicFinished(NULL);
+		Mix_FadeOutMusic(1000 * fadetime);
+	}
+}
+
 bool audio_backend_music_is_paused(void) {
 	return mixer_loaded && Mix_PausedMusic();
 }
 
 bool audio_backend_music_is_playing(void) {
-	return mixer_loaded && Mix_PlayingMusic();
+	return mixer_loaded && Mix_PlayingMusic() && Mix_FadingMusic() != MIX_FADING_OUT;
 }
 
 void audio_backend_music_resume(void) {
@@ -219,6 +226,9 @@ bool audio_backend_music_play(void *impl) {
 	MixerInternalMusic *imus = impl;
 	Mix_Music *mmus;
 	int loops;
+
+	Mix_HookMusicFinished(NULL);
+	Mix_HaltMusic();
 
 	if(imus->intro) {
 		next_loop = imus->loop;

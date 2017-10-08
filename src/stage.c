@@ -435,6 +435,7 @@ void stage_finish(int gameover) {
 	assert(global.game_over != GAMEOVER_TRANSITIONING);
 	global.game_over = GAMEOVER_TRANSITIONING;
 	set_transition_callback(TransFadeBlack, FADE_TIME, FADE_TIME*2, stage_finalize, (void*)(intptr_t)gameover);
+	fade_bgm();
 
 	if(global.replaymode == REPLAY_PLAY) {
 		return;
@@ -647,10 +648,6 @@ void stage_loop(StageInfo *stage) {
 	StageFrameState fstate = { .stage = stage };
 	fpscounter_reset(&global.fps);
 	loop_at_fps(stage_frame, stage_fpslimit_condition, &fstate, FPS);
-
-	if(global.game_over == GAMEOVER_RESTART && global.stage->type != STAGE_SPELL) {
-		stop_bgm(true);
-	}
 
 	if(global.replaymode == REPLAY_RECORD) {
 		replay_stage_event(global.replay_stage, global.frames, EV_OVER, 0);

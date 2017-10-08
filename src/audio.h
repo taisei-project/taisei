@@ -39,6 +39,7 @@ bool audio_backend_music_is_paused(void);
 bool audio_backend_music_is_playing(void);
 void audio_backend_music_resume(void);
 void audio_backend_music_stop(void);
+void audio_backend_music_fade(double fadetime);
 void audio_backend_music_pause(void);
 bool audio_backend_music_play(void *impl);
 bool audio_backend_sound_play(void *impl, AudioBackendSoundGroup group);
@@ -68,6 +69,7 @@ Music* get_music(const char *music);
 
 void start_bgm(const char *name);
 void stop_bgm(bool force);
+void fade_bgm(void);
 void resume_bgm(void);
 void save_bgm(void); // XXX: this is broken
 void restore_bgm(void); // XXX: this is broken
