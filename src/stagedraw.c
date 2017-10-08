@@ -223,8 +223,22 @@ static void stage_draw_objects(void) {
 		glTranslatef(creal(global.boss->pos), cimag(global.boss->pos), 0);
 
 		if(!(global.frames % 5)) {
-			complex offset = (frand()-0.5)*100 + (frand()-0.5)*20.0*I;
-			create_particle3c("boss_shadow", 0, rgba(0.4,0.6,1,1), BossShadow, enemy_flare, 20, 0.3*(-100.0*I-offset)/(50.0+frand()*10), add_ref(global.boss));
+			complex offset = (frand()-0.5)*50 + (frand()-0.5)*20.0*I;
+			create_particle3c("boss_shadow", 0, rgba(0.2,0.35,0.5,0.5), EnemyFlareShrink, enemy_flare, 50, (-100.0*I-offset)/(50.0+frand()*10), add_ref(global.boss));
+		}
+
+		Attack *cur = global.boss->current;
+
+		// XXX: maybe we need an ATTACK_IS_SPELL() macro or something
+		if(!(global.frames % 2) && cur && cur->type != AT_Move && cur->type != AT_Normal && !cur->endtime) {
+			// copy animation state to render the same frame even after the boss has changed its own
+			AniPlayer *aplr = malloc(sizeof(AniPlayer));
+			aniplayer_copy(aplr, &global.boss->ani);
+
+			// this is in sync with the boss position oscillation
+			complex pos = global.boss->pos + I * 6 * sin(global.frames/25.0);
+
+			create_particle3c("boss_shadow", pos, rgb(0.4,0.6,1), BossShadow, boss_shadow_rule, 24, 0, add_ref(aplr));
 		}
 
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);

@@ -30,6 +30,12 @@ void aniplayer_reset(AniPlayer *plr) { // resets to a neutral state with empty q
 	}
 }
 
+void aniplayer_copy(AniPlayer *dst, AniPlayer *src) {
+	memcpy(dst, src, sizeof(AniPlayer));
+	dst->queue = NULL;
+	dst->queuesize = 0;
+}
+
 AniSequence *aniplayer_queue(AniPlayer *plr, int row, int loops, int delay) {
 	AniSequence *s = create_element_at_end((void **)&plr->queue,sizeof(AniSequence));
 	plr->queuesize++;

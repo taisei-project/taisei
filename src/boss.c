@@ -667,28 +667,21 @@ Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move) {
 }
 
 void BossShadow(Projectile *p, int t) {
-	Boss *boss = (Boss *)REF(p->args[2]);
-	if(boss == NULL)
-		return;
+	AniPlayer *aplr = (AniPlayer*)REF(p->args[2]);
+	assert(aplr != NULL);
 
 	glPushMatrix();
 	float s = 1.0+t/p->args[0]*0.5;
-
-	if(boss->pos + p->pos)
-		glTranslatef(creal(boss->pos + p->pos), cimag(boss->pos + p->pos), 0);
-
-	//if(p->angle != M_PI*0.5)
-	//	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
-	glScalef(s+0.2, s+0.2, 1);
+	glTranslatef(creal(p->pos), cimag(p->pos), 0);
+	glScalef(s, s, 1);
 
 	float r,g,b,a;
 	parse_color(p->clr,&r,&g,&b,&a);
 	a = 1.5-s;
-
 	glColor4f(r,g,b,a);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	aniplayer_play(&boss->ani,0,0);
+	aniplayer_play(aplr,0,0);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glPopMatrix();
@@ -696,6 +689,15 @@ void BossShadow(Projectile *p, int t) {
 	glColor3f(1,1,1);
 }
 
+int boss_shadow_rule(Projectile *p, int t) {
+	if(t == EVENT_DEATH) {
+		AniPlayer *aplr = REF(p->args[2]);
+		free(aplr);
+		free_ref(p->args[2]);
+	}
+
+	return enemy_flare(p, t);
+}
 
 void boss_preload(void) {
 	preload_resources(RES_SFX, RESF_OPTIONAL,

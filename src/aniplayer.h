@@ -43,8 +43,8 @@ typedef struct {
 
 void aniplayer_create(AniPlayer *plr, Animation *ani);
 void aniplayer_free(AniPlayer *plr);
-
 void aniplayer_reset(AniPlayer *plr); // resets to a neutral state with empty queue.
+void aniplayer_copy(AniPlayer *dst, AniPlayer *src);
 
 AniSequence *aniplayer_queue(AniPlayer *plr, int row, int loops, int delay); // 0 loops: played one time
 AniSequence *aniplayer_queue_pro(AniPlayer *plr, int row, int start, int duration, int delay, int speed); // self-documenting pro version
