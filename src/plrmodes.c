@@ -6,8 +6,6 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#include <float.h>
-
 #include "player.h"
 #include "global.h"
 #include "stage.h"
