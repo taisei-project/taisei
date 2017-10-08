@@ -12,6 +12,7 @@
 #include "difficulty.h"
 #include "aniplayer.h"
 #include "color.h"
+#include "projectile.h"
 
 enum {
 	ATTACK_START_DELAY = 60,
@@ -135,6 +136,8 @@ void boss_death(Boss **boss);
 void boss_kill_projectiles(void);
 
 void boss_preload(void);
+
+void BossShadow(Projectile *p, int t); // shadow particle effect behind the boss
 
 #define BOSS_DEFAULT_SPAWN_POS (VIEWPORT_W * 0.5 - I * VIEWPORT_H * 0.5)
 #define BOSS_DEFAULT_GO_POS (VIEWPORT_W * 0.5 + 200.0*I)

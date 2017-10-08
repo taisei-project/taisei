@@ -223,8 +223,8 @@ static void stage_draw_objects(void) {
 		glTranslatef(creal(global.boss->pos), cimag(global.boss->pos), 0);
 
 		if(!(global.frames % 5)) {
-			complex offset = (frand()-0.5)*50 + (frand()-0.5)*20.0*I;
-			create_particle3c("boss_shadow", -20.0*I, rgba(0.2,0.35,0.5,0.5), EnemyFlareShrink, enemy_flare, 50, (-100.0*I-offset)/(50.0+frand()*10), add_ref(global.boss));
+			complex offset = (frand()-0.5)*100 + (frand()-0.5)*20.0*I;
+			create_particle3c("boss_shadow", 0, rgba(0.4,0.6,1,1), BossShadow, enemy_flare, 20, 0.3*(-100.0*I-offset)/(50.0+frand()*10), add_ref(global.boss));
 		}
 
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);

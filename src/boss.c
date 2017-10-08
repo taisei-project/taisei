@@ -666,6 +666,37 @@ Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move) {
 	return a;
 }
 
+void BossShadow(Projectile *p, int t) {
+	Boss *boss = (Boss *)REF(p->args[2]);
+	if(boss == NULL)
+		return;
+
+	glPushMatrix();
+	float s = 1.0+t/p->args[0]*0.5;
+
+	if(boss->pos + p->pos)
+		glTranslatef(creal(boss->pos + p->pos), cimag(boss->pos + p->pos), 0);
+
+	//if(p->angle != M_PI*0.5)
+	//	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
+	glScalef(s+0.2, s+0.2, 1);
+
+	float r,g,b,a;
+	parse_color(p->clr,&r,&g,&b,&a);
+	a = 1.5-s;
+
+	glColor4f(r,g,b,a);
+
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	aniplayer_play(&boss->ani,0,0);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glPopMatrix();
+
+	glColor3f(1,1,1);
+}
+
+
 void boss_preload(void) {
 	preload_resources(RES_SFX, RESF_OPTIONAL,
 		"charge_generic",
