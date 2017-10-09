@@ -256,6 +256,12 @@ set(CMAKE_REQUIRED_INCLUDES ${INCs})
 include_directories(${INCs})
 
 check_symbol_exists(_POSIX_VERSION "unistd.h" POSIX)
+check_symbol_exists(__STDC_NO_COMPLEX__ "unistd.h" COMPLEX_MISSING)
+check_symbol_exists(__STDC_NO_VLA__ "unistd.h" VLA_MISSING)
+
+if(COMPLEX_MISSING OR VLA_MISSING)
+	message(FATAL_ERROR "Your C implementation needs to support complex numbers and variable length arrays.")
+endif()
 
 if(POSIX)
 	add_definitions(-D__POSIX__)
