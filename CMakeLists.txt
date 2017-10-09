@@ -21,9 +21,11 @@ function(taisei_parse_version version_string)
     set(version_string_orig ${version_string})
     string(SUBSTRING ${version_string} 0 1 first_char)
 
-    if(first_char STREQUAL "v")
+    # This is a dirty fix for MXE toolchain (which possibly does not strip leading 'v').
+    while(first_char STREQUAL "v")
         string(SUBSTRING ${version_string} 1 -1 version_string)
-    endif()
+        string(SUBSTRING ${version_string} 0 1 first_char)
+    endwhile()
 
     string(REPLACE "+" "-" version_string ${version_string})
     string(REGEX REPLACE "-.*" "" version_string_tmp ${version_string})
