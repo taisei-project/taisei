@@ -35,5 +35,3 @@ int uniloc(Shader *sha, const char *name);
 
 #define SHA_DELIM "%% -- FRAG"
 #define SHA_DELIM_SIZE (sizeof(SHA_DELIM) - 1)
-
-

@@ -48,5 +48,3 @@ void draw_model(const char *name);
 
 #define MDL_PATH_PREFIX "res/models/"
 #define MDL_EXTENSION ".obj"
-
-

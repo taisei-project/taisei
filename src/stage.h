@@ -122,5 +122,3 @@ void stage_start_bgm(const char *bgm);
 #include "stages/stage4.h"
 #include "stages/stage5.h"
 #include "stages/stage6.h"
-
-

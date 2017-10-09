@@ -17,5 +17,3 @@ void credits_preload(void);
 #define CREDITS_YUKKURI_SCALE 0.5
 
 #define CREDITS_FADEOUT 120
-
-

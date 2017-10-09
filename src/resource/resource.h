@@ -120,3 +120,5 @@ void preload_resources(ResourceType type, ResourceFlags flags, const char *first
 void resource_util_strip_ext(char *path);
 char* resource_util_basename(const char *prefix, const char *path);
 const char* resource_util_filename(const char *path);
+
+bool resource_sdl_event(SDL_Event *evt);

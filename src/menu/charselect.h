@@ -12,5 +12,3 @@
 
 void create_char_menu(MenuData *m);
 void draw_char_menu(MenuData *menu);
-
-

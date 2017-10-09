@@ -12,5 +12,3 @@
 
 void create_difficulty_menu(MenuData *menu);
 void draw_difficulty_menu(MenuData *m);
-
-

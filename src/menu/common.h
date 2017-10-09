@@ -17,5 +17,3 @@ void draw_menu_title(MenuData *m, char *title);
 void draw_menu_list(MenuData *m, float x, float y, void (*draw)(void*, int, int));
 void animate_menu_list(MenuData *m);
 void menu_commonaction_close(MenuData *menu, void *arg);
-
-

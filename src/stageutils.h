@@ -52,5 +52,3 @@ Vector **linear3dpos(Vector q, float maxrange, Vector p, Vector r);
 Vector **single3dpos(Vector q, float maxrange, Vector p);
 
 void skip_background_anim(Stage3D *s3d, void (*drawfunc)(void), int frames, int *timer, int *timer2);
-
-

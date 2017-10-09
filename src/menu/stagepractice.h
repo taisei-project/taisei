@@ -12,5 +12,3 @@
 #include "difficulty.h"
 
 void create_stgpract_menu(MenuData *m, Difficulty diff);
-
-

@@ -40,5 +40,3 @@ void vbo_add_verts(VBO *vbo, Vertex *verts, int count);
 void init_quadvbo(void);
 void draw_quad(void);
 void delete_vbo(VBO *vbo);
-
-

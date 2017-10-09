@@ -32,5 +32,3 @@ extern struct stage5_spells_s {
 
 extern StageProcs stage5_procs;
 extern StageProcs stage5_spell_procs;
-
-

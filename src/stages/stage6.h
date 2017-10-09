@@ -52,5 +52,3 @@ extern StageProcs stage6_procs;
 extern StageProcs stage6_spell_procs;
 
 void start_fall_over(void);
-
-

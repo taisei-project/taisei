@@ -16,5 +16,3 @@ void draw_main_menu(MenuData *m);
 void main_menu_update_practice_menus(void);
 void draw_loading_screen(void);
 void menu_preload(void);
-
-

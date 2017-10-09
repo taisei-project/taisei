@@ -60,5 +60,3 @@ struct Fonts {
 };
 
 extern struct Fonts _fonts;
-
-

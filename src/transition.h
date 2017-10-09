@@ -53,5 +53,3 @@ void set_transition_callback(TransitionRule rule, int dur1, int dur2, Transition
 void draw_transition(void);
 void update_transition(void);
 void draw_and_update_transition(void);
-
-
