@@ -123,6 +123,7 @@ set(SRCs
 
 if(WIN32)
 	set(SRCs ${SRCs}
+		windows_misc.c
 		vfs/syspath_win32.c)
 else()
 	set(SRCs ${SRCs}
