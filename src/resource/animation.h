@@ -36,5 +36,3 @@ void draw_animation_p(float x, float y, int row, Animation *ani);
 
 #define ANI_PATH_PREFIX TEX_PATH_PREFIX
 #define ANI_EXTENSION ".ani"
-
-

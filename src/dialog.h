@@ -44,5 +44,3 @@ void delete_dialog(Dialog *d);
 
 void draw_dialog(Dialog *dialog);
 void page_dialog(Dialog **d);
-
-

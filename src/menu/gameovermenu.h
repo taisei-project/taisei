@@ -11,5 +11,3 @@
 #include "menu.h"
 
 void create_gameover_menu(MenuData *);
-
-

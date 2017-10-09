@@ -113,5 +113,3 @@ void stage_clear_hazards(bool force);
 #include "stages/stage4.h"
 #include "stages/stage5.h"
 #include "stages/stage6.h"
-
-

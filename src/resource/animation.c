@@ -128,4 +128,3 @@ void draw_animation_p(float x, float y, int row, Animation *ani) {
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
 }
-

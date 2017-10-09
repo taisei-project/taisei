@@ -11,5 +11,3 @@
 #include "menu.h"
 
 void create_replayview_menu(MenuData *m);
-
-

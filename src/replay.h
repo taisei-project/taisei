@@ -182,6 +182,4 @@ void replay_play(Replay *rpy, int firstidx);
 
 int replay_find_stage_idx(Replay *rpy, uint8_t stageid);
 
-
-
 int replay_test(void);

@@ -22,5 +22,3 @@ void* load_music_end(void *opaque, const char *path, unsigned int flags);
 void unload_music(void *snd);
 
 #define BGM_PATH_PREFIX "res/bgm/"
-
-

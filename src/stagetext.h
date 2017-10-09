@@ -64,5 +64,3 @@ void stagetext_table_add_numeric_nonzero(StageTextTable *tbl, const char *title,
 void stagetext_table_add_separator(StageTextTable *tbl);
 
 void stagetext_table_test(void);
-
-

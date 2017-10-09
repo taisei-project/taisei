@@ -53,6 +53,3 @@ typedef struct OptionBinding {
 } OptionBinding;
 
 void draw_options_menu_bg(MenuData*);
-
-
-

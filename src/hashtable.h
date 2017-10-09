@@ -76,5 +76,3 @@ void hashtable_get_stats(Hashtable *ht, HashtableStats *stats);
 
 void hashtable_lock(Hashtable *ht);
 void hashtable_unlock(Hashtable *ht);
-
-
