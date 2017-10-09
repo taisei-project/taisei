@@ -286,9 +286,11 @@ static void vfs_zipfile_init_pathmap(VFSNode *node) {
 
         vfs_path_normalize(original, normalized);
 
-        char *c = strchr(normalized, 0) - 1;
-        if(*c == '/') {
-            *c = 0;
+        if(*normalized) {
+            char *c = strchr(normalized, 0) - 1;
+            if(*c == '/') {
+                *c = 0;
+            }
         }
 
         if(strcmp(original, normalized)) {
