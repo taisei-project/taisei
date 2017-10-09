@@ -36,7 +36,8 @@ void* load_sound_begin(const char *path, unsigned int flags) {
 		return NULL;
 	}
 
-	char resname[strlen(path) - sizeof(SFX_PATH_PREFIX) + 1];
+	assert(strstartswith(path, SFX_PATH_PREFIX));
+	char resname[strlen(path) - sizeof(SFX_PATH_PREFIX) + 2];
 	strcpy(resname, path + sizeof(SFX_PATH_PREFIX) - 1);
 	char *dot = strrchr(resname, '.');
 	assert(dot != NULL);
