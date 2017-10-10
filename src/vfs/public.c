@@ -230,7 +230,7 @@ bool vfs_print_tree(SDL_RWops *dest, const char *path) {
     char p[strlen(path)+3], *trail;
     vfs_path_normalize(path, p);
 
-    while(*(trail = strchr(p, 0) - 1) == '/') {
+    while(*p && *(trail = strchr(p, 0) - 1) == '/') {
         *trail = 0;
     }
 
