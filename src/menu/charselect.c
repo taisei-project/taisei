@@ -11,16 +11,12 @@
 #include "common.h"
 #include "global.h"
 
-// static to preserve between menu restarts
-static CharacterID selected_charid;
-static ShotModeID selected_shotid;
-
 void set_player(MenuData *m, void *p) {
-	selected_charid = (CharacterID)(uintptr_t)p;
+	progress.game_settings.character = (CharacterID)(uintptr_t)p;
 }
 
 void set_shotmode(MenuData *m, void *p) {
-	selected_shotid = (ShotModeID)(uintptr_t)p;
+	progress.game_settings.shotmode = (ShotModeID)(uintptr_t)p;
 }
 
 void create_shottype_menu(MenuData *m) {
@@ -30,8 +26,9 @@ void create_shottype_menu(MenuData *m) {
 	for(uintptr_t i = 0; i < NUM_SHOT_MODES_PER_CHARACTER; ++i) {
 		add_menu_entry(m, NULL, set_shotmode, (void*)i);
 
-		if(i == selected_shotid) {
+		if(i == progress.game_settings.shotmode) {
 			m->cursor = i;
+			break;
 		}
 	}
 }
@@ -53,8 +50,9 @@ void create_char_menu(MenuData *m) {
 	for(uintptr_t i = 0; i < NUM_CHARACTERS; ++i) {
 		add_menu_entry(m, NULL, set_player, (void*)i)->transition = TransFadeBlack;
 
-		if(i == selected_charid) {
+		if(i == progress.game_settings.character) {
 			m->cursor = i;
+			break;
 		}
 	}
 }
@@ -200,7 +198,6 @@ void char_menu_input(MenuData *menu) {
 }
 
 void free_char_menu(MenuData *menu) {
-	global.plr.mode = plrmode_find(selected_charid, selected_shotid);
 	MenuData *mod = menu->context;
 	destroy_menu(mod);
 	free(mod);

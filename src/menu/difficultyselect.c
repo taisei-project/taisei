@@ -13,7 +13,7 @@
 #include "global.h"
 
 void set_difficulty(MenuData *m, void *d) {
-	global.diff = (Difficulty) (uintptr_t) d;
+	progress.game_settings.difficulty = (Difficulty)(uintptr_t)d;
 }
 
 void create_difficulty_menu(MenuData *m) {
@@ -30,7 +30,7 @@ void create_difficulty_menu(MenuData *m) {
 	for(int i = 0; i < m->ecount; ++i) {
 		Difficulty d = (Difficulty)(uintptr_t)m->entries[i].arg;
 
-		if(global.diff == d) {
+		if(d == progress.game_settings.difficulty) {
 			m->cursor = i;
 			break;
 		}

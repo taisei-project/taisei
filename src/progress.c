@@ -45,6 +45,9 @@
 
 		- PCMD_ENDINGS
 			Sets the the number of times an ending was achieved for a list of endings
+
+		- PCMD_GAME_SETTINGS
+			Sets the last picked difficulty, character and shot mode
 */
 
 /*
@@ -52,7 +55,8 @@
 	Now in case you wonder why I decided to do it this way instead of stuffing everything in the config file, here are a couple of reasons:
 
 		- The config module, as of the time of writting, is messy enough and probably needs refactoring.
-		  I don't want to mix user preferences with things that are not supposed to be directly edited on top of that.
+
+		- I don't want to mix user preferences with things that are not supposed to be directly edited.
 
 		- I don't want someone to accidentally lose progress after deleting the config file because they wanted to restore the default settings.
 
@@ -201,8 +205,23 @@ static void progress_read(SDL_RWops *file) {
 				}
 				break;
 
+			case PCMD_GAME_SETTINGS:
+				if(cmdsize == sizeof(uint8_t) * 3) {
+					progress.game_settings.difficulty = SDL_ReadU8(vfile);
+					progress.game_settings.character = SDL_ReadU8(vfile);
+					progress.game_settings.shotmode = SDL_ReadU8(vfile);
+				} else {
+					log_warn("Command %x with bad size %u ignored", cmd, cmdsize);
+
+					while(cur < cmdsize) {
+						SDL_ReadU8(vfile);
+						cur += sizeof(uint8_t);
+					}
+				}
+				break;
+
 			default:
-				log_warn("Unknown command %i (%u bytes). Will preserve as-is and not interpret.", cmd, cmdsize);
+				log_warn("Unknown command %x (%u bytes). Will preserve as-is and not interpret", cmd, cmdsize);
 
 				UnknownCmd *c = create_element((void**)&progress.unknown, sizeof(UnknownCmd));
 				c->cmd = cmd;
@@ -460,6 +479,22 @@ static void progress_write_cmd_endings(SDL_RWops *vfile, void **arg) {
 }
 
 //
+//	PCMD_GAME_SETTINGS
+//
+
+static void progress_prepare_cmd_game_settings(size_t *bufsize, void **arg) {
+	*bufsize += CMD_HEADER_SIZE + sizeof(uint8_t) * 3;
+}
+
+static void progress_write_cmd_game_settings(SDL_RWops *vfile, void **arg) {
+	SDL_WriteU8(vfile, PCMD_GAME_SETTINGS);
+	SDL_WriteLE16(vfile, sizeof(uint8_t) * 3);
+	SDL_WriteU8(vfile, progress.game_settings.difficulty);
+	SDL_WriteU8(vfile, progress.game_settings.character);
+	SDL_WriteU8(vfile, progress.game_settings.shotmode);
+}
+
+//
 //	Copy unhandled commands from the original file
 //
 
@@ -501,6 +536,7 @@ static void progress_write(SDL_RWops *file) {
 		{progress_prepare_cmd_hiscore, progress_write_cmd_hiscore, NULL},
 		{progress_prepare_cmd_stage_playinfo, progress_write_cmd_stage_playinfo, NULL},
 		{progress_prepare_cmd_endings, progress_write_cmd_endings, NULL},
+		{progress_prepare_cmd_game_settings, progress_write_cmd_game_settings, NULL},
 		// {progress_prepare_cmd_test, progress_write_cmd_test, NULL},
 		{progress_prepare_cmd_unknown, progress_write_cmd_unknown, NULL},
 		{NULL}

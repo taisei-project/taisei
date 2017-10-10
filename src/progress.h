@@ -27,6 +27,7 @@ typedef enum ProgfileCommand {
     PCMD_HISCORE                           = 0x02,
     PCMD_STAGE_PLAYINFO                    = 0x03,
     PCMD_ENDINGS                           = 0x04,
+    PCMD_GAME_SETTINGS                     = 0x05,
 } ProgfileCommand;
 
 typedef struct StageProgress {
@@ -45,6 +46,12 @@ typedef struct GlobalProgress {
     uint32_t hiscore;
     uint32_t achieved_endings[NUM_ENDINGS];
     struct UnknownCmd *unknown;
+
+    struct {
+        uint8_t difficulty;
+        uint8_t character;
+        uint8_t shotmode;
+    } game_settings;
 } GlobalProgress;
 
 extern GlobalProgress progress;
@@ -52,5 +59,3 @@ extern GlobalProgress progress;
 void progress_load(void);
 void progress_save(void);
 void progress_unload(void);
-
-
