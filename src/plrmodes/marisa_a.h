@@ -10,4 +10,4 @@
 
 #include "plrmodes.h"
 
-PlayerMode plrmode_marisa_a;
+extern PlayerMode plrmode_marisa_a;
