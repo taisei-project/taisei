@@ -226,27 +226,26 @@ char* vfs_repr(const char *path, bool try_syspath) {
     return NULL;
 }
 
-bool vfs_print_tree(SDL_RWops *dest, char *path) {
-    char p[strlen(path)+3], *ignore;
-    path = vfs_path_normalize(path, p);
-    VFSNode *node = vfs_locate(vfs_root, path);
+bool vfs_print_tree(SDL_RWops *dest, const char *path) {
+    char p[strlen(path)+3], *trail;
+    vfs_path_normalize(path, p);
+
+    while(*p && *(trail = strchr(p, 0) - 1) == '/') {
+        *trail = 0;
+    }
+
+    VFSNode *node = vfs_locate(vfs_root, p);
 
     if(!node) {
         vfs_set_error("Node '%s' does not exist", path);
         return false;
     }
 
-    if(*path) {
-        vfs_path_split_right(path, &path, &ignore);
-        if(*path) {
-            char *e = strchr(path, 0);
-            *e++ = '/';
-            *e = 0;
-        }
-        vfs_path_root_prefix(path);
+    if(*p) {
+        vfs_path_root_prefix(p);
     }
 
-    vfs_print_tree_recurse(dest, node, path, "");
+    vfs_print_tree_recurse(dest, node, p, "");
     vfs_freetemp(node);
     return true;
 }

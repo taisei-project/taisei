@@ -51,7 +51,7 @@ int vfs_dir_list_order_ascending(const char **a, const char **b);
 int vfs_dir_list_order_descending(const char **a, const char **b);
 
 char* vfs_repr(const char *path, bool try_syspath);
-bool vfs_print_tree(SDL_RWops *dest, char *path);
+bool vfs_print_tree(SDL_RWops *dest, const char *path);
 
 // these are defined in private.c, but need to be accessible from external code
 void vfs_init(void);

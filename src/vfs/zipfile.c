@@ -201,6 +201,7 @@ const char* vfs_zipfile_iter_shared(VFSNode *node, VFSZipFileData *zdata, VFSZip
 
     for(; !r && idata->idx < idata->num; ++idata->idx) {
         const char *p = zip_get_name(tls->zip, idata->idx, 0);
+        const char *p_original = p;
 
         if(idata->prefix) {
             if(strstartswith(p, idata->prefix)) {
@@ -208,6 +209,17 @@ const char* vfs_zipfile_iter_shared(VFSNode *node, VFSZipFileData *zdata, VFSZip
             } else {
                 continue;
             }
+        }
+
+        while(!strncmp(p, "./", 2)) {
+            // skip the redundant "current directory" prefix
+            p += 2;
+        }
+
+        if(!strncmp(p, "../", 3)) {
+            // sorry, nope. can't work with this
+            log_warn("Bad path in zip file: %s", p_original);
+            continue;
         }
 
         if(!*p) {

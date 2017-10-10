@@ -164,6 +164,7 @@ int main(int argc, char **argv) {
 		if(!vfs_print_tree(rwops, a.filename)) {
 			log_warn("VFS error: %s", vfs_get_error());
 			SDL_RWclose(rwops);
+			free_cli_action(&a);
 			return 1;
 		}
 
