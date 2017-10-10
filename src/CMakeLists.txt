@@ -1,4 +1,3 @@
-
 include(CheckSymbolExists)
 include(CheckAndSetFlags)
 
@@ -9,11 +8,6 @@ if(${USE_COTIRE})
 endif()
 
 find_package(PkgConfig REQUIRED)
-
-if(CMAKE_VERSION VERSION_LESS 3.3 AND ${PACKAGE_DATA})
-	message(WARNING "Your version of CMake is too old, so packaging of data will not be used. Upgrade CMake to at least version 3.3 to enable packaging or specify PACKAGE_DATA=OFF to avoid this warning.")
-	set(PACKAGE_DATA OFF PARENT_SCOPE)
-endif()
 
 if(${LINK_TO_LIBGL})
 	find_package(OpenGL REQUIRED)
@@ -26,20 +20,16 @@ pkg_check_modules(SDL2 sdl2>=2.0.5 REQUIRED)
 pkg_check_modules(SDL2_TTF SDL2_ttf REQUIRED)
 pkg_check_modules(ZLIB zlib REQUIRED)
 pkg_check_modules(PNG libpng>=1.5 REQUIRED)
-pkg_check_modules(ZIP libzip>=1.0)
-
-if(NOT ${ZIP_FOUND} AND NOT ${DISABLE_ZIP})
-	message(WARNING "You have no suitable libzip, so packaging of data will not be used and ZIP support will be disabled. Install at least libzip 1.0 to enable ZIP support or specify DISABLE_ZIP=ON to avoid this warning.")
-	set(DISABLE_ZIP ON)
-endif()
 
 if(NOT ${NO_AUDIO})
 	pkg_check_modules(SDL2_MIXER SDL2_mixer REQUIRED)
 endif()
 
-if(${DISABLE_ZIP})
-	set(PACKAGE_DATA OFF PARENT_SCOPE)
+if(${DISABLE_ZIP} OR NOT ${ZIP_SUPPORTED})
+	message(STATUS "ZIP support disabled")
 	add_definitions(-DDISABLE_ZIP)
+else()
+	message(STATUS "ZIP support enabled")
 endif()
 
 configure_file(
@@ -139,7 +129,7 @@ set(SRCs
 	"${CMAKE_CURRENT_BINARY_DIR}/version_auto.c"
 )
 
-if(NOT ${DISABLE_ZIP})
+if(${ZIP_SUPPORTED} AND NOT ${DISABLE_ZIP})
 	set(SRCs ${SRCs}
 		rwops/rwops_zipfile.c
 		vfs/zipfile.c
@@ -232,7 +222,6 @@ set(LIBs ${LIBs}
 	${SDL2_LIBRARIES}
 	${SDL2_TTF_LIBRARIES}
 	${ZLIB_LIBRARIES}
-	${ZIP_LIBRARIES}
 	${PNG_LIBRARIES}
 	${_OPENGL_GL_LIBRARY}
 	m)
@@ -241,7 +230,6 @@ set(LIBDIRs
 	${SDL2_LIBRARY_DIRS}
 	${SDL2_TTF_LIBRARY_DIRS}
 	${ZLIB_LIBRARY_DIRS}
-	${ZIP_LIBRARY_DIRS}
 	${PNG_LIBRARY_DIRS}
 	)
 
@@ -266,10 +254,15 @@ set(INCs
 	${SDL2_INCLUDE_DIRS}
 	${SDL2_TTF_INCLUDE_DIRS}
 	${ZLIB_INCLUDE_DIRS}
-	${ZIP_INCLUDE_DIRS}
 	${PNG_INCLUDE_DIRS}
 	${_OPENGL_INCLUDE_DIR}
 	)
+
+if(${ZIP_SUPPORTED} AND NOT ${DISABLE_ZIP})
+	set(INCs ${INCs} ${ZIP_INCLUDE_DIRS})
+	set(LIBs ${LIBs} ${ZIP_LIBRARIES})
+	set(LIBDIRs ${LIBDIRs} ${ZIP_LIBRARY_DIRS})
+endif()
 
 # stupid cmake caching SHIT
 if(NOT ${NO_AUDIO})

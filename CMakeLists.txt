@@ -1,6 +1,8 @@
 project(taisei C)
 cmake_minimum_required(VERSION 3.0.2)
 
+find_package(PkgConfig REQUIRED)
+
 set(BUILDSCRIPTS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
 set(MISC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/misc")
 set(ICONS_DIR "${MISC_DIR}/icons")
@@ -125,6 +127,38 @@ if(APPLE)
     option(OSX_TOOL_PREFIX "Names of macOS-specific tools are prefixed with this string (useful for cross-compiling)." "")
 endif()
 
+# PACKAGE_DATA means we requested packaging; PACKAGE_DATA_SUPPORTED means it is supported at all.
+# So we should package if we requested it AND it is supported.
+# We will not check for support if packaging is not requested.
+set(PACKAGE_DATA_SUPPORTED ON)
+if(${PACKAGE_DATA})
+	if(CMAKE_VERSION VERSION_LESS 3.3)
+		message(WARNING "Your version of CMake is too old, so packaging of data will not be used. Upgrade CMake to at least version 3.3 to enable packaging or specify PACKAGE_DATA=OFF to avoid this warning.")
+		set(PACKAGE_DATA_SUPPORTED OFF)
+	endif()
+endif()
+
+# DISABLE_ZIP means we disabled usage of libzip; ZIP_SUPPORTED means libzip functionality is supported at all.
+# So we should use ZIP in code if we disabled it OR it is not supported.
+# We will not check for support if ZIP is disabled.
+set(ZIP_SUPPORTED ON)
+if(NOT ${DISABLE_ZIP})
+	pkg_check_modules(ZIP libzip>=1.0)
+	if(NOT ${ZIP_FOUND})
+		message(WARNING "You have no suitable libzip, so packaging of data will not be used and ZIP support will be disabled. Install at least libzip 1.0 to enable ZIP support or specify DISABLE_ZIP=ON to avoid this warning.")
+		set(ZIP_SUPPORTED OFF)
+	endif()
+endif()
+
+# Obviously, we should not package data if we're compiling without ZIP support.
+if(${DISABLE_ZIP} OR NOT ${ZIP_SUPPORTED})
+	if(${DISABLE_ZIP} AND ${PACKAGE_DATA} AND ${PACKAGE_DATA_SUPPORTED})
+		# It is not a hazardous situation, so we would not issue a warning, only status message.
+		message(STATUS "You have disabled ZIP support, packaging of data will not be used.")
+	endif()
+	set(PACKAGE_DATA_SUPPORTED OFF)
+endif()
+
 add_subdirectory(src)
 
 if(${RELATIVE})
@@ -164,7 +198,8 @@ install(FILES "${DOC_SRC_DIR}/STORY.txt" DESTINATION "${DOC_DIR}")
 install(FILES "${DOC_SRC_DIR}/COPYING" DESTINATION "${DOC_DIR}" RENAME "COPYING.txt")
 install(FILES "${DOC_SRC_DIR}/misc/README_installed.txt" DESTINATION "${DOC_DIR}" RENAME "README.txt")
 
-if(${PACKAGE_DATA})
+if(${PACKAGE_DATA} AND ${PACKAGE_DATA_SUPPORTED})
+    message(STATUS "Packaging of data enabled")
     set(GAME_RESOURCES_ZIP "${CMAKE_CURRENT_BINARY_DIR}/00-taisei.zip")
 
     configure_file(
@@ -191,6 +226,7 @@ if(${PACKAGE_DATA})
 
     install(FILES ${GAME_RESOURCES_ZIP} DESTINATION ${DATA_DIR})
 else()
+    message(STATUS "Packaging of data disabled")
     install(DIRECTORY "resources/" DESTINATION ${DATA_DIR})
 endif()
 
