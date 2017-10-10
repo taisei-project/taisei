@@ -140,7 +140,7 @@ static bool ending_frame(void *arg) {
 		set_transition(TransFadeWhite, ENDING_FADE_OUT, ENDING_FADE_OUT);
 	}
 
-	return e->pos >= e->count - 1;
+	return e->pos < e->count;
 }
 
 void ending_loop(void) {
