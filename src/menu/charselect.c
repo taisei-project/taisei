@@ -28,7 +28,6 @@ void create_shottype_menu(MenuData *m) {
 
 		if(i == progress.game_settings.shotmode) {
 			m->cursor = i;
-			break;
 		}
 	}
 }
@@ -52,7 +51,6 @@ void create_char_menu(MenuData *m) {
 
 		if(i == progress.game_settings.character) {
 			m->cursor = i;
-			break;
 		}
 	}
 }
