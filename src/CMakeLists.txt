@@ -7,22 +7,8 @@ if(${USE_COTIRE})
 	include(cotire)
 endif()
 
-find_package(PkgConfig REQUIRED)
-
 if(${LINK_TO_LIBGL})
-	find_package(OpenGL REQUIRED)
 	add_definitions(-DLINK_TO_LIBGL)
-	set(_OPENGL_GL_LIBRARY "${OPENGL_gl_LIBRARY}")
-	set(_OPENGL_GL_LIBRARY "${OPENGL_INCLUDE_DIR}")
-endif()
-
-pkg_check_modules(SDL2 sdl2>=2.0.5 REQUIRED)
-pkg_check_modules(SDL2_TTF SDL2_ttf REQUIRED)
-pkg_check_modules(ZLIB zlib REQUIRED)
-pkg_check_modules(PNG libpng>=1.5 REQUIRED)
-
-if(NOT ${NO_AUDIO})
-	pkg_check_modules(SDL2_MIXER SDL2_mixer REQUIRED)
 endif()
 
 if(${DISABLE_ZIP} OR NOT ${ZIP_SUPPORTED})
@@ -223,7 +209,6 @@ set(LIBs ${LIBs}
 	${SDL2_TTF_LIBRARIES}
 	${ZLIB_LIBRARIES}
 	${PNG_LIBRARIES}
-	${_OPENGL_GL_LIBRARY}
 	m)
 
 set(LIBDIRs
@@ -255,8 +240,12 @@ set(INCs
 	${SDL2_TTF_INCLUDE_DIRS}
 	${ZLIB_INCLUDE_DIRS}
 	${PNG_INCLUDE_DIRS}
-	${_OPENGL_INCLUDE_DIR}
 	)
+
+if(${LINK_TO_LIBGL})
+	set(INCs ${INCs} ${OPENGL_INCLUDE_DIR})
+	set(LIBs ${LIBs} ${OPENGL_gl_LIBRARY})
+endif()
 
 if(${ZIP_SUPPORTED} AND NOT ${DISABLE_ZIP})
 	set(INCs ${INCs} ${ZIP_INCLUDE_DIRS})

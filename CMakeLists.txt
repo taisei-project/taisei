@@ -127,6 +127,19 @@ if(APPLE)
     option(OSX_TOOL_PREFIX "Names of macOS-specific tools are prefixed with this string (useful for cross-compiling)." "")
 endif()
 
+if(${LINK_TO_LIBGL})
+	find_package(OpenGL REQUIRED)
+endif()
+
+pkg_check_modules(SDL2 sdl2>=2.0.5 REQUIRED)
+pkg_check_modules(SDL2_TTF SDL2_ttf REQUIRED)
+pkg_check_modules(ZLIB zlib REQUIRED)
+pkg_check_modules(PNG libpng>=1.5 REQUIRED)
+
+if(NOT ${NO_AUDIO})
+	pkg_check_modules(SDL2_MIXER SDL2_mixer REQUIRED)
+endif()
+
 # PACKAGE_DATA means we requested packaging; PACKAGE_DATA_SUPPORTED means it is supported at all.
 # So we should package if we requested it AND it is supported.
 # We will not check for support if packaging is not requested.
