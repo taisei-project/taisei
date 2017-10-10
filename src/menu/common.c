@@ -32,6 +32,10 @@ static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty
                 if(menu_loop(&m) == -1) {
                     return;
                 }
+
+                global.diff = progress.game_settings.difficulty;
+            } else {
+                // assume global.diff is set up beforehand
             }
         } else {
             global.diff = stagediff;
@@ -46,6 +50,13 @@ static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty
             restart = true;
         }
     } while(restart);
+
+    global.plr.mode = plrmode_find(
+        progress.game_settings.character,
+        progress.game_settings.shotmode
+    );
+
+    assert(global.plr.mode != NULL);
 
     global.replay_stage = NULL;
     replay_init(&global.replay);

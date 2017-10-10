@@ -58,6 +58,7 @@ void enter_stagepractice(MenuData *menu, void *arg) {
 			return;
 		}
 
+		global.diff = progress.game_settings.difficulty;
 		create_stgpract_menu(&m, global.diff);
 		menu_loop(&m);
 	} while(m.selected < 0 || m.selected == m.ecount - 1);
