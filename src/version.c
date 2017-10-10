@@ -11,10 +11,10 @@
 int taisei_version_compare(TaiseiVersion *v1, TaiseiVersion *v2, TaiseiVersionCmpLevel level) {
     int result = 0;
 
-    if((result = v1->major - v2->major) && level >= VCMP_MAJOR) return result;
-    if((result = v1->minor - v2->minor) && level >= VCMP_MINOR) return result;
-    if((result = v1->patch - v2->patch) && level >= VCMP_PATCH) return result;
-    if((result = v1->tweak - v2->tweak) && level >= VCMP_TWEAK) return result;
+    if((result = (int)v1->major - (int)v2->major) && level >= VCMP_MAJOR) return result;
+    if((result = (int)v1->minor - (int)v2->minor) && level >= VCMP_MINOR) return result;
+    if((result = (int)v1->patch - (int)v2->patch) && level >= VCMP_PATCH) return result;
+    if((result = (int)v1->tweak - (int)v2->tweak) && level >= VCMP_TWEAK) return result;
 
     return result;
 }
