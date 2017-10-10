@@ -108,9 +108,13 @@ typedef struct Boss {
 	Texture *dialog; // Used in spellcard intros
 
 	Color zoomcolor;
+	Color shadowcolor;
 
 	int failed_spells;
 	int lastdamageframe; // used to make the boss blink on damage taken
+	int birthtime;
+
+	BossRule global_rule;
 } Boss;
 
 Boss* create_boss(char *name, char *ani, char *dialog, complex pos);

@@ -108,6 +108,59 @@ Color approach_color(Color src, Color dst, double delta) {
     );
 }
 
+static float hue_to_rgb(float v1, float v2, float vH) {
+    if(vH < 0) {
+        vH += 1;
+    }
+
+    if(vH > 1) {
+        vH -= 1;
+    }
+
+    if((6 * vH) < 1) {
+        return (v1 + (v2 - v1) * 6 * vH);
+    }
+
+    if((2 * vH) < 1) {
+        return v2;
+    }
+
+    if((3 * vH) < 2) {
+        return (v1 + (v2 - v1) * ((2.0f / 3) - vH) * 6);
+    }
+
+    return v1;
+}
+
+Color hsla(float h, float s, float l, float a) {
+    float r, g, b;
+
+    if(s == 0) {
+        r = g = b = l;
+    } else {
+        float v1, v2;
+        h = fmod(h, 1.0);
+
+        if(l < 0.5) {
+            v2 = l * (1.0 + s);
+        } else {
+            v2 = l + s - s * l;
+        }
+
+        v1 = 2.0 * l - v2;
+
+        r = hue_to_rgb(v1, v2, h + (1.0/3.0));
+        g = hue_to_rgb(v1, v2, h);
+        b = hue_to_rgb(v1, v2, h - (1.0/3.0));
+    }
+
+    return rgba(r, g, b, a);
+}
+
+Color hsl(float h, float s, float l) {
+    return hsla(h, s, l, 1.0);
+}
+
 // #define COLOR_TEST
 
 int color_test(void) {

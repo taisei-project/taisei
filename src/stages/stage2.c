@@ -246,7 +246,7 @@ void stage2_spellpractice_events(void) {
 	AT(0) {
 		skip_background_anim(&bgcontext, stage2_draw, 180, &global.frames, NULL);
 
-		Boss* hina = create_boss("Kagiyama Hina", "hina", "dialog/hina", BOSS_DEFAULT_SPAWN_POS);
+		Boss* hina = stage2_spawn_hina(BOSS_DEFAULT_SPAWN_POS);
 		boss_add_attack_from_info(hina, global.stage->spell, true);
 		boss_start_attack(hina, hina->attacks);
 		global.boss = hina;

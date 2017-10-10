@@ -291,7 +291,7 @@ void stage4_spellpractice_events(void) {
 
 	AT(0) {
 		skip_background_anim(&bgcontext, stage4_draw, 3200, &global.frames, NULL);
-		global.boss = create_boss("Kurumi", "kurumi", "dialog/kurumi", BOSS_DEFAULT_SPAWN_POS);
+		global.boss = stage4_spawn_kurumi(BOSS_DEFAULT_SPAWN_POS);
 		boss_add_attack_from_info(global.boss, global.stage->spell, true);
 		boss_start_attack(global.boss, global.boss->attacks);
 

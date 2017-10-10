@@ -23,6 +23,7 @@ Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 	if(dialog)
 		buf->dialog = get_tex(dialog);
 
+	buf->birthtime = global.frames;
 	return buf;
 }
 
@@ -435,6 +436,10 @@ void process_boss(Boss **pboss) {
 
 	aniplayer_update(&boss->ani);
 
+	if(boss->global_rule) {
+		boss->global_rule(boss, global.frames - boss->birthtime);
+	}
+
 	if(!boss->current)
 		return;
 
@@ -447,7 +452,6 @@ void process_boss(Boss **pboss) {
 		global.plr.recovery = min(global.plr.recovery, global.frames);
 		log_debug("Attack started!");
 	}
-
 
 	if(!boss->current->endtime) {
 		int remaining = boss->current->timeout - time;
@@ -670,23 +674,29 @@ void BossShadow(Projectile *p, int t) {
 	AniPlayer *aplr = (AniPlayer*)REF(p->args[2]);
 	assert(aplr != NULL);
 
+	Shader *shader = get_shader("silhouette");
+	glUseProgram(shader->prog);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
 	glPushMatrix();
 	float s = 1.0+t/p->args[0]*0.5;
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
 	glScalef(s, s, 1);
 
-	float r,g,b,a;
-	parse_color(p->clr,&r,&g,&b,&a);
-	a = 1.5-s;
-	glColor4f(r,g,b,a);
+	float clr[4];
+	parse_color_array(p->clr, clr);
+	clr[3] = 1.5 - s;
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	float fade = 1 - clr[3];
+	float deform = 5 - 10 * fade * fade;
+	glUniform4fv(uniloc(shader, "color"), 1, clr);
+	glUniform1f(uniloc(shader, "deform"), deform);
+
 	aniplayer_play(aplr,0,0);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glPopMatrix();
-
-	glColor3f(1,1,1);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glUseProgram(0);
 }
 
 int boss_shadow_rule(Projectile *p, int t) {
@@ -719,6 +729,7 @@ void boss_preload(void) {
 		"spellcard_intro",
 		"spellcard_outro",
 		"spellcard_walloftext",
+		"silhouette",
 	NULL);
 
 	StageInfo *s = global.stage;

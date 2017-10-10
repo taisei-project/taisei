@@ -238,6 +238,7 @@ void iku_mid_intro(Boss *b, int t) {
 
 Boss *create_iku_mid(void) {
 	Boss *b = create_boss("Bombs?", "iku", 0, VIEWPORT_W+800.0*I);
+	b->shadowcolor = rgba(0.2, 0.4, 0.5, 0.5);
 
 	boss_add_attack(b, AT_SurvivalSpell, "Discharge Bombs", 16, 10, iku_mid_intro, NULL);
 
@@ -764,8 +765,14 @@ void iku_extra(Boss *b, int t) {
 	}
 }
 
-Boss *create_iku(void) {
-	Boss *b = create_boss("Nagae Iku", "iku", "dialog/iku", VIEWPORT_W/2-200.0*I);
+Boss* stage5_spawn_iku(complex pos) {
+	Boss *b = create_boss("Nagae Iku", "iku", "dialog/iku", pos);
+	b->shadowcolor = rgba(0.2, 0.4, 0.5, 0.5);
+	return b;
+}
+
+Boss* create_iku(void) {
+	Boss *b = stage5_spawn_iku(VIEWPORT_W/2-200.0*I);
 
 	boss_add_attack(b, AT_Move, "Introduction", 3, 0, iku_intro, NULL);
 	boss_add_attack(b, AT_Normal, "Bolts1", 20, 24000, iku_bolts, NULL);

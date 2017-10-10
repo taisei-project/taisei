@@ -375,8 +375,15 @@ void kurumi_outro(Boss *b, int time) {
 	b->pos += -5-I;
 }
 
-Boss *create_kurumi_mid(void) {
-	Boss* b = create_boss("Kurumi", "kurumi", "dialog/kurumi", VIEWPORT_W/2-400.0*I);
+Boss* stage4_spawn_kurumi(complex pos) {
+	Boss* b = create_boss("Kurumi", "kurumi", "dialog/kurumi", pos);
+	b->shadowcolor = rgba(0.5, 0.1, 0.0, 0.5);
+	return b;
+}
+
+Boss* create_kurumi_mid(void) {
+	Boss *b = stage4_spawn_kurumi(VIEWPORT_W/2-400.0*I);
+
 	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_intro, NULL);
 	boss_add_attack_from_info(b, &stage4_spells.mid.gate_of_walachia, false);
 	if(global.diff < D_Hard) {
@@ -1057,7 +1064,8 @@ void kurumi_extra(Boss *b, int time) {
 
 
 Boss *create_kurumi(void) {
-	Boss* b = create_boss("Kurumi", "kurumi", "dialog/kurumi", -400.0*I);
+	Boss* b = stage4_spawn_kurumi(-400.0*I);
+
 	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_boss_intro, NULL);
 	boss_add_attack(b, AT_Normal, "Sin Breaker", 20, 33000, kurumi_sbreaker, NULL);
 	if(global.diff < D_Hard) {

@@ -22,5 +22,4 @@ void elly_theory(Boss*, int);
 void elly_curvature(Boss*, int);
 
 void stage6_events(void);
-
-
+Boss* stage6_spawn_elly(complex pos);

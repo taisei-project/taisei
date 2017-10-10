@@ -17,5 +17,4 @@ void hina_wheel(Boss*, int);
 void hina_monty(Boss*, int);
 
 void stage2_events(void);
-
-
+Boss* stage2_spawn_hina(complex pos);

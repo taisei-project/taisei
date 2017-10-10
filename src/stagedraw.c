@@ -222,9 +222,11 @@ static void stage_draw_objects(void) {
 		glPushMatrix();
 		glTranslatef(creal(global.boss->pos), cimag(global.boss->pos), 0);
 
+		Color shadowcolor = global.boss->shadowcolor;
+
 		if(!(global.frames % 5)) {
 			complex offset = (frand()-0.5)*50 + (frand()-0.5)*20.0*I;
-			create_particle3c("boss_shadow", 0, rgba(0.2,0.35,0.5,0.5), EnemyFlareShrink, enemy_flare, 50, (-100.0*I-offset)/(50.0+frand()*10), add_ref(global.boss));
+			create_particle3c("boss_shadow", 0, shadowcolor, EnemyFlareShrink, enemy_flare, 50, (-100.0*I-offset)/(50.0+frand()*10), add_ref(global.boss));
 		}
 
 		Attack *cur = global.boss->current;
@@ -236,9 +238,13 @@ static void stage_draw_objects(void) {
 			aniplayer_copy(aplr, &global.boss->ani);
 
 			// this is in sync with the boss position oscillation
-			complex pos = global.boss->pos + I * 6 * sin(global.frames/25.0);
+			complex pos = global.boss->pos + 6 * sin(global.frames/25.0) * I;
 
-			create_particle3c("boss_shadow", pos, rgb(0.4,0.6,1), BossShadow, boss_shadow_rule, 24, 0, add_ref(aplr));
+			float glowstr = 0.5;
+			float a = (1.0 - glowstr) + glowstr * pow(psin(global.frames/15.0), 1.0);
+			shadowcolor = multiply_colors(shadowcolor, rgb(a, a, a));
+
+			create_particle3c("boss_shadow", pos, shadowcolor, BossShadow, boss_shadow_rule, 24, 0, add_ref(aplr));
 		}
 
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);

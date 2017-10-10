@@ -1297,8 +1297,18 @@ void elly_spellbg_modern(Boss *b, int t) {
 	glColor4f(1,1,1,1);
 }
 
-Boss *create_elly(void) {
-	Boss *b = create_boss("Elly", "elly", "dialog/elly", -200.0*I);
+static void elly_global_rule(Boss *b, int time) {
+	global.boss->shadowcolor = hsla(time/120.0, 1.0, 0.25, 0.5);
+}
+
+Boss* stage6_spawn_elly(complex pos) {
+	Boss *b = create_boss("Elly", "elly", "dialog/elly", pos);
+	b->global_rule = elly_global_rule;
+	return b;
+}
+
+Boss* create_elly(void) {
+	Boss *b = stage6_spawn_elly(-200.0*I);
 
 	boss_add_attack(b, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
 	boss_add_attack(b, AT_Normal, "Frequency", 40, 50000, elly_frequency, NULL);

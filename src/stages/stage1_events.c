@@ -216,8 +216,15 @@ void cirno_mid_flee(Boss *c, int time) {
 	}
 }
 
-Boss *create_cirno_mid(void) {
-	Boss* cirno = create_boss("Cirno", "cirno", "dialog/cirno", VIEWPORT_W + 220 + 30.0*I);
+Boss* stage1_spawn_cirno(complex pos) {
+	Boss *cirno = create_boss("Cirno", "cirno", "dialog/cirno", pos);
+	cirno->shadowcolor = rgba(0.2, 0.35, 0.5, 0.5);
+	return cirno;
+}
+
+Boss* create_cirno_mid(void) {
+	Boss *cirno = stage1_spawn_cirno(VIEWPORT_W + 220 + 30.0*I);
+
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro, NULL);
 	boss_add_attack(cirno, AT_Normal, "Icy Storm", 20, 22000, cirno_icy, NULL);
 	boss_add_attack_from_info(cirno, &stage1_spells.mid.perfect_freeze, false);
@@ -629,7 +636,8 @@ void cirno_superhardspellcard(Boss *c, int t) {
 }
 
 Boss *create_cirno(void) {
-	Boss* cirno = create_boss("Cirno", "cirno", "dialog/cirno", -230 + 100.0*I);
+	Boss* cirno = stage1_spawn_cirno(-230 + 100.0*I);
+
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro_boss, NULL);
 	boss_add_attack(cirno, AT_Normal, "Iceplosion 0", 20, 22000, cirno_iceplosion0, NULL);
 	boss_add_attack_from_info(cirno, &stage1_spells.boss.crystal_rain, false);

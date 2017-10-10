@@ -487,8 +487,15 @@ void stage3_boss_spellbg(Boss *b, int time) {
 	glColor4f(1,1,1,1);
 }
 
+Boss* stage3_spawn_scuttle(complex pos) {
+	Boss *scuttle = create_boss("Scuttle", "scuttle", 0, pos);
+	scuttle->shadowcolor = rgba(0.5, 0.6, 0.3, 0.5);
+	return scuttle;
+}
+
 Boss* stage3_create_midboss(void) {
-	Boss *scuttle = create_boss("Scuttle", "scuttle", 0, VIEWPORT_W/2 - 200.0*I);
+	Boss *scuttle = stage3_spawn_scuttle(VIEWPORT_W/2 - 200.0*I);
+
 	boss_add_attack(scuttle, AT_Move, "Introduction", 2, 0, scuttle_intro, NULL);
 	boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 30, 25000, scuttle_a0, NULL);
 	boss_add_attack_from_info(scuttle, &stage3_spells.mid.deadly_dance, false);
@@ -931,8 +938,15 @@ void stage3_boss_extra(Boss *boss, int time) {
 	}
 }
 
+Boss* stage3_spawn_wriggle_ex(complex pos) {
+	Boss *wriggle = create_boss("Wriggle EX", "wriggleex", "dialog/wriggle", pos);
+	wriggle->shadowcolor = rgba(0.2, 0.4, 0.5, 0.5);
+	return wriggle;
+}
+
 Boss* stage3_create_boss(void) {
-	Boss *wriggle = create_boss("Wriggle EX", "wriggleex", "dialog/wriggle", VIEWPORT_W/2 - 200.0*I);
+	Boss *wriggle = stage3_spawn_wriggle_ex(VIEWPORT_W/2 - 200.0*I);
+
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage3_boss_intro, NULL);
 	boss_add_attack(wriggle, AT_Normal, "", 20, 30000, stage3_boss_prea1, NULL);
 	boss_add_attack_from_info(wriggle, &stage3_spells.boss.moonlight_rocket, false);

@@ -18,5 +18,4 @@ void iku_induction(Boss*, int);
 void iku_extra(Boss*, int);
 
 void stage5_events(void);
-
-
+Boss* stage5_spawn_iku(complex pos);

@@ -19,5 +19,4 @@ void kurumi_danmaku(Boss*, int);
 void kurumi_extra(Boss*, int);
 
 void stage4_events(void);
-
-
+Boss* stage4_spawn_kurumi(complex pos);
