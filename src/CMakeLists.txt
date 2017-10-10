@@ -2,7 +2,7 @@
 include(CheckSymbolExists)
 include(CheckAndSetFlags)
 
-if(USE_COTIRE)
+if(${USE_COTIRE})
 	set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${BUILDSCRIPTS_DIR}/cmake-modules/cotire/CMake")
 	cmake_policy(SET CMP0011 NEW)
 	include(cotire)
@@ -10,12 +10,12 @@ endif()
 
 find_package(PkgConfig REQUIRED)
 
-if(CMAKE_VERSION VERSION_LESS 3.3 AND PACKAGE_DATA)
+if(CMAKE_VERSION VERSION_LESS 3.3 AND ${PACKAGE_DATA})
 	message(WARNING "Your version of CMake is too old, so packaging of data will not be used. Upgrade CMake to at least version 3.3 to enable packaging or specify PACKAGE_DATA=OFF to avoid this warning.")
 	set(PACKAGE_DATA OFF PARENT_SCOPE)
 endif()
 
-if(LINK_TO_LIBGL)
+if(${LINK_TO_LIBGL})
 	find_package(OpenGL REQUIRED)
 	add_definitions(-DLINK_TO_LIBGL)
 	set(_OPENGL_GL_LIBRARY "${OPENGL_gl_LIBRARY}")
@@ -28,16 +28,16 @@ pkg_check_modules(ZLIB zlib REQUIRED)
 pkg_check_modules(PNG libpng>=1.5 REQUIRED)
 pkg_check_modules(ZIP libzip>=1.0)
 
-if(NOT ZIP_FOUND AND NOT DISABLE_ZIP)
+if(NOT ${ZIP_FOUND} AND NOT ${DISABLE_ZIP})
 	message(WARNING "You have no suitable libzip, so packaging of data will not be used and ZIP support will be disabled. Install at least libzip 1.0 to enable ZIP support or specify DISABLE_ZIP=ON to avoid this warning.")
 	set(DISABLE_ZIP ON)
 endif()
 
-if(NOT NO_AUDIO)
+if(NOT ${NO_AUDIO})
 	pkg_check_modules(SDL2_MIXER SDL2_mixer REQUIRED)
 endif()
 
-if(DISABLE_ZIP)
+if(${DISABLE_ZIP})
 	set(PACKAGE_DATA OFF PARENT_SCOPE)
 	add_definitions(-DDISABLE_ZIP)
 endif()
@@ -139,7 +139,7 @@ set(SRCs
 	"${CMAKE_CURRENT_BINARY_DIR}/version_auto.c"
 )
 
-if(NOT DISABLE_ZIP)
+if(NOT ${DISABLE_ZIP})
 	set(SRCs ${SRCs}
 		rwops/rwops_zipfile.c
 		vfs/zipfile.c
@@ -156,7 +156,7 @@ else()
 		vfs/syspath_posix.c)
 endif()
 
-if(NO_AUDIO)
+if(${NO_AUDIO})
 	set(SRCs ${SRCs}
 		audio_null.c
 		resource/bgm_null.c
@@ -189,15 +189,15 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "Release" OR "${CMAKE_BUILD_TYPE}" STREQUAL "R
 	set(RELEASE_BUILD TRUE)
 endif()
 
-if(DEBUG_USE_UBSAN AND DEFINED DEBUG_BUILD)
+if(${DEBUG_USE_UBSAN} AND DEFINED DEBUG_BUILD)
 	CHECK_AND_SET_FLAGS(COMPILER_SUPPORTS_UBSAN "-fsanitize=undefined" DEBUG_FLAGS "-fsanitize=undefined")
 endif()
 
-if(DEBUG_USE_ASAN AND DEFINED DEBUG_BUILD)
+if(${DEBUG_USE_ASAN} AND DEFINED DEBUG_BUILD)
 	CHECK_AND_SET_FLAGS(COMPILER_SUPPORTS_ASAN "-fsanitize=address" DEBUG_FLAGS "-fsanitize=address")
 endif()
 
-if(RELEASE_USE_LTO AND DEFINED RELEASE_BUILD)
+if(${RELEASE_USE_LTO} AND DEFINED RELEASE_BUILD)
 	CHECK_AND_SET_FLAGS(COMPILER_SUPPORTS_LTO "-flto" RELEASE_FLAGS)
 endif()
 
@@ -210,15 +210,15 @@ set(WARNINGS "-Wall -Wno-parentheses -Wtype-limits -Wstrict-prototypes -Wlong-lo
 CHECK_AND_SET_FLAGS(COMPILER_WARN_PEDANTIC "-Wpedantic" WARNINGS)
 CHECK_AND_SET_FLAGS(COMPILER_WARN_NULLDEREF "-Wnull-dereference" WARNINGS)
 
-if(RELATIVE)
+if(${RELATIVE})
 	add_definitions(-DRELATIVE)
 endif()
 
-if(WERROR)
+if(${WERROR})
 	set(WARNINGS "${WARNINGS} -Werror")
 endif()
 
-if(FATALERRS)
+if(${FATALERRS})
 	set(WARNINGS "${WARNINGS} -Wfatal-errors")
 endif()
 
@@ -272,7 +272,7 @@ set(INCs
 	)
 
 # stupid cmake caching SHIT
-if(NOT NO_AUDIO)
+if(NOT ${NO_AUDIO})
 	set(INCs ${INCs} ${SDL2_MIXER_INCLUDE_DIRS})
 	set(LIBs ${LIBs} ${SDL2_MIXER_LIBRARIES})
 	set(LIBDIRs ${LIBDIRs} ${SDL2_MIXER_LIBRARY_DIRS})
@@ -313,7 +313,7 @@ list(REMOVE_DUPLICATES SRCs)
 
 link_directories(${LIBDIRs})
 
-if(TAISEI_WIN32_CONSOLE)
+if(${TAISEI_WIN32_CONSOLE})
 	list(REMOVE_ITEM LIBs -mwindows)
 	add_executable(taisei MACOSX_BUNDLE ${SRCs})
 else()
@@ -356,12 +356,12 @@ if(APPLE)
 		VERBATIM
 	)
 
-elseif(RELATIVE)
+elseif(${RELATIVE})
 	install(TARGETS taisei RUNTIME DESTINATION .)
 else()
 	install(TARGETS taisei RUNTIME DESTINATION bin)
 endif()
 
-if(USE_COTIRE)
+if(${USE_COTIRE})
 	cotire(taisei)
 endif()
