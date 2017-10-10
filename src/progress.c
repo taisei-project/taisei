@@ -10,6 +10,7 @@
 
 #include "progress.h"
 #include "stage.h"
+#include "version.h"
 
 /*
 
@@ -48,6 +49,9 @@
 
 		- PCMD_GAME_SETTINGS
 			Sets the last picked difficulty, character and shot mode
+
+		- PCMD_GAME_VERSION
+			Sets the game version this file was last written with
 */
 
 /*
@@ -83,6 +87,20 @@ typedef struct UnknownCmd {
 	uint16_t size;
 	uint8_t *data;
 } UnknownCmd;
+
+static bool progress_read_verify_cmd_size(SDL_RWops *vfile, uint8_t cmd, uint16_t cmdsize, uint16_t expectsize) {
+	if(cmdsize == expectsize) {
+		return true;
+	}
+
+	log_warn("Command %x with bad size %u ignored", cmd, cmdsize);
+
+	if(SDL_RWseek(vfile, cmdsize, RW_SEEK_CUR) < 0) {
+		log_warn("SDL_RWseek() failed: %s", SDL_GetError());
+	}
+
+	return false;
+}
 
 static void progress_read(SDL_RWops *file) {
 	int64_t filesize = SDL_RWsize(file);
@@ -130,6 +148,8 @@ static void progress_read(SDL_RWops *file) {
 		free(buf);
 		return;
 	}
+
+	TaiseiVersion version_info = { 0 };
 
 	while(SDL_RWtell(vfile) < bufsize) {
 		ProgfileCommand cmd = (int8_t)SDL_ReadU8(vfile);
@@ -206,17 +226,24 @@ static void progress_read(SDL_RWops *file) {
 				break;
 
 			case PCMD_GAME_SETTINGS:
-				if(cmdsize == sizeof(uint8_t) * 3) {
+				if(progress_read_verify_cmd_size(vfile, cmd, cmdsize, sizeof(uint8_t) * 3)) {
 					progress.game_settings.difficulty = SDL_ReadU8(vfile);
 					progress.game_settings.character = SDL_ReadU8(vfile);
 					progress.game_settings.shotmode = SDL_ReadU8(vfile);
-				} else {
-					log_warn("Command %x with bad size %u ignored", cmd, cmdsize);
+				}
+				break;
 
-					while(cur < cmdsize) {
-						SDL_ReadU8(vfile);
-						cur += sizeof(uint8_t);
+			case PCMD_GAME_VERSION:
+				if(progress_read_verify_cmd_size(vfile, cmd, cmdsize, TAISEI_VERSION_SIZE)) {
+					if(version_info.major > 0) {
+						log_warn("Multiple version information entries in progress file");
 					}
+
+					size_t read __attribute__((unused)) = taisei_version_read(vfile, &version_info);
+					assert(read == TAISEI_VERSION_SIZE);
+					char *vstr = taisei_version_tostring(&version_info);
+					log_info("Progress file from Taisei v%s", vstr);
+					free(vstr);
 				}
 				break;
 
@@ -230,6 +257,28 @@ static void progress_read(SDL_RWops *file) {
 				SDL_RWread(vfile, c->data, c->size, 1);
 
 				break;
+		}
+	}
+
+	if(version_info.major == 0) {
+		log_warn("No version information in progress file, it's probably just old (Taisei v1.1, or an early pre-v1.2 development build)");
+	} else {
+		TaiseiVersion current_version;
+		TAISEI_VERSION_GET_CURRENT(&current_version);
+		int cmp = taisei_version_compare(&current_version, &version_info, VCMP_TWEAK);
+
+		if(cmp != 0) {
+			char *v_prog = taisei_version_tostring(&version_info);
+			char *v_game = taisei_version_tostring(&current_version);
+
+			if(cmp > 0) {
+				log_info("Progress file will be automatically upgraded from v%s to v%s upon saving", v_prog, v_game);
+			} else {
+				log_warn("Progress file will be automatically downgraded from v%s to v%s upon saving", v_prog, v_game);
+			}
+
+			free(v_prog);
+			free(v_game);
 		}
 	}
 
@@ -495,6 +544,25 @@ static void progress_write_cmd_game_settings(SDL_RWops *vfile, void **arg) {
 }
 
 //
+//	PCMD_GAME_VERSION
+//
+
+static void progress_prepare_cmd_game_version(size_t *bufsize, void **arg) {
+	*bufsize += CMD_HEADER_SIZE + TAISEI_VERSION_SIZE;
+}
+
+static void progress_write_cmd_game_version(SDL_RWops *vfile, void **arg) {
+	SDL_WriteU8(vfile, PCMD_GAME_VERSION);
+	SDL_WriteLE16(vfile, TAISEI_VERSION_SIZE);
+
+	TaiseiVersion v;
+	TAISEI_VERSION_GET_CURRENT(&v);
+
+	// the buffer consistency check should fail later if there are any errors here
+	taisei_version_write(vfile, &v);
+}
+
+//
 //	Copy unhandled commands from the original file
 //
 
@@ -531,6 +599,7 @@ static void progress_write(SDL_RWops *file) {
 	SDL_RWwrite(file, progress_magic_bytes, 1, sizeof(progress_magic_bytes));
 
 	cmd_writer_t cmdtable[] = {
+		{progress_prepare_cmd_game_version, progress_write_cmd_game_version, NULL},
 		{progress_prepare_cmd_unlock_stages, progress_write_cmd_unlock_stages, NULL},
 		{progress_prepare_cmd_unlock_stages_with_difficulties, progress_write_cmd_unlock_stages_with_difficulties, NULL},
 		{progress_prepare_cmd_hiscore, progress_write_cmd_hiscore, NULL},

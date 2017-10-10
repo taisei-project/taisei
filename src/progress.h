@@ -28,6 +28,7 @@ typedef enum ProgfileCommand {
     PCMD_STAGE_PLAYINFO                    = 0x03,
     PCMD_ENDINGS                           = 0x04,
     PCMD_GAME_SETTINGS                     = 0x05,
+    PCMD_GAME_VERSION                      = 0x06,
 } ProgfileCommand;
 
 typedef struct StageProgress {
