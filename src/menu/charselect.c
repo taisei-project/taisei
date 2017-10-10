@@ -29,6 +29,10 @@ void create_shottype_menu(MenuData *m) {
 
 	for(uintptr_t i = 0; i < NUM_SHOT_MODES_PER_CHARACTER; ++i) {
 		add_menu_entry(m, NULL, set_shotmode, (void*)i);
+
+		if(i == selected_shotid) {
+			m->cursor = i;
+		}
 	}
 }
 
@@ -48,6 +52,10 @@ void create_char_menu(MenuData *m) {
 
 	for(uintptr_t i = 0; i < NUM_CHARACTERS; ++i) {
 		add_menu_entry(m, NULL, set_player, (void*)i)->transition = TransFadeBlack;
+
+		if(i == selected_charid) {
+			m->cursor = i;
+		}
 	}
 }
 
