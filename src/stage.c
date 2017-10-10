@@ -200,6 +200,10 @@ static void stage_start(StageInfo *stage) {
 	reset_sounds();
 }
 
+static bool ingame_menu_interrupts_bgm(void) {
+	return global.stage->type != STAGE_SPELL;
+}
+
 void stage_pause(void) {
 	MenuData menu;
 
@@ -209,11 +213,23 @@ void stage_pause(void) {
 		create_ingame_menu(&menu);
 	}
 
+	if(ingame_menu_interrupts_bgm()) {
+		stop_bgm(false);
+	}
+
 	pause_sounds();
-	stop_bgm(false);
 	menu_loop(&menu);
-	resume_sounds();
-	resume_bgm();
+
+	if(global.game_over) {
+		stop_sounds();
+
+		if(ingame_menu_interrupts_bgm() || global.game_over != GAMEOVER_RESTART) {
+			fade_bgm();
+		}
+	} else {
+		resume_sounds();
+		resume_bgm();
+	}
 }
 
 void stage_gameover(void) {
@@ -241,7 +257,11 @@ void stage_gameover(void) {
 	*/
 
 	pause_sounds();
-	stop_bgm(false);
+
+	if(ingame_menu_interrupts_bgm()) {
+		stop_bgm(false);
+	}
+
 	menu_loop(&menu);
 	resume_sounds();
 

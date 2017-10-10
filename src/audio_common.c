@@ -169,6 +169,10 @@ static void stop_bgm_internal(bool pause, bool fade) {
 
 	current_bgm.started_at = -1;
 
+	if(!pause) {
+		stralloc(&current_bgm.name, NULL);
+	}
+
 	if(audio_backend_music_is_playing() && !audio_backend_music_is_paused()) {
 		if(pause) {
 			audio_backend_music_pause();
