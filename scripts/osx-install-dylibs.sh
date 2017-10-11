@@ -51,7 +51,7 @@ function find_dylib {
 }
 
 function handle_dylibs {
-    $otool -L "$1"
+    $otool -L "$1" || exit 7
 
     for lib in $($otool -L "$1" | sed -e '/:$/d' -e 's/[[:blank:]]*//' -e 's/[[:blank:]].*//' -e '/libSystem/d' -e '/.*\.dylib/!d' -e '/^\/usr\//d' | sort | uniq); do
         libname="${lib##*/}"

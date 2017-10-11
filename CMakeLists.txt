@@ -117,9 +117,9 @@ option(PACKAGE_DATA_LEANIFY "Optimize the assets archive for size. This process 
 option(USE_CPACK "Add a 'package' target, used to prepare a release for binary distribution. Currently only used to create Windows installers. Requires CPack and NSIS." OFF)
 
 if(APPLE)
-    option(OSX_LIB_PATH "Colon-separated list of paths from where required runtime libraries will be copied into the bundle." "")
-    option(OSX_TOOL_PATH "Colon-separated list of paths from where macOS-specific library utilities (such as otool) can be found. This is prepended to PATH." "")
-    option(OSX_TOOL_PREFIX "Names of macOS-specific tools are prefixed with this string (useful for cross-compiling)." "")
+    set(OSX_LIB_PATH "" CACHE STRING "Colon-separated list of paths from where required runtime libraries will be copied into the bundle.")
+    set(OSX_TOOL_PATH "" CACHE STRING "Colon-separated list of paths from where macOS-specific library utilities (such as otool) can be found. This is prepended to PATH.")
+    set(OSX_TOOL_PREFIX "" CACHE STRING "Names of macOS-specific tools are prefixed with this string (useful for cross-compiling).")
 endif()
 
 add_subdirectory(src)
