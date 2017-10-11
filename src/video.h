@@ -44,5 +44,3 @@ bool video_is_fullscreen(void);
 bool video_is_resizable(void);
 bool video_can_change_resolution(void);
 void video_take_screenshot(void);
-
-

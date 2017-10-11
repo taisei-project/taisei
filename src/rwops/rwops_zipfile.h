@@ -13,5 +13,3 @@
 #include <stdbool.h>
 
 SDL_RWops* SDL_RWFromZipFile(zip_file_t *zipfile, bool autoclose);
-
-

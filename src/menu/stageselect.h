@@ -13,5 +13,3 @@
 #define STGMENU_MAX_TITLE_LENGTH 128
 
 void create_stage_menu(MenuData *m);
-
-

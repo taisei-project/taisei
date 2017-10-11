@@ -27,5 +27,3 @@ void matvecv(Matrix m, Vector *vs, int size);
 
 void normalize(Vector v);
 float length(Vector v);
-
-

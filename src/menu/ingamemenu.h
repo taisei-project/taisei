@@ -17,5 +17,3 @@ void create_ingame_menu(MenuData *menu);
 void create_ingame_menu_replay(MenuData *m);
 
 void restart_game(MenuData *m, void *arg);
-
-

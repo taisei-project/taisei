@@ -56,5 +56,3 @@ void spawn_items(complex pos, ...) __attribute__((sentinel));
 void items_preload(void);
 
 #define POWER_VALUE 3
-
-

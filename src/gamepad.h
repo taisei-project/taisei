@@ -51,5 +51,3 @@ int gamepad_get_player_axis_value(GamepadPlrAxis paxis);
 #define GAMEPAD_AXIS_MAX 32767
 #define GAMEPAD_AXIS_MIN -32768
 #define AXISVAL sign
-
-

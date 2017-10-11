@@ -1,30 +1,21 @@
-
 include(CheckSymbolExists)
 include(CheckAndSetFlags)
 
-if(USE_COTIRE)
+if(${USE_COTIRE})
 	set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${BUILDSCRIPTS_DIR}/cmake-modules/cotire/CMake")
 	cmake_policy(SET CMP0011 NEW)
 	include(cotire)
 endif()
 
-find_package(PkgConfig REQUIRED)
-
-if(LINK_TO_LIBGL)
-	find_package(OpenGL REQUIRED)
+if(${LINK_TO_LIBGL})
 	add_definitions(-DLINK_TO_LIBGL)
-	set(_OPENGL_GL_LIBRARY "${OPENGL_gl_LIBRARY}")
-	set(_OPENGL_GL_LIBRARY "${OPENGL_INCLUDE_DIR}")
 endif()
 
-pkg_check_modules(SDL2 sdl2>=2.0.5 REQUIRED)
-pkg_check_modules(SDL2_TTF SDL2_ttf REQUIRED)
-pkg_check_modules(ZLIB zlib REQUIRED)
-pkg_check_modules(PNG libpng>=1.5 REQUIRED)
-pkg_check_modules(ZIP libzip>=1.0 REQUIRED)
-
-if(NOT NO_AUDIO)
-	pkg_check_modules(SDL2_MIXER SDL2_mixer REQUIRED)
+if(NOT ${USE_ZIP} OR NOT ${ZIP_SUPPORTED})
+	message(STATUS "ZIP support disabled")
+	add_definitions(-DDISABLE_ZIP)
+else()
+	message(STATUS "ZIP support enabled")
 endif()
 
 configure_file(
@@ -114,20 +105,25 @@ set(SRCs
 	rwops/rwops_zlib.c
 	rwops/rwops_segment.c
 	rwops/rwops_autobuf.c
-	rwops/rwops_zipfile.c
 	vfs/private.c
 	vfs/public.c
 	vfs/setup.c
 	vfs/pathutil.c
 	vfs/union.c
 	vfs/vdir.c
-	vfs/zipfile.c
-	vfs/zippath.c
 	version.c
 	"${CMAKE_CURRENT_BINARY_DIR}/version_auto.c"
 )
 
-if(WIN32)
+if(${USE_ZIP} AND ${ZIP_SUPPORTED})
+	set(SRCs ${SRCs}
+		rwops/rwops_zipfile.c
+		vfs/zipfile.c
+		vfs/zippath.c)
+
+endif()
+
+if(${WIN32})
 	set(SRCs ${SRCs}
 		windows_misc.c
 		vfs/syspath_win32.c)
@@ -136,21 +132,21 @@ else()
 		vfs/syspath_posix.c)
 endif()
 
-if(NO_AUDIO)
-	set(SRCs ${SRCs}
-		audio_null.c
-		resource/bgm_null.c
-		resource/sfx_null.c
-	)
-else()
+if(${USE_AUDIO})
 	set(SRCs ${SRCs}
 		audio_mixer.c
 		resource/bgm_mixer.c
 		resource/sfx_mixer.c
 	)
+else()
+	set(SRCs ${SRCs}
+		audio_null.c
+		resource/bgm_null.c
+		resource/sfx_null.c
+	)
 endif()
 
-if(WIN32)
+if(${WIN32})
 	set(DEBUG_FLAGS "-gstabs")
 else()
 	set(DEBUG_FLAGS "-ggdb")
@@ -164,16 +160,21 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug" OR "${CMAKE_BUILD_TYPE}" STREQUAL "Rel
 	set(DEBUG_BUILD TRUE)
 endif()
 
-if(DEBUG_USE_UBSAN AND DEFINED DEBUG_BUILD)
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Release" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
+	# "Release build" is a build where ${RELEASE_FLAGS} are used.
+	set(RELEASE_BUILD TRUE)
+endif()
+
+if(${DEBUG_USE_UBSAN} AND DEFINED DEBUG_BUILD)
 	CHECK_AND_SET_FLAGS(COMPILER_SUPPORTS_UBSAN "-fsanitize=undefined" DEBUG_FLAGS "-fsanitize=undefined")
 endif()
 
-if(DEBUG_USE_ASAN AND DEFINED DEBUG_BUILD)
+if(${DEBUG_USE_ASAN} AND DEFINED DEBUG_BUILD)
 	CHECK_AND_SET_FLAGS(COMPILER_SUPPORTS_ASAN "-fsanitize=address" DEBUG_FLAGS "-fsanitize=address")
 endif()
 
-if(RELEASE_USE_LTO)
-	set(RELEASE_FLAGS "${RELEASE_FLAGS} -flto")
+if(${RELEASE_USE_LTO} AND DEFINED RELEASE_BUILD)
+	CHECK_AND_SET_FLAGS(COMPILER_SUPPORTS_LTO "-flto" RELEASE_FLAGS)
 endif()
 
 set(CMAKE_C_FLAGS_DEBUG "${DEBUG_FLAGS} -DDEBUG")
@@ -185,21 +186,21 @@ set(WARNINGS "-Wall -Wno-parentheses -Wtype-limits -Wstrict-prototypes -Wlong-lo
 CHECK_AND_SET_FLAGS(COMPILER_WARN_PEDANTIC "-Wpedantic" WARNINGS)
 CHECK_AND_SET_FLAGS(COMPILER_WARN_NULLDEREF "-Wnull-dereference" WARNINGS)
 
-if(RELATIVE)
-    add_definitions(-DRELATIVE)
+if(${RELATIVE})
+	add_definitions(-DRELATIVE)
 endif()
 
-if(WERROR)
+if(${WERROR})
 	set(WARNINGS "${WARNINGS} -Werror")
 endif()
 
-if(FATALERRS)
+if(${FATALERRS})
 	set(WARNINGS "${WARNINGS} -Wfatal-errors")
 endif()
 
 add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -std=c11 ${WARNINGS})
 
-if(WIN32 OR APPLE)
+if(${WIN32} OR ${APPLE})
 	add_definitions(-DLOG_FATAL_MSGBOX)
 endif()
 
@@ -207,32 +208,23 @@ set(LIBs ${LIBs}
 	${SDL2_LIBRARIES}
 	${SDL2_TTF_LIBRARIES}
 	${ZLIB_LIBRARIES}
-	${ZIP_LIBRARIES}
 	${PNG_LIBRARIES}
-	${_OPENGL_GL_LIBRARY}
 	m)
 
 set(LIBDIRs
 	${SDL2_LIBRARY_DIRS}
 	${SDL2_TTF_LIBRARY_DIRS}
 	${ZLIB_LIBRARY_DIRS}
-	${ZIP_LIBRARY_DIRS}
 	${PNG_LIBRARY_DIRS}
 	)
 
-if(WIN32)
+if(${WIN32})
 	add_definitions(-D__USE_MINGW_ANSI_STDIO)
 	set(LIBs ${LIBs} -ldxguid -lwinmm)
 
 	string(REPLACE "gcc" "windres" CMAKE_RC_COMPILER_INIT ${CMAKE_C_COMPILER})
 	enable_language(RC)
 	set(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> -O coff -o <OBJECT> <SOURCE>")
-
-	if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-		set(RELEASE_BUILD TRUE)
-	endif()
-
-	# DEBUG_BUILD is also used in the template and is defined above
 
 	configure_file(
 		"${CMAKE_CURRENT_SOURCE_DIR}/taisei.rc.in"
@@ -247,13 +239,21 @@ set(INCs
 	${SDL2_INCLUDE_DIRS}
 	${SDL2_TTF_INCLUDE_DIRS}
 	${ZLIB_INCLUDE_DIRS}
-	${ZIP_INCLUDE_DIRS}
 	${PNG_INCLUDE_DIRS}
-	${_OPENGL_INCLUDE_DIR}
 	)
 
-# stupid cmake caching SHIT
-if(NOT NO_AUDIO)
+if(${LINK_TO_LIBGL})
+	set(INCs ${INCs} ${OPENGL_INCLUDE_DIR})
+	set(LIBs ${LIBs} ${OPENGL_gl_LIBRARY})
+endif()
+
+if(${USE_ZIP} AND ${ZIP_SUPPORTED})
+	set(INCs ${INCs} ${ZIP_INCLUDE_DIRS})
+	set(LIBs ${LIBs} ${ZIP_LIBRARIES})
+	set(LIBDIRs ${LIBDIRs} ${ZIP_LIBRARY_DIRS})
+endif()
+
+if(${USE_AUDIO})
 	set(INCs ${INCs} ${SDL2_MIXER_INCLUDE_DIRS})
 	set(LIBs ${LIBs} ${SDL2_MIXER_LIBRARIES})
 	set(LIBDIRs ${LIBDIRs} ${SDL2_MIXER_LIBRARY_DIRS})
@@ -266,17 +266,17 @@ check_symbol_exists(_POSIX_VERSION "unistd.h" POSIX)
 check_symbol_exists(__STDC_NO_COMPLEX__ "unistd.h" COMPLEX_MISSING)
 check_symbol_exists(__STDC_NO_VLA__ "unistd.h" VLA_MISSING)
 
-if(COMPLEX_MISSING OR VLA_MISSING)
+if(${COMPLEX_MISSING} OR ${VLA_MISSING})
 	message(FATAL_ERROR "Your C implementation needs to support complex numbers and variable length arrays.")
 endif()
 
-if(POSIX)
+if(${POSIX})
 	add_definitions(-D__POSIX__)
 endif()
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 	check_symbol_exists(backtrace "execinfo.h" HAVE_BACKTRACE)
-	if(HAVE_BACKTRACE)
+	if(${HAVE_BACKTRACE})
 		add_definitions(-DLOG_ENABLE_BACKTRACE)
 	endif()
 endif()
@@ -294,7 +294,7 @@ list(REMOVE_DUPLICATES SRCs)
 
 link_directories(${LIBDIRs})
 
-if(TAISEI_WIN32_CONSOLE)
+if(${TAISEI_WIN32_CONSOLE})
 	list(REMOVE_ITEM LIBs -mwindows)
 	add_executable(taisei MACOSX_BUNDLE ${SRCs})
 else()
@@ -305,7 +305,7 @@ target_link_libraries(taisei ${LIBs})
 
 set(MACOSX_BUNDLE_BUNDLE_NAME "Taisei")
 
-if(APPLE)
+if(${APPLE})
 	set_target_properties(taisei PROPERTIES
 		OUTPUT_NAME "${MACOSX_BUNDLE_BUNDLE_NAME}"
 		MACOSX_BUNDLE_ICON_FILE "Taisei"
@@ -337,12 +337,12 @@ if(APPLE)
 		VERBATIM
 	)
 
-elseif(RELATIVE)
+elseif(${RELATIVE})
 	install(TARGETS taisei RUNTIME DESTINATION .)
 else()
 	install(TARGETS taisei RUNTIME DESTINATION bin)
 endif()
 
-if(USE_COTIRE)
+if(${USE_COTIRE})
 	cotire(taisei)
 endif()

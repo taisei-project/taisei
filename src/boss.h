@@ -147,5 +147,3 @@ int boss_shadow_rule(Projectile *p, int t);
 #define BOSS_DEFAULT_SPAWN_POS (VIEWPORT_W * 0.5 - I * VIEWPORT_H * 0.5)
 #define BOSS_DEFAULT_GO_POS (VIEWPORT_W * 0.5 + 200.0*I)
 #define BOSS_NOMOVE (-3142-39942.0*I)
-
-
