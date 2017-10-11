@@ -88,6 +88,8 @@ endif()
 #
 
 if(DEFINED TAISEI_DEBUG)
+    message(WARNING "You have TAISEI_DEBUG set, which overrides CMAKE_BUILD_TYPE. This is a deprecated option and you should not use it, unless maybe your cross-toolchain has a cmake wrapper that is doing something idiotic. Consider unsetting it with cmake -UTAISEI_DEBUG.")
+
     # XXX: avoid using this unless you absolutely have to
     if(${TAISEI_DEBUG})
         set(CMAKE_BUILD_TYPE "Debug")
@@ -98,30 +100,32 @@ endif()
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
     set(CMAKE_BUILD_TYPE "Release")
-    #message(WARNING "CMAKE_BUILD_TYPE was not set, assuming ${CMAKE_BUILD_TYPE}.")
 endif()
 
 message(STATUS ${TAISEI_VERSION_FULL_STR})
 message(STATUS "Build configuration: ${CMAKE_BUILD_TYPE}")
 
-if(WIN32 OR APPLE)
+if(${WIN32} OR ${APPLE})
 	set(RELATIVE_DEFAULT ON)
 else()
 	set(RELATIVE_DEFAULT OFF)
 endif()
 
 option(RELATIVE "Use only relative paths to the executable and install everything in the same directory." ${RELATIVE_DEFAULT})
-option(NO_AUDIO "Build without audio support" OFF)
-option(DISABLE_ZIP "Build without .zip file support" OFF)
+option(USE_AUDIO "Build with audio support (SDL2_mixer)." ON)
+option(USE_ZIP "Build with .zip package support." ON)
+option(USE_CPACK "Add a 'package' target, used to prepare a release for binary distribution. Currently only used to create Windows installers. Requires CPack and NSIS." OFF)
+option(USE_COTIRE "Use cotire (COmpile TIme REducer) to speed up builds." OFF)
 option(DEBUG_USE_UBSAN "Enable the Undefined Behaviour Sanitizer (UBSan) in debug builds. Only disable if the compiler or target platform doesn't support it." ON)
 option(DEBUG_USE_ASAN "Enable the Address Sanitizer (ASan) and leak detection in debug builds." OFF)
 option(RELEASE_USE_LTO "Enable Link Time Optimization in release builds." ON)
-option(USE_COTIRE "Use cotire (COmpile TIme REducer) to speed up builds." OFF)
-option(PACKAGE_DATA "Package the game's assets into a compressed archive instead of bundling plain files." ON)
+option(PACKAGE_DATA "Package the game's assets into a compressed archive instead of bundling plain files. Requires USE_ZIP=ON." ON)
 option(PACKAGE_DATA_LEANIFY "Optimize the assets archive for size. This process can be very slow. Requires Leanify (https://github.com/JayXon/Leanify) and PACKAGE_DATA=ON." OFF)
-option(USE_CPACK "Add a 'package' target, used to prepare a release for binary distribution. Currently only used to create Windows installers. Requires CPack and NSIS." OFF)
+option(LINK_TO_LIBGL "Link to the OpenGL library instead of loading it at runtime. This is strongly discouraged, as it is not portable, and may not even work on some systems." OFF)
+option(WERROR "Treat compiler warnings as errors." OFF)
+option(FATALERRS "Abort compilation after first error is encountered." OFF)
 
-if(APPLE)
+if(${APPLE})
     option(OSX_LIB_PATH "Colon-separated list of paths from where required runtime libraries will be copied into the bundle." "")
     option(OSX_TOOL_PATH "Colon-separated list of paths from where macOS-specific library utilities (such as otool) can be found. This is prepended to PATH." "")
     option(OSX_TOOL_PREFIX "Names of macOS-specific tools are prefixed with this string (useful for cross-compiling)." "")
@@ -136,7 +140,7 @@ pkg_check_modules(SDL2_TTF SDL2_ttf REQUIRED)
 pkg_check_modules(ZLIB zlib REQUIRED)
 pkg_check_modules(PNG libpng>=1.5 REQUIRED)
 
-if(NOT ${NO_AUDIO})
+if(${USE_AUDIO})
 	pkg_check_modules(SDL2_MIXER SDL2_mixer REQUIRED)
 endif()
 
@@ -151,21 +155,21 @@ if(${PACKAGE_DATA})
 	endif()
 endif()
 
-# DISABLE_ZIP means we disabled usage of libzip; ZIP_SUPPORTED means libzip functionality is supported at all.
-# So we should use ZIP in code if we disabled it OR it is not supported.
+# USE_ZIP means we would like to link to libzip; ZIP_SUPPORTED means libzip functionality is supported at all.
+# So we shouldn't use ZIP in code if we disabled it OR it is not supported.
 # We will not check for support if ZIP is disabled.
 set(ZIP_SUPPORTED ON)
-if(NOT ${DISABLE_ZIP})
+if(${USE_ZIP})
 	pkg_check_modules(ZIP libzip>=1.0)
 	if(NOT ${ZIP_FOUND})
-		message(WARNING "You have no suitable libzip, so packaging of data will not be used and ZIP support will be disabled. Install at least libzip 1.0 to enable ZIP support or specify DISABLE_ZIP=ON to avoid this warning.")
+		message(WARNING "You have no suitable libzip, so packaging of data will not be used and ZIP support will be disabled. Install at least libzip 1.0 to enable ZIP support or specify USE_ZIP=ON to avoid this warning.")
 		set(ZIP_SUPPORTED OFF)
 	endif()
 endif()
 
 # Obviously, we should not package data if we're compiling without ZIP support.
-if(${DISABLE_ZIP} OR NOT ${ZIP_SUPPORTED})
-	if(${DISABLE_ZIP} AND ${PACKAGE_DATA} AND ${PACKAGE_DATA_SUPPORTED})
+if(NOT ${USE_ZIP} OR NOT ${ZIP_SUPPORTED})
+	if(NOT ${USE_ZIP} AND ${PACKAGE_DATA} AND ${PACKAGE_DATA_SUPPORTED})
 		# It is not a hazardous situation, so we would not issue a warning, only status message.
 		message(STATUS "You have disabled ZIP support, packaging of data will not be used.")
 	endif()
@@ -178,7 +182,7 @@ if(${RELATIVE})
     add_definitions(-DRELATIVE)
     set(DOC_DIR .)
 
-    if(APPLE)
+    if(${APPLE})
         set(RES_DIR "Taisei.app/Contents/Resources")
         set(DATA_DIR "${RES_DIR}/data")
         install(FILES "${ICONS_DIR}/taisei.icns" DESTINATION "${RES_DIR}" RENAME "Taisei.icns")
@@ -192,7 +196,7 @@ else()
     install(DIRECTORY "xdg/" DESTINATION ".")
 endif()
 
-if(WIN32)
+if(${WIN32})
     set(DOC_FILES "STORY.txt" "COPYING" "misc/README_installed.txt")
     set(DOC_TMP_DIR "${CMAKE_CURRENT_BINARY_DIR}/win32docs")
 
@@ -245,7 +249,7 @@ endif()
 
 install(FILES ${MISC_DIR}/gamecontrollerdb/gamecontrollerdb.txt DESTINATION ${DATA_DIR})
 
-if(WIN32)
+if(${WIN32})
     # XXX: this is supposedly for dynamic-link builds, untested due to MXE being an ass
     include(InstallRequiredSystemLibraries)
 endif()

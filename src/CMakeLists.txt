@@ -11,7 +11,7 @@ if(${LINK_TO_LIBGL})
 	add_definitions(-DLINK_TO_LIBGL)
 endif()
 
-if(${DISABLE_ZIP} OR NOT ${ZIP_SUPPORTED})
+if(NOT ${USE_ZIP} OR NOT ${ZIP_SUPPORTED})
 	message(STATUS "ZIP support disabled")
 	add_definitions(-DDISABLE_ZIP)
 else()
@@ -115,7 +115,7 @@ set(SRCs
 	"${CMAKE_CURRENT_BINARY_DIR}/version_auto.c"
 )
 
-if(${ZIP_SUPPORTED} AND NOT ${DISABLE_ZIP})
+if(${USE_ZIP} AND ${ZIP_SUPPORTED})
 	set(SRCs ${SRCs}
 		rwops/rwops_zipfile.c
 		vfs/zipfile.c
@@ -123,7 +123,7 @@ if(${ZIP_SUPPORTED} AND NOT ${DISABLE_ZIP})
 
 endif()
 
-if(WIN32)
+if(${WIN32})
 	set(SRCs ${SRCs}
 		windows_misc.c
 		vfs/syspath_win32.c)
@@ -132,21 +132,21 @@ else()
 		vfs/syspath_posix.c)
 endif()
 
-if(${NO_AUDIO})
-	set(SRCs ${SRCs}
-		audio_null.c
-		resource/bgm_null.c
-		resource/sfx_null.c
-	)
-else()
+if(${USE_AUDIO})
 	set(SRCs ${SRCs}
 		audio_mixer.c
 		resource/bgm_mixer.c
 		resource/sfx_mixer.c
 	)
+else()
+	set(SRCs ${SRCs}
+		audio_null.c
+		resource/bgm_null.c
+		resource/sfx_null.c
+	)
 endif()
 
-if(WIN32)
+if(${WIN32})
 	set(DEBUG_FLAGS "-gstabs")
 else()
 	set(DEBUG_FLAGS "-ggdb")
@@ -200,7 +200,7 @@ endif()
 
 add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}" -std=c11 ${WARNINGS})
 
-if(WIN32 OR APPLE)
+if(${WIN32} OR ${APPLE})
 	add_definitions(-DLOG_FATAL_MSGBOX)
 endif()
 
@@ -218,7 +218,7 @@ set(LIBDIRs
 	${PNG_LIBRARY_DIRS}
 	)
 
-if(WIN32)
+if(${WIN32})
 	add_definitions(-D__USE_MINGW_ANSI_STDIO)
 	set(LIBs ${LIBs} -ldxguid -lwinmm)
 
@@ -247,14 +247,13 @@ if(${LINK_TO_LIBGL})
 	set(LIBs ${LIBs} ${OPENGL_gl_LIBRARY})
 endif()
 
-if(${ZIP_SUPPORTED} AND NOT ${DISABLE_ZIP})
+if(${USE_ZIP} AND ${ZIP_SUPPORTED})
 	set(INCs ${INCs} ${ZIP_INCLUDE_DIRS})
 	set(LIBs ${LIBs} ${ZIP_LIBRARIES})
 	set(LIBDIRs ${LIBDIRs} ${ZIP_LIBRARY_DIRS})
 endif()
 
-# stupid cmake caching SHIT
-if(NOT ${NO_AUDIO})
+if(${USE_AUDIO})
 	set(INCs ${INCs} ${SDL2_MIXER_INCLUDE_DIRS})
 	set(LIBs ${LIBs} ${SDL2_MIXER_LIBRARIES})
 	set(LIBDIRs ${LIBDIRs} ${SDL2_MIXER_LIBRARY_DIRS})
@@ -267,17 +266,17 @@ check_symbol_exists(_POSIX_VERSION "unistd.h" POSIX)
 check_symbol_exists(__STDC_NO_COMPLEX__ "unistd.h" COMPLEX_MISSING)
 check_symbol_exists(__STDC_NO_VLA__ "unistd.h" VLA_MISSING)
 
-if(COMPLEX_MISSING OR VLA_MISSING)
+if(${COMPLEX_MISSING} OR ${VLA_MISSING})
 	message(FATAL_ERROR "Your C implementation needs to support complex numbers and variable length arrays.")
 endif()
 
-if(POSIX)
+if(${POSIX})
 	add_definitions(-D__POSIX__)
 endif()
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 	check_symbol_exists(backtrace "execinfo.h" HAVE_BACKTRACE)
-	if(HAVE_BACKTRACE)
+	if(${HAVE_BACKTRACE})
 		add_definitions(-DLOG_ENABLE_BACKTRACE)
 	endif()
 endif()
@@ -306,7 +305,7 @@ target_link_libraries(taisei ${LIBs})
 
 set(MACOSX_BUNDLE_BUNDLE_NAME "Taisei")
 
-if(APPLE)
+if(${APPLE})
 	set_target_properties(taisei PROPERTIES
 		OUTPUT_NAME "${MACOSX_BUNDLE_BUNDLE_NAME}"
 		MACOSX_BUNDLE_ICON_FILE "Taisei"
