@@ -127,9 +127,9 @@ option(WERROR "Treat compiler warnings as errors." OFF)
 option(FATALERRS "Abort compilation after first error is encountered." OFF)
 
 if(APPLE)
-    option(OSX_LIB_PATH "Colon-separated list of paths from where required runtime libraries will be copied into the bundle." "")
-    option(OSX_TOOL_PATH "Colon-separated list of paths from where macOS-specific library utilities (such as otool) can be found. This is prepended to PATH." "")
-    option(OSX_TOOL_PREFIX "Names of macOS-specific tools are prefixed with this string (useful for cross-compiling)." "")
+    set(OSX_LIB_PATH "" CACHE STRING "Colon-separated list of paths from where required runtime libraries will be copied into the bundle.")
+    set(OSX_TOOL_PATH "" CACHE STRING "Colon-separated list of paths from where macOS-specific library utilities (such as otool) can be found. This is prepended to PATH.")
+    set(OSX_TOOL_PREFIX "" CACHE STRING "Names of macOS-specific tools are prefixed with this string (useful for cross-compiling).")
 endif()
 
 if(LINK_TO_LIBGL)
