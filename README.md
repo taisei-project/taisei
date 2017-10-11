@@ -46,7 +46,7 @@ Taisei stores all data in a platform-specific directory:
 * On **macOS**, it's `$HOME/Library/Application Support/taisei`
 * On **Linux**, **\*BSD**, and most other **Unix**-like systems, it's `$XDG_DATA_HOME/taisei` or `$HOME/.local/share/taisei`
 
-You can set the environment variable `TAISEI_STORAGE_PATH` to override this behaviour.
+This is refered to as the **Storage Directory**. You can set the environment variable `TAISEI_STORAGE_PATH` to override this behaviour.
 
 ## Game controller support
 
@@ -70,33 +70,6 @@ Once you have your mapping, there are two ways to make Taisei use it:
 When you're done, please consider contributing your mappings to [SDL](https://libsdl.org/), [SDL_GameControllerDB](https://github.com/gabomdq/SDL_GameControllerDB), and [us](https://github.com/laochailan/taisei/issues), so that other people can benefit from your work.
 
 Also note that we currently only handle input from analog axes and digital buttons. Hats, analog buttons, and anything more exotic will not work, unless remapped.
-
-## Background music
-
-Currently Taisei does not include any background music. To use this feature,
-you should have the required audio files in the `bgm/` subdirectory of global
-resource directory (for example, `$prefix/share/taisei/bgm/`), or better,
-in user-specific resource directory (`$HOME/.local/share/taisei/resources/bgm/`).
-BGM (as well as SFX) may be in `.wav`, `.flac`, or `.ogg` format; additionally
-you may try other formats such as `.mp3`, `.aiff`, `.mod`, `.xm`, etc. if your
-build of SDL2_mixer supports these formats.
-
-The complete music pack consists of 16 tracks:
-```
-    credits     BGM for credits screen
-    ending      BGM for ending
-    gameover    BGM for game over screen
-    menu        BGM for menus (excluding in-game menu which pauses BGM)
-    stageN      N=1..6, standard stage theme
-    stageNboss  N=1..6, boss theme for a stage
-```
-
-If you want to specify stage/boss theme names to be shown during gameplay, you
-may do it by editing the [`resources/bgm/bgm.conf`](bgm/bgm.conf) file. It can
-be done either before building Taisei (then modified file will be packed along
-with other game resources if `PACKAGE_DATA` is on), or after installation (then
-modified `bgm.conf` will override packed one; in that case it should be placed
-in any of the `bgm/` directories mentioned above).
 
 ## Sound problems (Linux)
 
