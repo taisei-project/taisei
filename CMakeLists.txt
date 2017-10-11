@@ -1,5 +1,6 @@
 project(taisei C)
 cmake_minimum_required(VERSION 3.0.2)
+cmake_policy(SET CMP0054 NEW)
 
 find_package(PkgConfig REQUIRED)
 
@@ -23,7 +24,7 @@ function(taisei_parse_version version_string)
     set(version_string_orig ${version_string})
     string(SUBSTRING ${version_string} 0 1 first_char)
 
-    if(${first_char} STREQUAL "v")
+    if(first_char STREQUAL "v")
         string(SUBSTRING ${version_string} 1 -1 version_string)
     endif()
 
@@ -40,11 +41,11 @@ function(taisei_parse_version version_string)
 
     list(LENGTH version_string_tmp version_numelems)
 
-    if(${version_numelems} GREATER 3)
+    if(version_numelems GREATER 3)
         message(FATAL_ERROR "Too many dot-separated elements in version string ${version_string_orig}, please use the following format: [v]major[.minor[.patch]][-tweak[extrainfo]]")
     endif()
 
-    while(${version_numelems} LESS 3)
+    while(version_numelems LESS 3)
         list(APPEND version_string_tmp 0)
         list(LENGTH version_string_tmp version_numelems)
     endwhile()
@@ -60,22 +61,22 @@ function(taisei_parse_version version_string)
     set(TAISEI_VERSION_PATCH ${patch} PARENT_SCOPE)
     set(TAISEI_VERSION_TWEAK 0 PARENT_SCOPE)
 
-    if(${version_string_extra})
+    if(version_string_extra)
         string(SUBSTRING ${version_string_extra} 1 -1 version_string_extra)
         set(TAISEI_VERSION_TWEAK ${version_string_extra} PARENT_SCOPE)
     endif()
 endfunction()
 
-if(${TAISEI_VERSION_OVERRIDE})
+if(TAISEI_VERSION_OVERRIDE)
     taisei_parse_version(${TAISEI_VERSION_OVERRIDE})
     message(STATUS "Version information manually overriden: v${TAISEI_VERSION}")
 else()
     git_describe(TAISEI_VERSION --tags --match "v[0-9]*[!a-z]")
 
-    if(${TAISEI_VERSION} STREQUAL "GIT-NOTFOUND")
+    if(TAISEI_VERSION STREQUAL "GIT-NOTFOUND")
         message(WARNING "Git is not installed. Version information will be less accurate.")
         set(TAISEI_VERSION ${TAISEI_VERSION_FALLBACK})
-    elseif(${TAISEI_VERSION} STREQUAL "HEAD-HASH-NOTFOUND")
+    elseif(TAISEI_VERSION STREQUAL "HEAD-HASH-NOTFOUND")
         message(WARNING "Source tree doesn't seem to be in a git repository. Version information will be less accurate.")
         set(TAISEI_VERSION ${TAISEI_VERSION_FALLBACK})
     endif()
@@ -91,7 +92,7 @@ if(DEFINED TAISEI_DEBUG)
     message(WARNING "You have TAISEI_DEBUG set, which overrides CMAKE_BUILD_TYPE. This is a deprecated option and you should not use it, unless maybe your cross-toolchain has a cmake wrapper that is doing something idiotic. Consider unsetting it with cmake -UTAISEI_DEBUG.")
 
     # XXX: avoid using this unless you absolutely have to
-    if(${TAISEI_DEBUG})
+    if(TAISEI_DEBUG)
         set(CMAKE_BUILD_TYPE "Debug")
     else()
         set(CMAKE_BUILD_TYPE "Release")
@@ -105,7 +106,7 @@ endif()
 message(STATUS ${TAISEI_VERSION_FULL_STR})
 message(STATUS "Build configuration: ${CMAKE_BUILD_TYPE}")
 
-if(${WIN32} OR ${APPLE})
+if(WIN32 OR APPLE)
 	set(RELATIVE_DEFAULT ON)
 else()
 	set(RELATIVE_DEFAULT OFF)
@@ -125,13 +126,13 @@ option(LINK_TO_LIBGL "Link to the OpenGL library instead of loading it at runtim
 option(WERROR "Treat compiler warnings as errors." OFF)
 option(FATALERRS "Abort compilation after first error is encountered." OFF)
 
-if(${APPLE})
+if(APPLE)
     option(OSX_LIB_PATH "Colon-separated list of paths from where required runtime libraries will be copied into the bundle." "")
     option(OSX_TOOL_PATH "Colon-separated list of paths from where macOS-specific library utilities (such as otool) can be found. This is prepended to PATH." "")
     option(OSX_TOOL_PREFIX "Names of macOS-specific tools are prefixed with this string (useful for cross-compiling)." "")
 endif()
 
-if(${LINK_TO_LIBGL})
+if(LINK_TO_LIBGL)
 	find_package(OpenGL REQUIRED)
 endif()
 
@@ -140,7 +141,7 @@ pkg_check_modules(SDL2_TTF SDL2_ttf REQUIRED)
 pkg_check_modules(ZLIB zlib REQUIRED)
 pkg_check_modules(PNG libpng>=1.5 REQUIRED)
 
-if(${USE_AUDIO})
+if(USE_AUDIO)
 	pkg_check_modules(SDL2_MIXER SDL2_mixer REQUIRED)
 endif()
 
@@ -148,7 +149,7 @@ endif()
 # So we should package if we requested it AND it is supported.
 # We will not check for support if packaging is not requested.
 set(PACKAGE_DATA_SUPPORTED ON)
-if(${PACKAGE_DATA})
+if(PACKAGE_DATA)
 	if(CMAKE_VERSION VERSION_LESS 3.3)
 		message(WARNING "Your version of CMake is too old, so packaging of data will not be used. Upgrade CMake to at least version 3.3 to enable packaging or specify PACKAGE_DATA=OFF to avoid this warning.")
 		set(PACKAGE_DATA_SUPPORTED OFF)
@@ -159,17 +160,17 @@ endif()
 # So we shouldn't use ZIP in code if we disabled it OR it is not supported.
 # We will not check for support if ZIP is disabled.
 set(ZIP_SUPPORTED ON)
-if(${USE_ZIP})
+if(USE_ZIP)
 	pkg_check_modules(ZIP libzip>=1.0)
-	if(NOT ${ZIP_FOUND})
+	if(NOT ZIP_FOUND)
 		message(WARNING "You have no suitable libzip, so packaging of data will not be used and ZIP support will be disabled. Install at least libzip 1.0 to enable ZIP support or specify USE_ZIP=ON to avoid this warning.")
 		set(ZIP_SUPPORTED OFF)
 	endif()
 endif()
 
 # Obviously, we should not package data if we're compiling without ZIP support.
-if(NOT ${USE_ZIP} OR NOT ${ZIP_SUPPORTED})
-	if(NOT ${USE_ZIP} AND ${PACKAGE_DATA} AND ${PACKAGE_DATA_SUPPORTED})
+if(NOT USE_ZIP OR NOT ZIP_SUPPORTED)
+	if(NOT USE_ZIP AND PACKAGE_DATA AND PACKAGE_DATA_SUPPORTED)
 		# It is not a hazardous situation, so we would not issue a warning, only status message.
 		message(STATUS "You have disabled ZIP support, packaging of data will not be used.")
 	endif()
@@ -178,11 +179,11 @@ endif()
 
 add_subdirectory(src)
 
-if(${RELATIVE})
+if(RELATIVE)
     add_definitions(-DRELATIVE)
     set(DOC_DIR .)
 
-    if(${APPLE})
+    if(APPLE)
         set(RES_DIR "Taisei.app/Contents/Resources")
         set(DATA_DIR "${RES_DIR}/data")
         install(FILES "${ICONS_DIR}/taisei.icns" DESTINATION "${RES_DIR}" RENAME "Taisei.icns")
@@ -196,7 +197,7 @@ else()
     install(DIRECTORY "xdg/" DESTINATION ".")
 endif()
 
-if(${WIN32})
+if(WIN32)
     set(DOC_FILES "STORY.txt" "COPYING" "misc/README_installed.txt")
     set(DOC_TMP_DIR "${CMAKE_CURRENT_BINARY_DIR}/win32docs")
 
@@ -215,7 +216,7 @@ install(FILES "${DOC_SRC_DIR}/STORY.txt" DESTINATION "${DOC_DIR}")
 install(FILES "${DOC_SRC_DIR}/COPYING" DESTINATION "${DOC_DIR}" RENAME "COPYING.txt")
 install(FILES "${DOC_SRC_DIR}/misc/README_installed.txt" DESTINATION "${DOC_DIR}" RENAME "README.txt")
 
-if(${PACKAGE_DATA} AND ${PACKAGE_DATA_SUPPORTED})
+if(PACKAGE_DATA AND PACKAGE_DATA_SUPPORTED)
     message(STATUS "Packaging of data enabled")
     set(GAME_RESOURCES_ZIP "${CMAKE_CURRENT_BINARY_DIR}/00-taisei.zip")
 
@@ -226,10 +227,10 @@ if(${PACKAGE_DATA} AND ${PACKAGE_DATA_SUPPORTED})
 
     install(SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/package_data.cmake")
 
-    if(${PACKAGE_DATA_LEANIFY})
+    if(PACKAGE_DATA_LEANIFY)
         find_program(LEANIFY_COMMAND "leanify")
 
-        if(NOT ${LEANIFY_COMMAND})
+        if(NOT LEANIFY_COMMAND)
             message(FATAL_ERROR "'leanify' not found. Either install it from https://github.com/JayXon/Leanify or pass -DPACKAGE_DATA_LEANIFY=OFF to CMake.")
         else()
             configure_file(
@@ -249,12 +250,12 @@ endif()
 
 install(FILES ${MISC_DIR}/gamecontrollerdb/gamecontrollerdb.txt DESTINATION ${DATA_DIR})
 
-if(${WIN32})
+if(WIN32)
     # XXX: this is supposedly for dynamic-link builds, untested due to MXE being an ass
     include(InstallRequiredSystemLibraries)
 endif()
 
-if(${USE_CPACK})
+if(USE_CPACK)
     include("${BUILDSCRIPTS_DIR}/CPackSettings.cmake")
 endif()
 
