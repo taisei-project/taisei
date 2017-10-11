@@ -349,6 +349,8 @@ void loop_at_fps(bool (*frame_func)(void*), bool (*limiter_cond_func)(void*), vo
             continue;
         }
 
+        glClear(GL_COLOR_BUFFER_BIT);
+
         if(!frame_func(arg)) {
             return;
         }
