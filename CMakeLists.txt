@@ -1,5 +1,16 @@
 project(taisei C)
 cmake_minimum_required(VERSION 3.3)
+cmake_policy(SET CMP0054 NEW)
+
+set(PYTHON_VERSION_REQUIRED "3.4")
+
+find_package(PythonInterp ${PYTHON_VERSION_REQUIRED})
+
+if(PYTHON_VERSION_STRING AND PYTHON_VERSION_STRING VERSION_LESS ${PYTHON_VERSION_REQUIRED})
+    # workaround for cmake retardation: if there's a bad entry in the cache, it won't bother trying to replace it.
+    unset(PYTHON_EXECUTABLE CACHE)
+    find_package(PythonInterp ${PYTHON_VERSION_REQUIRED})
+endif()
 
 set(BUILDSCRIPTS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
 
