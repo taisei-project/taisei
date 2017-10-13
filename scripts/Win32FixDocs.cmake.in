@@ -1,10 +1,4 @@
 
-find_program(UNIX2DOS unix2dos)
-
-if(NOT UNIX2DOS)
-    message(FATAL_ERROR "unix2dos not found, please install it (probably comes with dos2unix)")
-endif()
-
 set(DOC_PREFIX "@CMAKE_CURRENT_SOURCE_DIR@")
 set(DOC_FILES "@DOC_FILES@")
 
@@ -14,12 +8,12 @@ file(MAKE_DIRECTORY "@DOC_TMP_DIR@/misc")
 
 foreach(FILE IN LISTS DOC_FILES)
     execute_process(
-        COMMAND "${UNIX2DOS}" -n "${DOC_PREFIX}/${FILE}" "@DOC_TMP_DIR@/${FILE}"
+        COMMAND "@PYTHON_EXECUTABLE@" "@BUILDSCRIPTS_DIR@/fix-win32-doc.py" "${DOC_PREFIX}/${FILE}" "@DOC_TMP_DIR@/${FILE}"
         WORKING_DIRECTORY "@CMAKE_CURRENT_SOURCE_DIR@"
         RESULT_VARIABLE ERRCODE
     )
 
     if(NOT ERRCODE EQUAL 0)
-        message(FATAL_ERROR "${UNIX2DOS} exited with error ${ERRCODE}")
+        message(FATAL_ERROR "Failed to process file ${DOC_PREFIX}/${FILE}")
     endif()
 endforeach()

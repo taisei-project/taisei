@@ -1,5 +1,4 @@
 
-
 if(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
     # XXX: not a huge issue, but this seems to have no effect
     #      at least on my system, it still creates a 32-bit installer
@@ -8,17 +7,23 @@ else()
     set(NSIS "NSIS")
 endif()
 
-set(CPACK_GENERATOR "${NSIS};7Z")
+if(WIN32)
+    set(CPACK_GENERATOR "${NSIS};7Z")
+    set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_BINARY_DIR}/win32docs/COPYING")
+else()
+    set(CPACK_GENERATOR "TGZ")
+    set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/COPYING")
+endif()
+
 set(CPACK_PACKAGE_NAME "Taisei")
 set(CPACK_PACKAGE_VENDOR "Taisei Project")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "An open-source Tōhō Project fangame")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A free and open-source Tōhō Project fangame")
 set(CPACK_PACKAGE_VERSION_MAJOR "${TAISEI_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${TAISEI_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${TAISEI_VERSION_PATCH}")
 set(CPACK_PACKAGE_VERSION "${TAISEI_VERSION}")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "Taisei Project")
 set(CPACK_PACKAGE_ICON "${ICONS_DIR}/taisei.ico")
-set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/COPYING")
 set(CPACK_MONOLITHIC_INSTALL TRUE)
 set(CPACK_PACKAGE_EXECUTABLES "taisei" "Taisei")
 
@@ -27,9 +32,6 @@ set(CPACK_NSIS_INSTALLED_ICON_NAME "taisei.exe")
 set(CPACK_NSIS_MUI_FINISHPAGE_RUN "taisei.exe")
 set(CPACK_NSIS_HELP_LINK "https://taisei-project.org/")
 set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL TRUE)
-
-set(CPACK_RESOURCE_FILE_README)
-set(CPACK_RESOURCE_FILE_WELCOME)
 
 set(CPACK_PROJECT_CONFIG_FILE "${BUILDSCRIPTS_DIR}/CPackRuntimeSettings.cmake")
 
