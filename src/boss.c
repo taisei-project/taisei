@@ -405,7 +405,7 @@ void boss_finish_current_attack(Boss *boss) {
 			if(p) {
 				++p->num_cleared;
 			}
-		} else {
+		} else if(boss->current->type != AT_ExtraSpell) {
 			boss->failed_spells++;
 		}
 
