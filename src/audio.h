@@ -42,6 +42,7 @@ void audio_backend_music_stop(void);
 void audio_backend_music_fade(double fadetime);
 void audio_backend_music_pause(void);
 bool audio_backend_music_play(void *impl);
+bool audio_backend_music_set_position(double pos);
 bool audio_backend_sound_play(void *impl, AudioBackendSoundGroup group);
 bool audio_backend_sound_loop(void *impl, AudioBackendSoundGroup group);
 bool audio_backend_sound_stop_loop(void *impl);

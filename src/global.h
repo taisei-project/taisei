@@ -94,6 +94,7 @@ typedef struct {
 
 	int frames; // stage global timer
 	int timer; // stage event timer (freezes on bosses, dialogs, etc.)
+	int stage_start_frame;
 
 	int frameskip;
 

@@ -251,6 +251,23 @@ bool audio_backend_music_play(void *impl) {
 	return result;
 }
 
+bool audio_backend_music_set_position(double pos) {
+	if(!mixer_loaded) {
+		return false;
+	}
+
+	// FIXME: BGMs that have intros are not handled correctly!
+
+	Mix_RewindMusic();
+
+	if(Mix_SetMusicPosition(pos)) {
+		log_warn("Mix_SetMusicPosition() failed: %s", Mix_GetError());
+		return false;
+	}
+
+	return true;
+}
+
 static int translate_group(AudioBackendSoundGroup group, int defmixgroup) {
 	switch(group) {
 		case SNDGROUP_MAIN:	return MAIN_CHANNEL_GROUP;

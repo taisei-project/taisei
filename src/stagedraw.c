@@ -537,7 +537,7 @@ void stage_draw_hud(void) {
 	glPopMatrix();
 
 #ifdef DEBUG
-	snprintf(buf, sizeof(buf), "%.16f fps", global.fps.fps);
+	snprintf(buf, sizeof(buf), "%.2f fps, timer: %d, frames: %d", global.fps.fps, global.timer, global.frames);
 #else
 	snprintf(buf, sizeof(buf), "%.2f fps", global.fps.fps);
 #endif

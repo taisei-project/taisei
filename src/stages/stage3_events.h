@@ -22,3 +22,5 @@ void stage3_boss_extra(Boss*, int t);
 void stage3_events(void);
 Boss* stage3_spawn_scuttle(complex pos);
 Boss* stage3_spawn_wriggle_ex(complex pos);
+
+#define STAGE3_MIDBOSS_TIME 1765

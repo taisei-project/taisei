@@ -20,7 +20,7 @@
 
 struct stage3_spells_s stage3_spells = {
 	.mid = {
-		.deadly_dance			= {{ 0,  1,  2,  3}, AT_Spellcard, "Venom Sign ~ Deadly Dance", 25, 50000,
+		.deadly_dance			= {{ 0,  1,  2,  3}, AT_Spellcard, "Venom Sign ~ Deadly Dance", 13, 40000,
 								scuttle_dance, scuttle_spellbg, BOSS_DEFAULT_GO_POS},
 		.acid_rain				= {{-1, -1,  4,  5}, AT_Spellcard, "Venom Sign ~ Acid Rain", 30, 50000,
 									scuttle_acid, scuttle_spellbg, BOSS_DEFAULT_GO_POS},
@@ -257,7 +257,9 @@ void stage3_draw(void) {
 
 	// 2800 - MIDBOSS
 
-	FROM_TO(2900, 3100, 1) {
+	int midboss_time = STAGE3_MIDBOSS_TIME;
+
+	FROM_TO(2900 + midboss_time, 3100 + midboss_time, 1) {
 		stgstate.clr_r += 0.3 / 200.0;
 		stgstate.clr_g -= 0.5 / 200.0;
 		bgcontext.cv[1] -= 90 / 200.0/2;
@@ -266,33 +268,33 @@ void stage3_draw(void) {
 		stgstate.clr_b += 0.2 / 200.0;
 	}
 
-	FROM_TO(3300, 3360, 1) {
+	FROM_TO(3300 + midboss_time, 3360 + midboss_time, 1) {
 		stgstate.tunnel_avel += 2 / 60.0;
 		stgstate.tunnel_side += 70 / 60.0;
 	}
 
-	FROM_TO(3600, 3700, 1) {
+	FROM_TO(3600 + midboss_time, 3700 + midboss_time, 1) {
 		stgstate.tunnel_side += 20 / 60.0;
 		stgstate.tunnel_updn += 40 / 60.0;
 	}
 
-	FROM_TO(3830, 3950, 1) {
+	FROM_TO(3830 + midboss_time, 3950 + midboss_time, 1) {
 		stgstate.tunnel_avel -= 2 / 120.0;
 	}
 
-	FROM_TO(3960, 4000, 1) {
+	FROM_TO(3960 + midboss_time, 4000 + midboss_time, 1) {
 		stgstate.tunnel_avel += 2 / 40.0;
 	}
 
-	FROM_TO(4360, 4390, 1) {
+	FROM_TO(4360 + midboss_time, 4390 + midboss_time, 1) {
 		stgstate.clr_r -= .5 / 30.0;
 	}
 
-	FROM_TO(4390, 4510, 1) {
+	FROM_TO(4390 + midboss_time, 4510 + midboss_time, 1) {
 		stgstate.clr_r += .5 / 120.0;
 	}
 
-	FROM_TO(4299, 5299, 1) {
+	FROM_TO(4299 + midboss_time, 5299 + midboss_time, 1) {
 		stgstate.tunnel_side -= 90 / 1000.0;
 		stgstate.tunnel_updn -= 40 / 1000.0;
 		stgstate.clr_r -= 0.5 / 1000.0;
@@ -300,7 +302,7 @@ void stage3_draw(void) {
 		stgstate.fog_exp -= 1.5 / 1000.0;
 	}
 
-	FROM_TO(5099, 5299, 1) {
+	FROM_TO(5099 + midboss_time, 5299 + midboss_time, 1) {
 		bgcontext.cv[1] += 90 / 200.0/2;
 		stgstate.tunnel_avel -= 1.1 / 200.0;
 		bgcontext.crot[0] -= 15 / 200.0;
@@ -309,12 +311,12 @@ void stage3_draw(void) {
 
 	// 5300 - BOSS
 
-	FROM_TO(5301, 5500, 1) {
+	FROM_TO(5301 + midboss_time, 5500 + midboss_time, 1) {
 		bgcontext.cv[1] -= 70 / 200.0/2;
 		stgstate.clr_r += 1.1 / 200.0;
 	}
 
-	FROM_TO(5301, 5700, 1) {
+	FROM_TO(5301 + midboss_time, 5700 + midboss_time, 1) {
 		bgcontext.crot[0] -= 10 / 400.0;
 		stgstate.fog_exp -= 2.0 / 400.0;
 		//stgstate.tunnel_avel -= 0.5 / 200.0;
@@ -334,7 +336,7 @@ void stage3_spellpractice_events(void) {
 			skip_background_anim(&bgcontext, stage3_draw, 2800, &global.timer, NULL);
 			global.boss = stage3_spawn_scuttle(BOSS_DEFAULT_SPAWN_POS);
 		} else {
-			skip_background_anim(&bgcontext, stage3_draw, 5300, &global.timer, NULL);
+			skip_background_anim(&bgcontext, stage3_draw, 5300 + STAGE3_MIDBOSS_TIME, &global.timer, NULL);
 			global.boss = stage3_spawn_wriggle_ex(BOSS_DEFAULT_SPAWN_POS);
 		}
 
