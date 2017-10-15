@@ -775,8 +775,6 @@ int kurumi_extra_dead_shield_proj(Projectile *p, int time) {
 	return asymptotic(p, time);
 }
 
-
-
 int kurumi_extra_dead_shield(Enemy *e, int time) {
 	if(time < 0) {
 		return 1;
@@ -807,7 +805,7 @@ int kurumi_extra_dead_shield(Enemy *e, int time) {
 
 int kurumi_extra_shield(Enemy *e, int time) {
 	if(time == EVENT_DEATH) {
-		if(!boss_is_dying(global.boss) && e->args[2] == 0) {
+		if(global.boss && !global.game_over && !boss_is_dying(global.boss) && e->args[2] == 0) {
 			create_enemy2c(e->pos, ENEMY_IMMUNE, KurumiSlave, kurumi_extra_dead_shield, e->args[0], e->args[1]);
 		}
 		return 1;
@@ -902,7 +900,8 @@ int kurumi_extra_drainer(Projectile *p, int time) {
 }
 
 void kurumi_extra_create_drainer(Enemy *e) {
-	create_particle1c("sinewave", e->pos, 0, kurumi_extra_drainer_draw, kurumi_extra_drainer, add_ref(e));
+	Projectile *p = create_projectile_p(&global.projs, get_tex("part/sinewave"), e->pos, 0, kurumi_extra_drainer_draw, kurumi_extra_drainer, add_ref(e), 0, 0, 0);
+	p->type = FakeProj;
 }
 
 void kurumi_swirl_draw(Enemy *e, int time) {
@@ -1003,7 +1002,9 @@ void kurumi_extra(Boss *b, int time) {
 	int t = time % length;
 	int direction = (time/length)%2;
 
-	int shieldlimit = 1000;
+	int castlimit = b->current->maxhp * 0.05;
+	int shieldlimit = b->current->maxhp * 0.1;
+
 	TIMER(&t);
 
 	if(time == EVENT_DEATH) {
@@ -1028,8 +1029,8 @@ void kurumi_extra(Boss *b, int time) {
 		int cnt = 20;
 		for(int i = 0; i < cnt; i++) {
 			b->current->hp -= 600;
-			if(b->current->hp < shieldlimit)
-				b->current->hp = shieldlimit;
+			if(b->current->hp < castlimit)
+				b->current->hp = castlimit;
 			tsrand_fill(2);
 			complex pos = VIEWPORT_W/2*afrand(0)+I*afrand(1)*VIEWPORT_H*2/3;
 			if(direction)
