@@ -193,6 +193,12 @@ void draw_text_prerendered(Alignment align, float x, float y, SDL_Surface *surf)
 }
 
 void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *font) {
+	assert(text != NULL);
+
+	if(!*text) {
+		return;
+	}
+
 	char *nl;
 	char *buf = malloc(strlen(text)+1);
 	strcpy(buf, text);
