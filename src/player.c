@@ -192,7 +192,7 @@ void player_logic(Player* plr) {
 	if(global.frames - plr->recovery < 0) {
 		Enemy *en;
 		for(en = global.enemies; en; en = en->next)
-			if(!en->unbombable && en->hp > ENEMY_IMMUNE)
+			if(en->hp > ENEMY_IMMUNE)
 				en->hp -= 300;
 
 		if(global.boss) {

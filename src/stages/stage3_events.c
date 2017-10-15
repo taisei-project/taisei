@@ -81,7 +81,6 @@ int stage3_slavefairy(Enemy *e, int t) {
 
 	AT(EVENT_BIRTH) {
 		e->alpha = 0;
-		e->unbombable = true;
 	}
 
 	if(t < 120)
@@ -119,7 +118,6 @@ int stage3_slavefairy2(Enemy *e, int t) {
 
 	AT(EVENT_BIRTH) {
 		e->alpha = 0;
-		e->unbombable = true;
 	}
 
 	int lifetime = 100+20*global.diff;
@@ -152,7 +150,6 @@ int stage3_bigfairy(Enemy *e, int t) {
 
 	AT(EVENT_BIRTH) {
 		e->alpha = 0;
-		e->unbombable = true;
 	}
 
 	EnemyLogicRule slave = cimag(e->args[0]) ? stage3_slavefairy2 : stage3_slavefairy;
@@ -177,7 +174,6 @@ int stage3_bitchswirl(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_BIRTH) {
-		e->unbombable = true;
 		return 1;
 	}
 
@@ -208,7 +204,6 @@ int stage3_cornerfairy(Enemy *e, int t) {
 
 	AT(EVENT_BIRTH) {
 		e->alpha = 0;
-		e->unbombable = true;
 	}
 
 	FROM_TO(0, 120, 1)

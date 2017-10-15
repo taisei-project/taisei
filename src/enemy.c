@@ -26,7 +26,6 @@ Enemy *create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyDrawRule draw_r
 
 	e->hp = hp;
 	e->alpha = 1.0;
-	e->unbombable = false;
 
 	e->logic_rule = logic_rule;
 	e->draw_rule = draw_rule;

@@ -36,7 +36,6 @@ struct Enemy {
 	EnemyDrawRule draw_rule;
 
 	int hp;
-	bool unbombable;
 
 	complex args[RULE_ARGC];
 	float alpha;
