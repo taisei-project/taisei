@@ -15,6 +15,15 @@ void aniplayer_create(AniPlayer *plr, Animation *ani) {
 	plr->ani = ani;
 }
 
+AniPlayer* aniplayer_create_copy(AniPlayer *src) {
+	// XXX: maybe it needs another name since it allocates memory?
+	//		or maybe aniplayer_create needs another name since it doesn't?
+
+	AniPlayer *plr = malloc(sizeof(AniPlayer));
+	aniplayer_copy(plr, src);
+	return plr;
+}
+
 void aniplayer_free(AniPlayer *plr) {
 	plr->queuesize = 0; // prevent aniplayer_reset from messing with the queue, since we're going to wipe all of it anyway
 	delete_all_elements((void **)&plr->queue,delete_element);

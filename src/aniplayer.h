@@ -42,6 +42,7 @@ typedef struct {
 } AniPlayer;
 
 void aniplayer_create(AniPlayer *plr, Animation *ani);
+AniPlayer* aniplayer_create_copy(AniPlayer *src);
 void aniplayer_free(AniPlayer *plr);
 void aniplayer_reset(AniPlayer *plr); // resets to a neutral state with empty queue.
 void aniplayer_copy(AniPlayer *dst, AniPlayer *src);

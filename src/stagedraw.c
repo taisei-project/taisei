@@ -219,48 +219,7 @@ static FBO* stage_render_bg(StageInfo *stage) {
 
 static void stage_draw_objects(void) {
 	if(global.boss) {
-		glPushMatrix();
-		glTranslatef(creal(global.boss->pos), cimag(global.boss->pos), 0);
-
-		Color shadowcolor = global.boss->shadowcolor;
-
-		if(!(global.frames % 5)) {
-			complex offset = (frand()-0.5)*50 + (frand()-0.5)*20.0*I;
-			create_particle3c("boss_shadow", 0, shadowcolor, EnemyFlareShrink, enemy_flare, 50, (-100.0*I-offset)/(50.0+frand()*10), add_ref(global.boss));
-		}
-
-		Attack *cur = global.boss->current;
-
-		// XXX: maybe we need an ATTACK_IS_SPELL() macro or something
-		if(!(global.frames % 2) && cur && cur->type != AT_Move && cur->type != AT_Normal && !cur->endtime) {
-			// copy animation state to render the same frame even after the boss has changed its own
-			AniPlayer *aplr = malloc(sizeof(AniPlayer));
-			aniplayer_copy(aplr, &global.boss->ani);
-
-			// this is in sync with the boss position oscillation
-			complex pos = global.boss->pos + 6 * sin(global.frames/25.0) * I;
-
-			float glowstr = 0.5;
-			float a = (1.0 - glowstr) + glowstr * pow(psin(global.frames/15.0), 1.0);
-			shadowcolor = multiply_colors(shadowcolor, rgb(a, a, a));
-
-			create_particle3c("boss_shadow", pos, shadowcolor, BossShadow, boss_shadow_rule, 24, 0, add_ref(aplr));
-		}
-
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		glRotatef(global.frames*4.0, 0, 0, -1);
-
-		float f = 0.8+0.1*sin(global.frames/8.0);
-
-		if(boss_is_dying(global.boss)) {
-			float t = (global.frames - global.boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
-			f -= t*(t-0.7)/max(0.01, 1-t);
-		}
-
-		glScalef(f,f,f);
-		draw_texture(0, 0, "boss_circle");
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glPopMatrix();
+		draw_boss_background(global.boss);
 	}
 
 	player_draw(&global.plr);
@@ -272,11 +231,13 @@ static void stage_draw_objects(void) {
 	draw_enemies(global.enemies);
 	draw_lasers(false);
 
-	if(global.boss)
+	if(global.boss) {
 		draw_boss(global.boss);
+	}
 
-	if(global.dialog)
+	if(global.dialog) {
 		draw_dialog(global.dialog);
+	}
 
 	stagetext_draw();
 }

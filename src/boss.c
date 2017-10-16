@@ -139,12 +139,105 @@ static bool attack_is_over(Attack *a) {
 	return a->hp <= 0 && global.frames > a->endtime;
 }
 
+static void BossShadow(Projectile *p, int t) {
+	AniPlayer *aplr = (AniPlayer*)REF(p->args[2]);
+	assert(aplr != NULL);
+
+	Shader *shader = get_shader("silhouette");
+	glUseProgram(shader->prog);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+	glPushMatrix();
+	float s = 1.0+t/p->args[0]*0.5;
+	glTranslatef(creal(p->pos), cimag(p->pos), 0);
+	glScalef(s, s, 1);
+
+	float clr[4];
+	parse_color_array(p->clr, clr);
+	clr[3] = 1.5 - s;
+
+	float fade = 1 - clr[3];
+	float deform = 5 - 10 * fade * fade;
+	glUniform4fv(uniloc(shader, "color"), 1, clr);
+	glUniform1f(uniloc(shader, "deform"), deform);
+
+	aniplayer_play(aplr,0,0);
+
+	glPopMatrix();
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glUseProgram(0);
+}
+
+static int boss_shadow_rule(Projectile *p, int t) {
+	if(t == EVENT_DEATH) {
+		AniPlayer *aplr = REF(p->args[2]);
+		free(aplr);
+		free_ref(p->args[2]);
+	}
+
+	return enemy_flare(p, t);
+}
+
+void draw_boss_background(Boss *boss) {
+	glPushMatrix();
+	glTranslatef(creal(boss->pos), cimag(boss->pos), 0);
+
+	Color shadowcolor = boss->shadowcolor;
+
+	if(!(global.frames % 5)) {
+		complex offset = (frand()-0.5)*50 + (frand()-0.5)*20.0*I;
+		create_particle3c("boss_shadow", 0, shadowcolor, EnemyFlareShrink, enemy_flare, 50, (-100.0*I-offset)/(50.0+frand()*10), add_ref(boss));
+	}
+
+	Attack *cur = boss->current;
+
+	// XXX: maybe we need an ATTACK_IS_SPELL() macro or something
+	bool is_spell = cur && cur->type != AT_Move && cur->type != AT_Normal && !cur->endtime;
+
+	if(!(global.frames % 2) && (is_spell || boss_is_dying(boss))) {
+		// copy animation state to render the same frame even after the boss has changed its own
+		AniPlayer *aplr = malloc(sizeof(AniPlayer));
+		aniplayer_copy(aplr, &boss->ani);
+
+		// this is in sync with the boss position oscillation
+		complex pos = boss->pos + 6 * sin(global.frames/25.0) * I;
+
+		float glowstr = 0.5;
+		float a = (1.0 - glowstr) + glowstr * pow(psin(global.frames/15.0), 1.0);
+		shadowcolor = multiply_colors(shadowcolor, rgb(a, a, a));
+
+		create_particle3c("boss_shadow", pos, shadowcolor, BossShadow, boss_shadow_rule, 24, 0, add_ref(aplr));
+	}
+
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glRotatef(global.frames*4.0, 0, 0, -1);
+
+	float f = 0.8+0.1*sin(global.frames/8.0);
+
+	if(boss_is_dying(boss)) {
+		float t = (global.frames - boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
+		f -= t*(t-0.7)/max(0.01, 1-t);
+	}
+
+	glScalef(f,f,f);
+	draw_texture(0, 0, "boss_circle");
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glPopMatrix();
+}
+
 void draw_boss(Boss *boss) {
 	float red = 0.5*exp(-0.5*(global.frames-boss->lastdamageframe));
 	if(red > 1)
 		red = 0;
 
-	glColor4f(1,1-red,1-red/2,1);
+	float boss_alpha = 1;
+
+	if(boss_is_dying(boss)) {
+		float t = (global.frames - boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
+		boss_alpha = (1 - t) + 0.3;
+	}
+
+	glColor4f(1,1-red,1-red/2,boss_alpha);
 	aniplayer_play(&boss->ani,creal(boss->pos), cimag(boss->pos) + 6*sin(global.frames/25.0));
 	glColor4f(1,1,1,1);
 
@@ -485,7 +578,6 @@ void process_boss(Boss **pboss) {
 					}
 				}
 			} else {
-				over = 1;
 				global.shake_view_fade = 0.15;
 			}
 		} else if(time < 0) {
@@ -526,11 +618,39 @@ void process_boss(Boss **pboss) {
 	}
 
 	if(boss_is_dying(boss)) {
-		float t = (global.frames-boss->current->endtime)/(float)BOSS_DEATH_DELAY+1;
+		float t = (global.frames - boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
 		complex pos = boss->pos;
 		Color c = rgba(0.1+sin(10*t),0.1+cos(10*t),0.5,t);
 		tsrand_fill(6);
 		create_particle4c("petal", pos, c, Petal, asymptotic, sign(anfrand(5))*(3+t*5*afrand(0))*cexp(I*M_PI*8*t), 5+I, afrand(2) + afrand(3)*I, afrand(4) + 360.0*I*afrand(1));
+
+		if(!extra) {
+			if(t == 1) {
+				global.shake_view_fade = 0.2;
+			} else {
+				global.shake_view = 5 * (t + t*t + t*t*t);
+			}
+		}
+
+		if(t == 1) {
+			for(int i = 0; i < 10; ++i) {
+				create_particle3c("boss_shadow", boss->pos, boss->shadowcolor,
+					BossShadow, boss_shadow_rule, 60 + 20 * i, 0,
+					add_ref(aniplayer_create_copy(&boss->ani)));
+			}
+
+			for(int i = 0; i < 256; i++) {
+				tsrand_fill(3);
+				create_particle2c("flare", boss->pos, 0, Fade, timeout_linear,
+					60 + 10 * afrand(2),
+					(3+afrand(0)*10)*cexp(I*tsrand_a(1)));
+			}
+
+			create_particle2c("blast", boss->pos, 0, GrowFade, timeout, 60, 3);
+			create_particle2c("blast", boss->pos, 0, GrowFade, timeout, 70, 2.5);
+		}
+
+		play_sound_cooldown("bossdeath", BOSS_DEATH_DELAY * 2);
 	}
 
 	if(over) {
@@ -670,45 +790,6 @@ Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move) {
 	return a;
 }
 
-void BossShadow(Projectile *p, int t) {
-	AniPlayer *aplr = (AniPlayer*)REF(p->args[2]);
-	assert(aplr != NULL);
-
-	Shader *shader = get_shader("silhouette");
-	glUseProgram(shader->prog);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-	glPushMatrix();
-	float s = 1.0+t/p->args[0]*0.5;
-	glTranslatef(creal(p->pos), cimag(p->pos), 0);
-	glScalef(s, s, 1);
-
-	float clr[4];
-	parse_color_array(p->clr, clr);
-	clr[3] = 1.5 - s;
-
-	float fade = 1 - clr[3];
-	float deform = 5 - 10 * fade * fade;
-	glUniform4fv(uniloc(shader, "color"), 1, clr);
-	glUniform1f(uniloc(shader, "deform"), deform);
-
-	aniplayer_play(aplr,0,0);
-
-	glPopMatrix();
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glUseProgram(0);
-}
-
-int boss_shadow_rule(Projectile *p, int t) {
-	if(t == EVENT_DEATH) {
-		AniPlayer *aplr = REF(p->args[2]);
-		free(aplr);
-		free_ref(p->args[2]);
-	}
-
-	return enemy_flare(p, t);
-}
-
 void boss_preload(void) {
 	preload_resources(RES_SFX, RESF_OPTIONAL,
 		"charge_generic",
@@ -716,6 +797,7 @@ void boss_preload(void) {
 		"spellclear",
 		"timeout1",
 		"timeout2",
+		"bossdeath",
 	NULL);
 
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
