@@ -164,7 +164,7 @@ static int stage3_burstfairy(Enemy *e, int t) {
 		GO_TO(e, e->args[0], 0.05)
 	}
 
-	int step = 3;
+	int step = 3 - (global.diff > D_Normal);
 
 	AT(bursttime) {
 		play_sound("shot_special1");
@@ -179,7 +179,7 @@ static int stage3_burstfairy(Enemy *e, int t) {
 			for(int i = -1; i < 2; i += 2) {
 				create_projectile2c("bullet", e->pos + dir * 10,
 					mix_colors(rgb(1.0, 0.0, 0.0), rgb(0.0, 0.0, 1.0), psin(M_PI * phase)), asymptotic,
-					1.5 * dir * (1 + p / (cnt - 1.0)) * i, 6 + global.diff
+					1.5 * dir * (1 + p / (cnt - 1.0)) * i, 3 * global.diff
 				);
 			}
 		}
@@ -392,7 +392,7 @@ static int stage3_cornerfairy(Enemy *e, int t) {
 }
 
 static void scuttle_intro(Boss *boss, int time) {
-	GO_TO(boss, VIEWPORT_W/2.0 + 100.0*I, 0.03);
+	GO_TO(boss, VIEWPORT_W/2.0 + 100.0*I, 0.04);
 }
 
 static void scuttle_outro(Boss *boss, int time) {
@@ -582,8 +582,8 @@ Boss* stage3_spawn_scuttle(complex pos) {
 Boss* stage3_create_midboss(void) {
 	Boss *scuttle = stage3_spawn_scuttle(VIEWPORT_W/2 - 200.0*I);
 
-	boss_add_attack(scuttle, AT_Move, "Introduction", 2, 0, scuttle_intro, NULL);
-	boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 10, 20000, scuttle_lethbite, NULL);
+	boss_add_attack(scuttle, AT_Move, "Introduction", 1, 0, scuttle_intro, NULL);
+	boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 11, 20000, scuttle_lethbite, NULL);
 	boss_add_attack_from_info(scuttle, &stage3_spells.mid.deadly_dance, false);
 
 	/*
@@ -1064,7 +1064,12 @@ static int wriggle_nonspell_slave(Enemy *e, int time) {
 		d += 4;
 
 	if(!(time % d)) {
-		play_sound("shot1");
+		if(level > 2) {
+			play_sound("shot_special1");
+		} else {
+			play_sound("shot1");
+		}
+
 		create_projectile1c("rice", e->pos, rgb(0.7, 0.2, 0.1), linear, 3 * cexp(I*carg(boss->pos - e->pos)));
 		if(!(time % (d*2)) || level > 1)
 			create_projectile1c("thickrice", e->pos, rgb(0.7, 0.7, 0.1), linear, 2.5 * cexp(I*carg(boss->pos - e->pos)));
@@ -1131,11 +1136,11 @@ Boss* stage3_create_boss(void) {
 	Boss *wriggle = stage3_spawn_wriggle_ex(VIEWPORT_W/2 - 200.0*I);
 
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, wriggle_intro, NULL);
-	boss_add_attack(wriggle, AT_Normal, "", 20, 30000, stage3_boss_nonspell1, NULL);
+	boss_add_attack(wriggle, AT_Normal, "", 11, 35000, stage3_boss_nonspell1, NULL);
 	boss_add_attack_from_info(wriggle, &stage3_spells.boss.moonlight_rocket, false);
-	boss_add_attack(wriggle, AT_Normal, "", 20, 32000, stage3_boss_nonspell2, NULL);
+	boss_add_attack(wriggle, AT_Normal, "", 20, 35000, stage3_boss_nonspell2, NULL);
 	boss_add_attack_from_info(wriggle, &stage3_spells.boss.wriggle_night_ignite, false);
-	boss_add_attack(wriggle, AT_Normal, "", 20, 34000, stage3_boss_nonspell3, NULL);
+	boss_add_attack(wriggle, AT_Normal, "", 20, 35000, stage3_boss_nonspell3, NULL);
 	boss_add_attack_from_info(wriggle, &stage3_spells.boss.firefly_storm, false);
 	boss_add_attack_from_info(wriggle, &stage3_spells.extra.light_singularity, false);
 
