@@ -163,7 +163,7 @@ static void player_fail_spell(Player *plr) {
 }
 
 bool player_should_shoot(Player *plr, bool extra) {
-	return (plr->inputflags & INFLAG_SHOT) &&
+	return (plr->inputflags & INFLAG_SHOT) && !global.dialog &&
 			(!extra || (global.frames - plr->recovery >= 0 && plr->deathtime >= -1));
 }
 
