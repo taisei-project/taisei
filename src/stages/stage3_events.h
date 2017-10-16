@@ -11,13 +11,14 @@
 #include "boss.h"
 
 void scuttle_spellbg(Boss*, int t);
-void stage3_boss_spellbg(Boss*, int t);
-void scuttle_dance(Boss*, int t);
-void scuttle_acid(Boss*, int t);
-void stage3_boss_a1(Boss*, int t);
-void stage3_boss_a2(Boss*, int t);
-void stage3_boss_a3(Boss*, int t);
-void stage3_boss_extra(Boss*, int t);
+void wriggle_spellbg(Boss*, int t);
+
+void scuttle_deadly_dance(Boss*, int t);
+void scuttle_acid_rain(Boss*, int t);
+void wriggle_moonlight_rocket(Boss*, int t);
+void wriggle_night_ignite(Boss*, int t);
+void wriggle_awful_spell(Boss*, int t);
+void wriggle_extra(Boss*, int t);
 
 void stage3_events(void);
 Boss* stage3_spawn_scuttle(complex pos);

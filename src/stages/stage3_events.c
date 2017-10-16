@@ -11,7 +11,7 @@
 #include "stage.h"
 #include "enemy.h"
 
-Dialog *stage3_dialog(void) {
+static Dialog *stage3_dialog(void) {
 	PlayerCharacter *pc = global.plr.mode->character;
 	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/wriggle");
 
@@ -30,7 +30,7 @@ Dialog *stage3_dialog(void) {
 	return d;
 }
 
-int stage3_enterswirl(Enemy *e, int t) {
+static int stage3_enterswirl(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_DEATH) {
@@ -72,7 +72,7 @@ int stage3_enterswirl(Enemy *e, int t) {
 	return 0;
 }
 
-int stage3_slavefairy(Enemy *e, int t) {
+static int stage3_slavefairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_DEATH) {
@@ -108,7 +108,7 @@ int stage3_slavefairy(Enemy *e, int t) {
 	return 0;
 }
 
-int stage3_slavefairy2(Enemy *e, int t) {
+static int stage3_slavefairy2(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_DEATH) {
@@ -145,7 +145,7 @@ int stage3_slavefairy2(Enemy *e, int t) {
 	return 1;
 }
 
-int stage3_burstfairy(Enemy *e, int t) {
+static int stage3_burstfairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_DEATH) {
@@ -195,7 +195,7 @@ int stage3_burstfairy(Enemy *e, int t) {
 	return 0;
 }
 
-int stage3_chargefairy_proj(Projectile *p, int t) {
+static int stage3_chargefairy_proj(Projectile *p, int t) {
 	if(t < 0) {
 		return 0;
 	}
@@ -223,7 +223,7 @@ int stage3_chargefairy_proj(Projectile *p, int t) {
 	return 0;
 }
 
-int stage3_chargefairy(Enemy *e, int t) {
+static int stage3_chargefairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_DEATH) {
@@ -293,7 +293,7 @@ int stage3_chargefairy(Enemy *e, int t) {
 	return 0;
 }
 
-int stage3_bigfairy(Enemy *e, int t) {
+static int stage3_bigfairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_DEATH) {
@@ -325,7 +325,7 @@ int stage3_bigfairy(Enemy *e, int t) {
 	return 0;
 }
 
-int stage3_bitchswirl(Enemy *e, int t) {
+static int stage3_bitchswirl(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_BIRTH) {
@@ -351,7 +351,7 @@ int stage3_bitchswirl(Enemy *e, int t) {
 	return 0;
 }
 
-int stage3_cornerfairy(Enemy *e, int t) {
+static int stage3_cornerfairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_DEATH) {
@@ -391,11 +391,11 @@ int stage3_cornerfairy(Enemy *e, int t) {
 	return 0;
 }
 
-void scuttle_intro(Boss *boss, int time) {
+static void scuttle_intro(Boss *boss, int time) {
 	GO_TO(boss, VIEWPORT_W/2.0 + 100.0*I, 0.03);
 }
 
-void scuttle_outro(Boss *boss, int time) {
+static void scuttle_outro(Boss *boss, int time) {
 	if(time == 0) {
 		spawn_items(boss->pos, Point, 10, Power, 10, Life, 1, NULL);
 	}
@@ -403,7 +403,7 @@ void scuttle_outro(Boss *boss, int time) {
 	boss->pos += pow(max(0, time)/30.0, 2) * cexp(I*(3*M_PI/2 + 0.5 * sin(time / 20.0)));
 }
 
-int scuttle_poison(Projectile *p, int time) {
+static int scuttle_poison(Projectile *p, int time) {
 	int result = accelerated(p, time);
 
 	if(time < 0)
@@ -422,7 +422,7 @@ int scuttle_poison(Projectile *p, int time) {
 	return result;
 }
 
-int scuttle_a0_proj(Projectile *p, int time) {
+static int scuttle_lethbite_proj(Projectile *p, int time) {
 	#define A0_PROJ_START 120
 	#define A0_PROJ_CHARGE 20
 	TIMER(&time)
@@ -457,7 +457,7 @@ int scuttle_a0_proj(Projectile *p, int time) {
 	#undef A0_PROJ_CHARGE
 }
 
-void scuttle_a0(Boss *boss, int time) {
+static void scuttle_lethbite(Boss *boss, int time) {
 	int i;
 	TIMER(&time)
 
@@ -468,7 +468,7 @@ void scuttle_a0(Boss *boss, int time) {
 
 		for(i = 0; i < cnt; ++i) {
 			complex v = (2 - psin((max(3, global.diff+1)*2*M_PI*i/(float)cnt) + time)) * cexp(I*2*M_PI/cnt*i);
-			create_projectile2c("wave", boss->pos - v * 50, _i % 2? rgb(0.7, 0.3, 0.0) : rgb(0.3, .7, 0.0), scuttle_a0_proj,
+			create_projectile2c("wave", boss->pos - v * 50, _i % 2? rgb(0.7, 0.3, 0.0) : rgb(0.3, .7, 0.0), scuttle_lethbite_proj,
 				v,
 				2.0
 			);
@@ -479,7 +479,7 @@ void scuttle_a0(Boss *boss, int time) {
 	}
 }
 
-void scuttle_dance(Boss *boss, int time) {
+void scuttle_deadly_dance(Boss *boss, int time) {
 	int i;
 	TIMER(&time)
 
@@ -533,7 +533,7 @@ void scuttle_dance(Boss *boss, int time) {
 	}
 }
 
-void scuttle_poison2_draw(Projectile *p, int time) {
+static void scuttle_poison2_draw(Projectile *p, int time) {
 	float f = 1-min(time/60.0,1);
 	glPushMatrix();
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
@@ -551,7 +551,7 @@ void scuttle_poison2_draw(Projectile *p, int time) {
 	glPopMatrix();
 }
 
-int scuttle_poison2(Projectile *p, int time) {
+static int scuttle_poison2(Projectile *p, int time) {
 	if(time < 0)
 		return 1;
 
@@ -582,7 +582,7 @@ int scuttle_poison2(Projectile *p, int time) {
 	return 1;
 }
 
-void scuttle_acid(Boss *boss, int time) {
+void scuttle_acid_rain(Boss *boss, int time) {
 	TIMER(&time)
 
 	if(time < 0) {
@@ -625,7 +625,7 @@ void scuttle_spellbg(Boss *h, int time) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-void stage3_boss_spellbg(Boss *b, int time) {
+void wriggle_spellbg(Boss *b, int time) {
 	glColor4f(1,1,1,1);
 	fill_screen(0, 0, 768.0/1024.0, "stage3/wspellbg");
 	glColor4f(1,1,1,0.5);
@@ -653,7 +653,7 @@ Boss* stage3_create_midboss(void) {
 	Boss *scuttle = stage3_spawn_scuttle(VIEWPORT_W/2 - 200.0*I);
 
 	boss_add_attack(scuttle, AT_Move, "Introduction", 2, 0, scuttle_intro, NULL);
-	boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 10, 20000, scuttle_a0, NULL);
+	boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 10, 20000, scuttle_lethbite, NULL);
 	boss_add_attack_from_info(scuttle, &stage3_spells.mid.deadly_dance, false);
 
 	/*
@@ -668,7 +668,7 @@ Boss* stage3_create_midboss(void) {
 	return scuttle;
 }
 
-void wriggle_slave_draw(Enemy *e, int time) {
+static void wriggle_slave_draw(Enemy *e, int time) {
 	if(time < 0)
 		return;
 
@@ -690,7 +690,7 @@ void wriggle_slave_draw(Enemy *e, int time) {
 	}
 }
 
-int stage3_boss_a1_laserbullet(Projectile *p, int time) {
+static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 	if(time == EVENT_DEATH) {
 		free_ref(p->args[0]);
 		return 1;
@@ -705,7 +705,7 @@ int stage3_boss_a1_laserbullet(Projectile *p, int time) {
 
 			Laser *l = create_lasercurve2c(p->pos, deathtime, deathtime, rgb(0.4, 0.9, 1.0), las_accel, 0, accel);
 			l->width = 15;
-			create_projectile_p(&global.projs, p->tex, p->pos, p->clr, p->draw, stage3_boss_a1_laserbullet, add_ref(l), deathtime - 1, 0, 0);
+			create_projectile_p(&global.projs, p->tex, p->pos, p->clr, p->draw, wriggle_rocket_laserbullet, add_ref(l), deathtime - 1, 0, 0);
 
 			// FIXME: better sound
 			play_sound("shot_special1");
@@ -737,7 +737,7 @@ int stage3_boss_a1_laserbullet(Projectile *p, int time) {
 	return 1;
 }
 
-void stage3_boss_a1_slave_part(Projectile *p, int t) {
+static void wriggle_slave_part_draw(Projectile *p, int t) {
 	Texture *tex = p->tex;
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 	float b = 1 - t / p->args[0];
@@ -753,7 +753,7 @@ void stage3_boss_a1_slave_part(Projectile *p, int t) {
 	glColor4f(1,1,1,1);
 }
 
-int stage3_boss_a1_slave(Enemy *e, int time) {
+static int wriggle_spell_slave(Enemy *e, int time) {
 	TIMER(&time)
 
 	float angle = e->args[2] * (time / 70.0 + e->args[1]);
@@ -774,7 +774,7 @@ int stage3_boss_a1_slave(Enemy *e, int time) {
 
 	if(!(time % 2)) {
 		float c = 0.5 * psin(time / 25.0);
-		Projectile *p = create_projectile_p(&global.projs, prefix_get_tex("lasercurve", "part/"), e->pos, rgb(1.0 - c, 0.5, 0.5 + c), stage3_boss_a1_slave_part, timeout, 120, 0, 0, 0);
+		Projectile *p = create_projectile_p(&global.projs, prefix_get_tex("lasercurve", "part/"), e->pos, rgb(1.0 - c, 0.5, 0.5 + c), wriggle_slave_part_draw, timeout, 120, 0, 0, 0);
 		p->type = FairyProj;
 	}
 
@@ -797,10 +797,10 @@ int stage3_boss_a1_slave(Enemy *e, int time) {
 		float dt = 60;
 
 		l = create_lasercurve4c(e->pos, dt, dt, rgb(1.0, 1.0, 0.5), las_sine_expanding, 2.5*dir, M_PI/20, 0.2, 0);
-		create_projectile3c("ball", e->pos, rgb(1.0, 0.4, 0.6), stage3_boss_a1_laserbullet, add_ref(l), dt-1, 1);
+		create_projectile3c("ball", e->pos, rgb(1.0, 0.4, 0.6), wriggle_rocket_laserbullet, add_ref(l), dt-1, 1);
 
 		l = create_lasercurve4c(e->pos, dt, dt, rgb(0.5, 1.0, 0.5), las_sine_expanding, 2.5*dir, M_PI/20, 0.2, M_PI);
-		create_projectile3c("ball", e->pos, rgb(1.0, 0.4, 0.6), stage3_boss_a1_laserbullet, add_ref(l), dt-1, 1);
+		create_projectile3c("ball", e->pos, rgb(1.0, 0.4, 0.6), wriggle_rocket_laserbullet, add_ref(l), dt-1, 1);
 
 		play_sound("laser1");
 	}
@@ -823,7 +823,7 @@ int stage3_boss_a1_slave(Enemy *e, int time) {
 	return 1;
 }
 
-void stage3_boss_a1(Boss *boss, int time) {
+void wriggle_moonlight_rocket(Boss *boss, int time) {
 	int i, j, cnt = 1 + global.diff;
 	TIMER(&time)
 
@@ -836,11 +836,11 @@ void stage3_boss_a1(Boss *boss, int time) {
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2.5, 0.05)
 	else if(time == 0) {
 		for(j = -1; j < 2; j += 2) for(i = 0; i < cnt; ++i)
-			create_enemy3c(boss->pos, ENEMY_IMMUNE, wriggle_slave_draw, stage3_boss_a1_slave, add_ref(boss), i*2*M_PI/cnt, j);
+			create_enemy3c(boss->pos, ENEMY_IMMUNE, wriggle_slave_draw, wriggle_spell_slave, add_ref(boss), i*2*M_PI/cnt, j);
 	}
 }
 
-int stage3_boss_a2_laserbullet(Projectile *p, int time) {
+static int wriggle_ignite_laserbullet(Projectile *p, int time) {
 	if(time == EVENT_DEATH) {
 		free_ref(p->args[0]);
 		return 1;
@@ -862,7 +862,7 @@ int stage3_boss_a2_laserbullet(Projectile *p, int time) {
 	return 1;
 }
 
-void stage3_boss_a2_warnlaser_logic(Laser *l, int time) {
+static void wriggle_ignite_warnlaser_logic(Laser *l, int time) {
 	if(time == EVENT_BIRTH) {
 		l->width = 0;
 		return;
@@ -880,12 +880,12 @@ void stage3_boss_a2_warnlaser_logic(Laser *l, int time) {
 	l->color = mix_colors(rgb(1, 0.2, 0.2), rgb(0.2, 0.2, 1), time / l->deathtime);
 }
 
-void stage3_boss_a2_warnlaser(Laser *l) {
+static void wriggle_ignite_warnlaser(Laser *l) {
 	float f = 6;
-	create_laser(l->pos, 90, 120, 0, l->prule, stage3_boss_a2_warnlaser_logic, f*l->args[0], l->args[1], f*l->args[2], l->args[3]);
+	create_laser(l->pos, 90, 120, 0, l->prule, wriggle_ignite_warnlaser_logic, f*l->args[0], l->args[1], f*l->args[2], l->args[3]);
 }
 
-void stage3_boss_a2(Boss *boss, int time) {
+void wriggle_night_ignite(Boss *boss, int time) {
 	TIMER(&time)
 
 	float dfactor = global.diff / (float)D_Lunatic;
@@ -902,7 +902,7 @@ void stage3_boss_a2(Boss *boss, int time) {
 	}
 
 	AT(0) for(j = -1; j < 2; j += 2) for(i = 0; i < 7; ++i)
-		create_enemy4c(boss->pos, ENEMY_IMMUNE, wriggle_slave_draw, stage3_boss_a1_slave, add_ref(boss), i*2*M_PI/7, j, 1);
+		create_enemy4c(boss->pos, ENEMY_IMMUNE, wriggle_slave_draw, wriggle_spell_slave, add_ref(boss), i*2*M_PI/7, j, 1);
 
 	FROM_TO_INT(0, 1000000, 180, 120, 10) {
 		float dt = 200;
@@ -917,18 +917,18 @@ void stage3_boss_a2(Boss *boss, int time) {
 		double freq = 0.05;
 
 		Laser *l1 = create_lasercurve3c(boss->pos, lt, dt, rgb(b, b, 1.0), las_sine_expanding, vel, amp, freq);
-		stage3_boss_a2_warnlaser(l1);
+		wriggle_ignite_warnlaser(l1);
 
 		Laser *l2 = create_lasercurve3c(boss->pos, lt * 1.5, dt, rgb(1.0, b, b), las_sine_expanding, vel, amp, freq - 0.002 * min(global.diff, D_Hard));
-		stage3_boss_a2_warnlaser(l2);
+		wriggle_ignite_warnlaser(l2);
 
 		Laser *l3 = create_lasercurve3c(boss->pos, lt, dt, rgb(b, b, 1.0), las_sine_expanding, vel, amp, freq - 0.004 * min(global.diff, D_Hard));
-		stage3_boss_a2_warnlaser(l3);
+		wriggle_ignite_warnlaser(l3);
 
 		for(int i = 0; i < 5 + 15 * dfactor; ++i) {
-			create_projectile2c("plainball",	boss->pos, rgb(c, c, 1.0), stage3_boss_a2_laserbullet, add_ref(l1), i)->draw = ProjDrawAdd;
-			create_projectile2c("bigball",		boss->pos, rgb(1.0, c, c), stage3_boss_a2_laserbullet, add_ref(l2), i)->draw = ProjDrawAdd;
-			create_projectile2c("plainball",	boss->pos, rgb(c, c, 1.0), stage3_boss_a2_laserbullet, add_ref(l3), i)->draw = ProjDrawAdd;
+			create_projectile2c("plainball",	boss->pos, rgb(c, c, 1.0), wriggle_ignite_laserbullet, add_ref(l1), i)->draw = ProjDrawAdd;
+			create_projectile2c("bigball",		boss->pos, rgb(1.0, c, c), wriggle_ignite_laserbullet, add_ref(l2), i)->draw = ProjDrawAdd;
+			create_projectile2c("plainball",	boss->pos, rgb(c, c, 1.0), wriggle_ignite_laserbullet, add_ref(l3), i)->draw = ProjDrawAdd;
 
 			// FIXME: better sound
 			play_sound("shot1");
@@ -939,7 +939,7 @@ void stage3_boss_a2(Boss *boss, int time) {
 	}
 }
 
-void stage3_boss_a3(Boss *boss, int time) {
+void wriggle_awful_spell(Boss *boss, int time) {
 	TIMER(&time)
 
 	AT(EVENT_DEATH) {
@@ -981,14 +981,14 @@ void stage3_boss_a3(Boss *boss, int time) {
 		Laser *l;
 
 		l = create_lasercurve3c(boss->pos, lt, dt, c1, las_sine, s * 3 * cexp(I*a), M_PI/4, s*0.05);
-		create_projectile2c("thickrice",	boss->pos, c1, stage3_boss_a2_laserbullet, add_ref(l), 0)->draw = ProjDrawAdd;
+		create_projectile2c("thickrice",	boss->pos, c1, wriggle_ignite_laserbullet, add_ref(l), 0)->draw = ProjDrawAdd;
 		l = create_lasercurve4c(boss->pos, lt, dt, c2, las_sine, s * 3 * cexp(I*a), M_PI/4, s*0.05, M_PI);
-		create_projectile2c("thickrice",	boss->pos, c2, stage3_boss_a2_laserbullet, add_ref(l), 0)->draw = ProjDrawAdd;
+		create_projectile2c("thickrice",	boss->pos, c2, wriggle_ignite_laserbullet, add_ref(l), 0)->draw = ProjDrawAdd;
 
 		if(global.diff >= D_Normal) {
 			dt *= 0.7;
 			l = create_lasercurve3c(boss->pos, dt*0.75, dt, c3, las_turning, 10 * cexp(I*(a)), 2 * cexp(I*(a + M_PI/2)), 30*I);
-			create_projectile2c("rice",	boss->pos, rgb(1.0, 0, 1.0), stage3_boss_a2_laserbullet, add_ref(l), 0)->draw = ProjDrawAdd;
+			create_projectile2c("rice",	boss->pos, rgb(1.0, 0, 1.0), wriggle_ignite_laserbullet, add_ref(l), 0)->draw = ProjDrawAdd;
 		}
 	}
 
@@ -1002,7 +1002,7 @@ void stage3_boss_a3(Boss *boss, int time) {
 	}
 }
 
-int stage3_boss_prea1_slave(Enemy *e, int time) {
+static int wriggle_nonspell_slave(Enemy *e, int time) {
 	TIMER(&time)
 
 	int level = e->args[3];
@@ -1039,12 +1039,12 @@ int stage3_boss_prea1_slave(Enemy *e, int time) {
 	return 1;
 }
 
-void stage3_boss_pre_common(Boss *boss, int time, int level) {
+static void wriggle_nonspell_common(Boss *boss, int time, int level) {
 	TIMER(&time)
 	int i, j, cnt = 3 + global.diff;
 
 	AT(0) for(j = -1; j < 2; j += 2) for(i = 0; i < cnt; ++i)
-		create_enemy4c(boss->pos, ENEMY_IMMUNE, wriggle_slave_draw, stage3_boss_prea1_slave, add_ref(boss), i*2*M_PI/cnt, j, level);
+		create_enemy4c(boss->pos, ENEMY_IMMUNE, wriggle_slave_draw, wriggle_nonspell_slave, add_ref(boss), i*2*M_PI/cnt, j, level);
 
 	AT(EVENT_DEATH) {
 		killall(global.enemies);
@@ -1066,26 +1066,26 @@ void stage3_boss_pre_common(Boss *boss, int time, int level) {
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/3, 0.03)
 }
 
-void stage3_boss_prea1(Boss *boss, int time) {
-	stage3_boss_pre_common(boss, time, 1);
+static void stage3_boss_nonspell1(Boss *boss, int time) {
+	wriggle_nonspell_common(boss, time, 1);
 }
 
-void stage3_boss_prea2(Boss *boss, int time) {
-	stage3_boss_pre_common(boss, time, 2);
+static void stage3_boss_nonspell2(Boss *boss, int time) {
+	wriggle_nonspell_common(boss, time, 2);
 }
 
-void stage3_boss_prea3(Boss *boss, int time) {
-	stage3_boss_pre_common(boss, time, 3);
+static void stage3_boss_nonspell3(Boss *boss, int time) {
+	wriggle_nonspell_common(boss, time, 3);
 }
 
-void stage3_boss_intro(Boss *boss, int time) {
+static void wriggle_intro(Boss *boss, int time) {
 	if(time == 110)
 		global.dialog = stage3_dialog();
 
 	GO_TO(boss, VIEWPORT_W/2.0 + 100.0*I, 0.03);
 }
 
-void stage3_boss_extra(Boss *boss, int time) {
+void wriggle_extra(Boss *boss, int time) {
 	//int t = time % 700;
 	TIMER(&time);
 
@@ -1097,7 +1097,7 @@ void stage3_boss_extra(Boss *boss, int time) {
 	AT(0) {
 		int i, j, cnt = 1 + global.diff;
 		for(j = -1; j < 2; j += 2) for(i = 0; i < cnt; ++i)
-			create_enemy3c(boss->pos, ENEMY_IMMUNE, wriggle_slave_draw, stage3_boss_a1_slave, add_ref(boss), i*2*M_PI/cnt, j);
+			create_enemy3c(boss->pos, ENEMY_IMMUNE, wriggle_slave_draw, wriggle_spell_slave, add_ref(boss), i*2*M_PI/cnt, j);
 		return;
 	}
 
@@ -1116,7 +1116,7 @@ void stage3_boss_extra(Boss *boss, int time) {
 
 			float c = 0.8 * psin(_ni*2*M_PI/cnt);
 			Laser *l = create_lasercurve2c(origin, deathtime/3, deathtime, rgb(1 - c, 0.2, 0.2 + c), las_accel, 0, accel);
-			create_projectile3c("ball", origin, rgb(1.0, 0.5, 0.5), stage3_boss_a1_laserbullet, add_ref(l), deathtime - 1, 0)->draw = ProjDrawAdd;
+			create_projectile3c("ball", origin, rgb(1.0, 0.5, 0.5), wriggle_rocket_laserbullet, add_ref(l), deathtime - 1, 0)->draw = ProjDrawAdd;
 		}
 	}
 }
@@ -1130,12 +1130,12 @@ Boss* stage3_spawn_wriggle_ex(complex pos) {
 Boss* stage3_create_boss(void) {
 	Boss *wriggle = stage3_spawn_wriggle_ex(VIEWPORT_W/2 - 200.0*I);
 
-	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage3_boss_intro, NULL);
-	boss_add_attack(wriggle, AT_Normal, "", 20, 30000, stage3_boss_prea1, NULL);
+	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, wriggle_intro, NULL);
+	boss_add_attack(wriggle, AT_Normal, "", 20, 30000, stage3_boss_nonspell1, NULL);
 	boss_add_attack_from_info(wriggle, &stage3_spells.boss.moonlight_rocket, false);
-	boss_add_attack(wriggle, AT_Normal, "", 20, 32000, stage3_boss_prea2, NULL);
+	boss_add_attack(wriggle, AT_Normal, "", 20, 32000, stage3_boss_nonspell2, NULL);
 	boss_add_attack_from_info(wriggle, &stage3_spells.boss.wriggle_night_ignite, false);
-	boss_add_attack(wriggle, AT_Normal, "", 20, 34000, stage3_boss_prea3, NULL);
+	boss_add_attack(wriggle, AT_Normal, "", 20, 34000, stage3_boss_nonspell3, NULL);
 	boss_add_attack_from_info(wriggle, &stage3_spells.boss.unspellable_spell_name, false);
 	boss_add_attack_from_info(wriggle, &stage3_spells.extra.moonlight_wraith, false);
 

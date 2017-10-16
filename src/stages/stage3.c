@@ -21,22 +21,22 @@
 struct stage3_spells_s stage3_spells = {
 	.mid = {
 		.deadly_dance			= {{ 0,  1,  2,  3}, AT_Spellcard, "Venom Sign ~ Deadly Dance", 13, 40000,
-								scuttle_dance, scuttle_spellbg, BOSS_DEFAULT_GO_POS},
+									scuttle_deadly_dance, scuttle_spellbg, BOSS_DEFAULT_GO_POS},
 		.acid_rain				= {{-1, -1,  4,  5}, AT_Spellcard, "Venom Sign ~ Acid Rain", 30, 50000,
-									scuttle_acid, scuttle_spellbg, BOSS_DEFAULT_GO_POS},
+									scuttle_acid_rain, scuttle_spellbg, BOSS_DEFAULT_GO_POS},
 	},
 
 	.boss = {
 		.moonlight_rocket		= {{ 6,  7,  8,  9}, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 40000,
-									stage3_boss_a1, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
+									wriggle_moonlight_rocket, wriggle_spellbg, BOSS_DEFAULT_GO_POS},
 		.wriggle_night_ignite	= {{10, 11, 12, 13}, AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 30, 46000,
-									stage3_boss_a2, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
+									wriggle_night_ignite, wriggle_spellbg, BOSS_DEFAULT_GO_POS},
 		.unspellable_spell_name	= {{14, 15, 16, 17}, AT_Spellcard, "Bug Sign ~ Phosphaenus Hemipterus", 35, 40000,
-									stage3_boss_a3, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
+									wriggle_awful_spell, wriggle_spellbg, BOSS_DEFAULT_GO_POS},
 	},
 
 	.extra.moonlight_wraith		= {{ 0,  1,  2,  3}, AT_ExtraSpell, "Firefly Sign ~ Moonlight Wraith", 60, 150000,
-								stage3_boss_extra, stage3_boss_spellbg, BOSS_DEFAULT_GO_POS},
+									wriggle_extra, wriggle_spellbg, BOSS_DEFAULT_GO_POS},
 };
 
 static Stage3D bgcontext;
