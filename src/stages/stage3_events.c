@@ -149,7 +149,7 @@ int stage3_burstfairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_DEATH) {
-		spawn_items(e->pos, Point, 2, Power, 3, NULL);
+		spawn_items(e->pos, Point, 2, Power, 5, NULL);
 		return 1;
 	}
 
@@ -767,7 +767,6 @@ int stage3_boss_a1_slave(Enemy *e, int time) {
 
 	AT(EVENT_DEATH) {
 		free_ref(e->args[0]);
-		spawn_items(e->pos, Point, 1, Power, 1, NULL);
 		return 1;
 	}
 
@@ -1016,7 +1015,6 @@ int stage3_boss_prea1_slave(Enemy *e, int time) {
 
 	AT(EVENT_DEATH) {
 		free_ref(e->args[0]);
-		spawn_items(e->pos, Point, 1, Power, 1, NULL);
 		return 1;
 	}
 
