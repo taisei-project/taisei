@@ -196,7 +196,7 @@ static void progress_read(SDL_RWops *file) {
 					Difficulty diff = SDL_ReadU8(vfile); cur += sizeof(uint8_t);
 					StageProgress *p = stage_get_progress(stg, diff, true);
 
-					assert(p != NULL);
+					// assert(p != NULL);
 
 					uint32_t np = SDL_ReadLE32(vfile); cur += sizeof(uint32_t);
 					uint32_t nc = SDL_ReadLE32(vfile); cur += sizeof(uint32_t);
@@ -205,8 +205,6 @@ static void progress_read(SDL_RWops *file) {
 						p->num_played = np;
 						p->num_cleared = nc;
 					} else {
-						// won't get here in debug builds due to the assertion above,
-						// but this case should still be handled gracefully in release builds.
 						log_warn("Invalid stage %x ignored", stg);
 					}
 				}

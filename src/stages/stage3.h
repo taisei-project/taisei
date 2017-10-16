@@ -16,17 +16,16 @@ extern struct stage3_spells_s {
 
     struct {
         AttackInfo deadly_dance;
-        AttackInfo acid_rain;
     } mid;
 
     struct {
         AttackInfo moonlight_rocket;
         AttackInfo wriggle_night_ignite;
-        AttackInfo unspellable_spell_name;
+        AttackInfo firefly_storm;
     } boss;
 
     struct {
-        AttackInfo moonlight_wraith;
+        AttackInfo light_singularity;
     } extra;
 
     // required for iteration

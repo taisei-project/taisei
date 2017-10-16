@@ -533,76 +533,6 @@ void scuttle_deadly_dance(Boss *boss, int time) {
 	}
 }
 
-static void scuttle_poison2_draw(Projectile *p, int time) {
-	float f = 1-min(time/60.0,1);
-	glPushMatrix();
-	glTranslatef(creal(p->pos), cimag(p->pos), 0);
-	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
-	_ProjDraw(p,time);
-	if(f > 0) {
-		p->tex = get_tex("proj/ball");
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-		glScalef(f,f,f);
-		_ProjDraw(p,time);
-		glScalef(1/f,1/f,1/f);
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-		p->tex = get_tex("proj/rice");
-	}
-	glPopMatrix();
-}
-
-static int scuttle_poison2(Projectile *p, int time) {
-	if(time < 0)
-		return 1;
-
-	if(cabs(global.plr.pos-p->pos) > 100) {
-		p->args[2]+=1;
-	} else {
-		p->args[2]-=1;
-		if(creal(p->args[2]) < 0)
-			p->args[2] = 0;
-	}
-
-	int turntime = rint(creal(p->args[0]));
-	int t = rint(creal(p->args[2]));
-	if(t < turntime) {
-		float f = t/(float)turntime;
-		p->clr=rgb(0.3-0.3*f,1.0-0.5*f,0.3+0.7*f);
-	}
-
-	if(t == turntime && global.boss) {
-		p->args[1] = global.boss->pos-p->pos;
-		p->args[1] *= 2/cabs(p->args[1]);
-		p->angle = carg(p->args[1]);
-		p->birthtime = global.frames;
-		p->draw = scuttle_poison2_draw;
-		p->tex = get_tex("proj/rice");
-	}
-	p->pos += p->args[1];
-	return 1;
-}
-
-void scuttle_acid_rain(Boss *boss, int time) {
-	TIMER(&time)
-
-	if(time < 0) {
-		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.05)
-		return;
-	}
-	boss->ani.stdrow=1;
-
-	bool lun = global.diff == D_Lunatic;
-	FROM_TO(30, 9000, 2) {
-		int i, cnt = 2;
-		for(i = 0; i < cnt; ++i) {
-			float r = tanh(sin(_i/200.));
-			float v = lun ? cos(_i/150.)/pow(cosh(atanh(r)),2) : 0.5;
-			complex pos = 230*cexp(I*(_i*0.301+2*M_PI/cnt*i))*r;
-			create_projectile2c(lun && !(i%10) ? "bigball" : "ball",boss->pos+pos,rgb(0.3,1.0,0.3),scuttle_poison2,100-25*(!lun),cexp(I*(!lun)*0.6)*pos/cabs(pos)*(1+v));
-		}
-	}
-}
-
 void scuttle_spellbg(Boss *h, int time) {
 	float a = 1.0;
 
@@ -939,65 +869,171 @@ void wriggle_night_ignite(Boss *boss, int time) {
 	}
 }
 
-void wriggle_awful_spell(Boss *boss, int time) {
+static void wriggle_singularity_laser_logic(Laser *l, int time) {
+	if(time == EVENT_BIRTH) {
+		l->width = 0;
+		l->speed = 0;
+		l->timeshift = l->timespan;
+		l->unclearable = true;
+		return;
+	}
+
+	if(time == 120) {
+		play_sound("laser1");
+	}
+
+	l->width = laser_charge(l, time, 120, 10 + 10 * psin(l->args[0] + time / 60.0));
+	l->args[3] = time / 10.0;
+	l->args[0] *= cexp(I*(M_PI/500.0) * (0.6 + 0.4 * global.diff));
+
+	l->color = hsl((carg(l->args[0]) + M_PI) / (M_PI * 2), 1.0, 0.5);
+}
+
+void wriggle_light_singularity(Boss *boss, int time) {
 	TIMER(&time)
 
 	AT(EVENT_DEATH) {
 		return;
 	}
 
+	time -= 120;
+
 	if(time < 0) {
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.05)
 		return;
 	}
 
-	int d = 4 - min(global.diff, D_Hard);
-	int t = 25 * (3 - max((int)global.diff - D_Normal, 0));
+	AT(0) {
+		int cnt = 2 + global.diff;
+		for(int i = 0; i < cnt; ++i) {
+			complex vel = 2 * cexp(I*(M_PI / 4 + M_PI * 2 * i / (double)cnt));
+			double amp = (4.0/cnt) * (M_PI/5.0);
+			double freq = 0.05;
 
-	FROM_TO_INT_SND("shot1_loop", 0, 1000000, 60 + t, 60, d) {
-		float rspeed = global.diff > D_Normal ? 4 : 1; // 1.0 +  // 23 * max((float)global.diff - D_Normal, 0);
-		float a = _ni*2*M_PI/(15.0/d) + _i + time*2*rspeed;
-		float dt = 150;
-		float lt = 100;
-		float s = 1.0;
-
-		float b = 0.35;
-		Color c1, c2, c3;
-
-		if(_i % 2) {
-			c1 = rgb(1, 1, b);
-			c2 = rgb(b, 1, b);
-			c3 = rgb(1, b, b*0.5);
-			s *= 0.8;
-		} else {
-			c1 = rgb(1, b, b);
-			c2 = rgb(b, b, 1);
-			c3 = rgb(b*0.75, 1, 1);
-			lt *= 0.5;
-
-			a *= -1;
+			create_laser(boss->pos, 200, 10000, rgb(0.0, 0.2, 1.0), las_sine_expanding,
+				wriggle_singularity_laser_logic, vel, amp, freq, 0);
 		}
 
-		Laser *l;
+		play_sound("charge_generic");
+	}
 
-		l = create_lasercurve3c(boss->pos, lt, dt, c1, las_sine, s * 3 * cexp(I*a), M_PI/4, s*0.05);
-		create_projectile2c("thickrice",	boss->pos, c1, wriggle_ignite_laserbullet, add_ref(l), 0)->draw = ProjDrawAdd;
-		l = create_lasercurve4c(boss->pos, lt, dt, c2, las_sine, s * 3 * cexp(I*a), M_PI/4, s*0.05, M_PI);
-		create_projectile2c("thickrice",	boss->pos, c2, wriggle_ignite_laserbullet, add_ref(l), 0)->draw = ProjDrawAdd;
+	if(time > 120) {
+		play_loop("shot1_loop");
+	}
 
-		if(global.diff >= D_Normal) {
-			dt *= 0.7;
-			l = create_lasercurve3c(boss->pos, dt*0.75, dt, c3, las_turning, 10 * cexp(I*(a)), 2 * cexp(I*(a + M_PI/2)), 30*I);
-			create_projectile2c("rice",	boss->pos, rgb(1.0, 0, 1.0), wriggle_ignite_laserbullet, add_ref(l), 0)->draw = ProjDrawAdd;
+	if(time > 0 && !(time % 300)) {
+		char *ptype = NULL;
+
+		switch(time / 300 - 1) {
+			case 0:	 ptype = "thickrice";	break;
+			case 1:	 ptype = "rice";		break;
+			case 2:	 ptype = "bullet";		break;
+			case 3:	 ptype = "wave";		break;
+			case 4:	 ptype = "ball";		break;
+			case 5:	 ptype = "plainball";	break;
+			case 6:	 ptype = "bigball";		break;
+			default: ptype = "soul";		break;
+		}
+
+		int cnt = 6 + 2 * global.diff;
+		float colorofs = frand();
+
+		for(int i = 0; i < cnt; ++i) {
+			double a = ((M_PI*2.0*i)/cnt);
+			complex dir = cexp(I*a);
+
+			create_projectile2c(ptype, boss->pos, hsl(a/(M_PI*2) + colorofs, 1.0, 0.5), asymptotic,
+				dir * (1.2 - 0.2 * global.diff),
+				20
+			)->draw = ProjDrawAdd;
+		}
+
+		play_sound("shot_special1");
+	}
+}
+
+static void wriggle_fstorm_proj_draw(Projectile *p, int time) {
+	float f = 1-min(time/60.0,1);
+	glPushMatrix();
+	glTranslatef(creal(p->pos), cimag(p->pos), 0);
+	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
+	_ProjDraw(p,time);
+
+	if(f > 0) {
+		p->tex = get_tex("proj/ball");
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+		glScalef(f,f,f);
+		_ProjDraw(p,time);
+		glScalef(1/f,1/f,1/f);
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+		p->tex = get_tex("proj/rice");
+	}
+	glPopMatrix();
+}
+
+static int wriggle_fstorm_proj(Projectile *p, int time) {
+	if(time < 0)
+		return 1;
+
+	if(cabs(global.plr.pos-p->pos) > 100) {
+		p->args[2]+=1;
+	} else {
+		p->args[2]-=1;
+		if(creal(p->args[2]) < 0)
+			p->args[2] = 0;
+	}
+
+	int turntime = rint(creal(p->args[0]));
+	int t = rint(creal(p->args[2]));
+	if(t < turntime) {
+		float f = t/(float)turntime;
+		p->clr=rgb(0.3+0.7*(1 - pow(1 - f, 4)), 0.3+0.3*f*f, 0.7-0.7*f);
+	}
+
+	if(t == turntime && global.boss) {
+		p->args[1] = global.boss->pos-p->pos;
+		p->args[1] *= 2/cabs(p->args[1]);
+		p->angle = carg(p->args[1]);
+		p->birthtime = global.frames;
+		p->draw = wriggle_fstorm_proj_draw;
+		p->tex = get_tex("proj/rice");
+
+		for(int i = 0; i < 3; ++i) {
+			tsrand_fill(2);
+			create_particle2c("flare", p->pos, 0, Shrink, timeout_linear, 60, (1+afrand(0))*cexp(I*tsrand_a(1)));
 		}
 	}
 
-	if(global.diff < D_Hard) {
-		int cnt = 35;
-		FROM_TO_INT_SND("shot1_loop", 120, 1000000, 60, cnt*2, 1) {
-			create_projectile2c("wave", boss->pos, (_ni % 2)? rgb(1.0, 0.5, 0.5) : rgb(0.5, 0.5, 1.0), (_ni % 2)? asymptotic : linear,
-				cexp(I*2*_ni*M_PI/cnt), 10
-			)->draw = ProjDrawAdd;
+	p->pos += p->args[1];
+	return 1;
+}
+
+void wriggle_firefly_storm(Boss *boss, int time) {
+	TIMER(&time)
+
+	if(time < 0) {
+		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.05)
+		return;
+	}
+
+	bool lun = global.diff == D_Lunatic;
+
+	FROM_TO_SND("shot1_loop", 30, 9000, 2) {
+		boss->ani.stdrow=1;
+
+		int i, cnt = 2;
+		for(i = 0; i < cnt; ++i) {
+			float r = tanh(sin(_i/200.));
+			float v = lun ? cos(_i/150.)/pow(cosh(atanh(r)),2) : 0.5;
+			complex pos = 230*cexp(I*(_i*0.301+2*M_PI/cnt*i))*r;
+			create_projectile2c(
+				(global.diff >= D_Hard) && !(i%10) ? "bigball" : "ball",
+				boss->pos+pos,
+				rgb(0.2,0.2,0.6),
+				wriggle_fstorm_proj,
+				(global.diff == D_Easy) ? 40 : 100-25*(!lun)-20*(global.diff == D_Normal),
+				cexp(I*(!lun)*0.6)*pos/cabs(pos)*(1+v)
+			);
 		}
 	}
 }
@@ -1085,42 +1121,6 @@ static void wriggle_intro(Boss *boss, int time) {
 	GO_TO(boss, VIEWPORT_W/2.0 + 100.0*I, 0.03);
 }
 
-void wriggle_extra(Boss *boss, int time) {
-	//int t = time % 700;
-	TIMER(&time);
-
-	if(time < 0) {
-		GO_TO(boss, VIEWPORT_W/2.0+100*I, 0.1);
-		return;
-	}
-
-	AT(0) {
-		int i, j, cnt = 1 + global.diff;
-		for(j = -1; j < 2; j += 2) for(i = 0; i < cnt; ++i)
-			create_enemy3c(boss->pos, ENEMY_IMMUNE, wriggle_slave_draw, wriggle_spell_slave, add_ref(boss), i*2*M_PI/cnt, j);
-		return;
-	}
-
-	int cnt = 7;
-	int step = 10;
-
-	FROM_TO_INT(60, 900000000, 300, cnt*step, step) {
-		int i; for(i = 0; i < 2; ++i) {
-			double Oy = VIEWPORT_H*_ni/(double)cnt;
-			complex origin = VIEWPORT_W*i + Oy*I;
-			complex target = global.plr.pos;
-
-			complex dist = target - origin;
-			complex accel = 0.05 * cexp(I*carg(dist));
-			float deathtime = sqrt(2*cabs(dist)/cabs(accel));
-
-			float c = 0.8 * psin(_ni*2*M_PI/cnt);
-			Laser *l = create_lasercurve2c(origin, deathtime/3, deathtime, rgb(1 - c, 0.2, 0.2 + c), las_accel, 0, accel);
-			create_projectile3c("ball", origin, rgb(1.0, 0.5, 0.5), wriggle_rocket_laserbullet, add_ref(l), deathtime - 1, 0)->draw = ProjDrawAdd;
-		}
-	}
-}
-
 Boss* stage3_spawn_wriggle_ex(complex pos) {
 	Boss *wriggle = create_boss("Wriggle EX", "wriggleex", "dialog/wriggle", pos);
 	wriggle->shadowcolor = rgba(0.2, 0.4, 0.5, 0.5);
@@ -1136,8 +1136,8 @@ Boss* stage3_create_boss(void) {
 	boss_add_attack(wriggle, AT_Normal, "", 20, 32000, stage3_boss_nonspell2, NULL);
 	boss_add_attack_from_info(wriggle, &stage3_spells.boss.wriggle_night_ignite, false);
 	boss_add_attack(wriggle, AT_Normal, "", 20, 34000, stage3_boss_nonspell3, NULL);
-	boss_add_attack_from_info(wriggle, &stage3_spells.boss.unspellable_spell_name, false);
-	boss_add_attack_from_info(wriggle, &stage3_spells.extra.moonlight_wraith, false);
+	boss_add_attack_from_info(wriggle, &stage3_spells.boss.firefly_storm, false);
+	boss_add_attack_from_info(wriggle, &stage3_spells.extra.light_singularity, false);
 
 	boss_start_attack(wriggle, wriggle->attacks);
 	return wriggle;
