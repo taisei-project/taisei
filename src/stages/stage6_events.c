@@ -313,6 +313,55 @@ int scythe_newton(Enemy *e, int t) {
 	return 1;
 }
 
+int ideal_gas_proj(Projectile *p, int t) {
+	if(t < 0)
+		return 1;
+	p->pos += p->args[0];
+
+	p->angle = carg(p->args[0]);
+	if(creal(p->pos) <= 0 || creal(p->pos) >= VIEWPORT_W) {
+		p->args[0] = -conj(p->args[0]);
+		p->pos += 2*p->args[0];
+	}
+
+	if(cimag(p->pos) <= 0 || cimag(p->pos) >= VIEWPORT_H-0) {
+		p->args[0] = conj(p->args[0]);
+		p->pos += 2*p->args[0];
+	}
+
+	return 1;
+}
+
+
+void elly_boltzmann(Boss *b, int t) {
+	TIMER(&t);
+	AT(0) {
+		global.enemies->birthtime = global.frames;
+		global.enemies->logic_rule = scythe_reset;
+	}
+
+	AT(10) {
+		int n = 150;
+		double T = 2;
+		int c = 12; // approximate normal distribution
+
+		for(int i = 0; i < n; i++) {
+			tsrand_fill(2);
+			complex pos = VIEWPORT_W*afrand(0)+I*VIEWPORT_H*afrand(1);
+			if(cabs(pos-global.plr.pos) < 150)
+				continue;
+			complex vel = 0;
+			for(int j = 0; j < c; j++) {
+				vel += nfrand();
+				vel += I*nfrand();
+			}
+			vel /= sqrt(c)/T;
+
+			create_projectile1c("rice", pos, rgb(cabs(vel), 0.5, 1), ideal_gas_proj, vel);
+		}
+	}
+}
+
 void elly_newton(Boss *b, int t) {
 	TIMER(&t);
 

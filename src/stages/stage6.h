@@ -20,6 +20,7 @@ extern struct stage6_spells_s {
             AttackInfo occams_razor;
             AttackInfo orbital_clockwork;
             AttackInfo wave_theory;
+            AttackInfo boltzmann;
         } scythe;
     };
 

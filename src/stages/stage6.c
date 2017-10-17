@@ -26,6 +26,8 @@ struct stage6_spells_s stage6_spells = {
 										elly_kepler, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
 		.wave_theory				= {{ 4,  5,  6,  7}, AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 30000,
 										elly_maxwell, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
+		.boltzmann				= {{ 28,29,30,31}, AT_Spellcard, "Boltzmann Sign ~ Ideal Gas", 25, 30000,
+										elly_boltzmann, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
 	},
 
 	.baryon = {
