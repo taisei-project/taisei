@@ -538,10 +538,9 @@ void process_boss(Boss **pboss) {
 	bool extra = boss->current->type == AT_ExtraSpell;
 	bool over = boss->current->finished && global.frames >= boss->current->endtime;
 
-	if(time == 0 && boss->current->type != AT_Move) {
+	if(time == 0 && ATTACK_IS_SPELL(boss->current->type)) {
 		// attack just started - cancel the player's bomb so that it doesn't fail the spell immediately
 		global.plr.recovery = min(global.plr.recovery, global.frames);
-		log_debug("Attack started!");
 	}
 
 	if(!boss->current->endtime) {
