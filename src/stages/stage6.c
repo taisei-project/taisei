@@ -31,6 +31,8 @@ struct stage6_spells_s stage6_spells = {
 	.baryon = {
 		.many_world_interpretation	= {{ 8,  9, 10, 11}, AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 40, 60000,
 										elly_eigenstate, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
+		.wave_particle_duality		= {{28, 29, 30, 31}, AT_Spellcard, "de Broglie Sign ~ Wave-Particle Duality", 60, 50000,
+										elly_broglie, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
 		.spacetime_curvature		= {{12, 13, 14, 15}, AT_Spellcard, "Ricci Sign ~ Spacetime Curvature", 50, 90000,
 										elly_ricci, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
 		.higgs_boson_uncovered		= {{16, 17, 18, 19}, AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 50, 60000,

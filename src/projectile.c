@@ -288,6 +288,10 @@ void PartDraw(Projectile *proj, int t) {
 		glColor3f(1,1,1);
 }
 
+void ProjNoDraw(Projectile *proj, int t) {
+
+}
+
 void Blast(Projectile *p, int t) {
 	if(t == 1) {
 		p->args[1] = frand()*360 + frand()*I;

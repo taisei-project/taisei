@@ -579,6 +579,10 @@ int baryon_center(Enemy *e, int t) {
 		free_ref(cimag(e->args[1]));
 	}
 
+	if(global.boss) {
+		e->pos = global.boss->pos;
+	}
+
 	return 1;
 }
 
@@ -697,6 +701,155 @@ void elly_eigenstate(Boss *b, int t) {
 		set_baryon_rule(baryon_eigenstate);
 	AT(EVENT_DEATH)
 		set_baryon_rule(baryon_reset);
+}
+
+int broglie_particle(Projectile *p, int t) {
+	if(t == EVENT_DEATH) {
+		free_ref(p->args[0]);
+		return 1;
+	}
+
+	if(t < 0) {
+		return 1;
+	}
+
+	int scattertime = creal(p->args[1]);
+
+	if(t < scattertime) {
+		Laser *laser = (Laser*)REF(p->args[0]);
+
+		if(laser) {
+			// p->args[3] = laser->prule(laser, max(0, t - cimag(p->args[1]))) - p->pos;
+			complex oldpos = p->pos;
+			p->pos = laser->prule(laser, min(t, cimag(p->args[1])));
+
+			if(oldpos != p->pos) {
+				p->angle = carg(p->pos - oldpos);
+			}
+		}
+	} else {
+		if(t == scattertime) {
+			p->draw = ProjDrawAdd;
+			p->angle += nfrand() * M_PI/8;
+			p->args[2] = -cabs(p->args[2]) * cexp(I*p->angle);
+		}
+
+		p->angle = carg(p->args[2]);
+		p->pos = p->pos + p->args[2];
+	}
+
+	return 1;
+}
+
+
+int broglie_charge(Projectile *p, int t) {
+	if(t < 0) {
+		return 1;
+	}
+
+	int firetime = creal(p->args[1]);
+
+	if(t == firetime) {
+		complex aim = p->args[0];
+		double dt = 100;
+		float a = 5;
+		Laser *l = create_lasercurve4c(p->pos, dt, dt, p->clr, las_sine, 5*aim, a*M_PI/8, 0.2, 0);
+		l->width = 20;
+
+		for(double ofs = 0; ofs < dt; ofs += 1) {
+			complex pos = l->prule(l, ofs);
+
+			for(int i = 0; i < 2; ++i) {
+				create_projectile4c(i ? "rice" : "thickrice", pos, p->clr, broglie_particle,
+					add_ref(l), I*ofs + dt + ofs - 20, cexp(I*frand()*M_PI*2), 0)->draw = ProjNoDraw;
+			}
+		}
+
+		return ACTION_DESTROY;
+	}
+
+	return 1;
+}
+
+int baryon_broglie(Enemy *e, int t) {
+	if(t < 0) {
+		return 1;
+	}
+
+	int t_real = t;
+
+	t %= 300;
+	TIMER(&t);
+	Enemy *master = NULL;
+
+	for(Enemy *e = global.enemies; e; e = e->next) {
+		if(e->draw_rule == Baryon) {
+			master = e;
+			break;
+		}
+	}
+
+	assert(master != NULL);
+
+	if(master != e) {
+		if(t_real < 300) {
+			GO_TO(e, global.boss->pos, 0.03);
+		} else {
+			e->pos = global.boss->pos;
+		}
+
+		return 1;
+	}
+
+	int delay = 140;
+	int step = 30;
+	int cnt = 3;
+	int fire_delay = 120;
+
+	FROM_TO(delay, delay + step * cnt - 1, step) {
+		double a = 2*M_PI * (0.25 + 1.0/cnt*_i);
+		complex n = cexp(I*a);
+
+		create_projectile2c("ball", e->pos + 15*n,
+			hsl(((t_real / 300) * 2*M_PI/3 + a + M_PI/6) / (M_PI*2), 1.0, 0.55),
+			broglie_charge, n, fire_delay - step * _i)->draw = ProjDrawAdd;
+	}
+
+	if(t < delay || t > delay + fire_delay) {
+		complex target_pos = global.boss->pos + 100 * cexp(I*carg(global.plr.pos - global.boss->pos));
+		GO_TO(e, target_pos, 0.03);
+	}
+
+	return 1;
+}
+
+void elly_broglie(Boss *b, int t) {
+	TIMER(&t);
+
+	if(t < 0) {
+		return;
+	}
+
+	AT(0) {
+		set_baryon_rule(baryon_broglie);
+	}
+
+	AT(EVENT_DEATH) {
+		set_baryon_rule(baryon_reset);
+	}
+
+	double ofs = 100;
+
+	complex positions[] = {
+		VIEWPORT_W-ofs + ofs*I,
+		ofs + (VIEWPORT_H-ofs)*I,
+		VIEWPORT_W-ofs + (VIEWPORT_H-ofs)*I,
+		ofs + ofs*I,
+	};
+
+	if(t/300 > 0) {
+		GO_TO(b, positions[(t/600) % (sizeof(positions)/sizeof(complex))], 0.02);
+	}
 }
 
 int baryon_nattack(Enemy *e, int t) {

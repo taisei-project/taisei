@@ -27,6 +27,7 @@ extern struct stage6_spells_s {
         AttackInfo baryon_first;
         struct {
             AttackInfo many_world_interpretation;
+            AttackInfo wave_particle_duality;
             AttackInfo spacetime_curvature;
             AttackInfo higgs_boson_uncovered;
         } baryon;
