@@ -126,7 +126,7 @@ void stage3_glitch(FBO *fbo) {
 	glColor4f(1,1,1,1);
 	float strength;
 
-	if(global.boss && global.boss->current && global.boss->current->type == AT_Spellcard && !strcmp(global.boss->name, "Scuttle")) {
+	if(global.boss && global.boss->current && ATTACK_IS_SPELL(global.boss->current->type) && !strcmp(global.boss->name, "Scuttle")) {
 		strength = 0.05 * pow(max(0, (global.frames - global.boss->current->starttime) / (double)global.boss->current->timeout), 2.0);
 	} else {
 		strength = 0.0;

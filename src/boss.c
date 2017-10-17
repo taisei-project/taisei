@@ -190,9 +190,7 @@ void draw_boss_background(Boss *boss) {
 	}
 
 	Attack *cur = boss->current;
-
-	// XXX: maybe we need an ATTACK_IS_SPELL() macro or something
-	bool is_spell = cur && cur->type != AT_Move && cur->type != AT_Normal && !cur->endtime;
+	bool is_spell = cur && ATTACK_IS_SPELL(cur->type) && !cur->endtime;
 
 	if(!(global.frames % 2) && (is_spell || boss_is_dying(boss))) {
 		// copy animation state to render the same frame even after the boss has changed its own
@@ -249,7 +247,7 @@ void draw_boss(Boss *boss) {
 	if(!boss->current)
 		return;
 
-	if(boss->current->type == AT_Spellcard || boss->current->type == AT_SurvivalSpell || boss->current->type == AT_ExtraSpell)
+	if(ATTACK_IS_SPELL(boss->current->type))
 		spell_opening(boss, global.frames - boss->current->starttime);
 
 	if(boss->current->type != AT_Move) {
@@ -489,7 +487,7 @@ void boss_finish_current_attack(Boss *boss) {
 		stage_clear_hazards(true);
 	}
 
-	if(t == AT_Spellcard || t == AT_ExtraSpell || t == AT_SurvivalSpell) {
+	if(ATTACK_IS_SPELL(t)) {
 		boss_give_spell_bonus(boss, boss->current, &global.plr);
 
 		if(!boss->current->failtime) {
@@ -734,7 +732,7 @@ void boss_start_attack(Boss *b, Attack *a) {
 
 	a->starttime = global.frames + (a->type == AT_ExtraSpell? ATTACK_START_DELAY_EXTRA : ATTACK_START_DELAY);
 	a->rule(b, EVENT_BIRTH);
-	if(a->type == AT_Spellcard || a->type == AT_SurvivalSpell || a->type == AT_ExtraSpell) {
+	if(ATTACK_IS_SPELL(a->type)) {
 		play_sound("charge_generic");
 		for(int i = 0; i < 10+5*(a->type == AT_ExtraSpell); i++) {
 			tsrand_fill(4);

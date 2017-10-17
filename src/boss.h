@@ -38,6 +38,8 @@ typedef enum AttackType {
 	AT_ExtraSpell
 } AttackType;
 
+#define ATTACK_IS_SPELL(a) ((a) == AT_Spellcard || (a) == AT_SurvivalSpell || (a) == AT_ExtraSpell)
+
 typedef struct AttackInfo {
 	/*
 		HOW TO SET UP THE IDMAP FOR DUMMIES
