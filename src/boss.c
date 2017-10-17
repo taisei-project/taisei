@@ -538,11 +538,6 @@ void process_boss(Boss **pboss) {
 	bool extra = boss->current->type == AT_ExtraSpell;
 	bool over = boss->current->finished && global.frames >= boss->current->endtime;
 
-	if(time == 0 && ATTACK_IS_SPELL(boss->current->type)) {
-		// attack just started - cancel the player's bomb so that it doesn't fail the spell immediately
-		global.plr.recovery = min(global.plr.recovery, global.frames);
-	}
-
 	if(!boss->current->endtime) {
 		int remaining = boss->current->timeout - time;
 
@@ -737,6 +732,10 @@ void boss_start_attack(Boss *b, Attack *a) {
 			tsrand_fill(4);
 			create_particle2c("stain", VIEWPORT_W/2 + VIEWPORT_W/4*anfrand(0)+I*VIEWPORT_H/2+I*anfrand(1)*30, rgb(0.2,0.3,0.4), GrowFadeAdd, timeout_linear, 50, sign(anfrand(2))*10*(1+afrand(3)));
 		}
+
+		// schedule a bomb cancellation for when the spell actually starts
+		// we don't want an ongoing bomb to immediately ruin the spell bonus
+		player_cancel_bomb(&global.plr, a->starttime - global.frames);
 	}
 
 	stage_clear_hazards(true);

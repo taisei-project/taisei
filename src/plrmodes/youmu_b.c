@@ -123,7 +123,41 @@ static int youmu_trap(Projectile *p, int t) {
 }
 
 static void YoumuSlash(Enemy *e, int t) {
+    t = player_get_bomb_progress(&global.plr, NULL);
     fade_out(10.0/t+sin(t/10.0)*0.1);
+}
+
+static int youmu_slash_logic(void *v, int t, double speed) {
+    Enemy *e = v;
+    TIMER(&t);
+
+    AT(0)
+        global.plr.pos = VIEWPORT_W/5.0 + (VIEWPORT_H - 100)*I;
+
+    FROM_TO(8,20,1)
+        global.plr.pos = VIEWPORT_W + (VIEWPORT_H - 100)*I - exp(-_i/8.0+log(4*VIEWPORT_W/5.0));
+
+    FROM_TO(30, 60, 10) {
+        tsrand_fill(3);
+        create_particle1c("youmu_slice", VIEWPORT_W/2.0 - 150 + 100*_i + VIEWPORT_H/2.0*I - 10-10.0*I + 20*afrand(0)+20.0*I*afrand(1), 0, youmu_common_particle_slice_draw, timeout, 200 / speed)->angle = -10.0+20.0*afrand(2);
+    }
+
+    FROM_TO(40,200,1)
+        if(frand() > 0.7) {
+            tsrand_fill(6);
+            create_particle2c("blast", VIEWPORT_W*afrand(0) + (VIEWPORT_H+50)*I, rgb(afrand(1),afrand(2),afrand(3)), Shrink, timeout_linear, 80 / speed, speed * (3*(1-2.0*afrand(4))-14.0*I+afrand(5)*2.0*I));
+        }
+
+    int tpar = 30;
+    if(t < 30)
+        tpar = t;
+
+    if(t < creal(e->args[0])-60 && frand() > 0.2) {
+        tsrand_fill(3);
+        create_particle2c("smoke", VIEWPORT_W*afrand(0) + (VIEWPORT_H+100)*I, rgba(0.4,0.4,0.4,afrand(1)*0.2 - 0.2 + 0.6*(tpar/30.0)), PartDraw, youmu_common_particle_spin, 300 / speed, speed * (-7.0*I+afrand(2)*1.0*I));
+    }
+
+    return 1;
 }
 
 static int youmu_slash(Enemy *e, int t) {
@@ -136,34 +170,7 @@ static int youmu_slash(Enemy *e, int t) {
         return ACTION_DESTROY;
     }
 
-    TIMER(&t);
-
-    AT(0)
-        global.plr.pos = VIEWPORT_W/5.0 + (VIEWPORT_H - 100)*I;
-
-    FROM_TO(8,20,1)
-        global.plr.pos = VIEWPORT_W + (VIEWPORT_H - 100)*I - exp(-_i/8.0+log(4*VIEWPORT_W/5.0));
-
-    FROM_TO(30, 60, 10) {
-        tsrand_fill(3);
-        create_particle1c("youmu_slice", VIEWPORT_W/2.0 - 150 + 100*_i + VIEWPORT_H/2.0*I - 10-10.0*I + 20*afrand(0)+20.0*I*afrand(1), 0, youmu_common_particle_slice_draw, timeout, 200)->angle = -10.0+20.0*afrand(2);
-    }
-
-    FROM_TO(40,200,1)
-        if(frand() > 0.7) {
-            tsrand_fill(6);
-            create_particle2c("blast", VIEWPORT_W*afrand(0) + (VIEWPORT_H+50)*I, rgb(afrand(1),afrand(2),afrand(3)), Shrink, timeout_linear, 80, 3*(1-2.0*afrand(4))-14.0*I+afrand(5)*2.0*I);
-        }
-
-    int tpar = 30;
-    if(t < 30)
-        tpar = t;
-
-    if(t < creal(e->args[0])-60 && frand() > 0.2) {
-        tsrand_fill(3);
-        create_particle2c("smoke", VIEWPORT_W*afrand(0) + (VIEWPORT_H+100)*I, rgba(0.4,0.4,0.4,afrand(1)*0.2 - 0.2 + 0.6*(tpar/30.0)), PartDraw, youmu_common_particle_spin, 300, -7.0*I+afrand(2)*1.0*I);
-    }
-    return 1;
+    return player_run_bomb_logic(&global.plr, e, &e->args[3], youmu_slash_logic);
 }
 
 static void youmu_haunting_power_shot(Player *plr, int p) {

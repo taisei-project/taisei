@@ -313,7 +313,7 @@ void stage_draw_scene(StageInfo *stage) {
 
 		// fade the background during bomb
 		if(global.frames - global.plr.recovery < 0) {
-			float t = BOMB_RECOVERY - global.plr.recovery + global.frames;
+			float t = player_get_bomb_progress(&global.plr, NULL);
 			float fade = 1;
 
 			if(t < BOMB_RECOVERY/6)

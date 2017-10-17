@@ -65,6 +65,11 @@ static int marisa_laser_slave(Enemy *e, int t) {
 static void masterspark_ring_draw(complex base, int t, float fade) {
     glPushMatrix();
 
+    if(t < 1) {
+        // prevent division by zero
+        t = 1;
+    }
+
     glTranslatef(creal(base), cimag(base)-t*t*0.4, 0);
 
     float f = sqrt(t/500.0)*1200;
@@ -79,6 +84,8 @@ static void masterspark_ring_draw(complex base, int t, float fade) {
 }
 
 static void masterspark_draw(Enemy *e, int t) {
+    t = player_get_bomb_progress(&global.plr, NULL) * (e->args[0] / BOMB_RECOVERY);
+
     glPushMatrix();
 
     float angle = 9 - t/e->args[0]*6.0, fade = 1;
@@ -102,8 +109,7 @@ static void masterspark_draw(Enemy *e, int t) {
     glPopMatrix();
 
 //  glColor4f(0.9,1,1,fade*0.8);
-    int i;
-    for(i = 0; i < 8; i++)
+    for(int i = 0; i < 8; i++)
         masterspark_ring_draw(global.plr.pos - 50.0*I, t%20 + 10*i, fade);
 
     glColor4f(1,1,1,1);
@@ -115,7 +121,9 @@ static int masterspark(Enemy *e, int t) {
         return 1;
     }
 
-    if(t > creal(e->args[0]) || global.frames - global.plr.recovery > 0) {
+    t = player_get_bomb_progress(&global.plr, NULL) * (e->args[0] / BOMB_RECOVERY);
+
+    if(t >= creal(e->args[0]) || global.frames - global.plr.recovery > 0) {
         global.shake_view = 0;
         return ACTION_DESTROY;
     }

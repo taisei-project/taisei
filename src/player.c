@@ -190,6 +190,17 @@ void player_logic(Player* plr) {
 		player_realdeath(plr);
 
 	if(global.frames - plr->recovery < 0) {
+		if(plr->bombcanceltime) {
+			int bctime = plr->bombcanceltime + plr->bombcanceldelay;
+
+			if(bctime <= global.frames) {
+				plr->recovery = global.frames;
+				plr->bombcanceltime = 0;
+				plr->bombcanceldelay = 0;
+				return;
+			}
+		}
+
 		Enemy *en;
 		for(en = global.enemies; en; en = en->next)
 			if(en->hp > ENEMY_IMMUNE)
@@ -226,11 +237,141 @@ bool player_bomb(Player *plr) {
 		}
 
 		plr->recovery = global.frames + BOMB_RECOVERY;
+		plr->bombcanceltime = 0;
+		plr->bombcanceldelay = 0;
 
 		return true;
 	}
 
 	return false;
+}
+
+void player_cancel_bomb(Player *plr, int delay) {
+	if(global.frames - plr->recovery >= 0) {
+		// not bombing
+		return;
+	}
+
+	if(plr->bombcanceltime) {
+		int canceltime_queued = plr->bombcanceltime + plr->bombcanceldelay;
+		int canceltime_requested = global.frames + delay;
+
+		if(canceltime_queued > canceltime_requested) {
+			plr->bombcanceldelay -= (canceltime_queued - canceltime_requested);
+		}
+	} else {
+		plr->bombcanceltime = global.frames;
+		plr->bombcanceldelay = delay;
+	}
+}
+
+int player_get_bomb_progress(Player *plr, double *out_speed) {
+	if(global.frames - plr->recovery >= 0) {
+		if(out_speed != NULL) {
+			*out_speed = 1.0;
+		}
+
+		return BOMB_RECOVERY;
+	}
+
+	int start_time = plr->recovery - BOMB_RECOVERY;
+	int end_time = plr->recovery;
+
+	if(!plr->bombcanceltime || plr->bombcanceltime + plr->bombcanceldelay >= end_time) {
+		if(out_speed != NULL) {
+			*out_speed = 1.0;
+		}
+
+		return BOMB_RECOVERY - (end_time - global.frames);
+	}
+
+	int cancel_time = plr->bombcanceltime + plr->bombcanceldelay;
+	int passed_time = plr->bombcanceltime - start_time;
+
+	int shortened_total_time = (BOMB_RECOVERY - passed_time) - (end_time - cancel_time);
+	int shortened_passed_time = (global.frames - plr->bombcanceltime);
+
+	double passed_fraction = passed_time / (double)BOMB_RECOVERY;
+	double shortened_fraction = shortened_passed_time / (double)shortened_total_time;
+	shortened_fraction *= (1 - passed_fraction);
+
+	if(out_speed != NULL) {
+		*out_speed = (BOMB_RECOVERY - passed_time) / (double)shortened_total_time;
+	}
+
+	return rint(BOMB_RECOVERY * (passed_fraction + shortened_fraction));
+}
+
+int player_run_bomb_logic(Player *plr, void *ent, complex *argptr, int (*callback)(void *ent, int t, double speed)) {
+	static bool inside;
+
+	if(inside) {
+		log_fatal("recursive call not allowed");
+	}
+
+	inside = true;
+
+	int prev_t = creal(*argptr);
+	double speed;
+	int bomb_t = player_get_bomb_progress(plr, &speed);
+
+	// we're going to (partially) simulate a few frames from the 'past' here...
+
+	int rewind = bomb_t - prev_t;
+	int saveframes __attribute__((unused)) = global.frames;
+	Projectile *saveparts = global.particles;
+
+	if(rewind < 0) {
+		// edge case: entity from a previous bomb remaining,
+		// but we're either not bombing or started a new bomb
+		// no need to simulate any old frames in this case
+		bomb_t = prev_t;
+		rewind = 0;
+	}
+
+	global.frames -= rewind;
+	global.particles = NULL;
+
+	int t, ret;
+	for(t = prev_t; t <= bomb_t; ++t) {
+		ret = callback(ent, t, speed);
+
+		if(t != bomb_t) {
+			// we must not process the final frame here, stage_logic will do it
+			process_projectiles(&global.particles, false);
+
+			// call the draw functions too, because some of them modify args or spawn stuff...
+			// this is stupid and should not happen, but for now it does.
+			draw_projectiles(global.particles);
+
+			global.frames++;
+		}
+
+		if(ret == ACTION_DESTROY) {
+			break;
+		}
+	}
+
+	// merge our stolen particles back into the main list
+	// won't preserve the order, but whatever...
+
+	while(global.particles && saveparts) {
+		Projectile *part = global.particles;
+		global.particles = global.particles->next;
+
+		part->prev = NULL;
+		part->next = saveparts;
+		saveparts->prev = part;
+		saveparts = part;
+	}
+
+	assert(global.frames == saveframes);
+
+	global.particles = saveparts;
+	*argptr = t;
+
+	inside = false;
+	return ret;
 }
 
 void player_realdeath(Player *plr) {
@@ -351,6 +492,13 @@ bool player_event(Player *plr, uint8_t type, uint16_t value) {
 			switch(value) {
 				case KEY_BOMB:
 					useful = player_bomb(plr);
+
+					if(!useful && plr->iddqd) {
+						// smooth bomb cancellation test
+						player_cancel_bomb(plr, 60);
+						useful = true;
+					}
+
 					break;
 
 				case KEY_IDDQD:

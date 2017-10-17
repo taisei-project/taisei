@@ -119,6 +119,28 @@ static int youmu_mirror_myon(Enemy *e, int t) {
     return 1;
 }
 
+static int youmu_split_logic(void *v, int t, double speed) {
+    Enemy *e = v;
+    TIMER(&t);
+
+    FROM_TO(30,200,1) {
+        tsrand_fill(2);
+        create_particle2c("smoke", VIEWPORT_W/2 + VIEWPORT_H/2*I, rgba(0.4,0.4,0.4,afrand(0)*0.2+0.4), PartDraw, youmu_common_particle_spin, 300 / speed, speed*6*cexp(I*afrand(1)*2*M_PI));
+    }
+
+    FROM_TO(100,170,10) {
+        tsrand_fill(3);
+        create_particle1c("youmu_slice", VIEWPORT_W/2.0 + VIEWPORT_H/2.0*I - 200-200.0*I + 400*afrand(0)+400.0*I*afrand(1), 0, youmu_common_particle_slice_draw, timeout, (100-_i) / speed)->angle = 360.0*afrand(2);
+    }
+
+    FROM_TO(0, 220, 1) {
+        float talt = atan((t-e->args[0]/2)/30.0)*10+atan(-e->args[0]/2);
+        global.plr.pos = VIEWPORT_W/2.0 + (VIEWPORT_H-80)*I + VIEWPORT_W/3.0*sin(talt);
+    }
+
+    return 1;
+}
+
 static int youmu_split(Enemy *e, int t) {
     if(t < 0)
         return 1;
@@ -130,25 +152,7 @@ static int youmu_split(Enemy *e, int t) {
         return ACTION_DESTROY;
     }
 
-    TIMER(&t);
-
-    FROM_TO(30,200,1) {
-        tsrand_fill(2);
-        create_particle2c("smoke", VIEWPORT_W/2 + VIEWPORT_H/2*I, rgba(0.4,0.4,0.4,afrand(0)*0.2+0.4), PartDraw, youmu_common_particle_spin, 300, 6*cexp(I*afrand(1)*2*M_PI));
-    }
-
-    FROM_TO(100,170,10) {
-        tsrand_fill(3);
-        create_particle1c("youmu_slice", VIEWPORT_W/2.0 + VIEWPORT_H/2.0*I - 200-200.0*I + 400*afrand(0)+400.0*I*afrand(1), 0, youmu_common_particle_slice_draw, timeout, 100-_i)->angle = 360.0*afrand(2);
-    }
-
-
-    FROM_TO(0, 220, 1) {
-        float talt = atan((t-e->args[0]/2)/30.0)*10+atan(-e->args[0]/2);
-        global.plr.pos = VIEWPORT_W/2.0 + (VIEWPORT_H-80)*I + VIEWPORT_W/3.0*sin(talt);
-    }
-
-    return 1;
+    return player_run_bomb_logic(&global.plr, e, &e->args[3], youmu_split_logic);
 }
 
 static void youmu_mirror_bomb(Player *plr) {

@@ -71,6 +71,8 @@ typedef struct {
 	int recovery;
 	int deathtime;
 	int respawntime;
+	int bombcanceltime;
+	int bombcanceldelay;
 
 	struct PlayerMode *mode;
 	AniPlayer ani;
@@ -137,5 +139,9 @@ void player_add_bomb_fragments(Player *plr, int frags);
 void player_add_lives(Player *plr, int lives);
 void player_add_bombs(Player *plr, int bombs);
 void player_add_points(Player *plr, unsigned int points);
+
+void player_cancel_bomb(Player *plr, int delay);
+int player_get_bomb_progress(Player *plr, double *out_speed);
+int player_run_bomb_logic(Player *plr, void *ent, complex *argptr, int (*callback)(void *ent, int t, double speed));
 
 void player_preload(void);

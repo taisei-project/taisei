@@ -45,7 +45,6 @@ static void marisa_star_trail_draw(Projectile *p, int t) {
 
 static void marisa_star_bomb_draw(Projectile *p, int t) {
     marisa_star(p, t);
-    create_particle1c("maristar_orbit", p->pos, 0, GrowFadeAdd, timeout, 40)->type = PlrProj;
 }
 
 static int marisa_star_projectile(Projectile *p, int t) {
@@ -83,22 +82,30 @@ static int marisa_star_slave(Enemy *e, int t) {
     return 1;
 }
 
-static int marisa_star_orbit(Projectile *p, int t) { // a[0]: x' a[1]: x''
-    if(t == 0)
-        p->pos0 = global.plr.pos;
-    if(t < 0)
-        return 1;
-
-    if(t > 300 || global.frames - global.plr.recovery > 0)
-        return ACTION_DESTROY;
-
+static int marisa_star_orbit_logic(void *v, int t, double speed) {
+    Projectile *p = v;
     float r = cabs(p->pos0 - p->pos);
-
     p->args[1] = (0.5e5-t*t)*cexp(I*carg(p->pos0 - p->pos))/(r*r);
     p->args[0] += p->args[1]*0.2;
     p->pos += p->args[0];
-
+    create_particle1c("maristar_orbit", p->pos, 0, GrowFadeAdd, timeout, 40 / speed)->type = PlrProj;
     return 1;
+}
+
+static int marisa_star_orbit(Projectile *p, int t) { // a[0]: x' a[1]: x''
+    if(t == 0) {
+        p->pos0 = global.plr.pos;
+    }
+
+    if(t < 0) {
+        return 1;
+    }
+
+    if(global.frames - global.plr.recovery > 0) {
+        return ACTION_DESTROY;
+    }
+
+    return player_run_bomb_logic(&global.plr, p, &p->args[3], marisa_star_orbit_logic);
 }
 
 static void marisa_star_bomb(Player *plr) {
