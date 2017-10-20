@@ -330,15 +330,16 @@ else()
 	set(TAISEI_BINARY "bin/taisei")
 endif()
 
-configure_file(
-	"${BUILDSCRIPTS_DIR}/PostInstallRelease.cmake.in"
-	"${CMAKE_CURRENT_BINARY_DIR}/PostInstallRelease.cmake"
-@ONLY)
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
+	configure_file(
+		"${BUILDSCRIPTS_DIR}/PostInstallRelease.cmake.in"
+		"${CMAKE_CURRENT_BINARY_DIR}/PostInstallRelease.cmake"
+	@ONLY)
 
-install(
-	SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/PostInstallRelease.cmake"
-	CONFIGURATIONS Release
-)
+	install(
+		SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/PostInstallRelease.cmake"
+	)
+endif()
 
 if(USE_COTIRE)
 	cotire(taisei)
