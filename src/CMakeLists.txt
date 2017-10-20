@@ -304,8 +304,12 @@ if(APPLE)
 	set(DYLIBS_DIR_NAME "dylibs")
 	set(DYLIBS_DIR_FINAL "${OSX_BINARY_DIR}/${DYLIBS_DIR_NAME}")
 	set(DYLIBS_DIR_INTERMEDIATE "${CMAKE_CURRENT_BINARY_DIR}/${DYLIBS_DIR_NAME}")
+	set(TAISEI_BINARY "${OSX_BINARY}")
 
-	configure_file("${BUILDSCRIPTS_DIR}/OSXInstallDylibs.cmake.in" "${CMAKE_CURRENT_BINARY_DIR}/OSXInstallDylibs.cmake" @ONLY)
+	configure_file(
+		"${BUILDSCRIPTS_DIR}/OSXInstallDylibs.cmake.in"
+		"${CMAKE_CURRENT_BINARY_DIR}/OSXInstallDylibs.cmake"
+	@ONLY)
 
 	install(SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/OSXInstallDylibs.cmake")
 	install(DIRECTORY "${DYLIBS_DIR_INTERMEDIATE}" DESTINATION "${OSX_BINARY_DIR}")
@@ -320,9 +324,21 @@ if(APPLE)
 
 elseif(RELATIVE)
 	install(TARGETS taisei RUNTIME DESTINATION .)
+	set(TAISEI_BINARY "./taisei")
 else()
 	install(TARGETS taisei RUNTIME DESTINATION bin)
+	set(TAISEI_BINARY "bin/taisei")
 endif()
+
+configure_file(
+	"${BUILDSCRIPTS_DIR}/PostInstallRelease.cmake.in"
+	"${CMAKE_CURRENT_BINARY_DIR}/PostInstallRelease.cmake"
+@ONLY)
+
+install(
+	SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/PostInstallRelease.cmake"
+	CONFIGURATIONS Release
+)
 
 if(USE_COTIRE)
 	cotire(taisei)
