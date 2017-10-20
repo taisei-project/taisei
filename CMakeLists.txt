@@ -1,5 +1,5 @@
 project(taisei C)
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.1)
 cmake_policy(SET CMP0054 NEW)
 
 set(PYTHON_VERSION_REQUIRED "3.4")

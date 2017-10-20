@@ -13,7 +13,7 @@ Dependencies:
 * libzip >= 1.0
 * libpng >= 1.5.0
 * OpenGL >= 2.1
-* CMake >= 3.3 (build system)
+* CMake >= 3.1 (build system)
 * pkg-config (build dependency)
 
 To build and install Taisei just follow these steps.
