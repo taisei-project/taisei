@@ -56,6 +56,11 @@ Projectile *create_projectile_p(Projectile **dest, Texture *tex, complex pos, Co
 	p->args[2] = a3;
 	p->args[3] = a4;
 
+	// BUG: this currently breaks some projectiles
+	//		enable this when they're fixed
+	// assert(rule != NULL);
+	// rule(p, EVENT_BIRTH);
+
 	return p;
 }
 

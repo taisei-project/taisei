@@ -66,6 +66,15 @@ return pos + a0*t + 0.5*a1*t*t;
 vec2 p = vec2(t, a2.x*t*0.02*sin(0.1*t+a2.y));
 return pos + vec2(a0.x*p.x - a0.y*p.y, a0.x*p.y + a0.y*p.x);
 %%sine%%
+vec2 line_vel = a0;
+vec2 line_dir = line_vel / length(line_vel);
+vec2 line_normal = vec2(line_dir.y, -line_dir.x);
+float sine_amp = a1.x;
+float sine_freq = a2.x;
+float sine_phase = a3.x;
+vec2 sine_ofs = line_normal * sine_amp * sin(sine_freq * t + sine_phase);
+return pos + t * line_vel + sine_ofs;
+%%weird_sine%%
 float s = (a2.x * t + a3.x);
 return pos + dir(angle(a0) + a1.x * sin(s) / s) * t * length(a0);
 %%sine_expanding%%
