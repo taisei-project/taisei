@@ -519,8 +519,9 @@ void Baryon(Enemy *e, int t) {
 
 // 	create_particle2c("flare", e->pos+40*frand()*cexp(2.0*I*M_PI*frand()), rgb(0, 1, 1), GrowFadeAdd, timeout_linear, 50, 1-I);
 
-	if(!(t % 10))
+	if(!(t % 10) && global.boss && cabs(e->pos - global.boss->pos) > 2) {
 		create_particle1c("stain", e->pos+10*frand()*cexp(2.0*I*M_PI*frand()), rgb(0, 1*alpha, 0.7*alpha), FadeAdd, timeout, 50)->angle = 2*M_PI*frand();
+	}
 }
 
 void BaryonCenter(Enemy *e, int t) {
@@ -577,6 +578,10 @@ int baryon_center(Enemy *e, int t) {
 	if(t == EVENT_DEATH) {
 		free_ref(creal(e->args[1]));
 		free_ref(cimag(e->args[1]));
+	}
+
+	if(global.boss) {
+		e->pos = global.boss->pos;
 	}
 
 	return 1;
@@ -697,6 +702,217 @@ void elly_eigenstate(Boss *b, int t) {
 		set_baryon_rule(baryon_eigenstate);
 	AT(EVENT_DEATH)
 		set_baryon_rule(baryon_reset);
+}
+
+int broglie_particle(Projectile *p, int t) {
+	if(t == EVENT_DEATH) {
+		free_ref(p->args[0]);
+		return 1;
+	}
+
+	/*
+	if(t == EVENT_BIRTH) {
+		// hidden and no collision detection until scattertime
+		p->type = FakeProj;
+		p->draw = ProjNoDraw;
+	}
+	*/
+
+	if(t < 0) {
+		return 1;
+	}
+
+	int scattertime = creal(p->args[1]);
+
+	if(t < scattertime) {
+		Laser *laser = (Laser*)REF(p->args[0]);
+
+		if(laser) {
+			complex oldpos = p->pos;
+			p->pos = laser->prule(laser, min(t, cimag(p->args[1])));
+
+			if(oldpos != p->pos) {
+				p->angle = carg(p->pos - oldpos);
+			}
+		}
+	} else {
+		if(t == scattertime) {
+			p->type = FairyProj;
+			p->draw = ProjDrawAdd;
+
+			double angle_ampl = creal(p->args[3]);
+			double angle_freq = cimag(p->args[3]);
+
+			p->angle += angle_ampl * sin(t * angle_freq);
+			p->args[2] = -cabs(p->args[2]) * cexp(I*p->angle);
+		}
+
+		p->angle = carg(p->args[2]);
+		p->pos = p->pos + p->args[2];
+	}
+
+	return 1;
+}
+
+#define BROGLIE_PERIOD (420 - 30 * global.diff)
+
+void broglie_laser_logic(Laser *l, int t) {
+	double hue = cimag(l->args[3]);
+
+	if(t == EVENT_BIRTH) {
+		l->color = hsl(hue, 1.0, 0.5);
+	}
+
+	if(t < 0) {
+		return;
+	}
+
+	int dt = l->deathtime + l->timespan * l->speed;
+
+	log_debug("%i %i", t, dt);
+
+	l->color = hsl(hue, 1.0, 0.5 + 0.3 * pow((double)t / dt, 2));
+}
+
+int broglie_charge(Projectile *p, int t) {
+	if(t < 0) {
+		return 1;
+	}
+
+	int firetime = creal(p->args[1]);
+
+	if(t == firetime) {
+		int attack_num = creal(p->args[2]);
+		double hue = creal(p->args[3]);
+
+		complex aim = p->args[0];
+		double dt = 200;
+
+		double s_ampl = 30 + 2 * attack_num;
+		double s_freq = 0.10 + 0.01 * attack_num;
+
+		for(int lnum = 0; lnum < 2; ++lnum) {
+			Laser *l = create_lasercurve4c(p->pos - aim * 15, dt, dt/2, 0, las_sine,
+				5*aim, s_ampl, s_freq, lnum * M_PI +
+				I*(hue + lnum * (M_PI/12)/(M_PI/2)));
+
+			l->width = 20;
+			l->lrule = broglie_laser_logic;
+
+			int pnum = 0;
+			double inc = pow(1.10 - 0.10 * (global.diff - D_Easy), 2);
+
+			for(double ofs = 0; ofs < dt; ofs += inc, ++pnum) {
+				complex pos = l->prule(l, ofs);
+				bool fast = global.diff == D_Easy || pnum & 1;
+
+				char  *txt = fast ? "thickrice" : "rice";
+				double spd = fast ?         2.0 : 1.5;
+
+				Projectile *part = create_projectile4c(txt, pos,
+					hsl(hue + lnum * (M_PI/12)/(M_PI/2), 1.0, 0.5), broglie_particle,
+					add_ref(l), I*ofs + dt + ofs - 10, spd,
+					(1 + 2 * ((global.diff - 1) / (double)(D_Lunatic - 1))) * M_PI/11 + s_freq*5*I);
+
+				part->draw = ProjNoDraw;
+				part->type = FakeProj;
+			}
+		}
+
+		return ACTION_DESTROY;
+	}
+
+	return 1;
+}
+
+int baryon_broglie(Enemy *e, int t) {
+	if(t < 0) {
+		return 1;
+	}
+
+	if(!global.boss) {
+		return ACTION_DESTROY;
+	}
+
+	int period = BROGLIE_PERIOD;
+	int t_real = t;
+	int attack_num = t_real / period;
+	t %= period;
+
+	TIMER(&t);
+	Enemy *master = NULL;
+
+	for(Enemy *e = global.enemies; e; e = e->next) {
+		if(e->draw_rule == Baryon) {
+			master = e;
+			break;
+		}
+	}
+
+	assert(master != NULL);
+
+	if(master != e) {
+		if(t_real < period) {
+			GO_TO(e, global.boss->pos, 0.03);
+		} else {
+			e->pos = global.boss->pos;
+		}
+
+		return 1;
+	}
+
+	int delay = 140;
+	int step = 30;
+	int cnt = 3;
+	int fire_delay = 120;
+
+	FROM_TO(delay, delay + step * cnt - 1, step) {
+		double a = 2*M_PI * (0.25 + 1.0/cnt*_i);
+		complex n = cexp(I*a);
+
+		double hue = (attack_num * M_PI + a + M_PI/6) / (M_PI*2);
+
+		create_projectile4c("ball", e->pos + 15*n,
+			hsl(hue, 1.0, 0.55),
+			broglie_charge, n, fire_delay - step * _i, attack_num, hue)->draw = ProjDrawAdd;
+	}
+
+	if(t < delay || t > delay + fire_delay) {
+		complex target_pos = global.boss->pos + 100 * cexp(I*carg(global.plr.pos - global.boss->pos));
+		GO_TO(e, target_pos, 0.03);
+	}
+
+	return 1;
+}
+
+void elly_broglie(Boss *b, int t) {
+	TIMER(&t);
+
+	if(t < 0) {
+		return;
+	}
+
+	AT(0) {
+		set_baryon_rule(baryon_broglie);
+	}
+
+	AT(EVENT_DEATH) {
+		set_baryon_rule(baryon_reset);
+	}
+
+	int period = BROGLIE_PERIOD;
+	double ofs = 100;
+
+	complex positions[] = {
+		VIEWPORT_W-ofs + ofs*I,
+		ofs + (VIEWPORT_H-ofs)*I,
+		VIEWPORT_W-ofs + (VIEWPORT_H-ofs)*I,
+		ofs + ofs*I,
+	};
+
+	if(t/period > 0) {
+		GO_TO(b, positions[(t/(period*2)) % (sizeof(positions)/sizeof(complex))], 0.02);
+	}
 }
 
 int baryon_nattack(Enemy *e, int t) {
@@ -890,6 +1106,8 @@ void elly_ricci(Boss *b, int t) {
 	int c = 15;
 	float v = 3;
 	int interval = 5;
+
+	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.03);
 
 	FROM_TO(30, 100000, interval) {
 		for(int i = 0; i < c; i++) {
@@ -1113,9 +1331,6 @@ int curvature_slave(Enemy *e, int t) {
 		if(global.diff == D_Lunatic) {
 			create_projectile2c("plainball",global.boss->pos,rgb(0.2, 0.4,1), curvature_orbiter, 40*cexp(I*t/400),add_ref(p))->draw = ProjDrawAdd;
 		}
-
-
-
 	}
 
 	return 1;
@@ -1297,6 +1512,11 @@ void elly_spellbg_modern(Boss *b, int t) {
 	glColor4f(1,1,1,1);
 }
 
+void elly_spellbg_modern_dark(Boss *b, int t) {
+	elly_spellbg_modern(b, t);
+	fade_out(0.75 * min(1, t / 300.0));
+}
+
 static void elly_global_rule(Boss *b, int time) {
 	global.boss->shadowcolor = hsla(time/120.0, 1.0, 0.25, 0.5);
 }
@@ -1319,6 +1539,7 @@ Boss* create_elly(void) {
 	boss_add_attack(b, AT_Move, "Unbound", 3, 10, elly_unbound, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.many_world_interpretation, false);
 	boss_add_attack(b, AT_Normal, "Baryon", 40, 50000, elly_baryonattack, NULL);
+	boss_add_attack_from_info(b, &stage6_spells.baryon.wave_particle_duality, false);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.spacetime_curvature, false);
 	boss_add_attack(b, AT_Normal, "Baryon", 40, 50000, elly_baryonattack2, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.higgs_boson_uncovered, false);

@@ -12,10 +12,13 @@
 
 void elly_spellbg_classic(Boss*, int);
 void elly_spellbg_modern(Boss*, int);
+void elly_spellbg_modern_dark(Boss*, int);
+
 void elly_kepler(Boss*, int);
 void elly_newton(Boss*, int);
 void elly_maxwell(Boss*, int);
 void elly_eigenstate(Boss*, int);
+void elly_broglie(Boss*, int);
 void elly_ricci(Boss*, int);
 void elly_lhc(Boss*, int);
 void elly_theory(Boss*, int);

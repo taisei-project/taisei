@@ -304,9 +304,12 @@ complex las_accel(Laser *l, float t) {
 	return l->pos + l->args[0]*t + 0.5*l->args[1]*t*t;
 }
 
-complex las_sine(Laser *l, float t) {				// [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
+complex las_weird_sine(Laser *l, float t) {				// [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
+	// XXX: this used to be called "las_sine", but it's actually not a proper sine wave
+	// do we even still need this?
+
 	if(t == EVENT_BIRTH) {
-		l->shader = get_shader_optional("laser_sine");
+		l->shader = get_shader_optional("laser_weird_sine");
 		l->collision_step = 3;
 		return 0;
 	}
@@ -315,7 +318,29 @@ complex las_sine(Laser *l, float t) {				// [0] = velocity; [1] = sine amplitude
 	return l->pos + cexp(I * (carg(l->args[0]) + l->args[1] * sin(s) / s)) * t * cabs(l->args[0]);
 }
 
+complex las_sine(Laser *l, float t) {				// [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
+	// this is actually shaped like a sine wave
+
+	if(t == EVENT_BIRTH) {
+		l->shader = get_shader_optional("laser_sine");
+		l->collision_step = 3;
+		return 0;
+	}
+
+	complex line_vel = l->args[0];
+	complex line_dir = line_vel / cabs(line_vel);
+	complex line_normal = cimag(line_dir) - I*creal(line_dir);
+	complex sine_amp = l->args[1];
+	complex sine_freq = l->args[2];
+	complex sine_phase = l->args[3];
+
+	complex sine_ofs = line_normal * sine_amp * sin(sine_freq * t + sine_phase);
+	return l->pos + t * line_vel + sine_ofs;
+}
+
 complex las_sine_expanding(Laser *l, float t) {	// [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
+	// XXX: this is also a "weird" one
+
 	if(t == EVENT_BIRTH) {
 		l->shader = get_shader_optional("laser_sine_expanding");
 		l->collision_step = 3;
