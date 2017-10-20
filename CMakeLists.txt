@@ -128,6 +128,7 @@ option(USE_CPACK "Add a 'package' target, used to prepare a release for binary d
 option(USE_COTIRE "Use cotire (COmpile TIme REducer) to speed up builds." OFF)
 option(DEBUG_USE_UBSAN "Enable the Undefined Behaviour Sanitizer (UBSan) in debug builds. Only disable if the compiler or target platform doesn't support it." ON)
 option(DEBUG_USE_ASAN "Enable the Address Sanitizer (ASan) and leak detection in debug builds." OFF)
+option(RELWITHDEBINFO_USE_DEBUG_FLAGS "Use debug flags in RelWithDebInfo builds (e.g. sanitizers)." OFF)
 option(RELEASE_USE_LTO "Enable Link Time Optimization in release builds." ON)
 option(PACKAGE_DATA "Package the game's assets into a compressed archive instead of bundling plain files. Requires USE_ZIP=ON." ON)
 option(PACKAGE_DATA_LEANIFY "Optimize the assets archive for size. This process can be very slow. Requires Leanify (https://github.com/JayXon/Leanify) and PACKAGE_DATA=ON." OFF)

@@ -155,32 +155,43 @@ endif()
 set(DEBUG_FLAGS "${DEBUG_FLAGS} -fno-omit-frame-pointer")
 set(RELEASE_FLAGS "-DNDEBUG")
 
-if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
-	# "Debug build" is a build where ${DEBUG_FLAGS} are used.
+set(DEBUG_BUILD FALSE)		# "Debug build" is a build where ${DEBUG_FLAGS} are used.
+set(RELEASE_BUILD FALSE)	# "Release build" is a build where ${RELEASE_FLAGS} are used.
+
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug" OR ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo" AND RELWITHDEBINFO_USE_DEBUG_FLAGS))
 	set(DEBUG_BUILD TRUE)
 endif()
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Release" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
-	# "Release build" is a build where ${RELEASE_FLAGS} are used.
 	set(RELEASE_BUILD TRUE)
 endif()
 
-if(DEBUG_USE_UBSAN AND DEFINED DEBUG_BUILD)
+if(DEBUG_USE_UBSAN)
 	CHECK_AND_SET_FLAGS(COMPILER_SUPPORTS_UBSAN "-fsanitize=undefined" DEBUG_FLAGS "-fsanitize=undefined")
 endif()
 
-if(DEBUG_USE_ASAN AND DEFINED DEBUG_BUILD)
+if(DEBUG_USE_ASAN)
 	CHECK_AND_SET_FLAGS(COMPILER_SUPPORTS_ASAN "-fsanitize=address" DEBUG_FLAGS "-fsanitize=address")
 endif()
 
-if(RELEASE_USE_LTO AND DEFINED RELEASE_BUILD)
+if(RELEASE_USE_LTO)
 	CHECK_AND_SET_FLAGS(COMPILER_SUPPORTS_LTO "-flto" RELEASE_FLAGS "-flto")
 endif()
 
 set(CMAKE_C_FLAGS_DEBUG "${DEBUG_FLAGS} -DDEBUG")
 set(CMAKE_C_FLAGS_RELEASE "${RELEASE_FLAGS} -O3")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO "${RELEASE_FLAGS} -O2 ${DEBUG_FLAGS}")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "${RELEASE_FLAGS} -O2")
 set(CMAKE_C_FLAGS_MINSIZEREL "${RELEASE_FLAGS} -Os")
+
+if(RELWITHDEBINFO_USE_DEBUG_FLAGS)
+	set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} ${DEBUG_FLAGS}")
+endif()
+
+check_symbol_exists(backtrace "execinfo.h" HAVE_BACKTRACE)
+if(${HAVE_BACKTRACE})
+	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DLOG_ENABLE_BACKTRACE")
+	set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -DLOG_ENABLE_BACKTRACE")
+endif()
 
 set(WARNINGS "-Wall -Wno-parentheses -Wtype-limits -Wstrict-prototypes -Wlong-long -Winit-self")
 CHECK_AND_SET_FLAGS(COMPILER_WARN_PEDANTIC "-Wpedantic" WARNINGS)
@@ -272,13 +283,6 @@ endif()
 
 if(POSIX)
 	add_definitions(-D__POSIX__)
-endif()
-
-if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-	check_symbol_exists(backtrace "execinfo.h" HAVE_BACKTRACE)
-	if(${HAVE_BACKTRACE})
-		add_definitions(-DLOG_ENABLE_BACKTRACE)
-	endif()
 endif()
 
 if (CMAKE_GENERATOR STREQUAL "Ninja" AND
