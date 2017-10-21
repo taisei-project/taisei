@@ -400,6 +400,13 @@ void gamepad_axis(SDL_GameControllerAxis id, int raw) {
 	signed char val  = AXISVAL(gamepad_axis_process_value_deadzone(raw));
 	bool restricted = !config_get_int(CONFIG_GAMEPAD_AXIS_FREE);
 
+	if(val && a[id] && sign(val) != sign(a[id])) {
+		// axis changed direction without passing the '0' state
+		// this can be bad for digital input simulation (aka 'restricted mode')
+		// so we insert a fake 0 event inbetween
+		gamepad_axis(id, 0);
+	}
+
 	events_emit(TE_GAMEPAD_AXIS, id, (void*)(intptr_t)raw, NULL);
 
 	if(!restricted) {
