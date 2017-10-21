@@ -925,6 +925,7 @@ static bool options_rebind_input_handler(SDL_Event *event, void *arg) {
 		if(b->type != BT_KeyBinding) {
 			if(esc) {
 				b->blockinput = false;
+				play_ui_sound("hit");
 			}
 
 			return true;
@@ -938,8 +939,17 @@ static bool options_rebind_input_handler(SDL_Event *event, void *arg) {
 			}
 
 			config_set_int(b->configentry, scan);
+			play_ui_sound("shot_special1");
+		} else {
+			play_ui_sound("hit");
 		}
 
+		b->blockinput = false;
+		return true;
+	}
+
+	if(t == MAKE_TAISEI_EVENT(TE_MENU_ABORT)) {
+		play_ui_sound("hit");
 		b->blockinput = false;
 		return true;
 	}
@@ -950,6 +960,7 @@ static bool options_rebind_input_handler(SDL_Event *event, void *arg) {
 		if(b->type != BT_GamepadKeyBinding) {
 			if(b->type == BT_GamepadAxisBinding) {
 				b->blockinput = false;
+				play_ui_sound("hit");
 			}
 
 			return true;
@@ -957,6 +968,7 @@ static bool options_rebind_input_handler(SDL_Event *event, void *arg) {
 
 		if(button == SDL_CONTROLLER_BUTTON_BACK || button == SDL_CONTROLLER_BUTTON_START) {
 			b->blockinput = false;
+			play_ui_sound("hit");
 			return true;
 		}
 
@@ -968,6 +980,7 @@ static bool options_rebind_input_handler(SDL_Event *event, void *arg) {
 
 		config_set_int(b->configentry, button);
 		b->blockinput = false;
+		play_ui_sound("shot_special1");
 		return true;
 	}
 
@@ -1038,6 +1051,12 @@ static bool options_text_input_handler(SDL_Event *event, void *arg) {
 
 		free(text_allocated);
 		play_ui_sound(snd);
+		return true;
+	}
+
+	if(t == MAKE_TAISEI_EVENT(TE_MENU_ABORT)) {
+		play_ui_sound("hit");
+		b->blockinput = false;
 		return true;
 	}
 

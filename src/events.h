@@ -62,6 +62,11 @@ typedef enum {
 	EFLAG_TEXT = (1 << 2),
 } EventFlags;
 
+typedef enum {
+	INDEV_KEYBOARD,
+	INDEV_GAMEPAD,
+} InputDevice;
+
 #define EPRIO_DEFAULT_REMAP EPRIO_NORMAL
 
 // if the this returns true, the event won't be passed down to lower priority handlers
