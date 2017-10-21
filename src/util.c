@@ -349,7 +349,7 @@ void loop_at_fps(bool (*frame_func)(void*), bool (*limiter_cond_func)(void*), vo
             continue;
         }
 
-badshit:
+magic:
         glClear(GL_COLOR_BUFFER_BIT);
 
         if(!frame_func(arg)) {
@@ -361,12 +361,12 @@ badshit:
 
             long double rt = time_get();
             long double diff = rt - next_frame_time;
+
             if(diff >= 0) {
-                // log_warn("BAD SHIT! %Lf", diff);
+                // frame took too long...
+                // try to compensate in the next frame to avoid slowdown
                 real_time = rt - min(diff, target_frame_time);
-                goto badshit;
-            } else {
-                // log_warn("GOOD SHIT! %Lf", diff);
+                goto magic;
             }
 
             if(delay > 0) {
