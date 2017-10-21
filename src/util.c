@@ -349,6 +349,7 @@ void loop_at_fps(bool (*frame_func)(void*), bool (*limiter_cond_func)(void*), vo
             continue;
         }
 
+badshit:
         glClear(GL_COLOR_BUFFER_BIT);
 
         if(!frame_func(arg)) {
@@ -357,6 +358,16 @@ void loop_at_fps(bool (*frame_func)(void*), bool (*limiter_cond_func)(void*), vo
 
         if(!limiter_cond_func || limiter_cond_func(arg)) {
             next_frame_time = real_time + target_frame_time;
+
+            long double rt = time_get();
+            long double diff = rt - next_frame_time;
+            if(diff >= 0) {
+                // log_warn("BAD SHIT! %Lf", diff);
+                real_time = rt - min(diff, target_frame_time);
+                goto badshit;
+            } else {
+                // log_warn("GOOD SHIT! %Lf", diff);
+            }
 
             if(delay > 0) {
                 int32_t realdelay = delay;
