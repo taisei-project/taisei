@@ -348,7 +348,7 @@ static bool events_handler_key_down(SDL_Event *event, void *arg) {
 	if(!repeat || transition.state == TRANS_IDLE) {
 		for(struct eventmap_s *m = menu_event_map; m->scancode != SDL_SCANCODE_UNKNOWN; ++m) {
 			if(scan == m->scancode) {
-				events_emit(m->event, 0, NULL, NULL);
+				events_emit(m->event, 0, (void*)(intptr_t)INDEV_KEYBOARD, NULL);
 				break;
 			}
 		}
@@ -365,7 +365,7 @@ static bool events_handler_key_down(SDL_Event *event, void *arg) {
 			int key = config_key_from_scancode(scan);
 
 			if(key >= 0) {
-				events_emit(TE_GAME_KEY_DOWN, key, NULL, NULL);
+				events_emit(TE_GAME_KEY_DOWN, key, (void*)(intptr_t)INDEV_KEYBOARD, NULL);
 			}
 		}
 	}
@@ -383,7 +383,7 @@ static bool events_handler_key_up(SDL_Event *event, void *arg) {
 	int key = config_key_from_scancode(scan);
 
 	if(key >= 0) {
-		events_emit(TE_GAME_KEY_UP, key, NULL, NULL);
+		events_emit(TE_GAME_KEY_UP, key, (void*)(intptr_t)INDEV_KEYBOARD, NULL);
 	}
 
 	return false;

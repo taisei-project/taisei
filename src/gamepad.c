@@ -423,12 +423,12 @@ void gamepad_axis(SDL_GameControllerAxis id, int raw) {
 
 			if(key >= 0) {
 				if(restricted) {
-					events_emit(TE_GAME_KEY_DOWN, key, NULL, NULL);
+					events_emit(TE_GAME_KEY_DOWN, key, (void*)(intptr_t)INDEV_GAMEPAD, NULL);
 				}
 
 				int evt = gamepad_axis2menuevt(id, val);
 				if(evt >= 0) {
-					events_emit(evt, 0, NULL, NULL);
+					events_emit(evt, 0, (void*)(intptr_t)INDEV_GAMEPAD, NULL);
 				}
 			}
 
@@ -438,7 +438,7 @@ void gamepad_axis(SDL_GameControllerAxis id, int raw) {
 			int key = gamepad_axis2gamekey(id, a[id]);
 
 			if(key >= 0) {
-				events_emit(TE_GAME_KEY_UP, key, NULL, NULL);
+				events_emit(TE_GAME_KEY_UP, key, (void*)(intptr_t)INDEV_GAMEPAD, NULL);
 			}
 		}
 
@@ -449,45 +449,46 @@ void gamepad_axis(SDL_GameControllerAxis id, int raw) {
 void gamepad_button(SDL_GameControllerButton button, int state) {
 	int gpkey	= config_gamepad_key_from_gamepad_button(button);
 	int key		= config_key_from_gamepad_key(gpkey);
+	void *indev =  (void*)(intptr_t)INDEV_GAMEPAD;
 
 	if(state == SDL_PRESSED) {
-		events_emit(TE_GAMEPAD_BUTTON_DOWN, button, NULL, NULL);
+		events_emit(TE_GAMEPAD_BUTTON_DOWN, button, indev, NULL);
 
 		switch(button) {
 			case SDL_CONTROLLER_BUTTON_START:
-				events_emit(TE_MENU_ACCEPT, 0, NULL, NULL);
-				events_emit(TE_GAME_PAUSE, 0, NULL, NULL);
+				events_emit(TE_MENU_ACCEPT, 0, indev, NULL);
+				events_emit(TE_GAME_PAUSE, 0, indev, NULL);
 				break;
 
 			case SDL_CONTROLLER_BUTTON_BACK:
-				events_emit(TE_MENU_ABORT, 0, NULL, NULL);
-				events_emit(TE_GAME_PAUSE, 0, NULL, NULL);
+				events_emit(TE_MENU_ABORT, 0, indev, NULL);
+				events_emit(TE_GAME_PAUSE, 0, indev, NULL);
 				break;
 
-			case SDL_CONTROLLER_BUTTON_DPAD_UP:		events_emit(TE_MENU_CURSOR_UP, 0, NULL, NULL);		break;
-			case SDL_CONTROLLER_BUTTON_DPAD_DOWN:	events_emit(TE_MENU_CURSOR_DOWN, 0, NULL, NULL);	break;
-			case SDL_CONTROLLER_BUTTON_DPAD_LEFT:	events_emit(TE_MENU_CURSOR_LEFT, 0, NULL, NULL);	break;
-			case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:	events_emit(TE_MENU_CURSOR_RIGHT, 0, NULL, NULL);	break;
+			case SDL_CONTROLLER_BUTTON_DPAD_UP:		events_emit(TE_MENU_CURSOR_UP, 0, indev, NULL);		break;
+			case SDL_CONTROLLER_BUTTON_DPAD_DOWN:	events_emit(TE_MENU_CURSOR_DOWN, 0, indev, NULL);	break;
+			case SDL_CONTROLLER_BUTTON_DPAD_LEFT:	events_emit(TE_MENU_CURSOR_LEFT, 0, indev, NULL);	break;
+			case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:	events_emit(TE_MENU_CURSOR_RIGHT, 0, indev, NULL);	break;
 
 			case SDL_CONTROLLER_BUTTON_A:
-				events_emit(TE_MENU_ACCEPT, 0, NULL, NULL);
+				events_emit(TE_MENU_ACCEPT, 0, indev, NULL);
 				break;
 
 			case SDL_CONTROLLER_BUTTON_B:
-				events_emit(TE_MENU_ABORT, 0, NULL, NULL);
+				events_emit(TE_MENU_ABORT, 0, indev, NULL);
 				break;
 
 			default:
 				if(key >= 0) {
-					events_emit(TE_GAME_KEY_DOWN, key, NULL, NULL);
+					events_emit(TE_GAME_KEY_DOWN, key, indev, NULL);
 				} break;
 		}
 
 	} else {
-		events_emit(TE_GAMEPAD_BUTTON_UP, button, NULL, NULL);
+		events_emit(TE_GAMEPAD_BUTTON_UP, button, indev, NULL);
 
 		if(key >= 0) {
-			events_emit(TE_GAME_KEY_UP, key, NULL, NULL);
+			events_emit(TE_GAME_KEY_UP, key, indev, NULL);
 		}
 	}
 }
