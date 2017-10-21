@@ -15,7 +15,7 @@ If you get hit you lose a life (displayed on the right hand side in the HUD), if
 
 Using the Gamepad is also supported. See options to set up controls.
 
-Users of qwerty keyboard layouts: Don’t worry, Taisei’s controls are not based on layout but key location.
+Users of non-qwerty keyboard layouts: Don’t worry, Taisei’s controls are not based on layout but key location.
 
 ## Shotmodes
 
@@ -96,7 +96,7 @@ Taisei has 6 levels (called *stages*). Each stage has a boss and a midboss in so
 
 ## Bombs
 
-Your characters are of course no less apt in magic than the bosses, so they
+Your characters are of course no less apt at magic than the bosses, so they
 have Spellcards of their own. These are called *bombs*.
 
 You can use them to clear out bullets and enemies from the screen. However you
@@ -130,4 +130,4 @@ Knowing this much should help to get you started!
 
 If you want more tricks and hints on how to *“git gud”*. Checkout resources on how to play *Touhou*, the game Taisei is based on.
 
-Enjoy playing and if you want to contact us, visit us on Freenode IRC #taisei-project or on Discord.
+Enjoy playing and if you want to contact us, visit us on Freenode IRC #taisei-project or on [Discord](https://discord.gg/JEHCMzW).
