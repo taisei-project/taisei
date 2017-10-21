@@ -208,7 +208,7 @@ else()
 endif()
 
 if(WIN32)
-    set(DOC_FILES "STORY.txt" "COPYING" "misc/README_installed.txt")
+    set(DOC_FILES "STORY.txt" "GAME.md" "COPYING" "misc/README_installed.txt")
     set(DOC_TMP_DIR "${CMAKE_CURRENT_BINARY_DIR}/win32docs")
 
     configure_file(
@@ -223,6 +223,7 @@ else()
 endif()
 
 install(FILES "${DOC_SRC_DIR}/STORY.txt" DESTINATION "${DOC_DIR}")
+install(FILES "${DOC_SRC_DIR}/GAME.md" DESTINATION "${DOC_DIR}" RENAME "GAME.txt")
 install(FILES "${DOC_SRC_DIR}/COPYING" DESTINATION "${DOC_DIR}" RENAME "COPYING.txt")
 install(FILES "${DOC_SRC_DIR}/misc/README_installed.txt" DESTINATION "${DOC_DIR}" RENAME "README.txt")
 
