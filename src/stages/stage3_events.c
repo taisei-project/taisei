@@ -16,18 +16,40 @@ static Dialog *stage3_dialog(void) {
 	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/wriggle");
 
 	if(pc->id == PLR_CHAR_MARISA) {
-		dadd_msg(d, Left, "Ugh, it’s like bugs being attracted by the light…");
-		dadd_msg(d, Right, "That’s right! The light makes us strong!");
-		dadd_msg(d, Right, "And this place is filled with it!\nFeel my tremendous power!");
+		dadd_msg(d,Left, "Huh, didn’t expect a bug to make\nit this far down the tunnel.");
+		dadd_msg(d,Right, "All of this beautiful light, and\nyou didn’t expect me to be drawn to it?");
+		dadd_msg(d,Left, "I expected ya to lose, that’s all.");
+		dadd_msg(d,Right, "I’m nowhere near as weak as you think, human!\nIn fact, being here has made me stronger than ever!\nThat’s because I’m the one that made this\ntunnel and broke the barrier,");
+		dadd_msg(d,Right, "in order to finally show you all\nthe true merit of insect power!");
+		dadd_msg(d,Left, "I can’t really say I believe ya on\nthat point, bein’ that you’re just\na bug ‘n all.");
+		dadd_msg(d,Right, "Ha! Watch me put on a grand light show\nthat will put your dud fireworks to shame!");
 	} else if(pc->id == PLR_CHAR_YOUMU) {
-		dadd_msg(d, Left, "Eww, I can’t stand bugs.");
-		dadd_msg(d, Right, "Don’t discriminate! We are A-class yōkai!\nVery dangerous!");
-		dadd_msg(d, Left, "You mean very delusional?\nI usually step on you.");
-		dadd_msg(d, Right, "Then let me teach you a lesson –\nwith my danmaku more frightening\nthan giant feet!");
+		dadd_msg(d,Left, "Huh, why is it that I feel like\nI’ve fought you before? But when\nI try to recall anything, my skin crawls\nand I seem to forget immediately.");
+		dadd_msg(d,Right, "Maybe it’s because you realized\nthe true power of us insects?");
+		dadd_msg(d,Left, "No, I think it’s because I was\ntoo disgusted.");
+		dadd_msg(d,Right, " How dare you! We make life possible\nfor you humans, and in turn you disrespect\nus and call us derogatory things!");
+		dadd_msg(d,Right, "Entering this light has given me\ngreat power. I’ll stomp you out in the\nsame cruel way you humans step\non bugs!");
+		dadd_msg(d,Left, "If I cut legs off of an insect,\ndo they squirm all on their own? How gross!");
 	}
 	dadd_msg(d, BGM, "stage3boss");
 
 	return d;
+}
+
+static Dialog *stage3_post_dialog(void) {
+	PlayerCharacter *pc = global.plr.mode->character;
+	Dialog *d = create_dialog(pc->dialog_sprite_name, NULL);
+
+	if(pc->id == PLR_CHAR_MARISA) {
+		dadd_msg(d, Left, "Whoops, looks like she burnt herself out\non all that light she was all excited about.\nAs I figured, the tunnel’s still here…");
+		dadd_msg(d, Left, "so she wasn’t the culprit at all, just a bug\nthat got caught inside. She should’a searched\nfor a window instead of flyin’ right into the fire.");
+	}
+	if(pc->id == PLR_CHAR_YOUMU) {
+		dadd_msg(d, Left, "I never see any insect infestations\nwhile tending Hakugyokurou’s gardens.\nThat’s a convenience of being\nhalf-dead.");
+	}
+
+	return d;
+
 }
 
 static int stage3_enterswirl(Enemy *e, int t) {
@@ -1368,6 +1390,9 @@ void stage3_events(void) {
 
 	AT(5300 + midboss_time) {
 		global.boss = stage3_create_boss();
+	}
+	AT(5400 + midboss_time) {
+		global.dialog = stage3_post_dialog();
 	}
 
 	AT(5700 + midboss_time - FADE_TIME) {

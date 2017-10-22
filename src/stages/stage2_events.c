@@ -16,21 +16,17 @@ Dialog *stage2_dialog(void) {
 	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/hina");
 
 	if(pc->id == PLR_CHAR_MARISA) {
-		dadd_msg(d, Left, "Ha! What are you doing here?\nYou the culprit?");
-		dadd_msg(d, Right, "Huh? No, you? Everone is going crazy, you know?\nThat’s why I’m here.");
-		dadd_msg(d, Left, "Why? What happened?");
-		dadd_msg(d, Right, "The border has been broken.");
-		dadd_msg(d, Left, "Is that even possible?!");
-		dadd_msg(d, Right, "Look, there is a way outside\nright behind us.");
-		dadd_msg(d, Left, "But I’ve got a feeling that you\nwon’t let me pass, haha!");
-		dadd_msg(d, Right, "First let me see if I can collect some misfortune from you!");
+		dadd_msg(d,Right, "I can’t let you pass any further\nthan this. Please go back\ndown the mountain.");
+		dadd_msg(d,Left, "So, is that your misfortune talkin’?");
+		dadd_msg(d,Right, "Exploring that tunnel is only\ngoing to lead you to ruin.\nI’ll protect you by driving you away!");
+		dadd_msg(d,Left, "I can make dumb decisions on\nmy own, thanks.");
+		dadd_msg(d,Right, "A bad attitude like that is destined to be\ncursed from the beginning. I’ll send you packing\nhome as a favor to you, so you don’t get\nhurt further by your terrible ideas!");
 	} else if(pc->id == PLR_CHAR_YOUMU) {
-		dadd_msg(d, Left, "This must be the place…");
-		dadd_msg(d, Right, "Hello? ");
-		dadd_msg(d, Left, "You came here because of the\n“crack”, too? Where is it?");
-		dadd_msg(d, Right, "Right behind us, but…");
-		dadd_msg(d, Left, "Okay, if you’ll excuse me…");
-		dadd_msg(d, Right, "No! Messing around with it\nis going to cause trouble!\nI don’t want trouble at my place.");
+		dadd_msg(d,Right, "I can’t let you pass any further\nthan this. Please go back down\nthe mountain.");
+		dadd_msg(d,Left, "Are you a goddess? It’s nice of\nyou to be looking out for me,\nbut the Netherworld has been put at\nrisk due to this incident.");
+		dadd_msg(d,Left, "I have to keep going.");
+		dadd_msg(d,Right, "The tunnel heads leads nowhere but\nto ruin. If you don’t return to\nthe ghostly world where you come from,\nI’ll have to stop you by force!");
+		dadd_msg(d,Left, "My mistress won’t like it if\nI tell her I was stopped by divine\nintervention. You’ll have to\ncome up with another excuse.");
 	}
 
 	dadd_msg(d, BGM, "stage2boss");
@@ -41,7 +37,11 @@ Dialog *stage2_post_dialog(void) {
 	PlayerCharacter *pc = global.plr.mode->character;
 	Dialog *d = create_dialog(pc->dialog_sprite_name, NULL);
 
-	dadd_msg(d, Left, "Well, let’s go then.");
+	if(pc->id == PLR_CHAR_MARISA) {
+		dadd_msg(d, Left, "Somehow I already feel luckier after\nbeating ya. Fixin’ the border\nshould be no sweat!");
+	} else if(pc->id == PLR_CHAR_YOUMU) {
+		dadd_msg(d, Left, "It’s strange, but fighting a god\nmakes me feel like some of my burdens\nare lifted.\nI wonder if she decided to bless me after all?");
+	}
 
 	return d;
 }

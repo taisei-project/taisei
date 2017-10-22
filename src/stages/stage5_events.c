@@ -15,7 +15,11 @@ Dialog *stage5_post_mid_dialog(void) {
 	PlayerCharacter *pc = global.plr.mode->character;
 	Dialog *d = create_dialog(pc->dialog_sprite_name, NULL);
 
-	dadd_msg(d, Left, "Hey! Stop!");
+	if(pc->id == PLR_CHAR_MARISA) {
+		dadd_msg(d, Left, "Hey, wait!  …Did I just see an oarfish?");
+	} else if(pc->id == PLR_CHAR_YOUMU) {
+		dadd_msg(d, Left, "A messenger of Heaven! If I follow her, I’ll\nsurely learn something about the incident!");
+	}
 
 	return d;
 }
@@ -25,19 +29,21 @@ Dialog *stage5_boss_dialog(void) {
 	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/iku");
 
 	if(pc->id == PLR_CHAR_MARISA) {
-		dadd_msg(d, Left, "Finally!");
-		dadd_msg(d, Right, "Stop following me!");
-		dadd_msg(d, Left, "Why? You aren’t involved in this, are you?");
-		dadd_msg(d, Right, "I don’t have time for your suspicions now.");
-		dadd_msg(d, Left, "Sounds very suspicious, actually.");
-		dadd_msg(d, Right, "Okay, let’s just get this over with.");
+		dadd_msg(d,Left, "I finally caught up to ya! I should’ve\nknown that the Dragon’s messenger would be hard\nto chase down in the air.");
+		dadd_msg(d,Left, "Are you part of the incident too?");
+		dadd_msg(d,Right, "Weren’t those earlier bombs enough of\na deterrent? As this world is cutting\ninto the space of Heaven, only those\nauthorized are allowed to investigate.");
+		dadd_msg(d,Right, "You’re not a Celestial or anyone else\nfrom Heaven. That means you cannot go\nfurther.");
+		dadd_msg(d,Left, "C’mon, you’re good at readin’ the atmosphere,\nright? Then ya should know that I’m not gonna\nback down after comin’ this far.");
+		dadd_msg(d,Right, "I don’t have time to reason with you,\nunfortunately. When it comes to an average\nhuman sticking out arrogantly, there’s only one reasonable\ncourse of action for a bolt of lightning to take.");
+		dadd_msg(d,Right, "Prepare to be struck down from\nHeaven’s door!");
 	} else if(pc->id == PLR_CHAR_YOUMU) {
-		dadd_msg(d, Left, "There you are!");
-		dadd_msg(d, Right, "Stop following me!");
-		dadd_msg(d, Left, "You look very suspicious to me…");
-		dadd_msg(d, Right, "I’m trying to get to the root of this just\nlike you.");
-		dadd_msg(d, Left, "What kind of story is that? You attacked me!");
-		dadd_msg(d, Right, "Listen, I don’t have time for this…");
+		dadd_msg(d,Left, "You were quite difficult to pin down.\nDon’t worry; I’ll listen to whatever warning\nyou have before I continue forward.");
+		dadd_msg(d,Right, "Hmm, you’re the groundskeeper of the\nNetherworld, correct?");
+		dadd_msg(d,Left, "That’s right. My mistress sent me here to\ninvestigate since the world of spirits\nhas been put in jeopardy by this new world\ninfringing on its boundaries.");
+		dadd_msg(d,Right, "I’m afraid I cannot let you pass. This new world\nis a great issue caused by an incredible new power.\nOnly a Celestial or greater is qualified to handle such a\ndangerous occurrence.");
+		dadd_msg(d,Left, "That doesn’t seem fair considering I’ve solved\nincidents before. I know what I am doing,\nand Lady Yuyuko entrusted me with this.");
+		dadd_msg(d,Right, "If your confidence will not allow you to back\ndown, then so be it. I will test you using all of\nHeaven’s might, and if you are unfit, you shall\nbe cast down from this Tower of Babel!");
+		dadd_msg(d,Left, "I shall pass whatever test necessary if it\nwill allow me to fulfill the wishes of\nLady Yuyuko!");
 	}
 	dadd_msg(d, BGM, "stage5boss");
 	return d;
@@ -49,10 +55,9 @@ Dialog *stage5_post_boss_dialog(void) {
 
 	dadd_msg(d, Left, "I can see the top!");
 	if(pc->id == PLR_CHAR_MARISA) {
-		dadd_msg(d, Left, "Hopefully climbing all those stairs\nwas worth it.");
+		dadd_msg(d, Left, "I might not have the proper credentials,\nbut I can definitely solve this incident.\nJust sit back and leave it to me!");
 	} else if(pc->id == PLR_CHAR_YOUMU) {
-		dadd_msg(d, Left, "Looks like she really wasn’t behind this…\nWell this tower looks magnificent though!");
-		dadd_msg(d, Left, "It’s the type of tower that never comes\nwithout an evil genius at its top.");
+		dadd_msg(d, Left, "As you can see, I have cut through your\nchallenge. You can trust me to get to the\nheart of the matter and handle it swiftly and carefully.");
 	}
 
 	return d;
