@@ -20,7 +20,7 @@ Dialog *stage1_dialog(void) {
 		dadd_msg(d, Right, "Weak to cold for sure! I’ll turn you\ninto a human-sized popsicle!");
 		dadd_msg(d, Left, "I’d like to see ya try");
 	}
-	
+
 	if(pc->id == PLR_CHAR_YOUMU) {
 		dadd_msg(d, Left, "The temperature of the lake almost resembles\nthe Netherworld’s. Good thing\nI don’t get cold easily.");
 		dadd_msg(d, Right, "What’s that? You think you\ncan’t get cold?");
@@ -65,7 +65,7 @@ int cirno_snowflake_proj(Projectile *p, int time) {
 		p->pos += p->args[0];
 	} else {
 		if(time == split_time) {
-			play_sound_cooldown("shot_special1", 30);
+			play_sound_cooldown("redirect", 30);
 			create_particle1c("stain", p->pos, 0, GrowFadeAdd, timeout, 5)->angle = p->angle;
 			p->clr = mix_colors(p->clr, rgb(0.5, 0.5, 0.5), 0.5);
 		}
@@ -137,13 +137,15 @@ int cirno_pfreeze_frogs(Projectile *p, int t) {
 		linear(p, t);
 	else if(boss_t == 110) {
 		p->clr = rgb(0.7,0.7,0.7);
+		create_particle1c("stain", p->pos, 0, GrowFadeAdd, timeout, 30)->angle = p->angle;
+		play_sound("shot_special1");
 	}
 
 	if(t == 240) {
 		p->pos0 = p->pos;
 		p->args[0] = (1.8+0.2*global.diff)*cexp(I*2*M_PI*frand());
 		create_particle1c("stain", p->pos, 0, GrowFadeAdd, timeout, 30)->angle = p->angle;
-		play_sound("shot1");
+		play_sound_cooldown("redirect", 2);
 	}
 
 	if(t > 240)
@@ -523,6 +525,7 @@ int cirno_icicles(Projectile *p, int t) {
 		p->args[0] = 2.5*cexp(I*(carg(p->args[0])-M_PI/2.0+M_PI*(creal(p->args[0]) > 0)));
 		if(global.diff > D_Normal)
 			p->args[0] += 0.05*nfrand();
+		play_sound("redirect");
 	} else if(t > turn) {
 		p->pos += p->args[0];
 	}

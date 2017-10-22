@@ -497,7 +497,10 @@ void projectiles_preload(void) {
 	preload_resources(RES_SFX, RESF_PERMANENT,
 		"shot1",
 		"shot1_loop",
+		"shot_special1",
+		"redirect",
 	NULL);
+
 	preload_resources(RES_SHADER, RESF_PERMANENT,
 		"bullet_color",
 	NULL);

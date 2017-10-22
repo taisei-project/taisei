@@ -727,7 +727,8 @@ void boss_start_attack(Boss *b, Attack *a) {
 	a->starttime = global.frames + (a->type == AT_ExtraSpell? ATTACK_START_DELAY_EXTRA : ATTACK_START_DELAY);
 	a->rule(b, EVENT_BIRTH);
 	if(ATTACK_IS_SPELL(a->type)) {
-		play_sound("charge_generic");
+		play_sound(a->type == AT_ExtraSpell ? "charge_extra" : "charge_generic");
+
 		for(int i = 0; i < 10+5*(a->type == AT_ExtraSpell); i++) {
 			tsrand_fill(4);
 			create_particle2c("stain", VIEWPORT_W/2 + VIEWPORT_W/4*anfrand(0)+I*VIEWPORT_H/2+I*anfrand(1)*30, rgb(0.2,0.3,0.4), GrowFadeAdd, timeout_linear, 50, sign(anfrand(2))*10*(1+afrand(3)));

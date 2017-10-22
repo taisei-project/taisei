@@ -205,7 +205,7 @@ int stage2_accel_circle(Enemy *e, int t) {
 
 		int i;
 		for(i = 0; i < 6; i++) {
-			play_sound("shot1"); // XXX: this needs a different sound. shot_special1 seems too loud/excessive
+			play_sound("redirect");
 			create_projectile2c("ball", e->pos, rgb(0.6,0.1,0.2), accelerated, 1.5*cexp(2.0*I*M_PI/6*i)+cexp(I*carg(global.plr.pos - e->pos)), -0.02*cexp(I*(2*M_PI/6*i+0.02*frand()*global.diff)));
 		}
 	}
@@ -236,9 +236,9 @@ int wriggle_bug(Projectile *p, int t) {
 	p->pos += p->args[0];
 	p->angle = carg(p->args[0]);
 
-	if(t > 70 && frand() < 0.01) {
-		play_loop("shot1");
-		p->args[0] *= cexp(I*M_PI/3);
+	if(global.boss && global.boss->current && !((global.frames - global.boss->current->starttime - 30) % 200)) {
+		play_sound("redirect");
+		p->args[0] *= cexp(I*(M_PI/3)*nfrand());
 		create_particle2c("flare", p->pos, 0, GrowFade, timeout, 15, 5);
 	}
 

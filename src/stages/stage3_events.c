@@ -234,8 +234,8 @@ static int stage3_chargefairy_proj(Projectile *p, int t) {
 	t -= creal(p->args[2]);
 
 	if(t == 0) {
-		// FIXME: better sound effect
 		// FIXME: particle effect
+		play_sound("redirect");
 		play_sound("shot_special1");
 	} else if(t > 0) {
 		p->args[1] *= 0.8;
@@ -439,6 +439,8 @@ static int scuttle_poison(Projectile *p, int time) {
 				0,
 				0.005*cexp(I*(M_PI*2 * sin(a/5.0 + t/20.0)))
 		);
+
+		play_sound("redirect");
 	}
 
 	return result;
@@ -470,7 +472,7 @@ static int scuttle_lethbite_proj(Projectile *p, int time) {
 			);
 		}
 
-		// FIXME: better sound
+		play_sound("redirect");
 		play_sound("shot1");
 	}
 
@@ -659,7 +661,7 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 			l->width = 15;
 			create_projectile_p(&global.projs, p->tex, p->pos, p->clr, p->draw, wriggle_rocket_laserbullet, add_ref(l), deathtime - 1, 0, 0);
 
-			// FIXME: better sound
+			play_sound("redirect");
 			play_sound("shot_special1");
 		} else {
 			int cnt = floor(2 + frand() * global.diff), i;
@@ -715,8 +717,6 @@ static int wriggle_spell_slave(Enemy *e, int time) {
 	if(!boss)
 		return ACTION_DESTROY;
 
-	int extra = boss->current->type == AT_ExtraSpell;
-
 	AT(EVENT_DEATH) {
 		free_ref(e->args[0]);
 		return 1;
@@ -728,19 +728,6 @@ static int wriggle_spell_slave(Enemy *e, int time) {
 		float c = 0.5 * psin(time / 25.0);
 		Projectile *p = create_projectile_p(&global.projs, prefix_get_tex("lasercurve", "part/"), e->pos, rgb(1.0 - c, 0.5, 0.5 + c), wriggle_slave_part_draw, timeout, 120, 0, 0, 0);
 		p->type = FairyProj;
-	}
-
-	if(extra) {
-		if(global.diff > D_Easy && time > 300 && !(time % 20)) {
-			int d = max(1, global.diff - 2);
-			int i; for(i = -d; i < d; ++i)
-				create_projectile2c("wave", e->pos, rgb(0.3 + 0.7 * psin(time / 30.0), 1.0, 0.3), accelerated, dir*0.5, cexp(I*(0.05*i+carg(dir))) * 0.005)->draw = ProjDrawAdd;
-
-			// FIXME: better sound
-			play_sound("shot1");
-		}
-
-		return 1;
 	}
 
 	// moonlight rocket rockets
@@ -1024,6 +1011,8 @@ static int wriggle_fstorm_proj(Projectile *p, int time) {
 			tsrand_fill(2);
 			create_particle2c("flare", p->pos, 0, Shrink, timeout_linear, 60, (1+afrand(0))*cexp(I*tsrand_a(1)));
 		}
+
+		play_sound_cooldown("redirect", 3);
 	}
 
 	p->pos += p->args[1];
@@ -1086,11 +1075,7 @@ static int wriggle_nonspell_slave(Enemy *e, int time) {
 		d += 4;
 
 	if(!(time % d)) {
-		if(level > 2) {
-			play_sound("shot_special1");
-		} else {
-			play_sound("shot1");
-		}
+		play_sound("shot1");
 
 		create_projectile1c("rice", e->pos, rgb(0.7, 0.2, 0.1), linear, 3 * cexp(I*carg(boss->pos - e->pos)));
 		if(!(time % (d*2)) || level > 1)

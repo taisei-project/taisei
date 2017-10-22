@@ -351,8 +351,16 @@ complex las_sine_expanding(Laser *l, float t) {	// [0] = velocity; [1] = sine am
 		return 0;
 	}
 
-	double s = (l->args[2] * t + l->args[3]);
-	return l->pos + cexp(I * (carg(l->args[0]) + l->args[1] * sin(s))) * t * cabs(l->args[0]);
+	complex velocity = l->args[0];
+	double amplitude = creal(l->args[1]);
+	double frequency = creal(l->args[2]);
+	double phase = creal(l->args[3]);
+
+	double angle = carg(velocity);
+	double speed = cabs(velocity);
+
+	double s = (frequency * t + phase);
+	return l->pos + cexp(I * (angle + amplitude * sin(s))) * t * speed;
 }
 
 complex las_turning(Laser *l, float t) { // [0] = vel0; [1] = vel1; [2] r: turn begin time, i: turn end time
