@@ -30,6 +30,7 @@ Laser *create_laser(complex pos, float time, float deathtime, Color color, Laser
 	l->shader = NULL;
 	l->collision_step = 5;
 	l->width = 10;
+	l->width_exponent = 1.0;
 	l->speed = 1;
 	l->timeshift = 0;
 	l->in_background = false;
@@ -97,6 +98,7 @@ void draw_laser_curve_instanced(Laser *l) {
 	glUniform1f(uniloc(l->shader, "timeshift"), t);
 	glUniform1f(uniloc(l->shader, "wq"), wq*l->width);
 	glUniform1f(uniloc(l->shader, "hq"), hq*l->width);
+	glUniform1f(uniloc(l->shader, "width_exponent"), l->width_exponent);
 
 	glUniform1i(uniloc(l->shader, "span"), c*2);
 
@@ -130,6 +132,7 @@ void draw_laser_curve(Laser *laser) {
 		float tail = laser->timespan/1.9;
 
 		float s = -0.75/pow(tail,2)*(t1-tail)*(t1+tail);
+		s = pow(s, laser->width_exponent);
 
 		glTranslatef(creal(pos), cimag(pos), 0);
 		glRotatef(180/M_PI*carg(last-pos), 0, 0, 1);
@@ -268,6 +271,7 @@ int collision_laser_curve(Laser *l) {
 		float t1 = t - ((global.frames - l->birthtime)*l->speed - l->timespan/2 + l->timeshift);
 		float tail = l->timespan/1.9;
 		float s = -0.75/pow(tail,2)*(t1-tail)*(t1+tail);
+		s = pow(s, l->width_exponent);
 
 		if(collision_line(last, pos, global.plr.pos, s*l->width*0.5))
 			return 1;

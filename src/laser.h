@@ -33,6 +33,7 @@ struct Laser {
 	float timeshift;
 	float speed;
 	float width;
+	float width_exponent;
 
 	Shader *shader;
 

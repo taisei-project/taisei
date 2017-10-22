@@ -743,7 +743,7 @@ int broglie_particle(Projectile *p, int t) {
 			double angle_ampl = creal(p->args[3]);
 			double angle_freq = cimag(p->args[3]);
 
-			p->angle += angle_ampl * sin(t * angle_freq);
+			p->angle += angle_ampl * sin(t * angle_freq) * cos(2 * t * angle_freq);
 			p->args[2] = -cabs(p->args[2]) * cexp(I*p->angle);
 		}
 
@@ -767,11 +767,10 @@ void broglie_laser_logic(Laser *l, int t) {
 		return;
 	}
 
-	int dt = l->deathtime + l->timespan * l->speed;
-
-	log_debug("%i %i", t, dt);
-
-	l->color = hsl(hue, 1.0, 0.5 + 0.3 * pow((double)t / dt, 2));
+	int dt = l->timespan * l->speed;
+	float charge = min(1, pow((double)t / dt, 4));
+	l->color = hsl(hue, 1.0, 0.5 + 0.2 * charge);
+	l->width_exponent = 1.0 - 0.5 * charge;
 }
 
 int broglie_charge(Projectile *p, int t) {
@@ -785,14 +784,14 @@ int broglie_charge(Projectile *p, int t) {
 		int attack_num = creal(p->args[2]);
 		double hue = creal(p->args[3]);
 
-		complex aim = p->args[0];
-		double dt = 200;
+		p->pos -= p->args[0] * 15;
+		complex aim = cexp(I*p->angle);
 
 		double s_ampl = 30 + 2 * attack_num;
 		double s_freq = 0.10 + 0.01 * attack_num;
 
 		for(int lnum = 0; lnum < 2; ++lnum) {
-			Laser *l = create_lasercurve4c(p->pos - aim * 15, dt, dt/2, 0, las_sine,
+			Laser *l = create_lasercurve4c(p->pos, 75, 100, 0, las_sine,
 				5*aim, s_ampl, s_freq, lnum * M_PI +
 				I*(hue + lnum * (M_PI/12)/(M_PI/2)));
 
@@ -802,7 +801,7 @@ int broglie_charge(Projectile *p, int t) {
 			int pnum = 0;
 			double inc = pow(1.10 - 0.10 * (global.diff - D_Easy), 2);
 
-			for(double ofs = 0; ofs < dt; ofs += inc, ++pnum) {
+			for(double ofs = 0; ofs < l->deathtime; ofs += inc, ++pnum) {
 				complex pos = l->prule(l, ofs);
 				bool fast = global.diff == D_Easy || pnum & 1;
 
@@ -811,8 +810,8 @@ int broglie_charge(Projectile *p, int t) {
 
 				Projectile *part = create_projectile4c(txt, pos,
 					hsl(hue + lnum * (M_PI/12)/(M_PI/2), 1.0, 0.5), broglie_particle,
-					add_ref(l), I*ofs + dt + ofs - 10, spd,
-					(1 + 2 * ((global.diff - 1) / (double)(D_Lunatic - 1))) * M_PI/11 + s_freq*5*I);
+					add_ref(l), I*ofs + l->timespan + ofs - 10, spd,
+					(1 + 2 * ((global.diff - 1) / (double)(D_Lunatic - 1))) * M_PI/11 + s_freq*10*I);
 
 				part->draw = ProjNoDraw;
 				part->type = FakeProj;
@@ -820,6 +819,11 @@ int broglie_charge(Projectile *p, int t) {
 		}
 
 		return ACTION_DESTROY;
+	} else {
+		float f = pow(clamp((120 - (firetime - t)) / 90.0, 0, 1), 8);
+		complex o = p->pos - p->args[0] * 15;
+		p->args[0] *= cexp(I*M_PI*0.2*f);
+		p->pos = o + p->args[0] * 15;
 	}
 
 	return 1;
@@ -862,9 +866,15 @@ int baryon_broglie(Enemy *e, int t) {
 	}
 
 	int delay = 140;
-	int step = 30;
+	int step = 15;
 	int cnt = 3;
 	int fire_delay = 120;
+
+	static double aim_angle;
+
+	AT(delay) {
+		aim_angle = carg(e->pos - global.boss->pos);
+	}
 
 	FROM_TO(delay, delay + step * cnt - 1, step) {
 		double a = 2*M_PI * (0.25 + 1.0/cnt*_i);
@@ -872,12 +882,16 @@ int baryon_broglie(Enemy *e, int t) {
 
 		double hue = (attack_num * M_PI + a + M_PI/6) / (M_PI*2);
 
-		create_projectile4c("ball", e->pos + 15*n,
+		Projectile *p = create_projectile4c("ball", e->pos + 15*n,
 			hsl(hue, 1.0, 0.55),
-			broglie_charge, n, fire_delay - step * _i, attack_num, hue)->draw = ProjDrawAdd;
+			broglie_charge, n, (fire_delay - step * _i), attack_num, hue
+		);
+
+		p->draw = ProjDrawAdd;
+		p->angle = (2*M_PI*_i)/cnt + aim_angle;
 	}
 
-	if(t < delay || t > delay + fire_delay) {
+	if(t < delay /*|| t > delay + fire_delay*/) {
 		complex target_pos = global.boss->pos + 100 * cexp(I*carg(global.plr.pos - global.boss->pos));
 		GO_TO(e, target_pos, 0.03);
 	}
@@ -905,13 +919,15 @@ void elly_broglie(Boss *b, int t) {
 
 	complex positions[] = {
 		VIEWPORT_W-ofs + ofs*I,
+		VIEWPORT_W-ofs + ofs*I,
 		ofs + (VIEWPORT_H-ofs)*I,
-		VIEWPORT_W-ofs + (VIEWPORT_H-ofs)*I,
 		ofs + ofs*I,
+		ofs + ofs*I,
+		VIEWPORT_W-ofs + (VIEWPORT_H-ofs)*I,
 	};
 
 	if(t/period > 0) {
-		GO_TO(b, positions[(t/(period*2)) % (sizeof(positions)/sizeof(complex))], 0.02);
+		GO_TO(b, positions[(t/period) % (sizeof(positions)/sizeof(complex))], 0.02);
 	}
 }
 
