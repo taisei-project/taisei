@@ -48,9 +48,11 @@
 ■ 1. Incident
 ================================================================================
 
-  Another villain threatens to turn the land of dreams into a place of terror.
-  The barrier is disrupted. Unknown forces reach for control over the borders
-  themselves, throwing all of Gensōkyō into chaos.
+ Another villain threatens to turn the land of dreams into a place of terror.
+ The barrier is disrupted, and a strange tunnel opens on Yōkai Mountain that
+ leads to an unknown land.  Gensokyo is thrown into chaos as humans and yōkai
+ alike flock to this rift, where they will discover both new forces and old
+ forces that have changed beyond recognition.
 
 ================================================================================
 ■ 2. Characters
@@ -59,51 +61,55 @@
 
   ○ Kirisame Marisa
 
-    Because it’s a fan game after all.
-
-    One day, just as spring rolled around, Marisa went to check the shelves,
-    only to notice that her cash box was as empty as the shop itself.
-    It was an unusually quiet day, with hardly any customers around.
-
-    And it was going to be a very boring day at this rate.
-
-    As she languidly gazed around the shop, her eyes settled on a brand new
-    issue of the Bunbunmaru Newspaper on the table. “At least that shows up
-    every day,” she thought to herself. Anything to distract her now.
-
-        “News Exclusive: Border Broken?!”
-
-    The headline did not fail to grab her attention.
-
-        “[…] large crowd of bewildered yōkai […]”
-
-    “I am *so* going to check that out!”, she thought, her eyes lighting up
-    in a flash of excitement and determination, happy to have found a better
-    diversion than looking after her depressingly empty shop.
-
-    “Time to spark some ass!”
+    Early one spring day, just after dawn had passed, Marisa was finding a
+    severe lack of things to do. She had just finished some battle magic
+    research for her hakkero yesterday, and as usual, no customers seemed eager
+    to brave the dark, dank Forest of Magic in order to purchase anything or
+    pay for extermination services.
+   
+    The day likely would have stayed dull had Aya not decided to fervently bang
+    on the door, a rare presence that normally wouldn’t brave the Forest of
+    Magic’s unpleasantness unless something serious was happening.
+   
+    “Have you heard, Miss Marisa? The border has been broken on Yōkai
+    Mountain, and a tunnel to an unknown world has opened up! You’ll need to
+    leave now if you’re going to want to stay on top of this new development.”
+   
+    “Sign me up! Beats sittin’ in here all day, and anyway, that sounds like
+    it’s the start of a big incident! I can’t be left behind as Gensokyo’s
+    second best incident resolver!”
+    
+    With her mind settled, Marisa grabbed her hat and bolted out the door past
+    the expectant tengu. Living as isolated as she does, Marisa wasn’t
+    completely sure what she was heading into, but that didn’t matter. As long
+    as she had her magic and her experience, she was confident that she could
+    handle anyone and anything. After all, what incident couldn’t be fixed with
+    a liberal application of “Master Spark!” to the face? No incident, that’s
+    what.
 
 
   ○ Konpaku Yōmu
 
-    Because Yōmu is awesome.
-
-    A blossomless spring dawn in the Netherworld. Shattering noises cut through
-    the gardens of passed souls. Noises even ghosts would find disconcerting.
-    This ending night was as unusual as they come. The entire Netherworld was
-    awake early, including Yuyuko-sama and of course a certain half-phantom
-    girl.
-
-    “I cannot sleep like this. Can the restless not have at least this kind of
-    rest? Something really needs to be done about this, or I will go insane.”
-
-    “Of course, Yuyuko-sama. I shall slash every little clangor in this world
-    until your sleep is left undisturbed!”
-
-    Hakugyokurō’s close connection with the border makes it sensitive to
-    changes of the border’s structure. Yōmu, being aware of that, decided to
-    investigate this “border breaking” rumor first.
-
+    As what passed for dawn gently shook the Netherworld awake, the world’s
+    peaceful tranquility was broken by the disconcerting sounds of the breaking
+    barrier. As a world between worlds, the Netherworld was always sensitive to
+    changes in the boundary, and this time was no exception as the ghosts cried
+    and moaned at the disturbance to their afterlife.
+ 
+    “Yōmu, I cannot sleep in late with all this ruckus. And anyways, isn’t this
+    a bit unexpected? Miss Yakumo doesn’t put such strain on the border without
+    asking nicely and this doesn’t seem like her doing. I suspect this is the
+    work of someone else, and that’s just no good. We wouldn’t want the spirits
+    to break free and be bothersome to whomever they find now, would we?”
+ 
+    “You’re absolutely correct, Lady Yuyuko! I’ll cut to the truth of the matter
+    and ask whoever is responsible to both turn down the noise and the stress
+    put on the Netherworld’s boundary! You can count on me for anything!”
+ 
+    Something new and intrusive was pushing on the borders of the Netherworld,
+    weakening them. Were they to break, the restless dead would surely explore
+    whatever new space they were led to. Yōmu was resolved to end the incident
+    quickly, before any unwanted changes happened.
 
 ================================================================================
 ■ 3. Stages
@@ -125,82 +131,89 @@
   ○ Stage 1 Boss
     Cirno
 
-    While clueless about the course of events, she still jumps into action with
-    full force. Her reckless courage may seem like foolishness to others, but
-    she is bound and determined to bend history in her favor.
-
+    Incidents are always exciting to fairies. They never know what is going on,
+    but seeing trouble unfolding around them gives them the perfect excuse to
+    let loose and shoot at whoever they want. Instinctually, Cirno decides to
+    play along. Whoever stumbles across her lake would have to deal with an
+    ice-cold challenge!
 
 
   ○ Stage 2 Boss
     Kagiyama Hina
 
-    Hina was the first considerably strong yōkai to show up at the place of
-    action, which is why she ended up as the inofficial overseer of the growing
-    crowd. Actually, the only thing she wanted was to maintain a modicum of law
-    and order in her forest.
-
+    As the epicenter of the new disaster, the small forest and dark road home
+    to the wandering goddess had turned into a hotbed of activity.  Although
+    misguided, she decides that she needs to take action to prevent anyone from
+    entering the unknown rift, fearing that whatever is inside it would lead to
+    chaos and the eventual propagation of misfortune in Gensokyo.
 
 
   ○ Stage 3 Boss
     Wriggle
 
-    When bug-yōkai like Wriggle gain a reasonable amount of power, it is only
-    natural for them to become a bit overconfident. Fortunately, that alone
-    wasn’t enough for her to become the final boss.
-
-    The story doesn’t take place underground after all.
-
+    Normally an unimpressive and simpleminded yōkai, Wriggle nevertheless
+    manages to sneak past Hina and into the tunnel while the heroines are
+    fighting the goddess. Finding herself surrounded by distorted magical
+    energies, she gleefully absorbs a power past her own and decides that she
+    should prove insect superiority once and for all to the human simpletons
+    following right behind her.
 
 
   ○ Stage 4 Boss
     Kurumi
 
-    She is a friend of Elly’s… or at least her former kōhai. Some time ago,
-    Elly dragged her along when she left her mansion to set out on a longer
-    journey, and now they have returned. Still trying her best at keeping all
-    the curious yōkai (and players) who are entering from the tunnel off
-    Elly’s back, she grew tired of being her bodyguard long ago.
-
-    Somehow they’ve really taken a liking to each other.
-
+    This former guardian of the Lake of Blood had found herself jobless and
+    homeless after Yuuka dissolved her world and headed to Gensokyo. Instead of
+    following Yuuka to Gensokyo, however, she and Elly had left for the Outside
+    World. While relatively unchanged and unscathed by her long stay there, she
+    had grown decidedly closer to Elly, and is happy to support any of her new
+    goals, even if they go against yōkai standards. To that degree she is
+    gatekeeping once more… but this time for a new, more personal master. And
+    since it’s been a while since she last fed on humans freely, she may be a
+    little too excited to apply gratuitous force. Only a little.
 
 
   ○ Stage 5 Boss
     Nagae Iku
 
-    She slipped through the guard right after the player. No one knows what
-    she is after, but there are two things she hates:
-
-    Being interrupted when she is in a hurry and always being under suspicion.
-
-    Both happening at the same time has made her lose her temper.
-    But that makes her seem even more suspicious, doesn't it?
-
+    Similarly to Wriggle, Iku took full advantage of Kurumi’s distraction with
+    the heroines to sneak past them all and swiftly fly up to the top of the
+    tower, where she appears to have set herself up as an impromptu guardian.
+    Much like the Netherworld, Heaven’s space and borders were also being
+    infringed upon by the new world, and so the Celestials had decreed that Iku
+    be there to stop anyone other than them from dealing with it. Having gotten
+    there barely on time, she is flustered and irritated, and wants the
+    heroines to leave so that she can quietly investigate the issue and file a
+    report on it to her superiors. Since they refuse to let her be, she shocks
+    them with a surprisingly fierce fight!
 
 
   ○ Stage 6 Boss
     Elly
 
-    She quit her task of guarding that mansion in Lotus Land Story for unknown
-    reasons and obtained a new power and character from the outside world: the
-    power to manipulate relations (i.e. she can do fancy maths). This enabled
-    her to trick Gensōkyō’s border* and create herself a new place for research
-    using her new powers.
+    Like Kurumi, this former gatekeeper became literally disillusioned with her
+    job as she was cast from Mugenkan into the Outside World, both having
+    gotten lost on their way to Gensokyo. Despite the seeming contradictory
+    nature of logic and reasoning being used by a yōkai, it seems as though
+    Elly has been able to embrace these things, giving her the ability to
+    manipulate relations via complex calculations. Her impossible existence has
+    given rise to a fusion of magic and science, and by deconstructing the
+    nonsense making up Gensokyo’s border separating it from the Outside, she
+    was able to return to prominence in fantasy once more, as the one who
+    created a new world with a mansion and an impossibly high tower breaking
+    into Heaven.
 
-    On that high tower, she wants to research The Theory of Everything.
+    It is in this tower where she devotes herself to researching The Theory of
+    Everything, and as long as she continues to do so, Gensokyo is put at risk
+    of being deconstructed due to its inherently illogical nature. She doesn’t
+    mean to do this, of course, but by finishing this theory, it is only
+    natural that Gensokyo, which should not be able to exist, would be
+    affected.
 
-    Maybe she didn’t even plan to use it to anyone’s harm. She certainly didn’t
-    expect the location she chose for her tower to cause that much trouble.
-    But that’s the very nature of scientists. Research comes first.
+    Besides that, her world’s pushy nature makes her a very bad neighbor, but
+    she’s too busy to care.
 
-    Her spellcards are based on physical phenomena, turning her experiments
+    Her spell cards are based on physical phenomena, turning her experiments
     into powerful weapons.
 
     Fun Fact™: Taisei actually uses complex math for projectile positioning.
-
-
-    * It’s not like the border is an absolute barrier to yōkai. It is not
-      uncommon for powerful yōkai to pass through there without much trouble.
-      Some even visit the outside world regularly to hunt humans for food.
-      But Elly broke it at some place and made it lead to her own place
-      *somewhere inbetween*, which is unusual and shouldn’t be easily possible.
