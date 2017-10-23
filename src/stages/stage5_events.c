@@ -242,11 +242,16 @@ void iku_mid_intro(Boss *b, int t) {
 		killall(global.enemies);
 }
 
+static void midboss_dummy(Boss *b, int t) { }
+
 Boss *create_iku_mid(void) {
 	Boss *b = create_boss("Bombs?", "iku", 0, VIEWPORT_W+800.0*I);
 	b->shadowcolor = rgba(0.2, 0.4, 0.5, 0.5);
 
 	boss_add_attack(b, AT_SurvivalSpell, "Discharge Bombs", 16, 10, iku_mid_intro, NULL);
+
+	// suppress the boss death effects (this triggers the "boss fleeing" case)
+	boss_add_attack(b, AT_Move, "", 0, 0, midboss_dummy, NULL);
 
 	return b;
 }
@@ -842,8 +847,12 @@ void stage5_events(void) {
 	AT(2900)
 		global.boss = create_iku_mid();
 
-	AT(2920)
+	AT(2920) {
 		global.dialog = stage5_post_mid_dialog();
+
+		// XXX: this shitty hack is needed to force the dialog to not reopen immediately when it's closed with the shot button
+		global.timer++;
+	}
 
 	FROM_TO(3000, 3200, 100)
 		create_enemy1c(VIEWPORT_W/2 + VIEWPORT_W/6*(1-2*(_i&1)), 2000, BigFairy, stage5_lightburst2, -1+2*(_i&1) + 2.0*I);
