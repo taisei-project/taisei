@@ -36,7 +36,7 @@ void credits_fill(void) {
 	credits_add("laochailan\nLukas Weber\nlaochailan@web.de\n\nProgramming, game design,\ngraphics", 300);
 	credits_add("Akari\nAndrei Alexeyev\nakari@alienslab.net\n\nProgramming, game design", 300);
 	credits_add("Tuck V\nDiscord: @Tuck#1679\nYouTube: https://is.gd/exafez\n\nOriginal soundtrack", 300);
-	credits_add("vnutria\nMikhail Novik\nBandcamp: https://is.gd/owojix\n\nSound effects", 300);
+	credits_add("vnutriya\nMikhail Novik\nBandcamp: https://is.gd/owojix\n\nSound effects", 300);
 	credits_add("Lalasa\nOla Kruzel\nokruzel@comcast.net\nYouTube: https://is.gd/ohihef\n\nWriting, playtesting", 300);
 	credits_add("lachs0r\nMartin Herkt\nlachs0r@hong-mailing.de\n\nHosting, packaging,\nspiritual guidance", 300);
 	credits_add("makise-homura\nIgor Molchanov\nakemi_homura@kurisa.ch\n\nCode contributions\nElbrus compatible™", 300);
