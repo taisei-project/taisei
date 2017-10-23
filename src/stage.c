@@ -280,10 +280,6 @@ bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {
 
 	switch(type) {
 		case TE_GAME_KEY_DOWN:
-			if(code == KEY_NOBACKGROUND) {
-				break;
-			}
-
 			if(code == KEY_HAHAIWIN) {
 #ifdef DEBUG
 				stage_finish(GAMEOVER_WIN);
@@ -516,7 +512,11 @@ typedef struct StageFrameState {
 } StageFrameState;
 
 static bool stage_fpslimit_condition(void *arg) {
+#ifdef DEBUG
+	return !gamekeypressed(KEY_FPSLIMIT_OFF) && (global.replaymode != REPLAY_PLAY || !gamekeypressed(KEY_SKIP)) && !global.frameskip;
+#else
 	return (global.replaymode != REPLAY_PLAY || !gamekeypressed(KEY_SKIP)) && !global.frameskip;
+#endif
 }
 
 static bool stage_frame(void *arg) {

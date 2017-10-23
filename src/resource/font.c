@@ -213,6 +213,12 @@ void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *fo
 	free(buf);
 }
 
+void draw_text_auto_wrapped(Alignment align, float x, float y, const char *text, int width, TTF_Font *font) {
+	char buf[strlen(text) * 2];
+	wrap_text(buf, sizeof(buf), text, width, font);
+	draw_text(align, x, y, buf, font);
+}
+
 int stringwidth(char *s, TTF_Font *font) {
 	int w;
 	TTF_SizeUTF8(font, s, &w, NULL);
@@ -246,5 +252,62 @@ void shorten_text_up_to_width(char *s, float width, TTF_Font *font) {
 		for(int i = 0; i < min(3, l); ++i) {
 			s[l - i - 1] = '.';
 		}
+	}
+}
+
+void wrap_text(char *buf, size_t bufsize, const char *src, int width, TTF_Font *font) {
+	assert(buf != NULL);
+	assert(src != NULL);
+	assert(font != NULL);
+	assert(bufsize > strlen(src) + 1);
+	assert(width > 0);
+
+	char src_copy[strlen(src) + 1];
+	char *sptr = src_copy;
+	char *next = NULL;
+	char *curline = buf;
+
+	strcpy(src_copy, src);
+	*buf = 0;
+
+	while(next = strtok_r(NULL, " \t\n", &sptr)) {
+		int curwidth;
+
+		if(!*next) {
+			continue;
+		}
+
+		if(*curline) {
+			curwidth = stringwidth(curline, font);
+		} else {
+			curwidth = 0;
+		}
+
+		char tmpbuf[strlen(curline) + strlen(next) + 2];
+		strcpy(tmpbuf, curline);
+		strcat(tmpbuf, " ");
+		strcat(tmpbuf, next);
+
+		int totalwidth = stringwidth(tmpbuf, font);
+
+		if(totalwidth > width) {
+			if(curwidth == 0) {
+				log_fatal(
+					"Single word '%s' won't fit on one line. "
+					"Word width: %i, max width: %i, source string: %s",
+					next, stringwidth(next, font), width, src
+				);
+			}
+
+			strlcat(buf, "\n", bufsize);
+			curline = strchr(curline, 0);
+		} else {
+			if(*curline) {
+				strlcat(buf, " ", bufsize);
+			}
+
+		}
+
+		strlcat(buf, next, bufsize);
 	}
 }

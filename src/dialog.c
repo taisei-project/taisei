@@ -105,7 +105,8 @@ void draw_dialog(Dialog *dialog) {
 
 	if(dialog->messages[dialog->pos].side == Right)
 		glColor3f(0.6,0.6,1);
-	draw_text(AL_Center, VIEWPORT_W/2, VIEWPORT_H-110, dialog->messages[dialog->pos].msg, _fonts.standard);
+
+	draw_text_auto_wrapped(AL_Center, VIEWPORT_W/2, VIEWPORT_H-110, dialog->messages[dialog->pos].msg, VIEWPORT_W * 0.85, _fonts.standard);
 
 	if(dialog->messages[dialog->pos].side == Right)
 		glColor3f(1,1,1);

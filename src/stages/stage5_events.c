@@ -34,7 +34,8 @@ Dialog *stage5_boss_dialog(void) {
 		dadd_msg(d,Right, "Weren’t those earlier bombs enough of\na deterrent? As this world is cutting\ninto the space of Heaven, only those\nauthorized are allowed to investigate.");
 		dadd_msg(d,Right, "You’re not a Celestial or anyone else\nfrom Heaven. That means you cannot go\nfurther.");
 		dadd_msg(d,Left, "C’mon, you’re good at readin’ the atmosphere,\nright? Then ya should know that I’m not gonna\nback down after comin’ this far.");
-		dadd_msg(d,Right, "I don’t have time to reason with you,\nunfortunately. When it comes to an average\nhuman sticking out arrogantly, there’s only one reasonable\ncourse of action for a bolt of lightning to take.");
+		dadd_msg(d,Right, "I don’t have time to reason with you,\nunfortunately.");
+		dadd_msg(d,Right, "When it comes to an average\nhuman sticking out arrogantly, there’s only one reasonable\ncourse of action for a bolt of lightning to take.");
 		dadd_msg(d,Right, "Prepare to be struck down from\nHeaven’s door!");
 	} else if(pc->id == PLR_CHAR_YOUMU) {
 		dadd_msg(d,Left, "You were quite difficult to pin down.\nDon’t worry; I’ll listen to whatever warning\nyou have before I continue forward.");

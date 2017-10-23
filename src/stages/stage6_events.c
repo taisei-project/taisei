@@ -33,7 +33,8 @@ Dialog *stage6_dialog(void) {
 		dadd_msg(d,Right, "That is because you completely misunderstand.\nI am not a shikigami, and never was. My duty\nwas once to protect a powerful youkai, but when she\nleft for Gensokyo, I was left behind.");
 		dadd_msg(d,Right, "Together with my friend, Kurumi, we left for the\nOutside World and were stranded there. But I gained an incredible\nnew power once I realized my true calling as a mathematical theorist.");
 		dadd_msg(d,Left, "I don’t completely follow, but if you’re a youkai,\nI can’t see how you could be a scientist.\nIt goes against your nature.");
-		dadd_msg(d,Right, "An unenlightened fool such as yourself could never\ncomprehend my transcendence. I have become more than a simple youkai,\nfor I alone am now capable of discovering the secrets\nbehind the illusion of reality!");
+		dadd_msg(d,Right, "An unenlightened fool such as yourself could never\ncomprehend my transcendence.");
+		dadd_msg(d,Right, "I have become more than a simple youkai,\nfor I alone am now capable of discovering the secrets\nbehind the illusion of reality!");
 		dadd_msg(d,Left, "Well, whatever you’re doing here is disintegrating\nthe barrier of common sense and madness keeping Gensokyo\nfrom collapsing into the Outside World.");
 		dadd_msg(d,Left, "You’re also infringing on the Netherworld’s\nspace and my mistress is particularly upset\nabout that. That means I have to stop you, no matter what.");
 		dadd_msg(d,Right, "Pitiful servant of the dead. You’ll never\nbe able to stop my life’s work from being fulfilled!\nI’ll simply unravel that nonsense behind your half-and-half\nexistence!");
@@ -47,9 +48,13 @@ static Dialog *stage6_interboss_dialog(void) {
 	PlayerCharacter *pc = global.plr.mode->character;
 	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/elly");
 
-	dadd_msg(d, Right, "You’ve gotten this far…  I can’t believe it!\nBut that will not matter once I show you the\ntruth of this world, and every world. Space, time, dimensions…\nit all becomes clear when you understand\nThe Theory of Everything!\nPrepare to see the barrier destroyed!");
+	dadd_msg(d, Right, "You’ve gotten this far…  I can’t believe it!\nBut that will not matter once I show you the\ntruth of this world, and every world.");
+	dadd_msg(d, Right, "Space, time, dimensions…\nit all becomes clear when you understand\nThe Theory of Everything!");
+	dadd_msg(d, Right, "Prepare to see the barrier destroyed!");
+
 	return d;
 }
+
 int stage6_hacker(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
@@ -1555,6 +1560,12 @@ Boss* stage6_spawn_elly(complex pos) {
 	return b;
 }
 
+static void elly_insert_interboss_dialog(Boss *b, int t) {
+	if(t == 0) {
+		global.dialog = stage6_interboss_dialog();
+	}
+}
+
 Boss* create_elly(void) {
 	Boss *b = stage6_spawn_elly(-200.0*I);
 
@@ -1571,6 +1582,7 @@ Boss* create_elly(void) {
 	boss_add_attack_from_info(b, &stage6_spells.baryon.spacetime_curvature, false);
 	boss_add_attack(b, AT_Normal, "Baryon", 40, 50000, elly_baryonattack2, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.higgs_boson_uncovered, false);
+	boss_add_attack(b, AT_Move, "", 0, 0, elly_insert_interboss_dialog, NULL);
 	boss_add_attack(b, AT_Move, "Explode", 6, 10, elly_baryon_explode, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.extra.curvature_domination, false);
 	boss_add_attack_from_info(b, &stage6_spells.final.theory_of_everything, false);

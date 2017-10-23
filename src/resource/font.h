@@ -40,12 +40,15 @@ SDL_Surface* fontrender_render(FontRenderer *f, const char *text, TTF_Font *font
 
 Texture *load_text(const char *text, TTF_Font *font);
 void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *font);
+void draw_text_auto_wrapped(Alignment align, float x, float y, const char *text, int width, TTF_Font *font);
 void draw_text_prerendered(Alignment align, float x, float y, SDL_Surface *surf);
 
 int stringwidth(char *s, TTF_Font *font);
 int stringheight(char *s, TTF_Font *font);
 int charwidth(char c, TTF_Font *font);
+
 void shorten_text_up_to_width(char *s, float width, TTF_Font *font);
+void wrap_text(char *buf, size_t bufsize, const char *src, int width, TTF_Font *font);
 
 void init_fonts(void);
 void uninit_fonts(void);

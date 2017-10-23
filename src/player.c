@@ -520,7 +520,7 @@ bool player_event(Player *plr, uint8_t type, uint16_t value) {
 			break;
 
 		case EV_RELEASE:
-			player_setinputflag(plr, value, false);
+			useful = player_setinputflag(plr, value, false);
 			break;
 
 		case EV_AXIS_LR:
