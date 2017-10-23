@@ -21,6 +21,7 @@
 #include "cli.h"
 #include "vfs/setup.h"
 #include "version.h"
+#include "credits.h"
 
 static void taisei_shutdown(void) {
 	log_info("Shutting down");
@@ -204,6 +205,11 @@ int main(int argc, char **argv) {
 	if(a.type == CLI_PlayReplay) {
 		replay_play(&replay, replay_idx);
 		replay_destroy(&replay);
+		return 0;
+	}
+
+	if(a.type == CLI_Credits) {
+		credits_loop();
 		return 0;
 	}
 

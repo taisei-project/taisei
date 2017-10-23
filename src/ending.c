@@ -128,6 +128,11 @@ static bool ending_frame(void *arg) {
 	Ending *e = arg;
 
 	events_poll(NULL, 0);
+
+	if(e->pos >= e->count - 1) {
+		return false;
+	}
+
 	ending_draw(e);
 	global.frames++;
 	SDL_GL_SwapWindow(video.window);
@@ -140,7 +145,7 @@ static bool ending_frame(void *arg) {
 		set_transition(TransFadeWhite, ENDING_FADE_OUT, ENDING_FADE_OUT);
 	}
 
-	return e->pos < e->count;
+	return true;
 }
 
 void ending_loop(void) {

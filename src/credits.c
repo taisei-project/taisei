@@ -27,18 +27,25 @@ static struct {
 } credits;
 
 void credits_fill(void) {
+	// In case the shortened URLs break,
+	// Tuck V's YouTube: https://www.youtube.com/channel/UCaw73cuHLnFCSpjOtt_9pyg
+	// Lalasa's YouTube: https://www.youtube.com/channel/UCc6ePuGLYnKTkdDqxP3OB4Q
+	// vnutriya's bandcamp: https://vnutriya.bandcamp.com/
+
 	credits_add("Taisei Project\nbrought to you by…", 200);
-	credits_add("laochailan\nLukas Weber\nlaochailan@web.de", 300);
-	credits_add("Akari\nAndrei Alexeyev\nakari@alienslab.net", 300);
-	credits_add("Tuck V\nDiscord @Tuck#1679\nMusic", 300);
-	credits_add("lachs0r\nMartin Herkt\nlachs0r@hong-mailing.de", 300);
-	credits_add("makise-homura\nIgor Molchanov\nElbrus compatible™", 300);
-	credits_add("aiju\nJulius Schmidt\nhttp://aiju.de", 300);
+	credits_add("laochailan\nLukas Weber\nlaochailan@web.de\n\nProgramming, game design,\ngraphics", 300);
+	credits_add("Akari\nAndrei Alexeyev\nakari@alienslab.net\n\nProgramming, game design", 300);
+	credits_add("Tuck V\nDiscord: @Tuck#1679\nYouTube: https://is.gd/exafez\n\nOriginal soundtrack", 300);
+	credits_add("vnutria\nMikhail Novik\nBandcamp: https://is.gd/owojix\n\nSound effects", 300);
+	credits_add("Lalasa\nOla Kruzel\nokruzel@comcast.net\nYouTube: https://is.gd/ohihef\n\nWriting, playtesting", 300);
+	credits_add("lachs0r\nMartin Herkt\nlachs0r@hong-mailing.de\n\nHosting, packaging,\nspiritual guidance", 300);
+	credits_add("makise-homura\nIgor Molchanov\nakemi_homura@kurisa.ch\n\nCode contributions\nElbrus compatible™", 300);
+	credits_add("aiju\nJulius Schmidt\nhttp://aiju.de/\n\nI don't remember what this guy did", 300);
 	credits_add("Special Thanks", 300);
 	credits_add("ZUN\nfor Tōhō Project\nhttp://www16.big.or.jp/~zun/", 300);
 	credits_add("Mochizuki Ado\nfor a nice yukkuri image", 300);
 	credits_add("…and You!\nfor playing", 300);
-	credits_add("Visit Us\nhttp://taisei-project.org\n \nAnd join our IRC channel\n#taisei-project at irc.freenode.net", 500);
+	credits_add("Visit Us\nhttps://taisei-project.org/\n\nAnd join our IRC channel\n#taisei-project at irc.freenode.net\n\nOr our Discord server\nhttps://discord.gg/JEHCMzW", 500);
 	credits_add("*", 150);
 }
 
@@ -269,7 +276,7 @@ static bool credits_frame(void *arg) {
 	credits_draw();
 	global.frames++;
 	SDL_GL_SwapWindow(video.window);
-	return !credits.end;
+	return credits.end;
 }
 
 void credits_loop(void) {

@@ -356,6 +356,12 @@ magic:
             return;
         }
 
+#ifdef DEBUG
+        if(gamekeypressed(KEY_FPSLIMIT_OFF)) {
+            continue;
+        }
+#endif
+
         if(!limiter_cond_func || limiter_cond_func(arg)) {
             next_frame_time = real_time + target_frame_time;
 
