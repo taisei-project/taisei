@@ -1311,17 +1311,17 @@ void stage3_events(void) {
 
 	int midboss_time = STAGE3_MIDBOSS_TIME;
 
-	AT(2800) {
+	AT(2740) {
 		global.boss = stage3_create_midboss();
 	}
 
-	AT(2801) {
+	AT(2741) {
 		if(global.boss) {
 			global.timer += global.frames - global.boss->birthtime - 1;
 		}
 	}
 
-	FROM_TO(2801, 2800 + midboss_time - 60, 10) {
+	FROM_TO(2741, 2740 + midboss_time - 60, 10) {
 		if(_i&1) {
 			create_enemy3c(-20 + (VIEWPORT_H-20)*I, 50, Swirl, stage3_bitchswirl, 5, -1*I, 25+0.95*I);
 		} else {
@@ -1329,7 +1329,7 @@ void stage3_events(void) {
 		}
 	}
 
-	FROM_TO(2800 + midboss_time, 3000 + midboss_time, 10+2*(D_Lunatic-global.diff)) {
+	FROM_TO(2740 + midboss_time, 3000 + midboss_time, 10+2*(D_Lunatic-global.diff)) {
 		tsrand_fill(3);
 		create_enemy2c(VIEWPORT_W/2 + 20 * anfrand(0) + (VIEWPORT_H/4 + 20 * anfrand(1))*I, 200, Swirl, stage3_enterswirl, I * 3 + anfrand(2) * 3, 1);
 	}

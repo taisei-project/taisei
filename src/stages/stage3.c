@@ -20,7 +20,7 @@
 
 struct stage3_spells_s stage3_spells = {
 	.mid = {
-		.deadly_dance			= {{ 0,  1,  2,  3}, AT_Spellcard, "Venom Sign ~ Deadly Dance", 13, 40000,
+		.deadly_dance			= {{ 0,  1,  2,  3}, AT_SurvivalSpell, "Venom Sign ~ Deadly Dance", 14, 40000,
 									scuttle_deadly_dance, scuttle_spellbg, BOSS_DEFAULT_GO_POS},
 	},
 
@@ -250,13 +250,13 @@ void stage3_draw(void) {
 		stgstate.tunnel_avel += 0.013;
 	}
 
-	FROM_TO(2000, 2740, 1) {
-		stgstate.tunnel_side -= 100.0 / 740.0;
+	FROM_TO(2000, 2680, 1) {
+		stgstate.tunnel_side -= 100.0 / 680.0;
 		//stgstate.fog_exp -= 1.0 / 740.0;
-		bgcontext.crot[0] += 11 / 740.0;
+		bgcontext.crot[0] += 11 / 680.0;
 	}
 
-	FROM_TO(2740, 2799, 1) {
+	FROM_TO(2680, 2739, 1) {
 		stgstate.fog_exp += 1.0 / 60.0;
 		bgcontext.cv[1] += 1.0/2;
 		stgstate.clr_r -= 0.3 / 60.0;
@@ -265,7 +265,7 @@ void stage3_draw(void) {
 		bgcontext.crot[0] -= 11 / 60.0;
 	}
 
-	// 2800 - MIDBOSS
+	// 2740 - MIDBOSS
 
 	int midboss_time = STAGE3_MIDBOSS_TIME;
 
