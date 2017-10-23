@@ -42,8 +42,10 @@ static struct {
 	float clr_r;
 	float clr_g;
 	float clr_b;
+	float clr_mixfactor;
 
 	float fog_exp;
+	float fog_brightness;
 
 	float tunnel_angle;
 	float tunnel_avel;
@@ -89,10 +91,12 @@ void stage3_bg_tunnel_draw(Vector pos) {
 
 void stage3_tunnel(FBO *fbo) {
 	Shader *shader = get_shader("tunnel");
+	assert(uniloc(shader, "mixfactor") >= 0); // just so people don't forget to 'make install'; remove this later
 
 	glColor4f(1,1,1,1);
 	glUseProgram(shader->prog);
 	glUniform3f(uniloc(shader, "color"),stgstate.clr_r,stgstate.clr_g,stgstate.clr_b);
+	glUniform1f(uniloc(shader, "mixfactor"), stgstate.clr_mixfactor);
 	glActiveTexture(GL_TEXTURE0 + 2);
 	glBindTexture(GL_TEXTURE_2D, fbo->depth);
 	glActiveTexture(GL_TEXTURE0);
@@ -107,7 +111,7 @@ void stage3_fog(FBO *fbo) {
 	glColor4f(1,1,1,1);
 	glUseProgram(shader->prog);
 	glUniform1i(uniloc(shader, "depth"), 2);
-	glUniform4f(uniloc(shader, "fog_color"), .5, .5, .5, 1.0);
+	glUniform4f(uniloc(shader, "fog_color"), stgstate.fog_brightness, stgstate.fog_brightness, stgstate.fog_brightness, 1.0);
 	glUniform1f(uniloc(shader, "start"), 0.2);
 	glUniform1f(uniloc(shader, "end"), 0.8);
 	glUniform1f(uniloc(shader, "exponent"), stgstate.fog_exp/2);
@@ -157,6 +161,8 @@ void stage3_start(void) {
 	stgstate.clr_r = 1.0;
 	stgstate.clr_g = 0.0;
 	stgstate.clr_b = 0.5;
+	stgstate.clr_mixfactor = 1.0;
+	stgstate.fog_brightness = 0.5;
 }
 
 void stage3_preload(void) {
@@ -191,6 +197,12 @@ void stage3_draw(void) {
 	set_perspective(&bgcontext, 300, 5000);
 	stgstate.tunnel_angle += stgstate.tunnel_avel;
 	bgcontext.crot[2] = -(creal(global.plr.pos)-VIEWPORT_W/2)/80.0;
+
+	if(global.dialog) {
+		draw_stage3d(&bgcontext, 7000);
+		return;
+	}
+
 #if 1
 	FROM_TO(0, 160, 1) {
 		bgcontext.cv[1] -= 0.5/2;
@@ -269,6 +281,7 @@ void stage3_draw(void) {
 	FROM_TO(3300 + midboss_time, 3360 + midboss_time, 1) {
 		stgstate.tunnel_avel += 2 / 60.0;
 		stgstate.tunnel_side += 70 / 60.0;
+		bgcontext.cx[2] += (-30 - bgcontext.cx[2]) * 0.04;
 	}
 
 	FROM_TO(3600 + midboss_time, 3700 + midboss_time, 1) {
@@ -290,6 +303,9 @@ void stage3_draw(void) {
 
 	FROM_TO(4390 + midboss_time, 4510 + midboss_time, 1) {
 		stgstate.clr_r += .5 / 120.0;
+		bgcontext.cx[2] += (0 - bgcontext.cx[2]) * 0.05;
+		stgstate.fog_exp = approach(stgstate.fog_exp, 4, 1/20.0);
+		log_debug("%f %f", bgcontext.cx[2], stgstate.fog_exp);
 	}
 
 	FROM_TO(4299 + midboss_time, 5299 + midboss_time, 1) {
@@ -304,20 +320,32 @@ void stage3_draw(void) {
 		bgcontext.cv[1] += 90 / 200.0/2;
 		stgstate.tunnel_avel -= 1.1 / 200.0;
 		bgcontext.crot[0] -= 15 / 200.0;
-		//stgstate.fog_exp += 3.0 / 200.0;
+		stgstate.fog_exp = approach(stgstate.fog_exp, 2.5, 1/50.0);
+		log_debug("%f", stgstate.fog_exp);
+	}
+
+	FROM_TO(5200 + midboss_time, 5300 + midboss_time, 1) {
+		bgcontext.cx[2] += (-50 - bgcontext.cx[2]) * 0.02;
 	}
 
 	// 5300 - BOSS
 
-	FROM_TO(5301 + midboss_time, 5500 + midboss_time, 1) {
-		bgcontext.cv[1] -= 70 / 200.0/2;
-		stgstate.clr_r += 1.1 / 200.0;
-	}
-
 	FROM_TO(5301 + midboss_time, 5700 + midboss_time, 1) {
-		bgcontext.crot[0] -= 10 / 400.0;
-		stgstate.fog_exp -= 2.0 / 400.0;
-		//stgstate.tunnel_avel -= 0.5 / 200.0;
+		stgstate.tunnel_avel = (0 - stgstate.tunnel_avel) * 0.02;
+		bgcontext.cx[2] += (-500 - bgcontext.cx[2]) * 0.02;
+		bgcontext.crot[0] += (-180 - bgcontext.crot[0]) * 0.004;
+
+		stgstate.clr_mixfactor = approach(stgstate.clr_mixfactor, 0, 1/300.0);
+		stgstate.fog_brightness = approach(stgstate.fog_brightness, 1.0, 1/200.0);
+		stgstate.fog_exp = approach(stgstate.fog_exp, 3, 1/50.0);
+
+		bgcontext.cv[1] = approach(bgcontext.cv[1], -20, 1/10.0);
+
+		stgstate.clr_r = approach(stgstate.clr_r, 0.6, 1.0/200.0);
+		stgstate.clr_g = approach(stgstate.clr_g, 0.3, 1.0/200.0);
+		stgstate.clr_b = approach(stgstate.clr_b, 0.4, 1.0/200.0);
+
+		log_debug("%f %f %f %f %f", stgstate.fog_brightness, stgstate.fog_exp, bgcontext.cx[0], bgcontext.cx[1], bgcontext.cx[2]);
 	}
 #endif
 
@@ -343,6 +371,11 @@ void stage3_spellpractice_events(void) {
 
 		start_bgm("stage3boss");
 	}
+}
+
+void stage3_skip(int t) {
+	skip_background_anim(&bgcontext, stage3_draw, t, &global.timer, &global.frames);
+	audio_backend_music_set_position(global.timer / (double)FPS);
 }
 
 ShaderRule stage3_shaders[] = { stage3_fog, stage3_tunnel, NULL };

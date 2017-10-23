@@ -167,6 +167,18 @@ static int stage3_slavefairy2(Enemy *e, int t) {
 	return 1;
 }
 
+static void charge_effect(Enemy *e, int t, int chargetime) {
+	TIMER(&t);
+
+	FROM_TO(chargetime - 30, chargetime, 1) {
+		complex n = cexp(2.0*I*M_PI*frand());
+		float l = 50*frand()+25;
+		float s = 4+_i*0.01;
+		float alpha = 0.5;
+		create_particle2c("flare", e->pos+l*n, rgb(alpha, alpha, 0.5*alpha), FadeAdd, timeout_linear, l/s, -s*n);
+	}
+}
+
 static int stage3_burstfairy(Enemy *e, int t) {
 	TIMER(&t)
 
@@ -179,18 +191,36 @@ static int stage3_burstfairy(Enemy *e, int t) {
 		e->alpha = 0;
 	}
 
-	int bursttime = e->args[3];
+	int bursttime = creal(e->args[3]);
+	int prebursttime = cimag(e->args[3]);
 	int burstspan = 30;
 
 	if(t < bursttime) {
-		GO_TO(e, e->args[0], 0.05)
+		GO_TO(e, e->args[0], 0.08)
 	}
 
-	int step = 3 - (global.diff > D_Normal);
+	if(prebursttime > 0) {
+		AT(prebursttime) {
+			play_sound("shot_special1");
+
+			int cnt = 6 + 4 * global.diff;
+			for(int p = 0; p < cnt; ++p) {
+				complex dir = cexp(I*M_PI*2*p/cnt);
+				create_projectile2c("ball", e->args[0],
+					rgb(0.2, 0.1, 0.5), asymptotic,
+					dir, 10 + 4 * global.diff
+				);
+			}
+		}
+	}
 
 	AT(bursttime) {
 		play_sound("shot_special1");
 	}
+
+	int step = 3 - (global.diff > D_Normal);
+
+	charge_effect(e, t, bursttime);
 
 	FROM_TO_SND("shot1_loop", bursttime, bursttime + burstspan, step) {
 		double phase = (t - bursttime) / (double)burstspan;
@@ -263,17 +293,10 @@ static int stage3_chargefairy(Enemy *e, int t) {
 	}
 
 	int chargetime = e->args[1];
-
-	FROM_TO(chargetime - 30, chargetime, 1) {
-		complex n = cexp(2.0*I*M_PI*frand());
-		float l = 50*frand()+25;
-		float s = 4+_i*0.01;
-		float alpha = 0.5;
-		create_particle2c("flare", e->pos+l*n, rgb(alpha, alpha, 0.5*alpha), FadeAdd, timeout_linear, l/s, -s*n);
-	}
-
 	int cnt = 19 - 4 * (D_Lunatic - global.diff);
 	int step = 1;
+
+	charge_effect(e, t, chargetime);
 
 	FROM_TO_SND("shot1_loop", chargetime, chargetime + cnt * step - 1, step) {
 		complex aim = e->args[3] - e->pos;
@@ -399,7 +422,7 @@ static int stage3_cornerfairy(Enemy *e, int t) {
 				bool wave = global.diff > D_Easy && cabs(e->args[2]);
 
 				create_projectile2c(wave ? "wave" : "thickrice", e->pos, cabs(e->args[2])? rgb(0.5 - c*0.2, 0.3 + c*0.7, 1.0) : rgb(1.0 - c*0.5, 0.6, 0.5 + c*0.5), asymptotic,
-					(1.2+0.3*global.diff-0.6*wave*!!(e->args[2]))*cexp(I*((2*i*M_PI/cnt)+carg((VIEWPORT_W+I*VIEWPORT_H)/2 - e->pos))),
+					(1.8-0.4*wave*!!(e->args[2]))*cexp(I*((2*i*M_PI/cnt)+carg((VIEWPORT_W+I*VIEWPORT_H)/2 - e->pos))),
 					1.5
 				);
 			}
@@ -924,13 +947,22 @@ void wriggle_light_singularity(Boss *boss, int time) {
 		}
 
 		play_sound("charge_generic");
+		boss->ani.stdrow = 0;
 	}
 
 	if(time > 120) {
 		play_loop("shot1_loop");
 	}
 
-	if(time > 0 && !(time % 300)) {
+	if(time == 0) {
+		return;
+	}
+
+	if(!((time+30) % 300)) {
+		aniplayer_queue(&boss->ani, 2, 0, 0);
+	}
+
+	if(!(time % 300)) {
 		char *ptype = NULL;
 
 		switch(time / 300 - 1) {
@@ -958,6 +990,8 @@ void wriggle_light_singularity(Boss *boss, int time) {
 		}
 
 		play_sound("shot_special1");
+	} else if(!(time % 150)) {
+		aniplayer_queue(&boss->ani, 1, 1, 0);
 	}
 }
 
@@ -1155,13 +1189,14 @@ Boss* stage3_create_boss(void) {
 	return wriggle;
 }
 
+void stage3_skip(int t);
+
 void stage3_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
 		stage_start_bgm("stage3");
-		global.frames = global.timer = getenvint("STAGE3_TEST", 0);
-		audio_backend_music_set_position(global.timer / (double)FPS);
+		stage3_skip(getenvint("STAGE3_TEST", 0));
 	}
 
 	FROM_TO(160, 300, 10) {
@@ -1325,14 +1360,17 @@ void stage3_events(void) {
 
 	{
 		int cnt = 4;
-		int step = 60;
+		int step = 70;
 		int start = 4000 + midboss_time;
 		FROM_TO(start, start + step * cnt - 1, step) {
 			int i = _i % cnt;
 			double span = 300 - 60 * (1-i/2);
 			complex pos1 = VIEWPORT_W/2;
 			complex pos2 = VIEWPORT_W/2 + span * (-0.5 + (i&1)) + (VIEWPORT_H/3 + 100*(i/2))*I;
-			create_enemy4c(pos1, 3000, BigFairy, stage3_burstfairy, pos2, i&1, 0, start + step * 5 - global.timer);
+			create_enemy4c(pos1, 3000, BigFairy, stage3_burstfairy, pos2, i&1, 0,
+				(start + 300 - global.timer) + I *
+				(30)
+			);
 		}
 	}
 
@@ -1354,7 +1392,7 @@ void stage3_events(void) {
 		create_enemy3c(p4, 500, Fairy, stage3_cornerfairy, p4 - offs + offs*I, p1 - offs - offs*I, 1);
 	}
 
-	if(global.diff > D_Normal) AT(4420 + midboss_time) {
+	if(global.diff > D_Normal) AT(4480 + midboss_time) {
 		double offs = -50;
 
 		complex p1 = VIEWPORT_W/2+0*I;
@@ -1362,10 +1400,10 @@ void stage3_events(void) {
 		complex p3 = VIEWPORT_W/2+VIEWPORT_H*I;
 		complex p4 = 0+VIEWPORT_H/2*I;
 
-		create_enemy3c(p1, 500, Fairy, stage3_cornerfairy, p1 - offs*I, p2 + offs, 1);
-		create_enemy3c(p2, 500, Fairy, stage3_cornerfairy, p2 + offs,   p3 + offs*I, 1);
-		create_enemy3c(p3, 500, Fairy, stage3_cornerfairy, p3 + offs*I, p4 - offs, 1);
-		create_enemy3c(p4, 500, Fairy, stage3_cornerfairy, p4 - offs,   p1 + offs*I, 1);
+		create_enemy3c(p1, 500, Fairy, stage3_cornerfairy, p1 - offs*I, p2 + offs, 0);
+		create_enemy3c(p2, 500, Fairy, stage3_cornerfairy, p2 + offs,   p3 + offs*I, 0);
+		create_enemy3c(p3, 500, Fairy, stage3_cornerfairy, p3 + offs*I, p4 - offs, 0);
+		create_enemy3c(p4, 500, Fairy, stage3_cornerfairy, p4 - offs,   p1 + offs*I, 0);
 	}
 
 	FROM_TO(4760 + midboss_time, 4940 + midboss_time, 10+2*(D_Lunatic-global.diff)) {
