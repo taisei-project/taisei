@@ -36,7 +36,7 @@ void credits_fill(void) {
 	credits_add("ZUN\nfor Tōhō Project\nhttp://www16.big.or.jp/~zun/", 300);
 	credits_add("Mochizuki Ado\nfor a nice yukkuri image", 300);
 	credits_add("…and You!\nfor playing", 300);
-	credits_add("Visit Us\nhttp://taisei-project.org\n \nAnd join our IRC channel\n#taisei-project at irc.freenode.net", 500);
+	credits_add("Visit Us\nhttps://taisei-project.org/\n\nAnd join our IRC channel\n#taisei-project at irc.freenode.net\n\nOr our Discord server\nhttps://discord.gg/JEHCMzW", 500);
 	credits_add("*", 150);
 }
 
@@ -267,7 +267,7 @@ static bool credits_frame(void *arg) {
 	credits_draw();
 	global.frames++;
 	SDL_GL_SwapWindow(video.window);
-	return !credits.end;
+	return credits.end;
 }
 
 void credits_loop(void) {

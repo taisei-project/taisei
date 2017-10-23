@@ -17,6 +17,7 @@ typedef enum {
 	CLI_DumpStages,
 	CLI_DumpVFSTree,
 	CLI_Quit,
+	CLI_Credits,
 } CLIActionType;
 
 typedef struct CLIAction CLIAction;

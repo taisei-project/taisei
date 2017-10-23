@@ -51,7 +51,8 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		{{"dumpstages", no_argument, 0, 'u'}, "Print a list of all stages in the game", 0},
 		{{"vfs-tree", required_argument, 0, 't'}, "Print the virtual filesystem tree starting from %s", "PATH"},
 #endif
-		{{"help", no_argument, 0, 'h'}, "Display this help."},
+		{{"credits", no_argument, 0, 'c'}, "Show the credits scene and exit"},
+		{{"help", no_argument, 0, 'h'}, "Display this help"},
 		{{0,0,0,0},0,0}
 	};
 
@@ -156,6 +157,9 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		case 't':
 			a->type = CLI_DumpVFSTree,
 			a->filename = strdup(optarg ? optarg : "");
+			break;
+		case 'c':
+			a->type = CLI_Credits;
 			break;
 		default:
 			log_fatal("Unknown option (this shouldn’t happen)");
