@@ -1,0 +1,11 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/taisei-project/SDL_GameControllerDB
+	branch = master
+	commit = 49f976521240da679274efe38ef9838eee95fe99
+	parent = 1e83c67891588a8bc041e908aa7d9b7f76b0ebc8
+	cmdver = 0.3.1
