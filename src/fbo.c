@@ -14,7 +14,7 @@ static float sanitize_scale(float scale) {
 	return max(0.1, scale);
 }
 
-void init_fbo(FBO *fbo, float scale) {
+void init_fbo(FBO *fbo, float scale, int type) {
 	glGenTextures(1, &fbo->tex);
 	glBindTexture(GL_TEXTURE_2D, fbo->tex);
 
@@ -29,7 +29,7 @@ void init_fbo(FBO *fbo, float scale) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, fbo->nw, fbo->nh, 0, GL_BGR, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, type, fbo->nw, fbo->nh, 0, type, GL_UNSIGNED_BYTE, NULL);
 
 	glGenFramebuffers(1,&fbo->fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo->fbo);
@@ -50,16 +50,16 @@ void init_fbo(FBO *fbo, float scale) {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void reinit_fbo(FBO *fbo, float scale) {
+void reinit_fbo(FBO *fbo, float scale, int type) {
 	if(!fbo->scale) {
 		// fbo was never initialized
-		init_fbo(fbo, scale);
+		init_fbo(fbo, scale, type);
 		return;
 	}
 
 	if(fbo->scale != sanitize_scale(scale)) {
 		delete_fbo(fbo);
-		init_fbo(fbo, scale);
+		init_fbo(fbo, scale, type);
 	}
 }
 

@@ -100,6 +100,7 @@ int collision_projectile(Projectile *p) {
 		int damage = p->type - PlrProj;
 
 		while(e != NULL) {
+			// XXX: this 'hitbox' radius is smaller than the fairy circle, we should probably increase it...
 			if(e->hp != ENEMY_IMMUNE && cabs(e->pos - p->pos) < 15) {
 				player_add_points(&global.plr, damage * 0.5);
 
@@ -136,6 +137,18 @@ void draw_projectiles(Projectile *projs) {
 
 }
 
+bool projectile_in_viewport(Projectile *proj) {
+	int e = proj->maxviewportdist;
+
+	if(e < 300 && (proj->type == Particle || proj->type >= PlrProj)) {
+		// XXX: maybe have them set it manually?
+		e = 300;
+	}
+
+	return !(creal(proj->pos) + proj->tex->w/2 + e < 0 || creal(proj->pos) - proj->tex->w/2 - e > VIEWPORT_W
+		  || cimag(proj->pos) + proj->tex->h/2 + e < 0 || cimag(proj->pos) - proj->tex->h/2 - e > VIEWPORT_H);
+}
+
 void process_projectiles(Projectile **projs, bool collision) {
 	Projectile *proj = *projs, *del = NULL;
 
@@ -164,18 +177,9 @@ void process_projectiles(Projectile **projs, bool collision) {
 		}
 
 		if(col == 1 && global.frames - abs(global.plr.recovery) >= 0)
-				player_death(&global.plr);
+			player_death(&global.plr);
 
-		int e = proj->maxviewportdist;
-
-		if(e < 300 && (proj->type == Particle || proj->type >= PlrProj)) {
-			// XXX: maybe have them set it manually?
-			e = 300;
-		}
-
-		if(action == ACTION_DESTROY || col
-		|| creal(proj->pos) + proj->tex->w/2 + e < 0 || creal(proj->pos) - proj->tex->w/2 - e > VIEWPORT_W
-		|| cimag(proj->pos) + proj->tex->h/2 + e < 0 || cimag(proj->pos) - proj->tex->h/2 - e > VIEWPORT_H) {
+		if(action == ACTION_DESTROY || col || !projectile_in_viewport(proj)) {
 			del = proj;
 			proj = proj->next;
 			delete_projectile(projs, del);

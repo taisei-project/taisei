@@ -71,6 +71,7 @@ void delete_projectile(Projectile **dest, Projectile *proj);
 void delete_projectiles(Projectile **dest);
 void draw_projectiles(Projectile *projs);
 int collision_projectile(Projectile *p);
+bool projectile_in_viewport(Projectile *proj);
 void process_projectiles(Projectile **projs, bool collision);
 
 Projectile *get_proj(Projectile *hay, int birthtime);

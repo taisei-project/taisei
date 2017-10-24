@@ -125,7 +125,7 @@ void player_draw(Player*);
 void player_logic(Player*);
 bool player_should_shoot(Player *plr, bool extra);
 
-bool player_set_power(Player *plr, short npow, bool handle_fullpower);
+bool player_set_power(Player *plr, short npow);
 
 void player_move(Player*, complex delta);
 

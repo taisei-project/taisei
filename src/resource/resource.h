@@ -103,6 +103,7 @@ typedef struct Resources {
 	struct {
 		FBO bg[2];
 		FBO fg[2];
+		FBO rgba[2]; // XXX: do we actually need 2 RGBA FBOs?
 	} fbo;
 } Resources;
 

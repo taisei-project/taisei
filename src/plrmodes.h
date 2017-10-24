@@ -52,6 +52,7 @@ typedef struct PlayerCharacter {
     } ending;
 } PlayerCharacter;
 
+typedef void (*PlayerModeInitProc)(Player *plr);
 typedef void (*PlayerModeThinkProc)(Player *plr);
 typedef void (*PlayerModeShotProc)(Player *plr);
 typedef void (*PlayerModeBombProc)(Player *plr);
@@ -65,6 +66,7 @@ typedef struct PlayerMode {
     ShotModeID shot_mode;
 
     struct {
+        PlayerModeInitProc init;
         PlayerModeThinkProc think;
         PlayerModeShotProc shot;
         PlayerModeBombProc bomb;

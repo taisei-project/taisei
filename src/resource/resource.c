@@ -445,6 +445,8 @@ void free_resources(bool all) {
 	delete_fbo(&resources.fbo.bg[1]);
 	delete_fbo(&resources.fbo.fg[0]);
 	delete_fbo(&resources.fbo.fg[1]);
+	delete_fbo(&resources.fbo.rgba[0]);
+	delete_fbo(&resources.fbo.rgba[1]);
 
 	if(!getenvint("TAISEI_NOASYNC", 0)) {
 		events_unregister_handler(resource_asyncload_handler);

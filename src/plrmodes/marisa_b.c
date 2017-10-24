@@ -117,13 +117,9 @@ static void marisa_star_bomb(Player *plr) {
     }
 }
 
-static void marisa_star_power(Player *plr, short npow) {
+static void marisa_star_respawn_slaves(Player *plr, short npow) {
     Enemy *e = plr->slaves, *tmp;
     double dmg = 5;
-
-    if(plr->power / 100 == npow / 100) {
-        return;
-    }
 
     while(e != 0) {
         tmp = e;
@@ -151,6 +147,18 @@ static void marisa_star_power(Player *plr, short npow) {
     }
 }
 
+static void marisa_star_power(Player *plr, short npow) {
+    if(plr->power / 100 == npow / 100) {
+        return;
+    }
+
+    marisa_star_respawn_slaves(plr, npow);
+}
+
+static void marisa_star_init(Player *plr) {
+    marisa_star_respawn_slaves(plr, plr->power);
+}
+
 static void marisa_star_preload(void) {
     const int flags = RESF_DEFAULT;
 
@@ -174,5 +182,6 @@ PlayerMode plrmode_marisa_b = {
         .shot = marisa_common_shot,
         .power = marisa_star_power,
         .preload = marisa_star_preload,
+        .init = marisa_star_init,
     },
 };

@@ -160,12 +160,8 @@ static void youmu_mirror_bomb(Player *plr) {
     create_enemy_p(&plr->slaves, 40.0*I, ENEMY_BOMB, NULL, youmu_split, 280,0,0,0);
 }
 
-static void youmu_mirror_think(Player *plr) {
-    // XXX: do we really have to do this every frame?
-
-    if(plr->slaves == NULL) {
-        create_enemy_p(&plr->slaves, 40.0*I, ENEMY_IMMUNE, myon_draw, youmu_mirror_myon, 0, 0, 0, 0);
-    }
+static void youmu_mirror_init(Player *plr) {
+    create_enemy_p(&plr->slaves, 40.0*I, ENEMY_IMMUNE, myon_draw, youmu_mirror_myon, 0, 0, 0, 0);
 }
 
 static void youmu_mirror_preload(void) {
@@ -188,7 +184,7 @@ PlayerMode plrmode_youmu_a = {
     .procs = {
         .bomb = youmu_mirror_bomb,
         .shot = youmu_common_shot,
-        .think = youmu_mirror_think,
+        .init = youmu_mirror_init,
         .preload = youmu_mirror_preload,
     },
 };

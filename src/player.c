@@ -35,18 +35,19 @@ void player_stage_pre_init(Player *plr) {
 }
 
 void player_stage_post_init(Player *plr) {
-	// TODO: remove handle_fullpower from player_set_power and get rid of this hack
-	short power = global.plr.power;
-	global.plr.power = -1;
-	delete_enemies(&global.plr.slaves);
-	player_set_power(&global.plr, power, false);
-
 	assert(plr->mode != NULL);
-	aniplayer_create(&plr->ani, get_ani(plr->mode->character->player_sprite_name));
 
 	// ensure the essential callbacks are there. other code tests only for the optional ones
 	assert(plr->mode->procs.shot != NULL);
 	assert(plr->mode->procs.bomb != NULL);
+
+	delete_enemies(&global.plr.slaves);
+
+	if(plr->mode->procs.init != NULL) {
+		plr->mode->procs.init(plr);
+	}
+
+	aniplayer_create(&plr->ani, get_ani(plr->mode->character->player_sprite_name));
 }
 
 static void player_full_power(Player *plr) {
@@ -55,7 +56,7 @@ static void player_full_power(Player *plr) {
 	stagetext_add("Full Power!", VIEWPORT_W * 0.5 + VIEWPORT_H * 0.33 * I, AL_Center, _fonts.mainmenu, rgb(1, 1, 1), 0, 60, 20, 20);
 }
 
-bool player_set_power(Player *plr, short npow, bool handle_fullpower) {
+bool player_set_power(Player *plr, short npow) {
 	npow = clamp(npow, 0, PLR_MAX_POWER);
 
 	if(plr->mode->procs.power) {
@@ -65,7 +66,7 @@ bool player_set_power(Player *plr, short npow, bool handle_fullpower) {
 	int oldpow = plr->power;
 	plr->power = npow;
 
-	if(plr->power == PLR_MAX_POWER && oldpow < PLR_MAX_POWER && handle_fullpower) {
+	if(plr->power == PLR_MAX_POWER && oldpow < PLR_MAX_POWER) {
 		player_full_power(plr);
 	}
 
@@ -408,7 +409,7 @@ void player_realdeath(Player *plr) {
 	int drop = max(2, (plr->power * 0.15) / POWER_VALUE);
 	spawn_items(plr->deathpos, Power, drop, NULL);
 
-	player_set_power(plr, plr->power * 0.7,true);
+	player_set_power(plr, plr->power * 0.7);
 	plr->bombs = PLR_START_BOMBS;
 	plr->bomb_fragments = 0;
 
@@ -513,12 +514,12 @@ void player_event(Player *plr, uint8_t type, uint16_t value, bool warn, bool *ou
 					break;
 
 				case KEY_POWERUP:
-					useful = player_set_power(plr, plr->power + 100, true);
+					useful = player_set_power(plr, plr->power + 100);
 					cheat = true;
 					break;
 
 				case KEY_POWERDOWN:
-					useful = player_set_power(plr, plr->power - 100, true);
+					useful = player_set_power(plr, plr->power - 100);
 					cheat = true;
 					break;
 

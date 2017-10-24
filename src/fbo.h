@@ -19,8 +19,8 @@ typedef struct {
 	float scale;
 } FBO;
 
-void init_fbo(FBO *fbo, float scale);
-void reinit_fbo(FBO *fbo, float scale);
+void init_fbo(FBO *fbo, float scale, int type);
+void reinit_fbo(FBO *fbo, float scale, int type);
 void draw_fbo(FBO *fbo);
 void draw_fbo_viewport(FBO *fbo);
 void delete_fbo(FBO *fbo);

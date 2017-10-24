@@ -37,7 +37,7 @@ void marisa_common_shot(Player *plr) {
 void marisa_common_slave_draw(Enemy *e, int t) {
     glPushMatrix();
     glTranslatef(creal(e->pos), cimag(e->pos), -1);
-    glRotatef(global.frames * 3, 0, 0, 1);
+    // glRotatef(global.frames * 3, 0, 0, 1);
     draw_texture(0,0,"part/lasercurve");
     glPopMatrix();
 }

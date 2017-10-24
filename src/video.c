@@ -173,10 +173,12 @@ static void video_update_quality(void) {
 
 	log_debug("q:%f, fg:%f, bg:%f, text:%f", q, fg, bg, text);
 
-	reinit_fbo(&resources.fbo.bg[0], bg);
-	reinit_fbo(&resources.fbo.bg[1], bg);
-	reinit_fbo(&resources.fbo.fg[0], fg);
-	reinit_fbo(&resources.fbo.fg[1], fg);
+	reinit_fbo(&resources.fbo.bg[0], bg, GL_RGB);
+	reinit_fbo(&resources.fbo.bg[1], bg, GL_RGB);
+	reinit_fbo(&resources.fbo.fg[0], fg, GL_RGB);
+	reinit_fbo(&resources.fbo.fg[1], fg, GL_RGB);
+	reinit_fbo(&resources.fbo.rgba[0], fg, GL_RGBA);
+	reinit_fbo(&resources.fbo.rgba[1], fg, GL_RGBA);
 
 	reload_fonts(text);
 }
