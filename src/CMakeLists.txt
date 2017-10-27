@@ -286,6 +286,12 @@ target_link_libraries(taisei ${LIBs})
 
 set(MACOSX_BUNDLE_BUNDLE_NAME "Taisei")
 
+if(WIN32)
+	set(TAISEI_BINARY_SUFFIX ".exe")
+else()
+	set(TAISEI_BINARY_SUFFIX "")
+endif()
+
 if(APPLE)
 	set_target_properties(taisei PROPERTIES
 		OUTPUT_NAME "${MACOSX_BUNDLE_BUNDLE_NAME}"
@@ -329,6 +335,8 @@ else()
 	install(TARGETS taisei RUNTIME DESTINATION bin)
 	set(TAISEI_BINARY "bin/taisei")
 endif()
+
+set(TAISEI_BINARY "${TAISEI_BINARY}${TAISEI_BINARY_SUFFIX}")
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Release" AND NOT APPLE)
 	configure_file(
