@@ -330,7 +330,7 @@ else()
 	set(TAISEI_BINARY "bin/taisei")
 endif()
 
-if("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Release" AND NOT APPLE)
 	configure_file(
 		"${BUILDSCRIPTS_DIR}/PostInstallRelease.cmake.in"
 		"${CMAKE_CURRENT_BINARY_DIR}/PostInstallRelease.cmake"
