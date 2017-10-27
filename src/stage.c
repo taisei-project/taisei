@@ -479,8 +479,6 @@ static bool stage_frame(void *arg) {
 	StageFrameState *fstate = arg;
 	StageInfo *stage = fstate->stage;
 
-	((global.replaymode == REPLAY_PLAY) ? replay_input : stage_input)();
-
 	if(global.game_over != GAMEOVER_TRANSITIONING) {
 		if((!global.boss || boss_is_fleeing(global.boss)) && !global.dialog) {
 			stage->procs->event();
@@ -497,6 +495,7 @@ static bool stage_frame(void *arg) {
 		display_stage_title(stage);
 	}
 
+	((global.replaymode == REPLAY_PLAY) ? replay_input : stage_input)();
 	replay_stage_check_desync(global.replay_stage, global.frames, (tsrand() ^ global.plr.points) & 0xFFFF, global.replaymode);
 	stage_logic();
 
