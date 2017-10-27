@@ -9,10 +9,10 @@ endif()
 
 if(WIN32)
     set(CPACK_GENERATOR "${NSIS};7Z")
-    set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_BINARY_DIR}/win32docs/COPYING")
+    set(_CPACK_RESOURCE_FILE_LICENSE "${PROJECT_BINARY_DIR}/win32docs/COPYING")
 else()
     set(CPACK_GENERATOR "TGZ")
-    set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/COPYING")
+    set(_CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/COPYING")
 endif()
 
 set(CPACK_PACKAGE_NAME "Taisei")
@@ -30,6 +30,14 @@ set(CPACK_PACKAGE_EXECUTABLES "taisei" "Taisei")
 set(CPACK_NSIS_EXECUTABLES_DIRECTORY ".")
 set(CPACK_NSIS_INSTALLED_ICON_NAME "taisei.exe")
 set(CPACK_NSIS_MUI_FINISHPAGE_RUN "taisei.exe")
-set(CPACK_NSIS_HELP_LINK "http://taisei-project.org")
+set(CPACK_NSIS_HELP_LINK "https://taisei-project.org/")
+set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL TRUE)
+
+configure_file(
+    "${BUILDSCRIPTS_DIR}/CPackRuntimeSettings.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/CPackRuntimeSettings.cmake"
+@ONLY)
+
+set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_CURRENT_BINARY_DIR}/CPackRuntimeSettings.cmake")
 
 include(CPack)
