@@ -44,6 +44,7 @@ set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
 ")
 
 set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "${CLEANUP_COMMANDS}")
+set(CPACK_RESOURCE_FILE_LICENSE "@_CPACK_RESOURCE_FILE_LICENSE@")
 
  ###############################
 #                               #
