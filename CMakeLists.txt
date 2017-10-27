@@ -23,7 +23,7 @@ include(GetGitRevisionDescription)
 #   Set up version variables
 #
 
-set(TAISEI_VERSION_FALLBACK "1.1")
+set(TAISEI_VERSION_FALLBACK "1.1.1")
 
 function(taisei_parse_version version_string)
     string(STRIP ${version_string} version_string)
