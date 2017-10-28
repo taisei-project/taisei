@@ -100,8 +100,7 @@ int collision_projectile(Projectile *p) {
 		int damage = p->type - PlrProj;
 
 		while(e != NULL) {
-			// XXX: this 'hitbox' radius is smaller than the fairy circle, we should probably increase it...
-			if(e->hp != ENEMY_IMMUNE && cabs(e->pos - p->pos) < 15) {
+			if(e->hp != ENEMY_IMMUNE && cabs(e->pos - p->pos) < 30) {
 				player_add_points(&global.plr, damage * 0.5);
 
 				#ifdef PLR_DPS_STATS

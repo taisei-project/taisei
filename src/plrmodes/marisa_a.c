@@ -49,8 +49,7 @@ static complex trace_laser(complex origin, complex vel, int damage) {
         int col = collision_projectile(p);
 
         if(col || action == ACTION_DESTROY || !projectile_in_viewport(p)) {
-            complex nudge = -10 * vel / cabs(vel);
-            target = p->pos + nudge;
+            target = p->pos;
 
             if(col) {
                 tsrand_fill(3);
