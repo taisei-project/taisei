@@ -156,7 +156,10 @@ static float get_laser_alpha(Enemy *e, float a) {
 static void marisa_laser_renderer_draw(Enemy *renderer, int t) {
     double a = creal(renderer->args[0]);
     Shader *shader = get_shader("marisa_laser");
-    int u_clr = uniloc(shader, "color");
+    int u_clr0 = uniloc(shader, "color0");
+    int u_clr1 = uniloc(shader, "color1");
+    int u_clr_phase = uniloc(shader, "color_phase");
+    int u_clr_freq = uniloc(shader, "color_freq");
     int u_alpha = uniloc(shader, "alphamod");
     int u_length = uniloc(shader, "length");
     // int u_cutoff = uniloc(shader, "cutoff");
@@ -164,7 +167,10 @@ static void marisa_laser_renderer_draw(Enemy *renderer, int t) {
     Texture *tex1 = get_tex("part/marisa_laser1");
 
     glUseProgram(shader->prog);
-    glUniform4f(u_clr, 1, 1, 1, 1);
+    glUniform4f(u_clr0, 1, 1, 1, 0.5);
+    glUniform4f(u_clr1, 1, 1, 1, 0.8);
+    glUniform1f(u_clr_phase, -1.5 * t/M_PI);
+    glUniform1f(u_clr_freq, 10.0);
     glBlendFunc(GL_SRC_COLOR, GL_ONE);
     glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo.rgba[0].fbo);
     glClearColor(0, 0, 0, 0);
@@ -186,17 +192,21 @@ static void marisa_laser_renderer_draw(Enemy *renderer, int t) {
     glUseProgram(shader->prog);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-    glUniform4f(u_clr, 1.0, 0.4, 0.0, 1.0);
+    glUniform4f(u_clr0, 1.0, 0.0, 0.0, 0.5);
+    glUniform4f(u_clr1, 1.0, 0.0, 0.0, 1.0);
+
     FOR_EACH_SLAVE(e) {
         if(set_alpha_dimmed(u_alpha, get_laser_alpha(e, a))) {
-            draw_laser_beam(e->pos, e->args[3], 40, 128, t * -0.05, tex0, u_length);
+            draw_laser_beam(e->pos, e->args[3], 40, 128, t * -0.12, tex0, u_length);
         }
     }
 
-    glUniform4f(u_clr, 0.1, 0.1, 1.0, 1.0);
+    glUniform4f(u_clr0, 0.1, 0.5, 1.0, 2.0);
+    glUniform4f(u_clr1, 0.1, 0.1, 1.0, 1.0);
+
     FOR_EACH_SLAVE(e) {
         if(set_alpha_dimmed(u_alpha, get_laser_alpha(e, a))) {
-            draw_laser_beam(e->pos, e->args[3], 30, 128, t *  0.025, tex0, u_length);
+            draw_laser_beam(e->pos, e->args[3], 42, 200, t * -0.03, tex0, u_length);
         }
     }
 
