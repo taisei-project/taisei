@@ -245,7 +245,7 @@ void iku_mid_intro(Boss *b, int t) {
 static void midboss_dummy(Boss *b, int t) { }
 
 Boss *create_iku_mid(void) {
-	Boss *b = create_boss("Bombs?", "iku", 0, VIEWPORT_W+800.0*I);
+	Boss *b = create_boss("Bombs?", "iku_mid", 0, VIEWPORT_W+800.0*I);
 	b->shadowcolor = rgba(0.2, 0.4, 0.5, 0.5);
 
 	boss_add_attack(b, AT_SurvivalSpell, "Discharge Bombs", 16, 10, iku_mid_intro, NULL);

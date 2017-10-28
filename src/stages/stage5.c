@@ -160,6 +160,7 @@ void stage5_preload(void) {
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"iku",
+		"iku_mid",
 	NULL);
 	preload_resources(RES_MODEL, RESF_DEFAULT,
 		"tower",
