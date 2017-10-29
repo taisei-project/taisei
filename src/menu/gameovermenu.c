@@ -13,21 +13,12 @@
 
 static void continue_game(MenuData *m, void *arg) {
 	log_info("The game is being continued...");
-
-	if(global.replaymode == REPLAY_RECORD) { // actually... I'd be strange if REPLAY_PLAY ever got there
-		replay_destroy(&global.replay);      // 19:39:29 [@  laochailan] no. no fame for continue users >:D
-		global.replay_stage = NULL;
-	}
-
-	global.plr.lives = PLR_START_LIVES;
-	global.plr.life_fragments = 0;
-	global.continues += 1;
-
-	stage_clear_hazards(false);
+	assert(global.replaymode == REPLAY_RECORD);
+	player_event_with_replay(&global.plr, EV_CONTINUE, 0);
 }
 
 static void give_up(MenuData *m, void *arg) {
-	global.game_over = (MAX_CONTINUES - global.continues)? GAMEOVER_ABORT : GAMEOVER_DEFEAT;
+	global.game_over = (MAX_CONTINUES - global.plr.continues_used)? GAMEOVER_ABORT : GAMEOVER_DEFEAT;
 }
 
 void create_gameover_menu(MenuData *m) {
@@ -46,7 +37,7 @@ void create_gameover_menu(MenuData *m) {
 		m->context = "Game Over";
 
 		char s[64];
-		int c = MAX_CONTINUES - global.continues;
+		int c = MAX_CONTINUES - global.plr.continues_used;
 		snprintf(s, sizeof(s), "Continue (%i)", c);
 		add_menu_entry(m, s, c? continue_game : NULL, NULL);
 		add_menu_entry(m, "Restart the Game", restart_game, NULL)->transition = TransFadeBlack;

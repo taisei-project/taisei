@@ -355,9 +355,10 @@ void replay_input(void) {
 				s->fps = e->value;
 				break;
 
-			default:
-				player_event(&global.plr, e->type, (int16_t)e->value);
+			default: {
+				player_event(&global.plr, e->type, (int16_t)e->value, true, NULL, NULL);
 				break;
+			}
 		}
 	}
 
@@ -611,8 +612,8 @@ void stage_loop(StageInfo *stage) {
 	stage_start(stage);
 
 	if(global.replaymode == REPLAY_RECORD) {
-		if(config_get_int(CONFIG_SAVE_RPY) && !global.continues) {
-			global.replay_stage = replay_create_stage(&global.replay, stage, seed, global.diff, global.plr.points, &global.plr);
+		if(config_get_int(CONFIG_SAVE_RPY)) {
+			global.replay_stage = replay_create_stage(&global.replay, stage, seed, global.diff, &global.plr);
 
 			// make sure our player state is consistent with what goes into the replay
 			player_init(&global.plr);
@@ -631,7 +632,7 @@ void stage_loop(StageInfo *stage) {
 
 			++p->num_played;
 
-			if(!global.continues) {
+			if(!global.plr.continues_used) {
 				p->unlocked = true;
 			}
 		}
@@ -662,6 +663,10 @@ void stage_loop(StageInfo *stage) {
 
 	if(global.replaymode == REPLAY_RECORD) {
 		replay_stage_event(global.replay_stage, global.frames, EV_OVER, 0);
+
+		if(global.game_over == GAMEOVER_WIN) {
+			global.replay_stage->flags |= REPLAY_SFLAG_CLEAR;
+		}
 	}
 
 	stage->procs->end();

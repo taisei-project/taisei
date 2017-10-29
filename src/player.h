@@ -57,6 +57,7 @@ enum {
 
 typedef struct {
 	complex pos;
+	complex deathpos;
 	short focus;
 
 	int graze;
@@ -67,7 +68,9 @@ typedef struct {
 	int life_fragments;
 	int bomb_fragments;
 	short power;
+	int continues_used;
 
+	int continuetime;
 	int recovery;
 	int deathtime;
 	int respawntime;
@@ -101,6 +104,7 @@ enum {
 	EV_CHECK_DESYNC, // replay-only
 	EV_FPS, // replay-only
 	EV_INFLAGS,
+	EV_CONTINUE,
 };
 
 // This is called first before we even enter stage_loop.
@@ -129,7 +133,7 @@ void player_realdeath(Player*);
 void player_death(Player*);
 void player_graze(Player*, complex, int);
 
-bool player_event(Player* plr, uint8_t type, uint16_t value);
+void player_event(Player *plr, uint8_t type, uint16_t value, bool warn, bool *out_useful, bool *out_cheat);
 bool player_event_with_replay(Player *plr, uint8_t type, uint16_t value);
 void player_applymovement(Player* plr);
 void player_fix_input(Player *plr);

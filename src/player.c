@@ -20,6 +20,7 @@ void player_init(Player *plr) {
 	plr->lives = PLR_START_LIVES;
 	plr->bombs = PLR_START_BOMBS;
 	plr->deathtime = -1;
+	plr->continuetime = -1;
 	plr->mode = plrmode_find(0, 0);
 }
 
@@ -168,6 +169,17 @@ bool player_should_shoot(Player *plr, bool extra) {
 }
 
 void player_logic(Player* plr) {
+	if(plr->continuetime == global.frames) {
+		plr->lives = PLR_START_LIVES;
+		plr->bombs = PLR_START_BOMBS;
+		plr->life_fragments = 0;
+		plr->bomb_fragments = 0;
+		plr->continues_used += 1;
+		player_set_power(plr, 0, true);
+		stage_clear_hazards(false);
+		spawn_items(plr->deathpos, Power, (int)ceil(PLR_MAX_POWER/(double)POWER_VALUE), NULL);
+	}
+
 	process_enemies(&plr->slaves);
 	aniplayer_update(&plr->ani);
 	if(plr->deathtime < -1) {
@@ -378,9 +390,7 @@ void player_realdeath(Player *plr) {
 	plr->deathtime = -DEATH_DELAY-1;
 	plr->respawntime = global.frames;
 	plr->inputflags &= ~INFLAGS_MOVE;
-
-	complex death_origin = plr->pos;
-
+	plr->deathpos = plr->pos;
 	plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I+30.0*I;
 	plr->recovery = -(global.frames + DEATH_DELAY + 150);
 	stage_clear_hazards(false);
@@ -396,7 +406,7 @@ void player_realdeath(Player *plr) {
 	}
 
 	int drop = max(2, (plr->power * 0.15) / POWER_VALUE);
-	spawn_items(death_origin, Power, drop, NULL);
+	spawn_items(plr->deathpos, Power, drop, NULL);
 
 	player_set_power(plr, plr->power * 0.7,true);
 	plr->bombs = PLR_START_BOMBS;
@@ -404,11 +414,6 @@ void player_realdeath(Player *plr) {
 
 	if(plr->lives-- == 0 && global.replaymode != REPLAY_PLAY) {
 		stage_gameover();
-
-		if(plr->lives > 0) {
-			// game continued
-			spawn_items(death_origin, Power, (int)ceil(PLR_MAX_POWER/(double)POWER_VALUE), NULL);
-		}
 	}
 }
 
@@ -479,8 +484,9 @@ static bool player_set_axis(int *aptr, uint16_t value) {
 	return true;
 }
 
-bool player_event(Player *plr, uint8_t type, uint16_t value) {
+void player_event(Player *plr, uint8_t type, uint16_t value, bool warn, bool *out_useful, bool *out_cheat) {
 	bool useful = true;
+	bool cheat = false;
 
 	switch(type) {
 		case EV_PRESS:
@@ -503,14 +509,17 @@ bool player_event(Player *plr, uint8_t type, uint16_t value) {
 
 				case KEY_IDDQD:
 					plr->iddqd = !plr->iddqd;
+					cheat = true;
 					break;
 
 				case KEY_POWERUP:
 					useful = player_set_power(plr, plr->power + 100, true);
+					cheat = true;
 					break;
 
 				case KEY_POWERDOWN:
 					useful = player_set_power(plr, plr->power - 100, true);
+					cheat = true;
 					break;
 
 				default:
@@ -535,20 +544,70 @@ bool player_event(Player *plr, uint8_t type, uint16_t value) {
 			useful = player_updateinputflags(plr, value);
 			break;
 
+		case EV_CONTINUE:
+			// continuing in the same frame will desync the replay,
+			// so schedule it for the next one
+			plr->continuetime = global.frames + 1;
+			useful = true;
+			break;
+
 		default:
 			log_warn("Can not handle event: [%i:%02x:%04x]", global.frames, type, value);
 			useful = false;
+			warn = false;
 			break;
 	}
 
-	return useful;
+	if(warn) {
+		assert(global.replaymode == REPLAY_PLAY);
+
+		if(!useful) {
+			log_warn("Useless event in replay: [%i:%02x:%04x]", global.frames, type, value);
+		}
+
+		if(cheat) {
+			log_warn("Cheat event in replay: [%i:%02x:%04x]", global.frames, type, value);
+
+			if( !(global.replay.flags			& REPLAY_GFLAG_CHEATS) ||
+				!(global.replay_stage->flags 	& REPLAY_SFLAG_CHEATS)) {
+				log_warn("...but this replay was NOT properly cheat-flagged! Not cool, not cool at all");
+			}
+		}
+
+		if(type == EV_CONTINUE && (
+			!(global.replay.flags			& REPLAY_GFLAG_CONTINUES) ||
+			!(global.replay_stage->flags 	& REPLAY_SFLAG_CONTINUES))) {
+			log_warn("Continue event in replay: [%i:%02x:%04x], but this replay was not properly continue-flagged", global.frames, type, value);
+		}
+	}
+
+	if(out_useful) {
+		*out_useful = useful;
+	}
+
+	if(out_cheat) {
+		*out_cheat = cheat;
+	}
 }
 
 bool player_event_with_replay(Player *plr, uint8_t type, uint16_t value) {
+	bool useful, cheat;
 	assert(global.replaymode == REPLAY_RECORD);
+	player_event(plr, type, value, false, &useful, &cheat);
 
-	if(player_event(plr, type, value)) {
+	if(useful) {
 		replay_stage_event(global.replay_stage, global.frames, type, value);
+
+		if(type == EV_CONTINUE) {
+			global.replay.flags |= REPLAY_GFLAG_CONTINUES;
+			global.replay_stage->flags |= REPLAY_SFLAG_CONTINUES;
+		}
+
+		if(cheat) {
+			global.replay.flags |= REPLAY_GFLAG_CHEATS;
+			global.replay_stage->flags |= REPLAY_SFLAG_CHEATS;
+		}
+
 		return true;
 	} else {
 		log_debug("Useless event discarded: [%i:%02x:%04x]", global.frames, type, value);

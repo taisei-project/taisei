@@ -64,7 +64,6 @@ static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty
 
     do {
         restart = false;
-        global.continues = 0;
 
         if(info) {
             global.is_practice_mode = (info->type != STAGE_EXTRA);
@@ -77,7 +76,6 @@ static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty
         }
 
         if(global.game_over == GAMEOVER_RESTART) {
-            player_init(&global.plr);
             replay_destroy(&global.replay);
             replay_init(&global.replay);
             global.game_over = 0;

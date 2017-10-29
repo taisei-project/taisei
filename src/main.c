@@ -69,10 +69,6 @@ static int run_tests(void) {
 		return 1;
 	}
 
-	if(replay_test()) {
-		return 1;
-	}
-
 	if(zrwops_test()) {
 		return 1;
 	}

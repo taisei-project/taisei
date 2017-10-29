@@ -75,7 +75,7 @@ void good_ending_youmu(Ending *e) {
 void create_ending(Ending *e) {
 	memset(e, 0, sizeof(Ending));
 
-	if(global.continues || global.diff == D_Easy) {
+	if(global.plr.continues_used || global.diff == D_Easy) {
 		global.plr.mode->character->ending.bad(e);
 		add_ending_entry(e, 400, "Try a no continue run on higher difficulties. You can do it!", NULL);
 	} else {

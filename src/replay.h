@@ -29,15 +29,18 @@
 	// Taisei v1.1 legacy format
 	#define REPLAY_STRUCT_VERSION_TS101000 5
 
-	// Taisei v1.2 revision 0: like v1.1, but with game version information
+	// Taisei v1.2 revision 0: adds game version information
 	#define REPLAY_STRUCT_VERSION_TS102000_REV0 6
+
+	// Taisei v1.2 revision 1: adds flags, stageflags and continues; reduces playername size to 255 bytes
+	#define REPLAY_STRUCT_VERSION_TS102000_REV1 7
 /* END supported struct versions */
 
 #define REPLAY_VERSION_COMPRESSION_BIT 0x8000
 #define REPLAY_COMPRESSION_CHUNK_SIZE 4096
 
 // What struct version to use when saving recorded replays
-#define REPLAY_STRUCT_VERSION_WRITE (REPLAY_STRUCT_VERSION_TS102000_REV0 | REPLAY_VERSION_COMPRESSION_BIT)
+#define REPLAY_STRUCT_VERSION_WRITE (REPLAY_STRUCT_VERSION_TS102000_REV1 | REPLAY_VERSION_COMPRESSION_BIT)
 
 #define REPLAY_ALLOC_INITIAL 256
 
@@ -48,7 +51,7 @@
 #define REPLAY_WRITE_DESYNC_CHECKS
 
 #ifdef DEBUG
-	// #define REPLAY_LOAD_GARBAGE_TEST
+	#define REPLAY_LOAD_DEBUG
 #endif
 
 typedef struct ReplayEvent {
@@ -64,13 +67,23 @@ typedef struct ReplayEvent {
 typedef struct ReplayStage {
 	/* BEGIN stored fields */
 
+	/* BEGIN REPLAY_STRUCT_VERSION_TS102000_REV1 and above */
+
+	// Bitfield, various parameters that apply to this specific stage
+	uint32_t flags;
+
+	/* END REPLAY_STRUCT_VERSION_TS102000_REV1 and above */
+
 	// initial game settings
 	uint16_t stage; // must match type of StageInfo.id in stage.h
 	uint32_t seed;	// this also happens to be the game initiation time - and we use this property, don't break it please
 	uint8_t diff;
-	uint32_t points;
 
 	// initial player settings
+	uint32_t plr_points;
+	/* BEGIN REPLAY_STRUCT_VERSION_TS102000_REV1 and above */
+	uint8_t plr_continues_used;
+	/* END REPLAY_STRUCT_VERSION_TS102000_REV1 and above */
 	uint8_t plr_char;
 	uint8_t plr_shot;
 	uint16_t plr_pos_x;
@@ -124,12 +137,25 @@ typedef struct Replay {
 	uint32_t fileoffset;
 
 	// How many bytes is {playername} long. The string is not null terminated in the file, but is null terminated after it's been loaded into this struct
-	// uint16_t playername_size;
+	// REPLAY_STRUCT_VERSION_TS102000_REV1 and above:
+	// 		uint8_t playername_size;
+	// REPLAY_STRUCT_VERSION_TS102000_REV0 and below:
+	// 		uint16_t playername_size;
 
+	// The player UTF8-encoded player name
 	char *playername;
+
+	/* BEGIN REPLAY_STRUCT_VERSION_TS102000_REV1 and above */
+
+	// Bitfield, various parameters that apply to the whole replay
+	uint32_t flags;
+
+	/* END REPLAY_STRUCT_VERSION_TS102000_REV1 and above */
+
+	// Number of stages in this replay
 	uint16_t numstages;
 
-	// Contains {numstages} elements when not NULL
+	// Array, contains {numstages} elements when not NULL
 	ReplayStage *stages;
 
 	// ALL input events from ALL of the stages
@@ -158,8 +184,22 @@ typedef enum ReplayReadMode {
 	REPLAY_READ_ALL = 3, // includes the other two
 } ReplayReadMode;
 
+typedef enum ReplayGlobalFlags {
+	_REPLAY_GFLAG_NULL,
+	REPLAY_GFLAG_CONTINUES 			= (1 << 0),	// a continue was used in any stage
+	REPLAY_GFLAG_CHEATS				= (1 << 1),	// a cheat was used in any stage
+	REPLAY_GFLAG_CLEAR				= (1 << 2), // all stages in the replay were cleared
+} ReplayGlobalFlags;
+
+typedef enum ReplayStageFlags {
+	_REPLAY_SFLAG_NULL,
+	REPLAY_SFLAG_CONTINUES 			= (1 << 0), // a continue was used in this stage
+	REPLAY_SFLAG_CHEATS				= (1 << 1), // a cheat was used in this stage
+	REPLAY_SFLAG_CLEAR				= (1 << 2), // this stage was cleared
+} ReplayStageFlags;
+
 void replay_init(Replay *rpy);
-ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, Difficulty diff, uint32_t points, Player *plr);
+ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, Difficulty diff, Player *plr);
 
 void replay_destroy(Replay *rpy);
 void replay_destroy_events(Replay *rpy);
@@ -180,5 +220,3 @@ void replay_copy(Replay *dst, Replay *src, bool steal_events);
 void replay_play(Replay *rpy, int firstidx);
 
 int replay_find_stage_idx(Replay *rpy, uint8_t stageid);
-
-int replay_test(void);

@@ -118,7 +118,6 @@ typedef struct {
 	RandomState rand_visual;
 
 	StageInfo *stage;
-	int continues;
 
 	bool is_practice_mode;
 } Global;

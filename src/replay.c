@@ -22,7 +22,7 @@ void replay_init(Replay *rpy) {
 	log_debug("Replay at %p initialized for writing", (void*)rpy);
 }
 
-ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, Difficulty diff, uint32_t points, Player *plr) {
+ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, Difficulty diff, Player *plr) {
 	ReplayStage *s;
 
 	rpy->stages = (ReplayStage*)realloc(rpy->stages, sizeof(ReplayStage) * (++rpy->numstages));
@@ -35,11 +35,12 @@ ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, D
 	s->stage = stage->id;
 	s->seed	= seed;
 	s->diff	= diff;
-	s->points = points;
 
 	s->plr_pos_x = floor(creal(plr->pos));
 	s->plr_pos_y = floor(cimag(plr->pos));
 
+	s->plr_points = plr->points;
+	s->plr_continues_used = plr->continues_used;
 	s->plr_focus = plr->focus;
 	s->plr_char	= plr->mode->character->id;
 	s->plr_shot	= plr->mode->shot_mode;
@@ -55,7 +56,8 @@ ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, D
 }
 
 void replay_stage_sync_player_state(ReplayStage *stg, Player *plr) {
-	plr->points = stg->points;
+	plr->points = stg->plr_points;
+	plr->continues_used = stg->plr_continues_used;
 	plr->mode = plrmode_find(stg->plr_char, stg->plr_shot);
 	plr->pos = stg->plr_pos_x + I * stg->plr_pos_y;
 	plr->focus = stg->plr_focus;
@@ -127,8 +129,13 @@ void replay_stage_event(ReplayStage *stg, uint32_t frame, uint8_t type, uint16_t
 	}
 }
 
-static void replay_write_string(SDL_RWops *file, char *str) {
-	SDL_WriteLE16(file, strlen(str));
+static void replay_write_string(SDL_RWops *file, char *str, uint16_t version) {
+	if(version >= REPLAY_STRUCT_VERSION_TS102000_REV1) {
+		SDL_WriteU8(file, strlen(str));
+	} else {
+		SDL_WriteLE16(file, strlen(str));
+	}
+
 	SDL_RWwrite(file, str, 1, strlen(str));
 }
 
@@ -140,12 +147,13 @@ static bool replay_write_stage_event(ReplayEvent *evt, SDL_RWops *file) {
 	return true;
 }
 
-static uint32_t replay_calc_stageinfo_checksum(ReplayStage *stg) {
+static uint32_t replay_calc_stageinfo_checksum(ReplayStage *stg, uint16_t version) {
 	uint32_t cs = 0;
+
 	cs += stg->stage;
 	cs += stg->seed;
 	cs += stg->diff;
-	cs += stg->points;
+	cs += stg->plr_points;
 	cs += stg->plr_char;
 	cs += stg->plr_shot;
 	cs += stg->plr_pos_x;
@@ -158,14 +166,30 @@ static uint32_t replay_calc_stageinfo_checksum(ReplayStage *stg) {
 	cs += stg->plr_bomb_fragments;
 	cs += stg->plr_inputflags;
 	cs += stg->numevents;
+
+	if(version >= REPLAY_STRUCT_VERSION_TS102000_REV1) {
+		cs += stg->plr_continues_used;
+		cs += stg->flags;
+	}
+
+	log_debug("%08x", cs);
 	return cs;
 }
 
-static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file) {
+static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file, uint16_t version) {
+	if(version >= REPLAY_STRUCT_VERSION_TS102000_REV1) {
+		SDL_WriteLE32(file, stg->flags);
+	}
+
 	SDL_WriteLE16(file, stg->stage);
 	SDL_WriteLE32(file, stg->seed);
 	SDL_WriteU8(file, stg->diff);
-	SDL_WriteLE32(file, stg->points);
+	SDL_WriteLE32(file, stg->plr_points);
+
+	if(version >= REPLAY_STRUCT_VERSION_TS102000_REV1) {
+		SDL_WriteU8(file, stg->plr_continues_used);
+	}
+
 	SDL_WriteU8(file, stg->plr_char);
 	SDL_WriteU8(file, stg->plr_shot);
 	SDL_WriteLE16(file, stg->plr_pos_x);
@@ -178,9 +202,20 @@ static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file) {
 	SDL_WriteU8(file, stg->plr_bomb_fragments);
 	SDL_WriteU8(file, stg->plr_inputflags);
 	SDL_WriteLE16(file, stg->numevents);
-	SDL_WriteLE32(file, 1 + ~replay_calc_stageinfo_checksum(stg));
+	SDL_WriteLE32(file, 1 + ~replay_calc_stageinfo_checksum(stg, version));
 
 	return true;
+}
+
+static void fix_flags(Replay *rpy) {
+	rpy->flags |= REPLAY_GFLAG_CLEAR;
+
+	for(int i = 0; i < rpy->numstages; ++i) {
+		if(!(rpy->stages[i].flags & REPLAY_SFLAG_CLEAR)) {
+			rpy->flags &= ~REPLAY_SFLAG_CLEAR;
+			break;
+		}
+	}
 }
 
 bool replay_write(Replay *rpy, SDL_RWops *file, uint16_t version) {
@@ -210,11 +245,17 @@ bool replay_write(Replay *rpy, SDL_RWops *file, uint16_t version) {
 		vfile = SDL_RWWrapZWriter(abuf, REPLAY_COMPRESSION_CHUNK_SIZE, false);
 	}
 
-	replay_write_string(vfile, config_get_str(CONFIG_PLAYERNAME));
+	replay_write_string(vfile, config_get_str(CONFIG_PLAYERNAME), base_version);
+	fix_flags(rpy);
+
+	if(base_version >= REPLAY_STRUCT_VERSION_TS102000_REV1) {
+		SDL_WriteLE32(vfile, rpy->flags);
+	}
+
 	SDL_WriteLE16(vfile, rpy->numstages);
 
 	for(i = 0; i < rpy->numstages; ++i) {
-		if(!replay_write_stage(rpy->stages + i, vfile)) {
+		if(!replay_write_stage(rpy->stages + i, vfile, base_version)) {
 			if(compression) {
 				SDL_RWclose(vfile);
 				SDL_RWclose(abuf);
@@ -255,7 +296,7 @@ bool replay_write(Replay *rpy, SDL_RWops *file, uint16_t version) {
 	return true;
 }
 
-#ifdef REPLAY_LOAD_GARBAGE_TEST
+#ifdef REPLAY_LOAD_DEBUG
 #define PRINTPROP(prop,fmt) log_debug(#prop " = %" # fmt " [%"PRIi64" / %"PRIi64"]", prop, SDL_RWtell(file), filesize)
 #else
 #define PRINTPROP(prop,fmt) (void)(prop)
@@ -263,8 +304,14 @@ bool replay_write(Replay *rpy, SDL_RWops *file, uint16_t version) {
 
 #define CHECKPROP(prop,fmt) PRINTPROP(prop,fmt); if(filesize > 0 && SDL_RWtell(file) == filesize) { log_warn("%s: Premature EOF", source); return false; }
 
-static void replay_read_string(SDL_RWops *file, char **ptr) {
-	size_t len = SDL_ReadLE16(file);
+static void replay_read_string(SDL_RWops *file, char **ptr, uint16_t version) {
+	size_t len;
+
+	if(version >= REPLAY_STRUCT_VERSION_TS102000_REV1) {
+		len = SDL_ReadU8(file);
+	} else {
+		len = SDL_ReadLE16(file);
+	}
 
 	*ptr = malloc(len + 1);
 	memset(*ptr, 0, len + 1);
@@ -298,7 +345,9 @@ static bool replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, s
 			break;
 		}
 
-		case REPLAY_STRUCT_VERSION_TS102000_REV0: {
+		case REPLAY_STRUCT_VERSION_TS102000_REV0:
+		case REPLAY_STRUCT_VERSION_TS102000_REV1:
+		{
 			if(taisei_version_read(file, &rpy->game_version) != TAISEI_VERSION_SIZE) {
 				log_warn("%s: Failed to read game version", source);
 				return false;
@@ -328,8 +377,14 @@ static bool replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, s
 }
 
 static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, const char *source) {
-	replay_read_string(file, &rpy->playername);
+	uint16_t version = rpy->version & ~REPLAY_VERSION_COMPRESSION_BIT;
+
+	replay_read_string(file, &rpy->playername, version);
 	PRINTPROP(rpy->playername, s);
+
+	if(version >= REPLAY_STRUCT_VERSION_TS102000_REV1) {
+		CHECKPROP(rpy->flags = SDL_ReadLE32(file), u);
+	}
 
 	CHECKPROP(rpy->numstages = SDL_ReadLE16(file), u);
 
@@ -344,10 +399,19 @@ static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, con
 	for(int i = 0; i < rpy->numstages; ++i) {
 		ReplayStage *stg = rpy->stages + i;
 
+		if(version >= REPLAY_STRUCT_VERSION_TS102000_REV1) {
+			CHECKPROP(stg->flags = SDL_ReadLE32(file), u);
+		}
+
 		CHECKPROP(stg->stage = SDL_ReadLE16(file), u);
 		CHECKPROP(stg->seed = SDL_ReadLE32(file), u);
 		CHECKPROP(stg->diff = SDL_ReadU8(file), u);
-		CHECKPROP(stg->points = SDL_ReadLE32(file), u);
+		CHECKPROP(stg->plr_points = SDL_ReadLE32(file), u);
+
+		if(version >= REPLAY_STRUCT_VERSION_TS102000_REV1) {
+			CHECKPROP(stg->plr_continues_used = SDL_ReadU8(file), u);
+		}
+
 		CHECKPROP(stg->plr_char = SDL_ReadU8(file), u);
 		CHECKPROP(stg->plr_shot = SDL_ReadU8(file), u);
 		CHECKPROP(stg->plr_pos_x = SDL_ReadLE16(file), u);
@@ -361,7 +425,7 @@ static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, con
 		CHECKPROP(stg->plr_inputflags = SDL_ReadU8(file), u);
 		CHECKPROP(stg->numevents = SDL_ReadLE16(file), u);
 
-		if(replay_calc_stageinfo_checksum(stg) + SDL_ReadLE32(file)) {
+		if(replay_calc_stageinfo_checksum(stg, version) + SDL_ReadLE32(file)) {
 			log_warn("%s: Stageinfo is corrupt", source);
 			return false;
 		}
@@ -646,60 +710,6 @@ void replay_stage_check_desync(ReplayStage *stg, int time, uint16_t check, Repla
 		// log_debug("%u", check);
 		replay_stage_event(stg, time, EV_CHECK_DESYNC, (int16_t)check);
 	}
-#endif
-}
-
-int replay_test(void) {
-#ifdef REPLAY_LOAD_GARBAGE_TEST
-	int sz = getenvint("TAISEI_REPLAY_LOAD_GARBAGE_TEST", 0);
-	int headsz = sizeof(replay_magic_header) + 8; // 8 = version (uint16) + strlen (uint16) + plrname "test" (char[4])
-
-	if(sz <= 0) {
-		return 0;
-	}
-
-	uint8_t *buf = malloc(sz + headsz);
-	SDL_RWops *handle = SDL_RWFromMem(buf, sz + headsz);
-
-	SDL_RWwrite(handle, replay_magic_header, sizeof(replay_magic_header), 1);
-
-	SDL_WriteLE16(handle, REPLAY_STRUCT_VERSION_TS101000);
-	SDL_WriteLE16(handle, 4);
-	SDL_WriteU8(handle, 't');
-	SDL_WriteU8(handle, 'e');
-	SDL_WriteU8(handle, 's');
-	SDL_WriteU8(handle, 't');
-
-	log_info("Wrote a valid replay header");
-
-	RandomState rnd;
-	tsrand_init(&rnd, time(0));
-
-	for(int i = 0; i < sz; ++i) {
-		SDL_WriteU8(handle, tsrand_p(&rnd) & 0xFF);
-	}
-
-	log_info("Wrote %i bytes of garbage", sz);
-
-	SDL_RWseek(handle, 0, RW_SEEK_SET);
-
-	for(int i = 0; i < headsz; ++i) {
-		tsfprintf(stdout, "%x ", buf[i]);
-	}
-
-	tsfprintf(stdout, "\n");
-
-	Replay rpy;
-
-	if(replay_read(&rpy, handle, REPLAY_READ_ALL)) {
-		log_fatal("Succeeded loading garbage data as a replay... that shouldn't happen");
-	}
-
-	replay_destroy(&rpy);
-	free(buf);
-	return 1;
-#else
-	return 0;
 #endif
 }
 
