@@ -55,6 +55,7 @@ AniSequence *aniplayer_queue(AniPlayer *plr, int row, int loops, int delay) {
 
 	s->duration = (loops+1)*plr->ani->cols*plr->ani->speed;
 	s->delay = delay;
+	s->mirrored = plr->mirrored;
 
 	return s;
 }

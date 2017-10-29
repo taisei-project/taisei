@@ -323,6 +323,8 @@ void iku_bolts(Boss *b, int time) {
 
 	FROM_TO(60, 400, 50) {
 		int i, c = 10+global.diff;
+		b->ani.mirrored = !b->ani.mirrored;
+		aniplayer_queue(&b->ani,1,0,5);
 		for(i = 0; i < c; i++) {
 			create_projectile2c("ball", b->pos, rgb(0.4, 1, 1), asymptotic, (i+2)*0.4*cexp(I*carg(global.plr.pos-b->pos))+0.2*(global.diff-1)*frand(), 3)->draw = ProjDrawAdd;
 		}
@@ -378,7 +380,7 @@ complex bolts2_laser(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		return 0;
 	}
-	return creal(l->args[0])+I*cimag(l->pos) + sign(cimag(l->args[0]-l->pos))*0.06*I*t*t + (20+4*global.diff)*sin(t*0.025*global.diff+creal(l->args[0]));
+	return creal(l->args[0])+I*cimag(l->pos) + sign(cimag(l->args[0]-l->pos))*0.06*I*t*t + (20+4*global.diff)*sin(t*0.025*global.diff+creal(l->args[0]))*l->args[1];
 }
 
 void iku_bolts2(Boss *b, int time) {
@@ -389,8 +391,11 @@ void iku_bolts2(Boss *b, int time) {
 		cloud_common();
 	}
 
-	FROM_TO(0, 400, 60)
-		create_lasercurve1c(creal(global.plr.pos), 100, 200, rgb(0.3,1,1), bolts2_laser, global.plr.pos);
+	FROM_TO(0, 400, 60) {
+		b->ani.mirrored = !b->ani.mirrored;
+		aniplayer_queue(&b->ani,1,0,5);
+		create_lasercurve2c(creal(global.plr.pos), 100, 200, rgb(0.3,1,1), bolts2_laser, global.plr.pos,b->ani.mirrored*2-1);
+	}
 
 	FROM_TO(0, 400, 5-global.diff)
 		if(frand() < 0.9)
@@ -470,6 +475,8 @@ void iku_lightning(Boss *b, int time) {
 	}
 
 	AT(100) {
+		b->ani.mirrored = !b->ani.mirrored;
+		aniplayer_queue(&b->ani,1,0,5);
 		int c = 40;
 		int l = 200;
 		int s = 10;
@@ -492,6 +499,8 @@ void iku_bolts3(Boss *b, int time) {
 	}
 
 	FROM_TO(60, 400, 60) {
+		b->ani.mirrored = !b->ani.mirrored;
+		aniplayer_queue(&b->ani,1,0,5);
 		int i, c = 10+global.diff;
 		complex n = cexp(I*carg(global.plr.pos-b->pos)+0.1*I-0.2*I*frand());
 		for(i = 0; i < c; i++) {
@@ -545,6 +554,8 @@ void iku_cathode(Boss *b, int t) {
 	TIMER(&t)
 
 	FROM_TO(50, 1800, 70-global.diff*10) {
+		b->ani.mirrored = !b->ani.mirrored;
+		aniplayer_queue(&b->ani,1,0,5);
 		int i;
 		int c = 5+global.diff;
 
@@ -560,6 +571,8 @@ void iku_induction(Boss *b, int t) {
 		GO_TO(b, VIEWPORT_W/2+200.0*I, 0.03);
 		return;
 	}
+
+	b->ani.stdrow=1;
 
 	TIMER(&t);
 
@@ -665,6 +678,8 @@ int iku_extra_trigger_bullet(Projectile *p, int t) {
 void iku_extra_fire_trigger_bullet(void) {
 	Enemy *e = iku_extra_find_next_slave(global.boss->pos, 250);
 
+	global.boss->ani.mirrored = !global.boss->ani.mirrored;
+	aniplayer_queue(&global.boss->ani,1,0,5);
 	if(!e) {
 		return;
 	}
