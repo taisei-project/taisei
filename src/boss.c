@@ -175,18 +175,58 @@ static int boss_shadow_rule(Projectile *p, int t) {
 		free_ref(p->args[2]);
 	}
 
-	return enemy_flare(p, t);
+	return timeout_linear(p, t);
 }
 
+void BossVeil(Projectile *p, int t) {
+	Boss *e = (Boss *)REF(p->args[2]);
+	if(e == NULL)
+		return;
+
+	glPushMatrix();
+	float s = 1.0-t/p->args[0];
+
+	if(e->pos + p->pos)
+		glTranslatef(creal(e->pos + p->pos), cimag(e->pos + p->pos), 0);
+
+	if(s != 1) {
+		double f = 2*(-cimag(p->pos)+30)/p->tex->h;
+		glScalef(1.5,tanh(t/20.)*f, 1);
+	}
+
+	float r,g,b,a;
+	parse_color(p->clr, &r, &g, &b, &a);
+
+	glColor4f(r,g,b,s);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	draw_texture_p(0, 0, p->tex);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glPopMatrix();
+
+	glColor3f(1,1,1);
+}
+
+int boss_veil(Projectile *p, int t) {
+	if(t > creal(p->args[0]))
+		return ACTION_DESTROY;
+	if(t < 0)
+		return 1;
+
+	p->pos += p->args[1];
+	if(cimag(p->pos) < -40)
+		p->args[1]=0;
+	return 1;
+}
 void draw_boss_background(Boss *boss) {
 	glPushMatrix();
 	glTranslatef(creal(boss->pos), cimag(boss->pos), 0);
 
 	Color shadowcolor = boss->shadowcolor;
 
-	if(!(global.frames % 5)) {
+	if(!(global.frames % 10)) {
 		complex offset = (frand()-0.5)*50 + (frand()-0.5)*20.0*I;
-		create_particle3c("boss_shadow", 0, shadowcolor, EnemyFlareShrink, enemy_flare, 50, (-100.0*I-offset)/(50.0+frand()*10), add_ref(boss));
+		create_particle3c("boss_shadow", 0, shadowcolor, BossVeil, boss_veil, 50, (-100.0*I-offset)/(50.0+frand()*10), add_ref(boss));
 	}
 
 	Attack *cur = boss->current;
