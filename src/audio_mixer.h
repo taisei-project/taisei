@@ -17,11 +17,12 @@
 typedef struct {
 	Mix_Chunk *ch;
 	int loopchan; // channel the sound may be looping on. -1 if not looping
+	int playchan; // channel the sound was last played on (looping does NOT set this). -1 if never played
 } MixerInternalSound;
 
 typedef struct MixerInternalMusic {
-    Mix_Music *intro;
-    Mix_Music *loop;
+	Mix_Music *intro;
+	Mix_Music *loop;
 } MixerInternalMusic;
 
 char* audio_mixer_sound_path(const char *prefix, const char *name, bool isbgm);

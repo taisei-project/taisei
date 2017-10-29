@@ -152,7 +152,7 @@ int stage2_sidebox_trail(Enemy *e, int t) { // creal(a[0]): velocity, cimag(a[0]
 		e->args[0] += creal(e->args[1])*I;
 
 	FROM_TO(10,200,30-global.diff*4) {
-		play_sound_cooldown("shot1", 5);
+		play_sound_ex("shot1", 5, false);
 
 		float f = 0;
 		if(global.diff > D_Normal)
@@ -309,7 +309,7 @@ void hina_cards1(Boss *h, int time) {
 
 	h->ani.stdrow = 1;
 	FROM_TO(0, 500, 2-(global.diff > D_Normal)) {
-		play_sound_cooldown("shot1", 4);
+		play_sound_ex("shot1", 4, false);
 		create_projectile2c("card", h->pos+50*cexp(I*t/10), rgb(0.8,0.0,0.0),  asymptotic, (1.6+0.4*global.diff)*cexp(I*t/5.0), 3);
 		create_projectile2c("card", h->pos-50*cexp(I*t/10), rgb(0.0,0.0,0.8),  asymptotic, -(1.6+0.4*global.diff)*cexp(I*t/5.0), 3);
 	}
@@ -395,7 +395,7 @@ void hina_bad_pick(Boss *h, int time) {
 	GO_TO(h, VIEWPORT_W/SLOTS*((113*(time/500))%SLOTS+0.5)+ 100.0*I, 0.02);
 
 	FROM_TO(100, 500, 5) {
-		play_sound_cooldown("shot1", 4);
+		play_sound_ex("shot1", 4, false);
 
 		for(i = 1; i < SLOTS; i++) {
 			create_projectile1c("crystal", VIEWPORT_W/SLOTS*i, rgb(0.5,0,0.6), linear, 7.0*I);

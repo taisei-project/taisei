@@ -65,7 +65,7 @@ int cirno_snowflake_proj(Projectile *p, int time) {
 		p->pos += p->args[0];
 	} else {
 		if(time == split_time) {
-			play_sound_cooldown("redirect", 30);
+			play_sound_ex("redirect", 30, false);
 			create_particle1c("stain", p->pos, 0, GrowFadeAdd, timeout, 5)->angle = p->angle;
 			p->clr = mix_colors(p->clr, rgb(0.5, 0.5, 0.5), 0.5);
 		}
@@ -145,7 +145,7 @@ int cirno_pfreeze_frogs(Projectile *p, int t) {
 		p->pos0 = p->pos;
 		p->args[0] = (1.8+0.2*global.diff)*cexp(I*2*M_PI*frand());
 		create_particle1c("stain", p->pos, 0, GrowFadeAdd, timeout, 30)->angle = p->angle;
-		play_sound_cooldown("redirect", 2);
+		play_sound_ex("redirect", 2, false);
 	}
 
 	if(t > 240)

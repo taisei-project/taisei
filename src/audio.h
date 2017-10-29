@@ -44,6 +44,7 @@ void audio_backend_music_pause(void);
 bool audio_backend_music_play(void *impl);
 bool audio_backend_music_set_position(double pos);
 bool audio_backend_sound_play(void *impl, AudioBackendSoundGroup group);
+bool audio_backend_sound_play_or_restart(void *impl, AudioBackendSoundGroup group);
 bool audio_backend_sound_loop(void *impl, AudioBackendSoundGroup group);
 bool audio_backend_sound_stop_loop(void *impl);
 bool audio_backend_sound_pause_all(AudioBackendSoundGroup group);
@@ -54,7 +55,7 @@ void audio_init(void);
 void audio_shutdown(void);
 
 void play_sound(const char *name);
-void play_sound_cooldown(const char *name, int cooldown);
+void play_sound_ex(const char *name, int cooldown, bool replace);
 void play_loop(const char *name);
 void play_ui_sound(const char *name);
 void reset_sounds(void);

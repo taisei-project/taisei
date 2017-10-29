@@ -18,7 +18,7 @@ static Hashtable *bgm_descriptions;
 static Hashtable *sfx_volumes;
 CurrentBGM current_bgm = { .name = NULL };
 
-static void play_sound_internal(const char *name, bool is_ui, int cooldown) {
+static void play_sound_internal(const char *name, bool is_ui, int cooldown, bool replace) {
 	if(!audio_backend_initialized() || global.frameskip) {
 		return;
 	}
@@ -30,19 +30,21 @@ static void play_sound_internal(const char *name, bool is_ui, int cooldown) {
 	}
 
 	snd->lastplayframe = global.frames;
-	audio_backend_sound_play(snd->impl, is_ui ? SNDGROUP_UI : SNDGROUP_MAIN);
+
+	(replace ? audio_backend_sound_play_or_restart : audio_backend_sound_play)
+		(snd->impl, is_ui ? SNDGROUP_UI : SNDGROUP_MAIN);
 }
 
 void play_sound(const char *name) {
-	play_sound_internal(name, false, 0);
+	play_sound_internal(name, false, 0, false);
 }
 
-void play_sound_cooldown(const char *name, int cooldown) {
-	play_sound_internal(name, false, cooldown);
+void play_sound_ex(const char *name, int cooldown, bool replace) {
+	play_sound_internal(name, false, cooldown, replace);
 }
 
 void play_ui_sound(const char *name) {
-	play_sound_internal(name, true, 0);
+	play_sound_internal(name, true, 0, true);
 }
 
 void play_loop(const char *name) {

@@ -642,7 +642,7 @@ void process_boss(Boss **pboss) {
 			create_particle2c("blast", boss->pos, 0, GrowFade, timeout, 70, 2.5);
 		}
 
-		play_sound_cooldown("bossdeath", BOSS_DEATH_DELAY * 2);
+		play_sound_ex("bossdeath", BOSS_DEATH_DELAY * 2, false);
 	}
 
 	if(over) {

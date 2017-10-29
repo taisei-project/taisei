@@ -46,10 +46,14 @@ void* load_sound_begin(const char *path, unsigned int flags) {
 	Mix_VolumeChunk(sound, get_default_sfx_volume(resname));
 	log_debug("%s volume: %i", resname, Mix_VolumeChunk(sound, -1));
 
+	MixerInternalSound *isnd = calloc(1, sizeof(MixerInternalSound));
+	isnd->ch = sound;
+	isnd->loopchan = -1;
+	isnd->playchan = -1;
+
 	Sound *snd = calloc(1, sizeof(Sound));
-	snd->impl = calloc(1, sizeof(MixerInternalSound));
-	((MixerInternalSound*)snd->impl)->ch = sound;
-	((MixerInternalSound*)snd->impl)->loopchan = -1;
+	snd->impl = isnd;
+
 	return snd;
 }
 

@@ -290,17 +290,39 @@ static int pick_channel(AudioBackendSoundGroup group, int defmixgroup) {
 	return channel;
 }
 
+static int audio_backend_sound_play_on_channel(int chan, MixerInternalSound *isnd) {
+	chan = Mix_PlayChannel(chan, isnd->ch, 0);
+
+	if(chan < 0) {
+		log_warn("Mix_PlayChannel() failed: %s", Mix_GetError());
+		return false;
+	}
+
+	isnd->playchan = chan;
+	return true;
+}
+
 bool audio_backend_sound_play(void *impl, AudioBackendSoundGroup group) {
 	if(!mixer_loaded)
 		return false;
 
-	bool result = (Mix_PlayChannel(pick_channel(group, MAIN_CHANNEL_GROUP), ((MixerInternalSound*)impl)->ch, 0) != -1);
+	MixerInternalSound *isnd = impl;
+	return audio_backend_sound_play_on_channel(pick_channel(group, MAIN_CHANNEL_GROUP), isnd);
+}
 
-	if(!result) {
-		log_warn("Mix_PlayChannel() failed: %s", Mix_GetError());
+bool audio_backend_sound_play_or_restart(void *impl, AudioBackendSoundGroup group) {
+	if(!mixer_loaded) {
+		return false;
 	}
 
-	return result;
+	MixerInternalSound *isnd = impl;
+	int chan = isnd->playchan;
+
+	if(chan < 0 || Mix_GetChunk(chan) != isnd->ch) {
+		chan = pick_channel(group, MAIN_CHANNEL_GROUP);
+	}
+
+	return audio_backend_sound_play_on_channel(chan, isnd);
 }
 
 bool audio_backend_sound_loop(void *impl, AudioBackendSoundGroup group) {

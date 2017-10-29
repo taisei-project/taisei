@@ -835,7 +835,7 @@ static void wriggle_ignite_warnlaser_logic(Laser *l, int time) {
 	}
 
 	if(time == 90) {
-		play_sound_cooldown("laser1", 30);
+		play_sound_ex("laser1", 30, false);
 	}
 
 	l->width = laser_charge(l, time, 90, 10);
@@ -897,7 +897,7 @@ void wriggle_night_ignite(Boss *boss, int time) {
 		}
 
 		// FIXME: better sound
-		play_sound_cooldown("shot_special1", 1);
+		play_sound_ex("shot_special1", 1, false);
 	}
 }
 
@@ -1046,7 +1046,7 @@ static int wriggle_fstorm_proj(Projectile *p, int time) {
 			create_particle2c("flare", p->pos, 0, Shrink, timeout_linear, 60, (1+afrand(0))*cexp(I*tsrand_a(1)));
 		}
 
-		play_sound_cooldown("redirect", 3);
+		play_sound_ex("redirect", 3, false);
 	}
 
 	p->pos += p->args[1];
