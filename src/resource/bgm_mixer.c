@@ -72,6 +72,7 @@ void* load_music_begin(const char *path, unsigned int flags) {
 	if(!imus->loop) {
 		assert(imus->intro == NULL);
 		free(imus);
+		free(mus->title);
 		free(mus);
 		mus = NULL;
 		log_warn("Failed to load bgm '%s'", path);
