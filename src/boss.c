@@ -412,7 +412,7 @@ void boss_rule_extra(Boss *boss, float alpha) {
 
 		int d = 5;
 		if(!(global.frames % d))
-			create_particle3c((frand() < v*0.3 || lt > 1)? "stain" : "boss_shadow", pos, rgb(r, g, b), GrowFadeAdd, timeout_linear, 30*lt, vel * (1 - 2 * !(global.frames % (2*d))), 2.5);
+			create_particle3c((frand() < v*0.3 || lt > 1)? "stain" : "arc", pos, rgb(r, g, b), GrowFadeAdd, timeout_linear, 30*lt, vel * (1 - 2 * !(global.frames % (2*d))), 2.5);
 	}
 }
 
@@ -841,6 +841,8 @@ void boss_preload(void) {
 		"boss_spellcircle0",
 		"boss_circle",
 		"boss_indicator",
+		"part/boss_shadow",
+		"part/arc",
 	NULL);
 
 	preload_resources(RES_SHADER, RESF_DEFAULT,

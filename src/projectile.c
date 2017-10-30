@@ -470,7 +470,6 @@ void projectiles_preload(void) {
 		// some of these are ubiquitous, but some only appear in very specific parts.
 
 		"part/blast",
-		"part/boss_shadow",
 		"part/flare",
 		"part/lasercurve",
 		"part/petal",
