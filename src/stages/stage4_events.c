@@ -385,9 +385,18 @@ void kurumi_outro(Boss *b, int time) {
 	b->pos += -5-I;
 }
 
+void kurumi_global_rule(Boss *b, int time) {
+	if(b->current && ATTACK_IS_SPELL(b->current->type)) {
+		b->shadowcolor = rgba(0.0, 0.4, 0.5, 0.5);
+	} else {
+		b->shadowcolor = rgba(1.0, 0.1, 0.0, 0.5);
+	}
+}
+
 Boss* stage4_spawn_kurumi(complex pos) {
 	Boss* b = create_boss("Kurumi", "kurumi", "dialog/kurumi", pos);
-	b->shadowcolor = rgba(0.5, 0.1, 0.0, 0.5);
+	b->glowcolor = rgba(0.5, 0.1, 0.0, 1.0);
+	b->global_rule = kurumi_global_rule;
 	return b;
 }
 

@@ -279,7 +279,8 @@ void wiggle_mid_flee(Boss *w, int t) {
 
 Boss *create_wriggle_mid(void) {
 	Boss* wriggle = create_boss("Wriggle", "wriggle", "dialog/wriggle", VIEWPORT_W + 150 - 30.0*I);
-	wriggle->shadowcolor = rgba(0.2, 0.4, 0.5, 0.5);
+	wriggle->glowcolor = rgba(0.2, 0.4, 0.5, 0.5);
+	wriggle->shadowcolor = rgba(0.4, 0.2, 0.6, 0.5);
 	wriggle_ani_flyin(wriggle);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 4, 0, wriggle_intro, NULL);
 	boss_add_attack(wriggle, AT_Normal, "Small Bug Storm", 20, 26000, wriggle_small_storm, NULL);
@@ -685,7 +686,8 @@ void hina_spell_bg(Boss *h, int time) {
 
 Boss* stage2_spawn_hina(complex pos) {
 	Boss *hina = create_boss("Kagiyama Hina", "hina", "dialog/hina", pos);
-	hina->shadowcolor = rgba(0.7, 0.2, 0.3, 0.5);
+	hina->glowcolor = rgba(0.7, 0.2, 0.3, 0.5);
+	hina->shadowcolor = hina->glowcolor;
 	return hina;
 }
 

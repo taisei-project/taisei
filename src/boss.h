@@ -111,6 +111,7 @@ typedef struct Boss {
 
 	Color zoomcolor;
 	Color shadowcolor;
+	Color glowcolor;
 
 	int failed_spells;
 	int lastdamageframe; // used to make the boss blink on damage taken

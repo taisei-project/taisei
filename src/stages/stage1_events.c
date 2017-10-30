@@ -224,7 +224,8 @@ void cirno_mid_flee(Boss *c, int time) {
 
 Boss* stage1_spawn_cirno(complex pos) {
 	Boss *cirno = create_boss("Cirno", "cirno", "dialog/cirno", pos);
-	cirno->shadowcolor = rgba(0.2, 0.35, 0.5, 0.5);
+	cirno->shadowcolor = rgba(0.6, 0.7, 1.0, 0.25);
+	cirno->glowcolor = rgba(0.2, 0.35, 0.5, 0.5);
 	return cirno;
 }
 

@@ -1551,7 +1551,8 @@ void elly_spellbg_modern_dark(Boss *b, int t) {
 }
 
 static void elly_global_rule(Boss *b, int time) {
-	global.boss->shadowcolor = hsla(time/120.0, 1.0, 0.25, 0.5);
+	global.boss->glowcolor = hsla(time/120.0, 1.0, 0.25, 0.5);
+	global.boss->shadowcolor = hsla((time+20)/120.0, 1.0, 0.25, 0.5);
 }
 
 Boss* stage6_spawn_elly(complex pos) {

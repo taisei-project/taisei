@@ -622,7 +622,8 @@ void wriggle_spellbg(Boss *b, int time) {
 
 Boss* stage3_spawn_scuttle(complex pos) {
 	Boss *scuttle = create_boss("Scuttle", "scuttle", 0, pos);
-	scuttle->shadowcolor = rgba(0.5, 0.6, 0.3, 0.5);
+	scuttle->glowcolor = rgba(0.5, 0.6, 0.3, 0.5);
+	scuttle->shadowcolor = rgba(0.7, 0.3, 0.1, 0.5);
 	return scuttle;
 }
 
@@ -632,12 +633,6 @@ Boss* stage3_create_midboss(void) {
 	boss_add_attack(scuttle, AT_Move, "Introduction", 1, 0, scuttle_intro, NULL);
 	boss_add_attack(scuttle, AT_Normal, "Lethal Bite", 11, 20000, scuttle_lethbite, NULL);
 	boss_add_attack_from_info(scuttle, &stage3_spells.mid.deadly_dance, false);
-
-	/*
-	if(global.diff > D_Normal)
-		boss_add_attack_from_info(scuttle, &stage3_spells.mid.acid_rain, false);
-	*/
-
 	boss_add_attack(scuttle, AT_Move, "Runaway", 2, 1, scuttle_outro, NULL);
 	scuttle->zoomcolor = rgb(0.4, 0.1, 0.4);
 
@@ -1169,7 +1164,8 @@ static void wriggle_intro(Boss *boss, int time) {
 
 Boss* stage3_spawn_wriggle_ex(complex pos) {
 	Boss *wriggle = create_boss("Wriggle EX", "wriggleex", "dialog/wriggle", pos);
-	wriggle->shadowcolor = rgba(0.2, 0.4, 0.5, 0.5);
+	wriggle->glowcolor = rgba(0.2, 0.4, 0.5, 0.5);
+	wriggle->shadowcolor = rgba(0.4, 0.2, 0.6, 0.5);
 	return wriggle;
 }
 

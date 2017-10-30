@@ -793,7 +793,8 @@ void iku_extra(Boss *b, int t) {
 
 Boss* stage5_spawn_iku(complex pos) {
 	Boss *b = create_boss("Nagae Iku", "iku", "dialog/iku", pos);
-	b->shadowcolor = rgba(0.2, 0.4, 0.5, 0.5);
+	b->glowcolor = rgba(0.2, 0.4, 0.5, 0.5);
+	b->shadowcolor = rgba(0.65, 0.2, 0.75, 0.5);
 	return b;
 }
 
