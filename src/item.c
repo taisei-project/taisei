@@ -10,7 +10,29 @@
 #include "global.h"
 #include "list.h"
 
-Item *create_item(complex pos, complex v, ItemType type) {
+static Texture* item_tex(ItemType type) {
+	static const char *const map[] = {
+		[Power]		= "items/power",
+		[Point]		= "items/point",
+		[Life]		= "items/life",
+		[Bomb]		= "items/bomb",
+		[LifeFrag]	= "items/lifefrag",
+		[BombFrag]	= "items/bombfrag",
+		[BPoint]	= "items/bullet_point",
+	};
+
+	// int cast to silence a WTF warning
+	assert((int)type < sizeof(map)/sizeof(char*));
+	return get_tex(map[type]);
+}
+
+Item* create_item(complex pos, complex v, ItemType type) {
+	if((creal(pos) < 0 || creal(pos) > VIEWPORT_W)) {
+		// we need this because we clamp the item position to the viewport boundary during motion
+		// e.g. enemies that die offscreen shouldn't spawn any items inside the viewport
+		return NULL;
+	}
+
 	Item *e, **d, **dest = &global.items;
 
 	for(e = *dest; e && e->next; e = e->next)
@@ -37,36 +59,38 @@ void delete_item(Item *item) {
 	delete_element((void **)&global.items, item);
 }
 
+Item* create_bpoint(complex pos) {
+	Item *i = create_item(pos, 0, BPoint);
+
+	if(i) {
+		create_particle1c("flare", pos, 0, Fade, timeout, 30);
+		i->auto_collect = 10;
+	}
+
+	return i;
+}
+
 void draw_items(void) {
-	Item *p;
-	Texture *tex = NULL;
-	for(p = global.items; p; p = p->next) {
-		switch(p->type){
-			case Power:
-				tex = get_tex("items/power");
-				break;
-			case Point:
-				tex = get_tex("items/point");
-				break;
-			case Life:
-				tex = get_tex("items/life");
-				break;
-			case Bomb:
-				tex = get_tex("items/bomb");
-				break;
-			case LifeFrag:
-				tex = get_tex("items/lifefrag");
-				break;
-			case BombFrag:
-				tex = get_tex("items/bombfrag");
-				break;
-			case BPoint:
-				tex = get_tex("items/bullet_point");
-				break;
-			default:
-				break;
+	Color white = rgba(1, 1, 1, 1);
+	Color prevc = white;
+
+	for(Item *i = global.items; i; i = i->next) {
+		Color c = rgba(1, 1, 1,
+			i->type == BPoint && !i->auto_collect
+				? clamp(2.0 - (global.frames - i->birthtime) / 60.0, 0.1, 1.0)
+				: 1.0
+		);
+
+		if(prevc != c) {
+			parse_color_call(c, glColor4f);
+			prevc = c;
 		}
-		draw_texture_p(creal(p->pos), cimag(p->pos), tex);
+
+		draw_texture_p(creal(i->pos), cimag(i->pos), item_tex(i->type));
+	}
+
+	if(prevc != white) {
+		glColor4f(1, 1, 1, 1);
 	}
 }
 
@@ -78,10 +102,27 @@ void move_item(Item *i) {
 	int t = global.frames - i->birthtime;
 	complex lim = 0 + 2.0*I;
 
-	if(i->auto_collect)
+	if(i->auto_collect) {
 		i->pos -= (7+i->auto_collect)*cexp(I*carg(i->pos - global.plr.pos));
-	else
+	} else {
+		complex oldpos = i->pos;
 		i->pos = i->pos0 + log(t/5.0 + 1)*5*(i->v + lim) + lim*t;
+
+		complex v = i->pos - oldpos;
+		double half = item_tex(i->type)->w/2.0;
+		bool over = false;
+
+		if((over = creal(i->pos) > VIEWPORT_W-half) || creal(i->pos) < half) {
+			complex normal = over ? -1 : 1;
+			v -= 2 * normal * (creal(normal)*creal(v));
+			v = 1.5*creal(v) - I*fabs(cimag(v));
+
+			i->pos = clamp(creal(i->pos), half, VIEWPORT_W-half) + I*cimag(i->pos);
+			i->v = v;
+			i->pos0 = i->pos;
+			i->birthtime = global.frames;
+		}
+	}
 }
 
 void process_items(void) {
@@ -100,9 +141,22 @@ void process_items(void) {
 			item->type = Point;
 		}
 
-		if(cimag(global.plr.pos) < POINT_OF_COLLECT || cabs(global.plr.pos - item->pos) < r
-		|| global.frames - global.plr.recovery < 0)
+		if(cabs(global.plr.pos - item->pos) < r) {
 			item->auto_collect = 1;
+		} else {
+			bool plr_alive = global.plr.deathtime <= global.frames && global.plr.deathtime == -1;
+
+			if((cimag(global.plr.pos) < POINT_OF_COLLECT && plr_alive)
+			|| global.frames - global.plr.recovery < 0)
+				item->auto_collect = 1;
+
+			if(item->auto_collect && !plr_alive) {
+				item->auto_collect = 0;
+				item->pos0 = item->pos;
+				item->birthtime = global.frames;
+				item->v = -10*I + 5*nfrand();
+			}
+		}
 
 		move_item(item);
 

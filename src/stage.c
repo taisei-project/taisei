@@ -422,6 +422,23 @@ void stage_clear_hazards(bool force) {
 	}
 }
 
+void stage_clear_hazards_instantly(bool force) {
+	for(Projectile *p = global.projs, *next; p; p = next) {
+		next = p->next;
+
+		if(p->type == FairyProj || p->type == FakeProj || p->type == DeadProj) {
+			create_bpoint(p->pos);
+			delete_projectile(&global.projs, p);
+		}
+	}
+
+	// TODO: clear these instantly as well
+	for(Laser *l = global.lasers; l; l = l->next) {
+		if(!l->unclearable || force)
+			l->dead = true;
+	}
+}
+
 static void stage_free(void) {
 	delete_enemies(&global.enemies);
 	delete_enemies(&global.plr.slaves);

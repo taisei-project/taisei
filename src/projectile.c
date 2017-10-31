@@ -160,8 +160,7 @@ void process_projectiles(Projectile **projs, bool collision) {
 		if(proj->type == DeadProj && killed < 5) {
 			killed++;
 			action = ACTION_DESTROY;
-			create_particle1c("flare", proj->pos, 0, Fade, timeout, 30);
-			create_item(proj->pos, 0, BPoint)->auto_collect = 10;
+			create_bpoint(proj->pos);
 		}
 
 		if(collision)

@@ -197,8 +197,7 @@ void process_lasers(void) {
 				double y = cimag(p);
 
 				if(x > 0 && x < VIEWPORT_W && y > 0 && y < VIEWPORT_H) {
-					create_particle1c("flare", p, 0, Fade, timeout, 30);
-					create_item(p, 0, BPoint)->auto_collect = 10;
+					create_bpoint(p);
 				}
 
 				if(kill_now) {

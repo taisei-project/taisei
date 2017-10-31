@@ -9,6 +9,7 @@
 #pragma once
 
 #include "util.h"
+#include "resource/texture.h"
 
 typedef struct Item Item;
 
@@ -42,6 +43,8 @@ Item *create_item(complex pos, complex v, ItemType type);
 void delete_item(Item *item);
 void draw_items(void);
 void delete_items(void);
+
+Item* create_bpoint(complex pos);
 
 int collision_item(Item *p);
 void process_items(void);

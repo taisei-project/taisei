@@ -186,6 +186,7 @@ void player_logic(Player* plr) {
 	if(plr->deathtime < -1) {
 		plr->deathtime++;
 		plr->pos -= I;
+		stage_clear_hazards_instantly(false);
 		return;
 	}
 
@@ -199,8 +200,11 @@ void player_logic(Player* plr) {
 		plr->mode->procs.shot(plr);
 	}
 
-	if(global.frames == plr->deathtime)
+	if(global.frames == plr->deathtime) {
 		player_realdeath(plr);
+	} else if(plr->deathtime > global.frames) {
+		stage_clear_hazards_instantly(false);
+	}
 
 	if(global.frames - plr->recovery < 0) {
 		if(plr->bombcanceltime) {
@@ -421,11 +425,13 @@ void player_realdeath(Player *plr) {
 void player_death(Player *plr) {
 	if(plr->deathtime == -1 && global.frames - abs(plr->recovery) > 0) {
 		play_sound("death");
-		int i;
-		for(i = 0; i < 20; i++) {
+
+		for(int i = 0; i < 20; i++) {
 			tsrand_fill(2);
 			create_particle2c("flare", plr->pos, 0, Shrink, timeout_linear, 40, (3+afrand(0)*7)*cexp(I*tsrand_a(1)))->type=PlrProj;
 		}
+
+		stage_clear_hazards(false);
 		create_particle2c("blast", plr->pos, rgba(1,0.3,0.3,0.5), GrowFadeAdd, timeout, 35, 2.4)->type=PlrProj;
 		plr->deathtime = global.frames + DEATHBOMB_TIME;
 	}

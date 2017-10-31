@@ -113,6 +113,7 @@ void stage_pause(void);
 void stage_gameover(void);
 
 void stage_clear_hazards(bool force);
+void stage_clear_hazards_instantly(bool force);
 
 void stage_start_bgm(const char *bgm);
 
