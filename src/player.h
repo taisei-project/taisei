@@ -133,7 +133,7 @@ void player_realdeath(Player*);
 void player_death(Player*);
 void player_graze(Player*, complex, int);
 
-void player_event(Player *plr, uint8_t type, uint16_t value, bool warn, bool *out_useful, bool *out_cheat);
+void player_event(Player *plr, uint8_t type, uint16_t value, bool *out_useful, bool *out_cheat);
 bool player_event_with_replay(Player *plr, uint8_t type, uint16_t value);
 void player_applymovement(Player* plr);
 void player_fix_input(Player *plr);

@@ -356,7 +356,7 @@ void replay_input(void) {
 				break;
 
 			default: {
-				player_event(&global.plr, e->type, (int16_t)e->value, true, NULL, NULL);
+				player_event(&global.plr, e->type, (int16_t)e->value, NULL, NULL);
 				break;
 			}
 		}

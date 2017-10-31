@@ -485,9 +485,10 @@ static bool player_set_axis(int *aptr, uint16_t value) {
 	return true;
 }
 
-void player_event(Player *plr, uint8_t type, uint16_t value, bool warn, bool *out_useful, bool *out_cheat) {
+void player_event(Player *plr, uint8_t type, uint16_t value, bool *out_useful, bool *out_cheat) {
 	bool useful = true;
 	bool cheat = false;
+	bool is_replay = global.replaymode == REPLAY_PLAY;
 
 	switch(type) {
 		case EV_PRESS:
@@ -555,13 +556,10 @@ void player_event(Player *plr, uint8_t type, uint16_t value, bool warn, bool *ou
 		default:
 			log_warn("Can not handle event: [%i:%02x:%04x]", global.frames, type, value);
 			useful = false;
-			warn = false;
 			break;
 	}
 
-	if(warn) {
-		assert(global.replaymode == REPLAY_PLAY);
-
+	if(is_replay) {
 		if(!useful) {
 			log_warn("Useless event in replay: [%i:%02x:%04x]", global.frames, type, value);
 		}
@@ -594,7 +592,12 @@ void player_event(Player *plr, uint8_t type, uint16_t value, bool warn, bool *ou
 bool player_event_with_replay(Player *plr, uint8_t type, uint16_t value) {
 	bool useful, cheat;
 	assert(global.replaymode == REPLAY_RECORD);
-	player_event(plr, type, value, false, &useful, &cheat);
+
+	if(config_get_int(CONFIG_SHOT_INVERTED) && value == KEY_SHOT && (type == EV_PRESS || type == EV_RELEASE)) {
+		type = type == EV_PRESS ? EV_RELEASE : EV_PRESS;
+	}
+
+	player_event(plr, type, value, &useful, &cheat);
 
 	if(useful) {
 		replay_stage_event(global.replay_stage, global.frames, type, value);
@@ -694,6 +697,7 @@ void player_fix_input(Player *plr) {
 	// usually because the pause menu ate them up
 
 	PlrInputFlag newflags = plr->inputflags;
+	bool invert_shot = config_get_int(CONFIG_SHOT_INVERTED);
 
 	for(KeyIndex key = KEYIDX_FIRST; key <= KEYIDX_LAST; ++key) {
 		int flag = key_to_inflag(key);
@@ -701,6 +705,10 @@ void player_fix_input(Player *plr) {
 		if(flag && !(plr->gamepadmove && (flag & INFLAGS_MOVE))) {
 			bool flagset = plr->inputflags & flag;
 			bool keyheld = gamekeypressed(key);
+
+			if(invert_shot && key == KEY_SHOT) {
+				keyheld = !keyheld;
+			}
 
 			if(flagset && !keyheld) {
 				newflags &= ~flag;

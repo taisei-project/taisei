@@ -632,13 +632,18 @@ void create_options_menu(MenuData *m) {
 
 	add_menu_entry(m, "Save replays", do_nothing,
 		b = bind_option(CONFIG_SAVE_RPY, bind_common_onoffplus_get, bind_common_onoffplus_set)
-	);	bind_addvalue(b, "on");
-		bind_addvalue(b, "off");
+	);	bind_addvalue(b, "always");
+		bind_addvalue(b, "never");
 		bind_addvalue(b, "ask");
 
-	add_menu_entry(m, "Auto-restart in spell practice mode", do_nothing,
+	add_menu_entry(m, "Auto-restart in Spell Practice", do_nothing,
 		b = bind_option(CONFIG_SPELLSTAGE_AUTORESTART, 	bind_common_onoff_get,
 														bind_common_onoff_set)
+	);	bind_onoff(b);
+
+	add_menu_entry(m, "Shoot by default", do_nothing,
+		b = bind_option(CONFIG_SHOT_INVERTED,	bind_common_onoff_get,
+												bind_common_onoff_set)
 	);	bind_onoff(b);
 
 	add_menu_separator(m);

@@ -86,6 +86,7 @@
 	CONFIGDEF_FLOAT		(TEXT_QUALITY,				"text_quality",							1.0) \
 	CONFIGDEF_FLOAT		(FG_QUALITY,				"fg_quality",							1.0) \
 	CONFIGDEF_FLOAT		(BG_QUALITY,				"bg_quality",							1.0) \
+	CONFIGDEF_INT		(SHOT_INVERTED,				"shot_inverted",						0) \
 	KEYDEFS \
 	CONFIGDEF_INT		(GAMEPAD_ENABLED, 			"gamepad_enabled", 						0) \
 	CONFIGDEF_STRING	(GAMEPAD_DEVICE, 			"gamepad_device", 						"default") \
