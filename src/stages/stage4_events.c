@@ -73,7 +73,7 @@ int stage4_splasher(Enemy *e, int t) {
 	FROM_TO(0, 50, 1)
 		e->pos += e->args[0]*(1-t/50.0);
 
-	FROM_TO(66-6*global.diff, 150, 5-global.diff) {
+	FROM_TO_SND("shot1_loop", 66-6*global.diff, 150, 5-global.diff) {
 		tsrand_fill(4);
 		create_projectile2c(afrand(0) > 0.5 ? "rice" : "thickrice", e->pos, rgb(0.8,0.3-0.1*afrand(1),0.5), accelerated, e->args[0]/2+(1-2*afrand(2))+(1-2*afrand(3))*I, 0.02*I);
 	}
@@ -97,6 +97,7 @@ int stage4_fodder(Enemy *e, int t) {
 	e->pos += e->args[0];
 
 	FROM_TO(100, 200, 22-global.diff*3) {
+		play_sound("shot1");
 		create_projectile2c("ball", e->pos, rgb(1, 0.3, 0.5), asymptotic, 2*cexp(I*M_PI*2*frand()), 3);
 	}
 
@@ -120,6 +121,7 @@ int stage4_partcircle(Enemy *e, int t) {
 	FROM_TO(60,76,1) {
 		int i;
 		for(i = 0; i < global.diff; i++) {
+			play_sound("shot2");
 			complex n = cexp(I*M_PI/16.0*_i + I*carg(e->args[0])-I*M_PI/4.0 + 0.01*I*i*(1-2*(creal(e->args[0]) > 0)));
 			create_projectile2c("wave", e->pos + (30)*n, rgb(1-0.2*i,0.5,0.7), asymptotic, 2*n, 2+2*i);
 		}
@@ -149,10 +151,10 @@ int stage4_cardbuster(Enemy *e, int t) {
 
 	complex n = cexp(I*carg(global.plr.pos - e->pos) + 0.3*I*_i);
 
-	FROM_TO(120, 120+20*global.diff, 1)
+	FROM_TO_SND("shot1_loop", 120, 120+20*global.diff, 1)
 		create_projectile2c("card", e->pos + 30*n, rgb(0, 1, 0), asymptotic, (1.1+0.2*global.diff)*n, 0.4*I);
 
-	FROM_TO(300, 320+20*global.diff, 1)
+	FROM_TO_SND("shot1_loop", 300, 320+20*global.diff, 1)
 		create_projectile2c("card", e->pos + 30*n, rgb(0, 1, 0.2), asymptotic, (1.1+0.2*global.diff)*n, 0.4*I);
 
 	return 1;
@@ -178,6 +180,7 @@ int stage4_backfire(Enemy *e, int t) {
 	e->pos += e->args[0];
 
 	FROM_TO(20,180+global.diff*20,2) {
+		play_sound("shot2");
 		complex n = cexp(I*M_PI*frand()-I*copysign(M_PI/2.0, creal(e->args[0])));
 		int i;
 		for(i = 0; i < global.diff; i++)
@@ -203,6 +206,7 @@ int stage4_bigcircle(Enemy *e, int t) {
 
 
 	FROM_TO(80,100+30*global.diff,20) {
+		play_sound("shot_special1");
 		int i;
 		int n = 10+3*global.diff;
 		for(i = 0; i < n; i++) {
@@ -228,6 +232,7 @@ int stage4_explosive(Enemy *e, int t) {
 			create_projectile2c("ball", e->pos, rgb(0.1, 0.2, 1-0.6*(i&1)), asymptotic, (1.1+0.3*global.diff)*cexp(I*2*M_PI*(i+frand())/(float)n)*phase, 2);
 		}
 
+		play_sound("shot1");
 		return 1;
 	}
 
@@ -270,6 +275,7 @@ int kurumi_burstslave(Enemy *e, int t) {
 		float r = cimag(e->pos)/VIEWPORT_H;
 		create_projectile2c("wave", e->pos + 10.0*I*e->args[0], rgb(r,0,0), accelerated, 2.0*I*e->args[0], -0.01*e->args[1]);
 		create_projectile2c("wave", e->pos - 10.0*I*e->args[0], rgb(r,0,0), accelerated, -2.0*I*e->args[0], -0.01*e->args[1]);
+		play_sound("shot1");
 	}
 
 	FROM_TO(40, 100,1) {
@@ -320,6 +326,7 @@ int kurumi_spikeslave(Enemy *e, int t) {
 		float r = cimag(e->pos)/VIEWPORT_H;
 		create_projectile2c("wave", e->pos + 10.0*I*e->args[0], rgb(r,0,0), linear, 1.5*I*e->args[1], -0.01*e->args[0]);
 		create_projectile2c("wave", e->pos - 10.0*I*e->args[0], rgb(r,0,0), linear, -1.5*I*e->args[1], -0.01*e->args[0]);
+		play_sound("shot1");
 	}
 
 	return 1;
@@ -359,6 +366,7 @@ void kurumi_redspike(Boss *b, int time) {
 			complex offset = 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1));
 			complex n = cexp(I*carg(global.plr.pos-b->pos-offset));
 			create_projectile2c("rice", b->pos+offset, rgb(1,0,0), accelerated, -1*n, 0.05*n)->draw=ProjDrawAdd;
+			play_sound("shot2");
 		}
 	}
 }
@@ -419,6 +427,7 @@ int splitcard(Projectile *p, int t) {
 	if(t == creal(p->args[2])) {
 		p->args[0] += p->args[3];
 		p->clr = derive_color(p->clr, CLRMASK_B, rgb(0, 0, -color_component(p->clr, CLR_B)));
+		play_sound_ex("redirect", 10, false);
 	}
 
 	return asymptotic(p, t);
@@ -447,6 +456,8 @@ int stage4_supercard(Enemy *e, int t) {
 	__timep = &time;
 
 	FROM_TO(70, 70+20*global.diff, 1) {
+		play_sound("shot1");
+
 		int i;
 		complex n = cexp(I*carg(global.plr.pos - e->pos) + 0.3*I*_i);
 		for(i = -1; i <= 1 && t; i++)
@@ -478,7 +489,7 @@ void kurumi_breaker(Boss *b, int time) {
 
 	TIMER(&t);
 
-	FROM_TO(50, 400, 50-7*global.diff) {
+	FROM_TO_SND("shot1_loop", 50, 400, 50-7*global.diff) {
 		complex p = b->pos + 150*sin(_i) + 100.0*I*cos(_i);
 
 		for(i = 0; i < c; i++) {
@@ -490,6 +501,7 @@ void kurumi_breaker(Boss *b, int time) {
 	}
 
 	FROM_TO(60, 400, 100) {
+		play_sound("shot_special1");
 		aniplayer_queue(&b->ani,1,0,0);
 		for(i = 0; i < 20; i++)
 			create_projectile2c("bigball", b->pos, rgb(0.5,0,0.5), asymptotic, cexp(2.0*I*M_PI/20.0*i), 3)->draw=ProjDrawAdd;
@@ -558,8 +570,10 @@ int aniwall_slave(Enemy *e, int t) {
 
 		if(!(t % 7-global.diff-2*(global.diff > D_Normal))) {
 			complex v = e->args[2]/cabs(e->args[2])*I*sign(creal(e->args[0]));
-			if(cimag(v) > -0.1 || global.diff >= D_Normal)
+			if(cimag(v) > -0.1 || global.diff >= D_Normal) {
+				play_sound("shot1");
 				create_projectile2c("ball", e->pos+I*v*20*nfrand(), rgb(1,0,0), aniwall_bullet, 1*v, 40);
+			}
 		}
 	}
 
@@ -580,12 +594,12 @@ void kurumi_aniwall(Boss *b, int time) {
 
 	GO_TO(b, VIEWPORT_W/2 + VIEWPORT_W/3*sin(time/200) + I*cimag(b->pos),0.03)
 
-
 	if(time < 0)
 		return;
 
 	b->ani.stdrow = 1;
 	AT(0) {
+		play_sound("laser1");
 		create_lasercurve2c(b->pos, 50, 80, rgb(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(0.4*I));
 		create_enemy1c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, aniwall_slave, 0.2*cexp(0.4*I));
 		create_lasercurve2c(b->pos, 50, 80, rgb(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(I*M_PI - 0.4*I));
@@ -605,7 +619,7 @@ void kurumi_sbreaker(Boss *b, int time) {
 	int c = 10+global.diff*2;
 	int kt = 40;
 
-	FROM_TO(50, dur, 2+(global.diff < D_Hard)) {
+	FROM_TO_SND("shot1_loop", 50, dur, 2+(global.diff < D_Hard)) {
 		complex p = b->pos + 150*sin(_i/8.0)+100.0*I*cos(_i/15.0);
 
 		complex n = cexp(2.0*I*M_PI/c*_i);
@@ -615,11 +629,11 @@ void kurumi_sbreaker(Boss *b, int time) {
 	}
 
 	FROM_TO(60, dur, 100) {
+		play_sound("shot_special1");
 		aniplayer_queue(&b->ani,1,0,0);
 		for(i = 0; i < 20; i++)
 			create_projectile2c("bigball", b->pos, rgb(0.5,0,0.5), asymptotic, cexp(2.0*I*M_PI/20.0*i), 3)->draw=ProjDrawAdd;
 	}
-
 }
 
 int blowwall_slave(Enemy *e, int t) {
@@ -662,18 +676,24 @@ int blowwall_slave(Enemy *e, int t) {
 			create_projectile2c(type, e->pos, rgb(1, 0.1, 0.1), asymptotic, (1+3*f)*cexp(2.0*I*M_PI*frand()), 4)->draw=ProjDrawAdd;
 		}
 
+		play_sound("shot_special1");
 		return ACTION_DESTROY;
 	}
 
 	return 1;
 }
 
-
-
 static void bwlaser(Boss *b, float arg, int slave) {
 	create_lasercurve2c(b->pos, 50, 100, rgb(1, 0.5+0.3*slave, 0.5+0.3*slave), las_accel, 0, (0.1+0.1*slave)*cexp(I*arg));
-	if(slave)
+
+	if(slave) {
+		play_sound("laser1");
 		create_enemy1c(b->pos, ENEMY_IMMUNE, NULL, blowwall_slave, 0.2*cexp(I*arg));
+	} else {
+		// FIXME: needs a better sound
+		play_sound("shot2");
+		play_sound("shot_special1");
+	}
 }
 
 void kurumi_blowwall(Boss *b, int time) {
@@ -737,6 +757,8 @@ int kdanmaku_slave(Enemy *e, int t) {
 					create_projectile1c("thickrice", p, rgb(1, 0.5, 0.5), linear, 0.5*cexp(2.0*I*M_PI*frand()))->draw = ProjDrawAdd;
 			}
 		}
+
+		play_sound_ex("redirect", 3, false);
 	}
 
 	return 1;
@@ -752,6 +774,7 @@ void kurumi_danmaku(Boss *b, int time) {
 		return;
 
 	AT(50) {
+		play_sound("laser1");
 		create_lasercurve2c(b->pos, 50, 100, rgb(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(I*carg(-b->pos)));
 		create_lasercurve2c(b->pos, 50, 100, rgb(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(I*carg(VIEWPORT_W-b->pos)));
 		create_enemy3c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, kdanmaku_slave, 0.2*cexp(I*carg(-b->pos)), 0, 1);
@@ -798,6 +821,7 @@ int kurumi_extra_dead_shield(Enemy *e, int time) {
 		// complex dir = cexp(I*(carg(global.plr.pos - e->pos)));
 		complex dir = cexp(I*creal(e->args[0]));
 		create_projectile2c("rice", e->pos, 0, kurumi_extra_dead_shield_proj, 2*dir, 10);
+		play_sound("shot1");
 	}
 
 	time += cimag(e->args[1]);
@@ -811,6 +835,10 @@ int kurumi_extra_dead_shield(Enemy *e, int time) {
 			tsrand_fill(2);
 			create_projectile2c("ball", e->pos, 0, kurumi_extra_dead_shield_proj, 1.5 * (1 + afrand(0)) * dir, 4 + anfrand(1))->draw = ProjDrawAdd;
 		}
+
+		// FIXME: needs a more powerful 'explosion' sound
+		play_sound("shot_special1");
+		play_sound("enemy_death");
 	}
 
 	return 1;
@@ -859,6 +887,8 @@ int kurumi_extra_bigfairy1(Enemy *e, int time) {
 			create_lasercurve2c(e->pos,20,200,rgb(1,0.3,0.7),las_accel,arg,0.1*arg);
 			create_projectile2c("bullet",e->pos,rgb(1,0.3,0.7),accelerated,arg,0.1*arg);
 		}
+
+		play_sound("laser1");
 	}
 
 	return 1;
@@ -898,6 +928,8 @@ int kurumi_extra_drainer(Projectile *p, int time) {
 		p->args[2] = approach(p->args[2], 1, 0.5);
 
 		if(time > 40) {
+			// TODO: maybe add a special sound for this?
+
 			int drain = clamp(4, 0, e->hp);
 			e->hp -= drain;
 			global.boss->current->hp = min(global.boss->current->maxhp, global.boss->current->hp + drain * 2);
@@ -965,7 +997,7 @@ int kurumi_extra_fairy(Enemy *e, int t) {
 
 	int attacktime = creal(e->args[1]);
 	int flytime = cimag(e->args[1]);
-	FROM_TO(attacktime-20,attacktime+20,20) {
+	FROM_TO_SND("shot1_loop", attacktime-20,attacktime+20,20) {
 		complex vel = cexp(I*frand()*2*M_PI)*(2+0.1*(global.diff-D_Easy));
 		if(e->args[2] == 0) { // attack type
 			int corners = 5;
@@ -991,8 +1023,8 @@ int kurumi_extra_fairy(Enemy *e, int t) {
 	}
 	AT(attacktime) {
 		e->args[0] = global.plr.pos-e->pos;
-
 		kurumi_extra_create_drainer(e);
+		play_sound("redirect");
 	}
 	FROM_TO(attacktime,attacktime+flytime,1) {
 		e->pos += e->args[0]/flytime;
@@ -1051,6 +1083,9 @@ void kurumi_extra(Boss *b, int time) {
 			// immune so they don’t get killed while they are still offscreen.
 			create_enemy3c(pos-300*(1-2*direction),ENEMY_IMMUNE,kurumi_extra_fairy_draw,kurumi_extra_fairy,pos,100+20*i+100*(1.1-0.05*global.diff)*I,direction);
 		}
+
+		// XXX: maybe add a special sound for this?
+		play_sound("shot_special1");
 	}
 
 	complex sidepos = VIEWPORT_W * (0.5+0.3*(1-2*direction)) + VIEWPORT_H * 0.28 * I;
