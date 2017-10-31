@@ -176,7 +176,7 @@ void player_logic(Player* plr) {
 		plr->life_fragments = 0;
 		plr->bomb_fragments = 0;
 		plr->continues_used += 1;
-		player_set_power(plr, 0, true);
+		player_set_power(plr, 0);
 		stage_clear_hazards(false);
 		spawn_items(plr->deathpos, Power, (int)ceil(PLR_MAX_POWER/(double)POWER_VALUE), NULL);
 	}
