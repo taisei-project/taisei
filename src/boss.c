@@ -186,15 +186,16 @@ void draw_boss_background(Boss *boss) {
 	Color glowcolor = boss->glowcolor;
 	Color shadowcolor = boss->shadowcolor;
 
-	if(!(global.frames % 13)) {
+	Attack *cur = boss->current;
+	bool is_spell = cur && ATTACK_IS_SPELL(cur->type) && !cur->endtime;
+	bool is_extra = cur && cur->type == AT_ExtraSpell && global.frames >= cur->starttime;
+
+	if(!(global.frames % 13) && !is_extra) {
 		complex v = cexp(I*global.frames);
 		create_particle3c("smoke", v, shadowcolor, EnemyFlareShrink, enemy_flare, 180, 0, add_ref(boss))->angle = M_PI*2*frand();
 	}
 
-	Attack *cur = boss->current;
-	bool is_spell = cur && ATTACK_IS_SPELL(cur->type) && !cur->endtime;
-
-	if(!(global.frames % 2) && (is_spell || boss_is_dying(boss))) {
+	if(!(global.frames % (2 + 2 * is_extra)) && (is_spell || boss_is_dying(boss))) {
 		// copy animation state to render the same frame even after the boss has changed its own
 		AniPlayer *aplr = malloc(sizeof(AniPlayer));
 		aniplayer_copy(aplr, &boss->ani);
