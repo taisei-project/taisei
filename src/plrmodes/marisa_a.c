@@ -38,26 +38,18 @@ static void draw_laser_beam(complex src, complex dst, double size, double step, 
 }
 
 static complex trace_laser(complex origin, complex vel, int damage) {
-    complex target = origin;
-    Projectile *p = NULL;
+    int col;
+    complex target = trace_projectile(
+        origin, 28*(1+I), linear, 0, vel, 0, 0, 0, PlrProj + damage, &col
+    );
 
-    create_projectile_p(&p, get_tex("proj/ball"), origin, 0, NULL, linear, vel, 0, 0, 0);
-    p->type = PlrProj + damage;
-
-    for(int t = 0; p; ++t) {
-        int action = p->rule(p, t);
-        int col = collision_projectile(p);
-
-        if(col || action == ACTION_DESTROY || !projectile_in_viewport(p)) {
-            target = p->pos;
-
-            if(col) {
-                tsrand_fill(3);
-                create_particle2c("flare", target, 0, Shrink, timeout_linear, 3 + 5 * afrand(2), (2+afrand(0)*6)*cexp(I*M_PI*2*afrand(1)))->type=PlrProj;
-            }
-
-            delete_projectile(&p, p);
-        }
+    if(col) {
+        tsrand_fill(3);
+        create_particle2c(
+            "flare", target, 0, Shrink, timeout_linear,
+            3 + 5 * afrand(2),
+            (2+afrand(0)*6)*cexp(I*M_PI*2*afrand(1))
+        )->type=PlrProj;
     }
 
     return target;

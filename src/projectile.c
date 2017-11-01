@@ -28,14 +28,18 @@ Projectile *create_projectile_p(Projectile **dest, Texture *tex, complex pos, Co
 							    ProjDRule draw, ProjRule rule, complex a1, complex a2, complex a3, complex a4) {
 	Projectile *p, *e, **d;
 
-	for(e = *dest; e && e->next; e = e->next)
-		if(e->prev && tex->w*tex->h > e->tex->w*e->tex->h)
-			break;
-
-	if(e == NULL)
+	if(tex == NULL) {
 		d = dest;
-	else
-		d = &e;
+	} else {
+		for(e = *dest; e && e->next; e = e->next)
+			if(e->prev && tex->w*tex->h > e->tex->w*e->tex->h)
+				break;
+
+		if(e == NULL)
+			d = dest;
+		else
+			d = &e;
+	}
 
 	p = create_element((void **)d, sizeof(Projectile));
 
@@ -50,6 +54,7 @@ Projectile *create_projectile_p(Projectile **dest, Texture *tex, complex pos, Co
 	p->clr = clr;
 	p->grazed = 0;
 	p->maxviewportdist = 0;
+	p->size = 0;
 
 	p->args[0] = a1;
 	p->args[1] = a2;
@@ -80,11 +85,31 @@ void delete_projectiles(Projectile **projs) {
 	delete_all_elements((void **)projs, _delete_projectile);
 }
 
+static complex projectile_size(Projectile *p) {
+	if(p->tex) {
+		return p->tex->w + I*p->tex->h;
+	}
+
+	return p->size;
+}
+
+static void projectile_size_split(Projectile *p, double *w, double *h) {
+	assert(w != NULL);
+	assert(h != NULL);
+
+	complex c = projectile_size(p);
+	*w = creal(c);
+	*h = cimag(c);
+}
+
 int collision_projectile(Projectile *p) {
 	if(p->type == FairyProj) {
+		double w, h;
+		projectile_size_split(p, &w, &h);
+
 		double angle = carg(global.plr.pos - p->pos) + p->angle;
-		double projr = sqrt(pow(p->tex->w/4*cos(angle),2)*5/10.0 + pow(p->tex->h/2*sin(angle)*5/10.0,2));
-		double grazer = max(p->tex->w, p->tex->h);
+		double projr = sqrt(pow(w/4*cos(angle),2)*5/10.0 + pow(h/2*sin(angle)*5/10.0,2));
+		double grazer = max(w, h);
 		double dst = cabs(global.plr.pos - p->pos);
 		grazer = (0.9 * sqrt(grazer) + 0.1 * grazer) * 6;
 
@@ -144,8 +169,11 @@ bool projectile_in_viewport(Projectile *proj) {
 		e = 300;
 	}
 
-	return !(creal(proj->pos) + proj->tex->w/2 + e < 0 || creal(proj->pos) - proj->tex->w/2 - e > VIEWPORT_W
-		  || cimag(proj->pos) + proj->tex->h/2 + e < 0 || cimag(proj->pos) - proj->tex->h/2 - e > VIEWPORT_H);
+	double w, h;
+	projectile_size_split(proj, &w, &h);
+
+	return !(creal(proj->pos) + w/2 + e < 0 || creal(proj->pos) - w/2 - e > VIEWPORT_W
+		  || cimag(proj->pos) + h/2 + e < 0 || cimag(proj->pos) - h/2 - e > VIEWPORT_H);
 }
 
 void process_projectiles(Projectile **projs, bool collision) {
@@ -188,6 +216,31 @@ void process_projectiles(Projectile **projs, bool collision) {
 	}
 }
 
+complex trace_projectile(complex origin, complex size, ProjRule rule, float angle, complex a0, complex a1, complex a2, complex a3, ProjType type, int *out_col) {
+	complex target = origin;
+	Projectile *p = NULL;
+
+	create_projectile_p(&p, NULL, origin, 0, NULL, rule, a0, a1, a2, a3);
+	p->type = type;
+	p->size = size;
+
+	for(int t = 0; p; ++t) {
+		int action = p->rule(p, t);
+		int col = collision_projectile(p);
+
+		if(col || action == ACTION_DESTROY || !projectile_in_viewport(p)) {
+			target = p->pos;
+
+			if(out_col) {
+				*out_col = col;
+			}
+
+			delete_projectile(&p, p);
+		}
+	}
+
+	return target;
+}
 
 int linear(Projectile *p, int t) { // sure is physics in here; a[0]: velocity
 	if(t < 0)

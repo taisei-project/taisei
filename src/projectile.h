@@ -45,6 +45,7 @@ typedef struct Projectile {
 	ProjRule rule;
 	ProjDRule draw;
 	Texture *tex;
+	complex size; // this is currently ignored if tex is not NULL.
 
 	ProjType type;
 
@@ -74,7 +75,7 @@ int collision_projectile(Projectile *p);
 bool projectile_in_viewport(Projectile *proj);
 void process_projectiles(Projectile **projs, bool collision);
 
-Projectile *get_proj(Projectile *hay, int birthtime);
+complex trace_projectile(complex origin, complex size, ProjRule rule, float angle, complex a0, complex a1, complex a2, complex a3, ProjType type, int *out_col);
 
 int linear(Projectile *p, int t);
 int accelerated(Projectile *p, int t);
