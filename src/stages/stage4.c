@@ -49,8 +49,10 @@ void stage4_fog(FBO *fbo) {
 	Shader *shader = get_shader("zbuf_fog");
 
 	float f = 0;
-	if(global.timer > 5100) {
-		float v = (global.timer-5100)*0.0005;
+	int redtime = 5100 + STAGE3_MIDBOSS_MUSIC_TIME;
+
+	if(global.timer > redtime) {
+		float v = (global.timer-redtime)*0.0005;
 		f =  v < 0.1 ? v : 0.1;
 	}
 
@@ -250,6 +252,7 @@ void stage4_preload(void) {
 		"stage4/mansion",
 		"stage4/planks",
 		"stage4/wall",
+		"stage6/scythe", // Stage 6 is also intentional
 		"dialog/kurumi",
 	NULL);
 	preload_resources(RES_SHADER, RESF_DEFAULT,
@@ -297,6 +300,11 @@ void stage4_spellpractice_events(void) {
 
 		start_bgm("stage4boss");
 	}
+}
+
+void stage4_skip(int t) {
+	skip_background_anim(&bgcontext, stage4_draw, t, &global.timer, &global.frames);
+	audio_backend_music_set_position(global.timer / (double)FPS);
 }
 
 ShaderRule stage4_shaders[] = { stage4_fog, NULL };

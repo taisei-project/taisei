@@ -7,6 +7,7 @@
  */
 
 #include "stage4_events.h"
+#include "stage6_events.h"
 #include "global.h"
 #include "stage.h"
 #include "enemy.h"
@@ -411,7 +412,7 @@ Boss* stage4_spawn_kurumi(complex pos) {
 Boss* create_kurumi_mid(void) {
 	Boss *b = stage4_spawn_kurumi(VIEWPORT_W/2-400.0*I);
 
-	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_intro, NULL);
+	boss_add_attack(b, AT_Move, "Introduction", 2, 0, kurumi_intro, NULL);
 	boss_add_attack_from_info(b, &stage4_spells.mid.gate_of_walachia, false);
 	if(global.diff < D_Hard) {
 		boss_add_attack_from_info(b, &stage4_spells.mid.dry_fountain, false);
@@ -1148,13 +1149,79 @@ Boss *create_kurumi(void) {
 	return b;
 }
 
+static int scythe_post_mid(Enemy *e, int t) {
+	TIMER(&t);
 
+	int fleetime = creal(e->args[3]);
+
+	if(t == EVENT_DEATH) {
+		if(fleetime >= 300) {
+			spawn_items(e->pos, Life, 1, NULL);
+		}
+
+		return 1;
+	}
+
+	if(t < 0) {
+		return 1;
+	}
+
+	AT(fleetime) {
+		return ACTION_DESTROY;
+	}
+
+	double scale = min(1.0, t / 60.0) * (1.0 - clamp((t - (fleetime - 60)) / 60.0, 0.0, 1.0));
+	double alpha = scale * scale;
+	double spin = (0.2 + 0.2 * (1.0 - alpha)) * 1.5;
+
+	complex opos = VIEWPORT_W/2+160*I;
+	double targ = (t-300) * (0.5 + psin(t/300.0));
+	double w = min(0.15, 0.0001*targ);
+
+	complex pofs = 150*cos(w*targ+M_PI/2.0) + I*80*sin(2*w*targ);
+	pofs += ((VIEWPORT_W/2+VIEWPORT_H/2*I - opos) * (global.diff - D_Easy)) / (D_Lunatic - D_Easy);
+
+	e->pos = opos + pofs * (1.0 - clamp((t - (fleetime - 120)) / 60.0, 0.0, 1.0)) * smooth(smooth(scale));
+	e->args[2] = 0.5 * scale + (1.0 - alpha) * I;
+	e->args[1] = creal(e->args[1]) + spin * I;
+
+	FROM_TO(90, fleetime - 120, 1) {
+		complex shotorg = e->pos+80*cexp(I*creal(e->args[1]));
+		complex shotdir = cexp(I*creal(e->args[1]));
+
+		struct projentry { char *proj; char *snd; } projs[] = {
+			{ "ball",		"shot1"},
+			{ "bigball",	"shot1"},
+			{ "soul",		"shot_special1"},
+			{ "bigball",	"shot1"},
+		};
+
+		struct projentry *pe = &projs[_i % (sizeof(projs)/sizeof(struct projentry))];
+
+		double ca = creal(e->args[1]) + _i/60.0;
+		Color c = rgb(cos(ca), sin(ca), cos(ca+2.1));
+
+		play_sound_ex(pe->snd, 3, true);
+		create_projectile2c(pe->proj, shotorg, c, asymptotic, (1.2-0.1*global.diff)*shotdir, 5 * sin(t/150.0));
+
+	}
+
+	FROM_TO(fleetime - 120, fleetime, 1) {
+		stage_clear_hazards(false);
+	}
+
+	scythe_common(e, t);
+	return 1;
+}
+
+void stage4_skip(int t);
 
 void stage4_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
 		stage_start_bgm("stage4");
+		stage4_skip(getenvint("STAGE4_TEST", 0));
 	}
 
 	AT(70) {
@@ -1193,29 +1260,43 @@ void stage4_events(void) {
 	AT(3200)
 		global.boss = create_kurumi_mid();
 
-	FROM_TO(3201, 3601, 10)
+	int midboss_time = STAGE3_MIDBOSS_MUSIC_TIME;
+
+	AT(3201) {
+		if(global.boss) {
+			global.timer += min(midboss_time, global.frames - global.boss->birthtime) - 1;
+		}
+	}
+
+	FROM_TO(3201, 3201 + midboss_time - 1, 1) {
+		if(!global.enemies) {
+			create_enemy4c(VIEWPORT_W/2+160.0*I, ENEMY_IMMUNE, Scythe, scythe_post_mid, 0, 1+0.2*I, 0+1*I, 3201 + midboss_time - global.timer);
+		}
+	}
+
+	FROM_TO(3201 + midboss_time, 3601 + midboss_time, 10)
 		create_enemy1c(VIEWPORT_W*(_i&1)+VIEWPORT_H/2*I-300.0*I*frand(), 200, Fairy, stage4_fodder, 2-4*(_i&1)+1.0*I);
 
-	FROM_TO(3500, 4000, 100)
+	FROM_TO(3500 + midboss_time, 4000 + midboss_time, 100)
 		create_enemy3c(VIEWPORT_W/4.0 + VIEWPORT_W/2.0*(_i&1), 1000, BigFairy, stage4_cardbuster, VIEWPORT_W/6.0*(_i&1)+100.0*I,
 					VIEWPORT_W/4.0+VIEWPORT_W/2.0*((_i+1)&1)+300.0*I, VIEWPORT_W/2.0-200.0*I);
 
-	AT(3800)
+	AT(3800 + midboss_time)
 		create_enemy1c(VIEWPORT_W/2, 7000, BigFairy, stage4_supercard, 4.0*I);
 
-	FROM_TO(4300, 4600, 95-10*global.diff)
+	FROM_TO(4300 + midboss_time, 4600 + midboss_time, 95-10*global.diff)
 		create_enemy1c(VIEWPORT_W*(_i&1)+100*I, 200, Swirl, stage4_backfire, frand()*(1-2*(_i&1)));
 
-	FROM_TO(4800, 5200, 10)
+	FROM_TO(4800 + midboss_time, 5200 + midboss_time, 10)
 		create_enemy1c(20.0*I+I*VIEWPORT_H/3*frand()+VIEWPORT_W*(_i&1), 100, Swirl, stage4_explosive, (1-2*(_i&1))*3+I);
 
-	AT(5300)
+	AT(5300 + midboss_time)
 		global.boss = create_kurumi();
 
-	AT(5400)
+	AT(5400 + midboss_time)
 		global.dialog = stage4_dialog_end();
 
-	AT(5550 - FADE_TIME) {
+	AT(5550 + midboss_time - FADE_TIME) {
 		stage_finish(GAMEOVER_WIN);
 	}
 }

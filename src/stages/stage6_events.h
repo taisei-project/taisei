@@ -9,6 +9,7 @@
 #pragma once
 
 #include "boss.h"
+#include "enemy.h"
 
 void elly_spellbg_classic(Boss*, int);
 void elly_spellbg_modern(Boss*, int);
@@ -26,3 +27,6 @@ void elly_curvature(Boss*, int);
 
 void stage6_events(void);
 Boss* stage6_spawn_elly(complex pos);
+
+void Scythe(Enemy *e, int t);
+void scythe_common(Enemy *e, int t);

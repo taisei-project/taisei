@@ -133,12 +133,15 @@ void ScaleFade(Projectile *p, int t) {
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
 	glScalef(creal(p->args[1]), creal(p->args[1]), 1);
 	glRotatef(180/M_PI*p->angle, 0, 0, 1);
-	if(t/creal(p->args[0]) != 0)
-		glColor4f(1,1,1, 1.0 - (float)t/p->args[0]);
+
+	float a = (1.0 - t/creal(p->args[0])) * (1.0 - cimag(p->args[1]));
+
+	if(a != 1)
+		glColor4f(1,1,1,a);
 
 	draw_texture_p(0, 0, p->tex);
 
-	if(t/creal(p->args[0]) != 0)
+	if(a != 1)
 		glColor4f(1,1,1,1);
 	glPopMatrix();
 }
