@@ -485,10 +485,10 @@ void stage_draw_hud(void) {
 	snprintf(buf, sizeof(buf), "%i", global.plr.graze);
 	draw_text(AL_Left, -6, 270, buf, _fonts.standard);
 
-	snprintf(buf, sizeof(buf), "%i", global.plr.points);
+	snprintf(buf, sizeof(buf), "%u", global.plr.points);
 	draw_text(AL_Left, 8, 49, buf, _fonts.standard);
 
-	snprintf(buf, sizeof(buf), "%i", progress.hiscore);
+	snprintf(buf, sizeof(buf), "%u", progress.hiscore);
 	draw_text(AL_Left, 8, 83, buf, _fonts.standard);
 
 	if(global.plr.iddqd) {
