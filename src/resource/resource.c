@@ -73,13 +73,6 @@ Resource* insert_resource(ResourceType type, const char *name, void *data, Resou
 		flags |= RESF_PERMANENT;
 	}
 
-	if(type == RES_SFX || type == RES_BGM) {
-		// audio stuff is always optional.
-		// loading may fail if the backend failed to initialize properly, even though the resource exists.
-		// this is a less than ideal situation, but it doesn't render the game unplayable.
-		flags |= RESF_OPTIONAL;
-	}
-
 	res->type = handler->type;
 	res->flags = flags;
 	res->data = data;
@@ -296,6 +289,13 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 			if(!(flags & RESF_OPTIONAL) && getenvint("TAISEI_PRELOAD_REQUIRED", false)) {
 				log_fatal("Aborting due to TAISEI_PRELOAD_REQUIRED");
 			}
+		}
+
+		if(type == RES_SFX || type == RES_BGM) {
+			// audio stuff is always optional.
+			// loading may fail if the backend failed to initialize properly, even though the resource exists.
+			// this is a less than ideal situation, but it doesn't render the game unplayable.
+			flags |= RESF_OPTIONAL;
 		}
 
 		res = load_resource(handler, NULL, name, flags, false);
