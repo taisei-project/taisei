@@ -162,6 +162,13 @@ noreturn void _taisei_log_fatal(LogLevel lvl, const char *funcname, const char *
 
 static void delete_logger(void **loggers, void *logger) {
     Logger *l = logger;
+
+#if HAVE_STDIO_H
+    if(l->out->type == SDL_RWOPS_STDFILE) {
+        fflush(l->out->hidden.stdio.fp);
+    }
+#endif
+
     SDL_RWclose(l->out);
     delete_element(loggers, logger);
 }
