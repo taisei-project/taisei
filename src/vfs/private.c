@@ -8,6 +8,7 @@
 
 #include "private.h"
 #include "vdir.h"
+#include "ipfs.h"
 
 VFSNode *vfs_root;
 
@@ -15,8 +16,15 @@ typedef struct vfs_tls_s {
     char *error_str;
 } vfs_tls_t;
 
+typedef struct vfs_shutdownhook_t {
+    List refs;
+    VFSShutdownHandler func;
+    void *arg;
+} vfs_shutdownhook_t;
+
 static SDL_TLSID vfs_tls_id;
 static vfs_tls_t *vfs_tls_fallback;
+static vfs_shutdownhook_t *shutdown_hooks;
 
 static void vfs_free(VFSNode *node);
 
@@ -57,15 +65,31 @@ void vfs_init(void) {
         log_warn("SDL_TLSCreate(): failed: %s", SDL_GetError());
         vfs_tls_fallback = calloc(1, sizeof(vfs_tls_t));
     }
+
+    vfs_ipfs_global_init();
 }
 
-void vfs_uninit(void) {
+static void call_shutdown_hook(void **vlist, void *vhook) {
+    vfs_shutdownhook_t *hook = vhook;
+    hook->func(hook->arg);
+    delete_element(vlist, vhook);
+}
+
+void vfs_shutdown(void) {
+    delete_all_elements((void**)&shutdown_hooks, call_shutdown_hook);
+
     vfs_decref(vfs_root);
     vfs_tls_free(vfs_tls_fallback);
 
     vfs_root = NULL;
     vfs_tls_id = 0;
     vfs_tls_fallback = NULL;
+}
+
+void vfs_hook_on_shutdown(VFSShutdownHandler func, void *arg) {
+    vfs_shutdownhook_t *hook = create_element_at_end((void**)&shutdown_hooks, sizeof(vfs_shutdownhook_t));
+    hook->func = func;
+    hook->arg = arg;
 }
 
 VFSNode* vfs_alloc(bool temp) {
@@ -219,7 +243,7 @@ char* vfs_repr_node(VFSNode *node, bool try_syspath) {
 
     if(try_syspath && node->funcs->syspath) {
         if(r = node->funcs->syspath(node)) {
-            vfs_syspath_normalize_inplace(r);
+            // vfs_syspath_normalize_inplace(r);
             return r;
         }
     }

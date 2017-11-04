@@ -6,11 +6,14 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#include "rwops_zlib.h"
-#include "rwops_segment.h"
-#include "rwops_autobuf.h"
 #include "rwops_pipe.h"
 
-#ifndef DISABLE_ZIP
-#include "rwops_zipfile.h"
-#endif
+SDL_RWops* SDL_RWpopen(const char *command, const char *mode) {
+    SDL_SetError("Not implemented");
+    return NULL;
+}
+
+int SDL_RWConvertToPipe(SDL_RWops *rw) {
+    SDL_SetError("Not implemented");
+    return -1;
+}

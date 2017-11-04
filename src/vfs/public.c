@@ -9,6 +9,8 @@
 #include "private.h"
 #include "union.h"
 #include "syspath.h"
+#include "ipfs.h"
+#include "ipfs_root.h"
 #ifndef DISABLE_ZIP
 #include "zipfile.h"
 #endif
@@ -18,16 +20,19 @@ typedef struct VFSDir {
     void *opaque;
 } VFSDir;
 
-bool vfs_create_union_mountpoint(const char *mountpoint) {
-    VFSNode *unode = vfs_alloc(false);
-    vfs_union_init(unode);
-
-    if(!vfs_mount(vfs_root, mountpoint, unode)) {
-        vfs_decref(unode);
+static bool mount_or_decref(const char *mountpoint, VFSNode *node) {
+    if(!vfs_mount(vfs_root, mountpoint, node)) {
+        vfs_decref(node);
         return false;
     }
 
     return true;
+}
+
+bool vfs_create_union_mountpoint(const char *mountpoint) {
+    VFSNode *unode = vfs_alloc(false);
+    vfs_union_init(unode);
+    return mount_or_decref(mountpoint, unode);
 }
 
 bool vfs_mount_syspath(const char *mountpoint, const char *fspath, bool mkdir) {
@@ -48,12 +53,31 @@ bool vfs_mount_syspath(const char *mountpoint, const char *fspath, bool mkdir) {
         return false;
     }
 
-    if(!vfs_mount(vfs_root, mountpoint, rdir)) {
-        vfs_decref(rdir);
+    return mount_or_decref(mountpoint, rdir);
+}
+
+bool vfs_mount_ipfs(const char *mountpoint, const char *ipfspath) {
+    vfs_ipfs_global_init();
+    VFSNode *ipfsnode = vfs_alloc(false);
+
+    if(!vfs_ipfs_init(ipfsnode, ipfspath)) {
+        vfs_decref(ipfsnode);
         return false;
     }
 
-    return true;
+    return mount_or_decref(mountpoint, ipfsnode);
+}
+
+bool vfs_mount_ipfs_root(const char *mountpoint) {
+    vfs_ipfs_global_init();
+    VFSNode *ipfsroot = vfs_alloc(false);
+
+    if(!vfs_ipfsroot_init(ipfsroot)) {
+        vfs_decref(ipfsroot);
+        return false;
+    }
+
+    return mount_or_decref(mountpoint, ipfsroot);
 }
 
 #ifndef DISABLE_ZIP
@@ -75,12 +99,7 @@ bool vfs_mount_zipfile(const char *mountpoint, const char *zippath) {
         return false;
     }
 
-    if(!vfs_mount(vfs_root, mountpoint, znode)) {
-        vfs_decref(znode);
-        return false;
-    }
-
-    return true;
+    return mount_or_decref(mountpoint, znode);
 }
 #endif
 
@@ -99,13 +118,7 @@ bool vfs_mount_alias(const char *dst, const char *src) {
     }
 
     vfs_incref(srcnode);
-
-    if(!vfs_mount(vfs_root, dst, srcnode)) {
-        vfs_decref(srcnode);
-        return false;
-    }
-
-    return true;
+    return mount_or_decref(dst, srcnode);
 }
 
 bool vfs_unmount(const char *path) {
@@ -314,7 +327,6 @@ char** vfs_dir_list_sorted(const char *path, size_t *out_size, int (*compare)(co
         }
 
         results[(*out_size)++] = strdup(e);
-        log_debug("Added %s", results[(*out_size)-1]);
 
         if(*out_size >= real_size) {
             real_size *= 2;

@@ -6,11 +6,9 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#include "rwops_zlib.h"
-#include "rwops_segment.h"
-#include "rwops_autobuf.h"
-#include "rwops_pipe.h"
+#pragma once
 
-#ifndef DISABLE_ZIP
-#include "rwops_zipfile.h"
-#endif
+enum {
+    // includes null terminator
+    IPFS_HASH_SIZE = 47
+};

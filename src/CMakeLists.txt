@@ -23,6 +23,14 @@ configure_file(
 	"${CMAKE_CURRENT_BINARY_DIR}/version_auto.c"
 )
 
+check_symbol_exists(_POSIX_VERSION "unistd.h" POSIX)
+check_symbol_exists(__STDC_NO_COMPLEX__ "unistd.h" COMPLEX_MISSING)
+check_symbol_exists(__STDC_NO_VLA__ "unistd.h" VLA_MISSING)
+
+if(COMPLEX_MISSING OR VLA_MISSING)
+	message(FATAL_ERROR "Your C implementation needs to support complex numbers and variable length arrays.")
+endif()
+
 set(SRCs
 	main.c
 	cli.c
@@ -111,6 +119,8 @@ set(SRCs
 	vfs/pathutil.c
 	vfs/union.c
 	vfs/vdir.c
+	vfs/ipfs.c
+	vfs/ipfs_root.c
 	version.c
 	"${CMAKE_CURRENT_BINARY_DIR}/version_auto.c"
 )
@@ -126,10 +136,24 @@ endif()
 if(WIN32)
 	set(SRCs ${SRCs}
 		windows_misc.c
-		vfs/syspath_win32.c)
+	)
+endif()
+
+if(POSIX)
+	set(SRCs ${SRCs}
+		vfs/syspath_posix.c
+		rwops/rwops_pipe_posix.c
+	)
+elseif(WIN32)
+	set(SRCs ${SRCs}
+		vfs/syspath_win32.c
+		rwops/rwops_pipe_null.c
+	)
 else()
 	set(SRCs ${SRCs}
-		vfs/syspath_posix.c)
+		vfs/syspath_posix.c		# eeehh, maybe it'll work ¯\_(ツ)_/¯
+		rwops/rwops_pipe_null.c
+	)
 endif()
 
 if(USE_AUDIO)
@@ -272,14 +296,6 @@ endif()
 
 set(CMAKE_REQUIRED_INCLUDES ${INCs})
 include_directories(${INCs})
-
-check_symbol_exists(_POSIX_VERSION "unistd.h" POSIX)
-check_symbol_exists(__STDC_NO_COMPLEX__ "unistd.h" COMPLEX_MISSING)
-check_symbol_exists(__STDC_NO_VLA__ "unistd.h" VLA_MISSING)
-
-if(COMPLEX_MISSING OR VLA_MISSING)
-	message(FATAL_ERROR "Your C implementation needs to support complex numbers and variable length arrays.")
-endif()
 
 if(POSIX)
 	add_definitions(-D__POSIX__)

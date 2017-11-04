@@ -96,21 +96,9 @@ static SDL_RWops* vfs_zippath_open(VFSNode *node, VFSOpenMode mode) {
         return ziprw;
     }
 
-    uint8_t buf[4096] = {0};
-    ssize_t len;
-    SDL_RWops *abufrw = SDL_RWAutoBuffer(NULL, 4096);
-
-    while((len = SDL_RWread(ziprw, buf, 1, sizeof(buf))) > 0) {
-        SDL_RWwrite(abufrw, buf, 1, len);
-    }
-
+    SDL_RWops *bufrw = SDL_RWCopyToBuffer(ziprw);
     SDL_RWclose(ziprw);
-
-    size_t datasize = SDL_RWtell(abufrw);
-    SDL_RWseek(abufrw, 0, RW_SEEK_SET);
-    abufrw = SDL_RWWrapSegment(abufrw, 0, datasize, true);
-
-    return abufrw;
+    return bufrw;
 }
 
 static VFSNodeFuncs vfs_funcs_zippath = {

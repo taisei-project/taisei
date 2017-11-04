@@ -65,7 +65,7 @@ void config_init(void) {
 
 static void config_delete_unknown_entries(void);
 
-void config_uninit(void) {
+void config_shutdown(void) {
 	for(ConfigEntry *e = configdefs; e->name; ++e) {
 		if(e->type == CONFIG_TYPE_STRING) {
 			free(e->val.s);

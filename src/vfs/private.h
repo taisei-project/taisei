@@ -28,6 +28,8 @@ typedef enum VFSNodeType {
     VNODE_VDIR,
     VNODE_SYSPATH,
     VNODE_UNION,
+    VNODE_IPFS,
+    VNODE_IPFSROOT,
 #ifndef DISABLE_ZIP
     VNODE_ZIPFILE,
     VNODE_ZIPPATH,
@@ -91,6 +93,8 @@ typedef struct VFSNode {
     };
 } VFSNode;
 
+typedef void (*VFSShutdownHandler)(void *arg);
+
 extern VFSNode *vfs_root;
 
 VFSNode* vfs_alloc(bool temp);
@@ -108,6 +112,8 @@ void vfs_iter_stop(VFSNode *node, void **opaque);
 
 void vfs_set_error(char *fmt, ...) __attribute__((format(FORMAT_ATTR, 1, 2)));
 void vfs_set_error_from_sdl(void);
+
+void vfs_hook_on_shutdown(VFSShutdownHandler, void *arg);
 
 void vfs_print_tree_recurse(SDL_RWops *dest, VFSNode *root, char *prefix, const char *name);
 

@@ -11,3 +11,4 @@
 #include <SDL.h>
 
 SDL_RWops* SDL_RWAutoBuffer(void **ptr, size_t initsize);
+SDL_RWops* SDL_RWCopyToBuffer(SDL_RWops *src);

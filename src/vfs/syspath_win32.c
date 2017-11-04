@@ -177,7 +177,9 @@ static char* vfs_syspath_repr(VFSNode *node) {
 }
 
 static char* vfs_syspath_syspath(VFSNode *node) {
-    return strdup(node->syspath.path);
+    char *p = strdup(node->syspath.path);
+    vfs_syspath_normalize_inplace(p);
+    return p;
 }
 
 static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {

@@ -6,11 +6,10 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#include "rwops_zlib.h"
-#include "rwops_segment.h"
-#include "rwops_autobuf.h"
-#include "rwops_pipe.h"
+#pragma once
 
-#ifndef DISABLE_ZIP
-#include "rwops_zipfile.h"
-#endif
+#include "private.h"
+#include "ipfs_public.h"
+
+bool vfs_ipfs_init(VFSNode *node, const char *path);
+void vfs_ipfs_global_init(void);

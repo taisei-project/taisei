@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef TAISEI_VFS_PUBLIC
-#define TAISEI_VFS_PUBLIC
+#pragma once
 
 #include <SDL.h>
 #include <stdbool.h>
@@ -38,6 +37,7 @@ void vfs_mkdir_required(const char *path);
 bool vfs_create_union_mountpoint(const char *mountpoint);
 bool vfs_mount_alias(const char *dst, const char *src);
 bool vfs_mount_syspath(const char *mountpoint, const char *fspath, bool mkdir);
+bool vfs_mount_ipfs(const char *mountpoint, const char *ipfspath);
 
 #ifndef DISABLE_ZIP
 bool vfs_mount_zipfile(const char *mountpoint, const char *zippath);
@@ -59,7 +59,5 @@ bool vfs_print_tree(SDL_RWops *dest, const char *path);
 
 // these are defined in private.c, but need to be accessible from external code
 void vfs_init(void);
-void vfs_uninit(void);
+void vfs_shutdown(void);
 const char* vfs_get_error(void);
-
-#endif

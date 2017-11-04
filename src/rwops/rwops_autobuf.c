@@ -7,6 +7,7 @@
  */
 
 #include "rwops_autobuf.h"
+#include "rwops_segment.h"
 
 #define BUFFER(rw) ((Buffer*)((rw)->hidden.unknown.data1))
 
@@ -102,4 +103,20 @@ SDL_RWops* SDL_RWAutoBuffer(void **ptr, size_t initsize) {
     rw->hidden.unknown.data1 = b;
 
     return rw;
+}
+
+SDL_RWops* SDL_RWCopyToBuffer(SDL_RWops *src) {
+    uint8_t buf[4096] = {0};
+    ssize_t len;
+    SDL_RWops *abufrw = SDL_RWAutoBuffer(NULL, 4096);
+
+    while((len = SDL_RWread(src, buf, 1, sizeof(buf))) > 0) {
+        SDL_RWwrite(abufrw, buf, 1, len);
+    }
+
+    size_t datasize = SDL_RWtell(abufrw);
+    SDL_RWseek(abufrw, 0, RW_SEEK_SET);
+    abufrw = SDL_RWWrapSegment(abufrw, 0, datasize, true);
+
+    return abufrw;
 }
