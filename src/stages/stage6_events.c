@@ -48,7 +48,7 @@ static Dialog *stage6_interboss_dialog(void) {
 	PlayerCharacter *pc = global.plr.mode->character;
 	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/elly");
 
-	dadd_msg(d, Right, "You’ve gotten this far…  I can’t believe it!\nBut that will not matter once I show you the\ntruth of this world, and every world.");
+	dadd_msg(d, Right, "You’ve gotten this far… I can’t believe it!\nBut that will not matter once I show you the\ntruth of this world, and every world.");
 	dadd_msg(d, Right, "Space, time, dimensions…\nit all becomes clear when you understand\nThe Theory of Everything!");
 	dadd_msg(d, Right, "Prepare to see the barrier destroyed!");
 
@@ -269,6 +269,7 @@ int scythe_reset(Enemy *e, int t) {
 
 void elly_frequency(Boss *b, int t) {
 	TIMER(&t);
+	b->ani.stdrow=1;
 	AT(EVENT_BIRTH) {
 		global.enemies->birthtime = global.frames;
 		global.enemies->logic_rule = scythe_infinity;
@@ -281,6 +282,12 @@ void elly_frequency(Boss *b, int t) {
 	}
 
 }
+
+static void elly_clap(Boss *b, int claptime) {
+	aniplayer_queue_pro(&b->ani,2,0,3,claptime,5);
+	aniplayer_queue_pro(&b->ani,2,3,5,0,5);
+}
+
 
 int scythe_newton(Enemy *e, int t) {
 	if(t < 0) {
@@ -339,6 +346,7 @@ void elly_newton(Boss *b, int t) {
 	AT(0) {
 		global.enemies->birthtime = global.frames;
 		global.enemies->logic_rule = scythe_newton;
+		elly_clap(b,100);
 	}
 
 	AT(EVENT_DEATH) {
@@ -443,6 +451,7 @@ void elly_kepler(Boss *b, int t) {
 		global.enemies->birthtime = global.frames;
 		global.enemies->logic_rule = scythe_kepler;
 		create_projectile3c("soul",b->pos,rgb(0.3,0.8,1),kepler_bullet,50+10*global.diff,0,0);
+		elly_clap(b,20);
 	}
 
 	AT(EVENT_DEATH) {
@@ -462,6 +471,7 @@ void elly_kepler(Boss *b, int t) {
 
 void elly_frequency2(Boss *b, int t) {
 	TIMER(&t);
+	b->ani.stdrow=1;
 	AT(0) {
 		global.enemies->birthtime = global.frames;
 		global.enemies->logic_rule = scythe_infinity;
@@ -508,6 +518,8 @@ void maxwell_laser_logic(Laser *l, int t) {
 void elly_maxwell(Boss *b, int t) {
 	TIMER(&t);
 
+	AT(38)
+		elly_clap(b,100);
 	FROM_TO(40, 159, 5)
 		create_laser(b->pos, 200, 10000, rgb(0,0.2,1), maxwell_laser, maxwell_laser_logic, cexp(2.0*I*M_PI/24*_i)*VIEWPORT_H*0.005, 200+15.0*I, 0, 0);
 
@@ -644,6 +656,7 @@ void elly_unbound(Boss *b, int t) {
 	AT(0) {
 		global.enemies->birthtime = global.frames;
 		global.enemies->logic_rule = scythe_explode;
+		elly_clap(b,150);
 	}
 
 	AT(100) {
@@ -718,6 +731,7 @@ int baryon_reset(Enemy *e, int t) {
 void elly_eigenstate(Boss *b, int t) {
 	TIMER(&t);
 
+	b->ani.stdrow=1;
 	AT(0)
 		set_baryon_rule(baryon_eigenstate);
 	AT(EVENT_DEATH)
@@ -893,6 +907,7 @@ int baryon_broglie(Enemy *e, int t) {
 	static double aim_angle;
 
 	AT(delay) {
+		elly_clap(global.boss,fire_delay);
 		aim_angle = carg(e->pos - global.boss->pos);
 	}
 
@@ -968,6 +983,7 @@ int baryon_nattack(Enemy *e, int t) {
 	return 1;
 }
 
+/* !!! You are entering Akari danmaku code !!! */
 #define SAFE_RADIUS_DELAY 300
 #define SAFE_RADIUS_BASE 100
 #define SAFE_RADIUS_STRETCH 100
@@ -1168,6 +1184,7 @@ void elly_ricci(Boss *b, int t) {
 #undef SAFE_RADIUS_PHASE_FUNC
 #undef SAFE_RADIUS_PHASE_NORMALIZED
 #undef SAFE_RADIUS_PHASE_NUM
+/* Thank you for visiting Akari danmaku code (tm) */
 
 void elly_baryonattack(Boss *b, int t) {
 	TIMER(&t);
@@ -1178,6 +1195,7 @@ void elly_baryonattack(Boss *b, int t) {
 }
 
 void elly_baryonattack2(Boss *b, int t) {
+	b->ani.stdrow=1;
 	TIMER(&t);
 	AT(0)
 		set_baryon_rule(baryon_nattack);
@@ -1253,6 +1271,10 @@ void elly_lhc(Boss *b, int t) {
 		set_baryon_rule(baryon_lhc);
 	AT(EVENT_DEATH)
 		set_baryon_rule(baryon_reset);
+
+	FROM_TO(260, 10000, 400) {
+		elly_clap(b,100);
+	}
 
 	FROM_TO(280, 10000, 400) {
 		int i;
@@ -1500,6 +1522,9 @@ void elly_theory(Boss *b, int time) {
 		global.shake_view = 0;
 
 	TIMER(&t);
+
+	AT(0)
+		elly_clap(b,500);
 
 	FROM_TO(0, 500, 10)
 		for(i = 0; i < 3; i++) {
