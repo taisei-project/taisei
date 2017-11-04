@@ -184,7 +184,7 @@ KeyIndex config_key_from_gamepad_button(int btn);
 
 void config_reset(void);
 void config_init(void);
-void config_uninit(void);
+void config_shutdown(void);
 void config_load(void);
 void config_save(void);
 void config_set_callback(ConfigIndex idx, ConfigCallback callback);

@@ -8,14 +8,16 @@
 
 #include "vdir.h"
 
+#define _contents_ data1
+
 static void vfs_vdir_attach_node(VFSNode *vdir, const char *name, VFSNode *node) {
-    VFSNode *oldnode = hashtable_get_string(vdir->vdir.contents, name);
+    VFSNode *oldnode = hashtable_get_string(vdir->_contents_, name);
 
     if(oldnode) {
         vfs_decref(oldnode);
     }
 
-    hashtable_set_string(vdir->vdir.contents, name, node);
+    hashtable_set_string(vdir->_contents_, name, node);
 }
 
 static VFSNode* vfs_vdir_locate(VFSNode *vdir, const char *path) {
@@ -23,14 +25,11 @@ static VFSNode* vfs_vdir_locate(VFSNode *vdir, const char *path) {
     char mutpath[strlen(path)+1];
     char *primpath, *subpath;
 
-    assert(vdir->type == VNODE_VDIR);
-
     strcpy(mutpath, path);
     vfs_path_split_left(mutpath, &primpath, &subpath);
 
-    if(node = hashtable_get_string(vdir->vdir.contents, mutpath)) {
-        VFSNode *r = vfs_locate(node, subpath);
-        return r;
+    if(node = hashtable_get_string(vdir->_contents_, mutpath)) {
+        return vfs_locate(node, subpath);
     }
 
     return NULL;
@@ -40,7 +39,7 @@ static const char* vfs_vdir_iter(VFSNode *vdir, void **opaque) {
     char *ret = NULL;
 
     if(!*opaque) {
-        *opaque = hashtable_iter(vdir->vdir.contents);
+        *opaque = hashtable_iter(vdir->_contents_);
     }
 
     if(!hashtable_iter_next((HashtableIterator*)*opaque, (void**)&ret, NULL)) {
@@ -65,7 +64,7 @@ static VFSInfo vfs_vdir_query(VFSNode *vdir) {
 }
 
 static void vfs_vdir_free(VFSNode *vdir) {
-    Hashtable *ht = vdir->vdir.contents;
+    Hashtable *ht = vdir->_contents_;
     HashtableIterator *i;
     VFSNode *child;
 
@@ -89,12 +88,12 @@ static bool vfs_vdir_mount(VFSNode *vdir, const char *mountpoint, VFSNode *subtr
 static bool vfs_vdir_unmount(VFSNode *vdir, const char *mountpoint) {
     VFSNode *mountee;
 
-    if(!(mountee = hashtable_get_string(vdir->vdir.contents, mountpoint))) {
+    if(!(mountee = hashtable_get_string(vdir->_contents_, mountpoint))) {
         vfs_set_error("Mountpoint '%s' doesn't exist", mountpoint);
         return false;
     }
 
-    hashtable_unset_string(vdir->vdir.contents, mountpoint);
+    hashtable_unset_string(vdir->_contents_, mountpoint);
     vfs_decref(mountee);
     return true;
 }
@@ -105,7 +104,7 @@ static bool vfs_vdir_mkdir(VFSNode *node, const char *subdir) {
         return false;
     }
 
-    VFSNode *subnode = vfs_alloc(false);
+    VFSNode *subnode = vfs_alloc();
     vfs_vdir_init(subnode);
     vfs_vdir_mount(node, subdir, subnode);
 
@@ -129,7 +128,6 @@ static VFSNodeFuncs vfs_funcs_vdir = {
 };
 
 void vfs_vdir_init(VFSNode *node) {
-    node->type = VNODE_VDIR;
     node->funcs = &vfs_funcs_vdir;
-    node->vdir.contents = hashtable_new_stringkeys(HT_DYNAMIC_SIZE);
+    node->_contents_ = hashtable_new_stringkeys(HT_DYNAMIC_SIZE);
 }

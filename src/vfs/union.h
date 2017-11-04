@@ -6,11 +6,9 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef TAISEI_VFS_UNION
-#define TAISEI_VFS_UNION
+#pragma once
 
 #include "private.h"
+#include "union_public.h"
 
 void vfs_union_init(VFSNode *node);
-
-#endif

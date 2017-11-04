@@ -8,6 +8,9 @@
 
 #include "union.h"
 
+#define _members_ data1
+#define _primary_member_ data2
+
 static bool vfs_union_mount_internal(VFSNode *unode, const char *mountpoint, VFSNode *mountee, VFSInfo info, bool seterror);
 
 static void vfs_union_delete_callback(void **list, void *elem) {
@@ -18,15 +21,15 @@ static void vfs_union_delete_callback(void **list, void *elem) {
 }
 
 static void vfs_union_free(VFSNode *node) {
-    delete_all_elements((void**)&node->vunion.members, vfs_union_delete_callback);
+    delete_all_elements((void**)&node->_members_, vfs_union_delete_callback);
 }
 
 static VFSNode* vfs_union_locate(VFSNode *node, const char *path) {
-    VFSNode *u = vfs_alloc(true);
+    VFSNode *u = vfs_alloc();
     vfs_union_init(u); // uniception!
 
     VFSInfo prim_info = VFSINFO_ERROR;
-    ListContainer *first = node->vunion.members.all;
+    ListContainer *first = node->_members_;
     ListContainer *last = first;
     ListContainer *c;
 
@@ -43,25 +46,30 @@ static VFSNode* vfs_union_locate(VFSNode *node, const char *path) {
 
             if(vfs_union_mount_internal(u, NULL, o, i, false)) {
                 prim_info = i;
+            } else {
+                vfs_decref(o);
             }
         }
     }
 
-    if(u->vunion.members.primary) {
-        if(!u->vunion.members.all->next || !prim_info.is_dir) {
+    if(u->_primary_member_) {
+        if(!((List*)(u->_members_))->next || !prim_info.is_dir) {
             // the temporary union contains just one member, or doesn't represent a directory
             // in those cases it's just a useless wrapper, so let's just return the primary member directly
-            VFSNode *n = u->vunion.members.primary;
+            VFSNode *n = u->_primary_member_;
 
-            // remove the primary member from the 'all' list to prevent vfs_freetemp from wrecking it
-            delete_element((void**)&u->vunion.members.all, u->vunion.members.all);
+            // incref primary member to keep it alive
+            vfs_incref(n);
 
-            vfs_freetemp(u);
+            // destroy the wrapper, also decrefs n
+            vfs_decref(u);
+
+            // no need to incref n, vfs_locate did that for us earlier
             return n;
         }
     } else {
         // all in vain...
-        vfs_freetemp(u);
+        vfs_decref(u);
         u = NULL;
     }
 
@@ -80,7 +88,7 @@ static const char* vfs_union_iter(VFSNode *node, void **opaque) {
 
     if(!i) {
         i = malloc(sizeof(VFSUnionIterData));
-        i->current = node->vunion.members.all;
+        i->current = node->_members_;
         i->opaque = NULL;
 
          // XXX: this may not be the most efficient implementation of a "set" structure...
@@ -123,8 +131,8 @@ static void vfs_union_iter_stop(VFSNode *node, void **opaque) {
 }
 
 static VFSInfo vfs_union_query(VFSNode *node) {
-    if(node->vunion.members.primary) {
-        return vfs_query_node(node->vunion.members.primary);
+    if(node->_primary_member_) {
+        return vfs_query_node(node->_primary_member_);
     }
 
     vfs_set_error("Union object has no members");
@@ -137,8 +145,6 @@ static bool vfs_union_mount_internal(VFSNode *unode, const char *mountpoint, VFS
             char *r = vfs_repr_node(mountee, true);
             vfs_set_error("Mountee doesn't represent a usable resource: %s", r);
             free(r);
-        } else {
-            vfs_decref(mountee);
         }
 
         return false;
@@ -151,7 +157,7 @@ static bool vfs_union_mount_internal(VFSNode *unode, const char *mountpoint, VFS
         return false;
     }
 
-    ListContainer *c = NULL, *p = unode->vunion.members.all;
+    ListContainer *c = NULL, *p = unode->_members_;
     create_container(&c)->data = mountee;
 
     c->next = p;
@@ -160,8 +166,8 @@ static bool vfs_union_mount_internal(VFSNode *unode, const char *mountpoint, VFS
         p->prev = c;
     }
 
-    unode->vunion.members.all = c;
-    unode->vunion.members.primary = mountee;
+    unode->_members_ = c;
+    unode->_primary_member_ = mountee;
 
     return true;
 }
@@ -176,7 +182,7 @@ static bool vfs_union_mount(VFSNode *unode, const char *mountpoint, VFSNode *mou
 }
 
 static SDL_RWops* vfs_union_open(VFSNode *unode, VFSOpenMode mode) {
-    VFSNode *n = unode->vunion.members.primary;
+    VFSNode *n = unode->_primary_member_;
 
     if(n) {
         if(n->funcs->open) {
@@ -194,7 +200,7 @@ static SDL_RWops* vfs_union_open(VFSNode *unode, VFSOpenMode mode) {
 static char* vfs_union_repr(VFSNode *node) {
     char *mlist = strdup("union: "), *r;
 
-    for(ListContainer *c = node->vunion.members.all; c; c = c->next) {
+    for(ListContainer *c = node->_members_; c; c = c->next) {
         VFSNode *n = c->data;
 
         strappend(&mlist, r = vfs_repr_node(n, false));
@@ -209,7 +215,7 @@ static char* vfs_union_repr(VFSNode *node) {
 }
 
 static char* vfs_union_syspath(VFSNode *node) {
-    VFSNode *n = node->vunion.members.primary;
+    VFSNode *n = node->_primary_member_;
 
     if(n) {
         if(n->funcs->syspath) {
@@ -224,7 +230,7 @@ static char* vfs_union_syspath(VFSNode *node) {
 }
 
 static bool vfs_union_mkdir(VFSNode *node, const char *subdir) {
-    VFSNode *n = node->vunion.members.primary;
+    VFSNode *n = node->_primary_member_;
 
     if(n) {
         if(n->funcs->mkdir) {
@@ -252,6 +258,6 @@ static VFSNodeFuncs vfs_funcs_union = {
 };
 
 void vfs_union_init(VFSNode *node) {
-    node->type = VNODE_UNION;
     node->funcs = &vfs_funcs_union;
+    node->data1 = node->data2 = NULL;
 }

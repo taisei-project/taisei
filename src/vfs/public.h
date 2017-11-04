@@ -6,11 +6,14 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef TAISEI_VFS_PUBLIC
-#define TAISEI_VFS_PUBLIC
+#pragma once
 
 #include <SDL.h>
 #include <stdbool.h>
+
+#include "syspath_public.h"
+#include "union_public.h"
+#include "zipfile_public.h"
 
 typedef struct VFSInfo {
     unsigned int error: 1;
@@ -32,13 +35,11 @@ typedef struct VFSDir VFSDir;
 
 SDL_RWops* vfs_open(const char *path, VFSOpenMode mode);
 VFSInfo vfs_query(const char *path);
+
 bool vfs_mkdir(const char *path);
 void vfs_mkdir_required(const char *path);
 
-bool vfs_create_union_mountpoint(const char *mountpoint);
 bool vfs_mount_alias(const char *dst, const char *src);
-bool vfs_mount_syspath(const char *mountpoint, const char *fspath, bool mkdir);
-bool vfs_mount_zipfile(const char *mountpoint, const char *zippath);
 bool vfs_unmount(const char *path);
 
 VFSDir* vfs_dir_open(const char *path);
@@ -55,7 +56,5 @@ bool vfs_print_tree(SDL_RWops *dest, const char *path);
 
 // these are defined in private.c, but need to be accessible from external code
 void vfs_init(void);
-void vfs_uninit(void);
+void vfs_shutdown(void);
 const char* vfs_get_error(void);
-
-#endif

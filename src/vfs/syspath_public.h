@@ -6,8 +6,6 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#include <stdbool.h>
 
-#include "util.h"
-
-void vfs_setup(bool silent);
+bool vfs_mount_syspath(const char *mountpoint, const char *fspath, bool mkdir);

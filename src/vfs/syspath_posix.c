@@ -14,19 +14,21 @@
 
 #include "syspath.h"
 
+#define _path_ data1
+
 char vfs_syspath_prefered_separator = '/';
 
 static void vfs_syspath_init_internal(VFSNode *node, char *path);
 
 static void vfs_syspath_free(VFSNode *node) {
-    free(node->syspath.path);
+    free(node->_path_);
 }
 
 static VFSInfo vfs_syspath_query(VFSNode *node) {
     struct stat fstat;
     VFSInfo i = {0};
 
-    if(stat(node->syspath.path, &fstat) >= 0) {
+    if(stat(node->_path_, &fstat) >= 0) {
         i.exists = true;
         i.is_dir = S_ISDIR(fstat.st_mode);
     }
@@ -36,7 +38,7 @@ static VFSInfo vfs_syspath_query(VFSNode *node) {
 
 static SDL_RWops* vfs_syspath_open(VFSNode *node, VFSOpenMode mode) {
     mode &= VFS_MODE_RWMASK;
-    SDL_RWops *rwops = SDL_RWFromFile(node->syspath.path, mode == VFS_MODE_WRITE ? "w" : "r");
+    SDL_RWops *rwops = SDL_RWFromFile(node->_path_, mode == VFS_MODE_WRITE ? "w" : "r");
 
     if(!rwops) {
         vfs_set_error_from_sdl();
@@ -46,8 +48,8 @@ static SDL_RWops* vfs_syspath_open(VFSNode *node, VFSOpenMode mode) {
 }
 
 static VFSNode* vfs_syspath_locate(VFSNode *node, const char *path) {
-    VFSNode *n = vfs_alloc(true);
-    vfs_syspath_init_internal(n, strfmt("%s%c%s", node->syspath.path, VFS_PATH_SEP, path));
+    VFSNode *n = vfs_alloc();
+    vfs_syspath_init_internal(n, strfmt("%s%c%s", node->_path_, VFS_PATH_SEP, path));
     return n;
 }
 
@@ -56,7 +58,7 @@ static const char* vfs_syspath_iter(VFSNode *node, void **opaque) {
     struct dirent *e;
 
     if(!*opaque) {
-        *opaque = opendir(node->syspath.path);
+        *opaque = opendir(node->_path_);
     }
 
     if(!(dir = *opaque)) {
@@ -84,11 +86,13 @@ static void vfs_syspath_iter_stop(VFSNode *node, void **opaque) {
 }
 
 static char* vfs_syspath_repr(VFSNode *node) {
-    return strfmt("filesystem path (posix): %s", node->syspath.path);
+    return strfmt("filesystem path (posix): %s", node->_path_);
 }
 
 static char* vfs_syspath_syspath(VFSNode *node) {
-    return strdup(node->syspath.path);
+    char *p = strdup(node->_path_);
+    vfs_syspath_normalize_inplace(p);
+    return p;
 }
 
 static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
@@ -96,7 +100,7 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
         subdir = "";
     }
 
-    char *p = strfmt("%s%c%s", node->syspath.path, VFS_PATH_SEP, subdir);
+    char *p = strfmt("%s%c%s", node->_path_, VFS_PATH_SEP, subdir);
     bool ok = !mkdir(p, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
     if(!ok && errno == EEXIST) {
@@ -108,9 +112,7 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
             vfs_set_error("%s already exists, and is not a directory", p);
         }
 
-        if(node != n) {
-            vfs_freetemp(n);
-        }
+        vfs_decref(n);
     }
 
     if(!ok) {
@@ -152,9 +154,8 @@ void vfs_syspath_normalize(char *buf, size_t bufsize, const char *path) {
 
 static void vfs_syspath_init_internal(VFSNode *node, char *path) {
     vfs_syspath_normalize_inplace(path);
-    node->type = VNODE_SYSPATH;
     node->funcs = &vfs_funcs_syspath;
-    node->syspath.path = path;
+    node->_path_ = path;
 }
 
 bool vfs_syspath_init(VFSNode *node, const char *path) {

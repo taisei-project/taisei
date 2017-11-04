@@ -38,7 +38,15 @@ static void get_core_paths(char **res, char **storage) {
     }
 }
 
-static bool filter_zip_ext(const char *str) {
+static struct pkg_loader_t {
+    const char *const ext;
+    bool (*mount)(const char *mp, const char *arg);
+} pkg_loaders[] = {
+    { ".zip",       vfs_mount_zipfile },
+    { NULL },
+};
+
+static struct pkg_loader_t* find_loader(const char *str) {
     char buf[strlen(str) + 1];
     memset(buf, 0, sizeof(buf));
 
@@ -46,34 +54,47 @@ static bool filter_zip_ext(const char *str) {
         *p = tolower(*str);
     }
 
-    return strendswith(buf, ".zip");
+    for(struct pkg_loader_t *l = pkg_loaders; l->ext; ++l) {
+        if(strendswith(buf, l->ext)){
+            return l;
+        }
+    }
+
+    return NULL;
 }
 
 static void load_packages(const char *dir, const char *unionmp) {
-    // go over the ZIPs in dir in alphapetical order and merge them into unionmp
+    // go over the packages in dir in alphapetical order and merge them into unionmp
     // e.g. files in 00-aaa.zip will be shadowed by files in 99-zzz.zip
 
-    size_t numzips = 0;
-    char **ziplist = vfs_dir_list_sorted(dir, &numzips, vfs_dir_list_order_ascending, filter_zip_ext);
+    size_t numpaks = 0;
+    char **paklist = vfs_dir_list_sorted(dir, &numpaks, vfs_dir_list_order_ascending, NULL);
 
-    if(!ziplist) {
+    if(!paklist) {
         log_fatal("VFS error: %s", vfs_get_error());
     }
 
-    for(size_t i = 0; i < numzips; ++i) {
-        const char *entry = ziplist[i];
+    for(size_t i = 0; i < numpaks; ++i) {
+        const char *entry = paklist[i];
+        struct pkg_loader_t *loader = find_loader(entry);
+
+        if(loader == NULL) {
+            continue;
+        }
+
         log_info("Adding package: %s", entry);
+        assert(loader->mount != NULL);
 
         char *tmp = strfmt("%s/%s", dir, entry);
 
-        if(!vfs_mount_zipfile(unionmp, tmp)) {
+        if(!loader->mount(unionmp, tmp)) {
             log_warn("VFS error: %s", vfs_get_error());
         }
 
         free(tmp);
     }
 
-    vfs_dir_list_free(ziplist, numzips);
+    vfs_dir_list_free(paklist, numpaks);
 }
 
 void vfs_setup(bool silent) {
@@ -88,7 +109,7 @@ void vfs_setup(bool silent) {
     char *p = NULL;
 
     struct mpoint_t {
-        const char *dest;   const char *syspath;                            bool mkdir; bool loadzips;
+        const char *dest;   const char *syspath;                            bool mkdir; bool loadpaks;
     } mpts[] = {
         // per-user directory, where configs, replays, screenshots, etc. get stored
         {"storage",         storage_path,                                   true,       false},
@@ -106,16 +127,16 @@ void vfs_setup(bool silent) {
     // temporary union of the "real" directories
     vfs_create_union_mountpoint("resdirs");
 
-    // temporary union of the ZIP packages
+    // temporary union of the packages (e.g. zip files)
     vfs_create_union_mountpoint("respkgs");
 
     // permanent union of respkgs and resdirs
-    // this way, files in any of the "real" directories always have priority over anything in ZIPs
+    // this way, files in any of the "real" directories always have priority over anything in packages
     vfs_create_union_mountpoint("res");
 
     for(struct mpoint_t *mp = mpts; mp->dest; ++mp) {
-        if(mp->loadzips) {
-            // mount it to a temporary mountpoint to get a list of ZIPs from this directory
+        if(mp->loadpaks) {
+            // mount it to a temporary mountpoint to get a list of packages from this directory
             if(!vfs_mount_syspath("tmp", mp->syspath, mp->mkdir)) {
                 log_fatal("Failed to mount '%s': %s", mp->syspath, vfs_get_error());
             }
@@ -126,7 +147,7 @@ void vfs_setup(bool silent) {
                 continue;
             }
 
-            // load all ZIPs from this directory into the respkgs union
+            // load all packages from this directory into the respkgs union
             load_packages("tmp", "respkgs");
 
             // now mount it to the intended destination, and remove the temporary mountpoint

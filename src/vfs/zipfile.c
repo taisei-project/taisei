@@ -7,7 +7,7 @@
  */
 
 #include "zipfile.h"
-#include "zippath.h"
+#include "zipfile_impl.h"
 
 static VFSZipFileTLS* vfs_zipfile_get_tls(VFSNode *node, bool create);
 
@@ -15,7 +15,7 @@ static VFSZipFileTLS* vfs_zipfile_get_tls(VFSNode *node, bool create);
 
 static zip_int64_t vfs_zipfile_srcfunc(void *userdata, void *data, zip_uint64_t len, zip_source_cmd_t cmd) {
     VFSNode *zipnode = userdata;
-    VFSZipFileData *zdata = zipnode->data;
+    VFSZipFileData *zdata = zipnode->data1;
     VFSZipFileTLS *tls = vfs_zipfile_get_tls(zipnode, false);
     VFSNode *source = zdata->source;
     zip_int64_t ret = -1;
@@ -135,10 +135,10 @@ void vfs_zipfile_free_tls(VFSZipFileTLS *tls) {
 
 static void vfs_zipfile_free(VFSNode *node) {
     if(node) {
-        VFSZipFileData *zdata = node->data;
+        VFSZipFileData *zdata = node->data1;
 
         if(zdata) {
-            SDL_TLSID tls_id = ((VFSZipFileData*)node->data)->tls_id;
+            SDL_TLSID tls_id = ((VFSZipFileData*)node->data1)->tls_id;
             VFSZipFileTLS *tls = SDL_TLSGet(tls_id);
 
             if(tls) {
@@ -146,7 +146,10 @@ static void vfs_zipfile_free(VFSNode *node) {
                 SDL_TLSSet(tls_id, NULL, NULL);
             }
 
-            vfs_decref(zdata->source);
+            if(zdata->source) {
+                vfs_decref(zdata->source);
+            }
+
             hashtable_free(zdata->pathmap);
             free(zdata);
         }
@@ -161,7 +164,7 @@ static VFSInfo vfs_zipfile_query(VFSNode *node) {
 }
 
 static char* vfs_zipfile_syspath(VFSNode *node) {
-    VFSZipFileData *zdata = node->data;
+    VFSZipFileData *zdata = node->data1;
 
     if(zdata->source->funcs->syspath) {
         return zdata->source->funcs->syspath(zdata->source);
@@ -171,7 +174,7 @@ static char* vfs_zipfile_syspath(VFSNode *node) {
 }
 
 static char* vfs_zipfile_repr(VFSNode *node) {
-    VFSZipFileData *zdata = node->data;
+    VFSZipFileData *zdata = node->data1;
     char *srcrepr = vfs_repr_node(zdata->source, false);
     char *ziprepr = strfmt("zip archive %s", srcrepr);
     free(srcrepr);
@@ -180,7 +183,7 @@ static char* vfs_zipfile_repr(VFSNode *node) {
 
 static VFSNode* vfs_zipfile_locate(VFSNode *node, const char *path) {
     VFSZipFileTLS *tls = vfs_zipfile_get_tls(node, true);
-    VFSZipFileData *zdata = node->data;
+    VFSZipFileData *zdata = node->data1;
     zip_int64_t idx = (zip_int64_t)((intptr_t)hashtable_get_string(zdata->pathmap, path) - 1);
 
     if(idx < 0) {
@@ -191,7 +194,7 @@ static VFSNode* vfs_zipfile_locate(VFSNode *node, const char *path) {
         return NULL;
     }
 
-    VFSNode *n = vfs_alloc(true);
+    VFSNode *n = vfs_alloc();
     vfs_zippath_init(n, node, tls, idx);
     return n;
 }
@@ -251,7 +254,7 @@ const char* vfs_zipfile_iter_shared(VFSNode *node, VFSZipFileData *zdata, VFSZip
 }
 
 static const char* vfs_zipfile_iter(VFSNode *node, void **opaque) {
-    VFSZipFileData *zdata = node->data;
+    VFSZipFileData *zdata = node->data1;
     VFSZipFileIterData *idata = *opaque;
     VFSZipFileTLS *tls = vfs_zipfile_get_tls(node, true);
 
@@ -287,7 +290,7 @@ static VFSNodeFuncs vfs_funcs_zipfile = {
 };
 
 static void vfs_zipfile_init_pathmap(VFSNode *node) {
-    VFSZipFileData *zdata = node->data;
+    VFSZipFileData *zdata = node->data1;
     VFSZipFileTLS *tls = vfs_zipfile_get_tls(node, true);
     zdata->pathmap = hashtable_new_stringkeys(HT_DYNAMIC_SIZE);
     zip_int64_t num = zip_get_num_entries(tls->zip, 0);
@@ -312,7 +315,7 @@ static void vfs_zipfile_init_pathmap(VFSNode *node) {
 }
 
 static VFSZipFileTLS* vfs_zipfile_get_tls(VFSNode *node, bool create) {
-    VFSZipFileData *zdata = node->data;
+    VFSZipFileData *zdata = node->data1;
     VFSZipFileTLS *tls = SDL_TLSGet(zdata->tls_id);
 
     if(tls || !create) {
@@ -339,18 +342,31 @@ static VFSZipFileTLS* vfs_zipfile_get_tls(VFSNode *node, bool create) {
 }
 
 bool vfs_zipfile_init(VFSNode *node, VFSNode *source) {
+    VFSNode backup;
+    memcpy(&backup, node, sizeof(VFSNode));
+
     VFSZipFileData *zdata = calloc(1, sizeof(VFSZipFileData));
     zdata->source = source;
     zdata->tls_id = SDL_TLSCreate();
 
-    node->data = zdata;
-    node->type = VNODE_ZIPFILE;
+    node->data1 = zdata;
     node->funcs = &vfs_funcs_zipfile;
 
+    if(!zdata->tls_id) {
+        vfs_set_error("SDL_TLSCreate() failed: %s", SDL_GetError());
+        goto error;
+    }
+
     if(!vfs_zipfile_get_tls(node, true)) {
-        return false;
+        goto error;
     }
 
     vfs_zipfile_init_pathmap(node);
     return true;
+
+error:
+    zdata->source = NULL; // don't decref it
+    node->funcs->free(node);
+    memcpy(node, &backup, sizeof(VFSNode));
+    return false;
 }

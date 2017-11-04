@@ -6,11 +6,8 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef TAISEI_VFS_VDIR
-#define TAISEI_VFS_VDIR
+#pragma once
 
 #include "private.h"
 
 void vfs_vdir_init(VFSNode *node);
-
-#endif
