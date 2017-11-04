@@ -22,7 +22,7 @@ static void vfs_union_free(VFSNode *node) {
 }
 
 static VFSNode* vfs_union_locate(VFSNode *node, const char *path) {
-    VFSNode *u = vfs_alloc(true);
+    VFSNode *u = vfs_alloc();
     vfs_union_init(u); // uniception!
 
     VFSInfo prim_info = VFSINFO_ERROR;
@@ -43,6 +43,8 @@ static VFSNode* vfs_union_locate(VFSNode *node, const char *path) {
 
             if(vfs_union_mount_internal(u, NULL, o, i, false)) {
                 prim_info = i;
+            } else {
+                vfs_decref(o);
             }
         }
     }
@@ -53,15 +55,18 @@ static VFSNode* vfs_union_locate(VFSNode *node, const char *path) {
             // in those cases it's just a useless wrapper, so let's just return the primary member directly
             VFSNode *n = u->vunion.members.primary;
 
-            // remove the primary member from the 'all' list to prevent vfs_freetemp from wrecking it
-            delete_element((void**)&u->vunion.members.all, u->vunion.members.all);
+            // incref primary member to keep it alive
+            vfs_incref(n);
 
-            vfs_freetemp(u);
+            // destroy the wrapper, also decrefs n
+            vfs_decref(u);
+
+            // no need to incref n, vfs_locate did that for us earlier
             return n;
         }
     } else {
         // all in vain...
-        vfs_freetemp(u);
+        vfs_decref(u);
         u = NULL;
     }
 
@@ -137,8 +142,6 @@ static bool vfs_union_mount_internal(VFSNode *unode, const char *mountpoint, VFS
             char *r = vfs_repr_node(mountee, true);
             vfs_set_error("Mountee doesn't represent a usable resource: %s", r);
             free(r);
-        } else {
-            vfs_decref(mountee);
         }
 
         return false;

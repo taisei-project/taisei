@@ -46,7 +46,7 @@ static SDL_RWops* vfs_syspath_open(VFSNode *node, VFSOpenMode mode) {
 }
 
 static VFSNode* vfs_syspath_locate(VFSNode *node, const char *path) {
-    VFSNode *n = vfs_alloc(true);
+    VFSNode *n = vfs_alloc();
     vfs_syspath_init_internal(n, strfmt("%s%c%s", node->syspath.path, VFS_PATH_SEP, path));
     return n;
 }
@@ -110,9 +110,7 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
             vfs_set_error("%s already exists, and is not a directory", p);
         }
 
-        if(node != n) {
-            vfs_freetemp(n);
-        }
+        vfs_decref(n);
     }
 
     if(!ok) {

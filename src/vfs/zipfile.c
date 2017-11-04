@@ -191,7 +191,7 @@ static VFSNode* vfs_zipfile_locate(VFSNode *node, const char *path) {
         return NULL;
     }
 
-    VFSNode *n = vfs_alloc(true);
+    VFSNode *n = vfs_alloc();
     vfs_zippath_init(n, node, tls, idx);
     return n;
 }

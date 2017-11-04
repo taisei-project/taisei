@@ -54,7 +54,7 @@ static vfs_tls_t* vfs_tls_get(void) {
 }
 
 void vfs_init(void) {
-    vfs_root = vfs_alloc(false);
+    vfs_root = vfs_alloc();
     vfs_vdir_init(vfs_root);
 
     vfs_tls_id = SDL_TLSCreate();
@@ -92,17 +92,13 @@ void vfs_hook_on_shutdown(VFSShutdownHandler func, void *arg) {
     hook->arg = arg;
 }
 
-VFSNode* vfs_alloc(bool temp) {
+VFSNode* vfs_alloc(void) {
     VFSNode *node = calloc(1, sizeof(VFSNode));
-
-    if(!temp) {
-        vfs_incref(node);
-    }
-
+    vfs_incref(node);
     return node;
 }
 
-void vfs_free(VFSNode *node) {
+static void vfs_free(VFSNode *node) {
     if(!node) {
         return;
     }
@@ -112,11 +108,6 @@ void vfs_free(VFSNode *node) {
     }
 
     free(node);
-}
-
-bool vfs_makeperm(VFSNode *node) {
-    assert(node != NULL);
-    return SDL_AtomicCAS(&node->refcount, 0, 1);
 }
 
 void vfs_incref(VFSNode *node) {
@@ -129,23 +120,12 @@ bool vfs_decref(VFSNode *node) {
         return true;
     }
 
-    vfs_makeperm(node);
-
     if(SDL_AtomicDecRef(&node->refcount)) {
         vfs_free(node);
         return true;
     }
 
     return false;
-}
-
-bool vfs_freetemp(VFSNode *node) {
-    if(!node) {
-        return true;
-    }
-
-    vfs_incref(node);
-    return vfs_decref(node);
 }
 
 VFSInfo vfs_query_node(VFSNode *node) {
@@ -169,6 +149,7 @@ VFSNode* vfs_locate(VFSNode *root, const char *path) {
 #endif
 
     if(!*path) {
+        vfs_incref(root);
         return root;
     }
 
@@ -200,7 +181,7 @@ bool vfs_mount(VFSNode *root, const char *mountpoint, VFSNode *subtree) {
             vfs_set_error("Mountpoint '%s' already exists and does not support merging", mountpoint);
         }
 
-        vfs_freetemp(mpnode);
+        vfs_decref(mpnode);
         return result;
     }
 
@@ -215,7 +196,7 @@ bool vfs_mount(VFSNode *root, const char *mountpoint, VFSNode *subtree) {
             vfs_set_error("Parent directory '%s' of mountpoint '%s' does not support mounting", mpbase, mountpoint);
         }
 
-        vfs_freetemp(mpnode);
+        vfs_decref(mpnode);
     }
 
     return result;
@@ -277,7 +258,7 @@ void vfs_print_tree_recurse(SDL_RWops *dest, VFSNode *root, char *prefix, const 
         VFSNode *node = vfs_locate(root, n);
         if(node) {
             vfs_print_tree_recurse(dest, node, newprefix, n);
-            vfs_freetemp(node);
+            vfs_decref(node);
         }
     }
 

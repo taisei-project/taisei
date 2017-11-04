@@ -197,6 +197,11 @@ static VFSNode* vfs_ipfs_get_cached(const char *path) {
     VFSNode *n = hashtable_get_string(global.pathmap, path);
     SDL_UnlockMutex(global.pathmap_mtx);
     log_debug("Cache %s: %s", n ? "hit" : "miss", path);
+
+    if(n) {
+        vfs_incref(n);
+    }
+
     return n;
 }
 
@@ -236,10 +241,10 @@ static VFSNode* vfs_ipfs_locate(VFSNode *node, const char *path) {
     n = vfs_ipfs_get_cached(fullpath);
 
     if(n == NULL) {
-        n = vfs_alloc(true);
+        n = vfs_alloc();
 
         if(!vfs_ipfs_init_internal(n, strdup(fullpath))) {
-            vfs_freetemp(n);
+            vfs_decref(n);
             n = NULL;
         }
     }
@@ -247,7 +252,7 @@ static VFSNode* vfs_ipfs_locate(VFSNode *node, const char *path) {
     if(n != NULL && *subpath) {
         VFSNode *o = n;
         n = o->funcs->locate(n, subpath);
-        vfs_freetemp(o);
+        vfs_decref(o);
     }
 
     return n;

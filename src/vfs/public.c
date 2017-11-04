@@ -30,13 +30,13 @@ static bool mount_or_decref(const char *mountpoint, VFSNode *node) {
 }
 
 bool vfs_create_union_mountpoint(const char *mountpoint) {
-    VFSNode *unode = vfs_alloc(false);
+    VFSNode *unode = vfs_alloc();
     vfs_union_init(unode);
     return mount_or_decref(mountpoint, unode);
 }
 
 bool vfs_mount_syspath(const char *mountpoint, const char *fspath, bool mkdir) {
-    VFSNode *rdir = vfs_alloc(false);
+    VFSNode *rdir = vfs_alloc();
 
     if(!vfs_syspath_init(rdir, fspath)) {
         vfs_set_error("Can't initialize path: %s", vfs_get_error());
@@ -58,7 +58,7 @@ bool vfs_mount_syspath(const char *mountpoint, const char *fspath, bool mkdir) {
 
 bool vfs_mount_ipfs(const char *mountpoint, const char *ipfspath) {
     vfs_ipfs_global_init();
-    VFSNode *ipfsnode = vfs_alloc(false);
+    VFSNode *ipfsnode = vfs_alloc();
 
     if(!vfs_ipfs_init(ipfsnode, ipfspath)) {
         vfs_decref(ipfsnode);
@@ -70,7 +70,7 @@ bool vfs_mount_ipfs(const char *mountpoint, const char *ipfspath) {
 
 bool vfs_mount_ipfs_root(const char *mountpoint) {
     vfs_ipfs_global_init();
-    VFSNode *ipfsroot = vfs_alloc(false);
+    VFSNode *ipfsroot = vfs_alloc();
 
     if(!vfs_ipfsroot_init(ipfsroot)) {
         vfs_decref(ipfsroot);
@@ -91,11 +91,10 @@ bool vfs_mount_zipfile(const char *mountpoint, const char *zippath) {
         return false;
     }
 
-    vfs_incref(node);
-    VFSNode *znode = vfs_alloc(false);
+    VFSNode *znode = vfs_alloc();
 
     if(!vfs_zipfile_init(znode, node)) {
-        vfs_decref(znode);
+        vfs_decref(znode); // this decrefs node too
         return false;
     }
 
@@ -117,7 +116,6 @@ bool vfs_mount_alias(const char *dst, const char *src) {
         return false;
     }
 
-    vfs_incref(srcnode);
     return mount_or_decref(dst, srcnode);
 }
 
@@ -137,7 +135,7 @@ bool vfs_unmount(const char *path) {
             vfs_set_error("Node '%s' doesn't support unmounting", parent);
         }
 
-        vfs_freetemp(node);
+        vfs_decref(node);
         return result;
     }
 
@@ -157,10 +155,11 @@ SDL_RWops* vfs_open(const char *path, VFSOpenMode mode) {
         if(node->funcs->open) {
             // expected to set error on failure
             rwops = node->funcs->open(node, mode);
-            vfs_freetemp(node);
         } else {
             vfs_set_error("Node '%s' can't be opened as a file", path);
         }
+
+        vfs_decref(node);
     } else {
         vfs_set_error("Node '%s' does not exist", path);
     }
@@ -180,7 +179,7 @@ VFSInfo vfs_query(const char *path) {
         // exists or not, that is an error.
 
         VFSInfo i = vfs_query_node(node);
-        vfs_freetemp(node);
+        vfs_decref(node);
         return i;
     }
 
@@ -196,11 +195,11 @@ bool vfs_mkdir(const char *path) {
 
     if(node && node->funcs->mkdir) {
         ok = node->funcs->mkdir(node, NULL);
-        vfs_freetemp(node);
+        vfs_decref(node);
         return ok;
     }
 
-    vfs_freetemp(node);
+    vfs_decref(node);
 
     char *parent, *subdir;
     vfs_path_split_right(p, &parent, &subdir);
@@ -218,7 +217,7 @@ bool vfs_mkdir(const char *path) {
         vfs_set_error("Node '%s' does not exist", parent);
     }
 
-    vfs_freetemp(node);
+    vfs_decref(node);
     return false;
 }
 
@@ -235,7 +234,7 @@ char* vfs_repr(const char *path, bool try_syspath) {
 
     if(node) {
         char *p = vfs_repr_node(node, try_syspath);
-        vfs_freetemp(node);
+        vfs_decref(node);
         return p;
     }
 
@@ -263,7 +262,7 @@ bool vfs_print_tree(SDL_RWops *dest, const char *path) {
     }
 
     vfs_print_tree_recurse(dest, node, p, "");
-    vfs_freetemp(node);
+    vfs_decref(node);
     return true;
 }
 
@@ -276,13 +275,11 @@ VFSDir* vfs_dir_open(const char *path) {
         if(node->funcs->iter && vfs_query_node(node).is_dir) {
             VFSDir *d = calloc(1, sizeof(VFSDir));
             d->node = node;
-            vfs_incref(node);
             return d;
-        } else {
-            vfs_set_error("Node '%s' is not a directory", path);
         }
 
-        vfs_freetemp(node);
+        vfs_set_error("Node '%s' is not a directory", path);
+        vfs_decref(node);
     } else {
         vfs_set_error("Node '%s' does not exist", path);
     }

@@ -29,8 +29,7 @@ static VFSNode* vfs_vdir_locate(VFSNode *vdir, const char *path) {
     vfs_path_split_left(mutpath, &primpath, &subpath);
 
     if(node = hashtable_get_string(vdir->vdir.contents, mutpath)) {
-        VFSNode *r = vfs_locate(node, subpath);
-        return r;
+        return vfs_locate(node, subpath);
     }
 
     return NULL;
@@ -105,7 +104,7 @@ static bool vfs_vdir_mkdir(VFSNode *node, const char *subdir) {
         return false;
     }
 
-    VFSNode *subnode = vfs_alloc(false);
+    VFSNode *subnode = vfs_alloc();
     vfs_vdir_init(subnode);
     vfs_vdir_mount(node, subdir, subnode);
 

@@ -97,11 +97,9 @@ typedef void (*VFSShutdownHandler)(void *arg);
 
 extern VFSNode *vfs_root;
 
-VFSNode* vfs_alloc(bool temp);
+VFSNode* vfs_alloc(void);
 void vfs_incref(VFSNode *node);
 bool vfs_decref(VFSNode *node);
-bool vfs_freetemp(VFSNode *node);
-bool vfs_makeperm(VFSNode *node);
 char* vfs_repr_node(VFSNode *node, bool try_syspath);
 
 VFSNode* vfs_locate(VFSNode *root, const char *path);

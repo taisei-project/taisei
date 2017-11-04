@@ -22,7 +22,7 @@ static VFSInfo vfs_ipfsroot_query(VFSNode *node) {
 }
 
 static VFSNode* vfs_ipfsroot_locate(VFSNode *node, const char *path) {
-    VFSNode *n = vfs_alloc(true);
+    VFSNode *n = vfs_alloc();
 
     if(!vfs_ipfs_init(n, path)) {
         vfs_decref(n);
