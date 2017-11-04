@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include <SDL_mutex.h>
 
+// #define HT_USE_MUTEX
+
 typedef struct HashtableElement {
     void *next;
     void *prev;
@@ -30,8 +32,12 @@ struct Hashtable {
     HTHashFunc hash_func;
     HTCopyFunc copy_func;
     HTFreeFunc free_func;
+#ifdef HT_USE_MUTEX
+    SDL_mutex *mutex;
+#else
     SDL_atomic_t cur_operation;
     SDL_atomic_t num_operations;
+#endif
     size_t num_elements;
     bool dynamic_size;
 };
@@ -89,14 +95,27 @@ Hashtable* hashtable_new(size_t size, HTCmpFunc cmp_func, HTHashFunc hash_func, 
     ht->copy_func = copy_func;
     ht->free_func = free_func;
 
+#ifdef HT_USE_MUTEX
+    ht->mutex = SDL_CreateMutex();
+#else
     SDL_AtomicSet(&ht->cur_operation, HT_OP_NONE);
     SDL_AtomicSet(&ht->num_operations, 0);
+#endif
 
     assert(ht->hash_func != NULL);
 
     return ht;
 }
 
+#ifdef HT_USE_MUTEX
+static void hashtable_enter_state(Hashtable *ht, int state, bool mutex) {
+    SDL_LockMutex(ht->mutex);
+}
+
+static void hashtable_idle_state(Hashtable *ht) {
+    SDL_UnlockMutex(ht->mutex);
+}
+#else
 static bool hashtable_try_enter_state(Hashtable *ht, int state, bool mutex) {
     SDL_atomic_t *ptr = &ht->cur_operation;
 
@@ -112,10 +131,13 @@ static void hashtable_enter_state(Hashtable *ht, int state, bool mutex) {
     SDL_AtomicIncRef(&ht->num_operations);
 }
 
+
 static void hashtable_idle_state(Hashtable *ht) {
-    if(SDL_AtomicDecRef(&ht->num_operations))
+    if(SDL_AtomicDecRef(&ht->num_operations)) {
         SDL_AtomicSet(&ht->cur_operation, HT_OP_NONE);
+    }
 }
+#endif
 
 void hashtable_lock(Hashtable *ht) {
     assert(ht != NULL);
@@ -159,6 +181,10 @@ void hashtable_free(Hashtable *ht) {
     }
 
     hashtable_unset_all(ht);
+
+#ifdef HT_USE_MUTEX
+    SDL_DestroyMutex(ht->mutex);
+#endif
 
     free(ht->table);
     free(ht);

@@ -37,8 +37,8 @@ static void taisei_shutdown(void) {
 	video_shutdown();
 	gamepad_shutdown();
 	stage_free_array();
-	config_uninit();
-	vfs_uninit();
+	config_shutdown();
+	vfs_shutdown();
 	events_shutdown();
 	time_shutdown();
 
@@ -166,7 +166,7 @@ int main(int argc, char **argv) {
 		}
 
 		SDL_RWclose(rwops);
-		vfs_uninit();
+		vfs_shutdown();
 		free_cli_action(&a);
 		return 0;
 	}

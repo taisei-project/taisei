@@ -6,8 +6,10 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#include "union.h"
 
-#include "util.h"
-
-void vfs_setup(bool silent);
+bool vfs_create_union_mountpoint(const char *mountpoint) {
+    VFSNode *unode = vfs_alloc();
+    vfs_union_init(unode);
+    return vfs_mount_or_decref(vfs_root, mountpoint, unode);
+}

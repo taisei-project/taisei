@@ -6,8 +6,9 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#include "zipfile.h"
 
-#include "util.h"
-
-void vfs_setup(bool silent);
+bool vfs_zipfile_init(VFSNode *node, VFSNode *source) {
+    vfs_set_error("Compiled without ZIP support");
+    return false;
+}

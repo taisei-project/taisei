@@ -6,22 +6,22 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#include "zippath.h"
 #include "zipfile.h"
+#include "zipfile_impl.h"
 #include "syspath.h"
 #include "rwops/all.h"
 
 static const char* vfs_zippath_name(VFSNode *node) {
-    VFSZipPathData *zdata = node->data;
+    VFSZipPathData *zdata = node->data1;
     return zip_get_name(zdata->tls->zip, zdata->index, 0);
 }
 
 static void vfs_zippath_free(VFSNode *node) {
-    free(node->data);
+    free(node->data1);
 }
 
 static char* vfs_zippath_repr(VFSNode *node) {
-    VFSZipPathData *zdata = node->data;
+    VFSZipPathData *zdata = node->data1;
     char *ziprepr = vfs_repr_node(zdata->zipnode, false);
     char *zpathrepr = strfmt("%s '%s' in %s",
         zdata->info.is_dir ? "directory" : "file", vfs_zippath_name(node), ziprepr);
@@ -30,7 +30,7 @@ static char* vfs_zippath_repr(VFSNode *node) {
 }
 
 static char* vfs_zippath_syspath(VFSNode *node) {
-    VFSZipPathData *zdata = node->data;
+    VFSZipPathData *zdata = node->data1;
     char *zippath = vfs_repr_node(zdata->zipnode, true);
     char *subpath = strfmt("%s%c%s", zippath, vfs_syspath_prefered_separator, vfs_zippath_name(node));
     free(zippath);
@@ -38,12 +38,12 @@ static char* vfs_zippath_syspath(VFSNode *node) {
 }
 
 static VFSInfo vfs_zippath_query(VFSNode *node) {
-    VFSZipPathData *zdata = node->data;
+    VFSZipPathData *zdata = node->data1;
     return zdata->info;
 }
 
 static VFSNode* vfs_zippath_locate(VFSNode *node, const char *path) {
-    VFSZipPathData *zdata = node->data;
+    VFSZipPathData *zdata = node->data1;
 
     const char *mypath = vfs_zippath_name(node);
     char fullpath[strlen(mypath) + strlen(path) + 2];
@@ -54,7 +54,7 @@ static VFSNode* vfs_zippath_locate(VFSNode *node, const char *path) {
 }
 
 static const char* vfs_zippath_iter(VFSNode *node, void **opaque) {
-    VFSZipPathData *zdata = node->data;
+    VFSZipPathData *zdata = node->data1;
     VFSZipFileIterData *idata = *opaque;
 
     if(!zdata->info.is_dir) {
@@ -70,7 +70,7 @@ static const char* vfs_zippath_iter(VFSNode *node, void **opaque) {
         *opaque = idata;
     }
 
-    return vfs_zipfile_iter_shared(node, zdata->zipnode->data, idata, zdata->tls);
+    return vfs_zipfile_iter_shared(node, zdata->zipnode->data1, idata, zdata->tls);
 }
 
 #define vfs_zippath_iter_stop vfs_zipfile_iter_stop
@@ -81,7 +81,7 @@ static SDL_RWops* vfs_zippath_open(VFSNode *node, VFSOpenMode mode) {
         return NULL;
     }
 
-    VFSZipPathData *zdata = node->data;
+    VFSZipPathData *zdata = node->data1;
     zip_file_t *zipfile = zip_fopen_index(zdata->tls->zip, zdata->index, 0);
 
     if(!zipfile) {
@@ -96,21 +96,9 @@ static SDL_RWops* vfs_zippath_open(VFSNode *node, VFSOpenMode mode) {
         return ziprw;
     }
 
-    uint8_t buf[4096] = {0};
-    ssize_t len;
-    SDL_RWops *abufrw = SDL_RWAutoBuffer(NULL, 4096);
-
-    while((len = SDL_RWread(ziprw, buf, 1, sizeof(buf))) > 0) {
-        SDL_RWwrite(abufrw, buf, 1, len);
-    }
-
+    SDL_RWops *bufrw = SDL_RWCopyToBuffer(ziprw);
     SDL_RWclose(ziprw);
-
-    size_t datasize = SDL_RWtell(abufrw);
-    SDL_RWseek(abufrw, 0, RW_SEEK_SET);
-    abufrw = SDL_RWWrapSegment(abufrw, 0, datasize, true);
-
-    return abufrw;
+    return bufrw;
 }
 
 static VFSNodeFuncs vfs_funcs_zippath = {
@@ -131,7 +119,7 @@ void vfs_zippath_init(VFSNode *node, VFSNode *zipnode, VFSZipFileTLS *tls, zip_i
     zdata->zipnode = zipnode;
     zdata->tls = tls;
     zdata->index = idx;
-    node->data = zdata;
+    node->data1 = zdata;
 
     zdata->info.exists = true;
 
@@ -139,7 +127,6 @@ void vfs_zippath_init(VFSNode *node, VFSNode *zipnode, VFSZipFileTLS *tls, zip_i
         zdata->info.is_dir = true;
     }
 
-    node->type = VNODE_ZIPPATH;
     node->funcs = &vfs_funcs_zippath;
 
     const char *path = vfs_zippath_name(node);

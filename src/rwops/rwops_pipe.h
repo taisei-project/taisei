@@ -8,6 +8,8 @@
 
 #pragma once
 
-#include "util.h"
+#include <SDL.h>
+#include <stdbool.h>
 
-void vfs_setup(bool silent);
+SDL_RWops* SDL_RWpopen(const char *command, const char *mode);
+int SDL_RWConvertToPipe(SDL_RWops *stdio_rw);

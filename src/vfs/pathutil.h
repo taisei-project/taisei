@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef TAISEI_VFS_PATHUTIL
-#define TAISEI_VFS_PATHUTIL
+#pragma once
 
 #include <SDL_platform.h>
 
@@ -27,5 +26,3 @@ void vfs_path_split_right(char *path, char **lpath, char **rpath);
 void vfs_path_root_prefix(char *path);
 
 char* vfs_syspath_normalize_inplace(char *path);
-
-#endif
