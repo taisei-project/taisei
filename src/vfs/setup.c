@@ -149,7 +149,7 @@ void vfs_setup(bool silent) {
     vfs_create_union_mountpoint("respkgs");
 
     // permanent union of respkgs and resdirs
-    // this way, files in any of the "real" directories always have priority over anything in packaages
+    // this way, files in any of the "real" directories always have priority over anything in packages
     vfs_create_union_mountpoint("res");
 
     for(struct mpoint_t *mp = mpts; mp->dest; ++mp) {
