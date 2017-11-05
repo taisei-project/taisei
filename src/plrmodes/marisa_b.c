@@ -14,30 +14,21 @@ static void marisa_star(Projectile *p, int t) {
     glPushMatrix();
     glTranslatef(creal(p->pos), cimag(p->pos), 0);
     glRotatef(t*10, 0, 0, 1);
-
-    if(p->clr) {
-        parse_color_call(p->clr, glColor4f);
-        draw_texture_p(0, 0, p->tex);
-        glColor4f(1, 1, 1, 1);
-    } else {
-        draw_texture_p(0, 0, p->tex);
-    }
-
+    ProjDrawCore(p, p->color);
     glPopMatrix();
 }
 
 static void marisa_star_trail_draw(Projectile *p, int t) {
     float s = 1 - t / creal(p->args[0]);
 
-    Color clr = derive_color(p->clr, CLRMASK_A, rgba(0, 0, 0, s*0.5));
+    Color clr = derive_color(p->color, CLRMASK_A, rgba(0, 0, 0, s*0.5));
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glPushMatrix();
     glTranslatef(creal(p->pos), cimag(p->pos), 0);
     glRotatef(t*10, 0, 0, 1);
     glScalef(s, s, 1);
-    parse_color_call(clr, glColor4f);
-    draw_texture_p(0, 0, p->tex);
+    ProjDrawCore(p, clr);
     glColor4f(1,1,1,1);
     glPopMatrix();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -49,15 +40,32 @@ static void marisa_star_bomb_draw(Projectile *p, int t) {
 
 static int marisa_star_projectile(Projectile *p, int t) {
     float c = 0.3 * psin(t * 0.2);
-    p->clr = rgb(1 - c, 0.7 + 0.3 * psin(t * 0.1), 0.9 + c/3);
+    p->color = rgb(1 - c, 0.7 + 0.3 * psin(t * 0.1), 0.9 + c/3);
 
     int r = accelerated(p, t);
-    create_projectile_p(&global.particles, get_tex("proj/maristar"), p->pos, p->clr, marisa_star_trail_draw, timeout, 10, 0, 0, 0)->type = PlrProj;
+
+    PARTICLE(
+        .texture_ptr = get_tex("proj/maristar"),
+        .pos = p->pos,
+        .color = p->color,
+        .rule = timeout,
+        .args = { 10 },
+        .draw_rule = marisa_star_trail_draw,
+        .type = PlrProj,
+    );
 
     if(t == EVENT_DEATH) {
-        Projectile *impact = create_projectile_p(&global.particles, get_tex("proj/maristar"), p->pos, p->clr, GrowFadeAdd, timeout, 40, 2, 0, 0);
-        impact->type = PlrProj;
-        impact->angle = frand() * 2 * M_PI;
+        PARTICLE(
+            .texture_ptr = get_tex("proj/maristar"),
+            .pos = p->pos,
+            .color = p->color,
+            .rule = timeout,
+            .draw_rule = GrowFade,
+            .args = { 40, 2 },
+            .type = PlrProj,
+            .angle = frand() * 2 * M_PI,
+            .flags = PFLAG_DRAWADD,
+        );
     }
 
     return r;
@@ -73,8 +81,16 @@ static int marisa_star_slave(Enemy *e, int t) {
         v = creal(v) * (1 - 5 * focus) + I * cimag(v) * (1 - 2.5 * focus);
         a = creal(a) * focus * -0.0525 + I * cimag(a) * 2;
 
-        create_projectile_p(&global.projs, get_tex("proj/maristar"), e->pos, rgb(1, 0.5, 1), marisa_star, marisa_star_projectile,
-                            v, a, 0, 0)->type = PlrProj+e->args[3]*15;
+        PROJECTILE(
+            .texture_ptr = get_tex("proj/maristar"),
+            .pos = e->pos,
+            .color = rgb(1.0, 0.5, 1.0),
+            .rule = marisa_star_projectile,
+            .draw_rule = marisa_star,
+            .args = { v, a },
+            .type = PlrProj + e->args[3] * 15,
+            .color_transform_rule = proj_clrtransform_particle,
+        );
     }
 
     e->pos = global.plr.pos + (1 - focus)*e->pos0 + focus*e->args[0];
@@ -85,10 +101,17 @@ static int marisa_star_slave(Enemy *e, int t) {
 static int marisa_star_orbit_logic(void *v, int t, double speed) {
     Projectile *p = v;
     float r = cabs(p->pos0 - p->pos);
+
     p->args[1] = (0.5e5-t*t)*cexp(I*carg(p->pos0 - p->pos))/(r*r);
     p->args[0] += p->args[1]*0.2;
     p->pos += p->args[0];
-    create_particle1c("maristar_orbit", p->pos, 0, GrowFadeAdd, timeout, 40 / speed)->type = PlrProj;
+
+    PARTICLE("maristar_orbit", p->pos, 0, timeout, { 40 / speed },
+        .draw_rule = GrowFade,
+        .type = PlrProj,
+        .flags = PFLAG_DRAWADD,
+    );
+
     return 1;
 }
 
@@ -113,7 +136,12 @@ static void marisa_star_bomb(Player *plr) {
     for(int i = 0; i < 20; i++) {
         float r = frand()*40 + 100;
         float phi = frand()*2*M_PI;
-        create_particle1c("maristar_orbit", plr->pos + r*cexp(I*phi), 0, marisa_star_bomb_draw, marisa_star_orbit, I*r*cexp(I*(phi+frand()*0.5))/10)->type=PlrProj;
+
+        PARTICLE("maristar_orbit", plr->pos + r*cexp(I*phi), 0, marisa_star_orbit,
+            .draw_rule = marisa_star_bomb_draw,
+            .args = { I*r*cexp(I*(phi+frand()*0.5))/10 },
+            .type = PlrProj,
+        );
     }
 }
 

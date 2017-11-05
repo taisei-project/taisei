@@ -45,20 +45,20 @@ static complex trace_laser(complex origin, complex vel, int damage) {
 
     if(col) {
         tsrand_fill(3);
-        create_particle2c(
-            "flare", target, 0, Shrink, timeout_linear,
-            3 + 5 * afrand(2),
-            (2+afrand(0)*6)*cexp(I*M_PI*2*afrand(1))
-        )->type=PlrProj;
+        PARTICLE(
+            .texture = "flare",
+            .pos = target,
+            .rule = timeout_linear,
+            .draw_rule = Shrink,
+            .args = {
+                3 + 5 * afrand(2),
+                (2+afrand(0)*6)*cexp(I*M_PI*2*afrand(1))
+            },
+            .type = PlrProj,
+        );
     }
 
     return target;
-}
-
-static void set_color(int u_clr, Color c) {
-    float ca[4];
-    parse_color_array(c, ca);
-    glUniform4fv(u_clr, 1, ca);
 }
 
 static float set_alpha(int u_alpha, float a) {
@@ -83,8 +83,8 @@ static void draw_magic_star(complex pos, double a, Color c1, Color c2) {
     c2 = multiply_colors(c2, mul);
 
     Texture *tex = get_tex("part/magic_star");
-    Shader *shader = get_shader("bullet_color");
-    int u_clr = uniloc(shader, "color");
+    Shader *shader = recolor_get_shader();
+    ColorTransform ct;
     glUseProgram(shader->prog);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -92,12 +92,14 @@ static void draw_magic_star(complex pos, double a, Color c1, Color c2) {
         glTranslatef(creal(pos), cimag(pos), -1);
         glScalef(0.25, 0.25, 1);
         glPushMatrix();
-            set_color(u_clr, c1);
+            static_clrtransform_bullet(c1, &ct);
+            recolor_apply_transform(&ct);
             glRotatef(global.frames * 3, 0, 0, 1);
             draw_texture_p(0, 0, tex);
         glPopMatrix();
         glPushMatrix();
-            set_color(u_clr, c2);
+            static_clrtransform_bullet(c2, &ct);
+            recolor_apply_transform(&ct);
             glRotatef(global.frames * -3, 0, 0, 1);
             draw_texture_p(0, 0, tex);
         glPopMatrix();

@@ -45,18 +45,15 @@ void youmu_common_particle_slice_draw(Projectile *p, int t) {
     }
 
     float f = p->args[1]/p->args[0]*20.0;
-
-    glColor4f(1,1,1,1.0 - p->args[2]/p->args[0]*20.0);
+    p->color = rgba(1, 1, 1, 1 - p->args[2]/p->args[0]*20.0);
 
     glPushMatrix();
     glTranslatef(creal(p->pos), cimag(p->pos),0);
-    glRotatef(p->angle,0,0,1);
+    glRotatef(p->angle/M_PI*180,0,0,1);
     glScalef(f,1,1);
     draw_texture(0,0,"part/youmu_slice");
-
+    ProjDrawCore(p, p->color);
     glPopMatrix();
-
-    glColor4f(1,1,1,1);
 }
 
 void youmu_common_shot(Player *plr) {
@@ -65,7 +62,16 @@ void youmu_common_shot(Player *plr) {
     }
 
     if(!(global.frames % 6)) {
-        create_projectile1c("youmu", plr->pos + 10 - I*20, 0, linear, -20.0*I)->type = PlrProj+120;
-        create_projectile1c("youmu", plr->pos - 10 - I*20, 0, linear, -20.0*I)->type = PlrProj+120;
+        Color c = rgb(1, 1, 1);
+
+        PROJECTILE("youmu", plr->pos + 10 - I*20, c, linear, { -20.0*I },
+            .type = PlrProj+120,
+            .color_transform_rule = proj_clrtransform_particle,
+        );
+
+        PROJECTILE("youmu", plr->pos - 10 - I*20, c, linear, { -20.0*I },
+            .type = PlrProj+120,
+            .color_transform_rule = proj_clrtransform_particle,
+        );
     }
 }

@@ -46,6 +46,7 @@ Dialog *stage5_boss_dialog(void) {
 		dadd_msg(d,Right, "If your confidence will not allow you to back down, then so be it. I will test you using all of Heaven’s might, and if you are unfit, you shall be cast down from this Tower of Babel!");
 		dadd_msg(d,Left, "I shall pass whatever test necessary if it will allow me to fulfill the wishes of Lady Yuyuko!");
 	}
+
 	dadd_msg(d, BGM, "stage5boss");
 	return d;
 }
@@ -82,7 +83,10 @@ int stage5_greeter(Enemy *e, int t) {
 		int i;
 
 		for(i = -(int)global.diff; i <= (int)global.diff; i++) {
-			create_projectile2c("bullet", e->pos, rgb(0.0,0.0,1.0), asymptotic, (3.5+(global.diff == D_Lunatic))*cexp(I*carg(global.plr.pos-e->pos) + 0.06*I*i), 5);
+			PROJECTILE("bullet", e->pos, rgb(0.0,0.0,1.0), asymptotic, {
+				(3.5+(global.diff == D_Lunatic))*cexp(I*carg(global.plr.pos-e->pos) + 0.06*I*i),
+				5
+			});
 		}
 	}
 
@@ -104,7 +108,7 @@ int stage5_lightburst(Enemy *e, int t) {
 		int c = 5+global.diff;
 		for(i = 0; i < c; i++) {
 			complex n = cexp(I*carg(global.plr.pos) + 2.0*I*M_PI/c*i);
-			create_projectile2c("ball", e->pos + 50*n*cexp(-0.4*I*_i*global.diff), rgb(0.3, 0, 0.7), asymptotic, 3*n, 3);
+			PROJECTILE("ball", e->pos + 50*n*cexp(-0.4*I*_i*global.diff), rgb(0.3, 0, 0.7), asymptotic, { 3*n, 3 });
 		}
 	}
 
@@ -125,8 +129,8 @@ int stage5_swirl(Enemy *e, int t) {
 	e->pos += e->args[0];
 
 	FROM_TO(0, 400, 26-global.diff*4) {
-		create_projectile2c("bullet", e->pos, rgb(0.3, 0.4, 0.5), asymptotic, 2*e->args[0]*I/cabs(e->args[0]), 3);
-		create_projectile2c("bullet", e->pos, rgb(0.3, 0.4, 0.5), asymptotic, -2*e->args[0]*I/cabs(e->args[0]), 3);
+		PROJECTILE("bullet", e->pos, rgb(0.3, 0.4, 0.5), asymptotic, { 2*e->args[0]*I/cabs(e->args[0]), 3 });
+		PROJECTILE("bullet", e->pos, rgb(0.3, 0.4, 0.5), asymptotic, {-2*e->args[0]*I/cabs(e->args[0]), 3 });
 	}
 
 	return 1;
@@ -142,10 +146,9 @@ int stage5_limiter(Enemy *e, int t) {
 	e->pos += e->args[0];
 
 	FROM_TO(0, 1200, 3) {
-		create_projectile2c("rice", e->pos, rgb(0.5,0.1,0.2), asymptotic, 10*cexp(I*carg(global.plr.pos-e->pos)+0.2*I-0.1*I*(global.diff/4)+3.0*I/(_i+1)), 2);
-		create_projectile2c("rice", e->pos, rgb(0.5,0.1,0.2), asymptotic, 10*cexp(I*carg(global.plr.pos-e->pos)-0.2*I+0.1*I*(global.diff/4)-3.0*I/(_i+1)), 2);
+		PROJECTILE("rice", e->pos, rgb(0.5,0.1,0.2), asymptotic, { 10*cexp(I*carg(global.plr.pos-e->pos)+0.2*I-0.1*I*(global.diff/4)+3.0*I/(_i+1)), 2 });
+		PROJECTILE("rice", e->pos, rgb(0.5,0.1,0.2), asymptotic, { 10*cexp(I*carg(global.plr.pos-e->pos)-0.2*I+0.1*I*(global.diff/4)-3.0*I/(_i+1)), 2 });
 	}
-
 
 	return 1;
 }
@@ -167,7 +170,7 @@ int stage5_laserfairy(Enemy *e, int t) {
 		complex n = cexp(I*carg(global.plr.pos-e->pos)+(0.2-0.02*global.diff)*I*_i);
 		float fac = (0.5+0.2*global.diff);
 		create_lasercurve2c(e->pos, 100, 300, rgb(0.7, 0.3, 1), las_accel, fac*4*n, fac*0.05*n);
-		create_projectile2c("plainball", e->pos, rgb(0.7, 0.3, 1), accelerated, fac*4*n, fac*0.05*n)->draw = ProjDrawAdd;
+		PROJECTILE("plainball", e->pos, rgb(0.7, 0.3, 1), accelerated, { fac*4*n, fac*0.05*n }, .flags = PFLAG_DRAWADD);
 	}
 	return 1;
 }
@@ -183,7 +186,7 @@ int stage5_miner(Enemy *e, int t) {
 
 	FROM_TO(0, 600, 5-global.diff/2) {
 		tsrand_fill(2);
-		create_projectile1c("rice", e->pos + 20*cexp(2.0*I*M_PI*afrand(0)), rgb(0,0,cabs(e->args[0])), linear, cexp(2.0*I*M_PI*afrand(1)));
+		PROJECTILE("rice", e->pos + 20*cexp(2.0*I*M_PI*afrand(0)), rgb(0,0,cabs(e->args[0])), linear, { cexp(2.0*I*M_PI*afrand(1)) });
 	}
 
 	return 1;
@@ -196,15 +199,17 @@ int stage5_explosion(Enemy *e, int t) {
 		return 1;
 	}
 
-	FROM_TO(0, 80, 1)
+	FROM_TO(0, 80, 1) {
 		e->pos += e->args[0];
+	}
 
-	FROM_TO(90, 300, 7-global.diff)
-		create_projectile2c("soul", e->pos, rgb(0,0,1), asymptotic, 4*cexp(0.5*I*_i), 3)->draw = ProjDrawAdd;
+	FROM_TO(90, 300, 7-global.diff) {
+		PROJECTILE("soul", e->pos, rgb(0,0,1), asymptotic, { 4*cexp(0.5*I*_i), 3 }, .flags = PFLAG_DRAWADD);
+	}
 
 	FROM_TO(200, 720, 6-global.diff) {
-		create_projectile2c("rice", e->pos, rgb(1,0,0), asymptotic, 2*cexp(-0.3*I*_i+frand()*I), 3);
-		create_projectile2c("rice", e->pos, rgb(1,0,0), asymptotic, -2*cexp(-0.3*I*_i+frand()*I), 3);
+		PROJECTILE("rice", e->pos, rgb(1,0,0), asymptotic, { 2*cexp(-0.3*I*_i+frand()*I), 3 });
+		PROJECTILE("rice", e->pos, rgb(1,0,0), asymptotic, {-2*cexp(-0.3*I*_i+frand()*I), 3 });
 	}
 
 	FROM_TO(500, 800, 100-10*global.diff)
@@ -217,15 +222,30 @@ void iku_slave_draw(Enemy *e, int t) {
 	complex offset = (frand()-0.5)*10 + (frand()-0.5)*10.0*I;
 	if(e->args[2] && !(t % 5)) {
 		char *part = frand() > 0.5 ? "lightning0" : "lightning1";
-		Projectile *p = create_particle1c(part, e->pos+3*offset, rgb(1.0, 1.0, 1.0), FadeAdd, timeout, 20);
-		p->angle = frand()*2*M_PI;
+		PARTICLE(part, e->pos+3*offset, rgb(1.0, 1.0, 1.0), timeout,
+			.args = { 20 },
+			.draw_rule = Fade,
+			.flags = PFLAG_DRAWADD,
+			.angle = frand()*2*M_PI,
+		);
 	}
 
 	if(!(t % 3)) {
 		float alpha = 1;
-		if(!e->args[2])
+
+		if(!e->args[2]) {
 			alpha *= 0.03;
-		create_particle3c("lightningball", e->pos, rgba(.1*alpha, .1*alpha, .6*alpha, 0.1*alpha), FadeAdd, enemy_flare, 50,offset*0.1,add_ref(e));
+		}
+
+		PARTICLE(
+			.texture = "lightningball",
+			.pos = e->pos,
+			.color = rgba(0.1*alpha, 0.1*alpha, 0.6*alpha, 0.5*alpha),
+			.draw_rule = Fade,
+			.rule = enemy_flare,
+			.args = { 50, offset*0.1, add_ref(e) },
+			.flags = PFLAG_DRAWADD,
+		);
 	}
 }
 
@@ -272,7 +292,16 @@ int stage5_lightburst2(Enemy *e, int t) {
 		for(i = 0; i < c; i++) {
 			tsrand_fill(2);
 			complex n = cexp(I*carg(global.plr.pos-e->pos) + 2.0*I*M_PI/c*i);
-			create_projectile2c("bigball", e->pos + 50*n*cexp(-1.0*I*_i*global.diff), rgb(0.3, 0, 0.7+0.3*(_i&1)), asymptotic, 2.5*n+0.25*global.diff*afrand(0)*cexp(2.0*I*M_PI*afrand(1)), 3);
+			PROJECTILE(
+				.texture = "bigball",
+				.pos = e->pos + 50*n*cexp(-1.0*I*_i*global.diff),
+				.color = rgb(0.3, 0, 0.7+0.3*(_i&1)),
+				.rule = asymptotic,
+				.args = {
+					2.5*n+0.25*global.diff*afrand(0)*cexp(2.0*I*M_PI*afrand(1)),
+					3
+				}
+			);
 		}
 	}
 
@@ -291,8 +320,7 @@ int stage5_superbullet(Enemy *e, int t) {
 
 	FROM_TO(60, 200, 1) {
 		complex n = cexp(I*M_PI*sin(_i/(8.0+global.diff)+frand()*0.1)+I*carg(global.plr.pos-e->pos));
-
-		create_projectile2c("bullet", e->pos + 50*n, rgb(0.6, 0, 0), asymptotic, 2*n, 10);
+		PROJECTILE("bullet", e->pos + 50*n, rgb(0.6, 0, 0), asymptotic, { 2*n, 10 });
 	}
 
 	FROM_TO(260, 400, 1)
@@ -310,7 +338,18 @@ void iku_intro(Boss *b, int t) {
 static void cloud_common(void) {
 	tsrand_fill(4);
 	float v = (afrand(2)+afrand(3))*0.5+1.0;
-	create_projectile_p(&global.projs,get_tex("part/lightningball"), VIEWPORT_W*afrand(0)-15.0*I, rgba(0.2,0.0,0.4,0.6), PartDraw, accelerated, 1-2*afrand(1)+v*I, -0.01*I,0,0);
+
+	PROJECTILE(
+		.texture_ptr = get_tex("part/lightningball"),
+		.pos = VIEWPORT_W*afrand(0)-15.0*I,
+		.color = rgba(0.2, 0.0, 0.4, 0.6),
+		.rule = accelerated,
+		.args = {
+			1-2*afrand(1)+v*I,
+			-0.01*I
+		},
+		.color_transform_rule = proj_clrtransform_particle,
+	);
 }
 
 void iku_bolts(Boss *b, int time) {
@@ -326,7 +365,13 @@ void iku_bolts(Boss *b, int time) {
 		b->ani.mirrored = !b->ani.mirrored;
 		aniplayer_queue(&b->ani,1,0,5);
 		for(i = 0; i < c; i++) {
-			create_projectile2c("ball", b->pos, rgb(0.4, 1, 1), asymptotic, (i+2)*0.4*cexp(I*carg(global.plr.pos-b->pos))+0.2*(global.diff-1)*frand(), 3)->draw = ProjDrawAdd;
+			PROJECTILE("ball", b->pos, rgb(0.4, 1, 1), asymptotic,
+				.args = {
+					(i+2)*0.4*cexp(I*carg(global.plr.pos-b->pos))+0.2*(global.diff-1)*frand(),
+					3
+				},
+				.flags = PFLAG_DRAWADD,
+			);
 		}
 	}
 
@@ -364,15 +409,24 @@ void iku_atmospheric(Boss *b, int time) {
 		int c = 6+global.diff;
 
 		for(i = -c*0.5; i <= c*0.5; i++) {
-			create_projectile2c("ball", p1+(p2-p1)/c*i, rgb(1-1/(1+fabs(0.1*i)), 0.5-0.1*abs(i), 1), accelerated, 0, (0.004+0.001*global.diff)*cexp(I*carg(p2-p1)+I*M_PI/2+0.2*I*i))->draw = ProjDrawAdd;
+			PROJECTILE(
+				.texture = "ball",
+				.pos = p1+(p2-p1)/c*i,
+				.color = rgb(1-1/(1+fabs(0.1*i)), 0.5-0.1*abs(i), 1),
+				.rule = accelerated,
+				.args = {
+					0, (0.004+0.001*global.diff)*cexp(I*carg(p2-p1)+I*M_PI/2+0.2*I*i)
+				},
+				.flags = PFLAG_DRAWADD,
+			);
 		}
 	}
 
 	FROM_TO(0, 500, 7-global.diff) {
 		if(global.diff >= D_Hard)
-			create_projectile2c("thickrice", VIEWPORT_W*frand(), rgb(0,0.3,0.7), accelerated, 0, 0.01*I);
+			PROJECTILE("thickrice", VIEWPORT_W*frand(), rgb(0,0.3,0.7), accelerated, { 0, 0.01*I });
 		else
-			create_projectile1c("rice", VIEWPORT_W*frand(), rgb(0,0.3,0.7), linear, 2*I);
+			PROJECTILE("rice", VIEWPORT_W*frand(), rgb(0,0.3,0.7), linear, { 2*I });
 	}
 }
 
@@ -399,7 +453,7 @@ void iku_bolts2(Boss *b, int time) {
 
 	FROM_TO(0, 400, 5-global.diff)
 		if(frand() < 0.9)
-			create_projectile1c("plainball", b->pos, rgb(0.2,0,0.8), linear, cexp(0.1*I*_i));
+			PROJECTILE("plainball", b->pos, rgb(0.2,0,0.8), linear, { cexp(0.1*I*_i) });
 
 	FROM_TO(0, 70, 1)
 		GO_TO(b, 100+200.0*I, 0.02);
@@ -426,7 +480,13 @@ int lightning_slave(Enemy *e, int t) {
 		if(cabs(e->pos-global.plr.pos) > 60) {
 			tsrand_fill(2);
 			Color clr = rgb(1-1/(1+0.01*_i), 0.5-0.01*_i, 1);
-			create_projectile2c("wave", e->pos, clr, accelerated, (0.5+0.3*(_i&1)*(global.diff==D_Lunatic))*e->args[0]/cabs(e->args[0])*I, 0.001*global.diff*(1-2*afrand(0)+I*afrand(1)))->draw = ProjDrawAdd;
+			PROJECTILE("wave", e->pos, clr, accelerated,
+				.args = {
+					(0.5+0.3*(_i&1)*(global.diff==D_Lunatic))*e->args[0]/cabs(e->args[0])*I,
+					0.001*global.diff*(1-2*afrand(0)+I*afrand(1))
+				},
+				.flags = PFLAG_DRAWADD,
+			);
 		}
 
 	return 1;
@@ -436,8 +496,12 @@ static int zigzag_bullet(Projectile *p, int t) {
 	int l = 50;
 	p->pos = p->pos0+(abs(((2*t)%l)-l/2)*I+t)*2*p->args[0];
 
-	if(t%2 == 0)
-		create_particle1c("lightningball", p->pos, rgb(0.1,0.1,0.6), FadeAdd, timeout, 15);
+	if(t%2 == 0) {
+		PARTICLE("lightningball", p->pos, rgb(0.1,0.1,0.6), timeout, { 15 },
+			.draw_rule = Fade,
+			.flags = PFLAG_DRAWADD,
+		);
+	}
 
 	return 1;
 }
@@ -464,14 +528,25 @@ void iku_lightning(Boss *b, int time) {
 		float l = 150*frand()+50;
 		float s = 4+_i*0.01;
 		float alpha = 0.5;
-		create_particle2c("lightningball", b->pos+l*n, rgb(0.1*alpha,0.1*alpha,0.6*alpha), FadeAdd, timeout_linear, l/s, -s*n);
+
+		PARTICLE(
+			.texture = "lightningball",
+			.pos = b->pos+l*n,
+			.color = rgb(0.1*alpha, 0.1*alpha, 0.6*alpha),
+			.draw_rule = Fade,
+			.flags = PFLAG_DRAWADD,
+			.rule = timeout_linear,
+			.args = { l/s, -s*n },
+		);
 	}
 
 	if(global.diff == D_Lunatic && time > 0 && !(time%100)) {
 		int c = 7;
 		for(int i = 0; i<c; i++)
-			create_projectile1c("bigball", b->pos, rgb(0.5,0.1,1), zigzag_bullet, cexp(2*M_PI*I/c*i+I*carg(global.plr.pos-b->pos)))->draw = ProjDrawAdd;
-
+			PROJECTILE("bigball", b->pos, rgb(0.5,0.1,1), zigzag_bullet,
+				.args = { cexp(2*M_PI*I/c*i+I*carg(global.plr.pos-b->pos)) },
+				.flags = PFLAG_DRAWADD,
+			);
 	}
 
 	AT(100) {
@@ -480,13 +555,22 @@ void iku_lightning(Boss *b, int time) {
 		int c = 40;
 		int l = 200;
 		int s = 10;
-		float alpha = 1;
+
 		for(int i=0; i < c; i++) {
 			complex n = cexp(2.0*I*M_PI*frand());
-			create_particle2c("smoke", b->pos, rgb(0.4*alpha,0.4*alpha,1*alpha), FadeAdd, timeout_linear, l/s, s*n);
+			PARTICLE(
+				.texture = "smoke",
+				.pos = b->pos,
+				.color = rgb(0.4, 0.4, 1.0),
+				.draw_rule = Fade,
+				.rule = timeout_linear,
+				.args = { l/s, s*n }
+			);
 		}
-		for(int i = 0; i < global.diff+1; i++)
+
+		for(int i = 0; i < global.diff+1; i++){
 			create_enemy1c(b->pos, ENEMY_IMMUNE, NULL, lightning_slave, 10*cexp(I*carg(global.plr.pos - b->pos)+2.0*I*M_PI/(global.diff+1)*i));
+		}
 	}
 }
 
@@ -504,13 +588,19 @@ void iku_bolts3(Boss *b, int time) {
 		int i, c = 10+global.diff;
 		complex n = cexp(I*carg(global.plr.pos-b->pos)+0.1*I-0.2*I*frand());
 		for(i = 0; i < c; i++) {
-			create_projectile2c("ball", b->pos, rgb(0.4, 1, 1), asymptotic, (i+2)*0.4*n+0.2*(global.diff-1)*frand(), 3)->draw = ProjDrawAdd;
+			PROJECTILE("ball", b->pos, rgb(0.4, 1, 1), asymptotic,
+				.args = {
+					(i+2)*0.4*n+0.2*(global.diff-1)*frand(),
+					3
+				},
+				.flags = PFLAG_DRAWADD,
+			);
 		}
 	}
 
 	FROM_TO(0, 400, 5-global.diff)
 		if(frand() < 0.9)
-			create_projectile1c("plainball", b->pos, rgb(0.2,0,0.8), linear, cexp(0.1*I*_i));
+			PROJECTILE("plainball", b->pos, rgb(0.2,0,0.8), linear, { cexp(0.1*I*_i) });
 
 	FROM_TO(0, 70, 1)
 		GO_TO(b, 100+200.0*I, 0.02);
@@ -560,7 +650,14 @@ void iku_cathode(Boss *b, int t) {
 		int c = 5+global.diff;
 
 		for(i = 0; i < c; i++) {
-			create_projectile3c("bigball", b->pos, rgb(0.2, 0.4, 1), induction_bullet, 2*cexp(2.0*I*M_PI*frand()), 0.01*I*(1-2*(_i&1)),1)->draw = ProjDrawAdd;
+			PROJECTILE("bigball", b->pos, rgb(0.2, 0.4, 1), induction_bullet,
+				.args = {
+					2*cexp(2.0*I*M_PI*frand()),
+					0.01*I*(1-2*(_i&1)),
+					1
+				},
+				.flags = PFLAG_DRAWADD,
+			);
 			create_lasercurve2c(b->pos, 60, 200, rgb(0.4, 1, 1), cathode_laser, 2*cexp(2.0*I*M_PI*M_PI*frand()), 0.015*I*(1-2*(_i&1)));
 		}
 	}
@@ -587,7 +684,13 @@ void iku_induction(Boss *b, int t) {
 				float a = -0.0002*(global.diff-D_Easy);
 				if(global.diff == D_Hard)
 					a += 0.0005;
-				create_projectile2c("ball", b->pos, clr, induction_bullet, 2*cexp(2.0*I*M_PI/c*i+I*M_PI/2+I*shift), (0.01+0.001*global.diff)*I*(1-2*j)+a)->draw = ProjDrawAdd;
+				PROJECTILE("ball", b->pos, clr, induction_bullet,
+					.args = {
+						2*cexp(2.0*I*M_PI/c*i+I*M_PI/2+I*shift),
+						(0.01+0.001*global.diff)*I*(1-2*j)+a
+					},
+					.flags = PFLAG_DRAWADD,
+				);
 			}
 		}
 
@@ -618,13 +721,24 @@ Enemy* iku_extra_find_next_slave(complex from, double playerbias) {
 	return nearest;
 }
 
-
 void iku_extra_slave_draw(Enemy *e, int t) {
 	iku_slave_draw(e, t);
 
 	if(e->args[2] && !(t % 5)) {
 		complex offset = (frand()-0.5)*30 + (frand()-0.5)*20.0*I;
-		create_particle3c("lasercurve", offset, e->args[1] ? rgb(1.0, 0.5, 0.0) : rgb(0.0, 0.5, 0.5), EnemyFlareShrink, enemy_flare, 50, (-50.0*I-offset)/50.0, add_ref(e));
+		PARTICLE(
+			.texture = "lasercurve",
+			.pos = offset,
+			.color = e->args[1] ? rgb(1.0, 0.5, 0.0) : rgb(0.0, 0.5, 0.5),
+			.draw_rule = EnemyFlareShrink,
+			.rule = enemy_flare,
+			.args = {
+				50,
+				(-50.0*I-offset)/50.0,
+				add_ref(e)
+			},
+			.flags = PFLAG_DRAWADD,
+		);
 	}
 }
 
@@ -656,8 +770,8 @@ int iku_extra_trigger_bullet(Projectile *p, int t) {
 		int cnt = 6 + 2 * global.diff;
 		for(int i = 0; i < cnt; ++i) {
 			complex dir = cexp(I*(t + i*2*M_PI/cnt));
-			create_projectile2c("bigball", p->pos, rgb(1, 0.5, 0), asymptotic, 1.1*dir, 5)->draw = ProjDrawAdd;
-			create_projectile2c("bigball", p->pos, rgb(0, 0.5, 1), asymptotic, dir, 10)->draw = ProjDrawAdd;
+			PROJECTILE("bigball", p->pos, rgb(1, 0.5, 0), asymptotic, { 1.1*dir, 5  }, .flags = PFLAG_DRAWADD);
+			PROJECTILE("bigball", p->pos, rgb(0, 0.5, 1), asymptotic, {     dir, 10 }, .flags = PFLAG_DRAWADD);
 		}
 		global.shake_view += 5;
 		global.shake_view_fade = 0.2;
@@ -666,11 +780,18 @@ int iku_extra_trigger_bullet(Projectile *p, int t) {
 
 	p->angle = global.frames + t;
 
-	char *part = frand() > 0.5 ? "lightning0" : "lightning1";
-	complex ofs = nfrand();
-	ofs += I * nfrand();
-	Projectile *prt = create_particle2c(part, p->pos + 3 * ofs, rgb(1.0, 0.7 + 0.2 * nfrand(), 0.4), GrowFadeAdd, timeout, 20, 2.4);
-	prt->angle = frand() * 2 * M_PI;
+	tsrand_fill(5);
+
+	PARTICLE(
+		.texture = afrand(0) > 0.5 ? "lightning0" : "lightning1",
+		.pos = p->pos + 3 * (anfrand(1)+I*anfrand(2)),
+		.angle = afrand(3) * 2 * M_PI,
+		.color = rgb(1.0, 0.7 + 0.2 * anfrand(4), 0.4),
+		.rule = timeout,
+		.draw_rule = GrowFade,
+		.args = { 20, 2.4 },
+		.flags = PFLAG_DRAWADD,
+	);
 
 	return 1;
 }
@@ -686,8 +807,11 @@ void iku_extra_fire_trigger_bullet(void) {
 
 	Boss *b = global.boss;
 
-	create_projectile3c("soul", b->pos, rgb(0.2, 0.2, 1.0), iku_extra_trigger_bullet,
-		3*cexp(I*carg(e->pos - b->pos)), add_ref(e), -1);
+	PROJECTILE("soul", b->pos, rgb(0.2, 0.2, 1.0), iku_extra_trigger_bullet, {
+		3*cexp(I*carg(e->pos - b->pos)),
+		add_ref(e),
+		-1
+	});
 }
 
 int iku_extra_slave(Enemy *e, int t) {
@@ -718,7 +842,10 @@ int iku_extra_slave(Enemy *e, int t) {
 					double r = frand() * 2 * M_PI;
 
 					for(i = 0; i < cnt; ++i) {
-						create_projectile2c("rice", e->pos, rgb(1, 1, 0), asymptotic, 2*cexp(I*(r+i*2*M_PI/cnt)), 2)->draw = ProjDrawAdd;
+						PROJECTILE("rice", e->pos, rgb(1, 1, 0), asymptotic,
+							.args = { 2*cexp(I*(r+i*2*M_PI/cnt)), 2 },
+							.flags = PFLAG_DRAWADD,
+						);
 					}
 				}
 			} else {
@@ -736,7 +863,10 @@ int iku_extra_slave(Enemy *e, int t) {
 						continue;
 
 					for(i = 0; i < cnt; ++i) {
-						create_projectile2c("ball", o->pos, rgb(0, 1, 1), asymptotic, 1.5*cexp(I*(t + i*2*M_PI/cnt)), 5)->draw = ProjDrawAdd;
+						PROJECTILE("ball", o->pos, rgb(0, 1, 1), asymptotic,
+							.args = { 1.5*cexp(I*(t + i*2*M_PI/cnt)), 5},
+							.flags = PFLAG_DRAWADD,
+						);
 					}
 
 					o->args[1] = 0;

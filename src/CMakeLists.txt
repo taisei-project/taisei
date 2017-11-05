@@ -32,6 +32,7 @@ set(SRCs
 	random.c
 	config.c
 	color.c
+	recolor.c
 	gamepad.c
 	stage.c
 	stagedraw.c

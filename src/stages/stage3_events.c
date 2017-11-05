@@ -72,10 +72,10 @@ static int stage3_enterswirl(Enemy *e, int t) {
 			double a = (M_PI * 2.0 * i) / cnt;
 			complex dir = cexp(I*a);
 
-			create_projectile2c(e->args[1]? "ball" : "rice", e->pos, rgb(r, g, 1.0), asymptotic,
+			PROJECTILE(e->args[1]? "ball" : "rice", e->pos, rgb(r, g, 1.0), asymptotic, {
 				1.5 * dir,
 				10 - 10 * psin(2 * a + M_PI/2)
-			);
+			});
 		}
 
 		return 1;
@@ -113,14 +113,19 @@ static int stage3_slavefairy(Enemy *e, int t) {
 		float a = _i * 0.5;
 		complex dir = cexp(I*a);
 
-		create_projectile2c("wave", e->pos + dir * 10, (_i % 2)? rgb(1.0, 0.3, 0.3) : rgb(0.3, 0.3, 1.0), accelerated,
-			dir * 2,
-			dir * -0.035
+		PROJECTILE("wave",
+			.pos = e->pos + dir * 10,
+			.color = (_i % 2)? rgb(1.0, 0.3, 0.3) : rgb(0.3, 0.3, 1.0),
+			.rule = accelerated,
+			.args = {
+				dir * 2,
+				dir * -0.035,
+			},
 		);
 
-		if(global.diff > D_Easy && e->args[1]) create_projectile1c("ball", e->pos + dir * 10, rgb(1.0, 0.6, 0.3), linear,
-			dir * (1.0 + 0.5 * sin(a))
-		);
+		if(global.diff > D_Easy && e->args[1]) {
+			PROJECTILE("ball", e->pos + dir * 10, rgb(1.0, 0.6, 0.3), linear, { dir * (1.0 + 0.5 * sin(a)) });
+		}
 	}
 
 	if(t >= 120) {
@@ -154,9 +159,10 @@ static int stage3_slavefairy2(Enemy *e, int t) {
 		}
 
 		complex dir = cexp(I*a);
-		create_projectile1c("wave",e->pos,_i&1 ? rgb(1.0,0.3,0.3): rgb(0.3,0.3,1.0), linear, 2*dir);
+		PROJECTILE("wave", e->pos, _i&1 ? rgb(1.0,0.3,0.3): rgb(0.3,0.3,1.0), linear, { 2*dir });
+
 		if(global.diff > D_Normal && _i % 3 == 0) {
-			create_projectile1c("rice",e->pos,_i&1==0 ? rgb(1.0,0.3,0.3): rgb(0.3,0.3,1.0), linear, -2*dir);
+			PROJECTILE("rice", e->pos, _i&1==0 ? rgb(1.0,0.3,0.3): rgb(0.3,0.3,1.0), linear, { -2*dir });
 		}
 	}
 
@@ -174,8 +180,16 @@ static void charge_effect(Enemy *e, int t, int chargetime) {
 		complex n = cexp(2.0*I*M_PI*frand());
 		float l = 50*frand()+25;
 		float s = 4+_i*0.01;
-		float alpha = 0.5;
-		create_particle2c("flare", e->pos+l*n, rgb(alpha, alpha, 0.5*alpha), FadeAdd, timeout_linear, l/s, -s*n);
+
+		PARTICLE(
+			.texture = "flare",
+			.pos = e->pos+l*n,
+			.color = rgb(0.5, 0.5, 0.25),
+			.draw_rule = Fade,
+			.rule = timeout_linear,
+			.args = { l/s, -s*n },
+			.flags =  PFLAG_DRAWADD
+		);
 	}
 }
 
@@ -206,10 +220,10 @@ static int stage3_burstfairy(Enemy *e, int t) {
 			int cnt = 6 + 4 * global.diff;
 			for(int p = 0; p < cnt; ++p) {
 				complex dir = cexp(I*M_PI*2*p/cnt);
-				create_projectile2c("ball", e->args[0],
-					rgb(0.2, 0.1, 0.5), asymptotic,
-					dir, 10 + 4 * global.diff
-				);
+				PROJECTILE("ball", e->args[0], rgb(0.2, 0.1, 0.5), asymptotic, {
+					dir,
+					10 + 4 * global.diff
+				});
 			}
 		}
 	}
@@ -229,9 +243,13 @@ static int stage3_burstfairy(Enemy *e, int t) {
 		int cnt = 5 + global.diff;
 		for(int p = 0; p < cnt; ++p) {
 			for(int i = -1; i < 2; i += 2) {
-				create_projectile2c("bullet", e->pos + dir * 10,
-					mix_colors(rgb(1.0, 0.0, 0.0), rgb(0.0, 0.0, 1.0), psin(M_PI * phase)), asymptotic,
-					1.5 * dir * (1 + p / (cnt - 1.0)) * i, 3 * global.diff
+				PROJECTILE("bullet", e->pos + dir * 10,
+					.color = mix_colors(rgb(1.0, 0.0, 0.0), rgb(0.0, 0.0, 1.0), psin(M_PI * phase)),
+					.rule = asymptotic,
+					.args = {
+						1.5 * dir * (1 + p / (cnt - 1.0)) * i,
+						3 * global.diff
+					},
 				);
 			}
 		}
@@ -317,9 +335,13 @@ static int stage3_chargefairy(Enemy *e, int t) {
 			complex paim = e->pos + (w+1) * aim - o;
 			paim /= cabs(paim);
 
-			create_projectile3c("wave", o,
-				mix_colors(rgb(1.0, 0.0, 0.0), rgb(0.0, 0.0, 1.0), f), stage3_chargefairy_proj,
-				paim, 6 + global.diff - layer, chargetime + 30 - t
+			PROJECTILE("wave", o,
+				.color = mix_colors(rgb(1.0, 0.0, 0.0), rgb(0.0, 0.0, 1.0), f),
+				.rule = stage3_chargefairy_proj,
+				.args = {
+					paim, 6 + global.diff - layer,
+					chargetime + 30 - t
+				},
 			);
 		}
 	}
@@ -383,10 +405,10 @@ static int stage3_bitchswirl(Enemy *e, int t) {
 	}
 
 	FROM_TO(0, 120, 20) {
-		create_projectile2c("flea", e->pos, rgb(.7, 0.0, 0.5), accelerated,
+		PROJECTILE("flea", e->pos, rgb(.7, 0.0, 0.5), accelerated, {
 			2*cexp(I*carg(global.plr.pos - e->pos)),
 			0.005*cexp(I*(M_PI*2 * frand())) * (global.diff > D_Easy)
-		);
+		});
 		play_sound("shot1");
 	}
 
@@ -421,9 +443,17 @@ static int stage3_cornerfairy(Enemy *e, int t) {
 				float c = psin(t / 15.0);
 				bool wave = global.diff > D_Easy && cabs(e->args[2]);
 
-				create_projectile2c(wave ? "wave" : "thickrice", e->pos, cabs(e->args[2])? rgb(0.5 - c*0.2, 0.3 + c*0.7, 1.0) : rgb(1.0 - c*0.5, 0.6, 0.5 + c*0.5), asymptotic,
-					(1.8-0.4*wave*!!(e->args[2]))*cexp(I*((2*i*M_PI/cnt)+carg((VIEWPORT_W+I*VIEWPORT_H)/2 - e->pos))),
-					1.5
+				PROJECTILE(
+					.texture = wave ? "wave" : "thickrice",
+					.pos = e->pos,
+					.color = cabs(e->args[2])
+							? rgb(0.5 - c*0.2, 0.3 + c*0.7, 1.0)
+							: rgb(1.0 - c*0.5, 0.6, 0.5 + c*0.5),
+					.rule = asymptotic,
+					.args = {
+						(1.8-0.4*wave*!!(e->args[2]))*cexp(I*((2*i*M_PI/cnt)+carg((VIEWPORT_W+I*VIEWPORT_H)/2 - e->pos))),
+						1.5
+					},
 				);
 			}
 		}
@@ -458,9 +488,15 @@ static int scuttle_poison(Projectile *p, int time) {
 		float a = p->args[2];
 		float t = p->args[3] + time;
 
-		create_projectile2c((frand() > 0.5)? "thickrice" : "rice", p->pos, rgb(0.3, 0.7 + 0.3 * psin(a/3.0 + t/20.0), 0.3), accelerated,
+		PROJECTILE(
+			.texture = (frand() > 0.5)? "thickrice" : "rice",
+			.pos = p->pos,
+			.color = rgb(0.3, 0.7 + 0.3 * psin(a/3.0 + t/20.0), 0.3),
+			.rule = accelerated,
+			.args = {
 				0,
-				0.005*cexp(I*(M_PI*2 * sin(a/5.0 + t/20.0)))
+				0.005*cexp(I*(M_PI*2 * sin(a/5.0 + t/20.0))),
+			},
 		);
 
 		play_sound("redirect");
@@ -486,13 +522,27 @@ static int scuttle_lethbite_proj(Projectile *p, int time) {
 			tsrand_fill(2);
 			Color clr = rgba(1.0,0.8,0.8,0.8);
 
-			create_particle3c("lasercurve", 0, clr, EnemyFlareShrink, enemy_flare, 100, cexp(I*(M_PI*anfrand(0))) * (1 + afrand(1)), add_ref(p));
+			PARTICLE(
+				.texture = "lasercurve",
+				.color = clr,
+				.draw_rule = EnemyFlareShrink,
+				.rule = enemy_flare,
+				.args = {
+					100,
+					cexp(I*(M_PI*anfrand(0))) * (1 + afrand(1)),
+					add_ref(p)
+				},
+				.flags = PFLAG_DRAWADD,
+			);
 
 			float offset = global.frames/15.0;
-			if(global.diff > D_Hard && global.boss)
+			if(global.diff > D_Hard && global.boss) {
 				offset = M_PI+carg(global.plr.pos-global.boss->pos);
-			create_projectile1c("thickrice", p->pos, rgb(0.4, 0.3, 1.0), linear,-cexp(I*(i*2*M_PI/cnt + offset)) * (1.0 + (global.diff > D_Normal))
-			);
+			}
+
+			PROJECTILE("thickrice", p->pos, rgb(0.4, 0.3, 1.0), linear, {
+				-cexp(I*(i*2*M_PI/cnt + offset)) * (1.0 + (global.diff > D_Normal))
+			});
 		}
 
 		play_sound("redirect");
@@ -515,9 +565,12 @@ static void scuttle_lethbite(Boss *boss, int time) {
 
 		for(i = 0; i < cnt; ++i) {
 			complex v = (2 - psin((max(3, global.diff+1)*2*M_PI*i/(float)cnt) + time)) * cexp(I*2*M_PI/cnt*i);
-			create_projectile2c("wave", boss->pos - v * 50, _i % 2? rgb(0.7, 0.3, 0.0) : rgb(0.3, .7, 0.0), scuttle_lethbite_proj,
-				v,
-				2.0
+			PROJECTILE(
+				.texture = "wave",
+				.pos = boss->pos - v * 50,
+				.color = _i % 2? rgb(0.7, 0.3, 0.0) : rgb(0.3, .7, 0.0),
+				.rule = scuttle_lethbite_proj,
+				.args = { v, 2.0 },
 			);
 		}
 
@@ -548,11 +601,17 @@ void scuttle_deadly_dance(Boss *boss, int time) {
 		if(!(time % 70)) {
 			for(i = 0; i < 15; ++i) {
 				double a = M_PI/(5 + global.diff) * i * 2;
-				create_projectile4c("wave", boss->pos, rgb(0.3, 0.3 + 0.7 * psin(a*3 + time/50.0), 0.3), scuttle_poison,
-					0,
-					0.02 * cexp(I*(a+time/10.0)),
-					a,
-					time
+				PROJECTILE(
+					.texture = "wave",
+					.pos = boss->pos,
+					.color = rgb(0.3, 0.3 + 0.7 * psin(a*3 + time/50.0), 0.3),
+					.rule = scuttle_poison,
+					.args = {
+						0,
+						0.02 * cexp(I*(a+time/10.0)),
+						a,
+						time
+					}
 				);
 			}
 
@@ -561,10 +620,12 @@ void scuttle_deadly_dance(Boss *boss, int time) {
 
 		if(global.diff > D_Easy && !(time % 35)) {
 			int cnt = global.diff * 2;
-			for(i = 0; i < cnt; ++i) create_projectile2c("ball", boss->pos, rgb(1.0, 1.0, 0.3), asymptotic,
-				(0.5 + 3 * psin(time + M_PI/3*2*i)) * cexp(I*(time / 20.0 + M_PI/cnt*i*2)),
-				1.5
-			);
+			for(i = 0; i < cnt; ++i) {
+				PROJECTILE("ball", boss->pos, rgb(1.0, 1.0, 0.3), asymptotic, {
+					(0.5 + 3 * psin(time + M_PI/3*2*i)) * cexp(I*(time / 20.0 + M_PI/cnt*i*2)),
+					1.5
+				});
+			}
 
 			play_sound("shot1");
 		}
@@ -573,8 +634,14 @@ void scuttle_deadly_dance(Boss *boss, int time) {
 	if(!(time % 3)) {
 		for(i = -1; i < 2; i += 2) {
 			double c = psin(time/10.0);
-			create_projectile1c("crystal", boss->pos, rgba(0.3 + c * 0.7, 0.6 - c * 0.3, 0.3, 0.7), linear,
-				10 * cexp(I*(carg(global.plr.pos - boss->pos) + (M_PI/4.0 * i * (1-time/2500.0)) * (1 - 0.5 * psin(time/15.0))))
+			PROJECTILE(
+				.texture = "crystal",
+				.pos = boss->pos,
+				.color = rgba(0.3 + c * 0.7, 0.6 - c * 0.3, 0.3, 0.7),
+				.rule = linear,
+				.args = {
+					10 * cexp(I*(carg(global.plr.pos - boss->pos) + (M_PI/4.0 * i * (1-time/2500.0)) * (1 - 0.5 * psin(time/15.0))))
+				}
 			);
 		}
 	}
@@ -658,7 +725,19 @@ static void wriggle_slave_draw(Enemy *e, int time) {
 
 	if(time % 5 == 0) {
 		tsrand_fill(2);
-		create_particle3c("lasercurve", 5*cexp(2*I*M_PI*afrand(0)), rgba(1,1,0.8,0.6), EnemyFlareShrink, enemy_flare, 60, 0.3*cexp(2*M_PI*I*afrand(1)),add_ref(e));
+		PARTICLE(
+			.texture = "lasercurve",
+			.pos = 5*cexp(2*I*M_PI*afrand(0)),
+			.color = rgba(1,1,0.8,0.6),
+			.draw_rule = EnemyFlareShrink,
+			.rule = enemy_flare,
+			.args = {
+				60,
+				0.3*cexp(2*M_PI*I*afrand(1)),
+				add_ref(e),
+			},
+			.flags = PFLAG_DRAWADD,
+		);
 	}
 }
 
@@ -677,7 +756,18 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 
 			Laser *l = create_lasercurve2c(p->pos, deathtime, deathtime, rgb(0.4, 0.9, 1.0), las_accel, 0, accel);
 			l->width = 15;
-			create_projectile_p(&global.projs, p->tex, p->pos, p->clr, p->draw, wriggle_rocket_laserbullet, add_ref(l), deathtime - 1, 0, 0);
+
+			PROJECTILE(
+				.texture_ptr = p->tex,
+				.pos = p->pos,
+				.color = p->color,
+				.draw_rule = p->draw_rule,
+				.rule = wriggle_rocket_laserbullet,
+				.args = {
+					add_ref(l),
+					deathtime - 1
+				}
+			);
 
 			play_sound("redirect");
 			play_sound("shot_special1");
@@ -685,9 +775,17 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 			int cnt = floor(2 + frand() * global.diff), i;
 
 			for(i = 0; i < cnt; ++i) {
-				create_projectile2c("thickrice", p->pos, (i % 2) ? rgb(1.0, 0.4, 0.6) : rgb(0.6, 0.4, 1.0), asymptotic,
-					(0.1 + frand()) * cexp(I*(2*i*M_PI/cnt+time)), 5
-				)->draw = ProjDrawAdd;
+				PROJECTILE(
+					.texture = "thickrice",
+					.pos = p->pos,
+					.color = (i % 2) ? rgb(1.0, 0.4, 0.6) : rgb(0.6, 0.4, 1.0),
+					.rule = asymptotic,
+					.args = {
+						(0.1 + frand()) * cexp(I*(2*i*M_PI/cnt+time)),
+						5
+					},
+					.flags = PFLAG_DRAWADD,
+				);
 			}
 
 			// FIXME: better sound
@@ -713,16 +811,13 @@ static void wriggle_slave_part_draw(Projectile *p, int t) {
 	Texture *tex = p->tex;
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 	float b = 1 - t / p->args[0];
-	parse_color_call(multiply_colors(p->clr, rgb(b, b, b)), glColor4f);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
 	glPushMatrix();
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
+	ProjDrawCore(p, multiply_colors(p->color, rgba(b, b, b, 1)));
 	draw_texture_p(0,0, p->tex);
 	glPopMatrix();
-
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glColor4f(1,1,1,1);
 }
 
 static int wriggle_spell_slave(Enemy *e, int time) {
@@ -744,8 +839,16 @@ static int wriggle_spell_slave(Enemy *e, int time) {
 
 	if(!(time % 2)) {
 		float c = 0.5 * psin(time / 25.0);
-		Projectile *p = create_projectile_p(&global.projs, prefix_get_tex("lasercurve", "part/"), e->pos, rgb(1.0 - c, 0.5, 0.5 + c), wriggle_slave_part_draw, timeout, 120, 0, 0, 0);
-		p->type = EnemyProj;
+
+		PROJECTILE(
+			.texture_ptr = get_tex("part/lasercurve"),
+			.pos = e->pos,
+			.color = rgb(1.0 - c, 0.5, 0.5 + c),
+			.draw_rule = wriggle_slave_part_draw,
+			.rule = timeout,
+			.args = { 120 },
+			.color_transform_rule = proj_clrtransform_particle,
+		);
 	}
 
 	// moonlight rocket rockets
@@ -754,10 +857,14 @@ static int wriggle_spell_slave(Enemy *e, int time) {
 		float dt = 60;
 
 		l = create_lasercurve4c(e->pos, dt, dt, rgb(1.0, 1.0, 0.5), las_sine_expanding, 2.5*dir, M_PI/20, 0.2, 0);
-		create_projectile3c("ball", e->pos, rgb(1.0, 0.4, 0.6), wriggle_rocket_laserbullet, add_ref(l), dt-1, 1);
+		PROJECTILE("ball", e->pos, rgb(1.0, 0.4, 0.6), wriggle_rocket_laserbullet, {
+			add_ref(l), dt-1, 1
+		});
 
 		l = create_lasercurve4c(e->pos, dt, dt, rgb(0.5, 1.0, 0.5), las_sine_expanding, 2.5*dir, M_PI/20, 0.2, M_PI);
-		create_projectile3c("ball", e->pos, rgb(1.0, 0.4, 0.6), wriggle_rocket_laserbullet, add_ref(l), dt-1, 1);
+		PROJECTILE("ball", e->pos, rgb(1.0, 0.4, 0.6), wriggle_rocket_laserbullet, {
+			add_ref(l), dt-1, 1
+		});
 
 		play_sound("laser1");
 	}
@@ -767,9 +874,21 @@ static int wriggle_spell_slave(Enemy *e, int time) {
 		FROM_TO(300, 1000000, 180) {
 			int cnt = 5, i;
 			for(i = 0; i < cnt; ++i) {
-				create_projectile2c("ball", e->pos, rgb(0.5, 1.0, 0.5), accelerated, 0, 0.02 * cexp(I*i*2*M_PI/cnt))->draw = ProjDrawAdd;
-				if(global.diff > D_Hard)
-					create_projectile2c("ball", e->pos, rgb(1.0, 1.0, 0.5), accelerated, 0, 0.01 * cexp(I*i*2*M_PI/cnt))->draw = ProjDrawAdd;
+				PROJECTILE("ball", e->pos, rgb(0.5, 1.0, 0.5), accelerated,
+					.args = {
+						0, 0.02 * cexp(I*i*2*M_PI/cnt)
+					},
+					.flags = PFLAG_DRAWADD,
+				);
+
+				if(global.diff > D_Hard) {
+					PROJECTILE("ball", e->pos, rgb(1.0, 1.0, 0.5), accelerated,
+						.args = {
+							0, 0.01 * cexp(I*i*2*M_PI/cnt)
+						},
+						.flags = PFLAG_DRAWADD,
+					);
+				}
 			}
 
 			// FIXME: better sound
@@ -846,7 +965,6 @@ void wriggle_night_ignite(Boss *boss, int time) {
 	TIMER(&time)
 
 	float dfactor = global.diff / (float)D_Lunatic;
-	int i, j;
 
 	if(time == EVENT_DEATH) {
 		killall(global.enemies);
@@ -858,8 +976,9 @@ void wriggle_night_ignite(Boss *boss, int time) {
 		return;
 	}
 
-	AT(0) for(j = -1; j < 2; j += 2) for(i = 0; i < 7; ++i)
+	AT(0) for(int j = -1; j < 2; j += 2) for(int i = 0; i < 7; ++i) {
 		create_enemy4c(boss->pos, ENEMY_IMMUNE, wriggle_slave_draw, wriggle_spell_slave, add_ref(boss), i*2*M_PI/7, j, 1);
+	}
 
 	FROM_TO_INT(0, 1000000, 180, 120, 10) {
 		float dt = 200;
@@ -883,9 +1002,9 @@ void wriggle_night_ignite(Boss *boss, int time) {
 		wriggle_ignite_warnlaser(l3);
 
 		for(int i = 0; i < 5 + 15 * dfactor; ++i) {
-			create_projectile2c("plainball",	boss->pos, rgb(c, c, 1.0), wriggle_ignite_laserbullet, add_ref(l1), i)->draw = ProjDrawAdd;
-			create_projectile2c("bigball",		boss->pos, rgb(1.0, c, c), wriggle_ignite_laserbullet, add_ref(l2), i)->draw = ProjDrawAdd;
-			create_projectile2c("plainball",	boss->pos, rgb(c, c, 1.0), wriggle_ignite_laserbullet, add_ref(l3), i)->draw = ProjDrawAdd;
+			PROJECTILE("plainball",	boss->pos, rgb(c, c, 1.0), wriggle_ignite_laserbullet, { add_ref(l1), i }, .flags = PFLAG_DRAWADD);
+			PROJECTILE("bigball",	boss->pos, rgb(1.0, c, c), wriggle_ignite_laserbullet, { add_ref(l2), i }, .flags = PFLAG_DRAWADD);
+			PROJECTILE("plainball",	boss->pos, rgb(c, c, 1.0), wriggle_ignite_laserbullet, { add_ref(l3), i }, .flags = PFLAG_DRAWADD);
 
 			// FIXME: better sound
 			play_sound("shot1");
@@ -978,10 +1097,17 @@ void wriggle_light_singularity(Boss *boss, int time) {
 			double a = ((M_PI*2.0*i)/cnt);
 			complex dir = cexp(I*a);
 
-			create_projectile2c(ptype, boss->pos, hsl(a/(M_PI*2) + colorofs, 1.0, 0.5), asymptotic,
-				dir * (1.2 - 0.2 * global.diff),
-				20
-			)->draw = ProjDrawAdd;
+			PROJECTILE(
+				.texture = ptype,
+				.pos = boss->pos,
+				.color = hsl(a/(M_PI*2) + colorofs, 1.0, 0.5),
+				.rule = asymptotic,
+				.args = {
+					dir * (1.2 - 0.2 * global.diff),
+					20
+				},
+				.flags = PFLAG_DRAWADD,
+			);
 		}
 
 		play_sound("shot_special1");
@@ -995,13 +1121,13 @@ static void wriggle_fstorm_proj_draw(Projectile *p, int time) {
 	glPushMatrix();
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
 	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
-	_ProjDraw(p,time);
+	ProjDrawCore(p, p->color);
 
 	if(f > 0) {
 		p->tex = get_tex("proj/ball");
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 		glScalef(f,f,f);
-		_ProjDraw(p,time);
+		ProjDrawCore(p,time);
 		glScalef(1/f,1/f,1/f);
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		p->tex = get_tex("proj/rice");
@@ -1025,7 +1151,7 @@ static int wriggle_fstorm_proj(Projectile *p, int time) {
 	int t = rint(creal(p->args[2]));
 	if(t < turntime) {
 		float f = t/(float)turntime;
-		p->clr=rgb(0.3+0.7*(1 - pow(1 - f, 4)), 0.3+0.3*f*f, 0.7-0.7*f);
+		p->color = rgb(0.3+0.7*(1 - pow(1 - f, 4)), 0.3+0.3*f*f, 0.7-0.7*f);
 	}
 
 	if(t == turntime && global.boss) {
@@ -1033,12 +1159,17 @@ static int wriggle_fstorm_proj(Projectile *p, int time) {
 		p->args[1] *= 2/cabs(p->args[1]);
 		p->angle = carg(p->args[1]);
 		p->birthtime = global.frames;
-		p->draw = wriggle_fstorm_proj_draw;
+		p->draw_rule = wriggle_fstorm_proj_draw;
 		p->tex = get_tex("proj/rice");
 
 		for(int i = 0; i < 3; ++i) {
 			tsrand_fill(2);
-			create_particle2c("flare", p->pos, 0, Shrink, timeout_linear, 60, (1+afrand(0))*cexp(I*tsrand_a(1)));
+			PARTICLE("flare", p->pos, 0, timeout_linear,
+				.args = {
+					60, (1+afrand(0))*cexp(I*tsrand_a(1))
+				},
+				.draw_rule = Shrink,
+			);
 		}
 
 		play_sound_ex("redirect", 3, false);
@@ -1066,13 +1197,16 @@ void wriggle_firefly_storm(Boss *boss, int time) {
 			float r = tanh(sin(_i/200.));
 			float v = lun ? cos(_i/150.)/pow(cosh(atanh(r)),2) : 0.5;
 			complex pos = 230*cexp(I*(_i*0.301+2*M_PI/cnt*i))*r;
-			create_projectile2c(
-				(global.diff >= D_Hard) && !(i%10) ? "bigball" : "ball",
-				boss->pos+pos,
-				rgb(0.2,0.2,0.6),
-				wriggle_fstorm_proj,
-				(global.diff == D_Easy) ? 40 : 100-25*(!lun)-20*(global.diff == D_Normal),
-				cexp(I*(!lun)*0.6)*pos/cabs(pos)*(1+v)
+
+			PROJECTILE(
+				.texture = (global.diff >= D_Hard) && !(i%10) ? "bigball" : "ball",
+				.pos = boss->pos+pos,
+				.color = rgb(0.2,0.2,0.6),
+				.rule = wriggle_fstorm_proj,
+				.args = {
+					(global.diff == D_Easy) ? 40 : 100-25*(!lun)-20*(global.diff == D_Normal),
+					cexp(I*(!lun)*0.6)*pos/cabs(pos)*(1+v)
+				},
 			);
 		}
 	}
@@ -1106,11 +1240,15 @@ static int wriggle_nonspell_slave(Enemy *e, int time) {
 	if(!(time % d)) {
 		play_sound("shot1");
 
-		create_projectile1c("rice", e->pos, rgb(0.7, 0.2, 0.1), linear, 3 * cexp(I*carg(boss->pos - e->pos)));
-		if(!(time % (d*2)) || level > 1)
-			create_projectile1c("thickrice", e->pos, rgb(0.7, 0.7, 0.1), linear, 2.5 * cexp(I*carg(boss->pos - e->pos)));
-		if(level > 2)
-			create_projectile1c("wave", e->pos, rgb(0.3, 0.1 + 0.6 * psin(time / 25.0), 0.7), linear, 2 * cexp(I*carg(boss->pos - e->pos)));
+		PROJECTILE("rice", e->pos, rgb(0.7, 0.2, 0.1), linear, { 3 * cexp(I*carg(boss->pos - e->pos)) });
+
+		if(!(time % (d*2)) || level > 1) {
+			PROJECTILE("thickrice", e->pos, rgb(0.7, 0.7, 0.1), linear, { 2.5 * cexp(I*carg(boss->pos - e->pos)) });
+		}
+
+		if(level > 2) {
+			PROJECTILE("wave", e->pos, rgb(0.3, 0.1 + 0.6 * psin(time / 25.0), 0.7), linear, { 2 * cexp(I*carg(boss->pos - e->pos)) });
+		}
 	}
 
 	return 1;

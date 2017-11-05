@@ -31,9 +31,9 @@ struct stage1_spells_s stage1_spells = {
 							cirno_snow_halation, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
 		.icicle_fall		= {{ 8,  9, 10, 11}, AT_Spellcard, "Doom Sign ~ Icicle Fall", 35, 40000,
 							cirno_icicle_fall, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
-#ifdef DEBUG
+//#ifdef DEBUG
 		.benchmark		= {{-1,-1,-1,14}, AT_SurvivalSpell, "Profiling ~ ベンチマーク", 40, 40000, cirno_benchmark, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I}
-#endif
+//#endif
 	},
 
 	.extra.crystal_blizzard	= {{ 0,  1,  2,  3}, AT_ExtraSpell, "Frost Sign ~ Crystal Blizzard", 60, 40000,
@@ -42,11 +42,14 @@ struct stage1_spells_s stage1_spells = {
 
 static Stage3D bgcontext;
 
+static bool particle_filter(Projectile *part) {
+	return part->type < PlrProj;
+}
+
 void stage1_bg_draw(Vector pos) {
 	glPushMatrix();
 	glTranslatef(0,bgcontext.cx[1]+500,0);
 	glRotatef(180,1,0,0);
-
 
 	//glEnable(GL_TEXTURE_2D);
 	//glBindTexture(GL_TEXTURE_2D, get_tex("stage1/water")->gltex);
@@ -64,10 +67,7 @@ void stage1_bg_draw(Vector pos) {
 	glTranslatef(-VIEWPORT_W/2,0,0);
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
-	for(Projectile *p = global.particles; p; p = p->next) {
-		if(p->type != PlrProj)
-			p->draw(p,global.frames - p->birthtime);
-	}
+	draw_projectiles(global.particles, particle_filter);
 	draw_enemies(global.enemies);
 	if(global.boss)
 		draw_boss(global.boss);

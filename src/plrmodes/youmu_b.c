@@ -38,9 +38,10 @@ static complex youmu_homing_target(complex org, complex fallback) {
 }
 
 static void youmu_homing_draw_common(Projectile *p, int t, float clrfactor, float alpha) {
-    glColor4f(0.7f + 0.3f * clrfactor, 0.9f + 0.1f * clrfactor, 1, alpha);
+    Color oldcolor = p->color;
+    p->color = multiply_colors(oldcolor, rgba(0.7f + 0.3f * clrfactor, 0.9f + 0.1f * clrfactor, 1, alpha));
     ProjDraw(p, t);
-    glColor4f(1, 1, 1, 1);
+    p->color = oldcolor;
 }
 
 static void youmu_homing_draw_proj(Projectile *p, int t) {
@@ -54,9 +55,16 @@ static void youmu_homing_draw_trail(Projectile *p, int t) {
 }
 
 static void youmu_homing_trail(Projectile *p, complex v, int to) {
-    Projectile *trail = create_projectile_p(&global.particles, p->tex, p->pos, 0, youmu_homing_draw_trail, timeout_linear, to, v, 0, 0);
-    trail->type = PlrProj;
-    trail->angle = p->angle;
+    PARTICLE(
+        .texture_ptr = p->tex,
+        .pos = p->pos,
+        .color = p->color,
+        .angle = p->angle,
+        .rule = timeout_linear,
+        .draw_rule = youmu_homing_draw_trail,
+        .args = { to, v },
+        .type = PlrProj,
+    );
 }
 
 static int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: aim (r: linear, i: accelerated), a[2]: timeout, a[3]: initial target
@@ -85,7 +93,7 @@ static int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: aim (r:
 
 static int youmu_trap(Projectile *p, int t) {
     if(t == EVENT_DEATH) {
-        create_particle1c("blast", p->pos, 0, Blast, timeout, 15);
+        PARTICLE("blast", p->pos, 0, timeout, { 15 }, .draw_rule = Blast);
         return 1;
     }
 
@@ -96,8 +104,8 @@ static int youmu_trap(Projectile *p, int t) {
     }
 
     if(!(global.plr.inputflags & INFLAG_FOCUS)) {
-        create_particle1c("blast", p->pos, 0, Blast, timeout, 20);
-        create_particle1c("blast", p->pos, 0, Blast, timeout, 23);
+        PARTICLE("blast", p->pos, 0, timeout, { 20 }, .draw_rule = Blast);
+        PARTICLE("blast", p->pos, 0, timeout, { 23 }, .draw_rule = Blast);
 
         int cnt = creal(p->args[2]);
         int dmg = cimag(p->args[2]);
@@ -107,9 +115,13 @@ static int youmu_trap(Projectile *p, int t) {
         for(int i = 0; i < cnt; ++i) {
             float a = (i / (float)cnt) * M_PI * 2;
             complex dir = cexp(I*(a));
-            Projectile *proj = create_projectile4c("hghost", p->pos, 0, youmu_homing, 5 * dir, aim, dur, global.plr.pos);
-            proj->type = PlrProj + dmg;
-            proj->draw = youmu_homing_draw_proj;
+
+            PROJECTILE("hghost", p->pos, rgb(1, 1, 1), youmu_homing,
+                .args = { 5 * dir, aim, dur, global.plr.pos },
+                .type = PlrProj + dmg,
+                .draw_rule = youmu_homing_draw_proj,
+                .color_transform_rule = proj_clrtransform_particle,
+            );
         }
 
         return ACTION_DESTROY;
@@ -139,13 +151,30 @@ static int youmu_slash_logic(void *v, int t, double speed) {
 
     FROM_TO(30, 60, 10) {
         tsrand_fill(3);
-        create_particle1c("youmu_slice", VIEWPORT_W/2.0 - 150 + 100*_i + VIEWPORT_H/2.0*I - 10-10.0*I + 20*afrand(0)+20.0*I*afrand(1), 0, youmu_common_particle_slice_draw, timeout, 200 / speed)->angle = -10.0+20.0*afrand(2);
+
+        PARTICLE(
+            .texture = "youmu_slice",
+            .pos = VIEWPORT_W/2.0 - 150 + 100*_i + VIEWPORT_H/2.0*I - 10-10.0*I + 20*afrand(0)+20.0*I*afrand(1),
+            .draw_rule = youmu_common_particle_slice_draw,
+            .rule = timeout,
+            .args = { 200 / speed },
+            .angle = 10 * anfrand(2),
+            .type = PlrProj,
+        );
     }
 
     FROM_TO(40,200,1)
         if(frand() > 0.7) {
             tsrand_fill(6);
-            create_particle2c("blast", VIEWPORT_W*afrand(0) + (VIEWPORT_H+50)*I, rgb(afrand(1),afrand(2),afrand(3)), Shrink, timeout_linear, 80 / speed, speed * (3*(1-2.0*afrand(4))-14.0*I+afrand(5)*2.0*I));
+            PARTICLE(
+                .texture = "blast",
+                .pos = VIEWPORT_W*afrand(0) + (VIEWPORT_H+50)*I,
+                .color = rgb(afrand(1),afrand(2),afrand(3)),
+                .rule = timeout_linear,
+                .draw_rule = Shrink,
+                .args = { 80 / speed, speed * (3*(1-2.0*afrand(4))-14.0*I+afrand(5)*2.0*I) },
+                .type = PlrProj,
+            );
         }
 
     int tpar = 30;
@@ -154,7 +183,14 @@ static int youmu_slash_logic(void *v, int t, double speed) {
 
     if(t < creal(e->args[0])-60 && frand() > 0.2) {
         tsrand_fill(3);
-        create_particle2c("smoke", VIEWPORT_W*afrand(0) + (VIEWPORT_H+100)*I, rgba(0.4,0.4,0.4,afrand(1)*0.2 - 0.2 + 0.6*(tpar/30.0)), PartDraw, youmu_common_particle_spin, 300 / speed, speed * (-7.0*I+afrand(2)*1.0*I));
+        PARTICLE(
+            .texture = "smoke",
+            .pos = VIEWPORT_W*afrand(0) + (VIEWPORT_H+100)*I,
+            .color = rgba(0.4,0.4,0.4,afrand(1)*0.2 - 0.2 + 0.6*(tpar/30.0)),
+            .rule = youmu_common_particle_spin,
+            .args = { 300 / speed, speed * (-7.0*I+afrand(2)*1.0*I) },
+            .type = PlrProj,
+        );
     }
 
     return 1;
@@ -183,12 +219,18 @@ static void youmu_haunting_power_shot(Player *plr, int p) {
         return;
     }
 
-    Projectile **dst = &global.projs;
     Texture *t = get_tex("proj/hghost");
 
     for(int sign = -1; sign < 2; sign += 2) {
-        create_projectile_p(dst, t, plr->pos, 0, youmu_homing_draw_proj, youmu_homing,
-            speed * cexp(I*carg(sign*p*spread-speed*I)), aim, 60, VIEWPORT_W*0.5)->type = PlrProj+54;
+        PROJECTILE(
+            .texture_ptr = t,
+            .pos =  plr->pos,
+            .rule = youmu_homing,
+            .draw_rule = youmu_homing_draw_proj,
+            .args = { speed * cexp(I*carg(sign*p*spread-speed*I)), aim, 60, VIEWPORT_W*0.5 },
+            .type = PlrProj+54,
+            .color_transform_rule = proj_clrtransform_particle,
+        );
     }
 }
 
@@ -204,11 +246,19 @@ static void youmu_haunting_shot(Player *plr) {
                 int pdmg = 120 - 18 * 4 * (1 - pow(1 - pwr / 4.0, 1.5));
                 complex aim = 0.75;
 
-                create_projectile4c("youhoming", plr->pos, 0, youmu_trap, -30.0*I, 120, pcnt+pdmg*I, aim)->type = PlrProj+1000;
+                PROJECTILE("youhoming", plr->pos, rgb(1, 1, 1), youmu_trap,
+                    .args = { -30.0*I, 120, pcnt+pdmg*I, aim },
+                    .type = PlrProj+1000,
+                    .color_transform_rule = proj_clrtransform_particle,
+                );
             }
         } else {
             if(!(global.frames % 6)) {
-                create_projectile4c("hghost", plr->pos, 0, youmu_homing, -10.0*I, 0.25 + 0.1*I, 60, VIEWPORT_W*0.5)->type = PlrProj+120;
+                PROJECTILE("hghost", plr->pos, rgb(0.75, 0.9, 1), youmu_homing,
+                    .args = { -10.0*I, 0.25 + 0.1*I, 60, VIEWPORT_W*0.5 },
+                    .type = PlrProj+120,
+                    .color_transform_rule = proj_clrtransform_particle,
+                );
             }
 
             for(int p = 1; p <= PLR_MAX_POWER/100; ++p) {

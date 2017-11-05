@@ -225,8 +225,8 @@ static void stage_draw_objects(void) {
 	player_draw(&global.plr);
 
 	draw_items();
-	draw_projectiles(global.projs);
-	draw_projectiles(global.particles);
+	draw_projectiles(global.projs, NULL);
+	draw_projectiles(global.particles, NULL);
 	draw_lasers(true);
 	draw_enemies(global.enemies);
 	draw_lasers(false);

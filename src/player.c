@@ -359,7 +359,8 @@ int player_run_bomb_logic(Player *plr, void *ent, complex *argptr, int (*callbac
 
 			// call the draw functions too, because some of them modify args or spawn stuff...
 			// this is stupid and should not happen, but for now it does.
-			draw_projectiles(global.particles);
+			draw_projectiles(global.particles, NULL);
+			draw_projectiles(global.particles, NULL);
 
 			global.frames++;
 		}
@@ -428,11 +429,29 @@ void player_death(Player *plr) {
 
 		for(int i = 0; i < 20; i++) {
 			tsrand_fill(2);
-			create_particle2c("flare", plr->pos, 0, Shrink, timeout_linear, 40, (3+afrand(0)*7)*cexp(I*tsrand_a(1)))->type=PlrProj;
+			PARTICLE(
+				.texture = "flare",
+				.pos = plr->pos,
+				.rule = timeout_linear,
+				.draw_rule = Shrink,
+				.args = { 40, (3+afrand(0)*7)*cexp(I*tsrand_a(1)) },
+				.type = PlrProj,
+			);
 		}
 
 		stage_clear_hazards(false);
-		create_particle2c("blast", plr->pos, rgba(1,0.3,0.3,0.5), GrowFadeAdd, timeout, 35, 2.4)->type=PlrProj;
+
+		PARTICLE(
+			.texture = "blast",
+			.pos = plr->pos,
+			.color = rgba(1.0, 0.3, 0.3, 0.5),
+			.rule = timeout,
+			.draw_rule = GrowFade,
+			.args = { 35, 2.4 },
+			.type = PlrProj,
+			.flags = PFLAG_DRAWADD,
+		);
+
 		plr->deathtime = global.frames + DEATHBOMB_TIME;
 	}
 }
@@ -750,7 +769,15 @@ void player_graze(Player *plr, complex pos, int pts) {
 
 	int i = 0; for(i = 0; i < 5; ++i) {
 		tsrand_fill(3);
-		create_particle2c("flare", pos, 0, Shrink, timeout_linear, 5 + 5 * afrand(2), (1+afrand(0)*5)*cexp(I*tsrand_a(1)))->type=PlrProj;
+
+		PARTICLE(
+			.texture = "flare",
+			.pos = pos,
+			.rule = timeout_linear,
+			.draw_rule = Shrink,
+			.args = { 5 + 5 * afrand(2), (1+afrand(0)*5)*cexp(I*tsrand_a(1)) },
+			.type = PlrProj,
+		);
 	}
 }
 

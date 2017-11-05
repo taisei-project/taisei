@@ -11,16 +11,15 @@
 
 static const float conv = 1.0f / CLR_ONEVALUE;
 
+#ifndef COLOR_INLINE
+
 Color rgba(float r, float g, float b, float a) {
     assert(!r || isnormal(r));
     assert(!g || isnormal(g));
     assert(!b || isnormal(b));
     assert(!a || isnormal(a));
 
-    return ((((Color)(ColorComponent)(CLR_ONEVALUE * (r)) & CLR_CMASK) << CLR_R) + \
-            (((Color)(ColorComponent)(CLR_ONEVALUE * (g)) & CLR_CMASK) << CLR_G) + \
-            (((Color)(ColorComponent)(CLR_ONEVALUE * (b)) & CLR_CMASK) << CLR_B) + \
-            (((Color)(ColorComponent)(CLR_ONEVALUE * (a)) & CLR_CMASK) << CLR_A));
+    return RGBA(r, g, b, a);
 }
 
 Color rgb(float r, float g, float b) {
@@ -28,11 +27,10 @@ Color rgb(float r, float g, float b) {
     assert(!g || isnormal(g));
     assert(!b || isnormal(b));
 
-    return ((((Color)(ColorComponent)(CLR_ONEVALUE * (r)) & CLR_CMASK) << CLR_R) + \
-            (((Color)(ColorComponent)(CLR_ONEVALUE * (g)) & CLR_CMASK) << CLR_G) + \
-            (((Color)(ColorComponent)(CLR_ONEVALUE * (b)) & CLR_CMASK) << CLR_B) + \
-            (CLR_ONEVALUE << CLR_A));
+    return RGB(r, g, b);
 }
+
+#endif
 
 void parse_color(Color clr, float *r, float *g, float *b, float *a) {
     *r = (ColorComponent)((clr >> CLR_R) & CLR_CMASK) * conv;
@@ -159,6 +157,12 @@ Color hsla(float h, float s, float l, float a) {
 
 Color hsl(float h, float s, float l) {
     return hsla(h, s, l, 1.0);
+}
+
+char* color_str(Color c) {
+    float r, g, b, a;
+    parse_color(c, &r, &g, &b, &a);
+    return strfmt("rgba(%f, %f, %f, %f) 0x%016"PRIxMAX, r, g, b, a, (uintmax_t)c);
 }
 
 // #define COLOR_TEST

@@ -43,16 +43,21 @@ void _delete_enemy(void **enemies, void* enemy) {
 	Enemy *e = (Enemy *)enemy;
 
 	if(e->hp <= 0 && e->hp > ENEMY_IMMUNE) {
-		int i;
 		play_sound("enemydeath");
-		for(i = 0; i < 10; i++) {
+
+		for(int i = 0; i < 10; i++) {
 			tsrand_fill(2);
-			create_particle2c("flare", e->pos, 0, Fade, timeout_linear, 10, (3+afrand(0)*10)*cexp(I*afrand(1)*2*M_PI));
+
+			PARTICLE("flare", e->pos, 0, timeout_linear, .draw_rule = Fade,
+				.args = { 10, (3+afrand(0)*10)*cexp(I*afrand(1)*2*M_PI) },
+			);
 		}
-		create_particle1c("blast", e->pos, 0, Blast, timeout, 20);
-		create_particle1c("blast", e->pos, 0, Blast, timeout, 20);
-		create_particle2c("blast", e->pos, 0, GrowFade, timeout, 15,0);
+
+		PARTICLE("blast", e->pos, 0, timeout, { 20 }, .draw_rule = Blast);
+		PARTICLE("blast", e->pos, 0, timeout, { 20 }, .draw_rule = Blast);
+		PARTICLE("blast", e->pos, 0, timeout, { 15 }, .draw_rule = GrowFade);
 	}
+
 	e->logic_rule(enemy, EVENT_DEATH);
 	del_ref(enemy);
 
@@ -113,38 +118,37 @@ int enemy_flare(Projectile *p, int t) { // a[0] timeout, a[1] velocity, a[2] ref
 
 void EnemyFlareShrink(Projectile *p, int t) {
 	Enemy *e = (Enemy *)REF(p->args[2]);
-	if(e == NULL)
+
+	if(e == NULL) {
 		return;
+	}
 
 	glPushMatrix();
 	float s = 2.0-t/p->args[0]*2;
 
-	if(e->pos + p->pos)
-		glTranslatef(creal(e->pos + p->pos), cimag(e->pos + p->pos), 0);
+	glTranslatef(creal(e->pos + p->pos), cimag(e->pos + p->pos), 0);
 
-	if(p->angle != M_PI*0.5)
+	if(p->angle != M_PI*0.5) {
 		glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
+	}
 
-	if(s != 1)
+	if(s != 1) {
 		glScalef(s, s, 1);
+	}
 
-	if(p->clr)
-		parse_color_call(p->clr, glColor4f);
-
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	draw_texture_p(0, 0, p->tex);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+	ProjDrawCore(p, p->color);
 	glPopMatrix();
-
-	if(p->clr)
-		glColor3f(1,1,1);
 }
 
 void BigFairy(Enemy *e, int t) {
 	if(!(t % 5)) {
 		complex offset = (frand()-0.5)*30 + (frand()-0.5)*20.0*I;
-		create_particle3c("lasercurve", offset, rgb(0,0.2,0.3), EnemyFlareShrink, enemy_flare, 50, (-50.0*I-offset)/50.0, add_ref(e));
+
+		PARTICLE("lasercurve", offset, rgb(0,0.2,0.3), enemy_flare,
+			.draw_rule = EnemyFlareShrink,
+			.args = { 50, (-50.0*I-offset)/50.0, add_ref(e) },
+			.flags = PFLAG_DRAWADD,
+		);
 	}
 
 	glPushMatrix();
