@@ -22,6 +22,9 @@ extern struct stage1_spells_s {
         AttackInfo crystal_rain;
         AttackInfo snow_halation;
         AttackInfo icicle_fall;
+#ifdef DEBUG
+        AttackInfo benchmark;
+#endif
     } boss;
 
     struct {

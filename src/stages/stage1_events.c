@@ -632,6 +632,33 @@ void cirno_crystal_blizzard(Boss *c, int time) {
 	}
 }
 
+void cirno_benchmark(Boss* b, int t) {
+	if(t < 0) {
+		return;
+	}
+
+	int N = 5000; // number of particles on the screen
+
+	b->ani.stdrow=1;
+	double speed = 10;
+	int c = N*speed/VIEWPORT_H;
+	for(int i = 0; i < c; i++) {
+		double x = frand()*VIEWPORT_W;
+		double plrx = creal(global.plr.pos);
+		x = plrx + sqrt((x-plrx)*(x-plrx)+100)*(1-2*(x<plrx));
+		Projectile *p = create_projectile1c("ball", x, rgb(0.1, 0.1, 0.5), linear, speed*I);
+		p->grazed=1;
+		if(t > 350 && frand() > 0.5)
+			p->draw=ProjDrawAdd;
+
+		if(t > 700 && frand() > 0.5)
+			p->tex = get_tex("proj/plainball");
+		if(t > 1200 && frand() > 0.5)
+			p->clr = rgb(1.0,0.2,0.8);
+	}
+
+}
+
 void cirno_superhardspellcard(Boss *c, int t) {
 	// HOWTO: create a super hard spellcard in a few seconds
 

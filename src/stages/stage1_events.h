@@ -16,6 +16,7 @@ void cirno_snow_halation(Boss*, int);
 void cirno_icicle_fall(Boss*, int);
 void cirno_pfreeze_bg(Boss*, int);
 void cirno_crystal_blizzard(Boss*, int);
+void cirno_benchmark(Boss*, int);
 
 void stage1_events(void);
 Boss* stage1_spawn_cirno(complex pos);

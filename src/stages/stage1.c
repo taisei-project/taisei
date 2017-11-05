@@ -31,6 +31,9 @@ struct stage1_spells_s stage1_spells = {
 							cirno_snow_halation, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
 		.icicle_fall		= {{ 8,  9, 10, 11}, AT_Spellcard, "Doom Sign ~ Icicle Fall", 35, 40000,
 							cirno_icicle_fall, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I},
+#ifdef DEBUG
+		.benchmark		= {{-1,-1,-1,14}, AT_SurvivalSpell, "Profiling ~ ベンチマーク", 40, 40000, cirno_benchmark, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I}
+#endif
 	},
 
 	.extra.crystal_blizzard	= {{ 0,  1,  2,  3}, AT_ExtraSpell, "Frost Sign ~ Crystal Blizzard", 60, 40000,
