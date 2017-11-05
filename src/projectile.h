@@ -24,7 +24,7 @@ typedef int (*ProjRule)(struct Projectile *p, int t);
 typedef void (*ProjDRule)(struct Projectile *p, int t);
 
 typedef enum {
-	FairyProj, // hazard, collides with player (XXX: rename this to EnemyProj?)
+	EnemyProj, // hazard, collides with player
 	DeadProj, // no collision, will be converted to a BPoint item shortly
 	Particle, // no collision, not a hazard
 	FakeProj, // hazard, but no collision

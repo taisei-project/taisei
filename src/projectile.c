@@ -50,7 +50,7 @@ Projectile *create_projectile_p(Projectile **dest, Texture *tex, complex pos, Co
 	p->rule = rule;
 	p->draw = draw;
 	p->tex = tex;
-	p->type = FairyProj;
+	p->type = EnemyProj;
 	p->clr = clr;
 	p->grazed = 0;
 	p->maxviewportdist = 0;
@@ -103,7 +103,7 @@ static void projectile_size_split(Projectile *p, double *w, double *h) {
 }
 
 int collision_projectile(Projectile *p) {
-	if(p->type == FairyProj) {
+	if(p->type == EnemyProj) {
 		double w, h;
 		projectile_size_split(p, &w, &h);
 

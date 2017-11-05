@@ -256,7 +256,7 @@ static int stage3_chargefairy_proj(Projectile *p, int t) {
 	if(t == 0) {
 		p->type = FakeProj;
 	} else if(t == 20) {
-		p->type = FairyProj;
+		p->type = EnemyProj;
 	}
 	*/
 
@@ -745,7 +745,7 @@ static int wriggle_spell_slave(Enemy *e, int time) {
 	if(!(time % 2)) {
 		float c = 0.5 * psin(time / 25.0);
 		Projectile *p = create_projectile_p(&global.projs, prefix_get_tex("lasercurve", "part/"), e->pos, rgb(1.0 - c, 0.5, 0.5 + c), wriggle_slave_part_draw, timeout, 120, 0, 0, 0);
-		p->type = FairyProj;
+		p->type = EnemyProj;
 	}
 
 	// moonlight rocket rockets

@@ -412,7 +412,7 @@ static void stage_logic(void) {
 
 void stage_clear_hazards(bool force) {
 	for(Projectile *p = global.projs; p; p = p->next) {
-		if(p->type == FairyProj || p->type == FakeProj)
+		if(p->type == EnemyProj || p->type == FakeProj)
 			p->type = DeadProj;
 	}
 
@@ -426,7 +426,7 @@ void stage_clear_hazards_instantly(bool force) {
 	for(Projectile *p = global.projs, *next; p; p = next) {
 		next = p->next;
 
-		if(p->type == FairyProj || p->type == FakeProj || p->type == DeadProj) {
+		if(p->type == EnemyProj || p->type == FakeProj || p->type == DeadProj) {
 			create_bpoint(p->pos);
 			delete_projectile(&global.projs, p);
 		}

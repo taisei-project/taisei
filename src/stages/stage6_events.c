@@ -314,7 +314,7 @@ int scythe_newton(Enemy *e, int t) {
 		float f = carg(global.plr.pos-e->pos);
 		Projectile *p;
 		for(p = global.projs; p; p = p->next) {
-			if(p->type == FairyProj && cabs(p->pos-e->pos) < 50 && cabs(global.plr.pos-e->pos) > 50 && p->args[2] == 0) {
+			if(p->type == EnemyProj && cabs(p->pos-e->pos) < 50 && cabs(global.plr.pos-e->pos) > 50 && p->args[2] == 0) {
 				e->args[3] += 1;
 				//p->args[0] /= 2;
 				if(global.diff > D_Normal && (int)(creal(e->args[3])+0.5) % (15-5*(global.diff == D_Lunatic)) == 0) {
@@ -771,7 +771,7 @@ int broglie_particle(Projectile *p, int t) {
 		}
 	} else {
 		if(t == scattertime && p->type != DeadProj) {
-			p->type = FairyProj;
+			p->type = EnemyProj;
 			p->draw = ProjDrawAdd;
 
 			double angle_ampl = creal(p->args[3]);
