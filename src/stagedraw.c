@@ -116,7 +116,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBO **fbo0, FBO **fbo1) {
 		float ratio = (float)VIEWPORT_H/VIEWPORT_W;
 
 		glBindFramebuffer(GL_FRAMEBUFFER, (*fbo0)->fbo);
-		if(t<4*ATTACK_START_DELAY) {
+		if(t<ATTACK_START_DELAY) {
 			Shader *shader = get_shader("spellcard_intro");
 			glUseProgram(shader->prog);
 
