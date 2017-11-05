@@ -770,7 +770,7 @@ int broglie_particle(Projectile *p, int t) {
 			}
 		}
 	} else {
-		if(t == scattertime) {
+		if(t == scattertime && p->type != DeadProj) {
 			p->type = FairyProj;
 			p->draw = ProjDrawAdd;
 
