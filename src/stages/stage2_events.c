@@ -16,17 +16,17 @@ Dialog *stage2_dialog(void) {
 	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/hina");
 
 	if(pc->id == PLR_CHAR_MARISA) {
-		dadd_msg(d,Right, "I can’t let you pass any further\nthan this. Please go back\ndown the mountain.");
+		dadd_msg(d,Right, "I can’t let you pass any further than this. Please go back down the mountain.");
 		dadd_msg(d,Left, "So, is that your misfortune talkin’?");
-		dadd_msg(d,Right, "Exploring that tunnel is only\ngoing to lead you to ruin.\nI’ll protect you by driving you away!");
-		dadd_msg(d,Left, "I can make dumb decisions on\nmy own, thanks.");
-		dadd_msg(d,Right, "A bad attitude like that is destined to be\ncursed from the beginning. I’ll send you packing\nhome as a favor to you, so you don’t get\nhurt further by your terrible ideas!");
+		dadd_msg(d,Right, "Exploring that tunnel is only going to lead you to ruin. I’ll protect you by driving you away!");
+		dadd_msg(d,Left, "I can make dumb decisions on my own, thanks.");
+		dadd_msg(d,Right, "A bad attitude like that is destined to be cursed from the beginning. I’ll send you packing home as a favor to you, so you don’t get hurt further by your terrible ideas!");
 	} else if(pc->id == PLR_CHAR_YOUMU) {
-		dadd_msg(d,Right, "I can’t let you pass any further\nthan this. Please go back down\nthe mountain.");
-		dadd_msg(d,Left, "Are you a goddess? It’s nice of\nyou to be looking out for me,\nbut the Netherworld has been put at\nrisk due to this incident.");
+		dadd_msg(d,Right, "I can’t let you pass any further than this. Please go back down the mountain.");
+		dadd_msg(d,Left, "Are you a goddess? It’s nice of you to be looking out for me, but the Netherworld has been put at risk due to this incident.");
 		dadd_msg(d,Left, "I have to keep going.");
-		dadd_msg(d,Right, "The tunnel heads leads nowhere but\nto ruin. If you don’t return to\nthe ghostly world where you come from,\nI’ll have to stop you by force!");
-		dadd_msg(d,Left, "My mistress won’t like it if\nI tell her I was stopped by divine\nintervention. You’ll have to\ncome up with another excuse.");
+		dadd_msg(d,Right, "The tunnel heads leads nowhere but to ruin. If you don’t return to the ghostly world where you come from, I’ll have to stop you by force!");
+		dadd_msg(d,Left, "My mistress won’t like it if I tell her I was stopped by divine intervention. You’ll have to come up with another excuse.");
 	}
 
 	dadd_msg(d, BGM, "stage2boss");
@@ -38,9 +38,9 @@ Dialog *stage2_post_dialog(void) {
 	Dialog *d = create_dialog(pc->dialog_sprite_name, NULL);
 
 	if(pc->id == PLR_CHAR_MARISA) {
-		dadd_msg(d, Left, "Somehow I already feel luckier after\nbeating ya. Fixin’ the border\nshould be no sweat!");
+		dadd_msg(d, Left, "Somehow I already feel luckier after beating ya. Fixin’ the border should be no sweat!");
 	} else if(pc->id == PLR_CHAR_YOUMU) {
-		dadd_msg(d, Left, "It’s strange, but fighting a god\nmakes me feel like some of my burdens\nare lifted.\nI wonder if she decided to bless me after all?");
+		dadd_msg(d, Left, "It’s strange, but fighting a god makes me feel like some of my burdens are lifted. I wonder if she decided to bless me after all?");
 	}
 
 	return d;

@@ -17,27 +17,27 @@ Dialog *stage6_dialog(void) {
 	if(pc->id == PLR_CHAR_MARISA) {
 		dadd_msg(d,Left, "And so the big bad boss behind it all is…");
 		dadd_msg(d,Left, "Wait, Elly?!");
-		dadd_msg(d,Right, "That’s strange; I thought Kurumi was\nkeeping people from sneaking into my\nlaboratory.");
-		dadd_msg(d,Left, "You have a lab?! Last time we fought,\nya were just some random guard. You\ndidn’t even know any science!");
-		dadd_msg(d,Right, "After Yuuka was defeated and left us\nfor Gensokyo, Kurumi and I decided we\nneeded to do some soul searching\nand find another job.");
-		dadd_msg(d,Right, "We stranded ourselves in the Outside\nWorld on accident, and I found my true\ncalling as a mathematical theorist.");
-		dadd_msg(d,Right, "This world I’ve built… this is a world\ndictated not by the madness of Gensokyo,\nbut of reason, logic, and common sense!");
-		dadd_msg(d,Left, "Yeah, and that’s why it broke the barrier,\ndidn’t it? You can’t have a borin’ world\nlike this next t’ Gensokyo without causin’ us issues.");
-		dadd_msg(d,Right, "An unenlightened fool like you wouldn’t\nunderstand… You’re even still using magic,\nof all things!");
-		dadd_msg(d,Left, "I understand enough to know that you’re the\nproblem. And like any good mathematician,\nI’m gonna solve it by blastin’ it to bits!");
-		dadd_msg(d,Right, "No! You’ll never destroy my life’s work!\nI’ll dissect that nonsensical magic of yours,\nand then I’ll tear it apart!");
+		dadd_msg(d,Right, "That’s strange; I thought Kurumi was keeping people from sneaking into my laboratory.");
+		dadd_msg(d,Left, "You have a lab?! Last time we fought, ya were just some random guard. You didn’t even know any science!");
+		dadd_msg(d,Right, "After Yuuka was defeated and left us for Gensokyo, Kurumi and I decided we needed to do some soul searching and find another job.");
+		dadd_msg(d,Right, "We stranded ourselves in the Outside World on accident, and I found my true calling as a mathematical theorist.");
+		dadd_msg(d,Right, "This world I’ve built… this is a world dictated not by the madness of Gensokyo, but of reason, logic, and common sense!");
+		dadd_msg(d,Left, "Yeah, and that’s why it broke the barrier, didn’t it? You can’t have a borin’ world like this next t’ Gensokyo without causin’ us issues.");
+		dadd_msg(d,Right, "An unenlightened fool like you wouldn’t understand… You’re even still using magic, of all things!");
+		dadd_msg(d,Left, "I understand enough to know that you’re the problem. And like any good mathematician, I’m gonna solve it by blastin’ it to bits!");
+		dadd_msg(d,Right, "No! You’ll never destroy my life’s work! I’ll dissect that nonsensical magic of yours, and then I’ll tear it apart!");
 	} else if(pc->id == PLR_CHAR_YOUMU) {
 		dadd_msg(d,Left, "Are you the one behind this new world?");
 		dadd_msg(d,Right, "That is correct.");
-		dadd_msg(d,Left, "Considering that scythe of yours,\nI’m really quite surprised that a shikigami\nwould be behind everything.");
-		dadd_msg(d,Right, "That is because you completely misunderstand.\nI am not a shikigami, and never was. My duty\nwas once to protect a powerful youkai, but when she\nleft for Gensokyo, I was left behind.");
-		dadd_msg(d,Right, "Together with my friend, Kurumi, we left for the\nOutside World and were stranded there. But I gained an incredible\nnew power once I realized my true calling as a mathematical theorist.");
-		dadd_msg(d,Left, "I don’t completely follow, but if you’re a youkai,\nI can’t see how you could be a scientist.\nIt goes against your nature.");
-		dadd_msg(d,Right, "An unenlightened fool such as yourself could never\ncomprehend my transcendence.");
-		dadd_msg(d,Right, "I have become more than a simple youkai,\nfor I alone am now capable of discovering the secrets\nbehind the illusion of reality!");
-		dadd_msg(d,Left, "Well, whatever you’re doing here is disintegrating\nthe barrier of common sense and madness keeping Gensokyo\nfrom collapsing into the Outside World.");
-		dadd_msg(d,Left, "You’re also infringing on the Netherworld’s\nspace and my mistress is particularly upset\nabout that. That means I have to stop you, no matter what.");
-		dadd_msg(d,Right, "Pitiful servant of the dead. You’ll never\nbe able to stop my life’s work from being fulfilled!\nI’ll simply unravel that nonsense behind your half-and-half\nexistence!");
+		dadd_msg(d,Left, "Considering that scythe of yours, I’m really quite surprised that a shikigami would be behind everything.");
+		dadd_msg(d,Right, "That is because you completely misunderstand. I am not a shikigami, and never was. My duty was once to protect a powerful youkai, but when she left for Gensokyo, I was left behind.");
+		dadd_msg(d,Right, "Together with my friend, Kurumi, we left for the Outside World and were stranded there. But I gained an incredible new power once I realized my true calling as a mathematical theorist.");
+		dadd_msg(d,Left, "I don’t completely follow, but if you’re a youkai, I can’t see how you could be a scientist. It goes against your nature.");
+		dadd_msg(d,Right, "An unenlightened fool such as yourself could never comprehend my transcendence.");
+		dadd_msg(d,Right, "I have become more than a simple youkai, for I alone am now capable of discovering the secrets behind the illusion of reality!");
+		dadd_msg(d,Left, "Well, whatever you’re doing here is disintegrating the barrier of common sense and madness keeping Gensokyo from collapsing into the Outside World.");
+		dadd_msg(d,Left, "You’re also infringing on the Netherworld’s space and my mistress is particularly upset about that. That means I have to stop you, no matter what.");
+		dadd_msg(d,Right, "Pitiful servant of the dead. You’ll never be able to stop my life’s work from being fulfilled! I’ll simply unravel that nonsense behind your half-and-half existence!");
 	}
 
 	dadd_msg(d, BGM, "stage6boss");
@@ -48,8 +48,8 @@ static Dialog *stage6_interboss_dialog(void) {
 	PlayerCharacter *pc = global.plr.mode->character;
 	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/elly");
 
-	dadd_msg(d, Right, "You’ve gotten this far… I can’t believe it!\nBut that will not matter once I show you the\ntruth of this world, and every world.");
-	dadd_msg(d, Right, "Space, time, dimensions…\nit all becomes clear when you understand\nThe Theory of Everything!");
+	dadd_msg(d, Right, "You’ve gotten this far… I can’t believe it! But that will not matter once I show you the truth of this world, and every world.");
+	dadd_msg(d, Right, "Space, time, dimensions… it all becomes clear when you understand The Theory of Everything!");
 	dadd_msg(d, Right, "Prepare to see the barrier destroyed!");
 
 	return d;

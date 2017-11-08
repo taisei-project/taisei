@@ -18,7 +18,7 @@ Dialog *stage5_post_mid_dialog(void) {
 	if(pc->id == PLR_CHAR_MARISA) {
 		dadd_msg(d, Left, "Hey, wait!  …Did I just see an oarfish?");
 	} else if(pc->id == PLR_CHAR_YOUMU) {
-		dadd_msg(d, Left, "A messenger of Heaven! If I follow her, I’ll\nsurely learn something about the incident!");
+		dadd_msg(d, Left, "A messenger of Heaven! If I follow her, I’ll surely learn something about the incident!");
 	}
 
 	return d;
@@ -29,22 +29,22 @@ Dialog *stage5_boss_dialog(void) {
 	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/iku");
 
 	if(pc->id == PLR_CHAR_MARISA) {
-		dadd_msg(d,Left, "I finally caught up to ya! I should’ve\nknown that the Dragon’s messenger would be hard\nto chase down in the air.");
+		dadd_msg(d,Left, "I finally caught up to ya! I should’ve known that the Dragon’s messenger would be hard to chase down in the air.");
 		dadd_msg(d,Left, "Are you part of the incident too?");
-		dadd_msg(d,Right, "Weren’t those earlier bombs enough of\na deterrent? As this world is cutting\ninto the space of Heaven, only those\nauthorized are allowed to investigate.");
-		dadd_msg(d,Right, "You’re not a Celestial or anyone else\nfrom Heaven. That means you cannot go\nfurther.");
-		dadd_msg(d,Left, "C’mon, you’re good at readin’ the atmosphere,\nright? Then ya should know that I’m not gonna\nback down after comin’ this far.");
-		dadd_msg(d,Right, "I don’t have time to reason with you,\nunfortunately.");
-		dadd_msg(d,Right, "When it comes to an average\nhuman sticking out arrogantly, there’s only one reasonable\ncourse of action for a bolt of lightning to take.");
-		dadd_msg(d,Right, "Prepare to be struck down from\nHeaven’s door!");
+		dadd_msg(d,Right, "Weren’t those earlier bombs enough of a deterrent? As this world is cutting into the space of Heaven, only those authorized are allowed to investigate.");
+		dadd_msg(d,Right, "You’re not a Celestial or anyone else from Heaven. That means you cannot go further.");
+		dadd_msg(d,Left, "C’mon, you’re good at readin’ the atmosphere, right? Then ya should know that I’m not gonna back down after comin’ this far.");
+		dadd_msg(d,Right, "I don’t have time to reason with you, unfortunately.");
+		dadd_msg(d,Right, "When it comes to an average human sticking out arrogantly, there’s only one reasonable course of action for a bolt of lightning to take.");
+		dadd_msg(d,Right, "Prepare to be struck down from Heaven’s door!");
 	} else if(pc->id == PLR_CHAR_YOUMU) {
-		dadd_msg(d,Left, "You were quite difficult to pin down.\nDon’t worry; I’ll listen to whatever warning\nyou have before I continue forward.");
-		dadd_msg(d,Right, "Hmm, you’re the groundskeeper of the\nNetherworld, correct?");
-		dadd_msg(d,Left, "That’s right. My mistress sent me here to\ninvestigate since the world of spirits\nhas been put in jeopardy by this new world\ninfringing on its boundaries.");
-		dadd_msg(d,Right, "I’m afraid I cannot let you pass. This new world\nis a great issue caused by an incredible new power.\nOnly a Celestial or greater is qualified to handle such a\ndangerous occurrence.");
-		dadd_msg(d,Left, "That doesn’t seem fair considering I’ve solved\nincidents before. I know what I am doing,\nand Lady Yuyuko entrusted me with this.");
-		dadd_msg(d,Right, "If your confidence will not allow you to back\ndown, then so be it. I will test you using all of\nHeaven’s might, and if you are unfit, you shall\nbe cast down from this Tower of Babel!");
-		dadd_msg(d,Left, "I shall pass whatever test necessary if it\nwill allow me to fulfill the wishes of\nLady Yuyuko!");
+		dadd_msg(d,Left, "You were quite difficult to pin down. Don’t worry; I’ll listen to whatever warning you have before I continue forward.");
+		dadd_msg(d,Right, "Hmm, you’re the groundskeeper of the Netherworld, correct?");
+		dadd_msg(d,Left, "That’s right. My mistress sent me here to investigate since the world of spirits has been put in jeopardy by this new world infringing on its boundaries.");
+		dadd_msg(d,Right, "I’m afraid I cannot let you pass. This new world is a great issue caused by an incredible new power. Only a Celestial or greater is qualified to handle such a dangerous occurrence.");
+		dadd_msg(d,Left, "That doesn’t seem fair considering I’ve solved incidents before. I know what I am doing, and Lady Yuyuko entrusted me with this.");
+		dadd_msg(d,Right, "If your confidence will not allow you to back down, then so be it. I will test you using all of Heaven’s might, and if you are unfit, you shall be cast down from this Tower of Babel!");
+		dadd_msg(d,Left, "I shall pass whatever test necessary if it will allow me to fulfill the wishes of Lady Yuyuko!");
 	}
 	dadd_msg(d, BGM, "stage5boss");
 	return d;

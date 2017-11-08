@@ -14,19 +14,19 @@ Dialog *stage1_dialog(void) {
 	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/cirno");
 
 	if(pc->id == PLR_CHAR_MARISA) {
-		dadd_msg(d, Left, "It’s gotten pretty cold ‘round here.\nI wish I brought a sweater.");
-		dadd_msg(d, Right, "Every time there’s an incident,\nwe fairies show up to stop weak\nhumans like you from spoiling\nthe fun!");
+		dadd_msg(d, Left, "It’s gotten pretty cold ‘round here. I wish I brought a sweater.");
+		dadd_msg(d, Right, "Every time there’s an incident, we fairies show up to stop weak humans like you from spoiling the fun!");
 		dadd_msg(d, Left, "So, you’re callin’ me weak?");
-		dadd_msg(d, Right, "Weak to cold for sure! I’ll turn you\ninto a human-sized popsicle!");
-		dadd_msg(d, Left, "I’d like to see ya try");
+		dadd_msg(d, Right, "Weak to cold for sure! I’ll turn you into a human-sized popsicle!");
+		dadd_msg(d, Left, "I’d like to see ya try.");
 	}
 
 	if(pc->id == PLR_CHAR_YOUMU) {
-		dadd_msg(d, Left, "The temperature of the lake almost resembles\nthe Netherworld’s. Good thing\nI don’t get cold easily.");
-		dadd_msg(d, Right, "What’s that? You think you\ncan’t get cold?");
-		dadd_msg(d, Left, "I don’t just think that, I know that.\nI’m half-phantom, so even my body\nis cold.");
-		dadd_msg(d, Right, "I’ll take that as a challenge!\nPrepare to be chilled in a way no ghost\ncan match!");
-		dadd_msg(d, Right, "Let’s see if phantoms are good as\nsoft-serve ice cream!");
+		dadd_msg(d, Left, "The temperature of the lake almost resembles the Netherworld’s. Good thing I don’t get cold easily.");
+		dadd_msg(d, Right, "What’s that? You think you can’t get cold?");
+		dadd_msg(d, Left, "I don’t just think that, I know that. I’m half-phantom, so even my body is cold.");
+		dadd_msg(d, Right, "I’ll take that as a challenge! Prepare to be chilled in a way no ghost can match!");
+		dadd_msg(d, Right, "Let’s see if phantoms are good as soft-serve ice cream!");
 	}
 
 	dadd_msg(d, BGM, "stage1boss");
@@ -39,10 +39,10 @@ static Dialog *stage1_postdialog(void) {
 	Dialog *d = create_dialog(pc->dialog_sprite_name, NULL);
 
 	if(pc->id == PLR_CHAR_MARISA) {
-		dadd_msg(d, Left, "I’ve made the lake a lot warmer now,\nso ya can’t freeze anyone.");
+		dadd_msg(d, Left, "I’ve made the lake a lot warmer now, so ya can’t freeze anyone.");
 	}
 	if(pc->id == PLR_CHAR_YOUMU) {
-		dadd_msg(d, Left, "Lady Yuyuko would probably like trying\nsuch an unusual flavor of ice cream.\nI hope she never gets that idea.");
+		dadd_msg(d, Left, "Lady Yuyuko would probably like trying such an unusual flavor of ice cream. I hope she never gets that idea.");
 	}
 
 	return d;
