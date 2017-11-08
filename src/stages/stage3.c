@@ -305,7 +305,6 @@ void stage3_draw(void) {
 		stgstate.clr_r += .5 / 120.0;
 		bgcontext.cx[2] += (0 - bgcontext.cx[2]) * 0.05;
 		stgstate.fog_exp = approach(stgstate.fog_exp, 4, 1/20.0);
-		log_debug("%f %f", bgcontext.cx[2], stgstate.fog_exp);
 	}
 
 	FROM_TO(4299 + midboss_time, 5299 + midboss_time, 1) {
@@ -321,7 +320,6 @@ void stage3_draw(void) {
 		stgstate.tunnel_avel -= 1.1 / 200.0;
 		bgcontext.crot[0] -= 15 / 200.0;
 		stgstate.fog_exp = approach(stgstate.fog_exp, 2.5, 1/50.0);
-		log_debug("%f", stgstate.fog_exp);
 	}
 
 	FROM_TO(5200 + midboss_time, 5300 + midboss_time, 1) {
@@ -345,7 +343,6 @@ void stage3_draw(void) {
 		stgstate.clr_g = approach(stgstate.clr_g, 0.3, 1.0/200.0);
 		stgstate.clr_b = approach(stgstate.clr_b, 0.4, 1.0/200.0);
 
-		log_debug("%f %f %f %f %f", stgstate.fog_brightness, stgstate.fog_exp, bgcontext.cx[0], bgcontext.cx[1], bgcontext.cx[2]);
 	}
 #endif
 
