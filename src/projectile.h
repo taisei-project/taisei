@@ -48,7 +48,7 @@ typedef enum ProjFlags {
 	PFLAG_DRAWADD = (1 << 0),
 	PFLAG_DRAWSUB = (1 << 1),
 	PFLAG_NOSPAWNZOOM = (1 << 2),
-	PFLAG_NOGRAZE = (1 << 3), // XXX: do we need this?
+	PFLAG_NOGRAZE = (1 << 3),
 } ProjFlags;
 
 #ifdef PROJ_DEBUG
@@ -81,10 +81,6 @@ struct Projectile {
 #ifdef PROJ_DEBUG
 	ProjDebugInfo debug;
 #endif
-};
-
-enum {
-	PDRAWPASSFLAG_IGNOREPLR = 0x8000, // hack for stage1 bg...
 };
 
 typedef struct ProjArgs {

@@ -21,13 +21,8 @@ uniform vec4 B;
 uniform vec4 A;
 uniform vec4 O;
 
-// uniform vec4 Cmin;
-// uniform vec4 Cmax;
-
 void main(void) {
 	vec4 texel = texture2D(tex, vec2(TexCoord0.xy));
-
-    // texel = clamp(texel, Cmin, Cmax);
 
     gl_FragColor = (
         R * texel.r +

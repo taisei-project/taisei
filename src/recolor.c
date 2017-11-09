@@ -14,9 +14,6 @@ ColorTransform colortransform_identity = {
     .G[1] = RGBA(0, 1, 0, 0),
     .B[1] = RGBA(0, 0, 1, 0),
     .A[1] = RGBA(0, 0, 0, 1),
-
-    .min = RGBA(0, 0, 0, 0),
-    .max = RGBA(1, 1, 1, 1),
 };
 
 struct recolor_varcache {
@@ -31,8 +28,6 @@ static struct recolor_vars_s {
     struct recolor_varcache B;
     struct recolor_varcache A;
     struct recolor_varcache O;
-    // struct recolor_varcache min;
-    // struct recolor_varcache max;
     bool loaded;
 } recolor_vars;
 
@@ -59,8 +54,6 @@ void recolor_init(void) {
     recolor_vars.B.loc = uniloc(recolor_vars.shader, "B");
     recolor_vars.A.loc = uniloc(recolor_vars.shader, "A");
     recolor_vars.O.loc = uniloc(recolor_vars.shader, "O");
-    // recolor_vars.min.loc = uniloc(recolor_vars.shader, "Cmin");
-    // recolor_vars.max.loc = uniloc(recolor_vars.shader, "Cmax");
 
     int prev_prog = 0;
     glGetIntegerv(GL_CURRENT_PROGRAM, &prev_prog);
@@ -95,7 +88,4 @@ void recolor_apply_transform(ColorTransform *ct) {
     }
 
     recolor_set_uniform(&recolor_vars.O, rgba(accum[0], accum[1], accum[2], accum[3]));
-
-    // recolor_set_uniform(&recolor_vars.min, ct->min);
-    // recolor_set_uniform(&recolor_vars.max, ct->max);
 }

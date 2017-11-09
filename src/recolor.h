@@ -29,9 +29,6 @@ typedef struct ColorTransform {
             Color high;
         } pairs[4];
     };
-
-    Color min;
-    Color max;
 } ColorTransform;
 
 extern ColorTransform colortransform_identity;

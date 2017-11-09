@@ -60,7 +60,6 @@ void* create_element_at_priority(void **list_head, size_t size, int prio, int (*
 
 	if(!*list_head) {
 		*list_head = elem;
-		// log_debug("PRIO: %i", prio);
 		return elem;
 	}
 

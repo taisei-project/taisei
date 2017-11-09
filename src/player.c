@@ -360,7 +360,6 @@ int player_run_bomb_logic(Player *plr, void *ent, complex *argptr, int (*callbac
 			// call the draw functions too, because some of them modify args or spawn stuff...
 			// this is stupid and should not happen, but for now it does.
 			draw_projectiles(global.particles, NULL);
-			draw_projectiles(global.particles, NULL);
 
 			global.frames++;
 		}

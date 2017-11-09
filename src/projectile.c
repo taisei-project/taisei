@@ -223,8 +223,6 @@ void static_clrtransform_bullet(Color c, ColorTransform *out) {
 		.B[0] = c & ~CLRMASK_A,
 		.B[1] = rgba(1, 1, 1, 0),
 		.A[1] = c &  CLRMASK_A,
-		// .min = rgba(0, 0, 0, 0),
-		// .max = rgba(1, 1, 1, 1),
 	}, sizeof(ColorTransform));
 }
 
@@ -234,8 +232,6 @@ void static_clrtransform_particle(Color c, ColorTransform *out) {
 		.G[1] = c & CLRMASK_G,
 		.B[1] = c & CLRMASK_B,
 		.A[1] = c & CLRMASK_A,
-		// .min = rgba(0, 0, 0, 0),
-		// .max = rgba(1, 1, 1, 1),
 	}, sizeof(ColorTransform));
 }
 
@@ -504,10 +500,7 @@ void DeathShrink(Projectile *p, int t) {
 
 void GrowFade(Projectile *p, int t) {
 	glPushMatrix();
-	glTranslatef(creal(p->pos), cimag(p->pos), 0);
-	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
-
-	// apply_common_transforms(p, t);
+	apply_common_transforms(p, t);
 
 	float s = t/p->args[0]*(1 + (creal(p->args[2])? p->args[2] : p->args[1]));
 	if(s != 1) {
