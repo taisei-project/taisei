@@ -16,10 +16,20 @@
  */
 
 typedef struct ColorTransform {
-    Color R[2];
-    Color G[2];
-    Color B[2];
-    Color A[2];
+    union {
+        struct {
+            Color R[2];
+            Color G[2];
+            Color B[2];
+            Color A[2];
+        };
+
+        struct {
+            Color low;
+            Color high;
+        } pairs[4];
+    };
+
     Color min;
     Color max;
 } ColorTransform;

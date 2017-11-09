@@ -15,15 +15,11 @@ void main(void) {
 varying vec4 TexCoord0;
 uniform sampler2D tex;
 
-uniform vec4 R0;
-uniform vec4 G0;
-uniform vec4 B0;
-uniform vec4 A0;
-
-uniform vec4 R1;
-uniform vec4 G1;
-uniform vec4 B1;
-uniform vec4 A1;
+uniform vec4 R;
+uniform vec4 G;
+uniform vec4 B;
+uniform vec4 A;
+uniform vec4 O;
 
 // uniform vec4 Cmin;
 // uniform vec4 Cmax;
@@ -34,9 +30,9 @@ void main(void) {
     // texel = clamp(texel, Cmin, Cmax);
 
     gl_FragColor = (
-        mix(R0, R1, texel.r) +
-        mix(G0, G1, texel.g) +
-        mix(B0, B1, texel.b) +
-        mix(A0, A1, texel.a)
-    );
+        R * texel.r +
+        G * texel.g +
+        B * texel.b +
+        A * texel.a
+    ) + O;
 }
