@@ -564,7 +564,8 @@ void iku_lightning(Boss *b, int time) {
 				.color = rgb(0.4, 0.4, 1.0),
 				.draw_rule = Fade,
 				.rule = timeout_linear,
-				.args = { l/s, s*n }
+				.args = { l/s, s*n },
+				.flags = PFLAG_DRAWADD,
 			);
 		}
 
