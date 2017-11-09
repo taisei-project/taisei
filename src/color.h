@@ -57,6 +57,14 @@ Color approach_color(Color src, Color dst, double delta) __attribute__((const));
 float color_component(Color clr, unsigned int ofs) __attribute__((const));
 char* color_str(Color c);
 
+#ifdef RGBA
+#undef RGBA
+#endif
+
+#ifdef RGB
+#undef RGB
+#endif
+
 #define RGBA(r,g,b,a) \
    ((((Color)(ColorComponent)(CLR_ONEVALUE * (r)) & CLR_CMASK) << CLR_R) + \
     (((Color)(ColorComponent)(CLR_ONEVALUE * (g)) & CLR_CMASK) << CLR_G) + \
