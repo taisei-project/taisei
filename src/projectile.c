@@ -402,11 +402,11 @@ static inline void apply_common_transforms(Projectile *proj, int t) {
 	glTranslatef(creal(proj->pos), cimag(proj->pos), 0);
 	glRotatef(proj->angle*180/M_PI+90, 0, 0, 1);
 
-	if(t < 16) {
+	if(t >= 16) {
 		return;
 	}
 
-	if(!(proj->flags & PFLAG_NOSPAWNZOOM)) {
+	if(proj->flags & PFLAG_NOSPAWNZOOM) {
 		return;
 	}
 
