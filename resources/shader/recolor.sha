@@ -5,21 +5,29 @@ varying vec4 TexCoord0;
 void main(void) {
 	gl_Position = ftransform();
 	gl_FrontColor = gl_Color;
-		
+
 	TexCoord0 = gl_TextureMatrix[0] * gl_MultiTexCoord0;
 }
 
 %% -- FRAG
 #version 110
 
-uniform sampler2D tex;
-uniform vec4 color;
-
 varying vec4 TexCoord0;
+uniform sampler2D tex;
+
+uniform vec4 R;
+uniform vec4 G;
+uniform vec4 B;
+uniform vec4 A;
+uniform vec4 O;
 
 void main(void) {
 	vec4 texel = texture2D(tex, vec2(TexCoord0.xy));
-	vec4 mixclr = mix(color, vec4(1.0), texel.b);
-	mixclr.a *= texel.a*color.a;
-	gl_FragColor = mixclr;
+
+    gl_FragColor = (
+        R * texel.r +
+        G * texel.g +
+        B * texel.b +
+        A * texel.a
+    ) + O;
 }

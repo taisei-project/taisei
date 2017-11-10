@@ -177,6 +177,7 @@ typedef void (APIENTRY *tsglGenBuffers_ptr)(GLsizei n, GLuint *buffers);
 typedef void (APIENTRY *tsglGenFramebuffers_ptr)(GLsizei n, GLuint *framebuffers);
 typedef void (GLAPIENTRY *tsglGenTextures_ptr)(GLsizei n, GLuint *textures);
 typedef void (APIENTRY *tsglGetActiveUniform_ptr)(GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size, GLenum *type, GLchar *name);
+typedef void (GLAPIENTRY *tsglGetIntegerv_ptr)(GLenum pname, GLint *params);
 typedef void (APIENTRY *tsglGetProgramInfoLog_ptr)(GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
 typedef void (APIENTRY *tsglGetProgramiv_ptr)(GLuint program, GLenum pname, GLint *params);
 typedef void (APIENTRY *tsglGetShaderInfoLog_ptr)(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
@@ -195,7 +196,6 @@ typedef void (GLAPIENTRY *tsglReadBuffer_ptr)(GLenum mode);
 typedef void (GLAPIENTRY *tsglReadPixels_ptr)(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels);
 typedef void (GLAPIENTRY *tsglRotatef_ptr)(GLfloat angle, GLfloat x, GLfloat y, GLfloat z);
 typedef void (GLAPIENTRY *tsglScalef_ptr)(GLfloat x, GLfloat y, GLfloat z);
-typedef void (GLAPIENTRY *tsglScissor_ptr)(GLint x, GLint y, GLsizei width, GLsizei height);
 typedef void (APIENTRY *tsglShaderSource_ptr)(GLuint shader, GLsizei count, const GLchar *const*string, const GLint *length);
 typedef void (GLAPIENTRY *tsglTexCoordPointer_ptr)(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr);
 typedef void (GLAPIENTRY *tsglTexImage2D_ptr)(GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
@@ -270,6 +270,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glGenFramebuffers
 #undef glGenTextures
 #undef glGetActiveUniform
+#undef glGetIntegerv
 #undef glGetProgramInfoLog
 #undef glGetProgramiv
 #undef glGetShaderInfoLog
@@ -288,7 +289,6 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glReadPixels
 #undef glRotatef
 #undef glScalef
-#undef glScissor
 #undef glShaderSource
 #undef glTexCoordPointer
 #undef glTexImage2D
@@ -364,6 +364,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glGenFramebuffers tsglGenFramebuffers
 #define glGenTextures tsglGenTextures
 #define glGetActiveUniform tsglGetActiveUniform
+#define glGetIntegerv tsglGetIntegerv
 #define glGetProgramInfoLog tsglGetProgramInfoLog
 #define glGetProgramiv tsglGetProgramiv
 #define glGetShaderInfoLog tsglGetShaderInfoLog
@@ -382,7 +383,6 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glReadPixels tsglReadPixels
 #define glRotatef tsglRotatef
 #define glScalef tsglScalef
-#define glScissor tsglScissor
 #define glShaderSource tsglShaderSource
 #define glTexCoordPointer tsglTexCoordPointer
 #define glTexImage2D tsglTexImage2D
@@ -460,6 +460,7 @@ GLDEF(glGenBuffers, tsglGenBuffers, tsglGenBuffers_ptr) \
 GLDEF(glGenFramebuffers, tsglGenFramebuffers, tsglGenFramebuffers_ptr) \
 GLDEF(glGenTextures, tsglGenTextures, tsglGenTextures_ptr) \
 GLDEF(glGetActiveUniform, tsglGetActiveUniform, tsglGetActiveUniform_ptr) \
+GLDEF(glGetIntegerv, tsglGetIntegerv, tsglGetIntegerv_ptr) \
 GLDEF(glGetProgramInfoLog, tsglGetProgramInfoLog, tsglGetProgramInfoLog_ptr) \
 GLDEF(glGetProgramiv, tsglGetProgramiv, tsglGetProgramiv_ptr) \
 GLDEF(glGetShaderInfoLog, tsglGetShaderInfoLog, tsglGetShaderInfoLog_ptr) \
@@ -478,7 +479,6 @@ GLDEF(glReadBuffer, tsglReadBuffer, tsglReadBuffer_ptr) \
 GLDEF(glReadPixels, tsglReadPixels, tsglReadPixels_ptr) \
 GLDEF(glRotatef, tsglRotatef, tsglRotatef_ptr) \
 GLDEF(glScalef, tsglScalef, tsglScalef_ptr) \
-GLDEF(glScissor, tsglScissor, tsglScissor_ptr) \
 GLDEF(glShaderSource, tsglShaderSource, tsglShaderSource_ptr) \
 GLDEF(glTexCoordPointer, tsglTexCoordPointer, tsglTexCoordPointer_ptr) \
 GLDEF(glTexImage2D, tsglTexImage2D, tsglTexImage2D_ptr) \
@@ -560,6 +560,7 @@ GLAPI void APIENTRY glGenBuffers (GLsizei n, GLuint *buffers);
 GLAPI void APIENTRY glGenFramebuffers (GLsizei n, GLuint *framebuffers);
 GLAPI void GLAPIENTRY glGenTextures( GLsizei n, GLuint *textures );
 GLAPI void APIENTRY glGetActiveUniform (GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size, GLenum *type, GLchar *name);
+GLAPI void GLAPIENTRY glGetIntegerv( GLenum pname, GLint *params );
 GLAPI void APIENTRY glGetProgramInfoLog (GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
 GLAPI void APIENTRY glGetProgramiv (GLuint program, GLenum pname, GLint *params);
 GLAPI void APIENTRY glGetShaderInfoLog (GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
@@ -578,7 +579,6 @@ GLAPI void GLAPIENTRY glReadBuffer( GLenum mode );
 GLAPI void GLAPIENTRY glReadPixels( GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels );
 GLAPI void GLAPIENTRY glRotatef( GLfloat angle, GLfloat x, GLfloat y, GLfloat z );
 GLAPI void GLAPIENTRY glScalef( GLfloat x, GLfloat y, GLfloat z );
-GLAPI void GLAPIENTRY glScissor( GLint x, GLint y, GLsizei width, GLsizei height);
 GLAPI void APIENTRY glShaderSource (GLuint shader, GLsizei count, const GLchar *const*string, const GLint *length);
 GLAPI void GLAPIENTRY glTexCoordPointer( GLint size, GLenum type, GLsizei stride, const GLvoid *ptr );
 GLAPI void GLAPIENTRY glTexImage2D( GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels );
@@ -653,6 +653,7 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglGenFramebuffers glGenFramebuffers
 #define tsglGenTextures glGenTextures
 #define tsglGetActiveUniform glGetActiveUniform
+#define tsglGetIntegerv glGetIntegerv
 #define tsglGetProgramInfoLog glGetProgramInfoLog
 #define tsglGetProgramiv glGetProgramiv
 #define tsglGetShaderInfoLog glGetShaderInfoLog
@@ -671,7 +672,6 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglReadPixels glReadPixels
 #define tsglRotatef glRotatef
 #define tsglScalef glScalef
-#define tsglScissor glScissor
 #define tsglShaderSource glShaderSource
 #define tsglTexCoordPointer glTexCoordPointer
 #define tsglTexImage2D glTexImage2D

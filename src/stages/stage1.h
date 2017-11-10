@@ -10,6 +10,10 @@
 
 #include "stage.h"
 
+#if defined(DEBUG) && !defined(SPELL_BENCHMARK)
+#define SPELL_BENCHMARK
+#endif
+
 extern struct stage1_spells_s {
     // this struct must contain only fields of type AttackInfo
     // order of fields affects the visual spellstage number, but not its real internal ID
@@ -22,14 +26,15 @@ extern struct stage1_spells_s {
         AttackInfo crystal_rain;
         AttackInfo snow_halation;
         AttackInfo icicle_fall;
-#ifdef DEBUG
-        AttackInfo benchmark;
-#endif
     } boss;
 
     struct {
         AttackInfo crystal_blizzard;
     } extra;
+
+#ifdef SPELL_BENCHMARK
+    AttackInfo benchmark;
+#endif
 
     // required for iteration
     AttackInfo null;

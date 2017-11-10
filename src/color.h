@@ -28,8 +28,20 @@
 typedef uint64_t Color;
 typedef int16_t ColorComponent;
 
+#ifndef COLOR_INLINE
+    #ifdef NDEBUG
+        #define COLOR_INLINE
+    #endif
+#endif
+
+#ifdef COLOR_INLINE
+#define rgba(r,g,b,a) RGBA(r,g,b,a)
+#define rgb(r,g,b) RGB(r,g,b)
+#else
 Color rgba(float r, float g, float b, float a) __attribute__((const));
 Color rgb(float r, float g, float b) __attribute__((const));
+#endif
+
 Color hsla(float h, float s, float l, float a) __attribute__((const));
 Color hsl(float h, float s, float l) __attribute__((const));
 
@@ -43,5 +55,26 @@ Color subtract_colors(Color c1, Color c2) __attribute__((const));
 Color mix_colors(Color c1, Color c2, double a) __attribute__((const));
 Color approach_color(Color src, Color dst, double delta) __attribute__((const));
 float color_component(Color clr, unsigned int ofs) __attribute__((const));
+char* color_str(Color c);
+
+#ifdef RGBA
+#undef RGBA
+#endif
+
+#ifdef RGB
+#undef RGB
+#endif
+
+#define RGBA(r,g,b,a) \
+   ((((Color)(ColorComponent)(CLR_ONEVALUE * (r)) & CLR_CMASK) << CLR_R) + \
+    (((Color)(ColorComponent)(CLR_ONEVALUE * (g)) & CLR_CMASK) << CLR_G) + \
+    (((Color)(ColorComponent)(CLR_ONEVALUE * (b)) & CLR_CMASK) << CLR_B) + \
+    (((Color)(ColorComponent)(CLR_ONEVALUE * (a)) & CLR_CMASK) << CLR_A))
+
+#define RGB(r,g,b) \
+   ((((Color)(ColorComponent)(CLR_ONEVALUE * (r)) & CLR_CMASK) << CLR_R) + \
+    (((Color)(ColorComponent)(CLR_ONEVALUE * (g)) & CLR_CMASK) << CLR_G) + \
+    (((Color)(ColorComponent)(CLR_ONEVALUE * (b)) & CLR_CMASK) << CLR_B) + \
+    (CLR_ONEVALUE << CLR_A))
 
 int color_test(void);

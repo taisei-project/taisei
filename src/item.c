@@ -63,7 +63,7 @@ Item* create_bpoint(complex pos) {
 	Item *i = create_item(pos, 0, BPoint);
 
 	if(i) {
-		create_particle1c("flare", pos, 0, Fade, timeout, 30);
+		PARTICLE("flare", pos, 0, timeout, { 30 }, .draw_rule = Fade);
 		i->auto_collect = 10;
 	}
 

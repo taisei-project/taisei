@@ -29,8 +29,17 @@ void marisa_common_shot(Player *plr) {
     }
 
     if(!(global.frames % 6)) {
-        create_projectile1c("marisa", plr->pos + 10 - 15.0*I, 0, linear, -20.0*I)->type = PlrProj+175;
-        create_projectile1c("marisa", plr->pos - 10 - 15.0*I, 0, linear, -20.0*I)->type = PlrProj+175;
+        Color c = rgb(1, 1, 1);
+
+        PROJECTILE("marisa", plr->pos + 10 - 15.0*I, c, linear, { -20.0*I },
+            .type = PlrProj+175,
+            .color_transform_rule = proj_clrtransform_particle,
+        );
+
+        PROJECTILE("marisa", plr->pos - 10 - 15.0*I, c, linear, { -20.0*I },
+            .type = PlrProj+175,
+            .color_transform_rule = proj_clrtransform_particle,
+        );
     }
 }
 

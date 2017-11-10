@@ -11,6 +11,7 @@
 #include "video.h"
 #include "menu/mainmenu.h"
 #include "events.h"
+#include "recolor.h"
 
 Resources resources;
 static SDL_threadID main_thread_id;
@@ -373,6 +374,8 @@ void init_resources(void) {
 
 		events_register_handler(&h);
 	}
+
+	recolor_init();
 }
 
 void resource_util_strip_ext(char *path) {

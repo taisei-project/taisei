@@ -68,11 +68,17 @@ int stage2_great_circle(Enemy *e, int t) {
 
 		for(n = 0; n < c; n++) {
 			complex dir = cexp(I*(2*M_PI/c*n+partdist*(_i%c2-c2/2)+bunchdist*(_i/c2)));
-			create_projectile2c("rice", e->pos+30*dir, rgb(0.6,0.0,0.3), asymptotic, 1.5*dir, _i%5);
+
+			PROJECTILE("rice", e->pos+30*dir, rgb(0.6,0.0,0.3), asymptotic, {
+				1.5*dir,
+				_i%5
+			});
 
 			if(global.diff > D_Easy && _i%7 == 0) {
 				play_sound("shot1");
-				create_projectile1c("bigball", e->pos+30*dir, rgb(0.3,0.0,0.6), linear, 1.7*dir*cexp(0.3*I*frand()));
+				PROJECTILE("bigball", e->pos+30*dir, rgb(0.3,0.0,0.6), linear, {
+					1.7*dir*cexp(0.3*I*frand())
+				});
 			}
 		}
 	}
@@ -110,7 +116,9 @@ int stage2_small_spin_circle(Enemy *e, int t) {
 			play_sound("shot1");
 		}
 
-		create_projectile1c("ball", e->pos, rgb(0.9,0.0,0.3), linear, pow(global.diff,0.7)*(conj(e->pos-VIEWPORT_W/2)/100 + ((1-2*e->dir)+3.0*I)));
+		PROJECTILE("ball", e->pos, rgb(0.9,0.0,0.3), linear, {
+			pow(global.diff,0.7)*(conj(e->pos-VIEWPORT_W/2)/100 + ((1-2*e->dir)+3.0*I))
+		});
 	}
 
 	return 1;
@@ -131,8 +139,14 @@ int stage2_aim(Enemy *e, int t) {
 	AT(90) {
 		if(global.diff > D_Normal) {
 			play_sound("shot1");
-			create_projectile2c("plainball", e->pos, rgb(0.6,0.0,0.8), asymptotic, 5*cexp(I*carg(global.plr.pos-e->pos)), -1);
-			create_projectile1c("plainball", e->pos, rgb(0.2,0.0,0.1), linear, 3*cexp(I*carg(global.plr.pos-e->pos)));
+			PROJECTILE("plainball", e->pos, rgb(0.6,0.0,0.8), asymptotic, {
+				5*cexp(I*carg(global.plr.pos-e->pos)),
+				-1
+			});
+
+			PROJECTILE("plainball", e->pos, rgb(0.2,0.0,0.1), linear, {
+				3*cexp(I*carg(global.plr.pos-e->pos))
+			});
 		}
 	}
 
@@ -158,8 +172,8 @@ int stage2_sidebox_trail(Enemy *e, int t) { // creal(a[0]): velocity, cimag(a[0]
 		if(global.diff > D_Normal)
 			f = 0.03*global.diff*frand();
 
-		create_projectile1c("rice", e->pos, rgb(0.9,0.0,0.9), linear, 3*cexp(I*(cimag(e->args[0])+f+0.5*M_PI)));
-		create_projectile1c("rice", e->pos, rgb(0.9,0.0,0.9), linear, 3*cexp(I*(cimag(e->args[0])-f-0.5*M_PI)));
+		PROJECTILE("rice", e->pos, rgb(0.9,0.0,0.9), linear, { 3*cexp(I*(cimag(e->args[0])+f+0.5*M_PI)) });
+		PROJECTILE("rice", e->pos, rgb(0.9,0.0,0.9), linear, { 3*cexp(I*(cimag(e->args[0])-f-0.5*M_PI)) });
 	}
 
 	return 1;
@@ -184,7 +198,10 @@ int stage2_flea(Enemy *e, int t) {
 	FROM_TO(10, 400, 30-global.diff*3-t/70) {
 		if(global.diff == D_Easy) {
 			play_sound("shot1");
-			create_projectile2c("flea", e->pos, rgb(0.3,0.2,1), asymptotic, 1.5*cexp(2.0*I*M_PI*frand()), 1.5);
+			PROJECTILE("flea", e->pos, rgb(0.3,0.2,1), asymptotic, {
+				1.5*cexp(2.0*I*M_PI*frand()),
+				1.5
+			});
 		}
 	}
 
@@ -206,7 +223,10 @@ int stage2_accel_circle(Enemy *e, int t) {
 		int i;
 		for(i = 0; i < 6; i++) {
 			play_sound("redirect");
-			create_projectile2c("ball", e->pos, rgb(0.6,0.1,0.2), accelerated, 1.5*cexp(2.0*I*M_PI/6*i)+cexp(I*carg(global.plr.pos - e->pos)), -0.02*cexp(I*(2*M_PI/6*i+0.02*frand()*global.diff)));
+			PROJECTILE("ball", e->pos, rgb(0.6,0.1,0.2), accelerated, {
+				1.5*cexp(2.0*I*M_PI/6*i)+cexp(I*carg(global.plr.pos - e->pos)),
+				-0.02*cexp(I*(2*M_PI/6*i+0.02*frand()*global.diff))
+			});
 		}
 	}
 
@@ -239,7 +259,7 @@ int wriggle_bug(Projectile *p, int t) {
 	if(global.boss && global.boss->current && !((global.frames - global.boss->current->starttime - 30) % 200)) {
 		play_sound("redirect");
 		p->args[0] *= cexp(I*(M_PI/3)*nfrand());
-		create_particle2c("flare", p->pos, 0, GrowFade, timeout, 15, 5);
+		PARTICLE("flare", p->pos, 0, timeout, { 15, 5 }, .draw_rule = GrowFade);
 	}
 
 	return 1;
@@ -253,8 +273,8 @@ void wriggle_small_storm(Boss *w, int time) {
 		return;
 
 	FROM_TO_SND("shot1_loop", 0,400,5-global.diff) {
-		create_projectile1c("rice", w->pos, rgb(1,0.5,0.2), wriggle_bug, 2*cexp(I*_i*2*M_PI/20));
-		create_projectile1c("rice", w->pos, rgb(1,0.5,0.2), wriggle_bug, 2*cexp(I*_i*2*M_PI/20+I*M_PI));
+		PROJECTILE("rice", w->pos, rgb(1,0.5,0.2), wriggle_bug, { 2*cexp(I*_i*2*M_PI/20) });
+		PROJECTILE("rice", w->pos, rgb(1,0.5,0.2), wriggle_bug, { 2*cexp(I*_i*2*M_PI/20+I*M_PI) });
 	}
 
 	GO_AT(w, 60, 120, 1)
@@ -264,8 +284,12 @@ void wriggle_small_storm(Boss *w, int time) {
 		int i;
 		aniplayer_queue(&w->ani,1,0,0)->speed=4;
 		play_sound("shot_special1");
+
 		for(i = 0; i < 10+global.diff; i++) {
-			create_projectile2c("bigball", w->pos, rgb(0.1,0.3,0.0), asymptotic, 2*cexp(I*i*2*M_PI/(10+global.diff)), 2);
+			PROJECTILE("bigball", w->pos, rgb(0.1,0.3,0.0), asymptotic, {
+				2*cexp(I*i*2*M_PI/(10+global.diff)),
+				2
+			});
 		}
 	}
 }
@@ -311,8 +335,8 @@ void hina_cards1(Boss *h, int time) {
 	h->ani.stdrow = 1;
 	FROM_TO(0, 500, 2-(global.diff > D_Normal)) {
 		play_sound_ex("shot1", 4, false);
-		create_projectile2c("card", h->pos+50*cexp(I*t/10), rgb(0.8,0.0,0.0),  asymptotic, (1.6+0.4*global.diff)*cexp(I*t/5.0), 3);
-		create_projectile2c("card", h->pos-50*cexp(I*t/10), rgb(0.0,0.0,0.8),  asymptotic, -(1.6+0.4*global.diff)*cexp(I*t/5.0), 3);
+		PROJECTILE("card", h->pos+50*cexp(I*t/10), rgb(0.8,0.0,0.0), asymptotic, { (1.6+0.4*global.diff)*cexp(I*t/5.0), 3 });
+		PROJECTILE("card", h->pos-50*cexp(I*t/10), rgb(0.0,0.0,0.8), asymptotic, {-(1.6+0.4*global.diff)*cexp(I*t/5.0), 3 });
 	}
 }
 
@@ -339,8 +363,11 @@ void hina_amulet(Boss *h, int time) {
 
 		complex p = h->pos+30*log(1+_i/2.0)*n;
 
-		create_projectile2c("ball", p, rgb(0.8,0,0), accelerated, speed * 2*n*I, accel * -0.01*n);
-		create_projectile2c(global.diff == D_Easy ? "ball" : "crystal", p, rgb(0.8,0,0.5), accelerated, speed * -2*n*I, accel * -0.01*n);
+		const char *t0 = "ball";
+		const char *t1 = global.diff == D_Easy ? t0 : "crystal";
+
+		PROJECTILE(t0, p, rgb(0.8, 0.0, 0.0), accelerated, { speed *  2*n*I, accel * -0.01*n });
+		PROJECTILE(t1, p, rgb(0.8, 0.0, 0.5), accelerated, { speed * -2*n*I, accel * -0.01*n });
 	}
 }
 
@@ -361,7 +388,10 @@ void hina_cards2(Boss *h, int time) {
 		int i;
 		for(i = 0; i < 30; i++) {
 			play_sound("shot_special1");
-			create_projectile2c("bigball", h->pos, rgb(0.7, 0, 0.7), asymptotic, 2*cexp(I*2*M_PI*i/20.0), 3);
+			PROJECTILE("bigball", h->pos, rgb(0.7, 0, 0.7), asymptotic, {
+				2*cexp(I*2*M_PI*i/20.0),
+				3
+			});
 		}
 	}
 }
@@ -399,8 +429,9 @@ void hina_bad_pick(Boss *h, int time) {
 		play_sound_ex("shot1", 4, false);
 
 		for(i = 1; i < SLOTS; i++) {
-			create_projectile1c("crystal", VIEWPORT_W/SLOTS*i, rgb(0.5,0,0.6), linear, 7.0*I);
+			PROJECTILE("crystal", VIEWPORT_W/SLOTS*i, rgb(0.5,0,0.6), linear, { 7.0*I });
 		}
+
 		if(global.diff >= D_Hard) {
 			double shift = 0;
 			if(global.diff == D_Lunatic)
@@ -409,7 +440,7 @@ void hina_bad_pick(Boss *h, int time) {
 				double height = VIEWPORT_H/SLOTS*i+shift;
 				if(height > VIEWPORT_H-40)
 					height -= VIEWPORT_H-40;
-				create_projectile1c("crystal", (i&1)*VIEWPORT_W+I*height, rgb(0.5,0,0.6), linear, 5.0*(1-2*(i&1)));
+				PROJECTILE("crystal", (i&1)*VIEWPORT_W+I*height, rgb(0.5,0,0.6), linear, { 5.0*(1-2*(i&1)) });
 			}
 		}
 	}
@@ -426,7 +457,15 @@ void hina_bad_pick(Boss *h, int time) {
 			float cnt = (1+min(D_Normal,global.diff)) * 5;
 			for(j = 0; j < cnt; j++) {
 				complex o = VIEWPORT_W/SLOTS*(i + j/(cnt-1));
-				create_projectile3c("ball", o, rgb(0.7,0,0.0), bad_pick_bullet, 0, 0.005*nfrand() + 0.005*I * (1 + psin(i + j + global.frames)),i)->draw = ProjDrawAdd;
+
+				PROJECTILE("ball", o, rgb(0.7,0,0.0), bad_pick_bullet,
+					.args = {
+						0,
+						0.005*nfrand() + 0.005*I * (1 + psin(i + j + global.frames)),
+						i
+					},
+					.flags = PFLAG_DRAWADD,
+				);
 			}
 		}
 	}
@@ -468,7 +507,7 @@ void hina_wheel(Boss *h, int time) {
 
 		for(i = 1; i < 6+d; i++) {
 			float a = dir * 2*M_PI/(5+d)*(i+(1 + 0.4 * d)*time/100.0+(1 + 0.2 * d)*frand()*time/1700.0);
-			create_projectile1c("crystal", h->pos, rgb(log(1+time*1e-3),0,0.2), linear, speed*cexp(I*a));
+			PROJECTILE("crystal", h->pos, rgb(log(1+time*1e-3),0,0.2), linear, { speed*cexp(I*a) });
 		}
 	}
 }
@@ -489,12 +528,24 @@ int hina_monty_slave(Enemy *s, int time) {
 	if(time > 60 && time < 720-140 + 20*(global.diff-D_Lunatic) && !(time % (int)(max(2 + (global.diff < D_Normal), (120 - 0.5 * time))))) {
 		play_loop("shot1_loop");
 
-		create_projectile2c("crystal", s->pos, rgb(0.5 + 0.5 * psin(time*0.2), 0.3, 1.0 - 0.5 * psin(time*0.2)),
-							asymptotic, 5*I + 1 * (sin(time) + I * cos(time)), 4);
+		PROJECTILE("crystal", s->pos,
+			.color = rgb(0.5 + 0.5 * psin(time*0.2), 0.3, 1.0 - 0.5 * psin(time*0.2)),
+			.rule = asymptotic,
+			.args = {
+				5*I + 1 * (sin(time) + I * cos(time)),
+				4
+			}
+		);
 
 		if(global.diff > D_Easy) {
-			create_projectile2c("crystal", s->pos, rgb(0.5 + 0.5 * psin(time*0.2), 0.3, 1.0 - 0.5 * psin(time*0.2)),
-								timeout_deadproj_linear, 500, -0.5*I + 1 * (sin(time) + I * cos(time)));
+			PROJECTILE("crystal", s->pos,
+				.color = rgb(0.5 + 0.5 * psin(time*0.2), 0.3, 1.0 - 0.5 * psin(time*0.2)),
+				.rule = timeout_deadproj_linear,
+				.args = {
+					500,
+					-0.5*I + 1 * (sin(time) + I * cos(time))
+				}
+			);
 		}
 	}
 
@@ -505,12 +556,14 @@ void hina_monty_slave_draw(Enemy *s, int time) {
 	Swirl(s, time);
 
 	Texture *soul = get_tex("proj/soul");
-	Shader *shader = get_shader("bullet_color");
+	Shader *shader = recolor_get_shader();
 	double scale = fabs(swing(clamp(time / 60.0, 0, 1), 3)) * 1.25;
 
-	float clr1[] = {1.0, 0.0, 0.0, 1.0};
-	float clr2[] = {0.0, 0.0, 1.0, 1.0};
-	float clr3[] = {psin(time*0.05), 0.0, 1.0 - psin(time*0.05), 1.0};
+	ColorTransform ct;
+
+	Color clr1 = rgba(1.0, 0.0, 0.0, 1.0);
+	Color clr2 = rgba(0.0, 0.0, 1.0, 1.0);
+	Color clr3 = rgba(psin(time*0.05), 0.0, 1.0 - psin(time*0.05), 1.0);
 
 	glUseProgram(shader->prog);
 
@@ -519,21 +572,24 @@ void hina_monty_slave_draw(Enemy *s, int time) {
 
 	glTranslatef(creal(s->pos), cimag(s->pos), 0);
 
-	glUniform4fv(uniloc(shader, "color"), 1, clr1);
+	static_clrtransform_bullet(clr1, &ct);
+	recolor_apply_transform(&ct);
 	glPushMatrix();
 	glRotatef(time, 0, 0, 1);
 	glScalef(scale * (0.6 + 0.6 * psin(time*0.1)), scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), 0);
 	draw_texture_p(0, 0, soul);
 	glPopMatrix();
 
-	glUniform4fv(uniloc(shader, "color"), 1, clr2);
+	static_clrtransform_bullet(clr2, &ct);
+	recolor_apply_transform(&ct);
 	glPushMatrix();
 	glRotatef(time, 0, 0, 1);
 	glScalef(scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0);
 	draw_texture_p(0, 0, soul);
 	glPopMatrix();
 
-	glUniform4fv(uniloc(shader, "color"), 1, clr3);
+	static_clrtransform_bullet(clr3, &ct);
+	recolor_apply_transform(&ct);
 	glPushMatrix();
 	glRotatef(-time, 0, 0, 1);
 	// glScalef(scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0);
@@ -615,9 +671,16 @@ void hina_monty(Boss *h, int time) {
 		for(int i = 0; i < cnt; i++) {
 			bool top = ((global.diff > D_Hard) && (_i % 2));
 			complex o = !top*VIEWPORT_H*I + cwidth*(bad_pos + i/(double)(cnt - 1));
-			create_projectile2c("ball", o, top ? rgb(0, 0, 0.7) : rgb(0.7, 0, 0), accelerated, 0,
-				(top ? -0.5 : 1) * 0.004 * (sin((M_PI * 4 * i / (cnt - 1)))*0.1*global.diff - I*(1 + psin(i + global.frames)))
-			)->draw = ProjDrawAdd;
+
+			PROJECTILE("ball", o,
+				.color = top ? rgb(0, 0, 0.7) : rgb(0.7, 0, 0),
+				.rule = accelerated,
+				.args = {
+					0,
+					(top ? -0.5 : 1) * 0.004 * (sin((M_PI * 4 * i / (cnt - 1)))*0.1*global.diff - I*(1 + psin(i + global.frames)))
+				},
+				.flags = PFLAG_DRAWADD,
+			);
 		}
 	}
 
@@ -647,10 +710,12 @@ void hina_monty(Boss *h, int time) {
 			}
 
 			complex o = cwidth * (p + 0.5/(cnt-1) - 0.5) + h->pos;
-			if(global.diff > D_Normal)
-				create_projectile2c("card", o, rgb(c * 0.8, 0, (1 - c) * 0.8), accelerated, -2.5*I, 0.05*I);
-			else
-				create_projectile1c("card", o, rgb(c * 0.8, 0, (1 - c) * 0.8), linear, 2.5*I);
+
+			if(global.diff > D_Normal) {
+				PROJECTILE("card", o, rgb(c * 0.8, 0, (1 - c) * 0.8), accelerated, { -2.5*I, 0.05*I });
+			} else {
+				PROJECTILE("card", o, rgb(c * 0.8, 0, (1 - c) * 0.8), linear, { 2.5*I });
+			}
 		}
 	}
 

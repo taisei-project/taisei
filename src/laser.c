@@ -201,7 +201,7 @@ void process_lasers(void) {
 				}
 
 				if(kill_now) {
-					create_particle1c("flare", p, 0, GrowFade, timeout, 20);
+					PARTICLE("flare", p, 0, timeout, { 20 }, .draw_rule = GrowFade);
 					laser->deathtime = 0;
 				}
 			}

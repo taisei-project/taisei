@@ -153,7 +153,7 @@ static void BossGlow(Projectile *p, int t) {
 	glScalef(s, s, 1);
 
 	float clr[4];
-	parse_color_array(p->clr, clr);
+	parse_color_array(p->color, clr);
 	clr[3] = 1.5 - s;
 
 	float fade = 1 - clr[3];
@@ -165,7 +165,7 @@ static void BossGlow(Projectile *p, int t) {
 
 	glPopMatrix();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glUseProgram(0);
+	glUseProgram(recolor_get_shader()->prog);
 }
 
 static int boss_glow_rule(Projectile *p, int t) {
@@ -177,6 +177,22 @@ static int boss_glow_rule(Projectile *p, int t) {
 	}
 
 	return enemy_flare(p, t);
+}
+
+static Projectile* spawn_boss_glow(Boss *boss, Color clr, int timeout) {
+	// copy animation state to render the same frame even after the boss has changed its own
+	AniPlayer *aplr = aniplayer_create_copy(&boss->ani);
+
+	return PARTICLE(
+		// this is in sync with the boss position oscillation
+		.pos = boss->pos + 6 * sin(global.frames/25.0) * I,
+		.color = clr,
+		.rule = boss_glow_rule,
+		.draw_rule = BossGlow,
+		.args = { timeout, 0, add_ref(aplr), },
+		.angle = M_PI * 2 * frand(),
+		.size = (1+I)*9000, // ensure it's drawn under everything else
+	);
 }
 
 void draw_boss_background(Boss *boss) {
@@ -192,22 +208,19 @@ void draw_boss_background(Boss *boss) {
 
 	if(!(global.frames % 13) && !is_extra) {
 		complex v = cexp(I*global.frames);
-		create_particle3c("smoke", v, shadowcolor, EnemyFlareShrink, enemy_flare, 180, 0, add_ref(boss))->angle = M_PI*2*frand();
+
+		PARTICLE("smoke", v, shadowcolor, enemy_flare,
+			.draw_rule = EnemyFlareShrink,
+			.args = { 180, 0, add_ref(boss), },
+			.angle = M_PI * 2 * frand(),
+			.flags = PFLAG_DRAWADD,
+		);
 	}
 
 	if(!(global.frames % (2 + 2 * is_extra)) && (is_spell || boss_is_dying(boss))) {
-		// copy animation state to render the same frame even after the boss has changed its own
-		AniPlayer *aplr = malloc(sizeof(AniPlayer));
-		aniplayer_copy(aplr, &boss->ani);
-
-		// this is in sync with the boss position oscillation
-		complex pos = boss->pos + 6 * sin(global.frames/25.0) * I;
-
 		float glowstr = 0.5;
 		float a = (1.0 - glowstr) + glowstr * pow(psin(global.frames/15.0), 1.0);
-		glowcolor = multiply_colors(glowcolor, rgb(a, a, a));
-
-		create_particle3c("boss_shadow", pos, glowcolor, BossGlow, boss_glow_rule, 24, 0, add_ref(aplr));
+		spawn_boss_glow(boss, multiply_colors(glowcolor, rgb(a, a, a)), 24);
 	}
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -349,6 +362,10 @@ void draw_boss(Boss *boss) {
 }
 
 void boss_rule_extra(Boss *boss, float alpha) {
+	if(global.frames % 5) {
+		return;
+	}
+
 	int cnt = 10 * max(1, alpha);
 	alpha = min(2, alpha);
 	int lt = 1;
@@ -358,24 +375,26 @@ void boss_rule_extra(Boss *boss, float alpha) {
 		alpha = 1 * frand();
 	}
 
-	int i; for(i = 0; i < cnt; ++i) {
+	for(int i = 0; i < cnt; ++i) {
 		float a = i*2*M_PI/cnt + global.frames / 100.0;
-
 		complex dir = cexp(I*(a+global.frames/50.0));
-		complex pos = boss->pos + dir * (100 + 50 * psin(alpha*global.frames/10.0+2*i)) * alpha;
 		complex vel = dir * 3;
-
-		float r, g, b;
 		float v = max(0, alpha - 1);
 		float psina = psin(a);
 
-		r = 1.0 - 0.5 * psina *    v;
-		g = 0.5 + 0.2 * psina * (1-v);
-		b = 0.5 + 0.5 * psina *    v;
-
-		int d = 5;
-		if(!(global.frames % d))
-			create_particle3c((frand() < v*0.3 || lt > 1)? "stain" : "arc", pos, rgb(r, g, b), GrowFadeAdd, timeout_linear, 30*lt, vel * (1 - 2 * !(global.frames % (2*d))), 2.5);
+		PARTICLE(
+			.texture = (frand() < v*0.3 || lt > 1) ? "stain" : "arc",
+			.pos = boss->pos + dir * (100 + 50 * psin(alpha*global.frames/10.0+2*i)) * alpha,
+			.color = rgb(
+				1.0 - 0.5 * psina *    v,
+				0.5 + 0.2 * psina * (1-v),
+				0.5 + 0.5 * psina *    v
+			),
+			.rule = timeout_linear,
+			.draw_rule = GrowFade,
+			.flags = PFLAG_DRAWADD,
+			.args = { 30*lt, vel * (1 - 2 * !(global.frames % 10)), 2.5 },
+		);
 	}
 }
 
@@ -614,10 +633,22 @@ void process_boss(Boss **pboss) {
 
 	if(boss_is_dying(boss)) {
 		float t = (global.frames - boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
-		complex pos = boss->pos;
-		Color c = rgba(0.1+sin(10*t),0.1+cos(10*t),0.5,t);
 		tsrand_fill(6);
-		create_particle4c("petal", pos, c, Petal, asymptotic, sign(anfrand(5))*(3+t*5*afrand(0))*cexp(I*M_PI*8*t), 5+I, afrand(2) + afrand(3)*I, afrand(4) + 360.0*I*afrand(1));
+
+		PARTICLE(
+			.texture = "petal",
+			.pos = boss->pos,
+			.rule = asymptotic,
+			.draw_rule = Petal,
+			.color = rgba(0.1+sin(10*t),0.1+cos(10*t),0.5,t),
+			.args = {
+				sign(anfrand(5))*(3+t*5*afrand(0))*cexp(I*M_PI*8*t),
+				5+I,
+				afrand(2) + afrand(3)*I,
+				afrand(4) + 360.0*I*afrand(1)
+			},
+			.flags = PFLAG_DRAWADD,
+		);
 
 		if(!extra) {
 			if(t == 1) {
@@ -629,20 +660,21 @@ void process_boss(Boss **pboss) {
 
 		if(t == 1) {
 			for(int i = 0; i < 10; ++i) {
-				create_particle3c("boss_shadow", boss->pos, boss->glowcolor,
-					BossGlow, boss_glow_rule, 60 + 20 * i, 0,
-					add_ref(aniplayer_create_copy(&boss->ani)));
+				spawn_boss_glow(boss, boss->glowcolor, 60 + 20 * i);
 			}
 
 			for(int i = 0; i < 256; i++) {
 				tsrand_fill(3);
-				create_particle2c("flare", boss->pos, 0, Fade, timeout_linear,
-					60 + 10 * afrand(2),
-					(3+afrand(0)*10)*cexp(I*tsrand_a(1)));
+				PARTICLE("flare", boss->pos, 0, timeout_linear, .draw_rule = Fade,
+					.args = {
+						60 + 10 * afrand(2),
+						(3+afrand(0)*10)*cexp(I*tsrand_a(1))
+					},
+				);
 			}
 
-			create_particle2c("blast", boss->pos, 0, GrowFade, timeout, 60, 3);
-			create_particle2c("blast", boss->pos, 0, GrowFade, timeout, 70, 2.5);
+			PARTICLE("blast", boss->pos, 0, timeout, { 60, 3 }, .draw_rule = GrowFade);
+			PARTICLE("blast", boss->pos, 0, timeout, { 70, 2.5 }, .draw_rule = GrowFade);
 		}
 
 		play_sound_ex("bossdeath", BOSS_DEATH_DELAY * 2, false);
@@ -734,7 +766,16 @@ void boss_start_attack(Boss *b, Attack *a) {
 
 		for(int i = 0; i < 10+5*(a->type == AT_ExtraSpell); i++) {
 			tsrand_fill(4);
-			create_particle2c("stain", VIEWPORT_W/2 + VIEWPORT_W/4*anfrand(0)+I*VIEWPORT_H/2+I*anfrand(1)*30, rgb(0.2,0.3,0.4), GrowFadeAdd, timeout_linear, 50, sign(anfrand(2))*10*(1+afrand(3)));
+
+			PARTICLE(
+				.texture = "stain",
+				.pos = VIEWPORT_W/2 + VIEWPORT_W/4*anfrand(0)+I*VIEWPORT_H/2+I*anfrand(1)*30,
+				.color = rgb(0.2,0.3,0.4),
+				.rule = timeout_linear,
+				.draw_rule = GrowFade,
+				.args = { 50, sign(anfrand(2))*10*(1+afrand(3)) },
+				.flags = PFLAG_DRAWADD,
+			);
 		}
 
 		// schedule a bomb cancellation for when the spell actually starts
