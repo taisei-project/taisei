@@ -29,6 +29,12 @@
 #define strlcat SDL_strlcat
 #define strlcpy SDL_strlcpy
 
+#ifdef strtok_r
+#undef strtok_r
+#endif
+
+#define strtok_r _ts_strtok_r
+
 char* copy_segment(const char *text, const char *delim, int *size);
 bool strendswith(const char *s, const char *e) __attribute__((pure));
 bool strstartswith(const char *s, const char *p) __attribute__((pure));
