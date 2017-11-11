@@ -303,8 +303,8 @@ float smoothreclamp(float x, float old_min, float old_max, float new_min, float 
 //
 
 void fpscounter_reset(FPSCounter *fps) {
-    long double frametime = 1.0 / FPS;
-    const int log_size = sizeof(fps->frametimes)/sizeof(long double);
+    hrtime_t frametime = 1.0 / FPS;
+    const int log_size = sizeof(fps->frametimes)/sizeof(hrtime_t);
 
     for(int i = 0; i < log_size; ++i) {
         fps->frametimes[i] = frametime;
@@ -315,13 +315,13 @@ void fpscounter_reset(FPSCounter *fps) {
 }
 
 void fpscounter_update(FPSCounter *fps) {
-    const int log_size = sizeof(fps->frametimes)/sizeof(long double);
+    const int log_size = sizeof(fps->frametimes)/sizeof(hrtime_t);
     double frametime = time_get() - fps->last_update_time;
 
-    memmove(fps->frametimes, fps->frametimes + 1, (log_size - 1) * sizeof(long double));
+    memmove(fps->frametimes, fps->frametimes + 1, (log_size - 1) * sizeof(hrtime_t));
     fps->frametimes[log_size - 1] = frametime;
 
-    long double avg = 0.0;
+    hrtime_t avg = 0.0;
 
     for(int i = 0; i < log_size; ++i) {
         avg += fps->frametimes[i];
@@ -335,9 +335,9 @@ void loop_at_fps(bool (*frame_func)(void*), bool (*limiter_cond_func)(void*), vo
     assert(frame_func != NULL);
     assert(fps > 0);
 
-    long double real_time = time_get();
-    long double next_frame_time = real_time;
-    long double target_frame_time = ((long double)1.0) / fps;
+    hrtime_t real_time = time_get();
+    hrtime_t next_frame_time = real_time;
+    hrtime_t target_frame_time = ((hrtime_t)1.0) / fps;
 
     int32_t delay = getenvint("TAISEI_FRAMELIMITER_SLEEP", 0);
     bool exact_delay = getenvint("TAISEI_FRAMELIMITER_SLEEP_EXACT", 1);
@@ -365,8 +365,8 @@ magic:
         if(!limiter_cond_func || limiter_cond_func(arg)) {
             next_frame_time = real_time + target_frame_time;
 
-            long double rt = time_get();
-            long double diff = rt - next_frame_time;
+            hrtime_t rt = time_get();
+            hrtime_t diff = rt - next_frame_time;
 
             if(diff >= 0) {
                 // frame took too long...

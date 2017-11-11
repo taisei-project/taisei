@@ -249,7 +249,7 @@ static void video_new_window_internal(int w, int h, uint32_t flags, bool fallbac
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
 
-	video.window = SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w, h, flags);
+	video.window = SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, flags);
 
 	if(video.window) {
 		if(video.glcontext) {
@@ -291,6 +291,9 @@ static void video_new_window(int w, int h, bool fs, bool resizable) {
 		video.current.height,
 		modeflagsstr(SDL_GetWindowFlags(video.window))
 	);
+
+	events_pause_keyrepeat();
+	SDL_RaiseWindow(video.window);
 }
 
 static bool video_set_display_mode(int w, int h) {
@@ -316,12 +319,13 @@ static bool video_set_display_mode(int w, int h) {
 
 static void video_set_fullscreen(bool fullscreen) {
 	uint32_t flags = fullscreen ? get_fullscreen_flag() : 0;
+	events_pause_keyrepeat();
 
-	if(!SDL_SetWindowFullscreen(video.window, flags)) {
-		events_pause_keyrepeat();
-	} else {
+	if(SDL_SetWindowFullscreen(video.window, flags) < 0) {
 		log_warn("Failed to switch to %s mode: %s", modeflagsstr(flags), SDL_GetError());
 	}
+
+	SDL_RaiseWindow(video.window);
 }
 
 void video_set_mode(int w, int h, bool fs, bool resizable) {
@@ -338,7 +342,7 @@ void video_set_mode(int w, int h, bool fs, bool resizable) {
 			video_set_display_mode(w, h);
 			video_set_fullscreen(fs);
 			video_update_mode_settings();
-		} else if(fs == video_is_fullscreen()) {
+		} else {
 			// XXX: I would like to use SDL_SetWindowSize for size changes, but apparently it's impossible to reliably detect
 			//		when it fails to actually resize the window. For example, a tiling WM (awesome) may be getting in its way
 			//		and we'd never know. SDL_GL_GetDrawableSize/SDL_GetWindowSize aren't helping as of SDL 2.0.5.

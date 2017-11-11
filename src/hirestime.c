@@ -7,10 +7,11 @@
  */
 
 #include "util.h"
+#include "hirestime.h"
 
 static bool use_hires;
-static long double time_current;
-static long double time_offset;
+static hrtime_t time_current;
+static hrtime_t time_offset;
 static uint64_t prev_hires_time;
 static uint64_t prev_hires_freq;
 static SDL_mutex *paranoia;
@@ -33,7 +34,7 @@ static void time_update(void) {
             continue;
         }
 
-        long double time_new = time_offset + (long double)(cntr - prev_hires_time) / freq;
+        hrtime_t time_new = time_offset + (hrtime_t)(cntr - prev_hires_time) / freq;
 
         if(time_new < time_current) {
             log_warn("BUG: time went backwards. Was %.16Lf, now %.16Lf. Possible cause: your OS sucks spherical objects. Attempting to correct this...", time_current, time_new);
@@ -72,11 +73,11 @@ void time_shutdown(void) {
     }
 }
 
-long double time_get(void) {
+hrtime_t time_get(void) {
     if(use_hires) {
         SDL_LockMutex(paranoia);
         time_update();
-        long double t = time_current;
+        hrtime_t t = time_current;
         SDL_UnlockMutex(paranoia);
         return t;
     }
