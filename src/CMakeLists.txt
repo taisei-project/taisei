@@ -205,15 +205,47 @@ endif()
 
 set(CMAKE_C_FLAGS_DEBUG "${DEBUG_FLAGS} -DDEBUG")
 set(CMAKE_C_FLAGS_RELEASE "${RELEASE_FLAGS} -O3")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO "${RELEASE_FLAGS} -O2 ${DEBUG_FLAGS}")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "${RELEASE_FLAGS} -O2")
 set(CMAKE_C_FLAGS_MINSIZEREL "${RELEASE_FLAGS} -Os")
 
-set(WARNINGS "-Wall -Wno-parentheses -Wtype-limits -Wstrict-prototypes -Wlong-long -Winit-self")
-CHECK_AND_SET_FLAGS(COMPILER_WARN_PEDANTIC "-Wpedantic" WARNINGS)
-CHECK_AND_SET_FLAGS(COMPILER_WARN_NULLDEREF "-Wnull-dereference" WARNINGS)
+if(RELWITHDEBINFO_USE_DEBUG_FLAGS)
+	set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} ${DEBUG_FLAGS}")
+endif()
+
+check_symbol_exists(backtrace "execinfo.h" HAVE_BACKTRACE)
+if(${HAVE_BACKTRACE})
+	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DLOG_ENABLE_BACKTRACE")
+	set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -DLOG_ENABLE_BACKTRACE")
+endif()
+
+set(WANT_WARNINGS
+	"all"
+	"pedantic"
+	"parentheses"
+	"type-limits"
+	"strict-prototypes"
+	"long-long"
+	"init-self"
+	"null-dereference"
+	"format-pedantic"
+	"gcc-compat"
+	"float-overflow-conversion"
+	"float-zero-conversion"
+	"for-loop-analysis"
+	"implicit-fallthrough"
+	"sometimes-uninitialized"
+	"unneeded-internal-declaration"
+	"unreachable-code"
+	"unreachable-code-loop-increment"
+	"gnu"
+)
+
+foreach(warning IN LISTS WANT_WARNINGS)
+	CHECK_AND_SET_FLAGS(COMPILER_HAS_W${warning} "-W${warning}" WARNINGS)
+endforeach()
 
 if(RELATIVE)
-    add_definitions(-DRELATIVE)
+	add_definitions(-DRELATIVE)
 endif()
 
 if(WERROR)

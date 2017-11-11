@@ -614,7 +614,6 @@ static void progress_write(SDL_RWops *file) {
 
 	if(!SDL_RWwrite(file, buf, bufsize, 1)) {
 		log_fatal("SDL_RWwrite() failed: %s", SDL_GetError());
-		free(buf);
 		return;
 	}
 

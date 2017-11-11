@@ -68,7 +68,7 @@ void vfs_path_split_left(char *path, char **lpath, char **rpath) {
 
     *lpath = path;
 
-    if(sep = strchr(path, VFS_PATH_SEP)) {
+    if((sep = strchr(path, VFS_PATH_SEP))) {
         *sep = 0;
         *rpath = sep + 1;
     } else {
@@ -83,7 +83,7 @@ void vfs_path_split_right(char *path, char **lpath, char **rpath) {
     while(*(c = strrchr(path, 0) - 1) == VFS_PATH_SEP)
         *c = 0;
 
-    if(sep = strrchr(path, VFS_PATH_SEP)) {
+    if((sep = strrchr(path, VFS_PATH_SEP))) {
         *sep = 0;
         *lpath = path;
         *rpath = sep + 1;

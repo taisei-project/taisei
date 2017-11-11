@@ -270,7 +270,6 @@ static void video_new_window_internal(int w, int h, uint32_t flags, bool fallbac
 		return;
 	}
 
-	log_fatal("Failed to create window with mode %ix%i (%s): %s", w, h, modeflagsstr(flags), SDL_GetError());
 	video_new_window_internal(RESX, RESY, flags & ~SDL_WINDOW_FULLSCREEN_DESKTOP, true);
 }
 

@@ -164,7 +164,8 @@ void spawn_items(complex pos, ...) {
 	va_start(args, pos);
 
 	ItemType type;
-	while(type = va_arg(args, ItemType)) {
+
+	while((type = va_arg(args, ItemType))) {
 		int num = va_arg(args, int);
 		for(int i = 0; i < num; ++i) {
 			spawn_item(pos, type);

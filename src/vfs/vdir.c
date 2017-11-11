@@ -28,7 +28,7 @@ static VFSNode* vfs_vdir_locate(VFSNode *vdir, const char *path) {
     strcpy(mutpath, path);
     vfs_path_split_left(mutpath, &primpath, &subpath);
 
-    if(node = hashtable_get_string(vdir->_contents_, mutpath)) {
+    if((node = hashtable_get_string(vdir->_contents_, mutpath))) {
         return vfs_locate(node, subpath);
     }
 
