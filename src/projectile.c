@@ -173,7 +173,7 @@ int collision_projectile(Projectile *p) {
 		projectile_size_split(p, &w, &h);
 
 		double angle = carg(global.plr.pos - p->pos) + p->angle;
-		double projr = sqrt(pow(w/4*cos(angle),2)*5/10.0 + pow(h/2*sin(angle)*5/10.0,2));
+		double projr = sqrt(pow(w/2*cos(angle), 2) + pow(h/2*sin(angle), 2)) * 0.45;
 		double grazer = max(w, h);
 		double dst = cabs(global.plr.pos - p->pos);
 		grazer = (0.9 * sqrt(grazer) + 0.1 * grazer) * 6;
