@@ -32,7 +32,7 @@ static char* vfs_zippath_repr(VFSNode *node) {
 static char* vfs_zippath_syspath(VFSNode *node) {
     VFSZipPathData *zdata = node->data1;
     char *zippath = vfs_repr_node(zdata->zipnode, true);
-    char *subpath = strfmt("%s%c%s", zippath, vfs_syspath_prefered_separator, vfs_zippath_name(node));
+    char *subpath = strfmt("%s%c%s", zippath, vfs_syspath_preferred_separator, vfs_zippath_name(node));
     free(zippath);
     return subpath;
 }

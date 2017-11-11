@@ -16,7 +16,7 @@
 
 #define _path_ data1
 
-char vfs_syspath_prefered_separator = '/';
+char vfs_syspath_preferred_separator = '/';
 
 static void vfs_syspath_init_internal(VFSNode *node, char *path);
 
