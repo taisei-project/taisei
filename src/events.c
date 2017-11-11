@@ -12,7 +12,7 @@
 #include "video.h"
 #include "gamepad.h"
 
-static uint32_t keyrepeat_paused_until;
+static hrtime_t keyrepeat_paused_until;
 static ListContainer *global_handlers;
 
 uint32_t sdl_first_user_event;
@@ -243,9 +243,9 @@ void events_emit(TaiseiEvent type, int32_t code, void *data1, void *data2) {
 }
 
 void events_pause_keyrepeat(void) {
-	// for whatever stupid bizarre reason, keyrepeat skips the delay after the window toggles fullscreen on some systems
-	// this ugly hack is a workaround for that
-	keyrepeat_paused_until = SDL_GetTicks() + 250;
+	// workaround for SDL bug
+	// https://bugzilla.libsdl.org/show_bug.cgi?id=3287
+	keyrepeat_paused_until = time_get() + 0.25;
 }
 
 /*
@@ -262,7 +262,7 @@ static bool events_handler_key_up(SDL_Event *event, void *arg);
 
 static EventHandler default_handlers[] = {
 	{ .proc = events_handler_quit,					.priority = EPRIO_SYSTEM,		.event_type = SDL_QUIT },
-	{ .proc = events_handler_keyrepeat_workaround,	.priority = EPRIO_CAPTURE,		.event_type = SDL_KEYDOWN },
+	{ .proc = events_handler_keyrepeat_workaround,	.priority = EPRIO_CAPTURE,		.event_type = 0 },
 	{ .proc = events_handler_clipboard,				.priority = EPRIO_CAPTURE,		.event_type = SDL_KEYDOWN },
 	{ .proc = events_handler_hotkeys,				.priority = EPRIO_HOTKEYS,		.event_type = SDL_KEYDOWN },
 	{ .proc = events_handler_key_down,				.priority = EPRIO_TRANSLATION,	.event_type = SDL_KEYDOWN },
@@ -288,11 +288,22 @@ static bool events_handler_quit(SDL_Event *event, void *arg) {
 }
 
 static bool events_handler_keyrepeat_workaround(SDL_Event *event, void *arg) {
-	uint32_t timenow;
+	hrtime_t timenow = time_get();
 
-	if(event->key.repeat && (timenow = SDL_GetTicks()) < keyrepeat_paused_until) {
-		log_debug("Prevented a potentially bogus key repeat: %i %i %u",
-			event->key.keysym.scancode, event->key.keysym.mod, keyrepeat_paused_until - timenow);
+	if(event->type != SDL_KEYDOWN) {
+		uint32_t te = TAISEI_EVENT(event->type);
+
+		if(te < TE_MENU_FIRST || te > TE_MENU_LAST) {
+			return false;
+		}
+	}
+
+	if(timenow < keyrepeat_paused_until) {
+		log_debug(
+			"Prevented a potentially bogus key repeat (%f remaining). "
+			"This is an SDL bug. See https://bugzilla.libsdl.org/show_bug.cgi?id=3287",
+			(double)(keyrepeat_paused_until - timenow)
+		);
 		return true;
 	}
 

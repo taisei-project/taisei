@@ -19,6 +19,7 @@
 #include "vfs/public.h"
 #include "log.h"
 #include "compat.h"
+#include "hirestime.h"
 
 //
 // string utils
@@ -96,9 +97,9 @@ float smoothreclamp(float x, float old_min, float old_max, float new_min, float 
 //
 
 typedef struct {
-    long double frametimes[120]; // size = number of frames to average
+    hrtime_t frametimes[120]; // size = number of frames to average
     double fps; // average fps over the last X frames
-    long double last_update_time; // internal; last time the average was recalculated
+    hrtime_t last_update_time; // internal; last time the average was recalculated
 } FPSCounter;
 
 void loop_at_fps(bool (*frame_func)(void*), bool (*limiter_cond_func)(void*), void *arg, uint32_t fps);

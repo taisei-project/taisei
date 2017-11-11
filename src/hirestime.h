@@ -8,6 +8,8 @@
 
 #pragma once
 
+typedef long double hrtime_t;
+
 void time_init(void);
 void time_shutdown(void);
-long double time_get(void);
+hrtime_t time_get(void);
