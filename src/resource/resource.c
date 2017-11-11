@@ -201,6 +201,13 @@ static Resource* load_resource(ResourceHandler *handler, const char *path, const
 
 	assert(path || name);
 
+	if(handler->type == RES_SFX || handler->type == RES_BGM) {
+		// audio stuff is always optional.
+		// loading may fail if the backend failed to initialize properly, even though the resource exists.
+		// this is a less than ideal situation, but it doesn't render the game unplayable.
+		flags |= RESF_OPTIONAL;
+	}
+
 	if(!path) {
 		path = allocated_path = handler->find(name);
 
