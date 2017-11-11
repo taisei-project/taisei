@@ -84,16 +84,11 @@ void player_move(Player *plr, complex delta) {
 		speed = plr->mode->procs.speed_mod(plr, speed);
 	}
 
-	complex opos = plr->pos - VIEWPORT_W/2.0 - VIEWPORT_H/2.0*I;
-	complex npos = opos + delta*speed;
-
-	Animation *ani = plr->ani.ani;
-
-	bool xfac = fabs(creal(npos)) < fabs(creal(opos)) || fabs(creal(npos)) < VIEWPORT_W/2.0 - ani->w/2;
-	bool yfac = fabs(cimag(npos)) < fabs(cimag(opos)) || fabs(cimag(npos)) < VIEWPORT_H/2.0 - ani->h/2;
-
+	delta *= speed;
 	complex lastpos = plr->pos;
-	plr->pos += (creal(delta)*xfac + cimag(delta)*yfac*I)*speed;
+	double x = clamp(creal(plr->pos) + creal(delta), PLR_MIN_BORDER_DIST, VIEWPORT_W - PLR_MIN_BORDER_DIST);
+	double y = clamp(cimag(plr->pos) + cimag(delta), PLR_MIN_BORDER_DIST, VIEWPORT_H - PLR_MIN_BORDER_DIST);
+	plr->pos = x + y*I;
 	complex realdir = plr->pos - lastpos;
 
 	if(cabs(realdir)) {
