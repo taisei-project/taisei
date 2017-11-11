@@ -54,7 +54,7 @@ static Stage3D bgcontext;
 static int fall_over;
 
 enum {
-	NUM_STARS = 100
+	NUM_STARS = 200
 };
 
 static float starpos[3*NUM_STARS];
@@ -215,13 +215,15 @@ void stage6_start(void) {
 	for(int i = 0; i < NUM_STARS; i++) {
 		float x,y,z,r;
 
-		do {
-			x = nfrand();
-			y = nfrand();
-			z = frand();
-			r = sqrt(x*x+y*y+z*z);
-		} while(r <= 0 || r > 1);
-
+		x = y = z = 0;
+		for(int c = 0; c < 10; c++) {
+			x += nfrand();
+			y += nfrand();
+			z += nfrand();
+		} // now x,y,z are approximately gaussian
+		z = fabs(z);
+		r = sqrt(x*x+y*y+z*z);
+		// normalize them and it’s evenly distributed on a sphere
 		starpos[3*i+0] = x/r;
 		starpos[3*i+1] = y/r;
 		starpos[3*i+2] = z/r;
