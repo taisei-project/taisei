@@ -229,7 +229,7 @@ char** vfs_dir_list_sorted(const char *path, size_t *out_size, int (*compare)(co
     results = malloc(sizeof(char*) * real_size);
     *out_size = 0;
 
-    for(const char *e; e = vfs_dir_read(dir);) {
+    for(const char *e; (e = vfs_dir_read(dir));) {
         if(filter && !filter(e)) {
             continue;
         }

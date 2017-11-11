@@ -159,10 +159,10 @@ static int stage3_slavefairy2(Enemy *e, int t) {
 		}
 
 		complex dir = cexp(I*a);
-		PROJECTILE("wave", e->pos, _i&1 ? rgb(1.0,0.3,0.3): rgb(0.3,0.3,1.0), linear, { 2*dir });
+		PROJECTILE("wave", e->pos, (_i&1) ? rgb(1.0,0.3,0.3) : rgb(0.3,0.3,1.0), linear, { 2*dir });
 
 		if(global.diff > D_Normal && _i % 3 == 0) {
-			PROJECTILE("rice", e->pos, _i&1==0 ? rgb(1.0,0.3,0.3): rgb(0.3,0.3,1.0), linear, { -2*dir });
+			PROJECTILE("rice", e->pos, !(_i&1) ? rgb(1.0,0.3,0.3) : rgb(0.3,0.3,1.0), linear, { -2*dir });
 		}
 	}
 

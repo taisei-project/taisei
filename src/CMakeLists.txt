@@ -222,9 +222,31 @@ if(${HAVE_BACKTRACE})
 	set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -DLOG_ENABLE_BACKTRACE")
 endif()
 
-set(WARNINGS "-Wall -Wno-parentheses -Wtype-limits -Wstrict-prototypes -Wlong-long -Winit-self")
-CHECK_AND_SET_FLAGS(COMPILER_WARN_PEDANTIC "-Wpedantic" WARNINGS)
-CHECK_AND_SET_FLAGS(COMPILER_WARN_NULLDEREF "-Wnull-dereference" WARNINGS)
+set(WANT_WARNINGS
+	"all"
+	"pedantic"
+	"parentheses"
+	"type-limits"
+	"strict-prototypes"
+	"long-long"
+	"init-self"
+	"null-dereference"
+	"format-pedantic"
+	"gcc-compat"
+	"float-overflow-conversion"
+	"float-zero-conversion"
+	"for-loop-analysis"
+	"implicit-fallthrough"
+	"sometimes-uninitialized"
+	"unneeded-internal-declaration"
+	"unreachable-code"
+	"unreachable-code-loop-increment"
+	"gnu"
+)
+
+foreach(warning IN LISTS WANT_WARNINGS)
+	CHECK_AND_SET_FLAGS(COMPILER_HAS_W${warning} "-W${warning}" WARNINGS)
+endforeach()
 
 if(RELATIVE)
 	add_definitions(-DRELATIVE)

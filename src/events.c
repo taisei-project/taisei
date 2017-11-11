@@ -96,7 +96,7 @@ static bool events_invoke_handlers(SDL_Event *event, ListContainer *h_list, Even
 		// case 1 (simplest): we have a list and no custom handlers
 
 		for(ListContainer *c = h_list; c; c = c->next) {
-			if(result = events_invoke_handler(event, (EventHandler*)c->data)) {
+			if((result = events_invoke_handler(event, (EventHandler*)c->data))) {
 				break;
 			}
 		}
@@ -139,7 +139,7 @@ static bool events_invoke_handlers(SDL_Event *event, ListContainer *h_list, Even
 
 		// iterate over the merged list
 		for(ListContainer *c = merged_list; c; c = c->next) {
-			if(result = events_invoke_handler(event, (EventHandler*)c->data)) {
+			if((result = events_invoke_handler(event, (EventHandler*)c->data))) {
 				break;
 			}
 		}
@@ -152,7 +152,7 @@ static bool events_invoke_handlers(SDL_Event *event, ListContainer *h_list, Even
 		// case 3 (unlikely): we don't have a list for some reason (no global handlers?), but there are custom handlers
 
 		for(EventHandler *h = h_array; h->proc; ++h) {
-			if(result = events_invoke_handler(event, h)) {
+			if((result = events_invoke_handler(event, h))) {
 				break;
 			}
 		}

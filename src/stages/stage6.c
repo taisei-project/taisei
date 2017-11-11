@@ -56,6 +56,7 @@ static int fall_over;
 enum {
 	NUM_STARS = 100
 };
+
 static float starpos[3*NUM_STARS];
 
 Vector **stage6_towerwall_pos(Vector pos, float maxrange) {
@@ -213,15 +214,17 @@ void stage6_start(void) {
 
 	for(int i = 0; i < NUM_STARS; i++) {
 		float x,y,z,r;
+
 		do {
 			x = nfrand();
 			y = nfrand();
 			z = frand();
 			r = sqrt(x*x+y*y+z*z);
-		} while(0 < r < 1);
-		starpos[3*i+0]= x/r;
-		starpos[3*i+1]= y/r;
-		starpos[3*i+2]= z/r;
+		} while(r <= 0 || r > 1);
+
+		starpos[3*i+0] = x/r;
+		starpos[3*i+1] = y/r;
+		starpos[3*i+2] = z/r;
 	}
 
 	bgcontext.cx[1] = -230;

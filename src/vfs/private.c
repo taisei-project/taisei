@@ -167,7 +167,7 @@ bool vfs_mount(VFSNode *root, const char *mountpoint, VFSNode *subtree) {
     strcpy(buf[1], buf[0]);
     vfs_path_split_right(buf[1], &mpbase, &mpname);
 
-    if(mpnode = vfs_locate(root, mountpoint)) {
+    if((mpnode = vfs_locate(root, mountpoint))) {
         // mountpoint already exists - try to merge with the target node
 
         if(mpnode->funcs->mount) {
@@ -182,7 +182,7 @@ bool vfs_mount(VFSNode *root, const char *mountpoint, VFSNode *subtree) {
         return result;
     }
 
-    if(mpnode = vfs_locate(root, mpbase)) {
+    if((mpnode = vfs_locate(root, mpbase))) {
         // try to become a subnode of parent (conventional mount)
 
         if(mpnode->funcs->mount) {
@@ -229,7 +229,7 @@ char* vfs_repr_node(VFSNode *node, bool try_syspath) {
     char *r;
 
     if(try_syspath && node->funcs->syspath) {
-        if(r = node->funcs->syspath(node)) {
+        if((r = node->funcs->syspath(node))) {
             return r;
         }
     }
@@ -259,7 +259,7 @@ void vfs_print_tree_recurse(SDL_RWops *dest, VFSNode *root, char *prefix, const 
         return;
     }
 
-    for(const char *n; n = vfs_iter(root, &o);) {
+    for(const char *n; (n = vfs_iter(root, &o));) {
         VFSNode *node = vfs_locate(root, n);
         if(node) {
             vfs_print_tree_recurse(dest, node, newprefix, n);

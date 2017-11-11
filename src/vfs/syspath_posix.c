@@ -49,7 +49,7 @@ static SDL_RWops* vfs_syspath_open(VFSNode *node, VFSOpenMode mode) {
 
 static VFSNode* vfs_syspath_locate(VFSNode *node, const char *path) {
     VFSNode *n = vfs_alloc();
-    vfs_syspath_init_internal(n, strfmt("%s%c%s", node->_path_, VFS_PATH_SEP, path));
+    vfs_syspath_init_internal(n, strfmt("%s%c%s", (char*)node->_path_, VFS_PATH_SEP, path));
     return n;
 }
 
@@ -86,7 +86,7 @@ static void vfs_syspath_iter_stop(VFSNode *node, void **opaque) {
 }
 
 static char* vfs_syspath_repr(VFSNode *node) {
-    return strfmt("filesystem path (posix): %s", node->_path_);
+    return strfmt("filesystem path (posix): %s", (char*)node->_path_);
 }
 
 static char* vfs_syspath_syspath(VFSNode *node) {
@@ -100,7 +100,7 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
         subdir = "";
     }
 
-    char *p = strfmt("%s%c%s", node->_path_, VFS_PATH_SEP, subdir);
+    char *p = strfmt("%s%c%s", (char*)node->_path_, VFS_PATH_SEP, subdir);
     bool ok = !mkdir(p, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
     if(!ok && errno == EEXIST) {

@@ -62,7 +62,7 @@ static bool extension_supported(const char *ext) {
 		strcpy(buf, overrides);
 		arg = buf;
 
-		while(e = strtok_r(arg, " ", &save)) {
+		while((e = strtok_r(arg, " ", &save))) {
 			bool r = true;
 
 			if(*e == '-') {
@@ -82,20 +82,20 @@ static bool extension_supported(const char *ext) {
 }
 
 static void check_glext_draw_instanced(void) {
-	if(glext.draw_instanced = (
+	if((glext.draw_instanced = (
 		(glext.ARB_draw_instanced = extension_supported("GL_ARB_draw_instanced")) &&
 		(glext.DrawArraysInstanced = tsglDrawArraysInstancedARB)
-	)) {
+	))) {
 		log_debug("Using GL_ARB_draw_instanced");
 		return;
 	} else {
 		glext.ARB_draw_instanced = false;
 	}
 
-	if(glext.draw_instanced = (
+	if((glext.draw_instanced = (
 		(glext.EXT_draw_instanced = extension_supported("GL_EXT_draw_instanced")) &&
 		(glext.DrawArraysInstanced = tsglDrawArraysInstancedARB)
-	)) {
+	))) {
 		log_debug("Using GL_EXT_draw_instanced");
 		return;
 	} else {
@@ -110,20 +110,20 @@ static void check_glext_draw_instanced(void) {
 }
 
 static void check_glext_debug_output(void) {
-	if(glext.debug_output = (
+	if((glext.debug_output = (
 		extension_supported("GL_ARB_debug_output") &&
 		(glext.DebugMessageCallback = tsglDebugMessageCallbackARB) &&
 		(glext.DebugMessageControl = tsglDebugMessageControlARB)
-	)) {
+	))) {
 		log_debug("Using GL_ARB_debug_output");
 		return;
 	}
 
-	if(glext.debug_output = (
+	if((glext.debug_output = (
 		extension_supported("GL_KHR_debug") &&
 		(glext.DebugMessageCallback = tsglDebugMessageCallback) &&
 		(glext.DebugMessageControl = tsglDebugMessageControl)
-	)) {
+	))) {
 		log_debug("Using GL_KHR_debug");
 		return;
 	}

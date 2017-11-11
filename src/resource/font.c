@@ -270,7 +270,7 @@ void wrap_text(char *buf, size_t bufsize, const char *src, int width, TTF_Font *
 	strcpy(src_copy, src);
 	*buf = 0;
 
-	while(next = strtok_r(NULL, " \t\n", &sptr)) {
+	while((next = strtok_r(NULL, " \t\n", &sptr))) {
 		int curwidth;
 
 		if(!*next) {
