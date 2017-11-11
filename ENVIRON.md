@@ -36,7 +36,9 @@ In addition to the variables listed here, those processed by our runtime depende
 
 ### Video and OpenGL
 
-* **TAISEI_VIDEO_DRIVER** *(default: unset)*: The video backend for SDL to use. If this is not specified, Taisei will try to use the first driver that SDL supports, ignoring `x11` and `dummy` drivers. If that fails, fall back to the default driver as seen by SDL (this step will either load the `x11` driver, or not work at all). This is done to improve support for newer display systems like Wayland, where an X11 compatibility layer may be present. If SDL was compiled with `x11` support, it will generally try to use it first by default. If that succeeds on such a system, Taisei will be running in X11 compatibility mode, even though it could use the native protocol. This level of indirection degrades performance and introduces display artifacts at least on some systems. The standard `SDL_VIDEODRIVER` variable has no effect, unless `TAISEI_VIDEO_DRIVER` is set to `sdldefault`, or the default algorithm falls back to letting SDL pick the driver.
+* **TAISEI_PREFER_SDL_VIDEODRIVERS** *(default: wayland,mir,cocoa,windows,x11)*: List of SDL video backends that Taisei will attempt to use, in the specified order, before falling back to SDL's default. Entries may be separated by spaces, commas, colons, and semicolons. This variable is ignored if `SDL_VIDEODRIVER` is set.
+
+* **TAISEI_VIDEO_DRIVER** *(**deprecated**; default: unset)*: Use `SDL_VIDEODRIVER` instead.
 
 * **TAISEI_LIBGL** *(default: unset)*: OpenGL library to load instead of the default. The value has a platform-specific meaning (it's passed to the equivalent of `dlopen`). Takes precedence over `SDL_OPENGL_LIBRARY` if set. Has no effect if Taisei is linked to libgl (which is not recommended, because it's not portable).
 

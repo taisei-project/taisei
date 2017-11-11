@@ -467,49 +467,46 @@ static void video_quality_callback(ConfigIndex idx, ConfigValue v) {
 }
 
 static void video_init_sdl(void) {
+	char *prefer_drivers = getenv("TAISEI_PREFER_SDL_VIDEODRIVERS");
 	char *force_driver = getenv("TAISEI_VIDEO_DRIVER");
 
 	if(force_driver && *force_driver) {
-		log_debug("Driver '%s' forced by environment", force_driver);
-
-		if(!strcasecmp(force_driver, "sdldefault")) {
-			force_driver = NULL;
-		}
-
-		if(SDL_VideoInit(force_driver)) {
-			log_fatal("SDL_VideoInit() failed: %s", SDL_GetError());
-		}
-
-		return;
+		log_warn("TAISEI_VIDEO_DRIVER is deprecated and will be removed, use TAISEI_PREFER_SDL_VIDEODRIVERS or SDL_VIDEODRIVER instead");
+	} else {
+		force_driver = getenv("SDL_VIDEODRIVER");
 	}
 
-	// Initialize the SDL video subsystem with the correct driver
-	// On Wayland/Mir systems, an X compatibility layer will likely be present
-	// SDL will prioritize it by default, and we don't want that
+	if(!(prefer_drivers && *prefer_drivers)) {
+		// https://bugzilla.libsdl.org/show_bug.cgi?id=3948
+		// A suboptimal X11 server may be available on top of those systems,
+		// so we push X11 down in the priority list.
+		prefer_drivers = "wayland,mir,cocoa,windows,x11";
+	}
 
-	int drivers = SDL_GetNumVideoDrivers();
-	bool initialized = false;
+	if(prefer_drivers && *prefer_drivers && !(force_driver && *force_driver)) {
+		char buf[strlen(prefer_drivers) + 1];
+		char *driver, *bufptr = buf;
+		int drivernum = 0;
+		strcpy(buf, prefer_drivers);
 
-	for(int i = 0; i < drivers; ++i) {
-		const char *driver = SDL_GetVideoDriver(i);
-		if(!strcmp(driver, "x11") || !strcmp(driver, "dummy")) {
-			continue;
+		while((driver = strtok_r(NULL, " :;,", &bufptr))) {
+			++drivernum;
+			log_info("Trying preferred driver #%i: %s", drivernum, driver);
+
+			if(SDL_VideoInit(driver)) {
+				log_info("Driver '%s' failed: %s", driver, SDL_GetError());
+			} else {
+				return;
+			}
 		}
 
-		if(SDL_VideoInit(driver)) {
-			log_debug("Driver '%s' failed: %s", driver, SDL_GetError());
-		} else {
-			initialized = true;
-			break;
+		if(drivernum) {
+			log_info("All preferred drivers failed, falling back to SDL default");
 		}
 	}
 
-	if(!initialized) {
-		log_debug("Falling back to the default driver");
-
-		if(SDL_VideoInit(NULL)) {
-			log_fatal("SDL_VideoInit() failed: %s", SDL_GetError());
-		}
+	if(SDL_VideoInit(force_driver)) {
+		log_fatal("SDL_VideoInit() failed: %s", SDL_GetError());
 	}
 }
 
