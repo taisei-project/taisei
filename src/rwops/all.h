@@ -6,6 +6,7 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
+#include "build_config.h"
 #include "rwops_zlib.h"
 #include "rwops_segment.h"
 #include "rwops_autobuf.h"

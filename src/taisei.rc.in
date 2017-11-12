@@ -12,8 +12,7 @@ STRINGTABLE BEGIN
     IDS_REPLAY, "Taisei Project replay"
 END
 
-#cmakedefine DEBUG_BUILD
-#cmakedefine RELEASE_BUILD
+${BUILDTYPE_DEFINE}
 
 #ifdef DEBUG_BUILD
     #define F_DEBUG VS_FF_DEBUG

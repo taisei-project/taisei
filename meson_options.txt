@@ -1,0 +1,6 @@
+option('version_fallback', type : 'string', description : 'Overrides the version string when not building in a git repository')
+option('enable_audio', type : 'combo', choices : ['auto', 'true', 'false'], description : 'Enable audio support (needs SDL2_mixer)')
+option('package_data', type : 'combo', choices : ['auto', 'true', 'false'], description : 'Package the game’s assets into a compressed archive instead of bundling plain files (needs libzip)')
+option('install_relative', type : 'combo', choices : ['auto', 'true', 'false'], description : 'Use only relative paths to the executable and install everything in the same directory')
+option('win_console', type : 'boolean', value : false, description : 'Use the console subsystem on Windows')
+option('static', type : 'boolean', value : false, description : 'Build statically linked executable')
