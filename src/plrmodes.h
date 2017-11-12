@@ -57,6 +57,7 @@ typedef void (*PlayerModeFreeProc)(Player *plr);
 typedef void (*PlayerModeThinkProc)(Player *plr);
 typedef void (*PlayerModeShotProc)(Player *plr);
 typedef void (*PlayerModeBombProc)(Player *plr);
+typedef void (*PlayerModeBombBgProc)(Player *plr);
 typedef void (*PlayerModePowerProc)(Player *plr, short npow);
 typedef double (*PlayerModeSpeedModProc)(Player *plr, double speed);
 typedef void (*PlayerModePreloadProc)(void);
@@ -72,6 +73,7 @@ typedef struct PlayerMode {
         PlayerModeThinkProc think;
         PlayerModeShotProc shot;
         PlayerModeBombProc bomb;
+        PlayerModeBombBgProc bombbg;
         PlayerModePowerProc power;
         PlayerModeSpeedModProc speed_mod;
         PlayerModePreloadProc preload;

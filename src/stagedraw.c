@@ -356,20 +356,9 @@ void stage_draw_scene(StageInfo *stage) {
 		// disable boss background distortion
 		glUseProgram(0);
 
-		// fade the background during bomb
+		// draw bomb background
 		if(global.frames - global.plr.recovery < 0) {
-			float t = player_get_bomb_progress(&global.plr, NULL);
-			float fade = 1;
-
-			if(t < BOMB_RECOVERY/6)
-				fade = t/BOMB_RECOVERY*6;
-
-			if(t > BOMB_RECOVERY/4*3)
-				fade = 1-t/BOMB_RECOVERY*4 + 3;
-
-			glPushMatrix();
-			fade_out(fade*0.6);
-			glPopMatrix();
+			global.plr.mode->procs.bombbg(&global.plr);
 		}
 	} else if(!key_nobg) {
 		glClear(GL_COLOR_BUFFER_BIT);

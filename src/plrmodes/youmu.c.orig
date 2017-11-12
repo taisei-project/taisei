@@ -85,6 +85,17 @@ void youmu_common_shot(Player *plr) {
     }
 }
 
+<<<<<<< HEAD
+void youmu_common_draw_proj(Projectile *p, Color c, float scale) {
+    glPushMatrix();
+    glTranslatef(creal(p->pos), cimag(p->pos), 0);
+    glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
+    glScalef(scale, scale, 1);
+    ProjDrawCore(p, c);
+    glPopMatrix();
+}
+
+=======
 void youmu_common_bombbg(Player *plr) {
 	float t = player_get_bomb_progress(&global.plr, NULL);
 	float fade = 1;
@@ -99,13 +110,4 @@ void youmu_common_bombbg(Player *plr) {
 	fill_screen(0,-t*0.01,1,"marisa_bombbg");
 	glColor4f(1,1,1,1);
 }
-
-void youmu_common_draw_proj(Projectile *p, Color c, float scale) {
-    glPushMatrix();
-    glTranslatef(creal(p->pos), cimag(p->pos), 0);
-    glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
-    glScalef(scale, scale, 1);
-    ProjDrawCore(p, c);
-    glPopMatrix();
-}
-
+>>>>>>> redo masterspark

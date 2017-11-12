@@ -238,8 +238,12 @@ PlayerMode plrmode_marisa_b = {
     .shot_mode = PLR_SHOT_MARISA_STAR,
     .procs = {
         .bomb = marisa_star_bomb,
-	.bombbg = marisa_star_bombbg,
+<<<<<<< HEAD
         .shot = marisa_star_shot,
+=======
+	.bombbg = marisa_star_bombbg,
+        .shot = marisa_common_shot,
+>>>>>>> redo masterspark
         .power = marisa_star_power,
         .preload = marisa_star_preload,
         .init = marisa_star_init,
