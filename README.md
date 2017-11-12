@@ -13,7 +13,7 @@ Dependencies:
 * libzip >= 1.0
 * libpng >= 1.5.0
 * OpenGL >= 2.1
-* CMake >= 3.1 (build system)
+* meson >= 0.38.0 (build system)
 * pkg-config (build dependency)
 
 To build and install Taisei just follow these steps.
@@ -21,15 +21,15 @@ To build and install Taisei just follow these steps.
 ```
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=$yourprefix ..
-make
-make install
+meson --prefix=$yourprefix ..
+ninja
+ninja install
 ```
 
 This will install game data to `$prefix/share/taisei/` and build this path
 _statically_ into the executable. This might be a package maintainer’s choice.
-Alternatively you may want to add `-DRELATIVE=TRUE` to get a relative structure
-like
+Alternatively you may want to add `-Drelative_install=true --bindir=`
+to get a relative structure like
 
 ```
 $prefix/taisei

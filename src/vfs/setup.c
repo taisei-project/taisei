@@ -6,19 +6,18 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
+#include "build_config.h"
 #include "public.h"
 #include "setup.h"
-
-#define STATIC_RESOURCE_PREFIX PREFIX "/share/taisei/"
 
 static char* get_default_res_path(void) {
     char *res;
 
 #ifdef RELATIVE
     res = SDL_GetBasePath();
-    strappend(&res, "data/");
+    strappend(&res, DATA_PATH);
 #else
-    res = strdup(STATIC_RESOURCE_PREFIX);
+    res = strdup(DATA_PATH);
 #endif
 
     return res;
