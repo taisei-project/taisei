@@ -298,6 +298,10 @@ float smoothreclamp(float x, float old_min, float old_max, float new_min, float 
     return new_min + (new_max - new_min) * smooth(x);
 }
 
+float sanitize_scale(float scale) {
+    return max(0.1, scale);
+}
+
 //
 // gl/video utils
 //

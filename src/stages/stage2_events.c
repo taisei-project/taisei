@@ -243,7 +243,7 @@ static void wriggle_ani_flyin(Boss *w) {
 	aniplayer_queue_pro(&w->ani,1,3,12,0,0);
 }
 
-void wriggle_intro(Boss *w, int t) {
+static void wriggle_intro_stage2(Boss *w, int t) {
 	if(t < 0)
 		return;
 	w->pos = VIEWPORT_W/2 + 100.0*I + 300*(1.0-t/(4.0*FPS))*cexp(I*(3-t*0.04));
@@ -306,7 +306,7 @@ Boss *create_wriggle_mid(void) {
 	wriggle->glowcolor = rgba(0.2, 0.4, 0.5, 0.5);
 	wriggle->shadowcolor = rgba(0.4, 0.2, 0.6, 0.5);
 	wriggle_ani_flyin(wriggle);
-	boss_add_attack(wriggle, AT_Move, "Introduction", 4, 0, wriggle_intro, NULL);
+	boss_add_attack(wriggle, AT_Move, "Introduction", 4, 0, wriggle_intro_stage2, NULL);
 	boss_add_attack(wriggle, AT_Normal, "Small Bug Storm", 20, 26000, wriggle_small_storm, NULL);
 	boss_add_attack(wriggle, AT_Move, "Flee", 5, 0, wiggle_mid_flee, NULL);;
 

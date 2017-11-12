@@ -8,13 +8,11 @@
 
 #include "mainmenu.h"
 #include "menu.h"
+#include "submenus.h"
 
 #include "common.h"
-#include "options.h"
-#include "stageselect.h"
-#include "replayview.h"
+
 #include "savereplay.h"
-#include "spellpractice.h"
 #include "stagepractice.h"
 #include "difficultyselect.h"
 
@@ -23,30 +21,6 @@
 #include "stage.h"
 #include "version.h"
 #include "plrmodes.h"
-
-void enter_options(MenuData *menu, void *arg) {
-	MenuData m;
-	create_options_menu(&m);
-	menu_loop(&m);
-}
-
-void enter_stagemenu(MenuData *menu, void *arg) {
-	MenuData m;
-	create_stage_menu(&m);
-	menu_loop(&m);
-}
-
-void enter_replayview(MenuData *menu, void *arg) {
-	MenuData m;
-	create_replayview_menu(&m);
-	menu_loop(&m);
-}
-
-void enter_spellpractice(MenuData *menu, void *arg) {
-	MenuData m;
-	create_spell_menu(&m);
-	menu_loop(&m);
-}
 
 void enter_stagepractice(MenuData *menu, void *arg) {
 	MenuData m;

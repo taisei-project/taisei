@@ -9,6 +9,7 @@
 #include "menu.h"
 #include "common.h"
 #include "ingamemenu.h"
+#include "submenus.h"
 #include "global.h"
 #include "stagedraw.h"
 #include "video.h"
@@ -22,12 +23,6 @@ static void return_to_title(MenuData *m, void *arg) {
 void restart_game(MenuData *m, void *arg) {
 	global.game_over = GAMEOVER_RESTART;
 	menu_commonaction_close(m, arg);
-}
-
-static void enter_options(MenuData *m, void *arg) {
-	MenuData opts;
-	create_options_menu(&opts);
-	menu_loop(&opts);
 }
 
 void create_ingame_menu(MenuData *m) {

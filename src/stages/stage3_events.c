@@ -1293,7 +1293,7 @@ static void stage3_boss_nonspell3(Boss *boss, int time) {
 	wriggle_nonspell_common(boss, time, 3);
 }
 
-static void wriggle_intro(Boss *boss, int time) {
+static void stage3_boss_intro(Boss *boss, int time) {
 	if(time == 110)
 		global.dialog = stage3_dialog();
 
@@ -1310,7 +1310,7 @@ Boss* stage3_spawn_wriggle_ex(complex pos) {
 Boss* stage3_create_boss(void) {
 	Boss *wriggle = stage3_spawn_wriggle_ex(VIEWPORT_W/2 - 200.0*I);
 
-	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, wriggle_intro, NULL);
+	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage3_boss_intro, NULL);
 	boss_add_attack(wriggle, AT_Normal, "", 11, 35000, stage3_boss_nonspell1, NULL);
 	boss_add_attack_from_info(wriggle, &stage3_spells.boss.moonlight_rocket, false);
 	boss_add_attack(wriggle, AT_Normal, "", 20, 35000, stage3_boss_nonspell2, NULL);

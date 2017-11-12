@@ -87,6 +87,7 @@ set(SRCs
 	menu/difficultyselect.c
 	menu/charselect.c
 	menu/stagepractice.c
+	menu/submenus.c
 	menu/spellpractice.c
 	menu/common.c
 	stages/stage1.c

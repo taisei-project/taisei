@@ -21,5 +21,5 @@ void kurumi_extra(Boss*, int);
 void stage4_events(void);
 Boss* stage4_spawn_kurumi(complex pos);
 
-#define STAGE3_MIDBOSS_TIME 3724
-#define STAGE3_MIDBOSS_MUSIC_TIME 2818
+#define STAGE4_MIDBOSS_TIME 3724
+#define STAGE4_MIDBOSS_MUSIC_TIME 2818

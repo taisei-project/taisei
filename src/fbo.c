@@ -8,11 +8,7 @@
 
 #include "fbo.h"
 #include "global.h"
-
-static float sanitize_scale(float scale) {
-	// return ftopow2(clamp(scale, 0.25, 4.0));
-	return max(0.1, scale);
-}
+#include "util.h"
 
 void init_fbo(FBO *fbo, float scale, int type) {
 	glGenTextures(1, &fbo->tex);

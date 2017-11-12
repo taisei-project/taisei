@@ -49,7 +49,7 @@ void stage4_fog(FBO *fbo) {
 	Shader *shader = get_shader("zbuf_fog");
 
 	float f = 0;
-	int redtime = 5100 + STAGE3_MIDBOSS_MUSIC_TIME;
+	int redtime = 5100 + STAGE4_MIDBOSS_MUSIC_TIME;
 
 	if(global.timer > redtime) {
 		float v = (global.timer-redtime)*0.0005;

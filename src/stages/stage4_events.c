@@ -1373,7 +1373,7 @@ void stage4_events(void) {
 	AT(3200)
 		global.boss = create_kurumi_mid();
 
-	int midboss_time = STAGE3_MIDBOSS_MUSIC_TIME;
+	int midboss_time = STAGE4_MIDBOSS_MUSIC_TIME;
 
 	AT(3201) {
 		if(global.boss) {

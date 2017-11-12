@@ -8,6 +8,7 @@
 
 #include "font.h"
 #include "global.h"
+#include "util.h"
 
 struct Fonts _fonts;
 
@@ -33,10 +34,6 @@ TTF_Font* load_font(char *vfspath, int size) {
 
 	free(syspath);
 	return f;
-}
-
-static float sanitize_scale(float scale) {
-	return max(0.1, scale);
 }
 
 void fontrenderer_init(FontRenderer *f, float quality) {
