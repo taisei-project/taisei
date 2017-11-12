@@ -310,6 +310,11 @@ static void masterspark_visual(Enemy *e, int t, bool render) {
     glUseProgram(0);
 }
 
+static int masterspark_star(Projectile *p, int t) {
+	p->args[1] += 0.1*p->args[1]/cabs(p->args[1]);
+	return timeout_linear(p,t);
+}
+
 static int masterspark(Enemy *e, int t) {
     if(t == EVENT_BIRTH) {
         global.shake_view = 8;
@@ -318,9 +323,11 @@ static int masterspark(Enemy *e, int t) {
 
     t = player_get_bomb_progress(&global.plr, NULL);
     if(t%2==0 && t < BOMB_RECOVERY*3/4) {
-	    complex dir = -cexp(M_PI*I*frand());
+	    complex dir = -cexp(1.2*I*nfrand())*I;
 	    Color c = rgb(0.7+0.3*sin(t*0.1),0.7+0.3*cos(t*0.1),0.7+0.3*cos(t*0.01));
-	    PARTICLE("maristar_orbit",global.plr.pos+40*dir,c,timeout_linear,{50, 10*dir-10*I,3},nfrand(),PFLAG_DRAWADD,GrowFade);
+	    PARTICLE("maristar_orbit",global.plr.pos+40*dir,c,masterspark_star,{50, 10*dir-10*I,3},nfrand(),PFLAG_DRAWADD,GrowFade);
+	    dir = -conj(dir);
+	    PARTICLE("maristar_orbit",global.plr.pos+40*dir,c,masterspark_star,{50, 10*dir-10*I,3},nfrand(),PFLAG_DRAWADD,GrowFade);
 	    PARTICLE("smoke",global.plr.pos-40*I,rgb(0.9,1,1),timeout_linear,{50, -5*dir,3},nfrand(),PFLAG_DRAWADD,GrowFade);
     }
 
