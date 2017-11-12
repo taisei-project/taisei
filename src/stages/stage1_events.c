@@ -430,7 +430,7 @@ static int halation_orb(Projectile *p, int time) {
 	}
 
 	if(!(time % 4)) {
-		PROJECTILE("stain", p->pos, 0, timeout, { 20 },
+		PARTICLE("stain", p->pos, 0, timeout, { 20 },
 			.draw_rule = GrowFade,
 			.angle = global.frames * 15,
 			.flags = PFLAG_DRAWADD,
