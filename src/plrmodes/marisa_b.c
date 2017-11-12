@@ -166,9 +166,14 @@ static void marisa_star_bombbg(Player *plr) {
 	if(t > BOMB_RECOVERY/4*3)
 		fade = 1-t/BOMB_RECOVERY*4 + 3;
 
+	Shader *s = get_shader("maristar_bombbg");
+	glUseProgram(s->prog);
+	glUniform1f(uniloc(s,"t"), t/BOMB_RECOVERY);
+	glUniform2f(uniloc(s,"plrpos"), creal(global.plr.pos)/VIEWPORT_W,cimag(global.plr.pos)/VIEWPORT_H);
 	glColor4f(1,1,1,0.6*fade);
-	fill_screen(0,-t*0.01,1,"marisa_bombbg");
+	fill_screen(0,0,1,"marisa_bombbg");
 	glColor4f(1,1,1,1);
+	glUseProgram(0);
 }
 
 static void marisa_star_respawn_slaves(Player *plr, short npow) {
@@ -225,6 +230,11 @@ static void marisa_star_preload(void) {
         "proj/marisa",
         "proj/maristar",
         "part/maristar_orbit",
+	"marisa_bombbg",
+    NULL);
+
+    preload_resources(RES_SHADER, flags,
+	"maristar_bombbg",
     NULL);
 
     preload_resources(RES_SFX, flags | RESF_OPTIONAL,

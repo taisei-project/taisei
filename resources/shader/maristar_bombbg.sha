@@ -1,0 +1,29 @@
+#version 110
+
+varying vec4 texc;
+
+void main(void) {
+	gl_Position = ftransform();
+	gl_FrontColor = gl_Color;
+		
+	texc = gl_TextureMatrix[0] * gl_MultiTexCoord0;
+}
+
+%% -- FRAG
+#version 110
+
+uniform float t;
+
+uniform sampler2D tex;
+uniform vec2 plrpos;
+varying vec4 texc;
+
+void main(void) {	
+	vec2 r = texc.xy-plrpos;
+	r = vec2(atan(r.y,r.x)/3.1415*4.,length(r)-2.*t*(1.+t));
+	r.x+=(1.+r.y)*t*5.;
+	vec4 texel = texture2D(tex, r);
+	texel.a = 0.7*t*(1.-t)*4.;
+
+	gl_FragColor = texel;
+}

@@ -463,6 +463,7 @@ static void marisa_laser_preload(void) {
 
     preload_resources(RES_SHADER, flags,
         "marisa_laser",
+	"masterspark",
     NULL);
 
     preload_resources(RES_SFX, flags | RESF_OPTIONAL,
