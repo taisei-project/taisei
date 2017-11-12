@@ -386,11 +386,18 @@ static void stage_logic(void) {
 
 	update_sounds();
 
-	if(global.boss && !global.dialog)
-		process_boss(&global.boss);
+	if(global.dialog) {
+		int to = global.dialog->messages[global.dialog->pos].timeout;
 
-	if(global.dialog && (global.plr.inputflags & INFLAG_SKIP) && global.frames - global.dialog->page_time > 3)
-		page_dialog(&global.dialog);
+		if(
+			(to && to >= global.frames) ||
+			((global.plr.inputflags & INFLAG_SKIP) && global.frames - global.dialog->page_time > 3)
+		) {
+			page_dialog(&global.dialog);
+		}
+	} else if(global.boss) {
+		process_boss(&global.boss);
+	}
 
 	global.frames++;
 

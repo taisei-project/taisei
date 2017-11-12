@@ -23,6 +23,7 @@ typedef enum {
 typedef struct DialogMessage {
 	Side side;
 	char *msg;
+	int timeout;
 } DialogMessage;
 
 typedef struct Dialog {
@@ -39,8 +40,8 @@ typedef struct Dialog {
 
 Dialog *create_dialog(const char *left, const char *right);
 void dset_image(Dialog *d, Side side, const char *name);
-void dadd_msg(Dialog *d, Side side, const char *msg);
+DialogMessage* dadd_msg(Dialog *d, Side side, const char *msg);
 void delete_dialog(Dialog *d);
 
 void draw_dialog(Dialog *dialog);
-void page_dialog(Dialog **d);
+bool page_dialog(Dialog **d);

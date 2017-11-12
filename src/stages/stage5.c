@@ -20,15 +20,15 @@
 
 struct stage5_spells_s stage5_spells = {
 	.boss = {
-		.atmospheric_discharge	= {{ 0,  1,  2,  3}, AT_Spellcard, "High Voltage ~ Atmospheric Discharge", 30, 44000,
+		.atmospheric_discharge	= {{ 0,  1,  2,  3}, AT_Spellcard, "High Voltage ~ Atmospheric Discharge", 60, 44000,
 									iku_atmospheric, iku_spell_bg, BOSS_DEFAULT_GO_POS},
-		.artificial_lightning	= {{ 4,  5,  6,  7}, AT_Spellcard, "Charge Sign ~ Artificial Lightning", 45, 60000,
+		.artificial_lightning	= {{ 4,  5,  6,  7}, AT_Spellcard, "Charge Sign ~ Artificial Lightning", 75, 60000,
 									iku_lightning, iku_spell_bg, BOSS_DEFAULT_GO_POS},
-		.natural_cathode		= {{ 8,  9, 10, 11}, AT_Spellcard, "Spark Sign ~ Natural Cathode", 30, 44000,
+		.natural_cathode		= {{ 8,  9, 10, 11}, AT_Spellcard, "Spark Sign ~ Natural Cathode", 60, 44000,
 									iku_cathode, iku_spell_bg, BOSS_DEFAULT_GO_POS},
-		.induction_field		= {{12, 13, -1, -1}, AT_Spellcard, "Current Sign ~ Induction Field", 30, 50000,
+		.induction_field		= {{12, 13, -1, -1}, AT_Spellcard, "Current Sign ~ Induction Field", 60, 50000,
 									iku_induction, iku_spell_bg, BOSS_DEFAULT_GO_POS},
-		.inductive_resonance	= {{-1, -1, 14, 15}, AT_Spellcard, "Current Sign ~ Inductive Resonance", 30, 50000,
+		.inductive_resonance	= {{-1, -1, 14, 15}, AT_Spellcard, "Current Sign ~ Inductive Resonance", 60, 50000,
 									iku_induction, iku_spell_bg, BOSS_DEFAULT_GO_POS},
 	},
 
@@ -86,10 +86,13 @@ void stage5_draw(void) {
 	stagedata.rotshift += stagedata.omega;
 	bgcontext.crot[0] += stagedata.omega*0.5;
 	stagedata.rad += stagedata.omega*20;
-	FROM_TO(5000, 5050, 1)
+
+	int rot_time = 6350;
+
+	FROM_TO(rot_time, rot_time+50, 1)
 		stagedata.omega -= 0.005;
 
-	FROM_TO(5200, 5250, 1)
+	FROM_TO(rot_time+200, rot_time+250, 1)
 		stagedata.omega += 0.005;
 
 	bgcontext.cx[0] = stagedata.rad*cos(-w*global.frames);
@@ -169,6 +172,18 @@ void stage5_preload(void) {
 
 void stage5_end(void) {
 	free_stage3d(&bgcontext);
+}
+
+void stage5_skip(int t) {
+	skip_background_anim(&bgcontext, stage5_draw, t, &global.timer, &global.frames);
+
+	int mskip = global.timer;
+
+	if(mskip > 2900) {
+		mskip += 1100;
+	}
+
+	audio_backend_music_set_position(mskip / (double)FPS);
 }
 
 void stage5_spellpractice_events(void) {

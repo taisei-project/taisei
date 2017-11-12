@@ -29,11 +29,13 @@ void dset_image(Dialog *d, Side side, const char *name) {
 	d->images[side] = get_tex(name);
 }
 
-void dadd_msg(Dialog *d, Side side, const char *msg) {
+DialogMessage* dadd_msg(Dialog *d, Side side, const char *msg) {
 	d->messages = realloc(d->messages, (++d->count)*sizeof(DialogMessage));
 	d->messages[d->count-1].side = side;
 	d->messages[d->count-1].msg = malloc(strlen(msg) + 1);
+	d->messages[d->count-1].timeout = 0;
 	strlcpy(d->messages[d->count-1].msg, msg, strlen(msg) + 1);
+	return &d->messages[d->count-1];
 }
 
 void delete_dialog(Dialog *d) {
@@ -113,14 +115,24 @@ void draw_dialog(Dialog *dialog) {
 	glPopMatrix();
 }
 
-void page_dialog(Dialog **d) {
+bool page_dialog(Dialog **d) {
+	int to = (*d)->messages[(*d)->pos].timeout;
+
+	if(to && to > global.frames) {
+		return false;
+	}
+
 	(*d)->pos++;
 	(*d)->page_time = global.frames;
 
 	if((*d)->pos >= (*d)->count) {
 		delete_dialog(*d);
 		*d = NULL;
+
+		// XXX: maybe this can be handled elsewhere?
 		if(!global.boss)
 			global.timer++;
 	}
+
+	return true;
 }

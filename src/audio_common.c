@@ -13,12 +13,30 @@
 #include "resource/resource.h"
 #include "global.h"
 
+CurrentBGM current_bgm = { .name = NULL };
+
 static char *saved_bgm;
 static Hashtable *bgm_descriptions;
 static Hashtable *sfx_volumes;
-CurrentBGM current_bgm = { .name = NULL };
 
-static void play_sound_internal(const char *name, bool is_ui, int cooldown, bool replace) {
+static struct enqueued_sound {
+	List chain;
+	char *name;
+	int time;
+	int cooldown;
+	bool replace;
+} *sound_queue;
+
+static void play_sound_internal(const char *name, bool is_ui, int cooldown, bool replace, int delay) {
+	if(delay > 0) {
+		struct enqueued_sound *s = create_element((void**)&sound_queue, sizeof(struct enqueued_sound));
+		s->time = global.frames + delay;
+		s->name = strdup(name);
+		s->cooldown = cooldown;
+		s->replace = replace;
+		return;
+	}
+
 	if(!audio_backend_initialized() || global.frameskip) {
 		return;
 	}
@@ -35,16 +53,33 @@ static void play_sound_internal(const char *name, bool is_ui, int cooldown, bool
 		(snd->impl, is_ui ? SNDGROUP_UI : SNDGROUP_MAIN);
 }
 
+static void discard_enqueued_sound(void **queue, void *vsnd) {
+	struct enqueued_sound *snd = vsnd;
+	free(snd->name);
+	delete_element(queue, snd);
+}
+
+static void play_enqueued_sound(void **queue, void *vsnd) {
+	struct enqueued_sound *snd = vsnd;
+	play_sound_internal(snd->name, false, snd->cooldown, snd->replace, 0);
+	free(snd->name);
+	delete_element(queue, snd);
+}
+
 void play_sound(const char *name) {
-	play_sound_internal(name, false, 0, false);
+	play_sound_internal(name, false, 0, false, 0);
 }
 
 void play_sound_ex(const char *name, int cooldown, bool replace) {
-	play_sound_internal(name, false, cooldown, replace);
+	play_sound_internal(name, false, cooldown, replace, 0);
+}
+
+void play_sound_delayed(const char *name, int cooldown, bool replace, int delay) {
+	play_sound_internal(name, false, cooldown, replace, delay);
 }
 
 void play_ui_sound(const char *name) {
-	play_sound_internal(name, true, 0, true);
+	play_sound_internal(name, true, 0, true, 0);
 }
 
 void play_loop(const char *name) {
@@ -75,15 +110,26 @@ void reset_sounds(void) {
 			audio_backend_sound_stop_loop(snd->sound->impl);
 		}
 	}
+
+	delete_all_elements((void**)&sound_queue, discard_enqueued_sound);
 }
 
 void update_sounds(void) {
 	Resource *snd;
+
 	for(HashtableIterator *i = hashtable_iter(resources.handlers[RES_SFX].mapping);
 			hashtable_iter_next(i, 0, (void**)&snd);) {
 		if(snd->sound->islooping && global.frames > snd->sound->lastplayframe + LOOPTIMEOUTFRAMES) {
 			snd->sound->islooping = false;
 			audio_backend_sound_stop_loop(snd->sound->impl);
+		}
+	}
+
+	for(struct enqueued_sound *s = sound_queue, *next; s; s = next) {
+		next = (struct enqueued_sound*)s->chain.next;
+
+		if(s->time <= global.frames) {
+			play_enqueued_sound((void**)&sound_queue, s);
 		}
 	}
 }

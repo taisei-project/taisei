@@ -56,6 +56,7 @@ void audio_shutdown(void);
 
 void play_sound(const char *name);
 void play_sound_ex(const char *name, int cooldown, bool replace);
+void play_sound_delayed(const char *name, int cooldown, bool replace, int delay);
 void play_loop(const char *name);
 void play_ui_sound(const char *name);
 void reset_sounds(void);
