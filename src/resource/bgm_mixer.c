@@ -13,11 +13,11 @@
 #include "bgm.h"
 #include "audio_mixer.h"
 
-char* music_path(const char *name) {
+char* bgm_path(const char *name) {
 	return audio_mixer_sound_path(BGM_PATH_PREFIX, name, true);
 }
 
-bool check_music_path(const char *path) {
+bool check_bgm_path(const char *path) {
 	return strstartswith(path, BGM_PATH_PREFIX) && audio_mixer_check_sound_path(path, true);
 }
 
@@ -43,7 +43,7 @@ static Mix_Music* load_mix_music(const char *path) {
 	return music;
 }
 
-void* load_music_begin(const char *path, unsigned int flags) {
+void* load_bgm_begin(const char *path, unsigned int flags) {
 	Music *mus = calloc(1, sizeof(Music));
 	MixerInternalMusic *imus = calloc(1, sizeof(MixerInternalMusic));
 	mus->impl = imus;
@@ -81,11 +81,11 @@ void* load_music_begin(const char *path, unsigned int flags) {
 	return mus;
 }
 
-void* load_music_end(void *opaque, const char *path, unsigned int flags) {
+void* load_bgm_end(void *opaque, const char *path, unsigned int flags) {
 	return opaque;
 }
 
-void unload_music(void *vmus) {
+void unload_bgm(void *vmus) {
 	Music *mus = vmus;
 	MixerInternalMusic *imus = mus->impl;
 	Mix_FreeMusic(imus->intro);

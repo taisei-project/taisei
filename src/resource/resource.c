@@ -356,7 +356,7 @@ void init_resources(void) {
 	);
 
 	register_handler(
-		RES_BGM, BGM_PATH_PREFIX, load_music_begin, load_music_end, unload_music, NULL, music_path, check_music_path, HT_DYNAMIC_SIZE
+		RES_BGM, BGM_PATH_PREFIX, load_bgm_begin, load_bgm_end, unload_bgm, NULL, bgm_path, check_bgm_path, HT_DYNAMIC_SIZE
 	);
 
 	register_handler(
