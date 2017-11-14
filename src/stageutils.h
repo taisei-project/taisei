@@ -37,6 +37,8 @@ struct Stage3D {
 	char nodraw;
 };
 
+extern Stage3D stage_3d_context;
+
 void init_stage3d(Stage3D *s);
 
 void add_model(Stage3D *s, SegmentDrawRule draw, SegmentPositionRule pos);

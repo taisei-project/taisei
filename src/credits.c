@@ -11,8 +11,6 @@
 #include "stageutils.h"
 #include "video.h"
 
-static Stage3D bgcontext;
-
 typedef struct CreditsEntry {
 	char **data;
 	int lines;
@@ -121,19 +119,19 @@ void credits_towerwall_draw(Vector pos) {
 }
 
 Vector **credits_skysphere_pos(Vector pos, float maxrange) {
-	return single3dpos(pos, maxrange, bgcontext.cx);
+	return single3dpos(pos, maxrange, stage_3d_context.cx);
 }
 
 void credits_init(void) {
 	memset(&credits, 0, sizeof(credits));
-	init_stage3d(&bgcontext);
+	init_stage3d(&stage_3d_context);
 
-	add_model(&bgcontext, credits_skysphere_draw, credits_skysphere_pos);
-	add_model(&bgcontext, credits_towerwall_draw, stage6_towerwall_pos);
+	add_model(&stage_3d_context, credits_skysphere_draw, credits_skysphere_pos);
+	add_model(&stage_3d_context, credits_towerwall_draw, stage6_towerwall_pos);
 
-	bgcontext.cx[0] = 0;
-	bgcontext.cx[1] = 600;
-	bgcontext.crot[0] = 0;
+	stage_3d_context.cx[0] = 0;
+	stage_3d_context.cx[1] = 600;
+	stage_3d_context.crot[0] = 0;
 
 	global.frames = 0;
 	credits_fill();
@@ -199,8 +197,8 @@ void credits_draw(void) {
 	glTranslatef(-SCREEN_W/2, 0, 0);
 	glEnable(GL_DEPTH_TEST);
 
-	set_perspective_viewport(&bgcontext, 100, 9000, 0, 0, SCREEN_W, SCREEN_H);
-	draw_stage3d(&bgcontext, 10000);
+	set_perspective_viewport(&stage_3d_context, 100, 9000, 0, 0, SCREEN_W, SCREEN_H);
+	draw_stage3d(&stage_3d_context, 10000);
 
 	glPopMatrix();
 	set_ortho();
@@ -231,10 +229,10 @@ void credits_finish(void *arg) {
 void credits_process(void) {
 	TIMER(&global.frames);
 
-	bgcontext.cx[2] = 200 - global.frames * 50;
-	bgcontext.cx[1] = 500 + 100 * psin(global.frames / 100.0) * psin(global.frames / 200.0 + M_PI);
-	//bgcontext.cx[0] += nfrand();
-	bgcontext.cx[0] = 25 * sin(global.frames / 75.7) * cos(global.frames / 99.3);
+	stage_3d_context.cx[2] = 200 - global.frames * 50;
+	stage_3d_context.cx[1] = 500 + 100 * psin(global.frames / 100.0) * psin(global.frames / 200.0 + M_PI);
+	//stage_3d_context.cx[0] += nfrand();
+	stage_3d_context.cx[0] = 25 * sin(global.frames / 75.7) * cos(global.frames / 99.3);
 
 	FROM_TO(200, 300, 1)
 		credits.panelalpha += 0.01;

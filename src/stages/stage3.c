@@ -37,7 +37,6 @@ struct stage3_spells_s stage3_spells = {
 									wriggle_light_singularity, wriggle_spellbg, BOSS_DEFAULT_GO_POS},
 };
 
-static Stage3D bgcontext;
 static struct {
 	float clr_r;
 	float clr_g;
@@ -149,13 +148,13 @@ void stage3_glitch(FBO *fbo) {
 }
 
 void stage3_start(void) {
-	init_stage3d(&bgcontext);
+	init_stage3d(&stage_3d_context);
 
-	bgcontext.cx[2] = -10;
-	bgcontext.crot[0] = -95;
-	bgcontext.cv[1] = 10;
+	stage_3d_context.cx[2] = -10;
+	stage_3d_context.crot[0] = -95;
+	stage_3d_context.cv[1] = 10;
 
-	add_model(&bgcontext, stage3_bg_tunnel_draw, stage3_bg_pos);
+	add_model(&stage_3d_context, stage3_bg_tunnel_draw, stage3_bg_pos);
 
 	memset(&stgstate, 0, sizeof(stgstate));
 	stgstate.clr_r = 1.0;
@@ -188,24 +187,24 @@ void stage3_preload(void) {
 }
 
 void stage3_end(void) {
-	free_stage3d(&bgcontext);
+	free_stage3d(&stage_3d_context);
 }
 
 void stage3_draw(void) {
 	TIMER(&global.timer)
 
-	set_perspective(&bgcontext, 300, 5000);
+	set_perspective(&stage_3d_context, 300, 5000);
 	stgstate.tunnel_angle += stgstate.tunnel_avel;
-	bgcontext.crot[2] = -(creal(global.plr.pos)-VIEWPORT_W/2)/80.0;
+	stage_3d_context.crot[2] = -(creal(global.plr.pos)-VIEWPORT_W/2)/80.0;
 
 	if(global.dialog) {
-		draw_stage3d(&bgcontext, 7000);
+		draw_stage3d(&stage_3d_context, 7000);
 		return;
 	}
 
 #if 1
 	FROM_TO(0, 160, 1) {
-		bgcontext.cv[1] -= 0.5/2;
+		stage_3d_context.cv[1] -= 0.5/2;
 		stgstate.clr_r -= 0.2 / 160.0;
 		stgstate.clr_b -= 0.1 / 160.0;
 	}
@@ -215,12 +214,12 @@ void stage3_draw(void) {
 
 	FROM_TO(400, 500, 1) {
 		stgstate.tunnel_avel += 0.005;
-		bgcontext.cv[1] -= 0.3/2;
+		stage_3d_context.cv[1] -= 0.3/2;
 	}
 
 	FROM_TO(1050, 1150, 1) {
 		stgstate.tunnel_avel -= 0.010;
-		bgcontext.cv[1] -= 0.2/2;
+		stage_3d_context.cv[1] -= 0.2/2;
 	}
 
 	FROM_TO(1060, 1400, 1) {
@@ -233,10 +232,10 @@ void stage3_draw(void) {
 		stgstate.tunnel_side += 100.0 / 230.0;
 
 	FROM_TO(1400, 1550, 1) {
-		bgcontext.crot[0] -= 3 / 150.0;
+		stage_3d_context.crot[0] -= 3 / 150.0;
 		stgstate.tunnel_updn += 70.0 / 150.0;
 		stgstate.tunnel_avel += 1 / 150.0;
-		bgcontext.cv[1] -= 0.2/2;
+		stage_3d_context.cv[1] -= 0.2/2;
 	}
 
 	FROM_TO(1570, 1700, 1) {
@@ -253,16 +252,16 @@ void stage3_draw(void) {
 	FROM_TO(2000, 2680, 1) {
 		stgstate.tunnel_side -= 100.0 / 680.0;
 		//stgstate.fog_exp -= 1.0 / 740.0;
-		bgcontext.crot[0] += 11 / 680.0;
+		stage_3d_context.crot[0] += 11 / 680.0;
 	}
 
 	FROM_TO(2680, 2739, 1) {
 		stgstate.fog_exp += 1.0 / 60.0;
-		bgcontext.cv[1] += 1.0/2;
+		stage_3d_context.cv[1] += 1.0/2;
 		stgstate.clr_r -= 0.3 / 60.0;
 		stgstate.clr_g += 0.5 / 60.0;
 		stgstate.tunnel_avel -= 0.7 / 60.0;
-		bgcontext.crot[0] -= 11 / 60.0;
+		stage_3d_context.crot[0] -= 11 / 60.0;
 	}
 
 	// 2740 - MIDBOSS
@@ -272,7 +271,7 @@ void stage3_draw(void) {
 	FROM_TO(2900 + midboss_time, 3100 + midboss_time, 1) {
 		stgstate.clr_r += 0.3 / 200.0;
 		stgstate.clr_g -= 0.5 / 200.0;
-		bgcontext.cv[1] -= 90 / 200.0/2;
+		stage_3d_context.cv[1] -= 90 / 200.0/2;
 		stgstate.tunnel_avel -= 1 / 200.0;
 		stgstate.fog_exp -= 1.0 / 200.0;
 		stgstate.clr_b += 0.2 / 200.0;
@@ -281,7 +280,7 @@ void stage3_draw(void) {
 	FROM_TO(3300 + midboss_time, 3360 + midboss_time, 1) {
 		stgstate.tunnel_avel += 2 / 60.0;
 		stgstate.tunnel_side += 70 / 60.0;
-		bgcontext.cx[2] += (-30 - bgcontext.cx[2]) * 0.04;
+		stage_3d_context.cx[2] += (-30 - stage_3d_context.cx[2]) * 0.04;
 	}
 
 	FROM_TO(3600 + midboss_time, 3700 + midboss_time, 1) {
@@ -303,7 +302,7 @@ void stage3_draw(void) {
 
 	FROM_TO(4390 + midboss_time, 4510 + midboss_time, 1) {
 		stgstate.clr_r += .5 / 120.0;
-		bgcontext.cx[2] += (0 - bgcontext.cx[2]) * 0.05;
+		stage_3d_context.cx[2] += (0 - stage_3d_context.cx[2]) * 0.05;
 		stgstate.fog_exp = approach(stgstate.fog_exp, 4, 1/20.0);
 	}
 
@@ -311,33 +310,33 @@ void stage3_draw(void) {
 		stgstate.tunnel_side -= 90 / 1000.0;
 		stgstate.tunnel_updn -= 40 / 1000.0;
 		stgstate.clr_r -= 0.5 / 1000.0;
-		bgcontext.crot[0] += 7 / 1000.0;
+		stage_3d_context.crot[0] += 7 / 1000.0;
 		stgstate.fog_exp -= 1.5 / 1000.0;
 	}
 
 	FROM_TO(5099 + midboss_time, 5299 + midboss_time, 1) {
-		bgcontext.cv[1] += 90 / 200.0/2;
+		stage_3d_context.cv[1] += 90 / 200.0/2;
 		stgstate.tunnel_avel -= 1.1 / 200.0;
-		bgcontext.crot[0] -= 15 / 200.0;
+		stage_3d_context.crot[0] -= 15 / 200.0;
 		stgstate.fog_exp = approach(stgstate.fog_exp, 2.5, 1/50.0);
 	}
 
 	FROM_TO(5200 + midboss_time, 5300 + midboss_time, 1) {
-		bgcontext.cx[2] += (-50 - bgcontext.cx[2]) * 0.02;
+		stage_3d_context.cx[2] += (-50 - stage_3d_context.cx[2]) * 0.02;
 	}
 
 	// 5300 - BOSS
 
 	FROM_TO(5301 + midboss_time, 5700 + midboss_time, 1) {
 		stgstate.tunnel_avel = (0 - stgstate.tunnel_avel) * 0.02;
-		bgcontext.cx[2] += (-500 - bgcontext.cx[2]) * 0.02;
-		bgcontext.crot[0] += (-180 - bgcontext.crot[0]) * 0.004;
+		stage_3d_context.cx[2] += (-500 - stage_3d_context.cx[2]) * 0.02;
+		stage_3d_context.crot[0] += (-180 - stage_3d_context.crot[0]) * 0.004;
 
 		stgstate.clr_mixfactor = approach(stgstate.clr_mixfactor, 0, 1/300.0);
 		stgstate.fog_brightness = approach(stgstate.fog_brightness, 1.0, 1/200.0);
 		stgstate.fog_exp = approach(stgstate.fog_exp, 3, 1/50.0);
 
-		bgcontext.cv[1] = approach(bgcontext.cv[1], -20, 1/10.0);
+		stage_3d_context.cv[1] = approach(stage_3d_context.cv[1], -20, 1/10.0);
 
 		stgstate.clr_r = approach(stgstate.clr_r, 0.6, 1.0/200.0);
 		stgstate.clr_g = approach(stgstate.clr_g, 0.3, 1.0/200.0);
@@ -346,7 +345,7 @@ void stage3_draw(void) {
 	}
 #endif
 
-	draw_stage3d(&bgcontext, 7000);
+	draw_stage3d(&stage_3d_context, 7000);
 }
 
 void scuttle_spellbg(Boss*, int t);
@@ -356,10 +355,10 @@ void stage3_spellpractice_events(void) {
 
 	AT(0) {
 		if(global.stage->spell->draw_rule == scuttle_spellbg) {
-			skip_background_anim(&bgcontext, stage3_draw, 2800, &global.timer, NULL);
+			skip_background_anim(&stage_3d_context, stage3_draw, 2800, &global.timer, NULL);
 			global.boss = stage3_spawn_scuttle(BOSS_DEFAULT_SPAWN_POS);
 		} else {
-			skip_background_anim(&bgcontext, stage3_draw, 5300 + STAGE3_MIDBOSS_TIME, &global.timer, NULL);
+			skip_background_anim(&stage_3d_context, stage3_draw, 5300 + STAGE3_MIDBOSS_TIME, &global.timer, NULL);
 			global.boss = stage3_spawn_wriggle_ex(BOSS_DEFAULT_SPAWN_POS);
 		}
 
@@ -371,7 +370,7 @@ void stage3_spellpractice_events(void) {
 }
 
 void stage3_skip(int t) {
-	skip_background_anim(&bgcontext, stage3_draw, t, &global.timer, &global.frames);
+	skip_background_anim(&stage_3d_context, stage3_draw, t, &global.timer, &global.frames);
 	audio_backend_music_set_position(global.timer / (double)FPS);
 }
 

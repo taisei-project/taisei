@@ -12,6 +12,8 @@
 #include "taiseigl.h"
 #include "global.h"
 
+Stage3D stage_3d_context;
+
 void init_stage3d(Stage3D *s) {
 	memset(s, 0, sizeof(Stage3D));
 	s->projangle = 45;

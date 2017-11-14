@@ -34,8 +34,6 @@ struct stage2_spells_s stage2_spells = {
 								hina_monty, hina_spell_bg, BOSS_DEFAULT_GO_POS},
 };
 
-static Stage3D bgcontext;
-
 void stage2_bg_leaves_draw(Vector pos) {
 	glEnable(GL_TEXTURE_2D);
 	glUseProgram(get_shader("alpha_depth")->prog);
@@ -184,18 +182,18 @@ static void stage2_bloom(FBO *fbo) {
 }
 
 void stage2_start(void) {
-	init_stage3d(&bgcontext);
-	bgcontext.cx[2] = 1000;
-	bgcontext.cx[0] = -850;
-	bgcontext.crot[0] = 60;
-	bgcontext.crot[2] = -90;
+	init_stage3d(&stage_3d_context);
+	stage_3d_context.cx[2] = 1000;
+	stage_3d_context.cx[0] = -850;
+	stage_3d_context.crot[0] = 60;
+	stage_3d_context.crot[2] = -90;
 
-	bgcontext.cv[0] = 9;
+	stage_3d_context.cv[0] = 9;
 
-	add_model(&bgcontext, stage2_bg_ground_draw, stage2_bg_pos);
-	add_model(&bgcontext, stage2_bg_grass_draw, stage2_bg_grass_pos);
-	add_model(&bgcontext, stage2_bg_grass_draw, stage2_bg_grass_pos2);
-	add_model(&bgcontext, stage2_bg_leaves_draw, stage2_bg_pos);
+	add_model(&stage_3d_context, stage2_bg_ground_draw, stage2_bg_pos);
+	add_model(&stage_3d_context, stage2_bg_grass_draw, stage2_bg_grass_pos);
+	add_model(&stage_3d_context, stage2_bg_grass_draw, stage2_bg_grass_pos2);
+	add_model(&stage_3d_context, stage2_bg_leaves_draw, stage2_bg_pos);
 }
 
 void stage2_preload(void) {
@@ -222,21 +220,21 @@ void stage2_preload(void) {
 }
 
 void stage2_end(void) {
-	free_stage3d(&bgcontext);
+	free_stage3d(&stage_3d_context);
 }
 
 void stage2_draw(void) {
 	TIMER(&global.frames);
 
-	set_perspective(&bgcontext, 500, 5000);
+	set_perspective(&stage_3d_context, 500, 5000);
 
 	FROM_TO(0,180,1) {
-		bgcontext.cv[0] -= 0.05;
-		bgcontext.cv[1] += 0.05;
-		bgcontext.crot[2] += 0.5;
+		stage_3d_context.cv[0] -= 0.05;
+		stage_3d_context.cv[1] += 0.05;
+		stage_3d_context.crot[2] += 0.5;
 	}
 
-	draw_stage3d(&bgcontext, 7000);
+	draw_stage3d(&stage_3d_context, 7000);
 
 }
 
@@ -244,7 +242,7 @@ void stage2_spellpractice_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		skip_background_anim(&bgcontext, stage2_draw, 180, &global.frames, NULL);
+		skip_background_anim(&stage_3d_context, stage2_draw, 180, &global.frames, NULL);
 
 		Boss* hina = stage2_spawn_hina(BOSS_DEFAULT_SPAWN_POS);
 		boss_add_attack_from_info(hina, global.stage->spell, true);

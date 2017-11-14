@@ -36,8 +36,6 @@ struct stage5_spells_s stage5_spells = {
 									iku_extra, iku_spell_bg, BOSS_DEFAULT_GO_POS},
 };
 
-static Stage3D bgcontext;
-
 struct {
 	float light_strength;
 
@@ -77,14 +75,14 @@ void stage5_stairs_draw(Vector pos) {
 }
 
 void stage5_draw(void) {
-	set_perspective(&bgcontext, 100, 20000);
-	draw_stage3d(&bgcontext, 30000);
+	set_perspective(&stage_3d_context, 100, 20000);
+	draw_stage3d(&stage_3d_context, 30000);
 
 	TIMER(&global.timer);
 	float w = 0.005;
 
 	stagedata.rotshift += stagedata.omega;
-	bgcontext.crot[0] += stagedata.omega*0.5;
+	stage_3d_context.crot[0] += stagedata.omega*0.5;
 	stagedata.rad += stagedata.omega*20;
 
 	int rot_time = 6350;
@@ -95,11 +93,11 @@ void stage5_draw(void) {
 	FROM_TO(rot_time+200, rot_time+250, 1)
 		stagedata.omega += 0.005;
 
-	bgcontext.cx[0] = stagedata.rad*cos(-w*global.frames);
-	bgcontext.cx[1] = stagedata.rad*sin(-w*global.frames);
-	bgcontext.cx[2] = -1700+w*3000/M_PI*global.frames;
+	stage_3d_context.cx[0] = stagedata.rad*cos(-w*global.frames);
+	stage_3d_context.cx[1] = stagedata.rad*sin(-w*global.frames);
+	stage_3d_context.cx[2] = -1700+w*3000/M_PI*global.frames;
 
-	bgcontext.crot[2] = stagedata.rotshift-180/M_PI*w*global.frames;
+	stage_3d_context.crot[2] = stagedata.rotshift-180/M_PI*w*global.frames;
 
 	stagedata.light_strength *= 0.98;
 
@@ -140,10 +138,10 @@ void iku_spell_bg(Boss *b, int t) {
 void stage5_start(void) {
 	memset(&stagedata, 0, sizeof(stagedata));
 
-	init_stage3d(&bgcontext);
-	add_model(&bgcontext, stage5_stairs_draw, stage5_stairs_pos);
+	init_stage3d(&stage_3d_context);
+	add_model(&stage_3d_context, stage5_stairs_draw, stage5_stairs_pos);
 
-	bgcontext.crot[0] = 60;
+	stage_3d_context.crot[0] = 60;
 	stagedata.rotshift = 140;
 	stagedata.rad = 2800;
 }
@@ -171,11 +169,11 @@ void stage5_preload(void) {
 }
 
 void stage5_end(void) {
-	free_stage3d(&bgcontext);
+	free_stage3d(&stage_3d_context);
 }
 
 void stage5_skip(int t) {
-	skip_background_anim(&bgcontext, stage5_draw, t, &global.timer, &global.frames);
+	skip_background_anim(&stage_3d_context, stage5_draw, t, &global.timer, &global.frames);
 
 	int mskip = global.timer;
 
@@ -190,7 +188,7 @@ void stage5_spellpractice_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		skip_background_anim(&bgcontext, stage5_draw, 5300, &global.timer, NULL);
+		skip_background_anim(&stage_3d_context, stage5_draw, 5300, &global.timer, NULL);
 		global.boss = stage5_spawn_iku(BOSS_DEFAULT_SPAWN_POS);
 		boss_add_attack_from_info(global.boss, global.stage->spell, true);
 		boss_start_attack(global.boss, global.boss->attacks);

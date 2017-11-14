@@ -50,7 +50,6 @@ struct stage6_spells_s stage6_spells = {
 	},
 };
 
-static Stage3D bgcontext;
 static int fall_over;
 
 enum {
@@ -116,7 +115,7 @@ void stage6_towertop_draw(Vector pos) {
 }
 
 Vector **stage6_skysphere_pos(Vector pos, float maxrange) {
-	return single3dpos(pos, maxrange, bgcontext.cx);
+	return single3dpos(pos, maxrange, stage_3d_context.cx);
 }
 
 void stage6_skysphere_draw(Vector pos) {
@@ -151,34 +150,34 @@ void stage6_skysphere_draw(Vector pos) {
 }
 
 void stage6_draw(void) {
-	set_perspective(&bgcontext, 100, 9000);
-	draw_stage3d(&bgcontext, 10000);
+	set_perspective(&stage_3d_context, 100, 9000);
+	draw_stage3d(&stage_3d_context, 10000);
 
 	if(fall_over) {
 		int t = global.frames - fall_over;
 		TIMER(&t);
 
 		FROM_TO(0, 240, 1) {
-			bgcontext.cx[0] += 0.02*cos(M_PI/180*bgcontext.crot[2]+M_PI/2)*_i;
-			bgcontext.cx[1] += 0.02*sin(M_PI/180*bgcontext.crot[2]+M_PI/2)*_i;
+			stage_3d_context.cx[0] += 0.02*cos(M_PI/180*stage_3d_context.crot[2]+M_PI/2)*_i;
+			stage_3d_context.cx[1] += 0.02*sin(M_PI/180*stage_3d_context.crot[2]+M_PI/2)*_i;
 		}
 
 		FROM_TO(150, 1000, 1) {
-			bgcontext.crot[0] -= 0.02*(global.frames-fall_over-150);
-			if(bgcontext.crot[0] < 0)
-				bgcontext.crot[0] = 0;
+			stage_3d_context.crot[0] -= 0.02*(global.frames-fall_over-150);
+			if(stage_3d_context.crot[0] < 0)
+				stage_3d_context.crot[0] = 0;
 		}
 
 		if(t >= 190)
-			bgcontext.cx[2] -= max(6, 0.05*(global.frames-fall_over-150));
+			stage_3d_context.cx[2] -= max(6, 0.05*(global.frames-fall_over-150));
 
 		FROM_TO(300, 470,1) {
-			bgcontext.cx[0] -= 0.01*cos(M_PI/180*bgcontext.crot[2]+M_PI/2)*_i;
-			bgcontext.cx[1] -= 0.01*sin(M_PI/180*bgcontext.crot[2]+M_PI/2)*_i;
+			stage_3d_context.cx[0] -= 0.01*cos(M_PI/180*stage_3d_context.crot[2]+M_PI/2)*_i;
+			stage_3d_context.cx[1] -= 0.01*sin(M_PI/180*stage_3d_context.crot[2]+M_PI/2)*_i;
 		}
 
 		if(t > 470)
-			bgcontext.cx[0] += 1-2*frand();
+			stage_3d_context.cx[0] += 1-2*frand();
 
 	}
 
@@ -193,11 +192,11 @@ void stage6_draw(void) {
 		g = max(0, g-0.01*(global.timer - 3628));
 
 
-	bgcontext.cx[0] += -230*w*f*sin(w*global.frames-M_PI/2);
-	bgcontext.cx[1] += 230*w*f*cos(w*global.frames-M_PI/2);
-	bgcontext.cx[2] += w*f*140/M_PI;
+	stage_3d_context.cx[0] += -230*w*f*sin(w*global.frames-M_PI/2);
+	stage_3d_context.cx[1] += 230*w*f*cos(w*global.frames-M_PI/2);
+	stage_3d_context.cx[2] += w*f*140/M_PI;
 
-	bgcontext.crot[2] += 180/M_PI*g*w;
+	stage_3d_context.crot[2] += 180/M_PI*g*w;
 }
 
 void start_fall_over(void) { //troll
@@ -205,12 +204,12 @@ void start_fall_over(void) { //troll
 }
 
 void stage6_start(void) {
-	init_stage3d(&bgcontext);
+	init_stage3d(&stage_3d_context);
 	fall_over = 0;
 
-	add_model(&bgcontext, stage6_skysphere_draw, stage6_skysphere_pos);
-	add_model(&bgcontext, stage6_towertop_draw, stage6_towertop_pos);
-	add_model(&bgcontext, stage6_towerwall_draw, stage6_towerwall_pos);
+	add_model(&stage_3d_context, stage6_skysphere_draw, stage6_skysphere_pos);
+	add_model(&stage_3d_context, stage6_towertop_draw, stage6_towertop_pos);
+	add_model(&stage_3d_context, stage6_towerwall_draw, stage6_towerwall_pos);
 
 	for(int i = 0; i < NUM_STARS; i++) {
 		float x,y,z,r;
@@ -229,16 +228,16 @@ void stage6_start(void) {
 		starpos[3*i+2] = z/r;
 	}
 
-	bgcontext.cx[1] = -230;
-	bgcontext.crot[0] = 90;
-	bgcontext.crot[2] = -40;
+	stage_3d_context.cx[1] = -230;
+	stage_3d_context.crot[0] = 90;
+	stage_3d_context.crot[2] = -40;
 
 // 	for testing
-// 	bgcontext.cx[0] = 80;
-// 	bgcontext.cx[1] = -215;
-// 	bgcontext.cx[2] = 295;
-// 	bgcontext.crot[0] = 90;
-// 	bgcontext.crot[2] = 381.415100;
+// 	stage_3d_context.cx[0] = 80;
+// 	stage_3d_context.cx[1] = -215;
+// 	stage_3d_context.cx[2] = 295;
+// 	stage_3d_context.crot[0] = 90;
+// 	stage_3d_context.crot[2] = 381.415100;
 //
 
 }
@@ -273,7 +272,7 @@ void stage6_preload(void) {
 }
 
 void stage6_end(void) {
-	free_stage3d(&bgcontext);
+	free_stage3d(&stage_3d_context);
 }
 
 void elly_intro(Boss*, int);
@@ -283,7 +282,7 @@ void stage6_spellpractice_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		skip_background_anim(&bgcontext, stage6_draw, 3800, &global.timer, &global.frames);
+		skip_background_anim(&stage_3d_context, stage6_draw, 3800, &global.timer, &global.frames);
 		global.boss = stage6_spawn_elly(BOSS_DEFAULT_SPAWN_POS);
 
 		AttackInfo *s = global.stage->spell;
@@ -297,7 +296,7 @@ void stage6_spellpractice_events(void) {
 			go = false;
 		} else if(s == &stage6_spells.final.theory_of_everything) {
 			start_fall_over();
-			skip_background_anim(&bgcontext, stage6_draw, 300, &global.timer, &global.frames);
+			skip_background_anim(&stage_3d_context, stage6_draw, 300, &global.timer, &global.frames);
 		}
 
 		boss_add_attack_from_info(global.boss, global.stage->spell, go);

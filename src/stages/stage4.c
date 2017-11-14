@@ -43,8 +43,6 @@ struct stage4_spells_s stage4_spells = {
 								kurumi_extra, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
 };
 
-static Stage3D bgcontext;
-
 void stage4_fog(FBO *fbo) {
 	Shader *shader = get_shader("zbuf_fog");
 
@@ -225,21 +223,21 @@ void stage4_corridor_draw(Vector pos) {
 }
 
 void stage4_start(void) {
-	init_stage3d(&bgcontext);
+	init_stage3d(&stage_3d_context);
 
-	bgcontext.cx[2] = -10000;
-	bgcontext.cv[2] = 19.7;
-	bgcontext.crot[0] = 80;
+	stage_3d_context.cx[2] = -10000;
+	stage_3d_context.cv[2] = 19.7;
+	stage_3d_context.crot[0] = 80;
 
 	// for testing
-// 	bgcontext.cx[1] = 2000;
-// 	bgcontext.cx[2] = 130;
-// 	bgcontext.cv[1] = 10;
-// 	bgcontext.crot[0] = 80;
+// 	stage_3d_context.cx[1] = 2000;
+// 	stage_3d_context.cx[2] = 130;
+// 	stage_3d_context.cv[1] = 10;
+// 	stage_3d_context.crot[0] = 80;
 
-	add_model(&bgcontext, stage4_lake_draw, stage4_lake_pos);
-	add_model(&bgcontext, stage4_fountain_draw, stage4_fountain_pos);
-	add_model(&bgcontext, stage4_corridor_draw, stage4_corridor_pos);
+	add_model(&stage_3d_context, stage4_lake_draw, stage4_lake_pos);
+	add_model(&stage_3d_context, stage4_fountain_draw, stage4_fountain_pos);
+	add_model(&stage_3d_context, stage4_corridor_draw, stage4_corridor_pos);
 }
 
 void stage4_preload(void) {
@@ -268,32 +266,32 @@ void stage4_preload(void) {
 }
 
 void stage4_end(void) {
-	free_stage3d(&bgcontext);
+	free_stage3d(&stage_3d_context);
 }
 
 void stage4_draw(void) {
-	set_perspective(&bgcontext, 130, 3000);
+	set_perspective(&stage_3d_context, 130, 3000);
 
-	draw_stage3d(&bgcontext, 4000);
+	draw_stage3d(&stage_3d_context, 4000);
 
-	if(bgcontext.cx[2] >= -1000 && bgcontext.cv[2] > 0)
-		bgcontext.cv[2] -= 0.17;
+	if(stage_3d_context.cx[2] >= -1000 && stage_3d_context.cv[2] > 0)
+		stage_3d_context.cv[2] -= 0.17;
 
-	if(bgcontext.cx[1] < 100 && bgcontext.cv[2] < 0)
-		bgcontext.cv[2] = 0;
+	if(stage_3d_context.cx[1] < 100 && stage_3d_context.cv[2] < 0)
+		stage_3d_context.cv[2] = 0;
 
-	if(bgcontext.cx[2] >= 0 && bgcontext.cx[2] <= 10)
-		bgcontext.cv[1] += 0.2;
+	if(stage_3d_context.cx[2] >= 0 && stage_3d_context.cx[2] <= 10)
+		stage_3d_context.cv[1] += 0.2;
 
-	if(bgcontext.cx[1] >= 1200 && bgcontext.cx[1] <= 2000)
-		bgcontext.cv[1] += 0.02;
+	if(stage_3d_context.cx[1] >= 1200 && stage_3d_context.cx[1] <= 2000)
+		stage_3d_context.cv[1] += 0.02;
 }
 
 void stage4_spellpractice_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		skip_background_anim(&bgcontext, stage4_draw, 3200, &global.frames, NULL);
+		skip_background_anim(&stage_3d_context, stage4_draw, 3200, &global.frames, NULL);
 		global.boss = stage4_spawn_kurumi(BOSS_DEFAULT_SPAWN_POS);
 		boss_add_attack_from_info(global.boss, global.stage->spell, true);
 		boss_start_attack(global.boss, global.boss->attacks);
@@ -303,7 +301,7 @@ void stage4_spellpractice_events(void) {
 }
 
 void stage4_skip(int t) {
-	skip_background_anim(&bgcontext, stage4_draw, t, &global.timer, &global.frames);
+	skip_background_anim(&stage_3d_context, stage4_draw, t, &global.timer, &global.frames);
 	audio_backend_music_set_position(global.timer / (double)FPS);
 }
 

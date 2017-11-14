@@ -42,15 +42,13 @@ struct stage1_spells_s stage1_spells = {
 #endif
 };
 
-static Stage3D bgcontext;
-
 static bool particle_filter(Projectile *part) {
 	return part->type < PlrProj;
 }
 
 void stage1_bg_draw(Vector pos) {
 	glPushMatrix();
-	glTranslatef(0,bgcontext.cx[1]+500,0);
+	glTranslatef(0,stage_3d_context.cx[1]+500,0);
 	glRotatef(180,1,0,0);
 
 	//glEnable(GL_TEXTURE_2D);
@@ -92,7 +90,7 @@ Vector **stage1_bg_pos(Vector p, float maxrange) {
 }
 
 void stage1_smoke_draw(Vector pos) {
-	float d = fabsf(pos[1]-bgcontext.cx[1]);
+	float d = fabsf(pos[1]-stage_3d_context.cx[1]);
 
 	glDisable(GL_DEPTH_TEST);
 	glPushMatrix();
@@ -135,9 +133,9 @@ void stage1_fog(FBO *fbo) {
 }
 
 void stage1_draw(void) {
-	set_perspective(&bgcontext, 500, 5000);
+	set_perspective(&stage_3d_context, 500, 5000);
 
-	draw_stage3d(&bgcontext, 7000);
+	draw_stage3d(&stage_3d_context, 7000);
 }
 
 void stage1_reed_draw(Vector pos) {
@@ -164,14 +162,14 @@ void stage1_reed_draw(Vector pos) {
 }
 
 void stage1_start(void) {
-	init_stage3d(&bgcontext);
-	add_model(&bgcontext, stage1_bg_draw, stage1_bg_pos);
-	add_model(&bgcontext, stage1_smoke_draw, stage1_smoke_pos);
-	add_model(&bgcontext, stage1_reed_draw, stage1_smoke_pos);
+	init_stage3d(&stage_3d_context);
+	add_model(&stage_3d_context, stage1_bg_draw, stage1_bg_pos);
+	add_model(&stage_3d_context, stage1_smoke_draw, stage1_smoke_pos);
+	add_model(&stage_3d_context, stage1_reed_draw, stage1_smoke_pos);
 
-	bgcontext.crot[0] = 60;
-	bgcontext.cx[2] = 700;
-	bgcontext.cv[1] = 4;
+	stage_3d_context.crot[0] = 60;
+	stage_3d_context.cx[2] = 700;
+	stage_3d_context.cv[1] = 4;
 }
 
 void stage1_preload(void) {
@@ -194,7 +192,7 @@ void stage1_preload(void) {
 }
 
 void stage1_end(void) {
-	free_stage3d(&bgcontext);
+	free_stage3d(&stage_3d_context);
 }
 
 void stage1_spellpractice_events(void) {
