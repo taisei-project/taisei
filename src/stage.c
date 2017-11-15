@@ -555,6 +555,8 @@ static bool stage_frame(void *arg) {
 			stage_finish(GAMEOVER_WIN);
 			fstate->transition_delay = 60;
 		}
+
+		stage->procs->update();
 	}
 
 	if(!global.timer && stage->type != STAGE_SPELL) {
@@ -617,6 +619,7 @@ void stage_loop(StageInfo *stage) {
 	assert(stage->procs->end);
 	assert(stage->procs->draw);
 	assert(stage->procs->event);
+	assert(stage->procs->update);
 	assert(stage->procs->shader_rules);
 
 	if(global.game_over == GAMEOVER_WIN) {

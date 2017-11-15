@@ -32,9 +32,6 @@ struct Stage3D {
 	Vector crot;
 
 	float projangle;
-
-	// hack to quickly skip through stage animations up to a specific frame
-	char nodraw;
 };
 
 extern Stage3D stage_3d_context;
@@ -46,6 +43,7 @@ void add_model(Stage3D *s, SegmentDrawRule draw, SegmentPositionRule pos);
 void set_perspective_viewport(Stage3D *s, float n, float f, int vx, int vy, int vw, int vh);
 void set_perspective(Stage3D *s, float near, float far);
 void draw_stage3d(Stage3D *s, float maxrange);
+void update_stage3d(Stage3D *s);
 
 void free_stage3d(Stage3D *s);
 
@@ -53,4 +51,4 @@ Vector **linear3dpos(Vector q, float maxrange, Vector p, Vector r);
 
 Vector **single3dpos(Vector q, float maxrange, Vector p);
 
-void skip_background_anim(Stage3D *s3d, void (*drawfunc)(void), int frames, int *timer, int *timer2);
+void skip_background_anim(Stage3D *s3d, void (*update_func)(void), int frames, int *timer, int *timer2);

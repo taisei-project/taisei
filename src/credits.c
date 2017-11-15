@@ -8,7 +8,7 @@
 
 #include "credits.h"
 #include "global.h"
-#include "stageutils.h"
+#include "stages/stage6.h"
 #include "video.h"
 
 typedef struct CreditsEntry {
@@ -78,9 +78,6 @@ void credits_add(char *data, int time) {
 	strcpy(e->data[l], buf);
 	credits.end += time + CREDITS_ENTRY_FADEOUT;
 }
-
-Vector **stage6_towerwall_pos(Vector pos, float maxrange);
-void stage6_towerwall_draw(Vector pos);
 
 void credits_skysphere_draw(Vector pos) {
 	glEnable(GL_TEXTURE_2D);

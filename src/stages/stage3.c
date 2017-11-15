@@ -52,7 +52,7 @@ static struct {
 	float tunnel_side;
 } stgstate;
 
-Vector **stage3_bg_pos(Vector pos, float maxrange) {
+static Vector **stage3_bg_pos(Vector pos, float maxrange) {
 	//Vector p = {100 * cos(global.frames / 52.0), 100, 50 * sin(global.frames / 50.0)};
 	Vector p = {
 		stgstate.tunnel_side * cos(global.frames / 52.0),
@@ -64,7 +64,7 @@ Vector **stage3_bg_pos(Vector pos, float maxrange) {
 	return linear3dpos(pos, maxrange, p, r);
 }
 
-void stage3_bg_tunnel_draw(Vector pos) {
+static void stage3_bg_tunnel_draw(Vector pos) {
 	int n = 6;
 	float r = 300;
 	int i;
@@ -88,7 +88,7 @@ void stage3_bg_tunnel_draw(Vector pos) {
 	glDisable(GL_TEXTURE_2D);
 }
 
-void stage3_tunnel(FBO *fbo) {
+static void stage3_tunnel(FBO *fbo) {
 	Shader *shader = get_shader("tunnel");
 	assert(uniloc(shader, "mixfactor") >= 0); // just so people don't forget to 'make install'; remove this later
 
@@ -104,7 +104,7 @@ void stage3_tunnel(FBO *fbo) {
 	glUseProgram(0);
 }
 
-void stage3_fog(FBO *fbo) {
+static void stage3_fog(FBO *fbo) {
 	Shader *shader = get_shader("zbuf_fog");
 
 	glColor4f(1,1,1,1);
@@ -123,7 +123,7 @@ void stage3_fog(FBO *fbo) {
 	glUseProgram(0);
 }
 
-void stage3_glitch(FBO *fbo) {
+static void stage3_glitch(FBO *fbo) {
 	Shader *shader = get_shader("glitch");
 
 	glColor4f(1,1,1,1);
@@ -147,7 +147,7 @@ void stage3_glitch(FBO *fbo) {
 	glUseProgram(0);
 }
 
-void stage3_start(void) {
+static void stage3_start(void) {
 	init_stage3d(&stage_3d_context);
 
 	stage_3d_context.cx[2] = -10;
@@ -164,7 +164,7 @@ void stage3_start(void) {
 	stgstate.fog_brightness = 0.5;
 }
 
-void stage3_preload(void) {
+static void stage3_preload(void) {
 	preload_resources(RES_BGM, RESF_OPTIONAL, "stage3", "stage3boss", NULL);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
 		"stage3/border",
@@ -186,23 +186,26 @@ void stage3_preload(void) {
 	NULL);
 }
 
-void stage3_end(void) {
+static void stage3_end(void) {
 	free_stage3d(&stage_3d_context);
 }
 
-void stage3_draw(void) {
+static void stage3_draw(void) {
+	set_perspective(&stage_3d_context, 300, 5000);
+	draw_stage3d(&stage_3d_context, 7000);
+}
+
+static void stage3_update(void) {
 	TIMER(&global.timer)
 
-	set_perspective(&stage_3d_context, 300, 5000);
 	stgstate.tunnel_angle += stgstate.tunnel_avel;
 	stage_3d_context.crot[2] = -(creal(global.plr.pos)-VIEWPORT_W/2)/80.0;
 
 	if(global.dialog) {
-		draw_stage3d(&stage_3d_context, 7000);
+		update_stage3d(&stage_3d_context);
 		return;
 	}
 
-#if 1
 	FROM_TO(0, 160, 1) {
 		stage_3d_context.cv[1] -= 0.5/2;
 		stgstate.clr_r -= 0.2 / 160.0;
@@ -341,24 +344,22 @@ void stage3_draw(void) {
 		stgstate.clr_r = approach(stgstate.clr_r, 0.6, 1.0/200.0);
 		stgstate.clr_g = approach(stgstate.clr_g, 0.3, 1.0/200.0);
 		stgstate.clr_b = approach(stgstate.clr_b, 0.4, 1.0/200.0);
-
 	}
-#endif
 
-	draw_stage3d(&stage_3d_context, 7000);
+	update_stage3d(&stage_3d_context);
 }
 
 void scuttle_spellbg(Boss*, int t);
 
-void stage3_spellpractice_events(void) {
+static void stage3_spellpractice_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
 		if(global.stage->spell->draw_rule == scuttle_spellbg) {
-			skip_background_anim(&stage_3d_context, stage3_draw, 2800, &global.timer, NULL);
+			skip_background_anim(&stage_3d_context, stage3_update, 2800, &global.timer, NULL);
 			global.boss = stage3_spawn_scuttle(BOSS_DEFAULT_SPAWN_POS);
 		} else {
-			skip_background_anim(&stage_3d_context, stage3_draw, 5300 + STAGE3_MIDBOSS_TIME, &global.timer, NULL);
+			skip_background_anim(&stage_3d_context, stage3_update, 5300 + STAGE3_MIDBOSS_TIME, &global.timer, NULL);
 			global.boss = stage3_spawn_wriggle_ex(BOSS_DEFAULT_SPAWN_POS);
 		}
 
@@ -370,7 +371,7 @@ void stage3_spellpractice_events(void) {
 }
 
 void stage3_skip(int t) {
-	skip_background_anim(&stage_3d_context, stage3_draw, t, &global.timer, &global.frames);
+	skip_background_anim(&stage_3d_context, stage3_update, t, &global.timer, &global.frames);
 	audio_backend_music_set_position(global.timer / (double)FPS);
 }
 
@@ -382,6 +383,7 @@ StageProcs stage3_procs = {
 	.preload = stage3_preload,
 	.end = stage3_end,
 	.draw = stage3_draw,
+	.update = stage3_update,
 	.event = stage3_events,
 	.shader_rules = stage3_shaders,
 	.postprocess_rules = stage3_postprocess,
@@ -393,6 +395,7 @@ StageProcs stage3_spell_procs = {
 	.begin = stage3_start,
 	.end = stage3_end,
 	.draw = stage3_draw,
+	.update = stage3_update,
 	.event = stage3_spellpractice_events,
 	.shader_rules = stage3_shaders,
 	.postprocess_rules = stage3_postprocess,

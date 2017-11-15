@@ -74,7 +74,6 @@ Vector **stage6_towerwall_pos(Vector pos, float maxrange) {
 	return list;
 }
 
-
 void stage6_towerwall_draw(Vector pos) {
 	glEnable(GL_TEXTURE_2D);
 
@@ -94,13 +93,13 @@ void stage6_towerwall_draw(Vector pos) {
 	glDisable(GL_TEXTURE_2D);
 }
 
-Vector **stage6_towertop_pos(Vector pos, float maxrange) {
+static Vector **stage6_towertop_pos(Vector pos, float maxrange) {
 	Vector p = {0, 0, 70};
 
 	return single3dpos(pos, maxrange, p);
 }
 
-void stage6_towertop_draw(Vector pos) {
+static void stage6_towertop_draw(Vector pos) {
 	glEnable(GL_TEXTURE_2D);
 
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towertop")->gltex);
@@ -114,11 +113,11 @@ void stage6_towertop_draw(Vector pos) {
 	glDisable(GL_TEXTURE_2D);
 }
 
-Vector **stage6_skysphere_pos(Vector pos, float maxrange) {
+static Vector **stage6_skysphere_pos(Vector pos, float maxrange) {
 	return single3dpos(pos, maxrange, stage_3d_context.cx);
 }
 
-void stage6_skysphere_draw(Vector pos) {
+static void stage6_skysphere_draw(Vector pos) {
 	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_DEPTH_TEST);
 	Shader *s = get_shader("stage6_sky");
@@ -149,9 +148,13 @@ void stage6_skysphere_draw(Vector pos) {
 	glEnable(GL_DEPTH_TEST);
 }
 
-void stage6_draw(void) {
+static void stage6_draw(void) {
 	set_perspective(&stage_3d_context, 100, 9000);
 	draw_stage3d(&stage_3d_context, 10000);
+}
+
+static void stage6_update(void) {
+	update_stage3d(&stage_3d_context);
 
 	if(fall_over) {
 		int t = global.frames - fall_over;
@@ -178,7 +181,6 @@ void stage6_draw(void) {
 
 		if(t > 470)
 			stage_3d_context.cx[0] += 1-2*frand();
-
 	}
 
 	float w = 0.002;
@@ -191,7 +193,6 @@ void stage6_draw(void) {
 	if(global.timer > 3628)
 		g = max(0, g-0.01*(global.timer - 3628));
 
-
 	stage_3d_context.cx[0] += -230*w*f*sin(w*global.frames-M_PI/2);
 	stage_3d_context.cx[1] += 230*w*f*cos(w*global.frames-M_PI/2);
 	stage_3d_context.cx[2] += w*f*140/M_PI;
@@ -203,7 +204,7 @@ void start_fall_over(void) { //troll
 	fall_over = global.frames;
 }
 
-void stage6_start(void) {
+static void stage6_start(void) {
 	init_stage3d(&stage_3d_context);
 	fall_over = 0;
 
@@ -238,11 +239,9 @@ void stage6_start(void) {
 // 	stage_3d_context.cx[2] = 295;
 // 	stage_3d_context.crot[0] = 90;
 // 	stage_3d_context.crot[2] = 381.415100;
-//
-
 }
 
-void stage6_preload(void) {
+static void stage6_preload(void) {
 	preload_resources(RES_BGM, RESF_OPTIONAL, "stage6", "stage6boss", NULL);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
 		"stage6/baryon_connector",
@@ -271,18 +270,18 @@ void stage6_preload(void) {
 	NULL);
 }
 
-void stage6_end(void) {
+static void stage6_end(void) {
 	free_stage3d(&stage_3d_context);
 }
 
 void elly_intro(Boss*, int);
 void elly_unbound(Boss*, int);
 
-void stage6_spellpractice_events(void) {
+static void stage6_spellpractice_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		skip_background_anim(&stage_3d_context, stage6_draw, 3800, &global.timer, &global.frames);
+		skip_background_anim(&stage_3d_context, stage6_update, 3800, &global.timer, &global.frames);
 		global.boss = stage6_spawn_elly(BOSS_DEFAULT_SPAWN_POS);
 
 		AttackInfo *s = global.stage->spell;
@@ -296,7 +295,7 @@ void stage6_spellpractice_events(void) {
 			go = false;
 		} else if(s == &stage6_spells.final.theory_of_everything) {
 			start_fall_over();
-			skip_background_anim(&stage_3d_context, stage6_draw, 300, &global.timer, &global.frames);
+			skip_background_anim(&stage_3d_context, stage6_update, 300, &global.timer, &global.frames);
 		}
 
 		boss_add_attack_from_info(global.boss, global.stage->spell, go);
@@ -317,6 +316,7 @@ StageProcs stage6_procs = {
 	.preload = stage6_preload,
 	.end = stage6_end,
 	.draw = stage6_draw,
+	.update = stage6_update,
 	.event = stage6_events,
 	.shader_rules = stage6_shaders,
 	.spellpractice_procs = &stage6_spell_procs,
@@ -327,6 +327,7 @@ StageProcs stage6_spell_procs = {
 	.begin = stage6_start,
 	.end = stage6_end,
 	.draw = stage6_draw,
+	.update = stage6_update,
 	.event = stage6_spellpractice_events,
 	.shader_rules = stage6_shaders,
 };

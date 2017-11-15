@@ -9,6 +9,7 @@
 #pragma once
 
 #include "stage.h"
+#include "stageutils.h"
 
 extern struct stage6_spells_s {
     // this struct must contain only fields of type AttackInfo
@@ -53,3 +54,6 @@ extern StageProcs stage6_procs;
 extern StageProcs stage6_spell_procs;
 
 void start_fall_over(void);
+
+Vector **stage6_towerwall_pos(Vector pos, float maxrange);
+void stage6_towerwall_draw(Vector pos);

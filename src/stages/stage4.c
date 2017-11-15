@@ -43,7 +43,7 @@ struct stage4_spells_s stage4_spells = {
 								kurumi_extra, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
 };
 
-void stage4_fog(FBO *fbo) {
+static void stage4_fog(FBO *fbo) {
 	Shader *shader = get_shader("zbuf_fog");
 
 	float f = 0;
@@ -69,7 +69,7 @@ void stage4_fog(FBO *fbo) {
 	glUseProgram(0);
 }
 
-Vector **stage4_fountain_pos(Vector pos, float maxrange) {
+static Vector **stage4_fountain_pos(Vector pos, float maxrange) {
 	Vector p = {0, 400, 1500};
 	Vector r = {0, 0, 3000};
 
@@ -85,7 +85,7 @@ Vector **stage4_fountain_pos(Vector pos, float maxrange) {
 	return list;
 }
 
-void stage4_fountain_draw(Vector pos) {
+static void stage4_fountain_draw(Vector pos) {
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage2/border")->gltex);
 
@@ -101,7 +101,7 @@ void stage4_fountain_draw(Vector pos) {
 	glDisable(GL_TEXTURE_2D);
 }
 
-Vector **stage4_lake_pos(Vector pos, float maxrange) {
+static Vector **stage4_lake_pos(Vector pos, float maxrange) {
 	Vector p = {0, 600, 0};
 	Vector d;
 
@@ -124,7 +124,7 @@ Vector **stage4_lake_pos(Vector pos, float maxrange) {
 	}
 }
 
-void stage4_lake_draw(Vector pos) {
+static void stage4_lake_draw(Vector pos) {
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage4/lake")->gltex);
 
@@ -148,7 +148,7 @@ void stage4_lake_draw(Vector pos) {
 	glDisable(GL_TEXTURE_2D);
 }
 
-Vector **stage4_corridor_pos(Vector pos, float maxrange) {
+static Vector **stage4_corridor_pos(Vector pos, float maxrange) {
 	Vector p = {0, 2400, 50};
 	Vector r = {0, 2000, 0};
 
@@ -164,7 +164,7 @@ Vector **stage4_corridor_pos(Vector pos, float maxrange) {
 	return list;
 }
 
-void stage4_corridor_draw(Vector pos) {
+static void stage4_corridor_draw(Vector pos) {
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage4/planks")->gltex);
 
@@ -222,7 +222,7 @@ void stage4_corridor_draw(Vector pos) {
 	glColor3f(1,1,1);
 }
 
-void stage4_start(void) {
+static void stage4_start(void) {
 	init_stage3d(&stage_3d_context);
 
 	stage_3d_context.cx[2] = -10000;
@@ -240,7 +240,7 @@ void stage4_start(void) {
 	add_model(&stage_3d_context, stage4_corridor_draw, stage4_corridor_pos);
 }
 
-void stage4_preload(void) {
+static void stage4_preload(void) {
 	preload_resources(RES_BGM, RESF_OPTIONAL, "stage4", "stage4boss", NULL);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
 		"stage2/border", // Stage 2 is intentional!
@@ -265,14 +265,17 @@ void stage4_preload(void) {
 	NULL);
 }
 
-void stage4_end(void) {
+static void stage4_end(void) {
 	free_stage3d(&stage_3d_context);
 }
 
-void stage4_draw(void) {
+static void stage4_draw(void) {
 	set_perspective(&stage_3d_context, 130, 3000);
-
 	draw_stage3d(&stage_3d_context, 4000);
+}
+
+static void stage4_update(void) {
+	update_stage3d(&stage_3d_context);
 
 	if(stage_3d_context.cx[2] >= -1000 && stage_3d_context.cv[2] > 0)
 		stage_3d_context.cv[2] -= 0.17;
@@ -287,11 +290,11 @@ void stage4_draw(void) {
 		stage_3d_context.cv[1] += 0.02;
 }
 
-void stage4_spellpractice_events(void) {
+static void stage4_spellpractice_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		skip_background_anim(&stage_3d_context, stage4_draw, 3200, &global.frames, NULL);
+		skip_background_anim(&stage_3d_context, stage4_update, 3200, &global.frames, NULL);
 		global.boss = stage4_spawn_kurumi(BOSS_DEFAULT_SPAWN_POS);
 		boss_add_attack_from_info(global.boss, global.stage->spell, true);
 		boss_start_attack(global.boss, global.boss->attacks);
@@ -301,7 +304,7 @@ void stage4_spellpractice_events(void) {
 }
 
 void stage4_skip(int t) {
-	skip_background_anim(&stage_3d_context, stage4_draw, t, &global.timer, &global.frames);
+	skip_background_anim(&stage_3d_context, stage4_update, t, &global.timer, &global.frames);
 	audio_backend_music_set_position(global.timer / (double)FPS);
 }
 
@@ -312,6 +315,7 @@ StageProcs stage4_procs = {
 	.preload = stage4_preload,
 	.end = stage4_end,
 	.draw = stage4_draw,
+	.update = stage4_update,
 	.event = stage4_events,
 	.shader_rules = stage4_shaders,
 	.spellpractice_procs = &stage4_spell_procs,
@@ -322,6 +326,7 @@ StageProcs stage4_spell_procs = {
 	.begin = stage4_start,
 	.end = stage4_end,
 	.draw = stage4_draw,
+	.update = stage4_update,
 	.event = stage4_spellpractice_events,
 	.shader_rules = stage4_shaders,
 };

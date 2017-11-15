@@ -44,14 +44,14 @@ struct {
 	float rad;
 } stagedata;
 
-Vector **stage5_stairs_pos(Vector pos, float maxrange) {
+static Vector **stage5_stairs_pos(Vector pos, float maxrange) {
 	Vector p = {0, 0, 0};
 	Vector r = {0, 0, 6000};
 
 	return linear3dpos(pos, maxrange, p, r);
 }
 
-void stage5_stairs_draw(Vector pos) {
+static void stage5_stairs_draw(Vector pos) {
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage5/tower")->gltex);
 
@@ -74,9 +74,13 @@ void stage5_stairs_draw(Vector pos) {
 	glUseProgram(0);
 }
 
-void stage5_draw(void) {
+static void stage5_draw(void) {
 	set_perspective(&stage_3d_context, 100, 20000);
 	draw_stage3d(&stage_3d_context, 30000);
+}
+
+static void stage5_update(void) {
+	update_stage3d(&stage_3d_context);
 
 	TIMER(&global.timer);
 	float w = 0.005;
@@ -135,7 +139,7 @@ void iku_spell_bg(Boss *b, int t) {
 	glColor4f(1,1,1,1);
 }
 
-void stage5_start(void) {
+static void stage5_start(void) {
 	memset(&stagedata, 0, sizeof(stagedata));
 
 	init_stage3d(&stage_3d_context);
@@ -146,7 +150,7 @@ void stage5_start(void) {
 	stagedata.rad = 2800;
 }
 
-void stage5_preload(void) {
+static void stage5_preload(void) {
 	preload_resources(RES_BGM, RESF_OPTIONAL, "stage5", "stage5boss", NULL);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
 		"stage5/noise",
@@ -168,12 +172,12 @@ void stage5_preload(void) {
 	NULL);
 }
 
-void stage5_end(void) {
+static void stage5_end(void) {
 	free_stage3d(&stage_3d_context);
 }
 
 void stage5_skip(int t) {
-	skip_background_anim(&stage_3d_context, stage5_draw, t, &global.timer, &global.frames);
+	skip_background_anim(&stage_3d_context, stage5_update, t, &global.timer, &global.frames);
 
 	int mskip = global.timer;
 
@@ -184,11 +188,11 @@ void stage5_skip(int t) {
 	audio_backend_music_set_position(mskip / (double)FPS);
 }
 
-void stage5_spellpractice_events(void) {
+static void stage5_spellpractice_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		skip_background_anim(&stage_3d_context, stage5_draw, 5300, &global.timer, NULL);
+		skip_background_anim(&stage_3d_context, stage5_update, 6960, &global.timer, NULL);
 		global.boss = stage5_spawn_iku(BOSS_DEFAULT_SPAWN_POS);
 		boss_add_attack_from_info(global.boss, global.stage->spell, true);
 		boss_start_attack(global.boss, global.boss->attacks);
@@ -204,6 +208,7 @@ StageProcs stage5_procs = {
 	.preload = stage5_preload,
 	.end = stage5_end,
 	.draw = stage5_draw,
+	.update = stage5_update,
 	.event = stage5_events,
 	.shader_rules = stage5_shaders,
 	.spellpractice_procs = &stage5_spell_procs,
@@ -214,6 +219,7 @@ StageProcs stage5_spell_procs = {
 	.begin = stage5_start,
 	.end = stage5_end,
 	.draw = stage5_draw,
+	.update = stage5_update,
 	.event = stage5_spellpractice_events,
 	.shader_rules = stage5_shaders,
 };

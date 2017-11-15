@@ -34,7 +34,7 @@ struct stage2_spells_s stage2_spells = {
 								hina_monty, hina_spell_bg, BOSS_DEFAULT_GO_POS},
 };
 
-void stage2_bg_leaves_draw(Vector pos) {
+static void stage2_bg_leaves_draw(Vector pos) {
 	glEnable(GL_TEXTURE_2D);
 	glUseProgram(get_shader("alpha_depth")->prog);
 
@@ -80,7 +80,6 @@ static void stage2_bg_grass_draw(Vector pos) {
 
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_TEXTURE_2D);
-
 }
 
 static void stage2_bg_ground_draw(Vector pos) {
@@ -131,21 +130,21 @@ static void stage2_bg_ground_draw(Vector pos) {
 	glMatrixMode(GL_MODELVIEW);
 }
 
-Vector **stage2_bg_pos(Vector pos, float maxrange) {
+static Vector **stage2_bg_pos(Vector pos, float maxrange) {
 	Vector p = {0, 0, 0};
 	Vector r = {0, 1000, 0};
 
 	return linear3dpos(pos, maxrange, p, r);
 }
 
-Vector **stage2_bg_grass_pos(Vector pos, float maxrange) {
+static Vector **stage2_bg_grass_pos(Vector pos, float maxrange) {
 	Vector p = {0, 0, 0};
 	Vector r = {0, 2000, 0};
 
 	return linear3dpos(pos, maxrange, p, r);
 }
 
-Vector **stage2_bg_grass_pos2(Vector pos, float maxrange) {
+static Vector **stage2_bg_grass_pos2(Vector pos, float maxrange) {
 	Vector p = {0, 1234, 40};
 	Vector r = {0, 2000, 0};
 
@@ -181,7 +180,7 @@ static void stage2_bloom(FBO *fbo) {
 	glUseProgram(0);
 }
 
-void stage2_start(void) {
+static void stage2_start(void) {
 	init_stage3d(&stage_3d_context);
 	stage_3d_context.cx[2] = 1000;
 	stage_3d_context.cx[0] = -850;
@@ -196,7 +195,7 @@ void stage2_start(void) {
 	add_model(&stage_3d_context, stage2_bg_leaves_draw, stage2_bg_pos);
 }
 
-void stage2_preload(void) {
+static void stage2_preload(void) {
 	preload_resources(RES_BGM, RESF_OPTIONAL, "stage2", "stage2boss", NULL);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
 		"stage2/border",
@@ -219,30 +218,32 @@ void stage2_preload(void) {
 	NULL);
 }
 
-void stage2_end(void) {
+static void stage2_end(void) {
 	free_stage3d(&stage_3d_context);
 }
 
-void stage2_draw(void) {
+static void stage2_draw(void) {
+	set_perspective(&stage_3d_context, 500, 5000);
+	draw_stage3d(&stage_3d_context, 7000);
+}
+
+static void stage2_update(void) {
 	TIMER(&global.frames);
 
-	set_perspective(&stage_3d_context, 500, 5000);
-
-	FROM_TO(0,180,1) {
+	FROM_TO(0, 180, 1) {
 		stage_3d_context.cv[0] -= 0.05;
 		stage_3d_context.cv[1] += 0.05;
 		stage_3d_context.crot[2] += 0.5;
 	}
 
-	draw_stage3d(&stage_3d_context, 7000);
-
+	update_stage3d(&stage_3d_context);
 }
 
-void stage2_spellpractice_events(void) {
+static void stage2_spellpractice_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		skip_background_anim(&stage_3d_context, stage2_draw, 180, &global.frames, NULL);
+		skip_background_anim(&stage_3d_context, stage2_update, 180, &global.frames, NULL);
 
 		Boss* hina = stage2_spawn_hina(BOSS_DEFAULT_SPAWN_POS);
 		boss_add_attack_from_info(hina, global.stage->spell, true);
@@ -260,6 +261,7 @@ StageProcs stage2_procs = {
 	.preload = stage2_preload,
 	.end = stage2_end,
 	.draw = stage2_draw,
+	.update = stage2_update,
 	.event = stage2_events,
 	.shader_rules = stage2_shaders,
 	.spellpractice_procs = &stage2_spell_procs,
@@ -270,6 +272,7 @@ StageProcs stage2_spell_procs = {
 	.begin = stage2_start,
 	.end = stage2_end,
 	.draw = stage2_draw,
+	.update = stage2_update,
 	.event = stage2_spellpractice_events,
 	.shader_rules = stage2_shaders,
 };

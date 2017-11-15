@@ -46,7 +46,7 @@ static bool particle_filter(Projectile *part) {
 	return part->type < PlrProj;
 }
 
-void stage1_bg_draw(Vector pos) {
+static void stage1_bg_draw(Vector pos) {
 	glPushMatrix();
 	glTranslatef(0,stage_3d_context.cx[1]+500,0);
 	glRotatef(180,1,0,0);
@@ -84,12 +84,12 @@ void stage1_bg_draw(Vector pos) {
 	glPopMatrix();
 }
 
-Vector **stage1_bg_pos(Vector p, float maxrange) {
+static Vector **stage1_bg_pos(Vector p, float maxrange) {
 	Vector q = {0,0,0};
 	return single3dpos(p, INFINITY, q);
 }
 
-void stage1_smoke_draw(Vector pos) {
+static void stage1_smoke_draw(Vector pos) {
 	float d = fabsf(pos[1]-stage_3d_context.cx[1]);
 
 	glDisable(GL_DEPTH_TEST);
@@ -107,13 +107,13 @@ void stage1_smoke_draw(Vector pos) {
 	glEnable(GL_DEPTH_TEST);
 }
 
-Vector **stage1_smoke_pos(Vector p, float maxrange) {
+static Vector **stage1_smoke_pos(Vector p, float maxrange) {
 	Vector q = {0,0,-300};
 	Vector r = {0,300,0};
 	return linear3dpos(p, maxrange/2.0, q, r);
 }
 
-void stage1_fog(FBO *fbo) {
+static void stage1_fog(FBO *fbo) {
 	Shader *shader = get_shader("zbuf_fog");
 
 	glUseProgram(shader->prog);
@@ -132,13 +132,16 @@ void stage1_fog(FBO *fbo) {
 	glUseProgram(0);
 }
 
-void stage1_draw(void) {
+static void stage1_draw(void) {
 	set_perspective(&stage_3d_context, 500, 5000);
-
 	draw_stage3d(&stage_3d_context, 7000);
 }
 
-void stage1_reed_draw(Vector pos) {
+static void stage1_update(void) {
+	update_stage3d(&stage_3d_context);
+}
+
+static void stage1_reed_draw(Vector pos) {
 	float d = -55+50*sin(pos[1]/25.0);
 	glPushMatrix();
 	glTranslatef(pos[0]+200*sin(pos[1]), pos[1], d);
@@ -161,7 +164,7 @@ void stage1_reed_draw(Vector pos) {
 	glPopMatrix();
 }
 
-void stage1_start(void) {
+static void stage1_start(void) {
 	init_stage3d(&stage_3d_context);
 	add_model(&stage_3d_context, stage1_bg_draw, stage1_bg_pos);
 	add_model(&stage_3d_context, stage1_smoke_draw, stage1_smoke_pos);
@@ -172,7 +175,7 @@ void stage1_start(void) {
 	stage_3d_context.cv[1] = 4;
 }
 
-void stage1_preload(void) {
+static void stage1_preload(void) {
 	preload_resources(RES_BGM, RESF_OPTIONAL, "stage1", "stage1boss", NULL);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
 		"stage1/cirnobg",
@@ -191,11 +194,11 @@ void stage1_preload(void) {
 	NULL);
 }
 
-void stage1_end(void) {
+static void stage1_end(void) {
 	free_stage3d(&stage_3d_context);
 }
 
-void stage1_spellpractice_events(void) {
+static void stage1_spellpractice_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
@@ -215,6 +218,7 @@ StageProcs stage1_procs = {
 	.preload = stage1_preload,
 	.end = stage1_end,
 	.draw = stage1_draw,
+	.update = stage1_update,
 	.event = stage1_events,
 	.shader_rules = stage1_shaders,
 	.spellpractice_procs = &stage1_spell_procs,
@@ -225,6 +229,7 @@ StageProcs stage1_spell_procs = {
 	.begin = stage1_start,
 	.end = stage1_end,
 	.draw = stage1_draw,
+	.update = stage1_update,
 	.event = stage1_spellpractice_events,
 	.shader_rules = stage1_shaders,
 };

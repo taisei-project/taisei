@@ -43,14 +43,14 @@ void set_perspective(Stage3D *s, float n, float f) {
 	set_perspective_viewport(s, n, f, VIEWPORT_X, VIEWPORT_Y, VIEWPORT_W, VIEWPORT_H);
 }
 
-void draw_stage3d(Stage3D *s, float maxrange) {
-	int i,j;
-	for(i = 0; i < 3;i++)
+void update_stage3d(Stage3D *s) {
+	for(int i = 0; i < 3;i++){
 		s->cx[i] += s->cv[i];
-
-	if(s->nodraw) {
-		return;
 	}
+}
+
+void draw_stage3d(Stage3D *s, float maxrange) {
+	int i, j;
 
 	glPushMatrix();
 
@@ -147,28 +147,18 @@ Vector **single3dpos(Vector q, float maxrange, Vector p) {
 	}
 }
 
-void skip_background_anim(Stage3D *s3d, void (*drawfunc)(void), int frames, int *timer, int *timer2) {
-	// two timers because stage 6 is so fucking special
-	// second is optional
-
-	if(s3d) {
-		s3d->nodraw = true;
-	}
-
+void skip_background_anim(Stage3D *s3d, void (*update_func)(void), int frames, int *timer, int *timer2) {
 	int targetframes = *timer + frames;
 
 	while(++(*timer) < targetframes) {
 		if(timer2) {
 			++(*timer2);
 		}
-		drawfunc();
+
+		update_func();
 	}
 
 	if(timer2) {
 		++(*timer2);
-	}
-
-	if(s3d) {
-		s3d->nodraw = false;
 	}
 }
