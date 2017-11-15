@@ -14,7 +14,7 @@
 #include "recolor.h"
 
 #ifdef DEBUG
-	// #define PROJ_DEBUG
+	#define PROJ_DEBUG
 #endif
 
 enum {
@@ -51,14 +51,6 @@ typedef enum ProjFlags {
 	PFLAG_NOGRAZE = (1 << 3),
 } ProjFlags;
 
-#ifdef PROJ_DEBUG
-typedef struct ProjDebugInfo {
-	const char *file;
-	const char *func;
-	unsigned int line;
-} ProjDebugInfo;
-#endif
-
 struct Projectile {
 	struct Projectile *next;
 	struct Projectile *prev;
@@ -79,7 +71,7 @@ struct Projectile {
 	bool grazed;
 
 #ifdef PROJ_DEBUG
-	ProjDebugInfo debug;
+	DebugInfo debug;
 #endif
 };
 
@@ -104,9 +96,9 @@ Projectile* create_projectile(ProjArgs *args);
 Projectile* create_particle(ProjArgs *args);
 
 #ifdef PROJ_DEBUG
-	Projectile* _proj_attach_dbginfo(Projectile *p, ProjDebugInfo *dbg);
-	#define PROJECTILE(...) _proj_attach_dbginfo(create_projectile(&(ProjArgs) { __VA_ARGS__ }), &(ProjDebugInfo) { __FILE__, __func__, __LINE__ })
-	#define PARTICLE(...) _proj_attach_dbginfo(create_particle(&(ProjArgs) { __VA_ARGS__ }), &(ProjDebugInfo) { __FILE__, __func__, __LINE__ })
+	Projectile* _proj_attach_dbginfo(Projectile *p, DebugInfo *dbg);
+	#define PROJECTILE(...) _proj_attach_dbginfo(create_projectile(&(ProjArgs) { __VA_ARGS__ }), _DEBUG_INFO_PTR_)
+	#define PARTICLE(...) _proj_attach_dbginfo(create_particle(&(ProjArgs) { __VA_ARGS__ }), _DEBUG_INFO_PTR_)
 #else
 	#define PROJECTILE(...) create_projectile(&(ProjArgs) { __VA_ARGS__ })
 	#define PARTICLE(...) create_particle(&(ProjArgs) { __VA_ARGS__ })
@@ -134,12 +126,15 @@ void DeathShrink(Projectile *p, int t);
 void Fade(Projectile *p, int t);
 void GrowFade(Projectile *p, int t);
 void ScaleFade(Projectile *p, int t);
-void Blast(Projectile *p, int t);
+
 
 void Petal(Projectile *p, int t);
 void petal_explosion(int n, complex pos);
 
 int timeout(Projectile *p, int t);
 int timeout_linear(Projectile *p, int t);
+
+int blast_timeout(Projectile *p, int t);
+void Blast(Projectile *p, int t);
 
 void projectiles_preload(void);

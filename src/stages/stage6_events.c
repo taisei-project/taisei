@@ -194,7 +194,11 @@ int scythe_mid(Enemy *e, int t) {
 	return 1;
 }
 
-void Scythe(Enemy *e, int t) {
+void Scythe(Enemy *e, int t, bool render) {
+	if(render) {
+		return;
+	}
+
 	PARTICLE(
 		.texture_ptr = get_tex("stage6/scythe"),
 		.pos = e->pos+I*6*sin(global.frames/25.0),
@@ -580,10 +584,26 @@ void elly_maxwell(Boss *b, int t) {
 
 }
 
-void Baryon(Enemy *e, int t) {
+void Baryon(Enemy *e, int t, bool render) {
 	Enemy *n;
-
 	float alpha = 1 - 0.8/(exp((cabs(global.plr.pos-e->pos)-100)/10)+1);
+
+	if(!render) {
+		if(!(t % 10) && global.boss && cabs(e->pos - global.boss->pos) > 2) {
+			PARTICLE(
+				.texture = "stain",
+				.pos = e->pos+10*frand()*cexp(2.0*I*M_PI*frand()),
+				.color = rgb(0, 1*alpha, 0.7*alpha),
+				.draw_rule = Fade,
+				.rule = timeout,
+				.args = { 50 },
+				.angle = 2*M_PI*frand(),
+				.flags = PFLAG_DRAWADD,
+			);
+		}
+
+		return;
+	}
 
 	glColor4f(1.0,1.0,1.0,alpha);
 	draw_texture(creal(e->pos), cimag(e->pos), "stage6/baryon");
@@ -603,26 +623,32 @@ void Baryon(Enemy *e, int t) {
 	draw_quad();
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
+}
 
-// 	PARTICLE("flare", e->pos+40*frand()*cexp(2.0*I*M_PI*frand()), rgb(0, 1, 1), GrowFadeAdd, timeout_linear, 50, 1-I);
+void BaryonCenter(Enemy *e, int t, bool render) {
+	Enemy *l[2];
+	int i;
 
-	if(!(t % 10) && global.boss && cabs(e->pos - global.boss->pos) > 2) {
-		PARTICLE(
-			.texture = "stain",
-			.pos = e->pos+10*frand()*cexp(2.0*I*M_PI*frand()),
-			.color = rgb(0, 1*alpha, 0.7*alpha),
+	if(!render) {
+		complex p = e->pos+40*frand()*cexp(2.0*I*M_PI*frand());
+
+		PARTICLE("flare", p, rgb(0.0, 1.0, 1.0),
+			.draw_rule = GrowFade,
+			.rule = timeout_linear,
+			.args = { 50, 1-I },
+			.flags = PFLAG_DRAWADD,
+		);
+
+		PARTICLE("stain", p, rgb(0.0, 1.0, 0.2),
 			.draw_rule = Fade,
 			.rule = timeout,
 			.args = { 50 },
 			.angle = 2*M_PI*frand(),
 			.flags = PFLAG_DRAWADD,
 		);
-	}
-}
 
-void BaryonCenter(Enemy *e, int t) {
-	Enemy *l[2];
-	int i;
+		return;
+	}
 
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 
@@ -633,7 +659,6 @@ void BaryonCenter(Enemy *e, int t) {
 	glPopMatrix();
 	draw_texture(creal(e->pos), cimag(e->pos), "stage6/baryon");
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-
 
 	l[0] = REF(creal(e->args[1]));
 	l[1] = REF(cimag(e->args[1]));
@@ -653,23 +678,6 @@ void BaryonCenter(Enemy *e, int t) {
 
 	}
 	glDisable(GL_TEXTURE_2D);
-
-	complex p = e->pos+40*frand()*cexp(2.0*I*M_PI*frand());
-
-	PARTICLE("flare", p, rgb(0.0, 1.0, 1.0),
-		.draw_rule = GrowFade,
-		.rule = timeout_linear,
-		.args = { 50, 1-I },
-		.flags = PFLAG_DRAWADD,
-	);
-
-	PARTICLE("stain", p, rgb(0.0, 1.0, 0.2),
-		.draw_rule = Fade,
-		.rule = timeout,
-		.args = { 50 },
-		.angle = 2*M_PI*frand(),
-		.flags = PFLAG_DRAWADD,
-	);
 }
 
 int baryon_unfold(Enemy *e, int t) {
@@ -764,7 +772,7 @@ void elly_unbound(Boss *b, int t) {
 static void set_baryon_rule(EnemyLogicRule r) {
 	Enemy *e;
 	for(e = global.enemies; e; e = e->next) {
-		if(e->draw_rule == Baryon) {
+		if(e->visual_rule == Baryon) {
 			e->birthtime = global.frames;
 			e->logic_rule = r;
 		}
@@ -975,7 +983,7 @@ int baryon_broglie(Enemy *e, int t) {
 	Enemy *master = NULL;
 
 	for(Enemy *en = global.enemies; en; en = en->next) {
-		if(en->draw_rule == Baryon) {
+		if(en->visual_rule == Baryon) {
 			master = en;
 			break;
 		}
@@ -1237,7 +1245,7 @@ static int ricci_proj(Projectile *p, int t) {
 	double influence = 0;
 
 	for(e = global.enemies; e; e = e->next, i++) {
-		if(e->draw_rule != Baryon) {
+		if(e->visual_rule != Baryon) {
 			i--;
 			continue;
 		}

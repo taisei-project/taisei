@@ -103,6 +103,10 @@ int projectile_prio_func(void *vproj) {
 }
 
 static Projectile* _create_projectile(ProjArgs *args) {
+	if(IN_DRAW_CODE) {
+		log_fatal("Tried to spawn a projectile while in drawing code");
+	}
+
 	Projectile *p = create_element_at_priority(
 		(void**)args->dest, sizeof(Projectile),
 		projectile_prio_rawfunc(args->texture_ptr, args->size),
@@ -144,8 +148,9 @@ Projectile* create_particle(ProjArgs *args) {
 }
 
 #ifdef PROJ_DEBUG
-Projectile* _proj_attach_dbginfo(Projectile *p, ProjDebugInfo *dbg) {
-	memcpy(&p->debug, dbg, sizeof(ProjDebugInfo));
+Projectile* _proj_attach_dbginfo(Projectile *p, DebugInfo *dbg) {
+	memcpy(&p->debug, dbg, sizeof(DebugInfo));
+	set_debug_info(dbg);
 	return p;
 }
 #endif
@@ -244,17 +249,28 @@ void proj_clrtransform_particle(Projectile *p, int t, Color c, ColorTransform *o
 }
 
 static inline void draw_projectile(Projectile *proj) {
+#ifdef PROJ_DEBUG
+	static Projectile prev_state;
+	memcpy(&prev_state, proj, sizeof(Projectile));
+
 	proj->draw_rule(proj, global.frames - proj->birthtime);
 
-#ifdef PROJ_DEBUG
-	int cur_shader;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &cur_shader); // NOTE: this can be really slow!
+	if(memcmp(&prev_state, proj, sizeof(Projectile))) {
+		set_debug_info(&proj->debug);
+		log_fatal("Projectile modified its state in draw rule");
+	}
 
-    if(cur_shader != recolor_get_shader()->prog) {
-    	log_fatal("Bad shader after drawing projectile. Offending spawn: %s:%u:%s",
-    		proj->debug.file, proj->debug.line, proj->debug.func
-    	);
-    }
+	/*
+	int cur_shader;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &cur_shader); // NOTE: this can be really slow!
+
+	if(cur_shader != recolor_get_shader()->prog) {
+		set_debug_info(&proj->debug);
+		log_fatal("Bad shader after drawing projectile");
+	}
+	*/
+#else
+	proj->draw_rule(proj, global.frames - proj->birthtime);
 #endif
 }
 
@@ -450,12 +466,16 @@ void ProjDraw(Projectile *proj, int t) {
 void ProjNoDraw(Projectile *proj, int t) {
 }
 
-void Blast(Projectile *p, int t) {
+int blast_timeout(Projectile *p, int t) {
 	if(t == 1) {
 		p->args[1] = frand()*360 + frand()*I;
 		p->args[2] = frand() + frand()*I;
 	}
 
+	return timeout(p, t);
+}
+
+void Blast(Projectile *p, int t) {
 	glPushMatrix();
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
 	glRotatef(creal(p->args[1]), cimag(p->args[1]), creal(p->args[2]), cimag(p->args[2]));

@@ -28,5 +28,5 @@ void elly_curvature(Boss*, int);
 void stage6_events(void);
 Boss* stage6_spawn_elly(complex pos);
 
-void Scythe(Enemy *e, int t);
+void Scythe(Enemy *e, int t, bool render);
 void scythe_common(Enemy *e, int t);

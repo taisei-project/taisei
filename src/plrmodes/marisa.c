@@ -43,7 +43,11 @@ void marisa_common_shot(Player *plr) {
     }
 }
 
-void marisa_common_slave_draw(Enemy *e, int t) {
+void marisa_common_slave_visual(Enemy *e, int t, bool render) {
+    if(!render) {
+        return;
+    }
+
     glPushMatrix();
     glTranslatef(creal(e->pos), cimag(e->pos), -1);
     // glRotatef(global.frames * 3, 0, 0, 1);

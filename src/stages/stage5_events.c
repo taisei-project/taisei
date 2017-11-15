@@ -306,7 +306,11 @@ int stage5_explosion(Enemy *e, int t) {
 	return 1;
 }
 
-void iku_slave_draw(Enemy *e, int t) {
+void iku_slave_visual(Enemy *e, int t, bool render) {
+	if(render) {
+		return;
+	}
+
 	complex offset = (frand()-0.5)*10 + (frand()-0.5)*10.0*I;
 
 	if(e->args[2] && !(t % 5)) {
@@ -338,7 +342,7 @@ void iku_mid_intro(Boss *b, int t) {
 	b->pos += -1-7.0*I+10*t*(cimag(b->pos)<-200);
 
 	FROM_TO(90, 110, 10) {
-		create_enemy3c(b->pos, ENEMY_IMMUNE, iku_slave_draw, stage5_explosion, -2-0.5*_i+I*_i, _i == 1,1);
+		create_enemy3c(b->pos, ENEMY_IMMUNE, iku_slave_visual, stage5_explosion, -2-0.5*_i+I*_i, _i == 1,1);
 	}
 
 	AT(960)
@@ -853,8 +857,12 @@ Enemy* iku_extra_find_next_slave(complex from, double playerbias) {
 	return nearest;
 }
 
-void iku_extra_slave_draw(Enemy *e, int t) {
-	iku_slave_draw(e, t);
+void iku_extra_slave_visual(Enemy *e, int t, bool render) {
+	iku_slave_visual(e, t, render);
+
+	if(render) {
+		return;
+	}
 
 	if(e->args[2] && !(t % 5)) {
 		complex offset = (frand()-0.5)*30 + (frand()-0.5)*20.0*I;
@@ -1056,7 +1064,7 @@ void iku_extra(Boss *b, int t) {
 		for(i = 0; i < cnt; ++i) {
 			for(j = 0; j < cnt; ++j) {
 				complex epos = step * (0.5 + i) + (step * j + 125) * I;
-				create_enemy4c(b->pos, ENEMY_IMMUNE, iku_extra_slave_draw, iku_extra_slave, epos, 0, 0, 1);
+				create_enemy4c(b->pos, ENEMY_IMMUNE, iku_extra_slave_visual, iku_extra_slave, epos, 0, 0, 1);
 			}
 		}
 	}

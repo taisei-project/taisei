@@ -157,21 +157,21 @@ static void marisa_star_respawn_slaves(Player *plr, short npow) {
     }
 
     if(npow / 100 == 1) {
-        create_enemy_p(&plr->slaves, 40.0*I, ENEMY_IMMUNE, marisa_common_slave_draw, marisa_star_slave, +30.0*I, -2.0*I, -0.1*I, dmg);
+        create_enemy_p(&plr->slaves, 40.0*I, ENEMY_IMMUNE, marisa_common_slave_visual, marisa_star_slave, +30.0*I, -2.0*I, -0.1*I, dmg);
     }
 
     if(npow >= 200) {
-        create_enemy_p(&plr->slaves, 30.0*I+15, ENEMY_IMMUNE, marisa_common_slave_draw, marisa_star_slave, +30.0*I+10, -0.3-2.0*I,  1-0.1*I, dmg);
-        create_enemy_p(&plr->slaves, 30.0*I-15, ENEMY_IMMUNE, marisa_common_slave_draw, marisa_star_slave, +30.0*I-10,  0.3-2.0*I, -1-0.1*I, dmg);
+        create_enemy_p(&plr->slaves, 30.0*I+15, ENEMY_IMMUNE, marisa_common_slave_visual, marisa_star_slave, +30.0*I+10, -0.3-2.0*I,  1-0.1*I, dmg);
+        create_enemy_p(&plr->slaves, 30.0*I-15, ENEMY_IMMUNE, marisa_common_slave_visual, marisa_star_slave, +30.0*I-10,  0.3-2.0*I, -1-0.1*I, dmg);
     }
 
     if(npow / 100 == 3) {
-        create_enemy_p(&plr->slaves, -30.0*I, ENEMY_IMMUNE, marisa_common_slave_draw, marisa_star_slave, +30.0*I, -2.0*I, -0.1*I, dmg);
+        create_enemy_p(&plr->slaves, -30.0*I, ENEMY_IMMUNE, marisa_common_slave_visual, marisa_star_slave, +30.0*I, -2.0*I, -0.1*I, dmg);
     }
 
     if(npow >= 400) {
-        create_enemy_p(&plr->slaves,  30, ENEMY_IMMUNE, marisa_common_slave_draw, marisa_star_slave,  25+30.0*I, -0.6-2.0*I,  2-0.1*I, dmg);
-        create_enemy_p(&plr->slaves, -30, ENEMY_IMMUNE, marisa_common_slave_draw, marisa_star_slave, -25+30.0*I,  0.6-2.0*I, -2-0.1*I, dmg);
+        create_enemy_p(&plr->slaves,  30, ENEMY_IMMUNE, marisa_common_slave_visual, marisa_star_slave,  25+30.0*I, -0.6-2.0*I,  2-0.1*I, dmg);
+        create_enemy_p(&plr->slaves, -30, ENEMY_IMMUNE, marisa_common_slave_visual, marisa_star_slave, -25+30.0*I,  0.6-2.0*I, -2-0.1*I, dmg);
     }
 }
 

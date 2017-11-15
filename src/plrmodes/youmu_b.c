@@ -93,7 +93,7 @@ static int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: aim (r:
 
 static int youmu_trap(Projectile *p, int t) {
     if(t == EVENT_DEATH) {
-        PARTICLE("blast", p->pos, 0, timeout, { 15 }, .draw_rule = Blast);
+        PARTICLE("blast", p->pos, 0, blast_timeout, { 15 }, .draw_rule = Blast);
         return 1;
     }
 
@@ -104,8 +104,8 @@ static int youmu_trap(Projectile *p, int t) {
     }
 
     if(!(global.plr.inputflags & INFLAG_FOCUS)) {
-        PARTICLE("blast", p->pos, 0, timeout, { 20 }, .draw_rule = Blast);
-        PARTICLE("blast", p->pos, 0, timeout, { 23 }, .draw_rule = Blast);
+        PARTICLE("blast", p->pos, 0, blast_timeout, { 20 }, .draw_rule = Blast);
+        PARTICLE("blast", p->pos, 0, blast_timeout, { 23 }, .draw_rule = Blast);
 
         int cnt = creal(p->args[2]);
         int dmg = cimag(p->args[2]);
@@ -134,9 +134,11 @@ static int youmu_trap(Projectile *p, int t) {
     return 1;
 }
 
-static void YoumuSlash(Enemy *e, int t) {
-    t = player_get_bomb_progress(&global.plr, NULL);
-    fade_out(10.0/t+sin(t/10.0)*0.1);
+static void YoumuSlash(Enemy *e, int t, bool render) {
+    if(render) {
+        t = player_get_bomb_progress(&global.plr, NULL);
+        fade_out(10.0/t+sin(t/10.0)*0.1);
+    }
 }
 
 static int youmu_slash_logic(void *v, int t, double speed) {
@@ -156,7 +158,7 @@ static int youmu_slash_logic(void *v, int t, double speed) {
             .texture = "youmu_slice",
             .pos = VIEWPORT_W/2.0 - 150 + 100*_i + VIEWPORT_H/2.0*I - 10-10.0*I + 20*afrand(0)+20.0*I*afrand(1),
             .draw_rule = youmu_common_particle_slice_draw,
-            .rule = timeout,
+            .rule = youmu_common_particle_slice_logic,
             .args = { 200 / speed },
             .angle = 10 * anfrand(2),
             .type = PlrProj,

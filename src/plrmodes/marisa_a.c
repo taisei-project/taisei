@@ -109,7 +109,12 @@ static void draw_magic_star(complex pos, double a, Color c1, Color c2) {
     glUseProgram(0);
 }
 
-static void marisa_laser_slave_draw(Enemy *e, int t) {
+static void marisa_laser_slave_visual(Enemy *e, int t, bool render) {
+    if(!render) {
+        marisa_common_slave_visual(e, t, render);
+        return;
+    }
+
     float laser_alpha = global.plr.slaves->args[0];
     float star_alpha = global.plr.slaves->args[1];
 
@@ -118,7 +123,7 @@ static void marisa_laser_slave_draw(Enemy *e, int t) {
         rgb(0.0, 0.1, 1.1)
     );
 
-    marisa_common_slave_draw(e, t);
+    marisa_common_slave_visual(e, t, render);
 
     if(laser_alpha <= 0) {
         return;
@@ -132,11 +137,11 @@ static void marisa_laser_slave_draw(Enemy *e, int t) {
     glColor4f(1, 1, 1, 1);
 }
 
-static void marisa_laser_fader_draw(Enemy *e, int t) {
+static void marisa_laser_fader_visual(Enemy *e, int t, bool render) {
 }
 
 static float get_laser_alpha(Enemy *e, float a) {
-    if(e->draw_rule == marisa_laser_fader_draw) {
+    if(e->visual_rule == marisa_laser_fader_visual) {
         return e->args[1];
     }
 
@@ -144,9 +149,13 @@ static float get_laser_alpha(Enemy *e, float a) {
 }
 
 #define FOR_EACH_SLAVE(e) for(Enemy *e = global.plr.slaves; e; e = e->next) if(e != renderer)
-#define FOR_EACH_REAL_SLAVE(e) FOR_EACH_SLAVE(e) if(e->draw_rule == marisa_laser_slave_draw)
+#define FOR_EACH_REAL_SLAVE(e) FOR_EACH_SLAVE(e) if(e->visual_rule == marisa_laser_slave_visual)
 
-static void marisa_laser_renderer_draw(Enemy *renderer, int t) {
+static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
+    if(!render) {
+        return;
+    }
+
     double a = creal(renderer->args[0]);
     Shader *shader = get_shader("marisa_laser");
     int u_clr0 = uniloc(shader, "color0");
@@ -218,7 +227,7 @@ static int marisa_laser_fader(Enemy *e, int t) {
 }
 
 static Enemy* spawn_laser_fader(Enemy *e, double alpha) {
-    return create_enemy_p(&global.plr.slaves, e->pos, ENEMY_IMMUNE, marisa_laser_fader_draw, marisa_laser_fader,
+    return create_enemy_p(&global.plr.slaves, e->pos, ENEMY_IMMUNE, marisa_laser_fader_visual, marisa_laser_fader,
         e->args[0], alpha, e->args[2], e->args[3]);
 }
 
@@ -290,7 +299,11 @@ static void masterspark_ring_draw(complex base, int t, float fade) {
     glPopMatrix();
 }
 
-static void masterspark_draw(Enemy *e, int t) {
+static void masterspark_visual(Enemy *e, int t, bool render) {
+    if(!render) {
+        return;
+    }
+
     t = player_get_bomb_progress(&global.plr, NULL) * (e->args[0] / BOMB_RECOVERY);
 
     glPushMatrix();
@@ -340,7 +353,7 @@ static int masterspark(Enemy *e, int t) {
 
 static void marisa_laser_bomb(Player *plr) {
     play_sound("bomb_marisa_a");
-    create_enemy_p(&plr->slaves, 40.0*I, ENEMY_BOMB, masterspark_draw, masterspark, 280,0,0,0);
+    create_enemy_p(&plr->slaves, 40.0*I, ENEMY_BOMB, masterspark_visual, masterspark, 280,0,0,0);
 }
 
 static void marisa_laser_respawn_slaves(Player *plr, short npow) {
@@ -356,21 +369,21 @@ static void marisa_laser_respawn_slaves(Player *plr, short npow) {
     }
 
     if(npow / 100 == 1) {
-        create_enemy_p(&plr->slaves, -40.0*I, ENEMY_IMMUNE, marisa_laser_slave_draw, marisa_laser_slave, -40.0*I, dmg, 0, 0);
+        create_enemy_p(&plr->slaves, -40.0*I, ENEMY_IMMUNE, marisa_laser_slave_visual, marisa_laser_slave, -40.0*I, dmg, 0, 0);
     }
 
     if(npow >= 200) {
-        create_enemy_p(&plr->slaves, 25-5.0*I, ENEMY_IMMUNE, marisa_laser_slave_draw, marisa_laser_slave, 8-40.0*I, dmg,   -M_PI/30, 0);
-        create_enemy_p(&plr->slaves, -25-5.0*I, ENEMY_IMMUNE, marisa_laser_slave_draw, marisa_laser_slave, -8-40.0*I, dmg,  M_PI/30, 0);
+        create_enemy_p(&plr->slaves, 25-5.0*I, ENEMY_IMMUNE, marisa_laser_slave_visual, marisa_laser_slave, 8-40.0*I, dmg,   -M_PI/30, 0);
+        create_enemy_p(&plr->slaves, -25-5.0*I, ENEMY_IMMUNE, marisa_laser_slave_visual, marisa_laser_slave, -8-40.0*I, dmg,  M_PI/30, 0);
     }
 
     if(npow / 100 == 3) {
-        create_enemy_p(&plr->slaves, -30.0*I, ENEMY_IMMUNE, marisa_laser_slave_draw, marisa_laser_slave, -50.0*I, dmg, 0, 0);
+        create_enemy_p(&plr->slaves, -30.0*I, ENEMY_IMMUNE, marisa_laser_slave_visual, marisa_laser_slave, -50.0*I, dmg, 0, 0);
     }
 
     if(npow >= 400) {
-        create_enemy_p(&plr->slaves, 17-30.0*I, ENEMY_IMMUNE, marisa_laser_slave_draw, marisa_laser_slave, 4-45.0*I, dmg, M_PI/60, 0);
-        create_enemy_p(&plr->slaves, -17-30.0*I, ENEMY_IMMUNE, marisa_laser_slave_draw, marisa_laser_slave, -4-45.0*I, dmg, -M_PI/60, 0);
+        create_enemy_p(&plr->slaves, 17-30.0*I, ENEMY_IMMUNE, marisa_laser_slave_visual, marisa_laser_slave, 4-45.0*I, dmg, M_PI/60, 0);
+        create_enemy_p(&plr->slaves, -17-30.0*I, ENEMY_IMMUNE, marisa_laser_slave_visual, marisa_laser_slave, -4-45.0*I, dmg, -M_PI/60, 0);
     }
 }
 
@@ -383,7 +396,7 @@ static void marisa_laser_power(Player *plr, short npow) {
 }
 
 static void marisa_laser_init(Player *plr) {
-    create_enemy_p(&plr->slaves, 0, ENEMY_IMMUNE, marisa_laser_renderer_draw, marisa_laser_renderer, 0, 0, 0, 0);
+    create_enemy_p(&plr->slaves, 0, ENEMY_IMMUNE, marisa_laser_renderer_visual, marisa_laser_renderer, 0, 0, 0, 0);
     marisa_laser_respawn_slaves(plr, plr->power);
 }
 

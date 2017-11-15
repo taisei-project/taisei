@@ -14,8 +14,24 @@
 #include "list.h"
 #include "aniplayer.h"
 
-Enemy *create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyDrawRule draw_rule, EnemyLogicRule logic_rule,
+#ifdef create_enemy_p
+#undef create_enemy_p
+#endif
+
+#ifdef DEBUG
+Enemy* _enemy_attach_dbginfo(Enemy *e, DebugInfo *dbg) {
+	memcpy(&e->debug, dbg, sizeof(DebugInfo));
+	set_debug_info(dbg);
+	return e;
+}
+#endif
+
+Enemy *create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyVisualRule visual_rule, EnemyLogicRule logic_rule,
 				  complex a1, complex a2, complex a3, complex a4) {
+	if(IN_DRAW_CODE) {
+		log_fatal("Tried to spawn an enemy while in drawing code");
+	}
+
 	Enemy *e = (Enemy *)create_element((void **)enemies, sizeof(Enemy));
 	e->moving = false;
 	e->dir = 0;
@@ -28,7 +44,7 @@ Enemy *create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyDrawRule draw_r
 	e->alpha = 1.0;
 
 	e->logic_rule = logic_rule;
-	e->draw_rule = draw_rule;
+	e->visual_rule = visual_rule;
 
 	e->args[0] = a1;
 	e->args[1] = a2;
@@ -53,9 +69,9 @@ void _delete_enemy(void **enemies, void* enemy) {
 			);
 		}
 
-		PARTICLE("blast", e->pos, 0, timeout, { 20 }, .draw_rule = Blast);
-		PARTICLE("blast", e->pos, 0, timeout, { 20 }, .draw_rule = Blast);
-		PARTICLE("blast", e->pos, 0, timeout, { 15 }, .draw_rule = GrowFade);
+		PARTICLE("blast", e->pos, 0, blast_timeout, { 20 }, .draw_rule = Blast);
+		PARTICLE("blast", e->pos, 0, blast_timeout, { 20 }, .draw_rule = Blast);
+		PARTICLE("blast", e->pos, 0, blast_timeout, { 15 }, .draw_rule = GrowFade);
 	}
 
 	e->logic_rule(enemy, EVENT_DEATH);
@@ -72,12 +88,27 @@ void delete_enemies(Enemy **enemies) {
 	delete_all_elements((void **)enemies, _delete_enemy);
 }
 
+static void draw_enemy(Enemy *e) {
+#ifdef ENEMY_DEBUG
+	static Enemy prev_state;
+	memcpy(&prev_state, e, sizeof(Enemy));
+	e->visual_rule(e, global.frames - e->birthtime, true);
+
+	if(memcmp(&prev_state, e, sizeof(Enemy))) {
+		set_debug_info(&e->debug);
+		log_fatal("Enemy modified its own state in draw rule");
+	}
+#else
+	e->visual_rule(e, global.frames - e->birthtime, true);
+#endif
+}
+
 void draw_enemies(Enemy *enemies) {
 	Enemy *e;
 	bool reset = false;
 
 	for(e = enemies; e; e = e->next) {
-		if(e->draw_rule) {
+		if(e->visual_rule) {
 			if(e->alpha < 1) {
 				e->alpha += 1 / 60.0;
 				if(e->alpha > 1)
@@ -87,7 +118,8 @@ void draw_enemies(Enemy *enemies) {
 				reset = true;
 			}
 
-			e->draw_rule(e, global.frames - e->birthtime);
+			draw_enemy(e);
+
 			if(reset)
 				glColor4f(1,1,1,1);
 		}
@@ -140,15 +172,19 @@ void EnemyFlareShrink(Projectile *p, int t) {
 	glPopMatrix();
 }
 
-void BigFairy(Enemy *e, int t) {
-	if(!(t % 5)) {
-		complex offset = (frand()-0.5)*30 + (frand()-0.5)*20.0*I;
+void BigFairy(Enemy *e, int t, bool render) {
+	if(!render) {
+		if(!(t % 5)) {
+			complex offset = (frand()-0.5)*30 + (frand()-0.5)*20.0*I;
 
-		PARTICLE("lasercurve", offset, rgb(0,0.2,0.3), enemy_flare,
-			.draw_rule = EnemyFlareShrink,
-			.args = { 50, (-50.0*I-offset)/50.0, add_ref(e) },
-			.flags = PFLAG_DRAWADD,
-		);
+			PARTICLE("lasercurve", offset, rgb(0,0.2,0.3), enemy_flare,
+				.draw_rule = EnemyFlareShrink,
+				.args = { 50, (-50.0*I-offset)/50.0, add_ref(e) },
+				.flags = PFLAG_DRAWADD,
+			);
+		}
+
+		return;
 	}
 
 	glPushMatrix();
@@ -173,7 +209,10 @@ void BigFairy(Enemy *e, int t) {
 		glCullFace(GL_BACK);
 }
 
-void Fairy(Enemy *e, int t) {
+void Fairy(Enemy *e, int t, bool render) {
+	if(!render) {
+		return;
+	}
 
 	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;
 	glPushMatrix();
@@ -200,7 +239,11 @@ void Fairy(Enemy *e, int t) {
 	}
 }
 
-void Swirl(Enemy *e, int t) {
+void Swirl(Enemy *e, int t, bool render) {
+	if(!render) {
+		return;
+	}
+
 	glPushMatrix();
 	glTranslatef(creal(e->pos), cimag(e->pos),0);
 	glRotatef(t*15,0,0,1);
@@ -225,6 +268,10 @@ void process_enemies(Enemy **enemies) {
 			enemy = enemy->next;
 			delete_enemy(enemies, del);
 		} else {
+			if(enemy->visual_rule) {
+				enemy->visual_rule(enemy, global.frames - enemy->birthtime, false);
+			}
+
 			enemy = enemy->next;
 		}
 	}

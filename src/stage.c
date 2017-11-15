@@ -395,7 +395,9 @@ static void stage_logic(void) {
 		) {
 			page_dialog(&global.dialog);
 		}
-	} else if(global.boss) {
+	}
+
+	if(global.boss) {
 		process_boss(&global.boss);
 	}
 
@@ -596,7 +598,9 @@ static bool stage_frame(void *arg) {
 
 	tsrand_lock(&global.rand_game);
 	tsrand_switch(&global.rand_visual);
+	BEGIN_DRAW_CODE();
 	stage_draw_scene(stage);
+	END_DRAW_CODE();
 	tsrand_unlock(&global.rand_game);
 	tsrand_switch(&global.rand_game);
 

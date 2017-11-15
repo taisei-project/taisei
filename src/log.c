@@ -44,13 +44,34 @@ static const char* level_prefix(LogLevel lvl) {
     return level_prefix_map[idx];
 }
 
-static char* format_log_string(LogLevel lvl, const char *funcname, const char *fmt, va_list args) {
+static char* format_log_string(LogLevel lvl, const char *funcname, const char *fmt, va_list args, bool is_backtrace) {
     const char *pref = level_prefix(lvl);
     char *msg = vstrfmt(fmt, args);
     char *final = strfmt("%-9d %s: %s(): %s%s", SDL_GetTicks(), pref, funcname, msg, LOG_EOL);
     free(msg);
 
     // TODO: maybe convert all \n in the message to LOG_EOL
+
+#ifdef DEBUG
+    if((backtrace_log_levels & lvl) && !is_backtrace) {
+        DebugInfo *debug_info = get_debug_info();
+        DebugInfo *debug_meta = get_debug_meta();
+
+        msg = final;
+        final = strfmt(
+            "%s%s%s"
+            "Debug info: %s:%i:%s%s"
+            "Debug info set at: %s:%i:%s%s"
+            "Note: debug info may not be relevant to this issue%s",
+            msg, LOG_EOL, LOG_EOL,
+            debug_info->file, debug_info->line, debug_info->func, LOG_EOL,
+            debug_meta->file, debug_meta->line, debug_meta->func, LOG_EOL,
+            LOG_EOL
+        );
+
+        free(msg);
+    }
+#endif
 
     return final;
 }
@@ -81,7 +102,7 @@ static void log_internal(LogLevel lvl, bool is_backtrace, const char *funcname, 
     for(Logger *l = loggers; l; l = l->next) {
         if(l->levels & lvl) {
             if(!str) {
-                str = format_log_string(lvl, funcname, fmt, args);
+                str = format_log_string(lvl, funcname, fmt, args, is_backtrace);
                 slen = strlen(str);
             }
 

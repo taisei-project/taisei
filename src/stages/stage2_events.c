@@ -552,8 +552,12 @@ int hina_monty_slave(Enemy *s, int time) {
 	return 1;
 }
 
-void hina_monty_slave_draw(Enemy *s, int time) {
-	Swirl(s, time);
+void hina_monty_slave_visual(Enemy *s, int time, bool render) {
+	Swirl(s, time, render);
+
+	if(!render) {
+		return;
+	}
 
 	Texture *soul = get_tex("proj/soul");
 	Shader *shader = recolor_get_shader();
@@ -652,7 +656,7 @@ void hina_monty(Boss *h, int time) {
 
 	AT(140) {
 		play_sound("shot_special1");
-		create_enemy4c(cwidth * (0.5 + slave_pos) + VIEWPORT_H/2.0*I - 200.0*I, ENEMY_IMMUNE, hina_monty_slave_draw, hina_monty_slave, 0, 0, 0, 1);
+		create_enemy4c(cwidth * (0.5 + slave_pos) + VIEWPORT_H/2.0*I - 200.0*I, ENEMY_IMMUNE, hina_monty_slave_visual, hina_monty_slave, 0, 0, 0, 1);
 	}
 
 	AT(190) {

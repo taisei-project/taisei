@@ -195,10 +195,7 @@ static Projectile* spawn_boss_glow(Boss *boss, Color clr, int timeout) {
 	);
 }
 
-void draw_boss_background(Boss *boss) {
-	glPushMatrix();
-	glTranslatef(creal(boss->pos), cimag(boss->pos), 0);
-
+static void spawn_particle_effects(Boss *boss) {
 	Color glowcolor = boss->glowcolor;
 	Color shadowcolor = boss->shadowcolor;
 
@@ -222,6 +219,11 @@ void draw_boss_background(Boss *boss) {
 		float a = (1.0 - glowstr) + glowstr * pow(psin(global.frames/15.0), 1.0);
 		spawn_boss_glow(boss, multiply_colors(glowcolor, rgb(a, a, a)), 24);
 	}
+}
+
+void draw_boss_background(Boss *boss) {
+	glPushMatrix();
+	glTranslatef(creal(boss->pos), cimag(boss->pos), 0);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glRotatef(global.frames*4.0, 0, 0, -1);
@@ -553,8 +555,11 @@ void process_boss(Boss **pboss) {
 		boss->global_rule(boss, global.frames - boss->birthtime);
 	}
 
-	if(!boss->current)
+	spawn_particle_effects(boss);
+
+	if(!boss->current || global.dialog) {
 		return;
+	}
 
 	int time = global.frames - boss->current->starttime;
 	bool extra = boss->current->type == AT_ExtraSpell;

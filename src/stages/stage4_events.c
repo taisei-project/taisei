@@ -290,7 +290,11 @@ int stage4_explosive(Enemy *e, int t) {
 	return 1;
 }
 
-void KurumiSlave(Enemy *e, int t) {
+void KurumiSlave(Enemy *e, int t, bool render) {
+	if(render) {
+		return;
+	}
+
 	if(!(t%2)) {
 		complex offset = (frand()-0.5)*30;
 		offset += (frand()-0.5)*20.0*I;
@@ -654,7 +658,11 @@ int aniwall_slave(Enemy *e, int t) {
 	return 1;
 }
 
-void KurumiAniWallSlave(Enemy *e, int t) {
+void KurumiAniWallSlave(Enemy *e, int t, bool render) {
+	if(render) {
+		return;
+	}
+
 	if(e->args[1]) {
 		PARTICLE("lasercurve", e->pos, rgb(1,1,1), timeout, { 30 },
 			.draw_rule = Fade,
@@ -1060,26 +1068,41 @@ void kurumi_extra_create_drainer(Enemy *e) {
 	);
 }
 
-void kurumi_swirl_draw(Enemy *e, int time) {
+void kurumi_extra_swirl_visual(Enemy *e, int time, bool render) {
+	if(!render) {
+		Swirl(e, time, render);
+		return;
+	}
+
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
-	Swirl(e, time);
+	Swirl(e, time, render);
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-void kurumi_extra_fairy_draw(Enemy *e, int time) {
+void kurumi_extra_fairy_visual(Enemy *e, int time, bool render) {
+	if(!render) {
+		Fairy(e, time, render);
+		return;
+	}
+
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glUseProgram(get_shader("negative")->prog);
-	Fairy(e, time);
+	Fairy(e, time, render);
 	glUseProgram(0);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-void kurumi_bigfairy_draw(Enemy *e, int time) {
+void kurumi_extra_bigfairy_visual(Enemy *e, int time, bool render) {
+	if(!render) {
+		BigFairy(e, time, render);
+		return;
+	}
+
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glUseProgram(get_shader("negative")->prog);
-	BigFairy(e, time);
+	BigFairy(e, time, render);
 	glUseProgram(0);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
@@ -1176,8 +1199,8 @@ void kurumi_extra(Boss *b, int time) {
 		for(int i = 0; i < cnt; ++i) {
 			double a = M_PI * 2 * i / (double)cnt;
 			int hp = 500;
-			create_enemy2c(b->pos, hp, kurumi_swirl_draw, kurumi_extra_shield, a + 0.05*I, 800);
-			create_enemy2c(b->pos, hp, kurumi_swirl_draw, kurumi_extra_shield, a - 0.05*I, 800);
+			create_enemy2c(b->pos, hp, kurumi_extra_swirl_visual, kurumi_extra_shield, a + 0.05*I, 800);
+			create_enemy2c(b->pos, hp, kurumi_extra_swirl_visual, kurumi_extra_shield, a - 0.05*I, 800);
 		}
 	}
 
@@ -1192,7 +1215,7 @@ void kurumi_extra(Boss *b, int time) {
 			if(direction)
 				pos = VIEWPORT_W-creal(pos)+I*cimag(pos);
 			// immune so they don’t get killed while they are still offscreen.
-			create_enemy3c(pos-300*(1-2*direction),ENEMY_IMMUNE,kurumi_extra_fairy_draw,kurumi_extra_fairy,pos,100+20*i+100*(1.1-0.05*global.diff)*I,direction);
+			create_enemy3c(pos-300*(1-2*direction),ENEMY_IMMUNE,kurumi_extra_fairy_visual,kurumi_extra_fairy,pos,100+20*i+100*(1.1-0.05*global.diff)*I,direction);
 		}
 
 		// XXX: maybe add a special sound for this?
@@ -1221,8 +1244,8 @@ void kurumi_extra(Boss *b, int time) {
 			double ofs = VIEWPORT_W * 0.5;
 			complex pos = 0.5 * VIEWPORT_W + I * (VIEWPORT_H - 100);
 			complex targ = 0.5 *VIEWPORT_W + VIEWPORT_H * 0.3 * I;
-			create_enemy1c(pos + ofs, 3300, kurumi_bigfairy_draw, kurumi_extra_bigfairy1, targ + 0.8*ofs);
-			create_enemy1c(pos - ofs, 3300, kurumi_bigfairy_draw, kurumi_extra_bigfairy1, targ - 0.8*ofs);
+			create_enemy1c(pos + ofs, 3300, kurumi_extra_bigfairy_visual, kurumi_extra_bigfairy1, targ + 0.8*ofs);
+			create_enemy1c(pos - ofs, 3300, kurumi_extra_bigfairy_visual, kurumi_extra_bigfairy1, targ - 0.8*ofs);
 		}
 	}
 	if((t == length-20 && global.diff == D_Easy)|| b->current->hp < shieldlimit) {

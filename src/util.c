@@ -706,3 +706,27 @@ uint32_t crc32str(uint32_t crc, const char *str) {
 
     return crc ^ ~0U;
 }
+
+#ifdef DEBUG
+
+bool _in_draw_code;
+
+// TODO: make this thread-safe (use a TLS)
+static DebugInfo debug_info;
+static DebugInfo debug_meta;
+
+void _set_debug_info(DebugInfo *info, DebugInfo *meta) {
+    // assume the char*s point to literals
+    memcpy(&debug_info, info, sizeof(DebugInfo));
+    memcpy(&debug_meta, meta, sizeof(DebugInfo));
+}
+
+DebugInfo* get_debug_info(void) {
+    return &debug_info;
+}
+
+DebugInfo* get_debug_meta(void) {
+    return &debug_meta;
+}
+
+#endif

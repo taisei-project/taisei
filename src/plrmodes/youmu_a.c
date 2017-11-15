@@ -145,7 +145,7 @@ static int youmu_split_logic(void *v, int t, double speed) {
             .texture = "youmu_slice",
             .pos = VIEWPORT_W/2.0 + VIEWPORT_H/2.0*I - 200-200.0*I + 400*afrand(0)+400.0*I*afrand(1),
             .draw_rule = youmu_common_particle_slice_draw,
-            .rule = timeout,
+            .rule = youmu_common_particle_slice_logic,
             .args = { (100 - _i) / speed },
             .angle = M_PI * 2 * afrand(2),
             .type = PlrProj,
