@@ -183,16 +183,19 @@ bool audio_mixer_check_sound_path(const char *path, bool isbgm) {
 }
 
 static Mix_Music *next_loop;
+static double next_loop_point;
 
 static void mixer_music_finished(void) {
 	// XXX: there may be a race condition in here
 	// probably should protect next_loop with a mutex
 
-	log_debug("Intro stopped playing");
+	log_debug("%s stopped playing", next_loop_point ? "Loop" : "Intro");
 
 	if(next_loop) {
-		if(Mix_PlayMusic(next_loop, -1) == -1) {
+		if(Mix_PlayMusic(next_loop, next_loop_point ? 0 : -1) == -1) {
 			log_warn("Mix_PlayMusic() failed: %s", Mix_GetError());
+		} else if(next_loop_point >= 0) {
+			Mix_SetMusicPosition(next_loop_point);
 		} else {
 			next_loop = NULL;
 		}
@@ -248,14 +251,23 @@ bool audio_backend_music_play(void *impl) {
 
 	if(imus->intro) {
 		next_loop = imus->loop;
+		next_loop_point = imus->loop_point;
 		mmus = imus->intro;
 		loops = 0;
 		assert(next_loop != NULL);
 		Mix_HookMusicFinished(mixer_music_finished);
 	} else {
 		mmus = imus->loop;
-		loops = -1;
-		Mix_HookMusicFinished(NULL);
+		next_loop_point = imus->loop_point;
+
+		if(next_loop_point >= 0) {
+			loops = 0;
+			next_loop = imus->loop;
+			Mix_HookMusicFinished(mixer_music_finished);
+		} else {
+			loops = -1;
+			Mix_HookMusicFinished(NULL);
+		}
 	}
 
 	bool result = (Mix_PlayMusic(mmus, loops) != -1);

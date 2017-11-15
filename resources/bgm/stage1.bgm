@@ -1,4 +1,4 @@
 title = The Fog Invites Unseen Mischief
 artist = Tuck V
-intro = res/bgm/stage1/intro.ogg
-loop = res/bgm/stage1/loop.ogg
+loop = res/bgm/stage1/stage.ogg
+loop_point = 6.857143

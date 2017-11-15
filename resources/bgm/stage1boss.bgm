@@ -1,4 +1,4 @@
 title = An Impish Reflection on the Water
 artist = Tuck V
-intro = res/bgm/stage1/boss_intro.ogg
-loop = res/bgm/stage1/boss_loop.ogg
+loop = res/bgm/stage1/boss.ogg
+loop_point = 3.200000

@@ -56,6 +56,13 @@ void* load_bgm_begin(const char *path, unsigned int flags) {
 		} else {
 			imus->intro = load_mix_music(hashtable_get_string(bgm, "intro"));
 			imus->loop = load_mix_music(hashtable_get_string(bgm, "loop"));
+
+			char *loop_point = hashtable_get_string(bgm, "loop_point");
+
+			if(loop_point) {
+				imus->loop_point = strtod(loop_point, NULL);
+			}
+
 			mus->title = hashtable_get_string(bgm, "title");
 
 			if(mus->title) {

@@ -1,4 +1,4 @@
 title = Marginal Red ~ The Red Word
 artist = Tuck V
-intro = res/bgm/stage4/boss_intro.ogg
-loop = res/bgm/stage4/boss_loop.ogg
+loop = res/bgm/stage4/boss.ogg
+loop_point = 24.000000
