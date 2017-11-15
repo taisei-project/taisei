@@ -44,14 +44,12 @@ void set_perspective(Stage3D *s, float n, float f) {
 }
 
 void update_stage3d(Stage3D *s) {
-	for(int i = 0; i < 3;i++){
+	for(int i = 0; i < 3; i++){
 		s->cx[i] += s->cv[i];
 	}
 }
 
 void draw_stage3d(Stage3D *s, float maxrange) {
-	int i, j;
-
 	glPushMatrix();
 
 	if(s->crot[0])
@@ -64,11 +62,11 @@ void draw_stage3d(Stage3D *s, float maxrange) {
 	if(s->cx[0] || s->cx[1] || s->cx[2])
 		glTranslatef(-s->cx[0],-s->cx[1],-s->cx[2]);
 
-	for(i = 0; i < s->msize; i++) {
+	for(int i = 0; i < s->msize; i++) {
 		Vector **list;
 		list = s->models[i].pos(s->cx, maxrange);
 
-		for(j = 0; list && list[j] != NULL; j++) {
+		for(int j = 0; list && list[j] != NULL; j++) {
 			s->models[i].draw(*list[j]);
 			free(list[j]);
 		}

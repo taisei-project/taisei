@@ -231,10 +231,11 @@ static void stage2_update(void) {
 	TIMER(&global.frames);
 
 	FROM_TO(0, 180, 1) {
-		stage_3d_context.cv[0] -= 0.05;
-		stage_3d_context.cv[1] += 0.05;
-		stage_3d_context.crot[2] += 0.5;
+		stage_3d_context.cv[0] = approach(stage_3d_context.cv[0], 0, 0.05);
+		stage_3d_context.cv[1] = approach(stage_3d_context.cv[1], 9, 0.05);
 	}
+
+	stage_3d_context.crot[2] += min(0.5, -stage_3d_context.crot[2] * 0.02);
 
 	update_stage3d(&stage_3d_context);
 }
