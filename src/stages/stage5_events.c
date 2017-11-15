@@ -521,7 +521,6 @@ void iku_atmospheric(Boss *b, int time) {
 	}
 
 	FROM_TO(0, 500, 7-global.diff) {
-		play_sound("shot");
 		if(global.diff >= D_Hard)
 			PROJECTILE("thickrice", VIEWPORT_W*frand(), rgb(0,0.3,0.7), accelerated, { 0, 0.01*I });
 		else
