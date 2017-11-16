@@ -27,10 +27,7 @@ static struct {
 	unsigned char num;
 } groups[2];
 
-const char *mixer_audio_exts[] = { ".bgm", ".wav", ".ogg", ".mp3", ".mod", ".xm", ".s3m",
-		".669", ".it", ".med", ".mid", ".flac", ".aiff", ".voc",
-		NULL };
-
+const char *mixer_audio_exts[] = { ".ogg", ".wav", NULL };
 
 void audio_backend_init(void) {
 	if(mixer_loaded) {
@@ -42,7 +39,7 @@ void audio_backend_init(void) {
 		return;
 	}
 
-	if(!Mix_Init(MIX_INIT_OGG | MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3)) {
+	if(!(Mix_Init(MIX_INIT_OGG) & MIX_INIT_OGG)) {
 		log_warn("Mix_Init() failed: %s", Mix_GetError());
 		Mix_Quit(); // Try to shutdown mixer if it was partly initialized
 		return;
@@ -149,22 +146,40 @@ void audio_backend_set_bgm_volume(float gain) {
 		Mix_VolumeMusic(gain * MIX_MAX_VOLUME);
 }
 
-char* audio_mixer_sound_path(const char *prefix, const char *name, bool isbgm) {
-	for(const char **ext = mixer_audio_exts + !isbgm; *ext; ++ext) {
-		char *p = strjoin(prefix, name, *ext, NULL);
+static char* try_path(const char *prefix, const char *name, const char *ext) {
+	char *p = strjoin(prefix, name, ext, NULL);
 
-		if(vfs_query(p).exists) {
+	if(vfs_query(p).exists) {
+		log_debug("Returning %s", p);
+		return p;
+	}
+
+	free(p);
+	return NULL;
+}
+
+char* audio_mixer_sound_path(const char *prefix, const char *name, bool isbgm) {
+	char *p = NULL;
+
+	if(isbgm && (p = try_path(prefix, name, ".bgm"))) {
+		return p;
+	}
+
+	for(const char **ext = mixer_audio_exts; *ext; ++ext) {
+		if((p = try_path(prefix, name, *ext))) {
 			return p;
 		}
-
-		free(p);
 	}
 
 	return NULL;
 }
 
 bool audio_mixer_check_sound_path(const char *path, bool isbgm) {
-	return strendswith_any(path, mixer_audio_exts + !isbgm);
+	if(isbgm && strendswith(path, ".bgm")) {
+		return true;
+	}
+
+	return strendswith_any(path, mixer_audio_exts);
 }
 
 static Mix_Music *next_loop;

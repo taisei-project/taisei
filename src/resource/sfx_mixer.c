@@ -14,7 +14,7 @@
 #include "audio_mixer.h"
 
 char* sound_path(const char *name) {
-	return audio_mixer_sound_path(SFX_PATH_PREFIX, name, true);
+	return audio_mixer_sound_path(SFX_PATH_PREFIX, name, false);
 }
 
 bool check_sound_path(const char *path) {
