@@ -6,6 +6,8 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
+#define SDL_MAIN_HANDLED
+
 #include <locale.h>
 
 #include "global.h"

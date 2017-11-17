@@ -145,15 +145,15 @@ if(WIN32)
 	)
 endif()
 
-if(POSIX)
-	set(SRCs ${SRCs}
-		vfs/syspath_posix.c
-		rwops/rwops_pipe_posix.c
-	)
-elseif(WIN32)
+if(WIN32)
 	set(SRCs ${SRCs}
 		vfs/syspath_win32.c
 		rwops/rwops_pipe_null.c
+	)
+elseif(POSIX)
+	set(SRCs ${SRCs}
+		vfs/syspath_posix.c
+		rwops/rwops_pipe_posix.c
 	)
 else()
 	set(SRCs ${SRCs}
@@ -285,7 +285,7 @@ if(${WIN32})
 	add_definitions(-D__USE_MINGW_ANSI_STDIO)
 	set(LIBs ${LIBs} -ldxguid -lwinmm)
 
-	string(REPLACE "gcc" "windres" CMAKE_RC_COMPILER_INIT ${CMAKE_C_COMPILER})
+	string(REPLACE "gcc" "windres" CMAKE_RC_COMPILER ${CMAKE_C_COMPILER})
 	enable_language(RC)
 	set(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> -O coff -o <OBJECT> <SOURCE>")
 
