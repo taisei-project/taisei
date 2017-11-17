@@ -38,6 +38,23 @@ $prefix/data/
 
 `RELATIVE` is always set when building for Windows or macOS.
 
+## Cross-compiling on Linux for Windows
+
+Get MinGW equivalents of listed dependencies, then run:
+
+```
+mkdir build
+cd build
+mkdir /tmp/taisei-build
+x86_64-w64-mingw32-cmake -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=/usr/bin/x86_64-w64-mingw32-gcc -DCMAKE_INSTALL_PREFIX=$output-folder -DRELATIVE=TRUE -DCMAKE_BUILD_TYPE=Release ..
+make
+make install
+```
+
+x86_64-w64-mingw32-gcc may be in different directory on your machine.
+
+This will generate portable build of Taisei in $output-folder.
+
 ## Where are my replays, screenshots and settings?
 
 Taisei stores all data in a platform-specific directory:
