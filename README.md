@@ -51,9 +51,9 @@ make
 make install
 ```
 
-x86_64-w64-mingw32-gcc may be in different directory on your machine.
+`x86_64-w64-mingw32-gcc` may be in different directory on your machine.
 
-This will generate portable build of Taisei in $output-folder.
+This will generate portable build of Taisei in `$output-folder`.
 
 ## Where are my replays, screenshots and settings?
 
