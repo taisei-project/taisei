@@ -15,7 +15,6 @@
 #endif
 
 #include <windows.h>
-#include <shlwapi.h>
 #include <SDL.h>
 
 #include "syspath.h"
@@ -64,10 +63,12 @@ static void _vfs_set_error_win32(const char *file, int line) {
 static VFSInfo vfs_syspath_query(VFSNode *node) {
     VFSInfo i = {0};
 
-    if(!PathFileExists(node->_wpath_)) {
+    SDL_RWops *rwops = SDL_RWFromFile(node->_path_, "rb");
+    if (rwops == NULL) {
         i.exists = false;
         return i;
     }
+    SDL_RWClose(rwops);
 
     DWORD attrib = GetFileAttributes(node->_wpath_);
 
