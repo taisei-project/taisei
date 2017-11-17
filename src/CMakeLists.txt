@@ -155,6 +155,9 @@ elseif(WIN32)
 		vfs/syspath_win32.c
 		rwops/rwops_pipe_null.c
 	)
+	set(LIBs ${LIBs}
+		shlwapi
+	)
 else()
 	set(SRCs ${SRCs}
 		vfs/syspath_posix.c		# eeehh, maybe it'll work ¯\_(ツ)_/¯
