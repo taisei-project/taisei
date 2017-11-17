@@ -10,6 +10,9 @@
 #include "plrmodes.h"
 #include "marisa.h"
 
+// args are pain
+static float global_magicstar_alpha;
+
 static void draw_laser_beam(complex src, complex dst, double size, double step, double t, Texture *tex, int u_length) {
     complex dir = dst - src;
     complex center = (src + dst) * 0.5;
@@ -116,7 +119,7 @@ static void marisa_laser_slave_visual(Enemy *e, int t, bool render) {
     }
 
     float laser_alpha = global.plr.slaves->args[0];
-    float star_alpha = global.plr.slaves->args[1];
+    float star_alpha = global.plr.slaves->args[1] * global_magicstar_alpha;
 
     draw_magic_star(e->pos, 0.75 * star_alpha,
         rgb(1.0, 0.1, 0.1),
@@ -400,6 +403,37 @@ static void marisa_laser_init(Player *plr) {
     marisa_laser_respawn_slaves(plr, plr->power);
 }
 
+static void marisa_laser_think(Player *plr) {
+    Enemy *laser_renderer = plr->slaves;
+    assert(laser_renderer != NULL);
+    assert(laser_renderer->logic_rule == marisa_laser_renderer);
+
+    if(creal(laser_renderer->args[0]) > 0) {
+        bool found = false;
+
+        for(Projectile *p = global.projs; p && !found; p = p->next) {
+            if(p->type != EnemyProj) {
+                continue;
+            }
+
+            for(Enemy *slave = laser_renderer->next; slave; slave = slave->next) {
+                if(slave->visual_rule == marisa_laser_slave_visual && cabs(slave->pos - p->pos) < 30) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+
+        if(found) {
+            global_magicstar_alpha = approach(global_magicstar_alpha, 0.25, 0.15);
+        } else {
+            global_magicstar_alpha = approach(global_magicstar_alpha, 1.00, 0.08);
+        }
+    } else {
+        global_magicstar_alpha = 1.0;
+    }
+}
+
 static double marisa_laser_speed_mod(Player *plr, double speed) {
     if(global.frames - plr->recovery < 0) {
         speed /= 5.0;
@@ -442,5 +476,6 @@ PlayerMode plrmode_marisa_a = {
         .speed_mod = marisa_laser_speed_mod,
         .preload = marisa_laser_preload,
         .init = marisa_laser_init,
+        .think = marisa_laser_think,
     },
 };
