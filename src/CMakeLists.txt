@@ -145,15 +145,15 @@ if(WIN32)
 	)
 endif()
 
-if(POSIX)
-	set(SRCs ${SRCs}
-		vfs/syspath_posix.c
-		rwops/rwops_pipe_posix.c
-	)
-elseif(WIN32)
+if(WIN32)
 	set(SRCs ${SRCs}
 		vfs/syspath_win32.c
 		rwops/rwops_pipe_null.c
+	)
+elseif(POSIX)
+	set(SRCs ${SRCs}
+		vfs/syspath_posix.c
+		rwops/rwops_pipe_posix.c
 	)
 else()
 	set(SRCs ${SRCs}
