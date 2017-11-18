@@ -55,3 +55,11 @@ void marisa_common_slave_visual(Enemy *e, int t, bool render) {
     draw_texture(0,0,"part/lasercurve");
     glPopMatrix();
 }
+
+void marisa_common_masterspark_draw(int t) {
+    Shader *mshader = get_shader("masterspark");
+    glUseProgram(mshader->prog);
+    glUniform1f(uniloc(mshader,"t"),t);
+    draw_quad();
+    glUseProgram(0);
+}

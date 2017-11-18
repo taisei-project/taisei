@@ -299,15 +299,11 @@ static void masterspark_visual(Enemy *e, int t, bool render) {
 	fade *= fade;
     }
 
-    Shader *mshader = get_shader("masterspark");
-    glUseProgram(mshader->prog);
-    glUniform1f(uniloc(mshader,"t"),t);
     glPushMatrix();
     glTranslatef(creal(global.plr.pos),cimag(global.plr.pos)-40-VIEWPORT_H/2,0);
     glScalef(fade*400,VIEWPORT_H,1);
-    draw_quad();
+    marisa_common_masterspark_draw(t);
     glPopMatrix();
-    glUseProgram(0);
 }
 
 static int masterspark_star(Projectile *p, int t) {
@@ -316,27 +312,54 @@ static int masterspark_star(Projectile *p, int t) {
 }
 
 static int masterspark(Enemy *e, int t) {
-    if(t == EVENT_BIRTH) {
-        global.shake_view = 8;
-        return 1;
-    }
+	if(t == EVENT_BIRTH) {
+		global.shake_view = 8;
+		return 1;
+	}
 
-    t = player_get_bomb_progress(&global.plr, NULL);
-    if(t%2==0 && t < BOMB_RECOVERY*3/4) {
-	    complex dir = -cexp(1.2*I*nfrand())*I;
-	    Color c = rgb(0.7+0.3*sin(t*0.1),0.7+0.3*cos(t*0.1),0.7+0.3*cos(t*0.01));
-	    PARTICLE("maristar_orbit",global.plr.pos+40*dir,c,masterspark_star,{50, 10*dir-10*I,3},nfrand(),PFLAG_DRAWADD,GrowFade);
-	    dir = -conj(dir);
-	    PARTICLE("maristar_orbit",global.plr.pos+40*dir,c,masterspark_star,{50, 10*dir-10*I,3},nfrand(),PFLAG_DRAWADD,GrowFade);
-	    PARTICLE("smoke",global.plr.pos-40*I,rgb(0.9,1,1),timeout_linear,{50, -5*dir,3},nfrand(),PFLAG_DRAWADD,GrowFade);
-    }
+	t = player_get_bomb_progress(&global.plr, NULL);
+	if(t%2==0 && t < BOMB_RECOVERY*3/4) {
+		complex dir = -cexp(1.2*I*nfrand())*I;
+		Color c = rgb(0.7+0.3*sin(t*0.1),0.7+0.3*cos(t*0.1),0.7+0.3*cos(t*0.01));
+		PARTICLE(
+			.texture="maristar_orbit",
+			.pos=global.plr.pos+40*dir,
+			.color=c,
+			.rule=masterspark_star,
+			.args={50, 10*dir-10*I,3},
+			.angle=nfrand(),
+			.flags=PFLAG_DRAWADD,
+			.draw_rule=GrowFade
+		);
+		dir = -conj(dir);
+		PARTICLE(
+			.texture="maristar_orbit",
+			.pos=global.plr.pos+40*dir,
+			.color=c,
+			.rule=masterspark_star,
+			.args={50, 10*dir-10*I,3},
+			.angle=nfrand(),
+			.flags=PFLAG_DRAWADD,
+			.draw_rule=GrowFade
+		);
+		PARTICLE(
+			.texture="smoke",
+			.pos=global.plr.pos-40*I,
+			.color=rgb(0.9,1,1),
+			.rule=timeout_linear,
+			.args={50, -5*dir,3},
+			.angle=nfrand(),
+			.flags=PFLAG_DRAWADD,
+			.draw_rule=GrowFade
+		);
+	}
 
-    if(t >= BOMB_RECOVERY || global.frames - global.plr.recovery > 0) {
-        global.shake_view = 0;
-        return ACTION_DESTROY;
-    }
+	if(t >= BOMB_RECOVERY || global.frames - global.plr.recovery > 0) {
+		global.shake_view = 0;
+		return ACTION_DESTROY;
+	}
 
-    return 1;
+	return 1;
 }
 
 static void marisa_laser_bombbg(Player *plr) {
@@ -453,9 +476,8 @@ static void marisa_laser_preload(void) {
         // "part/marilaser_part0",
         // "proj/marilaser",
         "proj/marisa",
-        "masterspark",
-        "masterspark_ring",
 	"marisa_bombbg",
+	"part/maristar_orbit",
         "part/marisa_laser0",
         "part/marisa_laser1",
         "part/magic_star",
