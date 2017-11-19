@@ -43,7 +43,7 @@ void audio_backend_init(void) {
 	 * on every OS) but it is optional. Upstream doesn’t react to bug
 	 * reports, downstream thinks if this were a bug upstream would react
 	 * and now even a few weeks after release nothing is being done about it it seems.
-	 * Other games don’t call the function so machbe that is the way to go.
+	 * Other games don’t call the function so maybe that is the way to go.
 	if(!(Mix_Init(MIX_INIT_OGG) & MIX_INIT_OGG)) {
 		log_warn("Mix_Init() failed: %s", Mix_GetError());
 		Mix_Quit(); // Try to shutdown mixer if it was partly initialized
