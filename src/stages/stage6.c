@@ -20,7 +20,7 @@
 
 struct stage6_spells_s stage6_spells = {
 	.scythe = {
-		.occams_razor				= {{ 0,  1,  2,  3}, AT_Spellcard, "Newton Sign ~ Occam’s razor", 50, 60000,
+		.occams_razor				= {{ 0,  1,  2,  3}, AT_Spellcard, "Newton Sign ~ Occam’s Razor", 50, 60000,
 										elly_newton, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
 		.orbital_clockwork			= {{24, 25, 26, 27}, AT_Spellcard, "Kepler Sign ~ Orbital Clockwork", 45, 60000,
 										elly_kepler, elly_spellbg_classic, BOSS_DEFAULT_GO_POS},
