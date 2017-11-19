@@ -39,11 +39,16 @@ void audio_backend_init(void) {
 		return;
 	}
 
+	/* this function is buggy in SDL_mixer 2.0.2 (as in breaks the library
+	 * on every OS) but it is optional. Upstream doesn’t react to bug
+	 * reports, downstream thinks if this were a bug upstream would react
+	 * and now even a few weeks after release nothing is being done about it it seems.
+	 * Other games don’t call the function so machbe that is the way to go.
 	if(!(Mix_Init(MIX_INIT_OGG) & MIX_INIT_OGG)) {
 		log_warn("Mix_Init() failed: %s", Mix_GetError());
 		Mix_Quit(); // Try to shutdown mixer if it was partly initialized
 		return;
-	}
+	}*/
 
 	if(Mix_OpenAudio(AUDIO_FREQ, AUDIO_FORMAT, 2, config_get_int(CONFIG_MIXER_CHUNKSIZE)) == -1) {
 		log_warn("Mix_OpenAudio() failed: %s", Mix_GetError());
