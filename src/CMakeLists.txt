@@ -23,6 +23,9 @@ pkg_check_modules(ZLIB zlib REQUIRED)
 pkg_check_modules(PNG libpng>=1.5 REQUIRED)
 pkg_check_modules(ZIP libzip>=1.0 REQUIRED)
 
+set(USE_ZIP ON)
+set(ZIP_SUPPORTED ON)
+
 if(NOT NO_AUDIO)
 	pkg_check_modules(SDL2_MIXER SDL2_mixer REQUIRED)
 endif()
