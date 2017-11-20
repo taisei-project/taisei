@@ -32,14 +32,14 @@ void audio_backend_init(void) {
 		return;
 	}
 
-	if(!Mix_Init(MIX_INIT_OGG | MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3)) {
-		log_warn("Mix_Init() failed: %s", Mix_GetError());
-		Mix_Quit(); // Try to shutdown mixer if it was partly initialized
+	if(Mix_OpenAudio(AUDIO_FREQ, AUDIO_FORMAT, 2, config_get_int(CONFIG_MIXER_CHUNKSIZE)) == -1) {
+		log_warn("Mix_OpenAudio() failed: %s", Mix_GetError());
+		Mix_Quit();
 		return;
 	}
 
-	if(Mix_OpenAudio(AUDIO_FREQ, AUDIO_FORMAT, 2, config_get_int(CONFIG_MIXER_CHUNKSIZE)) == -1) {
-		log_warn("Mix_OpenAudio() failed: %s", Mix_GetError());
+	if(!(Mix_Init(MIX_INIT_OGG) & MIX_INIT_OGG)) {
+		log_warn("Mix_Init() failed: %s", Mix_GetError());
 		Mix_Quit();
 		return;
 	}
