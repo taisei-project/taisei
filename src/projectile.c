@@ -224,20 +224,20 @@ int collision_projectile(Projectile *p) {
 }
 
 void static_clrtransform_bullet(Color c, ColorTransform *out) {
-	memcpy(out, &(ColorTransform) {
+	memcpy(out, (&(ColorTransform) {
 		.B[0] = c & ~CLRMASK_A,
 		.B[1] = rgba(1, 1, 1, 0),
 		.A[1] = c &  CLRMASK_A,
-	}, sizeof(ColorTransform));
+	}), sizeof(ColorTransform));
 }
 
 void static_clrtransform_particle(Color c, ColorTransform *out) {
-	memcpy(out, &(ColorTransform) {
+	memcpy(out, (&(ColorTransform) {
 		.R[1] = c & CLRMASK_R,
 		.G[1] = c & CLRMASK_G,
 		.B[1] = c & CLRMASK_B,
 		.A[1] = c & CLRMASK_A,
-	}, sizeof(ColorTransform));
+	}), sizeof(ColorTransform));
 }
 
 void proj_clrtransform_bullet(Projectile *p, int t, Color c, ColorTransform *out) {
