@@ -433,7 +433,7 @@ static inline void apply_common_transforms(Projectile *proj, int t) {
 
 static inline void apply_color(Projectile *proj, Color c) {
 	static ColorTransform ct;
-	proj->color_transform_rule(proj, proj->birthtime - global.frames, c, &ct);
+	proj->color_transform_rule(proj, global.frames - proj->birthtime, c, &ct);
 	recolor_apply_transform(&ct);
 }
 
@@ -586,8 +586,7 @@ void Petal(Projectile *p, int t) {
 }
 
 void petal_explosion(int n, complex pos) {
-	int i;
-	for(i = 0; i < n; i++) {
+	for(int i = 0; i < n; i++) {
 		tsrand_fill(6);
 		float t = frand();
 		Color c = rgba(sin(5*t),cos(5*t),0.5,t);
@@ -597,9 +596,11 @@ void petal_explosion(int n, complex pos) {
 			.args = {
 				(3+5*afrand(2))*cexp(I*M_PI*2*afrand(3)),
 				5,
-				afrand(4) + afrand(5)*I, afrand(1) + 360.0*I*afrand(0),
+				afrand(4) + afrand(5)*I,
+				afrand(1) + 360.0*I*afrand(0),
 			},
 			.flags = PFLAG_DRAWADD,
+			.type = PlrProj, // hack: never reflect these in stage1 water (GL_CULL_FACE conflict)
 		);
 	}
 }
