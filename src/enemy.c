@@ -110,18 +110,15 @@ void draw_enemies(Enemy *enemies) {
 	for(e = enemies; e; e = e->next) {
 		if(e->visual_rule) {
 			if(e->alpha < 1) {
-				e->alpha += 1 / 60.0;
-				if(e->alpha > 1)
-					e->alpha = 1;
-
 				glColor4f(1,1,1,e->alpha);
 				reset = true;
 			}
 
 			draw_enemy(e);
 
-			if(reset)
+			if(reset) {
 				glColor4f(1,1,1,1);
+			}
 		}
 	}
 }
@@ -257,8 +254,11 @@ void process_enemies(Enemy **enemies) {
 	while(enemy != NULL) {
 		int action = enemy->logic_rule(enemy, global.frames - enemy->birthtime);
 
-		if(enemy->hp > ENEMY_IMMUNE && cabs(enemy->pos - global.plr.pos) < 7)
+		if(enemy->hp > ENEMY_IMMUNE && enemy->alpha >= 1.0 && cabs(enemy->pos - global.plr.pos) < 7) {
 			player_death(&global.plr);
+		}
+
+		enemy->alpha = approach(enemy->alpha, 1.0, 1.0/60.0);
 
 		if((enemy->hp > ENEMY_IMMUNE
 		&& (creal(enemy->pos) < -20 || creal(enemy->pos) > VIEWPORT_W + 20
