@@ -11,12 +11,12 @@
 
 const char* difficulty_name(Difficulty diff) {
     switch(diff) {
-        case D_Easy:    return "Easy";      break;
-        case D_Normal:  return "Normal";    break;
-        case D_Hard:    return "Hard";      break;
-        case D_Lunatic: return "Lunatic";   break;
-        case D_Extra:   return "Extra";     break;
-        default:        return "Unknown";   break;
+        case D_Easy:    return "Easy";
+        case D_Normal:  return "Normal";
+        case D_Hard:    return "Hard";
+        case D_Lunatic: return "Lunatic";
+        case D_Extra:   return "Extra";
+        default:        return "Unknown";
     }
 }
 

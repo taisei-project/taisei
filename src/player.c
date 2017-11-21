@@ -452,13 +452,13 @@ void player_death(Player *plr) {
 
 static PlrInputFlag key_to_inflag(KeyIndex key) {
 	switch(key) {
-		case KEY_UP:    return INFLAG_UP;    break;
-		case KEY_DOWN:  return INFLAG_DOWN;  break;
-		case KEY_LEFT:  return INFLAG_LEFT;  break;
-		case KEY_RIGHT: return INFLAG_RIGHT; break;
-		case KEY_FOCUS: return INFLAG_FOCUS; break;
-		case KEY_SHOT:  return INFLAG_SHOT;  break;
-		case KEY_SKIP:  return INFLAG_SKIP;  break;
+		case KEY_UP:    return INFLAG_UP;
+		case KEY_DOWN:  return INFLAG_DOWN;
+		case KEY_LEFT:  return INFLAG_LEFT;
+		case KEY_RIGHT: return INFLAG_RIGHT;
+		case KEY_FOCUS: return INFLAG_FOCUS;
+		case KEY_SHOT:  return INFLAG_SHOT;
+		case KEY_SKIP:  return INFLAG_SKIP;
 		default:        return 0;
 	}
 }
