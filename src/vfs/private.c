@@ -66,14 +66,15 @@ void vfs_init(void) {
     }
 }
 
-static void call_shutdown_hook(void **vlist, void *vhook) {
-    vfs_shutdownhook_t *hook = vhook;
+static void* call_shutdown_hook(List **vlist, List *vhook, void *arg) {
+    vfs_shutdownhook_t *hook = (vfs_shutdownhook_t*)vhook;
     hook->func(hook->arg);
-    delete_element(vlist, vhook);
+    free(list_unlink(vlist, vhook));
+    return NULL;
 }
 
 void vfs_shutdown(void) {
-    delete_all_elements((void**)&shutdown_hooks, call_shutdown_hook);
+    list_foreach((List**)&shutdown_hooks, call_shutdown_hook, NULL);
 
     vfs_decref(vfs_root);
     vfs_tls_free(vfs_tls_fallback);
@@ -84,7 +85,7 @@ void vfs_shutdown(void) {
 }
 
 void vfs_hook_on_shutdown(VFSShutdownHandler func, void *arg) {
-    vfs_shutdownhook_t *hook = create_element_at_end((void**)&shutdown_hooks, sizeof(vfs_shutdownhook_t));
+    vfs_shutdownhook_t *hook = (vfs_shutdownhook_t*)list_append((List**)&shutdown_hooks, malloc(sizeof(vfs_shutdownhook_t)));
     hook->func = func;
     hook->arg = arg;
 }

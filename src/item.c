@@ -26,6 +26,11 @@ static Texture* item_tex(ItemType type) {
 	return get_tex(map[type]);
 }
 
+static int item_prio(List *litem) {
+	Item *item = (Item*)litem;
+	return item->type;
+}
+
 Item* create_item(complex pos, complex v, ItemType type) {
 	if((creal(pos) < 0 || creal(pos) > VIEWPORT_W)) {
 		// we need this because we clamp the item position to the viewport boundary during motion
@@ -33,18 +38,7 @@ Item* create_item(complex pos, complex v, ItemType type) {
 		return NULL;
 	}
 
-	Item *e, **d, **dest = &global.items;
-
-	for(e = *dest; e && e->next; e = e->next)
-		if(e->prev && type < e->type)
-			break;
-
-	if(e == NULL)
-		d = dest;
-	else
-		d = &e;
-
-	Item *i = create_element((void **)d, sizeof(Item));
+	Item *i = (Item*)list_insert_at_priority((List**)&global.items, malloc(sizeof(Item)), type, item_prio);
 	i->pos = pos;
 	i->pos0 = pos;
 	i->v = v;
@@ -56,7 +50,7 @@ Item* create_item(complex pos, complex v, ItemType type) {
 }
 
 void delete_item(Item *item) {
-	delete_element((void **)&global.items, item);
+	free(list_unlink((List**)&global.items, (List*)item));
 }
 
 Item* create_bpoint(complex pos) {
@@ -95,7 +89,7 @@ void draw_items(void) {
 }
 
 void delete_items(void) {
-	delete_all_elements((void **)&global.items, delete_element);
+	list_free_all((List**)&global.items);
 }
 
 void move_item(Item *i) {

@@ -55,6 +55,7 @@ set(SRCs
 	enemy.c
 	item.c
 	list.c
+	refs.c
 	hashtable.c
 	boss.c
 	plrmodes.c

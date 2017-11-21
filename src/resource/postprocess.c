@@ -36,7 +36,7 @@ static void postprocess_load_callback(const char *key, const char *value, void *
     PostprocessShader *current = *slist;
 
     if(!strcmp(key, "@shader")) {
-        current = create_element((void**)slist, sizeof(PostprocessShader));
+        current = (PostprocessShader*)list_append((List**)slist, malloc(sizeof(PostprocessShader)));
         current->uniforms = NULL;
         current->shader = get_resource(RES_SHADER, value, ldata->resflags)->shader;
         log_debug("Shader added: %s (prog: %u)", value, current->shader->prog);
@@ -102,7 +102,7 @@ static void postprocess_load_callback(const char *key, const char *value, void *
         }
     }
 
-    PostprocessShaderUniform *uni = create_element((void**)&current->uniforms, sizeof(PostprocessShaderUniform));
+    PostprocessShaderUniform *uni = (PostprocessShaderUniform*)list_append((List**)&current->uniforms, malloc(sizeof(PostprocessShaderUniform)));
     uni->loc = uniloc(current->shader, name);
     uni->type = utype;
     uni->size = usize;
@@ -127,20 +127,22 @@ PostprocessShader* postprocess_load(const char *path, ResourceFlags flags) {
     return list;
 }
 
-static void delete_uniform(void **dest, void *data) {
-    PostprocessShaderUniform *uni = data;
+static void* delete_uniform(List **dest, List *data, void *arg) {
+    PostprocessShaderUniform *uni = (PostprocessShaderUniform*)data;
     free(uni->values.v);
-    delete_element(dest, data);
+    free(list_unlink(dest, data));
+    return NULL;
 }
 
-static void delete_shader(void **dest, void *data) {
-    PostprocessShader *ps = data;
-    delete_all_elements((void**)&ps->uniforms, delete_uniform);
-    delete_element(dest, data);
+static void* delete_shader(List **dest, List *data, void *arg) {
+    PostprocessShader *ps = (PostprocessShader*)data;
+    list_foreach((List**)&ps->uniforms, delete_uniform, NULL);
+    free(list_unlink(dest, data));
+    return NULL;
 }
 
 void postprocess_unload(PostprocessShader **list) {
-    delete_all_elements((void**)list, delete_shader);
+    list_foreach((List**)list, delete_shader, NULL);
 }
 
 void postprocess(PostprocessShader *ppshaders, FBO **primfbo, FBO **auxfbo, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw) {

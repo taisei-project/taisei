@@ -6,41 +6,57 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#include "list.h"
-
 #include <stdlib.h>
 #include <stdio.h>
+
+#define LIST_NO_MACROS
+
+#include "list.h"
 #include "global.h"
 
-void *_FREEREF;
-
-void *create_element(void **dest, size_t size) {
+List* list_insert(List **dest, List *elem) {
 	assert(dest != NULL);
-	assert(size > 0);
+	assert(elem != NULL);
 
-	List *e = calloc(1, size);
-	List **d = (List **)dest;
+	elem->prev = *dest;
 
-	e->prev = *d;
+	if(*dest != NULL) {
+		elem->next = (*dest)->next;
 
-	if(*d != NULL) {
-		e->next = (*d)->next;
-		if((*d)->next)
-			(*d)->next->prev = e;
+		if((*dest)->next) {
+			(*dest)->next->prev = elem;
+		}
 
-		(*d)->next = e;
+		(*dest)->next = elem;
 	} else {
-		*d = e;
+		elem->next = NULL;
+		*dest = elem;
 	}
 
-	return e;
+	return elem;
 }
 
-void* create_element_at_end(void **dest, size_t size) {
+List* list_push(List **dest, List *elem) {
 	assert(dest != NULL);
+	assert(elem != NULL);
+
+	if(*dest) {
+		(*dest)->prev = elem;
+	}
+
+	elem->next = *dest;
+	elem->prev = NULL;
+
+	*dest = elem;
+	return elem;
+}
+
+List* list_append(List **dest, List *elem) {
+	assert(dest != NULL);
+	assert(elem != NULL);
 
 	if(*dest == NULL) {
-		return create_element((void **)dest,size);
+		return list_insert(dest, elem);
 	}
 
 	List *end = NULL;
@@ -48,17 +64,16 @@ void* create_element_at_end(void **dest, size_t size) {
 		end = e;
 	}
 
-	return create_element((void **)&end,size);
+	return list_insert(&end, elem);
 }
 
-void* create_element_at_priority(void **list_head, size_t size, int prio, int (*prio_func)(void*)) {
+List* list_insert_at_priority(List **list_head, List *elem, int prio, ListPriorityFunc prio_func) {
 	assert(list_head != NULL);
-	assert(size > 0);
+	assert(elem != NULL);
 	assert(prio_func != NULL);
 
-	List *elem = calloc(1, size);
-
 	if(!*list_head) {
+		elem->prev = elem->next = NULL;
 		*list_head = elem;
 		return elem;
 	}
@@ -93,126 +108,54 @@ void* create_element_at_priority(void **list_head, size_t size, int prio, int (*
 	return elem;
 }
 
-ListContainer* create_container(ListContainer **dest) {
-	return create_element((void**)dest, sizeof(ListContainer));
-}
-
-ListContainer* create_container_at_priority(ListContainer **list_head, int prio, int (*prio_func)(void*)) {
-	return create_element_at_priority((void**)list_head, sizeof(ListContainer), prio, prio_func);
-}
-
-void delete_element(void **dest, void *e) {
-	if(((List *)e)->prev != NULL)
-		((List *)((List *)e)->prev)->next = ((List *)e)->next;
-	if(((List *)e)->next != NULL)
-		((List *)((List *)e)->next)->prev = ((List *)e)->prev;
-	if(*dest == e)
-		*dest = ((List *)e)->next;
-
-	free(e);
-}
-
-void delete_all_elements(void **dest, void (callback)(void **, void *)) {
-	void *e = *dest;
-	void *tmp;
-
-	while(e != 0) {
-		tmp = e;
-		e = ((List *)e)->next;
-		callback(dest, tmp);
+List* list_unlink(List **dest, List *elem) {
+	if(elem->prev != NULL) {
+		elem->prev->next = elem->next;
 	}
 
-	*dest = NULL;
-}
-
-void delete_all_elements_witharg(void **dest, void (callback)(void **, void *, void *), void *arg) {
-	void *e = *dest;
-	void *tmp;
-
-	while(e != 0) {
-		tmp = e;
-		e = ((List *)e)->next;
-		callback(dest, tmp, arg);
+	if(elem->next != NULL)  {
+		elem->next->prev = elem->prev;
 	}
 
-	*dest = NULL;
+	if(*dest == elem) {
+		*dest = elem->next;
+	}
+
+	return elem;
 }
 
-#ifdef DEBUG
-	// #define DEBUG_REFS
-#endif
+List* list_pop(List **dest) {
+	return list_unlink(dest, *dest);
+}
 
-#ifdef DEBUG_REFS
-	#define REFLOG(...) log_debug(__VA_ARGS__);
-#else
-	#define REFLOG(...)
-#endif
+void* list_foreach(List **dest, ListForeachCallback callback, void *arg) {
+	List *e = *dest;
 
-int add_ref(void *ptr) {
-	int i, firstfree = -1;
+	while(e != 0) {
+		void *ret;
+		List *tmp = e;
+		e = e->next;
 
-	for(i = 0; i < global.refs.count; i++) {
-		if(global.refs.ptrs[i].ptr == ptr) {
-			global.refs.ptrs[i].refs++;
-			REFLOG("increased refcount for %p (ref %i): %i", ptr, i, global.refs.ptrs[i].refs);
-			return i;
-		} else if(firstfree < 0 && global.refs.ptrs[i].ptr == FREEREF) {
-			firstfree = i;
+		if((ret = callback(dest, tmp, arg)) != NULL) {
+			return ret;
 		}
 	}
 
-	if(firstfree >= 0) {
-		global.refs.ptrs[firstfree].ptr = ptr;
-		global.refs.ptrs[firstfree].refs = 1;
-		REFLOG("found free ref for %p: %i", ptr, firstfree);
-		return firstfree;
-	}
-
-	global.refs.ptrs = realloc(global.refs.ptrs, (++global.refs.count)*sizeof(Reference));
-	global.refs.ptrs[global.refs.count - 1].ptr = ptr;
-	global.refs.ptrs[global.refs.count - 1].refs = 1;
-	REFLOG("new ref for %p: %i", ptr, global.refs.count - 1);
-
-	return global.refs.count - 1;
+	return NULL;
 }
 
-void del_ref(void *ptr) {
-	int i;
-
-	for(i = 0; i < global.refs.count; i++)
-		if(global.refs.ptrs[i].ptr == ptr)
-			global.refs.ptrs[i].ptr = NULL;
+void* list_callback_free_element(List **dest, List *elem, void *arg) {
+	list_unlink(dest, elem);
+	free(elem);
+	return NULL;
 }
 
-void free_ref(int i) {
-	if(i < 0)
-		return;
-
-	global.refs.ptrs[i].refs--;
-	REFLOG("decreased refcount for %p (ref %i): %i", global.refs.ptrs[i].ptr, i, global.refs.ptrs[i].refs);
-
-	if(global.refs.ptrs[i].refs <= 0) {
-		global.refs.ptrs[i].ptr = FREEREF;
-		global.refs.ptrs[i].refs = 0;
-		REFLOG("ref %i is now free", i);
-	}
+void list_free_all(List **dest) {
+	list_foreach(dest, list_callback_free_element, NULL);
 }
 
-void free_all_refs(void) {
-	int inuse = 0;
-	int inuse_unique = 0;
-
-	for(int i = 0; i < global.refs.count; i++) {
-		if(global.refs.ptrs[i].refs) {
-			inuse += global.refs.ptrs[i].refs;
-			inuse_unique += 1;
-		}
-	}
-
-	if(inuse) {
-		log_warn("%i refs were still in use (%i unique, %i total allocated)", inuse, inuse_unique, global.refs.count);
-	}
-
-	free(global.refs.ptrs);
-	memset(&global.refs, 0, sizeof(RefArray));
+ListContainer* list_wrap_container(void *data) {
+	ListContainer *c = calloc(1, sizeof(ListContainer));
+	c->data = data;
+	return c;
 }

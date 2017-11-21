@@ -97,8 +97,8 @@ int projectile_prio_rawfunc(Texture *tex, complex size) {
 	return -rint(creal(s) * cimag(s));
 }
 
-int projectile_prio_func(void *vproj) {
-	Projectile *proj = vproj;
+int projectile_prio_func(List *vproj) {
+	Projectile *proj = (Projectile*)vproj;
 	return projectile_prio_rawfunc(proj->tex, proj->size);
 }
 
@@ -107,8 +107,9 @@ static Projectile* _create_projectile(ProjArgs *args) {
 		log_fatal("Tried to spawn a projectile while in drawing code");
 	}
 
-	Projectile *p = create_element_at_priority(
-		(void**)args->dest, sizeof(Projectile),
+	Projectile *p = (Projectile*)list_insert_at_priority(
+		(List**)args->dest,
+		malloc(sizeof(Projectile)),
 		projectile_prio_rawfunc(args->texture_ptr, args->size),
 		projectile_prio_func
 	);
@@ -155,21 +156,21 @@ Projectile* _proj_attach_dbginfo(Projectile *p, DebugInfo *dbg) {
 }
 #endif
 
-
-void _delete_projectile(void **projs, void *proj) {
-	Projectile *p = proj;
+static void* _delete_projectile(List **projs, List *proj, void *arg) {
+	Projectile *p = (Projectile*)proj;
 	p->rule(p, EVENT_DEATH);
 
 	del_ref(proj);
-	delete_element(projs, proj);
+	free(list_unlink(projs, proj));
+	return NULL;
 }
 
 void delete_projectile(Projectile **projs, Projectile *proj) {
-	_delete_projectile((void **)projs, proj);
+	_delete_projectile((List**)projs, (List*)proj, NULL);
 }
 
 void delete_projectiles(Projectile **projs) {
-	delete_all_elements((void **)projs, _delete_projectile);
+	list_foreach((List**)projs, _delete_projectile, NULL);
 }
 
 int collision_projectile(Projectile *p) {

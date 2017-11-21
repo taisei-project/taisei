@@ -13,7 +13,7 @@
 static StageText *textlist = NULL;
 
 StageText* stagetext_add(const char *text, complex pos, Alignment align, TTF_Font *font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
-    StageText *t = create_element((void**)&textlist, sizeof(StageText));
+    StageText *t = (StageText*)list_append((List**)&textlist, malloc(sizeof(StageText)));
     t->rendered_text = fontrender_render(&resources.fontren, text, font);
     t->pos = pos;
     t->align = align;
@@ -44,13 +44,14 @@ StageText* stagetext_add_numeric(int n, complex pos, Alignment align, TTF_Font *
     return t;
 }
 
-static void stagetext_delete(StageText **dest, StageText *txt) {
-    SDL_FreeSurface(txt->rendered_text);
-    delete_element((void**)dest, txt);
+static void* stagetext_delete(List **dest, List *txt, void *arg) {
+    SDL_FreeSurface(((StageText*)txt)->rendered_text);
+    free(list_unlink(dest, txt));
+    return NULL;
 }
 
 void stagetext_free(void) {
-    delete_all_elements((void**)&textlist, (void (*)(void **, void *))stagetext_delete);
+    list_foreach((List**)&textlist, stagetext_delete, NULL);
 }
 
 static void stagetext_draw_single(StageText *txt) {
@@ -59,7 +60,7 @@ static void stagetext_draw_single(StageText *txt) {
     }
 
     if(global.frames > txt->time.spawn + txt->time.life) {
-        stagetext_delete(&textlist, txt);
+        stagetext_delete((List**)&textlist, (List*)txt, NULL);
         return;
     }
 
@@ -95,8 +96,7 @@ void stagetext_draw(void) {
 }
 
 static void stagetext_table_push(StageTextTable *tbl, StageText *txt, bool update_pos) {
-    ListContainer *c = create_container(&tbl->elems);
-    c->data = txt;
+    list_append(&tbl->elems, list_wrap_container(txt));
 
     if(update_pos) {
         tbl->pos += txt->rendered_text->h / resources.fontren.quality * I;
@@ -126,7 +126,7 @@ void stagetext_end_table(StageTextTable *tbl) {
         ((StageText*)c->data)->pos += ofs;
     }
 
-    delete_all_elements((void**)&tbl->elems, delete_element);
+    list_free_all(&tbl->elems);
 }
 
 static void stagetext_table_add_label(StageTextTable *tbl, const char *title) {

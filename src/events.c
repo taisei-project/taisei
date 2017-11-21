@@ -69,7 +69,7 @@ static bool events_invoke_handler(SDL_Event *event, EventHandler *handler) {
 	return false;
 }
 
-static int handler_container_prio_func(void *h) {
+static int handler_container_prio_func(List *h) {
 	return ((EventHandler*)((ListContainer*)h)->data)->priority;
 }
 
@@ -130,11 +130,12 @@ static bool events_invoke_handlers(SDL_Event *event, ListContainer *h_list, Even
 
 		// merge the array into the list copy, respecting priority
 		for(EventHandler *h = h_array; h->proc; ++h) {
-			create_container_at_priority(
+			list_insert_at_priority(
 				&merged_list,
+				list_wrap_container(h),
 				real_priority(h->priority),
 				handler_container_prio_func
-			)->data = h;
+			);
 		}
 
 		// iterate over the merged list
@@ -144,7 +145,7 @@ static bool events_invoke_handlers(SDL_Event *event, ListContainer *h_list, Even
 			}
 		}
 
-		delete_all_elements((void**)&merged_list, delete_element);
+		list_free_all((List**)&merged_list);
 		return result;
 	}
 
@@ -174,7 +175,12 @@ void events_register_handler(EventHandler *handler) {
 	}
 
 	assert(handler_alloc->priority > EPRIO_DEFAULT);
-	create_container_at_priority(&global_handlers, handler_alloc->priority, handler_container_prio_func)->data = handler_alloc;
+	list_insert_at_priority(
+		(List**)&global_handlers,
+		(List*)list_wrap_container(handler_alloc),
+		handler_alloc->priority,
+		handler_container_prio_func
+	);
 
 	log_debug("Registered handler: %p %u", *(void**)&handler_alloc->proc, handler_alloc->priority);
 }
@@ -187,7 +193,7 @@ void events_unregister_handler(EventHandlerProc proc) {
 
 		if(h->proc == proc) {
 			free(c->data);
-			delete_element((void**)&global_handlers, c);
+			free(list_unlink(&global_handlers, c));
 			return;
 		}
 	}

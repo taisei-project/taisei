@@ -26,14 +26,14 @@ AniPlayer* aniplayer_create_copy(AniPlayer *src) {
 
 void aniplayer_free(AniPlayer *plr) {
 	plr->queuesize = 0; // prevent aniplayer_reset from messing with the queue, since we're going to wipe all of it anyway
-	delete_all_elements((void **)&plr->queue,delete_element);
+	list_free_all((List**)&plr->queue);
 	aniplayer_reset(plr);
 }
 
 void aniplayer_reset(AniPlayer *plr) { // resets to a neutral state with empty queue.
 	plr->stdrow = 0;
 	if(plr->queuesize > 0) { // abort the animation in the fastest fluent way.
-		delete_all_elements((void **)&plr->queue->next,delete_element);
+		list_free_all((List**)&plr->queue->next);
 		plr->queuesize = 1;
 		plr->queue->delay = 0;
 	}
@@ -46,7 +46,7 @@ void aniplayer_copy(AniPlayer *dst, AniPlayer *src) {
 }
 
 AniSequence *aniplayer_queue(AniPlayer *plr, int row, int loops, int delay) {
-	AniSequence *s = create_element_at_end((void **)&plr->queue,sizeof(AniSequence));
+	AniSequence *s = (AniSequence*)list_append((List**)&plr->queue, calloc(1, sizeof(AniSequence)));
 	plr->queuesize++;
 	s->row = row;
 
@@ -81,7 +81,7 @@ void aniplayer_update(AniPlayer *plr) {
 		} else if(s->delay > 0) {
 			s->delay--;
 		} else {
-			delete_element((void **)&plr->queue,plr->queue);
+			free(list_pop((List**)&plr->queue));
 			plr->queuesize--;
 			plr->clock = 0;
 		}

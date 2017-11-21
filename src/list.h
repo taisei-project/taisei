@@ -8,19 +8,6 @@
 
 #pragma once
 
-/* I got annoyed of the code doubling caused by simple linked lists,
- * so i do some void-magic here to save the lines.
- */
-
-#include <stdlib.h>
-
-void* create_element(void **dest, size_t size);
-void* create_element_at_end(void **dest, size_t size);
-void* create_element_at_priority(void **list_head, size_t size, int prio, int (*prio_func)(void*));
-void delete_element(void **dest, void *e);
-void delete_all_elements(void **dest, void (callback)(void **, void *));
-void delete_all_elements_witharg(void **dest, void (callback)(void **, void *, void *), void *arg);
-
 typedef struct List {
     struct List *next;
     struct List *prev;
@@ -32,23 +19,37 @@ typedef struct ListContainer {
     void *data;
 } ListContainer;
 
-ListContainer* create_container(ListContainer **dest);
-ListContainer* create_container_at_priority(ListContainer **list_head, int prio, int (*prio_func)(void*));
+typedef void* (*ListForeachCallback)(List **head, List *elem, void *arg);
+typedef int (*ListPriorityFunc)(List *elem);
 
-typedef struct {
-	void *ptr;
-	int refs;
-} Reference;
+List* list_insert(List **dest, List *elem);
+List* list_push(List **dest, List *elem);
+List* list_append(List **dest, List *elem);
+List* list_insert_at_priority(List **dest, List *elem, int prio, ListPriorityFunc prio_func);
+List* list_pop(List **dest);
+List* list_unlink(List **dest, List *elem);
+void* list_foreach(List **dest, ListForeachCallback callback, void *arg);
+void* list_callback_free_element(List **dest, List *elem, void *arg);
+void list_free_all(List **dest);
+ListContainer* list_wrap_container(void *data);
 
-typedef struct {
-	Reference *ptrs;
-	int count;
-} RefArray;
+// type-generic macros
 
-extern void *_FREEREF;
-#define FREEREF &_FREEREF
-#define REF(p) (global.refs.ptrs[(int)(p)].ptr)
-int add_ref(void *ptr);
-void del_ref(void *ptr);
-void free_ref(int i);
-void free_all_refs(void);
+#ifndef LIST_NO_MACROS
+
+#define LIST_CAST(expr,ptrlevel) (_Generic((expr), \
+    ListContainer ptrlevel: (List ptrlevel)(expr), \
+    void ptrlevel: (List ptrlevel)(expr), \
+    List ptrlevel: (expr) \
+))
+
+#define list_insert(dest,elem) list_insert(LIST_CAST(dest, **), LIST_CAST(elem, *))
+#define list_push(dest,elem) list_push(LIST_CAST(dest, **), LIST_CAST(elem, *))
+#define list_append(dest,elem) list_append(LIST_CAST(dest, **), LIST_CAST(elem, *))
+#define list_insert_at_priority(dest,elem,prio,prio_func) list_insert_at_priority(LIST_CAST(dest, **), LIST_CAST(elem, *), prio, prio_func)
+#define list_pop(dest) list_pop(LIST_CAST(dest, **))
+#define list_unlink(dest,elem) list_unlink(LIST_CAST(dest, **), LIST_CAST(elem, *))
+#define list_foreach(dest,callback,arg) list_foreach(LIST_CAST(dest, **), callback, arg)
+#define list_free_all(dest) list_free_all(LIST_CAST(dest, **))
+
+#endif // LIST_NO_MACROS

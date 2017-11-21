@@ -181,8 +181,8 @@ noreturn void _taisei_log_fatal(LogLevel lvl, const char *funcname, const char *
     log_abort(NULL);
 }
 
-static void delete_logger(void **loggers, void *logger) {
-    Logger *l = logger;
+static void* delete_logger(List **loggers, List *logger, void *arg) {
+    Logger *l = (Logger*)logger;
 
 #if HAVE_STDIO_H
     if(l->out->type == SDL_RWOPS_STDFILE) {
@@ -191,7 +191,9 @@ static void delete_logger(void **loggers, void *logger) {
 #endif
 
     SDL_RWclose(l->out);
-    delete_element(loggers, logger);
+    free(list_unlink(loggers, logger));
+
+    return NULL;
 }
 
 void log_init(LogLevel lvls, LogLevel backtrace_lvls) {
@@ -201,7 +203,7 @@ void log_init(LogLevel lvls, LogLevel backtrace_lvls) {
 }
 
 void log_shutdown(void) {
-    delete_all_elements((void**)&loggers, delete_logger);
+    list_foreach((List**)&loggers, delete_logger, NULL);
     SDL_DestroyMutex(log_mutex);
     log_mutex = NULL;
 }
@@ -220,7 +222,7 @@ void log_add_output(LogLevel levels, SDL_RWops *output) {
         return;
     }
 
-    Logger *l = create_element((void**)&loggers, sizeof(Logger));
+    Logger *l = (Logger*)list_append((List**)&loggers, malloc(sizeof(Logger)));
     l->levels = levels;
     l->out = output;
 }

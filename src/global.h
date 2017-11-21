@@ -33,6 +33,7 @@
 #include "laser.h"
 #include "dialog.h"
 #include "list.h"
+#include "refs.h"
 #include "config.h"
 #include "fbo.h"
 #include "vbo.h"

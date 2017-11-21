@@ -32,7 +32,8 @@ Enemy *create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyVisualRule visu
 		log_fatal("Tried to spawn an enemy while in drawing code");
 	}
 
-	Enemy *e = (Enemy *)create_element((void **)enemies, sizeof(Enemy));
+	// XXX: some code relies on the insertion logic
+	Enemy *e = (Enemy*)list_insert((List**)enemies, malloc(sizeof(Enemy)));
 	e->moving = false;
 	e->dir = 0;
 
@@ -55,8 +56,8 @@ Enemy *create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyVisualRule visu
 	return e;
 }
 
-void _delete_enemy(void **enemies, void* enemy) {
-	Enemy *e = (Enemy *)enemy;
+void* _delete_enemy(List **enemies, List* enemy, void *arg) {
+	Enemy *e = (Enemy*)enemy;
 
 	if(e->hp <= 0 && e->hp > ENEMY_IMMUNE) {
 		play_sound("enemydeath");
@@ -74,18 +75,19 @@ void _delete_enemy(void **enemies, void* enemy) {
 		PARTICLE("blast", e->pos, 0, blast_timeout, { 15 }, .draw_rule = GrowFade);
 	}
 
-	e->logic_rule(enemy, EVENT_DEATH);
+	e->logic_rule(e, EVENT_DEATH);
 	del_ref(enemy);
 
-	delete_element((void **)enemies, enemy);
+	free(list_unlink(enemies, enemy));
+	return NULL;
 }
 
 void delete_enemy(Enemy **enemies, Enemy* enemy) {
-	_delete_enemy((void**) enemies, enemy);
+	_delete_enemy((List**)enemies, (List*)enemy, NULL);
 }
 
 void delete_enemies(Enemy **enemies) {
-	delete_all_elements((void **)enemies, _delete_enemy);
+	list_foreach((List**)enemies, _delete_enemy, NULL);
 }
 
 static void draw_enemy(Enemy *e) {

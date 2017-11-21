@@ -11,7 +11,7 @@
 #include "list.h"
 
 Laser *create_laser(complex pos, float time, float deathtime, Color color, LaserPosRule prule, LaserLogicRule lrule, complex a0, complex a1, complex a2, complex a3) {
-	Laser *l = create_element((void **)&global.lasers, sizeof(Laser));
+	Laser *l = (Laser*)list_push((List**)&global.lasers, malloc(sizeof(Laser)));
 
 	l->birthtime = global.frames;
 	l->timespan = time;
@@ -168,18 +168,23 @@ void draw_lasers(int bgpass) {
 	}
 }
 
-void _delete_laser(void **lasers, void *laser) {
-	Laser *l = laser;
+void* _delete_laser(List **lasers, List *laser, void *arg) {
+	Laser *l = (Laser*)laser;
 
 	if(l->lrule)
 		l->lrule(l, EVENT_DEATH);
 
 	del_ref(laser);
-	delete_element(lasers, laser);
+	free(list_unlink(lasers, laser));
+	return NULL;
+}
+
+void delete_laser(Laser **lasers, Laser *laser) {
+	_delete_laser((List**)lasers, (List*)laser, NULL);
 }
 
 void delete_lasers(void) {
-	delete_all_elements((void **)&global.lasers, _delete_laser);
+	list_foreach((List**)&global.lasers, _delete_laser, NULL);
 }
 
 void process_lasers(void) {
@@ -218,7 +223,7 @@ void process_lasers(void) {
 		if(global.frames - laser->birthtime > laser->deathtime + laser->timespan*laser->speed) {
 			del = laser;
 			laser = laser->next;
-			_delete_laser((void **)&global.lasers, del);
+			delete_laser(&global.lasers, del);
 		} else {
 			laser = laser->next;
 		}

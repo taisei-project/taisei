@@ -29,7 +29,7 @@ static struct enqueued_sound {
 
 static void play_sound_internal(const char *name, bool is_ui, int cooldown, bool replace, int delay) {
 	if(delay > 0) {
-		struct enqueued_sound *s = create_element((void**)&sound_queue, sizeof(struct enqueued_sound));
+		struct enqueued_sound *s = (struct enqueued_sound*)list_push((List**)&sound_queue, malloc(sizeof(struct enqueued_sound)));
 		s->time = global.frames + delay;
 		s->name = strdup(name);
 		s->cooldown = cooldown;
@@ -53,17 +53,19 @@ static void play_sound_internal(const char *name, bool is_ui, int cooldown, bool
 		(snd->impl, is_ui ? SNDGROUP_UI : SNDGROUP_MAIN);
 }
 
-static void discard_enqueued_sound(void **queue, void *vsnd) {
-	struct enqueued_sound *snd = vsnd;
+static void* discard_enqueued_sound(List **queue, List *vsnd, void *arg) {
+	struct enqueued_sound *snd = (struct enqueued_sound*)vsnd;
 	free(snd->name);
-	delete_element(queue, snd);
+	free(list_unlink(queue, vsnd));
+	return NULL;
 }
 
-static void play_enqueued_sound(void **queue, void *vsnd) {
-	struct enqueued_sound *snd = vsnd;
+static void* play_enqueued_sound(List **queue, List *vsnd, void *arg) {
+	struct enqueued_sound *snd = (struct enqueued_sound*)vsnd;
 	play_sound_internal(snd->name, false, snd->cooldown, snd->replace, 0);
 	free(snd->name);
-	delete_element(queue, snd);
+	free(list_unlink(queue, vsnd));
+	return NULL;
 }
 
 void play_sound(const char *name) {
@@ -111,7 +113,7 @@ void reset_sounds(void) {
 		}
 	}
 
-	delete_all_elements((void**)&sound_queue, discard_enqueued_sound);
+	list_foreach((List**)&sound_queue, discard_enqueued_sound, NULL);
 }
 
 void update_sounds(void) {
@@ -129,7 +131,7 @@ void update_sounds(void) {
 		next = (struct enqueued_sound*)s->chain.next;
 
 		if(s->time <= global.frames) {
-			play_enqueued_sound((void**)&sound_queue, s);
+			play_enqueued_sound((List**)&sound_queue, (List*)s, NULL);
 		}
 	}
 }

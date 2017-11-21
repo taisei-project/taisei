@@ -248,7 +248,7 @@ static void progress_read(SDL_RWops *file) {
 			default:
 				log_warn("Unknown command %x (%u bytes). Will preserve as-is and not interpret", cmd, cmdsize);
 
-				UnknownCmd *c = create_element((void**)&progress.unknown, sizeof(UnknownCmd));
+				UnknownCmd *c = (UnknownCmd*)list_append((List**)&progress.unknown, malloc(sizeof(UnknownCmd)));
 				c->cmd = cmd;
 				c->size = cmdsize;
 				c->data = malloc(cmdsize);
@@ -448,7 +448,14 @@ static void progress_prepare_cmd_stage_playinfo(size_t *bufsize, void **arg) {
 			StageProgress *p = stage_get_progress_from_info(stg, d, false);
 
 			if(p && (p->num_played || p->num_cleared)) {
-				struct cmd_stage_playinfo_data_elem *e = create_element((void**)&data->elems, sizeof(struct cmd_stage_playinfo_data_elem));
+				struct cmd_stage_playinfo_data_elem *e = (
+					(struct cmd_stage_playinfo_data_elem*)
+					list_push(
+						(List**)&data->elems,
+						malloc(sizeof(struct cmd_stage_playinfo_data_elem))
+					)
+				);
+
 				e->stage = stg->id;					data->size += sizeof(uint16_t);
 				e->diff = d;						data->size += sizeof(uint8_t);
 				e->num_played = p->num_played;		data->size += sizeof(uint32_t);
@@ -482,7 +489,7 @@ static void progress_write_cmd_stage_playinfo(SDL_RWops *vfile, void **arg) {
 	}
 
 cleanup:
-	delete_all_elements((void**)&data->elems, delete_element);
+	list_free_all((List**)&data->elems);
 	free(data);
 }
 
@@ -694,12 +701,13 @@ void progress_save(void) {
 	SDL_RWclose(file);
 }
 
-static void delete_unknown_cmd(void **dest, void *elem) {
-	UnknownCmd *cmd = elem;
+static void* delete_unknown_cmd(List **dest, List *elem, void *arg) {
+	UnknownCmd *cmd = (UnknownCmd*)elem;
 	free(cmd->data);
-	delete_element(dest, cmd);
+	free(list_unlink(dest, elem));
+	return NULL;
 }
 
 void progress_unload(void) {
-	delete_all_elements((void**)&progress.unknown, delete_unknown_cmd);
+	list_foreach((void**)&progress.unknown, delete_unknown_cmd, NULL);
 }

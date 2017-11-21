@@ -13,15 +13,16 @@
 
 static bool vfs_union_mount_internal(VFSNode *unode, const char *mountpoint, VFSNode *mountee, VFSInfo info, bool seterror);
 
-static void vfs_union_delete_callback(void **list, void *elem) {
-    ListContainer *c = elem;
+static void* vfs_union_delete_callback(List **list, List *elem, void *arg) {
+    ListContainer *c = (ListContainer*)elem;
     VFSNode *n = c->data;
     vfs_decref(n);
-    delete_element(list, elem);
+    free(list_unlink(list, elem));
+    return NULL;
 }
 
 static void vfs_union_free(VFSNode *node) {
-    delete_all_elements((void**)&node->_members_, vfs_union_delete_callback);
+    list_foreach(&node->_members_, vfs_union_delete_callback, NULL);
 }
 
 static VFSNode* vfs_union_locate(VFSNode *node, const char *path) {
@@ -157,16 +158,7 @@ static bool vfs_union_mount_internal(VFSNode *unode, const char *mountpoint, VFS
         return false;
     }
 
-    ListContainer *c = NULL, *p = unode->_members_;
-    create_container(&c)->data = mountee;
-
-    c->next = p;
-
-    if(p) {
-        p->prev = c;
-    }
-
-    unode->_members_ = c;
+    list_push(&unode->_members_, list_wrap_container(mountee));
     unode->_primary_member_ = mountee;
 
     return true;

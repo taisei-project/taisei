@@ -239,7 +239,7 @@ static ConfigEntry* config_get_unknown_entry(const char *name) {
 		}
 	}
 
-	l = create_element((void**)&unknowndefs, sizeof(ConfigEntryList));
+	l = (ConfigEntryList*)list_push((List**)&unknowndefs, malloc(sizeof(ConfigEntryList)));
 	e = &l->entry;
 	memset(e, 0, sizeof(ConfigEntry));
 	stralloc(&e->name, name);
@@ -252,17 +252,18 @@ static void config_set_unknown(const char *name, const char *val) {
 	stralloc(&config_get_unknown_entry(name)->val.s, val);
 }
 
-static void config_delete_unknown_entry(void **list, void *lentry) {
+static void* config_delete_unknown_entry(List **list, List *lentry, void *arg) {
 	ConfigEntry *e = &((ConfigEntryList*)lentry)->entry;
 
 	free(e->name);
 	free(e->val.s);
+	free(list_unlink(list, lentry));
 
-	delete_element(list, lentry);
+	return NULL;
 }
 
 static void config_delete_unknown_entries(void) {
-	delete_all_elements((void**)&unknowndefs, config_delete_unknown_entry);
+	list_foreach((List**)&unknowndefs, config_delete_unknown_entry, NULL);
 }
 
 void config_save(void) {
