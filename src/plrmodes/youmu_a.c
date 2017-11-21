@@ -65,7 +65,10 @@ static int youmu_mirror_myon(Enemy *e, int t) {
 
     double nfocus = plr->focus / 30.0;
 
-    if(!(plr->inputflags & INFLAG_FOCUS)) {
+    if(!(plr->inputflags & INFLAG_SHOT)) {
+        nfocus = 0.0;
+        e->pos0 = -rad * I;
+    } else if(!(plr->inputflags & INFLAG_FOCUS)) {
         if((plr->inputflags & INFLAGS_MOVE)) {
             e->pos0 = rad * -plr->lastmovedir;
         } else {
@@ -77,7 +80,7 @@ static int youmu_mirror_myon(Enemy *e, int t) {
     complex target = plr->pos + e->pos0;
     e->pos += cexp(I*carg(target - e->pos)) * min(10, 0.07 * max(0, cabs(target - e->pos) - VIEWPORT_W * 0.5 * nfocus));
 
-    if(!(plr->inputflags & INFLAG_FOCUS)) {
+    if(!(plr->inputflags & INFLAG_SHOT) || !(plr->inputflags & INFLAG_FOCUS)) {
         e->args[0] = plr->pos - e->pos;
     }
 
