@@ -109,7 +109,6 @@ void draw_laser_curve_instanced(Laser *l) {
 }
 
 void draw_laser_curve(Laser *laser) {
-	glEnable(GL_TEXTURE_2D);
 	Texture *tex = get_tex("part/lasercurve");
 	complex last;
 
@@ -151,7 +150,6 @@ void draw_laser_curve(Laser *laser) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glColor4f(1,1,1,1);
-	glDisable(GL_TEXTURE_2D);
 }
 
 void draw_lasers(int bgpass) {

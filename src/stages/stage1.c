@@ -51,15 +51,14 @@ static void stage1_bg_draw(Vector pos) {
 	glTranslatef(0,stage_3d_context.cx[1]+500,0);
 	glRotatef(180,1,0,0);
 
-	//glEnable(GL_TEXTURE_2D);
-	//glBindTexture(GL_TEXTURE_2D, get_tex("stage1/water")->gltex);
-
+	glDisable(GL_TEXTURE_2D);
 	glPushMatrix();
 	glScalef(1200,3000,1);
 	glColor4f(0,0.1,.1,1);
 	draw_quad();
 	glColor4f(1,1,1,1);
 	glPopMatrix();
+	glEnable(GL_TEXTURE_2D);
 
 	glPushMatrix();
 	glRotatef(30,1,0,0);
@@ -74,6 +73,7 @@ static void stage1_bg_draw(Vector pos) {
 	glPopMatrix();
 	glEnable(GL_CULL_FACE);
 
+	glDisable(GL_TEXTURE_2D);
 	glPushMatrix();
 	glScalef(1200,3000,1);
 	glColor4f(0,0.1,.1,0.8);
@@ -82,6 +82,7 @@ static void stage1_bg_draw(Vector pos) {
 	glPopMatrix();
 	glEnable(GL_DEPTH_TEST);
 	glPopMatrix();
+	glEnable(GL_TEXTURE_2D);
 }
 
 static Vector **stage1_bg_pos(Vector p, float maxrange) {

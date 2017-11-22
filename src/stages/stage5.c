@@ -52,7 +52,6 @@ static Vector **stage5_stairs_pos(Vector pos, float maxrange) {
 }
 
 static void stage5_stairs_draw(Vector pos) {
-	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage5/tower")->gltex);
 
 	glPushMatrix();
@@ -68,8 +67,6 @@ static void stage5_stairs_draw(Vector pos) {
 	draw_model("tower");
 
 	glPopMatrix();
-
-	glDisable(GL_TEXTURE_2D);
 
 	glUseProgram(0);
 }

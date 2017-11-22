@@ -86,7 +86,6 @@ static Vector **stage4_fountain_pos(Vector pos, float maxrange) {
 }
 
 static void stage4_fountain_draw(Vector pos) {
-	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage2/border")->gltex);
 
 	glPushMatrix();
@@ -97,8 +96,6 @@ static void stage4_fountain_draw(Vector pos) {
 	draw_quad();
 
 	glPopMatrix();
-
-	glDisable(GL_TEXTURE_2D);
 }
 
 static Vector **stage4_lake_pos(Vector pos, float maxrange) {
@@ -125,7 +122,6 @@ static Vector **stage4_lake_pos(Vector pos, float maxrange) {
 }
 
 static void stage4_lake_draw(Vector pos) {
-	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage4/lake")->gltex);
 
 	glPushMatrix();
@@ -143,9 +139,6 @@ static void stage4_lake_draw(Vector pos) {
 
 	draw_model("mansion");
 	glPopMatrix();
-
-
-	glDisable(GL_TEXTURE_2D);
 }
 
 static Vector **stage4_corridor_pos(Vector pos, float maxrange) {
@@ -165,7 +158,6 @@ static Vector **stage4_corridor_pos(Vector pos, float maxrange) {
 }
 
 static void stage4_corridor_draw(Vector pos) {
-	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage4/planks")->gltex);
 
 	glMatrixMode(GL_TEXTURE);
@@ -220,6 +212,8 @@ static void stage4_corridor_draw(Vector pos) {
 
 	glPopMatrix();
 	glColor3f(1,1,1);
+
+	glEnable(GL_TEXTURE_2D);
 }
 
 static void stage4_start(void) {

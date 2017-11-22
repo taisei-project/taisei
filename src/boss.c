@@ -322,6 +322,7 @@ void draw_boss(Boss *boss) {
 			return;
 		}
 
+		glDisable(GL_TEXTURE_2D);
 		glPushMatrix();
 		glTranslatef(10,2,0);
 		glScalef((VIEWPORT_W-60)/(float)maxhpspan,1,1);
@@ -350,6 +351,7 @@ void draw_boss(Boss *boss) {
 		}
 
 		glPopMatrix();
+		glEnable(GL_TEXTURE_2D);
 
 		// remaining spells
 		glColor4f(1,1,1,0.7);

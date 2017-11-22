@@ -69,8 +69,6 @@ static void stage3_bg_tunnel_draw(Vector pos) {
 	float r = 300;
 	int i;
 
-	glEnable(GL_TEXTURE_2D);
-
 	glPushMatrix();
 	glTranslatef(pos[0], pos[1], pos[2]);
 
@@ -85,7 +83,6 @@ static void stage3_bg_tunnel_draw(Vector pos) {
 	}
 
 	glPopMatrix();
-	glDisable(GL_TEXTURE_2D);
 }
 
 static void stage3_tunnel(FBO *fbo) {

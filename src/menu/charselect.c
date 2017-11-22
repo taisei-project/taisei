@@ -65,7 +65,9 @@ void draw_char_menu(MenuData *menu) {
 	glColor4f(0,0,0,0.7);
 	glTranslatef(SCREEN_W/4*3, SCREEN_H/2, 0);
 	glScalef(300, SCREEN_H, 1);
+	glDisable(GL_TEXTURE_2D);
 	draw_quad();
+	glEnable(GL_TEXTURE_2D);
 	glPopMatrix();
 
 	CharacterID current_char;

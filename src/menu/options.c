@@ -860,6 +860,7 @@ void draw_options_menu(MenuData *menu) {
 					glPushMatrix();
 					glTranslatef(origin - (w+cw) * 0.5, 20 * i, 0);
 					draw_text(AL_Right, -((w+cw) * 0.5 + 10), 0, tmp, _fonts.standard);
+					glDisable(GL_TEXTURE_2D);
 					glPushMatrix();
 					glScalef(w+cw, h, 1);
 					glColor4f(1, 1, 1, (0.1 + 0.2 * a) * alpha);
@@ -870,6 +871,7 @@ void draw_options_menu(MenuData *menu) {
 					glColor4f(0.9, 0.6, 0.2, alpha);
 					draw_quad();
 					glPopMatrix();
+					glEnable(GL_TEXTURE_2D);
 
 					break;
 				}

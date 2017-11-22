@@ -613,7 +613,6 @@ void Baryon(Enemy *e, int t, bool render) {
 	if(!n)
 		return;
 
-	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/baryon_connector")->gltex);
 	glPushMatrix();
 	glTranslatef(creal(e->pos+n->pos)/2.0, cimag(e->pos+n->pos)/2.0, 0);
@@ -622,7 +621,6 @@ void Baryon(Enemy *e, int t, bool render) {
 
 	draw_quad();
 	glPopMatrix();
-	glDisable(GL_TEXTURE_2D);
 }
 
 void BaryonCenter(Enemy *e, int t, bool render) {
@@ -666,7 +664,6 @@ void BaryonCenter(Enemy *e, int t, bool render) {
 	if(!l[0] || !l[1])
 		return;
 
-	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/baryon_connector")->gltex);
 	for(i = 0; i < 2; i++) {
 		glPushMatrix();
@@ -677,7 +674,6 @@ void BaryonCenter(Enemy *e, int t, bool render) {
 		glPopMatrix();
 
 	}
-	glDisable(GL_TEXTURE_2D);
 }
 
 int baryon_unfold(Enemy *e, int t) {

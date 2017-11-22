@@ -157,6 +157,7 @@ static void video_init_gl(void) {
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
+	glEnable(GL_TEXTURE_2D);
 	init_quadvbo();
 
 	glClear(GL_COLOR_BUFFER_BIT);

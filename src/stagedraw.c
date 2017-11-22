@@ -45,7 +45,6 @@ static void draw_wall_of_text(float f, const char *txt) {
 	glUniform1f(uniloc(shader, "ratio"), h/w);
 	glUniform2f(uniloc(shader, "origin"), creal(global.boss->pos)/h, cimag(global.boss->pos)/w);
 	glUniform1f(uniloc(shader, "t"), f);
-	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 	draw_quad();
 	glUseProgram(0);

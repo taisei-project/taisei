@@ -80,7 +80,6 @@ void credits_add(char *data, int time) {
 }
 
 void credits_skysphere_draw(Vector pos) {
-	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_DEPTH_TEST);
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/sky")->gltex);
 
@@ -92,12 +91,9 @@ void credits_skysphere_draw(Vector pos) {
 	glPopMatrix();
 
 	glEnable(GL_DEPTH_TEST);
-	glDisable(GL_TEXTURE_2D);
 }
 
 void credits_towerwall_draw(Vector pos) {
-	glEnable(GL_TEXTURE_2D);
-
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towerwall")->gltex);
 
 	Shader *s = get_shader("tower_wall");
@@ -112,7 +108,6 @@ void credits_towerwall_draw(Vector pos) {
 	glPopMatrix();
 
 	glUseProgram(0);
-	glDisable(GL_TEXTURE_2D);
 }
 
 Vector **credits_skysphere_pos(Vector pos, float maxrange) {

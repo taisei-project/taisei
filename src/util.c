@@ -416,6 +416,7 @@ void set_ortho(void) {
 void colorfill(float r, float g, float b, float a) {
     if(a <= 0) return;
 
+    glDisable(GL_TEXTURE_2D);
     glColor4f(r,g,b,a);
 
     glPushMatrix();
@@ -426,6 +427,7 @@ void colorfill(float r, float g, float b, float a) {
     glPopMatrix();
 
     glColor4f(1,1,1,1);
+    glEnable(GL_TEXTURE_2D);
 }
 
 void fade_out(float f) {

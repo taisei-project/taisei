@@ -35,7 +35,6 @@ struct stage2_spells_s stage2_spells = {
 };
 
 static void stage2_bg_leaves_draw(Vector pos) {
-	glEnable(GL_TEXTURE_2D);
 	glUseProgram(get_shader("alpha_depth")->prog);
 
 	glMatrixMode(GL_TEXTURE);
@@ -58,15 +57,12 @@ static void stage2_bg_leaves_draw(Vector pos) {
 
 	glUseProgram(0);
 
-	glDisable(GL_TEXTURE_2D);
-
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
 	glMatrixMode(GL_MODELVIEW);
 }
 
 static void stage2_bg_grass_draw(Vector pos) {
-	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_DEPTH_TEST);
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage2/roadgrass")->gltex);
 
@@ -79,11 +75,9 @@ static void stage2_bg_grass_draw(Vector pos) {
 	glPopMatrix();
 
 	glEnable(GL_DEPTH_TEST);
-	glDisable(GL_TEXTURE_2D);
 }
 
 static void stage2_bg_ground_draw(Vector pos) {
-	glEnable(GL_TEXTURE_2D);
 	glPushMatrix();
 	glTranslatef(pos[0]-50,pos[1],pos[2]);
 	glScalef(-1000,1000,1);
@@ -101,7 +95,6 @@ static void stage2_bg_ground_draw(Vector pos) {
 	glColor4f(1,1,1,1);
 	glTranslatef(0,0,+10);
 	draw_quad();
-
 
 	glPopMatrix();
 
@@ -122,8 +115,6 @@ static void stage2_bg_ground_draw(Vector pos) {
 	draw_quad();
 
 	glPopMatrix();
-
-	glDisable(GL_TEXTURE_2D);
 
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();

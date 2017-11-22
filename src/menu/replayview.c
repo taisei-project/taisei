@@ -96,7 +96,9 @@ static void replayview_draw_stagemenu(MenuData *m) {
 	glTranslatef(SCREEN_W*0.5, SCREEN_H*0.5, 0);
 	glScalef(width, height, 1);
 	glColor4f(0.1, 0.1, 0.1, 0.7 * alpha);
+	glDisable(GL_TEXTURE_2D);
 	draw_quad();
+	glEnable(GL_TEXTURE_2D);
 	glPopMatrix();
 
 	glPushMatrix();

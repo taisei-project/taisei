@@ -175,8 +175,6 @@ static void draw_text_texture(Alignment align, float x, float y, Texture *tex) {
 	if(tex->h&1)
 		y += 0.5;
 
-	glEnable(GL_TEXTURE_2D);
-
 	glPushMatrix();
 	glTranslatef(x, y, 0);
 	glScalef(m, m, 1);

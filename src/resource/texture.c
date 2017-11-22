@@ -209,7 +209,6 @@ void draw_texture(float x, float y, const char *name) {
 }
 
 void draw_texture_p(float x, float y, Texture *tex) {
-	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 
 	glPushMatrix();
@@ -235,7 +234,6 @@ void draw_texture_p(float x, float y, Texture *tex) {
 	glMatrixMode(GL_MODELVIEW);
 
 	glPopMatrix();
-	glDisable(GL_TEXTURE_2D);
 }
 
 void fill_screen(float xoff, float yoff, float ratio, const char *name) {
@@ -243,8 +241,6 @@ void fill_screen(float xoff, float yoff, float ratio, const char *name) {
 }
 
 void fill_screen_p(float xoff, float yoff, float ratio, float aspect, Texture *tex) {
-	glEnable(GL_TEXTURE_2D);
-
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 
 	float rw = ratio;
@@ -293,7 +289,6 @@ void loop_tex_line_p(complex a, complex b, float w, float t, Texture *texture) {
 	glTranslatef(t, 0, 0);
 	glMatrixMode(GL_MODELVIEW);
 
-	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texture->gltex);
 
 	draw_quad();

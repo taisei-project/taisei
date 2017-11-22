@@ -52,7 +52,9 @@ void draw_difficulty_menu(MenuData *menu) {
 	glRotatef(4*menu->drawdata[0]-4,0,0,1);
 	glPushMatrix();
 	glScalef(SCREEN_W*1.5,120,1);
+	glDisable(GL_TEXTURE_2D);
 	draw_quad();
+	glEnable(GL_TEXTURE_2D);
 	glPopMatrix();
 	glColor3f(1,1,1);
 	draw_text(AL_Left, 40+35*menu->drawdata[0], -12, menu->entries[menu->cursor].name, _fonts.standard);

@@ -87,8 +87,6 @@ void draw_dialog(Dialog *dialog) {
 		glColor3f(1,1,1);
 	}
 
-
-
 	glCullFace(GL_BACK);
 	glPopMatrix();
 
@@ -101,7 +99,10 @@ void draw_dialog(Dialog *dialog) {
 	glTranslatef(VIEWPORT_W/2, VIEWPORT_H-75, 0);
 	glScalef(VIEWPORT_W-40, 110, 1);
 
+	glDisable(GL_TEXTURE_2D);
 	draw_quad();
+	glEnable(GL_TEXTURE_2D);
+
 	glPopMatrix();
 	glColor4f(1,1,1,1);
 

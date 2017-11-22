@@ -75,8 +75,6 @@ Vector **stage6_towerwall_pos(Vector pos, float maxrange) {
 }
 
 void stage6_towerwall_draw(Vector pos) {
-	glEnable(GL_TEXTURE_2D);
-
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towerwall")->gltex);
 
 	Shader *s = get_shader("tower_wall");
@@ -90,7 +88,6 @@ void stage6_towerwall_draw(Vector pos) {
 	glPopMatrix();
 
 	glUseProgram(0);
-	glDisable(GL_TEXTURE_2D);
 }
 
 static Vector **stage6_towertop_pos(Vector pos, float maxrange) {
@@ -100,8 +97,6 @@ static Vector **stage6_towertop_pos(Vector pos, float maxrange) {
 }
 
 static void stage6_towertop_draw(Vector pos) {
-	glEnable(GL_TEXTURE_2D);
-
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towertop")->gltex);
 
 	glPushMatrix();
@@ -109,8 +104,6 @@ static void stage6_towertop_draw(Vector pos) {
 	glScalef(28,28,28);
 	draw_model("towertop");
 	glPopMatrix();
-
-	glDisable(GL_TEXTURE_2D);
 }
 
 static Vector **stage6_skysphere_pos(Vector pos, float maxrange) {
@@ -118,7 +111,6 @@ static Vector **stage6_skysphere_pos(Vector pos, float maxrange) {
 }
 
 static void stage6_skysphere_draw(Vector pos) {
-	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_DEPTH_TEST);
 	Shader *s = get_shader("stage6_sky");
 	glUseProgram(s->prog);
@@ -131,7 +123,6 @@ static void stage6_skysphere_draw(Vector pos) {
 	draw_model("skysphere");
 
 	glUseProgram(0);
-	glDisable(GL_TEXTURE_2D);
 
 	for(int i = 0; i < NUM_STARS; i++) {
 		glPushMatrix();
@@ -143,6 +134,7 @@ static void stage6_skysphere_draw(Vector pos) {
 		draw_texture(0,0,"part/lasercurve");
 		glPopMatrix();
 	}
+
 	glPopMatrix();
 	glColor4f(1,1,1,1);
 	glEnable(GL_DEPTH_TEST);

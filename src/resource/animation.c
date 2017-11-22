@@ -97,7 +97,6 @@ void draw_animation(float x, float y, int col, int row, const char *name) {
 }
 
 void draw_animation_p(float x, float y, int col, int row, Animation *ani) {
-	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, ani->tex->gltex);
 
 	float s = (float)ani->tex->w/ani->cols/ani->tex->truew;
@@ -124,5 +123,4 @@ void draw_animation_p(float x, float y, int col, int row, Animation *ani) {
 	glMatrixMode(GL_MODELVIEW);
 
 	glPopMatrix();
-	glDisable(GL_TEXTURE_2D);
 }

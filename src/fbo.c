@@ -78,10 +78,8 @@ void draw_fbo(FBO *fbo) {
 	glPushMatrix();
 		glTranslatef(VIEWPORT_W/2., VIEWPORT_H/2., 0);
 		glScalef(VIEWPORT_W, VIEWPORT_H, 1);
-		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, fbo->tex);
 		glDrawArrays(GL_QUADS, 4, 4);
-		glDisable(GL_TEXTURE_2D);
 	glPopMatrix();
 
 	glMatrixMode(GL_TEXTURE);
