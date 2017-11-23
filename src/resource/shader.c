@@ -250,7 +250,7 @@ static void cache_uniforms(Shader *sha) {
 }
 
 static Shader* load_shader(const char *vheader, const char *fheader, const char *vtext, const char *ftext) {
-	Shader *sha = malloc(sizeof(Shader));
+	Shader *sha = calloc(1, sizeof(Shader));
 	GLuint vshaderobj;
 	GLuint fshaderobj;
 
@@ -269,6 +269,7 @@ static Shader* load_shader(const char *vheader, const char *fheader, const char 
 	const GLchar *v_sources[] = { vheader, vtext };
 	const GLchar *f_sources[] = { fheader, ftext };
 	GLint lengths[] = { -1, -1 };
+	GLint status1, status2;
 
 	glShaderSource(vshaderobj, 2, (const GLchar**)v_sources, lengths);
 	glShaderSource(fshaderobj, 2, (const GLchar**)f_sources, lengths);
@@ -276,8 +277,17 @@ static Shader* load_shader(const char *vheader, const char *fheader, const char 
 	glCompileShader(vshaderobj);
 	glCompileShader(fshaderobj);
 
+	glGetShaderiv(vshaderobj, GL_COMPILE_STATUS, &status1);
+	glGetShaderiv(fshaderobj, GL_COMPILE_STATUS, &status2);
+
 	print_info_log(vshaderobj, glGetShaderiv, glGetShaderInfoLog, "Vertex Shader");
 	print_info_log(fshaderobj, glGetShaderiv, glGetShaderInfoLog, "Fragment Shader");
+
+	if(!status1 || !status2) {
+		log_warn("Failed to compile the shader program");
+		unload_shader(sha);
+		return NULL;
+	}
 
 	glAttachShader(sha->prog, vshaderobj);
 	glAttachShader(sha->prog, fshaderobj);
@@ -286,8 +296,14 @@ static Shader* load_shader(const char *vheader, const char *fheader, const char 
 	glDeleteShader(fshaderobj);
 
 	glLinkProgram(sha->prog);
-
 	print_info_log(sha->prog, glGetProgramiv, glGetProgramInfoLog, "Program");
+	glGetProgramiv(sha->prog, GL_LINK_STATUS, &status1);
+
+	if(!status1) {
+		log_warn("Failed to link the shader program");
+		unload_shader(sha);
+		return NULL;
+	}
 
 	cache_uniforms(sha);
 

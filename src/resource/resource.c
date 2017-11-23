@@ -65,6 +65,18 @@ Resource* insert_resource(ResourceType type, const char *name, void *data, Resou
 	assert(name != NULL);
 	assert(source != NULL);
 
+	if(data == NULL) {
+		// Will only get here through some external loading mechanism (like laser snippets)
+
+		const char *typename = resource_type_names[type];
+		if(!(flags & RESF_OPTIONAL)) {
+			log_fatal("Required %s '%s' couldn't be loaded", typename, name);
+		} else {
+			log_warn("Failed to load %s '%s'", typename, name);
+			return NULL;
+		}
+	}
+
 	ResourceHandler *handler = get_handler(type);
 	Resource *oldres = hashtable_get_string(handler->mapping, name);
 	Resource *res = malloc(sizeof(Resource));
