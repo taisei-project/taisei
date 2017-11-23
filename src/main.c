@@ -160,7 +160,9 @@ void log_system_specs(void) {
 	log_info("SSE4.2: %d", SDL_HasSSE42());
 	log_info("AVX: %d", SDL_HasAVX());
 	log_info("AVX2: %d", SDL_HasAVX2());
+#if SDL_VERSION_ATLEAST(2, 0, 6)
 	log_info("NEON: %d", SDL_HasNEON());
+#endif
 	log_info("RAM: %d MB", SDL_GetSystemRAM());
 }
 
