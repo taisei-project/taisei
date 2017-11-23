@@ -236,6 +236,18 @@ void draw_texture_p(float x, float y, Texture *tex) {
 	glPopMatrix();
 }
 
+void draw_texture_with_size_p(float x, float y, float w, float h, Texture *tex) {
+	glPushMatrix();
+	glTranslatef(x, y, 0);
+	glScalef(w/tex->w, h/tex->h, 1);
+	draw_texture_p(0, 0, tex);
+	glPopMatrix();
+}
+
+void draw_texture_with_size(float x, float y, float w, float h, const char *name) {
+	draw_texture_with_size_p(x, y, w, h, get_tex(name));
+}
+
 void fill_screen(float xoff, float yoff, float ratio, const char *name) {
 	fill_screen_p(xoff, yoff, ratio, 1, get_tex(name));
 }

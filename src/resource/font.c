@@ -128,9 +128,12 @@ void uninit_fonts(void) {
 
 void load_fonts(float quality) {
 	fontrenderer_init(&resources.fontren, quality);
-	_fonts.standard = load_font("res/gfx/LinBiolinum.ttf", 20);
-	_fonts.mainmenu = load_font("res/gfx/immortal.ttf", 35);
-	_fonts.small    = load_font("res/gfx/LinBiolinum.ttf", 14);
+	_fonts.standard  = load_font("res/fonts/LinBiolinum.ttf",           20);
+	_fonts.mainmenu  = load_font("res/fonts/immortal.ttf",              35);
+	_fonts.small     = load_font("res/fonts/LinBiolinum.ttf",           14);
+	_fonts.hud       = load_font("res/fonts/Laconic_Regular.otf",       19);
+	_fonts.mono      = load_font("res/fonts/ShareTechMono-Regular.ttf", 19);
+	_fonts.monosmall = load_font("res/fonts/ShareTechMono-Regular.ttf", 14);
 }
 
 void reload_fonts(float quality) {

@@ -60,6 +60,9 @@ struct Fonts {
 	TTF_Font *standard;
 	TTF_Font *mainmenu;
 	TTF_Font *small;
+	TTF_Font *hud;
+	TTF_Font *mono;
+	TTF_Font *monosmall;
 };
 
 extern struct Fonts _fonts;

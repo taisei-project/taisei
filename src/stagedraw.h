@@ -10,6 +10,7 @@
 
 #include "stage.h"
 
+void stage_draw_preload(void);
 void stage_draw_hud(void);
 void stage_draw_foreground(void);
 void stage_draw_scene(StageInfo *stage);

@@ -11,6 +11,52 @@
 #include "stagetext.h"
 #include "video.h"
 
+static struct {
+	struct {
+		Shader *shader;
+		uint32_t u_colorAtop;
+		uint32_t u_colorAbot;
+		uint32_t u_colorBtop;
+		uint32_t u_colorBbot;
+		uint32_t u_colortint;
+		uint32_t u_split;
+	} hud_text;
+} stagedraw;
+
+void stage_draw_preload(void) {
+	preload_resources(RES_TEXTURE, RESF_PERMANENT,
+		"hud",
+		"star",
+		"titletransition",
+	NULL);
+
+	preload_resources(RES_SHADER, RESF_PERMANENT,
+		"stagetitle",
+		"ingame_menu",
+		"circleclipped_indicator",
+		"hud_text",
+	NULL);
+
+	stagedraw.hud_text.shader      = get_shader("hud_text");
+	stagedraw.hud_text.u_colorAtop = uniloc(stagedraw.hud_text.shader, "colorAtop");
+	stagedraw.hud_text.u_colorAbot = uniloc(stagedraw.hud_text.shader, "colorAbot");
+	stagedraw.hud_text.u_colorBtop = uniloc(stagedraw.hud_text.shader, "colorBtop");
+	stagedraw.hud_text.u_colorBbot = uniloc(stagedraw.hud_text.shader, "colorBbot");
+	stagedraw.hud_text.u_colortint = uniloc(stagedraw.hud_text.shader, "colortint");
+	stagedraw.hud_text.u_split     = uniloc(stagedraw.hud_text.shader, "split");
+
+	glUseProgram(stagedraw.hud_text.shader->prog);
+	glUniform4f(stagedraw.hud_text.u_colorAtop, 0.70, 0.70, 0.70, 0.70);
+	glUniform4f(stagedraw.hud_text.u_colorAbot, 0.50, 0.50, 0.50, 0.50);
+	glUniform4f(stagedraw.hud_text.u_colorBtop, 1.00, 1.00, 1.00, 1.00);
+	glUniform4f(stagedraw.hud_text.u_colorBbot, 0.80, 0.80, 0.80, 0.80);
+	glUniform4f(stagedraw.hud_text.u_colortint, 1.00, 1.00, 1.00, 1.00);
+	glUseProgram(0);
+
+	// As an optimization, static HUD text could be pre-rendered here.
+	// However, it must be re-rendered on a TE_VIDEO_MODE_CHANGED event in that case.
+}
+
 static void apply_shader_rules(ShaderRule *shaderrules, FBO **fbo0, FBO **fbo1) {
 	if(!shaderrules) {
 		return;
@@ -368,6 +414,7 @@ static void draw_star(int x, int y, float fill, float alpha) {
 	Texture *star = get_tex("star");
 	Shader *shader = get_shader("circleclipped_indicator");
 
+	y -= 2;
 	float clr[4];
 
 	Color amul = rgba(alpha, alpha, alpha, alpha);
@@ -380,7 +427,7 @@ static void draw_star(int x, int y, float fill, float alpha) {
 
 	if(fill >= 1 || fill <= 0) {
 		parse_color_call(fill > 0 ? fill_clr : back_clr, glColor4f);
-		draw_texture_p(x, y, star);
+		draw_texture_with_size_p(x, y, 20, 20, star);
 		glColor4f(1, 1, 1, 1);
 		return;
 	}
@@ -392,7 +439,7 @@ static void draw_star(int x, int y, float fill, float alpha) {
 	glUniform4fv(uniloc(shader, "fill_color"), 1, clr);
 	parse_color_array(back_clr, clr);
 	glUniform4fv(uniloc(shader, "back_color"), 1, clr);
-	draw_texture_p(x, y, star);
+	draw_texture_with_size_p(x, y, 20, 20, star);
 	glUseProgram(0);
 }
 
@@ -413,21 +460,162 @@ static void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, i
 	}
 }
 
-void stage_draw_hud(void) {
-	draw_texture(SCREEN_W/2.0, SCREEN_H/2.0, "hud");
+static inline void stage_draw_hud_power_value(float ypos, char *buf, size_t bufsize) {
+	glUniform1f(stagedraw.hud_text.u_split, -0.25);
+	snprintf(buf, bufsize, "%i.%02i", global.plr.power / 100, global.plr.power % 100);
+	draw_text(AL_Right, 170, ypos, buf, _fonts.mono);
+	glUniform1f(stagedraw.hud_text.u_split, 0.0);
+}
 
+static float split_for_digits(uint32_t val, int maxdigits) {
+	int digits = val ? log10(val) + 1 : 0;
+	int remdigits = maxdigits - digits;
+	return max(0, (float)remdigits/maxdigits);
+}
+
+static void stage_draw_hud_score(Alignment a, float xpos, float ypos, char *buf, size_t bufsize, uint32_t score) {
+	snprintf(buf, bufsize, "%010u", score);
+	glUniform1f(stagedraw.hud_text.u_split, split_for_digits(score, 10));
+	draw_text(a, xpos, ypos, buf, _fonts.mono);
+}
+
+static void stage_draw_hud_scores(float ypos_hiscore, float ypos_score, char *buf, size_t bufsize) {
+	stage_draw_hud_score(AL_Right, 170, ypos_hiscore, buf, bufsize, progress.hiscore);
+	stage_draw_hud_score(AL_Right, 170, ypos_score,   buf, bufsize, global.plr.points);
+	glUniform1f(stagedraw.hud_text.u_split, 0.0);
+}
+
+struct labels_s {
+	struct {
+		float ofs;
+	} x;
+
+	struct {
+		float mono_ofs;
+		float hiscore;
+		float score;
+		float lives;
+		float bombs;
+		float power;
+		float graze;
+	} y;
+};
+
+void stage_draw_hud_text(struct labels_s* labels) {
 	char buf[64];
 
-	glPushMatrix();
-	glTranslatef(615,0,0);
+	glUseProgram(stagedraw.hud_text.shader->prog);
+	glUniform1f(stagedraw.hud_text.u_split, 0.0);
+	glUniform4f(stagedraw.hud_text.u_colortint, 1.00, 1.00, 1.00, 1.00);
 
+	// Labels
+	glUniform4f(stagedraw.hud_text.u_colortint, 0.70, 0.70, 0.70, 0.70);
+	draw_text(AL_Left, labels->x.ofs, labels->y.hiscore, "Hi-Score:", _fonts.hud);
+	draw_text(AL_Left, labels->x.ofs, labels->y.score,   "Score:",    _fonts.hud);
+	draw_text(AL_Left, labels->x.ofs, labels->y.lives,   "Lives:",    _fonts.hud);
+	draw_text(AL_Left, labels->x.ofs, labels->y.bombs,   "Bombs:",    _fonts.hud);
+	draw_text(AL_Left, labels->x.ofs, labels->y.power,   "Power:",    _fonts.hud);
+	draw_text(AL_Left, labels->x.ofs, labels->y.graze,   "Graze:",    _fonts.hud);
+	glUniform4f(stagedraw.hud_text.u_colortint, 1.00, 1.00, 1.00, 1.00);
+
+	// Score/Hi-Score values
+	stage_draw_hud_scores(labels->y.hiscore + labels->y.mono_ofs, labels->y.score + labels->y.mono_ofs, buf, sizeof(buf));
+
+	// Lives and Bombs (N/A)
+	if(global.stage->type == STAGE_SPELL) {
+		glColor4f(1, 1, 1, 0.7);
+		draw_text(AL_Left, -6, labels->y.lives, "N/A", _fonts.hud);
+		draw_text(AL_Left, -6, labels->y.bombs, "N/A", _fonts.hud);
+		glColor4f(1, 1, 1, 1.0);
+	}
+
+	// Power value
+	stage_draw_hud_power_value(labels->y.power + labels->y.mono_ofs, buf, sizeof(buf));
+
+	// Graze value
+	snprintf(buf, sizeof(buf), "%05i", global.plr.graze);
+	glUniform1f(stagedraw.hud_text.u_split, split_for_digits(global.plr.graze, 5));
+	draw_text(AL_Left, -6, labels->y.graze + labels->y.mono_ofs, buf, _fonts.mono);
+	glUniform1f(stagedraw.hud_text.u_split, 0.0);
+
+	// Warning: pops outer matrix!
+	glPopMatrix();
+
+#ifdef DEBUG
+	snprintf(buf, sizeof(buf), "%.2f fps, timer: %d, frames: %d", global.fps.fps, global.timer, global.frames);
+#else
+	snprintf(buf, sizeof(buf), "%.2f fps", global.fps.fps);
+#endif
+
+	draw_text(AL_Right, SCREEN_W, SCREEN_H - 0.5 * stringheight(buf, _fonts.monosmall), buf, _fonts.monosmall);
+
+	if(global.replaymode == REPLAY_PLAY) {
+		// XXX: does it make sense to use the monospace font here?
+
+		snprintf(buf, sizeof(buf), "Replay: %s (%i fps)", global.replay.playername, global.replay_stage->fps);
+		int x = 0, y = SCREEN_H - 0.5 * stringheight(buf, _fonts.monosmall);
+
+		glUniform4f(stagedraw.hud_text.u_colortint, 0.50, 0.50, 0.50, 0.50);
+		draw_text(AL_Left, x, y, buf, _fonts.monosmall);
+		glUniform4f(stagedraw.hud_text.u_colortint, 1.00, 1.00, 1.00, 1.00);
+
+		if(global.replay_stage->desynced) {
+			x += stringwidth(buf, _fonts.monosmall);
+			strlcpy(buf, " (DESYNCED)", sizeof(buf));
+
+			glUniform4f(stagedraw.hud_text.u_colortint, 1.00, 0.20, 0.20, 0.60);
+			draw_text(AL_Left, x, y, buf, _fonts.monosmall);
+			glUniform4f(stagedraw.hud_text.u_colortint, 1.00, 1.00, 1.00, 1.00);
+		}
+	}
+#ifdef PLR_DPS_STATS
+	else if(global.frames) {
+		snprintf(buf, sizeof(buf), "Avg DPS: %.02f", global.plr.total_dmg / (global.frames / (double)FPS));
+		glUniform1f(stagedraw.hud_text.u_split, 8.0 / strlen(buf));
+		draw_text(AL_Left, 0, SCREEN_H - 0.5 * stringheight(buf, _fonts.monosmall), buf, _fonts.monosmall);
+	}
+#endif
+
+	glUseProgram(0);
+}
+
+void stage_draw_hud(void) {
+	// Background
+	draw_texture(SCREEN_W/2.0, SCREEN_H/2.0, "hud");
+
+	// Set up positions of most HUD elements
+	static struct labels_s labels = {
+		.x.ofs = -75,
+
+		// XXX: is there a more robust way to level the monospace font with the label one?
+		.y.mono_ofs = -0.5,
+	};
+
+	const float label_height = 33;
+	float label_cur_height = 0;
+	int i;
+
+	label_cur_height = 49;  i = 0;
+	labels.y.hiscore = label_cur_height+label_height*(i++);
+	labels.y.score   = label_cur_height+label_height*(i++);
+
+	label_cur_height = 180; i = 0;
+	labels.y.lives   = label_cur_height+label_height*(i++);
+	labels.y.bombs   = label_cur_height+label_height*(i++);
+	labels.y.power   = label_cur_height+label_height*(i++);
+	labels.y.graze   = label_cur_height+label_height*(i++);
+
+	glPushMatrix();
+	glTranslatef(615, 0, 0);
+
+	// Difficulty indicator
 	glPushMatrix();
 	glTranslatef((SCREEN_W - 615) * 0.25, SCREEN_H-170, 0);
 	glScalef(0.6, 0.6, 0);
-
-	draw_texture(0,0,difficulty_tex(global.diff));
+	draw_texture(0, 0, difficulty_tex(global.diff));
 	glPopMatrix();
 
+	// Set up variables for Extra Spell indicator
 	float a = 1, s = 0, fadein = 1, fadeout = 1, fade = 1;
 
 	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell) {
@@ -439,17 +627,21 @@ void stage_draw_hud(void) {
 		a = 0.5 + 0.5 * fade;
 	}
 
-	if(global.stage->type == STAGE_SPELL) {
-		glColor4f(1, 1, 1, 0.7);
-		draw_text(AL_Left, -6, 167, "N/A", _fonts.standard);
-		draw_text(AL_Left, -6, 200, "N/A", _fonts.standard);
-		glColor4f(1, 1, 1, 1.0);
-	} else {
-		draw_stars(0, 167, global.plr.lives, global.plr.life_fragments, PLR_MAX_LIVES, PLR_MAX_LIFE_FRAGMENTS, a);
-		draw_stars(0, 200, global.plr.bombs, global.plr.bomb_fragments, PLR_MAX_BOMBS, PLR_MAX_BOMB_FRAGMENTS, a);
+	// Lives and Bombs
+	if(global.stage->type != STAGE_SPELL) {
+		draw_stars(0, labels.y.lives, global.plr.lives, global.plr.life_fragments, PLR_MAX_LIVES, PLR_MAX_LIFE_FRAGMENTS, a);
+		draw_stars(0, labels.y.bombs, global.plr.bombs, global.plr.bomb_fragments, PLR_MAX_BOMBS, PLR_MAX_BOMB_FRAGMENTS, a);
 	}
 
+	// Power stars
+	draw_stars(0, labels.y.power, global.plr.power / 100, global.plr.power % 100, PLR_MAX_POWER / 100, 100, 1);
 
+	// God Mode indicator
+	if(global.plr.iddqd) {
+		draw_text(AL_Left, -70, 475, "GOD MODE", _fonts.mainmenu);
+	}
+
+	// Extra Spell indicator
 	if(s) {
 		float s2 = max(0, swing(s, 3));
 		glPushMatrix();
@@ -465,45 +657,7 @@ void stage_draw_hud(void) {
 		glPopMatrix();
 	}
 
-	// snprintf(buf, sizeof(buf), "%.2f", global.plr.power / 100.0);
-	// draw_text(AL_Left, -6, 236, buf, _fonts.standard);
-
-	draw_stars(0, 236, global.plr.power / 100, global.plr.power % 100, PLR_MAX_POWER / 100, 100, 1);
-
-	int ofs;
-	snprintf(buf, sizeof(buf), ".%02i", global.plr.power % 100);
-	ofs = stringwidth(buf, _fonts.standard);
-
-	glColor4f(0.5, 0.5, 0.5, 1);
-	draw_text(AL_Right, 170, 236, buf, _fonts.standard);
-	glColor4f(1.0, 1.0, 1.0, 1);
-
-	snprintf(buf, sizeof(buf), "%i", global.plr.power / 100);
-	draw_text(AL_Right, 170 - ofs, 236, buf, _fonts.standard);
-
-	snprintf(buf, sizeof(buf), "%i", global.plr.graze);
-	draw_text(AL_Left, -6, 270, buf, _fonts.standard);
-
-	snprintf(buf, sizeof(buf), "%u", global.plr.points);
-	draw_text(AL_Left, 8, 49, buf, _fonts.standard);
-
-	snprintf(buf, sizeof(buf), "%u", progress.hiscore);
-	draw_text(AL_Left, 8, 83, buf, _fonts.standard);
-
-	if(global.plr.iddqd) {
-		draw_text(AL_Left, -70, 475, "GOD MODE", _fonts.mainmenu);
-	}
-
-	glPopMatrix();
-
-#ifdef DEBUG
-	snprintf(buf, sizeof(buf), "%.2f fps, timer: %d, frames: %d", global.fps.fps, global.timer, global.frames);
-#else
-	snprintf(buf, sizeof(buf), "%.2f fps", global.fps.fps);
-#endif
-
-	draw_text(AL_Right, SCREEN_W, SCREEN_H - 0.5 * stringheight(buf, _fonts.standard), buf, _fonts.standard);
-
+	// Boss indicator ("Enemy")
 	if(global.boss) {
 		float red = 0.5*exp(-0.5*(global.frames-global.boss->lastdamageframe)); // hit indicator
 		if(red > 1)
@@ -513,27 +667,6 @@ void stage_draw_hud(void) {
 		glColor4f(1,1,1,1);
 	}
 
-	if(global.replaymode == REPLAY_PLAY) {
-		snprintf(buf, sizeof(buf), "Replay: %s (%i fps)", global.replay.playername, global.replay_stage->fps);
-		int x = 0, y = SCREEN_H - 0.5 * stringheight(buf, _fonts.standard);
-
-		glColor4f(0.5f, 0.5f, 0.5f, 0.6f);
-		draw_text(AL_Left, x, y, buf, _fonts.standard);
-		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-		if(global.replay_stage->desynced) {
-			x += stringwidth(buf, _fonts.standard);
-			strlcpy(buf, " (DESYNCED)", sizeof(buf));
-
-			glColor4f(1.0f, 0.2f, 0.2f, 0.6f);
-			draw_text(AL_Left, x, y, buf, _fonts.standard);
-			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		}
-	}
-#ifdef PLR_DPS_STATS
-	else if(global.frames) {
-		snprintf(buf, sizeof(buf), "Avg DPS: %f", global.plr.total_dmg / (global.frames / (double)FPS));
-		draw_text(AL_Left, 0, SCREEN_H - 0.5 * stringheight(buf, _fonts.standard), buf, _fonts.standard);
-	}
-#endif
+	// Warning: pops matrix!
+	stage_draw_hud_text(&labels);
 }

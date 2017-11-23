@@ -1,0 +1,53 @@
+#version 110
+
+varying vec4 TexCoord0;
+
+void main(void) {
+	gl_Position = ftransform();
+	TexCoord0 = gl_MultiTexCoord0;
+}
+
+%% -- FRAG
+#version 110
+
+uniform sampler2D tex;
+
+uniform vec4 colorAtop;
+uniform vec4 colorAbot;
+uniform vec4 colorBtop;
+uniform vec4 colorBbot;
+uniform vec4 colortint;
+uniform float split;
+
+varying vec4 TexCoord0;
+
+void main(void) {
+	vec4 texel = texture2D(tex, (TexCoord0 * gl_TextureMatrix[0]).xy);
+
+	float vsplit;
+	vec4 cAt;
+	vec4 cAb;
+	vec4 cBt;
+	vec4 cBb;
+
+	// branching on a uniform is fine
+	if(split < 0.0) {
+		vsplit = -split;
+		cAt = colorBtop;
+		cAb = colorBbot;
+		cBt = colorAtop;
+		cBb = colorAbot;
+	} else {
+		vsplit =  split;
+		cAt = colorAtop;
+		cAb = colorAbot;
+		cBt = colorBtop;
+		cBb = colorBbot;
+	}
+
+	gl_FragColor = texel * colortint * (
+		TexCoord0.x >= vsplit ?
+			mix(cBt, cBb, TexCoord0.y) :
+			mix(cAt, cAb, TexCoord0.y)
+	);
+}

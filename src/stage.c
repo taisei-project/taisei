@@ -502,18 +502,6 @@ static void stage_preload(void) {
 		enemies_preload();
 
 	global.stage->procs->preload();
-
-	preload_resources(RES_TEXTURE, RESF_PERMANENT,
-		"hud",
-		"star",
-		"titletransition",
-	NULL);
-
-	preload_resources(RES_SHADER, RESF_PERMANENT,
-		"stagetitle",
-		"ingame_menu",
-		"circleclipped_indicator",
-	NULL);
 }
 
 static void display_stage_title(StageInfo *info) {
@@ -636,6 +624,7 @@ void stage_loop(StageInfo *stage) {
 	global.stage = stage;
 
 	stage_preload();
+	stage_draw_preload();
 
 	uint32_t seed = (uint32_t)time(0);
 	tsrand_switch(&global.rand_game);
