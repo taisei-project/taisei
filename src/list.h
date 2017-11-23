@@ -21,11 +21,12 @@ typedef struct ListContainer {
 
 typedef void* (*ListForeachCallback)(List **head, List *elem, void *arg);
 typedef int (*ListPriorityFunc)(List *elem);
+typedef List* (*ListInsertionRule)(List **dest, List *elem);
 
 List* list_insert(List **dest, List *elem);
 List* list_push(List **dest, List *elem);
 List* list_append(List **dest, List *elem);
-List* list_insert_at_priority(List **dest, List *elem, int prio, ListPriorityFunc prio_func);
+List* list_insert_at_priority(List **dest, List *elem, int prio, ListPriorityFunc prio_func) __attribute__((hot));
 List* list_pop(List **dest);
 List* list_unlink(List **dest, List *elem);
 void* list_foreach(List **dest, ListForeachCallback callback, void *arg);

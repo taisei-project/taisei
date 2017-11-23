@@ -74,7 +74,7 @@ void* load_texture_end(void *opaque, const char *path, unsigned int flags) {
 }
 
 Texture* get_tex(const char *name) {
-	return get_resource(RES_TEXTURE, name, RESF_DEFAULT)->texture;
+	return get_resource(RES_TEXTURE, name, RESF_DEFAULT | RESF_UNSAFE)->texture;
 }
 
 Texture* prefix_get_tex(const char *name, const char *prefix) {

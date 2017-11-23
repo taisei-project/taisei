@@ -90,19 +90,23 @@ typedef struct ProjArgs {
 	Texture *texture_ptr;
 	complex size;
 	int max_viewport_dist;
+	ListInsertionRule insertion_rule;
 } ProjArgs;
 
 Projectile* create_projectile(ProjArgs *args);
 Projectile* create_particle(ProjArgs *args);
 
 #ifdef PROJ_DEBUG
-	Projectile* _proj_attach_dbginfo(Projectile *p, DebugInfo *dbg);
-	#define PROJECTILE(...) _proj_attach_dbginfo(create_projectile(&(ProjArgs) { __VA_ARGS__ }), _DEBUG_INFO_PTR_)
-	#define PARTICLE(...) _proj_attach_dbginfo(create_particle(&(ProjArgs) { __VA_ARGS__ }), _DEBUG_INFO_PTR_)
+	Projectile* _proj_attach_dbginfo(Projectile *p, DebugInfo *dbg, const char *callsite_str);
+	#define _PROJ_WRAP_SPAWN(p) _proj_attach_dbginfo((p), _DEBUG_INFO_PTR_, #p)
 #else
-	#define PROJECTILE(...) create_projectile(&(ProjArgs) { __VA_ARGS__ })
-	#define PARTICLE(...) create_particle(&(ProjArgs) { __VA_ARGS__ })
+	#define _PROJ_WRAP_SPAWN(p) (p)
 #endif
+
+#define _PROJ_GENERIC_SPAWN(constructor, ...) _PROJ_WRAP_SPAWN((constructor)((&(ProjArgs) { __VA_ARGS__ })))
+
+#define PROJECTILE(...) _PROJ_GENERIC_SPAWN(create_projectile, __VA_ARGS__)
+#define PARTICLE(...) _PROJ_GENERIC_SPAWN(create_particle, __VA_ARGS__)
 
 void delete_projectile(Projectile **dest, Projectile *proj);
 void delete_projectiles(Projectile **dest);
@@ -138,3 +142,5 @@ int blast_timeout(Projectile *p, int t);
 void Blast(Projectile *p, int t);
 
 void projectiles_preload(void);
+
+List* proj_insert_sizeprio(List **dest, List *elem) __attribute__((hot));

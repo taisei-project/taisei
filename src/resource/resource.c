@@ -298,8 +298,22 @@ static Resource* load_resource_finish(void *opaque, ResourceHandler *handler, co
 
 Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags) {
 	ResourceHandler *handler = get_handler(type);
+	Resource *res;
+
 	resource_wait_for_async_load(handler, name);
-	Resource *res = hashtable_get_string(handler->mapping, name);
+	if(flags & RESF_UNSAFE) {
+		res = hashtable_get_unsafe(handler->mapping, (void*)name);
+		flags &= ~RESF_UNSAFE;
+	} else {
+		res = hashtable_get(handler->mapping, (void*)name);
+	}
+
+	if(res) {
+		return res;
+	}
+
+	resource_wait_for_async_load(handler, name);
+	res = hashtable_get(handler->mapping, (void*)name);
 
 	if(!res) {
 		if(!(flags & RESF_PRELOAD)) {

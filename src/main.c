@@ -64,6 +64,40 @@ static void init_log_file(void) {
 	log_add_output(lvls_file, vfs_open("storage/log.txt", VFS_MODE_WRITE));
 }
 
+#ifdef CRC32_BENCHMARK
+// TODO: move all this crap somewhere
+
+static void hash_test_run(const char *str, uint32_t init, uint32_t (*hashfunc)(uint32_t, const char*)) {
+	hrtime_t begin = time_get();
+	for(int i = 0; i < 341346740; ++i) {
+		init = hashfunc(init, str);
+	}
+	log_debug("%08x %f", init, (double)(time_get() - begin));
+}
+
+static int hash_test(void) {
+	time_init();
+	const char *s;
+	s = "reimu";
+	log_info("-> %s", s);
+	hash_test_run(s, 0, crc32str);
+	hash_test_run(s, 0, crc32str_sse42);
+	s = "sphereness";
+	log_info("-> %s", s);
+	hash_test_run(s, 0, crc32str);
+	hash_test_run(s, 0, crc32str_sse42);
+	s = "res/textures/rabu_raibu.png";
+	log_info("-> %s", s);
+	hash_test_run(s, 0, crc32str);
+	hash_test_run(s, 0, crc32str_sse42);
+	return 1;
+}
+#else
+static int hash_test(void) {
+	return 0;
+}
+#endif
+
 static int run_tests(void) {
 	if(tsrand_test()) {
 		return 1;
@@ -78,6 +112,10 @@ static int run_tests(void) {
 	}
 
 	if(color_test()) {
+		return 1;
+	}
+
+	if(hash_test()) {
 		return 1;
 	}
 
@@ -106,6 +144,26 @@ static void log_lib_versions(void) {
 	log_info("Using libpng %s", png_get_header_ver(NULL));
 }
 
+void log_system_specs(void) {
+	log_info("CPU count: %d", SDL_GetCPUCount());
+	// log_info("CPU type: %s", SDL_GetCPUType());
+	// log_info("CPU name: %s", SDL_GetCPUName());
+	log_info("CacheLine size: %d", SDL_GetCPUCacheLineSize());
+	log_info("RDTSC: %d", SDL_HasRDTSC());
+	log_info("Altivec: %d", SDL_HasAltiVec());
+	log_info("MMX: %d", SDL_HasMMX());
+	log_info("3DNow: %d", SDL_Has3DNow());
+	log_info("SSE: %d", SDL_HasSSE());
+	log_info("SSE2: %d", SDL_HasSSE2());
+	log_info("SSE3: %d", SDL_HasSSE3());
+	log_info("SSE4.1: %d", SDL_HasSSE41());
+	log_info("SSE4.2: %d", SDL_HasSSE42());
+	log_info("AVX: %d", SDL_HasAVX());
+	log_info("AVX2: %d", SDL_HasAVX2());
+	log_info("NEON: %d", SDL_HasNEON());
+	log_info("RAM: %d MB", SDL_GetSystemRAM());
+}
+
 int main(int argc, char **argv) {
 	setlocale(LC_ALL, "C");
 
@@ -118,7 +176,6 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
-	log_info("%s %s", TAISEI_VERSION_FULL, TAISEI_VERSION_BUILD_TYPE);
 	stage_init_array(); // cli_args depends on this
 
 	// commandline arguments should be parsed as early as possible
@@ -174,6 +231,8 @@ int main(int argc, char **argv) {
 	free_cli_action(&a);
 	vfs_setup(false);
 	init_log_file();
+	log_info("%s %s", TAISEI_VERSION_FULL, TAISEI_VERSION_BUILD_TYPE);
+	log_system_specs();
 
 	config_load();
 

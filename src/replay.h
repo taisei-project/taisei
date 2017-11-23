@@ -51,7 +51,7 @@
 #define REPLAY_WRITE_DESYNC_CHECKS
 
 #ifdef DEBUG
-	#define REPLAY_LOAD_DEBUG
+	// #define REPLAY_LOAD_DEBUG
 #endif
 
 typedef struct ReplayEvent {

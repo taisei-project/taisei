@@ -209,6 +209,19 @@ void* hashtable_get(Hashtable *ht, void *key) {
     return NULL;
 }
 
+void* hashtable_get_unsafe(Hashtable *ht, void *key) {
+    hash_t hash = ht->hash_func(key);
+    HashtableElement *elems = ht->table[hash % ht->table_size];
+
+    for(HashtableElement *e = elems; e; e = e->next) {
+        if(hash == e->hash && ht->cmp_func(key, e->key)) {
+            return e->data;
+        }
+    }
+
+    return NULL;
+}
+
 static bool hashtable_set_internal(Hashtable *ht, HashtableElement **table, size_t table_size, hash_t hash, void *key, void *data) {
     bool collisions_updated = false;
     size_t idx = hash % table_size;
@@ -442,6 +455,10 @@ hash_t hashtable_hashfunc_string(void *vstr) {
     return crc32str(0, (const char*)vstr);
 }
 
+hash_t hashtable_hashfunc_string_sse42(void *vstr) {
+    return crc32str_sse42(0, (const char*)vstr);
+}
+
 void hashtable_copyfunc_string(void **dst, void *src) {
     *dst = malloc(strlen((char*)src) + 1);
     strcpy(*dst, src);
@@ -452,7 +469,7 @@ void hashtable_copyfunc_string(void **dst, void *src) {
 Hashtable* hashtable_new_stringkeys(size_t size) {
     return hashtable_new(size,
         hashtable_cmpfunc_string,
-        hashtable_hashfunc_string,
+        SDL_HasSSE42() ? hashtable_hashfunc_string_sse42 : hashtable_hashfunc_string,
         hashtable_copyfunc_string,
         hashtable_freefunc_string
     );

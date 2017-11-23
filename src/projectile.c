@@ -20,6 +20,7 @@ static ProjArgs defaults_proj = {
 	.type = EnemyProj,
 	.color = RGB(1, 1, 1),
 	.color_transform_rule = proj_clrtransform_bullet,
+	.insertion_rule = proj_insert_sizeprio,
 };
 
 static ProjArgs defaults_part = {
@@ -29,6 +30,7 @@ static ProjArgs defaults_part = {
 	.type = Particle,
 	.color = RGB(1, 1, 1),
 	.color_transform_rule = proj_clrtransform_particle,
+	.insertion_rule = list_append,
 };
 
 static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
@@ -66,40 +68,40 @@ static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
 		args->color_transform_rule = defaults->color_transform_rule;
 	}
 
+	if(!args->insertion_rule) {
+		args->insertion_rule = defaults->insertion_rule;
+	}
+
 	if(!args->max_viewport_dist && (args->type == Particle || args->type >= PlrProj)) {
 		args->max_viewport_dist = 300;
 	}
 }
 
-static complex projectile_size2(Texture *tex, complex size) {
-	if(tex) {
-		return tex->w + I*tex->h;
+static double projectile_rect_area(Projectile *p) {
+	if(p->tex) {
+		return p->tex->w * p->tex->h;
+	} else {
+		return creal(p->size) * cimag(p->size);
 	}
-
-	return size;
 }
 
-static complex projectile_size(Projectile *p) {
-	return projectile_size2(p->tex, p->size);
-}
-
-static void projectile_size_split(Projectile *p, double *w, double *h) {
-	assert(w != NULL);
-	assert(h != NULL);
-
-	complex c = projectile_size(p);
-	*w = creal(c);
-	*h = cimag(c);
-}
-
-int projectile_prio_rawfunc(Texture *tex, complex size) {
-	complex s = projectile_size2(tex, size);
-	return -rint(creal(s) * cimag(s));
+static void projectile_size(Projectile *p, double *w, double *h) {
+	if(p->tex) {
+		*w = p->tex->w;
+		*h = p->tex->h;
+	} else {
+		*w = creal(p->size);
+		*h = cimag(p->size);
+	}
 }
 
 int projectile_prio_func(List *vproj) {
 	Projectile *proj = (Projectile*)vproj;
-	return projectile_prio_rawfunc(proj->tex, proj->size);
+	return -rint(projectile_rect_area(proj));
+}
+
+List* proj_insert_sizeprio(List **dest, List *elem) {
+	return list_insert_at_priority(dest, elem, projectile_prio_func(elem), projectile_prio_func);
 }
 
 static Projectile* _create_projectile(ProjArgs *args) {
@@ -107,12 +109,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 		log_fatal("Tried to spawn a projectile while in drawing code");
 	}
 
-	Projectile *p = (Projectile*)list_insert_at_priority(
-		(List**)args->dest,
-		malloc(sizeof(Projectile)),
-		projectile_prio_rawfunc(args->texture_ptr, args->size),
-		projectile_prio_func
-	);
+	Projectile *p = calloc(1, sizeof(Projectile));
 
 	p->birthtime = global.frames;
 	p->pos = p->pos0 = args->pos;
@@ -135,7 +132,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	// assert(rule != NULL);
 	// rule(p, EVENT_BIRTH);
 
-	return p;
+	return (Projectile*)args->insertion_rule((List**)args->dest, (List*)p);
 }
 
 Projectile* create_projectile(ProjArgs *args) {
@@ -149,7 +146,8 @@ Projectile* create_particle(ProjArgs *args) {
 }
 
 #ifdef PROJ_DEBUG
-Projectile* _proj_attach_dbginfo(Projectile *p, DebugInfo *dbg) {
+Projectile* _proj_attach_dbginfo(Projectile *p, DebugInfo *dbg, const char *callsite_str) {
+	// log_debug("Spawn: [%s]", callsite_str);
 	memcpy(&p->debug, dbg, sizeof(DebugInfo));
 	set_debug_info(dbg);
 	return p;
@@ -176,7 +174,7 @@ void delete_projectiles(Projectile **projs) {
 int collision_projectile(Projectile *p) {
 	if(p->type == EnemyProj) {
 		double w, h;
-		projectile_size_split(p, &w, &h);
+		projectile_size(p, &w, &h);
 
 		double angle = carg(global.plr.pos - p->pos) + p->angle;
 		double projr = sqrt(pow(w/2*cos(angle), 2) + pow(h/2*sin(angle), 2)) * 0.45;
@@ -296,7 +294,7 @@ void draw_projectiles(Projectile *projs, ProjPredicate predicate) {
 bool projectile_in_viewport(Projectile *proj) {
 	double w, h;
 	int e = proj->max_viewport_dist;
-	projectile_size_split(proj, &w, &h);
+	projectile_size(proj, &w, &h);
 
 	return !(creal(proj->pos) + w/2 + e < 0 || creal(proj->pos) - w/2 - e > VIEWPORT_W
 		  || cimag(proj->pos) + h/2 + e < 0 || cimag(proj->pos) - h/2 - e > VIEWPORT_H);

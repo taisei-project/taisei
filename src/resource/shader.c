@@ -315,7 +315,7 @@ int uniloc(Shader *sha, const char *name) {
 }
 
 Shader* get_shader(const char *name) {
-	return get_resource(RES_SHADER, name, RESF_DEFAULT)->shader;
+	return get_resource(RES_SHADER, name, RESF_DEFAULT | RESF_UNSAFE)->shader;
 }
 
 Shader* get_shader_optional(const char *name) {

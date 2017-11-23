@@ -27,6 +27,21 @@ check_symbol_exists(_POSIX_VERSION "unistd.h" POSIX)
 check_symbol_exists(__STDC_NO_COMPLEX__ "unistd.h" COMPLEX_MISSING)
 check_symbol_exists(__STDC_NO_VLA__ "unistd.h" VLA_MISSING)
 
+# This doesn't work on gcc...
+# check_symbol_exists(_mm_crc32_u8 "immintrin.h" HAVE_CRC32_INTRIN)
+
+check_c_source_compiles("
+#include <immintrin.h>
+__attribute__((target(\"sse4.2\")))
+int main(int argc, char **argv) {
+	return _mm_crc32_u8(0, 42);
+}
+" HAVE_CRC32_INTRIN)
+
+if(HAVE_CRC32_INTRIN)
+	add_definitions(-DHAVE_CRC32_INTRIN)
+endif()
+
 if(COMPLEX_MISSING OR VLA_MISSING)
 	message(FATAL_ERROR "Your C implementation needs to support complex numbers and variable length arrays.")
 endif()

@@ -40,7 +40,8 @@ typedef void* (*HTIterCallback)(void *key, void *data, void *arg);
 
 Hashtable* hashtable_new(size_t size, HTCmpFunc cmp_func, HTHashFunc hash_func, HTCopyFunc copy_func, HTFreeFunc free_func);
 void hashtable_free(Hashtable *ht);
-void* hashtable_get(Hashtable *ht, void *key);
+void* hashtable_get(Hashtable *ht, void *key) __attribute__((hot));
+void* hashtable_get_unsafe(Hashtable *ht, void *key) __attribute__((hot));
 void hashtable_set(Hashtable *ht, void *key, void *data);
 void hashtable_unset(Hashtable *ht, void *key);
 void hashtable_unset_deferred(Hashtable *ht, void *key, ListContainer **list);
@@ -53,8 +54,9 @@ void* hashtable_foreach(Hashtable *ht, HTIterCallback callback, void *arg);
 HashtableIterator* hashtable_iter(Hashtable *ht);
 bool hashtable_iter_next(HashtableIterator *iter, void **out_key, void **out_data);
 
-bool hashtable_cmpfunc_string(void *str1, void *str2);
-hash_t hashtable_hashfunc_string(void *vstr);
+bool hashtable_cmpfunc_string(void *str1, void *str2) __attribute__((hot));
+hash_t hashtable_hashfunc_string(void *vstr) __attribute__((hot));
+hash_t hashtable_hashfunc_string_sse42(void *vstr) __attribute__((hot));
 void hashtable_copyfunc_string(void **dst, void *src);
 #define hashtable_freefunc_string free
 Hashtable* hashtable_new_stringkeys(size_t size);

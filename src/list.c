@@ -59,8 +59,8 @@ List* list_append(List **dest, List *elem) {
 		return list_insert(dest, elem);
 	}
 
-	List *end = NULL;
-	for(List *e = *dest; e; e = e->next) {
+	List *end = *dest;
+	for(List *e = (*dest)->next; e; e = e->next) {
 		end = e;
 	}
 
@@ -79,12 +79,15 @@ List* list_insert_at_priority(List **list_head, List *elem, int prio, ListPriori
 	}
 
 	List *dest = *list_head;
+	int dest_prio = prio_func(dest);
+	int candidate_prio = dest_prio;
 
-	for(List *e = dest; e && prio_func(e) <= prio; e = e->next) {
+	for(List *e = dest->next; e && (candidate_prio = prio_func(e)) <= prio; e = e->next) {
 		dest = e;
+		dest_prio = candidate_prio;
 	}
 
-	if(dest == *list_head && prio_func(dest) > prio) {
+	if(dest == *list_head && dest_prio > prio) {
 		elem->next = dest;
 		elem->prev = dest->prev;
 

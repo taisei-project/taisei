@@ -137,7 +137,17 @@ void tsfprintf(FILE *out, const char *restrict fmt, ...) __attribute__((format(F
 
 int getenvint(const char *v, int defaultval) __attribute__((pure));
 void png_setup_error_handlers(png_structp png);
-uint32_t crc32str(uint32_t crc, const char *str);
+uint32_t crc32str(uint32_t crc, const char *str) __attribute__((hot, pure));
+
+#if defined(HAVE_CRC32_INTRIN) && defined(DISABLE_CRC32_INTRIN)
+#undef HAVE_CRC32_INTRIN
+#endif
+
+#ifdef HAVE_CRC32_INTRIN
+uint32_t crc32str_sse42(uint32_t crc, const char *str) __attribute__((hot, pure));
+#else
+#define crc32str_sse42 crc32str
+#endif
 
 noreturn void _ts_assert_fail(const char *cond, const char *func, const char *file, int line, bool use_log);
 
