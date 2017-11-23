@@ -657,6 +657,9 @@ void stage_draw_hud(void) {
 		glPopMatrix();
 	}
 
+	// Warning: pops matrix!
+	stage_draw_hud_text(&labels);
+
 	// Boss indicator ("Enemy")
 	if(global.boss) {
 		float red = 0.5*exp(-0.5*(global.frames-global.boss->lastdamageframe)); // hit indicator
@@ -666,7 +669,4 @@ void stage_draw_hud(void) {
 		draw_texture(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
 		glColor4f(1,1,1,1);
 	}
-
-	// Warning: pops matrix!
-	stage_draw_hud_text(&labels);
 }
