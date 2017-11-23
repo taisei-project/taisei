@@ -300,7 +300,6 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 	ResourceHandler *handler = get_handler(type);
 	Resource *res;
 
-	resource_wait_for_async_load(handler, name);
 	if(flags & RESF_UNSAFE) {
 		res = hashtable_get_unsafe(handler->mapping, (void*)name);
 		flags &= ~RESF_UNSAFE;
