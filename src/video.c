@@ -526,7 +526,9 @@ static bool video_handle_window_event(SDL_Event *event, void *arg) {
 			break;
 
 		case SDL_WINDOWEVENT_FOCUS_LOST:
-			events_emit(TE_GAME_PAUSE, 0, NULL, NULL);
+			if(config_get_int(CONFIG_FOCUS_LOSS_PAUSE)) {
+				events_emit(TE_GAME_PAUSE, 0, NULL, NULL);
+			}
 			break;
 	}
 

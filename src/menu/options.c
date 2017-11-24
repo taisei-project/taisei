@@ -368,7 +368,13 @@ void options_sub_video(MenuData *parent, void *arg) {
 		b = bind_option(CONFIG_FULLSCREEN, bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 
-	add_menu_entry(m, "Resolution", do_nothing,
+	add_menu_entry(m, "Vertical synchronization", do_nothing,
+		b = bind_option(CONFIG_VSYNC, bind_common_onoffplus_get, bind_common_onoffplus_set)
+	);	bind_addvalue(b, "on");
+		bind_addvalue(b, "off");
+		bind_addvalue(b, "adaptive");
+
+	add_menu_entry(m, "Window size", do_nothing,
 		b = bind_resolution()
 	);	b->setter = bind_resolution_set;
 		b->dependence = bind_resolution_dependence;
@@ -378,11 +384,9 @@ void options_sub_video(MenuData *parent, void *arg) {
 	);	bind_onoff(b);
 		bind_setdependence(b, bind_resizable_dependence);
 
-	add_menu_entry(m, "Vertical synchronization", do_nothing,
-		b = bind_option(CONFIG_VSYNC, bind_common_onoffplus_get, bind_common_onoffplus_set)
-	);	bind_addvalue(b, "on");
-		bind_addvalue(b, "off");
-		bind_addvalue(b, "adaptive");
+	add_menu_entry(m, "Pause the game when it's not focused", do_nothing,
+		b = bind_option(CONFIG_FOCUS_LOSS_PAUSE, bind_common_onoff_get, bind_common_onoff_set)
+	);	bind_onoff(b);
 
 	add_menu_separator(m);
 
