@@ -73,12 +73,12 @@ endif
 
 
 if get_option('install_relative') == 'auto'
-    config.set('RELATIVE', host_machine.system() == 'windows' or host_machine.system() == 'darwin')
+    config.set('TAISEI_RELATIVE', host_machine.system() == 'windows' or host_machine.system() == 'darwin')
 else
-    config.set('RELATIVE', get_option('install_relative') == 'true')
+    config.set('TAISEI_RELATIVE', get_option('install_relative') == 'true')
 endif
 
-if config.get('RELATIVE')
+if config.get('TAISEI_RELATIVE')
     if host_machine.system() == 'darwin'
         data_path = join_paths(get_option('datadir'), 'data')
         config.set('DATA_PATH', '"@0@"'.format(join_paths('../..', data_path)))
@@ -144,7 +144,7 @@ Summary:
         systype,
         taisei_deps.contains(dep_sdl2_mixer),
         taisei_deps.contains(dep_zip),
-        config.get('RELATIVE'),
+        config.get('TAISEI_RELATIVE'),
         get_option('prefix'),
         get_option('bindir'),
         data_path,

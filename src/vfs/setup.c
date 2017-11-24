@@ -13,7 +13,7 @@
 static char* get_default_res_path(void) {
     char *res;
 
-#ifdef RELATIVE
+#ifdef TAISEI_RELATIVE
     res = SDL_GetBasePath();
     strappend(&res, DATA_PATH);
 #else
