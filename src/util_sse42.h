@@ -8,16 +8,11 @@
 
 #pragma once
 
-#ifndef __GNUC__ // clang defines this too
-    #define __attribute__(...)
-    #define __extension__
-    #define PRAGMA(p)
-#else
-    #define PRAGMA(p) _Pragma(#p)
-#endif
+#include <stdint.h>
+#include "compat.h"
 
-#ifdef __MINGW_PRINTF_FORMAT
-    #define FORMAT_ATTR __MINGW_PRINTF_FORMAT
+#ifdef HAVE_INTEL_INTRIN
+    uint32_t crc32str_sse42(uint32_t crc, const char *str) __attribute__((hot, pure));
 #else
-    #define FORMAT_ATTR printf
+    #define crc32str_sse42 crc32str
 #endif

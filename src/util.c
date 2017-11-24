@@ -709,20 +709,6 @@ uint32_t crc32str(uint32_t crc, const char *str) {
     return crc ^ ~0U;
 }
 
-#ifdef HAVE_CRC32_INTRIN
-#include <immintrin.h>
-__attribute__((target("sse4.2")))
-uint32_t crc32str_sse42(uint32_t crc, const char *str) {
-    const uint8_t *s = (const uint8_t*)str;
-
-    while(*s) {
-        crc = _mm_crc32_u8(crc, *s++);
-    }
-
-    return crc;
-}
-#endif
-
 #ifdef DEBUG
 
 bool _in_draw_code;

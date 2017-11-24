@@ -15,6 +15,7 @@
 #include <zlib.h> // compiling under mingw may fail without this...
 #include <png.h>
 #include <SDL.h>
+#include "util_sse42.h"
 #include "hashtable.h"
 #include "vfs/public.h"
 #include "log.h"
@@ -139,10 +140,6 @@ int getenvint(const char *v, int defaultval) __attribute__((pure));
 void png_setup_error_handlers(png_structp png);
 uint32_t crc32str(uint32_t crc, const char *str) __attribute__((hot, pure));
 
-#if defined(HAVE_CRC32_INTRIN) && defined(DISABLE_CRC32_INTRIN)
-#undef HAVE_CRC32_INTRIN
-#endif
-
 #ifdef HAVE_CRC32_INTRIN
 uint32_t crc32str_sse42(uint32_t crc, const char *str) __attribute__((hot, pure));
 #else
@@ -152,6 +149,9 @@ uint32_t crc32str_sse42(uint32_t crc, const char *str) __attribute__((hot, pure)
 noreturn void _ts_assert_fail(const char *cond, const char *func, const char *file, int line, bool use_log);
 
 #undef assert
+#undef static_assert
+
+#define static_assert _Static_assert
 
 #ifdef NDEBUG
     #define _assert(cond,uselog)

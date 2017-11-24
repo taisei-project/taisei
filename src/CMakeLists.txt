@@ -28,19 +28,17 @@ check_symbol_exists(__STDC_NO_COMPLEX__ "unistd.h" COMPLEX_MISSING)
 check_symbol_exists(__STDC_NO_VLA__ "unistd.h" VLA_MISSING)
 
 # This doesn't work on gcc...
-# check_symbol_exists(_mm_crc32_u8 "immintrin.h" HAVE_CRC32_INTRIN)
+# check_symbol_exists(_mm_crc32_u8 "immintrin.h" HAVE_INTEL_INTRIN)
+
+unset(HAVE_INTEL_INTRIN CACHE)
 
 check_c_source_compiles("
 #include <immintrin.h>
 __attribute__((target(\"sse4.2\")))
 int main(int argc, char **argv) {
-	return _mm_crc32_u8(0, 42);
+	return _mm_crc32_u8(argc, 42);
 }
-" HAVE_CRC32_INTRIN)
-
-if(HAVE_CRC32_INTRIN)
-	add_definitions(-DHAVE_CRC32_INTRIN)
-endif()
+" HAVE_INTEL_INTRIN)
 
 if(COMPLEX_MISSING OR VLA_MISSING)
 	message(FATAL_ERROR "Your C implementation needs to support complex numbers and variable length arrays.")
@@ -144,15 +142,24 @@ set(SRCs
 	"${CMAKE_CURRENT_BINARY_DIR}/version_auto.c"
 )
 
+if(USE_INTEL_INTRIN AND HAVE_INTEL_INTRIN)
+	set(SRCs ${SRCs}
+		util_sse42.c
+	)
+	add_definitions(-DHAVE_INTEL_INTRIN)
+	set_property(SOURCE util_sse42.c APPEND_STRING PROPERTY COMPILE_FLAGS "-msse4.2")
+endif()
+
 if(USE_ZIP AND ZIP_SUPPORTED)
 	set(SRCs ${SRCs}
 		rwops/rwops_zipfile.c
 		vfs/zipfile.c
-		vfs/zippath.c)
+		vfs/zippath.c
+	)
 else()
 	set(SRCs ${SRCs}
 		vfs/zipfile_null.c
-		)
+	)
 endif()
 
 if(WIN32)
