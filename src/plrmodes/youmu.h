@@ -18,3 +18,4 @@ int youmu_common_particle_spin(Projectile *p, int t);
 void youmu_common_particle_slice_draw(Projectile *p, int t);
 int youmu_common_particle_slice_logic(Projectile *p, int t);
 void youmu_common_shot(Player *plr);
+void youmu_common_draw_proj(Projectile *p, Color c, float scale);

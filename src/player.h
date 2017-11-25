@@ -123,6 +123,8 @@ void player_stage_post_init(Player *plr);
 
 // Yes, that's 3 different initialization functions right here.
 
+void player_free(Player *plr);
+
 void player_draw(Player*);
 void player_logic(Player*);
 bool player_should_shoot(Player *plr, bool extra);

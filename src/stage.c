@@ -691,6 +691,7 @@ void stage_loop(StageInfo *stage) {
 
 	stage->procs->end();
 	stage_free();
+	player_free(&global.plr);
 	tsrand_switch(&global.rand_visual);
 	free_all_refs();
 	stop_sounds();

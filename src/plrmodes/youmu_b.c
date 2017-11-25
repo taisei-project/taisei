@@ -37,37 +37,31 @@ static complex youmu_homing_target(complex org, complex fallback) {
     return target;
 }
 
-static void youmu_homing_draw_common(Projectile *p, int t, float clrfactor, float scale, float alpha) {
+static void youmu_homing_draw_common(Projectile *p, float clrfactor, float scale, float alpha) {
     Color c = multiply_colors(p->color, rgba(0.7f + 0.3f * clrfactor, 0.9f + 0.1f * clrfactor, 1, alpha));
-
-    glPushMatrix();
-    glTranslatef(creal(p->pos), cimag(p->pos), 0);
-    glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
-    glScalef(scale, scale, 1);
-    ProjDrawCore(p, c);
-    glPopMatrix();
+    youmu_common_draw_proj(p, c, scale);
 }
 
 static void youmu_homing_draw_proj(Projectile *p, int t) {
     float a = clamp(1.0f - (float)t / p->args[2], 0, 1);
-    youmu_homing_draw_common(p, t, a, 1, 0.5f);
+    youmu_homing_draw_common(p, a, 1, 0.5f);
 }
 
 static void youmu_homing_draw_trail(Projectile *p, int t) {
     float a = clamp(1.0f - (float)t / p->args[0], 0, 1);
-    youmu_homing_draw_common(p, t, a, 5 * (1 - a), 0.15f * a);
+    youmu_homing_draw_common(p, a, 5 * (1 - a), 0.15f * a);
 }
 
 static void youmu_trap_draw_trail(Projectile *p, int t) {
     float a = clamp(1.0f - (float)t / p->args[0], 0, 1);
-    youmu_homing_draw_common(p, t, a, 2 - a, 0.15f * a);
+    youmu_homing_draw_common(p, a, 2 - a, 0.15f * a);
 }
 
 static void youmu_trap_draw_child_proj(Projectile *p, int t) {
     float to = p->args[2];
     float a = clamp(1.0 - 3 * ((t - (to - to/3)) / to), 0, 1);
     a = 1 - pow(1 - a, 2);
-    youmu_homing_draw_common(p, t, a, 1 + 2 * pow(1 - a, 2), a);
+    youmu_homing_draw_common(p, a, 1 + 2 * pow(1 - a, 2), a);
 }
 
 static Projectile* youmu_homing_trail(Projectile *p, complex v, int to) {

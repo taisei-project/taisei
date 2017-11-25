@@ -50,6 +50,12 @@ void player_stage_post_init(Player *plr) {
 	aniplayer_create(&plr->ani, get_ani(plr->mode->character->player_sprite_name));
 }
 
+void player_free(Player *plr) {
+	if(plr->mode->procs.free) {
+		plr->mode->procs.free(plr);
+	}
+}
+
 static void player_full_power(Player *plr) {
 	play_sound("full_power");
 	stage_clear_hazards(false);

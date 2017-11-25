@@ -140,6 +140,7 @@ typedef void (APIENTRY *tsglBindBuffer_ptr)(GLenum target, GLuint buffer);
 typedef void (APIENTRY *tsglBindFramebuffer_ptr)(GLenum target, GLuint framebuffer);
 typedef void (GLAPIENTRY *tsglBindTexture_ptr)(GLenum target, GLuint texture);
 typedef void (GLAPIENTRY *tsglBlendEquation_ptr)(GLenum mode);
+typedef void (APIENTRY *tsglBlendEquationSeparate_ptr)(GLenum modeRGB, GLenum modeAlpha);
 typedef void (GLAPIENTRY *tsglBlendFunc_ptr)(GLenum sfactor, GLenum dfactor);
 typedef void (APIENTRY *tsglBlendFuncSeparate_ptr)(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
 typedef void (APIENTRY *tsglBufferData_ptr)(GLenum target, GLsizeiptr size, const void *data, GLenum usage);
@@ -233,6 +234,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glBindFramebuffer
 #undef glBindTexture
 #undef glBlendEquation
+#undef glBlendEquationSeparate
 #undef glBlendFunc
 #undef glBlendFuncSeparate
 #undef glBufferData
@@ -327,6 +329,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glBindFramebuffer tsglBindFramebuffer
 #define glBindTexture tsglBindTexture
 #define glBlendEquation tsglBlendEquation
+#define glBlendEquationSeparate tsglBlendEquationSeparate
 #define glBlendFunc tsglBlendFunc
 #define glBlendFuncSeparate tsglBlendFuncSeparate
 #define glBufferData tsglBufferData
@@ -423,6 +426,7 @@ GLDEF(glBindBuffer, tsglBindBuffer, tsglBindBuffer_ptr) \
 GLDEF(glBindFramebuffer, tsglBindFramebuffer, tsglBindFramebuffer_ptr) \
 GLDEF(glBindTexture, tsglBindTexture, tsglBindTexture_ptr) \
 GLDEF(glBlendEquation, tsglBlendEquation, tsglBlendEquation_ptr) \
+GLDEF(glBlendEquationSeparate, tsglBlendEquationSeparate, tsglBlendEquationSeparate_ptr) \
 GLDEF(glBlendFunc, tsglBlendFunc, tsglBlendFunc_ptr) \
 GLDEF(glBlendFuncSeparate, tsglBlendFuncSeparate, tsglBlendFuncSeparate_ptr) \
 GLDEF(glBufferData, tsglBufferData, tsglBufferData_ptr) \
@@ -523,6 +527,7 @@ GLAPI void APIENTRY glBindBuffer (GLenum target, GLuint buffer);
 GLAPI void APIENTRY glBindFramebuffer (GLenum target, GLuint framebuffer);
 GLAPI void GLAPIENTRY glBindTexture( GLenum target, GLuint texture );
 GLAPI void GLAPIENTRY glBlendEquation( GLenum mode );
+GLAPI void APIENTRY glBlendEquationSeparate (GLenum modeRGB, GLenum modeAlpha);
 GLAPI void GLAPIENTRY glBlendFunc( GLenum sfactor, GLenum dfactor );
 GLAPI void APIENTRY glBlendFuncSeparate (GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
 GLAPI void APIENTRY glBufferData (GLenum target, GLsizeiptr size, const void *data, GLenum usage);
@@ -616,6 +621,7 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglBindFramebuffer glBindFramebuffer
 #define tsglBindTexture glBindTexture
 #define tsglBlendEquation glBlendEquation
+#define tsglBlendEquationSeparate glBlendEquationSeparate
 #define tsglBlendFunc glBlendFunc
 #define tsglBlendFuncSeparate glBlendFuncSeparate
 #define tsglBufferData glBufferData

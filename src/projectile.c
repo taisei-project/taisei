@@ -31,6 +31,7 @@ static ProjArgs defaults_part = {
 	.color = RGB(1, 1, 1),
 	.color_transform_rule = proj_clrtransform_particle,
 	.insertion_rule = list_append,
+	// .insertion_rule = proj_insert_sizeprio,
 };
 
 static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
