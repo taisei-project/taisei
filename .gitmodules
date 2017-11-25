@@ -1,3 +1,0 @@
-[submodule "cotire"]
-	path = scripts/cmake-modules/cotire
-	url = https://github.com/sakra/cotire

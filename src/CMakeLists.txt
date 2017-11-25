@@ -1,12 +1,6 @@
 include(CheckSymbolExists)
 include(CheckAndSetFlags)
 
-if(USE_COTIRE)
-	set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${BUILDSCRIPTS_DIR}/cmake-modules/cotire/CMake")
-	cmake_policy(SET CMP0011 NEW)
-	include(cotire)
-endif()
-
 if(LINK_TO_LIBGL)
 	add_definitions(-DLINK_TO_LIBGL)
 endif()
@@ -440,8 +434,4 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "Release" AND NOT APPLE)
 	install(
 		SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/PostInstallRelease.cmake"
 	)
-endif()
-
-if(USE_COTIRE)
-	cotire(taisei)
 endif()
