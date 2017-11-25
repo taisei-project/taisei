@@ -7,6 +7,7 @@
  */
 
 #pragma once
+#include "taisei.h"
 
 typedef struct {
     void *ptr;

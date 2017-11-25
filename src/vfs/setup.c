@@ -6,6 +6,8 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
+#include "taisei.h"
+
 #include "build_config.h"
 #include "public.h"
 #include "setup.h"
@@ -13,11 +15,11 @@
 static char* get_default_res_path(void) {
     char *res;
 
-#ifdef TAISEI_RELATIVE
+#ifdef TAISEI_BUILDCONF_RELATIVE_DATA_PATH
     res = SDL_GetBasePath();
-    strappend(&res, DATA_PATH);
+    strappend(&res, TAISEI_BUILDCONF_DATA_PATH);
 #else
-    res = strdup(DATA_PATH);
+    res = strdup(TAISEI_BUILDCONF_DATA_PATH);
 #endif
 
     return res;

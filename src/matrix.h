@@ -7,6 +7,7 @@
  */
 
 #pragma once
+#include "taisei.h"
 
 typedef float Matrix[4][4];
 

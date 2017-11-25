@@ -7,7 +7,7 @@ if __name__ == '__main__':
         inpath = sys.argv[1]
         outpath = sys.argv[2]
     except IndexError:
-        sys.stdout.write("Usage: %s infile outfile\n")
+        sys.stdout.write("Usage: %s infile outfile\n" % sys.argv[0])
         exit(1)
 
     # This would have been a one-liner with pathlib available...

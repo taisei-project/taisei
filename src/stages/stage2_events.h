@@ -7,6 +7,7 @@
  */
 
 #pragma once
+#include "taisei.h"
 
 #include "boss.h"
 

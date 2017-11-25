@@ -7,6 +7,7 @@
  */
 
 #pragma once
+#include "taisei.h"
 
 #define WINDOW_TITLE "TaiseiProject"
 #define VIDEO_ASPECT_RATIO ((double)SCREEN_W/SCREEN_H)

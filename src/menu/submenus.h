@@ -7,6 +7,7 @@
  */
 
 #pragma once
+#include "taisei.h"
 
 void enter_options(MenuData *menu, void *arg);
 void enter_stagemenu(MenuData *menu, void *arg);

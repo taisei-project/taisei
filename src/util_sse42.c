@@ -6,10 +6,11 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
+#include "taisei.h"
+
 #include <immintrin.h>
 #include "util_sse42.h"
 
-__attribute__((target("sse4.2")))
 uint32_t crc32str_sse42(uint32_t crc, const char *str) {
     const uint8_t *s = (const uint8_t*)str;
 

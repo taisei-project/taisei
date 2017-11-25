@@ -7,6 +7,7 @@
  */
 
 #pragma once
+#include "taisei.h"
 
 /*
  * This is a helper to play animations. It saves the state of the animation and

@@ -1,4 +1,4 @@
-dirs = ['bgm', 'gfx', 'models', 'sfx', 'shader']
+dirs = ['bgm', 'gfx', 'models', 'sfx', 'shader', 'fonts']
 
 if taisei_deps.contains(dep_zip)
     archive = '00-taisei.zip'

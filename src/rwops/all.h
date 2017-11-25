@@ -6,12 +6,14 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
+#include "taisei.h"
+
 #include "build_config.h"
 #include "rwops_zlib.h"
 #include "rwops_segment.h"
 #include "rwops_autobuf.h"
 #include "rwops_pipe.h"
 
-#ifndef DISABLE_ZIP
+#ifdef TAISEI_BUILDCONF_USE_ZIP
 #include "rwops_zipfile.h"
 #endif
