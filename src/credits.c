@@ -6,6 +6,8 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
+#include "taisei.h"
+
 #include "credits.h"
 #include "global.h"
 #include "stages/stage6.h"

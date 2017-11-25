@@ -7,14 +7,11 @@
  */
 
 #pragma once
+#include "taisei.h"
 
 /*
  *  This file should not be included by code outside of the vfs/ directory
  */
-
-#ifndef DISABLE_ZIP
-#include <zip.h>
-#endif
 
 #include "util.h"
 

@@ -6,6 +6,8 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
+#include "taisei.h"
+
 #include "font.h"
 #include "global.h"
 #include "util.h"

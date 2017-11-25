@@ -6,6 +6,8 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
+#include "taisei.h"
+
 #include "laser.h"
 #include "global.h"
 #include "list.h"

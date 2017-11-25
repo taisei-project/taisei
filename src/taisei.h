@@ -9,7 +9,12 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL.h>
-#include <stdbool.h>
+#include "build_config.h"
 
-SDL_RWops* SDL_RWWrapSegment(SDL_RWops *src, size_t start, size_t end, bool autoclose);
+#ifdef TAISEI_BUILDCONF_DEBUG
+    #define DEBUG 1
+#endif
+
+#ifdef TAISEI_BUILDCONF_LOG_ENABLE_BACKTRACE
+    #define LOG_ENABLE_BACKTRACE
+#endif

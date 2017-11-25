@@ -7,6 +7,7 @@
  */
 
 #pragma once
+#include "taisei.h"
 
 #ifndef __GNUC__ // clang defines this too
     #define __attribute__(...)

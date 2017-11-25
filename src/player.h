@@ -7,6 +7,7 @@
  */
 
 #pragma once
+#include "taisei.h"
 
 #ifdef DEBUG
 	#define PLR_DPS_STATS

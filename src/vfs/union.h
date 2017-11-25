@@ -7,6 +7,7 @@
  */
 
 #pragma once
+#include "taisei.h"
 
 #include "private.h"
 #include "union_public.h"

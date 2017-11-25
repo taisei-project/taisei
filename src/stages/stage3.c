@@ -6,6 +6,8 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
+#include "taisei.h"
+
 #include "stage3.h"
 #include "stage3_events.h"
 

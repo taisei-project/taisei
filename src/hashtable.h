@@ -7,6 +7,7 @@
  */
 
 #pragma once
+#include "taisei.h"
 
 #include <stdbool.h>
 #include <stdint.h>
