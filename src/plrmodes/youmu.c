@@ -89,14 +89,17 @@ void youmu_common_bombbg(Player *plr) {
 	float t = player_get_bomb_progress(&global.plr, NULL);
 	float fade = 1;
 
-	if(t < BOMB_RECOVERY/6)
-		fade = t/BOMB_RECOVERY*6;
+	if(t < 1./12)
+		fade = t*12;
 
-	if(t > BOMB_RECOVERY/4*3)
-		fade = 1-t/BOMB_RECOVERY*4 + 3;
+	if(t > 1./2)
+		fade = 1-(t-1./2)*2;
+
+	if(fade < 0)
+		fade = 0;
 
 	glColor4f(1,1,1,0.6*fade);
-	fill_screen(0,-t*0.01,1,"marisa_bombbg");
+	fill_screen_p(0.5,0.5,3,1,1200*t*(t-1.5),get_tex("youmu_bombbg1"));
 	glColor4f(1,1,1,1);
 }
 

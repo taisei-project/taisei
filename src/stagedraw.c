@@ -374,11 +374,16 @@ void stage_draw_scene(StageInfo *stage) {
 	// stage postprocessing
 	apply_shader_rules(global.stage->procs->postprocess_rules, &fbo0, &fbo1);
 
+	// bomb effects shader if present and player bombing
+	if(global.frames - global.plr.recovery < 0 && global.plr.mode->procs.bomb_shader) {
+		ShaderRule rules[] = {global.plr.mode->procs.bomb_shader,0};
+		apply_shader_rules(rules,&fbo0,&fbo1);
+	}
 	// custom postprocessing
 	postprocess(
 		resources.stage_postprocess,
-		&fbo0,
 		&fbo1,
+		&fbo0,
 		postprocess_prepare,
 		draw_fbo_viewport
 	);

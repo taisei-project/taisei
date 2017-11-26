@@ -36,7 +36,7 @@ void draw_texture_with_size(float x, float y, float w, float h, const char *name
 void draw_texture_with_size_p(float x, float y, float w, float h, Texture *tex);
 
 void fill_screen(float xoff, float yoff, float ratio, const char *name);
-void fill_screen_p(float xoff, float yoff, float ratio, float aspect, Texture *tex);
+void fill_screen_p(float xoff, float yoff, float ratio, float aspect, float angle, Texture *tex);
 
 void loop_tex_line_p(complex a, complex b, float w, float t, Texture *texture);
 void loop_tex_line(complex a, complex b, float w, float t, const char *texture);

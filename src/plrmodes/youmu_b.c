@@ -364,6 +364,7 @@ static void youmu_haunting_preload(void) {
     preload_resources(RES_TEXTURE, flags,
         "proj/youmu",
         "part/youmu_slice",
+	"youmu_bombbg1",
 
     NULL);
 

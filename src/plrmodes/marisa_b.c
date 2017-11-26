@@ -135,7 +135,7 @@ static int marisa_star_orbit(Enemy *e, int t) {
 		return 1;
 	}
 
-	if(tb >= BOMB_RECOVERY) {
+	if(tb >= 1 || global.frames - global.plr.recovery >= 0) {
 		global.shake_view = 0;
 		return ACTION_DESTROY;
 	}
@@ -146,9 +146,9 @@ static int marisa_star_orbit(Enemy *e, int t) {
 
 	float clr[4];
 	parse_color_array(color,clr);
-	float fadetime = BOMB_RECOVERY*3./4;
+	float fadetime = 3./4;
 	if(tb >= fadetime) {
-		clr[3] = 1-(tb-fadetime)/(BOMB_RECOVERY-fadetime);
+		clr[3] = 1-(tb-fadetime)/(1-fadetime);
 	}
 
 	if(t%1 == 0) {
@@ -190,13 +190,13 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 
 	float fade = 1;
 
-	if(t < BOMB_RECOVERY/6.) {
-		fade = tb/BOMB_RECOVERY*6;
+	if(t < 1./6) {
+		fade = tb*6;
 		fade = sqrt(fade);
 	}
 
-	if(t > BOMB_RECOVERY/4.*3) {
-		fade = 1-tb/BOMB_RECOVERY*4 + 3;
+	if(t > 3./4) {
+		fade = 1-tb*4 + 3;
 		fade *= fade;
 	}
 
@@ -250,15 +250,15 @@ static void marisa_star_bombbg(Player *plr) {
 	float t = player_get_bomb_progress(&global.plr, NULL);
 	float fade = 1;
 
-	if(t < BOMB_RECOVERY/6)
-		fade = t/BOMB_RECOVERY*6;
+	if(t < 1./6)
+		fade = t*6;
 
-	if(t > BOMB_RECOVERY/4*3)
-		fade = 1-t/BOMB_RECOVERY*4 + 3;
+	if(t > 3./4)
+		fade = 1-t*4 + 3;
 
 	Shader *s = get_shader("maristar_bombbg");
 	glUseProgram(s->prog);
-	glUniform1f(uniloc(s,"t"), t/BOMB_RECOVERY);
+	glUniform1f(uniloc(s,"t"), t);
 	glUniform2f(uniloc(s,"plrpos"), creal(global.plr.pos)/VIEWPORT_W,cimag(global.plr.pos)/VIEWPORT_H);
 	glColor4f(1,1,1,0.6*fade);
 	fill_screen(0,0,1,"marisa_bombbg");

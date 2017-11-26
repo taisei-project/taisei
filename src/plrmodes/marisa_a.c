@@ -286,15 +286,15 @@ static void masterspark_visual(Enemy *e, int t, bool render) {
         return;
     }
 
-    t = player_get_bomb_progress(&global.plr, NULL) * (e->args[0] / BOMB_RECOVERY);
+    t = player_get_bomb_progress(&global.plr, NULL);
     float fade = 1;
 
-    if(t < creal(e->args[0]/6)) {
+    if(t < 1./6) {
         fade = t/e->args[0]*6;
 	fade = sqrt(fade);
     }
 
-    if(t > creal(e->args[0])/4*3) {
+    if(t > 3./4) {
         fade = 1-t/e->args[0]*4 + 3;
 	fade *= fade;
     }
@@ -318,7 +318,7 @@ static int masterspark(Enemy *e, int t) {
 	}
 
 	t = player_get_bomb_progress(&global.plr, NULL);
-	if(t%2==0 && t < BOMB_RECOVERY*3/4) {
+	if(t%2==0 && t < 3/4) {
 		complex dir = -cexp(1.2*I*nfrand())*I;
 		Color c = rgb(0.7+0.3*sin(t*0.1),0.7+0.3*cos(t*0.1),0.7+0.3*cos(t*0.01));
 		PARTICLE(
@@ -354,7 +354,7 @@ static int masterspark(Enemy *e, int t) {
 		);
 	}
 
-	if(t >= BOMB_RECOVERY || global.frames - global.plr.recovery > 0) {
+	if(t >= 1 || global.frames - global.plr.recovery >= 0) {
 		global.shake_view = 0;
 		return ACTION_DESTROY;
 	}
@@ -366,11 +366,11 @@ static void marisa_laser_bombbg(Player *plr) {
 	float t = player_get_bomb_progress(&global.plr, NULL);
 	float fade = 1;
 
-	if(t < BOMB_RECOVERY/6)
-		fade = t/BOMB_RECOVERY*6;
+	if(t < 1./6)
+		fade = t*6;
 
-	if(t > BOMB_RECOVERY/4*3)
-		fade = 1-t/BOMB_RECOVERY*4 + 3;
+	if(t > 3./4)
+		fade = 1-t*4 + 3;
 
 	glColor4f(1,1,1,0.8*fade);
 	fill_screen(sin(t*0.001),t*0.01*(1+t*0.01),1,"marisa_bombbg");

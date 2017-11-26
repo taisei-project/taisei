@@ -12,6 +12,7 @@
 #include "projectile.h"
 #include "player.h"
 #include "ending.h"
+#include "stage.h"
 
 typedef enum {
     /* do not reorder - screws replays */
@@ -73,6 +74,7 @@ typedef struct PlayerMode {
         PlayerModeThinkProc think;
         PlayerModeShotProc shot;
         PlayerModeBombProc bomb;
+	ShaderRule bomb_shader;
         PlayerModeBombBgProc bombbg;
         PlayerModePowerProc power;
         PlayerModeSpeedModProc speed_mod;

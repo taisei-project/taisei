@@ -283,13 +283,13 @@ void player_cancel_bomb(Player *plr, int delay) {
 	}
 }
 
-int player_get_bomb_progress(Player *plr, double *out_speed) {
+double player_get_bomb_progress(Player *plr, double *out_speed) {
 	if(global.frames - plr->recovery >= 0) {
 		if(out_speed != NULL) {
 			*out_speed = 1.0;
 		}
 
-		return BOMB_RECOVERY;
+		return 1;
 	}
 
 	int start_time = plr->recovery - BOMB_RECOVERY;
@@ -300,7 +300,7 @@ int player_get_bomb_progress(Player *plr, double *out_speed) {
 			*out_speed = 1.0;
 		}
 
-		return BOMB_RECOVERY - (end_time - global.frames);
+		return (BOMB_RECOVERY - (end_time - global.frames))/(double)BOMB_RECOVERY;
 	}
 
 	int cancel_time = plr->bombcanceltime + plr->bombcanceldelay;
@@ -317,7 +317,7 @@ int player_get_bomb_progress(Player *plr, double *out_speed) {
 		*out_speed = (BOMB_RECOVERY - passed_time) / (double)shortened_total_time;
 	}
 
-	return rint(BOMB_RECOVERY * (passed_fraction + shortened_fraction));
+	return passed_fraction + shortened_fraction;
 }
 
 int player_run_bomb_logic(Player *plr, void *ent, complex *argptr, int (*callback)(void *ent, int t, double speed)) {

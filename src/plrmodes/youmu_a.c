@@ -348,66 +348,67 @@ static void youmu_mirror_shot(Player *plr) {
     }
 }
 
-static int youmu_split_logic(void *v, int t, double speed) {
-    Enemy *e = v;
-    TIMER(&t);
-
-    FROM_TO(30,200,1) {
-        tsrand_fill(2);
-
-        PARTICLE(
-            .texture = "smoke",
-            .pos = VIEWPORT_W/2 + VIEWPORT_H/2*I,
-            .color = rgba(0.4, 0.4, 0.4, afrand(0) * 0.2 + 0.4),
-            .rule = youmu_common_particle_spin,
-            .args = { 300 / speed, speed * 6 * cexp(I*afrand(1)*2*M_PI) },
-            .type = PlrProj,
-        );
-    }
-
-    FROM_TO(100,170,10) {
-        tsrand_fill(3);
-
-        PARTICLE(
-            .texture = "youmu_slice",
-            .pos = VIEWPORT_W/2.0 + VIEWPORT_H/2.0*I - 200-200.0*I + 400*afrand(0)+400.0*I*afrand(1),
-            .draw_rule = youmu_common_particle_slice_draw,
-            .rule = youmu_common_particle_slice_logic,
-            .args = { (100 - _i) / speed },
-            .angle = M_PI * 2 * afrand(2),
-            .type = PlrProj,
-        );
-    }
-
-    FROM_TO(0, 220, 1) {
-        float talt = atan((t-e->args[0]/2)/30.0)*10+atan(-e->args[0]/2);
-        global.plr.pos = VIEWPORT_W/2.0 + (VIEWPORT_H-80)*I + VIEWPORT_W/3.0*sin(talt);
-    }
-
-    return 1;
-}
 
 static int youmu_split(Enemy *e, int t) {
-    if(t < 0)
-        return 1;
+	if(t < 0)
+		return 1;
 
-    if(t > creal(e->args[0]))
-        return ACTION_DESTROY;
+	if(global.frames - global.plr.recovery > 0) {
+		return ACTION_DESTROY;
+	}
+	TIMER(&t);
+	//FROM_TO(0, 220, 1) {
+		tsrand_fill(5);
+		double x = nfrand()*10;
+		PARTICLE(
+			.texture = "petal",
+			.pos = VIEWPORT_W/2+x+(x>0)*VIEWPORT_H*I,
+			.rule = accelerated,
+			.draw_rule = Petal,
+			.color = rgba(0.1,0.1,0.5,t),
+			.args = {
+				-10*I*x/fabs(x),
+				-I*x/fabs(x)+anfrand(4)*0.1,
+				afrand(1) + afrand(2)*I,
+				afrand(3) + 360.0*I*afrand(0)
+			},
+			.flags = PFLAG_DRAWADD,
+		);
+	//}
+	FROM_TO(0, 220, 1) {
+		global.plr.pos = VIEWPORT_W/2.0 + (VIEWPORT_H-180)*I;
+	}
 
-    if(global.frames - global.plr.recovery > 0) {
-        return ACTION_DESTROY;
-    }
+	return 1;
+}
 
-    return player_run_bomb_logic(&global.plr, e, &e->args[3], youmu_split_logic);
+static void youmu_mirror_shader(FBO *fbo) {
+	Shader *shader = get_shader("youmua_bomb");
+
+	double t = player_get_bomb_progress(&global.plr,0);
+	glUseProgram(shader->prog);
+	glUniform1f(uniloc(shader, "tbomb"), t);
+	draw_fbo_viewport(fbo);
+	glUseProgram(0);
+
+	colorfill(1,1,1,max(0,1-10*t));
 }
 
 static void youmu_mirror_bomb(Player *plr) {
-    play_sound("bomb_youmu_a");
+    play_sound("bomb_youmu_b");
     create_enemy_p(&plr->slaves, 40.0*I, ENEMY_BOMB, NULL, youmu_split, 280,0,0,0);
 }
 
 static void youmu_mirror_init(Player *plr) {
     create_enemy_p(&plr->slaves, 40.0*I, ENEMY_IMMUNE, NULL, youmu_mirror_myon, 0, 0, 0, 0);
+}
+
+static double youmu_mirror_speed_mod(Player *plr, double speed) {
+    if(global.frames - plr->recovery < 0) {
+        speed /= 5.0;
+    }
+
+    return speed;
 }
 
 static void youmu_mirror_preload(void) {
@@ -416,6 +417,7 @@ static void youmu_mirror_preload(void) {
     preload_resources(RES_TEXTURE, flags,
         "proj/youmu",
         "part/youmu_slice",
+	"youmu_bombbg1",
     NULL);
 
     preload_resources(RES_SFX, flags | RESF_OPTIONAL,
@@ -429,6 +431,8 @@ PlayerMode plrmode_youmu_a = {
     .shot_mode = PLR_SHOT_YOUMU_MIRROR,
     .procs = {
         .bomb = youmu_mirror_bomb,
+	.speed_mod = youmu_mirror_speed_mod,
+	.bomb_shader = youmu_mirror_shader,
 	.bombbg = youmu_common_bombbg,
         .shot = youmu_mirror_shot,
         .init = youmu_mirror_init,

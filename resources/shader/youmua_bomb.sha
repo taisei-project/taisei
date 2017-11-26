@@ -1,0 +1,29 @@
+#version 110
+
+void main(void) {
+	gl_Position     = ftransform();
+	gl_FrontColor   = gl_Color;
+	gl_TexCoord[0]  = gl_MultiTexCoord0;
+}
+
+%% -- FRAG
+
+#version 110
+
+uniform sampler2D tex;
+
+uniform float tbomb;
+
+void main(void) {
+	vec2 pos = vec2(gl_TexCoord[0]);
+
+	float shift = (2.*float(pos.x<0.5)-1.)*0.1*sqrt(tbomb);
+	float f = step(-pos.y*pos.y-abs(pos.x-0.5)+tbomb*(tbomb-0.8)*10.,0.);
+	vec3 clr0 = texture2D(tex, (gl_TextureMatrix[0]*vec4(pos,0.0,1.0)).xy).xyz;
+	pos.y = (1.-pos.y+float(shift>0.)*(2.*pos.y-1.0))*(1.0-abs(shift));
+	vec3 clr = texture2D(tex, (gl_TextureMatrix[0]*vec4(pos,0.0,1.0)).xy).xyz;
+
+	clr = (1.-f)*clr0 + f*(atan((clr-vec3(+shift,0.01*tbomb,-shift))*(1.+4.*tbomb*(1.-pow(pos.x-0.5,3.))))/0.8);
+
+	gl_FragColor = vec4(clr,1.0);
+}
