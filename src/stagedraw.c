@@ -382,8 +382,8 @@ void stage_draw_scene(StageInfo *stage) {
 	// custom postprocessing
 	postprocess(
 		resources.stage_postprocess,
-		&fbo1,
 		&fbo0,
+		&fbo1,
 		postprocess_prepare,
 		draw_fbo_viewport
 	);
