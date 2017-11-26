@@ -318,7 +318,7 @@ static int masterspark(Enemy *e, int t) {
 	}
 
 	t = player_get_bomb_progress(&global.plr, NULL);
-	if(t%2==0 && t < 3/4) {
+	if(t%2==0 && t < 3./4) {
 		complex dir = -cexp(1.2*I*nfrand())*I;
 		Color c = rgb(0.7+0.3*sin(t*0.1),0.7+0.3*cos(t*0.1),0.7+0.3*cos(t*0.01));
 		PARTICLE(
