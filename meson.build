@@ -13,9 +13,18 @@ project('taisei', 'c',
     ]
 )
 
+ver_fb = get_option('version_fallback').strip()
+version_fallback = ver_fb != '' ? ver_fb : meson.project_version()
+
+version_script = find_program('scripts/version.py')
+version_command = [version_script, '--rootdir', meson.source_root(), '--fallback', version_fallback]
+
+taisei_version_string = run_command(version_command, '{string}').stdout().strip()
+
 config = configuration_data()
 
 cc = meson.get_compiler('c')
+python3 = import('python3').find_python()
 
 taisei_c_warnargs = []
 taisei_c_args = []
@@ -86,20 +95,44 @@ if not (have_vla and have_complex)
     error('Your C implementation needs to support complex numbers and variable-length arrays.')
 endif
 
+macos_app_bundle = get_option('macos_bundle') and host_machine.system() == 'darwin'
 
-if get_option('install_relative') == 'auto'
-    config.set('TAISEI_BUILDCONF_RELATIVE_DATA_PATH', host_machine.system() == 'windows' or host_machine.system() == 'darwin')
+if macos_app_bundle
+    bundle_dir = 'Taisei.app'
+    datadir = join_paths(bundle_dir, 'Contents', 'Resources')
+    bindir = join_paths(bundle_dir, 'Contents', 'MacOS')
+    config.set('TAISEI_BUILDCONF_RELATIVE_DATA_PATH', true)
+
+    # arguments must be strings...
+    meson.add_install_script(
+        python3.path(),
+        join_paths(meson.source_root(), 'scripts', 'macos-install-dylibs.py'),
+        get_option('macos_lib_path'),
+        get_option('macos_tool_path'),
+        get_option('macos_tool_prefix'),
+    )
 else
-    config.set('TAISEI_BUILDCONF_RELATIVE_DATA_PATH', get_option('install_relative') == 'true')
+    datadir = get_option('datadir')
+    bindir = get_option('bindir')
+
+    if get_option('install_relative') == 'auto'
+        config.set('TAISEI_BUILDCONF_RELATIVE_DATA_PATH', host_machine.system() == 'windows')
+    else
+        config.set('TAISEI_BUILDCONF_RELATIVE_DATA_PATH', get_option('install_relative') == 'true')
+    endif
 endif
 
 if config.get('TAISEI_BUILDCONF_RELATIVE_DATA_PATH')
-    if host_machine.system() == 'darwin'
-        data_path = join_paths(get_option('datadir'), 'data')
-        config.set('TAISEI_BUILDCONF_DATA_PATH', '"@0@"'.format(join_paths('../..', data_path)))
-    else
-        data_path = 'data'
+    data_path = 'data'
+    doc_path = '.'
 
+    if macos_app_bundle
+        # This is relative to SDL_GetBasePath(), which will return '/path/to/Taisei.app/Contents/Resources' for a macOS bundle.
+        config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', data_path)
+
+        # Actual installation path
+        data_path = join_paths(datadir, data_path)
+    else
         # HACK
         rel_dpath = []
         foreach p : get_option('bindir').split('/')
@@ -109,17 +142,13 @@ if config.get('TAISEI_BUILDCONF_RELATIVE_DATA_PATH')
         endforeach
         rel_dpath += data_path
 
-        config.set('TAISEI_BUILDCONF_DATA_PATH', '"@0@"'.format(join_paths(rel_dpath)))
+        config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', format(join_paths(rel_dpath)))
     endif
-    doc_path = ''
 else
-    data_path = join_paths(get_option('datadir'), 'taisei')
-    config.set('TAISEI_BUILDCONF_DATA_PATH', '"@0@"'.format(join_paths(get_option('prefix'), data_path)))
-    doc_path = join_paths(get_option('datadir'), 'doc', 'taisei')
+    data_path = join_paths(datadir, 'taisei')
+    config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', join_paths(get_option('prefix'), data_path))
+    doc_path = join_paths(datadir, 'doc', 'taisei')
 endif
-
-
-systype = (have_posix ? 'POSIX (@0@)' : '@0@').format(host_machine.system())
 
 if get_option('buildtype').startswith('debug')
     config.set('TAISEI_BUILDCONF_DEBUG', true)
@@ -129,7 +158,7 @@ if get_option('buildtype').startswith('debug')
 endif
 
 if host_machine.system() == 'windows' or host_machine.system() == 'darwin'
-        config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX')
+        config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', true)
 endif
 
 if host_machine.system() == 'windows'
@@ -141,9 +170,14 @@ else
     install_data('COPYING', install_dir : doc_path)
 endif
 
+systype = (have_posix ? 'POSIX (@0@)' : '@0@').format(host_machine.system())
+systype = '@0@, @1@, @2@'.format(systype, host_machine.cpu_family(), host_machine.cpu())
+
 summary = '''
 
 Summary:
+    Taisei version:         @9@
+
     System type:            @0@
     Audio enabled:          @1@
     Package data:           @2@
@@ -161,10 +195,11 @@ Summary:
         taisei_deps.contains(dep_zip),
         config.get('TAISEI_BUILDCONF_RELATIVE_DATA_PATH'),
         get_option('prefix'),
-        get_option('bindir'),
+        bindir,
         data_path,
         doc_path,
-        get_option('buildtype')
+        get_option('buildtype'),
+        taisei_version_string
     )
 
 subdir('src')
@@ -174,3 +209,11 @@ subdir('doc')
 subdir('xdg')
 
 message(summary)
+
+if macos_app_bundle
+    dmg_command = find_program('scripts/macos-gen-dmg.sh')
+    dmg_filename = 'Taisei-@0@-macOS.dmg'.format(taisei_version_string)
+    dmg_target = run_target('dmg',
+        command: [dmg_command, get_option('prefix'), join_paths(meson.build_root(), dmg_filename)],
+    )
+endif
