@@ -1,10 +1,8 @@
-ver_fb = get_option('version_fallback').strip()
-version_fallback = ver_fb != '' ? ver_fb : meson.project_version()
 
-version_script = find_program('../scripts/version.py')
-version_command = [version_script, meson.source_root(), '@INPUT@', '@OUTPUT@', get_option('buildtype'), version_fallback]
+version_template_script = find_program('../scripts/version-template.py')
+version_template_command = [version_template_script, meson.source_root(), '@INPUT@', '@OUTPUT@', get_option('buildtype'), version_fallback]
 version_deps = [custom_target('version file',
-                              command : version_command,
+                              command : version_template_command,
                               build_always : true,
                               input : 'version_auto.c.in',
                               output : 'version_auto.c')]
@@ -14,12 +12,12 @@ if host_machine.system() == 'windows'
     # HACK: compile_resources only accepts strings, not generated dependencies.
     # We still want to generate this every time though.
     rcpath = join_paths(meson.current_build_dir(), 'taisei.rc')
-    c = run_command(version_script, meson.source_root(), 'taisei.rc.in', rcpath, get_option('buildtype'), version_fallback)
+    c = run_command(version_template_script, meson.source_root(), 'taisei.rc.in', rcpath, get_option('buildtype'), version_fallback)
     if c.returncode() != 0
         error('Failed to generate Windows resource file:\n' + c.stderr())
     endif
     version_deps += custom_target('Windows resource file',
-                                  command : version_command,
+                                  command : version_template_command,
                                   build_always : true,
                                   input : 'taisei.rc.in',
                                   output : 'taisei.rc')
@@ -32,7 +30,7 @@ __attribute__((target("sse4.2")))
 int main(int argc, char **argv) {
     return _mm_crc32_u8(argc, 42);
 }
-''')
+''', name : 'SSE 4.2 intrinsics test')
 
 if use_intel_intrin
     # All that just to append that -msse4.2 argument for this one file.
@@ -41,7 +39,7 @@ if use_intel_intrin
     taisei_deps += sse42_dep
     message('SEE4.2 intrinsics will be used')
 elif get_option('intel_intrin')
-    warning('SSE4.2 intrinsics can not be used')
+    message('SSE4.2 intrinsics can not be used')
 endif
 
 configure_file(configuration : config, output : 'build_config.h')
@@ -164,7 +162,9 @@ if taisei_deps.contains(dep_zip)
         'vfs/zippath.c',
     ]
 else
-    src_base += ['vfs/zipfile_null.c']
+    src_base += [
+        'vfs/zipfile_null.c',
+    ]
 endif
 
 if have_posix
@@ -185,8 +185,16 @@ else
     ]
 endif
 
-taisei_exe = executable('taisei', src_base, version_deps,
-                        dependencies : taisei_deps,
-                        c_args : taisei_c_args,
-                        gui_app : not get_option('win_console'),
-                        install : true)
+if macos_app_bundle
+    taisei_exe_name = 'Taisei'
+else
+    taisei_exe_name = 'taisei'
+endif
+
+taisei_exe = executable(taisei_exe_name, src_base, version_deps,
+    dependencies : taisei_deps,
+    c_args : taisei_c_args,
+    gui_app : not get_option('win_console'),
+    install : true,
+    install_dir : bindir,
+)
