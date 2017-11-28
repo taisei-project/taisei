@@ -2,10 +2,10 @@ option('version_fallback', type : 'string', description : 'Overrides the version
 option('enable_audio', type : 'combo', choices : ['auto', 'true', 'false'], description : 'Enable audio support (needs SDL2_mixer)')
 option('package_data', type : 'combo', choices : ['auto', 'true', 'false'], description : 'Package the game’s assets into a compressed archive instead of bundling plain files (needs libzip)')
 option('install_relative', type : 'combo', choices : ['auto', 'true', 'false'], description : 'Use only relative paths to the executable and install everything in the same directory. Always enabled for macOS bundles')
+option('install_freedesktop', type : 'combo', choices : ['auto', 'true', 'false'], description : 'Install freedesktop.org integration files (launchers, icons, replay file associations, etc.). Mostly relevant for Linux/BSD/etc. desktop systems')
 option('win_console', type : 'boolean', value : false, description : 'Use the console subsystem on Windows')
 option('static', type : 'boolean', value : false, description : 'Build statically linked executable')
 option('intel_intrin', type : 'boolean', value : true, description : 'Use some x86-specific intrinsics for optimizations where appropriate (if possible). Note that this is not equivalent to e.g. supplying -march in CFLAGS')
-
 option('macos_bundle', type : 'boolean', value : true, description : 'Make a macOS application bundle on install (ignored on other platforms)')
 option('macos_lib_path', type : 'string', description : 'List of paths (separated like the PATH environment variable) from where required runtime libraries will be copied into the bundle (useful for cross-compiling)')
 option('macos_tool_path', type : 'string', description : 'List of paths (separated like the PATH environment variable) from where macOS-specific utilities (such as otool and install_name_tool) can be found. This is prepended to PATH (useful for cross-compiling)')
