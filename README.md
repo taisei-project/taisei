@@ -46,7 +46,7 @@ Taisei stores all data in a platform-specific directory:
 * On **macOS**, it's `$HOME/Library/Application Support/taisei`
 * On **Linux**, **\*BSD**, and most other **Unix**-like systems, it's `$XDG_DATA_HOME/taisei` or `$HOME/.local/share/taisei`
 
-This is refered to as the **Storage Directory**. You can set the environment variable `TAISEI_STORAGE_PATH` to override this behaviour.
+This is referred to as the **Storage Directory**. You can set the environment variable `TAISEI_STORAGE_PATH` to override this behaviour.
 
 ## Game controller support
 
