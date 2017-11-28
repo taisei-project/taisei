@@ -13,7 +13,7 @@ In addition to the variables listed here, those processed by our runtime depende
 
 ### Virtual filesystem
 
-* **TAISEI_RES_PATH** *(default: unset)*: if set, overrides the default **resource directory** path. This is where Taisei looks for game data. The default path is platform- and build-specific:
+* **TAISEI_RES_PATH** *(default: unset)*: if set, overrides the default **resource directory** path. This is where Taisei looks for game data. The default path is platform and build specific:
     * On **macOS**, it will be the `Contents/Resources/data` directory inside of the `Taisei.app` bundle.
     * On **Linux**, **\*BSD**, and most other **Unix**-like systems (without -DRELATIVE), it will be `$prefix/share/taisei`. This path is static and determined at compile time.
     * On **Windows** and other platforms when built with -DRELATIVE, it will be the `data` directory relative to the executable (or to whatever `SDL_GetBasePath` returns on the given platform).
@@ -46,9 +46,9 @@ In addition to the variables listed here, those processed by our runtime depende
 
 ### Timing
 
-* **TAISEI_HIRES_TIMER** *(default value: `1`)*: if `1`, try to use the system's high resolution timer to limit the game's framerate. Disabling this is not recommended; it will likely make Taisei run slower or faster than intended and the reported FPS will be less accurate.
+* **TAISEI_HIRES_TIMER** *(default value: `1`)*: if `1`, tries to use the system's high resolution timer to limit the game's framerate. Disabling this is not recommended; it will likely make Taisei run slower or faster than intended and the reported FPS will be less accurate.
 
-* **TAISEI_FRAMELIMITER_SLEEP** *(default value: `0`)*: if over `0`, try to sleep this many milliseconds after every frame if it was processed quickly enough. This reduces CPU usage by having the game spend less time in a busy loop, but may hurt framerate stability if set too high, especially if the high resolution timer is disabled or not available.
+* **TAISEI_FRAMELIMITER_SLEEP** *(default value: `0`)*: if over `0`, tries to sleep this many milliseconds after every frame if it was processed quickly enough. This reduces CPU usage by having the game spend less time in a busy loop, but may hurt framerate stability if set too high, especially if the high resolution timer is disabled or not available.
 
 * **TAISEI_FRAMELIMITER_SLEEP_EXACT** *(default value: `1`)*: if `1`, the framerate limiter will either try to sleep the exact amount of time set in `TAISEI_FRAMELIMITER_SLEEP`, or none at all. Mitigates the aforementioned framerate stability issues by effectively making `TAISEI_FRAMELIMITER_SLEEP` do nothing if the value is too high for your system.
 
