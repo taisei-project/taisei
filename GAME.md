@@ -1,8 +1,8 @@
 # Taisei Project – Game Manual
 
-Taisei is a shoot-em-up game. Lots of bullets cover the screen and if you are hit by one, you die. To make things easier, your hitbox is very small, much smaller than your character.
+Taisei is a shoot-em-up game. Lots of bullets cover the screen and if you are hit by one, you die. To make things easier, your hitbox is very small-- much smaller than your character.
 
-If you get hit you lose a life (displayed on the right hand side in the HUD), if you are out of lives, it’s Game Over, but you get a few Continues to keep playing (without scores or replays).
+If you get hit you lose a life (displayed on the right hand side in the HUD); if you are out of lives, it’s Game Over, but you get a few Continues to keep playing (without scores or replays).
 
 ## Controls
 
@@ -51,7 +51,7 @@ The numbers in the HUD are
 
 ## Items
 
-Killed enemies drop various amouts of items. They may look like bullets at first, but they are safe to touch.
+Killed enemies drop various amounts of items. They may look like bullets at first, but they are safe to touch.
 
 These are:
 * **Blue**
@@ -74,38 +74,38 @@ Taisei has 6 levels (called *stages*). Each stage has a boss and a midboss in so
    A signature move every boss has. They are a break between the other, more
    fierce attacks, but some say there are Normals in the game that are way
    too hard.
-* **Spellcard**
+* **Spell Card**
    This is where the Bosses concentrate their powers (resulting in a background
    change) and hit you with really hard and unusual patterns.
-   They give a lot of extra points when you *capture* them. That means shot
-   down the hp within the time without getting hit or using bombs.
+   They give a lot of extra points when you *capture* them. That means shooting
+   down the HP within the time limit without getting hit or using bombs.
 
    You can revisit spellcards you have encountered in the *Spell Practice* mode
    to get better at the ones you frequently die on. 
 * **Extra Spell**
-   *Capture* every Spellcard of a boss in succession and you activate their *Extra Spell*.
+   *Capture* every Spell Card of a boss in succession and you activate their *Extra Spell*.
 
    These are super hard, unique spells that will take all your skills and
    creativity to dodge. Special safety magic has locked your Bomb and Life meters so
    they can’t hurt you, but you can’t use your bombs either.
 * **Survival Spell**
-   Rarely, a very strong Boss can invoke a Spellcard that makes them completely
-   invincible – turning their health bar blue.
+   Rarely, a very strong boss can invoke a Spell Card that makes them completely
+   invincible-- turning their health bar blue.
 
-   You are on your own here. Try to survive somehow until the timer runs up.
+   You are on your own here. Try to survive somehow until the timer runs out.
 
 ## Bombs
 
-Your characters are of course no less apt at magic than the bosses, so they
-have Spellcards of their own. These are called *bombs*.
+Your characters are, of course, no less apt at magic than the bosses, so they
+have Spell Cards of their own. These are called *bombs*.
 
 You can use them to clear out bullets and enemies from the screen. However you
-only get a limited amount, so they are best used when you are in a pinch. When
-used against a boss Spellcard, it voids your capturing bonus.
+only get a limited amount of them, so they are best used when you are in a pinch. When
+used against a boss' Spell Card, it voids your capturing bonus.
 
 Rumor has it that if you get hit by a bullet and hit the bomb key fast enough,
-you can avoid death. This is called *Death Bombing* and people who master it –
-so the lore goes – will find their bomb meter become a second life meter.
+you can avoid death. This is called *Death Bombing* and people who master it--
+so the lore goes-- will find their bomb meter becoming a second life meter.
 
 ## Difficulty
 
@@ -128,6 +128,6 @@ founded the project and wrote this section can’t beat Easy…
 
 Knowing this much should help to get you started!
 
-If you want more tricks and hints on how to *“git gud”*. Check out resources on how to play *Touhou*, the game Taisei is based on.
+If you want more tricks and hints on how to *“git gud”*, check out resources on how to play *Touhou*, the game Taisei is based on.
 
-Enjoy playing and if you want to contact us, visit us on Freenode IRC #taisei-project or on [Discord](https://discord.gg/JEHCMzW).
+Enjoy playing, and if you want to contact us, visit us on Freenode IRC #taisei-project or on [Discord](https://discord.gg/JEHCMzW).
