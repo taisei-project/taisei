@@ -122,9 +122,16 @@ else
     endif
 endif
 
+if get_option('install_freedesktop') == 'auto'
+    install_xdg = not config.get('TAISEI_BUILDCONF_RELATIVE_DATA_PATH')
+else
+    install_xdg = get_option('install_freedesktop') == 'true'
+endif
+
 if config.get('TAISEI_BUILDCONF_RELATIVE_DATA_PATH')
     data_path = 'data'
-    doc_path = '.'
+    doc_path = ''
+    xdg_path = 'freedesktop.org'
 
     if macos_app_bundle
         # This is relative to SDL_GetBasePath(), which will return '/path/to/Taisei.app/Contents/Resources' for a macOS bundle.
@@ -132,6 +139,9 @@ if config.get('TAISEI_BUILDCONF_RELATIVE_DATA_PATH')
 
         # Actual installation path
         data_path = join_paths(datadir, data_path)
+
+        # I don't know why would you do that, but more power to you
+        xdg_path = join_paths(datadir, xdg_path)
     else
         # HACK
         rel_dpath = []
@@ -142,12 +152,13 @@ if config.get('TAISEI_BUILDCONF_RELATIVE_DATA_PATH')
         endforeach
         rel_dpath += data_path
 
-        config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', format(join_paths(rel_dpath)))
+        config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', join_paths(rel_dpath))
     endif
 else
     data_path = join_paths(datadir, 'taisei')
     config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', join_paths(get_option('prefix'), data_path))
     doc_path = join_paths(datadir, 'doc', 'taisei')
+    xdg_path = data_path
 endif
 
 if get_option('buildtype').startswith('debug')
@@ -195,9 +206,12 @@ Summary:
         taisei_deps.contains(dep_zip),
         config.get('TAISEI_BUILDCONF_RELATIVE_DATA_PATH'),
         get_option('prefix'),
-        bindir,
-        data_path,
-        doc_path,
+
+        # the $ is intentional
+        join_paths('$prefix', bindir),
+        join_paths('$prefix', data_path),
+        join_paths('$prefix', doc_path),
+
         get_option('buildtype'),
         taisei_version_string
     )
