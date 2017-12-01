@@ -796,8 +796,9 @@ static void player_add_fragments(Player *plr, int frags, int *pwhole, int *pfrag
 		play_sound(fragsnd);
 	}
 
-	if(*pwhole > maxwhole) {
+	if(*pwhole >= maxwhole) {
 		*pwhole = maxwhole;
+		*pfrags = 0;
 	}
 }
 
