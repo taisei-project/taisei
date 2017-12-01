@@ -25,7 +25,7 @@ typedef struct ImageData {
 	int width;
 	int height;
 	int depth;
-	Uint32 *pixels;
+	uint32_t *pixels;
 } ImageData;
 
 static ImageData* load_png(const char *filename);
@@ -34,28 +34,38 @@ void* load_texture_begin(const char *path, unsigned int flags) {
 	return load_png(path);
 }
 
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+	#define A_OFS 0
+	#define B_OFS 8
+	#define G_OFS 16
+	#define R_OFS 24
+#else
+	#define A_OFS 24
+	#define B_OFS 16
+	#define G_OFS 8
+	#define R_OFS 0
+#endif
+
+#define CLRVAL(byte,clr) ((uint_fast32_t)(byte) << clr##_OFS)
+#define CLRGETVAL(src,clr) (((src) >> clr##_OFS) & 0xff)
+#define CLRMASK(clr) CLRVAL(0xff, clr)
+#define CLRPACK(r,g,b,a) (CLRVAL(r, R) | CLRVAL(g, G) | CLRVAL(b, B) | CLRVAL(a, A))
+#define CLRUNPACK(src,r,g,b,a) do { \
+	r = CLRGETVAL(src, R); \
+	g = CLRGETVAL(src, G); \
+	b = CLRGETVAL(src, B); \
+	a = CLRGETVAL(src, A); \
+} while(0)
+
 void* load_texture_end(void *opaque, const char *path, unsigned int flags) {
 	SDL_Surface *surface;
 	ImageData *img = opaque;
-	Uint32 rmask, gmask, bmask, amask;
 
 	if(!img) {
 		return NULL;
 	}
 
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-	rmask = 0xff000000;
-	gmask = 0x00ff0000;
-	bmask = 0x0000ff00;
-	amask = 0x000000ff;
-#else
-	rmask = 0x000000ff;
-	gmask = 0x0000ff00;
-	bmask = 0x00ff0000;
-	amask = 0xff000000;
-#endif
-
-	surface = SDL_CreateRGBSurfaceFrom(img->pixels, img->width, img->height, img->depth * 4, 0, rmask, gmask, bmask, amask);
+	surface = SDL_CreateRGBSurfaceFrom(img->pixels, img->width, img->height, img->depth * 4, 0, CLRMASK(R), CLRMASK(G), CLRMASK(B), CLRMASK(A));
 
 	if(!surface) {
 		log_warn("SDL_CreateRGBSurfaceFrom(): failed: %s", SDL_GetError());
@@ -126,7 +136,7 @@ static ImageData* load_png_p(const char *filename, SDL_RWops *rwops) {
 
 	png_bytep row_pointers[height];
 
-	Uint32 *pixels = malloc(sizeof(Uint32)*width*height);
+	uint32_t *pixels = malloc(sizeof(uint32_t)*width*height);
 
 	for(int i = 0; i < height; i++)
 		row_pointers[i] = (png_bytep)(pixels+i*width);
@@ -159,6 +169,65 @@ static ImageData* load_png(const char *filename) {
 	return img;
 }
 
+static uint_fast32_t nearest_with_best_alpha_o(uint32_t *pixels, uint_fast32_t w, uint_fast32_t x, uint_fast32_t y, uint_fast32_t numpixels, int_fast8_t offsets[4][2]) {
+	uint_fast32_t result = 0;
+	uint_fast32_t result_alpha = 0;
+
+	for(int i = 0; i <= 4; ++i) {
+		int ox = x + offsets[0][i];
+		int oy = y + offsets[1][i];
+		int idx = oy*w+ox;
+
+		if(idx < 0 || idx >= numpixels) {
+			continue;
+		}
+
+		uint_fast32_t clr = pixels[idx];
+		uint_fast32_t a = clr & CLRMASK(A);
+
+		if(a && a >= result_alpha) {
+			result = clr;
+			result_alpha = a;
+		}
+	}
+
+	return result;
+}
+
+static uint_fast32_t nearest_with_best_alpha(uint32_t *pixels, uint_fast32_t w, uint_fast32_t x, uint_fast32_t y, uint_fast32_t numpixels) {
+	/*
+	 *  GL_LINEAR will sample even pixels with zero alpha.
+	 *  Those usually don't have any meaningful RGB data.
+	 *  This results in ugly dark borders around some sprites.
+	 *  As a workaround, we change the RGB values of such pixels to those of the most opaque nearby one.
+	 */
+
+	uint_fast32_t result = 0;
+
+	static int_fast8_t offsets_short[4][2] = {
+		{ 0,  1 },
+		{ 0, -1 },
+		{ 1,  0 },
+		{ -1, 0 },
+	};
+
+	static int_fast8_t offsets_long[4][2] = {
+		{ 1,  1 },
+		{ 1, -1 },
+		{  1, 1 },
+		{ -1, 1 },
+	};
+
+	result = nearest_with_best_alpha_o(pixels, w, x, y, numpixels, offsets_short);
+
+	if(!(result & CLRMASK(A))) {
+		result = nearest_with_best_alpha_o(pixels, w, x, y, numpixels, offsets_long);
+	}
+
+	result &= ~CLRMASK(A);
+	return result;
+}
+
 void load_sdl_surf(SDL_Surface *surface, Texture *texture) {
 	glGenTextures(1, &texture->gltex);
 	glBindTexture(GL_TEXTURE_2D, texture->gltex);
@@ -174,16 +243,23 @@ void load_sdl_surf(SDL_Surface *surface, Texture *texture) {
 	while(nw < surface->w) nw *= 2;
 	while(nh < surface->h) nh *= 2;
 
-	Uint32 *tex = calloc(sizeof(Uint32), nw*nh);
-
-	int x, y;
+	uint32_t *tex = calloc(sizeof(uint32_t), nw*nh);
+	uint32_t clr;
+	uint32_t x, y;
 
 	for(y = 0; y < nh; y++) {
 		for(x = 0; x < nw; x++) {
-			if(y < surface->h && x < surface->w)
-				tex[y*nw+x] = ((Uint32*)surface->pixels)[y*surface->w+x];
-			else
-				tex[y*nw+x] = '\0';
+			if(y < surface->h && x < surface->w) {
+				clr = ((uint32_t*)surface->pixels)[y*surface->w+x];
+
+				if(!(clr & CLRMASK(A))) {
+					clr = nearest_with_best_alpha((uint32_t*)surface->pixels, surface->w, x, y, surface->h * surface->w);
+				}
+			} else {
+				clr = '\0';
+			}
+
+			tex[y*nw+x] = clr;
 		}
 	}
 
