@@ -173,9 +173,9 @@ static uint_fast32_t nearest_with_best_alpha_o(uint32_t *pixels, uint_fast32_t w
 	uint_fast32_t result = 0;
 	uint_fast32_t result_alpha = 0;
 
-	for(int i = 0; i <= 4; ++i) {
-		int ox = x + offsets[0][i];
-		int oy = y + offsets[1][i];
+	for(int i = 0; i < 4; ++i) {
+		int ox = x + offsets[i][0];
+		int oy = y + offsets[i][1];
 		int idx = oy*w+ox;
 
 		if(idx < 0 || idx >= numpixels) {
