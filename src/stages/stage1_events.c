@@ -769,8 +769,10 @@ int stage1_burst(Enemy *e, int time) {
 		return 1;
 	}
 
-	FROM_TO(0, 60, 1)
-		e->pos += 2.0*I;
+	FROM_TO(0, 60, 1) {
+		// e->pos += 2.0*I;
+		GO_TO(e, e->pos0 + 120*I, 0.03);
+	}
 
 	AT(60) {
 		int i = 0;
@@ -790,9 +792,9 @@ int stage1_burst(Enemy *e, int time) {
 		e->pos0 = e->pos;
 	}
 
-
-	FROM_TO(70, 900, 1)
+	FROM_TO(70, 900, 1) {
 		e->pos = e->pos0 + (0.04*e->args[0])*_i*_i;
+	}
 
 	return 1;
 }
@@ -809,13 +811,12 @@ int stage1_circletoss(Enemy *e, int time) {
 	int inter = 2+(global.diff<D_Hard);
 	int dur = 40;
 	FROM_TO_SND("shot1_loop",60,60+dur,inter) {
-		e->args[0] = 0.5*e->args[0];
+		e->args[0] = 0.8*e->args[0];
 		PROJECTILE("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, {
 			2*cexp(I*2*M_PI*inter/dur*_i),
-			_i/2.0 }
-		);
+			_i/2.0
+		});
 	}
-
 
 	if(global.diff > D_Easy) {
 		FROM_TO_INT_SND("shot1_loop",90,500,150,5+7*global.diff,1) {
@@ -907,8 +908,9 @@ int stage1_multiburst(Enemy *e, int t) {
 		return 1;
 	}
 
-	FROM_TO(0, 50, 1)
-		e->pos += 2.0*I;
+	FROM_TO(0, 100, 1) {
+		GO_TO(e, e->pos0 + 100*I , 0.02);
+	}
 
 	FROM_TO_INT(60, 300, 70, 40, 18-2*global.diff) {
 		play_sound("shot1");
@@ -936,15 +938,9 @@ int stage1_instantcircle(Enemy *e, int t) {
 		return 1;
 	}
 
-	FROM_TO(0, 110, 1) {
-		e->pos += e->args[0];
-	}
-
-	int i;
-
 	AT(150) {
 		play_sound("shot_special1");
-		for(i = 0; i < 20+2*global.diff; i++) {
+		for(int i = 0; i < 20+2*global.diff; i++) {
 			PROJECTILE("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, {
 				1.5*cexp(I*2*M_PI/(20.0+global.diff)*i),
 				2.0
@@ -955,7 +951,7 @@ int stage1_instantcircle(Enemy *e, int t) {
 	AT(170) {
 		if(global.diff > D_Easy) {
 			play_sound("shot_special1");
-			for(i = 0; i < 20+3*global.diff; i++) {
+			for(int i = 0; i < 20+3*global.diff; i++) {
 				PROJECTILE("rice", e->pos, rgb(0.6, 0.2, 0.7), asymptotic, {
 					3*cexp(I*2*M_PI/(20.0+global.diff)*i),
 					3.0
@@ -964,8 +960,11 @@ int stage1_instantcircle(Enemy *e, int t) {
 		}
 	}
 
-	if(t > 200)
+	if(t > 200) {
 		e->pos += e->args[1];
+	} else {
+		GO_TO(e, e->pos0 + e->args[0] * 110 , 0.02);
+	}
 
 	return 1;
 }
@@ -1062,7 +1061,6 @@ void stage1_events(void) {
 	FROM_TO(400, 460, 50)
 		create_enemy2c(VIEWPORT_W*_i + VIEWPORT_H/3*I, 1500, BigFairy, stage1_circletoss, 2-4*_i-0.3*I, 1-2*_i);
 
-
 	// swirl, sine pass
 	FROM_TO(380, 1000, 20) {
 		tsrand_fill(2);
@@ -1078,8 +1076,7 @@ void stage1_events(void) {
 
 	// bursts
 	FROM_TO(1250, 1800, 60) {
-		tsrand_fill(2);
-		create_enemy1c(VIEWPORT_W/2 + afrand(0)*500-250, 500, Fairy, stage1_burst, afrand(1)*2-1);
+		create_enemy1c(VIEWPORT_W/2 - 200 * sin(1.17*global.frames), 500, Fairy, stage1_burst, nfrand());
 	}
 
 	// circle - multi burst combo
@@ -1089,8 +1086,8 @@ void stage1_events(void) {
 	}
 
 	FROM_TO(2000, 2500, 200) {
-		int i, t = global.diff + 1;
-		for(i = 0; i < t; i++)
+		int t = global.diff + 1;
+		for(int i = 0; i < t; i++)
 			create_enemy1c(VIEWPORT_W/2 - 40*t + 80*i, 1000, Fairy, stage1_multiburst, i - 2.5);
 	}
 
@@ -1104,15 +1101,12 @@ void stage1_events(void) {
 	}
 
 	FROM_TO(2900, 3750, 190-30*global.diff) {
-		tsrand_fill(2);
-		create_enemy2c(VIEWPORT_W*afrand(0), 1200, Fairy, stage1_instantcircle, 2.0*I, 3.0 - 6*afrand(1) - 1.0*I);
+		create_enemy2c(VIEWPORT_W/2 + 205 * sin(2.13*global.frames), 1200, Fairy, stage1_instantcircle, 2.0*I, 3.0 - 6*frand() - 1.0*I);
 	}
-
 
 	// multiburst + normal circletoss, later tri-toss
 	FROM_TO(3900, 4800, 200) {
-		tsrand_fill(2);
-		create_enemy1c(VIEWPORT_W*afrand(0), 1000, Fairy, stage1_multiburst, 2.5*afrand(1));
+		create_enemy1c(VIEWPORT_W/2 - 195 * cos(2.43*global.frames), 1000, Fairy, stage1_multiburst, 2.5*frand());
 	}
 
 	FROM_TO(4000, 4100, 20)
@@ -1123,6 +1117,7 @@ void stage1_events(void) {
 
 	AT(5000)
 		global.boss = create_cirno();
+
 	AT(5100)
 		global.dialog = stage1_postdialog();
 
