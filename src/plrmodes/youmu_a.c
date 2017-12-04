@@ -264,7 +264,7 @@ static int youmu_mirror_myon(Enemy *e, int t) {
         r2 *= f;
 
         int p = plr->power / 100;
-        int dmg_center = 180 - rint(40 * (1 - 4 * pow(1 - 0.25 * p, 2)));
+        int dmg_center = 180 - rint(160 * (1 - pow(1 - 0.25 * p, 2)));
         int dmg_side = 41 - 3 * p;
 
         if(plr->power >= 100 && !((global.frames+0) % 6)) {
