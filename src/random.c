@@ -12,11 +12,56 @@
 #include "global.h"
 #include "random.h"
 
+static RandomState *tsrand_current;
+
 /*
- *	Multiply-with-carry algorithm
+ *	Complementary-multiply-with-carry algorithm
  */
 
-static RandomState *tsrand_current;
+// CMWC engine
+uint32_t tsrand_p(RandomState *rnd) {
+	if(rnd->locked) {
+        log_warn("Attempted to use a locked RNG state");
+        return 0;
+    }
+
+	uint64_t const a = 18782; // as Marsaglia recommends
+	uint32_t const m = 0xfffffffe; // as Marsaglia recommends
+	uint64_t t;
+	uint32_t x;
+
+	rnd->i = (rnd->i + 1) & (CMWC_CYCLE - 1);
+	t = a * rnd->Q[rnd->i] + rnd->c;
+	// Let c = t / 0xfffffff, x = t mod 0xffffffff
+	rnd->c = t >> 32;
+	x = t + rnd->c;
+
+	if(x < rnd->c) {
+		x++;
+		rnd->c++;
+	}
+
+	return rnd->Q[rnd->i] = m - x;
+}
+
+void tsrand_seed_p(RandomState *rnd, uint32_t seed) {
+	static const uint32_t phi = 0x9e3779b9;
+
+	rnd->Q[0] = seed;
+	rnd->Q[1] = seed + phi;
+	rnd->Q[2] = seed + phi + phi;
+
+	for(int i = 3; i < CMWC_CYCLE; ++i) {
+		rnd->Q[i] = rnd->Q[i - 3] ^ rnd->Q[i - 2] ^ phi ^ i;
+	}
+
+	rnd->c = 0x8edc04;
+	rnd->i = CMWC_CYCLE - 1;
+
+	for(int i = 0; i < CMWC_CYCLE*16; ++i) {
+		tsrand_p(rnd);
+	}
+}
 
 void tsrand_switch(RandomState *rnd) {
 	tsrand_current = rnd;
@@ -27,24 +72,6 @@ void tsrand_init(RandomState *rnd, uint32_t seed) {
 	tsrand_seed_p(rnd, seed);
 }
 
-void tsrand_seed_p(RandomState *rnd, uint32_t seed) {
-	// might be not the best way to seed this
-	rnd->w = (seed >> 16u) + TSRAND_W_SEED_COEFF * (seed & 0xFFFFu);
-	rnd->z = (seed >> 16u) + TSRAND_Z_SEED_COEFF * (seed & 0xFFFFu);
-}
-
-uint32_t tsrand_p(RandomState *rnd) {
-	if(rnd->locked) {
-		log_warn("Attempted to use a locked RNG state");
-		return 0;
-	}
-
-	rnd->w = (rnd->w >> 16u) + TSRAND_W_COEFF * (rnd->w & 0xFFFFu);
-	rnd->z = (rnd->z >> 16u) + TSRAND_Z_COEFF * (rnd->z & 0xFFFFu);
-
-	return (uint32_t)((rnd->z << 16u) + rnd->w) % TSRAND_MAX;
-}
-
 void tsrand_seed(uint32_t seed) {
 	tsrand_seed_p(tsrand_current, seed);
 }
@@ -53,12 +80,12 @@ uint32_t tsrand(void) {
 	return tsrand_p(tsrand_current);
 }
 
-double frand(void) {
-	return tsrand()/(double)TSRAND_MAX;
+float frand(void) {
+	return (float)((double)tsrand()/(double)TSRAND_MAX);
 }
 
-double nfrand(void) {
-	return frand() * 2 - 1;
+float nfrand(void) {
+	return frand() * 2.0 - 1.0;
 }
 
 int tsrand_test(void) {
@@ -68,12 +95,9 @@ int tsrand_test(void) {
 	tsrand_init(&rnd, time(0));
 	tsrand_switch(&rnd);
 
-	FILE *fp;
-	int i;
-
-	fp = fopen("/tmp/rand_test", "w");
-	for(i = 0; i < 1000000; ++i)
-		fprintf(fp, "%f\n", frand());
+	for(int i = 0; i < 2000000; ++i) {
+		tsfprintf(stdout, "%f\n", frand());
+	}
 
 	return 1;
 #elif defined(TSRAND_SEEDTEST)
@@ -81,17 +105,30 @@ int tsrand_test(void) {
 	tsrand_switch(&rnd);
 
 	int seed = 1337, i, j;
-	printf("SEED: %d\n", seed);
+	log_info("SEED: %d", seed);
 
 	for(i = 0; i < 5; ++i) {
-		printf("RUN #%i\n", i);
+		log_info("RUN #%i", i);
 		tsrand_seed(seed);
 
 		for(j = 0; j < 5; ++j) {
-			printf("-> %i\n", tsrand());
+			log_info("-> %i", tsrand());
 		}
 	}
 
+	return 1;
+#elif defined(TSRAND_RAWTEST)
+	RandomState rnd;
+	SDL_RWops *out = SDL_RWFromFP(stdout, false);
+
+	tsrand_init(&rnd, time(0));
+	tsrand_switch(&rnd);
+
+	for(int i = 0; i < CMWC_CYCLE; ++i) {
+		SDL_WriteLE32(out, tsrand());
+	}
+
+	SDL_RWclose(out);
 	return 1;
 #else
 	return 0;
@@ -150,11 +187,11 @@ uint32_t __tsrand_a(int idx, const char *file, unsigned int line) {
 	return 0;
 }
 
-double __afrand(int idx, const char *file, unsigned int line) {
-	return __tsrand_a(idx, file, line) / (double)TSRAND_MAX;
+float __afrand(int idx, const char *file, unsigned int line) {
+	return (float)((double)__tsrand_a(idx, file, line) / (double)TSRAND_MAX);
 }
 
-double __anfrand(int idx, const char *file, unsigned int line) {
+float __anfrand(int idx, const char *file, unsigned int line) {
 	return __afrand(idx, file, line) * 2 - 1;
 }
 
