@@ -14,5 +14,5 @@
 
 extern PlayerCharacter character_marisa;
 
-void marisa_common_shot(Player *plr);
+void marisa_common_shot(Player *plr, int dmg);
 void marisa_common_slave_visual(Enemy *e, int t, bool render);

@@ -23,10 +23,13 @@ static void marisa_star_trail_draw(Projectile *p, int t) {
 
     Color clr = derive_color(p->color, CLRMASK_A, rgba(0, 0, 0, s*0.5));
 
+    // s = 1 + t / creal(p->args[0]);
+
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glPushMatrix();
     glTranslatef(creal(p->pos), cimag(p->pos), 0);
-    glRotatef(t*10, 0, 0, 1);
+    // glRotatef(t*10, 0, 0, 1);
+    glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
     glScalef(s, s, 1);
     ProjDrawCore(p, clr);
     glColor4f(1,1,1,1);
@@ -43,15 +46,18 @@ static int marisa_star_projectile(Projectile *p, int t) {
     p->color = rgb(1 - c, 0.7 + 0.3 * psin(t * 0.1), 0.9 + c/3);
 
     int r = accelerated(p, t);
+    p->angle = t * 10;
 
     PARTICLE(
         .texture_ptr = get_tex("proj/maristar"),
         .pos = p->pos,
         .color = p->color,
         .rule = timeout,
-        .args = { 10 },
+        .args = { 8 },
         .draw_rule = marisa_star_trail_draw,
         .type = PlrProj,
+        .angle = p->angle,
+        .flags = PFLAG_DRAWADD,
     );
 
     if(t == EVENT_DEATH) {
@@ -74,23 +80,28 @@ static int marisa_star_projectile(Projectile *p, int t) {
 static int marisa_star_slave(Enemy *e, int t) {
     double focus = global.plr.focus/30.0;
 
-    if(player_should_shoot(&global.plr, true) && !(global.frames % 15)) {
-        complex v = e->args[1] * 2;
-        complex a = e->args[2];
+    for(int i = 0; i < 3; ++i) {
+        if(player_should_shoot(&global.plr, true) && !((global.frames+2*i) % 15)) {
+            complex v = e->args[1] * 2;
+            complex a = e->args[2];
 
-        v = creal(v) * (1 - 5 * focus) + I * cimag(v) * (1 - 2.5 * focus);
-        a = creal(a) * focus * -0.0525 + I * cimag(a) * 2;
+            v = creal(v) * (1 - 5 * focus) + I * cimag(v) * (1 - 2.5 * focus);
+            a = creal(a) * focus * -0.0525 + I * cimag(a) * 2;
 
-        PROJECTILE(
-            .texture_ptr = get_tex("proj/maristar"),
-            .pos = e->pos,
-            .color = rgb(1.0, 0.5, 1.0),
-            .rule = marisa_star_projectile,
-            .draw_rule = marisa_star,
-            .args = { v, a },
-            .type = PlrProj + e->args[3] * 15,
-            .color_transform_rule = proj_clrtransform_particle,
-        );
+            v *= cexp(I*i*M_PI/20*sign(v));
+            a *= cexp(I*i*M_PI/20*sign(v)*focus);
+
+            PROJECTILE(
+                .texture_ptr = get_tex("proj/maristar"),
+                .pos = e->pos,
+                .color = rgb(1.0, 0.5, 1.0),
+                .rule = marisa_star_projectile,
+                // .draw_rule = marisa_star,
+                .args = { v, a },
+                .type = PlrProj + e->args[3],
+                .color_transform_rule = proj_clrtransform_particle,
+            );
+        }
     }
 
     e->pos = global.plr.pos + (1 - focus)*e->pos0 + focus*e->args[0];
@@ -147,7 +158,7 @@ static void marisa_star_bomb(Player *plr) {
 
 static void marisa_star_respawn_slaves(Player *plr, short npow) {
     Enemy *e = plr->slaves, *tmp;
-    double dmg = 5;
+    double dmg = 56;
 
     while(e != 0) {
         tmp = e;
@@ -187,6 +198,11 @@ static void marisa_star_init(Player *plr) {
     marisa_star_respawn_slaves(plr, plr->power);
 }
 
+static void marisa_star_shot(Player *plr) {
+    int p = plr->power / 100;
+    marisa_common_shot(plr, 175 - 10*p);
+}
+
 static void marisa_star_preload(void) {
     const int flags = RESF_DEFAULT;
 
@@ -207,7 +223,7 @@ PlayerMode plrmode_marisa_b = {
     .shot_mode = PLR_SHOT_MARISA_STAR,
     .procs = {
         .bomb = marisa_star_bomb,
-        .shot = marisa_common_shot,
+        .shot = marisa_star_shot,
         .power = marisa_star_power,
         .preload = marisa_star_preload,
         .init = marisa_star_init,

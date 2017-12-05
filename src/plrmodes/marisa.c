@@ -8,6 +8,7 @@
 
 #include "global.h"
 #include "plrmodes.h"
+#include "marisa.h"
 
 PlayerCharacter character_marisa = {
     .id = PLR_CHAR_MARISA,
@@ -23,7 +24,7 @@ PlayerCharacter character_marisa = {
     },
 };
 
-void marisa_common_shot(Player *plr) {
+void marisa_common_shot(Player *plr, int dmg) {
     if(!(global.frames % 4)) {
         play_sound("generic_shot");
     }
@@ -32,12 +33,12 @@ void marisa_common_shot(Player *plr) {
         Color c = rgb(1, 1, 1);
 
         PROJECTILE("marisa", plr->pos + 10 - 15.0*I, c, linear, { -20.0*I },
-            .type = PlrProj+175,
+            .type = PlrProj+dmg,
             .color_transform_rule = proj_clrtransform_particle,
         );
 
         PROJECTILE("marisa", plr->pos - 10 - 15.0*I, c, linear, { -20.0*I },
-            .type = PlrProj+175,
+            .type = PlrProj+dmg,
             .color_transform_rule = proj_clrtransform_particle,
         );
     }

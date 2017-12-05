@@ -442,6 +442,10 @@ static double marisa_laser_speed_mod(Player *plr, double speed) {
     return speed;
 }
 
+static void marisa_laser_shot(Player *plr) {
+    marisa_common_shot(plr, 175);
+}
+
 static void marisa_laser_preload(void) {
     const int flags = RESF_DEFAULT;
 
@@ -471,7 +475,7 @@ PlayerMode plrmode_marisa_a = {
     .shot_mode = PLR_SHOT_MARISA_LASER,
     .procs = {
         .bomb = marisa_laser_bomb,
-        .shot = marisa_common_shot,
+        .shot = marisa_laser_shot,
         .power = marisa_laser_power,
         .speed_mod = marisa_laser_speed_mod,
         .preload = marisa_laser_preload,
