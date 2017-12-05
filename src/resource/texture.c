@@ -169,13 +169,22 @@ static ImageData* load_png(const char *filename) {
 	return img;
 }
 
-static uint_fast32_t nearest_with_best_alpha_o(uint32_t *pixels, uint_fast32_t w, uint_fast32_t x, uint_fast32_t y, uint_fast32_t numpixels, int_fast8_t offsets[4][2]) {
+static uint_fast32_t nearest_with_best_alpha_o(
+	uint32_t *pixels,
+	uint_fast32_t w,
+	uint_fast32_t x,
+	uint_fast32_t y,
+	uint_fast32_t tex_w,
+	uint_fast32_t tex_h,
+	uint_fast32_t numpixels,
+	int_fast8_t offsets[4][2]
+) {
 	uint_fast32_t result = 0;
 	uint_fast32_t result_alpha = 0;
 
 	for(int i = 0; i < 4; ++i) {
-		int ox = x + offsets[i][0];
-		int oy = y + offsets[i][1];
+		int ox = (x + offsets[i][0]) % tex_w;
+		int oy = (y + offsets[i][1]) % tex_h;
 		int idx = oy*w+ox;
 
 		if(idx < 0 || idx >= numpixels) {
@@ -194,7 +203,15 @@ static uint_fast32_t nearest_with_best_alpha_o(uint32_t *pixels, uint_fast32_t w
 	return result;
 }
 
-static uint_fast32_t nearest_with_best_alpha(uint32_t *pixels, uint_fast32_t w, uint_fast32_t x, uint_fast32_t y, uint_fast32_t numpixels) {
+static uint_fast32_t nearest_with_best_alpha(
+	uint32_t *pixels,
+	uint_fast32_t w,
+	uint_fast32_t x,
+	uint_fast32_t y,
+	uint_fast32_t tex_w,
+	uint_fast32_t tex_h,
+	uint_fast32_t numpixels
+) {
 	/*
 	 *  GL_LINEAR will sample even pixels with zero alpha.
 	 *  Those usually don't have any meaningful RGB data.
@@ -218,10 +235,10 @@ static uint_fast32_t nearest_with_best_alpha(uint32_t *pixels, uint_fast32_t w, 
 		{ -1, 1 },
 	};
 
-	result = nearest_with_best_alpha_o(pixels, w, x, y, numpixels, offsets_short);
+	result = nearest_with_best_alpha_o(pixels, w, x, y, tex_w, tex_h, numpixels, offsets_short);
 
 	if(!(result & CLRMASK(A))) {
-		result = nearest_with_best_alpha_o(pixels, w, x, y, numpixels, offsets_long);
+		result = nearest_with_best_alpha_o(pixels, w, x, y, tex_w, tex_h, numpixels, offsets_long);
 	}
 
 	result &= ~CLRMASK(A);
@@ -251,12 +268,22 @@ void load_sdl_surf(SDL_Surface *surface, Texture *texture) {
 		for(x = 0; x < nw; x++) {
 			if(y < surface->h && x < surface->w) {
 				clr = ((uint32_t*)surface->pixels)[y*surface->w+x];
-
-				if(!(clr & CLRMASK(A))) {
-					clr = nearest_with_best_alpha((uint32_t*)surface->pixels, surface->w, x, y, surface->h * surface->w);
-				}
 			} else {
 				clr = '\0';
+			}
+
+			if(y == nh-1 || x == nw-1 || (y <= surface->h && x <= surface->w)) {
+				if(!(clr & CLRMASK(A))) {
+					clr = nearest_with_best_alpha(
+						(uint32_t*)surface->pixels,
+						surface->w,
+						x,
+						y,
+						nw,
+						nh,
+						surface->h * surface->w
+					);
+				}
 			}
 
 			tex[y*nw+x] = clr;
