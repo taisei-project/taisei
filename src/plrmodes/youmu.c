@@ -35,36 +35,6 @@ int youmu_common_particle_spin(Projectile *p, int t) {
     return i;
 }
 
-void youmu_common_particle_slice_draw(Projectile *p, int t) {
-    float f = p->args[1]/p->args[0]*20.0;
-    glPushMatrix();
-    glTranslatef(creal(p->pos), cimag(p->pos),0);
-    glRotatef(p->angle/M_PI*180,0,0,1);
-    glScalef(f,1,1);
-    draw_texture(0,0,"part/youmu_slice");
-    ProjDrawCore(p, p->color);
-    glPopMatrix();
-}
-
-int youmu_common_particle_slice_logic(Projectile *p, int t) {
-    if(t < 0) {
-        return 1;
-    }
-
-    p->color = rgba(1, 1, 1, 1 - p->args[2]/p->args[0]*20.0);
-
-    if(t < creal(p->args[0])/20.0) {
-        p->args[1] += 1;
-    }
-
-    if(t > creal(p->args[0])-10) {
-        p->args[1] += 3;
-        p->args[2] += 1;
-    }
-
-    return timeout(p, t);
-}
-
 void youmu_common_shot(Player *plr) {
     if(!(global.frames % 4)) {
         play_sound("generic_shot");

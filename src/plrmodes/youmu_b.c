@@ -202,69 +202,72 @@ static int youmu_trap(Projectile *p, int t) {
     return 1;
 }
 
+static void youmu_particle_slice_draw(Projectile *p, int t) {
+    double lifetime = creal(p->args[0]);
+    double tt = t/lifetime;
+    double f = 0;
+    if(tt > 0.1) {
+	    f = min(1,(tt-0.1)/0.2);
+    }
+    if(tt > 0.5) {
+	    f = 1+(tt-0.5)/0.5;
+    }
+    glPushMatrix();
+    glTranslatef(creal(p->pos), cimag(p->pos),0);
+    glRotatef(p->angle/M_PI*180,0,0,1);
+    glScalef(f,1,1);
+    //draw_texture(0,0,"part/youmu_slice");
+    ProjDrawCore(p, p->color);
+    glPopMatrix();
+
+    double slicelen = 500;
+    f = sqrt(f);
+    complex slicepos=p->pos-(tt>0.1)*slicelen*I*cexp(I*p->angle)*(5*pow(tt-0.1,1.1)-0.5);
+    play_animation(get_ani("youmu"), creal(slicepos),cimag(slicepos),1);
+}
+
+
+static int youmu_particle_slice_logic(Projectile *p, int t) {
+    if(t < 0) {
+        return 1;
+    }
+
+    double lifetime = creal(p->args[0]);
+    double tt = t/lifetime;
+    double a = 0;
+    if(tt > 0.) {
+	    a = min(1,(tt-0.)/0.2);
+    }
+    if(tt > 0.5) {
+	    a = max(0,1-(tt-0.5)/0.5);
+    }
+    p->color = rgba(1, 1, 1,a);
+    
+    complex phase = cexp(p->angle*I);
+    if(t%5 == 0) {
+    	tsrand_fill(4);
+	    PARTICLE(
+		    .texture = "petal",
+		    .pos = p->pos-400*phase,
+		    .rule = accelerated,
+		    .draw_rule = Petal,
+		    .color = rgba(0.1,0.1,0.5,1),
+		    .args = {
+			    phase,
+			    phase*cexp(0.1*I),
+			    afrand(1) + afrand(2)*I,
+			    afrand(3) + 360.0*I*afrand(0)
+		    },
+		    .flags = PFLAG_DRAWADD,
+		);
+    }
+
+    return timeout(p, t);
+}
+
 static void YoumuSlash(Enemy *e, int t, bool render) {
-    if(render) {
-        t = player_get_bomb_progress(&global.plr, NULL);
-        fade_out(10.0/t+sin(t/10.0)*0.1);
-    }
 }
 
-static int youmu_slash_logic(void *v, int t, double speed) {
-    Enemy *e = v;
-    TIMER(&t);
-
-    AT(0)
-        global.plr.pos = VIEWPORT_W/5.0 + (VIEWPORT_H - 100)*I;
-
-    FROM_TO(8,20,1)
-        global.plr.pos = VIEWPORT_W + (VIEWPORT_H - 100)*I - exp(-_i/8.0+log(4*VIEWPORT_W/5.0));
-
-    FROM_TO(30, 60, 10) {
-        tsrand_fill(3);
-
-        PARTICLE(
-            .texture = "youmu_slice",
-            .pos = VIEWPORT_W/2.0 - 150 + 100*_i + VIEWPORT_H/2.0*I - 10-10.0*I + 20*afrand(0)+20.0*I*afrand(1),
-            .draw_rule = youmu_common_particle_slice_draw,
-            .rule = youmu_common_particle_slice_logic,
-            .args = { 200 / speed },
-            .angle = 10 * anfrand(2),
-            .type = PlrProj,
-        );
-    }
-
-    FROM_TO(40,200,1)
-        if(frand() > 0.7) {
-            tsrand_fill(6);
-            PARTICLE(
-                .texture = "blast",
-                .pos = VIEWPORT_W*afrand(0) + (VIEWPORT_H+50)*I,
-                .color = rgb(afrand(1),afrand(2),afrand(3)),
-                .rule = timeout_linear,
-                .draw_rule = Shrink,
-                .args = { 80 / speed, speed * (3*(1-2.0*afrand(4))-14.0*I+afrand(5)*2.0*I) },
-                .type = PlrProj,
-            );
-        }
-
-    int tpar = 30;
-    if(t < 30)
-        tpar = t;
-
-    if(t < creal(e->args[0])-60 && frand() > 0.2) {
-        tsrand_fill(3);
-        PARTICLE(
-            .texture = "smoke",
-            .pos = VIEWPORT_W*afrand(0) + (VIEWPORT_H+100)*I,
-            .color = rgba(0.4,0.4,0.4,afrand(1)*0.2 - 0.2 + 0.6*(tpar/30.0)),
-            .rule = youmu_common_particle_spin,
-            .args = { 300 / speed, speed * (-7.0*I+afrand(2)*1.0*I) },
-            .type = PlrProj,
-        );
-    }
-
-    return 1;
-}
 
 static int youmu_slash(Enemy *e, int t) {
     if(t > creal(e->args[0]))
@@ -276,7 +279,22 @@ static int youmu_slash(Enemy *e, int t) {
         return ACTION_DESTROY;
     }
 
-    return player_run_bomb_logic(&global.plr, e, &e->args[3], youmu_slash_logic);
+    TIMER(&t);
+    FROM_TO(0,10000,3) {
+	complex pos = cexp(I*_i)*(100+10*_i*_i*0.01);
+        PARTICLE(
+            .texture = "youmu_slice",
+            .pos = e->pos+pos,
+            .draw_rule = youmu_particle_slice_draw,
+            .rule = youmu_particle_slice_logic,
+	    .flags = PFLAG_DRAWADD,
+            .args = { 100 },
+            .angle = carg(pos),
+            .type = PlrProj,
+        );
+    }
+
+    return 1;
 }
 
 static int youmu_asymptotic(Projectile *p, int t) {
@@ -355,7 +373,7 @@ static void youmu_haunting_shot(Player *plr) {
 
 static void youmu_haunting_bomb(Player *plr) {
     play_sound("bomb_youmu_b");
-    create_enemy_p(&plr->slaves, 40.0*I, ENEMY_BOMB, YoumuSlash, youmu_slash, 280,0,0,0);
+    create_enemy_p(&plr->slaves, global.plr.pos, ENEMY_BOMB, YoumuSlash, youmu_slash, 280,0,0,0);
 }
 
 static void youmu_haunting_preload(void) {
