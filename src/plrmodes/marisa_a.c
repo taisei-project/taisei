@@ -281,28 +281,28 @@ static int marisa_laser_slave(Enemy *e, int t) {
     return 1;
 }
 
-static void masterspark_visual(Enemy *e, int t, bool render) {
+static void masterspark_visual(Enemy *e, int t2, bool render) {
     if(!render) {
         return;
     }
 
-    t = player_get_bomb_progress(&global.plr, NULL);
+    float t = player_get_bomb_progress(&global.plr, NULL);
     float fade = 1;
 
     if(t < 1./6) {
-        fade = t/e->args[0]*6;
+        fade = t*6;
 	fade = sqrt(fade);
     }
 
     if(t > 3./4) {
-        fade = 1-t/e->args[0]*4 + 3;
+        fade = 1-t*4 + 3;
 	fade *= fade;
     }
 
     glPushMatrix();
     glTranslatef(creal(global.plr.pos),cimag(global.plr.pos)-40-VIEWPORT_H/2,0);
     glScalef(fade*400,VIEWPORT_H,1);
-    marisa_common_masterspark_draw(t);
+    marisa_common_masterspark_draw(t*BOMB_RECOVERY);
     glPopMatrix();
 }
 
@@ -311,16 +311,16 @@ static int masterspark_star(Projectile *p, int t) {
 	return timeout_linear(p,t);
 }
 
-static int masterspark(Enemy *e, int t) {
-	if(t == EVENT_BIRTH) {
+static int masterspark(Enemy *e, int t2) {
+	if(t2 == EVENT_BIRTH) {
 		global.shake_view = 8;
 		return 1;
 	}
 
-	t = player_get_bomb_progress(&global.plr, NULL);
-	if(t%2==0 && t < 3./4) {
+	float t = player_get_bomb_progress(&global.plr, NULL);
+	if(t2%2==0 && t < 3./4) {
 		complex dir = -cexp(1.2*I*nfrand())*I;
-		Color c = rgb(0.7+0.3*sin(t*0.1),0.7+0.3*cos(t*0.1),0.7+0.3*cos(t*0.01));
+		Color c = rgb(0.7+0.3*sin(t*30),0.7+0.3*cos(t*30),0.7+0.3*cos(t*3));
 		PARTICLE(
 			.texture="maristar_orbit",
 			.pos=global.plr.pos+40*dir,
@@ -373,7 +373,7 @@ static void marisa_laser_bombbg(Player *plr) {
 		fade = 1-t*4 + 3;
 
 	glColor4f(1,1,1,0.8*fade);
-	fill_screen(sin(t*0.001),t*0.01*(1+t*0.01),1,"marisa_bombbg");
+	fill_screen(sin(t*0.3),t*3*(1+t*3),1,"marisa_bombbg");
 	glColor4f(1,1,1,1);
 }
 

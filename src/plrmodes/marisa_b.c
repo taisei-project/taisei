@@ -190,12 +190,12 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 
 	float fade = 1;
 
-	if(t < 1./6) {
+	if(tb < 1./6) {
 		fade = tb*6;
 		fade = sqrt(fade);
 	}
 
-	if(t > 3./4) {
+	if(tb > 3./4) {
 		fade = 1-tb*4 + 3;
 		fade *= fade;
 	}
@@ -209,10 +209,9 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 	glPushMatrix();
 	glRotatef(carg(e->pos-global.plr.pos)*180/M_PI+90,0,0,1);
 
-	int sparktime = 0;
-	glScalef(40*fade,VIEWPORT_H,1);
+	glScalef(80*fade,VIEWPORT_H,1);
 	glTranslatef(0,-0.5,0);
-	marisa_common_masterspark_draw(tb-sparktime);
+	marisa_common_masterspark_draw(BOMB_RECOVERY*tb);
 
 	glPopMatrix();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
