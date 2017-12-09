@@ -324,6 +324,7 @@ static void marisa_star_preload(void) {
 		NULL);
 
 	preload_resources(RES_SHADER, flags,
+		"masterspark",
 		"maristar_bombbg",
 		NULL);
 
