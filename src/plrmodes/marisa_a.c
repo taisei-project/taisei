@@ -384,7 +384,7 @@ static void marisa_laser_bomb(Player *plr) {
 
 static void marisa_laser_respawn_slaves(Player *plr, short npow) {
     Enemy *e = plr->slaves, *tmp;
-    double dmg = 4;
+    double dmg = 8;
 
     while(e != 0) {
         tmp = e;
