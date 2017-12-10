@@ -65,7 +65,7 @@ int stage6_hacker(Enemy *e, int t) {
 	FROM_TO(0, 70, 1)
 		e->pos += e->args[0];
 
-	FROM_TO(100, 180+40*global.diff, 3) {
+	FROM_TO_SND("shot1_loop",100, 180+40*global.diff, 3) {
 		int i;
 		for(i = 0; i < 6; i++) {
 			complex n = sin(_i*0.2)*cexp(I*0.3*(i/2-1))*(1-2*(i&1));
@@ -93,6 +93,7 @@ int stage6_side(Enemy *e, int t) {
 	AT(70) {
 		int i;
 		int c = 15+10*global.diff;
+		play_sound_ex("shot1",4,true);
 		for(i = 0; i < c; i++) {
 			PROJECTILE(
 				.texture = (i%2 == 0) ? "rice" : "flea",
@@ -144,6 +145,7 @@ int stage6_flowermine(Enemy *e, int t) {
 			},
 			.angle = 0.6*_i,
 		);
+		play_sound("shot1");
 	}
 
 	return 1;
@@ -154,6 +156,7 @@ void scythe_common(Enemy *e, int t) {
 }
 
 int scythe_mid(Enemy *e, int t) {
+	TIMER(&t);
 	complex n;
 
 	if(t < 0) {
@@ -168,6 +171,7 @@ int scythe_mid(Enemy *e, int t) {
 	e->pos += (6-global.diff-0.005*I*t)*e->args[0];
 
 	n = cexp(cimag(e->args[1])*I*t);
+	FROM_TO_SND("shot1_loop",0,300,1) {}
 	PROJECTILE(
 		.texture = "bigball",
 		.pos = e->pos + 80*n,
@@ -275,7 +279,7 @@ int scythe_infinity(Enemy *e, int t) {
 		e->args[1] = creal(e->args[1]) + I*min(0.2, cimag(e->args[1])+0.0001*t*t);
 	}
 
-	FROM_TO(40, 3000, 1) {
+	FROM_TO_SND("shot1_loop",40, 3000, 1) {
 		float w = min(0.15, 0.0001*(t-40));
 		e->pos = VIEWPORT_W/2 + 200.0*I + 200*cos(w*(t-40)+M_PI/2.0) + I*80*sin(creal(e->args[0])*w*(t-40));
 
@@ -363,6 +367,7 @@ int scythe_newton(Enemy *e, int t) {
 			if(p->type == EnemyProj && cabs(p->pos-e->pos) < 50 && cabs(global.plr.pos-e->pos) > 50 && p->args[2] == 0) {
 				e->args[3] += 1;
 				//p->args[0] /= 2;
+				play_sound_ex("redirect",4,false); 
 				if(global.diff > D_Normal && (int)(creal(e->args[3])+0.5) % (15-5*(global.diff == D_Lunatic)) == 0) {
 					p->args[0] = cexp(I*f);
 					p->color = rgb(1,0,0.5);
@@ -405,6 +410,7 @@ void elly_newton(Boss *b, int t) {
 		int x, y;
 		float w = min(D_Hard,global.diff)/2.0+1.5;
 
+		play_sound("shot_special1");
 		for(x = -w; x <= w; x++) {
 			for(y = -w; y <= w; y++) {
 				PROJECTILE("ball", b->pos+(x+I*y)*(18)*cexp(I*a), rgb(0, 0.5, 1), linear, { 2*cexp(I*a) });
@@ -481,6 +487,7 @@ int kepler_bullet(Projectile *p, int t) {
 		if(global.diff == D_Easy)
 			n=7;
 
+		play_sound("redirect");
 		if(tier <= 1+(global.diff>D_Hard) && cimag(p->args[1])*(tier+1) < n) {
 			PROJECTILE(
 				.texture = "flea",
@@ -517,6 +524,7 @@ void elly_kepler(Boss *b, int t) {
 
 	FROM_TO(0, 100000, 20) {
 		int c = 2;
+		play_sound("shot_special1");
 		for(int i = 0; i < c; i++) {
 			complex n = cexp(I*2*M_PI/c*i+I*0.6*_i);
 			PROJECTILE("soul", b->pos, rgb(0.3,0.8,1), kepler_bullet, {
@@ -542,7 +550,7 @@ void elly_frequency2(Boss *b, int t) {
 		global.enemies->args[0] = 0;
 	}
 
-	FROM_TO(0, 2000, 3-global.diff/2) {
+	FROM_TO_SND("shot1_loop",0, 2000, 3-global.diff/2) {
 		complex n = sin(t*0.12*global.diff)*cexp(t*0.02*I*global.diff);
 		PROJECTILE("plainball", b->pos+80*n, rgb(0,0,0.7), asymptotic, { 2*n/cabs(n), 3 });
 	}
@@ -577,10 +585,14 @@ void maxwell_laser_logic(Laser *l, int t) {
 void elly_maxwell(Boss *b, int t) {
 	TIMER(&t);
 
-	AT(38)
-		elly_clap(b,100);
-	FROM_TO(40, 159, 5)
+	AT(250) {
+		elly_clap(b,50);
+    		play_sound("laser1");
+
+	}
+	FROM_TO(40, 159, 5) {
 		create_laser(b->pos, 200, 10000, rgb(0,0.2,1), maxwell_laser, maxwell_laser_logic, cexp(2.0*I*M_PI/24*_i)*VIEWPORT_H*0.005, 200+15.0*I, 0, 0);
+	}
 
 }
 
@@ -719,6 +731,7 @@ int scythe_explode(Enemy *e, int t) {
 	if(t == 100) {
 		petal_explosion(100, e->pos);
 		global.shake_view = 16;
+		play_sound("boom");
 
 		scythe_common(e, t);
 		return ACTION_DESTROY;
@@ -795,6 +808,8 @@ int baryon_eigenstate(Enemy *e, int t) {
 		int i, j;
 		int c = 9;
 
+		play_sound("shot_special1");
+		play_sound_delayed("redirect",4,true,60);
 		for(i = 0; i < c; i++) {
 			complex n = cexp(2.0*I*_i+I*M_PI/2+I*creal(e->args[2]));
 			for(j = 0; j < 3; j++) {
@@ -852,6 +867,8 @@ int broglie_particle(Projectile *p, int t) {
 
 	int scattertime = creal(p->args[1]);
 
+	if(t == scattertime)
+		play_sound_ex("redirect",5,false);
 	if(t < scattertime) {
 		Laser *laser = (Laser*)REF(p->args[0]);
 
@@ -906,9 +923,13 @@ int broglie_charge(Projectile *p, int t) {
 		return 1;
 	}
 
+	if(t == 1)
+		play_sound_ex("shot3",10,false);
+
 	int firetime = creal(p->args[1]);
 
 	if(t == firetime) {
+		play_sound_ex("laser1",10,true);
 		int attack_num = creal(p->args[2]);
 		double hue = creal(p->args[3]);
 
@@ -1078,7 +1099,7 @@ int baryon_nattack(Enemy *e, int t) {
 
 	e->pos = global.boss->pos + (e->pos-global.boss->pos)*cexp(0.006*I);
 
-	FROM_TO(30, 10000, (7 - global.diff)) {
+	FROM_TO_SND("shot1_loop",30, 10000, (7 - global.diff)) {
 		float a = 0.2*_i + creal(e->args[2]) + 0.006*t;
 		float ca = a + t/60.0f;
 		PROJECTILE(
@@ -1141,6 +1162,7 @@ static int ricci_proj2(Projectile *p, int t) {
 
 	AT(EVENT_DEATH) {
 		Enemy *e = (Enemy*)REF(p->args[1]);
+		play_sound_ex("shot3",8, false);
 
 		if(!e) {
 			return 1;
@@ -1327,6 +1349,7 @@ void elly_baryonattack2(Boss *b, int t) {
 		set_baryon_rule(baryon_reset);
 
 	FROM_TO(100, 100000, 200-5*global.diff) {
+		play_sound("shot_special1");
 
 		if(_i % 2) {
 			int cnt = 5;
@@ -1379,6 +1402,7 @@ int baryon_lhc(Enemy *e, int t) {
 		e->args[3] = 100.0*I+400.0*I*((t/400)&1);
 
 		if(g == 2 || g == 5) {
+			play_sound_delayed("laser1",10,true,200);
 			create_laser(e->pos, 200, 300, rgb(0.1+0.9*(g>3),0,1-0.9*(g>3)), las_linear, lhc_laser_logic, (1-2*(g>3))*VIEWPORT_W*0.005, 200+30.0*I, add_ref(e), 0);
 		}
 	}
@@ -1406,6 +1430,7 @@ void elly_lhc(Boss *b, int t) {
 		complex pos = VIEWPORT_W/2 + 100.0*I+400.0*I*((t/400)&1);
 
 		global.shake_view = 16;
+		play_sound("boom");
 
 		for(i = 0; i < c; i++) {
 			complex v = 3*cexp(2.0*I*M_PI*frand());
@@ -1423,11 +1448,13 @@ void elly_lhc(Boss *b, int t) {
 		}
 	}
 
-	FROM_TO(0, 100000,7-global.diff)
+	FROM_TO(0, 100000,7-global.diff) {
+		play_sound_ex("shot2",10,false);
 		PROJECTILE("ball", b->pos, rgb(0, 0.4,1), asymptotic,
 			.args = { cexp(2.0*I*_i), 3 },
 			.flags = PFLAG_DRAWADD,
 		);
+	}
 
 	FROM_TO(300, 10000, 400) {
 		global.shake_view = 0;
@@ -1439,6 +1466,7 @@ int baryon_explode(Enemy *e, int t) {
 	AT(EVENT_DEATH) {
 		free_ref(e->args[1]);
 		petal_explosion(35, e->pos);
+		play_sound("bossdeath");
 		return 1;
 	}
 
@@ -1498,6 +1526,7 @@ static double saw(double t) {
 int curvature_slave(Enemy *e, int t) {
 	e->args[0] = -(e->args[1] - global.plr.pos);
 	e->args[1] = global.plr.pos;
+	play_loop("shot1_loop");
 
 	if(t % (2+(global.diff < D_Hard)) == 0) {
 		tsrand_fill(2);
@@ -1531,6 +1560,7 @@ int curvature_slave(Enemy *e, int t) {
 	}
 
 	if(global.diff >= D_Hard && !(t%20)) {
+		play_sound_ex("shot2",10,false);
 		Projectile *p =PROJECTILE(
 			.texture = "bigball",
 			.pos = global.boss->pos,
