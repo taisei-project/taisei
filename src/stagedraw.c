@@ -457,7 +457,7 @@ static void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, i
 static inline void stage_draw_hud_power_value(float ypos, char *buf, size_t bufsize) {
 	glUniform1f(stagedraw.hud_text.u_split, -0.25);
 	snprintf(buf, bufsize, "%i.%02i", global.plr.power / 100, global.plr.power % 100);
-	draw_text(AL_Right, 170, ypos, buf, _fonts.mono);
+	draw_text(AL_Right, 170, (int)ypos, buf, _fonts.mono);
 	glUniform1f(stagedraw.hud_text.u_split, 0.0);
 }
 
@@ -470,12 +470,12 @@ static float split_for_digits(uint32_t val, int maxdigits) {
 static void stage_draw_hud_score(Alignment a, float xpos, float ypos, char *buf, size_t bufsize, uint32_t score) {
 	snprintf(buf, bufsize, "%010u", score);
 	glUniform1f(stagedraw.hud_text.u_split, split_for_digits(score, 10));
-	draw_text(a, xpos, ypos, buf, _fonts.mono);
+	draw_text(a, (int)xpos, (int)ypos, buf, _fonts.mono);
 }
 
 static void stage_draw_hud_scores(float ypos_hiscore, float ypos_score, char *buf, size_t bufsize) {
-	stage_draw_hud_score(AL_Right, 170, ypos_hiscore, buf, bufsize, progress.hiscore);
-	stage_draw_hud_score(AL_Right, 170, ypos_score,   buf, bufsize, global.plr.points);
+	stage_draw_hud_score(AL_Right, 170, (int)ypos_hiscore, buf, bufsize, progress.hiscore);
+	stage_draw_hud_score(AL_Right, 170, (int)ypos_score,   buf, bufsize, global.plr.points);
 	glUniform1f(stagedraw.hud_text.u_split, 0.0);
 }
 
@@ -529,7 +529,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	// Graze value
 	snprintf(buf, sizeof(buf), "%05i", global.plr.graze);
 	glUniform1f(stagedraw.hud_text.u_split, split_for_digits(global.plr.graze, 5));
-	draw_text(AL_Left, -6, labels->y.graze + labels->y.mono_ofs, buf, _fonts.mono);
+	draw_text(AL_Left, -6, (int)(labels->y.graze + labels->y.mono_ofs), buf, _fonts.mono);
 	glUniform1f(stagedraw.hud_text.u_split, 0.0);
 
 	// Warning: pops outer matrix!
@@ -541,7 +541,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	snprintf(buf, sizeof(buf), "%.2f fps", global.fps.fps);
 #endif
 
-	draw_text(AL_Right, SCREEN_W, SCREEN_H - 0.5 * stringheight(buf, _fonts.monosmall), buf, _fonts.monosmall);
+	draw_text(AL_Right, SCREEN_W, rint(SCREEN_H - 0.5 * stringheight(buf, _fonts.monosmall)), buf, _fonts.monosmall);
 
 	if(global.replaymode == REPLAY_PLAY) {
 		// XXX: does it make sense to use the monospace font here?
@@ -566,7 +566,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	else if(global.frames) {
 		snprintf(buf, sizeof(buf), "Avg DPS: %.02f", global.plr.total_dmg / (global.frames / (double)FPS));
 		glUniform1f(stagedraw.hud_text.u_split, 8.0 / strlen(buf));
-		draw_text(AL_Left, 0, SCREEN_H - 0.5 * stringheight(buf, _fonts.monosmall), buf, _fonts.monosmall);
+		draw_text(AL_Left, 0, rint(SCREEN_H - 0.5 * stringheight(buf, _fonts.monosmall)), buf, _fonts.monosmall);
 	}
 #endif
 
