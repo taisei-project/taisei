@@ -1689,7 +1689,7 @@ int scythe_theory(Enemy *e, int t) {
 	n = cexp(cimag(e->args[1])*I*t);
 
 	TIMER(&t);
-	FROM_TO(0, 300, 4) {
+	FROM_TO_SND("shot1_loop",0, 300, 4) {
 		PROJECTILE(
 			.texture = "ball",
 			.pos = e->pos + 80*n,
@@ -1739,6 +1739,7 @@ void elly_theory(Boss *b, int time) {
 
 	FROM_TO(20, 70, 30-global.diff) {
 		int c = 20+2*global.diff;
+		play_sound("shot_special1");
 		for(i = 0; i < c; i++) {
 			complex n = cexp(2.0*I*M_PI/c*i);
 			PROJECTILE(
@@ -1756,6 +1757,7 @@ void elly_theory(Boss *b, int time) {
 	}
 
 	FROM_TO(120, 240, 10-global.diff) {
+		play_sound("shot1");
 		int x, y;
 		int w = 2;
 		complex n = cexp(0.7*I*_i+0.2*I*frand());
