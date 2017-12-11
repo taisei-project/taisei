@@ -11,6 +11,12 @@
 #include "stagetext.h"
 #include "video.h"
 
+#ifdef DEBUG
+	#define GRAPHS_DEFAULT 1
+#else
+	#define GRAPHS_DEFAULT 0
+#endif
+
 static struct {
 	struct {
 		Shader *shader;
@@ -21,6 +27,7 @@ static struct {
 		uint32_t u_colortint;
 		uint32_t u_split;
 	} hud_text;
+	bool framerate_graphs;
 } stagedraw;
 
 void stage_draw_preload(void) {
@@ -53,6 +60,7 @@ void stage_draw_preload(void) {
 	glUniform4f(stagedraw.hud_text.u_colortint, 1.00, 1.00, 1.00, 1.00);
 	glUseProgram(0);
 
+	stagedraw.framerate_graphs = getenvint("TAISEI_FRAMERATE_GRAPHS", GRAPHS_DEFAULT);
 	// As an optimization, static HUD text could be pre-rendered here.
 	// However, it must be re-rendered on a TE_VIDEO_MODE_CHANGED event in that case.
 }
@@ -573,6 +581,68 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	glUseProgram(0);
 }
 
+static void draw_graph(float x, float y, float w, float h) {
+	glPushMatrix();
+	glTranslatef(x + w/2, y + h/2, 0);
+	glScalef(w, h, 1);
+	glDisable(GL_TEXTURE_2D);
+	draw_quad();
+	glEnable(GL_TEXTURE_2D);
+	glPopMatrix();
+}
+
+static void fill_graph(int num_samples, float *samples, FPSCounter *fps) {
+	for(int i = 0; i < num_samples; ++i) {
+		samples[i] = fps->frametimes[i] / (((hrtime_t)2.0)/FPS);
+
+		if(samples[i] > 1.0) {
+			samples[i] = 1.0;
+		}
+	}
+}
+
+static void stage_draw_framerate_graphs(void) {
+	#define NUM_SAMPLES (sizeof(((FPSCounter){{0}}).frametimes) / sizeof(((FPSCounter){{0}}).frametimes[0]))
+	static float samples[NUM_SAMPLES];
+
+	Shader *s = get_shader("graph");
+	uint32_t u_points = uniloc(s, "points[0]");
+	uint32_t u_colors[3] = {
+		uniloc(s, "color_low"),
+		uniloc(s, "color_mid"),
+		uniloc(s, "color_high"),
+	};
+
+	float pad = 15;
+
+	float w = 260 - pad;
+	float h = 30;
+
+	float x = SCREEN_W - w - pad;
+	float y = 100;
+
+	glUseProgram(s->prog);
+
+	fill_graph(NUM_SAMPLES, samples, &global.fps);
+	glUniform3f(u_colors[0], 0.0, 1.0, 1.0);
+	glUniform3f(u_colors[1], 1.0, 1.0, 0.0);
+	glUniform3f(u_colors[2], 1.0, 0.0, 0.0);
+	glUniform1fv(u_points, NUM_SAMPLES, samples);
+	draw_graph(x, y, w, h);
+
+	// x -= w * 1.1;
+	y += h + 1;
+
+	fill_graph(NUM_SAMPLES, samples, &global.fps_busy);
+	glUniform3f(u_colors[0], 0.0, 1.0, 0.0);
+	glUniform3f(u_colors[1], 1.0, 0.0, 0.0);
+	glUniform3f(u_colors[2], 1.0, 0.0, 0.5);
+	glUniform1fv(u_points, NUM_SAMPLES, samples);
+	draw_graph(x, y, w, h);
+
+	glUseProgram(0);
+}
+
 void stage_draw_hud(void) {
 	// Background
 	draw_texture(SCREEN_W/2.0, SCREEN_H/2.0, "hud");
@@ -653,6 +723,10 @@ void stage_draw_hud(void) {
 
 	// Warning: pops matrix!
 	stage_draw_hud_text(&labels);
+
+	if(stagedraw.framerate_graphs) {
+		stage_draw_framerate_graphs();
+	}
 
 	// Boss indicator ("Enemy")
 	if(global.boss) {

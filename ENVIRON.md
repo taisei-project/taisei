@@ -44,6 +44,8 @@ In addition to the variables listed here, those processed by our runtime depende
 
 * **TAISEI_GL_EXT_OVERRIDES** *(default: unset)*: Space-separated list of OpenGL extensions that are assumed to be supported, even if the driver says they aren't. Prefix an extension with `-` to invert this behaviour. Might be used to work around bugs in some weird/ancient/broken drivers, but your chances are slim. Also note that Taisei assumes many extensions to be available on any sane OpenGL 2.1+ implementation and doesn't test for them, so you can't disable code that uses those this way.
 
+* **TAISEI_FRAMERATE_GRAPHS** *(default value: `0` for release builds, `1` for debug builds)*: if `1`, framerate graphs will be drawn on the HUD.
+
 ### Timing
 
 * **TAISEI_HIRES_TIMER** *(default value: `1`)*: if `1`, tries to use the system's high resolution timer to limit the game's framerate. Disabling this is not recommended; it will likely make Taisei run slower or faster than intended and the reported FPS will be less accurate.
@@ -51,6 +53,8 @@ In addition to the variables listed here, those processed by our runtime depende
 * **TAISEI_FRAMELIMITER_SLEEP** *(default value: `0`)*: if over `0`, tries to sleep this many milliseconds after every frame if it was processed quickly enough. This reduces CPU usage by having the game spend less time in a busy loop, but may hurt framerate stability if set too high, especially if the high resolution timer is disabled or not available.
 
 * **TAISEI_FRAMELIMITER_SLEEP_EXACT** *(default value: `1`)*: if `1`, the framerate limiter will either try to sleep the exact amount of time set in `TAISEI_FRAMELIMITER_SLEEP`, or none at all. Mitigates the aforementioned framerate stability issues by effectively making `TAISEI_FRAMELIMITER_SLEEP` do nothing if the value is too high for your system.
+
+* **TAISEI_FRAMELIMITER_COMPENSATE** *(default value: `1`)*: if `1`, the framerate limiter may let frames finish earlier than normal after sudden frametime spikes. This achieves better timing accuracy, but may hurt fluidity if the framerate is too unstable.
 
 ### Logging
 

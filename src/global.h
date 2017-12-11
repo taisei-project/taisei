@@ -107,6 +107,7 @@ typedef struct {
 	int game_over;
 
 	FPSCounter fps;
+	FPSCounter fps_busy;
 
 	Replay replay;
 	ReplayMode replaymode;

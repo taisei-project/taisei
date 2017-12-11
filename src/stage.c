@@ -573,17 +573,6 @@ static bool stage_frame(void *arg) {
 		return true;
 	}
 
-	fpscounter_update(&global.fps);
-
-	if(global.replaymode == REPLAY_RECORD) {
-		uint16_t replay_fps = (uint16_t)rint(global.fps.fps);
-
-		if(replay_fps != fstate->last_replay_fps) {
-			replay_stage_event(global.replay_stage, global.frames, EV_FPS, replay_fps);
-			fstate->last_replay_fps = replay_fps;
-		}
-	}
-
 	tsrand_lock(&global.rand_game);
 	tsrand_switch(&global.rand_visual);
 	BEGIN_DRAW_CODE();
@@ -599,6 +588,18 @@ static bool stage_frame(void *arg) {
 	}
 
 	SDL_GL_SwapWindow(video.window);
+
+	fpscounter_update(&global.fps);
+	fpscounter_update(&global.fps_busy);
+
+	if(global.replaymode == REPLAY_RECORD) {
+		uint16_t replay_fps = (uint16_t)rint(global.fps.fps);
+
+		if(replay_fps != fstate->last_replay_fps) {
+			replay_stage_event(global.replay_stage, global.frames, EV_FPS, replay_fps);
+			fstate->last_replay_fps = replay_fps;
+		}
+	}
 
 	return global.game_over <= 0;
 }

@@ -345,6 +345,9 @@ void loop_at_fps(bool (*frame_func)(void*), bool (*limiter_cond_func)(void*), vo
 
     int32_t delay = getenvint("TAISEI_FRAMELIMITER_SLEEP", 0);
     bool exact_delay = getenvint("TAISEI_FRAMELIMITER_SLEEP_EXACT", 1);
+    bool compensate = getenvint("TAISEI_FRAMELIMITER_COMPENSATE", 1);
+
+    // fpscounter_reset(&global.fps_busy);
 
     while(true) {
         real_time = time_get();
@@ -353,12 +356,15 @@ void loop_at_fps(bool (*frame_func)(void*), bool (*limiter_cond_func)(void*), vo
             continue;
         }
 
-magic:
+begin_frame:
+        global.fps_busy.last_update_time = time_get();
         glClear(GL_COLOR_BUFFER_BIT);
 
         if(!frame_func(arg)) {
             return;
         }
+
+        // fpscounter_update(&global.fps_busy);
 
 #ifdef DEBUG
         if(gamekeypressed(KEY_FPSLIMIT_OFF)) {
@@ -369,14 +375,16 @@ magic:
         if(!limiter_cond_func || limiter_cond_func(arg)) {
             next_frame_time = real_time + target_frame_time;
 
-            hrtime_t rt = time_get();
-            hrtime_t diff = rt - next_frame_time;
+            if(compensate) {
+                hrtime_t rt = time_get();
+                hrtime_t diff = rt - next_frame_time;
 
-            if(diff >= 0) {
-                // frame took too long...
-                // try to compensate in the next frame to avoid slowdown
-                real_time = rt - min(diff, target_frame_time);
-                goto magic;
+                if(diff >= 0) {
+                    // frame took too long...
+                    // try to compensate in the next frame to avoid slowdown
+                    real_time = rt - min(diff, target_frame_time);
+                    goto begin_frame;
+                }
             }
 
             if(delay > 0) {
