@@ -10,14 +10,6 @@
 #include "plrmodes.h"
 #include "marisa.h"
 
-static void marisa_star(Projectile *p, int t) {
-	glPushMatrix();
-	glTranslatef(creal(p->pos), cimag(p->pos), 0);
-	glRotatef(t*10, 0, 0, 1);
-	ProjDrawCore(p, p->color);
-	glPopMatrix();
-}
-
 static void marisa_star_trail_draw(Projectile *p, int t) {
 	float s = 1 - t / creal(p->args[0]);
 
