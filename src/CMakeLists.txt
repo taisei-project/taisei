@@ -52,6 +52,7 @@ set(SRCs
 	stage.c
 	stagedraw.c
 	stagetext.c
+	stageobjects.c
 	replay.c
 	global.c
 	events.c
@@ -64,6 +65,9 @@ set(SRCs
 	list.c
 	refs.c
 	hashtable.c
+	objectpool.c
+	# objectpool_fake.c
+	objectpool_util.c
 	boss.c
 	plrmodes.c
 	plrmodes/marisa.c

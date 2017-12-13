@@ -128,6 +128,10 @@ List* list_unlink(List **dest, List *elem) {
 }
 
 List* list_pop(List **dest) {
+	if(*dest == NULL) {
+		return NULL;
+	}
+
 	return list_unlink(dest, *dest);
 }
 

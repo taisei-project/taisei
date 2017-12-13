@@ -10,6 +10,7 @@
 
 #include "util.h"
 #include "projectile.h"
+#include "objectpool.h"
 
 #ifdef DEBUG
 	#define ENEMY_DEBUG
@@ -25,8 +26,13 @@ enum {
 };
 
 struct Enemy {
-	Enemy *next;
-	Enemy *prev;
+	union {
+		ObjectInterface object_interface;
+		struct {
+			Enemy *next;
+			Enemy *prev;
+		};
+	};
 
 	complex pos;
 	complex pos0;

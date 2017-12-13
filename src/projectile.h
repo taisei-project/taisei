@@ -12,6 +12,7 @@
 #include "resource/texture.h"
 #include "color.h"
 #include "recolor.h"
+#include "objectpool.h"
 
 #ifdef DEBUG
 	#define PROJ_DEBUG
@@ -52,8 +53,14 @@ typedef enum ProjFlags {
 } ProjFlags;
 
 struct Projectile {
-	struct Projectile *next;
-	struct Projectile *prev;
+	union {
+		ObjectInterface object_interface;
+		struct {
+			Projectile *next;
+			Projectile *prev;
+		};
+	};
+
 	complex pos;
 	complex pos0;
 	complex size; // this is currently ignored if tex is not NULL.

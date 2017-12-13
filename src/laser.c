@@ -9,9 +9,10 @@
 #include "laser.h"
 #include "global.h"
 #include "list.h"
+#include "stageobjects.h"
 
 Laser *create_laser(complex pos, float time, float deathtime, Color color, LaserPosRule prule, LaserLogicRule lrule, complex a0, complex a1, complex a2, complex a3) {
-	Laser *l = (Laser*)list_push((List**)&global.lasers, malloc(sizeof(Laser)));
+	Laser *l = (Laser*)list_push((List**)&global.lasers, (List*)objpool_acquire(stage_object_pools.lasers));
 
 	l->birthtime = global.frames;
 	l->timespan = time;
@@ -173,7 +174,7 @@ void* _delete_laser(List **lasers, List *laser, void *arg) {
 		l->lrule(l, EVENT_DEATH);
 
 	del_ref(laser);
-	free(list_unlink(lasers, laser));
+	objpool_release(stage_object_pools.lasers, (ObjectInterface*)list_unlink(lasers, laser));
 	return NULL;
 }
 

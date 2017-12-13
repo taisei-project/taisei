@@ -9,6 +9,7 @@
 #include "aniplayer.h"
 #include "list.h"
 #include "global.h"
+#include "stageobjects.h"
 
 void aniplayer_create(AniPlayer *plr, Animation *ani) {
 	memset(plr,0,sizeof(AniPlayer));
@@ -19,9 +20,18 @@ AniPlayer* aniplayer_create_copy(AniPlayer *src) {
 	// XXX: maybe it needs another name since it allocates memory?
 	//		or maybe aniplayer_create needs another name since it doesn't?
 
-	AniPlayer *plr = malloc(sizeof(AniPlayer));
+	// AniPlayer *plr = malloc(sizeof(AniPlayer));
+
+	AniPlayer *plr = (AniPlayer*)objpool_acquire(stage_object_pools.aniplayers);
 	aniplayer_copy(plr, src);
 	return plr;
+}
+
+void aniplayer_free_copy(AniPlayer *ani) {
+	if(ani) {
+		aniplayer_free(ani);
+		objpool_release(stage_object_pools.aniplayers, (ObjectInterface*)ani);
+	}
 }
 
 void aniplayer_free(AniPlayer *plr) {

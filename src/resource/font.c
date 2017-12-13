@@ -134,6 +134,7 @@ void load_fonts(float quality) {
 	_fonts.hud       = load_font("res/fonts/Laconic_Regular.otf",       19);
 	_fonts.mono      = load_font("res/fonts/ShareTechMono-Regular.ttf", 19);
 	_fonts.monosmall = load_font("res/fonts/ShareTechMono-Regular.ttf", 14);
+	_fonts.monotiny  = load_font("res/fonts/ShareTechMono-Regular.ttf", 10);
 }
 
 void reload_fonts(float quality) {
@@ -158,25 +159,47 @@ void free_fonts(void) {
 
 static void draw_text_texture(Alignment align, float x, float y, Texture *tex) {
 	float m = 1.0 / resources.fontren.quality;
+	bool adjust = !(align & AL_Flag_NoAdjust);
+	align &= 0xf;
 
-	switch(align) {
-	case AL_Center:
-		break;
+	if(adjust) {
+		switch(align) {
+			case AL_Center:
+				break;
+			// tex->w/2 is integer division and must be done first
+			case AL_Left:
+				x += m*(tex->w/2);
+				break;
+			case AL_Right:
+				x -= m*(tex->w/2);
+				break;
+			default:
+				log_fatal("Invalid alignment %x", align);
+		}
 
-	// tex->w/2 is integer division and must be done first
-	case AL_Left:
-		x += m*(tex->w/2);
-		break;
-	case AL_Right:
-		x -= m*(tex->w/2);
-		break;
+		// if textures are odd pixeled, align them for ideal sharpness.
+
+		if(tex->w&1) {
+			x += 0.5;
+		}
+
+		if(tex->h&1) {
+			y += 0.5;
+		}
+	} else {
+		switch(align) {
+			case AL_Center:
+				break;
+			case AL_Left:
+				x += m*(tex->w/2.0);
+				break;
+			case AL_Right:
+				x -= m*(tex->w/2.0);
+				break;
+			default:
+				log_fatal("Invalid alignment %x", align);
+		}
 	}
-
-	// if textures are odd pixeled, align them for ideal sharpness.
-	if(tex->w&1)
-		x += 0.5;
-	if(tex->h&1)
-		y += 0.5;
 
 	glPushMatrix();
 	glTranslatef(x, y, 0);

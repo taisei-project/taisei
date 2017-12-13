@@ -13,8 +13,10 @@
 
 #ifdef DEBUG
 	#define GRAPHS_DEFAULT 1
+	#define OBJPOOLSTATS_DEFAULT 1
 #else
 	#define GRAPHS_DEFAULT 0
+	#define OBJPOOLSTATS_DEFAULT 0
 #endif
 
 static struct {
@@ -28,6 +30,7 @@ static struct {
 		uint32_t u_split;
 	} hud_text;
 	bool framerate_graphs;
+	bool objpool_stats;
 } stagedraw;
 
 void stage_draw_preload(void) {
@@ -61,6 +64,7 @@ void stage_draw_preload(void) {
 	glUseProgram(0);
 
 	stagedraw.framerate_graphs = getenvint("TAISEI_FRAMERATE_GRAPHS", GRAPHS_DEFAULT);
+	stagedraw.objpool_stats = getenvint("TAISEI_OBJPOOL_STATS", OBJPOOLSTATS_DEFAULT);
 	// As an optimization, static HUD text could be pre-rendered here.
 	// However, it must be re-rendered on a TE_VIDEO_MODE_CHANGED event in that case.
 }
@@ -487,6 +491,22 @@ static void stage_draw_hud_scores(float ypos_hiscore, float ypos_score, char *bu
 	glUniform1f(stagedraw.hud_text.u_split, 0.0);
 }
 
+static void stage_draw_hud_objpool_stats(float x, float y, float width, TTF_Font *font) {
+	ObjectPool **last = &stage_object_pools.first + (sizeof(StageObjectPools)/sizeof(ObjectPool*) - 1);
+
+	for(ObjectPool **pool = &stage_object_pools.first; pool <= last; ++pool) {
+		ObjectPoolStats stats;
+		char buf[32];
+		objpool_get_stats(*pool, &stats);
+
+		snprintf(buf, sizeof(buf), "%zu | %4zu", stats.usage, stats.peak_usage);
+		draw_text(AL_Left  | AL_Flag_NoAdjust, (int)x,           (int)y, stats.tag, font);
+		draw_text(AL_Right | AL_Flag_NoAdjust, (int)(x + width), (int)y, buf,       font);
+
+		y += stringheight(buf, font) * 1.1;
+	}
+}
+
 struct labels_s {
 	struct {
 		float ofs;
@@ -520,6 +540,10 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	draw_text(AL_Left, labels->x.ofs, labels->y.graze,   "Graze:",    _fonts.hud);
 	glUniform4f(stagedraw.hud_text.u_colortint, 1.00, 1.00, 1.00, 1.00);
 
+	if(stagedraw.objpool_stats) {
+		stage_draw_hud_objpool_stats(labels->x.ofs, labels->y.graze + 32, 250, _fonts.monotiny);
+	}
+
 	// Score/Hi-Score values
 	stage_draw_hud_scores(labels->y.hiscore + labels->y.mono_ofs, labels->y.score + labels->y.mono_ofs, buf, sizeof(buf));
 
@@ -549,7 +573,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	snprintf(buf, sizeof(buf), "%.2f fps", global.fps.fps);
 #endif
 
-	draw_text(AL_Right, SCREEN_W, rint(SCREEN_H - 0.5 * stringheight(buf, _fonts.monosmall)), buf, _fonts.monosmall);
+	draw_text(AL_Right | AL_Flag_NoAdjust, SCREEN_W, rint(SCREEN_H - 0.5 * stringheight(buf, _fonts.monosmall)), buf, _fonts.monosmall);
 
 	if(global.replaymode == REPLAY_PLAY) {
 		// XXX: does it make sense to use the monospace font here?

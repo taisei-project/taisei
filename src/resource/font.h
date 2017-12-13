@@ -17,6 +17,9 @@ typedef enum {
 	AL_Right
 } Alignment;
 
+enum {
+	AL_Flag_NoAdjust = 0x10,
+};
 
 // Size of the buffer used by the font renderer at quality == 1.0.
 // No text larger than this can be drawn.
@@ -63,6 +66,7 @@ struct Fonts {
 	TTF_Font *hud;
 	TTF_Font *mono;
 	TTF_Font *monosmall;
+	TTF_Font *monotiny;
 };
 
 extern struct Fonts _fonts;

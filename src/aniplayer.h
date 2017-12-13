@@ -14,6 +14,7 @@
  */
 
 #include "resource/animation.h"
+#include "stageobjects.h"
 
 typedef struct AniSequence AniSequence;
 struct AniSequence{
@@ -31,6 +32,8 @@ struct AniSequence{
 };
 
 typedef struct {
+	ObjectInterface object_interface; // hack for the boss glow effect
+
 	Animation *ani;
 	int clock;
 
@@ -42,10 +45,12 @@ typedef struct {
 } AniPlayer;
 
 void aniplayer_create(AniPlayer *plr, Animation *ani);
-AniPlayer* aniplayer_create_copy(AniPlayer *src);
 void aniplayer_free(AniPlayer *plr);
 void aniplayer_reset(AniPlayer *plr); // resets to a neutral state with empty queue.
 void aniplayer_copy(AniPlayer *dst, AniPlayer *src);
+
+AniPlayer* aniplayer_create_copy(AniPlayer *src);
+void aniplayer_free_copy(AniPlayer *ani);
 
 AniSequence *aniplayer_queue(AniPlayer *plr, int row, int loops, int delay); // 0 loops: played one time
 AniSequence *aniplayer_queue_pro(AniPlayer *plr, int row, int start, int duration, int delay, int speed); // self-documenting pro version

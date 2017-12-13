@@ -171,7 +171,7 @@ static void BossGlow(Projectile *p, int t) {
 static int boss_glow_rule(Projectile *p, int t) {
 	if(t == EVENT_DEATH) {
 		AniPlayer *aplr = REF(p->args[2]);
-		free(aplr);
+		aniplayer_free_copy(aplr);
 		free_ref(p->args[2]);
 		return 1;
 	}

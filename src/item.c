@@ -9,6 +9,8 @@
 #include "item.h"
 #include "global.h"
 #include "list.h"
+#include "stageobjects.h"
+#include "objectpool_util.h"
 
 static Texture* item_tex(ItemType type) {
 	static const char *const map[] = {
@@ -31,6 +33,10 @@ static int item_prio(List *litem) {
 	return item->type;
 }
 
+static void* alloc_item(void) {
+	return objpool_acquire(stage_object_pools.items);
+}
+
 Item* create_item(complex pos, complex v, ItemType type) {
 	if((creal(pos) < 0 || creal(pos) > VIEWPORT_W)) {
 		// we need this because we clamp the item position to the viewport boundary during motion
@@ -38,7 +44,7 @@ Item* create_item(complex pos, complex v, ItemType type) {
 		return NULL;
 	}
 
-	Item *i = (Item*)list_insert_at_priority((List**)&global.items, malloc(sizeof(Item)), type, item_prio);
+	Item *i = (Item*)list_insert_at_priority((List**)&global.items, alloc_item(), type, item_prio);
 	i->pos = pos;
 	i->pos0 = pos;
 	i->v = v;
@@ -50,7 +56,7 @@ Item* create_item(complex pos, complex v, ItemType type) {
 }
 
 void delete_item(Item *item) {
-	free(list_unlink((List**)&global.items, (List*)item));
+	objpool_release(stage_object_pools.items, (ObjectInterface*)list_unlink((List**)&global.items, (List*)item));
 }
 
 Item* create_bpoint(complex pos) {
@@ -89,7 +95,7 @@ void draw_items(void) {
 }
 
 void delete_items(void) {
-	list_free_all((List**)&global.items);
+	objpool_release_list(stage_object_pools.items, (List**)&global.items);
 }
 
 void move_item(Item *i) {

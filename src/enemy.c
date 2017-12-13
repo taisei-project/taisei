@@ -13,6 +13,7 @@
 #include "projectile.h"
 #include "list.h"
 #include "aniplayer.h"
+#include "stageobjects.h"
 
 #ifdef create_enemy_p
 #undef create_enemy_p
@@ -33,7 +34,7 @@ Enemy *create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyVisualRule visu
 	}
 
 	// XXX: some code relies on the insertion logic
-	Enemy *e = (Enemy*)list_insert((List**)enemies, malloc(sizeof(Enemy)));
+	Enemy *e = (Enemy*)list_insert((List**)enemies, (List*)objpool_acquire(stage_object_pools.enemies));
 	e->moving = false;
 	e->dir = 0;
 
@@ -77,8 +78,8 @@ void* _delete_enemy(List **enemies, List* enemy, void *arg) {
 
 	e->logic_rule(e, EVENT_DEATH);
 	del_ref(enemy);
+	objpool_release(stage_object_pools.enemies, (ObjectInterface*)list_unlink(enemies, enemy));
 
-	free(list_unlink(enemies, enemy));
 	return NULL;
 }
 

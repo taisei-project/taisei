@@ -22,6 +22,7 @@
 #include "log.h"
 #include "stagetext.h"
 #include "stagedraw.h"
+#include "stageobjects.h"
 
 static size_t numstages = 0;
 StageInfo *stages = NULL;
@@ -624,6 +625,7 @@ void stage_loop(StageInfo *stage) {
 	// I really want to separate all of the game state from the global struct sometime
 	global.stage = stage;
 
+	stage_objpools_alloc();
 	stage_preload();
 	stage_draw_preload();
 
@@ -695,5 +697,6 @@ void stage_loop(StageInfo *stage) {
 	player_free(&global.plr);
 	tsrand_switch(&global.rand_visual);
 	free_all_refs();
+	stage_objpools_free();
 	stop_sounds();
 }

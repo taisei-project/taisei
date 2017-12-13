@@ -12,6 +12,7 @@
 #include "global.h"
 #include "list.h"
 #include "vbo.h"
+#include "stageobjects.h"
 
 static ProjArgs defaults_proj = {
 	.texture = "proj/",
@@ -110,7 +111,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 		log_fatal("Tried to spawn a projectile while in drawing code");
 	}
 
-	Projectile *p = calloc(1, sizeof(Projectile));
+	Projectile *p = (Projectile*)objpool_acquire(stage_object_pools.projectiles);
 
 	p->birthtime = global.frames;
 	p->pos = p->pos0 = args->pos;
@@ -160,7 +161,8 @@ static void* _delete_projectile(List **projs, List *proj, void *arg) {
 	p->rule(p, EVENT_DEATH);
 
 	del_ref(proj);
-	free(list_unlink(projs, proj));
+	objpool_release(stage_object_pools.projectiles, (ObjectInterface*)list_unlink(projs, proj));
+
 	return NULL;
 }
 
