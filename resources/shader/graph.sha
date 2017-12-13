@@ -51,5 +51,6 @@ void main(void) {
         c.rgb = mix(color_low, color_mid,  2.0 *  cval);
     }
 
+    c = mix(c, vec4(1.0), 0.5 * pow(1.0 - abs(coord.y - 0.5), 32.0));
     gl_FragColor = c;
 }
