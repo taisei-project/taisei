@@ -140,7 +140,7 @@ int getenvint(const char *v, int defaultval) __attribute__((pure));
 void png_setup_error_handlers(png_structp png);
 uint32_t crc32str(uint32_t crc, const char *str) __attribute__((hot, pure));
 
-#ifdef HAVE_CRC32_INTRIN
+#ifdef HAVE_INTEL_INTRIN
 uint32_t crc32str_sse42(uint32_t crc, const char *str) __attribute__((hot, pure));
 #else
 #define crc32str_sse42 crc32str
