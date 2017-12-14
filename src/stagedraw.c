@@ -65,8 +65,12 @@ void stage_draw_preload(void) {
 
 	stagedraw.framerate_graphs = getenvint("TAISEI_FRAMERATE_GRAPHS", GRAPHS_DEFAULT);
 	stagedraw.objpool_stats = getenvint("TAISEI_OBJPOOL_STATS", OBJPOOLSTATS_DEFAULT);
-	// As an optimization, static HUD text could be pre-rendered here.
-	// However, it must be re-rendered on a TE_VIDEO_MODE_CHANGED event in that case.
+
+	if(stagedraw.framerate_graphs) {
+		preload_resources(RES_SHADER, RESF_PERMANENT,
+			"graph",
+		NULL);
+	}
 }
 
 static void apply_shader_rules(ShaderRule *shaderrules, FBO **fbo0, FBO **fbo1) {

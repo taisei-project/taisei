@@ -416,11 +416,13 @@ static void youmu_mirror_preload(void) {
 
     preload_resources(RES_TEXTURE, flags,
         "proj/youmu",
-	"youmu_bombbg1",
+        "part/myon",
+        "part/stardust",
+        "youmu_bombbg1",
     NULL);
-    
+
     preload_resources(RES_SHADER, flags,
-	"youmua_bomb",
+        "youmua_bomb",
     NULL);
 
     preload_resources(RES_SFX, flags | RESF_OPTIONAL,
