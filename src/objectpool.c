@@ -116,7 +116,7 @@ void objpool_release(ObjectPool *pool, ObjectInterface *object) {
         OBJ_USED(pool, object) = false;
     })
 
-    list_push((List**)pool->free_objects, (List*)object);
+    list_push((List**)&pool->free_objects, (List*)object);
     pool->usage--;
     // log_debug("[%s] Usage: %zu", pool->tag, pool->usage);
 }
