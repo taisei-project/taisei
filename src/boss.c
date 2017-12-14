@@ -27,7 +27,7 @@ Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 	return buf;
 }
 
-void draw_boss_text(Alignment align, float x, float y, const char *text, TTF_Font *fnt, Color clr) {
+void draw_boss_text(Alignment align, float x, float y, const char *text, Font *fnt, Color clr) {
 	Color black = rgb(0, 0, 0);
 	Color white = rgb(1, 1, 1);
 

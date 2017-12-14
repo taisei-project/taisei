@@ -364,6 +364,8 @@ begin_frame:
             return;
         }
 
+        // update_font_cache();
+
         // fpscounter_update(&global.fps_busy);
 
 #ifdef DEBUG

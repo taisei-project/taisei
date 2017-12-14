@@ -9,7 +9,9 @@
 #pragma once
 
 #include <SDL_ttf.h>
+
 #include "texture.h"
+#include "hashtable.h"
 
 typedef enum {
 	AL_Center,
@@ -28,45 +30,51 @@ enum {
 	FONTREN_MAXH = 64,		// must be a power of two that is > largest font size
 };
 
-typedef struct FontRenderer FontRenderer;
-struct FontRenderer {
+typedef struct Font Font;
+
+typedef struct FontRenderer {
 	Texture tex;
 	GLuint pbo;
 	float quality;
-};
+} FontRenderer;
 
 void fontrenderer_init(FontRenderer *f, float quality);
 void fontrenderer_free(FontRenderer *f);
-void fontrenderer_draw(FontRenderer *f, const char *text, TTF_Font *font);
+void fontrenderer_draw(FontRenderer *f, const char *text, Font *font);
 void fontrenderer_draw_prerendered(FontRenderer *f, SDL_Surface *surf);
-SDL_Surface* fontrender_render(FontRenderer *f, const char *text, TTF_Font *font);
+SDL_Surface* fontrender_render(FontRenderer *f, const char *text, Font *font);
 
-Texture *load_text(const char *text, TTF_Font *font);
-void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *font);
-void draw_text_auto_wrapped(Alignment align, float x, float y, const char *text, int width, TTF_Font *font);
+Texture *load_text(const char *text, Font *font);
+void draw_text(Alignment align, float x, float y, const char *text, Font *font);
+void draw_text_auto_wrapped(Alignment align, float x, float y, const char *text, int width, Font *font);
 void draw_text_prerendered(Alignment align, float x, float y, SDL_Surface *surf);
 
-int stringwidth(char *s, TTF_Font *font);
-int stringheight(char *s, TTF_Font *font);
-int charwidth(char c, TTF_Font *font);
+int stringwidth(char *s, Font *font);
+int stringheight(char *s, Font *font);
+int charwidth(char c, Font *font);
 
-void shorten_text_up_to_width(char *s, float width, TTF_Font *font);
-void wrap_text(char *buf, size_t bufsize, const char *src, int width, TTF_Font *font);
+void shorten_text_up_to_width(char *s, float width, Font *font);
+void wrap_text(char *buf, size_t bufsize, const char *src, int width, Font *font);
 
 void init_fonts(void);
 void uninit_fonts(void);
 void load_fonts(float quality);
 void reload_fonts(float quality);
 void free_fonts(void);
+void update_font_cache(void);
 
-struct Fonts {
-	TTF_Font *standard;
-	TTF_Font *mainmenu;
-	TTF_Font *small;
-	TTF_Font *hud;
-	TTF_Font *mono;
-	TTF_Font *monosmall;
-	TTF_Font *monotiny;
-};
+extern struct Fonts {
+	union {
+		struct {
+			Font *standard;
+			Font *mainmenu;
+			Font *small;
+			Font *hud;
+			Font *mono;
+			Font *monosmall;
+			Font *monotiny;
+		};
 
-extern struct Fonts _fonts;
+		Font *first;
+	};
+} _fonts;

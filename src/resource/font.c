@@ -9,10 +9,53 @@
 #include "font.h"
 #include "global.h"
 #include "util.h"
+#include "objectpool.h"
+#include "objectpool_util.h"
+
+#define CACHE_EXPIRE_TIME 1000
+
+#ifdef DEBUG
+	// #define VERBOSE_CACHE_LOG
+#endif
+
+#ifdef VERBOSE_CACHE_LOG
+	#define CACHELOG(fmt, ...) log_debug(fmt, __VA_ARGS__)
+#else
+	#define CACHELOG(fmt, ...)
+#endif
+
+typedef struct CacheEntry {
+	union {
+		ObjectInterface object_interface;
+		struct {
+			struct CacheEntry *next;
+			struct CacheEntry *prev;
+		};
+	};
+
+	SDL_Surface *surf;
+	int width;
+	int height;
+	uint32_t ref_time;
+
+	struct {
+		 // to simplify invalidation
+		Hashtable *ht;
+		char *ht_key;
+	} owner;
+} CacheEntry;
+
+static ObjectPool *cache_pool;
+static CacheEntry *cache_entries;
+
+struct Font {
+	TTF_Font *ttf;
+	Hashtable *cache;
+};
 
 struct Fonts _fonts;
 
-TTF_Font* load_font(char *vfspath, int size) {
+static TTF_Font* load_ttf(char *vfspath, int size) {
 	char *syspath = vfs_repr(vfspath, true);
 
 	SDL_RWops *rwops = vfs_open(vfspath, VFS_MODE_READ | VFS_MODE_SEEKABLE);
@@ -34,6 +77,76 @@ TTF_Font* load_font(char *vfspath, int size) {
 
 	free(syspath);
 	return f;
+}
+
+static Font* load_font(char *vfspath, int size) {
+	TTF_Font *ttf = load_ttf(vfspath, size);
+
+	Font *font = calloc(1, sizeof(Font));
+	font->ttf = ttf;
+	font->cache = hashtable_new_stringkeys(2048);
+
+	return font;
+}
+
+static void free_cache_entry(CacheEntry *e) {
+	if(!e) {
+		return;
+	}
+
+	if(e->surf) {
+		SDL_FreeSurface(e->surf);
+	}
+
+	CACHELOG("Wiping cache entry %p [%s]", (void*)e, e->owner.ht_key);
+
+	free(e->owner.ht_key);
+	list_unlink((List**)&cache_entries, (List*)e);
+	objpool_release(cache_pool, (ObjectInterface*)e);
+}
+
+static CacheEntry* get_cache_entry(Font *font, const char *text) {
+	CacheEntry *e = hashtable_get_unsafe(font->cache, (void*)text);
+
+	if(!e) {
+		if(objpool_is_full(cache_pool)) {
+			CacheEntry *oldest = cache_entries;
+
+			for(CacheEntry *e = cache_entries->next; e; e = e->next) {
+				if(e->ref_time < oldest->ref_time) {
+					oldest = e;
+				}
+			}
+
+			hashtable_unset_string(oldest->owner.ht, oldest->owner.ht_key);
+			free_cache_entry(oldest);
+		}
+
+		e = (CacheEntry*)objpool_acquire(cache_pool);
+		list_push((List**)&cache_entries, (List*)e);
+		hashtable_set_string(font->cache, text, e);
+		e->owner.ht = font->cache;
+		e->owner.ht_key = strdup(text);
+
+		CACHELOG("New entry for text: [%s]", text);
+	}
+
+	e->ref_time = SDL_GetTicks();
+	return e;
+}
+
+void update_font_cache(void) {
+	uint32_t now = SDL_GetTicks();
+
+	CacheEntry *next;
+	for(CacheEntry *e = cache_entries; e; e = next) {
+		next = e->next;
+
+		if(now - e->ref_time > CACHE_EXPIRE_TIME) {
+			hashtable_unset(e->owner.ht, e->owner.ht_key);
+			free_cache_entry(e);
+		}
+	}
 }
 
 void fontrenderer_init(FontRenderer *f, float quality) {
@@ -96,8 +209,16 @@ void fontrenderer_draw_prerendered(FontRenderer *f, SDL_Surface *surf) {
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
 
-SDL_Surface* fontrender_render(FontRenderer *f, const char *text, TTF_Font *font) {
-	SDL_Surface *surf = TTF_RenderUTF8_Blended(font, text, (SDL_Color){255, 255, 255});
+SDL_Surface* fontrender_render(FontRenderer *f, const char *text, Font *font) {
+	CacheEntry *e = get_cache_entry(font, text);
+	SDL_Surface *surf = e->surf;
+
+	if(surf) {
+		return surf;
+	}
+
+	CACHELOG("Rendering text: [%s]", text);
+	surf = e->surf = TTF_RenderUTF8_Blended(font->ttf, text, (SDL_Color){255, 255, 255});
 
 	if(!surf) {
 		log_fatal("TTF_RenderUTF8_Blended() failed: %s", TTF_GetError());
@@ -110,15 +231,15 @@ SDL_Surface* fontrender_render(FontRenderer *f, const char *text, TTF_Font *font
 	return surf;
 }
 
-void fontrenderer_draw(FontRenderer *f, const char *text, TTF_Font *font) {
+void fontrenderer_draw(FontRenderer *f, const char *text, Font *font) {
 	SDL_Surface *surf = fontrender_render(f, text, font);
 	fontrenderer_draw_prerendered(f, surf);
-	SDL_FreeSurface(surf);
 }
 
 void init_fonts(void) {
 	TTF_Init();
 	memset(&resources.fontren, 0, sizeof(resources.fontren));
+	cache_pool = objpool_alloc(sizeof(CacheEntry), 512, "fontcache");
 }
 
 void uninit_fonts(void) {
@@ -150,11 +271,25 @@ void reload_fonts(float quality) {
 	}
 }
 
+static void free_font(Font *font) {
+	CacheEntry *e;
+	TTF_CloseFont(font->ttf);
+
+	for(HashtableIterator *i = hashtable_iter(font->cache); hashtable_iter_next(i, 0, (void**)&e);) {
+		free_cache_entry(e);
+	}
+
+	hashtable_free(font->cache);
+	free(font);
+}
+
 void free_fonts(void) {
 	fontrenderer_free(&resources.fontren);
-	TTF_CloseFont(_fonts.standard);
-	TTF_CloseFont(_fonts.mainmenu);
-	TTF_CloseFont(_fonts.small);
+
+	Font **last = &_fonts.first + (sizeof(_fonts)/sizeof(Font*) - 1);
+	for(Font **font = &_fonts.first; font <= last; ++font) {
+		free_font(*font);
+	}
 }
 
 static void draw_text_texture(Alignment align, float x, float y, Texture *tex) {
@@ -213,7 +348,7 @@ void draw_text_prerendered(Alignment align, float x, float y, SDL_Surface *surf)
 	draw_text_texture(align, x, y, &resources.fontren.tex);
 }
 
-void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *font) {
+void draw_text(Alignment align, float x, float y, const char *text, Font *font) {
 	assert(text != NULL);
 
 	if(!*text) {
@@ -234,32 +369,49 @@ void draw_text(Alignment align, float x, float y, const char *text, TTF_Font *fo
 	free(buf);
 }
 
-void draw_text_auto_wrapped(Alignment align, float x, float y, const char *text, int width, TTF_Font *font) {
+void draw_text_auto_wrapped(Alignment align, float x, float y, const char *text, int width, Font *font) {
 	char buf[strlen(text) * 2];
 	wrap_text(buf, sizeof(buf), text, width, font);
 	draw_text(align, x, y, buf, font);
 }
 
-int stringwidth(char *s, TTF_Font *font) {
+static void string_dimensions(char *s, Font *font, int *w, int *h) {
+	CacheEntry *e = get_cache_entry(font, s);
+
+	if(e->width <= 0 || e->height <= 0) {
+		TTF_SizeUTF8(font->ttf, s, &e->width, &e->height);
+		CACHELOG("Got size %ix%i for text: [%s]", e->width, e->height, s);
+	}
+
+	if(w) {
+		*w = e->width;
+	}
+
+	if(h) {
+		*h = e->height;
+	}
+}
+
+int stringwidth(char *s, Font *font) {
 	int w;
-	TTF_SizeUTF8(font, s, &w, NULL);
+	string_dimensions(s, font, &w, NULL);
 	return w / resources.fontren.quality;
 }
 
-int stringheight(char *s, TTF_Font *font) {
+int stringheight(char *s, Font *font) {
 	int h;
-	TTF_SizeUTF8(font, s, NULL, &h);
+	string_dimensions(s, font, NULL, &h);
 	return h / resources.fontren.quality;
 }
 
-int charwidth(char c, TTF_Font *font) {
+int charwidth(char c, Font *font) {
 	char s[2];
 	s[0] = c;
 	s[1] = 0;
 	return stringwidth(s, font);
 }
 
-void shorten_text_up_to_width(char *s, float width, TTF_Font *font) {
+void shorten_text_up_to_width(char *s, float width, Font *font) {
 	while(stringwidth(s, font) > width) {
 		int l = strlen(s);
 
@@ -276,7 +428,7 @@ void shorten_text_up_to_width(char *s, float width, TTF_Font *font) {
 	}
 }
 
-void wrap_text(char *buf, size_t bufsize, const char *src, int width, TTF_Font *font) {
+void wrap_text(char *buf, size_t bufsize, const char *src, int width, Font *font) {
 	assert(buf != NULL);
 	assert(src != NULL);
 	assert(font != NULL);

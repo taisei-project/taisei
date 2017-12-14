@@ -506,8 +506,8 @@ static void stage_preload(void) {
 }
 
 static void display_stage_title(StageInfo *info) {
-	stagetext_add(info->title,    VIEWPORT_W/2 + I * (VIEWPORT_H/2-40), AL_Center, _fonts.mainmenu, rgb(1, 1, 1), 50, 85, 35, 35);
-	stagetext_add(info->subtitle, VIEWPORT_W/2 + I * (VIEWPORT_H/2),    AL_Center, _fonts.standard, rgb(1, 1, 1), 60, 85, 35, 35);
+	stagetext_add(info->title,    VIEWPORT_W/2 + I * (VIEWPORT_H/2-40), AL_Center, &_fonts.mainmenu, rgb(1, 1, 1), 50, 85, 35, 35);
+	stagetext_add(info->subtitle, VIEWPORT_W/2 + I * (VIEWPORT_H/2),    AL_Center, &_fonts.standard, rgb(1, 1, 1), 60, 85, 35, 35);
 
 }
 
@@ -517,7 +517,7 @@ void stage_start_bgm(const char *bgm) {
 	if(current_bgm.title && current_bgm.started_at >= 0) {
 		char txt[strlen(current_bgm.title) + 6];
 		snprintf(txt, sizeof(txt), "BGM: %s", current_bgm.title);
-		stagetext_add(txt, VIEWPORT_W-15 + I * (VIEWPORT_H-20), AL_Right, _fonts.standard, rgb(1, 1, 1), 30, 85, 35, 35);
+		stagetext_add(txt, VIEWPORT_W-15 + I * (VIEWPORT_H-20), AL_Right, &_fonts.standard, rgb(1, 1, 1), 30, 85, 35, 35);
 	}
 }
 

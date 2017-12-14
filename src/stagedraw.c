@@ -491,7 +491,7 @@ static void stage_draw_hud_scores(float ypos_hiscore, float ypos_score, char *bu
 	glUniform1f(stagedraw.hud_text.u_split, 0.0);
 }
 
-static void stage_draw_hud_objpool_stats(float x, float y, float width, TTF_Font *font) {
+static void stage_draw_hud_objpool_stats(float x, float y, float width, Font *font) {
 	ObjectPool **last = &stage_object_pools.first + (sizeof(StageObjectPools)/sizeof(ObjectPool*) - 1);
 
 	for(ObjectPool **pool = &stage_object_pools.first; pool <= last; ++pool) {
