@@ -479,11 +479,12 @@ void gamepad_button(SDL_GameControllerButton button, int state) {
 				break;
 
 			default:
-				if(key >= 0) {
-					events_emit(TE_GAME_KEY_DOWN, key, indev, NULL);
-				} break;
+				break;
 		}
 
+		if(key >= 0) {
+			events_emit(TE_GAME_KEY_DOWN, key, indev, NULL);
+		}
 	} else {
 		events_emit(TE_GAMEPAD_BUTTON_UP, button, indev, NULL);
 
