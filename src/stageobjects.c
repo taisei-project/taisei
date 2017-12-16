@@ -8,7 +8,7 @@
 
 #define MAX_PROJECTILES             8192
 #define MAX_ITEMS                   MAX_PROJECTILES
-#define MAX_ENEMIES                 64
+#define MAX_ENEMIES                 256
 #define MAX_LASERS                  256
 #define MAX_ANIPLAYERS              32
 
