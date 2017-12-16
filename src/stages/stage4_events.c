@@ -1435,7 +1435,7 @@ void stage4_events(void) {
 		create_enemy1c(VIEWPORT_W*(_i&1)+VIEWPORT_H/2*I-300.0*I*frand(), 200, Fairy, stage4_fodder, 2-4*(_i&1)+1.0*I);
 
 	FROM_TO(3500 + midboss_time, 4000 + midboss_time, 100)
-		create_enemy3c(VIEWPORT_W/4.0 + VIEWPORT_W/2.0*(_i&1), 1000, BigFairy, stage4_cardbuster, VIEWPORT_W/6.0*(_i&1)+100.0*I,
+		create_enemy3c(VIEWPORT_W/4.0 + VIEWPORT_W/2.0*(_i&1), 1000, BigFairy, stage4_cardbuster, VIEWPORT_W/2.+VIEWPORT_W*0.4*(1-2*(_i&1))+100.0*I,
 					VIEWPORT_W/4.0+VIEWPORT_W/2.0*((_i+1)&1)+300.0*I, VIEWPORT_W/2.0-200.0*I);
 
 	AT(3800 + midboss_time)
