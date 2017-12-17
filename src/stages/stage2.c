@@ -242,7 +242,7 @@ static void stage2_spellpractice_events(void) {
 		boss_start_attack(hina, hina->attacks);
 		global.boss = hina;
 
-		start_bgm("stage2boss");
+		stage_start_bgm("stage2boss");
 	}
 }
 

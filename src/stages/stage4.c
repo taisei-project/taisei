@@ -293,7 +293,7 @@ static void stage4_spellpractice_events(void) {
 		boss_add_attack_from_info(global.boss, global.stage->spell, true);
 		boss_start_attack(global.boss, global.boss->attacks);
 
-		start_bgm("stage4boss");
+		stage_start_bgm("stage4boss");
 	}
 }
 

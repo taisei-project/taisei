@@ -208,7 +208,7 @@ static void stage1_spellpractice_events(void) {
 		boss_start_attack(cirno, cirno->attacks);
 		global.boss = cirno;
 
-		start_bgm("stage1boss");
+		stage_start_bgm("stage1boss");
 	}
 }
 

@@ -512,17 +512,24 @@ static void stage_preload(void) {
 static void display_stage_title(StageInfo *info) {
 	stagetext_add(info->title,    VIEWPORT_W/2 + I * (VIEWPORT_H/2-40), AL_Center, &_fonts.mainmenu, rgb(1, 1, 1), 50, 85, 35, 35);
 	stagetext_add(info->subtitle, VIEWPORT_W/2 + I * (VIEWPORT_H/2),    AL_Center, &_fonts.standard, rgb(1, 1, 1), 60, 85, 35, 35);
-
 }
 
 void stage_start_bgm(const char *bgm) {
+	char *old_title = NULL;
+
+	if(current_bgm.title && global.stage->type == STAGE_SPELL) {
+		old_title = strdup(current_bgm.title);
+	}
+
 	start_bgm(bgm);
 
-	if(current_bgm.title && current_bgm.started_at >= 0) {
+	if(current_bgm.title && current_bgm.started_at >= 0 && (!old_title || strcmp(current_bgm.title, old_title))) {
 		char txt[strlen(current_bgm.title) + 6];
 		snprintf(txt, sizeof(txt), "BGM: %s", current_bgm.title);
 		stagetext_add(txt, VIEWPORT_W-15 + I * (VIEWPORT_H-20), AL_Right, &_fonts.standard, rgb(1, 1, 1), 30, 85, 35, 35);
 	}
+
+	free(old_title);
 }
 
 typedef struct StageFrameState {
@@ -552,11 +559,6 @@ static bool stage_frame(void *arg) {
 		}
 
 		stage->procs->update();
-	}
-
-	if(!global.timer && stage->type != STAGE_SPELL) {
-		// must be done here to let the event function start a BGM first
-		display_stage_title(stage);
 	}
 
 	replay_stage_check_desync(global.replay_stage, global.frames, (tsrand() ^ global.plr.points) & 0xFFFF, global.replaymode);
@@ -683,6 +685,7 @@ void stage_loop(StageInfo *stage) {
 
 	player_stage_post_init(&global.plr);
 	stage->procs->begin();
+	display_stage_title(stage);
 
 	StageFrameState fstate = { .stage = stage };
 	fpscounter_reset(&global.fps);
