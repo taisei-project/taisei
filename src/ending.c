@@ -51,7 +51,8 @@ void bad_ending_marisa(Ending *e) {
 
 void bad_ending_youmu(Ending *e) {
 	add_ending_entry(e, -1, "“Now, let your mind be expanded! Do you have the potential to understand the code behind reality?”", NULL);
-	add_ending_entry(e, -1, "Although Yōmu reached into the deepest recesses of her samurai mental concentration, she was not a fully budded warrior, and so found this spring of knowledge far beyond her grasp. She instead bloomed with shame as she felt her mind be consumed by the light, no matter how much she struggled against it, and soon even the horizon swirled around her incomprehensibly. Her spirit half was not spared either, finding itself stretched and distorted into strange, meaningless shapes, and together both halves of Yōmu sank down into the foggy abyss of forgetfulness as the world dissipated before them like a fragile dawn mist.", NULL);
+	add_ending_entry(e, -1, "Although Yōmu reached into the deepest recesses of her samurai mental concentration, she was not a fully budded warrior, and so found this spring of knowledge far beyond her grasp. She instead bloomed with shame as she felt her mind be consumed by the light, no matter how much she struggled against it, and soon even the horizon swirled around her incomprehensibly.", NULL);
+	add_ending_entry(e, -1, "Her spirit half was not spared either, finding itself stretched and distorted into strange, meaningless shapes, and together both halves of Yōmu sank down into the foggy abyss of forgetfulness as the world dissipated before them like a fragile dawn mist.", NULL);
 	add_ending_entry(e, -1, "“Yōmu… Yōmu, wake up.”", NULL);
 	add_ending_entry(e, -1, "Bolting upright in shock, Yōmu found herself in her bed back in Hakugyokurō. It was early morning, just as when she had left to solve the incident, but immediately something felt off, and the half-ghost gardener found herself feeling surprisingly flustered and discontented.", NULL);
 

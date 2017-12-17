@@ -61,9 +61,9 @@ Dialog *stage5_post_boss_dialog(void) {
 
 	dadd_msg(d, Left, "I can see the top!");
 	if(pc->id == PLR_CHAR_MARISA) {
-		dadd_msg(d, Left, "I might not have the proper credentials,\nbut I can definitely solve this incident.\nJust sit back and leave it to me!");
+		dadd_msg(d, Left, "I might not have the proper credentials, but I can definitely solve this incident. Just sit back and leave it to me!");
 	} else if(pc->id == PLR_CHAR_YOUMU) {
-		dadd_msg(d, Left, "As you can see, I have cut through your\nchallenge. You can trust me to get to the\nheart of the matter and handle it swiftly and carefully.");
+		dadd_msg(d, Left, "As you can see, I have cut through your challenge. You can trust me to get to the heart of the matter and handle it swiftly and carefully.");
 	}
 
 	return d;
