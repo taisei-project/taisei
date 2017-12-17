@@ -122,13 +122,14 @@ static int marisa_star_orbit(Enemy *e, int t) {
 	if(t == EVENT_BIRTH) {
 		global.shake_view = 8;
 		return 1;
+	} else if(t == EVENT_DEATH) {
+		global.shake_view = 0;
 	}
 	if(t < 0) {
 		return 1;
 	}
 
 	if(tb >= 1 || global.frames - global.plr.recovery >= 0) {
-		global.shake_view = 0;
 		return ACTION_DESTROY;
 	}
 

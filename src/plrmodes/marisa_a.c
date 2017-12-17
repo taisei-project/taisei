@@ -315,7 +315,13 @@ static int masterspark(Enemy *e, int t2) {
 	if(t2 == EVENT_BIRTH) {
 		global.shake_view = 8;
 		return 1;
+	} else if(t2 == EVENT_DEATH) {
+		global.shake_view=0;
+		return 1;
 	}
+
+	if(t2 < 0)
+		return 1;
 
 	float t = player_get_bomb_progress(&global.plr, NULL);
 	if(t2%2==0 && t < 3./4) {
@@ -355,7 +361,6 @@ static int masterspark(Enemy *e, int t2) {
 	}
 
 	if(t >= 1 || global.frames - global.plr.recovery >= 0) {
-		global.shake_view = 0;
 		return ACTION_DESTROY;
 	}
 
