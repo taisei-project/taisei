@@ -205,6 +205,10 @@ static bool ingame_menu_interrupts_bgm(void) {
 	return global.stage->type != STAGE_SPELL;
 }
 
+static void stage_fade_bgm(void) {
+	fade_bgm((FPS * FADE_TIME) / 2000.0);
+}
+
 void stage_pause(void) {
 	MenuData menu;
 
@@ -225,7 +229,7 @@ void stage_pause(void) {
 		stop_sounds();
 
 		if(ingame_menu_interrupts_bgm() || global.game_over != GAMEOVER_RESTART) {
-			fade_bgm();
+			stage_fade_bgm();
 		}
 	} else {
 		resume_sounds();
@@ -479,7 +483,7 @@ void stage_finish(int gameover) {
 	assert(global.game_over != GAMEOVER_TRANSITIONING);
 	global.game_over = GAMEOVER_TRANSITIONING;
 	set_transition_callback(TransFadeBlack, FADE_TIME, FADE_TIME*2, stage_finalize, (void*)(intptr_t)gameover);
-	fade_bgm();
+	stage_fade_bgm();
 
 	if(global.replaymode == REPLAY_PLAY) {
 		return;

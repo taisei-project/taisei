@@ -212,7 +212,7 @@ void resume_bgm(void) {
 	start_bgm(current_bgm.name); // In most cases it just unpauses existing music.
 }
 
-static void stop_bgm_internal(bool pause, bool fade) {
+static void stop_bgm_internal(bool pause, double fadetime) {
 	if(!current_bgm.name) {
 		return;
 	}
@@ -227,8 +227,8 @@ static void stop_bgm_internal(bool pause, bool fade) {
 		if(pause) {
 			audio_backend_music_pause();
 			log_debug("BGM paused");
-		} else if(fade) {
-			audio_backend_music_fade((FPS * FADE_TIME) / 2000.0);
+		} else if(fadetime > 0) {
+			audio_backend_music_fade(fadetime);
 			log_debug("BGM fading out");
 		} else {
 			audio_backend_music_stop();
@@ -243,8 +243,8 @@ void stop_bgm(bool force) {
 	stop_bgm_internal(!force, false);
 }
 
-void fade_bgm(void) {
-	stop_bgm_internal(false, true);
+void fade_bgm(double fadetime) {
+	stop_bgm_internal(false, fadetime);
 }
 
 void save_bgm(void) {

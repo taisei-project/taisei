@@ -166,6 +166,7 @@ static bool ending_frame(void *arg) {
 	}
 
 	if(global.frames == e->entries[e->count-1].time-ENDING_FADE_OUT) {
+		fade_bgm((FPS * ENDING_FADE_OUT) / 4000.0);
 		set_transition(TransFadeWhite, ENDING_FADE_OUT, ENDING_FADE_OUT);
 	}
 
@@ -178,6 +179,7 @@ void ending_loop(void) {
 	create_ending(&e);
 	global.frames = 0;
 	set_ortho();
+	start_bgm("ending");
 	loop_at_fps(ending_frame, NULL, &e, FPS);
 	free_ending(&e);
 }

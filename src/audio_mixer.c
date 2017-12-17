@@ -213,7 +213,7 @@ void audio_backend_music_stop(void) {
 void audio_backend_music_fade(double fadetime) {
 	if(mixer_loaded) {
 		Mix_HookMusicFinished(NULL);
-		Mix_FadeOutMusic(1000 * fadetime);
+		Mix_FadeOutMusic(floor(1000 * fadetime));
 	}
 }
 
