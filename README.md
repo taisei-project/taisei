@@ -67,7 +67,7 @@ Once you have your mapping, there are two ways to make Taisei use it:
 * Create a file named `gamecontrollerdb.txt` where your config, replays and screenshots are, and put each mapping on a new line.
 * Put your mappings in the environment variable `SDL_GAMECONTROLLERCONFIG`, also separated by line breaks. Other games that use the GameController API will also pick them up.
 
-When you're done, please consider contributing your mappings to [SDL](https://libsdl.org/), [SDL_GameControllerDB](https://github.com/gabomdq/SDL_GameControllerDB), and [us](https://github.com/laochailan/taisei/issues), so that other people can benefit from your work.
+When you're done, please consider contributing your mappings to [SDL](https://libsdl.org/), [SDL_GameControllerDB](https://github.com/gabomdq/SDL_GameControllerDB), and [us](https://github.com/taisei-project/SDL_GameControllerDB), so that other people can benefit from your work.
 
 Also note that we currently only handle input from analog axes and digital buttons. Hats, analog buttons, and anything more exotic will not work, unless remapped.
 
