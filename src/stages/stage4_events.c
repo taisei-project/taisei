@@ -162,15 +162,16 @@ int stage4_cardbuster(Enemy *e, int t) {
 	FROM_TO(400, 600, 1)
 		e->pos += (e->args[2]-e->args[1])/200.0;
 
-	int c = 20;
+	int c = 40;
 	complex n = cexp(I*carg(global.plr.pos - e->pos) + 4*M_PI/(c+1)*I*_i);
 
 	FROM_TO_SND("shot1_loop", 120, 120+c*global.diff, 1) {
-		PROJECTILE("card", e->pos + 30*n, rgb(0, 0.8, 0.2), accelerated, { (1.1+0.2*global.diff)*n, 0.01*(1+0.1*_i)*n });
+		if(_i&1)
+			PROJECTILE("card", e->pos + 30*n, rgb(0, 0.8, 0.2), accelerated, { (0.8+0.2*global.diff)*n, 0.01*(1+0.01*_i)*n });
 	}
 
 	FROM_TO_SND("shot1_loop", 300, 320+20*global.diff, 1) {
-		PROJECTILE("card", e->pos + 30*n, rgb(0, 0.7, 0.5), asymptotic, { (1.1+0.2*global.diff)*n, 0.4*I });
+		PROJECTILE("card", e->pos + 30*n, rgb(0, 0.7, 0.5), asymptotic, { (0.8+0.2*global.diff)*n, 0.4*I });
 	}
 
 	return 1;
@@ -260,21 +261,23 @@ int stage4_explosive(Enemy *e, int t) {
 	if(t == EVENT_DEATH || (t >= 100 && global.diff >= D_Normal)) {
 		int i;
 		if(t == EVENT_DEATH)
-        		spawn_items(e->pos, Power, 1, NULL);
+			spawn_items(e->pos, Power, 1, NULL);
 
-		int n = 5*global.diff;
+		int n = 10*global.diff;
 		complex phase = global.plr.pos-e->pos;
 		phase /= cabs(phase);
 
 		for(i = 0; i < n; i++) {
-    			double angle = 2*M_PI*i/n+carg(phase);
+			double angle = 2*M_PI*i/n+carg(phase);
+			if(frand() < 0.5)
+				angle += M_PI/n;
 			PROJECTILE(
 				.texture = "ball",
 				.pos = e->pos,
 				.color = rgb(0.1+0.4*(i&1), 0.2, 1-0.6*(i&1)),
 				.rule = accelerated,
 				.args = {
-					2*(1.1+0.3*global.diff)*cexp(I*angle),
+					1.5*(1.1+0.3*global.diff)*cexp(I*angle),
 					0.001*cexp(I*angle)
 				}
 			);
@@ -528,14 +531,13 @@ int stage4_supercard(Enemy *e, int t) {
 	__timep = &time;
 
 	FROM_TO(70, 70+20*global.diff, 1) {
-		play_sound("shot1");
+		play_sound_ex("shot1",5,false);
 
 		int i;
 		complex n = cexp(I*carg(global.plr.pos - e->pos) + 2*M_PI/20.*I*_i);
 		for(i = -1; i <= 1 && t; i++)
-			PROJECTILE("card", e->pos + 30*n, rgb(0,1-_i/20.0, 0.4), splitcard,
-				{1*n, 0.1*_i, 100-time+70, 1.4*I*i*n},
-                                .flags=PFLAG_DRAWADD
+			PROJECTILE("card", e->pos + 30*n, rgb(0,0.4,1-_i/40.0), splitcard,
+				{1*n, 0.1*_i, 100-time+70, 1.4*I*i*n}
                         );
 	}
 
@@ -835,12 +837,12 @@ void kurumi_blowwall(Boss *b, int time) {
 static int kdanmaku_proj(Projectile *p, int t) {
 	int time = creal(p->args[0]);
 	if(t == time) {
-    		p->color=rgb(0.6,0.3,1.0);
-    		p->tex=get_tex("proj/flea");
-    		p->args[1] = -I;
-    	}
-    	if(t > time)
-        	p->args[1] -= 0.01*I;
+		p->color=rgb(0.6,0.3,1.0);
+		p->tex=get_tex("proj/flea");
+		p->args[1] = -I;
+	}
+	if(t > time)
+		p->args[1] -= 0.01*I;
 	p->pos += p->args[1];
 	p->angle = carg(p->args[1]);
 	return 1;
@@ -1434,12 +1436,12 @@ void stage4_events(void) {
 	FROM_TO(3201 + midboss_time, 3601 + midboss_time, 10)
 		create_enemy1c(VIEWPORT_W*(_i&1)+VIEWPORT_H/2*I-300.0*I*frand(), 200, Fairy, stage4_fodder, 2-4*(_i&1)+1.0*I);
 
-	FROM_TO(3500 + midboss_time, 4000 + midboss_time, 100)
-		create_enemy3c(VIEWPORT_W/4.0 + VIEWPORT_W/2.0*(_i&1), 1000, BigFairy, stage4_cardbuster, VIEWPORT_W/2.+VIEWPORT_W*0.4*(1-2*(_i&1))+100.0*I,
+	FROM_TO(3350 + midboss_time, 4000 + midboss_time, 100)
+		create_enemy3c(VIEWPORT_W/4.0 + VIEWPORT_W/2.0*(_i&1), 3000, BigFairy, stage4_cardbuster, VIEWPORT_W/2.+VIEWPORT_W*0.4*(1-2*(_i&1))+100.0*I,
 					VIEWPORT_W/4.0+VIEWPORT_W/2.0*((_i+1)&1)+300.0*I, VIEWPORT_W/2.0-200.0*I);
 
 	AT(3800 + midboss_time)
-		create_enemy1c(VIEWPORT_W/2, 7000, BigFairy, stage4_supercard, 4.0*I);
+		create_enemy1c(VIEWPORT_W/2, 9000, BigFairy, stage4_supercard, 4.0*I);
 
 	FROM_TO(4300 + midboss_time, 4600 + midboss_time, 95-10*global.diff)
 		create_enemy1c(VIEWPORT_W*(_i&1)+100*I, 200, Swirl, stage4_backfire, frand()*(1-2*(_i&1)));
