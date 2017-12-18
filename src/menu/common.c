@@ -98,7 +98,6 @@ static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty
         }
 
         case 2: {
-            MenuData m;
             create_saverpy_menu(&m);
             menu_loop(&m);
             break;
