@@ -107,9 +107,7 @@ void replay_destroy(Replay *rpy) {
 }
 
 void replay_stage_event(ReplayStage *stg, uint32_t frame, uint8_t type, uint16_t value) {
-	if(!stg) {
-		return;
-	}
+	assert(stg != NULL);
 
 	ReplayStage *s = stg;
 	ReplayEvent *e = s->events + s->numevents++;

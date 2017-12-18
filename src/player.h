@@ -152,6 +152,5 @@ void player_cancel_bomb(Player *plr, int delay);
 
 // Progress is normalized from 0: bomb start to 1: bomb end
 double player_get_bomb_progress(Player *plr, double *out_speed);
-int player_run_bomb_logic(Player *plr, void *ent, complex *argptr, int (*callback)(void *ent, int t, double speed));
 
 void player_preload(void);

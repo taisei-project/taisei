@@ -87,26 +87,25 @@ static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty
     } while(restart);
 
     free_resources(false);
+    assert(global.replay_stage != NULL);
 
-    if(global.replay_stage) {
-        switch(config_get_int(CONFIG_SAVE_RPY)) {
-            case 0: break;
+    switch(config_get_int(CONFIG_SAVE_RPY)) {
+        case 0: break;
 
-            case 1: {
-                save_rpy(menu, NULL);
-                break;
-            }
-
-            case 2: {
-                MenuData m;
-                create_saverpy_menu(&m);
-                menu_loop(&m);
-                break;
-            }
+        case 1: {
+            save_rpy(menu, NULL);
+            break;
         }
 
-        global.replay_stage = NULL;
+        case 2: {
+            MenuData m;
+            create_saverpy_menu(&m);
+            menu_loop(&m);
+            break;
+        }
     }
+
+    global.replay_stage = NULL;
 
     if(global.game_over == GAMEOVER_WIN && !info) {
         start_bgm("ending");

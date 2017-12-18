@@ -641,15 +641,11 @@ void stage_loop(StageInfo *stage) {
 	stage_start(stage);
 
 	if(global.replaymode == REPLAY_RECORD) {
-		if(config_get_int(CONFIG_SAVE_RPY)) {
-			global.replay_stage = replay_create_stage(&global.replay, stage, seed, global.diff, &global.plr);
+		global.replay_stage = replay_create_stage(&global.replay, stage, seed, global.diff, &global.plr);
 
-			// make sure our player state is consistent with what goes into the replay
-			player_init(&global.plr);
-			replay_stage_sync_player_state(global.replay_stage, &global.plr);
-		} else {
-			global.replay_stage = NULL;
-		}
+		// make sure our player state is consistent with what goes into the replay
+		player_init(&global.plr);
+		replay_stage_sync_player_state(global.replay_stage, &global.plr);
 
 		log_debug("Random seed: %u", seed);
 
