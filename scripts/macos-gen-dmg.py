@@ -3,13 +3,16 @@
 from taiseilib.tempinstall import temp_install
 from taiseilib.common import run_main
 
+from pathlib import Path
+
 import argparse
 import subprocess
 import shlex
+import os
 
 
 def main(args):
-    parser = argparse.ArgumentParser(description='Generate a macOS dmg package.', prog=args[0])
+    parser = argparse.ArgumentParser(description='Generate a .dmg package for macOS.', prog=args[0])
 
     parser.add_argument('output',
         help='The destination .dmg file',
@@ -17,7 +20,8 @@ def main(args):
 
     parser.add_argument('build_dir',
         help='The build directory (defaults to CWD)',
-        default='.',
+        default=Path(os.getcwd()),
+        type=Path,
         nargs='?',
     )
 

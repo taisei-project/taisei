@@ -23,10 +23,6 @@ class MacroNotDefinedError(NameNotDefinedError):
         return super().__init__('Macro', name)
 
 
-pattern_with_macros = re.compile(r'\${(\w+(?:\(.*?\))?)}', re.A)
-pattern_without_macros = re.compile(r'\${(\w+)}', re.A)
-
-
 def make_macros(args=common.default_args):
     from . import version
     vobj = version.get(args=args)
@@ -34,17 +30,25 @@ def make_macros(args=common.default_args):
     def macro_version(format):
         return vobj.format(format)
 
+    def macro_file(path):
+        with open(path, 'r') as infile:
+            return infile.read()
+
     return {
         'VERSION': macro_version,
+        'FILE': macro_file,
     }
 
 
-def configure(source, variables, *, default=None, use_macros=True, args=common.default_args):
+def configure(source, variables, *, default=None, use_macros=True, prefix='${', suffix='}', args=common.default_args):
+    prefix = re.escape(prefix)
+    suffix = re.escape(suffix)
+
     if use_macros:
-        pattern = pattern_with_macros
+        pattern = re.compile(prefix + r'(\w+(?:\(.*?\))?)' + suffix, re.A)
         macros = make_macros(args)
     else:
-        pattern = pattern_without_macros
+        pattern = re.compile(prefix + r'(\w+)' + suffix, re.A)
 
     def sub(match):
         var = match.group(1)
@@ -80,16 +84,15 @@ def configure_file(inpath, outpath, variables, **options):
     common.update_text_file(outpath, result)
 
 
-def main(args):
+def add_configure_args(parser):
     def parse_definition(defstring):
         return defstring.split('=', 1)
 
-    import argparse
+    def parse_definition_from_file(defstring):
+        var, fpath = parse_definition(defstring)
 
-    parser = argparse.ArgumentParser(description='Generate a text file based on a template.', prog=args[0])
-
-    parser.add_argument('input', help='the template file')
-    parser.add_argument('output', help='the output file')
+        with open(fpath, 'r') as infile:
+            return (var, infile.read())
 
     parser.add_argument('--define', '-D',
         type=parse_definition,
@@ -100,12 +103,45 @@ def main(args):
         help='define a variable that may appear in template, can be used multiple times'
     )
 
+    parser.add_argument('--define-from-file', '-F',
+        type=parse_definition_from_file,
+        action='append',
+        metavar='VARIABLE=FILE',
+        dest='variables',
+        default=[],
+        help='like --define, but the value is read from the specified file'
+    )
+
+    parser.add_argument('--prefix',
+        default='${',
+        help='prefix for substitution expressions, default: ${'
+    )
+
+    parser.add_argument('--suffix',
+        default='}',
+        help='suffix for substitution expressions, default: }'
+    )
+
+
+def main(args):
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Generate a text file based on a template.', prog=args[0])
+
+    parser.add_argument('input', help='the template file')
+    parser.add_argument('output', help='the output file')
+
+    add_configure_args(parser)
     common.add_common_args(parser, depfile=True)
 
     args = parser.parse_args(args[1:])
     args.variables = dict(args.variables)
 
-    configure_file(args.input, args.output, args.variables, args=args)
+    configure_file(args.input, args.output, args.variables,
+        prefix=args.prefix,
+        suffix=args.suffix,
+        args=args
+    )
 
     if args.depfile is not None:
         common.write_depfile(args.depfile, args.output, [args.input, __file__])
