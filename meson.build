@@ -22,13 +22,17 @@ common_taiseilib_args = [
 ]
 
 common_taiseilib_defs = [
-    '-DMESON_BUILD_TYPE=@0@'.format(get_option('buildtype'))
+    '-DMESON_BUILD_TYPE=@0@'.format(get_option('buildtype')),
+    '-DMESON_BUILD_ROOT=@0@'.format(meson.build_root()),
+    '-DMESON_SOURCE_ROOT=@0@'.format(meson.source_root()),
 ]
 
-version_script = find_program('scripts/version.py')
+scripts_dir = 'scripts'
+
+version_script = find_program(join_paths(scripts_dir, 'version.py'))
 version_command = [version_script, common_taiseilib_args]
 
-preprocess_script = find_program('scripts/configure-file.py')
+preprocess_script = find_program(join_paths(scripts_dir, 'configure-file.py'))
 preprocess_args = common_taiseilib_args + common_taiseilib_defs
 preprocess_command = [preprocess_script, preprocess_args]
 
@@ -192,10 +196,14 @@ if host_machine.system() == 'windows' or host_machine.system() == 'darwin'
 endif
 
 if host_machine.system() == 'windows'
-    unix2dos = find_program('scripts/unix2dos.py')
-    custom_target('COPYING.txt', command : [unix2dos, '@INPUT@', '@OUTPUT@'],
-                  input : 'COPYING', output : 'COPYING.txt',
-                  install : true, install_dir : doc_path)
+    unix2dos = find_program(join_paths(scripts_dir, 'unix2dos.py'))
+    custom_target('COPYING.txt',
+        command : [unix2dos, '@INPUT@', '@OUTPUT@'],
+        input : 'COPYING',
+        output : 'COPYING.txt',
+        install : true,
+        install_dir : doc_path
+    )
 else
     install_data('COPYING', install_dir : doc_path)
 endif
@@ -240,13 +248,6 @@ subdir('resources')
 subdir('misc')
 subdir('doc')
 subdir('xdg')
+subdir('scripts')
 
 message(summary)
-
-if macos_app_bundle
-    dmg_command = find_program('scripts/macos-gen-dmg.py')
-    dmg_filename = 'Taisei-@0@-macOS.dmg'.format(taisei_version_string)
-    dmg_target = run_target('dmg',
-        command: [dmg_command, join_paths(meson.build_root(), dmg_filename), meson.build_root()],
-    )
-endif
