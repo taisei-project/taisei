@@ -782,7 +782,7 @@ void iku_cathode(Boss *b, int t) {
 
 	TIMER(&t)
 
-	FROM_TO(50, 1800, 70-global.diff*10) {
+	FROM_TO(50, 18000, 70-global.diff*10) {
 		b->ani.mirrored = !b->ani.mirrored;
 		aniplayer_queue(&b->ani,1,0,5);
 		int i;
@@ -818,7 +818,7 @@ void iku_induction(Boss *b, int t) {
 
 	TIMER(&t);
 
-	FROM_TO_SND("shot1_loop", 0, 1800, 8) {
+	FROM_TO_SND("shot1_loop", 0, 18000, 8) {
 		play_sound("redirect");
 
 		int i,j;
