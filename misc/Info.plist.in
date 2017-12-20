@@ -17,11 +17,11 @@
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>${TAISEI_VERSION}</string>
+    <string>${VERSION({string})}</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleVersion</key>
-    <string>${TAISEI_VERSION_MAJOR}.${TAISEI_VERSION_MINOR}.${TAISEI_VERSION_PATCH}.${TAISEI_VERSION_TWEAK}</string>
+    <string>${VERSION({major}.{minor}.{patch}.{tweak})}</string>
     <key>NSHumanReadableCopyright</key>
     <string>© 2011-2017, Taisei Project</string>
 </dict>

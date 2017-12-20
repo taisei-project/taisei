@@ -16,8 +16,27 @@ project('taisei', 'c',
 ver_fb = get_option('version_fallback').strip()
 version_fallback = ver_fb != '' ? ver_fb : meson.project_version()
 
+common_taiseilib_args = [
+    '--rootdir', meson.source_root(),
+    '--fallback-version', version_fallback
+]
+
+common_taiseilib_defs = [
+    '-DMESON_BUILD_TYPE=@0@'.format(get_option('buildtype'))
+]
+
 version_script = find_program('scripts/version.py')
-version_command = [version_script, '--rootdir', meson.source_root(), '--fallback', version_fallback]
+version_command = [version_script, common_taiseilib_args]
+
+preprocess_script = find_program('scripts/configure-file.py')
+preprocess_args = common_taiseilib_args + common_taiseilib_defs
+preprocess_command = [preprocess_script, preprocess_args]
+
+preprocessor = generator(preprocess_script,
+    arguments: preprocess_args + ['@EXTRA_ARGS@', '--depfile', '@DEPFILE@', '@INPUT@', '@OUTPUT@'],
+    output: '@BASENAME@',
+    depfile: '@BASENAME@.d',
+)
 
 taisei_version_string = run_command(version_command, '{string}').stdout().strip()
 
@@ -225,9 +244,9 @@ subdir('xdg')
 message(summary)
 
 if macos_app_bundle
-    dmg_command = find_program('scripts/macos-gen-dmg.sh')
+    dmg_command = find_program('scripts/macos-gen-dmg.py')
     dmg_filename = 'Taisei-@0@-macOS.dmg'.format(taisei_version_string)
     dmg_target = run_target('dmg',
-        command: [dmg_command, get_option('prefix'), join_paths(meson.build_root(), dmg_filename)],
+        command: [dmg_command, join_paths(meson.build_root(), dmg_filename), meson.build_root()],
     )
 endif

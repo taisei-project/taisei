@@ -4,6 +4,8 @@ import os
 import sys
 from zipfile import ZipFile, ZIP_DEFLATED
 
+from taiseilib.common import write_depfile
+
 assert(len(sys.argv) > 4)
 archive = sys.argv[1]
 sourcedir = sys.argv[2]
@@ -18,6 +20,6 @@ with ZipFile(archive, "w", ZIP_DEFLATED) as zf:
                 rel = os.path.join(os.path.basename(directory), os.path.relpath(abspath, directory))
                 zf.write(abspath, rel)
 
-    with open(depfile, "w") as df:
-        l = [archive + ":"] + [os.path.join(sourcedir, x) for x in zf.namelist()]
-        df.write(" \\\n ".join(l))
+    write_depfile(depfile, archive,
+        [os.path.join(sourcedir, x) for x in zf.namelist()] + [__file__]
+    )
