@@ -27,8 +27,8 @@ ${BUILDTYPE_DEFINE}
 #endif
 
 VS_VERSION_INFO VERSIONINFO
-    FILEVERSION     ${TAISEI_VERSION_MAJOR},${TAISEI_VERSION_MINOR},${TAISEI_VERSION_PATCH},${TAISEI_VERSION_TWEAK}
-    PRODUCTVERSION  ${TAISEI_VERSION_MAJOR},${TAISEI_VERSION_MINOR},${TAISEI_VERSION_PATCH},${TAISEI_VERSION_TWEAK}
+    FILEVERSION     ${VERSION({major},{minor},{patch},{tweak})}
+    PRODUCTVERSION  ${VERSION({major},{minor},{patch},{tweak})}
     FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
     FILEFLAGS       (F_DEBUG|F_PRERELEASE)
     FILEOS          VOS_NT
@@ -41,11 +41,11 @@ BEGIN
         BEGIN
             VALUE "CompanyName",      "Taisei Project developers\0"
             VALUE "FileDescription",  "Taisei Project\0"
-            VALUE "FileVersion",      "${TAISEI_VERSION}\0"
+            VALUE "FileVersion",      "${VERSION({string})}\0"
             VALUE "InternalName",     "taisei\0"
             VALUE "OriginalFilename", "taisei.exe\0"
             VALUE "ProductName",      "Taisei Project\0"
-            VALUE "ProductVersion",   "${TAISEI_VERSION}\0"
+            VALUE "ProductVersion",   "${VERSION({string})}\0"
         END
     END
     BLOCK "VarFileInfo"

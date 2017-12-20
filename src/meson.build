@@ -1,27 +1,43 @@
 
-version_template_script = find_program('../scripts/version-template.py')
-version_template_command = [version_template_script, meson.source_root(), '@INPUT@', '@OUTPUT@', get_option('buildtype'), version_fallback]
-version_deps = [custom_target('version file',
-                              command : version_template_command,
-                              build_always : true,
-                              input : 'version_auto.c.in',
-                              output : 'version_auto.c')]
+version_deps = [
+    preprocessor.process('version_auto.c.in')
+]
 
 if host_machine.system() == 'windows'
     winmod = import('windows')
+
     # HACK: compile_resources only accepts strings, not generated dependencies.
     # We still want to generate this every time though.
+
+    # This is unreliable.
+    # https://github.com/mesonbuild/meson/issues/2807
+
     rcpath = join_paths(meson.current_build_dir(), 'taisei.rc')
-    c = run_command(version_template_script, meson.source_root(), 'taisei.rc.in', rcpath, get_option('buildtype'), version_fallback)
+    rcdefs = [
+        '-DICONS_DIR=@0@'.format(join_paths(meson.source_root(), 'misc', 'icons'))
+    ]
+
+    if get_option('buildtype').startswith('debug')
+        rcdefs += ['-DBUILDTYPE_DEFINE=#define DEBUG_BUILD']
+    else
+        rcdefs += ['-DBUILDTYPE_DEFINE=#define RELEASE_BUILD']
+    endif
+
+    c = run_command(preprocess_command, 'taisei.rc.in', rcpath, rcdefs)
+
     if c.returncode() != 0
         error('Failed to generate Windows resource file:\n' + c.stderr())
     endif
-    version_deps += custom_target('Windows resource file',
-                                  command : version_template_command,
-                                  build_always : true,
-                                  input : 'taisei.rc.in',
-                                  output : 'taisei.rc')
-    version_deps += winmod.compile_resources(rcpath)
+
+    rc_target = custom_target('Windows resource file',
+        command : [preprocess_command, rcdefs, '@INPUT@', '@OUTPUT@'],
+        build_always : true,
+        input : 'taisei.rc.in',
+        output : 'taisei.rc',
+    )
+
+    version_deps += rc_target
+    version_deps += winmod.compile_resources(rc_target.full_path())
 endif
 
 use_intel_intrin = get_option('intel_intrin') and cc.links('''
@@ -177,7 +193,7 @@ if have_posix
     ]
 elif host_machine.system() == 'windows'
     src_base += [
-        'windows_misc.c',
+        # 'windows_misc.c',
         'vfs/syspath_win32.c',
         'rwops/rwops_pipe_null.c',
     ]
