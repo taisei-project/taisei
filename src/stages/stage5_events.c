@@ -17,7 +17,7 @@ Dialog *stage5_post_mid_dialog(void) {
 	DialogMessage *m = NULL;
 
 	if(pc->id == PLR_CHAR_MARISA) {
-		m = dadd_msg(d, Left, "Hey, wait!  …Did I just see an oarfish?");
+		m = dadd_msg(d, Left, "Hey, wait! …Did I just see an oarfish?");
 	} else if(pc->id == PLR_CHAR_YOUMU) {
 		m = dadd_msg(d, Left, "A messenger of Heaven! If I follow her, I’ll surely learn something about the incident!");
 	}

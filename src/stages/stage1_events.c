@@ -14,7 +14,7 @@ Dialog *stage1_dialog(void) {
 	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/cirno");
 
 	if(pc->id == PLR_CHAR_MARISA) {
-		dadd_msg(d, Left, "It’s gotten pretty cold ‘round here. I wish I brought a sweater.");
+		dadd_msg(d, Left, "It’s gotten pretty cold ’round here. I wish I brought a sweater.");
 		dadd_msg(d, Right, "Every time there’s an incident, we fairies show up to stop weak humans like you from spoiling the fun!");
 		dadd_msg(d, Left, "So, you’re callin’ me weak?");
 		dadd_msg(d, Right, "Weak to cold for sure! I’ll turn you into a human-sized popsicle!");

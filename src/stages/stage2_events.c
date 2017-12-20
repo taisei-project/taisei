@@ -25,7 +25,7 @@ Dialog *stage2_dialog(void) {
 		dadd_msg(d,Right, "I can’t let you pass any further than this. Please go back down the mountain.");
 		dadd_msg(d,Left, "Are you a goddess? It’s nice of you to be looking out for me, but the Netherworld has been put at risk due to this incident.");
 		dadd_msg(d,Left, "I have to keep going.");
-		dadd_msg(d,Right, "The tunnel heads leads nowhere but to ruin. If you don’t return to the ghostly world where you come from, I’ll have to stop you by force!");
+		dadd_msg(d,Right, "The tunnel leads nowhere but to ruin. If you don’t return to the ghostly world where you come from, I’ll have to stop you by force!");
 		dadd_msg(d,Left, "My mistress won’t like it if I tell her I was stopped by divine intervention. You’ll have to come up with another excuse.");
 	}
 

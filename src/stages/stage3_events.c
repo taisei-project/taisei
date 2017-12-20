@@ -21,13 +21,13 @@ static Dialog *stage3_dialog(void) {
 		dadd_msg(d,Left, "I expected ya to lose, that’s all.");
 		dadd_msg(d,Right, "I’m nowhere near as weak as you think, human! In fact, being here has made me stronger than ever! That’s because I’m the one that made this tunnel and broke the barrier,");
 		dadd_msg(d,Right, "in order to finally show you all the true merit of insect power!");
-		dadd_msg(d,Left, "I can’t really say I believe ya on that point, bein’ that you’re just a bug ‘n all.");
+		dadd_msg(d,Left, "I can’t really say I believe ya on that point, bein’ that you’re just a bug ’n all.");
 		dadd_msg(d,Right, "Ha! Watch me put on a grand light show that will put your dud fireworks to shame!");
 	} else if(pc->id == PLR_CHAR_YOUMU) {
 		dadd_msg(d,Left, "Huh, why is it that I feel like I’ve fought you before? But when I try to recall anything, my skin crawls and I seem to forget immediately.");
 		dadd_msg(d,Right, "Maybe it’s because you realized the true power of us insects?");
 		dadd_msg(d,Left, "No, I think it’s because I was too disgusted.");
-		dadd_msg(d,Right, " How dare you! We make life possible for you humans, and in turn you disrespect us and call us derogatory things!");
+		dadd_msg(d,Right, "How dare you! We make life possible for you humans, and in turn you disrespect us and call us derogatory things!");
 		dadd_msg(d,Right, "Entering this light has given me great power. I’ll stomp you out in the same cruel way you humans step on bugs!");
 		dadd_msg(d,Left, "If I cut legs off of an insect, do they squirm all on their own? How gross!");
 	}
@@ -45,7 +45,7 @@ static Dialog *stage3_post_dialog(void) {
 		dadd_msg(d, Left, "so she wasn’t the culprit at all, just a bug that got caught inside. She should’a searched for a window instead of flyin’ right into the fire.");
 	}
 	if(pc->id == PLR_CHAR_YOUMU) {
-		dadd_msg(d, Left, "I never see any insect infestations while tending Hakugyokurou’s gardens. That’s a convenience of being half-dead.");
+		dadd_msg(d, Left, "I never see any insect infestations while tending Hakugyokurō’s gardens. That’s a convenience of being half-dead.");
 	}
 
 	return d;
