@@ -6,6 +6,8 @@
  * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
  */
 
+#include "taisei.h"
+
 #include "objectpool_util.h"
 
 static void* objpool_release_list_callback(List **dest, List *elem, void *vpool) {
