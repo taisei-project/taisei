@@ -10,9 +10,9 @@ class VerionFormatError(common.TaiseiError):
 
 class Version(object):
     def __init__(self, version_str):
-        version_str = version_str.lstrip("v")
+        version_str = version_str.lstrip("v").replace("+", "-")
         vparts = version_str.split("-")[0].split(".")
-        vextra = version_str.replace("+", "-").split("-")
+        vextra = version_str.split("-")
 
         if len(vextra) > 1:
             vextra = vextra[1]
