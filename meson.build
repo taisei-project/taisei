@@ -181,7 +181,7 @@ else
     data_path = join_paths(datadir, 'taisei')
     config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', join_paths(get_option('prefix'), data_path))
     doc_path = join_paths(datadir, 'doc', 'taisei')
-    xdg_path = data_path
+    xdg_path = datadir
 endif
 
 if get_option('buildtype').startswith('debug')
