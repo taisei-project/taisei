@@ -38,6 +38,11 @@ if host_machine.system() == 'windows'
 
     version_deps += rc_target
     version_deps += winmod.compile_resources(rc_target.full_path())
+
+    # msvcrt is dumb and only supports up to c89.
+    # with this defined, alternative implementations from mingw for e.g. the
+    # printf family of functions will be used, which conform to c11.
+    config.set('__USE_MINGW_ANSI_STDIO', 1)
 endif
 
 use_intel_intrin = get_option('intel_intrin') and cc.links('''
