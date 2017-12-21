@@ -4,7 +4,7 @@ dst="$PWD"
 cd "$(dirname "${BASH_SOURCE[0]}")"/.. || exit $?
 src="$PWD"
 
-exec meson setup \
+exec ${MESON:-meson} \
     --buildtype=debug \
     --prefix="$dst/install" \
     -Dstrip=false \
