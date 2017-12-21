@@ -9,11 +9,10 @@ from contextlib import contextmanager, suppress
 from tempfile import TemporaryDirectory
 
 import os
-import json
 
 
 def get_build_opts(build_dir):
-    opts = json.loads(meson_introspect('--buildoptions', cwd=build_dir))
+    opts = meson_introspect('--buildoptions', cwd=build_dir)
     return {opt['name']: opt for opt in opts}
 
 

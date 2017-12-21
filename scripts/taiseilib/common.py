@@ -1,25 +1,42 @@
+
+from contextlib import contextmanager
+from pathlib import Path
+
+import subprocess
+
+
 class TaiseiError(RuntimeError):
     pass
 
 
 class DefaultArgs(object):
-    def getattr(self):
-        return None
+    def __init__(self):
+        self.fallback_version = None
+        self.rootdir = Path(__file__).parent.parent.parent
+        self.depfile = None
 
 
 default_args = DefaultArgs()
 
 
 def add_common_args(parser, *, depfile=False):
-    parser.add_argument('--fallback-version', type=str, default=None,
-        help='fallback version string, used if git lookup fails')
+    parser.add_argument('--fallback-version',
+        default=default_args.fallback_version,
+        help='fallback version string, used if git lookup fails'
+    )
 
-    parser.add_argument('--rootdir', type=str, default=None,
-        help='Taisei source directory')
+    parser.add_argument('--rootdir',
+        type=Path,
+        default=default_args.rootdir,
+        help='Taisei source directory'
+    )
 
     if depfile:
-        parser.add_argument('--depfile', type=str, default=None,
-            help='generate a depfile for the build system')
+        parser.add_argument('--depfile',
+            type=Path,
+            default=default_args.depfile,
+            help='generate a depfile for the build system'
+        )
 
 
 def run_main(func, args=None):
@@ -56,17 +73,25 @@ def update_text_file(outpath, data):
 
 def meson(*args, **kwargs):
     # TODO: locate meson executable somehow
-    import subprocess
     return subprocess.check_call(('meson',) + args, **kwargs)
 
 
 def meson_introspect(*args, **kwargs):
     # TODO: locate meson executable somehow
-    import subprocess
-    return subprocess.check_output(('meson', 'introspect') + args, **kwargs)
+    import json
+    return json.loads(subprocess.check_output(('meson', 'introspect') + args, **kwargs).decode('utf8'))
 
 
 def ninja(*args, **kwargs):
     # TODO: locate ninja executable somehow
-    import subprocess
     return subprocess.check_call(('ninja',) + args, **kwargs)
+
+
+@contextmanager
+def in_dir(dir):
+    import os
+
+    old = Path.cwd()
+    os.chdir(str(dir))
+    yield
+    os.chdir(str(old))
