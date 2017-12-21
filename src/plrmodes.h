@@ -20,7 +20,7 @@ typedef enum {
 
     PLR_CHAR_MARISA = 0,
     PLR_CHAR_YOUMU = 1,
-    // PLR_CHAR_REIMU = 2,
+    PLR_CHAR_REIMU = 2,
 
     NUM_CHARACTERS,
 } CharacterID;
@@ -33,6 +33,9 @@ typedef enum {
 
     PLR_SHOT_YOUMU_MIRROR = 0,
     PLR_SHOT_YOUMU_HAUNTING = 1,
+    
+    PLR_SHOT_REIMU_DREAM= 0,
+    PLR_SHOT_REIMU_SPIRIT = 1,
 
     NUM_SHOT_MODES_PER_CHARACTER,
 } ShotModeID;

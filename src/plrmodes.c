@@ -15,10 +15,12 @@
 #include "plrmodes.h"
 #include "plrmodes/marisa.h"
 #include "plrmodes/youmu.h"
+#include "plrmodes/reimu.h"
 
 static PlayerCharacter *player_characters[] = {
 	&character_marisa,
 	&character_youmu,
+	&character_reimu,
 };
 
 static PlayerMode *player_modes[] = {
@@ -26,6 +28,8 @@ static PlayerMode *player_modes[] = {
 	&plrmode_marisa_b,
 	&plrmode_youmu_a,
 	&plrmode_youmu_b,
+	&plrmode_reimu_a,
+	&plrmode_reimu_b,
 };
 
 PlayerCharacter* plrchar_get(CharacterID id) {
