@@ -28,15 +28,15 @@ ninja install
 
 This will install game data to `$prefix/share/taisei/` and build this path
 _statically_ into the executable. This might be a package maintainer’s choice.
-Alternatively you may want to add `-Drelative_install=true --bindir=`
-to get a relative structure like
+Alternatively you may want to add `-Dinstall_relative=true` to get a relative
+structure like
 
 ```
 $prefix/taisei
 $prefix/data/
 ```
 
-`RELATIVE` is always set when building for Windows or macOS.
+`install_relative` is always set when building for Windows.
 
 ## Where are my replays, screenshots and settings?
 

@@ -136,12 +136,17 @@ if macos_app_bundle
     )
 else
     datadir = get_option('datadir')
-    bindir = get_option('bindir')
 
     if get_option('install_relative') == 'auto'
         config.set('TAISEI_BUILDCONF_RELATIVE_DATA_PATH', host_machine.system() == 'windows')
     else
         config.set('TAISEI_BUILDCONF_RELATIVE_DATA_PATH', get_option('install_relative') == 'true')
+    endif
+
+    if config.get('TAISEI_BUILDCONF_RELATIVE_DATA_PATH')
+        bindir = ''
+    else
+        bindir = get_option('bindir')
     endif
 endif
 
@@ -156,26 +161,15 @@ if config.get('TAISEI_BUILDCONF_RELATIVE_DATA_PATH')
     doc_path = ''
     xdg_path = 'freedesktop.org'
 
-    if macos_app_bundle
-        # This is relative to SDL_GetBasePath(), which will return '/path/to/Taisei.app/Contents/Resources' for a macOS bundle.
-        config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', data_path)
+    # This is relative to SDL_GetBasePath()
+    config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', data_path)
 
+    if macos_app_bundle
         # Actual installation path
         data_path = join_paths(datadir, data_path)
 
         # I don't know why would you do that, but more power to you
         xdg_path = join_paths(datadir, xdg_path)
-    else
-        # HACK
-        rel_dpath = []
-        foreach p : get_option('bindir').split('/')
-            if p != ''
-                rel_dpath += '..'
-            endif
-        endforeach
-        rel_dpath += data_path
-
-        config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', join_paths(rel_dpath))
     endif
 else
     data_path = join_paths(datadir, 'taisei')
