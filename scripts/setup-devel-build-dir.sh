@@ -6,7 +6,7 @@ src="$PWD"
 
 exec meson setup \
     --buildtype=debug \
-    --prefix="$PWD/install" \
+    --prefix="$dst/install" \
     -Dstrip=false \
     -Db_lto=false \
     -Db_ndebug=false \
