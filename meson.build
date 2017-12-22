@@ -44,10 +44,13 @@ preprocessor = generator(preprocess_script,
 
 taisei_version_result = run_command(version_command, '{string}')
 
+if taisei_version_result.stderr() != ''
+    message(taisei_version_result.stderr().strip())
+endif
+
 if taisei_version_result.returncode() != 0
-    error('Version script exited with code @0@\n\n@1@'.format(
-        taisei_version_result.returncode(),
-        taisei_version_result.stderr(),
+    error('Version script exited with code @0@'.format(
+        taisei_version_result.returncode()
     ))
 endif
 

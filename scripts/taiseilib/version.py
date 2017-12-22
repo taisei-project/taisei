@@ -56,7 +56,9 @@ def get(*, rootdir=None, fallback=None, args=common.default_args):
         )
 
         version_str = git.strip()
-    except subprocess.SubprocessError:
+    except (subprocess.SubprocessError, OSError) as e:
+        print(e, file=sys.stderr)
+
         if not fallback:
             raise
 
