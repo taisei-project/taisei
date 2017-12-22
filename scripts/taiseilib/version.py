@@ -57,11 +57,10 @@ def get(*, rootdir=None, fallback=None, args=common.default_args):
 
         version_str = git.strip()
     except (subprocess.SubprocessError, OSError) as e:
-        print(e, file=sys.stderr)
-
         if not fallback:
             raise
 
+        print(e, file=sys.stderr)
         print("Warning: git not found or not a git repository; using fallback version {0}".format(fallback), file=sys.stderr)
         version_str = fallback
 
