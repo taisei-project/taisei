@@ -3,7 +3,7 @@ project('taisei', 'c',
     version : 'v1.1.0-9999',
     meson_version : '>=0.38.0',
     default_options : [
-        'c_std=c11',
+        'c_std=gnu11',
 
         # You may want to change these for a debug build dir
         'buildtype=release',
