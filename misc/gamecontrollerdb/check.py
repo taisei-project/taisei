@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 #import fileinput
 import string
@@ -27,6 +27,8 @@ def error (message):
     print(get_current_line())
 
 def check_guid (guid):
+    if guid == "xinput":
+        return
     if len (guid) != 32:
         error ("The length of the guid string must be equal to 32")
     for c in guid:
@@ -39,7 +41,8 @@ def check_mapping (mappingstring):
             "back", "dpdown", \
             "dpleft", "dpright", "dpup", "guide", "leftshoulder", "leftstick", \
             "lefttrigger", "rightshoulder", "rightstick", "righttrigger", \
-            "start", "x", "y"]
+            "start", "x", "y", "-leftx", "-lefty", "-rightx", "-righty", \
+            "+leftx", "+lefty", "+rightx", "+righty"]
     platforms = ["Linux", "Mac OS X", "Windows"]
     mappings = mappingstring.split (',')
     for mapping in mappings:
@@ -60,24 +63,24 @@ def check_mapping (mappingstring):
         else:
             if not value:
                 continue
-            if value[0] in ['-', '+', '~']:
+            if value[0] in ['-', '+']:
                 if not value[1] == 'a':
                     error ("Invalid value \"" + value + "\" for key \"" + key +
                            "\". Inversion and range modifiers only valid for " +
                                    "axis (a).")
-                if not value[2:].isnumeric():
+                if not value[2:].isdigit():
                     error ("Invalid value \"" + value + "\" for key \"" + key +
                            "\". Should be followed by a number after 'a'")
             elif not value[0] in ['a', 'h', 'b']:
                 error ("Invalid value \"" + value + "\" for key \"" + key +
                        "\". Should start with a, b, or h")
             elif value[0] in ['a', 'b']:
-                if value[0] == 'a' and value[-1] in ['-', '+', '~']:
-                    if not value[1:-1].isnumeric():
+                if value[0] == 'a' and value[-1] in ['~']:
+                    if not value[1:-1].isdigit():
                         error ("Invalid value \"" + value + "\" for key \""
                                 + key + "\". Should be followed by a number " +
                                 "after 'a'")
-                elif not value[1:].isnumeric():
+                elif not value[1:].isdigit():
                     error ("Invalid value \"" + value + "\" for key \"" + key +
                            "\". Should be followed by a number after 'a' or " +
                            "'b'")
@@ -85,7 +88,7 @@ def check_mapping (mappingstring):
                 dpad_positions = map(str, [0, 1, 2, 4, 8, 1|2, 2|4, 4|8, 8|1])
                 dpad_index = value[1:].split ('.')[0]
                 dpad_position = value[1:].split ('.')[1]
-                if not dpad_index.isnumeric():
+                if not dpad_index.isdigit():
                     error ("Invalid value \"" + value + "\" for key \"" + key +
                            "\". Dpad index \"" + dpad_index + "\" should be " +
                            "a number")
@@ -149,6 +152,7 @@ def do_tests(filename):
         check_guid(splitted[0])
         check_mapping(splitted[2])
         check_duplicates(splitted[0].lower(), get_platform(splitted[2]))
+
     input_file.close()
 
 def sort_by_name(filename):
@@ -158,9 +162,15 @@ def sort_by_name(filename):
     sorted_dict = dict({"Windows": list(tuple()), "Mac OS X": list(tuple()), \
             "Linux": list(tuple())})
 
+    header_message = ""
+
     for lineno, line in enumerate(input_file):
         current_line = line
         current_lineno = lineno + 1
+
+        if current_lineno == 1 or current_lineno == 2:
+            header_message += line
+            continue
         if line.startswith('#') or line == '\n':
             continue
         splitted = line[:-1].split(',', 2)
@@ -171,6 +181,8 @@ def sort_by_name(filename):
         sorted_dict[platform].append((splitted[1], line))
 
     out_file = open("gamecontrollerdb_sorted.txt", 'w')
+    out_file.write(header_message)
+
     for platform, name_tuples in sorted_dict.items():
         if platform != "Windows":
             out_file.write("\n")
