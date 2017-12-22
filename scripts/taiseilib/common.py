@@ -93,5 +93,8 @@ def in_dir(dir):
 
     old = Path.cwd()
     os.chdir(str(dir))
-    yield
-    os.chdir(str(old))
+
+    try:
+        yield
+    finally:
+        os.chdir(str(old))
