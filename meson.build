@@ -42,7 +42,16 @@ preprocessor = generator(preprocess_script,
     depfile: '@BASENAME@.d',
 )
 
-taisei_version_string = run_command(version_command, '{string}').stdout().strip()
+taisei_version_result = run_command(version_command, '{string}')
+
+if taisei_version_result.returncode() != 0
+    error('Version script exited with code @0@\n\n@1@'.format(
+        taisei_version_result.returncode(),
+        taisei_version_result.stderr(),
+    ))
+endif
+
+taisei_version_string = taisei_version_result.stdout().strip()
 
 config = configuration_data()
 

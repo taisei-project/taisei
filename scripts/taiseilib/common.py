@@ -48,7 +48,7 @@ def run_main(func, args=None):
 
 
 def write_depfile(depfile, target, deps):
-    with open(depfile, "w") as df:
+    with Path(depfile).open('w') as df:
         l = [target + ":"] + list(deps) + [__file__]
         df.write(" \\\n ".join(l))
 

@@ -2,6 +2,8 @@
 from . import common
 
 import sys
+import subprocess
+import shlex
 
 
 class VerionFormatError(common.TaiseiError):
@@ -47,10 +49,14 @@ def get(*, rootdir=None, fallback=None, args=common.default_args):
         rootdir = pathlib.Path(__file__).parent
 
     try:
-        from subprocess import check_output
-        git = check_output(['git', 'describe', '--tags', '--match', 'v[0-9]*[!asz]'], cwd=rootdir, universal_newlines=True)
+        git = subprocess.check_output(
+            shlex.split('git describe --tags --match v[0-9]*[!asz]'),
+            cwd=str(rootdir),
+            universal_newlines=True
+        )
+
         version_str = git.strip()
-    except:
+    except subprocess.SubprocessError:
         if not fallback:
             raise
 

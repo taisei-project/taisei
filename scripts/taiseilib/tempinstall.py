@@ -12,7 +12,7 @@ import os
 
 
 def get_build_opts(build_dir):
-    opts = meson_introspect('--buildoptions', cwd=build_dir)
+    opts = meson_introspect('--buildoptions', cwd=str(build_dir))
     return {opt['name']: opt for opt in opts}
 
 
@@ -33,7 +33,7 @@ def temp_install(build_dir):
 
         try:
             for target in ('install',): # ('reconfigure', 'install',):
-                ninja(target, cwd=build_dir, env=env)
+                ninja(target, cwd=str(build_dir), env=env)
 
             yield install_path
         finally:
