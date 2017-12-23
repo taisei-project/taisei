@@ -27,13 +27,7 @@
 #endif
 
 typedef struct CacheEntry {
-	union {
-		ObjectInterface object_interface;
-		struct {
-			struct CacheEntry *next;
-			struct CacheEntry *prev;
-		};
-	};
+	OBJECT_INTERFACE(struct CacheEntry);
 
 	SDL_Surface *surf;
 	int width;
@@ -241,7 +235,7 @@ void fontrenderer_draw(FontRenderer *f, const char *text, Font *font) {
 void init_fonts(void) {
 	TTF_Init();
 	memset(&resources.fontren, 0, sizeof(resources.fontren));
-	cache_pool = objpool_alloc(sizeof(CacheEntry), 512, "fontcache");
+	cache_pool = OBJPOOL_ALLOC(CacheEntry, 512);
 }
 
 void uninit_fonts(void) {

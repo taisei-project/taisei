@@ -32,8 +32,9 @@ struct AniSequence{
 	bool backwards;
 };
 
-typedef struct {
-	ObjectInterface object_interface; // hack for the boss glow effect
+typedef struct AniPlayer AniPlayer;
+struct AniPlayer{
+	OBJECT_INTERFACE(AniPlayer); // hack for the boss glow effect
 
 	Animation *ani;
 	int clock;
@@ -43,12 +44,11 @@ typedef struct {
 
 	AniSequence *queue;
 	int queuesize;
-} AniPlayer;
+};
 
 void aniplayer_create(AniPlayer *plr, Animation *ani);
 void aniplayer_free(AniPlayer *plr);
 void aniplayer_reset(AniPlayer *plr); // resets to a neutral state with empty queue.
-void aniplayer_copy(AniPlayer *dst, AniPlayer *src);
 
 AniPlayer* aniplayer_create_copy(AniPlayer *src);
 void aniplayer_free_copy(AniPlayer *ani);

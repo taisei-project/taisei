@@ -99,7 +99,7 @@ typedef struct Attack {
 
 typedef struct Boss {
 	// XXX: temporary hack for binary compatibility of pos with Enemy and Projectile structs
-	ObjectInterface object_interface;
+	OBJECT_INTERFACE(struct Boss);
 	complex pos;
 
 	Attack *attacks;

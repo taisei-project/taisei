@@ -15,6 +15,8 @@ struct ObjectPool {
     size_t size_of_object;
 };
 
+size_t sizeof_objpool_interface = sizeof(ObjectInterface);
+
 ObjectPool *objpool_alloc(size_t obj_size, size_t max_objects, const char *tag) {
     ObjectPool *pool = malloc(sizeof(ObjectPool));
     pool->size_of_object = obj_size;
@@ -36,4 +38,13 @@ void objpool_free(ObjectPool *pool) {
 void objpool_get_stats(ObjectPool *pool, ObjectPoolStats *stats) {
     memset(&stats, 0, sizeof(ObjectPoolStats));
     stats->tag = "<N/A>";
+}
+
+void objpool_memtest(ObjectPool *pool, ObjectInterface *object) {
+    assert(pool != NULL);
+    assert(object != NULL);
+}
+
+size_t objpool_object_size(ObjectPool *pool) {
+    return pool->size_of_object;
 }

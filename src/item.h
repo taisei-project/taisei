@@ -11,6 +11,7 @@
 
 #include "util.h"
 #include "resource/texture.h"
+#include "objectpool.h"
 
 typedef struct Item Item;
 
@@ -27,8 +28,7 @@ typedef enum {
 } ItemType;
 
 struct Item {
-	Item *next;
-	Item *prev;
+	OBJECT_INTERFACE(Item);
 
 	int birthtime;
 	complex pos;

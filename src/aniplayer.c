@@ -12,6 +12,7 @@
 #include "list.h"
 #include "global.h"
 #include "stageobjects.h"
+#include "objectpool_util.h"
 
 void aniplayer_create(AniPlayer *plr, Animation *ani) {
 	memset(plr,0,sizeof(AniPlayer));
@@ -22,10 +23,16 @@ AniPlayer* aniplayer_create_copy(AniPlayer *src) {
 	// XXX: maybe it needs another name since it allocates memory?
 	//		or maybe aniplayer_create needs another name since it doesn't?
 
-	// AniPlayer *plr = malloc(sizeof(AniPlayer));
-
 	AniPlayer *plr = (AniPlayer*)objpool_acquire(stage_object_pools.aniplayers);
-	aniplayer_copy(plr, src);
+
+	size_t data_size;
+	void *src_data = objpool_object_contents(NULL, &src->object_interface, NULL);
+	void *dst_data = objpool_object_contents(stage_object_pools.aniplayers, &plr->object_interface, &data_size);
+	memcpy(dst_data, src_data, data_size);
+
+	plr->queue = NULL;
+	plr->queuesize = 0;
+
 	return plr;
 }
 
@@ -49,12 +56,6 @@ void aniplayer_reset(AniPlayer *plr) { // resets to a neutral state with empty q
 		plr->queuesize = 1;
 		plr->queue->delay = 0;
 	}
-}
-
-void aniplayer_copy(AniPlayer *dst, AniPlayer *src) {
-	memcpy(dst, src, sizeof(AniPlayer));
-	dst->queue = NULL;
-	dst->queuesize = 0;
 }
 
 AniSequence *aniplayer_queue(AniPlayer *plr, int row, int loops, int delay) {

@@ -54,13 +54,7 @@ typedef enum ProjFlags {
 } ProjFlags;
 
 struct Projectile {
-	union {
-		ObjectInterface object_interface;
-		struct {
-			Projectile *next;
-			Projectile *prev;
-		};
-	};
+	OBJECT_INTERFACE(Projectile);
 
 	complex pos;
 	complex pos0;

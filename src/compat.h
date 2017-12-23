@@ -15,6 +15,7 @@
     #define PRAGMA(p)
 #else
     #define PRAGMA(p) _Pragma(#p)
+    #define USE_GNU_EXTENSIONS
 #endif
 
 #ifdef __MINGW_PRINTF_FORMAT

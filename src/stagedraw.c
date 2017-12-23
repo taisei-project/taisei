@@ -505,7 +505,7 @@ static void stage_draw_hud_objpool_stats(float x, float y, float width, Font *fo
 		char buf[32];
 		objpool_get_stats(*pool, &stats);
 
-		snprintf(buf, sizeof(buf), "%zu | %4zu", stats.usage, stats.peak_usage);
+		snprintf(buf, sizeof(buf), "%zu | %5zu", stats.usage, stats.peak_usage);
 		draw_text(AL_Left  | AL_Flag_NoAdjust, (int)x,           (int)y, stats.tag, font);
 		draw_text(AL_Right | AL_Flag_NoAdjust, (int)(x + width), (int)y, buf,       font);
 

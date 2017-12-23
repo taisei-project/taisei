@@ -19,8 +19,7 @@ typedef complex (*LaserPosRule)(Laser* l, float time);
 typedef void (*LaserLogicRule)(Laser* l, int time);
 
 struct Laser {
-	struct Laser *next;
-	struct Laser *prev;
+	OBJECT_INTERFACE(Laser);
 
 	complex pos;
 

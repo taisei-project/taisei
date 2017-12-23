@@ -27,13 +27,7 @@ enum {
 };
 
 struct Enemy {
-	union {
-		ObjectInterface object_interface;
-		struct {
-			Enemy *next;
-			Enemy *prev;
-		};
-	};
+	OBJECT_INTERFACE(Enemy);
 
 	complex pos;
 	complex pos0;

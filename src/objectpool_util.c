@@ -9,6 +9,7 @@
 #include "taisei.h"
 
 #include "objectpool_util.h"
+#include "util.h"
 
 static void* objpool_release_list_callback(List **dest, List *elem, void *vpool) {
     list_unlink(dest, elem);
@@ -24,4 +25,19 @@ bool objpool_is_full(ObjectPool *pool) {
     ObjectPoolStats stats;
     objpool_get_stats(pool, &stats);
     return stats.capacity == stats.usage;
+}
+
+size_t objpool_object_contents_size(ObjectPool *pool) {
+    return objpool_object_size(pool) - sizeof(ObjectInterface);
+}
+
+void *objpool_object_contents(ObjectPool *pool, ObjectInterface *obj, size_t *out_size) {
+    assert(obj != NULL);
+
+    if(out_size != NULL) {
+        objpool_memtest(pool, obj);
+        *out_size = objpool_object_contents_size(pool);
+    }
+
+    return (char*)obj + sizeof(ObjectInterface);
 }

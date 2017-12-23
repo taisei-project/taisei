@@ -9,14 +9,22 @@
 #pragma once
 #include "taisei.h"
 
+#define LIST_INTERFACE_BASE(typename) struct { \
+    typename *next; \
+    typename *prev; \
+}
+
+#define LIST_INTERFACE(typename) union { \
+    List list_interface; \
+    LIST_INTERFACE_BASE(typename); \
+}
+
 typedef struct List {
-    struct List *next;
-    struct List *prev;
+    LIST_INTERFACE_BASE(struct List);
 } List;
 
 typedef struct ListContainer {
-    struct ListContainer *next;
-    struct ListContainer *prev;
+    LIST_INTERFACE(struct ListContainer);
     void *data;
 } ListContainer;
 

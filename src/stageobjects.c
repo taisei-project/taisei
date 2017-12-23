@@ -15,26 +15,35 @@
 #include "laser.h"
 #include "aniplayer.h"
 
-#define MAX_PROJECTILES             8192
-#define MAX_ITEMS                   MAX_PROJECTILES
-#define MAX_ENEMIES                 256
-#define MAX_LASERS                  256
-#define MAX_ANIPLAYERS              32
+#define MAX_projectiles             1024
+#define MAX_items                   MAX_projectiles
+#define MAX_enemies                 64
+#define MAX_lasers                  64
+#define MAX_aniplayers              32
+
+#define OBJECT_POOLS \
+    OBJECT_POOL(Projectile, projectiles) \
+    OBJECT_POOL(Item, items) \
+    OBJECT_POOL(Enemy, enemies) \
+    OBJECT_POOL(Laser, lasers) \
+    OBJECT_POOL(AniPlayer, aniplayers) \
 
 StageObjectPools stage_object_pools;
 
 void stage_objpools_alloc(void) {
-    stage_object_pools.projectiles = objpool_alloc(sizeof(Projectile), MAX_PROJECTILES, "proj+part");
-    stage_object_pools.items = objpool_alloc(sizeof(Item), MAX_ITEMS, "item");
-    stage_object_pools.enemies = objpool_alloc(sizeof(Enemy), MAX_ENEMIES, "enemy");
-    stage_object_pools.lasers = objpool_alloc(sizeof(Laser), MAX_LASERS, "laser");
-    stage_object_pools.aniplayers = objpool_alloc(sizeof(AniPlayer), MAX_ANIPLAYERS, "aniplr");
+    stage_object_pools = (StageObjectPools){
+        #define OBJECT_POOL(type,field) \
+            .field = OBJPOOL_ALLOC(type, MAX_##field),
+
+        OBJECT_POOLS
+        #undef OBJECT_POOL
+    };
 }
 
 void stage_objpools_free(void) {
-    objpool_free(stage_object_pools.projectiles);
-    objpool_free(stage_object_pools.items);
-    objpool_free(stage_object_pools.enemies);
-    objpool_free(stage_object_pools.lasers);
-    objpool_free(stage_object_pools.aniplayers);
+    #define OBJECT_POOL(type,field) \
+        objpool_free(stage_object_pools.field);
+
+    OBJECT_POOLS
+    #undef OBJECT_POOL
 }
