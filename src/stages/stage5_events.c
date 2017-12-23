@@ -774,7 +774,6 @@ complex cathode_laser(Laser *l, float t) {
 	}
 
 	l->args[1] = I*cimag(l->args[1]);
-	log_debug("%f %f", creal(l->args[1]), cimag(l->args[1]));
 
 	return l->pos + l->args[0]*t*cexp(l->args[1]*t);
 }
