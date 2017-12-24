@@ -64,7 +64,6 @@ def main(args):
                 build_options = json.loads(infile.read())
 
     regen_cmdline = args.meson + [
-        'setup',
         str(args.rootdir.resolve(strict=True)),
         str(args.dest_build_dir.resolve(strict=False)),
     ]
@@ -116,7 +115,7 @@ def main(args):
         for opt in build_options:
             name = opt['name']
             value = opt_str_value(opt['value'])
-            subprocess.check_call(args.meson + ['configure', '-D{}={}'.format(name, value)])
+            subprocess.call(args.meson + ['configure', '-D{}={}'.format(name, value)])
 
     print('')
     print("Regeneration done. This process is not 100% reliable; you may want to check the output of 'meson configure'")
