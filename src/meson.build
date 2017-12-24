@@ -58,9 +58,9 @@ if use_intel_intrin
     sse42_lib = static_library('taisei_sse42', 'util_sse42.c', c_args: taisei_c_args + ['-msse4.2'], install : false)
     sse42_dep = declare_dependency(link_with: sse42_lib)
     taisei_deps += sse42_dep
-    message('SEE4.2 intrinsics will be used')
+    message('SSE 4.2 intrinsics will be used')
 elif get_option('intel_intrin')
-    message('SSE4.2 intrinsics can not be used')
+    message('SSE 4.2 intrinsics can not be used')
 endif
 
 configure_file(configuration : config, output : 'build_config.h')
