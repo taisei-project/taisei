@@ -32,6 +32,14 @@ static Dialog *stage3_dialog(void) {
 		dadd_msg(d,Right, "How dare you! We make life possible for you humans, and in turn you disrespect us and call us derogatory things!");
 		dadd_msg(d,Right, "Entering this light has given me great power. I’ll stomp you out in the same cruel way you humans step on bugs!");
 		dadd_msg(d,Left, "If I cut legs off of an insect, do they squirm all on their own? How gross!");
+	} else if(pc->id == PLR_CHAR_REIMU) {
+		dadd_msg(d,Left, "Huh, a bug that managed to escape extermination.");
+		dadd_msg(d,Right, "I heard that! ");
+		dadd_msg(d,Right, "Do you really think I’ll let you get away with such a callous remark?");
+		dadd_msg(d,Left, "You’re just an insect yōkai. What do you think you’re capable of?");
+		dadd_msg(d,Right, "Why, this entire incident! You’re looking at the culprit right here, right now!");
+		dadd_msg(d,Left, "You can’t be serious. Are you just drunk on all this light?");
+		dadd_msg(d,Right, "I’m drunk on power! I’ll prove my mettle by defeating you once and for all!");
 	}
 	dadd_msg(d, BGM, "stage3boss");
 
@@ -48,6 +56,10 @@ static Dialog *stage3_post_dialog(void) {
 	}
 	if(pc->id == PLR_CHAR_YOUMU) {
 		dadd_msg(d, Left, "I never see any insect infestations while tending Hakugyokurō’s gardens. That’s a convenience of being half-dead.");
+	}
+	if(pc->id == PLR_CHAR_REIMU) {
+		dadd_msg(d,Left, "If humans get drunk from moonshine, then I guess bugs can become intoxicated by sunshine too.");
+		dadd_msg(d,Left, "She was definitely kidding with all those claims, though. My intuition tells me nothing has changed.");
 	}
 
 	return d;

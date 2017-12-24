@@ -31,6 +31,15 @@ Dialog *stage1_dialog(void) {
 		dadd_msg(d, Right, "Let’s see if phantoms are good as soft-serve ice cream!");
 	}
 
+	if(pc->id == PLR_CHAR_REIMU) {
+		dadd_msg(d,Left, "Good grief, it’s too early to be flying around like this.");
+		dadd_msg(d,Right, "Hey, shrine maiden! Am I making you cold?");
+		dadd_msg(d,Left, "Not as much as you’re just being a pest. I’m too busy to play games with fairies.");
+		dadd_msg(d,Right, "That’s not true! It’s never too early to have fun!");
+		dadd_msg(d,Right, "Prepare to catch an air conditioner cold on my ice playground!");
+	}
+
+
 	dadd_msg(d, BGM, "stage1boss");
 
 	return d;
@@ -45,6 +54,9 @@ static Dialog *stage1_postdialog(void) {
 	}
 	if(pc->id == PLR_CHAR_YOUMU) {
 		dadd_msg(d, Left, "Lady Yuyuko would probably like trying such an unusual flavor of ice cream. I hope she never gets that idea.");
+	}
+	if(pc->id == PLR_CHAR_REIMU) {
+		dadd_msg(d,Left, "A~ah, it’s snowing during springtime. It’s actually a bit pretty to look at.");
 	}
 
 	return d;

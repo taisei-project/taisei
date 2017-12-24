@@ -43,6 +43,14 @@ Dialog *stage4_dialog(void) {
 		dadd_msg(d,Right, "This isn’t my house, and you’re not allowed to snoop any more than you have! If you keep ignoring me, I’ll have to suck you dry right here where we stand!");
 		dadd_msg(d,Left, "It’s not your house, and yet you’re telling me to leave? You sound just as presumptuous as the other vampire I’ve met.");
 		dadd_msg(d,Right, "I can bet you that I’m much more frightening.");
+	} else if(pc->id == PLR_CHAR_REIMU) {
+		dadd_msg(d,Right, "Halt, intruder!");
+		dadd_msg(d,Left, "Oh, it’s somebody new.");
+		dadd_msg(d,Right, "No, definitely not! I could never forget you from all those years ago! That was the most intense battle of my life!");
+		dadd_msg(d,Left, "Hmm, nope, I don’t remember fighting you. Maybe if you told me your name, I could recall faster.");
+		dadd_msg(d,Right, "Unforgivable! How about I just jog your memory through terror instead?");
+		dadd_msg(d,Left, "I’m in a hurry, and that also sounds unpleasant.");
+		dadd_msg(d,Right, "You don’t get a choice! Prepare to have bloody nightmares for weeks, shrine maiden!");
 	}
 
 	dadd_msg(d, BGM, "stage4boss");
@@ -59,6 +67,8 @@ Dialog *stage4_dialog_end(void) {
 	} else if(pc->id == PLR_CHAR_YOUMU) {
 		dadd_msg(d,Left, "You’re not as scary as her, or even as good of a host. Maybe you should work on your manners and buy yourself a nice mansion to lord over instead of taking someone else’s.");
 
+	} else if(pc->id == PLR_CHAR_REIMU) {
+		dadd_msg(d,Left, "See, I don’t scare easily, so that didn’t work. You should have just told me your name.");
 	}
 	return d;
 }

@@ -40,8 +40,19 @@ Dialog *stage6_dialog(void) {
 		dadd_msg(d,Left, "Well, whatever you’re doing here is disintegrating the barrier of common sense and madness keeping Gensōkyō from collapsing into the Outside World.");
 		dadd_msg(d,Left, "You’re also infringing on the Netherworld’s space and my mistress is particularly upset about that. That means I have to stop you, no matter what.");
 		dadd_msg(d,Right, "Pitiful servant of the dead. You’ll never be able to stop my life’s work from being fulfilled! I’ll simply unravel that nonsense behind your half-and-half existence!");
+	} else if(pc->id == PLR_CHAR_REIMU) {
+		dadd_msg(d,Left, "Who are you? You’re a lot less intimidating than I expected.");
+		dadd_msg(d,Right, "I knew you would come here to interrupt me.");
+		dadd_msg(d,Left, "You seem to know who I am, just like that earlier yōkai did. I can’t say the same for myself.");
+		dadd_msg(d,Right, "That is because we met before in another time, when you were much younger…");
+		dadd_msg(d,Right, "Back then, I was a mere guard. But then my master left Kurumi and I behind. We fell into the real world instead of Gensōkyō,");
+		dadd_msg(d,Right, "and I realized that logic was far superior to the chaos of fantasy.");
+		dadd_msg(d,Left, "Do you really think it’s acceptable to threaten Gensōkyō just for some petty delusion of intelligence?");
+		dadd_msg(d,Right, "An unenlightened fool like you could never see how your faith blinds you.");
+		dadd_msg(d,Left, "You talk big but in the end you’re just a yōkai who is full of herself. It doesn’t matter how smart your world is if it threatens mine.");
+		dadd_msg(d,Left, "I’ll tear everything down all the same.");
+		dadd_msg(d,Right, "You’ll regret threatening my life’s work when I take your world away. Soon you will be a shrine maiden of nothing!");
 	}
-
 	dadd_msg(d, BGM, "stage6boss");
 	return d;
 }
@@ -53,7 +64,7 @@ static Dialog *stage6_interboss_dialog(void) {
 	dadd_msg(d, Right, "You’ve gotten this far… I can’t believe it! But that will not matter once I show you the truth of this world, and every world.");
 	dadd_msg(d, Right, "Space, time, dimensions… it all becomes clear when you understand The Theory of Everything!");
 	dadd_msg(d, Right, "Prepare to see the barrier destroyed!");
-
+	
 	return d;
 }
 

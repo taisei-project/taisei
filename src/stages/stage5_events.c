@@ -22,7 +22,10 @@ Dialog *stage5_post_mid_dialog(void) {
 		m = dadd_msg(d, Left, "Hey, wait! …Did I just see an oarfish?");
 	} else if(pc->id == PLR_CHAR_YOUMU) {
 		m = dadd_msg(d, Left, "A messenger of Heaven! If I follow her, I’ll surely learn something about the incident!");
+	} else if(pc->id == PLR_CHAR_REIMU) {
+		dadd_msg(d,Left, "I wonder what’s gotten into that oarfish?");
 	}
+
 
 	assert(m != NULL);
 	m->timeout = global.frames + 120;
@@ -51,6 +54,15 @@ Dialog *stage5_boss_dialog(void) {
 		dadd_msg(d,Left, "That doesn’t seem fair considering I’ve solved incidents before. I know what I am doing, and Lady Yuyuko entrusted me with this.");
 		dadd_msg(d,Right, "If your confidence will not allow you to back down, then so be it. I will test you using all of Heaven’s might, and if you are unfit, you shall be cast down from this Tower of Babel!");
 		dadd_msg(d,Left, "I shall pass whatever test necessary if it will allow me to fulfill the wishes of Lady Yuyuko!");
+	} else  if(pc->id == PLR_CHAR_REIMU) {
+		dadd_msg(d,Left, "I didn’t expect someone actually respectable like you to cause me trouble for no reason.");
+		dadd_msg(d,Right, "You may be the Hakurei shrine maiden, but I’m afraid that you don’t have permission from Heaven to be here.");
+		dadd_msg(d,Left, "What, are you saying that the gods suddenly don’t think I’m fit for duty anymore?");
+		dadd_msg(d,Right, "No, that’s not it. We already have a more suitable candidate from our concerned Celestials, and she is due to arrive instead.");
+		dadd_msg(d,Right, "That means you can go home.");
+		dadd_msg(d,Left, "Absolutely not. I’ve worked too hard to get here, so even if I’d like to leave, it’d be far too much wasted time.");
+		dadd_msg(d,Right, "I’ll compromise by offering a test instead. Defeat me, and you can take our representative’s place.");
+		dadd_msg(d,Right, "If you can weather the storm I’m about to summon, then I’ll be fully confident that you can strike down the master of this tower!");
 	}
 
 	dadd_msg(d, BGM, "stage5boss");
@@ -66,6 +78,8 @@ Dialog *stage5_post_boss_dialog(void) {
 		dadd_msg(d, Left, "I might not have the proper credentials, but I can definitely solve this incident. Just sit back and leave it to me!");
 	} else if(pc->id == PLR_CHAR_YOUMU) {
 		dadd_msg(d, Left, "As you can see, I have cut through your challenge. You can trust me to get to the heart of the matter and handle it swiftly and carefully.");
+	} else if(pc->id == PLR_CHAR_REIMU) {
+		dadd_msg(d,Left, "See? I’ve been solving incidents since the beginning. There is absolutely no one more qualified than me.");
 	}
 
 	return d;

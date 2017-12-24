@@ -29,8 +29,13 @@ Dialog *stage2_dialog(void) {
 		dadd_msg(d,Left, "I have to keep going.");
 		dadd_msg(d,Right, "The tunnel leads nowhere but to ruin. If you don’t return to the ghostly world where you come from, I’ll have to stop you by force!");
 		dadd_msg(d,Left, "My mistress won’t like it if I tell her I was stopped by divine intervention. You’ll have to come up with another excuse.");
+	} else if(pc->id == PLR_CHAR_REIMU) {
+		dadd_msg(d,Right, "I can’t let you pass any further than this. Please go back down the mountain.");
+		dadd_msg(d,Left, "You help humans that wander around the mountain, don’t you? So why are you getting in the way?");
+		dadd_msg(d,Right, "I can feel misfortune leaking from this tunnel. You won’t be going anywhere safe down this route so I need to stop you!");
+		dadd_msg(d,Left, "You should know by now that my job is taking care of dangerous things, so step aside.");
+		dadd_msg(d,Right, "I’m afraid not!");
 	}
-
 	dadd_msg(d, BGM, "stage2boss");
 	return d;
 }
@@ -43,7 +48,10 @@ Dialog *stage2_post_dialog(void) {
 		dadd_msg(d, Left, "Somehow I already feel luckier after beating ya. Fixin’ the border should be no sweat!");
 	} else if(pc->id == PLR_CHAR_YOUMU) {
 		dadd_msg(d, Left, "It’s strange, but fighting a god makes me feel like some of my burdens are lifted. I wonder if she decided to bless me after all?");
+	} else if(pc->id == PLR_CHAR_REIMU) {
+		dadd_msg(d,Left, "In the end, you only made things harder for the both of us.");
 	}
+
 
 	return d;
 }
