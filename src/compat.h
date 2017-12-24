@@ -18,7 +18,7 @@
     #define USE_GNU_EXTENSIONS
 #endif
 
-#ifdef __MINGW_PRINTF_FORMAT
+#ifdef __USE_MINGW_ANSI_STDIO
     #define FORMAT_ATTR __MINGW_PRINTF_FORMAT
 #else
     #define FORMAT_ATTR printf
