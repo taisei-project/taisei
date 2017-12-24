@@ -15,8 +15,6 @@ struct ObjectPool {
     size_t size_of_object;
 };
 
-size_t sizeof_objpool_interface = sizeof(ObjectInterface);
-
 ObjectPool *objpool_alloc(size_t obj_size, size_t max_objects, const char *tag) {
     ObjectPool *pool = malloc(sizeof(ObjectPool));
     pool->size_of_object = obj_size;
