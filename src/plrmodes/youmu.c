@@ -10,6 +10,7 @@
 
 #include "global.h"
 #include "plrmodes.h"
+#include "youmu.h"
 
 PlayerCharacter character_youmu = {
     .id = PLR_CHAR_YOUMU,
