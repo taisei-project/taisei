@@ -45,21 +45,22 @@ void aniplayer_free_copy(AniPlayer *ani) {
 
 void aniplayer_free(AniPlayer *plr) {
 	plr->queuesize = 0; // prevent aniplayer_reset from messing with the queue, since we're going to wipe all of it anyway
-	list_free_all((List**)&plr->queue);
+	list_free_all(&plr->queue);
 	aniplayer_reset(plr);
 }
 
 void aniplayer_reset(AniPlayer *plr) { // resets to a neutral state with empty queue.
 	plr->stdrow = 0;
 	if(plr->queuesize > 0) { // abort the animation in the fastest fluent way.
-		list_free_all((List**)&plr->queue->next);
+		list_free_all(&plr->queue->next);
 		plr->queuesize = 1;
 		plr->queue->delay = 0;
 	}
 }
 
 AniSequence *aniplayer_queue(AniPlayer *plr, int row, int loops, int delay) {
-	AniSequence *s = (AniSequence*)list_append((List**)&plr->queue, calloc(1, sizeof(AniSequence)));
+	AniSequence *s = calloc(1, sizeof(AniSequence));
+	list_append(&plr->queue, s);
 	plr->queuesize++;
 	s->row = row;
 
@@ -94,7 +95,7 @@ void aniplayer_update(AniPlayer *plr) {
 		} else if(s->delay > 0) {
 			s->delay--;
 		} else {
-			free(list_pop((List**)&plr->queue));
+			free(list_pop(&plr->queue));
 			plr->queuesize--;
 			plr->clock = 0;
 		}

@@ -30,7 +30,7 @@ static inline ObjectInterface* obj_ptr(ObjectPool *pool, char *objects, size_t i
 
 static void objpool_register_objects(ObjectPool *pool, char *objects) {
     for(size_t i = 0; i < pool->max_objects; ++i) {
-        list_push((List**)&pool->free_objects, (List*)obj_ptr(pool, objects, i));
+        list_push(&pool->free_objects, obj_ptr(pool, objects, i));
     }
 }
 
@@ -90,7 +90,7 @@ static char* objpool_fmt_size(ObjectPool *pool) {
 }
 
 ObjectInterface *objpool_acquire(ObjectPool *pool) {
-    ObjectInterface *obj = (ObjectInterface*)list_pop((List**)&pool->free_objects);
+    ObjectInterface *obj = list_pop(&pool->free_objects);
 
     if(obj) {
 acquired:
@@ -116,7 +116,7 @@ acquired:
     free(tmp);
 
     objpool_add_extent(pool);
-    obj = (ObjectInterface*)list_pop((List**)&pool->free_objects);
+    obj = list_pop(&pool->free_objects);
     assert(obj != NULL);
     goto acquired;
 }
@@ -135,7 +135,7 @@ void objpool_release(ObjectPool *pool, ObjectInterface *object) {
         object->_object_private.used = false;
     })
 
-    list_push((List**)&pool->free_objects, (List*)object);
+    list_push(&pool->free_objects, object);
 
     pool->usage--;
     // log_debug("[%s] Usage: %zu", pool->tag, pool->usage);

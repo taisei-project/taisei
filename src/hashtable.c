@@ -20,8 +20,7 @@
 // #define HT_USE_MUTEX
 
 typedef struct HashtableElement {
-    void *next;
-    void *prev;
+    LIST_INTERFACE(struct HashtableElement);
     void *data;
     void *key;
     hash_t hash;
@@ -165,7 +164,7 @@ static void* hashtable_delete_callback(List **vlist, List *velem, void *vht) {
 
 static void hashtable_unset_all_internal(Hashtable *ht) {
     for(size_t i = 0; i < ht->table_size; ++i) {
-        list_foreach((List**)(ht->table + i), hashtable_delete_callback, ht);
+        list_foreach((ht->table + i), hashtable_delete_callback, ht);
     }
 
     ht->num_elements = 0;
@@ -236,7 +235,7 @@ static bool hashtable_set_internal(Hashtable *ht, HashtableElement **table, size
                 ht->free_func(e->key);
             }
 
-            free(list_unlink((List**)&elems, (List*)e));
+            free(list_unlink(&elems, e));
             ht->num_elements--;
 
             if(elems) {
@@ -255,10 +254,11 @@ static bool hashtable_set_internal(Hashtable *ht, HashtableElement **table, size
             collisions_updated = !collisions_updated;
         }
 
-        elem = (HashtableElement*)list_push((List**)&elems, malloc(sizeof(HashtableElement)));
+        elem = malloc(sizeof(HashtableElement));
         ht->copy_func(&elem->key, key);
         elem->hash = ht->hash_func(elem->key);
         elem->data = data;
+        list_push(&elems, elem);
 
         ht->num_elements++;
     }
@@ -362,7 +362,7 @@ void hashtable_unset(Hashtable *ht, void *key) {
 
 void hashtable_unset_deferred(Hashtable *ht, void *key, ListContainer **list) {
     assert(ht != NULL);
-    ListContainer *c = (ListContainer*)list_push(list, list_wrap_container(NULL));
+    ListContainer *c = list_push(list, list_wrap_container(NULL));
     ht->copy_func(&c->data, key);
 }
 

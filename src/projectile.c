@@ -173,7 +173,7 @@ void delete_projectile(Projectile **projs, Projectile *proj) {
 }
 
 void delete_projectiles(Projectile **projs) {
-	list_foreach((List**)projs, _delete_projectile, NULL);
+	list_foreach(projs, _delete_projectile, NULL);
 }
 
 int collision_projectile(Projectile *p) {

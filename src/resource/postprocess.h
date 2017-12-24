@@ -18,8 +18,8 @@ typedef struct PostprocessShader PostprocessShader;
 typedef struct PostprocessShaderUniform PostprocessShaderUniform;
 
 struct PostprocessShader {
-    PostprocessShader *next;
-    PostprocessShader *prev;
+    LIST_INTERFACE(PostprocessShader);
+
     PostprocessShaderUniform *uniforms;
     Shader *shader;
 };
@@ -40,11 +40,12 @@ typedef union PostprocessShaderUniformValue {
 typedef void (APIENTRY *PostprocessShaderUniformFuncPtr)(GLint, GLsizei, const GLvoid*);
 
 struct PostprocessShaderUniform {
-    PostprocessShaderUniform *next;
-    PostprocessShaderUniform *prev;
+    LIST_INTERFACE(PostprocessShaderUniform);
+
     PostprocessShaderUniformType type;
     PostprocessShaderUniformValuePtr values;
     PostprocessShaderUniformFuncPtr func;
+
     int loc;
     int size;
     int amount;

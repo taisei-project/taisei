@@ -26,8 +26,8 @@
 #endif
 
 typedef struct Logger {
-    struct Logger *next;
-    struct Logger *prev;
+    LIST_INTERFACE(struct Logger);
+
     SDL_RWops *out;
     unsigned int levels;
 } Logger;
@@ -205,7 +205,7 @@ void log_init(LogLevel lvls, LogLevel backtrace_lvls) {
 }
 
 void log_shutdown(void) {
-    list_foreach((List**)&loggers, delete_logger, NULL);
+    list_foreach(&loggers, delete_logger, NULL);
     SDL_DestroyMutex(log_mutex);
     log_mutex = NULL;
 }
@@ -224,9 +224,10 @@ void log_add_output(LogLevel levels, SDL_RWops *output) {
         return;
     }
 
-    Logger *l = (Logger*)list_append((List**)&loggers, malloc(sizeof(Logger)));
+    Logger *l = malloc(sizeof(Logger));
     l->levels = levels;
     l->out = output;
+    list_append(&loggers, l);
 }
 
 static LogLevel chr2lvl(char c) {

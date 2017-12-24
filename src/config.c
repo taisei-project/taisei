@@ -36,8 +36,7 @@ CONFIGDEFS_EXPORT ConfigEntry configdefs[] = {
 };
 
 typedef struct ConfigEntryList {
-	struct ConfigEntryList *next;
-	struct ConfigEntryList *prev;
+	LIST_INTERFACE(struct ConfigEntryList);
 	ConfigEntry entry;
 } ConfigEntryList;
 
@@ -241,11 +240,12 @@ static ConfigEntry* config_get_unknown_entry(const char *name) {
 		}
 	}
 
-	l = (ConfigEntryList*)list_push((List**)&unknowndefs, malloc(sizeof(ConfigEntryList)));
+	l = malloc(sizeof(ConfigEntryList));
 	e = &l->entry;
 	memset(e, 0, sizeof(ConfigEntry));
 	stralloc(&e->name, name);
 	e->type = CONFIG_TYPE_STRING;
+	list_push(&unknowndefs, l);
 
 	return e;
 }
@@ -265,7 +265,7 @@ static void* config_delete_unknown_entry(List **list, List *lentry, void *arg) {
 }
 
 static void config_delete_unknown_entries(void) {
-	list_foreach((List**)&unknowndefs, config_delete_unknown_entry, NULL);
+	list_foreach(&unknowndefs, config_delete_unknown_entry, NULL);
 }
 
 void config_save(void) {

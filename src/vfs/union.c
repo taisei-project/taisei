@@ -24,7 +24,7 @@ static void* vfs_union_delete_callback(List **list, List *elem, void *arg) {
 }
 
 static void vfs_union_free(VFSNode *node) {
-    list_foreach(&node->_members_, vfs_union_delete_callback, NULL);
+    list_foreach((ListContainer**)&node->_members_, vfs_union_delete_callback, NULL);
 }
 
 static VFSNode* vfs_union_locate(VFSNode *node, const char *path) {
@@ -160,7 +160,7 @@ static bool vfs_union_mount_internal(VFSNode *unode, const char *mountpoint, VFS
         return false;
     }
 
-    list_push(&unode->_members_, list_wrap_container(mountee));
+    list_push((ListContainer**)&unode->_members_, list_wrap_container(mountee));
     unode->_primary_member_ = mountee;
 
     return true;

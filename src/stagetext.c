@@ -17,7 +17,9 @@ static StageText *textlist = NULL;
 #define NUM_PLACEHOLDER "........................"
 
 StageText* stagetext_add(const char *text, complex pos, Alignment align, Font **font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
-    StageText *t = (StageText*)list_append((List**)&textlist, malloc(sizeof(StageText)));
+    StageText *t = malloc(sizeof(StageText));
+    list_append(&textlist, t);
+
     t->text = strdup(text);
     t->font = font;
     t->pos = pos;

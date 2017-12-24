@@ -16,11 +16,11 @@
 
 #include "resource/animation.h"
 #include "stageobjects.h"
+#include "list.h"
 
 typedef struct AniSequence AniSequence;
 struct AniSequence{
-	struct AniSequence *next;
-	struct AniSequence *prev;
+	LIST_INTERFACE(AniSequence);
 
 	int row;
 	int duration; // number of frames this sequence will be drawn

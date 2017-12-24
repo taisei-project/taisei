@@ -14,7 +14,7 @@
 #include "stageobjects.h"
 
 Laser *create_laser(complex pos, float time, float deathtime, Color color, LaserPosRule prule, LaserLogicRule lrule, complex a0, complex a1, complex a2, complex a3) {
-	Laser *l = (Laser*)list_push((List**)&global.lasers, (List*)objpool_acquire(stage_object_pools.lasers));
+	Laser *l = (Laser*)list_push(&global.lasers, objpool_acquire(stage_object_pools.lasers));
 
 	l->birthtime = global.frames;
 	l->timespan = time;
@@ -185,7 +185,7 @@ void delete_laser(Laser **lasers, Laser *laser) {
 }
 
 void delete_lasers(void) {
-	list_foreach((List**)&global.lasers, _delete_laser, NULL);
+	list_foreach(&global.lasers, _delete_laser, NULL);
 }
 
 void process_lasers(void) {

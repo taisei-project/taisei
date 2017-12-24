@@ -83,8 +83,8 @@ static uint32_t progress_checksum(uint8_t *buf, size_t num) {
 }
 
 typedef struct UnknownCmd {
-	struct UnknownCmd *next;
-	struct UnknownCmd *prev;
+	LIST_INTERFACE(struct UnknownCmd);
+
 	uint8_t cmd;
 	uint16_t size;
 	uint8_t *data;
@@ -250,11 +250,12 @@ static void progress_read(SDL_RWops *file) {
 			default:
 				log_warn("Unknown command %x (%u bytes). Will preserve as-is and not interpret", cmd, cmdsize);
 
-				UnknownCmd *c = (UnknownCmd*)list_append((List**)&progress.unknown, malloc(sizeof(UnknownCmd)));
+				UnknownCmd *c = malloc(sizeof(UnknownCmd));
 				c->cmd = cmd;
 				c->size = cmdsize;
 				c->data = malloc(cmdsize);
 				SDL_RWread(vfile, c->data, c->size, 1);
+				list_append(&progress.unknown, c);
 
 				break;
 		}
@@ -419,8 +420,7 @@ static void progress_write_cmd_hiscore(SDL_RWops *vfile, void **arg) {
 //
 
 struct cmd_stage_playinfo_data_elem {
-	struct cmd_stage_playinfo_data_elem *next;
-	struct cmd_stage_playinfo_data_elem *prev;
+	LIST_INTERFACE(struct cmd_stage_playinfo_data_elem);
 	uint16_t stage;
 	uint8_t diff;
 	uint32_t num_played;
@@ -450,18 +450,14 @@ static void progress_prepare_cmd_stage_playinfo(size_t *bufsize, void **arg) {
 			StageProgress *p = stage_get_progress_from_info(stg, d, false);
 
 			if(p && (p->num_played || p->num_cleared)) {
-				struct cmd_stage_playinfo_data_elem *e = (
-					(struct cmd_stage_playinfo_data_elem*)
-					list_push(
-						(List**)&data->elems,
-						malloc(sizeof(struct cmd_stage_playinfo_data_elem))
-					)
-				);
+				struct cmd_stage_playinfo_data_elem *e = malloc(sizeof(struct cmd_stage_playinfo_data_elem));
 
 				e->stage = stg->id;					data->size += sizeof(uint16_t);
 				e->diff = d;						data->size += sizeof(uint8_t);
 				e->num_played = p->num_played;		data->size += sizeof(uint32_t);
 				e->num_cleared = p->num_cleared;	data->size += sizeof(uint32_t);
+
+				list_push(&data->elems, e);
 			}
 		}
 	}
@@ -491,7 +487,7 @@ static void progress_write_cmd_stage_playinfo(SDL_RWops *vfile, void **arg) {
 	}
 
 cleanup:
-	list_free_all((List**)&data->elems);
+	list_free_all(&data->elems);
 	free(data);
 }
 
@@ -711,5 +707,5 @@ static void* delete_unknown_cmd(List **dest, List *elem, void *arg) {
 }
 
 void progress_unload(void) {
-	list_foreach((void**)&progress.unknown, delete_unknown_cmd, NULL);
+	list_foreach(&progress.unknown, delete_unknown_cmd, NULL);
 }

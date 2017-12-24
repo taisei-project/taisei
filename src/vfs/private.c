@@ -18,7 +18,7 @@ typedef struct vfs_tls_s {
 } vfs_tls_t;
 
 typedef struct vfs_shutdownhook_t {
-    List refs;
+    LIST_INTERFACE(struct vfs_shutdownhook_t);
     VFSShutdownHandler func;
     void *arg;
 } vfs_shutdownhook_t;
@@ -76,7 +76,7 @@ static void* call_shutdown_hook(List **vlist, List *vhook, void *arg) {
 }
 
 void vfs_shutdown(void) {
-    list_foreach((List**)&shutdown_hooks, call_shutdown_hook, NULL);
+    list_foreach(&shutdown_hooks, call_shutdown_hook, NULL);
 
     vfs_decref(vfs_root);
     vfs_tls_free(vfs_tls_fallback);
@@ -87,9 +87,10 @@ void vfs_shutdown(void) {
 }
 
 void vfs_hook_on_shutdown(VFSShutdownHandler func, void *arg) {
-    vfs_shutdownhook_t *hook = (vfs_shutdownhook_t*)list_append((List**)&shutdown_hooks, malloc(sizeof(vfs_shutdownhook_t)));
+    vfs_shutdownhook_t *hook = malloc(sizeof(vfs_shutdownhook_t));
     hook->func = func;
     hook->arg = arg;
+    list_append(&shutdown_hooks, hook);
 }
 
 VFSNode* vfs_alloc(void) {

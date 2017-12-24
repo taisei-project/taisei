@@ -22,7 +22,7 @@ static Hashtable *bgm_descriptions;
 static Hashtable *sfx_volumes;
 
 static struct enqueued_sound {
-	List chain;
+	LIST_INTERFACE(struct enqueued_sound);
 	char *name;
 	int time;
 	int cooldown;
@@ -31,11 +31,12 @@ static struct enqueued_sound {
 
 static void play_sound_internal(const char *name, bool is_ui, int cooldown, bool replace, int delay) {
 	if(delay > 0) {
-		struct enqueued_sound *s = (struct enqueued_sound*)list_push((List**)&sound_queue, malloc(sizeof(struct enqueued_sound)));
+		struct enqueued_sound *s = malloc(sizeof(struct enqueued_sound));
 		s->time = global.frames + delay;
 		s->name = strdup(name);
 		s->cooldown = cooldown;
 		s->replace = replace;
+		list_push(&sound_queue, s);
 		return;
 	}
 
@@ -62,11 +63,10 @@ static void* discard_enqueued_sound(List **queue, List *vsnd, void *arg) {
 	return NULL;
 }
 
-static void* play_enqueued_sound(List **queue, List *vsnd, void *arg) {
-	struct enqueued_sound *snd = (struct enqueued_sound*)vsnd;
+static void* play_enqueued_sound(struct enqueued_sound **queue, struct enqueued_sound *snd, void *arg) {
 	play_sound_internal(snd->name, false, snd->cooldown, snd->replace, 0);
 	free(snd->name);
-	free(list_unlink(queue, vsnd));
+	free(list_unlink(queue, snd));
 	return NULL;
 }
 
@@ -115,7 +115,7 @@ void reset_sounds(void) {
 		}
 	}
 
-	list_foreach((List**)&sound_queue, discard_enqueued_sound, NULL);
+	list_foreach(&sound_queue, discard_enqueued_sound, NULL);
 }
 
 void update_sounds(void) {
@@ -130,10 +130,10 @@ void update_sounds(void) {
 	}
 
 	for(struct enqueued_sound *s = sound_queue, *next; s; s = next) {
-		next = (struct enqueued_sound*)s->chain.next;
+		next = (struct enqueued_sound*)s->next;
 
 		if(s->time <= global.frames) {
-			play_enqueued_sound((List**)&sound_queue, (List*)s, NULL);
+			play_enqueued_sound(&sound_queue, s, NULL);
 		}
 	}
 }

@@ -9,24 +9,32 @@
 #pragma once
 #include "taisei.h"
 
+typedef struct ListInterface ListInterface;
+typedef struct List List;
+typedef struct ListContainer ListContainer;
+
 #define LIST_INTERFACE_BASE(typename) struct { \
     typename *next; \
     typename *prev; \
 }
 
 #define LIST_INTERFACE(typename) union { \
-    List list_interface; \
+    ListInterface list_interface; \
     LIST_INTERFACE_BASE(typename); \
 }
 
-typedef struct List {
-    LIST_INTERFACE_BASE(struct List);
-} List;
+struct ListInterface {
+    LIST_INTERFACE_BASE(ListInterface);
+};
 
-typedef struct ListContainer {
-    LIST_INTERFACE(struct ListContainer);
+struct List {
+    LIST_INTERFACE(List);
+};
+
+struct ListContainer {
+    LIST_INTERFACE(ListContainer);
     void *data;
-} ListContainer;
+};
 
 typedef void* (*ListForeachCallback)(List **head, List *elem, void *arg);
 typedef int (*ListPriorityFunc)(List *elem);
@@ -47,19 +55,45 @@ ListContainer* list_wrap_container(void *data);
 
 #ifndef LIST_NO_MACROS
 
-#define LIST_CAST(expr,ptrlevel) (_Generic((expr), \
-    ListContainer ptrlevel: (List ptrlevel)(expr), \
-    void ptrlevel: (List ptrlevel)(expr), \
-    List ptrlevel: (expr) \
-))
+#ifdef USE_GNU_EXTENSIONS
+    // thorough safeguard
+    #define LIST_CAST(expr,ptrlevel) (__extension__({ \
+        static_assert(__builtin_types_compatible_p(ListInterface, __typeof__((ptrlevel (expr)).list_interface)), \
+            "struct must implement ListInterface (use the LIST_INTERFACE macro)"); \
+        static_assert(__builtin_offsetof(__typeof__(ptrlevel (expr)), list_interface) == 0, \
+            "list_interface must be the first member in struct"); \
+        (List ptrlevel)(expr); \
+    }))
+    #define LIST_CAST_RETURN(expr) (__typeof__(expr))
+#else
+    // basic safeguard
+    #define LIST_CAST(expr,ptrlevel) ((void)sizeof((ptrlevel (expr)).list_interface), (List ptrlevel)(expr))
+    // don't even think about adding a void* cast here
+    #define LIST_CAST_RETURN(expr)
+#endif
 
-#define list_insert(dest,elem) list_insert(LIST_CAST(dest, **), LIST_CAST(elem, *))
-#define list_push(dest,elem) list_push(LIST_CAST(dest, **), LIST_CAST(elem, *))
-#define list_append(dest,elem) list_append(LIST_CAST(dest, **), LIST_CAST(elem, *))
-#define list_insert_at_priority(dest,elem,prio,prio_func) list_insert_at_priority(LIST_CAST(dest, **), LIST_CAST(elem, *), prio, prio_func)
-#define list_pop(dest) list_pop(LIST_CAST(dest, **))
-#define list_unlink(dest,elem) list_unlink(LIST_CAST(dest, **), LIST_CAST(elem, *))
-#define list_foreach(dest,callback,arg) list_foreach(LIST_CAST(dest, **), callback, arg)
-#define list_free_all(dest) list_free_all(LIST_CAST(dest, **))
+#define list_insert(dest,elem) \
+    (LIST_CAST_RETURN(elem) list_insert(LIST_CAST(dest, **), LIST_CAST(elem, *)))
+
+#define list_push(dest,elem) \
+    (LIST_CAST_RETURN(elem) list_push(LIST_CAST(dest, **), LIST_CAST(elem, *)))
+
+#define list_append(dest,elem) \
+    (LIST_CAST_RETURN(elem) list_append(LIST_CAST(dest, **), LIST_CAST(elem, *)))
+
+#define list_insert_at_priority(dest,elem,prio,prio_func) \
+    (LIST_CAST_RETURN(elem) list_insert_at_priority(LIST_CAST(dest, **), LIST_CAST(elem, *), prio, prio_func))
+
+#define list_pop(dest) \
+    (LIST_CAST_RETURN(*(dest)) list_pop(LIST_CAST(dest, **)))
+
+#define list_unlink(dest,elem) \
+    (LIST_CAST_RETURN(elem) list_unlink(LIST_CAST(dest, **), LIST_CAST(elem, *)))
+
+#define list_foreach(dest,callback,arg) \
+    list_foreach(LIST_CAST(dest, **), callback, arg)
+
+#define list_free_all(dest) \
+    list_free_all(LIST_CAST(dest, **))
 
 #endif // LIST_NO_MACROS

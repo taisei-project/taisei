@@ -97,7 +97,7 @@ static void free_cache_entry(CacheEntry *e) {
 	CACHELOG("Wiping cache entry %p [%s]", (void*)e, e->owner.ht_key);
 
 	free(e->owner.ht_key);
-	list_unlink((List**)&cache_entries, (List*)e);
+	list_unlink(&cache_entries, e);
 	objpool_release(cache_pool, (ObjectInterface*)e);
 }
 
@@ -119,7 +119,7 @@ static CacheEntry* get_cache_entry(Font *font, const char *text) {
 		}
 
 		e = (CacheEntry*)objpool_acquire(cache_pool);
-		list_push((List**)&cache_entries, (List*)e);
+		list_push(&cache_entries, e);
 		hashtable_set_string(font->cache, text, e);
 		e->owner.ht = font->cache;
 		e->owner.ht_key = strdup(text);

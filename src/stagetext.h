@@ -19,8 +19,7 @@ typedef void (*StageTextPreDrawFunc)(StageText* txt, int t, float alpha);
 typedef struct StageTextTable StageTextTable;
 
 struct StageText {
-    StageText *next;
-    StageText *prev;
+    LIST_INTERFACE(StageText);
 
     char *text;
     Font **font;

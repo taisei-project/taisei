@@ -36,7 +36,7 @@ Enemy *create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyVisualRule visu
 	}
 
 	// XXX: some code relies on the insertion logic
-	Enemy *e = (Enemy*)list_insert((List**)enemies, (List*)objpool_acquire(stage_object_pools.enemies));
+	Enemy *e = (Enemy*)list_insert(enemies, objpool_acquire(stage_object_pools.enemies));
 	e->moving = false;
 	e->dir = 0;
 
@@ -90,7 +90,7 @@ void delete_enemy(Enemy **enemies, Enemy* enemy) {
 }
 
 void delete_enemies(Enemy **enemies) {
-	list_foreach((List**)enemies, _delete_enemy, NULL);
+	list_foreach(enemies, _delete_enemy, NULL);
 }
 
 static void draw_enemy(Enemy *e) {

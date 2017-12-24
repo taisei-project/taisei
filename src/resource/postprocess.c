@@ -38,9 +38,10 @@ static void postprocess_load_callback(const char *key, const char *value, void *
     PostprocessShader *current = *slist;
 
     if(!strcmp(key, "@shader")) {
-        current = (PostprocessShader*)list_append((List**)slist, malloc(sizeof(PostprocessShader)));
+        current = malloc(sizeof(PostprocessShader));
         current->uniforms = NULL;
         current->shader = get_resource(RES_SHADER, value, ldata->resflags)->shader;
+        list_append(slist, current);
         log_debug("Shader added: %s (prog: %u)", value, current->shader->prog);
         return;
     }
@@ -104,13 +105,14 @@ static void postprocess_load_callback(const char *key, const char *value, void *
         }
     }
 
-    PostprocessShaderUniform *uni = (PostprocessShaderUniform*)list_append((List**)&current->uniforms, malloc(sizeof(PostprocessShaderUniform)));
+    PostprocessShaderUniform *uni = malloc(sizeof(PostprocessShaderUniform));
     uni->loc = uniloc(current->shader, name);
     uni->type = utype;
     uni->size = usize;
     uni->amount = asize;
     uni->values.v = vbuf.v;
     uni->func = get_uniform_func(utype, usize);
+    list_append(&current->uniforms, uni);
 
     log_debug("Uniform added: (name: %s; loc: %i; prog: %u; type: %i; size: %i; num: %i)", name, uni->loc, current->shader->prog, uni->type, uni->size, uni->amount);
 
@@ -138,13 +140,13 @@ static void* delete_uniform(List **dest, List *data, void *arg) {
 
 static void* delete_shader(List **dest, List *data, void *arg) {
     PostprocessShader *ps = (PostprocessShader*)data;
-    list_foreach((List**)&ps->uniforms, delete_uniform, NULL);
+    list_foreach(&ps->uniforms, delete_uniform, NULL);
     free(list_unlink(dest, data));
     return NULL;
 }
 
 void postprocess_unload(PostprocessShader **list) {
-    list_foreach((List**)list, delete_shader, NULL);
+    list_foreach(list, delete_shader, NULL);
 }
 
 void postprocess(PostprocessShader *ppshaders, FBO **primfbo, FBO **auxfbo, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw) {

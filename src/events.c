@@ -147,7 +147,7 @@ static bool events_invoke_handlers(SDL_Event *event, ListContainer *h_list, Even
 			}
 		}
 
-		list_free_all((List**)&merged_list);
+		list_free_all(&merged_list);
 		return result;
 	}
 
@@ -178,8 +178,8 @@ void events_register_handler(EventHandler *handler) {
 
 	assert(handler_alloc->priority > EPRIO_DEFAULT);
 	list_insert_at_priority(
-		(List**)&global_handlers,
-		(List*)list_wrap_container(handler_alloc),
+		&global_handlers,
+		list_wrap_container(handler_alloc),
 		handler_alloc->priority,
 		handler_container_prio_func
 	);
