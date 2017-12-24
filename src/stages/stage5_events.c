@@ -23,7 +23,7 @@ Dialog *stage5_post_mid_dialog(void) {
 	} else if(pc->id == PLR_CHAR_YOUMU) {
 		m = dadd_msg(d, Left, "A messenger of Heaven! If I follow her, I’ll surely learn something about the incident!");
 	} else if(pc->id == PLR_CHAR_REIMU) {
-		dadd_msg(d,Left, "I wonder what’s gotten into that oarfish?");
+		m = dadd_msg(d,Left, "I wonder what’s gotten into that oarfish?");
 	}
 
 
