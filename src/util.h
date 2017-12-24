@@ -194,40 +194,43 @@ noreturn void _ts_assert_fail(const char *cond, const char *func, const char *fi
 PRAGMA(GCC diagnostic push)
 PRAGMA(GCC diagnostic ignored "-Wstrict-prototypes")
 
+// clang generates lots of these warnings with _FORTIFY_SOURCE
+PRAGMA(GCC diagnostic ignored "-Wignored-attributes")
+
 #undef fopen
-FILE* fopen() __attribute__((deprecated(
-    "Use vfs_open or SDL_RWFromFile instead")));
+__attribute__((deprecated("Use vfs_open or SDL_RWFromFile instead")))
+FILE* fopen();
 
 #undef strncat
-char* strncat() __attribute__((deprecated(
-    "This function likely doesn't do what you expect, use strlcat")));
+__attribute__((deprecated("This function likely doesn't do what you expect, use strlcat")))
+char* strncat();
 
 #undef strncpy
-char* strncpy() __attribute__((deprecated(
-    "This function likely doesn't do what you expect, use strlcpy")));
+__attribute__((deprecated("This function likely doesn't do what you expect, use strlcpy")))
+char* strncpy();
 
 #undef errx
-noreturn void errx(int, const char*, ...) __attribute__((deprecated(
-    "Use log_fatal instead")));
+__attribute__((deprecated("Use log_fatal instead")))
+noreturn void errx(int, const char*, ...);
 
 #undef warnx
-void warnx(const char*, ...) __attribute__((deprecated(
-    "Use log_warn instead")));
+__attribute__((deprecated("Use log_warn instead")))
+void warnx(const char*, ...);
 
 #undef printf
-int printf(const char*, ...) __attribute__((deprecated(
-    "Use log_info instead")));
+__attribute__((deprecated("Use log_info instead")))
+int printf(const char*, ...);
 
 #undef fprintf
-int fprintf(FILE*, const char*, ...) __attribute__((deprecated(
-    "Use log_warn instead (or SDL_RWops if you want to write to a file)")));
+__attribute__((deprecated("Use log_warn instead (or SDL_RWops if you want to write to a file)")))
+int fprintf(FILE*, const char*, ...);
 
 #undef strtok
-char* strtok() __attribute__((deprecated(
-    "Use strtok_r instead")));
+__attribute__((deprecated("Use strtok_r instead")))
+char* strtok();
 
 #undef sprintf
-int sprintf(char *, const char*, ...) __attribute__((deprecated(
-    "Use snprintf or strfmt instead")));
+__attribute__((deprecated("Use snprintf or strfmt instead")))
+int sprintf(char *, const char*, ...);
 
 PRAGMA(GCC diagnostic pop)

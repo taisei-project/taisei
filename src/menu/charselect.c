@@ -72,7 +72,7 @@ void draw_char_menu(MenuData *menu) {
 	glEnable(GL_TEXTURE_2D);
 	glPopMatrix();
 
-	CharacterID current_char;
+	CharacterID current_char = 0;
 
 	for(int i = 0; i < menu->ecount; i++) {
 		PlayerCharacter *pchar = plrchar_get((CharacterID)(uintptr_t)menu->entries[i].arg);

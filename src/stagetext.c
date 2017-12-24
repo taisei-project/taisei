@@ -54,7 +54,7 @@ static void* stagetext_delete(List **dest, List *txt, void *arg) {
 }
 
 void stagetext_free(void) {
-    list_foreach((List**)&textlist, stagetext_delete, NULL);
+    list_foreach(&textlist, stagetext_delete, NULL);
 }
 
 static void stagetext_draw_single(StageText *txt) {
