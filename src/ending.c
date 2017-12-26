@@ -86,6 +86,22 @@ void bad_ending_youmu(Ending *e) {
 	track_ending(ENDING_BAD_2);
 }
 
+void bad_ending_reimu(Ending *e) {
+	add_ending_entry(e, -1, "“Now, let your mind be expanded! Do you have the potential to understand the code behind reality?”", NULL);
+	add_ending_entry(e, -1, "Reimu may have been the mouthpiece of the gods, but this truth was far beyond the words they would push into her brain. Numbers overlapped endlessly and seamlessly over each other, and she quickly found herself in an inescapable mental haze. Without realizing it, she had stopped floating, and the Yin-Yang Orbs dropped uselessly alongside her, having lost all of their holy powers.", NULL);
+	add_ending_entry(e, -1, "Tired of what she perceived as nonsense, she willed the numbers to end, and they did, taking any directives of the Hakurei god along with them to create an unbearable silence that drifted darkly into unconsciousness.", NULL);
+	add_ending_entry(e, -1, "“Auughh!” \nBolting upwards in her futon, Reimu yelled out both in inexplicable frustration and pain as a sudden migraine woke her up on an otherwise peaceful morning. Grumbling, she glanced all around her room instinctually, as if she had seen something wrong with it before.", NULL);
+	add_ending_entry(e, -1, "But it looked just the same as it normally did, even through the angry throbbing in her skull. Knowing that further sleep was impossible, however, she picked herself up and started to get ready for the rest of the day. Of course, she didn’t get too far before being interrupted by an overly familiar yōkai sage.", NULL);
+	add_ending_entry(e, -1, "“What do you want?” Reimu asked grouchily, rubbing her forehead as she stared at a strangely concerned Yukari.", NULL);
+	add_ending_entry(e, -1, "“Did you really defeat Wriggle as the main culprit of the incident yesterday?”", NULL);
+	add_ending_entry(e, -1, "“Huh? I don’t even remember who I fought. Does it even matter?”", NULL);
+	add_ending_entry(e, -1, "“Yes, it does! Because Wriggle shouldn’t have that sort of power. That means… she must be more dangerous than she has been letting on! Never mind, fufu!” ", NULL);
+	add_ending_entry(e, -1, "Watching Yukari change her tone mid-sentence, Reimu felt disconcerted. The gap hag must have been onto something, but just as soon as she had realized it, that thought had been taken away by a mysterious force.", NULL);
+	add_ending_entry(e, -1, "Clearly this peace she had achieved by defeating Wriggle was just a farce, but she had no idea who was really behind it. What she needed now was another chance in another time-- to find the real logical perpetrator of the incident, she would have to go back and do it all over again.", NULL);
+	add_ending_entry(e, -1, "-BAD END-\nTry a clear without continues next time!", NULL);
+	track_ending(ENDING_BAD_3);
+}
+
 void good_ending_marisa(Ending *e) {
 	add_ending_entry(e, -1, "“Now, let your mind be expanded! Do you have the potential to understand the code behind reality?”", NULL);
 	add_ending_entry(e, -1, "“Ha! Who do ya take me for? Of course!”", NULL);
@@ -114,6 +130,24 @@ void good_ending_youmu(Ending *e) {
 	add_ending_entry(e, -1, "The only question now is what secret Yōmu would, in fact, see at the end of the world.", NULL);
 	add_ending_entry(e, -1, "-GOOD END-\nExtra Stage has opened up for you! Do you have what it takes to discover the hidden truth behind everything?", NULL);
 	track_ending(ENDING_GOOD_2);
+}
+
+void good_ending_reimu(Ending *e) {
+	add_ending_entry(e, -1, "“Now, let your mind be expanded! Do you have the potential to understand the code behind reality?”", NULL);
+	add_ending_entry(e, -1, "“What a pointless question! Be defeated already!”", NULL);
+	add_ending_entry(e, -1, "Reimu, with her straightforward clarity, was able to hold fast and ignore the barrage focused upon her mind by sealing herself off via her fantasy nature. Raising her purification rod as a command, her Yin-Ying Orbs soared into the false sky and coalesced into one, a glowing orb that quickly grew to humongous proportions.", NULL);
+	add_ending_entry(e, -1, "She flicked her rod downwards, and Elly found herself facing this massive spirit orb unprepared. It plowed into her, and then also into her tower, smashing all in its path with a godly roar. When the dust and rubble settled, Reimu landed on the plains below, in front of the weakened Elly.", NULL);
+	add_ending_entry(e, -1, "“Are you satisfied? You destroyed my research, my life, and my home. And for what? An illogical world fit for neither yōkai nor humans!” Elly shouted, trying to but failing to crawl towards her fallen scythe.", NULL);
+	add_ending_entry(e, -1, "“That’s not true. You’re upset because you blame Gensōkyō for rejecting you when the reality is that you simply got lost, didn’t you? Gensōkyō welcomes everyone, and it will still welcome you,” Reimu replied, kicking aside Elly’s scythe before reaching out to pull her up. Elly hesitantly took it, her knees still shaking from Reimu’s spiritual blow.", NULL);
+	add_ending_entry(e, -1, "“I may be able to return to Gensōkyō as a yōkai, but what will happen to my work? I was so close to the truth and you blew it all away. There's no way I could be satisfied without knowing!”", NULL);
+	add_ending_entry(e, -1, "Reimu mulled over this for a moment before swinging her rod over her back, looking suddenly determined.", NULL);
+	add_ending_entry(e, -1, "“This truth of yours almost pulled Gensōkyō apart. For that I’ll just have to figure out the rest in your stead and then deal with it in any way that I’ll need to. Seems like I can’t go home yet…” Reimu declared, breaking it off with a sigh at the end.", NULL);
+	add_ending_entry(e, -1, "“Oh well, I’ll just make this as quick as I can. Feel free to invite yourself over to my shrine if you want. Everyone does that even if I say no, so I can’t really stop you.”", NULL);
+	add_ending_entry(e, -1, "Elly blinked for a few seconds in shock, and then started to laugh. Just like in the old days, Reimu still treated everyone with perfect neutrality. If anyone was best suited to discovering something without biases, it was Reimu, the Shrine Maiden of Paradise.", NULL);
+	add_ending_entry(e, -1, "Reimu herself had already started floating away towards the artificial horizon, and Elly watched, now completely at ease. After all, if Reimu was on the case, it would always work out right in the end. She was the unavoidable constant in a sea of variables, and using her shrine maiden intuition as her compass, there was no way that she could fail to trailblaze the way to the truth.", NULL);
+	add_ending_entry(e, -1, "The only question now is what secret Reimu would, in fact, see at the end of the world.", NULL);
+	add_ending_entry(e, -1, "-GOOD END-\nExtra Stage has opened up for you! Do you have what it takes to discover the hidden truth behind everything?", NULL);
+	track_ending(ENDING_GOOD_3);
 }
 
 static void create_ending(Ending *e) {
