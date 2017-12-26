@@ -20,23 +20,15 @@ varying vec4 TexCoord0;
 
 float pi = 2.0 * asin(1.0);
 
-float g(float x, float p) {
-    return 0.5 * (pow(2.0 * x - 1.0, p) + 1.0);
-}
-
-float f(float x, float p) {
-    if(x > 0.5) {
-        return g(x, p);
-    } else {
-        return 1.0 - g(1.0 - x, p);
-    }
+vec2 g(vec2 x, float p) {
+    return 0.5 * (pow(2.0 * x - 1.0, vec2(p)) + 1.0);
 }
 
 vec2 apply_deform(vec2 uv, float strength) {
-    float p = 1.0 + strength * length(vec2(0.5, 0.5) - uv.xy);
-    uv.x = f(uv.x, p);
-    uv.y = f(uv.y, p);
-    return uv;
+    float p = 1.0 + strength * length(0.5 - uv);
+    vec2 smaller = step(0.5 - uv, vec2(0.0));
+    uv = smaller + (1.0 - 2.0 * smaller) * g(0.5 + abs(uv - 0.5), p);
+    return 1.0 - uv;
 }
 
 void main(void) {
