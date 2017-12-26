@@ -220,6 +220,10 @@ static void replayview_logic(MenuData *m) {
 			ctx->sub_fade = approach(ctx->sub_fade, 0.0, 1.0/FADE_TIME);
 		}
 	}
+
+	m->drawdata[0] = SCREEN_W/2 - 100;
+	m->drawdata[1] = (SCREEN_W - 200)*1.75;
+	m->drawdata[2] += (20*m->cursor - m->drawdata[2])/10.0;
 }
 
 static void replayview_draw(MenuData *m) {
@@ -227,10 +231,6 @@ static void replayview_draw(MenuData *m) {
 
 	draw_options_menu_bg(m);
 	draw_menu_title(m, "Replays");
-
-	m->drawdata[0] = SCREEN_W/2 - 100;
-	m->drawdata[1] = (SCREEN_W - 200)*1.75;
-	m->drawdata[2] += (20*m->cursor - m->drawdata[2])/10.0;
 
 	draw_menu_list(m, 100, 100, replayview_drawitem);
 

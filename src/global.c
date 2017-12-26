@@ -28,6 +28,10 @@ void init_global(CLIAction *cli) {
 	if(global.frameskip) {
 		log_warn("FPS limiter disabled. Gotta go fast! (frameskip = %i)", global.frameskip);
 	}
+
+	fpscounter_reset(&global.fps.logic);
+	fpscounter_reset(&global.fps.render);
+	fpscounter_reset(&global.fps.busy);
 }
 
 // Inputdevice-agnostic method of checking whether a game control is pressed.

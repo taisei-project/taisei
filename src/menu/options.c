@@ -285,6 +285,15 @@ int bind_common_onoffplus_set(OptionBinding *b, int v) {
 #define bind_common_int_get bind_common_onoff_inverted_get
 #define bind_common_int_set bind_common_onoff_inverted_set
 
+int bind_common_intplus1_get(OptionBinding *b) {
+	return config_get_int(b->configentry) - 1;
+}
+
+int bind_common_intplus1_set(OptionBinding *b, int v) {
+	return config_set_int(b->configentry, v + 1) - 1;
+}
+
+
 // --- Binding callbacks for individual options --- //
 
 bool bind_audio_dependence(void) {
@@ -344,7 +353,7 @@ void destroy_options_menu(MenuData *m) {
 }
 
 static void do_nothing(MenuData *menu, void *arg) { }
-
+static void update_options_menu(MenuData *menu);
 void options_menu_input(MenuData*);
 
 void create_options_menu_basic(MenuData *m, char *s) {
@@ -354,6 +363,7 @@ void create_options_menu_basic(MenuData *m, char *s) {
 	m->context = s;
 	m->input = options_menu_input;
 	m->draw = draw_options_menu;
+	m->logic = update_options_menu;
 	m->end = destroy_options_menu;
 }
 
@@ -370,19 +380,6 @@ void options_sub_video(MenuData *parent, void *arg) {
 		b = bind_option(CONFIG_FULLSCREEN, bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 
-	add_menu_entry(m, "Vertical synchronization", do_nothing,
-		b = bind_option(CONFIG_VSYNC, bind_common_onoffplus_get, bind_common_onoffplus_set)
-	);	bind_addvalue(b, "on");
-		bind_addvalue(b, "off");
-		bind_addvalue(b, "adaptive");
-
-#ifdef DEBUG
-	add_menu_entry(m, "Swap buffers", do_nothing,
-		b = bind_option(CONFIG_VID_LATE_SWAP, bind_common_onoff_get, bind_common_onoff_set)
-	);	bind_addvalue(b, "late");
-		bind_addvalue(b, "early");
-#endif
-
 	add_menu_entry(m, "Window size", do_nothing,
 		b = bind_resolution()
 	);	b->setter = bind_resolution_set;
@@ -396,6 +393,27 @@ void options_sub_video(MenuData *parent, void *arg) {
 	add_menu_entry(m, "Pause the game when it's not focused", do_nothing,
 		b = bind_option(CONFIG_FOCUS_LOSS_PAUSE, bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
+
+	add_menu_separator(m);
+
+	add_menu_entry(m, "Vertical synchronization", do_nothing,
+		b = bind_option(CONFIG_VSYNC, bind_common_onoffplus_get, bind_common_onoffplus_set)
+	);	bind_addvalue(b, "on");
+		bind_addvalue(b, "off");
+		bind_addvalue(b, "adaptive");
+
+#ifdef DEBUG
+	add_menu_entry(m, "Swap buffers", do_nothing,
+		b = bind_option(CONFIG_VID_LATE_SWAP, bind_common_onoff_get, bind_common_onoff_set)
+	);	bind_addvalue(b, "late");
+		bind_addvalue(b, "early");
+#endif
+
+	add_menu_entry(m, "Skip frames", do_nothing,
+		b = bind_option(CONFIG_VID_FRAMESKIP, bind_common_intplus1_get, bind_common_intplus1_set)
+	);	bind_addvalue(b, "0");
+		bind_addvalue(b, "½");
+		bind_addvalue(b, "⅔");
 
 	add_menu_separator(m);
 
@@ -687,6 +705,20 @@ void draw_options_menu_bg(MenuData* menu) {
 	glColor4f(1, 1, 1, 1);
 }
 
+static void update_options_menu(MenuData *menu) {
+	menu->drawdata[0] += ((SCREEN_W/2 - 100) - menu->drawdata[0])/10.0;
+	menu->drawdata[1] += ((SCREEN_W - 200) * 1.75 - menu->drawdata[1])/10.0;
+	menu->drawdata[2] += (20*menu->cursor - menu->drawdata[2])/10.0;
+
+	for(int i = 0; i < menu->ecount; i++) {
+		MenuEntry *e = menu->entries + i;
+
+		if(e->name) {
+			e->drawdata += 0.2 * (10*(i == menu->cursor) - e->drawdata);
+		}
+	}
+}
+
 void draw_options_menu(MenuData *menu) {
 	draw_options_menu_bg(menu);
 	draw_menu_title(menu, menu->context);
@@ -695,10 +727,6 @@ void draw_options_menu(MenuData *menu) {
 	glTranslatef(100, 100, 0);
 
 	draw_menu_selector(menu->drawdata[0], menu->drawdata[2], menu->drawdata[1], 34, menu->frames);
-
-	menu->drawdata[0] += ((SCREEN_W/2 - 100) - menu->drawdata[0])/10.0;
-	menu->drawdata[1] += ((SCREEN_W - 200) * 1.75 - menu->drawdata[1])/10.0;
-	menu->drawdata[2] += (20*menu->cursor - menu->drawdata[2])/10.0;
 
 	int i, caption_drawn = 2;
 
@@ -709,7 +737,6 @@ void draw_options_menu(MenuData *menu) {
 		if(!e->name)
 			continue;
 
-		e->drawdata += 0.2 * (10*(i == menu->cursor) - e->drawdata);
 		float a = e->drawdata * 0.1;
 		float alpha = (!bind || bind_isactive(bind))? 1 : 0.5;
 

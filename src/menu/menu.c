@@ -46,7 +46,6 @@ void create_menu(MenuData *menu) {
 	menu->transition_in_time = FADE_TIME;
 	menu->transition_out_time = FADE_TIME;
 	menu->fade = 1.0;
-	menu->logic = menu_logic;
 	menu->input = menu_input;
 }
 
@@ -134,7 +133,7 @@ bool menu_input_handler(SDL_Event *event, void *arg) {
 void menu_input(MenuData *menu) {
 	events_poll((EventHandler[]){
 		{ .proc = menu_input_handler, .arg = menu },
-		{NULL}
+		{ NULL }
 	}, EFLAG_MENU);
 }
 
@@ -142,14 +141,14 @@ void menu_no_input(MenuData *menu) {
 	events_poll(NULL, 0);
 }
 
-void menu_logic(MenuData *menu) {
-	menu->frames++;
-}
-
-static FrameAction menu_frame(void *arg) {
+static FrameAction menu_logic_frame(void *arg) {
 	MenuData *menu = arg;
 
-	menu->logic(menu);
+	if(menu->logic) {
+		menu->logic(menu);
+	}
+
+	menu->frames++;
 
 	if(menu->state != MS_FadeOut || menu->flags & MF_AlwaysProcessInput) {
 		assert(menu->input);
@@ -159,11 +158,16 @@ static FrameAction menu_frame(void *arg) {
 	}
 
 	update_transition();
+
+	return menu->state == MS_Dead ? LFRAME_STOP : LFRAME_WAIT;
+}
+
+static FrameAction menu_render_frame(void *arg) {
+	MenuData *menu = arg;
 	assert(menu->draw);
 	menu->draw(menu);
 	draw_transition();
-
-	return menu->state == MS_Dead ? FRAME_STOP : FRAME_SWAP;
+	return RFRAME_SWAP;
 }
 
 int menu_loop(MenuData *menu) {
@@ -173,8 +177,7 @@ int menu_loop(MenuData *menu) {
 		menu->begin(menu);
 	}
 
-	assert(menu->logic != NULL);
-	loop_at_fps(menu_frame, NULL, menu, FPS);
+	loop_at_fps(menu_logic_frame, menu_render_frame, menu, FPS);
 
 	if(menu->end) {
 		menu->end(menu);

@@ -573,10 +573,24 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	// Warning: pops outer matrix!
 	glPopMatrix();
 
-#ifdef DEBUG
-	snprintf(buf, sizeof(buf), "%.2f fps, timer: %d, frames: %d", global.fps.fps, global.timer, global.frames);
+#ifdef DEBUGe
+	snprintf(buf, sizeof(buf), "%.2f lfps, %.2f rfps, timer: %d, frames: %d",
+		global.fps.logic.fps,
+		global.fps.render.fps,
+		global.timer,
+		global.frames
+	);
 #else
-	snprintf(buf, sizeof(buf), "%.2f fps", global.fps.fps);
+	if(get_effective_frameskip() > 1) {
+		snprintf(buf, sizeof(buf), "%.2f lfps, %.2f rfps",
+			global.fps.logic.fps,
+			global.fps.render.fps
+		);
+	} else {
+		snprintf(buf, sizeof(buf), "%.2f fps",
+			global.fps.logic.fps
+		);
+	}
 #endif
 
 	draw_text(AL_Right | AL_Flag_NoAdjust, SCREEN_W, rint(SCREEN_H - 0.5 * stringheight(buf, _fonts.monosmall)), buf, _fonts.monosmall);
@@ -653,7 +667,7 @@ static void stage_draw_framerate_graphs(void) {
 
 	glUseProgram(s->prog);
 
-	fill_graph(NUM_SAMPLES, samples, &global.fps);
+	fill_graph(NUM_SAMPLES, samples, &global.fps.logic);
 	glUniform3f(u_colors[0], 0.0, 1.0, 1.0);
 	glUniform3f(u_colors[1], 1.0, 1.0, 0.0);
 	glUniform3f(u_colors[2], 1.0, 0.0, 0.0);
@@ -663,7 +677,7 @@ static void stage_draw_framerate_graphs(void) {
 	// x -= w * 1.1;
 	y += h + 1;
 
-	fill_graph(NUM_SAMPLES, samples, &global.fps_busy);
+	fill_graph(NUM_SAMPLES, samples, &global.fps.busy);
 	glUniform3f(u_colors[0], 0.0, 1.0, 0.0);
 	glUniform3f(u_colors[1], 1.0, 0.0, 0.0);
 	glUniform3f(u_colors[2], 1.0, 0.0, 0.5);

@@ -30,6 +30,7 @@ void restart_game(MenuData *m, void *arg) {
 void create_ingame_menu(MenuData *m) {
 	create_menu(m);
 	m->draw = draw_ingame_menu;
+	m->logic = update_ingame_menu;
 	m->flags = MF_Abortable | MF_AlwaysProcessInput;
 	m->transition = TransEmpty;
 	m->cursor = 1;
@@ -49,6 +50,7 @@ static void skip_stage(MenuData *m, void *arg) {
 void create_ingame_menu_replay(MenuData *m) {
 	create_menu(m);
 	m->draw = draw_ingame_menu;
+	m->logic = update_ingame_menu;
 	m->flags = MF_Abortable | MF_AlwaysProcessInput;
 	m->transition = TransEmpty;
 	m->cursor = 1;
@@ -77,6 +79,11 @@ void draw_ingame_menu_bg(MenuData *menu, float f) {
 	glUseProgram(0);
 }
 
+void update_ingame_menu(MenuData *menu) {
+	menu->drawdata[0] += (menu->cursor*35 - menu->drawdata[0])/7.0;
+	menu->drawdata[1] += (stringwidth(menu->entries[menu->cursor].name, _fonts.standard) - menu->drawdata[1])/10.0;
+}
+
 void draw_ingame_menu(MenuData *menu) {
 	glPushMatrix();
 
@@ -87,9 +94,6 @@ void draw_ingame_menu(MenuData *menu) {
 	glTranslatef(VIEWPORT_W/2, VIEWPORT_H/4, 0);
 
 	draw_menu_selector(0, menu->drawdata[0], menu->drawdata[1]*2, 41, menu->frames);
-
-	menu->drawdata[0] += (menu->cursor*35 - menu->drawdata[0])/7.0;
-	menu->drawdata[1] += (stringwidth(menu->entries[menu->cursor].name, _fonts.standard) - menu->drawdata[1])/10.0;
 
 	if(menu->context) {
 		float s = 0.3 + 0.2 * sin(menu->frames/10.0);

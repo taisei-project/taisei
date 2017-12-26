@@ -18,7 +18,6 @@
 void draw_stage_menu(MenuData *m) {
 	draw_options_menu_bg(m);
 	draw_menu_title(m, "Select Stage");
-	animate_menu_list(m);
 	draw_menu_list(m, 100, 100, NULL);
 }
 
@@ -28,6 +27,7 @@ void create_stage_menu(MenuData *m) {
 
 	create_menu(m);
 	m->draw = draw_stage_menu;
+	m->logic = animate_menu_list;
 	m->flags = MF_Abortable;
 	m->transition = TransMenuDark;
 

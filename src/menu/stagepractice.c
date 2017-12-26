@@ -16,7 +16,6 @@
 void draw_stgpract_menu(MenuData *m) {
 	draw_options_menu_bg(m);
 	draw_menu_title(m, "Stage Practice");
-	animate_menu_list(m);
 	draw_menu_list(m, 100, 100, NULL);
 }
 
@@ -25,6 +24,7 @@ void create_stgpract_menu(MenuData *m, Difficulty diff) {
 
 	create_menu(m);
 	m->draw = draw_stgpract_menu;
+	m->logic = animate_menu_list;
 	m->flags = MF_Abortable;
 	m->transition = TransMenuDark;
 

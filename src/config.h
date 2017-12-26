@@ -78,6 +78,7 @@
 	CONFIGDEF_INT		(VID_HEIGHT, 				"vid_height", 							RESY) \
 	CONFIGDEF_INT		(VID_RESIZABLE,				"vid_resizable",						0) \
 	CONFIGDEF_INT		(VID_LATE_SWAP,				"vid_late_swap",						0) \
+	CONFIGDEF_INT		(VID_FRAMESKIP,				"vid_frameskip",						1) \
 	CONFIGDEF_INT		(VSYNC, 					"vsync", 								0) \
 	CONFIGDEF_INT		(MIXER_CHUNKSIZE,			"mixer_chunksize",						1024) \
 	CONFIGDEF_FLOAT		(SFX_VOLUME, 				"sfx_volume", 							1.0) \

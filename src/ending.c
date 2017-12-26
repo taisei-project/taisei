@@ -151,17 +151,16 @@ void ending_preload(void) {
 	preload_resource(RES_BGM, "ending", RESF_OPTIONAL);
 }
 
-static FrameAction ending_frame(void *arg) {
+static FrameAction ending_logic_frame(void *arg) {
 	Ending *e = arg;
 
 	update_transition();
 	events_poll(NULL, 0);
 
 	if(e->pos >= e->count - 1) {
-		return FRAME_STOP;
+		return LFRAME_STOP;
 	}
 
-	ending_draw(e);
 	global.frames++;
 
 	if(global.frames >= e->entries[e->pos+1].time) {
@@ -173,7 +172,13 @@ static FrameAction ending_frame(void *arg) {
 		set_transition(TransFadeWhite, ENDING_FADE_OUT, ENDING_FADE_OUT);
 	}
 
-	return FRAME_SWAP;
+	return LFRAME_WAIT;
+}
+
+static FrameAction ending_render_frame(void *arg) {
+	Ending *e = arg;
+	ending_draw(e);
+	return RFRAME_SWAP;
 }
 
 void ending_loop(void) {
@@ -183,6 +188,6 @@ void ending_loop(void) {
 	global.frames = 0;
 	set_ortho();
 	start_bgm("ending");
-	loop_at_fps(ending_frame, NULL, &e, FPS);
+	loop_at_fps(ending_logic_frame, ending_render_frame, &e, FPS);
 	free_ending(&e);
 }

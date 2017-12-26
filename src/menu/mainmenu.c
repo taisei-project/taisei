@@ -66,13 +66,16 @@ void main_menu_update_practice_menus(void) {
 	}
 }
 
-void begin_main_menu(MenuData *m) {
+static void begin_main_menu(MenuData *m) {
 	start_bgm("menu");
 }
+
+static void update_main_menu(MenuData *menu);
 
 void create_main_menu(MenuData *m) {
 	create_menu(m);
 	m->draw = draw_main_menu;
+	m->logic = update_main_menu;
 	m->begin = begin_main_menu;
 
 	add_menu_entry(m, "Start Story", start_game, NULL);
@@ -101,6 +104,15 @@ void draw_main_menu_bg(MenuData* menu) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
+static void update_main_menu(MenuData *menu) {
+	menu->drawdata[1] += (stringwidth(menu->entries[menu->cursor].name, _fonts.mainmenu) - menu->drawdata[1])/10.0;
+	menu->drawdata[2] += (35*menu->cursor - menu->drawdata[2])/10.0;
+
+	for(int i = 0; i < menu->ecount; i++) {
+		menu->entries[i].drawdata += 0.2 * ((i == menu->cursor) - menu->entries[i].drawdata);
+	}
+}
+
 void draw_main_menu(MenuData *menu) {
 	draw_main_menu_bg(menu);
 
@@ -118,14 +130,8 @@ void draw_main_menu(MenuData *menu) {
 	draw_texture_p(0,0,bg);
 	glPopMatrix();
 
-	int i;
-
-	menu->drawdata[1] += (stringwidth(menu->entries[menu->cursor].name, _fonts.mainmenu) - menu->drawdata[1])/10.0;
-	menu->drawdata[2] += (35*menu->cursor - menu->drawdata[2])/10.0;
-
-	for(i = 0; i < menu->ecount; i++) {
+	for(int i = 0; i < menu->ecount; i++) {
 		float s = 5*sin(menu->frames/80.0 + 20*i);
-		menu->entries[i].drawdata += 0.2 * ((i == menu->cursor) - menu->entries[i].drawdata);
 
 		if(menu->entries[i].action == NULL) {
 			glColor4f(0.2,0.3,0.5,0.7);

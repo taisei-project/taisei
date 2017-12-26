@@ -18,9 +18,14 @@ void set_difficulty(MenuData *m, void *d) {
 	progress.game_settings.difficulty = (Difficulty)(uintptr_t)d;
 }
 
+void update_difficulty_menu(MenuData *menu) {
+	menu->drawdata[0] += (menu->cursor-menu->drawdata[0])*0.1;
+}
+
 void create_difficulty_menu(MenuData *m) {
 	create_menu(m);
 	m->draw = draw_difficulty_menu;
+	m->logic = update_difficulty_menu;
 	m->transition = TransMenuDark;
 	m->flags = MF_Transient | MF_Abortable;
 
@@ -45,7 +50,6 @@ void draw_difficulty_menu(MenuData *menu) {
 
 	static Color clr = 0;
 
-	menu->drawdata[0] += (menu->cursor-menu->drawdata[0])*0.1;
 	clr = approach_color(clr, difficulty_color(menu->cursor + D_Easy), 0.1);
 	parse_color_call(multiply_colors(clr, rgba(0.1, 0.1, 0.1, 0.7)), glColor4f);
 

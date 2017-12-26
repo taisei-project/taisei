@@ -82,7 +82,6 @@ void add_menu_separator(MenuData *menu);
 void create_menu(MenuData *menu);
 void destroy_menu(MenuData *menu);
 
-void menu_logic(MenuData *menu);
 void menu_input(MenuData *menu);
 void menu_no_input(MenuData *menu);
 

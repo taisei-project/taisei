@@ -262,18 +262,22 @@ void credits_preload(void) {
 	NULL);
 }
 
-static FrameAction credits_frame(void *arg) {
+static FrameAction credits_logic_frame(void *arg) {
 	update_transition();
 	events_poll(NULL, 0);
 	credits_process();
-	credits_draw();
 	global.frames++;
-	return credits.end == 0 ? FRAME_STOP : FRAME_SWAP;
+	return credits.end == 0 ? LFRAME_STOP : LFRAME_WAIT;
+}
+
+static FrameAction credits_render_frame(void *arg) {
+	credits_draw();
+	return RFRAME_SWAP;
 }
 
 void credits_loop(void) {
 	credits_preload();
 	credits_init();
-	loop_at_fps(credits_frame, NULL, NULL, FPS);
+	loop_at_fps(credits_logic_frame, credits_render_frame, NULL, FPS);
 	credits_free();
 }

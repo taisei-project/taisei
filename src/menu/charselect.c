@@ -38,10 +38,17 @@ void char_menu_input(MenuData*);
 void draw_char_menu(MenuData*);
 void free_char_menu(MenuData*);
 
+void update_char_menu(MenuData *menu) {
+	for(int i = 0; i < menu->ecount; i++) {
+		menu->entries[i].drawdata += 0.08*(1.0*(menu->cursor != i) - menu->entries[i].drawdata);
+	}
+}
+
 void create_char_menu(MenuData *m) {
 	create_menu(m);
 	m->input = char_menu_input;
 	m->draw = draw_char_menu;
+	m->logic = update_char_menu;
 	m->end = free_char_menu;
 	m->transition = TransMenuDark;
 	m->flags = MF_Abortable | MF_Transient;
@@ -85,8 +92,6 @@ void draw_char_menu(MenuData *menu) {
 		if(menu->cursor == i) {
 			current_char = pchar->id;
 		}
-
-		menu->entries[i].drawdata += 0.08*(1.0*(menu->cursor != i) - menu->entries[i].drawdata);
 
 		glColor4f(1,1,1,1-menu->entries[i].drawdata*2);
 		draw_texture(SCREEN_W/3-200*menu->entries[i].drawdata, 2*SCREEN_H/3, tex);
@@ -195,7 +200,7 @@ bool char_menu_input_handler(SDL_Event *event, void *arg) {
 void char_menu_input(MenuData *menu) {
 	events_poll((EventHandler[]){
 		{ .proc = char_menu_input_handler, .arg = menu },
-		{NULL}
+		{ NULL }
 	}, EFLAG_MENU);
 }
 

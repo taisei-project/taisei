@@ -540,13 +540,9 @@ typedef struct StageFrameState {
 	uint16_t last_replay_fps;
 } StageFrameState;
 
-static bool stage_fpslimit_condition(void *arg) {
-	return (global.replaymode != REPLAY_PLAY || !gamekeypressed(KEY_SKIP)) && !global.frameskip;
-}
-
 static void stage_update_fps(StageFrameState *fstate) {
 	if(global.replaymode == REPLAY_RECORD) {
-		uint16_t replay_fps = (uint16_t)rint(global.fps.fps);
+		uint16_t replay_fps = (uint16_t)rint(global.fps.logic.fps);
 
 		if(replay_fps != fstate->last_replay_fps) {
 			replay_stage_event(global.replay_stage, global.frames, EV_FPS, replay_fps);
@@ -555,7 +551,7 @@ static void stage_update_fps(StageFrameState *fstate) {
 	}
 }
 
-static FrameAction stage_frame(void *arg) {
+static FrameAction stage_logic_frame(void *arg) {
 	StageFrameState *fstate = arg;
 	StageInfo *stage = fstate->stage;
 
@@ -586,8 +582,23 @@ static FrameAction stage_frame(void *arg) {
 		progress.hiscore = global.plr.points;
 	}
 
+	if(global.game_over > 0) {
+		return LFRAME_STOP;
+	}
+
+	if(global.frameskip || (global.replaymode == REPLAY_PLAY && gamekeypressed(KEY_SKIP))) {
+		return LFRAME_SKIP;
+	}
+
+	return LFRAME_WAIT;
+}
+
+static FrameAction stage_render_frame(void *arg) {
+	StageFrameState *fstate = arg;
+	StageInfo *stage = fstate->stage;
+
 	if(global.frameskip && global.frames % global.frameskip) {
-		return FRAME_DROP;
+		return RFRAME_DROP;
 	}
 
 	tsrand_lock(&global.rand_game);
@@ -597,10 +608,9 @@ static FrameAction stage_frame(void *arg) {
 	END_DRAW_CODE();
 	tsrand_unlock(&global.rand_game);
 	tsrand_switch(&global.rand_game);
-
 	draw_transition();
 
-	return (global.game_over > 0) ? FRAME_STOP : FRAME_SWAP;
+	return RFRAME_SWAP;
 }
 
 void stage_loop(StageInfo *stage) {
@@ -676,8 +686,7 @@ void stage_loop(StageInfo *stage) {
 	display_stage_title(stage);
 
 	StageFrameState fstate = { .stage = stage };
-	fpscounter_reset(&global.fps);
-	loop_at_fps(stage_frame, stage_fpslimit_condition, &fstate, FPS);
+	loop_at_fps(stage_logic_frame, stage_render_frame, &fstate, FPS);
 
 	if(global.replaymode == REPLAY_RECORD) {
 		replay_stage_event(global.replay_stage, global.frames, EV_OVER, 0);

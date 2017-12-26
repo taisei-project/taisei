@@ -26,7 +26,7 @@ static void give_up(MenuData *m, void *arg) {
 void create_gameover_menu(MenuData *m) {
 	create_menu(m);
 	m->draw = draw_ingame_menu;
-
+	m->logic = update_ingame_menu;
 	m->flags = MF_Transient | MF_AlwaysProcessInput;
 	m->transition = TransEmpty;
 
