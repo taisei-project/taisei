@@ -10,6 +10,7 @@
 
 #include "util.h"
 #include "global.h"
+#include "video.h"
 
 //
 // string utils
@@ -337,38 +338,38 @@ void fpscounter_update(FPSCounter *fps) {
     fps->last_update_time = time_get();
 }
 
-void loop_at_fps(bool (*frame_func)(void*), bool (*limiter_cond_func)(void*), void *arg, uint32_t fps) {
+void loop_at_fps(FrameAction (*frame_func)(void*), bool (*limiter_cond_func)(void*), void *arg, uint32_t fps) {
     assert(frame_func != NULL);
     assert(fps > 0);
 
-    hrtime_t real_time = time_get();
-    hrtime_t next_frame_time = real_time;
+    hrtime_t frame_start_time = time_get();
+    hrtime_t next_frame_time = frame_start_time;
     hrtime_t target_frame_time = ((hrtime_t)1.0) / fps;
+
+    FrameAction last_frame_action = FRAME_SWAP;
 
     int32_t delay = getenvint("TAISEI_FRAMELIMITER_SLEEP", 0);
     bool exact_delay = getenvint("TAISEI_FRAMELIMITER_SLEEP_EXACT", 1);
     bool compensate = getenvint("TAISEI_FRAMELIMITER_COMPENSATE", 1);
+    bool late_swap = config_get_int(CONFIG_VID_LATE_SWAP);
 
-    // fpscounter_reset(&global.fps_busy);
-
-    while(true) {
-        real_time = time_get();
-
-        if(real_time < next_frame_time) {
-            continue;
-        }
+    while(last_frame_action != FRAME_STOP) {
+        frame_start_time = time_get();
 
 begin_frame:
-        global.fps_busy.last_update_time = time_get();
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        if(!frame_func(arg)) {
-            return;
+        if(late_swap && last_frame_action == FRAME_SWAP) {
+            video_swap_buffers();
         }
 
-        // update_font_cache();
+        global.fps_busy.last_update_time = time_get();
+        last_frame_action = frame_func(arg);
 
-        // fpscounter_update(&global.fps_busy);
+        if(!late_swap && last_frame_action == FRAME_SWAP) {
+            video_swap_buffers();
+        }
+
+        fpscounter_update(&global.fps);
+        fpscounter_update(&global.fps_busy);
 
 #ifdef DEBUG
         if(gamekeypressed(KEY_FPSLIMIT_OFF)) {
@@ -377,7 +378,7 @@ begin_frame:
 #endif
 
         if(!limiter_cond_func || limiter_cond_func(arg)) {
-            next_frame_time = real_time + target_frame_time;
+            next_frame_time = frame_start_time + target_frame_time;
 
             if(compensate) {
                 hrtime_t rt = time_get();
@@ -386,22 +387,22 @@ begin_frame:
                 if(diff >= 0) {
                     // frame took too long...
                     // try to compensate in the next frame to avoid slowdown
-                    real_time = rt - min(diff, target_frame_time);
+                    frame_start_time = rt - min(diff, target_frame_time);
                     goto begin_frame;
                 }
             }
 
             if(delay > 0) {
                 int32_t realdelay = delay;
-                int32_t mindelay = (int32_t)(1000 * (next_frame_time - time_get()));
+                int32_t maxdelay = (int32_t)(1000 * (next_frame_time - time_get()));
 
-                if(realdelay > mindelay) {
+                if(realdelay > maxdelay) {
                     if(exact_delay) {
-                        log_debug("Delay of %i ignored. Minimum is %i but TAISEI_FRAMELIMITER_SLEEP_EXACT is active", realdelay, mindelay);
+                        log_debug("Delay of %i ignored. Minimum is %i but TAISEI_FRAMELIMITER_SLEEP_EXACT is active", realdelay, maxdelay);
                         realdelay = 0;
                     } else {
-                        log_debug("Delay reduced from %i to %i", realdelay, mindelay);
-                        realdelay = mindelay;
+                        log_debug("Delay reduced from %i to %i", realdelay, maxdelay);
+                        realdelay = maxdelay;
                     }
                 }
 
@@ -409,6 +410,10 @@ begin_frame:
                     SDL_Delay(realdelay);
                 }
             }
+        }
+
+        while(time_get() < next_frame_time) {
+            continue;
         }
     }
 }

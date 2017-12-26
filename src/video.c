@@ -184,6 +184,8 @@ static void video_update_quality(void) {
 	reinit_fbo(&resources.fbo.rgba[1], fg, GL_RGBA);
 
 	reload_fonts(text);
+
+    glClear(GL_COLOR_BUFFER_BIT);
 }
 
 static uint32_t get_fullscreen_flag(void) {
@@ -606,4 +608,8 @@ void video_shutdown(void) {
 	free(video.modes);
 	SDL_VideoQuit();
 	events_unregister_handler(video_handle_window_event);
+}
+
+void video_swap_buffers(void) {
+	SDL_GL_SwapWindow(video.window);
 }

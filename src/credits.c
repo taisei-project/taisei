@@ -212,7 +212,7 @@ void credits_draw(void) {
 		credits_draw_entry(&(credits.entries[i]));
 	glPopMatrix();
 
-	draw_and_update_transition();
+	draw_transition();
 }
 
 void credits_finish(void *arg) {
@@ -262,13 +262,13 @@ void credits_preload(void) {
 	NULL);
 }
 
-static bool credits_frame(void *arg) {
+static FrameAction credits_frame(void *arg) {
+	update_transition();
 	events_poll(NULL, 0);
 	credits_process();
 	credits_draw();
 	global.frames++;
-	SDL_GL_SwapWindow(video.window);
-	return credits.end;
+	return credits.end == 0 ? FRAME_STOP : FRAME_SWAP;
 }
 
 void credits_loop(void) {

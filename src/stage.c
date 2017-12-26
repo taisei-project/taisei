@@ -544,10 +544,26 @@ static bool stage_fpslimit_condition(void *arg) {
 	return (global.replaymode != REPLAY_PLAY || !gamekeypressed(KEY_SKIP)) && !global.frameskip;
 }
 
-static bool stage_frame(void *arg) {
+static void stage_update_fps(StageFrameState *fstate) {
+	if(global.replaymode == REPLAY_RECORD) {
+		uint16_t replay_fps = (uint16_t)rint(global.fps.fps);
+
+		if(replay_fps != fstate->last_replay_fps) {
+			replay_stage_event(global.replay_stage, global.frames, EV_FPS, replay_fps);
+			fstate->last_replay_fps = replay_fps;
+		}
+	}
+}
+
+static FrameAction stage_frame(void *arg) {
 	StageFrameState *fstate = arg;
 	StageInfo *stage = fstate->stage;
 
+	if(--fstate->transition_delay) {
+		update_transition();
+	}
+
+	stage_update_fps(fstate);
 	((global.replaymode == REPLAY_PLAY) ? replay_input : stage_input)();
 
 	if(global.game_over != GAMEOVER_TRANSITIONING) {
@@ -570,16 +586,8 @@ static bool stage_frame(void *arg) {
 		progress.hiscore = global.plr.points;
 	}
 
-	if(fstate->transition_delay) {
-		--fstate->transition_delay;
-	}
-
 	if(global.frameskip && global.frames % global.frameskip) {
-		if(!fstate->transition_delay) {
-			update_transition();
-		}
-
-		return true;
+		return FRAME_DROP;
 	}
 
 	tsrand_lock(&global.rand_game);
@@ -592,25 +600,7 @@ static bool stage_frame(void *arg) {
 
 	draw_transition();
 
-	if(!fstate->transition_delay) {
-		update_transition();
-	}
-
-	SDL_GL_SwapWindow(video.window);
-
-	fpscounter_update(&global.fps);
-	fpscounter_update(&global.fps_busy);
-
-	if(global.replaymode == REPLAY_RECORD) {
-		uint16_t replay_fps = (uint16_t)rint(global.fps.fps);
-
-		if(replay_fps != fstate->last_replay_fps) {
-			replay_stage_event(global.replay_stage, global.frames, EV_FPS, replay_fps);
-			fstate->last_replay_fps = replay_fps;
-		}
-	}
-
-	return global.game_over <= 0;
+	return (global.game_over > 0) ? FRAME_STOP : FRAME_SWAP;
 }
 
 void stage_loop(StageInfo *stage) {

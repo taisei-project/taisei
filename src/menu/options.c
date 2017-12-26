@@ -376,6 +376,13 @@ void options_sub_video(MenuData *parent, void *arg) {
 		bind_addvalue(b, "off");
 		bind_addvalue(b, "adaptive");
 
+#ifdef DEBUG
+	add_menu_entry(m, "Swap buffers", do_nothing,
+		b = bind_option(CONFIG_VID_LATE_SWAP, bind_common_onoff_get, bind_common_onoff_set)
+	);	bind_addvalue(b, "late");
+		bind_addvalue(b, "early");
+#endif
+
 	add_menu_entry(m, "Window size", do_nothing,
 		b = bind_resolution()
 	);	b->setter = bind_resolution_set;

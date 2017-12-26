@@ -105,7 +105,13 @@ typedef struct {
     hrtime_t last_update_time; // internal; last time the average was recalculated
 } FPSCounter;
 
-void loop_at_fps(bool (*frame_func)(void*), bool (*limiter_cond_func)(void*), void *arg, uint32_t fps);
+typedef enum FrameAction {
+    FRAME_SWAP,
+    FRAME_DROP,
+    FRAME_STOP,
+} FrameAction;
+
+void loop_at_fps(FrameAction (*frame_func)(void*), bool (*limiter_cond_func)(void*), void *arg, uint32_t fps);
 void fpscounter_reset(FPSCounter *fps);
 void fpscounter_update(FPSCounter *fps);
 void set_ortho(void);

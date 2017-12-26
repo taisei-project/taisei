@@ -185,7 +185,7 @@ void draw_loading_screen(void) {
 	set_ortho();
 	draw_texture(SCREEN_W/2, SCREEN_H/2, "loading");
 	draw_text(AL_Right,SCREEN_W-5,SCREEN_H-10,TAISEI_VERSION,_fonts.small);
-	SDL_GL_SwapWindow(video.window);
+	video_swap_buffers();
 }
 
 void menu_preload(void) {

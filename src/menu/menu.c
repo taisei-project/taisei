@@ -146,7 +146,7 @@ void menu_logic(MenuData *menu) {
 	menu->frames++;
 }
 
-static bool menu_frame(void *arg) {
+static FrameAction menu_frame(void *arg) {
 	MenuData *menu = arg;
 
 	menu->logic(menu);
@@ -158,13 +158,12 @@ static bool menu_frame(void *arg) {
 		menu_no_input(menu);
 	}
 
+	update_transition();
 	assert(menu->draw);
 	menu->draw(menu);
-	draw_and_update_transition();
+	draw_transition();
 
-	SDL_GL_SwapWindow(video.window);
-
-	return menu->state != MS_Dead;
+	return menu->state == MS_Dead ? FRAME_STOP : FRAME_SWAP;
 }
 
 int menu_loop(MenuData *menu) {

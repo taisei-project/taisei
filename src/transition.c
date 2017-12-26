@@ -156,8 +156,3 @@ void update_transition(void) {
 		}
 	}
 }
-
-void draw_and_update_transition(void) {
-	draw_transition();
-	update_transition();
-}

@@ -144,25 +144,25 @@ void ending_draw(Ending *e) {
 	draw_text_auto_wrapped(AL_Center, SCREEN_W/2, VIEWPORT_H*4/5, e->entries[e->pos].msg, SCREEN_W * 0.85, _fonts.standard);
 	glColor4f(1,1,1,1);
 
-	draw_and_update_transition();
+	draw_transition();
 }
 
 void ending_preload(void) {
 	preload_resource(RES_BGM, "ending", RESF_OPTIONAL);
 }
 
-static bool ending_frame(void *arg) {
+static FrameAction ending_frame(void *arg) {
 	Ending *e = arg;
 
+	update_transition();
 	events_poll(NULL, 0);
 
 	if(e->pos >= e->count - 1) {
-		return false;
+		return FRAME_STOP;
 	}
 
 	ending_draw(e);
 	global.frames++;
-	SDL_GL_SwapWindow(video.window);
 
 	if(global.frames >= e->entries[e->pos+1].time) {
 		e->pos++;
@@ -173,7 +173,7 @@ static bool ending_frame(void *arg) {
 		set_transition(TransFadeWhite, ENDING_FADE_OUT, ENDING_FADE_OUT);
 	}
 
-	return true;
+	return FRAME_SWAP;
 }
 
 void ending_loop(void) {
