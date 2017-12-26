@@ -573,7 +573,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	// Warning: pops outer matrix!
 	glPopMatrix();
 
-#ifdef DEBUGe
+#ifdef DEBUG
 	snprintf(buf, sizeof(buf), "%.2f lfps, %.2f rfps, timer: %d, frames: %d",
 		global.fps.logic.fps,
 		global.fps.render.fps,

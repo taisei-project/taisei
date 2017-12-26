@@ -597,10 +597,6 @@ static FrameAction stage_render_frame(void *arg) {
 	StageFrameState *fstate = arg;
 	StageInfo *stage = fstate->stage;
 
-	if(global.frameskip && global.frames % global.frameskip) {
-		return RFRAME_DROP;
-	}
-
 	tsrand_lock(&global.rand_game);
 	tsrand_switch(&global.rand_visual);
 	BEGIN_DRAW_CODE();
