@@ -74,6 +74,10 @@ bool player_set_power(Player *plr, short npow) {
 	int oldpow = plr->power;
 	plr->power = npow;
 
+	if(oldpow / 100 < npow / 100) {
+		play_sound("powerup");
+	}
+
 	if(plr->power == PLR_MAX_POWER && oldpow < PLR_MAX_POWER) {
 		player_full_power(plr);
 	}
@@ -793,6 +797,7 @@ void player_preload(void) {
 		"graze",
 		"death",
 		"generic_shot",
+		"powerup",
 		"full_power",
 		"extra_life",
 		"extra_bomb",
