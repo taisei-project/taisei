@@ -369,7 +369,7 @@ void loop_at_fps(LogicFrameFunc logic_frame, RenderFrameFunc render_frame, void 
 
     uint32_t frame_num = 0;
 
-    while(lframe_action != LFRAME_STOP) {
+    while(true) {
         frame_start_time = time_get();
 
 begin_frame:
@@ -391,6 +391,11 @@ begin_frame:
 
         fpscounter_update(&global.fps.logic);
         fpscounter_update(&global.fps.busy);
+
+        if(lframe_action == LFRAME_STOP) {
+            video_swap_buffers();
+            break;
+        }
 
         if(!late_swap && rframe_action == RFRAME_SWAP) {
             video_swap_buffers();
@@ -426,7 +431,7 @@ begin_frame:
 
             if(realdelay > maxdelay) {
                 if(exact_delay) {
-                    log_debug("Delay of %i ignored. Minimum is %i but TAISEI_FRAMELIMITER_SLEEP_EXACT is active", realdelay, maxdelay);
+                    log_debug("Delay of %i ignored. Maximum is %i, TAISEI_FRAMELIMITER_SLEEP_EXACT is active", realdelay, maxdelay);
                     realdelay = 0;
                 } else {
                     log_debug("Delay reduced from %i to %i", realdelay, maxdelay);
