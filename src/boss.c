@@ -417,10 +417,15 @@ bool boss_is_vulnerable(Boss *boss) {
 }
 
 bool boss_damage(Boss *boss, int dmg) {
-	if(!boss || !boss->current || !boss_is_vulnerable(boss))
+	assert(boss != NULL);
+
+	if(!boss_is_vulnerable(boss))
 		return false;
-	if(dmg > 0 && global.frames-boss->lastdamageframe > 2)
+
+	if(dmg > 0 && global.frames-boss->lastdamageframe > 2) {
 		boss->lastdamageframe = global.frames;
+	}
+
 	boss->current->hp -= dmg;
 	return true;
 }

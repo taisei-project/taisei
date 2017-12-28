@@ -43,16 +43,25 @@ static void draw_laser_beam(complex src, complex dst, double size, double step, 
 }
 
 static complex trace_laser(complex origin, complex vel, int damage) {
-    int col;
-    complex target = trace_projectile(
-        origin, 28*(1+I), linear, 0, vel, 0, 0, 0, PlrProj + damage, &col
+    ProjCollisionResult col;
+    Projectile *lproj = NULL;
+
+    PROJECTILE(
+        .dest = &lproj,
+        .pos = origin,
+        .size = 28*(1+I),
+        .type = PlrProj + damage,
+        .rule = linear,
+        .args = { vel },
     );
 
-    if(col) {
+    trace_projectile(lproj, &col, PCOL_ENEMY | PCOL_BOSS | PCOL_VOID);
+
+    if(col.type & (PCOL_ENEMY | PCOL_BOSS)) {
         tsrand_fill(3);
         PARTICLE(
             .texture = "flare",
-            .pos = target,
+            .pos = col.location,
             .rule = timeout_linear,
             .draw_rule = Shrink,
             .args = {
@@ -63,7 +72,9 @@ static complex trace_laser(complex origin, complex vel, int damage) {
         );
     }
 
-    return target;
+    col.fatal = true;
+    apply_projectile_collision(&lproj, lproj, &col);
+    return col.location;
 }
 
 static float set_alpha(int u_alpha, float a) {

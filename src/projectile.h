@@ -95,6 +95,23 @@ typedef struct ProjArgs {
 	ListInsertionRule insertion_rule;
 } ProjArgs;
 
+typedef enum ProjCollisionType {
+	PCOL_NONE                = 0,
+	PCOL_ENEMY               = (1 << 0),
+	PCOL_BOSS                = (1 << 1),
+	PCOL_PLAYER              = (1 << 2),
+	PCOL_PLAYER_GRAZE        = (1 << 3),
+	PCOL_VOID                = (1 << 4),
+} ProjCollisionType;
+
+typedef struct ProjCollisionResult {
+	ProjCollisionType type;
+	bool fatal; // for the projectile
+	complex location;
+	int damage;
+	void *entity;
+} ProjCollisionResult;
+
 Projectile* create_projectile(ProjArgs *args);
 Projectile* create_particle(ProjArgs *args);
 
@@ -113,11 +130,12 @@ Projectile* create_particle(ProjArgs *args);
 void delete_projectile(Projectile **dest, Projectile *proj);
 void delete_projectiles(Projectile **dest);
 void draw_projectiles(Projectile *projs, ProjPredicate predicate);
-int collision_projectile(Projectile *p);
+
+void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col);
+void apply_projectile_collision(Projectile **projlist, Projectile *p, ProjCollisionResult *col);
+void trace_projectile(Projectile *p, ProjCollisionResult *out_col, ProjCollisionType stopflags);
 bool projectile_in_viewport(Projectile *proj);
 void process_projectiles(Projectile **projs, bool collision);
-
-complex trace_projectile(complex origin, complex size, ProjRule rule, float angle, complex a0, complex a1, complex a2, complex a3, ProjType type, int *out_col);
 
 int linear(Projectile *p, int t);
 int accelerated(Projectile *p, int t);

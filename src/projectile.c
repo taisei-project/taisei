@@ -176,7 +176,15 @@ void delete_projectiles(Projectile **projs) {
 	list_foreach(projs, _delete_projectile, NULL);
 }
 
-int collision_projectile(Projectile *p) {
+void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
+	assert(out_col != NULL);
+
+	out_col->type = PCOL_NONE;
+	out_col->entity = NULL;
+	out_col->fatal = false;
+	out_col->location = p->pos;
+	out_col->damage = 0;
+
 	if(p->type == EnemyProj) {
 		double w, h;
 		projectile_size(p, &w, &h);
@@ -187,44 +195,100 @@ int collision_projectile(Projectile *p) {
 		double dst = cabs(global.plr.pos - p->pos);
 		grazer = (0.9 * sqrt(grazer) + 0.1 * grazer) * 6;
 
-		if(dst < projr + 1)
-			return 1;
-
-		if(!p->grazed && dst < grazer && global.frames - abs(global.plr.recovery) > 0) {
-			p->grazed = true;
-			player_graze(&global.plr, p->pos - grazer * 0.3 * cexp(I*carg(p->pos - global.plr.pos)), 50);
+		if(dst < projr + 1) {
+			out_col->type = PCOL_PLAYER;
+			out_col->entity = &global.plr;
+			out_col->fatal = true;
+		} else if(!p->grazed && dst < grazer && global.frames - abs(global.plr.recovery) > 0) {
+			out_col->location = p->pos - grazer * 0.3 * cexp(I*carg(p->pos - global.plr.pos));
+			out_col->type = PCOL_PLAYER_GRAZE;
+			out_col->entity = &global.plr;
 		}
 	} else if(p->type >= PlrProj) {
-		Enemy *e = global.enemies;
 		int damage = p->type - PlrProj;
 
-		while(e != NULL) {
+		for(Enemy *e = global.enemies; e; e = e->next) {
 			if(e->hp != ENEMY_IMMUNE && cabs(e->pos - p->pos) < 30) {
-				player_add_points(&global.plr, damage * 0.5);
+				out_col->type = PCOL_ENEMY;
+				out_col->entity = e;
+				out_col->fatal = true;
+				out_col->damage = damage;
 
-				#ifdef PLR_DPS_STATS
-					global.plr.total_dmg += min(e->hp, damage);
-				#endif
-
-				e->hp -= damage;
-				return 2;
+				return;
 			}
-			e = e->next;
 		}
 
 		if(global.boss && cabs(global.boss->pos - p->pos) < 42) {
-			if(boss_damage(global.boss, damage)) {
-				player_add_points(&global.plr, damage * 0.2);
-
-				#ifdef PLR_DPS_STATS
-					global.plr.total_dmg += damage;
-				#endif
-
-				return 2;
+			if(boss_is_vulnerable(global.boss)) {
+				out_col->type = PCOL_BOSS;
+				out_col->entity = global.boss;
+				out_col->fatal = true;
+				out_col->damage = damage;
 			}
 		}
 	}
-	return 0;
+
+	if(out_col->type == PCOL_NONE && !projectile_in_viewport(p)) {
+		out_col->type = PCOL_VOID;
+		out_col->fatal = true;
+	}
+}
+
+void apply_projectile_collision(Projectile **projlist, Projectile *p, ProjCollisionResult *col) {
+	switch(col->type) {
+		case PCOL_NONE: {
+			break;
+		}
+
+		case PCOL_PLAYER: {
+			if(global.frames - abs(((Player*)col->entity)->recovery) >= 0) {
+				player_death(col->entity);
+			}
+
+			break;
+		}
+
+		case PCOL_PLAYER_GRAZE: {
+			p->grazed = true;
+			player_graze(col->entity, col->location, 50);
+			break;
+		}
+
+		case PCOL_ENEMY: {
+			Enemy *e = col->entity;
+			player_add_points(&global.plr, col->damage * 0.5);
+
+			#ifdef PLR_DPS_STATS
+				global.plr.total_dmg += min(e->hp, col->damage);
+			#endif
+
+			e->hp -= col->damage;
+			break;
+		}
+
+		case PCOL_BOSS: {
+			if(boss_damage(col->entity, col->damage)) {
+				player_add_points(&global.plr, col->damage * 0.2);
+
+				#ifdef PLR_DPS_STATS
+					global.plr.total_dmg += col->damage;
+				#endif
+			}
+			break;
+		}
+
+		case PCOL_VOID: {
+			break;
+		}
+
+		default: {
+			log_fatal("Invalid collision type %x", col->type);
+		}
+	}
+
+	if(col->fatal) {
+		delete_projectile(projlist, p);
+	}
 }
 
 void static_clrtransform_bullet(Color c, ColorTransform *out) {
@@ -306,12 +370,14 @@ bool projectile_in_viewport(Projectile *proj) {
 }
 
 void process_projectiles(Projectile **projs, bool collision) {
-	Projectile *proj = *projs, *del = NULL;
+	ProjCollisionResult col = { 0 };
 
 	char killed = 0;
-	char col = 0;
 	int action;
-	while(proj != NULL) {
+
+	for(Projectile *proj = *projs, *next; proj; proj = next) {
+		next = proj->next;
+
 		action = proj->rule(proj, global.frames - proj->birthtime);
 
 		if(proj->type == DeadProj && killed < 5) {
@@ -320,67 +386,47 @@ void process_projectiles(Projectile **projs, bool collision) {
 			create_bpoint(proj->pos);
 		}
 
-		if(collision)
-			col = collision_projectile(proj);
+		if(collision) {
+			calc_projectile_collision(proj, &col);
 
-		if(col && proj->type != Particle) {
-			PARTICLE(
-				.texture_ptr = proj->tex,
-				.pos = proj->pos,
-				.color = proj->color,
-				.flags = proj->flags,
-				.color_transform_rule = proj->color_transform_rule,
-				.rule = timeout_linear,
-				.draw_rule = DeathShrink,
-				.args = { 10, 5*cexp(proj->angle*I) },
-				.type = proj->type >= PlrProj ? PlrProj : Particle,
-			);
-		}
-
-		if(col == 1 && global.frames - abs(global.plr.recovery) >= 0)
-			player_death(&global.plr);
-
-		if(action == ACTION_DESTROY || col || !projectile_in_viewport(proj)) {
-			del = proj;
-			proj = proj->next;
-			delete_projectile(projs, del);
-			if(proj == NULL) break;
+			if(col.fatal) {
+				PARTICLE(
+					.texture_ptr = proj->tex,
+					.pos = proj->pos,
+					.color = proj->color,
+					.flags = proj->flags,
+					.color_transform_rule = proj->color_transform_rule,
+					.rule = timeout_linear,
+					.draw_rule = DeathShrink,
+					.args = { 10, 5*cexp(proj->angle*I) },
+					.type = proj->type >= PlrProj ? PlrProj : Particle,
+				);
+			}
 		} else {
-			proj = proj->next;
+			memset(&col, 0, sizeof(col));
+
+			if(!projectile_in_viewport(proj)) {
+				col.fatal = true;
+			}
 		}
+
+		if(action == ACTION_DESTROY) {
+			col.fatal = true;
+		}
+
+		apply_projectile_collision(projs, proj, &col);
 	}
 }
 
-complex trace_projectile(complex origin, complex size, ProjRule rule, float angle, complex a0, complex a1, complex a2, complex a3, ProjType type, int *out_col) {
-	complex target = origin;
-	Projectile *p = NULL;
-
-	PROJECTILE(
-		.dest = &p,
-		.type = type,
-		.size = size,
-		.pos = origin,
-		.rule = rule,
-		.angle = angle,
-		.args = { a0, a1, a2, a3 },
-	);
-
+void trace_projectile(Projectile *p, ProjCollisionResult *out_col, ProjCollisionType stopflags) {
 	for(int t = 0; p; ++t) {
 		int action = p->rule(p, t);
-		int col = collision_projectile(p);
+		calc_projectile_collision(p, out_col);
 
-		if(col || action == ACTION_DESTROY || !projectile_in_viewport(p)) {
-			target = p->pos;
-
-			if(out_col) {
-				*out_col = col;
-			}
-
-			delete_projectile(&p, p);
+		if(out_col->type & stopflags || action == ACTION_DESTROY) {
+			return;
 		}
 	}
-
-	return target;
 }
 
 int linear(Projectile *p, int t) { // sure is physics in here; a[0]: velocity
