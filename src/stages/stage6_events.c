@@ -834,8 +834,23 @@ int baryon_eigenstate(Enemy *e, int t) {
 	return 1;
 }
 
-int baryon_reset(Enemy *e, int t) {
-	GO_TO(e, e->pos0, 0.1);
+int baryon_reset(Enemy *baryon, int t) {
+	// GO_TO(baryon, baryon->pos0, 0.1);
+
+	if(t < 0) {
+		return 1;
+	}
+
+	for(Enemy *e = global.enemies; e; e = e->next) {
+		if(e->visual_rule == BaryonCenter) {
+			complex targ_pos = baryon->pos0 - e->pos0 + e->pos;
+			GO_TO(baryon, targ_pos, 0.1);
+
+			return 1;
+		}
+	}
+
+	log_fatal("No baryon center?");
 	return 1;
 }
 
@@ -1064,16 +1079,16 @@ int baryon_broglie(Enemy *e, int t) {
 void elly_broglie(Boss *b, int t) {
 	TIMER(&t);
 
-	if(t < 0) {
-		return;
-	}
-
 	AT(0) {
 		set_baryon_rule(baryon_broglie);
 	}
 
 	AT(EVENT_DEATH) {
 		set_baryon_rule(baryon_reset);
+	}
+
+	if(t < 0) {
+		return;
 	}
 
 	int period = BROGLIE_PERIOD;
