@@ -281,9 +281,44 @@ void stage_gameover(void) {
 	resume_bgm();
 }
 
+static bool stage_input_common(SDL_Event *event, void *arg) {
+	TaiseiEvent type = TAISEI_EVENT(event->type);
+	int32_t code = event->user.code;
+
+	switch(type) {
+		case TE_GAME_KEY_DOWN:
+			switch(code) {
+				case KEY_STOP:
+					// global.game_over = GAMEOVER_DEFEAT;
+					stage_finish(GAMEOVER_DEFEAT);
+					return true;
+
+				case KEY_RESTART:
+					// global.game_over = GAMEOVER_RESTART;
+					stage_finish(GAMEOVER_RESTART);
+					return true;
+			}
+
+			break;
+
+		case TE_GAME_PAUSE:
+			stage_pause();
+			break;
+
+		default:
+			break;
+	}
+
+	return false;
+}
+
 bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {
 	TaiseiEvent type = TAISEI_EVENT(event->type);
 	int32_t code = event->user.code;
+
+	if(stage_input_common(event, arg)) {
+		return false;
+	}
 
 	switch(type) {
 		case TE_GAME_KEY_DOWN:
@@ -308,10 +343,6 @@ bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {
 			player_event_with_replay(&global.plr, EV_RELEASE, code);
 			break;
 
-		case TE_GAME_PAUSE:
-			stage_pause();
-			break;
-
 		case TE_GAME_AXIS_LR:
 			player_event_with_replay(&global.plr, EV_AXIS_LR, (uint16_t)code);
 			break;
@@ -327,10 +358,7 @@ bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {
 }
 
 bool stage_input_handler_replay(SDL_Event *event, void *arg) {
-	if(event->type == MAKE_TAISEI_EVENT(TE_GAME_PAUSE)) {
-		stage_pause();
-	}
-
+	stage_input_common(event, arg);
 	return false;
 }
 
@@ -487,7 +515,7 @@ void stage_finish(int gameover) {
 	set_transition_callback(TransFadeBlack, FADE_TIME, FADE_TIME*2, stage_finalize, (void*)(intptr_t)gameover);
 	stage_fade_bgm();
 
-	if(global.replaymode == REPLAY_PLAY) {
+	if(global.replaymode == REPLAY_PLAY || global.game_over != GAMEOVER_WIN) {
 		return;
 	}
 

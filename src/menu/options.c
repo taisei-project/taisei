@@ -325,13 +325,12 @@ int bind_resolution_set(OptionBinding *b, int v) {
 // --- Creating, destroying, filling the menu --- //
 
 void destroy_options_menu(MenuData *m) {
-	int i;
-
-	for(i = 0; i < m->ecount; ++i) {
+	for(int i = 0; i < m->ecount; ++i) {
 		OptionBinding *bind = bind_get(m, i);
 
-		if(!bind)
+		if(!bind) {
 			continue;
+		}
 
 		if(bind->type == BT_Resolution && video_can_change_resolution()) {
 			if(bind->selected != -1) {
@@ -617,6 +616,16 @@ void options_sub_controls(MenuData *parent, void *arg) {
 
 	add_menu_entry(m, "Skip dialog", do_nothing,
 		bind_keybinding(CONFIG_KEY_SKIP)
+	);
+
+	add_menu_separator(m);
+
+	add_menu_entry(m, "Stop the game immediately", do_nothing,
+		bind_keybinding(CONFIG_KEY_STOP)
+	);
+
+	add_menu_entry(m, "Restart the game immediately", do_nothing,
+		bind_keybinding(CONFIG_KEY_RESTART)
 	);
 
 #ifdef DEBUG

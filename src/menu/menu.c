@@ -98,7 +98,8 @@ bool menu_input_handler(SDL_Event *event, void *arg) {
 				if(++menu->cursor >= menu->ecount)
 					menu->cursor = 0;
 			} while(menu->entries[menu->cursor].action == NULL);
-		break;
+
+			return true;
 
 		case TE_MENU_CURSOR_UP:
 			play_ui_sound("generic_shot");
@@ -106,7 +107,9 @@ bool menu_input_handler(SDL_Event *event, void *arg) {
 				if(--menu->cursor < 0)
 					menu->cursor = menu->ecount - 1;
 			} while(menu->entries[menu->cursor].action == NULL);
-		break;
+
+			log_debug("WTF!");
+			return true;
 
 		case TE_MENU_ACCEPT:
 			play_ui_sound("shot_special1");
@@ -114,7 +117,8 @@ bool menu_input_handler(SDL_Event *event, void *arg) {
 				menu->selected = menu->cursor;
 				close_menu(menu);
 			}
-		break;
+
+			return true;
 
 		case TE_MENU_ABORT:
 			play_ui_sound("hit");
@@ -122,12 +126,12 @@ bool menu_input_handler(SDL_Event *event, void *arg) {
 				menu->selected = -1;
 				close_menu(menu);
 			}
-		break;
 
-		default: break;
+			return true;
+
+		default:
+			return false;
 	}
-
-	return false;
 }
 
 void menu_input(MenuData *menu) {

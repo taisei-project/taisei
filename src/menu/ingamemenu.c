@@ -27,10 +27,79 @@ void restart_game(MenuData *m, void *arg) {
 	menu_commonaction_close(m, arg);
 }
 
+static void ingame_menu_do(MenuData *m, MenuAction action) {
+	m->selected = -1;
+
+	for(int i = 0; i < m->ecount; ++i) {
+		if(m->entries[i].action == action) {
+			m->selected = i;
+		}
+	}
+
+	assert(m->selected >= 0);
+	close_menu(m);
+}
+
+static bool check_shortcut(SDL_Scancode scan, SDL_Scancode expectscan) {
+	if(scan != expectscan) {
+		return false;
+	}
+
+	KeyIndex k = config_key_from_scancode(scan);
+
+	switch(k) {
+		case KEY_UP:
+		case KEY_DOWN:
+		case KEY_LEFT:
+		case KEY_RIGHT:
+		case KEY_SHOT:
+		case KEY_BOMB:
+			return false;
+
+		default:
+			return true;
+	}
+}
+
+static bool ingame_menu_input_handler(SDL_Event *event, void *arg) {
+	MenuData *menu = arg;
+
+	switch(event->type) {
+		case SDL_KEYDOWN: {
+			SDL_Scancode scan = event->key.keysym.scancode;
+
+			if(check_shortcut(scan, SDL_SCANCODE_R)) {
+				ingame_menu_do(menu, restart_game);
+				return true;
+			}
+
+			if(check_shortcut(scan, SDL_SCANCODE_Q)) {
+				ingame_menu_do(menu, return_to_title);
+				return true;
+			}
+
+			return false;
+		}
+
+		default: {
+			return false;
+		}
+	}
+}
+
+static void ingame_menu_input(MenuData *m) {
+	events_poll((EventHandler[]){
+		{ .proc = menu_input_handler, .arg = m },
+		{ .proc = ingame_menu_input_handler, .arg = m },
+		{ NULL }
+	}, EFLAG_MENU);
+}
+
 void create_ingame_menu(MenuData *m) {
 	create_menu(m);
 	m->draw = draw_ingame_menu;
 	m->logic = update_ingame_menu;
+	m->input = ingame_menu_input;
 	m->flags = MF_Abortable | MF_AlwaysProcessInput;
 	m->transition = TransEmpty;
 	m->cursor = 1;
