@@ -583,10 +583,6 @@ static FrameAction stage_logic_frame(void *arg) {
 	StageFrameState *fstate = arg;
 	StageInfo *stage = fstate->stage;
 
-	if(--fstate->transition_delay) {
-		update_transition();
-	}
-
 	stage_update_fps(fstate);
 	((global.replaymode == REPLAY_PLAY) ? replay_input : stage_input)();
 
@@ -605,6 +601,12 @@ static FrameAction stage_logic_frame(void *arg) {
 
 	replay_stage_check_desync(global.replay_stage, global.frames, (tsrand() ^ global.plr.points) & 0xFFFF, global.replaymode);
 	stage_logic();
+
+	if(fstate->transition_delay) {
+		--fstate->transition_delay;
+	} else {
+		update_transition();
+	}
 
 	if(global.replaymode == REPLAY_RECORD && global.plr.points > progress.hiscore) {
 		progress.hiscore = global.plr.points;
