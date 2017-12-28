@@ -133,7 +133,7 @@ void draw_projectiles(Projectile *projs, ProjPredicate predicate);
 
 void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col);
 void apply_projectile_collision(Projectile **projlist, Projectile *p, ProjCollisionResult *col);
-void trace_projectile(Projectile *p, ProjCollisionResult *out_col, ProjCollisionType stopflags);
+int trace_projectile(Projectile *p, ProjCollisionResult *out_col, ProjCollisionType stopflags, int timeofs);
 bool projectile_in_viewport(Projectile *proj);
 void process_projectiles(Projectile **projs, bool collision);
 

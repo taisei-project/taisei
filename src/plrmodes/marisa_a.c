@@ -15,6 +15,15 @@
 // args are pain
 static float global_magicstar_alpha;
 
+typedef struct MarisaLaserData {
+    struct {
+        complex first;
+        complex last;
+    } trace_hit;
+    complex prev_pos;
+    float lean;
+} MarisaLaserData;
+
 static void draw_laser_beam(complex src, complex dst, double size, double step, double t, Texture *tex, int u_length) {
     complex dir = dst - src;
     complex center = (src + dst) * 0.5;
@@ -42,39 +51,85 @@ static void draw_laser_beam(complex src, complex dst, double size, double step, 
     glPopMatrix();
 }
 
-static complex trace_laser(complex origin, complex vel, int damage) {
+static void trace_laser(Enemy *e, complex vel, int damage) {
     ProjCollisionResult col;
     Projectile *lproj = NULL;
 
+    MarisaLaserData *ld = REF(e->args[3]);
+
     PROJECTILE(
         .dest = &lproj,
-        .pos = origin,
+        .pos = e->pos,
         .size = 28*(1+I),
         .type = PlrProj + damage,
         .rule = linear,
         .args = { vel },
     );
 
-    trace_projectile(lproj, &col, PCOL_ENEMY | PCOL_BOSS | PCOL_VOID);
+    bool first_found = false;
+    int timeofs = 0;
+    int col_types = (PCOL_ENEMY | PCOL_BOSS);
 
-    if(col.type & (PCOL_ENEMY | PCOL_BOSS)) {
-        tsrand_fill(3);
-        PARTICLE(
-            .texture = "flare",
-            .pos = col.location,
-            .rule = timeout_linear,
-            .draw_rule = Shrink,
-            .args = {
-                3 + 5 * afrand(2),
-                (2+afrand(0)*6)*cexp(I*M_PI*2*afrand(1))
-            },
-            .type = PlrProj,
-        );
+    struct enemy_col {
+        LIST_INTERFACE(struct enemy_col);
+        Enemy *enemy;
+        int original_hp;
+    } *prev_collisions = NULL;
+
+    while(lproj) {
+        timeofs = trace_projectile(lproj, &col, col_types | PCOL_VOID, timeofs);
+        struct enemy_col *c = NULL;
+
+        if(!first_found) {
+            ld->trace_hit.first = col.location;
+            first_found = true;
+        }
+
+        if(col.type & col_types) {
+            tsrand_fill(3);
+            PARTICLE(
+                .texture = "flare",
+                .pos = col.location,
+                .rule = timeout_linear,
+                .draw_rule = Shrink,
+                .args = {
+                    3 + 5 * afrand(2),
+                    (2+afrand(0)*6)*cexp(I*M_PI*2*afrand(1))
+                },
+                .type = PlrProj,
+            );
+
+            if(col.type == PCOL_ENEMY) {
+                c = malloc(sizeof(struct enemy_col));
+                c->enemy = col.entity;
+                list_push(&prev_collisions, c);
+            } else {
+                col_types &= ~col.type;
+            }
+
+            col.fatal = false;
+        }
+
+        apply_projectile_collision(&lproj, lproj, &col);
+
+        if(col.type == PCOL_BOSS) {
+            assert(!col.fatal);
+        }
+
+        if(c) {
+            c->original_hp = ((Enemy*)col.entity)->hp;
+            ((Enemy*)col.entity)->hp = ENEMY_IMMUNE;
+        }
     }
 
-    col.fatal = true;
-    apply_projectile_collision(&lproj, lproj, &col);
-    return col.location;
+    for(struct enemy_col *c = prev_collisions, *next; c; c = next) {
+        next = c->next;
+        c->enemy->hp = c->original_hp;
+        list_unlink(&prev_collisions, c);
+        free(c);
+    }
+
+    ld->trace_hit.last = col.location;
 }
 
 static float set_alpha(int u_alpha, float a) {
@@ -145,9 +200,11 @@ static void marisa_laser_slave_visual(Enemy *e, int t, bool render) {
         return;
     }
 
+    MarisaLaserData *ld = REF(e->args[3]);
+
     glColor4f(1, 1, 1, laser_alpha);
     glPushMatrix();
-    glTranslatef(creal(e->args[3]), cimag(e->args[3]), 0);
+    glTranslatef(creal(ld->trace_hit.first), cimag(ld->trace_hit.first), 0);
     draw_texture(0, 0, "part/lasercurve");
     glPopMatrix();
     glColor4f(1, 1, 1, 1);
@@ -198,7 +255,8 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 
     FOR_EACH_SLAVE(e) {
         if(set_alpha(u_alpha, get_laser_alpha(e, a))) {
-            draw_laser_beam(e->pos, e->args[3], 32, 128, -0.02 * t, tex1, u_length);
+            MarisaLaserData *ld = REF(e->args[3]);
+            draw_laser_beam(e->pos, ld->trace_hit.last, 32, 128, -0.02 * t, tex1, u_length);
         }
     }
 
@@ -215,7 +273,8 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 
     FOR_EACH_SLAVE(e) {
         if(set_alpha_dimmed(u_alpha, get_laser_alpha(e, a))) {
-            draw_laser_beam(e->pos, e->args[3], 40, 128, t * -0.12, tex0, u_length);
+            MarisaLaserData *ld = REF(e->args[3]);
+            draw_laser_beam(e->pos, ld->trace_hit.first, 40, 128, t * -0.12, tex0, u_length);
         }
     }
 
@@ -224,7 +283,8 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 
     FOR_EACH_SLAVE(e) {
         if(set_alpha_dimmed(u_alpha, get_laser_alpha(e, a))) {
-            draw_laser_beam(e->pos, e->args[3], 42, 200, t * -0.03, tex0, u_length);
+            MarisaLaserData *ld = REF(e->args[3]);
+            draw_laser_beam(e->pos, ld->trace_hit.first, 42, 200, t * -0.03, tex0, u_length);
         }
     }
 
@@ -233,6 +293,13 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 }
 
 static int marisa_laser_fader(Enemy *e, int t) {
+    if(t == EVENT_DEATH) {
+        MarisaLaserData *ld = REF(e->args[3]);
+        free(ld);
+        free_ref(e->args[3]);
+        return ACTION_DESTROY;
+    }
+
     e->args[1] = approach(e->args[1], 0.0, 0.1);
 
     if(creal(e->args[1]) == 0) {
@@ -243,8 +310,11 @@ static int marisa_laser_fader(Enemy *e, int t) {
 }
 
 static Enemy* spawn_laser_fader(Enemy *e, double alpha) {
+    MarisaLaserData *ld = calloc(1, sizeof(MarisaLaserData));
+    memcpy(ld, (MarisaLaserData*)REF(e->args[3]), sizeof(MarisaLaserData));
+
     return create_enemy_p(&global.plr.slaves, e->pos, ENEMY_IMMUNE, marisa_laser_fader_visual, marisa_laser_fader,
-        e->args[0], alpha, e->args[2], e->args[3]);
+        e->args[0], alpha, e->args[2], add_ref(ld));
 }
 
 static int marisa_laser_renderer(Enemy *renderer, int t) {
@@ -272,8 +342,16 @@ static int marisa_laser_renderer(Enemy *renderer, int t) {
 #undef FOR_EACH_REAL_SLAVE
 
 static int marisa_laser_slave(Enemy *e, int t) {
+    if(t == EVENT_BIRTH) {
+        return 1;
+    }
+
     if(t == EVENT_DEATH && !global.game_over && global.plr.slaves && creal(global.plr.slaves->args[0])) {
         spawn_laser_fader(e, global.plr.slaves->args[0]);
+
+        MarisaLaserData *ld = REF(e->args[3]);
+        free(ld);
+        free_ref(e->args[3]);
         return 1;
     }
 
@@ -283,12 +361,18 @@ static int marisa_laser_slave(Enemy *e, int t) {
 
     e->pos = global.plr.pos + (1 - global.plr.focus/30.0)*e->pos0 + (global.plr.focus/30.0)*e->args[0];
 
+    MarisaLaserData *ld = REF(e->args[3]);
+    complex pdelta = e->pos - ld->prev_pos;
+    ld->prev_pos = e->pos;
+    ld->lean += (-0.01 * creal(pdelta) - ld->lean) * 0.2;
+
     if(player_should_shoot(&global.plr, true)) {
         float angle = creal(e->args[2]);
         float f = smoothreclamp(global.plr.focus, 0, 30, 0, 1);
         f = smoothreclamp(f, 0, 1, 0, 1);
         float factor = (1.0 + 0.7 * psin(t/15.0)) * -(1-f) * !!angle;
-        e->args[3] = trace_laser(e->pos, -5 * cexp(I*(angle*factor + M_PI/2)), creal(e->args[1]));
+
+        trace_laser(e, -5 * cexp(I*(angle*factor + ld->lean + M_PI/2)), creal(e->args[1]));
     }
 
     return 1;
@@ -429,6 +513,14 @@ static void marisa_laser_respawn_slaves(Player *plr, short npow) {
         create_enemy_p(&plr->slaves, 17-30.0*I, ENEMY_IMMUNE, marisa_laser_slave_visual, marisa_laser_slave, 4-45.0*I, dmg, M_PI/60, 0);
         create_enemy_p(&plr->slaves, -17-30.0*I, ENEMY_IMMUNE, marisa_laser_slave_visual, marisa_laser_slave, -4-45.0*I, dmg, -M_PI/60, 0);
     }
+
+    for(e = plr->slaves; e; e = e->next) {
+        if(e->logic_rule == marisa_laser_slave) {
+            MarisaLaserData *ld = calloc(1, sizeof(MarisaLaserData));
+            ld->prev_pos = e->pos + plr->pos;
+            e->args[3] = add_ref(ld);
+        }
+    }
 }
 
 static void marisa_laser_power(Player *plr, short npow) {
@@ -484,7 +576,7 @@ static double marisa_laser_speed_mod(Player *plr, double speed) {
 }
 
 static void marisa_laser_shot(Player *plr) {
-    marisa_common_shot(plr, 175);
+    marisa_common_shot(plr, 175 - 4 * (plr->power / 100));
 }
 
 static void marisa_laser_preload(void) {
@@ -494,8 +586,8 @@ static void marisa_laser_preload(void) {
         // "part/marilaser_part0",
         // "proj/marilaser",
         "proj/marisa",
-	"marisa_bombbg",
-	"part/maristar_orbit",
+        "marisa_bombbg",
+        "part/maristar_orbit",
         "part/marisa_laser0",
         "part/marisa_laser1",
         "part/magic_star",

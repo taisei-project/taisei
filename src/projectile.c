@@ -418,15 +418,19 @@ void process_projectiles(Projectile **projs, bool collision) {
 	}
 }
 
-void trace_projectile(Projectile *p, ProjCollisionResult *out_col, ProjCollisionType stopflags) {
-	for(int t = 0; p; ++t) {
+int trace_projectile(Projectile *p, ProjCollisionResult *out_col, ProjCollisionType stopflags, int timeofs) {
+	int t;
+
+	for(t = timeofs; p; ++t) {
 		int action = p->rule(p, t);
 		calc_projectile_collision(p, out_col);
 
 		if(out_col->type & stopflags || action == ACTION_DESTROY) {
-			return;
+			return t;
 		}
 	}
+
+	return t;
 }
 
 int linear(Projectile *p, int t) { // sure is physics in here; a[0]: velocity
