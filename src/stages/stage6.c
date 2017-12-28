@@ -37,7 +37,7 @@ struct stage6_spells_s stage6_spells = {
 										elly_broglie, elly_spellbg_modern_dark, BOSS_DEFAULT_GO_POS},
 		.spacetime_curvature		= {{12, 13, 14, 15}, AT_Spellcard, "Ricci Sign ~ Spacetime Curvature", 50, 90000,
 										elly_ricci, elly_spellbg_modern, BOSS_DEFAULT_GO_POS},
-		.higgs_boson_uncovered		= {{16, 17, 18, 19}, AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 50, 60000,
+		.higgs_boson_uncovered		= {{16, 17, 18, 19}, AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 75, 60000,
 										elly_lhc, elly_spellbg_modern, BOSS_DEFAULT_GO_POS}
 	},
 

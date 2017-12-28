@@ -1101,7 +1101,7 @@ Boss* create_iku(void) {
 	boss_add_attack_from_info(b, &stage5_spells.boss.atmospheric_discharge, false);
 	boss_add_attack(b, AT_Normal, "Bolts2", 45, 27000, iku_bolts2, NULL);
 	boss_add_attack_from_info(b, &stage5_spells.boss.artificial_lightning, false);
-	boss_add_attack(b, AT_Normal, "Bolts3", 45, 30000, iku_bolts3, NULL);
+	boss_add_attack(b, AT_Normal, "Bolts3", 50, 30000, iku_bolts3, NULL);
 	boss_add_attack_from_info(b, &stage5_spells.boss.natural_cathode, false);
 
 	if(global.diff < D_Hard) {

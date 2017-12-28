@@ -766,9 +766,9 @@ Boss *create_hina(void) {
 	Boss *hina = stage2_spawn_hina(VIEWPORT_W + 150 + 100.0*I);
 
 	boss_add_attack(hina, AT_Move, "Introduction", 2, 0, hina_intro, NULL);
-	boss_add_attack(hina, AT_Normal, "Cards1", 20, 25000, hina_cards1, NULL);
+	boss_add_attack(hina, AT_Normal, "Cards1", 30, 25000, hina_cards1, NULL);
 	boss_add_attack_from_info(hina, &stage2_spells.boss.amulet_of_harm, false);
-	boss_add_attack(hina, AT_Normal, "Cards2", 17, 30000, hina_cards2, NULL);
+	boss_add_attack(hina, AT_Normal, "Cards2", 40, 30000, hina_cards2, NULL);
 	boss_add_attack_from_info(hina, &stage2_spells.boss.bad_pick, false);
 
 	if(global.diff < D_Hard) {

@@ -27,9 +27,9 @@ struct stage3_spells_s stage3_spells = {
 	},
 
 	.boss = {
-		.moonlight_rocket		= {{ 6,  7,  8,  9}, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 30, 40000,
+		.moonlight_rocket		= {{ 6,  7,  8,  9}, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 35, 40000,
 									wriggle_moonlight_rocket, wriggle_spellbg, BOSS_DEFAULT_GO_POS},
-		.wriggle_night_ignite	= {{10, 11, 12, 13}, AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 30, 46000,
+		.wriggle_night_ignite	= {{10, 11, 12, 13}, AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 50, 46000,
 									wriggle_night_ignite, wriggle_spellbg, BOSS_DEFAULT_GO_POS},
 		.firefly_storm			= {{14, 15, 16, 17}, AT_Spellcard, "Bug Sign ~ Firefly Storm", 45, 45000,
 									wriggle_firefly_storm, wriggle_spellbg, BOSS_DEFAULT_GO_POS},

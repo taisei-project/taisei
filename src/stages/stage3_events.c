@@ -1314,9 +1314,9 @@ Boss* stage3_create_boss(void) {
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage3_boss_intro, NULL);
 	boss_add_attack(wriggle, AT_Normal, "", 11, 35000, stage3_boss_nonspell1, NULL);
 	boss_add_attack_from_info(wriggle, &stage3_spells.boss.moonlight_rocket, false);
-	boss_add_attack(wriggle, AT_Normal, "", 20, 35000, stage3_boss_nonspell2, NULL);
+	boss_add_attack(wriggle, AT_Normal, "", 40, 35000, stage3_boss_nonspell2, NULL);
 	boss_add_attack_from_info(wriggle, &stage3_spells.boss.wriggle_night_ignite, false);
-	boss_add_attack(wriggle, AT_Normal, "", 20, 35000, stage3_boss_nonspell3, NULL);
+	boss_add_attack(wriggle, AT_Normal, "", 40, 35000, stage3_boss_nonspell3, NULL);
 	boss_add_attack_from_info(wriggle, &stage3_spells.boss.firefly_storm, false);
 	boss_add_attack_from_info(wriggle, &stage3_spells.extra.light_singularity, false);
 

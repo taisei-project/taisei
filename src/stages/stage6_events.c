@@ -1848,10 +1848,10 @@ Boss* create_elly(void) {
 	boss_add_attack_from_info(b, &stage6_spells.scythe.wave_theory, false);
 	boss_add_attack(b, AT_Move, "Unbound", 3, 10, elly_unbound, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.many_world_interpretation, false);
-	boss_add_attack(b, AT_Normal, "Baryon", 40, 50000, elly_baryonattack, NULL);
+	boss_add_attack(b, AT_Normal, "Baryon", 50, 55000, elly_baryonattack, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.wave_particle_duality, false);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.spacetime_curvature, false);
-	boss_add_attack(b, AT_Normal, "Baryon", 40, 50000, elly_baryonattack2, NULL);
+	boss_add_attack(b, AT_Normal, "Baryon", 50, 55000, elly_baryonattack2, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.higgs_boson_uncovered, false);
 	boss_add_attack(b, AT_Move, "", 0, 0, elly_insert_interboss_dialog, NULL);
 	boss_add_attack(b, AT_Move, "Explode", 6, 10, elly_baryon_explode, NULL);
