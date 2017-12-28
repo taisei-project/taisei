@@ -515,7 +515,7 @@ void stage_finish(int gameover) {
 	set_transition_callback(TransFadeBlack, FADE_TIME, FADE_TIME*2, stage_finalize, (void*)(intptr_t)gameover);
 	stage_fade_bgm();
 
-	if(global.replaymode == REPLAY_PLAY || global.game_over != GAMEOVER_WIN) {
+	if(global.replaymode == REPLAY_PLAY || gameover != GAMEOVER_WIN) {
 		return;
 	}
 
