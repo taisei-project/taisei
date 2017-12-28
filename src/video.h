@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#define WINDOW_TITLE "TaiseiProject"
+#define WINDOW_TITLE "Taisei Project"
 #define VIDEO_ASPECT_RATIO ((double)SCREEN_W/SCREEN_H)
 
 #include <SDL.h>
