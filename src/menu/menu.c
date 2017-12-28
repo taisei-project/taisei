@@ -108,7 +108,6 @@ bool menu_input_handler(SDL_Event *event, void *arg) {
 					menu->cursor = menu->ecount - 1;
 			} while(menu->entries[menu->cursor].action == NULL);
 
-			log_debug("WTF!");
 			return true;
 
 		case TE_MENU_ACCEPT:

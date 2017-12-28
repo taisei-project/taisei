@@ -157,10 +157,6 @@ static FrameAction ending_logic_frame(void *arg) {
 	update_transition();
 	events_poll(NULL, 0);
 
-	if(e->pos >= e->count - 1) {
-		return LFRAME_STOP;
-	}
-
 	global.frames++;
 
 	if(global.frames >= e->entries[e->pos+1].time) {
@@ -170,6 +166,10 @@ static FrameAction ending_logic_frame(void *arg) {
 	if(global.frames == e->entries[e->count-1].time-ENDING_FADE_OUT) {
 		fade_bgm((FPS * ENDING_FADE_OUT) / 4000.0);
 		set_transition(TransFadeWhite, ENDING_FADE_OUT, ENDING_FADE_OUT);
+	}
+
+	if(e->pos >= e->count - 1) {
+		return LFRAME_STOP;
 	}
 
 	return LFRAME_WAIT;
