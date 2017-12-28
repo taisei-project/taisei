@@ -100,7 +100,6 @@ typedef struct Resource {
 typedef struct Resources {
 	ResourceHandler handlers[RES_NUMTYPES];
 	PostprocessShader *stage_postprocess;
-	FontRenderer fontren;
 
 	struct {
 		FBO bg[2];

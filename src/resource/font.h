@@ -33,22 +33,10 @@ enum {
 
 typedef struct Font Font;
 
-typedef struct FontRenderer {
-	Texture tex;
-	GLuint pbo;
-	float quality;
-} FontRenderer;
-
-void fontrenderer_init(FontRenderer *f, float quality);
-void fontrenderer_free(FontRenderer *f);
-void fontrenderer_draw(FontRenderer *f, const char *text, Font *font);
-void fontrenderer_draw_prerendered(FontRenderer *f, SDL_Surface *surf);
-SDL_Surface* fontrender_render(FontRenderer *f, const char *text, Font *font);
-
 Texture *load_text(const char *text, Font *font);
 void draw_text(Alignment align, float x, float y, const char *text, Font *font);
 void draw_text_auto_wrapped(Alignment align, float x, float y, const char *text, int width, Font *font);
-void draw_text_prerendered(Alignment align, float x, float y, SDL_Surface *surf);
+Texture* render_text(const char *text, Font *font);
 
 int stringwidth(char *s, Font *font);
 int stringheight(char *s, Font *font);

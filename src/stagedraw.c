@@ -90,8 +90,7 @@ static void apply_shader_rules(ShaderRule *shaderrules, FBO **fbo0, FBO **fbo1) 
 }
 
 static void draw_wall_of_text(float f, const char *txt) {
-	fontrenderer_draw(&resources.fontren, txt,_fonts.standard);
-	Texture *tex = &resources.fontren.tex;
+	Texture *tex = render_text(txt, _fonts.standard);
 	int strw = tex->w;
 	int strh = tex->h;
 
