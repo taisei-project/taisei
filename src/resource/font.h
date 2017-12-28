@@ -54,6 +54,8 @@ int stringwidth(char *s, Font *font);
 int stringheight(char *s, Font *font);
 int charwidth(char c, Font *font);
 
+int font_line_spacing(Font *font);
+
 void shorten_text_up_to_width(char *s, float width, Font *font);
 void wrap_text(char *buf, size_t bufsize, const char *src, int width, Font *font);
 

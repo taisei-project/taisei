@@ -407,6 +407,10 @@ int charwidth(char c, Font *font) {
 	return stringwidth(s, font);
 }
 
+int font_line_spacing(Font *font) {
+	return TTF_FontLineSkip(font->ttf);
+}
+
 void shorten_text_up_to_width(char *s, float width, Font *font) {
 	while(stringwidth(s, font) > width) {
 		int l = strlen(s);

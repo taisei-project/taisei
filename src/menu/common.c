@@ -109,9 +109,7 @@ static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty
     global.replay_stage = NULL;
 
     if(global.game_over == GAMEOVER_WIN && !info) {
-        start_bgm("ending");
         ending_loop();
-        start_bgm("credits");
         credits_loop();
         free_resources(false);
     }
