@@ -104,6 +104,6 @@ SDL_GameControllerAxis gamepad_axis_to_sdl_axis(GamepadAxis axis);
 int gamepad_axis_value(GamepadAxis paxis);
 int gamepad_player_axis_value(GamepadPlrAxis paxis);
 
-#define GAMEPAD_AXIS_MAX_VALUE SDL_JOYSTICK_AXIS_MAX
-#define GAMEPAD_AXIS_MIN_VALUE SDL_JOYSTICK_AXIS_MIN
+#define GAMEPAD_AXIS_MAX_VALUE 32767
+#define GAMEPAD_AXIS_MIN_VALUE -32768
 #define AXISVAL sign
