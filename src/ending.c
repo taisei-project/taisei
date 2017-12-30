@@ -125,6 +125,7 @@ void free_ending(Ending *e) {
 
 void ending_draw(Ending *e) {
 	float s, d;
+
 	int t1 = global.frames-e->entries[e->pos].time;
 	int t2 = e->entries[e->pos+1].time-global.frames;
 
@@ -177,6 +178,11 @@ static FrameAction ending_logic_frame(void *arg) {
 
 static FrameAction ending_render_frame(void *arg) {
 	Ending *e = arg;
+
+	if(e->pos >= e->count - 1) {
+		return RFRAME_DROP;
+	}
+
 	ending_draw(e);
 	return RFRAME_SWAP;
 }
