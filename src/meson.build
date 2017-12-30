@@ -1,12 +1,12 @@
 
-version_deps = [
-    custom_target('version information',
-        command : [preprocess_command, '@INPUT@', '@OUTPUT@'],
-        build_always : true,
-        input : 'version_auto.c.in',
-        output : 'version_auto.c',
-    )
-]
+version_deps = []
+
+version_deps += custom_target('version information',
+    command : [preprocess_command, '@INPUT@', '@OUTPUT@'],
+    build_always : true,
+    input : 'version_auto.c.in',
+    output : 'version_auto.c',
+)
 
 if host_machine.system() == 'windows'
     winmod = import('windows')
