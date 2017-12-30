@@ -842,10 +842,10 @@ void stage2_events(void) {
 	}
 
 	FROM_TO(3700, 4500, 40)
-		create_enemy1c(VIEWPORT_W(0.1+0.8*frand())-10.0*I, 150, Fairy, stage2_flea, 2.5*I);
+		create_enemy1c(VIEWPORT_W*(0.1+0.8*frand())-10.0*I, 150, Fairy, stage2_flea, 2.5*I);
 
 	FROM_TO(4000, 4600, 100+100*(global.diff<D_Hard))
-		create_enemy1c(VIEWPORT_W*(0.3+0.4*frand())-10.0*I, 2000, Fairy, stage2_accel_circle, 2.0*I);
+		create_enemy1c(VIEWPORT_W*(0.3-0.4*frand())-10.0*I, 2000, Fairy, stage2_accel_circle, 2.0*I);
 
 	AT(5100) {
 		global.boss = create_hina();
