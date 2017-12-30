@@ -198,7 +198,7 @@ int stage2_flea(Enemy *e, int t) {
 
 
 	FROM_TO(10, 400, 30-global.diff*3-t/70) {
-		if(global.diff == D_Easy) {
+		if(global.diff != D_Easy) {
 			play_sound("shot1");
 			PROJECTILE("flea", e->pos, rgb(0.3,0.2,1), asymptotic, {
 				1.5*cexp(2.0*I*M_PI*frand()),
@@ -814,7 +814,7 @@ void stage2_events(void) {
 		create_enemy1c(VIEWPORT_W-150-10.0*I, 4000, BigFairy, stage2_great_circle, 2.5*I);
 
 	FROM_TO(1700, 2000, 30)
-		create_enemy1c(VIEWPORT_W*frand()-20.0*I, 200, Fairy, stage2_flea, 1.7*I);
+		create_enemy1c(VIEWPORT_W*frand()-10.0*I, 200, Fairy, stage2_flea, 1.7*I);
 
 	if(global.diff > D_Easy) {
 		FROM_TO(1950, 2500, 60) {
@@ -828,7 +828,7 @@ void stage2_events(void) {
 		create_enemy1c(VIEWPORT_W/4*3-10.0*I, 2000, Fairy, stage2_accel_circle, 2.0*I);
 	}
 
-	AT(2800)
+	AT(2700)
 		global.boss = create_wriggle_mid();
 
 	FROM_TO(2900, 3400, 50) {
@@ -842,10 +842,10 @@ void stage2_events(void) {
 	}
 
 	FROM_TO(3700, 4500, 40)
-		create_enemy1c(VIEWPORT_W*frand()-10.0*I, 150, Fairy, stage2_flea, 2.5*I);
+		create_enemy1c(VIEWPORT_W(0.1+0.8*frand())-10.0*I, 150, Fairy, stage2_flea, 2.5*I);
 
 	FROM_TO(4000, 4600, 100+100*(global.diff<D_Hard))
-		create_enemy1c(VIEWPORT_W/2+100-200*frand()-10.0*I, 2000, Fairy, stage2_accel_circle, 2.0*I);
+		create_enemy1c(VIEWPORT_W*(0.3+0.4*frand())-10.0*I, 2000, Fairy, stage2_accel_circle, 2.0*I);
 
 	AT(5100) {
 		global.boss = create_hina();
