@@ -19,14 +19,12 @@
 #define MAX_items                   MAX_projectiles
 #define MAX_enemies                 64
 #define MAX_lasers                  64
-#define MAX_aniplayers              32
 
 #define OBJECT_POOLS \
     OBJECT_POOL(Projectile, projectiles) \
     OBJECT_POOL(Item, items) \
     OBJECT_POOL(Enemy, enemies) \
     OBJECT_POOL(Laser, lasers) \
-    OBJECT_POOL(AniPlayer, aniplayers) \
 
 StageObjectPools stage_object_pools;
 

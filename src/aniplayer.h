@@ -50,8 +50,13 @@ void aniplayer_create(AniPlayer *plr, Animation *ani);
 void aniplayer_free(AniPlayer *plr);
 void aniplayer_reset(AniPlayer *plr); // resets to a neutral state with empty queue.
 
-AniPlayer* aniplayer_create_copy(AniPlayer *src);
-void aniplayer_free_copy(AniPlayer *ani);
+// this returns a representation of the frame that is currently drawn by the aniplayer.
+// in multirow animations it is computed as follows:
+//
+// idx = (row*ani->cols+col)*(1-2*mirrored)
+//
+int aniplayer_get_frame(AniPlayer *plr);
+void play_animation_frame(Animation *ani, float x, float y, int frame); // context free version that can be used with aniplayer_get_frame to draw a specific state
 
 AniSequence *aniplayer_queue(AniPlayer *plr, int row, int loops, int delay); // 0 loops: played one time
 AniSequence *aniplayer_queue_pro(AniPlayer *plr, int row, int start, int duration, int delay, int speed); // self-documenting pro version

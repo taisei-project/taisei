@@ -18,7 +18,6 @@ typedef struct StageObjectPools {
             ObjectPool *items;
             ObjectPool *enemies;
             ObjectPool *lasers;
-            ObjectPool *aniplayers;     // hack for the boss glow effect
         };
 
         ObjectPool *first;

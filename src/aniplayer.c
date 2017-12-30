@@ -19,28 +19,24 @@ void aniplayer_create(AniPlayer *plr, Animation *ani) {
 	plr->ani = ani;
 }
 
-AniPlayer* aniplayer_create_copy(AniPlayer *src) {
-	// XXX: maybe it needs another name since it allocates memory?
-	//		or maybe aniplayer_create needs another name since it doesn't?
+int aniplayer_get_frame(AniPlayer *plr) {
+	int col = (plr->clock/plr->ani->speed) % plr->ani->cols;
+	int row = plr->stdrow;
+	int speed = plr->ani->speed;
+	bool mirror = plr->mirrored;
+	if(plr->queue) {
+		AniSequence *s = plr->queue;
+		if(s->speed > 0)
+			speed = s->speed;
+		col = (s->clock/speed) % plr->ani->cols;
+		if(s->backwards)
+			col = ((s->duration-s->clock)/speed) % plr->ani->cols;
+		row = s->row;
 
-	AniPlayer *plr = (AniPlayer*)objpool_acquire(stage_object_pools.aniplayers);
-
-	size_t data_size;
-	void *src_data = objpool_object_contents(NULL, &src->object_interface, NULL);
-	void *dst_data = objpool_object_contents(stage_object_pools.aniplayers, &plr->object_interface, &data_size);
-	memcpy(dst_data, src_data, data_size);
-
-	plr->queue = NULL;
-	plr->queuesize = 0;
-
-	return plr;
-}
-
-void aniplayer_free_copy(AniPlayer *ani) {
-	if(ani) {
-		aniplayer_free(ani);
-		objpool_release(stage_object_pools.aniplayers, (ObjectInterface*)ani);
+		mirror = s->mirrored;
 	}
+
+	return (row*plr->ani->cols+col)*(1-2*mirror);
 }
 
 void aniplayer_free(AniPlayer *plr) {
@@ -102,23 +98,9 @@ void aniplayer_update(AniPlayer *plr) {
 	}
 }
 
-void aniplayer_play(AniPlayer *plr, float x, float y) {
-	int col = (plr->clock/plr->ani->speed) % plr->ani->cols;
-	int row = plr->stdrow;
-	int speed = plr->ani->speed;
-	bool mirror = plr->mirrored;
-	if(plr->queue) {
-		AniSequence *s = plr->queue;
-		if(s->speed > 0)
-			speed = s->speed;
-		col = (s->clock/speed) % plr->ani->cols;
-		if(s->backwards)
-			col = ((s->duration-s->clock)/speed) % plr->ani->cols;
-		row = s->row;
-
-		mirror = s->mirrored;
-	}
-
+void play_animation_frame(Animation *ani, float x, float y, int frame) {
+	int mirror = frame < 0;
+	frame = abs(frame);
 	if(mirror) {
 		glPushMatrix();
 		glCullFace(GL_FRONT);
@@ -127,12 +109,17 @@ void aniplayer_play(AniPlayer *plr, float x, float y) {
 		glScalef(-1,1,1);
 	}
 
-	draw_animation_p(x,y,col,row,plr->ani);
+	draw_animation_p(x,y,frame%ani->cols,frame/ani->cols,ani);
 
 	if(mirror) {
 		glCullFace(GL_BACK);
 		glPopMatrix();
 	}
+}
+
+void aniplayer_play(AniPlayer *plr, float x, float y) {
+	int frame = aniplayer_get_frame(plr);
+	play_animation_frame(plr->ani,x,y,frame); // or as my grandpa always said: rather write 100 lines of new code than one old line twice.
 }
 
 void play_animation(Animation *ani, float x, float y, int row) { // the old way to draw animations without AniPlayer

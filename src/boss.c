@@ -142,8 +142,9 @@ static bool attack_is_over(Attack *a) {
 }
 
 static void BossGlow(Projectile *p, int t) {
-	AniPlayer *aplr = (AniPlayer*)REF(p->args[2]);
-	assert(aplr != NULL);
+	Animation *ani = (Animation *)REF(p->args[3]);
+	assert(ani != 0);
+	int animationFrame = rint(creal(p->args[2]));
 
 	Shader *shader = get_shader("silhouette");
 	glUseProgram(shader->prog);
@@ -163,35 +164,28 @@ static void BossGlow(Projectile *p, int t) {
 	glUniform4fv(uniloc(shader, "color"), 1, clr);
 	glUniform1f(uniloc(shader, "deform"), deform);
 
-	aniplayer_play(aplr,0,0);
+	play_animation_frame(ani,0,0,animationFrame);
 
 	glPopMatrix();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glUseProgram(recolor_get_shader()->prog);
 }
 
-static int boss_glow_rule(Projectile *p, int t) {
+static int boss_glow(Projectile *p, int t) {
 	if(t == EVENT_DEATH) {
-		AniPlayer *aplr = REF(p->args[2]);
-		aniplayer_free_copy(aplr);
-		free_ref(p->args[2]);
-		return 1;
+		free_ref(p->args[3]);
 	}
-
-	return enemy_flare(p, t);
+	return timeout_linear(p,t);
 }
 
 static Projectile* spawn_boss_glow(Boss *boss, Color clr, int timeout) {
-	// copy animation state to render the same frame even after the boss has changed its own
-	AniPlayer *aplr = aniplayer_create_copy(&boss->ani);
-
 	return PARTICLE(
 		// this is in sync with the boss position oscillation
 		.pos = boss->pos + 6 * sin(global.frames/25.0) * I,
 		.color = clr,
-		.rule = boss_glow_rule,
+		.rule = boss_glow,
 		.draw_rule = BossGlow,
-		.args = { timeout, 0, add_ref(aplr), },
+		.args = { timeout, 0, aniplayer_get_frame(&boss->ani), add_ref(global.boss->ani.ani)}, // the ref is needed just to pass a pointer :/
 		.angle = M_PI * 2 * frand(),
 		.size = (1+I)*9000, // ensure it's drawn under everything else
 	);
