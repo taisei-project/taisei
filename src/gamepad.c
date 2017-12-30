@@ -734,7 +734,7 @@ SDL_GameControllerButton gamepad_button_to_sdl_button(GamepadButton btn) {
 }
 
 GamepadAxis gamepad_axis_from_sdl_axis(SDL_GameControllerAxis axis) {
-	if(axis <= GAMEPAD_AXIS_INVALID || axis >= GAMEPAD_AXIS_MAX) {
+	if(axis <= SDL_CONTROLLER_AXIS_INVALID || axis >= SDL_CONTROLLER_AXIS_MAX) {
 		return GAMEPAD_AXIS_INVALID;
 	}
 
@@ -742,7 +742,7 @@ GamepadAxis gamepad_axis_from_sdl_axis(SDL_GameControllerAxis axis) {
 }
 
 SDL_GameControllerAxis gamepad_axis_to_sdl_axis(GamepadAxis axis) {
-	if(axis <= SDL_CONTROLLER_AXIS_INVALID || axis >= SDL_CONTROLLER_AXIS_MAX) {
+	if(axis <= GAMEPAD_AXIS_INVALID || axis >= GAMEPAD_AXIS_MAX) {
 		return SDL_CONTROLLER_AXIS_INVALID;
 	}
 
