@@ -1,6 +1,11 @@
 
 version_deps = [
-    preprocessor.process('version_auto.c.in')
+    custom_target('version information',
+        command : [preprocess_command, '@INPUT@', '@OUTPUT@'],
+        build_always : true,
+        input : 'version_auto.c.in',
+        output : 'version_auto.c',
+    )
 ]
 
 if host_machine.system() == 'windows'
