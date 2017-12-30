@@ -835,8 +835,6 @@ int baryon_eigenstate(Enemy *e, int t) {
 }
 
 int baryon_reset(Enemy *baryon, int t) {
-	// GO_TO(baryon, baryon->pos0, 0.1);
-
 	if(t < 0) {
 		return 1;
 	}
@@ -850,7 +848,7 @@ int baryon_reset(Enemy *baryon, int t) {
 		}
 	}
 
-	log_fatal("No baryon center?");
+	GO_TO(baryon, baryon->pos0, 0.1);
 	return 1;
 }
 
