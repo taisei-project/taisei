@@ -238,7 +238,7 @@ void gamepad_init(void) {
 
 	SDL_Joystick *joy = SDL_GameControllerGetJoystick(gamepad.device);
 	gamepad.instance = SDL_JoystickInstanceID(joy);
-	gamepad.axis = malloc(GAMEPAD_AXIS_MAX);
+	gamepad.axis = calloc(GAMEPAD_AXIS_MAX, 1);
 
 	log_info("Using device '%s' (#%i): %s", guid, dev, gamepad_device_name(dev));
 	SDL_GameControllerEventState(SDL_ENABLE);
