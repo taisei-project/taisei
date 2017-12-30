@@ -398,7 +398,7 @@ static void masterspark_visual(Enemy *e, int t2, bool render) {
 
     glPushMatrix();
     glTranslatef(creal(global.plr.pos),cimag(global.plr.pos)-40-VIEWPORT_H/2,0);
-    glScalef(fade*400,VIEWPORT_H,1);
+    glScalef(fade*800,VIEWPORT_H,1);
     marisa_common_masterspark_draw(t*BOMB_RECOVERY);
     glPopMatrix();
 }
