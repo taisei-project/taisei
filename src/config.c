@@ -289,7 +289,7 @@ void config_save(void) {
 			break;
 
 		case CONFIG_TYPE_GPKEYBINDING:
-			SDL_RWprintf(out, "%s = %s\n", e->name, SDL_GameControllerGetStringForButton(e->val.i));
+			SDL_RWprintf(out, "%s = %s\n", e->name, gamepad_button_name(e->val.i));
 			break;
 
 		case CONFIG_TYPE_STRING:
@@ -361,10 +361,10 @@ static void config_set(const char *key, const char *val, void *data) {
 		}
 
 		case CONFIG_TYPE_GPKEYBINDING: {
-			SDL_GameControllerButton btn = SDL_GameControllerGetButtonFromString(val);
+			GamepadButton btn = gamepad_button_from_name(val);
 
-			if(btn == SDL_CONTROLLER_BUTTON_INVALID) {
-				log_warn("Unknown gamepad key '%s'", val);
+			if(btn == GAMEPAD_BUTTON_INVALID) {
+				log_warn("Unknown gamepad button '%s'", val);
 			} else {
 				e->val.i = btn;
 			}

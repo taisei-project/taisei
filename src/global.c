@@ -38,5 +38,5 @@ void init_global(CLIAction *cli) {
 // ALWAYS use this instead of SDL_GetKeyState if you need it.
 // XXX: Move this somewhere?
 bool gamekeypressed(KeyIndex key) {
-	return SDL_GetKeyboardState(NULL)[config_get_int(KEYIDX_TO_CFGIDX(key))] || gamepad_gamekeypressed(key);
+	return SDL_GetKeyboardState(NULL)[config_get_int(KEYIDX_TO_CFGIDX(key))] || gamepad_game_key_pressed(key);
 }

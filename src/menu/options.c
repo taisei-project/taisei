@@ -88,12 +88,12 @@ OptionBinding* bind_gpaxisbinding(int cfgentry) {
 }
 
 static int bind_gpdev_get(OptionBinding *b) {
-	return gamepad_numfromguid(config_get_str(b->configentry));
+	return gamepad_device_num_from_guid(config_get_str(b->configentry));
 }
 
 static int bind_gpdev_set(OptionBinding *b, int v) {
 	char guid[33] = {0};
-	gamepad_deviceguid(v, guid, sizeof(guid));
+	gamepad_device_guid(v, guid, sizeof(guid));
 
 	if(*guid) {
 		config_set_str(b->configentry, guid);
@@ -116,7 +116,7 @@ OptionBinding* bind_gpdevice(int cfgentry) {
 	bind->valrange_min = 0;
 	bind->valrange_max = 0; // updated later
 
-	bind->selected = gamepad_numfromguid(config_get_str(bind->configentry));
+	bind->selected = gamepad_device_num_from_guid(config_get_str(bind->configentry));
 
 	return bind;
 }
@@ -334,9 +334,9 @@ void destroy_options_menu(MenuData *m) {
 
 		if(bind->type == BT_Resolution && video_can_change_resolution()) {
 			if(bind->selected != -1) {
-				VideoMode *m = video.modes + bind->selected;
+				VideoMode *mode = video.modes + bind->selected;
 
-				video_set_mode(m->width, m->height,
+				video_set_mode(mode->width, mode->height,
 					config_get_int(CONFIG_FULLSCREEN),
 					config_get_int(CONFIG_VID_RESIZABLE)
 				);
@@ -813,10 +813,10 @@ void draw_options_menu(MenuData *menu) {
 				case BT_GamepadDevice: {
 					if(bind_isactive(bind)) {
 						// XXX: I'm not exactly a huge fan of fixing up state in drawing code, but it seems the way to go for now...
-						bind->valrange_max = gamepad_devicecount();
+						bind->valrange_max = gamepad_device_count();
 
 						if(bind->selected < 0 || bind->selected > bind->valrange_max) {
-							bind->selected = gamepad_currentdevice();
+							bind->selected = gamepad_current_device_num();
 
 							if(bind->selected < 0) {
 								bind->selected = 0;
@@ -827,7 +827,7 @@ void draw_options_menu(MenuData *menu) {
 						char buf[64];
 
 						if(bind->valrange_max > 0) {
-							snprintf(buf, sizeof(buf), "#%i: %s", bind->selected + 1, gamepad_devicename(bind->selected));
+							snprintf(buf, sizeof(buf), "#%i: %s", bind->selected + 1, gamepad_device_name(bind->selected));
 							shorten_text_up_to_width(buf, (SCREEN_W - 220) / 2, _fonts.standard);
 							txt = buf;
 						} else {
@@ -1011,18 +1011,20 @@ static bool options_rebind_input_handler(SDL_Event *event, void *arg) {
 	}
 
 	if(t == MAKE_TAISEI_EVENT(TE_GAMEPAD_BUTTON_DOWN)) {
-		SDL_GameControllerButton button = event->user.code;
+		GamepadButton button = event->user.code;
 
 		if(b->type != BT_GamepadKeyBinding) {
+			/*
 			if(b->type == BT_GamepadAxisBinding) {
 				b->blockinput = false;
 				play_ui_sound("hit");
 			}
+			*/
 
 			return true;
 		}
 
-		if(button == SDL_CONTROLLER_BUTTON_BACK || button == SDL_CONTROLLER_BUTTON_START) {
+		if(button == GAMEPAD_BUTTON_BACK || button == GAMEPAD_BUTTON_START) {
 			b->blockinput = false;
 			play_ui_sound("hit");
 			return true;
@@ -1041,7 +1043,7 @@ static bool options_rebind_input_handler(SDL_Event *event, void *arg) {
 	}
 
 	if(t == MAKE_TAISEI_EVENT(TE_GAMEPAD_AXIS)) {
-		SDL_GameControllerAxis axis = event->user.code;
+		GamepadAxis axis = event->user.code;
 
 		if(b->type == BT_GamepadAxisBinding) {
 			if(b->configentry == CONFIG_GAMEPAD_AXIS_UD) {

@@ -589,7 +589,7 @@ bool player_applymovement_gamepad(Player *plr) {
 		return false;
 	}
 
-	complex direction = (plr->axis_lr + plr->axis_ud*I) / (double)GAMEPAD_AXIS_MAX;
+	complex direction = (plr->axis_lr + plr->axis_ud*I) / (double)GAMEPAD_AXIS_MAX_VALUE;
 	if(cabs(direction) > 1)
 		direction /= cabs(direction);
 
@@ -682,8 +682,8 @@ void player_fix_input(Player *plr) {
 	}
 
 	if(config_get_int(CONFIG_GAMEPAD_AXIS_FREE)) {
-		int axis_lr = gamepad_get_player_axis_value(PLRAXIS_LR);
-		int axis_ud = gamepad_get_player_axis_value(PLRAXIS_UD);
+		int axis_lr = gamepad_player_axis_value(PLRAXIS_LR);
+		int axis_ud = gamepad_player_axis_value(PLRAXIS_UD);
 
 		if(plr->axis_lr != axis_lr) {
 			player_event_with_replay(plr, EV_AXIS_LR, axis_lr);
