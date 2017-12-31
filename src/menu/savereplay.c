@@ -25,7 +25,7 @@ void save_rpy(MenuData *menu, void *a) {
 	// time when the game was *initiated*
 	rawtime = (time_t)rpy->stages[0].seed;
 	timeinfo = localtime(&rawtime);
-	strftime(strtime, 128, "%Y%m%d_%H-%M-%S_%Z", timeinfo);
+	strftime(strtime, 128, "%Y%m%d_%H-%M-%S%z", timeinfo);
 
 	char prepr[16], drepr[16];
 	plrmode_repr(prepr, 16, plrmode_find(rpy->stages[0].plr_char, rpy->stages[0].plr_shot));

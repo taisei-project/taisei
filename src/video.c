@@ -386,7 +386,7 @@ void video_take_screenshot(void) {
 
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
-	strftime(outfile, 128, "taisei_%Y%m%d_%H-%M-%S_%Z.png", timeinfo);
+	strftime(outfile, 128, "taisei_%Y%m%d_%H-%M-%S%z.png", timeinfo);
 
 	outpath = strjoin("storage/screenshots/", outfile, NULL);
 	syspath = vfs_repr(outpath, true);
