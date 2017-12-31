@@ -116,6 +116,16 @@ int stage6_side(Enemy *e, int t) {
 
 int wait_proj(Projectile *p, int t) {
 	if(t > creal(p->args[1])) {
+		if(t == creal(p->args[1]) + 1) {
+			play_sound_ex("redirect", 4, false);
+			PARTICLE("flare", p->pos, 0, timeout_linear,
+				.args = {
+					60, -p->args[0] * 0.5
+				},
+				.draw_rule = Shrink,
+			);
+		}
+
 		p->angle = carg(p->args[0]);
 		p->pos += p->args[0];
 	}
@@ -166,7 +176,7 @@ int scythe_mid(Enemy *e, int t) {
 		return 1;
 	}
 
-	if(t > 300) {
+	if(creal(e->pos) > VIEWPORT_W + 100) {
 		return ACTION_DESTROY;
 	}
 
@@ -187,13 +197,17 @@ int scythe_mid(Enemy *e, int t) {
 	);
 
 	if(global.diff > D_Normal && t&1) {
-		PROJECTILE("ball", e->pos + 80*n, rgb(0, 0.2, 0.5), accelerated,
+		Projectile *p = PROJECTILE("ball", e->pos + 80*n, rgb(0, 0.2, 0.5), accelerated,
 			.args = {
 				n,
 				0.01*global.diff*cexp(I*carg(global.plr.pos - e->pos - 80*n))
 			},
 			.flags = PFLAG_DRAWADD,
 		);
+
+		if(projectile_in_viewport(p)) {
+			play_sound("shot1");
+		}
 	}
 
 	scythe_common(e, t);
@@ -745,13 +759,14 @@ int scythe_explode(Enemy *e, int t) {
 
 void elly_unbound(Boss *b, int t) {
 	if(global.stage->type == STAGE_SPELL) {
-		t += 100;
+		// t += 100;
 		GO_TO(b, BOSS_DEFAULT_GO_POS, 0.1)
 	}
 
 	TIMER(&t);
 
 	AT(0) {
+		assert(global.enemies->visual_rule == Scythe);
 		global.enemies->birthtime = global.frames;
 		global.enemies->logic_rule = scythe_explode;
 		elly_clap(b,150);
@@ -882,8 +897,6 @@ int broglie_particle(Projectile *p, int t) {
 
 	int scattertime = creal(p->args[1]);
 
-	if(t == scattertime)
-		play_sound_ex("redirect",5,false);
 	if(t < scattertime) {
 		Laser *laser = (Laser*)REF(p->args[0]);
 
@@ -905,6 +918,8 @@ int broglie_particle(Projectile *p, int t) {
 
 			p->angle += angle_ampl * sin(t * angle_freq) * cos(2 * t * angle_freq);
 			p->args[2] = -cabs(p->args[2]) * cexp(I*p->angle);
+
+			play_sound("redirect");
 		}
 
 		p->angle = carg(p->args[2]);
@@ -938,13 +953,30 @@ int broglie_charge(Projectile *p, int t) {
 		return 1;
 	}
 
-	if(t == 1)
-		play_sound_ex("shot3",10,false);
+	if(t == 1) {
+		play_sound_ex("shot3", 10, false);
+	}
 
 	int firetime = creal(p->args[1]);
 
 	if(t == firetime) {
-		play_sound_ex("laser1",10,true);
+		play_sound_ex("laser1", 10, true);
+		play_sound("boom");
+
+		global.shake_view = 5.0;
+		global.shake_view_fade = 0.25;
+
+		PARTICLE(
+			.texture = "blast",
+			.pos = p->pos,
+			.color = p->color,
+			.rule = timeout,
+			.draw_rule = GrowFade,
+			.args = { 35, 2.4 },
+			.type = PlrProj,
+			.flags = PFLAG_DRAWADD,
+		);
+
 		int attack_num = creal(p->args[2]);
 		double hue = creal(p->args[3]);
 
@@ -988,10 +1020,28 @@ int broglie_charge(Projectile *p, int t) {
 
 		return ACTION_DESTROY;
 	} else {
-		float f = pow(clamp((120 - (firetime - t)) / 90.0, 0, 1), 8);
+		float f = pow(clamp((140 - (firetime - t)) / 90.0, 0, 1), 8);
 		complex o = p->pos - p->args[0] * 15;
 		p->args[0] *= cexp(I*M_PI*0.2*f);
 		p->pos = o + p->args[0] * 15;
+
+		if(f > 0.1) {
+			play_loop("charge_generic");
+
+			complex n = cexp(2.0*I*M_PI*frand());
+			float l = 50*frand()+25;
+			float s = 4+f;
+
+			PARTICLE(
+				.texture = "flare",
+				.pos = p->pos+l*n,
+				.color = mix_colors(p->color, rgb(1, 1, 1), clamp((1 - f * 0.5), 0.0, 1.0)),
+				.draw_rule = Fade,
+				.rule = timeout_linear,
+				.args = { l/s, -s*n },
+				.flags =  PFLAG_DRAWADD
+			);
+		}
 	}
 
 	return 1;
@@ -1175,13 +1225,19 @@ static void ricci_laser_logic(Laser *l, int t) {
 static int ricci_proj2(Projectile *p, int t) {
 	TIMER(&t);
 
+	if(t == 1) {
+		play_sound("shot3");
+	}
+
 	AT(EVENT_DEATH) {
 		Enemy *e = (Enemy*)REF(p->args[1]);
-		play_sound_ex("shot3",8, false);
 
 		if(!e) {
 			return 1;
 		}
+
+		// play_sound_ex("shot3",8, false);
+		play_sound("shot_special1");
 
 		double rad = SAFE_RADIUS_MAX * (0.6 - 0.2 * (double)(D_Lunatic - global.diff) / 3);
 

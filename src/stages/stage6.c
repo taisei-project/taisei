@@ -270,6 +270,7 @@ static void stage6_end(void) {
 
 void elly_intro(Boss*, int);
 void elly_unbound(Boss*, int);
+int scythe_reset(Enemy *e, int t);
 
 static void stage6_spellpractice_events(void) {
 	TIMER(&global.timer);
@@ -282,9 +283,10 @@ static void stage6_spellpractice_events(void) {
 		char go = true;
 
 		if(STG6_SPELL_NEEDS_SCYTHE(s)) {
-			boss_add_attack(global.boss, AT_Move, "Catch the Scythe", 2, 0, elly_intro, NULL);
+			boss_add_attack(global.boss, AT_Move, "Catch the Scythe", 1.5, 0, elly_intro, NULL);
 			go = false;
 		} else if(STG6_SPELL_NEEDS_BARYON(s)) {
+			create_enemy3c(BOSS_DEFAULT_GO_POS, ENEMY_IMMUNE, Scythe, scythe_reset, 0, 1+0.2*I, 1);
 			boss_add_attack(global.boss, AT_Move, "Unbound", 3, 0, elly_unbound, NULL);
 			go = false;
 		} else if(s == &stage6_spells.final.theory_of_everything) {
