@@ -26,7 +26,7 @@
 	#define CACHELOG(fmt, ...)
 #endif
 
-// #define FONTREN_USE_INTERNAL_PIXBUF
+#define FONTREN_USE_INTERNAL_PIXBUF
 
 typedef struct CacheEntry {
 	OBJECT_INTERFACE(struct CacheEntry);
