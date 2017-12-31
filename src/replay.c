@@ -723,7 +723,7 @@ int replay_find_stage_idx(Replay *rpy, uint8_t stageid) {
 		}
 	}
 
-	log_warn("Stage %x was not found in the replay", stageid);
+	log_warn("Stage %X was not found in the replay", stageid);
 	return -1;
 }
 
@@ -744,7 +744,7 @@ void replay_play(Replay *rpy, int firstidx) {
 		StageInfo *gstg = stage_get(rstg->stage);
 
 		if(!gstg) {
-			log_warn("Invalid stage %x in replay at %i skipped.", rstg->stage, i);
+			log_warn("Invalid stage %X in replay at %i skipped.", rstg->stage, i);
 			continue;
 		}
 

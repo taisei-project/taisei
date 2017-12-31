@@ -193,7 +193,7 @@ int main(int argc, char **argv) {
 
 	if(a.type == CLI_DumpStages) {
 		for(StageInfo *stg = stages; stg->procs; ++stg) {
-			tsfprintf(stdout, "%x %s: %s\n", stg->id, stg->title, stg->subtitle);
+			tsfprintf(stdout, "%X %s: %s\n", stg->id, stg->title, stg->subtitle);
 		}
 
 		free_cli_action(&a);
@@ -276,7 +276,7 @@ int main(int argc, char **argv) {
 	log_warn("Compiled with DEBUG flag!");
 
 	if(a.type == CLI_SelectStage) {
-		log_info("Entering stage skip mode: Stage %x", a.stageid);
+		log_info("Entering stage skip mode: Stage %X", a.stageid);
 		StageInfo* stg = stage_get(a.stageid);
 		assert(stg); // properly checked before this
 

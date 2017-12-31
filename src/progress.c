@@ -207,7 +207,7 @@ static void progress_read(SDL_RWops *file) {
 						p->num_played = np;
 						p->num_cleared = nc;
 					} else {
-						log_warn("Invalid stage %x ignored", stg);
+						log_warn("Invalid stage %X ignored", stg);
 					}
 				}
 				break;

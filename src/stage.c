@@ -112,7 +112,7 @@ void stage_init_array(void) {
 
 		for(int j = 0; stages[j].procs; ++j) {
 			if(i != j && stages[i].id == stages[j].id) {
-				log_fatal("Duplicate ID 0x%04x in stages array, indices: %i, %i", stages[i].id, i, j);
+				log_fatal("Duplicate ID %X in stages array, indices: %i, %i", stages[i].id, i, j);
 			}
 		}
 	}

@@ -166,7 +166,7 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		if(a->type != CLI_PlayReplay && a->type != CLI_SelectStage) {
 			log_warn("--sid was ignored");
 		} else if(!stage_get(stageid)) {
-			log_fatal("Invalid stage id: %x", stageid);
+			log_fatal("Invalid stage id: %X", stageid);
 		}
 	}
 
