@@ -26,8 +26,6 @@
 	#define CACHELOG(fmt, ...)
 #endif
 
-#define FONTREN_USE_INTERNAL_PIXBUF
-
 typedef struct CacheEntry {
 	OBJECT_INTERFACE(struct CacheEntry);
 
@@ -46,9 +44,7 @@ typedef struct CacheEntry {
 typedef struct FontRenderer {
 	Texture tex;
 	float quality;
-#ifdef FONTREN_USE_INTERNAL_PIXBUF
 	uint32_t *pixbuf;
-#endif
 } FontRenderer;
 
 static ObjectPool *cache_pool;
@@ -168,9 +164,7 @@ static void fontrenderer_init(FontRenderer *f, float quality) {
 	f->tex.truew = w;
 	f->tex.trueh = h;
 
-#ifdef FONTREN_USE_INTERNAL_PIXBUF
 	f->pixbuf = calloc(f->tex.truew, f->tex.trueh);
-#endif
 
 	glBindTexture(GL_TEXTURE_2D,f->tex.gltex);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -186,9 +180,7 @@ static void fontrenderer_init(FontRenderer *f, float quality) {
 static void fontrenderer_free(FontRenderer *f) {
 	glDeleteTextures(1, &f->tex.gltex);
 
-#ifdef FONTREN_USE_INTERNAL_PIXBUF
 	free(f->pixbuf);
-#endif
 }
 
 static void fontrenderer_draw_prerendered(FontRenderer *f, SDL_Surface *surf) {
@@ -196,7 +188,6 @@ static void fontrenderer_draw_prerendered(FontRenderer *f, SDL_Surface *surf) {
 
 	glBindTexture(GL_TEXTURE_2D, f->tex.gltex);
 
-#ifdef FONTREN_USE_INTERNAL_PIXBUF
 	f->tex.w = surf->w;
 	f->tex.h = surf->h;
 
@@ -213,13 +204,6 @@ static void fontrenderer_draw_prerendered(FontRenderer *f, SDL_Surface *surf) {
 
 	memset(pixels+(winh-1)*winw,0,winw*4);
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, winw, winh, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-#else
-	// XXX: is this accurate enough?
-	f->tex.w = surf->w-1;
-	f->tex.h = surf->h-1;
-
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, surf->w, surf->h, GL_RGBA, GL_UNSIGNED_BYTE, surf->pixels);
-#endif
 }
 
 static SDL_Surface* fontrender_render(FontRenderer *f, const char *text, Font *font) {
