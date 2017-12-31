@@ -42,7 +42,7 @@ Dialog *stage6_dialog(void) {
 		dadd_msg(d,Right, "Pitiful servant of the dead. You’ll never be able to stop my life’s work from being fulfilled! I’ll simply unravel that nonsense behind your half-and-half existence!");
 	}
 
-	dadd_msg(d, BGM, "stage6boss");
+	dadd_msg(d, BGM, "stage6boss_phase1");
 	return d;
 }
 
@@ -759,8 +759,9 @@ int scythe_explode(Enemy *e, int t) {
 
 void elly_unbound(Boss *b, int t) {
 	if(global.stage->type == STAGE_SPELL) {
-		// t += 100;
 		GO_TO(b, BOSS_DEFAULT_GO_POS, 0.1)
+	} else if(t == 0) {
+		play_sound("bossdeath");
 	}
 
 	TIMER(&t);
@@ -772,7 +773,17 @@ void elly_unbound(Boss *b, int t) {
 		elly_clap(b,150);
 	}
 
+	if(global.stage->type != STAGE_SPELL) {
+		AT(70) {
+			fade_bgm(0.5);
+		}
+	}
+
 	AT(100) {
+		if(global.stage->type != STAGE_SPELL) {
+			stage_start_bgm("stage6boss_phase2");
+		}
+
 		int i;
 		Enemy *e, *last = NULL, *first = NULL, *middle = NULL;
 

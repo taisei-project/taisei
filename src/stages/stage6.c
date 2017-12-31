@@ -236,7 +236,12 @@ static void stage6_start(void) {
 }
 
 static void stage6_preload(void) {
-	preload_resources(RES_BGM, RESF_OPTIONAL, "stage6", "stage6boss", NULL);
+	preload_resources(RES_BGM, RESF_OPTIONAL,
+		"stage6",
+		"stage6boss_phase1",
+		"stage6boss_phase2",
+		"stage6boss_phase3",
+	NULL);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
 		"stage6/baryon_connector",
 		"stage6/baryon",
@@ -285,19 +290,22 @@ static void stage6_spellpractice_events(void) {
 		if(STG6_SPELL_NEEDS_SCYTHE(s)) {
 			boss_add_attack(global.boss, AT_Move, "Catch the Scythe", 1.5, 0, elly_intro, NULL);
 			go = false;
+			stage_start_bgm("stage6boss_phase1");
 		} else if(STG6_SPELL_NEEDS_BARYON(s)) {
 			create_enemy3c(BOSS_DEFAULT_GO_POS, ENEMY_IMMUNE, Scythe, scythe_reset, 0, 1+0.2*I, 1);
 			boss_add_attack(global.boss, AT_Move, "Unbound", 3, 0, elly_unbound, NULL);
 			go = false;
+			stage_start_bgm("stage6boss_phase2");
 		} else if(s == &stage6_spells.final.theory_of_everything) {
 			start_fall_over();
 			skip_background_anim(&stage_3d_context, stage6_update, 300, &global.timer, &global.frames);
+			stage_start_bgm("stage6boss_phase3");
+		} else {
+			stage_start_bgm("stage6boss_phase2");
 		}
 
 		boss_add_attack_from_info(global.boss, global.stage->spell, go);
 		boss_start_attack(global.boss, global.boss->attacks);
-
-		stage_start_bgm("stage6boss");
 	}
 
 	if(!global.boss) {
