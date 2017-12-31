@@ -756,9 +756,6 @@ int induction_bullet(Projectile *p, int time) {
 	if(global.diff > D_Normal && !p->args[2]) {
 		t = time*0.6;
 		t = 230-t;
-		complex pos = induction_bullet_traj(p,t);
-		if(fabs(creal(pos)/VIEWPORT_W-0.5) > 0.5 || fabs(cimag(pos)/VIEWPORT_H-0.5) > 0.5)
-			return 1;
 		if(t < 0)
 			return ACTION_DESTROY;
 	}
@@ -839,6 +836,7 @@ void iku_induction(Boss *b, int t) {
 						(0.01+0.001*global.diff)*I*(1-2*j)+a
 					},
 					.flags = PFLAG_DRAWADD,
+					.max_viewport_dist = 400*(global.diff>=D_Hard),
 				);
 			}
 		}
