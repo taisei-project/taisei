@@ -389,7 +389,7 @@ void process_projectiles(Projectile **projs, bool collision) {
 		if(collision) {
 			calc_projectile_collision(proj, &col);
 
-			if(col.fatal) {
+			if(col.fatal && col.type != PCOL_VOID) {
 				PARTICLE(
 					.texture_ptr = proj->tex,
 					.pos = proj->pos,
