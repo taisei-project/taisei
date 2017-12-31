@@ -792,13 +792,14 @@ void iku_cathode(Boss *b, int t) {
 		for(i = 0; i < c; i++) {
 			PROJECTILE("bigball", b->pos, rgb(0.2, 0.4, 1), induction_bullet,
 				.args = {
-					2*cexp(2.0*I*M_PI*frand()),
-					0.01*I*(1-2*(_i&1)),
+					0.7*2*cexp(2.0*I*M_PI*frand()),
+					0.7*0.01*I*(1-2*(_i&1)),
 					1
 				},
 				.flags = PFLAG_DRAWADD,
 			);
-			create_lasercurve2c(b->pos, 60, 200, rgb(0.4, 1, 1), cathode_laser, 2*cexp(2.0*I*M_PI*M_PI*frand()), 0.015*I*(1-2*(_i&1)));
+			if(i < c*3/4)
+				create_lasercurve2c(b->pos, 60, 200, rgb(0.4, 1, 1), cathode_laser, 2*cexp(2.0*I*M_PI*M_PI*frand()), 0.015*I*(1-2*(_i&1)));
 		}
 
 		// XXX: better ideas?
@@ -1102,13 +1103,13 @@ Boss* create_iku(void) {
 	boss_add_attack(b, AT_Normal, "Bolts2", 45, 27000, iku_bolts2, NULL);
 	boss_add_attack_from_info(b, &stage5_spells.boss.artificial_lightning, false);
 	boss_add_attack(b, AT_Normal, "Bolts3", 50, 30000, iku_bolts3, NULL);
-	boss_add_attack_from_info(b, &stage5_spells.boss.natural_cathode, false);
 
 	if(global.diff < D_Hard) {
 		boss_add_attack_from_info(b, &stage5_spells.boss.induction_field, false);
 	} else {
 		boss_add_attack_from_info(b, &stage5_spells.boss.inductive_resonance, false);
 	}
+	boss_add_attack_from_info(b, &stage5_spells.boss.natural_cathode, false);
 
 	boss_add_attack_from_info(b, &stage5_spells.extra.overload, false);
 
