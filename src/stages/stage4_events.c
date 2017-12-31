@@ -271,12 +271,10 @@ int stage4_explosive(Enemy *e, int t) {
 
 		for(i = 0; i < n; i++) {
 			double angle = 2*M_PI*i/n+carg(phase);
-			if(frand() < 0.5)
-				angle += M_PI/n;
 			PROJECTILE(
 				.texture = "ball",
 				.pos = e->pos,
-				.color = rgb(0.1+0.4*(i&1), 0.2, 1-0.6*(i&1)),
+				.color = rgb(0.1+0.6*(i&1), 0.2, 1-0.6*(i&1)),
 				.rule = accelerated,
 				.args = {
 					1.5*(1.1+0.3*global.diff)*cexp(I*angle),
