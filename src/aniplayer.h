@@ -53,7 +53,7 @@ void aniplayer_reset(AniPlayer *plr); // resets to a neutral state with empty qu
 // this returns a representation of the frame that is currently drawn by the aniplayer.
 // in multirow animations it is computed as follows:
 //
-// idx = (row*ani->cols+col)*(1-2*mirrored)
+// idx = ani->rows*ani->cols*mirrored+row*ani->cols+col
 //
 int aniplayer_get_frame(AniPlayer *plr);
 void play_animation_frame(Animation *ani, float x, float y, int frame); // context free version that can be used with aniplayer_get_frame to draw a specific state
