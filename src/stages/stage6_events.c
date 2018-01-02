@@ -1802,88 +1802,188 @@ void elly_baryon_explode(Boss *b, int t) {
 	}
 }
 
-int theory_proj(Projectile *p, int t) {
+static int elly_toe_boson(Projectile *p, int t) {
+	if(t<0)
+		return 1;
+	p->pos += p->args[0];
+	p->angle = carg(p->args[0]);
+	if(creal(p->pos) < -10) {
+		p->pos += VIEWPORT_W;
+		p->args[1] += 1;
+	}
+	if(creal(p->pos) > VIEWPORT_W+10) {
+		p->pos -= VIEWPORT_W;
+		p->args[1] += 1;
+	}
+	if(cimag(p->pos) < -10) {
+		p->pos += I*VIEWPORT_H;
+		p->args[1] += 1;
+	}
+	if(cimag(p->pos) > VIEWPORT_H+10) {
+		p->pos -= I*VIEWPORT_H;
+		p->args[1] += 1;
+	}
 
+	if(creal(p->args[1]) > 1.1+global.diff/2)
+		return ACTION_DESTROY;
+	return 1;
+}
+
+#define YUKAWATIME 2200
+
+static bool elly_toe_its_yukawatime(complex pos) {
+	int t = global.frames-global.boss->current->starttime;
+
+	if(pos == 0)
+		return t>YUKAWATIME;
+
+	int sectors = 4;
+
+	pos -= global.boss->pos;
+	if(((int)(carg(pos)/2/M_PI*sectors+sectors+0.005*t))%2)
+		return t > YUKAWATIME+0.2*cabs(pos);
+
+	return false;
+}
+
+
+
+static int elly_toe_fermion(Projectile *p, int t) {
+	if(t < 0)
+		return 1;
+	if(t == 1)
+		p->pos0 = 0;
+
+	int speeduptime = creal(p->args[2]);
+	if(t > speeduptime)
+		p->pos0 += p->pos0/cabs(p->pos0)*(t-speeduptime)*0.01;
+	else
+		p->pos0 += (p->args[0]-p->pos0)*0.01;
+	p->pos = global.boss->pos+p->pos0*cexp(I*0.01*t)+5*cexp(I*t*0.05+I*p->args[1]);
+
+	if(creal(p->args[3]) < 0) // add a way to disable the yukawa phase
+		return 1;
+	if(elly_toe_its_yukawatime(p->pos)) {
+		if(!p->args[3]) {
+			p->tex = get_tex("proj/bigball");
+			p->args[3]=1;
+		}
+		p->pos0*=1.01;
+	} else if(p->args[3]) {
+		p->tex = get_tex("proj/ball");
+		p->args[3]=0;
+	}
+	return 1;
+}
+
+static int elly_toe_higgs(Projectile *p, int t) {
 	if(t < 0)
 		return 1;
 
-	p->pos += p->args[0];
-	p->angle = carg(p->args[0]);
-
-	if(!cimag(p->args[1])) {
-		float re = creal(p->pos);
-		float im = cimag(p->pos);
-
-		if(re <= 0 || re >= VIEWPORT_W)
-			p->args[0] = -creal(p->args[0]) + I*cimag(p->args[0]);
-		else if(im <= 0 || im >= VIEWPORT_H)
-			p->args[0] = creal(p->args[0]) - I*cimag(p->args[0]);
-		else
-			return 1;
-
-		p->args[0] *= 0.4+0.1*global.diff;
-
-		switch((int)creal(p->args[1])) {
-		case 0:
-			p->tex = get_tex("proj/ball");
-			break;
-		case 1:
-			p->tex = get_tex("proj/bigball");
-			break;
-		case 2:
-			p->tex = get_tex("proj/bullet");
-			break;
-		case 3:
-			p->tex = get_tex("proj/plainball");
-			break;
+	if(elly_toe_its_yukawatime(p->pos)) {
+		if(!p->args[3]) {
+			p->tex = get_tex("proj/rice");
+			p->args[3]=1;
 		}
-
-		p->color = rgb(cos(p->angle), sin(p->angle), cos(p->angle+2.1));
-		p->args[1] += I;
+		p->args[1]*=1.01;
+	} else if(p->args[3]) {
+		p->tex = get_tex("proj/flea");
+		p->args[3]=0;
 	}
 
-	return 1;
+	return linear(p,t);
+
 }
 
-int scythe_theory(Enemy *e, int t) {
-	complex n;
+static complex elly_toe_laser_pos(Laser *l, float t) { // a[0]: direction, a[1]: type, a[2]: width
+	int type = creal(l->args[1]+0.5);
 
-	if(t < 0) {
-		scythe_common(e, t);
-		return 1;
+	if(t == EVENT_BIRTH) {
+		switch(type) {
+		case 0:
+			l->shader = get_shader_optional("laser_elly_toe_fermion");
+			l->color = rgb(0.4,0.4,1);
+			break;
+		case 1:
+			l->shader = get_shader_optional("laser_elly_toe_photon");
+			l->color = rgb(1,0.4,0.4);
+			break;
+		case 2:
+			l->shader = get_shader_optional("laser_elly_toe_gluon");
+			l->color = rgb(0.4,1,0.4);
+			break;
+		case 3:
+			l->shader = get_shader_optional("laser_elly_toe_higgs");
+			l->color = rgb(1,0.4,1);
+			break;
+		default:
+			log_fatal("Unknown Elly laser type.");
+		}
+		l->collision_step = 1;
+		return 0;
 	}
 
-	if(t > 300) {
-		scythe_common(e, t);
-		return ACTION_DESTROY;
+	double width = creal(l->args[2]);
+	switch(type) {
+	case 0:
+		return l->pos+l->args[0]*t;
+	case 1:
+		return l->pos+l->args[0]*(t+width*I*sin(t/width));
+	case 2:
+		return l->pos+l->args[0]*(t+width*(0.6*(cos(3*t/width)-1)+I*sin(3*t/width)));
+	case 3:
+		return l->pos+l->args[0]*(t+floor(t/width)*width);
 	}
 
-	e->pos += (3-0.01*I*t)*e->args[0];
+	return 0;
+}
 
-	n = cexp(cimag(e->args[1])*I*t);
+#define LASER_EXTENT 4
+#define LASER_LENGTH 40
 
-	TIMER(&t);
-	FROM_TO_SND("shot1_loop",0, 300, 4) {
-		PROJECTILE(
-			.texture = "ball",
-			.pos = e->pos + 80*n,
-			.color = rgb(carg(n), 1-carg(n), 1/carg(n)),
-			.rule = wait_proj,
-			.args = {
-				(0.6+0.3*global.diff)*cexp(0.6*I)*n, 100
-			},
-			.flags = PFLAG_DRAWADD,
+static void elly_toe_laser_logic(Laser *l, int t) {
+	if(t == l->deathtime) {
+		static const int transfer[][4] = {
+			{1, 0, 0, 0},
+			{0,-1,-1, 3},
+			{0,-1, 2, 3},
+			{0, 3, 3, 1}
+		};
+
+		complex newpos = l->prule(l,t);
+		if(creal(newpos) < 0 || cimag(newpos) < 0 || creal(newpos) > VIEWPORT_W || cimag(newpos) > VIEWPORT_H)
+			return;
+
+		int newtype, newtype2;
+		do {
+			newtype = 3.999999*frand();
+			newtype2 = transfer[(int)(creal(l->args[1])+0.5)][newtype];
+			// actually in this case, gluons are also always possible
+			if(newtype2 == 1 && frand() > 0.5) {
+				newtype = 2;
+			}
+		} while(newtype2 == -1 || newtype2 == 3 || newtype == 3);
+
+		complex newdir = cexp(0.2*I*(1+frand()));
+		create_laser(l->prule(l,t),LASER_LENGTH,LASER_LENGTH,rgb(1,1,1),
+			elly_toe_laser_pos,elly_toe_laser_logic,
+			l->args[0]*newdir,
+			newtype,
+			LASER_EXTENT,
+			0
+		);
+		create_laser(l->prule(l,t),LASER_LENGTH,LASER_LENGTH,rgb(1,1,1),
+			elly_toe_laser_pos,elly_toe_laser_logic,
+			l->args[0]/newdir,
+			newtype2,
+			LASER_EXTENT,
+			0
 		);
 	}
-
-	scythe_common(e, t);
-	return 1;
+	l->pos+=I;
 }
 
 void elly_theory(Boss *b, int time) {
-	int t = time % 500;
-	int i;
-
 	if(time == EVENT_BIRTH)
 		global.shake_view = 10;
 	if(time < 20)
@@ -1891,68 +1991,120 @@ void elly_theory(Boss *b, int time) {
 	if(time == 0)
 		global.shake_view = 0;
 
-	TIMER(&t);
+	TIMER(&time);
 
 	AT(0)
-		elly_clap(b,500);
+		elly_clap(b,50000);
 
-	FROM_TO(0, 500, 10)
-		for(i = 0; i < 3; i++) {
-			tsrand_fill(5);
-			PARTICLE(
-				.texture = "stain",
-				.pos = b->pos+80*afrand(0)*cexp(2.0*I*M_PI*afrand(1)),
-				.color = rgb(1 - afrand(2), 0.8, 0.5),
-				.draw_rule = Fade,
-				.rule = timeout,
-				.args = {60, 1+3*afrand(3) },
-				.angle = 2*M_PI*afrand(4),
-				.flags = PFLAG_DRAWADD,
-			);
-		}
+	int fermiontime = 1000;
+	int higgstime = 1700;
+	int symmetrytime = higgstime+200;
+	int yukawatime = YUKAWATIME;
+	int breaktime = yukawatime+400;
 
-	FROM_TO(20, 70, 30-global.diff) {
-		int c = 20+2*global.diff;
-		play_sound("shot_special1");
-		for(i = 0; i < c; i++) {
-			complex n = cexp(2.0*I*M_PI/c*i);
-			PROJECTILE(
-				.texture = "soul",
-				.pos = b->pos,
-				.color = rgb(0.2, 0, 0.9),
-				.rule = accelerated,
+	FROM_TO_INT(0, fermiontime+1000, 200, 30, 2) {
+		int count = 4;
+		complex dir = cexp(I*(2*_i+2*M_PI/50*_ni));
+		for(int i = 0; i < count*2; i++) {
+			PROJECTILE("rice", b->pos, rgb(1.0,0.,.0+i*0.2),
+				.rule = elly_toe_boson,
 				.args = {
-					n,
-					(0.01+0.002*global.diff)*n+0.01*I*n*(1-2*(_i&1))
+					(1-2*(i&1))*(2+0.05*(i/2))*dir,
+					2*(time > fermiontime-100),
 				},
-				.flags = PFLAG_DRAWADD,
+				.max_viewport_dist=20,
 			);
 		}
 	}
 
-	FROM_TO(120, 240, 10-global.diff) {
-		play_sound("shot1");
-		int x, y;
-		int w = 2;
-		complex n = cexp(0.7*I*_i+0.2*I*frand());
-		for(x = -w; x <= w; x++) {
-			for(y = -w; y <= w; y++) {
-				PROJECTILE(
-					.texture = "ball",
-					.pos = b->pos + (15+5*global.diff)*(x+I*y)*n,
-					.color = rgb(0, 0.5, 1),
-					.rule = accelerated,
-					.args = { 2*n, 0.026*n }
+	FROM_TO(fermiontime,yukawatime+400,2) {
+		double r = 100;
+		complex dest = r*cexp(I*1*_i);
+		for(int clr = 0; clr < 3; clr++) {
+			PROJECTILE("ball", b->pos, rgb(clr==0,clr==1,clr==2),
+				.rule = elly_toe_fermion,
+				.args = {
+					dest,
+					clr*2*M_PI/3,
+					40,
+				},
+				.flags=PFLAG_DRAWADD,
+				.max_viewport_dist=50,
+			);
+		}
+	}
+
+	AT(symmetrytime) {
+		stagetext_add("Symmetry broken!", VIEWPORT_W/2+I*VIEWPORT_H/4,AL_Center,&_fonts.mainmenu,rgb(1,1,1),0,100,10,20);
+		global.shake_view=10;
+		global.shake_view_fade=1;
+	}
+	AT(yukawatime) {
+		stagetext_add("Coupling the Higgs!", VIEWPORT_W/2+I*VIEWPORT_H/4,AL_Center,&_fonts.mainmenu,rgb(1,1,1),0,100,10,20);
+		global.shake_view=10;
+		global.shake_view_fade=1;
+	}
+	
+	AT(breaktime) {
+		stagetext_add("Perturbation theory!", VIEWPORT_W/2+I*VIEWPORT_H/4,AL_Center,&_fonts.mainmenu,rgb(1,1,1),0,100,10,20);
+		stagetext_add("breaking down!", VIEWPORT_W/2+I*VIEWPORT_H/4+30*I,AL_Center,&_fonts.mainmenu,rgb(1,1,1),0,100,10,20);
+		global.shake_view=10;
+		global.shake_view_fade=0.1;
+	}
+
+	FROM_TO(higgstime,yukawatime+100,4+4*(time>symmetrytime)) {
+		int arms = 4;
+		for(int dir = 0; dir < 2; dir++) {
+			for(int arm = 0; arm < arms; arm++) {
+				complex v = -2*I*cexp(I*M_PI/(arms+1)*(arm+1)+0.1*I*sin(time*0.1+arm));
+				if(dir)
+					v = -conj(v);
+				if(time>symmetrytime) {
+					int t = time-symmetrytime;
+					v*=cexp(-I*0.001*t*t+0.01*frand()*dir);
+				}
+				PROJECTILE("flea", b->pos, rgb(dir*(time>symmetrytime),0,1),
+					.rule = elly_toe_higgs,
+					.args = { v },
 				);
 			}
 		}
 	}
+	FROM_TO(breaktime,breaktime+10000,70) {
+		complex phase = cexp(2*I*M_PI*frand());
+		int count = 8;
+		for(int i = 0; i < count; i++) {
+			create_laser(b->pos,LASER_LENGTH,LASER_LENGTH/2,rgb(1,1,1),
+				elly_toe_laser_pos,elly_toe_laser_logic,
+				3*cexp(2*I*M_PI/count*i)*phase,
+				0,
+				LASER_EXTENT,
+				0
+			);
+		}
+	}
 
-	FROM_TO(250, 299, 10) {
-		create_enemy3c(b->pos, ENEMY_IMMUNE, Scythe, scythe_theory, cexp(2.0*I*M_PI/5*_i+I*(time/500)), 0.2*I, 1);
+	FROM_TO(breaktime+35,breaktime+10000,7) {
+		int count = 8;
+		for(int clr = 0; clr < 3; clr++) {
+			PROJECTILE("soul", b->pos, rgb(clr==0,clr==1,clr==2),
+				.rule = elly_toe_fermion,
+				.args = {
+					50*cexp(1*I*_i),
+					clr*2*M_PI/3,
+					40,
+					-1,
+				},
+				.flags=PFLAG_DRAWADD,
+				.max_viewport_dist=50,
+			);
+		}
 	}
 
 }
+
+#undef LASER_EXTENT
+#undef YUKAWATIME
 
 void elly_spellbg_classic(Boss *b, int t) {
 	fill_screen(0,0,0.7,"stage6/spellbg_classic");
