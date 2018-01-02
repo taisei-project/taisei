@@ -34,8 +34,6 @@ struct AniSequence{
 
 typedef struct AniPlayer AniPlayer;
 struct AniPlayer{
-	OBJECT_INTERFACE(AniPlayer); // hack for the boss glow effect
-
 	Animation *ani;
 	int clock;
 
