@@ -2009,7 +2009,7 @@ void elly_theory(Boss *b, int time) {
 			PROJECTILE("rice", b->pos, rgb(1.0,0.,.0+i*0.2),
 				.rule = elly_toe_boson,
 				.args = {
-					(1-2*(i&1))*(2+0.05*(i/2))*dir,
+					(1-2*(i&1))*(2+0.05*(i/2))*dir*cexp(I*0.002*(1+(time<fermiontime-100))*i),
 					2*(time > fermiontime-100),
 				},
 				.max_viewport_dist=20,
@@ -2049,7 +2049,7 @@ void elly_theory(Boss *b, int time) {
 		stagetext_add("Perturbation theory!", VIEWPORT_W/2+I*VIEWPORT_H/4,AL_Center,&_fonts.mainmenu,rgb(1,1,1),0,100,10,20);
 		stagetext_add("breaking down!", VIEWPORT_W/2+I*VIEWPORT_H/4+30*I,AL_Center,&_fonts.mainmenu,rgb(1,1,1),0,100,10,20);
 		global.shake_view=10;
-		global.shake_view_fade=0.1;
+		global.shake_view_fade=1;
 	}
 
 	FROM_TO(higgstime,yukawatime+100,4+4*(time>symmetrytime)) {
