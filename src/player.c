@@ -335,9 +335,6 @@ void player_realdeath(Player *plr) {
 	plr->recovery = -(global.frames + DEATH_DELAY + 150);
 	stage_clear_hazards(false);
 
-	if(plr->iddqd)
-		return;
-
 	player_fail_spell(plr);
 
 	if(global.stage->type != STAGE_SPELL && global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell) {
@@ -358,6 +355,9 @@ void player_realdeath(Player *plr) {
 }
 
 void player_death(Player *plr) {
+	if(plr->iddqd)
+		return;
+
 	if(plr->deathtime == -1 && global.frames - abs(plr->recovery) > 0) {
 		play_sound("death");
 
