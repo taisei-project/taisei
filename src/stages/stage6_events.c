@@ -1501,8 +1501,10 @@ void elly_lhc(Boss *b, int t) {
 
 	AT(0)
 		set_baryon_rule(baryon_lhc);
-	AT(EVENT_DEATH)
+	AT(EVENT_DEATH) {
 		set_baryon_rule(baryon_reset);
+		global.shake_view_fade=1;
+	}
 
 	FROM_TO(260, 10000, 400) {
 		elly_clap(b,100);
