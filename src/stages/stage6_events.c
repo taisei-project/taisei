@@ -10,7 +10,8 @@
 
 #include "stage6_events.h"
 #include "stage6.h"
-#include <global.h>
+#include "global.h"
+#include "stagetext.h"
 
 Dialog *stage6_dialog(void) {
 	PlayerCharacter *pc = global.plr.mode->character;
@@ -757,7 +758,7 @@ int scythe_explode(Enemy *e, int t) {
 	return 1;
 }
 
-void elly_unbound(Boss *b, int t) {
+void elly_paradigm_shift(Boss *b, int t) {
 	if(global.stage->type == STAGE_SPELL) {
 		GO_TO(b, BOSS_DEFAULT_GO_POS, 0.1)
 	} else if(t == 0) {
@@ -782,6 +783,7 @@ void elly_unbound(Boss *b, int t) {
 	AT(100) {
 		if(global.stage->type != STAGE_SPELL) {
 			stage_start_bgm("stage6boss_phase2");
+			stagetext_add("Paradigm Shift!", VIEWPORT_W/2+I*(VIEWPORT_H/2+64), AL_Center, &_fonts.mainmenu, rgb(1, 1, 1), 0, 120, 10, 30);
 		}
 
 		int i;
@@ -1911,7 +1913,7 @@ Boss* create_elly(void) {
 	boss_add_attack(b, AT_Normal, "Frequency2", 40, 50000, elly_frequency2, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.scythe.orbital_clockwork, false);
 	boss_add_attack_from_info(b, &stage6_spells.scythe.wave_theory, false);
-	boss_add_attack(b, AT_Move, "Unbound", 3, 10, elly_unbound, NULL);
+	boss_add_attack(b, AT_Move, "Paradigm Shift", 3, 10, elly_paradigm_shift, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.many_world_interpretation, false);
 	boss_add_attack(b, AT_Normal, "Baryon", 50, 55000, elly_baryonattack, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.wave_particle_duality, false);

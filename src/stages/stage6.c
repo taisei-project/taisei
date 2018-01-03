@@ -274,7 +274,7 @@ static void stage6_end(void) {
 }
 
 void elly_intro(Boss*, int);
-void elly_unbound(Boss*, int);
+void elly_paradigm_shift(Boss*, int);
 int scythe_reset(Enemy *e, int t);
 
 static void stage6_spellpractice_events(void) {
@@ -293,7 +293,7 @@ static void stage6_spellpractice_events(void) {
 			stage_start_bgm("stage6boss_phase1");
 		} else if(STG6_SPELL_NEEDS_BARYON(s)) {
 			create_enemy3c(BOSS_DEFAULT_GO_POS, ENEMY_IMMUNE, Scythe, scythe_reset, 0, 1+0.2*I, 1);
-			boss_add_attack(global.boss, AT_Move, "Unbound", 3, 0, elly_unbound, NULL);
+			boss_add_attack(global.boss, AT_Move, "Paradigm Shift", 3, 0, elly_paradigm_shift, NULL);
 			go = false;
 			stage_start_bgm("stage6boss_phase2");
 		} else if(s == &stage6_spells.final.theory_of_everything) {
