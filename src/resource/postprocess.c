@@ -149,33 +149,30 @@ void postprocess_unload(PostprocessShader **list) {
     list_foreach(list, delete_shader, NULL);
 }
 
-void postprocess(PostprocessShader *ppshaders, FBO **primfbo, FBO **auxfbo, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw) {
+void postprocess(PostprocessShader *ppshaders, FBOPair *fbos, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw) {
     if(!ppshaders) {
         return;
     }
 
-    swap_fbos(primfbo, auxfbo);
-
     for(PostprocessShader *pps = ppshaders; pps; pps = pps->next) {
         Shader *s = pps->shader;
 
-        glBindFramebuffer(GL_FRAMEBUFFER, (*primfbo)->fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbos->back->fbo);
         glUseProgram(s->prog);
 
         if(prepare) {
-            prepare(*primfbo, s);
+            prepare(fbos->back, s);
         }
 
         for(PostprocessShaderUniform *u = pps->uniforms; u; u = u->next) {
             u->func(u->loc, u->amount, u->values.v);
         }
 
-        swap_fbos(primfbo, auxfbo);
-        draw(*primfbo);
-        glUseProgram(0);
+        draw(fbos->front);
+        swap_fbo_pair(fbos);
     }
 
-    swap_fbos(primfbo, auxfbo);
+    glUseProgram(0);
 }
 
 /*

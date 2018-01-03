@@ -477,12 +477,9 @@ void free_resources(bool all) {
 
 	delete_vbo(&_vbo);
 	postprocess_unload(&resources.stage_postprocess);
-	delete_fbo(&resources.fbo.bg[0]);
-	delete_fbo(&resources.fbo.bg[1]);
-	delete_fbo(&resources.fbo.fg[0]);
-	delete_fbo(&resources.fbo.fg[1]);
-	delete_fbo(&resources.fbo.rgba[0]);
-	delete_fbo(&resources.fbo.rgba[1]);
+	delete_fbo_pair(&resources.fbo_pairs.bg);
+	delete_fbo_pair(&resources.fbo_pairs.fg);
+	delete_fbo_pair(&resources.fbo_pairs.rgba);
 
 	if(!getenvint("TAISEI_NOASYNC", 0)) {
 		events_unregister_handler(resource_asyncload_handler);

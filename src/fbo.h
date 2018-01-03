@@ -11,7 +11,7 @@
 
 #include "taiseigl.h"
 
-typedef struct {
+typedef struct FBO {
 	GLuint fbo;
 	GLuint tex;
 	GLuint depth;
@@ -20,9 +20,29 @@ typedef struct {
 	float scale;
 } FBO;
 
-void init_fbo(FBO *fbo, float scale, int type);
-void reinit_fbo(FBO *fbo, float scale, int type);
+#define FBO_FRONT 0
+#define FBO_BACK 1
+
+typedef struct FBOPair {
+	/*
+	 *  Rule of thumb:
+	 *      1. Bind back buffer;
+	 *      2. Draw front buffer;
+	 *      3. Call swap_fbo_pair;
+	 *      4. Rinse, repeat.
+	 */
+
+	FBO *front;
+	FBO *back;
+
+	struct {
+		FBO array[2];
+	} _fbopair_private;
+} FBOPair;
+
+void init_fbo_pair(FBOPair *pair, float scale, int type);
+void delete_fbo_pair(FBOPair *pair);
+void swap_fbo_pair(FBOPair *pair);
+
 void draw_fbo(FBO *fbo);
 void draw_fbo_viewport(FBO *fbo);
-void delete_fbo(FBO *fbo);
-void swap_fbos(FBO **fbo1, FBO **fbo2);

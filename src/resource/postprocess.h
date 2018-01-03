@@ -58,7 +58,7 @@ char* postprocess_path(const char *path);
 
 PostprocessShader* postprocess_load(const char *path, unsigned int flags);
 void postprocess_unload(PostprocessShader **list);
-void postprocess(PostprocessShader *ppshaders, FBO **primfbo, FBO **auxfbo, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw);
+void postprocess(PostprocessShader *ppshaders, FBOPair *fbos, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw);
 
 /*
  *  Glue for resources api

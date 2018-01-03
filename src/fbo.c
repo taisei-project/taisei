@@ -12,7 +12,7 @@
 #include "global.h"
 #include "util.h"
 
-void init_fbo(FBO *fbo, float scale, int type) {
+static void init_fbo(FBO *fbo, float scale, int type) {
 	glGenTextures(1, &fbo->tex);
 	glBindTexture(GL_TEXTURE_2D, fbo->tex);
 
@@ -45,10 +45,17 @@ void init_fbo(FBO *fbo, float scale, int type) {
 
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,fbo->depth, 0);
 
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void reinit_fbo(FBO *fbo, float scale, int type) {
+static void delete_fbo(FBO *fbo) {
+	glDeleteFramebuffers(1, &fbo->fbo);
+	glDeleteTextures(1, &fbo->depth);
+	glDeleteTextures(1, &fbo->tex);
+}
+
+static void reinit_fbo(FBO *fbo, float scale, int type) {
 	if(!fbo->scale) {
 		// fbo was never initialized
 		init_fbo(fbo, scale, type);
@@ -61,10 +68,27 @@ void reinit_fbo(FBO *fbo, float scale, int type) {
 	}
 }
 
-void delete_fbo(FBO *fbo) {
-	glDeleteFramebuffers(1, &fbo->fbo);
-	glDeleteTextures(1, &fbo->depth);
-	glDeleteTextures(1, &fbo->tex);
+static void swap_fbos(FBO **fbo1, FBO **fbo2) {
+    FBO *temp = *fbo1;
+    *fbo1 = *fbo2;
+    *fbo2 = temp;
+}
+
+void init_fbo_pair(FBOPair *pair, float scale, int type) {
+	pair->front = pair->_fbopair_private.array + FBO_FRONT;
+	pair->back = pair->_fbopair_private.array + FBO_BACK;
+
+	reinit_fbo(pair->front, scale, type);
+	reinit_fbo(pair->back, scale, type);
+}
+
+void delete_fbo_pair(FBOPair *pair) {
+	delete_fbo(pair->front);
+	delete_fbo(pair->back);
+}
+
+void swap_fbo_pair(FBOPair *pair) {
+	swap_fbos(&pair->front, &pair->back);
 }
 
 void draw_fbo(FBO *fbo) {
@@ -95,10 +119,4 @@ void draw_fbo_viewport(FBO *fbo) {
 	glViewport(0, 0, fbo->scale*VIEWPORT_W, fbo->scale*VIEWPORT_H);
 	set_ortho_ex(VIEWPORT_W,VIEWPORT_H);
 	draw_fbo(fbo);
-}
-
-void swap_fbos(FBO **fbo1, FBO **fbo2) {
-    FBO *temp = *fbo1;
-    *fbo1 = *fbo2;
-    *fbo2 = temp;
 }

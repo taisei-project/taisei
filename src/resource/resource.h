@@ -102,10 +102,10 @@ typedef struct Resources {
 	PostprocessShader *stage_postprocess;
 
 	struct {
-		FBO bg[2];
-		FBO fg[2];
-		FBO rgba[2]; // XXX: do we actually need 2 RGBA FBOs?
-	} fbo;
+		FBOPair bg;
+		FBOPair fg;
+		FBOPair rgba;
+	} fbo_pairs;
 } Resources;
 
 extern Resources resources;

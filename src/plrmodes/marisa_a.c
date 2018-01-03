@@ -247,7 +247,7 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
     glUniform1f(u_clr_phase, -1.5 * t/M_PI);
     glUniform1f(u_clr_freq, 10.0);
     glBlendFunc(GL_SRC_COLOR, GL_ONE);
-    glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo.rgba[0].fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo_pairs.rgba.front->fbo);
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0, 0, 0, 1);
@@ -261,10 +261,10 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
     }
 
     glBlendEquation(GL_FUNC_ADD);
-    glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo.fg[0].fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo_pairs.fg.back->fbo);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glUseProgram(0);
-    draw_fbo_viewport(&resources.fbo.rgba[0]);
+    draw_fbo_viewport(resources.fbo_pairs.rgba.front);
     glUseProgram(shader->prog);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 

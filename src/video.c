@@ -176,12 +176,9 @@ static void video_update_quality(void) {
 
 	log_debug("q:%f, fg:%f, bg:%f, text:%f", q, fg, bg, text);
 
-	reinit_fbo(&resources.fbo.bg[0], bg, GL_RGB);
-	reinit_fbo(&resources.fbo.bg[1], bg, GL_RGB);
-	reinit_fbo(&resources.fbo.fg[0], fg, GL_RGB);
-	reinit_fbo(&resources.fbo.fg[1], fg, GL_RGB);
-	reinit_fbo(&resources.fbo.rgba[0], fg, GL_RGBA);
-	reinit_fbo(&resources.fbo.rgba[1], fg, GL_RGBA);
+	init_fbo_pair(&resources.fbo_pairs.bg, bg, GL_RGB);
+	init_fbo_pair(&resources.fbo_pairs.fg, fg, GL_RGB);
+	init_fbo_pair(&resources.fbo_pairs.rgba, fg, GL_RGBA);
 
 	reload_fonts(text);
 
@@ -546,7 +543,7 @@ void video_init(void) {
 	bool fullscreen_available = false;
 
 	memset(&video, 0, sizeof(video));
-	memset(&resources.fbo, 0, sizeof(resources.fbo));
+	memset(&resources.fbo_pairs, 0, sizeof(resources.fbo_pairs));
 
 	video_init_sdl();
 	log_info("Using driver '%s'", SDL_GetCurrentVideoDriver());

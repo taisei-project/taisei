@@ -75,15 +75,15 @@ void stage_draw_preload(void) {
 	}
 }
 
-static void apply_shader_rules(ShaderRule *shaderrules, FBO **fbo0, FBO **fbo1) {
+static void apply_shader_rules(ShaderRule *shaderrules, FBOPair *fbos) {
 	if(!shaderrules) {
 		return;
 	}
 
 	for(ShaderRule *rule = shaderrules; *rule; ++rule) {
-		glBindFramebuffer(GL_FRAMEBUFFER, (*fbo1)->fbo);
-		(*rule)(*fbo0);
-		swap_fbos(fbo0, fbo1);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbos->back->fbo);
+		(*rule)(fbos->front);
+		swap_fbo_pair(fbos);
 	}
 
 	return;
@@ -155,29 +155,24 @@ static void draw_spellbg(int t) {
 	glPopMatrix();
 }
 
-static void apply_bg_shaders(ShaderRule *shaderrules, FBO **fbo0, FBO **fbo1) {
+static void apply_bg_shaders(ShaderRule *shaderrules, FBOPair *fbos) {
 	Boss *b = global.boss;
 	if(b && b->current && b->current->draw_rule) {
 		int t = global.frames - b->current->starttime;
 
-		FBO *fbo0_orig = *fbo0;
 		if(t < 4*ATTACK_START_DELAY || b->current->endtime) {
-			apply_shader_rules(shaderrules, fbo0, fbo1);
+			apply_shader_rules(shaderrules, fbos);
 		}
 
-		if(*fbo0 == fbo0_orig) {
-			glBindFramebuffer(GL_FRAMEBUFFER, (*fbo1)->fbo);
-			draw_fbo_viewport(*fbo0);
-			swap_fbos(fbo0, fbo1);
-		}
-
-		glBindFramebuffer(GL_FRAMEBUFFER, (*fbo1)->fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbos->back->fbo);
+		draw_fbo_viewport(fbos->front);
 		draw_spellbg(t);
+		swap_fbo_pair(fbos);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbos->back->fbo);
 
 		complex pos = b->pos;
 		float ratio = (float)VIEWPORT_H/VIEWPORT_W;
 
-		glBindFramebuffer(GL_FRAMEBUFFER, (*fbo0)->fbo);
 		if(t<ATTACK_START_DELAY) {
 			Shader *shader = get_shader("spellcard_intro");
 			glUseProgram(shader->prog);
@@ -213,11 +208,12 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBO **fbo0, FBO **fbo1) {
 			glUseProgram(0);
 		}
 
-		draw_fbo_viewport(*fbo1);
+		draw_fbo_viewport(fbos->front);
+		swap_fbo_pair(fbos);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glUseProgram(0);
 	} else {
-		apply_shader_rules(shaderrules, fbo0, fbo1);
+		apply_shader_rules(shaderrules, fbos);
 	}
 }
 
@@ -260,9 +256,9 @@ static void apply_zoom_shader(void) {
 	}
 }
 
-static FBO* stage_render_bg(StageInfo *stage) {
-	glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo.bg[0].fbo);
-	float scale = resources.fbo.bg[0].scale;
+static void stage_render_bg(StageInfo *stage) {
+	glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo_pairs.bg.back->fbo);
+	float scale = resources.fbo_pairs.bg.back->scale;
 	glViewport(0, 0, scale*VIEWPORT_W, scale*VIEWPORT_H);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -272,11 +268,9 @@ static FBO* stage_render_bg(StageInfo *stage) {
 		stage->procs->draw();
 	glPopMatrix();
 
-	FBO *fbo0 = resources.fbo.bg;
-	FBO *fbo1 = resources.fbo.bg + 1;
-
-	apply_bg_shaders(stage->procs->shader_rules, &fbo0, &fbo1);
-	return fbo0;
+	swap_fbo_pair(&resources.fbo_pairs.bg);
+	apply_bg_shaders(stage->procs->shader_rules, &resources.fbo_pairs.bg);
+	return;
 }
 
 static void stage_draw_objects(void) {
@@ -335,7 +329,7 @@ void stage_draw_foreground(void) {
 					global.shake_view = global.shake_view_fade = 0;
 			}
 		}
-		draw_fbo(&resources.fbo.fg[0]);
+		draw_fbo(resources.fbo_pairs.fg.front);
 	glPopMatrix();
 	set_ortho();
 }
@@ -348,16 +342,15 @@ void stage_draw_scene(StageInfo *stage) {
 #endif
 
 	bool draw_bg = !config_get_int(CONFIG_NO_STAGEBG) && !key_nobg;
-	FBO *fbg = NULL;
 
 	if(draw_bg) {
 		// render the 3D background
-		fbg = stage_render_bg(stage);
+		stage_render_bg(stage);
 	}
 
 	// switch to foreground FBO
-	glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo.fg[0].fbo);
-	float scale = resources.fbo.fg[0].scale;
+	glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo_pairs.fg.back->fbo);
+	float scale = resources.fbo_pairs.fg.back->scale;
 	glViewport(0, 0, scale*VIEWPORT_W, scale*VIEWPORT_H);
 	set_ortho_ex(VIEWPORT_W,VIEWPORT_H);
 
@@ -368,7 +361,7 @@ void stage_draw_scene(StageInfo *stage) {
 		}
 
 		// draw the 3D background
-		draw_fbo(fbg);
+		draw_fbo(resources.fbo_pairs.bg.front);
 
 		// disable boss background distortion
 		glUseProgram(0);
@@ -382,34 +375,28 @@ void stage_draw_scene(StageInfo *stage) {
 	}
 
 	// draw the 2D objects
-	set_ortho_ex(VIEWPORT_W,VIEWPORT_H);
+	set_ortho_ex(VIEWPORT_W, VIEWPORT_H);
 	stage_draw_objects();
 
-	// apply postprocessing shaders
-	FBO *fbo0 = resources.fbo.fg, *fbo1 = resources.fbo.fg+1;
+	// everything drawn, now apply postprocessing
+	swap_fbo_pair(&resources.fbo_pairs.fg);
 
 	// stage postprocessing
-	apply_shader_rules(global.stage->procs->postprocess_rules, &fbo0, &fbo1);
+	apply_shader_rules(global.stage->procs->postprocess_rules, &resources.fbo_pairs.fg);
 
 	// bomb effects shader if present and player bombing
 	if(global.frames - global.plr.recovery < 0 && global.plr.mode->procs.bomb_shader) {
 		ShaderRule rules[] = {global.plr.mode->procs.bomb_shader,0};
-		apply_shader_rules(rules,&fbo0,&fbo1);
+		apply_shader_rules(rules, &resources.fbo_pairs.fg);
 	}
+
 	// custom postprocessing
 	postprocess(
 		resources.stage_postprocess,
-		&fbo0,
-		&fbo1,
+		&resources.fbo_pairs.fg,
 		postprocess_prepare,
 		draw_fbo_viewport
 	);
-
-	// update the primary foreground FBO if needed
-	if(fbo0 != resources.fbo.fg) {
-		glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo.fg[0].fbo);
-		draw_fbo_viewport(fbo0);
-	}
 
 	// switch to main framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
