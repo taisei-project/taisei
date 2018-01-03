@@ -2111,12 +2111,12 @@ void elly_theory(Boss *b, int time) {
 		}
 	}
 
-	FROM_TO(breaktime+35,breaktime+10000,7) {
+	FROM_TO(breaktime+35,breaktime+10000,14) {
 		for(int clr = 0; clr < 3; clr++) {
 			PROJECTILE("soul", b->pos, rgb(clr==0,clr==1,clr==2),
 				.rule = elly_toe_fermion,
 				.args = {
-					50*cexp(1*I*_i),
+					50*cexp(1.3*I*_i),
 					clr*2*M_PI/3,
 					40,
 					-1,
