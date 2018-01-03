@@ -1802,29 +1802,56 @@ void elly_baryon_explode(Boss *b, int t) {
 	}
 }
 
+static complex wrap_around(complex *pos) {
+	complex dir = 0;
+	if(creal(*pos) < -10) {
+		*pos += VIEWPORT_W;
+		dir = -1;
+	}
+	if(creal(*pos) > VIEWPORT_W+10) {
+		*pos -= VIEWPORT_W;
+		dir = 1;
+	}
+	if(cimag(*pos) < -10) {
+		*pos += I*VIEWPORT_H;
+		dir = -I;
+	}
+	if(cimag(*pos) > VIEWPORT_H+10) {
+		*pos -= I*VIEWPORT_H;
+		dir = I;
+	}
+
+	return dir;
+}
+
 static int elly_toe_boson(Projectile *p, int t) {
 	if(t<0)
 		return 1;
 	p->pos += p->args[0];
 	p->angle = carg(p->args[0]);
-	if(creal(p->pos) < -10) {
-		p->pos += VIEWPORT_W;
+
+	if(wrap_around(&p->pos) != 0)
 		p->args[1] += 1;
-	}
-	if(creal(p->pos) > VIEWPORT_W+10) {
-		p->pos -= VIEWPORT_W;
-		p->args[1] += 1;
-	}
-	if(cimag(p->pos) < -10) {
-		p->pos += I*VIEWPORT_H;
-		p->args[1] += 1;
-	}
-	if(cimag(p->pos) > VIEWPORT_H+10) {
-		p->pos -= I*VIEWPORT_H;
-		p->args[1] += 1;
+
+	float tLookahead = 40;
+	complex posLookahead = p->pos+p->args[0]*tLookahead;
+	complex dir = wrap_around(&posLookahead);
+	if(dir != 0 && t%3 == 0 && creal(p->args[1]) <= 1.1) {
+		complex pos0 = posLookahead - VIEWPORT_W/2*(1-creal(dir))-I*VIEWPORT_H/2*(1-cimag(dir));
+
+		// Re [a b^*] behaves like the 2D vector scalar product
+		float tOvershoot = creal(pos0*conj(dir))/creal(p->args[0]*conj(dir));
+		posLookahead -= p->args[0]*tOvershoot;
+		PARTICLE("lasercurve", posLookahead, rgb(1,0,0.5), timeout_linear,
+				.draw_rule = Fade,
+				.args = { 10, p->args[0]},
+				.flags = PFLAG_DRAWADD
+		);
 	}
 
-	if(creal(p->args[1]) > 1.1+global.diff/2)
+
+
+	if(creal(p->args[1]) > 2.1)
 		return ACTION_DESTROY;
 	return 1;
 }
@@ -2002,14 +2029,14 @@ void elly_theory(Boss *b, int time) {
 	int yukawatime = YUKAWATIME;
 	int breaktime = yukawatime+400;
 
-	FROM_TO_INT(0, fermiontime+1000, 200, 30, 2) {
-		int count = 4;
-		complex dir = cexp(I*(2*_i+2*M_PI/50*_ni));
-		for(int i = 0; i < count*2; i++) {
-			PROJECTILE("rice", b->pos, rgb(1.0,0.,.0+i*0.2),
+	FROM_TO_INT(0, fermiontime+1000, 200, 24, 7) {
+		int count = 32;
+		for(int i = 0; i < count; i++) {
+			complex dir = cexp(I*(2*M_PI/count*i+_i));
+			PROJECTILE("rice", b->pos, rgb(1.0,0.,0.2*_ni),
 				.rule = elly_toe_boson,
 				.args = {
-					(1-2*(i&1))*(2+0.05*(i/2))*dir*cexp(I*0.002*(1+(time<fermiontime-100))*i),
+					(2.5)*dir,
 					2*(time > fermiontime-100),
 				},
 				.max_viewport_dist=20,
@@ -2085,7 +2112,6 @@ void elly_theory(Boss *b, int time) {
 	}
 
 	FROM_TO(breaktime+35,breaktime+10000,7) {
-		int count = 8;
 		for(int clr = 0; clr < 3; clr++) {
 			PROJECTILE("soul", b->pos, rgb(clr==0,clr==1,clr==2),
 				.rule = elly_toe_fermion,
