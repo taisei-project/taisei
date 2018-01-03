@@ -871,7 +871,7 @@ void elly_paradigm_shift(Boss *b, int t) {
 	}
 
 	if(global.stage->type != STAGE_SPELL) {
-		AT(70) {
+		AT(80) {
 			fade_bgm(0.5);
 		}
 	}
@@ -1633,13 +1633,14 @@ int baryon_explode(Enemy *e, int t) {
 	AT(EVENT_DEATH) {
 		free_ref(e->args[1]);
 		petal_explosion(35, e->pos);
-		play_sound("bossdeath");
+		play_sound("boom");
+		global.shake_view = min(30, global.shake_view + 10);
 		return 1;
 	}
 
-	GO_TO(e, global.boss->pos + (e->pos0-global.boss->pos)*(1.5+0.2*sin(t*0.05)), 0.04);
+	GO_TO(e, global.boss->pos + (e->pos0-global.boss->pos)*(1.5+0.2*sin(t*0.1)), 0.04);
 
-	if(frand() < 0.02) {
+	if(frand() < t / 1000.0) {
 		e->hp = 0;
 		return 1;
 	}
@@ -1768,48 +1769,63 @@ int curvature_slave(Enemy *e, int t) {
 
 void elly_curvature(Boss *b, int t) {
 	TIMER(&t);
-	AT(EVENT_BIRTH)
+
+	AT(EVENT_BIRTH) {
 		set_baryon_rule(baryon_curvature);
+		return;
+	}
+
 	AT(EVENT_DEATH) {
 		set_baryon_rule(baryon_reset);
+
+		for(Enemy *e = global.enemies; e; e = e->next) {
+			if(e->logic_rule == curvature_slave) {
+				e->hp = 0;
+			}
+		}
+
+		return;
 	}
 
 	AT(50) {
-		create_enemy2c(b->pos,ENEMY_IMMUNE, 0, curvature_slave,0,global.plr.pos);
+		create_enemy2c(b->pos, ENEMY_IMMUNE, 0, curvature_slave, 0, global.plr.pos);
 	}
 
 	GO_TO(b, VIEWPORT_W/2+100*I+VIEWPORT_W/3*round(sin(t/200)), 0.04);
-
-	AT(EVENT_DEATH) {
-		killall(global.enemies);
-	}
 
 }
 void elly_baryon_explode(Boss *b, int t) {
 	TIMER(&t);
 
-	AT(0)
-		start_fall_over();
+	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.05);
 
-	GO_TO(b,VIEWPORT_W/2+I*VIEWPORT_H/2,0.1);
+	global.shake_view_fade = 0.5;
 
-	AT(20)
+	AT(20) {
 		set_baryon_rule(baryon_explode);
+	}
+
+	AT(42) {
+		fade_bgm(1.0);
+	}
 
 	FROM_TO(0, 200, 1) {
 		tsrand_fill(2);
 		petal_explosion(1, b->pos + 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1)));
+		global.shake_view = max(global.shake_view, 5 * _i / 200.0);
+
+		if(_i > 30) {
+			play_loop("charge_generic");
+		}
 	}
 
 	AT(200) {
 		tsrand_fill(2);
-		global.shake_view = 10;
+		global.shake_view += 30;
+		global.shake_view_fade = 0.05;
+		play_sound("boom");
 		petal_explosion(100, b->pos + 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1)));
 		killall(global.enemies);
-	}
-
-	AT(220) {
-		global.shake_view = 0;
 	}
 }
 
@@ -2553,9 +2569,21 @@ Boss* stage6_spawn_elly(complex pos) {
 }
 
 static void elly_insert_interboss_dialog(Boss *b, int t) {
-	if(t == 0) {
-		global.dialog = stage6_interboss_dialog();
+	global.dialog = stage6_interboss_dialog();
+}
+
+static void elly_begin_toe(Boss *b, int t) {
+	TIMER(&t);
+
+	AT(1) {
+		start_fall_over();
+		stage_start_bgm("stage6boss_phase3");
+		global.shake_view_fade = 0;
 	}
+}
+
+static void elly_goto_center(Boss *b, int t) {
+	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.05);
 }
 
 Boss* create_elly(void) {
@@ -2567,16 +2595,18 @@ Boss* create_elly(void) {
 	boss_add_attack(b, AT_Normal, "Frequency2", 40, 50000, elly_frequency2, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.scythe.orbital_clockwork, false);
 	boss_add_attack_from_info(b, &stage6_spells.scythe.wave_theory, false);
-	boss_add_attack(b, AT_Move, "Paradigm Shift", 3, 10, elly_paradigm_shift, NULL);
+	boss_add_attack(b, AT_Move, "Paradigm Shift", 3, 0, elly_paradigm_shift, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.many_world_interpretation, false);
 	boss_add_attack(b, AT_Normal, "Baryon", 50, 55000, elly_baryonattack, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.wave_particle_duality, false);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.spacetime_curvature, false);
-	boss_add_attack(b, AT_Normal, "Baryon", 50, 55000, elly_baryonattack2, NULL);
+	boss_add_attack(b, AT_Normal, "Baryon2", 50, 55000, elly_baryonattack2, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.higgs_boson_uncovered, false);
 	boss_add_attack_from_info(b, &stage6_spells.extra.curvature_domination, false);
-	boss_add_attack(b, AT_Move, "", 0, 0, elly_insert_interboss_dialog, NULL);
-	boss_add_attack(b, AT_Move, "Explode", 6, 10, elly_baryon_explode, NULL);
+	boss_add_attack(b, AT_Move, "Explode", 4, 0, elly_baryon_explode, NULL);
+	boss_add_attack(b, AT_Move, "Move to center", 1, 0, elly_goto_center, NULL);
+	boss_add_attack(b, AT_Immediate, "Final dialog", 0, 0, elly_insert_interboss_dialog, NULL);
+	boss_add_attack(b, AT_Move, "ToE transition", 7, 0, elly_begin_toe, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.final.theory_of_everything, false);
 	boss_start_attack(b, b->attacks);
 
@@ -2588,6 +2618,7 @@ void stage6_events(void) {
 
 	AT(0) {
 		stage_start_bgm("stage6");
+		// skip_background_anim(&stage_3d_context, stage_get(6)->procs->update, 3800, &global.timer, &global.frames);
 	}
 
 	AT(100)
@@ -2613,7 +2644,7 @@ void stage6_events(void) {
 	AT(3800)
 		global.boss = create_elly();
 
-	AT(3900 - FADE_TIME) {
+	AT(4160 - FADE_TIME) {
 		stage_finish(GAMEOVER_WIN);
 	}
 }
