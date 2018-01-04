@@ -180,7 +180,7 @@ static int youmu_trap(Projectile *p, int t) {
             complex dir = cexp(I*(a));
 
             PROJECTILE("youmu", p->pos, rgb(1, 1, 1), youmu_homing,
-                .args = { 5 * dir, aim, dur + charge*I, global.plr.pos },
+                .args = { 5 * (1 + charge) * dir, (1 + charge) * aim, dur + charge*I, creal(p->pos) - VIEWPORT_H*I },
                 .type = PlrProj + dmg,
                 .draw_rule = youmu_trap_draw_child_proj,
                 .color_transform_rule = youmu_trap_proj_clr_transform,
@@ -244,7 +244,7 @@ static int youmu_particle_slice_logic(Projectile *p, int t) {
 	    a = max(0,1-(tt-0.5)/0.5);
     }
     p->color = rgba(1, 1, 1,a);
-    
+
     complex phase = cexp(p->angle*I);
     if(t%5 == 0) {
     	tsrand_fill(4);
