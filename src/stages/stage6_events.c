@@ -1803,22 +1803,30 @@ void elly_baryon_explode(Boss *b, int t) {
 }
 
 static complex wrap_around(complex *pos) {
+	// This function only works approximately. If more than one of these conditions are true,
+	// dir has to correspond to the wall that was passed first for the
+	// current preview display to work.
+	//
+	// with some clever geometry this could be either fixed here or in the
+	// preview calculation, but the spell as it is currently seems to work
+	// perfectly with this simplified version.
+
 	complex dir = 0;
 	if(creal(*pos) < -10) {
 		*pos += VIEWPORT_W;
-		dir = -1;
+		dir += -1;
 	}
 	if(creal(*pos) > VIEWPORT_W+10) {
 		*pos -= VIEWPORT_W;
-		dir = 1;
+		dir += 1;
 	}
 	if(cimag(*pos) < -10) {
 		*pos += I*VIEWPORT_H;
-		dir = -I;
+		dir += -I;
 	}
 	if(cimag(*pos) > VIEWPORT_H+10) {
 		*pos -= I*VIEWPORT_H;
-		dir = I;
+		dir += I;
 	}
 
 	return dir;
@@ -1832,7 +1840,7 @@ static int elly_toe_boson(Projectile *p, int t) {
 
 	if(wrap_around(&p->pos) != 0) {
 		p->args[1] += 1;
-		p->color = rgb(1.0-0.3*creal(p->args[1]),0.5*creal(p->args[1]),color_component(p->color,CLR_B));
+		p->color = rgb(1.0-creal(p->args[1]),0,creal(p->args[1])+color_component(p->color,CLR_B));
 	}
 
 	float tLookahead = 40;
@@ -1991,6 +1999,8 @@ static void elly_toe_laser_logic(Laser *l, int t) {
 			if(newtype2 == 1 && frand() > 0.5) {
 				newtype = 2;
 			}
+
+			// I removed type 3 because 
 		} while(newtype2 == -1 || newtype2 == 3 || newtype == 3);
 
 		complex newdir = cexp(0.2*I*(1+frand()));
@@ -2012,6 +2022,57 @@ static void elly_toe_laser_logic(Laser *l, int t) {
 	l->pos+=I;
 }
 
+
+// This spell contains some obscure (and some less obscure) physics references.
+// However the first priority was good looks and playability, so most of the
+// references are pretty bad.
+//
+// I am waiting for the day somebody notices this and writes a 10-page comment
+// about it on reddit. ;_; So I add a disclaimer beforehand (2018). Maybe it can also
+// serve as entertainment for the interested hacker stumbling across these
+// lines.
+//
+// Disclaimer:
+//
+// 1. This spell is based on the Standard Model of Particle physics, which is
+//    very complicated, so the picture here is always very very very dumbed down.
+//
+// 2. The first two phases stand for the bosons and fermions in the model. My
+//    way of representing them was to choose a heavily overlapping pattern for
+//    the bosons and a non-overlapping one for the fermions (nod to the Pauli
+//    principle). The rest of them is not a good reference at all.
+//
+// 3. Especially this rgb rotating thing the fermions do has not much to do
+//    with physics. Maybe it represents color charge? And the rotation
+//    represents the way fermions transform strangely under rotations?
+//
+// 4. The symmetry thing is one fm closer to the truth. In reality the symmetry
+//    that is broken in the phase we live in is continuous, but that is not easy
+//    to do in danmaku, so I took a mirror symmetry and broke it.
+//    Then in reality, the higgs gets a funny property that makes the other
+//    things which interact with it get a mass.
+//    In the spell, I represented that by adding those sectors where the fermions
+//    become big (massive ;)).
+//
+// 5. The last part is a nod to Feynman diagrams and perturbation theory. Have
+//    been planning to add those to the game for quite some time. They are one
+//    of the iconic sights in modern physics and they can be used as laser danmaku.
+//    The rules here are again simplified:
+//
+//    I only use QED and QCD (not the whole SM) and leave out ghosts and the 4
+//    gluon vertex (because I can’t draw dashed lasers and the 4-vertex doesn’t
+//    fit into the pattern).
+//
+//    Of course, drawing laser danmaku is easy. The actual calculations behind
+//    the diagrams are one of the most complicated fields in Physics (fun fact:
+//    they are a driving force for CAS software and high precision integration
+//    methods). This whole thing is called perturbation theory and one of its
+//    problems is that it doesn’t really converge, so that’s the reason behind
+//    “Perturbation theory breaking down”
+//
+// (9). I’m only human though and this is not exactly the stuff I do, so I’m
+//      not an expert and more things might be off.
+//
 void elly_theory(Boss *b, int time) {
 	if(time == EVENT_BIRTH)
 		global.shake_view = 10;
@@ -2031,23 +2092,24 @@ void elly_theory(Boss *b, int time) {
 	int yukawatime = YUKAWATIME;
 	int breaktime = yukawatime+400;
 
+	// The fact that there are 4 bullets per trail is actually one of the physics references.
 	FROM_TO_INT(0, fermiontime+1000, 200, 24, 7) {
-		int count = 32;
+		int count = 32 - (_i==0); // 31 at the first iteration to remove the spawn safe spot
 		for(int i = 0; i < count; i++) {
-			complex dir = cexp(I*(2*M_PI/count*(i+0.5)));
+			complex dir = I*cexp(I*(2*M_PI/count*(i+0.5)));
 			dir *= cexp(I*0.15*sign(creal(dir))*sin(_i));
-			PROJECTILE("rice", b->pos, rgb(1.0,0.,0.2*_ni),
+			PROJECTILE("rice", b->pos, rgb(2.0,0.,0.2*_ni),
 				.rule = elly_toe_boson,
 				.args = {
 					2.5*dir,
-					2*(time > fermiontime-124),
+					2*(time > fermiontime-124), // make the pattern easier in the later phases
 				},
 				.max_viewport_dist=20,
 			);
 		}
 	}
 
-	FROM_TO(fermiontime,yukawatime+400,2) {
+	FROM_TO(fermiontime,yukawatime+250,2) {
 		complex dest = 100*cexp(I*1*_i);
 		for(int clr = 0; clr < 3; clr++) {
 			PROJECTILE("ball", b->pos, rgb(clr==0,clr==1,clr==2),
