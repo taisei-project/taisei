@@ -2,8 +2,8 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2017, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2017, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
  */
 
 #include "taisei.h"
@@ -514,6 +514,7 @@ void cirno_snow_halation(Boss *c, int time) {
 	GO_TO(c, VIEWPORT_W/2.0+100.0*I, 0.05);
 
 	// TODO: get rid of the "static" nonsense already! #ArgsForBossAttacks2017
+	// tfw it's 2018 and still no args
 	static complex center;
 	static float rotation;
 
