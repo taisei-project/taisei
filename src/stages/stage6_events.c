@@ -1830,8 +1830,10 @@ static int elly_toe_boson(Projectile *p, int t) {
 	p->pos += p->args[0];
 	p->angle = carg(p->args[0]);
 
-	if(wrap_around(&p->pos) != 0)
+	if(wrap_around(&p->pos) != 0) {
 		p->args[1] += 1;
+		p->color = rgb(1.0-0.3*creal(p->args[1]),0.5*creal(p->args[1]),color_component(p->color,CLR_B));
+	}
 
 	float tLookahead = 40;
 	complex posLookahead = p->pos+p->args[0]*tLookahead;
@@ -2032,12 +2034,13 @@ void elly_theory(Boss *b, int time) {
 	FROM_TO_INT(0, fermiontime+1000, 200, 24, 7) {
 		int count = 32;
 		for(int i = 0; i < count; i++) {
-			complex dir = cexp(I*(2*M_PI/count*i+_i));
+			complex dir = cexp(I*(2*M_PI/count*(i+0.5)));
+			dir *= cexp(I*0.15*sign(creal(dir))*sin(_i));
 			PROJECTILE("rice", b->pos, rgb(1.0,0.,0.2*_ni),
 				.rule = elly_toe_boson,
 				.args = {
-					(2.5)*dir,
-					2*(time > fermiontime-100),
+					2.5*dir,
+					2*(time > fermiontime-124),
 				},
 				.max_viewport_dist=20,
 			);
@@ -2045,8 +2048,7 @@ void elly_theory(Boss *b, int time) {
 	}
 
 	FROM_TO(fermiontime,yukawatime+400,2) {
-		double r = 100;
-		complex dest = r*cexp(I*1*_i);
+		complex dest = 100*cexp(I*1*_i);
 		for(int clr = 0; clr < 3; clr++) {
 			PROJECTILE("ball", b->pos, rgb(clr==0,clr==1,clr==2),
 				.rule = elly_toe_fermion,
