@@ -215,6 +215,17 @@ int scythe_mid(Enemy *e, int t) {
 	return 1;
 }
 
+void ScytheTrail(Projectile *p, int t) {
+	glPushMatrix();
+	glTranslatef(creal(p->pos), cimag(p->pos), 0);
+	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
+	glScalef(creal(p->args[1]), creal(p->args[1]), 1);
+
+	float a = (1.0 - t/creal(p->args[0])) * (1.0 - cimag(p->args[1]));
+	ProjDrawCore(p, rgba(1, 1, 1, a));
+	glPopMatrix();
+}
+
 void Scythe(Enemy *e, int t, bool render) {
 	if(render) {
 		return;
@@ -223,7 +234,7 @@ void Scythe(Enemy *e, int t, bool render) {
 	PARTICLE(
 		.texture_ptr = get_tex("stage6/scythe"),
 		.pos = e->pos+I*6*sin(global.frames/25.0),
-		.draw_rule = ScaleFade,
+		.draw_rule = ScytheTrail,
 		.rule = timeout,
 		.args = { 8, e->args[2] },
 		.angle = creal(e->args[1]) - M_PI/2,
