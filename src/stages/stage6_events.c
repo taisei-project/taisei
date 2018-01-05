@@ -1566,6 +1566,28 @@ int baryon_explode(Enemy *e, int t) {
 	return 1;
 }
 
+int baryon_curvature(Enemy *e, int t) {
+	int num = creal(e->args[2])+0.5;
+	int odd = num&1;
+	complex bpos = global.boss->pos;
+	complex target = (1-2*odd)*(300+100*sin(t*0.01))*cexp(I*(2*M_PI*(num+0.5*odd)/6+0.6*sqrt(1+t*t/600.)));
+	GO_TO(e,bpos+target, 0.1);
+
+	if(global.diff > D_Easy && t % (80-4*global.diff) == 0) {
+		tsrand_fill(2);
+		complex pos = e->pos+60*anfrand(0)+I*60*anfrand(1);
+
+		if(cabs(pos - global.plr.pos) > 100) {
+			PROJECTILE("ball", pos, rgb(1, 0.4,1), linear,
+				.args = { cexp(I*carg(global.plr.pos-pos)) },
+				.flags = PFLAG_DRAWADD,
+			  );
+		}
+	}
+
+	return 1;
+}
+
 int curvature_bullet(Projectile *p, int t) {
 	if(REF(p->args[1]) == 0) {
 		return 0;
@@ -1633,17 +1655,6 @@ int curvature_slave(Enemy *e, int t) {
 			);
 		}
 	}
-	if(global.diff > D_Easy && t % (60-8*global.diff) == 0) {
-			tsrand_fill(2);
-			complex pos = VIEWPORT_W*afrand(0)+I*VIEWPORT_H*afrand(1);
-
-			if(cabs(pos - global.plr.pos) > 100) {
-				PROJECTILE("ball", pos, rgb(1, 0.4,1), linear,
-					.args = { cexp(I*carg(global.plr.pos-pos)) },
-					.flags = PFLAG_DRAWADD,
-				);
-			}
-	}
 
 	if(global.diff >= D_Hard && !(t%20)) {
 		play_sound_ex("shot2",10,false);
@@ -1676,6 +1687,11 @@ int curvature_slave(Enemy *e, int t) {
 
 void elly_curvature(Boss *b, int t) {
 	TIMER(&t);
+	AT(EVENT_BIRTH)
+		set_baryon_rule(baryon_curvature);
+	AT(EVENT_DEATH) {
+		set_baryon_rule(baryon_reset);
+	}
 
 	AT(50) {
 		create_enemy2c(b->pos,ENEMY_IMMUNE, 0, curvature_slave,0,global.plr.pos);
@@ -1922,9 +1938,9 @@ Boss* create_elly(void) {
 	boss_add_attack_from_info(b, &stage6_spells.baryon.spacetime_curvature, false);
 	boss_add_attack(b, AT_Normal, "Baryon", 50, 55000, elly_baryonattack2, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.higgs_boson_uncovered, false);
+	boss_add_attack_from_info(b, &stage6_spells.extra.curvature_domination, false);
 	boss_add_attack(b, AT_Move, "", 0, 0, elly_insert_interboss_dialog, NULL);
 	boss_add_attack(b, AT_Move, "Explode", 6, 10, elly_baryon_explode, NULL);
-	boss_add_attack_from_info(b, &stage6_spells.extra.curvature_domination, false);
 	boss_add_attack_from_info(b, &stage6_spells.final.theory_of_everything, false);
 	boss_start_attack(b, b->attacks);
 

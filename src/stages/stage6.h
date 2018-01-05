@@ -49,7 +49,7 @@ extern struct stage6_spells_s {
 
 // this hackery is needed for spell practice
 #define STG6_SPELL_NEEDS_SCYTHE(s) ((s) >= &stage6_spells.scythe_first && ((s) - &stage6_spells.scythe_first) < sizeof(stage6_spells.scythe)/sizeof(AttackInfo))
-#define STG6_SPELL_NEEDS_BARYON(s) ((s) >= &stage6_spells.baryon_first && ((s) - &stage6_spells.baryon_first) < sizeof(stage6_spells.baryon)/sizeof(AttackInfo))
+#define STG6_SPELL_NEEDS_BARYON(s) ((s) >= &stage6_spells.baryon_first && ((s) - &stage6_spells.baryon_first) < sizeof(stage6_spells.baryon)/sizeof(AttackInfo)+1)
 
 extern StageProcs stage6_procs;
 extern StageProcs stage6_spell_procs;
