@@ -373,7 +373,7 @@ int scythe_newton(Enemy *e, int t) {
 	}
 
 	FROM_TO(100, 10000, 1) {
-		e->pos = VIEWPORT_W/2+I*VIEWPORT_H/2 + 500*cos(_i*0.06)*cexp(I*_i*0.01);
+		e->pos = VIEWPORT_W/2+I*VIEWPORT_H/2 + 400*cos(_i*0.04)*cexp(I*_i*0.01);
 	}
 
 
@@ -385,13 +385,15 @@ int scythe_newton(Enemy *e, int t) {
 				e->args[3] += 1;
 				//p->args[0] /= 2;
 				play_sound_ex("redirect",4,false);
-				if(global.diff > D_Normal && (int)(creal(e->args[3])+0.5) % (15-5*(global.diff == D_Lunatic)) == 0) {
-					p->args[0] = cexp(I*f);
+				if(global.diff > D_Normal && (int)(creal(e->args[3])+0.5) % (15-2*global.diff) == 0) {
+					p->args[0] = 1.5*cexp(I*f);
 					p->color = rgb(1,0,0.5);
 					p->tex = get_tex("proj/bullet");
 					p->args[1] = 0.005*I;
 				} else {
-					p->args[0] = 2*cexp(I*2*M_PI*frand());
+					p->birthtime=global.frames;
+					p->pos0=p->pos;
+					p->args[0] = (2+0.125*global.diff)*cexp(I*2*M_PI*frand());
 					p->color = rgba(frand(), 0, 1, 0.8);
 				}
 				p->args[2] = 1;
@@ -425,12 +427,12 @@ void elly_newton(Boss *b, int t) {
 	FROM_TO(0, 100000, 20+10*(global.diff>D_Normal)) {
 		float a = 2.7*_i+carg(global.plr.pos-b->pos);
 		int x, y;
-		float w = min(D_Hard,global.diff)/2.0+1.5;
+		float w = global.diff/2.0+1.5;
 
 		play_sound("shot_special1");
 		for(x = -w; x <= w; x++) {
 			for(y = -w; y <= w; y++) {
-				PROJECTILE("ball", b->pos+(x+I*y)*(18)*cexp(I*a), rgb(0, 0.5, 1), linear, { 2*cexp(I*a) });
+				PROJECTILE("ball", b->pos+(x+I*y)*25*cexp(I*a), rgb(0, 0.5, 1), linear, { (2+(_i==0))*cexp(I*a) });
 			}
 		}
 	}
