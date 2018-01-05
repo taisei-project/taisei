@@ -367,7 +367,7 @@ void stage_draw_scene(StageInfo *stage) {
 		glUseProgram(0);
 
 		// draw bomb background
-		if(global.frames - global.plr.recovery < 0) {
+		if(global.frames - global.plr.recovery < 0 && global.plr.mode->procs.bombbg) {
 			global.plr.mode->procs.bombbg(&global.plr);
 		}
 	} else if(!key_nobg) {
