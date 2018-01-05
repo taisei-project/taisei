@@ -117,8 +117,6 @@ static void stage6_skysphere_draw(Vector pos) {
 	Shader *s = get_shader("stage6_sky");
 	glUseProgram(s->prog);
 
-	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/sky")->gltex);
-
 	glPushMatrix();
 	glTranslatef(pos[0], pos[1], pos[2]-30);
 	glScalef(150,150,150);
@@ -247,7 +245,6 @@ static void stage6_preload(void) {
 		"stage6/baryon",
 		"stage6/scythecircle",
 		"stage6/scythe",
-		"stage6/sky",
 		"stage6/spellbg_chalk",
 		"stage6/spellbg_classic",
 		"stage6/spellbg_modern",

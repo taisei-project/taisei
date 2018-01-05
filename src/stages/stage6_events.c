@@ -1712,6 +1712,8 @@ void elly_baryon_explode(Boss *b, int t) {
 	AT(0)
 		start_fall_over();
 
+	GO_TO(b,VIEWPORT_W/2+I*VIEWPORT_H/2,0.1);
+
 	AT(20)
 		set_baryon_rule(baryon_explode);
 
