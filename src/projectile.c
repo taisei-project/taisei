@@ -99,7 +99,7 @@ static void projectile_size(Projectile *p, double *w, double *h) {
 	}
 }
 
-int projectile_prio_func(List *vproj) {
+static int projectile_sizeprio_func(List *vproj) {
 	Projectile *proj = (Projectile*)vproj;
 
 	if(proj->priority_override) {
@@ -110,7 +110,27 @@ int projectile_prio_func(List *vproj) {
 }
 
 List* proj_insert_sizeprio(List **dest, List *elem) {
-	return list_insert_at_priority(dest, elem, projectile_prio_func(elem), projectile_prio_func);
+	return list_insert_at_priority(dest, elem, projectile_sizeprio_func(elem), projectile_sizeprio_func);
+}
+
+static int projectile_colorprio_func(List *vproj) {
+	Projectile *p = (Projectile*)vproj;
+	Color c = p->color;
+	uint32_t c32 = 0;
+	float r, g, b, a;
+
+	// convert color to 32bit
+	parse_color(c, &r, &g, &b, &a);
+	c32 |= (((c & CLRMASK_R) >> CLR_R) & 0xFF) << 0;
+	c32 |= (((c & CLRMASK_G) >> CLR_G) & 0xFF) << 8;
+	c32 |= (((c & CLRMASK_B) >> CLR_B) & 0xFF) << 16;
+
+	return (int)c32;
+}
+
+List* proj_insert_colorprio(List **dest, List *elem) {
+	return list_insert_at_priority(dest, elem, projectile_colorprio_func(elem), projectile_colorprio_func);
+	// return list_push(dest, elem);
 }
 
 static Projectile* _create_projectile(ProjArgs *args) {
@@ -665,11 +685,18 @@ void Fade(Projectile *p, int t) {
 void ScaleFade(Projectile *p, int t) {
 	glPushMatrix();
 	apply_common_transforms(p, t);
-	glScalef(creal(p->args[1]), creal(p->args[1]), 1);
 
-	float a = (1.0 - t/creal(p->args[0])) * (1.0 - cimag(p->args[1]));
-	Color c = rgba(1, 1, 1, a);
+	double scale_min = creal(p->args[2]);
+	double scale_max = cimag(p->args[2]);
+	double timefactor = t / creal(p->args[0]);
+	double scale = scale_min * (1 - timefactor) + scale_max * timefactor;
+	double alpha = pow(1 - timefactor, 2);
 
+	// log_debug("%f %f %f %f", scale_min, scale_max, timefactor, scale);
+
+	Color c = multiply_colors(p->color, rgba(1, 1, 1, alpha));
+
+	glScalef(scale, scale, 1);
 	ProjDrawCore(p, c);
 	glPopMatrix();
 }
@@ -688,6 +715,17 @@ int timeout_linear(Projectile *p, int t) {
 		return 1;
 
 	p->angle = carg(p->args[1]);
+	p->pos = p->pos0 + p->args[1]*t;
+
+	return 1;
+}
+
+int timeout_linear_fixangle(Projectile *p, int t) {
+	if(t >= creal(p->args[0]))
+		return ACTION_DESTROY;
+	if(t < 0)
+		return 1;
+
 	p->pos = p->pos0 + p->args[1]*t;
 
 	return 1;

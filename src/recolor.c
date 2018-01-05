@@ -31,6 +31,7 @@ static struct recolor_vars_s {
     struct recolor_varcache A;
     struct recolor_varcache O;
     bool loaded;
+    int transfers;
 } recolor_vars;
 
 static inline void recolor_set_uniform(struct recolor_varcache *vc, Color clr) {
@@ -40,6 +41,7 @@ static inline void recolor_set_uniform(struct recolor_varcache *vc, Color clr) {
         parse_color_array(clr, clrarr);
         glUniform4fv(vc->loc, 1, clrarr);
         vc->prev = clr;
+        // log_debug("%i", ++recolor_vars.transfers);
     }
 }
 

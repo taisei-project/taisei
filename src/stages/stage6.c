@@ -48,7 +48,7 @@ struct stage6_spells_s stage6_spells = {
 
 	.final = {
 		.theory_of_everything		= {{20, 21, 22, 23}, AT_SurvivalSpell, "Tower of Truth ~ Theory of Everything", 70, 40000,
-										elly_theory, elly_spellbg_modern, BOSS_DEFAULT_GO_POS}
+										elly_theory, elly_spellbg_modern, ELLY_TOE_TARGET_POS}
 	},
 };
 
@@ -251,6 +251,8 @@ static void stage6_preload(void) {
 		"stage6/towertop",
 		"stage6/towerwall",
 		"dialog/elly",
+		"part/stardust",
+		"part/myon",
 	NULL);
 	preload_resources(RES_SHADER, RESF_DEFAULT,
 		"tower_wall",
@@ -263,6 +265,10 @@ static void stage6_preload(void) {
 		"towerwall",
 		"towertop",
 		"skysphere",
+	NULL);
+	preload_resources(RES_SFX, RESF_DEFAULT | RESF_OPTIONAL,
+		"warp",
+		"noise1",
 	NULL);
 }
 

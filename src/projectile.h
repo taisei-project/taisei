@@ -170,6 +170,7 @@ void petal_explosion(int n, complex pos);
 
 int timeout(Projectile *p, int t);
 int timeout_linear(Projectile *p, int t);
+int timeout_linear_fixangle(Projectile *p, int t);
 
 int blast_timeout(Projectile *p, int t);
 void Blast(Projectile *p, int t);
@@ -177,3 +178,4 @@ void Blast(Projectile *p, int t);
 void projectiles_preload(void);
 
 List* proj_insert_sizeprio(List **dest, List *elem) __attribute__((hot));
+List* proj_insert_colorprio(List **dest, List *elem);
