@@ -225,7 +225,7 @@ int stage2_accel_circle(Enemy *e, int t) {
 		int i;
 		for(i = 0; i < 6; i++) {
 			play_sound("redirect");
-			PROJECTILE("ball", e->pos, rgb(0.6,0.1,0.2), accelerated, {
+			PROJECTILE("ball", e->pos, rgb(0.9,0.1,0.2), accelerated, {
 				1.5*cexp(2.0*I*M_PI/6*i)+cexp(I*carg(global.plr.pos - e->pos)),
 				-0.02*cexp(I*(2*M_PI/6*i+0.02*frand()*global.diff))
 			});
@@ -845,7 +845,7 @@ void stage2_events(void) {
 		create_enemy1c(VIEWPORT_W*(0.1+0.8*frand())-10.0*I, 150, Fairy, stage2_flea, 2.5*I);
 
 	FROM_TO(4000, 4600, 100+100*(global.diff<D_Hard))
-		create_enemy1c(VIEWPORT_W*(0.3-0.4*frand())-10.0*I, 2000, Fairy, stage2_accel_circle, 2.0*I);
+		create_enemy1c(VIEWPORT_W*(0.5+0.2*_i*(1-2*(_i&1)))-10.0*I, 2000, Fairy, stage2_accel_circle, 2.0*I);
 
 	AT(5100) {
 		global.boss = create_hina();
