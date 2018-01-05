@@ -1,7 +1,7 @@
 project('taisei', 'c',
     license : 'MIT',
     version : 'v1.1.0-9999',
-    meson_version : '>=0.38.0',
+    meson_version : '>=0.39.0',
     default_options : [
         'c_std=gnu11',
 
