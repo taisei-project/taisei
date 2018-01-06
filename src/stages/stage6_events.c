@@ -447,9 +447,9 @@ void elly_newton(Boss *b, int t) {
 		Color c = 0;
 
 		switch(tsrand() % 3) {
-			case 0: c = rgb(1.0, 0.0, 0.0); break;
+			case 0: c = rgb(0.8, 0.0, 0.1); break;
 			case 1: c = rgb(0.4, 0.6, 0.0); break;
-			case 2: c = rgb(0.8, 0.4, 0.0); break;
+			case 2: c = rgb(0.8, 0.6, 0.0); break;
 		}
 
 		PROJECTILE(
