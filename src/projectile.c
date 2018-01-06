@@ -415,7 +415,7 @@ Projectile* spawn_projectile_clear_effect(Projectile *proj) {
 	return spawn_projectile_death_effect(proj);
 }
 
-bool clear_projectile(Projectile *proj, bool force, bool now) {
+bool clear_projectile(Projectile **projlist, Projectile *proj, bool force, bool now) {
 	if(!force && !projectile_is_clearable(proj)) {
 		return false;
 	}
@@ -426,11 +426,12 @@ bool clear_projectile(Projectile *proj, bool force, bool now) {
 		}
 
 		spawn_projectile_clear_effect(proj);
+		delete_projectile(projlist, proj);
 	} else {
 		proj->type = DeadProj;
 	}
 
-	return false;
+	return true;
 }
 
 void process_projectiles(Projectile **projs, bool collision) {
@@ -447,7 +448,10 @@ void process_projectiles(Projectile **projs, bool collision) {
 		if(proj->type == DeadProj && killed < 5) {
 			killed++;
 			action = ACTION_DESTROY;
-			clear_projectile(proj, true, true);
+
+			if(clear_projectile(projs, proj, true, true)) {
+				continue;
+			}
 		}
 
 		if(collision) {

@@ -188,7 +188,7 @@ void delete_lasers(void) {
 	list_foreach(&global.lasers, _delete_laser, NULL);
 }
 
-bool clear_laser(Laser *l, bool force, bool now) {
+bool clear_laser(Laser **laserlist, Laser *l, bool force, bool now) {
 	if(!force && l->unclearable) {
 		return false;
 	}

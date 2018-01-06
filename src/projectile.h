@@ -148,7 +148,7 @@ bool projectile_is_clearable(Projectile *p);
 Projectile* spawn_projectile_collision_effect(Projectile *proj);
 Projectile* spawn_projectile_clear_effect(Projectile *proj);
 
-bool clear_projectile(Projectile *proj, bool force, bool now);
+bool clear_projectile(Projectile **projlist, Projectile *proj, bool force, bool now);
 
 int linear(Projectile *p, int t);
 int accelerated(Projectile *p, int t);
