@@ -204,7 +204,7 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 	glPushMatrix();
 	glRotatef(carg(e->pos-global.plr.pos)*180/M_PI+90,0,0,1);
 
-	glScalef(80*fade,VIEWPORT_H,1);
+	glScalef(120*fade,VIEWPORT_H*1.5,1);
 	glTranslatef(0,-0.5,0);
 	marisa_common_masterspark_draw(BOMB_RECOVERY*tb);
 
