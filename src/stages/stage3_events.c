@@ -857,6 +857,7 @@ static int wriggle_spell_slave(Enemy *e, int time) {
 			.rule = timeout,
 			.args = { 120 },
 			.color_transform_rule = proj_clrtransform_particle,
+			.flags = PFLAG_NOCLEAR | PFLAG_NOCOLLISIONEFFECT,
 		);
 	}
 
