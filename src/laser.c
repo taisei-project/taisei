@@ -291,7 +291,7 @@ int collision_laser_curve(Laser *l) {
 		if(collision_line(last, pos, global.plr.pos, s*l->width*0.5))
 			return 1;
 		else if(!(global.frames % 5) && global.frames - abs(global.plr.recovery) > 0 && collision_line(last, pos, global.plr.pos, l->width*1.8))
-			player_graze(&global.plr, pos, 7);
+			player_graze(&global.plr, pos, 7, 5);
 
 		last = pos;
 	}

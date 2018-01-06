@@ -136,7 +136,7 @@ void player_move(Player*, complex delta);
 
 void player_realdeath(Player*);
 void player_death(Player*);
-void player_graze(Player*, complex, int);
+void player_graze(Player *plr, complex pos, int pts, int effect_intensity);
 
 void player_event(Player *plr, uint8_t type, uint16_t value, bool *out_useful, bool *out_cheat);
 bool player_event_with_replay(Player *plr, uint8_t type, uint16_t value);

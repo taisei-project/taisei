@@ -695,13 +695,13 @@ void player_fix_input(Player *plr) {
 	}
 }
 
-void player_graze(Player *plr, complex pos, int pts) {
+void player_graze(Player *plr, complex pos, int pts, int effect_intensity) {
 	plr->graze++;
 
-	player_add_points(&global.plr, pts);
+	player_add_points(plr, pts);
 	play_sound("graze");
 
-	int i = 0; for(i = 0; i < 5; ++i) {
+	for(int i = 0; i < effect_intensity; ++i) {
 		tsrand_fill(3);
 
 		PARTICLE(
@@ -709,7 +709,7 @@ void player_graze(Player *plr, complex pos, int pts) {
 			.pos = pos,
 			.rule = timeout_linear,
 			.draw_rule = Shrink,
-			.args = { 5 + 5 * afrand(2), (1+afrand(0)*5)*cexp(I*tsrand_a(1)) },
+			.args = { 5 + 5 * afrand(2), (1+afrand(0)*5)*cexp(I*M_PI*2*afrand(1)) },
 			.type = PlrProj,
 		);
 	}

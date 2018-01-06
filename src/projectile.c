@@ -256,7 +256,13 @@ void apply_projectile_collision(Projectile **projlist, Projectile *p, ProjCollis
 
 		case PCOL_PLAYER_GRAZE: {
 			p->grazed = true;
-			player_graze(col->entity, col->location, 50);
+
+			if(p->flags & PFLAG_GRAZESPAM) {
+				player_graze(col->entity, col->location, 10, 2);
+			} else {
+				player_graze(col->entity, col->location, 50, 5);
+			}
+
 			break;
 		}
 

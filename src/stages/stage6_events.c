@@ -1377,9 +1377,6 @@ static int ricci_proj(Projectile *p, int t) {
 	if(t < 0)
 		return 1;
 
-	if(t == 1)
-		p->grazed = true;
-
 	if(!global.boss)
 		return ACTION_DESTROY;
 
@@ -1442,7 +1439,7 @@ void elly_ricci(Boss *b, int t) {
 			complex pos = 0.5 * w/(float)c + fmod(w/(float)c*(i+0.5*_i),w) + (VIEWPORT_H+10)*I;
 
 			PROJECTILE("ball", pos, rgba(0.5, 0.0, 0,0), ricci_proj, { -v*I },
-				.flags = PFLAG_DRAWADD | PFLAG_NOSPAWNZOOM | PFLAG_NOGRAZE | PFLAG_NOCLEAR,
+				.flags = PFLAG_DRAWADD | PFLAG_NOSPAWNZOOM | PFLAG_NOCLEAR | PFLAG_GRAZESPAM,
 				.max_viewport_dist = SAFE_RADIUS_MAX,
 			);
 		}
