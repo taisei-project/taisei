@@ -355,7 +355,6 @@ static void elly_clap(Boss *b, int claptime) {
 	aniplayer_queue_pro(&b->ani,2,3,5,0,5);
 }
 
-
 int scythe_newton(Enemy *e, int t) {
 	if(t < 0) {
 		scythe_common(e, t);
@@ -378,36 +377,55 @@ int scythe_newton(Enemy *e, int t) {
 
 
 	FROM_TO(100, 10000, 3) {
-		float f = carg(global.plr.pos-e->pos);
 		Projectile *p;
 		for(p = global.projs; p; p = p->next) {
-			if(p->type == EnemyProj && cabs(p->pos-e->pos) < 50 && cabs(global.plr.pos-e->pos) > 50 && p->args[2] == 0) {
+			if(
+				p->type == EnemyProj &&
+				cabs(p->pos-e->pos) < 50 &&
+				cabs(global.plr.pos-e->pos) > 50 &&
+				p->args[2] == 0 &&
+				p->tex != get_tex("proj/apple")
+			) {
 				e->args[3] += 1;
 				//p->args[0] /= 2;
 				play_sound_ex("redirect",4,false);
-				if(global.diff > D_Normal && (int)(creal(e->args[3])+0.5) % (15-2*global.diff) == 0) {
-					p->args[0] = 1.5*cexp(I*f);
-					p->color = rgb(1,0,0.5);
-					p->tex = get_tex("proj/bullet");
-					p->args[1] = 0.005*I;
-				} else {
-					p->birthtime=global.frames;
-					p->pos0=p->pos;
-					p->args[0] = (2+0.125*global.diff)*cexp(I*2*M_PI*frand());
-					p->color = rgba(frand(), 0, 1, 0.8);
-				}
+				p->birthtime=global.frames;
+				p->pos0=p->pos;
+				p->args[0] = (2+0.125*global.diff)*cexp(I*2*M_PI*frand());
+				p->color = rgba(frand(), 0, 1, 0.8);
 				p->args[2] = 1;
 			}
 		}
 	}
 
+	/*
 	FROM_TO(100, 10000, 5-global.diff/2) {
 		if(cabs(global.plr.pos-e->pos) > 50)
 			PROJECTILE("rice", e->pos, rgb(0.3, 1, 0.8), linear, { I });
 	}
+	*/
 
 	scythe_common(e, t);
 	return 1;
+}
+
+static void apple_clrtransform(Projectile *p, int t, Color c, ColorTransform *out) {
+	memcpy(out, (&(ColorTransform) {
+		.R[1] = rgba(0.00, 0.75, 0.00, 0.00),
+		.G[1] = c & ~CLRMASK_A,
+		.B[1] = rgba(1, 1, 1, 0),
+		.A[1] = c &  CLRMASK_A,
+	}), sizeof(ColorTransform));
+}
+
+static int newton_apple(Projectile *p, int t) {
+	int r = accelerated(p, t);
+
+	if(t >= 0) {
+		p->angle += M_PI/16 * sin(creal(p->args[2]) + t / 30.0);
+	}
+
+	return r;
 }
 
 void elly_newton(Boss *b, int t) {
@@ -422,6 +440,31 @@ void elly_newton(Boss *b, int t) {
 	AT(EVENT_DEATH) {
 		global.enemies->birthtime = global.frames;
 		global.enemies->logic_rule = scythe_reset;
+	}
+
+	FROM_TO(30 + 60 * (D_Lunatic - global.diff), 10000000, 30 - 6 * global.diff) {
+		Texture *apple = get_tex("proj/apple");
+		Color c = 0;
+
+		switch(tsrand() % 3) {
+			case 0: c = rgb(1.0, 0.0, 0.0); break;
+			case 1: c = rgb(0.4, 0.6, 0.0); break;
+			case 2: c = rgb(0.8, 0.4, 0.0); break;
+		}
+
+		PROJECTILE(
+			.texture_ptr = apple,
+			.pos = clamp(creal(global.plr.pos) + nfrand() * 64, apple->w*0.5, VIEWPORT_W - apple->w*0.5),
+			.rule = newton_apple,
+			.args = {
+				0, 0.05*I, M_PI*2*frand()
+			},
+			.color = c,
+			.color_transform_rule = apple_clrtransform,
+			.priority_override = -28*28+1, // force it to be drawn above the balls
+		);
+
+		play_sound("shot3");
 	}
 
 	FROM_TO(0, 100000, 20+10*(global.diff>D_Normal)) {

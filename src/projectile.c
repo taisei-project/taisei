@@ -101,6 +101,11 @@ static void projectile_size(Projectile *p, double *w, double *h) {
 
 int projectile_prio_func(List *vproj) {
 	Projectile *proj = (Projectile*)vproj;
+
+	if(proj->priority_override) {
+		return proj->priority_override;
+	}
+
 	return -rint(projectile_rect_area(proj));
 }
 
@@ -128,6 +133,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	p->max_viewport_dist = args->max_viewport_dist;
 	p->size = args->size;
 	p->flags = args->flags;
+	p->priority_override = args->priority_override;
 
 	memcpy(p->args, args->args, sizeof(p->args));
 

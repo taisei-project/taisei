@@ -69,6 +69,7 @@ struct Projectile {
 	float angle;
 	ProjType type;
 	int max_viewport_dist;
+	int priority_override;
 	ProjFlags flags;
 	bool grazed;
 
@@ -93,6 +94,7 @@ typedef struct ProjArgs {
 	complex size;
 	int max_viewport_dist;
 	ListInsertionRule insertion_rule;
+	int priority_override;
 } ProjArgs;
 
 typedef enum ProjCollisionType {
