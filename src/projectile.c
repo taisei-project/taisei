@@ -439,6 +439,18 @@ int trace_projectile(Projectile *p, ProjCollisionResult *out_col, ProjCollisionT
 	return t;
 }
 
+bool projectile_is_clearable(Projectile *p) {
+	if(p->type == DeadProj) {
+		return true;
+	}
+
+	if(p->type == EnemyProj || p->type == FakeProj) {
+		return (p->flags & PFLAG_NOCLEAR) != PFLAG_NOCLEAR;
+	}
+
+	return false;
+}
+
 int linear(Projectile *p, int t) { // sure is physics in here; a[0]: velocity
 	if(t < 0)
 		return 1;

@@ -1169,7 +1169,7 @@ int baryon_broglie(Enemy *e, int t) {
 				attack_num,
 				hue
 			},
-			.flags = PFLAG_DRAWADD,
+			.flags = PFLAG_DRAWADD | PFLAG_NOCLEAR,
 			.angle = (2*M_PI*_i)/cnt + aim_angle,
 		);
 	}
@@ -1441,7 +1441,7 @@ void elly_ricci(Boss *b, int t) {
 			complex pos = 0.5 * w/(float)c + fmod(w/(float)c*(i+0.5*_i),w) + (VIEWPORT_H+10)*I;
 
 			PROJECTILE("ball", pos, rgba(0.5, 0.0, 0,0), ricci_proj, { -v*I },
-				.flags = PFLAG_DRAWADD | PFLAG_NOSPAWNZOOM | PFLAG_NOGRAZE,
+				.flags = PFLAG_DRAWADD | PFLAG_NOSPAWNZOOM | PFLAG_NOGRAZE | PFLAG_NOCLEAR,
 				.max_viewport_dist = SAFE_RADIUS_MAX,
 			);
 		}
@@ -1532,7 +1532,9 @@ int baryon_lhc(Enemy *e, int t) {
 
 		if(g == 2 || g == 5) {
 			play_sound_delayed("laser1",10,true,200);
-			create_laser(e->pos, 200, 300, rgb(0.1+0.9*(g>3),0,1-0.9*(g>3)), las_linear, lhc_laser_logic, (1-2*(g>3))*VIEWPORT_W*0.005, 200+30.0*I, add_ref(e), 0);
+
+			Laser *l = create_laser(e->pos, 200, 300, rgb(0.1+0.9*(g>3),0,1-0.9*(g>3)), las_linear, lhc_laser_logic, (1-2*(g>3))*VIEWPORT_W*0.005, 200+30.0*I, add_ref(e), 0);
+			l->unclearable = true;
 		}
 	}
 

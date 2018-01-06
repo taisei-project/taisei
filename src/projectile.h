@@ -51,6 +51,7 @@ typedef enum ProjFlags {
 	PFLAG_DRAWSUB = (1 << 1),
 	PFLAG_NOSPAWNZOOM = (1 << 2),
 	PFLAG_NOGRAZE = (1 << 3),
+	PFLAG_NOCLEAR = (1 << 4),
 } ProjFlags;
 
 struct Projectile {
@@ -138,6 +139,7 @@ void apply_projectile_collision(Projectile **projlist, Projectile *p, ProjCollis
 int trace_projectile(Projectile *p, ProjCollisionResult *out_col, ProjCollisionType stopflags, int timeofs);
 bool projectile_in_viewport(Projectile *proj);
 void process_projectiles(Projectile **projs, bool collision);
+bool projectile_is_clearable(Projectile *p);
 
 int linear(Projectile *p, int t);
 int accelerated(Projectile *p, int t);
