@@ -970,6 +970,7 @@ int broglie_particle(Projectile *p, int t) {
 		if(t == scattertime && p->type != DeadProj) {
 			p->type = EnemyProj;
 			p->draw_rule = ProjDraw;
+			p->flags &= ~(PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT);
 
 			double angle_ampl = creal(p->args[3]);
 			double angle_freq = cimag(p->args[3]);
@@ -1070,7 +1071,7 @@ int broglie_charge(Projectile *p, int t) {
 						(1 + 2 * ((global.diff - 1) / (double)(D_Lunatic - 1))) * M_PI/11 + s_freq*10*I
 					},
 					.draw_rule = ProjNoDraw,
-					.flags = PFLAG_DRAWADD,
+					.flags = PFLAG_DRAWADD | PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT,
 					.type = FakeProj,
 				);
 			}

@@ -415,7 +415,10 @@ bool clear_projectile(Projectile *proj, bool force, bool now) {
 	}
 
 	if(now) {
-		create_bpoint(proj->pos);
+		if(!(proj->flags & PFLAG_NOCLEARBONUS)) {
+			create_bpoint(proj->pos);
+		}
+
 		spawn_projectile_clear_effect(proj);
 	} else {
 		proj->type = DeadProj;
