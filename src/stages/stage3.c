@@ -281,8 +281,8 @@ static void stage3_update(void) {
 
 	FROM_TO(3300 + midboss_time, 3360 + midboss_time, 1) {
 		stgstate.tunnel_avel += 2 / 60.0;
-		stgstate.tunnel_side += 70 / 60.0;
-		stage_3d_context.cx[2] += (-30 - stage_3d_context.cx[2]) * 0.04;
+		stgstate.tunnel_side += 50 / 60.0;
+		stage_3d_context.cx[2] += (-20 - stage_3d_context.cx[2]) * 0.04;
 	}
 
 	FROM_TO(3600 + midboss_time, 3700 + midboss_time, 1) {
@@ -309,9 +309,10 @@ static void stage3_update(void) {
 	}
 
 	FROM_TO(4299 + midboss_time, 5299 + midboss_time, 1) {
-		stgstate.tunnel_side -= 90 / 1000.0;
+		stgstate.tunnel_side -= 70 / 1000.0;
 		stgstate.tunnel_updn -= 40 / 1000.0;
 		stgstate.clr_r -= 0.5 / 1000.0;
+		stgstate.clr_b += 0.2 / 1000.0;
 		stage_3d_context.crot[0] += 7 / 1000.0;
 		stgstate.fog_exp -= 1.5 / 1000.0;
 	}
