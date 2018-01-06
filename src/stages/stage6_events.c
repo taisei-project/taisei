@@ -1849,6 +1849,20 @@ static int elly_toe_boson_effect(Projectile *p, int t) {
 	return r;
 }
 
+static Color boson_color(int pos, int warps) {
+	float f = pos / 3.0;
+
+	int index = warps % 3;
+
+	switch(index) {
+		case 0: return mix_colors(rgb(1.0, 0.0, 0.0), rgb(1.0, 0.0, 0.5), f);
+		case 1: return mix_colors(rgb(0.0, 0.0, 1.0), rgb(0.5, 0.0, 1.0), f);
+		case 2: return mix_colors(rgb(1.0, 0.0, 1.0), rgb(0.0, 1.0, 1.0), f);
+	}
+
+	log_fatal("fix the switch (%i)", index);
+}
+
 static int elly_toe_boson(Projectile *p, int t) {
 	if(t < 0) {
 		return 1;
@@ -1905,18 +1919,19 @@ static int elly_toe_boson(Projectile *p, int t) {
 
 	p->pos += p->args[0];
 	complex prev_pos = p->pos;
+	int warps_left = creal(p->args[1]);
+	int warps_initial = cimag(p->args[1]);
 
 	if(wrap_around(&p->pos) != 0) {
-		p->args[1] += 1;
-
-		if(creal(p->args[1]) > 2.1) {
+		if(warps_left-- < 1) {
 			return ACTION_DESTROY;
 		}
+
+		p->args[1] = warps_left + warps_initial * I;
 
 		if(num_in_trail == 3) {
 			play_sound_ex("warp", 0, false);
 			// play_sound("redirect");
-
 		}
 
 		PARTICLE("myon", prev_pos, p->color, timeout,
@@ -1935,7 +1950,16 @@ static int elly_toe_boson(Projectile *p, int t) {
 			.angle = M_PI*2*frand(),
 		);
 
-		p->color = rgb(1.0-creal(p->args[1]),0,creal(p->args[1])+color_component(p->color,CLR_B));
+		// p->color = rgb(1.0 - warps_left, 0, warps_left + color_component(p->color,CLR_B));
+		/*
+		p->color = derive_color(
+			subtract_colors(rgb(1, 1, 1), p->color),
+			CLRMASK_A,
+			rgba(0, 0, 0, color_component(p->color, CLR_A))
+		);
+		*/
+
+		p->color = boson_color(num_in_trail, warps_initial - warps_left);
 
 		PARTICLE("stardust", p->pos, p->color, elly_toe_boson_effect,
 			.draw_rule = ScaleFade,
@@ -1949,13 +1973,13 @@ static int elly_toe_boson(Projectile *p, int t) {
 	float tLookahead = 40;
 	complex posLookahead = p->pos+p->args[0]*tLookahead;
 	complex dir = wrap_around(&posLookahead);
-	if(dir != 0 && t%3 == 0 && creal(p->args[1]) <= 1.1) {
+	if(dir != 0 && t%3 == 0 && warps_left > 0) {
 		complex pos0 = posLookahead - VIEWPORT_W/2*(1-creal(dir))-I*VIEWPORT_H/2*(1-cimag(dir));
 
 		// Re [a b^*] behaves like the 2D vector scalar product
 		float tOvershoot = creal(pos0*conj(dir))/creal(p->args[0]*conj(dir));
 		posLookahead -= p->args[0]*tOvershoot;
-		PARTICLE("lasercurve", posLookahead, rgb(1,0,0.5), timeout_linear,
+		PARTICLE("lasercurve", posLookahead, boson_color(num_in_trail, warps_initial - warps_left + 1), timeout_linear,
 				.draw_rule = Fade,
 				.args = { 10, p->args[0] },
 				.flags = PFLAG_DRAWADD,
@@ -1966,7 +1990,9 @@ static int elly_toe_boson(Projectile *p, int t) {
 	return 1;
 }
 
+#define HIGGSTIME 1700
 #define YUKAWATIME 2200
+#define SYMMETRYTIME HIGGSTIME+200
 
 static bool elly_toe_its_yukawatime(complex pos) {
 	int t = global.frames-global.boss->current->starttime;
@@ -1985,6 +2011,11 @@ static bool elly_toe_its_yukawatime(complex pos) {
 
 static int elly_toe_fermion_yukawa_effect(Projectile *p, int t) {
 	int r = timeout(p, t);
+
+	if(t == EVENT_DEATH) {
+		free_ref(p->args[3]);
+		return 1;
+	}
 
 	Projectile *master = REF(p->args[3]);
 
@@ -2056,14 +2087,25 @@ static int elly_toe_higgs(Projectile *p, int t) {
 			p->tex = get_tex("proj/rice");
 			p->args[3]=1;
 		}
-		p->args[1]*=1.01;
+		p->args[0]*=1.01;
 	} else if(p->args[3]) {
 		p->tex = get_tex("proj/flea");
 		p->args[3]=0;
 	}
 
-	return linear(p,t);
+	int global_time = global.frames - global.boss->current->starttime - HIGGSTIME;
+	int max_time = HIGGSTIME - SYMMETRYTIME;
+	double rotation = 0.5 * M_PI * max(0, (int)global.diff - D_Normal);
 
+	if(global_time > max_time) {
+		global_time = max_time;
+	}
+
+	complex vel = p->args[0] * cexp(I*rotation*global_time/(float)max_time);
+	p->pos = p->pos0 + t * vel;
+	p->angle = carg(vel);
+
+	return 1;
 }
 
 static complex elly_toe_laser_pos(Laser *l, float t) { // a[0]: direction, a[1]: type, a[2]: width
@@ -2109,8 +2151,61 @@ static complex elly_toe_laser_pos(Laser *l, float t) { // a[0]: direction, a[1]:
 	return 0;
 }
 
-#define LASER_EXTENT 4
+#define LASER_EXTENT (4+global.diff-D_Normal)
 #define LASER_LENGTH 40
+
+static int elly_toe_laser_particle_rule(Projectile *p, int t) {
+	if(t == EVENT_DEATH) {
+		free_ref(p->args[3]);
+		return 1;
+	}
+
+	if(t < 0) {
+		return 1;
+	}
+
+	if(t > creal(p->args[0])) {
+		return ACTION_DESTROY;
+	}
+
+	Laser *l = REF(p->args[3]);
+
+	if(!l) {
+		return ACTION_DESTROY;
+	}
+
+	p->pos = l->prule(l, 0);
+
+	return 1;
+}
+
+static void elly_toe_laser_particle(Laser *l, complex origin) {
+	Color c = multiply_colors(l->color, l->color);
+
+	PARTICLE("stardust", origin, c, elly_toe_laser_particle_rule,
+		.draw_rule = ScaleFade,
+		.args = { 30, 0, 2 * I, add_ref(l) },
+		.flags = PFLAG_DRAWADD,
+		.insertion_rule = proj_insert_colorprio,
+		.angle = M_PI*2*frand(),
+	);
+
+	PARTICLE("stain", origin, c, elly_toe_laser_particle_rule,
+		.draw_rule = ScaleFade,
+		.args = { 20, 0, 2 * I, add_ref(l) },
+		.flags = PFLAG_DRAWADD,
+		.insertion_rule = proj_insert_colorprio,
+		.angle = M_PI*2*frand(),
+	);
+
+	PARTICLE("lasercurve", origin, c, elly_toe_laser_particle_rule,
+		.draw_rule = ScaleFade,
+		.args = { 40, 0, 1, add_ref(l) },
+		.flags = PFLAG_DRAWADD,
+		.insertion_rule = proj_insert_colorprio,
+		.angle = M_PI*2*frand(),
+	);
+}
 
 static void elly_toe_laser_logic(Laser *l, int t) {
 	if(t == l->deathtime) {
@@ -2137,21 +2232,27 @@ static void elly_toe_laser_logic(Laser *l, int t) {
 			// I removed type 3 because
 		} while(newtype2 == -1 || newtype2 == 3 || newtype == 3);
 
+		complex origin = l->prule(l,t);
 		complex newdir = cexp(0.2*I*(1+frand()));
-		create_laser(l->prule(l,t),LASER_LENGTH,LASER_LENGTH,rgb(1,1,1),
+
+		Laser *l1 = create_laser(origin,LASER_LENGTH,LASER_LENGTH,rgb(1,1,1),
 			elly_toe_laser_pos,elly_toe_laser_logic,
 			l->args[0]*newdir,
 			newtype,
 			LASER_EXTENT,
 			0
 		);
-		create_laser(l->prule(l,t),LASER_LENGTH,LASER_LENGTH,rgb(1,1,1),
+
+		Laser *l2 = create_laser(origin,LASER_LENGTH,LASER_LENGTH,rgb(1,1,1),
 			elly_toe_laser_pos,elly_toe_laser_logic,
 			l->args[0]/newdir,
 			newtype2,
 			LASER_EXTENT,
 			0
 		);
+
+		elly_toe_laser_particle(l1, origin);
+		elly_toe_laser_particle(l2, origin);
 	}
 	l->pos+=I;
 }
@@ -2228,25 +2329,37 @@ void elly_theory(Boss *b, int time) {
 	}
 
 	int fermiontime = 1000;
-	int higgstime = 1700;
-	int symmetrytime = higgstime+200;
+	int higgstime = HIGGSTIME;
+	int symmetrytime = SYMMETRYTIME;
 	int yukawatime = YUKAWATIME;
 	int breaktime = yukawatime+400;
 
 	{
 		int count = 30;
 		int step = 1;
-		int phasetime = count * step - 1;
-		int delay = 0;
+		int start_time = 0;
+		int end_time = fermiontime + 1000;
+		int cycle_time = count * step - 1;
+		int cycle_step = 200;
+		int solo_cycles = (fermiontime - start_time) / cycle_step - global.diff + 1;
+		int warp_cycles = (higgstime - start_time) / cycle_step - 1;
 
-		if(time - delay <= phasetime) {
-			--count; // 31 at the first iteration to remove the spawn safe spot
-			phasetime -= step;
+		if(time - start_time <= cycle_time) {
+			--count; // get rid of the spawn safe spot on first cycle
+			cycle_time -= step;
 		}
 
-		FROM_TO_INT(delay, fermiontime+1000, 200, phasetime, step) {
+		FROM_TO_INT(start_time, end_time, cycle_step, cycle_time, step) {
 			play_sound("shot2");
+
 			int pnum = _ni;
+			int num_warps = 0;
+
+			if(_i < solo_cycles) {
+				num_warps = global.diff;
+			} else if(_i < warp_cycles && global.diff > D_Normal) {
+				num_warps = 1;
+			}
 
 			// The fact that there are 4 bullets per trail is actually one of the physics references.
 			for(int i = 0; i < 4; i++) {
@@ -2256,13 +2369,13 @@ void elly_theory(Boss *b, int time) {
 				dir *= cexp(I*0.15*sign(creal(dir))*sin(_i));
 
 				complex bpos = b->pos + 18 * dir * i;
-				Color bclr = rgb(2.0, 0.0, 0.2 * (3 - i));
+				Color bclr = boson_color(i, 0);
 
 				PROJECTILE("rice", b->pos, bclr,
 					.rule = elly_toe_boson,
 					.args = {
 						2.5*dir,
-						2*(time > fermiontime-124), // make the pattern easier in the later phases
+						num_warps * (1 + I),
 						42*2 - step * _ni + i*I, // real: activation delay, imag: pos in trail (0 is furtherst from head)
 						bpos,
 					},
@@ -2347,7 +2460,14 @@ void elly_theory(Boss *b, int time) {
 	FROM_TO(higgstime,yukawatime+100,4+4*(time>symmetrytime)) {
 		play_loop("shot1_loop");
 
-		int arms = 4;
+		int arms;
+
+		switch(global.diff) {
+			case D_Hard:    arms = 5; break;
+			case D_Lunatic: arms = 7; break;
+			default:        arms = 4; break;
+		}
+
 		for(int dir = 0; dir < 2; dir++) {
 			for(int arm = 0; arm < arms; arm++) {
 				complex v = -2*I*cexp(I*M_PI/(arms+1)*(arm+1)+0.1*I*sin(time*0.1+arm));
@@ -2381,7 +2501,7 @@ void elly_theory(Boss *b, int time) {
 		}
 	}
 
-	FROM_TO(breaktime+35,breaktime+10000,14) {
+	FROM_TO(breaktime+35, breaktime+10000, 14) {
 		play_sound("redirect");
 		// play_sound("shot_special1");
 
