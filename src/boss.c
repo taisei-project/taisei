@@ -511,7 +511,7 @@ void boss_finish_current_attack(Boss *boss) {
 	aniplayer_reset(&boss->ani);
 
 	if(t != AT_Move) {
-		stage_clear_hazards(true);
+		stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
 	}
 
 	if(ATTACK_IS_SPELL(t)) {
@@ -635,7 +635,7 @@ void process_boss(Boss **pboss) {
 			// XXX: do we actually need to call this for AT_Move attacks at all?
 			//      it should be harmless, but probably unnecessary.
 			//      i'll be conservative and leave it in for now.
-			stage_clear_hazards(true);
+			stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
 		}
 	}
 
@@ -729,7 +729,7 @@ void boss_death(Boss **boss) {
 	}
 
 	if(!fleed) {
-		stage_clear_hazards(true);
+		stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
 	}
 
 	free_boss(*boss);
@@ -791,7 +791,7 @@ void boss_start_attack(Boss *b, Attack *a) {
 		player_cancel_bomb(&global.plr, a->starttime - global.frames);
 	}
 
-	stage_clear_hazards(true);
+	stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
 }
 
 Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule) {

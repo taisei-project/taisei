@@ -558,7 +558,7 @@ static int splitcard_elly(Projectile *p, int t) {
 		p->color = derive_color(p->color, CLRMASK_B, rgb(0,0,-color_component(p->color,CLR_B)));
 		play_sound_ex("redirect", 10, false);
 	}
-	
+
 	return asymptotic(p, t);
 }
 
@@ -1366,7 +1366,7 @@ static int scythe_post_mid(Enemy *e, int t) {
 	}
 
 	FROM_TO(fleetime - 120, fleetime, 1) {
-		stage_clear_hazards(false);
+		stage_clear_hazards(CLEAR_HAZARDS_ALL);
 	}
 
 	scythe_common(e, t);

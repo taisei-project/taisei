@@ -114,10 +114,18 @@ void stage_finish(int gameover);
 void stage_pause(void);
 void stage_gameover(void);
 
-void stage_clear_hazards(bool force);
-void stage_clear_hazards_instantly(bool force);
-
 void stage_start_bgm(const char *bgm);
+
+typedef enum ClearHazardsFlags {
+	CLEAR_HAZARDS_BULLETS = (1 << 0),
+	CLEAR_HAZARDS_LASERS = (1 << 1),
+	CLEAR_HAZARDS_FORCE = (1 << 2),
+	CLEAR_HAZARDS_NOW = (1 << 3),
+
+	CLEAR_HAZARDS_ALL = CLEAR_HAZARDS_BULLETS | CLEAR_HAZARDS_LASERS,
+} ClearHazardsFlags;
+
+void stage_clear_hazards(ClearHazardsFlags flags);
 
 #include "stages/stage1.h"
 #include "stages/stage2.h"

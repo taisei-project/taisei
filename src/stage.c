@@ -454,34 +454,16 @@ static void stage_logic(void) {
 	}
 }
 
-void stage_clear_hazards(bool force) {
-	for(Projectile *p = global.projs; p; p = p->next) {
-		if(force || projectile_is_clearable(p)) {
-			p->type = DeadProj;
+void stage_clear_hazards(ClearHazardsFlags flags) {
+	if(flags & CLEAR_HAZARDS_BULLETS) {
+		for(Projectile *p = global.projs; p; p = p->next) {
+			clear_projectile(p, flags & CLEAR_HAZARDS_FORCE, flags & CLEAR_HAZARDS_NOW);
 		}
 	}
 
-	for(Laser *l = global.lasers; l; l = l->next) {
-		if(force || !l->unclearable) {
-			l->dead = true;
-		}
-	}
-}
-
-void stage_clear_hazards_instantly(bool force) {
-	for(Projectile *p = global.projs, *next; p; p = next) {
-		next = p->next;
-
-		if(force || projectile_is_clearable(p)) {
-			create_bpoint(p->pos);
-			delete_projectile(&global.projs, p);
-		}
-	}
-
-	// TODO: clear these instantly as well
-	for(Laser *l = global.lasers; l; l = l->next) {
-		if(force || !l->unclearable) {
-			l->dead = true;
+	if(flags & CLEAR_HAZARDS_LASERS) {
+		for(Laser *l = global.lasers; l; l = l->next) {
+			clear_laser(l, flags & CLEAR_HAZARDS_FORCE, flags & CLEAR_HAZARDS_NOW);
 		}
 	}
 }

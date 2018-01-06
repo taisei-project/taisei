@@ -188,6 +188,16 @@ void delete_lasers(void) {
 	list_foreach(&global.lasers, _delete_laser, NULL);
 }
 
+bool clear_laser(Laser *l, bool force, bool now) {
+	if(!force && l->unclearable) {
+		return false;
+	}
+
+	// TODO: implement "now"
+	l->dead = true;
+	return true;
+}
+
 void process_lasers(void) {
 	Laser *laser = global.lasers, *del = NULL;
 

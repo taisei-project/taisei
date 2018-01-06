@@ -375,6 +375,55 @@ bool projectile_in_viewport(Projectile *proj) {
 		  || cimag(proj->pos) + h/2 + e < 0 || cimag(proj->pos) - h/2 - e > VIEWPORT_H);
 }
 
+static Projectile* spawn_projectile_death_effect(Projectile *proj) {
+	if(proj->tex == NULL) {
+		return NULL;
+	}
+
+	return PARTICLE(
+		.texture_ptr = proj->tex,
+		.pos = proj->pos,
+		.color = proj->color,
+		.flags = proj->flags,
+		.color_transform_rule = proj->color_transform_rule,
+		.rule = timeout_linear,
+		.draw_rule = DeathShrink,
+		.args = { 10, 5*cexp(proj->angle*I) },
+		.type = proj->type >= PlrProj ? PlrProj : Particle,
+	);
+}
+
+Projectile* spawn_projectile_collision_effect(Projectile *proj) {
+	if(proj->flags & PFLAG_NOCOLLISIONEFFECT) {
+		return NULL;
+	}
+
+	return spawn_projectile_death_effect(proj);
+}
+
+Projectile* spawn_projectile_clear_effect(Projectile *proj) {
+	if(proj->flags & PFLAG_NOCLEAREFFECT) {
+		return NULL;
+	}
+
+	return spawn_projectile_death_effect(proj);
+}
+
+bool clear_projectile(Projectile *proj, bool force, bool now) {
+	if(!force && !projectile_is_clearable(proj)) {
+		return false;
+	}
+
+	if(now) {
+		create_bpoint(proj->pos);
+		spawn_projectile_clear_effect(proj);
+	} else {
+		proj->type = DeadProj;
+	}
+
+	return false;
+}
+
 void process_projectiles(Projectile **projs, bool collision) {
 	ProjCollisionResult col = { 0 };
 
@@ -389,24 +438,14 @@ void process_projectiles(Projectile **projs, bool collision) {
 		if(proj->type == DeadProj && killed < 5) {
 			killed++;
 			action = ACTION_DESTROY;
-			create_bpoint(proj->pos);
+			clear_projectile(proj, true, true);
 		}
 
 		if(collision) {
 			calc_projectile_collision(proj, &col);
 
 			if(col.fatal && col.type != PCOL_VOID) {
-				PARTICLE(
-					.texture_ptr = proj->tex,
-					.pos = proj->pos,
-					.color = proj->color,
-					.flags = proj->flags,
-					.color_transform_rule = proj->color_transform_rule,
-					.rule = timeout_linear,
-					.draw_rule = DeathShrink,
-					.args = { 10, 5*cexp(proj->angle*I) },
-					.type = proj->type >= PlrProj ? PlrProj : Particle,
-				);
+				spawn_projectile_collision_effect(proj);
 			}
 		} else {
 			memset(&col, 0, sizeof(col));

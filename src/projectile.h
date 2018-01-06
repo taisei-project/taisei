@@ -52,6 +52,8 @@ typedef enum ProjFlags {
 	PFLAG_NOSPAWNZOOM = (1 << 2),
 	PFLAG_NOGRAZE = (1 << 3),
 	PFLAG_NOCLEAR = (1 << 4),
+	PFLAG_NOCLEAREFFECT = (1 << 5),
+	PFLAG_NOCOLLISIONEFFECT = (1 << 6),
 } ProjFlags;
 
 struct Projectile {
@@ -140,6 +142,11 @@ int trace_projectile(Projectile *p, ProjCollisionResult *out_col, ProjCollisionT
 bool projectile_in_viewport(Projectile *proj);
 void process_projectiles(Projectile **projs, bool collision);
 bool projectile_is_clearable(Projectile *p);
+
+Projectile* spawn_projectile_collision_effect(Projectile *proj);
+Projectile* spawn_projectile_clear_effect(Projectile *proj);
+
+bool clear_projectile(Projectile *proj, bool force, bool now);
 
 int linear(Projectile *p, int t);
 int accelerated(Projectile *p, int t);

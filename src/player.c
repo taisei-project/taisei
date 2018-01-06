@@ -60,7 +60,7 @@ void player_free(Player *plr) {
 
 static void player_full_power(Player *plr) {
 	play_sound("full_power");
-	stage_clear_hazards(false);
+	stage_clear_hazards(CLEAR_HAZARDS_ALL);
 	stagetext_add("Full Power!", VIEWPORT_W * 0.5 + VIEWPORT_H * 0.33 * I, AL_Center, &_fonts.mainmenu, rgb(1, 1, 1), 0, 60, 20, 20);
 }
 
@@ -184,7 +184,7 @@ void player_logic(Player* plr) {
 		plr->bomb_fragments = 0;
 		plr->continues_used += 1;
 		player_set_power(plr, 0);
-		stage_clear_hazards(false);
+		stage_clear_hazards(CLEAR_HAZARDS_ALL);
 		spawn_items(plr->deathpos, Power, (int)ceil(PLR_MAX_POWER/(double)POWER_VALUE), NULL);
 	}
 
@@ -193,7 +193,7 @@ void player_logic(Player* plr) {
 	if(plr->deathtime < -1) {
 		plr->deathtime++;
 		plr->pos -= I;
-		stage_clear_hazards_instantly(false);
+		stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
 		return;
 	}
 
@@ -210,7 +210,7 @@ void player_logic(Player* plr) {
 	if(global.frames == plr->deathtime) {
 		player_realdeath(plr);
 	} else if(plr->deathtime > global.frames) {
-		stage_clear_hazards_instantly(false);
+		stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
 	}
 
 	if(global.frames - plr->recovery < 0) {
@@ -234,7 +234,7 @@ void player_logic(Player* plr) {
 			boss_damage(global.boss, 30);
 		}
 
-		stage_clear_hazards(false);
+		stage_clear_hazards(CLEAR_HAZARDS_ALL);
 		player_fail_spell(plr);
 	}
 }
@@ -245,7 +245,7 @@ bool player_bomb(Player *plr) {
 
 	if(global.frames - plr->recovery >= 0 && (plr->bombs > 0 || plr->iddqd) && global.frames - plr->respawntime >= 60) {
 		player_fail_spell(plr);
-		stage_clear_hazards(false);
+		stage_clear_hazards(CLEAR_HAZARDS_ALL);
 		plr->mode->procs.bomb(plr);
 		plr->bombs--;
 
@@ -333,7 +333,7 @@ void player_realdeath(Player *plr) {
 	plr->deathpos = plr->pos;
 	plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I+30.0*I;
 	plr->recovery = -(global.frames + DEATH_DELAY + 150);
-	stage_clear_hazards(false);
+	stage_clear_hazards(CLEAR_HAZARDS_ALL);
 
 	player_fail_spell(plr);
 
@@ -373,7 +373,7 @@ void player_death(Player *plr) {
 			);
 		}
 
-		stage_clear_hazards(false);
+		stage_clear_hazards(CLEAR_HAZARDS_ALL);
 
 		PARTICLE(
 			.texture = "blast",
