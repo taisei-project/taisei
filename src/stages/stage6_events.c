@@ -325,7 +325,7 @@ int scythe_reset(Enemy *e, int t) {
 	if(t == 1)
 		e->args[1] = fmod(creal(e->args[1]), 2*M_PI) + I*cimag(e->args[1]);
 
-	GO_TO(e, BOSS_DEFAULT_GO_POS, 0.02);
+	GO_TO(e, BOSS_DEFAULT_GO_POS, 0.05);
 	e->args[2] = max(0.6, creal(e->args[2])-0.01*t);
 	e->args[1] += (0.19-creal(e->args[1]))*0.05;
 	e->args[1] = creal(e->args[1]) + I*0.9*cimag(e->args[1]);
@@ -750,16 +750,29 @@ void BaryonCenter(Enemy *e, int t, bool render) {
 	}
 }
 
-int baryon_unfold(Enemy *e, int t) {
+int baryon_unfold(Enemy *baryon, int t) {
 	if(t < 0)
 		return 1; // not catching death for references! because there will be no death!
 
 	TIMER(&t);
-	FROM_TO(0, 100, 1)
-		e->pos += e->args[0];
 
-	AT(100)
-		e->pos0 = e->pos;
+	int extent = 100;
+
+	FROM_TO(0, extent, 1) {
+		for(Enemy *e = global.enemies; e; e = e->next) {
+			if(e->visual_rule == BaryonCenter) {
+				float f = t / (float)extent;
+				float x = f;
+				float g = sin(2 * M_PI * log(log(x + 1) + 1));
+				float a = g * pow(1 - x, 2);
+				f = 1 - pow(1 - f, 10) + a;
+
+				baryon->pos = baryon->pos0 = e->pos + baryon->args[0] * f * extent;
+				return 1;
+			}
+		}
+	}
+
 	return 1;
 }
 
@@ -803,6 +816,26 @@ int scythe_explode(Enemy *e, int t) {
 	return 1;
 }
 
+void elly_spawn_baryons(complex pos) {
+	int i;
+	Enemy *e, *last = NULL, *first = NULL, *middle = NULL;
+
+	for(i = 0; i < 6; i++) {
+		e = create_enemy3c(pos, ENEMY_IMMUNE, Baryon, baryon_unfold, 1.5*cexp(2.0*I*M_PI/6*i), i != 0 ? add_ref(last) : 0, i);
+
+		if(i == 0) {
+			first = e;
+		} else if(i == 3) {
+			middle = e;
+		}
+
+		last = e;
+	}
+
+	first->args[1] = add_ref(last);
+	create_enemy2c(pos, ENEMY_IMMUNE, BaryonCenter, baryon_center, 0, add_ref(first) + I*add_ref(middle));
+}
+
 void elly_paradigm_shift(Boss *b, int t) {
 	if(global.stage->type == STAGE_SPELL) {
 		GO_TO(b, BOSS_DEFAULT_GO_POS, 0.1)
@@ -831,22 +864,7 @@ void elly_paradigm_shift(Boss *b, int t) {
 			stagetext_add("Paradigm Shift!", VIEWPORT_W/2+I*(VIEWPORT_H/2+64), AL_Center, &_fonts.mainmenu, rgb(1, 1, 1), 0, 120, 10, 30);
 		}
 
-		int i;
-		Enemy *e, *last = NULL, *first = NULL, *middle = NULL;
-
-		for(i = 0; i < 6; i++) {
-			e = create_enemy3c(b->pos, ENEMY_IMMUNE, Baryon, baryon_unfold, 1.5*cexp(2.0*I*M_PI/6*i), i != 0 ? add_ref(last) : 0, i);
-			if(i == 0)
-				first = e;
-			else if(i == 3)
-				middle = e;
-
-			last = e;
-		}
-
-		first->args[1] = add_ref(last);
-
-		create_enemy2c(b->pos, ENEMY_IMMUNE, BaryonCenter, baryon_center, 0, add_ref(first) + I*add_ref(middle));
+		elly_spawn_baryons(b->pos);
 	}
 
 	if(t > 120)

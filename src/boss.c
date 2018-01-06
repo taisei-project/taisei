@@ -824,14 +824,30 @@ Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 }
 
 void boss_generic_move(Boss *b, int time) {
-	if(b->current->info->pos_dest != BOSS_NOMOVE) {
-		GO_TO(b, b->current->info->pos_dest, 0.1)
+	Attack *atck = b->current;
+
+	if(atck->info->pos_dest == BOSS_NOMOVE) {
+		return;
 	}
+
+	if(time == EVENT_DEATH) {
+		b->pos = atck->info->pos_dest;
+		return;
+	}
+
+	// because GO_TO is unreliable and linear is just not hip and cool enough
+
+	float f = (time + ATTACK_START_DELAY) / ((float)atck->timeout + ATTACK_START_DELAY);
+	float x = f;
+	float a = 0.3;
+	f = 1 - pow(f - 1, 4);
+	f = f * (1 + a * pow(1 - x, 2));
+	b->pos = atck->info->pos_dest * f + BOSS_DEFAULT_SPAWN_POS * (1 - f);
 }
 
 Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move) {
 	if(move) {
-		boss_add_attack(boss, AT_Move, "Generic Move", 1, 0, boss_generic_move, NULL)->info = info;
+		boss_add_attack(boss, AT_Move, "Generic Move", 0.5, 0, boss_generic_move, NULL)->info = info;
 	}
 
 	Attack *a = boss_add_attack(boss, info->type, info->name, info->timeout, info->hp, info->rule, info->draw_rule);
