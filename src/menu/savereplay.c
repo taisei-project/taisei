@@ -16,8 +16,7 @@
 #include "plrmodes.h"
 #include "common.h"
 
-void save_rpy(MenuData *menu, void *a) {
-	Replay *rpy = &global.replay;
+static void do_save_replay(Replay *rpy) {
 	char strtime[128], name[128];
 	time_t rawtime;
 	struct tm * timeinfo;
@@ -40,7 +39,11 @@ void save_rpy(MenuData *menu, void *a) {
 	replay_save(rpy, name);
 }
 
-void draw_saverpy_menu(MenuData *m) {
+static void save_rpy(MenuData *menu, void *a) {
+	do_save_replay(&global.replay);
+}
+
+static void draw_saverpy_menu(MenuData *m) {
 	int i;
 
 	draw_options_menu_bg(m);
@@ -75,7 +78,7 @@ void draw_saverpy_menu(MenuData *m) {
 	glPopMatrix();
 }
 
-bool savepry_input_handler(SDL_Event *event, void *arg) {
+static bool savepry_input_handler(SDL_Event *event, void *arg) {
 	if(event->type == MAKE_TAISEI_EVENT(TE_MENU_CURSOR_LEFT)) {
 		event->type = MAKE_TAISEI_EVENT(TE_MENU_CURSOR_UP);
 	} else if(event->type == MAKE_TAISEI_EVENT(TE_MENU_CURSOR_RIGHT)) {
@@ -85,7 +88,7 @@ bool savepry_input_handler(SDL_Event *event, void *arg) {
 	return false;
 }
 
-void saverpy_menu_input(MenuData *menu) {
+static void saverpy_menu_input(MenuData *menu) {
 	events_poll((EventHandler[]){
 		{ .proc = savepry_input_handler, .arg = menu },
 		{ .proc = menu_input_handler, .arg = menu },
@@ -102,4 +105,26 @@ void create_saverpy_menu(MenuData *m) {
 
 	add_menu_entry(m, "Yes", save_rpy, NULL);
 	add_menu_entry(m, "No", menu_commonaction_close, NULL);
+}
+
+void ask_save_replay(void) {
+	assert(global.replay_stage != NULL);
+
+	switch(config_get_int(CONFIG_SAVE_RPY)) {
+		case 0: {
+			break;
+		}
+
+		case 1: {
+			do_save_replay(&global.replay);
+			break;
+		}
+
+		case 2: {
+			MenuData m;
+			create_saverpy_menu(&m);
+			menu_loop(&m);
+			break;
+		}
+	}
 }

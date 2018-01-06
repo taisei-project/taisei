@@ -15,6 +15,7 @@
 #include "audio.h"
 #include "stage.h"
 #include "menu/mainmenu.h"
+#include "menu/savereplay.h"
 #include "gamepad.h"
 #include "resource/bgm.h"
 #include "progress.h"
@@ -281,6 +282,7 @@ int main(int argc, char **argv) {
 		assert(stg); // properly checked before this
 
 		global.diff = stg->difficulty;
+		global.is_practice_mode = (stg->type != STAGE_EXTRA);
 
 		if(a.diff) {
 			global.diff = a.diff;
@@ -302,6 +304,7 @@ int main(int argc, char **argv) {
 			stage_loop(stg);
 		} while(global.game_over == GAMEOVER_RESTART);
 
+		ask_save_replay();
 		return 0;
 	}
 #endif

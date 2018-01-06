@@ -89,22 +89,7 @@ static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty
     } while(restart);
 
     free_resources(false);
-    assert(global.replay_stage != NULL);
-
-    switch(config_get_int(CONFIG_SAVE_RPY)) {
-        case 0: break;
-
-        case 1: {
-            save_rpy(menu, NULL);
-            break;
-        }
-
-        case 2: {
-            create_saverpy_menu(&m);
-            menu_loop(&m);
-            break;
-        }
-    }
+    ask_save_replay();
 
     global.replay_stage = NULL;
 

@@ -11,5 +11,5 @@
 
 #include "menu.h"
 
-void save_rpy(MenuData *menu, void*);
 void create_saverpy_menu(MenuData*);
+void ask_save_replay(void);
