@@ -253,6 +253,7 @@ static void marisa_star_bombbg(Player *plr) {
 	Shader *s = get_shader("maristar_bombbg");
 	glUseProgram(s->prog);
 	glUniform1f(uniloc(s,"t"), t);
+	glUniform1f(uniloc(s,"decay"), 1);
 	glUniform2f(uniloc(s,"plrpos"), creal(global.plr.pos)/VIEWPORT_W,cimag(global.plr.pos)/VIEWPORT_H);
 	glColor4f(1,1,1,0.6*fade);
 	fill_screen(0,0,1,"marisa_bombbg");

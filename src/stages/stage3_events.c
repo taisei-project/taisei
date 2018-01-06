@@ -664,7 +664,16 @@ void scuttle_spellbg(Boss *h, int time) {
 
 	glColor4f(1, 1, 1, 0.1);
 	fill_screen(time/300.0 + 0.5, -time/340.0+0.5, s*0.5, "stage3/spellbg1");
-	fill_screen(time/220.0 + 0.5, -time/400.0+0.5, s*0.5, "stage3/spellbg1");
+	Shader *sha = get_shader("maristar_bombbg");
+	glUseProgram(sha->prog);
+	glUniform1f(uniloc(sha,"t"), time/400.);
+	glUniform1f(uniloc(sha,"decay"), 0.);
+	glColor4f(1, 1, 1, 0.1);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glUniform2f(uniloc(sha,"plrpos"), 0.5,0.5);
+	fill_screen(0.0, 0.0, 1, "stage3/spellbg1");
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glUseProgram(0);
 
 
 	glColor4f(1, 1, 1, 1);
@@ -672,8 +681,6 @@ void scuttle_spellbg(Boss *h, int time) {
 }
 
 void wriggle_spellbg(Boss *b, int time) {
-	glColor4f(1,1,1,1);
-	fill_screen(0, 0, 768.0/1024.0, "stage3/wspellbg");
 	glColor4f(1,1,1,0.5);
 	glBlendEquation(GL_FUNC_SUBTRACT);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -685,6 +692,7 @@ void wriggle_spellbg(Boss *b, int time) {
 	fill_screen(cos(time) * 0.02, time / 30.0, 1, "stage3/wspellclouds");
 
 	glBlendEquation(GL_FUNC_ADD);
+	fill_screen(0, 0, 768.0/1024.0, "stage3/wspellbg");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glColor4f(1,1,1,1);
 }
