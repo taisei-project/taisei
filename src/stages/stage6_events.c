@@ -2234,7 +2234,7 @@ void elly_theory(Boss *b, int time) {
 	int breaktime = yukawatime+400;
 
 	{
-		int count = 32;
+		int count = 30;
 		int step = 1;
 		int phasetime = count * step - 1;
 		int delay = 0;
