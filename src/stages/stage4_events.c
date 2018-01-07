@@ -873,14 +873,14 @@ int kdanmaku_slave(Enemy *e, int t) {
 		return ACTION_DESTROY;
 
 	if(e->args[2] && e->args[1]) {
-		int i, n = 2+4*global.diff;
-		float speed = 1+0.1*(global.diff>D_Normal);
+		int i, n = 3+max(D_Normal,global.diff);
+		float speed = 1.5+0.1*global.diff;
 
 		for(i = 0; i < n; i++) {
-			complex p = VIEWPORT_W/(float)n*(i+frand()) + I*cimag(e->pos);
+			complex p = VIEWPORT_W/(float)n*(i+psin(t*t*i*i+t*t)) + I*cimag(e->pos);
 			if(cabs(p-global.plr.pos) > 60) {
 				PROJECTILE("thickrice", p, rgb(1, 0.5, 0.5), kdanmaku_proj,
-					.args = { 600, speed*0.5*cexp(2.0*I*M_PI*sin(245*t+i*i*3501)) },
+					.args = { 400, speed*0.5*cexp(2.0*I*M_PI*sin(245*t+i*i*3501)) },
 					.flags = PFLAG_DRAWADD,
 				);
 			}
@@ -892,7 +892,7 @@ int kdanmaku_slave(Enemy *e, int t) {
 }
 
 void kurumi_danmaku(Boss *b, int time) {
-	int t = time % 600;
+	int t = time % 400;
 	TIMER(&t);
 
 	if(time == EVENT_DEATH)
@@ -1297,8 +1297,8 @@ Boss *create_kurumi(void) {
 		boss_add_attack_from_info(b, &stage4_spells.boss.demon_wall, false);
 	}
 	boss_add_attack(b, AT_Normal, "Cold Breaker", 25, 36000, kurumi_breaker, NULL);
-	boss_add_attack_from_info(b, &stage4_spells.boss.blow_the_walls, false);
 	boss_add_attack_from_info(b, &stage4_spells.boss.bloody_danmaku, false);
+	boss_add_attack_from_info(b, &stage4_spells.boss.blow_the_walls, false);
 	boss_add_attack_from_info(b, &stage4_spells.extra.vlads_army, false);
 	boss_start_attack(b, b->attacks);
 

@@ -24,8 +24,8 @@ extern struct stage4_spells_s {
     struct {
         AttackInfo animate_wall;
         AttackInfo demon_wall;
-        AttackInfo blow_the_walls;
         AttackInfo bloody_danmaku;
+        AttackInfo blow_the_walls;
     } boss;
 
     struct {

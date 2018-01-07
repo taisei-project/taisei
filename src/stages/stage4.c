@@ -37,7 +37,7 @@ struct stage4_spells_s stage4_spells = {
 								kurumi_aniwall, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
 		.blow_the_walls		= {{12, 13, 14, 15}, AT_Spellcard, "Power Sign ~ Blow the Walls", 30, 55000,
 								kurumi_blowwall, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
-		.bloody_danmaku		= {{18, 19, 16, 17}, AT_Spellcard, "Fear Sign ~ Bloody Danmaku", 30, 60000,
+		.bloody_danmaku		= {{18, 19, 16, 17}, AT_Spellcard, "Danmaku Sign ~ Vampiric Vapor", 30, 60000,
 								kurumi_danmaku, kurumi_spell_bg, BOSS_DEFAULT_GO_POS},
 	},
 
