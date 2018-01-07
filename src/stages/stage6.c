@@ -271,7 +271,7 @@ static void stage6_end(void) {
 }
 
 void elly_intro(Boss*, int);
-void elly_spawn_baryons(complex pos, bool unfold);
+void elly_spawn_baryons(complex pos);
 int scythe_reset(Enemy *e, int t);
 
 static void stage6_spellpractice_events(void) {
@@ -287,7 +287,7 @@ static void stage6_spellpractice_events(void) {
 			create_enemy3c(-32 + 32*I, ENEMY_IMMUNE, Scythe, scythe_reset, 0, 1+0.2*I, 1);
 			stage_start_bgm("stage6boss_phase1");
 		} else if(STG6_SPELL_NEEDS_BARYON(s)) {
-			elly_spawn_baryons(global.boss->pos, false);
+			elly_spawn_baryons(global.boss->pos);
 			stage_start_bgm("stage6boss_phase2");
 		} else if(s == &stage6_spells.final.theory_of_everything) {
 			start_fall_over();
