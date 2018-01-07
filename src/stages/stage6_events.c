@@ -1852,15 +1852,7 @@ static int elly_toe_boson_effect(Projectile *p, int t) {
 static Color boson_color(int pos, int warps) {
 	float f = pos / 3.0;
 
-	int index = warps % 3;
-
-	switch(index) {
-		case 0: return mix_colors(rgb(1.0, 0.0, 0.0), rgb(1.0, 0.0, 0.5), f);
-		case 1: return mix_colors(rgb(0.0, 0.0, 1.0), rgb(0.5, 0.0, 1.0), f);
-		case 2: return mix_colors(rgb(1.0, 0.0, 1.0), rgb(0.0, 1.0, 1.0), f);
-	}
-
-	log_fatal("fix the switch (%i)", index);
+	return hsl((warps-0.3*(1-f))/3.,1+f,0.5);
 }
 
 static int elly_toe_boson(Projectile *p, int t) {
