@@ -757,15 +757,22 @@ int baryon_unfold(Enemy *baryon, int t) {
 	TIMER(&t);
 
 	int extent = 100;
+	float timeout;
 
-	FROM_TO(0, extent, 1) {
+	if(global.stage->type == STAGE_SPELL) {
+		timeout = 92;
+	} else {
+		timeout = 142;
+	}
+
+	FROM_TO(0, timeout, 1) {
 		for(Enemy *e = global.enemies; e; e = e->next) {
 			if(e->visual_rule == BaryonCenter) {
-				float f = t / (float)extent;
+				float f = t / (float)timeout;
 				float x = f;
 				float g = sin(2 * M_PI * log(log(x + 1) + 1));
-				float a = g * pow(1 - x, 2);
-				f = 1 - pow(1 - f, 10) + a;
+				float a = g * pow(1 - x, 2 * x);
+				f = 1 - pow(1 - f, 3) + a;
 
 				baryon->pos = baryon->pos0 = e->pos + baryon->args[0] * f * extent;
 				return 1;
