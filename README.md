@@ -13,7 +13,7 @@ Dependencies:
 * libzip >= 1.0
 * libpng >= 1.5.0
 * OpenGL >= 2.1
-* meson >= 0.38.0 (build system)
+* meson >= 0.39.0 (build system)
 * pkg-config (build dependency)
 
 To build and install Taisei just follow these steps.
