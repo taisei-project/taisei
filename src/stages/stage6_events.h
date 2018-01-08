@@ -31,3 +31,6 @@ Boss* stage6_spawn_elly(complex pos);
 
 void Scythe(Enemy *e, int t, bool render);
 void scythe_common(Enemy *e, int t);
+
+// #define ELLY_TOE_TARGET_POS (VIEWPORT_W/2+298.0*I)
+#define ELLY_TOE_TARGET_POS (VIEWPORT_W/2+VIEWPORT_H/2*I)

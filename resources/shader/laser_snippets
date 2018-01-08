@@ -118,3 +118,11 @@ return vec2(
 );
 %%iku_cathode%%
 return pos + cmul(t * a0, dir(a1.y * t));
+%%elly_toe_fermion%%
+return pos + a0*t;
+%%elly_toe_photon%%
+return pos+cmul(a0,vec2(t,a2.x*sin(t/a2.x)));
+%%elly_toe_gluon%%
+return pos+cmul(a0,vec2(t+a2.x*(0.6*(cos(3.*t/a2.x)-1.)),a2.x*sin(3.*t/a2.x)));
+%%elly_toe_higgs%%
+return pos+a0*(t+floor(t/a2.x)*a2.x);

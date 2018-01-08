@@ -215,6 +215,17 @@ int scythe_mid(Enemy *e, int t) {
 	return 1;
 }
 
+void ScytheTrail(Projectile *p, int t) {
+	glPushMatrix();
+	glTranslatef(creal(p->pos), cimag(p->pos), 0);
+	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
+	glScalef(creal(p->args[1]), creal(p->args[1]), 1);
+
+	float a = (1.0 - t/creal(p->args[0])) * (1.0 - cimag(p->args[1]));
+	ProjDrawCore(p, rgba(1, 1, 1, a));
+	glPopMatrix();
+}
+
 void Scythe(Enemy *e, int t, bool render) {
 	if(render) {
 		return;
@@ -223,7 +234,7 @@ void Scythe(Enemy *e, int t, bool render) {
 	PARTICLE(
 		.texture_ptr = get_tex("stage6/scythe"),
 		.pos = e->pos+I*6*sin(global.frames/25.0),
-		.draw_rule = ScaleFade,
+		.draw_rule = ScytheTrail,
 		.rule = timeout,
 		.args = { 8, e->args[2] },
 		.angle = creal(e->args[1]) - M_PI/2,
@@ -860,7 +871,7 @@ void elly_paradigm_shift(Boss *b, int t) {
 	}
 
 	if(global.stage->type != STAGE_SPELL) {
-		AT(70) {
+		AT(80) {
 			fade_bgm(0.5);
 		}
 	}
@@ -1622,13 +1633,14 @@ int baryon_explode(Enemy *e, int t) {
 	AT(EVENT_DEATH) {
 		free_ref(e->args[1]);
 		petal_explosion(35, e->pos);
-		play_sound("bossdeath");
+		play_sound("boom");
+		global.shake_view = min(30, global.shake_view + 10);
 		return 1;
 	}
 
-	GO_TO(e, global.boss->pos + (e->pos0-global.boss->pos)*(1.5+0.2*sin(t*0.05)), 0.04);
+	GO_TO(e, global.boss->pos + (e->pos0-global.boss->pos)*(1.5+0.2*sin(t*0.1)), 0.04);
 
-	if(frand() < 0.02) {
+	if(frand() < t / 1000.0) {
 		e->hp = 0;
 		return 1;
 	}
@@ -1757,202 +1769,770 @@ int curvature_slave(Enemy *e, int t) {
 
 void elly_curvature(Boss *b, int t) {
 	TIMER(&t);
-	AT(EVENT_BIRTH)
+
+	AT(EVENT_BIRTH) {
 		set_baryon_rule(baryon_curvature);
+		return;
+	}
+
 	AT(EVENT_DEATH) {
 		set_baryon_rule(baryon_reset);
+
+		for(Enemy *e = global.enemies; e; e = e->next) {
+			if(e->logic_rule == curvature_slave) {
+				e->hp = 0;
+			}
+		}
+
+		return;
 	}
 
 	AT(50) {
-		create_enemy2c(b->pos,ENEMY_IMMUNE, 0, curvature_slave,0,global.plr.pos);
+		create_enemy2c(b->pos, ENEMY_IMMUNE, 0, curvature_slave, 0, global.plr.pos);
 	}
 
 	GO_TO(b, VIEWPORT_W/2+100*I+VIEWPORT_W/3*round(sin(t/200)), 0.04);
-
-	AT(EVENT_DEATH) {
-		killall(global.enemies);
-	}
 
 }
 void elly_baryon_explode(Boss *b, int t) {
 	TIMER(&t);
 
-	AT(0)
-		start_fall_over();
+	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.05);
 
-	GO_TO(b,VIEWPORT_W/2+I*VIEWPORT_H/2,0.1);
+	global.shake_view_fade = 0.5;
 
-	AT(20)
+	AT(20) {
 		set_baryon_rule(baryon_explode);
+	}
+
+	AT(42) {
+		fade_bgm(1.0);
+	}
 
 	FROM_TO(0, 200, 1) {
 		tsrand_fill(2);
 		petal_explosion(1, b->pos + 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1)));
+		global.shake_view = max(global.shake_view, 5 * _i / 200.0);
+
+		if(_i > 30) {
+			play_loop("charge_generic");
+		}
 	}
 
 	AT(200) {
 		tsrand_fill(2);
-		global.shake_view = 10;
+		global.shake_view += 30;
+		global.shake_view_fade = 0.05;
+		play_sound("boom");
 		petal_explosion(100, b->pos + 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1)));
 		killall(global.enemies);
 	}
-
-	AT(220) {
-		global.shake_view = 0;
-	}
 }
 
-int theory_proj(Projectile *p, int t) {
+static complex wrap_around(complex *pos) {
+	// This function only works approximately. If more than one of these conditions are true,
+	// dir has to correspond to the wall that was passed first for the
+	// current preview display to work.
+	//
+	// with some clever geometry this could be either fixed here or in the
+	// preview calculation, but the spell as it is currently seems to work
+	// perfectly with this simplified version.
 
-	if(t < 0)
+	complex dir = 0;
+	if(creal(*pos) < -10) {
+		*pos += VIEWPORT_W;
+		dir += -1;
+	}
+	if(creal(*pos) > VIEWPORT_W+10) {
+		*pos -= VIEWPORT_W;
+		dir += 1;
+	}
+	if(cimag(*pos) < -10) {
+		*pos += I*VIEWPORT_H;
+		dir += -I;
+	}
+	if(cimag(*pos) > VIEWPORT_H+10) {
+		*pos -= I*VIEWPORT_H;
+		dir += I;
+	}
+
+	return dir;
+}
+
+static int elly_toe_boson_effect(Projectile *p, int t) {
+	int r = timeout_linear(p, t);
+	p->angle = creal(p->args[3]) * max(0, t) / creal(p->args[0]);
+	return r;
+}
+
+static Color boson_color(int pos, int warps) {
+	float f = pos / 3.0;
+
+	return hsl((warps-0.3*(1-f))/3.,1+f,0.5);
+}
+
+static int elly_toe_boson(Projectile *p, int t) {
+	if(t < 0) {
 		return 1;
+	}
 
-	p->pos += p->args[0];
 	p->angle = carg(p->args[0]);
 
-	if(!cimag(p->args[1])) {
-		float re = creal(p->pos);
-		float im = cimag(p->pos);
+	int activate_time = creal(p->args[2]);
+	int num_in_trail = cimag(p->args[2]);
+	assert(activate_time >= 0);
 
-		if(re <= 0 || re >= VIEWPORT_W)
-			p->args[0] = -creal(p->args[0]) + I*cimag(p->args[0]);
-		else if(im <= 0 || im >= VIEWPORT_H)
-			p->args[0] = creal(p->args[0]) - I*cimag(p->args[0]);
-		else
-			return 1;
+	if(t < activate_time) {
+		float fract = clamp(2 * (t+1) / (float)activate_time, 0, 1);
 
-		p->args[0] *= 0.4+0.1*global.diff;
+		float a = 0.1;
+		float x = fract;
+		float modulate = sin(x * M_PI) * (0.5 + cos(x * M_PI));
+		fract = (pow(a, x) - 1) / (a - 1);
+		fract *= (1 + (1 - x) * modulate);
 
-		switch((int)creal(p->args[1])) {
-		case 0:
-			p->tex = get_tex("proj/ball");
-			break;
-		case 1:
-			p->tex = get_tex("proj/bigball");
-			break;
-		case 2:
-			p->tex = get_tex("proj/bullet");
-			break;
-		case 3:
-			p->tex = get_tex("proj/plainball");
-			break;
+		p->pos = p->args[3] * fract + p->pos0 * (1 - fract);
+
+		if(t % 3 == 0) {
+			PARTICLE("lasercurve", p->pos, p->color, timeout_linear,
+				.draw_rule = Fade,
+				.args = { 10, p->args[0] },
+				.flags = PFLAG_DRAWADD,
+				.insertion_rule = proj_insert_colorprio,
+			);
 		}
 
-		p->color = rgb(cos(p->angle), sin(p->angle), cos(p->angle+2.1));
-		p->args[1] += I;
-	}
-
-	return 1;
-}
-
-int scythe_theory(Enemy *e, int t) {
-	complex n;
-
-	if(t < 0) {
-		scythe_common(e, t);
 		return 1;
 	}
 
-	if(t > 300) {
-		scythe_common(e, t);
-		return ACTION_DESTROY;
+	if(t == activate_time) {
+		play_sound("shot_special1");
+		play_sound("redirect");
+
+		for(int i = 0; i < 3; ++i) {
+			PARTICLE("stain", p->pos, rgb(i==0, i==1, i==2), elly_toe_boson_effect,
+				.draw_rule = ScaleFade,
+				.args = {
+					60,
+					p->args[0] * 1.0,
+					0.5 * (0.8 + 2.0 * I),
+					M_PI*2*frand(),
+				},
+				.angle = 0,
+				.flags = PFLAG_DRAWADD,
+				.insertion_rule = proj_insert_colorprio,
+			);
+		}
 	}
 
-	e->pos += (3-0.01*I*t)*e->args[0];
+	p->pos += p->args[0];
+	complex prev_pos = p->pos;
+	int warps_left = creal(p->args[1]);
+	int warps_initial = cimag(p->args[1]);
 
-	n = cexp(cimag(e->args[1])*I*t);
+	if(wrap_around(&p->pos) != 0) {
+		if(warps_left-- < 1) {
+			return ACTION_DESTROY;
+		}
 
-	TIMER(&t);
-	FROM_TO_SND("shot1_loop",0, 300, 4) {
-		PROJECTILE(
-			.texture = "ball",
-			.pos = e->pos + 80*n,
-			.color = rgb(carg(n), 1-carg(n), 1/carg(n)),
-			.rule = wait_proj,
-			.args = {
-				(0.6+0.3*global.diff)*cexp(0.6*I)*n, 100
-			},
+		p->args[1] = warps_left + warps_initial * I;
+
+		if(num_in_trail == 3) {
+			play_sound_ex("warp", 0, false);
+			// play_sound("redirect");
+		}
+
+		PARTICLE("myon", prev_pos, p->color, timeout,
+			.draw_rule = ScaleFade,
+			.args = { 50, 0, 5.00 },
 			.flags = PFLAG_DRAWADD,
+			.insertion_rule = proj_insert_colorprio,
+			.angle = M_PI*2*frand(),
+		);
+
+		PARTICLE("stardust", prev_pos, p->color, timeout,
+			.draw_rule = ScaleFade,
+			.args = { 60, 0, 3 * I },
+			.flags = PFLAG_DRAWADD,
+			.insertion_rule = proj_insert_colorprio,
+			.angle = M_PI*2*frand(),
+		);
+
+		// p->color = rgb(1.0 - warps_left, 0, warps_left + color_component(p->color,CLR_B));
+		/*
+		p->color = derive_color(
+			subtract_colors(rgb(1, 1, 1), p->color),
+			CLRMASK_A,
+			rgba(0, 0, 0, color_component(p->color, CLR_A))
+		);
+		*/
+
+		p->color = boson_color(num_in_trail, warps_initial - warps_left);
+
+		PARTICLE("stardust", p->pos, p->color, elly_toe_boson_effect,
+			.draw_rule = ScaleFade,
+			.args = { 30, p->args[0] * 2, 3 * I, M_PI*2*frand() },
+			.flags = PFLAG_DRAWADD,
+			.insertion_rule = proj_insert_colorprio,
+			.angle = 0,
 		);
 	}
 
-	scythe_common(e, t);
+	float tLookahead = 40;
+	complex posLookahead = p->pos+p->args[0]*tLookahead;
+	complex dir = wrap_around(&posLookahead);
+	if(dir != 0 && t%3 == 0 && warps_left > 0) {
+		complex pos0 = posLookahead - VIEWPORT_W/2*(1-creal(dir))-I*VIEWPORT_H/2*(1-cimag(dir));
+
+		// Re [a b^*] behaves like the 2D vector scalar product
+		float tOvershoot = creal(pos0*conj(dir))/creal(p->args[0]*conj(dir));
+		posLookahead -= p->args[0]*tOvershoot;
+		PARTICLE("lasercurve", posLookahead, boson_color(num_in_trail, warps_initial - warps_left + 1), timeout_linear,
+				.draw_rule = Fade,
+				.args = { 10, p->args[0] },
+				.flags = PFLAG_DRAWADD,
+				.insertion_rule = proj_insert_colorprio,
+		);
+	}
+
 	return 1;
 }
 
-void elly_theory(Boss *b, int time) {
-	int t = time % 500;
-	int i;
+#define HIGGSTIME 1700
+#define YUKAWATIME 2200
+#define SYMMETRYTIME HIGGSTIME+200
 
-	if(time == EVENT_BIRTH)
-		global.shake_view = 10;
-	if(time < 20)
-		GO_TO(b, VIEWPORT_W/2+300.0*I, 0.05);
-	if(time == 0)
-		global.shake_view = 0;
+static bool elly_toe_its_yukawatime(complex pos) {
+	int t = global.frames-global.boss->current->starttime;
 
-	TIMER(&t);
+	if(pos == 0)
+		return t>YUKAWATIME;
 
-	AT(0)
-		elly_clap(b,500);
+	int sectors = 4;
 
-	FROM_TO(0, 500, 10)
-		for(i = 0; i < 3; i++) {
-			tsrand_fill(5);
-			PARTICLE(
-				.texture = "stain",
-				.pos = b->pos+80*afrand(0)*cexp(2.0*I*M_PI*afrand(1)),
-				.color = rgb(1 - afrand(2), 0.8, 0.5),
-				.draw_rule = Fade,
-				.rule = timeout,
-				.args = {60, 1+3*afrand(3) },
-				.angle = 2*M_PI*afrand(4),
-				.flags = PFLAG_DRAWADD,
-			);
-		}
+	pos -= global.boss->pos;
+	if(((int)(carg(pos)/2/M_PI*sectors+sectors+0.005*t))%2)
+		return t > YUKAWATIME+0.2*cabs(pos);
 
-	FROM_TO(20, 70, 30-global.diff) {
-		int c = 20+2*global.diff;
-		play_sound("shot_special1");
-		for(i = 0; i < c; i++) {
-			complex n = cexp(2.0*I*M_PI/c*i);
-			PROJECTILE(
-				.texture = "soul",
-				.pos = b->pos,
-				.color = rgb(0.2, 0, 0.9),
-				.rule = accelerated,
-				.args = {
-					n,
-					(0.01+0.002*global.diff)*n+0.01*I*n*(1-2*(_i&1))
-				},
-				.flags = PFLAG_DRAWADD,
-			);
-		}
+	return false;
+}
+
+static int elly_toe_fermion_yukawa_effect(Projectile *p, int t) {
+	int r = timeout(p, t);
+
+	if(t == EVENT_DEATH) {
+		free_ref(p->args[3]);
+		return 1;
 	}
 
-	FROM_TO(120, 240, 10-global.diff) {
-		play_sound("shot1");
-		int x, y;
-		int w = 2;
-		complex n = cexp(0.7*I*_i+0.2*I*frand());
-		for(x = -w; x <= w; x++) {
-			for(y = -w; y <= w; y++) {
-				PROJECTILE(
-					.texture = "ball",
-					.pos = b->pos + (15+5*global.diff)*(x+I*y)*n,
-					.color = rgb(0, 0.5, 1),
-					.rule = accelerated,
-					.args = { 2*n, 0.026*n }
+	Projectile *master = REF(p->args[3]);
+
+	if(master) {
+		p->pos = master->pos;
+	}
+
+	return r;
+}
+
+static int elly_toe_fermion(Projectile *p, int t) {
+	if(t < 0)
+		return 1;
+	if(t == 1)
+		p->pos0 = 0;
+
+	int speeduptime = creal(p->args[2]);
+	if(t > speeduptime)
+		p->pos0 += p->pos0/cabs(p->pos0)*(t-speeduptime)*0.01;
+	else
+		p->pos0 += (p->args[0]-p->pos0)*0.01;
+	p->pos = global.boss->pos+p->pos0*cexp(I*0.01*t)+5*cexp(I*t*0.05+I*p->args[1]);
+
+	if(t % 5 == 0) {
+		double particle_scale = min(1.0, 0.5 * p->tex->w / 28.0);
+
+		PARTICLE("stardust", p->pos, p->color, timeout,
+			.draw_rule = ScaleFade,
+			.args = { min(t / 6.0, 10), 0, particle_scale * (1 + 2 * I) },
+			.flags = PFLAG_DRAWADD,
+			.insertion_rule = proj_insert_colorprio,
+			.angle = M_PI*2*frand(),
+		);
+	}
+
+	if(creal(p->args[3]) < 0) // add a way to disable the yukawa phase
+		return 1;
+
+	if(elly_toe_its_yukawatime(p->pos)) {
+		if(!p->args[3]) {
+			p->tex = get_tex("proj/bigball");
+			p->args[3]=1;
+			play_sound_ex("shot_special1", 5, false);
+
+			PARTICLE("myon", p->pos, p->color, elly_toe_fermion_yukawa_effect,
+				.draw_rule = ScaleFade,
+				.args = { 60, 0, 20 * I, add_ref(p) },
+				.flags = PFLAG_DRAWADD,
+				.insertion_rule = proj_insert_colorprio,
+				.angle = M_PI*2*frand(),
+			);
+		}
+
+		p->pos0*=1.01;
+	} else if(p->args[3]) {
+		p->tex = get_tex("proj/ball");
+		p->args[3]=0;
+	}
+
+	return 1;
+}
+
+static int elly_toe_higgs(Projectile *p, int t) {
+	if(t < 0)
+		return 1;
+
+	if(elly_toe_its_yukawatime(p->pos)) {
+		if(!p->args[3]) {
+			p->tex = get_tex("proj/rice");
+			p->args[3]=1;
+		}
+		p->args[0]*=1.01;
+	} else if(p->args[3]) {
+		p->tex = get_tex("proj/flea");
+		p->args[3]=0;
+	}
+
+	int global_time = global.frames - global.boss->current->starttime - HIGGSTIME;
+	int max_time = HIGGSTIME - SYMMETRYTIME;
+	double rotation = 0.5 * M_PI * max(0, (int)global.diff - D_Normal);
+
+	if(global_time > max_time) {
+		global_time = max_time;
+	}
+
+	complex vel = p->args[0] * cexp(I*rotation*global_time/(float)max_time);
+	p->pos = p->pos0 + t * vel;
+	p->angle = carg(vel);
+
+	return 1;
+}
+
+static complex elly_toe_laser_pos(Laser *l, float t) { // a[0]: direction, a[1]: type, a[2]: width
+	int type = creal(l->args[1]+0.5);
+
+	if(t == EVENT_BIRTH) {
+		switch(type) {
+		case 0:
+			l->shader = get_shader_optional("laser_elly_toe_fermion");
+			l->color = rgb(0.4,0.4,1);
+			break;
+		case 1:
+			l->shader = get_shader_optional("laser_elly_toe_photon");
+			l->color = rgb(1,0.4,0.4);
+			break;
+		case 2:
+			l->shader = get_shader_optional("laser_elly_toe_gluon");
+			l->color = rgb(0.4,1,0.4);
+			break;
+		case 3:
+			l->shader = get_shader_optional("laser_elly_toe_higgs");
+			l->color = rgb(1,0.4,1);
+			break;
+		default:
+			log_fatal("Unknown Elly laser type.");
+		}
+		l->collision_step = 1;
+		return 0;
+	}
+
+	double width = creal(l->args[2]);
+	switch(type) {
+	case 0:
+		return l->pos+l->args[0]*t;
+	case 1:
+		return l->pos+l->args[0]*(t+width*I*sin(t/width));
+	case 2:
+		return l->pos+l->args[0]*(t+width*(0.6*(cos(3*t/width)-1)+I*sin(3*t/width)));
+	case 3:
+		return l->pos+l->args[0]*(t+floor(t/width)*width);
+	}
+
+	return 0;
+}
+
+#define LASER_EXTENT (4+global.diff-D_Normal)
+#define LASER_LENGTH 40
+
+static int elly_toe_laser_particle_rule(Projectile *p, int t) {
+	if(t == EVENT_DEATH) {
+		free_ref(p->args[3]);
+		return 1;
+	}
+
+	if(t < 0) {
+		return 1;
+	}
+
+	if(t > creal(p->args[0])) {
+		return ACTION_DESTROY;
+	}
+
+	Laser *l = REF(p->args[3]);
+
+	if(!l) {
+		return ACTION_DESTROY;
+	}
+
+	p->pos = l->prule(l, 0);
+
+	return 1;
+}
+
+static void elly_toe_laser_particle(Laser *l, complex origin) {
+	Color c = multiply_colors(l->color, l->color);
+
+	PARTICLE("stardust", origin, c, elly_toe_laser_particle_rule,
+		.draw_rule = ScaleFade,
+		.args = { 30, 0, 2 * I, add_ref(l) },
+		.flags = PFLAG_DRAWADD,
+		.insertion_rule = proj_insert_colorprio,
+		.angle = M_PI*2*frand(),
+	);
+
+	PARTICLE("stain", origin, c, elly_toe_laser_particle_rule,
+		.draw_rule = ScaleFade,
+		.args = { 20, 0, 2 * I, add_ref(l) },
+		.flags = PFLAG_DRAWADD,
+		.insertion_rule = proj_insert_colorprio,
+		.angle = M_PI*2*frand(),
+	);
+
+	PARTICLE("lasercurve", origin, c, elly_toe_laser_particle_rule,
+		.draw_rule = ScaleFade,
+		.args = { 40, 0, 1, add_ref(l) },
+		.flags = PFLAG_DRAWADD,
+		.insertion_rule = proj_insert_colorprio,
+		.angle = M_PI*2*frand(),
+	);
+}
+
+static void elly_toe_laser_logic(Laser *l, int t) {
+	if(t == l->deathtime) {
+		static const int transfer[][4] = {
+			{1, 0, 0, 0},
+			{0,-1,-1, 3},
+			{0,-1, 2, 3},
+			{0, 3, 3, 1}
+		};
+
+		complex newpos = l->prule(l,t);
+		if(creal(newpos) < 0 || cimag(newpos) < 0 || creal(newpos) > VIEWPORT_W || cimag(newpos) > VIEWPORT_H)
+			return;
+
+		int newtype, newtype2;
+		do {
+			newtype = 3.999999*frand();
+			newtype2 = transfer[(int)(creal(l->args[1])+0.5)][newtype];
+			// actually in this case, gluons are also always possible
+			if(newtype2 == 1 && frand() > 0.5) {
+				newtype = 2;
+			}
+
+			// I removed type 3 because
+		} while(newtype2 == -1 || newtype2 == 3 || newtype == 3);
+
+		complex origin = l->prule(l,t);
+		complex newdir = cexp(0.2*I*(1+frand()));
+
+		Laser *l1 = create_laser(origin,LASER_LENGTH,LASER_LENGTH,rgb(1,1,1),
+			elly_toe_laser_pos,elly_toe_laser_logic,
+			l->args[0]*newdir,
+			newtype,
+			LASER_EXTENT,
+			0
+		);
+
+		Laser *l2 = create_laser(origin,LASER_LENGTH,LASER_LENGTH,rgb(1,1,1),
+			elly_toe_laser_pos,elly_toe_laser_logic,
+			l->args[0]/newdir,
+			newtype2,
+			LASER_EXTENT,
+			0
+		);
+
+		elly_toe_laser_particle(l1, origin);
+		elly_toe_laser_particle(l2, origin);
+	}
+	l->pos+=I;
+}
+
+
+// This spell contains some obscure (and some less obscure) physics references.
+// However the first priority was good looks and playability, so most of the
+// references are pretty bad.
+//
+// I am waiting for the day somebody notices this and writes a 10-page comment
+// about it on reddit. ;_; So I add a disclaimer beforehand (2018). Maybe it can also
+// serve as entertainment for the interested hacker stumbling across these
+// lines.
+//
+// Disclaimer:
+//
+// 1. This spell is based on the Standard Model of Particle physics, which is
+//    very complicated, so the picture here is always very very very dumbed down.
+//
+// 2. The first two phases stand for the bosons and fermions in the model. My
+//    way of representing them was to choose a heavily overlapping pattern for
+//    the bosons and a non-overlapping one for the fermions (nod to the Pauli
+//    principle). The rest of them is not a good reference at all.
+//
+// 3. Especially this rgb rotating thing the fermions do has not much to do
+//    with physics. Maybe it represents color charge? And the rotation
+//    represents the way fermions transform strangely under rotations?
+//
+// 4. The symmetry thing is one fm closer to the truth. In reality the symmetry
+//    that is broken in the phase we live in is continuous, but that is not easy
+//    to do in danmaku, so I took a mirror symmetry and broke it.
+//    Then in reality, the higgs gets a funny property that makes the other
+//    things which interact with it get a mass.
+//    In the spell, I represented that by adding those sectors where the fermions
+//    become big (massive ;)).
+//
+// 5. The last part is a nod to Feynman diagrams and perturbation theory. Have
+//    been planning to add those to the game for quite some time. They are one
+//    of the iconic sights in modern physics and they can be used as laser danmaku.
+//    The rules here are again simplified:
+//
+//    I only use QED and QCD (not the whole SM) and leave out ghosts and the 4
+//    gluon vertex (because I can’t draw dashed lasers and the 4-vertex doesn’t
+//    fit into the pattern).
+//
+//    Of course, drawing laser danmaku is easy. The actual calculations behind
+//    the diagrams are one of the most complicated fields in Physics (fun fact:
+//    they are a driving force for CAS software and high precision integration
+//    methods). This whole thing is called perturbation theory and one of its
+//    problems is that it doesn’t really converge, so that’s the reason behind
+//    “Perturbation theory breaking down”
+//
+// (9). I’m only human though and this is not exactly the stuff I do, so I’m
+//      not an expert and more things might be off.
+//
+void elly_theory(Boss *b, int time) {
+	if(time == EVENT_BIRTH) {
+		global.shake_view = 10;
+		return;
+	}
+
+	if(time < 0) {
+		GO_TO(b, ELLY_TOE_TARGET_POS, 0.1);
+		return;
+	}
+
+	TIMER(&time);
+
+	AT(0) {
+		assert(cabs(b->pos - ELLY_TOE_TARGET_POS) < 1);
+		b->pos = ELLY_TOE_TARGET_POS;
+		global.shake_view = 0;
+		elly_clap(b,50000);
+	}
+
+	int fermiontime = 1000;
+	int higgstime = HIGGSTIME;
+	int symmetrytime = SYMMETRYTIME;
+	int yukawatime = YUKAWATIME;
+	int breaktime = yukawatime+400;
+
+	{
+		int count = 30;
+		int step = 1;
+		int start_time = 0;
+		int end_time = fermiontime + 1000;
+		int cycle_time = count * step - 1;
+		int cycle_step = 200;
+		int solo_cycles = (fermiontime - start_time) / cycle_step - global.diff + 1;
+		int warp_cycles = (higgstime - start_time) / cycle_step - 1;
+
+		if(time - start_time <= cycle_time) {
+			--count; // get rid of the spawn safe spot on first cycle
+			cycle_time -= step;
+		}
+
+		FROM_TO_INT(start_time, end_time, cycle_step, cycle_time, step) {
+			play_sound("shot2");
+
+			int pnum = _ni;
+			int num_warps = 0;
+
+			if(_i < solo_cycles) {
+				num_warps = global.diff;
+			} else if(_i < warp_cycles && global.diff > D_Normal) {
+				num_warps = 1;
+			}
+
+			// The fact that there are 4 bullets per trail is actually one of the physics references.
+			for(int i = 0; i < 4; i++) {
+				pnum = (count - pnum - 1);
+
+				complex dir = I*cexp(I*(2*M_PI/count*(pnum+0.5)));
+				dir *= cexp(I*0.15*sign(creal(dir))*sin(_i));
+
+				complex bpos = b->pos + 18 * dir * i;
+				Color bclr = boson_color(i, 0);
+
+				PROJECTILE("rice", b->pos, bclr,
+					.rule = elly_toe_boson,
+					.args = {
+						2.5*dir,
+						num_warps * (1 + I),
+						42*2 - step * _ni + i*I, // real: activation delay, imag: pos in trail (0 is furtherst from head)
+						bpos,
+					},
+					.max_viewport_dist = 20,
 				);
 			}
 		}
 	}
 
-	FROM_TO(250, 299, 10) {
-		create_enemy3c(b->pos, ENEMY_IMMUNE, Scythe, scythe_theory, cexp(2.0*I*M_PI/5*_i+I*(time/500)), 0.2*I, 1);
+	FROM_TO(fermiontime,yukawatime+250,2) {
+		// play_loop("noise1");
+		play_sound_ex("shot1", 5, false);
+
+		complex dest = 100*cexp(I*1*_i);
+		for(int clr = 0; clr < 3; clr++) {
+			PROJECTILE("ball", b->pos, rgb(clr==0,clr==1,clr==2),
+				.rule = elly_toe_fermion,
+				.args = {
+					dest,
+					clr*2*M_PI/3,
+					40,
+				},
+				.flags=PFLAG_DRAWADD,
+				.max_viewport_dist=50,
+			);
+		}
 	}
 
+	AT(fermiontime) {
+		play_sound("charge_generic");
+		global.shake_view=10;
+		global.shake_view_fade=1;
+	}
+
+	AT(symmetrytime) {
+		play_sound("charge_generic");
+		play_sound("boom");
+		stagetext_add("Symmetry broken!", VIEWPORT_W/2+I*VIEWPORT_H/4,AL_Center,&_fonts.mainmenu,rgb(1,1,1),0,100,10,20);
+		global.shake_view=10;
+		global.shake_view_fade=1;
+
+		PARTICLE(
+			.texture = "blast",
+			.pos = b->pos,
+			.color = rgba(1.0, 0.3, 0.3, 0.5),
+			.rule = timeout,
+			.draw_rule = GrowFade,
+			.args = { 60, 4 },
+			// .flags = PFLAG_DRAWADD,
+		);
+
+		for(int i = 0; i < 10; ++i) {
+			PARTICLE(
+				.texture = "stain",
+				.pos = b->pos,
+				.color = rgba(0.3, 0.3, 1.0, 1.0),
+				.rule = timeout,
+				.draw_rule = ScaleFade,
+				.args = { 120 + 20 * nfrand(), 0, 2 * (1 + 5 * I) },
+				.flags = PFLAG_DRAWADD,
+				.insertion_rule = proj_insert_colorprio,
+				.angle = M_PI*2*frand(),
+			);
+		}
+	}
+
+	AT(yukawatime) {
+		play_sound("charge_generic");
+		stagetext_add("Coupling the Higgs!", VIEWPORT_W/2+I*VIEWPORT_H/4,AL_Center,&_fonts.mainmenu,rgb(1,1,1),0,100,10,20);
+		global.shake_view=10;
+		global.shake_view_fade=1;
+	}
+
+	AT(breaktime) {
+		play_sound("charge_generic");
+		stagetext_add("Perturbation theory!", VIEWPORT_W/2+I*VIEWPORT_H/4,AL_Center,&_fonts.mainmenu,rgb(1,1,1),0,100,10,20);
+		stagetext_add("breaking down!", VIEWPORT_W/2+I*VIEWPORT_H/4+30*I,AL_Center,&_fonts.mainmenu,rgb(1,1,1),0,100,10,20);
+		global.shake_view=10;
+		global.shake_view_fade=1;
+	}
+
+	FROM_TO(higgstime,yukawatime+100,4+4*(time>symmetrytime)) {
+		play_loop("shot1_loop");
+
+		int arms;
+
+		switch(global.diff) {
+			case D_Hard:    arms = 5; break;
+			case D_Lunatic: arms = 7; break;
+			default:        arms = 4; break;
+		}
+
+		for(int dir = 0; dir < 2; dir++) {
+			for(int arm = 0; arm < arms; arm++) {
+				complex v = -2*I*cexp(I*M_PI/(arms+1)*(arm+1)+0.1*I*sin(time*0.1+arm));
+				if(dir)
+					v = -conj(v);
+				if(time>symmetrytime) {
+					int t = time-symmetrytime;
+					v*=cexp(-I*0.001*t*t+0.01*frand()*dir);
+				}
+				PROJECTILE("flea", b->pos, rgb(dir*(time>symmetrytime),0,1),
+					.rule = elly_toe_higgs,
+					.args = { v },
+				);
+			}
+		}
+	}
+
+	FROM_TO(breaktime,breaktime+10000,70) {
+		play_sound_ex("laser1", 0, true);
+
+		complex phase = cexp(2*I*M_PI*frand());
+		int count = 8;
+		for(int i = 0; i < count; i++) {
+			create_laser(b->pos,LASER_LENGTH,LASER_LENGTH/2,rgb(1,1,1),
+				elly_toe_laser_pos,elly_toe_laser_logic,
+				3*cexp(2*I*M_PI/count*i)*phase,
+				0,
+				LASER_EXTENT,
+				0
+			);
+		}
+	}
+
+	FROM_TO(breaktime+35, breaktime+10000, 14) {
+		play_sound("redirect");
+		// play_sound("shot_special1");
+
+		for(int clr = 0; clr < 3; clr++) {
+			PROJECTILE("soul", b->pos, rgb(clr==0,clr==1,clr==2),
+				.rule = elly_toe_fermion,
+				.args = {
+					50*cexp(1.3*I*_i),
+					clr*2*M_PI/3,
+					40,
+					-1,
+				},
+				.flags=PFLAG_DRAWADD,
+				.max_viewport_dist=50,
+			);
+		}
+	}
+
+	FROM_TO_SND("noise1", yukawatime - 60, breaktime + 10000, 1) {};
 }
+
+#undef LASER_EXTENT
+#undef YUKAWATIME
 
 void elly_spellbg_classic(Boss *b, int t) {
 	fill_screen(0,0,0.7,"stage6/spellbg_classic");
@@ -1989,9 +2569,21 @@ Boss* stage6_spawn_elly(complex pos) {
 }
 
 static void elly_insert_interboss_dialog(Boss *b, int t) {
-	if(t == 0) {
-		global.dialog = stage6_interboss_dialog();
+	global.dialog = stage6_interboss_dialog();
+}
+
+static void elly_begin_toe(Boss *b, int t) {
+	TIMER(&t);
+
+	AT(1) {
+		start_fall_over();
+		stage_start_bgm("stage6boss_phase3");
+		global.shake_view_fade = 0;
 	}
+}
+
+static void elly_goto_center(Boss *b, int t) {
+	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.05);
 }
 
 Boss* create_elly(void) {
@@ -2003,16 +2595,18 @@ Boss* create_elly(void) {
 	boss_add_attack(b, AT_Normal, "Frequency2", 40, 50000, elly_frequency2, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.scythe.orbital_clockwork, false);
 	boss_add_attack_from_info(b, &stage6_spells.scythe.wave_theory, false);
-	boss_add_attack(b, AT_Move, "Paradigm Shift", 3, 10, elly_paradigm_shift, NULL);
+	boss_add_attack(b, AT_Move, "Paradigm Shift", 3, 0, elly_paradigm_shift, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.many_world_interpretation, false);
 	boss_add_attack(b, AT_Normal, "Baryon", 50, 55000, elly_baryonattack, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.wave_particle_duality, false);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.spacetime_curvature, false);
-	boss_add_attack(b, AT_Normal, "Baryon", 50, 55000, elly_baryonattack2, NULL);
+	boss_add_attack(b, AT_Normal, "Baryon2", 50, 55000, elly_baryonattack2, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.higgs_boson_uncovered, false);
 	boss_add_attack_from_info(b, &stage6_spells.extra.curvature_domination, false);
-	boss_add_attack(b, AT_Move, "", 0, 0, elly_insert_interboss_dialog, NULL);
-	boss_add_attack(b, AT_Move, "Explode", 6, 10, elly_baryon_explode, NULL);
+	boss_add_attack(b, AT_Move, "Explode", 4, 0, elly_baryon_explode, NULL);
+	boss_add_attack(b, AT_Move, "Move to center", 1, 0, elly_goto_center, NULL);
+	boss_add_attack(b, AT_Immediate, "Final dialog", 0, 0, elly_insert_interboss_dialog, NULL);
+	boss_add_attack(b, AT_Move, "ToE transition", 7, 0, elly_begin_toe, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.final.theory_of_everything, false);
 	boss_start_attack(b, b->attacks);
 
@@ -2024,6 +2618,7 @@ void stage6_events(void) {
 
 	AT(0) {
 		stage_start_bgm("stage6");
+		// skip_background_anim(&stage_3d_context, stage_get(6)->procs->update, 3800, &global.timer, &global.frames);
 	}
 
 	AT(100)
@@ -2049,7 +2644,7 @@ void stage6_events(void) {
 	AT(3800)
 		global.boss = create_elly();
 
-	AT(3900 - FADE_TIME) {
+	AT(4160 - FADE_TIME) {
 		stage_finish(GAMEOVER_WIN);
 	}
 }

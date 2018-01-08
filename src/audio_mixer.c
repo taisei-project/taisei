@@ -376,8 +376,11 @@ bool audio_backend_sound_stop_loop(void *impl) {
 		return false;
 
 	MixerInternalSound *snd = (MixerInternalSound *)impl;
-	if(snd->loopchan == -1)
+
+	if(snd->loopchan == -1) {
 		return false;
+	}
+
 	Mix_HaltChannel(snd->loopchan);
 
 	return true;
