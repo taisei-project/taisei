@@ -294,6 +294,8 @@ int main(int argc, char **argv) {
 		log_info("Entering %s", stg->title);
 
 		do {
+			global.replay_stage = NULL;
+			replay_init(&global.replay);
 			global.game_over = 0;
 			player_init(&global.plr);
 
@@ -302,6 +304,10 @@ int main(int argc, char **argv) {
 			}
 
 			stage_loop(stg);
+
+			if(global.game_over == GAMEOVER_RESTART) {
+				replay_destroy(&global.replay);
+			}
 		} while(global.game_over == GAMEOVER_RESTART);
 
 		ask_save_replay();

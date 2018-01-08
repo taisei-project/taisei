@@ -47,12 +47,21 @@ void start_replay(MenuData *menu, void *arg) {
 
 static void replayview_draw_stagemenu(MenuData*);
 
+static void replayview_end_stageselect(MenuData *m) {
+	ReplayviewContext *ctx = m->context;
+
+	if(m->cursor >= 0) {
+		ctx->pickedstage = m->cursor;
+	}
+}
+
 MenuData* replayview_sub_stageselect(MenuData *menu, ReplayviewItemContext *ictx) {
 	MenuData *m = malloc(sizeof(MenuData));
 	Replay *rpy = ictx->replay;
 
 	create_menu(m);
 	m->draw = replayview_draw_stagemenu;
+	m->end = replayview_end_stageselect;
 	m->context = menu->context;
 	m->flags = MF_Transient | MF_Abortable;
 	m->transition = NULL;
@@ -115,10 +124,6 @@ static void replayview_draw_stagemenu(MenuData *m) {
 		} else {
 			float ia = 1-a;
 			glColor4f(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a) * alpha);
-		}
-
-		if(i == m->cursor) {
-			ctx->pickedstage = i;
 		}
 
 		draw_text(AL_Center, 0, 20*i, e->name, _fonts.standard);
