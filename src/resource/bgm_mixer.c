@@ -78,7 +78,7 @@ void* load_bgm_begin(const char *path, unsigned int flags) {
 		imus->loop = load_mix_music(path);
 	}
 
-	if(!imus->loop) {
+	if(!imus->loop && !imus->intro) {
 		assert(imus->intro == NULL);
 		free(imus);
 		free(mus->title);

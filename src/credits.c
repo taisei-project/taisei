@@ -120,7 +120,11 @@ void credits_fill(void) {
 		"libpng\n"
 		"http://www.libpng.org/\n\n"
 		"Ogg Vorbis\n"
-		"https://xiph.org/vorbis/\n\n"
+		"https://xiph.org/vorbis/"
+	), 350);
+
+	credits_add((
+		"\n"
 		"libzip\n"
 		"https://libzip.org/\n\n"
 		"Meson build system\n"
@@ -128,7 +132,7 @@ void credits_fill(void) {
 		"M cross environment\n"
 		"http://mxe.cc/\n\n"
 		"and many other projects"
-	), 700);
+	), 350);
 
 	credits_add((
 		"Mochizuki Ado\n"
@@ -150,7 +154,7 @@ void credits_fill(void) {
 	), ENTRY_TIME);
 
 	// yukkureimu
-	credits_add("*", 150);
+	credits_add("*\nAnd don't forget to take it easy!", 200);
 }
 
 void credits_add(char *data, int time) {
@@ -223,68 +227,110 @@ void credits_init(void) {
 	start_bgm("credits");
 }
 
-void credits_draw_entry(CreditsEntry *e) {
-	int time = global.frames - 400, i;
-	bool yukkuri = false;
-	float first, other = 0, fadein = 1, fadeout = 1;
-	CreditsEntry *o;
-	Texture *ytex = NULL;
+static double entry_height(CreditsEntry *e, double *head, double *body) {
+	double total = *head = *body = 0;
 
-	for(o = credits.entries; o != e; ++o)
-		time -= o->time + CREDITS_ENTRY_FADEOUT;
-
-	int ofs = 5 * e->lines;
-
-	if(*(e->data[0]) == '*') {
-		yukkuri = true;
-		ofs = 25;
+	if(!e->lines) {
+		return total;
 	}
 
+	if(e->lines > 0) {
+		if(*(e->data[0]) == '*') {
+			total += *head = get_tex("yukkureimu")->h * CREDITS_YUKKURI_SCALE;
+		} else {
+			total += *head = font_line_spacing(_fonts.mainmenu) * 0.5;
+		}
+
+		if(e->lines > 1) {
+			total += *body += (e->lines - 0.5) * font_line_spacing(_fonts.standard) * 0.5;
+		}
+	}
+
+	return total;
+}
+
+void credits_draw_entry(CreditsEntry *e) {
+	int time = global.frames - 400;
+	float fadein = 1, fadeout = 1;
+
+	for(CreditsEntry *o = credits.entries; o != e; ++o) {
+		time -= o->time + CREDITS_ENTRY_FADEOUT;
+	}
+
+	double h_total, h_head, h_body;
+	h_total = entry_height(e, &h_head, &h_body);
+
+	// random asspull approximation to make stuff not overlap too much
+	int ofs = (1 - pow(1 - h_total / SCREEN_H, 2)) * SCREEN_H * 0.095;
 	time -= ofs;
 
-	if(time < 0)
+	if(time < 0) {
 		return;
+	}
 
 	ofs *= 2;
 
-	if(time <= CREDITS_ENTRY_FADEIN)
+	if(time <= CREDITS_ENTRY_FADEIN) {
 		fadein = time / CREDITS_ENTRY_FADEIN;
+	}
 
-	if(time - e->time - CREDITS_ENTRY_FADEIN + ofs > 0)
+	if(time - e->time - CREDITS_ENTRY_FADEIN + ofs > 0) {
 		fadeout = max(0, 1 - (time - e->time - CREDITS_ENTRY_FADEIN + ofs) / CREDITS_ENTRY_FADEOUT);
+	}
 
-	if(!fadein || !fadeout)
+	if(!fadein || !fadeout) {
 		return;
+	}
 
-	if(yukkuri) {
+	bool yukkuri = false;
+	Texture *ytex = NULL;
+
+	if(*e->data[0] == '*') {
+		yukkuri = true;
 		ytex = get_tex("yukkureimu");
 	}
 
-	first = yukkuri ?
-		(ytex->trueh * CREDITS_YUKKURI_SCALE) :
-		(font_line_spacing(_fonts.mainmenu) + stringheight(e->data[0], _fonts.mainmenu));
+	glPushMatrix();
 
-	if(e->lines > 1) {
-		other = font_line_spacing(_fonts.standard) + stringheight(e->data[1], _fonts.standard);
+	if(fadein < 1) {
+		glTranslatef(0, SCREEN_W * pow(1 - fadein,  2) *  0.5, 0);
+	} else if(fadeout < 1) {
+		glTranslatef(0, SCREEN_W * pow(1 - fadeout, 2) * -0.5, 0);
 	}
 
+	// for debugging: draw a quad as tall as the entry is expected to be
+	/*
 	glPushMatrix();
-	if(fadein < 1)
-		glTranslatef(0, SCREEN_W * pow(1 - fadein,  2) *  0.5, 0);
-	else if(fadeout < 1)
-		glTranslatef(0, SCREEN_W * pow(1 - fadeout, 2) * -0.5, 0);
+	glColor4f(1, 0, 0, fadein * fadeout);
+	glDisable(GL_TEXTURE_2D);
+	glScalef(300, h_total, 1);
+	draw_quad();
+	glEnable(GL_TEXTURE_2D);
+	glPopMatrix();
+	*/
 
 	glColor4f(1, 1, 1, fadein * fadeout);
-	for(i = 0; i < e->lines; ++i) {
+
+	if(yukkuri) {
+		glTranslatef(0, (-h_body) * 0.5, 0);
+	} else {
+		glTranslatef(0, (-h_body) * 0.5, 0);
+	}
+
+	for(int i = 0; i < e->lines; ++i) {
 		if(yukkuri && !i) {
 			glPushMatrix();
 			glScalef(CREDITS_YUKKURI_SCALE, CREDITS_YUKKURI_SCALE, 1.0);
-			draw_texture_p(0, (first + other * (e->lines-1)) / -8 + 10 * sin(global.frames / 10.0) * fadeout * fadein, ytex);
+			draw_texture_p(0, 10 * sin(global.frames / 10.0) * fadeout * fadein, ytex);
 			glPopMatrix();
-		} else draw_text(AL_Center, 0,
-			(first + other * (e->lines-1)) * -0.25 + (i? first/4 + other/2 * i : 0) + (yukkuri? other*2.5 : 0), e->data[i],
-		(i? _fonts.standard : _fonts.mainmenu));
+			glTranslatef(0, ytex->h * CREDITS_YUKKURI_SCALE * 0.5, 0);
+		} else {
+			Font *font = i ? _fonts.standard : _fonts.mainmenu;
+			draw_text(AL_Center, 0, 0, e->data[i], font);
+			glTranslatef(0, font_line_spacing(font) * 0.5, 0);
+		}
 	}
+
 	glPopMatrix();
 	glColor4f(1, 1, 1, 1);
 }
@@ -308,12 +354,11 @@ void credits_draw(void) {
 	glTranslatef(SCREEN_W/4*3, SCREEN_H/2, 0);
 	glScalef(300, SCREEN_H, 1);
 	draw_quad();
+	glColor4f(1, 1, 1, 1);
 	glPopMatrix();
 
 	glPushMatrix();
-	glColor4f(1, 1, 1, credits.panelalpha * 0.7);
 	glTranslatef(SCREEN_W/4*3, SCREEN_H/2, 0);
-	glColor4f(1, 1, 1, 1);
 
 	for(int i = 0; i < credits.ecount; ++i) {
 		credits_draw_entry(&(credits.entries[i]));

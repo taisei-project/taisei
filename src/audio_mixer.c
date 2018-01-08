@@ -254,10 +254,9 @@ bool audio_backend_music_play(void *impl) {
 
 	if(imus->intro) {
 		next_loop = imus->loop;
-		next_loop_point = imus->loop_point;
+		next_loop_point = next_loop ? imus->loop_point : 0;
 		mmus = imus->intro;
 		loops = 0;
-		assert(next_loop != NULL);
 		Mix_HookMusicFinished(mixer_music_finished);
 	} else {
 		mmus = imus->loop;
