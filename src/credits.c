@@ -185,20 +185,6 @@ void credits_add(char *data, int time) {
 	credits.end += time + CREDITS_ENTRY_FADEOUT;
 }
 
-void credits_skysphere_draw(Vector pos) {
-	glDisable(GL_DEPTH_TEST);
-	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/sky")->gltex);
-
-	glPushMatrix();
-	glTranslatef(pos[0], pos[1], pos[2]-30);
-	float s = 370;
-	glScalef(s, s, s);
-	draw_model("skysphere");
-	glPopMatrix();
-
-	glEnable(GL_DEPTH_TEST);
-}
-
 void credits_towerwall_draw(Vector pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towerwall")->gltex);
 
@@ -224,7 +210,6 @@ void credits_init(void) {
 	memset(&credits, 0, sizeof(credits));
 	init_stage3d(&stage_3d_context);
 
-	add_model(&stage_3d_context, credits_skysphere_draw, credits_skysphere_pos);
 	add_model(&stage_3d_context, credits_towerwall_draw, stage6_towerwall_pos);
 
 	stage_3d_context.cx[0] = 0;
@@ -305,8 +290,9 @@ void credits_draw_entry(CreditsEntry *e) {
 }
 
 void credits_draw(void) {
-	//glClearColor(1, 1, 1, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	colorfill(1, 1, 1, 1); // don't use glClearColor for this, it screws up letterboxing
+
 	glPushMatrix();
 	glTranslatef(-SCREEN_W/2, 0, 0);
 	glEnable(GL_DEPTH_TEST);
@@ -379,7 +365,6 @@ void credits_preload(void) {
 	preload_resource(RES_BGM, "credits", RESF_OPTIONAL);
 	preload_resource(RES_SHADER, "tower_wall", RESF_DEFAULT);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
-		"stage6/sky",
 		"stage6/towerwall",
 		"yukkureimu",
 	NULL);
