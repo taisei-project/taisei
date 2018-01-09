@@ -63,8 +63,8 @@ typedef struct {
 	complex deathpos;
 	short focus;
 
-	int graze;
-	unsigned int points;
+	uint16_t graze;
+	uint32_t points;
 
 	int lives;
 	int bombs;

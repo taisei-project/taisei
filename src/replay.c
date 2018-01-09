@@ -209,7 +209,7 @@ static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file, uint16_t versi
 	SDL_WriteU8(file, stg->plr_inputflags);
 
 	if(version >= REPLAY_STRUCT_VERSION_TS102000_REV2) {
-		SDL_WriteU8(file, stg->plr_graze);
+		SDL_WriteLE16(file, stg->plr_graze);
 	}
 
 	SDL_WriteLE16(file, stg->numevents);
@@ -437,7 +437,7 @@ static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, con
 		CHECKPROP(stg->plr_inputflags = SDL_ReadU8(file), u);
 
 		if(version >= REPLAY_STRUCT_VERSION_TS102000_REV2) {
-			CHECKPROP(stg->plr_graze = SDL_ReadU8(file), u);
+			CHECKPROP(stg->plr_graze = SDL_ReadLE16(file), u);
 		}
 
 		CHECKPROP(stg->numevents = SDL_ReadLE16(file), u);

@@ -698,7 +698,10 @@ void player_fix_input(Player *plr) {
 }
 
 void player_graze(Player *plr, complex pos, int pts, int effect_intensity) {
-	plr->graze++;
+	if(!(++plr->graze)) {
+		log_warn("Graze counter overflow");
+		plr->graze = 0xffff;
+	}
 
 	player_add_points(plr, pts);
 	play_sound("graze");
