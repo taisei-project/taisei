@@ -225,13 +225,16 @@ void player_logic(Player* plr) {
 			}
 		}
 
-		Enemy *en;
-		for(en = global.enemies; en; en = en->next)
-			if(en->hp > ENEMY_IMMUNE)
-				en->hp -= 300;
+		const int damage = 100;
+
+		for(Enemy *en = global.enemies; en; en = en->next) {
+			if(en->hp > ENEMY_IMMUNE) {
+				en->hp -= damage;
+			}
+		}
 
 		if(global.boss) {
-			boss_damage(global.boss, 30);
+			boss_damage(global.boss, damage);
 		}
 
 		stage_clear_hazards(CLEAR_HAZARDS_ALL);
