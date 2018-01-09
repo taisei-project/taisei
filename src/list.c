@@ -69,7 +69,8 @@ List* list_append(List **dest, List *elem) {
 	return list_insert(&end, elem);
 }
 
-List* list_insert_at_priority(List **list_head, List *elem, int prio, ListPriorityFunc prio_func) {
+__attribute__((hot))
+static List* list_insert_at_priority(List **list_head, List *elem, int prio, ListPriorityFunc prio_func, bool head) {
 	assert(list_head != NULL);
 	assert(elem != NULL);
 	assert(prio_func != NULL);
@@ -84,9 +85,16 @@ List* list_insert_at_priority(List **list_head, List *elem, int prio, ListPriori
 	int dest_prio = prio_func(dest);
 	int candidate_prio = dest_prio;
 
-	for(List *e = dest->next; e && (candidate_prio = prio_func(e)) <= prio; e = e->next) {
-		dest = e;
-		dest_prio = candidate_prio;
+	if(head) {
+		for(List *e = dest->next; e && (candidate_prio = prio_func(e)) <  prio; e = e->next) {
+			dest = e;
+			dest_prio = candidate_prio;
+		}
+	} else {
+		for(List *e = dest->next; e && (candidate_prio = prio_func(e)) <= prio; e = e->next) {
+			dest = e;
+			dest_prio = candidate_prio;
+		}
 	}
 
 	if(dest == *list_head && dest_prio > prio) {
@@ -111,6 +119,14 @@ List* list_insert_at_priority(List **list_head, List *elem, int prio, ListPriori
 	}
 
 	return elem;
+}
+
+List* list_insert_at_priority_head(List **dest, List *elem, int prio, ListPriorityFunc prio_func){
+	return list_insert_at_priority(dest, elem, prio, prio_func, true);
+}
+
+List* list_insert_at_priority_tail(List **dest, List *elem, int prio, ListPriorityFunc prio_func){
+	return list_insert_at_priority(dest, elem, prio, prio_func, false);
 }
 
 List* list_unlink(List **dest, List *elem) {

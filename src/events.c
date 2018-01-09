@@ -132,7 +132,7 @@ static bool events_invoke_handlers(SDL_Event *event, ListContainer *h_list, Even
 
 		// merge the array into the list copy, respecting priority
 		for(EventHandler *h = h_array; h->proc; ++h) {
-			list_insert_at_priority(
+			list_insert_at_priority_tail(
 				&merged_list,
 				list_wrap_container(h),
 				real_priority(h->priority),
@@ -177,7 +177,7 @@ void events_register_handler(EventHandler *handler) {
 	}
 
 	assert(handler_alloc->priority > EPRIO_DEFAULT);
-	list_insert_at_priority(
+	list_insert_at_priority_tail(
 		&global_handlers,
 		list_wrap_container(handler_alloc),
 		handler_alloc->priority,

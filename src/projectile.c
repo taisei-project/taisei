@@ -110,7 +110,7 @@ static int projectile_sizeprio_func(List *vproj) {
 }
 
 List* proj_insert_sizeprio(List **dest, List *elem) {
-	return list_insert_at_priority(dest, elem, projectile_sizeprio_func(elem), projectile_sizeprio_func);
+	return list_insert_at_priority_tail(dest, elem, projectile_sizeprio_func(elem), projectile_sizeprio_func);
 }
 
 static int projectile_colorprio_func(List *vproj) {
@@ -129,7 +129,7 @@ static int projectile_colorprio_func(List *vproj) {
 }
 
 List* proj_insert_colorprio(List **dest, List *elem) {
-	return list_insert_at_priority(dest, elem, projectile_colorprio_func(elem), projectile_colorprio_func);
+	return list_insert_at_priority_head(dest, elem, projectile_colorprio_func(elem), projectile_colorprio_func);
 	// return list_push(dest, elem);
 }
 

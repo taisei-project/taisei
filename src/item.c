@@ -43,7 +43,7 @@ Item* create_item(complex pos, complex v, ItemType type) {
 	}
 
 	Item *i = (Item*)objpool_acquire(stage_object_pools.items);
-	list_insert_at_priority(&global.items, i, type, item_prio);
+	list_insert_at_priority_tail(&global.items, i, type, item_prio);
 
 	i->pos = pos;
 	i->pos0 = pos;

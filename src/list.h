@@ -43,7 +43,8 @@ typedef List* (*ListInsertionRule)(List **dest, List *elem);
 List* list_insert(List **dest, List *elem);
 List* list_push(List **dest, List *elem);
 List* list_append(List **dest, List *elem);
-List* list_insert_at_priority(List **dest, List *elem, int prio, ListPriorityFunc prio_func) __attribute__((hot));
+List* list_insert_at_priority_head(List **dest, List *elem, int prio, ListPriorityFunc prio_func) __attribute__((hot));
+List* list_insert_at_priority_tail(List **dest, List *elem, int prio, ListPriorityFunc prio_func) __attribute__((hot));
 List* list_pop(List **dest);
 List* list_unlink(List **dest, List *elem);
 void* list_foreach(List **dest, ListForeachCallback callback, void *arg);
@@ -81,8 +82,11 @@ ListContainer* list_wrap_container(void *data);
 #define list_append(dest,elem) \
     (LIST_CAST_RETURN(elem) list_append(LIST_CAST(dest, **), LIST_CAST(elem, *)))
 
-#define list_insert_at_priority(dest,elem,prio,prio_func) \
-    (LIST_CAST_RETURN(elem) list_insert_at_priority(LIST_CAST(dest, **), LIST_CAST(elem, *), prio, prio_func))
+#define list_insert_at_priority_head(dest,elem,prio,prio_func) \
+    (LIST_CAST_RETURN(elem) list_insert_at_priority_head(LIST_CAST(dest, **), LIST_CAST(elem, *), prio, prio_func))
+
+#define list_insert_at_priority_tail(dest,elem,prio,prio_func) \
+    (LIST_CAST_RETURN(elem) list_insert_at_priority_tail(LIST_CAST(dest, **), LIST_CAST(elem, *), prio, prio_func))
 
 #define list_pop(dest) \
     (LIST_CAST_RETURN(*(dest)) list_pop(LIST_CAST(dest, **)))
