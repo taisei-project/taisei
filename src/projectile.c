@@ -436,7 +436,7 @@ Projectile* spawn_projectile_clear_effect(Projectile *proj) {
 }
 
 bool clear_projectile(Projectile **projlist, Projectile *proj, bool force, bool now) {
-	if(!force && !projectile_is_clearable(proj)) {
+	if(proj->type >= PlrProj || (!force && !projectile_is_clearable(proj))) {
 		return false;
 	}
 
