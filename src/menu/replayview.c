@@ -21,7 +21,6 @@
 // Type of MenuData.context
 typedef struct ReplayviewContext {
 	MenuData *submenu;
-	int pickedstage;
 	double sub_fade;
 } ReplayviewContext;
 
@@ -35,25 +34,23 @@ void start_replay(MenuData *menu, void *arg) {
 	ReplayviewItemContext *ictx = arg;
 	ReplayviewContext *mctx = menu->context;
 
+	int stagenum = 0;
+
+	if(mctx->submenu) {
+		stagenum = mctx->submenu->cursor;
+	}
+
 	Replay *rpy = ictx->replay;
 
 	if(!replay_load(rpy, ictx->replayname, REPLAY_READ_EVENTS)) {
 		return;
 	}
 
-	replay_play(ictx->replay, mctx->pickedstage);
+	replay_play(ictx->replay, stagenum);
 	start_bgm("menu");
 }
 
 static void replayview_draw_stagemenu(MenuData*);
-
-static void replayview_end_stageselect(MenuData *m) {
-	ReplayviewContext *ctx = m->context;
-
-	if(m->cursor >= 0) {
-		ctx->pickedstage = m->cursor;
-	}
-}
 
 MenuData* replayview_sub_stageselect(MenuData *menu, ReplayviewItemContext *ictx) {
 	MenuData *m = malloc(sizeof(MenuData));
@@ -61,7 +58,6 @@ MenuData* replayview_sub_stageselect(MenuData *menu, ReplayviewItemContext *ictx
 
 	create_menu(m);
 	m->draw = replayview_draw_stagemenu;
-	m->end = replayview_end_stageselect;
 	m->context = menu->context;
 	m->flags = MF_Transient | MF_Abortable;
 	m->transition = NULL;
