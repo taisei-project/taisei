@@ -834,15 +834,44 @@ void kurumi_blowwall(Boss *b, int time) {
 
 }
 
+static Projectile* vapor_particle(complex pos, Color clr) {
+	return PARTICLE(
+		.texture = "stain",
+		.color = clr,
+		.rule = timeout,
+		.draw_rule = ScaleFade,
+		.args = { 120, 0, 0.0 + 5.0*I },
+		.pos = pos,
+		.angle = M_PI*2*frand(),
+		.flags = PFLAG_DRAWADD,
+	);
+}
+
 static int kdanmaku_proj(Projectile *p, int t) {
 	int time = creal(p->args[0]);
+
 	if(t == time) {
-		p->color=rgb(0.6,0.3,1.0);
-		p->tex=get_tex("proj/flea");
-		p->args[1] = -I;
+		p->color = rgb(0.6,0.3,1.0);
+		p->tex = get_tex("proj/bullet");
+		p->args[1] = (global.plr.pos - p->pos) * 0.001;
+
+		vapor_particle(p->pos, rgba(0.6, 0.3, 1.0, 0.5));
+		PARTICLE(
+			.texture = "flare",
+			.color = rgb(1, 1, 1),
+			.rule = timeout,
+			.draw_rule = ScaleFade,
+			.args = { 30, 0, 3.0 },
+			.pos = p->pos,
+		);
+
+		play_sound("shot3");
 	}
-	if(t > time)
-		p->args[1] -= 0.01*I;
+
+	if(t > time && cabs(p->args[1]) < 2) {
+		p->args[1] *= 1.02;
+	}
+
 	p->pos += p->args[1];
 	p->angle = carg(p->args[1]);
 	return 1;
@@ -880,9 +909,11 @@ int kdanmaku_slave(Enemy *e, int t) {
 			complex p = VIEWPORT_W/(float)n*(i+psin(t*t*i*i+t*t)) + I*cimag(e->pos);
 			if(cabs(p-global.plr.pos) > 60) {
 				PROJECTILE("thickrice", p, rgb(1, 0.5, 0.5), kdanmaku_proj,
-					.args = { 400, speed*0.5*cexp(2.0*I*M_PI*sin(245*t+i*i*3501)) },
+					.args = { 160, speed*0.5*cexp(2.0*I*M_PI*sin(245*t+i*i*3501)) },
 					.flags = PFLAG_DRAWADD,
 				);
+
+				vapor_particle(p, rgba(1, 0.25 * frand(), 0.25 * frand(), 0.5));
 			}
 		}
 		play_sound_ex("redirect", 3, false);
