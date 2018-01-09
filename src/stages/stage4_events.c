@@ -840,7 +840,7 @@ static Projectile* vapor_particle(complex pos, Color clr) {
 		.color = clr,
 		.rule = timeout,
 		.draw_rule = ScaleFade,
-		.args = { 120, 0, 0.0 + 5.0*I },
+		.args = { 60, 0, 0.0 + 5.0*I },
 		.pos = pos,
 		.angle = M_PI*2*frand(),
 		.flags = PFLAG_DRAWADD,
@@ -855,7 +855,8 @@ static int kdanmaku_proj(Projectile *p, int t) {
 		p->tex = get_tex("proj/bullet");
 		p->args[1] = (global.plr.pos - p->pos) * 0.001;
 
-		vapor_particle(p->pos, rgba(0.6, 0.3, 1.0, 0.5));
+		if(frand()<0.5)
+			vapor_particle(p->pos, rgba(0.6, 0.3, 1.0, 1));
 		PARTICLE(
 			.texture = "flare",
 			.color = rgb(1, 1, 1),
@@ -913,7 +914,8 @@ int kdanmaku_slave(Enemy *e, int t) {
 					.flags = PFLAG_DRAWADD,
 				);
 
-				vapor_particle(p, rgba(1, 0.25 * frand(), 0.25 * frand(), 0.5));
+				if(frand()<0.5)
+					vapor_particle(p, rgba(1, 0.25 * frand(), 0.25 * frand(), 1));
 			}
 		}
 		play_sound_ex("redirect", 3, false);
@@ -931,6 +933,9 @@ void kurumi_danmaku(Boss *b, int time) {
 	if(time < 0)
 		return;
 
+	AT(260) {
+		aniplayer_queue(&b->ani,1,4,0);
+	}
 	AT(50) {
 		play_sound("laser1");
 		create_lasercurve2c(b->pos, 50, 100, rgb(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(I*carg(-b->pos)));
