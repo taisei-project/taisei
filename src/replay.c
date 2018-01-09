@@ -51,6 +51,7 @@ ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, D
 	s->plr_bombs = plr->bombs;
 	s->plr_bomb_fragments = plr->bomb_fragments;
 	s->plr_power = plr->power;
+	s->plr_graze = plr->graze;
 	s->plr_inputflags = plr->inputflags;
 
 	log_debug("Created a new stage %p in replay %p", (void*)s, (void*)rpy);
@@ -68,6 +69,7 @@ void replay_stage_sync_player_state(ReplayStage *stg, Player *plr) {
 	plr->bombs = stg->plr_bombs;
 	plr->bomb_fragments = stg->plr_bomb_fragments;
 	plr->power = stg->plr_power;
+	plr->graze = stg->plr_graze;
 	plr->inputflags = stg->plr_inputflags;
 }
 
@@ -172,6 +174,10 @@ static uint32_t replay_calc_stageinfo_checksum(ReplayStage *stg, uint16_t versio
 		cs += stg->flags;
 	}
 
+	if(version >= REPLAY_STRUCT_VERSION_TS102000_REV2) {
+		cs += stg->plr_graze;
+	}
+
 	log_debug("%08x", cs);
 	return cs;
 }
@@ -201,6 +207,11 @@ static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file, uint16_t versi
 	SDL_WriteU8(file, stg->plr_bombs);
 	SDL_WriteU8(file, stg->plr_bomb_fragments);
 	SDL_WriteU8(file, stg->plr_inputflags);
+
+	if(version >= REPLAY_STRUCT_VERSION_TS102000_REV2) {
+		SDL_WriteU8(file, stg->plr_graze);
+	}
+
 	SDL_WriteLE16(file, stg->numevents);
 	SDL_WriteLE32(file, 1 + ~replay_calc_stageinfo_checksum(stg, version));
 
@@ -347,6 +358,7 @@ static bool replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, s
 
 		case REPLAY_STRUCT_VERSION_TS102000_REV0:
 		case REPLAY_STRUCT_VERSION_TS102000_REV1:
+		case REPLAY_STRUCT_VERSION_TS102000_REV2:
 		{
 			if(taisei_version_read(file, &rpy->game_version) != TAISEI_VERSION_SIZE) {
 				log_warn("%s: Failed to read game version", source);
@@ -423,6 +435,11 @@ static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, con
 		CHECKPROP(stg->plr_bombs = SDL_ReadU8(file), u);
 		CHECKPROP(stg->plr_bomb_fragments = SDL_ReadU8(file), u);
 		CHECKPROP(stg->plr_inputflags = SDL_ReadU8(file), u);
+
+		if(version >= REPLAY_STRUCT_VERSION_TS102000_REV2) {
+			CHECKPROP(stg->plr_graze = SDL_ReadU8(file), u);
+		}
+
 		CHECKPROP(stg->numevents = SDL_ReadLE16(file), u);
 
 		if(replay_calc_stageinfo_checksum(stg, version) + SDL_ReadLE32(file)) {

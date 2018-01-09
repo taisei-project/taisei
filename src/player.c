@@ -30,7 +30,6 @@ void player_stage_pre_init(Player *plr) {
 	plr->recovery = 0;
 	plr->respawntime = 0;
 	plr->deathtime = -1;
-	plr->graze = 0;
 	plr->axis_lr = 0;
 	plr->axis_ud = 0;
 	plrmode_preload(plr->mode);
