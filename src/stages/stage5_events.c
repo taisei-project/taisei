@@ -780,17 +780,21 @@ void iku_cathode(Boss *b, int t) {
 
 	TIMER(&t)
 
+	FROM_TO(37, 18000, 70-global.diff*10) {
+		aniplayer_reset(&b->ani);
+		aniplayer_queue_pro(&b->ani,1,0,3,10,4);
+		aniplayer_queue_pro(&b->ani,1,0,3,0,4)->backwards=true;
+	}
 	FROM_TO(50, 18000, 70-global.diff*10) {
-		b->ani.mirrored = !b->ani.mirrored;
-		aniplayer_queue(&b->ani,1,0,5);
 		int i;
-		int c = 5+global.diff;
+		int c = 7+global.diff/2;
 
+		double speedmod = 1-0.3*(global.diff == D_Lunatic);
 		for(i = 0; i < c; i++) {
 			PROJECTILE("bigball", b->pos, rgb(0.2, 0.4, 1), induction_bullet,
 				.args = {
-					0.7*2*cexp(2.0*I*M_PI*frand()),
-					0.7*0.01*I*(1-2*(_i&1)),
+					speedmod*2*cexp(2.0*I*M_PI*frand()),
+					speedmod*0.01*I*(1-2*(_i&1)),
 					1
 				},
 				.flags = PFLAG_DRAWADD,
