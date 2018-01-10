@@ -211,21 +211,13 @@ static void stage_fade_bgm(void) {
 	fade_bgm((FPS * FADE_TIME) / 2000.0);
 }
 
-void stage_pause(void) {
-	MenuData menu;
-
-	if(global.replaymode == REPLAY_PLAY) {
-		create_ingame_menu_replay(&menu);
-	} else {
-		create_ingame_menu(&menu);
-	}
-
+static void stage_ingame_menu_loop(MenuData *menu) {
 	if(ingame_menu_interrupts_bgm()) {
 		stop_bgm(false);
 	}
 
 	pause_sounds();
-	menu_loop(&menu);
+	menu_loop(menu);
 
 	if(global.game_over) {
 		stop_sounds();
@@ -239,6 +231,18 @@ void stage_pause(void) {
 	}
 }
 
+void stage_pause(void) {
+	MenuData menu;
+
+	if(global.replaymode == REPLAY_PLAY) {
+		create_ingame_menu_replay(&menu);
+	} else {
+		create_ingame_menu(&menu);
+	}
+
+	stage_ingame_menu_loop(&menu);
+}
+
 void stage_gameover(void) {
 	if(global.stage->type == STAGE_SPELL && config_get_int(CONFIG_SPELLSTAGE_AUTORESTART)) {
 		global.game_over = GAMEOVER_RESTART;
@@ -247,38 +251,7 @@ void stage_gameover(void) {
 
 	MenuData menu;
 	create_gameover_menu(&menu);
-
-	// XXX: The save_bgm and restore_bgm code is broken.
-	// Disabled it for now, as we don't have a gameover BGM yet
-	// When we do, it needs to be fixed.
-	// It should be probably implemented by the backend, it has a better idea
-	// about how to manage its own state than the audio frontend code.
-
-	/*
-	bool interrupt_bgm = (global.stage->type != STAGE_SPELL);
-
-	if(interrupt_bgm) {
-		save_bgm();
-		start_bgm("gameover");
-	}
-	*/
-
-	pause_sounds();
-
-	if(ingame_menu_interrupts_bgm()) {
-		stop_bgm(false);
-	}
-
-	menu_loop(&menu);
-	resume_sounds();
-
-	/*
-	if(interrupt_bgm) {
-		restore_bgm();
-	}
-	*/
-
-	resume_bgm();
+	stage_ingame_menu_loop(&menu);
 }
 
 static bool stage_input_common(SDL_Event *event, void *arg) {
