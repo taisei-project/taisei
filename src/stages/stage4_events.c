@@ -815,9 +815,10 @@ void kurumi_blowwall(Boss *b, int time) {
 		killall(global.enemies);
 
 	if(time < 0) {
-		GO_TO(b, BOSS_DEFAULT_GO_POS, 0.04)
 		return;
 	}
+
+	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.04)
 
 	b->ani.stdrow=1;
 	AT(50)
@@ -933,9 +934,12 @@ void kurumi_danmaku(Boss *b, int time) {
 	if(time < 0)
 		return;
 
+	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.04)
+
 	AT(260) {
 		aniplayer_queue(&b->ani,1,4,0);
 	}
+
 	AT(50) {
 		play_sound("laser1");
 		create_lasercurve2c(b->pos, 50, 100, rgb(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(I*carg(-b->pos)));
