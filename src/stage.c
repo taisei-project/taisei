@@ -696,7 +696,10 @@ void stage_loop(StageInfo *stage) {
 
 	player_stage_post_init(&global.plr);
 	stage->procs->begin();
-	display_stage_title(stage);
+
+	if(global.stage->type != STAGE_SPELL) {
+		display_stage_title(stage);
+	}
 
 	StageFrameState fstate = { .stage = stage };
 	loop_at_fps(stage_logic_frame, stage_render_frame, &fstate, FPS);
