@@ -681,6 +681,8 @@ void scuttle_spellbg(Boss *h, int time) {
 }
 
 void wriggle_spellbg(Boss *b, int time) {
+	glColor4f(1,1,1,1);
+	fill_screen(0, 0, 768.0/1024.0, "stage3/wspellbg");
 	glColor4f(1,1,1,0.5);
 	glBlendEquation(GL_FUNC_SUBTRACT);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -692,7 +694,6 @@ void wriggle_spellbg(Boss *b, int time) {
 	fill_screen(cos(time) * 0.02, time / 30.0, 1, "stage3/wspellclouds");
 
 	glBlendEquation(GL_FUNC_ADD);
-	fill_screen(0, 0, 768.0/1024.0, "stage3/wspellbg");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glColor4f(1,1,1,1);
 }
