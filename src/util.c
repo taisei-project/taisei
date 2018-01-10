@@ -389,17 +389,16 @@ begin_frame:
             fpscounter_update(&global.fps.render);
         }
 
-        fpscounter_update(&global.fps.logic);
-        fpscounter_update(&global.fps.busy);
-
         if(lframe_action == LFRAME_STOP) {
-            video_swap_buffers();
             break;
         }
 
         if(!late_swap && rframe_action == RFRAME_SWAP) {
             video_swap_buffers();
         }
+
+        fpscounter_update(&global.fps.logic);
+        fpscounter_update(&global.fps.busy);
 
         if(lframe_action == LFRAME_SKIP) {
             continue;
