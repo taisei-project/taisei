@@ -298,8 +298,7 @@ void load_sdl_surf(SDL_Surface *surface, Texture *texture) {
 	texture->truew = nw;
 	texture->trueh = nh;
 
-
-	glTexImage2D(GL_TEXTURE_2D, 0, 4, nw, nh, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, nw, nh, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex);
 
 	free(tex);
 }
