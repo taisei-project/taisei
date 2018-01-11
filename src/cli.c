@@ -49,10 +49,10 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		{{"diff", required_argument, 0, 'd'}, "Select a difficulty (Easy/Normal/Hard/Lunatic)", "DIFF"},
 	/*	{{"sname", required_argument, 0, 'n'}, "Select stage by %s", "NAME"},*/
 		{{"shotmode", required_argument, 0, 's'}, "Select a shotmode (marisaA/youmuA/marisaB/youmuB)", "SMODE"},
-		{{"frameskip", optional_argument, 0, 'f'}, "Disable FPS limiter, render only every %s frame", "FRAME"},
 		{{"dumpstages", no_argument, 0, 'u'}, "Print a list of all stages in the game", 0},
 		{{"vfs-tree", required_argument, 0, 't'}, "Print the virtual filesystem tree starting from %s", "PATH"},
 #endif
+		{{"frameskip", optional_argument, 0, 'f'}, "Disable FPS limiter, render only every %s frame", "FRAME"},
 		{{"credits", no_argument, 0, 'c'}, "Show the credits scene and exit"},
 		{{"help", no_argument, 0, 'h'}, "Display this help"},
 		{{0,0,0,0},0,0}

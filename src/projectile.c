@@ -348,7 +348,46 @@ void proj_clrtransform_particle(Projectile *p, int t, Color c, ColorTransform *o
 	static_clrtransform_particle(c, out);
 }
 
-static inline void draw_projectile(Projectile *proj) {
+typedef enum ProjBlendMode {
+	PBM_NORMAL,
+	PBM_ADD,
+	PBM_SUB,
+} ProjBlendMode;
+
+static inline void draw_projectile(Projectile *proj, ProjBlendMode *cur_blend_mode) {
+	ProjBlendMode blend_mode;
+
+	if(proj->flags & PFLAG_DRAWADD) {
+		blend_mode = PBM_ADD;
+	} else if(proj->flags & PFLAG_DRAWSUB) {
+		blend_mode = PBM_SUB;
+	} else {
+		blend_mode = PBM_NORMAL;
+	}
+
+	if(blend_mode != *cur_blend_mode) {
+		if(*cur_blend_mode == PBM_SUB) {
+			glBlendEquation(GL_FUNC_ADD);
+		}
+
+		switch(blend_mode) {
+			case PBM_NORMAL:
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				break;
+
+			case PBM_ADD:
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+				break;
+
+			case PBM_SUB:
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+				glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+				break;
+		}
+
+		*cur_blend_mode = blend_mode;
+	}
+
 #ifdef PROJ_DEBUG
 	static Projectile prev_state;
 	memcpy(&prev_state, proj, sizeof(Projectile));
@@ -375,21 +414,32 @@ static inline void draw_projectile(Projectile *proj) {
 }
 
 void draw_projectiles(Projectile *projs, ProjPredicate predicate) {
+	ProjBlendMode blend_mode = PBM_NORMAL;
+
 	glUseProgram(recolor_get_shader()->prog);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	if(predicate) {
 		for(Projectile *proj = projs; proj; proj = proj->next) {
 			if(predicate(proj)) {
-				draw_projectile(proj);
+				draw_projectile(proj, &blend_mode);
 			}
 		}
 	} else {
 		for(Projectile *proj = projs; proj; proj = proj->next) {
-			draw_projectile(proj);
+			draw_projectile(proj, &blend_mode);
 		}
 	}
 
 	glUseProgram(0);
+
+	if(blend_mode != PBM_NORMAL) {
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		if(blend_mode == PBM_SUB) {
+			glBlendEquation(GL_FUNC_ADD);
+		}
+	}
 }
 
 bool projectile_in_viewport(Projectile *proj) {
@@ -584,20 +634,7 @@ static inline void apply_color(Projectile *proj, Color c) {
 
 void ProjDrawCore(Projectile *proj, Color c) {
 	apply_color(proj, c);
-
-	if(proj->flags & PFLAG_DRAWADD) {
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-		draw_texture_p(0, 0, proj->tex);
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-	} else if(proj->flags & PFLAG_DRAWSUB) {
-		glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-		draw_texture_p(0, 0, proj->tex);
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-		glBlendEquation(GL_FUNC_ADD);
-	} else {
-		draw_texture_p(0, 0, proj->tex);
-	}
+	draw_texture_p(0, 0, proj->tex);
 }
 
 void ProjDraw(Projectile *proj, int t) {

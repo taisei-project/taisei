@@ -58,7 +58,7 @@ Laser *create_laserline_ab(complex a, complex b, float width, float charge, floa
 	return create_laser(a, 200, dur, clr, las_linear, static_laser, m, charge + I*width, 0, 0);
 }
 
-void draw_laser_curve_instanced(Laser *l) {
+static void draw_laser_curve_instanced(Laser *l) {
 	static float clr[4];
 	float t;
 	int c;
@@ -84,11 +84,6 @@ void draw_laser_curve_instanced(Laser *l) {
 		return;
 	}
 
-	glBindTexture(GL_TEXTURE_2D, tex->gltex);
-
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-	glUseProgram(l->shader->prog);
 	parse_color_array(l->color, clr);
 	glUniform4fv(uniloc(l->shader, "clr"), 1, clr);
 
@@ -106,18 +101,13 @@ void draw_laser_curve_instanced(Laser *l) {
 	glUniform1i(uniloc(l->shader, "span"), c*2);
 
 	glDrawArraysInstanced(GL_QUADS, 0, 4, c*2);
-
-	glUseProgram(0);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-void draw_laser_curve(Laser *laser) {
+static void draw_laser_curve(Laser *laser) {
 	Texture *tex = get_tex("part/lasercurve");
 	complex last;
 
-	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 	parse_color_call(laser->color, glColor4f);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 	float t = (global.frames - laser->birthtime)*laser->speed - laser->timespan + laser->timeshift;
 	if(t < 0)
@@ -150,22 +140,49 @@ void draw_laser_curve(Laser *laser) {
 		glPopMatrix();
 	}
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	glColor4f(1,1,1,1);
 }
 
 void draw_lasers(int bgpass) {
 	Laser *laser;
+	bool first = true;
+	int program = 0;
 
 	for(laser = global.lasers; laser; laser = laser->next) {
-		if(bgpass != laser->in_background)
+		if(bgpass != laser->in_background) {
 			continue;
+		}
 
-		if(laser->shader && glext.draw_instanced)
+		if(first) {
+			Texture *tex = get_tex("part/lasercurve");
+			glBindTexture(GL_TEXTURE_2D, tex->gltex);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+			first = false;
+		}
+
+		if(laser->shader && glext.draw_instanced) {
+			if(program != laser->shader->prog) {
+				program = laser->shader->prog;
+				glUseProgram(program);
+			}
+
 			draw_laser_curve_instanced(laser);
-		else
+		} else {
+			if(program != 0) {
+				program = 0;
+				glUseProgram(program);
+			}
+
 			draw_laser_curve(laser);
+		}
+	}
+
+	if(!first) {
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
+
+	if(program != 0) {
+		glUseProgram(0);
 	}
 }
 
