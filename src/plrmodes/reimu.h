@@ -15,3 +15,5 @@
 extern PlayerCharacter character_reimu;
 extern PlayerMode plrmode_reimu_a;
 extern PlayerMode plrmode_reimu_b;
+
+void reimu_yinyang_visual(Enemy *e, int t, bool render);
