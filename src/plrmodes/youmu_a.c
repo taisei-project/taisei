@@ -70,9 +70,8 @@ static void spawn_stardust(complex pos, Color clr, int timeout, complex v) {
         .draw_rule = myon_draw_trail,
         .rule = myon_particle_rule,
         .args = { timeout, v, 0.2 + 0.1 * frand(), 1 },
-        .type = PlrProj,
         .angle = M_PI*2*frand(),
-        .flags = PFLAG_DRAWADD,
+        .flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
     );
 }
 
@@ -92,8 +91,7 @@ static void myon_spawn_trail(Enemy *e, int t) {
             .draw_rule = myon_draw_trail,
             .rule = myon_particle_rule,
             .args = { 60, -I*0.0*cexp(I*M_PI/16*sin(t)), -0.2, 0 },
-            .flags = PFLAG_DRAWADD,
-            .type = PlrProj,
+            .flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
             .angle = M_PI*2*frand(),
         );
 
@@ -104,8 +102,7 @@ static void myon_spawn_trail(Enemy *e, int t) {
             .draw_rule = Shrink,
             .rule = myon_particle_rule,
             .args = { 10, cexp(I*M_PI*2*frand())*0.5, 0.2, 0 },
-            .flags = PFLAG_DRAWADD,
-            .type = PlrProj,
+            .flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
             .angle = M_PI*2*frand(),
         );
     }
@@ -117,7 +114,7 @@ static void myon_spawn_trail(Enemy *e, int t) {
         .rule = myon_flare_particle_rule,
         .args = { 40, f * stardust_v },
         .draw_rule = Shrink,
-        .type = PlrProj,
+        .flags = PFLAG_NOREFLECT,
         .angle = M_PI*2*frand(),
     );
 
@@ -151,8 +148,7 @@ static int myon_proj(Projectile *p, int t) {
         .draw_rule = myon_draw_proj_trail,
         .rule = timeout_linear,
         .args = { 10, p->args[0]*0.8, 0.6, 0 },
-        .flags = PFLAG_DRAWADD,
-        .type = PlrProj,
+        .flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
         .angle = p->angle,
     );
 

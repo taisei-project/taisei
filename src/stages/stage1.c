@@ -45,7 +45,7 @@ struct stage1_spells_s stage1_spells = {
 };
 
 static bool particle_filter(Projectile *part) {
-	return part->type < PlrProj;
+	return !(part->flags & PFLAG_NOREFLECT);
 }
 
 static void stage1_bg_draw(Vector pos) {

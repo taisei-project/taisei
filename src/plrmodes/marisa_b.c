@@ -45,9 +45,8 @@ static int marisa_star_projectile(Projectile *p, int t) {
 		.rule = timeout,
         .args = { 8 },
 		.draw_rule = marisa_star_trail_draw,
-		.type = PlrProj,
         .angle = p->angle,
-        .flags = PFLAG_DRAWADD,
+        .flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
 	);
 
 	if(t == EVENT_DEATH) {
@@ -58,9 +57,8 @@ static int marisa_star_projectile(Projectile *p, int t) {
 			.rule = timeout,
 			.draw_rule = GrowFade,
 			.args = { 40, 2 },
-			.type = PlrProj,
 			.angle = frand() * 2 * M_PI,
-			.flags = PFLAG_DRAWADD,
+			.flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
 		);
 	}
 
@@ -148,27 +146,25 @@ static int marisa_star_orbit(Enemy *e, int t) {
 
 	if(t%1 == 0) {
 		PARTICLE(
-			.texture_ptr=get_tex("part/lightningball"),
-			.pos=e->pos,
-			.color=rgba(clr[0],clr[1],clr[2],clr[3]/2),
-			.rule=timeout,
-			.draw_rule=Fade,
-			.flags=PFLAG_DRAWADD,
+			.texture_ptr = get_tex("part/lightningball"),
+			.pos = e->pos,
+			.color = rgba(clr[0],clr[1],clr[2],clr[3]/2),
+			.rule = timeout,
+			.draw_rule = Fade,
+			.flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
 			.args = { 10, 2 },
-			.type = PlrProj,
 		);
 	}
 
 	if(t%(10-t/30) == 0 && tb < fadetime) {
 		PARTICLE(
-			.texture="maristar_orbit",
-			.pos=e->pos,
-			.color=rgba(clr[0],clr[1],clr[2],1),
-			.rule=marisa_star_orbit_star,
-			.draw_rule=GrowFade,
-			.flags=PFLAG_DRAWADD,
+			.texture = "maristar_orbit",
+			.pos = e->pos,
+			.color = rgba(clr[0],clr[1],clr[2],1),
+			.rule = marisa_star_orbit_star,
+			.draw_rule = GrowFade,
+			.flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
 			.args = { 150, -5*dir/cabs(dir), 3 },
-			.type = PlrProj,
 		);
 	}
 

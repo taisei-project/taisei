@@ -371,7 +371,7 @@ void player_death(Player *plr) {
 				.rule = timeout_linear,
 				.draw_rule = Shrink,
 				.args = { 40, (3+afrand(0)*7)*cexp(I*tsrand_a(1)) },
-				.type = PlrProj,
+				.flags = PFLAG_NOREFLECT,
 			);
 		}
 
@@ -384,8 +384,7 @@ void player_death(Player *plr) {
 			.rule = timeout,
 			.draw_rule = GrowFade,
 			.args = { 35, 2.4 },
-			.type = PlrProj,
-			.flags = PFLAG_DRAWADD,
+			.flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
 		);
 
 		plr->deathtime = global.frames + DEATHBOMB_TIME;
@@ -715,7 +714,7 @@ void player_graze(Player *plr, complex pos, int pts, int effect_intensity) {
 			.rule = timeout_linear,
 			.draw_rule = Shrink,
 			.args = { 5 + 5 * afrand(2), (1+afrand(0)*5)*cexp(I*M_PI*2*afrand(1)) },
-			.type = PlrProj,
+			.flags = PFLAG_NOREFLECT,
 		);
 	}
 }

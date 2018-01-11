@@ -56,6 +56,7 @@ typedef enum ProjFlags {
 	PFLAG_NOCOLLISIONEFFECT = (1 << 6),
 	PFLAG_NOCLEARBONUS = (1 << 7),
 	PFLAG_GRAZESPAM = (1 << 8),
+	PFLAG_NOREFLECT = (1 << 9),
 } ProjFlags;
 
 struct Projectile {

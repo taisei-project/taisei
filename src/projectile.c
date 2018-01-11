@@ -389,6 +389,11 @@ static inline void draw_projectile(Projectile *proj, ProjBlendMode *cur_blend_mo
 	}
 
 #ifdef PROJ_DEBUG
+	if(proj->type == PlrProj) {
+		set_debug_info(&proj->debug);
+		log_fatal("Projectile with type PlrProj");
+	}
+
 	static Projectile prev_state;
 	memcpy(&prev_state, proj, sizeof(Projectile));
 
@@ -460,12 +465,11 @@ static Projectile* spawn_projectile_death_effect(Projectile *proj) {
 		.texture_ptr = proj->tex,
 		.pos = proj->pos,
 		.color = proj->color,
-		.flags = proj->flags,
+		.flags = proj->flags | PFLAG_NOREFLECT,
 		.color_transform_rule = proj->color_transform_rule,
 		.rule = timeout_linear,
 		.draw_rule = DeathShrink,
 		.args = { 10, 5*cexp(proj->angle*I) },
-		.type = proj->type >= PlrProj ? PlrProj : Particle,
 	);
 }
 
@@ -799,8 +803,8 @@ void petal_explosion(int n, complex pos) {
 				afrand(4) + afrand(5)*I,
 				afrand(1) + 360.0*I*afrand(0),
 			},
-			.flags = PFLAG_DRAWADD,
-			.type = PlrProj, // hack: never reflect these in stage1 water (GL_CULL_FACE conflict)
+			// hack: never reflect these in stage1 water (GL_CULL_FACE conflict)
+			.flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
 		);
 	}
 }

@@ -1068,7 +1068,6 @@ int broglie_charge(Projectile *p, int t) {
 			.rule = timeout,
 			.draw_rule = GrowFade,
 			.args = { 35, 2.4 },
-			.type = PlrProj,
 			.flags = PFLAG_DRAWADD,
 		);
 

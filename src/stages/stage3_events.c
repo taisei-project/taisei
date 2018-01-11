@@ -809,7 +809,6 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 				.rule = timeout,
 				.draw_rule = GrowFade,
 				.args = { 35 - 5 * frand(), 1 + 0.5 * frand() },
-				.type = PlrProj,
 				.flags = PFLAG_DRAWADD,
 				.angle = M_PI * 2 * frand(),
 			);

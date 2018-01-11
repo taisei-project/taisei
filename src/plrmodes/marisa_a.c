@@ -96,7 +96,7 @@ static void trace_laser(Enemy *e, complex vel, int damage) {
                     3 + 5 * afrand(2),
                     (2+afrand(0)*6)*cexp(I*M_PI*2*afrand(1))
                 },
-                .type = PlrProj,
+                .flags = PFLAG_NOREFLECT,
             );
 
             if(col.type == PCOL_ENEMY) {

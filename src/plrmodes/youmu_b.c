@@ -75,8 +75,7 @@ static Projectile* youmu_homing_trail(Projectile *p, complex v, int to) {
         .rule = timeout_linear,
         .draw_rule = youmu_homing_draw_trail,
         .args = { to, v },
-        .type = PlrProj,
-        // .flags = p->flags,
+        .flags = PFLAG_NOREFLECT,
         .color_transform_rule = p->color_transform_rule,
     );
 }
@@ -289,10 +288,9 @@ static int youmu_slash(Enemy *e, int t) {
             .pos = e->pos+pos,
             .draw_rule = youmu_particle_slice_draw,
             .rule = youmu_particle_slice_logic,
-	    .flags = PFLAG_DRAWADD,
+            .flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
             .args = { 100 },
             .angle = carg(pos),
-            .type = PlrProj,
         );
     }
 
