@@ -761,7 +761,7 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 	if(time >= creal(p->args[1])) {
 		if(p->args[2]) {
 			complex dist = global.plr.pos - p->pos;
-			complex accel = (0.1 + 0.2 * (global.diff / (float)D_Lunatic)) * cexp(I*carg(dist));
+			complex accel = (0.1 + 0.2 * (global.diff / (float)D_Lunatic)) * dist / cabs(dist);
 			float deathtime = sqrt(2*cabs(dist)/cabs(accel));
 
 			Laser *l = create_lasercurve2c(p->pos, deathtime, deathtime, rgb(0.4, 0.9, 1.0), las_accel, 0, accel);
@@ -775,32 +775,49 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 				.rule = wriggle_rocket_laserbullet,
 				.args = {
 					add_ref(l),
-					deathtime - 1
+					deathtime,
 				}
 			);
 
 			play_sound("redirect");
 			play_sound("shot_special1");
 		} else {
-			int cnt = floor(2 + frand() * global.diff), i;
+			int cnt = 22, i;
+			float rot = (global.frames - global.boss->current->starttime) * 0.015;
+			Color c = hsl(fmod(rot, M_PI*2)/(M_PI/2), 1.0, 0.5);
 
 			for(i = 0; i < cnt; ++i) {
+				float f = (float)i/cnt;
+
 				PROJECTILE(
 					.texture = "thickrice",
 					.pos = p->pos,
-					.color = (i % 2) ? rgb(1.0, 0.4, 0.6) : rgb(0.6, 0.4, 1.0),
+					.color = c,
 					.rule = asymptotic,
 					.args = {
-						(0.1 + frand()) * cexp(I*(2*i*M_PI/cnt+time)),
-						5
+						(1.0 + psin(M_PI*18*f)) * cexp(I*(2.0*M_PI*f+rot)),
+						2 + 2 * global.diff
 					},
 					.flags = PFLAG_DRAWADD,
 				);
 			}
 
+			PARTICLE(
+				.texture = "blast",
+				.pos = p->pos,
+				.color = c,
+				.rule = timeout,
+				.draw_rule = GrowFade,
+				.args = { 35 - 5 * frand(), 1 + 0.5 * frand() },
+				.type = PlrProj,
+				.flags = PFLAG_DRAWADD,
+				.angle = M_PI * 2 * frand(),
+			);
+
 			// FIXME: better sound
 			play_sound("enemydeath");
 			play_sound("shot1");
+			play_sound("shot3");
 		}
 
 		return ACTION_DESTROY;
@@ -863,7 +880,9 @@ static int wriggle_spell_slave(Enemy *e, int time) {
 	}
 
 	// moonlight rocket rockets
-	if(!creal(e->args[3]) && !(time % 140)) {
+	int rocket_period = (160 + 20 * (D_Lunatic - global.diff));
+
+	if(!creal(e->args[3]) && !((time + rocket_period/2) % rocket_period)) {
 		Laser *l;
 		float dt = 60;
 
