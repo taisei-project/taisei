@@ -384,7 +384,7 @@ void player_death(Player *plr) {
 			.rule = timeout,
 			.draw_rule = GrowFade,
 			.args = { 35, 2.4 },
-			.flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
+			.flags = PFLAG_DRAWADD | PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 		);
 
 		plr->deathtime = global.frames + DEATHBOMB_TIME;

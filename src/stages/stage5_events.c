@@ -217,7 +217,7 @@ static void lightning_particle(complex pos, int t) {
 		PARTICLE(part, pos, rgb(1.0, 1.0, 1.0), timeout,
 			.args = { 20 },
 			.draw_rule = Fade,
-			.flags = PFLAG_DRAWADD,
+			.flags = PFLAG_DRAWADD | PFLAG_REQUIREDPARTICLE,
 			.angle = frand()*2*M_PI,
 		);
 	}
@@ -333,7 +333,7 @@ void iku_slave_visual(Enemy *e, int t, bool render) {
 			.draw_rule = Fade,
 			.rule = enemy_flare,
 			.args = { 50, offset*0.1, add_ref(e) },
-			.flags = PFLAG_DRAWADD,
+			.flags = PFLAG_DRAWADD | PFLAG_REQUIREDPARTICLE,
 		);
 	}
 }

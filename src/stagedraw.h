@@ -15,3 +15,4 @@ void stage_draw_preload(void);
 void stage_draw_hud(void);
 void stage_draw_foreground(void);
 void stage_draw_scene(StageInfo *stage);
+bool stage_should_draw_particle(Projectile *p);

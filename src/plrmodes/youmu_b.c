@@ -149,7 +149,7 @@ static Projectile* youmu_trap_trail(Projectile *p, complex v, int t) {
 
 static int youmu_trap(Projectile *p, int t) {
     if(t == EVENT_DEATH) {
-        PARTICLE("blast", p->pos, 0, blast_timeout, { 15 }, .draw_rule = Blast);
+        PARTICLE("blast", p->pos, 0, blast_timeout, { 15 }, .draw_rule = Blast, .flags = PFLAG_REQUIREDPARTICLE);
         return 1;
     }
 
@@ -166,8 +166,8 @@ static int youmu_trap(Projectile *p, int t) {
     float charge = youmu_trap_charge(t);
 
     if(!(global.plr.inputflags & INFLAG_FOCUS)) {
-        PARTICLE("blast", p->pos, 0, blast_timeout, { 20 }, .draw_rule = Blast);
-        PARTICLE("blast", p->pos, 0, blast_timeout, { 23 }, .draw_rule = Blast);
+        PARTICLE("blast", p->pos, 0, blast_timeout, { 20 }, .draw_rule = Blast, .flags = PFLAG_REQUIREDPARTICLE);
+        PARTICLE("blast", p->pos, 0, blast_timeout, { 23 }, .draw_rule = Blast, .flags = PFLAG_REQUIREDPARTICLE);
 
         int cnt = rint(creal(p->args[2]) * (0.25 + 0.75 * charge));
         int dmg = cimag(p->args[2]);

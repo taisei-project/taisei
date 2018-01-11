@@ -114,7 +114,7 @@ static void myon_spawn_trail(Enemy *e, int t) {
         .rule = myon_flare_particle_rule,
         .args = { 40, f * stardust_v },
         .draw_rule = Shrink,
-        .flags = PFLAG_NOREFLECT,
+        .flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
         .angle = M_PI*2*frand(),
     );
 

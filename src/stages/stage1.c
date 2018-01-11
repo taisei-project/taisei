@@ -14,6 +14,7 @@
 #include "global.h"
 #include "stage.h"
 #include "stageutils.h"
+#include "stagedraw.h"
 
 /*
  *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
@@ -45,7 +46,7 @@ struct stage1_spells_s stage1_spells = {
 };
 
 static bool particle_filter(Projectile *part) {
-	return !(part->flags & PFLAG_NOREFLECT);
+	return !(part->flags & PFLAG_NOREFLECT) && stage_should_draw_particle(part);
 }
 
 static void stage1_bg_draw(Vector pos) {

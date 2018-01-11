@@ -73,9 +73,9 @@ void* _delete_enemy(List **enemies, List* enemy, void *arg) {
 			);
 		}
 
-		PARTICLE("blast", e->pos, 0, blast_timeout, { 20 }, .draw_rule = Blast);
-		PARTICLE("blast", e->pos, 0, blast_timeout, { 20 }, .draw_rule = Blast);
-		PARTICLE("blast", e->pos, 0, blast_timeout, { 15 }, .draw_rule = GrowFade);
+		PARTICLE("blast", e->pos, 0, blast_timeout, { 20 }, .draw_rule = Blast, .flags = PFLAG_REQUIREDPARTICLE);
+		PARTICLE("blast", e->pos, 0, blast_timeout, { 20 }, .draw_rule = Blast, .flags = PFLAG_REQUIREDPARTICLE);
+		PARTICLE("blast", e->pos, 0, blast_timeout, { 15 }, .draw_rule = GrowFade, .flags = PFLAG_REQUIREDPARTICLE);
 	}
 
 	e->logic_rule(e, EVENT_DEATH);

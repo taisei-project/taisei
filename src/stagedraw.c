@@ -273,6 +273,10 @@ static void stage_render_bg(StageInfo *stage) {
 	return;
 }
 
+bool stage_should_draw_particle(Projectile *p) {
+	return (p->flags & PFLAG_REQUIREDPARTICLE) || config_get_int(CONFIG_PARTICLES);
+}
+
 static void stage_draw_objects(void) {
 	if(global.boss) {
 		draw_boss_background(global.boss);
@@ -282,7 +286,11 @@ static void stage_draw_objects(void) {
 
 	draw_items();
 	draw_projectiles(global.projs, NULL);
-	draw_projectiles(global.particles, NULL);
+	draw_projectiles(global.particles,
+		config_get_int(CONFIG_PARTICLES)
+			? NULL
+			: stage_should_draw_particle
+	);
 	draw_lasers(true);
 	draw_enemies(global.enemies);
 	draw_lasers(false);

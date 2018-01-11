@@ -238,6 +238,7 @@ void Scythe(Enemy *e, int t, bool render) {
 		.rule = timeout,
 		.args = { 8, e->args[2] },
 		.angle = creal(e->args[1]) - M_PI/2,
+		.flags = PFLAG_REQUIREDPARTICLE,
 	);
 
 	PARTICLE(
@@ -1989,7 +1990,7 @@ static int elly_toe_boson(Projectile *p, int t) {
 		PARTICLE("lasercurve", posLookahead, boson_color(num_in_trail, warps_initial - warps_left + 1), timeout_linear,
 				.draw_rule = Fade,
 				.args = { 10, p->args[0] },
-				.flags = PFLAG_DRAWADD,
+				.flags = PFLAG_DRAWADD | PFLAG_REQUIREDPARTICLE,
 				.insertion_rule = proj_insert_colorprio,
 		);
 	}
