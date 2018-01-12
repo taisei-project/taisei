@@ -11,11 +11,7 @@ version_deps += custom_target('version information',
 if host_machine.system() == 'windows'
     winmod = import('windows')
 
-    # HACK: compile_resources only accepts strings, not generated dependencies.
-    # We still want to generate this every time though.
-
-    # This is unreliable.
-    # https://github.com/mesonbuild/meson/issues/2807
+    # NOTE: this code requires https://github.com/mesonbuild/meson/pull/2815
 
     rcpath = join_paths(meson.current_build_dir(), 'taisei.rc')
     rcdefs = [
@@ -28,12 +24,6 @@ if host_machine.system() == 'windows'
         rcdefs += ['-DBUILDTYPE_DEFINE=#define RELEASE_BUILD']
     endif
 
-    c = run_command(preprocess_command, 'taisei.rc.in', rcpath, rcdefs)
-
-    if c.returncode() != 0
-        error('Failed to generate Windows resource file:\n' + c.stderr())
-    endif
-
     rc_target = custom_target('Windows resource file',
         command : [preprocess_command, rcdefs, '@INPUT@', '@OUTPUT@'],
         build_always : true,
@@ -41,8 +31,7 @@ if host_machine.system() == 'windows'
         output : 'taisei.rc',
     )
 
-    version_deps += rc_target
-    version_deps += winmod.compile_resources(rc_target.full_path())
+    version_deps += winmod.compile_resources(rc_target)
 
     # msvcrt is dumb and only supports up to c89.
     # with this defined, alternative implementations from mingw for e.g. the
