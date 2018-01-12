@@ -75,7 +75,7 @@ typedef struct PlayerMode {
 		PlayerModeThinkProc think;
 		PlayerModeShotProc shot;
 		PlayerModeBombProc bomb;
-	ShaderRule bomb_shader;
+		ShaderRule bomb_shader;
 		PlayerModeBombBgProc bombbg;
 		PlayerModePowerProc power;
 		PlayerModeSpeedModProc speed_mod;
