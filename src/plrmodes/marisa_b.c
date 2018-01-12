@@ -19,7 +19,6 @@ static void marisa_star_trail_draw(Projectile *p, int t) {
 
 	// s = 1 + t / creal(p->args[0]);
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glPushMatrix();
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
 	// glRotatef(t*10, 0, 0, 1);
@@ -28,7 +27,6 @@ static void marisa_star_trail_draw(Projectile *p, int t) {
 	ProjDrawCore(p, clr);
 	glColor4f(1,1,1,1);
 	glPopMatrix();
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 static int marisa_star_projectile(Projectile *p, int t) {
