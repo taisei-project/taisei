@@ -12,8 +12,8 @@
 #include <stdbool.h>
 
 typedef struct Music {
-    char *title;
-    void *impl;
+	char *title;
+	void *impl;
 } Music;
 
 char* bgm_path(const char *name);

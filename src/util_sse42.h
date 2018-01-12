@@ -13,7 +13,7 @@
 #include "compat.h"
 
 #ifdef HAVE_INTEL_INTRIN
-    uint32_t crc32str_sse42(uint32_t crc, const char *str) __attribute__((hot, pure));
+	uint32_t crc32str_sse42(uint32_t crc, const char *str) __attribute__((hot, pure));
 #else
-    #define crc32str_sse42 crc32str
+	#define crc32str_sse42 crc32str
 #endif

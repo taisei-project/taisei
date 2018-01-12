@@ -153,7 +153,7 @@ void player_draw(Player* plr) {
 }
 
 static void player_fail_spell(Player *plr) {
-	if(	!global.boss ||
+	if( !global.boss ||
 		!global.boss->current ||
 		global.boss->current->finished ||
 		global.boss->current->failtime ||
@@ -527,15 +527,15 @@ void player_event(Player *plr, uint8_t type, uint16_t value, bool *out_useful, b
 		if(cheat) {
 			log_warn("Cheat event in replay: [%i:%02x:%04x]", global.frames, type, value);
 
-			if( !(global.replay.flags			& REPLAY_GFLAG_CHEATS) ||
-				!(global.replay_stage->flags 	& REPLAY_SFLAG_CHEATS)) {
+			if( !(global.replay.flags           & REPLAY_GFLAG_CHEATS) ||
+				!(global.replay_stage->flags    & REPLAY_SFLAG_CHEATS)) {
 				log_warn("...but this replay was NOT properly cheat-flagged! Not cool, not cool at all");
 			}
 		}
 
 		if(type == EV_CONTINUE && (
-			!(global.replay.flags			& REPLAY_GFLAG_CONTINUES) ||
-			!(global.replay_stage->flags 	& REPLAY_SFLAG_CONTINUES))) {
+			!(global.replay.flags           & REPLAY_GFLAG_CONTINUES) ||
+			!(global.replay_stage->flags    & REPLAY_SFLAG_CONTINUES))) {
 			log_warn("Continue event in replay: [%i:%02x:%04x], but this replay was not properly continue-flagged", global.frames, type, value);
 		}
 	}
@@ -624,10 +624,10 @@ void player_applymovement(Player *plr) {
 	bool gamepad = player_applymovement_gamepad(plr);
 	player_ani_moving(plr,false,false);
 
-	int up		=	plr->inputflags & INFLAG_UP,
-		down	=	plr->inputflags & INFLAG_DOWN,
-		left	=	plr->inputflags & INFLAG_LEFT,
-		right	=	plr->inputflags & INFLAG_RIGHT;
+	int up      =   plr->inputflags & INFLAG_UP,
+		down    =   plr->inputflags & INFLAG_DOWN,
+		left    =   plr->inputflags & INFLAG_LEFT,
+		right   =   plr->inputflags & INFLAG_RIGHT;
 
 	if(left && !right) {
 		player_ani_moving(plr,true,true);
@@ -640,10 +640,10 @@ void player_applymovement(Player *plr) {
 
 	complex direction = 0;
 
-	if(up)		direction -= 1.0*I;
-	if(down)	direction += 1.0*I;
-	if(left)	direction -= 1;
-	if(right)	direction += 1;
+	if(up)      direction -= 1.0*I;
+	if(down)    direction += 1.0*I;
+	if(left)    direction -= 1;
+	if(right)   direction += 1;
 
 	if(cabs(direction))
 		direction /= cabs(direction);

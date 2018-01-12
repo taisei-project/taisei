@@ -69,9 +69,9 @@ static void reinit_fbo(FBO *fbo, float scale, int type) {
 }
 
 static void swap_fbos(FBO **fbo1, FBO **fbo2) {
-    FBO *temp = *fbo1;
-    *fbo1 = *fbo2;
-    *fbo2 = temp;
+	FBO *temp = *fbo1;
+	*fbo1 = *fbo2;
+	*fbo2 = temp;
 }
 
 void init_fbo_pair(FBOPair *pair, float scale, int type) {

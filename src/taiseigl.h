@@ -7,13 +7,13 @@
 # You can force the script to pick up functions that are not directly called in the code here
 
 force_funcs = {
-    'glDrawArraysInstancedEXT',
-    'glDrawArraysInstancedARB',
-    'glGetShaderiv',
-    'glGetShaderInfoLog',
-    'glGetProgramInfoLog',
-    'glDebugMessageControlARB',
-    'glDebugMessageCallbackARB',
+	'glDrawArraysInstancedEXT',
+	'glDrawArraysInstancedARB',
+	'glGetShaderiv',
+	'glGetShaderInfoLog',
+	'glGetProgramInfoLog',
+	'glDebugMessageControlARB',
+	'glDebugMessageCallbackARB',
 }
 
 force_funcs |= {"glUniform%i%sv" % (i, s) for i in range(1, 5) for s in ('f', 'i', 'ui')}
@@ -26,21 +26,21 @@ srcdir = thisfile.parent
 glfuncs = set()
 
 try:
-    idir = sys.argv[1]
+	idir = sys.argv[1]
 except IndexError:
-    idir = '/usr/include/SDL2'
+	idir = '/usr/include/SDL2'
 
 glheaders = (
-    P('%s/SDL_opengl.h' % idir).read_text() +
-    P('%s/SDL_opengl_glext.h' % idir).read_text()
+	P('%s/SDL_opengl.h' % idir).read_text() +
+	P('%s/SDL_opengl_glext.h' % idir).read_text()
 )
 
 regex_glcall = re.compile(r'(gl[A-Z][a-zA-Z0-9]+)\(')
 regex_glproto_template = r'(^GLAPI\s+([a-zA-Z_0-9\s]+?\**)\s*((?:GL)?APIENTRY)\s+%s\s*\(\s*(.*?)\s*\);)'
 
 for src in srcdir.glob('**/*.c'):
-    for func in regex_glcall.findall(src.read_text()):
-        glfuncs.add(func)
+	for func in regex_glcall.findall(src.read_text()):
+		glfuncs.add(func)
 
 glfuncs = sorted(glfuncs | force_funcs)
 
@@ -48,39 +48,39 @@ typedefs = []
 prototypes = []
 
 for func in glfuncs:
-    try:
-        proto, rtype, callconv, params = re.findall(regex_glproto_template % func, glheaders, re.DOTALL|re.MULTILINE)[0]
-    except IndexError:
-        print("Function '%s' not found in the GL headers. Either it really does not exist, or this script is bugged. Please check the opengl headers in %s\nUpdate aborted." % (func, idir))
-        exit(1)
+	try:
+		proto, rtype, callconv, params = re.findall(regex_glproto_template % func, glheaders, re.DOTALL|re.MULTILINE)[0]
+	except IndexError:
+		print("Function '%s' not found in the GL headers. Either it really does not exist, or this script is bugged. Please check the opengl headers in %s\nUpdate aborted." % (func, idir))
+		exit(1)
 
-    proto = re.sub(r'\s+', ' ', proto, re.DOTALL|re.MULTILINE)
-    params = ', '.join(re.split(r',\s*', params))
+	proto = re.sub(r'\s+', ' ', proto, re.DOTALL|re.MULTILINE)
+	params = ', '.join(re.split(r',\s*', params))
 
-    typename = 'ts%s_ptr' % func
-    typedef = 'typedef %s (%s *%s)(%s);' % (rtype, callconv, typename, params)
+	typename = 'ts%s_ptr' % func
+	typedef = 'typedef %s (%s *%s)(%s);' % (rtype, callconv, typename, params)
 
-    typedefs.append(typedef)
-    prototypes.append(proto)
+	typedefs.append(typedef)
+	prototypes.append(proto)
 
 text = thisfile.read_text()
 
 subs = {
-    'gldefs': '#define GLDEFS \\\n' + ' \\\n'.join('GLDEF(%s, ts%s, ts%s_ptr)' % (f, f, f) for f in glfuncs),
-    'undefs': '\n'.join('#undef %s' % f for f in glfuncs),
-    'redefs': '\n'.join('#define %s ts%s' % (f, f) for f in glfuncs),
-    'reversedefs': '\n'.join('#define ts%s %s' % (f, f) for f in glfuncs),
-    'typedefs': '\n'.join(typedefs),
-    'protos': '\n'.join(prototypes),
+	'gldefs': '#define GLDEFS \\\n' + ' \\\n'.join('GLDEF(%s, ts%s, ts%s_ptr)' % (f, f, f) for f in glfuncs),
+	'undefs': '\n'.join('#undef %s' % f for f in glfuncs),
+	'redefs': '\n'.join('#define %s ts%s' % (f, f) for f in glfuncs),
+	'reversedefs': '\n'.join('#define ts%s %s' % (f, f) for f in glfuncs),
+	'typedefs': '\n'.join(typedefs),
+	'protos': '\n'.join(prototypes),
 }
 
 for key, val in subs.items():
-    text = re.sub(
-        r'(// @BEGIN:%s@)(.*?)(// @END:%s@)' % (key, key),
-        r'\1\n%s\n\3' % val,
-        text,
-        flags=re.DOTALL|re.MULTILINE
-    )
+	text = re.sub(
+		r'(// @BEGIN:%s@)(.*?)(// @END:%s@)' % (key, key),
+		r'\1\n%s\n\3' % val,
+		text,
+		flags=re.DOTALL|re.MULTILINE
+	)
 
 thisfile.write_text(text)
 
@@ -712,19 +712,19 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #endif // LINK_TO_LIBGL
 
 struct glext_s {
-    struct {
-        char major;
-        char minor;
-    } version;
+	struct {
+		char major;
+		char minor;
+	} version;
 
-    unsigned int draw_instanced: 1;
-    unsigned int debug_output: 1;
-    unsigned int EXT_draw_instanced: 1;
-    unsigned int ARB_draw_instanced: 1;
+	unsigned int draw_instanced: 1;
+	unsigned int debug_output: 1;
+	unsigned int EXT_draw_instanced: 1;
+	unsigned int ARB_draw_instanced: 1;
 
-    tsglDrawArraysInstanced_ptr DrawArraysInstanced;
-    tsglDebugMessageControl_ptr DebugMessageControl;
-    tsglDebugMessageCallback_ptr DebugMessageCallback;
+	tsglDrawArraysInstanced_ptr DrawArraysInstanced;
+	tsglDebugMessageControl_ptr DebugMessageControl;
+	tsglDebugMessageCallback_ptr DebugMessageCallback;
 };
 
 #endif // !TAISEIGL_H
@@ -732,16 +732,16 @@ struct glext_s {
 // Intentionally not guarded
 
 #ifndef TAISEIGL_NO_EXT_ABSTRACTION
-    #undef glDrawArraysInstanced
-    #undef glDebugMessageControl
-    #undef glDebugMessageCallback
-    #define glDrawArraysInstanced (glext.DrawArraysInstanced)
-    #define glDebugMessageControl (glext.DebugMessageControl)
-    #define glDebugMessageCallback (glext.DebugMessageCallback)
+	#undef glDrawArraysInstanced
+	#undef glDebugMessageControl
+	#undef glDebugMessageCallback
+	#define glDrawArraysInstanced (glext.DrawArraysInstanced)
+	#define glDebugMessageControl (glext.DebugMessageControl)
+	#define glDebugMessageCallback (glext.DebugMessageCallback)
 #elif defined(LINK_TO_LIBGL)
-    #undef glDrawArraysInstanced
-    #undef glDebugMessageControl
-    #undef glDebugMessageCallback
+	#undef glDrawArraysInstanced
+	#undef glDebugMessageControl
+	#undef glDebugMessageCallback
 #endif // !TAISEIGL_NO_EXT_ABSTRACTION
 
 // Don't even think about touching the construct below

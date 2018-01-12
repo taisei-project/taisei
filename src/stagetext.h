@@ -19,27 +19,27 @@ typedef void (*StageTextPreDrawFunc)(StageText* txt, int t, float alpha);
 typedef struct StageTextTable StageTextTable;
 
 struct StageText {
-    LIST_INTERFACE(StageText);
+	LIST_INTERFACE(StageText);
 
-    char *text;
-    Font **font;
+	char *text;
+	Font **font;
 
-    complex pos;
-    Alignment align;
-    float clr[4];
+	complex pos;
+	Alignment align;
+	float clr[4];
 
-    struct {
-        int spawn;
-        int life;
-        int fadein;
-        int fadeout;
-    } time;
+	struct {
+		int spawn;
+		int life;
+		int fadein;
+		int fadeout;
+	} time;
 
-    struct {
-        StageTextPreDrawFunc predraw;
-        void *data1;
-        void *data2;
-    } custom;
+	struct {
+		StageTextPreDrawFunc predraw;
+		void *data1;
+		void *data2;
+	} custom;
 };
 
 void stagetext_free(void);
@@ -48,14 +48,14 @@ StageText* stagetext_add(const char *text, complex pos, Alignment align, Font **
 StageText* stagetext_add_numeric(int n, complex pos, Alignment align, Font **font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime);
 
 struct StageTextTable {
-    complex pos;
-    double width;
-    Color clr;
-    int lifetime;
-    int fadeintime;
-    int fadeouttime;
-    int delay;
-    ListContainer *elems;
+	complex pos;
+	double width;
+	Color clr;
+	int lifetime;
+	int fadeintime;
+	int fadeouttime;
+	int delay;
+	ListContainer *elems;
 };
 
 void stagetext_begin_table(StageTextTable *tbl, const char *title, Color titleclr, Color clr, double width, int delay, int lifetime, int fadeintime, int fadeouttime);

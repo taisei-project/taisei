@@ -16,10 +16,10 @@
 #define CMWC_C_MAX 809430660 // as Marsaglia recommends
 
 struct RandomState {
-    uint32_t Q[CMWC_CYCLE];
-    uint32_t c; // must be limited with CMWC_C_MAX
-    uint32_t i;
-    bool locked;
+	uint32_t Q[CMWC_CYCLE];
+	uint32_t c; // must be limited with CMWC_C_MAX
+	uint32_t i;
+	bool locked;
 };
 
 typedef struct RandomState RandomState;

@@ -15,52 +15,52 @@
 #include "compat.h"
 
 typedef enum LogLevel {
-    LOG_NONE = 0,
-    LOG_DEBUG = 1,
-    LOG_INFO = 2,
-    LOG_WARN = 4,
-    LOG_FATAL = 8,
+	LOG_NONE = 0,
+	LOG_DEBUG = 1,
+	LOG_INFO = 2,
+	LOG_WARN = 4,
+	LOG_FATAL = 8,
 
-    LOG_SPAM = LOG_DEBUG | LOG_INFO,
-    LOG_ALERT = LOG_WARN | LOG_FATAL,
+	LOG_SPAM = LOG_DEBUG | LOG_INFO,
+	LOG_ALERT = LOG_WARN | LOG_FATAL,
 
-    LOG_ALL = LOG_SPAM | LOG_ALERT,
+	LOG_ALL = LOG_SPAM | LOG_ALERT,
 } LogLevel;
 
 #ifndef LOG_DEFAULT_LEVELS
-    #define LOG_DEFAULT_LEVELS LOG_ALL
+	#define LOG_DEFAULT_LEVELS LOG_ALL
 #endif
 
 #ifndef LOG_DEFAULT_LEVELS_FILE
-    #define LOG_DEFAULT_LEVELS_FILE LOG_ALL
+	#define LOG_DEFAULT_LEVELS_FILE LOG_ALL
 #endif
 
 #ifndef LOG_DEFAULT_LEVELS_CONSOLE
-    #ifdef DEBUG
-        #define LOG_DEFAULT_LEVELS_CONSOLE LOG_ALL
-    #else
-        #define LOG_DEFAULT_LEVELS_CONSOLE LOG_ALERT
-    #endif
+	#ifdef DEBUG
+		#define LOG_DEFAULT_LEVELS_CONSOLE LOG_ALL
+	#else
+		#define LOG_DEFAULT_LEVELS_CONSOLE LOG_ALERT
+	#endif
 #endif
 
 #ifndef LOG_DEFAULT_LEVELS_STDOUT
-    #define LOG_DEFAULT_LEVELS_STDOUT LOG_SPAM
+	#define LOG_DEFAULT_LEVELS_STDOUT LOG_SPAM
 #endif
 
 #ifndef LOG_DEFAULT_LEVELS_STDERR
-    #define LOG_DEFAULT_LEVELS_STDERR LOG_ALERT
+	#define LOG_DEFAULT_LEVELS_STDERR LOG_ALERT
 #endif
 
 #ifndef LOG_DEFAULT_LEVELS_BACKTRACE
-    #ifdef LOG_ENABLE_BACKTRACE
-        #define LOG_DEFAULT_LEVELS_BACKTRACE LOG_FATAL
-    #else
-        #define LOG_DEFAULT_LEVELS_BACKTRACE LOG_NONE
-    #endif
+	#ifdef LOG_ENABLE_BACKTRACE
+		#define LOG_DEFAULT_LEVELS_BACKTRACE LOG_FATAL
+	#else
+		#define LOG_DEFAULT_LEVELS_BACKTRACE LOG_NONE
+	#endif
 #endif
 
 #ifndef LOG_BACKTRACE_SIZE
-    #define LOG_BACKTRACE_SIZE 32
+	#define LOG_BACKTRACE_SIZE 32
 #endif
 
 void log_init(LogLevel lvls, LogLevel backtrace_lvls);
@@ -71,9 +71,9 @@ LogLevel log_parse_levels(LogLevel lvls, const char *lvlmod);
 bool log_initialized(void);
 
 #ifdef DEBUG
-    #define log_debug(...) _taisei_log(LOG_DEBUG, false, __func__, __VA_ARGS__)
+	#define log_debug(...) _taisei_log(LOG_DEBUG, false, __func__, __VA_ARGS__)
 #else
-    #define log_debug(...)
+	#define log_debug(...)
 #endif
 
 #define log_info(...) _taisei_log(LOG_INFO, false, __func__, __VA_ARGS__)
@@ -86,7 +86,7 @@ bool log_initialized(void);
 //
 
 void _taisei_log(LogLevel lvl, bool is_backtrace, const char *funcname, const char *fmt, ...)
-    __attribute__((format(FORMAT_ATTR, 4, 5)));
+	__attribute__((format(FORMAT_ATTR, 4, 5)));
 
 noreturn void _taisei_log_fatal(LogLevel lvl, const char *funcname, const char *fmt, ...)
-    __attribute__((format(FORMAT_ATTR, 3, 4)));
+	__attribute__((format(FORMAT_ATTR, 3, 4)));

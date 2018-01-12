@@ -10,16 +10,16 @@
 #include "taisei.h"
 
 #ifndef __GNUC__ // clang defines this too
-    #define __attribute__(...)
-    #define __extension__
-    #define PRAGMA(p)
+	#define __attribute__(...)
+	#define __extension__
+	#define PRAGMA(p)
 #else
-    #define PRAGMA(p) _Pragma(#p)
-    #define USE_GNU_EXTENSIONS
+	#define PRAGMA(p) _Pragma(#p)
+	#define USE_GNU_EXTENSIONS
 #endif
 
 #ifdef __USE_MINGW_ANSI_STDIO
-    #define FORMAT_ATTR __MINGW_PRINTF_FORMAT
+	#define FORMAT_ATTR __MINGW_PRINTF_FORMAT
 #else
-    #define FORMAT_ATTR printf
+	#define FORMAT_ATTR printf
 #endif

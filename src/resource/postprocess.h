@@ -18,37 +18,37 @@ typedef struct PostprocessShader PostprocessShader;
 typedef struct PostprocessShaderUniform PostprocessShaderUniform;
 
 struct PostprocessShader {
-    LIST_INTERFACE(PostprocessShader);
+	LIST_INTERFACE(PostprocessShader);
 
-    PostprocessShaderUniform *uniforms;
-    Shader *shader;
+	PostprocessShaderUniform *uniforms;
+	Shader *shader;
 };
 
 typedef enum PostprocessShaderUniformType {
-    PSU_FLOAT,
-    PSU_INT,
-    PSU_UINT,
+	PSU_FLOAT,
+	PSU_INT,
+	PSU_UINT,
 } PostprocessShaderUniformType;
 
 typedef union PostprocessShaderUniformValue {
-    void *v;
-    GLfloat *f;
-    GLint *i;
-    GLuint *u;
+	void *v;
+	GLfloat *f;
+	GLint *i;
+	GLuint *u;
 } PostprocessShaderUniformValuePtr;
 
 typedef void (APIENTRY *PostprocessShaderUniformFuncPtr)(GLint, GLsizei, const GLvoid*);
 
 struct PostprocessShaderUniform {
-    LIST_INTERFACE(PostprocessShaderUniform);
+	LIST_INTERFACE(PostprocessShaderUniform);
 
-    PostprocessShaderUniformType type;
-    PostprocessShaderUniformValuePtr values;
-    PostprocessShaderUniformFuncPtr func;
+	PostprocessShaderUniformType type;
+	PostprocessShaderUniformValuePtr values;
+	PostprocessShaderUniformFuncPtr func;
 
-    int loc;
-    int size;
-    int amount;
+	int loc;
+	int size;
+	int amount;
 };
 
 typedef void (*PostprocessDrawFuncPtr)(FBO*);

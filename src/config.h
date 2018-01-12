@@ -27,82 +27,82 @@
 // #define CONFIGDEF_STRING(id,entryname,default)
 
 /*
- *	DO NOT REORDER KEYBINDINGS.
+ *  DO NOT REORDER KEYBINDINGS.
  *
- *	The KEY_* constants are used by replays. These are formed from KEYDEFS.
- *	Always add new keys at the end of KEYDEFS, never put them directly into CONFIGDEFS.
+ *  The KEY_* constants are used by replays. These are formed from KEYDEFS.
+ *  Always add new keys at the end of KEYDEFS, never put them directly into CONFIGDEFS.
  *
- *	KEYDEFS can be safely moved around within CONFIGDEFS, however.
- *	Stuff in GPKEYDEFS is safe to reorder.
+ *  KEYDEFS can be safely moved around within CONFIGDEFS, however.
+ *  Stuff in GPKEYDEFS is safe to reorder.
  */
 
 #define KEYDEFS \
-	CONFIGDEF_KEYBINDING(KEY_UP,				"key_up",				SDL_SCANCODE_UP) \
-	CONFIGDEF_KEYBINDING(KEY_DOWN,				"key_down",				SDL_SCANCODE_DOWN) \
-	CONFIGDEF_KEYBINDING(KEY_LEFT,				"key_left",				SDL_SCANCODE_LEFT) \
-	CONFIGDEF_KEYBINDING(KEY_RIGHT,				"key_right",			SDL_SCANCODE_RIGHT) \
-	CONFIGDEF_KEYBINDING(KEY_FOCUS,				"key_focus",			SDL_SCANCODE_LSHIFT) \
-	CONFIGDEF_KEYBINDING(KEY_SHOT,				"key_shot",				SDL_SCANCODE_Z) \
-	CONFIGDEF_KEYBINDING(KEY_BOMB,				"key_bomb",				SDL_SCANCODE_X) \
-	CONFIGDEF_KEYBINDING(KEY_FULLSCREEN,		"key_fullscreen",		SDL_SCANCODE_F11) \
-	CONFIGDEF_KEYBINDING(KEY_SCREENSHOT,		"key_screenshot",		SDL_SCANCODE_P) \
-	CONFIGDEF_KEYBINDING(KEY_SKIP,				"key_skip",				SDL_SCANCODE_LCTRL) \
-	CONFIGDEF_KEYBINDING(KEY_IDDQD,				"key_iddqd",			SDL_SCANCODE_Q) \
-	CONFIGDEF_KEYBINDING(KEY_HAHAIWIN,			"key_skipstage",		SDL_SCANCODE_E) \
-	CONFIGDEF_KEYBINDING(KEY_PAUSE,				"key_pause",			SDL_SCANCODE_PAUSE) \
-	CONFIGDEF_KEYBINDING(KEY_NOBACKGROUND,		"key_nobackground",		SDL_SCANCODE_LALT) \
-	CONFIGDEF_KEYBINDING(KEY_POWERUP,			"key_powerup",			SDL_SCANCODE_2) \
-	CONFIGDEF_KEYBINDING(KEY_POWERDOWN,			"key_powerdown",		SDL_SCANCODE_1) \
-	CONFIGDEF_KEYBINDING(KEY_FPSLIMIT_OFF,		"key_fpslimit_off",		SDL_SCANCODE_RSHIFT) \
-	CONFIGDEF_KEYBINDING(KEY_STOP,				"key_stop",				SDL_SCANCODE_F1) \
-	CONFIGDEF_KEYBINDING(KEY_RESTART,			"key_restart",			SDL_SCANCODE_F2) \
+	CONFIGDEF_KEYBINDING(KEY_UP,                "key_up",               SDL_SCANCODE_UP) \
+	CONFIGDEF_KEYBINDING(KEY_DOWN,              "key_down",             SDL_SCANCODE_DOWN) \
+	CONFIGDEF_KEYBINDING(KEY_LEFT,              "key_left",             SDL_SCANCODE_LEFT) \
+	CONFIGDEF_KEYBINDING(KEY_RIGHT,             "key_right",            SDL_SCANCODE_RIGHT) \
+	CONFIGDEF_KEYBINDING(KEY_FOCUS,             "key_focus",            SDL_SCANCODE_LSHIFT) \
+	CONFIGDEF_KEYBINDING(KEY_SHOT,              "key_shot",             SDL_SCANCODE_Z) \
+	CONFIGDEF_KEYBINDING(KEY_BOMB,              "key_bomb",             SDL_SCANCODE_X) \
+	CONFIGDEF_KEYBINDING(KEY_FULLSCREEN,        "key_fullscreen",       SDL_SCANCODE_F11) \
+	CONFIGDEF_KEYBINDING(KEY_SCREENSHOT,        "key_screenshot",       SDL_SCANCODE_P) \
+	CONFIGDEF_KEYBINDING(KEY_SKIP,              "key_skip",             SDL_SCANCODE_LCTRL) \
+	CONFIGDEF_KEYBINDING(KEY_IDDQD,             "key_iddqd",            SDL_SCANCODE_Q) \
+	CONFIGDEF_KEYBINDING(KEY_HAHAIWIN,          "key_skipstage",        SDL_SCANCODE_E) \
+	CONFIGDEF_KEYBINDING(KEY_PAUSE,             "key_pause",            SDL_SCANCODE_PAUSE) \
+	CONFIGDEF_KEYBINDING(KEY_NOBACKGROUND,      "key_nobackground",     SDL_SCANCODE_LALT) \
+	CONFIGDEF_KEYBINDING(KEY_POWERUP,           "key_powerup",          SDL_SCANCODE_2) \
+	CONFIGDEF_KEYBINDING(KEY_POWERDOWN,         "key_powerdown",        SDL_SCANCODE_1) \
+	CONFIGDEF_KEYBINDING(KEY_FPSLIMIT_OFF,      "key_fpslimit_off",     SDL_SCANCODE_RSHIFT) \
+	CONFIGDEF_KEYBINDING(KEY_STOP,              "key_stop",             SDL_SCANCODE_F1) \
+	CONFIGDEF_KEYBINDING(KEY_RESTART,           "key_restart",          SDL_SCANCODE_F2) \
 
 
 #define GPKEYDEFS \
-	CONFIGDEF_GPKEYBINDING(KEY_UP, 				"gamepad_key_up", 		GAMEPAD_BUTTON_DPAD_UP) \
-	CONFIGDEF_GPKEYBINDING(KEY_DOWN, 			"gamepad_key_down", 	GAMEPAD_BUTTON_DPAD_DOWN) \
-	CONFIGDEF_GPKEYBINDING(KEY_LEFT, 			"gamepad_key_left", 	GAMEPAD_BUTTON_DPAD_LEFT) \
-	CONFIGDEF_GPKEYBINDING(KEY_RIGHT, 			"gamepad_key_right", 	GAMEPAD_BUTTON_DPAD_RIGHT) \
-	CONFIGDEF_GPKEYBINDING(KEY_FOCUS, 			"gamepad_key_focus", 	GAMEPAD_BUTTON_X) \
-	CONFIGDEF_GPKEYBINDING(KEY_SHOT, 			"gamepad_key_shot", 	GAMEPAD_BUTTON_A) \
-	CONFIGDEF_GPKEYBINDING(KEY_BOMB, 			"gamepad_key_bomb", 	GAMEPAD_BUTTON_Y) \
-	CONFIGDEF_GPKEYBINDING(KEY_SKIP, 			"gamepad_key_skip", 	GAMEPAD_BUTTON_B) \
+	CONFIGDEF_GPKEYBINDING(KEY_UP,              "gamepad_key_up",       GAMEPAD_BUTTON_DPAD_UP) \
+	CONFIGDEF_GPKEYBINDING(KEY_DOWN,            "gamepad_key_down",     GAMEPAD_BUTTON_DPAD_DOWN) \
+	CONFIGDEF_GPKEYBINDING(KEY_LEFT,            "gamepad_key_left",     GAMEPAD_BUTTON_DPAD_LEFT) \
+	CONFIGDEF_GPKEYBINDING(KEY_RIGHT,           "gamepad_key_right",    GAMEPAD_BUTTON_DPAD_RIGHT) \
+	CONFIGDEF_GPKEYBINDING(KEY_FOCUS,           "gamepad_key_focus",    GAMEPAD_BUTTON_X) \
+	CONFIGDEF_GPKEYBINDING(KEY_SHOT,            "gamepad_key_shot",     GAMEPAD_BUTTON_A) \
+	CONFIGDEF_GPKEYBINDING(KEY_BOMB,            "gamepad_key_bomb",     GAMEPAD_BUTTON_Y) \
+	CONFIGDEF_GPKEYBINDING(KEY_SKIP,            "gamepad_key_skip",     GAMEPAD_BUTTON_B) \
 
 
 #define CONFIGDEFS \
 	 /* @version must be on top. don't change its default value here, it does nothing. */ \
-	CONFIGDEF_INT		(VERSION,					"@version",								0) \
+	CONFIGDEF_INT       (VERSION,                   "@version",                             0) \
 	\
-	CONFIGDEF_STRING	(PLAYERNAME, 				"playername", 							"Player") \
-	CONFIGDEF_INT		(FULLSCREEN, 				"fullscreen", 							0) \
-	CONFIGDEF_INT		(FULLSCREEN_DESKTOP,		"fullscreen_desktop_mode",				1) \
-	CONFIGDEF_INT		(VID_WIDTH, 				"vid_width", 							RESX) \
-	CONFIGDEF_INT		(VID_HEIGHT, 				"vid_height", 							RESY) \
-	CONFIGDEF_INT		(VID_RESIZABLE,				"vid_resizable",						0) \
-	CONFIGDEF_INT		(VID_LATE_SWAP,				"vid_late_swap",						0) \
-	CONFIGDEF_INT		(VID_FRAMESKIP,				"vid_frameskip",						1) \
-	CONFIGDEF_INT		(VSYNC, 					"vsync", 								0) \
-	CONFIGDEF_INT		(MIXER_CHUNKSIZE,			"mixer_chunksize",						1024) \
-	CONFIGDEF_FLOAT		(SFX_VOLUME, 				"sfx_volume", 							1.0) \
-	CONFIGDEF_FLOAT		(BGM_VOLUME, 				"bgm_volume", 							1.0) \
-	CONFIGDEF_INT		(NO_STAGEBG, 				"disable_stagebg", 						0) \
-	CONFIGDEF_INT		(SAVE_RPY, 					"save_rpy", 							2) \
-	CONFIGDEF_INT		(SPELLSTAGE_AUTORESTART,	"spellpractice_restart_on_fail",		0) \
-	CONFIGDEF_FLOAT		(TEXT_QUALITY,				"text_quality",							1.0) \
-	CONFIGDEF_FLOAT		(FG_QUALITY,				"fg_quality",							1.0) \
-	CONFIGDEF_FLOAT		(BG_QUALITY,				"bg_quality",							1.0) \
-	CONFIGDEF_INT		(SHOT_INVERTED,				"shot_inverted",						0) \
-	CONFIGDEF_INT		(FOCUS_LOSS_PAUSE,			"focus_loss_pause",						1) \
-	CONFIGDEF_INT		(PARTICLES,					"particles",							1) \
+	CONFIGDEF_STRING    (PLAYERNAME,                "playername",                           "Player") \
+	CONFIGDEF_INT       (FULLSCREEN,                "fullscreen",                           0) \
+	CONFIGDEF_INT       (FULLSCREEN_DESKTOP,        "fullscreen_desktop_mode",              1) \
+	CONFIGDEF_INT       (VID_WIDTH,                 "vid_width",                            RESX) \
+	CONFIGDEF_INT       (VID_HEIGHT,                "vid_height",                           RESY) \
+	CONFIGDEF_INT       (VID_RESIZABLE,             "vid_resizable",                        0) \
+	CONFIGDEF_INT       (VID_LATE_SWAP,             "vid_late_swap",                        0) \
+	CONFIGDEF_INT       (VID_FRAMESKIP,             "vid_frameskip",                        1) \
+	CONFIGDEF_INT       (VSYNC,                     "vsync",                                0) \
+	CONFIGDEF_INT       (MIXER_CHUNKSIZE,           "mixer_chunksize",                      1024) \
+	CONFIGDEF_FLOAT     (SFX_VOLUME,                "sfx_volume",                           1.0) \
+	CONFIGDEF_FLOAT     (BGM_VOLUME,                "bgm_volume",                           1.0) \
+	CONFIGDEF_INT       (NO_STAGEBG,                "disable_stagebg",                      0) \
+	CONFIGDEF_INT       (SAVE_RPY,                  "save_rpy",                             2) \
+	CONFIGDEF_INT       (SPELLSTAGE_AUTORESTART,    "spellpractice_restart_on_fail",        0) \
+	CONFIGDEF_FLOAT     (TEXT_QUALITY,              "text_quality",                         1.0) \
+	CONFIGDEF_FLOAT     (FG_QUALITY,                "fg_quality",                           1.0) \
+	CONFIGDEF_FLOAT     (BG_QUALITY,                "bg_quality",                           1.0) \
+	CONFIGDEF_INT       (SHOT_INVERTED,             "shot_inverted",                        0) \
+	CONFIGDEF_INT       (FOCUS_LOSS_PAUSE,          "focus_loss_pause",                     1) \
+	CONFIGDEF_INT       (PARTICLES,                 "particles",                            1) \
 	KEYDEFS \
-	CONFIGDEF_INT		(GAMEPAD_ENABLED, 			"gamepad_enabled", 						0) \
-	CONFIGDEF_STRING	(GAMEPAD_DEVICE, 			"gamepad_device", 						"default") \
-	CONFIGDEF_INT		(GAMEPAD_AXIS_UD, 			"gamepad_axis_ud", 						1) \
-	CONFIGDEF_INT		(GAMEPAD_AXIS_LR, 			"gamepad_axis_lr", 						0) \
-	CONFIGDEF_INT		(GAMEPAD_AXIS_FREE, 		"gamepad_axis_free", 					1) \
-	CONFIGDEF_FLOAT		(GAMEPAD_AXIS_UD_SENS, 		"gamepad_axis_ud_free_sensitivity", 	1.0) \
-	CONFIGDEF_FLOAT		(GAMEPAD_AXIS_LR_SENS, 		"gamepad_axis_lr_free_sensitivity", 	1.0) \
-	CONFIGDEF_FLOAT		(GAMEPAD_AXIS_DEADZONE, 	"gamepad_axis_deadzone", 				0.1) \
+	CONFIGDEF_INT       (GAMEPAD_ENABLED,           "gamepad_enabled",                      0) \
+	CONFIGDEF_STRING    (GAMEPAD_DEVICE,            "gamepad_device",                       "default") \
+	CONFIGDEF_INT       (GAMEPAD_AXIS_UD,           "gamepad_axis_ud",                      1) \
+	CONFIGDEF_INT       (GAMEPAD_AXIS_LR,           "gamepad_axis_lr",                      0) \
+	CONFIGDEF_INT       (GAMEPAD_AXIS_FREE,         "gamepad_axis_free",                    1) \
+	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_UD_SENS,      "gamepad_axis_ud_free_sensitivity",     1.0) \
+	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_LR_SENS,      "gamepad_axis_lr_free_sensitivity",     1.0) \
+	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_DEADZONE,     "gamepad_axis_deadzone",                0.1) \
 	GPKEYDEFS \
 
 

@@ -13,9 +13,9 @@
 #include "compat.h"
 
 #ifdef TAISEI_BUILDCONF_DEBUG
-    #define DEBUG 1
+	#define DEBUG 1
 #endif
 
 #ifdef TAISEI_BUILDCONF_LOG_ENABLE_BACKTRACE
-    #define LOG_ENABLE_BACKTRACE
+	#define LOG_ENABLE_BACKTRACE
 #endif

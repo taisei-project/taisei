@@ -12,25 +12,25 @@
 #include "stage.h"
 
 extern struct stage3_spells_s {
-    // this struct must contain only fields of type AttackInfo
-    // order of fields affects the visual spellstage number, but not its real internal ID
+	// this struct must contain only fields of type AttackInfo
+	// order of fields affects the visual spellstage number, but not its real internal ID
 
-    struct {
-        AttackInfo deadly_dance;
-    } mid;
+	struct {
+		AttackInfo deadly_dance;
+	} mid;
 
-    struct {
-        AttackInfo moonlight_rocket;
-        AttackInfo wriggle_night_ignite;
-        AttackInfo firefly_storm;
-    } boss;
+	struct {
+		AttackInfo moonlight_rocket;
+		AttackInfo wriggle_night_ignite;
+		AttackInfo firefly_storm;
+	} boss;
 
-    struct {
-        AttackInfo light_singularity;
-    } extra;
+	struct {
+		AttackInfo light_singularity;
+	} extra;
 
-    // required for iteration
-    AttackInfo null;
+	// required for iteration
+	AttackInfo null;
 } stage3_spells;
 
 extern StageProcs stage3_procs;

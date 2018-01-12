@@ -17,155 +17,155 @@ static StageText *textlist = NULL;
 #define NUM_PLACEHOLDER "........................"
 
 StageText* stagetext_add(const char *text, complex pos, Alignment align, Font **font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
-    StageText *t = malloc(sizeof(StageText));
-    list_append(&textlist, t);
+	StageText *t = malloc(sizeof(StageText));
+	list_append(&textlist, t);
 
-    t->text = strdup(text);
-    t->font = font;
-    t->pos = pos;
-    t->align = align;
+	t->text = strdup(text);
+	t->font = font;
+	t->pos = pos;
+	t->align = align;
 
-    t->time.spawn = global.frames + delay;
-    t->time.life = lifetime + fadeouttime;
-    t->time.fadein = fadeintime;
-    t->time.fadeout = fadeouttime;
+	t->time.spawn = global.frames + delay;
+	t->time.life = lifetime + fadeouttime;
+	t->time.fadein = fadeintime;
+	t->time.fadeout = fadeouttime;
 
-    parse_color_array(clr, t->clr);
-    memset(&t->custom, 0, sizeof(t->custom));
+	parse_color_array(clr, t->clr);
+	memset(&t->custom, 0, sizeof(t->custom));
 
-    return t;
+	return t;
 }
 
 void stagetext_numeric_predraw(StageText *txt, int t, float a) {
-    snprintf(txt->text, sizeof(NUM_PLACEHOLDER), "%i", (int)((intptr_t)txt->custom.data1 * pow(a, 5)));
+	snprintf(txt->text, sizeof(NUM_PLACEHOLDER), "%i", (int)((intptr_t)txt->custom.data1 * pow(a, 5)));
 }
 
 StageText* stagetext_add_numeric(int n, complex pos, Alignment align, Font **font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
-    StageText *t = stagetext_add(NUM_PLACEHOLDER, pos, align, font, clr, delay, lifetime, fadeintime, fadeouttime);
-    t->custom.data1 = (void*)(intptr_t)n;
-    t->custom.predraw = stagetext_numeric_predraw;
-    return t;
+	StageText *t = stagetext_add(NUM_PLACEHOLDER, pos, align, font, clr, delay, lifetime, fadeintime, fadeouttime);
+	t->custom.data1 = (void*)(intptr_t)n;
+	t->custom.predraw = stagetext_numeric_predraw;
+	return t;
 }
 
 static void* stagetext_delete(List **dest, List *txt, void *arg) {
-    free(((StageText*)txt)->text);
-    free(list_unlink(dest, txt));
-    return NULL;
+	free(((StageText*)txt)->text);
+	free(list_unlink(dest, txt));
+	return NULL;
 }
 
 void stagetext_free(void) {
-    list_foreach(&textlist, stagetext_delete, NULL);
+	list_foreach(&textlist, stagetext_delete, NULL);
 }
 
 static void stagetext_draw_single(StageText *txt) {
-    if(global.frames < txt->time.spawn) {
-        return;
-    }
+	if(global.frames < txt->time.spawn) {
+		return;
+	}
 
-    if(global.frames > txt->time.spawn + txt->time.life) {
-        stagetext_delete((List**)&textlist, (List*)txt, NULL);
-        return;
-    }
+	if(global.frames > txt->time.spawn + txt->time.life) {
+		stagetext_delete((List**)&textlist, (List*)txt, NULL);
+		return;
+	}
 
-    int t = global.frames - txt->time.spawn;
-    float f = 1.0 - clamp((txt->time.life - t) / (float)txt->time.fadeout, 0, clamp(t / (float)txt->time.fadein, 0, 1));
+	int t = global.frames - txt->time.spawn;
+	float f = 1.0 - clamp((txt->time.life - t) / (float)txt->time.fadeout, 0, clamp(t / (float)txt->time.fadein, 0, 1));
 
-    if(txt->custom.predraw) {
-        txt->custom.predraw(txt, t, 1.0 - f);
-    }
+	if(txt->custom.predraw) {
+		txt->custom.predraw(txt, t, 1.0 - f);
+	}
 
-    Shader *sha = get_shader("stagetitle");
-    glUseProgram(sha->prog);
-    glUniform1i(uniloc(sha, "trans"), 1);
-    glUniform1f(uniloc(sha, "t"), 1.0 - f);
+	Shader *sha = get_shader("stagetitle");
+	glUseProgram(sha->prog);
+	glUniform1i(uniloc(sha, "trans"), 1);
+	glUniform1f(uniloc(sha, "t"), 1.0 - f);
 
-    glActiveTexture(GL_TEXTURE0 + 1);
-    glBindTexture(GL_TEXTURE_2D, get_tex("titletransition")->gltex);
-    glActiveTexture(GL_TEXTURE0);
+	glActiveTexture(GL_TEXTURE0 + 1);
+	glBindTexture(GL_TEXTURE_2D, get_tex("titletransition")->gltex);
+	glActiveTexture(GL_TEXTURE0);
 
-    glUniform3f(uniloc(sha, "color"), 0,0,0);
-    draw_text(txt->align, creal(txt->pos)+10*f*f+1, cimag(txt->pos)+10*f*f+1, txt->text, *txt->font);
-    glUniform3fv(uniloc(sha, "color"), 1, txt->clr);
-    draw_text(txt->align, creal(txt->pos)+10*f*f, cimag(txt->pos)+10*f*f, txt->text, *txt->font);
+	glUniform3f(uniloc(sha, "color"), 0,0,0);
+	draw_text(txt->align, creal(txt->pos)+10*f*f+1, cimag(txt->pos)+10*f*f+1, txt->text, *txt->font);
+	glUniform3fv(uniloc(sha, "color"), 1, txt->clr);
+	draw_text(txt->align, creal(txt->pos)+10*f*f, cimag(txt->pos)+10*f*f, txt->text, *txt->font);
 
-    glUseProgram(0);
+	glUseProgram(0);
 }
 
 void stagetext_draw(void) {
-    for(StageText *t = textlist, *next = NULL; t; t = next) {
-        next = t->next;
-        stagetext_draw_single(t);
-    }
+	for(StageText *t = textlist, *next = NULL; t; t = next) {
+		next = t->next;
+		stagetext_draw_single(t);
+	}
 }
 
 static void stagetext_table_push(StageTextTable *tbl, StageText *txt, bool update_pos) {
-    list_append(&tbl->elems, list_wrap_container(txt));
+	list_append(&tbl->elems, list_wrap_container(txt));
 
-    if(update_pos) {
-        tbl->pos += stringheight(txt->text, *txt->font) * I;
-    }
+	if(update_pos) {
+		tbl->pos += stringheight(txt->text, *txt->font) * I;
+	}
 
-    tbl->delay += 5;
+	tbl->delay += 5;
 }
 
 void stagetext_begin_table(StageTextTable *tbl, const char *title, Color titleclr, Color clr, double width, int delay, int lifetime, int fadeintime, int fadeouttime) {
-    memset(tbl, 0, sizeof(StageTextTable));
-    tbl->pos = VIEWPORT_W/2 + VIEWPORT_H/2*I;
-    tbl->clr = clr;
-    tbl->width = width;
-    tbl->lifetime = lifetime;
-    tbl->fadeintime = fadeintime;
-    tbl->fadeouttime = fadeouttime;
-    tbl->delay = delay;
+	memset(tbl, 0, sizeof(StageTextTable));
+	tbl->pos = VIEWPORT_W/2 + VIEWPORT_H/2*I;
+	tbl->clr = clr;
+	tbl->width = width;
+	tbl->lifetime = lifetime;
+	tbl->fadeintime = fadeintime;
+	tbl->fadeouttime = fadeouttime;
+	tbl->delay = delay;
 
-    StageText *txt = stagetext_add(title, tbl->pos, AL_Center, &_fonts.mainmenu, titleclr, tbl->delay, lifetime, fadeintime, fadeouttime);
-    stagetext_table_push(tbl, txt, true);
+	StageText *txt = stagetext_add(title, tbl->pos, AL_Center, &_fonts.mainmenu, titleclr, tbl->delay, lifetime, fadeintime, fadeouttime);
+	stagetext_table_push(tbl, txt, true);
 }
 
 void stagetext_end_table(StageTextTable *tbl) {
-    complex ofs = -0.5 * I * (cimag(tbl->pos) - VIEWPORT_H/2);
+	complex ofs = -0.5 * I * (cimag(tbl->pos) - VIEWPORT_H/2);
 
-    for(ListContainer *c = tbl->elems; c; c = c->next) {
-        ((StageText*)c->data)->pos += ofs;
-    }
+	for(ListContainer *c = tbl->elems; c; c = c->next) {
+		((StageText*)c->data)->pos += ofs;
+	}
 
-    list_free_all(&tbl->elems);
+	list_free_all(&tbl->elems);
 }
 
 static void stagetext_table_add_label(StageTextTable *tbl, const char *title) {
-    StageText *txt = stagetext_add(title, tbl->pos - tbl->width * 0.5, AL_Left, &_fonts.standard, tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
-    stagetext_table_push(tbl, txt, false);
+	StageText *txt = stagetext_add(title, tbl->pos - tbl->width * 0.5, AL_Left, &_fonts.standard, tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
+	stagetext_table_push(tbl, txt, false);
 }
 
 void stagetext_table_add(StageTextTable *tbl, const char *title, const char *val) {
-    stagetext_table_add_label(tbl, title);
-    StageText *txt = stagetext_add(val, tbl->pos + tbl->width * 0.5, AL_Right, &_fonts.standard, tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
-    stagetext_table_push(tbl, txt, true);
+	stagetext_table_add_label(tbl, title);
+	StageText *txt = stagetext_add(val, tbl->pos + tbl->width * 0.5, AL_Right, &_fonts.standard, tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
+	stagetext_table_push(tbl, txt, true);
 }
 
 void stagetext_table_add_numeric(StageTextTable *tbl, const char *title, int n) {
-    stagetext_table_add_label(tbl, title);
-    StageText *txt = stagetext_add_numeric(n, tbl->pos + tbl->width * 0.5, AL_Right, &_fonts.standard, tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
-    stagetext_table_push(tbl, txt, true);
+	stagetext_table_add_label(tbl, title);
+	StageText *txt = stagetext_add_numeric(n, tbl->pos + tbl->width * 0.5, AL_Right, &_fonts.standard, tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
+	stagetext_table_push(tbl, txt, true);
 }
 
 void stagetext_table_add_numeric_nonzero(StageTextTable *tbl, const char *title, int n) {
-    if(n) {
-        stagetext_table_add_numeric(tbl, title, n);
-    }
+	if(n) {
+		stagetext_table_add_numeric(tbl, title, n);
+	}
 }
 
 void stagetext_table_add_separator(StageTextTable *tbl) {
-    tbl->pos += I * 0.5 * stringheight("Love Live", _fonts.standard);
+	tbl->pos += I * 0.5 * stringheight("Love Live", _fonts.standard);
 }
 
 void stagetext_table_test(void) {
-    StageTextTable tbl;
-    stagetext_begin_table(&tbl, "Test", rgb(1, 1, 1), rgb(1, 1, 1), VIEWPORT_W/2, 60, 300, 30, 60);
-    stagetext_table_add(&tbl, "foo", "bar");
-    stagetext_table_add(&tbl, "qwerty", "asdfg");
-    stagetext_table_add(&tbl, "top", "kek");
-    stagetext_table_add_separator(&tbl);
-    stagetext_table_add_numeric(&tbl, "Total Score", 9000000);
-    stagetext_end_table(&tbl);
+	StageTextTable tbl;
+	stagetext_begin_table(&tbl, "Test", rgb(1, 1, 1), rgb(1, 1, 1), VIEWPORT_W/2, 60, 300, 30, 60);
+	stagetext_table_add(&tbl, "foo", "bar");
+	stagetext_table_add(&tbl, "qwerty", "asdfg");
+	stagetext_table_add(&tbl, "top", "kek");
+	stagetext_table_add_separator(&tbl);
+	stagetext_table_add_numeric(&tbl, "Total Score", 9000000);
+	stagetext_end_table(&tbl);
 }

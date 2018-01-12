@@ -538,7 +538,7 @@ int stage4_supercard(Enemy *e, int t) {
 		for(i = -1; i <= 1 && t; i++)
 			PROJECTILE("card", e->pos + 30*n, rgb(0,0.4,1-_i/40.0), splitcard,
 				{1*n, 0.1*_i, 100-time+70, 1.4*I*i*n}
-                        );
+						);
 	}
 
 	return 1;
@@ -554,7 +554,7 @@ void kurumi_boss_intro(Boss *b, int t) {
 
 static int splitcard_elly(Projectile *p, int t) {
 	if(t == creal(p->args[2])) {
-    		p->args[0]+=p->args[3];
+			p->args[0]+=p->args[3];
 		p->color = derive_color(p->color, CLRMASK_B, rgb(0,0,-color_component(p->color,CLR_B)));
 		play_sound_ex("redirect", 10, false);
 	}
@@ -1386,10 +1386,10 @@ static int scythe_post_mid(Enemy *e, int t) {
 		complex shotdir = cexp(I*creal(e->args[1]));
 
 		struct projentry { char *proj; char *snd; } projs[] = {
-			{ "ball",		"shot1"},
-			{ "bigball",	"shot1"},
-			{ "soul",		"shot_special1"},
-			{ "bigball",	"shot1"},
+			{ "ball",       "shot1"},
+			{ "bigball",    "shot1"},
+			{ "soul",       "shot_special1"},
+			{ "bigball",    "shot1"},
 		};
 
 		struct projentry *pe = &projs[_i % (sizeof(projs)/sizeof(struct projentry))];

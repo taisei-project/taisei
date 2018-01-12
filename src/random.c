@@ -17,15 +17,15 @@
 static RandomState *tsrand_current;
 
 /*
- *	Complementary-multiply-with-carry algorithm
+ *  Complementary-multiply-with-carry algorithm
  */
 
 // CMWC engine
 uint32_t tsrand_p(RandomState *rnd) {
 	if(rnd->locked) {
-        log_warn("Attempted to use a locked RNG state");
-        return 0;
-    }
+		log_warn("Attempted to use a locked RNG state");
+		return 0;
+	}
 
 	uint64_t const a = 18782; // as Marsaglia recommends
 	uint32_t const m = 0xfffffffe; // as Marsaglia recommends

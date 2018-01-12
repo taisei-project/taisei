@@ -16,24 +16,34 @@
 #include "stageutils.h"
 
 /*
- *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
+ *  See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
  *  To add, remove, or reorder spells, see this stage's header file.
  */
 
 struct stage2_spells_s stage2_spells = {
 	.boss = {
-		.amulet_of_harm		= {{ 0,  1,  2,  3}, AT_Spellcard, "Shard ~ Amulet of Harm", 26, 50000,
-									hina_amulet, hina_spell_bg, BOSS_DEFAULT_GO_POS},
-		.bad_pick		= {{ 4,  5,  6,  7}, AT_Spellcard, "Lottery Sign ~ Bad Pick", 30, 43200,
-									hina_bad_pick, hina_spell_bg, BOSS_DEFAULT_GO_POS},
-		.wheel_of_fortune_easy	= {{ 8,  9, -1, -1}, AT_Spellcard, "Lottery Sign ~ Wheel of Fortune", 20, 36000,
-									hina_wheel, hina_spell_bg, BOSS_DEFAULT_GO_POS},
-		.wheel_of_fortune_hard	= {{-1, -1, 10, 11}, AT_Spellcard, "Lottery Sign ~ Wheel of Fortune", 25, 36000,
-									hina_wheel, hina_spell_bg, BOSS_DEFAULT_GO_POS},
+		.amulet_of_harm = {
+			{ 0,  1,  2,  3}, AT_Spellcard, "Shard ~ Amulet of Harm", 26, 50000,
+			hina_amulet, hina_spell_bg, BOSS_DEFAULT_GO_POS
+		},
+		.bad_pick = {
+			{ 4,  5,  6,  7}, AT_Spellcard, "Lottery Sign ~ Bad Pick", 30, 43200,
+			hina_bad_pick, hina_spell_bg, BOSS_DEFAULT_GO_POS
+		},
+		.wheel_of_fortune_easy = {
+			{ 8,  9, -1, -1}, AT_Spellcard, "Lottery Sign ~ Wheel of Fortune", 20, 36000,
+			hina_wheel, hina_spell_bg, BOSS_DEFAULT_GO_POS
+		},
+		.wheel_of_fortune_hard = {
+			{-1, -1, 10, 11}, AT_Spellcard, "Lottery Sign ~ Wheel of Fortune", 25, 36000,
+			hina_wheel, hina_spell_bg, BOSS_DEFAULT_GO_POS
+		},
 	},
 
-	.extra.monty_hall_danmaku	= {{ 0,  1,  2,  3}, AT_ExtraSpell, "Lottery Sign ~ Monty Hall Danmaku", 60, 60000,
-								hina_monty, hina_spell_bg, BOSS_DEFAULT_GO_POS},
+	.extra.monty_hall_danmaku = {
+		{ 0,  1,  2,  3}, AT_ExtraSpell, "Lottery Sign ~ Monty Hall Danmaku", 60, 60000,
+		hina_monty, hina_spell_bg, BOSS_DEFAULT_GO_POS
+	},
 };
 
 static void stage2_bg_leaves_draw(Vector pos) {

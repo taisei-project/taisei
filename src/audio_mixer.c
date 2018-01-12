@@ -107,10 +107,12 @@ void audio_backend_init(void) {
 	Mix_QuerySpec(&frequency, &format, &channels);
 
 	if(frequency != AUDIO_FREQ || format != AUDIO_FORMAT) {
-		log_warn(	"Mixer spec doesn't match our request, "
-					"requested (freq=%i, fmt=%u), got (freq=%i, fmt=%u). "
-					"Sound may be distorted.",
-					AUDIO_FREQ, AUDIO_FORMAT, frequency, format);
+		log_warn(
+			"Mixer spec doesn't match our request, "
+			"requested (freq=%i, fmt=%u), got (freq=%i, fmt=%u). "
+			"Sound may be distorted.",
+			AUDIO_FREQ, AUDIO_FORMAT, frequency, format
+		);
 	}
 
 	log_info("Audio subsystem initialized (SDL2_Mixer)");
@@ -300,9 +302,9 @@ bool audio_backend_music_set_position(double pos) {
 
 static int translate_group(AudioBackendSoundGroup group, int defmixgroup) {
 	switch(group) {
-		case SNDGROUP_MAIN:	return MAIN_CHANNEL_GROUP;
-		case SNDGROUP_UI:	return UI_CHANNEL_GROUP;
-		default:			return defmixgroup;
+		case SNDGROUP_MAIN: return MAIN_CHANNEL_GROUP;
+		case SNDGROUP_UI:   return UI_CHANNEL_GROUP;
+		default:            return defmixgroup;
 	}
 }
 

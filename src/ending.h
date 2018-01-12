@@ -17,13 +17,13 @@ enum {
 };
 
 enum {
-    // do not reorder these or change the values
-    ENDING_BAD_1,
-    ENDING_BAD_2,
-    ENDING_GOOD_1,
-    ENDING_GOOD_2,
+	// do not reorder these or change the values
+	ENDING_BAD_1,
+	ENDING_BAD_2,
+	ENDING_GOOD_1,
+	ENDING_GOOD_2,
 
-    NUM_ENDINGS,
+	NUM_ENDINGS,
 };
 
 typedef struct EndingEntry EndingEntry;

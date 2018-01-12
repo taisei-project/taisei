@@ -193,9 +193,9 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 		shorten_text_up_to_width(tmp, csize, _fonts.standard);
 
 		switch(a) {
-			case AL_Center:	o += csize * 0.5 - stringwidth(tmp, _fonts.standard) * 0.5;		break;
-			case AL_Right:	o += csize - stringwidth(tmp, _fonts.standard);					break;
-			default:																		break;
+			case AL_Center: o += csize * 0.5 - stringwidth(tmp, _fonts.standard) * 0.5;     break;
+			case AL_Right:  o += csize - stringwidth(tmp, _fonts.standard);                 break;
+			default:                                                                        break;
 		}
 
 		draw_text(AL_Left, o + 10, 20*item, tmp, _fonts.standard);

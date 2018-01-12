@@ -33,24 +33,24 @@ typedef bool (*VFSMkDirFunc)(VFSNode *parent, const char *subdir);
 typedef SDL_RWops* (*VFSOpenFunc)(VFSNode *filenode, VFSOpenMode mode);
 
 typedef struct VFSNodeFuncs {
-    VFSReprFunc repr;
-    VFSFreeFunc free;
-    VFSQueryFunc query;
-    VFSMountFunc mount;
-    VFSUnmountFunc unmount;
-    VFSSysPathFunc syspath;
-    VFSLocateFunc locate;
-    VFSIterFunc iter;
-    VFSIterStopFunc iter_stop;
-    VFSMkDirFunc mkdir;
-    VFSOpenFunc open;
+	VFSReprFunc repr;
+	VFSFreeFunc free;
+	VFSQueryFunc query;
+	VFSMountFunc mount;
+	VFSUnmountFunc unmount;
+	VFSSysPathFunc syspath;
+	VFSLocateFunc locate;
+	VFSIterFunc iter;
+	VFSIterStopFunc iter_stop;
+	VFSMkDirFunc mkdir;
+	VFSOpenFunc open;
 } VFSNodeFuncs;
 
 typedef struct VFSNode {
-    VFSNodeFuncs *funcs;
-    SDL_atomic_t refcount;
-    void *data1;
-    void *data2;
+	VFSNodeFuncs *funcs;
+	SDL_atomic_t refcount;
+	void *data1;
+	void *data2;
 } VFSNode;
 
 typedef void (*VFSShutdownHandler)(void *arg);

@@ -1031,9 +1031,9 @@ void wriggle_night_ignite(Boss *boss, int time) {
 		wriggle_ignite_warnlaser(l3);
 
 		for(int i = 0; i < 5 + 15 * dfactor; ++i) {
-			PROJECTILE("plainball",	boss->pos, rgb(c, c, 1.0), wriggle_ignite_laserbullet, { add_ref(l1), i }, .flags = PFLAG_DRAWADD);
-			PROJECTILE("bigball",	boss->pos, rgb(1.0, c, c), wriggle_ignite_laserbullet, { add_ref(l2), i }, .flags = PFLAG_DRAWADD);
-			PROJECTILE("plainball",	boss->pos, rgb(c, c, 1.0), wriggle_ignite_laserbullet, { add_ref(l3), i }, .flags = PFLAG_DRAWADD);
+			PROJECTILE("plainball", boss->pos, rgb(c, c, 1.0), wriggle_ignite_laserbullet, { add_ref(l1), i }, .flags = PFLAG_DRAWADD);
+			PROJECTILE("bigball",   boss->pos, rgb(1.0, c, c), wriggle_ignite_laserbullet, { add_ref(l2), i }, .flags = PFLAG_DRAWADD);
+			PROJECTILE("plainball", boss->pos, rgb(c, c, 1.0), wriggle_ignite_laserbullet, { add_ref(l3), i }, .flags = PFLAG_DRAWADD);
 
 			// FIXME: better sound
 			play_sound("shot1");
@@ -1109,14 +1109,14 @@ void wriggle_light_singularity(Boss *boss, int time) {
 		char *ptype = NULL;
 
 		switch(time / 300 - 1) {
-			case 0:	 ptype = "thickrice";	break;
-			case 1:	 ptype = "rice";		break;
-			case 2:	 ptype = "bullet";		break;
-			case 3:	 ptype = "wave";		break;
-			case 4:	 ptype = "ball";		break;
-			case 5:	 ptype = "plainball";	break;
-			case 6:	 ptype = "bigball";		break;
-			default: ptype = "soul";		break;
+			case 0:  ptype = "thickrice";   break;
+			case 1:  ptype = "rice";        break;
+			case 2:  ptype = "bullet";      break;
+			case 3:  ptype = "wave";        break;
+			case 4:  ptype = "ball";        break;
+			case 5:  ptype = "plainball";   break;
+			case 6:  ptype = "bigball";     break;
+			default: ptype = "soul";        break;
 		}
 
 		int cnt = 6 + 2 * global.diff;

@@ -15,13 +15,13 @@
 #include "list.h"
 
 #ifdef DEBUG
-    #define OBJPOOL_DEBUG
+	#define OBJPOOL_DEBUG
 #endif
 
 #ifdef OBJPOOL_DEBUG
-    #define IF_OBJPOOL_DEBUG(code) code
+	#define IF_OBJPOOL_DEBUG(code) code
 #else
-    #define IF_OBJPOOL_DEBUG(code)
+	#define IF_OBJPOOL_DEBUG(code)
 #endif
 
 typedef struct ObjectPool ObjectPool;
@@ -29,42 +29,42 @@ typedef struct ObjectInterface ObjectInterface;
 typedef struct ObjectPoolStats ObjectPoolStats;
 
 struct ObjectPoolStats {
-    const char *tag;
-    size_t capacity;
-    size_t usage;
-    size_t peak_usage;
+	const char *tag;
+	size_t capacity;
+	size_t usage;
+	size_t peak_usage;
 };
 
 #define OBJECT_INTERFACE_BASE(typename) struct { \
-    LIST_INTERFACE(typename); \
-    IF_OBJPOOL_DEBUG( \
-        struct { \
-            bool used; \
-        } _object_private; \
-    ) \
+	LIST_INTERFACE(typename); \
+	IF_OBJPOOL_DEBUG( \
+		struct { \
+			bool used; \
+		} _object_private; \
+	) \
 }
 
 #define OBJECT_INTERFACE(typename) union { \
-    ObjectInterface object_interface; \
-    OBJECT_INTERFACE_BASE(typename); \
+	ObjectInterface object_interface; \
+	OBJECT_INTERFACE_BASE(typename); \
 }
 
 struct ObjectInterface {
-    OBJECT_INTERFACE_BASE(ObjectInterface);
+	OBJECT_INTERFACE_BASE(ObjectInterface);
 };
 
 #ifdef USE_GNU_EXTENSIONS
-    // Do some compile-time checks to make sure the type is compatible with object pools
+	// Do some compile-time checks to make sure the type is compatible with object pools
 
-    #define OBJPOOL_ALLOC(typename,max_objects) (__extension__ ({ \
-        static_assert(__builtin_types_compatible_p(ObjectInterface, __typeof__(((typename*)(0))->object_interface)), \
-            #typename " must implement ObjectInterface (use the OBJECT_INTERFACE macro)"); \
-        static_assert(__builtin_offsetof(typename, object_interface) == 0, \
-            "object_interface must be the first member in " #typename); \
-        objpool_alloc(sizeof(typename), max_objects, #typename); \
-    }))
+	#define OBJPOOL_ALLOC(typename,max_objects) (__extension__ ({ \
+		static_assert(__builtin_types_compatible_p(ObjectInterface, __typeof__(((typename*)(0))->object_interface)), \
+			#typename " must implement ObjectInterface (use the OBJECT_INTERFACE macro)"); \
+		static_assert(__builtin_offsetof(typename, object_interface) == 0, \
+			"object_interface must be the first member in " #typename); \
+		objpool_alloc(sizeof(typename), max_objects, #typename); \
+	}))
 #else
-    #define OBJPOOL_ALLOC(typename,max_objects) objpool_alloc(sizeof(typename), max_objects, #typename)
+	#define OBJPOOL_ALLOC(typename,max_objects) objpool_alloc(sizeof(typename), max_objects, #typename)
 #endif
 
 ObjectPool *objpool_alloc(size_t obj_size, size_t max_objects, const char *tag);

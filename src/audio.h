@@ -16,19 +16,19 @@
 #define DEFAULT_SFX_VOLUME 100
 
 typedef struct CurrentBGM {
-    char *name;
-    char *title;
-    int isboss;
-    int started_at;
-    Music *music;
+	char *name;
+	char *title;
+	int isboss;
+	int started_at;
+	Music *music;
 } CurrentBGM;
 
 extern CurrentBGM current_bgm;
 
 typedef enum {
-    SNDGROUP_ALL,
-    SNDGROUP_MAIN,
-    SNDGROUP_UI,
+	SNDGROUP_ALL,
+	SNDGROUP_MAIN,
+	SNDGROUP_UI,
 } AudioBackendSoundGroup;
 
 void audio_backend_init(void);

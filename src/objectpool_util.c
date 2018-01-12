@@ -12,32 +12,32 @@
 #include "util.h"
 
 static void* objpool_release_list_callback(List **dest, List *elem, void *vpool) {
-    list_unlink(dest, elem);
-    objpool_release((ObjectPool*)vpool, (ObjectInterface*)elem);
-    return NULL;
+	list_unlink(dest, elem);
+	objpool_release((ObjectPool*)vpool, (ObjectInterface*)elem);
+	return NULL;
 }
 
 void objpool_release_list(ObjectPool *pool, List **dest) {
-    list_foreach(dest, objpool_release_list_callback, pool);
+	list_foreach(dest, objpool_release_list_callback, pool);
 }
 
 bool objpool_is_full(ObjectPool *pool) {
-    ObjectPoolStats stats;
-    objpool_get_stats(pool, &stats);
-    return stats.capacity == stats.usage;
+	ObjectPoolStats stats;
+	objpool_get_stats(pool, &stats);
+	return stats.capacity == stats.usage;
 }
 
 size_t objpool_object_contents_size(ObjectPool *pool) {
-    return objpool_object_size(pool) - sizeof(ObjectInterface);
+	return objpool_object_size(pool) - sizeof(ObjectInterface);
 }
 
 void *objpool_object_contents(ObjectPool *pool, ObjectInterface *obj, size_t *out_size) {
-    assert(obj != NULL);
+	assert(obj != NULL);
 
-    if(out_size != NULL) {
-        objpool_memtest(pool, obj);
-        *out_size = objpool_object_contents_size(pool);
-    }
+	if(out_size != NULL) {
+		objpool_memtest(pool, obj);
+		*out_size = objpool_object_contents_size(pool);
+	}
 
-    return (char*)obj + sizeof(ObjectInterface);
+	return (char*)obj + sizeof(ObjectInterface);
 }

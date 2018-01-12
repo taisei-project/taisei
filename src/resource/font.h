@@ -27,8 +27,8 @@ enum {
 // Size of the buffer used by the font renderer at quality == 1.0.
 // No text larger than this can be drawn.
 enum {
-	FONTREN_MAXW = 1024,	// must be a power of two that is >= SCREEN_W
-	FONTREN_MAXH = 64,		// must be a power of two that is > largest font size
+	FONTREN_MAXW = 1024,    // must be a power of two that is >= SCREEN_W
+	FONTREN_MAXH = 64,      // must be a power of two that is > largest font size
 };
 
 typedef struct Font Font;

@@ -11,7 +11,7 @@
 #include "union.h"
 
 bool vfs_create_union_mountpoint(const char *mountpoint) {
-    VFSNode *unode = vfs_alloc();
-    vfs_union_init(unode);
-    return vfs_mount_or_decref(vfs_root, mountpoint, unode);
+	VFSNode *unode = vfs_alloc();
+	vfs_union_init(unode);
+	return vfs_mount_or_decref(vfs_root, mountpoint, unode);
 }

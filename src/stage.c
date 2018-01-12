@@ -303,7 +303,7 @@ bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {
 			}
 
 #ifndef DEBUG // no cheating for peasants
-			if(	code == KEY_IDDQD ||
+			if( code == KEY_IDDQD ||
 				code == KEY_POWERUP ||
 				code == KEY_POWERDOWN)
 				break;

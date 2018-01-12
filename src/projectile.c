@@ -158,7 +158,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	memcpy(p->args, args->args, sizeof(p->args));
 
 	// BUG: this currently breaks some projectiles
-	//		enable this when they're fixed
+	//      enable this when they're fixed
 	// assert(rule != NULL);
 	// rule(p, EVENT_BIRTH);
 
