@@ -47,7 +47,7 @@ static int reimu_dream_slave(Enemy *e, int t) {
 
 static void reimu_dream_respawn_slaves(Player *plr, short npow) {
 	Enemy *e = plr->slaves, *tmp;
-    double dmg = 56;
+	double dmg = 56;
 
 	while(e != 0) {
 		tmp = e;
