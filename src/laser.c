@@ -31,7 +31,7 @@ Laser *create_laser(complex pos, float time, float deathtime, Color color, Laser
 	l->lrule = lrule;
 
 	l->shader = NULL;
-	l->collision_step = 5;
+	l->collision_step = 1;
 	l->width = 10;
 	l->width_exponent = 1.0;
 	l->speed = 1;
@@ -346,7 +346,6 @@ complex las_weird_sine(Laser *l, float t) {             // [0] = velocity; [1] =
 
 	if(t == EVENT_BIRTH) {
 		l->shader = get_shader_optional("laser_weird_sine");
-		l->collision_step = 3;
 		return 0;
 	}
 
@@ -359,7 +358,6 @@ complex las_sine(Laser *l, float t) {               // [0] = velocity; [1] = sin
 
 	if(t == EVENT_BIRTH) {
 		l->shader = get_shader_optional("laser_sine");
-		l->collision_step = 3;
 		return 0;
 	}
 
@@ -379,7 +377,6 @@ complex las_sine_expanding(Laser *l, float t) { // [0] = velocity; [1] = sine am
 
 	if(t == EVENT_BIRTH) {
 		l->shader = get_shader_optional("laser_sine_expanding");
-		l->collision_step = 3;
 		return 0;
 	}
 
@@ -418,7 +415,6 @@ complex las_turning(Laser *l, float t) { // [0] = vel0; [1] = vel1; [2] r: turn 
 complex las_circle(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		l->shader = get_shader_optional("laser_circle");
-		l->collision_step = 3;
 		return 0;
 	}
 

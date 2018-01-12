@@ -2140,7 +2140,6 @@ static complex elly_toe_laser_pos(Laser *l, float t) { // a[0]: direction, a[1]:
 		default:
 			log_fatal("Unknown Elly laser type.");
 		}
-		l->collision_step = 1;
 		return 0;
 	}
 
