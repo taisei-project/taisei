@@ -15,10 +15,10 @@
 
 
 /*
- *	All stored fields in the Replay* structures are in the order in which they appear in the file.
- *	If a field is commented out, that means it *IS* stored in the file, just not used outside of the loading routine.
+ *  All stored fields in the Replay* structures are in the order in which they appear in the file.
+ *  If a field is commented out, that means it *IS* stored in the file, just not used outside of the loading routine.
  *
- *	Please maintain this convention, it makes it easier to grasp the replay file structure just by looking at this header.
+ *  Please maintain this convention, it makes it easier to grasp the replay file structure just by looking at this header.
  */
 
 
@@ -80,7 +80,7 @@ typedef struct ReplayStage {
 
 	// initial game settings
 	uint16_t stage; // must match type of StageInfo.id in stage.h
-	uint32_t seed;	// this also happens to be the game initiation time - and we use this property, don't break it please
+	uint32_t seed;  // this also happens to be the game initiation time - and we use this property, don't break it please
 	uint8_t diff;
 
 	// initial player settings
@@ -145,9 +145,9 @@ typedef struct Replay {
 
 	// How many bytes is {playername} long. The string is not null terminated in the file, but is null terminated after it's been loaded into this struct
 	// REPLAY_STRUCT_VERSION_TS102000_REV1 and above:
-	// 		uint8_t playername_size;
+	//      uint8_t playername_size;
 	// REPLAY_STRUCT_VERSION_TS102000_REV0 and below:
-	// 		uint16_t playername_size;
+	//      uint16_t playername_size;
 
 	// The player UTF8-encoded player name
 	char *playername;
@@ -193,16 +193,16 @@ typedef enum ReplayReadMode {
 
 typedef enum ReplayGlobalFlags {
 	_REPLAY_GFLAG_NULL,
-	REPLAY_GFLAG_CONTINUES 			= (1 << 0),	// a continue was used in any stage
-	REPLAY_GFLAG_CHEATS				= (1 << 1),	// a cheat was used in any stage
-	REPLAY_GFLAG_CLEAR				= (1 << 2), // all stages in the replay were cleared
+	REPLAY_GFLAG_CONTINUES          = (1 << 0), // a continue was used in any stage
+	REPLAY_GFLAG_CHEATS             = (1 << 1), // a cheat was used in any stage
+	REPLAY_GFLAG_CLEAR              = (1 << 2), // all stages in the replay were cleared
 } ReplayGlobalFlags;
 
 typedef enum ReplayStageFlags {
 	_REPLAY_SFLAG_NULL,
-	REPLAY_SFLAG_CONTINUES 			= (1 << 0), // a continue was used in this stage
-	REPLAY_SFLAG_CHEATS				= (1 << 1), // a cheat was used in this stage
-	REPLAY_SFLAG_CLEAR				= (1 << 2), // this stage was cleared
+	REPLAY_SFLAG_CONTINUES          = (1 << 0), // a continue was used in this stage
+	REPLAY_SFLAG_CHEATS             = (1 << 1), // a cheat was used in this stage
+	REPLAY_SFLAG_CLEAR              = (1 << 2), // this stage was cleared
 } ReplayStageFlags;
 
 void replay_init(Replay *rpy);

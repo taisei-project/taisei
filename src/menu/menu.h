@@ -35,9 +35,9 @@ typedef struct MenuEntry {
 } MenuEntry;
 
 enum MenuFlag {
-	MF_Transient = 1,			// the menu will be automatically closed on selection
-	MF_Abortable = 2,			// the menu can be closed with the escape key
-	MF_AlwaysProcessInput = 4	// the menu will process input when it's fading out
+	MF_Transient = 1,           // the menu will be automatically closed on selection
+	MF_Abortable = 2,           // the menu can be closed with the escape key
+	MF_AlwaysProcessInput = 4   // the menu will process input when it's fading out
 };
 
 enum MenuState {

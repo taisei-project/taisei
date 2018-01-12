@@ -299,7 +299,7 @@ typedef struct cmd_writer_t {
 #define CMD_HEADER_SIZE 3
 
 //
-//	PCMD_UNLOCK_STAGES
+//  PCMD_UNLOCK_STAGES
 //
 
 static void progress_prepare_cmd_unlock_stages(size_t *bufsize, void **arg) {
@@ -339,7 +339,7 @@ static void progress_write_cmd_unlock_stages(SDL_RWops *vfile, void **arg) {
 }
 
 //
-//	PCMD_UNLOCK_STAGES_WITH_DIFFICULTY
+//  PCMD_UNLOCK_STAGES_WITH_DIFFICULTY
 //
 
 static void progress_prepare_cmd_unlock_stages_with_difficulties(size_t *bufsize, void **arg) {
@@ -402,7 +402,7 @@ static void progress_write_cmd_unlock_stages_with_difficulties(SDL_RWops *vfile,
 }
 
 //
-//	PCMD_HISCORE
+//  PCMD_HISCORE
 //
 
 static void progress_prepare_cmd_hiscore(size_t *bufsize, void **arg) {
@@ -416,7 +416,7 @@ static void progress_write_cmd_hiscore(SDL_RWops *vfile, void **arg) {
 }
 
 //
-//	PCMD_STAGE_PLAYINFO
+//  PCMD_STAGE_PLAYINFO
 //
 
 struct cmd_stage_playinfo_data_elem {
@@ -452,10 +452,10 @@ static void progress_prepare_cmd_stage_playinfo(size_t *bufsize, void **arg) {
 			if(p && (p->num_played || p->num_cleared)) {
 				struct cmd_stage_playinfo_data_elem *e = malloc(sizeof(struct cmd_stage_playinfo_data_elem));
 
-				e->stage = stg->id;					data->size += sizeof(uint16_t);
-				e->diff = d;						data->size += sizeof(uint8_t);
-				e->num_played = p->num_played;		data->size += sizeof(uint32_t);
-				e->num_cleared = p->num_cleared;	data->size += sizeof(uint32_t);
+				e->stage = stg->id;                 data->size += sizeof(uint16_t);
+				e->diff = d;                        data->size += sizeof(uint8_t);
+				e->num_played = p->num_played;      data->size += sizeof(uint32_t);
+				e->num_cleared = p->num_cleared;    data->size += sizeof(uint32_t);
 
 				list_push(&data->elems, e);
 			}
@@ -492,7 +492,7 @@ cleanup:
 }
 
 //
-//	PCMD_ENDINGS
+//  PCMD_ENDINGS
 //
 
 static void progress_prepare_cmd_endings(size_t *bufsize, void **arg) {
@@ -531,7 +531,7 @@ static void progress_write_cmd_endings(SDL_RWops *vfile, void **arg) {
 }
 
 //
-//	PCMD_GAME_SETTINGS
+//  PCMD_GAME_SETTINGS
 //
 
 static void progress_prepare_cmd_game_settings(size_t *bufsize, void **arg) {
@@ -547,7 +547,7 @@ static void progress_write_cmd_game_settings(SDL_RWops *vfile, void **arg) {
 }
 
 //
-//	PCMD_GAME_VERSION
+//  PCMD_GAME_VERSION
 //
 
 static void progress_prepare_cmd_game_version(size_t *bufsize, void **arg) {
@@ -566,7 +566,7 @@ static void progress_write_cmd_game_version(SDL_RWops *vfile, void **arg) {
 }
 
 //
-//	Copy unhandled commands from the original file
+//  Copy unhandled commands from the original file
 //
 
 static void progress_prepare_cmd_unknown(size_t *bufsize, void **arg) {
@@ -584,7 +584,7 @@ static void progress_write_cmd_unknown(SDL_RWops *vfile, void **arg) {
 }
 
 //
-//	Test
+//  Test
 //
 
 __attribute__((unused)) static void progress_prepare_cmd_test(size_t *bufsize, void **arg) {

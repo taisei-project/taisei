@@ -35,8 +35,8 @@ ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, D
 	s->events = (ReplayEvent*)malloc(sizeof(ReplayEvent) * s->capacity);
 
 	s->stage = stage->id;
-	s->seed	= seed;
-	s->diff	= diff;
+	s->seed = seed;
+	s->diff = diff;
 
 	s->plr_pos_x = floor(creal(plr->pos));
 	s->plr_pos_y = floor(cimag(plr->pos));
@@ -44,8 +44,8 @@ ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, D
 	s->plr_points = plr->points;
 	s->plr_continues_used = plr->continues_used;
 	s->plr_focus = plr->focus;
-	s->plr_char	= plr->mode->character->id;
-	s->plr_shot	= plr->mode->shot_mode;
+	s->plr_char = plr->mode->character->id;
+	s->plr_shot = plr->mode->shot_mode;
 	s->plr_lives = plr->lives;
 	s->plr_life_fragments = plr->life_fragments;
 	s->plr_bombs = plr->bombs;
@@ -590,8 +590,8 @@ bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *
 #undef PRINTPROP
 
 static char* replay_getpath(const char *name, bool ext) {
-	return ext ?	strfmt("storage/replays/%s.%s", name, REPLAY_EXTENSION) :
-					strfmt("storage/replays/%s", 	name);
+	return ext ?    strfmt("storage/replays/%s.%s", name, REPLAY_EXTENSION) :
+					strfmt("storage/replays/%s",    name);
 }
 
 bool replay_save(Replay *rpy, const char *name) {

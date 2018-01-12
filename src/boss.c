@@ -447,8 +447,8 @@ static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
 	bool fail = a->failtime, extra = a->type == AT_ExtraSpell;
 
 	const char *title = extra ?
-						(fail ? "Extra Spell failed..." : "Extra Spell cleared!"):
-						(fail ?       "Spell failed..." :       "Spell cleared!");
+	                    (fail ? "Extra Spell failed..." : "Extra Spell cleared!"):
+	                    (fail ?       "Spell failed..." :       "Spell cleared!");
 
 	int time_left = max(0, a->starttime + a->timeout - global.frames);
 
@@ -502,11 +502,11 @@ static int attack_end_delay(Boss *boss) {
 	int delay = 0;
 
 	switch(boss->current->type) {
-		case AT_Spellcard:  	delay = ATTACK_END_DELAY_SPELL;	break;
-		case AT_SurvivalSpell:	delay = ATTACK_END_DELAY_SURV;	break;
-		case AT_ExtraSpell: 	delay = ATTACK_END_DELAY_EXTRA;	break;
-		case AT_Move:       	delay = ATTACK_END_DELAY_MOVE;	break;
-		default:            	delay = ATTACK_END_DELAY;		break;
+		case AT_Spellcard:      delay = ATTACK_END_DELAY_SPELL; break;
+		case AT_SurvivalSpell:  delay = ATTACK_END_DELAY_SURV;  break;
+		case AT_ExtraSpell:     delay = ATTACK_END_DELAY_EXTRA; break;
+		case AT_Move:           delay = ATTACK_END_DELAY_MOVE;  break;
+		default:                delay = ATTACK_END_DELAY;       break;
 	}
 
 	if(delay) {

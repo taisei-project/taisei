@@ -11,11 +11,11 @@
 #include "rwops_pipe.h"
 
 SDL_RWops* SDL_RWpopen(const char *command, const char *mode) {
-    SDL_SetError("Not implemented");
-    return NULL;
+	SDL_SetError("Not implemented");
+	return NULL;
 }
 
 int SDL_RWConvertToPipe(SDL_RWops *rw) {
-    SDL_SetError("Not implemented");
-    return -1;
+	SDL_SetError("Not implemented");
+	return -1;
 }

@@ -198,7 +198,6 @@ void credits_towerwall_draw(Vector pos) {
 
 	glPushMatrix();
 	glTranslatef(pos[0], pos[1], pos[2]);
-// 	glRotatef(90, 1,0,0);
 	glScalef(30,30,30);
 	draw_model("towerwall");
 	glPopMatrix();

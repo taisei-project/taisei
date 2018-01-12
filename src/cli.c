@@ -47,7 +47,6 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		{{"play", no_argument, 0, 'p'}, "Play a specific stage", 0},
 		{{"sid", required_argument, 0, 'i'}, "Select stage by %s", "ID"},
 		{{"diff", required_argument, 0, 'd'}, "Select a difficulty (Easy/Normal/Hard/Lunatic)", "DIFF"},
-	/*	{{"sname", required_argument, 0, 'n'}, "Select stage by %s", "NAME"},*/
 		{{"shotmode", required_argument, 0, 's'}, "Select a shotmode (marisaA/youmuA/marisaB/youmuB)", "SMODE"},
 		{{"dumpstages", no_argument, 0, 'u'}, "Print a list of all stages in the game", 0},
 		{{"vfs-tree", required_argument, 0, 't'}, "Print the virtual filesystem tree starting from %s", "PATH"},

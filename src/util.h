@@ -74,8 +74,8 @@ char* ucs4_to_utf8(const uint32_t *ucs4);
 // Taisei code always uses just "complex" when it actually means "complex double", which is not really correct...
 // gcc doesn't seem to care, other compilers do (e.g. clang)
 #ifdef complex
-    #undef complex
-    #define complex _Complex double
+	#undef complex
+	#define complex _Complex double
 #endif
 
 // needed for mingw compatibility:
@@ -100,18 +100,18 @@ float sanitize_scale(float scale) __attribute__((const));
 //
 
 typedef struct {
-    hrtime_t frametimes[120]; // size = number of frames to average
-    double fps; // average fps over the last X frames
-    hrtime_t last_update_time; // internal; last time the average was recalculated
+	hrtime_t frametimes[120]; // size = number of frames to average
+	double fps; // average fps over the last X frames
+	hrtime_t last_update_time; // internal; last time the average was recalculated
 } FPSCounter;
 
 typedef enum FrameAction {
-    RFRAME_SWAP,
-    RFRAME_DROP,
+	RFRAME_SWAP,
+	RFRAME_DROP,
 
-    LFRAME_WAIT,
-    LFRAME_SKIP,
-    LFRAME_STOP,
+	LFRAME_WAIT,
+	LFRAME_SKIP,
+	LFRAME_STOP,
 } FrameAction;
 
 typedef FrameAction (*LogicFrameFunc)(void*);
@@ -168,36 +168,36 @@ noreturn void _ts_assert_fail(const char *cond, const char *func, const char *fi
 #define static_assert _Static_assert
 
 #ifdef NDEBUG
-    #define _assert(cond,uselog)
+	#define _assert(cond,uselog)
 #else
-    #define _assert(cond,uselog) ((cond) ? (void)0 : _ts_assert_fail(#cond, __func__, __FILE__, __LINE__, uselog))
+	#define _assert(cond,uselog) ((cond) ? (void)0 : _ts_assert_fail(#cond, __func__, __FILE__, __LINE__, uselog))
 #endif
 
 #define assert(cond) _assert(cond, true)
 #define assert_nolog(cond) _assert(cond, false)
 
 #ifdef DEBUG
-    typedef struct DebugInfo {
-        const char *file;
-        const char *func;
-        unsigned int line;
-    } DebugInfo;
+	typedef struct DebugInfo {
+		const char *file;
+		const char *func;
+		unsigned int line;
+	} DebugInfo;
 
-    #define _DEBUG_INFO_PTR_ (&(DebugInfo){ __FILE__, __func__, __LINE__ })
-    #define set_debug_info(debug) _set_debug_info(debug, _DEBUG_INFO_PTR_)
-    void _set_debug_info(DebugInfo *debug, DebugInfo *meta);
-    DebugInfo* get_debug_info(void);
-    DebugInfo* get_debug_meta(void);
+	#define _DEBUG_INFO_PTR_ (&(DebugInfo){ __FILE__, __func__, __LINE__ })
+	#define set_debug_info(debug) _set_debug_info(debug, _DEBUG_INFO_PTR_)
+	void _set_debug_info(DebugInfo *debug, DebugInfo *meta);
+	DebugInfo* get_debug_info(void);
+	DebugInfo* get_debug_meta(void);
 
-    extern bool _in_draw_code;
-    #define BEGIN_DRAW_CODE() do { if(_in_draw_code) { log_fatal("BEGIN_DRAW_CODE not followed by END_DRAW_CODE"); } _in_draw_code = true; } while(0)
-    #define END_DRAW_CODE() do { if(!_in_draw_code) { log_fatal("END_DRAW_CODE not preceeded by BEGIN_DRAW_CODE"); } _in_draw_code = false; } while(0)
-    #define IN_DRAW_CODE (_in_draw_code)
+	extern bool _in_draw_code;
+	#define BEGIN_DRAW_CODE() do { if(_in_draw_code) { log_fatal("BEGIN_DRAW_CODE not followed by END_DRAW_CODE"); } _in_draw_code = true; } while(0)
+	#define END_DRAW_CODE() do { if(!_in_draw_code) { log_fatal("END_DRAW_CODE not preceeded by BEGIN_DRAW_CODE"); } _in_draw_code = false; } while(0)
+	#define IN_DRAW_CODE (_in_draw_code)
 #else
-    #define set_debug_info(debug)
-    #define BEGIN_DRAW_CODE()
-    #define END_DRAW_CODE()
-    #define IN_DRAW_CODE (0)
+	#define set_debug_info(debug)
+	#define BEGIN_DRAW_CODE()
+	#define END_DRAW_CODE()
+	#define IN_DRAW_CODE (0)
 #endif
 
 //

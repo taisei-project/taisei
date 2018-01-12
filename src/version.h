@@ -21,31 +21,31 @@ extern const uint8_t  TAISEI_VERSION_PATCH;
 extern const uint16_t TAISEI_VERSION_TWEAK;
 
 typedef struct TaiseiVersion {
-    uint8_t major;
-    uint8_t minor;
-    uint8_t patch;
-    uint16_t tweak;
+	uint8_t major;
+	uint8_t minor;
+	uint8_t patch;
+	uint16_t tweak;
 } TaiseiVersion;
 
 #define TAISEI_VERSION_SET(v,ma,mi,pa,tw) { \
-    (v)->major = (ma); \
-    (v)->minor = (mi); \
-    (v)->patch = (pa); \
-    (v)->tweak = (tw); \
+	(v)->major = (ma); \
+	(v)->minor = (mi); \
+	(v)->patch = (pa); \
+	(v)->tweak = (tw); \
 }
 
 #define TAISEI_VERSION_GET_CURRENT(v) TAISEI_VERSION_SET(v, \
-    TAISEI_VERSION_MAJOR, \
-    TAISEI_VERSION_MINOR, \
-    TAISEI_VERSION_PATCH, \
-    TAISEI_VERSION_TWEAK  \
+	TAISEI_VERSION_MAJOR, \
+	TAISEI_VERSION_MINOR, \
+	TAISEI_VERSION_PATCH, \
+	TAISEI_VERSION_TWEAK  \
 )
 
 typedef enum {
-    VCMP_MAJOR,
-    VCMP_MINOR,
-    VCMP_PATCH,
-    VCMP_TWEAK,
+	VCMP_MAJOR,
+	VCMP_MINOR,
+	VCMP_PATCH,
+	VCMP_TWEAK,
 } TaiseiVersionCmpLevel;
 
 // this is for IO purposes. sizeof(TaiseiVersion) may not match.

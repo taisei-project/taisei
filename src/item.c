@@ -16,13 +16,13 @@
 
 static Texture* item_tex(ItemType type) {
 	static const char *const map[] = {
-		[Power]		= "items/power",
-		[Point]		= "items/point",
-		[Life]		= "items/life",
-		[Bomb]		= "items/bomb",
-		[LifeFrag]	= "items/lifefrag",
-		[BombFrag]	= "items/bombfrag",
-		[BPoint]	= "items/bullet_point",
+		[Power]     = "items/power",
+		[Point]     = "items/point",
+		[Life]      = "items/life",
+		[Bomb]      = "items/bomb",
+		[LifeFrag]  = "items/lifefrag",
+		[BombFrag]  = "items/bombfrag",
+		[BPoint]    = "items/bullet_point",
 	};
 
 	// int cast to silence a WTF warning
@@ -127,7 +127,7 @@ void move_item(Item *i) {
 
 void process_items(void) {
 	Item *item = global.items, *del = NULL;
-    int v;
+	int v;
 
 	float r = 30;
 	if(global.plr.inputflags & INFLAG_FOCUS)

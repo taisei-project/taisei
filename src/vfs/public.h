@@ -17,17 +17,17 @@
 #include "zipfile_public.h"
 
 typedef struct VFSInfo {
-    unsigned int error: 1;
-    unsigned int exists : 1;
-    unsigned int is_dir : 1;
+	unsigned int error: 1;
+	unsigned int exists : 1;
+	unsigned int is_dir : 1;
 } VFSInfo;
 
 #define VFSINFO_ERROR ((VFSInfo){.error = true, 0})
 
 typedef enum VFSOpenMode {
-    VFS_MODE_READ = 1,
-    VFS_MODE_WRITE = 2,
-    VFS_MODE_SEEKABLE  = 4,
+	VFS_MODE_READ = 1,
+	VFS_MODE_WRITE = 2,
+	VFS_MODE_SEEKABLE  = 4,
 } VFSOpenMode;
 
 #define VFS_MODE_RWMASK (VFS_MODE_READ | VFS_MODE_WRITE)

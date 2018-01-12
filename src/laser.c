@@ -340,7 +340,7 @@ complex las_accel(Laser *l, float t) {
 	return l->pos + l->args[0]*t + 0.5*l->args[1]*t*t;
 }
 
-complex las_weird_sine(Laser *l, float t) {				// [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
+complex las_weird_sine(Laser *l, float t) {             // [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
 	// XXX: this used to be called "las_sine", but it's actually not a proper sine wave
 	// do we even still need this?
 
@@ -354,7 +354,7 @@ complex las_weird_sine(Laser *l, float t) {				// [0] = velocity; [1] = sine amp
 	return l->pos + cexp(I * (carg(l->args[0]) + l->args[1] * sin(s) / s)) * t * cabs(l->args[0]);
 }
 
-complex las_sine(Laser *l, float t) {				// [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
+complex las_sine(Laser *l, float t) {               // [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
 	// this is actually shaped like a sine wave
 
 	if(t == EVENT_BIRTH) {
@@ -374,7 +374,7 @@ complex las_sine(Laser *l, float t) {				// [0] = velocity; [1] = sine amplitude
 	return l->pos + t * line_vel + sine_ofs;
 }
 
-complex las_sine_expanding(Laser *l, float t) {	// [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
+complex las_sine_expanding(Laser *l, float t) { // [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
 	// XXX: this is also a "weird" one
 
 	if(t == EVENT_BIRTH) {

@@ -17,43 +17,43 @@
 #define PROGRESS_MAXFILESIZE 4096
 
 #ifdef DEBUG
-    // #define PROGRESS_UNLOCK_ALL
+	// #define PROGRESS_UNLOCK_ALL
 #endif
 
 typedef enum ProgfileCommand {
 // do not reorder this!
 
-    PCMD_UNLOCK_STAGES                     = 0x00,
-    PCMD_UNLOCK_STAGES_WITH_DIFFICULTY     = 0x01,
-    PCMD_HISCORE                           = 0x02,
-    PCMD_STAGE_PLAYINFO                    = 0x03,
-    PCMD_ENDINGS                           = 0x04,
-    PCMD_GAME_SETTINGS                     = 0x05,
-    PCMD_GAME_VERSION                      = 0x06,
+	PCMD_UNLOCK_STAGES                     = 0x00,
+	PCMD_UNLOCK_STAGES_WITH_DIFFICULTY     = 0x01,
+	PCMD_HISCORE                           = 0x02,
+	PCMD_STAGE_PLAYINFO                    = 0x03,
+	PCMD_ENDINGS                           = 0x04,
+	PCMD_GAME_SETTINGS                     = 0x05,
+	PCMD_GAME_VERSION                      = 0x06,
 } ProgfileCommand;
 
 typedef struct StageProgress {
-    // keep this struct small if you can
-    // see stage_get_progress_from_info() in stage.c for more information
+	// keep this struct small if you can
+	// see stage_get_progress_from_info() in stage.c for more information
 
-    unsigned int unlocked : 1;
+	unsigned int unlocked : 1;
 
-    uint32_t num_played;
-    uint32_t num_cleared;
+	uint32_t num_played;
+	uint32_t num_cleared;
 } StageProgress;
 
 struct UnknownCmd;
 
 typedef struct GlobalProgress {
-    uint32_t hiscore;
-    uint32_t achieved_endings[NUM_ENDINGS];
-    struct UnknownCmd *unknown;
+	uint32_t hiscore;
+	uint32_t achieved_endings[NUM_ENDINGS];
+	struct UnknownCmd *unknown;
 
-    struct {
-        uint8_t difficulty;
-        uint8_t character;
-        uint8_t shotmode;
-    } game_settings;
+	struct {
+		uint8_t difficulty;
+		uint8_t character;
+		uint8_t shotmode;
+	} game_settings;
 } GlobalProgress;
 
 extern GlobalProgress progress;

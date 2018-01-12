@@ -11,6 +11,6 @@
 #include "zipfile.h"
 
 bool vfs_zipfile_init(VFSNode *node, VFSNode *source) {
-    vfs_set_error("Compiled without ZIP support");
-    return false;
+	vfs_set_error("Compiled without ZIP support");
+	return false;
 }

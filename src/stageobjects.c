@@ -21,27 +21,27 @@
 #define MAX_lasers                  64
 
 #define OBJECT_POOLS \
-    OBJECT_POOL(Projectile, projectiles) \
-    OBJECT_POOL(Item, items) \
-    OBJECT_POOL(Enemy, enemies) \
-    OBJECT_POOL(Laser, lasers) \
+	OBJECT_POOL(Projectile, projectiles) \
+	OBJECT_POOL(Item, items) \
+	OBJECT_POOL(Enemy, enemies) \
+	OBJECT_POOL(Laser, lasers) \
 
 StageObjectPools stage_object_pools;
 
 void stage_objpools_alloc(void) {
-    stage_object_pools = (StageObjectPools){
-        #define OBJECT_POOL(type,field) \
-            .field = OBJPOOL_ALLOC(type, MAX_##field),
+	stage_object_pools = (StageObjectPools){
+		#define OBJECT_POOL(type,field) \
+			.field = OBJPOOL_ALLOC(type, MAX_##field),
 
-        OBJECT_POOLS
-        #undef OBJECT_POOL
-    };
+		OBJECT_POOLS
+		#undef OBJECT_POOL
+	};
 }
 
 void stage_objpools_free(void) {
-    #define OBJECT_POOL(type,field) \
-        objpool_free(stage_object_pools.field);
+	#define OBJECT_POOL(type,field) \
+		objpool_free(stage_object_pools.field);
 
-    OBJECT_POOLS
-    #undef OBJECT_POOL
+	OBJECT_POOLS
+	#undef OBJECT_POOL
 }

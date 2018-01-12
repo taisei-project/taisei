@@ -16,42 +16,42 @@
 #include "stage.h"
 
 typedef enum {
-    /* do not reorder - screws replays */
+	/* do not reorder - screws replays */
 
-    PLR_CHAR_MARISA = 0,
-    PLR_CHAR_YOUMU = 1,
-    // PLR_CHAR_REIMU = 2,
+	PLR_CHAR_MARISA = 0,
+	PLR_CHAR_YOUMU = 1,
+	// PLR_CHAR_REIMU = 2,
 
-    NUM_CHARACTERS,
+	NUM_CHARACTERS,
 } CharacterID;
 
 typedef enum {
-    /* do not reorder - screws replays */
+	/* do not reorder - screws replays */
 
-    PLR_SHOT_MARISA_LASER = 0,
-    PLR_SHOT_MARISA_STAR = 1,
+	PLR_SHOT_MARISA_LASER = 0,
+	PLR_SHOT_MARISA_STAR = 1,
 
-    PLR_SHOT_YOUMU_MIRROR = 0,
-    PLR_SHOT_YOUMU_HAUNTING = 1,
+	PLR_SHOT_YOUMU_MIRROR = 0,
+	PLR_SHOT_YOUMU_HAUNTING = 1,
 
-    NUM_SHOT_MODES_PER_CHARACTER,
+	NUM_SHOT_MODES_PER_CHARACTER,
 } ShotModeID;
 
 typedef void (*PlrCharEndingProc)(Ending *e);
 
 typedef struct PlayerCharacter {
-    char id;
-    const char *lower_name;
-    const char *proper_name;
-    const char *full_name;
-    const char *title;
-    const char *dialog_sprite_name;
-    const char *player_sprite_name;
+	char id;
+	const char *lower_name;
+	const char *proper_name;
+	const char *full_name;
+	const char *title;
+	const char *dialog_sprite_name;
+	const char *player_sprite_name;
 
-    struct {
-        PlrCharEndingProc good;
-        PlrCharEndingProc bad;
-    } ending;
+	struct {
+		PlrCharEndingProc good;
+		PlrCharEndingProc bad;
+	} ending;
 } PlayerCharacter;
 
 typedef void (*PlayerModeInitProc)(Player *plr);
@@ -65,26 +65,26 @@ typedef double (*PlayerModeSpeedModProc)(Player *plr, double speed);
 typedef void (*PlayerModePreloadProc)(void);
 
 typedef struct PlayerMode {
-    const char *name;
-    PlayerCharacter *character;
-    ShotModeID shot_mode;
+	const char *name;
+	PlayerCharacter *character;
+	ShotModeID shot_mode;
 
-    struct {
-        PlayerModeInitProc init;
-        PlayerModeFreeProc free;
-        PlayerModeThinkProc think;
-        PlayerModeShotProc shot;
-        PlayerModeBombProc bomb;
+	struct {
+		PlayerModeInitProc init;
+		PlayerModeFreeProc free;
+		PlayerModeThinkProc think;
+		PlayerModeShotProc shot;
+		PlayerModeBombProc bomb;
 	ShaderRule bomb_shader;
-        PlayerModeBombBgProc bombbg;
-        PlayerModePowerProc power;
-        PlayerModeSpeedModProc speed_mod;
-        PlayerModePreloadProc preload;
-    } procs;
+		PlayerModeBombBgProc bombbg;
+		PlayerModePowerProc power;
+		PlayerModeSpeedModProc speed_mod;
+		PlayerModePreloadProc preload;
+	} procs;
 } PlayerMode;
 
 enum {
-    NUM_PLAYER_MODES = NUM_CHARACTERS * NUM_SHOT_MODES_PER_CHARACTER,
+	NUM_PLAYER_MODES = NUM_CHARACTERS * NUM_SHOT_MODES_PER_CHARACTER,
 };
 
 PlayerCharacter* plrchar_get(CharacterID id);

@@ -16,29 +16,29 @@
 #endif
 
 extern struct stage1_spells_s {
-    // this struct must contain only fields of type AttackInfo
-    // order of fields affects the visual spellstage number, but not its real internal ID
+	// this struct must contain only fields of type AttackInfo
+	// order of fields affects the visual spellstage number, but not its real internal ID
 
-    struct {
-        AttackInfo perfect_freeze;
-    } mid;
+	struct {
+		AttackInfo perfect_freeze;
+	} mid;
 
-    struct {
-        AttackInfo crystal_rain;
-        AttackInfo snow_halation;
-        AttackInfo icicle_fall;
-    } boss;
+	struct {
+		AttackInfo crystal_rain;
+		AttackInfo snow_halation;
+		AttackInfo icicle_fall;
+	} boss;
 
-    struct {
-        AttackInfo crystal_blizzard;
-    } extra;
+	struct {
+		AttackInfo crystal_blizzard;
+	} extra;
 
 #ifdef SPELL_BENCHMARK
-    AttackInfo benchmark;
+	AttackInfo benchmark;
 #endif
 
-    // required for iteration
-    AttackInfo null;
+	// required for iteration
+	AttackInfo null;
 } stage1_spells;
 
 extern StageProcs stage1_procs;

@@ -34,7 +34,7 @@ static inline ResourceHandler* get_handler(ResourceType type) {
 
 static void register_handler(
 	ResourceType type,
-	const char *subdir,	// trailing slash assumed
+	const char *subdir, // trailing slash assumed
 	ResourceBeginLoadFunc begin_load,
 	ResourceEndLoadFunc end_load,
 	ResourceUnloadFunc unload,

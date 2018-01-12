@@ -55,8 +55,11 @@ struct Enemy {
 #define create_enemy2c(p,h,d,l,a1,a2) create_enemy_p(&global.enemies,p,h,d,l,a1,a2,0,0)
 #define create_enemy1c(p,h,d,l,a1) create_enemy_p(&global.enemies,p,h,d,l,a1,0,0,0)
 
-Enemy *create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyVisualRule draw_rule, EnemyLogicRule logic_rule,
-				    complex a1, complex a2, complex a3, complex a4);
+Enemy *create_enemy_p(
+	Enemy **enemies, complex pos, int hp, EnemyVisualRule draw_rule, EnemyLogicRule logic_rule,
+	complex a1, complex a2, complex a3, complex a4
+);
+
 #ifdef ENEMY_DEBUG
 	Enemy* _enemy_attach_dbginfo(Enemy *p, DebugInfo *dbg);
 	#define create_enemy_p(...) _enemy_attach_dbginfo(create_enemy_p(__VA_ARGS__), _DEBUG_INFO_PTR_)

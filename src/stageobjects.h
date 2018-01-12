@@ -12,16 +12,16 @@
 #include "objectpool.h"
 
 typedef struct StageObjectPools {
-    union {
-        struct {
-            ObjectPool *projectiles;    // includes particles as well
-            ObjectPool *items;
-            ObjectPool *enemies;
-            ObjectPool *lasers;
-        };
+	union {
+		struct {
+			ObjectPool *projectiles;    // includes particles as well
+			ObjectPool *items;
+			ObjectPool *enemies;
+			ObjectPool *lasers;
+		};
 
-        ObjectPool *first;
-    };
+		ObjectPool *first;
+	};
 } StageObjectPools;
 
 extern StageObjectPools stage_object_pools;

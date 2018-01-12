@@ -23,7 +23,7 @@ static void events_register_default_handlers(void);
 static void events_unregister_default_handlers(void);
 
 /*
- *	Public API
+ *  Public API
  */
 
 void events_init(void) {
@@ -89,8 +89,8 @@ static bool events_invoke_handlers(SDL_Event *event, ListContainer *h_list, Even
 	// list items take precedence
 	//
 	// assumptions:
-	// 		h_list is sorted by priority
-	//		h_array is in arbitrary order and terminated with a NULL-proc entry
+	//      h_list is sorted by priority
+	//      h_array is in arbitrary order and terminated with a NULL-proc entry
 
 	bool result = false;
 
@@ -257,7 +257,7 @@ void events_pause_keyrepeat(void) {
 }
 
 /*
- *	Default handlers
+ *  Default handlers
  */
 
 static bool events_handler_quit(SDL_Event *event, void *arg);
@@ -269,12 +269,12 @@ static bool events_handler_key_up(SDL_Event *event, void *arg);
 
 
 static EventHandler default_handlers[] = {
-	{ .proc = events_handler_quit,					.priority = EPRIO_SYSTEM,		.event_type = SDL_QUIT },
-	{ .proc = events_handler_keyrepeat_workaround,	.priority = EPRIO_CAPTURE,		.event_type = 0 },
-	{ .proc = events_handler_clipboard,				.priority = EPRIO_CAPTURE,		.event_type = SDL_KEYDOWN },
-	{ .proc = events_handler_hotkeys,				.priority = EPRIO_HOTKEYS,		.event_type = SDL_KEYDOWN },
-	{ .proc = events_handler_key_down,				.priority = EPRIO_TRANSLATION,	.event_type = SDL_KEYDOWN },
-	{ .proc = events_handler_key_up,				.priority = EPRIO_TRANSLATION,	.event_type = SDL_KEYUP },
+	{ .proc = events_handler_quit,                  .priority = EPRIO_SYSTEM,       .event_type = SDL_QUIT },
+	{ .proc = events_handler_keyrepeat_workaround,  .priority = EPRIO_CAPTURE,      .event_type = 0 },
+	{ .proc = events_handler_clipboard,             .priority = EPRIO_CAPTURE,      .event_type = SDL_KEYDOWN },
+	{ .proc = events_handler_hotkeys,               .priority = EPRIO_HOTKEYS,      .event_type = SDL_KEYDOWN },
+	{ .proc = events_handler_key_down,              .priority = EPRIO_TRANSLATION,  .event_type = SDL_KEYDOWN },
+	{ .proc = events_handler_key_up,                .priority = EPRIO_TRANSLATION,  .event_type = SDL_KEYUP },
 
 	{NULL}
 };
@@ -340,7 +340,7 @@ static bool events_handler_key_down(SDL_Event *event, void *arg) {
 	bool repeat = event->key.repeat;
 
 	/*
-	 *	Emit menu events
+	 *  Emit menu events
 	 */
 
 	struct eventmap_s { int scancode; TaiseiEvent event; } menu_event_map[] = {
@@ -374,7 +374,7 @@ static bool events_handler_key_down(SDL_Event *event, void *arg) {
 	}
 
 	/*
-	 *	Emit game events
+	 *  Emit game events
 	 */
 
 	if(!repeat) {
@@ -396,7 +396,7 @@ static bool events_handler_key_up(SDL_Event *event, void *arg) {
 	SDL_Scancode scan = event->key.keysym.scancode;
 
 	/*
-	 *	Emit game events
+	 *  Emit game events
 	 */
 
 	int key = config_key_from_scancode(scan);

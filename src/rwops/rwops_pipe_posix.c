@@ -19,51 +19,51 @@
 #include <errno.h>
 
 static int pipe_close(SDL_RWops *rw) {
-    int status = 0;
+	int status = 0;
 
-    if(rw->hidden.stdio.autoclose) {
-        if((status = pclose(rw->hidden.stdio.fp)) != 0) {
-            SDL_SetError("Process exited abnormally: code %i", status);
-            status = -1;
-        }
-    }
+	if(rw->hidden.stdio.autoclose) {
+		if((status = pclose(rw->hidden.stdio.fp)) != 0) {
+			SDL_SetError("Process exited abnormally: code %i", status);
+			status = -1;
+		}
+	}
 
-    SDL_FreeRW(rw);
-    return status;
+	SDL_FreeRW(rw);
+	return status;
 }
 
 SDL_RWops* SDL_RWpopen(const char *command, const char *mode) {
-    assert(command != NULL);
-    assert(mode != NULL);
+	assert(command != NULL);
+	assert(mode != NULL);
 
-    FILE *fp = popen(command, mode);
+	FILE *fp = popen(command, mode);
 
-    if(!fp) {
-        SDL_SetError("popen(\"%s\", \"%s\") failed: errno %i", command, mode, errno);
-        return NULL;
-    }
+	if(!fp) {
+		SDL_SetError("popen(\"%s\", \"%s\") failed: errno %i", command, mode, errno);
+		return NULL;
+	}
 
-    SDL_RWops *rw = SDL_RWFromFP(fp, true);
+	SDL_RWops *rw = SDL_RWFromFP(fp, true);
 
-    if(!rw) {
-        pclose(fp);
-        return NULL;
-    }
+	if(!rw) {
+		pclose(fp);
+		return NULL;
+	}
 
-    if(SDL_RWConvertToPipe(rw)) {
-        SDL_RWclose(rw);
-        return NULL;
-    }
+	if(SDL_RWConvertToPipe(rw)) {
+		SDL_RWclose(rw);
+		return NULL;
+	}
 
-    return rw;
+	return rw;
 }
 
 int SDL_RWConvertToPipe(SDL_RWops *rw) {
-    if(rw->type != SDL_RWOPS_STDFILE) {
-        SDL_SetError("Not an stdio stream");
-        return -1;
-    }
+	if(rw->type != SDL_RWOPS_STDFILE) {
+		SDL_SetError("Not an stdio stream");
+		return -1;
+	}
 
-    rw->close = pipe_close;
-    return 0;
+	rw->close = pipe_close;
+	return 0;
 }

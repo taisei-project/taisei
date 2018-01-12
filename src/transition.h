@@ -16,28 +16,28 @@ typedef void (*TransitionRule)(double fade);
 typedef void (*TransitionCallback)(void *a);
 
 struct Transition {
-    double fade;
+	double fade;
 	int dur1; // first half
 	int dur2; // second half
-    TransitionCallback callback;
-    void *arg;
+	TransitionCallback callback;
+	void *arg;
 
-    enum {
-        TRANS_IDLE,
-        TRANS_FADE_IN,
-        TRANS_FADE_OUT,
-    } state;
+	enum {
+		TRANS_IDLE,
+		TRANS_FADE_IN,
+		TRANS_FADE_OUT,
+	} state;
 
 	TransitionRule rule;
-    TransitionRule rule2;
+	TransitionRule rule2;
 
-    struct {
-        int dur1;
-        int dur2;
-        TransitionRule rule;
-        TransitionCallback callback;
-        void *arg;
-    } queued;
+	struct {
+		int dur1;
+		int dur2;
+		TransitionRule rule;
+		TransitionCallback callback;
+		void *arg;
+	} queued;
 };
 
 extern Transition transition;

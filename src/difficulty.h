@@ -12,12 +12,12 @@
 #include "color.h"
 
 typedef enum {
-    D_Any = 0,
-    D_Easy,
-    D_Normal,
-    D_Hard,
-    D_Lunatic,
-    D_Extra // reserved for later
+	D_Any = 0,
+	D_Easy,
+	D_Normal,
+	D_Hard,
+	D_Lunatic,
+	D_Extra // reserved for later
 } Difficulty;
 
 #define NUM_SELECTABLE_DIFFICULTIES D_Lunatic

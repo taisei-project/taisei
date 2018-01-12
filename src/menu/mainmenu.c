@@ -123,7 +123,7 @@ void draw_main_menu(MenuData *menu) {
 
 	Texture *bg = get_tex("part/smoke");
 	glPushMatrix();
-	glTranslatef(50 + menu->drawdata[1]/2, menu->drawdata[2], 0);	// 135
+	glTranslatef(50 + menu->drawdata[1]/2, menu->drawdata[2], 0);   // 135
 	glScalef(menu->drawdata[1]/100.0, 0.5, 1);
 	glRotatef(menu->frames*2,0,0,1);
 	glColor4f(0,0,0,0.5);

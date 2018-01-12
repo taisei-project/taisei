@@ -27,10 +27,10 @@ typedef struct HashtableStats HashtableStats;
 typedef uint32_t hash_t;
 
 struct HashtableStats {
-    unsigned int free_buckets;
-    unsigned int collisions;
-    unsigned int max_per_bucket;
-    unsigned int num_elements;
+	unsigned int free_buckets;
+	unsigned int collisions;
+	unsigned int max_per_bucket;
+	unsigned int num_elements;
 };
 
 typedef bool (*HTCmpFunc)(void *key1, void *key2);

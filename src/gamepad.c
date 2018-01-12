@@ -309,19 +309,19 @@ static int gamepad_axis2gamekey(GamepadAxis id, int val) {
 
 static GamepadAxis gamepad_gamekey2axis(KeyIndex key) {
 	switch(key) {
-		case KEY_UP:	case KEY_DOWN:	return config_get_int(CONFIG_GAMEPAD_AXIS_UD);
-		case KEY_LEFT:	case KEY_RIGHT:	return config_get_int(CONFIG_GAMEPAD_AXIS_LR);
-		default:						return GAMEPAD_AXIS_INVALID;
+		case KEY_UP:    case KEY_DOWN:  return config_get_int(CONFIG_GAMEPAD_AXIS_UD);
+		case KEY_LEFT:  case KEY_RIGHT: return config_get_int(CONFIG_GAMEPAD_AXIS_LR);
+		default:                        return GAMEPAD_AXIS_INVALID;
 	}
 }
 
 static int gamepad_gamekey2axisval(KeyIndex key) {
 	switch(key) {
-		case KEY_UP:	return AXISVAL_UP;
-		case KEY_DOWN:	return AXISVAL_DOWN;
-		case KEY_LEFT:	return AXISVAL_LEFT;
-		case KEY_RIGHT:	return AXISVAL_RIGHT;
-		default:		return AXISVAL_NULL;
+		case KEY_UP:    return AXISVAL_UP;
+		case KEY_DOWN:  return AXISVAL_DOWN;
+		case KEY_LEFT:  return AXISVAL_LEFT;
+		case KEY_RIGHT: return AXISVAL_RIGHT;
+		default:        return AXISVAL_NULL;
 	}
 }
 
@@ -425,7 +425,7 @@ static void gamepad_axis(GamepadAxis id, int raw) {
 		}
 	}
 
-	if(val) {	// simulate press
+	if(val) {   // simulate press
 		if(!a[id]) {
 			a[id] = val;
 			int key = gamepad_axis2gamekey(id, val);
@@ -447,7 +447,7 @@ static void gamepad_axis(GamepadAxis id, int raw) {
 				gamepad_button(btn, SDL_PRESSED);
 			}
 		}
-	} else if(a[id]) {	// simulate release
+	} else if(a[id]) {  // simulate release
 		if(restricted) {
 			int key = gamepad_axis2gamekey(id, a[id]);
 
@@ -467,9 +467,9 @@ static void gamepad_axis(GamepadAxis id, int raw) {
 }
 
 static void gamepad_button(GamepadButton button, int state) {
-	int gpkey	= config_gamepad_key_from_gamepad_button(button);
-	int key		= config_key_from_gamepad_key(gpkey);
-	void *indev =  (void*)(intptr_t)INDEV_GAMEPAD;
+	int gpkey   = config_gamepad_key_from_gamepad_button(button);
+	int key     = config_key_from_gamepad_key(gpkey);
+	void *indev = (void*)(intptr_t)INDEV_GAMEPAD;
 
 	if(state == SDL_PRESSED) {
 		events_emit(TE_GAMEPAD_BUTTON_DOWN, button, indev, NULL);

@@ -19,8 +19,8 @@
 
 void bind_init(OptionBinding *bind) {
 	memset(bind, 0, sizeof(OptionBinding));
-	bind->selected 	 	= -1;
-	bind->configentry 	= -1;
+	bind->selected      = -1;
+	bind->configentry   = -1;
 }
 
 OptionBinding* bind_new(void) {
@@ -432,7 +432,7 @@ void options_sub_video(MenuData *parent, void *arg) {
 
 	add_menu_entry(m, "Stage background quality", do_nothing,
 		b = bind_scale(CONFIG_BG_QUALITY, 0.1, 1.0, 0.05)
-	);  b->dependence = bind_bgquality_dependence;
+	);	b->dependence = bind_bgquality_dependence;
 
 	add_menu_entry(m, "Text quality", do_nothing,
 		b = bind_scale(CONFIG_TEXT_QUALITY, 0.1, 1.0, 0.05)
@@ -550,7 +550,7 @@ void options_sub_gamepad(MenuData *parent, void *arg) {
 
 	add_menu_entry(m, "Y axis sensitivity", do_nothing,
 		b = bind_scale(CONFIG_GAMEPAD_AXIS_UD_SENS, -2, 2, 0.05)
-	); 	bind_setdependence(b, gamepad_sens_depencence);
+	);	bind_setdependence(b, gamepad_sens_depencence);
 		b->pad++;
 
 	add_menu_entry(m, "Dead zone", do_nothing,
@@ -681,13 +681,11 @@ void create_options_menu(MenuData *m) {
 		bind_addvalue(b, "ask");
 
 	add_menu_entry(m, "Auto-restart in Spell Practice", do_nothing,
-		b = bind_option(CONFIG_SPELLSTAGE_AUTORESTART, 	bind_common_onoff_get,
-														bind_common_onoff_set)
+		b = bind_option(CONFIG_SPELLSTAGE_AUTORESTART,  bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 
 	add_menu_entry(m, "Shoot by default", do_nothing,
-		b = bind_option(CONFIG_SHOT_INVERTED,	bind_common_onoff_get,
-												bind_common_onoff_set)
+		b = bind_option(CONFIG_SHOT_INVERTED,   bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 
 	add_menu_separator(m);
@@ -774,7 +772,7 @@ void draw_options_menu(MenuData *menu) {
 					int val = bind_getvalue(bind);
 
 					if(bind->valrange_max) {
-						char tmp[16];	// who'd use a 16-digit number here anyway?
+						char tmp[16];   // who'd use a 16-digit number here anyway?
 						snprintf(tmp, 16, "%d", bind_getvalue(bind));
 						draw_text(AL_Right, origin, 20*i, tmp, _fonts.standard);
 					} else for(j = bind->displaysingle? val : bind->valcount-1; (j+1) && (!bind->displaysingle || j == val); --j) {

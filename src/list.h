@@ -14,26 +14,26 @@ typedef struct List List;
 typedef struct ListContainer ListContainer;
 
 #define LIST_INTERFACE_BASE(typename) struct { \
-    typename *next; \
-    typename *prev; \
+	typename *next; \
+	typename *prev; \
 }
 
 #define LIST_INTERFACE(typename) union { \
-    ListInterface list_interface; \
-    LIST_INTERFACE_BASE(typename); \
+	ListInterface list_interface; \
+	LIST_INTERFACE_BASE(typename); \
 }
 
 struct ListInterface {
-    LIST_INTERFACE_BASE(ListInterface);
+	LIST_INTERFACE_BASE(ListInterface);
 };
 
 struct List {
-    LIST_INTERFACE(List);
+	LIST_INTERFACE(List);
 };
 
 struct ListContainer {
-    LIST_INTERFACE(ListContainer);
-    void *data;
+	LIST_INTERFACE(ListContainer);
+	void *data;
 };
 
 typedef void* (*ListForeachCallback)(List **head, List *elem, void *arg);
@@ -57,47 +57,47 @@ ListContainer* list_wrap_container(void *data);
 #ifndef LIST_NO_MACROS
 
 #ifdef USE_GNU_EXTENSIONS
-    // thorough safeguard
-    #define LIST_CAST(expr,ptrlevel) (__extension__({ \
-        static_assert(__builtin_types_compatible_p(ListInterface, __typeof__((ptrlevel (expr)).list_interface)), \
-            "struct must implement ListInterface (use the LIST_INTERFACE macro)"); \
-        static_assert(__builtin_offsetof(__typeof__(ptrlevel (expr)), list_interface) == 0, \
-            "list_interface must be the first member in struct"); \
-        (List ptrlevel)(expr); \
-    }))
-    #define LIST_CAST_RETURN(expr) (__typeof__(expr))
+	// thorough safeguard
+	#define LIST_CAST(expr,ptrlevel) (__extension__({ \
+		static_assert(__builtin_types_compatible_p(ListInterface, __typeof__((ptrlevel (expr)).list_interface)), \
+			"struct must implement ListInterface (use the LIST_INTERFACE macro)"); \
+		static_assert(__builtin_offsetof(__typeof__(ptrlevel (expr)), list_interface) == 0, \
+			"list_interface must be the first member in struct"); \
+		(List ptrlevel)(expr); \
+	}))
+	#define LIST_CAST_RETURN(expr) (__typeof__(expr))
 #else
-    // basic safeguard
-    #define LIST_CAST(expr,ptrlevel) ((void)sizeof((ptrlevel (expr)).list_interface), (List ptrlevel)(expr))
-    // don't even think about adding a void* cast here
-    #define LIST_CAST_RETURN(expr)
+	// basic safeguard
+	#define LIST_CAST(expr,ptrlevel) ((void)sizeof((ptrlevel (expr)).list_interface), (List ptrlevel)(expr))
+	// don't even think about adding a void* cast here
+	#define LIST_CAST_RETURN(expr)
 #endif
 
 #define list_insert(dest,elem) \
-    (LIST_CAST_RETURN(elem) list_insert(LIST_CAST(dest, **), LIST_CAST(elem, *)))
+	(LIST_CAST_RETURN(elem) list_insert(LIST_CAST(dest, **), LIST_CAST(elem, *)))
 
 #define list_push(dest,elem) \
-    (LIST_CAST_RETURN(elem) list_push(LIST_CAST(dest, **), LIST_CAST(elem, *)))
+	(LIST_CAST_RETURN(elem) list_push(LIST_CAST(dest, **), LIST_CAST(elem, *)))
 
 #define list_append(dest,elem) \
-    (LIST_CAST_RETURN(elem) list_append(LIST_CAST(dest, **), LIST_CAST(elem, *)))
+	(LIST_CAST_RETURN(elem) list_append(LIST_CAST(dest, **), LIST_CAST(elem, *)))
 
 #define list_insert_at_priority_head(dest,elem,prio,prio_func) \
-    (LIST_CAST_RETURN(elem) list_insert_at_priority_head(LIST_CAST(dest, **), LIST_CAST(elem, *), prio, prio_func))
+	(LIST_CAST_RETURN(elem) list_insert_at_priority_head(LIST_CAST(dest, **), LIST_CAST(elem, *), prio, prio_func))
 
 #define list_insert_at_priority_tail(dest,elem,prio,prio_func) \
-    (LIST_CAST_RETURN(elem) list_insert_at_priority_tail(LIST_CAST(dest, **), LIST_CAST(elem, *), prio, prio_func))
+	(LIST_CAST_RETURN(elem) list_insert_at_priority_tail(LIST_CAST(dest, **), LIST_CAST(elem, *), prio, prio_func))
 
 #define list_pop(dest) \
-    (LIST_CAST_RETURN(*(dest)) list_pop(LIST_CAST(dest, **)))
+	(LIST_CAST_RETURN(*(dest)) list_pop(LIST_CAST(dest, **)))
 
 #define list_unlink(dest,elem) \
-    (LIST_CAST_RETURN(elem) list_unlink(LIST_CAST(dest, **), LIST_CAST(elem, *)))
+	(LIST_CAST_RETURN(elem) list_unlink(LIST_CAST(dest, **), LIST_CAST(elem, *)))
 
 #define list_foreach(dest,callback,arg) \
-    list_foreach(LIST_CAST(dest, **), callback, arg)
+	list_foreach(LIST_CAST(dest, **), callback, arg)
 
 #define list_free_all(dest) \
-    list_free_all(LIST_CAST(dest, **))
+	list_free_all(LIST_CAST(dest, **))
 
 #endif // LIST_NO_MACROS

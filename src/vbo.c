@@ -69,9 +69,9 @@ void delete_vbo(VBO *vbo) {
 
 void draw_quad(void) {
 
-// 	glBindBuffer(GL_ARRAY_BUFFER, _vbo.vbo);
+//  glBindBuffer(GL_ARRAY_BUFFER, _vbo.vbo);
 
 	glDrawArrays(GL_QUADS, 0, 4);
 
-// 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+//  glBindBuffer(GL_ARRAY_BUFFER, 0);
 }

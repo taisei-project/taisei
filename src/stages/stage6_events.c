@@ -380,7 +380,7 @@ int scythe_newton(Enemy *e, int t) {
 
 	AT(100) {
 		e->args[1] = 0.2*I;
-// 		e->args[2] = 1;
+//      e->args[2] = 1;
 	}
 
 	FROM_TO(100, 10000, 1) {
@@ -661,7 +661,7 @@ void elly_maxwell(Boss *b, int t) {
 
 	AT(250) {
 		elly_clap(b,50);
-    		play_sound("laser1");
+			play_sound("laser1");
 
 	}
 	FROM_TO(40, 159, 5) {

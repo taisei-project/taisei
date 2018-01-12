@@ -24,7 +24,7 @@ typedef struct {
 typedef struct MixerInternalMusic {
 	Mix_Music *intro;
 	Mix_Music *loop;
-    double loop_point;
+	double loop_point;
 } MixerInternalMusic;
 
 char* audio_mixer_sound_path(const char *prefix, const char *name, bool isbgm);

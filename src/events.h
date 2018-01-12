@@ -48,11 +48,11 @@ typedef enum {
 	// from highest to lowest
 	// feel free to add new prios as needed, just don't randomly reorder stuff
 
-	EPRIO_SYSTEM,		// for events not associated with user input
-	EPRIO_TRANSLATION,	// for translating raw input events into higher level Taisei events
-	EPRIO_CAPTURE,		// for capturing raw user input before it's further processed
-	EPRIO_HOTKEYS,		// for global keybindings
-	EPRIO_NORMAL,		// for everything else
+	EPRIO_SYSTEM,       // for events not associated with user input
+	EPRIO_TRANSLATION,  // for translating raw input events into higher level Taisei events
+	EPRIO_CAPTURE,      // for capturing raw user input before it's further processed
+	EPRIO_HOTKEYS,      // for global keybindings
+	EPRIO_NORMAL,       // for everything else
 
 	NUM_EPRIOS
 } EventPriority;

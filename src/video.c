@@ -182,7 +182,7 @@ static void video_update_quality(void) {
 
 	reload_fonts(text);
 
-    glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
 }
 
 static uint32_t get_fullscreen_flag(void) {
@@ -349,10 +349,10 @@ void video_set_mode(int w, int h, bool fs, bool resizable) {
 			video_update_mode_settings();
 		} else {
 			// XXX: I would like to use SDL_SetWindowSize for size changes, but apparently it's impossible to reliably detect
-			//		when it fails to actually resize the window. For example, a tiling WM (awesome) may be getting in its way
-			//		and we'd never know. SDL_GL_GetDrawableSize/SDL_GetWindowSize aren't helping as of SDL 2.0.5.
+			//      when it fails to actually resize the window. For example, a tiling WM (awesome) may be getting in its way
+			//      and we'd never know. SDL_GL_GetDrawableSize/SDL_GetWindowSize aren't helping as of SDL 2.0.5.
 			//
-			//		There's not much to be done about it. We're at mercy of SDL here and SDL is at mercy of the WM.
+			//      There's not much to be done about it. We're at mercy of SDL here and SDL is at mercy of the WM.
 			video_new_window(w, h, fs, resizable);
 			return;
 		}
@@ -403,15 +403,17 @@ void video_take_screenshot(void) {
 	glReadPixels(0, 0, rw, rh, GL_RGB, GL_UNSIGNED_BYTE, data);
 
 	png_structp png_ptr;
-    png_infop info_ptr;
+	png_infop info_ptr;
 	png_byte **row_pointers;
 
 	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	png_setup_error_handlers(png_ptr);
 	info_ptr = png_create_info_struct(png_ptr);
 
-	png_set_IHDR(png_ptr, info_ptr, w, h, 8, PNG_COLOR_TYPE_RGB,
-                  PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+	png_set_IHDR(
+		png_ptr, info_ptr, w, h, 8, PNG_COLOR_TYPE_RGB,
+		PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT
+	);
 
 	row_pointers = png_malloc(png_ptr, h*sizeof(png_byte *));
 

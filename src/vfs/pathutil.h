@@ -12,9 +12,9 @@
 #include <SDL_platform.h>
 
 #ifdef __WINDOWS__
-    #define VFS_PATH_SEPS "/\\"
+	#define VFS_PATH_SEPS "/\\"
 #else
-    #define VFS_PATH_SEPS "/"
+	#define VFS_PATH_SEPS "/"
 #endif
 
 #define VFS_PATH_SEP VFS_PATH_SEPS[0]

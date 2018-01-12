@@ -10,13 +10,13 @@
 #include "taisei.h"
 
 typedef struct {
-    void *ptr;
-    int refs;
+	void *ptr;
+	int refs;
 } Reference;
 
 typedef struct {
-    Reference *ptrs;
-    int count;
+	Reference *ptrs;
+	int count;
 } RefArray;
 
 extern void *_FREEREF;
