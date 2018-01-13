@@ -2565,10 +2565,9 @@ void elly_spellbg_toe(Boss *b, int t) {
 			break;
 		glColor4f(1,1,1,0.5*clamp((t-delays[i])*0.1,0,1));
 		char *texname = strfmt("stage6/toelagrangian/%d",i);
-		float wobble = max(0,t-BREAKTIME)*0.09;
+		float wobble = max(0,t-BREAKTIME)*0.03;
 		glPushMatrix();
 		glTranslatef(VIEWPORT_W/2+positions[i][0]+cos(wobble+i)*wobble,VIEWPORT_H/2-150+positions[i][1]+sin(i+wobble)*wobble,0);
-		glRotatef(wobble*5,0,0,1);
 		draw_texture(0,0,texname);
 		free(texname);
 		glPopMatrix();
