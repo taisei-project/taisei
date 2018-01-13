@@ -15,6 +15,7 @@
 void elly_spellbg_classic(Boss*, int);
 void elly_spellbg_modern(Boss*, int);
 void elly_spellbg_modern_dark(Boss*, int);
+void elly_spellbg_toe(Boss*, int);
 
 void elly_kepler(Boss*, int);
 void elly_newton(Boss*, int);

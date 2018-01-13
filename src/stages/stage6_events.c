@@ -1998,10 +1998,11 @@ static int elly_toe_boson(Projectile *p, int t) {
 	return 1;
 }
 
+#define FERMIONTIME 1000
 #define HIGGSTIME 1700
 #define YUKAWATIME 2200
-#define SYMMETRYTIME HIGGSTIME+200
-
+#define SYMMETRYTIME (HIGGSTIME+200)
+#define BREAKTIME (YUKAWATIME+200)
 static bool elly_toe_its_yukawatime(complex pos) {
 	int t = global.frames-global.boss->current->starttime;
 
@@ -2335,11 +2336,11 @@ void elly_theory(Boss *b, int time) {
 		elly_clap(b,50000);
 	}
 
-	int fermiontime = 1000;
+	int fermiontime = FERMIONTIME;
 	int higgstime = HIGGSTIME;
 	int symmetrytime = SYMMETRYTIME;
 	int yukawatime = YUKAWATIME;
-	int breaktime = yukawatime+400;
+	int breaktime = BREAKTIME;
 
 	{
 		int count = 30;
@@ -2530,8 +2531,57 @@ void elly_theory(Boss *b, int time) {
 	FROM_TO_SND("noise1", yukawatime - 60, breaktime + 10000, 1) {};
 }
 
+void elly_spellbg_toe(Boss *b, int t) {
+	glPushMatrix();
+	glTranslatef(VIEWPORT_W/2,VIEWPORT_H/2,0);
+	float s = 0.75+0.0005*t;
+	glScalef(s,s,s);
+	glRotatef(t*0.1,0,0,1);
+	glColor4f(.6,.6,.6,1);
+
+	draw_texture(0,0,"stage6/spellbg_toe");
+	glPopMatrix();
+	glBlendFunc(GL_ZERO,GL_SRC_COLOR);
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+
+	float positions[][2] = {
+		{-160,0},
+		{0,0},
+		{0,100},
+		{0,200},
+		{0,300},
+	};
+
+	int delays[] = {
+		-20,
+		0,
+		FERMIONTIME,
+		HIGGSTIME,
+		YUKAWATIME,
+	};
+	int count = sizeof(delays)/sizeof(int);
+	for(int i = 0; i < count; i++) {
+		if(t<delays[i])
+			break;
+		glColor4f(1,1,1,0.5*clamp((t-delays[i])*0.1,0,1));
+		char *texname = strfmt("stage6/toelagrangian/%d",i);
+		float wobble = max(0,t-BREAKTIME)*0.09;
+		glPushMatrix();
+		glTranslatef(VIEWPORT_W/2+positions[i][0]+cos(wobble+i)*wobble,VIEWPORT_H/2-150+positions[i][1]+sin(i+wobble)*wobble,0);
+		glRotatef(wobble*5,0,0,1);
+		draw_texture(0,0,texname);
+		free(texname);
+		glPopMatrix();
+	}
+	glColor4f(1,1,1,1);
+
+}
+
 #undef LASER_EXTENT
 #undef YUKAWATIME
+#undef FERMIONTIME
+#undef HIGGSTIME
+#undef SYMMETRYTIME
 
 void elly_spellbg_classic(Boss *b, int t) {
 	fill_screen(0,0,0.7,"stage6/spellbg_classic");
@@ -2555,6 +2605,7 @@ void elly_spellbg_modern_dark(Boss *b, int t) {
 	elly_spellbg_modern(b, t);
 	fade_out(0.75 * min(1, t / 300.0));
 }
+
 
 static void elly_global_rule(Boss *b, int time) {
 	global.boss->glowcolor = hsla(time/120.0, 1.0, 0.25, 0.5);

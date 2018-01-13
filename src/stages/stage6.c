@@ -65,7 +65,7 @@ struct stage6_spells_s stage6_spells = {
 	.final = {
 		.theory_of_everything = {
 			{20, 21, 22, 23}, AT_SurvivalSpell, "Tower of Truth ~ Theory of Everything", 70, 40000,
-			elly_theory, elly_spellbg_modern, ELLY_TOE_TARGET_POS}
+			elly_theory, elly_spellbg_toe, ELLY_TOE_TARGET_POS}
 	},
 };
 
@@ -264,8 +264,14 @@ static void stage6_preload(void) {
 		"stage6/spellbg_chalk",
 		"stage6/spellbg_classic",
 		"stage6/spellbg_modern",
+		"stage6/spellbg_toe",
 		"stage6/towertop",
 		"stage6/towerwall",
+		"stage6/toelagrangian/0",
+		"stage6/toelagrangian/1",
+		"stage6/toelagrangian/2",
+		"stage6/toelagrangian/3",
+		"stage6/toelagrangian/4",
 		"dialog/elly",
 		"part/stardust",
 		"part/myon",
