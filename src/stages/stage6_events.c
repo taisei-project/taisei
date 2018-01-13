@@ -2002,7 +2002,7 @@ static int elly_toe_boson(Projectile *p, int t) {
 #define HIGGSTIME 1700
 #define YUKAWATIME 2200
 #define SYMMETRYTIME (HIGGSTIME+200)
-#define BREAKTIME (YUKAWATIME+200)
+#define BREAKTIME (YUKAWATIME+400)
 static bool elly_toe_its_yukawatime(complex pos) {
 	int t = global.frames-global.boss->current->starttime;
 
