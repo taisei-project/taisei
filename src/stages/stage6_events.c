@@ -2003,6 +2003,7 @@ static int elly_toe_boson(Projectile *p, int t) {
 #define YUKAWATIME 2200
 #define SYMMETRYTIME (HIGGSTIME+200)
 #define BREAKTIME (YUKAWATIME+400)
+
 static bool elly_toe_its_yukawatime(complex pos) {
 	int t = global.frames-global.boss->current->starttime;
 
@@ -2103,7 +2104,7 @@ static int elly_toe_higgs(Projectile *p, int t) {
 	}
 
 	int global_time = global.frames - global.boss->current->starttime - HIGGSTIME;
-	int max_time = HIGGSTIME - SYMMETRYTIME;
+	int max_time = SYMMETRYTIME - HIGGSTIME;
 	double rotation = 0.5 * M_PI * max(0, (int)global.diff - D_Normal);
 
 	if(global_time > max_time) {
