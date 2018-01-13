@@ -95,7 +95,7 @@ const char* gamepad_device_name(int num) {
 }
 
 
-static void gamepad_update_device_list(void) {
+static bool gamepad_update_device_list(void) {
 	int cnt = SDL_NumJoysticks();
 	log_info("Updating gamepad devices list");
 
@@ -104,7 +104,7 @@ static void gamepad_update_device_list(void) {
 
 	if(!cnt) {
 		log_info("No joysticks attached");
-		return;
+		return false;
 	}
 
 	int *idmap_ptr = gamepad.devices.id_map = malloc(sizeof(int) * cnt);
@@ -136,8 +136,10 @@ static void gamepad_update_device_list(void) {
 
 	if(!gamepad.devices.count) {
 		log_info("No usable devices");
-		return;
+		return false;
 	}
+
+	return true;
 }
 
 static int gamepad_find_device_by_guid(const char *guid_str, char *guid_out, size_t guid_out_sz, int *out_localdevnum) {
@@ -216,8 +218,13 @@ void gamepad_init(void) {
 		return;
 	}
 
+	gamepad.initialized = true;
 	gamepad_load_all_mappings();
-	gamepad_update_device_list();
+
+	if(!gamepad_update_device_list()) {
+		gamepad_shutdown();
+		return;
+	}
 
 	char guid[33];
 	int dev = gamepad_find_device(guid, sizeof(guid), &gamepad.current_devnum);
@@ -249,8 +256,6 @@ void gamepad_init(void) {
 		.proc = gamepad_event_handler,
 		.priority = EPRIO_TRANSLATION,
 	});
-
-	gamepad.initialized = true;
 }
 
 void gamepad_shutdown(void) {
