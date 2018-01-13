@@ -21,6 +21,12 @@ A mapping looks like this :
 ```
 It is comprised of a controller GUID (`030000004c050000c405000000010000`), a name (`PS4 Controller`), button / axis mappings (`leftshoulder:b4`) and a platform (`platform:Mac OS X`).
 
+## Naming Convention
+- If the controller has a unique name, use that (ex. XBox Controller, XBox One Controller).
+- If the controller doesn't have a unique name, or when in doubt, use brand + model (ex. ACME GA09, 8Bitdo NES30 Pro).
+- You can add `Wireless` for controllers with such an option. (ex. XBox Wireless Controller).
+
+## Mapping Tools
 There are a few different tools that let you create mappings.
 
 ### [SDL2 ControllerMap](https://www.libsdl.org/download-2.0.php)
@@ -52,36 +58,53 @@ SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
 # For Contributors
 ## Check Your Mappings
 The currently active version is gamecontrollerdb.txt. If your mappings work on older SDL versions, you can add them to the appropriate files.
-Before submitting a new Pull Request, please run the `check.py` tool to make sure everything is in order. Run it with:
+Before submitting a new Pull Request, please run the `check.py` tool to make sure everything is in order.
+
+Run it with:
 ```
 python check.py gamecontrollerdb.txt
 ```
 
-If no errors were generated you can (please) send a Pull Request! Tests are automatically run on Pull Requests, so you'll easily see if there is an issue.
+Once no issues are detected, run the script with the `--format` option to sort the database in the appropriate format.
+```
+python check.py --format gamecontrollerdb.txt
+```
 
-### New Checks
-- Tests are run to ensure a platform is present.
-- Tests are run to make sure inversion and range modifiers are applied to axis fields.
-- Tests are run to check for duplicates.
+You may now send a Pull Request. Tests are automatically run on Pull Requests, so you'll easily see if there is an issue.
+
+### Checks
+- GUID is correct length and is hexadecimal.
+- Platform is present and supported.
+- Inversion and range modifiers are applied to axis fields.
+- No duplicate mappings.
+- No duplicate keys.
+- Buttons conform to supported values.
+
+### Formatting
+- The database is sorted by platform, then by name.
+- Individual mapping keys are sorted alphabetically.
+- Names are parsed for extraneous spaces.
 
 ### Options
 ```
-usage: check.py [-h] [--sort] [--convert_guids] [--remove_dupes]
-                [--add_missing_platform]
+usage: check.py [-h] [--format] [--convert_guids] [--add_missing_platform]
+                [--import_header sdl_header]
                 input_file
 
 positional arguments:
-  input_file            database file to check (gamecontrollerdb.txt)
+  input_file            database file to check, ex. gamecontrollerdb.txt
 
 optional arguments:
   -h, --help            show this help message and exit
-  --sort                sort the database on success
+  --format              sorts, formats and removes duplicates
   --convert_guids       convert Windows and macOS GUIDs to the newer SDL 2.0.5
                         format
-  --remove_dupes        automatically remove duplicates
   --add_missing_platform
-                        adds a platform field if it is missing (on older pre
-                        2.0.5 entries). Skips checks!
+                        adds a platform field if it is missing on Windows and
+                        Mac OS X 2.0.4 entries
+  --import_header sdl_header
+                        imports and overrides mappings using
+                        SDL_gamecontrollerdb.h
 ```
 
 ## References
