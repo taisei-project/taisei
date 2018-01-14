@@ -326,7 +326,7 @@ void credits_draw_entry(CreditsEntry *e) {
 		} else {
 			Font *font = i ? _fonts.standard : _fonts.mainmenu;
 			draw_text(AL_Center, 0, 0, e->data[i], font);
-			glTranslatef(0, font_line_spacing(font) * 0.5, 0);
+			glTranslatef(0, font_line_spacing(font) * 0.9, 0);
 		}
 	}
 
@@ -378,7 +378,6 @@ void credits_process(void) {
 
 	stage_3d_context.cx[2] = 200 - global.frames * 50;
 	stage_3d_context.cx[1] = 500 + 100 * psin(global.frames / 100.0) * psin(global.frames / 200.0 + M_PI);
-	//stage_3d_context.cx[0] += nfrand();
 	stage_3d_context.cx[0] = 25 * sin(global.frames / 75.7) * cos(global.frames / 99.3);
 
 	FROM_TO(200, 300, 1)

@@ -187,8 +187,6 @@ static void stage6_update(void) {
 			stage_3d_context.cx[1] -= 0.01*sin(M_PI/180*stage_3d_context.crot[2]+M_PI/2)*_i;
 		}
 
-		if(t > 470)
-			stage_3d_context.cx[0] += 1-2*frand();
 	}
 
 	float w = 0.002;
