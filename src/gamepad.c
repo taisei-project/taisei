@@ -13,12 +13,18 @@
 #include "events.h"
 #include "global.h"
 
+typedef struct GamepadAxisState {
+	int16_t raw;
+	int16_t analog;
+	int8_t digital;
+} GamepadAxisState;
+
 static struct {
 	bool initialized;
 	int current_devnum;
 	SDL_GameController *device;
 	SDL_JoystickID instance;
-	signed char *axis;
+	GamepadAxisState *axes;
 
 	struct {
 		int *id_map;
@@ -245,7 +251,7 @@ void gamepad_init(void) {
 
 	SDL_Joystick *joy = SDL_GameControllerGetJoystick(gamepad.device);
 	gamepad.instance = SDL_JoystickInstanceID(joy);
-	gamepad.axis = calloc(GAMEPAD_AXIS_MAX, 1);
+	gamepad.axes = calloc(GAMEPAD_AXIS_MAX, sizeof(GamepadAxisState));
 
 	log_info("Using device '%s' (#%i): %s", guid, dev, gamepad_device_name(dev));
 	SDL_GameControllerEventState(SDL_ENABLE);
@@ -269,7 +275,7 @@ void gamepad_shutdown(void) {
 		SDL_GameControllerClose(gamepad.device);
 	}
 
-	free(gamepad.axis);
+	free(gamepad.axes);
 	free(gamepad.devices.id_map);
 
 	SDL_GameControllerEventState(SDL_IGNORE);
@@ -294,24 +300,6 @@ static float gamepad_axis_sens(GamepadAxis id) {
 	return 1.0;
 }
 
-static int gamepad_axis2gamekey(GamepadAxis id, int val) {
-	val *= sign(gamepad_axis_sens(id));
-
-	if(!val) {
-		return -1;
-	}
-
-	if(id == config_get_int(CONFIG_GAMEPAD_AXIS_LR)) {
-		return val == AXISVAL_LEFT ? KEY_LEFT : KEY_RIGHT;
-	}
-
-	if(id == config_get_int(CONFIG_GAMEPAD_AXIS_UD)) {
-		return val == AXISVAL_UP   ? KEY_UP   : KEY_DOWN;
-	}
-
-	return -1;
-}
-
 static GamepadAxis gamepad_gamekey2axis(KeyIndex key) {
 	switch(key) {
 		case KEY_UP:    case KEY_DOWN:  return config_get_int(CONFIG_GAMEPAD_AXIS_UD);
@@ -331,29 +319,42 @@ static int gamepad_gamekey2axisval(KeyIndex key) {
 }
 
 static int gamepad_axis2menuevt(GamepadAxis id, int val) {
-	if(id == GAMEPAD_AXIS_LEFT_X || id == GAMEPAD_AXIS_RIGHT_X)
+	if(id == GAMEPAD_AXIS_LEFT_X || id == GAMEPAD_AXIS_RIGHT_X) {
 		return val == AXISVAL_LEFT ? TE_MENU_CURSOR_LEFT : TE_MENU_CURSOR_RIGHT;
+	}
 
-	if(id == GAMEPAD_AXIS_LEFT_Y || id == GAMEPAD_AXIS_RIGHT_Y)
+	if(id == GAMEPAD_AXIS_LEFT_Y || id == GAMEPAD_AXIS_RIGHT_Y) {
 		return val == AXISVAL_UP   ? TE_MENU_CURSOR_UP : TE_MENU_CURSOR_DOWN;
+	}
 
 	return -1;
 }
 
 static int gamepad_axis2gameevt(GamepadAxis id) {
-	if(id == config_get_int(CONFIG_GAMEPAD_AXIS_LR))
+	if(id == config_get_int(CONFIG_GAMEPAD_AXIS_LR)) {
 		return TE_GAME_AXIS_LR;
+	}
 
-	if(id == config_get_int(CONFIG_GAMEPAD_AXIS_UD))
+	if(id == config_get_int(CONFIG_GAMEPAD_AXIS_UD)) {
 		return TE_GAME_AXIS_UD;
+	}
 
 	return -1;
 }
 
+static int get_axis_abs_limit(int val) {
+	if(val < 0) {
+		return -GAMEPAD_AXIS_MIN_VALUE;
+	}
+
+	return GAMEPAD_AXIS_MAX_VALUE;
+}
+
 static int gamepad_axis_process_value_deadzone(int raw) {
 	int val, vsign;
+	int limit = get_axis_abs_limit(raw);
 	float deadzone = clamp(config_get_float(CONFIG_GAMEPAD_AXIS_DEADZONE), 0.01, 0.999);
-	int minval = clamp(deadzone, 0, 1) * GAMEPAD_AXIS_MAX_VALUE;
+	int minval = clamp(deadzone, 0, 1) * limit;
 
 	val = raw;
 	vsign = sign(val);
@@ -362,7 +363,7 @@ static int gamepad_axis_process_value_deadzone(int raw) {
 	if(val < minval) {
 		val = 0;
 	} else {
-		val = vsign * clamp((val - minval) / (1.0 - deadzone), 0, GAMEPAD_AXIS_MAX_VALUE);
+		val = vsign * clamp((val - minval) / (1.0 - deadzone), 0, limit);
 	}
 
 	return val;
@@ -374,19 +375,22 @@ static int gamepad_axis_process_value(GamepadAxis id, int raw) {
 
 	raw = gamepad_axis_process_value_deadzone(raw);
 
-	double x = raw / (double)GAMEPAD_AXIS_MAX_VALUE;
+	int limit = get_axis_abs_limit(sens_sign * raw);
+	double x = raw / (double)limit;
 	int in_sign = sign(x);
 
 	x = pow(fabs(x), 1.0 / fabs(sens)) * in_sign * sens_sign;
 	x = x ? x : 0;
-	x = clamp(x * GAMEPAD_AXIS_MAX_VALUE, GAMEPAD_AXIS_MIN_VALUE, GAMEPAD_AXIS_MAX_VALUE);
+	x = clamp(x * limit, GAMEPAD_AXIS_MIN_VALUE, GAMEPAD_AXIS_MAX_VALUE);
 
 	return (int)x;
 }
 
 int gamepad_axis_value(GamepadAxis id) {
-	SDL_GameControllerAxis sdl_id = gamepad_axis_to_sdl_axis(id);
-	return gamepad_axis_process_value(id, SDL_GameControllerGetAxis(gamepad.device, sdl_id));
+	assert(id > GAMEPAD_AXIS_INVALID);
+	assert(id < GAMEPAD_AXIS_MAX);
+
+	return gamepad.axes[id].analog;
 }
 
 int gamepad_player_axis_value(GamepadPlrAxis paxis) {
@@ -408,13 +412,92 @@ int gamepad_player_axis_value(GamepadPlrAxis paxis) {
 }
 
 static void gamepad_button(GamepadButton button, int state);
+static void gamepad_axis(GamepadAxis id, int raw);
+
+double gamepad_normalize_axis_value(int val) {
+	if(val < 0) {
+		return -val / (double)GAMEPAD_AXIS_MIN_VALUE;
+	} else if(val > 0) {
+		return val / (double)GAMEPAD_AXIS_MAX_VALUE;
+	} else {
+		return 0;
+	}
+}
+
+int gamepad_denormalize_axis_value(double val) {
+	if(val < 0) {
+		return -val * GAMEPAD_AXIS_MIN_VALUE;
+	} else if(val > 0) {
+		return val * GAMEPAD_AXIS_MAX_VALUE;
+	} else {
+		return 0;
+	}
+}
+
+static void gamepad_update_game_axis(GamepadAxis axis, int oldval) {
+	if(oldval != gamepad.axes[axis].analog) {
+		int evt = gamepad_axis2gameevt(axis);
+
+		if(evt >= 0) {
+			events_emit(evt, gamepad.axes[axis].analog, NULL, NULL);
+		}
+	}
+}
+
+static void gamepad_restrict_player_axis_vals(GamepadAxis new_axis, int new_val) {
+	typedef enum {
+		UP = (1 << 0),
+		DOWN = (1 << 1),
+		RIGHT = (1 << 3),
+		LEFT = (1 << 2),
+	} MoveDir;
+
+	GamepadAxis axis_x = config_get_int(CONFIG_GAMEPAD_AXIS_LR);
+	GamepadAxis axis_y = config_get_int(CONFIG_GAMEPAD_AXIS_UD);
+
+	int old_x = gamepad.axes[axis_x].analog;
+	int old_y = gamepad.axes[axis_y].analog;
+
+	gamepad.axes[new_axis].analog = new_val;
+
+	assert(axis_x > GAMEPAD_AXIS_INVALID && axis_x < GAMEPAD_AXIS_MAX);
+	assert(axis_y > GAMEPAD_AXIS_INVALID && axis_y < GAMEPAD_AXIS_MAX);
+
+	double x = gamepad_normalize_axis_value(gamepad_player_axis_value(PLRAXIS_LR));
+	double y = gamepad_normalize_axis_value(gamepad_player_axis_value(PLRAXIS_UD));
+
+	MoveDir move = 0;
+
+	if(x || y) {
+		int d = (int)rint(atan2(-y, x) / (M_PI/4));
+
+		switch(d) {
+			case  0:        move =    0 | RIGHT; break;
+			case -1:        move =   UP | RIGHT; break;
+			case -2:        move =   UP | 0;     break;
+			case -3:        move =   UP | LEFT;  break;
+			case -4: case 4:move = LEFT | 0;     break;
+			case  3:        move = DOWN | LEFT;  break;
+			case  2:        move = DOWN | 0;     break;
+			case  1:        move = DOWN | RIGHT; break;
+		}
+	}
+
+	gamepad.axes[axis_x].analog = (move & LEFT)  ? GAMEPAD_AXIS_MIN_VALUE :
+	                              (move & RIGHT) ? GAMEPAD_AXIS_MAX_VALUE : 0;
+
+	gamepad.axes[axis_y].analog = (move & DOWN)  ? GAMEPAD_AXIS_MIN_VALUE :
+	                              (move & UP)    ? GAMEPAD_AXIS_MAX_VALUE : 0;
+
+	gamepad_update_game_axis(axis_x, old_x);
+	gamepad_update_game_axis(axis_y, old_y);
+}
 
 static void gamepad_axis(GamepadAxis id, int raw) {
-	signed char *a   = gamepad.axis;
-	signed char val  = AXISVAL(gamepad_axis_process_value_deadzone(raw));
-	bool restricted = !config_get_int(CONFIG_GAMEPAD_AXIS_FREE);
+	int8_t digital = AXISVAL(gamepad_axis_process_value_deadzone(raw));
+	int16_t analog = gamepad_axis_process_value(id, raw);
 
-	if(val * a[id] < 0) {
+	if(digital * gamepad.axes[id].digital < 0) {
 		// axis changed direction without passing the '0' state
 		// this can be bad for digital input simulation (aka 'restricted mode')
 		// so we insert a fake 0 event inbetween
@@ -423,27 +506,24 @@ static void gamepad_axis(GamepadAxis id, int raw) {
 
 	events_emit(TE_GAMEPAD_AXIS, id, (void*)(intptr_t)raw, NULL);
 
-	if(!restricted) {
-		int evt = gamepad_axis2gameevt(id);
-		if(evt >= 0) {
-			events_emit(evt, gamepad_axis_process_value(id, raw), NULL, NULL);
-		}
+	int old_analog = gamepad.axes[id].analog;
+	gamepad.axes[id].raw = raw;
+
+	if(config_get_int(CONFIG_GAMEPAD_AXIS_FREE)) {
+		gamepad.axes[id].analog = analog;
+		gamepad_update_game_axis(id, old_analog);
+	} else if(gamepad_axis2gameevt(id) >= 0) {
+		gamepad_restrict_player_axis_vals(id, analog);
 	}
 
-	if(val) {   // simulate press
-		if(!a[id]) {
-			a[id] = val;
-			int key = gamepad_axis2gamekey(id, val);
+	if(digital != AXISVAL_NULL) {   // simulate press
+		if(!gamepad.axes[id].digital) {
+			gamepad.axes[id].digital = digital;
 
-			if(key >= 0) {
-				if(restricted) {
-					events_emit(TE_GAME_KEY_DOWN, key, (void*)(intptr_t)INDEV_GAMEPAD, NULL);
-				}
+			int evt = gamepad_axis2menuevt(id, digital);
 
-				int evt = gamepad_axis2menuevt(id, val);
-				if(evt >= 0) {
-					events_emit(evt, 0, (void*)(intptr_t)INDEV_GAMEPAD, NULL);
-				}
+			if(evt >= 0) {
+				events_emit(evt, 0, (void*)(intptr_t)INDEV_GAMEPAD, NULL);
 			}
 
 			GamepadButton btn = gamepad_button_from_axis(id);
@@ -452,16 +532,8 @@ static void gamepad_axis(GamepadAxis id, int raw) {
 				gamepad_button(btn, SDL_PRESSED);
 			}
 		}
-	} else if(a[id]) {  // simulate release
-		if(restricted) {
-			int key = gamepad_axis2gamekey(id, a[id]);
-
-			if(key >= 0) {
-				events_emit(TE_GAME_KEY_UP, key, (void*)(intptr_t)INDEV_GAMEPAD, NULL);
-			}
-		}
-
-		a[id] = AXISVAL_NULL;
+	} else if(gamepad.axes[id].digital != AXISVAL_NULL) {  // simulate release
+		gamepad.axes[id].digital = AXISVAL_NULL;
 
 		GamepadButton btn = gamepad_button_from_axis(id);
 
@@ -596,7 +668,7 @@ bool gamepad_button_pressed(GamepadButton btn) {
 				[GAMEPAD_EMULATED_BUTTON_TRIGGER_RIGHT] = GAMEPAD_AXIS_TRIGGER_RIGHT,
 			};
 
-			return gamepad.axis[ebtn_to_axis[ebtn]];
+			return gamepad.axes[ebtn_to_axis[ebtn]].digital;
 		}
 	}
 
@@ -610,7 +682,7 @@ bool gamepad_game_key_pressed(KeyIndex key) {
 	if(!config_get_int(CONFIG_GAMEPAD_AXIS_FREE)) {
 		GamepadAxis axis = gamepad_gamekey2axis(key);
 
-		if(axis != GAMEPAD_AXIS_INVALID && gamepad.axis[axis] == gamepad_gamekey2axisval(key)) {
+		if(axis != GAMEPAD_AXIS_INVALID && gamepad.axes[axis].digital == gamepad_gamekey2axisval(key)) {
 			return true;
 		}
 	}

@@ -590,9 +590,14 @@ bool player_applymovement_gamepad(Player *plr) {
 		return false;
 	}
 
-	complex direction = (plr->axis_lr + plr->axis_ud*I) / (double)GAMEPAD_AXIS_MAX_VALUE;
-	if(cabs(direction) > 1)
+	complex direction = (
+		gamepad_normalize_axis_value(plr->axis_lr) +
+		gamepad_normalize_axis_value(plr->axis_ud) * I
+	);
+
+	if(cabs(direction) > 1) {
 		direction /= cabs(direction);
+	}
 
 	int sr = sign(creal(direction));
 	int si = sign(cimag(direction));

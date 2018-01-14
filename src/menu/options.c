@@ -453,10 +453,6 @@ void bind_setvaluerange_fancy(OptionBinding *b, int ma) {
 	}
 }
 
-static bool gamepad_sens_depencence(void) {
-	return config_get_int(CONFIG_GAMEPAD_AXIS_FREE);
-}
-
 static bool gamepad_enabled_depencence(void) {
 	return config_get_int(CONFIG_GAMEPAD_ENABLED);
 }
@@ -545,13 +541,11 @@ void options_sub_gamepad(MenuData *parent, void *arg) {
 
 	add_menu_entry(m, "X axis sensitivity", do_nothing,
 		b = bind_scale(CONFIG_GAMEPAD_AXIS_LR_SENS, -2, 2, 0.05)
-	);	bind_setdependence(b, gamepad_sens_depencence);
-		b->pad++;
+	);	b->pad++;
 
 	add_menu_entry(m, "Y axis sensitivity", do_nothing,
 		b = bind_scale(CONFIG_GAMEPAD_AXIS_UD_SENS, -2, 2, 0.05)
-	);	bind_setdependence(b, gamepad_sens_depencence);
-		b->pad++;
+	);	b->pad++;
 
 	add_menu_entry(m, "Dead zone", do_nothing,
 		b = bind_scale(CONFIG_GAMEPAD_AXIS_DEADZONE, 0, 1, 0.01)
