@@ -237,11 +237,11 @@ static double entry_height(CreditsEntry *e, double *head, double *body) {
 		if(*(e->data[0]) == '*') {
 			total += *head = get_tex("yukkureimu")->h * CREDITS_YUKKURI_SCALE;
 		} else {
-			total += *head = font_line_spacing(_fonts.mainmenu) * 0.5;
+			total += *head = font_line_spacing(_fonts.mainmenu);
 		}
 
 		if(e->lines > 1) {
-			total += *body += (e->lines - 0.5) * font_line_spacing(_fonts.standard) * 0.5;
+			total += *body += (e->lines - 0.5) * font_line_spacing(_fonts.standard);
 		}
 	}
 
@@ -326,7 +326,7 @@ void credits_draw_entry(CreditsEntry *e) {
 		} else {
 			Font *font = i ? _fonts.standard : _fonts.mainmenu;
 			draw_text(AL_Center, 0, 0, e->data[i], font);
-			glTranslatef(0, font_line_spacing(font) * 0.9, 0);
+			glTranslatef(0, font_line_spacing(font), 0);
 		}
 	}
 

@@ -409,7 +409,7 @@ int charwidth(char c, Font *font) {
 }
 
 int font_line_spacing(Font *font) {
-	return TTF_FontLineSkip(font->ttf);
+	return TTF_FontLineSkip(font->ttf) / font_renderer.quality;
 }
 
 void shorten_text_up_to_width(char *s, float width, Font *font) {
