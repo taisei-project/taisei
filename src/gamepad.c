@@ -472,14 +472,14 @@ static void gamepad_restrict_player_axis_vals(GamepadAxis new_axis, int new_val)
 		int d = (int)rint(atan2(-y, x) / (M_PI/4));
 
 		switch(d) {
-			case  0:        move =    0 | RIGHT; break;
-			case -1:        move =   UP | RIGHT; break;
-			case -2:        move =   UP | 0;     break;
-			case -3:        move =   UP | LEFT;  break;
-			case -4: case 4:move = LEFT | 0;     break;
-			case  3:        move = DOWN | LEFT;  break;
-			case  2:        move = DOWN | 0;     break;
-			case  1:        move = DOWN | RIGHT; break;
+			case  0:         move =    0 | RIGHT; break;
+			case -1:         move =   UP | RIGHT; break;
+			case -2:         move =   UP | 0;     break;
+			case -3:         move =   UP | LEFT;  break;
+			case -4: case 4: move =    0 | LEFT;  break;
+			case  3:         move = DOWN | LEFT;  break;
+			case  2:         move = DOWN | 0;     break;
+			case  1:         move = DOWN | RIGHT; break;
 		}
 	}
 
