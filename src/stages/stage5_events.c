@@ -1030,7 +1030,7 @@ int iku_extra_slave(Enemy *e, int t) {
 
 					for(i = 0; i < cnt; ++i) {
 						PROJECTILE("ball", o->pos, rgb(0, 1, 1), asymptotic,
-							.args = { 1.5*cexp(I*(t + i*2*M_PI/cnt)), 5},
+							.args = { 1.5*cexp(I*(t + i*2*M_PI/cnt)), 8},
 							.flags = PFLAG_DRAWADD,
 						);
 					}
