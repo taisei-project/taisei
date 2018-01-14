@@ -2160,8 +2160,8 @@ static complex elly_toe_laser_pos(Laser *l, float t) { // a[0]: direction, a[1]:
 	return 0;
 }
 
-#define LASER_EXTENT (4+global.diff-D_Normal)
-#define LASER_LENGTH 40
+#define LASER_EXTENT (4+1.5*global.diff-D_Normal)
+#define LASER_LENGTH 60
 
 static int elly_toe_laser_particle_rule(Projectile *p, int t) {
 	if(t == EVENT_DEATH) {
@@ -2238,11 +2238,11 @@ static void elly_toe_laser_logic(Laser *l, int t) {
 				newtype = 2;
 			}
 
-			// I removed type 3 because
+			// I removed type 3 because i can’t draw dotted lines and it would be too difficult either way
 		} while(newtype2 == -1 || newtype2 == 3 || newtype == 3);
 
 		complex origin = l->prule(l,t);
-		complex newdir = cexp(0.2*I*(1+frand()));
+		complex newdir = cexp(0.3*I);
 
 		Laser *l1 = create_laser(origin,LASER_LENGTH,LASER_LENGTH,rgb(1,1,1),
 			elly_toe_laser_pos,elly_toe_laser_logic,
@@ -2263,7 +2263,7 @@ static void elly_toe_laser_logic(Laser *l, int t) {
 		elly_toe_laser_particle(l1, origin);
 		elly_toe_laser_particle(l2, origin);
 	}
-	l->pos+=I;
+	l->pos+=I*0.2;
 }
 
 
@@ -2494,7 +2494,7 @@ void elly_theory(Boss *b, int time) {
 		}
 	}
 
-	FROM_TO(breaktime,breaktime+10000,70) {
+	FROM_TO(breaktime,breaktime+10000,100) {
 		play_sound_ex("laser1", 0, true);
 
 		complex phase = cexp(2*I*M_PI*frand());
@@ -2502,7 +2502,7 @@ void elly_theory(Boss *b, int time) {
 		for(int i = 0; i < count; i++) {
 			create_laser(b->pos,LASER_LENGTH,LASER_LENGTH/2,rgb(1,1,1),
 				elly_toe_laser_pos,elly_toe_laser_logic,
-				3*cexp(2*I*M_PI/count*i)*phase,
+				2*cexp(2*I*M_PI/count*i)*phase,
 				0,
 				LASER_EXTENT,
 				0
