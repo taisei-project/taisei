@@ -1053,13 +1053,13 @@ static void wriggle_singularity_laser_logic(Laser *l, int time) {
 		return;
 	}
 
-	if(time == 120) {
+	if(time == 140) {
 		play_sound("laser1");
 	}
 
-	l->width = laser_charge(l, time, 120, 10 + 10 * psin(l->args[0] + time / 60.0));
+	l->width = laser_charge(l, time, 150, 10 + 10 * psin(l->args[0] + time / 60.0));
 	l->args[3] = time / 10.0;
-	l->args[0] *= cexp(I*(M_PI/500.0) * (0.6 + 0.4 * global.diff));
+	l->args[0] *= cexp(I*(M_PI/500.0) * (0.7 + 0.35 * global.diff));
 
 	l->color = hsl((carg(l->args[0]) + M_PI) / (M_PI * 2), 1.0, 0.5);
 }
@@ -1081,7 +1081,13 @@ void wriggle_light_singularity(Boss *boss, int time) {
 	AT(0) {
 		int cnt = 2 + global.diff;
 		for(int i = 0; i < cnt; ++i) {
-			complex vel = 2 * cexp(I*(M_PI / 4 + M_PI * 2 * i / (double)cnt));
+			double aofs = 0;
+
+			if(global.diff == D_Hard || global.diff == D_Easy) {
+				aofs = 0.7;
+			}
+
+			complex vel = 2 * cexp(I*(aofs + M_PI / 4 + M_PI * 2 * i / (double)cnt));
 			double amp = (4.0/cnt) * (M_PI/5.0);
 			double freq = 0.05;
 
