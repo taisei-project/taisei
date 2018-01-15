@@ -582,17 +582,16 @@ int lightning_slave(Enemy *e, int t) {
 	e->pos += e->args[0];
 
 	FROM_TO(0,200,20)
-		e->args[0] *= cexp(2.0*I*M_PI*frand());
+		e->args[0] *= cexp(I * (0.25 + 0.25 * frand() * M_PI));
 
 	FROM_TO(0, 200, 3)
 		if(cabs(e->pos-global.plr.pos) > 60) {
-			tsrand_fill(2);
 			Color clr = rgb(1-1/(1+0.01*_i), 0.5-0.01*_i, 1);
 
-			Projectile *p = PROJECTILE("wave", e->pos, clr, accelerated,
+			Projectile *p = PROJECTILE("wave", e->pos, clr, asymptotic,
 				.args = {
-					(0.5+0.3*(_i&1)*(global.diff==D_Lunatic))*e->args[0]/cabs(e->args[0])*I,
-					0.001*global.diff*(1-2*afrand(0)+I*afrand(1))
+					0.75*e->args[0]/cabs(e->args[0])*I,
+					10
 				},
 				.flags = PFLAG_DRAWADD,
 			);
@@ -602,7 +601,6 @@ int lightning_slave(Enemy *e, int t) {
 					tsrand_fill(2);
 					lightning_particle(p->pos + 5 * afrand(0) * cexp(I*M_PI*2*afrand(1)), 0);
 				}
-
 
 				play_sound_ex("shot3", 0, false);
 				// play_sound_ex("redirect", 0, true);
@@ -664,8 +662,8 @@ void iku_lightning(Boss *b, int time) {
 		);
 	}
 
-	if(global.diff == D_Lunatic && time > 0 && !(time%100)) {
-		int c = 7;
+	if(global.diff >= D_Hard && time > 0 && !(time%100)) {
+		int c = 7 + 2 * (global.diff == D_Lunatic);
 		for(int i = 0; i<c; i++) {
 			PROJECTILE("bigball", b->pos, rgb(0.5,0.1,1), zigzag_bullet,
 				.args = { cexp(2*M_PI*I/c*i+I*carg(global.plr.pos-b->pos)) },
