@@ -470,7 +470,13 @@ static void stage_finalize(void *arg) {
 }
 
 void stage_finish(int gameover) {
-	assert(global.game_over != GAMEOVER_TRANSITIONING);
+	// assert(global.game_over != GAMEOVER_TRANSITIONING);
+
+	if(global.game_over == GAMEOVER_TRANSITIONING) {
+		log_debug("Requested gameover %i, but already transitioning", gameover);
+		return;
+	}
+
 	global.game_over = GAMEOVER_TRANSITIONING;
 	set_transition_callback(TransFadeBlack, FADE_TIME, FADE_TIME*2, stage_finalize, (void*)(intptr_t)gameover);
 	stage_fade_bgm();
