@@ -584,32 +584,34 @@ static void gamepad_button(GamepadButton button, int state, bool is_repeat) {
 		btnstate->held = true;
 		events_emit(TE_GAMEPAD_BUTTON_DOWN, button, indev, NULL);
 
-		switch(button) {
-			case GAMEPAD_BUTTON_START:
-				events_emit(TE_MENU_ACCEPT, 0, indev, NULL);
-				events_emit(TE_GAME_PAUSE, 0, indev, NULL);
-				break;
+		if(!is_repeat || transition.state == TRANS_IDLE) {
+			switch(button) {
+				case GAMEPAD_BUTTON_START:
+					events_emit(TE_MENU_ACCEPT, 0, indev, NULL);
+					events_emit(TE_GAME_PAUSE, 0, indev, NULL);
+					break;
 
-			case GAMEPAD_BUTTON_BACK:
-				events_emit(TE_MENU_ABORT, 0, indev, NULL);
-				events_emit(TE_GAME_PAUSE, 0, indev, NULL);
-				break;
+				case GAMEPAD_BUTTON_BACK:
+					events_emit(TE_MENU_ABORT, 0, indev, NULL);
+					events_emit(TE_GAME_PAUSE, 0, indev, NULL);
+					break;
 
-			case GAMEPAD_BUTTON_DPAD_UP:    events_emit(TE_MENU_CURSOR_UP,    0, indev, NULL); break;
-			case GAMEPAD_BUTTON_DPAD_DOWN:  events_emit(TE_MENU_CURSOR_DOWN,  0, indev, NULL); break;
-			case GAMEPAD_BUTTON_DPAD_LEFT:  events_emit(TE_MENU_CURSOR_LEFT,  0, indev, NULL); break;
-			case GAMEPAD_BUTTON_DPAD_RIGHT: events_emit(TE_MENU_CURSOR_RIGHT, 0, indev, NULL); break;
+				case GAMEPAD_BUTTON_DPAD_UP:    events_emit(TE_MENU_CURSOR_UP,    0, indev, NULL); break;
+				case GAMEPAD_BUTTON_DPAD_DOWN:  events_emit(TE_MENU_CURSOR_DOWN,  0, indev, NULL); break;
+				case GAMEPAD_BUTTON_DPAD_LEFT:  events_emit(TE_MENU_CURSOR_LEFT,  0, indev, NULL); break;
+				case GAMEPAD_BUTTON_DPAD_RIGHT: events_emit(TE_MENU_CURSOR_RIGHT, 0, indev, NULL); break;
 
-			case GAMEPAD_BUTTON_A:
-				events_emit(TE_MENU_ACCEPT, 0, indev, NULL);
-				break;
+				case GAMEPAD_BUTTON_A:
+					events_emit(TE_MENU_ACCEPT, 0, indev, NULL);
+					break;
 
-			case GAMEPAD_BUTTON_B:
-				events_emit(TE_MENU_ABORT, 0, indev, NULL);
-				break;
+				case GAMEPAD_BUTTON_B:
+					events_emit(TE_MENU_ABORT, 0, indev, NULL);
+					break;
 
-			default:
-				break;
+				default:
+					break;
+			}
 		}
 
 		if(key >= 0 && !is_repeat) {
