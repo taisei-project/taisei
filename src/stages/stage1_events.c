@@ -61,7 +61,7 @@ int cirno_snowflake_proj(Projectile *p, int time) {
 	if(time < 0)
 		return 1;
 
-	int split_time = 200-20*global.diff;
+	int split_time = 200 - 20*global.diff - creal(p->args[1]) * 3;
 
 	if(time < split_time) {
 		p->pos += p->args[0];
@@ -71,41 +71,49 @@ int cirno_snowflake_proj(Projectile *p, int time) {
 			play_sound_ex("shot_special1", 30, false);
 			p->color = mix_colors(p->color, rgb(0.5, 0.5, 0.5), 0.5);
 
-			PARTICLE("stain", p->pos, 0, timeout, { 5 },
+			PARTICLE("stain", p->pos, rgba(0.9, 0.9, 1.0, 0.5), timeout, { 10 + 2 * creal(p->args[1]) },
 				.draw_rule = GrowFade,
 				.angle = p->angle,
 				.flags = PFLAG_DRAWADD,
 			);
 		}
 
-		p->pos += cabs(p->args[0])*cexp(I*p->angle);
+		p->pos -= cabs(p->args[0]) * cexp(I*p->angle);
 	}
 
 	return 1;
 }
 
 void cirno_icy(Boss *b, int time) {
-	int interval = 70-5*global.diff;
+	int interval = 70 - 8 * global.diff;
 	int t = time % interval;
-	int run = time/interval;
-	TIMER(&t);
-
+	int run = time / interval;
 	int size = 5+3*sin(337*run);
 
-	if(time < 0)
+	TIMER(&t);
+
+	if(time < 0) {
 		return;
-	complex vel = (1+0.1*global.diff)*cexp(I*fmod(200*run,M_PI));
+	}
+
+	complex vel = (1+0.125*global.diff)*cexp(I*fmod(200*run,M_PI));
 	int c = 6;
 	double dr = 15;
 
-	FROM_TO_SND("shot1_loop",0,3*size,3) {
+	FROM_TO_SND("shot1_loop", 0, 3*size, 3) {
 		for(int i = 0; i < c; i++) {
 			double ang = 2*M_PI/c*i+run*515;
 			complex phase = cexp(I*ang);
 
 			complex pos = b->pos+vel*t+dr*_i*phase;
-			PROJECTILE("crystal", pos+6*I*phase, rgb(0.0,0.1+0.1*size/5,0.8), cirno_snowflake_proj, { vel }, .angle = ang+M_PI/4);
-			PROJECTILE("crystal", pos-6*I*phase, rgb(0.0,0.1+0.1*size/5,0.8), cirno_snowflake_proj, { vel }, .angle = ang-M_PI/4);
+			PROJECTILE("crystal", pos+6*I*phase, rgb(0.0,0.1+0.1*size/5,0.8), cirno_snowflake_proj, { vel, _i, },
+				.angle = ang+M_PI/4,
+				.max_viewport_dist = 64,
+			);
+			PROJECTILE("crystal", pos-6*I*phase, rgb(0.0,0.1+0.1*size/5,0.8), cirno_snowflake_proj, { vel, _i },
+				.angle = ang-M_PI/4,
+				.max_viewport_dist = 64,
+			);
 
 			int split = 3;
 			if(_i > split) {
@@ -113,7 +121,10 @@ void cirno_icy(Boss *b, int time) {
 				for(int j = -1; j <= 1; j+=2) {
 					complex phase2 = cexp(I*M_PI/4*j)*phase;
 					complex pos = pos0+(dr*(_i-split))*phase2;
-					PROJECTILE("crystal", pos, rgb(0.0,0.3*size/5,1), cirno_snowflake_proj, { vel }, .angle = ang+M_PI/4*j);
+					PROJECTILE("crystal", pos, rgb(0.0,0.3*size/5,1), cirno_snowflake_proj, { vel, _i },
+						.angle = ang+M_PI/4*j,
+						.max_viewport_dist = 64,
+					);
 				}
 			}
 		}
@@ -257,7 +268,7 @@ Boss* create_cirno_mid(void) {
 	Boss *cirno = stage1_spawn_cirno(VIEWPORT_W + 220 + 30.0*I);
 
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro, NULL);
-	boss_add_attack(cirno, AT_Normal, "Icy Storm", 20, 22000, cirno_icy, NULL);
+	boss_add_attack(cirno, AT_Normal, "Icy Storm", 20, 24000, cirno_icy, NULL);
 	boss_add_attack_from_info(cirno, &stage1_spells.mid.perfect_freeze, false);
 	boss_add_attack(cirno, AT_Move, "Flee", 5, 0, cirno_mid_flee, NULL);
 
@@ -269,14 +280,14 @@ void cirno_intro_boss(Boss *c, int time) {
 	if(time < 0)
 		return;
 	TIMER(&time);
-	GO_TO(c, VIEWPORT_W/2.0 + 100.0*I, 0.035);
+	GO_TO(c, VIEWPORT_W/2.0 + 100.0*I, 0.05);
 
-	AT(100)
+	AT(120)
 		global.dialog = stage1_dialog();
 }
 
 void cirno_iceplosion0(Boss *c, int time) {
-	int t = time % 350;
+	int t = time % 300;
 	TIMER(&t);
 
 	if(time < 0)
@@ -356,7 +367,7 @@ void cirno_crystal_rain(Boss *c, int time) {
 }
 
 void cirno_iceplosion1(Boss *c, int time) {
-	int t = time % 360;
+	int t = time % 300;
 	TIMER(&t);
 
 	if(time < 0)
@@ -382,9 +393,13 @@ void cirno_iceplosion1(Boss *c, int time) {
 		PROJECTILE("crystal", c->pos - 100, rgb(0.3,0.3,0.8), accelerated, { 1.5*cexp(2.0*I*M_PI*frand()) + 0.4 + 2.0*I*global.diff/4., 0.002*cexp(I*(M_PI/10.0*(_i%20))) });
 	}
 
-	FROM_TO(150, 300, 30) {
+	FROM_TO(150, 300, 30 - 6 * global.diff) {
 		float dif = M_PI*2*frand();
 		int i;
+
+		if(_i > 15) {
+			_i = 15;
+		}
 
 		play_sound("shot1");
 		for(i = 0; i < 20; i++) {
@@ -750,9 +765,9 @@ Boss *create_cirno(void) {
 	Boss* cirno = stage1_spawn_cirno(-230 + 100.0*I);
 
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro_boss, NULL);
-	boss_add_attack(cirno, AT_Normal, "Iceplosion 0", 20, 22000, cirno_iceplosion0, NULL);
+	boss_add_attack(cirno, AT_Normal, "Iceplosion 0", 20, 23000, cirno_iceplosion0, NULL);
 	boss_add_attack_from_info(cirno, &stage1_spells.boss.crystal_rain, false);
-	boss_add_attack(cirno, AT_Normal, "Iceplosion 1", 20, 22000, cirno_iceplosion1, NULL);
+	boss_add_attack(cirno, AT_Normal, "Iceplosion 1", 20, 24000, cirno_iceplosion1, NULL);
 
 	if(global.diff > D_Normal) {
 		boss_add_attack_from_info(cirno, &stage1_spells.boss.snow_halation, false);
