@@ -12,6 +12,7 @@
 #include "config.h"
 #include "events.h"
 #include "global.h"
+#include "hirestime.h"
 
 typedef struct GamepadAxisState {
 	int16_t raw;
@@ -19,12 +20,19 @@ typedef struct GamepadAxisState {
 	int8_t digital;
 } GamepadAxisState;
 
+typedef struct GamepadButtonState {
+	bool held;
+	hrtime_t repeat_time;
+} GamepadButtonState;
+
 static struct {
 	bool initialized;
 	int current_devnum;
 	SDL_GameController *device;
 	SDL_JoystickID instance;
+
 	GamepadAxisState *axes;
+	GamepadButtonState *buttons;
 
 	struct {
 		int *id_map;
@@ -252,6 +260,7 @@ void gamepad_init(void) {
 	SDL_Joystick *joy = SDL_GameControllerGetJoystick(gamepad.device);
 	gamepad.instance = SDL_JoystickInstanceID(joy);
 	gamepad.axes = calloc(GAMEPAD_AXIS_MAX, sizeof(GamepadAxisState));
+	gamepad.buttons = calloc(GAMEPAD_BUTTON_MAX + GAMEPAD_EMULATED_BUTTON_MAX, sizeof(GamepadButtonState));
 
 	log_info("Using device '%s' (#%i): %s", guid, dev, gamepad_device_name(dev));
 	SDL_GameControllerEventState(SDL_ENABLE);
@@ -411,7 +420,7 @@ int gamepad_player_axis_value(GamepadPlrAxis paxis) {
 	return gamepad_axis_value(id);
 }
 
-static void gamepad_button(GamepadButton button, int state);
+static void gamepad_button(GamepadButton button, int state, bool is_repeat);
 static void gamepad_axis(GamepadAxis id, int raw);
 
 double gamepad_normalize_axis_value(int val) {
@@ -529,7 +538,7 @@ static void gamepad_axis(GamepadAxis id, int raw) {
 			GamepadButton btn = gamepad_button_from_axis(id);
 
 			if(btn != GAMEPAD_BUTTON_INVALID) {
-				gamepad_button(btn, SDL_PRESSED);
+				gamepad_button(btn, SDL_PRESSED, false);
 			}
 		}
 	} else if(gamepad.axes[id].digital != AXISVAL_NULL) {  // simulate release
@@ -538,17 +547,41 @@ static void gamepad_axis(GamepadAxis id, int raw) {
 		GamepadButton btn = gamepad_button_from_axis(id);
 
 		if(btn != GAMEPAD_BUTTON_INVALID) {
-			gamepad_button(btn, SDL_RELEASED);
+			gamepad_button(btn, SDL_RELEASED, false);
 		}
 	}
 }
 
-static void gamepad_button(GamepadButton button, int state) {
+static GamepadButtonState* gamepad_button_state(GamepadButton button) {
+	if(button > GAMEPAD_BUTTON_INVALID && button < GAMEPAD_BUTTON_MAX) {
+		return gamepad.buttons + button;
+	}
+
+	if(button & GAMEPAD_BUTTON_EMULATED) {
+		GamepadEmulatedButton ebutton = button & ~GAMEPAD_BUTTON_EMULATED;
+
+		if(ebutton > GAMEPAD_EMULATED_BUTTON_INVALID && ebutton < GAMEPAD_EMULATED_BUTTON_MAX) {
+			return gamepad.buttons + GAMEPAD_BUTTON_MAX + ebutton;
+		}
+	}
+
+	log_fatal("Button id %i is invalid", button);
+}
+
+static void gamepad_button(GamepadButton button, int state, bool is_repeat) {
 	int gpkey   = config_gamepad_key_from_gamepad_button(button);
 	int key     = config_key_from_gamepad_key(gpkey);
 	void *indev = (void*)(intptr_t)INDEV_GAMEPAD;
+	GamepadButtonState *btnstate = gamepad_button_state(button);
 
 	if(state == SDL_PRESSED) {
+		if(is_repeat) {
+			btnstate->repeat_time = time_get() + config_get_float(CONFIG_GAMEPAD_BTNREPEAT_INTERVAL);
+		} else {
+			btnstate->repeat_time = time_get() + config_get_float(CONFIG_GAMEPAD_BTNREPEAT_DELAY);
+		}
+
+		btnstate->held = true;
 		events_emit(TE_GAMEPAD_BUTTON_DOWN, button, indev, NULL);
 
 		switch(button) {
@@ -579,15 +612,24 @@ static void gamepad_button(GamepadButton button, int state) {
 				break;
 		}
 
-		if(key >= 0) {
+		if(key >= 0 && !is_repeat) {
 			events_emit(TE_GAME_KEY_DOWN, key, indev, NULL);
 		}
 	} else {
+		btnstate->held = false;
 		events_emit(TE_GAMEPAD_BUTTON_UP, button, indev, NULL);
 
 		if(key >= 0) {
 			events_emit(TE_GAME_KEY_UP, key, indev, NULL);
 		}
+	}
+}
+
+static void gamepad_handle_button_repeat(GamepadButton btn, hrtime_t time) {
+	GamepadButtonState *state = gamepad_button_state(btn);
+
+	if(state->held && time >= state->repeat_time) {
+		gamepad_button(btn, SDL_PRESSED, true);
 	}
 }
 
@@ -611,10 +653,22 @@ static bool gamepad_event_handler(SDL_Event *event, void *arg) {
 				GamepadButton btn = gamepad_button_from_sdl_button(event->cbutton.button);
 
 				if(btn != GAMEPAD_BUTTON_INVALID) {
-					gamepad_button(btn, event->cbutton.state);
+					gamepad_button(btn, event->cbutton.state, false);
 				}
 			}
 		return true;
+	}
+
+	if(event->type == MAKE_TAISEI_EVENT(TE_FRAME)) {
+		hrtime_t time = time_get();
+
+		for(GamepadButton btn = 0; btn < GAMEPAD_BUTTON_MAX; ++btn) {
+			gamepad_handle_button_repeat(btn, time);
+		}
+
+		for(GamepadEmulatedButton btn = 0; btn < GAMEPAD_EMULATED_BUTTON_MAX; ++btn) {
+			gamepad_handle_button_repeat(btn | GAMEPAD_BUTTON_EMULATED, time);
+		}
 	}
 
 	return false;

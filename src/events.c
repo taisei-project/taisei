@@ -226,6 +226,7 @@ static void events_apply_flags(EventFlags flags) {
 void events_poll(EventHandler *handlers, EventFlags flags) {
 	SDL_Event event;
 	events_apply_flags(flags);
+	events_emit(TE_FRAME, 0, NULL, NULL);
 
 	while(SDL_PollEvent(&event)) {
 		events_invoke_handlers(&event, global_handlers, handlers);

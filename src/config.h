@@ -103,6 +103,8 @@
 	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_UD_SENS,      "gamepad_axis_ud_free_sensitivity",     1.0) \
 	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_LR_SENS,      "gamepad_axis_lr_free_sensitivity",     1.0) \
 	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_DEADZONE,     "gamepad_axis_deadzone",                0.1) \
+	CONFIGDEF_FLOAT     (GAMEPAD_BTNREPEAT_DELAY,   "gamepad_button_repeat_delay",          0.25) \
+	CONFIGDEF_FLOAT     (GAMEPAD_BTNREPEAT_INTERVAL,"gamepad_button_repeat_interval",       0.02) \
 	GPKEYDEFS \
 
 

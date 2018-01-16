@@ -12,6 +12,8 @@
 #include "util.h"
 
 typedef enum {
+	TE_FRAME,
+
 	TE_RESOURCE_ASYNC_LOADED,
 
 	#define TE_MENU_FIRST TE_MENU_CURSOR_UP
