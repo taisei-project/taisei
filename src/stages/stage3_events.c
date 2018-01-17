@@ -755,8 +755,9 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 	if(time == EVENT_DEATH) {
 		free_ref(p->args[0]);
 		return 1;
-	} else if(time < 0)
+	} else if(time < 0) {
 		return 1;
+	}
 
 	if(time >= creal(p->args[1])) {
 		if(p->args[2]) {
@@ -783,7 +784,7 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 			play_sound("shot_special1");
 		} else {
 			int cnt = 22, i;
-			float rot = (global.frames - global.boss->current->starttime) * 0.015;
+			float rot = (global.frames - global.boss->current->starttime) * 0.0037 * (global.diff);
 			Color c = hsl(fmod(rot, M_PI*2)/(M_PI/2), 1.0, 0.5);
 
 			for(i = 0; i < cnt; ++i) {
