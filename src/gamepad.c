@@ -533,9 +533,34 @@ static GamepadButtonState* gamepad_button_state(GamepadButton button) {
 
 static const char* gamepad_button_name_internal(GamepadButton btn);
 
+static struct {
+	GamepadButton button;
+	KeyIndex game_key;
+} gamepad_default_button_mappings[] = {
+	{ GAMEPAD_BUTTON_BACK, KEY_SKIP },
+};
+
+#define NUM_DEFAULT_BUTTON_MAPPINGS (sizeof(gamepad_default_button_mappings)/sizeof(gamepad_default_button_mappings[0]))
+
+static int gamepad_game_key_for_button(GamepadButton button) {
+	int gpkey = config_gamepad_key_from_gamepad_button(button);
+	int key = config_key_from_gamepad_key(gpkey);
+
+	if(key >= 0) {
+		return key;
+	}
+
+	for(int i = 0; i < NUM_DEFAULT_BUTTON_MAPPINGS; ++i) {
+		if(gamepad_default_button_mappings[i].button == button) {
+			return gamepad_default_button_mappings[i].game_key;
+		}
+	}
+
+	return -1;
+}
+
 static void gamepad_button(GamepadButton button, int state, bool is_repeat) {
-	int gpkey   = config_gamepad_key_from_gamepad_button(button);
-	int key     = config_key_from_gamepad_key(gpkey);
+	int key = gamepad_game_key_for_button(button);
 	void *indev = (void*)(intptr_t)INDEV_GAMEPAD;
 	GamepadButtonState *btnstate = gamepad_button_state(button);
 
@@ -558,7 +583,7 @@ static void gamepad_button(GamepadButton button, int state, bool is_repeat) {
 				TaiseiEvent events[3];
 			} eventmap[] = {
 				{ GAMEPAD_BUTTON_START,               { TE_MENU_ACCEPT,       TE_GAME_PAUSE, TE_INVALID } },
-				{ GAMEPAD_BUTTON_BACK,                { TE_MENU_ABORT,        TE_GAME_PAUSE, TE_INVALID } },
+				{ GAMEPAD_BUTTON_BACK,                { TE_MENU_ABORT,        TE_INVALID } },
 				{ GAMEPAD_BUTTON_DPAD_UP,             { TE_MENU_CURSOR_UP,    TE_INVALID } },
 				{ GAMEPAD_BUTTON_DPAD_DOWN,           { TE_MENU_CURSOR_DOWN,  TE_INVALID } },
 				{ GAMEPAD_BUTTON_DPAD_LEFT,           { TE_MENU_CURSOR_LEFT,  TE_INVALID } },
@@ -705,16 +730,30 @@ bool gamepad_game_key_pressed(KeyIndex key) {
 		return false;
 	}
 
+	bool pressed;
 	int gpkey = config_gamepad_key_from_key(key);
 
 	if(gpkey < 0) {
-		return false;
+		pressed = false;
+	} else {
+		int cfgidx = GPKEYIDX_TO_CFGIDX(gpkey);
+		int button = config_get_int(cfgidx);
+		pressed = gamepad_button_pressed(button);
 	}
 
-	int cfgidx = GPKEYIDX_TO_CFGIDX(gpkey);
-	int button = config_get_int(cfgidx);
+	if(!pressed) {
+		for(int i = 0; i < NUM_DEFAULT_BUTTON_MAPPINGS; ++i) {
+			if(gamepad_default_button_mappings[i].game_key == key) {
+				pressed = gamepad_button_pressed(gamepad_default_button_mappings[i].button);
 
-	return gamepad_button_pressed(button);
+				if(pressed) {
+					return pressed;
+				}
+			}
+		}
+	}
+
+	return pressed;
 }
 
 static const char *const gamepad_button_names[] = {
