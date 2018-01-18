@@ -309,24 +309,6 @@ static float gamepad_axis_sens(GamepadAxis id) {
 	return 1.0;
 }
 
-static GamepadAxis gamepad_gamekey2axis(KeyIndex key) {
-	switch(key) {
-		case KEY_UP:    case KEY_DOWN:  return config_get_int(CONFIG_GAMEPAD_AXIS_UD);
-		case KEY_LEFT:  case KEY_RIGHT: return config_get_int(CONFIG_GAMEPAD_AXIS_LR);
-		default:                        return GAMEPAD_AXIS_INVALID;
-	}
-}
-
-static int gamepad_gamekey2axisval(KeyIndex key) {
-	switch(key) {
-		case KEY_UP:    return AXISVAL_UP;
-		case KEY_DOWN:  return AXISVAL_DOWN;
-		case KEY_LEFT:  return AXISVAL_LEFT;
-		case KEY_RIGHT: return AXISVAL_RIGHT;
-		default:        return AXISVAL_NULL;
-	}
-}
-
 static int gamepad_axis2gameevt(GamepadAxis id) {
 	if(id == config_get_int(CONFIG_GAMEPAD_AXIS_LR)) {
 		return TE_GAME_AXIS_LR;
@@ -719,15 +701,8 @@ bool gamepad_button_pressed(GamepadButton btn) {
 }
 
 bool gamepad_game_key_pressed(KeyIndex key) {
-	if(!gamepad.initialized)
+	if(!gamepad.initialized) {
 		return false;
-
-	if(!config_get_int(CONFIG_GAMEPAD_AXIS_FREE)) {
-		GamepadAxis axis = gamepad_gamekey2axis(key);
-
-		if(axis != GAMEPAD_AXIS_INVALID && gamepad.axes[axis].digital == gamepad_gamekey2axisval(key)) {
-			return true;
-		}
 	}
 
 	int gpkey = config_gamepad_key_from_key(key);

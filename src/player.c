@@ -687,17 +687,15 @@ void player_fix_input(Player *plr) {
 		player_event_with_replay(plr, EV_INFLAGS, newflags);
 	}
 
-	if(config_get_int(CONFIG_GAMEPAD_AXIS_FREE)) {
-		int axis_lr = gamepad_player_axis_value(PLRAXIS_LR);
-		int axis_ud = gamepad_player_axis_value(PLRAXIS_UD);
+	int axis_lr = gamepad_player_axis_value(PLRAXIS_LR);
+	int axis_ud = gamepad_player_axis_value(PLRAXIS_UD);
 
-		if(plr->axis_lr != axis_lr) {
-			player_event_with_replay(plr, EV_AXIS_LR, axis_lr);
-		}
+	if(plr->axis_lr != axis_lr) {
+		player_event_with_replay(plr, EV_AXIS_LR, axis_lr);
+	}
 
-		if(plr->axis_ud != axis_ud) {
-			player_event_with_replay(plr, EV_AXIS_UD, axis_ud);
-		}
+	if(plr->axis_ud != axis_ud) {
+		player_event_with_replay(plr, EV_AXIS_UD, axis_ud);
 	}
 }
 
