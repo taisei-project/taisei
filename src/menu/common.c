@@ -136,10 +136,8 @@ void draw_menu_list(MenuData *m, float x, float y, void (*draw)(void*, int, int)
 
 	draw_menu_selector(m->drawdata[0], m->drawdata[2], m->drawdata[1], 34, m->frames);
 
-	int i;
-	for(i = 0; i < m->ecount; i++) {
+	for(int i = 0; i < m->ecount; ++i) {
 		MenuEntry *e = &(m->entries[i]);
-		e->drawdata += 0.2 * (10*(i == m->cursor) - e->drawdata);
 
 		float p = offset + 20*i;
 
@@ -164,6 +162,17 @@ void draw_menu_list(MenuData *m, float x, float y, void (*draw)(void*, int, int)
 	glPopMatrix();
 }
 
+void animate_menu_list_entry(MenuData *m, int i) {
+	MenuEntry *e = &(m->entries[i]);
+	e->drawdata += 0.2 * (10*(i == m->cursor) - e->drawdata);
+}
+
+void animate_menu_list_entries(MenuData *m) {
+	for(int i = 0; i < m->ecount; ++i) {
+		animate_menu_list_entry(m, i);
+	}
+}
+
 void animate_menu_list(MenuData *m) {
 	MenuEntry *s = m->entries + m->cursor;
 	int w = stringwidth(s->name, _fonts.standard);
@@ -171,6 +180,8 @@ void animate_menu_list(MenuData *m) {
 	m->drawdata[0] += (10 + w/2.0 - m->drawdata[0])/10.0;
 	m->drawdata[1] += (w*2 - m->drawdata[1])/10.0;
 	m->drawdata[2] += (20*m->cursor - m->drawdata[2])/10.0;
+
+	animate_menu_list_entries(m);
 }
 
 void menu_commonaction_close(MenuData *menu, void *arg) {

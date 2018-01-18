@@ -14,12 +14,21 @@
 #include "common.h"
 #include "global.h"
 
+// FIXME: put this into the menu struct somehow (drawdata is a bad system)
+static Color diff_color;
+
 void set_difficulty(MenuData *m, void *d) {
 	progress.game_settings.difficulty = (Difficulty)(uintptr_t)d;
 }
 
 void update_difficulty_menu(MenuData *menu) {
 	menu->drawdata[0] += (menu->cursor-menu->drawdata[0])*0.1;
+
+	for(int i = 0; i < menu->ecount; ++i) {
+		menu->entries[i].drawdata += 0.2 * (30*(i == menu->cursor) - menu->entries[i].drawdata);
+	}
+
+	diff_color = approach_color(diff_color, difficulty_color(menu->cursor + D_Easy), 0.1);
 }
 
 void create_difficulty_menu(MenuData *m) {
@@ -48,10 +57,7 @@ void draw_difficulty_menu(MenuData *menu) {
 	draw_options_menu_bg(menu);
 	draw_menu_title(menu, "Select Difficulty");
 
-	static Color clr = 0;
-
-	clr = approach_color(clr, difficulty_color(menu->cursor + D_Easy), 0.1);
-	parse_color_call(multiply_colors(clr, rgba(0.1, 0.1, 0.1, 0.7)), glColor4f);
+	parse_color_call(multiply_colors(diff_color, rgba(0.1, 0.1, 0.1, 0.7)), glColor4f);
 
 	glPushMatrix();
 	glTranslatef(SCREEN_W/2+30 - 25*menu->drawdata[0], SCREEN_H/3 + 90*(0.7*menu->drawdata[0]),0);
@@ -67,10 +73,7 @@ void draw_difficulty_menu(MenuData *menu) {
 
 	glPopMatrix();
 
-	int i;
-	for(i = 0; i < menu->ecount; i++) {
-		menu->entries[i].drawdata += 0.2 * (30*(i == menu->cursor) - menu->entries[i].drawdata);
-
+	for(int i = 0; i < menu->ecount; ++i) {
 		glPushMatrix();
 		glTranslatef(SCREEN_W/2 + SCREEN_W*sign((i&1)-0.5)*(i!=menu->cursor)*menu_fade(menu) - (int)menu->entries[i].drawdata+25*i-50, SCREEN_H/3 + 90*(i-0.3*menu->drawdata[0]),0);
 

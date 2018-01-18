@@ -16,7 +16,6 @@
 void draw_spell_menu(MenuData *m) {
 	draw_options_menu_bg(m);
 	draw_menu_title(m, "Spell Practice");
-	animate_menu_list(m);
 	draw_menu_list(m, 100, 100, NULL);
 }
 
@@ -26,6 +25,7 @@ void create_spell_menu(MenuData *m) {
 
 	create_menu(m);
 	m->draw = draw_spell_menu;
+	m->logic = animate_menu_list;
 	m->flags = MF_Abortable;
 	m->transition = TransMenuDark;
 

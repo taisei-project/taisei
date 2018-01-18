@@ -44,8 +44,6 @@ static void save_rpy(MenuData *menu, void *a) {
 }
 
 static void draw_saverpy_menu(MenuData *m) {
-	int i;
-
 	draw_options_menu_bg(m);
 
 	draw_menu_selector(SCREEN_W/2 + 100 * m->drawdata[0] - 50, SCREEN_H/2, 163, 81, m->frames);
@@ -56,17 +54,13 @@ static void draw_saverpy_menu(MenuData *m) {
 	draw_text(AL_Center, 0, 0, "Save Replay?", _fonts.mainmenu);
 	glTranslatef(0, 100, 0);
 
-	m->drawdata[0] += (m->cursor - m->drawdata[0])/10.0;
-
-	for(i = 0; i < m->ecount; i++) {
+	for(int i = 0; i < m->ecount; i++) {
 		MenuEntry *e = &(m->entries[i]);
-
-		e->drawdata += 0.2 * (10*(i == m->cursor) - e->drawdata);
 		float a = e->drawdata * 0.1;
 
-		if(e->action == NULL)
+		if(e->action == NULL) {
 			glColor4f(0.5, 0.5, 0.5, 0.5);
-		else {
+		} else {
 			float ia = 1-a;
 			glColor4f(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, 0.7 + 0.3 * a);
 		}
@@ -96,11 +90,20 @@ static void saverpy_menu_input(MenuData *menu) {
 	}, EFLAG_MENU);
 }
 
+static void update_saverpy_menu(MenuData *m) {
+	m->drawdata[0] += (m->cursor - m->drawdata[0])/10.0;
+
+	for(int i = 0; i < m->ecount; i++) {
+		MenuEntry *e = &(m->entries[i]);
+		e->drawdata += 0.2 * (10*(i == m->cursor) - e->drawdata);
+	}
+}
+
 void create_saverpy_menu(MenuData *m) {
 	create_menu(m);
 	m->input = saverpy_menu_input;
 	m->draw = draw_saverpy_menu;
-
+	m->logic = update_saverpy_menu;
 	m->flags = MF_Transient;
 
 	add_menu_entry(m, "Yes", save_rpy, NULL);

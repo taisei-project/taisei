@@ -365,14 +365,29 @@ void loop_at_fps(LogicFrameFunc logic_frame, RenderFrameFunc render_frame, void 
 	int32_t delay = getenvint("TAISEI_FRAMELIMITER_SLEEP", 0);
 	bool exact_delay = getenvint("TAISEI_FRAMELIMITER_SLEEP_EXACT", 1);
 	bool compensate = getenvint("TAISEI_FRAMELIMITER_COMPENSATE", 1);
+	bool uncapped_rendering_env = getenvint("TAISEI_FRAMELIMITER_LOGIC_ONLY", 0);
 	bool late_swap = config_get_int(CONFIG_VID_LATE_SWAP);
 
 	uint32_t frame_num = 0;
 
+	// don't care about thread safety, we can render only on the main thread anyway
+	static uint8_t recursion_detector;
+	++recursion_detector;
+
 	while(true) {
+		bool uncapped_rendering = uncapped_rendering_env;
 		frame_start_time = time_get();
 
 begin_frame:
+
+#ifdef DEBUG
+		if(gamekeypressed(KEY_FPSLIMIT_OFF)) {
+			uncapped_rendering = false;
+		} else {
+			uncapped_rendering = uncapped_rendering_env;
+		}
+#endif
+
 		if(late_swap && rframe_action == RFRAME_SWAP) {
 			video_swap_buffers();
 		}
@@ -380,9 +395,57 @@ begin_frame:
 		global.fps.busy.last_update_time = time_get();
 
 		++frame_num;
-		lframe_action = logic_frame(arg);
 
-		if(frame_num % get_effective_frameskip()) {
+		if(uncapped_rendering) {
+			uint32_t logic_frames = 0;
+
+			while(lframe_action != LFRAME_STOP && next_frame_time < frame_start_time) {
+				uint8_t rval = recursion_detector;
+
+				lframe_action = logic_frame(arg);
+				fpscounter_update(&global.fps.logic);
+				++logic_frames;
+
+				if(rval != recursion_detector) {
+					log_debug(
+						"Recursive call detected (%u != %u), resetting next frame time to avoid a large skip",
+						rval,
+						recursion_detector
+					);
+					next_frame_time = time_get() + target_frame_time;
+					break;
+				}
+
+				hrtime_t frametime = target_frame_time;
+
+				if(lframe_action == LFRAME_SKIP) {
+					frametime *= 0.1;
+				}
+
+				next_frame_time += frametime;
+
+				hrtime_t total = time_get() - frame_start_time;
+
+				if(total > target_frame_time) {
+					next_frame_time = frame_start_time;
+					log_debug("Executing logic took too long (%f), giving up", (double)total);
+				}
+			}
+
+			if(logic_frames > 1) {
+				log_debug(
+					"Dropped %u logic frame%s in superframe #%u",
+					logic_frames - 1,
+					logic_frames > 2 ? "s" : "",
+					frame_num
+				);
+			}
+		} else {
+			lframe_action = logic_frame(arg);
+			fpscounter_update(&global.fps.logic);
+		}
+
+		if(!uncapped_rendering && frame_num % get_effective_frameskip()) {
 			rframe_action = RFRAME_DROP;
 		} else {
 			rframe_action = render_frame(arg);
@@ -397,10 +460,9 @@ begin_frame:
 			video_swap_buffers();
 		}
 
-		fpscounter_update(&global.fps.logic);
 		fpscounter_update(&global.fps.busy);
 
-		if(lframe_action == LFRAME_SKIP) {
+		if(lframe_action == LFRAME_SKIP || uncapped_rendering) {
 			continue;
 		}
 

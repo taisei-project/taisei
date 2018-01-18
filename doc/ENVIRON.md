@@ -56,6 +56,8 @@ In addition to the variables listed here, those processed by our runtime depende
 
 * **TAISEI_FRAMELIMITER_COMPENSATE** *(default value: `1`)*: if `1`, the framerate limiter may let frames finish earlier than normal after sudden frametime spikes. This achieves better timing accuracy, but may hurt fluidity if the framerate is too unstable.
 
+* **TAISEI_FRAMELIMITER_LOGIC_ONLY** *(default value: `0`)*: **EXPERIMENTAL**: if `1`, only the logic framerate will be capped; new rendering frames will be processed as quickly as possible, with no delay. This inherently desynchronizes logic and rendering frames, and therefore, some logic frames may be dropped if rendering is too slow. However, unlike with the synchronous mode, the game speed will remain roughly constant in those cases. `TAISEI_FRAMELIMITER_SLEEP`, `TAISEI_FRAMELIMITER_COMPENSATE`, and the `frameskip` setting have no effect in this mode.
+
 ### Logging
 
 Taisei's logging system currently has four basic levels and works by dispatching messages to a few output handlers. Each handler has a level filter, which is configured by a separate environment variable. All of those variables work the same way: their value looks like an IRC mode string, and represents a modification of the handler's default settings. If this doesn't make sense, take a look at the *Examples* section.

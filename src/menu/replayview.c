@@ -113,7 +113,7 @@ static void replayview_draw_stagemenu(MenuData *m) {
 
 	for(i = 0; i < m->ecount; ++i) {
 		MenuEntry *e = &(m->entries[i]);
-		float a = e->drawdata += 0.2 * ((i == m->cursor) - e->drawdata);
+		float a = e->drawdata;
 
 		if(e->action == NULL) {
 			glColor4f(0.5, 0.5, 0.5, 0.5 * alpha);
@@ -208,6 +208,11 @@ static void replayview_logic(MenuData *m) {
 	if(ctx->submenu) {
 		MenuData *sm = ctx->submenu;
 
+		for(int i = 0; i < sm->ecount; ++i) {
+			MenuEntry *e = sm->entries + i;
+			e->drawdata += 0.2 * ((i == m->cursor) - e->drawdata);
+		}
+
 		if(sm->state == MS_Dead) {
 			if(ctx->sub_fade == 1.0) {
 				destroy_menu(sm);
@@ -225,6 +230,8 @@ static void replayview_logic(MenuData *m) {
 	m->drawdata[0] = SCREEN_W/2 - 100;
 	m->drawdata[1] = (SCREEN_W - 200)*1.75;
 	m->drawdata[2] += (20*m->cursor - m->drawdata[2])/10.0;
+
+	animate_menu_list_entries(m);
 }
 
 static void replayview_draw(MenuData *m) {
