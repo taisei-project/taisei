@@ -126,7 +126,9 @@ void gluPerspective(GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFa
 #endif
 
 #ifdef DEBUG
+#ifdef TAISEI_BUILDCONF_DEBUG_OPENGL
 #define DEBUG_GL
+#endif
 #endif
 
 /*
