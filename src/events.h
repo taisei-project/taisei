@@ -12,6 +12,8 @@
 #include "util.h"
 
 typedef enum {
+	TE_INVALID = -1,
+
 	TE_FRAME,
 
 	TE_RESOURCE_ASYNC_LOADED,

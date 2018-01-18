@@ -14,7 +14,7 @@
 #include "events.h"
 #include "config.h"
 
-enum {
+typedef enum GamepadAxisDigitalValue {
 	AXISVAL_LEFT  = -1,
 	AXISVAL_RIGHT =  1,
 
@@ -22,9 +22,9 @@ enum {
 	AXISVAL_DOWN  =  1,
 
 	AXISVAL_NULL  = 0
-};
+} GamepadAxisDigitalValue;
 
-typedef enum {
+typedef enum GamepadPlrAxis {
 	PLRAXIS_LR, // aka X
 	PLRAXIS_UD, // aka Y
 } GamepadPlrAxis;
@@ -33,6 +33,10 @@ typedef enum GamepadEmulatedButton {
 	GAMEPAD_EMULATED_BUTTON_INVALID = -1,
 	GAMEPAD_EMULATED_BUTTON_TRIGGER_LEFT,
 	GAMEPAD_EMULATED_BUTTON_TRIGGER_RIGHT,
+	GAMEPAD_EMULATED_BUTTON_ANALOG_STICK_UP,
+	GAMEPAD_EMULATED_BUTTON_ANALOG_STICK_DOWN,
+	GAMEPAD_EMULATED_BUTTON_ANALOG_STICK_LEFT,
+	GAMEPAD_EMULATED_BUTTON_ANALOG_STICK_RIGHT,
 	GAMEPAD_EMULATED_BUTTON_MAX,
 } GamepadEmulatedButton;
 
@@ -60,6 +64,11 @@ typedef enum GamepadButton {
 
 	GAMEPAD_BUTTON_TRIGGER_LEFT = GAMEPAD_EMULATED_BUTTON_TRIGGER_LEFT | GAMEPAD_BUTTON_EMULATED,
 	GAMEPAD_BUTTON_TRIGGER_RIGHT = GAMEPAD_EMULATED_BUTTON_TRIGGER_RIGHT | GAMEPAD_BUTTON_EMULATED,
+
+	GAMEPAD_BUTTON_ANALOG_STICK_UP = GAMEPAD_EMULATED_BUTTON_ANALOG_STICK_UP | GAMEPAD_BUTTON_EMULATED,
+	GAMEPAD_BUTTON_ANALOG_STICK_DOWN = GAMEPAD_EMULATED_BUTTON_ANALOG_STICK_DOWN | GAMEPAD_BUTTON_EMULATED,
+	GAMEPAD_BUTTON_ANALOG_STICK_LEFT = GAMEPAD_EMULATED_BUTTON_ANALOG_STICK_LEFT | GAMEPAD_BUTTON_EMULATED,
+	GAMEPAD_BUTTON_ANALOG_STICK_RIGHT = GAMEPAD_EMULATED_BUTTON_ANALOG_STICK_RIGHT | GAMEPAD_BUTTON_EMULATED,
 } GamepadButton;
 
 typedef enum GamepadAxis {
@@ -94,7 +103,7 @@ const char* gamepad_axis_name(GamepadAxis btn);
 GamepadButton gamepad_button_from_name(const char *name);
 GamepadAxis gamepad_axis_from_name(const char *name);
 
-GamepadButton gamepad_button_from_axis(GamepadAxis axis);
+GamepadButton gamepad_button_from_axis(GamepadAxis axis, GamepadAxisDigitalValue dval);
 GamepadButton gamepad_button_from_sdl_button(SDL_GameControllerButton btn);
 SDL_GameControllerButton gamepad_button_to_sdl_button(GamepadButton btn);
 

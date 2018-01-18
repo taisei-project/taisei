@@ -327,18 +327,6 @@ static int gamepad_gamekey2axisval(KeyIndex key) {
 	}
 }
 
-static int gamepad_axis2menuevt(GamepadAxis id, int val) {
-	if(id == GAMEPAD_AXIS_LEFT_X || id == GAMEPAD_AXIS_RIGHT_X) {
-		return val == AXISVAL_LEFT ? TE_MENU_CURSOR_LEFT : TE_MENU_CURSOR_RIGHT;
-	}
-
-	if(id == GAMEPAD_AXIS_LEFT_Y || id == GAMEPAD_AXIS_RIGHT_Y) {
-		return val == AXISVAL_UP   ? TE_MENU_CURSOR_UP : TE_MENU_CURSOR_DOWN;
-	}
-
-	return -1;
-}
-
 static int gamepad_axis2gameevt(GamepadAxis id) {
 	if(id == config_get_int(CONFIG_GAMEPAD_AXIS_LR)) {
 		return TE_GAME_AXIS_LR;
@@ -529,22 +517,15 @@ static void gamepad_axis(GamepadAxis id, int raw) {
 		if(!gamepad.axes[id].digital) {
 			gamepad.axes[id].digital = digital;
 
-			int evt = gamepad_axis2menuevt(id, digital);
-
-			if(evt >= 0) {
-				events_emit(evt, 0, (void*)(intptr_t)INDEV_GAMEPAD, NULL);
-			}
-
-			GamepadButton btn = gamepad_button_from_axis(id);
+			GamepadButton btn = gamepad_button_from_axis(id, digital);
 
 			if(btn != GAMEPAD_BUTTON_INVALID) {
 				gamepad_button(btn, SDL_PRESSED, false);
 			}
 		}
 	} else if(gamepad.axes[id].digital != AXISVAL_NULL) {  // simulate release
+		GamepadButton btn = gamepad_button_from_axis(id, gamepad.axes[id].digital);
 		gamepad.axes[id].digital = AXISVAL_NULL;
-
-		GamepadButton btn = gamepad_button_from_axis(id);
 
 		if(btn != GAMEPAD_BUTTON_INVALID) {
 			gamepad_button(btn, SDL_RELEASED, false);
@@ -568,6 +549,8 @@ static GamepadButtonState* gamepad_button_state(GamepadButton button) {
 	log_fatal("Button id %i is invalid", button);
 }
 
+static const char* gamepad_button_name_internal(GamepadButton btn);
+
 static void gamepad_button(GamepadButton button, int state, bool is_repeat) {
 	int gpkey   = config_gamepad_key_from_gamepad_button(button);
 	int key     = config_key_from_gamepad_key(gpkey);
@@ -582,35 +565,40 @@ static void gamepad_button(GamepadButton button, int state, bool is_repeat) {
 		}
 
 		btnstate->held = true;
-		events_emit(TE_GAMEPAD_BUTTON_DOWN, button, indev, NULL);
+
+		if(gamepad_button_name_internal(button) != NULL) {
+			events_emit(TE_GAMEPAD_BUTTON_DOWN, button, indev, NULL);
+		}
 
 		if(!is_repeat || transition.state == TRANS_IDLE) {
-			switch(button) {
-				case GAMEPAD_BUTTON_START:
-					events_emit(TE_MENU_ACCEPT, 0, indev, NULL);
-					events_emit(TE_GAME_PAUSE, 0, indev, NULL);
-					break;
+			static struct eventmap_s {
+				GamepadButton button;
+				TaiseiEvent events[3];
+			} eventmap[] = {
+				{ GAMEPAD_BUTTON_START,               { TE_MENU_ACCEPT,       TE_GAME_PAUSE, TE_INVALID } },
+				{ GAMEPAD_BUTTON_BACK,                { TE_MENU_ABORT,        TE_GAME_PAUSE, TE_INVALID } },
+				{ GAMEPAD_BUTTON_DPAD_UP,             { TE_MENU_CURSOR_UP,    TE_INVALID } },
+				{ GAMEPAD_BUTTON_DPAD_DOWN,           { TE_MENU_CURSOR_DOWN,  TE_INVALID } },
+				{ GAMEPAD_BUTTON_DPAD_LEFT,           { TE_MENU_CURSOR_LEFT,  TE_INVALID } },
+				{ GAMEPAD_BUTTON_DPAD_RIGHT,          { TE_MENU_CURSOR_RIGHT, TE_INVALID } },
+				{ GAMEPAD_BUTTON_ANALOG_STICK_UP,     { TE_MENU_CURSOR_UP,    TE_INVALID } },
+				{ GAMEPAD_BUTTON_ANALOG_STICK_DOWN,   { TE_MENU_CURSOR_DOWN,  TE_INVALID } },
+				{ GAMEPAD_BUTTON_ANALOG_STICK_LEFT,   { TE_MENU_CURSOR_LEFT,  TE_INVALID } },
+				{ GAMEPAD_BUTTON_ANALOG_STICK_RIGHT,  { TE_MENU_CURSOR_RIGHT, TE_INVALID } },
+				{ GAMEPAD_BUTTON_A,                   { TE_MENU_ACCEPT,       TE_INVALID } },
+				{ GAMEPAD_BUTTON_B,                   { TE_MENU_ABORT,        TE_INVALID } },
+			};
 
-				case GAMEPAD_BUTTON_BACK:
-					events_emit(TE_MENU_ABORT, 0, indev, NULL);
-					events_emit(TE_GAME_PAUSE, 0, indev, NULL);
-					break;
+			for(int i = 0; i < sizeof(eventmap)/sizeof(eventmap[0]); ++i) {
+				struct eventmap_s *e = eventmap + i;
 
-				case GAMEPAD_BUTTON_DPAD_UP:    events_emit(TE_MENU_CURSOR_UP,    0, indev, NULL); break;
-				case GAMEPAD_BUTTON_DPAD_DOWN:  events_emit(TE_MENU_CURSOR_DOWN,  0, indev, NULL); break;
-				case GAMEPAD_BUTTON_DPAD_LEFT:  events_emit(TE_MENU_CURSOR_LEFT,  0, indev, NULL); break;
-				case GAMEPAD_BUTTON_DPAD_RIGHT: events_emit(TE_MENU_CURSOR_RIGHT, 0, indev, NULL); break;
+				if(e->button == button) {
+					for(int j = 0; j < sizeof(e->events)/sizeof(e->events[0]) && e->events[j] > TE_INVALID; ++j) {
+						events_emit(e->events[j], 0, indev, NULL);
+					}
 
-				case GAMEPAD_BUTTON_A:
-					events_emit(TE_MENU_ACCEPT, 0, indev, NULL);
 					break;
-
-				case GAMEPAD_BUTTON_B:
-					events_emit(TE_MENU_ABORT, 0, indev, NULL);
-					break;
-
-				default:
-					break;
+				}
 			}
 		}
 
@@ -776,6 +764,10 @@ static const char *const gamepad_button_names[] = {
 static const char *const gamepad_emulated_button_names[] = {
 	[GAMEPAD_EMULATED_BUTTON_TRIGGER_LEFT] = "Left Trigger",
 	[GAMEPAD_EMULATED_BUTTON_TRIGGER_RIGHT] = "Right Trigger",
+	[GAMEPAD_BUTTON_ANALOG_STICK_UP] = NULL,
+	[GAMEPAD_BUTTON_ANALOG_STICK_DOWN] = NULL,
+	[GAMEPAD_BUTTON_ANALOG_STICK_LEFT] = NULL,
+	[GAMEPAD_BUTTON_ANALOG_STICK_RIGHT] = NULL,
 };
 
 static const char *const gamepad_axis_names[] = {
@@ -787,8 +779,7 @@ static const char *const gamepad_axis_names[] = {
 	[GAMEPAD_AXIS_TRIGGER_RIGHT] = "Right Trigger",
 };
 
-const char* gamepad_button_name(GamepadButton btn) {
-
+static const char* gamepad_button_name_internal(GamepadButton btn) {
 	if(btn > GAMEPAD_BUTTON_INVALID && btn < GAMEPAD_BUTTON_MAX) {
 		return gamepad_button_names[btn];
 	}
@@ -797,11 +788,20 @@ const char* gamepad_button_name(GamepadButton btn) {
 		return gamepad_emulated_button_names[btn & ~GAMEPAD_BUTTON_EMULATED];
 	}
 
-	return "Unknown";
+	return NULL;
+}
+
+const char* gamepad_button_name(GamepadButton btn) {
+	const char *name = gamepad_button_name_internal(btn);
+
+	if(name == NULL) {
+		return "Unknown";
+	}
+
+	return name;
 }
 
 const char* gamepad_axis_name(GamepadAxis axis) {
-
 	if(axis > GAMEPAD_AXIS_INVALID && axis < GAMEPAD_AXIS_MAX) {
 		return gamepad_axis_names[axis];
 	}
@@ -817,7 +817,7 @@ GamepadButton gamepad_button_from_name(const char *name) {
 	}
 
 	for(int i = 0; i < GAMEPAD_EMULATED_BUTTON_MAX; ++i) {
-		if(!strcasecmp(gamepad_emulated_button_names[i], name)) {
+		if(gamepad_emulated_button_names[i] && !strcasecmp(gamepad_emulated_button_names[i], name)) {
 			return (GamepadButton)(i | GAMEPAD_BUTTON_EMULATED);
 		}
 	}
@@ -845,7 +845,7 @@ GamepadButton gamepad_button_from_sdl_button(SDL_GameControllerButton btn) {
 	return (GamepadButton)btn;
 }
 
-GamepadButton gamepad_button_from_axis(GamepadAxis axis) {
+GamepadButton gamepad_button_from_axis(GamepadAxis axis, GamepadAxisDigitalValue dval) {
 	switch(axis) {
 		case GAMEPAD_AXIS_TRIGGER_LEFT:
 			return GAMEPAD_BUTTON_TRIGGER_LEFT;
@@ -854,8 +854,36 @@ GamepadButton gamepad_button_from_axis(GamepadAxis axis) {
 			return GAMEPAD_BUTTON_TRIGGER_RIGHT;
 
 		default:
-			return GAMEPAD_BUTTON_INVALID;
+			break;
 	}
+
+	if(axis == GAMEPAD_AXIS_LEFT_Y || axis == GAMEPAD_AXIS_RIGHT_Y) {
+		switch(dval) {
+			case AXISVAL_UP:
+				return GAMEPAD_BUTTON_ANALOG_STICK_UP;
+
+			case AXISVAL_DOWN:
+				return GAMEPAD_BUTTON_ANALOG_STICK_DOWN;
+
+			default:
+				return GAMEPAD_BUTTON_INVALID;
+		}
+	}
+
+	if(axis == GAMEPAD_AXIS_LEFT_X || axis == GAMEPAD_AXIS_RIGHT_X) {
+		switch(dval) {
+			case AXISVAL_LEFT:
+				return GAMEPAD_BUTTON_ANALOG_STICK_LEFT;
+
+			case AXISVAL_RIGHT:
+				return GAMEPAD_BUTTON_ANALOG_STICK_RIGHT;
+
+			default:
+				return GAMEPAD_BUTTON_INVALID;
+		}
+	}
+
+	return GAMEPAD_BUTTON_INVALID;
 }
 
 SDL_GameControllerButton gamepad_button_to_sdl_button(GamepadButton btn) {
