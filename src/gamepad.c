@@ -699,20 +699,19 @@ int gamepad_current_device_num(void) {
 }
 
 bool gamepad_button_pressed(GamepadButton btn) {
-	if(btn > GAMEPAD_BUTTON_INVALID && btn < GAMEPAD_BUTTON_MAX) {
-		return SDL_GameControllerGetButton(gamepad.device, (SDL_GameControllerButton)btn);
+	if(btn <= GAMEPAD_BUTTON_INVALID) {
+		return false;
+	}
+
+	if(btn < GAMEPAD_BUTTON_MAX) {
+		return gamepad.buttons[btn].held;
 	}
 
 	if(btn & GAMEPAD_BUTTON_EMULATED) {
 		GamepadEmulatedButton ebtn = btn & ~GAMEPAD_BUTTON_EMULATED;
 
 		if(ebtn > GAMEPAD_EMULATED_BUTTON_INVALID && ebtn < GAMEPAD_EMULATED_BUTTON_MAX) {
-			static GamepadAxis ebtn_to_axis[] = {
-				[GAMEPAD_EMULATED_BUTTON_TRIGGER_LEFT] = GAMEPAD_AXIS_TRIGGER_LEFT,
-				[GAMEPAD_EMULATED_BUTTON_TRIGGER_RIGHT] = GAMEPAD_AXIS_TRIGGER_RIGHT,
-			};
-
-			return gamepad.axes[ebtn_to_axis[ebtn]].digital;
+			return gamepad.buttons[GAMEPAD_BUTTON_MAX + ebtn].held;
 		}
 	}
 
