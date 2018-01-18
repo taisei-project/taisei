@@ -386,7 +386,7 @@ int kurumi_spikeslave(Enemy *e, int t) {
 		float r = cimag(e->pos)/VIEWPORT_H;
 		PROJECTILE("wave", e->pos + 10.0*I*e->args[0], rgb(r,0,0), linear, { 1.5*I*e->args[1], -0.01*e->args[0] });
 		PROJECTILE("wave", e->pos - 10.0*I*e->args[0], rgb(r,0,0), linear, {-1.5*I*e->args[1], -0.01*e->args[0] });
-		play_sound_ex("shot1",5,false);
+		play_sound("shot1");
 	}
 
 	return 1;
@@ -411,7 +411,7 @@ void kurumi_redspike(Boss *b, int time) {
 		FROM_TO(0, 500, 150-50*global.diff) {
 			int i;
 			int n = global.diff*8;
-			for(i = 0; i < n; i++)
+			for(i = 0; i < n; i++) {
 				PROJECTILE(
 					.texture = "bigball",
 					.pos = b->pos,
@@ -423,6 +423,9 @@ void kurumi_redspike(Boss *b, int time) {
 					},
 					.flags = PFLAG_DRAWADD,
 				);
+			}
+
+			play_sound("shot_special1");
 		}
 	} else {
 		AT(80) {
@@ -439,7 +442,7 @@ void kurumi_redspike(Boss *b, int time) {
 				.args = { -1*n, 0.05*n },
 				.flags = PFLAG_DRAWADD,
 			);
-			play_sound_ex("shot2",5,false);
+			play_sound_ex("warp",0,false);
 		}
 	}
 }
