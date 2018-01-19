@@ -16,7 +16,7 @@ if get_option('docs')
     endif
 
     formats = r.stdout().split()
-    input_format = 'ghc'
+    input_format = 'gfm'
     input_format_fallback = 'markdown_github'
 
     if not formats.contains(input_format)
