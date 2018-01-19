@@ -36,7 +36,7 @@ In addition to the variables listed here, those processed by our runtime depende
 
 ### Video and OpenGL
 
-* **TAISEI_PREFER_SDL_VIDEODRIVERS** *(default: wayland,mir,cocoa,windows,x11)*: List of SDL video backends that Taisei will attempt to use, in the specified order, before falling back to SDL's default. Entries may be separated by spaces, commas, colons, and semicolons. This variable is ignored if `SDL_VIDEODRIVER` is set.
+* **TAISEI_PREFER_SDL_VIDEODRIVERS** *(default: `wayland,mir,cocoa,windows,x11`)*: List of SDL video backends that Taisei will attempt to use, in the specified order, before falling back to SDL's default. Entries may be separated by spaces, commas, colons, and semicolons. This variable is ignored if `SDL_VIDEODRIVER` is set.
 
 * **TAISEI_VIDEO_DRIVER** *(**deprecated**; default: unset)*: Use `SDL_VIDEODRIVER` instead.
 
