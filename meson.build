@@ -42,6 +42,8 @@ preprocessor = generator(preprocess_script,
     depfile: '@BASENAME@.d',
 )
 
+eolconv = find_program(join_paths(scripts_dir, 'eolconv.py'))
+
 taisei_version_result = run_command(version_command, '{string}')
 
 if taisei_version_result.stderr() != ''
@@ -204,9 +206,8 @@ endif
 config.set('TAISEI_BUILDCONF_DEBUG_OPENGL', get_option('debug_opengl'))
 
 if host_machine.system() == 'windows'
-    unix2dos = find_program(join_paths(scripts_dir, 'unix2dos.py'))
     custom_target('COPYING.txt',
-        command : [unix2dos, '@INPUT@', '@OUTPUT@'],
+        command : [eolconv, 'crlf', '@INPUT@', '@OUTPUT@'],
         input : 'COPYING',
         output : 'COPYING.txt',
         install : true,

@@ -15,6 +15,7 @@ Dependencies:
 * OpenGL >= 2.1
 * meson >= 0.39.0 (build system)
 * pkg-config (build dependency)
+* pandoc (build dependency, optional)
 
 To build and install Taisei just follow these steps.
 
