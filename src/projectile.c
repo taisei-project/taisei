@@ -467,9 +467,10 @@ static Projectile* spawn_projectile_death_effect(Projectile *proj) {
 		.color = proj->color,
 		.flags = proj->flags | PFLAG_NOREFLECT,
 		.color_transform_rule = proj->color_transform_rule,
-		.rule = timeout_linear,
+		.rule = timeout,
 		.draw_rule = DeathShrink,
-		.args = { 10, 5*cexp(proj->angle*I) },
+		.angle = proj->angle,
+		.args = { 10 },
 	);
 }
 
@@ -696,7 +697,7 @@ void DeathShrink(Projectile *p, int t) {
 
 	float s = 2.0-t/p->args[0]*2;
 	if(s != 1) {
-		glScalef(s, 1, 1);
+		glScalef(s, s, 1);
 	}
 
 	ProjDrawCore(p, p->color);
