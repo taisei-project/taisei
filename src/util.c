@@ -378,13 +378,15 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 		glUniform4fv(uniloc(shader, "fill_color"), 1, clr);
 		glUniform1f(uniloc(shader, "fill"), numfrags / (float)maxfrags);
 		draw_quad();
+		i++;
 	}
 
 	glUniform1f(uniloc(shader, "fill"), 0);
 
-	while(i++ < maxstars) {
+	while(i < maxstars) {
 		glTranslatef(1, 0, 0);
 		draw_quad();
+		i++;
 	}
 
 	end_draw_texture();
