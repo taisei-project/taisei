@@ -596,6 +596,7 @@ void scuttle_deadly_dance(Boss *boss, int time) {
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.03)
 
 	if(time > 30) {
+		float angle_ofs = frand() * M_PI * 2;
 		double t = time * 1.5 * (0.4 + 0.3 * global.diff);
 		double moverad = min(160, time/2.7);
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2 + sin(t/50.0) * moverad * cexp(I * M_PI_2 * t/100.0), 0.03)
@@ -610,7 +611,7 @@ void scuttle_deadly_dance(Boss *boss, int time) {
 					.rule = scuttle_poison,
 					.args = {
 						0,
-						0.02 * cexp(I*(a+time/10.0)),
+						0.02 * cexp(I*(angle_ofs+a+time/10.0)),
 						a,
 						time
 					}
@@ -624,7 +625,7 @@ void scuttle_deadly_dance(Boss *boss, int time) {
 			int cnt = global.diff * 2;
 			for(i = 0; i < cnt; ++i) {
 				PROJECTILE("ball", boss->pos, rgb(1.0, 1.0, 0.3), asymptotic, {
-					(0.5 + 3 * psin(time + M_PI/3*2*i)) * cexp(I*(time / 20.0 + M_PI/cnt*i*2)),
+					(0.5 + 3 * psin(time + M_PI/3*2*i)) * cexp(I*(angle_ofs + time / 20.0 + M_PI/cnt*i*2)),
 					1.5
 				});
 			}
