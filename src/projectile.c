@@ -456,8 +456,26 @@ bool projectile_in_viewport(Projectile *proj) {
 		  || cimag(proj->pos) + h/2 + e < 0 || cimag(proj->pos) - h/2 - e > VIEWPORT_H);
 }
 
-static Projectile* spawn_projectile_death_effect(Projectile *proj) {
-	if(proj->tex == NULL) {
+Projectile* spawn_projectile_collision_effect(Projectile *proj) {
+	if(proj->flags & PFLAG_NOCOLLISIONEFFECT) {
+		return NULL;
+	}
+
+	return PARTICLE(
+		.texture_ptr = proj->tex,
+		.pos = proj->pos,
+		.color = proj->color,
+		.flags = proj->flags | PFLAG_NOREFLECT,
+		.color_transform_rule = proj->color_transform_rule,
+		.rule = timeout_linear,
+		.draw_rule = DeathShrink,
+		.angle = proj->angle,
+		.args = { 10, 5*cexp(I*proj->angle)},
+	);
+}
+
+Projectile* spawn_projectile_clear_effect(Projectile *proj) {
+	if(proj->flags & PFLAG_NOCLEAREFFECT) {
 		return NULL;
 	}
 
@@ -468,26 +486,10 @@ static Projectile* spawn_projectile_death_effect(Projectile *proj) {
 		.flags = proj->flags | PFLAG_NOREFLECT,
 		.color_transform_rule = proj->color_transform_rule,
 		.rule = timeout,
-		.draw_rule = DeathShrink,
+		.draw_rule = Shrink,
 		.angle = proj->angle,
 		.args = { 10 },
 	);
-}
-
-Projectile* spawn_projectile_collision_effect(Projectile *proj) {
-	if(proj->flags & PFLAG_NOCOLLISIONEFFECT) {
-		return NULL;
-	}
-
-	return spawn_projectile_death_effect(proj);
-}
-
-Projectile* spawn_projectile_clear_effect(Projectile *proj) {
-	if(proj->flags & PFLAG_NOCLEAREFFECT) {
-		return NULL;
-	}
-
-	return spawn_projectile_death_effect(proj);
 }
 
 bool clear_projectile(Projectile **projlist, Projectile *proj, bool force, bool now) {
@@ -697,7 +699,7 @@ void DeathShrink(Projectile *p, int t) {
 
 	float s = 2.0-t/p->args[0]*2;
 	if(s != 1) {
-		glScalef(s, s, 1);
+		glScalef(s, 1, 1);
 	}
 
 	ProjDrawCore(p, p->color);
