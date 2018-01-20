@@ -1,6 +1,17 @@
 
 if get_option('docs')
-    rst2html5 = find_program('rst2html5', 'rst2html5.py', 'rst2html5-docutils', required : false)
+    rst2html5 = find_program(
+        'rst2html5',
+        'rst2html5.py',
+        'rst2html5-docutils',
+        'rst2html4',
+        'rst2html4.py',
+        'rst2html4-docutils',
+        'rst2html',
+        'rst2html.py',
+        'rst2html-docutils',
+        required : false
+    )
 
     if not rst2html5.found()
         error('rst2html5 from docutils is required to build documentation. Please install it, or disable the `docs` option if you don\'t want it.')
