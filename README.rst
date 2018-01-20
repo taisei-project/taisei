@@ -119,8 +119,11 @@ Also note that we currently only handle input from analog axes and
 digital buttons. Hats, analog buttons, and anything more exotic will not
 work, unless remapped.
 
+Troubleshooting
+---------------
+
 Sound problems (Linux)
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 If your sound becomes glitchy, and you encounter lot of console messages
 like:
