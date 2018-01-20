@@ -49,6 +49,7 @@
 #include "cli.h"
 #include "hirestime.h"
 #include "log.h"
+#include "framerate.h"
 
 enum {
 	// defaults

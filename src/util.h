@@ -99,28 +99,6 @@ float sanitize_scale(float scale) __attribute__((const));
 // gl/video utils
 //
 
-typedef struct {
-	hrtime_t frametimes[120]; // size = number of frames to average
-	double fps; // average fps over the last X frames
-	hrtime_t last_update_time; // internal; last time the average was recalculated
-} FPSCounter;
-
-typedef enum FrameAction {
-	RFRAME_SWAP,
-	RFRAME_DROP,
-
-	LFRAME_WAIT,
-	LFRAME_SKIP,
-	LFRAME_STOP,
-} FrameAction;
-
-typedef FrameAction (*LogicFrameFunc)(void*);
-typedef FrameAction (*RenderFrameFunc)(void*);
-
-uint32_t get_effective_frameskip(void);
-void loop_at_fps(LogicFrameFunc logic_frame, RenderFrameFunc render_frame, void *arg, uint32_t fps);
-void fpscounter_reset(FPSCounter *fps);
-void fpscounter_update(FPSCounter *fps);
 void set_ortho(void);
 void set_ortho_ex(float w, float h);
 void colorfill(float r, float g, float b, float a);

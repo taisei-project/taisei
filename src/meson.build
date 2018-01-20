@@ -74,6 +74,7 @@ src_base = [
     'enemy.c',
     'events.c',
     'fbo.c',
+    'framerate.c',
     'gamepad.c',
     'global.c',
     'hashtable.c',
