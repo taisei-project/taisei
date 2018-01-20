@@ -810,11 +810,15 @@ void iku_cathode(Boss *b, int t) {
 }
 
 void iku_induction(Boss *b, int t) {
+	// thwarf safespots
+	complex ofs = global.diff > D_Normal ? 10*I : 0;
+
+	GO_TO(b, VIEWPORT_W/2+200.0*I + ofs, 0.03);
+
 	if(t < 0) {
 		return;
 	}
 
-	GO_TO(b, VIEWPORT_W/2+200.0*I, 0.03);
 	b->ani.stdrow=1;
 
 	TIMER(&t);
