@@ -23,10 +23,9 @@ void add_ending_entry(Ending *e, int dur, char *msg, char *tex) {
 	e->entries = realloc(e->entries, (++e->count)*sizeof(EndingEntry));
 	entry = &e->entries[e->count-1];
 
-	if(dur == -1)
-		dur=max(300,2.5*strlen(msg)); // i know unicode, but this just needs to be roughly right
-	entry->time = e->duration;
-	e->duration += dur;
+	entry->time = 0;
+	if(e->count > 1)
+		entry->time = 1<<23; // nobody will ever! find out
 	entry->msg = NULL;
 	stralloc(&entry->msg, msg);
 
@@ -111,7 +110,7 @@ void create_ending(Ending *e) {
 	}
 
 	if(global.diff == D_Lunatic)
-		add_ending_entry(e, 400, "Lunatic? Didn’t know this was even possible. Cheater.", NULL);
+		add_ending_entry(e, 400, "Lunatic? Nice! Be sure to upload it somewhere including a commentary of your agony. We are into that kind of- I mean it helps with balancing! Did you know the devs can only play Easy and Normal? I’m sure you had a lot of fun with creative patterns such as Natural Cathode or ToE or whatever happens in Stage 4. Anyways catch ya laterr...", NULL);
 
 	add_ending_entry(e, 400, "", NULL);
 }
@@ -152,11 +151,33 @@ void ending_preload(void) {
 	preload_resource(RES_BGM, "ending", RESF_OPTIONAL);
 }
 
+bool ending_input_handler(SDL_Event *event, void *arg) {
+	Ending *e = arg;
+
+	TaiseiEvent type = TAISEI_EVENT(event->type);
+	int32_t code = event->user.code;
+
+	switch(type) {
+		case TE_GAME_KEY_DOWN:
+			if(code == KEY_SHOT) {
+				if(e->entries[e->pos+1].time > global.frames+ENDING_FADE_TIME)
+					e->entries[e->pos+1].time = global.frames+ENDING_FADE_TIME;
+			}
+			break;
+		default:
+			break;
+	}
+	return false;
+}
+
 static FrameAction ending_logic_frame(void *arg) {
 	Ending *e = arg;
 
 	update_transition();
-	events_poll(NULL, 0);
+	events_poll((EventHandler[]){
+		{ .proc = ending_input_handler, .arg=e },
+		{ NULL }
+	}, EFLAG_GAME);
 
 	global.frames++;
 
