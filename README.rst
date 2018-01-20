@@ -13,8 +13,8 @@ folklore.
 Installation
 ------------
 
-Dependencies:
-^^^^^^^^^^^^^
+Dependencies
+^^^^^^^^^^^^
 
 -  SDL2 >= 2.0.5, SDL2_ttf, SDL2_mixer
 -  zlib
@@ -22,8 +22,8 @@ Dependencies:
 -  libpng >= 1.5.0
 -  OpenGL >= 2.1
 
-Build-only dependencies:
-^^^^^^^^^^^^^^^^^^^^^^^^
+Build-only dependencies
+^^^^^^^^^^^^^^^^^^^^^^^
 
 -  meson >= 0.39.0 (build system)
 -  Python >= 3.4
