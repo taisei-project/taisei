@@ -33,6 +33,9 @@ void free_texture(Texture *tex);
 void draw_texture(float x, float y, const char *name);
 void draw_texture_p(float x, float y, Texture *tex);
 
+void begin_draw_texture(float x, float y, float w, float h, Texture *tex);
+void end_draw_texture(void);
+
 void draw_texture_with_size(float x, float y, float w, float h, const char *name);
 void draw_texture_with_size_p(float x, float y, float w, float h, Texture *tex);
 

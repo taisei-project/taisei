@@ -416,56 +416,6 @@ void stage_draw_scene(StageInfo *stage) {
 	stage_draw_hud();
 }
 
-static void draw_star(int x, int y, float fill, float alpha) {
-	Texture *star = get_tex("star");
-	Shader *shader = get_shader("circleclipped_indicator");
-
-	y -= 2;
-	float clr[4];
-
-	Color amul = rgba(alpha, alpha, alpha, alpha);
-	Color fill_clr = multiply_colors(rgba(1.0f, 1.0f, 1.0f, 1.0f), amul);
-	Color back_clr = multiply_colors(rgba(0.2f, 0.6f, 1.0f, 0.2f), amul);
-
-	if(fill < 1) {
-		fill_clr = mix_colors(derive_color(back_clr, CLRMASK_A, alpha), fill_clr, 0.35f);
-	}
-
-	if(fill >= 1 || fill <= 0) {
-		parse_color_call(fill > 0 ? fill_clr : back_clr, glColor4f);
-		draw_texture_with_size_p(x, y, 20, 20, star);
-		glColor4f(1, 1, 1, 1);
-		return;
-	}
-
-	glUseProgram(shader->prog);
-	glUniform1f(uniloc(shader, "fill"), fill);
-	glUniform1f(uniloc(shader, "tcfactor"), star->truew / (float)star->w);
-	parse_color_array(fill_clr, clr);
-	glUniform4fv(uniloc(shader, "fill_color"), 1, clr);
-	parse_color_array(back_clr, clr);
-	glUniform4fv(uniloc(shader, "back_color"), 1, clr);
-	draw_texture_with_size_p(x, y, 20, 20, star);
-	glUseProgram(0);
-}
-
-static void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxfrags, float alpha) {
-	static const int star_width = 20;
-	int i = 0;
-
-	while(i < numstars) {
-		draw_star(x + star_width * i++, y, 1, alpha);
-	}
-
-	if(numfrags) {
-		draw_star(x + star_width * i++, y, numfrags / (float)maxfrags, alpha);
-	}
-
-	while(i < maxstars) {
-		draw_star(x + star_width * i++, y, 0, alpha);
-	}
-}
-
 static inline void stage_draw_hud_power_value(float ypos, char *buf, size_t bufsize) {
 	glUniform1f(stagedraw.hud_text.u_split, -0.25);
 	snprintf(buf, bufsize, "%i.%02i", global.plr.power / 100, global.plr.power % 100);
@@ -731,12 +681,12 @@ void stage_draw_hud(void) {
 
 	// Lives and Bombs
 	if(global.stage->type != STAGE_SPELL) {
-		draw_stars(0, labels.y.lives, global.plr.lives, global.plr.life_fragments, PLR_MAX_LIVES, PLR_MAX_LIFE_FRAGMENTS, a);
-		draw_stars(0, labels.y.bombs, global.plr.bombs, global.plr.bomb_fragments, PLR_MAX_BOMBS, PLR_MAX_BOMB_FRAGMENTS, a);
+		draw_stars(0, labels.y.lives, global.plr.lives, global.plr.life_fragments, PLR_MAX_LIVES, PLR_MAX_LIFE_FRAGMENTS, a, 20);
+		draw_stars(0, labels.y.bombs, global.plr.bombs, global.plr.bomb_fragments, PLR_MAX_BOMBS, PLR_MAX_BOMB_FRAGMENTS, a, 20);
 	}
 
 	// Power stars
-	draw_stars(0, labels.y.power, global.plr.power / 100, global.plr.power % 100, PLR_MAX_POWER / 100, 100, 1);
+	draw_stars(0, labels.y.power, global.plr.power / 100, global.plr.power % 100, PLR_MAX_POWER / 100, 100, 1, 20);
 
 	// God Mode indicator
 	if(global.plr.iddqd) {

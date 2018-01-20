@@ -342,6 +342,55 @@ void fade_out(float f) {
 	colorfill(0, 0, 0, f);
 }
 
+void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxfrags, float alpha, float star_width) {
+	Texture *star = get_tex("star");
+	Shader *shader = get_shader("circleclipped_indicator");
+	static float clr[4];
+	int i = 0;
+
+	Color amul = rgba(alpha, alpha, alpha, alpha);
+	Color fill_clr = multiply_colors(rgba(1.0f, 1.0f, 1.0f, 1.0f), amul);
+	Color back_clr = multiply_colors(rgba(0.2f, 0.6f, 1.0f, 0.2f), amul);
+	Color frag_clr = mix_colors(derive_color(back_clr, CLRMASK_A, alpha), fill_clr, 0.35f);
+
+	// XXX: move to call site?
+	y -= 2;
+
+	glUseProgram(shader->prog);
+	glUniform1f(uniloc(shader, "tcfactor"), star->truew / (float)star->w);
+	parse_color_array(fill_clr, clr);
+	glUniform4fv(uniloc(shader, "fill_color"), 1, clr);
+	parse_color_array(back_clr, clr);
+	glUniform4fv(uniloc(shader, "back_color"), 1, clr);
+	glUniform1f(uniloc(shader, "fill"), 1);
+
+	begin_draw_texture(x - star_width, y, star_width, star_width, star);
+
+	while(i < numstars) {
+		glTranslatef(1, 0, 0);
+		draw_quad();
+		i++;
+	}
+
+	if(numfrags) {
+		glTranslatef(1, 0, 0);
+		parse_color_array(frag_clr, clr);
+		glUniform4fv(uniloc(shader, "fill_color"), 1, clr);
+		glUniform1f(uniloc(shader, "fill"), numfrags / (float)maxfrags);
+		draw_quad();
+	}
+
+	glUniform1f(uniloc(shader, "fill"), 0);
+
+	while(i++ < maxstars) {
+		glTranslatef(1, 0, 0);
+		draw_quad();
+	}
+
+	end_draw_texture();
+	glUseProgram(0);
+}
+
 //
 // i/o uitls
 //

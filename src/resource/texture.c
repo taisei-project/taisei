@@ -312,40 +312,56 @@ void draw_texture(float x, float y, const char *name) {
 	draw_texture_p(x, y, get_tex(name));
 }
 
-void draw_texture_p(float x, float y, Texture *tex) {
+void begin_draw_texture(float x, float y, float w, float h, Texture *tex) {
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
-
 	glPushMatrix();
 
 	float wq = ((float)tex->w)/tex->truew;
 	float hq = ((float)tex->h)/tex->trueh;
 
-	if(x || y)
-		glTranslatef(x,y,0);
-	if(tex->w != 1 || tex->h != 1)
-		glScalef(tex->w,tex->h,1);
+	if(x || y) {
+		glTranslatef(x, y, 0);
+	}
+
+	if(w == 0) {
+		w = tex->w;
+	}
+
+	if(h == 0) {
+		h = tex->h;
+	}
+
+	if(w != 1 || h != 1) {
+		glScalef(w, h, 1);
+	}
 
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
-	if(wq != 1 || hq != 1)
+
+	if(wq != 1 || hq != 1) {
 		glScalef(wq, hq, 1);
+	}
+
 	glMatrixMode(GL_MODELVIEW);
+}
 
-	draw_quad();
-
+void end_draw_texture(void) {
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
 	glMatrixMode(GL_MODELVIEW);
-
 	glPopMatrix();
 }
 
+void draw_texture_p(float x, float y, Texture *tex) {
+	begin_draw_texture(x, y, 0, 0, tex);
+	draw_quad();
+	end_draw_texture();
+}
+
 void draw_texture_with_size_p(float x, float y, float w, float h, Texture *tex) {
-	glPushMatrix();
-	glTranslatef(x, y, 0);
-	glScalef(w/tex->w, h/tex->h, 1);
-	draw_texture_p(0, 0, tex);
-	glPopMatrix();
+	begin_draw_texture(x, y, w, h, tex);
+	draw_quad();
+	end_draw_texture();
 }
 
 void draw_texture_with_size(float x, float y, float w, float h, const char *name) {

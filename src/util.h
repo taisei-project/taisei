@@ -103,6 +103,7 @@ void set_ortho(void);
 void set_ortho_ex(float w, float h);
 void colorfill(float r, float g, float b, float a);
 void fade_out(float f);
+void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxfrags, float alpha, float star_width);
 
 //
 // i/o utils
