@@ -25,7 +25,7 @@ Virtual filesystem
 ~~~~~~~~~~~~~~~~~~
 
 **TAISEI_RES_PATH**
-   Default: unset
+   | Default: unset
 
    If set, overrides the default **resource directory** path. This is
    where Taisei looks for game data. The default path is platform and
@@ -41,7 +41,7 @@ Virtual filesystem
       whatever ``SDL_GetBasePath`` returns on the given platform).
 
 **TAISEI_STORAGE_PATH**
-   Default: unset
+   | Default: unset
 
    If set, overrides the default **storage directory** path. This is
    where Taisei saves your configuration, progress, screenshots and
