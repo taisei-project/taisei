@@ -322,6 +322,14 @@ int bind_resolution_set(OptionBinding *b, int v) {
 	return v;
 }
 
+int bind_power_set(OptionBinding *b, int v) {
+	return config_set_int(b->configentry, v * 100) / 100;
+}
+
+int bind_power_get(OptionBinding *b) {
+	return config_get_int(b->configentry) / 100;
+}
+
 // --- Creating, destroying, filling the menu --- //
 
 void destroy_options_menu(MenuData *m) {
@@ -678,6 +686,14 @@ void create_options_menu(MenuData *m) {
 		b = bind_option(CONFIG_SPELLSTAGE_AUTORESTART,  bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 
+	add_menu_entry(m, "Power in Spell and Stage Practice", do_nothing,
+		b = bind_option(CONFIG_PRACTICE_POWER, bind_power_get, bind_power_set)
+	);	bind_addvalue(b, "0.0");
+		bind_addvalue(b, "1.0");
+		bind_addvalue(b, "2.0");
+		bind_addvalue(b, "3.0");
+		bind_addvalue(b, "4.0");
+
 	add_menu_entry(m, "Shoot by default", do_nothing,
 		b = bind_option(CONFIG_SHOT_INVERTED,   bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
@@ -769,6 +785,9 @@ void draw_options_menu(MenuData *menu) {
 						char tmp[16];   // who'd use a 16-digit number here anyway?
 						snprintf(tmp, 16, "%d", bind_getvalue(bind));
 						draw_text(AL_Right, origin, 20*i, tmp, _fonts.standard);
+					} else if(bind->configentry == CONFIG_PRACTICE_POWER) {
+						int stars = PLR_MAX_POWER / 100;
+						draw_stars(origin - 20 * (stars - 0.5), 20*i, val, 0, stars, 100, alpha, 20);
 					} else for(j = bind->displaysingle? val : bind->valcount-1; (j+1) && (!bind->displaysingle || j == val); --j) {
 						if(j != bind->valcount-1 && !bind->displaysingle)
 							origin -= stringwidth(bind->values[j+1], _fonts.standard) + 5;

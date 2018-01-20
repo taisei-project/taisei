@@ -191,13 +191,22 @@ static void stage_start(StageInfo *stage) {
 	player_stage_pre_init(&global.plr);
 
 	if(stage->type == STAGE_SPELL) {
+		assert(global.is_practice_mode);
 		global.plr.lives = 0;
 		global.plr.bombs = 0;
-		global.plr.power = PLR_SPELLPRACTICE_POWER;
 	} else if(global.is_practice_mode) {
 		global.plr.lives = PLR_STGPRACTICE_LIVES;
 		global.plr.bombs = PLR_STGPRACTICE_BOMBS;
-		global.plr.power = PLR_STGPRACTICE_POWER;
+	}
+
+	if(global.is_practice_mode) {
+		global.plr.power = config_get_int(CONFIG_PRACTICE_POWER);
+	}
+
+	if(global.plr.power < 0) {
+		global.plr.power = 0;
+	} else if(global.plr.power > PLR_MAX_POWER) {
+		global.plr.power = PLR_MAX_POWER;
 	}
 
 	reset_sounds();
