@@ -1,6 +1,8 @@
 Taisei
 ======
 
+.. contents::
+
 Introduction
 ------------
 
@@ -12,15 +14,21 @@ Installation
 ------------
 
 Dependencies:
+^^^^^^^^^^^^^
 
 -  SDL2 >= 2.0.5, SDL2_ttf, SDL2_mixer
 -  zlib
 -  libzip >= 1.0
 -  libpng >= 1.5.0
 -  OpenGL >= 2.1
+
+Build-only dependencies:
+^^^^^^^^^^^^^^^^^^^^^^^^
+
 -  meson >= 0.39.0 (build system)
--  pkg-config (build dependency)
--  pandoc (build dependency, optional)
+-  Python >= 3.4
+-  pkg-config
+-  docutils (optional, for documentation)
 
 To build and install Taisei just follow these steps.
 
@@ -76,7 +84,7 @@ An example mapping string looks like this:
 There are a few ways to generate a custom mapping:
 
 -  You can use the
-   ```controllermap`` <https://aur.archlinux.org/packages/controllermap>`__
+   `controllermap <https://aur.archlinux.org/packages/controllermap>`__
    utility, which `comes with SDL source
    code <https://hg.libsdl.org/SDL/file/68a767ae3a88/test/controllermap.c>`__.
 -  If you use Steam, you can configure your controller there. Then you
@@ -115,8 +123,13 @@ Sound problems (Linux)
 ----------------------
 
 If your sound becomes glitchy, and you encounter lot of console messages
-like: ``ALSA lib pcm.c:7234:(snd_pcm_recover) underrun occurred``, it
-seems like you possibly have broken ALSA configuration. This may be
+like:
+
+::
+
+    ALSA lib pcm.c:7234:(snd_pcm_recover) underrun occurred
+
+it seems like you possibly have broken ALSA configuration. This may be
 fixed by playing with parameter values of ``pcm.dmixer.slave`` option
 group in ``/etc/asound.conf`` or wherever you have your ALSA
 configuration. Commenting ``period_time``, ``period_size``,

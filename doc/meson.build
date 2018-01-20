@@ -1,57 +1,27 @@
 
 if get_option('docs')
-    pandoc = find_program('pandoc', required : false)
+    rst2html5 = find_program('rst2html5', required : false)
 
-    if not pandoc.found()
-        error('pandoc is required to build documentation. Please install it, or disable the `docs` option if you don\'t want it.')
+    if not rst2html5.found()
+        error('rst2html5 from docutils is required to build documentation. Please install it, or disable the `docs` option if you don\'t want it.')
     endif
 
-    r = run_command(pandoc, '--list-input-formats')
-
-    if r.returncode() != 0
-        error('Couldn\'t retrieve list of input formats supported by pandoc (error code @0@)\n\n@1@'.format(
-            r.returncode(),
-            r.stderr()
-        ))
-    endif
-
-    formats = r.stdout().split()
-    input_format = 'gfm'
-    input_format_fallback = 'markdown_github'
-
-    if not formats.contains(input_format)
-        message('pandoc doesn\'t support the \'@0@\' format, falling back to @1@'.format(
-            input_format,
-            input_format_fallback
-        ))
-
-        if not formats.contains(input_format_fallback)
-            error('pandoc supports neither \'@0@\' nor \'@1@\''.format(
-                input_format,
-                input_format_fallback
-            ))
-        endif
-
-        input_format = input_format_fallback
-    endif
-
-    md_to_html = generator(pandoc,
-        arguments: [
-            '--from', input_format,
-            '--to', 'html5',
-            '--standalone',
-            '--self-contained',
-            '--table-of-contents',
-            '@EXTRA_ARGS@',
+    rst_to_html = generator(rst2html5,
+        arguments : [
+            '--no-datestamp',
+            '--no-source-link',
+            '--smart-quotes=yes',
+            '--no-compact-lists',
+            '--stylesheet-path=minimal.css,plain.css,@0@/doc/taisei.css'.format(meson.source_root()),
             '@INPUT@',
-            '--output', '@OUTPUT@',
+            '@OUTPUT@',
         ],
-        output: '@BASENAME@.html',
+        output : '@BASENAME@.html',
     )
 
-    md_docs = [
-        ['ENVIRON.md', 'Environment Variables'],
-        ['GAME.md', 'Game Manual'],
+    rst_docs = [
+        'ENVIRON.rst',
+        'GAME.rst',
     ]
 
     txt_docs = [
@@ -71,19 +41,15 @@ if get_option('docs')
         )
     endforeach
 
-    foreach pair : md_docs
-        f = pair[0]
-        title = pair[1]
-
+    foreach f : rst_docs
         name = f.split('.')[0] + '.html'
         custom_target(name,
             command : [eolconv, eol, '@INPUT@', '@OUTPUT@'],
-            input : md_to_html.process(f, extra_args : [
-                '--metadata=title=@0@ - Taisei Project'.format(title)
-            ]),
+            input : rst_to_html.process(f),
             output : name,
             install : true,
-            install_dir : doc_path
+            install_dir : doc_path,
+            depend_files : files('taisei.css')
         )
     endforeach
 endif

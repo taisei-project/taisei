@@ -1,7 +1,15 @@
 .. _taisei-project--game-manual:
 
+.. role:: strike
+    :class: strike
+
 Taisei Project – Game Manual
 ============================
+
+.. contents::
+
+Introduction
+------------
 
 Taisei is a shoot-em-up game. Lots of bullets cover the screen and if
 you are hit by one, you die. To make things easier, your hitbox is very
@@ -88,11 +96,11 @@ midboss in some form. They are much stronger than normal enemies and
 have different attacks with time limits. There are different types of
 Attacks:
 
--  **Normal** A signature move every boss has. They are a break between
+-  **Normal**: A signature move every boss has. They are a break between
    the other, more fierce attacks, but some say there are Normals in the
    game that are way too hard.
 
--  **Spell Card** This is where the Bosses concentrate their powers
+-  **Spell Card**: This is where the Bosses concentrate their powers
    (resulting in a background change) and hit you with really hard and
    unusual patterns. They give a lot of extra points when you *capture*
    them. That means shooting down the HP within the time limit without
@@ -101,7 +109,7 @@ Attacks:
    You can revisit spellcards you have encountered in the *Spell
    Practice* mode to get better at the ones you frequently die on.
 
--  **Extra Spell** *Capture* every Spell Card of a boss in succession
+-  **Extra Spell**: *Capture* every Spell Card of a boss in succession
    and you activate their *Extra Spell*.
 
    These are super hard, unique spells that will take all your skills
@@ -109,7 +117,7 @@ Attacks:
    and Life meters so they can’t hurt you, but you can’t use your bombs
    either.
 
--  **Survival Spell** Rarely, a very strong boss can invoke a Spell Card
+-  **Survival Spell**: Rarely, a very strong boss can invoke a Spell Card
    that makes them completely invincible-- turning their health bar
    blue.
 
@@ -135,8 +143,8 @@ second life meter.
 Difficulty
 ----------
 
-[STRIKEOUT:If you found this guide helpful, you probably should start
-playing Easy mode.]
+:strike:`If you found this guide helpful, you probably should start
+playing Easy mode.`
 
 Taisei is a very hard game, especially for newcomers to the genre. In
 many modern games, *Easy* is a placeholder and *Normal* is the easy mode

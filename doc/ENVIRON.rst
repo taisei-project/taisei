@@ -1,5 +1,7 @@
-Taisei environment variables
-============================
+Taisei Project – Environment Variables
+======================================
+
+.. contents::
 
 Introduction
 ------------
@@ -22,9 +24,12 @@ Variables
 Virtual filesystem
 ~~~~~~~~~~~~~~~~~~
 
--  **TAISEI_RES_PATH** *(default: unset)*: if set, overrides the default
-   **resource directory** path. This is where Taisei looks for game
-   data. The default path is platform and build specific:
+**TAISEI_RES_PATH**
+   Default: unset
+
+   If set, overrides the default **resource directory** path. This is
+   where Taisei looks for game data. The default path is platform and
+   build specific:
 
    -  On **macOS**, it will be the ``Contents/Resources/data`` directory
       inside of the ``Taisei.app`` bundle.
@@ -35,14 +40,16 @@ Virtual filesystem
       will be the ``data`` directory relative to the executable (or to
       whatever ``SDL_GetBasePath`` returns on the given platform).
 
--  **TAISEI_STORAGE_PATH** *(default: unset)*: if set, overrides the
-   default **storage directory** path. This is where Taisei saves your
-   configuration, progress, screenshots and replays. Taisei also loads
-   custom data from the ``resources`` subdirectory in there, if any, in
-   addition to the stock assets. The custom resources shadow the default
-   ones if the names clash. The default path is platform specific, and
-   is equivalent to the return value of
-   ``SDL_GetPrefPath("", "taisei")``:
+**TAISEI_STORAGE_PATH**
+   Default: unset
+
+   If set, overrides the default **storage directory** path. This is
+   where Taisei saves your configuration, progress, screenshots and
+   replays. Taisei also loads custom data from the ``resources``
+   subdirectory in there, if any, in addition to the stock assets. The
+   custom resources shadow the default ones if the names clash. The
+   default path is platform specific, and is equivalent to the return
+   value of ``SDL_GetPrefPath("", "taisei")``:
 
    -  On **Windows**, it's ``%APPDATA%\taisei``.
    -  On **macOS**, it's ``$HOME/Library/Application Support/taisei``.
@@ -52,94 +59,122 @@ Virtual filesystem
 Resources
 ~~~~~~~~~
 
--  **TAISEI_NOASYNC** *(default: ``0``)*: if ``1``, disables
-   asynchronous loading. Increases loading times, might slightly reduce
-   CPU and memory usage during loads. Generally not recommended unless
-   you encounter a race condition bug, in which case you should report
-   it.
+**TAISEI_NOASYNC**
+   | Default: ``0``
 
--  **TAISEI_NOUNLOAD** *(default: ``0``)*: if ``1``, loaded resources
-   are never unloaded. Increases memory usage, reduces filesystem reads
-   and loading times over time.
+   If ``1``, disables asynchronous loading. Increases loading times, might
+   slightly reduce CPU and memory usage during loads. Generally not
+   recommended unless you encounter a race condition bug, in which case
+   you should report it.
 
--  **TAISEI_NOPRELOAD** *(default: ``0``)*: if ``1``, disables
-   preloading. All resources are only loaded as they are needed. Reduces
-   loading times and memory usage, but may cause stuttering during
-   gameplay.
+**TAISEI_NOUNLOAD**
+   | Default: ``0``
 
--  **TAISEI_PRELOAD_REQUIRED** *(default: ``0``)*: if ``1``, the game
-   will crash with an error message when it attempts to use a resource
-   that hasn't been previously preloaded. Useful for developers to debug
-   missing preloads. Doesn't affect optional resources.
+   If ``1``, loaded resources are never unloaded. Increases memory usage,
+   reduces filesystem reads and loading times over time.
+
+**TAISEI_NOPRELOAD**
+   | Default: ``0``
+
+   If ``1``, disables preloading. All resources are only loaded as they
+   are needed. Reduces loading times and memory usage, but may cause
+   stuttering during gameplay.
+
+**TAISEI_PRELOAD_REQUIRED**
+   | Default: ``0``
+
+   If ``1``, the game will crash with an error message when it attempts to
+   use a resource that hasn't been previously preloaded. Useful for
+   developers to debug missing preloads. Doesn't affect optional resources.
 
 Video and OpenGL
 ~~~~~~~~~~~~~~~~
 
--  **TAISEI_PREFER_SDL_VIDEODRIVERS** *(default:
-   ``wayland,mir,cocoa,windows,x11``)*: List of SDL video backends that
-   Taisei will attempt to use, in the specified order, before falling
-   back to SDL's default. Entries may be separated by spaces, commas,
-   colons, and semicolons. This variable is ignored if
-   ``SDL_VIDEODRIVER`` is set.
+**TAISEI_PREFER_SDL_VIDEODRIVERS**
+   | Default: ``wayland,mir,cocoa,windows,x11``
 
--  **TAISEI_VIDEO_DRIVER** *(**deprecated**; default: unset)*: Use
-   ``SDL_VIDEODRIVER`` instead.
+   List of SDL video backends that Taisei will attempt to use, in the
+   specified order, before falling back to SDL's default. Entries may be
+   separated by spaces, commas, colons, and semicolons. This variable is
+   ignored if ``SDL_VIDEODRIVER`` is set.
 
--  **TAISEI_LIBGL** *(default: unset)*: OpenGL library to load instead
-   of the default. The value has a platform-specific meaning (it's
-   passed to the equivalent of ``dlopen``). Takes precedence over
-   ``SDL_OPENGL_LIBRARY`` if set. Has no effect if Taisei is linked to
-   libgl (which is not recommended, because it's not portable).
+**TAISEI_VIDEO_DRIVER**
+   | Default: unset
+   | **Deprecated**
 
--  **TAISEI_GL_EXT_OVERRIDES** *(default: unset)*: Space-separated list
-   of OpenGL extensions that are assumed to be supported, even if the
-   driver says they aren't. Prefix an extension with ``-`` to invert
-   this behaviour. Might be used to work around bugs in some
-   weird/ancient/broken drivers, but your chances are slim. Also note
-   that Taisei assumes many extensions to be available on any sane
-   OpenGL 2.1+ implementation and doesn't test for them, so you can't
-   disable code that uses those this way.
+   Use ``SDL_VIDEODRIVER`` instead.
 
--  **TAISEI_FRAMERATE_GRAPHS** *(default: ``0`` for release builds,
-   ``1`` for debug builds)*: if ``1``, framerate graphs will be drawn on
-   the HUD.
+**TAISEI_LIBGL**
+   | Default: unset
+
+   OpenGL library to load instead of the default. The value has a
+   platform-specific meaning (it's passed to the equivalent of ``dlopen``).
+   Takes precedence over ``SDL_OPENGL_LIBRARY`` if set. Has no effect if
+   Taisei is linked to libgl (which is not recommended, because it's not
+   portable).
+
+**TAISEI_GL_EXT_OVERRIDES**
+   | Default: unset
+
+   Space-separated list of OpenGL extensions that are assumed to be
+   supported, even if the driver says they aren't. Prefix an extension with
+   ``-`` to invert this behaviour. Might be used to work around bugs in
+   some weird/ancient/broken drivers, but your chances are slim. Also note
+   that Taisei assumes many extensions to be available on any sane OpenGL
+   2.1+ implementation and doesn't test for them, so you can't disable code
+   that uses those this way.
+
+**TAISEI_FRAMERATE_GRAPHS**
+   | Default: ``0`` for release builds, ``1`` for debug builds
+
+   if ``1``, framerate graphs will be drawn on the HUD.
 
 Timing
 ~~~~~~
 
--  **TAISEI_HIRES_TIMER** *(default: ``1``)*: if ``1``, tries to use the
-   system's high resolution timer to limit the game's framerate.
-   Disabling this is not recommended; it will likely make Taisei run
-   slower or faster than intended and the reported FPS will be less
-   accurate.
+**TAISEI_HIRES_TIMER**
+   | Default: ``1``
 
--  **TAISEI_FRAMELIMITER_SLEEP** *(default: ``0``)*: if over ``0``,
-   tries to sleep this many milliseconds after every frame if it was
-   processed quickly enough. This reduces CPU usage by having the game
-   spend less time in a busy loop, but may hurt framerate stability if
+   If ``1``, tries to use the system's high resolution timer to limit the
+   game's framerate. Disabling this is not recommended; it will likely make
+   Taisei run slower or faster than intended and the reported FPS will be
+   less accurate.
+
+**TAISEI_FRAMELIMITER_SLEEP**
+   | Default: ``0``
+
+   If over ``0``, tries to sleep this many milliseconds after every frame
+   if it was processed quickly enough. This reduces CPU usage by having the
+   game spend less time in a busy loop, but may hurt framerate stability if
    set too high, especially if the high resolution timer is disabled or
    not available.
 
--  **TAISEI_FRAMELIMITER_SLEEP_EXACT** *(default: ``1``)*: if ``1``, the
-   framerate limiter will either try to sleep the exact amount of time
-   set in ``TAISEI_FRAMELIMITER_SLEEP``, or none at all. Mitigates the
-   aforementioned framerate stability issues by effectively making
-   ``TAISEI_FRAMELIMITER_SLEEP`` do nothing if the value is too high for
-   your system.
+**TAISEI_FRAMELIMITER_SLEEP_EXACT**
+   | Default: ``1``
 
--  **TAISEI_FRAMELIMITER_COMPENSATE** *(default: ``1``)*: if ``1``, the
-   framerate limiter may let frames finish earlier than normal after
-   sudden frametime spikes. This achieves better timing accuracy, but
-   may hurt fluidity if the framerate is too unstable.
+   If ``1``, the framerate limiter will either try to sleep the exact
+   amount of time set in ``TAISEI_FRAMELIMITER_SLEEP``, or none at all.
+   Mitigates the aforementioned framerate stability issues by effectively
+   making ``TAISEI_FRAMELIMITER_SLEEP`` do nothing if the value is too high
+   for your system.
 
--  **TAISEI_FRAMELIMITER_LOGIC_ONLY** *(default: ``0``)*:
-   **EXPERIMENTAL**: if ``1``, only the logic framerate will be capped;
-   new rendering frames will be processed as quickly as possible, with
-   no delay. This inherently desynchronizes logic and rendering frames,
-   and therefore, some logic frames may be dropped if rendering is too
-   slow. However, unlike with the synchronous mode, the game speed will
-   remain roughly constant in those cases.
-   ``TAISEI_FRAMELIMITER_SLEEP``, ``TAISEI_FRAMELIMITER_COMPENSATE``,
+**TAISEI_FRAMELIMITER_COMPENSATE**
+   | Default: ``1``
+
+   If ``1``, the framerate limiter may let frames finish earlier than
+   normal after sudden frametime spikes. This achieves better timing
+   accuracy, but may hurt fluidity if the framerate is too unstable.
+
+**TAISEI_FRAMELIMITER_LOGIC_ONLY**
+   | Default: ``0``
+   | **Experimental**
+
+   If ``1``, only the logic framerate will be capped; new rendering frames
+   will be processed as quickly as possible, with no delay. This inherently
+   desynchronizes logic and rendering frames, and therefore, some logic
+   frames may be dropped if rendering is too slow. However, unlike with the
+   synchronous mode, the game speed will remain roughly constant in those
+   cases. ``TAISEI_FRAMELIMITER_SLEEP``, ``TAISEI_FRAMELIMITER_COMPENSATE``,
    and the ``frameskip`` setting have no effect in this mode.
 
 Logging
