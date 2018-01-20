@@ -1133,11 +1133,14 @@ void stage1_events(void) {
 	AT(4200)
 		create_enemy2c(VIEWPORT_W/2.0, 4000, BigFairy, stage1_tritoss, 2.0*I, -2.6*I);
 
-	AT(5000)
+	AT(5000) {
+		killall(global.enemies);
 		global.boss = create_cirno();
+	}
 
-	AT(5100)
+	AT(5100) {
 		global.dialog = stage1_postdialog();
+	}
 
 	AT(5400 - FADE_TIME) {
 		stage_finish(GAMEOVER_WIN);
