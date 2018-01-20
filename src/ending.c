@@ -112,7 +112,8 @@ void create_ending(Ending *e) {
 	if(global.diff == D_Lunatic)
 		add_ending_entry(e, 400, "Lunatic? Nice! Be sure to upload it somewhere including a commentary of your agony. We are into that kind of- I mean it helps with balancing! Did you know the devs can only play Easy and Normal? I’m sure you had a lot of fun with creative patterns such as Natural Cathode or ToE or whatever happens in Stage 4. Anyways catch ya laterr...", NULL);
 
-	add_ending_entry(e, 400, "", NULL);
+	add_ending_entry(e, 400, "", NULL); // this is important
+	e->duration = 1<<23;
 }
 
 void free_ending(Ending *e) {
@@ -143,8 +144,6 @@ void ending_draw(Ending *e) {
 
 	draw_text_auto_wrapped(AL_Center, SCREEN_W/2, VIEWPORT_H*4/5, e->entries[e->pos].msg, SCREEN_W * 0.85, _fonts.standard);
 	glColor4f(1,1,1,1);
-
-	draw_transition();
 }
 
 void ending_preload(void) {
@@ -160,8 +159,10 @@ bool ending_input_handler(SDL_Event *event, void *arg) {
 	switch(type) {
 		case TE_GAME_KEY_DOWN:
 			if(code == KEY_SHOT) {
-				if(e->entries[e->pos+1].time > global.frames+ENDING_FADE_TIME)
-					e->entries[e->pos+1].time = global.frames+ENDING_FADE_TIME;
+				if(e->pos < e->count-1
+						&& e->entries[e->pos].time+ENDING_FADE_TIME < global.frames
+						&& global.frames < e->entries[e->pos+1].time-ENDING_FADE_TIME)
+					e->entries[e->pos+1].time = global.frames+(e->pos != e->count-2)*ENDING_FADE_TIME;
 			}
 			break;
 		default:
@@ -181,16 +182,17 @@ static FrameAction ending_logic_frame(void *arg) {
 
 	global.frames++;
 
-	if(global.frames >= e->entries[e->pos+1].time) {
+	if(e->pos < e->count-1 && global.frames >= e->entries[e->pos+1].time) {
 		e->pos++;
+		if(e->pos == e->count-1) {
+			fade_bgm((FPS * ENDING_FADE_OUT) / 4000.0);
+			set_transition(TransFadeWhite, ENDING_FADE_OUT, ENDING_FADE_OUT);
+			e->duration = global.frames+ENDING_FADE_OUT;
+		}
+
 	}
 
-	if(global.frames == e->entries[e->count-1].time-ENDING_FADE_OUT) {
-		fade_bgm((FPS * ENDING_FADE_OUT) / 4000.0);
-		set_transition(TransFadeWhite, ENDING_FADE_OUT, ENDING_FADE_OUT);
-	}
-
-	if(e->pos >= e->count - 1) {
+	if(global.frames >= e->duration) {
 		return LFRAME_STOP;
 	}
 
@@ -200,11 +202,10 @@ static FrameAction ending_logic_frame(void *arg) {
 static FrameAction ending_render_frame(void *arg) {
 	Ending *e = arg;
 
-	if(e->pos >= e->count - 1) {
-		return RFRAME_DROP;
-	}
+	if(e->pos < e->count-1)
+		ending_draw(e);
 
-	ending_draw(e);
+	draw_transition();
 	return RFRAME_SWAP;
 }
 
