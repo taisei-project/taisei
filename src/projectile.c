@@ -462,14 +462,14 @@ static Projectile* spawn_projectile_death_effect(Projectile *proj) {
 	}
 
 	return PARTICLE(
-		.texture_ptr = proj->tex,
+		.texture = "lightningball",
 		.pos = proj->pos,
 		.color = proj->color,
-		.flags = proj->flags | PFLAG_NOREFLECT,
-		.color_transform_rule = proj->color_transform_rule,
+		.flags = PFLAG_DRAWADD|PFLAG_NOREFLECT,
+		.color_transform_rule = proj_clrtransform_particle,
 		.rule = timeout_linear,
-		.draw_rule = DeathShrink,
-		.args = { 10, 5*cexp(proj->angle*I) },
+		.draw_rule = ScaleFade,
+		.args = { 23, 3*cexp(2*I*M_PI*frand()), 1+0.*I },
 	);
 }
 
