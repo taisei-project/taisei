@@ -472,8 +472,9 @@ Projectile* spawn_projectile_collision_effect(Projectile *proj) {
 		.color_transform_rule = proj->color_transform_rule,
 		.rule = timeout_linear,
 		.draw_rule = DeathShrink,
-		.args = { 10, 5*cexp(proj->angle*I) },
-	       );
+		.angle = proj->angle,
+		.args = { 10, 5*cexp(I*proj->angle)},
+	);
 }
 
 Projectile* spawn_projectile_clear_effect(Projectile *proj) {
@@ -482,14 +483,15 @@ Projectile* spawn_projectile_clear_effect(Projectile *proj) {
 	}
 
 	return PARTICLE(
-		.texture = "flare",
+		.texture_ptr = proj->tex,
 		.pos = proj->pos,
 		.color = proj->color,
-		.flags = PFLAG_DRAWADD|PFLAG_NOREFLECT,
-		.color_transform_rule = proj_clrtransform_particle,
-		.rule = timeout_linear,
-		.draw_rule = ScaleFade,
-		.args = { 23, 3*cexp(2*I*M_PI*frand()), 3+0.*I },
+		.flags = proj->flags | PFLAG_NOREFLECT,
+		.color_transform_rule = proj->color_transform_rule,
+		.rule = timeout,
+		.draw_rule = Shrink,
+		.angle = proj->angle,
+		.args = { 10 },
 	);
 }
 
