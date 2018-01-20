@@ -456,29 +456,24 @@ bool projectile_in_viewport(Projectile *proj) {
 		  || cimag(proj->pos) + h/2 + e < 0 || cimag(proj->pos) - h/2 - e > VIEWPORT_H);
 }
 
-static Projectile* spawn_projectile_death_effect(Projectile *proj) {
+Projectile* spawn_projectile_collision_effect(Projectile *proj) {
+	if(proj->flags & PFLAG_NOCOLLISIONEFFECT) {
+		return NULL;
+	}
 	if(proj->tex == NULL) {
 		return NULL;
 	}
 
 	return PARTICLE(
-		.texture = "lightningball",
+		.texture_ptr = proj->tex,
 		.pos = proj->pos,
 		.color = proj->color,
-		.flags = PFLAG_DRAWADD|PFLAG_NOREFLECT,
-		.color_transform_rule = proj_clrtransform_particle,
+		.flags = proj->flags | PFLAG_NOREFLECT,
+		.color_transform_rule = proj->color_transform_rule,
 		.rule = timeout_linear,
-		.draw_rule = ScaleFade,
-		.args = { 23, 3*cexp(2*I*M_PI*frand()), 1+0.*I },
-	);
-}
-
-Projectile* spawn_projectile_collision_effect(Projectile *proj) {
-	if(proj->flags & PFLAG_NOCOLLISIONEFFECT) {
-		return NULL;
-	}
-
-	return spawn_projectile_death_effect(proj);
+		.draw_rule = DeathShrink,
+		.args = { 10, 5*cexp(proj->angle*I) },
+	       );
 }
 
 Projectile* spawn_projectile_clear_effect(Projectile *proj) {
@@ -486,7 +481,16 @@ Projectile* spawn_projectile_clear_effect(Projectile *proj) {
 		return NULL;
 	}
 
-	return spawn_projectile_death_effect(proj);
+	return PARTICLE(
+		.texture = "flare",
+		.pos = proj->pos,
+		.color = proj->color,
+		.flags = PFLAG_DRAWADD|PFLAG_NOREFLECT,
+		.color_transform_rule = proj_clrtransform_particle,
+		.rule = timeout_linear,
+		.draw_rule = ScaleFade,
+		.args = { 23, 3*cexp(2*I*M_PI*frand()), 3+0.*I },
+	);
 }
 
 bool clear_projectile(Projectile **projlist, Projectile *proj, bool force, bool now) {
