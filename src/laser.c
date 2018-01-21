@@ -311,23 +311,27 @@ int collision_laser_curve(Laser *l) {
 	if(t < 0)
 		t = 0;
 
-	float t_start = t;
+	//float t_start = t;
 
 	last = l->prule(l,t);
 
 	for(t += l->collision_step; t <= min(t_end,t_death); t += l->collision_step) {
 		pos = l->prule(l,t);
+		float t1 = t-l->timespan/2; // i have no idea
+		float tail = l->timespan/1.9;
 
-		float widthfac = -1.*(t-t_start)*(t-min(t_end,t_death))/(double)l->timespan/l->timespan;
+		float widthfac = -0.75/pow(tail,2)*(t1-tail)*(t1+tail);
+
+		//float widthfac = -(t-t_start)*(t-min(t_end,t_death))/pow((min(t_end,t_death)-t_start)/2.,2);
 		widthfac = max(0.25,pow(widthfac, l->width_exponent));
 
-		float collision_width = widthfac*l->width*0.5;
+		float collision_width = widthfac*l->width*0.5+1;
 
 		if(collision_line(last, pos, global.plr.pos, collision_width) >= 0) {
 			return 1;
 		}
 		if(!grazed && !(global.frames % 7) && global.frames - abs(global.plr.recovery) > 0) {
-			float f = collision_line(last, pos, global.plr.pos, l->width+5);
+			float f = collision_line(last, pos, global.plr.pos, l->width*2+8);
 
 			if(f >= 0) {
 				player_graze(&global.plr, last+f*(pos-last), 7, 5);
