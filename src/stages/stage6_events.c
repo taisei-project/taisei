@@ -633,7 +633,7 @@ void elly_frequency2(Boss *b, int t) {
 complex maxwell_laser(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		l->unclearable = true;
-		l->shader = get_shader("laser_maxwell");
+		l->shader = get_shader_optional("laser_maxwell");
 		return 0;
 	}
 
