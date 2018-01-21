@@ -258,36 +258,52 @@ void process_lasers(void) {
 	}
 }
 
-int collision_line(complex a, complex b, complex c, float r) {
-	complex m;
-	float d, la, lm, s;
+// what this terrible function probably does:
+// is the point of shortest distance between the line through a and b
+// and a point c between a and b and closer than r? if yes return f so that a+f*(b-a) is that point.
+// otherwise return -1.
+double collision_line(complex a, complex b, complex c, float r) {
+	complex m,v;
+	double projection, lv, lm, distance;
 
-	m = b-a;
-	a -= c;
+	m = b-a; // vector pointing along the line
+	v = a-c; // vector from collider to point A
 
-	la = a*conj(a);
-	lm = m*conj(m);
+	lv = cabs(v);
+	lm = cabs(m);
+	if(lm == 0) {
+		return -1;
+	}
 
-	if(!lm) {
+	projection = -creal(v*conj(m))/lm; // project v onto the line
+
+	// now the distance can be calculated by Pythagoras
+	distance = sqrt(lv*lv-projection*projection);
+	if(distance <= r) {
+		double f = projection/lm;
+		if(f >= 0 && f <= 1) // it’s on the line!
+			return f;
+	}
+
+	// now here is an additional check that becomes important if we use
+	// this to check collisions along a curve made out of multiple straight
+	// line segments.
+	// Imagine approaching a convex corner of the curve from outside. With
+	// just the above check there is a triangular death zone. This check
+	// here puts a circle in that zone.
+	if(lv < r)
 		return 0;
-	}
 
-	d = -(creal(a)*creal(m)+cimag(a)*cimag(m))/lm;
-
-	s = d*d - (la - r*r)/lm;
-
-	if(s >= 0) {
-		if((d+s >= 0 && d+s <= 1) || (d-s >= 0 && d-s <= 1))
-			return 1;
-	}
-
-	return 0;
+	return -1;
 }
 
 int collision_laser_curve(Laser *l) {
-	float s = (global.frames - l->birthtime)*l->speed + l->timeshift;
-	float t = s - l->timespan;
+	float t_end = (global.frames - l->birthtime)*l->speed + l->timeshift; // end of the laser based on length
+	float t_death = l->deathtime*l->speed+l->timeshift; // end of the laser based on lifetime
+	float t = t_end - l->timespan;
 	complex last, pos;
+
+	bool grazed = false;
 
 	if(l->width <= 3.0)
 		return 0;
@@ -295,27 +311,36 @@ int collision_laser_curve(Laser *l) {
 	if(t < 0)
 		t = 0;
 
+	float t_start = t;
+
 	last = l->prule(l,t);
 
-	for(t += l->collision_step; t + l->collision_step <= s && t + l->collision_step <= l->deathtime + l->timeshift; t += l->collision_step) {
+	for(t += l->collision_step; t <= min(t_end,t_death); t += l->collision_step) {
 		pos = l->prule(l,t);
 
-		float t1 = t - ((global.frames - l->birthtime)*l->speed - l->timespan/2 + l->timeshift);
-		float tail = l->timespan/1.9;
-		float s = -0.75/pow(tail,2)*(t1-tail)*(t1+tail);
-		s = pow(s, l->width_exponent);
+		float widthfac = -1.*(t-t_start)*(t-min(t_end,t_death))/(double)l->timespan/l->timespan;
+		widthfac = max(0.25,pow(widthfac, l->width_exponent));
 
-		if(collision_line(last, pos, global.plr.pos, s*l->width*0.5))
+		float collision_width = widthfac*l->width*0.5;
+
+		if(collision_line(last, pos, global.plr.pos, collision_width) >= 0) {
 			return 1;
-		else if(!(global.frames % 5) && global.frames - abs(global.plr.recovery) > 0 && collision_line(last, pos, global.plr.pos, l->width*1.8))
-			player_graze(&global.plr, pos, 7, 5);
+		}
+		if(!grazed && !(global.frames % 7) && global.frames - abs(global.plr.recovery) > 0) {
+			float f = collision_line(last, pos, global.plr.pos, l->width+5);
+
+			if(f >= 0) {
+				player_graze(&global.plr, last+f*(pos-last), 7, 5);
+				grazed = true;
+			}
+		}
 
 		last = pos;
 	}
 
-	pos = l->prule(l, min(s, l->deathtime + l->timeshift));
+	pos = l->prule(l, min(t_end, t_death));
 
-	if(collision_line(last, pos, global.plr.pos, l->width*0.5))
+	if(collision_line(last, pos, global.plr.pos, l->width*0.5) >= 0)
 		return 1;
 
 	return 0;
@@ -324,7 +349,7 @@ int collision_laser_curve(Laser *l) {
 complex las_linear(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		l->shader = get_shader_optional("laser_linear");
-		l->collision_step = l->timespan;
+		l->collision_step = max(3,l->timespan/10);
 		return 0;
 	}
 
