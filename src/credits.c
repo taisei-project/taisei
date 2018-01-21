@@ -38,7 +38,7 @@ void credits_fill(void) {
 	// In case the shortened URLs break,
 	// Tuck V's YouTube: https://www.youtube.com/channel/UCaw73cuHLnFCSpjOtt_9pyg
 	// Lalasa's YouTube: https://www.youtube.com/channel/UCc6ePuGLYnKTkdDqxP3OB4Q
-	// vnutriya's bandcamp: https://vnutriya.bandcamp.com/
+	// InsideI's bandcamp: https://vnutriya.bandcamp.com/
 
 	credits_add("Taisei Project\nbrought to you by…", 200);
 
@@ -65,7 +65,7 @@ void credits_fill(void) {
 	), ENTRY_TIME);
 
 	credits_add((
-		"vnutriya\n"
+		"InsideI\n"
 		"Mikhail Novik\n"
 		"Bandcamp: https://is.gd/owojix\n\n"
 		"Sound effects"
