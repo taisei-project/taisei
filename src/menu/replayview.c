@@ -210,7 +210,7 @@ static void replayview_logic(MenuData *m) {
 
 		for(int i = 0; i < sm->ecount; ++i) {
 			MenuEntry *e = sm->entries + i;
-			e->drawdata += 0.2 * ((i == m->cursor) - e->drawdata);
+			e->drawdata += 0.2 * ((i == sm->cursor) - e->drawdata);
 		}
 
 		if(sm->state == MS_Dead) {
