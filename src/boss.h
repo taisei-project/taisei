@@ -61,7 +61,7 @@ typedef struct AttackInfo {
 		Doing so is going to break replays, progress files, and anything that stores stage IDs permanently.
 		Stage IDs are an internal detail invisible to the player, so they don't need to have any kind of fancy ordering.
 	*/
-	signed char idmap[NUM_SELECTABLE_DIFFICULTIES];
+	signed char idmap[NUM_SELECTABLE_DIFFICULTIES + 1];
 
 	AttackType type;
 	char *name;

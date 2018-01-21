@@ -33,13 +33,13 @@ extern struct stage1_spells_s {
 		AttackInfo crystal_blizzard;
 	} extra;
 
-#ifdef SPELL_BENCHMARK
-	AttackInfo benchmark;
-#endif
-
 	// required for iteration
 	AttackInfo null;
 } stage1_spells;
 
 extern StageProcs stage1_procs;
 extern StageProcs stage1_spell_procs;
+
+#ifdef SPELL_BENCHMARK
+AttackInfo stage1_spell_benchmark;
+#endif

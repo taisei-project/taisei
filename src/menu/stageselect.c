@@ -32,7 +32,7 @@ void create_stage_menu(MenuData *m) {
 	m->transition = TransMenuDark;
 
 	for(int i = 0; stages[i].procs; ++i) {
-		if(stages[i].difficulty < lastdiff || (stages[i].difficulty && !lastdiff)) {
+		if(stages[i].difficulty < lastdiff || (stages[i].difficulty == D_Extra && lastdiff != D_Extra) || (stages[i].difficulty && !lastdiff)) {
 			add_menu_separator(m);
 		}
 

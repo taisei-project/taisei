@@ -48,6 +48,18 @@ static void end_stages(void) {
 	add_stage(0, NULL, 0, NULL, NULL, NULL, 0);
 }
 
+static void add_spellpractice_stage(StageInfo *s, AttackInfo *a, int *spellnum, uint16_t spellbits, Difficulty diff) {
+	uint16_t id = spellbits | a->idmap[diff - D_Easy] | (s->id << 8);
+
+	char *title = strfmt("Spell %d", ++(*spellnum));
+	char *subtitle = strjoin(a->name, " ~ ", difficulty_name(diff), NULL);
+
+	add_stage(id, s->procs->spellpractice_procs, STAGE_SPELL, title, subtitle, a, diff);
+
+	free(title);
+	free(subtitle);
+}
+
 static void add_spellpractice_stages(int *spellnum, bool (*filter)(AttackInfo*), uint16_t spellbits) {
 	for(int i = 0 ;; ++i) {
 		StageInfo *s = stages + i;
@@ -63,16 +75,8 @@ static void add_spellpractice_stages(int *spellnum, bool (*filter)(AttackInfo*),
 
 			for(Difficulty diff = D_Easy; diff < D_Easy + NUM_SELECTABLE_DIFFICULTIES; ++diff) {
 				if(a->idmap[diff - D_Easy] >= 0) {
-					uint16_t id = spellbits | a->idmap[diff - D_Easy] | (s->id << 8);
-
-					char *title = strfmt("Spell %d", ++(*spellnum));
-					char *subtitle = strjoin(a->name, " ~ ", difficulty_name(diff), NULL);
-
-					add_stage(id, s->procs->spellpractice_procs, STAGE_SPELL, title, subtitle, a, diff);
+					add_spellpractice_stage(s, a, spellnum, spellbits, diff);
 					s = stages + i; // stages just got realloc'd, so we must update the pointer
-
-					free(title);
-					free(subtitle);
 				}
 			}
 		}
@@ -90,7 +94,7 @@ static bool spellfilter_extra(AttackInfo *spell) {
 void stage_init_array(void) {
 	int spellnum = 0;
 
-//           id  procs          type         title      subtitle                       spells                       diff
+//	         id  procs          type         title      subtitle                       spells                       diff
 	add_stage(1, &stage1_procs, STAGE_STORY, "Stage 1", "Misty Lake",                  (AttackInfo*)&stage1_spells, D_Any);
 	add_stage(2, &stage2_procs, STAGE_STORY, "Stage 2", "Walk Along the Border",       (AttackInfo*)&stage2_spells, D_Any);
 	add_stage(3, &stage3_procs, STAGE_STORY, "Stage 3", "Through the Tunnel of Light", (AttackInfo*)&stage3_spells, D_Any);
@@ -101,6 +105,10 @@ void stage_init_array(void) {
 	// generate spellpractice stages
 	add_spellpractice_stages(&spellnum, spellfilter_normal, STAGE_SPELL_BIT);
 	add_spellpractice_stages(&spellnum, spellfilter_extra, STAGE_SPELL_BIT | STAGE_EXTRASPELL_BIT);
+
+#ifdef SPELL_BENCHMARK
+	add_spellpractice_stage(stages, &stage1_spell_benchmark, &spellnum, STAGE_SPELL_BIT, D_Extra);
+#endif
 
 	end_stages();
 

@@ -48,14 +48,14 @@ struct stage1_spells_s stage1_spells = {
 		{ 0,  1,  2,  3}, AT_ExtraSpell, "Frost Sign ~ Crystal Blizzard", 60, 40000,
 		cirno_crystal_blizzard, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I
 	},
+};
 
 #ifdef SPELL_BENCHMARK
-	.benchmark = {
-		{-1, -1, -1, 127}, AT_SurvivalSpell, "Profiling ~ ベンチマーク", 40, 40000,
-		cirno_benchmark, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I
-	},
-#endif
+AttackInfo stage1_spell_benchmark = {
+	{-1, -1, -1, -1, 127}, AT_SurvivalSpell, "Profiling ~ ベンチマーク", 40, 40000,
+	cirno_benchmark, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I
 };
+#endif
 
 static bool particle_filter(Projectile *part) {
 	return !(part->flags & PFLAG_NOREFLECT) && stage_should_draw_particle(part);

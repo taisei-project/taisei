@@ -34,7 +34,7 @@ void create_spell_menu(MenuData *m) {
 			continue;
 		}
 
-		if(stg->difficulty < lastdiff) {
+		if(stg->difficulty < lastdiff || (stg->difficulty == D_Extra && lastdiff != D_Extra)) {
 			add_menu_separator(m);
 		}
 
