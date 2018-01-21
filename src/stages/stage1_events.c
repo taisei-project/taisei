@@ -10,6 +10,7 @@
 
 #include "stage1_events.h"
 #include "global.h"
+#include "stagetext.h"
 
 Dialog *stage1_dialog(void) {
 	PlayerCharacter *pc = global.plr.mode->character;
@@ -522,16 +523,26 @@ void cirno_snow_halation(Boss *c, int time) {
 	int t = time % 300;
 	TIMER(&t);
 
+	// TODO: get rid of the "static" nonsense already! #ArgsForBossAttacks2017
+	// tfw it's 2018 and still no args
+	// tfw when you then add another static
+	static complex center;
+	static float rotation;
+	static int cheater;
+
+	if(time == EVENT_BIRTH)
+		cheater = 0;
+
 	if(time < 0) {
 		return;
 	}
 
-	GO_TO(c, VIEWPORT_W/2.0+100.0*I, 0.05);
-
-	// TODO: get rid of the "static" nonsense already! #ArgsForBossAttacks2017
-	// tfw it's 2018 and still no args
-	static complex center;
-	static float rotation;
+	if(cheater >= 8) {
+		GO_TO(c, global.plr.pos,0.05);
+		c->ani.stdrow = 1;
+	} else {
+		GO_TO(c, VIEWPORT_W/2.0+100.0*I, 0.05);
+	}
 
 	AT(60) {
 		center = global.plr.pos;
@@ -561,8 +572,26 @@ void cirno_snow_halation(Boss *c, int time) {
 		}
 	}
 
-	AT(80 + interval * projs/2) {
+	AT(100 + interval * projs/2) {
 		c->ani.stdrow = 0;
+
+		if(cabs(global.plr.pos-center)>cabs(halation_calc_orb_pos(0,0,0,projs))) {
+			char *text[] = {
+				"",
+				"What are you doing??",
+				"Dodge it properly!",
+				"I bet you can’t do it! Idiot!",
+				"I spent so much time on this attack!",
+				"Maybe it is too smart for secondaries!",
+				"I think you don’t even understand the timer!",
+				"You- You Idiootttt!",
+			};
+
+			if(cheater < sizeof(text)/sizeof(text[0])) {
+				stagetext_add(text[cheater],global.boss->pos+100*I,AL_Center,&_fonts.hud,rgb(1,1,1),0,100,10,20);
+				cheater++;
+			}
+		}
 	}
 }
 
