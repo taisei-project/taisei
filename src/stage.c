@@ -191,7 +191,7 @@ static void stage_start(StageInfo *stage) {
 	player_stage_pre_init(&global.plr);
 
 	if(stage->type == STAGE_SPELL) {
-		assert(global.is_practice_mode);
+		global.is_practice_mode = true;
 		global.plr.lives = 0;
 		global.plr.bombs = 0;
 	} else if(global.is_practice_mode) {
