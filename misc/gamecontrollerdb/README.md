@@ -41,13 +41,12 @@ In Steam's Big Picture mode, configure your joystick. Then look in `[steam_insta
 
 Unfortunately, **Steam does not ouput the platform field**, so you will need to add it manually. At the end of the generated entry, add `platform:Windows,` or `platform:Mac OS X,` or `platform:Linux,`.
 
+## Standard Mappings
+Some controllers are a little tricky to figure out. Here are the recommended mappings.
 
-### [SDL2 Gamepad Tool](http://www.generalarcade.com/gamepadtool/)
-Third party cross-platform tool with GUI (Windows, macOS and Linux).
+![mapping standard](data/mapping_guide.png)
 
-Setup your controller and copy the ouput entry. The tool currently doesn't output SDL 2.0.5 GUIDs, but that is fine as SDL still supports these GUIDs. I will convert older GUIDs in pull requests as well.
-
-## Usage
+# Usage
 Download gamecontrollerdb.txt, place it in your app's directory and load it.
 
 For example :
@@ -72,13 +71,15 @@ python check.py --format gamecontrollerdb.txt
 
 You may now send a Pull Request. Tests are automatically run on Pull Requests, so you'll easily see if there is an issue.
 
-### Checks
+### Unit Tests
 - GUID is correct length and is hexadecimal.
+- GUID is in 2.0.5+ format.
 - Platform is present and supported.
 - Inversion and range modifiers are applied to axis fields.
 - No duplicate mappings.
 - No duplicate keys.
 - Buttons conform to supported values.
+- No upstream official mappings are modified.
 
 ### Formatting
 - The database is sorted by platform, then by name.

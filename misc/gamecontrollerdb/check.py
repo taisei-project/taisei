@@ -1,4 +1,21 @@
 #!/usr/bin/env python
+'''
+  Simple DirectMedia Layer
+  Copyright (C) 2017-2018 Philippe Groarke <philippe.groarke@gmail.com>
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
+'''
 
 import sys
 # if sys.version_info[0] != 3:
@@ -13,9 +30,12 @@ import shutil
 import argparse
 import csv
 import re
+import copy
 
-FILE_HEADER = "# Game Controller DB for SDL in 2.0.6 format\n" \
+FILE_HEADER = "# Game Controller DB for SDL in %s format\n" \
         "# Source: https://github.com/gabomdq/SDL_GameControllerDB\n"
+
+sdl_version = "2.0.6"
 
 mappings_dict = OrderedDict([
     ("Windows", {}),
@@ -24,6 +44,8 @@ mappings_dict = OrderedDict([
     ("Android", {}),
     ("iOS", {}),
 ])
+
+header_mappings_dict = copy.deepcopy(mappings_dict)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("input_file", help="database file to check, " \
@@ -47,7 +69,7 @@ class Mapping:
         "-a": re.compile(r"^[0-9]+\~?$"),
         "a": re.compile(r"^[0-9]+\~?$"),
         "b": re.compile(r"^[0-9]+$"),
-        "h": re.compile(r"^[0-9]+\.(0|1|2|4|8|3|6|12|9)$"),
+        "h": re.compile(r"^[0-9]+\.(1|2|4|8|3|6|12|9)$"),
     }
 
     def __init__(self, mapping_string, line_number, add_missing_platform = False):
@@ -59,7 +81,7 @@ class Mapping:
             "+leftx": "",
             "+lefty": "",
             "+rightx": "",
-            "+righty"
+            "+righty": "",
             "-leftx": "",
             "-lefty": "",
             "-rightx": "",
@@ -103,8 +125,22 @@ class Mapping:
 
 
     def set_guid(self, guid):
+        global sdl_version
+
         if not self.GUID_REGEX.match(guid):
             raise ValueError("GUID malformed.", guid)
+
+        if sdl_version == "2.0.4" or sdl_version == "2.0.5":
+            self.guid = guid
+            return
+
+        if guid[20:32] == "504944564944":
+            raise ValueError("GUID in SDL 2.0.4 format, please update your "\
+                    "mapping software.")
+
+        if guid[4:16] == "000000000000" and guid[20:32] == "000000000000":
+            raise ValueError("GUID in SDL 2.0.4 format, please update your "\
+                    "mapping software.")
 
         self.guid = guid
 
@@ -190,6 +226,16 @@ class Mapping:
         ret += "  }\n}"
         return ret
 
+    def __eq__(self, other):
+        ret = True
+        ret &= self.guid == other.guid
+        ret &= self.name == other.name
+        ret &= self.platform == other.platform
+        ret &= self.__keys == other.__keys
+        return ret
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def serialize(self):
         ret = "%s,%s," % (self.guid, self.name)
@@ -235,7 +281,7 @@ class Mapping:
         return True
 
 
-def import_header(filepath, debug_out = False):
+def import_header(mappings_dict, filepath, debug_out = False):
     class Platform:
         XINPUT = 0
         WINDOWS = 1
@@ -245,7 +291,6 @@ def import_header(filepath, debug_out = False):
         IOS = 5
         NONE = 6
 
-    global mappings_dict # { "platform": { "guid": Mapping }}
     current_platform = Platform.NONE
 
     input_file = open(filepath, mode="r")
@@ -309,19 +354,33 @@ def import_header(filepath, debug_out = False):
 
 def main():
     global mappings_dict # { "platform": { "guid": Mapping }}
+    global header_mappings_dict # { "platform": { "guid": Mapping }}
+    global sdl_version
     global parser
     args = parser.parse_args()
     success = True
 
+    if "204" in args.input_file:
+        sdl_version = "2.0.4"
+    elif "205" in args.input_file:
+        sdl_version = "2.0.5"
+
     if args.add_missing_platform:
-        print("Will try to add missing platforms. Requires SDL 2.0.4 GUID.")
-        if not args.format:
-            print("Use --format option to save database. Running in debug "\
-                    "output mode...")
+        if sdl_version != "2.0.4":
+            print("Cannot add missing platforms on newer SDL database.")
+            args.add_missing_platform = False
+        else:
+            print("Will try to add missing platforms. Requires SDL 2.0.4 GUID.")
+            if not args.format:
+                print("Use --format option to save database. Running in debug "\
+                        "output mode...")
 
 
     # Tests.
     print("\nApplying checks.")
+
+    import_header(header_mappings_dict,
+            "data/SDL_gamecontrollerdb" + sdl_version + ".h", False)
 
     input_file = open(args.input_file, mode="r")
     for lineno, line in enumerate(input_file):
@@ -338,13 +397,25 @@ def main():
             continue
 
         if mapping.guid in mappings_dict[mapping.platform]:
-            print("Duplicate detected at line #" + str(lineno + 1))
+            print("\nDuplicate detected at line #" + str(lineno + 1))
             prev_mapping = mappings_dict[mapping.platform][mapping.guid]
             print("Previous mapping at line #" + str(prev_mapping.line_number))
             print("In mapping")
             print(line)
             success = False
             continue
+
+        if mapping.guid in header_mappings_dict[mapping.platform]:
+            if mapping != header_mappings_dict[mapping.platform][mapping.guid]:
+                print("\nCannot modify upstream SDL header mapping at line #" \
+                        + str(lineno + 1))
+                print("If you have problems with an official SDL mapping, " \
+                        "please report the issue or send a pull request to " \
+                        "the SDL project : libsdl.org.")
+                print("In mapping")
+                print(line)
+                success = False
+                continue
 
         mappings_dict[mapping.platform][mapping.guid] = mapping
     input_file.close()
@@ -377,17 +448,17 @@ def main():
                     mappings_dict[platform][mapping.guid] = mapping
 
     if args.import_header is not None:
-        print("Importing mappings from SDL_gamecontrollerdb.h.")
+        print("Importing mappings from %s" % args.import_header)
         if not args.format:
             print("Use --format option to save database. Running in debug "\
                     "output mode...")
-        import_header(args.import_header, not args.format)
+        import_header(mappings_dict, args.import_header, not args.format)
 
     if args.format:
         print("\nFormatting db.")
         out_filename = path.splitext(input_file.name)[0] + "_format.txt"
         out_file = open(out_filename, 'w')
-        out_file.write(FILE_HEADER)
+        out_file.write(FILE_HEADER % sdl_version)
         for platform,p_dict in mappings_dict.items():
             out_file.write("\n")
             out_file.write("# " + platform + "\n")
