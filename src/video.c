@@ -251,7 +251,7 @@ static void video_new_window_internal(int w, int h, uint32_t flags, bool fallbac
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
 
-	char title[sizeof(WINDOW_TITLE) + strlen(TAISEI_VERSION) + 1];
+	char title[sizeof(WINDOW_TITLE) + strlen(TAISEI_VERSION) + 2];
 	snprintf(title, sizeof(title), "%s v%s", WINDOW_TITLE, TAISEI_VERSION);
 
 	video.window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, flags);
