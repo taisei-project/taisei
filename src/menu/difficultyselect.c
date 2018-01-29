@@ -80,7 +80,7 @@ void draw_difficulty_menu(MenuData *menu) {
 		//glColor4f(0,0,0,1);
 
 		glColor3f(1,1,1);
-		draw_texture(0,0,difficulty_tex(D_Easy+i));
+		draw_sprite(0, 0, difficulty_sprite_name(D_Easy+i));
 		glPopMatrix();
 	}
 }

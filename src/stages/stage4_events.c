@@ -79,7 +79,7 @@ int stage4_splasher(Enemy *e, int t) {
 	FROM_TO_SND("shot1_loop", 66-6*global.diff, 150, 5-global.diff) {
 		tsrand_fill(4);
 		PROJECTILE(
-			.texture = afrand(0) > 0.5 ? "rice" : "thickrice",
+			.sprite = afrand(0) > 0.5 ? "rice" : "thickrice",
 			.pos = e->pos,
 			.color = rgb(0.8,0.3-0.1*afrand(1),0.5),
 			.rule = accelerated,
@@ -230,7 +230,7 @@ int stage4_bigcircle(Enemy *e, int t) {
 		int n = 10+3*global.diff;
 		for(i = 0; i < n; i++) {
 			PROJECTILE(
-				.texture = "bigball",
+				.sprite = "bigball",
 				.pos = e->pos,
 				.color = rgb(0,0.8-0.4*_i,0),
 				.rule = asymptotic,
@@ -243,7 +243,7 @@ int stage4_bigcircle(Enemy *e, int t) {
 
 			if(global.diff > D_Easy) {
 				PROJECTILE(
-					.texture = "ball",
+					.sprite = "ball",
 					.pos = e->pos,
 					.color = rgb(0,0.3*_i,0.4),
 					.rule = asymptotic,
@@ -272,7 +272,7 @@ int stage4_explosive(Enemy *e, int t) {
 		for(i = 0; i < n; i++) {
 			double angle = 2*M_PI*i/n+carg(phase);
 			PROJECTILE(
-				.texture = "ball",
+				.sprite = "ball",
 				.pos = e->pos,
 				.color = rgb(0.1+0.6*(i&1), 0.2, 1-0.6*(i&1)),
 				.rule = accelerated,
@@ -301,7 +301,7 @@ void KurumiSlave(Enemy *e, int t, bool render) {
 		complex offset = (frand()-0.5)*30;
 		offset += (frand()-0.5)*20.0*I;
 		PARTICLE(
-			.texture = "lasercurve",
+			.sprite = "smoothdot",
 			.pos = offset,
 			.color = rgb(0.3,0.0,0.0),
 			.draw_rule = EnemyFlareShrink,
@@ -413,7 +413,7 @@ void kurumi_redspike(Boss *b, int time) {
 			int n = global.diff*8;
 			for(i = 0; i < n; i++) {
 				PROJECTILE(
-					.texture = "bigball",
+					.sprite = "bigball",
 					.pos = b->pos,
 					.color = rgb(1.0, 0.0, 0.0),
 					.rule = asymptotic,
@@ -454,12 +454,12 @@ void kurumi_spell_bg(Boss *b, int time) {
 	glTranslatef(VIEWPORT_W/2, VIEWPORT_H/2,0);
 	glScalef(0.6,0.6,1);
 	glColor3f(f,1-f,1-f);
-	draw_texture(0, 0, "stage4/kurumibg1");
+	draw_sprite(0, 0, "stage4/kurumibg1");
 	glColor3f(1,1,1);
 	glPopMatrix();
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	fill_screen(time/300.0, time/300.0, 0.5, "stage4/kurumibg2");
+	fill_viewport(time/300.0, time/300.0, 0.5, "stage4/kurumibg2");
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -681,7 +681,7 @@ void KurumiAniWallSlave(Enemy *e, int t, bool render) {
 	}
 
 	if(e->args[1]) {
-		PARTICLE("lasercurve", e->pos, rgb(1,1,1), timeout, { 30 },
+		PARTICLE("smoothdot", e->pos, rgb(1,1,1), timeout, { 30 },
 			.draw_rule = Fade,
 			.flags = PFLAG_DRAWADD,
 		);
@@ -840,7 +840,7 @@ void kurumi_blowwall(Boss *b, int time) {
 
 static Projectile* vapor_particle(complex pos, Color clr) {
 	return PARTICLE(
-		.texture = "stain",
+		.sprite = "stain",
 		.color = clr,
 		.rule = timeout,
 		.draw_rule = ScaleFade,
@@ -856,13 +856,13 @@ static int kdanmaku_proj(Projectile *p, int t) {
 
 	if(t == time) {
 		p->color = rgb(0.6,0.3,1.0);
-		p->tex = get_tex("proj/bullet");
+		p->sprite = get_sprite("proj/bullet");
 		p->args[1] = (global.plr.pos - p->pos) * 0.001;
 
 		if(frand()<0.5)
 			vapor_particle(p->pos, rgba(0.6, 0.3, 1.0, 1));
 		PARTICLE(
-			.texture = "flare",
+			.sprite = "flare",
 			.color = rgb(1, 1, 1),
 			.rule = timeout,
 			.draw_rule = ScaleFade,
@@ -1071,6 +1071,7 @@ void kurumi_extra_drainer_draw(Projectile *p, int time) {
 	complex org = p->pos;
 	complex targ = p->args[1];
 	double a = 0.5 * creal(p->args[2]);
+	Texture *tex = get_tex("part/sinewave");
 
 	ColorTransform ct;
 
@@ -1078,15 +1079,15 @@ void kurumi_extra_drainer_draw(Projectile *p, int time) {
 
 	static_clrtransform_particle(rgba(1.0, 0.5, 0.5, a), &ct);
 	recolor_apply_transform(&ct);
-	loop_tex_line_p(org, targ, 16, time * 0.01, p->tex);
+	loop_tex_line_p(org, targ, 16, time * 0.01, tex);
 
 	static_clrtransform_particle(rgba(0.4, 0.2, 0.2, a), &ct);
 	recolor_apply_transform(&ct);
-	loop_tex_line_p(org, targ, 18, time * 0.0043, p->tex);
+	loop_tex_line_p(org, targ, 18, time * 0.0043, tex);
 
 	static_clrtransform_particle(rgba(0.5, 0.2, 0.5, a), &ct);
 	recolor_apply_transform(&ct);
-	loop_tex_line_p(org, targ, 24, time * 0.003, p->tex);
+	loop_tex_line_p(org, targ, 24, time * 0.003, tex);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
@@ -1127,7 +1128,7 @@ int kurumi_extra_drainer(Projectile *p, int time) {
 
 void kurumi_extra_create_drainer(Enemy *e) {
 	PROJECTILE(
-		.texture_ptr = get_tex("part/sinewave"),
+		.size = 1+I,
 		.pos = e->pos,
 		.rule = kurumi_extra_drainer,
 		.draw_rule = kurumi_extra_drainer_draw,

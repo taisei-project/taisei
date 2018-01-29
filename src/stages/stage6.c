@@ -147,7 +147,7 @@ static void stage6_skysphere_draw(Vector pos) {
 		glTranslatef(x,y,z);
 		glRotatef(180/M_PI*acos(starpos[3*i+2]),-y,x,0);
 		glScalef(1./4000,1./4000,1./4000);
-		draw_texture(0,0,"part/lasercurve");
+		draw_sprite(0,0,"part/smoothdot");
 		glPopMatrix();
 	}
 
@@ -255,31 +255,34 @@ static void stage6_preload(void) {
 		"stage6boss_phase3",
 	NULL);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+		"stage6/towertop",
+		"stage6/towerwall",
+	NULL);
+	preload_resources(RES_SPRITE, RESF_DEFAULT,
 		"stage6/baryon_connector",
 		"stage6/baryon",
 		"stage6/scythecircle",
 		"stage6/scythe",
-		"stage6/spellbg_chalk",
-		"stage6/spellbg_classic",
-		"stage6/spellbg_modern",
-		"stage6/spellbg_toe",
-		"stage6/towertop",
-		"stage6/towerwall",
 		"stage6/toelagrangian/0",
 		"stage6/toelagrangian/1",
 		"stage6/toelagrangian/2",
 		"stage6/toelagrangian/3",
 		"stage6/toelagrangian/4",
-		"dialog/elly",
+		"stage6/spellbg_chalk",
+		"stage6/spellbg_classic",
+		"stage6/spellbg_modern",
+		"stage6/spellbg_toe",
 		"part/stardust",
 		"part/myon",
+		"proj/apple",
+		"dialog/elly",
 	NULL);
 	preload_resources(RES_SHADER, RESF_DEFAULT,
 		"tower_wall",
 		"stage6_sky",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
-		"elly",
+		"boss/elly",
 	NULL);
 	preload_resources(RES_MODEL, RESF_DEFAULT,
 		"towerwall",

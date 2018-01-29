@@ -10,7 +10,7 @@
 #include "taisei.h"
 
 #include <stdbool.h>
-#include "resource/texture.h"
+#include "resource/sprite.h"
 
 struct DialogMessage;
 struct DialogSpeaker;
@@ -29,7 +29,7 @@ typedef struct DialogMessage {
 
 typedef struct Dialog {
 	DialogMessage *messages;
-	Texture *images[2];
+	Sprite *images[2];
 
 	int count;
 	int pos;

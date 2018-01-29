@@ -184,7 +184,7 @@ static void charge_effect(Enemy *e, int t, int chargetime) {
 		float s = 4+_i*0.01;
 
 		PARTICLE(
-			.texture = "flare",
+			.sprite = "flare",
 			.pos = e->pos+l*n,
 			.color = rgb(0.5, 0.5, 0.25),
 			.draw_rule = Fade,
@@ -446,7 +446,7 @@ static int stage3_cornerfairy(Enemy *e, int t) {
 				bool wave = global.diff > D_Easy && cabs(e->args[2]);
 
 				PROJECTILE(
-					.texture = wave ? "wave" : "thickrice",
+					.sprite = wave ? "wave" : "thickrice",
 					.pos = e->pos,
 					.color = cabs(e->args[2])
 							? rgb(0.5 - c*0.2, 0.3 + c*0.7, 1.0)
@@ -491,7 +491,7 @@ static int scuttle_poison(Projectile *p, int time) {
 		float t = p->args[3] + time;
 
 		PROJECTILE(
-			.texture = (frand() > 0.5)? "thickrice" : "rice",
+			.sprite = (frand() > 0.5)? "thickrice" : "rice",
 			.pos = p->pos,
 			.color = rgb(0.3, 0.7 + 0.3 * psin(a/3.0 + t/20.0), 0.3),
 			.rule = accelerated,
@@ -525,7 +525,7 @@ static int scuttle_lethbite_proj(Projectile *p, int time) {
 			Color clr = rgba(1.0,0.8,0.8,0.8);
 
 			PARTICLE(
-				.texture = "lasercurve",
+				.sprite = "smoothdot",
 				.color = clr,
 				.draw_rule = EnemyFlareShrink,
 				.rule = enemy_flare,
@@ -568,7 +568,7 @@ static void scuttle_lethbite(Boss *boss, int time) {
 		for(i = 0; i < cnt; ++i) {
 			complex v = (2 - psin((max(3, global.diff+1)*2*M_PI*i/(float)cnt) + time)) * cexp(I*2*M_PI/cnt*i);
 			PROJECTILE(
-				.texture = "wave",
+				.sprite = "wave",
 				.pos = boss->pos - v * 50,
 				.color = _i % 2? rgb(0.7, 0.3, 0.0) : rgb(0.3, .7, 0.0),
 				.rule = scuttle_lethbite_proj,
@@ -605,7 +605,7 @@ void scuttle_deadly_dance(Boss *boss, int time) {
 			for(i = 0; i < 15; ++i) {
 				double a = M_PI/(5 + global.diff) * i * 2;
 				PROJECTILE(
-					.texture = "wave",
+					.sprite = "wave",
 					.pos = boss->pos,
 					.color = rgb(0.3, 0.3 + 0.7 * psin(a*3 + time/50.0), 0.3),
 					.rule = scuttle_poison,
@@ -638,7 +638,7 @@ void scuttle_deadly_dance(Boss *boss, int time) {
 		for(i = -1; i < 2; i += 2) {
 			double c = psin(time/10.0);
 			PROJECTILE(
-				.texture = "crystal",
+				.sprite = "crystal",
 				.pos = boss->pos,
 				.color = rgba(0.3 + c * 0.7, 0.6 - c * 0.3, 0.3, 0.7),
 				.rule = linear,
@@ -658,13 +658,13 @@ void scuttle_spellbg(Boss *h, int time) {
 	float s = 0.3 + 0.7 * a;
 
 	glColor4f(.1, .1, .1, a);
-	draw_texture(VIEWPORT_W/2, VIEWPORT_H/2, "stage3/spellbg2");
+	draw_sprite(VIEWPORT_W/2, VIEWPORT_H/2, "stage3/spellbg2");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-	fill_screen(-time/200.0 + 0.5, time/400.0+0.5, s, "stage3/spellbg1");
+	fill_viewport(-time/200.0 + 0.5, time/400.0+0.5, s, "stage3/spellbg1");
 
 	glColor4f(1, 1, 1, 0.1);
-	fill_screen(time/300.0 + 0.5, -time/340.0+0.5, s*0.5, "stage3/spellbg1");
+	fill_viewport(time/300.0 + 0.5, -time/340.0+0.5, s*0.5, "stage3/spellbg1");
 	Shader *sha = get_shader("maristar_bombbg");
 	glUseProgram(sha->prog);
 	glUniform1f(uniloc(sha,"t"), time/400.);
@@ -672,7 +672,7 @@ void scuttle_spellbg(Boss *h, int time) {
 	glColor4f(1, 1, 1, 0.1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glUniform2f(uniloc(sha,"plrpos"), 0.5,0.5);
-	fill_screen(0.0, 0.0, 1, "stage3/spellbg1");
+	fill_viewport(0.0, 0.0, 1, "stage3/spellbg1");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glUseProgram(0);
 
@@ -683,16 +683,16 @@ void scuttle_spellbg(Boss *h, int time) {
 
 void wriggle_spellbg(Boss *b, int time) {
 	glColor4f(1,1,1,1);
-	fill_screen(0, 0, 768.0/1024.0, "stage3/wspellbg");
+	fill_viewport(0, 0, 768.0/1024.0, "stage3/wspellbg");
 	glColor4f(1,1,1,0.5);
 	glBlendEquation(GL_FUNC_SUBTRACT);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	fill_screen(sin(time) * 0.015, time / 50.0, 1, "stage3/wspellclouds");
+	fill_viewport(sin(time) * 0.015, time / 50.0, 1, "stage3/wspellclouds");
 	glBlendEquation(GL_FUNC_ADD);
-	fill_screen(0, time / 70.0, 1, "stage3/wspellswarm");
+	fill_viewport(0, time / 70.0, 1, "stage3/wspellswarm");
 	glBlendEquation(GL_FUNC_SUBTRACT);
 	glColor4f(1,1,1,0.4);
-	fill_screen(cos(time) * 0.02, time / 30.0, 1, "stage3/wspellclouds");
+	fill_viewport(cos(time) * 0.02, time / 30.0, 1, "stage3/wspellclouds");
 
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -730,14 +730,14 @@ static void wriggle_slave_visual(Enemy *e, int time, bool render) {
 		glColor4f(0.8,1,0.4,1);
 		glScalef(0.7,0.7,1);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		draw_texture(0,0,"fairy_circle");
+		draw_sprite(0,0,"fairy_circle");
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glColor3f(1,1,1);
 		glPopMatrix();
 	} else if(time % 5 == 0) {
 		tsrand_fill(2);
 		PARTICLE(
-			.texture = "lasercurve",
+			.sprite = "smoothdot",
 			.pos = 5*cexp(2*I*M_PI*afrand(0)),
 			.color = rgba(1,1,0.8,0.6),
 			.draw_rule = EnemyFlareShrink,
@@ -770,7 +770,7 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 			l->width = 15;
 
 			PROJECTILE(
-				.texture_ptr = p->tex,
+				.sprite_ptr = p->sprite,
 				.pos = p->pos,
 				.color = p->color,
 				.draw_rule = p->draw_rule,
@@ -792,7 +792,7 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 				float f = (float)i/cnt;
 
 				PROJECTILE(
-					.texture = "thickrice",
+					.sprite = "thickrice",
 					.pos = p->pos,
 					.color = c,
 					.rule = asymptotic,
@@ -805,7 +805,7 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 			}
 
 			PARTICLE(
-				.texture = "blast",
+				.sprite = "blast",
 				.pos = p->pos,
 				.color = c,
 				.rule = timeout,
@@ -836,14 +836,11 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 }
 
 static void wriggle_slave_part_draw(Projectile *p, int t) {
-	Texture *tex = p->tex;
-	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 	float b = 1 - t / p->args[0];
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glPushMatrix();
 	glTranslatef(creal(p->pos), cimag(p->pos), 0);
 	ProjDrawCore(p, multiply_colors(p->color, rgba(b, b, b, 1)));
-	draw_texture_p(0,0, p->tex);
 	glPopMatrix();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
@@ -869,7 +866,7 @@ static int wriggle_spell_slave(Enemy *e, int time) {
 		float c = 0.5 * psin(time / 25.0);
 
 		PROJECTILE(
-			.texture_ptr = get_tex("part/lasercurve"),
+			.sprite_ptr = get_sprite("part/smoothdot"),
 			.pos = e->pos,
 			.color = rgb(1.0 - c, 0.5, 0.5 + c),
 			.draw_rule = wriggle_slave_part_draw,
@@ -1135,7 +1132,7 @@ void wriggle_light_singularity(Boss *boss, int time) {
 			complex dir = cexp(I*a);
 
 			PROJECTILE(
-				.texture = ptype,
+				.sprite = ptype,
 				.pos = boss->pos,
 				.color = hsl(a/(M_PI*2) + colorofs, 1.0, 0.5),
 				.rule = asymptotic,
@@ -1161,14 +1158,15 @@ static void wriggle_fstorm_proj_draw(Projectile *p, int time) {
 	ProjDrawCore(p, p->color);
 
 	if(f > 0) {
-		p->tex = get_tex("proj/ball");
+		p->sprite = get_sprite("proj/ball");
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 		glScalef(f,f,f);
 		ProjDrawCore(p,time);
 		glScalef(1/f,1/f,1/f);
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-		p->tex = get_tex("proj/rice");
+		p->sprite = get_sprite("proj/rice");
 	}
+
 	glPopMatrix();
 }
 
@@ -1197,7 +1195,7 @@ static int wriggle_fstorm_proj(Projectile *p, int time) {
 		p->angle = carg(p->args[1]);
 		p->birthtime = global.frames;
 		p->draw_rule = wriggle_fstorm_proj_draw;
-		p->tex = get_tex("proj/rice");
+		p->sprite = get_sprite("proj/rice");
 
 		for(int i = 0; i < 3; ++i) {
 			tsrand_fill(2);
@@ -1236,7 +1234,7 @@ void wriggle_firefly_storm(Boss *boss, int time) {
 			complex pos = 230*cexp(I*(_i*0.301+2*M_PI/cnt*i))*r;
 
 			PROJECTILE(
-				.texture = (global.diff >= D_Hard) && !(i%10) ? "bigball" : "ball",
+				.sprite = (global.diff >= D_Hard) && !(i%10) ? "bigball" : "ball",
 				.pos = boss->pos+pos,
 				.color = rgb(0.2,0.2,0.6),
 				.rule = wriggle_fstorm_proj,

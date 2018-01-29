@@ -37,7 +37,7 @@ PlayerCharacter* plrchar_get(CharacterID id) {
 
 void plrchar_preload(PlayerCharacter *pc) {
 	preload_resource(RES_ANIM, pc->player_sprite_name, RESF_DEFAULT);
-	preload_resource(RES_TEXTURE, pc->dialog_sprite_name, RESF_DEFAULT);
+	preload_resource(RES_SPRITE, pc->dialog_sprite_name, RESF_DEFAULT);
 }
 
 int plrmode_repr(char *out, size_t outsize, PlayerMode *mode) {

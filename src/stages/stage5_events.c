@@ -327,7 +327,7 @@ void iku_slave_visual(Enemy *e, int t, bool render) {
 		}
 
 		PARTICLE(
-			.texture = "lightningball",
+			.sprite = "lightningball",
 			.pos = e->pos,
 			.color = rgba(0.1*alpha, 0.1*alpha, 0.6*alpha, 0.5*alpha),
 			.draw_rule = Fade,
@@ -387,7 +387,7 @@ int stage5_lightburst2(Enemy *e, int t) {
 			tsrand_fill(2);
 			complex n = cexp(I*carg(global.plr.pos-e->pos) + 2.0*I*M_PI/c*i);
 			PROJECTILE(
-				.texture = "bigball",
+				.sprite = "bigball",
 				.pos = e->pos + 50*n*cexp(-1.0*I*_i*global.diff),
 				.color = rgb(0.3, 0, 0.7+0.3*(_i&1)),
 				.rule = asymptotic,
@@ -438,7 +438,7 @@ static void cloud_common(void) {
 	float v = (afrand(2)+afrand(3))*0.5+1.0;
 
 	PROJECTILE(
-		.texture_ptr = get_tex("part/lightningball"),
+		.sprite_ptr = get_sprite("part/lightningball"),
 		.pos = VIEWPORT_W*afrand(0)-15.0*I,
 		.color = rgba(0.2, 0.0, 0.4, 0.6),
 		.rule = accelerated,
@@ -511,7 +511,7 @@ void iku_atmospheric(Boss *b, int time) {
 
 		for(i = -c*0.5; i <= c*0.5; i++) {
 			PROJECTILE(
-				.texture = "ball",
+				.sprite = "ball",
 				.pos = p1+(p2-p1)/c*i,
 				.color = rgb(1-1/(1+fabs(0.1*i)), 0.5-0.1*abs(i), 1),
 				.rule = accelerated,
@@ -652,7 +652,7 @@ void iku_lightning(Boss *b, int time) {
 		float alpha = 0.5;
 
 		PARTICLE(
-			.texture = "lightningball",
+			.sprite = "lightningball",
 			.pos = b->pos+l*n,
 			.color = rgb(0.1*alpha, 0.1*alpha, 0.6*alpha),
 			.draw_rule = Fade,
@@ -685,7 +685,7 @@ void iku_lightning(Boss *b, int time) {
 		for(int i=0; i < c; i++) {
 			complex n = cexp(2.0*I*M_PI*frand());
 			PARTICLE(
-				.texture = "smoke",
+				.sprite = "smoke",
 				.pos = b->pos,
 				.color = rgb(0.4, 0.4, 1.0),
 				.draw_rule = Fade,
@@ -884,7 +884,7 @@ void iku_extra_slave_visual(Enemy *e, int t, bool render) {
 	if(e->args[2] && !(t % 5)) {
 		complex offset = (frand()-0.5)*30 + (frand()-0.5)*20.0*I;
 		PARTICLE(
-			.texture = "lasercurve",
+			.sprite = "smoothdot",
 			.pos = offset,
 			.color = e->args[1] ? rgb(1.0, 0.5, 0.0) : rgb(0.0, 0.5, 0.5),
 			.draw_rule = EnemyFlareShrink,
@@ -943,7 +943,7 @@ int iku_extra_trigger_bullet(Projectile *p, int t) {
 	tsrand_fill(5);
 
 	PARTICLE(
-		.texture = afrand(0) > 0.5 ? "lightning0" : "lightning1",
+		.sprite = afrand(0) > 0.5 ? "lightning0" : "lightning1",
 		.pos = p->pos + 3 * (anfrand(1)+I*anfrand(2)),
 		.angle = afrand(3) * 2 * M_PI,
 		.color = rgb(1.0, 0.7 + 0.2 * anfrand(4), 0.4),

@@ -254,7 +254,7 @@ static void stage4_start(void) {
 
 static void stage4_preload(void) {
 	preload_resources(RES_BGM, RESF_OPTIONAL, "stage4", "stage4boss", NULL);
-	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+	preload_resources(RES_SPRITE, RESF_DEFAULT,
 		"stage2/border", // Stage 2 is intentional!
 		"stage4/kurumibg1",
 		"stage4/kurumibg2",
@@ -262,14 +262,16 @@ static void stage4_preload(void) {
 		"stage4/mansion",
 		"stage4/planks",
 		"stage4/wall",
-		"stage6/scythe", // Stage 6 is also intentional
 		"dialog/kurumi",
+	NULL);
+	preload_resources(RES_SPRITE, RESF_DEFAULT,
+		"stage6/scythe", // Stage 6 is also intentional
 	NULL);
 	preload_resources(RES_SHADER, RESF_DEFAULT,
 		"zbuf_fog",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
-		"kurumi",
+		"boss/kurumi",
 	NULL);
 	preload_resources(RES_MODEL, RESF_DEFAULT,
 		"mansion",

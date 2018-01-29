@@ -561,7 +561,7 @@ void hina_monty_slave_visual(Enemy *s, int time, bool render) {
 		return;
 	}
 
-	Texture *soul = get_tex("proj/soul");
+	Sprite *soul = get_sprite("proj/soul");
 	Shader *shader = recolor_get_shader();
 	double scale = fabs(swing(clamp(time / 60.0, 0, 1), 3)) * 1.25;
 
@@ -583,7 +583,7 @@ void hina_monty_slave_visual(Enemy *s, int time, bool render) {
 	glPushMatrix();
 	glRotatef(time, 0, 0, 1);
 	glScalef(scale * (0.6 + 0.6 * psin(time*0.1)), scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), 0);
-	draw_texture_p(0, 0, soul);
+	draw_sprite_p(0, 0, soul);
 	glPopMatrix();
 
 	static_clrtransform_bullet(clr2, &ct);
@@ -591,7 +591,7 @@ void hina_monty_slave_visual(Enemy *s, int time, bool render) {
 	glPushMatrix();
 	glRotatef(time, 0, 0, 1);
 	glScalef(scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0);
-	draw_texture_p(0, 0, soul);
+	draw_sprite_p(0, 0, soul);
 	glPopMatrix();
 
 	static_clrtransform_bullet(clr3, &ct);
@@ -600,7 +600,7 @@ void hina_monty_slave_visual(Enemy *s, int time, bool render) {
 	glRotatef(-time, 0, 0, 1);
 	// glScalef(scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0);
 	glScalef(scale, scale, 0);
-	draw_texture_p(0, 0, soul);
+	draw_sprite_p(0, 0, soul);
 	glPopMatrix();
 
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
@@ -742,11 +742,11 @@ void hina_spell_bg(Boss *h, int time) {
 	glTranslatef(VIEWPORT_W/2, VIEWPORT_H/2,0);
 	glPushMatrix();
 	glScalef(0.6,0.6,1);
-	draw_texture(0, 0, "stage2/spellbg1");
+	draw_sprite(0, 0, "stage2/spellbg1");
 	glPopMatrix();
 	glBlendFunc(GL_ZERO, GL_SRC_COLOR);
 	glRotatef(time*5, 0,0,1);
-	draw_texture(0, 0, "stage2/spellbg2");
+	draw_sprite(0, 0, "stage2/spellbg2");
 	glPopMatrix();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	play_animation(get_ani("fire"),creal(h->pos), cimag(h->pos), 0);

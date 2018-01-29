@@ -17,10 +17,13 @@ Dialog *create_dialog(const char *left, const char *right) {
 	Dialog *d = malloc(sizeof(Dialog));
 	memset(d, 0, sizeof(Dialog));
 
-	if(left)
-		d->images[Left] = get_tex(left);
-	if(right)
-		d->images[Right] = get_tex(right);
+	if(left) {
+		d->images[Left] = get_sprite(left);
+	}
+
+	if(right) {
+		d->images[Right] = get_sprite(right);
+	}
 
 	d->page_time = global.frames;
 	d->birthtime = global.frames;
@@ -28,7 +31,7 @@ Dialog *create_dialog(const char *left, const char *right) {
 }
 
 void dset_image(Dialog *d, Side side, const char *name) {
-	d->images[side] = get_tex(name);
+	d->images[side] = get_sprite(name);
 }
 
 DialogMessage* dadd_msg(Dialog *d, Side side, const char *msg) {
@@ -83,7 +86,7 @@ void draw_dialog(Dialog *dialog) {
 
 		glTranslatef(VIEWPORT_W*7.0/18.0, 0, 0);
 		if(dialog->images[i])
-			draw_texture_p(0, 0, dialog->images[i]);
+			draw_sprite_p(0, 0, dialog->images[i]);
 		glPopMatrix();
 
 		glColor3f(1,1,1);

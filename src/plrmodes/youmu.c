@@ -19,7 +19,7 @@ PlayerCharacter character_youmu = {
 	.full_name = "Konpaku Yōmu",
 	.title = "Half-Phantom Girl",
 	.dialog_sprite_name = "dialog/youmu",
-	.player_sprite_name = "youmu",
+	.player_sprite_name = "player/youmu",
 	.ending = {
 		.good = good_ending_youmu,
 		.bad = bad_ending_youmu,
@@ -72,7 +72,7 @@ void youmu_common_bombbg(Player *plr) {
 		fade = 0;
 
 	glColor4f(1,1,1,0.6*fade);
-	fill_screen_p(0.5,0.5,3,1,1200*t*(t-1.5),get_tex("youmu_bombbg1"));
+	fill_viewport_p(0.5,0.5,3,1,1200*t*(t-1.5),get_tex("youmu_bombbg1"));
 	glColor4f(1,1,1,1);
 }
 

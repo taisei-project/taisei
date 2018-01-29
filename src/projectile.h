@@ -10,7 +10,7 @@
 #include "taisei.h"
 
 #include "util.h"
-#include "resource/texture.h"
+#include "resource/sprite.h"
 #include "color.h"
 #include "recolor.h"
 #include "objectpool.h"
@@ -65,12 +65,12 @@ struct Projectile {
 
 	complex pos;
 	complex pos0;
-	complex size; // this is currently ignored if tex is not NULL.
+	complex size; // this is currently ignored if sprite is not NULL.
 	complex args[RULE_ARGC];
 	ProjRule rule;
 	ProjDrawRule draw_rule;
 	ProjColorTransformRule color_transform_rule;
-	Texture *tex;
+	Sprite *sprite;
 	Color color;
 	int birthtime;
 	float angle;
@@ -86,7 +86,7 @@ struct Projectile {
 };
 
 typedef struct ProjArgs {
-	const char *texture;
+	const char *sprite;
 	complex pos;
 	Color color;
 	ProjRule rule;
@@ -97,7 +97,7 @@ typedef struct ProjArgs {
 	ProjColorTransformRule color_transform_rule;
 	Projectile **dest;
 	ProjType type;
-	Texture *texture_ptr;
+	Sprite *sprite_ptr;
 	complex size;
 	int max_viewport_dist;
 	ListInsertionRule insertion_rule;

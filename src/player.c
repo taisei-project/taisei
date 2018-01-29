@@ -122,7 +122,7 @@ void player_draw(Player* plr) {
 				glRotatef(global.frames*10, 0, 0, 1);
 				glScalef(1, 1, 1);
 				glColor4f(1, 1, 1, 0.2 * (clamp(plr->focus, 0, 15) / 15.0));
-				draw_texture(0, 0, "fairy_circle");
+				draw_sprite(0, 0, "fairy_circle");
 				glColor4f(1,1,1,1);
 			glPopMatrix();
 		}
@@ -144,7 +144,7 @@ void player_draw(Player* plr) {
 			glPushMatrix();
 				glColor4f(1, 1, 1, plr->focus / 30.0);
 				glRotatef(global.frames, 0, 0, -1);
-				draw_texture(0, 0, "focus");
+				draw_sprite(0, 0, "focus");
 				glColor4f(1, 1, 1, 1);
 			glPopMatrix();
 		}
@@ -366,7 +366,7 @@ void player_death(Player *plr) {
 		for(int i = 0; i < 20; i++) {
 			tsrand_fill(2);
 			PARTICLE(
-				.texture = "flare",
+				.sprite = "flare",
 				.pos = plr->pos,
 				.rule = timeout_linear,
 				.draw_rule = Shrink,
@@ -378,7 +378,7 @@ void player_death(Player *plr) {
 		stage_clear_hazards(CLEAR_HAZARDS_ALL);
 
 		PARTICLE(
-			.texture = "blast",
+			.sprite = "blast",
 			.pos = plr->pos,
 			.color = rgba(1.0, 0.3, 0.3, 0.5),
 			.rule = timeout,
@@ -712,7 +712,7 @@ void player_graze(Player *plr, complex pos, int pts, int effect_intensity) {
 		tsrand_fill(3);
 
 		PARTICLE(
-			.texture = "flare",
+			.sprite = "flare",
 			.pos = pos,
 			.rule = timeout_linear,
 			.draw_rule = Shrink,
@@ -795,7 +795,7 @@ void player_add_points(Player *plr, unsigned int points) {
 void player_preload(void) {
 	const int flags = RESF_DEFAULT;
 
-	preload_resources(RES_TEXTURE, flags,
+	preload_resources(RES_SPRITE, flags,
 		"focus",
 		"fairy_circle",
 	NULL);

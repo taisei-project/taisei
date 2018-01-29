@@ -19,7 +19,7 @@ PlayerCharacter character_marisa = {
 	.full_name = "Kirisame Marisa",
 	.title = "Black Magician",
 	.dialog_sprite_name = "dialog/marisa",
-	.player_sprite_name = "marisa",
+	.player_sprite_name = "player/marisa",
 	.ending = {
 		.good = good_ending_marisa,
 		.bad = bad_ending_marisa,
@@ -54,7 +54,7 @@ void marisa_common_slave_visual(Enemy *e, int t, bool render) {
 	glPushMatrix();
 	glTranslatef(creal(e->pos), cimag(e->pos), -1);
 	// glRotatef(global.frames * 3, 0, 0, 1);
-	draw_texture(0,0,"part/lasercurve");
+	draw_sprite(0, 0, "part/smoothdot");
 	glPopMatrix();
 }
 

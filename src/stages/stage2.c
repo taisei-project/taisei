@@ -200,7 +200,7 @@ static void stage2_start(void) {
 
 static void stage2_preload(void) {
 	preload_resources(RES_BGM, RESF_OPTIONAL, "stage2", "stage2boss", NULL);
-	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+	preload_resources(RES_SPRITE, RESF_DEFAULT,
 		"stage2/border",
 		"stage2/leaves",
 		"stage2/roadgrass",
@@ -215,8 +215,8 @@ static void stage2_preload(void) {
 		"alpha_depth",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
-		"wriggle",
-		"hina",
+		"boss/wriggle",
+		"boss/hina",
 		"fire",
 	NULL);
 }

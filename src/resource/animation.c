@@ -26,6 +26,16 @@ typedef struct AnimationLoadData {
 	char *basename;
 } AnimationLoadData;
 
+static int hashtable_int(Hashtable *ht, const char *key) {
+	char *val = hashtable_get_string(ht, key);
+
+	if(!val) {
+		return 0;
+	}
+
+	return atoi(val);
+}
+
 void* load_animation_begin(const char *filename, unsigned int flags) {
 	char *basename = resource_util_basename(ANI_PATH_PREFIX, filename);
 	char name[strlen(basename) + 1];
@@ -40,13 +50,13 @@ void* load_animation_begin(const char *filename, unsigned int flags) {
 	}
 
 	Animation *ani = malloc(sizeof(Animation));
-	ani->rows = atoi((char*)hashtable_get_string(ht, "rows"));
-	ani->cols = atoi((char*)hashtable_get_string(ht, "cols"));
-	ani->speed = atoi((char*)hashtable_get_string(ht, "speed"));
+	ani->rows = hashtable_int(ht, "rows");
+	ani->cols = hashtable_int(ht, "cols");
+	ani->speed = hashtable_int(ht, "speed");
 	hashtable_foreach(ht, hashtable_iter_free_data, NULL);
 	hashtable_free(ht);
 
-#define ANIFAIL(what) { log_warn("Bad '" what "' in animation '%s'", basename); free(ani); free(basename); return NULL; }
+#define ANIFAIL(what) { log_warn("Bad '" what "' value in animation '%s'", basename); free(ani); free(basename); return NULL; }
 	if(ani->rows < 1) ANIFAIL("rows")
 	if(ani->cols < 1) ANIFAIL("cols")
 #undef ANIFAIL
@@ -72,17 +82,23 @@ void* load_animation_end(void *opaque, const char *filename, unsigned int flags)
 	}
 
 	Animation *ani = data->ani;
-	ani->tex = get_resource(RES_TEXTURE, data->basename, flags)->texture;
+	ani->frames = calloc(ani->rows * ani->cols, sizeof(Sprite*));
 
-	if(!ani->tex) {
-		log_warn("Couldn't get texture '%s'", data->basename);
-		free(data->basename);
-		free(data);
-		return NULL;
+	char buf[strlen(data->basename) + sizeof(".frame0000")];
+
+	for(int i = 0; i < ani->rows * ani->cols; ++i) {
+		snprintf(buf, sizeof(buf), "%s.frame%04d", data->basename, i);
+		Resource *res = get_resource(RES_SPRITE, buf, flags);
+
+		if(res == NULL) {
+			free(ani->frames);
+			free(ani);
+			ani = NULL;
+			break;
+		}
+
+		ani->frames[i] = res->sprite;
 	}
-
-	ani->w = ani->tex->w / ani->cols;
-	ani->h = ani->tex->h / ani->rows;
 
 	free(data->basename);
 	free(data);
@@ -90,8 +106,23 @@ void* load_animation_end(void *opaque, const char *filename, unsigned int flags)
 	return ani;
 }
 
+void unload_animation(void *vani) {
+	Animation *ani = vani;
+	free(ani->frames);
+	free(ani);
+}
+
 Animation *get_ani(const char *name) {
 	return get_resource(RES_ANIM, name, RESF_DEFAULT)->animation;
+}
+
+static Sprite* get_animation_frame(Animation *ani, int col, int row) {
+	int idx = row * ani->cols + col;
+
+	assert(idx >= 0);
+	assert(idx < ani->rows * ani->cols);
+
+	return ani->frames[idx];
 }
 
 void draw_animation(float x, float y, int col, int row, const char *name) {
@@ -99,15 +130,5 @@ void draw_animation(float x, float y, int col, int row, const char *name) {
 }
 
 void draw_animation_p(float x, float y, int col, int row, Animation *ani) {
-	float frame_w = (float)ani->tex->w / ani->cols;
-	float frame_h = (float)ani->tex->h / ani->rows;
-
-	begin_draw_texture(
-		(FloatRect){ x, y, ani->w, ani->h },
-		(FloatRect){ col*frame_w, row*frame_h, frame_w, frame_h },
-		ani->tex
-	);
-
-	draw_quad();
-	end_draw_texture();
+	draw_sprite_p(x, y, get_animation_frame(ani, col, row));
 }

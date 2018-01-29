@@ -9,26 +9,28 @@
 #pragma once
 #include "taisei.h"
 
-#include "texture.h"
+#include "sprite.h"
 
 struct Animation;
 
 typedef struct Animation {
+	// i'm emulating lao's fixed rows/cols table system,
+	// even though animations could have arbitrarily sized framegroups now.
+	// i just don't want to rewrite the whole animation system from scratch.
+	// be my guest if you want to try and do this the right way.
+
 	int rows;
 	int cols;
-
-	int w;
-	int h;
-
 	int speed;
 
-	Texture *tex;
+	Sprite **frames;
 } Animation;
 
 char* animation_path(const char *name);
 bool check_animation_path(const char *path);
 void* load_animation_begin(const char *filename, unsigned int flags);
 void* load_animation_end(void *opaque, const char *filename, unsigned int flags);
+void unload_animation(void *vani);
 
 Animation *get_ani(const char *name);
 

@@ -85,7 +85,7 @@ void draw_char_menu(MenuData *menu) {
 		PlayerCharacter *pchar = plrchar_get((CharacterID)(uintptr_t)menu->entries[i].arg);
 		assert(pchar != NULL);
 
-		const char *tex = pchar->dialog_sprite_name;
+		const char *spr = pchar->dialog_sprite_name;
 		const char *name = pchar->full_name;
 		const char *title = pchar->title;
 
@@ -94,7 +94,7 @@ void draw_char_menu(MenuData *menu) {
 		}
 
 		glColor4f(1,1,1,1-menu->entries[i].drawdata*2);
-		draw_texture(SCREEN_W/3-200*menu->entries[i].drawdata, 2*SCREEN_H/3, tex);
+		draw_sprite(SCREEN_W/3-200*menu->entries[i].drawdata, 2*SCREEN_H/3, spr);
 
 		glPushMatrix();
 		glTranslatef(SCREEN_W/4*3, SCREEN_H/3, 0);
@@ -148,12 +148,13 @@ void draw_char_menu(MenuData *menu) {
 			glCullFace(GL_FRONT);
 		}
 
-		draw_texture(0,0,"charselect_arrow");
+		draw_sprite(0, 0, "menu/arrow");
 
 		glPopMatrix();
 
-		if(i)
+		if(i) {
 			glCullFace(GL_BACK);
+		}
 	}
 
 	glColor3f(1,1,1);

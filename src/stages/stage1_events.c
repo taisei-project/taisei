@@ -141,7 +141,7 @@ void cirno_mid_outro(Boss *c, int time) {
 
 static Projectile* spawn_stain(complex pos, float angle, int to) {
 	return PARTICLE(
-		.texture = "stain",
+		.sprite = "stain",
 		.pos = pos,
 		.rule = timeout,
 		.draw_rule = GrowFade,
@@ -242,12 +242,12 @@ void cirno_perfect_freeze(Boss *c, int time) {
 
 void cirno_pfreeze_bg(Boss *c, int time) {
 	glColor4f(0.5,0.5,0.5,1);
-	fill_screen(time/700.0, time/700.0, 1, "stage1/cirnobg");
+	fill_viewport(time/700.0, time/700.0, 1, "stage1/cirnobg");
 	glColor4f(0.7,0.7,0.7,0.5);
 	glBlendFunc(GL_ZERO, GL_SRC_COLOR);
-	fill_screen(-time/700.0 + 0.5, time/700.0+0.5, 0.4, "stage1/cirnobg");
+	fill_viewport(-time/700.0 + 0.5, time/700.0+0.5, 0.4, "stage1/cirnobg");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	fill_screen(0, -time/100.0, 0, "stage1/snowlayer");
+	fill_viewport(0, -time/100.0, 0, "stage1/snowlayer");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glColor4f(1,1,1,1);
 }
@@ -558,7 +558,7 @@ void cirno_snow_halation(Boss *c, int time) {
 
 		for(int p = _i*2; p <= _i*2 + 1; ++p) {
 			PROJECTILE(
-				.texture = "plainball",
+				.sprite = "plainball",
 				.pos = halation_calc_orb_pos(center, rotation, p, projs),
 				.color = halation_color(0),
 				.rule = halation_orb,
@@ -699,7 +699,7 @@ void cirno_crystal_blizzard(Boss *c, int time) {
 		int i, cnt = 14 + global.diff * 3;
 		for(i = 0; i < cnt; ++i) {
 			PROJECTILE(
-				.texture = "crystal",
+				.sprite = "crystal",
 				.pos = i*VIEWPORT_W/cnt,
 				.color = i % 2? rgb(0.2,0.2,0.4) : rgb(0.5,0.5,0.5),
 				.rule = accelerated,
@@ -720,7 +720,7 @@ void cirno_crystal_blizzard(Boss *c, int time) {
 		if(!(time % (1 + D_Lunatic - global.diff))) {
 			tsrand_fill(2);
 			PROJECTILE(
-				.texture = "wave",
+				.sprite = "wave",
 				.pos = c->pos,
 				.color = rgb(0.2, 0.2, 0.4),
 				.rule = cirno_crystal_blizzard_proj,
@@ -737,7 +737,7 @@ void cirno_crystal_blizzard(Boss *c, int time) {
 			int i, cnt = global.diff - 1;
 			for(i = 0; i < cnt; ++i) {
 				PROJECTILE(
-					.texture = "ball",
+					.sprite = "ball",
 					.pos = c->pos,
 					.color = rgb(0.1, 0.1, 0.5),
 					.rule = accelerated,
@@ -772,7 +772,7 @@ void cirno_benchmark(Boss* b, int t) {
 			p->flags |= PFLAG_DRAWADD;
 
 		if(t > 700 && frand() > 0.5)
-			p->tex = get_tex("proj/plainball");
+			p->sprite = get_sprite("proj/plainball");
 
 		if(t > 1200 && frand() > 0.5)
 			p->color = rgb(1.0,0.2,0.8);
@@ -1078,7 +1078,7 @@ void stage1_events(void) {
 
 		for(int i = 0; i < cnt; ++i) {
 			PROJECTILE(
-				.texture = "bigball",
+				.sprite = "bigball",
 				.pos = VIEWPORT_W * (i+0.5) / cnt,
 				.rule = timeout_linear,
 				.args = { 500, I },

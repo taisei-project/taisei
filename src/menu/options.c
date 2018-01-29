@@ -497,7 +497,7 @@ void options_sub_gamepad_controls(MenuData *parent, void *arg) {
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_FOCUS)
 	);
 
-	add_menu_entry(m, "Bomb", do_nothing,
+	add_menu_entry(m, "Spell", do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_BOMB)
 	);
 
@@ -606,7 +606,7 @@ void options_sub_controls(MenuData *parent, void *arg) {
 		bind_keybinding(CONFIG_KEY_FOCUS)
 	);
 
-	add_menu_entry(m, "Bomb", do_nothing,
+	add_menu_entry(m, "Spell", do_nothing,
 		bind_keybinding(CONFIG_KEY_BOMB)
 	);
 
@@ -720,9 +720,8 @@ void create_options_menu(MenuData *m) {
 // --- Drawing the menu --- //
 
 void draw_options_menu_bg(MenuData* menu) {
-	//draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubgbg");
 	glColor4f(0.3, 0.3, 0.3, 0.9 + 0.1 * sin(menu->frames/100.0));
-	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubg");
+	fill_screen("menu/mainmenubg");
 	glColor4f(1, 1, 1, 1);
 }
 

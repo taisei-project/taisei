@@ -121,32 +121,32 @@ static void stage5_update(void) {
 }
 
 void iku_spell_bg(Boss *b, int t) {
-	fill_screen(0, 300, 1, "stage5/spell_bg");
+	fill_viewport(0, 300, 1, "stage5/spell_bg");
 
 	glBlendFunc(GL_ZERO, GL_SRC_COLOR);
-	fill_screen(0, t*0.001, 0.7, "stage5/noise");
+	fill_viewport(0, t*0.001, 0.7, "stage5/noise");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glPushMatrix();
 	glTranslatef(0, -100, 0);
 
-	fill_screen(t/100.0,0,0.5,"stage5/spell_clouds");
+	fill_viewport(t/100.0,0,0.5,"stage5/spell_clouds");
 	glPushMatrix();
 	glTranslatef(0, 100, 0);
-	fill_screen(t/100.0*0.75,0,0.6,"stage5/spell_clouds");
+	fill_viewport(t/100.0*0.75,0,0.6,"stage5/spell_clouds");
 	glPushMatrix();
 	glTranslatef(0, 100, 0);
-	fill_screen(t/100.0*0.5,0,0.7,"stage5/spell_clouds");
+	fill_viewport(t/100.0*0.5,0,0.7,"stage5/spell_clouds");
 	glPushMatrix();
 	glTranslatef(0, 100, 0);
-	fill_screen(t/100.0*0.25,0,0.8,"stage5/spell_clouds");
+	fill_viewport(t/100.0*0.25,0,0.8,"stage5/spell_clouds");
 	glPopMatrix();
 	glPopMatrix();
 	glPopMatrix();
 	glPopMatrix();
 
 	glColor4f(1,1,1,0.05*stagedata.light_strength);
-	fill_screen(0, 300, 1, "stage5/spell_lightning");
+	fill_viewport(0, 300, 1, "stage5/spell_lightning");
 	glColor4f(1,1,1,1);
 }
 
@@ -163,7 +163,7 @@ static void stage5_start(void) {
 
 static void stage5_preload(void) {
 	preload_resources(RES_BGM, RESF_OPTIONAL, "stage5", "stage5boss", NULL);
-	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+	preload_resources(RES_SPRITE, RESF_DEFAULT,
 		"stage5/noise",
 		"stage5/spell_bg",
 		"stage5/spell_clouds",
@@ -175,8 +175,8 @@ static void stage5_preload(void) {
 		"tower_light",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
-		"iku",
-		"iku_mid",
+		"boss/iku",
+		"boss/iku_mid",
 	NULL);
 	preload_resources(RES_MODEL, RESF_DEFAULT,
 		"tower",

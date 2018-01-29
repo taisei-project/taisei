@@ -88,7 +88,7 @@ static void trace_laser(Enemy *e, complex vel, int damage) {
 		if(col.type & col_types) {
 			tsrand_fill(3);
 			PARTICLE(
-				.texture = "flare",
+				.sprite = "flare",
 				.pos = col.location,
 				.rule = timeout_linear,
 				.draw_rule = Shrink,
@@ -153,7 +153,7 @@ static void draw_magic_star(complex pos, double a, Color c1, Color c2) {
 	c1 = multiply_colors(c1, mul);
 	c2 = multiply_colors(c2, mul);
 
-	Texture *tex = get_tex("part/magic_star");
+	Sprite *spr = get_sprite("part/magic_star");
 	Shader *shader = recolor_get_shader();
 	ColorTransform ct;
 	glUseProgram(shader->prog);
@@ -161,18 +161,17 @@ static void draw_magic_star(complex pos, double a, Color c1, Color c2) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glPushMatrix();
 		glTranslatef(creal(pos), cimag(pos), -1);
-		glScalef(0.25, 0.25, 1);
 		glPushMatrix();
 			static_clrtransform_bullet(c1, &ct);
 			recolor_apply_transform(&ct);
 			glRotatef(global.frames * 3, 0, 0, 1);
-			draw_texture_p(0, 0, tex);
+			draw_sprite_p(0, 0, spr);
 		glPopMatrix();
 		glPushMatrix();
 			static_clrtransform_bullet(c2, &ct);
 			recolor_apply_transform(&ct);
 			glRotatef(global.frames * -3, 0, 0, 1);
-			draw_texture_p(0, 0, tex);
+			draw_sprite_p(0, 0, spr);
 		glPopMatrix();
 	glPopMatrix();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -205,7 +204,7 @@ static void marisa_laser_slave_visual(Enemy *e, int t, bool render) {
 	glColor4f(1, 1, 1, laser_alpha);
 	glPushMatrix();
 	glTranslatef(creal(ld->trace_hit.first), cimag(ld->trace_hit.first), 0);
-	draw_texture(0, 0, "part/lasercurve");
+	draw_sprite(0, 0, "part/smoothdot");
 	glPopMatrix();
 	glColor4f(1, 1, 1, 1);
 }
@@ -425,7 +424,7 @@ static int masterspark(Enemy *e, int t2) {
 		complex dir = -cexp(1.2*I*nfrand())*I;
 		Color c = rgb(0.7+0.3*sin(t*30),0.7+0.3*cos(t*30),0.7+0.3*cos(t*3));
 		PARTICLE(
-			.texture="maristar_orbit",
+			.sprite="maristar_orbit",
 			.pos=global.plr.pos+40*dir,
 			.color=c,
 			.rule=masterspark_star,
@@ -436,7 +435,7 @@ static int masterspark(Enemy *e, int t2) {
 		);
 		dir = -conj(dir);
 		PARTICLE(
-			.texture="maristar_orbit",
+			.sprite="maristar_orbit",
 			.pos=global.plr.pos+40*dir,
 			.color=c,
 			.rule=masterspark_star,
@@ -446,7 +445,7 @@ static int masterspark(Enemy *e, int t2) {
 			.draw_rule=GrowFade
 		);
 		PARTICLE(
-			.texture="smoke",
+			.sprite="smoke",
 			.pos=global.plr.pos-40*I,
 			.color=rgb(0.9,1,1),
 			.rule=timeout_linear,
@@ -475,7 +474,7 @@ static void marisa_laser_bombbg(Player *plr) {
 		fade = 1-t*4 + 3;
 
 	glColor4f(1,1,1,0.8*fade);
-	fill_screen(sin(t*0.3),t*3*(1+t*3),1,"marisa_bombbg");
+	fill_viewport(sin(t*0.3),t*3*(1+t*3),1,"marisa_bombbg");
 	glColor4f(1,1,1,1);
 }
 
@@ -582,20 +581,21 @@ static void marisa_laser_shot(Player *plr) {
 static void marisa_laser_preload(void) {
 	const int flags = RESF_DEFAULT;
 
-	preload_resources(RES_TEXTURE, flags,
-		// "part/marilaser_part0",
-		// "proj/marilaser",
+	preload_resources(RES_SPRITE, flags,
 		"proj/marisa",
-		"marisa_bombbg",
 		"part/maristar_orbit",
+		"part/magic_star",
+	NULL);
+
+	preload_resources(RES_TEXTURE, flags,
+		"marisa_bombbg",
 		"part/marisa_laser0",
 		"part/marisa_laser1",
-		"part/magic_star",
 	NULL);
 
 	preload_resources(RES_SHADER, flags,
 		"marisa_laser",
-	"masterspark",
+		"masterspark",
 	NULL);
 
 	preload_resources(RES_SFX, flags | RESF_OPTIONAL,

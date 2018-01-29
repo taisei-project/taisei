@@ -116,7 +116,7 @@ static void stage1_smoke_draw(Vector pos) {
 	glRotatef(global.frames,0,0,1);
 
 	glColor4f(.8,.8,.8,((d-500)*(d-500))/1.5e7);
-	draw_texture(0,0,"stage1/fog");
+	draw_sprite(0,0,"stage1/fog");
 	glColor4f(1,1,1,1);
 
 	glPopMatrix();
@@ -193,7 +193,7 @@ static void stage1_start(void) {
 
 static void stage1_preload(void) {
 	preload_resources(RES_BGM, RESF_OPTIONAL, "stage1", "stage1boss", NULL);
-	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+	preload_resources(RES_SPRITE, RESF_DEFAULT,
 		"stage1/cirnobg",
 		"stage1/fog",
 		"stage1/snowlayer",
@@ -206,7 +206,7 @@ static void stage1_preload(void) {
 		"zbuf_fog",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
-		"cirno",
+		"boss/cirno",
 	NULL);
 }
 

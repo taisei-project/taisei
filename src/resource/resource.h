@@ -19,6 +19,7 @@
 #include "font.h"
 #include "model.h"
 #include "postprocess.h"
+#include "sprite.h"
 #include "hashtable.h"
 
 typedef enum ResourceType {
@@ -29,6 +30,7 @@ typedef enum ResourceType {
 	RES_SHADER,
 	RES_MODEL,
 	RES_POSTPROCESS,
+	RES_SPRITE,
 	RES_NUMTYPES,
 } ResourceType;
 
@@ -94,6 +96,7 @@ typedef struct Resource {
 		Shader *shader;
 		Model *model;
 		PostprocessShader *postprocess;
+		Sprite *sprite;
 	};
 } Resource;
 

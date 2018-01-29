@@ -36,9 +36,12 @@ static struct {
 } stagedraw;
 
 void stage_draw_preload(void) {
-	preload_resources(RES_TEXTURE, RESF_PERMANENT,
-		"hud",
+	preload_resources(RES_SPRITE, RESF_PERMANENT,
 		"star",
+		"hud",
+	NULL);
+
+	preload_resources(RES_TEXTURE, RESF_PERMANENT,
 		"titletransition",
 	NULL);
 
@@ -90,8 +93,8 @@ static void apply_shader_rules(ShaderRule *shaderrules, FBOPair *fbos) {
 }
 
 static void draw_wall_of_text(float f, const char *txt) {
-	float strw, strh;
-	Texture *tex = render_text(txt, _fonts.standard, &strw, &strh);
+	Sprite spr;
+	render_text(txt, _fonts.standard, &spr);
 
 	float w = VIEWPORT_W;
 	float h = VIEWPORT_H;
@@ -102,12 +105,12 @@ static void draw_wall_of_text(float f, const char *txt) {
 
 	Shader *shader = get_shader("spellcard_walloftext");
 	glUseProgram(shader->prog);
-	glUniform1f(uniloc(shader, "w"), strw/(float)tex->w);
-	glUniform1f(uniloc(shader, "h"), strh/(float)tex->h);
+	glUniform1f(uniloc(shader, "w"), spr.tex_area.w/spr.tex->w);
+	glUniform1f(uniloc(shader, "h"), spr.tex_area.h/spr.tex->h);
 	glUniform1f(uniloc(shader, "ratio"), h/w);
 	glUniform2f(uniloc(shader, "origin"), creal(global.boss->pos)/h, cimag(global.boss->pos)/w);
 	glUniform1f(uniloc(shader, "t"), f);
-	glBindTexture(GL_TEXTURE_2D, tex->gltex);
+	glBindTexture(GL_TEXTURE_2D, spr.tex->gltex);
 	draw_quad();
 	glUseProgram(0);
 
@@ -132,7 +135,7 @@ static void draw_spellbg(int t) {
 		glScalef(f,f,f);
 	}
 
-	draw_texture(0,0,"boss_spellcircle0");
+	draw_sprite(0, 0, "boss_spellcircle0");
 	glPopMatrix();
 
 	float delay = ATTACK_START_DELAY;
@@ -146,7 +149,7 @@ static void draw_spellbg(int t) {
 		glPushMatrix();
 		float f = -0.5*t/(float)ATTACK_START_DELAY+0.5;
 		glColor4f(1,1,1,-f*f+2*f);
-		draw_texture_p(VIEWPORT_W*3/4-10*f*f,VIEWPORT_H*2/3-10*f*f,b->dialog);
+		draw_sprite_p(VIEWPORT_W*3/4-10*f*f,VIEWPORT_H*2/3-10*f*f,b->dialog);
 		glColor4f(1,1,1,1);
 		glPopMatrix();
 	}
@@ -484,7 +487,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	draw_text(AL_Left, labels->x.ofs, labels->y.hiscore, "Hi-Score:", _fonts.hud);
 	draw_text(AL_Left, labels->x.ofs, labels->y.score,   "Score:",    _fonts.hud);
 	draw_text(AL_Left, labels->x.ofs, labels->y.lives,   "Lives:",    _fonts.hud);
-	draw_text(AL_Left, labels->x.ofs, labels->y.bombs,   "Bombs:",    _fonts.hud);
+	draw_text(AL_Left, labels->x.ofs, labels->y.bombs,   "Spells:",   _fonts.hud);
 	draw_text(AL_Left, labels->x.ofs, labels->y.power,   "Power:",    _fonts.hud);
 	draw_text(AL_Left, labels->x.ofs, labels->y.graze,   "Graze:",    _fonts.hud);
 	glUniform4f(stagedraw.hud_text.u_colortint, 1.00, 1.00, 1.00, 1.00);
@@ -632,7 +635,7 @@ static void stage_draw_framerate_graphs(void) {
 
 void stage_draw_hud(void) {
 	// Background
-	draw_texture(SCREEN_W/2.0, SCREEN_H/2.0, "hud");
+	draw_sprite(SCREEN_W/2.0, SCREEN_H/2.0, "hud");
 
 	// Set up positions of most HUD elements
 	static struct labels_s labels = {
@@ -663,7 +666,7 @@ void stage_draw_hud(void) {
 	glPushMatrix();
 	glTranslatef((SCREEN_W - 615) * 0.25, SCREEN_H-170, 0);
 	glScalef(0.6, 0.6, 0);
-	draw_texture(0, 0, difficulty_tex(global.diff));
+	draw_sprite(0, 0, difficulty_sprite_name(global.diff));
 	glPopMatrix();
 
 	// Set up variables for Extra Spell indicator
@@ -721,7 +724,7 @@ void stage_draw_hud(void) {
 		if(red > 1)
 			red = 0;
 		glColor4f(1,1,1,1-red);
-		draw_texture(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
+		draw_sprite(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
 		glColor4f(1,1,1,1);
 	}
 }

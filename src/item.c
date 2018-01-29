@@ -14,20 +14,20 @@
 #include "stageobjects.h"
 #include "objectpool_util.h"
 
-static Texture* item_tex(ItemType type) {
+static Sprite* item_sprite(ItemType type) {
 	static const char *const map[] = {
-		[Power]     = "items/power",
-		[Point]     = "items/point",
-		[Life]      = "items/life",
-		[Bomb]      = "items/bomb",
-		[LifeFrag]  = "items/lifefrag",
-		[BombFrag]  = "items/bombfrag",
-		[BPoint]    = "items/bullet_point",
+		[Power]     = "item/power",
+		[Point]     = "item/point",
+		[Life]      = "item/life",
+		[Bomb]      = "item/bomb",
+		[LifeFrag]  = "item/lifefrag",
+		[BombFrag]  = "item/bombfrag",
+		[BPoint]    = "item/bullet_point",
 	};
 
 	// int cast to silence a WTF warning
 	assert((int)type < sizeof(map)/sizeof(char*));
-	return get_tex(map[type]);
+	return get_sprite(map[type]);
 }
 
 static int item_prio(List *litem) {
@@ -41,6 +41,8 @@ Item* create_item(complex pos, complex v, ItemType type) {
 		// e.g. enemies that die offscreen shouldn't spawn any items inside the viewport
 		return NULL;
 	}
+
+	// type = 1 + floor(Life * frand());
 
 	Item *i = (Item*)objpool_acquire(stage_object_pools.items);
 	list_insert_at_priority_tail(&global.items, i, type, item_prio);
@@ -86,7 +88,7 @@ void draw_items(void) {
 			prevc = c;
 		}
 
-		draw_texture_p(creal(i->pos), cimag(i->pos), item_tex(i->type));
+		draw_sprite_p(creal(i->pos), cimag(i->pos), item_sprite(i->type));
 	}
 
 	if(prevc != white) {
@@ -109,7 +111,7 @@ void move_item(Item *i) {
 		i->pos = i->pos0 + log(t/5.0 + 1)*5*(i->v + lim) + lim*t;
 
 		complex v = i->pos - oldpos;
-		double half = item_tex(i->type)->w/2.0;
+		double half = item_sprite(i->type)->w/2.0;
 		bool over = false;
 
 		if((over = creal(i->pos) > VIEWPORT_W-half) || creal(i->pos) < half) {
@@ -230,14 +232,14 @@ void spawn_items(complex pos, ...) {
 }
 
 void items_preload(void) {
-	preload_resources(RES_TEXTURE, RESF_PERMANENT,
-		"items/power",
-		"items/point",
-		"items/life",
-		"items/bomb",
-		"items/lifefrag",
-		"items/bombfrag",
-		"items/bullet_point",
+	preload_resources(RES_SPRITE, RESF_PERMANENT,
+		"item/power",
+		"item/point",
+		"item/life",
+		"item/bomb",
+		"item/lifefrag",
+		"item/bombfrag",
+		"item/bullet_point",
 	NULL);
 
 	preload_resources(RES_SFX, RESF_OPTIONAL,

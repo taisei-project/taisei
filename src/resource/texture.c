@@ -59,6 +59,49 @@ void* load_texture_begin(const char *path, unsigned int flags) {
 	a = CLRGETVAL(src, A); \
 } while(0)
 
+#include "video.h"
+
+static void texture_post_load(Texture *tex) {
+	// this is a bit hacky and not very efficient,
+	// but it's still much faster than fixing up the texture on the CPU
+
+	GLuint fbotex, fbo;
+	Shader *sha = get_shader("texture_post_load");
+
+	glEnable(GL_TEXTURE_2D);
+	glDisable(GL_BLEND);
+	glGenTextures(1, &fbotex);
+	glBindTexture(GL_TEXTURE_2D, fbotex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex->w, tex->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbotex, 0);
+	glBindTexture(GL_TEXTURE_2D, tex->gltex);
+	glUseProgram(sha->prog);
+	glUniform1i(uniloc(sha, "width"), tex->w);
+	glUniform1i(uniloc(sha, "height"), tex->h);
+	glPushMatrix();
+	glLoadIdentity();
+	glViewport(0, 0, tex->w, tex->h);
+	set_ortho_ex(tex->w, tex->h);
+	glTranslatef(tex->w * 0.5, tex->h * 0.5, 0);
+	glScalef(tex->w, tex->h, 1);
+	glDrawArrays(GL_QUADS, 4, 4);
+	glPopMatrix();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDeleteFramebuffers(1, &fbo);
+	glDeleteTextures(1, &tex->gltex);
+	glUseProgram(0);
+	video_set_viewport();
+	set_ortho();
+	glEnable(GL_BLEND);
+	tex->gltex = fbotex;
+}
+
 void* load_texture_end(void *opaque, const char *path, unsigned int flags) {
 	SDL_Surface *surface;
 	ImageData *img = opaque;
@@ -82,6 +125,7 @@ void* load_texture_end(void *opaque, const char *path, unsigned int flags) {
 	SDL_FreeSurface(surface);
 	free(img);
 
+	texture_post_load(texture);
 	return texture;
 }
 
@@ -171,82 +215,6 @@ static ImageData* load_png(const char *filename) {
 	return img;
 }
 
-static uint_fast32_t nearest_with_best_alpha_o(
-	uint32_t *pixels,
-	uint_fast32_t w,
-	uint_fast32_t x,
-	uint_fast32_t y,
-	uint_fast32_t tex_w,
-	uint_fast32_t tex_h,
-	uint_fast32_t numpixels,
-	int_fast8_t offsets[4][2]
-) {
-	uint_fast32_t result = 0;
-	uint_fast32_t result_alpha = 0;
-
-	for(int i = 0; i < 4; ++i) {
-		int ox = (x + offsets[i][0]) % tex_w;
-		int oy = (y + offsets[i][1]) % tex_h;
-		int idx = oy*w+ox;
-
-		if(idx < 0 || idx >= numpixels) {
-			continue;
-		}
-
-		uint_fast32_t clr = pixels[idx];
-		uint_fast32_t a = clr & CLRMASK(A);
-
-		if(a && a >= result_alpha) {
-			result = clr;
-			result_alpha = a;
-		}
-	}
-
-	return result;
-}
-
-static uint_fast32_t nearest_with_best_alpha(
-	uint32_t *pixels,
-	uint_fast32_t w,
-	uint_fast32_t x,
-	uint_fast32_t y,
-	uint_fast32_t tex_w,
-	uint_fast32_t tex_h,
-	uint_fast32_t numpixels
-) {
-	/*
-	 *  GL_LINEAR will sample even pixels with zero alpha.
-	 *  Those usually don't have any meaningful RGB data.
-	 *  This results in ugly dark borders around some sprites.
-	 *  As a workaround, we change the RGB values of such pixels to those of the most opaque nearby one.
-	 */
-
-	uint_fast32_t result = 0;
-
-	static int_fast8_t offsets_short[4][2] = {
-		{ 0,  1 },
-		{ 0, -1 },
-		{ 1,  0 },
-		{ -1, 0 },
-	};
-
-	static int_fast8_t offsets_long[4][2] = {
-		{ 1,  1 },
-		{ 1, -1 },
-		{  1, 1 },
-		{ -1, 1 },
-	};
-
-	result = nearest_with_best_alpha_o(pixels, w, x, y, tex_w, tex_h, numpixels, offsets_short);
-
-	if(!(result & CLRMASK(A))) {
-		result = nearest_with_best_alpha_o(pixels, w, x, y, tex_w, tex_h, numpixels, offsets_long);
-	}
-
-	result &= ~CLRMASK(A);
-	return result;
-}
-
 void load_sdl_surf(SDL_Surface *surface, Texture *texture) {
 	glGenTextures(1, &texture->gltex);
 	glBindTexture(GL_TEXTURE_2D, texture->gltex);
@@ -271,20 +239,6 @@ void load_sdl_surf(SDL_Surface *surface, Texture *texture) {
 				clr = '\0';
 			}
 
-			if(y == nh-1 || x == nw-1 || (y <= surface->h && x <= surface->w)) {
-				if(!(clr & CLRMASK(A))) {
-					clr = nearest_with_best_alpha(
-						(uint32_t*)surface->pixels,
-						surface->w,
-						x,
-						y,
-						nw,
-						nh,
-						surface->h * surface->w
-					);
-				}
-			}
-
 			tex[y*nw+x] = clr;
 		}
 	}
@@ -300,10 +254,6 @@ void load_sdl_surf(SDL_Surface *surface, Texture *texture) {
 void free_texture(Texture *tex) {
 	glDeleteTextures(1, &tex->gltex);
 	free(tex);
-}
-
-void draw_texture(float x, float y, const char *name) {
-	draw_texture_p(x, y, get_tex(name));
 }
 
 static struct draw_texture_state {
@@ -379,6 +329,10 @@ void draw_texture_p(float x, float y, Texture *tex) {
 	end_draw_texture();
 }
 
+void draw_texture(float x, float y, const char *name) {
+	draw_texture_p(x, y, get_tex(name));
+}
+
 void draw_texture_with_size_p(float x, float y, float w, float h, Texture *tex) {
 	begin_draw_texture((FloatRect){ x, y, w, h }, (FloatRect){ 0, 0, tex->w, tex->h }, tex);
 	draw_quad();
@@ -389,11 +343,11 @@ void draw_texture_with_size(float x, float y, float w, float h, const char *name
 	draw_texture_with_size_p(x, y, w, h, get_tex(name));
 }
 
-void fill_screen(float xoff, float yoff, float ratio, const char *name) {
-	fill_screen_p(xoff, yoff, ratio, 1, 0, get_tex(name));
+void fill_viewport(float xoff, float yoff, float ratio, const char *name) {
+	fill_viewport_p(xoff, yoff, ratio, 1, 0, get_tex(name));
 }
 
-void fill_screen_p(float xoff, float yoff, float ratio, float aspect, float angle, Texture *tex) {
+void fill_viewport_p(float xoff, float yoff, float ratio, float aspect, float angle, Texture *tex) {
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 
 	float rw, rh;
@@ -406,26 +360,50 @@ void fill_screen_p(float xoff, float yoff, float ratio, float aspect, float angl
 		rh = ratio;
 	}
 
-	glMatrixMode(GL_TEXTURE);
-		glLoadIdentity();
-		glTranslatef(xoff,yoff, 0);
-		glScalef(rw, rh, 1);
-		glTranslatef(0.5,0.5, 0);
-		glRotatef(angle,0,0,1);
-		glTranslatef(-0.5,-0.5, 0);
-	glMatrixMode(GL_MODELVIEW);
+	bool texture_matrix_tainteed = false;
+
+	if(xoff || yoff || rw != 1 || rh != 1 || angle) {
+		texture_matrix_tainteed = true;
+		glMatrixMode(GL_TEXTURE);
+
+		if(xoff || yoff) {
+			glTranslatef(xoff,yoff, 0);
+		}
+
+		if(rw != 1 || rh != 1) {
+			glScalef(rw, rh, 1);
+		}
+
+		if(angle) {
+			glTranslatef(0.5, 0.5, 0);
+			glRotatef(angle, 0, 0, 1);
+			glTranslatef(-0.5, -0.5, 0);
+		}
+
+		glMatrixMode(GL_MODELVIEW);
+	}
 
 	glPushMatrix();
 	glTranslatef(VIEWPORT_W*0.5, VIEWPORT_H*0.5, 0);
 	glScalef(VIEWPORT_W, VIEWPORT_H, 1);
-
 	draw_quad();
-
 	glPopMatrix();
 
-	glMatrixMode(GL_TEXTURE);
+	if(texture_matrix_tainteed) {
+		glMatrixMode(GL_TEXTURE);
 		glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
+		glMatrixMode(GL_MODELVIEW);
+	}
+}
+
+void fill_screen(const char *name) {
+	fill_screen_p(get_tex(name));
+}
+
+void fill_screen_p(Texture *tex) {
+	begin_draw_texture((FloatRect){ SCREEN_W*0.5, SCREEN_H*0.5, SCREEN_W, SCREEN_H }, (FloatRect){ 0, 0, tex->w, tex->h }, tex);
+	draw_quad();
+	end_draw_texture();
 }
 
 // draws a thin, w-width rectangle from point A to point B with a texture that

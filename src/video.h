@@ -32,6 +32,7 @@ typedef struct {
 	VideoMode real;
 	SDL_Window *window;
 	SDL_GLContext *glcontext;
+	float quality_factor;
 } Video;
 
 extern Video video;

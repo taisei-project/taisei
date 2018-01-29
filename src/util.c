@@ -343,7 +343,7 @@ void fade_out(float f) {
 }
 
 void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxfrags, float alpha, float star_width) {
-	Texture *star = get_tex("star");
+	Sprite *star = get_sprite("star");
 	Shader *shader = get_shader("circleclipped_indicator");
 	static float clr[4];
 	int i = 0;
@@ -363,11 +363,7 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 	glUniform4fv(uniloc(shader, "back_color"), 1, clr);
 	glUniform1f(uniloc(shader, "fill"), 1);
 
-	begin_draw_texture(
-		(FloatRect){ x - star_width, y, star_width, star_width },
-		(FloatRect){ 0, 0, star->w, star->h },
-		star
-	);
+	begin_draw_sprite(x - star_width, y, star_width/star->w, star_width/star->w, true, star);
 
 	while(i < numstars) {
 		glTranslatef(1, 0, 0);
@@ -392,7 +388,7 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 		i++;
 	}
 
-	end_draw_texture();
+	end_draw_sprite();
 	glUseProgram(0);
 }
 

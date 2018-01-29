@@ -167,8 +167,9 @@ static void video_init_gl(void) {
 
 static void video_update_quality(void) {
 	int vw, vh;
-	video_get_viewport_size(&vw,&vh);
+	video_get_viewport_size(&vw, &vh);
 	float q = (float)vh / SCREEN_H;
+	video.quality_factor = q;
 
 	float fg = q * config_get_float(CONFIG_FG_QUALITY);
 	float bg = q * config_get_float(CONFIG_BG_QUALITY);

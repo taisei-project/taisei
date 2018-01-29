@@ -19,13 +19,14 @@ Resources resources;
 static SDL_threadID main_thread_id;
 
 static const char *resource_type_names[] = {
-	"texture",
-	"animation",
-	"sound",
-	"bgm",
-	"shader",
-	"model",
-	"postprocessing pipeline",
+	[RES_TEXTURE] = "texture",
+	[RES_ANIM] = "animation",
+	[RES_SFX] = "sound",
+	[RES_BGM] = "bgm",
+	[RES_SHADER] = "shader",
+	[RES_MODEL] = "model",
+	[RES_POSTPROCESS] = "postprocessing pipeline",
+	[RES_SPRITE] = "sprite",
 };
 
 static inline ResourceHandler* get_handler(ResourceType type) {
@@ -367,7 +368,7 @@ void init_resources(void) {
 	);
 
 	register_handler(
-		RES_ANIM, ANI_PATH_PREFIX, load_animation_begin, load_animation_end, free, NULL, animation_path, check_animation_path, HT_DYNAMIC_SIZE
+		RES_ANIM, ANI_PATH_PREFIX, load_animation_begin, load_animation_end, unload_animation, NULL, animation_path, check_animation_path, HT_DYNAMIC_SIZE
 	);
 
 	register_handler(
@@ -390,6 +391,10 @@ void init_resources(void) {
 		RES_POSTPROCESS, SHA_PATH_PREFIX, load_postprocess_begin, load_postprocess_end, unload_postprocess, NULL, postprocess_path, check_postprocess_path, HT_DYNAMIC_SIZE
 	);
 
+	register_handler(
+		RES_SPRITE, SPRITE_PATH_PREFIX, load_sprite_begin, load_sprite_end, free, NULL, sprite_path, check_sprite_path, HT_DYNAMIC_SIZE
+	);
+
 	main_thread_id = SDL_ThreadID();
 
 	if(!getenvint("TAISEI_NOASYNC", 0)) {
@@ -403,6 +408,7 @@ void init_resources(void) {
 	}
 
 	recolor_init();
+	preload_resource(RES_SHADER, "texture_post_load", RESF_PERMANENT);
 }
 
 void resource_util_strip_ext(char *path) {
