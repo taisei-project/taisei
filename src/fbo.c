@@ -17,8 +17,8 @@ static void init_fbo(FBO *fbo, float scale, int type) {
 	glBindTexture(GL_TEXTURE_2D, fbo->tex);
 
 	fbo->scale = scale = sanitize_scale(scale);
-	fbo->nw = topow2(scale * VIEWPORT_W);
-	fbo->nh = topow2(scale * VIEWPORT_H);
+	fbo->nw = scale * VIEWPORT_W;
+	fbo->nh = scale * VIEWPORT_H;
 
 	log_debug("FBO %p: q=%f, w=%i, h=%i", (void*)fbo, fbo->scale, fbo->nw, fbo->nh);
 

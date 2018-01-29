@@ -256,11 +256,8 @@ void load_sdl_surf(SDL_Surface *surface, Texture *texture) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	int nw = 2;
-	int nh = 2;
-
-	while(nw < surface->w) nw *= 2;
-	while(nh < surface->h) nh *= 2;
+	int nw = surface->w;
+	int nh = surface->h;
 
 	uint32_t *tex = calloc(sizeof(uint32_t), nw*nh);
 	uint32_t clr;
