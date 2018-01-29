@@ -63,11 +63,6 @@ static void draw_laser_curve_instanced(Laser *l) {
 	float t;
 	int c;
 
-	Texture *tex = get_tex("part/lasercurve");
-
-	float wq = ((float)tex->w)/tex->truew;
-	float hq = ((float)tex->h)/tex->trueh;
-
 	c = l->timespan;
 
 	t = (global.frames - l->birthtime)*l->speed - l->timespan + l->timeshift;
@@ -94,8 +89,7 @@ static void draw_laser_curve_instanced(Laser *l) {
 	glUniform2f(uniloc(l->shader, "a3"), creal(l->args[3]), cimag(l->args[3]));
 
 	glUniform1f(uniloc(l->shader, "timeshift"), t);
-	glUniform1f(uniloc(l->shader, "wq"), wq*l->width);
-	glUniform1f(uniloc(l->shader, "hq"), hq*l->width);
+	glUniform1f(uniloc(l->shader, "width"), l->width);
 	glUniform1f(uniloc(l->shader, "width_exponent"), l->width_exponent);
 
 	glUniform1i(uniloc(l->shader, "span"), c*2);
@@ -129,10 +123,7 @@ static void draw_laser_curve(Laser *laser) {
 		glTranslatef(creal(pos), cimag(pos), 0);
 		glRotatef(180/M_PI*carg(last-pos), 0, 0, 1);
 
-		float wq = ((float)tex->w)/tex->truew;
-		float hq = ((float)tex->h)/tex->trueh;
-
-		glScalef(tex->w*wq*0.5*cabs(last-pos),s*laser->width*hq,s);
+		glScalef(tex->w*0.5*cabs(last-pos),s*laser->width,s);
 		draw_quad();
 
 		last = pos;

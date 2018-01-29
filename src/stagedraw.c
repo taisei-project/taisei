@@ -90,9 +90,8 @@ static void apply_shader_rules(ShaderRule *shaderrules, FBOPair *fbos) {
 }
 
 static void draw_wall_of_text(float f, const char *txt) {
-	Texture *tex = render_text(txt, _fonts.standard);
-	int strw = tex->w;
-	int strh = tex->h;
+	float strw, strh;
+	Texture *tex = render_text(txt, _fonts.standard, &strw, &strh);
 
 	float w = VIEWPORT_W;
 	float h = VIEWPORT_H;
@@ -103,8 +102,8 @@ static void draw_wall_of_text(float f, const char *txt) {
 
 	Shader *shader = get_shader("spellcard_walloftext");
 	glUseProgram(shader->prog);
-	glUniform1f(uniloc(shader, "w"), strw/(float)tex->truew);
-	glUniform1f(uniloc(shader, "h"), strh/(float)tex->trueh);
+	glUniform1f(uniloc(shader, "w"), strw/(float)tex->w);
+	glUniform1f(uniloc(shader, "h"), strh/(float)tex->h);
 	glUniform1f(uniloc(shader, "ratio"), h/w);
 	glUniform2f(uniloc(shader, "origin"), creal(global.boss->pos)/h, cimag(global.boss->pos)/w);
 	glUniform1f(uniloc(shader, "t"), f);

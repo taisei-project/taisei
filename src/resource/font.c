@@ -45,6 +45,10 @@ typedef struct FontRenderer {
 	Texture tex;
 	float quality;
 	uint32_t *pixbuf;
+	struct {
+		int w;
+		int h;
+	} rendered_area;
 } FontRenderer;
 
 static ObjectPool *cache_pool;
@@ -161,20 +165,20 @@ static void fontrenderer_init(FontRenderer *f, float quality) {
 
 	glGenTextures(1,&f->tex.gltex);
 
-	f->tex.truew = w;
-	f->tex.trueh = h;
+	f->tex.w = w;
+	f->tex.h = h;
 
-	f->pixbuf = calloc(f->tex.truew, f->tex.trueh);
+	f->pixbuf = calloc(w, h);
 
-	glBindTexture(GL_TEXTURE_2D,f->tex.gltex);
+	glBindTexture(GL_TEXTURE_2D, f->tex.gltex);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, f->tex.truew, f->tex.trueh, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
-	log_debug("q=%f, w=%i, h=%i", f->quality, f->tex.truew, f->tex.trueh);
+	log_debug("q=%f, w=%i, h=%i", f->quality, w, h);
 }
 
 static void fontrenderer_free(FontRenderer *f) {
@@ -188,8 +192,8 @@ static void fontrenderer_draw_prerendered(FontRenderer *f, SDL_Surface *surf) {
 
 	glBindTexture(GL_TEXTURE_2D, f->tex.gltex);
 
-	f->tex.w = surf->w;
-	f->tex.h = surf->h;
+	f->rendered_area.w = surf->w;
+	f->rendered_area.h = surf->h;
 
 	// the written texture is zero padded to avoid bits of previously drawn text bleeding in
 	int winw = surf->w+1;
@@ -221,8 +225,8 @@ static SDL_Surface* fontrender_render(FontRenderer *f, const char *text, Font *f
 		log_fatal("TTF_RenderUTF8_Blended() failed: %s", TTF_GetError());
 	}
 
-	if(surf->w > f->tex.truew || surf->h > f->tex.trueh) {
-		log_fatal("Text (%s %dx%d) is too big for the internal buffer (%dx%d).", text, surf->w, surf->h, f->tex.truew, f->tex.trueh);
+	if(surf->w > f->tex.w || surf->h > f->tex.h) {
+		log_fatal("Text (%s %dx%d) is too big for the internal buffer (%dx%d).", text, surf->w, surf->h, f->tex.w, f->tex.h);
 	}
 
 	return surf;
@@ -289,21 +293,24 @@ void free_fonts(void) {
 	}
 }
 
-static void draw_text_texture(Alignment align, float x, float y, Texture *tex) {
+static void draw_text_texture(Alignment align, float x, float y) {
 	float m = 1.0 / font_renderer.quality;
 	bool adjust = !(align & AL_Flag_NoAdjust);
 	align &= 0xf;
+
+	int w = font_renderer.rendered_area.w;
+	int h = font_renderer.rendered_area.h;
 
 	if(adjust) {
 		switch(align) {
 			case AL_Center:
 				break;
-			// tex->w/2 is integer division and must be done first
+			// w/2 is integer division and must be done first
 			case AL_Left:
-				x += m*(tex->w/2);
+				x += m*(w/2);
 				break;
 			case AL_Right:
-				x -= m*(tex->w/2);
+				x -= m*(w/2);
 				break;
 			default:
 				log_fatal("Invalid alignment %x", align);
@@ -311,11 +318,11 @@ static void draw_text_texture(Alignment align, float x, float y, Texture *tex) {
 
 		// if textures are odd pixeled, align them for ideal sharpness.
 
-		if(tex->w&1) {
+		if(w&1) {
 			x += 0.5;
 		}
 
-		if(tex->h&1) {
+		if(h&1) {
 			y += 0.5;
 		}
 	} else {
@@ -323,21 +330,24 @@ static void draw_text_texture(Alignment align, float x, float y, Texture *tex) {
 			case AL_Center:
 				break;
 			case AL_Left:
-				x += m*(tex->w/2.0);
+				x += m*(w/2.0);
 				break;
 			case AL_Right:
-				x -= m*(tex->w/2.0);
+				x -= m*(w/2.0);
 				break;
 			default:
 				log_fatal("Invalid alignment %x", align);
 		}
 	}
 
-	glPushMatrix();
-	glTranslatef(x, y, 0);
-	glScalef(m, m, 1);
-	draw_texture_p(0, 0, tex);
-	glPopMatrix();
+	begin_draw_texture(
+		(FloatRect){ x, y, w/font_renderer.quality, h/font_renderer.quality },
+		(FloatRect){ 0, 0, w, h },
+		&font_renderer.tex
+	);
+
+	draw_quad();
+	end_draw_texture();
 }
 
 void draw_text(Alignment align, float x, float y, const char *text, Font *font) {
@@ -357,12 +367,23 @@ void draw_text(Alignment align, float x, float y, const char *text, Font *font) 
 	}
 
 	fontrenderer_draw(&font_renderer, buf, font);
-	draw_text_texture(align, x, y, &font_renderer.tex);
+	draw_text_texture(align, x, y);
 	free(buf);
 }
 
-Texture* render_text(const char *text, Font *font) {
+Texture* render_text(const char *text, Font *font, float *out_w, float *out_h) {
 	fontrenderer_draw(&font_renderer, text, font);
+
+	// no quality adjustment, the actual size in texels is important here
+
+	if(out_w) {
+		*out_w = font_renderer.rendered_area.w;
+	}
+
+	if(out_w) {
+		*out_h = font_renderer.rendered_area.h;
+	}
+
 	return &font_renderer.tex;
 }
 

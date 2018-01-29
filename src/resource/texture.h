@@ -18,7 +18,6 @@ typedef struct Texture Texture;
 
 struct Texture {
 	int w, h;
-	int truew, trueh;
 	GLuint gltex;
 };
 

@@ -292,9 +292,6 @@ void load_sdl_surf(SDL_Surface *surface, Texture *texture) {
 	texture->w = surface->w;
 	texture->h = surface->h;
 
-	texture->truew = nw;
-	texture->trueh = nh;
-
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, nw, nh, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex);
 
 	free(tex);
@@ -329,8 +326,8 @@ void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex) {
 	float w = dest.w;
 	float h = dest.h;
 
-	float s = frag.w/tex->truew;
-	float t = frag.h/tex->trueh;
+	float s = frag.w/tex->w;
+	float t = frag.h/tex->h;
 
 	if(s != 1 || t != 1 || frag.x || frag.y) {
 		draw_texture_state.texture_matrix_tainteed = true;
@@ -338,7 +335,7 @@ void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex) {
 		glMatrixMode(GL_TEXTURE);
 		glLoadIdentity();
 
-		glScalef(1.0/tex->truew, 1.0/tex->trueh, 1);
+		glScalef(1.0/tex->w, 1.0/tex->h, 1);
 
 		if(frag.x || frag.y) {
 			glTranslatef(frag.x, frag.y, 0);
@@ -399,14 +396,15 @@ void fill_screen(float xoff, float yoff, float ratio, const char *name) {
 void fill_screen_p(float xoff, float yoff, float ratio, float aspect, float angle, Texture *tex) {
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 
-	float rw = ratio;
-	float rh = ratio;
+	float rw, rh;
 
 	if(ratio == 0) {
-		rw = ((float)tex->w)/tex->truew;
-		rh = ((float)tex->h)/tex->trueh;
+		rw = aspect;
+		rh = 1;
+	} else {
+		rw = ratio * aspect;
+		rh = ratio;
 	}
-	rw *= aspect;
 
 	glMatrixMode(GL_TEXTURE);
 		glLoadIdentity();

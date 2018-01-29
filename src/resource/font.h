@@ -36,7 +36,7 @@ typedef struct Font Font;
 Texture *load_text(const char *text, Font *font);
 void draw_text(Alignment align, float x, float y, const char *text, Font *font);
 void draw_text_auto_wrapped(Alignment align, float x, float y, const char *text, int width, Font *font);
-Texture* render_text(const char *text, Font *font);
+Texture* render_text(const char *text, Font *font, float *out_w, float *out_h);
 
 int stringwidth(char *s, Font *font);
 int stringheight(char *s, Font *font);

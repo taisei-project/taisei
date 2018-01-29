@@ -357,7 +357,6 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 	y -= 2;
 
 	glUseProgram(shader->prog);
-	glUniform1f(uniloc(shader, "tcfactor"), star->truew / (float)star->w);
 	parse_color_array(fill_clr, clr);
 	glUniform4fv(uniloc(shader, "fill_color"), 1, clr);
 	parse_color_array(back_clr, clr);
