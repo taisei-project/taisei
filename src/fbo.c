@@ -92,25 +92,12 @@ void swap_fbo_pair(FBOPair *pair) {
 }
 
 void draw_fbo(FBO *fbo) {
-	// this floor is very important, because the size of the fbo is integer
-	// and rendering it perfectly is necessary for non-blurry graphics.
-	float wq = floor(fbo->scale*VIEWPORT_W)/(float)fbo->nw;
-	float hq = floor(fbo->scale*VIEWPORT_H)/(float)fbo->nh;
-	glMatrixMode(GL_TEXTURE);
-	glLoadIdentity();
-	glScalef(wq, hq, 1);
-	glMatrixMode(GL_MODELVIEW);
-
 	glPushMatrix();
 		glTranslatef(VIEWPORT_W/2., VIEWPORT_H/2., 0);
 		glScalef(VIEWPORT_W, VIEWPORT_H, 1);
 		glBindTexture(GL_TEXTURE_2D, fbo->tex);
 		glDrawArrays(GL_QUADS, 4, 4);
 	glPopMatrix();
-
-	glMatrixMode(GL_TEXTURE);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
 }
 
 void draw_fbo_viewport(FBO *fbo) {
