@@ -364,7 +364,11 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 	glUniform4fv(uniloc(shader, "back_color"), 1, clr);
 	glUniform1f(uniloc(shader, "fill"), 1);
 
-	begin_draw_texture(x - star_width, y, star_width, star_width, star);
+	begin_draw_texture(
+		(FloatRect){ x - star_width, y, star_width, star_width },
+		(FloatRect){ 0, 0, star->w, star->h },
+		star
+	);
 
 	while(i < numstars) {
 		glTranslatef(1, 0, 0);

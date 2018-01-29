@@ -309,54 +309,81 @@ void draw_texture(float x, float y, const char *name) {
 	draw_texture_p(x, y, get_tex(name));
 }
 
-void begin_draw_texture(float x, float y, float w, float h, Texture *tex) {
+static struct draw_texture_state {
+	bool drawing;
+	bool texture_matrix_tainteed;
+} draw_texture_state;
+
+void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex) {
+	if(draw_texture_state.drawing) {
+		log_fatal("Already drawing. Did you forget to call end_draw_texture, or call me on the wrong thread?");
+	}
+
+	draw_texture_state.drawing = true;
+
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 	glPushMatrix();
 
-	float wq = ((float)tex->w)/tex->truew;
-	float hq = ((float)tex->h)/tex->trueh;
+	float x = dest.x;
+	float y = dest.y;
+	float w = dest.w;
+	float h = dest.h;
+
+	float s = frag.w/tex->truew;
+	float t = frag.h/tex->trueh;
+
+	if(s != 1 || t != 1 || frag.x || frag.y) {
+		draw_texture_state.texture_matrix_tainteed = true;
+
+		glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
+
+		glScalef(1.0/tex->truew, 1.0/tex->trueh, 1);
+
+		if(frag.x || frag.y) {
+			glTranslatef(frag.x, frag.y, 0);
+		}
+
+		if(s != 1 || t != 1) {
+			glScalef(frag.w, frag.h, 1);
+		}
+
+		glMatrixMode(GL_MODELVIEW);
+	}
 
 	if(x || y) {
 		glTranslatef(x, y, 0);
 	}
 
-	if(w == 0) {
-		w = tex->w;
-	}
-
-	if(h == 0) {
-		h = tex->h;
-	}
-
 	if(w != 1 || h != 1) {
 		glScalef(w, h, 1);
 	}
-
-	glMatrixMode(GL_TEXTURE);
-	glLoadIdentity();
-
-	if(wq != 1 || hq != 1) {
-		glScalef(wq, hq, 1);
-	}
-
-	glMatrixMode(GL_MODELVIEW);
 }
 
 void end_draw_texture(void) {
-	glMatrixMode(GL_TEXTURE);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
+	if(!draw_texture_state.drawing) {
+		log_fatal("Not drawing. Did you forget to call begin_draw_texture, or call me on the wrong thread?");
+	}
+
+	if(draw_texture_state.texture_matrix_tainteed) {
+		draw_texture_state.texture_matrix_tainteed = false;
+		glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
+		glMatrixMode(GL_MODELVIEW);
+	}
+
 	glPopMatrix();
+	draw_texture_state.drawing = false;
 }
 
 void draw_texture_p(float x, float y, Texture *tex) {
-	begin_draw_texture(x, y, 0, 0, tex);
+	begin_draw_texture((FloatRect){ x, y, tex->w, tex->h }, (FloatRect){ 0, 0, tex->w, tex->h }, tex);
 	draw_quad();
 	end_draw_texture();
 }
 
 void draw_texture_with_size_p(float x, float y, float w, float h, Texture *tex) {
-	begin_draw_texture(x, y, w, h, tex);
+	begin_draw_texture((FloatRect){ x, y, w, h }, (FloatRect){ 0, 0, tex->w, tex->h }, tex);
 	draw_quad();
 	end_draw_texture();
 }

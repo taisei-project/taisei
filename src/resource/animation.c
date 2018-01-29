@@ -99,30 +99,15 @@ void draw_animation(float x, float y, int col, int row, const char *name) {
 }
 
 void draw_animation_p(float x, float y, int col, int row, Animation *ani) {
-	glBindTexture(GL_TEXTURE_2D, ani->tex->gltex);
+	float frame_w = (float)ani->tex->w / ani->cols;
+	float frame_h = (float)ani->tex->h / ani->rows;
 
-	float s = (float)ani->tex->w/ani->cols/ani->tex->truew;
-	float t = ((float)ani->tex->h)/ani->tex->trueh/(float)ani->rows;
-
-	glPushMatrix();
-	if(x || y)
-		glTranslatef(x,y,0);
-	if(ani->w != 1 || ani->h != 1)
-		glScalef(ani->w,ani->h, 1);
-
-	glMatrixMode(GL_TEXTURE);
-		glPushMatrix();
-		glScalef(s,t,1);
-
-		if(col || row)
-			glTranslatef(col, row, 0);
-	glMatrixMode(GL_MODELVIEW);
+	begin_draw_texture(
+		(FloatRect){ x, y, ani->w, ani->h },
+		(FloatRect){ col*frame_w, row*frame_h, frame_w, frame_h },
+		ani->tex
+	);
 
 	draw_quad();
-
-	glMatrixMode(GL_TEXTURE);
-		glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
-
-	glPopMatrix();
+	end_draw_texture();
 }

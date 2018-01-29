@@ -62,6 +62,13 @@ char* ucs4_to_utf8(const uint32_t *ucs4);
 // math utils
 //
 
+typedef struct FloatRect {
+	float x;
+	float y;
+	float w;
+	float h;
+} FloatRect;
+
 #include <complex.h>
 
 // These definitions are common but non-standard, so we provide our own

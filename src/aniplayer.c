@@ -101,6 +101,7 @@ void aniplayer_update(AniPlayer *plr) {
 void play_animation_frame(Animation *ani, float x, float y, int frame) {
 	int mirror = frame/(ani->cols*ani->rows);
 	frame = frame%(ani->cols*ani->rows);
+
 	if(mirror) {
 		glPushMatrix();
 		glCullFace(GL_FRONT);
