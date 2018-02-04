@@ -258,7 +258,7 @@ void free_texture(Texture *tex) {
 
 static struct draw_texture_state {
 	bool drawing;
-	bool texture_matrix_tainteed;
+	bool texture_matrix_tainted;
 } draw_texture_state;
 
 void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex) {
@@ -280,7 +280,7 @@ void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex) {
 	float t = frag.h/tex->h;
 
 	if(s != 1 || t != 1 || frag.x || frag.y) {
-		draw_texture_state.texture_matrix_tainteed = true;
+		draw_texture_state.texture_matrix_tainted = true;
 
 		glMatrixMode(GL_TEXTURE);
 		glLoadIdentity();
@@ -312,8 +312,8 @@ void end_draw_texture(void) {
 		log_fatal("Not drawing. Did you forget to call begin_draw_texture, or call me on the wrong thread?");
 	}
 
-	if(draw_texture_state.texture_matrix_tainteed) {
-		draw_texture_state.texture_matrix_tainteed = false;
+	if(draw_texture_state.texture_matrix_tainted) {
+		draw_texture_state.texture_matrix_tainted = false;
 		glMatrixMode(GL_TEXTURE);
 		glLoadIdentity();
 		glMatrixMode(GL_MODELVIEW);
@@ -360,10 +360,10 @@ void fill_viewport_p(float xoff, float yoff, float ratio, float aspect, float an
 		rh = ratio;
 	}
 
-	bool texture_matrix_tainteed = false;
+	bool texture_matrix_tainted = false;
 
 	if(xoff || yoff || rw != 1 || rh != 1 || angle) {
-		texture_matrix_tainteed = true;
+		texture_matrix_tainted = true;
 		glMatrixMode(GL_TEXTURE);
 
 		if(xoff || yoff) {
@@ -389,7 +389,7 @@ void fill_viewport_p(float xoff, float yoff, float ratio, float aspect, float an
 	draw_quad();
 	glPopMatrix();
 
-	if(texture_matrix_tainteed) {
+	if(texture_matrix_tainted) {
 		glMatrixMode(GL_TEXTURE);
 		glLoadIdentity();
 		glMatrixMode(GL_MODELVIEW);

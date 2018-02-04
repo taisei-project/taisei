@@ -104,7 +104,7 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, border=1, force_single=Fa
 
     total_images = len(rects)
 
-    make_maker = lambda: rectpack.newPacker(
+    make_packer = lambda: rectpack.newPacker(
         # No rotation support in Taisei yet
         rotation=False,
 
@@ -118,7 +118,7 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, border=1, force_single=Fa
 
     if force_single:
         while True:
-            packer = make_maker()
+            packer = make_packer()
             packer.add_bin(*binsize)
 
             for rect in rects:
@@ -134,7 +134,7 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, border=1, force_single=Fa
             else:
                 binsize[0] *= 2
     else:
-        packer = make_maker()
+        packer = make_packer()
 
         for rect in rects:
             packer.add_rect(*rect)
