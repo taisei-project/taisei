@@ -322,8 +322,6 @@ void hina_intro(Boss *h, int time) {
 	AT(100)
 		global.dialog = stage2_dialog();
 
-	aniplayer_queue(&h->ani,0,2,0);
-	aniplayer_queue(&h->ani,1,0,0);
 	GO_TO(h, VIEWPORT_W/2 + 100.0*I, 0.05);
 }
 
@@ -765,6 +763,8 @@ Boss* stage2_spawn_hina(complex pos) {
 Boss *create_hina(void) {
 	Boss *hina = stage2_spawn_hina(VIEWPORT_W + 150 + 100.0*I);
 
+	aniplayer_queue(&hina->ani,0,2,0);
+	aniplayer_queue(&hina->ani,1,0,0);
 	boss_add_attack(hina, AT_Move, "Introduction", 2, 0, hina_intro, NULL);
 	boss_add_attack(hina, AT_Normal, "Cards1", 30, 25000, hina_cards1, NULL);
 	boss_add_attack_from_info(hina, &stage2_spells.boss.amulet_of_harm, false);
