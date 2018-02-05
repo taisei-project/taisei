@@ -515,6 +515,40 @@ Hashtable* parse_keyvalue_file(const char *filename, size_t tablesize) {
 	return ht;
 }
 
+static void kvcallback_spec(const char *key, const char *val, KVSpec *spec) {
+	for(KVSpec *s = spec; s->name; ++s) {
+		if(!strcmp(key, s->name)) {
+			if(s->out_str) {
+				*s->out_str = strdup(val);
+			}
+
+			if(s->out_int) {
+				*s->out_int = strtol(val, NULL, 10);
+			}
+
+			if(s->out_float) {
+				*s->out_float = strtod(val, NULL);
+			}
+
+			if(s->out_double) {
+				*s->out_double = strtod(val, NULL);
+			}
+
+			return;
+		}
+	}
+
+	log_warn("Unknown key '%s' with value '%s' ignored", key, val);
+}
+
+bool parse_keyvalue_stream_with_spec(SDL_RWops *strm, KVSpec *spec) {
+	return parse_keyvalue_stream_cb(strm, (KVCallback)kvcallback_spec, spec);
+}
+
+bool parse_keyvalue_file_with_spec(const char *filename, KVSpec *spec) {
+	return parse_keyvalue_file_cb(filename, (KVCallback)kvcallback_spec, spec);
+}
+
 static void png_rwops_write_data(png_structp png_ptr, png_bytep data, png_size_t length) {
 	SDL_RWops *out = png_get_io_ptr(png_ptr);
 	SDL_RWwrite(out, data, length, 1);
@@ -570,6 +604,17 @@ void tsfprintf(FILE *out, const char *restrict fmt, ...) {
 	va_start(args, fmt);
 	vfprintf(out, fmt, args);
 	va_end(args);
+}
+
+char* try_path(const char *prefix, const char *name, const char *ext) {
+	char *p = strjoin(prefix, name, ext, NULL);
+
+	if(vfs_query(p).exists) {
+		return p;
+	}
+
+	free(p);
+	return NULL;
 }
 
 //

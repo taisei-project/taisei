@@ -8,6 +8,8 @@
 
 #include "taisei.h"
 
+#include <SDL_image.h>
+
 #include "resource.h"
 #include "config.h"
 #include "video.h"
@@ -362,7 +364,24 @@ void preload_resources(ResourceType type, ResourceFlags flags, const char *first
 	va_end(args);
 }
 
+static void init_sdl_image(void) {
+	int want_flags = IMG_INIT_JPG | IMG_INIT_PNG;
+	int init_flags = IMG_Init(want_flags);
+
+	if((want_flags & init_flags) != want_flags) {
+		log_warn(
+			"SDL_image doesn't support some of the formats we want. "
+			"Requested: %i, got: %i. "
+			"Textures may fail to load",
+			want_flags,
+			init_flags
+		);
+	}
+}
+
 void init_resources(void) {
+	init_sdl_image();
+
 	register_handler(
 		RES_TEXTURE, TEX_PATH_PREFIX, load_texture_begin, load_texture_end, (ResourceUnloadFunc)free_texture, NULL, texture_path, check_texture_path, HT_DYNAMIC_SIZE
 	);
@@ -490,4 +509,6 @@ void free_resources(bool all) {
 	if(!getenvint("TAISEI_NOASYNC", 0)) {
 		events_unregister_handler(resource_asyncload_handler);
 	}
+
+	IMG_Quit();
 }

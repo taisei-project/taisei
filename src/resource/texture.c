@@ -8,19 +8,52 @@
 
 #include "taisei.h"
 
-#include <png.h>
+#include <SDL_image.h>
 
 #include "texture.h"
 #include "resource.h"
 #include "global.h"
 #include "vbo.h"
+#include "video.h"
+
+static const char *texture_image_exts[] = {
+	// more are usable if you explicitly specify the source in a .tex file,
+	// but these are the ones we officially support, and are tried in this
+	// order for source auto-detection.
+	".png",
+	".jpg",
+	".jpeg",
+	NULL
+};
+
+static char* texture_image_path(const char *name) {
+	char *p = NULL;
+
+	for(const char **ext = texture_image_exts; *ext; ++ext) {
+		if((p = try_path(TEX_PATH_PREFIX, name, *ext))) {
+			return p;
+		}
+	}
+
+	return NULL;
+}
 
 char* texture_path(const char *name) {
-	return strjoin(TEX_PATH_PREFIX, name, TEX_EXTENSION, NULL);
+	char *p = NULL;
+
+	if((p = try_path(TEX_PATH_PREFIX, name, TEX_EXTENSION))) {
+		return p;
+	}
+
+	return texture_image_path(name);
 }
 
 bool check_texture_path(const char *path) {
-	return strendswith(path, TEX_EXTENSION);
+	if(strendswith(path, TEX_EXTENSION)) {
+		return true;
+	}
+
+	return strendswith_any(path, texture_image_exts);
 }
 
 typedef struct ImageData {
@@ -30,36 +63,72 @@ typedef struct ImageData {
 	uint32_t *pixels;
 } ImageData;
 
-static ImageData* load_png(const char *filename);
-
 void* load_texture_begin(const char *path, unsigned int flags) {
-	return load_png(path);
+	const char *source = path;
+	char *source_allocated = NULL;
+	SDL_Surface *surf = NULL;
+	SDL_RWops *srcrw = NULL;
+
+	if(strendswith(path, TEX_EXTENSION)) {
+		if(!parse_keyvalue_file_with_spec(path, (KVSpec[]) {
+			{ "source", .out_str = &source_allocated },
+			// TODO: more parameters, e.g. filtering, wrap modes, post-load shaders, mipmaps, compression, etc.
+			{ NULL }
+		})) {
+			free(source_allocated);
+			return NULL;
+		}
+
+		if(!source_allocated) {
+			char *basename = resource_util_basename(TEX_PATH_PREFIX, path);
+			source_allocated = texture_image_path(basename);
+
+			if(!source_allocated) {
+				log_warn("%s: couldn't infer source path from texture name", basename);
+			} else {
+				log_warn("%s: inferred source path from texture name: %s", basename, source_allocated);
+			}
+
+			free(basename);
+
+			if(!source_allocated) {
+				return NULL;
+			}
+		}
+
+		source = source_allocated;
+	}
+
+	srcrw = vfs_open(source, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+
+	if(!srcrw) {
+		log_warn("VFS error: %s", vfs_get_error());
+		free(source_allocated);
+		return NULL;
+	}
+
+	if(strendswith(source, ".tga")) {
+		surf = IMG_LoadTGA_RW(srcrw);
+	} else {
+		surf = IMG_Load_RW(srcrw, false);
+	}
+
+	if(!surf) {
+		log_warn("IMG_Load_RW failed: %s", IMG_GetError());
+	}
+
+	SDL_RWclose(srcrw);
+
+	SDL_Surface *converted_surf = SDL_ConvertSurfaceFormat(surf, SDL_PIXELFORMAT_RGBA32, 0);
+	SDL_FreeSurface(surf);
+
+	if(!converted_surf) {
+		log_warn("SDL_ConvertSurfaceFormat(): failed: %s", SDL_GetError());
+		return NULL;
+	}
+
+	return converted_surf;
 }
-
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-	#define A_OFS 0
-	#define B_OFS 8
-	#define G_OFS 16
-	#define R_OFS 24
-#else
-	#define A_OFS 24
-	#define B_OFS 16
-	#define G_OFS 8
-	#define R_OFS 0
-#endif
-
-#define CLRVAL(byte,clr) ((uint_fast32_t)(byte) << clr##_OFS)
-#define CLRGETVAL(src,clr) (((src) >> clr##_OFS) & 0xff)
-#define CLRMASK(clr) CLRVAL(0xff, clr)
-#define CLRPACK(r,g,b,a) (CLRVAL(r, R) | CLRVAL(g, G) | CLRVAL(b, B) | CLRVAL(a, A))
-#define CLRUNPACK(src,r,g,b,a) do { \
-	r = CLRGETVAL(src, R); \
-	g = CLRGETVAL(src, G); \
-	b = CLRGETVAL(src, B); \
-	a = CLRGETVAL(src, A); \
-} while(0)
-
-#include "video.h"
 
 static void texture_post_load(Texture *tex) {
 	// this is a bit hacky and not very efficient,
@@ -103,27 +172,16 @@ static void texture_post_load(Texture *tex) {
 }
 
 void* load_texture_end(void *opaque, const char *path, unsigned int flags) {
-	SDL_Surface *surface;
-	ImageData *img = opaque;
-
-	if(!img) {
-		return NULL;
-	}
-
-	surface = SDL_CreateRGBSurfaceFrom(img->pixels, img->width, img->height, img->depth * 4, 0, CLRMASK(R), CLRMASK(G), CLRMASK(B), CLRMASK(A));
+	SDL_Surface *surface = opaque;
 
 	if(!surface) {
-		log_warn("SDL_CreateRGBSurfaceFrom(): failed: %s", SDL_GetError());
-		free(img);
 		return NULL;
 	}
 
 	Texture *texture = malloc(sizeof(Texture));
 
 	load_sdl_surf(surface, texture);
-	free(surface->pixels);
 	SDL_FreeSurface(surface);
-	free(img);
 
 	texture_post_load(texture);
 	return texture;
@@ -140,81 +198,6 @@ Texture* prefix_get_tex(const char *name, const char *prefix) {
 	return tex;
 }
 
-static ImageData* load_png_p(const char *filename, SDL_RWops *rwops) {
-#define PNGFAIL(msg) { log_warn("Couldn't load '%s': %s", filename, msg); return NULL; }
-	png_structp png_ptr;
-	if(!(png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL))) {
-		PNGFAIL("png_create_read_struct() failed")
-	}
-
-	png_setup_error_handlers(png_ptr);
-
-	png_infop info_ptr;
-	if(!(info_ptr = png_create_info_struct(png_ptr))) {
-		png_destroy_read_struct(&png_ptr, NULL, NULL);
-		PNGFAIL("png_create_info_struct() failed")
-	}
-
-	png_infop end_info;
-	if(!(end_info = png_create_info_struct(png_ptr))) {
-		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-		PNGFAIL("png_create_info_struct() failed")
-	}
-
-	png_init_rwops_read(png_ptr, rwops);
-	png_read_info(png_ptr, info_ptr);
-
-	int colortype = png_get_color_type(png_ptr,info_ptr);
-
-	if(colortype == PNG_COLOR_TYPE_PALETTE)
-		png_set_expand(png_ptr);
-	if (colortype == PNG_COLOR_TYPE_GRAY ||
-			colortype == PNG_COLOR_TYPE_GRAY_ALPHA)
-		png_set_gray_to_rgb(png_ptr);
-	if(!(colortype & PNG_COLOR_MASK_ALPHA))
-		png_set_filler(png_ptr, 0xff, PNG_FILLER_AFTER);
-
-	png_read_update_info(png_ptr, info_ptr);
-
-	int width = png_get_image_width(png_ptr, info_ptr);
-	int height = png_get_image_height(png_ptr, info_ptr);
-	int depth = png_get_bit_depth(png_ptr, info_ptr);
-
-	png_bytep row_pointers[height];
-
-	uint32_t *pixels = malloc(sizeof(uint32_t)*width*height);
-
-	for(int i = 0; i < height; i++)
-		row_pointers[i] = (png_bytep)(pixels+i*width);
-
-	png_read_image(png_ptr, row_pointers);
-	png_read_end(png_ptr, end_info);
-	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
-
-	ImageData *img = malloc(sizeof(ImageData));
-	img->width = width;
-	img->height = height;
-	img->depth = depth;
-	img->pixels = pixels;
-
-	return img;
-#undef PNGFAIL
-}
-
-static ImageData* load_png(const char *filename) {
-	SDL_RWops *rwops = vfs_open(filename, VFS_MODE_READ);
-
-	if(!rwops) {
-		log_warn("VFS error: %s", vfs_get_error());
-		return NULL;
-	}
-
-	ImageData *img = load_png_p(filename, rwops);
-
-	SDL_RWclose(rwops);
-	return img;
-}
-
 void load_sdl_surf(SDL_Surface *surface, Texture *texture) {
 	glGenTextures(1, &texture->gltex);
 	glBindTexture(GL_TEXTURE_2D, texture->gltex);
@@ -224,31 +207,12 @@ void load_sdl_surf(SDL_Surface *surface, Texture *texture) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	int nw = surface->w;
-	int nh = surface->h;
-
-	uint32_t *tex = calloc(sizeof(uint32_t), nw*nh);
-	uint32_t clr;
-	uint32_t x, y;
-
-	for(y = 0; y < nh; y++) {
-		for(x = 0; x < nw; x++) {
-			if(y < surface->h && x < surface->w) {
-				clr = ((uint32_t*)surface->pixels)[y*surface->w+x];
-			} else {
-				clr = '\0';
-			}
-
-			tex[y*nw+x] = clr;
-		}
-	}
+	SDL_LockSurface(surface);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+	SDL_UnlockSurface(surface);
 
 	texture->w = surface->w;
 	texture->h = surface->h;
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, nw, nh, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex);
-
-	free(tex);
 }
 
 void free_texture(Texture *tex) {
@@ -367,7 +331,7 @@ void fill_viewport_p(float xoff, float yoff, float ratio, float aspect, float an
 		glMatrixMode(GL_TEXTURE);
 
 		if(xoff || yoff) {
-			glTranslatef(xoff,yoff, 0);
+			glTranslatef(xoff, yoff, 0);
 		}
 
 		if(rw != 1 || rh != 1) {

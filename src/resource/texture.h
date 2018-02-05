@@ -51,4 +51,4 @@ Texture* get_tex(const char *name);
 Texture* prefix_get_tex(const char *name, const char *prefix);
 
 #define TEX_PATH_PREFIX "res/gfx/"
-#define TEX_EXTENSION ".png"
+#define TEX_EXTENSION ".tex"

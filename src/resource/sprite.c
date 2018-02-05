@@ -35,37 +35,6 @@ struct sprite_load_state {
 	char *texture_name;
 };
 
-static void parse_sprite(const char *key, const char *value, void *data) {
-	struct sprite_load_state *state = data;
-	Sprite *spr = state->spr;
-
-	struct keymap {
-		const char *key;
-		float *dest;
-	} keymap[] = {
-		{ "region_x", &spr->tex_area.x },
-		{ "region_y", &spr->tex_area.y },
-		{ "region_w", &spr->tex_area.w },
-		{ "region_h", &spr->tex_area.h },
-		{ "w",        &spr->w },
-		{ "h",        &spr->h },
-		{ NULL },
-	};
-
-	if(!strcmp(key, "texture")) {
-		stralloc(&state->texture_name, value);
-	} else {
-		for(struct keymap *m = keymap; m->key; ++m) {
-			if(!strcmp(key, m->key)) {
-				*m->dest = (float)strtod(value, NULL);
-				return;
-			}
-		}
-
-		log_warn("Unknown parameter '%s' ignored", key);
-	}
-}
-
 void* load_sprite_begin(const char *path, unsigned int flags) {
 	Sprite *spr = calloc(1, sizeof(Sprite));
 	struct sprite_load_state *state = calloc(1, sizeof(struct sprite_load_state));
@@ -77,7 +46,16 @@ void* load_sprite_begin(const char *path, unsigned int flags) {
 		return state;
 	}
 
-	if(!parse_keyvalue_file_cb(path, parse_sprite, state)) {
+	if(!parse_keyvalue_file_with_spec(path, (KVSpec[]){
+		{ "texture",  .out_str   = &state->texture_name },
+		{ "region_x", .out_float = &spr->tex_area.x },
+		{ "region_y", .out_float = &spr->tex_area.y },
+		{ "region_w", .out_float = &spr->tex_area.w },
+		{ "region_h", .out_float = &spr->tex_area.h },
+		{ "w",        .out_float = &spr->w },
+		{ "h",        .out_float = &spr->h },
+		{ NULL }
+	})) {
 		free(spr);
 		free(state->texture_name);
 		free(state);

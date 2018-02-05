@@ -9,6 +9,7 @@
 #include "taisei.h"
 
 #include <locale.h>
+#include <SDL_image.h>
 
 #include "global.h"
 #include "video.h"
@@ -143,8 +144,28 @@ static void init_sdl(void) {
 static void log_lib_versions(void) {
 	log_info("Compiled against zlib %s", ZLIB_VERSION);
 	log_info("Using zlib %s", zlibVersion());
+
 	log_info("Compiled against libpng %s", PNG_LIBPNG_VER_STRING);
 	log_info("Using libpng %s", png_get_header_ver(NULL));
+
+	log_info("Compiled against libpng %s", PNG_LIBPNG_VER_STRING);
+	log_info("Using libpng %s", png_get_header_ver(NULL));
+
+	SDL_version img_version_compiled;
+	const SDL_version *img_version_linked = IMG_Linked_Version();
+	SDL_IMAGE_VERSION(&img_version_compiled);
+
+	log_info("Compiled against SDL_image %d.%d.%d",
+		img_version_compiled.major,
+		img_version_compiled.minor,
+		img_version_compiled.patch
+	);
+
+	log_info("Using SDL_image %d.%d.%d",
+		img_version_linked->major,
+		img_version_linked->minor,
+		img_version_linked->patch
+	);
 }
 
 void log_system_specs(void) {

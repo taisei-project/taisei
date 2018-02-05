@@ -16,10 +16,11 @@ Installation
 Dependencies
 ^^^^^^^^^^^^
 
--  SDL2 >= 2.0.5, SDL2_ttf, SDL2_mixer
+-  SDL2 >= 2.0.5, SDL2_ttf, SDL2_mixer, SDL2_image
 -  zlib
 -  libzip >= 1.0
 -  libpng >= 1.5.0
+-  libjpeg
 -  OpenGL >= 2.1
 
 Build-only dependencies

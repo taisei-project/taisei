@@ -26,35 +26,23 @@ typedef struct AnimationLoadData {
 	char *basename;
 } AnimationLoadData;
 
-static int hashtable_int(Hashtable *ht, const char *key) {
-	char *val = hashtable_get_string(ht, key);
-
-	if(!val) {
-		return 0;
-	}
-
-	return atoi(val);
-}
-
 void* load_animation_begin(const char *filename, unsigned int flags) {
 	char *basename = resource_util_basename(ANI_PATH_PREFIX, filename);
 	char name[strlen(basename) + 1];
 	strcpy(name, basename);
 
-	Hashtable *ht = parse_keyvalue_file(filename, 5);
+	Animation *ani = calloc(1, sizeof(Animation));
 
-	if(!ht) {
-		log_warn("parse_keyvalue_file() failed");
+	if(!parse_keyvalue_file_with_spec(filename, (KVSpec[]){
+		{ "rows",  .out_int = &ani->rows },
+		{ "cols",  .out_int = &ani->cols },
+		{ "speed", .out_int = &ani->speed },
+		{ NULL },
+	})) {
+		free(ani);
 		free(basename);
 		return NULL;
 	}
-
-	Animation *ani = malloc(sizeof(Animation));
-	ani->rows = hashtable_int(ht, "rows");
-	ani->cols = hashtable_int(ht, "cols");
-	ani->speed = hashtable_int(ht, "speed");
-	hashtable_foreach(ht, hashtable_iter_free_data, NULL);
-	hashtable_free(ht);
 
 #define ANIFAIL(what) { log_warn("Bad '" what "' value in animation '%s'", basename); free(ani); free(basename); return NULL; }
 	if(ani->rows < 1) ANIFAIL("rows")

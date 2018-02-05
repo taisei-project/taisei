@@ -29,7 +29,7 @@ static struct {
 	unsigned char num;
 } groups[2];
 
-const char *mixer_audio_exts[] = { ".ogg", ".wav", NULL };
+static const char *mixer_audio_exts[] = { ".ogg", ".wav", NULL };
 
 void audio_backend_init(void) {
 	if(mixer_loaded) {
@@ -149,18 +149,6 @@ void audio_backend_set_sfx_volume(float gain) {
 void audio_backend_set_bgm_volume(float gain) {
 	if(mixer_loaded)
 		Mix_VolumeMusic(gain * MIX_MAX_VOLUME);
-}
-
-static char* try_path(const char *prefix, const char *name, const char *ext) {
-	char *p = strjoin(prefix, name, ext, NULL);
-
-	if(vfs_query(p).exists) {
-		log_debug("Returning %s", p);
-		return p;
-	}
-
-	free(p);
-	return NULL;
 }
 
 char* audio_mixer_sound_path(const char *prefix, const char *name, bool isbgm) {

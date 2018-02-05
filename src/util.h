@@ -118,11 +118,22 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 
 typedef void (*KVCallback)(const char *key, const char *value, void *data);
 
+typedef struct KVSpec {
+	const char *name;
+
+	char **out_str;
+	int *out_int;
+	double *out_double;
+	float *out_float;
+} KVSpec;
+
 char* read_all(const char *filename, int *size);
 bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data);
 bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *data);
 Hashtable* parse_keyvalue_stream(SDL_RWops *strm, size_t tablesize);
 Hashtable* parse_keyvalue_file(const char *filename, size_t tablesize);
+bool parse_keyvalue_stream_with_spec(SDL_RWops *strm, KVSpec *spec);
+bool parse_keyvalue_file_with_spec(const char *filename, KVSpec *spec);
 void png_init_rwops_read(png_structp png, SDL_RWops *rwops);
 void png_init_rwops_write(png_structp png, SDL_RWops *rwops);
 
@@ -131,6 +142,8 @@ size_t SDL_RWprintf(SDL_RWops *rwops, const char* fmt, ...) __attribute__((forma
 
 // This is for the very few legitimate uses for printf/fprintf that shouldn't be replaced with log_*
 void tsfprintf(FILE *out, const char *restrict fmt, ...) __attribute__((format(FORMAT_ATTR, 2, 3)));
+
+char* try_path(const char *prefix, const char *name, const char *ext);
 
 //
 // misc utils
