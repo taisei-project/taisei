@@ -519,7 +519,7 @@ static void kvcallback_spec(const char *key, const char *val, KVSpec *spec) {
 	for(KVSpec *s = spec; s->name; ++s) {
 		if(!strcmp(key, s->name)) {
 			if(s->out_str) {
-				*s->out_str = strdup(val);
+				stralloc(s->out_str, val);
 			}
 
 			if(s->out_int) {
