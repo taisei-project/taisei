@@ -121,6 +121,7 @@ src_base = [
     'resource/postprocess.c',
     'resource/resource.c',
     'resource/shader.c',
+    'resource/sprite.c',
     'resource/texture.c',
     'rwops/rwops_autobuf.c',
     'rwops/rwops_dummy.c',

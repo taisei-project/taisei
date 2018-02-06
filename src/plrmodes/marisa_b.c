@@ -37,7 +37,7 @@ static int marisa_star_projectile(Projectile *p, int t) {
 	p->angle = t * 10;
 
 	PARTICLE(
-		.texture_ptr = get_tex("proj/maristar"),
+		.sprite_ptr = get_sprite("proj/maristar"),
 		.pos = p->pos,
 		.color = p->color,
 		.rule = timeout,
@@ -49,7 +49,7 @@ static int marisa_star_projectile(Projectile *p, int t) {
 
 	if(t == EVENT_DEATH) {
 		PARTICLE(
-			.texture_ptr = get_tex("proj/maristar"),
+			.sprite_ptr = get_sprite("proj/maristar"),
 			.pos = p->pos,
 			.color = p->color,
 			.rule = timeout,
@@ -78,7 +78,7 @@ static int marisa_star_slave(Enemy *e, int t) {
 			a *= cexp(I*i*M_PI/20*sign(v)*focus);
 
 			PROJECTILE(
-				.texture_ptr = get_tex("proj/maristar"),
+				.sprite_ptr = get_sprite("proj/maristar"),
 				.pos = e->pos,
 				.color = rgb(1.0, 0.5, 1.0),
 				.rule = marisa_star_projectile,
@@ -144,7 +144,7 @@ static int marisa_star_orbit(Enemy *e, int t) {
 
 	if(t%1 == 0) {
 		PARTICLE(
-			.texture_ptr = get_tex("part/lightningball"),
+			.sprite_ptr = get_sprite("part/lightningball"),
 			.pos = e->pos,
 			.color = rgba(clr[0],clr[1],clr[2],clr[3]/2),
 			.rule = timeout,
@@ -156,7 +156,7 @@ static int marisa_star_orbit(Enemy *e, int t) {
 
 	if(t%(10-t/30) == 0 && tb < fadetime) {
 		PARTICLE(
-			.texture = "maristar_orbit",
+			.sprite = "maristar_orbit",
 			.pos = e->pos,
 			.color = rgba(clr[0],clr[1],clr[2],1),
 			.rule = marisa_star_orbit_star,
@@ -206,9 +206,9 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glColor4f(clr[0],clr[1],clr[2],clr[3]);
 	glRotatef(t*10,0,0,1);
-	draw_texture(0,0,"fairy_circle");
+	draw_sprite(0,0,"fairy_circle");
 	glScalef(0.6,0.6,1);
-	draw_texture(0,0,"part/lightningball");
+	draw_sprite(0,0,"part/lightningball");
 	glPopMatrix();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -250,7 +250,7 @@ static void marisa_star_bombbg(Player *plr) {
 	glUniform1f(uniloc(s,"decay"), 1);
 	glUniform2f(uniloc(s,"plrpos"), creal(global.plr.pos)/VIEWPORT_W,cimag(global.plr.pos)/VIEWPORT_H);
 	glColor4f(1,1,1,0.6*fade);
-	fill_screen(0,0,1,"marisa_bombbg");
+	fill_viewport(0,0,1,"marisa_bombbg");
 	glColor4f(1,1,1,1);
 	glUseProgram(0);
 }
@@ -305,21 +305,28 @@ static void marisa_star_shot(Player *plr) {
 static void marisa_star_preload(void) {
 	const int flags = RESF_DEFAULT;
 
-	preload_resources(RES_TEXTURE, flags,
+	preload_resources(RES_SPRITE, flags,
 		"proj/marisa",
 		"proj/maristar",
 		"part/maristar_orbit",
+		NULL
+	);
+
+	preload_resources(RES_TEXTURE, flags,
 		"marisa_bombbg",
-		NULL);
+		NULL
+	);
 
 	preload_resources(RES_SHADER, flags,
 		"masterspark",
 		"maristar_bombbg",
-		NULL);
+		NULL
+	);
 
 	preload_resources(RES_SFX, flags | RESF_OPTIONAL,
 		"bomb_marisa_b",
-		NULL);
+		NULL
+	);
 }
 
 PlayerMode plrmode_marisa_b = {

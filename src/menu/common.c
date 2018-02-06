@@ -114,13 +114,13 @@ void start_game_no_difficulty_menu(MenuData *m, void *arg) {
 }
 
 void draw_menu_selector(float x, float y, float w, float h, float t) {
-	Texture *bg = get_tex("part/smoke");
+	Sprite *bg = get_sprite("part/smoke");
 	glPushMatrix();
 	glTranslatef(x, y, 0);
 	glScalef(w / bg->w, h / bg->h, 1);
 	glRotatef(t*2,0,0,1);
 	glColor4f(0,0,0,0.5 * (1 - transition.fade));
-	draw_texture_p(0,0,bg);
+	draw_sprite(0, 0, "part/smoke");
 	glPopMatrix();
 }
 

@@ -64,7 +64,7 @@ static void myon_draw_trail(Projectile *p, int t) {
 
 static void spawn_stardust(complex pos, Color clr, int timeout, complex v) {
 	PARTICLE(
-		.texture = "stardust",
+		.sprite = "stardust",
 		.pos = pos+5*frand()*cexp(2.0*I*M_PI*frand()),
 		.color = clr,
 		.draw_rule = myon_draw_trail,
@@ -85,7 +85,7 @@ static void myon_spawn_trail(Enemy *e, int t) {
 
 	if(player_should_shoot(&global.plr, true)) {
 		PARTICLE(
-			.texture = "smoke",
+			.sprite = "smoke",
 			.pos = pos+10*frand()*cexp(2.0*I*M_PI*frand()),
 			.color = myon_color(f, (1 + f) * 0.05),
 			.draw_rule = myon_draw_trail,
@@ -96,7 +96,7 @@ static void myon_spawn_trail(Enemy *e, int t) {
 		);
 
 		PARTICLE(
-			.texture = "flare",
+			.sprite = "flare",
 			.pos = pos+5*frand()*cexp(2.0*I*M_PI*frand()),
 			.color = rgba(1, 1, 1, 0.2),
 			.draw_rule = Shrink,
@@ -108,7 +108,7 @@ static void myon_spawn_trail(Enemy *e, int t) {
 	}
 
 	PARTICLE(
-		.texture = "myon",
+		.sprite = "myon",
 		.color = myon_color(f, 0.5),
 		.pos = pos,
 		.rule = myon_flare_particle_rule,
@@ -142,7 +142,7 @@ static int myon_proj(Projectile *p, int t) {
 	// spawn_stardust(p->pos, multiply_colors(p->color, myon_color(abs(global.plr.focus) / 30.0, 0.1)), 20, p->args[0]*0.1);
 
 	PARTICLE(
-		.texture = "boss_shadow",
+		.sprite = "boss_shadow",
 		.pos = p->pos,
 		.color = derive_color(p->color, CLRMASK_A, rgba(0, 0, 0, 0.075)),
 		.draw_rule = myon_draw_proj_trail,
@@ -193,7 +193,7 @@ static Projectile* youmu_mirror_myon_proj(char *tex, complex pos, double speed, 
 
 	return PROJECTILE(
 		.color = c, // mix_colors(myon_color(f, 1), rgb(0.6, 0.8, 0.7), f),
-		.texture = tex,
+		.sprite = tex,
 		.pos = pos,
 		.rule = myon_proj,
 		.args = { speed*dir },
@@ -359,7 +359,7 @@ static int youmu_split(Enemy *e, int t) {
 		tsrand_fill(5);
 		double x = nfrand()*10;
 		PARTICLE(
-			.texture = "petal",
+			.sprite = "petal",
 			.pos = VIEWPORT_W/2+x+(x>0)*VIEWPORT_H*I,
 			.rule = accelerated,
 			.draw_rule = Petal,
@@ -412,10 +412,13 @@ static double youmu_mirror_speed_mod(Player *plr, double speed) {
 static void youmu_mirror_preload(void) {
 	const int flags = RESF_DEFAULT;
 
-	preload_resources(RES_TEXTURE, flags,
+	preload_resources(RES_SPRITE, flags,
 		"proj/youmu",
 		"part/myon",
 		"part/stardust",
+	NULL);
+
+	preload_resources(RES_TEXTURE, flags,
 		"youmu_bombbg1",
 	NULL);
 

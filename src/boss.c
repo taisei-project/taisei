@@ -21,9 +21,13 @@ Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 	strcpy(buf->name, name);
 	buf->pos = pos;
 
-	aniplayer_create(&buf->ani, get_ani(ani));
-	if(dialog)
-		buf->dialog = get_tex(dialog);
+	char strbuf[strlen(ani) + sizeof("boss/")];
+	snprintf(strbuf, sizeof(strbuf), "boss/%s", ani);
+	aniplayer_create(&buf->ani, get_ani(strbuf));
+
+	if(dialog) {
+		buf->dialog = get_sprite(dialog);
+	}
 
 	buf->birthtime = global.frames;
 	return buf;
@@ -69,11 +73,11 @@ void draw_extraspell_bg(Boss *boss, int time) {
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glColor4f(0.2,0.1,0,0.7);
-	fill_screen(sin(time) * 0.015, time / 50.0, 1, "stage3/wspellclouds");
+	fill_viewport(sin(time) * 0.015, time / 50.0, 1, "stage3/wspellclouds");
 	glColor4f(1,1,1,1);
 	glBlendEquation(GL_MIN);
-	fill_screen(cos(time) * 0.015, time / 70.0, 1, "stage4/kurumibg2");
-	fill_screen(sin(time+2.1) * 0.015, time / 30.0, 1, "stage4/kurumibg2");
+	fill_viewport(cos(time) * 0.015, time / 70.0, 1, "stage4/kurumibg2");
+	fill_viewport(sin(time+2.1) * 0.015, time / 30.0, 1, "stage4/kurumibg2");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glBlendEquation(GL_FUNC_ADD);
 }
@@ -246,7 +250,7 @@ void draw_boss_background(Boss *boss) {
 	}
 
 	glScalef(f,f,f);
-	draw_texture(0, 0, "boss_circle");
+	draw_sprite(0, 0, "boss_circle");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glPopMatrix();
 }
@@ -365,6 +369,7 @@ void draw_boss(Boss *boss) {
 
 		// remaining spells
 		glColor4f(1,1,1,0.7);
+		Sprite *star = get_sprite("star");
 
 		for(int x = 0, i = boss->acount-1; i > nextspell; i--) {
 			if(
@@ -372,7 +377,7 @@ void draw_boss(Boss *boss) {
 				(boss->attacks[i].type != AT_ExtraSpell) &&
 				!boss_should_skip_attack(boss, &boss->attacks[i])
 			) {
-				draw_texture_with_size(x += 22, 40, 20, 20, "star");
+				draw_sprite_p(x += star->w * 1.1, 40, star);
 			}
 		}
 
@@ -402,7 +407,7 @@ void boss_rule_extra(Boss *boss, float alpha) {
 		float psina = psin(a);
 
 		PARTICLE(
-			.texture = (frand() < v*0.3 || lt > 1) ? "stain" : "arc",
+			.sprite = (frand() < v*0.3 || lt > 1) ? "stain" : "arc",
 			.pos = boss->pos + dir * (100 + 50 * psin(alpha*global.frames/10.0+2*i)) * alpha,
 			.color = rgb(
 				1.0 - 0.5 * psina *    v,
@@ -668,7 +673,7 @@ void process_boss(Boss **pboss) {
 		tsrand_fill(6);
 
 		PARTICLE(
-			.texture = "petal",
+			.sprite = "petal",
 			.pos = boss->pos,
 			.rule = asymptotic,
 			.draw_rule = Petal,
@@ -813,7 +818,7 @@ void boss_start_attack(Boss *b, Attack *a) {
 			tsrand_fill(4);
 
 			PARTICLE(
-				.texture = "stain",
+				.sprite = "stain",
 				.pos = VIEWPORT_W/2 + VIEWPORT_W/4*anfrand(0)+I*VIEWPORT_H/2+I*anfrand(1)*30,
 				.color = rgb(0.2,0.3,0.4),
 				.rule = timeout_linear,
@@ -902,12 +907,12 @@ void boss_preload(void) {
 		"bossdeath",
 	NULL);
 
-	preload_resources(RES_TEXTURE, RESF_DEFAULT,
-		"boss_spellcircle0",
-		"boss_circle",
+	preload_resources(RES_SPRITE, RESF_DEFAULT,
 		"boss_indicator",
 		"part/boss_shadow",
 		"part/arc",
+		"boss_spellcircle0",
+		"boss_circle",
 	NULL);
 
 	preload_resources(RES_SHADER, RESF_DEFAULT,

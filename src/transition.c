@@ -24,19 +24,19 @@ void TransFadeWhite(double fade) {
 
 void TransLoader(double fade) {
 	glColor4f(1, 1, 1, fade);
-	draw_texture(SCREEN_W/2, SCREEN_H/2, "loading");
+	fill_screen("loading");
 	glColor4f(1, 1, 1, 1);
 }
 
 void TransMenu(double fade) {
 	glColor4f(1, 1, 1, fade);
-	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubg");
+	fill_screen("menu/mainmenubg");
 	glColor4f(1, 1, 1, 1);
 }
 
 void TransMenuDark(double fade) {
 	glColor4f(0.3, 0.3, 0.3, fade);
-	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubg");
+	fill_screen("menu/mainmenubg");
 	glColor4f(1, 1, 1, 1);
 }
 

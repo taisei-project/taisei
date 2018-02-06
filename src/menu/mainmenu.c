@@ -96,10 +96,7 @@ void create_main_menu(MenuData *m) {
 
 void draw_main_menu_bg(MenuData* menu) {
 	glColor4f(1,1,1,1);
-	//draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubgbg");
-	//glColor4f(1,1,1,0.95 + 0.05*sin(menu->frames/100.0));
-
-	draw_texture(SCREEN_W/2, SCREEN_H/2, "mainmenu/mainmenubg");
+	fill_screen("menu/mainmenubg");
 	glColor4f(1,1,1,1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
@@ -115,20 +112,11 @@ static void update_main_menu(MenuData *menu) {
 
 void draw_main_menu(MenuData *menu) {
 	draw_main_menu_bg(menu);
-
-	draw_texture(150.5, 100, "mainmenu/logo");
+	draw_sprite(150.5, 100, "menu/logo");
 
 	glPushMatrix();
 	glTranslatef(0, SCREEN_H-270, 0);
-
-	Texture *bg = get_tex("part/smoke");
-	glPushMatrix();
-	glTranslatef(50 + menu->drawdata[1]/2, menu->drawdata[2], 0);   // 135
-	glScalef(menu->drawdata[1]/100.0, 0.5, 1);
-	glRotatef(menu->frames*2,0,0,1);
-	glColor4f(0,0,0,0.5);
-	draw_texture_p(0,0,bg);
-	glPopMatrix();
+	draw_menu_selector(50 + menu->drawdata[1]/2, menu->drawdata[2], 1.5 * menu->drawdata[1], 64, menu->frames);
 
 	for(int i = 0; i < menu->ecount; i++) {
 		float s = 5*sin(menu->frames/80.0 + 20*i);
@@ -175,7 +163,7 @@ void draw_main_menu(MenuData *menu) {
 		glScalef(0.2,0.2,0.2);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		glRotatef(2*(t%period),rx,ry,rz);
-		draw_texture(0,0,"part/petal");
+		draw_sprite(0,0,"part/petal");
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_CULL_FACE);
 		glPopMatrix();
@@ -189,7 +177,7 @@ void draw_main_menu(MenuData *menu) {
 void draw_loading_screen(void) {
 	preload_resource(RES_TEXTURE, "loading", RESF_PERMANENT);
 	set_ortho();
-	draw_texture(SCREEN_W/2, SCREEN_H/2, "loading");
+	fill_screen("loading");
 	draw_text(AL_Right,SCREEN_W-5,SCREEN_H-10,TAISEI_VERSION,_fonts.small);
 	video_swap_buffers();
 }
@@ -198,11 +186,19 @@ void menu_preload(void) {
 	difficulty_preload();
 
 	preload_resources(RES_TEXTURE, RESF_PERMANENT,
-		"mainmenu/mainmenubg",
-		"mainmenu/logo",
+		"menu/mainmenubg",
+	NULL);
+
+	preload_resources(RES_SPRITE, RESF_PERMANENT,
 		"part/smoke",
 		"part/petal",
-		"charselect_arrow",
+		"menu/logo",
+		"menu/arrow",
+		"star",
+	NULL);
+
+	preload_resources(RES_SHADER, RESF_PERMANENT,
+		"circleclipped_indicator",
 	NULL);
 
 	preload_resources(RES_SFX, RESF_PERMANENT | RESF_OPTIONAL,
@@ -216,6 +212,6 @@ void menu_preload(void) {
 	NULL);
 
 	for(int i = 0; i < NUM_CHARACTERS; ++i) {
-		preload_resource(RES_TEXTURE, plrchar_get(i)->dialog_sprite_name, RESF_PERMANENT);
+		preload_resource(RES_SPRITE, plrchar_get(i)->dialog_sprite_name, RESF_PERMANENT);
 	}
 }

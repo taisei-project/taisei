@@ -282,11 +282,11 @@ void credits_draw_entry(CreditsEntry *e) {
 	}
 
 	bool yukkuri = false;
-	Texture *ytex = NULL;
+	Sprite *yukkuri_spr = NULL;
 
 	if(*e->data[0] == '*') {
 		yukkuri = true;
-		ytex = get_tex("yukkureimu");
+		yukkuri_spr = get_sprite("yukkureimu");
 	}
 
 	glPushMatrix();
@@ -320,9 +320,9 @@ void credits_draw_entry(CreditsEntry *e) {
 		if(yukkuri && !i) {
 			glPushMatrix();
 			glScalef(CREDITS_YUKKURI_SCALE, CREDITS_YUKKURI_SCALE, 1.0);
-			draw_texture_p(0, 10 * sin(global.frames / 10.0) * fadeout * fadein, ytex);
+			draw_sprite_p(0, 10 * sin(global.frames / 10.0) * fadeout * fadein, yukkuri_spr);
 			glPopMatrix();
-			glTranslatef(0, ytex->h * CREDITS_YUKKURI_SCALE * 0.5, 0);
+			glTranslatef(0, yukkuri_spr->h * CREDITS_YUKKURI_SCALE * 0.5, 0);
 		} else {
 			Font *font = i ? _fonts.standard : _fonts.mainmenu;
 			draw_text(AL_Center, 0, 0, e->data[i], font);

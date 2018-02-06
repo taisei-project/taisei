@@ -29,8 +29,8 @@ bool check_texture_path(const char *path);
 void load_sdl_surf(SDL_Surface *surface, Texture *texture);
 void free_texture(Texture *tex);
 
-void draw_texture(float x, float y, const char *name);
-void draw_texture_p(float x, float y, Texture *tex);
+// void draw_texture(float x, float y, const char *name);
+// void draw_texture_p(float x, float y, Texture *tex);
 
 void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex);
 void end_draw_texture(void);
@@ -38,8 +38,11 @@ void end_draw_texture(void);
 void draw_texture_with_size(float x, float y, float w, float h, const char *name);
 void draw_texture_with_size_p(float x, float y, float w, float h, Texture *tex);
 
-void fill_screen(float xoff, float yoff, float ratio, const char *name);
-void fill_screen_p(float xoff, float yoff, float ratio, float aspect, float angle, Texture *tex);
+void fill_viewport(float xoff, float yoff, float ratio, const char *name);
+void fill_viewport_p(float xoff, float yoff, float ratio, float aspect, float angle, Texture *tex);
+
+void fill_screen(const char *name);
+void fill_screen_p(Texture *tex);
 
 void loop_tex_line_p(complex a, complex b, float w, float t, Texture *texture);
 void loop_tex_line(complex a, complex b, float w, float t, const char *texture);
@@ -48,4 +51,4 @@ Texture* get_tex(const char *name);
 Texture* prefix_get_tex(const char *name, const char *prefix);
 
 #define TEX_PATH_PREFIX "res/gfx/"
-#define TEX_EXTENSION ".png"
+#define TEX_EXTENSION ".tex"

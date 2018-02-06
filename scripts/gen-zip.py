@@ -26,7 +26,7 @@ import os
 
 
 def main(args):
-    parser = argparse.ArgumentParser(description='Generate an ZIP distribution.', prog=args[0])
+    parser = argparse.ArgumentParser(description='Generate a ZIP distribution.', prog=args[0])
 
     parser.add_argument('build_dir',
         help='The build directory (defaults to CWD)',

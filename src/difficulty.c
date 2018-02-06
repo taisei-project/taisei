@@ -22,14 +22,14 @@ const char* difficulty_name(Difficulty diff) {
 	}
 }
 
-const char* difficulty_tex(Difficulty diff) {
+const char* difficulty_sprite_name(Difficulty diff) {
 	switch(diff) {
 		case D_Easy:    return "difficulty/easy";
 		case D_Normal:  return "difficulty/normal";
 		case D_Hard:    return "difficulty/hard";
 		case D_Lunatic: return "difficulty/lunatic";
 		case D_Extra:   return "difficulty/lunatic";
-		default:        return "difficulty/unknown"; // This texture is not supposed to exist.
+		default:        return "difficulty/unknown"; // This sprite is not supposed to exist.
 	}
 }
 
@@ -46,6 +46,6 @@ Color difficulty_color(Difficulty diff) {
 
 void difficulty_preload(void) {
 	for(Difficulty diff = D_Easy; diff < NUM_SELECTABLE_DIFFICULTIES + D_Easy; ++diff) {
-		preload_resource(RES_TEXTURE, difficulty_tex(diff), RESF_PERMANENT);
+		preload_resource(RES_SPRITE, difficulty_sprite_name(diff), RESF_PERMANENT);
 	}
 }

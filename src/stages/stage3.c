@@ -175,7 +175,7 @@ static void stage3_start(void) {
 
 static void stage3_preload(void) {
 	preload_resources(RES_BGM, RESF_OPTIONAL, "stage3", "stage3boss", NULL);
-	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+	preload_resources(RES_SPRITE, RESF_DEFAULT,
 		"stage3/border",
 		"stage3/spellbg1",
 		"stage3/spellbg2",
@@ -190,8 +190,8 @@ static void stage3_preload(void) {
 		"glitch",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
-		"scuttle",
-		"wriggleex",
+		"boss/scuttle",
+		"boss/wriggleex",
 	NULL);
 }
 

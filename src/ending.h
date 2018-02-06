@@ -27,23 +27,9 @@ enum {
 };
 
 typedef struct EndingEntry EndingEntry;
-struct EndingEntry {
-	char *msg;
-	Texture *tex;
-
-	int time;
-};
-
 typedef struct Ending Ending;
-struct Ending {
-	EndingEntry *entries;
-	int count;
-	int duration;
 
-	int pos;
-};
-
-void add_ending_entry(Ending *e, int time, char *msg, char *tex);
+void add_ending_entry(Ending *e, int time, const char *msg, const char *sprite);
 
 void create_ending(Ending *e);
 void ending_loop(void);

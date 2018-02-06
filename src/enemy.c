@@ -179,7 +179,7 @@ void BigFairy(Enemy *e, int t, bool render) {
 		if(!(t % 5)) {
 			complex offset = (frand()-0.5)*30 + (frand()-0.5)*20.0*I;
 
-			PARTICLE("lasercurve", offset, rgb(0,0.2,0.3), enemy_flare,
+			PARTICLE("smoothdot", offset, rgb(0,0.2,0.3), enemy_flare,
 				.draw_rule = EnemyFlareShrink,
 				.args = { 50, (-50.0*I-offset)/50.0, add_ref(e) },
 				.flags = PFLAG_DRAWADD,
@@ -197,14 +197,14 @@ void BigFairy(Enemy *e, int t, bool render) {
 	glPushMatrix();
 	glRotatef(global.frames*10,0,0,1);
 	glScalef(s, s, s);
-	draw_texture(0,0,"fairy_circle");
+	draw_sprite(0,0,"fairy_circle");
 	glPopMatrix();
 
 	if(e->dir) {
 		glCullFace(GL_FRONT);
 		glScalef(-1,1,1);
 	}
-	play_animation(get_ani("bigfairy"),0, 0, e->moving);
+	play_animation(get_ani("enemy/bigfairy"),0, 0, e->moving);
 	glPopMatrix();
 
 	if(e->dir)
@@ -223,7 +223,7 @@ void Fairy(Enemy *e, int t, bool render) {
 	glPushMatrix();
 	glRotatef(global.frames*10,0,0,1);
 	glScalef(s, s, s);
-	draw_texture(0,0,"fairy_circle");
+	draw_sprite(0,0,"fairy_circle");
 	glPopMatrix();
 
 	glPushMatrix();
@@ -231,7 +231,7 @@ void Fairy(Enemy *e, int t, bool render) {
 		glCullFace(GL_FRONT);
 		glScalef(-1,1,1);
 	}
-	play_animation(get_ani("fairy"),0, 0, e->moving);
+	play_animation(get_ani("enemy/fairy"),0, 0, e->moving);
 	glPopMatrix();
 
 	glPopMatrix();
@@ -249,7 +249,7 @@ void Swirl(Enemy *e, int t, bool render) {
 	glPushMatrix();
 	glTranslatef(creal(e->pos), cimag(e->pos),0);
 	glRotatef(t*15,0,0,1);
-	draw_texture(0,0, "swirl");
+	draw_sprite(0,0, "enemy/swirl");
 	glPopMatrix();
 }
 
@@ -284,12 +284,13 @@ void process_enemies(Enemy **enemies) {
 
 void enemies_preload(void) {
 	preload_resources(RES_ANIM, RESF_DEFAULT,
-		"fairy",
-		"bigfairy",
+		"enemy/fairy",
+		"enemy/bigfairy",
 	NULL);
 
-	preload_resources(RES_TEXTURE, RESF_DEFAULT,
-		"swirl",
+	preload_resources(RES_SPRITE, RESF_DEFAULT,
+		"fairy_circle",
+		"enemy/swirl",
 	NULL);
 
 	preload_resources(RES_SFX, RESF_OPTIONAL,

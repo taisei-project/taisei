@@ -111,7 +111,7 @@ typedef struct Boss {
 	int acount;
 
 	AniPlayer ani;
-	Texture *dialog; // Used in spellcard intros
+	Sprite *dialog; // Used in spellcard intros
 
 	Color zoomcolor;
 	Color shadowcolor;

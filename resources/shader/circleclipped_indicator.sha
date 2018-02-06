@@ -6,7 +6,7 @@ void main(void) {
     gl_Position = ftransform();
     gl_FrontColor = gl_Color;
 
-    TexCoord0 = gl_TextureMatrix[0] * gl_MultiTexCoord0;
+    TexCoord0 = gl_MultiTexCoord0;
 }
 
 %% -- FRAG
@@ -22,7 +22,7 @@ varying vec4 TexCoord0;
 
 void main(void) {
     vec2 tc = TexCoord0.xy;
-    vec4 texel = texture2D(tex, tc);
+    vec4 texel = texture2D(tex, (gl_TextureMatrix[0] * TexCoord0).xy);
     tc -= vec2(0.5);
     texel *= mix(back_color, fill_color, float(atan(tc.x,-tc.y) < PI*(2.0*fill-1.0)));
     gl_FragColor = texel;

@@ -68,7 +68,7 @@ static void youmu_trap_draw_child_proj(Projectile *p, int t) {
 
 static Projectile* youmu_homing_trail(Projectile *p, complex v, int to) {
 	return PARTICLE(
-		.texture_ptr = p->tex,
+		.sprite_ptr = p->sprite,
 		.pos = p->pos,
 		.color = p->color,
 		.angle = p->angle,
@@ -224,7 +224,7 @@ static void youmu_particle_slice_draw(Projectile *p, int t) {
 	double slicelen = 500;
 	f = sqrt(f);
 	complex slicepos=p->pos-(tt>0.1)*slicelen*I*cexp(I*p->angle)*(5*pow(tt-0.1,1.1)-0.5);
-	play_animation(get_ani("youmu"), creal(slicepos),cimag(slicepos),1);
+	play_animation(global.plr.ani.ani, creal(slicepos),cimag(slicepos),1);
 }
 
 
@@ -248,7 +248,7 @@ static int youmu_particle_slice_logic(Projectile *p, int t) {
 	if(t%5 == 0) {
 		tsrand_fill(4);
 		PARTICLE(
-			.texture = "petal",
+			.sprite = "petal",
 			.pos = p->pos-400*phase,
 			.rule = accelerated,
 			.draw_rule = Petal,
@@ -284,7 +284,7 @@ static int youmu_slash(Enemy *e, int t) {
 	FROM_TO(0,10000,3) {
 	complex pos = cexp(I*_i)*(100+10*_i*_i*0.01);
 		PARTICLE(
-			.texture = "youmu_slice",
+			.sprite = "youmu_slice",
 			.pos = e->pos+pos,
 			.draw_rule = youmu_particle_slice_draw,
 			.rule = youmu_particle_slice_logic,
@@ -325,7 +325,7 @@ static void youmu_haunting_power_shot(Player *plr, int p) {
 		complex dir = cexp(I*carg(sign*p*spread-speed*I));
 
 		PROJECTILE(
-			.texture = "hghost",
+			.sprite = "hghost",
 			.pos =  plr->pos,
 			.rule = youmu_asymptotic,
 			.color = rgba(0.8 + 0.2 * (1-np), 1.0, 0.9 + 0.1 * sqrt(1-np), 1.0),
@@ -379,11 +379,13 @@ static void youmu_haunting_bomb(Player *plr) {
 static void youmu_haunting_preload(void) {
 	const int flags = RESF_DEFAULT;
 
-	preload_resources(RES_TEXTURE, flags,
+	preload_resources(RES_SPRITE, flags,
 		"proj/youmu",
 		"part/youmu_slice",
-	"youmu_bombbg1",
+	NULL);
 
+	preload_resources(RES_TEXTURE, flags,
+		"youmu_bombbg1",
 	NULL);
 
 	preload_resources(RES_SFX, flags | RESF_OPTIONAL,

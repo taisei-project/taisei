@@ -17,7 +17,7 @@
 #include "stageobjects.h"
 
 static ProjArgs defaults_proj = {
-	.texture = "proj/",
+	.sprite = "proj/",
 	.draw_rule = ProjDraw,
 	.dest = &global.projs,
 	.type = EnemyProj,
@@ -27,7 +27,7 @@ static ProjArgs defaults_proj = {
 };
 
 static ProjArgs defaults_part = {
-	.texture = "part/",
+	.sprite = "part/",
 	.draw_rule = ProjDraw,
 	.dest = &global.particles,
 	.type = Particle,
@@ -38,18 +38,18 @@ static ProjArgs defaults_part = {
 };
 
 static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
-	int texargs = (bool)args->texture + (bool)args->texture_ptr + (bool)args->size;
+	int texargs = (bool)args->sprite + (bool)args->sprite_ptr + (bool)args->size;
 
 	if(texargs != 1) {
-		log_fatal("Exactly one of .texture, .texture_ptr, or .size is required");
+		log_fatal("Exactly one of .sprite, .sprite_ptr, or .size is required");
 	}
 
 	if(!args->rule) {
 		log_fatal(".rule is required");
 	}
 
-	if(args->texture) {
-		args->texture_ptr = prefix_get_tex(args->texture, defaults->texture);
+	if(args->sprite) {
+		args->sprite_ptr = prefix_get_sprite(args->sprite, defaults->sprite);
 	}
 
 	if(!args->draw_rule) {
@@ -82,17 +82,17 @@ static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
 }
 
 static double projectile_rect_area(Projectile *p) {
-	if(p->tex) {
-		return p->tex->w * p->tex->h;
+	if(p->sprite) {
+		return p->sprite->w * p->sprite->h;
 	} else {
 		return creal(p->size) * cimag(p->size);
 	}
 }
 
 static void projectile_size(Projectile *p, double *w, double *h) {
-	if(p->tex) {
-		*w = p->tex->w;
-		*h = p->tex->h;
+	if(p->sprite) {
+		*w = p->sprite->w;
+		*h = p->sprite->h;
 	} else {
 		*w = creal(p->size);
 		*h = cimag(p->size);
@@ -146,7 +146,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	p->rule = args->rule;
 	p->draw_rule = args->draw_rule;
 	p->color_transform_rule = args->color_transform_rule;
-	p->tex = args->texture_ptr;
+	p->sprite = args->sprite_ptr;
 	p->type = args->type;
 	p->color = args->color;
 	p->grazed = (bool)(args->flags & PFLAG_NOGRAZE);
@@ -460,12 +460,12 @@ Projectile* spawn_projectile_collision_effect(Projectile *proj) {
 	if(proj->flags & PFLAG_NOCOLLISIONEFFECT) {
 		return NULL;
 	}
-	if(proj->tex == NULL) {
+	if(proj->sprite == NULL) {
 		return NULL;
 	}
 
 	return PARTICLE(
-		.texture_ptr = proj->tex,
+		.sprite_ptr = proj->sprite,
 		.pos = proj->pos,
 		.color = proj->color,
 		.flags = proj->flags | PFLAG_NOREFLECT,
@@ -483,7 +483,7 @@ Projectile* spawn_projectile_clear_effect(Projectile *proj) {
 	}
 
 	return PARTICLE(
-		.texture_ptr = proj->tex,
+		.sprite_ptr = proj->sprite,
 		.pos = proj->pos,
 		.color = proj->color,
 		.flags = proj->flags | PFLAG_NOREFLECT,
@@ -644,7 +644,7 @@ static inline void apply_color(Projectile *proj, Color c) {
 
 void ProjDrawCore(Projectile *proj, Color c) {
 	apply_color(proj, c);
-	draw_texture_p(0, 0, proj->tex);
+	draw_sprite_p(0, 0, proj->sprite);
 }
 
 void ProjDraw(Projectile *proj, int t) {
@@ -675,10 +675,10 @@ void Blast(Projectile *p, int t) {
 
 	apply_color(p, rgba(0.3, 0.6, 1.0, 1.0 - t/p->args[0]));
 
-	draw_texture_p(0,0,p->tex);
+	draw_sprite_p(0,0,p->sprite);
 	glScalef(0.5+creal(p->args[2]),0.5+creal(p->args[2]),1);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-	draw_texture_p(0,0,p->tex);
+	draw_sprite_p(0,0,p->sprite);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 	glPopMatrix();
 }
@@ -816,19 +816,23 @@ void petal_explosion(int n, complex pos) {
 }
 
 void projectiles_preload(void) {
-	preload_resources(RES_TEXTURE, RESF_PERMANENT,
-		// XXX: maybe split this up into stage-specific preloads too?
-		// some of these are ubiquitous, but some only appear in very specific parts.
+	// XXX: maybe split this up into stage-specific preloads too?
+	// some of these are ubiquitous, but some only appear in very specific parts.
 
+	preload_resources(RES_TEXTURE, RESF_PERMANENT,
+		"part/lasercurve",
+	NULL);
+
+	preload_resources(RES_SPRITE, RESF_PERMANENT,
 		"part/blast",
 		"part/flare",
-		"part/lasercurve",
 		"part/petal",
 		"part/smoke",
 		"part/stain",
 		"part/lightning0",
 		"part/lightning1",
 		"part/lightningball",
+		"part/smoothdot",
 		"proj/ball",
 		"proj/bigball",
 		"proj/bullet",

@@ -43,12 +43,9 @@ typedef struct CacheEntry {
 
 typedef struct FontRenderer {
 	Texture tex;
+	Sprite sprite;
 	float quality;
 	uint32_t *pixbuf;
-	struct {
-		int w;
-		int h;
-	} rendered_area;
 } FontRenderer;
 
 static ObjectPool *cache_pool;
@@ -156,61 +153,60 @@ void update_font_cache(void) {
 	}
 }
 
-static void fontrenderer_init(FontRenderer *f, float quality) {
-	f->quality = quality = sanitize_scale(quality);
+static void fontrenderer_init(float quality) {
+	font_renderer.quality = quality = sanitize_scale(quality);
 
 	float r = ftopow2(quality);
 	int w = FONTREN_MAXW * r;
 	int h = FONTREN_MAXH * r;
 
-	glGenTextures(1,&f->tex.gltex);
+	font_renderer.tex.w = w;
+	font_renderer.tex.h = h;
+	font_renderer.sprite.tex = &font_renderer.tex;
+	font_renderer.pixbuf = calloc(w, h);
 
-	f->tex.w = w;
-	f->tex.h = h;
-
-	f->pixbuf = calloc(w, h);
-
-	glBindTexture(GL_TEXTURE_2D, f->tex.gltex);
+	glGenTextures(1, &font_renderer.tex.gltex);
+	glBindTexture(GL_TEXTURE_2D, font_renderer.tex.gltex);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
-	log_debug("q=%f, w=%i, h=%i", f->quality, w, h);
+	log_debug("q=%f, w=%i, h=%i", font_renderer.quality, w, h);
 }
 
-static void fontrenderer_free(FontRenderer *f) {
-	glDeleteTextures(1, &f->tex.gltex);
-
-	free(f->pixbuf);
+static void fontrenderer_free(void) {
+	glDeleteTextures(1, &font_renderer.tex.gltex);
+	free(font_renderer.pixbuf);
 }
 
-static void fontrenderer_draw_prerendered(FontRenderer *f, SDL_Surface *surf) {
+static void fontrenderer_upload(SDL_Surface *surf) {
 	assert(surf != NULL);
 
-	glBindTexture(GL_TEXTURE_2D, f->tex.gltex);
-
-	f->rendered_area.w = surf->w;
-	f->rendered_area.h = surf->h;
+	glBindTexture(GL_TEXTURE_2D, font_renderer.tex.gltex);
 
 	// the written texture is zero padded to avoid bits of previously drawn text bleeding in
 	int winw = surf->w+1;
 	int winh = surf->h+1;
 
-	uint32_t *pixels = f->pixbuf;
+	uint32_t *pixels = font_renderer.pixbuf;
 
 	for(int y = 0; y < surf->h; y++) {
-		memcpy(pixels+y*winw, ((uint8_t *)surf->pixels)+y*surf->pitch, surf->w*4);
+		memcpy(pixels+y*winw, ((uint8_t*)surf->pixels)+y*surf->pitch, surf->w*4);
 		pixels[y*winw+surf->w]=0;
 	}
 
-	memset(pixels+(winh-1)*winw,0,winw*4);
+	memset(pixels+(winh-1)*winw, 0, winw*4);
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, winw, winh, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+	font_renderer.sprite.tex_area.w = surf->w;
+	font_renderer.sprite.tex_area.h = surf->h;
+	font_renderer.sprite.w = font_renderer.sprite.tex_area.w / font_renderer.quality;
+	font_renderer.sprite.h = font_renderer.sprite.tex_area.h / font_renderer.quality;
 }
 
-static SDL_Surface* fontrender_render(FontRenderer *f, const char *text, Font *font) {
+static SDL_Surface* fontrender_render(const char *text, Font *font) {
 	CacheEntry *e = get_cache_entry(font, text);
 	SDL_Surface *surf = e->surf;
 
@@ -225,16 +221,18 @@ static SDL_Surface* fontrender_render(FontRenderer *f, const char *text, Font *f
 		log_fatal("TTF_RenderUTF8_Blended() failed: %s", TTF_GetError());
 	}
 
-	if(surf->w > f->tex.w || surf->h > f->tex.h) {
-		log_fatal("Text (%s %dx%d) is too big for the internal buffer (%dx%d).", text, surf->w, surf->h, f->tex.w, f->tex.h);
+	if(surf->w > font_renderer.tex.w || surf->h > font_renderer.tex.h) {
+		log_fatal(
+			"Text (%s %dx%d) is too big for the internal buffer (%dx%d).",
+			text,
+			surf->w,
+			surf->h,
+			font_renderer.tex.w,
+			font_renderer.tex.h
+		);
 	}
 
 	return surf;
-}
-
-static void fontrenderer_draw(FontRenderer *f, const char *text, Font *font) {
-	SDL_Surface *surf = fontrender_render(f, text, font);
-	fontrenderer_draw_prerendered(f, surf);
 }
 
 void init_fonts(void) {
@@ -249,7 +247,7 @@ void uninit_fonts(void) {
 }
 
 void load_fonts(float quality) {
-	fontrenderer_init(&font_renderer, quality);
+	fontrenderer_init(quality);
 	_fonts.standard  = load_font("res/fonts/LinBiolinum.ttf",           20);
 	_fonts.mainmenu  = load_font("res/fonts/immortal.ttf",              35);
 	_fonts.small     = load_font("res/fonts/LinBiolinum.ttf",           14);
@@ -285,7 +283,7 @@ static void free_font(Font *font) {
 }
 
 void free_fonts(void) {
-	fontrenderer_free(&font_renderer);
+	fontrenderer_free();
 
 	Font **last = &_fonts.first + (sizeof(_fonts)/sizeof(Font*) - 1);
 	for(Font **font = &_fonts.first; font <= last; ++font) {
@@ -293,13 +291,17 @@ void free_fonts(void) {
 	}
 }
 
-static void draw_text_texture(Alignment align, float x, float y) {
+static void draw_text_line(Alignment align, float x, float y, const char *text, Font *font) {
 	float m = 1.0 / font_renderer.quality;
 	bool adjust = !(align & AL_Flag_NoAdjust);
 	align &= 0xf;
 
-	int w = font_renderer.rendered_area.w;
-	int h = font_renderer.rendered_area.h;
+	fontrenderer_upload(fontrender_render(text, font));
+
+	// XXX: all of these hacks are probably broken
+
+	int w = font_renderer.sprite.tex_area.w;
+	int h = font_renderer.sprite.tex_area.h;
 
 	if(adjust) {
 		switch(align) {
@@ -340,14 +342,7 @@ static void draw_text_texture(Alignment align, float x, float y) {
 		}
 	}
 
-	begin_draw_texture(
-		(FloatRect){ x, y, w/font_renderer.quality, h/font_renderer.quality },
-		(FloatRect){ 0, 0, w, h },
-		&font_renderer.tex
-	);
-
-	draw_quad();
-	end_draw_texture();
+	draw_sprite_unaligned_p(x, y, &font_renderer.sprite);
 }
 
 void draw_text(Alignment align, float x, float y, const char *text, Font *font) {
@@ -366,25 +361,13 @@ void draw_text(Alignment align, float x, float y, const char *text, Font *font) 
 		*nl = '\0';
 	}
 
-	fontrenderer_draw(&font_renderer, buf, font);
-	draw_text_texture(align, x, y);
+	draw_text_line(align, x, y, buf, font);
 	free(buf);
 }
 
-Texture* render_text(const char *text, Font *font, float *out_w, float *out_h) {
-	fontrenderer_draw(&font_renderer, text, font);
-
-	// no quality adjustment, the actual size in texels is important here
-
-	if(out_w) {
-		*out_w = font_renderer.rendered_area.w;
-	}
-
-	if(out_w) {
-		*out_h = font_renderer.rendered_area.h;
-	}
-
-	return &font_renderer.tex;
+void render_text(const char *text, Font *font, Sprite *out_spr) {
+	fontrenderer_upload(fontrender_render(text, font));
+	memcpy(out_spr, &font_renderer.sprite, sizeof(Sprite));
 }
 
 void draw_text_auto_wrapped(Alignment align, float x, float y, const char *text, int width, Font *font) {

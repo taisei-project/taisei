@@ -13,26 +13,43 @@
 #include "video.h"
 #include "progress.h"
 
+struct EndingEntry {
+	char *msg;
+	Sprite *sprite;
+	int time;
+};
+
+struct Ending {
+	EndingEntry *entries;
+	int count;
+	int duration;
+	int pos;
+};
+
 static void track_ending(int ending) {
 	assert(ending >= 0 && ending < NUM_ENDINGS);
 	progress.achieved_endings[ending]++;
 }
 
-void add_ending_entry(Ending *e, int dur, char *msg, char *tex) {
+void add_ending_entry(Ending *e, int dur, const char *msg, const char *sprite) {
 	EndingEntry *entry;
 	e->entries = realloc(e->entries, (++e->count)*sizeof(EndingEntry));
 	entry = &e->entries[e->count-1];
 
 	entry->time = 0;
-	if(e->count > 1)
+
+	if(e->count > 1) {
 		entry->time = 1<<23; // nobody will ever! find out
+	}
+
 	entry->msg = NULL;
 	stralloc(&entry->msg, msg);
 
-	if(tex)
-		entry->tex = get_tex(tex);
-	else
-		entry->tex = NULL;
+	if(sprite) {
+		entry->sprite = get_sprite(sprite);
+	} else {
+		entry->sprite = NULL;
+	}
 }
 
 /*
@@ -139,8 +156,10 @@ void ending_draw(Ending *e) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glColor4f(1,1,1,s);
-	if(e->entries[e->pos].tex)
-		draw_texture_p(SCREEN_W/2, SCREEN_H/2, e->entries[e->pos].tex);
+
+	if(e->entries[e->pos].sprite) {
+		draw_sprite_p(SCREEN_W/2, SCREEN_H/2, e->entries[e->pos].sprite);
+	}
 
 	draw_text_auto_wrapped(AL_Center, SCREEN_W/2, VIEWPORT_H*4/5, e->entries[e->pos].msg, SCREEN_W * 0.85, _fonts.standard);
 	glColor4f(1,1,1,1);
