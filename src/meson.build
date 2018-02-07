@@ -85,7 +85,6 @@ src_base = [
     'list.c',
     'log.c',
     'main.c',
-    'matrix.c',
     'menu/charselect.c',
     'menu/common.c',
     'menu/difficultyselect.c',

@@ -9,22 +9,23 @@
 #pragma once
 #include "taisei.h"
 
-#include <stdbool.h>
-#include "matrix.h"
+#include "util.h"
 
-typedef int IVector[3];
+#include <stdbool.h>
+
+typedef int ivec3[3];
 
 typedef struct ObjFileData {
-	Vector *xs;
+	vec3 *xs;
 	int xcount;
 
-	Vector *normals;
+	vec3 *normals;
 	int ncount;
 
-	Vector *texcoords;
+	vec3 *texcoords;
 	int tcount;
 
-	IVector *indices;
+	ivec3 *indices;
 	int icount;
 
 	int fverts;

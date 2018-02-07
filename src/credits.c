@@ -189,7 +189,7 @@ void credits_add(char *data, int time) {
 	credits.end += time + CREDITS_ENTRY_FADEOUT;
 }
 
-void credits_towerwall_draw(Vector pos) {
+void credits_towerwall_draw(vec3 pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towerwall")->gltex);
 
 	Shader *s = get_shader("tower_wall");
@@ -205,7 +205,7 @@ void credits_towerwall_draw(Vector pos) {
 	glUseProgram(0);
 }
 
-Vector **credits_skysphere_pos(Vector pos, float maxrange) {
+vec3 **credits_skysphere_pos(vec3 pos, float maxrange) {
 	return single3dpos(pos, maxrange, stage_3d_context.cx);
 }
 

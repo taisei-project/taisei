@@ -46,7 +46,7 @@ struct stage2_spells_s stage2_spells = {
 	},
 };
 
-static void stage2_bg_leaves_draw(Vector pos) {
+static void stage2_bg_leaves_draw(vec3 pos) {
 	glUseProgram(get_shader("alpha_depth")->prog);
 
 	glMatrixMode(GL_TEXTURE);
@@ -74,7 +74,7 @@ static void stage2_bg_leaves_draw(Vector pos) {
 	glMatrixMode(GL_MODELVIEW);
 }
 
-static void stage2_bg_grass_draw(Vector pos) {
+static void stage2_bg_grass_draw(vec3 pos) {
 	glDisable(GL_DEPTH_TEST);
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage2/roadgrass")->gltex);
 
@@ -89,7 +89,7 @@ static void stage2_bg_grass_draw(Vector pos) {
 	glEnable(GL_DEPTH_TEST);
 }
 
-static void stage2_bg_ground_draw(Vector pos) {
+static void stage2_bg_ground_draw(vec3 pos) {
 	glPushMatrix();
 	glTranslatef(pos[0]-50,pos[1],pos[2]);
 	glScalef(-1000,1000,1);
@@ -133,23 +133,23 @@ static void stage2_bg_ground_draw(Vector pos) {
 	glMatrixMode(GL_MODELVIEW);
 }
 
-static Vector **stage2_bg_pos(Vector pos, float maxrange) {
-	Vector p = {0, 0, 0};
-	Vector r = {0, 1000, 0};
+static vec3 **stage2_bg_pos(vec3 pos, float maxrange) {
+	vec3 p = {0, 0, 0};
+	vec3 r = {0, 1000, 0};
 
 	return linear3dpos(pos, maxrange, p, r);
 }
 
-static Vector **stage2_bg_grass_pos(Vector pos, float maxrange) {
-	Vector p = {0, 0, 0};
-	Vector r = {0, 2000, 0};
+static vec3 **stage2_bg_grass_pos(vec3 pos, float maxrange) {
+	vec3 p = {0, 0, 0};
+	vec3 r = {0, 2000, 0};
 
 	return linear3dpos(pos, maxrange, p, r);
 }
 
-static Vector **stage2_bg_grass_pos2(Vector pos, float maxrange) {
-	Vector p = {0, 1234, 40};
-	Vector r = {0, 2000, 0};
+static vec3 **stage2_bg_grass_pos2(vec3 pos, float maxrange) {
+	vec3 p = {0, 1234, 40};
+	vec3 r = {0, 2000, 0};
 
 	return linear3dpos(pos, maxrange, p, r);
 }

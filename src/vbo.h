@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include "matrix.h"
 #include "resource/texture.h"
 #include "resource/shader.h"
 #include "taiseigl.h"
@@ -29,8 +28,8 @@ extern VBO _vbo;
 
 typedef struct Vertex Vertex;
 struct Vertex {
-	Vector x;
-	Vector n;
+	vec3 x;
+	vec3 n;
 	float s;
 	float t;
 };

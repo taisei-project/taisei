@@ -87,11 +87,11 @@ static void stage4_fog(FBO *fbo) {
 	glUseProgram(0);
 }
 
-static Vector **stage4_fountain_pos(Vector pos, float maxrange) {
-	Vector p = {0, 400, 1500};
-	Vector r = {0, 0, 3000};
+static vec3 **stage4_fountain_pos(vec3 pos, float maxrange) {
+	vec3 p = {0, 400, 1500};
+	vec3 r = {0, 0, 3000};
 
-	Vector **list = linear3dpos(pos, maxrange, p, r);
+	vec3 **list = linear3dpos(pos, maxrange, p, r);
 
 	int i;
 
@@ -103,7 +103,7 @@ static Vector **stage4_fountain_pos(Vector pos, float maxrange) {
 	return list;
 }
 
-static void stage4_fountain_draw(Vector pos) {
+static void stage4_fountain_draw(vec3 pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage2/border")->gltex);
 
 	glPushMatrix();
@@ -116,21 +116,21 @@ static void stage4_fountain_draw(Vector pos) {
 	glPopMatrix();
 }
 
-static Vector **stage4_lake_pos(Vector pos, float maxrange) {
-	Vector p = {0, 600, 0};
-	Vector d;
+static vec3 **stage4_lake_pos(vec3 pos, float maxrange) {
+	vec3 p = {0, 600, 0};
+	vec3 d;
 
 	int i;
 
 	for(i = 0; i < 3; i++)
 		d[i] = p[i] - pos[i];
 
-	if(length(d) > maxrange) {
+	if(glm_vec_norm(d) > maxrange) {
 		return NULL;
 	} else {
-		Vector **list = calloc(2, sizeof(Vector*));
+		vec3 **list = calloc(2, sizeof(vec3*));
 
-		list[0] = malloc(sizeof(Vector));
+		list[0] = malloc(sizeof(vec3));
 		for(i = 0; i < 3; i++)
 			(*list[0])[i] = p[i];
 		list[1] = NULL;
@@ -139,7 +139,7 @@ static Vector **stage4_lake_pos(Vector pos, float maxrange) {
 	}
 }
 
-static void stage4_lake_draw(Vector pos) {
+static void stage4_lake_draw(vec3 pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage4/lake")->gltex);
 
 	glPushMatrix();
@@ -159,11 +159,11 @@ static void stage4_lake_draw(Vector pos) {
 	glPopMatrix();
 }
 
-static Vector **stage4_corridor_pos(Vector pos, float maxrange) {
-	Vector p = {0, 2400, 50};
-	Vector r = {0, 2000, 0};
+static vec3 **stage4_corridor_pos(vec3 pos, float maxrange) {
+	vec3 p = {0, 2400, 50};
+	vec3 r = {0, 2000, 0};
 
-	Vector **list = linear3dpos(pos, maxrange, p, r);
+	vec3 **list = linear3dpos(pos, maxrange, p, r);
 
 	int i;
 
@@ -175,7 +175,7 @@ static Vector **stage4_corridor_pos(Vector pos, float maxrange) {
 	return list;
 }
 
-static void stage4_corridor_draw(Vector pos) {
+static void stage4_corridor_draw(vec3 pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage4/planks")->gltex);
 
 	glMatrixMode(GL_TEXTURE);

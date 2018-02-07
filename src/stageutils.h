@@ -9,12 +9,12 @@
 #pragma once
 #include "taisei.h"
 
-#include "matrix.h"
+#include "util.h"
 
 typedef struct StageSegment StageSegment;
 
-typedef void (*SegmentDrawRule)(Vector pos);
-typedef Vector **(*SegmentPositionRule)(Vector q, float maxrange); // returns NULL-terminated array
+typedef void (*SegmentDrawRule)(vec3 pos);
+typedef vec3 **(*SegmentPositionRule)(vec3 q, float maxrange); // returns NULL-terminated array
 
 struct StageSegment {
 	SegmentDrawRule draw;
@@ -27,10 +27,10 @@ struct Stage3D {
 	int msize;
 
 	// Camera
-	Vector cx; // x
-	Vector cv; // x'
+	vec3 cx; // x
+	vec3 cv; // x'
 
-	Vector crot;
+	vec3 crot;
 
 	float projangle;
 };
@@ -48,8 +48,8 @@ void update_stage3d(Stage3D *s);
 
 void free_stage3d(Stage3D *s);
 
-Vector **linear3dpos(Vector q, float maxrange, Vector p, Vector r);
+vec3 **linear3dpos(vec3 q, float maxrange, vec3 p, vec3 r);
 
-Vector **single3dpos(Vector q, float maxrange, Vector p);
+vec3 **single3dpos(vec3 q, float maxrange, vec3 p);
 
 void skip_background_anim(Stage3D *s3d, void (*update_func)(void), int frames, int *timer, int *timer2);

@@ -61,7 +61,7 @@ static bool particle_filter(Projectile *part) {
 	return !(part->flags & PFLAG_NOREFLECT) && stage_should_draw_particle(part);
 }
 
-static void stage1_bg_draw(Vector pos) {
+static void stage1_bg_draw(vec3 pos) {
 	glPushMatrix();
 	glTranslatef(0,stage_3d_context.cx[1]+500,0);
 	glRotatef(180,1,0,0);
@@ -100,12 +100,12 @@ static void stage1_bg_draw(Vector pos) {
 	glEnable(GL_TEXTURE_2D);
 }
 
-static Vector **stage1_bg_pos(Vector p, float maxrange) {
-	Vector q = {0,0,0};
+static vec3 **stage1_bg_pos(vec3 p, float maxrange) {
+	vec3 q = {0,0,0};
 	return single3dpos(p, INFINITY, q);
 }
 
-static void stage1_smoke_draw(Vector pos) {
+static void stage1_smoke_draw(vec3 pos) {
 	float d = fabsf(pos[1]-stage_3d_context.cx[1]);
 
 	glDisable(GL_DEPTH_TEST);
@@ -123,9 +123,9 @@ static void stage1_smoke_draw(Vector pos) {
 	glEnable(GL_DEPTH_TEST);
 }
 
-static Vector **stage1_smoke_pos(Vector p, float maxrange) {
-	Vector q = {0,0,-300};
-	Vector r = {0,300,0};
+static vec3 **stage1_smoke_pos(vec3 p, float maxrange) {
+	vec3 q = {0,0,-300};
+	vec3 r = {0,300,0};
 	return linear3dpos(p, maxrange/2.0, q, r);
 }
 
@@ -157,7 +157,7 @@ static void stage1_update(void) {
 	update_stage3d(&stage_3d_context);
 }
 
-static void stage1_reed_draw(Vector pos) {
+static void stage1_reed_draw(vec3 pos) {
 	float d = -55+50*sin(pos[1]/25.0);
 	glPushMatrix();
 	glTranslatef(pos[0]+200*sin(pos[1]), pos[1], d);

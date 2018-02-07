@@ -77,11 +77,11 @@ enum {
 
 static float starpos[3*NUM_STARS];
 
-Vector **stage6_towerwall_pos(Vector pos, float maxrange) {
-	Vector p = {0, 0, -220};
-	Vector r = {0, 0, 300};
+vec3 **stage6_towerwall_pos(vec3 pos, float maxrange) {
+	vec3 p = {0, 0, -220};
+	vec3 r = {0, 0, 300};
 
-	Vector **list = linear3dpos(pos, maxrange, p, r);
+	vec3 **list = linear3dpos(pos, maxrange, p, r);
 
 	int i;
 
@@ -93,7 +93,7 @@ Vector **stage6_towerwall_pos(Vector pos, float maxrange) {
 	return list;
 }
 
-void stage6_towerwall_draw(Vector pos) {
+void stage6_towerwall_draw(vec3 pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towerwall")->gltex);
 
 	Shader *s = get_shader("tower_wall");
@@ -108,13 +108,13 @@ void stage6_towerwall_draw(Vector pos) {
 	glUseProgram(0);
 }
 
-static Vector **stage6_towertop_pos(Vector pos, float maxrange) {
-	Vector p = {0, 0, 70};
+static vec3 **stage6_towertop_pos(vec3 pos, float maxrange) {
+	vec3 p = {0, 0, 70};
 
 	return single3dpos(pos, maxrange, p);
 }
 
-static void stage6_towertop_draw(Vector pos) {
+static void stage6_towertop_draw(vec3 pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towertop")->gltex);
 
 	glPushMatrix();
@@ -124,11 +124,11 @@ static void stage6_towertop_draw(Vector pos) {
 	glPopMatrix();
 }
 
-static Vector **stage6_skysphere_pos(Vector pos, float maxrange) {
+static vec3 **stage6_skysphere_pos(vec3 pos, float maxrange) {
 	return single3dpos(pos, maxrange, stage_3d_context.cx);
 }
 
-static void stage6_skysphere_draw(Vector pos) {
+static void stage6_skysphere_draw(vec3 pos) {
 	glDisable(GL_DEPTH_TEST);
 	Shader *s = get_shader("stage6_sky");
 	glUseProgram(s->prog);

@@ -58,14 +58,14 @@ struct {
 	float rad;
 } stagedata;
 
-static Vector **stage5_stairs_pos(Vector pos, float maxrange) {
-	Vector p = {0, 0, 0};
-	Vector r = {0, 0, 6000};
+static vec3 **stage5_stairs_pos(vec3 pos, float maxrange) {
+	vec3 p = {0, 0, 0};
+	vec3 r = {0, 0, 6000};
 
 	return linear3dpos(pos, maxrange, p, r);
 }
 
-static void stage5_stairs_draw(Vector pos) {
+static void stage5_stairs_draw(vec3 pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage5/tower")->gltex);
 
 	glPushMatrix();

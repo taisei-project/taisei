@@ -56,5 +56,5 @@ extern StageProcs stage6_spell_procs;
 
 void start_fall_over(void);
 
-Vector **stage6_towerwall_pos(Vector pos, float maxrange);
-void stage6_towerwall_draw(Vector pos);
+vec3 **stage6_towerwall_pos(vec3 pos, float maxrange);
+void stage6_towerwall_draw(vec3 pos);
