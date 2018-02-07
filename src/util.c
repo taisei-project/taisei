@@ -621,17 +621,6 @@ char* try_path(const char *prefix, const char *name, const char *ext) {
 // misc utils
 //
 
-void _ts_assert_fail(const char *cond, const char *func, const char *file, int line, bool use_log) {
-	use_log = use_log && log_initialized();
-
-	if(use_log) {
-		log_fatal("%s:%i: %s(): assertion `%s` failed", file, line, func, cond);
-	} else {
-		tsfprintf(stderr, "%s:%i: %s(): assertion `%s` failed", file, line, func, cond);
-		abort();
-	}
-}
-
 int getenvint(const char *v, int defaultval) {
 	char *e = getenv(v);
 

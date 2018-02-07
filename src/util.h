@@ -22,6 +22,7 @@
 #include "log.h"
 #include "compat.h"
 #include "hirestime.h"
+#include "assert.h"
 
 //
 // string utils
@@ -158,22 +159,6 @@ uint32_t crc32str_sse42(uint32_t crc, const char *str) __attribute__((hot, pure)
 #else
 #define crc32str_sse42 crc32str
 #endif
-
-noreturn void _ts_assert_fail(const char *cond, const char *func, const char *file, int line, bool use_log);
-
-#undef assert
-#undef static_assert
-
-#define static_assert _Static_assert
-
-#ifdef NDEBUG
-	#define _assert(cond,uselog)
-#else
-	#define _assert(cond,uselog) ((cond) ? (void)0 : _ts_assert_fail(#cond, __func__, __FILE__, __LINE__, uselog))
-#endif
-
-#define assert(cond) _assert(cond, true)
-#define assert_nolog(cond) _assert(cond, false)
 
 #ifdef DEBUG
 	typedef struct DebugInfo {

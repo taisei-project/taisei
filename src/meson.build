@@ -61,6 +61,7 @@ configure_file(configuration : config, output : 'build_config.h')
 
 src_base = [
     'aniplayer.c',
+    'assert.c',
     'audio_common.c',
     'boss.c',
     'cli.c',
