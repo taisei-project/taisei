@@ -75,8 +75,10 @@ typedef struct FloatRect {
 // These definitions are common but non-standard, so we provide our own
 #undef M_PI
 #undef M_PI_2
+#undef M_PI_4
 #define M_PI 3.14159265358979323846
 #define M_PI_2 1.57079632679489661923
+#define M_PI_4 0.78539816339744830962
 
 // This is a workaround to properly specify the type of our "complex" variables...
 // Taisei code always uses just "complex" when it actually means "complex double", which is not really correct...
@@ -102,6 +104,8 @@ float ftopow2(float x) __attribute__((const));
 float smooth(float x) __attribute__((const));
 float smoothreclamp(float x, float old_min, float old_max, float new_min, float new_max) __attribute__((const));
 float sanitize_scale(float scale) __attribute__((const));
+
+#include <cglm/cglm.h>
 
 //
 // gl/video utils

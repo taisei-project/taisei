@@ -253,13 +253,13 @@ Summary:
         taisei_version_string
     )
 
+subdir('external')
 subdir('src')
 subdir('resources')
 subdir('misc')
 subdir('doc')
 subdir('xdg')
 subdir('scripts')
-subdir('external')
 
 message(summary)
 
