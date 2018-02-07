@@ -1,4 +1,3 @@
-install_data(join_paths('gamecontrollerdb', 'gamecontrollerdb.txt'), install_dir : data_path)
 
 if macos_app_bundle
     install_data(join_paths('icons', 'Taisei.icns'), install_dir : datadir)

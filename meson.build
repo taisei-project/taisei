@@ -259,6 +259,7 @@ subdir('misc')
 subdir('doc')
 subdir('xdg')
 subdir('scripts')
+subdir('external')
 
 message(summary)
 
