@@ -1,0 +1,1 @@
+option('lib_type', type : 'combo', choices : ['static', 'shared', 'default_library', 'inline'], description : 'Type of library to build: `default_library` respects ths global `default_library` option; `inline` is for projects that need just the header-only API')
