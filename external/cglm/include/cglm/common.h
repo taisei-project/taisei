@@ -14,7 +14,7 @@
 #include <math.h>
 #include <float.h>
 
-#if defined(_WIN32)
+#if defined(_WIN32) && defined(_MSC_VER)
 #  ifdef CGLM_DLL
 #    define CGLM_EXPORT __declspec(dllexport)
 #  else
@@ -23,7 +23,7 @@
 #  define CGLM_INLINE __forceinline
 #else
 #  define CGLM_EXPORT __attribute__((visibility("default")))
-#  define CGLM_INLINE static inline __attribute((always_inline))
+#  define CGLM_INLINE static inline __attribute__((always_inline))
 #endif
 
 #define glm__memcpy(type, dest, src, size)                                    \
