@@ -571,38 +571,38 @@ void hina_monty_slave_visual(Enemy *s, int time, bool render) {
 
 	glUseProgram(shader->prog);
 
-	glPushMatrix();
+	render_push(&render);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 
-	glTranslatef(creal(s->pos), cimag(s->pos), 0);
+	render_translate(&render,(vec3){creal(s->pos), cimag(s->pos), 0});
 
 	static_clrtransform_bullet(clr1, &ct);
 	recolor_apply_transform(&ct);
-	glPushMatrix();
-	glRotatef(time, 0, 0, 1);
-	glScalef(scale * (0.6 + 0.6 * psin(time*0.1)), scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), 0);
+	render_push(&render);
+	render_rotate_deg(&render,time, 0, 0, 1);
+	render_scale(&render,(vec3){scale * (0.6 + 0.6 * psin(time*0.1)), scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), 0});
 	draw_sprite_p(0, 0, soul);
-	glPopMatrix();
+	render_pop(&render);
 
 	static_clrtransform_bullet(clr2, &ct);
 	recolor_apply_transform(&ct);
-	glPushMatrix();
-	glRotatef(time, 0, 0, 1);
-	glScalef(scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0);
+	render_push(&render);
+	render_rotate_deg(&render,time, 0, 0, 1);
+	render_scale(&render,(vec3){scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0});
 	draw_sprite_p(0, 0, soul);
-	glPopMatrix();
+	render_pop(&render);
 
 	static_clrtransform_bullet(clr3, &ct);
 	recolor_apply_transform(&ct);
-	glPushMatrix();
-	glRotatef(-time, 0, 0, 1);
-	// glScalef(scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0);
-	glScalef(scale, scale, 0);
+	render_push(&render);
+	render_rotate_deg(&render,-time, 0, 0, 1);
+	// render_scale(&render,(vec3){scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0});
+	render_scale(&render,(vec3){scale, scale, 0});
 	draw_sprite_p(0, 0, soul);
-	glPopMatrix();
+	render_pop(&render);
 
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-	glPopMatrix();
+	render_pop(&render);
 
 	glUseProgram(0);
 }
@@ -736,16 +736,16 @@ void hina_monty(Boss *h, int time) {
 
 void hina_spell_bg(Boss *h, int time) {
 
-	glPushMatrix();
-	glTranslatef(VIEWPORT_W/2, VIEWPORT_H/2,0);
-	glPushMatrix();
-	glScalef(0.6,0.6,1);
+	render_push(&render);
+	render_translate(&render,(vec3){VIEWPORT_W/2, VIEWPORT_H/2,0});
+	render_push(&render);
+	render_scale(&render,(vec3){0.6,0.6,1});
 	draw_sprite(0, 0, "stage2/spellbg1");
-	glPopMatrix();
+	render_pop(&render);
 	glBlendFunc(GL_ZERO, GL_SRC_COLOR);
-	glRotatef(time*5, 0,0,1);
+	render_rotate_deg(&render,time*5, 0,0,1);
 	draw_sprite(0, 0, "stage2/spellbg2");
-	glPopMatrix();
+	render_pop(&render);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	play_animation(get_ani("fire"),creal(h->pos), cimag(h->pos), 0);
 

@@ -242,13 +242,13 @@ Model* get_model(const char *name) {
 void draw_model_p(Model *model) {
 	GLenum flag = model->fverts == 3 ? GL_TRIANGLES : GL_QUADS;
 
-	glMatrixMode(GL_TEXTURE);
-	glScalef(1,-1,1); // every texture in taisei is actually read vertically mirrored. and I noticed that just now.
+	render_matrixmode(&render,MM_TEXTURE);
+	render_scale(&render,(vec3){1,-1,1}); // every texture in taisei is actually read vertically mirrored. and I noticed that just now.
 
 	glDrawElements(flag, model->icount, GL_UNSIGNED_INT, model->indices);
 
 	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
+	render_matrixmode(&render,MM_MODELVIEW);
 }
 
 void draw_model(const char *name) {

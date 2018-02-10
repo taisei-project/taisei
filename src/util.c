@@ -310,10 +310,10 @@ float sanitize_scale(float scale) {
 //
 
 void set_ortho_ex(float w, float h) {
-	glMatrixMode(GL_PROJECTION);
+	render_matrixmode(&render,MM_PROJECTION);
 	glLoadIdentity();
 	glOrtho(0, w, h, 0, -100, 100);
-	glMatrixMode(GL_MODELVIEW);
+	render_matrixmode(&render,MM_MODELVIEW);
 	glDisable(GL_DEPTH_TEST);
 }
 
@@ -327,12 +327,12 @@ void colorfill(float r, float g, float b, float a) {
 	glDisable(GL_TEXTURE_2D);
 	glColor4f(r,g,b,a);
 
-	glPushMatrix();
-	glScalef(SCREEN_W,SCREEN_H,1);
-	glTranslatef(0.5,0.5,0);
+	render_push(&render);
+	render_scale(&render,(vec3){SCREEN_W,SCREEN_H,1});
+	render_translate(&render,(vec3){0.5,0.5,0});
 
 	draw_quad();
-	glPopMatrix();
+	render_pop(&render);
 
 	glColor4f(1,1,1,1);
 	glEnable(GL_TEXTURE_2D);
@@ -366,13 +366,13 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 	begin_draw_sprite(x - star_width, y, star_width/star->w, star_width/star->w, true, star);
 
 	while(i < numstars) {
-		glTranslatef(1, 0, 0);
+		render_translate(&render,(vec3){1, 0, 0});
 		draw_quad();
 		i++;
 	}
 
 	if(numfrags) {
-		glTranslatef(1, 0, 0);
+		render_translate(&render,(vec3){1, 0, 0});
 		parse_color_array(frag_clr, clr);
 		glUniform4fv(uniloc(shader, "fill_color"), 1, clr);
 		glUniform1f(uniloc(shader, "fill"), numfrags / (float)maxfrags);
@@ -383,7 +383,7 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 	glUniform1f(uniloc(shader, "fill"), 0);
 
 	while(i < maxstars) {
-		glTranslatef(1, 0, 0);
+		render_translate(&render,(vec3){1, 0, 0});
 		draw_quad();
 		i++;
 	}

@@ -70,14 +70,14 @@ void draw_char_menu(MenuData *menu) {
 	draw_options_menu_bg(menu);
 	draw_menu_title(menu, "Select Character");
 
-	glPushMatrix();
+	render_push(&render);
 	glColor4f(0,0,0,0.7);
-	glTranslatef(SCREEN_W/4*3, SCREEN_H/2, 0);
-	glScalef(300, SCREEN_H, 1);
+	render_translate(&render,(vec3){SCREEN_W/4*3, SCREEN_H/2, 0});
+	render_scale(&render,(vec3){300, SCREEN_H, 1});
 	glDisable(GL_TEXTURE_2D);
 	draw_quad();
 	glEnable(GL_TEXTURE_2D);
-	glPopMatrix();
+	render_pop(&render);
 
 	CharacterID current_char = 0;
 
@@ -96,18 +96,18 @@ void draw_char_menu(MenuData *menu) {
 		glColor4f(1,1,1,1-menu->entries[i].drawdata*2);
 		draw_sprite(SCREEN_W/3-200*menu->entries[i].drawdata, 2*SCREEN_H/3, spr);
 
-		glPushMatrix();
-		glTranslatef(SCREEN_W/4*3, SCREEN_H/3, 0);
+		render_push(&render);
+		render_translate(&render,(vec3){SCREEN_W/4*3, SCREEN_H/3, 0});
 
-		glPushMatrix();
+		render_push(&render);
 
 		if(menu->entries[i].drawdata != 0) {
-			glTranslatef(0,-300*menu->entries[i].drawdata, 0);
-			glRotatef(180*menu->entries[i].drawdata, 1,0,0);
+			render_translate(&render,(vec3){0,-300*menu->entries[i].drawdata, 0});
+			render_rotate_deg(&render,180*menu->entries[i].drawdata, 1,0,0);
 		}
 
 		draw_text(AL_Center, 0, 0, name, _fonts.mainmenu);
-		glPopMatrix();
+		render_pop(&render);
 
 		if(menu->entries[i].drawdata) {
 			glColor4f(1,1,1,1-menu->entries[i].drawdata*3);
@@ -116,11 +116,11 @@ void draw_char_menu(MenuData *menu) {
 		}
 
 		draw_text(AL_Center, 0, 70, title, _fonts.standard);
-		glPopMatrix();
+		render_pop(&render);
 	}
 
-	glPushMatrix();
-	glTranslatef(SCREEN_W/4*3, SCREEN_H/3, 0);
+	render_push(&render);
+	render_translate(&render,(vec3){SCREEN_W/4*3, SCREEN_H/3, 0});
 
 	for(int i = 0; i < mod->ecount; i++) {
 		PlayerMode *mode = plrmode_find(current_char, (ShotModeID)(uintptr_t)mod->entries[i].arg);
@@ -135,22 +135,22 @@ void draw_char_menu(MenuData *menu) {
 		draw_text(AL_Center, 0, 200+40*i, mode->name, _fonts.standard);
 	}
 
-	glPopMatrix();
+	render_pop(&render);
 	glColor4f(1,1,1,0.3*sin(menu->frames/20.0)+0.5);
 
 	for(int i = 0; i <= 1; i++) {
-		glPushMatrix();
+		render_push(&render);
 
-		glTranslatef(60 + (SCREEN_W/2 - 30)*i, SCREEN_H/2+80, 0);
+		render_translate(&render,(vec3){60 + (SCREEN_W/2 - 30)*i, SCREEN_H/2+80, 0});
 
 		if(i) {
-			glScalef(-1,1,1);
+			render_scale(&render,(vec3){-1,1,1});
 			glCullFace(GL_FRONT);
 		}
 
 		draw_sprite(0, 0, "menu/arrow");
 
-		glPopMatrix();
+		render_pop(&render);
 
 		if(i) {
 			glCullFace(GL_BACK);

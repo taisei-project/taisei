@@ -114,17 +114,17 @@ void player_draw(Player* plr) {
 
 	draw_enemies(plr->slaves);
 
-	glPushMatrix();
-		glTranslatef(creal(plr->pos), cimag(plr->pos), 0);
+	render_push(render);
+		render_translate(&render,(vec3){creal(plr->pos), cimag(plr->pos), 0});
 
 		if(plr->focus) {
-			glPushMatrix();
-				glRotatef(global.frames*10, 0, 0, 1);
-				glScalef(1, 1, 1);
+			render_push(render);
+				render_rotate_deg(&render,global.frames*10, 0, 0, 1);
+				render_scale(&render,(vec3){1, 1, 1});
 				glColor4f(1, 1, 1, 0.2 * (clamp(plr->focus, 0, 15) / 15.0));
 				draw_sprite(0, 0, "fairy_circle");
 				glColor4f(1,1,1,1);
-			glPopMatrix();
+			render_pop(&render);
 		}
 
 
@@ -141,15 +141,15 @@ void player_draw(Player* plr) {
 			glColor3f(1,1,1);
 
 		if(plr->focus) {
-			glPushMatrix();
+			render_push(render);
 				glColor4f(1, 1, 1, plr->focus / 30.0);
-				glRotatef(global.frames, 0, 0, -1);
+				render_rotate_deg(&render,global.frames, 0, 0, -1);
 				draw_sprite(0, 0, "focus");
 				glColor4f(1, 1, 1, 1);
-			glPopMatrix();
+			render_pop(&render);
 		}
 
-	glPopMatrix();
+	render_pop(&render);
 }
 
 static void player_fail_spell(Player *plr) {

@@ -196,11 +196,11 @@ void credits_towerwall_draw(vec3 pos) {
 	glUseProgram(s->prog);
 	glUniform1i(uniloc(s, "lendiv"), 2800.0 + 300.0 * sin(global.frames / 77.7));
 
-	glPushMatrix();
-	glTranslatef(pos[0], pos[1], pos[2]);
-	glScalef(30,30,30);
+	render_push(&render);
+	render_translate(&render,(vec3){pos[0], pos[1], pos[2]});
+	render_scale(&render,(vec3){30,30,30});
 	draw_model("towerwall");
-	glPopMatrix();
+	render_pop(&render);
 
 	glUseProgram(0);
 }
@@ -289,48 +289,48 @@ void credits_draw_entry(CreditsEntry *e) {
 		yukkuri_spr = get_sprite("yukkureimu");
 	}
 
-	glPushMatrix();
+	render_push(&render);
 
 	if(fadein < 1) {
-		glTranslatef(0, SCREEN_W * pow(1 - fadein,  2) *  0.5, 0);
+		render_translate(&render,(vec3){0, SCREEN_W * pow(1 - fadein,  2) *  0.5, 0});
 	} else if(fadeout < 1) {
-		glTranslatef(0, SCREEN_W * pow(1 - fadeout, 2) * -0.5, 0);
+		render_translate(&render,(vec3){0, SCREEN_W * pow(1 - fadeout, 2) * -0.5, 0});
 	}
 
 	// for debugging: draw a quad as tall as the entry is expected to be
 	/*
-	glPushMatrix();
+	render_push(&render);
 	glColor4f(1, 0, 0, fadein * fadeout);
 	glDisable(GL_TEXTURE_2D);
-	glScalef(300, h_total, 1);
+	render_scale(&render,(vec3){300, h_total, 1});
 	draw_quad();
 	glEnable(GL_TEXTURE_2D);
-	glPopMatrix();
+	render_pop(&render);
 	*/
 
 	glColor4f(1, 1, 1, fadein * fadeout);
 
 	if(yukkuri) {
-		glTranslatef(0, (-h_body) * 0.5, 0);
+		render_translate(&render,(vec3){0, (-h_body) * 0.5, 0});
 	} else {
-		glTranslatef(0, (-h_body) * 0.5, 0);
+		render_translate(&render,(vec3){0, (-h_body) * 0.5, 0});
 	}
 
 	for(int i = 0; i < e->lines; ++i) {
 		if(yukkuri && !i) {
-			glPushMatrix();
-			glScalef(CREDITS_YUKKURI_SCALE, CREDITS_YUKKURI_SCALE, 1.0);
+			render_push(&render);
+			render_scale(&render,(vec3){CREDITS_YUKKURI_SCALE, CREDITS_YUKKURI_SCALE, 1.0});
 			draw_sprite_p(0, 10 * sin(global.frames / 10.0) * fadeout * fadein, yukkuri_spr);
-			glPopMatrix();
-			glTranslatef(0, yukkuri_spr->h * CREDITS_YUKKURI_SCALE * 0.5, 0);
+			render_pop(&render);
+			render_translate(&render,(vec3){0, yukkuri_spr->h * CREDITS_YUKKURI_SCALE * 0.5, 0});
 		} else {
 			Font *font = i ? _fonts.standard : _fonts.mainmenu;
 			draw_text(AL_Center, 0, 0, e->data[i], font);
-			glTranslatef(0, font_line_spacing(font), 0);
+			render_translate(&render,(vec3){0, font_line_spacing(font), 0});
 		}
 	}
 
-	glPopMatrix();
+	render_pop(&render);
 	glColor4f(1, 1, 1, 1);
 }
 
@@ -338,32 +338,32 @@ void credits_draw(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	colorfill(1, 1, 1, 1); // don't use glClearColor for this, it screws up letterboxing
 
-	glPushMatrix();
-	glTranslatef(-SCREEN_W/2, 0, 0);
+	render_push(&render);
+	render_translate(&render,(vec3){-SCREEN_W/2, 0, 0});
 	glEnable(GL_DEPTH_TEST);
 
 	set_perspective_viewport(&stage_3d_context, 100, 9000, 0, 0, SCREEN_W, SCREEN_H);
 	draw_stage3d(&stage_3d_context, 10000);
 
-	glPopMatrix();
+	render_pop(&render);
 	set_ortho();
 
-	glPushMatrix();
+	render_push(&render);
 	glColor4f(0, 0, 0, credits.panelalpha * 0.7);
-	glTranslatef(SCREEN_W/4*3, SCREEN_H/2, 0);
-	glScalef(300, SCREEN_H, 1);
+	render_translate(&render,(vec3){SCREEN_W/4*3, SCREEN_H/2, 0});
+	render_scale(&render,(vec3){300, SCREEN_H, 1});
 	draw_quad();
 	glColor4f(1, 1, 1, 1);
-	glPopMatrix();
+	render_pop(&render);
 
-	glPushMatrix();
-	glTranslatef(SCREEN_W/4*3, SCREEN_H/2, 0);
+	render_push(&render);
+	render_translate(&render,(vec3){SCREEN_W/4*3, SCREEN_H/2, 0});
 
 	for(int i = 0; i < credits.ecount; ++i) {
 		credits_draw_entry(&(credits.entries[i]));
 	}
 
-	glPopMatrix();
+	render_pop(&render);
 
 	draw_transition();
 }

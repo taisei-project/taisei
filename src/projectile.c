@@ -615,8 +615,8 @@ int asymptotic(Projectile *p, int t) { // v = a[0]*(a[1] + 1); a[1] -> 0
 }
 
 static inline void apply_common_transforms(Projectile *proj, int t) {
-	glTranslatef(creal(proj->pos), cimag(proj->pos), 0);
-	glRotatef(proj->angle*180/M_PI+90, 0, 0, 1);
+	render_translate(&render,(vec3){creal(proj->pos), cimag(proj->pos), 0});
+	render_rotate_deg(&render,proj->angle*180/M_PI+90, 0, 0, 1);
 
 	if(t >= 16) {
 		return;
@@ -632,7 +632,7 @@ static inline void apply_common_transforms(Projectile *proj, int t) {
 
 	float s = 2.0-t/16.0;
 	if(s != 1) {
-		glScalef(s, s, 1);
+		render_scale(&render,(vec3){s, s, 1});
 	}
 }
 
@@ -648,10 +648,10 @@ void ProjDrawCore(Projectile *proj, Color c) {
 }
 
 void ProjDraw(Projectile *proj, int t) {
-	glPushMatrix();
+	render_push(&render);
 	apply_common_transforms(proj, t);
 	ProjDrawCore(proj, proj->color);
-	glPopMatrix();
+	render_pop(&render);
 }
 
 void ProjNoDraw(Projectile *proj, int t) {
@@ -667,70 +667,70 @@ int blast_timeout(Projectile *p, int t) {
 }
 
 void Blast(Projectile *p, int t) {
-	glPushMatrix();
-	glTranslatef(creal(p->pos), cimag(p->pos), 0);
-	glRotatef(creal(p->args[1]), cimag(p->args[1]), creal(p->args[2]), cimag(p->args[2]));
+	render_push(&render);
+	render_translate(&render,(vec3){creal(p->pos), cimag(p->pos), 0});
+	render_rotate_deg(&render,creal(p->args[1]), cimag(p->args[1]), creal(p->args[2]), cimag(p->args[2]));
 	if(t != p->args[0] && p->args[0] != 0)
-		glScalef(t/p->args[0], t/p->args[0], 1);
+		render_scale(&render,(vec3){t/p->args[0], t/p->args[0], 1});
 
 	apply_color(p, rgba(0.3, 0.6, 1.0, 1.0 - t/p->args[0]));
 
 	draw_sprite_p(0,0,p->sprite);
-	glScalef(0.5+creal(p->args[2]),0.5+creal(p->args[2]),1);
+	render_scale(&render,(vec3){0.5+creal(p->args[2]),0.5+creal(p->args[2]),1});
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 	draw_sprite_p(0,0,p->sprite);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-	glPopMatrix();
+	render_pop(&render);
 }
 
 void Shrink(Projectile *p, int t) {
-	glPushMatrix();
+	render_push(&render);
 	apply_common_transforms(p, t);
 
 	float s = 2.0-t/p->args[0]*2;
 	if(s != 1) {
-		glScalef(s, s, 1);
+		render_scale(&render,(vec3){s, s, 1});
 	}
 
 	ProjDrawCore(p, p->color);
-	glPopMatrix();
+	render_pop(&render);
 }
 
 void DeathShrink(Projectile *p, int t) {
-	glPushMatrix();
+	render_push(&render);
 	apply_common_transforms(p, t);
 
 	float s = 2.0-t/p->args[0]*2;
 	if(s != 1) {
-		glScalef(s, 1, 1);
+		render_scale(&render,(vec3){s, 1, 1});
 	}
 
 	ProjDrawCore(p, p->color);
-	glPopMatrix();
+	render_pop(&render);
 }
 
 void GrowFade(Projectile *p, int t) {
-	glPushMatrix();
+	render_push(&render);
 	apply_common_transforms(p, t);
 
 	float s = t/p->args[0]*(1 + (creal(p->args[2])? p->args[2] : p->args[1]));
 	if(s != 1) {
-		glScalef(s, s, 1);
+		render_scale(&render,(vec3){s, s, 1});
 	}
 
 	ProjDrawCore(p, multiply_colors(p->color, rgba(1, 1, 1, 1 - t/p->args[0])));
-	glPopMatrix();
+	render_pop(&render);
 }
 
 void Fade(Projectile *p, int t) {
-	glPushMatrix();
+	render_push(&render);
 	apply_common_transforms(p, t);
 	ProjDrawCore(p, multiply_colors(p->color, rgba(1, 1, 1, 1 - t/p->args[0])));
-	glPopMatrix();
+	render_pop(&render);
 }
 
 void ScaleFade(Projectile *p, int t) {
-	glPushMatrix();
+	render_push(&render);
 	apply_common_transforms(p, t);
 
 	double scale_min = creal(p->args[2]);
@@ -743,9 +743,9 @@ void ScaleFade(Projectile *p, int t) {
 
 	Color c = multiply_colors(p->color, rgba(1, 1, 1, alpha));
 
-	glScalef(scale, scale, 1);
+	render_scale(&render,(vec3){scale, scale, 1});
 	ProjDrawCore(p, c);
-	glPopMatrix();
+	render_pop(&render);
 }
 
 int timeout(Projectile *p, int t) {
@@ -787,11 +787,11 @@ void Petal(Projectile *p, int t) {
 	x /= r; y /= r; z /= r;
 
 	glDisable(GL_CULL_FACE);
-	glPushMatrix();
-	glTranslatef(creal(p->pos), cimag(p->pos),0);
-	glRotatef(t*4.0 + cimag(p->args[3]), x, y, z);
+	render_push(&render);
+	render_translate(&render,(vec3){creal(p->pos), cimag(p->pos),0});
+	render_rotate_deg(&render,t*4.0 + cimag(p->args[3]), x, y, z);
 	ProjDrawCore(p, p->color);
-	glPopMatrix();
+	render_pop(&render);
 	glEnable(GL_CULL_FACE);
 }
 

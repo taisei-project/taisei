@@ -99,9 +99,9 @@ static void draw_wall_of_text(float f, const char *txt) {
 	float w = VIEWPORT_W;
 	float h = VIEWPORT_H;
 
-	glPushMatrix();
-	glTranslatef(w/2, h/2, 0);
-	glScalef(w, h, 1.0);
+	render_push(&render);
+	render_translate(&render,(vec3){w/2, h/2, 0});
+	render_scale(&render,(vec3){w, h, 1.0});
 
 	Shader *shader = get_shader("spellcard_walloftext");
 	glUseProgram(shader->prog);
@@ -114,11 +114,11 @@ static void draw_wall_of_text(float f, const char *txt) {
 	draw_quad();
 	glUseProgram(0);
 
-	glPopMatrix();
+	render_pop(&render);
 }
 
 static void draw_spellbg(int t) {
-	glPushMatrix();
+	render_push(&render);
 
 	Boss *b = global.boss;
 	b->current->draw_rule(b, t);
@@ -126,17 +126,17 @@ static void draw_spellbg(int t) {
 	if(b->current->type == AT_ExtraSpell)
 		draw_extraspell_bg(b, t);
 
-	glPushMatrix();
-	glTranslatef(creal(b->pos), cimag(b->pos), 0);
-	glRotatef(global.frames*7.0, 0, 0, -1);
+	render_push(&render);
+	render_translate(&render,(vec3){creal(b->pos), cimag(b->pos), 0});
+	render_rotate_deg(&render,global.frames*7.0, 0, 0, -1);
 
 	if(t < 0) {
 		float f = 1.0 - t/(float)ATTACK_START_DELAY;
-		glScalef(f,f,f);
+		render_scale(&render,(vec3){f,f,f});
 	}
 
 	draw_sprite(0, 0, "boss_spellcircle0");
-	glPopMatrix();
+	render_pop(&render);
 
 	float delay = ATTACK_START_DELAY;
 	if(b->current->type == AT_ExtraSpell)
@@ -146,15 +146,15 @@ static void draw_spellbg(int t) {
 		draw_wall_of_text(f, b->current->name);
 
 	if(t < ATTACK_START_DELAY && b->dialog) {
-		glPushMatrix();
+		render_push(&render);
 		float f = -0.5*t/(float)ATTACK_START_DELAY+0.5;
 		glColor4f(1,1,1,-f*f+2*f);
 		draw_sprite_p(VIEWPORT_W*3/4-10*f*f,VIEWPORT_H*2/3-10*f*f,b->dialog);
 		glColor4f(1,1,1,1);
-		glPopMatrix();
+		render_pop(&render);
 	}
 
-	glPopMatrix();
+	render_pop(&render);
 }
 
 static void apply_bg_shaders(ShaderRule *shaderrules, FBOPair *fbos) {
@@ -264,11 +264,11 @@ static void stage_render_bg(StageInfo *stage) {
 	glViewport(0, 0, scale*VIEWPORT_W, scale*VIEWPORT_H);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glPushMatrix();
-		glTranslatef(-(VIEWPORT_X+VIEWPORT_W/2), -(VIEWPORT_Y+VIEWPORT_H/2),0);
+	render_push(&render);
+		render_translate(&render,(vec3){-(VIEWPORT_X+VIEWPORT_W/2), -(VIEWPORT_Y+VIEWPORT_H/2),0});
 		glEnable(GL_DEPTH_TEST);
 		stage->procs->draw();
-	glPopMatrix();
+	render_pop(&render);
 
 	swap_fbo_pair(&resources.fbo_pairs.bg);
 	apply_bg_shaders(stage->procs->shader_rules, &resources.fbo_pairs.bg);
@@ -323,15 +323,15 @@ void stage_draw_foreground(void) {
 	float scale = fach;
 
 	// draw the foreground FBO
-	glPushMatrix();
-		glScalef(1/facw,1/fach,1);
-		glTranslatef(floorf(facw*VIEWPORT_X), floorf(fach*VIEWPORT_Y), 0);
-		glScalef(floorf(scale*VIEWPORT_W)/VIEWPORT_W,floorf(scale*VIEWPORT_H)/VIEWPORT_H,1);
+	render_push(&render);
+		render_scale(&render,(vec3){1/facw,1/fach,1});
+		render_translate(&render,(vec3){floorf(facw*VIEWPORT_X), floorf(fach*VIEWPORT_Y), 0});
+		render_scale(&render,(vec3){floorf(scale*VIEWPORT_W)/VIEWPORT_W,floorf(scale*VIEWPORT_H)/VIEWPORT_H,1});
 		// apply the screenshake effect
 		if(global.shake_view) {
-			glTranslatef(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames*1.1+3),0);
-			glScalef(1+2*global.shake_view/VIEWPORT_W,1+2*global.shake_view/VIEWPORT_H,1);
-			glTranslatef(-global.shake_view,-global.shake_view,0);
+			render_translate(&render,(vec3){global.shake_view*sin(global.frames),global.shake_view*sin(global.frames*1.1+3),0});
+			render_scale(&render,(vec3){1+2*global.shake_view/VIEWPORT_W,1+2*global.shake_view/VIEWPORT_H,1});
+			render_translate(&render,(vec3){-global.shake_view,-global.shake_view,0});
 
 			if(global.shake_view_fade) {
 				global.shake_view -= global.shake_view_fade;
@@ -340,7 +340,7 @@ void stage_draw_foreground(void) {
 			}
 		}
 		draw_fbo(resources.fbo_pairs.fg.front);
-	glPopMatrix();
+	render_pop(&render);
 	set_ortho();
 }
 
@@ -517,7 +517,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	glUniform1f(stagedraw.hud_text.u_split, 0.0);
 
 	// Warning: pops outer matrix!
-	glPopMatrix();
+	render_pop(&render);
 
 #ifdef DEBUG
 	snprintf(buf, sizeof(buf), "%.2f lfps, %.2f rfps, timer: %d, frames: %d",
@@ -572,13 +572,13 @@ void stage_draw_hud_text(struct labels_s* labels) {
 }
 
 static void draw_graph(float x, float y, float w, float h) {
-	glPushMatrix();
-	glTranslatef(x + w/2, y + h/2, 0);
-	glScalef(w, h, 1);
+	render_push(&render);
+	render_translate(&render,(vec3){x + w/2, y + h/2, 0});
+	render_scale(&render,(vec3){w, h, 1});
 	glDisable(GL_TEXTURE_2D);
 	draw_quad();
 	glEnable(GL_TEXTURE_2D);
-	glPopMatrix();
+	render_pop(&render);
 }
 
 static void fill_graph(int num_samples, float *samples, FPSCounter *fps) {
@@ -659,15 +659,15 @@ void stage_draw_hud(void) {
 	labels.y.power   = label_cur_height+label_height*(i++);
 	labels.y.graze   = label_cur_height+label_height*(i++);
 
-	glPushMatrix();
-	glTranslatef(615, 0, 0);
+	render_push(&render);
+	render_translate(&render,(vec3){615, 0, 0});
 
 	// Difficulty indicator
-	glPushMatrix();
-	glTranslatef((SCREEN_W - 615) * 0.25, SCREEN_H-170, 0);
-	glScalef(0.6, 0.6, 0);
+	render_push(&render);
+	render_translate(&render,(vec3){(SCREEN_W - 615) * 0.25, SCREEN_H-170, 0});
+	render_scale(&render,(vec3){0.6, 0.6, 0});
 	draw_sprite(0, 0, difficulty_sprite_name(global.diff));
-	glPopMatrix();
+	render_pop(&render);
 
 	// Set up variables for Extra Spell indicator
 	float a = 1, s = 0, fadein = 1, fadeout = 1, fade = 1;
@@ -698,17 +698,17 @@ void stage_draw_hud(void) {
 	// Extra Spell indicator
 	if(s) {
 		float s2 = max(0, swing(s, 3));
-		glPushMatrix();
-		glTranslatef((SCREEN_W - 615) * 0.25 - 615 * (1 - pow(2*fadein-1, 2)), 340, 0);
+		render_push(&render);
+		render_translate(&render,(vec3){(SCREEN_W - 615) * 0.25 - 615 * (1 - pow(2*fadein-1, 2)), 340, 0});
 		glColor4f(0.3, 0.6, 0.7, 0.7 * s);
-		glRotatef(-25 + 360 * (1-s2), 0, 0, 1);
-		glScalef(s2, s2, 0);
+		render_rotate_deg(&render,-25 + 360 * (1-s2), 0, 0, 1);
+		render_scale(&render,(vec3){s2, s2, 0});
 		draw_text(AL_Center,  1,  1, "Extra Spell!", _fonts.mainmenu);
 		draw_text(AL_Center, -1, -1, "Extra Spell!", _fonts.mainmenu);
 		glColor4f(1, 1, 1, s);
 		draw_text(AL_Center, 0, 0, "Extra Spell!", _fonts.mainmenu);
 		glColor4f(1, 1, 1, 1);
-		glPopMatrix();
+		render_pop(&render);
 	}
 
 	// Warning: pops matrix!

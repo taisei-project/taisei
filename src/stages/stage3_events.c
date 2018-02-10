@@ -724,16 +724,16 @@ static void wriggle_slave_visual(Enemy *e, int time, bool render) {
 		return;
 
 	if(render) {
-		glPushMatrix();
-		glTranslatef(creal(e->pos),cimag(e->pos),0);
-		glRotatef(7*time,0,0,1);
+		render_push(&render);
+		render_translate(&render,(vec3){creal(e->pos),cimag(e->pos),0});
+		render_rotate_deg(&render,7*time,0,0,1);
 		glColor4f(0.8,1,0.4,1);
-		glScalef(0.7,0.7,1);
+		render_scale(&render,(vec3){0.7,0.7,1});
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		draw_sprite(0,0,"fairy_circle");
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glColor3f(1,1,1);
-		glPopMatrix();
+		render_pop(&render);
 	} else if(time % 5 == 0) {
 		tsrand_fill(2);
 		PARTICLE(
@@ -838,10 +838,10 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 static void wriggle_slave_part_draw(Projectile *p, int t) {
 	float b = 1 - t / p->args[0];
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glPushMatrix();
-	glTranslatef(creal(p->pos), cimag(p->pos), 0);
+	render_push(&render);
+	render_translate(&render,(vec3){creal(p->pos), cimag(p->pos), 0});
 	ProjDrawCore(p, multiply_colors(p->color, rgba(b, b, b, 1)));
-	glPopMatrix();
+	render_pop(&render);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
@@ -1152,22 +1152,22 @@ void wriggle_light_singularity(Boss *boss, int time) {
 
 static void wriggle_fstorm_proj_draw(Projectile *p, int time) {
 	float f = 1-min(time/60.0,1);
-	glPushMatrix();
-	glTranslatef(creal(p->pos), cimag(p->pos), 0);
-	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
+	render_push(&render);
+	render_translate(&render,(vec3){creal(p->pos), cimag(p->pos), 0});
+	render_rotate_deg(&render,p->angle*180/M_PI+90, 0, 0, 1);
 	ProjDrawCore(p, p->color);
 
 	if(f > 0) {
 		p->sprite = get_sprite("proj/ball");
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-		glScalef(f,f,f);
+		render_scale(&render,(vec3){f,f,f});
 		ProjDrawCore(p,time);
-		glScalef(1/f,1/f,1/f);
+		render_scale(&render,(vec3){1/f,1/f,1/f});
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		p->sprite = get_sprite("proj/rice");
 	}
 
-	glPopMatrix();
+	render_pop(&render);
 }
 
 static int wriggle_fstorm_proj(Projectile *p, int time) {

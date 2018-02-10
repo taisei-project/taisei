@@ -99,17 +99,17 @@ static void replayview_draw_stagemenu(MenuData *m) {
 	float height = (1+m->ecount) * 20;
 	float width  = 100;
 
-	glPushMatrix();
-	glTranslatef(SCREEN_W*0.5, SCREEN_H*0.5, 0);
-	glScalef(width, height, 1);
+	render_push(&render);
+	render_translate(&render,(vec3){SCREEN_W*0.5, SCREEN_H*0.5, 0});
+	render_scale(&render,(vec3){width, height, 1});
 	glColor4f(0.1, 0.1, 0.1, 0.7 * alpha);
 	glDisable(GL_TEXTURE_2D);
 	draw_quad();
 	glEnable(GL_TEXTURE_2D);
-	glPopMatrix();
+	render_pop(&render);
 
-	glPushMatrix();
-	glTranslatef(SCREEN_W*0.5, (SCREEN_H-(m->ecount-1)*20)*0.5, 0);
+	render_push(&render);
+	render_translate(&render,(vec3){SCREEN_W*0.5, (SCREEN_H-(m->ecount-1)*20)*0.5, 0});
 
 	for(i = 0; i < m->ecount; ++i) {
 		MenuEntry *e = &(m->entries[i]);
@@ -125,7 +125,7 @@ static void replayview_draw_stagemenu(MenuData *m) {
 		draw_text(AL_Center, 0, 20*i, e->name, _fonts.standard);
 	}
 
-	glPopMatrix();
+	render_pop(&render);
 }
 
 static void replayview_drawitem(void *n, int item, int cnt) {

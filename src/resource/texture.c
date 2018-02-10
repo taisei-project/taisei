@@ -153,14 +153,14 @@ static void texture_post_load(Texture *tex) {
 	glUseProgram(sha->prog);
 	glUniform1i(uniloc(sha, "width"), tex->w);
 	glUniform1i(uniloc(sha, "height"), tex->h);
-	glPushMatrix();
+	render_push(&render);
 	glLoadIdentity();
 	glViewport(0, 0, tex->w, tex->h);
 	set_ortho_ex(tex->w, tex->h);
-	glTranslatef(tex->w * 0.5, tex->h * 0.5, 0);
-	glScalef(tex->w, tex->h, 1);
+	render_translate(&render,(vec3){tex->w * 0.5, tex->h * 0.5, 0});
+	render_scale(&render,(vec3){tex->w, tex->h, 1});
 	glDrawArrays(GL_QUADS, 4, 4);
-	glPopMatrix();
+	render_pop(&render);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDeleteFramebuffers(1, &fbo);
 	glDeleteTextures(1, &tex->gltex);
@@ -233,7 +233,7 @@ void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex) {
 	draw_texture_state.drawing = true;
 
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
-	glPushMatrix();
+	render_push(&render);
 
 	float x = dest.x;
 	float y = dest.y;
@@ -246,28 +246,28 @@ void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex) {
 	if(s != 1 || t != 1 || frag.x || frag.y) {
 		draw_texture_state.texture_matrix_tainted = true;
 
-		glMatrixMode(GL_TEXTURE);
+		render_matrixmode(&render,MM_TEXTURE);
 		glLoadIdentity();
 
-		glScalef(1.0/tex->w, 1.0/tex->h, 1);
+		render_scale(&render,(vec3){1.0/tex->w, 1.0/tex->h, 1});
 
 		if(frag.x || frag.y) {
-			glTranslatef(frag.x, frag.y, 0);
+			render_translate(&render,(vec3){frag.x, frag.y, 0});
 		}
 
 		if(s != 1 || t != 1) {
-			glScalef(frag.w, frag.h, 1);
+			render_scale(&render,(vec3){frag.w, frag.h, 1});
 		}
 
-		glMatrixMode(GL_MODELVIEW);
+		render_matrixmode(&render,MM_MODELVIEW);
 	}
 
 	if(x || y) {
-		glTranslatef(x, y, 0);
+		render_translate(&render,(vec3){x, y, 0});
 	}
 
 	if(w != 1 || h != 1) {
-		glScalef(w, h, 1);
+		render_scale(&render,(vec3){w, h, 1});
 	}
 }
 
@@ -278,12 +278,12 @@ void end_draw_texture(void) {
 
 	if(draw_texture_state.texture_matrix_tainted) {
 		draw_texture_state.texture_matrix_tainted = false;
-		glMatrixMode(GL_TEXTURE);
+		render_matrixmode(&render,MM_TEXTURE);
 		glLoadIdentity();
-		glMatrixMode(GL_MODELVIEW);
+		render_matrixmode(&render,MM_MODELVIEW);
 	}
 
-	glPopMatrix();
+	render_pop(&render);
 	draw_texture_state.drawing = false;
 }
 
@@ -328,35 +328,35 @@ void fill_viewport_p(float xoff, float yoff, float ratio, float aspect, float an
 
 	if(xoff || yoff || rw != 1 || rh != 1 || angle) {
 		texture_matrix_tainted = true;
-		glMatrixMode(GL_TEXTURE);
+		render_matrixmode(&render,MM_TEXTURE);
 
 		if(xoff || yoff) {
-			glTranslatef(xoff, yoff, 0);
+			render_translate(&render,(vec3){xoff, yoff, 0});
 		}
 
 		if(rw != 1 || rh != 1) {
-			glScalef(rw, rh, 1);
+			render_scale(&render,(vec3){rw, rh, 1});
 		}
 
 		if(angle) {
-			glTranslatef(0.5, 0.5, 0);
-			glRotatef(angle, 0, 0, 1);
-			glTranslatef(-0.5, -0.5, 0);
+			render_translate(&render,(vec3){0.5, 0.5, 0});
+			render_rotate_deg(&render,angle, 0, 0, 1);
+			render_translate(&render,(vec3){-0.5, -0.5, 0});
 		}
 
-		glMatrixMode(GL_MODELVIEW);
+		render_matrixmode(&render,MM_MODELVIEW);
 	}
 
-	glPushMatrix();
-	glTranslatef(VIEWPORT_W*0.5, VIEWPORT_H*0.5, 0);
-	glScalef(VIEWPORT_W, VIEWPORT_H, 1);
+	render_push(&render);
+	render_translate(&render,(vec3){VIEWPORT_W*0.5, VIEWPORT_H*0.5, 0});
+	render_scale(&render,(vec3){VIEWPORT_W, VIEWPORT_H, 1});
 	draw_quad();
-	glPopMatrix();
+	render_pop(&render);
 
 	if(texture_matrix_tainted) {
-		glMatrixMode(GL_TEXTURE);
+		render_matrixmode(&render,MM_TEXTURE);
 		glLoadIdentity();
-		glMatrixMode(GL_MODELVIEW);
+		render_matrixmode(&render,MM_MODELVIEW);
 	}
 }
 
@@ -378,25 +378,25 @@ void fill_screen_p(Texture *tex) {
 void loop_tex_line_p(complex a, complex b, float w, float t, Texture *texture) {
 	complex d = b-a;
 	complex c = (b+a)/2;
-	glPushMatrix();
-	glTranslatef(creal(c),cimag(c),0);
-	glRotatef(180/M_PI*carg(d),0,0,1);
-	glScalef(cabs(d),w,1);
+	render_push(&render);
+	render_translate(&render,(vec3){creal(c),cimag(c),0});
+	render_rotate_deg(&render,180/M_PI*carg(d),0,0,1);
+	render_scale(&render,(vec3){cabs(d),w,1});
 
-	glMatrixMode(GL_TEXTURE);
+	render_matrixmode(&render,MM_TEXTURE);
 	glLoadIdentity();
-	glTranslatef(t, 0, 0);
-	glMatrixMode(GL_MODELVIEW);
+	render_translate(&render,(vec3){t, 0, 0});
+	render_matrixmode(&render,MM_MODELVIEW);
 
 	glBindTexture(GL_TEXTURE_2D, texture->gltex);
 
 	draw_quad();
 
-	glMatrixMode(GL_TEXTURE);
+	render_matrixmode(&render,MM_TEXTURE);
 		glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
+	render_matrixmode(&render,MM_MODELVIEW);
 
-	glPopMatrix();
+	render_pop(&render);
 }
 
 void loop_tex_line(complex a, complex b, float w, float t, const char *texture) {

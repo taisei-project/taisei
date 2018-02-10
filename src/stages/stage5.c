@@ -68,9 +68,9 @@ static vec3 **stage5_stairs_pos(vec3 pos, float maxrange) {
 static void stage5_stairs_draw(vec3 pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage5/tower")->gltex);
 
-	glPushMatrix();
-	glTranslatef(pos[0], pos[1], pos[2]);
-	glScalef(300,300,300);
+	render_push(&render);
+	render_translate(&render,(vec3){pos[0], pos[1], pos[2]});
+	render_scale(&render,(vec3){300,300,300});
 
 	Shader *sha = get_shader("tower_light");
 	glUseProgram(sha->prog);
@@ -80,7 +80,7 @@ static void stage5_stairs_draw(vec3 pos) {
 
 	draw_model("tower");
 
-	glPopMatrix();
+	render_pop(&render);
 
 	glUseProgram(0);
 }
@@ -127,23 +127,23 @@ void iku_spell_bg(Boss *b, int t) {
 	fill_viewport(0, t*0.001, 0.7, "stage5/noise");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glPushMatrix();
-	glTranslatef(0, -100, 0);
+	render_push(&render);
+	render_translate(&render,(vec3){0, -100, 0});
 
 	fill_viewport(t/100.0,0,0.5,"stage5/spell_clouds");
-	glPushMatrix();
-	glTranslatef(0, 100, 0);
+	render_push(&render);
+	render_translate(&render,(vec3){0, 100, 0});
 	fill_viewport(t/100.0*0.75,0,0.6,"stage5/spell_clouds");
-	glPushMatrix();
-	glTranslatef(0, 100, 0);
+	render_push(&render);
+	render_translate(&render,(vec3){0, 100, 0});
 	fill_viewport(t/100.0*0.5,0,0.7,"stage5/spell_clouds");
-	glPushMatrix();
-	glTranslatef(0, 100, 0);
+	render_push(&render);
+	render_translate(&render,(vec3){0, 100, 0});
 	fill_viewport(t/100.0*0.25,0,0.8,"stage5/spell_clouds");
-	glPopMatrix();
-	glPopMatrix();
-	glPopMatrix();
-	glPopMatrix();
+	render_pop(&render);
+	render_pop(&render);
+	render_pop(&render);
+	render_pop(&render);
 
 	glColor4f(1,1,1,0.05*stagedata.light_strength);
 	fill_viewport(0, 300, 1, "stage5/spell_lightning");

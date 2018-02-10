@@ -62,41 +62,41 @@ static bool particle_filter(Projectile *part) {
 }
 
 static void stage1_bg_draw(vec3 pos) {
-	glPushMatrix();
-	glTranslatef(0,stage_3d_context.cx[1]+500,0);
-	glRotatef(180,1,0,0);
+	render_push(&render);
+	render_translate(&render,(vec3){0,stage_3d_context.cx[1]+500,0});
+	render_rotate_deg(&render,180,1,0,0);
 
 	glDisable(GL_TEXTURE_2D);
-	glPushMatrix();
-	glScalef(1200,3000,1);
+	render_push(&render);
+	render_scale(&render,(vec3){1200,3000,1});
 	glColor4f(0,0.1,.1,1);
 	draw_quad();
 	glColor4f(1,1,1,1);
-	glPopMatrix();
+	render_pop(&render);
 	glEnable(GL_TEXTURE_2D);
 
-	glPushMatrix();
-	glRotatef(30,1,0,0);
-	glScalef(.85,-.85,.85);
-	glTranslatef(-VIEWPORT_W/2,0,0);
+	render_push(&render);
+	render_rotate_deg(&render,30,1,0,0);
+	render_scale(&render,(vec3){.85,-.85,.85});
+	render_translate(&render,(vec3){-VIEWPORT_W/2,0,0});
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 	draw_projectiles(global.particles, particle_filter);
 	draw_enemies(global.enemies);
 	if(global.boss)
 		draw_boss(global.boss);
-	glPopMatrix();
+	render_pop(&render);
 	glEnable(GL_CULL_FACE);
 
 	glDisable(GL_TEXTURE_2D);
-	glPushMatrix();
-	glScalef(1200,3000,1);
+	render_push(&render);
+	render_scale(&render,(vec3){1200,3000,1});
 	glColor4f(0,0.1,.1,0.8);
 	draw_quad();
 	glColor4f(1,1,1,1);
-	glPopMatrix();
+	render_pop(&render);
 	glEnable(GL_DEPTH_TEST);
-	glPopMatrix();
+	render_pop(&render);
 	glEnable(GL_TEXTURE_2D);
 }
 
@@ -109,17 +109,17 @@ static void stage1_smoke_draw(vec3 pos) {
 	float d = fabsf(pos[1]-stage_3d_context.cx[1]);
 
 	glDisable(GL_DEPTH_TEST);
-	glPushMatrix();
-	glTranslatef(pos[0]+200*sin(pos[1]), pos[1], pos[2]+200*sin(pos[1]/25.0));
-	glRotatef(90,-1,0,0);
-	glScalef(3.5,2,1);
-	glRotatef(global.frames,0,0,1);
+	render_push(&render);
+	render_translate(&render,(vec3){pos[0]+200*sin(pos[1]), pos[1], pos[2]+200*sin(pos[1]/25.0)});
+	render_rotate_deg(&render,90,-1,0,0);
+	render_scale(&render,(vec3){3.5,2,1});
+	render_rotate_deg(&render,global.frames,0,0,1);
 
 	glColor4f(.8,.8,.8,((d-500)*(d-500))/1.5e7);
 	draw_sprite(0,0,"stage1/fog");
 	glColor4f(1,1,1,1);
 
-	glPopMatrix();
+	render_pop(&render);
 	glEnable(GL_DEPTH_TEST);
 }
 
@@ -159,17 +159,17 @@ static void stage1_update(void) {
 
 static void stage1_reed_draw(vec3 pos) {
 	float d = -55+50*sin(pos[1]/25.0);
-	glPushMatrix();
-	glTranslatef(pos[0]+200*sin(pos[1]), pos[1], d);
-	glRotatef(90,1,0,0);
-//glRotatef(90,0,0,1);
-	glScalef(80,80,80);
+	render_push(&render);
+	render_translate(&render,(vec3){pos[0]+200*sin(pos[1]), pos[1], d});
+	render_rotate_deg(&render,90,1,0,0);
+//render_rotate_deg(&render,90,0,0,1);
+	render_scale(&render,(vec3){80,80,80});
 	glColor4f(0.,0.05,0.05,1);
 
 	draw_model("reeds");
-	glTranslatef(0,-d/80,0);
-	glScalef(1,-1,1);
-	glTranslatef(0,d/80,0);
+	render_translate(&render,(vec3){0,-d/80,0});
+	render_scale(&render,(vec3){1,-1,1});
+	render_translate(&render,(vec3){0,d/80,0});
 	glDepthFunc(GL_GREATER);
 	glDepthMask(GL_FALSE);
 	glColor4f(0.,0.05,0.05,0.5);
@@ -177,7 +177,7 @@ static void stage1_reed_draw(vec3 pos) {
 	glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LEQUAL);
 	glColor4f(1,1,1,1);
-	glPopMatrix();
+	render_pop(&render);
 }
 
 static void stage1_start(void) {

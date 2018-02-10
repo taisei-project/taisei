@@ -450,13 +450,13 @@ void kurumi_redspike(Boss *b, int time) {
 void kurumi_spell_bg(Boss *b, int time) {
 	float f = 0.5+0.5*sin(time/80.0);
 
-	glPushMatrix();
-	glTranslatef(VIEWPORT_W/2, VIEWPORT_H/2,0);
-	glScalef(0.6,0.6,1);
+	render_push(&render);
+	render_translate(&render,(vec3){VIEWPORT_W/2, VIEWPORT_H/2,0});
+	render_scale(&render,(vec3){0.6,0.6,1});
 	glColor3f(f,1-f,1-f);
 	draw_sprite(0, 0, "stage4/kurumibg1");
 	glColor3f(1,1,1);
-	glPopMatrix();
+	render_pop(&render);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	fill_viewport(time/300.0, time/300.0, 0.5, "stage4/kurumibg2");

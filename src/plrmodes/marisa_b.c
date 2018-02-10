@@ -19,14 +19,14 @@ static void marisa_star_trail_draw(Projectile *p, int t) {
 
 	// s = 1 + t / creal(p->args[0]);
 
-	glPushMatrix();
-	glTranslatef(creal(p->pos), cimag(p->pos), 0);
-	// glRotatef(t*10, 0, 0, 1);
-	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
-	glScalef(s, s, 1);
+	render_push(&render);
+	render_translate(&render,(vec3){creal(p->pos), cimag(p->pos), 0});
+	// render_rotate_deg(&render,t*10, 0, 0, 1);
+	render_rotate_deg(&render,p->angle*180/M_PI+90, 0, 0, 1);
+	render_scale(&render,(vec3){s, s, 1});
 	ProjDrawCore(p, clr);
 	glColor4f(1,1,1,1);
-	glPopMatrix();
+	render_pop(&render);
 }
 
 static int marisa_star_projectile(Projectile *p, int t) {
@@ -193,23 +193,23 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 	parse_color_array(color,clr);
 	clr[3] = fade;
 
-	glPushMatrix();
-	glTranslatef(creal(e->pos),cimag(e->pos),0);
-	glPushMatrix();
-	glRotatef(carg(e->pos-global.plr.pos)*180/M_PI+90,0,0,1);
+	render_push(&render);
+	render_translate(&render,(vec3){creal(e->pos),cimag(e->pos),0});
+	render_push(&render);
+	render_rotate_deg(&render,carg(e->pos-global.plr.pos)*180/M_PI+90,0,0,1);
 
-	glScalef(120*fade,VIEWPORT_H*1.5,1);
-	glTranslatef(0,-0.5,0);
+	render_scale(&render,(vec3){120*fade,VIEWPORT_H*1.5,1});
+	render_translate(&render,(vec3){0,-0.5,0});
 	marisa_common_masterspark_draw(BOMB_RECOVERY*tb);
 
-	glPopMatrix();
+	render_pop(&render);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glColor4f(clr[0],clr[1],clr[2],clr[3]);
-	glRotatef(t*10,0,0,1);
+	render_rotate_deg(&render,t*10,0,0,1);
 	draw_sprite(0,0,"fairy_circle");
-	glScalef(0.6,0.6,1);
+	render_scale(&render,(vec3){0.6,0.6,1});
 	draw_sprite(0,0,"part/lightningball");
-	glPopMatrix();
+	render_pop(&render);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glColor4f(1,1,1,1);

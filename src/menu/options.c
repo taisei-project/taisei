@@ -743,8 +743,8 @@ void draw_options_menu(MenuData *menu) {
 	draw_options_menu_bg(menu);
 	draw_menu_title(menu, menu->context);
 
-	glPushMatrix();
-	glTranslatef(100, 100, 0);
+	render_push(&render);
+	render_translate(&render,(vec3){100, 100, 0});
 
 	draw_menu_selector(menu->drawdata[0], menu->drawdata[2], menu->drawdata[1], 34, menu->frames);
 
@@ -920,20 +920,20 @@ void draw_options_menu(MenuData *menu) {
 					if(!strcmp(tmp, "-0%"))
 						strcpy(tmp, "0%");
 
-					glPushMatrix();
-					glTranslatef(origin - (w+cw) * 0.5, 20 * i, 0);
+					render_push(&render);
+					render_translate(&render,(vec3){origin - (w+cw) * 0.5, 20 * i, 0});
 					draw_text(AL_Right, -((w+cw) * 0.5 + 10), 0, tmp, _fonts.standard);
 					glDisable(GL_TEXTURE_2D);
-					glPushMatrix();
-					glScalef(w+cw, h, 1);
+					render_push(&render);
+					render_scale(&render,(vec3){w+cw, h, 1});
 					glColor4f(1, 1, 1, (0.1 + 0.2 * a) * alpha);
 					draw_quad();
-					glPopMatrix();
-					glTranslatef(w * (pos - 0.5), 0, 0);
-					glScalef(cw, h, 0);
+					render_pop(&render);
+					render_translate(&render,(vec3){w * (pos - 0.5), 0, 0});
+					render_scale(&render,(vec3){cw, h, 0});
 					glColor4f(0.9, 0.6, 0.2, alpha);
 					draw_quad();
-					glPopMatrix();
+					render_pop(&render);
 					glEnable(GL_TEXTURE_2D);
 
 					break;
@@ -942,7 +942,7 @@ void draw_options_menu(MenuData *menu) {
 		}
 	}
 
-	glPopMatrix();
+	render_pop(&render);
 }
 
 // --- Input/event processing --- //

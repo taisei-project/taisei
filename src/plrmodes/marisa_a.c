@@ -28,27 +28,27 @@ static void draw_laser_beam(complex src, complex dst, double size, double step, 
 	complex dir = dst - src;
 	complex center = (src + dst) * 0.5;
 
-	glPushMatrix();
+	render_push(&render);
 
-	glTranslatef(creal(center), cimag(center), 0);
-	glRotatef(180/M_PI*carg(dir), 0, 0, 1);
-	glScalef(cabs(dir), size, 1);
+	render_translate(&render,(vec3){creal(center), cimag(center), 0});
+	render_rotate_deg(&render,180/M_PI*carg(dir), 0, 0, 1);
+	render_scale(&render,(vec3){cabs(dir), size, 1});
 
-	glMatrixMode(GL_TEXTURE);
+	render_matrixmode(&render,MM_TEXTURE);
 	glLoadIdentity();
-	glTranslatef(-cimag(src) / step + t, 0, 0);
-	glScalef(cabs(dir) / step, 1, 1);
-	glMatrixMode(GL_MODELVIEW);
+	render_translate(&render,(vec3){-cimag(src) / step + t, 0, 0});
+	render_scale(&render,(vec3){cabs(dir) / step, 1, 1});
+	render_matrixmode(&render,MM_MODELVIEW);
 
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
 	glUniform1f(u_length, cabs(dir) / step);
 	draw_quad();
 
-	glMatrixMode(GL_TEXTURE);
+	render_matrixmode(&render,MM_TEXTURE);
 	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
+	render_matrixmode(&render,MM_MODELVIEW);
 
-	glPopMatrix();
+	render_pop(&render);
 }
 
 static void trace_laser(Enemy *e, complex vel, int damage) {
@@ -159,21 +159,21 @@ static void draw_magic_star(complex pos, double a, Color c1, Color c2) {
 	glUseProgram(shader->prog);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glPushMatrix();
-		glTranslatef(creal(pos), cimag(pos), -1);
-		glPushMatrix();
+	render_push(&render);
+		render_translate(&render,(vec3){creal(pos), cimag(pos), -1});
+		render_push(&render);
 			static_clrtransform_bullet(c1, &ct);
 			recolor_apply_transform(&ct);
-			glRotatef(global.frames * 3, 0, 0, 1);
+			render_rotate_deg(&render,global.frames * 3, 0, 0, 1);
 			draw_sprite_p(0, 0, spr);
-		glPopMatrix();
-		glPushMatrix();
+		render_pop(&render);
+		render_push(&render);
 			static_clrtransform_bullet(c2, &ct);
 			recolor_apply_transform(&ct);
-			glRotatef(global.frames * -3, 0, 0, 1);
+			render_rotate_deg(&render,global.frames * -3, 0, 0, 1);
 			draw_sprite_p(0, 0, spr);
-		glPopMatrix();
-	glPopMatrix();
+		render_pop(&render);
+	render_pop(&render);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glUseProgram(0);
@@ -202,10 +202,10 @@ static void marisa_laser_slave_visual(Enemy *e, int t, bool render) {
 	MarisaLaserData *ld = REF(e->args[3]);
 
 	glColor4f(1, 1, 1, laser_alpha);
-	glPushMatrix();
-	glTranslatef(creal(ld->trace_hit.first), cimag(ld->trace_hit.first), 0);
+	render_push(&render);
+	render_translate(&render,(vec3){creal(ld->trace_hit.first), cimag(ld->trace_hit.first), 0});
 	draw_sprite(0, 0, "part/smoothdot");
-	glPopMatrix();
+	render_pop(&render);
 	glColor4f(1, 1, 1, 1);
 }
 
@@ -395,11 +395,11 @@ static void masterspark_visual(Enemy *e, int t2, bool render) {
 	fade *= fade;
 	}
 
-	glPushMatrix();
-	glTranslatef(creal(global.plr.pos),cimag(global.plr.pos)-40-VIEWPORT_H/2,0);
-	glScalef(fade*800,VIEWPORT_H,1);
+	render_push(&render);
+	render_translate(&render,(vec3){creal(global.plr.pos),cimag(global.plr.pos)-40-VIEWPORT_H/2,0});
+	render_scale(&render,(vec3){fade*800,VIEWPORT_H,1});
 	marisa_common_masterspark_draw(t*BOMB_RECOVERY);
-	glPopMatrix();
+	render_pop(&render);
 }
 
 static int masterspark_star(Projectile *p, int t) {

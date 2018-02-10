@@ -114,8 +114,8 @@ void draw_main_menu(MenuData *menu) {
 	draw_main_menu_bg(menu);
 	draw_sprite(150.5, 100, "menu/logo");
 
-	glPushMatrix();
-	glTranslatef(0, SCREEN_H-270, 0);
+	render_push(&render);
+	render_translate(&render,(vec3){0, SCREEN_H-270, 0});
 	draw_menu_selector(50 + menu->drawdata[1]/2, menu->drawdata[2], 1.5 * menu->drawdata[1], 64, menu->frames);
 
 	for(int i = 0; i < menu->ecount; i++) {
@@ -132,7 +132,7 @@ void draw_main_menu(MenuData *menu) {
 		draw_text(AL_Left, 50 + s, 35*i, menu->entries[i].name, _fonts.mainmenu);
 	}
 
-	glPopMatrix();
+	render_pop(&render);
 
 	glColor4f(1,1,1,1);
 	for(int i = 0; i < 50; i++) { // who needs persistent state for a particle system?
@@ -158,15 +158,15 @@ void draw_main_menu(MenuData *menu) {
 			continue;
 
 		glDisable(GL_CULL_FACE);
-		glPushMatrix();
-		glTranslatef(posx,posy,0);
-		glScalef(0.2,0.2,0.2);
+		render_push(&render);
+		render_translate(&render,(vec3){posx,posy,0});
+		render_scale(&render,(vec3){0.2,0.2,0.2});
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		glRotatef(2*(t%period),rx,ry,rz);
+		render_rotate_deg(&render,2*(t%period),rx,ry,rz);
 		draw_sprite(0,0,"part/petal");
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_CULL_FACE);
-		glPopMatrix();
+		render_pop(&render);
 	}
 
 	char version[32];

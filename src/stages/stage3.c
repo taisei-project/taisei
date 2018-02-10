@@ -81,20 +81,20 @@ static void stage3_bg_tunnel_draw(vec3 pos) {
 	float r = 300;
 	int i;
 
-	glPushMatrix();
-	glTranslatef(pos[0], pos[1], pos[2]);
+	render_push(&render);
+	render_translate(&render,(vec3){pos[0], pos[1], pos[2]});
 
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage3/border")->gltex);
 	for(i = 0; i < n; i++) {
-		glPushMatrix();
-		glRotatef(360.0/n*i + stgstate.tunnel_angle, 0, 1, 0);
-		glTranslatef(0,0,-r);
-		glScalef(2*r/tan((n-2)*M_PI/n), 3000, 1);
+		render_push(&render);
+		render_rotate_deg(&render,360.0/n*i + stgstate.tunnel_angle, 0, 1, 0);
+		render_translate(&render,(vec3){0,0,-r});
+		render_scale(&render,(vec3){2*r/tan((n-2)*M_PI/n), 3000, 1});
 		draw_quad();
-		glPopMatrix();
+		render_pop(&render);
 	}
 
-	glPopMatrix();
+	render_pop(&render);
 }
 
 static void stage3_tunnel(FBO *fbo) {

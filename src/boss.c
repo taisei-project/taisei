@@ -55,15 +55,15 @@ void spell_opening(Boss *b, int time) {
 
 	int strw = stringwidth(b->current->name,_fonts.standard);
 
-	glPushMatrix();
-	glTranslatef(creal(x),cimag(x),0);
+	render_push(&render);
+	render_translate(&render,(vec3){creal(x),cimag(x),0});
 	float scale = f+1.*(1-f)*(1-f)*(1-f);
-	glScalef(scale,scale,1);
-	glRotatef(360*f,1,1,0);
+	render_scale(&render,(vec3){scale,scale,1});
+	render_rotate_deg(&render,360*f,1,1,0);
 	glDisable(GL_CULL_FACE);
 	draw_boss_text(AL_Right, strw/2*(1-f), 0, b->current->name, _fonts.standard, rgb(1, 1, 1));
 	glEnable(GL_CULL_FACE);
-	glPopMatrix();
+	render_pop(&render);
 
 	glUseProgram(0);
 }
@@ -168,10 +168,10 @@ static void BossGlow(Projectile *p, int t) {
 	glUseProgram(shader->prog);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-	glPushMatrix();
+	render_push(&render);
 	float s = 1.0+t/p->args[0]*0.5;
-	glTranslatef(creal(p->pos), cimag(p->pos), 0);
-	glScalef(s, s, 1);
+	render_translate(&render,(vec3){creal(p->pos), cimag(p->pos), 0});
+	render_scale(&render,(vec3){s, s, 1});
 
 	float clr[4];
 	parse_color_array(p->color, clr);
@@ -184,7 +184,7 @@ static void BossGlow(Projectile *p, int t) {
 
 	play_animation_frame(ani,0,0,animationFrame);
 
-	glPopMatrix();
+	render_pop(&render);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glUseProgram(recolor_get_shader()->prog);
 }
@@ -236,11 +236,11 @@ static void spawn_particle_effects(Boss *boss) {
 }
 
 void draw_boss_background(Boss *boss) {
-	glPushMatrix();
-	glTranslatef(creal(boss->pos), cimag(boss->pos), 0);
+	render_push(&render);
+	render_translate(&render,(vec3){creal(boss->pos), cimag(boss->pos), 0});
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glRotatef(global.frames*4.0, 0, 0, -1);
+	render_rotate_deg(&render,global.frames*4.0, 0, 0, -1);
 
 	float f = 0.8+0.1*sin(global.frames/8.0);
 
@@ -249,10 +249,10 @@ void draw_boss_background(Boss *boss) {
 		f -= t*(t-0.7)/max(0.01, 1-t);
 	}
 
-	glScalef(f,f,f);
+	render_scale(&render,(vec3){f,f,f});
 	draw_sprite(0, 0, "boss_circle");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glPopMatrix();
+	render_pop(&render);
 }
 
 void draw_boss(Boss *boss) {
@@ -337,17 +337,17 @@ void draw_boss(Boss *boss) {
 		}
 
 		glDisable(GL_TEXTURE_2D);
-		glPushMatrix();
-		glTranslatef(10,2,0);
-		glScalef((VIEWPORT_W-60)/(float)maxhpspan,1,1);
+		render_push(&render);
+		render_translate(&render,(vec3){10,2,0});
+		render_scale(&render,(vec3){(VIEWPORT_W-60)/(float)maxhpspan,1,1});
 
 		// background shadow
-		glPushMatrix();
+		render_push(&render);
 		glColor4f(0,0,0,0.65);
-		glScalef(hpspan+2, 4, 1);
-		glTranslatef(0.5, 0.5, 0);
+		render_scale(&render,(vec3){hpspan+2, 4, 1});
+		render_translate(&render,(vec3){0.5, 0.5, 0});
 		draw_quad();
-		glPopMatrix();
+		render_pop(&render);
 
 		// actual health bar
 		for(int i = nextspell; i > prevspell; i--) {
@@ -356,15 +356,15 @@ void draw_boss(Boss *boss) {
 
 			parse_color_call(boss_healthbar_color(boss->attacks[i].type), glColor4f);
 
-			glPushMatrix();
-			glScalef(boss->attacks[i].hp, 2, 1);
-			glTranslatef(+0.5, 0.5, 0);
+			render_push(&render);
+			render_scale(&render,(vec3){boss->attacks[i].hp, 2, 1});
+			render_translate(&render,(vec3){+0.5, 0.5, 0});
 			draw_quad();
-			glPopMatrix();
-			glTranslatef(boss->attacks[i].hp, 0, 0);
+			render_pop(&render);
+			render_translate(&render,(vec3){boss->attacks[i].hp, 0, 0});
 		}
 
-		glPopMatrix();
+		render_pop(&render);
 		glEnable(GL_TEXTURE_2D);
 
 		// remaining spells

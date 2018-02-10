@@ -53,20 +53,20 @@ void delete_dialog(Dialog *d) {
 }
 
 void draw_dialog(Dialog *dialog) {
-	glPushMatrix();
+	render_push(&render);
 
-	glTranslatef(VIEWPORT_W/2.0, VIEWPORT_H*3.0/4.0, 0);
+	render_translate(&render,(vec3){VIEWPORT_W/2.0, VIEWPORT_H*3.0/4.0, 0});
 
 	int i;
 	for(i = 0; i < 2; i++) {
-		glPushMatrix();
+		render_push(&render);
 		if(i == Left) {
 			glCullFace(GL_FRONT);
-			glScalef(-1,1,1);
+			render_scale(&render,(vec3){-1,1,1});
 		}
 
 		if(global.frames - dialog->birthtime < 30)
-			glTranslatef(120 - (global.frames - dialog->birthtime)*4, 0, 0);
+			render_translate(&render,(vec3){120 - (global.frames - dialog->birthtime)*4, 0, 0});
 
 		int cur = dialog->messages[dialog->pos].side;
 		int pre = 2;
@@ -76,39 +76,39 @@ void draw_dialog(Dialog *dialog) {
 		short dir = (1 - 2*(i == dialog->messages[dialog->pos].side));
 		if(global.frames - dialog->page_time < 10 && ((i != pre && i == cur) || (i == pre && i != cur))) {
 			int time = (global.frames - dialog->page_time) * dir;
-			glTranslatef(time, time, 0);
+			render_translate(&render,(vec3){time, time, 0});
 			float clr = 1.0 - 0.07*time;
 			glColor3f(clr, clr, clr);
 		} else {
-			glTranslatef(dir*10, dir*10, 0);
+			render_translate(&render,(vec3){dir*10, dir*10, 0});
 			glColor3f(1 - dir*0.7, 1 - dir*0.7, 1 - dir*0.7);
 		}
 
-		glTranslatef(VIEWPORT_W*7.0/18.0, 0, 0);
+		render_translate(&render,(vec3){VIEWPORT_W*7.0/18.0, 0, 0});
 		if(dialog->images[i])
 			draw_sprite_p(0, 0, dialog->images[i]);
-		glPopMatrix();
+		render_pop(&render);
 
 		glColor3f(1,1,1);
 	}
 
 	glCullFace(GL_BACK);
-	glPopMatrix();
+	render_pop(&render);
 
-	glPushMatrix();
+	render_push(&render);
 	if(global.frames - dialog->birthtime < 25)
-		glTranslatef(0, 100-(global.frames-dialog->birthtime)*4, 0);
+		render_translate(&render,(vec3){0, 100-(global.frames-dialog->birthtime)*4, 0});
 	glColor4f(0,0,0,0.8);
 
-	glPushMatrix();
-	glTranslatef(VIEWPORT_W/2, VIEWPORT_H-75, 0);
-	glScalef(VIEWPORT_W-40, 110, 1);
+	render_push(&render);
+	render_translate(&render,(vec3){VIEWPORT_W/2, VIEWPORT_H-75, 0});
+	render_scale(&render,(vec3){VIEWPORT_W-40, 110, 1});
 
 	glDisable(GL_TEXTURE_2D);
 	draw_quad();
 	glEnable(GL_TEXTURE_2D);
 
-	glPopMatrix();
+	render_pop(&render);
 	glColor4f(1,1,1,1);
 
 	if(dialog->messages[dialog->pos].side == Right)
@@ -118,7 +118,7 @@ void draw_dialog(Dialog *dialog) {
 
 	if(dialog->messages[dialog->pos].side == Right)
 		glColor3f(1,1,1);
-	glPopMatrix();
+	render_pop(&render);
 }
 
 bool page_dialog(Dialog **d) {

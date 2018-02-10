@@ -51,11 +51,11 @@ void marisa_common_slave_visual(Enemy *e, int t, bool render) {
 		return;
 	}
 
-	glPushMatrix();
-	glTranslatef(creal(e->pos), cimag(e->pos), -1);
-	// glRotatef(global.frames * 3, 0, 0, 1);
+	render_push(&render);
+	render_translate(&render,(vec3){creal(e->pos), cimag(e->pos), -1});
+	// render_rotate_deg(&render,global.frames * 3, 0, 0, 1);
 	draw_sprite(0, 0, "part/smoothdot");
-	glPopMatrix();
+	render_pop(&render);
 }
 
 void marisa_common_masterspark_draw(int t) {

@@ -111,7 +111,7 @@ static void draw_laser_curve(Laser *laser) {
 
 	for(t += 0.5; t < (global.frames - laser->birthtime)*laser->speed + laser->timeshift && t <= laser->deathtime + laser->timeshift; t += 1.5) {
 		complex pos = laser->prule(laser,t);
-		glPushMatrix();
+		render_push(&render);
 
 		float t1 = t - ((global.frames - laser->birthtime)*laser->speed - laser->timespan/2 + laser->timeshift);
 
@@ -120,15 +120,15 @@ static void draw_laser_curve(Laser *laser) {
 		float s = -0.75/pow(tail,2)*(t1-tail)*(t1+tail);
 		s = pow(s, laser->width_exponent);
 
-		glTranslatef(creal(pos), cimag(pos), 0);
-		glRotatef(180/M_PI*carg(last-pos), 0, 0, 1);
+		render_translate(&render,(vec3){creal(pos), cimag(pos), 0});
+		render_rotate_deg(&render,180/M_PI*carg(last-pos), 0, 0, 1);
 
-		glScalef(tex->w*0.5*cabs(last-pos),s*laser->width,s);
+		render_scale(&render,(vec3){tex->w*0.5*cabs(last-pos),s*laser->width,s});
 		draw_quad();
 
 		last = pos;
 
-		glPopMatrix();
+		render_pop(&render);
 	}
 
 	glColor4f(1,1,1,1);

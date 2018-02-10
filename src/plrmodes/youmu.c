@@ -77,11 +77,11 @@ void youmu_common_bombbg(Player *plr) {
 }
 
 void youmu_common_draw_proj(Projectile *p, Color c, float scale) {
-	glPushMatrix();
-	glTranslatef(creal(p->pos), cimag(p->pos), 0);
-	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
-	glScalef(scale, scale, 1);
+	render_push(&render);
+	render_translate(&render,(vec3){creal(p->pos), cimag(p->pos), 0});
+	render_rotate_deg(&render,p->angle*180/M_PI+90, 0, 0, 1);
+	render_scale(&render,(vec3){scale, scale, 1});
 	ProjDrawCore(p, c);
-	glPopMatrix();
+	render_pop(&render);
 }
 

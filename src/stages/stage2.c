@@ -49,50 +49,50 @@ struct stage2_spells_s stage2_spells = {
 static void stage2_bg_leaves_draw(vec3 pos) {
 	glUseProgram(get_shader("alpha_depth")->prog);
 
-	glMatrixMode(GL_TEXTURE);
+	render_matrixmode(&render,MM_TEXTURE);
 	glLoadIdentity();
-	glScalef(-1,1,1);
-	glMatrixMode(GL_MODELVIEW);
+	render_scale(&render,(vec3){-1,1,1});
+	render_matrixmode(&render,MM_MODELVIEW);
 
 	Texture *leaves = get_tex("stage2/leaves");
 	glBindTexture(GL_TEXTURE_2D, leaves->gltex);
 
-	glPushMatrix();
-	glTranslatef(pos[0]-360,pos[1],pos[2]+500);
-	glRotatef(-160,0,1,0);
-	glTranslatef(-50,0,0);
-	glScalef(1000,3000,1);
+	render_push(&render);
+	render_translate(&render,(vec3){pos[0]-360,pos[1],pos[2]+500});
+	render_rotate_deg(&render,-160,0,1,0);
+	render_translate(&render,(vec3){-50,0,0});
+	render_scale(&render,(vec3){1000,3000,1});
 
 	draw_quad();
 
-	glPopMatrix();
+	render_pop(&render);
 
 	glUseProgram(0);
 
-	glMatrixMode(GL_TEXTURE);
+	render_matrixmode(&render,MM_TEXTURE);
 	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
+	render_matrixmode(&render,MM_MODELVIEW);
 }
 
 static void stage2_bg_grass_draw(vec3 pos) {
 	glDisable(GL_DEPTH_TEST);
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage2/roadgrass")->gltex);
 
-	glPushMatrix();
-	glTranslatef(pos[0]+250,pos[1],pos[2]+40);
-	glRotatef(pos[2]/2-14,0,1,0);
+	render_push(&render);
+	render_translate(&render,(vec3){pos[0]+250,pos[1],pos[2]+40});
+	render_rotate_deg(&render,pos[2]/2-14,0,1,0);
 
-	glScalef(-500,2000,1);
+	render_scale(&render,(vec3){-500,2000,1});
 	draw_quad();
-	glPopMatrix();
+	render_pop(&render);
 
 	glEnable(GL_DEPTH_TEST);
 }
 
 static void stage2_bg_ground_draw(vec3 pos) {
-	glPushMatrix();
-	glTranslatef(pos[0]-50,pos[1],pos[2]);
-	glScalef(-1000,1000,1);
+	render_push(&render);
+	render_translate(&render,(vec3){pos[0]-50,pos[1],pos[2]});
+	render_scale(&render,(vec3){-1000,1000,1});
 
 	Texture *road = get_tex("stage2/roadstones");
 
@@ -105,32 +105,32 @@ static void stage2_bg_ground_draw(vec3 pos) {
 	glColor4f(0.5,0.5,0.5,1);
 	draw_quad();
 	glColor4f(1,1,1,1);
-	glTranslatef(0,0,+10);
+	render_translate(&render,(vec3){0,0,+10});
 	draw_quad();
 
-	glPopMatrix();
+	render_pop(&render);
 
-	glMatrixMode(GL_TEXTURE);
+	render_matrixmode(&render,MM_TEXTURE);
 	glLoadIdentity();
-	glTranslatef(global.frames/100.0,1*sin(global.frames/100.0),0);
-	glMatrixMode(GL_MODELVIEW);
+	render_translate(&render,(vec3){global.frames/100.0,1*sin(global.frames/100.0),0});
+	render_matrixmode(&render,MM_MODELVIEW);
 
-	glPushMatrix();
+	render_push(&render);
 
 	Texture *border = get_tex("stage2/border");
 	glBindTexture(GL_TEXTURE_2D, border->gltex);
 
-	glTranslatef(pos[0]+410,pos[1],pos[2]+600);
-	glRotatef(90,0,1,0);
-	glScalef(1200,1000,1);
+	render_translate(&render,(vec3){pos[0]+410,pos[1],pos[2]+600});
+	render_rotate_deg(&render,90,0,1,0);
+	render_scale(&render,(vec3){1200,1000,1});
 
 	draw_quad();
 
-	glPopMatrix();
+	render_pop(&render);
 
-	glMatrixMode(GL_TEXTURE);
+	render_matrixmode(&render,MM_TEXTURE);
 	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
+	render_matrixmode(&render,MM_MODELVIEW);
 }
 
 static vec3 **stage2_bg_pos(vec3 pos, float maxrange) {

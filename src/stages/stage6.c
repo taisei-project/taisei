@@ -99,11 +99,11 @@ void stage6_towerwall_draw(vec3 pos) {
 	Shader *s = get_shader("tower_wall");
 	glUseProgram(s->prog);
 
-	glPushMatrix();
-	glTranslatef(pos[0], pos[1], pos[2]);
-	glScalef(30,30,30);
+	render_push(&render);
+	render_translate(&render,(vec3){pos[0], pos[1], pos[2]});
+	render_scale(&render,(vec3){30,30,30});
 	draw_model("towerwall");
-	glPopMatrix();
+	render_pop(&render);
 
 	glUseProgram(0);
 }
@@ -117,11 +117,11 @@ static vec3 **stage6_towertop_pos(vec3 pos, float maxrange) {
 static void stage6_towertop_draw(vec3 pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towertop")->gltex);
 
-	glPushMatrix();
-	glTranslatef(pos[0], pos[1], pos[2]);
-	glScalef(28,28,28);
+	render_push(&render);
+	render_translate(&render,(vec3){pos[0], pos[1], pos[2]});
+	render_scale(&render,(vec3){28,28,28});
 	draw_model("towertop");
-	glPopMatrix();
+	render_pop(&render);
 }
 
 static vec3 **stage6_skysphere_pos(vec3 pos, float maxrange) {
@@ -133,25 +133,25 @@ static void stage6_skysphere_draw(vec3 pos) {
 	Shader *s = get_shader("stage6_sky");
 	glUseProgram(s->prog);
 
-	glPushMatrix();
-	glTranslatef(pos[0], pos[1], pos[2]-30);
-	glScalef(150,150,150);
+	render_push(&render);
+	render_translate(&render,(vec3){pos[0], pos[1], pos[2]-30});
+	render_scale(&render,(vec3){150,150,150});
 	draw_model("skysphere");
 
 	glUseProgram(0);
 
 	for(int i = 0; i < NUM_STARS; i++) {
-		glPushMatrix();
+		render_push(&render);
 		float x = starpos[3*i+0], y = starpos[3*i+1], z = starpos[3*i+2];
 		glColor4f(0.9,0.9,1,0.8*z);
-		glTranslatef(x,y,z);
-		glRotatef(180/M_PI*acos(starpos[3*i+2]),-y,x,0);
-		glScalef(1./4000,1./4000,1./4000);
+		render_translate(&render,(vec3){x,y,z});
+		render_rotate_deg(&render,180/M_PI*acos(starpos[3*i+2]),-y,x,0);
+		render_scale(&render,(vec3){1./4000,1./4000,1./4000});
 		draw_sprite(0,0,"part/smoothdot");
-		glPopMatrix();
+		render_pop(&render);
 	}
 
-	glPopMatrix();
+	render_pop(&render);
 	glColor4f(1,1,1,1);
 	glEnable(GL_DEPTH_TEST);
 }

@@ -59,28 +59,28 @@ void draw_difficulty_menu(MenuData *menu) {
 
 	parse_color_call(multiply_colors(diff_color, rgba(0.1, 0.1, 0.1, 0.7)), glColor4f);
 
-	glPushMatrix();
-	glTranslatef(SCREEN_W/2+30 - 25*menu->drawdata[0], SCREEN_H/3 + 90*(0.7*menu->drawdata[0]),0);
-	glRotatef(4*menu->drawdata[0]-4,0,0,1);
-	glPushMatrix();
-	glScalef(SCREEN_W*1.5,120,1);
+	render_push(&render);
+	render_translate(&render,(vec3){SCREEN_W/2+30 - 25*menu->drawdata[0], SCREEN_H/3 + 90*(0.7*menu->drawdata[0]),0});
+	render_rotate_deg(&render,4*menu->drawdata[0]-4,0,0,1);
+	render_push(&render);
+	render_scale(&render,(vec3){SCREEN_W*1.5,120,1});
 	glDisable(GL_TEXTURE_2D);
 	draw_quad();
 	glEnable(GL_TEXTURE_2D);
-	glPopMatrix();
+	render_pop(&render);
 	glColor3f(1,1,1);
 	draw_text(AL_Left, 40+35*menu->drawdata[0], -12, menu->entries[menu->cursor].name, _fonts.standard);
 
-	glPopMatrix();
+	render_pop(&render);
 
 	for(int i = 0; i < menu->ecount; ++i) {
-		glPushMatrix();
-		glTranslatef(SCREEN_W/2 + SCREEN_W*sign((i&1)-0.5)*(i!=menu->cursor)*menu_fade(menu) - (int)menu->entries[i].drawdata+25*i-50, SCREEN_H/3 + 90*(i-0.3*menu->drawdata[0]),0);
+		render_push(&render);
+		render_translate(&render,(vec3){SCREEN_W/2 + SCREEN_W*sign((i&1)-0.5)*(i!=menu->cursor)*menu_fade(menu) - (int)menu->entries[i].drawdata+25*i-50, SCREEN_H/3 + 90*(i-0.3*menu->drawdata[0]),0});
 
 		//glColor4f(0,0,0,1);
 
 		glColor3f(1,1,1);
 		draw_sprite(0, 0, difficulty_sprite_name(D_Easy+i));
-		glPopMatrix();
+		render_pop(&render);
 	}
 }

@@ -157,21 +157,21 @@ void EnemyFlareShrink(Projectile *p, int t) {
 		return;
 	}
 
-	glPushMatrix();
+	render_push(&render);
 	float s = 2.0-t/p->args[0]*2;
 
-	glTranslatef(creal(e->pos + p->pos), cimag(e->pos + p->pos), 0);
+	render_translate(&render,(vec3){creal(e->pos + p->pos), cimag(e->pos + p->pos), 0});
 
 	if(p->angle != M_PI*0.5) {
-		glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
+		render_rotate_deg(&render,p->angle*180/M_PI+90, 0, 0, 1);
 	}
 
 	if(s != 1) {
-		glScalef(s, s, 1);
+		render_scale(&render,(vec3){s, s, 1});
 	}
 
 	ProjDrawCore(p, p->color);
-	glPopMatrix();
+	render_pop(&render);
 }
 
 void BigFairy(Enemy *e, int t, bool render) {
@@ -189,23 +189,23 @@ void BigFairy(Enemy *e, int t, bool render) {
 		return;
 	}
 
-	glPushMatrix();
-	glTranslatef(creal(e->pos), cimag(e->pos), 0);
+	render_push(&render);
+	render_translate(&render,(vec3){creal(e->pos), cimag(e->pos), 0});
 
 	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;
 
-	glPushMatrix();
-	glRotatef(global.frames*10,0,0,1);
-	glScalef(s, s, s);
+	render_push(&render);
+	render_rotate_deg(&render,global.frames*10,0,0,1);
+	render_scale(&render,(vec3){s, s, s});
 	draw_sprite(0,0,"fairy_circle");
-	glPopMatrix();
+	render_pop(&render);
 
 	if(e->dir) {
 		glCullFace(GL_FRONT);
-		glScalef(-1,1,1);
+		render_scale(&render,(vec3){-1,1,1});
 	}
 	play_animation(get_ani("enemy/bigfairy"),0, 0, e->moving);
-	glPopMatrix();
+	render_pop(&render);
 
 	if(e->dir)
 		glCullFace(GL_BACK);
@@ -217,24 +217,24 @@ void Fairy(Enemy *e, int t, bool render) {
 	}
 
 	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;
-	glPushMatrix();
-	glTranslatef(creal(e->pos),cimag(e->pos),0);
+	render_push(&render);
+	render_translate(&render,(vec3){creal(e->pos),cimag(e->pos),0});
 
-	glPushMatrix();
-	glRotatef(global.frames*10,0,0,1);
-	glScalef(s, s, s);
+	render_push(&render);
+	render_rotate_deg(&render,global.frames*10,0,0,1);
+	render_scale(&render,(vec3){s, s, s});
 	draw_sprite(0,0,"fairy_circle");
-	glPopMatrix();
+	render_pop(&render);
 
-	glPushMatrix();
+	render_push(&render);
 	if(e->dir) {
 		glCullFace(GL_FRONT);
-		glScalef(-1,1,1);
+		render_scale(&render,(vec3){-1,1,1});
 	}
 	play_animation(get_ani("enemy/fairy"),0, 0, e->moving);
-	glPopMatrix();
+	render_pop(&render);
 
-	glPopMatrix();
+	render_pop(&render);
 
 	if(e->dir) {
 		glCullFace(GL_BACK);
@@ -246,11 +246,11 @@ void Swirl(Enemy *e, int t, bool render) {
 		return;
 	}
 
-	glPushMatrix();
-	glTranslatef(creal(e->pos), cimag(e->pos),0);
-	glRotatef(t*15,0,0,1);
+	render_push(&render);
+	render_translate(&render,(vec3){creal(e->pos), cimag(e->pos),0});
+	render_rotate_deg(&render,t*15,0,0,1);
 	draw_sprite(0,0, "enemy/swirl");
-	glPopMatrix();
+	render_pop(&render);
 }
 
 void process_enemies(Enemy **enemies) {

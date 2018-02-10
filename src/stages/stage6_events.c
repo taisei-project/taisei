@@ -216,14 +216,14 @@ int scythe_mid(Enemy *e, int t) {
 }
 
 void ScytheTrail(Projectile *p, int t) {
-	glPushMatrix();
-	glTranslatef(creal(p->pos), cimag(p->pos), 0);
-	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
-	glScalef(creal(p->args[1]), creal(p->args[1]), 1);
+	render_push(&render);
+	render_translate(&render,(vec3){creal(p->pos), cimag(p->pos), 0});
+	render_rotate_deg(&render,p->angle*180/M_PI+90, 0, 0, 1);
+	render_scale(&render,(vec3){creal(p->args[1]), creal(p->args[1]), 1});
 
 	float a = (1.0 - t/creal(p->args[0])) * (1.0 - cimag(p->args[1]));
 	ProjDrawCore(p, rgba(1, 1, 1, a));
-	glPopMatrix();
+	render_pop(&render);
 }
 
 void Scythe(Enemy *e, int t, bool render) {
@@ -672,12 +672,12 @@ void elly_maxwell(Boss *b, int t) {
 
 static void draw_baryon_connector(complex a, complex b) {
 	Sprite *spr = get_sprite("stage6/baryon_connector");
-	glPushMatrix();
-	glTranslatef(creal(a+b)/2.0, cimag(a+b)/2.0, 0);
-	glRotatef(180/M_PI*carg(a-b), 0, 0, 1);
-	glScalef((cabs(a-b)-70) / spr->w, 20 / spr->h, 1);
+	render_push(&render);
+	render_translate(&render,(vec3){creal(a+b)/2.0, cimag(a+b)/2.0, 0});
+	render_rotate_deg(&render,180/M_PI*carg(a-b), 0, 0, 1);
+	render_scale(&render,(vec3){(cabs(a-b)-70) / spr->w, 20 / spr->h, 1});
 	draw_sprite_p(0, 0, spr);
-	glPopMatrix();
+	render_pop(&render);
 }
 
 void Baryon(Enemy *e, int t, bool render) {
@@ -739,11 +739,11 @@ void BaryonCenter(Enemy *e, int t, bool render) {
 
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 
-	glPushMatrix();
-	glTranslatef(creal(e->pos), cimag(e->pos), 0);
-	glRotatef(2*t, 0, 0, 1);
+	render_push(&render);
+	render_translate(&render,(vec3){creal(e->pos), cimag(e->pos), 0});
+	render_rotate_deg(&render,2*t, 0, 0, 1);
 	draw_sprite(0, 0, "stage6/scythecircle");
-	glPopMatrix();
+	render_pop(&render);
 	draw_sprite(creal(e->pos), cimag(e->pos), "stage6/baryon");
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
@@ -2529,15 +2529,15 @@ void elly_theory(Boss *b, int time) {
 }
 
 void elly_spellbg_toe(Boss *b, int t) {
-	glPushMatrix();
-	glTranslatef(VIEWPORT_W/2,VIEWPORT_H/2,0);
+	render_push(&render);
+	render_translate(&render,(vec3){VIEWPORT_W/2,VIEWPORT_H/2,0});
 	float s = 0.75+0.0005*t;
-	glScalef(s,s,s);
-	glRotatef(t*0.1,0,0,1);
+	render_scale(&render,(vec3){s,s,s});
+	render_rotate_deg(&render,t*0.1,0,0,1);
 	glColor4f(.6,.6,.6,1);
 
 	draw_sprite(0,0,"stage6/spellbg_toe");
-	glPopMatrix();
+	render_pop(&render);
 	glBlendFunc(GL_ZERO,GL_SRC_COLOR);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
@@ -2563,11 +2563,11 @@ void elly_spellbg_toe(Boss *b, int t) {
 		glColor4f(1,1,1,0.5*clamp((t-delays[i])*0.1,0,1));
 		char *texname = strfmt("stage6/toelagrangian/%d",i);
 		float wobble = max(0,t-BREAKTIME)*0.03;
-		glPushMatrix();
-		glTranslatef(VIEWPORT_W/2+positions[i][0]+cos(wobble+i)*wobble,VIEWPORT_H/2-150+positions[i][1]+sin(i+wobble)*wobble,0);
+		render_push(&render);
+		render_translate(&render,(vec3){VIEWPORT_W/2+positions[i][0]+cos(wobble+i)*wobble,VIEWPORT_H/2-150+positions[i][1]+sin(i+wobble)*wobble,0});
 		draw_sprite(0,0,texname);
 		free(texname);
-		glPopMatrix();
+		render_pop(&render);
 	}
 	glColor4f(1,1,1,1);
 

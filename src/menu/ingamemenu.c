@@ -154,13 +154,13 @@ void update_ingame_menu(MenuData *menu) {
 }
 
 void draw_ingame_menu(MenuData *menu) {
-	glPushMatrix();
+	render_push(&render);
 
 	draw_ingame_menu_bg(menu, 1.0-menu_fade(menu));
 
-	glPushMatrix();
-	glTranslatef(VIEWPORT_X, VIEWPORT_Y, 0);
-	glTranslatef(VIEWPORT_W/2, VIEWPORT_H/4, 0);
+	render_push(&render);
+	render_translate(&render,(vec3){VIEWPORT_X, VIEWPORT_Y, 0});
+	render_translate(&render,(vec3){VIEWPORT_W/2, VIEWPORT_H/4, 0});
 
 	draw_menu_selector(0, menu->drawdata[0], menu->drawdata[1]*2, 41, menu->frames);
 
@@ -188,8 +188,8 @@ void draw_ingame_menu(MenuData *menu) {
 	}
 
 	glColor4f(1,1,1,1);
-	glPopMatrix();
-	glPopMatrix();
+	render_pop(&render);
+	render_pop(&render);
 
 	stage_draw_hud();
 }
