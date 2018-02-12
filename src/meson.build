@@ -114,6 +114,7 @@ src_base = [
     'random.c',
     'recolor.c',
     'refs.c',
+    'renderer.c',
     'replay.c',
     'resource/animation.c',
     'resource/font.c',

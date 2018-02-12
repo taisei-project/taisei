@@ -47,7 +47,6 @@ Color hsla(float h, float s, float l, float a) __attribute__((const));
 Color hsl(float h, float s, float l) __attribute__((const));
 
 void parse_color(Color clr, float *r, float *g, float *b, float *a);
-void parse_color_call(Color clr, tsglColor4f_ptr func);
 void parse_color_array(Color clr, float array[4]);
 Color derive_color(Color src, Color mask, Color mod) __attribute__((const));
 Color multiply_colors(Color c1, Color c2) __attribute__((const));

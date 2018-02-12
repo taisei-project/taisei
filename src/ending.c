@@ -155,14 +155,14 @@ void ending_draw(Ending *e) {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glColor4f(1,1,1,s);
+	render_color4(1,1,1,s);
 
 	if(e->entries[e->pos].sprite) {
 		draw_sprite_p(SCREEN_W/2, SCREEN_H/2, e->entries[e->pos].sprite);
 	}
 
 	draw_text_auto_wrapped(AL_Center, SCREEN_W/2, VIEWPORT_H*4/5, e->entries[e->pos].msg, SCREEN_W * 0.85, _fonts.standard);
-	glColor4f(1,1,1,1);
+	render_color4(1,1,1,1);
 }
 
 void ending_preload(void) {

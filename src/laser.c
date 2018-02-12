@@ -94,14 +94,14 @@ static void draw_laser_curve_instanced(Laser *l) {
 
 	glUniform1i(uniloc(l->shader, "span"), c*2);
 
-	glDrawArraysInstanced(GL_QUADS, 0, 4, c*2);
+	glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, c*2);
 }
 
 static void draw_laser_curve(Laser *laser) {
 	Texture *tex = get_tex("part/lasercurve");
 	complex last;
 
-	parse_color_call(laser->color, glColor4f);
+	render_color(laser->color);
 
 	float t = (global.frames - laser->birthtime)*laser->speed - laser->timespan + laser->timeshift;
 	if(t < 0)
@@ -111,7 +111,7 @@ static void draw_laser_curve(Laser *laser) {
 
 	for(t += 0.5; t < (global.frames - laser->birthtime)*laser->speed + laser->timeshift && t <= laser->deathtime + laser->timeshift; t += 1.5) {
 		complex pos = laser->prule(laser,t);
-		render_push(&render);
+		render_push();
 
 		float t1 = t - ((global.frames - laser->birthtime)*laser->speed - laser->timespan/2 + laser->timeshift);
 
@@ -120,18 +120,18 @@ static void draw_laser_curve(Laser *laser) {
 		float s = -0.75/pow(tail,2)*(t1-tail)*(t1+tail);
 		s = pow(s, laser->width_exponent);
 
-		render_translate(&render,(vec3){creal(pos), cimag(pos), 0});
-		render_rotate_deg(&render,180/M_PI*carg(last-pos), 0, 0, 1);
+		render_translate(creal(pos), cimag(pos), 0);
+		render_rotate_deg(180/M_PI*carg(last-pos), 0, 0, 1);
 
-		render_scale(&render,(vec3){tex->w*0.5*cabs(last-pos),s*laser->width,s});
-		draw_quad();
+		render_scale(tex->w*0.5*cabs(last-pos),s*laser->width,s);
+		render_draw_quad();
 
 		last = pos;
 
-		render_pop(&render);
+		render_pop();
 	}
 
-	glColor4f(1,1,1,1);
+	render_color4(1,1,1,1);
 }
 
 void draw_lasers(int bgpass) {
@@ -173,7 +173,7 @@ void draw_lasers(int bgpass) {
 	}
 
 	if(program != 0) {
-		glUseProgram(0);
+		render_shader_standard();
 	}
 }
 

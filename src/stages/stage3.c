@@ -81,27 +81,27 @@ static void stage3_bg_tunnel_draw(vec3 pos) {
 	float r = 300;
 	int i;
 
-	render_push(&render);
-	render_translate(&render,(vec3){pos[0], pos[1], pos[2]});
+	render_push();
+	render_translate(pos[0], pos[1], pos[2]);
 
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage3/border")->gltex);
 	for(i = 0; i < n; i++) {
-		render_push(&render);
-		render_rotate_deg(&render,360.0/n*i + stgstate.tunnel_angle, 0, 1, 0);
-		render_translate(&render,(vec3){0,0,-r});
-		render_scale(&render,(vec3){2*r/tan((n-2)*M_PI/n), 3000, 1});
-		draw_quad();
-		render_pop(&render);
+		render_push();
+		render_rotate_deg(360.0/n*i + stgstate.tunnel_angle, 0, 1, 0);
+		render_translate(0,0,-r);
+		render_scale(2*r/tan((n-2)*M_PI/n), 3000, 1);
+		render_draw_quad();
+		render_pop();
 	}
 
-	render_pop(&render);
+	render_pop();
 }
 
 static void stage3_tunnel(FBO *fbo) {
 	Shader *shader = get_shader("tunnel");
 	assert(uniloc(shader, "mixfactor") >= 0); // just so people don't forget to 'make install'; remove this later
 
-	glColor4f(1,1,1,1);
+	render_color4(1,1,1,1);
 	glUseProgram(shader->prog);
 	glUniform3f(uniloc(shader, "color"),stgstate.clr_r,stgstate.clr_g,stgstate.clr_b);
 	glUniform1f(uniloc(shader, "mixfactor"), stgstate.clr_mixfactor);
@@ -110,13 +110,13 @@ static void stage3_tunnel(FBO *fbo) {
 	glActiveTexture(GL_TEXTURE0);
 
 	draw_fbo_viewport(fbo);
-	glUseProgram(0);
+	render_shader_standard();
 }
 
 static void stage3_fog(FBO *fbo) {
 	Shader *shader = get_shader("zbuf_fog");
 
-	glColor4f(1,1,1,1);
+	render_color4(1,1,1,1);
 	glUseProgram(shader->prog);
 	glUniform1i(uniloc(shader, "depth"), 2);
 	glUniform4f(uniloc(shader, "fog_color"), stgstate.fog_brightness, stgstate.fog_brightness, stgstate.fog_brightness, 1.0);
@@ -129,13 +129,13 @@ static void stage3_fog(FBO *fbo) {
 	glActiveTexture(GL_TEXTURE0);
 
 	draw_fbo_viewport(fbo);
-	glUseProgram(0);
+	render_shader_standard();
 }
 
 static void stage3_glitch(FBO *fbo) {
 	Shader *shader = get_shader("glitch");
 
-	glColor4f(1,1,1,1);
+	render_color4(1,1,1,1);
 	float strength;
 
 	if(global.boss && global.boss->current && ATTACK_IS_SPELL(global.boss->current->type) && !strcmp(global.boss->name, "Scuttle")) {
@@ -149,11 +149,11 @@ static void stage3_glitch(FBO *fbo) {
 		glUniform1f(uniloc(shader, "strength"), strength);
 		glUniform1i(uniloc(shader, "frames"), global.frames + tsrand() % 30);
 	} else {
-		glUseProgram(0);
+		render_shader_standard();
 	}
 
 	draw_fbo_viewport(fbo);
-	glUseProgram(0);
+	render_shader_standard();
 }
 
 static void stage3_start(void) {

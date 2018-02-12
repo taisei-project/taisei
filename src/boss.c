@@ -37,13 +37,13 @@ void draw_boss_text(Alignment align, float x, float y, const char *text, Font *f
 	Color black = rgb(0, 0, 0);
 	Color white = rgb(1, 1, 1);
 
-	parse_color_call(derive_color(black, CLRMASK_A, clr), glColor4f);
+	render_color(derive_color(black, CLRMASK_A, clr));
 	draw_text(align, x+1, y+1, text, fnt);
-	parse_color_call(clr, glColor4f);
+	render_color(clr);
 	draw_text(align, x, y, text, fnt);
 
 	if(clr != white) {
-		parse_color_call(white, glColor4f);
+		render_color(white);
 	}
 }
 
@@ -55,26 +55,26 @@ void spell_opening(Boss *b, int time) {
 
 	int strw = stringwidth(b->current->name,_fonts.standard);
 
-	render_push(&render);
-	render_translate(&render,(vec3){creal(x),cimag(x),0});
+	render_push();
+	render_translate(creal(x),cimag(x),0);
 	float scale = f+1.*(1-f)*(1-f)*(1-f);
-	render_scale(&render,(vec3){scale,scale,1});
-	render_rotate_deg(&render,360*f,1,1,0);
+	render_scale(scale,scale,1);
+	render_rotate_deg(360*f,1,1,0);
 	glDisable(GL_CULL_FACE);
 	draw_boss_text(AL_Right, strw/2*(1-f), 0, b->current->name, _fonts.standard, rgb(1, 1, 1));
 	glEnable(GL_CULL_FACE);
-	render_pop(&render);
+	render_pop();
 
-	glUseProgram(0);
+	render_shader_standard();
 }
 
 void draw_extraspell_bg(Boss *boss, int time) {
 	// overlay for all extra spells
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glColor4f(0.2,0.1,0,0.7);
+	render_color4(0.2,0.1,0,0.7);
 	fill_viewport(sin(time) * 0.015, time / 50.0, 1, "stage3/wspellclouds");
-	glColor4f(1,1,1,1);
+	render_color4(1,1,1,1);
 	glBlendEquation(GL_MIN);
 	fill_viewport(cos(time) * 0.015, time / 70.0, 1, "stage4/kurumibg2");
 	fill_viewport(sin(time+2.1) * 0.015, time / 30.0, 1, "stage4/kurumibg2");
@@ -168,10 +168,10 @@ static void BossGlow(Projectile *p, int t) {
 	glUseProgram(shader->prog);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-	render_push(&render);
+	render_push();
 	float s = 1.0+t/p->args[0]*0.5;
-	render_translate(&render,(vec3){creal(p->pos), cimag(p->pos), 0});
-	render_scale(&render,(vec3){s, s, 1});
+	render_translate(creal(p->pos), cimag(p->pos), 0);
+	render_scale(s, s, 1);
 
 	float clr[4];
 	parse_color_array(p->color, clr);
@@ -184,7 +184,7 @@ static void BossGlow(Projectile *p, int t) {
 
 	play_animation_frame(ani,0,0,animationFrame);
 
-	render_pop(&render);
+	render_pop();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glUseProgram(recolor_get_shader()->prog);
 }
@@ -236,11 +236,11 @@ static void spawn_particle_effects(Boss *boss) {
 }
 
 void draw_boss_background(Boss *boss) {
-	render_push(&render);
-	render_translate(&render,(vec3){creal(boss->pos), cimag(boss->pos), 0});
+	render_push();
+	render_translate(creal(boss->pos), cimag(boss->pos), 0);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	render_rotate_deg(&render,global.frames*4.0, 0, 0, -1);
+	render_rotate_deg(global.frames*4.0, 0, 0, -1);
 
 	float f = 0.8+0.1*sin(global.frames/8.0);
 
@@ -249,10 +249,10 @@ void draw_boss_background(Boss *boss) {
 		f -= t*(t-0.7)/max(0.01, 1-t);
 	}
 
-	render_scale(&render,(vec3){f,f,f});
+	render_scale(f,f,f);
 	draw_sprite(0, 0, "boss_circle");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	render_pop(&render);
+	render_pop();
 }
 
 void draw_boss(Boss *boss) {
@@ -267,9 +267,9 @@ void draw_boss(Boss *boss) {
 		boss_alpha = (1 - t) + 0.3;
 	}
 
-	glColor4f(1,1-red,1-red/2,boss_alpha);
+	render_color4(1,1-red,1-red/2,boss_alpha);
 	aniplayer_play(&boss->ani,creal(boss->pos), cimag(boss->pos) + 6*sin(global.frames/25.0));
-	glColor4f(1,1,1,1);
+	render_color4(1,1,1,1);
 
 	if(boss->current->type == AT_Move && global.frames - boss->current->starttime > 0 && boss_attack_is_final(boss, boss->current))
 		return;
@@ -336,39 +336,39 @@ void draw_boss(Boss *boss) {
 			return;
 		}
 
-		glDisable(GL_TEXTURE_2D);
-		render_push(&render);
-		render_translate(&render,(vec3){10,2,0});
-		render_scale(&render,(vec3){(VIEWPORT_W-60)/(float)maxhpspan,1,1});
+		render_shader_standard_notex();
+		render_push();
+		render_translate(10,2,0);
+		render_scale((VIEWPORT_W-60)/(float)maxhpspan,1,1);
 
 		// background shadow
-		render_push(&render);
-		glColor4f(0,0,0,0.65);
-		render_scale(&render,(vec3){hpspan+2, 4, 1});
-		render_translate(&render,(vec3){0.5, 0.5, 0});
-		draw_quad();
-		render_pop(&render);
+		render_push();
+		render_color4(0,0,0,0.65);
+		render_scale(hpspan+2, 4, 1);
+		render_translate(0.5, 0.5, 0);
+		render_draw_quad();
+		render_pop();
 
 		// actual health bar
 		for(int i = nextspell; i > prevspell; i--) {
 			if(boss_should_skip_attack(boss,&boss->attacks[i]))
 				continue;
 
-			parse_color_call(boss_healthbar_color(boss->attacks[i].type), glColor4f);
+			render_color(boss_healthbar_color(boss->attacks[i].type));
 
-			render_push(&render);
-			render_scale(&render,(vec3){boss->attacks[i].hp, 2, 1});
-			render_translate(&render,(vec3){+0.5, 0.5, 0});
-			draw_quad();
-			render_pop(&render);
-			render_translate(&render,(vec3){boss->attacks[i].hp, 0, 0});
+			render_push();
+			render_scale(boss->attacks[i].hp, 2, 1);
+			render_translate(+0.5, 0.5, 0);
+			render_draw_quad();
+			render_pop();
+			render_translate(boss->attacks[i].hp, 0, 0);
 		}
 
-		render_pop(&render);
-		glEnable(GL_TEXTURE_2D);
+		render_pop();
+		render_shader_standard();
 
 		// remaining spells
-		glColor4f(1,1,1,0.7);
+		render_color4(1,1,1,0.7);
 		Sprite *star = get_sprite("star");
 
 		for(int x = 0, i = boss->acount-1; i > nextspell; i--) {
@@ -381,7 +381,7 @@ void draw_boss(Boss *boss) {
 			}
 		}
 
-		glColor3f(1,1,1);
+		render_color3(1,1,1);
 	}
 }
 

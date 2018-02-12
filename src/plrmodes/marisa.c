@@ -51,17 +51,17 @@ void marisa_common_slave_visual(Enemy *e, int t, bool render) {
 		return;
 	}
 
-	render_push(&render);
-	render_translate(&render,(vec3){creal(e->pos), cimag(e->pos), -1});
-	// render_rotate_deg(&render,global.frames * 3, 0, 0, 1);
+	render_push();
+	render_translate(creal(e->pos), cimag(e->pos), -1);
+	// render_rotate_deg(global.frames * 3, 0, 0, 1);
 	draw_sprite(0, 0, "part/smoothdot");
-	render_pop(&render);
+	render_pop();
 }
 
 void marisa_common_masterspark_draw(int t) {
 	Shader *mshader = get_shader("masterspark");
 	glUseProgram(mshader->prog);
 	glUniform1f(uniloc(mshader,"t"),t);
-	draw_quad();
-	glUseProgram(0);
+	render_draw_quad();
+	render_shader_standard();
 }

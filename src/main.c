@@ -276,6 +276,7 @@ int main(int argc, char **argv) {
 	load_resources();
 	gamepad_init();
 	progress_load();
+	render_shader_standard();
 
 	set_transition(TransLoader, 0, FADE_TIME*2);
 

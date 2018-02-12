@@ -306,7 +306,12 @@ static Shader* load_shader(const char *vheader, const char *fheader, const char 
 		unload_shader(sha);
 		return NULL;
 	}
-
+	
+	glUseProgram(sha->prog);
+	int rcIdx = glGetUniformBlockIndex(sha->prog,"RenderContext");
+	if(rcIdx >= 0) {
+		glUniformBlockBinding(sha->prog, rcIdx, 1);
+	}
 	cache_uniforms(sha);
 
 	return sha;

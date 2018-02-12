@@ -92,12 +92,12 @@ void swap_fbo_pair(FBOPair *pair) {
 }
 
 void draw_fbo(FBO *fbo) {
-	render_push(&render);
-		render_translate(&render,(vec3){VIEWPORT_W/2., VIEWPORT_H/2., 0});
-		render_scale(&render,(vec3){VIEWPORT_W, VIEWPORT_H, 1});
+	render_push();
+		render_translate(VIEWPORT_W/2., VIEWPORT_H/2., 0);
+		render_scale(VIEWPORT_W, VIEWPORT_H, 1);
 		glBindTexture(GL_TEXTURE_2D, fbo->tex);
-		glDrawArrays(GL_QUADS, 4, 4);
-	render_pop(&render);
+		glDrawArrays(GL_TRIANGLE_FAN, 4, 4);
+	render_pop();
 }
 
 void draw_fbo_viewport(FBO *fbo) {

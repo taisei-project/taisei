@@ -159,8 +159,10 @@ static void video_init_gl(void) {
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
-	glEnable(GL_TEXTURE_2D);
+	
 	init_quadvbo();
+	
+	render_init();
 
 	glClear(GL_COLOR_BUFFER_BIT);
 }
@@ -247,10 +249,13 @@ static void video_new_window_internal(int w, int h, uint32_t flags, bool fallbac
 	}
 
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
 #ifdef DEBUG_GL
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+
 
 	char title[sizeof(WINDOW_TITLE) + strlen(TAISEI_VERSION) + 2];
 	snprintf(title, sizeof(title), "%s v%s", WINDOW_TITLE, TAISEI_VERSION);
@@ -605,6 +610,7 @@ void video_init(void) {
 }
 
 void video_shutdown(void) {
+	render_free();
 	SDL_DestroyWindow(video.window);
 	SDL_GL_DeleteContext(video.glcontext);
 	unload_gl_library();

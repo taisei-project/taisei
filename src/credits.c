@@ -196,13 +196,13 @@ void credits_towerwall_draw(vec3 pos) {
 	glUseProgram(s->prog);
 	glUniform1i(uniloc(s, "lendiv"), 2800.0 + 300.0 * sin(global.frames / 77.7));
 
-	render_push(&render);
-	render_translate(&render,(vec3){pos[0], pos[1], pos[2]});
-	render_scale(&render,(vec3){30,30,30});
+	render_push();
+	render_translate(pos[0], pos[1], pos[2]);
+	render_scale(30,30,30);
 	draw_model("towerwall");
-	render_pop(&render);
+	render_pop();
 
-	glUseProgram(0);
+	render_shader_standard();
 }
 
 vec3 **credits_skysphere_pos(vec3 pos, float maxrange) {
@@ -289,81 +289,81 @@ void credits_draw_entry(CreditsEntry *e) {
 		yukkuri_spr = get_sprite("yukkureimu");
 	}
 
-	render_push(&render);
+	render_push();
 
 	if(fadein < 1) {
-		render_translate(&render,(vec3){0, SCREEN_W * pow(1 - fadein,  2) *  0.5, 0});
+		render_translate(0, SCREEN_W * pow(1 - fadein,  2) *  0.5, 0);
 	} else if(fadeout < 1) {
-		render_translate(&render,(vec3){0, SCREEN_W * pow(1 - fadeout, 2) * -0.5, 0});
+		render_translate(0, SCREEN_W * pow(1 - fadeout, 2) * -0.5, 0);
 	}
 
 	// for debugging: draw a quad as tall as the entry is expected to be
 	/*
-	render_push(&render);
-	glColor4f(1, 0, 0, fadein * fadeout);
-	glDisable(GL_TEXTURE_2D);
-	render_scale(&render,(vec3){300, h_total, 1});
-	draw_quad();
-	glEnable(GL_TEXTURE_2D);
-	render_pop(&render);
+	render_push();
+	render_color4(1, 0, 0, fadein * fadeout);
+	render_shader_standard_notex();
+	render_scale(300, h_total, 1);
+	render_draw_quad();
+	render_shader_standard();
+	render_pop();
 	*/
 
-	glColor4f(1, 1, 1, fadein * fadeout);
+	render_color4(1, 1, 1, fadein * fadeout);
 
 	if(yukkuri) {
-		render_translate(&render,(vec3){0, (-h_body) * 0.5, 0});
+		render_translate(0, (-h_body) * 0.5, 0);
 	} else {
-		render_translate(&render,(vec3){0, (-h_body) * 0.5, 0});
+		render_translate(0, (-h_body) * 0.5, 0);
 	}
 
 	for(int i = 0; i < e->lines; ++i) {
 		if(yukkuri && !i) {
-			render_push(&render);
-			render_scale(&render,(vec3){CREDITS_YUKKURI_SCALE, CREDITS_YUKKURI_SCALE, 1.0});
+			render_push();
+			render_scale(CREDITS_YUKKURI_SCALE, CREDITS_YUKKURI_SCALE, 1.0);
 			draw_sprite_p(0, 10 * sin(global.frames / 10.0) * fadeout * fadein, yukkuri_spr);
-			render_pop(&render);
-			render_translate(&render,(vec3){0, yukkuri_spr->h * CREDITS_YUKKURI_SCALE * 0.5, 0});
+			render_pop();
+			render_translate(0, yukkuri_spr->h * CREDITS_YUKKURI_SCALE * 0.5, 0);
 		} else {
 			Font *font = i ? _fonts.standard : _fonts.mainmenu;
 			draw_text(AL_Center, 0, 0, e->data[i], font);
-			render_translate(&render,(vec3){0, font_line_spacing(font), 0});
+			render_translate(0, font_line_spacing(font), 0);
 		}
 	}
 
-	render_pop(&render);
-	glColor4f(1, 1, 1, 1);
+	render_pop();
+	render_color4(1, 1, 1, 1);
 }
 
 void credits_draw(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	colorfill(1, 1, 1, 1); // don't use glClearColor for this, it screws up letterboxing
 
-	render_push(&render);
-	render_translate(&render,(vec3){-SCREEN_W/2, 0, 0});
+	render_push();
+	render_translate(-SCREEN_W/2, 0, 0);
 	glEnable(GL_DEPTH_TEST);
 
 	set_perspective_viewport(&stage_3d_context, 100, 9000, 0, 0, SCREEN_W, SCREEN_H);
 	draw_stage3d(&stage_3d_context, 10000);
 
-	render_pop(&render);
+	render_pop();
 	set_ortho();
 
-	render_push(&render);
-	glColor4f(0, 0, 0, credits.panelalpha * 0.7);
-	render_translate(&render,(vec3){SCREEN_W/4*3, SCREEN_H/2, 0});
-	render_scale(&render,(vec3){300, SCREEN_H, 1});
-	draw_quad();
-	glColor4f(1, 1, 1, 1);
-	render_pop(&render);
+	render_push();
+	render_color4(0, 0, 0, credits.panelalpha * 0.7);
+	render_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
+	render_scale(300, SCREEN_H, 1);
+	render_draw_quad();
+	render_color4(1, 1, 1, 1);
+	render_pop();
 
-	render_push(&render);
-	render_translate(&render,(vec3){SCREEN_W/4*3, SCREEN_H/2, 0});
+	render_push();
+	render_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
 
 	for(int i = 0; i < credits.ecount; ++i) {
 		credits_draw_entry(&(credits.entries[i]));
 	}
 
-	render_pop(&render);
+	render_pop();
 
 	draw_transition();
 }

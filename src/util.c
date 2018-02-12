@@ -310,10 +310,9 @@ float sanitize_scale(float scale) {
 //
 
 void set_ortho_ex(float w, float h) {
-	render_matrixmode(&render,MM_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, w, h, 0, -100, 100);
-	render_matrixmode(&render,MM_MODELVIEW);
+	render_matrix_mode(MM_PROJECTION);
+	render_ortho( 0, w, h, 0, -100, 100);
+	render_matrix_mode(MM_MODELVIEW);
 	glDisable(GL_DEPTH_TEST);
 }
 
@@ -324,18 +323,18 @@ void set_ortho(void) {
 void colorfill(float r, float g, float b, float a) {
 	if(a <= 0) return;
 
-	glDisable(GL_TEXTURE_2D);
-	glColor4f(r,g,b,a);
+	render_shader_standard_notex();
+	render_color4(r,g,b,a);
 
-	render_push(&render);
-	render_scale(&render,(vec3){SCREEN_W,SCREEN_H,1});
-	render_translate(&render,(vec3){0.5,0.5,0});
+	render_push();
+	render_scale(SCREEN_W,SCREEN_H,1);
+	render_translate(0.5,0.5,0);
 
-	draw_quad();
-	render_pop(&render);
+	render_draw_quad();
+	render_pop();
 
-	glColor4f(1,1,1,1);
-	glEnable(GL_TEXTURE_2D);
+	render_color4(1,1,1,1);
+	render_shader_standard();
 }
 
 void fade_out(float f) {
@@ -366,30 +365,30 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 	begin_draw_sprite(x - star_width, y, star_width/star->w, star_width/star->w, true, star);
 
 	while(i < numstars) {
-		render_translate(&render,(vec3){1, 0, 0});
-		draw_quad();
+		render_translate(1, 0, 0);
+		render_draw_quad();
 		i++;
 	}
 
 	if(numfrags) {
-		render_translate(&render,(vec3){1, 0, 0});
+		render_translate(1, 0, 0);
 		parse_color_array(frag_clr, clr);
 		glUniform4fv(uniloc(shader, "fill_color"), 1, clr);
 		glUniform1f(uniloc(shader, "fill"), numfrags / (float)maxfrags);
-		draw_quad();
+		render_draw_quad();
 		i++;
 	}
 
 	glUniform1f(uniloc(shader, "fill"), 0);
 
 	while(i < maxstars) {
-		render_translate(&render,(vec3){1, 0, 0});
-		draw_quad();
+		render_translate(1, 0, 0);
+		render_draw_quad();
 		i++;
 	}
 
 	end_draw_sprite();
-	glUseProgram(0);
+	render_shader_standard();
 }
 
 //

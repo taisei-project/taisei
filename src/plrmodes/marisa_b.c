@@ -19,14 +19,14 @@ static void marisa_star_trail_draw(Projectile *p, int t) {
 
 	// s = 1 + t / creal(p->args[0]);
 
-	render_push(&render);
-	render_translate(&render,(vec3){creal(p->pos), cimag(p->pos), 0});
-	// render_rotate_deg(&render,t*10, 0, 0, 1);
-	render_rotate_deg(&render,p->angle*180/M_PI+90, 0, 0, 1);
-	render_scale(&render,(vec3){s, s, 1});
+	render_push();
+	render_translate(creal(p->pos), cimag(p->pos), 0);
+	// render_rotate_deg(t*10, 0, 0, 1);
+	render_rotate_deg(p->angle*180/M_PI+90, 0, 0, 1);
+	render_scale(s, s, 1);
 	ProjDrawCore(p, clr);
-	glColor4f(1,1,1,1);
-	render_pop(&render);
+	render_color4(1,1,1,1);
+	render_pop();
 }
 
 static int marisa_star_projectile(Projectile *p, int t) {
@@ -193,26 +193,26 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 	parse_color_array(color,clr);
 	clr[3] = fade;
 
-	render_push(&render);
-	render_translate(&render,(vec3){creal(e->pos),cimag(e->pos),0});
-	render_push(&render);
-	render_rotate_deg(&render,carg(e->pos-global.plr.pos)*180/M_PI+90,0,0,1);
+	render_push();
+	render_translate(creal(e->pos),cimag(e->pos),0);
+	render_push();
+	render_rotate_deg(carg(e->pos-global.plr.pos)*180/M_PI+90,0,0,1);
 
-	render_scale(&render,(vec3){120*fade,VIEWPORT_H*1.5,1});
-	render_translate(&render,(vec3){0,-0.5,0});
+	render_scale(120*fade,VIEWPORT_H*1.5,1);
+	render_translate(0,-0.5,0);
 	marisa_common_masterspark_draw(BOMB_RECOVERY*tb);
 
-	render_pop(&render);
+	render_pop();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glColor4f(clr[0],clr[1],clr[2],clr[3]);
-	render_rotate_deg(&render,t*10,0,0,1);
+	render_color4(clr[0],clr[1],clr[2],clr[3]);
+	render_rotate_deg(t*10,0,0,1);
 	draw_sprite(0,0,"fairy_circle");
-	render_scale(&render,(vec3){0.6,0.6,1});
+	render_scale(0.6,0.6,1);
 	draw_sprite(0,0,"part/lightningball");
-	render_pop(&render);
+	render_pop();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glColor4f(1,1,1,1);
+	render_color4(1,1,1,1);
 }
 
 
@@ -249,10 +249,10 @@ static void marisa_star_bombbg(Player *plr) {
 	glUniform1f(uniloc(s,"t"), t);
 	glUniform1f(uniloc(s,"decay"), 1);
 	glUniform2f(uniloc(s,"plrpos"), creal(global.plr.pos)/VIEWPORT_W,cimag(global.plr.pos)/VIEWPORT_H);
-	glColor4f(1,1,1,0.6*fade);
+	render_color4(1,1,1,0.6*fade);
 	fill_viewport(0,0,1,"marisa_bombbg");
-	glColor4f(1,1,1,1);
-	glUseProgram(0);
+	render_color4(1,1,1,1);
+	render_shader_standard();
 }
 
 static void marisa_star_respawn_slaves(Player *plr, short npow) {

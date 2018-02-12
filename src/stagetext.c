@@ -88,7 +88,7 @@ static void stagetext_draw_single(StageText *txt) {
 	glUniform3fv(uniloc(sha, "color"), 1, txt->clr);
 	draw_text(txt->align, creal(txt->pos)+10*f*f, cimag(txt->pos)+10*f*f, txt->text, *txt->font);
 
-	glUseProgram(0);
+	render_shader_standard();
 }
 
 void stagetext_draw(void) {

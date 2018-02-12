@@ -145,7 +145,7 @@ void draw_ingame_menu_bg(MenuData *menu, float f) {
 	glUniform1f(uniloc(shader, "rad"), rad);
 	glUniform1f(uniloc(shader, "phase"), menu->frames / 100.0);
 	stage_draw_foreground();
-	glUseProgram(0);
+	render_shader_standard();
 }
 
 void update_ingame_menu(MenuData *menu) {
@@ -154,19 +154,19 @@ void update_ingame_menu(MenuData *menu) {
 }
 
 void draw_ingame_menu(MenuData *menu) {
-	render_push(&render);
+	render_push();
 
 	draw_ingame_menu_bg(menu, 1.0-menu_fade(menu));
 
-	render_push(&render);
-	render_translate(&render,(vec3){VIEWPORT_X, VIEWPORT_Y, 0});
-	render_translate(&render,(vec3){VIEWPORT_W/2, VIEWPORT_H/4, 0});
+	render_push();
+	render_translate(VIEWPORT_X, VIEWPORT_Y, 0);
+	render_translate(VIEWPORT_W/2, VIEWPORT_H/4, 0);
 
 	draw_menu_selector(0, menu->drawdata[0], menu->drawdata[1]*2, 41, menu->frames);
 
 	if(menu->context) {
 		float s = 0.3 + 0.2 * sin(menu->frames/10.0);
-		glColor4f(1-s/2, 1-s/2, 1-s, 1-menu_fade(menu));
+		render_color4(1-s/2, 1-s/2, 1-s, 1-menu_fade(menu));
 		draw_text(AL_Center, 0, -2 * 35, menu->context, _fonts.standard);
 	}
 
@@ -179,17 +179,17 @@ void draw_ingame_menu(MenuData *menu) {
 				s = 0.3 + 0.2*sin(menu->frames/7.0);
 			}
 
-			glColor4f(t-s,t-s,t-s/2, 1-menu_fade(menu));
+			render_color4(t-s,t-s,t-s/2, 1-menu_fade(menu));
 		} else {
-			glColor4f(0.5, 0.5, 0.5, 0.5 * (1-menu_fade(menu)));
+			render_color4(0.5, 0.5, 0.5, 0.5 * (1-menu_fade(menu)));
 		}
 
 		draw_text(AL_Center, 0, i*35, menu->entries[i].name, _fonts.standard);
 	}
 
-	glColor4f(1,1,1,1);
-	render_pop(&render);
-	render_pop(&render);
+	render_color4(1,1,1,1);
+	render_pop();
+	render_pop();
 
 	stage_draw_hud();
 }

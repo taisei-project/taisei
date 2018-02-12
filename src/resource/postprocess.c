@@ -172,7 +172,7 @@ void postprocess(PostprocessShader *ppshaders, FBOPair *fbos, PostprocessPrepare
 		swap_fbo_pair(fbos);
 	}
 
-	glUseProgram(0);
+	render_shader_standard();
 }
 
 /*

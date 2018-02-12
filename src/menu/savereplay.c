@@ -48,28 +48,28 @@ static void draw_saverpy_menu(MenuData *m) {
 
 	draw_menu_selector(SCREEN_W/2 + 100 * m->drawdata[0] - 50, SCREEN_H/2, 163, 81, m->frames);
 
-	render_push(&render);
-	glColor4f(1, 1, 1, 1);
-	render_translate(&render,(vec3){SCREEN_W/2, SCREEN_H/2 - 100, 0});
+	render_push();
+	render_color4(1, 1, 1, 1);
+	render_translate(SCREEN_W/2, SCREEN_H/2 - 100, 0);
 	draw_text(AL_Center, 0, 0, "Save Replay?", _fonts.mainmenu);
-	render_translate(&render,(vec3){0, 100, 0});
+	render_translate(0, 100, 0);
 
 	for(int i = 0; i < m->ecount; i++) {
 		MenuEntry *e = &(m->entries[i]);
 		float a = e->drawdata * 0.1;
 
 		if(e->action == NULL) {
-			glColor4f(0.5, 0.5, 0.5, 0.5);
+			render_color4(0.5, 0.5, 0.5, 0.5);
 		} else {
 			float ia = 1-a;
-			glColor4f(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, 0.7 + 0.3 * a);
+			render_color4(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, 0.7 + 0.3 * a);
 		}
 
 		if(e->name)
 			draw_text(AL_Center, -50 + 100 * i, 0, e->name, _fonts.mainmenu);
 	}
 
-	render_pop(&render);
+	render_pop();
 }
 
 static bool savepry_input_handler(SDL_Event *event, void *arg) {

@@ -84,7 +84,7 @@ void draw_items(void) {
 		);
 
 		if(prevc != c) {
-			parse_color_call(c, glColor4f);
+			render_color(c);
 			prevc = c;
 		}
 
@@ -92,7 +92,7 @@ void draw_items(void) {
 	}
 
 	if(prevc != white) {
-		glColor4f(1, 1, 1, 1);
+		render_color4(1, 1, 1, 1);
 	}
 }
 

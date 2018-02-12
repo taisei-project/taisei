@@ -137,7 +137,6 @@ static void texture_post_load(Texture *tex) {
 	GLuint fbotex, fbo;
 	Shader *sha = get_shader("texture_post_load");
 
-	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_BLEND);
 	glGenTextures(1, &fbotex);
 	glBindTexture(GL_TEXTURE_2D, fbotex);
@@ -153,18 +152,18 @@ static void texture_post_load(Texture *tex) {
 	glUseProgram(sha->prog);
 	glUniform1i(uniloc(sha, "width"), tex->w);
 	glUniform1i(uniloc(sha, "height"), tex->h);
-	render_push(&render);
-	glLoadIdentity();
+	render_push();
+	render_identity();
 	glViewport(0, 0, tex->w, tex->h);
 	set_ortho_ex(tex->w, tex->h);
-	render_translate(&render,(vec3){tex->w * 0.5, tex->h * 0.5, 0});
-	render_scale(&render,(vec3){tex->w, tex->h, 1});
-	glDrawArrays(GL_QUADS, 4, 4);
-	render_pop(&render);
+	render_translate(tex->w * 0.5, tex->h * 0.5, 0);
+	render_scale(tex->w, tex->h, 1);
+	glDrawArrays(GL_TRIANGLE_FAN, 4, 4);
+	render_pop();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDeleteFramebuffers(1, &fbo);
 	glDeleteTextures(1, &tex->gltex);
-	glUseProgram(0);
+	render_shader_standard();
 	video_set_viewport();
 	set_ortho();
 	glEnable(GL_BLEND);
@@ -183,7 +182,7 @@ void* load_texture_end(void *opaque, const char *path, unsigned int flags) {
 	load_sdl_surf(surface, texture);
 	SDL_FreeSurface(surface);
 
-	texture_post_load(texture);
+	//texture_post_load(texture);
 	return texture;
 }
 
@@ -233,7 +232,7 @@ void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex) {
 	draw_texture_state.drawing = true;
 
 	glBindTexture(GL_TEXTURE_2D, tex->gltex);
-	render_push(&render);
+	render_push();
 
 	float x = dest.x;
 	float y = dest.y;
@@ -246,28 +245,28 @@ void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex) {
 	if(s != 1 || t != 1 || frag.x || frag.y) {
 		draw_texture_state.texture_matrix_tainted = true;
 
-		render_matrixmode(&render,MM_TEXTURE);
-		glLoadIdentity();
+		render_matrix_mode(MM_TEXTURE);
+		render_identity();
 
-		render_scale(&render,(vec3){1.0/tex->w, 1.0/tex->h, 1});
+		render_scale(1.0/tex->w, 1.0/tex->h, 1);
 
 		if(frag.x || frag.y) {
-			render_translate(&render,(vec3){frag.x, frag.y, 0});
+			render_translate(frag.x, frag.y, 0);
 		}
 
 		if(s != 1 || t != 1) {
-			render_scale(&render,(vec3){frag.w, frag.h, 1});
+			render_scale(frag.w, frag.h, 1);
 		}
 
-		render_matrixmode(&render,MM_MODELVIEW);
+		render_matrix_mode(MM_MODELVIEW);
 	}
 
 	if(x || y) {
-		render_translate(&render,(vec3){x, y, 0});
+		render_translate(x, y, 0);
 	}
 
 	if(w != 1 || h != 1) {
-		render_scale(&render,(vec3){w, h, 1});
+		render_scale(w, h, 1);
 	}
 }
 
@@ -278,18 +277,18 @@ void end_draw_texture(void) {
 
 	if(draw_texture_state.texture_matrix_tainted) {
 		draw_texture_state.texture_matrix_tainted = false;
-		render_matrixmode(&render,MM_TEXTURE);
-		glLoadIdentity();
-		render_matrixmode(&render,MM_MODELVIEW);
+		render_matrix_mode(MM_TEXTURE);
+		render_identity();
+		render_matrix_mode(MM_MODELVIEW);
 	}
 
-	render_pop(&render);
+	render_pop();
 	draw_texture_state.drawing = false;
 }
 
 void draw_texture_p(float x, float y, Texture *tex) {
 	begin_draw_texture((FloatRect){ x, y, tex->w, tex->h }, (FloatRect){ 0, 0, tex->w, tex->h }, tex);
-	draw_quad();
+	render_draw_quad();
 	end_draw_texture();
 }
 
@@ -299,7 +298,7 @@ void draw_texture(float x, float y, const char *name) {
 
 void draw_texture_with_size_p(float x, float y, float w, float h, Texture *tex) {
 	begin_draw_texture((FloatRect){ x, y, w, h }, (FloatRect){ 0, 0, tex->w, tex->h }, tex);
-	draw_quad();
+	render_draw_quad();
 	end_draw_texture();
 }
 
@@ -328,35 +327,35 @@ void fill_viewport_p(float xoff, float yoff, float ratio, float aspect, float an
 
 	if(xoff || yoff || rw != 1 || rh != 1 || angle) {
 		texture_matrix_tainted = true;
-		render_matrixmode(&render,MM_TEXTURE);
+		render_matrix_mode(MM_TEXTURE);
 
 		if(xoff || yoff) {
-			render_translate(&render,(vec3){xoff, yoff, 0});
+			render_translate(xoff, yoff, 0);
 		}
 
 		if(rw != 1 || rh != 1) {
-			render_scale(&render,(vec3){rw, rh, 1});
+			render_scale(rw, rh, 1);
 		}
 
 		if(angle) {
-			render_translate(&render,(vec3){0.5, 0.5, 0});
-			render_rotate_deg(&render,angle, 0, 0, 1);
-			render_translate(&render,(vec3){-0.5, -0.5, 0});
+			render_translate(0.5, 0.5, 0);
+			render_rotate_deg(angle, 0, 0, 1);
+			render_translate(-0.5, -0.5, 0);
 		}
 
-		render_matrixmode(&render,MM_MODELVIEW);
+		render_matrix_mode(MM_MODELVIEW);
 	}
 
-	render_push(&render);
-	render_translate(&render,(vec3){VIEWPORT_W*0.5, VIEWPORT_H*0.5, 0});
-	render_scale(&render,(vec3){VIEWPORT_W, VIEWPORT_H, 1});
-	draw_quad();
-	render_pop(&render);
+	render_push();
+	render_translate(VIEWPORT_W*0.5, VIEWPORT_H*0.5, 0);
+	render_scale(VIEWPORT_W, VIEWPORT_H, 1);
+	render_draw_quad();
+	render_pop();
 
 	if(texture_matrix_tainted) {
-		render_matrixmode(&render,MM_TEXTURE);
-		glLoadIdentity();
-		render_matrixmode(&render,MM_MODELVIEW);
+		render_matrix_mode(MM_TEXTURE);
+		render_identity();
+		render_matrix_mode(MM_MODELVIEW);
 	}
 }
 
@@ -366,7 +365,7 @@ void fill_screen(const char *name) {
 
 void fill_screen_p(Texture *tex) {
 	begin_draw_texture((FloatRect){ SCREEN_W*0.5, SCREEN_H*0.5, SCREEN_W, SCREEN_H }, (FloatRect){ 0, 0, tex->w, tex->h }, tex);
-	draw_quad();
+	render_draw_quad();
 	end_draw_texture();
 }
 
@@ -378,25 +377,25 @@ void fill_screen_p(Texture *tex) {
 void loop_tex_line_p(complex a, complex b, float w, float t, Texture *texture) {
 	complex d = b-a;
 	complex c = (b+a)/2;
-	render_push(&render);
-	render_translate(&render,(vec3){creal(c),cimag(c),0});
-	render_rotate_deg(&render,180/M_PI*carg(d),0,0,1);
-	render_scale(&render,(vec3){cabs(d),w,1});
+	render_push();
+	render_translate(creal(c),cimag(c),0);
+	render_rotate_deg(180/M_PI*carg(d),0,0,1);
+	render_scale(cabs(d),w,1);
 
-	render_matrixmode(&render,MM_TEXTURE);
-	glLoadIdentity();
-	render_translate(&render,(vec3){t, 0, 0});
-	render_matrixmode(&render,MM_MODELVIEW);
+	render_matrix_mode(MM_TEXTURE);
+	render_identity();
+	render_translate(t, 0, 0);
+	render_matrix_mode(MM_MODELVIEW);
 
 	glBindTexture(GL_TEXTURE_2D, texture->gltex);
 
-	draw_quad();
+	render_draw_quad();
 
-	render_matrixmode(&render,MM_TEXTURE);
-		glLoadIdentity();
-	render_matrixmode(&render,MM_MODELVIEW);
+	render_matrix_mode(MM_TEXTURE);
+		render_identity();
+	render_matrix_mode(MM_MODELVIEW);
 
-	render_pop(&render);
+	render_pop();
 }
 
 void loop_tex_line(complex a, complex b, float w, float t, const char *texture) {

@@ -657,46 +657,46 @@ void scuttle_spellbg(Boss *h, int time) {
 		a += (time / (float)ATTACK_START_DELAY);
 	float s = 0.3 + 0.7 * a;
 
-	glColor4f(.1, .1, .1, a);
+	render_color4(.1, .1, .1, a);
 	draw_sprite(VIEWPORT_W/2, VIEWPORT_H/2, "stage3/spellbg2");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 	fill_viewport(-time/200.0 + 0.5, time/400.0+0.5, s, "stage3/spellbg1");
 
-	glColor4f(1, 1, 1, 0.1);
+	render_color4(1, 1, 1, 0.1);
 	fill_viewport(time/300.0 + 0.5, -time/340.0+0.5, s*0.5, "stage3/spellbg1");
 	Shader *sha = get_shader("maristar_bombbg");
 	glUseProgram(sha->prog);
 	glUniform1f(uniloc(sha,"t"), time/400.);
 	glUniform1f(uniloc(sha,"decay"), 0.);
-	glColor4f(1, 1, 1, 0.1);
+	render_color4(1, 1, 1, 0.1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glUniform2f(uniloc(sha,"plrpos"), 0.5,0.5);
 	fill_viewport(0.0, 0.0, 1, "stage3/spellbg1");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glUseProgram(0);
+	render_shader_standard();
 
 
-	glColor4f(1, 1, 1, 1);
+	render_color4(1, 1, 1, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void wriggle_spellbg(Boss *b, int time) {
-	glColor4f(1,1,1,1);
+	render_color4(1,1,1,1);
 	fill_viewport(0, 0, 768.0/1024.0, "stage3/wspellbg");
-	glColor4f(1,1,1,0.5);
+	render_color4(1,1,1,0.5);
 	glBlendEquation(GL_FUNC_SUBTRACT);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	fill_viewport(sin(time) * 0.015, time / 50.0, 1, "stage3/wspellclouds");
 	glBlendEquation(GL_FUNC_ADD);
 	fill_viewport(0, time / 70.0, 1, "stage3/wspellswarm");
 	glBlendEquation(GL_FUNC_SUBTRACT);
-	glColor4f(1,1,1,0.4);
+	render_color4(1,1,1,0.4);
 	fill_viewport(cos(time) * 0.02, time / 30.0, 1, "stage3/wspellclouds");
 
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glColor4f(1,1,1,1);
+	render_color4(1,1,1,1);
 }
 
 Boss* stage3_spawn_scuttle(complex pos) {
@@ -724,16 +724,16 @@ static void wriggle_slave_visual(Enemy *e, int time, bool render) {
 		return;
 
 	if(render) {
-		render_push(&render);
-		render_translate(&render,(vec3){creal(e->pos),cimag(e->pos),0});
-		render_rotate_deg(&render,7*time,0,0,1);
-		glColor4f(0.8,1,0.4,1);
-		render_scale(&render,(vec3){0.7,0.7,1});
+		render_push();
+		render_translate(creal(e->pos),cimag(e->pos),0);
+		render_rotate_deg(7*time,0,0,1);
+		render_color4(0.8,1,0.4,1);
+		render_scale(0.7,0.7,1);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		draw_sprite(0,0,"fairy_circle");
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glColor3f(1,1,1);
-		render_pop(&render);
+		render_color3(1,1,1);
+		render_pop();
 	} else if(time % 5 == 0) {
 		tsrand_fill(2);
 		PARTICLE(
@@ -838,10 +838,10 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 static void wriggle_slave_part_draw(Projectile *p, int t) {
 	float b = 1 - t / p->args[0];
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	render_push(&render);
-	render_translate(&render,(vec3){creal(p->pos), cimag(p->pos), 0});
+	render_push();
+	render_translate(creal(p->pos), cimag(p->pos), 0);
 	ProjDrawCore(p, multiply_colors(p->color, rgba(b, b, b, 1)));
-	render_pop(&render);
+	render_pop();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
@@ -1152,22 +1152,22 @@ void wriggle_light_singularity(Boss *boss, int time) {
 
 static void wriggle_fstorm_proj_draw(Projectile *p, int time) {
 	float f = 1-min(time/60.0,1);
-	render_push(&render);
-	render_translate(&render,(vec3){creal(p->pos), cimag(p->pos), 0});
-	render_rotate_deg(&render,p->angle*180/M_PI+90, 0, 0, 1);
+	render_push();
+	render_translate(creal(p->pos), cimag(p->pos), 0);
+	render_rotate_deg(p->angle*180/M_PI+90, 0, 0, 1);
 	ProjDrawCore(p, p->color);
 
 	if(f > 0) {
 		p->sprite = get_sprite("proj/ball");
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-		render_scale(&render,(vec3){f,f,f});
+		render_scale(f,f,f);
 		ProjDrawCore(p,time);
-		render_scale(&render,(vec3){1/f,1/f,1/f});
+		render_scale(1/f,1/f,1/f);
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		p->sprite = get_sprite("proj/rice");
 	}
 
-	render_pop(&render);
+	render_pop();
 }
 
 static int wriggle_fstorm_proj(Projectile *p, int time) {

@@ -50,6 +50,7 @@
 #include "hirestime.h"
 #include "log.h"
 #include "framerate.h"
+#include "renderer.h"
 
 enum {
 	// defaults

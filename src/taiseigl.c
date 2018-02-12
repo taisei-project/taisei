@@ -178,10 +178,3 @@ void load_gl_functions(void) {
 #undef GLDEF
 #endif
 }
-
-void gluPerspective(GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFar) {
-	GLdouble fW, fH;
-	fH = tan(fovY / 360 * M_PI) * zNear;
-	fW = fH * aspect;
-	glFrustum(-fW, fW, -fH, fH, zNear, zFar);
-}

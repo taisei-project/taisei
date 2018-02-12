@@ -99,13 +99,13 @@ void stage6_towerwall_draw(vec3 pos) {
 	Shader *s = get_shader("tower_wall");
 	glUseProgram(s->prog);
 
-	render_push(&render);
-	render_translate(&render,(vec3){pos[0], pos[1], pos[2]});
-	render_scale(&render,(vec3){30,30,30});
+	render_push();
+	render_translate(pos[0], pos[1], pos[2]);
+	render_scale(30,30,30);
 	draw_model("towerwall");
-	render_pop(&render);
+	render_pop();
 
-	glUseProgram(0);
+	render_shader_standard();
 }
 
 static vec3 **stage6_towertop_pos(vec3 pos, float maxrange) {
@@ -117,11 +117,11 @@ static vec3 **stage6_towertop_pos(vec3 pos, float maxrange) {
 static void stage6_towertop_draw(vec3 pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towertop")->gltex);
 
-	render_push(&render);
-	render_translate(&render,(vec3){pos[0], pos[1], pos[2]});
-	render_scale(&render,(vec3){28,28,28});
+	render_push();
+	render_translate(pos[0], pos[1], pos[2]);
+	render_scale(28,28,28);
 	draw_model("towertop");
-	render_pop(&render);
+	render_pop();
 }
 
 static vec3 **stage6_skysphere_pos(vec3 pos, float maxrange) {
@@ -133,26 +133,26 @@ static void stage6_skysphere_draw(vec3 pos) {
 	Shader *s = get_shader("stage6_sky");
 	glUseProgram(s->prog);
 
-	render_push(&render);
-	render_translate(&render,(vec3){pos[0], pos[1], pos[2]-30});
-	render_scale(&render,(vec3){150,150,150});
+	render_push();
+	render_translate(pos[0], pos[1], pos[2]-30);
+	render_scale(150,150,150);
 	draw_model("skysphere");
 
-	glUseProgram(0);
+	render_shader_standard();
 
 	for(int i = 0; i < NUM_STARS; i++) {
-		render_push(&render);
+		render_push();
 		float x = starpos[3*i+0], y = starpos[3*i+1], z = starpos[3*i+2];
-		glColor4f(0.9,0.9,1,0.8*z);
-		render_translate(&render,(vec3){x,y,z});
-		render_rotate_deg(&render,180/M_PI*acos(starpos[3*i+2]),-y,x,0);
-		render_scale(&render,(vec3){1./4000,1./4000,1./4000});
+		render_color4(0.9,0.9,1,0.8*z);
+		render_translate(x,y,z);
+		render_rotate_deg(180/M_PI*acos(starpos[3*i+2]),-y,x,0);
+		render_scale(1./4000,1./4000,1./4000);
 		draw_sprite(0,0,"part/smoothdot");
-		render_pop(&render);
+		render_pop();
 	}
 
-	render_pop(&render);
-	glColor4f(1,1,1,1);
+	render_pop();
+	render_color4(1,1,1,1);
 	glEnable(GL_DEPTH_TEST);
 }
 

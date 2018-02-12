@@ -84,7 +84,7 @@ static void stage4_fog(FBO *fbo) {
 	glActiveTexture(GL_TEXTURE0);
 
 	draw_fbo_viewport(fbo);
-	glUseProgram(0);
+	render_shader_standard();
 }
 
 static vec3 **stage4_fountain_pos(vec3 pos, float maxrange) {
@@ -106,14 +106,14 @@ static vec3 **stage4_fountain_pos(vec3 pos, float maxrange) {
 static void stage4_fountain_draw(vec3 pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage2/border")->gltex);
 
-	render_push(&render);
-	render_translate(&render,(vec3){pos[0], pos[1], pos[2]});
-	render_rotate_deg(&render,-90, 1,0,0);
-	render_scale(&render,(vec3){1000,3010,1});
+	render_push();
+	render_translate(pos[0], pos[1], pos[2]);
+	render_rotate_deg(-90, 1,0,0);
+	render_scale(1000,3010,1);
 
-	draw_quad();
+	render_draw_quad();
 
-	render_pop(&render);
+	render_pop();
 }
 
 static vec3 **stage4_lake_pos(vec3 pos, float maxrange) {
@@ -142,21 +142,21 @@ static vec3 **stage4_lake_pos(vec3 pos, float maxrange) {
 static void stage4_lake_draw(vec3 pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage4/lake")->gltex);
 
-	render_push(&render);
-	render_translate(&render,(vec3){pos[0], pos[1]+140, pos[2]});
-	render_scale(&render,(vec3){15,15,15});
+	render_push();
+	render_translate(pos[0], pos[1]+140, pos[2]);
+	render_scale(15,15,15);
 
 	draw_model("lake");
-	render_pop(&render);
+	render_pop();
 
-	render_push(&render);
-	render_translate(&render,(vec3){pos[0], pos[1]+944, pos[2]+50});
-	render_scale(&render,(vec3){30,30,30});
+	render_push();
+	render_translate(pos[0], pos[1]+944, pos[2]+50);
+	render_scale(30,30,30);
 
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage4/mansion")->gltex);
 
 	draw_model("mansion");
-	render_pop(&render);
+	render_pop();
 }
 
 static vec3 **stage4_corridor_pos(vec3 pos, float maxrange) {
@@ -178,60 +178,60 @@ static vec3 **stage4_corridor_pos(vec3 pos, float maxrange) {
 static void stage4_corridor_draw(vec3 pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage4/planks")->gltex);
 
-	render_matrixmode(&render,MM_TEXTURE);
-	render_scale(&render,(vec3){1,2,1});
-	render_matrixmode(&render,MM_MODELVIEW);
+	render_matrix_mode(MM_TEXTURE);
+	render_scale(1,2,1);
+	render_matrix_mode(MM_MODELVIEW);
 
-	render_push(&render);
-	render_translate(&render,(vec3){pos[0], pos[1], pos[2]});
+	render_push();
+	render_translate(pos[0], pos[1], pos[2]);
 
-	render_push(&render);
-	render_rotate_deg(&render,180, 1,0,0);
-	render_scale(&render,(vec3){300,2000,1});
+	render_push();
+	render_rotate_deg(180, 1,0,0);
+	render_scale(300,2000,1);
 
-	draw_quad();
-	render_pop(&render);
+	render_draw_quad();
+	render_pop();
 
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage4/wall")->gltex);
 
-	render_matrixmode(&render,MM_TEXTURE);
-	glLoadIdentity();
-	render_rotate_deg(&render,90,0,0,1);
-	render_scale(&render,(vec3){1,10,1});
-	render_matrixmode(&render,MM_MODELVIEW);
+	render_matrix_mode(MM_TEXTURE);
+	render_identity();
+	render_rotate_deg(90,0,0,1);
+	render_scale(1,10,1);
+	render_matrix_mode(MM_MODELVIEW);
 
-	render_push(&render);
-	render_translate(&render,(vec3){100,5,75});
-	render_rotate_deg(&render,90, 0,1,0);
-	render_scale(&render,(vec3){150,2000,1});
-	draw_quad();
-	render_pop(&render);
+	render_push();
+	render_translate(100,5,75);
+	render_rotate_deg(90, 0,1,0);
+	render_scale(150,2000,1);
+	render_draw_quad();
+	render_pop();
 
-	render_push(&render);
-	render_translate(&render,(vec3){-100,5,75});
-	render_rotate_deg(&render,180,1,0,0);
-	render_rotate_deg(&render,-90, 0,1,0);
-	render_scale(&render,(vec3){150,2000,1});
-	draw_quad();
-	render_pop(&render);
+	render_push();
+	render_translate(-100,5,75);
+	render_rotate_deg(180,1,0,0);
+	render_rotate_deg(-90, 0,1,0);
+	render_scale(150,2000,1);
+	render_draw_quad();
+	render_pop();
 
-	render_matrixmode(&render,MM_TEXTURE);
-	glLoadIdentity();
-	render_matrixmode(&render,MM_MODELVIEW);
+	render_matrix_mode(MM_TEXTURE);
+	render_identity();
+	render_matrix_mode(MM_MODELVIEW);
 
-	glDisable(GL_TEXTURE_2D);
+	render_shader_standard_notex();
 
-	glColor3f(0.01,0.01,0.01);
-	render_push(&render);
-	render_translate(&render,(vec3){0,0,150});
-	render_scale(&render,(vec3){500,2000,1});
-	draw_quad();
-	render_pop(&render);
+	render_color3(0.01,0.01,0.01);
+	render_push();
+	render_translate(0,0,150);
+	render_scale(500,2000,1);
+	render_draw_quad();
+	render_pop();
 
-	render_pop(&render);
-	glColor3f(1,1,1);
+	render_pop();
+	render_color3(1,1,1);
 
-	glEnable(GL_TEXTURE_2D);
+	render_shader_standard();
 }
 
 static void stage4_start(void) {

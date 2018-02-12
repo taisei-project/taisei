@@ -387,7 +387,7 @@ static void youmu_mirror_shader(FBO *fbo) {
 	glUseProgram(shader->prog);
 	glUniform1f(uniloc(shader, "tbomb"), t);
 	draw_fbo_viewport(fbo);
-	glUseProgram(0);
+	render_shader_standard();
 
 	colorfill(1,1,1,max(0,1-10*t));
 }

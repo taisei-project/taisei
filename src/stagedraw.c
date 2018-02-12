@@ -66,7 +66,7 @@ void stage_draw_preload(void) {
 	glUniform4f(stagedraw.hud_text.u_colorBtop, 1.00, 1.00, 1.00, 1.00);
 	glUniform4f(stagedraw.hud_text.u_colorBbot, 0.80, 0.80, 0.80, 0.80);
 	glUniform4f(stagedraw.hud_text.u_colortint, 1.00, 1.00, 1.00, 1.00);
-	glUseProgram(0);
+	render_shader_standard();
 
 	stagedraw.framerate_graphs = getenvint("TAISEI_FRAMERATE_GRAPHS", GRAPHS_DEFAULT);
 	stagedraw.objpool_stats = getenvint("TAISEI_OBJPOOL_STATS", OBJPOOLSTATS_DEFAULT);
@@ -99,9 +99,9 @@ static void draw_wall_of_text(float f, const char *txt) {
 	float w = VIEWPORT_W;
 	float h = VIEWPORT_H;
 
-	render_push(&render);
-	render_translate(&render,(vec3){w/2, h/2, 0});
-	render_scale(&render,(vec3){w, h, 1.0});
+	render_push();
+	render_translate(w/2, h/2, 0);
+	render_scale(w, h, 1.0);
 
 	Shader *shader = get_shader("spellcard_walloftext");
 	glUseProgram(shader->prog);
@@ -111,14 +111,14 @@ static void draw_wall_of_text(float f, const char *txt) {
 	glUniform2f(uniloc(shader, "origin"), creal(global.boss->pos)/h, cimag(global.boss->pos)/w);
 	glUniform1f(uniloc(shader, "t"), f);
 	glBindTexture(GL_TEXTURE_2D, spr.tex->gltex);
-	draw_quad();
-	glUseProgram(0);
+	render_draw_quad();
+	render_shader_standard();
 
-	render_pop(&render);
+	render_pop();
 }
 
 static void draw_spellbg(int t) {
-	render_push(&render);
+	render_push();
 
 	Boss *b = global.boss;
 	b->current->draw_rule(b, t);
@@ -126,17 +126,17 @@ static void draw_spellbg(int t) {
 	if(b->current->type == AT_ExtraSpell)
 		draw_extraspell_bg(b, t);
 
-	render_push(&render);
-	render_translate(&render,(vec3){creal(b->pos), cimag(b->pos), 0});
-	render_rotate_deg(&render,global.frames*7.0, 0, 0, -1);
+	render_push();
+	render_translate(creal(b->pos), cimag(b->pos), 0);
+	render_rotate_deg(global.frames*7.0, 0, 0, -1);
 
 	if(t < 0) {
 		float f = 1.0 - t/(float)ATTACK_START_DELAY;
-		render_scale(&render,(vec3){f,f,f});
+		render_scale(f,f,f);
 	}
 
 	draw_sprite(0, 0, "boss_spellcircle0");
-	render_pop(&render);
+	render_pop();
 
 	float delay = ATTACK_START_DELAY;
 	if(b->current->type == AT_ExtraSpell)
@@ -146,15 +146,15 @@ static void draw_spellbg(int t) {
 		draw_wall_of_text(f, b->current->name);
 
 	if(t < ATTACK_START_DELAY && b->dialog) {
-		render_push(&render);
+		render_push();
 		float f = -0.5*t/(float)ATTACK_START_DELAY+0.5;
-		glColor4f(1,1,1,-f*f+2*f);
+		render_color4(1,1,1,-f*f+2*f);
 		draw_sprite_p(VIEWPORT_W*3/4-10*f*f,VIEWPORT_H*2/3-10*f*f,b->dialog);
-		glColor4f(1,1,1,1);
-		render_pop(&render);
+		render_color4(1,1,1,1);
+		render_pop();
 	}
 
-	render_pop(&render);
+	render_pop();
 }
 
 static void apply_bg_shaders(ShaderRule *shaderrules, FBOPair *fbos) {
@@ -207,13 +207,13 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBOPair *fbos) {
 			glUniform1f(uniloc(shader, "t"), max(0,tn/delay+1));
 
 		} else {
-			glUseProgram(0);
+			render_shader_standard();
 		}
 
 		draw_fbo_viewport(fbos->front);
 		swap_fbo_pair(fbos);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glUseProgram(0);
+		render_shader_standard();
 	} else {
 		apply_shader_rules(shaderrules, fbos);
 	}
@@ -264,11 +264,11 @@ static void stage_render_bg(StageInfo *stage) {
 	glViewport(0, 0, scale*VIEWPORT_W, scale*VIEWPORT_H);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	render_push(&render);
-		render_translate(&render,(vec3){-(VIEWPORT_X+VIEWPORT_W/2), -(VIEWPORT_Y+VIEWPORT_H/2),0});
+	render_push();
+		render_translate(-(VIEWPORT_X+VIEWPORT_W/2), -(VIEWPORT_Y+VIEWPORT_H/2),0);
 		glEnable(GL_DEPTH_TEST);
 		stage->procs->draw();
-	render_pop(&render);
+	render_pop();
 
 	swap_fbo_pair(&resources.fbo_pairs.bg);
 	apply_bg_shaders(stage->procs->shader_rules, &resources.fbo_pairs.bg);
@@ -323,15 +323,15 @@ void stage_draw_foreground(void) {
 	float scale = fach;
 
 	// draw the foreground FBO
-	render_push(&render);
-		render_scale(&render,(vec3){1/facw,1/fach,1});
-		render_translate(&render,(vec3){floorf(facw*VIEWPORT_X), floorf(fach*VIEWPORT_Y), 0});
-		render_scale(&render,(vec3){floorf(scale*VIEWPORT_W)/VIEWPORT_W,floorf(scale*VIEWPORT_H)/VIEWPORT_H,1});
+	render_push();
+		render_scale(1/facw,1/fach,1);
+		render_translate(floorf(facw*VIEWPORT_X), floorf(fach*VIEWPORT_Y), 0);
+		render_scale(floorf(scale*VIEWPORT_W)/VIEWPORT_W,floorf(scale*VIEWPORT_H)/VIEWPORT_H,1);
 		// apply the screenshake effect
 		if(global.shake_view) {
-			render_translate(&render,(vec3){global.shake_view*sin(global.frames),global.shake_view*sin(global.frames*1.1+3),0});
-			render_scale(&render,(vec3){1+2*global.shake_view/VIEWPORT_W,1+2*global.shake_view/VIEWPORT_H,1});
-			render_translate(&render,(vec3){-global.shake_view,-global.shake_view,0});
+			render_translate(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames*1.1+3),0);
+			render_scale(1+2*global.shake_view/VIEWPORT_W,1+2*global.shake_view/VIEWPORT_H,1);
+			render_translate(-global.shake_view,-global.shake_view,0);
 
 			if(global.shake_view_fade) {
 				global.shake_view -= global.shake_view_fade;
@@ -340,7 +340,7 @@ void stage_draw_foreground(void) {
 			}
 		}
 		draw_fbo(resources.fbo_pairs.fg.front);
-	render_pop(&render);
+	render_pop();
 	set_ortho();
 }
 
@@ -374,7 +374,7 @@ void stage_draw_scene(StageInfo *stage) {
 		draw_fbo(resources.fbo_pairs.bg.front);
 
 		// disable boss background distortion
-		glUseProgram(0);
+		render_shader_standard();
 
 		// draw bomb background
 		if(global.frames - global.plr.recovery < 0 && global.plr.mode->procs.bombbg) {
@@ -501,10 +501,10 @@ void stage_draw_hud_text(struct labels_s* labels) {
 
 	// Lives and Bombs (N/A)
 	if(global.stage->type == STAGE_SPELL) {
-		glColor4f(1, 1, 1, 0.7);
+		render_color4(1, 1, 1, 0.7);
 		draw_text(AL_Left, -6, labels->y.lives, "N/A", _fonts.hud);
 		draw_text(AL_Left, -6, labels->y.bombs, "N/A", _fonts.hud);
-		glColor4f(1, 1, 1, 1.0);
+		render_color4(1, 1, 1, 1.0);
 	}
 
 	// Power value
@@ -517,7 +517,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	glUniform1f(stagedraw.hud_text.u_split, 0.0);
 
 	// Warning: pops outer matrix!
-	render_pop(&render);
+	render_pop();
 
 #ifdef DEBUG
 	snprintf(buf, sizeof(buf), "%.2f lfps, %.2f rfps, timer: %d, frames: %d",
@@ -568,17 +568,17 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	}
 #endif
 
-	glUseProgram(0);
+	render_shader_standard();
 }
 
 static void draw_graph(float x, float y, float w, float h) {
-	render_push(&render);
-	render_translate(&render,(vec3){x + w/2, y + h/2, 0});
-	render_scale(&render,(vec3){w, h, 1});
-	glDisable(GL_TEXTURE_2D);
-	draw_quad();
-	glEnable(GL_TEXTURE_2D);
-	render_pop(&render);
+	render_push();
+	render_translate(x + w/2, y + h/2, 0);
+	render_scale(w, h, 1);
+	render_shader_standard_notex();
+	render_draw_quad();
+	render_shader_standard();
+	render_pop();
 }
 
 static void fill_graph(int num_samples, float *samples, FPSCounter *fps) {
@@ -630,7 +630,7 @@ static void stage_draw_framerate_graphs(void) {
 	glUniform1fv(u_points, NUM_SAMPLES, samples);
 	draw_graph(x, y, w, h);
 
-	glUseProgram(0);
+	render_shader_standard();
 }
 
 void stage_draw_hud(void) {
@@ -659,15 +659,15 @@ void stage_draw_hud(void) {
 	labels.y.power   = label_cur_height+label_height*(i++);
 	labels.y.graze   = label_cur_height+label_height*(i++);
 
-	render_push(&render);
-	render_translate(&render,(vec3){615, 0, 0});
+	render_push();
+	render_translate(615, 0, 0);
 
 	// Difficulty indicator
-	render_push(&render);
-	render_translate(&render,(vec3){(SCREEN_W - 615) * 0.25, SCREEN_H-170, 0});
-	render_scale(&render,(vec3){0.6, 0.6, 0});
+	render_push();
+	render_translate((SCREEN_W - 615) * 0.25, SCREEN_H-170, 0);
+	render_scale(0.6, 0.6, 0);
 	draw_sprite(0, 0, difficulty_sprite_name(global.diff));
-	render_pop(&render);
+	render_pop();
 
 	// Set up variables for Extra Spell indicator
 	float a = 1, s = 0, fadein = 1, fadeout = 1, fade = 1;
@@ -698,17 +698,17 @@ void stage_draw_hud(void) {
 	// Extra Spell indicator
 	if(s) {
 		float s2 = max(0, swing(s, 3));
-		render_push(&render);
-		render_translate(&render,(vec3){(SCREEN_W - 615) * 0.25 - 615 * (1 - pow(2*fadein-1, 2)), 340, 0});
-		glColor4f(0.3, 0.6, 0.7, 0.7 * s);
-		render_rotate_deg(&render,-25 + 360 * (1-s2), 0, 0, 1);
-		render_scale(&render,(vec3){s2, s2, 0});
+		render_push();
+		render_translate((SCREEN_W - 615) * 0.25 - 615 * (1 - pow(2*fadein-1, 2)), 340, 0);
+		render_color4(0.3, 0.6, 0.7, 0.7 * s);
+		render_rotate_deg(-25 + 360 * (1-s2), 0, 0, 1);
+		render_scale(s2, s2, 0);
 		draw_text(AL_Center,  1,  1, "Extra Spell!", _fonts.mainmenu);
 		draw_text(AL_Center, -1, -1, "Extra Spell!", _fonts.mainmenu);
-		glColor4f(1, 1, 1, s);
+		render_color4(1, 1, 1, s);
 		draw_text(AL_Center, 0, 0, "Extra Spell!", _fonts.mainmenu);
-		glColor4f(1, 1, 1, 1);
-		render_pop(&render);
+		render_color4(1, 1, 1, 1);
+		render_pop();
 	}
 
 	// Warning: pops matrix!
@@ -723,8 +723,8 @@ void stage_draw_hud(void) {
 		float red = 0.5*exp(-0.5*(global.frames-global.boss->lastdamageframe)); // hit indicator
 		if(red > 1)
 			red = 0;
-		glColor4f(1,1,1,1-red);
+		render_color4(1,1,1,1-red);
 		draw_sprite(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
-		glColor4f(1,1,1,1);
+		render_color4(1,1,1,1);
 	}
 }

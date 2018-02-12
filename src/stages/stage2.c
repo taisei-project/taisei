@@ -49,88 +49,88 @@ struct stage2_spells_s stage2_spells = {
 static void stage2_bg_leaves_draw(vec3 pos) {
 	glUseProgram(get_shader("alpha_depth")->prog);
 
-	render_matrixmode(&render,MM_TEXTURE);
-	glLoadIdentity();
-	render_scale(&render,(vec3){-1,1,1});
-	render_matrixmode(&render,MM_MODELVIEW);
+	render_matrix_mode(MM_TEXTURE);
+	render_identity();
+	render_scale(-1,1,1);
+	render_matrix_mode(MM_MODELVIEW);
 
 	Texture *leaves = get_tex("stage2/leaves");
 	glBindTexture(GL_TEXTURE_2D, leaves->gltex);
 
-	render_push(&render);
-	render_translate(&render,(vec3){pos[0]-360,pos[1],pos[2]+500});
-	render_rotate_deg(&render,-160,0,1,0);
-	render_translate(&render,(vec3){-50,0,0});
-	render_scale(&render,(vec3){1000,3000,1});
+	render_push();
+	render_translate(pos[0]-360,pos[1],pos[2]+500);
+	render_rotate_deg(-160,0,1,0);
+	render_translate(-50,0,0);
+	render_scale(1000,3000,1);
 
-	draw_quad();
+	render_draw_quad();
 
-	render_pop(&render);
+	render_pop();
 
-	glUseProgram(0);
+	render_shader_standard();
 
-	render_matrixmode(&render,MM_TEXTURE);
-	glLoadIdentity();
-	render_matrixmode(&render,MM_MODELVIEW);
+	render_matrix_mode(MM_TEXTURE);
+	render_identity();
+	render_matrix_mode(MM_MODELVIEW);
 }
 
 static void stage2_bg_grass_draw(vec3 pos) {
 	glDisable(GL_DEPTH_TEST);
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage2/roadgrass")->gltex);
 
-	render_push(&render);
-	render_translate(&render,(vec3){pos[0]+250,pos[1],pos[2]+40});
-	render_rotate_deg(&render,pos[2]/2-14,0,1,0);
+	render_push();
+	render_translate(pos[0]+250,pos[1],pos[2]+40);
+	render_rotate_deg(pos[2]/2-14,0,1,0);
 
-	render_scale(&render,(vec3){-500,2000,1});
-	draw_quad();
-	render_pop(&render);
+	render_scale(-500,2000,1);
+	render_draw_quad();
+	render_pop();
 
 	glEnable(GL_DEPTH_TEST);
 }
 
 static void stage2_bg_ground_draw(vec3 pos) {
-	render_push(&render);
-	render_translate(&render,(vec3){pos[0]-50,pos[1],pos[2]});
-	render_scale(&render,(vec3){-1000,1000,1});
+	render_push();
+	render_translate(pos[0]-50,pos[1],pos[2]);
+	render_scale(-1000,1000,1);
 
 	Texture *road = get_tex("stage2/roadstones");
 
 	glBindTexture(GL_TEXTURE_2D, road->gltex);
 
-	glColor4f(0.08,0.,0.1,1);
-	glDisable(GL_TEXTURE_2D);
-	draw_quad();
-	glEnable(GL_TEXTURE_2D);
-	glColor4f(0.5,0.5,0.5,1);
-	draw_quad();
-	glColor4f(1,1,1,1);
-	render_translate(&render,(vec3){0,0,+10});
-	draw_quad();
+	render_color4(0.08,0.,0.1,1);
+	render_shader_standard_notex();
+	render_draw_quad();
+	render_shader_standard();
+	render_color4(0.5,0.5,0.5,1);
+	render_draw_quad();
+	render_color4(1,1,1,1);
+	render_translate(0,0,+10);
+	render_draw_quad();
 
-	render_pop(&render);
+	render_pop();
 
-	render_matrixmode(&render,MM_TEXTURE);
-	glLoadIdentity();
-	render_translate(&render,(vec3){global.frames/100.0,1*sin(global.frames/100.0),0});
-	render_matrixmode(&render,MM_MODELVIEW);
+	render_matrix_mode(MM_TEXTURE);
+	render_identity();
+	render_translate(global.frames/100.0,1*sin(global.frames/100.0),0);
+	render_matrix_mode(MM_MODELVIEW);
 
-	render_push(&render);
+	render_push();
 
 	Texture *border = get_tex("stage2/border");
 	glBindTexture(GL_TEXTURE_2D, border->gltex);
 
-	render_translate(&render,(vec3){pos[0]+410,pos[1],pos[2]+600});
-	render_rotate_deg(&render,90,0,1,0);
-	render_scale(&render,(vec3){1200,1000,1});
+	render_translate(pos[0]+410,pos[1],pos[2]+600);
+	render_rotate_deg(90,0,1,0);
+	render_scale(1200,1000,1);
 
-	draw_quad();
+	render_draw_quad();
 
-	render_pop(&render);
+	render_pop();
 
-	render_matrixmode(&render,MM_TEXTURE);
-	glLoadIdentity();
-	render_matrixmode(&render,MM_MODELVIEW);
+	render_matrix_mode(MM_TEXTURE);
+	render_identity();
+	render_matrix_mode(MM_MODELVIEW);
 }
 
 static vec3 **stage2_bg_pos(vec3 pos, float maxrange) {
@@ -169,7 +169,7 @@ static void stage2_fog(FBO *fbo) {
 	glActiveTexture(GL_TEXTURE0);
 
 	draw_fbo_viewport(fbo);
-	glUseProgram(0);
+	render_shader_standard();
 }
 
 static void stage2_bloom(FBO *fbo) {
@@ -180,7 +180,7 @@ static void stage2_bloom(FBO *fbo) {
 	glUniform1f(uniloc(shader, "intensity"), 0.05);
 	glUniform1f(uniloc(shader, "radius"), 0.03);
 	draw_fbo_viewport(fbo);
-	glUseProgram(0);
+	render_shader_standard();
 }
 
 static void stage2_start(void) {

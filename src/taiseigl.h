@@ -114,9 +114,6 @@ void load_gl_functions(void);
 void check_gl_extensions(void);
 void unload_gl_library(void);
 
-#define gluPerspective tsgluPerspective
-void gluPerspective(GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFar);
-
 #ifndef APIENTRY
 #define APIENTRY
 #endif
@@ -141,18 +138,17 @@ void gluPerspective(GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFa
 typedef void (GLAPIENTRY *tsglActiveTexture_ptr)(GLenum texture);
 typedef void (APIENTRY *tsglAttachShader_ptr)(GLuint program, GLuint shader);
 typedef void (APIENTRY *tsglBindBuffer_ptr)(GLenum target, GLuint buffer);
+typedef void (APIENTRY *tsglBindBufferRange_ptr)(GLenum target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size);
 typedef void (APIENTRY *tsglBindFramebuffer_ptr)(GLenum target, GLuint framebuffer);
 typedef void (GLAPIENTRY *tsglBindTexture_ptr)(GLenum target, GLuint texture);
+typedef void (APIENTRY *tsglBindVertexArray_ptr)(GLuint array);
 typedef void (GLAPIENTRY *tsglBlendEquation_ptr)(GLenum mode);
-typedef void (APIENTRY *tsglBlendEquationSeparate_ptr)(GLenum modeRGB, GLenum modeAlpha);
 typedef void (GLAPIENTRY *tsglBlendFunc_ptr)(GLenum sfactor, GLenum dfactor);
 typedef void (APIENTRY *tsglBlendFuncSeparate_ptr)(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
 typedef void (APIENTRY *tsglBufferData_ptr)(GLenum target, GLsizeiptr size, const void *data, GLenum usage);
 typedef void (APIENTRY *tsglBufferSubData_ptr)(GLenum target, GLintptr offset, GLsizeiptr size, const void *data);
 typedef void (GLAPIENTRY *tsglClear_ptr)(GLbitfield mask);
 typedef void (GLAPIENTRY *tsglClearColor_ptr)(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
-typedef void (GLAPIENTRY *tsglColor3f_ptr)(GLfloat red, GLfloat green, GLfloat blue);
-typedef void (GLAPIENTRY *tsglColor4f_ptr)(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
 typedef void (APIENTRY *tsglCompileShader_ptr)(GLuint shader);
 typedef GLuint (APIENTRY *tsglCreateProgram_ptr)(void);
 typedef GLuint (APIENTRY *tsglCreateShader_ptr)(GLenum type);
@@ -175,12 +171,12 @@ typedef void (APIENTRY *tsglDrawArraysInstancedARB_ptr)(GLenum mode, GLint first
 typedef void (APIENTRY *tsglDrawArraysInstancedEXT_ptr)(GLenum mode, GLint start, GLsizei count, GLsizei primcount);
 typedef void (GLAPIENTRY *tsglDrawElements_ptr)(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices);
 typedef void (GLAPIENTRY *tsglEnable_ptr)(GLenum cap);
-typedef void (GLAPIENTRY *tsglEnableClientState_ptr)(GLenum cap);
+typedef void (APIENTRY *tsglEnableVertexAttribArray_ptr)(GLuint index);
 typedef void (APIENTRY *tsglFramebufferTexture2D_ptr)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
-typedef void (GLAPIENTRY *tsglFrustum_ptr)(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble near_val, GLdouble far_val);
 typedef void (APIENTRY *tsglGenBuffers_ptr)(GLsizei n, GLuint *buffers);
 typedef void (APIENTRY *tsglGenFramebuffers_ptr)(GLsizei n, GLuint *framebuffers);
 typedef void (GLAPIENTRY *tsglGenTextures_ptr)(GLsizei n, GLuint *textures);
+typedef void (APIENTRY *tsglGenVertexArrays_ptr)(GLsizei n, GLuint *arrays);
 typedef void (APIENTRY *tsglGetActiveUniform_ptr)(GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size, GLenum *type, GLchar *name);
 typedef void (GLAPIENTRY *tsglGetIntegerv_ptr)(GLenum pname, GLint *params);
 typedef void (APIENTRY *tsglGetProgramInfoLog_ptr)(GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
@@ -188,26 +184,16 @@ typedef void (APIENTRY *tsglGetProgramiv_ptr)(GLuint program, GLenum pname, GLin
 typedef void (APIENTRY *tsglGetShaderInfoLog_ptr)(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
 typedef void (APIENTRY *tsglGetShaderiv_ptr)(GLuint shader, GLenum pname, GLint *params);
 typedef const GLubyte * (GLAPIENTRY *tsglGetString_ptr)(GLenum name);
+typedef GLuint (APIENTRY *tsglGetUniformBlockIndex_ptr)(GLuint program, const GLchar *uniformBlockName);
 typedef GLint (APIENTRY *tsglGetUniformLocation_ptr)(GLuint program, const GLchar *name);
 typedef void (APIENTRY *tsglLinkProgram_ptr)(GLuint program);
-typedef void (GLAPIENTRY *tsglLoadIdentity_ptr)(void);
-typedef void * (APIENTRY *tsglMapBuffer_ptr)(GLenum target, GLenum access);
-typedef void (GLAPIENTRY *tsglMatrixMode_ptr)(GLenum mode);
-typedef void (GLAPIENTRY *tsglNormalPointer_ptr)(GLenum type, GLsizei stride, const GLvoid *ptr);
-typedef void (GLAPIENTRY *tsglOrtho_ptr)(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble near_val, GLdouble far_val);
-typedef void (GLAPIENTRY *tsglPopMatrix_ptr)(void);
-typedef void (GLAPIENTRY *tsglPushMatrix_ptr)(void);
 typedef void (GLAPIENTRY *tsglReadBuffer_ptr)(GLenum mode);
 typedef void (GLAPIENTRY *tsglReadPixels_ptr)(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels);
-typedef void (GLAPIENTRY *tsglRotatef_ptr)(GLfloat angle, GLfloat x, GLfloat y, GLfloat z);
-typedef void (GLAPIENTRY *tsglScalef_ptr)(GLfloat x, GLfloat y, GLfloat z);
 typedef void (APIENTRY *tsglShaderSource_ptr)(GLuint shader, GLsizei count, const GLchar *const*string, const GLint *length);
-typedef void (GLAPIENTRY *tsglTexCoordPointer_ptr)(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr);
 typedef void (GLAPIENTRY *tsglTexImage2D_ptr)(GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
 typedef void (GLAPIENTRY *tsglTexParameterf_ptr)(GLenum target, GLenum pname, GLfloat param);
 typedef void (GLAPIENTRY *tsglTexParameteri_ptr)(GLenum target, GLenum pname, GLint param);
 typedef void (GLAPIENTRY *tsglTexSubImage2D_ptr)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels);
-typedef void (GLAPIENTRY *tsglTranslatef_ptr)(GLfloat x, GLfloat y, GLfloat z);
 typedef void (APIENTRY *tsglUniform1f_ptr)(GLint location, GLfloat v0);
 typedef void (APIENTRY *tsglUniform1fv_ptr)(GLint location, GLsizei count, const GLfloat *value);
 typedef void (APIENTRY *tsglUniform1i_ptr)(GLint location, GLint v0);
@@ -225,9 +211,9 @@ typedef void (APIENTRY *tsglUniform4f_ptr)(GLint location, GLfloat v0, GLfloat v
 typedef void (APIENTRY *tsglUniform4fv_ptr)(GLint location, GLsizei count, const GLfloat *value);
 typedef void (APIENTRY *tsglUniform4iv_ptr)(GLint location, GLsizei count, const GLint *value);
 typedef void (APIENTRY *tsglUniform4uiv_ptr)(GLint location, GLsizei count, const GLuint *value);
-typedef GLboolean (APIENTRY *tsglUnmapBuffer_ptr)(GLenum target);
+typedef void (APIENTRY *tsglUniformBlockBinding_ptr)(GLuint program, GLuint uniformBlockIndex, GLuint uniformBlockBinding);
 typedef void (APIENTRY *tsglUseProgram_ptr)(GLuint program);
-typedef void (GLAPIENTRY *tsglVertexPointer_ptr)(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr);
+typedef void (APIENTRY *tsglVertexAttribPointer_ptr)(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer);
 typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLsizei height);
 // @END:typedefs@
 
@@ -235,18 +221,17 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glActiveTexture
 #undef glAttachShader
 #undef glBindBuffer
+#undef glBindBufferRange
 #undef glBindFramebuffer
 #undef glBindTexture
+#undef glBindVertexArray
 #undef glBlendEquation
-#undef glBlendEquationSeparate
 #undef glBlendFunc
 #undef glBlendFuncSeparate
 #undef glBufferData
 #undef glBufferSubData
 #undef glClear
 #undef glClearColor
-#undef glColor3f
-#undef glColor4f
 #undef glCompileShader
 #undef glCreateProgram
 #undef glCreateShader
@@ -269,12 +254,12 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glDrawArraysInstancedEXT
 #undef glDrawElements
 #undef glEnable
-#undef glEnableClientState
+#undef glEnableVertexAttribArray
 #undef glFramebufferTexture2D
-#undef glFrustum
 #undef glGenBuffers
 #undef glGenFramebuffers
 #undef glGenTextures
+#undef glGenVertexArrays
 #undef glGetActiveUniform
 #undef glGetIntegerv
 #undef glGetProgramInfoLog
@@ -282,26 +267,16 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glGetShaderInfoLog
 #undef glGetShaderiv
 #undef glGetString
+#undef glGetUniformBlockIndex
 #undef glGetUniformLocation
 #undef glLinkProgram
-#undef glLoadIdentity
-#undef glMapBuffer
-#undef glMatrixMode
-#undef glNormalPointer
-#undef glOrtho
-#undef glPopMatrix
-#undef glPushMatrix
 #undef glReadBuffer
 #undef glReadPixels
-#undef glRotatef
-#undef glScalef
 #undef glShaderSource
-#undef glTexCoordPointer
 #undef glTexImage2D
 #undef glTexParameterf
 #undef glTexParameteri
 #undef glTexSubImage2D
-#undef glTranslatef
 #undef glUniform1f
 #undef glUniform1fv
 #undef glUniform1i
@@ -319,9 +294,9 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glUniform4fv
 #undef glUniform4iv
 #undef glUniform4uiv
-#undef glUnmapBuffer
+#undef glUniformBlockBinding
 #undef glUseProgram
-#undef glVertexPointer
+#undef glVertexAttribPointer
 #undef glViewport
 // @END:undefs@
 
@@ -330,18 +305,17 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glActiveTexture tsglActiveTexture
 #define glAttachShader tsglAttachShader
 #define glBindBuffer tsglBindBuffer
+#define glBindBufferRange tsglBindBufferRange
 #define glBindFramebuffer tsglBindFramebuffer
 #define glBindTexture tsglBindTexture
+#define glBindVertexArray tsglBindVertexArray
 #define glBlendEquation tsglBlendEquation
-#define glBlendEquationSeparate tsglBlendEquationSeparate
 #define glBlendFunc tsglBlendFunc
 #define glBlendFuncSeparate tsglBlendFuncSeparate
 #define glBufferData tsglBufferData
 #define glBufferSubData tsglBufferSubData
 #define glClear tsglClear
 #define glClearColor tsglClearColor
-#define glColor3f tsglColor3f
-#define glColor4f tsglColor4f
 #define glCompileShader tsglCompileShader
 #define glCreateProgram tsglCreateProgram
 #define glCreateShader tsglCreateShader
@@ -364,12 +338,12 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glDrawArraysInstancedEXT tsglDrawArraysInstancedEXT
 #define glDrawElements tsglDrawElements
 #define glEnable tsglEnable
-#define glEnableClientState tsglEnableClientState
+#define glEnableVertexAttribArray tsglEnableVertexAttribArray
 #define glFramebufferTexture2D tsglFramebufferTexture2D
-#define glFrustum tsglFrustum
 #define glGenBuffers tsglGenBuffers
 #define glGenFramebuffers tsglGenFramebuffers
 #define glGenTextures tsglGenTextures
+#define glGenVertexArrays tsglGenVertexArrays
 #define glGetActiveUniform tsglGetActiveUniform
 #define glGetIntegerv tsglGetIntegerv
 #define glGetProgramInfoLog tsglGetProgramInfoLog
@@ -377,26 +351,16 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glGetShaderInfoLog tsglGetShaderInfoLog
 #define glGetShaderiv tsglGetShaderiv
 #define glGetString tsglGetString
+#define glGetUniformBlockIndex tsglGetUniformBlockIndex
 #define glGetUniformLocation tsglGetUniformLocation
 #define glLinkProgram tsglLinkProgram
-#define glLoadIdentity tsglLoadIdentity
-#define glMapBuffer tsglMapBuffer
-#define glMatrixMode tsglMatrixMode
-#define glNormalPointer tsglNormalPointer
-#define glOrtho tsglOrtho
-#define glPopMatrix tsglPopMatrix
-#define glPushMatrix tsglPushMatrix
 #define glReadBuffer tsglReadBuffer
 #define glReadPixels tsglReadPixels
-#define glRotatef tsglRotatef
-#define glScalef tsglScalef
 #define glShaderSource tsglShaderSource
-#define glTexCoordPointer tsglTexCoordPointer
 #define glTexImage2D tsglTexImage2D
 #define glTexParameterf tsglTexParameterf
 #define glTexParameteri tsglTexParameteri
 #define glTexSubImage2D tsglTexSubImage2D
-#define glTranslatef tsglTranslatef
 #define glUniform1f tsglUniform1f
 #define glUniform1fv tsglUniform1fv
 #define glUniform1i tsglUniform1i
@@ -414,9 +378,9 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glUniform4fv tsglUniform4fv
 #define glUniform4iv tsglUniform4iv
 #define glUniform4uiv tsglUniform4uiv
-#define glUnmapBuffer tsglUnmapBuffer
+#define glUniformBlockBinding tsglUniformBlockBinding
 #define glUseProgram tsglUseProgram
-#define glVertexPointer tsglVertexPointer
+#define glVertexAttribPointer tsglVertexAttribPointer
 #define glViewport tsglViewport
 // @END:redefs@
 #endif // !LINK_TO_LIBGL
@@ -427,18 +391,17 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 GLDEF(glActiveTexture, tsglActiveTexture, tsglActiveTexture_ptr) \
 GLDEF(glAttachShader, tsglAttachShader, tsglAttachShader_ptr) \
 GLDEF(glBindBuffer, tsglBindBuffer, tsglBindBuffer_ptr) \
+GLDEF(glBindBufferRange, tsglBindBufferRange, tsglBindBufferRange_ptr) \
 GLDEF(glBindFramebuffer, tsglBindFramebuffer, tsglBindFramebuffer_ptr) \
 GLDEF(glBindTexture, tsglBindTexture, tsglBindTexture_ptr) \
+GLDEF(glBindVertexArray, tsglBindVertexArray, tsglBindVertexArray_ptr) \
 GLDEF(glBlendEquation, tsglBlendEquation, tsglBlendEquation_ptr) \
-GLDEF(glBlendEquationSeparate, tsglBlendEquationSeparate, tsglBlendEquationSeparate_ptr) \
 GLDEF(glBlendFunc, tsglBlendFunc, tsglBlendFunc_ptr) \
 GLDEF(glBlendFuncSeparate, tsglBlendFuncSeparate, tsglBlendFuncSeparate_ptr) \
 GLDEF(glBufferData, tsglBufferData, tsglBufferData_ptr) \
 GLDEF(glBufferSubData, tsglBufferSubData, tsglBufferSubData_ptr) \
 GLDEF(glClear, tsglClear, tsglClear_ptr) \
 GLDEF(glClearColor, tsglClearColor, tsglClearColor_ptr) \
-GLDEF(glColor3f, tsglColor3f, tsglColor3f_ptr) \
-GLDEF(glColor4f, tsglColor4f, tsglColor4f_ptr) \
 GLDEF(glCompileShader, tsglCompileShader, tsglCompileShader_ptr) \
 GLDEF(glCreateProgram, tsglCreateProgram, tsglCreateProgram_ptr) \
 GLDEF(glCreateShader, tsglCreateShader, tsglCreateShader_ptr) \
@@ -461,12 +424,12 @@ GLDEF(glDrawArraysInstancedARB, tsglDrawArraysInstancedARB, tsglDrawArraysInstan
 GLDEF(glDrawArraysInstancedEXT, tsglDrawArraysInstancedEXT, tsglDrawArraysInstancedEXT_ptr) \
 GLDEF(glDrawElements, tsglDrawElements, tsglDrawElements_ptr) \
 GLDEF(glEnable, tsglEnable, tsglEnable_ptr) \
-GLDEF(glEnableClientState, tsglEnableClientState, tsglEnableClientState_ptr) \
+GLDEF(glEnableVertexAttribArray, tsglEnableVertexAttribArray, tsglEnableVertexAttribArray_ptr) \
 GLDEF(glFramebufferTexture2D, tsglFramebufferTexture2D, tsglFramebufferTexture2D_ptr) \
-GLDEF(glFrustum, tsglFrustum, tsglFrustum_ptr) \
 GLDEF(glGenBuffers, tsglGenBuffers, tsglGenBuffers_ptr) \
 GLDEF(glGenFramebuffers, tsglGenFramebuffers, tsglGenFramebuffers_ptr) \
 GLDEF(glGenTextures, tsglGenTextures, tsglGenTextures_ptr) \
+GLDEF(glGenVertexArrays, tsglGenVertexArrays, tsglGenVertexArrays_ptr) \
 GLDEF(glGetActiveUniform, tsglGetActiveUniform, tsglGetActiveUniform_ptr) \
 GLDEF(glGetIntegerv, tsglGetIntegerv, tsglGetIntegerv_ptr) \
 GLDEF(glGetProgramInfoLog, tsglGetProgramInfoLog, tsglGetProgramInfoLog_ptr) \
@@ -474,26 +437,16 @@ GLDEF(glGetProgramiv, tsglGetProgramiv, tsglGetProgramiv_ptr) \
 GLDEF(glGetShaderInfoLog, tsglGetShaderInfoLog, tsglGetShaderInfoLog_ptr) \
 GLDEF(glGetShaderiv, tsglGetShaderiv, tsglGetShaderiv_ptr) \
 GLDEF(glGetString, tsglGetString, tsglGetString_ptr) \
+GLDEF(glGetUniformBlockIndex, tsglGetUniformBlockIndex, tsglGetUniformBlockIndex_ptr) \
 GLDEF(glGetUniformLocation, tsglGetUniformLocation, tsglGetUniformLocation_ptr) \
 GLDEF(glLinkProgram, tsglLinkProgram, tsglLinkProgram_ptr) \
-GLDEF(glLoadIdentity, tsglLoadIdentity, tsglLoadIdentity_ptr) \
-GLDEF(glMapBuffer, tsglMapBuffer, tsglMapBuffer_ptr) \
-GLDEF(glMatrixMode, tsglMatrixMode, tsglMatrixMode_ptr) \
-GLDEF(glNormalPointer, tsglNormalPointer, tsglNormalPointer_ptr) \
-GLDEF(glOrtho, tsglOrtho, tsglOrtho_ptr) \
-GLDEF(glPopMatrix, tsglPopMatrix, tsglPopMatrix_ptr) \
-GLDEF(glPushMatrix, tsglPushMatrix, tsglPushMatrix_ptr) \
 GLDEF(glReadBuffer, tsglReadBuffer, tsglReadBuffer_ptr) \
 GLDEF(glReadPixels, tsglReadPixels, tsglReadPixels_ptr) \
-GLDEF(glRotatef, tsglRotatef, tsglRotatef_ptr) \
-GLDEF(glScalef, tsglScalef, tsglScalef_ptr) \
 GLDEF(glShaderSource, tsglShaderSource, tsglShaderSource_ptr) \
-GLDEF(glTexCoordPointer, tsglTexCoordPointer, tsglTexCoordPointer_ptr) \
 GLDEF(glTexImage2D, tsglTexImage2D, tsglTexImage2D_ptr) \
 GLDEF(glTexParameterf, tsglTexParameterf, tsglTexParameterf_ptr) \
 GLDEF(glTexParameteri, tsglTexParameteri, tsglTexParameteri_ptr) \
 GLDEF(glTexSubImage2D, tsglTexSubImage2D, tsglTexSubImage2D_ptr) \
-GLDEF(glTranslatef, tsglTranslatef, tsglTranslatef_ptr) \
 GLDEF(glUniform1f, tsglUniform1f, tsglUniform1f_ptr) \
 GLDEF(glUniform1fv, tsglUniform1fv, tsglUniform1fv_ptr) \
 GLDEF(glUniform1i, tsglUniform1i, tsglUniform1i_ptr) \
@@ -511,9 +464,9 @@ GLDEF(glUniform4f, tsglUniform4f, tsglUniform4f_ptr) \
 GLDEF(glUniform4fv, tsglUniform4fv, tsglUniform4fv_ptr) \
 GLDEF(glUniform4iv, tsglUniform4iv, tsglUniform4iv_ptr) \
 GLDEF(glUniform4uiv, tsglUniform4uiv, tsglUniform4uiv_ptr) \
-GLDEF(glUnmapBuffer, tsglUnmapBuffer, tsglUnmapBuffer_ptr) \
+GLDEF(glUniformBlockBinding, tsglUniformBlockBinding, tsglUniformBlockBinding_ptr) \
 GLDEF(glUseProgram, tsglUseProgram, tsglUseProgram_ptr) \
-GLDEF(glVertexPointer, tsglVertexPointer, tsglVertexPointer_ptr) \
+GLDEF(glVertexAttribPointer, tsglVertexAttribPointer, tsglVertexAttribPointer_ptr) \
 GLDEF(glViewport, tsglViewport, tsglViewport_ptr)
 // @END:gldefs@
 
@@ -528,18 +481,17 @@ GLDEFS
 GLAPI void GLAPIENTRY glActiveTexture( GLenum texture );
 GLAPI void APIENTRY glAttachShader (GLuint program, GLuint shader);
 GLAPI void APIENTRY glBindBuffer (GLenum target, GLuint buffer);
+GLAPI void APIENTRY glBindBufferRange (GLenum target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size);
 GLAPI void APIENTRY glBindFramebuffer (GLenum target, GLuint framebuffer);
 GLAPI void GLAPIENTRY glBindTexture( GLenum target, GLuint texture );
+GLAPI void APIENTRY glBindVertexArray (GLuint array);
 GLAPI void GLAPIENTRY glBlendEquation( GLenum mode );
-GLAPI void APIENTRY glBlendEquationSeparate (GLenum modeRGB, GLenum modeAlpha);
 GLAPI void GLAPIENTRY glBlendFunc( GLenum sfactor, GLenum dfactor );
 GLAPI void APIENTRY glBlendFuncSeparate (GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
 GLAPI void APIENTRY glBufferData (GLenum target, GLsizeiptr size, const void *data, GLenum usage);
 GLAPI void APIENTRY glBufferSubData (GLenum target, GLintptr offset, GLsizeiptr size, const void *data);
 GLAPI void GLAPIENTRY glClear( GLbitfield mask );
 GLAPI void GLAPIENTRY glClearColor( GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha );
-GLAPI void GLAPIENTRY glColor3f( GLfloat red, GLfloat green, GLfloat blue );
-GLAPI void GLAPIENTRY glColor4f( GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha );
 GLAPI void APIENTRY glCompileShader (GLuint shader);
 GLAPI GLuint APIENTRY glCreateProgram (void);
 GLAPI GLuint APIENTRY glCreateShader (GLenum type);
@@ -562,12 +514,12 @@ GLAPI void APIENTRY glDrawArraysInstancedARB (GLenum mode, GLint first, GLsizei 
 GLAPI void APIENTRY glDrawArraysInstancedEXT (GLenum mode, GLint start, GLsizei count, GLsizei primcount);
 GLAPI void GLAPIENTRY glDrawElements( GLenum mode, GLsizei count, GLenum type, const GLvoid *indices );
 GLAPI void GLAPIENTRY glEnable( GLenum cap );
-GLAPI void GLAPIENTRY glEnableClientState( GLenum cap );
+GLAPI void APIENTRY glEnableVertexAttribArray (GLuint index);
 GLAPI void APIENTRY glFramebufferTexture2D (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
-GLAPI void GLAPIENTRY glFrustum( GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble near_val, GLdouble far_val );
 GLAPI void APIENTRY glGenBuffers (GLsizei n, GLuint *buffers);
 GLAPI void APIENTRY glGenFramebuffers (GLsizei n, GLuint *framebuffers);
 GLAPI void GLAPIENTRY glGenTextures( GLsizei n, GLuint *textures );
+GLAPI void APIENTRY glGenVertexArrays (GLsizei n, GLuint *arrays);
 GLAPI void APIENTRY glGetActiveUniform (GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size, GLenum *type, GLchar *name);
 GLAPI void GLAPIENTRY glGetIntegerv( GLenum pname, GLint *params );
 GLAPI void APIENTRY glGetProgramInfoLog (GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
@@ -575,26 +527,16 @@ GLAPI void APIENTRY glGetProgramiv (GLuint program, GLenum pname, GLint *params)
 GLAPI void APIENTRY glGetShaderInfoLog (GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
 GLAPI void APIENTRY glGetShaderiv (GLuint shader, GLenum pname, GLint *params);
 GLAPI const GLubyte * GLAPIENTRY glGetString( GLenum name );
+GLAPI GLuint APIENTRY glGetUniformBlockIndex (GLuint program, const GLchar *uniformBlockName);
 GLAPI GLint APIENTRY glGetUniformLocation (GLuint program, const GLchar *name);
 GLAPI void APIENTRY glLinkProgram (GLuint program);
-GLAPI void GLAPIENTRY glLoadIdentity( void );
-GLAPI void *APIENTRY glMapBuffer (GLenum target, GLenum access);
-GLAPI void GLAPIENTRY glMatrixMode( GLenum mode );
-GLAPI void GLAPIENTRY glNormalPointer( GLenum type, GLsizei stride, const GLvoid *ptr );
-GLAPI void GLAPIENTRY glOrtho( GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble near_val, GLdouble far_val );
-GLAPI void GLAPIENTRY render_pop(&render void );
-GLAPI void GLAPIENTRY render_push(&render void );
 GLAPI void GLAPIENTRY glReadBuffer( GLenum mode );
 GLAPI void GLAPIENTRY glReadPixels( GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels );
-GLAPI void GLAPIENTRY render_rotate_deg(&render, GLfloat angle, GLfloat x, GLfloat y, GLfloat z );
-GLAPI void GLAPIENTRY render_scale(&render,(vec3){ GLfloat x, GLfloat y, GLfloat z });
 GLAPI void APIENTRY glShaderSource (GLuint shader, GLsizei count, const GLchar *const*string, const GLint *length);
-GLAPI void GLAPIENTRY glTexCoordPointer( GLint size, GLenum type, GLsizei stride, const GLvoid *ptr );
 GLAPI void GLAPIENTRY glTexImage2D( GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels );
 GLAPI void GLAPIENTRY glTexParameterf( GLenum target, GLenum pname, GLfloat param );
 GLAPI void GLAPIENTRY glTexParameteri( GLenum target, GLenum pname, GLint param );
 GLAPI void GLAPIENTRY glTexSubImage2D( GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels );
-GLAPI void GLAPIENTRY render_translate(&render,(vec3){ GLfloat x, GLfloat y, GLfloat z });
 GLAPI void APIENTRY glUniform1f (GLint location, GLfloat v0);
 GLAPI void APIENTRY glUniform1fv (GLint location, GLsizei count, const GLfloat *value);
 GLAPI void APIENTRY glUniform1i (GLint location, GLint v0);
@@ -612,9 +554,9 @@ GLAPI void APIENTRY glUniform4f (GLint location, GLfloat v0, GLfloat v1, GLfloat
 GLAPI void APIENTRY glUniform4fv (GLint location, GLsizei count, const GLfloat *value);
 GLAPI void APIENTRY glUniform4iv (GLint location, GLsizei count, const GLint *value);
 GLAPI void APIENTRY glUniform4uiv (GLint location, GLsizei count, const GLuint *value);
-GLAPI GLboolean APIENTRY glUnmapBuffer (GLenum target);
+GLAPI void APIENTRY glUniformBlockBinding (GLuint program, GLuint uniformBlockIndex, GLuint uniformBlockBinding);
 GLAPI void APIENTRY glUseProgram (GLuint program);
-GLAPI void GLAPIENTRY glVertexPointer( GLint size, GLenum type, GLsizei stride, const GLvoid *ptr );
+GLAPI void APIENTRY glVertexAttribPointer (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer);
 GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei height );
 // @END:protos@
 
@@ -622,18 +564,17 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglActiveTexture glActiveTexture
 #define tsglAttachShader glAttachShader
 #define tsglBindBuffer glBindBuffer
+#define tsglBindBufferRange glBindBufferRange
 #define tsglBindFramebuffer glBindFramebuffer
 #define tsglBindTexture glBindTexture
+#define tsglBindVertexArray glBindVertexArray
 #define tsglBlendEquation glBlendEquation
-#define tsglBlendEquationSeparate glBlendEquationSeparate
 #define tsglBlendFunc glBlendFunc
 #define tsglBlendFuncSeparate glBlendFuncSeparate
 #define tsglBufferData glBufferData
 #define tsglBufferSubData glBufferSubData
 #define tsglClear glClear
 #define tsglClearColor glClearColor
-#define tsglColor3f glColor3f
-#define tsglColor4f glColor4f
 #define tsglCompileShader glCompileShader
 #define tsglCreateProgram glCreateProgram
 #define tsglCreateShader glCreateShader
@@ -656,12 +597,12 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglDrawArraysInstancedEXT glDrawArraysInstancedEXT
 #define tsglDrawElements glDrawElements
 #define tsglEnable glEnable
-#define tsglEnableClientState glEnableClientState
+#define tsglEnableVertexAttribArray glEnableVertexAttribArray
 #define tsglFramebufferTexture2D glFramebufferTexture2D
-#define tsglFrustum glFrustum
 #define tsglGenBuffers glGenBuffers
 #define tsglGenFramebuffers glGenFramebuffers
 #define tsglGenTextures glGenTextures
+#define tsglGenVertexArrays glGenVertexArrays
 #define tsglGetActiveUniform glGetActiveUniform
 #define tsglGetIntegerv glGetIntegerv
 #define tsglGetProgramInfoLog glGetProgramInfoLog
@@ -669,26 +610,16 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglGetShaderInfoLog glGetShaderInfoLog
 #define tsglGetShaderiv glGetShaderiv
 #define tsglGetString glGetString
+#define tsglGetUniformBlockIndex glGetUniformBlockIndex
 #define tsglGetUniformLocation glGetUniformLocation
 #define tsglLinkProgram glLinkProgram
-#define tsglLoadIdentity glLoadIdentity
-#define tsglMapBuffer glMapBuffer
-#define tsglMatrixMode glMatrixMode
-#define tsglNormalPointer glNormalPointer
-#define tsglOrtho glOrtho
-#define tsglPopMatrix glPopMatrix
-#define tsglPushMatrix glPushMatrix
 #define tsglReadBuffer glReadBuffer
 #define tsglReadPixels glReadPixels
-#define tsglRotatef glRotatef
-#define tsglScalef glScalef
 #define tsglShaderSource glShaderSource
-#define tsglTexCoordPointer glTexCoordPointer
 #define tsglTexImage2D glTexImage2D
 #define tsglTexParameterf glTexParameterf
 #define tsglTexParameteri glTexParameteri
 #define tsglTexSubImage2D glTexSubImage2D
-#define tsglTranslatef glTranslatef
 #define tsglUniform1f glUniform1f
 #define tsglUniform1fv glUniform1fv
 #define tsglUniform1i glUniform1i
@@ -706,9 +637,9 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglUniform4fv glUniform4fv
 #define tsglUniform4iv glUniform4iv
 #define tsglUniform4uiv glUniform4uiv
-#define tsglUnmapBuffer glUnmapBuffer
+#define tsglUniformBlockBinding glUniformBlockBinding
 #define tsglUseProgram glUseProgram
-#define tsglVertexPointer glVertexPointer
+#define tsglVertexAttribPointer glVertexAttribPointer
 #define tsglViewport glViewport
 // @END:reversedefs@
 #endif // LINK_TO_LIBGL

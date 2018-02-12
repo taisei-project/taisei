@@ -18,20 +18,23 @@ void init_vbo(VBO *vbo, int size) {
 	memset(vbo, 0, sizeof(VBO));
 	vbo->size = size;
 
+	GLuint VertexArrayID; // TODO move me to the right place.
+	glGenVertexArrays(1, &VertexArrayID);
+	glBindVertexArray(VertexArrayID);
+	
 	glGenBuffers(1, &vbo->vbo);
-
 	glBindBuffer(GL_ARRAY_BUFFER, vbo->vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex)*size, NULL, GL_STATIC_DRAW);
+	
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0); // vertex
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(3*sizeof(float))); // normal
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(6*sizeof(float))); // texture coord
 
-	glVertexPointer(3, GL_FLOAT, sizeof(Vertex), NULL);
-	glNormalPointer(GL_FLOAT, sizeof(Vertex), (uint8_t*)NULL + sizeof(vec3));
-	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), (uint8_t*)NULL + 2*sizeof(vec3));
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
 }
 
 void vbo_add_verts(VBO *vbo, Vertex *verts, int count) {
@@ -71,7 +74,7 @@ void draw_quad(void) {
 
 //  glBindBuffer(GL_ARRAY_BUFFER, _vbo.vbo);
 
-	glDrawArrays(GL_QUADS, 0, 4);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 //  glBindBuffer(GL_ARRAY_BUFFER, 0);
 }

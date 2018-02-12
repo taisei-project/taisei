@@ -213,13 +213,13 @@ static void youmu_particle_slice_draw(Projectile *p, int t) {
 	if(tt > 0.5) {
 		f = 1+(tt-0.5)/0.5;
 	}
-	render_push(&render);
-	render_translate(&render,(vec3){creal(p->pos), cimag(p->pos),0});
-	render_rotate_deg(&render,p->angle/M_PI*180,0,0,1);
-	render_scale(&render,(vec3){f,1,1});
+	render_push();
+	render_translate(creal(p->pos), cimag(p->pos),0);
+	render_rotate_deg(p->angle/M_PI*180,0,0,1);
+	render_scale(f,1,1);
 	//draw_texture(0,0,"part/youmu_slice");
 	ProjDrawCore(p, p->color);
-	render_pop(&render);
+	render_pop();
 
 	double slicelen = 500;
 	f = sqrt(f);

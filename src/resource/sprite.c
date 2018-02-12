@@ -173,6 +173,6 @@ void end_draw_sprite(void) {
 
 void draw_sprite_ex(float x, float y, float scale_x, float scale_y, bool align, Sprite *spr) {
 	begin_draw_sprite(x, y, scale_x, scale_y, align, spr);
-	draw_quad();
+	render_draw_quad();
 	end_draw_texture();
 }

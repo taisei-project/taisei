@@ -29,16 +29,16 @@ void add_model(Stage3D *s, SegmentDrawRule draw, SegmentPositionRule pos) {
 }
 
 void set_perspective_viewport(Stage3D *s, float n, float f, int vx, int vy, int vw, int vh) {
-	render_matrixmode(&render,MM_PROJECTION);
+	render_matrix_mode(MM_PROJECTION);
 
-	glLoadIdentity();
+	render_identity();
 	float facw = SCREEN_W/(float)VIEWPORT_W;
 	float fach = SCREEN_H/(float)VIEWPORT_H;
-	render_scale(&render,(vec3){facw,fach,1});
-	gluPerspective(s->projangle, 1, n, f);
-	render_translate(&render,(vec3){vx+vw/2.0, vy+vh/2.0, 0});
+	render_scale(facw,fach,1);
+	render_perspective(s->projangle, 1, n, f);
+	render_translate(vx+vw/2.0, vy+vh/2.0, 0);
 
-	render_matrixmode(&render,MM_MODELVIEW);
+	render_matrix_mode(MM_MODELVIEW);
 }
 
 void set_perspective(Stage3D *s, float n, float f) {
@@ -52,17 +52,17 @@ void update_stage3d(Stage3D *s) {
 }
 
 void draw_stage3d(Stage3D *s, float maxrange) {
-	render_push(&render);
+	render_push();
 
 	if(s->crot[0])
-		render_rotate_deg(&render,-s->crot[0], 1, 0, 0);
+		render_rotate_deg(-s->crot[0], 1, 0, 0);
 	if(s->crot[1])
-		render_rotate_deg(&render,-s->crot[1], 0, 1, 0);
+		render_rotate_deg(-s->crot[1], 0, 1, 0);
 	if(s->crot[2])
-		render_rotate_deg(&render,-s->crot[2], 0, 0, 1);
+		render_rotate_deg(-s->crot[2], 0, 0, 1);
 
 	if(s->cx[0] || s->cx[1] || s->cx[2])
-		render_translate(&render,(vec3){-s->cx[0],-s->cx[1],-s->cx[2]});
+		render_translate(-s->cx[0],-s->cx[1],-s->cx[2]);
 
 	for(int i = 0; i < s->msize; i++) {
 		vec3 **list;
@@ -76,7 +76,7 @@ void draw_stage3d(Stage3D *s, float maxrange) {
 		free(list);
 	}
 
-	render_pop(&render();
+	render_pop();
 }
 
 void free_stage3d(Stage3D *s) {
