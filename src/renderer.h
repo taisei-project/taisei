@@ -24,7 +24,7 @@ enum {
 
 typedef struct MatrixStack MatrixStack;
 struct MatrixStack { // debil stack on the stack
-	int head;
+	mat4 *head;
 
 	// the alignment is required for the SSE codepath in CGLM
 	mat4 stack[RENDER_MATRIX_STACKSIZE] CGLM_ALIGN(32);
