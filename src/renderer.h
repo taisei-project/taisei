@@ -25,7 +25,9 @@ enum {
 typedef struct MatrixStack MatrixStack;
 struct MatrixStack { // debil stack on the stack
 	int head;
-	mat4 stack[RENDER_MATRIX_STACKSIZE]; // sure hope none of the two stacks overflows.
+
+	// the alignment is required for the SSE codepath in CGLM
+	mat4 stack[RENDER_MATRIX_STACKSIZE] CGLM_ALIGN(32);
 };
 
 
@@ -44,15 +46,15 @@ struct RendererUBOData {
 typedef struct Renderer Renderer;
 struct Renderer {
 	MatrixMode mode;
-	
+
 	MatrixStack modelview;
 	MatrixStack projection;
 	MatrixStack texture;
-	
+
 	vec4 color;
-	
+
 	bool changed;
-	
+
 	GLuint ubo;
 	RendererUBOData ubodata;
 };
