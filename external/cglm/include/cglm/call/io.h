@@ -11,7 +11,8 @@
 extern "C" {
 #endif
 
-#include "../cglm.h"
+#include "../common.h"
+#include <stdio.h>
 
 CGLM_EXPORT
 void

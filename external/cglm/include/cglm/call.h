@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-#include "cglm.h"
+#include "common.h"
 #include "call/vec3.h"
 #include "call/vec4.h"
 #include "call/mat4.h"
@@ -24,6 +24,11 @@ extern "C" {
 #include "call/frustum.h"
 #include "call/box.h"
 #include "call/io.h"
+
+// TODO: call versions of these?
+#include "util.h"
+// #include "vec3-ext.h"
+// #include "vec4-ext.h"
 
 #ifdef __cplusplus
 }

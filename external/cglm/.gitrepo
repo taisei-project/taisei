@@ -5,7 +5,7 @@
 ;
 [subrepo]
 	remote = https://github.com/taisei-project/cglm
-	branch = meson
-	commit = 589ddd4a7dda0903adff2425d916479677be2d42
-	parent = e67880b76dd916a457e9a7bde8217d4cd3443e4f
+	branch = taisei
+	commit = 5af24c6b834fd85bb41ae2520f7030c1b689152e
+	parent = cc41f444380def4cb5338aeda1204698d14d49f2
 	cmdver = 0.3.1

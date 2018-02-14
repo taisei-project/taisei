@@ -8,7 +8,7 @@
 /*
  Types:
    enum glm_euler_sq
- 
+
  Functions:
    CGLM_INLINE glm_euler_sq glm_euler_order(int newOrder[3]);
    CGLM_INLINE void glm_euler_angles(mat4 m, vec3 dest);
@@ -27,24 +27,6 @@
 #define cglm_euler_h
 
 #include "common.h"
-
-/*!
- * if you have axis order like vec3 orderVec = [0, 1, 2] or [0, 2, 1]...
- * vector then you can convert it to this enum by doing this:
- * @code
- * glm_euler_sq order;
- * order = orderVec[0] | orderVec[1] << 2 | orderVec[2] << 4;
- * @endcode
- * you may need to explicit cast if required
- */
-typedef enum glm_euler_sq {
-  GLM_EULER_XYZ = 0 << 0 | 1 << 2 | 2 << 4,
-  GLM_EULER_XZY = 0 << 0 | 2 << 2 | 1 << 4,
-  GLM_EULER_YZX = 1 << 0 | 2 << 2 | 0 << 4,
-  GLM_EULER_YXZ = 1 << 0 | 0 << 2 | 2 << 4,
-  GLM_EULER_ZXY = 2 << 0 | 0 << 2 | 1 << 4,
-  GLM_EULER_ZYX = 2 << 0 | 1 << 2 | 0 << 4
-} glm_euler_sq;
 
 CGLM_INLINE
 glm_euler_sq
@@ -66,7 +48,7 @@ glm_euler_angles(mat4 m, vec3 dest) {
       vec3  a[2];
       float cy1, cy2;
       int   path;
-      
+
       a[0][1] = asinf(-m[0][2]);
       a[1][1] = CGLM_PI - a[0][1];
 
