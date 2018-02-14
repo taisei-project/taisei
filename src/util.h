@@ -105,7 +105,7 @@ float smooth(float x) __attribute__((const));
 float smoothreclamp(float x, float old_min, float old_max, float new_min, float new_max) __attribute__((const));
 float sanitize_scale(float scale) __attribute__((const));
 
-#include <cglm/cglm.h>
+#include <cglm/types.h>
 
 //
 // gl/video utils

@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include "taiseigl.h"
 #include "global.h"
+#include "glm.h"
 
 Stage3D stage_3d_context;
 

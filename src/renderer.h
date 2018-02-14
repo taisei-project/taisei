@@ -8,8 +8,8 @@
 
 #pragma once
 #include "taisei.h"
+
 #include "color.h"
-#include <cglm/cglm.h>
 
 enum MatrixMode { // XXX: Mimicking the gl matrix mode api for easy replacement. But we might just want to add proper functions to modify the non modelview matrices.
 	MM_MODELVIEW,

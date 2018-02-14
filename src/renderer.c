@@ -6,8 +6,11 @@
  * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
  */
 
+#include "taisei.h"
+
 #include "renderer.h"
 #include "resource/shader.h"
+#include "glm.h"
 
 Renderer _renderer;
 
