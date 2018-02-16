@@ -13,6 +13,20 @@
 #include "resource.h"
 #include "list.h"
 
+ResourceHandler animation_res_handler = {
+	.type = RES_ANIM,
+	.typename = "animation",
+	.subdir = ANI_PATH_PREFIX,
+
+	.procs = {
+		.find = animation_path,
+		.check = check_animation_path,
+		.begin_load = load_animation_begin,
+		.end_load = load_animation_end,
+		.unload = unload_animation,
+	},
+};
+
 char* animation_path(const char *name) {
 	return strjoin(ANI_PATH_PREFIX, name, ANI_EXTENSION, NULL);
 }
@@ -85,7 +99,7 @@ void* load_animation_end(void *opaque, const char *filename, unsigned int flags)
 			break;
 		}
 
-		ani->frames[i] = res->sprite;
+		ani->frames[i] = res->data;
 	}
 
 	free(data->basename);
@@ -101,7 +115,7 @@ void unload_animation(void *vani) {
 }
 
 Animation *get_ani(const char *name) {
-	return get_resource(RES_ANIM, name, RESF_DEFAULT)->animation;
+	return get_resource(RES_ANIM, name, RESF_DEFAULT)->data;
 }
 
 static Sprite* get_animation_frame(Animation *ani, int col, int row) {

@@ -9,10 +9,8 @@
 #pragma once
 #include "taisei.h"
 
-#include "list.h"
-#include "hashtable.h"
+#include "resource.h"
 #include "shader.h"
-#include "fbo.h"
 
 typedef struct PostprocessShader PostprocessShader;
 typedef struct PostprocessShaderUniform PostprocessShaderUniform;
@@ -69,3 +67,5 @@ bool check_postprocess_path(const char *path);
 void* load_postprocess_begin(const char *path, unsigned int flags);
 void* load_postprocess_end(void *opaque, const char *path, unsigned int flags);
 void unload_postprocess(void*);
+
+extern ResourceHandler postprocess_res_handler;

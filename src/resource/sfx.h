@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include <stdbool.h>
+#include "resource.h"
 
 typedef struct Sound {
 	int lastplayframe;
@@ -22,5 +22,7 @@ bool check_sound_path(const char *path);
 void* load_sound_begin(const char *path, unsigned int flags);
 void* load_sound_end(void *opaque, const char *path, unsigned int flags);
 void unload_sound(void *snd);
+
+extern ResourceHandler sfx_res_handler;
 
 #define SFX_PATH_PREFIX "res/sfx/"

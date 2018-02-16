@@ -11,7 +11,7 @@
 
 #include "util.h"
 #include "projectile.h"
-#include "resource/shader.h"
+#include "resource/shader_program.h"
 
 typedef struct Laser Laser;
 
@@ -35,7 +35,7 @@ struct Laser {
 	float width;
 	float width_exponent;
 
-	Shader *shader;
+	ShaderProgram *shader;
 
 	float collision_step;
 

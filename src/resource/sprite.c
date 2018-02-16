@@ -9,8 +9,22 @@
 #include "taisei.h"
 
 #include "sprite.h"
-#include "resource.h"
 #include "video.h"
+#include "renderer.h"
+
+ResourceHandler sprite_res_handler = {
+	.type = RES_SPRITE,
+	.typename = "sprite",
+	.subdir = SPRITE_PATH_PREFIX,
+
+	.procs = {
+		.find = sprite_path,
+		.check = check_sprite_path,
+		.begin_load = load_sprite_begin,
+		.end_load = load_sprite_end,
+		.unload = free,
+	},
+};
 
 char* sprite_path(const char *name) {
 	char *path = strjoin(SPRITE_PATH_PREFIX, name, SPRITE_EXTENSION, NULL);
@@ -90,7 +104,7 @@ void* load_sprite_end(void *opaque, const char *path, unsigned int flags) {
 		return NULL;
 	}
 
-	spr->tex = res->texture;
+	spr->tex = res->data;
 
 	float tex_w_flt = spr->tex->w;
 	float tex_h_flt = spr->tex->h;
@@ -122,7 +136,7 @@ void* load_sprite_end(void *opaque, const char *path, unsigned int flags) {
 }
 
 Sprite* get_sprite(const char *name) {
-	return get_resource(RES_SPRITE, name, RESF_DEFAULT | RESF_UNSAFE)->sprite;
+	return get_resource(RES_SPRITE, name, RESF_DEFAULT | RESF_UNSAFE)->data;
 }
 
 Sprite* prefix_get_sprite(const char *name, const char *prefix) {

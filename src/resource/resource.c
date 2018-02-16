@@ -16,54 +16,48 @@
 #include "menu/mainmenu.h"
 #include "events.h"
 #include "recolor.h"
+#include "vbo.h"
 
-Resources resources;
-static SDL_threadID main_thread_id;
+#include "texture.h"
+#include "animation.h"
+#include "sfx.h"
+#include "bgm.h"
+// shader
+#include "model.h"
+#include "postprocess.h"
+#include "sprite.h"
 
-static const char *resource_type_names[] = {
-	[RES_TEXTURE] = "texture",
-	[RES_ANIM] = "animation",
-	[RES_SFX] = "sound",
-	[RES_BGM] = "bgm",
-	[RES_SHADER] = "shader",
-	[RES_MODEL] = "model",
-	[RES_POSTPROCESS] = "postprocessing pipeline",
-	[RES_SPRITE] = "sprite",
+Resources resources = {
+	.handlers = {
+		[RES_TEXTURE] = &texture_res_handler,
+		[RES_ANIM] = &animation_res_handler,
+		[RES_SFX] = &sfx_res_handler,
+		[RES_BGM] = &bgm_res_handler,
+		// shader
+		[RES_MODEL] = &model_res_handler,
+		[RES_POSTPROCESS] = &postprocess_res_handler,
+		[RES_SPRITE] = &sprite_res_handler,
+	},
 };
 
+static SDL_threadID main_thread_id;
+
 static inline ResourceHandler* get_handler(ResourceType type) {
-	return resources.handlers + type;
+	return *(resources.handlers + type);
 }
 
-static void register_handler(
-	ResourceType type,
-	const char *subdir, // trailing slash assumed
-	ResourceBeginLoadFunc begin_load,
-	ResourceEndLoadFunc end_load,
-	ResourceUnloadFunc unload,
-	ResourceNameFunc name,
-	ResourceFindFunc find,
-	ResourceCheckFunc check,
-	size_t tablesize)
-{
-	assert(type >= 0 && type < RES_NUMTYPES);
-
-	ResourceHandler *h = get_handler(type);
-	h->type = type;
-	h->begin_load = begin_load;
-	h->end_load = end_load;
-	h->unload = unload;
-	h->name = name;
-	h->find = find;
-	h->check = check;
-	h->mapping = hashtable_new_stringkeys(tablesize);
-	h->async_load_data = hashtable_new_stringkeys(tablesize);
-	strcpy(h->subdir, subdir);
+static void alloc_handler(ResourceHandler *h) {
+	h->mapping = hashtable_new_stringkeys(HT_DYNAMIC_SIZE);
+	h->async_load_data = hashtable_new_stringkeys(HT_DYNAMIC_SIZE);
 }
 
 static void unload_resource(Resource *res) {
-	get_handler(res->type)->unload(res->data);
+	get_handler(res->type)->procs.unload(res->data);
 	free(res);
+}
+
+static const char* type_name(ResourceType type) {
+	return get_handler(type)->typename;
 }
 
 Resource* insert_resource(ResourceType type, const char *name, void *data, ResourceFlags flags, const char *source) {
@@ -73,7 +67,7 @@ Resource* insert_resource(ResourceType type, const char *name, void *data, Resou
 	if(data == NULL) {
 		// Will only get here through some external loading mechanism (like laser snippets)
 
-		const char *typename = resource_type_names[type];
+		const char *typename = type_name(type);
 		if(!(flags & RESF_OPTIONAL)) {
 			log_fatal("Required %s '%s' couldn't be loaded", typename, name);
 		} else {
@@ -96,21 +90,21 @@ Resource* insert_resource(ResourceType type, const char *name, void *data, Resou
 	res->data = data;
 
 	if(oldres) {
-		log_warn("Replacing a previously loaded %s '%s'", resource_type_names[type], name);
+		log_warn("Replacing a previously loaded %s '%s'", type_name(type), name);
 		unload_resource(oldres);
 	}
 
 	hashtable_set_string(handler->mapping, name, res);
 
-	log_info("Loaded %s '%s' from '%s' (%s)", resource_type_names[handler->type], name, source,
+	log_info("Loaded %s '%s' from '%s' (%s)", type_name(handler->type), name, source,
 		(flags & RESF_PERMANENT) ? "permanent" : "transient");
 
 	return res;
 }
 
 static char* get_name(ResourceHandler *handler, const char *path) {
-	if(handler->name) {
-		return handler->name(path);
+	if(handler->procs.name) {
+		return handler->procs.name(path);
 	}
 
 	return resource_util_basename(handler->subdir, path);
@@ -128,7 +122,7 @@ static int load_resource_async_thread(void *vdata) {
 	ResourceAsyncLoadData *data = vdata;
 
 	SDL_SetThreadPriority(SDL_THREAD_PRIORITY_LOW);
-	data->opaque = data->handler->begin_load(data->path, data->flags);
+	data->opaque = data->handler->procs.begin_load(data->path, data->flags);
 	events_emit(TE_RESOURCE_ASYNC_LOADED, 0, data, NULL);
 
 	return 0;
@@ -156,7 +150,7 @@ static bool resource_asyncload_handler(SDL_Event *evt, void *arg) {
 }
 
 static void load_resource_async(ResourceHandler *handler, char *path, char *name, ResourceFlags flags) {
-	log_debug("Loading %s '%s' asynchronously", resource_type_names[handler->type], name);
+	log_debug("Loading %s '%s' asynchronously", type_name(handler->type), name);
 
 	ResourceAsyncLoadData *data = malloc(sizeof(ResourceAsyncLoadData));
 	hashtable_set_string(handler->async_load_data, name, data);
@@ -213,7 +207,7 @@ static void resource_wait_for_all_async_loads(ResourceHandler *handler) {
 static Resource* load_resource(ResourceHandler *handler, const char *path, const char *name, ResourceFlags flags, bool async) {
 	Resource *res;
 
-	const char *typename = resource_type_names[handler->type];
+	const char *typename = type_name(handler->type);
 	char *allocated_path = NULL;
 	char *allocated_name = NULL;
 
@@ -227,7 +221,7 @@ static Resource* load_resource(ResourceHandler *handler, const char *path, const
 	}
 
 	if(!path) {
-		path = allocated_path = handler->find(name);
+		path = allocated_path = handler->procs.find(name);
 
 		if(!path) {
 			if(!(flags & RESF_OPTIONAL)) {
@@ -242,7 +236,7 @@ static Resource* load_resource(ResourceHandler *handler, const char *path, const
 		name = allocated_name = get_name(handler, path);
 	}
 
-	assert(handler->check(path));
+	assert(handler->procs.check(path));
 
 	if(async) {
 		if(resource_check_async_load(handler, name)) {
@@ -268,12 +262,12 @@ static Resource* load_resource(ResourceHandler *handler, const char *path, const
 		return NULL;
 	}
 
-	return load_resource_finish(handler->begin_load(path, flags), handler, path, name, allocated_path, allocated_name, flags);
+	return load_resource_finish(handler->procs.begin_load(path, flags), handler, path, name, allocated_path, allocated_name, flags);
 }
 
 static Resource* load_resource_finish(void *opaque, ResourceHandler *handler, const char *path, const char *name, char *allocated_path, char *allocated_name, ResourceFlags flags) {
-	const char *typename = resource_type_names[handler->type];
-	void *raw = handler->end_load(opaque, path, flags);
+	const char *typename = type_name(handler->type);
+	void *raw = handler->procs.end_load(opaque, path, flags);
 
 	if(!raw) {
 		name = name ? name : "<name unknown>";
@@ -301,7 +295,7 @@ static Resource* load_resource_finish(void *opaque, ResourceHandler *handler, co
 	return res;
 }
 
-Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags) {
+Resource* get_resource_p(ResourceType type, const char *name, ResourceFlags flags, void **out) {
 	ResourceHandler *handler = get_handler(type);
 	Resource *res;
 
@@ -313,6 +307,10 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 	}
 
 	if(res) {
+		if(out) {
+			*out = res->data;
+		}
+
 		return res;
 	}
 
@@ -321,7 +319,7 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 
 	if(!res) {
 		if(!(flags & RESF_PRELOAD)) {
-			log_warn("%s '%s' was not preloaded", resource_type_names[type], name);
+			log_warn("%s '%s' was not preloaded", type_name(type), name);
 
 			if(!(flags & RESF_OPTIONAL) && getenvint("TAISEI_PRELOAD_REQUIRED", false)) {
 				log_fatal("Aborting due to TAISEI_PRELOAD_REQUIRED");
@@ -332,11 +330,21 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 	}
 
 	if(res && flags & RESF_PERMANENT && !(res->flags & RESF_PERMANENT)) {
-		log_debug("Promoted %s '%s' to permanent", resource_type_names[type], name);
+		log_debug("Promoted %s '%s' to permanent", type_name(type), name);
 		res->flags |= RESF_PERMANENT;
 	}
 
+	if(res) {
+		*out = res->data;
+	} else {
+		*out = NULL;
+	}
+
 	return res;
+}
+
+Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags) {
+	return get_resource_p(type, name, flags, NULL);
 }
 
 void preload_resource(ResourceType type, const char *name, ResourceFlags flags) {
@@ -382,37 +390,9 @@ static void init_sdl_image(void) {
 void init_resources(void) {
 	init_sdl_image();
 
-	register_handler(
-		RES_TEXTURE, TEX_PATH_PREFIX, load_texture_begin, load_texture_end, (ResourceUnloadFunc)free_texture, NULL, texture_path, check_texture_path, HT_DYNAMIC_SIZE
-	);
-
-	register_handler(
-		RES_ANIM, ANI_PATH_PREFIX, load_animation_begin, load_animation_end, unload_animation, NULL, animation_path, check_animation_path, HT_DYNAMIC_SIZE
-	);
-
-	register_handler(
-		RES_SHADER, SHA_PATH_PREFIX, load_shader_begin, load_shader_end, unload_shader, NULL, shader_path, check_shader_path, HT_DYNAMIC_SIZE
-	);
-
-	register_handler(
-		RES_MODEL, MDL_PATH_PREFIX, load_model_begin, load_model_end, unload_model, NULL, model_path, check_model_path, HT_DYNAMIC_SIZE
-	);
-
-	register_handler(
-		RES_SFX, SFX_PATH_PREFIX, load_sound_begin, load_sound_end, unload_sound, NULL, sound_path, check_sound_path, HT_DYNAMIC_SIZE
-	);
-
-	register_handler(
-		RES_BGM, BGM_PATH_PREFIX, load_bgm_begin, load_bgm_end, unload_bgm, NULL, bgm_path, check_bgm_path, HT_DYNAMIC_SIZE
-	);
-
-	register_handler(
-		RES_POSTPROCESS, SHA_PATH_PREFIX, load_postprocess_begin, load_postprocess_end, unload_postprocess, NULL, postprocess_path, check_postprocess_path, HT_DYNAMIC_SIZE
-	);
-
-	register_handler(
-		RES_SPRITE, SPRITE_PATH_PREFIX, load_sprite_begin, load_sprite_end, free, NULL, sprite_path, check_sprite_path, HT_DYNAMIC_SIZE
-	);
+	for(ResourceHandler **h = resources.handlers; h < resources.handlers + RES_NUMTYPES; ++h) {
+		alloc_handler(*h);
+	}
 
 	main_thread_id = SDL_ThreadID();
 
@@ -461,7 +441,6 @@ void load_resources(void) {
 	}
 
 	menu_preload();
-	resources.stage_postprocess = postprocess_load(SHA_PATH_PREFIX "postprocess.conf", RESF_PERMANENT | RESF_PRELOAD);
 }
 
 void free_resources(bool all) {
@@ -480,7 +459,7 @@ void free_resources(bool all) {
 
 			ResourceFlags flags __attribute__((unused)) = res->flags;
 			unload_resource(res);
-			log_debug("Unloaded %s '%s' (%s)", resource_type_names[type], name,
+			log_debug("Unloaded %s '%s' (%s)", type_name(type), name,
 				(flags & RESF_PERMANENT) ? "permanent" : "transient"
 			);
 
@@ -501,7 +480,6 @@ void free_resources(bool all) {
 	}
 
 	delete_vbo(&_vbo);
-	postprocess_unload(&resources.stage_postprocess);
 	delete_fbo_pair(&resources.fbo_pairs.bg);
 	delete_fbo_pair(&resources.fbo_pairs.fg);
 	delete_fbo_pair(&resources.fbo_pairs.rgba);

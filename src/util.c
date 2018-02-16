@@ -343,7 +343,7 @@ void fade_out(float f) {
 
 void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxfrags, float alpha, float star_width) {
 	Sprite *star = get_sprite("star");
-	Shader *shader = get_shader("circleclipped_indicator");
+	ShaderProgram *shader = get_shader_program("circleclipped_indicator");
 	static float clr[4];
 	int i = 0;
 
@@ -619,6 +619,12 @@ char* try_path(const char *prefix, const char *name, const char *ext) {
 //
 // misc utils
 //
+
+void* memdup(const void *src, size_t size) {
+	void *data = malloc(size);
+	memcpy(data, src, size);
+	return data;
+}
 
 int getenvint(const char *v, int defaultval) {
 	char *e = getenv(v);

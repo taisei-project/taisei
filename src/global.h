@@ -19,7 +19,6 @@
 
 #include "resource/sfx.h"
 #include "resource/bgm.h"
-#include "resource/shader.h"
 #include "resource/font.h"
 #include "resource/animation.h"
 

@@ -10,7 +10,7 @@
 #include "taisei.h"
 
 #include "color.h"
-#include "resource/shader.h"
+#include "resource/shader_program.h"
 
 /*
  *  Utilities for using the recolor shader in rendering code efficiently
@@ -38,5 +38,5 @@ typedef void (*ColorTransformFunc)(Color clr, ColorTransform *out, void *arg);
 
 void recolor_init(void);
 void recolor_reinit(void);
-Shader* recolor_get_shader(void);
+ShaderProgram* recolor_get_shader(void);
 void recolor_apply_transform(ColorTransform *ct);

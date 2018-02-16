@@ -14,6 +14,8 @@
 #include "resource.h"
 #include "sfx.h"
 #include "audio_mixer.h"
+#include "util.h"
+#include "audio.h"
 
 char* sound_path(const char *name) {
 	return audio_mixer_sound_path(SFX_PATH_PREFIX, name, false);

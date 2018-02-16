@@ -16,6 +16,20 @@
 #include "vbo.h"
 #include "video.h"
 
+ResourceHandler texture_res_handler = {
+	.type = RES_TEXTURE,
+	.typename = "texture",
+	.subdir = TEX_PATH_PREFIX,
+
+	.procs = {
+		.find = texture_path,
+		.check = check_texture_path,
+		.begin_load = load_texture_begin,
+		.end_load = load_texture_end,
+		.unload = (ResourceUnloadProc)free_texture,
+	},
+};
+
 static const char *texture_image_exts[] = {
 	// more are usable if you explicitly specify the source in a .tex file,
 	// but these are the ones we officially support, and are tried in this
@@ -187,7 +201,7 @@ void* load_texture_end(void *opaque, const char *path, unsigned int flags) {
 }
 
 Texture* get_tex(const char *name) {
-	return get_resource(RES_TEXTURE, name, RESF_DEFAULT | RESF_UNSAFE)->texture;
+	return get_resource(RES_TEXTURE, name, RESF_DEFAULT | RESF_UNSAFE)->data;
 }
 
 Texture* prefix_get_tex(const char *name, const char *prefix) {

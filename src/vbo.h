@@ -10,7 +10,6 @@
 #include "taisei.h"
 
 #include "resource/texture.h"
-#include "resource/shader.h"
 #include "taiseigl.h"
 
 enum {

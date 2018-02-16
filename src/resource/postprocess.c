@@ -12,10 +12,25 @@
 #include "util.h"
 #include "postprocess.h"
 #include "resource.h"
+#include "renderer.h"
+
+ResourceHandler postprocess_res_handler = {
+	.type = RES_POSTPROCESS,
+	.typename = "postprocessing pipeline",
+	.subdir = SHA_PATH_PREFIX,
+
+	.procs = {
+		.find = postprocess_path,
+		.check = check_postprocess_path,
+		.begin_load = load_postprocess_begin,
+		.end_load = load_postprocess_end,
+		.unload = unload_postprocess,
+	},
+};
 
 static PostprocessShaderUniformFuncPtr get_uniform_func(PostprocessShaderUniformType type, int size) {
-	tsglUniform1fv_ptr   f_funcs[] = { glUniform1fv,  glUniform2fv,  glUniform3fv,  glUniform4fv };
-	tsglUniform1iv_ptr   i_funcs[] = { glUniform1iv,  glUniform2iv,  glUniform3iv,  glUniform4iv };
+	tsglUniform1fv_ptr   f_funcs[] = { glUniform1fv,  glUniform2fv,  glUniform3fv,  glUniform4fv  };
+	tsglUniform1iv_ptr   i_funcs[] = { glUniform1iv,  glUniform2iv,  glUniform3iv,  glUniform4iv  };
 	tsglUniform1uiv_ptr ui_funcs[] = { glUniform1uiv, glUniform2uiv, glUniform3uiv, glUniform4uiv };
 
 	PostprocessShaderUniformFuncPtr *lists[] = {
@@ -40,7 +55,7 @@ static void postprocess_load_callback(const char *key, const char *value, void *
 	if(!strcmp(key, "@shader")) {
 		current = malloc(sizeof(PostprocessShader));
 		current->uniforms = NULL;
-		current->shader = get_resource(RES_SHADER, value, ldata->resflags)->shader;
+		current->shader = get_resource(RES_SHADER, value, ldata->resflags)->data;
 		list_append(slist, current);
 		log_debug("Shader added: %s (prog: %u)", value, current->shader->prog);
 		return;

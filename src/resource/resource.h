@@ -9,25 +9,16 @@
 #pragma once
 #include "taisei.h"
 
-#include "global.h"
-
-#include "texture.h"
-#include "animation.h"
-#include "sfx.h"
-#include "bgm.h"
-#include "shader.h"
-#include "font.h"
-#include "model.h"
-#include "postprocess.h"
-#include "sprite.h"
 #include "hashtable.h"
+#include "fbo.h"
 
 typedef enum ResourceType {
 	RES_TEXTURE,
 	RES_ANIM,
 	RES_SFX,
 	RES_BGM,
-	RES_SHADER,
+	RES_SHADER_OBJECT,
+	RES_SHADER_PROGRAM,
 	RES_MODEL,
 	RES_POSTPROCESS,
 	RES_SPRITE,
@@ -46,63 +37,57 @@ typedef enum ResourceFlags {
 // Converts a vfs path into an abstract resource name to be used as the hashtable key.
 // This method is optional, the default strategy is to take the path minus the prefix and extension.
 // The returned name must be free()'d.
-typedef char* (*ResourceNameFunc)(const char *path);
+typedef char* (*ResourceNameProc)(const char *path);
 
 // Converts an abstract resource name into a vfs path from which a resource with that name could be loaded.
 // The path may not actually exist or be usable. The load function (see below) shall deal with such cases.
 // The returned path must be free()'d.
 // May return NULL on failure, but does not have to.
-typedef char* (*ResourceFindFunc)(const char *name);
+typedef char* (*ResourceFindProc)(const char *name);
 
 // Tells whether the resource handler should attempt to load a file, specified by a vfs path.
-typedef bool (*ResourceCheckFunc)(const char *path);
+typedef bool (*ResourceCheckProc)(const char *path);
 
 // Begins loading a resource specified by path.
 // May be called asynchronously.
-// The return value is not interpreted in any way, it's just passed to the corresponding ResourceEndLoadFunc later.
-typedef void* (*ResourceBeginLoadFunc)(const char *path, unsigned int flags);
+// The return value is not interpreted in any way, it's just passed to the corresponding ResourceEndLoadProc later.
+typedef void* (*ResourceBeginLoadProc)(const char *path, unsigned int flags);
 
 // Finishes loading a resource and returns a pointer to it.
 // Will be called from the main thread only.
 // On failure, must return NULL and not crash the program.
-typedef void* (*ResourceEndLoadFunc)(void *opaque, const char *path, unsigned int flags);
+typedef void* (*ResourceEndLoadProc)(void *opaque, const char *path, unsigned int flags);
 
 // Unloads a resource, freeing all allocated to it memory.
-typedef void (*ResourceUnloadFunc)(void *res);
+typedef void (*ResourceUnloadProc)(void *res);
 
 typedef struct ResourceHandler {
 	ResourceType type;
-	ResourceNameFunc name;
-	ResourceFindFunc find;
-	ResourceCheckFunc check;
-	ResourceBeginLoadFunc begin_load;
-	ResourceEndLoadFunc end_load;
-	ResourceUnloadFunc unload;
+
+	char *typename;
+	char *subdir;
+
+	struct {
+		ResourceNameProc name;
+		ResourceFindProc find;
+		ResourceCheckProc check;
+		ResourceBeginLoadProc begin_load;
+		ResourceEndLoadProc end_load;
+		ResourceUnloadProc unload;
+	} procs;
+
 	Hashtable *mapping;
 	Hashtable *async_load_data;
-	char subdir[32];
 } ResourceHandler;
 
 typedef struct Resource {
 	ResourceType type;
 	ResourceFlags flags;
-
-	union {
-		void *data;
-		Texture *texture;
-		Animation *animation;
-		Sound *sound;
-		Music *music;
-		Shader *shader;
-		Model *model;
-		PostprocessShader *postprocess;
-		Sprite *sprite;
-	};
+	void *data;
 } Resource;
 
 typedef struct Resources {
-	ResourceHandler handlers[RES_NUMTYPES];
-	PostprocessShader *stage_postprocess;
+	ResourceHandler *handlers[RES_NUMTYPES];
 
 	struct {
 		FBOPair bg;
@@ -117,6 +102,7 @@ void init_resources(void);
 void load_resources(void);
 void free_resources(bool all);
 
+Resource* get_resource_p(ResourceType type, const char *name, ResourceFlags flags, void **out);
 Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags);
 Resource* insert_resource(ResourceType type, const char *name, void *data, ResourceFlags flags, const char *source);
 void preload_resource(ResourceType type, const char *name, ResourceFlags flags);
@@ -125,5 +111,3 @@ void preload_resources(ResourceType type, ResourceFlags flags, const char *first
 void resource_util_strip_ext(char *path);
 char* resource_util_basename(const char *prefix, const char *path);
 const char* resource_util_filename(const char *path);
-
-bool resource_sdl_event(SDL_Event *evt);

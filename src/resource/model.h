@@ -10,10 +10,7 @@
 #include "taisei.h"
 
 #include "util.h"
-
-#include <stdbool.h>
-
-typedef int ivec3[3];
+#include "resource.h"
 
 typedef struct ObjFileData {
 	vec3 *xs;
@@ -47,6 +44,8 @@ Model* get_model(const char *name);
 
 void draw_model_p(Model *model);
 void draw_model(const char *name);
+
+extern ResourceHandler model_res_handler;
 
 #define MDL_PATH_PREFIX "res/models/"
 #define MDL_EXTENSION ".obj"

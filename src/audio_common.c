@@ -105,13 +105,18 @@ void play_loop(const char *name) {
 }
 
 void reset_sounds(void) {
-	Resource *snd;
-	for(HashtableIterator *i = hashtable_iter(resources.handlers[RES_SFX].mapping);
-			hashtable_iter_next(i, 0, (void**)&snd);) {
-		snd->sound->lastplayframe = 0;
-		if(snd->sound->islooping) {
-			snd->sound->islooping = false;
-			audio_backend_sound_stop_loop(snd->sound->impl);
+	Resource *res;
+	Sound *snd;
+
+	for(HashtableIterator *i = hashtable_iter(resources.handlers[RES_SFX]->mapping);
+		hashtable_iter_next(i, 0, (void**)&res);
+	) {
+		snd = res->data;
+
+		snd->lastplayframe = 0;
+		if(snd->islooping) {
+			snd->islooping = false;
+			audio_backend_sound_stop_loop(snd->impl);
 		}
 	}
 
@@ -119,13 +124,17 @@ void reset_sounds(void) {
 }
 
 void update_sounds(void) {
-	Resource *snd;
+	Resource *res;
+	Sound *snd;
 
-	for(HashtableIterator *i = hashtable_iter(resources.handlers[RES_SFX].mapping);
-			hashtable_iter_next(i, 0, (void**)&snd);) {
-		if(snd->sound->islooping && global.frames > snd->sound->lastplayframe + LOOPTIMEOUTFRAMES) {
-			snd->sound->islooping = false;
-			audio_backend_sound_stop_loop(snd->sound->impl);
+	for(HashtableIterator *i = hashtable_iter(resources.handlers[RES_SFX]->mapping);
+		hashtable_iter_next(i, 0, (void**)&res);
+	) {
+		snd = res->data;
+
+		if(snd->islooping && global.frames > snd->lastplayframe + LOOPTIMEOUTFRAMES) {
+			snd->islooping = false;
+			audio_backend_sound_stop_loop(snd->impl);
 		}
 	}
 
@@ -152,12 +161,12 @@ void stop_sounds(void) {
 
 Sound* get_sound(const char *name) {
 	Resource *res = get_resource(RES_SFX, name, RESF_OPTIONAL);
-	return res ? res->sound : NULL;
+	return res ? res->data : NULL;
 }
 
 Music* get_music(const char *name) {
 	Resource *res = get_resource(RES_BGM, name, RESF_OPTIONAL);
-	return res ? res->music : NULL;
+	return res ? res->data : NULL;
 }
 
 static void sfx_cfg_volume_callback(ConfigIndex idx, ConfigValue v) {

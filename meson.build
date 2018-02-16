@@ -85,6 +85,7 @@ foreach flag : [
             '-Wunreachable-code',
             '-Wunreachable-code-loop-increment',
             '-Wgnu',
+            '-Wcast-align',
         ]
     if cc.has_argument(flag)
         taisei_c_warnargs += flag

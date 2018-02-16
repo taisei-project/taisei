@@ -13,6 +13,7 @@
 #include <stdbool.h>
 #include "taiseigl.h"
 #include "util.h"
+#include "resource.h"
 
 typedef struct Texture Texture;
 
@@ -49,6 +50,8 @@ void loop_tex_line(complex a, complex b, float w, float t, const char *texture);
 
 Texture* get_tex(const char *name);
 Texture* prefix_get_tex(const char *name, const char *prefix);
+
+extern ResourceHandler texture_res_handler;
 
 #define TEX_PATH_PREFIX "res/gfx/"
 #define TEX_EXTENSION ".tex"

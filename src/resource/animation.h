@@ -9,6 +9,7 @@
 #pragma once
 #include "taisei.h"
 
+#include "resource.h"
 #include "sprite.h"
 
 struct Animation;
@@ -36,6 +37,8 @@ Animation *get_ani(const char *name);
 
 void draw_animation(float x, float y, int col, int row, const char *name);
 void draw_animation_p(float x, float y, int col, int row, Animation *ani);
+
+extern ResourceHandler animation_res_handler;
 
 #define ANI_PATH_PREFIX TEX_PATH_PREFIX
 #define ANI_EXTENSION ".ani"

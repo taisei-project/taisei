@@ -9,6 +9,7 @@
 #pragma once
 #include "taisei.h"
 
+#include "resource.h"
 #include "texture.h"
 
 typedef struct Sprite {
@@ -34,6 +35,8 @@ void end_draw_sprite(void);
 
 Sprite* get_sprite(const char *name);
 Sprite* prefix_get_sprite(const char *name, const char *prefix);
+
+extern ResourceHandler sprite_res_handler;
 
 #define SPRITE_PATH_PREFIX "res/gfx/"
 #define SPRITE_EXTENSION ".spr"

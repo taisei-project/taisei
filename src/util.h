@@ -154,6 +154,7 @@ char* try_path(const char *prefix, const char *name, const char *ext);
 // misc utils
 //
 
+void* memdup(const void *src, size_t size);
 int getenvint(const char *v, int defaultval) __attribute__((pure));
 void png_setup_error_handlers(png_structp png);
 uint32_t crc32str(uint32_t crc, const char *str) __attribute__((hot, pure));

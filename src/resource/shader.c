@@ -15,6 +15,7 @@
 #include "resource.h"
 #include "config.h"
 #include "list.h"
+#include "util.h"
 
 static char snippet_header_EXT_draw_instanced[] =
 	"#version 120\n"
@@ -306,7 +307,7 @@ static Shader* load_shader(const char *vheader, const char *fheader, const char 
 		unload_shader(sha);
 		return NULL;
 	}
-	
+
 	glUseProgram(sha->prog);
 	int rcIdx = glGetUniformBlockIndex(sha->prog,"RenderContext");
 	if(rcIdx >= 0) {
@@ -322,7 +323,7 @@ int uniloc(Shader *sha, const char *name) {
 }
 
 Shader* get_shader(const char *name) {
-	return get_resource(RES_SHADER, name, RESF_DEFAULT | RESF_UNSAFE)->shader;
+	return get_resource(RES_SHADER, name, RESF_DEFAULT | RESF_UNSAFE)->data;
 }
 
 Shader* get_shader_optional(const char *name) {
@@ -333,5 +334,5 @@ Shader* get_shader_optional(const char *name) {
 		return NULL;
 	}
 
-	return r->shader;
+	return r->data;
 }

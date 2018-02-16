@@ -15,6 +15,7 @@
 #include "stage.h"
 #include "stageutils.h"
 #include "glm.h"
+#include "resource/model.h"
 
 /*
  *  See the definition of AttackInfo in boss.h for information on how to set up the idmaps.

@@ -12,6 +12,7 @@
 #include "global.h"
 #include "stages/stage6.h"
 #include "video.h"
+#include "resource/model.h"
 
 typedef struct CreditsEntry {
 	char **data;

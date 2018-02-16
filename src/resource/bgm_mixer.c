@@ -14,6 +14,7 @@
 #include "resource.h"
 #include "bgm.h"
 #include "audio_mixer.h"
+#include "util.h"
 
 char* bgm_path(const char *name) {
 	return audio_mixer_sound_path(BGM_PATH_PREFIX, name, true);

@@ -12,6 +12,7 @@
 #include "stagedraw.h"
 #include "stagetext.h"
 #include "video.h"
+#include "resource/postprocess.h"
 
 #ifdef DEBUG
 	#define GRAPHS_DEFAULT 1
@@ -33,9 +34,14 @@ static struct {
 	} hud_text;
 	bool framerate_graphs;
 	bool objpool_stats;
+	PostprocessShader *viewport_pp;
 } stagedraw;
 
 void stage_draw_preload(void) {
+	preload_resources(RES_POSTPROCESS, RESF_OPTIONAL,
+		"viewport",
+	NULL);
+
 	preload_resources(RES_SPRITE, RESF_PERMANENT,
 		"star",
 		"hud",
@@ -76,6 +82,8 @@ void stage_draw_preload(void) {
 			"graph",
 		NULL);
 	}
+
+	get_resource_p(RES_POSTPROCESS, "viewport", RESF_OPTIONAL, (void**)&stagedraw.viewport_pp);
 }
 
 static void apply_shader_rules(ShaderRule *shaderrules, FBOPair *fbos) {
@@ -402,7 +410,7 @@ void stage_draw_scene(StageInfo *stage) {
 
 	// custom postprocessing
 	postprocess(
-		resources.stage_postprocess,
+		stagedraw.viewport_pp,
 		&resources.fbo_pairs.fg,
 		postprocess_prepare,
 		draw_fbo_viewport

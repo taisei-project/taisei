@@ -8,12 +8,29 @@
 
 #include "taisei.h"
 
-#include "model.h"
-#include "list.h"
-#include "resource.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
+#include "model.h"
+#include "list.h"
+#include "resource.h"
+#include "vbo.h"
+#include "renderer.h"
+
+ResourceHandler model_res_handler = {
+	.type = RES_MODEL,
+	.typename = "model",
+	.subdir = MDL_PATH_PREFIX,
+
+	.procs = {
+		.find = model_path,
+		.check = check_model_path,
+		.begin_load = load_model_begin,
+		.end_load = load_model_end,
+		.unload = unload_model,
+	},
+};
 
 static void parse_obj(const char *filename, ObjFileData *data);
 static void free_obj(ObjFileData *data);
@@ -236,7 +253,7 @@ static void parse_obj(const char *filename, ObjFileData *data) {
 }
 
 Model* get_model(const char *name) {
-	return get_resource(RES_MODEL, name, RESF_DEFAULT)->model;
+	return get_resource(RES_MODEL, name, RESF_DEFAULT)->data;
 }
 
 void draw_model_p(Model *model) {
