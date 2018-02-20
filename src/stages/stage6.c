@@ -97,16 +97,16 @@ vec3 **stage6_towerwall_pos(vec3 pos, float maxrange) {
 void stage6_towerwall_draw(vec3 pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towerwall")->gltex);
 
-	Shader *s = get_shader("tower_wall");
-	glUseProgram(s->prog);
+	ShaderProgram *s = get_shader_program("tower_wall");
+	glUseProgram(s->gl_handle);
 
-	render_push();
-	render_translate(pos[0], pos[1], pos[2]);
-	render_scale(30,30,30);
+	r_mat_push();
+	r_mat_translate(pos[0], pos[1], pos[2]);
+	r_mat_scale(30,30,30);
 	draw_model("towerwall");
-	render_pop();
+	r_mat_pop();
 
-	render_shader_standard();
+	r_shader_standard();
 }
 
 static vec3 **stage6_towertop_pos(vec3 pos, float maxrange) {
@@ -118,11 +118,11 @@ static vec3 **stage6_towertop_pos(vec3 pos, float maxrange) {
 static void stage6_towertop_draw(vec3 pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towertop")->gltex);
 
-	render_push();
-	render_translate(pos[0], pos[1], pos[2]);
-	render_scale(28,28,28);
+	r_mat_push();
+	r_mat_translate(pos[0], pos[1], pos[2]);
+	r_mat_scale(28,28,28);
 	draw_model("towertop");
-	render_pop();
+	r_mat_pop();
 }
 
 static vec3 **stage6_skysphere_pos(vec3 pos, float maxrange) {
@@ -131,29 +131,29 @@ static vec3 **stage6_skysphere_pos(vec3 pos, float maxrange) {
 
 static void stage6_skysphere_draw(vec3 pos) {
 	glDisable(GL_DEPTH_TEST);
-	Shader *s = get_shader("stage6_sky");
-	glUseProgram(s->prog);
+	ShaderProgram *s = get_shader_program("stage6_sky");
+	glUseProgram(s->gl_handle);
 
-	render_push();
-	render_translate(pos[0], pos[1], pos[2]-30);
-	render_scale(150,150,150);
+	r_mat_push();
+	r_mat_translate(pos[0], pos[1], pos[2]-30);
+	r_mat_scale(150,150,150);
 	draw_model("skysphere");
 
-	render_shader_standard();
+	r_shader_standard();
 
 	for(int i = 0; i < NUM_STARS; i++) {
-		render_push();
+		r_mat_push();
 		float x = starpos[3*i+0], y = starpos[3*i+1], z = starpos[3*i+2];
-		render_color4(0.9,0.9,1,0.8*z);
-		render_translate(x,y,z);
-		render_rotate_deg(180/M_PI*acos(starpos[3*i+2]),-y,x,0);
-		render_scale(1./4000,1./4000,1./4000);
+		r_color4(0.9,0.9,1,0.8*z);
+		r_mat_translate(x,y,z);
+		r_mat_rotate_deg(180/M_PI*acos(starpos[3*i+2]),-y,x,0);
+		r_mat_scale(1./4000,1./4000,1./4000);
 		draw_sprite(0,0,"part/smoothdot");
-		render_pop();
+		r_mat_pop();
 	}
 
-	render_pop();
-	render_color4(1,1,1,1);
+	r_mat_pop();
+	r_color4(1,1,1,1);
 	glEnable(GL_DEPTH_TEST);
 }
 
@@ -278,7 +278,7 @@ static void stage6_preload(void) {
 		"proj/apple",
 		"dialog/elly",
 	NULL);
-	preload_resources(RES_SHADER, RESF_DEFAULT,
+	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"tower_wall",
 		"stage6_sky",
 	NULL);

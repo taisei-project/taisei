@@ -5,3 +5,5 @@ osxbuild/
 .*DS_Store
 __pycache__
 *.out
+*.kdev4
+.kdev4/

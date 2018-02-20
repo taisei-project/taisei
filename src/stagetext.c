@@ -74,8 +74,8 @@ static void stagetext_draw_single(StageText *txt) {
 		txt->custom.predraw(txt, t, 1.0 - f);
 	}
 
-	Shader *sha = get_shader("stagetitle");
-	glUseProgram(sha->prog);
+	ShaderProgram *sha = get_shader_program("stagetext");
+	glUseProgram(sha->gl_handle);
 	glUniform1i(uniloc(sha, "trans"), 1);
 	glUniform1f(uniloc(sha, "t"), 1.0 - f);
 
@@ -88,7 +88,7 @@ static void stagetext_draw_single(StageText *txt) {
 	glUniform3fv(uniloc(sha, "color"), 1, txt->clr);
 	draw_text(txt->align, creal(txt->pos)+10*f*f, cimag(txt->pos)+10*f*f, txt->text, *txt->font);
 
-	render_shader_standard();
+	r_shader_standard();
 }
 
 void stagetext_draw(void) {

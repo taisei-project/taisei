@@ -11,7 +11,7 @@
 #include "bgm.h"
 
 ResourceHandler bgm_res_handler = {
-    .type = RES_ANIM,
+    .type = RES_BGM,
     .typename = "bgm",
     .subdir = BGM_PATH_PREFIX,
 

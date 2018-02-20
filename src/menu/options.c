@@ -720,9 +720,9 @@ void create_options_menu(MenuData *m) {
 // --- Drawing the menu --- //
 
 void draw_options_menu_bg(MenuData* menu) {
-	render_color4(0.3, 0.3, 0.3, 0.9 + 0.1 * sin(menu->frames/100.0));
+	r_color4(0.3, 0.3, 0.3, 0.9 + 0.1 * sin(menu->frames/100.0));
 	fill_screen("menu/mainmenubg");
-	render_color4(1, 1, 1, 1);
+	r_color4(1, 1, 1, 1);
 }
 
 static void update_options_menu(MenuData *menu) {
@@ -743,8 +743,8 @@ void draw_options_menu(MenuData *menu) {
 	draw_options_menu_bg(menu);
 	draw_menu_title(menu, menu->context);
 
-	render_push();
-	render_translate(100, 100, 0);
+	r_mat_push();
+	r_mat_translate(100, 100, 0);
 
 	draw_menu_selector(menu->drawdata[0], menu->drawdata[2], menu->drawdata[1], 34, menu->frames);
 
@@ -761,11 +761,11 @@ void draw_options_menu(MenuData *menu) {
 		float alpha = (!bind || bind_isactive(bind))? 1 : 0.5;
 
 		if(e->action == NULL) {
-			render_color4(0.5, 0.5, 0.5, 0.7 * alpha);
+			r_color4(0.5, 0.5, 0.5, 0.7 * alpha);
 		} else {
 			//render_color4(0.7 + 0.3 * (1-a), 1, 1, (0.7 + 0.3 * a) * alpha);
 			float ia = 1-a;
-			render_color4(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a) * alpha);
+			r_color4(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a) * alpha);
 		}
 
 		draw_text(AL_Left, (1 + (bind ? bind->pad : 0)) * 20 - e->drawdata, 20*i, e->name, _fonts.standard);
@@ -792,9 +792,9 @@ void draw_options_menu(MenuData *menu) {
 							origin -= stringwidth(bind->values[j+1], _fonts.standard) + 5;
 
 						if(val == j) {
-							render_color4(0.9, 0.6, 0.2, alpha);
+								r_color4(0.9, 0.6, 0.2, alpha);
 						} else {
-							render_color4(0.5,0.5,0.5,0.7 * alpha);
+								r_color4(0.5,0.5,0.5,0.7 * alpha);
 						}
 
 						draw_text(AL_Right, origin, 20*i, bind->values[j], _fonts.standard);
@@ -804,7 +804,7 @@ void draw_options_menu(MenuData *menu) {
 
 				case BT_KeyBinding: {
 					if(bind->blockinput) {
-						render_color4(0.5, 1, 0.5, 1);
+						r_color4(0.5, 1, 0.5, 1);
 						draw_text(AL_Right, origin, 20*i, "Press a key to assign, ESC to cancel", _fonts.standard);
 					} else {
 						const char *txt = SDL_GetScancodeName(config_get_int(bind->configentry));
@@ -817,7 +817,7 @@ void draw_options_menu(MenuData *menu) {
 					}
 
 					if(!caption_drawn) {
-						render_color4(1,1,1,0.7);
+						r_color4(1,1,1,0.7);
 						draw_text(AL_Center, (SCREEN_W - 200)/2, 20*(i-1), "Controls", _fonts.standard);
 						caption_drawn = 1;
 					}
@@ -859,7 +859,7 @@ void draw_options_menu(MenuData *menu) {
 					bool is_axis = (bind->type == BT_GamepadAxisBinding);
 
 					if(bind->blockinput) {
-						render_color4(0.5, 1, 0.5, 1);
+						r_color4(0.5, 1, 0.5, 1);
 						draw_text(AL_Right, origin, 20*i,
 							is_axis ? "Move an axis to assign, Back to cancel"
 									: "Press a button to assign, Back to cancel",
@@ -876,7 +876,7 @@ void draw_options_menu(MenuData *menu) {
 
 				case BT_StrValue: {
 					if(bind->blockinput) {
-						render_color4(0.5, 1, 0.5, 1.0);
+						r_color4(0.5, 1, 0.5, 1.0);
 						if(*bind->strvalue) {
 							draw_text(AL_Right, origin, 20*i, bind->strvalue, _fonts.standard);
 						}
@@ -920,21 +920,21 @@ void draw_options_menu(MenuData *menu) {
 					if(!strcmp(tmp, "-0%"))
 						strcpy(tmp, "0%");
 
-					render_push();
-					render_translate(origin - (w+cw) * 0.5, 20 * i, 0);
+					r_mat_push();
+					r_mat_translate(origin - (w+cw) * 0.5, 20 * i, 0);
 					draw_text(AL_Right, -((w+cw) * 0.5 + 10), 0, tmp, _fonts.standard);
-					render_shader_standard_notex();
-					render_push();
-					render_scale(w+cw, h, 1);
-					render_color4(1, 1, 1, (0.1 + 0.2 * a) * alpha);
-					render_draw_quad();
-					render_pop();
-					render_translate(w * (pos - 0.5), 0, 0);
-					render_scale(cw, h, 0);
-					render_color4(0.9, 0.6, 0.2, alpha);
-					render_draw_quad();
-					render_pop();
-					render_shader_standard();
+					r_shader_standard_notex();
+					r_mat_push();
+					r_mat_scale(w+cw, h, 1);
+					r_color4(1, 1, 1, (0.1 + 0.2 * a) * alpha);
+					r_draw_quad();
+					r_mat_pop();
+					r_mat_translate(w * (pos - 0.5), 0, 0);
+					r_mat_scale(cw, h, 0);
+					r_color4(0.9, 0.6, 0.2, alpha);
+					r_draw_quad();
+					r_mat_pop();
+					r_shader_standard();
 
 					break;
 				}
@@ -942,7 +942,7 @@ void draw_options_menu(MenuData *menu) {
 		}
 	}
 
-	render_pop();
+	r_mat_pop();
 }
 
 // --- Input/event processing --- //

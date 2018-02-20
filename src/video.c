@@ -162,7 +162,7 @@ static void video_init_gl(void) {
 
 	init_quadvbo();
 
-	render_init();
+	r_init();
 
 	glClear(GL_COLOR_BUFFER_BIT);
 }
@@ -609,7 +609,7 @@ void video_init(void) {
 }
 
 void video_shutdown(void) {
-	render_free();
+	r_shutdown();
 	SDL_DestroyWindow(video.window);
 	SDL_GL_DeleteContext(video.glcontext);
 	unload_gl_library();

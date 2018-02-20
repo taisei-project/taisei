@@ -84,7 +84,7 @@ void draw_items(void) {
 		);
 
 		if(prevc != c) {
-			render_color(c);
+			r_color(c);
 			prevc = c;
 		}
 
@@ -92,7 +92,7 @@ void draw_items(void) {
 	}
 
 	if(prevc != white) {
-		render_color4(1, 1, 1, 1);
+		r_color4(1, 1, 1, 1);
 	}
 }
 

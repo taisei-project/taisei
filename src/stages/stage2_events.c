@@ -560,7 +560,7 @@ void hina_monty_slave_visual(Enemy *s, int time, bool render) {
 	}
 
 	Sprite *soul = get_sprite("proj/soul");
-	Shader *shader = recolor_get_shader();
+	ShaderProgram *shader = recolor_get_shader();
 	double scale = fabs(swing(clamp(time / 60.0, 0, 1), 3)) * 1.25;
 
 	ColorTransform ct;
@@ -569,42 +569,42 @@ void hina_monty_slave_visual(Enemy *s, int time, bool render) {
 	Color clr2 = rgba(0.0, 0.0, 1.0, 1.0);
 	Color clr3 = rgba(psin(time*0.05), 0.0, 1.0 - psin(time*0.05), 1.0);
 
-	glUseProgram(shader->prog);
+	glUseProgram(shader->gl_handle);
 
-	render_push();
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+	r_mat_push();
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-	render_translate(creal(s->pos), cimag(s->pos), 0);
+	r_mat_translate(creal(s->pos), cimag(s->pos), 0);
 
 	static_clrtransform_bullet(clr1, &ct);
 	recolor_apply_transform(&ct);
-	render_push();
-	render_rotate_deg(time, 0, 0, 1);
-	render_scale(scale * (0.6 + 0.6 * psin(time*0.1)), scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), 0);
+	r_mat_push();
+	r_mat_rotate_deg(time, 0, 0, 1);
+	r_mat_scale(scale * (0.6 + 0.6 * psin(time*0.1)), scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), 0);
 	draw_sprite_p(0, 0, soul);
-	render_pop();
+	r_mat_pop();
 
 	static_clrtransform_bullet(clr2, &ct);
 	recolor_apply_transform(&ct);
-	render_push();
-	render_rotate_deg(time, 0, 0, 1);
-	render_scale(scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0);
+	r_mat_push();
+	r_mat_rotate_deg(time, 0, 0, 1);
+	r_mat_scale(scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0);
 	draw_sprite_p(0, 0, soul);
-	render_pop();
+	r_mat_pop();
 
 	static_clrtransform_bullet(clr3, &ct);
 	recolor_apply_transform(&ct);
-	render_push();
-	render_rotate_deg(-time, 0, 0, 1);
+	r_mat_push();
+	r_mat_rotate_deg(-time, 0, 0, 1);
 	// render_scale(scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0);
-	render_scale(scale, scale, 0);
+	r_mat_scale(scale, scale, 0);
 	draw_sprite_p(0, 0, soul);
-	render_pop();
+	r_mat_pop();
 
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-	render_pop();
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_mat_pop();
 
-	render_shader_standard();
+	r_shader_standard();
 }
 
 void hina_monty(Boss *h, int time) {
@@ -736,16 +736,16 @@ void hina_monty(Boss *h, int time) {
 
 void hina_spell_bg(Boss *h, int time) {
 
-	render_push();
-	render_translate(VIEWPORT_W/2, VIEWPORT_H/2,0);
-	render_push();
-	render_scale(0.6,0.6,1);
+	r_mat_push();
+	r_mat_translate(VIEWPORT_W/2, VIEWPORT_H/2,0);
+	r_mat_push();
+	r_mat_scale(0.6,0.6,1);
 	draw_sprite(0, 0, "stage2/spellbg1");
-	render_pop();
+	r_mat_pop();
 	glBlendFunc(GL_ZERO, GL_SRC_COLOR);
-	render_rotate_deg(time*5, 0,0,1);
+	r_mat_rotate_deg(time*5, 0,0,1);
 	draw_sprite(0, 0, "stage2/spellbg2");
-	render_pop();
+	r_mat_pop();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	play_animation(get_ani("fire"),creal(h->pos), cimag(h->pos), 0);
 

@@ -70,14 +70,14 @@ void draw_char_menu(MenuData *menu) {
 	draw_options_menu_bg(menu);
 	draw_menu_title(menu, "Select Character");
 
-	render_push();
-	render_color4(0,0,0,0.7);
-	render_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
-	render_scale(300, SCREEN_H, 1);
-	render_shader_standard_notex();
-	render_draw_quad();
-	render_shader_standard();
-	render_pop();
+	r_mat_push();
+	r_color4(0,0,0,0.7);
+	r_mat_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
+	r_mat_scale(300, SCREEN_H, 1);
+	r_shader_standard_notex();
+	r_draw_quad();
+	r_shader_standard();
+	r_mat_pop();
 
 	CharacterID current_char = 0;
 
@@ -93,71 +93,71 @@ void draw_char_menu(MenuData *menu) {
 			current_char = pchar->id;
 		}
 
-		render_color4(1,1,1,1-menu->entries[i].drawdata*2);
+		r_color4(1,1,1,1-menu->entries[i].drawdata*2);
 		draw_sprite(SCREEN_W/3-200*menu->entries[i].drawdata, 2*SCREEN_H/3, spr);
 
-		render_push();
-		render_translate(SCREEN_W/4*3, SCREEN_H/3, 0);
+		r_mat_push();
+		r_mat_translate(SCREEN_W/4*3, SCREEN_H/3, 0);
 
-		render_push();
+		r_mat_push();
 
 		if(menu->entries[i].drawdata != 0) {
-			render_translate(0,-300*menu->entries[i].drawdata, 0);
-			render_rotate_deg(180*menu->entries[i].drawdata, 1,0,0);
+			r_mat_translate(0,-300*menu->entries[i].drawdata, 0);
+			r_mat_rotate_deg(180*menu->entries[i].drawdata, 1,0,0);
 		}
 
 		draw_text(AL_Center, 0, 0, name, _fonts.mainmenu);
-		render_pop();
+		r_mat_pop();
 
 		if(menu->entries[i].drawdata) {
-			render_color4(1,1,1,1-menu->entries[i].drawdata*3);
+			r_color4(1,1,1,1-menu->entries[i].drawdata*3);
 		} else {
-			render_color4(1,1,1,1);
+			r_color4(1,1,1,1);
 		}
 
 		draw_text(AL_Center, 0, 70, title, _fonts.standard);
-		render_pop();
+		r_mat_pop();
 	}
 
-	render_push();
-	render_translate(SCREEN_W/4*3, SCREEN_H/3, 0);
+	r_mat_push();
+	r_mat_translate(SCREEN_W/4*3, SCREEN_H/3, 0);
 
 	for(int i = 0; i < mod->ecount; i++) {
 		PlayerMode *mode = plrmode_find(current_char, (ShotModeID)(uintptr_t)mod->entries[i].arg);
 		assert(mode != NULL);
 
 		if(mod->cursor == i) {
-			render_color4(0.9,0.6,0.2,1);
+			r_color4(0.9,0.6,0.2,1);
 		} else {
-			render_color4(1,1,1,1);
+			r_color4(1,1,1,1);
 		}
 
 		draw_text(AL_Center, 0, 200+40*i, mode->name, _fonts.standard);
 	}
 
-	render_pop();
-	render_color4(1,1,1,0.3*sin(menu->frames/20.0)+0.5);
+	r_mat_pop();
+	r_color4(1,1,1,0.3*sin(menu->frames/20.0)+0.5);
 
 	for(int i = 0; i <= 1; i++) {
-		render_push();
+		r_mat_push();
 
-		render_translate(60 + (SCREEN_W/2 - 30)*i, SCREEN_H/2+80, 0);
+		r_mat_translate(60 + (SCREEN_W/2 - 30)*i, SCREEN_H/2+80, 0);
 
 		if(i) {
-			render_scale(-1,1,1);
+			r_mat_scale(-1,1,1);
 			glCullFace(GL_FRONT);
 		}
 
 		draw_sprite(0, 0, "menu/arrow");
 
-		render_pop();
+		r_mat_pop();
 
 		if(i) {
 			glCullFace(GL_BACK);
 		}
 	}
 
-	render_color3(1,1,1);
+	r_color3(1,1,1);
 }
 
 bool char_menu_input_handler(SDL_Event *event, void *arg) {

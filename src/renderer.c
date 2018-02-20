@@ -13,7 +13,9 @@
 #include "resource/resource.h"
 #include "glm.h"
 
-struct {
+#include "recolor.h"
+
+static struct {
 	// MatrixMode mode;
 
 	struct {
@@ -32,13 +34,12 @@ struct {
 
 	vec4 color;
 
-	bool changed;
-
 	GLuint ubo;
 	RendererUBOData ubodata;
 
 	struct {
-		ShaderProgram *current;
+		ShaderProgram *active;
+		ShaderProgram *pending;
 		ShaderProgram *std;
 		ShaderProgram *std_notex;
 	} progs;
@@ -53,6 +54,7 @@ void matstack_push(MatrixStack *ms) {
 	if(ms->head >= ms->stack + RENDER_MATRIX_STACKSIZE) {
 		log_fatal("matrix.stackoverflow.com/jobs: Increase RENDER_MATRIX_STACKSIZE");
 	}
+
 	glm_mat4_copy(*ms->head, *(ms->head + 1));
 	ms->head++;
 }
@@ -62,28 +64,33 @@ void matstack_pop(MatrixStack *ms) {
 	ms->head--;
 }
 
-void render_init(void) {
-	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
-		"standard",
-		"standardnotex",
-	NULL);
-
+void r_init(void) {
 	matstack_init(&R.mstacks.texture);
 	matstack_init(&R.mstacks.modelview);
 	matstack_init(&R.mstacks.projection);
-	R.changed = true;
 
 	glGenBuffers(1, &R.ubo);
 	glBindBuffer(GL_UNIFORM_BUFFER, R.ubo);
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(R.ubodata), &R.ubodata, GL_STREAM_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	glBindBufferRange(GL_UNIFORM_BUFFER, 1, R.ubo, 0, sizeof(R.ubodata));
+}
+
+void r_post_init(void) {
+	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT | RESF_PERMANENT,
+		"standard",
+		"standardnotex",
+	NULL);
+
+	recolor_init();
 
 	R.progs.std = get_shader_program("standard");
 	R.progs.std_notex = get_shader_program("standardnotex");
+
+	r_shader_standard();
 }
 
-void render_free(void) {
+void r_shutdown(void) {
 	glDeleteBuffers(1, &R.ubo);
 }
 
@@ -91,103 +98,136 @@ static inline vec4 *active_matrix(void) {
 	return *R.mstacks.active->head;
 }
 
-void render_matrix_mode(MatrixMode mode) {
-	assert(mode > 0);
+void r_mat_mode(MatrixMode mode) {
+	assert(mode >= 0);
 	assert(mode < MM_NUM_MODES);
 	R.mstacks.active = &R.mstacks.indexed[mode];
 }
 
-void render_push(void) {
+void r_mat_push(void) {
 	matstack_push(R.mstacks.active);
 }
-void render_pop(void) {
+void r_mat_pop(void) {
 	matstack_pop(R.mstacks.active);
-	R.changed = true;
 }
 
-void render_identity(void) {
+void r_mat_identity(void) {
 	glm_mat4_identity(active_matrix());
 }
 
-void render_translate(float x, float y, float z) {
-	glm_translate(active_matrix(), (vec3){x, y, z});
-	R.changed = true;
+void r_mat_translate_v(vec3 v) {
+	glm_translate(active_matrix(), v);
 }
 
-void render_rotate(float angle, float x, float y, float z) {
-	glm_rotate(active_matrix(), angle, (vec3){x, y, z});
-	R.changed = true;
+void r_mat_translate(float x, float y, float z) {
+	r_mat_translate_v((vec3) { x, y, z });
 }
 
-void render_rotate_deg(float angle_degrees, float x, float y, float z) {
-	glm_rotate(active_matrix(), glm_rad(angle_degrees), (vec3){x, y, z});
-	R.changed = true;
+void r_mat_rotate_v(float angle, vec3 v) {
+	glm_rotate(active_matrix(), angle, v);
 }
 
-void render_scale(float x, float y, float z) {
-	glm_scale(active_matrix(), (vec3){x, y, z});
-	R.changed = true;
+void r_mat_rotate(float angle, float x, float y, float z) {
+	r_mat_rotate_v(angle, (vec3) { x, y, z });
 }
 
-void render_ortho(float left, float right, float bottom, float top, float near, float far) {
+void r_mat_rotate_deg_v(float angle_degrees, vec3 v) {
+	r_mat_rotate_v(glm_rad(angle_degrees), v);
+}
+
+void r_mat_rotate_deg(float angle_degrees, float x, float y, float z) {
+	r_mat_rotate_deg_v(angle_degrees, (vec3) { x, y, z });
+}
+
+void r_mat_scale_v(vec3 v) {
+	glm_scale(active_matrix(), v);
+}
+
+void r_mat_scale(float x, float y, float z) {
+	r_mat_scale_v((vec3) { x, y, z });
+}
+
+void r_mat_ortho(float left, float right, float bottom, float top, float near, float far) {
 	glm_ortho(left, right, bottom, top, near, far, active_matrix());
-	R.changed = true;
 }
 
-void render_perspective(float angle, float aspect, float near, float far) {
+void r_mat_perspective(float angle, float aspect, float near, float far) {
 	glm_perspective(angle, aspect, near, far, active_matrix());
-	R.changed = true;
 }
 
-void render_color(Color c) {
+void r_color(Color c) {
 	parse_color_array(c, R.color);
-	R.changed = true;
 }
 
-void render_color4(float r, float g, float b, float a) {
-	glm_vec4_copy((vec4){r, g, b, a}, R.color);
-	R.changed = true;
+void r_color4(float r, float g, float b, float a) {
+	glm_vec4_copy((vec4) { r, g, b, a }, R.color);
 }
 
-void render_color3(float r, float g, float b) {
-	glm_vec4_copy((vec4){r, g, b, 1.0}, R.color);
-	R.changed = true;
+void r_color3(float r, float g, float b) {
+	glm_vec4_copy((vec4) { r, g, b, 1.0 }, R.color);
+
 }
 
-void render_draw_quad(void) {
-	if(R.changed && R.progs.current->renderctx_block_idx >= 0) {
-		glm_mat4_copy(*R.mstacks.modelview.head, R.ubodata.modelview);
-		glm_mat4_copy(*R.mstacks.projection.head, R.ubodata.projection);
-		glm_mat4_copy(*R.mstacks.texture.head, R.ubodata.texture);
-		glm_vec4_copy(R.color, R.ubodata.color);
+static void update_prog(void) {
+	if(R.progs.pending != R.progs.active) {
+		log_debug("switch program %i", R.progs.pending->gl_handle);
+		glUseProgram(R.progs.pending->gl_handle);
+		R.progs.active = R.progs.pending;
+	}
+}
 
-		// glm_mat4_print(R.ubodata.projection, stdout);
+static void update_ubo(void) {
+	// update_prog();
 
-		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(R.ubodata), &R.ubodata);
+	/*
+	if(R.progs.active->renderctx_block_idx < 0) {
+		return;
+	}
+	*/
 
-		R.changed = false;
+	RendererUBOData ubo;
+	memset(&ubo, 0, sizeof(ubo));
+
+	glm_mat4_copy(*R.mstacks.modelview.head, ubo.modelview);
+	glm_mat4_copy(*R.mstacks.projection.head, ubo.projection);
+	glm_mat4_copy(*R.mstacks.texture.head, ubo.texture);
+	glm_vec4_copy(R.color, ubo.color);
+
+	if(!memcmp(&R.ubodata, &ubo, sizeof(ubo))) {
+		return;
 	}
 
+	memcpy(&R.ubodata, &ubo, sizeof(ubo));
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(R.ubodata), &R.ubodata);
+}
+
+void r_draw_quad(void) {
+	update_ubo();
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-void render_shader(ShaderProgram *prog) {
+void r_shader(ShaderProgram *prog) {
 	assert(prog != NULL);
-
-	if(R.progs.current != prog) {
-		glUseProgram(prog->gl_handle);
-		R.progs.current = prog;
-	}
+	R.progs.pending = prog;
+	// update_prog();
+	glUseProgram(prog->gl_handle);
+	R.progs.active = prog;
 }
 
-void render_shader_standard(void) {
-	glUseProgram(R.progs.std->gl_handle);
+void r_shader_standard(void) {
+	r_shader(R.progs.std);
 }
 
-void render_shader_standard_notex(void) {
-	glUseProgram(R.progs.std_notex->gl_handle);
+void r_shader_standard_notex(void) {
+	// log_fatal("fuck you");
+	r_shader(R.progs.std_notex);
 }
 
-ShaderProgram* render_current_shader(void) {
-	return R.progs.current;
+ShaderProgram *r_shader_current(void) {
+	// update_prog();
+	return R.progs.active;
+}
+
+void r_flush(void) {
+	update_ubo();
 }

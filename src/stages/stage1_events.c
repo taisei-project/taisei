@@ -241,15 +241,15 @@ void cirno_perfect_freeze(Boss *c, int time) {
 }
 
 void cirno_pfreeze_bg(Boss *c, int time) {
-	render_color4(0.5,0.5,0.5,1);
+	r_color4(0.5,0.5,0.5,1);
 	fill_viewport(time/700.0, time/700.0, 1, "stage1/cirnobg");
-	render_color4(0.7,0.7,0.7,0.5);
+	r_color4(0.7,0.7,0.7,0.5);
 	glBlendFunc(GL_ZERO, GL_SRC_COLOR);
 	fill_viewport(-time/700.0 + 0.5, time/700.0+0.5, 0.4, "stage1/cirnobg");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	fill_viewport(0, -time/100.0, 0, "stage1/snowlayer");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	render_color4(1,1,1,1);
+	r_color4(1,1,1,1);
 }
 
 void cirno_mid_flee(Boss *c, int time) {

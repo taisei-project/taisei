@@ -69,21 +69,21 @@ static vec3 **stage5_stairs_pos(vec3 pos, float maxrange) {
 static void stage5_stairs_draw(vec3 pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage5/tower")->gltex);
 
-	render_push();
-	render_translate(pos[0], pos[1], pos[2]);
-	render_scale(300,300,300);
+	r_mat_push();
+	r_mat_translate(pos[0], pos[1], pos[2]);
+	r_mat_scale(300,300,300);
 
-	Shader *sha = get_shader("tower_light");
-	glUseProgram(sha->prog);
+	ShaderProgram *sha = get_shader_program("tower_light");
+	glUseProgram(sha->gl_handle);
 	glUniform3f(uniloc(sha, "lightvec"), 0, 0, 0);
 	glUniform4f(uniloc(sha, "color"), 0.1, 0.1, 0.5, 1);
 	glUniform1f(uniloc(sha, "strength"), stagedata.light_strength);
 
 	draw_model("tower");
 
-	render_pop();
+	r_mat_pop();
 
-	render_shader_standard();
+	r_shader_standard();
 }
 
 static void stage5_draw(void) {
@@ -128,27 +128,27 @@ void iku_spell_bg(Boss *b, int t) {
 	fill_viewport(0, t*0.001, 0.7, "stage5/noise");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	render_push();
-	render_translate(0, -100, 0);
+	r_mat_push();
+	r_mat_translate(0, -100, 0);
 
 	fill_viewport(t/100.0,0,0.5,"stage5/spell_clouds");
-	render_push();
-	render_translate(0, 100, 0);
+	r_mat_push();
+	r_mat_translate(0, 100, 0);
 	fill_viewport(t/100.0*0.75,0,0.6,"stage5/spell_clouds");
-	render_push();
-	render_translate(0, 100, 0);
+	r_mat_push();
+	r_mat_translate(0, 100, 0);
 	fill_viewport(t/100.0*0.5,0,0.7,"stage5/spell_clouds");
-	render_push();
-	render_translate(0, 100, 0);
+	r_mat_push();
+	r_mat_translate(0, 100, 0);
 	fill_viewport(t/100.0*0.25,0,0.8,"stage5/spell_clouds");
-	render_pop();
-	render_pop();
-	render_pop();
-	render_pop();
+	r_mat_pop();
+	r_mat_pop();
+	r_mat_pop();
+	r_mat_pop();
 
-	render_color4(1,1,1,0.05*stagedata.light_strength);
+	r_color4(1,1,1,0.05*stagedata.light_strength);
 	fill_viewport(0, 300, 1, "stage5/spell_lightning");
-	render_color4(1,1,1,1);
+	r_color4(1,1,1,1);
 }
 
 static void stage5_start(void) {
@@ -172,7 +172,7 @@ static void stage5_preload(void) {
 		"stage5/tower",
 		"dialog/iku",
 	NULL);
-	preload_resources(RES_SHADER, RESF_DEFAULT,
+	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"tower_light",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,

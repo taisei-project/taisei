@@ -24,10 +24,10 @@ uniform vec4 O;
 void main(void) {
 	vec4 texel = texture2D(tex, TexCoord0.xy);
 
-    gl_FragColor = (
-        R * texel.r +
-        G * texel.g +
-        B * texel.b +
-        A * texel.a
-    ) + O;
+	gl_FragColor = (
+		R * texel.r +
+		G * texel.g +
+		B * texel.b +
+		A * texel.a
+	) + O;
 }

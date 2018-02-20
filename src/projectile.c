@@ -408,7 +408,7 @@ static inline void draw_projectile(Projectile *proj, ProjBlendMode *cur_blend_mo
 	int cur_shader;
 	glGetIntegerv(GL_CURRENT_PROGRAM, &cur_shader); // NOTE: this can be really slow!
 
-	if(cur_shader != recolor_get_shader()->prog) {
+	if(cur_shader != recolor_get_shader()->gl_handle) {
 		set_debug_info(&proj->debug);
 		log_fatal("Bad shader after drawing projectile");
 	}
@@ -421,7 +421,7 @@ static inline void draw_projectile(Projectile *proj, ProjBlendMode *cur_blend_mo
 void draw_projectiles(Projectile *projs, ProjPredicate predicate) {
 	ProjBlendMode blend_mode = PBM_NORMAL;
 
-	glUseProgram(recolor_get_shader()->prog);
+	glUseProgram(recolor_get_shader()->gl_handle);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	if(predicate) {
@@ -436,7 +436,7 @@ void draw_projectiles(Projectile *projs, ProjPredicate predicate) {
 		}
 	}
 
-	render_shader_standard();
+	r_shader_standard();
 
 	if(blend_mode != PBM_NORMAL) {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -615,8 +615,8 @@ int asymptotic(Projectile *p, int t) { // v = a[0]*(a[1] + 1); a[1] -> 0
 }
 
 static inline void apply_common_transforms(Projectile *proj, int t) {
-	render_translate(creal(proj->pos), cimag(proj->pos), 0);
-	render_rotate_deg(proj->angle*180/M_PI+90, 0, 0, 1);
+	r_mat_translate(creal(proj->pos), cimag(proj->pos), 0);
+	r_mat_rotate_deg(proj->angle*180/M_PI+90, 0, 0, 1);
 
 	if(t >= 16) {
 		return;
@@ -632,7 +632,7 @@ static inline void apply_common_transforms(Projectile *proj, int t) {
 
 	float s = 2.0-t/16.0;
 	if(s != 1) {
-		render_scale(s, s, 1);
+		r_mat_scale(s, s, 1);
 	}
 }
 
@@ -648,10 +648,10 @@ void ProjDrawCore(Projectile *proj, Color c) {
 }
 
 void ProjDraw(Projectile *proj, int t) {
-	render_push();
+	r_mat_push();
 	apply_common_transforms(proj, t);
 	ProjDrawCore(proj, proj->color);
-	render_pop();
+	r_mat_pop();
 }
 
 void ProjNoDraw(Projectile *proj, int t) {
@@ -667,70 +667,70 @@ int blast_timeout(Projectile *p, int t) {
 }
 
 void Blast(Projectile *p, int t) {
-	render_push();
-	render_translate(creal(p->pos), cimag(p->pos), 0);
-	render_rotate_deg(creal(p->args[1]), cimag(p->args[1]), creal(p->args[2]), cimag(p->args[2]));
+	r_mat_push();
+	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
+	r_mat_rotate_deg(creal(p->args[1]), cimag(p->args[1]), creal(p->args[2]), cimag(p->args[2]));
 	if(t != p->args[0] && p->args[0] != 0)
-		render_scale(t/p->args[0], t/p->args[0], 1);
+		r_mat_scale(t/p->args[0], t/p->args[0], 1);
 
 	apply_color(p, rgba(0.3, 0.6, 1.0, 1.0 - t/p->args[0]));
 
 	draw_sprite_p(0,0,p->sprite);
-	render_scale(0.5+creal(p->args[2]),0.5+creal(p->args[2]),1);
+	r_mat_scale(0.5+creal(p->args[2]),0.5+creal(p->args[2]),1);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 	draw_sprite_p(0,0,p->sprite);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-	render_pop();
+	r_mat_pop();
 }
 
 void Shrink(Projectile *p, int t) {
-	render_push();
+	r_mat_push();
 	apply_common_transforms(p, t);
 
 	float s = 2.0-t/p->args[0]*2;
 	if(s != 1) {
-		render_scale(s, s, 1);
+		r_mat_scale(s, s, 1);
 	}
 
 	ProjDrawCore(p, p->color);
-	render_pop();
+	r_mat_pop();
 }
 
 void DeathShrink(Projectile *p, int t) {
-	render_push();
+	r_mat_push();
 	apply_common_transforms(p, t);
 
 	float s = 2.0-t/p->args[0]*2;
 	if(s != 1) {
-		render_scale(s, 1, 1);
+		r_mat_scale(s, 1, 1);
 	}
 
 	ProjDrawCore(p, p->color);
-	render_pop();
+	r_mat_pop();
 }
 
 void GrowFade(Projectile *p, int t) {
-	render_push();
+	r_mat_push();
 	apply_common_transforms(p, t);
 
 	float s = t/p->args[0]*(1 + (creal(p->args[2])? p->args[2] : p->args[1]));
 	if(s != 1) {
-		render_scale(s, s, 1);
+		r_mat_scale(s, s, 1);
 	}
 
 	ProjDrawCore(p, multiply_colors(p->color, rgba(1, 1, 1, 1 - t/p->args[0])));
-	render_pop();
+	r_mat_pop();
 }
 
 void Fade(Projectile *p, int t) {
-	render_push();
+	r_mat_push();
 	apply_common_transforms(p, t);
 	ProjDrawCore(p, multiply_colors(p->color, rgba(1, 1, 1, 1 - t/p->args[0])));
-	render_pop();
+	r_mat_pop();
 }
 
 void ScaleFade(Projectile *p, int t) {
-	render_push();
+	r_mat_push();
 	apply_common_transforms(p, t);
 
 	double scale_min = creal(p->args[2]);
@@ -743,9 +743,9 @@ void ScaleFade(Projectile *p, int t) {
 
 	Color c = multiply_colors(p->color, rgba(1, 1, 1, alpha));
 
-	render_scale(scale, scale, 1);
+	r_mat_scale(scale, scale, 1);
 	ProjDrawCore(p, c);
-	render_pop();
+	r_mat_pop();
 }
 
 int timeout(Projectile *p, int t) {
@@ -787,11 +787,11 @@ void Petal(Projectile *p, int t) {
 	x /= r; y /= r; z /= r;
 
 	glDisable(GL_CULL_FACE);
-	render_push();
-	render_translate(creal(p->pos), cimag(p->pos),0);
-	render_rotate_deg(t*4.0 + cimag(p->args[3]), x, y, z);
+	r_mat_push();
+	r_mat_translate(creal(p->pos), cimag(p->pos),0);
+	r_mat_rotate_deg(t*4.0 + cimag(p->args[3]), x, y, z);
 	ProjDrawCore(p, p->color);
-	render_pop();
+	r_mat_pop();
 	glEnable(GL_CULL_FACE);
 }
 

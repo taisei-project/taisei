@@ -24,7 +24,7 @@ struct recolor_varcache {
 };
 
 static struct recolor_vars_s {
-	Shader *shader;
+	ShaderProgram *shader;
 	struct recolor_varcache R;
 	struct recolor_varcache G;
 	struct recolor_varcache B;
@@ -50,9 +50,9 @@ void recolor_init(void) {
 		return;
 	}
 
-	preload_resource(RES_SHADER, "recolor", RESF_PERMANENT);
+	preload_resource(RES_SHADER_PROGRAM, "recolor", RESF_PERMANENT);
 
-	recolor_vars.shader = get_shader("recolor");
+	recolor_vars.shader = get_shader_program("recolor");
 	recolor_vars.R.loc = uniloc(recolor_vars.shader, "R");
 	recolor_vars.G.loc = uniloc(recolor_vars.shader, "G");
 	recolor_vars.B.loc = uniloc(recolor_vars.shader, "B");
@@ -61,7 +61,7 @@ void recolor_init(void) {
 
 	int prev_prog = 0;
 	glGetIntegerv(GL_CURRENT_PROGRAM, &prev_prog);
-	glUseProgram(recolor_vars.shader->prog);
+	glUseProgram(recolor_vars.shader->gl_handle);
 	recolor_apply_transform(&colortransform_identity);
 	glUseProgram(prev_prog);
 }
@@ -71,7 +71,7 @@ void recolor_reinit(void) {
 	recolor_init();
 }
 
-Shader* recolor_get_shader(void) {
+ShaderProgram* recolor_get_shader(void) {
 	return recolor_vars.shader;
 }
 

@@ -108,7 +108,7 @@ void reset_sounds(void) {
 	Resource *res;
 	Sound *snd;
 
-	for(HashtableIterator *i = hashtable_iter(resources.handlers[RES_SFX]->mapping);
+	for(HashtableIterator *i = hashtable_iter(get_resource_table(RES_SFX));
 		hashtable_iter_next(i, 0, (void**)&res);
 	) {
 		snd = res->data;
@@ -127,7 +127,7 @@ void update_sounds(void) {
 	Resource *res;
 	Sound *snd;
 
-	for(HashtableIterator *i = hashtable_iter(resources.handlers[RES_SFX]->mapping);
+	for(HashtableIterator *i = hashtable_iter(get_resource_table(RES_SFX));
 		hashtable_iter_next(i, 0, (void**)&res);
 	) {
 		snd = res->data;

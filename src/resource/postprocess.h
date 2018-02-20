@@ -10,7 +10,7 @@
 #include "taisei.h"
 
 #include "resource.h"
-#include "shader.h"
+#include "shader_program.h"
 
 typedef struct PostprocessShader PostprocessShader;
 typedef struct PostprocessShaderUniform PostprocessShaderUniform;
@@ -19,7 +19,7 @@ struct PostprocessShader {
 	LIST_INTERFACE(PostprocessShader);
 
 	PostprocessShaderUniform *uniforms;
-	Shader *shader;
+	ShaderProgram *shader;
 };
 
 typedef enum PostprocessShaderUniformType {
@@ -50,7 +50,7 @@ struct PostprocessShaderUniform {
 };
 
 typedef void (*PostprocessDrawFuncPtr)(FBO*);
-typedef void (*PostprocessPrepareFuncPtr)(FBO*, Shader*);
+typedef void (*PostprocessPrepareFuncPtr)(FBO*, ShaderProgram*);
 
 char* postprocess_path(const char *path);
 
@@ -69,3 +69,6 @@ void* load_postprocess_end(void *opaque, const char *path, unsigned int flags);
 void unload_postprocess(void*);
 
 extern ResourceHandler postprocess_res_handler;
+
+#define PP_PATH_PREFIX SHPROG_PATH_PREFIX
+#define PP_EXTENSION ".pp"

@@ -114,42 +114,42 @@ void player_draw(Player* plr) {
 
 	draw_enemies(plr->slaves);
 
-	render_push();
-		render_translate(creal(plr->pos), cimag(plr->pos), 0);
+	r_mat_push();
+		r_mat_translate(creal(plr->pos), cimag(plr->pos), 0);
 
 		if(plr->focus) {
-			render_push();
-				render_rotate_deg(global.frames*10, 0, 0, 1);
-				render_scale(1, 1, 1);
-				render_color4(1, 1, 1, 0.2 * (clamp(plr->focus, 0, 15) / 15.0));
+			r_mat_push();
+				r_mat_rotate_deg(global.frames*10, 0, 0, 1);
+				r_mat_scale(1, 1, 1);
+				r_color4(1, 1, 1, 0.2 * (clamp(plr->focus, 0, 15) / 15.0));
 				draw_sprite(0, 0, "fairy_circle");
-				render_color4(1,1,1,1);
-			render_pop();
+				r_color4(1,1,1,1);
+			r_mat_pop();
 		}
 
 
 		int clr_changed = 0;
 
 		if(global.frames - abs(plr->recovery) < 0 && (global.frames/8)&1) {
-			render_color4(0.4,0.4,1,0.9);
+			r_color4(0.4,0.4,1,0.9);
 			clr_changed = 1;
 		}
 
 		aniplayer_play(&plr->ani,0,0);
 
 		if(clr_changed)
-			render_color3(1,1,1);
+			r_color3(1,1,1);
 
 		if(plr->focus) {
-			render_push();
-				render_color4(1, 1, 1, plr->focus / 30.0);
-				render_rotate_deg(global.frames, 0, 0, -1);
+			r_mat_push();
+				r_color4(1, 1, 1, plr->focus / 30.0);
+				r_mat_rotate_deg(global.frames, 0, 0, -1);
 				draw_sprite(0, 0, "focus");
-				render_color4(1, 1, 1, 1);
-			render_pop();
+				r_color4(1, 1, 1, 1);
+			r_mat_pop();
 		}
 
-	render_pop();
+	r_mat_pop();
 }
 
 static void player_fail_spell(Player *plr) {

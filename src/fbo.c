@@ -43,7 +43,7 @@ static void init_fbo(FBO *fbo, float scale, int type) {
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, fbo->nw, fbo->nh, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,fbo->depth, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, fbo->depth, 0);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -92,12 +92,13 @@ void swap_fbo_pair(FBOPair *pair) {
 }
 
 void draw_fbo(FBO *fbo) {
-	render_push();
-		render_translate(VIEWPORT_W/2., VIEWPORT_H/2., 0);
-		render_scale(VIEWPORT_W, VIEWPORT_H, 1);
+	r_mat_push();
+		r_mat_translate(VIEWPORT_W/2., VIEWPORT_H/2., 0);
+		r_mat_scale(VIEWPORT_W, VIEWPORT_H, 1);
+		r_flush();
 		glBindTexture(GL_TEXTURE_2D, fbo->tex);
 		glDrawArrays(GL_TRIANGLE_FAN, 4, 4);
-	render_pop();
+	r_mat_pop();
 }
 
 void draw_fbo_viewport(FBO *fbo) {

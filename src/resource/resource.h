@@ -87,8 +87,6 @@ typedef struct Resource {
 } Resource;
 
 typedef struct Resources {
-	ResourceHandler *handlers[RES_NUMTYPES];
-
 	struct {
 		FBOPair bg;
 		FBOPair fg;
@@ -102,11 +100,12 @@ void init_resources(void);
 void load_resources(void);
 void free_resources(bool all);
 
-Resource* get_resource_p(ResourceType type, const char *name, ResourceFlags flags, void **out);
 Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags);
+void* get_resource_data(ResourceType type, const char *name, ResourceFlags flags);
 Resource* insert_resource(ResourceType type, const char *name, void *data, ResourceFlags flags, const char *source);
 void preload_resource(ResourceType type, const char *name, ResourceFlags flags);
 void preload_resources(ResourceType type, ResourceFlags flags, const char *firstname, ...) __attribute__((sentinel));
+Hashtable* get_resource_table(ResourceType type);
 
 void resource_util_strip_ext(char *path);
 char* resource_util_basename(const char *prefix, const char *path);

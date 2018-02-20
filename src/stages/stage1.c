@@ -63,42 +63,43 @@ static bool particle_filter(Projectile *part) {
 }
 
 static void stage1_bg_draw(vec3 pos) {
-	render_push();
-	render_translate(0,stage_3d_context.cx[1]+500,0);
-	render_rotate_deg(180,1,0,0);
+	r_mat_push();
+	r_mat_translate(0,stage_3d_context.cx[1]+500,0);
+	r_mat_rotate_deg(180,1,0,0);
 
-	render_shader_standard_notex();
-	render_push();
-	render_scale(1200,3000,1);
-	render_color4(0,0.1,.1,1);
-	render_draw_quad();
-	render_color4(1,1,1,1);
-	render_pop();
-	render_shader_standard();
+	r_shader_standard_notex();
+	r_mat_push();
+	r_mat_scale(1200,3000,1);
+	r_color4(0,0.1,.1,1);
+	r_draw_quad();
+	r_color4(1,1,1,1);
+	r_mat_pop();
+	r_shader_standard();
 
-	render_push();
-	render_rotate_deg(30,1,0,0);
-	render_scale(.85,-.85,.85);
-	render_translate(-VIEWPORT_W/2,0,0);
+	r_mat_push();
+	r_mat_rotate_deg(30,1,0,0);
+	r_mat_scale(.85,-.85,.85);
+	r_mat_translate(-VIEWPORT_W/2,0,0);
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 	draw_projectiles(global.particles, particle_filter);
 	draw_enemies(global.enemies);
 	if(global.boss)
 		draw_boss(global.boss);
-	render_pop();
+	
+	r_mat_pop();
 	glEnable(GL_CULL_FACE);
 
-	render_shader_standard_notex();
-	render_push();
-	render_scale(1200,3000,1);
-	render_color4(0,0.1,.1,0.8);
-	render_draw_quad();
-	render_color4(1,1,1,1);
-	render_pop();
+	r_shader_standard_notex();
+	r_mat_push();
+	r_mat_scale(1200,3000,1);
+	r_color4(0,0.1,.1,0.8);
+	r_draw_quad();
+	r_color4(1,1,1,1);
+	r_mat_pop();
 	glEnable(GL_DEPTH_TEST);
-	render_pop();
-	render_shader_standard();
+	r_mat_pop();
+	r_shader_standard();
 }
 
 static vec3 **stage1_bg_pos(vec3 p, float maxrange) {
@@ -110,17 +111,17 @@ static void stage1_smoke_draw(vec3 pos) {
 	float d = fabsf(pos[1]-stage_3d_context.cx[1]);
 
 	glDisable(GL_DEPTH_TEST);
-	render_push();
-	render_translate(pos[0]+200*sin(pos[1]), pos[1], pos[2]+200*sin(pos[1]/25.0));
-	render_rotate_deg(90,-1,0,0);
-	render_scale(3.5,2,1);
-	render_rotate_deg(global.frames,0,0,1);
+	r_mat_push();
+	r_mat_translate(pos[0]+200*sin(pos[1]), pos[1], pos[2]+200*sin(pos[1]/25.0));
+	r_mat_rotate_deg(90,-1,0,0);
+	r_mat_scale(3.5,2,1);
+	r_mat_rotate_deg(global.frames,0,0,1);
 
-	render_color4(.8,.8,.8,((d-500)*(d-500))/1.5e7);
+	r_color4(.8,.8,.8,((d-500)*(d-500))/1.5e7);
 	draw_sprite(0,0,"stage1/fog");
-	render_color4(1,1,1,1);
+	r_color4(1,1,1,1);
 
-	render_pop();
+	r_mat_pop();
 	glEnable(GL_DEPTH_TEST);
 }
 
@@ -131,9 +132,9 @@ static vec3 **stage1_smoke_pos(vec3 p, float maxrange) {
 }
 
 static void stage1_fog(FBO *fbo) {
-	Shader *shader = get_shader("zbuf_fog");
+	ShaderProgram *shader = get_shader_program("zbuf_fog");
 
-	glUseProgram(shader->prog);
+	glUseProgram(shader->gl_handle);
 	glUniform1i(uniloc(shader, "tex"), 0);
 	glUniform1i(uniloc(shader, "depth"), 1);
 	glUniform4f(uniloc(shader, "fog_color"), 0.8, 0.8, 0.8, 1.0);
@@ -146,7 +147,7 @@ static void stage1_fog(FBO *fbo) {
 	glActiveTexture(GL_TEXTURE0);
 
 	draw_fbo_viewport(fbo);
-	render_shader_standard();
+	r_shader_standard();
 }
 
 static void stage1_draw(void) {
@@ -160,25 +161,25 @@ static void stage1_update(void) {
 
 static void stage1_reed_draw(vec3 pos) {
 	float d = -55+50*sin(pos[1]/25.0);
-	render_push();
-	render_translate(pos[0]+200*sin(pos[1]), pos[1], d);
-	render_rotate_deg(90,1,0,0);
+	r_mat_push();
+	r_mat_translate(pos[0]+200*sin(pos[1]), pos[1], d);
+	r_mat_rotate_deg(90,1,0,0);
 //render_rotate_deg(90,0,0,1);
-	render_scale(80,80,80);
-	render_color4(0.,0.05,0.05,1);
+	r_mat_scale(80,80,80);
+	r_color4(0.,0.05,0.05,1);
 
 	draw_model("reeds");
-	render_translate(0,-d/80,0);
-	render_scale(1,-1,1);
-	render_translate(0,d/80,0);
+	r_mat_translate(0,-d/80,0);
+	r_mat_scale(1,-1,1);
+	r_mat_translate(0,d/80,0);
 	glDepthFunc(GL_GREATER);
 	glDepthMask(GL_FALSE);
-	render_color4(0.,0.05,0.05,0.5);
+	r_color4(0.,0.05,0.05,0.5);
 	draw_model("reeds");
 	glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LEQUAL);
-	render_color4(1,1,1,1);
-	render_pop();
+	r_color4(1,1,1,1);
+	r_mat_pop();
 }
 
 static void stage1_start(void) {
@@ -203,7 +204,7 @@ static void stage1_preload(void) {
 	preload_resources(RES_MODEL, RESF_DEFAULT,
 		"reeds",
 	NULL);
-	preload_resources(RES_SHADER, RESF_DEFAULT,
+	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"zbuf_fog",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,

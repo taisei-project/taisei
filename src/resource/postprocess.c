@@ -17,7 +17,7 @@
 ResourceHandler postprocess_res_handler = {
 	.type = RES_POSTPROCESS,
 	.typename = "postprocessing pipeline",
-	.subdir = SHA_PATH_PREFIX,
+	.subdir = PP_PATH_PREFIX,
 
 	.procs = {
 		.find = postprocess_path,
@@ -55,9 +55,9 @@ static void postprocess_load_callback(const char *key, const char *value, void *
 	if(!strcmp(key, "@shader")) {
 		current = malloc(sizeof(PostprocessShader));
 		current->uniforms = NULL;
-		current->shader = get_resource(RES_SHADER, value, ldata->resflags)->data;
+		current->shader = get_resource(RES_SHADER_PROGRAM, value, ldata->resflags)->data;
 		list_append(slist, current);
-		log_debug("Shader added: %s (prog: %u)", value, current->shader->prog);
+		log_debug("Shader added: %s (prog: %u)", value, current->shader->gl_handle);
 		return;
 	}
 
@@ -129,7 +129,15 @@ static void postprocess_load_callback(const char *key, const char *value, void *
 	uni->func = get_uniform_func(utype, usize);
 	list_append(&current->uniforms, uni);
 
-	log_debug("Uniform added: (name: %s; loc: %i; prog: %u; type: %i; size: %i; num: %i)", name, uni->loc, current->shader->prog, uni->type, uni->size, uni->amount);
+	log_debug(
+		"Uniform added: (name: %s; loc: %i; prog: %u; type: %i; size: %i; num: %i)",
+		name,
+		uni->loc,
+		current->shader->gl_handle,
+		uni->type,
+		uni->size,
+		uni->amount
+	);
 
 	for(int i = 0; i < uni->size * uni->amount; ++i) {
 		log_debug("u[%i] = (f: %f; i: %i; u: %u)", i, uni->values.f[i], uni->values.i[i], uni->values.u[i]);
@@ -170,10 +178,10 @@ void postprocess(PostprocessShader *ppshaders, FBOPair *fbos, PostprocessPrepare
 	}
 
 	for(PostprocessShader *pps = ppshaders; pps; pps = pps->next) {
-		Shader *s = pps->shader;
+		ShaderProgram *s = pps->shader;
 
 		glBindFramebuffer(GL_FRAMEBUFFER, fbos->back->fbo);
-		glUseProgram(s->prog);
+		glUseProgram(s->gl_handle);
 
 		if(prepare) {
 			prepare(fbos->back, s);
@@ -187,7 +195,7 @@ void postprocess(PostprocessShader *ppshaders, FBOPair *fbos, PostprocessPrepare
 		swap_fbo_pair(fbos);
 	}
 
-	render_shader_standard();
+	r_shader_standard();
 }
 
 /*
@@ -195,11 +203,11 @@ void postprocess(PostprocessShader *ppshaders, FBOPair *fbos, PostprocessPrepare
  */
 
 char* postprocess_path(const char *name) {
-	return strjoin(SHA_PATH_PREFIX, name, ".pp", NULL);
+	return strjoin(PP_PATH_PREFIX, name, PP_EXTENSION, NULL);
 }
 
 bool check_postprocess_path(const char *path) {
-	return strendswith(path, SHA_EXTENSION);
+	return strendswith(path, PP_EXTENSION);
 }
 
 void* load_postprocess_begin(const char *path, unsigned int flags) {

@@ -216,14 +216,14 @@ int scythe_mid(Enemy *e, int t) {
 }
 
 void ScytheTrail(Projectile *p, int t) {
-	render_push();
-	render_translate(creal(p->pos), cimag(p->pos), 0);
-	render_rotate_deg(p->angle*180/M_PI+90, 0, 0, 1);
-	render_scale(creal(p->args[1]), creal(p->args[1]), 1);
+	r_mat_push();
+	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
+	r_mat_rotate_deg(p->angle*180/M_PI+90, 0, 0, 1);
+	r_mat_scale(creal(p->args[1]), creal(p->args[1]), 1);
 
 	float a = (1.0 - t/creal(p->args[0])) * (1.0 - cimag(p->args[1]));
 	ProjDrawCore(p, rgba(1, 1, 1, a));
-	render_pop();
+	r_mat_pop();
 }
 
 void Scythe(Enemy *e, int t, bool render) {
@@ -633,7 +633,7 @@ void elly_frequency2(Boss *b, int t) {
 complex maxwell_laser(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		l->unclearable = true;
-		l->shader = get_shader_optional("laser_maxwell");
+		l->shader = get_shader_program("laser_maxwell");
 		return 0;
 	}
 
@@ -672,12 +672,12 @@ void elly_maxwell(Boss *b, int t) {
 
 static void draw_baryon_connector(complex a, complex b) {
 	Sprite *spr = get_sprite("stage6/baryon_connector");
-	render_push();
-	render_translate(creal(a+b)/2.0, cimag(a+b)/2.0, 0);
-	render_rotate_deg(180/M_PI*carg(a-b), 0, 0, 1);
-	render_scale((cabs(a-b)-70) / spr->w, 20 / spr->h, 1);
+	r_mat_push();
+	r_mat_translate(creal(a+b)/2.0, cimag(a+b)/2.0, 0);
+	r_mat_rotate_deg(180/M_PI*carg(a-b), 0, 0, 1);
+	r_mat_scale((cabs(a-b)-70) / spr->w, 20 / spr->h, 1);
 	draw_sprite_p(0, 0, spr);
-	render_pop();
+	r_mat_pop();
 }
 
 void Baryon(Enemy *e, int t, bool render) {
@@ -701,9 +701,9 @@ void Baryon(Enemy *e, int t, bool render) {
 		return;
 	}
 
-	render_color4(1.0,1.0,1.0,alpha);
+	r_color4(1.0,1.0,1.0,alpha);
 	draw_sprite(creal(e->pos), cimag(e->pos), "stage6/baryon");
-	render_color4(1.0,1.0,1.0,1.0);
+	r_color4(1.0,1.0,1.0,1.0);
 
 	n = REF(e->args[1]);
 	if(!n)
@@ -739,11 +739,11 @@ void BaryonCenter(Enemy *e, int t, bool render) {
 
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 
-	render_push();
-	render_translate(creal(e->pos), cimag(e->pos), 0);
-	render_rotate_deg(2*t, 0, 0, 1);
+	r_mat_push();
+	r_mat_translate(creal(e->pos), cimag(e->pos), 0);
+	r_mat_rotate_deg(2*t, 0, 0, 1);
 	draw_sprite(0, 0, "stage6/scythecircle");
-	render_pop();
+	r_mat_pop();
 	draw_sprite(creal(e->pos), cimag(e->pos), "stage6/baryon");
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
@@ -2120,19 +2120,19 @@ static complex elly_toe_laser_pos(Laser *l, float t) { // a[0]: direction, a[1]:
 	if(t == EVENT_BIRTH) {
 		switch(type) {
 		case 0:
-			l->shader = get_shader_optional("laser_elly_toe_fermion");
+			l->shader = get_shader_program("laser_elly_toe_fermion");
 			l->color = rgb(0.4,0.4,1);
 			break;
 		case 1:
-			l->shader = get_shader_optional("laser_elly_toe_photon");
+			l->shader = get_shader_program("laser_elly_toe_photon");
 			l->color = rgb(1,0.4,0.4);
 			break;
 		case 2:
-			l->shader = get_shader_optional("laser_elly_toe_gluon");
+			l->shader = get_shader_program("laser_elly_toe_gluon");
 			l->color = rgb(0.4,1,0.4);
 			break;
 		case 3:
-			l->shader = get_shader_optional("laser_elly_toe_higgs");
+			l->shader = get_shader_program("laser_elly_toe_higgs");
 			l->color = rgb(1,0.4,1);
 			break;
 		default:
@@ -2529,15 +2529,15 @@ void elly_theory(Boss *b, int time) {
 }
 
 void elly_spellbg_toe(Boss *b, int t) {
-	render_push();
-	render_translate(VIEWPORT_W/2,VIEWPORT_H/2,0);
+	r_mat_push();
+	r_mat_translate(VIEWPORT_W/2,VIEWPORT_H/2,0);
 	float s = 0.75+0.0005*t;
-	render_scale(s,s,s);
-	render_rotate_deg(t*0.1,0,0,1);
-	render_color4(.6,.6,.6,1);
+	r_mat_scale(s,s,s);
+	r_mat_rotate_deg(t*0.1,0,0,1);
+	r_color4(.6,.6,.6,1);
 
 	draw_sprite(0,0,"stage6/spellbg_toe");
-	render_pop();
+	r_mat_pop();
 	glBlendFunc(GL_ZERO,GL_SRC_COLOR);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
@@ -2560,16 +2560,18 @@ void elly_spellbg_toe(Boss *b, int t) {
 	for(int i = 0; i < count; i++) {
 		if(t<delays[i])
 			break;
-		render_color4(1,1,1,0.5*clamp((t-delays[i])*0.1,0,1));
+		
+		r_color4(1,1,1,0.5*clamp((t-delays[i])*0.1,0,1));
 		char *texname = strfmt("stage6/toelagrangian/%d",i);
 		float wobble = max(0,t-BREAKTIME)*0.03;
-		render_push();
-		render_translate(VIEWPORT_W/2+positions[i][0]+cos(wobble+i)*wobble,VIEWPORT_H/2-150+positions[i][1]+sin(i+wobble)*wobble,0);
+		r_mat_push();
+		r_mat_translate(VIEWPORT_W/2+positions[i][0]+cos(wobble+i)*wobble,VIEWPORT_H/2-150+positions[i][1]+sin(i+wobble)*wobble,0);
 		draw_sprite(0,0,texname);
 		free(texname);
-		render_pop();
+		r_mat_pop();
 	}
-	render_color4(1,1,1,1);
+	
+	r_color4(1,1,1,1);
 
 }
 
@@ -2582,19 +2584,19 @@ void elly_spellbg_toe(Boss *b, int t) {
 void elly_spellbg_classic(Boss *b, int t) {
 	fill_viewport(0,0,0.7,"stage6/spellbg_classic");
 	glBlendFunc(GL_ZERO,GL_SRC_COLOR);
-	render_color4(1,1,1,0);
+	r_color4(1,1,1,0);
 	fill_viewport(0,-t*0.005,0.7,"stage6/spellbg_chalk");
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-	render_color4(1,1,1,1);
+	r_color4(1,1,1,1);
 }
 
 void elly_spellbg_modern(Boss *b, int t) {
 	fill_viewport(0,0,0.6,"stage6/spellbg_modern");
 	glBlendFunc(GL_ZERO,GL_SRC_COLOR);
-	render_color4(1,1,1,0);
+	r_color4(1,1,1,0);
 	fill_viewport(0,-t*0.005,0.7,"stage6/spellbg_chalk");
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-	render_color4(1,1,1,1);
+	r_color4(1,1,1,1);
 }
 
 void elly_spellbg_modern_dark(Boss *b, int t) {

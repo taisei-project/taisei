@@ -64,7 +64,7 @@ struct stage4_spells_s stage4_spells = {
 };
 
 static void stage4_fog(FBO *fbo) {
-	Shader *shader = get_shader("zbuf_fog");
+	ShaderProgram *shader = get_shader_program("zbuf_fog");
 
 	float f = 0;
 	int redtime = 5100 + STAGE4_MIDBOSS_MUSIC_TIME;
@@ -74,7 +74,7 @@ static void stage4_fog(FBO *fbo) {
 		f =  v < 0.1 ? v : 0.1;
 	}
 
-	glUseProgram(shader->prog);
+	glUseProgram(shader->gl_handle);
 	glUniform1i(uniloc(shader, "depth"),2);
 	glUniform4f(uniloc(shader, "fog_color"),10*f,0,0.1-f,1.0);
 	glUniform1f(uniloc(shader, "start"),0.4);
@@ -86,7 +86,7 @@ static void stage4_fog(FBO *fbo) {
 	glActiveTexture(GL_TEXTURE0);
 
 	draw_fbo_viewport(fbo);
-	render_shader_standard();
+	r_shader_standard();
 }
 
 static vec3 **stage4_fountain_pos(vec3 pos, float maxrange) {
@@ -108,14 +108,14 @@ static vec3 **stage4_fountain_pos(vec3 pos, float maxrange) {
 static void stage4_fountain_draw(vec3 pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage2/border")->gltex);
 
-	render_push();
-	render_translate(pos[0], pos[1], pos[2]);
-	render_rotate_deg(-90, 1,0,0);
-	render_scale(1000,3010,1);
+	r_mat_push();
+	r_mat_translate(pos[0], pos[1], pos[2]);
+	r_mat_rotate_deg(-90, 1,0,0);
+	r_mat_scale(1000,3010,1);
 
-	render_draw_quad();
+	r_draw_quad();
 
-	render_pop();
+	r_mat_pop();
 }
 
 static vec3 **stage4_lake_pos(vec3 pos, float maxrange) {
@@ -144,21 +144,21 @@ static vec3 **stage4_lake_pos(vec3 pos, float maxrange) {
 static void stage4_lake_draw(vec3 pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage4/lake")->gltex);
 
-	render_push();
-	render_translate(pos[0], pos[1]+140, pos[2]);
-	render_scale(15,15,15);
+	r_mat_push();
+	r_mat_translate(pos[0], pos[1]+140, pos[2]);
+	r_mat_scale(15,15,15);
 
 	draw_model("lake");
-	render_pop();
+	r_mat_pop();
 
-	render_push();
-	render_translate(pos[0], pos[1]+944, pos[2]+50);
-	render_scale(30,30,30);
+	r_mat_push();
+	r_mat_translate(pos[0], pos[1]+944, pos[2]+50);
+	r_mat_scale(30,30,30);
 
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage4/mansion")->gltex);
 
 	draw_model("mansion");
-	render_pop();
+	r_mat_pop();
 }
 
 static vec3 **stage4_corridor_pos(vec3 pos, float maxrange) {
@@ -180,60 +180,60 @@ static vec3 **stage4_corridor_pos(vec3 pos, float maxrange) {
 static void stage4_corridor_draw(vec3 pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage4/planks")->gltex);
 
-	render_matrix_mode(MM_TEXTURE);
-	render_scale(1,2,1);
-	render_matrix_mode(MM_MODELVIEW);
+	r_mat_mode(MM_TEXTURE);
+	r_mat_scale(1,2,1);
+	r_mat_mode(MM_MODELVIEW);
 
-	render_push();
-	render_translate(pos[0], pos[1], pos[2]);
+	r_mat_push();
+	r_mat_translate(pos[0], pos[1], pos[2]);
 
-	render_push();
-	render_rotate_deg(180, 1,0,0);
-	render_scale(300,2000,1);
+	r_mat_push();
+	r_mat_rotate_deg(180, 1,0,0);
+	r_mat_scale(300,2000,1);
 
-	render_draw_quad();
-	render_pop();
+	r_draw_quad();
+	r_mat_pop();
 
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage4/wall")->gltex);
 
-	render_matrix_mode(MM_TEXTURE);
-	render_identity();
-	render_rotate_deg(90,0,0,1);
-	render_scale(1,10,1);
-	render_matrix_mode(MM_MODELVIEW);
+	r_mat_mode(MM_TEXTURE);
+	r_mat_identity();
+	r_mat_rotate_deg(90,0,0,1);
+	r_mat_scale(1,10,1);
+	r_mat_mode(MM_MODELVIEW);
 
-	render_push();
-	render_translate(100,5,75);
-	render_rotate_deg(90, 0,1,0);
-	render_scale(150,2000,1);
-	render_draw_quad();
-	render_pop();
+	r_mat_push();
+	r_mat_translate(100,5,75);
+	r_mat_rotate_deg(90, 0,1,0);
+	r_mat_scale(150,2000,1);
+	r_draw_quad();
+	r_mat_pop();
 
-	render_push();
-	render_translate(-100,5,75);
-	render_rotate_deg(180,1,0,0);
-	render_rotate_deg(-90, 0,1,0);
-	render_scale(150,2000,1);
-	render_draw_quad();
-	render_pop();
+	r_mat_push();
+	r_mat_translate(-100,5,75);
+	r_mat_rotate_deg(180,1,0,0);
+	r_mat_rotate_deg(-90, 0,1,0);
+	r_mat_scale(150,2000,1);
+	r_draw_quad();
+	r_mat_pop();
 
-	render_matrix_mode(MM_TEXTURE);
-	render_identity();
-	render_matrix_mode(MM_MODELVIEW);
+	r_mat_mode(MM_TEXTURE);
+	r_mat_identity();
+	r_mat_mode(MM_MODELVIEW);
 
-	render_shader_standard_notex();
+	r_shader_standard_notex();
 
-	render_color3(0.01,0.01,0.01);
-	render_push();
-	render_translate(0,0,150);
-	render_scale(500,2000,1);
-	render_draw_quad();
-	render_pop();
+	r_color3(0.01,0.01,0.01);
+	r_mat_push();
+	r_mat_translate(0,0,150);
+	r_mat_scale(500,2000,1);
+	r_draw_quad();
+	r_mat_pop();
 
-	render_pop();
-	render_color3(1,1,1);
+	r_mat_pop();
+	r_color3(1,1,1);
 
-	render_shader_standard();
+	r_shader_standard();
 }
 
 static void stage4_start(void) {
@@ -269,7 +269,7 @@ static void stage4_preload(void) {
 	preload_resources(RES_SPRITE, RESF_DEFAULT,
 		"stage6/scythe", // Stage 6 is also intentional
 	NULL);
-	preload_resources(RES_SHADER, RESF_DEFAULT,
+	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"zbuf_fog",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,

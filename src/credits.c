@@ -193,17 +193,17 @@ void credits_add(char *data, int time) {
 void credits_towerwall_draw(vec3 pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towerwall")->gltex);
 
-	Shader *s = get_shader("tower_wall");
-	glUseProgram(s->prog);
+	ShaderProgram *s = get_shader_program("tower_wall");
+	glUseProgram(s->gl_handle);
 	glUniform1i(uniloc(s, "lendiv"), 2800.0 + 300.0 * sin(global.frames / 77.7));
 
-	render_push();
-	render_translate(pos[0], pos[1], pos[2]);
-	render_scale(30,30,30);
+	r_mat_push();
+	r_mat_translate(pos[0], pos[1], pos[2]);
+	r_mat_scale(30,30,30);
 	draw_model("towerwall");
-	render_pop();
+	r_mat_pop();
 
-	render_shader_standard();
+	r_shader_standard();
 }
 
 vec3 **credits_skysphere_pos(vec3 pos, float maxrange) {
@@ -290,12 +290,12 @@ void credits_draw_entry(CreditsEntry *e) {
 		yukkuri_spr = get_sprite("yukkureimu");
 	}
 
-	render_push();
+	r_mat_push();
 
 	if(fadein < 1) {
-		render_translate(0, SCREEN_W * pow(1 - fadein,  2) *  0.5, 0);
+		r_mat_translate(0, SCREEN_W * pow(1 - fadein,  2) *  0.5, 0);
 	} else if(fadeout < 1) {
-		render_translate(0, SCREEN_W * pow(1 - fadeout, 2) * -0.5, 0);
+		r_mat_translate(0, SCREEN_W * pow(1 - fadeout, 2) * -0.5, 0);
 	}
 
 	// for debugging: draw a quad as tall as the entry is expected to be
@@ -309,62 +309,62 @@ void credits_draw_entry(CreditsEntry *e) {
 	render_pop();
 	*/
 
-	render_color4(1, 1, 1, fadein * fadeout);
+	r_color4(1, 1, 1, fadein * fadeout);
 
 	if(yukkuri) {
-		render_translate(0, (-h_body) * 0.5, 0);
+		r_mat_translate(0, (-h_body) * 0.5, 0);
 	} else {
-		render_translate(0, (-h_body) * 0.5, 0);
+		r_mat_translate(0, (-h_body) * 0.5, 0);
 	}
 
 	for(int i = 0; i < e->lines; ++i) {
 		if(yukkuri && !i) {
-			render_push();
-			render_scale(CREDITS_YUKKURI_SCALE, CREDITS_YUKKURI_SCALE, 1.0);
+			r_mat_push();
+			r_mat_scale(CREDITS_YUKKURI_SCALE, CREDITS_YUKKURI_SCALE, 1.0);
 			draw_sprite_p(0, 10 * sin(global.frames / 10.0) * fadeout * fadein, yukkuri_spr);
-			render_pop();
-			render_translate(0, yukkuri_spr->h * CREDITS_YUKKURI_SCALE * 0.5, 0);
+			r_mat_pop();
+			r_mat_translate(0, yukkuri_spr->h * CREDITS_YUKKURI_SCALE * 0.5, 0);
 		} else {
 			Font *font = i ? _fonts.standard : _fonts.mainmenu;
 			draw_text(AL_Center, 0, 0, e->data[i], font);
-			render_translate(0, font_line_spacing(font), 0);
+			r_mat_translate(0, font_line_spacing(font), 0);
 		}
 	}
 
-	render_pop();
-	render_color4(1, 1, 1, 1);
+	r_mat_pop();
+	r_color4(1, 1, 1, 1);
 }
 
 void credits_draw(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	colorfill(1, 1, 1, 1); // don't use glClearColor for this, it screws up letterboxing
 
-	render_push();
-	render_translate(-SCREEN_W/2, 0, 0);
+	r_mat_push();
+	r_mat_translate(-SCREEN_W/2, 0, 0);
 	glEnable(GL_DEPTH_TEST);
 
 	set_perspective_viewport(&stage_3d_context, 100, 9000, 0, 0, SCREEN_W, SCREEN_H);
 	draw_stage3d(&stage_3d_context, 10000);
 
-	render_pop();
+	r_mat_pop();
 	set_ortho();
 
-	render_push();
-	render_color4(0, 0, 0, credits.panelalpha * 0.7);
-	render_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
-	render_scale(300, SCREEN_H, 1);
-	render_draw_quad();
-	render_color4(1, 1, 1, 1);
-	render_pop();
+	r_mat_push();
+	r_color4(0, 0, 0, credits.panelalpha * 0.7);
+	r_mat_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
+	r_mat_scale(300, SCREEN_H, 1);
+	r_draw_quad();
+	r_color4(1, 1, 1, 1);
+	r_mat_pop();
 
-	render_push();
-	render_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
+	r_mat_push();
+	r_mat_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
 
 	for(int i = 0; i < credits.ecount; ++i) {
 		credits_draw_entry(&(credits.entries[i]));
 	}
 
-	render_pop();
+	r_mat_pop();
 
 	draw_transition();
 }
@@ -407,7 +407,7 @@ void credits_free(void) {
 
 void credits_preload(void) {
 	preload_resource(RES_BGM, "credits", RESF_OPTIONAL);
-	preload_resource(RES_SHADER, "tower_wall", RESF_DEFAULT);
+	preload_resource(RES_SHADER_PROGRAM, "tower_wall", RESF_DEFAULT);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
 		"stage6/towerwall",
 		"yukkureimu",

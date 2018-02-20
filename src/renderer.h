@@ -42,34 +42,41 @@ typedef struct RendererUBOData {
 	vec4 color;
 } RendererUBOData;
 
-void render_init(void);
-void render_free(void);
+void r_init(void);
+void r_post_init(void);
+void r_shutdown(void);
 
-void render_matrix_mode(MatrixMode mode);
+void r_mat_mode(MatrixMode mode);
 
-void render_push(void);
-void render_pop(void);
+void r_mat_push(void);
+void r_mat_pop(void);
 
-void render_identity(void);
-void render_translate(float x, float y, float z);
-void render_rotate(float angle, float nx, float ny, float nz);
-void render_rotate_deg(float angle_degrees, float nx, float ny, float nz);
-void render_scale(float sx, float sy, float sz);
+void r_mat_identity(void);
+void r_mat_translate(float x, float y, float z);
+void r_mat_translate_v(vec3 v);
+void r_mat_rotate(float angle, float nx, float ny, float nz);
+void r_mat_rotate_v(float angle, vec3 v);
+void r_mat_rotate_deg(float angle_degrees, float nx, float ny, float nz);
+void r_mat_rotate_deg_v(float angle_degrees, vec3 v);
+void r_mat_scale(float sx, float sy, float sz);
+void r_mat_scale_v(vec3 v);
 
-void render_ortho(float left, float right, float bottom, float top, float near, float far);
-void render_perspective(float angle, float aspect, float near, float far);
+void r_mat_ortho(float left, float right, float bottom, float top, float near, float far);
+void r_mat_perspective(float angle, float aspect, float near, float far);
 
-void render_color(Color c);
-void render_color4(float r, float g, float b, float a);
-void render_color3(float r, float g, float b);
+void r_color(Color c);
+void r_color4(float r, float g, float b, float a);
+void r_color3(float r, float g, float b);
 
-void render_shader(ShaderProgram *prog);
-void render_shader_standard(void);
-void render_shader_standard_notex(void);
+void r_shader(ShaderProgram *prog);
+void r_shader_standard(void);
+void r_shader_standard_notex(void);
 
-ShaderProgram* render_current_shader(void);
+ShaderProgram* r_shader_current(void);
 
-void render_draw_quad(void);
+void r_draw_quad(void);
+
+void r_flush(void);
 
 #define R_SCOPE(code) do { \
 	render_push(); \
@@ -78,3 +85,5 @@ void render_draw_quad(void);
 	} while(0); \
 	render_pop(); \
 } while(0)
+
+

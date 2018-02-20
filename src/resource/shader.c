@@ -40,7 +40,7 @@ bool check_shader_path(const char *path) {
 	return strendswith(path, SHA_EXTENSION);
 }
 
-static Shader* load_shader(const char *vheader, const char *fheader, const char *vtext, const char *ftext);
+static ShaderProgram* load_shader(const char *vheader, const char *fheader, const char *vtext, const char *ftext);
 
 typedef struct ShaderLoadData {
 	char *text;
@@ -84,7 +84,7 @@ void* load_shader_end(void *opaque, const char *path, unsigned int flags) {
 		return NULL;
 	}
 
-	Shader *sha = load_shader(NULL, NULL, data->vtext, data->ftext);
+	ShaderProgram *sha = load_shader(NULL, NULL, data->vtext, data->ftext);
 
 	free(data->text);
 	free(data);
@@ -93,8 +93,8 @@ void* load_shader_end(void *opaque, const char *path, unsigned int flags) {
 }
 
 void unload_shader(void *vsha) {
-	Shader *sha = vsha;
-	glDeleteProgram((sha)->prog);
+	ShaderProgram *sha = vsha;
+	glDeleteProgram((sha)->gl_handle);
 	hashtable_free(sha->uniforms);
 	free(sha);
 }
@@ -192,7 +192,7 @@ void load_shader_snippets(const char *filename, const char *prefix, unsigned int
 		strlcat(nbuf+prefixlen, name, nend-name+1);
 		nbuf[nend-name+prefixlen] = 0;
 
-		Shader *sha = load_shader(get_snippet_header(), NULL, vtext, ftext);
+		ShaderProgram *sha = load_shader(get_snippet_header(), NULL, vtext, ftext);
 		insert_resource(RES_SHADER, nbuf, sha, flags, filename);
 
 		free(nbuf);
@@ -221,7 +221,7 @@ static void print_info_log(GLuint shader, tsglGetShaderiv_ptr lenfunc, tsglGetSh
 	}
 }
 
-static void cache_uniforms(Shader *sha) {
+static void cache_uniforms(ShaderProgram *sha) {
 	int i, maxlen = 0;
 	GLint tmpi;
 	GLenum tmpt;
@@ -229,8 +229,8 @@ static void cache_uniforms(Shader *sha) {
 
 	sha->uniforms = hashtable_new_stringkeys(13);
 
-	glGetProgramiv(sha->prog, GL_ACTIVE_UNIFORMS, &unicount);
-	glGetProgramiv(sha->prog, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxlen);
+	glGetProgramiv(sha->gl_handle, GL_ACTIVE_UNIFORMS, &unicount);
+	glGetProgramiv(sha->gl_handle, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxlen);
 
 	if(maxlen < 1) {
 		return;
@@ -239,12 +239,12 @@ static void cache_uniforms(Shader *sha) {
 	char name[maxlen];
 
 	for(i = 0; i < unicount; i++) {
-		glGetActiveUniform(sha->prog, i, maxlen, NULL, &tmpi, &tmpt, name);
+		glGetActiveUniform(sha->gl_handle, i, maxlen, NULL, &tmpi, &tmpt, name);
 		// This +1 increment kills two youkai with one spellcard.
 		// 1. We can't store 0 in the hashtable, because that's the NULL/nonexistent value.
 		//    But 0 is a valid uniform location, so we need to store that in some way.
 		// 2. glGetUniformLocation returns -1 for builtin uniforms, which we don't want to cache anyway.
-		hashtable_set_string(sha->uniforms, name, (void*)(intptr_t)(glGetUniformLocation(sha->prog, name) + 1));
+		hashtable_set_string(sha->uniforms, name, (void*)(intptr_t)(glGetUniformLocation(sha->gl_handle, name) + 1));
 	}
 
 #ifdef DEBUG_GL
@@ -252,12 +252,12 @@ static void cache_uniforms(Shader *sha) {
 #endif
 }
 
-static Shader* load_shader(const char *vheader, const char *fheader, const char *vtext, const char *ftext) {
-	Shader *sha = calloc(1, sizeof(Shader));
+static ShaderProgram* load_shader(const char *vheader, const char *fheader, const char *vtext, const char *ftext) {
+	ShaderProgram *sha = calloc(1, sizeof(ShaderProgram));
 	GLuint vshaderobj;
 	GLuint fshaderobj;
 
-	sha->prog = glCreateProgram();
+	sha->gl_handle= glCreateProgram();
 	vshaderobj = glCreateShader(GL_VERTEX_SHADER);
 	fshaderobj = glCreateShader(GL_FRAGMENT_SHADER);
 
@@ -283,8 +283,8 @@ static Shader* load_shader(const char *vheader, const char *fheader, const char 
 	glGetShaderiv(vshaderobj, GL_COMPILE_STATUS, &status1);
 	glGetShaderiv(fshaderobj, GL_COMPILE_STATUS, &status2);
 
-	print_info_log(vshaderobj, glGetShaderiv, glGetShaderInfoLog, "Vertex Shader");
-	print_info_log(fshaderobj, glGetShaderiv, glGetShaderInfoLog, "Fragment Shader");
+	print_info_log(vshaderobj, glGetShaderiv, glGetShaderInfoLog, "Vertex ShaderProgram");
+	print_info_log(fshaderobj, glGetShaderiv, glGetShaderInfoLog, "Fragment ShaderProgram");
 
 	if(!status1 || !status2) {
 		log_warn("Failed to compile the shader program");
@@ -292,15 +292,15 @@ static Shader* load_shader(const char *vheader, const char *fheader, const char 
 		return NULL;
 	}
 
-	glAttachShader(sha->prog, vshaderobj);
-	glAttachShader(sha->prog, fshaderobj);
+	glAttachShader(sha->gl_handle, vshaderobj);
+	glAttachShader(sha->gl_handle, fshaderobj);
 
 	glDeleteShader(vshaderobj);
 	glDeleteShader(fshaderobj);
 
-	glLinkProgram(sha->prog);
-	print_info_log(sha->prog, glGetProgramiv, glGetProgramInfoLog, "Program");
-	glGetProgramiv(sha->prog, GL_LINK_STATUS, &status1);
+	glLinkProgram(sha->gl_handle);
+	print_info_log(sha->gl_handle, glGetProgramiv, glGetProgramInfoLog, "Program");
+	glGetProgramiv(sha->gl_handle, GL_LINK_STATUS, &status1);
 
 	if(!status1) {
 		log_warn("Failed to link the shader program");
@@ -308,29 +308,29 @@ static Shader* load_shader(const char *vheader, const char *fheader, const char 
 		return NULL;
 	}
 
-	glUseProgram(sha->prog);
-	int rcIdx = glGetUniformBlockIndex(sha->prog,"RenderContext");
+	glUseProgram(sha->gl_handle);
+	int rcIdx = glGetUniformBlockIndex(sha->gl_handle,"RenderContext");
 	if(rcIdx >= 0) {
-		glUniformBlockBinding(sha->prog, rcIdx, 1);
+		glUniformBlockBinding(sha->gl_handle, rcIdx, 1);
 	}
 	cache_uniforms(sha);
 
 	return sha;
 }
 
-int uniloc(Shader *sha, const char *name) {
+int uniloc(ShaderProgram *sha, const char *name) {
 	return (intptr_t)hashtable_get_string(sha->uniforms, name) - 1;
 }
 
-Shader* get_shader(const char *name) {
+ShaderProgram* get_shader(const char *name) {
 	return get_resource(RES_SHADER, name, RESF_DEFAULT | RESF_UNSAFE)->data;
 }
 
-Shader* get_shader_optional(const char *name) {
+ShaderProgram* get_shader_optional(const char *name) {
 	Resource *r = get_resource(RES_SHADER, name, RESF_OPTIONAL);
 
 	if(!r) {
-		log_warn("Shader %s could not be loaded", name);
+		log_warn("ShaderProgram %s could not be loaded", name);
 		return NULL;
 	}
 

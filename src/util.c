@@ -310,9 +310,9 @@ float sanitize_scale(float scale) {
 //
 
 void set_ortho_ex(float w, float h) {
-	render_matrix_mode(MM_PROJECTION);
-	render_ortho( 0, w, h, 0, -100, 100);
-	render_matrix_mode(MM_MODELVIEW);
+	r_mat_mode(MM_PROJECTION);
+	r_mat_ortho( 0, w, h, 0, -100, 100);
+	r_mat_mode(MM_MODELVIEW);
 	glDisable(GL_DEPTH_TEST);
 }
 
@@ -323,18 +323,18 @@ void set_ortho(void) {
 void colorfill(float r, float g, float b, float a) {
 	if(a <= 0) return;
 
-	render_shader_standard_notex();
-	render_color4(r,g,b,a);
+	r_shader_standard_notex();
+	r_color4(r,g,b,a);
 
-	render_push();
-	render_scale(SCREEN_W,SCREEN_H,1);
-	render_translate(0.5,0.5,0);
+	r_mat_push();
+	r_mat_scale(SCREEN_W,SCREEN_H,1);
+	r_mat_translate(0.5,0.5,0);
 
-	render_draw_quad();
-	render_pop();
+	r_draw_quad();
+	r_mat_pop();
 
-	render_color4(1,1,1,1);
-	render_shader_standard();
+	r_color4(1,1,1,1);
+	r_shader_standard();
 }
 
 void fade_out(float f) {
@@ -355,7 +355,7 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 	// XXX: move to call site?
 	y -= 2;
 
-	glUseProgram(shader->prog);
+	glUseProgram(shader->gl_handle);
 	parse_color_array(fill_clr, clr);
 	glUniform4fv(uniloc(shader, "fill_color"), 1, clr);
 	parse_color_array(back_clr, clr);
@@ -365,30 +365,30 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 	begin_draw_sprite(x - star_width, y, star_width/star->w, star_width/star->w, true, star);
 
 	while(i < numstars) {
-		render_translate(1, 0, 0);
-		render_draw_quad();
+		r_mat_translate(1, 0, 0);
+		r_draw_quad();
 		i++;
 	}
 
 	if(numfrags) {
-		render_translate(1, 0, 0);
+		r_mat_translate(1, 0, 0);
 		parse_color_array(frag_clr, clr);
 		glUniform4fv(uniloc(shader, "fill_color"), 1, clr);
 		glUniform1f(uniloc(shader, "fill"), numfrags / (float)maxfrags);
-		render_draw_quad();
+		r_draw_quad();
 		i++;
 	}
 
 	glUniform1f(uniloc(shader, "fill"), 0);
 
 	while(i < maxstars) {
-		render_translate(1, 0, 0);
-		render_draw_quad();
+		r_mat_translate(1, 0, 0);
+		r_draw_quad();
 		i++;
 	}
 
 	end_draw_sprite();
-	render_shader_standard();
+	r_shader_standard();
 }
 
 //

@@ -57,30 +57,30 @@ void draw_difficulty_menu(MenuData *menu) {
 	draw_options_menu_bg(menu);
 	draw_menu_title(menu, "Select Difficulty");
 
-	render_color(multiply_colors(diff_color, rgba(0.1, 0.1, 0.1, 0.7)));
+	r_color(multiply_colors(diff_color, rgba(0.1, 0.1, 0.1, 0.7)));
 
-	render_push();
-	render_translate(SCREEN_W/2+30 - 25*menu->drawdata[0], SCREEN_H/3 + 90*(0.7*menu->drawdata[0]),0);
-	render_rotate_deg(4*menu->drawdata[0]-4,0,0,1);
-	render_push();
-	render_scale(SCREEN_W*1.5,120,1);
-	render_shader_standard_notex();
-	render_draw_quad();
-	render_shader_standard();
-	render_pop();
-	render_color3(1,1,1);
+	r_mat_push();
+	r_mat_translate(SCREEN_W/2+30 - 25*menu->drawdata[0], SCREEN_H/3 + 90*(0.7*menu->drawdata[0]),0);
+	r_mat_rotate_deg(4*menu->drawdata[0]-4,0,0,1);
+	r_mat_push();
+	r_mat_scale(SCREEN_W*1.5,120,1);
+	r_shader_standard_notex();
+	r_draw_quad();
+	r_shader_standard();
+	r_mat_pop();
+	r_color3(1,1,1);
 	draw_text(AL_Left, 40+35*menu->drawdata[0], -12, menu->entries[menu->cursor].name, _fonts.standard);
 
-	render_pop();
+	r_mat_pop();
 
 	for(int i = 0; i < menu->ecount; ++i) {
-		render_push();
-		render_translate(SCREEN_W/2 + SCREEN_W*sign((i&1)-0.5)*(i!=menu->cursor)*menu_fade(menu) - (int)menu->entries[i].drawdata+25*i-50, SCREEN_H/3 + 90*(i-0.3*menu->drawdata[0]),0);
+		r_mat_push();
+		r_mat_translate(SCREEN_W/2 + SCREEN_W*sign((i&1)-0.5)*(i!=menu->cursor)*menu_fade(menu) - (int)menu->entries[i].drawdata+25*i-50, SCREEN_H/3 + 90*(i-0.3*menu->drawdata[0]),0);
 
 		//render_color4(0,0,0,1);
 
-		render_color3(1,1,1);
+		r_color3(1,1,1);
 		draw_sprite(0, 0, difficulty_sprite_name(D_Easy+i));
-		render_pop();
+		r_mat_pop();
 	}
 }

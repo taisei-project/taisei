@@ -103,18 +103,18 @@ void play_animation_frame(Animation *ani, float x, float y, int frame) {
 	frame = frame%(ani->cols*ani->rows);
 
 	if(mirror) {
-		render_push();
+		r_mat_push();
 		glCullFace(GL_FRONT);
-		render_translate(x,y,0);
+		r_mat_translate(x,y,0);
 		x = y = 0;
-		render_scale(-1,1,1);
+		r_mat_scale(-1,1,1);
 	}
 
 	draw_animation_p(x,y,frame%ani->cols,frame/ani->cols,ani);
 
 	if(mirror) {
 		glCullFace(GL_BACK);
-		render_pop();
+		r_mat_pop();
 	}
 }
 

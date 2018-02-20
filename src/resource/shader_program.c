@@ -14,7 +14,7 @@
 
 ResourceHandler shader_program_res_handler = {
 	.type = RES_SHADER_PROGRAM,
-	.typename = "shader programs",
+	.typename = "shader program",
 	.subdir = SHPROG_PATH_PREFIX,
 
 	.procs = {
@@ -30,7 +30,7 @@ char* shader_program_path(const char *name) {
 	return strjoin(SHPROG_PATH_PREFIX, name, SHPROG_EXT, NULL);
 }
 
-bool check_shader_object_path(const char *path) {
+bool check_shader_program_path(const char *path) {
 	return strendswith(path, SHPROG_EXT) && strstartswith(path, SHPROG_PATH_PREFIX);
 }
 
@@ -66,7 +66,7 @@ void* load_shader_program_begin(const char *path, unsigned int flags) {
 	memset(&ldata, 0, sizeof(ldata));
 
 	if(!parse_keyvalue_file_with_spec(path, (KVSpec[]){
-		{ "objects", .out_str = &ldata.objlist },
+		{ "glsl_objects", .out_str = &ldata.objlist },
 		{ NULL }
 	})) {
 		free(ldata.objlist);
@@ -87,8 +87,7 @@ void* load_shader_program_begin(const char *path, unsigned int flags) {
 }
 
 static void attach_shobject(const char *name, struct shprog_load_data *ldata) {
-	ShaderObject *shobj = NULL;
-	get_resource_p(RES_SHADER_OBJECT, name, ldata->load_flags, (void**)&shobj);
+	ShaderObject *shobj = get_resource_data(RES_SHADER_OBJECT, name, ldata->load_flags);
 
 	if(!shobj) {
 		return;
@@ -141,7 +140,7 @@ static void cache_uniforms(ShaderProgram *prog) {
 	}
 
 #ifdef DEBUG_GL
-	// hashtable_print_stringkeys(sha->uniforms);
+	hashtable_print_stringkeys(prog->uniforms);
 #endif
 }
 
@@ -187,7 +186,7 @@ void* load_shader_program_end(void *opaque, const char *path, unsigned int flags
 	return memdup(&ldata.shprog, sizeof(ldata.shprog));
 }
 
-void unload_shader(void *vprog) {
+void unload_shader_program(void *vprog) {
 	ShaderProgram *prog = vprog;
 	glDeleteProgram(prog->gl_handle);
 	hashtable_free(prog->uniforms);
@@ -206,7 +205,7 @@ ShaderProgram* get_shader_program_optional(const char *name) {
 	Resource *r = get_resource(RES_SHADER_PROGRAM, name, RESF_OPTIONAL | RESF_UNSAFE);
 
 	if(!r) {
-		log_warn("Shader program %s could not be loaded", name);
+		log_warn("ShaderProgram program %s could not be loaded", name);
 		return NULL;
 	}
 

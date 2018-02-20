@@ -22,31 +22,34 @@
 #include "animation.h"
 #include "sfx.h"
 #include "bgm.h"
-// shader
+#include "shader_object.h"
+#include "shader_program.h"
 #include "model.h"
 #include "postprocess.h"
 #include "sprite.h"
 
-Resources resources = {
-	.handlers = {
-		[RES_TEXTURE] = &texture_res_handler,
-		[RES_ANIM] = &animation_res_handler,
-		[RES_SFX] = &sfx_res_handler,
-		[RES_BGM] = &bgm_res_handler,
-		// shader
-		[RES_MODEL] = &model_res_handler,
-		[RES_POSTPROCESS] = &postprocess_res_handler,
-		[RES_SPRITE] = &sprite_res_handler,
-	},
+ResourceHandler *_handlers[] = {
+	[RES_TEXTURE] = &texture_res_handler,
+	[RES_ANIM] = &animation_res_handler,
+	[RES_SFX] = &sfx_res_handler,
+	[RES_BGM] = &bgm_res_handler,
+	[RES_SHADER_OBJECT] = &shader_object_res_handler,
+	[RES_SHADER_PROGRAM] = &shader_program_res_handler,
+	[RES_MODEL] = &model_res_handler,
+	[RES_POSTPROCESS] = &postprocess_res_handler,
+	[RES_SPRITE] = &sprite_res_handler,
 };
+
+Resources resources;
 
 static SDL_threadID main_thread_id;
 
 static inline ResourceHandler* get_handler(ResourceType type) {
-	return *(resources.handlers + type);
+	return *(_handlers + type);
 }
 
 static void alloc_handler(ResourceHandler *h) {
+	assert(h != NULL);
 	h->mapping = hashtable_new_stringkeys(HT_DYNAMIC_SIZE);
 	h->async_load_data = hashtable_new_stringkeys(HT_DYNAMIC_SIZE);
 }
@@ -295,7 +298,7 @@ static Resource* load_resource_finish(void *opaque, ResourceHandler *handler, co
 	return res;
 }
 
-Resource* get_resource_p(ResourceType type, const char *name, ResourceFlags flags, void **out) {
+Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags) {
 	ResourceHandler *handler = get_handler(type);
 	Resource *res;
 
@@ -307,10 +310,6 @@ Resource* get_resource_p(ResourceType type, const char *name, ResourceFlags flag
 	}
 
 	if(res) {
-		if(out) {
-			*out = res->data;
-		}
-
 		return res;
 	}
 
@@ -334,17 +333,21 @@ Resource* get_resource_p(ResourceType type, const char *name, ResourceFlags flag
 		res->flags |= RESF_PERMANENT;
 	}
 
-	if(res) {
-		*out = res->data;
-	} else {
-		*out = NULL;
-	}
-
 	return res;
 }
 
-Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags) {
-	return get_resource_p(type, name, flags, NULL);
+void* get_resource_data(ResourceType type, const char *name, ResourceFlags flags) {
+	Resource *res = get_resource(type, name, flags);
+
+	if(res) {
+		return res->data;
+	}
+
+	return NULL;
+}
+
+Hashtable* get_resource_table(ResourceType type) {
+	return get_handler(type)->mapping;
 }
 
 void preload_resource(ResourceType type, const char *name, ResourceFlags flags) {
@@ -390,8 +393,9 @@ static void init_sdl_image(void) {
 void init_resources(void) {
 	init_sdl_image();
 
-	for(ResourceHandler **h = resources.handlers; h < resources.handlers + RES_NUMTYPES; ++h) {
-		alloc_handler(*h);
+	for(int i = 0; i < RES_NUMTYPES; ++i) {
+		ResourceHandler *h = get_handler(i);
+		alloc_handler(h);
 	}
 
 	main_thread_id = SDL_ThreadID();
@@ -405,9 +409,6 @@ void init_resources(void) {
 
 		events_register_handler(&h);
 	}
-
-	recolor_init();
-	preload_resource(RES_SHADER, "texture_post_load", RESF_PERMANENT);
 }
 
 void resource_util_strip_ext(char *path) {
@@ -436,9 +437,11 @@ const char* resource_util_filename(const char *path) {
 }
 
 void load_resources(void) {
+	/*
 	if(glext.draw_instanced) {
-		load_shader_snippets(SHA_PATH_PREFIX "laser_snippets", "laser_", RESF_PERMANENT);
+		load_shader_snippets(SHPROG_PATH_PREFIX "laser_snippets", "laser_", RESF_PERMANENT);
 	}
+	*/
 
 	menu_preload();
 }

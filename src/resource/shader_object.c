@@ -53,6 +53,7 @@ static bool include_shader(const char *path, SDL_RWops *dest, int *include_level
 	char linebuf[256]; // TODO: remove this dumb limitation
 
 	while(SDL_RWgets(stream, linebuf, sizeof(linebuf))) {
+		// TODO: actually implement #include
 		SDL_RWwrite(dest, linebuf, 1, strlen(linebuf));
 	}
 
@@ -84,6 +85,8 @@ void* load_shader_object_begin(const char *path, unsigned int flags) {
 		SDL_RWclose(writer);
 		return NULL;
 	}
+
+	SDL_WriteU8(writer, 0);
 
 	struct shobj_load_data *ldata = calloc(1, sizeof(struct shobj_load_data) + strlen(src) + 1);
 	strcpy(ldata->src, src);

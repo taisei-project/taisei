@@ -115,14 +115,14 @@ void draw_enemies(Enemy *enemies) {
 	for(e = enemies; e; e = e->next) {
 		if(e->visual_rule) {
 			if(e->alpha < 1) {
-				render_color4(1,1,1,e->alpha);
+				r_color4(1,1,1,e->alpha);
 				reset = true;
 			}
 
 			draw_enemy(e);
 
 			if(reset) {
-				render_color4(1,1,1,1);
+				r_color4(1,1,1,1);
 			}
 		}
 	}
@@ -157,21 +157,21 @@ void EnemyFlareShrink(Projectile *p, int t) {
 		return;
 	}
 
-	render_push();
+	r_mat_push();
 	float s = 2.0-t/p->args[0]*2;
 
-	render_translate(creal(e->pos + p->pos), cimag(e->pos + p->pos), 0);
+	r_mat_translate(creal(e->pos + p->pos), cimag(e->pos + p->pos), 0);
 
 	if(p->angle != M_PI*0.5) {
-		render_rotate_deg(p->angle*180/M_PI+90, 0, 0, 1);
+		r_mat_rotate_deg(p->angle*180/M_PI+90, 0, 0, 1);
 	}
 
 	if(s != 1) {
-		render_scale(s, s, 1);
+		r_mat_scale(s, s, 1);
 	}
 
 	ProjDrawCore(p, p->color);
-	render_pop();
+	r_mat_pop();
 }
 
 void BigFairy(Enemy *e, int t, bool render) {
@@ -189,23 +189,23 @@ void BigFairy(Enemy *e, int t, bool render) {
 		return;
 	}
 
-	render_push();
-	render_translate(creal(e->pos), cimag(e->pos), 0);
+	r_mat_push();
+	r_mat_translate(creal(e->pos), cimag(e->pos), 0);
 
 	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;
 
-	render_push();
-	render_rotate_deg(global.frames*10,0,0,1);
-	render_scale(s, s, s);
+	r_mat_push();
+	r_mat_rotate_deg(global.frames*10,0,0,1);
+	r_mat_scale(s, s, s);
 	draw_sprite(0,0,"fairy_circle");
-	render_pop();
+	r_mat_pop();
 
 	if(e->dir) {
 		glCullFace(GL_FRONT);
-		render_scale(-1,1,1);
+		r_mat_scale(-1,1,1);
 	}
 	play_animation(get_ani("enemy/bigfairy"),0, 0, e->moving);
-	render_pop();
+	r_mat_pop();
 
 	if(e->dir)
 		glCullFace(GL_BACK);
@@ -217,24 +217,24 @@ void Fairy(Enemy *e, int t, bool render) {
 	}
 
 	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;
-	render_push();
-	render_translate(creal(e->pos),cimag(e->pos),0);
+	r_mat_push();
+	r_mat_translate(creal(e->pos),cimag(e->pos),0);
 
-	render_push();
-	render_rotate_deg(global.frames*10,0,0,1);
-	render_scale(s, s, s);
+	r_mat_push();
+	r_mat_rotate_deg(global.frames*10,0,0,1);
+	r_mat_scale(s, s, s);
 	draw_sprite(0,0,"fairy_circle");
-	render_pop();
+	r_mat_pop();
 
-	render_push();
+	r_mat_push();
 	if(e->dir) {
 		glCullFace(GL_FRONT);
-		render_scale(-1,1,1);
+		r_mat_scale(-1,1,1);
 	}
 	play_animation(get_ani("enemy/fairy"),0, 0, e->moving);
-	render_pop();
+	r_mat_pop();
 
-	render_pop();
+	r_mat_pop();
 
 	if(e->dir) {
 		glCullFace(GL_BACK);
@@ -246,11 +246,11 @@ void Swirl(Enemy *e, int t, bool render) {
 		return;
 	}
 
-	render_push();
-	render_translate(creal(e->pos), cimag(e->pos),0);
-	render_rotate_deg(t*15,0,0,1);
+	r_mat_push();
+	r_mat_translate(creal(e->pos), cimag(e->pos),0);
+	r_mat_rotate_deg(t*15,0,0,1);
 	draw_sprite(0,0, "enemy/swirl");
-	render_pop();
+	r_mat_pop();
 }
 
 void process_enemies(Enemy **enemies) {
