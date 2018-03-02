@@ -244,8 +244,8 @@ static void marisa_star_bombbg(Player *plr) {
 	if(t > 3./4)
 		fade = 1-t*4 + 3;
 
-	ShaderProgram *s = get_shader_program("maristar_bombbg");
-	glUseProgram(s->gl_handle);
+	ShaderProgram *s = r_shader_get("maristar_bombbg");
+	r_shader_ptr(s);
 	glUniform1f(uniloc(s,"t"), t);
 	glUniform1f(uniloc(s,"decay"), 1);
 	glUniform2f(uniloc(s,"plrpos"), creal(global.plr.pos)/VIEWPORT_W,cimag(global.plr.pos)/VIEWPORT_H);

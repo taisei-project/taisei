@@ -11,7 +11,7 @@
 #include "global.h"
 
 #define TAISEIGL_NO_EXT_ABSTRACTION
-#include "taiseigl.h"
+#include "opengl.h"
 #undef TAISEIGL_NO_EXT_ABSTRACTION
 
 struct glext_s glext;

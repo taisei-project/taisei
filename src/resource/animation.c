@@ -40,7 +40,7 @@ typedef struct AnimationLoadData {
 	char *basename;
 } AnimationLoadData;
 
-void* load_animation_begin(const char *filename, unsigned int flags) {
+void* load_animation_begin(const char *filename, uint flags) {
 	char *basename = resource_util_basename(ANI_PATH_PREFIX, filename);
 	char name[strlen(basename) + 1];
 	strcpy(name, basename);
@@ -76,7 +76,7 @@ void* load_animation_begin(const char *filename, unsigned int flags) {
 	return data;
 }
 
-void* load_animation_end(void *opaque, const char *filename, unsigned int flags) {
+void* load_animation_end(void *opaque, const char *filename, uint flags) {
 	AnimationLoadData *data = opaque;
 
 	if(!data) {

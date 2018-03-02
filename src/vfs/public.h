@@ -17,9 +17,9 @@
 #include "zipfile_public.h"
 
 typedef struct VFSInfo {
-	unsigned int error: 1;
-	unsigned int exists : 1;
-	unsigned int is_dir : 1;
+	uint error: 1;
+	uint exists : 1;
+	uint is_dir : 1;
 } VFSInfo;
 
 #define VFSINFO_ERROR ((VFSInfo){.error = true, 0})
@@ -43,19 +43,20 @@ void vfs_mkdir_required(const char *path);
 bool vfs_mount_alias(const char *dst, const char *src);
 bool vfs_unmount(const char *path);
 
-VFSDir* vfs_dir_open(const char *path);
-void vfs_dir_close(VFSDir *dir);
-const char* vfs_dir_read(VFSDir *dir);
+VFSDir* vfs_dir_open(const char *path) attr_nonnull(1) attr_nodiscard;
+void vfs_dir_close(VFSDir *dir) attr_nonnull(1);
+const char* vfs_dir_read(VFSDir *dir) attr_nonnull(1);
 
-char** vfs_dir_list_sorted(const char *path, size_t *out_size, int (*compare)(const char**, const char**), bool (*filter)(const char*));
+char** vfs_dir_list_sorted(const char *path, size_t *out_size, int (*compare)(const char**, const char**), bool (*filter)(const char*))
+	attr_nonnull(1, 2, 3) attr_nodiscard;
 void vfs_dir_list_free(char **list, size_t size);
 int vfs_dir_list_order_ascending(const char **a, const char **b);
 int vfs_dir_list_order_descending(const char **a, const char **b);
 
-char* vfs_repr(const char *path, bool try_syspath);
-bool vfs_print_tree(SDL_RWops *dest, const char *path);
+char* vfs_repr(const char *path, bool try_syspath) attr_nonnull(1) attr_nodiscard;
+bool vfs_print_tree(SDL_RWops *dest, const char *path) attr_nonnull(1, 2);
 
 // these are defined in private.c, but need to be accessible from external code
 void vfs_init(void);
 void vfs_shutdown(void);
-const char* vfs_get_error(void);
+const char* vfs_get_error(void) attr_returns_nonnull;

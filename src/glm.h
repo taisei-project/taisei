@@ -6,6 +6,7 @@
  * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
  */
 
+#pragma once
 #include "taisei.h"
 
 // This is a wrapper header to include cglm the "right way".

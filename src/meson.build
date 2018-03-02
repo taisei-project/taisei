@@ -114,7 +114,6 @@ src_base = [
     'random.c',
     'recolor.c',
     'refs.c',
-    'renderer.c',
     'replay.c',
     'resource/animation.c',
     'resource/bgm.c',
@@ -123,8 +122,6 @@ src_base = [
     'resource/postprocess.c',
     'resource/resource.c',
     'resource/sfx.c',
-    'resource/shader_object.c',
-    'resource/shader_program.c',
     'resource/sprite.c',
     'resource/texture.c',
     'rwops/rwops_autobuf.c',
@@ -148,7 +145,6 @@ src_base = [
     'stages/stage6_events.c',
     'stagetext.c',
     'stageutils.c',
-    'taiseigl.c',
     'transition.c',
     'util.c',
     'vbo.c',
@@ -163,6 +159,14 @@ src_base = [
     'vfs/vdir.c',
     'vfs/zipfile_public.c',
     'video.c',
+] + [
+    'renderer/api.c',
+    'renderer/common/opengl.c',
+    'renderer/common/matstack.c',
+    'renderer/gl33/core.c',
+    'renderer/gl33/texture.c',
+    'renderer/gl33/shader_program.c',
+    'renderer/gl33/shader_object.c',
 ]
 
 if taisei_deps.contains(dep_sdl2_mixer)

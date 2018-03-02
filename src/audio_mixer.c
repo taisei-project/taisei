@@ -25,8 +25,8 @@
 static bool mixer_loaded = false;
 
 static struct {
-	unsigned char first;
-	unsigned char num;
+	uchar first;
+	uchar num;
 } groups[2];
 
 static const char *mixer_audio_exts[] = { ".ogg", ".wav", NULL };

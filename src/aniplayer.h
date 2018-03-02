@@ -44,21 +44,21 @@ struct AniPlayer{
 	int queuesize;
 };
 
-void aniplayer_create(AniPlayer *plr, Animation *ani);
+void aniplayer_create(AniPlayer *plr, Animation *ani) attr_nonnull(1, 2);
 void aniplayer_free(AniPlayer *plr);
-void aniplayer_reset(AniPlayer *plr); // resets to a neutral state with empty queue.
+void aniplayer_reset(AniPlayer *plr); attr_nonnull(1) // resets to a neutral state with empty queue.
 
 // this returns a representation of the frame that is currently drawn by the aniplayer.
 // in multirow animations it is computed as follows:
 //
 // idx = ani->rows*ani->cols*mirrored+row*ani->cols+col
 //
-int aniplayer_get_frame(AniPlayer *plr);
+int aniplayer_get_frame(AniPlayer *plr) attr_nonnull(1);
 void play_animation_frame(Animation *ani, float x, float y, int frame); // context free version that can be used with aniplayer_get_frame to draw a specific state
 
-AniSequence *aniplayer_queue(AniPlayer *plr, int row, int loops, int delay); // 0 loops: played one time
-AniSequence *aniplayer_queue_pro(AniPlayer *plr, int row, int start, int duration, int delay, int speed); // self-documenting pro version
-void aniplayer_update(AniPlayer *plr); // makes the inner clocks tick
-void aniplayer_play(AniPlayer *plr, float x, float y);
+AniSequence *aniplayer_queue(AniPlayer *plr, int row, int loops, int delay) attr_nonnull(1); // 0 loops: played one time
+AniSequence *aniplayer_queue_pro(AniPlayer *plr, int row, int start, int duration, int delay, int speed) attr_nonnull(1); // self-documenting pro version
+void aniplayer_update(AniPlayer *plr) attr_nonnull(1); // makes the inner clocks tick
+void aniplayer_play(AniPlayer *plr, float x, float y) attr_nonnull(1);
 
-void play_animation(Animation *ani, float x, float y, int row); // the old way to draw animations without AniPlayer
+void play_animation(Animation *ani, float x, float y, int row) attr_nonnull(1); // the old way to draw animations without AniPlayer

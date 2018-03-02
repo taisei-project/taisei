@@ -13,6 +13,6 @@
 
 char* bgm_path(const char *name) { return NULL; }
 bool check_bgm_path(const char *path) { return NULL; }
-void* load_bgm_begin(const char *path, unsigned int flags) { return NULL; }
-void* load_bgm_end(void *opaque, const char *path, unsigned int flags) { return NULL; }
+void* load_bgm_begin(const char *path, uint flags) { return NULL; }
+void* load_bgm_end(void *opaque, const char *path, uint flags) { return NULL; }
 void unload_bgm(void *vmus) { }

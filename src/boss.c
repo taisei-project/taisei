@@ -164,8 +164,8 @@ static void BossGlow(Projectile *p, int t) {
 	assert(ani != 0);
 	int animationFrame = rint(creal(p->args[2]));
 
-	ShaderProgram *shader = get_shader_program("silhouette");
-	glUseProgram(shader->gl_handle);
+	ShaderProgram *shader = r_shader_get("silhouette");
+	r_shader_ptr(shader);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 	r_mat_push();
@@ -186,7 +186,7 @@ static void BossGlow(Projectile *p, int t) {
 
 	r_mat_pop();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glUseProgram(recolor_get_shader()->gl_handle);
+	r_shader_ptr(recolor_get_shader());
 }
 
 static int boss_glow(Projectile *p, int t) {

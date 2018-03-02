@@ -160,13 +160,11 @@ void stop_sounds(void) {
 }
 
 Sound* get_sound(const char *name) {
-	Resource *res = get_resource(RES_SFX, name, RESF_OPTIONAL);
-	return res ? res->data : NULL;
+	return get_resource_data(RES_SFX, name, RESF_OPTIONAL);
 }
 
 Music* get_music(const char *name) {
-	Resource *res = get_resource(RES_BGM, name, RESF_OPTIONAL);
-	return res ? res->data : NULL;
+	return get_resource_data(RES_BGM, name, RESF_OPTIONAL);
 }
 
 static void sfx_cfg_volume_callback(ConfigIndex idx, ConfigValue v) {

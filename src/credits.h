@@ -10,5 +10,4 @@
 #include "taisei.h"
 
 void credits_loop(void);
-void credits_add(char*, int);
 void credits_preload(void);

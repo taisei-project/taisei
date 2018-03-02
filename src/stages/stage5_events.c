@@ -536,7 +536,7 @@ void iku_atmospheric(Boss *b, int time) {
 
 complex bolts2_laser(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
-		l->shader = get_shader_program_optional("laser_iku_lightning");
+		l->shader = r_shader_get_optional("laser_iku_lightning");
 		return 0;
 	}
 
@@ -764,7 +764,7 @@ int induction_bullet(Projectile *p, int time) {
 
 complex cathode_laser(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
-		l->shader = get_shader_program_optional("laser_iku_cathode");
+		l->shader = r_shader_get_optional("laser_iku_cathode");
 		return 0;
 	}
 

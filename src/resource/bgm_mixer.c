@@ -46,7 +46,7 @@ static Mix_Music* load_mix_music(const char *path) {
 	return music;
 }
 
-void* load_bgm_begin(const char *path, unsigned int flags) {
+void* load_bgm_begin(const char *path, uint flags) {
 	Music *mus = calloc(1, sizeof(Music));
 	MixerInternalMusic *imus = calloc(1, sizeof(MixerInternalMusic));
 	mus->impl = imus;
@@ -91,7 +91,7 @@ void* load_bgm_begin(const char *path, unsigned int flags) {
 	return mus;
 }
 
-void* load_bgm_end(void *opaque, const char *path, unsigned int flags) {
+void* load_bgm_end(void *opaque, const char *path, uint flags) {
 	return opaque;
 }
 

@@ -12,7 +12,8 @@
 #include "util.h"
 #include "postprocess.h"
 #include "resource.h"
-#include "renderer.h"
+#include "renderer/api.h"
+#include "renderer/common/opengl.h"
 
 ResourceHandler postprocess_res_handler = {
 	.type = RES_POSTPROCESS,
@@ -57,7 +58,6 @@ static void postprocess_load_callback(const char *key, const char *value, void *
 		current->uniforms = NULL;
 		current->shader = get_resource(RES_SHADER_PROGRAM, value, ldata->resflags)->data;
 		list_append(slist, current);
-		log_debug("Shader added: %s (prog: %u)", value, current->shader->gl_handle);
 		return;
 	}
 
@@ -129,16 +129,6 @@ static void postprocess_load_callback(const char *key, const char *value, void *
 	uni->func = get_uniform_func(utype, usize);
 	list_append(&current->uniforms, uni);
 
-	log_debug(
-		"Uniform added: (name: %s; loc: %i; prog: %u; type: %i; size: %i; num: %i)",
-		name,
-		uni->loc,
-		current->shader->gl_handle,
-		uni->type,
-		uni->size,
-		uni->amount
-	);
-
 	for(int i = 0; i < uni->size * uni->amount; ++i) {
 		log_debug("u[%i] = (f: %f; i: %i; u: %u)", i, uni->values.f[i], uni->values.i[i], uni->values.u[i]);
 	}
@@ -180,8 +170,8 @@ void postprocess(PostprocessShader *ppshaders, FBOPair *fbos, PostprocessPrepare
 	for(PostprocessShader *pps = ppshaders; pps; pps = pps->next) {
 		ShaderProgram *s = pps->shader;
 
-		glBindFramebuffer(GL_FRAMEBUFFER, fbos->back->fbo);
-		glUseProgram(s->gl_handle);
+		r_target(fbos->back);
+		r_shader_ptr(s);
 
 		if(prepare) {
 			prepare(fbos->back, s);
@@ -210,11 +200,11 @@ bool check_postprocess_path(const char *path) {
 	return strendswith(path, PP_EXTENSION);
 }
 
-void* load_postprocess_begin(const char *path, unsigned int flags) {
+void* load_postprocess_begin(const char *path, uint flags) {
 	return (void*)true;
 }
 
-void* load_postprocess_end(void *opaque, const char *path, unsigned int flags) {
+void* load_postprocess_end(void *opaque, const char *path, uint flags) {
 	return postprocess_load(path, flags);
 }
 

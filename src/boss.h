@@ -29,7 +29,7 @@ enum {
 
 struct Boss;
 
-typedef void (*BossRule)(struct Boss*, int time);
+typedef void (*BossRule)(struct Boss*, int time) attr_nonnull(1);
 
 typedef enum AttackType {
 	AT_Normal,
@@ -61,7 +61,7 @@ typedef struct AttackInfo {
 		Doing so is going to break replays, progress files, and anything that stores stage IDs permanently.
 		Stage IDs are an internal detail invisible to the player, so they don't need to have any kind of fancy ordering.
 	*/
-	signed char idmap[NUM_SELECTABLE_DIFFICULTIES + 1];
+	schar idmap[NUM_SELECTABLE_DIFFICULTIES + 1];
 
 	AttackType type;
 	char *name;
@@ -124,27 +124,29 @@ typedef struct Boss {
 	BossRule global_rule;
 } Boss;
 
-Boss* create_boss(char *name, char *ani, char *dialog, complex pos);
-void free_boss(Boss *boss);
-void process_boss(Boss **boss);
+Boss* create_boss(char *name, char *ani, char *dialog, complex pos) attr_nonnull(1, 2) attr_returns_nonnull;
+void free_boss(Boss *boss) attr_nonnull(1);
+void process_boss(Boss **boss) attr_nonnull(1);
 
-void draw_extraspell_bg(Boss *boss, int time);
-void draw_boss(Boss *boss);
-void draw_boss_background(Boss *boss);
+void draw_extraspell_bg(Boss *boss, int time) attr_nonnull(1);
+void draw_boss(Boss *boss) attr_nonnull(1);
+void draw_boss_background(Boss *boss) attr_nonnull(1);
 
-Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule);
-Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move);
+Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule)
+	attr_nonnull(1) attr_returns_nonnull;
+Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move)
+	attr_nonnull(1, 2) attr_returns_nonnull;
 
-void boss_start_attack(Boss *b, Attack *a);
-void boss_finish_current_attack(Boss *boss);
+void boss_start_attack(Boss *b, Attack *a) attr_nonnull(1, 2);
+void boss_finish_current_attack(Boss *boss) attr_nonnull(1);
 
-bool boss_is_dying(Boss *boss); // true if the last attack is over but the BOSS_DEATH_DELAY has not elapsed.
-bool boss_is_fleeing(Boss *boss);
-bool boss_is_vulnerable(Boss *boss);
+bool boss_is_dying(Boss *boss) attr_nonnull(1); // true if the last attack is over but the BOSS_DEATH_DELAY has not elapsed.
+bool boss_is_fleeing(Boss *boss) attr_nonnull(1);
+bool boss_is_vulnerable(Boss *boss) attr_nonnull(1);
 
-bool boss_damage(Boss *boss, int dmg); // subtract dmg hitpoints from hp returns true on success
+bool boss_damage(Boss *boss, int dmg) attr_nonnull(1); // subtract dmg hitpoints from hp returns true on success
 
-void boss_death(Boss **boss);
+void boss_death(Boss **boss) attr_nonnull(1);
 void boss_kill_projectiles(void);
 
 void boss_preload(void);

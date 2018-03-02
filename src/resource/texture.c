@@ -15,6 +15,11 @@
 #include "global.h"
 #include "vbo.h"
 #include "video.h"
+#include "renderer/api.h"
+
+static void* load_texture_begin(const char *path, uint flags);
+static void* load_texture_end(void *opaque, const char *path, uint flags);
+static void free_texture(Texture *tex);
 
 ResourceHandler texture_res_handler = {
 	.type = RES_TEXTURE,
@@ -52,7 +57,7 @@ static char* texture_image_path(const char *name) {
 	return NULL;
 }
 
-char* texture_path(const char *name) {
+static char* texture_path(const char *name) {
 	char *p = NULL;
 
 	if((p = try_path(TEX_PATH_PREFIX, name, TEX_EXTENSION))) {
@@ -62,7 +67,7 @@ char* texture_path(const char *name) {
 	return texture_image_path(name);
 }
 
-bool check_texture_path(const char *path) {
+static bool check_texture_path(const char *path) {
 	if(strendswith(path, TEX_EXTENSION)) {
 		return true;
 	}
@@ -77,7 +82,7 @@ typedef struct ImageData {
 	uint32_t *pixels;
 } ImageData;
 
-void* load_texture_begin(const char *path, unsigned int flags) {
+static void* load_texture_begin(const char *path, uint flags) {
 	const char *source = path;
 	char *source_allocated = NULL;
 	SDL_Surface *surf = NULL;
@@ -144,12 +149,13 @@ void* load_texture_begin(const char *path, unsigned int flags) {
 	return converted_surf;
 }
 
+/*
 static void texture_post_load(Texture *tex) {
 	// this is a bit hacky and not very efficient,
 	// but it's still much faster than fixing up the texture on the CPU
 
 	GLuint fbotex, fbo;
-	ShaderProgram *sha = get_shader_program("texture_post_load");
+	ShaderProgram *sha = r_shader_get("texture_post_load");
 
 	glDisable(GL_BLEND);
 	glGenTextures(1, &fbotex);
@@ -183,8 +189,9 @@ static void texture_post_load(Texture *tex) {
 	glEnable(GL_BLEND);
 	tex->gltex = fbotex;
 }
+*/
 
-void* load_texture_end(void *opaque, const char *path, unsigned int flags) {
+static void* load_texture_end(void *opaque, const char *path, uint flags) {
 	SDL_Surface *surface = opaque;
 
 	if(!surface) {
@@ -212,24 +219,25 @@ Texture* prefix_get_tex(const char *name, const char *prefix) {
 }
 
 void load_sdl_surf(SDL_Surface *surface, Texture *texture) {
-	glGenTextures(1, &texture->gltex);
-	glBindTexture(GL_TEXTURE_2D, texture->gltex);
-
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
 	SDL_LockSurface(surface);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+	r_texture_create(texture, &(TextureParams) {
+		.width = surface->w,
+		.height = surface->h,
+		.image_data = surface->pixels,
+		.filter = {
+			.upscale = TEX_FILTER_LINEAR,
+			.downscale = TEX_FILTER_LINEAR,
+		},
+		.wrap = {
+			.s = TEX_WRAP_REPEAT,
+			.t = TEX_WRAP_REPEAT,
+		},
+	});
 	SDL_UnlockSurface(surface);
-
-	texture->w = surface->w;
-	texture->h = surface->h;
 }
 
-void free_texture(Texture *tex) {
-	glDeleteTextures(1, &tex->gltex);
+static void free_texture(Texture *tex) {
+	r_texture_destroy(tex);
 	free(tex);
 }
 
@@ -245,7 +253,8 @@ void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex) {
 
 	draw_texture_state.drawing = true;
 
-	glBindTexture(GL_TEXTURE_2D, tex->gltex);
+	r_texture_ptr(0, tex);
+	r_flush();
 	r_mat_push();
 
 	float x = dest.x;
@@ -325,7 +334,8 @@ void fill_viewport(float xoff, float yoff, float ratio, const char *name) {
 }
 
 void fill_viewport_p(float xoff, float yoff, float ratio, float aspect, float angle, Texture *tex) {
-	glBindTexture(GL_TEXTURE_2D, tex->gltex);
+	r_texture_ptr(0, tex);
+	r_flush();
 
 	float rw, rh;
 
@@ -391,22 +401,23 @@ void fill_screen_p(Texture *tex) {
 void loop_tex_line_p(complex a, complex b, float w, float t, Texture *texture) {
 	complex d = b-a;
 	complex c = (b+a)/2;
+
 	r_mat_push();
 	r_mat_translate(creal(c),cimag(c),0);
 	r_mat_rotate_deg(180/M_PI*carg(d),0,0,1);
 	r_mat_scale(cabs(d),w,1);
 
 	r_mat_mode(MM_TEXTURE);
-	r_mat_identity();
+	// r_mat_identity();
 	r_mat_translate(t, 0, 0);
 	r_mat_mode(MM_MODELVIEW);
 
-	glBindTexture(GL_TEXTURE_2D, texture->gltex);
-
+	r_texture_ptr(0, texture);
+	r_flush();
 	r_draw_quad();
 
 	r_mat_mode(MM_TEXTURE);
-		r_mat_identity();
+	r_mat_identity();
 	r_mat_mode(MM_MODELVIEW);
 
 	r_mat_pop();

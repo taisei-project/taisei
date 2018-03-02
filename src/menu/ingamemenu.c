@@ -140,8 +140,8 @@ void draw_ingame_menu_bg(MenuData *menu, float f) {
 	video_set_viewport();
 	set_ortho();
 
-	ShaderProgram *shader = get_shader_program("ingame_menu");
-	glUseProgram(shader->gl_handle);
+	ShaderProgram *shader = r_shader_get("ingame_menu");
+	r_shader_ptr(shader);
 	glUniform1f(uniloc(shader, "rad"), rad);
 	glUniform1f(uniloc(shader, "phase"), menu->frames / 100.0);
 	stage_draw_foreground();

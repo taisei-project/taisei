@@ -12,59 +12,38 @@
 #include "global.h"
 #include "util.h"
 
-static void init_fbo(FBO *fbo, float scale, int type) {
-	glGenTextures(1, &fbo->tex);
-	glBindTexture(GL_TEXTURE_2D, fbo->tex);
+// TODO: rename and move this
+Resources resources;
 
-	fbo->scale = scale = sanitize_scale(scale);
-	fbo->nw = scale * VIEWPORT_W;
-	fbo->nh = scale * VIEWPORT_H;
+static void init_fbo(FBO *fbo, uint width, uint height) {
+	r_texture_create(fbo, &(TextureParams) {
+		.width  = width,
+		.height = height,
+	});
 
-	log_debug("FBO %p: q=%f, w=%i, h=%i", (void*)fbo, fbo->scale, fbo->nw, fbo->nh);
+	r_texture_make_render_target(fbo);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, type, fbo->nw, fbo->nh, 0, type, GL_UNSIGNED_BYTE, NULL);
-
-	glGenFramebuffers(1,&fbo->fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo->fbo);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbo->tex, 0);
-
-	glGenTextures(1, &fbo->depth);
-	glBindTexture(GL_TEXTURE_2D, fbo->depth);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, fbo->nw, fbo->nh, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, fbo->depth, 0);
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	log_debug("FBO %p: w=%i, h=%i", (void*)fbo, fbo->w, fbo->h);
 }
 
 static void delete_fbo(FBO *fbo) {
-	glDeleteFramebuffers(1, &fbo->fbo);
-	glDeleteTextures(1, &fbo->depth);
-	glDeleteTextures(1, &fbo->tex);
+	r_texture_destroy(fbo);
 }
 
 static void reinit_fbo(FBO *fbo, float scale, int type) {
-	if(!fbo->scale) {
+	if(!fbo->impl) {
 		// fbo was never initialized
 		init_fbo(fbo, scale, type);
 		return;
 	}
 
-	if(fbo->scale != sanitize_scale(scale)) {
+	scale = sanitize_scale(scale);
+	uint w = VIEWPORT_W * scale;
+	uint h = VIEWPORT_H * scale;
+
+	if(fbo->w != w || fbo->h != h) {
 		delete_fbo(fbo);
-		init_fbo(fbo, scale, type);
+		init_fbo(fbo, w, h);
 	}
 }
 
@@ -96,15 +75,16 @@ void draw_fbo(FBO *fbo) {
 		r_mat_translate(VIEWPORT_W/2., VIEWPORT_H/2., 0);
 		r_mat_scale(VIEWPORT_W, VIEWPORT_H, 1);
 		r_flush();
-		glBindTexture(GL_TEXTURE_2D, fbo->tex);
-		glDrawArrays(GL_TRIANGLE_FAN, 4, 4);
+		r_texture_ptr(0, fbo);
+		// glDrawArrays(GL_TRIANGLE_FAN, 4, 4);
+		r_draw_quad();
 	r_mat_pop();
 }
 
 void draw_fbo_viewport(FBO *fbo) {
 	// assumption: rendering into another, identical FBO
 
-	glViewport(0, 0, fbo->scale*VIEWPORT_W, fbo->scale*VIEWPORT_H);
-	set_ortho_ex(VIEWPORT_W,VIEWPORT_H);
+	// glViewport(0, 0, fbo->scale*VIEWPORT_W, fbo->scale*VIEWPORT_H);
+	set_ortho_ex(VIEWPORT_W, VIEWPORT_H);
 	draw_fbo(fbo);
 }

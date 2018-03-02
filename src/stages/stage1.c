@@ -132,9 +132,9 @@ static vec3 **stage1_smoke_pos(vec3 p, float maxrange) {
 }
 
 static void stage1_fog(FBO *fbo) {
-	ShaderProgram *shader = get_shader_program("zbuf_fog");
+	ShaderProgram *shader = r_shader_get("zbuf_fog");
 
-	glUseProgram(shader->gl_handle);
+	r_shader_ptr(shader);
 	glUniform1i(uniloc(shader, "tex"), 0);
 	glUniform1i(uniloc(shader, "depth"), 1);
 	glUniform4f(uniloc(shader, "fog_color"), 0.8, 0.8, 0.8, 1.0);

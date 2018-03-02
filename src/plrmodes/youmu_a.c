@@ -381,10 +381,10 @@ static int youmu_split(Enemy *e, int t) {
 }
 
 static void youmu_mirror_shader(FBO *fbo) {
-	ShaderProgram *shader = get_shader_program("youmua_bomb");
+	ShaderProgram *shader = r_shader_get("youmua_bomb");
 
 	double t = player_get_bomb_progress(&global.plr,0);
-	glUseProgram(shader->gl_handle);
+	r_shader_ptr(shader);
 	glUniform1f(uniloc(shader, "tbomb"), t);
 	draw_fbo_viewport(fbo);
 	r_shader_standard();

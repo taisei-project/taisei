@@ -665,8 +665,8 @@ void scuttle_spellbg(Boss *h, int time) {
 
 	r_color4(1, 1, 1, 0.1);
 	fill_viewport(time/300.0 + 0.5, -time/340.0+0.5, s*0.5, "stage3/spellbg1");
-	ShaderProgram *sha = get_shader_program("maristar_bombbg");
-	glUseProgram(sha->gl_handle);
+	ShaderProgram *sha = r_shader_get("maristar_bombbg");
+	r_shader_ptr(sha);
 	glUniform1f(uniloc(sha,"t"), time/400.);
 	glUniform1f(uniloc(sha,"decay"), 0.);
 	r_color4(1, 1, 1, 0.1);

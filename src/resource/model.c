@@ -49,7 +49,7 @@ typedef struct ModelLoadData {
 	Model *model;
 } ModelLoadData;
 
-void* load_model_begin(const char *path, unsigned int flags) {
+void* load_model_begin(const char *path, uint flags) {
 	Model *m = malloc(sizeof(Model));
 	ObjFileData *data = malloc(sizeof(ObjFileData));
 	Vertex *verts;
@@ -57,7 +57,7 @@ void* load_model_begin(const char *path, unsigned int flags) {
 	parse_obj(path, data);
 
 	m->fverts = data->fverts;
-	m->indices = calloc(data->icount, sizeof(unsigned int));
+	m->indices = calloc(data->icount, sizeof(uint));
 	m->icount = data->icount;
 
 	verts = calloc(data->icount, sizeof(Vertex));
@@ -68,7 +68,7 @@ void* load_model_begin(const char *path, unsigned int flags) {
 }
 
 	memset(verts, 0, data->icount*sizeof(Vertex));
-	for(unsigned int i = 0; i < data->icount; i++) {
+	for(uint i = 0; i < data->icount; i++) {
 		int xi, ni, ti;
 
 		xi = data->indices[i][0]-1;
@@ -115,9 +115,9 @@ fail:
 	return NULL;
 }
 
-void* load_model_end(void *opaque, const char *path, unsigned int flags) {
+void* load_model_end(void *opaque, const char *path, uint flags) {
 	ModelLoadData *ldata = opaque;
-	unsigned int ioffset = _vbo.offset;
+	uint ioffset = _vbo.offset;
 
 	if(!ldata) {
 		return NULL;

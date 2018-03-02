@@ -74,8 +74,8 @@ static void stagetext_draw_single(StageText *txt) {
 		txt->custom.predraw(txt, t, 1.0 - f);
 	}
 
-	ShaderProgram *sha = get_shader_program("stagetext");
-	glUseProgram(sha->gl_handle);
+	ShaderProgram *sha = r_shader_get("stagetext");
+	r_shader_ptr(sha);
 	glUniform1i(uniloc(sha, "trans"), 1);
 	glUniform1f(uniloc(sha, "t"), 1.0 - f);
 

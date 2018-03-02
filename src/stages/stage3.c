@@ -98,11 +98,11 @@ static void stage3_bg_tunnel_draw(vec3 pos) {
 }
 
 static void stage3_tunnel(FBO *fbo) {
-	ShaderProgram *shader = get_shader_program("tunnel");
+	ShaderProgram *shader = r_shader_get("tunnel");
 	assert(uniloc(shader, "mixfactor") >= 0); // just so people don't forget to 'make install'; remove this later
 
 	r_color4(1,1,1,1);
-	glUseProgram(shader->gl_handle);
+	r_shader_ptr(shader);
 	glUniform3f(uniloc(shader, "color"),stgstate.clr_r,stgstate.clr_g,stgstate.clr_b);
 	glUniform1f(uniloc(shader, "mixfactor"), stgstate.clr_mixfactor);
 	glActiveTexture(GL_TEXTURE0 + 2);
@@ -114,10 +114,10 @@ static void stage3_tunnel(FBO *fbo) {
 }
 
 static void stage3_fog(FBO *fbo) {
-	ShaderProgram *shader = get_shader_program("zbuf_fog");
+	ShaderProgram *shader = r_shader_get("zbuf_fog");
 
 	r_color4(1,1,1,1);
-	glUseProgram(shader->gl_handle);
+	r_shader_ptr(shader);
 	glUniform1i(uniloc(shader, "depth"), 2);
 	glUniform4f(uniloc(shader, "fog_color"), stgstate.fog_brightness, stgstate.fog_brightness, stgstate.fog_brightness, 1.0);
 	glUniform1f(uniloc(shader, "start"), 0.2);
@@ -133,7 +133,7 @@ static void stage3_fog(FBO *fbo) {
 }
 
 static void stage3_glitch(FBO *fbo) {
-	ShaderProgram *shader = get_shader_program("glitch");
+	ShaderProgram *shader = r_shader_get("glitch");
 
 	r_color4(1,1,1,1);
 	float strength;
@@ -145,7 +145,7 @@ static void stage3_glitch(FBO *fbo) {
 	}
 
 	if(strength > 0) {
-		glUseProgram(shader->gl_handle);
+		r_shader_ptr(shader);
 		glUniform1f(uniloc(shader, "strength"), strength);
 		glUniform1i(uniloc(shader, "frames"), global.frames + tsrand() % 30);
 	} else {

@@ -58,7 +58,7 @@ void stage_draw_preload(void) {
 		"hud_text",
 	NULL);
 
-	stagedraw.hud_text.shader      = get_shader_program("hud_text");
+	stagedraw.hud_text.shader      = r_shader_get("hud_text");
 	stagedraw.hud_text.u_colorAtop = uniloc(stagedraw.hud_text.shader, "colorAtop");
 	stagedraw.hud_text.u_colorAbot = uniloc(stagedraw.hud_text.shader, "colorAbot");
 	stagedraw.hud_text.u_colorBtop = uniloc(stagedraw.hud_text.shader, "colorBtop");
@@ -66,7 +66,7 @@ void stage_draw_preload(void) {
 	stagedraw.hud_text.u_colortint = uniloc(stagedraw.hud_text.shader, "colortint");
 	stagedraw.hud_text.u_split     = uniloc(stagedraw.hud_text.shader, "split");
 
-	glUseProgram(stagedraw.hud_text.shader->gl_handle);
+	r_shader_ptr(stagedraw.hud_text.shader);
 	glUniform4f(stagedraw.hud_text.u_colorAtop, 0.70, 0.70, 0.70, 0.70);
 	glUniform4f(stagedraw.hud_text.u_colorAbot, 0.50, 0.50, 0.50, 0.50);
 	glUniform4f(stagedraw.hud_text.u_colorBtop, 1.00, 1.00, 1.00, 1.00);
@@ -111,14 +111,14 @@ static void draw_wall_of_text(float f, const char *txt) {
 	r_mat_translate(w/2, h/2, 0);
 	r_mat_scale(w, h, 1.0);
 
-	ShaderProgram *shader = get_shader_program("spellcard_walloftext");
-	glUseProgram(shader->gl_handle);
+	ShaderProgram *shader = r_shader_get("spellcard_walloftext");
+	r_shader_ptr(shader);
 	glUniform1f(uniloc(shader, "w"), spr.tex_area.w/spr.tex->w);
 	glUniform1f(uniloc(shader, "h"), spr.tex_area.h/spr.tex->h);
 	glUniform1f(uniloc(shader, "ratio"), h/w);
 	glUniform2f(uniloc(shader, "origin"), creal(global.boss->pos)/h, cimag(global.boss->pos)/w);
 	glUniform1f(uniloc(shader, "t"), f);
-	glBindTexture(GL_TEXTURE_2D, spr.tex->gltex);
+	r_texture_ptr(0, spr.tex);
 	r_draw_quad();
 	r_shader_standard();
 
@@ -174,18 +174,18 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBOPair *fbos) {
 			apply_shader_rules(shaderrules, fbos);
 		}
 
-		glBindFramebuffer(GL_FRAMEBUFFER, fbos->back->fbo);
+		r_target(fbos->back);
 		draw_fbo_viewport(fbos->front);
 		draw_spellbg(t);
 		swap_fbo_pair(fbos);
-		glBindFramebuffer(GL_FRAMEBUFFER, fbos->back->fbo);
+		r_target(fbos->back);
 
 		complex pos = b->pos;
 		float ratio = (float)VIEWPORT_H/VIEWPORT_W;
 
 		if(t<ATTACK_START_DELAY) {
-			ShaderProgram *shader = get_shader_program("spellcard_intro");
-			glUseProgram(shader->gl_handle);
+			ShaderProgram *shader = r_shader_get("spellcard_intro");
+			r_shader_ptr(shader);
 
 			glUniform1f(uniloc(shader, "ratio"), ratio);
 			glUniform2f(uniloc(shader, "origin"), creal(pos)/VIEWPORT_W, 1-cimag(pos)/VIEWPORT_H);
@@ -198,8 +198,8 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBOPair *fbos) {
 			glUniform1f(uniloc(shader, "t"), (t+delay)/duration);
 		} else if(b->current->endtime) {
 			int tn = global.frames - b->current->endtime;
-			ShaderProgram *shader = get_shader_program("spellcard_outro");
-			glUseProgram(shader->gl_handle);
+			ShaderProgram *shader = r_shader_get("spellcard_outro");
+			r_shader_ptr(shader);
 
 			float delay = ATTACK_END_DELAY;
 
@@ -228,8 +228,8 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBOPair *fbos) {
 }
 
 static void apply_zoom_shader(void) {
-	ShaderProgram *shader = get_shader_program("boss_zoom");
-	glUseProgram(shader->gl_handle);
+	ShaderProgram *shader = r_shader_get("boss_zoom");
+	r_shader_ptr(shader);
 
 	complex fpos = global.boss->pos;
 	complex pos = fpos + 15*cexp(I*global.frames/4.5);
@@ -486,7 +486,7 @@ struct labels_s {
 void stage_draw_hud_text(struct labels_s* labels) {
 	char buf[64];
 
-	glUseProgram(stagedraw.hud_text.shader->gl_handle);
+	r_shader_ptr(stagedraw.hud_text.shader);
 	glUniform1f(stagedraw.hud_text.u_split, 0.0);
 	glUniform4f(stagedraw.hud_text.u_colortint, 1.00, 1.00, 1.00, 1.00);
 
@@ -601,7 +601,7 @@ static void stage_draw_framerate_graphs(void) {
 	#define NUM_SAMPLES (sizeof(((FPSCounter){{0}}).frametimes) / sizeof(((FPSCounter){{0}}).frametimes[0]))
 	static float samples[NUM_SAMPLES];
 
-	ShaderProgram *s = get_shader_program("graph");
+	ShaderProgram *s = r_shader_get("graph");
 	uint32_t u_points = uniloc(s, "points[0]");
 	uint32_t u_colors[3] = {
 		uniloc(s, "color_low"),
@@ -617,7 +617,7 @@ static void stage_draw_framerate_graphs(void) {
 	float x = SCREEN_W - w - pad;
 	float y = 100;
 
-	glUseProgram(s->gl_handle);
+	r_shader_ptr(s);
 
 	fill_graph(NUM_SAMPLES, samples, &global.fps.logic);
 	glUniform3f(u_colors[0], 0.0, 1.0, 1.0);

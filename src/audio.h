@@ -55,11 +55,11 @@ bool audio_backend_sound_stop_all(AudioBackendSoundGroup group);
 void audio_init(void);
 void audio_shutdown(void);
 
-void play_sound(const char *name);
-void play_sound_ex(const char *name, int cooldown, bool replace);
-void play_sound_delayed(const char *name, int cooldown, bool replace, int delay);
-void play_loop(const char *name);
-void play_ui_sound(const char *name);
+void play_sound(const char *name) attr_nonnull(1);
+void play_sound_ex(const char *name, int cooldown, bool replace) attr_nonnull(1);
+void play_sound_delayed(const char *name, int cooldown, bool replace, int delay) attr_nonnull(1);
+void play_loop(const char *name) attr_nonnull(1);
+void play_ui_sound(const char *name) attr_nonnull(1);
 void reset_sounds(void);
 void pause_sounds(void);
 void resume_sounds(void);
@@ -68,10 +68,10 @@ void update_sounds(void); // checks if loops need to be stopped
 
 int get_default_sfx_volume(const char *sfx);
 
-Sound* get_sound(const char *name);
-Music* get_music(const char *music);
+Sound* get_sound(const char *name) attr_nonnull(1);
+Music* get_music(const char *music) attr_nonnull(1);
 
-void start_bgm(const char *name);
+void start_bgm(const char *name) attr_nonnull(1);
 void stop_bgm(bool force);
 void fade_bgm(double fadetime);
 void resume_bgm(void);

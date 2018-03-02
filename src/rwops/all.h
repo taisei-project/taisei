@@ -6,6 +6,7 @@
  * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
  */
 
+#pragma once
 #include "taisei.h"
 
 #include "build_config.h"

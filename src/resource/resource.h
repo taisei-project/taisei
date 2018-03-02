@@ -10,7 +10,7 @@
 #include "taisei.h"
 
 #include "hashtable.h"
-#include "fbo.h"
+// #include "fbo.h"
 
 typedef enum ResourceType {
 	RES_TEXTURE,
@@ -51,12 +51,12 @@ typedef bool (*ResourceCheckProc)(const char *path);
 // Begins loading a resource specified by path.
 // May be called asynchronously.
 // The return value is not interpreted in any way, it's just passed to the corresponding ResourceEndLoadProc later.
-typedef void* (*ResourceBeginLoadProc)(const char *path, unsigned int flags);
+typedef void* (*ResourceBeginLoadProc)(const char *path, uint flags);
 
 // Finishes loading a resource and returns a pointer to it.
 // Will be called from the main thread only.
 // On failure, must return NULL and not crash the program.
-typedef void* (*ResourceEndLoadProc)(void *opaque, const char *path, unsigned int flags);
+typedef void* (*ResourceEndLoadProc)(void *opaque, const char *path, uint flags);
 
 // Unloads a resource, freeing all allocated to it memory.
 typedef void (*ResourceUnloadProc)(void *res);
@@ -86,16 +86,6 @@ typedef struct Resource {
 	void *data;
 } Resource;
 
-typedef struct Resources {
-	struct {
-		FBOPair bg;
-		FBOPair fg;
-		FBOPair rgba;
-	} fbo_pairs;
-} Resources;
-
-extern Resources resources;
-
 void init_resources(void);
 void load_resources(void);
 void free_resources(bool all);
@@ -104,7 +94,7 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 void* get_resource_data(ResourceType type, const char *name, ResourceFlags flags);
 Resource* insert_resource(ResourceType type, const char *name, void *data, ResourceFlags flags, const char *source);
 void preload_resource(ResourceType type, const char *name, ResourceFlags flags);
-void preload_resources(ResourceType type, ResourceFlags flags, const char *firstname, ...) __attribute__((sentinel));
+void preload_resources(ResourceType type, ResourceFlags flags, const char *firstname, ...) attr_sentinel;
 Hashtable* get_resource_table(ResourceType type);
 
 void resource_util_strip_ext(char *path);

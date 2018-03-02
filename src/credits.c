@@ -35,7 +35,9 @@ static struct {
 
 #define ENTRY_TIME 350
 
-void credits_fill(void) {
+static void credits_add(char *data, int time);
+
+static void credits_fill(void) {
 	// In case the shortened URLs break,
 	// Tuck V's YouTube: https://www.youtube.com/channel/UCaw73cuHLnFCSpjOtt_9pyg
 	// Lalasa's YouTube: https://www.youtube.com/channel/UCc6ePuGLYnKTkdDqxP3OB4Q
@@ -158,7 +160,7 @@ void credits_fill(void) {
 	credits_add("*\nAnd don't forget to take it easy!", 200);
 }
 
-void credits_add(char *data, int time) {
+static void credits_add(char *data, int time) {
 	CreditsEntry *e;
 	char *c, buf[256];
 	int l = 0, i = 0;
@@ -190,11 +192,11 @@ void credits_add(char *data, int time) {
 	credits.end += time + CREDITS_ENTRY_FADEOUT;
 }
 
-void credits_towerwall_draw(vec3 pos) {
+static void credits_towerwall_draw(vec3 pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towerwall")->gltex);
 
-	ShaderProgram *s = get_shader_program("tower_wall");
-	glUseProgram(s->gl_handle);
+	ShaderProgram *s = r_shader_get("tower_wall");
+	r_shader_ptr(s);
 	glUniform1i(uniloc(s, "lendiv"), 2800.0 + 300.0 * sin(global.frames / 77.7));
 
 	r_mat_push();
@@ -206,11 +208,7 @@ void credits_towerwall_draw(vec3 pos) {
 	r_shader_standard();
 }
 
-vec3 **credits_skysphere_pos(vec3 pos, float maxrange) {
-	return single3dpos(pos, maxrange, stage_3d_context.cx);
-}
-
-void credits_init(void) {
+static void credits_init(void) {
 	memset(&credits, 0, sizeof(credits));
 	init_stage3d(&stage_3d_context);
 
@@ -249,7 +247,7 @@ static double entry_height(CreditsEntry *e, double *head, double *body) {
 	return total;
 }
 
-void credits_draw_entry(CreditsEntry *e) {
+static void credits_draw_entry(CreditsEntry *e) {
 	int time = global.frames - 400;
 	float fadein = 1, fadeout = 1;
 
@@ -335,7 +333,7 @@ void credits_draw_entry(CreditsEntry *e) {
 	r_color4(1, 1, 1, 1);
 }
 
-void credits_draw(void) {
+static void credits_draw(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	colorfill(1, 1, 1, 1); // don't use glClearColor for this, it screws up letterboxing
 
@@ -369,12 +367,12 @@ void credits_draw(void) {
 	draw_transition();
 }
 
-void credits_finish(void *arg) {
+static void credits_finish(void *arg) {
 	credits.end = 0;
 	set_transition(TransLoader, 0, FADE_TIME*10);
 }
 
-void credits_process(void) {
+static void credits_process(void) {
 	TIMER(&global.frames);
 
 	stage_3d_context.cx[2] = 200 - global.frames * 50;
@@ -393,7 +391,7 @@ void credits_process(void) {
 	}
 }
 
-void credits_free(void) {
+static void credits_free(void) {
 	int i, j;
 	for(i = 0; i < credits.ecount; ++i) {
 		CreditsEntry *e = &(credits.entries[i]);

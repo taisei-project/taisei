@@ -650,10 +650,10 @@ struct glext_s {
 		char minor;
 	} version;
 
-	unsigned int draw_instanced: 1;
-	unsigned int debug_output: 1;
-	unsigned int EXT_draw_instanced: 1;
-	unsigned int ARB_draw_instanced: 1;
+	uint draw_instanced: 1;
+	uint debug_output: 1;
+	uint EXT_draw_instanced: 1;
+	uint ARB_draw_instanced: 1;
 
 	tsglDrawArraysInstanced_ptr DrawArraysInstanced;
 	tsglDebugMessageControl_ptr DebugMessageControl;
@@ -681,3 +681,4 @@ struct glext_s {
 /*
 """
 #*/
+

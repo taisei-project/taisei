@@ -10,6 +10,8 @@
 
 #include "recolor.h"
 #include "resource/resource.h"
+#include "renderer/common/opengl.h"
+#include "renderer/api.h"
 
 ColorTransform colortransform_identity = {
 	.R[1] = RGBA(1, 0, 0, 0),
@@ -52,18 +54,17 @@ void recolor_init(void) {
 
 	preload_resource(RES_SHADER_PROGRAM, "recolor", RESF_PERMANENT);
 
-	recolor_vars.shader = get_shader_program("recolor");
+	recolor_vars.shader = r_shader_get("recolor");
 	recolor_vars.R.loc = uniloc(recolor_vars.shader, "R");
 	recolor_vars.G.loc = uniloc(recolor_vars.shader, "G");
 	recolor_vars.B.loc = uniloc(recolor_vars.shader, "B");
 	recolor_vars.A.loc = uniloc(recolor_vars.shader, "A");
 	recolor_vars.O.loc = uniloc(recolor_vars.shader, "O");
 
-	int prev_prog = 0;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &prev_prog);
-	glUseProgram(recolor_vars.shader->gl_handle);
+	const ShaderProgram *prev_prog = r_shader_current();
+	r_shader_ptr(recolor_vars.shader);
 	recolor_apply_transform(&colortransform_identity);
-	glUseProgram(prev_prog);
+	r_shader_ptr(prev_prog);
 }
 
 void recolor_reinit(void) {

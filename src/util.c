@@ -279,7 +279,7 @@ double swing(double x, double s) {
 	return x * x * ((s + 1) * x + s) / 2 + 1;
 }
 
-unsigned int topow2(unsigned int x) {
+uint topow2(uint x) {
 	int y = 1;
 	while(y < x) y *= 2;
 	return y;
@@ -343,7 +343,7 @@ void fade_out(float f) {
 
 void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxfrags, float alpha, float star_width) {
 	Sprite *star = get_sprite("star");
-	ShaderProgram *shader = get_shader_program("circleclipped_indicator");
+	ShaderProgram *shader = r_shader_get("circleclipped_indicator");
 	static float clr[4];
 	int i = 0;
 
@@ -355,7 +355,7 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 	// XXX: move to call site?
 	y -= 2;
 
-	glUseProgram(shader->gl_handle);
+	r_shader_ptr(shader);
 	parse_color_array(fill_clr, clr);
 	glUniform4fv(uniloc(shader, "fill_color"), 1, clr);
 	parse_color_array(back_clr, clr);

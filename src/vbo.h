@@ -10,7 +10,7 @@
 #include "taisei.h"
 
 #include "resource/texture.h"
-#include "taiseigl.h"
+#include "renderer/common/opengl.h"
 
 enum {
 	VBO_SIZE = 8192, // * sizeof(Vertex)

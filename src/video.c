@@ -12,7 +12,6 @@
 
 #include "global.h"
 #include "video.h"
-#include "taiseigl.h"
 
 Video video;
 static bool libgl_loaded = false;
@@ -89,82 +88,6 @@ static void video_update_vsync(void) {
 			break;
 		}
 	}
-}
-
-#ifdef DEBUG_GL
-static void APIENTRY video_gl_debug(
-	GLenum source,
-	GLenum type,
-	GLuint id,
-	GLenum severity,
-	GLsizei length,
-	const GLchar *message,
-	const void *arg
-) {
-	char *strtype = "unknown";
-	char *strsev = "unknown";
-	LogLevel lvl = LOG_DEBUG;
-
-	switch(type) {
-		case GL_DEBUG_TYPE_ERROR: strtype = "error"; lvl = LOG_FATAL; break;
-		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: strtype = "deprecated"; lvl = LOG_WARN; break;
-		case GL_DEBUG_TYPE_PORTABILITY: strtype = "portability"; break;
-		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: strtype = "undefined"; break;
-		case GL_DEBUG_TYPE_PERFORMANCE: strtype = "performance"; break;
-		case GL_DEBUG_TYPE_OTHER: strtype = "other"; break;
-	}
-
-	switch(severity) {
-		case GL_DEBUG_SEVERITY_LOW: strsev = "low"; break;
-		case GL_DEBUG_SEVERITY_MEDIUM: strsev = "medium"; break;
-		case GL_DEBUG_SEVERITY_HIGH: strsev = "high"; break;
-		case GL_DEBUG_SEVERITY_NOTIFICATION: strsev = "notify"; break;
-	}
-
-	if(type == GL_DEBUG_TYPE_OTHER && severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
-		// too verbose, spits a message every time some text is drawn
-		return;
-	}
-
-	log_custom(lvl, "[OpenGL debug, %s, %s] %i: %s", strtype, strsev, id, message);
-}
-
-static void APIENTRY video_gl_debug_enable(void) {
-	GLuint unused = 0;
-	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-	glDebugMessageCallback(video_gl_debug, NULL);
-	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, &unused, true);
-	log_info("Enabled OpenGL debugging");
-}
-#endif
-
-static void video_init_gl(void) {
-	video.glcontext = SDL_GL_CreateContext(video.window);
-
-	load_gl_functions();
-	check_gl_extensions();
-
-#ifdef DEBUG_GL
-	if(glext.debug_output) {
-		video_gl_debug_enable();
-	} else {
-		log_warn("OpenGL debugging is not supported by the implementation");
-	}
-#endif
-
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
-
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_BLEND);
-
-	init_quadvbo();
-
-	r_init();
-
-	glClear(GL_COLOR_BUFFER_BIT);
 }
 
 static void video_update_quality(void) {
@@ -248,31 +171,11 @@ static void video_new_window_internal(int w, int h, uint32_t flags, bool fallbac
 		video.window = NULL;
 	}
 
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-#ifdef DEBUG_GL
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-#endif
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-
 	char title[sizeof(WINDOW_TITLE) + strlen(TAISEI_VERSION) + 2];
 	snprintf(title, sizeof(title), "%s v%s", WINDOW_TITLE, TAISEI_VERSION);
-
-	video.window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, flags);
+	video.window = r_create_window(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, flags);
 
 	if(video.window) {
-		if(video.glcontext) {
-			SDL_GL_MakeCurrent(video.window, video.glcontext);
-		} else {
-			video_init_gl();
-		}
-
-		if(!video.glcontext) {
-			log_fatal("Error creating OpenGL context: %s", SDL_GetError());
-			return;
-		}
-
 		video_update_mode_settings();
 		return;
 	}
@@ -286,7 +189,7 @@ static void video_new_window_internal(int w, int h, uint32_t flags, bool fallbac
 }
 
 static void video_new_window(int w, int h, bool fs, bool resizable) {
-	uint32_t flags = SDL_WINDOW_OPENGL;
+	uint32_t flags = 0;
 
 	if(fs) {
 		flags |= get_fullscreen_flag();

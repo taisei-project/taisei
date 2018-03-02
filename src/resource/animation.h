@@ -29,8 +29,8 @@ typedef struct Animation {
 
 char* animation_path(const char *name);
 bool check_animation_path(const char *path);
-void* load_animation_begin(const char *filename, unsigned int flags);
-void* load_animation_end(void *opaque, const char *filename, unsigned int flags);
+void* load_animation_begin(const char *filename, uint flags);
+void* load_animation_end(void *opaque, const char *filename, uint flags);
 void unload_animation(void *vani);
 
 Animation *get_ani(const char *name);

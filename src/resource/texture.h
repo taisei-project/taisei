@@ -11,27 +11,18 @@
 
 #include <SDL.h>
 #include <stdbool.h>
-#include "taiseigl.h"
 #include "util.h"
 #include "resource.h"
 
-typedef struct Texture Texture;
+typedef struct TextureImpl TextureImpl;
 
-struct Texture {
-	int w, h;
-	GLuint gltex;
-};
+typedef struct Texture {
+	uint w, h;
+	TextureImpl *impl;
+} Texture;
 
 char* texture_path(const char *name);
-void* load_texture_begin(const char *path, unsigned int flags);
-void* load_texture_end(void *opaque, const char *path, unsigned int flags);
 bool check_texture_path(const char *path);
-
-void load_sdl_surf(SDL_Surface *surface, Texture *texture);
-void free_texture(Texture *tex);
-
-// void draw_texture(float x, float y, const char *name);
-// void draw_texture_p(float x, float y, Texture *tex);
 
 void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex);
 void end_draw_texture(void);
@@ -47,6 +38,8 @@ void fill_screen_p(Texture *tex);
 
 void loop_tex_line_p(complex a, complex b, float w, float t, Texture *texture);
 void loop_tex_line(complex a, complex b, float w, float t, const char *texture);
+
+void load_sdl_surf(SDL_Surface *surface, Texture *texture);
 
 Texture* get_tex(const char *name);
 Texture* prefix_get_tex(const char *name, const char *prefix);

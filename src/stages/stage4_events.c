@@ -1158,7 +1158,7 @@ void kurumi_extra_fairy_visual(Enemy *e, int time, bool render) {
 	}
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glUseProgram(get_shader_program("negative")->gl_handle);
+	r_shader(negative);
 	Fairy(e, time, render);
 	r_shader_standard();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1171,7 +1171,7 @@ void kurumi_extra_bigfairy_visual(Enemy *e, int time, bool render) {
 	}
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glUseProgram(get_shader_program("negative")->gl_handle);
+	r_shader(negative);
 	BigFairy(e, time, render);
 	r_shader_standard();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

@@ -97,8 +97,8 @@ vec3 **stage6_towerwall_pos(vec3 pos, float maxrange) {
 void stage6_towerwall_draw(vec3 pos) {
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towerwall")->gltex);
 
-	ShaderProgram *s = get_shader_program("tower_wall");
-	glUseProgram(s->gl_handle);
+	ShaderProgram *s = r_shader_get("tower_wall");
+	r_shader_ptr(s);
 
 	r_mat_push();
 	r_mat_translate(pos[0], pos[1], pos[2]);
@@ -131,8 +131,8 @@ static vec3 **stage6_skysphere_pos(vec3 pos, float maxrange) {
 
 static void stage6_skysphere_draw(vec3 pos) {
 	glDisable(GL_DEPTH_TEST);
-	ShaderProgram *s = get_shader_program("stage6_sky");
-	glUseProgram(s->gl_handle);
+	ShaderProgram *s = r_shader_get("stage6_sky");
+	r_shader_ptr(s);
 
 	r_mat_push();
 	r_mat_translate(pos[0], pos[1], pos[2]-30);

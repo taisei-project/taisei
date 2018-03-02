@@ -29,15 +29,15 @@ typedef struct ObjFileData {
 } ObjFileData;
 
 typedef struct Model {
-	unsigned int *indices;
+	uint *indices;
 	int icount;
 	int fverts;
 } Model;
 
 char* model_path(const char *name);
 bool check_model_path(const char *path);
-void* load_model_begin(const char *path, unsigned int flags);
-void* load_model_end(void *opaque, const char *path, unsigned int flags);
+void* load_model_begin(const char *path, uint flags);
+void* load_model_end(void *opaque, const char *path, uint flags);
 void unload_model(void*); // Does not delete elements from the VBO, so doing this at runtime is leaking VBO space
 
 Model* get_model(const char *name);

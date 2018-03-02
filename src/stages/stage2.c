@@ -47,7 +47,7 @@ struct stage2_spells_s stage2_spells = {
 };
 
 static void stage2_bg_leaves_draw(vec3 pos) {
-	glUseProgram(get_shader_program("alpha_depth")->gl_handle);
+	r_shader(alpha_depth);
 
 	r_mat_mode(MM_TEXTURE);
 	r_mat_identity();
@@ -155,9 +155,9 @@ static vec3 **stage2_bg_grass_pos2(vec3 pos, float maxrange) {
 }
 
 static void stage2_fog(FBO *fbo) {
-	ShaderProgram *shader = get_shader_program("zbuf_fog");
+	ShaderProgram *shader = r_shader_get("zbuf_fog");
 
-	glUseProgram(shader->gl_handle);
+	r_shader_ptr(shader);
 	glUniform1i(uniloc(shader, "depth"),2);
 	glUniform4f(uniloc(shader, "fog_color"),0.05,0.0,0.03,1.0);
 	glUniform1f(uniloc(shader, "start"),0.2);
@@ -173,9 +173,9 @@ static void stage2_fog(FBO *fbo) {
 }
 
 static void stage2_bloom(FBO *fbo) {
-	ShaderProgram *shader = get_shader_program("bloom");
+	ShaderProgram *shader = r_shader_get("bloom");
 
-	glUseProgram(shader->gl_handle);
+	r_shader_ptr(shader);
 	glUniform1i(uniloc(shader, "samples"), 10);
 	glUniform1f(uniloc(shader, "intensity"), 0.05);
 	glUniform1f(uniloc(shader, "radius"), 0.03);

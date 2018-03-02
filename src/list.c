@@ -69,7 +69,7 @@ List* list_append(List **dest, List *elem) {
 	return list_insert(&end, elem);
 }
 
-__attribute__((hot))
+attr_hot
 static List* list_insert_at_priority(List **list_head, List *elem, int prio, ListPriorityFunc prio_func, bool head) {
 	assert(list_head != NULL);
 	assert(elem != NULL);

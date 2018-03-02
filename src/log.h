@@ -86,7 +86,7 @@ bool log_initialized(void);
 //
 
 void _taisei_log(LogLevel lvl, bool is_backtrace, const char *funcname, const char *fmt, ...)
-	__attribute__((format(FORMAT_ATTR, 4, 5)));
+	attr_printf(4, 5);
 
 noreturn void _taisei_log_fatal(LogLevel lvl, const char *funcname, const char *fmt, ...)
-	__attribute__((format(FORMAT_ATTR, 3, 4)));
+	attr_printf(3, 4);

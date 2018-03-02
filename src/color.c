@@ -49,7 +49,7 @@ Color derive_color(Color src, Color mask, Color mod) {
 	return (src & ~mask) | (mod & mask);
 }
 
-float color_component(Color clr, unsigned int ofs) {
+float color_component(Color clr, uint ofs) {
 	return (ColorComponent)((clr >> ofs) & CLR_CMASK) * conv;
 }
 

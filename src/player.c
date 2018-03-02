@@ -772,7 +772,7 @@ void player_add_bombs(Player *plr, int bombs) {
 }
 
 
-static void try_spawn_bonus_item(Player *plr, ItemType type, unsigned int oldpoints, unsigned int reqpoints) {
+static void try_spawn_bonus_item(Player *plr, ItemType type, uint oldpoints, uint reqpoints) {
 	int items = plr->points / reqpoints - oldpoints / reqpoints;
 
 	if(items > 0) {
@@ -782,8 +782,8 @@ static void try_spawn_bonus_item(Player *plr, ItemType type, unsigned int oldpoi
 	}
 }
 
-void player_add_points(Player *plr, unsigned int points) {
-	unsigned int old = plr->points;
+void player_add_points(Player *plr, uint points) {
+	uint old = plr->points;
 	plr->points += points;
 
 	if(global.stage->type != STAGE_SPELL) {

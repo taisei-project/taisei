@@ -48,7 +48,7 @@ typedef struct ShaderLoadData {
 	char *ftext;
 } ShaderLoadData;
 
-void* load_shader_begin(const char *path, unsigned int flags) {
+void* load_shader_begin(const char *path, uint flags) {
 	char *text, *vtext, *ftext, *delim;
 
 	text = read_all(path, NULL);
@@ -77,7 +77,7 @@ void* load_shader_begin(const char *path, unsigned int flags) {
 	return data;
 }
 
-void* load_shader_end(void *opaque, const char *path, unsigned int flags) {
+void* load_shader_end(void *opaque, const char *path, uint flags) {
 	ShaderLoadData *data = opaque;
 
 	if(!data) {
@@ -110,7 +110,7 @@ static char* get_snippet_header(void) {
 	}
 }
 
-void load_shader_snippets(const char *filename, const char *prefix, unsigned int flags) {
+void load_shader_snippets(const char *filename, const char *prefix, uint flags) {
 	int size, vhsize = 0, vfsize = 0, fhsize = 0, ffsize = 0, ssize, prefixlen;
 	char *text, *vhead, *vfoot, *fhead, *ffoot;
 	char *sec, *name, *nend, *send;

@@ -73,8 +73,8 @@ static void stage5_stairs_draw(vec3 pos) {
 	r_mat_translate(pos[0], pos[1], pos[2]);
 	r_mat_scale(300,300,300);
 
-	ShaderProgram *sha = get_shader_program("tower_light");
-	glUseProgram(sha->gl_handle);
+	ShaderProgram *sha = r_shader_get("tower_light");
+	r_shader_ptr(sha);
 	glUniform3f(uniloc(sha, "lightvec"), 0, 0, 0);
 	glUniform4f(uniloc(sha, "color"), 0.1, 0.1, 0.5, 1);
 	glUniform1f(uniloc(sha, "strength"), stagedata.light_strength);

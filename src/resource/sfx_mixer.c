@@ -25,7 +25,7 @@ bool check_sound_path(const char *path) {
 	return strstartswith(path, SFX_PATH_PREFIX) && audio_mixer_check_sound_path(path, false);
 }
 
-void* load_sound_begin(const char *path, unsigned int flags) {
+void* load_sound_begin(const char *path, uint flags) {
 	SDL_RWops *rwops = vfs_open(path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
 	if(!rwops) {
@@ -61,7 +61,7 @@ void* load_sound_begin(const char *path, unsigned int flags) {
 	return snd;
 }
 
-void* load_sound_end(void *opaque, const char *path, unsigned int flags) {
+void* load_sound_end(void *opaque, const char *path, uint flags) {
 	return opaque;
 }
 

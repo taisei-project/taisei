@@ -24,7 +24,6 @@
 
 #include "menu/menu.h"
 
-#include "taiseigl.h"
 #include "player.h"
 #include "projectile.h"
 #include "enemy.h"
@@ -49,7 +48,7 @@
 #include "hirestime.h"
 #include "log.h"
 #include "framerate.h"
-#include "renderer.h"
+#include "renderer/api.h"
 
 enum {
 	// defaults

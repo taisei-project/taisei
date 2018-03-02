@@ -179,5 +179,5 @@ void Blast(Projectile *p, int t);
 
 void projectiles_preload(void);
 
-List* proj_insert_sizeprio(List **dest, List *elem) __attribute__((hot));
+List* proj_insert_sizeprio(List **dest, List *elem) attr_hot;
 List* proj_insert_colorprio(List **dest, List *elem);

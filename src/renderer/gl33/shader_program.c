@@ -10,34 +10,28 @@
 
 #include "shader_program.h"
 #include "shader_object.h"
-#include "renderer.h"
+#include "../api.h"
 
-ResourceHandler shader_program_res_handler = {
-	.type = RES_SHADER_PROGRAM,
-	.typename = "shader program",
-	.subdir = SHPROG_PATH_PREFIX,
+int shprog_uniform_location(ShaderProgram *prog, const char *name) {
+	return (intptr_t)hashtable_get_string(prog->uniforms, name) - 1;
+}
 
-	.procs = {
-		.find = shader_program_path,
-		.check = check_shader_program_path,
-		.begin_load = load_shader_program_begin,
-		.end_load = load_shader_program_end,
-		.unload = unload_shader_program,
-	},
-};
+/*
+ * Resource API
+ */
 
-char* shader_program_path(const char *name) {
+static char* shader_program_path(const char *name) {
 	return strjoin(SHPROG_PATH_PREFIX, name, SHPROG_EXT, NULL);
 }
 
-bool check_shader_program_path(const char *path) {
+static bool check_shader_program_path(const char *path) {
 	return strendswith(path, SHPROG_EXT) && strstartswith(path, SHPROG_PATH_PREFIX);
 }
 
 struct shprog_load_data {
 	ShaderProgram shprog;
 	int num_objects;
-	unsigned int load_flags;
+	uint load_flags;
 	char *objlist;
 };
 
@@ -60,7 +54,7 @@ static void preload_shobject(const char *name, struct shprog_load_data *ldata) {
 	++ldata->num_objects;
 }
 
-void* load_shader_program_begin(const char *path, unsigned int flags) {
+static void* load_shader_program_begin(const char *path, uint flags) {
 	struct shprog_load_data ldata;
 	ldata.load_flags = flags;
 	memset(&ldata, 0, sizeof(ldata));
@@ -93,7 +87,7 @@ static void attach_shobject(const char *name, struct shprog_load_data *ldata) {
 		return;
 	}
 
-	glAttachShader(ldata->shprog.gl_handle, shobj->gl_handle);
+	glAttachShader(ldata->shprog.gl_handle, shobj->impl->gl_handle);
 	--ldata->num_objects;
 }
 
@@ -108,7 +102,7 @@ static void print_info_log(GLuint prog) {
 
 		log_warn(
 			"\n== Shader program linkage log (%u) ==\n%s\n== End of shader program linkage log (%u) ==",
-			prog, log, prog
+				 prog, log, prog
 		);
 	}
 }
@@ -139,12 +133,12 @@ static void cache_uniforms(ShaderProgram *prog) {
 		hashtable_set_string(prog->uniforms, name, (void*)(intptr_t)(glGetUniformLocation(prog->gl_handle, name) + 1));
 	}
 
-#ifdef DEBUG_GL
+	#ifdef DEBUG_GL
 	hashtable_print_stringkeys(prog->uniforms);
-#endif
+	#endif
 }
 
-void* load_shader_program_end(void *opaque, const char *path, unsigned int flags) {
+static void* load_shader_program_end(void *opaque, const char *path, uint flags) {
 	if(!opaque) {
 		return NULL;
 	}
@@ -193,21 +187,16 @@ void unload_shader_program(void *vprog) {
 	free(prog);
 }
 
-int uniloc(ShaderProgram *prog, const char *name) {
-	return (intptr_t)hashtable_get_string(prog->uniforms, name) - 1;
-}
+ResourceHandler shader_program_res_handler = {
+	.type = RES_SHADER_PROGRAM,
+	.typename = "shader program",
+	.subdir = SHPROG_PATH_PREFIX,
 
-ShaderProgram* get_shader_program(const char *name) {
-	return get_resource(RES_SHADER_PROGRAM, name, RESF_DEFAULT | RESF_UNSAFE)->data;
-}
-
-ShaderProgram* get_shader_program_optional(const char *name) {
-	Resource *r = get_resource(RES_SHADER_PROGRAM, name, RESF_OPTIONAL | RESF_UNSAFE);
-
-	if(!r) {
-		log_warn("ShaderProgram program %s could not be loaded", name);
-		return NULL;
-	}
-
-	return r->data;
-}
+	.procs = {
+		.find = shader_program_path,
+		.check = check_shader_program_path,
+		.begin_load = load_shader_program_begin,
+		.end_load = load_shader_program_end,
+		.unload = unload_shader_program,
+	},
+};

@@ -27,10 +27,10 @@ typedef struct HashtableStats HashtableStats;
 typedef uint32_t hash_t;
 
 struct HashtableStats {
-	unsigned int free_buckets;
-	unsigned int collisions;
-	unsigned int max_per_bucket;
-	unsigned int num_elements;
+	uint free_buckets;
+	uint collisions;
+	uint max_per_bucket;
+	uint num_elements;
 };
 
 typedef bool (*HTCmpFunc)(void *key1, void *key2);
@@ -41,8 +41,8 @@ typedef void* (*HTIterCallback)(void *key, void *data, void *arg);
 
 Hashtable* hashtable_new(size_t size, HTCmpFunc cmp_func, HTHashFunc hash_func, HTCopyFunc copy_func, HTFreeFunc free_func);
 void hashtable_free(Hashtable *ht);
-void* hashtable_get(Hashtable *ht, void *key) __attribute__((hot));
-void* hashtable_get_unsafe(Hashtable *ht, void *key) __attribute__((hot));
+void* hashtable_get(Hashtable *ht, void *key) attr_hot;
+void* hashtable_get_unsafe(Hashtable *ht, void *key) attr_hot;
 void hashtable_set(Hashtable *ht, void *key, void *data);
 void hashtable_unset(Hashtable *ht, void *key);
 void hashtable_unset_deferred(Hashtable *ht, void *key, ListContainer **list);
@@ -55,9 +55,9 @@ void* hashtable_foreach(Hashtable *ht, HTIterCallback callback, void *arg);
 HashtableIterator* hashtable_iter(Hashtable *ht);
 bool hashtable_iter_next(HashtableIterator *iter, void **out_key, void **out_data);
 
-bool hashtable_cmpfunc_string(void *str1, void *str2) __attribute__((hot));
-hash_t hashtable_hashfunc_string(void *vstr) __attribute__((hot));
-hash_t hashtable_hashfunc_string_sse42(void *vstr) __attribute__((hot));
+bool hashtable_cmpfunc_string(void *str1, void *str2) attr_hot;
+hash_t hashtable_hashfunc_string(void *vstr) attr_hot;
+hash_t hashtable_hashfunc_string_sse42(void *vstr) attr_hot;
 void hashtable_copyfunc_string(void **dst, void *src);
 #define hashtable_freefunc_string free
 Hashtable* hashtable_new_stringkeys(size_t size);

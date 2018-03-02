@@ -45,11 +45,11 @@ bool check_sprite_path(const char *path) {
 
 struct sprite_load_state {
 	Sprite *spr;
-	unsigned int flags;
+	uint flags;
 	char *texture_name;
 };
 
-void* load_sprite_begin(const char *path, unsigned int flags) {
+void* load_sprite_begin(const char *path, uint flags) {
 	Sprite *spr = calloc(1, sizeof(Sprite));
 	struct sprite_load_state *state = calloc(1, sizeof(struct sprite_load_state));
 	state->spr = spr;
@@ -85,7 +85,7 @@ void* load_sprite_begin(const char *path, unsigned int flags) {
 	return state;
 }
 
-void* load_sprite_end(void *opaque, const char *path, unsigned int flags) {
+void* load_sprite_end(void *opaque, const char *path, uint flags) {
 	struct sprite_load_state *state = opaque;
 
 	if(!state) {

@@ -20,8 +20,8 @@ typedef struct Sprite {
 } Sprite;
 
 char* sprite_path(const char *name);
-void* load_sprite_begin(const char *path, unsigned int flags);
-void* load_sprite_end(void *opaque, const char *path, unsigned int flags);
+void* load_sprite_begin(const char *path, uint flags);
+void* load_sprite_end(void *opaque, const char *path, uint flags);
 bool check_sprite_path(const char *path);
 
 void draw_sprite(float x, float y, const char *name);

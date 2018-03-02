@@ -156,7 +156,7 @@ static void draw_magic_star(complex pos, double a, Color c1, Color c2) {
 	Sprite *spr = get_sprite("part/magic_star");
 	ShaderProgram *shader = recolor_get_shader();
 	ColorTransform ct;
-	glUseProgram(shader->gl_handle);
+	r_shader_ptr(shader);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	r_mat_push();
@@ -176,7 +176,7 @@ static void draw_magic_star(complex pos, double a, Color c1, Color c2) {
 	r_mat_pop();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glUseProgram(0);
+	r_shader_standard();
 }
 
 static void marisa_laser_slave_visual(Enemy *e, int t, bool render) {
@@ -229,7 +229,7 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	}
 
 	double a = creal(renderer->args[0]);
-	ShaderProgram *shader = get_shader_program("marisa_laser");
+	ShaderProgram *shader = r_shader_get("marisa_laser");
 	int u_clr0 = uniloc(shader, "color0");
 	int u_clr1 = uniloc(shader, "color1");
 	int u_clr_phase = uniloc(shader, "color_phase");
@@ -240,7 +240,7 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	Texture *tex0 = get_tex("part/marisa_laser0");
 	Texture *tex1 = get_tex("part/marisa_laser1");
 
-	glUseProgram(shader->gl_handle);
+	r_shader_ptr(shader);
 	glUniform4f(u_clr0, 1, 1, 1, 0.5);
 	glUniform4f(u_clr1, 1, 1, 1, 0.8);
 	glUniform1f(u_clr_phase, -1.5 * t/M_PI);
@@ -262,9 +262,9 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	glBlendEquation(GL_FUNC_ADD);
 	glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo_pairs.fg.back->fbo);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glUseProgram(0);
+	r_shader_standard();
 	draw_fbo_viewport(resources.fbo_pairs.rgba.front);
-	glUseProgram(shader->gl_handle);
+	r_shader_ptr(shader);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 	glUniform4f(u_clr0, 1.0, 0.0, 0.0, 0.5);
@@ -287,7 +287,7 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 		}
 	}
 
-	glUseProgram(0);
+	r_shader_standard();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 

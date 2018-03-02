@@ -569,7 +569,7 @@ void hina_monty_slave_visual(Enemy *s, int time, bool render) {
 	Color clr2 = rgba(0.0, 0.0, 1.0, 1.0);
 	Color clr3 = rgba(psin(time*0.05), 0.0, 1.0 - psin(time*0.05), 1.0);
 
-	glUseProgram(shader->gl_handle);
+	r_shader_ptr(shader);
 
 	r_mat_push();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);

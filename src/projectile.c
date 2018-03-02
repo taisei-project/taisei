@@ -421,7 +421,7 @@ static inline void draw_projectile(Projectile *proj, ProjBlendMode *cur_blend_mo
 void draw_projectiles(Projectile *projs, ProjPredicate predicate) {
 	ProjBlendMode blend_mode = PBM_NORMAL;
 
-	glUseProgram(recolor_get_shader()->gl_handle);
+	r_shader_ptr(recolor_get_shader());
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	if(predicate) {

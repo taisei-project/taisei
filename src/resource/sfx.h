@@ -19,8 +19,8 @@ typedef struct Sound {
 
 char* sound_path(const char *name);
 bool check_sound_path(const char *path);
-void* load_sound_begin(const char *path, unsigned int flags);
-void* load_sound_end(void *opaque, const char *path, unsigned int flags);
+void* load_sound_begin(const char *path, uint flags);
+void* load_sound_end(void *opaque, const char *path, uint flags);
 void unload_sound(void *snd);
 
 extern ResourceHandler sfx_res_handler;

@@ -460,7 +460,7 @@ void free_resources(bool all) {
 			if(!all && res->flags & RESF_PERMANENT)
 				continue;
 
-			ResourceFlags flags __attribute__((unused)) = res->flags;
+			attr_unused ResourceFlags flags = res->flags;
 			unload_resource(res);
 			log_debug("Unloaded %s '%s' (%s)", type_name(type), name,
 				(flags & RESF_PERMANENT) ? "permanent" : "transient"

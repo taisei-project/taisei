@@ -11,6 +11,8 @@
 
 #include "resource.h"
 #include "shader_program.h"
+#include "fbo.h"
+#include "renderer/common/opengl.h"
 
 typedef struct PostprocessShader PostprocessShader;
 typedef struct PostprocessShaderUniform PostprocessShaderUniform;
@@ -54,7 +56,7 @@ typedef void (*PostprocessPrepareFuncPtr)(FBO*, ShaderProgram*);
 
 char* postprocess_path(const char *path);
 
-PostprocessShader* postprocess_load(const char *path, unsigned int flags);
+PostprocessShader* postprocess_load(const char *path, uint flags);
 void postprocess_unload(PostprocessShader **list);
 void postprocess(PostprocessShader *ppshaders, FBOPair *fbos, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw);
 
@@ -64,8 +66,8 @@ void postprocess(PostprocessShader *ppshaders, FBOPair *fbos, PostprocessPrepare
 
 char* postprocess_path(const char *name);
 bool check_postprocess_path(const char *path);
-void* load_postprocess_begin(const char *path, unsigned int flags);
-void* load_postprocess_end(void *opaque, const char *path, unsigned int flags);
+void* load_postprocess_begin(const char *path, uint flags);
+void* load_postprocess_end(void *opaque, const char *path, uint flags);
 void unload_postprocess(void*);
 
 extern ResourceHandler postprocess_res_handler;

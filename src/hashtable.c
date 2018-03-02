@@ -562,7 +562,7 @@ void hashtable_print_stringkeys(Hashtable *ht) {
 	log_debug(
 		"%i total elements, %i unused buckets, %i collisions, max %i elems per bucket, %lu approx overhead",
 		stats.num_elements, stats.free_buckets, stats.collisions, stats.max_per_bucket,
-		(unsigned long int)hashtable_get_approx_overhead(ht)
+		(ulong)hashtable_get_approx_overhead(ht)
 	);
 }
 

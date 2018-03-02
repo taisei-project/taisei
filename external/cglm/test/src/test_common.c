@@ -13,7 +13,7 @@ void
 test_rand_mat4(mat4 dest) {
   glm_mat4_copy(GLM_MAT4_IDENTITY, dest);
   
-  srand((unsigned int)time(NULL));
+  srand((uint)time(NULL));
 
   /* random position */
   dest[3][0] = drand48();

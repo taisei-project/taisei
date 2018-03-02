@@ -31,7 +31,7 @@ static void track_ending(int ending) {
 	progress.achieved_endings[ending]++;
 }
 
-void add_ending_entry(Ending *e, int dur, const char *msg, const char *sprite) {
+static void add_ending_entry(Ending *e, int dur, const char *msg, const char *sprite) {
 	EndingEntry *entry;
 	e->entries = realloc(e->entries, (++e->count)*sizeof(EndingEntry));
 	entry = &e->entries[e->count-1];
@@ -116,7 +116,7 @@ void good_ending_youmu(Ending *e) {
 	track_ending(ENDING_GOOD_2);
 }
 
-void create_ending(Ending *e) {
+static void create_ending(Ending *e) {
 	memset(e, 0, sizeof(Ending));
 
 	if(global.plr.continues_used) {
@@ -133,14 +133,14 @@ void create_ending(Ending *e) {
 	e->duration = 1<<23;
 }
 
-void free_ending(Ending *e) {
+static void free_ending(Ending *e) {
 	int i;
 	for(i = 0; i < e->count; i++)
 		free(e->entries[i].msg);
 	free(e->entries);
 }
 
-void ending_draw(Ending *e) {
+static void ending_draw(Ending *e) {
 	float s, d;
 
 	int t1 = global.frames-e->entries[e->pos].time;
@@ -169,7 +169,7 @@ void ending_preload(void) {
 	preload_resource(RES_BGM, "ending", RESF_OPTIONAL);
 }
 
-bool ending_input_handler(SDL_Event *event, void *arg) {
+static bool ending_input_handler(SDL_Event *event, void *arg) {
 	Ending *e = arg;
 
 	TaiseiEvent type = TAISEI_EVENT(event->type);

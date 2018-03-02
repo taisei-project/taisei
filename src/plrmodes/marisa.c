@@ -59,8 +59,8 @@ void marisa_common_slave_visual(Enemy *e, int t, bool render) {
 }
 
 void marisa_common_masterspark_draw(int t) {
-	ShaderProgram *mshader = get_shader_program("masterspark");
-	glUseProgram(mshader->gl_handle);
+	ShaderProgram *mshader = r_shader_get("masterspark");
+	r_shader_ptr(mshader);
 	glUniform1f(uniloc(mshader,"t"),t);
 	r_draw_quad();
 	r_shader_standard();

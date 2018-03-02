@@ -40,14 +40,14 @@
 #define strtok_r _ts_strtok_r
 
 char* copy_segment(const char *text, const char *delim, int *size);
-bool strendswith(const char *s, const char *e) __attribute__((pure));
-bool strstartswith(const char *s, const char *p) __attribute__((pure));
-bool strendswith_any(const char *s, const char **earray) __attribute__((pure));
-bool strstartswith_any(const char *s, const char **earray) __attribute__((pure));
+bool strendswith(const char *s, const char *e) attr_pure;
+bool strstartswith(const char *s, const char *p) attr_pure;
+bool strendswith_any(const char *s, const char **earray) attr_pure;
+bool strstartswith_any(const char *s, const char **earray) attr_pure;
 void stralloc(char **dest, const char *src);
-char* strjoin(const char *first, ...) __attribute__((sentinel));
+char* strjoin(const char *first, ...) attr_sentinel;
 char* vstrfmt(const char *fmt, va_list args);
-char* strfmt(const char *fmt, ...) __attribute__((format(FORMAT_ATTR, 1, 2)));
+char* strfmt(const char *fmt, ...) attr_printf(1,  2);
 void strip_trailing_slashes(char *buf);
 char* strtok_r(char *str, const char *delim, char **nextp);
 char* strappend(char **dst, char *src);
@@ -83,27 +83,25 @@ typedef struct FloatRect {
 // This is a workaround to properly specify the type of our "complex" variables...
 // Taisei code always uses just "complex" when it actually means "complex double", which is not really correct...
 // gcc doesn't seem to care, other compilers do (e.g. clang)
-#ifdef complex
-	#undef complex
-	#define complex _Complex double
-#endif
+#undef complex
+#define complex _Complex double
 
 // needed for mingw compatibility:
 #undef min
 #undef max
 
-double min(double, double) __attribute__((const));
-double max(double, double) __attribute__((const));
-double clamp(double, double, double) __attribute__((const));
-double approach(double v, double t, double d) __attribute__((const));
-double psin(double) __attribute__((const));
-int sign(double) __attribute__((const));
-double swing(double x, double s) __attribute__((const));
-unsigned int topow2(unsigned int x) __attribute__((const));
-float ftopow2(float x) __attribute__((const));
-float smooth(float x) __attribute__((const));
-float smoothreclamp(float x, float old_min, float old_max, float new_min, float new_max) __attribute__((const));
-float sanitize_scale(float scale) __attribute__((const));
+double min(double, double) attr_const;
+double max(double, double) attr_const;
+double clamp(double, double, double) attr_const;
+double approach(double v, double t, double d) attr_const;
+double psin(double) attr_const;
+int sign(double) attr_const;
+double swing(double x, double s) attr_const;
+uint topow2(uint x) attr_const;
+float ftopow2(float x) attr_const;
+float smooth(float x) attr_const;
+float smoothreclamp(float x, float old_min, float old_max, float new_min, float new_max) attr_const;
+float sanitize_scale(float scale) attr_const;
 
 #include <cglm/types.h>
 
@@ -143,10 +141,10 @@ void png_init_rwops_read(png_structp png, SDL_RWops *rwops);
 void png_init_rwops_write(png_structp png, SDL_RWops *rwops);
 
 char* SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize);
-size_t SDL_RWprintf(SDL_RWops *rwops, const char* fmt, ...) __attribute__((format(FORMAT_ATTR, 2, 3)));
+size_t SDL_RWprintf(SDL_RWops *rwops, const char* fmt, ...) attr_printf(2, 3);
 
 // This is for the very few legitimate uses for printf/fprintf that shouldn't be replaced with log_*
-void tsfprintf(FILE *out, const char *restrict fmt, ...) __attribute__((format(FORMAT_ATTR, 2, 3)));
+void tsfprintf(FILE *out, const char *restrict fmt, ...) attr_printf(2, 3);
 
 char* try_path(const char *prefix, const char *name, const char *ext);
 
@@ -155,21 +153,15 @@ char* try_path(const char *prefix, const char *name, const char *ext);
 //
 
 void* memdup(const void *src, size_t size);
-int getenvint(const char *v, int defaultval) __attribute__((pure));
+int getenvint(const char *v, int defaultval) attr_pure;
 void png_setup_error_handlers(png_structp png);
-uint32_t crc32str(uint32_t crc, const char *str) __attribute__((hot, pure));
-
-#ifdef HAVE_INTEL_INTRIN
-uint32_t crc32str_sse42(uint32_t crc, const char *str) __attribute__((hot, pure));
-#else
-#define crc32str_sse42 crc32str
-#endif
+uint32_t crc32str(uint32_t crc, const char *str) attr_hot attr_pure;
 
 #ifdef DEBUG
 	typedef struct DebugInfo {
 		const char *file;
 		const char *func;
-		unsigned int line;
+		uint line;
 	} DebugInfo;
 
 	#define _DEBUG_INFO_PTR_ (&(DebugInfo){ __FILE__, __func__, __LINE__ })
@@ -200,39 +192,39 @@ PRAGMA(GCC diagnostic ignored "-Wstrict-prototypes")
 PRAGMA(GCC diagnostic ignored "-Wignored-attributes")
 
 #undef fopen
-__attribute__((deprecated("Use vfs_open or SDL_RWFromFile instead")))
+attr_deprecated("Use vfs_open or SDL_RWFromFile instead")
 FILE* fopen();
 
 #undef strncat
-__attribute__((deprecated("This function likely doesn't do what you expect, use strlcat")))
+attr_deprecated("This function likely doesn't do what you expect, use strlcat")
 char* strncat();
 
 #undef strncpy
-__attribute__((deprecated("This function likely doesn't do what you expect, use strlcpy")))
+attr_deprecated("This function likely doesn't do what you expect, use strlcpy")
 char* strncpy();
 
 #undef errx
-__attribute__((deprecated("Use log_fatal instead")))
+attr_deprecated("Use log_fatal instead")
 noreturn void errx(int, const char*, ...);
 
 #undef warnx
-__attribute__((deprecated("Use log_warn instead")))
+attr_deprecated("Use log_warn instead")
 void warnx(const char*, ...);
 
 #undef printf
-__attribute__((deprecated("Use log_info instead")))
+attr_deprecated("Use log_info instead")
 int printf(const char*, ...);
 
 #undef fprintf
-__attribute__((deprecated("Use log_warn instead (or SDL_RWops if you want to write to a file)")))
+attr_deprecated("Use log_warn instead (or SDL_RWops if you want to write to a file)")
 int fprintf(FILE*, const char*, ...);
 
 #undef strtok
-__attribute__((deprecated("Use strtok_r instead")))
+attr_deprecated("Use strtok_r instead")
 char* strtok();
 
 #undef sprintf
-__attribute__((deprecated("Use snprintf or strfmt instead")))
+attr_deprecated("Use snprintf or strfmt instead")
 int sprintf(char *, const char*, ...);
 
 PRAGMA(GCC diagnostic pop)

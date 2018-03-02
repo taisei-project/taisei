@@ -64,7 +64,7 @@ struct stage4_spells_s stage4_spells = {
 };
 
 static void stage4_fog(FBO *fbo) {
-	ShaderProgram *shader = get_shader_program("zbuf_fog");
+	ShaderProgram *shader = r_shader_get("zbuf_fog");
 
 	float f = 0;
 	int redtime = 5100 + STAGE4_MIDBOSS_MUSIC_TIME;
@@ -74,16 +74,15 @@ static void stage4_fog(FBO *fbo) {
 		f =  v < 0.1 ? v : 0.1;
 	}
 
-	glUseProgram(shader->gl_handle);
+	r_shader_ptr(shader);
 	glUniform1i(uniloc(shader, "depth"),2);
 	glUniform4f(uniloc(shader, "fog_color"),10*f,0,0.1-f,1.0);
 	glUniform1f(uniloc(shader, "start"),0.4);
 	glUniform1f(uniloc(shader, "end"),0.8);
 	glUniform1f(uniloc(shader, "exponent"),4.0);
 	glUniform1f(uniloc(shader, "sphereness"),0);
-	glActiveTexture(GL_TEXTURE0 + 2);
-	glBindTexture(GL_TEXTURE_2D, fbo->depth);
-	glActiveTexture(GL_TEXTURE0);
+
+	r_texture_ptr(2, fbo->depth);
 
 	draw_fbo_viewport(fbo);
 	r_shader_standard();

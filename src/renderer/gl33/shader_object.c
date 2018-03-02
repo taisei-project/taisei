@@ -12,21 +12,11 @@
 #include "shader_object.h"
 #include "rwops/rwops_autobuf.h"
 
-ResourceHandler shader_object_res_handler = {
-	.type = RES_SHADER_OBJECT,
-	.typename = "shader object",
-	.subdir = SHOBJ_PATH_PREFIX,
+/*
+ * Resource API
+ */
 
-	.procs = {
-		.find = shader_object_path,
-		.check = check_shader_object_path,
-		.begin_load = load_shader_object_begin,
-		.end_load = load_shader_object_end,
-		.unload = unload_shader_object,
-	},
-};
-
-char* shader_object_path(const char *name) {
+static char* shader_object_path(const char *name) {
 	if(strendswith_any(name, (const char*[]){".vert", ".frag", NULL})) {
 		return strjoin(SHOBJ_PATH_PREFIX, name, ".glsl", NULL);
 	}
@@ -34,7 +24,7 @@ char* shader_object_path(const char *name) {
 	return NULL;
 }
 
-bool check_shader_object_path(const char *path) {
+static bool check_shader_object_path(const char *path) {
 	if(!strstartswith(path, SHOBJ_PATH_PREFIX)) {
 		return false;
 	}
@@ -65,7 +55,7 @@ struct shobj_load_data {
 	char src[];
 };
 
-void* load_shader_object_begin(const char *path, unsigned int flags) {
+static void* load_shader_object_begin(const char *path, uint flags) {
 	ShaderObjectType type;
 
 	if(strendswith(path, ".frag.glsl")) {
@@ -92,6 +82,7 @@ void* load_shader_object_begin(const char *path, unsigned int flags) {
 	strcpy(ldata->src, src);
 	SDL_RWclose(writer);
 	ldata->shobj.type = type;
+	ldata->shobj.impl = calloc(1, sizeof(ShaderObjectImpl));
 
 	return ldata;
 }
@@ -107,12 +98,12 @@ static void print_info_log(GLuint shader) {
 
 		log_warn(
 			"\n== Shader object compilation log (%u) ==\n%s\n== End of shader object compilation log (%u) ==",
-			shader, log, shader
+				 shader, log, shader
 		);
 	}
 }
 
-void* load_shader_object_end(void *opaque, const char *path, unsigned int flags) {
+static void* load_shader_object_end(void *opaque, const char *path, uint flags) {
 	struct shobj_load_data *ldata = opaque;
 
 	if(!ldata) {
@@ -120,17 +111,23 @@ void* load_shader_object_end(void *opaque, const char *path, unsigned int flags)
 	}
 
 	ShaderObject *shobj = NULL;
-	ldata->shobj.gl_handle = glCreateShader(ldata->shobj.type == SHOBJ_VERT ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
+	ldata->shobj.impl->gl_handle = glCreateShader(
+		ldata->shobj.type == SHOBJ_VERT
+			? GL_VERTEX_SHADER
+			: GL_FRAGMENT_SHADER
+	);
 	GLint status;
+	GLuint gl_handle = ldata->shobj.impl->gl_handle;
 
-	glShaderSource(ldata->shobj.gl_handle, 1, (const GLchar*[]){ ldata->src }, (GLint[]){ -1 });
-	glCompileShader(ldata->shobj.gl_handle);
-	glGetShaderiv(ldata->shobj.gl_handle, GL_COMPILE_STATUS, &status);
-	print_info_log(ldata->shobj.gl_handle);
+	glShaderSource(gl_handle, 1, (const GLchar*[]){ ldata->src }, (GLint[]){ -1 });
+	glCompileShader(gl_handle);
+	glGetShaderiv(gl_handle, GL_COMPILE_STATUS, &status);
+	print_info_log(gl_handle);
 
 	if(!status) {
 		log_warn("%s: failed to compile shader object", path);
-		glDeleteShader(ldata->shobj.gl_handle);
+		glDeleteShader(gl_handle);
+		free(ldata->shobj.impl);
 	} else {
 		shobj = memdup(&ldata->shobj, sizeof(ldata->shobj));
 	}
@@ -139,8 +136,23 @@ void* load_shader_object_end(void *opaque, const char *path, unsigned int flags)
 	return shobj;
 }
 
-void unload_shader_object(void *vsha) {
+static void unload_shader_object(void *vsha) {
 	ShaderObject *shobj = vsha;
-	glDeleteShader(shobj->gl_handle);
+	glDeleteShader(shobj->impl->gl_handle);
+	free(shobj->impl);
 	free(shobj);
 }
+
+ResourceHandler shader_object_res_handler = {
+	.type = RES_SHADER_OBJECT,
+	.typename = "shader object",
+	.subdir = SHOBJ_PATH_PREFIX,
+
+	.procs = {
+		.find = shader_object_path,
+		.check = check_shader_object_path,
+		.begin_load = load_shader_object_begin,
+		.end_load = load_shader_object_end,
+		.unload = unload_shader_object,
+	},
+};
