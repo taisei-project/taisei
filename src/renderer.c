@@ -152,7 +152,7 @@ void r_mat_ortho(float left, float right, float bottom, float top, float near, f
 }
 
 void r_mat_perspective(float angle, float aspect, float near, float far) {
-	glm_perspective(angle, aspect, near, far, active_matrix());
+	glm_perspective(glm_rad(angle), aspect, near, far, active_matrix());
 }
 
 void r_color(Color c) {

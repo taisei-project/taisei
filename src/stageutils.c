@@ -35,8 +35,8 @@ void set_perspective_viewport(Stage3D *s, float n, float f, int vx, int vy, int 
 	r_mat_identity();
 	float facw = SCREEN_W/(float)VIEWPORT_W;
 	float fach = SCREEN_H/(float)VIEWPORT_H;
-	r_mat_scale(facw,fach,1);
 	r_mat_perspective(s->projangle, 1, n, f);
+	r_mat_scale(facw,fach,1);
 	r_mat_translate(vx+vw/2.0, vy+vh/2.0, 0);
 
 	r_mat_mode(MM_MODELVIEW);
