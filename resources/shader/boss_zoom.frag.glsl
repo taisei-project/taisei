@@ -1,14 +1,4 @@
-#version 110
-
-void main(void) {
-	gl_Position     = ftransform();
-	gl_FrontColor   = gl_Color;
-	gl_TexCoord[0]  = gl_MultiTexCoord0;
-}
-
-%% -- FRAG
-
-#version 110
+#version 330
 
 uniform sampler2D tex;
 uniform vec2 blur_orig; // center
@@ -18,8 +8,17 @@ uniform float rad;
 uniform float ratio; // texture h/w
 uniform vec4 color;
 
+layout(std140) uniform RenderContext {
+	mat4 modelViewMatrix;
+	mat4 projectionMatrix;
+	mat4 textureMatrix;
+	vec4 color;
+} ctx;
+
+in vec2 texCoordRaw;
+
 void main(void) {
-	vec2 pos = vec2(gl_TexCoord[0]);
+	vec2 pos = texCoordRaw;
 	pos -= blur_orig;
 
 	vec2 pos1 = pos;
@@ -28,11 +27,11 @@ void main(void) {
 	pos *= min(length(pos1)/blur_rad,1.0);
 	pos += blur_orig;
 	pos = clamp(pos, 0.005, 0.995);
-	pos = (gl_TextureMatrix[0] * vec4(pos,0.0,1.0)).xy;
+	pos = (ctx.textureMatrix * vec4(pos,0.0,1.0)).xy;
 
 	gl_FragColor = texture2D(tex, pos);
 
-	pos1 = vec2(gl_TexCoord[0]) - fix_orig;
+	pos1 = texCoordRaw - fix_orig;
 	pos1.y *= ratio;
 
 	gl_FragColor *= pow(color,vec4(3.0*max(0.0,rad - length(pos1))));

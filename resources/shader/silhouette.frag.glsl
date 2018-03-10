@@ -4,7 +4,14 @@ uniform sampler2D tex;
 uniform vec4 color;
 uniform float deform;
 
-in vec2 texCoord;
+layout(std140) uniform RenderContext {
+	mat4 modelViewMatrix;
+	mat4 projectionMatrix;
+	mat4 textureMatrix;
+	vec4 color;
+} ctx;
+
+in vec2 texCoordRaw;
 out vec4 fragColor;
 
 float pi = 2.0 * asin(1.0);
@@ -21,8 +28,8 @@ vec2 apply_deform(vec2 uv, float strength) {
 }
 
 void main(void) {
-	vec4 uv = texCoord;
-	vec4 uv_orig = uv;
+	vec2 uv = texCoordRaw;
+	vec2 uv_orig = uv;
 	vec4 texel;
 
 	const float limit = 1.0;
@@ -32,8 +39,8 @@ void main(void) {
 	fragColor = vec4(0.0);
 
 	for(float i = 0.0; i <= limit; i += step) {
-		uv.xy = apply_deform(uv_orig.xy, deform * i);
-		texel = texture2D(tex, uv);
+		uv = apply_deform(uv_orig, deform * i);
+		texel = texture2D(tex, (ctx.textureMatrix*vec4(uv,0.0,1.0)).xy);
 		fragColor += vec4(color.rgb, color.a * texel.a);
 	}
 

@@ -1,27 +1,26 @@
-#version 110
-
-void main(void) {
- gl_Position     = ftransform();
- gl_FrontColor   = gl_Color;
- gl_TexCoord[0]  = gl_MultiTexCoord0;
-}
-
-%% -- FRAG
-
-#version 110
+#version 330
 
 uniform sampler2D tex;
 uniform vec2 origin;
 uniform float ratio; // texture h/w
 uniform float t;
 
+layout(std140) uniform RenderContext {
+	mat4 modelViewMatrix;
+	mat4 projectionMatrix;
+	mat4 textureMatrix;
+	vec4 color;
+} ctx;
+
 float smoothstep(float x) {
 	return 1.0/(exp(8.*x)+1.0);
 }
 
+in vec2 texCoordRaw;
+
 void main(void) {
-	vec2 pos = vec2(gl_TexCoord[0]);
-	vec4 clr = texture2D(tex, (gl_TextureMatrix[0] * vec4(pos,0.0,1.0)).xy);
+	vec2 pos = texCoordRaw;
+	vec4 clr = texture2D(tex, (ctx.textureMatrix * vec4(pos,0.0,1.0)).xy);
 	pos -= origin;
 	pos.y *= ratio;
 	float r = length(pos);
