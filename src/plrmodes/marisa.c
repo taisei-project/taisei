@@ -11,6 +11,7 @@
 #include "global.h"
 #include "plrmodes.h"
 #include "marisa.h"
+#include "renderer/api.h"
 
 PlayerCharacter character_marisa = {
 	.id = PLR_CHAR_MARISA,
@@ -59,9 +60,8 @@ void marisa_common_slave_visual(Enemy *e, int t, bool render) {
 }
 
 void marisa_common_masterspark_draw(int t) {
-	ShaderProgram *mshader = r_shader_get("masterspark");
-	r_shader_ptr(mshader);
-	glUniform1f(uniloc(mshader,"t"),t);
+	r_shader("masterspark");
+	r_uniform_float("t", t);
 	r_draw_quad();
 	r_shader_standard();
 }

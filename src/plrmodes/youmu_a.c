@@ -11,6 +11,7 @@
 #include "global.h"
 #include "plrmodes.h"
 #include "youmu.h"
+#include "renderer/api.h"
 
 static Color myon_color(float f, float a) {
 	// return rgba(0.8+0.2*f, 0.9-0.4*sqrt(f), 1.0-0.2*f*f, a);
@@ -385,7 +386,7 @@ static void youmu_mirror_shader(FBO *fbo) {
 
 	double t = player_get_bomb_progress(&global.plr,0);
 	r_shader_ptr(shader);
-	glUniform1f(uniloc(shader, "tbomb"), t);
+	r_uniform_float("tbomb", t);
 	draw_fbo_viewport(fbo);
 	r_shader_standard();
 

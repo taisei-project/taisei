@@ -13,6 +13,7 @@
 #include "stages/stage6.h"
 #include "video.h"
 #include "resource/model.h"
+#include "renderer/api.h"
 
 typedef struct CreditsEntry {
 	char **data;
@@ -193,11 +194,10 @@ static void credits_add(char *data, int time) {
 }
 
 static void credits_towerwall_draw(vec3 pos) {
-	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towerwall")->gltex);
+	r_texture(0, "stage6/towerwall");
 
-	ShaderProgram *s = r_shader_get("tower_wall");
-	r_shader_ptr(s);
-	glUniform1i(uniloc(s, "lendiv"), 2800.0 + 300.0 * sin(global.frames / 77.7));
+	r_shader("tower_wall");
+	r_uniform_float("lendiv", 2800.0 + 300.0 * sin(global.frames / 77.7));
 
 	r_mat_push();
 	r_mat_translate(pos[0], pos[1], pos[2]);

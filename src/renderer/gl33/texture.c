@@ -23,14 +23,43 @@ static inline GLuint r_wrap_to_gl_wrap(TextureWrapMode wmode) {
 	return GL_REPEAT;
 }
 
+static inline GLuint r_type_to_gl_internal_format(TextureType type) {
+	switch(type) {
+		case TEX_TYPE_DEFAULT:
+		case TEX_TYPE_RGBA:
+			return GL_RGBA8;
+
+		case TEX_TYPE_DEPTH:
+			return GL_DEPTH_COMPONENT16;
+
+		default:
+			log_fatal("Bad texture type %x", type);
+	}
+}
+
+static inline GLuint r_type_to_gl_external_format(TextureType type) {
+	switch(type) {
+		case TEX_TYPE_DEFAULT:
+		case TEX_TYPE_RGBA:
+			return GL_RGBA8;
+
+		case TEX_TYPE_DEPTH:
+			return GL_DEPTH_COMPONENT;
+
+		default:
+			log_fatal("Bad texture type %x", type);
+	}
+}
+
 void r_texture_create(Texture *tex, const TextureParams *params) {
+	assert(tex != NULL);
+	assert(params != NULL);
+
+	memset(tex, 0, sizeof(Texture));
+
 	tex->w = params->width;
 	tex->h = params->height;
-	tex->impl = calloc(1, sizeof(TextureImpl));
-	tex->impl->wrap.s = params->wrap.s;
-	tex->impl->wrap.t = params->wrap.t;
-	tex->impl->filter.downscale = params->filter.downscale;
-	tex->impl->filter.upscale = params->filter.upscale;
+	tex->type = params->type;
 
 	uint unit = gl33_active_texunit();
 	const Texture *prev_tex = r_texture_current(unit);
@@ -41,12 +70,22 @@ void r_texture_create(Texture *tex, const TextureParams *params) {
 
 	// TODO: mipmaps
 
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, r_wrap_to_gl_wrap(tex->impl->wrap.s));
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, r_wrap_to_gl_wrap(tex->impl->wrap.t));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(tex->impl->filter.downscale));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(tex->impl->filter.upscale));
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, r_wrap_to_gl_wrap(params->wrap.s));
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, r_wrap_to_gl_wrap(params->wrap.t));
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(params->filter.downscale));
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(params->filter.upscale));
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex->w, tex->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, params->image_data);
+	glTexImage2D(
+		GL_TEXTURE_2D,
+		0,
+		r_type_to_gl_internal_format(params->type),
+		tex->w,
+		tex->h,
+		0,
+		r_type_to_gl_external_format(params->type),
+		GL_UNSIGNED_BYTE,
+		params->image_data
+	);
 
 	r_texture_ptr(unit, prev_tex);
 }
@@ -60,59 +99,9 @@ void r_texture_fill(Texture *tex, uint8_t *image_data) {
 	r_texture_ptr(unit, prev_tex);
 }
 
-void r_texture_make_render_target(Texture *tex) {
-	assert(tex != NULL);
-	assert(tex->impl != NULL);
-
-	if(tex->impl->fbo.gl_handle) {
-		return;
-	}
-
-	assert(tex->impl->fbo.gl_depthtex_handle == 0);
-
-	uint unit = gl33_active_texunit();
-	const Texture *prev_tex = r_texture_current(unit);
-
-	Texture depth_tex = { .impl = &(TextureImpl){ 0 }};
-	glGenTextures(1, &depth_tex.impl->gl_handle);
-
-	r_texture_ptr(unit, &depth_tex);
-	r_flush();
-
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, r_wrap_to_gl_wrap(tex->impl->wrap.s));
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, r_wrap_to_gl_wrap(tex->impl->wrap.t));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(tex->impl->filter.downscale));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(tex->impl->filter.upscale));
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, tex->w, tex->h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-
-	glGenFramebuffers(1, &tex->impl->fbo.gl_handle);
-	const Texture *prev_target = r_target_current();
-	r_target(tex);
-	r_flush();
-
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex->impl->gl_handle, 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_tex.impl->gl_handle, 0);
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	r_target(prev_target);
-	r_texture_ptr(unit, prev_tex);
-}
-
 void r_texture_destroy(Texture *tex) {
 	if(tex->impl) {
-		if(tex->impl->fbo.gl_handle) {
-			glDeleteFramebuffers(1, &tex->impl->fbo.gl_handle);
-		}
-
-		if(tex->impl->gl_handle) {
-			glDeleteTextures(1, &tex->impl->gl_handle);
-		}
-
-		if(tex->impl->fbo.gl_depthtex_handle) {
-			glDeleteTextures(1, &tex->impl->fbo.gl_depthtex_handle);
-		}
-
+		glDeleteTextures(1, &tex->impl->gl_handle);
 		free(tex->impl);
 		tex->impl = NULL;
 	}

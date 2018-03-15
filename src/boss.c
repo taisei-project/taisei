@@ -164,8 +164,7 @@ static void BossGlow(Projectile *p, int t) {
 	assert(ani != 0);
 	int animationFrame = rint(creal(p->args[2]));
 
-	ShaderProgram *shader = r_shader_get("silhouette");
-	r_shader_ptr(shader);
+	r_shader("silhouette");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 	r_mat_push();
@@ -179,8 +178,8 @@ static void BossGlow(Projectile *p, int t) {
 
 	float fade = 1 - clr[3];
 	float deform = 5 - 10 * fade * fade;
-	glUniform4fv(uniloc(shader, "color"), 1, clr);
-	glUniform1f(uniloc(shader, "deform"), deform);
+	r_uniform("color", 1, clr);
+	r_uniform("deform", 1, &deform);
 
 	play_animation_frame(ani,0,0,animationFrame);
 

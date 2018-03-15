@@ -13,6 +13,7 @@
 #include "../common/matstack.h"
 #include "shader_program.h"
 #include "texture.h"
+#include "render_target.h"
 #include "resource/resource.h"
 #include "resource/model.h"
 #include "glm.h"
@@ -53,11 +54,7 @@ static struct {
 		TextureUnit *active;
 	} texunits;
 
-	struct {
-		GLuint gl_fbo;
-		const Texture *tex_ptr;
-	} render_target;
-
+	const RenderTarget *render_target;
 	vec4 color;
 	GLuint ubo;
 	UBOData ubodata;
@@ -331,29 +328,27 @@ const Texture* r_texture_current(uint unit) {
 	return R.texunits.indexed[unit].tex2d.ptr;
 }
 
-void r_target(const Texture *target) {
+void r_target(const RenderTarget *target) {
 	// TODO: defer until needed
 
 	if(target == NULL) {
-		if(R.render_target.gl_fbo != 0) {
+		if(R.render_target->gl_fbo != 0) {
 			r_flush();
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			R.render_target.gl_fbo = 0;
-			R.render_target.tex_ptr = NULL;
+			R.render_target = NULL;
 		}
 	} else {
-		assert(target->impl->fbo.gl_handle != 0);
-		if(R.render_target.gl_fbo != target->impl->fbo.gl_handle) {
+		assert(target->gl_fbo != 0);
+		if(R.render_target->gl_fbo != target->gl_fbo) {
 			r_flush();
-			glBindFramebuffer(GL_FRAMEBUFFER, target->impl->fbo.gl_handle);
-			R.render_target.gl_fbo = target->impl->fbo.gl_handle;
-			R.render_target.tex_ptr = target;
+			glBindFramebuffer(GL_FRAMEBUFFER, target->gl_fbo);
+			R.render_target = target;
 		}
 	}
 }
 
-const Texture* r_target_current(void) {
-	return R.render_target.tex_ptr;
+const RenderTarget *r_target_current() {
+	return R.render_target;
 }
 
 void r_shader_ptr(const ShaderProgram *prog) {

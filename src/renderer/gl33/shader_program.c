@@ -12,8 +12,135 @@
 #include "shader_object.h"
 #include "../api.h"
 
-int shprog_uniform_location(ShaderProgram *prog, const char *name) {
-	return (intptr_t)hashtable_get_string(prog->uniforms, name) - 1;
+const Uniform* r_shader_uniform(const ShaderProgram *prog, const char *uniform_name) {
+	return hashtable_get_string(prog->uniforms, uniform_name);
+}
+
+static void uset_float(Uniform *uniform, uint count, const void *data) {
+	glUniform1fv(uniform->location, count, (float*)data);
+}
+
+static void uset_vec2(Uniform *uniform, uint count, const void *data) {
+	glUniform2fv(uniform->location, count, (float*)data);
+}
+
+static void uset_vec3(Uniform *uniform, uint count, const void *data) {
+	glUniform3fv(uniform->location, count, (float*)data);
+}
+
+static void uset_vec4(Uniform *uniform, uint count, const void *data) {
+	glUniform4fv(uniform->location, count, (float*)data);
+}
+
+static void uset_int(Uniform *uniform, uint count, const void *data) {
+	glUniform1iv(uniform->location, count, (int*)data);
+}
+
+static void uset_ivec2(Uniform *uniform, uint count, const void *data) {
+	glUniform2iv(uniform->location, count, (int*)data);
+}
+
+static void uset_ivec3(Uniform *uniform, uint count, const void *data) {
+	glUniform3iv(uniform->location, count, (int*)data);
+}
+
+static void uset_ivec4(Uniform *uniform, uint count, const void *data) {
+	glUniform4iv(uniform->location, count, (int*)data);
+}
+
+static void uset_mat3(Uniform *uniform, uint count, const void *data) {
+	glUniformMatrix3fv(uniform->location, count, false, (float*)data);
+}
+
+static void uset_mat4(Uniform *uniform, uint count, const void *data) {
+	glUniformMatrix4fv(uniform->location, count, false, (float*)data);
+}
+
+void r_uniform_ptr(const Uniform *uniform, uint count, const void *data) {
+	assert(count > 0);
+	assert(uniform != NULL);
+	assert(uniform->prog != NULL);
+
+	if(uniform == NULL) {
+		return;
+	}
+
+	static UniformSetter type_to_setter[] = {
+		[UNIFORM_FLOAT]   = uset_float,
+		[UNIFORM_VEC2]    = uset_vec2,
+		[UNIFORM_VEC3]    = uset_vec3,
+		[UNIFORM_VEC4]    = uset_vec4,
+		[UNIFORM_INT]     = uset_int,
+		[UNIFORM_IVEC2]   = uset_ivec2,
+		[UNIFORM_IVEC3]   = uset_ivec3,
+		[UNIFORM_IVEC4]   = uset_ivec4,
+		[UNIFORM_SAMPLER] = uset_int,
+		[UNIFORM_MAT3]    = uset_mat3,
+		[UNIFORM_MAT4]    = uset_mat4,
+	};
+
+	assert(uniform->type >= 0 && uniform->type < sizeof(type_to_setter)/sizeof(UniformSetter));
+
+	const ShaderProgram *prev_prog = r_shader_current();
+	r_shader_ptr(uniform->prog);
+	r_flush();
+	type_to_setter[uniform->type](uniform, count, data);
+	r_shader_ptr(prev_prog);
+}
+
+static void cache_uniforms(ShaderProgram *prog) {
+	int maxlen = 0;
+	GLint unicount;
+
+	prog->uniforms = hashtable_new_stringkeys(13);
+
+	glGetProgramiv(prog->gl_handle, GL_ACTIVE_UNIFORMS, &unicount);
+	glGetProgramiv(prog->gl_handle, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxlen);
+
+	if(maxlen < 1) {
+		return;
+	}
+
+	char name[maxlen];
+
+	for(int i = 0; i < unicount; ++i) {
+		GLenum type;
+		GLint size, loc;
+		Uniform uni = { .prog = prog };
+
+		glGetActiveUniform(prog->gl_handle, i, maxlen, NULL, &size, &type, name);
+		loc = glGetUniformLocation(prog->gl_handle, name);
+
+		if(loc < 0) {
+			// builtin uniform
+			continue;
+		}
+
+		switch(type) {
+			case GL_FLOAT:      uni.type = UNIFORM_FLOAT;   break;
+			case GL_FLOAT_VEC2: uni.type = UNIFORM_VEC2;    break;
+			case GL_FLOAT_VEC3: uni.type = UNIFORM_VEC3;    break;
+			case GL_FLOAT_VEC4: uni.type = UNIFORM_VEC4;    break;
+			case GL_INT:        uni.type = UNIFORM_INT;     break;
+			case GL_INT_VEC2:   uni.type = UNIFORM_IVEC2;   break;
+			case GL_INT_VEC3:   uni.type = UNIFORM_IVEC3;   break;
+			case GL_INT_VEC4:   uni.type = UNIFORM_IVEC4;   break;
+			case GL_SAMPLER_2D: uni.type = UNIFORM_SAMPLER; break;
+			case GL_FLOAT_MAT3: uni.type = UNIFORM_MAT3;    break;
+			case GL_FLOAT_MAT4: uni.type = UNIFORM_MAT4;    break;
+
+			default:
+				log_warn("Uniform '%s' is of an unsupported type 0x%04x and will be ignored.", name, type);
+				continue;
+		}
+
+		uni.location = loc;
+		hashtable_set_string(prog->uniforms, name, memdup(&uni, sizeof(uni)));
+	}
+
+	#ifdef DEBUG_GL
+	hashtable_print_stringkeys(prog->uniforms);
+	#endif
 }
 
 /*
@@ -107,37 +234,6 @@ static void print_info_log(GLuint prog) {
 	}
 }
 
-static void cache_uniforms(ShaderProgram *prog) {
-	int maxlen = 0;
-	GLint tmpi;
-	GLenum tmpt;
-	GLint unicount;
-
-	prog->uniforms = hashtable_new_stringkeys(13);
-
-	glGetProgramiv(prog->gl_handle, GL_ACTIVE_UNIFORMS, &unicount);
-	glGetProgramiv(prog->gl_handle, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxlen);
-
-	if(maxlen < 1) {
-		return;
-	}
-
-	char name[maxlen];
-
-	for(int i = 0; i < unicount; ++i) {
-		glGetActiveUniform(prog->gl_handle, i, maxlen, NULL, &tmpi, &tmpt, name);
-		// This +1 increment kills two youkai with one spellcard.
-		// 1. We can't store 0 in the hashtable, because that's the NULL/nonexistent value.
-		//    But 0 is a valid uniform location, so we need to store that in some way.
-		// 2. glGetUniformLocation returns -1 for builtin uniforms, which we don't want to cache anyway.
-		hashtable_set_string(prog->uniforms, name, (void*)(intptr_t)(glGetUniformLocation(prog->gl_handle, name) + 1));
-	}
-
-	#ifdef DEBUG_GL
-	hashtable_print_stringkeys(prog->uniforms);
-	#endif
-}
-
 static void* load_shader_program_end(void *opaque, const char *path, uint flags) {
 	if(!opaque) {
 		return NULL;
@@ -183,6 +279,7 @@ static void* load_shader_program_end(void *opaque, const char *path, uint flags)
 void unload_shader_program(void *vprog) {
 	ShaderProgram *prog = vprog;
 	glDeleteProgram(prog->gl_handle);
+	hashtable_foreach(prog->uniforms, hashtable_iter_free_data, NULL);
 	hashtable_free(prog->uniforms);
 	free(prog);
 }

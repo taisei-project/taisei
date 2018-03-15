@@ -21,8 +21,8 @@ force_funcs |= {"glUniform%i%sv" % (i, s) for i in range(1, 5) for s in ('f', 'i
 import sys, re
 from pathlib import Path as P
 
-thisfile = P(sys.argv[0])
-srcdir = thisfile.parent
+thisfile = P(__file__)
+srcdir = thisfile.parent.parent.parent
 glfuncs = set()
 
 try:
@@ -144,7 +144,6 @@ typedef void (GLAPIENTRY *tsglBindTexture_ptr)(GLenum target, GLuint texture);
 typedef void (APIENTRY *tsglBindVertexArray_ptr)(GLuint array);
 typedef void (GLAPIENTRY *tsglBlendEquation_ptr)(GLenum mode);
 typedef void (GLAPIENTRY *tsglBlendFunc_ptr)(GLenum sfactor, GLenum dfactor);
-typedef void (APIENTRY *tsglBlendFuncSeparate_ptr)(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
 typedef void (APIENTRY *tsglBufferData_ptr)(GLenum target, GLsizeiptr size, const void *data, GLenum usage);
 typedef void (APIENTRY *tsglBufferSubData_ptr)(GLenum target, GLintptr offset, GLsizeiptr size, const void *data);
 typedef void (GLAPIENTRY *tsglClear_ptr)(GLbitfield mask);
@@ -212,6 +211,8 @@ typedef void (APIENTRY *tsglUniform4fv_ptr)(GLint location, GLsizei count, const
 typedef void (APIENTRY *tsglUniform4iv_ptr)(GLint location, GLsizei count, const GLint *value);
 typedef void (APIENTRY *tsglUniform4uiv_ptr)(GLint location, GLsizei count, const GLuint *value);
 typedef void (APIENTRY *tsglUniformBlockBinding_ptr)(GLuint program, GLuint uniformBlockIndex, GLuint uniformBlockBinding);
+typedef void (APIENTRY *tsglUniformMatrix3fv_ptr)(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
+typedef void (APIENTRY *tsglUniformMatrix4fv_ptr)(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
 typedef void (APIENTRY *tsglUseProgram_ptr)(GLuint program);
 typedef void (APIENTRY *tsglVertexAttribPointer_ptr)(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer);
 typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLsizei height);
@@ -227,7 +228,6 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glBindVertexArray
 #undef glBlendEquation
 #undef glBlendFunc
-#undef glBlendFuncSeparate
 #undef glBufferData
 #undef glBufferSubData
 #undef glClear
@@ -295,6 +295,8 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glUniform4iv
 #undef glUniform4uiv
 #undef glUniformBlockBinding
+#undef glUniformMatrix3fv
+#undef glUniformMatrix4fv
 #undef glUseProgram
 #undef glVertexAttribPointer
 #undef glViewport
@@ -311,7 +313,6 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glBindVertexArray tsglBindVertexArray
 #define glBlendEquation tsglBlendEquation
 #define glBlendFunc tsglBlendFunc
-#define glBlendFuncSeparate tsglBlendFuncSeparate
 #define glBufferData tsglBufferData
 #define glBufferSubData tsglBufferSubData
 #define glClear tsglClear
@@ -379,6 +380,8 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glUniform4iv tsglUniform4iv
 #define glUniform4uiv tsglUniform4uiv
 #define glUniformBlockBinding tsglUniformBlockBinding
+#define glUniformMatrix3fv tsglUniformMatrix3fv
+#define glUniformMatrix4fv tsglUniformMatrix4fv
 #define glUseProgram tsglUseProgram
 #define glVertexAttribPointer tsglVertexAttribPointer
 #define glViewport tsglViewport
@@ -397,7 +400,6 @@ GLDEF(glBindTexture, tsglBindTexture, tsglBindTexture_ptr) \
 GLDEF(glBindVertexArray, tsglBindVertexArray, tsglBindVertexArray_ptr) \
 GLDEF(glBlendEquation, tsglBlendEquation, tsglBlendEquation_ptr) \
 GLDEF(glBlendFunc, tsglBlendFunc, tsglBlendFunc_ptr) \
-GLDEF(glBlendFuncSeparate, tsglBlendFuncSeparate, tsglBlendFuncSeparate_ptr) \
 GLDEF(glBufferData, tsglBufferData, tsglBufferData_ptr) \
 GLDEF(glBufferSubData, tsglBufferSubData, tsglBufferSubData_ptr) \
 GLDEF(glClear, tsglClear, tsglClear_ptr) \
@@ -465,6 +467,8 @@ GLDEF(glUniform4fv, tsglUniform4fv, tsglUniform4fv_ptr) \
 GLDEF(glUniform4iv, tsglUniform4iv, tsglUniform4iv_ptr) \
 GLDEF(glUniform4uiv, tsglUniform4uiv, tsglUniform4uiv_ptr) \
 GLDEF(glUniformBlockBinding, tsglUniformBlockBinding, tsglUniformBlockBinding_ptr) \
+GLDEF(glUniformMatrix3fv, tsglUniformMatrix3fv, tsglUniformMatrix3fv_ptr) \
+GLDEF(glUniformMatrix4fv, tsglUniformMatrix4fv, tsglUniformMatrix4fv_ptr) \
 GLDEF(glUseProgram, tsglUseProgram, tsglUseProgram_ptr) \
 GLDEF(glVertexAttribPointer, tsglVertexAttribPointer, tsglVertexAttribPointer_ptr) \
 GLDEF(glViewport, tsglViewport, tsglViewport_ptr)
@@ -487,7 +491,6 @@ GLAPI void GLAPIENTRY glBindTexture( GLenum target, GLuint texture );
 GLAPI void APIENTRY glBindVertexArray (GLuint array);
 GLAPI void GLAPIENTRY glBlendEquation( GLenum mode );
 GLAPI void GLAPIENTRY glBlendFunc( GLenum sfactor, GLenum dfactor );
-GLAPI void APIENTRY glBlendFuncSeparate (GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
 GLAPI void APIENTRY glBufferData (GLenum target, GLsizeiptr size, const void *data, GLenum usage);
 GLAPI void APIENTRY glBufferSubData (GLenum target, GLintptr offset, GLsizeiptr size, const void *data);
 GLAPI void GLAPIENTRY glClear( GLbitfield mask );
@@ -555,6 +558,8 @@ GLAPI void APIENTRY glUniform4fv (GLint location, GLsizei count, const GLfloat *
 GLAPI void APIENTRY glUniform4iv (GLint location, GLsizei count, const GLint *value);
 GLAPI void APIENTRY glUniform4uiv (GLint location, GLsizei count, const GLuint *value);
 GLAPI void APIENTRY glUniformBlockBinding (GLuint program, GLuint uniformBlockIndex, GLuint uniformBlockBinding);
+GLAPI void APIENTRY glUniformMatrix3fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
+GLAPI void APIENTRY glUniformMatrix4fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
 GLAPI void APIENTRY glUseProgram (GLuint program);
 GLAPI void APIENTRY glVertexAttribPointer (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer);
 GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei height );
@@ -570,7 +575,6 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglBindVertexArray glBindVertexArray
 #define tsglBlendEquation glBlendEquation
 #define tsglBlendFunc glBlendFunc
-#define tsglBlendFuncSeparate glBlendFuncSeparate
 #define tsglBufferData glBufferData
 #define tsglBufferSubData glBufferSubData
 #define tsglClear glClear
@@ -638,6 +642,8 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglUniform4iv glUniform4iv
 #define tsglUniform4uiv glUniform4uiv
 #define tsglUniformBlockBinding glUniformBlockBinding
+#define tsglUniformMatrix3fv glUniformMatrix3fv
+#define tsglUniformMatrix4fv glUniformMatrix4fv
 #define tsglUseProgram glUseProgram
 #define tsglVertexAttribPointer glVertexAttribPointer
 #define tsglViewport glViewport

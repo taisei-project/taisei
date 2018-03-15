@@ -11,14 +11,23 @@
 
 #include "util.h"
 #include "hashtable.h"
+#include "../api.h"
 #include "../common/opengl.h"
 #include "resource/resource.h"
 #include "resource/shader_program.h"
 
-typedef struct ShaderProgram {
+struct ShaderProgram {
 	GLuint gl_handle;
 	Hashtable *uniforms;
 	int renderctx_block_idx;
-} ShaderProgram;
+};
+
+typedef void (*UniformSetter)(Uniform *uniform, uint count, const void *data);
+
+struct Uniform {
+	ShaderProgram *prog;
+	uint location;
+	UniformType type;
+};
 
 int shprog_uniform_location(ShaderProgram *prog, const char *name);

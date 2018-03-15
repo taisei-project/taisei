@@ -11,6 +11,7 @@
 #include "global.h"
 #include "plrmodes.h"
 #include "marisa.h"
+#include "renderer/api.h"
 
 // args are pain
 static float global_magicstar_alpha;
@@ -24,7 +25,7 @@ typedef struct MarisaLaserData {
 	float lean;
 } MarisaLaserData;
 
-static void draw_laser_beam(complex src, complex dst, double size, double step, double t, Texture *tex, int u_length) {
+static void draw_laser_beam(complex src, complex dst, double size, double step, double t, Texture *tex, Uniform *u_length) {
 	complex dir = dst - src;
 	complex center = (src + dst) * 0.5;
 
@@ -40,9 +41,9 @@ static void draw_laser_beam(complex src, complex dst, double size, double step, 
 	r_mat_scale(cabs(dir) / step, 1, 1);
 	r_mat_mode(MM_MODELVIEW);
 
-	glBindTexture(GL_TEXTURE_2D, tex->gltex);
-	glUniform1f(u_length, cabs(dir) / step);
-	draw_quad();
+	r_texture_ptr(0, tex);
+	r_uniform_ptr(u_length, 1, (float[]) { cabs(dir) / step });
+	r_draw_quad();
 
 	r_mat_mode(MM_TEXTURE);
 	r_mat_identity();
@@ -132,15 +133,15 @@ static void trace_laser(Enemy *e, complex vel, int damage) {
 	ld->trace_hit.last = col.location;
 }
 
-static float set_alpha(int u_alpha, float a) {
+static float set_alpha(Uniform *u_alpha, float a) {
 	if(a) {
-		glUniform1f(u_alpha, a);
+		r_uniform_ptr(u_alpha, 1, (float[]) { a });
 	}
 
 	return a;
 }
 
-static float set_alpha_dimmed(int u_alpha, float a) {
+static float set_alpha_dimmed(Uniform *u_alpha, float a) {
 	return set_alpha(u_alpha, a * a * 0.5);
 }
 
@@ -230,23 +231,23 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 
 	double a = creal(renderer->args[0]);
 	ShaderProgram *shader = r_shader_get("marisa_laser");
-	int u_clr0 = uniloc(shader, "color0");
-	int u_clr1 = uniloc(shader, "color1");
-	int u_clr_phase = uniloc(shader, "color_phase");
-	int u_clr_freq = uniloc(shader, "color_freq");
-	int u_alpha = uniloc(shader, "alphamod");
-	int u_length = uniloc(shader, "length");
+	Uniform *u_clr0 = r_shader_uniform(shader, "color0");
+	Uniform *u_clr1 = r_shader_uniform(shader, "color1");
+	Uniform *u_clr_phase = r_shader_uniform(shader, "color_phase");
+	Uniform *u_clr_freq = r_shader_uniform(shader, "color_freq");
+	Uniform *u_alpha = r_shader_uniform(shader, "alphamod");
+	Uniform *u_length = r_shader_uniform(shader, "length");
 	// int u_cutoff = uniloc(shader, "cutoff");
 	Texture *tex0 = get_tex("part/marisa_laser0");
 	Texture *tex1 = get_tex("part/marisa_laser1");
 
 	r_shader_ptr(shader);
-	glUniform4f(u_clr0, 1, 1, 1, 0.5);
-	glUniform4f(u_clr1, 1, 1, 1, 0.8);
-	glUniform1f(u_clr_phase, -1.5 * t/M_PI);
-	glUniform1f(u_clr_freq, 10.0);
+	r_uniform_ptr(u_clr0,      1, (float[]) { 1, 1, 1, 0.5 });
+	r_uniform_ptr(u_clr1,      1, (float[]) { 1, 1, 1, 0.8 });
+	r_uniform_ptr(u_clr_phase, 1, (float[]) { -1.5 * t/M_PI });
+	r_uniform_ptr(u_clr_freq,  1, (float[]) { 10.0 });
 	glBlendFunc(GL_SRC_COLOR, GL_ONE);
-	glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo_pairs.rgba.front->fbo);
+	r_target(resources.fbo_pairs.rgba.front);
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glClearColor(0, 0, 0, 1);
@@ -260,15 +261,15 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	}
 
 	glBlendEquation(GL_FUNC_ADD);
-	glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo_pairs.fg.back->fbo);
+	r_target(resources.fbo_pairs.fg.back);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	r_shader_standard();
 	draw_fbo_viewport(resources.fbo_pairs.rgba.front);
 	r_shader_ptr(shader);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-	glUniform4f(u_clr0, 1.0, 0.0, 0.0, 0.5);
-	glUniform4f(u_clr1, 1.0, 0.0, 0.0, 1.0);
+	r_uniform_ptr(u_clr0, 1, (float[]) { 1.0, 0.0, 0.0, 0.5 });
+	r_uniform_ptr(u_clr1, 1, (float[]) { 1.0, 0.0, 0.0, 1.0 });
 
 	FOR_EACH_SLAVE(e) {
 		if(set_alpha_dimmed(u_alpha, get_laser_alpha(e, a))) {
@@ -277,8 +278,8 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 		}
 	}
 
-	glUniform4f(u_clr0, 0.1, 0.5, 1.0, 2.0);
-	glUniform4f(u_clr1, 0.1, 0.1, 1.0, 1.0);
+	r_uniform_ptr(u_clr0, 1, (float[]) { 1.0, 0.5, 1.0, 2.0 });
+	r_uniform_ptr(u_clr1, 1, (float[]) { 0.1, 0.1, 1.0, 1.0 });
 
 	FOR_EACH_SLAVE(e) {
 		if(set_alpha_dimmed(u_alpha, get_laser_alpha(e, a))) {

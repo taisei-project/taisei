@@ -11,6 +11,7 @@
 #include "global.h"
 #include "plrmodes.h"
 #include "marisa.h"
+#include "renderer/api.h"
 
 static void marisa_star_trail_draw(Projectile *p, int t) {
 	float s = 1 - t / creal(p->args[0]);
@@ -246,9 +247,9 @@ static void marisa_star_bombbg(Player *plr) {
 
 	ShaderProgram *s = r_shader_get("maristar_bombbg");
 	r_shader_ptr(s);
-	glUniform1f(uniloc(s,"t"), t);
-	glUniform1f(uniloc(s,"decay"), 1);
-	glUniform2f(uniloc(s,"plrpos"), creal(global.plr.pos)/VIEWPORT_W,cimag(global.plr.pos)/VIEWPORT_H);
+	r_uniform_float("t", t);
+	r_uniform_float("decay", 1);
+	r_uniform_vec2("plrpos", creal(global.plr.pos)/VIEWPORT_W, cimag(global.plr.pos)/VIEWPORT_H);
 	r_color4(1,1,1,0.6*fade);
 	fill_viewport(0,0,1,"marisa_bombbg");
 	r_color4(1,1,1,1);

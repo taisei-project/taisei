@@ -12,6 +12,7 @@
 #include "global.h"
 #include "list.h"
 #include "stageobjects.h"
+#include "renderer/api.h"
 
 Laser *create_laser(complex pos, float time, float deathtime, Color color, LaserPosRule prule, LaserLogicRule lrule, complex a0, complex a1, complex a2, complex a3) {
 	Laser *l = (Laser*)list_push(&global.lasers, objpool_acquire(stage_object_pools.lasers));
@@ -59,7 +60,6 @@ Laser *create_laserline_ab(complex a, complex b, float width, float charge, floa
 }
 
 static void draw_laser_curve_instanced(Laser *l) {
-	static float clr[4];
 	float t;
 	int c;
 
@@ -79,21 +79,18 @@ static void draw_laser_curve_instanced(Laser *l) {
 		return;
 	}
 
-	parse_color_array(l->color, clr);
-	glUniform4fv(uniloc(l->shader, "clr"), 1, clr);
+	r_uniform_rgba("clr", l->color);
+	r_uniform_complex("pos", l->pos);
+	r_uniform_complex("a0", l->args[0]);
+	r_uniform_complex("a1", l->args[1]);
+	r_uniform_complex("a2", l->args[2]);
+	r_uniform_complex("a3", l->args[3]);
+	r_uniform_float("timeshift", t);
+	r_uniform_float("width", l->width);
+	r_uniform_float("width_exponent", l->width_exponent);
+	r_uniform_int("span", c * 2);
 
-	glUniform2f(uniloc(l->shader, "pos"), creal(l->pos), cimag(l->pos));
-	glUniform2f(uniloc(l->shader, "a0"), creal(l->args[0]), cimag(l->args[0]));
-	glUniform2f(uniloc(l->shader, "a1"), creal(l->args[1]), cimag(l->args[1]));
-	glUniform2f(uniloc(l->shader, "a2"), creal(l->args[2]), cimag(l->args[2]));
-	glUniform2f(uniloc(l->shader, "a3"), creal(l->args[3]), cimag(l->args[3]));
-
-	glUniform1f(uniloc(l->shader, "timeshift"), t);
-	glUniform1f(uniloc(l->shader, "width"), l->width);
-	glUniform1f(uniloc(l->shader, "width_exponent"), l->width_exponent);
-
-	glUniform1i(uniloc(l->shader, "span"), c*2);
-
+	r_flush();
 	glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, c*2);
 }
 

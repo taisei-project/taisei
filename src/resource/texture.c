@@ -57,7 +57,7 @@ static char* texture_image_path(const char *name) {
 	return NULL;
 }
 
-static char* texture_path(const char *name) {
+char* texture_path(const char *name) {
 	char *p = NULL;
 
 	if((p = try_path(TEX_PATH_PREFIX, name, TEX_EXTENSION))) {
@@ -67,7 +67,7 @@ static char* texture_path(const char *name) {
 	return texture_image_path(name);
 }
 
-static bool check_texture_path(const char *path) {
+bool check_texture_path(const char *path) {
 	if(strendswith(path, TEX_EXTENSION)) {
 		return true;
 	}
@@ -208,7 +208,7 @@ static void* load_texture_end(void *opaque, const char *path, uint flags) {
 }
 
 Texture* get_tex(const char *name) {
-	return get_resource(RES_TEXTURE, name, RESF_DEFAULT | RESF_UNSAFE)->data;
+	return r_texture_get(name);
 }
 
 Texture* prefix_get_tex(const char *name, const char *prefix) {
@@ -223,6 +223,7 @@ void load_sdl_surf(SDL_Surface *surface, Texture *texture) {
 	r_texture_create(texture, &(TextureParams) {
 		.width = surface->w,
 		.height = surface->h,
+		.type = TEX_TYPE_RGBA,
 		.image_data = surface->pixels,
 		.filter = {
 			.upscale = TEX_FILTER_LINEAR,

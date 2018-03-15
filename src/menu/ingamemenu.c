@@ -16,6 +16,7 @@
 #include "stagedraw.h"
 #include "video.h"
 #include "options.h"
+#include "renderer/api.h"
 
 static void return_to_title(MenuData *m, void *arg) {
 	global.game_over = GAMEOVER_ABORT;
@@ -136,14 +137,13 @@ void create_ingame_menu_replay(MenuData *m) {
 void draw_ingame_menu_bg(MenuData *menu, float f) {
 	float rad = f*IMENU_BLUR;
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	r_target(NULL);
 	video_set_viewport();
 	set_ortho();
 
-	ShaderProgram *shader = r_shader_get("ingame_menu");
-	r_shader_ptr(shader);
-	glUniform1f(uniloc(shader, "rad"), rad);
-	glUniform1f(uniloc(shader, "phase"), menu->frames / 100.0);
+	r_shader("ingame_menu");
+	r_uniform_float("rad", rad);
+	r_uniform_float("phase", menu->frames / 100.0);
 	stage_draw_foreground();
 	r_shader_standard();
 }

@@ -10,7 +10,6 @@
 
 #include "recolor.h"
 #include "resource/resource.h"
-#include "renderer/common/opengl.h"
 #include "renderer/api.h"
 
 ColorTransform colortransform_identity = {
@@ -22,7 +21,7 @@ ColorTransform colortransform_identity = {
 
 struct recolor_varcache {
 	Color prev;
-	int loc;
+	Uniform *uni;
 };
 
 static struct recolor_vars_s {
@@ -41,7 +40,7 @@ static inline void recolor_set_uniform(struct recolor_varcache *vc, Color clr) {
 
 	if(vc->prev != clr) {
 		parse_color_array(clr, clrarr);
-		glUniform4fv(vc->loc, 1, clrarr);
+		r_uniform_ptr(vc->uni, 1, clrarr);
 		vc->prev = clr;
 		// log_debug("%i", ++recolor_vars.transfers);
 	}
@@ -55,11 +54,11 @@ void recolor_init(void) {
 	preload_resource(RES_SHADER_PROGRAM, "recolor", RESF_PERMANENT);
 
 	recolor_vars.shader = r_shader_get("recolor");
-	recolor_vars.R.loc = uniloc(recolor_vars.shader, "R");
-	recolor_vars.G.loc = uniloc(recolor_vars.shader, "G");
-	recolor_vars.B.loc = uniloc(recolor_vars.shader, "B");
-	recolor_vars.A.loc = uniloc(recolor_vars.shader, "A");
-	recolor_vars.O.loc = uniloc(recolor_vars.shader, "O");
+	recolor_vars.R.uni = r_shader_uniform(recolor_vars.shader, "R");
+	recolor_vars.G.uni = r_shader_uniform(recolor_vars.shader, "G");
+	recolor_vars.B.uni = r_shader_uniform(recolor_vars.shader, "B");
+	recolor_vars.A.uni = r_shader_uniform(recolor_vars.shader, "A");
+	recolor_vars.O.uni = r_shader_uniform(recolor_vars.shader, "O");
 
 	const ShaderProgram *prev_prog = r_shader_current();
 	r_shader_ptr(recolor_vars.shader);

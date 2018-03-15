@@ -13,13 +13,9 @@
 #include <stdbool.h>
 #include "util.h"
 #include "resource.h"
+#include "renderer/api.h"
 
-typedef struct TextureImpl TextureImpl;
-
-typedef struct Texture {
-	uint w, h;
-	TextureImpl *impl;
-} Texture;
+typedef struct Texture Texture;
 
 char* texture_path(const char *name);
 bool check_texture_path(const char *path);

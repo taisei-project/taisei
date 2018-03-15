@@ -343,8 +343,6 @@ void fade_out(float f) {
 
 void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxfrags, float alpha, float star_width) {
 	Sprite *star = get_sprite("star");
-	ShaderProgram *shader = r_shader_get("circleclipped_indicator");
-	static float clr[4];
 	int i = 0;
 
 	Color amul = rgba(alpha, alpha, alpha, alpha);
@@ -355,12 +353,10 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 	// XXX: move to call site?
 	y -= 2;
 
-	r_shader_ptr(shader);
-	parse_color_array(fill_clr, clr);
-	glUniform4fv(uniloc(shader, "fill_color"), 1, clr);
-	parse_color_array(back_clr, clr);
-	glUniform4fv(uniloc(shader, "back_color"), 1, clr);
-	glUniform1f(uniloc(shader, "fill"), 1);
+	r_shader("circleclipped_indicator");
+	r_uniform_rgba("fill_color", fill_clr);
+	r_uniform_rgba("back_color", back_clr);
+	r_uniform_float("fill", 1);
 
 	begin_draw_sprite(x - star_width, y, star_width/star->w, star_width/star->w, true, star);
 
@@ -372,14 +368,13 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 
 	if(numfrags) {
 		r_mat_translate(1, 0, 0);
-		parse_color_array(frag_clr, clr);
-		glUniform4fv(uniloc(shader, "fill_color"), 1, clr);
-		glUniform1f(uniloc(shader, "fill"), numfrags / (float)maxfrags);
+		r_uniform_rgba("fill_color", frag_clr);
+		r_uniform_float("fill", numfrags / (float)maxfrags);
 		r_draw_quad();
 		i++;
 	}
 
-	glUniform1f(uniloc(shader, "fill"), 0);
+	r_uniform_float("fill", 0);
 
 	while(i < maxstars) {
 		r_mat_translate(1, 0, 0);

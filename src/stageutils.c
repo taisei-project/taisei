@@ -11,7 +11,6 @@
 #include "stageutils.h"
 #include <string.h>
 #include <stdlib.h>
-#include "taiseigl.h"
 #include "global.h"
 #include "glm.h"
 

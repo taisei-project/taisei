@@ -11,10 +11,7 @@
 
 #include "renderer/api.h"
 
-typedef Texture FBO;
-
-#define FBO_FRONT 0
-#define FBO_BACK 1
+typedef RenderTarget FBO;
 
 typedef struct FBOPair {
 	/*
@@ -27,10 +24,6 @@ typedef struct FBOPair {
 
 	FBO *front;
 	FBO *back;
-
-	struct {
-		FBO array[2];
-	} _fbopair_private;
 } FBOPair;
 
 void init_fbo_pair(FBOPair *pair, float scale, int type);

@@ -9,11 +9,11 @@
 #pragma once
 #include "taisei.h"
 
-#include "../common/opengl.h"
 #include "../api.h"
-#include "resource/resource.h"
-#include "resource/texture.h"
+#include "../common/opengl.h"
+#include "texture.h"
 
-typedef struct TextureImpl {
-	GLuint gl_handle;
-} TextureImpl;
+struct RenderTarget {
+	GLuint gl_fbo;
+	Texture *attachments[RENDERTARGET_MAX_ATTACHMENTS];
+};
