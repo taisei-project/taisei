@@ -75,6 +75,7 @@ void r_shader_standard_notex(void);
 ShaderProgram* r_shader_current(void);
 
 void r_draw_quad(void);
+void r_draw_model(const char *name);
 
 void r_flush(void);
 

@@ -148,7 +148,7 @@ static void stage4_lake_draw(vec3 pos) {
 	r_mat_translate(pos[0], pos[1]+140, pos[2]);
 	r_mat_scale(15,15,15);
 
-	draw_model("lake");
+	r_draw_model("lake");
 	r_mat_pop();
 
 	r_mat_push();
@@ -157,7 +157,7 @@ static void stage4_lake_draw(vec3 pos) {
 
 	glBindTexture(GL_TEXTURE_2D, get_tex("stage4/mansion")->gltex);
 
-	draw_model("mansion");
+	r_draw_model("mansion");
 	r_mat_pop();
 }
 

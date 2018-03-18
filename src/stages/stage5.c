@@ -79,7 +79,7 @@ static void stage5_stairs_draw(vec3 pos) {
 	glUniform4f(uniloc(sha, "color"), 0.1, 0.1, 0.5, 1);
 	glUniform1f(uniloc(sha, "strength"), stagedata.light_strength);
 
-	draw_model("tower");
+	r_draw_model("tower");
 
 	r_mat_pop();
 

@@ -206,6 +206,11 @@ void r_draw_quad(void) {
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
+void r_draw_model(const char *name) {
+	update_ubo();
+	draw_model(name);
+}
+
 void r_shader(ShaderProgram *prog) {
 	assert(prog != NULL);
 	R.progs.pending = prog;

@@ -200,7 +200,7 @@ void credits_towerwall_draw(vec3 pos) {
 	r_mat_push();
 	r_mat_translate(pos[0], pos[1], pos[2]);
 	r_mat_scale(30,30,30);
-	draw_model("towerwall");
+	r_draw_model("towerwall");
 	r_mat_pop();
 
 	r_shader_standard();

@@ -103,7 +103,7 @@ void stage6_towerwall_draw(vec3 pos) {
 	r_mat_push();
 	r_mat_translate(pos[0], pos[1], pos[2]);
 	r_mat_scale(30,30,30);
-	draw_model("towerwall");
+	r_draw_model("towerwall");
 	r_mat_pop();
 
 	r_shader_standard();
@@ -121,7 +121,7 @@ static void stage6_towertop_draw(vec3 pos) {
 	r_mat_push();
 	r_mat_translate(pos[0], pos[1], pos[2]);
 	r_mat_scale(28,28,28);
-	draw_model("towertop");
+	r_draw_model("towertop");
 	r_mat_pop();
 }
 
@@ -137,7 +137,7 @@ static void stage6_skysphere_draw(vec3 pos) {
 	r_mat_push();
 	r_mat_translate(pos[0], pos[1], pos[2]-30);
 	r_mat_scale(150,150,150);
-	draw_model("skysphere");
+	r_draw_model("skysphere");
 
 	r_shader_standard();
 

@@ -244,8 +244,8 @@ static void parse_obj(const char *filename, ObjFileData *data) {
 			if(data->fverts != j)
 				log_fatal("OBJ file '%s:%d': Parsing error: face vertex count must stay the same in the whole file", filename, linen);
 
-			if(data->fverts != 3 && data->fverts != 4)
-				log_fatal("OBJ file '%s:%d': Parsing error: face vertex count must be either 3 or 4", filename, linen);
+			if(data->fverts != 3)
+				log_fatal("OBJ file '%s:%d': Parsing error: face vertex count must be 3", filename, linen);
 		}
 	}
 

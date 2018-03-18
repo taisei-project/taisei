@@ -167,15 +167,14 @@ static void stage1_reed_draw(vec3 pos) {
 //render_rotate_deg(90,0,0,1);
 	r_mat_scale(80,80,80);
 	r_color4(0.,0.05,0.05,1);
-
-	draw_model("reeds");
+	r_draw_model("reeds");
 	r_mat_translate(0,-d/80,0);
 	r_mat_scale(1,-1,1);
 	r_mat_translate(0,d/80,0);
 	glDepthFunc(GL_GREATER);
 	glDepthMask(GL_FALSE);
 	r_color4(0.,0.05,0.05,0.5);
-	draw_model("reeds");
+	r_draw_model("reeds");
 	glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LEQUAL);
 	r_color4(1,1,1,1);
