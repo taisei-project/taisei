@@ -45,7 +45,7 @@ typedef unsigned long ulong;
 typedef unsigned char uchar;
 
 #undef schar
-typedef unsigned char schar;
+typedef signed char schar;
 
 /*
  * Abstract away the nasty GNU attribute syntax.
