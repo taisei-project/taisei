@@ -77,11 +77,11 @@ void draw_dialog(Dialog *dialog) {
 		if(global.frames - dialog->page_time < 10 && ((i != pre && i == cur) || (i == pre && i != cur))) {
 			int time = (global.frames - dialog->page_time) * dir;
 			r_mat_translate(time, time, 0);
-			float clr = 1.0 - 0.07*time;
+			float clr = min(1.0 - 0.07*time,1);
 			r_color3(clr, clr, clr);
 		} else {
 			r_mat_translate(dir*10, dir*10, 0);
-			r_color3(1 - dir*0.7, 1 - dir*0.7, 1 - dir*0.7);
+			r_color3(1 - (dir>0)*0.7, 1 - (dir>0)*0.7, 1 - (dir>0)*0.7);
 		}
 
 		r_mat_translate(VIEWPORT_W*7.0/18.0, 0, 0);
