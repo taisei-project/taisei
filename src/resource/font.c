@@ -165,6 +165,7 @@ static void fontrenderer_init(float quality) {
 	font_renderer.sprite.tex = &font_renderer.tex;
 	font_renderer.pixbuf = calloc(w, h);
 
+	/*
 	glGenTextures(1, &font_renderer.tex.gltex);
 	glBindTexture(GL_TEXTURE_2D, font_renderer.tex.gltex);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -172,19 +173,30 @@ static void fontrenderer_init(float quality) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	*/
+
+	r_texture_create(&font_renderer.tex, &(TextureParams) {
+		.type = TEX_TYPE_RGBA,
+		.filter = {
+			.upscale = TEX_FILTER_LINEAR,
+			.downscale = TEX_FILTER_LINEAR,
+		},
+		.wrap = {
+			.s = TEX_WRAP_CLAMP,
+			.t = TEX_WRAP_CLAMP,
+		}
+	});
 
 	log_debug("q=%f, w=%i, h=%i", font_renderer.quality, w, h);
 }
 
 static void fontrenderer_free(void) {
-	glDeleteTextures(1, &font_renderer.tex.gltex);
+	r_texture_destroy(&font_renderer.tex);
 	free(font_renderer.pixbuf);
 }
 
 static void fontrenderer_upload(SDL_Surface *surf) {
 	assert(surf != NULL);
-
-	glBindTexture(GL_TEXTURE_2D, font_renderer.tex.gltex);
 
 	// the written texture is zero padded to avoid bits of previously drawn text bleeding in
 	int winw = surf->w+1;
@@ -198,7 +210,7 @@ static void fontrenderer_upload(SDL_Surface *surf) {
 	}
 
 	memset(pixels+(winh-1)*winw, 0, winw*4);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, winw, winh, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	r_texture_fill_region(&font_renderer.tex, 0, 0, winw, winh, pixels);
 
 	font_renderer.sprite.tex_area.w = surf->w;
 	font_renderer.sprite.tex_area.h = surf->h;

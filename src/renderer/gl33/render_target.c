@@ -32,14 +32,14 @@ void r_target_attach(RenderTarget *target, Texture *tex, RenderTargetAttachment 
 
 	GLuint gl_tex = tex ? tex->impl->gl_handle : 0;
 
-	const RenderTarget *prev_target = r_target_current();
+	RenderTarget *prev_target = r_target_current();
 	r_target(target);
 	r_flush();
 	glFramebufferTexture2D(GL_FRAMEBUFFER, r_attachment_to_gl_attachment[attachment], GL_TEXTURE_2D, gl_tex, 0);
 	r_target(prev_target);
 }
 
-const Texture* r_target_get_attachment(RenderTarget *target, RenderTargetAttachment attachment) {
+Texture* r_target_get_attachment(RenderTarget *target, RenderTargetAttachment attachment) {
 	assert(attachment >= 0 && attachment < RENDERTARGET_MAX_ATTACHMENTS);
 	return target->attachments[attachment];
 }

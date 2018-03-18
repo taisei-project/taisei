@@ -47,15 +47,14 @@ struct stage2_spells_s stage2_spells = {
 };
 
 static void stage2_bg_leaves_draw(vec3 pos) {
-	r_shader(alpha_depth);
+	r_shader("alpha_depth");
 
 	r_mat_mode(MM_TEXTURE);
 	r_mat_identity();
 	r_mat_scale(-1,1,1);
 	r_mat_mode(MM_MODELVIEW);
 
-	Texture *leaves = get_tex("stage2/leaves");
-	glBindTexture(GL_TEXTURE_2D, leaves->gltex);
+	r_texture(0, "stage2/leaves");
 
 	r_mat_push();
 	r_mat_translate(pos[0]-360,pos[1],pos[2]+500);
@@ -76,7 +75,7 @@ static void stage2_bg_leaves_draw(vec3 pos) {
 
 static void stage2_bg_grass_draw(vec3 pos) {
 	glDisable(GL_DEPTH_TEST);
-	glBindTexture(GL_TEXTURE_2D, get_tex("stage2/roadgrass")->gltex);
+	r_texture(0, "stage2/roadgrass");
 
 	r_mat_push();
 	r_mat_translate(pos[0]+250,pos[1],pos[2]+40);
@@ -94,9 +93,7 @@ static void stage2_bg_ground_draw(vec3 pos) {
 	r_mat_translate(pos[0]-50,pos[1],pos[2]);
 	r_mat_scale(-1000,1000,1);
 
-	Texture *road = get_tex("stage2/roadstones");
-
-	glBindTexture(GL_TEXTURE_2D, road->gltex);
+	r_texture(0, "stage2/roadstones");
 
 	r_color4(0.08,0.,0.1,1);
 	r_shader_standard_notex();
@@ -117,8 +114,7 @@ static void stage2_bg_ground_draw(vec3 pos) {
 
 	r_mat_push();
 
-	Texture *border = get_tex("stage2/border");
-	glBindTexture(GL_TEXTURE_2D, border->gltex);
+	r_texture(0, "stage2/border");
 
 	r_mat_translate(pos[0]+410,pos[1],pos[2]+600);
 	r_mat_rotate_deg(90,0,1,0);
@@ -155,30 +151,24 @@ static vec3 **stage2_bg_grass_pos2(vec3 pos, float maxrange) {
 }
 
 static void stage2_fog(FBO *fbo) {
-	ShaderProgram *shader = r_shader_get("zbuf_fog");
-
-	r_shader_ptr(shader);
-	glUniform1i(uniloc(shader, "depth"),2);
-	glUniform4f(uniloc(shader, "fog_color"),0.05,0.0,0.03,1.0);
-	glUniform1f(uniloc(shader, "start"),0.2);
-	glUniform1f(uniloc(shader, "end"),0.8);
-	glUniform1f(uniloc(shader, "exponent"),3.0);
-	glUniform1f(uniloc(shader, "sphereness"),0);
-	glActiveTexture(GL_TEXTURE0 + 2);
-	glBindTexture(GL_TEXTURE_2D, fbo->depth);
-	glActiveTexture(GL_TEXTURE0);
-
+	r_shader("zbuf_fog");
+	r_uniform_int("tex", 0);
+	r_uniform_int("depth", 2);
+	r_uniform_vec4("fog_color", 0.05, 0.0, 0.03, 1.0);
+	r_uniform_float("start", 0.2);
+	r_uniform_float("end", 0.8);
+	r_uniform_float("exponent", 3.0);
+	r_uniform_float("sphereness", 0);
+	r_texture_ptr(2, r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_DEPTH));
 	draw_fbo_viewport(fbo);
 	r_shader_standard();
 }
 
 static void stage2_bloom(FBO *fbo) {
-	ShaderProgram *shader = r_shader_get("bloom");
-
-	r_shader_ptr(shader);
-	glUniform1i(uniloc(shader, "samples"), 10);
-	glUniform1f(uniloc(shader, "intensity"), 0.05);
-	glUniform1f(uniloc(shader, "radius"), 0.03);
+	r_shader("bloom");
+	r_uniform_int("samples", 10);
+	r_uniform_float("intensity", 0.05);
+	r_uniform_float("radius", 0.03);
 	draw_fbo_viewport(fbo);
 	r_shader_standard();
 }

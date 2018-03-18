@@ -10,7 +10,7 @@
 
 #include "sprite.h"
 #include "video.h"
-#include "renderer.h"
+#include "renderer/api.h"
 
 ResourceHandler sprite_res_handler = {
 	.type = RES_SPRITE,

@@ -132,20 +132,15 @@ static vec3 **stage1_smoke_pos(vec3 p, float maxrange) {
 }
 
 static void stage1_fog(FBO *fbo) {
-	ShaderProgram *shader = r_shader_get("zbuf_fog");
-
-	r_shader_ptr(shader);
-	glUniform1i(uniloc(shader, "tex"), 0);
-	glUniform1i(uniloc(shader, "depth"), 1);
-	glUniform4f(uniloc(shader, "fog_color"), 0.8, 0.8, 0.8, 1.0);
-	glUniform1f(uniloc(shader, "start"), 0.0);
-	glUniform1f(uniloc(shader, "end"), 0.8);
-	glUniform1f(uniloc(shader, "exponent"), 3.0);
-	glUniform1f(uniloc(shader, "sphereness"), 0.2);
-	glActiveTexture(GL_TEXTURE0 + 1);
-	glBindTexture(GL_TEXTURE_2D, fbo->depth);
-	glActiveTexture(GL_TEXTURE0);
-
+	r_shader("zbuf_fog");
+	r_uniform_int("tex", 0);
+	r_uniform_int("depth", 1);
+	r_uniform_vec4("fog_color", 0.8, 0.8, 0.8, 1.0);
+	r_uniform_float("start", 0.0);
+	r_uniform_float("end", 0.8);
+	r_uniform_float("exponent", 3.0);
+	r_uniform_float("sphereness", 0.2);
+	r_texture_ptr(1, r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_DEPTH));
 	draw_fbo_viewport(fbo);
 	r_shader_standard();
 }

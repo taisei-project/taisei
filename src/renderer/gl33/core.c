@@ -30,7 +30,7 @@ typedef struct UBOData {
 typedef struct TextureUnit {
 	struct {
 		GLuint gl_handle;
-		const Texture *ptr;
+		Texture *ptr;
 	} tex2d;
 } TextureUnit;
 
@@ -54,16 +54,16 @@ static struct {
 		TextureUnit *active;
 	} texunits;
 
-	const RenderTarget *render_target;
+	RenderTarget *render_target;
 	vec4 color;
 	GLuint ubo;
 	UBOData ubodata;
 
 	struct {
-		const ShaderProgram *active;
-		const ShaderProgram *pending;
-		const ShaderProgram *std;
-		const ShaderProgram *std_notex;
+		ShaderProgram *active;
+		ShaderProgram *pending;
+		ShaderProgram *std;
+		ShaderProgram *std_notex;
 	} progs;
 
 	SDL_GLContext *gl_context;
@@ -270,7 +270,7 @@ static void update_ubo(void) {
 	/*
 	 *	if(R.progs.active->renderctx_block_idx < 0) {
 	 *		return;
-}
+	}
 */
 
 	UBOData ubo;
@@ -307,7 +307,7 @@ void r_draw_model(const char *name) {
 	r_mat_mode(MM_MODELVIEW);
 }
 
-void r_texture_ptr(uint unit, const Texture *tex) {
+void r_texture_ptr(uint unit, Texture *tex) {
 	assert(unit < GL33_MAX_TEXUNITS);
 	assert(tex != NULL);
 	assert(tex->impl != NULL);
@@ -323,12 +323,12 @@ void r_texture_ptr(uint unit, const Texture *tex) {
 	}
 }
 
-const Texture* r_texture_current(uint unit) {
+Texture* r_texture_current(uint unit) {
 	assert(unit < GL33_MAX_TEXUNITS);
 	return R.texunits.indexed[unit].tex2d.ptr;
 }
 
-void r_target(const RenderTarget *target) {
+void r_target(RenderTarget *target) {
 	// TODO: defer until needed
 
 	if(target == NULL) {
@@ -347,11 +347,13 @@ void r_target(const RenderTarget *target) {
 	}
 }
 
-const RenderTarget *r_target_current() {
+RenderTarget *r_target_current() {
 	return R.render_target;
 }
 
-void r_shader_ptr(const ShaderProgram *prog) {
+void r_shader_ptr(ShaderProgram *prog) {
+	// TODO: defer until needed
+
 	assert(prog != NULL);
 	R.progs.pending = prog;
 	// update_prog();
@@ -361,14 +363,13 @@ void r_shader_ptr(const ShaderProgram *prog) {
 
 void r_shader_standard(void) {
 	r_shader_ptr(R.progs.std);
-	r_shader("standard");
 }
 
 void r_shader_standard_notex(void) {
 	r_shader_ptr(R.progs.std_notex);
 }
 
-const ShaderProgram *r_shader_current(void) {
+ShaderProgram *r_shader_current() {
 	// update_prog();
 	return R.progs.active;
 }

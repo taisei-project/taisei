@@ -121,7 +121,7 @@ static void postprocess_load_callback(const char *key, const char *value, void *
 	}
 
 	PostprocessShaderUniform *uni = malloc(sizeof(PostprocessShaderUniform));
-	uni->loc = uniloc(current->shader, name);
+	uni->loc = -1; // uniloc(current->shader, name);
 	uni->type = utype;
 	uni->size = usize;
 	uni->amount = asize;

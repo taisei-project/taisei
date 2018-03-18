@@ -62,7 +62,7 @@ void r_texture_create(Texture *tex, const TextureParams *params) {
 	tex->type = params->type;
 
 	uint unit = gl33_active_texunit();
-	const Texture *prev_tex = r_texture_current(unit);
+	Texture *prev_tex = r_texture_current(unit);
 
 	glGenTextures(1, &tex->impl->gl_handle);
 	r_texture_ptr(unit, tex);
@@ -90,12 +90,16 @@ void r_texture_create(Texture *tex, const TextureParams *params) {
 	r_texture_ptr(unit, prev_tex);
 }
 
-void r_texture_fill(Texture *tex, uint8_t *image_data) {
+void r_texture_fill(Texture *tex, void *image_data) {
+	r_texture_fill_region(tex, 0, 0, tex->w, tex->h, image_data);
+}
+
+void r_texture_fill_region(Texture *tex, uint x, uint y, uint w, uint h, void *image_data) {
 	uint unit = gl33_active_texunit();
-	const Texture *prev_tex = r_texture_current(unit);
+	Texture *prev_tex = r_texture_current(unit);
 	r_texture_ptr(unit, tex);
 	r_flush();
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex->w, tex->h, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
 	r_texture_ptr(unit, prev_tex);
 }
 

@@ -84,7 +84,7 @@ static void stage3_bg_tunnel_draw(vec3 pos) {
 	r_mat_push();
 	r_mat_translate(pos[0], pos[1], pos[2]);
 
-	glBindTexture(GL_TEXTURE_2D, get_tex("stage3/border")->gltex);
+	r_texture(0, "stage3/border");
 	for(i = 0; i < n; i++) {
 		r_mat_push();
 		r_mat_rotate_deg(360.0/n*i + stgstate.tunnel_angle, 0, 1, 0);
@@ -98,44 +98,29 @@ static void stage3_bg_tunnel_draw(vec3 pos) {
 }
 
 static void stage3_tunnel(FBO *fbo) {
-	ShaderProgram *shader = r_shader_get("tunnel");
-	assert(uniloc(shader, "mixfactor") >= 0); // just so people don't forget to 'make install'; remove this later
-
-	r_color4(1,1,1,1);
-	r_shader_ptr(shader);
-	glUniform3f(uniloc(shader, "color"),stgstate.clr_r,stgstate.clr_g,stgstate.clr_b);
-	glUniform1f(uniloc(shader, "mixfactor"), stgstate.clr_mixfactor);
-	glActiveTexture(GL_TEXTURE0 + 2);
-	glBindTexture(GL_TEXTURE_2D, fbo->depth);
-	glActiveTexture(GL_TEXTURE0);
-
+	r_shader("tunnel");
+	r_uniform_vec3("color", stgstate.clr_r, stgstate.clr_g, stgstate.clr_b);
+	r_uniform_float("mixfactor", stgstate.clr_mixfactor);
+	r_texture_ptr(2, r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_DEPTH));
 	draw_fbo_viewport(fbo);
 	r_shader_standard();
 }
 
 static void stage3_fog(FBO *fbo) {
-	ShaderProgram *shader = r_shader_get("zbuf_fog");
-
-	r_color4(1,1,1,1);
-	r_shader_ptr(shader);
-	glUniform1i(uniloc(shader, "depth"), 2);
-	glUniform4f(uniloc(shader, "fog_color"), stgstate.fog_brightness, stgstate.fog_brightness, stgstate.fog_brightness, 1.0);
-	glUniform1f(uniloc(shader, "start"), 0.2);
-	glUniform1f(uniloc(shader, "end"), 0.8);
-	glUniform1f(uniloc(shader, "exponent"), stgstate.fog_exp/2);
-	glUniform1f(uniloc(shader, "sphereness"),0);
-	glActiveTexture(GL_TEXTURE0 + 2);
-	glBindTexture(GL_TEXTURE_2D, fbo->depth);
-	glActiveTexture(GL_TEXTURE0);
-
+	r_shader("zbuf_fog");
+	r_uniform_int("tex", 0);
+	r_uniform_int("depth", 2);
+	r_uniform_vec4("fog_color", stgstate.fog_brightness, stgstate.fog_brightness, stgstate.fog_brightness, 1.0);
+	r_uniform_float("start", 0.2);
+	r_uniform_float("end", 0.8);
+	r_uniform_float("exponent", stgstate.fog_exp/2);
+	r_uniform_float("sphereness", 0);
+	r_texture_ptr(2, r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_DEPTH));
 	draw_fbo_viewport(fbo);
 	r_shader_standard();
 }
 
 static void stage3_glitch(FBO *fbo) {
-	ShaderProgram *shader = r_shader_get("glitch");
-
-	r_color4(1,1,1,1);
 	float strength;
 
 	if(global.boss && global.boss->current && ATTACK_IS_SPELL(global.boss->current->type) && !strcmp(global.boss->name, "Scuttle")) {
@@ -145,11 +130,12 @@ static void stage3_glitch(FBO *fbo) {
 	}
 
 	if(strength > 0) {
-		r_shader_ptr(shader);
-		glUniform1f(uniloc(shader, "strength"), strength);
-		glUniform1i(uniloc(shader, "frames"), global.frames + tsrand() % 30);
+		r_shader("glitch");
+		r_uniform_float("strength", strength);
+		r_uniform_int("frames", global.frames + tsrand() % 30);
 	} else {
 		r_shader_standard();
+		r_color4(1, 1, 1, 1);
 	}
 
 	draw_fbo_viewport(fbo);

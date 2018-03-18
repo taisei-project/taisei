@@ -104,7 +104,6 @@ typedef enum UniformType {
 typedef struct Uniform Uniform;
 
 /*
- * Provided by the backend at link time.
  * Creates an SDL window with proper flags, and if needed, sets up context and the r_* pointers.
  * Must be called before anything else.
  */
@@ -113,7 +112,7 @@ SDL_Window* r_create_window(const char *title, int x, int y, int w, int h, uint3
 	attr_nonnull(1) attr_nodiscard;
 
 /*
- *	Provided by the backend at run time.
+ *	TODO: Document these.
  */
 
 void r_init(void);
@@ -131,32 +130,33 @@ void r_mat_perspective(float angle, float aspect, float near, float far);
 
 void r_color4(float r, float g, float b, float a);
 
-void r_shader_ptr(const ShaderProgram *prog) attr_nonnull(1);
+void r_shader_ptr(ShaderProgram *prog) attr_nonnull(1);
 void r_shader_standard(void);
 void r_shader_standard_notex(void);
-const ShaderProgram* r_shader_current(void) attr_returns_nonnull;
+ShaderProgram* r_shader_current(void) attr_returns_nonnull;
 
-const Uniform* r_shader_uniform(const ShaderProgram *prog, const char *uniform_name) attr_nonnull(1, 2);
-void r_uniform_ptr(const Uniform *uniform, uint count, const void *data) attr_nonnull(3);
+Uniform* r_shader_uniform(ShaderProgram *prog, const char *uniform_name) attr_nonnull(1, 2);
+void r_uniform_ptr(Uniform *uniform, uint count, const void *data) attr_nonnull(3);
 
 void r_flush(void);
 void r_draw_quad(void);
 void r_draw_model(const char *model);
 
 void r_texture_create(Texture *tex, const TextureParams *params) attr_nonnull(1, 2);
-void r_texture_fill(Texture *tex, uint8_t *image_data) attr_nonnull(1, 2);
+void r_texture_fill(Texture *tex, void *image_data) attr_nonnull(1, 2);
+void r_texture_fill_region(Texture *tex, uint x, uint y, uint w, uint h, void *image_data) attr_nonnull(1, 6);
 void r_texture_destroy(Texture *tex) attr_nonnull(1);
 
-void r_texture_ptr(uint unit, const Texture *tex) attr_nonnull(2);
-const Texture* r_texture_current(uint unit);
+void r_texture_ptr(uint unit, Texture *tex) attr_nonnull(2);
+Texture* r_texture_current(uint unit);
 
 void r_target_create(RenderTarget *target) attr_nonnull(1);
 void r_target_attach(RenderTarget *target, Texture *tex, RenderTargetAttachment attachment) attr_nonnull(1);
-const Texture* r_target_get_attachment(RenderTarget *target, RenderTargetAttachment attachment) attr_nonnull(1);
+Texture* r_target_get_attachment(RenderTarget *target, RenderTargetAttachment attachment) attr_nonnull(1);
 void r_target_destroy(RenderTarget *target) attr_nonnull(1);
 
-void r_target(const RenderTarget *target);
-const RenderTarget* r_target_current(void);
+void r_target(RenderTarget *target);
+RenderTarget* r_target_current(void);
 
 /*
  *	Provided by the API module
@@ -231,7 +231,7 @@ void r_texture(uint unit, const char *tex) {
 }
 
 static inline attr_must_inline
-const Uniform* r_shader_current_uniform(const char *name) {
+Uniform* r_shader_current_uniform(const char *name) {
 	return r_shader_uniform(r_shader_current(), name);
 }
 

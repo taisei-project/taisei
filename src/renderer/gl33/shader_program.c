@@ -12,7 +12,7 @@
 #include "shader_object.h"
 #include "../api.h"
 
-const Uniform* r_shader_uniform(const ShaderProgram *prog, const char *uniform_name) {
+Uniform* r_shader_uniform(ShaderProgram *prog, const char *uniform_name) {
 	return hashtable_get_string(prog->uniforms, uniform_name);
 }
 
@@ -56,7 +56,7 @@ static void uset_mat4(Uniform *uniform, uint count, const void *data) {
 	glUniformMatrix4fv(uniform->location, count, false, (float*)data);
 }
 
-void r_uniform_ptr(const Uniform *uniform, uint count, const void *data) {
+void r_uniform_ptr(Uniform *uniform, uint count, const void *data) {
 	assert(count > 0);
 	assert(uniform != NULL);
 	assert(uniform->prog != NULL);
@@ -81,7 +81,7 @@ void r_uniform_ptr(const Uniform *uniform, uint count, const void *data) {
 
 	assert(uniform->type >= 0 && uniform->type < sizeof(type_to_setter)/sizeof(UniformSetter));
 
-	const ShaderProgram *prev_prog = r_shader_current();
+	ShaderProgram *prev_prog = r_shader_current();
 	r_shader_ptr(uniform->prog);
 	r_flush();
 	type_to_setter[uniform->type](uniform, count, data);

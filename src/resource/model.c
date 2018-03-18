@@ -16,7 +16,7 @@
 #include "list.h"
 #include "resource.h"
 #include "vbo.h"
-#include "renderer.h"
+#include "renderer/api.h"
 
 ResourceHandler model_res_handler = {
 	.type = RES_MODEL,

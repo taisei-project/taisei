@@ -95,10 +95,8 @@ vec3 **stage6_towerwall_pos(vec3 pos, float maxrange) {
 }
 
 void stage6_towerwall_draw(vec3 pos) {
-	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towerwall")->gltex);
-
-	ShaderProgram *s = r_shader_get("tower_wall");
-	r_shader_ptr(s);
+	r_texture(0, "stage6/towerwall");
+	r_shader("tower_wall");
 
 	r_mat_push();
 	r_mat_translate(pos[0], pos[1], pos[2]);
@@ -116,7 +114,7 @@ static vec3 **stage6_towertop_pos(vec3 pos, float maxrange) {
 }
 
 static void stage6_towertop_draw(vec3 pos) {
-	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towertop")->gltex);
+	r_texture(0, "stage6/towertop");
 
 	r_mat_push();
 	r_mat_translate(pos[0], pos[1], pos[2]);

@@ -26,7 +26,7 @@
 #include "vfs/setup.h"
 #include "version.h"
 #include "credits.h"
-#include "renderer.h"
+#include "renderer/api.h"
 
 static void taisei_shutdown(void) {
 	log_info("Shutting down");
@@ -272,7 +272,7 @@ int main(int argc, char **argv) {
 	init_fonts();
 	video_init();
 	init_resources();
-	r_post_init();
+	r_init();
 	draw_loading_screen();
 	audio_init();
 	load_resources();
