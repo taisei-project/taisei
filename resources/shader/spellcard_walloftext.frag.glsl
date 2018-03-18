@@ -1,4 +1,4 @@
-#version 330
+#version 330 core
 
 uniform sampler2D tex;
 uniform float w,h;
@@ -6,9 +6,11 @@ uniform float ratio;
 uniform vec2 origin;
 uniform float t;
 
+in vec2 texCoord;
 in vec2 texCoordRaw;
+out vec4 fragColor;
 
-float smoothstep(float x) {
+float smoothstep(float x) { // TODO: use glsl builtin function
 	return 1.0/(exp(8.*x)+1.0);
 }
 
@@ -24,5 +26,5 @@ void main(void) {
 	vec4 clr = texture2D(tex, pos);
 	clr.a *= float(pos.x < w && pos.y < h)*(2.*t-t*t);
 
-	gl_FragColor = clr;
+	fragColor = clr;
 }

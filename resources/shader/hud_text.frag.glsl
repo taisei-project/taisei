@@ -9,6 +9,7 @@ uniform float split;
 
 uniform sampler2D tex;
 in vec2 texCoord;
+in vec2 texCoordRaw;
 out vec4 fragColor;
 
 void main(void) {

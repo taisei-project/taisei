@@ -1,22 +1,12 @@
-#version 110
-
-varying vec4 TexCoord0;
-
-void main(void) {
-	gl_Position = ftransform();
-	gl_FrontColor = gl_Color;
-
-	TexCoord0 = gl_TextureMatrix[0] * gl_MultiTexCoord0;
-}
-
-%% -- FRAG
-#version 110
+#version 330 core
 
 uniform sampler2D tex;
 uniform vec3 color;
 uniform float mixfactor;
 
-varying vec4 TexCoord0;
+in vec2 texCoord;
+in vec2 texCoordRaw;
+out vec4 fragColor;
 
 float min(vec3 c) {
 	float m = c.r;
@@ -32,7 +22,7 @@ float lum(vec3 c) {
 }
 
 void main(void) {
-	vec3 rgb = texture2D(tex, vec2(TexCoord0.xy)).rgb;
+	vec3 rgb = texture2D(tex, texCoord).rgb;
 
 	float	lum1	= lum(rgb);
 	float	lum2	= lum(color);
@@ -40,5 +30,5 @@ void main(void) {
 	vec3	white2	= vec3(min(color));
 	vec3	newclr	= white1 + (color - white2) * (lum2/lum1);
 
-	gl_FragColor	= mix(vec4(rgb, 1.0), vec4(pow(newclr, vec3(1.3)), 1.0), mixfactor);
+	fragColor	= mix(vec4(rgb, 1.0), vec4(pow(newclr, vec3(1.3)), 1.0), mixfactor);
 }

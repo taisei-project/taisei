@@ -13,6 +13,7 @@ layout(std140) uniform RenderContext {
 	vec4 color;
 } ctx;
 
+in vec2 texCoord;
 in vec2 texCoordRaw;
 out vec4 fragColor;
 

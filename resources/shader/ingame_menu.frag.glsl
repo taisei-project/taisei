@@ -1,10 +1,11 @@
-#version 330
+#version 330 core
 
 uniform sampler2D tex;
 uniform float rad;
 uniform float phase;
 
 in vec2 texCoord;
+in vec2 texCoordRaw;
 out vec4 fragColor;
 
 float pi = 2.0 * asin(1.0);
