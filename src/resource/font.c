@@ -160,20 +160,8 @@ static void fontrenderer_init(float quality) {
 	int w = FONTREN_MAXW * r;
 	int h = FONTREN_MAXH * r;
 
-	font_renderer.tex.w = w;
-	font_renderer.tex.h = h;
 	font_renderer.sprite.tex = &font_renderer.tex;
-	font_renderer.pixbuf = calloc(w, h);
-
-	/*
-	glGenTextures(1, &font_renderer.tex.gltex);
-	glBindTexture(GL_TEXTURE_2D, font_renderer.tex.gltex);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-	*/
+	font_renderer.pixbuf = calloc(w * h, sizeof(uint32_t));
 
 	r_texture_create(&font_renderer.tex, &(TextureParams) {
 		.type = TEX_TYPE_RGBA,
@@ -184,7 +172,9 @@ static void fontrenderer_init(float quality) {
 		.wrap = {
 			.s = TEX_WRAP_CLAMP,
 			.t = TEX_WRAP_CLAMP,
-		}
+		},
+		.width = w,
+		.height = h,
 	});
 
 	log_debug("q=%f, w=%i, h=%i", font_renderer.quality, w, h);
@@ -203,6 +193,8 @@ static void fontrenderer_upload(SDL_Surface *surf) {
 	int winh = surf->h+1;
 
 	uint32_t *pixels = font_renderer.pixbuf;
+
+	// memset(pixels, 0, font_renderer.tex.w * font_renderer.tex.h * sizeof(uint32_t));
 
 	for(int y = 0; y < surf->h; y++) {
 		memcpy(pixels+y*winw, ((uint8_t*)surf->pixels)+y*surf->pitch, surf->w*4);

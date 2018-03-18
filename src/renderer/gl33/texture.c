@@ -41,7 +41,7 @@ static inline GLuint r_type_to_gl_external_format(TextureType type) {
 	switch(type) {
 		case TEX_TYPE_DEFAULT:
 		case TEX_TYPE_RGBA:
-			return GL_RGBA8;
+			return GL_RGBA;
 
 		case TEX_TYPE_DEPTH:
 			return GL_DEPTH_COMPONENT;
@@ -60,6 +60,7 @@ void r_texture_create(Texture *tex, const TextureParams *params) {
 	tex->w = params->width;
 	tex->h = params->height;
 	tex->type = params->type;
+	tex->impl = calloc(1, sizeof(TextureImpl));
 
 	uint unit = gl33_active_texunit();
 	Texture *prev_tex = r_texture_current(unit);

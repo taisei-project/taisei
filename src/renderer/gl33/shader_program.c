@@ -271,9 +271,9 @@ static void* load_shader_program_end(void *opaque, const char *path, uint flags)
 		glUniformBlockBinding(ldata.shprog.gl_handle, ldata.shprog.renderctx_block_idx, 1);
 	}
 
-	cache_uniforms(&ldata.shprog);
-
-	return memdup(&ldata.shprog, sizeof(ldata.shprog));
+	ShaderProgram *prog = memdup(&ldata.shprog, sizeof(ldata.shprog));
+	cache_uniforms(prog);
+	return prog;
 }
 
 void unload_shader_program(void *vprog) {

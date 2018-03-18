@@ -13,7 +13,6 @@
 #include "../common/opengl.h"
 #include "texture.h"
 
-struct RenderTarget {
+struct RenderTargetImpl {
 	GLuint gl_fbo;
-	Texture *attachments[RENDERTARGET_MAX_ATTACHMENTS];
 };

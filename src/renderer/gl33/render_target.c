@@ -23,7 +23,8 @@ static_assert(sizeof(r_attachment_to_gl_attachment)/sizeof(GLuint) == RENDERTARG
 void r_target_create(RenderTarget *target) {
 	assert(target != NULL);
 	memset(target, 0, sizeof(RenderTarget));
-	glGenFramebuffers(1, &target->gl_fbo);
+	target->impl = calloc(1, sizeof(RenderTargetImpl));
+	glGenFramebuffers(1, &target->impl->gl_fbo);
 }
 
 void r_target_attach(RenderTarget *target, Texture *tex, RenderTargetAttachment attachment) {
@@ -46,5 +47,6 @@ Texture* r_target_get_attachment(RenderTarget *target, RenderTargetAttachment at
 
 void r_target_destroy(RenderTarget *target) {
 	assert(target != NULL);
-	glDeleteFramebuffers(1, &target->gl_fbo);
+	glDeleteFramebuffers(1, &target->impl->gl_fbo);
+	free(target->impl);
 }

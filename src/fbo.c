@@ -38,9 +38,10 @@ static void init_fbo(FBO *fbo, uint width, uint height) {
 }
 
 static void delete_fbo(FBO *fbo) {
-	r_texture_destroy((Texture*)r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_COLOR0));
-	r_texture_destroy((Texture*)r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_DEPTH));
+	r_texture_destroy(r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_COLOR0));
+	r_texture_destroy(r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_DEPTH));
 	r_target_destroy(fbo);
+	free(fbo);
 }
 
 static void reinit_fbo(FBO *fbo, float scale, int type) {
@@ -48,14 +49,11 @@ static void reinit_fbo(FBO *fbo, float scale, int type) {
 	uint w = VIEWPORT_W * scale;
 	uint h = VIEWPORT_H * scale;
 
-	if(!fbo) {
+	Texture *rgba = r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_COLOR0);
+
+	if(!rgba) {
 		init_fbo(fbo, w, h);
-		return;
-	}
-
-	const Texture *rgba = r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_COLOR0);
-
-	if(!rgba || w != rgba->w || h != rgba->h) {
+	} else if(w != rgba->w || h != rgba->h) {
 		delete_fbo(fbo);
 		init_fbo(fbo, w, h);
 	}
@@ -68,6 +66,9 @@ static void swap_fbos(FBO **fbo1, FBO **fbo2) {
 }
 
 void init_fbo_pair(FBOPair *pair, float scale, int type) {
+	pair->front = pair->_private.targets+0;
+	pair->back  = pair->_private.targets+1;
+
 	reinit_fbo(pair->front, scale, type);
 	reinit_fbo(pair->back, scale, type);
 }

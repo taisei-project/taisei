@@ -24,6 +24,10 @@ typedef struct FBOPair {
 
 	FBO *front;
 	FBO *back;
+
+	struct {
+		FBO targets[2];
+	} _private;
 } FBOPair;
 
 void init_fbo_pair(FBOPair *pair, float scale, int type);

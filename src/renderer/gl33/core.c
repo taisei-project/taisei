@@ -18,7 +18,11 @@
 #include "resource/model.h"
 #include "glm.h"
 
+// FIXME: initialize this elsewhere
 #include "recolor.h"
+
+// FIXME: move this to gl33
+#include "vbo.h"
 
 typedef struct UBOData {
 	mat4 modelview;
@@ -152,7 +156,9 @@ static void gl33_init_context(SDL_Window *window) {
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(R.ubodata), &R.ubodata, GL_STREAM_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	glBindBufferRange(GL_UNIFORM_BUFFER, 1, R.ubo, 0, sizeof(R.ubodata));
-	// init_quadvbo();
+
+	// FIXME: move this to gl33
+	init_quadvbo();
 }
 
 uint gl33_active_texunit(void) {
@@ -203,8 +209,10 @@ void r_init(void) {
 	R.progs.std = get_resource_data(RES_SHADER_PROGRAM, "standard", RESF_PERMANENT);
 	R.progs.std_notex = get_resource_data(RES_SHADER_PROGRAM, "standardnotex", RESF_PERMANENT);
 
-	recolor_init();
 	r_shader_standard();
+
+	// FIXME: initialize this elsewhere
+	recolor_init();
 }
 
 void r_shutdown(void) {
@@ -309,7 +317,17 @@ void r_draw_model(const char *name) {
 
 void r_texture_ptr(uint unit, Texture *tex) {
 	assert(unit < GL33_MAX_TEXUNITS);
-	assert(tex != NULL);
+
+	if(tex == NULL) {
+		if(R.texunits.indexed[unit].tex2d.gl_handle != 0) {
+			glBindTexture(GL_TEXTURE_2D, 0);
+			R.texunits.indexed[unit].tex2d.gl_handle = 0;
+			R.texunits.indexed[unit].tex2d.ptr = NULL;
+		}
+
+		return;
+	}
+
 	assert(tex->impl != NULL);
 	assert(tex->impl->gl_handle != 0);
 
@@ -328,22 +346,24 @@ Texture* r_texture_current(uint unit) {
 	return R.texunits.indexed[unit].tex2d.ptr;
 }
 
+static inline GLuint fbo_num(RenderTarget *target) {
+	if(target == NULL) {
+		return 0;
+	}
+
+	assert(target->impl != NULL);
+	assert(target->impl->gl_fbo != 0);
+
+	return target->impl->gl_fbo;
+}
+
 void r_target(RenderTarget *target) {
 	// TODO: defer until needed
 
-	if(target == NULL) {
-		if(R.render_target->gl_fbo != 0) {
-			r_flush();
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			R.render_target = NULL;
-		}
-	} else {
-		assert(target->gl_fbo != 0);
-		if(R.render_target->gl_fbo != target->gl_fbo) {
-			r_flush();
-			glBindFramebuffer(GL_FRAMEBUFFER, target->gl_fbo);
-			R.render_target = target;
-		}
+	if(fbo_num(R.render_target) != fbo_num(target)) {
+		r_flush();
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo_num(target));
+		R.render_target = target;
 	}
 }
 
@@ -355,6 +375,8 @@ void r_shader_ptr(ShaderProgram *prog) {
 	// TODO: defer until needed
 
 	assert(prog != NULL);
+	assert(prog->gl_handle != 0);
+
 	R.progs.pending = prog;
 	// update_prog();
 	glUseProgram(prog->gl_handle);

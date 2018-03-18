@@ -60,8 +60,10 @@ void recolor_init(void) {
 	recolor_vars.A.uni = r_shader_uniform(recolor_vars.shader, "A");
 	recolor_vars.O.uni = r_shader_uniform(recolor_vars.shader, "O");
 
-	const ShaderProgram *prev_prog = r_shader_current();
+	ShaderProgram *prev_prog = r_shader_current();
 	r_shader_ptr(recolor_vars.shader);
+	assert(recolor_vars.shader != NULL);
+	assert(r_shader_current() == recolor_vars.shader);
 	recolor_apply_transform(&colortransform_identity);
 	r_shader_ptr(prev_prog);
 }

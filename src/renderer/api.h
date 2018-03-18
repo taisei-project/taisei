@@ -71,8 +71,6 @@ typedef struct Texture {
 	TextureImpl *impl;
 } Texture;
 
-typedef struct RenderTarget RenderTarget;
-
 typedef enum RenderTargetAttachment {
 	RENDERTARGET_ATTACHMENT_DEPTH,
 	RENDERTARGET_ATTACHMENT_COLOR0,
@@ -85,6 +83,13 @@ enum {
 	RENDERTARGET_MAX_COLOR_ATTACHMENTS = 4,
 	RENDERTARGET_MAX_ATTACHMENTS = RENDERTARGET_ATTACHMENT_COLOR0 + RENDERTARGET_MAX_COLOR_ATTACHMENTS,
 };
+
+typedef struct RenderTargetImpl RenderTargetImpl;
+
+typedef struct RenderTarget {
+	Texture *attachments[RENDERTARGET_MAX_ATTACHMENTS];
+	RenderTargetImpl *impl;
+} RenderTarget;
 
 typedef enum UniformType {
 	UNIFORM_FLOAT,
@@ -147,7 +152,7 @@ void r_texture_fill(Texture *tex, void *image_data) attr_nonnull(1, 2);
 void r_texture_fill_region(Texture *tex, uint x, uint y, uint w, uint h, void *image_data) attr_nonnull(1, 6);
 void r_texture_destroy(Texture *tex) attr_nonnull(1);
 
-void r_texture_ptr(uint unit, Texture *tex) attr_nonnull(2);
+void r_texture_ptr(uint unit, Texture *tex);
 Texture* r_texture_current(uint unit);
 
 void r_target_create(RenderTarget *target) attr_nonnull(1);
@@ -225,7 +230,7 @@ void r_shader(const char *prog) {
 	r_shader_ptr(r_shader_get(prog));
 }
 
-static inline attr_must_inline attr_nonnull(2)
+static inline attr_must_inline
 void r_texture(uint unit, const char *tex) {
 	r_texture_ptr(unit, r_texture_get(tex));
 }
