@@ -11,6 +11,7 @@
 #include "renderer.h"
 #include "resource/shader_program.h"
 #include "resource/resource.h"
+#include "resource/model.h"
 #include "glm.h"
 
 #include "recolor.h"
@@ -207,9 +208,18 @@ void r_draw_quad(void) {
 }
 
 void r_draw_model(const char *name) {
+	Model *model = get_model(name);
+	r_mat_mode(MM_TEXTURE);
+	// TODO: get rid of this -1?
+	r_mat_scale(1,-1,1); // every texture in taisei is actually read vertically mirrored. and I noticed that just now.
+
 	update_ubo();
-	draw_model(name);
+	glDrawElements(GL_TRIANGLES, model->icount, GL_UNSIGNED_INT, model->indices);
+
+	r_mat_identity();
+	r_mat_mode(MM_MODELVIEW);
 }
+
 
 void r_shader(ShaderProgram *prog) {
 	assert(prog != NULL);

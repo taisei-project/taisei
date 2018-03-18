@@ -42,9 +42,6 @@ void unload_model(void*); // Does not delete elements from the VBO, so doing thi
 
 Model* get_model(const char *name);
 
-void draw_model_p(Model *model);
-void draw_model(const char *name);
-
 extern ResourceHandler model_res_handler;
 
 #define MDL_PATH_PREFIX "res/models/"

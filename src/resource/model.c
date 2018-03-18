@@ -256,18 +256,3 @@ Model* get_model(const char *name) {
 	return get_resource(RES_MODEL, name, RESF_DEFAULT)->data;
 }
 
-void draw_model_p(Model *model) {
-	GLenum flag = model->fverts == 3 ? GL_TRIANGLES : GL_TRIANGLE_FAN;
-
-	r_mat_mode(MM_TEXTURE);
-	r_mat_scale(1,-1,1); // every texture in taisei is actually read vertically mirrored. and I noticed that just now.
-
-	glDrawElements(flag, model->icount, GL_UNSIGNED_INT, model->indices);
-
-	r_mat_identity();
-	r_mat_mode(MM_MODELVIEW);
-}
-
-void draw_model(const char *name) {
-	draw_model_p(get_model(name));
-}
