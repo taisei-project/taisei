@@ -2456,7 +2456,7 @@ void elly_theory(Boss *b, int time) {
 
 	AT(breaktime) {
 		play_sound("charge_generic");
-		stagetext_add("Perturbation theory!", VIEWPORT_W/2+I*VIEWPORT_H/4,AL_Center,&_fonts.mainmenu,rgb(1,1,1),0,100,10,20);
+		stagetext_add("Perturbation theory", VIEWPORT_W/2+I*VIEWPORT_H/4,AL_Center,&_fonts.mainmenu,rgb(1,1,1),0,100,10,20);
 		stagetext_add("breaking down!", VIEWPORT_W/2+I*VIEWPORT_H/4+30*I,AL_Center,&_fonts.mainmenu,rgb(1,1,1),0,100,10,20);
 		global.shake_view=10;
 		global.shake_view_fade=1;
