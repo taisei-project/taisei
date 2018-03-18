@@ -633,7 +633,7 @@ void elly_frequency2(Boss *b, int t) {
 complex maxwell_laser(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		l->unclearable = true;
-		l->shader = get_shader_program("laser_maxwell");
+		l->shader = get_shader_program_optional("laser_maxwell");
 		return 0;
 	}
 
@@ -2120,19 +2120,19 @@ static complex elly_toe_laser_pos(Laser *l, float t) { // a[0]: direction, a[1]:
 	if(t == EVENT_BIRTH) {
 		switch(type) {
 		case 0:
-			l->shader = get_shader_program("laser_elly_toe_fermion");
+			l->shader = get_shader_program_optional("laser_elly_toe_fermion");
 			l->color = rgb(0.4,0.4,1);
 			break;
 		case 1:
-			l->shader = get_shader_program("laser_elly_toe_photon");
+			l->shader = get_shader_program_optional("laser_elly_toe_photon");
 			l->color = rgb(1,0.4,0.4);
 			break;
 		case 2:
-			l->shader = get_shader_program("laser_elly_toe_gluon");
+			l->shader = get_shader_program_optional("laser_elly_toe_gluon");
 			l->color = rgb(0.4,1,0.4);
 			break;
 		case 3:
-			l->shader = get_shader_program("laser_elly_toe_higgs");
+			l->shader = get_shader_program_optional("laser_elly_toe_higgs");
 			l->color = rgb(1,0.4,1);
 			break;
 		default:
