@@ -25,6 +25,9 @@ static inline GLuint r_wrap_to_gl_wrap(TextureWrapMode wmode) {
 
 static inline GLuint r_type_to_gl_internal_format(TextureType type) {
 	switch(type) {
+		case TEX_TYPE_RGB:
+			return GL_RGB8;
+
 		case TEX_TYPE_DEFAULT:
 		case TEX_TYPE_RGBA:
 			return GL_RGBA8;
@@ -39,6 +42,9 @@ static inline GLuint r_type_to_gl_internal_format(TextureType type) {
 
 static inline GLuint r_type_to_gl_external_format(TextureType type) {
 	switch(type) {
+		case TEX_TYPE_RGB:
+			return GL_RGB;
+
 		case TEX_TYPE_DEFAULT:
 		case TEX_TYPE_RGBA:
 			return GL_RGBA;

@@ -26,6 +26,7 @@ typedef enum MatrixMode {
 
 typedef enum TextureType {
 	TEX_TYPE_DEFAULT,
+	TEX_TYPE_RGB,
 	TEX_TYPE_RGBA,
 	TEX_TYPE_DEPTH,
 } TextureType;

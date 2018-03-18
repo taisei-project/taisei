@@ -30,7 +30,7 @@ typedef struct FBOPair {
 	} _private;
 } FBOPair;
 
-void init_fbo_pair(FBOPair *pair, float scale, int type);
+void init_fbo_pair(FBOPair *pair, float scale, TextureType type);
 void delete_fbo_pair(FBOPair *pair);
 void swap_fbo_pair(FBOPair *pair);
 

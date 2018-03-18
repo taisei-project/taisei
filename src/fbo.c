@@ -15,36 +15,41 @@
 // TODO: rename and move this
 Resources resources;
 
-static void init_fbo(FBO *fbo, uint width, uint height) {
-	Texture rgba, depth;
+static void init_fbo(FBO *fbo, uint width, uint height, TextureType type) {
+	Texture *rgba = calloc(1, sizeof(Texture));
+	Texture *depth = calloc(1, sizeof(Texture));
 
-	r_texture_create(&rgba, &(TextureParams) {
+	r_texture_create(rgba, &(TextureParams) {
 		.width  = width,
 		.height = height,
-		.type = TEX_TYPE_RGBA,
+		.type = type,
 	});
 
-	r_texture_create(&depth, &(TextureParams) {
+	r_texture_create(depth, &(TextureParams) {
 		.width  = width,
 		.height = height,
 		.type = TEX_TYPE_DEPTH,
 	});
 
 	r_target_create(fbo);
-	r_target_attach(fbo, &rgba, RENDERTARGET_ATTACHMENT_COLOR0);
-	r_target_attach(fbo, &depth, RENDERTARGET_ATTACHMENT_DEPTH);
+	r_target_attach(fbo, rgba, RENDERTARGET_ATTACHMENT_COLOR0);
+	r_target_attach(fbo, depth, RENDERTARGET_ATTACHMENT_DEPTH);
 
 	log_debug("FBO %p: w=%i, h=%i", (void*)fbo, width, height);
 }
 
-static void delete_fbo(FBO *fbo) {
-	r_texture_destroy(r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_COLOR0));
-	r_texture_destroy(r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_DEPTH));
-	r_target_destroy(fbo);
-	free(fbo);
+static void delete_tex(Texture *tex) {
+	r_texture_destroy(tex);
+	free(tex);
 }
 
-static void reinit_fbo(FBO *fbo, float scale, int type) {
+static void delete_fbo(FBO *fbo) {
+	delete_tex(r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_COLOR0));
+	delete_tex(r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_DEPTH));
+	r_target_destroy(fbo);
+}
+
+static void reinit_fbo(FBO *fbo, float scale, TextureType type) {
 	scale = sanitize_scale(scale);
 	uint w = VIEWPORT_W * scale;
 	uint h = VIEWPORT_H * scale;
@@ -52,10 +57,10 @@ static void reinit_fbo(FBO *fbo, float scale, int type) {
 	Texture *rgba = r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_COLOR0);
 
 	if(!rgba) {
-		init_fbo(fbo, w, h);
+		init_fbo(fbo, w, h, type);
 	} else if(w != rgba->w || h != rgba->h) {
 		delete_fbo(fbo);
-		init_fbo(fbo, w, h);
+		init_fbo(fbo, w, h, type);
 	}
 }
 
@@ -65,7 +70,7 @@ static void swap_fbos(FBO **fbo1, FBO **fbo2) {
 	*fbo2 = temp;
 }
 
-void init_fbo_pair(FBOPair *pair, float scale, int type) {
+void init_fbo_pair(FBOPair *pair, float scale, TextureType type) {
 	pair->front = pair->_private.targets+0;
 	pair->back  = pair->_private.targets+1;
 
@@ -84,12 +89,20 @@ void swap_fbo_pair(FBOPair *pair) {
 
 void draw_fbo(FBO *fbo) {
 	r_mat_push();
-		r_mat_translate(VIEWPORT_W * 0.5, VIEWPORT_H * 0.5, 0);
-		r_mat_scale(VIEWPORT_W, VIEWPORT_H, 1);
-		r_flush();
-		r_texture_ptr(0, r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_COLOR0));
-		// glDrawArrays(GL_TRIANGLE_FAN, 4, 4);
-		r_draw_quad();
+	r_texture_ptr(0, r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_COLOR0));
+	r_mat_scale(VIEWPORT_W, VIEWPORT_H, 1);
+	r_mat_translate(0.5, 0.5, 0);
+
+	r_mat_scale(1, -1, 1);
+	glCullFace(GL_FRONT);
+	r_draw_quad();
+	glCullFace(GL_BACK);
+
+	/*
+	r_flush();
+	glDrawArrays(GL_TRIANGLE_FAN, 4, 4);
+	*/
+
 	r_mat_pop();
 }
 

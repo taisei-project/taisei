@@ -180,6 +180,13 @@ uint gl33_activate_texunit(uint unit) {
 }
 
 SDL_Window* r_create_window(const char *title, int x, int y, int w, int h, uint32_t flags) {
+	static bool libgl_loaded;
+
+	if(!libgl_loaded) {
+		load_gl_library();
+		libgl_loaded = true;
+	}
+
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -217,6 +224,8 @@ void r_init(void) {
 
 void r_shutdown(void) {
 	glDeleteBuffers(1, &R.ubo);
+	unload_gl_library();
+	SDL_GL_DeleteContext(R.gl_context);
 }
 
 static inline vec4* active_matrix(void) {

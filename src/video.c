@@ -14,7 +14,6 @@
 #include "video.h"
 
 Video video;
-static bool libgl_loaded = false;
 
 static VideoMode common_modes[] = {
 	{RESX, RESY},
@@ -102,9 +101,9 @@ static void video_update_quality(void) {
 
 	log_debug("q:%f, fg:%f, bg:%f, text:%f", q, fg, bg, text);
 
-	init_fbo_pair(&resources.fbo_pairs.bg, bg, GL_RGB);
-	init_fbo_pair(&resources.fbo_pairs.fg, fg, GL_RGB);
-	init_fbo_pair(&resources.fbo_pairs.rgba, fg, GL_RGBA);
+	init_fbo_pair(&resources.fbo_pairs.bg, bg, TEX_TYPE_RGB);
+	init_fbo_pair(&resources.fbo_pairs.fg, fg, TEX_TYPE_RGB);
+	init_fbo_pair(&resources.fbo_pairs.rgba, fg, TEX_TYPE_RGBA);
 
 	reload_fonts(text);
 
@@ -161,11 +160,6 @@ static const char* modeflagsstr(uint32_t flags) {
 }
 
 static void video_new_window_internal(int w, int h, uint32_t flags, bool fallback) {
-	if(!libgl_loaded) {
-		load_gl_library();
-		libgl_loaded = true;
-	}
-
 	if(video.window) {
 		SDL_DestroyWindow(video.window);
 		video.window = NULL;
@@ -512,10 +506,8 @@ void video_init(void) {
 }
 
 void video_shutdown(void) {
-	r_shutdown();
 	SDL_DestroyWindow(video.window);
-	SDL_GL_DeleteContext(video.glcontext);
-	unload_gl_library();
+	r_shutdown();
 	free(video.modes);
 	SDL_VideoQuit();
 	events_unregister_handler(video_handle_window_event);

@@ -47,6 +47,7 @@ static bool include_shader(const char *path, SDL_RWops *dest, int *include_level
 		SDL_RWwrite(dest, linebuf, 1, strlen(linebuf));
 	}
 
+	SDL_RWclose(stream);
 	return true;
 }
 

@@ -38,6 +38,8 @@ void r_target_attach(RenderTarget *target, Texture *tex, RenderTargetAttachment 
 	r_flush();
 	glFramebufferTexture2D(GL_FRAMEBUFFER, r_attachment_to_gl_attachment[attachment], GL_TEXTURE_2D, gl_tex, 0);
 	r_target(prev_target);
+
+	target->attachments[attachment] = tex;
 }
 
 Texture* r_target_get_attachment(RenderTarget *target, RenderTargetAttachment attachment) {
