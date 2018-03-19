@@ -313,7 +313,7 @@ void set_ortho_ex(float w, float h) {
 	r_mat_mode(MM_PROJECTION);
 	r_mat_ortho( 0, w, h, 0, -100, 100);
 	r_mat_mode(MM_MODELVIEW);
-	glDisable(GL_DEPTH_TEST);
+	r_disable(RCAP_DEPTH);
 }
 
 void set_ortho(void) {

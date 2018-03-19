@@ -786,13 +786,13 @@ void Petal(Projectile *p, int t) {
 	float r = sqrt(x*x+y*y+z*z);
 	x /= r; y /= r; z /= r;
 
-	glDisable(GL_CULL_FACE);
+	r_disable(RCAP_CULL);
 	r_mat_push();
 	r_mat_translate(creal(p->pos), cimag(p->pos),0);
 	r_mat_rotate_deg(t*4.0 + cimag(p->args[3]), x, y, z);
 	ProjDrawCore(p, p->color);
 	r_mat_pop();
-	glEnable(GL_CULL_FACE);
+	r_enable(RCAP_CULL);
 }
 
 void petal_explosion(int n, complex pos) {

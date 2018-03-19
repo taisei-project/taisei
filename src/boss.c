@@ -60,9 +60,9 @@ void spell_opening(Boss *b, int time) {
 	float scale = f+1.*(1-f)*(1-f)*(1-f);
 	r_mat_scale(scale,scale,1);
 	r_mat_rotate_deg(360*f,1,1,0);
-	glDisable(GL_CULL_FACE);
+	r_disable(RCAP_CULL);
 	draw_boss_text(AL_Right, strw/2*(1-f), 0, b->current->name, _fonts.standard, rgb(1, 1, 1));
-	glEnable(GL_CULL_FACE);
+	r_enable(RCAP_CULL);
 	r_mat_pop();
 
 	r_shader_standard();

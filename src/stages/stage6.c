@@ -128,7 +128,7 @@ static vec3 **stage6_skysphere_pos(vec3 pos, float maxrange) {
 }
 
 static void stage6_skysphere_draw(vec3 pos) {
-	glDisable(GL_DEPTH_TEST);
+	r_disable(RCAP_DEPTH);
 	ShaderProgram *s = r_shader_get("stage6_sky");
 	r_shader_ptr(s);
 
@@ -152,7 +152,7 @@ static void stage6_skysphere_draw(vec3 pos) {
 
 	r_mat_pop();
 	r_color4(1,1,1,1);
-	glEnable(GL_DEPTH_TEST);
+	r_enable(RCAP_DEPTH);
 }
 
 static void stage6_draw(void) {

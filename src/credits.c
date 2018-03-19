@@ -339,7 +339,7 @@ static void credits_draw(void) {
 
 	r_mat_push();
 	r_mat_translate(-SCREEN_W/2, 0, 0);
-	glEnable(GL_DEPTH_TEST);
+	r_enable(RCAP_DEPTH);
 
 	set_perspective_viewport(&stage_3d_context, 100, 9000, 0, 0, SCREEN_W, SCREEN_H);
 	draw_stage3d(&stage_3d_context, 10000);

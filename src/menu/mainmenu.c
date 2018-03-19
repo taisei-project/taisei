@@ -157,7 +157,7 @@ void draw_main_menu(MenuData *menu) {
 		if(posx > SCREEN_W+20 || posy < -20 || posy > SCREEN_H+20)
 			continue;
 
-		glDisable(GL_CULL_FACE);
+		r_disable(RCAP_CULL);
 		r_mat_push();
 		r_mat_translate(posx,posy,0);
 		r_mat_scale(0.2,0.2,0.2);
@@ -165,7 +165,7 @@ void draw_main_menu(MenuData *menu) {
 		r_mat_rotate_deg(2*(t%period),rx,ry,rz);
 		draw_sprite(0,0,"part/petal");
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_CULL_FACE);
+		r_enable(RCAP_CULL);
 		r_mat_pop();
 	}
 

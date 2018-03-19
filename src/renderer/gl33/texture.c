@@ -35,8 +35,7 @@ static inline GLuint r_type_to_gl_internal_format(TextureType type) {
 		case TEX_TYPE_DEPTH:
 			return GL_DEPTH_COMPONENT16;
 
-		default:
-			log_fatal("Bad texture type %x", type);
+		default: UNREACHABLE;
 	}
 }
 
@@ -52,8 +51,7 @@ static inline GLuint r_type_to_gl_external_format(TextureType type) {
 		case TEX_TYPE_DEPTH:
 			return GL_DEPTH_COMPONENT;
 
-		default:
-			log_fatal("Bad texture type %x", type);
+		default: UNREACHABLE;
 	}
 }
 

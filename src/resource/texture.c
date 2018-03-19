@@ -157,7 +157,7 @@ static void texture_post_load(Texture *tex) {
 	GLuint fbotex, fbo;
 	ShaderProgram *sha = r_shader_get("texture_post_load");
 
-	glDisable(GL_BLEND);
+	r_disable(RCAP_BLEND);
 	glGenTextures(1, &fbotex);
 	glBindTexture(GL_TEXTURE_2D, fbotex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -174,7 +174,7 @@ static void texture_post_load(Texture *tex) {
 	glUniform1i(uniloc(sha, "height"), tex->h);
 	r_mat_push();
 	r_mat_identity();
-	glViewport(0, 0, tex->w, tex->h);
+	r_viewport(0, 0, tex->w, tex->h);
 	set_ortho_ex(tex->w, tex->h);
 	r_mat_translate(tex->w * 0.5, tex->h * 0.5, 0);
 	r_mat_scale(tex->w, tex->h, 1);
@@ -186,7 +186,7 @@ static void texture_post_load(Texture *tex) {
 	r_shader_standard();
 	video_set_viewport();
 	set_ortho();
-	glEnable(GL_BLEND);
+	r_enable(RCAP_BLEND);
 	tex->gltex = fbotex;
 }
 */

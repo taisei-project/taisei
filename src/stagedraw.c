@@ -265,7 +265,7 @@ static void stage_render_bg(StageInfo *stage) {
 
 	r_mat_push();
 		r_mat_translate(-(VIEWPORT_X+VIEWPORT_W/2), -(VIEWPORT_Y+VIEWPORT_H/2),0);
-		glEnable(GL_DEPTH_TEST);
+		r_enable(RCAP_DEPTH);
 		stage->procs->draw();
 	r_mat_pop();
 

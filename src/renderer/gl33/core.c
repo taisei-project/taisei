@@ -64,6 +64,7 @@ static struct {
 	GLuint ubo;
 	UBOData ubodata;
 	IntRect viewport;
+	uint32_t capstates;
 
 	struct {
 		ShaderProgram *active;
@@ -131,6 +132,12 @@ static void gl33_debug_enable(void) {
 }
 #endif
 
+static inline attr_must_inline uint32_t cap_flag(RendererCapability cap) {
+	uint32_t idx = cap;
+	assert(idx < NUM_RCAPS);
+	return (1 << idx);
+}
+
 void gl33_debug_object_label(GLenum identifier, GLuint name, const char *label) {
 #ifdef DEBUG_GL
 	if(glext.KHR_debug) {
@@ -163,12 +170,13 @@ static void gl33_init_context(SDL_Window *window) {
 
 	R.texunits.active = R.texunits.indexed;
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_DEPTH_TEST);
+	r_enable(RCAP_DEPTH);
+	r_enable(RCAP_CULL);
+	r_enable(RCAP_BLEND);
+	r_clear(CLEAR_ALL);
+
 	glDepthFunc(GL_LEQUAL);
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_BLEND);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glGenBuffers(1, &R.ubo);
 	glBindBuffer(GL_UNIFORM_BUFFER, R.ubo);
@@ -182,6 +190,32 @@ static void gl33_init_context(SDL_Window *window) {
 
 	// FIXME: move this to gl33
 	init_quadvbo();
+}
+
+static GLenum cap_to_glcap[] = {
+	[RCAP_DEPTH] = GL_DEPTH_TEST,
+	[RCAP_CULL] = GL_CULL_FACE,
+	[RCAP_BLEND] = GL_BLEND,
+};
+
+static_assert(sizeof(cap_to_glcap)/sizeof(GLenum) == NUM_RCAPS, "Some rcaps unhandled");
+
+void r_enable(RendererCapability cap) {
+	uint32_t flag = cap_flag(cap);
+
+	if(!(R.capstates & flag)) {
+		glEnable(cap_to_glcap[cap]);
+		R.capstates |= flag;
+	}
+}
+
+void r_disable(RendererCapability cap) {
+	uint32_t flag = cap_flag(cap);
+
+	if(R.capstates & flag) {
+		glDisable(cap_to_glcap[cap]);
+		R.capstates &= ~flag;
+	}
 }
 
 uint gl33_active_texunit(void) {

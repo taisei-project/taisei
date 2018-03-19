@@ -13,9 +13,11 @@
 	#define __attribute__(...)
 	#define __extension__
 	#define PRAGMA(p)
+	#define UNREACHABLE
 #else
 	#define PRAGMA(p) _Pragma(#p)
 	#define USE_GNU_EXTENSIONS
+	#define UNREACHABLE __builtin_unreachable()
 #endif
 
 #ifndef __has_attribute

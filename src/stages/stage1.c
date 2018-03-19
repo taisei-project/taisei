@@ -80,15 +80,15 @@ static void stage1_bg_draw(vec3 pos) {
 	r_mat_rotate_deg(30,1,0,0);
 	r_mat_scale(.85,-.85,.85);
 	r_mat_translate(-VIEWPORT_W/2,0,0);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
+	r_disable(RCAP_CULL);
+	r_disable(RCAP_DEPTH);
 	draw_projectiles(global.particles, particle_filter);
 	draw_enemies(global.enemies);
 	if(global.boss)
 		draw_boss(global.boss);
 	
 	r_mat_pop();
-	glEnable(GL_CULL_FACE);
+	r_enable(RCAP_CULL);
 
 	r_shader_standard_notex();
 	r_mat_push();
@@ -97,7 +97,7 @@ static void stage1_bg_draw(vec3 pos) {
 	r_draw_quad();
 	r_color4(1,1,1,1);
 	r_mat_pop();
-	glEnable(GL_DEPTH_TEST);
+	r_enable(RCAP_DEPTH);
 	r_mat_pop();
 	r_shader_standard();
 }
@@ -110,7 +110,7 @@ static vec3 **stage1_bg_pos(vec3 p, float maxrange) {
 static void stage1_smoke_draw(vec3 pos) {
 	float d = fabsf(pos[1]-stage_3d_context.cx[1]);
 
-	glDisable(GL_DEPTH_TEST);
+	r_disable(RCAP_DEPTH);
 	r_mat_push();
 	r_mat_translate(pos[0]+200*sin(pos[1]), pos[1], pos[2]+200*sin(pos[1]/25.0));
 	r_mat_rotate_deg(90,-1,0,0);
@@ -122,7 +122,7 @@ static void stage1_smoke_draw(vec3 pos) {
 	r_color4(1,1,1,1);
 
 	r_mat_pop();
-	glEnable(GL_DEPTH_TEST);
+	r_enable(RCAP_DEPTH);
 }
 
 static vec3 **stage1_smoke_pos(vec3 p, float maxrange) {

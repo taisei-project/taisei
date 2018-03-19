@@ -90,3 +90,8 @@ void _taisei_log(LogLevel lvl, bool is_backtrace, const char *funcname, const ch
 
 noreturn void _taisei_log_fatal(LogLevel lvl, const char *funcname, const char *fmt, ...)
 	attr_printf(3, 4);
+
+#ifdef DEBUG
+	#undef UNREACHABLE
+	#define UNREACHABLE log_fatal("This code should never be reached")
+#endif

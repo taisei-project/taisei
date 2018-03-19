@@ -15,6 +15,14 @@
 #include "resource/shader_program.h"
 #include "resource/texture.h"
 
+typedef enum RendererCapability {
+	RCAP_DEPTH,
+	RCAP_CULL,
+	RCAP_BLEND,
+
+	NUM_RCAPS
+} RendererCapability;
+
 typedef enum MatrixMode {
 	// XXX: Mimicking the gl matrix mode api for easy replacement.
 	// But we might just want to add proper functions to modify the non modelview matrices.
@@ -136,6 +144,9 @@ SDL_Window* r_create_window(const char *title, int x, int y, int w, int h, uint3
 
 void r_init(void);
 void r_shutdown(void);
+
+void r_enable(RendererCapability cap);
+void r_disable(RendererCapability cap);
 
 void r_mat_mode(MatrixMode mode);
 void r_mat_push(void);
