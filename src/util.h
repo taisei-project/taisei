@@ -70,6 +70,13 @@ typedef struct FloatRect {
 	float h;
 } FloatRect;
 
+typedef struct IntRect {
+	int x;
+	int y;
+	int w;
+	int h;
+} IntRect;
+
 #include <complex.h>
 
 // These definitions are common but non-standard, so we provide our own

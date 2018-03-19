@@ -248,9 +248,9 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	r_uniform_ptr(u_clr_freq,  1, (float[]) { 10.0 });
 	glBlendFunc(GL_SRC_COLOR, GL_ONE);
 	r_target(resources.fbo_pairs.rgba.front);
-	glClearColor(0, 0, 0, 0);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glClearColor(0, 0, 0, 1);
+	r_clear_color4(0, 0, 0, 0);
+	r_clear(CLEAR_COLOR);
+	r_clear_color4(0, 0, 0, 1);
 	glBlendEquation(GL_MAX);
 
 	FOR_EACH_SLAVE(e) {

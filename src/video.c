@@ -68,7 +68,7 @@ void video_set_viewport(void) {
 	int w, h;
 	video_get_viewport_size(&w,&h);
 
-	glClear(GL_COLOR_BUFFER_BIT);
+	r_clear(CLEAR_COLOR);
 	glViewport((video.current.width - w) / 2, (video.current.height - h) / 2, w, h);
 }
 
@@ -107,7 +107,7 @@ static void video_update_quality(void) {
 
 	reload_fonts(text);
 
-	glClear(GL_COLOR_BUFFER_BIT);
+	r_clear(CLEAR_COLOR);
 }
 
 static uint32_t get_fullscreen_flag(void) {

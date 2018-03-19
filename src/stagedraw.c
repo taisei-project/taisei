@@ -261,7 +261,7 @@ static void stage_render_bg(StageInfo *stage) {
 	r_target(resources.fbo_pairs.bg.back);
 	Texture *bg_tex = r_target_get_attachment(resources.fbo_pairs.bg.back, RENDERTARGET_ATTACHMENT_COLOR0);
 	glViewport(0, 0, bg_tex->w, bg_tex->h);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	r_clear(CLEAR_ALL);
 
 	r_mat_push();
 		r_mat_translate(-(VIEWPORT_X+VIEWPORT_W/2), -(VIEWPORT_Y+VIEWPORT_H/2),0);
@@ -380,7 +380,7 @@ void stage_draw_scene(StageInfo *stage) {
 			global.plr.mode->procs.bombbg(&global.plr);
 		}
 	} else if(!key_nobg) {
-		glClear(GL_COLOR_BUFFER_BIT);
+		r_clear(CLEAR_COLOR);
 	}
 
 	// draw the 2D objects

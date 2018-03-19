@@ -334,8 +334,8 @@ static void credits_draw_entry(CreditsEntry *e) {
 }
 
 static void credits_draw(void) {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	colorfill(1, 1, 1, 1); // don't use glClearColor for this, it screws up letterboxing
+	r_clear(CLEAR_ALL);
+	colorfill(1, 1, 1, 1); // don't use r_clear_color4 for this, it screws up letterboxing
 
 	r_mat_push();
 	r_mat_translate(-SCREEN_W/2, 0, 0);

@@ -60,8 +60,10 @@ static struct {
 
 	RenderTarget *render_target;
 	vec4 color;
+	// vec4 clear_color;
 	GLuint ubo;
 	UBOData ubodata;
+	IntRect viewport;
 
 	struct {
 		ShaderProgram *active;
@@ -149,13 +151,15 @@ static void gl33_init_context(SDL_Window *window) {
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glGenBuffers(1, &R.ubo);
 	glBindBuffer(GL_UNIFORM_BUFFER, R.ubo);
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(R.ubodata), &R.ubodata, GL_STREAM_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	glBindBufferRange(GL_UNIFORM_BUFFER, 1, R.ubo, 0, sizeof(R.ubodata));
+
+	r_clear_color4(0, 0, 0, 1);
 
 	// FIXME: move this to gl33
 	init_quadvbo();
@@ -407,4 +411,29 @@ ShaderProgram *r_shader_current() {
 
 void r_flush(void) {
 	update_ubo();
+}
+
+void r_clear(ClearBufferFlags flags) {
+	GLbitfield mask = 0;
+
+	if(flags & CLEAR_COLOR) {
+		mask |= GL_COLOR_BUFFER_BIT;
+	}
+
+	if(flags & CLEAR_DEPTH) {
+		mask |= GL_DEPTH_BUFFER_BIT;
+	}
+
+	glClear(mask);
+}
+
+void r_clear_color4(float r, float g, float b, float a) {
+	glClearColor(r, g, b, a);
+}
+
+void r_viewport_rect(IntRect rect) {
+	if(memcmp(&R.viewport, &rect, sizeof(IntRect))) {
+		memcpy(&R.viewport, &rect, sizeof(IntRect));
+		glViewport(rect.x, rect.y, rect.w, rect.h);
+	}
 }

@@ -109,6 +109,13 @@ typedef enum UniformType {
 
 typedef struct Uniform Uniform;
 
+typedef enum ClearBufferFlags {
+	CLEAR_COLOR = (1 << 0),
+	CLEAR_DEPTH = (1 << 1),
+
+	CLEAR_ALL = CLEAR_COLOR | CLEAR_DEPTH,
+} ClearBufferFlags;
+
 /*
  * Creates an SDL window with proper flags, and if needed, sets up context and the r_* pointers.
  * Must be called before anything else.
@@ -163,6 +170,10 @@ void r_target_destroy(RenderTarget *target) attr_nonnull(1);
 
 void r_target(RenderTarget *target);
 RenderTarget* r_target_current(void);
+
+void r_clear(ClearBufferFlags flags);
+void r_clear_color4(float r, float g, float b, float a);
+void r_viewport_rect(IntRect rect);
 
 /*
  *	Provided by the API module
@@ -288,4 +299,21 @@ void r_uniform_rgba(const char *name, Color c) {
 static inline attr_must_inline
 void r_uniform_complex(const char *name, complex z) {
 	r_uniform(name, 1, (float[]) { creal(z), cimag(z) });
+}
+
+static inline attr_must_inline
+void r_clear_color3(float r, float g, float b) {
+	r_clear_color4(r, g, b, 1.0);
+}
+
+static inline attr_must_inline
+void r_clear_color(Color c) {
+	static float r, g, b, a;
+	parse_color(c, &r, &g, &b, &a);
+	r_clear_color4(r, g, b, a);
+}
+
+static inline attr_must_inline
+void r_viewport(int x, int y, int w, int h) {
+	r_viewport_rect((IntRect) { x, y, w, h });
 }
