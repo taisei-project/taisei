@@ -17,3 +17,4 @@
 
 uint gl33_active_texunit(void);
 uint gl33_activate_texunit(uint unit);
+void gl33_debug_object_label(GLenum identifier, GLuint name, const char *label);

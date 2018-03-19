@@ -85,42 +85,59 @@ static void APIENTRY gl33_debug(
 	const GLchar *message,
 	const void *arg
 ) {
+	char *strsrc = "unknown";
 	char *strtype = "unknown";
 	char *strsev = "unknown";
-	LogLevel lvl = LOG_DEBUG;
+	LogLevel lvl0 = LOG_DEBUG;
+	LogLevel lvl1 = LOG_DEBUG;
+	LogLevel lvl;
+
+	switch(source) {
+		case GL_DEBUG_SOURCE_API:               strsrc  = "api";                           break;
+		case GL_DEBUG_SOURCE_APPLICATION:       strsrc  = "app";                           break;
+		case GL_DEBUG_SOURCE_SHADER_COMPILER:   strsrc  = "shaderc";                       break;
+		case GL_DEBUG_SOURCE_THIRD_PARTY:       strsrc  = "extern";                        break;
+		case GL_DEBUG_SOURCE_WINDOW_SYSTEM:     strsrc  = "winsys";                        break;
+		case GL_DEBUG_SOURCE_OTHER:             strsrc  = "other";                         break;
+	}
 
 	switch(type) {
-		case GL_DEBUG_TYPE_ERROR:               strtype = "error";       lvl = LOG_FATAL; break;
-		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: strtype = "deprecated";  lvl = LOG_WARN;  break;
-		case GL_DEBUG_TYPE_PORTABILITY:         strtype = "portability";                  break;
-		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  strtype = "undefined";                    break;
-		case GL_DEBUG_TYPE_PERFORMANCE:         strtype = "performance";                  break;
-		case GL_DEBUG_TYPE_OTHER:               strtype = "other";                        break;
+		case GL_DEBUG_TYPE_ERROR:               strtype = "error";       lvl0 = LOG_FATAL; break;
+		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: strtype = "deprecated";  lvl0 = LOG_WARN;  break;
+		case GL_DEBUG_TYPE_PORTABILITY:         strtype = "portability"; lvl0 = LOG_WARN;  break;
+		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  strtype = "undefined";   lvl0 = LOG_WARN;  break;
+		case GL_DEBUG_TYPE_PERFORMANCE:         strtype = "performance"; lvl0 = LOG_WARN;  break;
+		case GL_DEBUG_TYPE_OTHER:               strtype = "other";                         break;
 	}
 
 	switch(severity) {
-		case GL_DEBUG_SEVERITY_LOW:             strsev  = "low";                          break;
-		case GL_DEBUG_SEVERITY_MEDIUM:          strsev  = "medium";                       break;
-		case GL_DEBUG_SEVERITY_HIGH:            strsev  = "high";                         break;
-		case GL_DEBUG_SEVERITY_NOTIFICATION:    strsev  = "notify";                       break;
+		case GL_DEBUG_SEVERITY_LOW:             strsev  = "low";         lvl1 = LOG_INFO;  break;
+		case GL_DEBUG_SEVERITY_MEDIUM:          strsev  = "medium";      lvl1 = LOG_WARN;  break;
+		case GL_DEBUG_SEVERITY_HIGH:            strsev  = "high";        lvl1 = LOG_FATAL; break;
+		case GL_DEBUG_SEVERITY_NOTIFICATION:    strsev  = "notify";                        break;
 	}
 
-	if(type == GL_DEBUG_TYPE_OTHER && severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
-		// too verbose, spits a message every time some text is drawn
-		return;
-	}
-
-	log_custom(lvl, "[OpenGL debug, %s, %s] %i: %s", strtype, strsev, id, message);
+	lvl = lvl1 > lvl0 ? lvl1 : lvl0;
+	log_custom(lvl, "[%s, %s, %s, id:%i] %s", strsrc, strtype, strsev, id, message);
 }
 
-static void APIENTRY gl33_debug_enable(void) {
+static void gl33_debug_enable(void) {
 	GLuint unused = 0;
+	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	glDebugMessageCallback(gl33_debug, NULL);
 	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, &unused, true);
 	log_info("Enabled OpenGL debugging");
 }
 #endif
+
+void gl33_debug_object_label(GLenum identifier, GLuint name, const char *label) {
+#ifdef DEBUG_GL
+	if(glext.KHR_debug) {
+		glObjectLabel(identifier, name, strlen(label), label);
+	}
+#endif
+}
 
 static void gl33_init_context(SDL_Window *window) {
 	R.gl_context = SDL_GL_CreateContext(window);

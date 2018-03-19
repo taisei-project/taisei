@@ -187,6 +187,7 @@ typedef const GLubyte * (APIENTRY *tsglGetStringi_ptr)(GLenum name, GLuint index
 typedef GLuint (APIENTRY *tsglGetUniformBlockIndex_ptr)(GLuint program, const GLchar *uniformBlockName);
 typedef GLint (APIENTRY *tsglGetUniformLocation_ptr)(GLuint program, const GLchar *name);
 typedef void (APIENTRY *tsglLinkProgram_ptr)(GLuint program);
+typedef void (APIENTRY *tsglObjectLabel_ptr)(GLenum identifier, GLuint name, GLsizei length, const GLchar *label);
 typedef void (GLAPIENTRY *tsglReadBuffer_ptr)(GLenum mode);
 typedef void (GLAPIENTRY *tsglReadPixels_ptr)(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels);
 typedef void (APIENTRY *tsglShaderSource_ptr)(GLuint shader, GLsizei count, const GLchar *const*string, const GLint *length);
@@ -268,6 +269,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glGetUniformBlockIndex
 #undef glGetUniformLocation
 #undef glLinkProgram
+#undef glObjectLabel
 #undef glReadBuffer
 #undef glReadPixels
 #undef glShaderSource
@@ -350,6 +352,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glGetUniformBlockIndex tsglGetUniformBlockIndex
 #define glGetUniformLocation tsglGetUniformLocation
 #define glLinkProgram tsglLinkProgram
+#define glObjectLabel tsglObjectLabel
 #define glReadBuffer tsglReadBuffer
 #define glReadPixels tsglReadPixels
 #define glShaderSource tsglShaderSource
@@ -434,6 +437,7 @@ GLDEF(glGetStringi, tsglGetStringi, tsglGetStringi_ptr) \
 GLDEF(glGetUniformBlockIndex, tsglGetUniformBlockIndex, tsglGetUniformBlockIndex_ptr) \
 GLDEF(glGetUniformLocation, tsglGetUniformLocation, tsglGetUniformLocation_ptr) \
 GLDEF(glLinkProgram, tsglLinkProgram, tsglLinkProgram_ptr) \
+GLDEF(glObjectLabel, tsglObjectLabel, tsglObjectLabel_ptr) \
 GLDEF(glReadBuffer, tsglReadBuffer, tsglReadBuffer_ptr) \
 GLDEF(glReadPixels, tsglReadPixels, tsglReadPixels_ptr) \
 GLDEF(glShaderSource, tsglShaderSource, tsglShaderSource_ptr) \
@@ -522,6 +526,7 @@ GLAPI const GLubyte *APIENTRY glGetStringi (GLenum name, GLuint index);
 GLAPI GLuint APIENTRY glGetUniformBlockIndex (GLuint program, const GLchar *uniformBlockName);
 GLAPI GLint APIENTRY glGetUniformLocation (GLuint program, const GLchar *name);
 GLAPI void APIENTRY glLinkProgram (GLuint program);
+GLAPI void APIENTRY glObjectLabel (GLenum identifier, GLuint name, GLsizei length, const GLchar *label);
 GLAPI void GLAPIENTRY glReadBuffer( GLenum mode );
 GLAPI void GLAPIENTRY glReadPixels( GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels );
 GLAPI void APIENTRY glShaderSource (GLuint shader, GLsizei count, const GLchar *const*string, const GLint *length);
@@ -603,6 +608,7 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglGetUniformBlockIndex glGetUniformBlockIndex
 #define tsglGetUniformLocation glGetUniformLocation
 #define tsglLinkProgram glLinkProgram
+#define tsglObjectLabel glObjectLabel
 #define tsglReadBuffer glReadBuffer
 #define tsglReadPixels glReadPixels
 #define tsglShaderSource glShaderSource
@@ -642,6 +648,8 @@ struct glext_s {
 	uint debug_output: 1;
 	uint EXT_draw_instanced: 1;
 	uint ARB_draw_instanced: 1;
+	uint KHR_debug: 1;
+	uint ARB_debug_output: 1;
 
 	tsglDrawArraysInstanced_ptr DrawArraysInstanced;
 	tsglDebugMessageControl_ptr DebugMessageControl;

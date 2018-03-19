@@ -9,6 +9,7 @@
 #include "taisei.h"
 
 #include "util.h"
+#include "core.h"
 #include "shader_object.h"
 #include "rwops/rwops_autobuf.h"
 
@@ -119,6 +120,10 @@ static void* load_shader_object_end(void *opaque, const char *path, uint flags) 
 	);
 	GLint status;
 	GLuint gl_handle = ldata->shobj.impl->gl_handle;
+
+	char *basename = resource_util_basename(SHOBJ_PATH_PREFIX, path);
+	gl33_debug_object_label(GL_SHADER, gl_handle, basename);
+	free(basename);
 
 	glShaderSource(gl_handle, 1, (const GLchar*[]){ ldata->src }, (GLint[]){ -1 });
 	glCompileShader(gl_handle);

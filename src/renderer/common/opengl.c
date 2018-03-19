@@ -113,20 +113,20 @@ static void check_glext_draw_instanced(void) {
 
 static void check_glext_debug_output(void) {
 	if((glext.debug_output = (
-		extension_supported("GL_ARB_debug_output") &&
-		(glext.DebugMessageCallback = tsglDebugMessageCallbackARB) &&
-		(glext.DebugMessageControl = tsglDebugMessageControlARB)
-	))) {
-		log_debug("Using GL_ARB_debug_output");
-		return;
-	}
-
-	if((glext.debug_output = (
-		extension_supported("GL_KHR_debug") &&
+		(glext.KHR_debug = extension_supported("GL_KHR_debug")) &&
 		(glext.DebugMessageCallback = tsglDebugMessageCallback) &&
 		(glext.DebugMessageControl = tsglDebugMessageControl)
 	))) {
 		log_debug("Using GL_KHR_debug");
+		return;
+	}
+
+	if((glext.debug_output = (
+		(glext.ARB_debug_output = extension_supported("GL_ARB_debug_output")) &&
+		(glext.DebugMessageCallback = tsglDebugMessageCallbackARB) &&
+		(glext.DebugMessageControl = tsglDebugMessageControlARB)
+	))) {
+		log_debug("Using GL_ARB_debug_output");
 		return;
 	}
 }

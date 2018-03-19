@@ -8,6 +8,7 @@
 
 #include "taisei.h"
 
+#include "core.h"
 #include "shader_program.h"
 #include "shader_object.h"
 #include "../api.h"
@@ -244,6 +245,11 @@ static void* load_shader_program_end(void *opaque, const char *path, uint flags)
 	free(opaque);
 
 	ldata.shprog.gl_handle = glCreateProgram();
+
+	char *basename = resource_util_basename(SHPROG_PATH_PREFIX, path);
+	gl33_debug_object_label(GL_PROGRAM, ldata.shprog.gl_handle, basename);
+	free(basename);
+
 	for_each_shobject(&ldata, attach_shobject);
 	free(ldata.objlist);
 
