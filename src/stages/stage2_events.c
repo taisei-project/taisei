@@ -572,7 +572,7 @@ void hina_monty_slave_visual(Enemy *s, int time, bool render) {
 	r_shader_ptr(shader);
 
 	r_mat_push();
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	r_blend(BLEND_ADD);
 
 	r_mat_translate(creal(s->pos), cimag(s->pos), 0);
 
@@ -601,7 +601,7 @@ void hina_monty_slave_visual(Enemy *s, int time, bool render) {
 	draw_sprite_p(0, 0, soul);
 	r_mat_pop();
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 	r_mat_pop();
 
 	r_shader_standard();
@@ -735,22 +735,19 @@ void hina_monty(Boss *h, int time) {
 }
 
 void hina_spell_bg(Boss *h, int time) {
-
 	r_mat_push();
 	r_mat_translate(VIEWPORT_W/2, VIEWPORT_H/2,0);
 	r_mat_push();
 	r_mat_scale(0.6,0.6,1);
 	draw_sprite(0, 0, "stage2/spellbg1");
 	r_mat_pop();
-	glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+	r_blend(BLEND_MOD);
 	r_mat_rotate_deg(time*5, 0,0,1);
 	draw_sprite(0, 0, "stage2/spellbg2");
 	r_mat_pop();
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	r_blend(BLEND_ADD);
 	play_animation(get_ani("fire"),creal(h->pos), cimag(h->pos), 0);
-
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+	r_blend(BLEND_ALPHA);
 }
 
 Boss* stage2_spawn_hina(complex pos) {

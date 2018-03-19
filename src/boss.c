@@ -71,15 +71,17 @@ void spell_opening(Boss *b, int time) {
 void draw_extraspell_bg(Boss *boss, int time) {
 	// overlay for all extra spells
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	r_blend(BLEND_ADD);
 	r_color4(0.2,0.1,0,0.7);
 	fill_viewport(sin(time) * 0.015, time / 50.0, 1, "stage3/wspellclouds");
 	r_color4(1,1,1,1);
-	glBlendEquation(GL_MIN);
+	r_blend(r_blend_compose(
+		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_MIN,
+		BLENDFACTOR_ZERO,      BLENDFACTOR_ONE, BLENDOP_MIN
+	));
 	fill_viewport(cos(time) * 0.015, time / 70.0, 1, "stage4/kurumibg2");
 	fill_viewport(sin(time+2.1) * 0.015, time / 30.0, 1, "stage4/kurumibg2");
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glBlendEquation(GL_FUNC_ADD);
+	r_blend(BLEND_ALPHA);
 }
 
 Color boss_healthbar_color(AttackType atype) {
@@ -165,7 +167,7 @@ static void BossGlow(Projectile *p, int t) {
 	int animationFrame = rint(creal(p->args[2]));
 
 	r_shader("silhouette");
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	r_blend(BLEND_ADD);
 
 	r_mat_push();
 	float s = 1.0+t/p->args[0]*0.5;
@@ -184,7 +186,7 @@ static void BossGlow(Projectile *p, int t) {
 	play_animation_frame(ani,0,0,animationFrame);
 
 	r_mat_pop();
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 	r_shader_ptr(recolor_get_shader());
 }
 
@@ -238,7 +240,7 @@ void draw_boss_background(Boss *boss) {
 	r_mat_push();
 	r_mat_translate(creal(boss->pos), cimag(boss->pos), 0);
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	r_blend(BLEND_ADD);
 	r_mat_rotate_deg(global.frames*4.0, 0, 0, -1);
 
 	float f = 0.8+0.1*sin(global.frames/8.0);
@@ -250,7 +252,7 @@ void draw_boss_background(Boss *boss) {
 
 	r_mat_scale(f,f,f);
 	draw_sprite(0, 0, "boss_circle");
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 	r_mat_pop();
 }
 

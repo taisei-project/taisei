@@ -159,7 +159,7 @@ static void draw_magic_star(complex pos, double a, Color c1, Color c2) {
 	ColorTransform ct;
 	r_shader_ptr(shader);
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	r_blend(BLEND_ADD);
 	r_mat_push();
 		r_mat_translate(creal(pos), cimag(pos), -1);
 		r_mat_push();
@@ -175,7 +175,7 @@ static void draw_magic_star(complex pos, double a, Color c1, Color c2) {
 			draw_sprite_p(0, 0, spr);
 		r_mat_pop();
 	r_mat_pop();
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 
 	r_shader_standard();
 }
@@ -246,12 +246,14 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	r_uniform_ptr(u_clr1,      1, (float[]) { 1, 1, 1, 0.8 });
 	r_uniform_ptr(u_clr_phase, 1, (float[]) { -1.5 * t/M_PI });
 	r_uniform_ptr(u_clr_freq,  1, (float[]) { 10.0 });
-	glBlendFunc(GL_SRC_COLOR, GL_ONE);
 	r_target(resources.fbo_pairs.rgba.front);
 	r_clear_color4(0, 0, 0, 0);
 	r_clear(CLEAR_COLOR);
 	r_clear_color4(0, 0, 0, 1);
-	glBlendEquation(GL_MAX);
+	r_blend(r_blend_compose(
+		BLENDFACTOR_SRC_COLOR, BLENDFACTOR_ONE, BLENDOP_MAX,
+		BLENDFACTOR_SRC_COLOR, BLENDFACTOR_ONE, BLENDOP_MAX
+	));
 
 	FOR_EACH_SLAVE(e) {
 		if(set_alpha(u_alpha, get_laser_alpha(e, a))) {
@@ -260,13 +262,12 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 		}
 	}
 
-	glBlendEquation(GL_FUNC_ADD);
+	r_blend(BLEND_ALPHA);
 	r_target(resources.fbo_pairs.fg.back);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	r_shader_standard();
 	draw_fbo_viewport(resources.fbo_pairs.rgba.front);
 	r_shader_ptr(shader);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	r_blend(BLEND_ADD);
 
 	r_uniform_ptr(u_clr0, 1, (float[]) { 1.0, 0.0, 0.0, 0.5 });
 	r_uniform_ptr(u_clr1, 1, (float[]) { 1.0, 0.0, 0.0, 1.0 });
@@ -289,7 +290,7 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	}
 
 	r_shader_standard();
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 }
 
 static int marisa_laser_fader(Enemy *e, int t) {

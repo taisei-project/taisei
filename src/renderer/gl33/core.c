@@ -65,6 +65,7 @@ static struct {
 	UBOData ubodata;
 	IntRect viewport;
 	uint32_t capstates;
+	BlendMode blend_mode;
 
 	struct {
 		ShaderProgram *active;
@@ -173,10 +174,10 @@ static void gl33_init_context(SDL_Window *window) {
 	r_enable(RCAP_DEPTH);
 	r_enable(RCAP_CULL);
 	r_enable(RCAP_BLEND);
-	r_clear(CLEAR_ALL);
+
+	r_blend(BLEND_ALPHA);
 
 	glDepthFunc(GL_LEQUAL);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glGenBuffers(1, &R.ubo);
 	glBindBuffer(GL_UNIFORM_BUFFER, R.ubo);
@@ -187,6 +188,7 @@ static void gl33_init_context(SDL_Window *window) {
 	glGetIntegerv(GL_VIEWPORT, &R.viewport.x);
 
 	r_clear_color4(0, 0, 0, 1);
+	r_clear(CLEAR_ALL);
 
 	// FIXME: move this to gl33
 	init_quadvbo();
@@ -532,4 +534,53 @@ void r_viewport_rect(IntRect rect) {
 void r_swap(SDL_Window *window) {
 	r_target(NULL);
 	SDL_GL_SwapWindow(window);
+}
+
+static GLenum blendop_to_gl_blendop(BlendOp op) {
+	switch(op) {
+		case BLENDOP_ADD:     return GL_FUNC_ADD;
+		case BLENDOP_SUB:     return GL_FUNC_SUBTRACT;
+		case BLENDOP_REV_SUB: return GL_FUNC_REVERSE_SUBTRACT;
+		case BLENDOP_MAX:     return GL_MAX;
+		case BLENDOP_MIN:     return GL_MIN;
+	}
+
+	UNREACHABLE;
+}
+
+static GLenum blendfactor_to_gl_blendfactor(BlendFactor factor) {
+	switch(factor) {
+		case BLENDFACTOR_DST_ALPHA:     return GL_DST_ALPHA;
+		case BLENDFACTOR_INV_DST_ALPHA: return GL_ONE_MINUS_DST_ALPHA;
+		case BLENDFACTOR_DST_COLOR:     return GL_DST_COLOR;
+		case BLENDFACTOR_INV_DST_COLOR: return GL_ONE_MINUS_DST_COLOR;
+		case BLENDFACTOR_INV_SRC_ALPHA: return GL_ONE_MINUS_SRC_ALPHA;
+		case BLENDFACTOR_INV_SRC_COLOR: return GL_ONE_MINUS_SRC_COLOR;
+		case BLENDFACTOR_ONE:           return GL_ONE;
+		case BLENDFACTOR_SRC_ALPHA:     return GL_SRC_ALPHA;
+		case BLENDFACTOR_SRC_COLOR:     return GL_SRC_COLOR;
+		case BLENDFACTOR_ZERO:          return GL_ZERO;
+	}
+
+	UNREACHABLE;
+}
+
+void r_blend(BlendMode mode) {
+	if(mode != R.blend_mode) {
+		static UnpackedBlendMode umode;
+		r_blend_unpack(mode, &umode);
+		R.blend_mode = mode;
+
+		glBlendEquationSeparate(
+			blendop_to_gl_blendop(umode.color.op),
+			blendop_to_gl_blendop(umode.alpha.op)
+		);
+
+		glBlendFuncSeparate(
+			blendfactor_to_gl_blendfactor(umode.color.src),
+			blendfactor_to_gl_blendfactor(umode.color.dst),
+			blendfactor_to_gl_blendfactor(umode.alpha.src),
+			blendfactor_to_gl_blendfactor(umode.alpha.dst)
+		);
+	}
 }

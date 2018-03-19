@@ -348,44 +348,13 @@ void proj_clrtransform_particle(Projectile *p, int t, Color c, ColorTransform *o
 	static_clrtransform_particle(c, out);
 }
 
-typedef enum ProjBlendMode {
-	PBM_NORMAL,
-	PBM_ADD,
-	PBM_SUB,
-} ProjBlendMode;
-
-static inline void draw_projectile(Projectile *proj, ProjBlendMode *cur_blend_mode) {
-	ProjBlendMode blend_mode;
-
+static inline void draw_projectile(Projectile *proj) {
 	if(proj->flags & PFLAG_DRAWADD) {
-		blend_mode = PBM_ADD;
+		r_blend(BLEND_ADD);
 	} else if(proj->flags & PFLAG_DRAWSUB) {
-		blend_mode = PBM_SUB;
+		r_blend(BLEND_SUB);
 	} else {
-		blend_mode = PBM_NORMAL;
-	}
-
-	if(blend_mode != *cur_blend_mode) {
-		if(*cur_blend_mode == PBM_SUB) {
-			glBlendEquation(GL_FUNC_ADD);
-		}
-
-		switch(blend_mode) {
-			case PBM_NORMAL:
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-				break;
-
-			case PBM_ADD:
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-				break;
-
-			case PBM_SUB:
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-				glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
-				break;
-		}
-
-		*cur_blend_mode = blend_mode;
+		r_blend(BLEND_ALPHA);
 	}
 
 #ifdef PROJ_DEBUG
@@ -419,32 +388,22 @@ static inline void draw_projectile(Projectile *proj, ProjBlendMode *cur_blend_mo
 }
 
 void draw_projectiles(Projectile *projs, ProjPredicate predicate) {
-	ProjBlendMode blend_mode = PBM_NORMAL;
-
 	r_shader_ptr(recolor_get_shader());
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	if(predicate) {
 		for(Projectile *proj = projs; proj; proj = proj->next) {
 			if(predicate(proj)) {
-				draw_projectile(proj, &blend_mode);
+				draw_projectile(proj);
 			}
 		}
 	} else {
 		for(Projectile *proj = projs; proj; proj = proj->next) {
-			draw_projectile(proj, &blend_mode);
+			draw_projectile(proj);
 		}
 	}
 
 	r_shader_standard();
-
-	if(blend_mode != PBM_NORMAL) {
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		if(blend_mode == PBM_SUB) {
-			glBlendEquation(GL_FUNC_ADD);
-		}
-	}
+	r_blend(BLEND_ALPHA);
 }
 
 bool projectile_in_viewport(Projectile *proj) {
@@ -677,9 +636,9 @@ void Blast(Projectile *p, int t) {
 
 	draw_sprite_p(0,0,p->sprite);
 	r_mat_scale(0.5+creal(p->args[2]),0.5+creal(p->args[2]),1);
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+	r_blend(BLEND_ADD);
 	draw_sprite_p(0,0,p->sprite);
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 	r_mat_pop();
 }
 

@@ -124,6 +124,89 @@ typedef enum ClearBufferFlags {
 	CLEAR_ALL = CLEAR_COLOR | CLEAR_DEPTH,
 } ClearBufferFlags;
 
+// Blend modes API based on the SDL one.
+
+typedef enum BlendModeComponent {
+	BLENDCOMP_COLOR_OP  = 0x00,
+	BLENDCOMP_SRC_COLOR = 0x04,
+	BLENDCOMP_DST_COLOR = 0x08,
+	BLENDCOMP_ALPHA_OP  = 0x10,
+	BLENDCOMP_SRC_ALPHA = 0x14,
+	BLENDCOMP_DST_ALPHA = 0x18,
+} BlendModeComponent;
+
+#define BLENDMODE_COMPOSE(src_color, dst_color, color_op, src_alpha, dst_alpha, alpha_op) \
+	( \
+		((uint32_t) color_op  << BLENDCOMP_COLOR_OP ) | \
+		((uint32_t) src_color << BLENDCOMP_SRC_COLOR) | \
+		((uint32_t) dst_color << BLENDCOMP_DST_COLOR) | \
+		((uint32_t) alpha_op  << BLENDCOMP_ALPHA_OP ) | \
+		((uint32_t) src_alpha << BLENDCOMP_SRC_ALPHA) | \
+		((uint32_t) dst_alpha << BLENDCOMP_DST_ALPHA)   \
+	)
+
+#define BLENDMODE_COMPONENT(mode, comp) \
+	(((uint32_t) mode >> (uint32_t) comp) & 0xF)
+
+typedef enum BlendOp {
+	BLENDOP_ADD     = 0x1, // dst + src
+	BLENDOP_SUB     = 0x2, // dst - src
+	BLENDOP_REV_SUB = 0x3, // src - dst
+	BLENDOP_MIN     = 0x4, // min(dst, src)
+	BLENDOP_MAX     = 0x5, // max(dst, src)
+} BlendOp;
+
+typedef enum BlendFactor {
+	BLENDFACTOR_ZERO          = 0x1,  //      0,      0,      0,      0
+	BLENDFACTOR_ONE           = 0x2,  //      1,      1,      1,      1
+	BLENDFACTOR_SRC_COLOR     = 0x3,  //   srcR,   srcG,   srcB,   srcA
+	BLENDFACTOR_INV_SRC_COLOR = 0x4,  // 1-srcR, 1-srcG, 1-srcB, 1-srcA
+	BLENDFACTOR_SRC_ALPHA     = 0x5,  //   srcA,   srcA,   srcA,   srcA
+	BLENDFACTOR_INV_SRC_ALPHA = 0x6,  // 1-srcA, 1-srcA, 1-srcA, 1-srcA
+	BLENDFACTOR_DST_COLOR     = 0x7,  //   dstR,   dstG,   dstB,   dstA
+	BLENDFACTOR_INV_DST_COLOR = 0x8,  // 1-dstR, 1-dstG, 1-dstB, 1-dstA
+	BLENDFACTOR_DST_ALPHA     = 0x9,  //   dstA,   dstA,   dstA,   dstA
+	BLENDFACTOR_INV_DST_ALPHA = 0xA,  // 1-dstA, 1-dstA, 1-dstA, 1-dstA
+} BlendFactor;
+
+typedef enum BlendMode {
+	BLEND_NONE  = BLENDMODE_COMPOSE(
+		BLENDFACTOR_ONE, BLENDFACTOR_ZERO, BLENDOP_ADD,
+		BLENDFACTOR_ONE, BLENDFACTOR_ZERO, BLENDOP_ADD
+	),
+
+	BLEND_ALPHA = BLENDMODE_COMPOSE(
+		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_INV_SRC_ALPHA, BLENDOP_ADD,
+		BLENDFACTOR_ONE,       BLENDFACTOR_INV_SRC_ALPHA, BLENDOP_ADD
+	),
+
+	BLEND_ADD = BLENDMODE_COMPOSE(
+		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_ADD,
+		BLENDFACTOR_ZERO,      BLENDFACTOR_ONE, BLENDOP_ADD
+	),
+
+	BLEND_SUB = BLENDMODE_COMPOSE(
+		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_REV_SUB,
+		BLENDFACTOR_ZERO,      BLENDFACTOR_ONE, BLENDOP_REV_SUB
+	),
+
+	BLEND_MOD = BLENDMODE_COMPOSE(
+		BLENDFACTOR_ZERO, BLENDFACTOR_SRC_COLOR, BLENDOP_ADD,
+		BLENDFACTOR_ZERO, BLENDFACTOR_ONE,       BLENDOP_ADD
+	),
+} BlendMode;
+
+typedef struct UnpackedBlendModePart {
+	BlendOp op;
+	BlendFactor src;
+	BlendFactor dst;
+} UnpackedBlendModePart;
+
+typedef struct UnpackedBlendMode {
+	UnpackedBlendModePart color;
+	UnpackedBlendModePart alpha;
+} UnpackedBlendMode;
+
 typedef enum VsyncMode {
 	VSYNC_NONE,
 	VSYNC_NORMAL,
@@ -159,6 +242,7 @@ void r_mat_ortho(float left, float right, float bottom, float top, float near, f
 void r_mat_perspective(float angle, float aspect, float near, float far);
 
 void r_color4(float r, float g, float b, float a);
+void r_blend(BlendMode mode);
 
 void r_shader_ptr(ShaderProgram *prog) attr_nonnull(1);
 void r_shader_standard(void);
@@ -339,3 +423,11 @@ static inline attr_must_inline
 void r_viewport(int x, int y, int w, int h) {
 	r_viewport_rect((IntRect) { x, y, w, h });
 }
+
+BlendMode r_blend_compose(
+	BlendFactor src_color, BlendFactor dst_color, BlendOp color_op,
+	BlendFactor src_alpha, BlendFactor dst_alpha, BlendOp alpha_op
+);
+
+uint32_t r_blend_component(BlendMode mode, BlendModeComponent component);
+void r_blend_unpack(BlendMode mode, UnpackedBlendMode *dest) attr_nonnull(2);

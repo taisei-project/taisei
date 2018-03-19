@@ -123,9 +123,9 @@ static void stage5_update(void) {
 void iku_spell_bg(Boss *b, int t) {
 	fill_viewport(0, 300, 1, "stage5/spell_bg");
 
-	glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+	r_blend(BLEND_MOD);
 	fill_viewport(0, t*0.001, 0.7, "stage5/noise");
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 
 	r_mat_push();
 	r_mat_translate(0, -100, 0);

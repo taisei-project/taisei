@@ -142,8 +142,8 @@ typedef void (APIENTRY *tsglBindBufferRange_ptr)(GLenum target, GLuint index, GL
 typedef void (APIENTRY *tsglBindFramebuffer_ptr)(GLenum target, GLuint framebuffer);
 typedef void (GLAPIENTRY *tsglBindTexture_ptr)(GLenum target, GLuint texture);
 typedef void (APIENTRY *tsglBindVertexArray_ptr)(GLuint array);
-typedef void (GLAPIENTRY *tsglBlendEquation_ptr)(GLenum mode);
-typedef void (GLAPIENTRY *tsglBlendFunc_ptr)(GLenum sfactor, GLenum dfactor);
+typedef void (APIENTRY *tsglBlendEquationSeparate_ptr)(GLenum modeRGB, GLenum modeAlpha);
+typedef void (APIENTRY *tsglBlendFuncSeparate_ptr)(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
 typedef void (APIENTRY *tsglBufferData_ptr)(GLenum target, GLsizeiptr size, const void *data, GLenum usage);
 typedef void (APIENTRY *tsglBufferSubData_ptr)(GLenum target, GLintptr offset, GLsizeiptr size, const void *data);
 typedef void (GLAPIENTRY *tsglClear_ptr)(GLbitfield mask);
@@ -224,8 +224,8 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glBindFramebuffer
 #undef glBindTexture
 #undef glBindVertexArray
-#undef glBlendEquation
-#undef glBlendFunc
+#undef glBlendEquationSeparate
+#undef glBlendFuncSeparate
 #undef glBufferData
 #undef glBufferSubData
 #undef glClear
@@ -307,8 +307,8 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glBindFramebuffer tsglBindFramebuffer
 #define glBindTexture tsglBindTexture
 #define glBindVertexArray tsglBindVertexArray
-#define glBlendEquation tsglBlendEquation
-#define glBlendFunc tsglBlendFunc
+#define glBlendEquationSeparate tsglBlendEquationSeparate
+#define glBlendFuncSeparate tsglBlendFuncSeparate
 #define glBufferData tsglBufferData
 #define glBufferSubData tsglBufferSubData
 #define glClear tsglClear
@@ -392,8 +392,8 @@ GLDEF(glBindBufferRange, tsglBindBufferRange, tsglBindBufferRange_ptr) \
 GLDEF(glBindFramebuffer, tsglBindFramebuffer, tsglBindFramebuffer_ptr) \
 GLDEF(glBindTexture, tsglBindTexture, tsglBindTexture_ptr) \
 GLDEF(glBindVertexArray, tsglBindVertexArray, tsglBindVertexArray_ptr) \
-GLDEF(glBlendEquation, tsglBlendEquation, tsglBlendEquation_ptr) \
-GLDEF(glBlendFunc, tsglBlendFunc, tsglBlendFunc_ptr) \
+GLDEF(glBlendEquationSeparate, tsglBlendEquationSeparate, tsglBlendEquationSeparate_ptr) \
+GLDEF(glBlendFuncSeparate, tsglBlendFuncSeparate, tsglBlendFuncSeparate_ptr) \
 GLDEF(glBufferData, tsglBufferData, tsglBufferData_ptr) \
 GLDEF(glBufferSubData, tsglBufferSubData, tsglBufferSubData_ptr) \
 GLDEF(glClear, tsglClear, tsglClear_ptr) \
@@ -481,8 +481,8 @@ GLAPI void APIENTRY glBindBufferRange (GLenum target, GLuint index, GLuint buffe
 GLAPI void APIENTRY glBindFramebuffer (GLenum target, GLuint framebuffer);
 GLAPI void GLAPIENTRY glBindTexture( GLenum target, GLuint texture );
 GLAPI void APIENTRY glBindVertexArray (GLuint array);
-GLAPI void GLAPIENTRY glBlendEquation( GLenum mode );
-GLAPI void GLAPIENTRY glBlendFunc( GLenum sfactor, GLenum dfactor );
+GLAPI void APIENTRY glBlendEquationSeparate (GLenum modeRGB, GLenum modeAlpha);
+GLAPI void APIENTRY glBlendFuncSeparate (GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
 GLAPI void APIENTRY glBufferData (GLenum target, GLsizeiptr size, const void *data, GLenum usage);
 GLAPI void APIENTRY glBufferSubData (GLenum target, GLintptr offset, GLsizeiptr size, const void *data);
 GLAPI void GLAPIENTRY glClear( GLbitfield mask );
@@ -563,8 +563,8 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglBindFramebuffer glBindFramebuffer
 #define tsglBindTexture glBindTexture
 #define tsglBindVertexArray glBindVertexArray
-#define tsglBlendEquation glBlendEquation
-#define tsglBlendFunc glBlendFunc
+#define tsglBlendEquationSeparate glBlendEquationSeparate
+#define tsglBlendFuncSeparate glBlendFuncSeparate
 #define tsglBufferData glBufferData
 #define tsglBufferSubData glBufferSubData
 #define tsglClear glClear

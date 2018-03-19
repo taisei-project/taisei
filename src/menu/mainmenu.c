@@ -98,7 +98,7 @@ void draw_main_menu_bg(MenuData* menu) {
 	r_color4(1,1,1,1);
 	fill_screen("menu/mainmenubg");
 	r_color4(1,1,1,1);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 }
 
 static void update_main_menu(MenuData *menu) {
@@ -161,10 +161,10 @@ void draw_main_menu(MenuData *menu) {
 		r_mat_push();
 		r_mat_translate(posx,posy,0);
 		r_mat_scale(0.2,0.2,0.2);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		r_blend(BLEND_ADD);
 		r_mat_rotate_deg(2*(t%period),rx,ry,rz);
 		draw_sprite(0,0,"part/petal");
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		r_blend(BLEND_ALPHA);
 		r_enable(RCAP_CULL);
 		r_mat_pop();
 	}

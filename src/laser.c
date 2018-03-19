@@ -134,7 +134,7 @@ static void draw_laser_curve(Laser *laser) {
 void draw_lasers(int bgpass) {
 	Laser *laser;
 	r_texture(0, "part/lasercurve");
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	r_blend(BLEND_ADD);
 
 	for(laser = global.lasers; laser; laser = laser->next) {
 		if(bgpass != laser->in_background) {
@@ -150,7 +150,7 @@ void draw_lasers(int bgpass) {
 		}
 	}
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 	r_shader_standard();
 }
 

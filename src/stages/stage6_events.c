@@ -737,15 +737,14 @@ void BaryonCenter(Enemy *e, int t, bool render) {
 		return;
 	}
 
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-
+	r_blend(BLEND_ADD);
 	r_mat_push();
 	r_mat_translate(creal(e->pos), cimag(e->pos), 0);
 	r_mat_rotate_deg(2*t, 0, 0, 1);
 	draw_sprite(0, 0, "stage6/scythecircle");
 	r_mat_pop();
 	draw_sprite(creal(e->pos), cimag(e->pos), "stage6/baryon");
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 
 	l[0] = REF(creal(e->args[1]));
 	l[1] = REF(cimag(e->args[1]));
@@ -2538,8 +2537,7 @@ void elly_spellbg_toe(Boss *b, int t) {
 
 	draw_sprite(0,0,"stage6/spellbg_toe");
 	r_mat_pop();
-	glBlendFunc(GL_ZERO,GL_SRC_COLOR);
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 
 	float positions[][2] = {
 		{-160,0},
@@ -2583,19 +2581,19 @@ void elly_spellbg_toe(Boss *b, int t) {
 
 void elly_spellbg_classic(Boss *b, int t) {
 	fill_viewport(0,0,0.7,"stage6/spellbg_classic");
-	glBlendFunc(GL_ZERO,GL_SRC_COLOR);
+	r_blend(BLEND_MOD);
 	r_color4(1,1,1,0);
 	fill_viewport(0,-t*0.005,0.7,"stage6/spellbg_chalk");
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 	r_color4(1,1,1,1);
 }
 
 void elly_spellbg_modern(Boss *b, int t) {
 	fill_viewport(0,0,0.6,"stage6/spellbg_modern");
-	glBlendFunc(GL_ZERO,GL_SRC_COLOR);
+	r_blend(BLEND_MOD);
 	r_color4(1,1,1,0);
 	fill_viewport(0,-t*0.005,0.7,"stage6/spellbg_chalk");
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 	r_color4(1,1,1,1);
 }
 

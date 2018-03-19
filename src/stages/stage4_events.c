@@ -458,10 +458,10 @@ void kurumi_spell_bg(Boss *b, int time) {
 	r_color3(1,1,1);
 	r_mat_pop();
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	r_blend(BLEND_ADD);
 	fill_viewport(time/300.0, time/300.0, 0.5, "stage4/kurumibg2");
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 
 }
 
@@ -1075,7 +1075,7 @@ void kurumi_extra_drainer_draw(Projectile *p, int time) {
 
 	ColorTransform ct;
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	r_blend(BLEND_ADD);
 
 	static_clrtransform_particle(rgba(1.0, 0.5, 0.5, a), &ct);
 	recolor_apply_transform(&ct);
@@ -1089,7 +1089,7 @@ void kurumi_extra_drainer_draw(Projectile *p, int time) {
 	recolor_apply_transform(&ct);
 	loop_tex_line_p(org, targ, 24, time * 0.003, tex);
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 }
 
 int kurumi_extra_drainer(Projectile *p, int time) {
@@ -1144,11 +1144,9 @@ void kurumi_extra_swirl_visual(Enemy *e, int time, bool render) {
 		return;
 	}
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+	r_blend(BLEND_SUB);
 	Swirl(e, time, render);
-	glBlendEquation(GL_FUNC_ADD);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 }
 
 void kurumi_extra_fairy_visual(Enemy *e, int time, bool render) {
@@ -1157,11 +1155,11 @@ void kurumi_extra_fairy_visual(Enemy *e, int time, bool render) {
 		return;
 	}
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	r_blend(BLEND_ADD);
 	r_shader("negative");
 	Fairy(e, time, render);
 	r_shader_standard();
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 }
 
 void kurumi_extra_bigfairy_visual(Enemy *e, int time, bool render) {
@@ -1170,11 +1168,11 @@ void kurumi_extra_bigfairy_visual(Enemy *e, int time, bool render) {
 		return;
 	}
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	r_blend(BLEND_ADD);
 	r_shader("negative");
 	BigFairy(e, time, render);
 	r_shader_standard();
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 }
 
 int kurumi_extra_fairy(Enemy *e, int t) {

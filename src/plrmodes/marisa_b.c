@@ -204,14 +204,14 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 	marisa_common_masterspark_draw(BOMB_RECOVERY*tb);
 
 	r_mat_pop();
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	r_blend(BLEND_ADD);
 	r_color4(clr[0],clr[1],clr[2],clr[3]);
 	r_mat_rotate_deg(t*10,0,0,1);
 	draw_sprite(0,0,"fairy_circle");
 	r_mat_scale(0.6,0.6,1);
 	draw_sprite(0,0,"part/lightningball");
 	r_mat_pop();
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 
 	r_color4(1,1,1,1);
 }

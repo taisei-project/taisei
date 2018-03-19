@@ -659,7 +659,7 @@ void scuttle_spellbg(Boss *h, int time) {
 
 	r_color4(.1, .1, .1, a);
 	draw_sprite(VIEWPORT_W/2, VIEWPORT_H/2, "stage3/spellbg2");
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	r_blend(BLEND_ADD);
 
 	fill_viewport(-time/200.0 + 0.5, time/400.0+0.5, s, "stage3/spellbg1");
 
@@ -669,31 +669,35 @@ void scuttle_spellbg(Boss *h, int time) {
 	r_uniform_float("t", time/400.);
 	r_uniform_float("decay", 0.);
 	r_color4(1, 1, 1, 0.1); // XXX: why is this here?!
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	r_blend(BLEND_ADD);
 	r_uniform_vec2("plrpos", 0.5,0.5);
 	fill_viewport(0.0, 0.0, 1, "stage3/spellbg1");
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 	r_shader_standard();
 
 	r_color4(1, 1, 1, 1);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 }
 
 void wriggle_spellbg(Boss *b, int time) {
 	r_color4(1,1,1,1);
 	fill_viewport(0, 0, 768.0/1024.0, "stage3/wspellbg");
 	r_color4(1,1,1,0.5);
-	glBlendEquation(GL_FUNC_SUBTRACT);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	r_blend(r_blend_compose(
+		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB,
+		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB
+	));
 	fill_viewport(sin(time) * 0.015, time / 50.0, 1, "stage3/wspellclouds");
-	glBlendEquation(GL_FUNC_ADD);
+	r_blend(BLEND_ADD);
 	fill_viewport(0, time / 70.0, 1, "stage3/wspellswarm");
-	glBlendEquation(GL_FUNC_SUBTRACT);
+	r_blend(r_blend_compose(
+		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB,
+		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB
+	));
 	r_color4(1,1,1,0.4);
 	fill_viewport(cos(time) * 0.02, time / 30.0, 1, "stage3/wspellclouds");
 
-	glBlendEquation(GL_FUNC_ADD);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 	r_color4(1,1,1,1);
 }
 
@@ -727,9 +731,9 @@ static void wriggle_slave_visual(Enemy *e, int time, bool render) {
 		r_mat_rotate_deg(7*time,0,0,1);
 		r_color4(0.8,1,0.4,1);
 		r_mat_scale(0.7,0.7,1);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		r_blend(BLEND_ADD);
 		draw_sprite(0,0,"fairy_circle");
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		r_blend(BLEND_ALPHA);
 		r_color3(1,1,1);
 		r_mat_pop();
 	} else if(time % 5 == 0) {
@@ -835,12 +839,12 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 
 static void wriggle_slave_part_draw(Projectile *p, int t) {
 	float b = 1 - t / p->args[0];
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	r_blend(BLEND_ADD);
 	r_mat_push();
 	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
 	ProjDrawCore(p, multiply_colors(p->color, rgba(b, b, b, 1)));
 	r_mat_pop();
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 }
 
 static int wriggle_spell_slave(Enemy *e, int time) {
@@ -1157,11 +1161,11 @@ static void wriggle_fstorm_proj_draw(Projectile *p, int time) {
 
 	if(f > 0) {
 		p->sprite = get_sprite("proj/ball");
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+		r_blend(BLEND_ADD);
 		r_mat_scale(f,f,f);
 		ProjDrawCore(p,time);
 		r_mat_scale(1/f,1/f,1/f);
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+		r_blend(BLEND_ALPHA);
 		p->sprite = get_sprite("proj/rice");
 	}
 
