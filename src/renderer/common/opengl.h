@@ -183,6 +183,7 @@ typedef void (APIENTRY *tsglGetProgramiv_ptr)(GLuint program, GLenum pname, GLin
 typedef void (APIENTRY *tsglGetShaderInfoLog_ptr)(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
 typedef void (APIENTRY *tsglGetShaderiv_ptr)(GLuint shader, GLenum pname, GLint *params);
 typedef const GLubyte * (GLAPIENTRY *tsglGetString_ptr)(GLenum name);
+typedef const GLubyte * (APIENTRY *tsglGetStringi_ptr)(GLenum name, GLuint index);
 typedef GLuint (APIENTRY *tsglGetUniformBlockIndex_ptr)(GLuint program, const GLchar *uniformBlockName);
 typedef GLint (APIENTRY *tsglGetUniformLocation_ptr)(GLuint program, const GLchar *name);
 typedef void (APIENTRY *tsglLinkProgram_ptr)(GLuint program);
@@ -263,6 +264,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glGetShaderInfoLog
 #undef glGetShaderiv
 #undef glGetString
+#undef glGetStringi
 #undef glGetUniformBlockIndex
 #undef glGetUniformLocation
 #undef glLinkProgram
@@ -344,6 +346,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glGetShaderInfoLog tsglGetShaderInfoLog
 #define glGetShaderiv tsglGetShaderiv
 #define glGetString tsglGetString
+#define glGetStringi tsglGetStringi
 #define glGetUniformBlockIndex tsglGetUniformBlockIndex
 #define glGetUniformLocation tsglGetUniformLocation
 #define glLinkProgram tsglLinkProgram
@@ -427,6 +430,7 @@ GLDEF(glGetProgramiv, tsglGetProgramiv, tsglGetProgramiv_ptr) \
 GLDEF(glGetShaderInfoLog, tsglGetShaderInfoLog, tsglGetShaderInfoLog_ptr) \
 GLDEF(glGetShaderiv, tsglGetShaderiv, tsglGetShaderiv_ptr) \
 GLDEF(glGetString, tsglGetString, tsglGetString_ptr) \
+GLDEF(glGetStringi, tsglGetStringi, tsglGetStringi_ptr) \
 GLDEF(glGetUniformBlockIndex, tsglGetUniformBlockIndex, tsglGetUniformBlockIndex_ptr) \
 GLDEF(glGetUniformLocation, tsglGetUniformLocation, tsglGetUniformLocation_ptr) \
 GLDEF(glLinkProgram, tsglLinkProgram, tsglLinkProgram_ptr) \
@@ -514,6 +518,7 @@ GLAPI void APIENTRY glGetProgramiv (GLuint program, GLenum pname, GLint *params)
 GLAPI void APIENTRY glGetShaderInfoLog (GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
 GLAPI void APIENTRY glGetShaderiv (GLuint shader, GLenum pname, GLint *params);
 GLAPI const GLubyte * GLAPIENTRY glGetString( GLenum name );
+GLAPI const GLubyte *APIENTRY glGetStringi (GLenum name, GLuint index);
 GLAPI GLuint APIENTRY glGetUniformBlockIndex (GLuint program, const GLchar *uniformBlockName);
 GLAPI GLint APIENTRY glGetUniformLocation (GLuint program, const GLchar *name);
 GLAPI void APIENTRY glLinkProgram (GLuint program);
@@ -594,6 +599,7 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglGetShaderInfoLog glGetShaderInfoLog
 #define tsglGetShaderiv glGetShaderiv
 #define tsglGetString glGetString
+#define tsglGetStringi glGetStringi
 #define tsglGetUniformBlockIndex glGetUniformBlockIndex
 #define tsglGetUniformLocation glGetUniformLocation
 #define tsglLinkProgram glLinkProgram

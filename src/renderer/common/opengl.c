@@ -145,7 +145,27 @@ void check_gl_extensions(void) {
 	log_info("OpenGL vendor: %s", (const char*)glGetString(GL_VENDOR));
 	log_info("OpenGL renderer: %s", (const char*)glGetString(GL_RENDERER));
 	log_info("GLSL version: %s", glslv);
-	log_debug("Supported extensions: %s", (const char*)glGetString(GL_EXTENSIONS));
+
+	// XXX: this is the legacy way, maybe we shouldn't try this first
+	const char *exts = (const char*)glGetString(GL_EXTENSIONS);
+
+	if(exts) {
+		log_debug("Supported extensions: %s", exts);
+	} else {
+		void *buf;
+		SDL_RWops *writer = SDL_RWAutoBuffer(&buf, 256);
+		GLint num_extensions;
+
+		SDL_RWprintf(writer, "Supported extensions:");
+		glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions);
+
+		for(int i = 0; i < num_extensions; ++i) {
+			SDL_RWprintf(writer, " %s", (const char*)glGetStringi(GL_EXTENSIONS, i));
+		}
+
+		log_debug("%s", buf);
+		SDL_RWclose(writer);
+	}
 
 	check_glext_draw_instanced();
 	check_glext_debug_output();
