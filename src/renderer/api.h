@@ -116,8 +116,14 @@ typedef enum ClearBufferFlags {
 	CLEAR_ALL = CLEAR_COLOR | CLEAR_DEPTH,
 } ClearBufferFlags;
 
+typedef enum VsyncMode {
+	VSYNC_NONE,
+	VSYNC_NORMAL,
+	VSYNC_ADAPTIVE,
+} VsyncMode;
+
 /*
- * Creates an SDL window with proper flags, and if needed, sets up context and the r_* pointers.
+ * Creates an SDL window with proper flags, and, if needed, sets up a rendering context associated with it.
  * Must be called before anything else.
  */
 
@@ -174,6 +180,11 @@ RenderTarget* r_target_current(void);
 void r_clear(ClearBufferFlags flags);
 void r_clear_color4(float r, float g, float b, float a);
 void r_viewport_rect(IntRect rect);
+
+void r_swap(SDL_Window *window);
+
+VsyncMode r_vsync_set(VsyncMode mode);
+VsyncMode r_vsync_get(void);
 
 /*
  *	Provided by the API module

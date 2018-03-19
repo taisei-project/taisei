@@ -69,22 +69,16 @@ void video_set_viewport(void) {
 	video_get_viewport_size(&w,&h);
 
 	r_clear(CLEAR_COLOR);
-	glViewport((video.current.width - w) / 2, (video.current.height - h) / 2, w, h);
+	r_viewport((video.current.width - w) / 2, (video.current.height - h) / 2, w, h);
 }
 
 static void video_update_vsync(void) {
 	if(global.frameskip || config_get_int(CONFIG_VSYNC) == 0) {
 		SDL_GL_SetSwapInterval(0);
 	} else {
-		switch (config_get_int(CONFIG_VSYNC)) {
-			case 2: // adaptive
-				if(SDL_GL_SetSwapInterval(-1) < 0) {
-			case 1: // on
-					if(SDL_GL_SetSwapInterval(1) < 0) {
-						log_warn("SDL_GL_SetSwapInterval() failed: %s", SDL_GetError());
-					}
-				}
-			break;
+		switch(config_get_int(CONFIG_VSYNC)) {
+			case 1:  r_vsync_set(VSYNC_NORMAL);   break;
+			default: r_vsync_set(VSYNC_ADAPTIVE); break;
 		}
 	}
 }
@@ -135,7 +129,7 @@ static void video_check_fullscreen_sanity(void) {
 static void video_update_mode_settings(void) {
 	SDL_ShowCursor(false);
 	video_update_vsync();
-	SDL_GL_GetDrawableSize(video.window, &video.current.width, &video.current.height);
+	SDL_GetWindowSize(video.window, &video.current.width, &video.current.height);
 	video.real.width = video.current.width;
 	video.real.height = video.current.height;
 	video_set_viewport();
@@ -514,5 +508,5 @@ void video_shutdown(void) {
 }
 
 void video_swap_buffers(void) {
-	SDL_GL_SwapWindow(video.window);
+	r_swap(video.window);
 }

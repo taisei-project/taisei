@@ -260,7 +260,7 @@ static void apply_zoom_shader(void) {
 static void stage_render_bg(StageInfo *stage) {
 	r_target(resources.fbo_pairs.bg.back);
 	Texture *bg_tex = r_target_get_attachment(resources.fbo_pairs.bg.back, RENDERTARGET_ATTACHMENT_COLOR0);
-	glViewport(0, 0, bg_tex->w, bg_tex->h);
+	r_viewport(0, 0, bg_tex->w, bg_tex->h);
 	r_clear(CLEAR_ALL);
 
 	r_mat_push();
@@ -360,7 +360,7 @@ void stage_draw_scene(StageInfo *stage) {
 	// switch to foreground FBO
 	r_target(resources.fbo_pairs.fg.back);
 	Texture *fg_tex = r_target_get_attachment(resources.fbo_pairs.fg.back, RENDERTARGET_ATTACHMENT_COLOR0);
-	glViewport(0, 0, fg_tex->w, fg_tex->h);
+	r_viewport(0, 0, fg_tex->w, fg_tex->h);
 	set_ortho_ex(VIEWPORT_W, VIEWPORT_H);
 
 	if(draw_bg) {

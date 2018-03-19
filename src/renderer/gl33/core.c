@@ -159,6 +159,8 @@ static void gl33_init_context(SDL_Window *window) {
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	glBindBufferRange(GL_UNIFORM_BUFFER, 1, R.ubo, 0, sizeof(R.ubodata));
 
+	glGetIntegerv(GL_VIEWPORT, &R.viewport.x);
+
 	r_clear_color4(0, 0, 0, 1);
 
 	// FIXME: move this to gl33
@@ -191,14 +193,17 @@ SDL_Window* r_create_window(const char *title, int x, int y, int w, int h, uint3
 		libgl_loaded = true;
 	}
 
+	SDL_GLcontextFlag ctxflags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG;
+
+#ifdef DEBUG_GL
+	ctxflags |= SDL_GL_CONTEXT_DEBUG_FLAG;
+#endif
+
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-
-	#ifdef DEBUG_GL
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-	#endif
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, ctxflags);
 
 	SDL_Window *window = SDL_CreateWindow(title, x, y, w, h, flags | SDL_WINDOW_OPENGL);
 
@@ -230,6 +235,41 @@ void r_shutdown(void) {
 	glDeleteBuffers(1, &R.ubo);
 	unload_gl_library();
 	SDL_GL_DeleteContext(R.gl_context);
+}
+
+VsyncMode r_vsync_set(VsyncMode mode) {
+	int interval = 0, result;
+
+	switch(mode) {
+		case VSYNC_NONE:     interval =  0; break;
+		case VSYNC_NORMAL:   interval =  1; break;
+		case VSYNC_ADAPTIVE: interval = -1; break;
+		default:
+			log_fatal("Unknown mode 0x%x", mode);
+	}
+
+set_interval:
+	result = SDL_GL_SetSwapInterval(interval);
+
+	if(result < 0) {
+		log_warn("SDL_GL_SetSwapInterval(%i) failed: %s", interval, SDL_GetError());
+
+		// if adaptive vsync failed, try normal vsync
+		if(interval < 0) {
+			interval = 1;
+			goto set_interval;
+		}
+	}
+}
+
+VsyncMode r_vsync_get(void) {
+	int interval = SDL_GL_GetSwapInterval();
+
+	if(interval == 0) {
+		return VSYNC_NONE;
+	}
+
+	return interval > 0 ? VSYNC_NORMAL : VSYNC_ADAPTIVE;
 }
 
 static inline vec4* active_matrix(void) {
@@ -436,4 +476,9 @@ void r_viewport_rect(IntRect rect) {
 		memcpy(&R.viewport, &rect, sizeof(IntRect));
 		glViewport(rect.x, rect.y, rect.w, rect.h);
 	}
+}
+
+void r_swap(SDL_Window *window) {
+	r_target(NULL);
+	SDL_GL_SwapWindow(window);
 }
