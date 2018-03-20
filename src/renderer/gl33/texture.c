@@ -14,13 +14,32 @@
 #include "core.h"
 
 static inline GLuint r_filter_to_gl_filter(TextureFilterMode fmode) {
-	// TODO: implement this
-	return GL_LINEAR;
+	switch(fmode) {
+		case TEX_FILTER_DEFAULT:
+		case TEX_FILTER_LINEAR:
+			return GL_LINEAR;
+
+		case TEX_FILTER_NEAREST:
+			return GL_NEAREST;
+
+		default: UNREACHABLE;
+	}
 }
 
 static inline GLuint r_wrap_to_gl_wrap(TextureWrapMode wmode) {
-	// TODO: implement this
-	return GL_REPEAT;
+	switch(wmode) {
+		case TEX_WRAP_DEFAULT:
+		case TEX_WRAP_REPEAT:
+			return GL_REPEAT;
+
+		case TEX_WRAP_CLAMP:
+			return GL_CLAMP_TO_EDGE;
+
+		case TEX_WRAP_MIRROR:
+			return GL_MIRRORED_REPEAT;
+
+		default: UNREACHABLE;
+	}
 }
 
 static inline GLuint r_type_to_gl_internal_format(TextureType type) {
@@ -104,7 +123,12 @@ void r_texture_fill_region(Texture *tex, uint x, uint y, uint w, uint h, void *i
 	Texture *prev_tex = r_texture_current(unit);
 	r_texture_ptr(unit, tex);
 	r_flush();
-	glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
+	glTexSubImage2D(
+		GL_TEXTURE_2D, 0,
+		x, y, w, h,
+		r_type_to_gl_external_format(tex->type),
+		GL_UNSIGNED_BYTE,
+	image_data);
 	r_texture_ptr(unit, prev_tex);
 }
 
