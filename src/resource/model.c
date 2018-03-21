@@ -15,7 +15,6 @@
 #include "model.h"
 #include "list.h"
 #include "resource.h"
-#include "vbo.h"
 #include "renderer/api.h"
 
 ResourceHandler model_res_handler = {
@@ -45,14 +44,14 @@ bool check_model_path(const char *path) {
 
 typedef struct ModelLoadData {
 	ObjFileData *obj;
-	Vertex *verts;
+	StaticModelVertex *verts;
 	Model *model;
 } ModelLoadData;
 
 void* load_model_begin(const char *path, uint flags) {
 	Model *m = malloc(sizeof(Model));
 	ObjFileData *data = malloc(sizeof(ObjFileData));
-	Vertex *verts;
+	StaticModelVertex *verts;
 
 	parse_obj(path, data);
 
@@ -60,14 +59,15 @@ void* load_model_begin(const char *path, uint flags) {
 	m->indices = calloc(data->icount, sizeof(uint));
 	m->icount = data->icount;
 
-	verts = calloc(data->icount, sizeof(Vertex));
+	verts = calloc(data->icount, sizeof(StaticModelVertex));
 
 #define BADREF(filename,aux,n) { \
 	log_warn("OBJ file '%s': Index %d: bad %s index reference\n", filename, n, aux); \
 	goto fail; \
 }
 
-	memset(verts, 0, data->icount*sizeof(Vertex));
+	memset(verts, 0, data->icount*sizeof(StaticModelVertex));
+
 	for(uint i = 0; i < data->icount; i++) {
 		int xi, ni, ti;
 
@@ -75,15 +75,15 @@ void* load_model_begin(const char *path, uint flags) {
 		if(xi < 0 || xi >= data->xcount)
 			BADREF(path, "vertex", i);
 
-		memcpy(verts[i].x, data->xs[xi], sizeof(vec3));
+		memcpy(verts[i].position, data->xs[xi], sizeof(vec3));
 
 		if(data->tcount) {
 			ti = data->indices[i][1]-1;
 			if(ti < 0 || ti >= data->tcount)
 				BADREF(path, "texcoord", i);
 
-			verts[i].s = data->texcoords[ti][0];
-			verts[i].t = data->texcoords[ti][1];
+			verts[i].uv.s = data->texcoords[ti][0];
+			verts[i].uv.t = data->texcoords[ti][1];
 		}
 
 		if(data->ncount) {
@@ -91,7 +91,7 @@ void* load_model_begin(const char *path, uint flags) {
 			if(ni < 0 || ni >= data->ncount)
 				BADREF(path, "normal", ni);
 
-			memcpy(verts[i].n, data->normals[ni], sizeof(vec3));
+			memcpy(verts[i].normal, data->normals[ni], sizeof(vec3));
 		}
 
 		m->indices[i] = i;
@@ -116,8 +116,9 @@ fail:
 }
 
 void* load_model_end(void *opaque, const char *path, uint flags) {
+	VertexBuffer *vbuf= r_vertex_buffer_static_models();
 	ModelLoadData *ldata = opaque;
-	uint ioffset = _vbo.offset;
+	size_t ioffset = vbuf->offset;
 
 	if(!ldata) {
 		return NULL;
@@ -127,7 +128,7 @@ void* load_model_end(void *opaque, const char *path, uint flags) {
 		ldata->model->indices[i] += ioffset;
 	}
 
-	vbo_add_verts(&_vbo, ldata->verts, ldata->obj->icount);
+	r_vertex_buffer_append(vbuf, sizeof(StaticModelVertex) * ldata->model->icount, ldata->verts);
 
 	free(ldata->verts);
 	free_obj(ldata->obj);

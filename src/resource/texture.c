@@ -13,7 +13,6 @@
 #include "texture.h"
 #include "resource.h"
 #include "global.h"
-#include "vbo.h"
 #include "video.h"
 #include "renderer/api.h"
 

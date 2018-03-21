@@ -13,7 +13,6 @@
 #include <stdlib.h>
 #include "global.h"
 #include "list.h"
-#include "vbo.h"
 #include "stageobjects.h"
 
 static ProjArgs defaults_proj = {

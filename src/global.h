@@ -35,7 +35,6 @@
 #include "refs.h"
 #include "config.h"
 #include "fbo.h"
-#include "vbo.h"
 #include "resource/resource.h"
 #include "replay.h"
 #include "random.h"

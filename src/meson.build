@@ -102,7 +102,6 @@ taisei_src = files(
     'stageutils.c',
     'transition.c',
     'util.c',
-    'vbo.c',
     'version.c',
     'video.c',
 )

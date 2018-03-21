@@ -139,7 +139,7 @@ void draw_lasers(int bgpass) {
 			continue;
 		}
 
-		if(laser->shader && glext.draw_instanced) {
+		if(laser->shader) {
 			r_shader_ptr(laser->shader);
 			draw_laser_curve_instanced(laser);
 		} else {

@@ -16,7 +16,6 @@
 #include "menu/mainmenu.h"
 #include "events.h"
 #include "recolor.h"
-#include "vbo.h"
 
 #include "texture.h"
 #include "animation.h"
@@ -482,7 +481,6 @@ void free_resources(bool all) {
 		return;
 	}
 
-	delete_vbo(&_vbo);
 	delete_fbo_pair(&resources.fbo_pairs.bg);
 	delete_fbo_pair(&resources.fbo_pairs.fg);
 	delete_fbo_pair(&resources.fbo_pairs.rgba);

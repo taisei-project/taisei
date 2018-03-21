@@ -13,6 +13,8 @@
 #include "global.h"
 #include "video.h"
 
+#include "renderer/common/opengl.h"
+
 Video video;
 
 static VideoMode common_modes[] = {

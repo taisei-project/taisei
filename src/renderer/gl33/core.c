@@ -11,18 +11,16 @@
 #include "core.h"
 #include "../api.h"
 #include "../common/matstack.h"
-#include "shader_program.h"
 #include "texture.h"
+#include "shader_program.h"
 #include "render_target.h"
+#include "vertex_buffer.h"
 #include "resource/resource.h"
 #include "resource/model.h"
 #include "glm.h"
 
 // FIXME: initialize this elsewhere
 #include "recolor.h"
-
-// FIXME: move this to gl33
-#include "vbo.h"
 
 typedef struct UBOData {
 	mat4 modelview;
@@ -70,6 +68,9 @@ static struct {
 	CullFaceMode cull_mode;
 	GLenum gl_cull_mode;
 	DepthTestFunc depth_func;
+	GLenum gl_vbo;
+	GLenum gl_vao;
+	VertexBuffer *vbuf;
 
 	struct {
 		ShaderProgram *active;
@@ -79,7 +80,29 @@ static struct {
 	} progs;
 
 	SDL_GLContext *gl_context;
+
+	VertexBuffer models_vbuf;
+
+	struct {
+		hrtime_t last_draw;
+		hrtime_t draw_time;
+		uint draw_calls;
+	} stats;
 } R;
+
+static inline void gl33_stats_pre_draw(void) {
+	R.stats.last_draw = time_get();
+	R.stats.draw_calls++;
+}
+
+static inline void gl33_stats_post_draw(void) {
+	R.stats.draw_time += (time_get() - R.stats.last_draw);
+}
+
+static inline void gl33_stats_post_frame(void) {
+	// log_debug("%.20gs spent in %u draw calls", (double)R.stats.draw_time, R.stats.draw_calls);
+	memset(&R.stats, 0, sizeof(R.stats));
+}
 
 #ifdef DEBUG_GL
 static void APIENTRY gl33_debug(
@@ -177,7 +200,7 @@ static void gl33_init_context(SDL_Window *window) {
 
 	glGenBuffers(1, &R.ubo);
 	glBindBuffer(GL_UNIFORM_BUFFER, R.ubo);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(R.ubodata), &R.ubodata, GL_STREAM_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(R.ubodata), &R.ubodata, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	glBindBufferRange(GL_UNIFORM_BUFFER, 1, R.ubo, 0, sizeof(R.ubodata));
 
@@ -186,8 +209,15 @@ static void gl33_init_context(SDL_Window *window) {
 	r_clear_color4(0, 0, 0, 1);
 	r_clear(CLEAR_ALL);
 
-	// FIXME: move this to gl33
-	init_quadvbo();
+	R.vbuf = &R.models_vbuf;
+
+	r_vertex_buffer_create(&R.models_vbuf, 8192 * sizeof(StaticModelVertex), 3, (VertexAttribFormat[]) {
+		{ 3, VA_FLOAT, VA_CONVERT_FLOAT }, // position
+		{ 3, VA_FLOAT, VA_CONVERT_FLOAT }, // normal
+		{ 2, VA_FLOAT, VA_CONVERT_FLOAT }, // texcoord
+	});
+
+	gl33_vertex_buffer_append_quad_model(&R.models_vbuf);
 }
 
 static inline attr_must_inline uint32_t cap_flag(RendererCapability cap) {
@@ -292,6 +322,7 @@ void r_init(void) {
 
 void r_shutdown(void) {
 	glDeleteBuffers(1, &R.ubo);
+	r_vertex_buffer_destroy(&R.models_vbuf);
 	unload_gl_library();
 	SDL_GL_DeleteContext(R.gl_context);
 }
@@ -409,27 +440,70 @@ static void update_ubo(void) {
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(R.ubodata), &R.ubodata);
 }
 
+void r_vertex_buffer(VertexBuffer *vbuf) {
+	assert(vbuf->impl != NULL);
+
+	if(vbuf != R.vbuf) {
+		R.vbuf = vbuf;
+	}
+
+	if(R.gl_vao != vbuf->impl->gl_vao) {
+		R.gl_vao = vbuf->impl->gl_vao;
+		glBindVertexArray(R.gl_vao);
+	}
+
+	if(R.gl_vbo != vbuf->impl->gl_vbo) {
+		R.gl_vbo = vbuf->impl->gl_vbo;
+		glBindBuffer(GL_ARRAY_BUFFER, R.gl_vbo);
+	}
+}
+
+VertexBuffer* r_vertex_buffer_current(void) {
+	return R.vbuf;
+}
+
+VertexBuffer* r_vertex_buffer_static_models(void) {
+	return &R.models_vbuf;
+}
+
 void r_draw_quad(void) {
 	update_ubo();
+	VertexBuffer *vbuf_saved = R.vbuf;
+	r_vertex_buffer(&R.models_vbuf);
+	gl33_stats_pre_draw();
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	gl33_stats_post_draw();
+	r_vertex_buffer(vbuf_saved);
 }
 
 void r_draw_quad_instanced(uint instances) {
 	update_ubo();
+	VertexBuffer *vbuf_saved = R.vbuf;
+	r_vertex_buffer(&R.models_vbuf);
+	gl33_stats_pre_draw();
 	glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, instances);
+	gl33_stats_post_draw();
+	r_vertex_buffer(vbuf_saved);
 }
 
 void r_draw_model(const char *name) {
+	VertexBuffer *vbuf_saved = R.vbuf;
+	r_vertex_buffer(&R.models_vbuf);
+
 	Model *model = get_model(name);
 	r_mat_mode(MM_TEXTURE);
 	// TODO: get rid of this -1?
 	r_mat_scale(1, -1, 1); // every texture in taisei is actually read vertically mirrored. and I noticed that just now.
 
 	update_ubo();
+	gl33_stats_pre_draw();
 	glDrawElements(GL_TRIANGLES, model->icount, GL_UNSIGNED_INT, model->indices);
+	gl33_stats_post_draw();
 
 	r_mat_identity();
 	r_mat_mode(MM_MODELVIEW);
+
+	r_vertex_buffer(vbuf_saved);
 }
 
 void r_texture_ptr(uint unit, Texture *tex) {
@@ -549,6 +623,7 @@ void r_viewport_current(IntRect *out_rect) {
 void r_swap(SDL_Window *window) {
 	r_target(NULL);
 	SDL_GL_SwapWindow(window);
+	gl33_stats_post_frame();
 }
 
 static GLenum blendop_to_gl_blendop(BlendOp op) {

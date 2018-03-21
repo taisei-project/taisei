@@ -99,6 +99,46 @@ typedef struct RenderTarget {
 	RenderTargetImpl *impl;
 } RenderTarget;
 
+typedef struct VertexBufferImpl VertexBufferImpl;
+
+typedef struct VertexBuffer {
+	uint size;
+	uint offset;
+	VertexBufferImpl *impl;
+} VertexBuffer;
+
+typedef enum VertexAttribType {
+	VA_FLOAT,
+	VA_BYTE,
+	VA_UBYTE,
+	VA_SHORT,
+	VA_USHORT,
+	VA_INT,
+	VA_UINT,
+} VertexAttribType;
+
+typedef enum VertexAttribConversion {
+	VA_CONVERT_FLOAT,
+	VA_CONVERT_FLOAT_NORMALIZED,
+	VA_CONVERT_INT,
+} VertexAttribConversion;
+
+typedef struct VertexAttribFormat {
+	uint8_t size;
+	VertexAttribType type;
+	VertexAttribConversion coversion;
+} VertexAttribFormat;
+
+typedef struct StaticModelVertex {
+	vec3 position;
+	vec3 normal;
+
+	struct {
+		float s;
+		float t;
+	} uv;
+} StaticModelVertex;
+
 typedef enum UniformType {
 	UNIFORM_FLOAT,
 	UNIFORM_VEC2,
@@ -297,6 +337,16 @@ void r_target_destroy(RenderTarget *target) attr_nonnull(1);
 
 void r_target(RenderTarget *target);
 RenderTarget* r_target_current(void);
+
+void r_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, uint nattribs, VertexAttribFormat attribs[nattribs]) attr_nonnull(1, 4);
+void r_vertex_buffer_destroy(VertexBuffer *vbuf) attr_nonnull(1);
+void r_vertex_buffer_invalidate(VertexBuffer *vbuf) attr_nonnull(1);
+void r_vertex_buffer_write(VertexBuffer *vbuf, size_t offset, size_t data_size, void *data) attr_nonnull(1, 4);
+void r_vertex_buffer_append(VertexBuffer *vbuf, size_t data_size, void *data) attr_nonnull(1, 3);
+
+void r_vertex_buffer(VertexBuffer *vbuf) attr_nonnull(1);
+VertexBuffer* r_vertex_buffer_current(void) attr_returns_nonnull;
+VertexBuffer* r_vertex_buffer_static_models(void) attr_returns_nonnull;
 
 void r_clear(ClearBufferFlags flags);
 void r_clear_color4(float r, float g, float b, float a);

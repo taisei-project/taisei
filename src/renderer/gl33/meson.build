@@ -5,6 +5,7 @@ gl33_src = files(
     'shader_object.c',
     'shader_program.c',
     'texture.c',
+	'vertex_buffer.c'
 )
 
 gl33_src += r_matstack_src

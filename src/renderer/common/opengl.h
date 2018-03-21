@@ -161,6 +161,7 @@ typedef void (APIENTRY *tsglDeleteFramebuffers_ptr)(GLsizei n, const GLuint *fra
 typedef void (APIENTRY *tsglDeleteProgram_ptr)(GLuint program);
 typedef void (APIENTRY *tsglDeleteShader_ptr)(GLuint shader);
 typedef void (GLAPIENTRY *tsglDeleteTextures_ptr)(GLsizei n, const GLuint *textures);
+typedef void (APIENTRY *tsglDeleteVertexArrays_ptr)(GLsizei n, const GLuint *arrays);
 typedef void (GLAPIENTRY *tsglDepthFunc_ptr)(GLenum func);
 typedef void (GLAPIENTRY *tsglDepthMask_ptr)(GLboolean flag);
 typedef void (GLAPIENTRY *tsglDisable_ptr)(GLenum cap);
@@ -242,6 +243,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glDeleteProgram
 #undef glDeleteShader
 #undef glDeleteTextures
+#undef glDeleteVertexArrays
 #undef glDepthFunc
 #undef glDepthMask
 #undef glDisable
@@ -324,6 +326,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glDeleteProgram tsglDeleteProgram
 #define glDeleteShader tsglDeleteShader
 #define glDeleteTextures tsglDeleteTextures
+#define glDeleteVertexArrays tsglDeleteVertexArrays
 #define glDepthFunc tsglDepthFunc
 #define glDepthMask tsglDepthMask
 #define glDisable tsglDisable
@@ -408,6 +411,7 @@ GLDEF(glDeleteFramebuffers, tsglDeleteFramebuffers, tsglDeleteFramebuffers_ptr) 
 GLDEF(glDeleteProgram, tsglDeleteProgram, tsglDeleteProgram_ptr) \
 GLDEF(glDeleteShader, tsglDeleteShader, tsglDeleteShader_ptr) \
 GLDEF(glDeleteTextures, tsglDeleteTextures, tsglDeleteTextures_ptr) \
+GLDEF(glDeleteVertexArrays, tsglDeleteVertexArrays, tsglDeleteVertexArrays_ptr) \
 GLDEF(glDepthFunc, tsglDepthFunc, tsglDepthFunc_ptr) \
 GLDEF(glDepthMask, tsglDepthMask, tsglDepthMask_ptr) \
 GLDEF(glDisable, tsglDisable, tsglDisable_ptr) \
@@ -496,6 +500,7 @@ GLAPI void APIENTRY glDeleteFramebuffers (GLsizei n, const GLuint *framebuffers)
 GLAPI void APIENTRY glDeleteProgram (GLuint program);
 GLAPI void APIENTRY glDeleteShader (GLuint shader);
 GLAPI void GLAPIENTRY glDeleteTextures( GLsizei n, const GLuint *textures);
+GLAPI void APIENTRY glDeleteVertexArrays (GLsizei n, const GLuint *arrays);
 GLAPI void GLAPIENTRY glDepthFunc( GLenum func );
 GLAPI void GLAPIENTRY glDepthMask( GLboolean flag );
 GLAPI void GLAPIENTRY glDisable( GLenum cap );
@@ -577,6 +582,7 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglDeleteProgram glDeleteProgram
 #define tsglDeleteShader glDeleteShader
 #define tsglDeleteTextures glDeleteTextures
+#define tsglDeleteVertexArrays glDeleteVertexArrays
 #define tsglDepthFunc glDepthFunc
 #define tsglDepthMask glDepthMask
 #define tsglDisable glDisable
