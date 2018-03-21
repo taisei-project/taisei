@@ -153,7 +153,7 @@ void check_gl_extensions(void) {
 		log_debug("Supported extensions: %s", exts);
 	} else {
 		void *buf;
-		SDL_RWops *writer = SDL_RWAutoBuffer(&buf, 256);
+		SDL_RWops *writer = SDL_RWAutoBuffer(&buf, 1024);
 		GLint num_extensions;
 
 		SDL_RWprintf(writer, "Supported extensions:");
@@ -163,6 +163,7 @@ void check_gl_extensions(void) {
 			SDL_RWprintf(writer, " %s", (const char*)glGetStringi(GL_EXTENSIONS, i));
 		}
 
+		SDL_WriteU8(writer, 0);
 		log_debug("%s", buf);
 		SDL_RWclose(writer);
 	}

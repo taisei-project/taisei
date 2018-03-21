@@ -101,20 +101,29 @@ char* vstrfmt(const char *fmt, va_list args) {
 	size_t asize = 1;
 	char *out = NULL;
 
-	while(asize * 2 <= fmtlen)
+	while(asize <= fmtlen)
 		asize *= 2;
 
-	do {
-		asize *= 2;
+	for(;;) {
 		out = realloc(out, asize);
+
 		va_list nargs;
 		va_copy(nargs, args);
 		written = vsnprintf(out, asize, fmt, nargs);
 		va_end(nargs);
 
-	} while(written >= asize);
+		if(written < asize) {
+			break;
+		}
 
-	return realloc(out, strlen(out) + 1);
+		asize = written + 1;
+	}
+
+	if(asize > strlen(out) + 1) {
+		out = realloc(out, strlen(out) + 1);
+	}
+
+	return out;
 }
 
 char* strfmt(const char *fmt, ...) {
