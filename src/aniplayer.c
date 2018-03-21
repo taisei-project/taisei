@@ -99,23 +99,24 @@ void aniplayer_update(AniPlayer *plr) {
 }
 
 void play_animation_frame(Animation *ani, float x, float y, int frame) {
-	int mirror = frame/(ani->cols*ani->rows);
-	frame = frame%(ani->cols*ani->rows);
+	bool mirror = frame / (ani->cols * ani->rows);
+	frame = frame % (ani->cols * ani->rows);
+
+	CullFaceMode cull_saved = r_cull_current();
 
 	if(mirror) {
+		r_cull(CULL_FRONT);
 		r_mat_push();
-		glCullFace(GL_FRONT);
-		r_mat_translate(x,y,0);
-		x = y = 0;
-		r_mat_scale(-1,1,1);
-	}
-
-	draw_animation_p(x,y,frame%ani->cols,frame/ani->cols,ani);
-
-	if(mirror) {
-		glCullFace(GL_BACK);
+		r_mat_translate(x, y, 0);
+		r_mat_scale(-1, 1, 1);
+		draw_animation_p(0, 0, frame % ani->cols, frame / ani->cols, ani);
 		r_mat_pop();
+	} else {
+		r_cull(CULL_BACK);
+		draw_animation_p(x, y, frame % ani->cols, frame / ani->cols, ani);
 	}
+
+	r_cull(cull_saved);
 }
 
 void aniplayer_play(AniPlayer *plr, float x, float y) {

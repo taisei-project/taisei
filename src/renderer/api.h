@@ -16,9 +16,8 @@
 #include "resource/texture.h"
 
 typedef enum RendererCapability {
-	RCAP_DEPTH,
-	RCAP_CULL,
-	RCAP_BLEND,
+	RCAP_DEPTH_TEST,
+	RCAP_DEPTH_WRITE,
 
 	NUM_RCAPS
 } RendererCapability;
@@ -207,6 +206,24 @@ typedef struct UnpackedBlendMode {
 	UnpackedBlendModePart alpha;
 } UnpackedBlendMode;
 
+typedef enum CullFaceMode {
+	CULL_NONE   = 0x0,
+	CULL_FRONT  = 0x1,
+	CULL_BACK   = 0x2,
+	CULL_BOTH   = CULL_FRONT | CULL_BACK,
+} CullFaceMode;
+
+typedef enum DepthTestFunc {
+	DEPTH_NEVER,
+	DEPTH_ALWAYS,
+	DEPTH_EQUAL,
+	DEPTH_NOTEQUAL,
+	DEPTH_LESS,
+	DEPTH_LEQUAL,
+	DEPTH_GREATER,
+	DEPTH_GEQUAL,
+} DepthTestFunc;
+
 typedef enum VsyncMode {
 	VSYNC_NONE,
 	VSYNC_NORMAL,
@@ -228,8 +245,8 @@ SDL_Window* r_create_window(const char *title, int x, int y, int w, int h, uint3
 void r_init(void);
 void r_shutdown(void);
 
-void r_enable(RendererCapability cap);
-void r_disable(RendererCapability cap);
+void r_capability(RendererCapability cap, bool value);
+bool r_capability_current(RendererCapability cap);
 
 void r_mat_mode(MatrixMode mode);
 void r_mat_push(void);
@@ -242,7 +259,15 @@ void r_mat_ortho(float left, float right, float bottom, float top, float near, f
 void r_mat_perspective(float angle, float aspect, float near, float far);
 
 void r_color4(float r, float g, float b, float a);
+
 void r_blend(BlendMode mode);
+BlendMode r_blend_current(void);
+
+void r_cull(CullFaceMode mode);
+CullFaceMode r_cull_current(void);
+
+void r_depth_func(DepthTestFunc func);
+DepthTestFunc r_depth_func_current(void);
 
 void r_shader_ptr(ShaderProgram *prog) attr_nonnull(1);
 void r_shader_standard(void);
@@ -254,6 +279,7 @@ void r_uniform_ptr(Uniform *uniform, uint count, const void *data) attr_nonnull(
 
 void r_flush(void);
 void r_draw_quad(void);
+void r_draw_quad_instanced(uint instances);
 void r_draw_model(const char *model);
 
 void r_texture_create(Texture *tex, const TextureParams *params) attr_nonnull(1, 2);
@@ -274,16 +300,28 @@ RenderTarget* r_target_current(void);
 
 void r_clear(ClearBufferFlags flags);
 void r_clear_color4(float r, float g, float b, float a);
+
 void r_viewport_rect(IntRect rect);
+void r_viewport_current(IntRect *out_rect) attr_nonnull(1);
+
+void r_vsync(VsyncMode mode);
+VsyncMode r_vsync_current(void);
 
 void r_swap(SDL_Window *window);
-
-VsyncMode r_vsync_set(VsyncMode mode);
-VsyncMode r_vsync_get(void);
 
 /*
  *	Provided by the API module
  */
+
+static inline attr_must_inline
+void r_enable(RendererCapability cap) {
+	r_capability(cap, true);
+}
+
+static inline attr_must_inline
+void r_disable(RendererCapability cap) {
+	r_capability(cap, false);
+}
 
 static inline attr_must_inline
 ShaderProgram* r_shader_get(const char *name) {

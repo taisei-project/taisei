@@ -65,7 +65,11 @@ static struct {
 	UBOData ubodata;
 	IntRect viewport;
 	uint32_t capstates;
+	bool blend_enabled;
 	BlendMode blend_mode;
+	CullFaceMode cull_mode;
+	GLenum gl_cull_mode;
+	DepthTestFunc depth_func;
 
 	struct {
 		ShaderProgram *active;
@@ -133,12 +137,6 @@ static void gl33_debug_enable(void) {
 }
 #endif
 
-static inline attr_must_inline uint32_t cap_flag(RendererCapability cap) {
-	uint32_t idx = cap;
-	assert(idx < NUM_RCAPS);
-	return (1 << idx);
-}
-
 void gl33_debug_object_label(GLenum identifier, GLuint name, const char *label) {
 #ifdef DEBUG_GL
 	if(glext.KHR_debug) {
@@ -171,13 +169,11 @@ static void gl33_init_context(SDL_Window *window) {
 
 	R.texunits.active = R.texunits.indexed;
 
-	r_enable(RCAP_DEPTH);
-	r_enable(RCAP_CULL);
-	r_enable(RCAP_BLEND);
-
+	r_enable(RCAP_DEPTH_TEST);
+	r_enable(RCAP_DEPTH_WRITE);
+	r_depth_func(DEPTH_LEQUAL);
+	r_cull(CULL_BACK);
 	r_blend(BLEND_ALPHA);
-
-	glDepthFunc(GL_LEQUAL);
 
 	glGenBuffers(1, &R.ubo);
 	glBindBuffer(GL_UNIFORM_BUFFER, R.ubo);
@@ -194,30 +190,40 @@ static void gl33_init_context(SDL_Window *window) {
 	init_quadvbo();
 }
 
-static GLenum cap_to_glcap[] = {
-	[RCAP_DEPTH] = GL_DEPTH_TEST,
-	[RCAP_CULL] = GL_CULL_FACE,
-	[RCAP_BLEND] = GL_BLEND,
-};
+static inline attr_must_inline uint32_t cap_flag(RendererCapability cap) {
+	uint32_t idx = cap;
+	assert(idx < NUM_RCAPS);
+	return (1 << idx);
+}
 
-static_assert(sizeof(cap_to_glcap)/sizeof(GLenum) == NUM_RCAPS, "Some rcaps unhandled");
-
-void r_enable(RendererCapability cap) {
+void r_capability(RendererCapability cap, bool value) {
 	uint32_t flag = cap_flag(cap);
 
-	if(!(R.capstates & flag)) {
-		glEnable(cap_to_glcap[cap]);
+	if((bool)(R.capstates & flag) == value) {
+		return;
+	}
+
+	switch(cap) {
+		case RCAP_DEPTH_TEST:
+			(value ? glEnable : glDisable)(GL_DEPTH_TEST);
+			break;
+
+		case RCAP_DEPTH_WRITE:
+			glDepthMask(value);
+			break;
+
+		default: UNREACHABLE;
+	}
+
+	if(value) {
 		R.capstates |= flag;
+	} else {
+		R.capstates &= ~flag;
 	}
 }
 
-void r_disable(RendererCapability cap) {
-	uint32_t flag = cap_flag(cap);
-
-	if(R.capstates & flag) {
-		glDisable(cap_to_glcap[cap]);
-		R.capstates &= ~flag;
-	}
+bool r_capability_current(RendererCapability cap) {
+	return R.capstates & cap_flag(cap);
 }
 
 uint gl33_active_texunit(void) {
@@ -290,7 +296,7 @@ void r_shutdown(void) {
 	SDL_GL_DeleteContext(R.gl_context);
 }
 
-VsyncMode r_vsync_set(VsyncMode mode) {
+void r_vsync(VsyncMode mode) {
 	int interval = 0, result;
 
 	switch(mode) {
@@ -315,7 +321,7 @@ set_interval:
 	}
 }
 
-VsyncMode r_vsync_get(void) {
+VsyncMode r_vsync_current(void) {
 	int interval = SDL_GL_GetSwapInterval();
 
 	if(interval == 0) {
@@ -406,6 +412,11 @@ static void update_ubo(void) {
 void r_draw_quad(void) {
 	update_ubo();
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+}
+
+void r_draw_quad_instanced(uint instances) {
+	update_ubo();
+	glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, instances);
 }
 
 void r_draw_model(const char *name) {
@@ -531,6 +542,10 @@ void r_viewport_rect(IntRect rect) {
 	}
 }
 
+void r_viewport_current(IntRect *out_rect) {
+	memcpy(out_rect, &R.viewport, sizeof(R.viewport));
+}
+
 void r_swap(SDL_Window *window) {
 	r_target(NULL);
 	SDL_GL_SwapWindow(window);
@@ -566,6 +581,18 @@ static GLenum blendfactor_to_gl_blendfactor(BlendFactor factor) {
 }
 
 void r_blend(BlendMode mode) {
+	if(mode == BLEND_NONE) {
+		if(R.blend_enabled) {
+			glDisable(GL_BLEND);
+		}
+
+		return;
+	}
+
+	if(!R.blend_enabled) {
+		glEnable(GL_BLEND);
+	}
+
 	if(mode != R.blend_mode) {
 		static UnpackedBlendMode umode;
 		r_blend_unpack(mode, &umode);
@@ -583,4 +610,73 @@ void r_blend(BlendMode mode) {
 			blendfactor_to_gl_blendfactor(umode.alpha.dst)
 		);
 	}
+}
+
+BlendMode r_blend_current(void) {
+	return R.blend_mode;
+}
+
+static inline GLenum r_cull_to_gl_cull(CullFaceMode mode) {
+	switch(mode) {
+		case CULL_BACK:
+			return GL_BACK;
+
+		case CULL_FRONT:
+			return GL_FRONT;
+
+		case CULL_BOTH:
+			return GL_FRONT_AND_BACK;
+
+		default: UNREACHABLE;
+	}
+}
+
+void r_cull(CullFaceMode mode) {
+	if(mode != R.cull_mode) {
+		if(mode == CULL_NONE) {
+			glDisable(GL_CULL_FACE);
+		} else {
+			if(R.cull_mode == CULL_NONE) {
+				glEnable(GL_CULL_FACE);
+			}
+
+			GLenum glcull = r_cull_to_gl_cull(mode);
+
+			if(glcull != R.gl_cull_mode) {
+				glCullFace(glcull);
+				R.gl_cull_mode = glcull;
+			}
+		}
+
+		R.cull_mode = mode;
+	}
+}
+
+CullFaceMode r_cull_current(void) {
+	return R.cull_mode;
+}
+
+void r_depth_func(DepthTestFunc func) {
+	static GLenum func_to_glfunc[] = {
+		[DEPTH_NEVER]     = GL_NEVER,
+		[DEPTH_ALWAYS]    = GL_ALWAYS,
+		[DEPTH_EQUAL]     = GL_EQUAL,
+		[DEPTH_NOTEQUAL]  = GL_NOTEQUAL,
+		[DEPTH_LESS]      = GL_LESS,
+		[DEPTH_LEQUAL]    = GL_LEQUAL,
+		[DEPTH_GREATER]   = GL_GREATER,
+		[DEPTH_GEQUAL]    = GL_GEQUAL,
+	};
+
+	uint32_t idx = func;
+	assert(idx < sizeof(func_to_glfunc)/sizeof(GLenum));
+
+	if(R.depth_func != func) {
+		glDepthFunc(func_to_glfunc[idx]);
+		R.depth_func = func;
+	}
+}
+
+DepthTestFunc r_depth_func_current(void) {
+	return R.depth_func;
 }

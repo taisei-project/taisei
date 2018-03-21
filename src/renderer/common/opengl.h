@@ -196,7 +196,6 @@ typedef void (GLAPIENTRY *tsglTexParameterf_ptr)(GLenum target, GLenum pname, GL
 typedef void (GLAPIENTRY *tsglTexParameteri_ptr)(GLenum target, GLenum pname, GLint param);
 typedef void (GLAPIENTRY *tsglTexSubImage2D_ptr)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels);
 typedef void (APIENTRY *tsglUniform1fv_ptr)(GLint location, GLsizei count, const GLfloat *value);
-typedef void (APIENTRY *tsglUniform1i_ptr)(GLint location, GLint v0);
 typedef void (APIENTRY *tsglUniform1iv_ptr)(GLint location, GLsizei count, const GLint *value);
 typedef void (APIENTRY *tsglUniform1uiv_ptr)(GLint location, GLsizei count, const GLuint *value);
 typedef void (APIENTRY *tsglUniform2fv_ptr)(GLint location, GLsizei count, const GLfloat *value);
@@ -278,7 +277,6 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glTexParameteri
 #undef glTexSubImage2D
 #undef glUniform1fv
-#undef glUniform1i
 #undef glUniform1iv
 #undef glUniform1uiv
 #undef glUniform2fv
@@ -361,7 +359,6 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glTexParameteri tsglTexParameteri
 #define glTexSubImage2D tsglTexSubImage2D
 #define glUniform1fv tsglUniform1fv
-#define glUniform1i tsglUniform1i
 #define glUniform1iv tsglUniform1iv
 #define glUniform1uiv tsglUniform1uiv
 #define glUniform2fv tsglUniform2fv
@@ -446,7 +443,6 @@ GLDEF(glTexParameterf, tsglTexParameterf, tsglTexParameterf_ptr) \
 GLDEF(glTexParameteri, tsglTexParameteri, tsglTexParameteri_ptr) \
 GLDEF(glTexSubImage2D, tsglTexSubImage2D, tsglTexSubImage2D_ptr) \
 GLDEF(glUniform1fv, tsglUniform1fv, tsglUniform1fv_ptr) \
-GLDEF(glUniform1i, tsglUniform1i, tsglUniform1i_ptr) \
 GLDEF(glUniform1iv, tsglUniform1iv, tsglUniform1iv_ptr) \
 GLDEF(glUniform1uiv, tsglUniform1uiv, tsglUniform1uiv_ptr) \
 GLDEF(glUniform2fv, tsglUniform2fv, tsglUniform2fv_ptr) \
@@ -535,7 +531,6 @@ GLAPI void GLAPIENTRY glTexParameterf( GLenum target, GLenum pname, GLfloat para
 GLAPI void GLAPIENTRY glTexParameteri( GLenum target, GLenum pname, GLint param );
 GLAPI void GLAPIENTRY glTexSubImage2D( GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels );
 GLAPI void APIENTRY glUniform1fv (GLint location, GLsizei count, const GLfloat *value);
-GLAPI void APIENTRY glUniform1i (GLint location, GLint v0);
 GLAPI void APIENTRY glUniform1iv (GLint location, GLsizei count, const GLint *value);
 GLAPI void APIENTRY glUniform1uiv (GLint location, GLsizei count, const GLuint *value);
 GLAPI void APIENTRY glUniform2fv (GLint location, GLsizei count, const GLfloat *value);
@@ -617,7 +612,6 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglTexParameteri glTexParameteri
 #define tsglTexSubImage2D glTexSubImage2D
 #define tsglUniform1fv glUniform1fv
-#define tsglUniform1i glUniform1i
 #define tsglUniform1iv glUniform1iv
 #define tsglUniform1uiv glUniform1uiv
 #define tsglUniform2fv glUniform2fv

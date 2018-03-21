@@ -89,9 +89,7 @@ static void draw_laser_curve_instanced(Laser *l) {
 	r_uniform_float("width", l->width);
 	r_uniform_float("width_exponent", l->width_exponent);
 	r_uniform_int("span", c * 2);
-
-	r_flush();
-	glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, c*2);
+	r_draw_quad_instanced(c*2);
 }
 
 static void draw_laser_curve(Laser *laser) {

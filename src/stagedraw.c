@@ -265,7 +265,7 @@ static void stage_render_bg(StageInfo *stage) {
 
 	r_mat_push();
 		r_mat_translate(-(VIEWPORT_X+VIEWPORT_W/2), -(VIEWPORT_Y+VIEWPORT_H/2),0);
-		r_enable(RCAP_DEPTH);
+		r_enable(RCAP_DEPTH_TEST);
 		stage->procs->draw();
 	r_mat_pop();
 
@@ -408,7 +408,7 @@ void stage_draw_scene(StageInfo *stage) {
 	);
 
 	// switch to main framebuffer
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	r_target(NULL);
 	video_set_viewport();
 	set_ortho();
 

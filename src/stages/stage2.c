@@ -74,7 +74,7 @@ static void stage2_bg_leaves_draw(vec3 pos) {
 }
 
 static void stage2_bg_grass_draw(vec3 pos) {
-	r_disable(RCAP_DEPTH);
+	r_disable(RCAP_DEPTH_TEST);
 	r_texture(0, "stage2/roadgrass");
 
 	r_mat_push();
@@ -85,7 +85,7 @@ static void stage2_bg_grass_draw(vec3 pos) {
 	r_draw_quad();
 	r_mat_pop();
 
-	r_enable(RCAP_DEPTH);
+	r_enable(RCAP_DEPTH_TEST);
 }
 
 static void stage2_bg_ground_draw(vec3 pos) {

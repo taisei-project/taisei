@@ -149,47 +149,57 @@ static void* load_texture_begin(const char *path, uint flags) {
 	return converted_surf;
 }
 
-/*
 static void texture_post_load(Texture *tex) {
 	// this is a bit hacky and not very efficient,
 	// but it's still much faster than fixing up the texture on the CPU
 
-	GLuint fbotex, fbo;
-	ShaderProgram *sha = r_shader_get("texture_post_load");
+	ShaderProgram *shader_saved = r_shader_current();
+	Texture *texture_saved = r_texture_current(0);
+	RenderTarget *target_saved = r_target_current();
+	BlendMode blend_saved = r_blend_current();
+	CullFaceMode cull_saved = r_cull_current();
 
-	r_disable(RCAP_BLEND);
-	glGenTextures(1, &fbotex);
-	glBindTexture(GL_TEXTURE_2D, fbotex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex->w, tex->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glGenFramebuffers(1, &fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbotex, 0);
-	glBindTexture(GL_TEXTURE_2D, tex->gltex);
-	glUseProgram(sha->gl_handle);
-	glUniform1i(uniloc(sha, "width"), tex->w);
-	glUniform1i(uniloc(sha, "height"), tex->h);
+	Texture fbo_tex;
+	RenderTarget fbo;
+
+	r_blend(BLEND_NONE);
+	r_cull(CULL_FRONT);
+	r_texture_create(&fbo_tex, &(TextureParams) {
+		.width = tex->w,
+		.height = tex->h,
+		.type = tex->type,
+		.filter = {
+			.upscale = TEX_FILTER_LINEAR,
+			.downscale = TEX_FILTER_LINEAR,
+		},
+		.wrap = {
+			.s = TEX_WRAP_REPEAT,
+			.t = TEX_WRAP_REPEAT,
+		},
+	});
+	r_target_create(&fbo);
+	r_target_attach(&fbo, &fbo_tex, RENDERTARGET_ATTACHMENT_COLOR0);
+	r_texture_ptr(0, tex);
+	r_shader("texture_post_load");
+	r_uniform_int("width", tex->w);
+	r_uniform_int("height", tex->h);
 	r_mat_push();
 	r_mat_identity();
-	r_viewport(0, 0, tex->w, tex->h);
-	set_ortho_ex(tex->w, tex->h);
-	r_mat_translate(tex->w * 0.5, tex->h * 0.5, 0);
-	r_mat_scale(tex->w, tex->h, 1);
-	glDrawArrays(GL_TRIANGLE_FAN, 4, 4);
+	r_mat_ortho(0, 1, 1, 0, -1, 1);
+	r_mat_translate(0.5, 0.5, 0);
+	r_mat_scale(1, -1, 1);
+	r_draw_quad();
 	r_mat_pop();
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glDeleteFramebuffers(1, &fbo);
-	glDeleteTextures(1, &tex->gltex);
-	r_shader_standard();
-	video_set_viewport();
-	set_ortho();
-	r_enable(RCAP_BLEND);
-	tex->gltex = fbotex;
+	r_target(target_saved);
+	r_shader_ptr(shader_saved);
+	r_texture_ptr(0, texture_saved);
+	r_blend(blend_saved);
+	r_cull(cull_saved);
+	r_target_destroy(&fbo);
+	r_texture_destroy(tex);
+
+	memcpy(tex, &fbo_tex, sizeof(fbo_tex));
 }
-*/
 
 static void* load_texture_end(void *opaque, const char *path, uint flags) {
 	SDL_Surface *surface = opaque;
@@ -395,9 +405,7 @@ void fill_screen_p(Texture *tex) {
 }
 
 // draws a thin, w-width rectangle from point A to point B with a texture that
-// moving along the line.
-// As with fill_screen, the texture’s dimensions must be powers of two for the
-// loop to be gapless.
+// moves along the line.
 //
 void loop_tex_line_p(complex a, complex b, float w, float t, Texture *texture) {
 	complex d = b-a;

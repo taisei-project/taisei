@@ -50,22 +50,21 @@ void draw_boss_text(Alignment align, float x, float y, const char *text, Font *f
 void spell_opening(Boss *b, int time) {
 	complex x0 = VIEWPORT_W/2+I*VIEWPORT_H/3.5;
 	float f = clamp((time-40.)/60.,0,1);
-
 	complex x = x0 + (VIEWPORT_W+I*35 - x0) * f*(f+1)*0.5;
-
 	int strw = stringwidth(b->current->name,_fonts.standard);
+
+	CullFaceMode cull_saved = r_cull_current();
+	r_cull(CULL_NONE);
 
 	r_mat_push();
 	r_mat_translate(creal(x),cimag(x),0);
 	float scale = f+1.*(1-f)*(1-f)*(1-f);
 	r_mat_scale(scale,scale,1);
 	r_mat_rotate_deg(360*f,1,1,0);
-	r_disable(RCAP_CULL);
 	draw_boss_text(AL_Right, strw/2*(1-f), 0, b->current->name, _fonts.standard, rgb(1, 1, 1));
-	r_enable(RCAP_CULL);
 	r_mat_pop();
 
-	r_shader_standard();
+	r_cull(cull_saved);
 }
 
 void draw_extraspell_bg(Boss *boss, int time) {

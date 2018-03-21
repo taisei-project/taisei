@@ -63,6 +63,8 @@ static bool particle_filter(Projectile *part) {
 }
 
 static void stage1_bg_draw(vec3 pos) {
+	CullFaceMode cull_saved = r_cull_current();
+
 	r_mat_push();
 	r_mat_translate(0,stage_3d_context.cx[1]+500,0);
 	r_mat_rotate_deg(180,1,0,0);
@@ -80,15 +82,17 @@ static void stage1_bg_draw(vec3 pos) {
 	r_mat_rotate_deg(30,1,0,0);
 	r_mat_scale(.85,-.85,.85);
 	r_mat_translate(-VIEWPORT_W/2,0,0);
-	r_disable(RCAP_CULL);
-	r_disable(RCAP_DEPTH);
+	r_cull(CULL_NONE);
+	r_disable(RCAP_DEPTH_TEST);
 	draw_projectiles(global.particles, particle_filter);
 	draw_enemies(global.enemies);
-	if(global.boss)
+
+	if(global.boss) {
 		draw_boss(global.boss);
-	
+	}
+
 	r_mat_pop();
-	r_enable(RCAP_CULL);
+	r_cull(cull_saved);
 
 	r_shader_standard_notex();
 	r_mat_push();
@@ -97,7 +101,7 @@ static void stage1_bg_draw(vec3 pos) {
 	r_draw_quad();
 	r_color4(1,1,1,1);
 	r_mat_pop();
-	r_enable(RCAP_DEPTH);
+	r_enable(RCAP_DEPTH_TEST);
 	r_mat_pop();
 	r_shader_standard();
 }
@@ -110,7 +114,7 @@ static vec3 **stage1_bg_pos(vec3 p, float maxrange) {
 static void stage1_smoke_draw(vec3 pos) {
 	float d = fabsf(pos[1]-stage_3d_context.cx[1]);
 
-	r_disable(RCAP_DEPTH);
+	r_disable(RCAP_DEPTH_TEST);
 	r_mat_push();
 	r_mat_translate(pos[0]+200*sin(pos[1]), pos[1], pos[2]+200*sin(pos[1]/25.0));
 	r_mat_rotate_deg(90,-1,0,0);
@@ -122,7 +126,7 @@ static void stage1_smoke_draw(vec3 pos) {
 	r_color4(1,1,1,1);
 
 	r_mat_pop();
-	r_enable(RCAP_DEPTH);
+	r_enable(RCAP_DEPTH_TEST);
 }
 
 static vec3 **stage1_smoke_pos(vec3 p, float maxrange) {
@@ -155,25 +159,28 @@ static void stage1_update(void) {
 }
 
 static void stage1_reed_draw(vec3 pos) {
+	bool depthwrite_saved = r_capability_current(RCAP_DEPTH_WRITE);
+	DepthTestFunc depthfunc_saved = r_depth_func_current();
+
 	float d = -55+50*sin(pos[1]/25.0);
 	r_mat_push();
 	r_mat_translate(pos[0]+200*sin(pos[1]), pos[1], d);
 	r_mat_rotate_deg(90,1,0,0);
-//render_rotate_deg(90,0,0,1);
 	r_mat_scale(80,80,80);
 	r_color4(0.,0.05,0.05,1);
 	r_draw_model("reeds");
 	r_mat_translate(0,-d/80,0);
 	r_mat_scale(1,-1,1);
 	r_mat_translate(0,d/80,0);
-	glDepthFunc(GL_GREATER);
-	glDepthMask(GL_FALSE);
+	r_depth_func(DEPTH_GREATER);
+	r_disable(RCAP_DEPTH_WRITE);
 	r_color4(0.,0.05,0.05,0.5);
 	r_draw_model("reeds");
-	glDepthMask(GL_TRUE);
-	glDepthFunc(GL_LEQUAL);
 	r_color4(1,1,1,1);
 	r_mat_pop();
+
+	r_capability(RCAP_DEPTH_WRITE, depthwrite_saved);
+	r_depth_func(depthfunc_saved);
 }
 
 static void stage1_start(void) {

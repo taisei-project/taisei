@@ -66,6 +66,7 @@ void create_char_menu(MenuData *m) {
 
 void draw_char_menu(MenuData *menu) {
 	MenuData *mod = ((MenuData *)menu->context);
+	CullFaceMode cull_saved = r_cull_current();
 
 	draw_options_menu_bg(menu);
 	draw_menu_title(menu, "Select Character");
@@ -145,19 +146,17 @@ void draw_char_menu(MenuData *menu) {
 
 		if(i) {
 			r_mat_scale(-1,1,1);
-			glCullFace(GL_FRONT);
+			r_cull(CULL_FRONT);
+		} else {
+			r_cull(CULL_BACK);
 		}
 
 		draw_sprite(0, 0, "menu/arrow");
-
 		r_mat_pop();
-
-		if(i) {
-			glCullFace(GL_BACK);
-		}
 	}
 
 	r_color3(1,1,1);
+	r_cull(cull_saved);
 }
 
 bool char_menu_input_handler(SDL_Event *event, void *arg) {

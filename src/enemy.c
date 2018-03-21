@@ -175,6 +175,8 @@ void EnemyFlareShrink(Projectile *p, int t) {
 }
 
 void BigFairy(Enemy *e, int t, bool render) {
+	CullFaceMode cull_saved = r_cull_current();
+
 	if(!render) {
 		if(!(t % 5)) {
 			complex offset = (frand()-0.5)*30 + (frand()-0.5)*20.0*I;
@@ -201,20 +203,26 @@ void BigFairy(Enemy *e, int t, bool render) {
 	r_mat_pop();
 
 	if(e->dir) {
-		glCullFace(GL_FRONT);
-		r_mat_scale(-1,1,1);
+		r_cull(CULL_FRONT);
+		r_mat_scale(-1, 1, 1);
+	} else {
+		r_cull(CULL_BACK);
 	}
+
 	play_animation(get_ani("enemy/bigfairy"),0, 0, e->moving);
 	r_mat_pop();
 
-	if(e->dir)
-		glCullFace(GL_BACK);
+	if(e->dir) {
+		r_cull(cull_saved);
+	}
 }
 
 void Fairy(Enemy *e, int t, bool render) {
 	if(!render) {
 		return;
 	}
+
+	CullFaceMode cull_saved = r_cull_current();
 
 	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;
 	r_mat_push();
@@ -227,18 +235,20 @@ void Fairy(Enemy *e, int t, bool render) {
 	r_mat_pop();
 
 	r_mat_push();
+
 	if(e->dir) {
-		glCullFace(GL_FRONT);
-		r_mat_scale(-1,1,1);
+		r_cull(CULL_FRONT);
+		r_mat_scale(-1, 1, 1);
+	} else {
+		r_cull(CULL_BACK);
 	}
+
 	play_animation(get_ani("enemy/fairy"),0, 0, e->moving);
 	r_mat_pop();
 
 	r_mat_pop();
 
-	if(e->dir) {
-		glCullFace(GL_BACK);
-	}
+	r_cull(cull_saved);
 }
 
 void Swirl(Enemy *e, int t, bool render) {

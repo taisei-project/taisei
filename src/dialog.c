@@ -53,16 +53,20 @@ void delete_dialog(Dialog *d) {
 }
 
 void draw_dialog(Dialog *dialog) {
-	r_mat_push();
+	CullFaceMode cull_saved = r_cull_current();
 
+	r_mat_push();
 	r_mat_translate(VIEWPORT_W/2.0, VIEWPORT_H*3.0/4.0, 0);
 
 	int i;
 	for(i = 0; i < 2; i++) {
 		r_mat_push();
+
 		if(i == Left) {
-			glCullFace(GL_FRONT);
-			r_mat_scale(-1,1,1);
+			r_cull(CULL_FRONT);
+			r_mat_scale(-1, 1, 1);
+		} else {
+			r_cull(CULL_BACK);
 		}
 
 		if(global.frames - dialog->birthtime < 30)
@@ -93,8 +97,8 @@ void draw_dialog(Dialog *dialog) {
 		r_color3(1,1,1);
 	}
 
-	glCullFace(GL_BACK);
 	r_mat_pop();
+	r_cull(cull_saved);
 
 	r_mat_push();
 	if(global.frames - dialog->birthtime < 25)

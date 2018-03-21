@@ -88,22 +88,18 @@ void swap_fbo_pair(FBOPair *pair) {
 }
 
 void draw_fbo(FBO *fbo) {
+	CullFaceMode cull_saved = r_cull_current();
+	r_cull(CULL_FRONT);
+
 	r_mat_push();
 	r_texture_ptr(0, r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_COLOR0));
 	r_mat_scale(VIEWPORT_W, VIEWPORT_H, 1);
 	r_mat_translate(0.5, 0.5, 0);
-
 	r_mat_scale(1, -1, 1);
-	glCullFace(GL_FRONT);
 	r_draw_quad();
-	glCullFace(GL_BACK);
-
-	/*
-	r_flush();
-	glDrawArrays(GL_TRIANGLE_FAN, 4, 4);
-	*/
-
 	r_mat_pop();
+
+	r_cull(cull_saved);
 }
 
 void draw_fbo_viewport(FBO *fbo) {

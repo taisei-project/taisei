@@ -77,8 +77,8 @@ static void video_update_vsync(void) {
 		SDL_GL_SetSwapInterval(0);
 	} else {
 		switch(config_get_int(CONFIG_VSYNC)) {
-			case 1:  r_vsync_set(VSYNC_NORMAL);   break;
-			default: r_vsync_set(VSYNC_ADAPTIVE); break;
+			case 1:  r_vsync(VSYNC_NORMAL);   break;
+			default: r_vsync(VSYNC_ADAPTIVE); break;
 		}
 	}
 }

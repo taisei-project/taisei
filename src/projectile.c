@@ -373,15 +373,10 @@ static inline void draw_projectile(Projectile *proj) {
 		log_fatal("Projectile modified its state in draw rule");
 	}
 
-	/*
-	int cur_shader;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &cur_shader); // NOTE: this can be really slow!
-
-	if(cur_shader != recolor_get_shader()->gl_handle) {
+	if(r_shader_current() != recolor_get_shader()) {
 		set_debug_info(&proj->debug);
 		log_fatal("Bad shader after drawing projectile");
 	}
-	*/
 #else
 	proj->draw_rule(proj, global.frames - proj->birthtime);
 #endif
@@ -745,13 +740,15 @@ void Petal(Projectile *p, int t) {
 	float r = sqrt(x*x+y*y+z*z);
 	x /= r; y /= r; z /= r;
 
-	r_disable(RCAP_CULL);
+	CullFaceMode cull_saved = r_cull_current();
+
+	r_cull(CULL_NONE);
 	r_mat_push();
 	r_mat_translate(creal(p->pos), cimag(p->pos),0);
 	r_mat_rotate_deg(t*4.0 + cimag(p->args[3]), x, y, z);
 	ProjDrawCore(p, p->color);
 	r_mat_pop();
-	r_enable(RCAP_CULL);
+	r_cull(cull_saved);
 }
 
 void petal_explosion(int n, complex pos) {
@@ -768,7 +765,7 @@ void petal_explosion(int n, complex pos) {
 				afrand(4) + afrand(5)*I,
 				afrand(1) + 360.0*I*afrand(0),
 			},
-			// hack: never reflect these in stage1 water (GL_CULL_FACE conflict)
+			// TODO: maybe remove this noreflect, there shouldn't be a cull mode mess anymore
 			.flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
 		);
 	}
