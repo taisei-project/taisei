@@ -125,10 +125,10 @@ void* load_model_end(void *opaque, const char *path, uint flags) {
 	}
 
 	for(int i = 0; i < ldata->obj->icount; ++i) {
-		ldata->model->indices[i] += ioffset;
+		ldata->model->indices[i] += ioffset / sizeof(StaticModelVertex);
 	}
 
-	r_vertex_buffer_append(vbuf, sizeof(StaticModelVertex) * ldata->model->icount, ldata->verts);
+	r_vertex_buffer_append(vbuf, sizeof(StaticModelVertex) * ldata->obj->icount, ldata->verts);
 
 	free(ldata->verts);
 	free_obj(ldata->obj);
