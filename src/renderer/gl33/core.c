@@ -203,7 +203,7 @@ static void gl33_init_context(SDL_Window *window) {
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(R.ubodata), &R.ubodata, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	glBindBufferRange(GL_UNIFORM_BUFFER, 1, R.ubo, 0, sizeof(R.ubodata));
-
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 	glGetIntegerv(GL_VIEWPORT, &R.viewport.x);
 
 	r_clear_color4(0, 0, 0, 1);
@@ -754,4 +754,13 @@ void r_depth_func(DepthTestFunc func) {
 
 DepthTestFunc r_depth_func_current(void) {
 	return R.depth_func;
+}
+
+uint8_t* r_screenshot(uint *out_width, uint *out_height) {
+	uint8_t *pixels = malloc(R.viewport.w * R.viewport.h * 3);
+	glReadBuffer(GL_FRONT);
+	glReadPixels(R.viewport.x, R.viewport.y, R.viewport.w, R.viewport.h, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+	*out_width = R.viewport.w;
+	*out_height = R.viewport.h;
+	return pixels;
 }

@@ -12,8 +12,7 @@
 
 #include "global.h"
 #include "video.h"
-
-#include "renderer/common/opengl.h"
+#include "renderer/api.h"
 
 Video video;
 
@@ -61,10 +60,10 @@ void video_get_viewport_size(int *width, int *height) {
 	} else if(r < VIDEO_ASPECT_RATIO) {
 		h = w / VIDEO_ASPECT_RATIO;
 	}
+
 	*width = w;
 	*height = h;
 }
-
 
 void video_set_viewport(void) {
 	int w, h;
@@ -76,7 +75,7 @@ void video_set_viewport(void) {
 
 static void video_update_vsync(void) {
 	if(global.frameskip || config_get_int(CONFIG_VSYNC) == 0) {
-		SDL_GL_SetSwapInterval(0);
+		r_vsync(VSYNC_NONE);
 	} else {
 		switch(config_get_int(CONFIG_VSYNC)) {
 			case 1:  r_vsync(VSYNC_NORMAL);   break;
@@ -262,22 +261,16 @@ void video_set_mode(int w, int h, bool fs, bool resizable) {
 
 void video_take_screenshot(void) {
 	SDL_RWops *out;
-	char *data;
 	char outfile[128], *outpath, *syspath;
 	time_t rawtime;
 	struct tm * timeinfo;
-	int w, h, rw, rh;
+	uint width, height;
+	uint8_t *pixels = r_screenshot(&width, &height);
 
-	w = video.current.width;
-	h = video.current.height;
-
-	rw = video.real.width;
-	rh = video.real.height;
-
-	rw = max(rw, w);
-	rh = max(rh, h);
-
-	data = malloc(3 * rw * rh);
+	if(!pixels) {
+		log_warn("Failed to take a screenshot");
+		return;
+	}
 
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
@@ -293,46 +286,40 @@ void video_take_screenshot(void) {
 
 	if(!out) {
 		log_warn("VFS error: %s", vfs_get_error());
-		free(data);
+		free(pixels);
 		return;
 	}
 
-	glReadBuffer(GL_FRONT);
-	glReadPixels(0, 0, rw, rh, GL_RGB, GL_UNSIGNED_BYTE, data);
-
 	png_structp png_ptr;
 	png_infop info_ptr;
-	png_byte **row_pointers;
 
 	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	png_setup_error_handlers(png_ptr);
 	info_ptr = png_create_info_struct(png_ptr);
 
 	png_set_IHDR(
-		png_ptr, info_ptr, w, h, 8, PNG_COLOR_TYPE_RGB,
+		png_ptr, info_ptr, width, height, 8, PNG_COLOR_TYPE_RGB,
 		PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT
 	);
 
-	row_pointers = png_malloc(png_ptr, h*sizeof(png_byte *));
+	png_byte *row_pointers[height];
 
-	for(int y = 0; y < h; y++) {
-		row_pointers[y] = png_malloc(png_ptr, 8*3*w);
-
-		memcpy(row_pointers[y], data + rw*3*(h-1-y), w*3);
+	for(int y = 0; y < height; y++) {
+		row_pointers[y] = png_malloc(png_ptr, width * 3);
+		memcpy(row_pointers[y], pixels + width * 3 * (height - 1 - y), width * 3);
 	}
 
 	png_init_rwops_write(png_ptr, out);
 	png_set_rows(png_ptr, info_ptr, row_pointers);
 	png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
 
-	for(int y = 0; y < h; y++)
+	for(int y = 0; y < height; y++) {
 		png_free(png_ptr, row_pointers[y]);
-
-	png_free(png_ptr, row_pointers);
+	}
 
 	png_destroy_write_struct(&png_ptr, &info_ptr);
 
-	free(data);
+	free(pixels);
 	SDL_RWclose(out);
 }
 

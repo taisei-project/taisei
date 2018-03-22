@@ -366,6 +366,8 @@ VsyncMode r_vsync_current(void);
 
 void r_swap(SDL_Window *window);
 
+uint8_t* r_screenshot(uint *out_width, uint *out_height) attr_nodiscard attr_nonnull(1, 2);
+
 /*
  *	Provided by the API module
  */

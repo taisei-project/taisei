@@ -182,6 +182,7 @@ typedef GLuint (APIENTRY *tsglGetUniformBlockIndex_ptr)(GLuint program, const GL
 typedef GLint (APIENTRY *tsglGetUniformLocation_ptr)(GLuint program, const GLchar *name);
 typedef void (APIENTRY *tsglLinkProgram_ptr)(GLuint program);
 typedef void (APIENTRY *tsglObjectLabel_ptr)(GLenum identifier, GLuint name, GLsizei length, const GLchar *label);
+typedef void (GLAPIENTRY *tsglPixelStorei_ptr)(GLenum pname, GLint param);
 typedef void (GLAPIENTRY *tsglReadBuffer_ptr)(GLenum mode);
 typedef void (GLAPIENTRY *tsglReadPixels_ptr)(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels);
 typedef void (APIENTRY *tsglShaderSource_ptr)(GLuint shader, GLsizei count, const GLchar *const*string, const GLint *length);
@@ -262,6 +263,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glGetUniformLocation
 #undef glLinkProgram
 #undef glObjectLabel
+#undef glPixelStorei
 #undef glReadBuffer
 #undef glReadPixels
 #undef glShaderSource
@@ -343,6 +345,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glGetUniformLocation tsglGetUniformLocation
 #define glLinkProgram tsglLinkProgram
 #define glObjectLabel tsglObjectLabel
+#define glPixelStorei tsglPixelStorei
 #define glReadBuffer tsglReadBuffer
 #define glReadPixels tsglReadPixels
 #define glShaderSource tsglShaderSource
@@ -426,6 +429,7 @@ GLDEF(glGetUniformBlockIndex, tsglGetUniformBlockIndex, tsglGetUniformBlockIndex
 GLDEF(glGetUniformLocation, tsglGetUniformLocation, tsglGetUniformLocation_ptr) \
 GLDEF(glLinkProgram, tsglLinkProgram, tsglLinkProgram_ptr) \
 GLDEF(glObjectLabel, tsglObjectLabel, tsglObjectLabel_ptr) \
+GLDEF(glPixelStorei, tsglPixelStorei, tsglPixelStorei_ptr) \
 GLDEF(glReadBuffer, tsglReadBuffer, tsglReadBuffer_ptr) \
 GLDEF(glReadPixels, tsglReadPixels, tsglReadPixels_ptr) \
 GLDEF(glShaderSource, tsglShaderSource, tsglShaderSource_ptr) \
@@ -513,6 +517,7 @@ GLAPI GLuint APIENTRY glGetUniformBlockIndex (GLuint program, const GLchar *unif
 GLAPI GLint APIENTRY glGetUniformLocation (GLuint program, const GLchar *name);
 GLAPI void APIENTRY glLinkProgram (GLuint program);
 GLAPI void APIENTRY glObjectLabel (GLenum identifier, GLuint name, GLsizei length, const GLchar *label);
+GLAPI void GLAPIENTRY glPixelStorei( GLenum pname, GLint param );
 GLAPI void GLAPIENTRY glReadBuffer( GLenum mode );
 GLAPI void GLAPIENTRY glReadPixels( GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels );
 GLAPI void APIENTRY glShaderSource (GLuint shader, GLsizei count, const GLchar *const*string, const GLint *length);
@@ -593,6 +598,7 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglGetUniformLocation glGetUniformLocation
 #define tsglLinkProgram glLinkProgram
 #define tsglObjectLabel glObjectLabel
+#define tsglPixelStorei glPixelStorei
 #define tsglReadBuffer glReadBuffer
 #define tsglReadPixels glReadPixels
 #define tsglShaderSource glShaderSource
