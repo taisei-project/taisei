@@ -68,6 +68,7 @@ static struct {
 	GLenum gl_vbo;
 	GLenum gl_vao;
 	VertexBuffer *vbuf;
+	GLuint gl_prog;
 
 	struct {
 		ShaderProgram *active;
@@ -553,10 +554,12 @@ void r_shader_ptr(ShaderProgram *prog) {
 	assert(prog != NULL);
 	assert(prog->gl_handle != 0);
 
-	R.progs.pending = prog;
-	// update_prog();
-	glUseProgram(prog->gl_handle);
-	R.progs.active = prog;
+	if(R.gl_prog != prog->gl_handle) {
+		glUseProgram(prog->gl_handle);
+		R.gl_prog = prog->gl_handle;
+		R.progs.active = prog;
+		R.progs.pending = prog;
+	}
 }
 
 void r_shader_standard(void) {
