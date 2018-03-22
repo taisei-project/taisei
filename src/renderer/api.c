@@ -97,3 +97,22 @@ void r_blend_unpack(BlendMode mode, UnpackedBlendMode *dest) {
 	dest->alpha.src = r_blend_component(mode, BLENDCOMP_SRC_ALPHA);
 	dest->alpha.dst = r_blend_component(mode, BLENDCOMP_DST_ALPHA);
 }
+
+const UniformTypeInfo* r_uniform_type_info(UniformType type) {
+	static UniformTypeInfo uniform_typemap[] = {
+		[UNIFORM_FLOAT]   = {  1, sizeof(float) },
+		[UNIFORM_VEC2]    = {  2, sizeof(float) },
+		[UNIFORM_VEC3]    = {  3, sizeof(float) },
+		[UNIFORM_VEC4]    = {  4, sizeof(float) },
+		[UNIFORM_INT]     = {  1, sizeof(int)   },
+		[UNIFORM_IVEC2]   = {  2, sizeof(int)   },
+		[UNIFORM_IVEC3]   = {  3, sizeof(int)   },
+		[UNIFORM_IVEC4]   = {  4, sizeof(int)   },
+		[UNIFORM_SAMPLER] = {  1, sizeof(int)   },
+		[UNIFORM_MAT3]    = {  9, sizeof(float) },
+		[UNIFORM_MAT4]    = { 16, sizeof(float) },
+	};
+
+	assert((uint)type < sizeof(uniform_typemap)/sizeof(UniformTypeInfo));
+	return uniform_typemap + type;
+}

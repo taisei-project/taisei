@@ -154,6 +154,12 @@ typedef enum UniformType {
 	UNIFORM_UNKNOWN,
 } UniformType;
 
+typedef struct UniformTypeInfo {
+	// Refers to vector elements, not array elements.
+	uint8_t elements;
+	uint8_t element_size;
+} UniformTypeInfo;
+
 typedef struct Uniform Uniform;
 
 typedef enum ClearBufferFlags {
@@ -316,6 +322,7 @@ ShaderProgram* r_shader_current(void) attr_returns_nonnull;
 
 Uniform* r_shader_uniform(ShaderProgram *prog, const char *uniform_name) attr_nonnull(1, 2);
 void r_uniform_ptr(Uniform *uniform, uint count, const void *data) attr_nonnull(3);
+UniformType r_uniform_type(Uniform *uniform);
 
 void r_flush(void);
 void r_draw_quad(void);
@@ -519,3 +526,5 @@ BlendMode r_blend_compose(
 
 uint32_t r_blend_component(BlendMode mode, BlendModeComponent component);
 void r_blend_unpack(BlendMode mode, UnpackedBlendMode *dest) attr_nonnull(2);
+
+const UniformTypeInfo* r_uniform_type_info(UniformType type) attr_returns_nonnull;

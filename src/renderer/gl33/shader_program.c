@@ -17,6 +17,10 @@ Uniform* r_shader_uniform(ShaderProgram *prog, const char *uniform_name) {
 	return hashtable_get_string(prog->uniforms, uniform_name);
 }
 
+UniformType r_uniform_type(Uniform *uniform) {
+	return uniform->type;
+}
+
 static void uset_float(Uniform *uniform, uint count, const void *data) {
 	glUniform1fv(uniform->location, count, (float*)data);
 }
@@ -89,6 +93,26 @@ void r_uniform_ptr(Uniform *uniform, uint count, const void *data) {
 	r_shader_ptr(prev_prog);
 }
 
+typedef struct UniformTypemapEntry {
+	GLuint gl_type;
+	size_t element_size;
+	uint8_t elements;
+} UniformTypemapEntry;
+
+static UniformTypemapEntry uniform_typemap[] = {
+	[UNIFORM_FLOAT]   = { GL_FLOAT,      sizeof(GLfloat),  1 },
+	[UNIFORM_VEC2]    = { GL_FLOAT_VEC2, sizeof(GLfloat),  2 },
+	[UNIFORM_VEC3]    = { GL_FLOAT_VEC3, sizeof(GLfloat),  3 },
+	[UNIFORM_VEC4]    = { GL_FLOAT_VEC4, sizeof(GLfloat),  4 },
+	[UNIFORM_INT]     = { GL_INT,        sizeof(GLint),    1 },
+	[UNIFORM_IVEC2]   = { GL_INT_VEC2,   sizeof(GLint),    2 },
+	[UNIFORM_IVEC3]   = { GL_INT_VEC3,   sizeof(GLint),    3 },
+	[UNIFORM_IVEC4]   = { GL_INT_VEC4,   sizeof(GLint),    4 },
+	[UNIFORM_SAMPLER] = { GL_INT,        sizeof(GLint),    1 },
+	[UNIFORM_MAT3]    = { GL_FLOAT_MAT3, sizeof(GLfloat),  9 },
+	[UNIFORM_MAT4]    = { GL_FLOAT_MAT4, sizeof(GLfloat), 16 },
+};
+
 static void cache_uniforms(ShaderProgram *prog) {
 	int maxlen = 0;
 	GLint unicount;
@@ -138,10 +162,6 @@ static void cache_uniforms(ShaderProgram *prog) {
 		uni.location = loc;
 		hashtable_set_string(prog->uniforms, name, memdup(&uni, sizeof(uni)));
 	}
-
-	#ifdef DEBUG_GL
-	hashtable_print_stringkeys(prog->uniforms);
-	#endif
 }
 
 /*

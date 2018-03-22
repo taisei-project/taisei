@@ -83,34 +83,6 @@ static bool extension_supported(const char *ext) {
 	return SDL_GL_ExtensionSupported(ext);
 }
 
-static void check_glext_draw_instanced(void) {
-	if((glext.draw_instanced = (
-		(glext.ARB_draw_instanced = extension_supported("GL_ARB_draw_instanced")) &&
-		(glext.DrawArraysInstanced = tsglDrawArraysInstancedARB)
-	))) {
-		log_debug("Using GL_ARB_draw_instanced");
-		return;
-	} else {
-		glext.ARB_draw_instanced = false;
-	}
-
-	if((glext.draw_instanced = (
-		(glext.EXT_draw_instanced = extension_supported("GL_EXT_draw_instanced")) &&
-		(glext.DrawArraysInstanced = tsglDrawArraysInstancedARB)
-	))) {
-		log_debug("Using GL_EXT_draw_instanced");
-		return;
-	} else {
-		glext.EXT_draw_instanced = false;
-	}
-
-	log_warn(
-		"glDrawArraysInstanced is not supported. "
-		"Your video driver is probably bad, or very old, or both. "
-		"Expect terrible performance."
-	);
-}
-
 static void check_glext_debug_output(void) {
 	if((glext.debug_output = (
 		(glext.KHR_debug = extension_supported("GL_KHR_debug")) &&
@@ -168,7 +140,6 @@ void check_gl_extensions(void) {
 		SDL_RWclose(writer);
 	}
 
-	check_glext_draw_instanced();
 	check_glext_debug_output();
 }
 

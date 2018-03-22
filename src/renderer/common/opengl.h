@@ -7,11 +7,6 @@
 # You can force the script to pick up functions that are not directly called in the code here
 
 force_funcs = {
-	'glDrawArraysInstancedEXT',
-	'glDrawArraysInstancedARB',
-	'glGetShaderiv',
-	'glGetShaderInfoLog',
-	'glGetProgramInfoLog',
 	'glDebugMessageControlARB',
 	'glDebugMessageCallbackARB',
 }
@@ -167,8 +162,6 @@ typedef void (GLAPIENTRY *tsglDepthMask_ptr)(GLboolean flag);
 typedef void (GLAPIENTRY *tsglDisable_ptr)(GLenum cap);
 typedef void (GLAPIENTRY *tsglDrawArrays_ptr)(GLenum mode, GLint first, GLsizei count);
 typedef void (APIENTRY *tsglDrawArraysInstanced_ptr)(GLenum mode, GLint first, GLsizei count, GLsizei instancecount);
-typedef void (APIENTRY *tsglDrawArraysInstancedARB_ptr)(GLenum mode, GLint first, GLsizei count, GLsizei primcount);
-typedef void (APIENTRY *tsglDrawArraysInstancedEXT_ptr)(GLenum mode, GLint start, GLsizei count, GLsizei primcount);
 typedef void (GLAPIENTRY *tsglDrawElements_ptr)(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices);
 typedef void (GLAPIENTRY *tsglEnable_ptr)(GLenum cap);
 typedef void (APIENTRY *tsglEnableVertexAttribArray_ptr)(GLuint index);
@@ -249,8 +242,6 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glDisable
 #undef glDrawArrays
 #undef glDrawArraysInstanced
-#undef glDrawArraysInstancedARB
-#undef glDrawArraysInstancedEXT
 #undef glDrawElements
 #undef glEnable
 #undef glEnableVertexAttribArray
@@ -332,8 +323,6 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glDisable tsglDisable
 #define glDrawArrays tsglDrawArrays
 #define glDrawArraysInstanced tsglDrawArraysInstanced
-#define glDrawArraysInstancedARB tsglDrawArraysInstancedARB
-#define glDrawArraysInstancedEXT tsglDrawArraysInstancedEXT
 #define glDrawElements tsglDrawElements
 #define glEnable tsglEnable
 #define glEnableVertexAttribArray tsglEnableVertexAttribArray
@@ -417,8 +406,6 @@ GLDEF(glDepthMask, tsglDepthMask, tsglDepthMask_ptr) \
 GLDEF(glDisable, tsglDisable, tsglDisable_ptr) \
 GLDEF(glDrawArrays, tsglDrawArrays, tsglDrawArrays_ptr) \
 GLDEF(glDrawArraysInstanced, tsglDrawArraysInstanced, tsglDrawArraysInstanced_ptr) \
-GLDEF(glDrawArraysInstancedARB, tsglDrawArraysInstancedARB, tsglDrawArraysInstancedARB_ptr) \
-GLDEF(glDrawArraysInstancedEXT, tsglDrawArraysInstancedEXT, tsglDrawArraysInstancedEXT_ptr) \
 GLDEF(glDrawElements, tsglDrawElements, tsglDrawElements_ptr) \
 GLDEF(glEnable, tsglEnable, tsglEnable_ptr) \
 GLDEF(glEnableVertexAttribArray, tsglEnableVertexAttribArray, tsglEnableVertexAttribArray_ptr) \
@@ -506,8 +493,6 @@ GLAPI void GLAPIENTRY glDepthMask( GLboolean flag );
 GLAPI void GLAPIENTRY glDisable( GLenum cap );
 GLAPI void GLAPIENTRY glDrawArrays( GLenum mode, GLint first, GLsizei count );
 GLAPI void APIENTRY glDrawArraysInstanced (GLenum mode, GLint first, GLsizei count, GLsizei instancecount);
-GLAPI void APIENTRY glDrawArraysInstancedARB (GLenum mode, GLint first, GLsizei count, GLsizei primcount);
-GLAPI void APIENTRY glDrawArraysInstancedEXT (GLenum mode, GLint start, GLsizei count, GLsizei primcount);
 GLAPI void GLAPIENTRY glDrawElements( GLenum mode, GLsizei count, GLenum type, const GLvoid *indices );
 GLAPI void GLAPIENTRY glEnable( GLenum cap );
 GLAPI void APIENTRY glEnableVertexAttribArray (GLuint index);
@@ -588,8 +573,6 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglDisable glDisable
 #define tsglDrawArrays glDrawArrays
 #define tsglDrawArraysInstanced glDrawArraysInstanced
-#define tsglDrawArraysInstancedARB glDrawArraysInstancedARB
-#define tsglDrawArraysInstancedEXT glDrawArraysInstancedEXT
 #define tsglDrawElements glDrawElements
 #define tsglEnable glEnable
 #define tsglEnableVertexAttribArray glEnableVertexAttribArray
@@ -644,14 +627,10 @@ struct glext_s {
 		char minor;
 	} version;
 
-	uint draw_instanced: 1;
 	uint debug_output: 1;
-	uint EXT_draw_instanced: 1;
-	uint ARB_draw_instanced: 1;
 	uint KHR_debug: 1;
 	uint ARB_debug_output: 1;
 
-	tsglDrawArraysInstanced_ptr DrawArraysInstanced;
 	tsglDebugMessageControl_ptr DebugMessageControl;
 	tsglDebugMessageCallback_ptr DebugMessageCallback;
 };
@@ -661,14 +640,11 @@ struct glext_s {
 // Intentionally not guarded
 
 #ifndef TAISEIGL_NO_EXT_ABSTRACTION
-	#undef glDrawArraysInstanced
 	#undef glDebugMessageControl
 	#undef glDebugMessageCallback
-	#define glDrawArraysInstanced (glext.DrawArraysInstanced)
 	#define glDebugMessageControl (glext.DebugMessageControl)
 	#define glDebugMessageCallback (glext.DebugMessageCallback)
 #elif defined(LINK_TO_LIBGL)
-	#undef glDrawArraysInstanced
 	#undef glDebugMessageControl
 	#undef glDebugMessageCallback
 #endif // !TAISEIGL_NO_EXT_ABSTRACTION

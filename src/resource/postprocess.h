@@ -12,10 +12,11 @@
 #include "resource.h"
 #include "shader_program.h"
 #include "fbo.h"
-#include "renderer/common/opengl.h"
+#include "renderer/api.h"
 
 typedef struct PostprocessShader PostprocessShader;
 typedef struct PostprocessShaderUniform PostprocessShaderUniform;
+typedef union PostprocessShaderUniformValue PostprocessShaderUniformValue;
 
 struct PostprocessShader {
 	LIST_INTERFACE(PostprocessShader);
@@ -24,31 +25,17 @@ struct PostprocessShader {
 	ShaderProgram *shader;
 };
 
-typedef enum PostprocessShaderUniformType {
-	PSU_FLOAT,
-	PSU_INT,
-	PSU_UINT,
-} PostprocessShaderUniformType;
-
-typedef union PostprocessShaderUniformValue {
-	void *v;
-	GLfloat *f;
-	GLint *i;
-	GLuint *u;
-} PostprocessShaderUniformValuePtr;
-
-typedef void (APIENTRY *PostprocessShaderUniformFuncPtr)(GLint, GLsizei, const GLvoid*);
+union PostprocessShaderUniformValue {
+	int i;
+	float f;
+};
 
 struct PostprocessShaderUniform {
 	LIST_INTERFACE(PostprocessShaderUniform);
 
-	PostprocessShaderUniformType type;
-	PostprocessShaderUniformValuePtr values;
-	PostprocessShaderUniformFuncPtr func;
-
-	int loc;
-	int size;
-	int amount;
+	Uniform *uniform;
+	PostprocessShaderUniformValue *values;
+	uint elements;
 };
 
 typedef void (*PostprocessDrawFuncPtr)(FBO*);
