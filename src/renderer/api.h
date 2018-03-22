@@ -14,6 +14,7 @@
 #include "resource/resource.h"
 #include "resource/shader_program.h"
 #include "resource/texture.h"
+#include "resource/model.h"
 
 typedef enum RendererCapability {
 	RCAP_DEPTH_TEST,
@@ -99,6 +100,16 @@ typedef struct RenderTarget {
 	RenderTargetImpl *impl;
 } RenderTarget;
 
+typedef enum Primitive {
+	PRIM_POINTS,
+	PRIM_LINE_STRIP,
+	PRIM_LINE_LOOP,
+	PRIM_LINES,
+	PRIM_TRIANGLE_STRIP,
+	PRIM_TRIANGLE_FAN,
+	PRIM_TRIANGLES,
+} Primitive;
+
 typedef struct VertexBufferImpl VertexBufferImpl;
 
 typedef struct VertexBuffer {
@@ -117,16 +128,27 @@ typedef enum VertexAttribType {
 	VA_UINT,
 } VertexAttribType;
 
+typedef struct VertexAttribTypeInfo {
+	size_t size;
+	size_t alignment;
+} VertexAttribTypeInfo;
+
 typedef enum VertexAttribConversion {
 	VA_CONVERT_FLOAT,
 	VA_CONVERT_FLOAT_NORMALIZED,
 	VA_CONVERT_INT,
 } VertexAttribConversion;
 
-typedef struct VertexAttribFormat {
-	uint8_t size;
+typedef struct VertexAttribSpec {
+	uint8_t elements;
 	VertexAttribType type;
 	VertexAttribConversion coversion;
+} VertexAttribSpec;
+
+typedef struct VertexAttribFormat {
+	VertexAttribSpec spec;
+	size_t stride;
+	size_t offset;
 } VertexAttribFormat;
 
 typedef struct StaticModelVertex {
@@ -288,8 +310,8 @@ SDL_Window* r_create_window(const char *title, int x, int y, int w, int h, uint3
  *	TODO: Document these.
  */
 
-void r_init(void);
-void r_shutdown(void);
+void _r_init(void); // use r_init() instead
+void _r_shutdown(void); // use r_shutdown() instead
 
 void r_capability(RendererCapability cap, bool value);
 bool r_capability_current(RendererCapability cap);
@@ -325,9 +347,7 @@ void r_uniform_ptr(Uniform *uniform, uint count, const void *data) attr_nonnull(
 UniformType r_uniform_type(Uniform *uniform);
 
 void r_flush(void);
-void r_draw_quad(void);
-void r_draw_quad_instanced(uint instances);
-void r_draw_model(const char *model);
+void r_draw(Primitive prim, uint first, uint count, uint32_t *indices, uint instances);
 
 void r_texture_create(Texture *tex, const TextureParams *params) attr_nonnull(1, 2);
 void r_texture_fill(Texture *tex, void *image_data) attr_nonnull(1, 2);
@@ -352,8 +372,7 @@ void r_vertex_buffer_write(VertexBuffer *vbuf, size_t offset, size_t data_size, 
 void r_vertex_buffer_append(VertexBuffer *vbuf, size_t data_size, void *data) attr_nonnull(1, 3);
 
 void r_vertex_buffer(VertexBuffer *vbuf) attr_nonnull(1);
-VertexBuffer* r_vertex_buffer_current(void) attr_returns_nonnull;
-VertexBuffer* r_vertex_buffer_static_models(void) attr_returns_nonnull;
+VertexBuffer* r_vertex_buffer_current(void);
 
 void r_clear(ClearBufferFlags flags);
 void r_clear_color4(float r, float g, float b, float a);
@@ -371,6 +390,32 @@ uint8_t* r_screenshot(uint *out_width, uint *out_height) attr_nodiscard attr_non
 /*
  *	Provided by the API module
  */
+
+void r_init(void);
+void r_shutdown(void);
+
+VertexBuffer* r_vertex_buffer_static_models(void) attr_returns_nonnull;
+
+void r_draw_quad(void);
+void r_draw_quad_instanced(uint instances);
+void r_draw_model_ptr(Model *model) attr_nonnull(1);
+
+BlendMode r_blend_compose(
+	BlendFactor src_color, BlendFactor dst_color, BlendOp color_op,
+	BlendFactor src_alpha, BlendFactor dst_alpha, BlendOp alpha_op
+);
+
+uint32_t r_blend_component(BlendMode mode, BlendModeComponent component);
+void r_blend_unpack(BlendMode mode, UnpackedBlendMode *dest) attr_nonnull(2);
+
+const UniformTypeInfo* r_uniform_type_info(UniformType type) attr_returns_nonnull;
+const VertexAttribTypeInfo* r_vertex_attrib_type_info(VertexAttribType type);
+
+void r_vertex_attrib_format_interleaved(
+	size_t nattribs,
+	VertexAttribSpec specs[nattribs],
+	VertexAttribFormat formats[nattribs]
+) attr_nonnull(2, 3);
 
 static inline attr_must_inline
 void r_enable(RendererCapability cap) {
@@ -521,12 +566,7 @@ void r_viewport(int x, int y, int w, int h) {
 	r_viewport_rect((IntRect) { x, y, w, h });
 }
 
-BlendMode r_blend_compose(
-	BlendFactor src_color, BlendFactor dst_color, BlendOp color_op,
-	BlendFactor src_alpha, BlendFactor dst_alpha, BlendOp alpha_op
-);
-
-uint32_t r_blend_component(BlendMode mode, BlendModeComponent component);
-void r_blend_unpack(BlendMode mode, UnpackedBlendMode *dest) attr_nonnull(2);
-
-const UniformTypeInfo* r_uniform_type_info(UniformType type) attr_returns_nonnull;
+static inline attr_must_inline attr_nonnull(1)
+void r_draw_model(const char *model) {
+	r_draw_model_ptr(get_resource_data(RES_MODEL, model, RESF_UNSAFE));
+}

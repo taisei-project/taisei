@@ -163,6 +163,7 @@ typedef void (GLAPIENTRY *tsglDisable_ptr)(GLenum cap);
 typedef void (GLAPIENTRY *tsglDrawArrays_ptr)(GLenum mode, GLint first, GLsizei count);
 typedef void (APIENTRY *tsglDrawArraysInstanced_ptr)(GLenum mode, GLint first, GLsizei count, GLsizei instancecount);
 typedef void (GLAPIENTRY *tsglDrawElements_ptr)(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices);
+typedef void (APIENTRY *tsglDrawElementsInstanced_ptr)(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount);
 typedef void (GLAPIENTRY *tsglEnable_ptr)(GLenum cap);
 typedef void (APIENTRY *tsglEnableVertexAttribArray_ptr)(GLuint index);
 typedef void (APIENTRY *tsglFramebufferTexture2D_ptr)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
@@ -244,6 +245,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glDrawArrays
 #undef glDrawArraysInstanced
 #undef glDrawElements
+#undef glDrawElementsInstanced
 #undef glEnable
 #undef glEnableVertexAttribArray
 #undef glFramebufferTexture2D
@@ -326,6 +328,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glDrawArrays tsglDrawArrays
 #define glDrawArraysInstanced tsglDrawArraysInstanced
 #define glDrawElements tsglDrawElements
+#define glDrawElementsInstanced tsglDrawElementsInstanced
 #define glEnable tsglEnable
 #define glEnableVertexAttribArray tsglEnableVertexAttribArray
 #define glFramebufferTexture2D tsglFramebufferTexture2D
@@ -410,6 +413,7 @@ GLDEF(glDisable, tsglDisable, tsglDisable_ptr) \
 GLDEF(glDrawArrays, tsglDrawArrays, tsglDrawArrays_ptr) \
 GLDEF(glDrawArraysInstanced, tsglDrawArraysInstanced, tsglDrawArraysInstanced_ptr) \
 GLDEF(glDrawElements, tsglDrawElements, tsglDrawElements_ptr) \
+GLDEF(glDrawElementsInstanced, tsglDrawElementsInstanced, tsglDrawElementsInstanced_ptr) \
 GLDEF(glEnable, tsglEnable, tsglEnable_ptr) \
 GLDEF(glEnableVertexAttribArray, tsglEnableVertexAttribArray, tsglEnableVertexAttribArray_ptr) \
 GLDEF(glFramebufferTexture2D, tsglFramebufferTexture2D, tsglFramebufferTexture2D_ptr) \
@@ -498,6 +502,7 @@ GLAPI void GLAPIENTRY glDisable( GLenum cap );
 GLAPI void GLAPIENTRY glDrawArrays( GLenum mode, GLint first, GLsizei count );
 GLAPI void APIENTRY glDrawArraysInstanced (GLenum mode, GLint first, GLsizei count, GLsizei instancecount);
 GLAPI void GLAPIENTRY glDrawElements( GLenum mode, GLsizei count, GLenum type, const GLvoid *indices );
+GLAPI void APIENTRY glDrawElementsInstanced (GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount);
 GLAPI void GLAPIENTRY glEnable( GLenum cap );
 GLAPI void APIENTRY glEnableVertexAttribArray (GLuint index);
 GLAPI void APIENTRY glFramebufferTexture2D (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
@@ -579,6 +584,7 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglDrawArrays glDrawArrays
 #define tsglDrawArraysInstanced glDrawArraysInstanced
 #define tsglDrawElements glDrawElements
+#define tsglDrawElementsInstanced glDrawElementsInstanced
 #define tsglEnable glEnable
 #define tsglEnableVertexAttribArray glEnableVertexAttribArray
 #define tsglFramebufferTexture2D glFramebufferTexture2D

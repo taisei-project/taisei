@@ -19,9 +19,6 @@
 #include "resource/model.h"
 #include "glm.h"
 
-// FIXME: initialize this elsewhere
-#include "recolor.h"
-
 typedef struct UBOData {
 	mat4 modelview;
 	mat4 projection;
@@ -81,27 +78,33 @@ static struct {
 
 	SDL_GLContext *gl_context;
 
-	VertexBuffer models_vbuf;
-
+#ifdef GL33_DRAW_STATS
 	struct {
 		hrtime_t last_draw;
 		hrtime_t draw_time;
 		uint draw_calls;
 	} stats;
+#endif
 } R;
 
 static inline void gl33_stats_pre_draw(void) {
+#ifdef GL33_DRAW_STATS
 	R.stats.last_draw = time_get();
 	R.stats.draw_calls++;
+#endif
 }
 
 static inline void gl33_stats_post_draw(void) {
+#ifdef GL33_DRAW_STATS
 	R.stats.draw_time += (time_get() - R.stats.last_draw);
+#endif
 }
 
 static inline void gl33_stats_post_frame(void) {
-	// log_debug("%.20gs spent in %u draw calls", (double)R.stats.draw_time, R.stats.draw_calls);
+#ifdef GL33_DRAW_STATS
+	log_debug("%.20gs spent in %u draw calls", (double)R.stats.draw_time, R.stats.draw_calls);
 	memset(&R.stats, 0, sizeof(R.stats));
+#endif
 }
 
 #ifdef DEBUG_GL
@@ -208,16 +211,6 @@ static void gl33_init_context(SDL_Window *window) {
 
 	r_clear_color4(0, 0, 0, 1);
 	r_clear(CLEAR_ALL);
-
-	R.vbuf = &R.models_vbuf;
-
-	r_vertex_buffer_create(&R.models_vbuf, 8192 * sizeof(StaticModelVertex), 3, (VertexAttribFormat[]) {
-		{ 3, VA_FLOAT, VA_CONVERT_FLOAT }, // position
-		{ 3, VA_FLOAT, VA_CONVERT_FLOAT }, // normal
-		{ 2, VA_FLOAT, VA_CONVERT_FLOAT }, // texcoord
-	});
-
-	gl33_vertex_buffer_append_quad_model(&R.models_vbuf);
 }
 
 static inline attr_must_inline uint32_t cap_flag(RendererCapability cap) {
@@ -305,7 +298,7 @@ SDL_Window* r_create_window(const char *title, int x, int y, int w, int h, uint3
 	return window;
 }
 
-void r_init(void) {
+void _r_init(void) {
 	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
 		"standard",
 		"standardnotex",
@@ -315,14 +308,10 @@ void r_init(void) {
 	R.progs.std_notex = get_resource_data(RES_SHADER_PROGRAM, "standardnotex", RESF_PERMANENT);
 
 	r_shader_standard();
-
-	// FIXME: initialize this elsewhere
-	recolor_init();
 }
 
-void r_shutdown(void) {
+void _r_shutdown(void) {
 	glDeleteBuffers(1, &R.ubo);
-	r_vertex_buffer_destroy(&R.models_vbuf);
 	unload_gl_library();
 	SDL_GL_DeleteContext(R.gl_context);
 }
@@ -462,48 +451,44 @@ VertexBuffer* r_vertex_buffer_current(void) {
 	return R.vbuf;
 }
 
-VertexBuffer* r_vertex_buffer_static_models(void) {
-	return &R.models_vbuf;
-}
+static GLenum prim_to_gl_prim[] = {
+	[PRIM_POINTS]         = GL_POINTS,
+	[PRIM_LINE_STRIP]     = GL_LINE_STRIP,
+	[PRIM_LINE_LOOP]      = GL_LINE_LOOP,
+	[PRIM_LINES]          = GL_LINES,
+	[PRIM_TRIANGLE_STRIP] = GL_TRIANGLE_STRIP,
+	[PRIM_TRIANGLE_FAN]   = GL_TRIANGLE_FAN,
+	[PRIM_TRIANGLES]      = GL_TRIANGLES,
+};
 
-void r_draw_quad(void) {
+void r_draw(Primitive prim, uint first, uint count, uint32_t *indices, uint instances) {
+	assert(count > 0);
+	assert((uint)prim < sizeof(prim_to_gl_prim)/sizeof(GLenum));
+
+	GLuint gl_prim = prim_to_gl_prim[prim];
 	update_ubo();
-	VertexBuffer *vbuf_saved = R.vbuf;
-	r_vertex_buffer(&R.models_vbuf);
-	gl33_stats_pre_draw();
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-	gl33_stats_post_draw();
-	r_vertex_buffer(vbuf_saved);
-}
 
-void r_draw_quad_instanced(uint instances) {
-	update_ubo();
-	VertexBuffer *vbuf_saved = R.vbuf;
-	r_vertex_buffer(&R.models_vbuf);
-	gl33_stats_pre_draw();
-	glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, instances);
-	gl33_stats_post_draw();
-	r_vertex_buffer(vbuf_saved);
-}
-
-void r_draw_model(const char *name) {
-	VertexBuffer *vbuf_saved = R.vbuf;
-	r_vertex_buffer(&R.models_vbuf);
-
-	Model *model = get_model(name);
-	r_mat_mode(MM_TEXTURE);
-	// TODO: get rid of this -1?
-	r_mat_scale(1, -1, 1); // every texture in taisei is actually read vertically mirrored. and I noticed that just now.
-
-	update_ubo();
-	gl33_stats_pre_draw();
-	glDrawElements(GL_TRIANGLES, model->icount, GL_UNSIGNED_INT, model->indices);
-	gl33_stats_post_draw();
-
-	r_mat_identity();
-	r_mat_mode(MM_MODELVIEW);
-
-	r_vertex_buffer(vbuf_saved);
+	if(indices == NULL) {
+		if(instances) {
+			gl33_stats_pre_draw();
+			glDrawArraysInstanced(gl_prim, first, count, instances);
+			gl33_stats_post_draw();
+		} else {
+			gl33_stats_pre_draw();
+			glDrawArrays(gl_prim, first, count);
+			gl33_stats_post_draw();
+		}
+	} else {
+		if(instances) {
+			gl33_stats_pre_draw();
+			glDrawElementsInstanced(gl_prim, count, GL_UNSIGNED_INT, indices, instances);
+			gl33_stats_post_draw();
+		} else {
+			gl33_stats_pre_draw();
+			glDrawElements(gl_prim, count, GL_UNSIGNED_INT, indices);
+			gl33_stats_post_draw();
+		}
+	}
 }
 
 void r_texture_ptr(uint unit, Texture *tex) {

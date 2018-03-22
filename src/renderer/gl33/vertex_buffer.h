@@ -15,5 +15,3 @@ typedef struct VertexBufferImpl {
 	GLuint gl_vbo;
 	GLuint gl_vao;
 } VertexBufferImpl;
-
-void gl33_vertex_buffer_append_quad_model(VertexBuffer *vbuf);
