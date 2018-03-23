@@ -49,9 +49,10 @@ void lasers_preload(void) {
 	preload_resource(RES_SHADER_PROGRAM, "laser_generic", RESF_DEFAULT);
 
 	VertexAttribFormat fmt[] = {
-		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sizeof(LaserQuadVertex),       0                 },
-		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sizeof(LaserQuadVertex),       2 * sizeof(float) },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sizeof(LaserInstancedAttribs), 4 * sizeof(float) },
+		// single quad, followed by a sequence of instanced attributes
+		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sizeof(LaserQuadVertex),       0                     },
+		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sizeof(LaserQuadVertex),       2     * sizeof(float) },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sizeof(LaserInstancedAttribs), 4 * 4 * sizeof(float) },
 	};
 
 	size_t capacity = sizeof(LaserQuadVertex) + 4096 * sizeof(LaserInstancedAttribs);
