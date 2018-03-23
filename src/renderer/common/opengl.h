@@ -162,6 +162,7 @@ typedef void (GLAPIENTRY *tsglDepthMask_ptr)(GLboolean flag);
 typedef void (GLAPIENTRY *tsglDisable_ptr)(GLenum cap);
 typedef void (GLAPIENTRY *tsglDrawArrays_ptr)(GLenum mode, GLint first, GLsizei count);
 typedef void (APIENTRY *tsglDrawArraysInstanced_ptr)(GLenum mode, GLint first, GLsizei count, GLsizei instancecount);
+typedef void (APIENTRY *tsglDrawBuffers_ptr)(GLsizei n, const GLenum *bufs);
 typedef void (GLAPIENTRY *tsglDrawElements_ptr)(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices);
 typedef void (APIENTRY *tsglDrawElementsInstanced_ptr)(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount);
 typedef void (GLAPIENTRY *tsglEnable_ptr)(GLenum cap);
@@ -246,6 +247,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glDisable
 #undef glDrawArrays
 #undef glDrawArraysInstanced
+#undef glDrawBuffers
 #undef glDrawElements
 #undef glDrawElementsInstanced
 #undef glEnable
@@ -331,6 +333,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glDisable tsglDisable
 #define glDrawArrays tsglDrawArrays
 #define glDrawArraysInstanced tsglDrawArraysInstanced
+#define glDrawBuffers tsglDrawBuffers
 #define glDrawElements tsglDrawElements
 #define glDrawElementsInstanced tsglDrawElementsInstanced
 #define glEnable tsglEnable
@@ -418,6 +421,7 @@ GLDEF(glDepthMask, tsglDepthMask, tsglDepthMask_ptr) \
 GLDEF(glDisable, tsglDisable, tsglDisable_ptr) \
 GLDEF(glDrawArrays, tsglDrawArrays, tsglDrawArrays_ptr) \
 GLDEF(glDrawArraysInstanced, tsglDrawArraysInstanced, tsglDrawArraysInstanced_ptr) \
+GLDEF(glDrawBuffers, tsglDrawBuffers, tsglDrawBuffers_ptr) \
 GLDEF(glDrawElements, tsglDrawElements, tsglDrawElements_ptr) \
 GLDEF(glDrawElementsInstanced, tsglDrawElementsInstanced, tsglDrawElementsInstanced_ptr) \
 GLDEF(glEnable, tsglEnable, tsglEnable_ptr) \
@@ -509,6 +513,7 @@ GLAPI void GLAPIENTRY glDepthMask( GLboolean flag );
 GLAPI void GLAPIENTRY glDisable( GLenum cap );
 GLAPI void GLAPIENTRY glDrawArrays( GLenum mode, GLint first, GLsizei count );
 GLAPI void APIENTRY glDrawArraysInstanced (GLenum mode, GLint first, GLsizei count, GLsizei instancecount);
+GLAPI void APIENTRY glDrawBuffers (GLsizei n, const GLenum *bufs);
 GLAPI void GLAPIENTRY glDrawElements( GLenum mode, GLsizei count, GLenum type, const GLvoid *indices );
 GLAPI void APIENTRY glDrawElementsInstanced (GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount);
 GLAPI void GLAPIENTRY glEnable( GLenum cap );
@@ -593,6 +598,7 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglDisable glDisable
 #define tsglDrawArrays glDrawArrays
 #define tsglDrawArraysInstanced glDrawArraysInstanced
+#define tsglDrawBuffers glDrawBuffers
 #define tsglDrawElements glDrawElements
 #define tsglDrawElementsInstanced glDrawElementsInstanced
 #define tsglEnable glEnable

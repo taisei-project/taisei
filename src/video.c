@@ -68,8 +68,6 @@ void video_get_viewport_size(int *width, int *height) {
 void video_set_viewport(void) {
 	int w, h;
 	video_get_viewport_size(&w,&h);
-
-	r_clear(CLEAR_COLOR);
 	r_viewport((video.current.width - w) / 2, (video.current.height - h) / 2, w, h);
 }
 
@@ -101,8 +99,6 @@ static void video_update_quality(void) {
 	init_fbo_pair(&resources.fbo_pairs.rgba, fg, TEX_TYPE_RGBA);
 
 	reload_fonts(text);
-
-	r_clear(CLEAR_COLOR);
 }
 
 static uint32_t get_fullscreen_flag(void) {
@@ -497,5 +493,7 @@ void video_shutdown(void) {
 }
 
 void video_swap_buffers(void) {
+	r_target(NULL);
 	r_swap(video.window);
+	r_clear(CLEAR_COLOR);
 }

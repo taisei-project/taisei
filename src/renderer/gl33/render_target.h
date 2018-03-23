@@ -15,4 +15,8 @@
 
 struct RenderTargetImpl {
 	GLuint gl_fbo;
+	bool initialized;
+	Texture *attachments[RENDERTARGET_MAX_ATTACHMENTS];
 };
+
+void gl33_target_initialize(RenderTarget *target);

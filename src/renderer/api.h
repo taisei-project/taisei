@@ -97,7 +97,6 @@ enum {
 typedef struct RenderTargetImpl RenderTargetImpl;
 
 typedef struct RenderTarget {
-	Texture *attachments[RENDERTARGET_MAX_ATTACHMENTS];
 	RenderTargetImpl *impl;
 } RenderTarget;
 

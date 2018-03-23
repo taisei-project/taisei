@@ -408,7 +408,31 @@ void r_color4(float r, float g, float b, float a) {
 	glm_vec4_copy((vec4) { r, g, b, a }, R.color);
 }
 
-static void update_ubo(void) {
+void gl33_sync_vertex_buffer(void) {
+	R.vertex_buffer.active = R.vertex_buffer.pending;
+
+	if(R.vertex_buffer.gl_vao != R.vertex_buffer.active->impl->gl_vao) {
+		R.vertex_buffer.gl_vao = R.vertex_buffer.active->impl->gl_vao;
+		glBindVertexArray(R.vertex_buffer.gl_vao);
+	}
+
+	if(R.vertex_buffer.gl_vbo != R.vertex_buffer.active->impl->gl_vbo) {
+		R.vertex_buffer.gl_vbo = R.vertex_buffer.active->impl->gl_vbo;
+		glBindBuffer(GL_ARRAY_BUFFER, R.vertex_buffer.active->impl->gl_vbo);
+	}
+}
+
+void r_vertex_buffer(VertexBuffer *vbuf) {
+	assert(vbuf->impl != NULL);
+
+	R.vertex_buffer.pending = vbuf;
+}
+
+VertexBuffer* r_vertex_buffer_current(void) {
+	return R.vertex_buffer.pending;
+}
+
+static void gl33_sync_state(void) {
 	gl33_sync_shader();
 	gl33_sync_texunits();
 	gl33_sync_render_target();
@@ -434,30 +458,6 @@ static void update_ubo(void) {
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(R.ubodata), &R.ubodata);
 }
 
-void gl33_sync_vertex_buffer(void) {
-	R.vertex_buffer.active = R.vertex_buffer.pending;
-
-	if(R.vertex_buffer.gl_vao != R.vertex_buffer.active->impl->gl_vao) {
-		R.vertex_buffer.gl_vao = R.vertex_buffer.active->impl->gl_vao;
-		glBindVertexArray(R.vertex_buffer.gl_vao);
-	}
-
-	if(R.vertex_buffer.gl_vbo != R.vertex_buffer.active->impl->gl_vbo) {
-		R.vertex_buffer.gl_vbo = R.vertex_buffer.active->impl->gl_vbo;
-		glBindBuffer(GL_ARRAY_BUFFER, R.vertex_buffer.active->impl->gl_vbo);
-	}
-}
-
-void r_vertex_buffer(VertexBuffer *vbuf) {
-	assert(vbuf->impl != NULL);
-
-	R.vertex_buffer.pending = vbuf;
-}
-
-VertexBuffer* r_vertex_buffer_current(void) {
-	return R.vertex_buffer.pending;
-}
-
 static GLenum prim_to_gl_prim[] = {
 	[PRIM_POINTS]         = GL_POINTS,
 	[PRIM_LINE_STRIP]     = GL_LINE_STRIP,
@@ -473,7 +473,7 @@ void r_draw(Primitive prim, uint first, uint count, uint32_t *indices, uint inst
 	assert((uint)prim < sizeof(prim_to_gl_prim)/sizeof(GLenum));
 
 	GLuint gl_prim = prim_to_gl_prim[prim];
-	update_ubo();
+	gl33_sync_state();
 
 	if(indices == NULL) {
 		if(instances) {
@@ -523,6 +523,14 @@ void gl33_sync_texunits(void) {
 	}
 }
 
+void gl33_texture_deleted(Texture *tex) {
+	for(uint i = 0; i < GL33_MAX_TEXUNITS; ++i) {
+		if(R.texunits.indexed[i].tex2d.pending == tex) {
+			R.texunits.indexed[i].tex2d.pending = NULL;
+		}
+	}
+}
+
 void r_texture_ptr(uint unit, Texture *tex) {
 	assert(unit < GL33_MAX_TEXUNITS);
 
@@ -555,6 +563,10 @@ void gl33_sync_render_target(void) {
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo_num(R.render_target.pending));
 		R.render_target.active = R.render_target.pending;
 	}
+
+	if(R.render_target.active) {
+		gl33_target_initialize(R.render_target.active);
+	}
 }
 
 void r_target(RenderTarget *target) {
@@ -571,7 +583,6 @@ RenderTarget *r_target_current() {
 
 void gl33_sync_shader(void) {
 	if(R.progs.pending && R.progs.gl_prog != R.progs.pending->gl_handle) {
-		log_debug("switch program %i", R.progs.pending->gl_handle);
 		glUseProgram(R.progs.pending->gl_handle);
 		R.progs.gl_prog = R.progs.pending->gl_handle;
 		R.progs.active = R.progs.pending;
@@ -608,6 +619,7 @@ void r_clear(ClearBufferFlags flags) {
 		mask |= GL_DEPTH_BUFFER_BIT;
 	}
 
+	gl33_sync_render_target();
 	glClear(mask);
 }
 
@@ -627,7 +639,7 @@ void r_viewport_current(IntRect *out_rect) {
 }
 
 void r_swap(SDL_Window *window) {
-	r_target(NULL);
+	gl33_sync_render_target();
 	SDL_GL_SwapWindow(window);
 	gl33_stats_post_frame();
 }

@@ -54,7 +54,13 @@ static void reinit_fbo(FBO *fbo, float scale, TextureType type) {
 	uint w = VIEWPORT_W * scale;
 	uint h = VIEWPORT_H * scale;
 
-	Texture *rgba = r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_COLOR0);
+	Texture *rgba;
+
+	if(fbo->impl) {
+		rgba = r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_COLOR0);
+	} else {
+		rgba = NULL;
+	}
 
 	if(!rgba) {
 		init_fbo(fbo, w, h, type);

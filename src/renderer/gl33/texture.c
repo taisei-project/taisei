@@ -137,5 +137,6 @@ void r_texture_destroy(Texture *tex) {
 		glDeleteTextures(1, &tex->impl->gl_handle);
 		free(tex->impl);
 		tex->impl = NULL;
+		gl33_texture_deleted(tex);
 	}
 }

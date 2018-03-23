@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "../common/opengl.h"
+#include "resource/texture.h"
 
 #define GL33_MAX_TEXUNITS 8
 
@@ -24,3 +25,5 @@ void gl33_sync_texunit(uint unit);
 void gl33_sync_texunits(void);
 void gl33_sync_render_target(void);
 void gl33_sync_vertex_buffer(void);
+
+void gl33_texture_deleted(Texture *tex);
