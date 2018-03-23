@@ -455,7 +455,7 @@ static void gl33_sync_state(void) {
 	}
 
 	memcpy(&R.ubodata, &ubo, sizeof(ubo));
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(R.ubodata), &R.ubodata);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(R.ubodata), &R.ubodata, GL_DYNAMIC_DRAW);
 }
 
 static GLenum prim_to_gl_prim[] = {
