@@ -208,6 +208,7 @@ typedef void (APIENTRY *tsglUniformMatrix3fv_ptr)(GLint location, GLsizei count,
 typedef void (APIENTRY *tsglUniformMatrix4fv_ptr)(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
 typedef void (APIENTRY *tsglUseProgram_ptr)(GLuint program);
 typedef void (APIENTRY *tsglVertexAttribDivisor_ptr)(GLuint index, GLuint divisor);
+typedef void (APIENTRY *tsglVertexAttribIPointer_ptr)(GLuint index, GLint size, GLenum type, GLsizei stride, const void *pointer);
 typedef void (APIENTRY *tsglVertexAttribPointer_ptr)(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer);
 typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLsizei height);
 // @END:typedefs@
@@ -291,6 +292,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glUniformMatrix4fv
 #undef glUseProgram
 #undef glVertexAttribDivisor
+#undef glVertexAttribIPointer
 #undef glVertexAttribPointer
 #undef glViewport
 // @END:undefs@
@@ -375,6 +377,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glUniformMatrix4fv tsglUniformMatrix4fv
 #define glUseProgram tsglUseProgram
 #define glVertexAttribDivisor tsglVertexAttribDivisor
+#define glVertexAttribIPointer tsglVertexAttribIPointer
 #define glVertexAttribPointer tsglVertexAttribPointer
 #define glViewport tsglViewport
 // @END:redefs@
@@ -461,6 +464,7 @@ GLDEF(glUniformMatrix3fv, tsglUniformMatrix3fv, tsglUniformMatrix3fv_ptr) \
 GLDEF(glUniformMatrix4fv, tsglUniformMatrix4fv, tsglUniformMatrix4fv_ptr) \
 GLDEF(glUseProgram, tsglUseProgram, tsglUseProgram_ptr) \
 GLDEF(glVertexAttribDivisor, tsglVertexAttribDivisor, tsglVertexAttribDivisor_ptr) \
+GLDEF(glVertexAttribIPointer, tsglVertexAttribIPointer, tsglVertexAttribIPointer_ptr) \
 GLDEF(glVertexAttribPointer, tsglVertexAttribPointer, tsglVertexAttribPointer_ptr) \
 GLDEF(glViewport, tsglViewport, tsglViewport_ptr)
 // @END:gldefs@
@@ -551,6 +555,7 @@ GLAPI void APIENTRY glUniformMatrix3fv (GLint location, GLsizei count, GLboolean
 GLAPI void APIENTRY glUniformMatrix4fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
 GLAPI void APIENTRY glUseProgram (GLuint program);
 GLAPI void APIENTRY glVertexAttribDivisor (GLuint index, GLuint divisor);
+GLAPI void APIENTRY glVertexAttribIPointer (GLuint index, GLint size, GLenum type, GLsizei stride, const void *pointer);
 GLAPI void APIENTRY glVertexAttribPointer (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer);
 GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei height );
 // @END:protos@
@@ -634,6 +639,7 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglUniformMatrix4fv glUniformMatrix4fv
 #define tsglUseProgram glUseProgram
 #define tsglVertexAttribDivisor glVertexAttribDivisor
+#define tsglVertexAttribIPointer glVertexAttribIPointer
 #define tsglVertexAttribPointer glVertexAttribPointer
 #define tsglViewport glViewport
 // @END:reversedefs@

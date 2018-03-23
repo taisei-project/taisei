@@ -63,6 +63,14 @@ void r_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, uint nattribs, 
 				break;
 
 			case VA_CONVERT_INT:
+				glVertexAttribIPointer(
+					i,
+					a->spec.elements,
+					va_type_to_gl_type[a->spec.type],
+					a->stride,
+					(void*)a->offset
+				);
+				glVertexAttribDivisor(i, a->spec.divisor);
 				break;
 
 			default: UNREACHABLE;
