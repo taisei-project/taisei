@@ -19,6 +19,8 @@
 #include "resource/model.h"
 #include "glm.h"
 
+#include <stdalign.h>
+
 typedef struct UBOData {
 	mat4 modelview;
 	mat4 projection;
@@ -442,7 +444,7 @@ static void gl33_sync_state(void) {
 		return;
 	}
 
-	UBOData ubo;
+	static alignas(32) UBOData ubo;
 	memset(&ubo, 0, sizeof(ubo));
 
 	glm_mat4_copy(*R.mstacks.modelview.head, ubo.modelview);
