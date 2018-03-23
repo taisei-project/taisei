@@ -143,6 +143,7 @@ typedef struct VertexAttribSpec {
 	uint8_t elements;
 	VertexAttribType type;
 	VertexAttribConversion coversion;
+	uint divisor;
 } VertexAttribSpec;
 
 typedef struct VertexAttribFormat {

@@ -479,6 +479,7 @@ static void stage_free(void) {
 		global.boss = NULL;
 	}
 
+	lasers_free();
 	stagetext_free();
 }
 
@@ -515,9 +516,11 @@ static void stage_preload(void) {
 	player_preload();
 	items_preload();
 	boss_preload();
+	lasers_preload();
 
-	if(global.stage->type != STAGE_SPELL)
+	if(global.stage->type != STAGE_SPELL) {
 		enemies_preload();
+	}
 
 	global.stage->procs->preload();
 }

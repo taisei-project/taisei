@@ -63,12 +63,12 @@ static void uset_mat4(Uniform *uniform, uint count, const void *data) {
 
 void r_uniform_ptr(Uniform *uniform, uint count, const void *data) {
 	assert(count > 0);
-	assert(uniform != NULL);
-	assert(uniform->prog != NULL);
 
 	if(uniform == NULL) {
 		return;
 	}
+
+	assert(uniform->prog != NULL);
 
 	static UniformSetter type_to_setter[] = {
 		[UNIFORM_FLOAT]   = uset_float,

@@ -40,7 +40,7 @@ void r_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, uint nattribs, 
 	r_vertex_buffer(vbuf);
 	r_flush();
 
-	glBufferData(GL_ARRAY_BUFFER, capacity, NULL, GL_STREAM_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, capacity, NULL, GL_STATIC_DRAW);
 
 	for(uint i = 0; i < nattribs; ++i) {
 		VertexAttribFormat *a = attribs + i;
@@ -59,6 +59,7 @@ void r_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, uint nattribs, 
 					a->stride,
 					(void*)a->offset
 				);
+				glVertexAttribDivisor(i, a->spec.divisor);
 				break;
 
 			case VA_CONVERT_INT:
@@ -89,7 +90,7 @@ void r_vertex_buffer_invalidate(VertexBuffer *vbuf) {
 	r_flush();
 
 	vbuf->offset = 0;
-	glBufferData(GL_ARRAY_BUFFER, vbuf->size, NULL, GL_STREAM_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vbuf->size, NULL, GL_DYNAMIC_DRAW);
 
 	r_vertex_buffer(vbuf_saved);
 }
@@ -109,7 +110,7 @@ void r_vertex_buffer_write(VertexBuffer *vbuf, size_t offset, size_t data_size, 
 }
 
 void r_vertex_buffer_append(VertexBuffer *vbuf, size_t data_size, void *data) {
-	log_debug("%u -> %u / %u", (uint)vbuf->offset, (uint)(vbuf->offset + data_size), (uint)vbuf->size);
+	// log_debug("%u -> %u / %u", (uint)vbuf->offset, (uint)(vbuf->offset + data_size), (uint)vbuf->size);
 	r_vertex_buffer_write(vbuf, vbuf->offset, data_size, data);
 	vbuf->offset += data_size;
 }

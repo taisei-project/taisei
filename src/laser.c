@@ -14,6 +14,58 @@
 #include "stageobjects.h"
 #include "renderer/api.h"
 
+typedef struct LaserQuadVertex {
+	float pos[2];
+
+	struct {
+		float s, y;
+	} uv;
+} LaserQuadVertex;
+
+static struct {
+	VertexBuffer vbuf;
+	ShaderProgram *shader_generic;
+	LaserQuadVertex quad[4];
+} lasers = {
+	.quad = {
+		{ { -0.5, -0.5, }, { 0, 0 } },
+		{ { -0.5,  0.5, }, { 0, 1 } },
+		{ {  0.5,  0.5, }, { 1, 1 } },
+		{ {  0.5, -0.5, }, { 1, 0 } },
+	}
+};
+
+typedef struct LaserInstancedAttribs {
+	float pos[2];
+	float delta[2];
+} LaserInstancedAttribs;
+
+static void lasers_vbuf_begin(void) {
+	r_vertex_buffer_invalidate(&lasers.vbuf);
+	r_vertex_buffer_append(&lasers.vbuf, sizeof(lasers.quad), lasers.quad);
+}
+
+void lasers_preload(void) {
+	preload_resource(RES_SHADER_PROGRAM, "laser_generic", RESF_DEFAULT);
+
+	VertexAttribFormat fmt[] = {
+		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sizeof(LaserQuadVertex),       0                 },
+		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sizeof(LaserQuadVertex),       2 * sizeof(float) },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sizeof(LaserInstancedAttribs), 4 * sizeof(float) },
+	};
+
+	size_t capacity = sizeof(LaserQuadVertex) + 4096 * sizeof(LaserInstancedAttribs);
+
+	r_vertex_buffer_create(&lasers.vbuf, capacity, sizeof(fmt)/sizeof(VertexAttribFormat), fmt);
+	lasers_vbuf_begin();
+
+	lasers.shader_generic = r_shader_get("laser_generic");
+}
+
+void lasers_free(void) {
+	r_vertex_buffer_destroy(&lasers.vbuf);
+}
+
 Laser *create_laser(complex pos, float time, float deathtime, Color color, LaserPosRule prule, LaserLogicRule lrule, complex a0, complex a1, complex a2, complex a3) {
 	Laser *l = (Laser*)list_push(&global.lasers, objpool_acquire(stage_object_pools.lasers));
 
@@ -59,7 +111,7 @@ Laser *create_laserline_ab(complex a, complex b, float width, float charge, floa
 	return create_laser(a, 200, dur, clr, las_linear, static_laser, m, charge + I*width, 0, 0);
 }
 
-static void draw_laser_curve_instanced(Laser *l) {
+static bool draw_laser_instanced_prepare(Laser *l, uint *out_instances, float *out_timeshift) {
 	float t;
 	int c;
 
@@ -75,64 +127,75 @@ static void draw_laser_curve_instanced(Laser *l) {
 		t = 0;
 	}
 
-	if(c < 0) {
+	if(c <= 0) {
+		return false;
+	}
+
+	*out_instances = c * 2;
+	*out_timeshift = t;
+
+	return true;
+}
+
+static void draw_laser_curve_specialized(Laser *l) {
+	float timeshift;
+	uint instances;
+
+	if(!draw_laser_instanced_prepare(l, &instances, &timeshift)) {
 		return;
 	}
 
-	r_uniform_rgba("clr", l->color);
+	r_color(l->color);
 	r_uniform_complex("pos", l->pos);
 	r_uniform_complex("a0", l->args[0]);
 	r_uniform_complex("a1", l->args[1]);
 	r_uniform_complex("a2", l->args[2]);
 	r_uniform_complex("a3", l->args[3]);
-	r_uniform_float("timeshift", t);
+	r_uniform_float("timeshift", timeshift);
 	r_uniform_float("width", l->width);
 	r_uniform_float("width_exponent", l->width_exponent);
-	r_uniform_int("span", c * 2);
-	r_draw_quad_instanced(c*2);
+	r_uniform_int("span", instances);
+	r_draw(PRIM_TRIANGLE_FAN, 0, 4, NULL, instances);
 }
 
-static void draw_laser_curve(Laser *laser) {
-	Texture *tex = get_tex("part/lasercurve");
-	complex last;
+static void draw_laser_curve_generic(Laser *l) {
+	float timeshift;
+	uint instances;
 
-	r_color(laser->color);
-
-	float t = (global.frames - laser->birthtime)*laser->speed - laser->timespan + laser->timeshift;
-	if(t < 0)
-		t = 0;
-
-	last = laser->prule(laser, t);
-
-	for(t += 0.5; t < (global.frames - laser->birthtime)*laser->speed + laser->timeshift && t <= laser->deathtime + laser->timeshift; t += 1.5) {
-		complex pos = laser->prule(laser,t);
-		r_mat_push();
-
-		float t1 = t - ((global.frames - laser->birthtime)*laser->speed - laser->timespan/2 + laser->timeshift);
-
-		float tail = laser->timespan/1.9;
-
-		float s = -0.75/pow(tail,2)*(t1-tail)*(t1+tail);
-		s = pow(s, laser->width_exponent);
-
-		r_mat_translate(creal(pos), cimag(pos), 0);
-		r_mat_rotate_deg(180/M_PI*carg(last-pos), 0, 0, 1);
-
-		r_mat_scale(tex->w*0.5*cabs(last-pos),s*laser->width,s);
-		r_draw_quad();
-
-		last = pos;
-
-		r_mat_pop();
+	if(!draw_laser_instanced_prepare(l, &instances, &timeshift)) {
+		return;
 	}
 
-	r_color4(1,1,1,1);
+	r_color(l->color);
+	r_uniform_float("timeshift", timeshift);
+	r_uniform_float("width", l->width);
+	r_uniform_float("width_exponent", l->width_exponent);
+	r_uniform_int("span", instances);
+
+	LaserInstancedAttribs attrs[instances], *aptr = attrs;
+	lasers_vbuf_begin();
+
+	for(uint i = 0; i < instances; ++i, ++aptr) {
+		complex pos = l->prule(l, i * 0.5 + timeshift);
+		complex delta = pos - l->prule(l, i * 0.5 + timeshift - 0.1);
+
+		aptr->pos[0] = creal(pos);
+		aptr->pos[1] = cimag(pos);
+		aptr->delta[0] = creal(delta);
+		aptr->delta[1] = cimag(delta);
+	}
+
+	r_vertex_buffer_append(&lasers.vbuf, sizeof(attrs), &attrs);
+	r_draw(PRIM_TRIANGLE_FAN, 0, 4, NULL, instances);
 }
 
 void draw_lasers(int bgpass) {
 	Laser *laser;
+	VertexBuffer *vbuf_saved = r_vertex_buffer_current();
+
 	r_texture(0, "part/lasercurve");
 	r_blend(BLEND_ADD);
+	r_vertex_buffer(&lasers.vbuf);
 
 	for(laser = global.lasers; laser; laser = laser->next) {
 		if(bgpass != laser->in_background) {
@@ -141,15 +204,16 @@ void draw_lasers(int bgpass) {
 
 		if(laser->shader) {
 			r_shader_ptr(laser->shader);
-			draw_laser_curve_instanced(laser);
+			draw_laser_curve_specialized(laser);
 		} else {
-			r_shader_standard();
-			draw_laser_curve(laser);
+			r_shader_ptr(lasers.shader_generic);
+			draw_laser_curve_generic(laser);
 		}
 	}
 
 	r_blend(BLEND_ALPHA);
 	r_shader_standard();
+	r_vertex_buffer(vbuf_saved);
 }
 
 void* _delete_laser(List **lasers, List *laser, void *arg) {
