@@ -63,7 +63,7 @@ static bool particle_filter(Projectile *part) {
 }
 
 static void stage1_bg_draw(vec3 pos) {
-	CullFaceMode cull_saved = r_cull_current();
+	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
 
 	r_mat_push();
 	r_mat_translate(0,stage_3d_context.cx[1]+500,0);
@@ -82,7 +82,7 @@ static void stage1_bg_draw(vec3 pos) {
 	r_mat_rotate_deg(30,1,0,0);
 	r_mat_scale(.85,-.85,.85);
 	r_mat_translate(-VIEWPORT_W/2,0,0);
-	r_cull(CULL_NONE);
+	r_disable(RCAP_CULL_FACE);
 	r_disable(RCAP_DEPTH_TEST);
 	draw_projectiles(global.particles, particle_filter);
 	draw_enemies(global.enemies);
@@ -92,7 +92,7 @@ static void stage1_bg_draw(vec3 pos) {
 	}
 
 	r_mat_pop();
-	r_cull(cull_saved);
+	r_capability(RCAP_CULL_FACE, cullcap_saved);
 
 	r_shader_standard_notex();
 	r_mat_push();

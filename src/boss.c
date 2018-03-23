@@ -53,8 +53,8 @@ void spell_opening(Boss *b, int time) {
 	complex x = x0 + (VIEWPORT_W+I*35 - x0) * f*(f+1)*0.5;
 	int strw = stringwidth(b->current->name,_fonts.standard);
 
-	CullFaceMode cull_saved = r_cull_current();
-	r_cull(CULL_NONE);
+	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
+	r_disable(RCAP_CULL_FACE);
 
 	r_mat_push();
 	r_mat_translate(creal(x),cimag(x),0);
@@ -64,7 +64,7 @@ void spell_opening(Boss *b, int time) {
 	draw_boss_text(AL_Right, strw/2*(1-f), 0, b->current->name, _fonts.standard, rgb(1, 1, 1));
 	r_mat_pop();
 
-	r_cull(cull_saved);
+	r_capability(RCAP_CULL_FACE, cullcap_saved);
 }
 
 void draw_extraspell_bg(Boss *boss, int time) {

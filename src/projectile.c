@@ -739,15 +739,15 @@ void Petal(Projectile *p, int t) {
 	float r = sqrt(x*x+y*y+z*z);
 	x /= r; y /= r; z /= r;
 
-	CullFaceMode cull_saved = r_cull_current();
+	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
 
-	r_cull(CULL_NONE);
+	r_disable(RCAP_CULL_FACE);
 	r_mat_push();
 	r_mat_translate(creal(p->pos), cimag(p->pos),0);
 	r_mat_rotate_deg(t*4.0 + cimag(p->args[3]), x, y, z);
 	ProjDrawCore(p, p->color);
 	r_mat_pop();
-	r_cull(cull_saved);
+	r_capability(RCAP_CULL_FACE, cullcap_saved);
 }
 
 void petal_explosion(int n, complex pos) {

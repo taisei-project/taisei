@@ -19,6 +19,7 @@
 typedef enum RendererCapability {
 	RCAP_DEPTH_TEST,
 	RCAP_DEPTH_WRITE,
+	RCAP_CULL_FACE,
 
 	NUM_RCAPS
 } RendererCapability;
@@ -276,7 +277,6 @@ typedef struct UnpackedBlendMode {
 } UnpackedBlendMode;
 
 typedef enum CullFaceMode {
-	CULL_NONE   = 0x0,
 	CULL_FRONT  = 0x1,
 	CULL_BACK   = 0x2,
 	CULL_BOTH   = CULL_FRONT | CULL_BACK,

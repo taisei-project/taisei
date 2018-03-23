@@ -134,8 +134,8 @@ void draw_main_menu(MenuData *menu) {
 
 	r_mat_pop();
 
-	CullFaceMode cull_saved = r_cull_current();
-	r_cull(CULL_NONE);
+	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
+	r_disable(RCAP_CULL_FACE);
 	r_blend(BLEND_ADD);
 	r_color4(1, 1, 1, 1);
 
@@ -169,7 +169,7 @@ void draw_main_menu(MenuData *menu) {
 		r_mat_pop();
 	}
 
-	r_cull(cull_saved);
+	r_capability(RCAP_CULL_FACE, cullcap_saved);
 	r_blend(BLEND_ALPHA);
 
 	char version[32];

@@ -63,7 +63,6 @@ static struct {
 	bool blend_enabled;
 	BlendMode blend_mode;
 	CullFaceMode cull_mode;
-	GLenum gl_cull_mode;
 	DepthTestFunc depth_func;
 	GLenum gl_vbo;
 	GLenum gl_vao;
@@ -198,6 +197,7 @@ static void gl33_init_context(SDL_Window *window) {
 
 	r_enable(RCAP_DEPTH_TEST);
 	r_enable(RCAP_DEPTH_WRITE);
+	r_enable(RCAP_CULL_FACE);
 	r_depth_func(DEPTH_LEQUAL);
 	r_cull(CULL_BACK);
 	r_blend(BLEND_ALPHA);
@@ -234,6 +234,10 @@ void r_capability(RendererCapability cap, bool value) {
 
 		case RCAP_DEPTH_WRITE:
 			glDepthMask(value);
+			break;
+
+		case RCAP_CULL_FACE:
+			(value ? glEnable : glDisable)(GL_CULL_FACE);
 			break;
 
 		default: UNREACHABLE;
@@ -696,21 +700,8 @@ static inline GLenum r_cull_to_gl_cull(CullFaceMode mode) {
 
 void r_cull(CullFaceMode mode) {
 	if(mode != R.cull_mode) {
-		if(mode == CULL_NONE) {
-			glDisable(GL_CULL_FACE);
-		} else {
-			if(R.cull_mode == CULL_NONE) {
-				glEnable(GL_CULL_FACE);
-			}
-
-			GLenum glcull = r_cull_to_gl_cull(mode);
-
-			if(glcull != R.gl_cull_mode) {
-				glCullFace(glcull);
-				R.gl_cull_mode = glcull;
-			}
-		}
-
+		GLenum glcull = r_cull_to_gl_cull(mode);
+		glCullFace(glcull);
 		R.cull_mode = mode;
 	}
 }
