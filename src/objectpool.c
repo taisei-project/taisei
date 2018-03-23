@@ -25,7 +25,7 @@ struct ObjectPool {
 };
 
 static inline ObjectInterface* obj_ptr(ObjectPool *pool, char *objects, size_t idx) {
-	return (ObjectInterface*)(objects + idx * pool->size_of_object);
+	return (ObjectInterface*)(void*)(objects + idx * pool->size_of_object);
 }
 
 static void objpool_register_objects(ObjectPool *pool, char *objects) {

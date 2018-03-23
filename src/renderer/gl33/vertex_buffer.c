@@ -13,6 +13,7 @@
 
 #include "../api.h"
 #include "vertex_buffer.h"
+#include "core.h"
 
 static GLenum va_type_to_gl_type[] = {
 	[VA_FLOAT]  = GL_FLOAT,

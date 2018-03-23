@@ -186,7 +186,7 @@ size_t ucs4len(const uint32_t *ucs4) {
 
 uint32_t* utf8_to_ucs4(const char *utf8) {
 	assert(utf8 != NULL);
-	uint32_t *ucs4 = (uint32_t*)SDL_iconv_string("UCS-4", "UTF-8", utf8, strlen(utf8) + 1);
+	uint32_t *ucs4 = (uint32_t*)(void*)SDL_iconv_string("UCS-4", "UTF-8", utf8, strlen(utf8) + 1);
 	assert(ucs4 != NULL);
 	return ucs4;
 }

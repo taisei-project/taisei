@@ -44,7 +44,7 @@ bool vfs_mount_alias(const char *dst, const char *src);
 bool vfs_unmount(const char *path);
 
 VFSDir* vfs_dir_open(const char *path) attr_nonnull(1) attr_nodiscard;
-void vfs_dir_close(VFSDir *dir) attr_nonnull(1);
+void vfs_dir_close(VFSDir *dir);
 const char* vfs_dir_read(VFSDir *dir) attr_nonnull(1);
 
 char** vfs_dir_list_sorted(const char *path, size_t *out_size, int (*compare)(const char**, const char**), bool (*filter)(const char*))

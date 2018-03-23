@@ -209,11 +209,7 @@ void vfs_dir_close(VFSDir *dir) {
 }
 
 const char* vfs_dir_read(VFSDir *dir) {
-	if(dir) {
-		return vfs_iter(dir->node, &dir->opaque);
-	}
-
-	return NULL;
+	return vfs_iter(dir->node, &dir->opaque);
 }
 
 char** vfs_dir_list_sorted(const char *path, size_t *out_size, int (*compare)(const char**, const char**), bool (*filter)(const char*)) {

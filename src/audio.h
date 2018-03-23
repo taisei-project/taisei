@@ -71,7 +71,7 @@ int get_default_sfx_volume(const char *sfx);
 Sound* get_sound(const char *name) attr_nonnull(1);
 Music* get_music(const char *music) attr_nonnull(1);
 
-void start_bgm(const char *name) attr_nonnull(1);
+void start_bgm(const char *name);
 void stop_bgm(bool force);
 void fade_bgm(double fadetime);
 void resume_bgm(void);
