@@ -677,12 +677,14 @@ void r_blend(BlendMode mode) {
 	if(mode == BLEND_NONE) {
 		if(R.blend_enabled) {
 			glDisable(GL_BLEND);
+			R.blend_enabled = false;
 		}
 
 		return;
 	}
 
 	if(!R.blend_enabled) {
+		R.blend_enabled = true;
 		glEnable(GL_BLEND);
 	}
 
