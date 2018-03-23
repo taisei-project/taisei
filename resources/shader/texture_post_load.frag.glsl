@@ -1,21 +1,12 @@
-#version 110
-
-varying vec4 TexCoord0;
-
-void main(void) {
-	gl_Position = ftransform();
-	gl_FrontColor = gl_Color;
-	TexCoord0 = gl_MultiTexCoord0;
-}
-
-%% -- FRAG
-#version 110
+#version 330 core
 
 uniform sampler2D tex;
 uniform int width;
 uniform int height;
 
-varying vec4 TexCoord0;
+in vec2 texCoord;
+in vec2 texCoordRaw;
+out vec4 fragColor;
 
 vec2 tc_normalize(ivec2 tc) {
 	return vec2(tc) / vec2(width, height);
@@ -34,8 +25,8 @@ vec4 sampleofs(ivec2 origin, int ofsx, int ofsy) {
 }
 
 void main(void) {
-	ivec2 tc = tc_denormalize(TexCoord0.xy);
-	vec4 texel = texture2D(tex, TexCoord0.xy);
+	ivec2 tc = tc_denormalize(texCoordRaw);
+	vec4 texel = texture2D(tex, texCoordRaw);
 	vec4 new_texel = texel;
 
 	/*
@@ -51,5 +42,5 @@ void main(void) {
 	new_texel = replace_color(new_texel, sampleofs(tc, -1,  0));
 	texel = mix(texel, vec4(new_texel.rgb, texel.a), float(texel.a <= 0.0));
 
-	gl_FragColor = texel;
+	fragColor = texel;
 }
