@@ -90,7 +90,7 @@ void r_texture_create(Texture *tex, const TextureParams *params) {
 
 	glGenTextures(1, &tex->impl->gl_handle);
 	r_texture_ptr(unit, tex);
-	r_flush();
+	gl33_sync_texunit(unit);
 
 	// TODO: mipmaps
 
@@ -122,7 +122,7 @@ void r_texture_fill_region(Texture *tex, uint x, uint y, uint w, uint h, void *i
 	uint unit = gl33_active_texunit();
 	Texture *prev_tex = r_texture_current(unit);
 	r_texture_ptr(unit, tex);
-	r_flush();
+	gl33_sync_texunit(unit);
 	glTexSubImage2D(
 		GL_TEXTURE_2D, 0,
 		x, y, w, h,

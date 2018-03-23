@@ -9,6 +9,7 @@
 #include "taisei.h"
 
 #include "render_target.h"
+#include "core.h"
 
 static GLuint r_attachment_to_gl_attachment[] = {
 	[RENDERTARGET_ATTACHMENT_DEPTH] = GL_DEPTH_ATTACHMENT,
@@ -35,7 +36,7 @@ void r_target_attach(RenderTarget *target, Texture *tex, RenderTargetAttachment 
 
 	RenderTarget *prev_target = r_target_current();
 	r_target(target);
-	r_flush();
+	gl33_sync_render_target();
 	glFramebufferTexture2D(GL_FRAMEBUFFER, r_attachment_to_gl_attachment[attachment], GL_TEXTURE_2D, gl_tex, 0);
 	r_target(prev_target);
 

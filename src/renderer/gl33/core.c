@@ -29,7 +29,8 @@ typedef struct UBOData {
 typedef struct TextureUnit {
 	struct {
 		GLuint gl_handle;
-		Texture *ptr;
+		Texture *active;
+		Texture *pending;
 	} tex2d;
 } TextureUnit;
 
@@ -51,11 +52,30 @@ static struct {
 	struct {
 		TextureUnit indexed[GL33_MAX_TEXUNITS];
 		TextureUnit *active;
+		TextureUnit *pending;
 	} texunits;
 
-	RenderTarget *render_target;
+	struct {
+		RenderTarget *active;
+		RenderTarget *pending;
+	} render_target;
+
+	struct {
+		GLenum gl_vbo;
+		GLenum gl_vao;
+		VertexBuffer *active;
+		VertexBuffer *pending;
+	} vertex_buffer;
+
+	struct {
+		GLuint gl_prog;
+		ShaderProgram *active;
+		ShaderProgram *pending;
+		ShaderProgram *std;
+		ShaderProgram *std_notex;
+	} progs;
+
 	vec4 color;
-	// vec4 clear_color;
 	GLuint ubo;
 	UBOData ubodata;
 	IntRect viewport;
@@ -64,17 +84,6 @@ static struct {
 	BlendMode blend_mode;
 	CullFaceMode cull_mode;
 	DepthTestFunc depth_func;
-	GLenum gl_vbo;
-	GLenum gl_vao;
-	VertexBuffer *vbuf;
-	GLuint gl_prog;
-
-	struct {
-		ShaderProgram *active;
-		ShaderProgram *pending;
-		ShaderProgram *std;
-		ShaderProgram *std_notex;
-	} progs;
 
 	SDL_GLContext *gl_context;
 
@@ -263,8 +272,6 @@ uint gl33_activate_texunit(uint unit) {
 	uint prev_unit = gl33_active_texunit();
 
 	if(prev_unit != unit) {
-		// TODO: defer until needed
-		r_flush();
 		glActiveTexture(GL_TEXTURE0 + unit);
 		R.texunits.active = R.texunits.indexed + unit;
 	}
@@ -401,22 +408,15 @@ void r_color4(float r, float g, float b, float a) {
 	glm_vec4_copy((vec4) { r, g, b, a }, R.color);
 }
 
-static void update_prog(void) {
-	if(R.progs.pending != R.progs.active) {
-		log_debug("switch program %i", R.progs.pending->gl_handle);
-		glUseProgram(R.progs.pending->gl_handle);
-		R.progs.active = R.progs.pending;
-	}
-}
-
 static void update_ubo(void) {
-	// update_prog();
+	gl33_sync_shader();
+	gl33_sync_texunits();
+	gl33_sync_render_target();
+	gl33_sync_vertex_buffer();
 
-	/*
-	 *	if(R.progs.active->renderctx_block_idx < 0) {
-	 *		return;
+	if(R.progs.active && R.progs.active->renderctx_block_idx < 0) {
+		return;
 	}
-*/
 
 	UBOData ubo;
 	memset(&ubo, 0, sizeof(ubo));
@@ -434,26 +434,28 @@ static void update_ubo(void) {
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(R.ubodata), &R.ubodata);
 }
 
-void r_vertex_buffer(VertexBuffer *vbuf) {
-	assert(vbuf->impl != NULL);
+void gl33_sync_vertex_buffer(void) {
+	R.vertex_buffer.active = R.vertex_buffer.pending;
 
-	if(vbuf != R.vbuf) {
-		R.vbuf = vbuf;
+	if(R.vertex_buffer.gl_vao != R.vertex_buffer.active->impl->gl_vao) {
+		R.vertex_buffer.gl_vao = R.vertex_buffer.active->impl->gl_vao;
+		glBindVertexArray(R.vertex_buffer.gl_vao);
 	}
 
-	if(R.gl_vao != vbuf->impl->gl_vao) {
-		R.gl_vao = vbuf->impl->gl_vao;
-		glBindVertexArray(R.gl_vao);
-	}
-
-	if(R.gl_vbo != vbuf->impl->gl_vbo) {
-		R.gl_vbo = vbuf->impl->gl_vbo;
-		glBindBuffer(GL_ARRAY_BUFFER, R.gl_vbo);
+	if(R.vertex_buffer.gl_vbo != R.vertex_buffer.active->impl->gl_vbo) {
+		R.vertex_buffer.gl_vbo = R.vertex_buffer.active->impl->gl_vbo;
+		glBindBuffer(GL_ARRAY_BUFFER, R.vertex_buffer.active->impl->gl_vbo);
 	}
 }
 
+void r_vertex_buffer(VertexBuffer *vbuf) {
+	assert(vbuf->impl != NULL);
+
+	R.vertex_buffer.pending = vbuf;
+}
+
 VertexBuffer* r_vertex_buffer_current(void) {
-	return R.vbuf;
+	return R.vertex_buffer.pending;
 }
 
 static GLenum prim_to_gl_prim[] = {
@@ -496,35 +498,45 @@ void r_draw(Primitive prim, uint first, uint count, uint32_t *indices, uint inst
 	}
 }
 
+void gl33_sync_texunit(uint unit) {
+	TextureUnit *u = R.texunits.indexed + unit;
+	Texture *tex = u->tex2d.pending;
+
+	if(tex == NULL) {
+		if(u->tex2d.gl_handle != 0) {
+			gl33_activate_texunit(unit);
+			glBindTexture(GL_TEXTURE_2D, 0);
+			u->tex2d.gl_handle = 0;
+			u->tex2d.active = tex;
+		}
+	} else if(u->tex2d.gl_handle != tex->impl->gl_handle) {
+		gl33_activate_texunit(unit);
+		glBindTexture(GL_TEXTURE_2D, tex->impl->gl_handle);
+		u->tex2d.gl_handle = tex->impl->gl_handle;
+		u->tex2d.active = tex;
+	}
+}
+
+void gl33_sync_texunits(void) {
+	for(uint i = 0; i < GL33_MAX_TEXUNITS; ++i) {
+		gl33_sync_texunit(i);
+	}
+}
+
 void r_texture_ptr(uint unit, Texture *tex) {
 	assert(unit < GL33_MAX_TEXUNITS);
 
-	if(tex == NULL) {
-		if(R.texunits.indexed[unit].tex2d.gl_handle != 0) {
-			glBindTexture(GL_TEXTURE_2D, 0);
-			R.texunits.indexed[unit].tex2d.gl_handle = 0;
-			R.texunits.indexed[unit].tex2d.ptr = NULL;
-		}
-
-		return;
+	if(tex != NULL) {
+		assert(tex->impl != NULL);
+		assert(tex->impl->gl_handle != 0);
 	}
 
-	assert(tex->impl != NULL);
-	assert(tex->impl->gl_handle != 0);
-
-	if(R.texunits.indexed[unit].tex2d.gl_handle != tex->impl->gl_handle) {
-		// TODO: defer until needed
-		gl33_activate_texunit(unit);
-		r_flush();
-		glBindTexture(GL_TEXTURE_2D, tex->impl->gl_handle);
-		R.texunits.indexed[unit].tex2d.gl_handle = tex->impl->gl_handle;
-		R.texunits.indexed[unit].tex2d.ptr = tex;
-	}
+	R.texunits.indexed[unit].tex2d.pending = tex;
 }
 
 Texture* r_texture_current(uint unit) {
 	assert(unit < GL33_MAX_TEXUNITS);
-	return R.texunits.indexed[unit].tex2d.ptr;
+	return R.texunits.indexed[unit].tex2d.pending;
 }
 
 static inline GLuint fbo_num(RenderTarget *target) {
@@ -538,32 +550,39 @@ static inline GLuint fbo_num(RenderTarget *target) {
 	return target->impl->gl_fbo;
 }
 
-void r_target(RenderTarget *target) {
-	// TODO: defer until needed
-
-	if(fbo_num(R.render_target) != fbo_num(target)) {
-		r_flush();
-		glBindFramebuffer(GL_FRAMEBUFFER, fbo_num(target));
-		R.render_target = target;
+void gl33_sync_render_target(void) {
+	if(fbo_num(R.render_target.active) != fbo_num(R.render_target.pending)) {
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo_num(R.render_target.pending));
+		R.render_target.active = R.render_target.pending;
 	}
+}
+
+void r_target(RenderTarget *target) {
+	assert(target == NULL || target->impl != NULL);
+	R.render_target.pending = target;
+
+	// TODO: figure out why this is necessary, fix it, and remove this.
+	gl33_sync_render_target();
 }
 
 RenderTarget *r_target_current() {
-	return R.render_target;
+	return R.render_target.pending;
+}
+
+void gl33_sync_shader(void) {
+	if(R.progs.pending && R.progs.gl_prog != R.progs.pending->gl_handle) {
+		log_debug("switch program %i", R.progs.pending->gl_handle);
+		glUseProgram(R.progs.pending->gl_handle);
+		R.progs.gl_prog = R.progs.pending->gl_handle;
+		R.progs.active = R.progs.pending;
+	}
 }
 
 void r_shader_ptr(ShaderProgram *prog) {
-	// TODO: defer until needed
-
 	assert(prog != NULL);
 	assert(prog->gl_handle != 0);
 
-	if(R.gl_prog != prog->gl_handle) {
-		glUseProgram(prog->gl_handle);
-		R.gl_prog = prog->gl_handle;
-		R.progs.active = prog;
-		R.progs.pending = prog;
-	}
+	R.progs.pending = prog;
 }
 
 void r_shader_standard(void) {
@@ -575,12 +594,7 @@ void r_shader_standard_notex(void) {
 }
 
 ShaderProgram *r_shader_current() {
-	// update_prog();
-	return R.progs.active;
-}
-
-void r_flush(void) {
-	update_ubo();
+	return R.progs.pending;
 }
 
 void r_clear(ClearBufferFlags flags) {

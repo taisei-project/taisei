@@ -347,7 +347,6 @@ Uniform* r_shader_uniform(ShaderProgram *prog, const char *uniform_name) attr_no
 void r_uniform_ptr(Uniform *uniform, uint count, const void *data) attr_nonnull(3);
 UniformType r_uniform_type(Uniform *uniform);
 
-void r_flush(void);
 void r_draw(Primitive prim, uint first, uint count, uint32_t *indices, uint instances);
 
 void r_texture_create(Texture *tex, const TextureParams *params) attr_nonnull(1, 2);

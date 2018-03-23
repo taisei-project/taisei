@@ -88,7 +88,7 @@ void r_uniform_ptr(Uniform *uniform, uint count, const void *data) {
 
 	ShaderProgram *prev_prog = r_shader_current();
 	r_shader_ptr(uniform->prog);
-	r_flush();
+	gl33_sync_shader();
 	type_to_setter[uniform->type](uniform, count, data);
 	r_shader_ptr(prev_prog);
 }

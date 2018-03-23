@@ -38,7 +38,7 @@ void r_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, uint nattribs, 
 	glGenBuffers(1, &vbuf->impl->gl_vbo);
 
 	r_vertex_buffer(vbuf);
-	r_flush();
+	gl33_sync_vertex_buffer();
 
 	glBufferData(GL_ARRAY_BUFFER, capacity, NULL, GL_STATIC_DRAW);
 
@@ -87,7 +87,7 @@ void r_vertex_buffer_invalidate(VertexBuffer *vbuf) {
 	VertexBuffer *vbuf_saved = r_vertex_buffer_current();
 
 	r_vertex_buffer(vbuf);
-	r_flush();
+	gl33_sync_vertex_buffer();
 
 	vbuf->offset = 0;
 	glBufferData(GL_ARRAY_BUFFER, vbuf->size, NULL, GL_DYNAMIC_DRAW);
@@ -102,7 +102,7 @@ void r_vertex_buffer_write(VertexBuffer *vbuf, size_t offset, size_t data_size, 
 	VertexBuffer *vbuf_saved = r_vertex_buffer_current();
 
 	r_vertex_buffer(vbuf);
-	r_flush();
+	gl33_sync_vertex_buffer();
 
 	glBufferSubData(GL_ARRAY_BUFFER, offset, data_size, data);
 

@@ -264,7 +264,6 @@ void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex) {
 	draw_texture_state.drawing = true;
 
 	r_texture_ptr(0, tex);
-	r_flush();
 	r_mat_push();
 
 	float x = dest.x;
@@ -345,7 +344,6 @@ void fill_viewport(float xoff, float yoff, float ratio, const char *name) {
 
 void fill_viewport_p(float xoff, float yoff, float ratio, float aspect, float angle, Texture *tex) {
 	r_texture_ptr(0, tex);
-	r_flush();
 
 	float rw, rh;
 
@@ -421,7 +419,6 @@ void loop_tex_line_p(complex a, complex b, float w, float t, Texture *texture) {
 	r_mat_mode(MM_MODELVIEW);
 
 	r_texture_ptr(0, texture);
-	r_flush();
 	r_draw_quad();
 
 	r_mat_mode(MM_TEXTURE);
