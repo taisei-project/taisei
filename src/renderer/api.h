@@ -70,7 +70,7 @@ typedef struct TextureParams {
 
 	uint mipmaps;
 	uint8_t *image_data;
-} TextureParams attr_designated_init;
+} attr_designated_init TextureParams;
 
 typedef struct TextureImpl TextureImpl;
 
