@@ -13,65 +13,80 @@
 #include "../common/opengl.h"
 #include "core.h"
 
-static inline GLuint r_filter_to_gl_filter(TextureFilterMode fmode) {
-	switch(fmode) {
-		case TEX_FILTER_DEFAULT:
-		case TEX_FILTER_LINEAR:
-			return GL_LINEAR;
+static GLuint r_filter_to_gl_filter(TextureFilterMode mode) {
+	static GLuint map[] = {
+		[TEX_FILTER_DEFAULT] = GL_LINEAR,
+		[TEX_FILTER_LINEAR]  = GL_LINEAR,
+		[TEX_FILTER_NEAREST] = GL_NEAREST,
+	};
 
-		case TEX_FILTER_NEAREST:
-			return GL_NEAREST;
-
-		default: UNREACHABLE;
-	}
+	assert((uint)mode < sizeof(map)/sizeof(*map));
+	return map[mode];
 }
 
-static inline GLuint r_wrap_to_gl_wrap(TextureWrapMode wmode) {
-	switch(wmode) {
-		case TEX_WRAP_DEFAULT:
-		case TEX_WRAP_REPEAT:
-			return GL_REPEAT;
+static GLuint r_wrap_to_gl_wrap(TextureWrapMode mode) {
+	static GLuint map[] = {
+		[TEX_WRAP_DEFAULT]   = GL_REPEAT,
+		[TEX_WRAP_CLAMP]     = GL_CLAMP,
+		[TEX_WRAP_MIRROR]    = GL_MIRRORED_REPEAT,
+		[TEX_WRAP_REPEAT]    = GL_REPEAT,
+	};
 
-		case TEX_WRAP_CLAMP:
-			return GL_CLAMP_TO_EDGE;
-
-		case TEX_WRAP_MIRROR:
-			return GL_MIRRORED_REPEAT;
-
-		default: UNREACHABLE;
-	}
+	assert((uint)mode < sizeof(map)/sizeof(*map));
+	return map[mode];
 }
 
-static inline GLuint r_type_to_gl_internal_format(TextureType type) {
-	switch(type) {
-		case TEX_TYPE_RGB:
-			return GL_RGB8;
+typedef struct TexTypeInfo {
+	GLuint internal_fmt;
+	GLuint external_fmt;
+	size_t pixel_size;
+} TexTypeInfo;
 
-		case TEX_TYPE_DEFAULT:
-		case TEX_TYPE_RGBA:
-			return GL_RGBA8;
+static TexTypeInfo* tex_type_info(TextureType type) {
+	static TexTypeInfo map[] = {
+		[TEX_TYPE_DEFAULT]   = { GL_RGBA8,             GL_RGBA,            4 },
+		[TEX_TYPE_RGB]       = { GL_RGB8,              GL_RGBA,            3 },
+		[TEX_TYPE_RGBA]      = { GL_RGBA8,             GL_RGBA,            4 },
+		[TEX_TYPE_DEPTH]     = { GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, 1 },
+	};
 
-		case TEX_TYPE_DEPTH:
-			return GL_DEPTH_COMPONENT16;
-
-		default: UNREACHABLE;
-	}
+	assert((uint)type < sizeof(map)/sizeof(*map));
+	return map + type;
 }
 
-static inline GLuint r_type_to_gl_external_format(TextureType type) {
-	switch(type) {
-		case TEX_TYPE_RGB:
-			return GL_RGB;
+static void gl33_texture_set_assume_active(Texture *tex, void *image_data) {
+	assert(tex->impl != NULL);
 
-		case TEX_TYPE_DEFAULT:
-		case TEX_TYPE_RGBA:
-			return GL_RGBA;
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, tex->impl->pbo);
 
-		case TEX_TYPE_DEPTH:
-			return GL_DEPTH_COMPONENT;
-
-		default: UNREACHABLE;
+	if(tex->impl->pbo) {
+		size_t s = tex->w * tex->h * tex_type_info(tex->type)->pixel_size;
+		glBufferData(GL_PIXEL_UNPACK_BUFFER, s, image_data, GL_STREAM_DRAW);
+		image_data = NULL;
 	}
+
+	glTexImage2D(
+		GL_TEXTURE_2D,
+		0,
+		tex->impl->fmt_internal,
+		tex->w,
+		tex->h,
+		0,
+		tex->impl->fmt_external,
+		GL_UNSIGNED_BYTE,
+		image_data
+	);
+}
+
+static void gl33_texture_set(Texture *tex, void *image_data) {
+	assert(tex->impl != NULL);
+
+	uint unit = gl33_active_texunit();
+	Texture *prev_tex = r_texture_current(unit);
+	r_texture_ptr(unit, tex);
+	gl33_sync_texunit(unit);
+	gl33_texture_set_assume_active(tex, image_data);
+	r_texture_ptr(unit, prev_tex);
 }
 
 void r_texture_create(Texture *tex, const TextureParams *params) {
@@ -99,23 +114,24 @@ void r_texture_create(Texture *tex, const TextureParams *params) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(params->filter.downscale));
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(params->filter.upscale));
 
-	glTexImage2D(
-		GL_TEXTURE_2D,
-		0,
-		r_type_to_gl_internal_format(params->type),
-		tex->w,
-		tex->h,
-		0,
-		r_type_to_gl_external_format(params->type),
-		GL_UNSIGNED_BYTE,
-		params->image_data
-	);
+	tex->impl->fmt_internal = tex_type_info(params->type)->internal_fmt;
+	tex->impl->fmt_external = tex_type_info(params->type)->external_fmt;
 
+	if(params->stream) {
+		glGenBuffers(1, &tex->impl->pbo);
+	}
+
+	gl33_texture_set_assume_active(tex, params->image_data);
 	r_texture_ptr(unit, prev_tex);
 }
 
+void r_texture_invalidate(Texture *tex) {
+	gl33_texture_set(tex, NULL);
+}
+
 void r_texture_fill(Texture *tex, void *image_data) {
-	r_texture_fill_region(tex, 0, 0, tex->w, tex->h, image_data);
+	// r_texture_fill_region(tex, 0, 0, tex->w, tex->h, image_data);
+	gl33_texture_set(tex, image_data);
 }
 
 void r_texture_fill_region(Texture *tex, uint x, uint y, uint w, uint h, void *image_data) {
@@ -126,15 +142,36 @@ void r_texture_fill_region(Texture *tex, uint x, uint y, uint w, uint h, void *i
 	glTexSubImage2D(
 		GL_TEXTURE_2D, 0,
 		x, y, w, h,
-		r_type_to_gl_external_format(tex->type),
+		tex_type_info(tex->type)->external_fmt,
 		GL_UNSIGNED_BYTE,
-	image_data);
+		image_data
+	);
 	r_texture_ptr(unit, prev_tex);
+}
+
+void r_texture_replace(Texture *tex, TextureType type, uint w, uint h, void *image_data) {
+	assert(tex->impl != NULL);
+
+	tex->w = w;
+	tex->h = h;
+
+	if(type != tex->type) {
+		tex->type = type;
+		tex->impl->fmt_internal = tex_type_info(type)->internal_fmt;
+		tex->impl->fmt_external = tex_type_info(type)->external_fmt;
+	}
+
+	gl33_texture_set(tex, image_data);
 }
 
 void r_texture_destroy(Texture *tex) {
 	if(tex->impl) {
 		glDeleteTextures(1, &tex->impl->gl_handle);
+
+		if(tex->impl->pbo) {
+			glDeleteBuffers(1, &tex->impl->pbo);
+		}
+
 		free(tex->impl);
 		tex->impl = NULL;
 		gl33_texture_deleted(tex);

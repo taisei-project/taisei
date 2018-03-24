@@ -24,13 +24,6 @@ enum {
 	AL_Flag_NoAdjust = 0x10,
 };
 
-// Size of the buffer used by the font renderer at quality == 1.0.
-// No text larger than this can be drawn.
-enum {
-	FONTREN_MAXW = 1024,    // must be a power of two that is >= SCREEN_W
-	FONTREN_MAXH = 64,      // must be a power of two that is > largest font size
-};
-
 typedef struct Font Font;
 
 void draw_text(Alignment align, float x, float y, const char *text, Font *font);

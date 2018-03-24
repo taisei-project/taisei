@@ -77,6 +77,11 @@ void loop_at_fps(LogicFrameFunc logic_frame, RenderFrameFunc render_frame, void 
 	static uint8_t recursion_detector;
 	++recursion_detector;
 
+#ifdef SPAM_FPS
+	hrtime_t frametimes[4096];
+	int frametimes_idx = 0;
+#endif
+
 	while(true) {
 		bool uncapped_rendering = uncapped_rendering_env;
 		frame_start_time = time_get();
@@ -153,6 +158,22 @@ begin_frame:
 		} else {
 			rframe_action = render_frame(arg);
 			fpscounter_update(&global.fps.render);
+
+#ifdef SPAM_FPS
+			frametimes[frametimes_idx++] = *global.fps.render.frametimes;
+			size_t s = sizeof(frametimes)/sizeof(*frametimes);
+
+			if(frametimes_idx == s) {
+				hrtime_t total = 0;
+
+				for(int i = 0; i < s; ++i) {
+					total += frametimes[i];
+				}
+
+				frametimes_idx = 0;
+				log_info("%zi frames in %.2fs = %.2f FPS", s, (double)total, (double)(1 / (total / s)));
+			}
+#endif
 		}
 
 		if(lframe_action == LFRAME_STOP) {

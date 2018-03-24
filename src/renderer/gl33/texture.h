@@ -16,4 +16,7 @@
 
 typedef struct TextureImpl {
 	GLuint gl_handle;
+	GLuint pbo;
+	GLenum fmt_internal;
+	GLenum fmt_external;
 } TextureImpl;

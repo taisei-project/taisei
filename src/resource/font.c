@@ -45,7 +45,6 @@ typedef struct FontRenderer {
 	Texture tex;
 	Sprite sprite;
 	float quality;
-	uint32_t *pixbuf;
 } FontRenderer;
 
 static ObjectPool *cache_pool;
@@ -153,17 +152,8 @@ void update_font_cache(void) {
 	}
 }
 
-static void fontrenderer_init(float quality) {
-	font_renderer.quality = quality = sanitize_scale(quality);
-
-	float r = ftopow2(quality);
-	int w = FONTREN_MAXW * r;
-	int h = FONTREN_MAXH * r;
-
-	font_renderer.sprite.tex = &font_renderer.tex;
-	font_renderer.pixbuf = calloc(w * h, sizeof(uint32_t));
-
-	r_texture_create(&font_renderer.tex, &(TextureParams) {
+static void fontrenderer_init_tex(Texture *tex) {
+	r_texture_create(tex, &(TextureParams) {
 		.type = TEX_TYPE_RGBA,
 		.filter = {
 			.upscale = TEX_FILTER_LINEAR,
@@ -173,36 +163,26 @@ static void fontrenderer_init(float quality) {
 			.s = TEX_WRAP_CLAMP,
 			.t = TEX_WRAP_CLAMP,
 		},
-		.width = w,
-		.height = h,
+		.width = 1,
+		.height = 1,
+		.stream = true,
 	});
+}
 
-	log_debug("q=%f, w=%i, h=%i", font_renderer.quality, w, h);
+static void fontrenderer_init(float quality) {
+	font_renderer.quality = quality = sanitize_scale(quality);
+	fontrenderer_init_tex(&font_renderer.tex);
+	font_renderer.sprite.tex = &font_renderer.tex;
 }
 
 static void fontrenderer_free(void) {
 	r_texture_destroy(&font_renderer.tex);
-	free(font_renderer.pixbuf);
 }
 
 static void fontrenderer_upload(SDL_Surface *surf) {
 	assert(surf != NULL);
 
-	// the written texture is zero padded to avoid bits of previously drawn text bleeding in
-	int winw = surf->w+1;
-	int winh = surf->h+1;
-
-	uint32_t *pixels = font_renderer.pixbuf;
-
-	// memset(pixels, 0, font_renderer.tex.w * font_renderer.tex.h * sizeof(uint32_t));
-
-	for(int y = 0; y < surf->h; y++) {
-		memcpy(pixels+y*winw, ((uint8_t*)surf->pixels)+y*surf->pitch, surf->w*4);
-		pixels[y*winw+surf->w]=0;
-	}
-
-	memset(pixels+(winh-1)*winw, 0, winw*4);
-	r_texture_fill_region(&font_renderer.tex, 0, 0, winw, winh, pixels);
+	r_texture_replace(&font_renderer.tex, font_renderer.tex.type, surf->w, surf->h, surf->pixels);
 
 	font_renderer.sprite.tex_area.w = surf->w;
 	font_renderer.sprite.tex_area.h = surf->h;
@@ -223,17 +203,6 @@ static SDL_Surface* fontrender_render(const char *text, Font *font) {
 
 	if(!surf) {
 		log_fatal("TTF_RenderUTF8_Blended() failed: %s", TTF_GetError());
-	}
-
-	if(surf->w > font_renderer.tex.w || surf->h > font_renderer.tex.h) {
-		log_fatal(
-			"Text (%s %dx%d) is too big for the internal buffer (%dx%d).",
-			text,
-			surf->w,
-			surf->h,
-			font_renderer.tex.w,
-			font_renderer.tex.h
-		);
 	}
 
 	return surf;

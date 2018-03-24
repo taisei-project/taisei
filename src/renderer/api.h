@@ -70,6 +70,7 @@ typedef struct TextureParams {
 
 	uint mipmaps;
 	uint8_t *image_data;
+	bool stream;
 } attr_designated_init TextureParams;
 
 typedef struct TextureImpl TextureImpl;
@@ -351,6 +352,8 @@ void r_draw(Primitive prim, uint first, uint count, uint32_t *indices, uint inst
 void r_texture_create(Texture *tex, const TextureParams *params) attr_nonnull(1, 2);
 void r_texture_fill(Texture *tex, void *image_data) attr_nonnull(1, 2);
 void r_texture_fill_region(Texture *tex, uint x, uint y, uint w, uint h, void *image_data) attr_nonnull(1, 6);
+void r_texture_invalidate(Texture *tex) attr_nonnull(1);
+void r_texture_replace(Texture *tex, TextureType type, uint w, uint h, void *image_data) attr_nonnull(1, 5);
 void r_texture_destroy(Texture *tex) attr_nonnull(1);
 
 void r_texture_ptr(uint unit, Texture *tex);
