@@ -47,10 +47,15 @@ static bool include_shader(const char *path, SDL_RWops *dest, int include_level)
 	while(SDL_RWgets(stream, linebuf, sizeof(linebuf))) {
 		const char include[] = "#include";
 
-		if(strstartswith(linebuf,include)) {
+		char *p = linebuf;
+		while(*p != 0 && isspace(*p)) {
+			p++;
+		}
+
+		if(strstartswith(p,include)) {
 			char *filename;
-			char *p = linebuf+sizeof(include)-1;
-			while(*p != 0 && (*p == ' ' || *p == '\t')) {
+			p += sizeof(include)-1;
+			while(*p != 0 && isspace(*p)) {
 				p++;
 			}
 			if(*p != '"') {
@@ -76,13 +81,14 @@ static bool include_shader(const char *path, SDL_RWops *dest, int include_level)
 			if(q != 0) {
 				*q = 0;
 			}
-			char *pathcopy=0;
-			stralloc(&pathcopy,path);
+			char *pathcopy = strdup(path);
 			char *newpath = strjoin(pathcopy,filename,0);
 			*p = '"';
 			*q = tmp;
 			
 			include_shader(newpath, dest, include_level+1);
+			SDL_RWprintf(dest, "#line %i %i", lineno + 1, include_level);
+			
 			free(pathcopy);
 			free(newpath);
 		} else {			
