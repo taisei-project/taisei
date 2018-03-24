@@ -18,6 +18,10 @@
  * Resource API
  */
 
+enum {
+	SHOBJ_MAX_INCLUDE_DEPTH = 42,
+};
+
 static char* shader_object_path(const char *name) {
 	if(strendswith_any(name, (const char*[]){".vert", ".frag", NULL})) {
 		return strjoin(SHOBJ_PATH_PREFIX, name, ".glsl", NULL);
@@ -35,6 +39,11 @@ static bool check_shader_object_path(const char *path) {
 }
 
 static bool include_shader(const char *path, SDL_RWops *dest, int include_level) {
+	if(include_level > SHOBJ_MAX_INCLUDE_DEPTH) {
+		log_warn("%s: max include depth reached. Maybe there is an include cycle?",path);	
+		return false;
+	}
+		
 	SDL_RWops *stream = vfs_open(path, VFS_MODE_READ);
 
 	if(!stream) {
@@ -59,7 +68,8 @@ static bool include_shader(const char *path, SDL_RWops *dest, int include_level)
 				p++;
 			}
 			if(*p != '"') {
-				log_warn("%s:%d: malformed #include statement: \" expected.",path,lineno);	
+				log_warn("%s:%d: malformed #include statement: \" expected.",path,lineno);
+				SDL_RWclose(stream);
 				return false;
 			}
 			if(*p != 0) {
@@ -71,6 +81,7 @@ static bool include_shader(const char *path, SDL_RWops *dest, int include_level)
 			}
 			if(*p != '"') {
 				log_warn("%s:%d: malformed #include statement: second \" expected.",path,lineno);	
+				SDL_RWclose(stream);
 				return false;
 			}
 			*p=0;
@@ -82,12 +93,16 @@ static bool include_shader(const char *path, SDL_RWops *dest, int include_level)
 				*q = 0;
 			}
 			char *pathcopy = strdup(path);
-			char *newpath = strjoin(pathcopy,filename,0);
+			char *newpath = strjoin(pathcopy,filename,NULL);
 			*p = '"';
 			*q = tmp;
 			
-			include_shader(newpath, dest, include_level+1);
-			SDL_RWprintf(dest, "#line %i %i", lineno + 1, include_level);
+			bool rc = include_shader(newpath, dest, include_level+1);
+			if(!rc) {
+				SDL_RWclose(stream);
+				return false;
+			}
+			SDL_RWprintf(dest, "#line %i %i\n", lineno + 1, include_level);
 			
 			free(pathcopy);
 			free(newpath);
