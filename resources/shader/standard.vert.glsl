@@ -1,11 +1,6 @@
 #version 330 core
 
-layout(std140) uniform RenderContext {
-	mat4 modelViewMatrix;
-	mat4 projectionMatrix;
-	mat4 textureMatrix;
-	vec4 color;
-} ctx;
+#include "render_context.glsl"
 
 layout(location=0) in vec3 position;
 layout(location=2) in vec2 texCoordRawIn;

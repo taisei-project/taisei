@@ -11,6 +11,7 @@
 #include "util.h"
 #include "core.h"
 #include "shader_object.h"
+#include "vfs/pathutil.h"
 #include "rwops/rwops_autobuf.h"
 
 /*
@@ -33,7 +34,7 @@ static bool check_shader_object_path(const char *path) {
 	return strendswith_any(path, (const char*[]){".vert.glsl", ".frag.glsl", NULL});
 }
 
-static bool include_shader(const char *path, SDL_RWops *dest, int *include_level) {
+static bool include_shader(const char *path, SDL_RWops *dest, int include_level) {
 	SDL_RWops *stream = vfs_open(path, VFS_MODE_READ);
 
 	if(!stream) {
@@ -42,10 +43,52 @@ static bool include_shader(const char *path, SDL_RWops *dest, int *include_level
 	}
 
 	char linebuf[256]; // TODO: remove this dumb limitation
-
+	int lineno = 1;
 	while(SDL_RWgets(stream, linebuf, sizeof(linebuf))) {
-		// TODO: actually implement #include
-		SDL_RWwrite(dest, linebuf, 1, strlen(linebuf));
+		const char include[] = "#include";
+
+		if(strstartswith(linebuf,include)) {
+			char *filename;
+			char *p = linebuf+sizeof(include)-1;
+			while(*p != 0 && (*p == ' ' || *p == '\t')) {
+				p++;
+			}
+			if(*p != '"') {
+				log_warn("%s:%d: malformed #include statement: \" expected.",path,lineno);	
+				return false;
+			}
+			if(*p != 0) {
+				p++;
+			}
+			filename = p;
+			while(*p != 0 && *p != '"') {
+				p++;
+			}
+			if(*p != '"') {
+				log_warn("%s:%d: malformed #include statement: second \" expected.",path,lineno);	
+				return false;
+			}
+			*p=0;
+			
+			// I have no idea how all the undocumented helper functions scattered about the code work.
+			char *q = strrchr(path, VFS_PATH_SEP)+1;
+			char tmp = *q;
+			if(q != 0) {
+				*q = 0;
+			}
+			char *pathcopy=0;
+			stralloc(&pathcopy,path);
+			char *newpath = strjoin(pathcopy,filename,0);
+			*p = '"';
+			*q = tmp;
+			
+			include_shader(newpath, dest, include_level+1);
+			free(pathcopy);
+			free(newpath);
+		} else {			
+			SDL_RWwrite(dest, linebuf, 1, strlen(linebuf));
+		}
+		lineno++;
 	}
 
 	SDL_RWclose(stream);
@@ -70,10 +113,9 @@ static void* load_shader_object_begin(const char *path, uint flags) {
 	}
 
 	char *src = NULL;
-	int include_level = 0;
 	SDL_RWops *writer = SDL_RWAutoBuffer((void**)&src, 256);
 
-	if(!include_shader(path, writer, &include_level)) {
+	if(!include_shader(path, writer, 0)) {
 		SDL_RWclose(writer);
 		return NULL;
 	}
