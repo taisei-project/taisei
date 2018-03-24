@@ -215,6 +215,7 @@ void draw_lasers(int bgpass) {
 	r_blend(BLEND_ALPHA);
 	r_shader_standard();
 	r_vertex_buffer(vbuf_saved);
+	r_color4(1, 1, 1, 1);
 }
 
 void* _delete_laser(List **lasers, List *laser, void *arg) {
