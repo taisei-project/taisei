@@ -27,7 +27,7 @@ static GLuint r_filter_to_gl_filter(TextureFilterMode mode) {
 static GLuint r_wrap_to_gl_wrap(TextureWrapMode mode) {
 	static GLuint map[] = {
 		[TEX_WRAP_DEFAULT]   = GL_REPEAT,
-		[TEX_WRAP_CLAMP]     = GL_CLAMP,
+		[TEX_WRAP_CLAMP]     = GL_CLAMP_TO_EDGE,
 		[TEX_WRAP_MIRROR]    = GL_MIRRORED_REPEAT,
 		[TEX_WRAP_REPEAT]    = GL_REPEAT,
 	};
