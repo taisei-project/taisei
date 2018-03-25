@@ -10,7 +10,6 @@
 #include "taisei.h"
 
 #include <SDL.h>
-#include <stdbool.h>
 
 #include "syspath_public.h"
 #include "union_public.h"

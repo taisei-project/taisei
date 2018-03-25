@@ -1,0 +1,7 @@
+
+vec2 uv_to_region(vec4 region, vec2 uv) {
+    return vec2(
+        mix(region.x, region.x + region.z, uv.x),
+        mix(region.y, region.y + region.w, uv.y)
+    );
+}

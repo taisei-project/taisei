@@ -726,16 +726,14 @@ static void wriggle_slave_visual(Enemy *e, int time, bool render) {
 		return;
 
 	if(render) {
-		r_mat_push();
-		r_mat_translate(creal(e->pos),cimag(e->pos),0);
-		r_mat_rotate_deg(7*time,0,0,1);
-		r_color4(0.8,1,0.4,1);
-		r_mat_scale(0.7,0.7,1);
-		r_blend(BLEND_ADD);
-		draw_sprite(0,0,"fairy_circle");
-		r_blend(BLEND_ALPHA);
-		r_color3(1,1,1);
-		r_mat_pop();
+		r_draw_sprite(&(SpriteParams) {
+			.sprite = "fairy_circle",
+			.rotation.angle = DEG2RAD * 7 * time,
+			.scale.both = 0.7,
+			.blend = BLEND_ADD,
+			.color = rgba(0.8, 1.0, 0.4, 1.0),
+			.pos = { creal(e->pos), cimag(e->pos) },
+		});
 	} else if(time % 5 == 0) {
 		tsrand_fill(2);
 		PARTICLE(
@@ -874,7 +872,7 @@ static int wriggle_spell_slave(Enemy *e, int time) {
 			.draw_rule = wriggle_slave_part_draw,
 			.rule = timeout,
 			.args = { 60 },
-			.color_transform_rule = proj_clrtransform_particle,
+			.shader = "sprite_default",
 			.flags = PFLAG_NOCLEAR | PFLAG_NOCLEAREFFECT | PFLAG_NOCOLLISIONEFFECT,
 		);
 	}

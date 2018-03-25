@@ -10,7 +10,6 @@
 #include "taisei.h"
 
 #include <SDL.h>
-#include <stdbool.h>
 #include "events.h"
 #include "config.h"
 

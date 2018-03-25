@@ -10,7 +10,6 @@
 #include "taisei.h"
 
 #include <SDL_keycode.h>
-#include <stdbool.h>
 
 #define CONFIG_FILE "storage/config"
 

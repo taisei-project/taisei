@@ -10,10 +10,8 @@
 #include "taisei.h"
 
 #include <SDL.h>
-#include <stdbool.h>
 #include "util.h"
 #include "resource.h"
-#include "renderer/api.h"
 
 typedef struct Texture Texture;
 

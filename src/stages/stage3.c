@@ -174,6 +174,7 @@ static void stage3_preload(void) {
 		"tunnel",
 		"zbuf_fog",
 		"glitch",
+		"maristar_bombbg",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/scuttle",

@@ -90,7 +90,7 @@ void draw_dialog(Dialog *dialog) {
 
 		r_mat_translate(VIEWPORT_W*7.0/18.0, 0, 0);
 		if(dialog->images[i])
-			draw_sprite_p(0, 0, dialog->images[i]);
+			draw_sprite_batched_p(0, 0, dialog->images[i]);
 		
 		r_mat_pop();
 
@@ -126,6 +126,7 @@ void draw_dialog(Dialog *dialog) {
 		r_color3(1,1,1);
 
 	r_mat_pop();
+	r_shader("sprite_default");
 }
 
 bool page_dialog(Dialog **d) {

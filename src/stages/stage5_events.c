@@ -446,7 +446,7 @@ static void cloud_common(void) {
 			1-2*afrand(1)+v*I,
 			-0.01*I
 		},
-		.color_transform_rule = proj_clrtransform_particle,
+		.shader = "sprite_default",
 	);
 }
 

@@ -367,7 +367,7 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 	r_uniform_rgba("back_color", back_clr);
 	r_uniform_float("fill", 1);
 
-	begin_draw_sprite(x - star_width, y, star_width/star->w, star_width/star->w, true, star);
+	begin_draw_sprite(x - star_width, y, star_width/star->w, star_width/star->w, star);
 
 	while(i < numstars) {
 		r_mat_translate(1, 0, 0);

@@ -85,8 +85,11 @@ void gl33_target_initialize(RenderTarget *target) {
 
 		glDrawBuffers(RENDERTARGET_MAX_COLOR_ATTACHMENTS, drawbufs);
 
+		Color cc_saved = r_clear_color_current();
+		r_clear_color4(0, 0, 0, 0);
 		// NOTE: r_clear would cause an infinite recursion here
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		r_clear_color(cc_saved);
 
 		target->impl->initialized = true;
 	}

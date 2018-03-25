@@ -155,29 +155,26 @@ static void draw_magic_star(complex pos, double a, Color c1, Color c2) {
 	c2 = multiply_colors(c2, mul);
 
 	Sprite *spr = get_sprite("part/magic_star");
-	ShaderProgram *shader = recolor_get_shader();
-	ColorTransform ct;
-	r_shader_ptr(shader);
+	r_shader("sprite_bullet");
 
 	r_blend(BLEND_ADD);
 	r_mat_push();
 		r_mat_translate(creal(pos), cimag(pos), -1);
 		r_mat_push();
-			static_clrtransform_bullet(c1, &ct);
-			recolor_apply_transform(&ct);
+			r_color(c1);
 			r_mat_rotate_deg(global.frames * 3, 0, 0, 1);
-			draw_sprite_p(0, 0, spr);
+			draw_sprite_batched_p(0, 0, spr);
 		r_mat_pop();
 		r_mat_push();
-			static_clrtransform_bullet(c2, &ct);
-			recolor_apply_transform(&ct);
+			r_color(c2);
 			r_mat_rotate_deg(global.frames * -3, 0, 0, 1);
-			draw_sprite_p(0, 0, spr);
+			draw_sprite_batched_p(0, 0, spr);
 		r_mat_pop();
 	r_mat_pop();
 	r_blend(BLEND_ALPHA);
+	r_color4(1, 1, 1, 1);
 
-	r_shader_standard();
+	r_shader("sprite_default");
 }
 
 static void marisa_laser_slave_visual(Enemy *e, int t, bool render) {
@@ -202,12 +199,11 @@ static void marisa_laser_slave_visual(Enemy *e, int t, bool render) {
 
 	MarisaLaserData *ld = REF(e->args[3]);
 
-	r_color4(1, 1, 1, laser_alpha);
-	r_mat_push();
-	r_mat_translate(creal(ld->trace_hit.first), cimag(ld->trace_hit.first), 0);
-	draw_sprite(0, 0, "part/smoothdot");
-	r_mat_pop();
-	r_color4(1, 1, 1, 1);
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "part/smoothdot",
+		.color = rgba(1, 1, 1, laser_alpha),
+		.pos = { creal(ld->trace_hit.first), cimag(ld->trace_hit.first) },
+	});
 }
 
 static void marisa_laser_fader_visual(Enemy *e, int t, bool render) {
@@ -237,10 +233,11 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	Uniform *u_clr_freq = r_shader_uniform(shader, "color_freq");
 	Uniform *u_alpha = r_shader_uniform(shader, "alphamod");
 	Uniform *u_length = r_shader_uniform(shader, "length");
-	// int u_cutoff = uniloc(shader, "cutoff");
 	Texture *tex0 = get_tex("part/marisa_laser0");
 	Texture *tex1 = get_tex("part/marisa_laser1");
+	VertexBuffer *vbuf_saved = r_vertex_buffer_current();
 
+	r_vertex_buffer(r_vertex_buffer_static_models());
 	r_shader_ptr(shader);
 	r_uniform_ptr(u_clr0,      1, (float[]) { 1, 1, 1, 0.5 });
 	r_uniform_ptr(u_clr1,      1, (float[]) { 1, 1, 1, 0.8 });
@@ -289,8 +286,9 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 		}
 	}
 
-	r_shader_standard();
+	r_shader("sprite_default");
 	r_blend(BLEND_ALPHA);
+	r_vertex_buffer(vbuf_saved);
 }
 
 static int marisa_laser_fader(Enemy *e, int t) {
@@ -611,7 +609,7 @@ PlayerMode plrmode_marisa_a = {
 	.shot_mode = PLR_SHOT_MARISA_LASER,
 	.procs = {
 		.bomb = marisa_laser_bomb,
-	.bombbg = marisa_laser_bombbg,
+		.bombbg = marisa_laser_bombbg,
 		.shot = marisa_laser_shot,
 		.power = marisa_laser_power,
 		.speed_mod = marisa_laser_speed_mod,

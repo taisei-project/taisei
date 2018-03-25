@@ -11,7 +11,6 @@
 
 #include <SDL.h>
 #include <SDL_platform.h>
-#include <stdbool.h>
 #include <math.h>
 
 #include "util.h"

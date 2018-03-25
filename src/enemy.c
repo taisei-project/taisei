@@ -16,6 +16,7 @@
 #include "list.h"
 #include "aniplayer.h"
 #include "stageobjects.h"
+#include "glm.h"
 
 #ifdef create_enemy_p
 #undef create_enemy_p
@@ -175,8 +176,6 @@ void EnemyFlareShrink(Projectile *p, int t) {
 }
 
 void BigFairy(Enemy *e, int t, bool render) {
-	CullFaceMode cull_saved = r_cull_current();
-
 	if(!render) {
 		if(!(t % 5)) {
 			complex offset = (frand()-0.5)*30 + (frand()-0.5)*20.0*I;
@@ -191,30 +190,16 @@ void BigFairy(Enemy *e, int t, bool render) {
 		return;
 	}
 
-	r_mat_push();
-	r_mat_translate(creal(e->pos), cimag(e->pos), 0);
-
 	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;
 
-	r_mat_push();
-	r_mat_rotate_deg(global.frames*10,0,0,1);
-	r_mat_scale(s, s, s);
-	draw_sprite(0,0,"fairy_circle");
-	r_mat_pop();
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "fairy_circle",
+		.pos = { creal(e->pos), cimag(e->pos) },
+		.rotation.angle = global.frames * 10 * DEG2RAD,
+		.scale.both = s,
+	});
 
-	if(e->dir) {
-		r_cull(CULL_FRONT);
-		r_mat_scale(-1, 1, 1);
-	} else {
-		r_cull(CULL_BACK);
-	}
-
-	play_animation(get_ani("enemy/bigfairy"),0, 0, e->moving);
-	r_mat_pop();
-
-	if(e->dir) {
-		r_cull(cull_saved);
-	}
+	play_animation(get_ani("enemy/bigfairy"), creal(e->pos), cimag(e->pos), e->moving, e->dir);
 }
 
 void Fairy(Enemy *e, int t, bool render) {
@@ -222,33 +207,16 @@ void Fairy(Enemy *e, int t, bool render) {
 		return;
 	}
 
-	CullFaceMode cull_saved = r_cull_current();
-
 	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;
-	r_mat_push();
-	r_mat_translate(creal(e->pos),cimag(e->pos),0);
 
-	r_mat_push();
-	r_mat_rotate_deg(global.frames*10,0,0,1);
-	r_mat_scale(s, s, s);
-	draw_sprite(0,0,"fairy_circle");
-	r_mat_pop();
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "fairy_circle",
+		.pos = { creal(e->pos), cimag(e->pos) },
+		.rotation.angle = global.frames * 10 * DEG2RAD,
+		.scale.both = s,
+	});
 
-	r_mat_push();
-
-	if(e->dir) {
-		r_cull(CULL_FRONT);
-		r_mat_scale(-1, 1, 1);
-	} else {
-		r_cull(CULL_BACK);
-	}
-
-	play_animation(get_ani("enemy/fairy"),0, 0, e->moving);
-	r_mat_pop();
-
-	r_mat_pop();
-
-	r_cull(cull_saved);
+	play_animation(get_ani("enemy/fairy"), creal(e->pos), cimag(e->pos), e->moving, e->dir);
 }
 
 void Swirl(Enemy *e, int t, bool render) {
@@ -256,11 +224,11 @@ void Swirl(Enemy *e, int t, bool render) {
 		return;
 	}
 
-	r_mat_push();
-	r_mat_translate(creal(e->pos), cimag(e->pos),0);
-	r_mat_rotate_deg(t*15,0,0,1);
-	draw_sprite(0,0, "enemy/swirl");
-	r_mat_pop();
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "enemy/swirl",
+		.pos = { creal(e->pos), cimag(e->pos) },
+		.rotation.angle = t * 10 * DEG2RAD,
+	});
 }
 
 void process_enemies(Enemy **enemies) {

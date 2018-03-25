@@ -73,9 +73,6 @@ Item* create_bpoint(complex pos) {
 }
 
 void draw_items(void) {
-	Color white = rgba(1, 1, 1, 1);
-	Color prevc = white;
-
 	for(Item *i = global.items; i; i = i->next) {
 		Color c = rgba(1, 1, 1,
 			i->type == BPoint && !i->auto_collect
@@ -83,16 +80,11 @@ void draw_items(void) {
 				: 1.0
 		);
 
-		if(prevc != c) {
-			r_color(c);
-			prevc = c;
-		}
-
-		draw_sprite_p(creal(i->pos), cimag(i->pos), item_sprite(i->type));
-	}
-
-	if(prevc != white) {
-		r_color4(1, 1, 1, 1);
+		r_draw_sprite(&(SpriteParams) {
+			.sprite_ptr = item_sprite(i->type),
+			.pos = { creal(i->pos), cimag(i->pos) },
+			.color = c,
+		});
 	}
 }
 

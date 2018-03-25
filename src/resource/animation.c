@@ -12,6 +12,7 @@
 #include "texture.h"
 #include "resource.h"
 #include "list.h"
+#include "renderer/api.h"
 
 ResourceHandler animation_res_handler = {
 	.type = RES_ANIM,
@@ -127,10 +128,19 @@ static Sprite* get_animation_frame(Animation *ani, int col, int row) {
 	return ani->frames[idx];
 }
 
-void draw_animation(float x, float y, int col, int row, const char *name) {
-	draw_animation_p(x, y, col, row, get_ani(name));
+void draw_animation(float x, float y, int col, int row, bool xflip, const char *name) {
+	draw_animation_p(x, y, col, row, xflip, get_ani(name));
 }
 
-void draw_animation_p(float x, float y, int col, int row, Animation *ani) {
-	draw_sprite_p(x, y, get_animation_frame(ani, col, row));
+void draw_animation_p(float x, float y, int col, int row, bool xflip, Animation *ani) {
+	r_draw_sprite(&(SpriteParams) {
+		.pos = { .x = x, .y = y },
+		.sprite_ptr = get_animation_frame(ani, col, row),
+		.flip.x = xflip,
+		.color = r_color_current(),
+	});
+}
+
+Sprite* ani_frame_from_time(Animation *ani, int row, int time) {
+	return get_animation_frame(ani, (time/ani->speed)%ani->cols, row);
 }

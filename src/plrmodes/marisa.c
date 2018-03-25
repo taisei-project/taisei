@@ -37,12 +37,12 @@ void marisa_common_shot(Player *plr, int dmg) {
 
 		PROJECTILE("marisa", plr->pos + 10 - 15.0*I, c, linear, { -20.0*I },
 			.type = PlrProj+dmg,
-			.color_transform_rule = proj_clrtransform_particle,
+			.shader = "sprite_default",
 		);
 
 		PROJECTILE("marisa", plr->pos - 10 - 15.0*I, c, linear, { -20.0*I },
 			.type = PlrProj+dmg,
-			.color_transform_rule = proj_clrtransform_particle,
+			.shader = "sprite_default",
 		);
 	}
 }
@@ -52,16 +52,13 @@ void marisa_common_slave_visual(Enemy *e, int t, bool render) {
 		return;
 	}
 
-	r_mat_push();
-	r_mat_translate(creal(e->pos), cimag(e->pos), -1);
-	// render_rotate_deg(global.frames * 3, 0, 0, 1);
-	draw_sprite(0, 0, "part/smoothdot");
-	r_mat_pop();
+	draw_sprite_batched(creal(e->pos), cimag(e->pos), "part/smoothdot");
 }
 
 void marisa_common_masterspark_draw(int t) {
+	ShaderProgram *prog_saved = r_shader_current();
 	r_shader("masterspark");
 	r_uniform_float("t", t);
 	r_draw_quad();
-	r_shader_standard();
+	r_shader_ptr(prog_saved);
 }

@@ -193,6 +193,7 @@ static void draw_laser_curve_generic(Laser *l) {
 void draw_lasers(int bgpass) {
 	Laser *laser;
 	VertexBuffer *vbuf_saved = r_vertex_buffer_current();
+	ShaderProgram *prog_saved = r_shader_current();
 
 	r_texture(0, "part/lasercurve");
 	r_blend(BLEND_ADD);
@@ -213,7 +214,7 @@ void draw_lasers(int bgpass) {
 	}
 
 	r_blend(BLEND_ALPHA);
-	r_shader_standard();
+	r_shader_ptr(prog_saved);
 	r_vertex_buffer(vbuf_saved);
 	r_color4(1, 1, 1, 1);
 }

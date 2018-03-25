@@ -11,9 +11,10 @@
 
 #include "util.h"
 #include "resource/sprite.h"
+#include "resource/shader_program.h"
 #include "color.h"
-#include "recolor.h"
 #include "objectpool.h"
+#include "renderer/api.h"
 
 #ifdef DEBUG
 	#define PROJ_DEBUG
@@ -27,14 +28,7 @@ typedef struct Projectile Projectile;
 
 typedef int (*ProjRule)(Projectile *p, int t);
 typedef void (*ProjDrawRule)(Projectile *p, int t);
-typedef void (*ProjColorTransformRule)(Projectile *p, int t, Color c, ColorTransform *out);
 typedef bool (*ProjPredicate)(Projectile *p);
-
-void static_clrtransform_bullet(Color c, ColorTransform *out);
-void static_clrtransform_particle(Color c, ColorTransform *out);
-
-void proj_clrtransform_bullet(Projectile *p, int t, Color c, ColorTransform *out);
-void proj_clrtransform_particle(Projectile *p, int t, Color c, ColorTransform *out);
 
 typedef enum {
 	_InvalidProj,
@@ -47,8 +41,8 @@ typedef enum {
 } ProjType;
 
 typedef enum ProjFlags {
-	PFLAG_DRAWADD = (1 << 0),
-	PFLAG_DRAWSUB = (1 << 1),
+	// PFLAG_DRAWADD = (1 << 0),
+	// PFLAG_DRAWSUB = (1 << 1),
 	PFLAG_NOSPAWNZOOM = (1 << 2),
 	PFLAG_NOGRAZE = (1 << 3),
 	PFLAG_NOCLEAR = (1 << 4),
@@ -60,18 +54,26 @@ typedef enum ProjFlags {
 	PFLAG_REQUIREDPARTICLE = (1 << 10),
 } ProjFlags;
 
+// attr_deprecated("Use .blend = BLEND_ADD instead")
+static const ProjFlags PFLAG_DRAWADD = (1 << 0);
+
+// attr_deprecated("Use .blend = BLEND_SUB instead")
+static const ProjFlags PFLAG_DRAWSUB = (1 << 1);
+
 struct Projectile {
 	OBJECT_INTERFACE(Projectile);
 
 	complex pos;
 	complex pos0;
-	complex size; // this is currently ignored if sprite is not NULL.
+	complex size; // TODO: this is currently ignored if sprite is not NULL. we need to decouple hitareas from sprites.
 	complex args[RULE_ARGC];
 	ProjRule rule;
 	ProjDrawRule draw_rule;
-	ProjColorTransformRule color_transform_rule;
+	ShaderProgram *shader;
 	Sprite *sprite;
 	Color color;
+	float shader_custom_param; // FIXME: see renderer/api.c: struct SpriteParams
+	BlendMode blend;
 	int birthtime;
 	float angle;
 	ProjType type;
@@ -93,8 +95,11 @@ typedef struct ProjArgs {
 	complex args[RULE_ARGC];
 	float angle;
 	ProjFlags flags;
+	BlendMode blend;
 	ProjDrawRule draw_rule;
-	ProjColorTransformRule color_transform_rule;
+	const char *shader;
+	ShaderProgram *shader_ptr;
+	float shader_custom_param; // FIXME: see renderer/api.c: struct SpriteParams
 	Projectile **dest;
 	ProjType type;
 	Sprite *sprite_ptr;

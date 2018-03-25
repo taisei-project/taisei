@@ -92,7 +92,6 @@ taisei_src = files(
     'progress.c',
     'projectile.c',
     'random.c',
-    'recolor.c',
     'refs.c',
     'replay.c',
     'stage.c',

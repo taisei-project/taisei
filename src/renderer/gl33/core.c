@@ -78,6 +78,7 @@ static struct {
 	} progs;
 
 	vec4 color;
+	vec4 clear_color;
 	GLuint ubo;
 	UBOData ubodata;
 	IntRect viewport;
@@ -86,6 +87,7 @@ static struct {
 	BlendMode blend_mode;
 	CullFaceMode cull_mode;
 	DepthTestFunc depth_func;
+	GLuint pbo;
 
 	SDL_GLContext *gl_context;
 
@@ -161,6 +163,11 @@ static void APIENTRY gl33_debug(
 	}
 
 	lvl = lvl1 > lvl0 ? lvl1 : lvl0;
+
+	if(source == GL_DEBUG_SOURCE_SHADER_COMPILER && type == GL_DEBUG_TYPE_ERROR) {
+		lvl = LOG_WARN;
+	}
+
 	log_custom(lvl, "[%s, %s, %s, id:%i] %s", strsrc, strtype, strsev, id, message);
 }
 
@@ -203,6 +210,7 @@ static void gl33_init_context(SDL_Window *window) {
 	matstack_reset(&R.mstacks.texture);
 	matstack_reset(&R.mstacks.modelview);
 	matstack_reset(&R.mstacks.projection);
+	r_mat_mode(MM_MODELVIEW);
 
 	R.texunits.active = R.texunits.indexed;
 
@@ -370,14 +378,14 @@ static inline vec4* active_matrix(void) {
 }
 
 void r_mat_mode(MatrixMode mode) {
-	assert(mode >= 0);
-	assert(mode < sizeof(R.mstacks.indexed) / sizeof(MatrixStack));
+	assert((uint)mode < sizeof(R.mstacks.indexed) / sizeof(MatrixStack));
 	R.mstacks.active = &R.mstacks.indexed[mode];
 }
 
 void r_mat_push(void) {
 	matstack_push(R.mstacks.active);
 }
+
 void r_mat_pop(void) {
 	matstack_pop(R.mstacks.active);
 }
@@ -406,8 +414,17 @@ void r_mat_perspective(float angle, float aspect, float near, float far) {
 	glm_perspective(angle, aspect, near, far, active_matrix());
 }
 
+void r_mat_current(MatrixMode mode, mat4 out_mat) {
+	assert((uint)mode < sizeof(R.mstacks.indexed) / sizeof(MatrixStack));
+	glm_mat4_copy(*R.mstacks.indexed[mode].head, out_mat);
+}
+
 void r_color4(float r, float g, float b, float a) {
 	glm_vec4_copy((vec4) { r, g, b, a }, R.color);
+}
+
+Color r_color_current(void) {
+	return rgba(R.color[0], R.color[1], R.color[2], R.color[3]);
 }
 
 void gl33_sync_vertex_buffer(void) {
@@ -473,6 +490,8 @@ static GLenum prim_to_gl_prim[] = {
 void r_draw(Primitive prim, uint first, uint count, uint32_t *indices, uint instances) {
 	assert(count > 0);
 	assert((uint)prim < sizeof(prim_to_gl_prim)/sizeof(GLenum));
+
+	r_flush_sprites();
 
 	GLuint gl_prim = prim_to_gl_prim[prim];
 	gl33_sync_state();
@@ -562,6 +581,7 @@ static inline GLuint fbo_num(RenderTarget *target) {
 
 void gl33_sync_render_target(void) {
 	if(fbo_num(R.render_target.active) != fbo_num(R.render_target.pending)) {
+		r_flush_sprites();
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo_num(R.render_target.pending));
 		R.render_target.active = R.render_target.pending;
 	}
@@ -621,16 +641,27 @@ void r_clear(ClearBufferFlags flags) {
 		mask |= GL_DEPTH_BUFFER_BIT;
 	}
 
+	r_flush_sprites();
 	gl33_sync_render_target();
 	glClear(mask);
 }
 
 void r_clear_color4(float r, float g, float b, float a) {
-	glClearColor(r, g, b, a);
+	vec4 cc = { r, g, b, a };
+
+	if(!memcmp(R.clear_color, cc, sizeof(cc))) {
+		memcpy(R.clear_color, cc, sizeof(cc));
+		glClearColor(r, g, b, a);
+	}
+}
+
+Color r_clear_color_current(void) {
+	return rgba(R.clear_color[0], R.clear_color[1], R.clear_color[2], R.clear_color[3]);
 }
 
 void r_viewport_rect(IntRect rect) {
 	if(memcmp(&R.viewport, &rect, sizeof(IntRect))) {
+		r_flush_sprites();
 		memcpy(&R.viewport, &rect, sizeof(IntRect));
 		glViewport(rect.x, rect.y, rect.w, rect.h);
 	}
@@ -641,6 +672,7 @@ void r_viewport_current(IntRect *out_rect) {
 }
 
 void r_swap(SDL_Window *window) {
+	r_flush_sprites();
 	gl33_sync_render_target();
 	SDL_GL_SwapWindow(window);
 	gl33_stats_post_frame();
@@ -730,6 +762,7 @@ static inline GLenum r_cull_to_gl_cull(CullFaceMode mode) {
 
 void r_cull(CullFaceMode mode) {
 	if(mode != R.cull_mode) {
+		r_flush_sprites();
 		GLenum glcull = r_cull_to_gl_cull(mode);
 		glCullFace(glcull);
 		R.cull_mode = mode;
@@ -756,6 +789,7 @@ void r_depth_func(DepthTestFunc func) {
 	assert(idx < sizeof(func_to_glfunc)/sizeof(GLenum));
 
 	if(R.depth_func != func) {
+		r_flush_sprites();
 		glDepthFunc(func_to_glfunc[idx]);
 		R.depth_func = func;
 	}
@@ -772,4 +806,12 @@ uint8_t* r_screenshot(uint *out_width, uint *out_height) {
 	*out_width = R.viewport.w;
 	*out_height = R.viewport.h;
 	return pixels;
+}
+
+void gl33_bind_pbo(GLuint pbo) {
+	if(pbo != R.pbo) {
+		// r_flush_sprites();
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+		R.pbo = pbo;
+	}
 }

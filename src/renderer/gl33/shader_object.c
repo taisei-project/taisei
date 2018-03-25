@@ -188,6 +188,8 @@ static void* load_shader_object_end(void *opaque, const char *path, uint flags) 
 	gl33_debug_object_label(GL_SHADER, gl_handle, basename);
 	free(basename);
 
+	// log_debug("Source code for %s:\n%s", path, ldata->src);
+
 	glShaderSource(gl_handle, 1, (const GLchar*[]){ ldata->src }, (GLint[]){ -1 });
 	glCompileShader(gl_handle);
 	glGetShaderiv(gl_handle, GL_COMPILE_STATUS, &status);

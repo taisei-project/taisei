@@ -57,7 +57,7 @@ static TexTypeInfo* tex_type_info(TextureType type) {
 static void gl33_texture_set_assume_active(Texture *tex, void *image_data) {
 	assert(tex->impl != NULL);
 
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, tex->impl->pbo);
+	gl33_bind_pbo(tex->impl->pbo);
 
 	if(tex->impl->pbo) {
 		size_t s = tex->w * tex->h * tex_type_info(tex->type)->pixel_size;
@@ -76,6 +76,8 @@ static void gl33_texture_set_assume_active(Texture *tex, void *image_data) {
 		GL_UNSIGNED_BYTE,
 		image_data
 	);
+
+	gl33_bind_pbo(0);
 }
 
 static void gl33_texture_set(Texture *tex, void *image_data) {

@@ -86,7 +86,7 @@ static int marisa_star_slave(Enemy *e, int t) {
 				// .draw_rule = marisa_star,
 				.args = { v, a },
 				.type = PlrProj + e->args[3],
-				.color_transform_rule = proj_clrtransform_particle,
+				.shader = "sprite_default",
 			);
 		}
 	}
@@ -207,9 +207,9 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 	r_blend(BLEND_ADD);
 	r_color4(clr[0],clr[1],clr[2],clr[3]);
 	r_mat_rotate_deg(t*10,0,0,1);
-	draw_sprite(0,0,"fairy_circle");
+	draw_sprite_batched(0,0,"fairy_circle");
 	r_mat_scale(0.6,0.6,1);
-	draw_sprite(0,0,"part/lightningball");
+	draw_sprite_batched(0,0,"part/lightningball");
 	r_mat_pop();
 	r_blend(BLEND_ALPHA);
 

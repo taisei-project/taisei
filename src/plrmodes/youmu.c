@@ -48,12 +48,12 @@ void youmu_common_shot(Player *plr) {
 
 		PROJECTILE("youmu", plr->pos + 10 - I*20, c, linear, { -20.0*I },
 			.type = PlrProj+120,
-			.color_transform_rule = proj_clrtransform_particle,
+			.shader = "sprite_default",
 		);
 
 		PROJECTILE("youmu", plr->pos - 10 - I*20, c, linear, { -20.0*I },
 			.type = PlrProj+120,
-			.color_transform_rule = proj_clrtransform_particle,
+			.shader = "sprite_default",
 		);
 	}
 }

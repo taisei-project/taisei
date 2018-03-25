@@ -11,8 +11,6 @@
 
 // NOTE: This file intentionally shadows the standard header!
 
-#include <stdnoreturn.h>
-#include <stdbool.h>
 
 noreturn void _ts_assert_fail(const char *cond, const char *func, const char *file, int line, bool use_log);
 

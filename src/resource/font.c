@@ -315,7 +315,7 @@ static void draw_text_line(Alignment align, float x, float y, const char *text, 
 		}
 	}
 
-	draw_sprite_unaligned_p(x, y, &font_renderer.sprite);
+	draw_sprite_p(x, y, &font_renderer.sprite);
 }
 
 void draw_text(Alignment align, float x, float y, const char *text, Font *font) {

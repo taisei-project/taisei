@@ -34,17 +34,16 @@ Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 }
 
 void draw_boss_text(Alignment align, float x, float y, const char *text, Font *fnt, Color clr) {
-	Color black = rgb(0, 0, 0);
-	Color white = rgb(1, 1, 1);
+	Color color_saved = r_color_current();
 
-	r_color(derive_color(black, CLRMASK_A, clr));
+	r_shader_standard();
+	r_color(derive_color(rgb(0, 0, 0), CLRMASK_A, clr));
 	draw_text(align, x+1, y+1, text, fnt);
 	r_color(clr);
 	draw_text(align, x, y, text, fnt);
+	r_shader("sprite_default");
 
-	if(clr != white) {
-		r_color(white);
-	}
+	r_color(color_saved);
 }
 
 void spell_opening(Boss *b, int time) {
@@ -163,30 +162,25 @@ static bool attack_is_over(Attack *a) {
 static void BossGlow(Projectile *p, int t) {
 	Animation *ani = (Animation *)REF(p->args[3]);
 	assert(ani != 0);
-	int animationFrame = rint(creal(p->args[2]));
 
-	r_shader("silhouette");
-	r_blend(BLEND_ADD);
+	uint animationFrame = rint(creal(p->args[2]));
+	bool mirror = animationFrame / (ani->cols * ani->rows);
+	animationFrame = animationFrame % (ani->cols * ani->rows);
 
-	r_mat_push();
 	float s = 1.0+t/p->args[0]*0.5;
-	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
-	r_mat_scale(s, s, 1);
-
-	float clr[4];
-	parse_color_array(p->color, clr);
-	clr[3] = 1.5 - s;
-
-	float fade = 1 - clr[3];
+	float fade = 1 - (1.5 - s);
 	float deform = 5 - 10 * fade * fade;
-	r_uniform("color", 1, clr);
-	r_uniform("deform", 1, &deform);
 
-	play_animation_frame(ani,0,0,animationFrame);
-
-	r_mat_pop();
-	r_blend(BLEND_ALPHA);
-	r_shader_ptr(recolor_get_shader());
+	r_draw_sprite(&(SpriteParams) {
+		.pos = { creal(p->pos), cimag(p->pos) },
+		.scale.both = s,
+		.blend = BLEND_ADD,
+		.sprite_ptr = ani->frames[animationFrame],
+		.color = derive_color(p->color, CLRMASK_A, rgba(0, 0, 0, 1.5 - s)),
+		.custom = deform,
+		.shader = "sprite_silhouette",
+		.flip.x = mirror,
+	});
 }
 
 static int boss_glow(Projectile *p, int t) {
@@ -250,7 +244,7 @@ void draw_boss_background(Boss *boss) {
 	}
 
 	r_mat_scale(f,f,f);
-	draw_sprite(0, 0, "boss_circle");
+	draw_sprite_batched(0, 0, "boss_circle");
 	r_blend(BLEND_ALPHA);
 	r_mat_pop();
 }
@@ -365,7 +359,7 @@ void draw_boss(Boss *boss) {
 		}
 
 		r_mat_pop();
-		r_shader_standard();
+		r_shader("sprite_default");
 
 		// remaining spells
 		r_color4(1,1,1,0.7);
@@ -377,7 +371,7 @@ void draw_boss(Boss *boss) {
 				(boss->attacks[i].type != AT_ExtraSpell) &&
 				!boss_should_skip_attack(boss, &boss->attacks[i])
 			) {
-				draw_sprite_p(x += star->w * 1.1, 40, star);
+				draw_sprite_batched_p(x += star->w * 1.1, 40, star);
 			}
 		}
 
@@ -920,7 +914,7 @@ void boss_preload(void) {
 		"spellcard_intro",
 		"spellcard_outro",
 		"spellcard_walloftext",
-		"silhouette",
+		"sprite_silhouette",
 	NULL);
 
 	StageInfo *s = global.stage;

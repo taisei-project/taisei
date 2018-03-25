@@ -61,4 +61,4 @@ AniSequence *aniplayer_queue_pro(AniPlayer *plr, int row, int start, int duratio
 void aniplayer_update(AniPlayer *plr) attr_nonnull(1); // makes the inner clocks tick
 void aniplayer_play(AniPlayer *plr, float x, float y) attr_nonnull(1);
 
-void play_animation(Animation *ani, float x, float y, int row) attr_nonnull(1); // the old way to draw animations without AniPlayer
+void play_animation(Animation *ani, float x, float y, int row, bool xflip) attr_nonnull(1); // the old way to draw animations without AniPlayer

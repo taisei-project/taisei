@@ -138,6 +138,7 @@ void draw_main_menu(MenuData *menu) {
 	r_disable(RCAP_CULL_FACE);
 	r_blend(BLEND_ADD);
 	r_color4(1, 1, 1, 1);
+	r_shader("sprite_default");
 
 	for(int i = 0; i < 50; i++) { // who needs persistent state for a particle system?
 		int period = 900;
@@ -165,10 +166,11 @@ void draw_main_menu(MenuData *menu) {
 		r_mat_translate(posx,posy,0);
 		r_mat_scale(0.2,0.2,0.2);
 		r_mat_rotate_deg(2*(t%period),rx,ry,rz);
-		draw_sprite(0,0,"part/petal");
+		draw_sprite_batched(0,0,"part/petal");
 		r_mat_pop();
 	}
 
+	r_shader_standard();
 	r_capability(RCAP_CULL_FACE, cullcap_saved);
 	r_blend(BLEND_ALPHA);
 

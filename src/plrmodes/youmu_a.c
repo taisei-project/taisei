@@ -162,14 +162,6 @@ static void myon_proj_draw(Projectile *p, int t) {
 	youmu_common_draw_proj(p, c, 1);
 }
 
-static void myon_proj_clr_transform(Projectile *p, int t, Color c, ColorTransform *out) {
-	memcpy(out, (&(ColorTransform) {
-		.R[1] = rgba(1, 1, 1, 0),
-		.B[1] = multiply_colors(c, c) & ~CLRMASK_A,
-		.A[1] = c &  CLRMASK_A,
-	}), sizeof(ColorTransform));
-}
-
 static Projectile* youmu_mirror_myon_proj(char *tex, complex pos, double speed, double angle, double aoffs, double upfactor, int dmg) {
 	complex dir = cexp(I*(M_PI/2 + aoffs)) * upfactor + cexp(I * (angle + aoffs)) * (1 - upfactor);
 	dir = dir / cabs(dir);
@@ -200,8 +192,7 @@ static Projectile* youmu_mirror_myon_proj(char *tex, complex pos, double speed, 
 		.args = { speed*dir },
 		.draw_rule = myon_proj_draw,
 		.type = PlrProj+dmg,
-		// .flags = PFLAG_DRAWSUB,
-		.color_transform_rule = myon_proj_clr_transform,
+		.shader = "sprite_youmu_myon_shot",
 	);
 }
 
@@ -314,7 +305,7 @@ static int youmu_mirror_self_proj(Projectile *p, int t) {
 static Projectile* youmu_mirror_self_shot(Player *plr, complex ofs, complex vel, int dmg, double turntime) {
 	return PROJECTILE("youmu", plr->pos + ofs, 0,
 		.type = PlrProj+dmg,
-		.color_transform_rule = proj_clrtransform_particle,
+		.shader = "sprite_default",
 		.draw_rule = myon_proj_draw,
 		.rule = youmu_mirror_self_proj,
 		.args = {
@@ -425,6 +416,7 @@ static void youmu_mirror_preload(void) {
 
 	preload_resources(RES_SHADER_PROGRAM, flags,
 		"youmua_bomb",
+		"sprite_youmu_myon_shot",
 	NULL);
 
 	preload_resources(RES_SFX, flags | RESF_OPTIONAL,

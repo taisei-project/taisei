@@ -15,6 +15,7 @@
 #include "resource/shader_program.h"
 #include "resource/texture.h"
 #include "resource/model.h"
+#include "resource/sprite.h"
 
 typedef enum RendererCapability {
 	RCAP_DEPTH_TEST,
@@ -299,6 +300,45 @@ typedef enum VsyncMode {
 	VSYNC_ADAPTIVE,
 } VsyncMode;
 
+typedef struct SpriteParams {
+	const char *sprite;
+	Sprite *sprite_ptr;
+
+	const char *shader;
+	ShaderProgram *shader_ptr;
+
+	Color color;
+	BlendMode blend;
+
+	struct {
+		float x;
+		float y;
+	} pos;
+
+	struct {
+		union {
+			float x;
+			float both;
+		};
+
+		float y;
+	} scale;
+
+	struct {
+		float angle;
+		vec3 vector;
+	} rotation;
+
+	// FIXME: find a more efficient solution for this?
+	// this is needed to support some color transforms, but most sprites won't use this attribute
+	float custom;
+
+	struct {
+		unsigned int x : 1;
+		unsigned int y : 1;
+	} flip;
+} attr_designated_init SpriteParams;
+
 /*
  * Creates an SDL window with proper flags, and, if needed, sets up a rendering context associated with it.
  * Must be called before anything else.
@@ -327,7 +367,10 @@ void r_mat_scale_v(vec3 v);
 void r_mat_ortho(float left, float right, float bottom, float top, float near, float far);
 void r_mat_perspective(float angle, float aspect, float near, float far);
 
+void r_mat_current(MatrixMode mode, mat4 out_mat);
+
 void r_color4(float r, float g, float b, float a);
+Color r_color_current(void);
 
 void r_blend(BlendMode mode);
 BlendMode r_blend_current(void);
@@ -378,6 +421,7 @@ VertexBuffer* r_vertex_buffer_current(void);
 
 void r_clear(ClearBufferFlags flags);
 void r_clear_color4(float r, float g, float b, float a);
+Color r_clear_color_current(void);
 
 void r_viewport_rect(IntRect rect);
 void r_viewport_current(IntRect *out_rect) attr_nonnull(1);
@@ -401,6 +445,9 @@ VertexBuffer* r_vertex_buffer_static_models(void) attr_returns_nonnull;
 void r_draw_quad(void);
 void r_draw_quad_instanced(uint instances);
 void r_draw_model_ptr(Model *model) attr_nonnull(1);
+void r_draw_sprite(const SpriteParams *params) attr_nonnull(1);
+
+void r_flush_sprites(void);
 
 BlendMode r_blend_compose(
 	BlendFactor src_color, BlendFactor dst_color, BlendOp color_op,

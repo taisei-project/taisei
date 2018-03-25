@@ -560,51 +560,45 @@ void hina_monty_slave_visual(Enemy *s, int time, bool render) {
 	}
 
 	Sprite *soul = get_sprite("proj/soul");
-	ShaderProgram *shader = recolor_get_shader();
 	double scale = fabs(swing(clamp(time / 60.0, 0, 1), 3)) * 1.25;
-
-	ColorTransform ct;
 
 	Color clr1 = rgba(1.0, 0.0, 0.0, 1.0);
 	Color clr2 = rgba(0.0, 0.0, 1.0, 1.0);
 	Color clr3 = rgba(psin(time*0.05), 0.0, 1.0 - psin(time*0.05), 1.0);
 
-	r_shader_ptr(shader);
-
 	r_mat_push();
-	r_blend(BLEND_ADD);
-
 	r_mat_translate(creal(s->pos), cimag(s->pos), 0);
 
-	static_clrtransform_bullet(clr1, &ct);
-	recolor_apply_transform(&ct);
-	r_mat_push();
-	r_mat_rotate_deg(time, 0, 0, 1);
-	r_mat_scale(scale * (0.6 + 0.6 * psin(time*0.1)), scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), 0);
-	draw_sprite_p(0, 0, soul);
-	r_mat_pop();
+	r_blend(BLEND_ADD);
+	r_shader("sprite_bullet");
 
-	static_clrtransform_bullet(clr2, &ct);
-	recolor_apply_transform(&ct);
-	r_mat_push();
-	r_mat_rotate_deg(time, 0, 0, 1);
-	r_mat_scale(scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0);
-	draw_sprite_p(0, 0, soul);
-	r_mat_pop();
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = soul,
+		.rotation.angle = time * DEG2RAD,
+		.scale.x = scale * (0.6 + 0.6 * psin(time*0.1)),
+		.scale.y = scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)),
+		.color = clr1,
+	});
 
-	static_clrtransform_bullet(clr3, &ct);
-	recolor_apply_transform(&ct);
-	r_mat_push();
-	r_mat_rotate_deg(-time, 0, 0, 1);
-	// render_scale(scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0);
-	r_mat_scale(scale, scale, 0);
-	draw_sprite_p(0, 0, soul);
-	r_mat_pop();
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = soul,
+		.rotation.angle = time * DEG2RAD,
+		.scale.x = scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)),
+		.scale.y = scale * (0.6 + 0.6 * psin(time*0.1)),
+		.color = clr2,
+	});
+
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = soul,
+		.rotation.angle = -time * DEG2RAD,
+		.scale.both = scale,
+		.color = clr3,
+	});
 
 	r_blend(BLEND_ALPHA);
 	r_mat_pop();
 
-	r_shader_standard();
+	r_shader("sprite_default");
 }
 
 void hina_monty(Boss *h, int time) {
@@ -746,7 +740,7 @@ void hina_spell_bg(Boss *h, int time) {
 	draw_sprite(0, 0, "stage2/spellbg2");
 	r_mat_pop();
 	r_blend(BLEND_ADD);
-	play_animation(get_ani("fire"),creal(h->pos), cimag(h->pos), 0);
+	draw_sprite_p(creal(h->pos), cimag(h->pos), ani_frame_from_time(get_ani("fire"), 0, global.frames));
 	r_blend(BLEND_ALPHA);
 }
 

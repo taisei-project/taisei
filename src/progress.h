@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include <stdbool.h>
 #include <SDL.h>
 #include "ending.h"
 

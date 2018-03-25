@@ -9,6 +9,20 @@
 #pragma once
 #include "taisei.h"
 
+#include <stdbool.h>
+#include <stdalign.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdnoreturn.h>
+
+#ifndef offsetof
+	#ifdef __GNUC__
+		#define offsetof(type, field) __builtin_offsetof(type, field)
+	#else
+		#define offsetof(type, field) ((size_t)&(((type *)0)->field))
+	#endif
+#endif
+
 #ifndef __GNUC__ // clang defines this too
 	#define __attribute__(...)
 	#define __extension__

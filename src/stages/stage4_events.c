@@ -1073,23 +1073,20 @@ void kurumi_extra_drainer_draw(Projectile *p, int time) {
 	double a = 0.5 * creal(p->args[2]);
 	Texture *tex = get_tex("part/sinewave");
 
-	ColorTransform ct;
-
+	r_shader_standard();
 	r_blend(BLEND_ADD);
 
-	static_clrtransform_particle(rgba(1.0, 0.5, 0.5, a), &ct);
-	recolor_apply_transform(&ct);
+	r_color4(1.0, 0.5, 0.5, a);
 	loop_tex_line_p(org, targ, 16, time * 0.01, tex);
 
-	static_clrtransform_particle(rgba(0.4, 0.2, 0.2, a), &ct);
-	recolor_apply_transform(&ct);
+	r_color4(0.4, 0.2, 0.2, a);
 	loop_tex_line_p(org, targ, 18, time * 0.0043, tex);
 
-	static_clrtransform_particle(rgba(0.5, 0.2, 0.5, a), &ct);
-	recolor_apply_transform(&ct);
+	r_color4(0.5, 0.2, 0.5, a);
 	loop_tex_line_p(org, targ, 24, time * 0.003, tex);
 
 	r_blend(BLEND_ALPHA);
+	r_shader("sprite_default");
 }
 
 int kurumi_extra_drainer(Projectile *p, int time) {
@@ -1134,13 +1131,14 @@ void kurumi_extra_create_drainer(Enemy *e) {
 		.draw_rule = kurumi_extra_drainer_draw,
 		.args = { add_ref(e) },
 		.type = FakeProj,
-		.color_transform_rule = proj_clrtransform_particle,
+		.shader = "sprite_default",
 	);
 }
 
 void kurumi_extra_swirl_visual(Enemy *e, int time, bool render) {
 	if(!render) {
-		Swirl(e, time, render);
+		// why the hell was this here?
+		// Swirl(e, time, render);
 		return;
 	}
 

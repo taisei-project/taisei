@@ -35,8 +35,11 @@ void unload_animation(void *vani);
 
 Animation *get_ani(const char *name);
 
-void draw_animation(float x, float y, int col, int row, const char *name);
-void draw_animation_p(float x, float y, int col, int row, Animation *ani);
+void draw_animation(float x, float y, int col, int row, bool xflip, const char *name);
+void draw_animation_p(float x, float y, int col, int row, bool xflip, Animation *ani);
+
+// XXX: another shitty animations hack. we need to rewrite this stuff eventually.
+Sprite* ani_frame_from_time(Animation *ani, int row, int time);
 
 extern ResourceHandler animation_res_handler;
 

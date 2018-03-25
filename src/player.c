@@ -118,35 +118,26 @@ void player_draw(Player* plr) {
 		r_mat_translate(creal(plr->pos), cimag(plr->pos), 0);
 
 		if(plr->focus) {
-			r_mat_push();
-				r_mat_rotate_deg(global.frames*10, 0, 0, 1);
-				r_mat_scale(1, 1, 1);
-				r_color4(1, 1, 1, 0.2 * (clamp(plr->focus, 0, 15) / 15.0));
-				draw_sprite(0, 0, "fairy_circle");
-				r_color4(1,1,1,1);
-			r_mat_pop();
+			r_draw_sprite(&(SpriteParams) {
+				.sprite = "fairy_circle",
+				.rotation.angle = DEG2RAD * global.frames * 10,
+				.color = rgba(1, 1, 1, 0.2 * (clamp(plr->focus, 0, 15) / 15.0)),
+			});
 		}
-
-
-		int clr_changed = 0;
 
 		if(global.frames - abs(plr->recovery) < 0 && (global.frames/8)&1) {
-			r_color4(0.4,0.4,1,0.9);
-			clr_changed = 1;
+			r_color4(0.4, 0.4, 1.0, 0.9);
 		}
 
-		aniplayer_play(&plr->ani,0,0);
-
-		if(clr_changed)
-			r_color3(1,1,1);
+		aniplayer_play(&plr->ani, 0, 0);
+		r_color3(1, 1, 1);
 
 		if(plr->focus) {
-			r_mat_push();
-				r_color4(1, 1, 1, plr->focus / 30.0);
-				r_mat_rotate_deg(global.frames, 0, 0, -1);
-				draw_sprite(0, 0, "focus");
-				r_color4(1, 1, 1, 1);
-			r_mat_pop();
+			r_draw_sprite(&(SpriteParams) {
+				.sprite = "focus",
+				.rotation.angle = DEG2RAD * global.frames * -1,
+				.color = rgba(1, 1, 1, plr->focus / 30.0),
+			});
 		}
 
 	r_mat_pop();

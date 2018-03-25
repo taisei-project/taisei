@@ -279,6 +279,8 @@ bool stage_should_draw_particle(Projectile *p) {
 }
 
 static void stage_draw_objects(void) {
+	r_shader("sprite_default");
+
 	if(global.boss) {
 		draw_boss_background(global.boss);
 	}
@@ -304,6 +306,7 @@ static void stage_draw_objects(void) {
 		draw_dialog(global.dialog);
 	}
 
+	r_shader_standard();
 	stagetext_draw();
 }
 
@@ -349,6 +352,12 @@ void stage_draw_scene(StageInfo *stage) {
 #else
 	bool key_nobg = false;
 #endif
+
+	/*
+	r_clear(CLEAR_ALL);
+	stage_draw_objects();
+	return;
+	*/
 
 	bool draw_bg = !config_get_int(CONFIG_NO_STAGEBG) && !key_nobg;
 

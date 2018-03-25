@@ -101,22 +101,7 @@ void aniplayer_update(AniPlayer *plr) {
 void play_animation_frame(Animation *ani, float x, float y, int frame) {
 	bool mirror = frame / (ani->cols * ani->rows);
 	frame = frame % (ani->cols * ani->rows);
-
-	CullFaceMode cull_saved = r_cull_current();
-
-	if(mirror) {
-		r_cull(CULL_FRONT);
-		r_mat_push();
-		r_mat_translate(x, y, 0);
-		r_mat_scale(-1, 1, 1);
-		draw_animation_p(0, 0, frame % ani->cols, frame / ani->cols, ani);
-		r_mat_pop();
-	} else {
-		r_cull(CULL_BACK);
-		draw_animation_p(x, y, frame % ani->cols, frame / ani->cols, ani);
-	}
-
-	r_cull(cull_saved);
+	draw_animation_p(x, y, frame % ani->cols, frame / ani->cols, mirror, ani);
 }
 
 void aniplayer_play(AniPlayer *plr, float x, float y) {
@@ -124,6 +109,6 @@ void aniplayer_play(AniPlayer *plr, float x, float y) {
 	play_animation_frame(plr->ani,x,y,frame); // or as my grandpa always said: rather write 100 lines of new code than one old line twice.
 }
 
-void play_animation(Animation *ani, float x, float y, int row) { // the old way to draw animations without AniPlayer
-	draw_animation_p(x,y,(global.frames/ani->speed)%ani->cols,row,ani);
+void play_animation(Animation *ani, float x, float y, int row, bool xflip) { // the old way to draw animations without AniPlayer
+	draw_animation_p(x, y, (global.frames/ani->speed)%ani->cols, row, xflip, ani);
 }

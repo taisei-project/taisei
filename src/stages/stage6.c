@@ -137,7 +137,7 @@ static void stage6_skysphere_draw(vec3 pos) {
 	r_mat_scale(150,150,150);
 	r_draw_model("skysphere");
 
-	r_shader_standard();
+	r_shader("sprite_default");
 
 	for(int i = 0; i < NUM_STARS; i++) {
 		r_mat_push();
@@ -146,9 +146,11 @@ static void stage6_skysphere_draw(vec3 pos) {
 		r_mat_translate(x,y,z);
 		r_mat_rotate_deg(180/M_PI*acos(starpos[3*i+2]),-y,x,0);
 		r_mat_scale(1./4000,1./4000,1./4000);
-		draw_sprite(0,0,"part/smoothdot");
+		draw_sprite_batched(0,0,"part/smoothdot");
 		r_mat_pop();
 	}
+
+	r_shader_standard();
 
 	r_mat_pop();
 	r_color4(1,1,1,1);
@@ -279,6 +281,7 @@ static void stage6_preload(void) {
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"tower_wall",
 		"stage6_sky",
+		"sprite_bullet_apple",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/elly",

@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include <stdbool.h>
 #include "projectile.h"
 #include "boss.h"
 #include "progress.h"

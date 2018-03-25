@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include <stdbool.h>
 
 bool vfs_create_union_mountpoint(const char *mountpoint)
 	attr_nonnull(1);

@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include <stdint.h>
 #include "compat.h"
 
 #ifdef HAVE_INTEL_INTRIN

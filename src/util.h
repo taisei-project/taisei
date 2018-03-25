@@ -9,8 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include <stdbool.h>
-#include <stdnoreturn.h>
 #include <stdio.h>
 #include <string.h>
 #include <zlib.h> // compiling under mingw may fail without this...
@@ -86,6 +84,9 @@ typedef struct IntRect {
 #define M_PI 3.14159265358979323846
 #define M_PI_2 1.57079632679489661923
 #define M_PI_4 0.78539816339744830962
+
+#define DEG2RAD (M_PI/180.0)
+#define RAD2DEG (180.0/M_PI)
 
 // This is a workaround to properly specify the type of our "complex" variables...
 // Taisei code always uses just "complex" when it actually means "complex double", which is not really correct...

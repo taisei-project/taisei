@@ -421,15 +421,6 @@ int scythe_newton(Enemy *e, int t) {
 	return 1;
 }
 
-static void apple_clrtransform(Projectile *p, int t, Color c, ColorTransform *out) {
-	memcpy(out, (&(ColorTransform) {
-		.R[1] = rgba(0.00, 0.75, 0.00, 0.00),
-		.G[1] = c & ~CLRMASK_A,
-		.B[1] = rgba(1, 1, 1, 0),
-		.A[1] = c &  CLRMASK_A,
-	}), sizeof(ColorTransform));
-}
-
 static int newton_apple(Projectile *p, int t) {
 	int r = accelerated(p, t);
 
@@ -472,7 +463,7 @@ void elly_newton(Boss *b, int t) {
 				0, 0.05*I, M_PI*2*frand()
 			},
 			.color = c,
-			.color_transform_rule = apple_clrtransform,
+			.shader = "sprite_bullet_apple",
 			.priority_override = -28*28+1, // force it to be drawn above the balls
 		);
 
@@ -676,7 +667,7 @@ static void draw_baryon_connector(complex a, complex b) {
 	r_mat_translate(creal(a+b)/2.0, cimag(a+b)/2.0, 0);
 	r_mat_rotate_deg(180/M_PI*carg(a-b), 0, 0, 1);
 	r_mat_scale((cabs(a-b)-70) / spr->w, 20 / spr->h, 1);
-	draw_sprite_p(0, 0, spr);
+	draw_sprite_batched_p(0, 0, spr);
 	r_mat_pop();
 }
 
@@ -702,7 +693,7 @@ void Baryon(Enemy *e, int t, bool render) {
 	}
 
 	r_color4(1.0,1.0,1.0,alpha);
-	draw_sprite(creal(e->pos), cimag(e->pos), "stage6/baryon");
+	draw_sprite_batched(creal(e->pos), cimag(e->pos), "stage6/baryon");
 	r_color4(1.0,1.0,1.0,1.0);
 
 	n = REF(e->args[1]);
@@ -741,9 +732,9 @@ void BaryonCenter(Enemy *e, int t, bool render) {
 	r_mat_push();
 	r_mat_translate(creal(e->pos), cimag(e->pos), 0);
 	r_mat_rotate_deg(2*t, 0, 0, 1);
-	draw_sprite(0, 0, "stage6/scythecircle");
+	draw_sprite_batched(0, 0, "stage6/scythecircle");
 	r_mat_pop();
-	draw_sprite(creal(e->pos), cimag(e->pos), "stage6/baryon");
+	draw_sprite_batched(creal(e->pos), cimag(e->pos), "stage6/baryon");
 	r_blend(BLEND_ALPHA);
 
 	l[0] = REF(creal(e->args[1]));
@@ -2554,6 +2545,9 @@ void elly_spellbg_toe(Boss *b, int t) {
 		HIGGSTIME,
 		YUKAWATIME,
 	};
+
+	r_shader("sprite_default");
+
 	int count = sizeof(delays)/sizeof(int);
 	for(int i = 0; i < count; i++) {
 		if(t<delays[i])
@@ -2564,13 +2558,13 @@ void elly_spellbg_toe(Boss *b, int t) {
 		float wobble = max(0,t-BREAKTIME)*0.03;
 		r_mat_push();
 		r_mat_translate(VIEWPORT_W/2+positions[i][0]+cos(wobble+i)*wobble,VIEWPORT_H/2-150+positions[i][1]+sin(i+wobble)*wobble,0);
-		draw_sprite(0,0,texname);
+		draw_sprite_batched(0,0,texname);
 		free(texname);
 		r_mat_pop();
 	}
 	
 	r_color4(1,1,1,1);
-
+	r_shader_standard();
 }
 
 #undef LASER_EXTENT

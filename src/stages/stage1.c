@@ -76,7 +76,6 @@ static void stage1_bg_draw(vec3 pos) {
 	r_draw_quad();
 	r_color4(1,1,1,1);
 	r_mat_pop();
-	r_shader_standard();
 
 	r_mat_push();
 	r_mat_rotate_deg(30,1,0,0);
@@ -84,6 +83,8 @@ static void stage1_bg_draw(vec3 pos) {
 	r_mat_translate(-VIEWPORT_W/2,0,0);
 	r_disable(RCAP_CULL_FACE);
 	r_disable(RCAP_DEPTH_TEST);
+
+	r_shader("sprite_default");
 	draw_projectiles(global.particles, particle_filter);
 	draw_enemies(global.enemies);
 
@@ -91,6 +92,7 @@ static void stage1_bg_draw(vec3 pos) {
 		draw_boss(global.boss);
 	}
 
+	r_shader_standard();
 	r_mat_pop();
 	r_capability(RCAP_CULL_FACE, cullcap_saved);
 

@@ -66,7 +66,7 @@ void draw_difficulty_menu(MenuData *menu) {
 	r_mat_scale(SCREEN_W*1.5,120,1);
 	r_shader_standard_notex();
 	r_draw_quad();
-	r_shader_standard();
+	r_shader("sprite_default");
 	r_mat_pop();
 	r_color3(1,1,1);
 	draw_text(AL_Left, 40+35*menu->drawdata[0], -12, menu->entries[menu->cursor].name, _fonts.standard);
@@ -77,10 +77,10 @@ void draw_difficulty_menu(MenuData *menu) {
 		r_mat_push();
 		r_mat_translate(SCREEN_W/2 + SCREEN_W*sign((i&1)-0.5)*(i!=menu->cursor)*menu_fade(menu) - (int)menu->entries[i].drawdata+25*i-50, SCREEN_H/3 + 90*(i-0.3*menu->drawdata[0]),0);
 
-		//render_color4(0,0,0,1);
-
 		r_color3(1,1,1);
-		draw_sprite(0, 0, difficulty_sprite_name(D_Easy+i));
+		draw_sprite_batched(0, 0, difficulty_sprite_name(D_Easy+i));
 		r_mat_pop();
 	}
+
+	r_shader_standard();
 }

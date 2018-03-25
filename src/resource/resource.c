@@ -15,7 +15,6 @@
 #include "video.h"
 #include "menu/mainmenu.h"
 #include "events.h"
-#include "recolor.h"
 
 #include "texture.h"
 #include "animation.h"

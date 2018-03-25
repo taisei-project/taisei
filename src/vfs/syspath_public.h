@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include <stdbool.h>
 
 bool vfs_mount_syspath(const char *mountpoint, const char *fspath, bool mkdir)
 	attr_nonnull(1, 2) attr_nodiscard;

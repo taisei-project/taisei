@@ -9,8 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include <stdnoreturn.h>
-#include <stdbool.h>
 #include <SDL.h>
 #include "compat.h"
 

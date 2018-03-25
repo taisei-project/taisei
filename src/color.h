@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include <stdint.h>
 #include "util.h"
 
 #define CLR_R ((Color)48)
