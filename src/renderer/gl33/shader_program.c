@@ -61,6 +61,28 @@ static void uset_mat4(Uniform *uniform, uint count, const void *data) {
 	glUniformMatrix4fv(uniform->location, count, false, (float*)data);
 }
 
+static void gl33_update_uniform(Uniform *uniform, uint count, const void *data, size_t datasize) {
+	memcpy(uniform->cache, data, datasize);
+
+	if(count > uniform->update_count) {
+		uniform->update_count = count;
+	}
+}
+
+static UniformSetter type_to_setter[] = {
+	[UNIFORM_FLOAT]   = uset_float,
+	[UNIFORM_VEC2]    = uset_vec2,
+	[UNIFORM_VEC3]    = uset_vec3,
+	[UNIFORM_VEC4]    = uset_vec4,
+	[UNIFORM_INT]     = uset_int,
+	[UNIFORM_IVEC2]   = uset_ivec2,
+	[UNIFORM_IVEC3]   = uset_ivec3,
+	[UNIFORM_IVEC4]   = uset_ivec4,
+	[UNIFORM_SAMPLER] = uset_int,
+	[UNIFORM_MAT3]    = uset_mat3,
+	[UNIFORM_MAT4]    = uset_mat4,
+};
+
 void r_uniform_ptr(Uniform *uniform, uint count, const void *data) {
 	assert(count > 0);
 
@@ -69,28 +91,36 @@ void r_uniform_ptr(Uniform *uniform, uint count, const void *data) {
 	}
 
 	assert(uniform->prog != NULL);
-
-	static UniformSetter type_to_setter[] = {
-		[UNIFORM_FLOAT]   = uset_float,
-		[UNIFORM_VEC2]    = uset_vec2,
-		[UNIFORM_VEC3]    = uset_vec3,
-		[UNIFORM_VEC4]    = uset_vec4,
-		[UNIFORM_INT]     = uset_int,
-		[UNIFORM_IVEC2]   = uset_ivec2,
-		[UNIFORM_IVEC3]   = uset_ivec3,
-		[UNIFORM_IVEC4]   = uset_ivec4,
-		[UNIFORM_SAMPLER] = uset_int,
-		[UNIFORM_MAT3]    = uset_mat3,
-		[UNIFORM_MAT4]    = uset_mat4,
-	};
-
 	assert(uniform->type >= 0 && uniform->type < sizeof(type_to_setter)/sizeof(UniformSetter));
+	const UniformTypeInfo *typeinfo = r_uniform_type_info(uniform->type);
+	size_t datasize = typeinfo->elements * typeinfo->element_size * count;
 
-	ShaderProgram *prev_prog = r_shader_current();
-	r_shader_ptr(uniform->prog);
-	gl33_sync_shader();
-	type_to_setter[uniform->type](uniform, count, data);
-	r_shader_ptr(prev_prog);
+	if(datasize > uniform->cache_size) {
+		uniform->cache = realloc(uniform->cache, datasize);
+		uniform->cache_size = datasize;
+		gl33_update_uniform(uniform, count, data, datasize);
+	} else if(memcmp(uniform->cache, data, datasize)) {
+		gl33_update_uniform(uniform, count, data, datasize);
+	}
+}
+
+static void* gl33_sync_uniform(void *key, void *data, void *arg) {
+	attr_unused const char *name = key;
+	Uniform *uniform = data;
+
+	if(uniform->update_count > 0) {
+		// NOTE: assuming the correct program is active here
+		type_to_setter[uniform->type](uniform, uniform->update_count, uniform->cache);
+		uniform->update_count = 0;
+	} else {
+		// log_debug("uniform %u:%s (shader %u) update of size %zu ignored", uniform->location, name, uniform->prog->gl_handle, uniform->cache_size);
+	}
+
+	return NULL;
+}
+
+void gl33_sync_uniforms(ShaderProgram *prog) {
+	hashtable_foreach(prog->uniforms, gl33_sync_uniform, NULL);
 }
 
 static void cache_uniforms(ShaderProgram *prog) {
@@ -282,10 +312,17 @@ static void* load_shader_program_end(void *opaque, const char *path, uint flags)
 	return prog;
 }
 
+static void* free_uniform(void *key, void *data, void *arg) {
+	Uniform *uniform = data;
+	free(uniform->cache);
+	free(uniform);
+	return NULL;
+}
+
 void unload_shader_program(void *vprog) {
 	ShaderProgram *prog = vprog;
 	glDeleteProgram(prog->gl_handle);
-	hashtable_foreach(prog->uniforms, hashtable_iter_free_data, NULL);
+	hashtable_foreach(prog->uniforms, free_uniform, NULL);
 	hashtable_free(prog->uniforms);
 	free(prog);
 }

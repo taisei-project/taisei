@@ -453,6 +453,7 @@ VertexBuffer* r_vertex_buffer_current(void) {
 
 static void gl33_sync_state(void) {
 	gl33_sync_shader();
+	gl33_sync_uniforms(R.progs.active);
 	gl33_sync_texunits();
 	gl33_sync_render_target();
 	gl33_sync_vertex_buffer();

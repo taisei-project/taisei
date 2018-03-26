@@ -28,6 +28,9 @@ struct Uniform {
 	ShaderProgram *prog;
 	uint location;
 	UniformType type;
+	void *cache;
+	size_t cache_size;
+	uint update_count;
 };
 
-int shprog_uniform_location(ShaderProgram *prog, const char *name);
+void gl33_sync_uniforms(ShaderProgram *prog);
