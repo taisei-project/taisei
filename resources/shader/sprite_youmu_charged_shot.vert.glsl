@@ -4,4 +4,4 @@
 #define SPRITE_OUT_TEXCOORD
 #define SPRITE_OUT_CUSTOM
 
-#include "sprite_default.vert.glslh"
+#include "lib/sprite_default.vert.glslh"

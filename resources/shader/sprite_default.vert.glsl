@@ -3,4 +3,4 @@
 #define SPRITE_OUT_COLOR
 #define SPRITE_OUT_TEXCOORD
 
-#include "sprite_default.vert.glslh"
+#include "lib/sprite_default.vert.glslh"

@@ -1,5 +1,7 @@
 #version 330 core
 
+#include "lib/render_context.glslh"
+
 uniform sampler2D tex;
 uniform vec4 color0;
 uniform vec4 color1;
@@ -7,13 +9,6 @@ uniform float color_phase;
 uniform float color_freq;
 uniform float alphamod;
 uniform float length;
-
-layout(std140) uniform RenderContext {
-	mat4 modelViewMatrix;
-	mat4 projectionMatrix;
-	mat4 textureMatrix;
-	vec4 color;
-} ctx;
 
 in vec2 texCoord;
 in vec2 texCoordRaw;

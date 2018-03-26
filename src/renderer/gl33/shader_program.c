@@ -83,6 +83,19 @@ static UniformSetter type_to_setter[] = {
 	[UNIFORM_MAT4]    = uset_mat4,
 };
 
+typedef struct MagicalUniform {
+	const char *name;
+	const char *typename;
+	UniformType type;
+} MagicalUniform;
+
+static MagicalUniform magical_unfiroms[] = {
+	{ "ctx.modelViewMatrix",  "mat4", UNIFORM_MAT4 },
+	{ "ctx.projectionMatrix", "mat4", UNIFORM_MAT4 },
+	{ "ctx.textureMatrix",    "mat4", UNIFORM_MAT4 },
+	{ "ctx.color",            "vec4", UNIFORM_VEC4 },
+};
+
 void r_uniform_ptr(Uniform *uniform, uint count, const void *data) {
 	assert(count > 0);
 
@@ -123,7 +136,7 @@ void gl33_sync_uniforms(ShaderProgram *prog) {
 	hashtable_foreach(prog->uniforms, gl33_sync_uniform, NULL);
 }
 
-static void cache_uniforms(ShaderProgram *prog) {
+static bool cache_uniforms(ShaderProgram *prog) {
 	int maxlen = 0;
 	GLint unicount;
 
@@ -132,8 +145,8 @@ static void cache_uniforms(ShaderProgram *prog) {
 	glGetProgramiv(prog->gl_handle, GL_ACTIVE_UNIFORMS, &unicount);
 	glGetProgramiv(prog->gl_handle, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxlen);
 
-	if(maxlen < 1) {
-		return;
+	if(maxlen < 1 || unicount < 1) {
+		return true;
 	}
 
 	char name[maxlen];
@@ -169,9 +182,21 @@ static void cache_uniforms(ShaderProgram *prog) {
 				continue;
 		}
 
+		for(int i = 0; i < sizeof(magical_unfiroms)/sizeof(MagicalUniform); ++i) {
+			MagicalUniform *m = magical_unfiroms + i;
+
+			if(!strcmp(name, m->name) && uni.type != m->type) {
+				log_warn("Magical uniform '%s' must be of type '%s'", name, m->typename);
+				return false;
+			}
+		}
+
 		uni.location = loc;
 		hashtable_set_string(prog->uniforms, name, memdup(&uni, sizeof(uni)));
+		log_debug("%s = %i", name, loc);
 	}
+
+	return true;
 }
 
 /*
@@ -265,6 +290,21 @@ static void print_info_log(GLuint prog) {
 	}
 }
 
+static void* free_uniform(void *key, void *data, void *arg) {
+	Uniform *uniform = data;
+	free(uniform->cache);
+	free(uniform);
+	return NULL;
+}
+
+static void unload_shader_program(void *vprog) {
+	ShaderProgram *prog = vprog;
+	glDeleteProgram(prog->gl_handle);
+	hashtable_foreach(prog->uniforms, free_uniform, NULL);
+	hashtable_free(prog->uniforms);
+	free(prog);
+}
+
 static void* load_shader_program_end(void *opaque, const char *path, uint flags) {
 	if(!opaque) {
 		return NULL;
@@ -301,30 +341,14 @@ static void* load_shader_program_end(void *opaque, const char *path, uint flags)
 		return NULL;
 	}
 
-	ldata.shprog.renderctx_block_idx = glGetUniformBlockIndex(ldata.shprog.gl_handle, "RenderContext");
+	ShaderProgram *prog = memdup(&ldata.shprog, sizeof(ldata.shprog));
 
-	if(ldata.shprog.renderctx_block_idx >= 0) {
-		glUniformBlockBinding(ldata.shprog.gl_handle, ldata.shprog.renderctx_block_idx, 1);
+	if(!cache_uniforms(prog)) {
+		unload_shader_program(prog);
+		prog = NULL;
 	}
 
-	ShaderProgram *prog = memdup(&ldata.shprog, sizeof(ldata.shprog));
-	cache_uniforms(prog);
 	return prog;
-}
-
-static void* free_uniform(void *key, void *data, void *arg) {
-	Uniform *uniform = data;
-	free(uniform->cache);
-	free(uniform);
-	return NULL;
-}
-
-void unload_shader_program(void *vprog) {
-	ShaderProgram *prog = vprog;
-	glDeleteProgram(prog->gl_handle);
-	hashtable_foreach(prog->uniforms, free_uniform, NULL);
-	hashtable_free(prog->uniforms);
-	free(prog);
 }
 
 ResourceHandler shader_program_res_handler = {

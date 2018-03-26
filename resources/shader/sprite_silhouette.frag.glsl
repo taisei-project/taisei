@@ -1,7 +1,7 @@
 #version 330 core
 
-#include "render_context.glslh"
-#include "uv_to_region.glslh"
+#include "lib/render_context.glslh"
+#include "lib/uv_to_region.glslh"
 
 uniform sampler2D tex;
 

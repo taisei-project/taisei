@@ -1,13 +1,8 @@
 #version 330 core
 
-uniform vec3 lightvec;
+#include "lib/render_context.glslh"
 
-layout(std140) uniform RenderContext {
-	mat4 modelViewMatrix;
-	mat4 projectionMatrix;
-	mat4 textureMatrix;
-	vec4 color;
-} ctx;
+uniform vec3 lightvec;
 
 layout(location=0) in vec3 position;
 layout(location=1) in vec3 normalIn;

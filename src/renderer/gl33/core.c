@@ -21,13 +21,6 @@
 
 #include <stdalign.h>
 
-typedef struct UBOData {
-	mat4 modelview;
-	mat4 projection;
-	mat4 texture;
-	vec4 color;
-} UBOData;
-
 typedef struct TextureUnit {
 	struct {
 		GLuint gl_handle;
@@ -79,8 +72,6 @@ static struct {
 
 	vec4 color;
 	vec4 clear_color;
-	GLuint ubo;
-	UBOData ubodata;
 	IntRect viewport;
 	uint32_t capstates;
 	bool blend_enabled;
@@ -221,11 +212,6 @@ static void gl33_init_context(SDL_Window *window) {
 	r_cull(CULL_BACK);
 	r_blend(BLEND_ALPHA);
 
-	glGenBuffers(1, &R.ubo);
-	glBindBuffer(GL_UNIFORM_BUFFER, R.ubo);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(R.ubodata), &R.ubodata, GL_DYNAMIC_DRAW);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-	glBindBufferRange(GL_UNIFORM_BUFFER, 1, R.ubo, 0, sizeof(R.ubodata));
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 	glGetIntegerv(GL_VIEWPORT, &R.viewport.x);
 
@@ -333,7 +319,6 @@ void _r_init(void) {
 }
 
 void _r_shutdown(void) {
-	glDeleteBuffers(1, &R.ubo);
 	unload_gl_library();
 	SDL_GL_DeleteContext(R.gl_context);
 }
@@ -453,29 +438,14 @@ VertexBuffer* r_vertex_buffer_current(void) {
 
 static void gl33_sync_state(void) {
 	gl33_sync_shader();
+	r_uniform("ctx.modelViewMatrix", 1, R.mstacks.modelview.head);
+	r_uniform("ctx.projectionMatrix", 1, R.mstacks.projection.head);
+	r_uniform("ctx.textureMatrix", 1, R.mstacks.texture.head);
+	r_uniform("ctx.color", 1, R.color);
 	gl33_sync_uniforms(R.progs.active);
 	gl33_sync_texunits();
 	gl33_sync_render_target();
 	gl33_sync_vertex_buffer();
-
-	if(R.progs.active && R.progs.active->renderctx_block_idx < 0) {
-		return;
-	}
-
-	static alignas(32) UBOData ubo;
-	memset(&ubo, 0, sizeof(ubo));
-
-	glm_mat4_copy(*R.mstacks.modelview.head, ubo.modelview);
-	glm_mat4_copy(*R.mstacks.projection.head, ubo.projection);
-	glm_mat4_copy(*R.mstacks.texture.head, ubo.texture);
-	glm_vec4_copy(R.color, ubo.color);
-
-	if(!memcmp(&R.ubodata, &ubo, sizeof(ubo))) {
-		return;
-	}
-
-	memcpy(&R.ubodata, &ubo, sizeof(ubo));
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(R.ubodata), &R.ubodata, GL_DYNAMIC_DRAW);
 }
 
 static GLenum prim_to_gl_prim[] = {

@@ -1,6 +1,6 @@
 #version 330 core
 
-#include "render_context.glslh"
+#include "lib/render_context.glslh"
 
 layout(location=0) in vec3 position;
 layout(location=2) in vec2 texCoordRawIn;

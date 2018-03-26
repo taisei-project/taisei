@@ -1,11 +1,6 @@
 #version 330 core
 
-layout(std140) uniform RenderContext {
-	mat4 modelViewMatrix;
-	mat4 projectionMatrix;
-	mat4 textureMatrix;
-	vec4 color;
-} ctx;
+#include "lib/render_context.glslh"
 
 layout(location = 0) in vec2 position;
 layout(location = 1) in vec2 texCoordRawIn;

@@ -1,4 +1,6 @@
-#version 330
+#version 330 core
+
+#include "lib/render_context.glslh"
 
 uniform sampler2D tex;
 uniform vec2 blur_orig; // center
@@ -7,13 +9,6 @@ uniform float blur_rad;  // radius of zoom effect
 uniform float rad;
 uniform float ratio; // texture h/w
 uniform vec4 color;
-
-layout(std140) uniform RenderContext {
-	mat4 modelViewMatrix;
-	mat4 projectionMatrix;
-	mat4 textureMatrix;
-	vec4 color;
-} ctx;
 
 in vec2 texCoord;
 in vec2 texCoordRaw;

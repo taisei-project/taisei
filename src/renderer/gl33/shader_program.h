@@ -19,7 +19,6 @@
 struct ShaderProgram {
 	GLuint gl_handle;
 	Hashtable *uniforms;
-	int renderctx_block_idx;
 };
 
 typedef void (*UniformSetter)(Uniform *uniform, uint count, const void *data);

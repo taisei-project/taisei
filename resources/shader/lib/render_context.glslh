@@ -1,4 +1,5 @@
-layout(std140) uniform RenderContext {
+
+uniform struct RenderContext {
 	mat4 modelViewMatrix;
 	mat4 projectionMatrix;
 	mat4 textureMatrix;

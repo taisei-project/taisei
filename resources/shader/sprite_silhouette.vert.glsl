@@ -6,4 +6,4 @@
 #define SPRITE_OUT_CUSTOM
 #define SPRITE_OUT_TEXREGION
 
-#include "sprite_default.vert.glslh"
+#include "lib/sprite_default.vert.glslh"
