@@ -246,41 +246,6 @@ static inline attr_must_inline uint32_t cap_flag(RendererCapability cap) {
 	assert(idx < NUM_RCAPS);
 	return (1 << idx);
 }
-/*
-void r_capability(RendererCapability cap, bool value) {
-	uint32_t flag = cap_flag(cap);
-
-	if((bool)(R.capstates & flag) == value) {
-		return;
-	}
-
-	switch(cap) {
-		case RCAP_DEPTH_TEST:
-			(value ? glEnable : glDisable)(GL_DEPTH_TEST);
-			break;
-
-		case RCAP_DEPTH_WRITE:
-			glDepthMask(value);
-			break;
-
-		case RCAP_CULL_FACE:
-			(value ? glEnable : glDisable)(GL_CULL_FACE);
-			break;
-
-		default: UNREACHABLE;
-	}
-
-	if(value) {
-		R.capstates |= flag;
-	} else {
-		R.capstates &= ~flag;
-	}
-}
-
-bool r_capability_current(RendererCapability cap) {
-	return R.capstates & cap_flag(cap);
-}
-*/
 
 void gl33_apply_capability(RendererCapability cap, bool value) {
 	switch(cap) {
