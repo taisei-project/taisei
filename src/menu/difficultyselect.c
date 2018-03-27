@@ -66,11 +66,12 @@ void draw_difficulty_menu(MenuData *menu) {
 	r_mat_scale(SCREEN_W*1.5,120,1);
 	r_shader_standard_notex();
 	r_draw_quad();
-	r_shader("sprite_default");
 	r_mat_pop();
 	r_color3(1,1,1);
+	r_shader_standard();
 	draw_text(AL_Left, 40+35*menu->drawdata[0], -12, menu->entries[menu->cursor].name, _fonts.standard);
 
+	r_shader("sprite_default");
 	r_mat_pop();
 
 	for(int i = 0; i < menu->ecount; ++i) {
