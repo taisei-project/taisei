@@ -27,5 +27,9 @@ void gl33_sync_texunit(uint unit);
 void gl33_sync_texunits(void);
 void gl33_sync_render_target(void);
 void gl33_sync_vertex_buffer(void);
+void gl33_sync_blend_mode(void);
+void gl33_sync_cull_face_mode(void);
+void gl33_sync_depth_test_func(void);
+void gl33_sync_capabilities(void);
 
 void gl33_texture_deleted(Texture *tex);

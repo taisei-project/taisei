@@ -70,14 +70,36 @@ static struct {
 		ShaderProgram *std_notex;
 	} progs;
 
+	struct {
+		struct {
+			BlendMode active;
+			BlendMode pending;
+		} mode;
+		bool enabled;
+	} blend;
+
+	struct {
+		struct {
+			CullFaceMode active;
+			CullFaceMode pending;
+		} mode;
+	} cull_face;
+
+	struct {
+		struct {
+			DepthTestFunc active;
+			DepthTestFunc pending;
+		} func;
+	} depth_test;
+
+	struct {
+		uint32_t active;
+		uint32_t pending;
+	} capabilities;
+
 	vec4 color;
 	vec4 clear_color;
 	IntRect viewport;
-	uint32_t capstates;
-	bool blend_enabled;
-	BlendMode blend_mode;
-	CullFaceMode cull_mode;
-	DepthTestFunc depth_func;
 	GLuint pbo;
 
 	SDL_GLContext *gl_context;
@@ -224,7 +246,7 @@ static inline attr_must_inline uint32_t cap_flag(RendererCapability cap) {
 	assert(idx < NUM_RCAPS);
 	return (1 << idx);
 }
-
+/*
 void r_capability(RendererCapability cap, bool value) {
 	uint32_t flag = cap_flag(cap);
 
@@ -257,6 +279,57 @@ void r_capability(RendererCapability cap, bool value) {
 
 bool r_capability_current(RendererCapability cap) {
 	return R.capstates & cap_flag(cap);
+}
+*/
+
+void gl33_apply_capability(RendererCapability cap, bool value) {
+	switch(cap) {
+		case RCAP_DEPTH_TEST:
+			(value ? glEnable : glDisable)(GL_DEPTH_TEST);
+			break;
+
+		case RCAP_DEPTH_WRITE:
+			glDepthMask(value);
+			break;
+
+		case RCAP_CULL_FACE:
+			(value ? glEnable : glDisable)(GL_CULL_FACE);
+			break;
+
+		default: UNREACHABLE;
+	}
+}
+
+void gl33_sync_capabilities(void) {
+	if(R.capabilities.active == R.capabilities.pending) {
+		return;
+	}
+
+	for(RendererCapability cap = 0; cap < NUM_RCAPS; ++cap) {
+		uint32_t flag = cap_flag(cap);
+		bool pending = R.capabilities.pending & flag;
+		bool active = R.capabilities.active & flag;
+
+		if(pending != active) {
+			gl33_apply_capability(cap, pending);
+		}
+	}
+
+	R.capabilities.active = R.capabilities.pending;
+}
+
+void r_capability(RendererCapability cap, bool value) {
+	uint32_t flag = cap_flag(cap);
+
+	if(value) {
+		R.capabilities.pending |=  flag;
+	} else {
+		R.capabilities.pending &= ~flag;
+	}
+}
+
+bool r_capability_current(RendererCapability cap) {
+	return R.capabilities.pending & cap_flag(cap);
 }
 
 uint gl33_active_texunit(void) {
@@ -437,6 +510,7 @@ VertexBuffer* r_vertex_buffer_current(void) {
 }
 
 static void gl33_sync_state(void) {
+	gl33_sync_capabilities();
 	gl33_sync_shader();
 	r_uniform("ctx.modelViewMatrix", 1, R.mstacks.modelview.head);
 	r_uniform("ctx.projectionMatrix", 1, R.mstacks.projection.head);
@@ -446,6 +520,15 @@ static void gl33_sync_state(void) {
 	gl33_sync_texunits();
 	gl33_sync_render_target();
 	gl33_sync_vertex_buffer();
+	gl33_sync_blend_mode();
+
+	if(R.capabilities.active & cap_flag(RCAP_CULL_FACE)) {
+		gl33_sync_cull_face_mode();
+	}
+
+	if(R.capabilities.active & cap_flag(RCAP_DEPTH_TEST)) {
+		gl33_sync_depth_test_func();
+	}
 }
 
 static GLenum prim_to_gl_prim[] = {
@@ -678,25 +761,30 @@ static GLenum blendfactor_to_gl_blendfactor(BlendFactor factor) {
 	UNREACHABLE;
 }
 
-void r_blend(BlendMode mode) {
+void gl33_sync_blend_mode(void) {
+	BlendMode mode = R.blend.mode.pending;
+
 	if(mode == BLEND_NONE) {
-		if(R.blend_enabled) {
+		if(R.blend.enabled) {
 			glDisable(GL_BLEND);
-			R.blend_enabled = false;
+			R.blend.enabled = false;
 		}
 
 		return;
 	}
 
-	if(!R.blend_enabled) {
-		R.blend_enabled = true;
+	if(!R.blend.enabled) {
+		R.blend.enabled = true;
 		glEnable(GL_BLEND);
 	}
 
-	if(mode != R.blend_mode) {
+	if(mode != R.blend.mode.active) {
 		static UnpackedBlendMode umode;
 		r_blend_unpack(mode, &umode);
-		R.blend_mode = mode;
+		R.blend.mode.active = mode;
+
+		// TODO: maybe cache the funcs and factors separately,
+		// because the blend funcs change a lot less frequently.
 
 		glBlendEquationSeparate(
 			blendop_to_gl_blendop(umode.color.op),
@@ -712,8 +800,13 @@ void r_blend(BlendMode mode) {
 	}
 }
 
+void r_blend(BlendMode mode) {
+	// TODO: validate it here?
+	R.blend.mode.pending = mode;
+}
+
 BlendMode r_blend_current(void) {
-	return R.blend_mode;
+	return R.blend.mode.pending;
 }
 
 static inline GLenum r_cull_to_gl_cull(CullFaceMode mode) {
@@ -731,20 +824,26 @@ static inline GLenum r_cull_to_gl_cull(CullFaceMode mode) {
 	}
 }
 
-void r_cull(CullFaceMode mode) {
-	if(mode != R.cull_mode) {
-		r_flush_sprites();
-		GLenum glcull = r_cull_to_gl_cull(mode);
+void gl33_sync_cull_face_mode(void) {
+	if(R.cull_face.mode.pending != R.cull_face.mode.active) {
+		GLenum glcull = r_cull_to_gl_cull(R.cull_face.mode.pending);
 		glCullFace(glcull);
-		R.cull_mode = mode;
+		R.cull_face.mode.active = R.cull_face.mode.pending;
 	}
 }
 
-CullFaceMode r_cull_current(void) {
-	return R.cull_mode;
+void r_cull(CullFaceMode mode) {
+	// TODO: validate it here?
+	R.cull_face.mode.pending = mode;
 }
 
-void r_depth_func(DepthTestFunc func) {
+CullFaceMode r_cull_current(void) {
+	return R.cull_face.mode.pending;
+}
+
+void gl33_sync_depth_test_func(void) {
+	DepthTestFunc func = R.depth_test.func.pending;
+
 	static GLenum func_to_glfunc[] = {
 		[DEPTH_NEVER]     = GL_NEVER,
 		[DEPTH_ALWAYS]    = GL_ALWAYS,
@@ -759,15 +858,19 @@ void r_depth_func(DepthTestFunc func) {
 	uint32_t idx = func;
 	assert(idx < sizeof(func_to_glfunc)/sizeof(GLenum));
 
-	if(R.depth_func != func) {
-		r_flush_sprites();
+	if(R.depth_test.func.active != func) {
 		glDepthFunc(func_to_glfunc[idx]);
-		R.depth_func = func;
+		R.depth_test.func.active = func;
 	}
 }
 
+void r_depth_func(DepthTestFunc func) {
+	// TODO: validate it here?
+	R.depth_test.func.pending = func;
+}
+
 DepthTestFunc r_depth_func_current(void) {
-	return R.depth_func;
+	return R.depth_test.func.pending;
 }
 
 uint8_t* r_screenshot(uint *out_width, uint *out_height) {
