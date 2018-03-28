@@ -23,13 +23,22 @@ struct ShaderProgram {
 
 typedef void (*UniformSetter)(Uniform *uniform, uint count, const void *data);
 
+typedef struct UniformCache {
+	void *data;
+	size_t size;
+} UniformCache;
+
 struct Uniform {
 	ShaderProgram *prog;
 	uint location;
 	UniformType type;
-	void *cache;
-	size_t cache_size;
-	uint update_count;
+
+	struct {
+		UniformCache pending;
+		UniformCache commited;
+		uint update_count;
+		size_t update_size;
+	} cache;
 };
 
 void gl33_sync_uniforms(ShaderProgram *prog);

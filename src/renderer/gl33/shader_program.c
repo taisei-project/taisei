@@ -61,14 +61,6 @@ static void uset_mat4(Uniform *uniform, uint count, const void *data) {
 	glUniformMatrix4fv(uniform->location, count, false, (float*)data);
 }
 
-static void gl33_update_uniform(Uniform *uniform, uint count, const void *data, size_t datasize) {
-	memcpy(uniform->cache, data, datasize);
-
-	if(count > uniform->update_count) {
-		uniform->update_count = count;
-	}
-}
-
 static UniformSetter type_to_setter[] = {
 	[UNIFORM_FLOAT]   = uset_float,
 	[UNIFORM_VEC2]    = uset_vec2,
@@ -96,6 +88,57 @@ static MagicalUniform magical_unfiroms[] = {
 	{ "ctx.color",            "vec4", UNIFORM_VEC4 },
 };
 
+static void gl33_update_uniform(Uniform *uniform, uint count, const void *data, size_t datasize) {
+	memcpy(uniform->cache.pending.data, data, datasize);
+
+	if(count > uniform->cache.update_count) {
+		uniform->cache.update_count = count;
+	}
+
+	if(datasize > uniform->cache.update_size) {
+		uniform->cache.update_size = datasize;
+	}
+}
+
+static void gl33_commit_uniform(Uniform *uniform) {
+	memcpy(uniform->cache.commited.data, uniform->cache.pending.data, uniform->cache.update_size);
+	type_to_setter[uniform->type](uniform, uniform->cache.update_count, uniform->cache.commited.data);
+
+	uniform->cache.update_size = 0;
+	uniform->cache.update_count = 0;
+
+	assert(uniform->cache.commited.size == uniform->cache.pending.size);
+	assert(!memcmp(uniform->cache.commited.data, uniform->cache.pending.data, uniform->cache.commited.size));
+}
+
+static void* gl33_sync_uniform(void *key, void *data, void *arg) {
+	attr_unused const char *name = key;
+	Uniform *uniform = data;
+
+	if(uniform->cache.update_count < 1) {
+		return NULL;
+	}
+
+	if(
+		uniform->cache.commited.data == NULL ||
+		uniform->cache.commited.size < uniform->cache.update_size
+	) {
+		uniform->cache.commited.data = realloc(uniform->cache.commited.data, uniform->cache.update_size);
+		uniform->cache.commited.size = uniform->cache.update_size;
+		gl33_commit_uniform(uniform);
+	} else if(memcmp(uniform->cache.commited.data, uniform->cache.pending.data, uniform->cache.update_size)) {
+		gl33_commit_uniform(uniform);
+	} else {
+		// log_debug("uniform %u:%s (shader %u) update of size %zu ignored", uniform->location, name, uniform->prog->gl_handle, uniform->cache.update_size);
+	}
+
+	return NULL;
+}
+
+void gl33_sync_uniforms(ShaderProgram *prog) {
+	hashtable_foreach(prog->uniforms, gl33_sync_uniform, NULL);
+}
+
 void r_uniform_ptr(Uniform *uniform, uint count, const void *data) {
 	assert(count > 0);
 
@@ -108,32 +151,13 @@ void r_uniform_ptr(Uniform *uniform, uint count, const void *data) {
 	const UniformTypeInfo *typeinfo = r_uniform_type_info(uniform->type);
 	size_t datasize = typeinfo->elements * typeinfo->element_size * count;
 
-	if(datasize > uniform->cache_size) {
-		uniform->cache = realloc(uniform->cache, datasize);
-		uniform->cache_size = datasize;
+	if(datasize > uniform->cache.pending.size) {
+		uniform->cache.pending.data = realloc(uniform->cache.pending.data, datasize);
+		uniform->cache.pending.size = datasize;
 		gl33_update_uniform(uniform, count, data, datasize);
-	} else if(memcmp(uniform->cache, data, datasize)) {
+	} else if(memcmp(uniform->cache.pending.data, data, datasize)) {
 		gl33_update_uniform(uniform, count, data, datasize);
 	}
-}
-
-static void* gl33_sync_uniform(void *key, void *data, void *arg) {
-	attr_unused const char *name = key;
-	Uniform *uniform = data;
-
-	if(uniform->update_count > 0) {
-		// NOTE: assuming the correct program is active here
-		type_to_setter[uniform->type](uniform, uniform->update_count, uniform->cache);
-		uniform->update_count = 0;
-	} else {
-		// log_debug("uniform %u:%s (shader %u) update of size %zu ignored", uniform->location, name, uniform->prog->gl_handle, uniform->cache_size);
-	}
-
-	return NULL;
-}
-
-void gl33_sync_uniforms(ShaderProgram *prog) {
-	hashtable_foreach(prog->uniforms, gl33_sync_uniform, NULL);
 }
 
 static bool cache_uniforms(ShaderProgram *prog) {
@@ -292,7 +316,8 @@ static void print_info_log(GLuint prog) {
 
 static void* free_uniform(void *key, void *data, void *arg) {
 	Uniform *uniform = data;
-	free(uniform->cache);
+	free(uniform->cache.commited.data);
+	free(uniform->cache.pending.data);
 	free(uniform);
 	return NULL;
 }

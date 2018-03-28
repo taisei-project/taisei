@@ -379,6 +379,7 @@ VsyncMode r_vsync_current(void) {
 
 void r_color4(float r, float g, float b, float a) {
 	glm_vec4_copy((vec4) { r, g, b, a }, R.color);
+	// r_uniform_vec4("ctx.color", r, g, b, a);
 }
 
 Color r_color_current(void) {
