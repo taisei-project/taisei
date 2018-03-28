@@ -9,6 +9,7 @@
 #include "taisei.h"
 
 #include "api.h"
+#include "common/matstack.h"
 #include "glm.h"
 
 #include <stdalign.h>
@@ -113,6 +114,7 @@ static void r_init_vbuf_sprites(VertexBuffer *vbuf) {
 
 void r_init(void) {
 	_r_init();
+	_r_mat_init();
 	r_init_vbuf_models(&R.vbufs.models);
 	r_init_vbuf_sprites(&R.vbufs.sprites);
 

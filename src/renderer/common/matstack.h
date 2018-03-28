@@ -36,3 +36,21 @@ void matstack_push(MatrixStack *ms)
 // It's an error to pop the last element.
 void matstack_pop(MatrixStack *ms)
 	attr_nonnull(1);
+
+typedef struct MatrixStates {
+	union {
+		struct {
+			MatrixStack modelview;
+			MatrixStack projection;
+			MatrixStack texture;
+		};
+
+		MatrixStack indexed[3];
+	};
+
+	MatrixStack *active;
+} MatrixStates;
+
+extern MatrixStates _r_matrices;
+
+void _r_mat_init(void);

@@ -31,20 +31,6 @@ typedef struct TextureUnit {
 
 static struct {
 	struct {
-		union {
-			struct {
-				MatrixStack modelview;
-				MatrixStack projection;
-				MatrixStack texture;
-			};
-
-			MatrixStack indexed[3];
-		};
-
-		MatrixStack *active;
-	} mstacks;
-
-	struct {
 		TextureUnit indexed[GL33_MAX_TEXUNITS];
 		TextureUnit *active;
 		TextureUnit *pending;
@@ -220,11 +206,6 @@ static void gl33_init_context(SDL_Window *window) {
 	}
 #endif
 
-	matstack_reset(&R.mstacks.texture);
-	matstack_reset(&R.mstacks.modelview);
-	matstack_reset(&R.mstacks.projection);
-	r_mat_mode(MM_MODELVIEW);
-
 	R.texunits.active = R.texunits.indexed;
 
 	r_enable(RCAP_DEPTH_TEST);
@@ -396,52 +377,6 @@ VsyncMode r_vsync_current(void) {
 	return interval > 0 ? VSYNC_NORMAL : VSYNC_ADAPTIVE;
 }
 
-static inline vec4* active_matrix(void) {
-	return *R.mstacks.active->head;
-}
-
-void r_mat_mode(MatrixMode mode) {
-	assert((uint)mode < sizeof(R.mstacks.indexed) / sizeof(MatrixStack));
-	R.mstacks.active = &R.mstacks.indexed[mode];
-}
-
-void r_mat_push(void) {
-	matstack_push(R.mstacks.active);
-}
-
-void r_mat_pop(void) {
-	matstack_pop(R.mstacks.active);
-}
-
-void r_mat_identity(void) {
-	glm_mat4_identity(active_matrix());
-}
-
-void r_mat_translate_v(vec3 v) {
-	glm_translate(active_matrix(), v);
-}
-
-void r_mat_rotate_v(float angle, vec3 v) {
-	glm_rotate(active_matrix(), angle, v);
-}
-
-void r_mat_scale_v(vec3 v) {
-	glm_scale(active_matrix(), v);
-}
-
-void r_mat_ortho(float left, float right, float bottom, float top, float near, float far) {
-	glm_ortho(left, right, bottom, top, near, far, active_matrix());
-}
-
-void r_mat_perspective(float angle, float aspect, float near, float far) {
-	glm_perspective(angle, aspect, near, far, active_matrix());
-}
-
-void r_mat_current(MatrixMode mode, mat4 out_mat) {
-	assert((uint)mode < sizeof(R.mstacks.indexed) / sizeof(MatrixStack));
-	glm_mat4_copy(*R.mstacks.indexed[mode].head, out_mat);
-}
-
 void r_color4(float r, float g, float b, float a) {
 	glm_vec4_copy((vec4) { r, g, b, a }, R.color);
 }
@@ -477,9 +412,9 @@ VertexBuffer* r_vertex_buffer_current(void) {
 static void gl33_sync_state(void) {
 	gl33_sync_capabilities();
 	gl33_sync_shader();
-	r_uniform("ctx.modelViewMatrix", 1, R.mstacks.modelview.head);
-	r_uniform("ctx.projectionMatrix", 1, R.mstacks.projection.head);
-	r_uniform("ctx.textureMatrix", 1, R.mstacks.texture.head);
+	r_uniform("ctx.modelViewMatrix", 1, _r_matrices.modelview.head);
+	r_uniform("ctx.projectionMatrix", 1, _r_matrices.projection.head);
+	r_uniform("ctx.textureMatrix", 1, _r_matrices.texture.head);
 	r_uniform("ctx.color", 1, R.color);
 	gl33_sync_uniforms(R.progs.active);
 	gl33_sync_texunits();
