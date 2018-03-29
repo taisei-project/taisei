@@ -1,1 +1,1 @@
-glsl_objects = stage6_sky.vert tower_wall.frag
+glsl_objects = tower_wall.vert tower_wall.frag
