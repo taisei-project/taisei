@@ -504,6 +504,10 @@ void gl33_texture_deleted(Texture *tex) {
 		if(R.texunits.indexed[i].tex2d.pending == tex) {
 			R.texunits.indexed[i].tex2d.pending = NULL;
 		}
+
+		if(R.texunits.indexed[i].tex2d.gl_handle == tex->impl->gl_handle) {
+			R.texunits.indexed[i].tex2d.gl_handle = 0;
+		}
 	}
 }
 

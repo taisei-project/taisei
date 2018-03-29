@@ -168,6 +168,8 @@ void r_texture_replace(Texture *tex, TextureType type, uint w, uint h, void *ima
 
 void r_texture_destroy(Texture *tex) {
 	if(tex->impl) {
+		gl33_texture_deleted(tex);
+
 		glDeleteTextures(1, &tex->impl->gl_handle);
 
 		if(tex->impl->pbo) {
@@ -176,6 +178,5 @@ void r_texture_destroy(Texture *tex) {
 
 		free(tex->impl);
 		tex->impl = NULL;
-		gl33_texture_deleted(tex);
 	}
 }
