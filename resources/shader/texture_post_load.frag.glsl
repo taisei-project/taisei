@@ -8,10 +8,6 @@ in vec2 texCoord;
 in vec2 texCoordRaw;
 out vec4 fragColor;
 
-vec2 tc_normalize(ivec2 tc) {
-	return vec2(tc) / vec2(width, height);
-}
-
 ivec2 tc_denormalize(vec2 tc) {
 	return ivec2(tc * vec2(width, height));
 }
@@ -21,12 +17,12 @@ vec4 replace_color(vec4 texel, vec4 neighbour) {
 }
 
 vec4 sampleofs(ivec2 origin, int ofsx, int ofsy) {
-	return texture2D(tex, tc_normalize(origin + ivec2(ofsx, ofsy)));
+	return texelFetch(tex, origin + ivec2(ofsx, ofsy), 0);
 }
 
 void main(void) {
 	ivec2 tc = tc_denormalize(texCoordRaw);
-	vec4 texel = texture2D(tex, texCoordRaw);
+	vec4 texel = texelFetch(tex, tc, 0);
 	vec4 new_texel = texel;
 
 	/*
