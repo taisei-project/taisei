@@ -93,20 +93,21 @@ static bool include_shader(const char *path, SDL_RWops *dest, int include_level)
 				*q = 0;
 			}
 			char *pathcopy = strdup(path);
-			char *newpath = strjoin(pathcopy,filename,NULL);
+			char *newpath = strjoin(pathcopy, filename, NULL);
 			*p = '"';
 			*q = tmp;
 			
+			free(pathcopy);
 			bool rc = include_shader(newpath, dest, include_level+1);
+			free(newpath);
+
 			if(!rc) {
 				SDL_RWclose(stream);
 				return false;
 			}
+
 			SDL_RWprintf(dest, "#line %i %i\n", lineno + 1, include_level);
-			
-			free(pathcopy);
-			free(newpath);
-		} else {			
+		} else {
 			SDL_RWwrite(dest, linebuf, 1, strlen(linebuf));
 		}
 		lineno++;
