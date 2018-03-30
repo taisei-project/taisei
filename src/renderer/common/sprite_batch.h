@@ -9,5 +9,5 @@
 #pragma once
 #include "taisei.h"
 
-bool vfs_create_union_mountpoint(const char *mountpoint)
-	attr_nonnull(1);
+void _r_sprite_batch_init(void);
+void _r_sprite_batch_shutdown(void);

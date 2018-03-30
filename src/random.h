@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-
 #define CMWC_CYCLE 4096 // as Marsaglia recommends
 #define CMWC_C_MAX 809430660 // as Marsaglia recommends
 

@@ -8,5 +8,4 @@ gl33_src = files(
 	'vertex_buffer.c'
 )
 
-gl33_src += r_matstack_src
 gl33_src += r_opengl_src

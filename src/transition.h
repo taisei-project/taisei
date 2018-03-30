@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-
 typedef struct Transition Transition;
 typedef void (*TransitionRule)(double fade);
 typedef void (*TransitionCallback)(void *a);
