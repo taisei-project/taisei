@@ -5,7 +5,16 @@ gl33_src = files(
     'shader_object.c',
     'shader_program.c',
     'texture.c',
-	'vertex_buffer.c'
+    'vertex_buffer.c',
+    'opengl.c',
 )
 
-gl33_src += r_opengl_src
+run_target('gl33_update_glheader',
+    command: [
+        gen_opengl_header_command,
+        meson.current_source_dir(),
+        files('opengl.h'),
+        '-f', 'glDebugMessageControlARB',
+        '-f', 'glDebugMessageCallbackARB',
+    ]
+)

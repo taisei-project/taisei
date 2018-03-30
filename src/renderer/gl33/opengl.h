@@ -1,89 +1,3 @@
-#if 0
-#
-#   Run this file with python3 to update the defs.
-#   It automatically picks up all the gl* functions used in Taisei code and updates itself.
-#
-
-# You can force the script to pick up functions that are not directly called in the code here
-
-force_funcs = {
-	'glDebugMessageControlARB',
-	'glDebugMessageCallbackARB',
-}
-
-force_funcs |= {"glUniform%i%sv" % (i, s) for i in range(1, 5) for s in ('f', 'i', 'ui')}
-
-import sys, re
-from pathlib import Path as P
-
-thisfile = P(__file__)
-srcdir = thisfile.parent.parent.parent
-glfuncs = set()
-
-try:
-	idir = sys.argv[1]
-except IndexError:
-	idir = '/usr/include/SDL2'
-
-glheaders = (
-	P('%s/SDL_opengl.h' % idir).read_text() +
-	P('%s/SDL_opengl_glext.h' % idir).read_text()
-)
-
-regex_glcall = re.compile(r'(gl[A-Z][a-zA-Z0-9]+)\(')
-regex_glproto_template = r'(^GLAPI\s+([a-zA-Z_0-9\s]+?\**)\s*((?:GL)?APIENTRY)\s+%s\s*\(\s*(.*?)\s*\);)'
-
-for src in srcdir.glob('**/*.c'):
-	for func in regex_glcall.findall(src.read_text()):
-		glfuncs.add(func)
-
-glfuncs = sorted(glfuncs | force_funcs)
-
-typedefs = []
-prototypes = []
-
-for func in glfuncs:
-	try:
-		proto, rtype, callconv, params = re.findall(regex_glproto_template % func, glheaders, re.DOTALL|re.MULTILINE)[0]
-	except IndexError:
-		print("Function '%s' not found in the GL headers. Either it really does not exist, or this script is bugged. Please check the opengl headers in %s\nUpdate aborted." % (func, idir))
-		exit(1)
-
-	proto = re.sub(r'\s+', ' ', proto, re.DOTALL|re.MULTILINE)
-	params = ', '.join(re.split(r',\s*', params))
-
-	typename = 'ts%s_ptr' % func
-	typedef = 'typedef %s (%s *%s)(%s);' % (rtype, callconv, typename, params)
-
-	typedefs.append(typedef)
-	prototypes.append(proto)
-
-text = thisfile.read_text()
-
-subs = {
-	'gldefs': '#define GLDEFS \\\n' + ' \\\n'.join('GLDEF(%s, ts%s, ts%s_ptr)' % (f, f, f) for f in glfuncs),
-	'undefs': '\n'.join('#undef %s' % f for f in glfuncs),
-	'redefs': '\n'.join('#define %s ts%s' % (f, f) for f in glfuncs),
-	'reversedefs': '\n'.join('#define ts%s %s' % (f, f) for f in glfuncs),
-	'typedefs': '\n'.join(typedefs),
-	'protos': '\n'.join(prototypes),
-}
-
-for key, val in subs.items():
-	text = re.sub(
-		r'(// @BEGIN:%s@)(.*?)(// @END:%s@)' % (key, key),
-		r'\1\n%s\n\3' % val,
-		text,
-		flags=re.DOTALL|re.MULTILINE
-	)
-
-thisfile.write_text(text)
-
-#/*
-"""
-*/
-#endif
-
 /*
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
@@ -133,7 +47,6 @@ void unload_gl_library(void);
 typedef void (GLAPIENTRY *tsglActiveTexture_ptr)(GLenum texture);
 typedef void (APIENTRY *tsglAttachShader_ptr)(GLuint program, GLuint shader);
 typedef void (APIENTRY *tsglBindBuffer_ptr)(GLenum target, GLuint buffer);
-typedef void (APIENTRY *tsglBindBufferRange_ptr)(GLenum target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size);
 typedef void (APIENTRY *tsglBindFramebuffer_ptr)(GLenum target, GLuint framebuffer);
 typedef void (GLAPIENTRY *tsglBindTexture_ptr)(GLenum target, GLuint texture);
 typedef void (APIENTRY *tsglBindVertexArray_ptr)(GLuint array);
@@ -180,7 +93,6 @@ typedef void (APIENTRY *tsglGetShaderInfoLog_ptr)(GLuint shader, GLsizei bufSize
 typedef void (APIENTRY *tsglGetShaderiv_ptr)(GLuint shader, GLenum pname, GLint *params);
 typedef const GLubyte * (GLAPIENTRY *tsglGetString_ptr)(GLenum name);
 typedef const GLubyte * (APIENTRY *tsglGetStringi_ptr)(GLenum name, GLuint index);
-typedef GLuint (APIENTRY *tsglGetUniformBlockIndex_ptr)(GLuint program, const GLchar *uniformBlockName);
 typedef GLint (APIENTRY *tsglGetUniformLocation_ptr)(GLuint program, const GLchar *name);
 typedef void (APIENTRY *tsglLinkProgram_ptr)(GLuint program);
 typedef void (APIENTRY *tsglObjectLabel_ptr)(GLenum identifier, GLuint name, GLsizei length, const GLchar *label);
@@ -194,17 +106,12 @@ typedef void (GLAPIENTRY *tsglTexParameteri_ptr)(GLenum target, GLenum pname, GL
 typedef void (GLAPIENTRY *tsglTexSubImage2D_ptr)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels);
 typedef void (APIENTRY *tsglUniform1fv_ptr)(GLint location, GLsizei count, const GLfloat *value);
 typedef void (APIENTRY *tsglUniform1iv_ptr)(GLint location, GLsizei count, const GLint *value);
-typedef void (APIENTRY *tsglUniform1uiv_ptr)(GLint location, GLsizei count, const GLuint *value);
 typedef void (APIENTRY *tsglUniform2fv_ptr)(GLint location, GLsizei count, const GLfloat *value);
 typedef void (APIENTRY *tsglUniform2iv_ptr)(GLint location, GLsizei count, const GLint *value);
-typedef void (APIENTRY *tsglUniform2uiv_ptr)(GLint location, GLsizei count, const GLuint *value);
 typedef void (APIENTRY *tsglUniform3fv_ptr)(GLint location, GLsizei count, const GLfloat *value);
 typedef void (APIENTRY *tsglUniform3iv_ptr)(GLint location, GLsizei count, const GLint *value);
-typedef void (APIENTRY *tsglUniform3uiv_ptr)(GLint location, GLsizei count, const GLuint *value);
 typedef void (APIENTRY *tsglUniform4fv_ptr)(GLint location, GLsizei count, const GLfloat *value);
 typedef void (APIENTRY *tsglUniform4iv_ptr)(GLint location, GLsizei count, const GLint *value);
-typedef void (APIENTRY *tsglUniform4uiv_ptr)(GLint location, GLsizei count, const GLuint *value);
-typedef void (APIENTRY *tsglUniformBlockBinding_ptr)(GLuint program, GLuint uniformBlockIndex, GLuint uniformBlockBinding);
 typedef void (APIENTRY *tsglUniformMatrix3fv_ptr)(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
 typedef void (APIENTRY *tsglUniformMatrix4fv_ptr)(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
 typedef void (APIENTRY *tsglUseProgram_ptr)(GLuint program);
@@ -218,7 +125,6 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glActiveTexture
 #undef glAttachShader
 #undef glBindBuffer
-#undef glBindBufferRange
 #undef glBindFramebuffer
 #undef glBindTexture
 #undef glBindVertexArray
@@ -265,7 +171,6 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glGetShaderiv
 #undef glGetString
 #undef glGetStringi
-#undef glGetUniformBlockIndex
 #undef glGetUniformLocation
 #undef glLinkProgram
 #undef glObjectLabel
@@ -279,17 +184,12 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glTexSubImage2D
 #undef glUniform1fv
 #undef glUniform1iv
-#undef glUniform1uiv
 #undef glUniform2fv
 #undef glUniform2iv
-#undef glUniform2uiv
 #undef glUniform3fv
 #undef glUniform3iv
-#undef glUniform3uiv
 #undef glUniform4fv
 #undef glUniform4iv
-#undef glUniform4uiv
-#undef glUniformBlockBinding
 #undef glUniformMatrix3fv
 #undef glUniformMatrix4fv
 #undef glUseProgram
@@ -304,7 +204,6 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glActiveTexture tsglActiveTexture
 #define glAttachShader tsglAttachShader
 #define glBindBuffer tsglBindBuffer
-#define glBindBufferRange tsglBindBufferRange
 #define glBindFramebuffer tsglBindFramebuffer
 #define glBindTexture tsglBindTexture
 #define glBindVertexArray tsglBindVertexArray
@@ -351,7 +250,6 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glGetShaderiv tsglGetShaderiv
 #define glGetString tsglGetString
 #define glGetStringi tsglGetStringi
-#define glGetUniformBlockIndex tsglGetUniformBlockIndex
 #define glGetUniformLocation tsglGetUniformLocation
 #define glLinkProgram tsglLinkProgram
 #define glObjectLabel tsglObjectLabel
@@ -365,17 +263,12 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glTexSubImage2D tsglTexSubImage2D
 #define glUniform1fv tsglUniform1fv
 #define glUniform1iv tsglUniform1iv
-#define glUniform1uiv tsglUniform1uiv
 #define glUniform2fv tsglUniform2fv
 #define glUniform2iv tsglUniform2iv
-#define glUniform2uiv tsglUniform2uiv
 #define glUniform3fv tsglUniform3fv
 #define glUniform3iv tsglUniform3iv
-#define glUniform3uiv tsglUniform3uiv
 #define glUniform4fv tsglUniform4fv
 #define glUniform4iv tsglUniform4iv
-#define glUniform4uiv tsglUniform4uiv
-#define glUniformBlockBinding tsglUniformBlockBinding
 #define glUniformMatrix3fv tsglUniformMatrix3fv
 #define glUniformMatrix4fv tsglUniformMatrix4fv
 #define glUseProgram tsglUseProgram
@@ -392,7 +285,6 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 GLDEF(glActiveTexture, tsglActiveTexture, tsglActiveTexture_ptr) \
 GLDEF(glAttachShader, tsglAttachShader, tsglAttachShader_ptr) \
 GLDEF(glBindBuffer, tsglBindBuffer, tsglBindBuffer_ptr) \
-GLDEF(glBindBufferRange, tsglBindBufferRange, tsglBindBufferRange_ptr) \
 GLDEF(glBindFramebuffer, tsglBindFramebuffer, tsglBindFramebuffer_ptr) \
 GLDEF(glBindTexture, tsglBindTexture, tsglBindTexture_ptr) \
 GLDEF(glBindVertexArray, tsglBindVertexArray, tsglBindVertexArray_ptr) \
@@ -439,7 +331,6 @@ GLDEF(glGetShaderInfoLog, tsglGetShaderInfoLog, tsglGetShaderInfoLog_ptr) \
 GLDEF(glGetShaderiv, tsglGetShaderiv, tsglGetShaderiv_ptr) \
 GLDEF(glGetString, tsglGetString, tsglGetString_ptr) \
 GLDEF(glGetStringi, tsglGetStringi, tsglGetStringi_ptr) \
-GLDEF(glGetUniformBlockIndex, tsglGetUniformBlockIndex, tsglGetUniformBlockIndex_ptr) \
 GLDEF(glGetUniformLocation, tsglGetUniformLocation, tsglGetUniformLocation_ptr) \
 GLDEF(glLinkProgram, tsglLinkProgram, tsglLinkProgram_ptr) \
 GLDEF(glObjectLabel, tsglObjectLabel, tsglObjectLabel_ptr) \
@@ -453,17 +344,12 @@ GLDEF(glTexParameteri, tsglTexParameteri, tsglTexParameteri_ptr) \
 GLDEF(glTexSubImage2D, tsglTexSubImage2D, tsglTexSubImage2D_ptr) \
 GLDEF(glUniform1fv, tsglUniform1fv, tsglUniform1fv_ptr) \
 GLDEF(glUniform1iv, tsglUniform1iv, tsglUniform1iv_ptr) \
-GLDEF(glUniform1uiv, tsglUniform1uiv, tsglUniform1uiv_ptr) \
 GLDEF(glUniform2fv, tsglUniform2fv, tsglUniform2fv_ptr) \
 GLDEF(glUniform2iv, tsglUniform2iv, tsglUniform2iv_ptr) \
-GLDEF(glUniform2uiv, tsglUniform2uiv, tsglUniform2uiv_ptr) \
 GLDEF(glUniform3fv, tsglUniform3fv, tsglUniform3fv_ptr) \
 GLDEF(glUniform3iv, tsglUniform3iv, tsglUniform3iv_ptr) \
-GLDEF(glUniform3uiv, tsglUniform3uiv, tsglUniform3uiv_ptr) \
 GLDEF(glUniform4fv, tsglUniform4fv, tsglUniform4fv_ptr) \
 GLDEF(glUniform4iv, tsglUniform4iv, tsglUniform4iv_ptr) \
-GLDEF(glUniform4uiv, tsglUniform4uiv, tsglUniform4uiv_ptr) \
-GLDEF(glUniformBlockBinding, tsglUniformBlockBinding, tsglUniformBlockBinding_ptr) \
 GLDEF(glUniformMatrix3fv, tsglUniformMatrix3fv, tsglUniformMatrix3fv_ptr) \
 GLDEF(glUniformMatrix4fv, tsglUniformMatrix4fv, tsglUniformMatrix4fv_ptr) \
 GLDEF(glUseProgram, tsglUseProgram, tsglUseProgram_ptr) \
@@ -484,7 +370,6 @@ GLDEFS
 GLAPI void GLAPIENTRY glActiveTexture( GLenum texture );
 GLAPI void APIENTRY glAttachShader (GLuint program, GLuint shader);
 GLAPI void APIENTRY glBindBuffer (GLenum target, GLuint buffer);
-GLAPI void APIENTRY glBindBufferRange (GLenum target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size);
 GLAPI void APIENTRY glBindFramebuffer (GLenum target, GLuint framebuffer);
 GLAPI void GLAPIENTRY glBindTexture( GLenum target, GLuint texture );
 GLAPI void APIENTRY glBindVertexArray (GLuint array);
@@ -531,7 +416,6 @@ GLAPI void APIENTRY glGetShaderInfoLog (GLuint shader, GLsizei bufSize, GLsizei 
 GLAPI void APIENTRY glGetShaderiv (GLuint shader, GLenum pname, GLint *params);
 GLAPI const GLubyte * GLAPIENTRY glGetString( GLenum name );
 GLAPI const GLubyte *APIENTRY glGetStringi (GLenum name, GLuint index);
-GLAPI GLuint APIENTRY glGetUniformBlockIndex (GLuint program, const GLchar *uniformBlockName);
 GLAPI GLint APIENTRY glGetUniformLocation (GLuint program, const GLchar *name);
 GLAPI void APIENTRY glLinkProgram (GLuint program);
 GLAPI void APIENTRY glObjectLabel (GLenum identifier, GLuint name, GLsizei length, const GLchar *label);
@@ -545,17 +429,12 @@ GLAPI void GLAPIENTRY glTexParameteri( GLenum target, GLenum pname, GLint param 
 GLAPI void GLAPIENTRY glTexSubImage2D( GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels );
 GLAPI void APIENTRY glUniform1fv (GLint location, GLsizei count, const GLfloat *value);
 GLAPI void APIENTRY glUniform1iv (GLint location, GLsizei count, const GLint *value);
-GLAPI void APIENTRY glUniform1uiv (GLint location, GLsizei count, const GLuint *value);
 GLAPI void APIENTRY glUniform2fv (GLint location, GLsizei count, const GLfloat *value);
 GLAPI void APIENTRY glUniform2iv (GLint location, GLsizei count, const GLint *value);
-GLAPI void APIENTRY glUniform2uiv (GLint location, GLsizei count, const GLuint *value);
 GLAPI void APIENTRY glUniform3fv (GLint location, GLsizei count, const GLfloat *value);
 GLAPI void APIENTRY glUniform3iv (GLint location, GLsizei count, const GLint *value);
-GLAPI void APIENTRY glUniform3uiv (GLint location, GLsizei count, const GLuint *value);
 GLAPI void APIENTRY glUniform4fv (GLint location, GLsizei count, const GLfloat *value);
 GLAPI void APIENTRY glUniform4iv (GLint location, GLsizei count, const GLint *value);
-GLAPI void APIENTRY glUniform4uiv (GLint location, GLsizei count, const GLuint *value);
-GLAPI void APIENTRY glUniformBlockBinding (GLuint program, GLuint uniformBlockIndex, GLuint uniformBlockBinding);
 GLAPI void APIENTRY glUniformMatrix3fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
 GLAPI void APIENTRY glUniformMatrix4fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
 GLAPI void APIENTRY glUseProgram (GLuint program);
@@ -569,7 +448,6 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglActiveTexture glActiveTexture
 #define tsglAttachShader glAttachShader
 #define tsglBindBuffer glBindBuffer
-#define tsglBindBufferRange glBindBufferRange
 #define tsglBindFramebuffer glBindFramebuffer
 #define tsglBindTexture glBindTexture
 #define tsglBindVertexArray glBindVertexArray
@@ -616,7 +494,6 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglGetShaderiv glGetShaderiv
 #define tsglGetString glGetString
 #define tsglGetStringi glGetStringi
-#define tsglGetUniformBlockIndex glGetUniformBlockIndex
 #define tsglGetUniformLocation glGetUniformLocation
 #define tsglLinkProgram glLinkProgram
 #define tsglObjectLabel glObjectLabel
@@ -630,17 +507,12 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglTexSubImage2D glTexSubImage2D
 #define tsglUniform1fv glUniform1fv
 #define tsglUniform1iv glUniform1iv
-#define tsglUniform1uiv glUniform1uiv
 #define tsglUniform2fv glUniform2fv
 #define tsglUniform2iv glUniform2iv
-#define tsglUniform2uiv glUniform2uiv
 #define tsglUniform3fv glUniform3fv
 #define tsglUniform3iv glUniform3iv
-#define tsglUniform3uiv glUniform3uiv
 #define tsglUniform4fv glUniform4fv
 #define tsglUniform4iv glUniform4iv
-#define tsglUniform4uiv glUniform4uiv
-#define tsglUniformBlockBinding glUniformBlockBinding
 #define tsglUniformMatrix3fv glUniformMatrix3fv
 #define tsglUniformMatrix4fv glUniformMatrix4fv
 #define tsglUseProgram glUseProgram
@@ -678,9 +550,3 @@ struct glext_s {
 	#undef glDebugMessageControl
 	#undef glDebugMessageCallback
 #endif // !TAISEIGL_NO_EXT_ABSTRACTION
-
-// Don't even think about touching the construct below
-/*
-"""
-#*/
-

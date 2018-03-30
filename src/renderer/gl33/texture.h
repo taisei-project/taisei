@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include "../common/opengl.h"
+#include "opengl.h"
 #include "../api.h"
 #include "resource/resource.h"
 #include "resource/texture.h"

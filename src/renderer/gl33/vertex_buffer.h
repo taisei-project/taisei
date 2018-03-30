@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include "../common/opengl.h"
+#include "opengl.h"
 
 typedef struct VertexBufferImpl {
 	GLuint gl_vbo;

@@ -10,7 +10,7 @@
 #include "taisei.h"
 
 #include "resource/shader_object.h"
-#include "../common/opengl.h"
+#include "opengl.h"
 
 typedef struct ShaderObjectImpl {
 	GLuint gl_handle;

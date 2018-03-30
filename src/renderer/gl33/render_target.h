@@ -10,7 +10,7 @@
 #include "taisei.h"
 
 #include "../api.h"
-#include "../common/opengl.h"
+#include "opengl.h"
 #include "texture.h"
 
 struct RenderTargetImpl {

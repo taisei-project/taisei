@@ -10,7 +10,7 @@
 #include "taisei.h"
 
 #include "../api.h"
-#include "../common/opengl.h"
+#include "opengl.h"
 #include "resource/texture.h"
 
 #define GL33_MAX_TEXUNITS 8

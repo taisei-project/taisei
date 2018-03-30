@@ -10,7 +10,7 @@
 
 #include "texture.h"
 #include "../api.h"
-#include "../common/opengl.h"
+#include "opengl.h"
 #include "core.h"
 
 static GLuint r_filter_to_gl_filter(TextureFilterMode mode) {

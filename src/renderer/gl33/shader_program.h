@@ -12,7 +12,7 @@
 #include "util.h"
 #include "hashtable.h"
 #include "../api.h"
-#include "../common/opengl.h"
+#include "opengl.h"
 #include "resource/resource.h"
 #include "resource/shader_program.h"
 
