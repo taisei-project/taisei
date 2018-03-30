@@ -65,8 +65,13 @@ Texture* r_target_get_attachment(RenderTarget *target, RenderTargetAttachment at
 
 void r_target_destroy(RenderTarget *target) {
 	assert(target != NULL);
-	glDeleteFramebuffers(1, &target->impl->gl_fbo);
-	free(target->impl);
+
+	if(target->impl != NULL) {
+		gl33_render_target_deleted(target);
+		glDeleteFramebuffers(1, &target->impl->gl_fbo);
+		free(target->impl);
+		target->impl = NULL;
+	}
 }
 
 void gl33_target_initialize(RenderTarget *target) {

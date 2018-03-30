@@ -138,7 +138,7 @@ void r_flush_sprites(void) {
 
 	uint pending = R.sprite_batch.num_pending;
 
-	// needs to be done early to thwart recursive callss
+	// needs to be done early to thwart recursive calls
 	R.sprite_batch.num_pending = 0;
 
 	// log_warn("flush! %u", pending);

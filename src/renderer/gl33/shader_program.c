@@ -324,6 +324,7 @@ static void* free_uniform(void *key, void *data, void *arg) {
 
 static void unload_shader_program(void *vprog) {
 	ShaderProgram *prog = vprog;
+	gl33_shader_deleted(prog);
 	glDeleteProgram(prog->gl_handle);
 	hashtable_foreach(prog->uniforms, free_uniform, NULL);
 	hashtable_free(prog->uniforms);

@@ -9,6 +9,7 @@
 #pragma once
 #include "taisei.h"
 
+#include "../api.h"
 #include "../common/opengl.h"
 #include "resource/texture.h"
 
@@ -32,4 +33,7 @@ void gl33_sync_cull_face_mode(void);
 void gl33_sync_depth_test_func(void);
 void gl33_sync_capabilities(void);
 
+void gl33_vertex_buffer_deleted(VertexBuffer *vbuf);
 void gl33_texture_deleted(Texture *tex);
+void gl33_render_target_deleted(RenderTarget *target);
+void gl33_shader_deleted(ShaderProgram *prog);

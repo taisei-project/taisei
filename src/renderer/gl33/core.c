@@ -400,6 +400,25 @@ void gl33_sync_vertex_buffer(void) {
 	}
 }
 
+void gl33_vertex_buffer_deleted(VertexBuffer *vbuf) {
+	if(R.vertex_buffer.active == vbuf) {
+		R.vertex_buffer.active = NULL;
+	}
+
+	if(R.vertex_buffer.pending == vbuf) {
+		R.vertex_buffer.pending = NULL;
+		r_vertex_buffer(r_vertex_buffer_static_models());
+	}
+
+	if(R.vertex_buffer.gl_vao == R.vertex_buffer.gl_vao) {
+		R.vertex_buffer.gl_vao = 0;
+	}
+
+	if(R.vertex_buffer.gl_vbo == R.vertex_buffer.gl_vbo) {
+		R.vertex_buffer.gl_vbo = 0;
+	}
+}
+
 void r_vertex_buffer(VertexBuffer *vbuf) {
 	assert(vbuf->impl != NULL);
 
@@ -505,9 +524,17 @@ void gl33_texture_deleted(Texture *tex) {
 			R.texunits.indexed[i].tex2d.pending = NULL;
 		}
 
+		if(R.texunits.indexed[i].tex2d.active == tex) {
+			R.texunits.indexed[i].tex2d.active= NULL;
+		}
+
 		if(R.texunits.indexed[i].tex2d.gl_handle == tex->impl->gl_handle) {
 			R.texunits.indexed[i].tex2d.gl_handle = 0;
 		}
+	}
+
+	if(R.pbo == tex->impl->pbo) {
+		R.pbo = 0;
 	}
 }
 
@@ -550,6 +577,16 @@ void gl33_sync_render_target(void) {
 	}
 }
 
+void gl33_render_target_deleted(RenderTarget *target) {
+	if(R.render_target.pending == target) {
+		R.render_target.pending = NULL;
+	}
+
+	if(R.render_target.active == target) {
+		R.render_target.active = NULL;
+	}
+}
+
 void r_target(RenderTarget *target) {
 	assert(target == NULL || target->impl != NULL);
 	R.render_target.pending = target;
@@ -567,6 +604,21 @@ void gl33_sync_shader(void) {
 		glUseProgram(R.progs.pending->gl_handle);
 		R.progs.gl_prog = R.progs.pending->gl_handle;
 		R.progs.active = R.progs.pending;
+	}
+}
+
+void gl33_shader_deleted(ShaderProgram *prog) {
+	if(R.progs.active == NULL) {
+		R.progs.active = NULL;
+	}
+
+	if(R.progs.pending == prog) {
+		R.progs.pending = NULL;
+		r_shader_standard();
+	}
+
+	if(R.progs.gl_prog == prog->gl_handle) {
+		R.progs.gl_prog = 0;
 	}
 }
 

@@ -85,6 +85,7 @@ void r_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, uint nattribs, 
 
 void r_vertex_buffer_destroy(VertexBuffer *vbuf) {
 	if(vbuf->impl) {
+		gl33_vertex_buffer_deleted(vbuf);
 		glDeleteBuffers(1, &vbuf->impl->gl_vbo);
 		glDeleteVertexArrays(1, &vbuf->impl->gl_vao);
 		free(vbuf->impl);
