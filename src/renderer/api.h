@@ -597,6 +597,18 @@ void r_uniform_complex(const char *name, complex z) {
 }
 
 static inline attr_must_inline
+void r_uniform_complex_array(const char *name, uint count, complex z[count]) {
+	float data[count * 2], *ptr = data;
+
+	for(int i = 0; i < count; ++i) {
+		*ptr++ = creal(z[i]);
+		*ptr++ = cimag(z[i]);
+	}
+
+	r_uniform(name, count, data);
+}
+
+static inline attr_must_inline
 void r_clear_color3(float r, float g, float b) {
 	r_clear_color4(r, g, b, 1.0);
 }

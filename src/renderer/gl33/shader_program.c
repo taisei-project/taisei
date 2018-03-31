@@ -263,8 +263,8 @@ static void preload_shobject(const char *name, struct shprog_load_data *ldata) {
 
 static void* load_shader_program_begin(const char *path, uint flags) {
 	struct shprog_load_data ldata;
-	ldata.load_flags = flags;
 	memset(&ldata, 0, sizeof(ldata));
+	ldata.load_flags = flags;
 
 	if(!parse_keyvalue_file_with_spec(path, (KVSpec[]){
 		{ "glsl_objects", .out_str = &ldata.objlist },

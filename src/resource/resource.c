@@ -435,12 +435,7 @@ const char* resource_util_filename(const char *path) {
 }
 
 void load_resources(void) {
-	/*
-	if(glext.draw_instanced) {
-		load_shader_snippets(SHPROG_PATH_PREFIX "laser_snippets", "laser_", RESF_PERMANENT);
-	}
-	*/
-
+	preload_resource(RES_SHADER_PROGRAM, "lasers/linear", RESF_OPTIONAL);
 	menu_preload();
 }
 

@@ -147,11 +147,8 @@ static void draw_laser_curve_specialized(Laser *l) {
 	}
 
 	r_color(l->color);
-	r_uniform_complex("pos", l->pos);
-	r_uniform_complex("a0", l->args[0]);
-	r_uniform_complex("a1", l->args[1]);
-	r_uniform_complex("a2", l->args[2]);
-	r_uniform_complex("a3", l->args[3]);
+	r_uniform_complex("origin", l->pos);
+	r_uniform_complex_array("args[0]", 4, l->args);
 	r_uniform_float("timeshift", timeshift);
 	r_uniform_float("width", l->width);
 	r_uniform_float("width_exponent", l->width_exponent);
@@ -385,7 +382,7 @@ int collision_laser_curve(Laser *l) {
 
 complex las_linear(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
-		l->shader = r_shader_get_optional("laser_linear");
+		l->shader = r_shader_get_optional("lasers/linear");
 		l->collision_step = max(3,l->timespan/10);
 		return 0;
 	}
@@ -395,7 +392,7 @@ complex las_linear(Laser *l, float t) {
 
 complex las_accel(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
-		l->shader = r_shader_get_optional("laser_accelerated");
+		l->shader = r_shader_get_optional("lasers/accelerated");
 		return 0;
 	}
 
@@ -407,7 +404,7 @@ complex las_weird_sine(Laser *l, float t) {             // [0] = velocity; [1] =
 	// do we even still need this?
 
 	if(t == EVENT_BIRTH) {
-		l->shader = r_shader_get_optional("laser_weird_sine");
+		l->shader = r_shader_get_optional("lasers/weird_sine");
 		return 0;
 	}
 
@@ -419,7 +416,7 @@ complex las_sine(Laser *l, float t) {               // [0] = velocity; [1] = sin
 	// this is actually shaped like a sine wave
 
 	if(t == EVENT_BIRTH) {
-		l->shader = r_shader_get_optional("laser_sine");
+		l->shader = r_shader_get_optional("lasers/sine");
 		return 0;
 	}
 
@@ -438,7 +435,7 @@ complex las_sine_expanding(Laser *l, float t) { // [0] = velocity; [1] = sine am
 	// XXX: this is also a "weird" one
 
 	if(t == EVENT_BIRTH) {
-		l->shader = r_shader_get_optional("laser_sine_expanding");
+		l->shader = r_shader_get_optional("lasers/sine_expanding");
 		return 0;
 	}
 
@@ -456,7 +453,7 @@ complex las_sine_expanding(Laser *l, float t) { // [0] = velocity; [1] = sine am
 
 complex las_turning(Laser *l, float t) { // [0] = vel0; [1] = vel1; [2] r: turn begin time, i: turn end time
 	if(t == EVENT_BIRTH) {
-		l->shader = r_shader_get_optional("laser_turning");
+		l->shader = r_shader_get_optional("lasers/turning");
 		return 0;
 	}
 
@@ -476,7 +473,7 @@ complex las_turning(Laser *l, float t) { // [0] = vel0; [1] = vel1; [2] r: turn 
 
 complex las_circle(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
-		l->shader = r_shader_get_optional("laser_circle");
+		l->shader = r_shader_get_optional("lasers/circle");
 		return 0;
 	}
 
