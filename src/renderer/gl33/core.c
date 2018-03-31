@@ -590,9 +590,6 @@ void gl33_render_target_deleted(RenderTarget *target) {
 void r_target(RenderTarget *target) {
 	assert(target == NULL || target->impl != NULL);
 	R.render_target.pending = target;
-
-	// TODO: figure out why this is necessary, fix it, and remove this.
-	gl33_sync_render_target();
 }
 
 RenderTarget *r_target_current() {
