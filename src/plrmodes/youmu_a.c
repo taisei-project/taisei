@@ -355,7 +355,7 @@ static int youmu_split(Enemy *e, int t) {
 			.pos = VIEWPORT_W/2+x+(x>0)*VIEWPORT_H*I,
 			.rule = accelerated,
 			.draw_rule = Petal,
-			.color = rgba(0.1,0.1,0.5,t),
+			.color = rgba(0.1, 0.1, 0.5, min(60, t)),
 			.args = {
 				-10*I*x/fabs(x),
 				-I*x/fabs(x)+anfrand(4)*0.1,

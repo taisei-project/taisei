@@ -17,7 +17,7 @@ void main(void) {
 	pos.y = pos.y*(1.0-abs(shift))+float(shift>0.)*shift;
 	vec3 clr = texture2D(tex, texCoord).rgb;
 
-	clr = (1.-f)*clr0 + f*(atan((clr-vec3(+shift,0.01*tbomb,-shift))*(1.+4.*tbomb*(1.-pow(pos.x-0.5,3.))))/0.8);
+	clr = (1.-f)*clr0 + f*(atan((clr-vec3(+shift,0.01*tbomb,-shift))*(1.+4.*tbomb*(1.-pow(abs(pos.x-0.5),3.))))/0.8);
 
 	fragColor = vec4(clr,1.0);
 }
