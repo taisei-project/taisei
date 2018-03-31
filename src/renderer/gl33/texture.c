@@ -92,9 +92,6 @@ static void gl33_texture_set(Texture *tex, void *image_data) {
 }
 
 void r_texture_create(Texture *tex, const TextureParams *params) {
-	assert(tex != NULL);
-	assert(params != NULL);
-
 	memset(tex, 0, sizeof(Texture));
 
 	tex->w = params->width;

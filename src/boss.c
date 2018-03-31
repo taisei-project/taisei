@@ -429,8 +429,6 @@ bool boss_is_vulnerable(Boss *boss) {
 }
 
 bool boss_damage(Boss *boss, int dmg) {
-	assert(boss != NULL);
-
 	if(!boss_is_vulnerable(boss))
 		return false;
 

@@ -17,9 +17,6 @@
 #include "global.h"
 
 List* list_insert(List **dest, List *elem) {
-	assert(dest != NULL);
-	assert(elem != NULL);
-
 	elem->prev = *dest;
 
 	if(*dest != NULL) {
@@ -39,9 +36,6 @@ List* list_insert(List **dest, List *elem) {
 }
 
 List* list_push(List **dest, List *elem) {
-	assert(dest != NULL);
-	assert(elem != NULL);
-
 	if(*dest) {
 		(*dest)->prev = elem;
 	}
@@ -54,9 +48,6 @@ List* list_push(List **dest, List *elem) {
 }
 
 List* list_append(List **dest, List *elem) {
-	assert(dest != NULL);
-	assert(elem != NULL);
-
 	if(*dest == NULL) {
 		return list_insert(dest, elem);
 	}
@@ -71,10 +62,6 @@ List* list_append(List **dest, List *elem) {
 
 attr_hot
 static List* list_insert_at_priority(List **list_head, List *elem, int prio, ListPriorityFunc prio_func, bool head) {
-	assert(list_head != NULL);
-	assert(elem != NULL);
-	assert(prio_func != NULL);
-
 	if(!*list_head) {
 		elem->prev = elem->next = NULL;
 		*list_head = elem;

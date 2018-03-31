@@ -12,6 +12,8 @@
 #include "global.h"
 #include "video.h"
 
+#include <time.h>
+
 //
 // string utils
 //
@@ -132,6 +134,20 @@ char* strfmt(const char *fmt, ...) {
 	char *str = vstrfmt(fmt, args);
 	va_end(args);
 	return str;
+}
+
+char* strftimealloc(const char *fmt, const struct tm *timeinfo) {
+	size_t sz_allocated = 64;
+
+	while(true) {
+		char str[sz_allocated];
+
+		if(strftime(str, sz_allocated, fmt, timeinfo)) {
+			return strdup(str);
+		}
+
+		sz_allocated *= 2;
+	};
 }
 
 char* copy_segment(const char *text, const char *delim, int *size) {

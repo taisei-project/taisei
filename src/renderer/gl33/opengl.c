@@ -136,7 +136,7 @@ void check_gl_extensions(void) {
 		}
 
 		SDL_WriteU8(writer, 0);
-		log_debug("%s", buf);
+		log_debug("%s", (char*)buf);
 		SDL_RWclose(writer);
 	}
 

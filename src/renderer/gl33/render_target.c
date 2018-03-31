@@ -22,7 +22,6 @@ static GLuint r_attachment_to_gl_attachment[] = {
 static_assert(sizeof(r_attachment_to_gl_attachment)/sizeof(GLuint) == RENDERTARGET_MAX_ATTACHMENTS, "");
 
 void r_target_create(RenderTarget *target) {
-	assert(target != NULL);
 	memset(target, 0, sizeof(RenderTarget));
 	target->impl = calloc(1, sizeof(RenderTargetImpl));
 	glGenFramebuffers(1, &target->impl->gl_fbo);
@@ -30,7 +29,6 @@ void r_target_create(RenderTarget *target) {
 
 void r_target_attach(RenderTarget *target, Texture *tex, RenderTargetAttachment attachment) {
 	assert(attachment >= 0 && attachment < RENDERTARGET_MAX_ATTACHMENTS);
-	assert(tex != NULL);
 
 	GLuint gl_tex = tex ? tex->impl->gl_handle : 0;
 	RenderTarget *prev_target = r_target_current();
@@ -64,8 +62,6 @@ Texture* r_target_get_attachment(RenderTarget *target, RenderTargetAttachment at
 }
 
 void r_target_destroy(RenderTarget *target) {
-	assert(target != NULL);
-
 	if(target->impl != NULL) {
 		gl33_render_target_deleted(target);
 		glDeleteFramebuffers(1, &target->impl->gl_fbo);

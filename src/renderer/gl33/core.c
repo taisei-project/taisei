@@ -410,11 +410,11 @@ void gl33_vertex_buffer_deleted(VertexBuffer *vbuf) {
 		r_vertex_buffer(r_vertex_buffer_static_models());
 	}
 
-	if(R.vertex_buffer.gl_vao == R.vertex_buffer.gl_vao) {
+	if(R.vertex_buffer.gl_vao == vbuf->impl->gl_vao) {
 		R.vertex_buffer.gl_vao = 0;
 	}
 
-	if(R.vertex_buffer.gl_vbo == R.vertex_buffer.gl_vbo) {
+	if(R.vertex_buffer.gl_vbo == vbuf->impl->gl_vbo) {
 		R.vertex_buffer.gl_vbo = 0;
 	}
 }
@@ -620,7 +620,6 @@ void gl33_shader_deleted(ShaderProgram *prog) {
 }
 
 void r_shader_ptr(ShaderProgram *prog) {
-	assert(prog != NULL);
 	assert(prog->gl_handle != 0);
 
 	R.progs.pending = prog;

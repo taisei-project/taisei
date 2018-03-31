@@ -27,7 +27,6 @@ static GLenum va_type_to_gl_type[] = {
 
 void r_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, uint nattribs, VertexAttribFormat attribs[nattribs]) {
 	assert(nattribs > 0);
-	assert(attribs != NULL);
 
 	memset(vbuf, 0, sizeof(VertexBuffer));
 	vbuf->impl = calloc(1, sizeof(VertexBufferImpl));

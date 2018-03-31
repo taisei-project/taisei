@@ -216,9 +216,6 @@ char** vfs_dir_list_sorted(const char *path, size_t *out_size, int (*compare)(co
 	char **results = NULL;
 	VFSDir *dir = vfs_dir_open(path);
 
-	assert(out_size != NULL);
-	assert(compare != NULL);
-
 	if(!dir) {
 		return results;
 	}
