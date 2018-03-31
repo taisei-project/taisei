@@ -26,7 +26,7 @@ void main(void) {
 	pos = clamp(pos, 0.005, 0.995);
 	pos = (ctx.textureMatrix * vec4(pos,0.0,1.0)).xy;
 
-	fragColor = texture2D(tex, pos);
+	fragColor = texture(tex, pos);
 
 	pos1 = texCoordRaw - fix_orig;
 	pos1.y *= ratio;

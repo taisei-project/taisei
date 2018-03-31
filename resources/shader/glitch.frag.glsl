@@ -22,5 +22,5 @@ void main(void) {
     p.x -= strength * 0.5 * g * s;
     p = clamp(p, 0.0, 1.0);
 
-    fragColor = texture2D(tex, p);
+    fragColor = texture(tex, p);
 }

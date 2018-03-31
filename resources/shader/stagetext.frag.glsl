@@ -18,9 +18,9 @@ void main(void) {
 	pos += (f*0.05*sin(10.0*(length(f)+t)))*(1.0-t);
 
 	pos = clamp(pos,0.0,1.0);
-	vec4 texel = texture2D(tex, (ctx.textureMatrix*vec4(pos,0.0,1.0)).xy);
+	vec4 texel = texture(tex, (ctx.textureMatrix*vec4(pos,0.0,1.0)).xy);
 
-	texel.a *= clamp((texture2D(trans, pos).r+0.5)*2.5*t-0.5, 0.0, 1.0);
+	texel.a *= clamp((texture(trans, pos).r+0.5)*2.5*t-0.5, 0.0, 1.0);
 	fragColor = vec4(color,1.0)*texel;
 }
 

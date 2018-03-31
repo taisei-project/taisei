@@ -12,3 +12,4 @@ option('macos_lib_path', type : 'string', description : 'List of paths (separate
 option('macos_tool_path', type : 'string', description : 'List of paths (separated like the PATH environment variable) from where macOS-specific utilities (such as otool and install_name_tool) can be found. This is prepended to PATH (useful for cross-compiling)')
 option('macos_tool_prefix', type : 'string', description : 'Names of macOS-specific tools are prefixed with this string (useful for cross-compiling)')
 option('docs', type : 'boolean', value : true, description : 'Build and install documentation')
+option('validate_glsl', type : 'combo', choices : ['auto', 'true', 'false'], description : 'Enable validation of GLSL shaders (requires glslc)')

@@ -5,7 +5,7 @@ from taiseilib.common import (
     update_text_file,
 )
 
-import sys, re, argparse
+import re, argparse
 from pathlib import Path
 
 

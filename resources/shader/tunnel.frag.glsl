@@ -22,7 +22,7 @@ float lum(vec3 c) {
 }
 
 void main(void) {
-	vec3 rgb = texture2D(tex, texCoord).rgb;
+	vec3 rgb = texture(tex, texCoord).rgb;
 
 	float	lum1	= lum(rgb);
 	float	lum2	= lum(color);

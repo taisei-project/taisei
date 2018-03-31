@@ -10,7 +10,7 @@ in vec3 l;
 out vec4 fragColor;
 
 void main(void) {
-	vec4 texel = texture2D(tex, texCoord);
+	vec4 texel = texture(tex, texCoord);
 	
 	float light = (1.6+strength)*dot(normal*(vec3(0.1)+texel.xyz), normalize(l));	
 	light = max(light, 0.0);

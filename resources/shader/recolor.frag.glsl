@@ -12,7 +12,7 @@ uniform vec4 A;
 uniform vec4 O;
 
 void main(void) {
-	vec4 texel = texture2D(tex, texCoord.xy);
+	vec4 texel = texture(tex, texCoord.xy);
 
 	fragColor = (
 		R * texel.r +

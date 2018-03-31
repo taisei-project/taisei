@@ -8,7 +8,7 @@ in vec2 texCoordRaw;
 out vec4 fragColor;
 
 void main(void) {
-	vec4 texel = texture2D(tex, texCoord);
+	vec4 texel = texture(tex, texCoord);
 	vec4 mixclr = 1.0-texel;
 	mixclr.a = texel.a;
 	fragColor = mixclr;

@@ -23,6 +23,6 @@ void main(void) {
 
     vec4 color = mix(color0, color1, 0.5 + 0.5 * sin(color_phase + color_freq * uv_scaled.x));
 
-    fragColor = texture2D(tex, texCoord);
+    fragColor = texture(tex, texCoord);
     fragColor *= vec4(color.rgb, color.a * a);
 }

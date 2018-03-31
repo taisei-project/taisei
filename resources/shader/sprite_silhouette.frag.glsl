@@ -40,7 +40,7 @@ void main(void) {
 
     for(float i = 0.0; i <= limit; i += step) {
         uv = apply_deform(uv_orig, deform * i);
-        texel = texture2D(tex, uv_to_region(texRegion, uv));
+        texel = texture(tex, uv_to_region(texRegion, uv));
         fragColor += vec4(color.rgb, color.a * texel.a);
     }
 

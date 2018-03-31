@@ -20,9 +20,9 @@ void main(void) {
 
 	for(int a = 0; a < samples; a++) {
 		vec2 npos = pos + vec2(cos(afactor*float(a)), sin(afactor*float(a))) * radius;
-		sum += texture2D(tex, (ctx.textureMatrix*vec4(clamp(npos,0.0,0.9),0.0,1.0)).xy);
+		sum += texture(tex, (ctx.textureMatrix*vec4(clamp(npos,0.0,0.9),0.0,1.0)).xy);
 	}
 	sum /= float(samples);
 
-	fragColor = texture2D(tex, texCoord) + intensity*sum*sum*10.0;
+	fragColor = texture(tex, texCoord) + intensity*sum*sum*10.0;
 }

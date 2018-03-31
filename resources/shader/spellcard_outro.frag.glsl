@@ -15,7 +15,7 @@ out vec4 fragColor;
 
 void main(void) {
 	vec2 pos = texCoordRaw;
-	vec4 clr = texture2D(tex, texCoord);
+	vec4 clr = texture(tex, texCoord);
 	pos -= origin;
 	pos.y *= ratio;
 	float r = length(pos);
