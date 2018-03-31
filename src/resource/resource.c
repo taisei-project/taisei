@@ -435,7 +435,6 @@ const char* resource_util_filename(const char *path) {
 }
 
 void load_resources(void) {
-	preload_resource(RES_SHADER_PROGRAM, "lasers/linear", RESF_OPTIONAL);
 	menu_preload();
 }
 
