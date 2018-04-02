@@ -355,6 +355,20 @@ static void video_quality_callback(ConfigIndex idx, ConfigValue v) {
 }
 
 static void video_init_sdl(void) {
+	uint num_drivers = SDL_GetNumVideoDrivers();
+	void *buf;
+	SDL_RWops *out = SDL_RWAutoBuffer(&buf, 256);
+
+	SDL_RWprintf(out, "Available video drivers:");
+
+	for(uint i = 0; i < num_drivers; ++i) {
+		SDL_RWprintf(out, " %s", SDL_GetVideoDriver(i));
+	}
+
+	SDL_WriteU8(out, 0);
+	log_info("%s", (char*)buf);
+	SDL_RWclose(out);
+
 	char *prefer_drivers = getenv("TAISEI_PREFER_SDL_VIDEODRIVERS");
 	char *force_driver = getenv("TAISEI_VIDEO_DRIVER");
 

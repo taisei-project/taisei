@@ -16,6 +16,13 @@
 
 #include <stdalign.h>
 
+static struct {
+	struct {
+		ShaderProgram *standard;
+		ShaderProgram *standardnotex;
+	} progs;
+} R;
+
 void r_init(void) {
 	_r_init();
 	_r_mat_init();
@@ -26,13 +33,26 @@ void r_init(void) {
 	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
 		"sprite_default",
 		"texture_post_load",
+		"standard",
+		"standardnotex",
 	NULL);
+
+	R.progs.standard = r_shader_get("standard");
+	R.progs.standardnotex = r_shader_get("standardnotex");
 }
 
 void r_shutdown(void) {
 	_r_sprite_batch_shutdown();
 	_r_models_shutdown();
 	_r_shutdown();
+}
+
+void r_shader_standard(void) {
+	r_shader_ptr(R.progs.standard);
+}
+
+void r_shader_standard_notex(void) {
+	r_shader_ptr(R.progs.standardnotex);
 }
 
 #ifdef DEBUG

@@ -6,5 +6,7 @@ renderer_src = files(
 subdir('common')
 renderer_src += r_common_src
 
-subdir('gl33')
-renderer_src += gl33_src
+renderer = get_option('renderer')
+
+subdir(renderer)
+renderer_src += get_variable('@0@_src'.format(renderer))

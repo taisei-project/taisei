@@ -24,6 +24,8 @@ typedef enum RendererFeature {
 	NUM_RFEATS,
 } RendererFeature;
 
+typedef uint_fast8_t r_feature_bits_t;
+
 typedef enum RendererCapability {
 	RCAP_DEPTH_TEST,
 	RCAP_DEPTH_WRITE,
@@ -31,6 +33,8 @@ typedef enum RendererCapability {
 
 	NUM_RCAPS
 } RendererCapability;
+
+typedef uint_fast8_t r_capability_bits_t;
 
 typedef enum MatrixMode {
 	// XXX: Mimicking the gl matrix mode api for easy replacement.
@@ -252,7 +256,7 @@ typedef enum BlendFactor {
 } BlendFactor;
 
 typedef enum BlendMode {
-	BLEND_NONE  = BLENDMODE_COMPOSE(
+	BLEND_NONE = BLENDMODE_COMPOSE(
 		BLENDFACTOR_ONE, BLENDFACTOR_ZERO, BLENDOP_ADD,
 		BLENDFACTOR_ONE, BLENDFACTOR_ZERO, BLENDOP_ADD
 	),
@@ -371,18 +375,6 @@ bool r_supports(RendererFeature feature);
 void r_capability(RendererCapability cap, bool value);
 bool r_capability_current(RendererCapability cap);
 
-void r_mat_mode(MatrixMode mode);
-void r_mat_push(void);
-void r_mat_pop(void);
-void r_mat_identity(void);
-void r_mat_translate_v(vec3 v);
-void r_mat_rotate_v(float angle, vec3 v);
-void r_mat_scale_v(vec3 v);
-void r_mat_ortho(float left, float right, float bottom, float top, float near, float far);
-void r_mat_perspective(float angle, float aspect, float near, float far);
-
-void r_mat_current(MatrixMode mode, mat4 out_mat);
-
 void r_color4(float r, float g, float b, float a);
 Color r_color_current(void);
 
@@ -396,8 +388,6 @@ void r_depth_func(DepthTestFunc func);
 DepthTestFunc r_depth_func_current(void);
 
 void r_shader_ptr(ShaderProgram *prog) attr_nonnull(1);
-void r_shader_standard(void);
-void r_shader_standard_notex(void);
 ShaderProgram* r_shader_current(void) attr_returns_nonnull;
 
 Uniform* r_shader_uniform(ShaderProgram *prog, const char *uniform_name) attr_nonnull(1, 2);
@@ -459,6 +449,21 @@ uint8_t* r_screenshot(uint *out_width, uint *out_height) attr_nodiscard attr_non
 
 void r_init(void);
 void r_shutdown(void);
+
+void r_mat_mode(MatrixMode mode);
+void r_mat_push(void);
+void r_mat_pop(void);
+void r_mat_identity(void);
+void r_mat_translate_v(vec3 v);
+void r_mat_rotate_v(float angle, vec3 v);
+void r_mat_scale_v(vec3 v);
+void r_mat_ortho(float left, float right, float bottom, float top, float near, float far);
+void r_mat_perspective(float angle, float aspect, float near, float far);
+
+void r_mat_current(MatrixMode mode, mat4 out_mat);
+
+void r_shader_standard(void);
+void r_shader_standard_notex(void);
 
 VertexBuffer* r_vertex_buffer_static_models(void) attr_returns_nonnull;
 VertexArray* r_vertex_array_static_models(void) attr_returns_nonnull;
@@ -654,3 +659,16 @@ void r_draw_model(const char *model) {
 	r_draw_model_ptr(get_resource_data(RES_MODEL, model, RESF_UNSAFE));
 }
 
+static inline attr_must_inline
+r_capability_bits_t r_capability_bit(RendererCapability cap) {
+	r_capability_bits_t idx = cap;
+	assert(idx < NUM_RCAPS);
+	return (1 << idx);
+}
+
+static inline attr_must_inline
+r_feature_bits_t r_feature_bit(RendererFeature feat) {
+	r_feature_bits_t idx = feat;
+	assert(idx < NUM_RFEATS);
+	return (1 << idx);
+}

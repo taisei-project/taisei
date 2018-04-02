@@ -88,15 +88,15 @@ static struct {
 	} depth_test;
 
 	struct {
-		uint32_t active;
-		uint32_t pending;
+		r_capability_bits_t active;
+		r_capability_bits_t pending;
 	} capabilities;
 
 	vec4 color;
 	vec4 clear_color;
 	IntRect viewport;
 	GLuint pbo;
-	uint32_t features;
+	r_feature_bits_t features;
 
 	SDL_GLContext *gl_context;
 
@@ -198,18 +198,6 @@ void gl33_debug_object_label(GLenum identifier, GLuint name, const char *label) 
 #endif
 }
 
-static inline attr_must_inline uint32_t cap_flag(RendererCapability cap) {
-	uint32_t idx = cap;
-	assert(idx < NUM_RCAPS);
-	return (1 << idx);
-}
-
-static inline attr_must_inline uint32_t feat_flag(RendererFeature feat) {
-	uint32_t idx = feat;
-	assert(idx < NUM_RCAPS);
-	return (1 << idx);
-}
-
 static void gl33_init_context(SDL_Window *window) {
 	R.gl_context = SDL_GL_CreateContext(window);
 
@@ -243,15 +231,15 @@ static void gl33_init_context(SDL_Window *window) {
 	r_clear_color4(0, 0, 0, 1);
 	r_clear(CLEAR_ALL);
 
-	R.features |= feat_flag(RFEAT_DRAW_INSTANCED);
+	R.features |= r_feature_bit(RFEAT_DRAW_INSTANCED);
 
 	if(glext.ARB_base_instance) {
-		R.features |= feat_flag(RFEAT_DRAW_INSTANCED_BASE_INSTANCE);
+		R.features |= r_feature_bit(RFEAT_DRAW_INSTANCED_BASE_INSTANCE);
 	}
 }
 
 bool r_supports(RendererFeature feature) {
-	return R.features & feat_flag(feature);
+	return R.features & r_feature_bit(feature);
 }
 
 void gl33_apply_capability(RendererCapability cap, bool value) {
@@ -278,7 +266,7 @@ void gl33_sync_capabilities(void) {
 	}
 
 	for(RendererCapability cap = 0; cap < NUM_RCAPS; ++cap) {
-		uint32_t flag = cap_flag(cap);
+		r_capability_bits_t flag = r_capability_bit(cap);
 		bool pending = R.capabilities.pending & flag;
 		bool active = R.capabilities.active & flag;
 
@@ -291,7 +279,7 @@ void gl33_sync_capabilities(void) {
 }
 
 void r_capability(RendererCapability cap, bool value) {
-	uint32_t flag = cap_flag(cap);
+	r_capability_bits_t flag = r_capability_bit(cap);
 
 	if(value) {
 		R.capabilities.pending |=  flag;
@@ -301,7 +289,7 @@ void r_capability(RendererCapability cap, bool value) {
 }
 
 bool r_capability_current(RendererCapability cap) {
-	return R.capabilities.pending & cap_flag(cap);
+	return R.capabilities.pending & r_capability_bit(cap);
 }
 
 uint gl33_active_texunit(void) {
@@ -500,11 +488,11 @@ static void gl33_sync_state(void) {
 	gl33_sync_vertex_array();
 	gl33_sync_blend_mode();
 
-	if(R.capabilities.active & cap_flag(RCAP_CULL_FACE)) {
+	if(R.capabilities.active & r_capability_bit(RCAP_CULL_FACE)) {
 		gl33_sync_cull_face_mode();
 	}
 
-	if(R.capabilities.active & cap_flag(RCAP_DEPTH_TEST)) {
+	if(R.capabilities.active & r_capability_bit(RCAP_DEPTH_TEST)) {
 		gl33_sync_depth_test_func();
 	}
 }
@@ -685,14 +673,6 @@ void r_shader_ptr(ShaderProgram *prog) {
 	assert(prog->gl_handle != 0);
 
 	R.progs.pending = prog;
-}
-
-void r_shader_standard(void) {
-	r_shader_ptr(R.progs.std);
-}
-
-void r_shader_standard_notex(void) {
-	r_shader_ptr(R.progs.std_notex);
 }
 
 ShaderProgram *r_shader_current() {
