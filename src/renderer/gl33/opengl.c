@@ -141,6 +141,11 @@ void check_gl_extensions(void) {
 	}
 
 	check_glext_debug_output();
+	glext.ARB_base_instance = (
+		extension_supported("GL_ARB_base_instance")
+		&& tsglDrawArraysInstancedBaseInstance
+		&& tsglDrawElementsInstancedBaseInstance
+	);
 }
 
 void load_gl_library(void) {

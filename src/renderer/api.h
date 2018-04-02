@@ -17,6 +17,13 @@
 #include "resource/model.h"
 #include "resource/sprite.h"
 
+typedef enum RendererFeature {
+	RFEAT_DRAW_INSTANCED,
+	RFEAT_DRAW_INSTANCED_BASE_INSTANCE,
+
+	NUM_RFEATS,
+} RendererFeature;
+
 typedef enum RendererCapability {
 	RCAP_DEPTH_TEST,
 	RCAP_DEPTH_WRITE,
@@ -359,6 +366,8 @@ SDL_Window* r_create_window(const char *title, int x, int y, int w, int h, uint3
 void _r_init(void); // use r_init() instead
 void _r_shutdown(void); // use r_shutdown() instead
 
+bool r_supports(RendererFeature feature);
+
 void r_capability(RendererCapability cap, bool value);
 bool r_capability_current(RendererCapability cap);
 
@@ -395,7 +404,7 @@ Uniform* r_shader_uniform(ShaderProgram *prog, const char *uniform_name) attr_no
 void r_uniform_ptr(Uniform *uniform, uint count, const void *data) attr_nonnull(3);
 UniformType r_uniform_type(Uniform *uniform);
 
-void r_draw(Primitive prim, uint first, uint count, uint32_t *indices, uint instances);
+void r_draw(Primitive prim, uint first, uint count, uint32_t *indices, uint instances, uint base_instance);
 
 void r_texture_create(Texture *tex, const TextureParams *params) attr_nonnull(1, 2);
 void r_texture_fill(Texture *tex, void *image_data) attr_nonnull(1, 2);

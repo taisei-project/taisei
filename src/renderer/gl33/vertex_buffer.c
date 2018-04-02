@@ -16,6 +16,8 @@
 #include "core.h"
 
 void r_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, void *data) {
+	capacity = topow2(capacity);
+
 	memset(vbuf, 0, sizeof(VertexBuffer));
 	vbuf->impl = calloc(1, sizeof(VertexBufferImpl));
 	vbuf->size = capacity;
@@ -27,12 +29,15 @@ void r_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, void *data) {
 	gl33_sync_vbo();
 	glBufferData(GL_ARRAY_BUFFER, capacity, data, GL_STATIC_DRAW);
 	gl33_bind_vbo(vbo_saved);
+
+	log_debug("Created VBO %u with %ukb of storage", vbuf->impl->gl_handle, vbuf->size / 1024);
 }
 
 void r_vertex_buffer_destroy(VertexBuffer *vbuf) {
 	if(vbuf->impl) {
 		gl33_vertex_buffer_deleted(vbuf);
 		glDeleteBuffers(1, &vbuf->impl->gl_handle);
+		log_debug("Deleted VBO %u with %ukb of storage", vbuf->impl->gl_handle, vbuf->size / 1024);
 		free(vbuf->impl);
 		vbuf->impl = NULL;
 	}

@@ -96,6 +96,7 @@ static struct {
 	vec4 clear_color;
 	IntRect viewport;
 	GLuint pbo;
+	uint32_t features;
 
 	SDL_GLContext *gl_context;
 
@@ -197,6 +198,18 @@ void gl33_debug_object_label(GLenum identifier, GLuint name, const char *label) 
 #endif
 }
 
+static inline attr_must_inline uint32_t cap_flag(RendererCapability cap) {
+	uint32_t idx = cap;
+	assert(idx < NUM_RCAPS);
+	return (1 << idx);
+}
+
+static inline attr_must_inline uint32_t feat_flag(RendererFeature feat) {
+	uint32_t idx = feat;
+	assert(idx < NUM_RCAPS);
+	return (1 << idx);
+}
+
 static void gl33_init_context(SDL_Window *window) {
 	R.gl_context = SDL_GL_CreateContext(window);
 
@@ -229,12 +242,16 @@ static void gl33_init_context(SDL_Window *window) {
 
 	r_clear_color4(0, 0, 0, 1);
 	r_clear(CLEAR_ALL);
+
+	R.features |= feat_flag(RFEAT_DRAW_INSTANCED);
+
+	if(glext.ARB_base_instance) {
+		R.features |= feat_flag(RFEAT_DRAW_INSTANCED_BASE_INSTANCE);
+	}
 }
 
-static inline attr_must_inline uint32_t cap_flag(RendererCapability cap) {
-	uint32_t idx = cap;
-	assert(idx < NUM_RCAPS);
-	return (1 << idx);
+bool r_supports(RendererFeature feature) {
+	return R.features & feat_flag(feature);
 }
 
 void gl33_apply_capability(RendererCapability cap, bool value) {
@@ -502,7 +519,7 @@ static GLenum prim_to_gl_prim[] = {
 	[PRIM_TRIANGLES]      = GL_TRIANGLES,
 };
 
-void r_draw(Primitive prim, uint first, uint count, uint32_t *indices, uint instances) {
+void r_draw(Primitive prim, uint first, uint count, uint32_t *indices, uint instances, uint base_instance) {
 	assert(count > 0);
 	assert((uint)prim < sizeof(prim_to_gl_prim)/sizeof(GLenum));
 
@@ -511,27 +528,31 @@ void r_draw(Primitive prim, uint first, uint count, uint32_t *indices, uint inst
 	GLuint gl_prim = prim_to_gl_prim[prim];
 	gl33_sync_state();
 
+	gl33_stats_pre_draw();
+
 	if(indices == NULL) {
 		if(instances) {
-			gl33_stats_pre_draw();
-			glDrawArraysInstanced(gl_prim, first, count, instances);
-			gl33_stats_post_draw();
+			if(base_instance) {
+				glDrawArraysInstancedBaseInstance(gl_prim, first, count, instances, base_instance);
+			} else {
+				glDrawArraysInstanced(gl_prim, first, count, instances);
+			}
 		} else {
-			gl33_stats_pre_draw();
 			glDrawArrays(gl_prim, first, count);
-			gl33_stats_post_draw();
 		}
 	} else {
 		if(instances) {
-			gl33_stats_pre_draw();
-			glDrawElementsInstanced(gl_prim, count, GL_UNSIGNED_INT, indices, instances);
-			gl33_stats_post_draw();
+			if(base_instance) {
+				glDrawElementsInstancedBaseInstance(gl_prim, count, GL_UNSIGNED_INT, indices, instances, base_instance);
+			} else {
+				glDrawElementsInstanced(gl_prim, count, GL_UNSIGNED_INT, indices, instances);
+			}
 		} else {
-			gl33_stats_pre_draw();
 			glDrawElements(gl_prim, count, GL_UNSIGNED_INT, indices);
-			gl33_stats_post_draw();
 		}
 	}
+
+	gl33_stats_post_draw();
 }
 
 void gl33_sync_texunit(uint unit) {

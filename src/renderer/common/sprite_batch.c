@@ -12,8 +12,6 @@
 #include "../api.h"
 #include "glm.h"
 
-#define SPRITE_BATCH_CAPACITY 2048
-
 typedef struct SpriteAttribs {
 	mat4 transform;
 	float rgba[4];
@@ -24,6 +22,7 @@ typedef struct SpriteAttribs {
 static struct SpriteBatchState {
 	VertexArray varr;
 	VertexBuffer vbuf;
+	uint base_instance;
 	Texture *tex;
 	ShaderProgram *shader;
 	BlendMode blend;
@@ -62,9 +61,17 @@ void _r_sprite_batch_init(void) {
 	#undef VERTEX_OFS
 	#undef INSTANCE_OFS
 
+	uint capacity;
+
+	if(r_supports(RFEAT_DRAW_INSTANCED_BASE_INSTANCE)) {
+		capacity = 1 << 15;
+	} else {
+		capacity = 1 << 11;
+	}
+
 	r_vertex_buffer_create(
 		&_r_sprite_batch.vbuf,
-		sizeof(SpriteAttribs) * SPRITE_BATCH_CAPACITY,
+		sizeof(SpriteAttribs) * capacity,
 		NULL
 	);
 	r_vertex_buffer_invalidate(&_r_sprite_batch.vbuf);
@@ -114,8 +121,19 @@ void r_flush_sprites(void) {
 	r_depth_func(_r_sprite_batch.depth_func);
 	r_cull(_r_sprite_batch.cull_mode);
 
-	r_draw(PRIM_TRIANGLE_FAN, 0, 4, NULL, pending);
-	r_vertex_buffer_invalidate(&_r_sprite_batch.vbuf);
+	if(r_supports(RFEAT_DRAW_INSTANCED_BASE_INSTANCE)) {
+		r_draw(PRIM_TRIANGLE_FAN, 0, 4, NULL, pending, _r_sprite_batch.base_instance);
+		_r_sprite_batch.base_instance += pending;
+
+		if(_r_sprite_batch.vbuf.size - _r_sprite_batch.vbuf.offset < sizeof(SpriteAttribs)) {
+			log_debug("Invalidating after %u sprites", _r_sprite_batch.base_instance);
+			r_vertex_buffer_invalidate(&_r_sprite_batch.vbuf);
+			_r_sprite_batch.base_instance = 0;
+		}
+	} else {
+		r_draw(PRIM_TRIANGLE_FAN, 0, 4, NULL, pending, 0);
+		r_vertex_buffer_invalidate(&_r_sprite_batch.vbuf);
+	}
 
 	r_vertex_array(varr_saved);
 	r_texture_ptr(0, tex_saved);
@@ -177,11 +195,6 @@ static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, VertexB
 	attribs.custom = params->custom;
 
 	r_vertex_buffer_append(vbuf, sizeof(attribs), &attribs);
-
-	if(vbuf->size - vbuf->offset < sizeof(attribs)) {
-		log_warn("Vertex buffer exhausted (%zu needed for next sprite, %u remaining), flush forced", sizeof(attribs), vbuf->size - vbuf->offset);
-		r_flush_sprites();
-	}
 }
 
 void r_draw_sprite(const SpriteParams *params) {
@@ -264,6 +277,14 @@ void r_draw_sprite(const SpriteParams *params) {
 	if(_r_sprite_batch.cull_mode != cull_mode) {
 		r_flush_sprites();
 		_r_sprite_batch.cull_mode = cull_mode;
+	}
+
+	if(_r_sprite_batch.vbuf.size - _r_sprite_batch.vbuf.offset < sizeof(SpriteAttribs)) {
+		if(!r_supports(RFEAT_DRAW_INSTANCED_BASE_INSTANCE)) {
+			log_warn("Vertex buffer exhausted (%zu needed for next sprite, %u remaining), flush forced", sizeof(SpriteAttribs), _r_sprite_batch.vbuf.size - _r_sprite_batch.vbuf.offset);
+		}
+
+		r_flush_sprites();
 	}
 
 	_r_sprite_batch.num_pending++;

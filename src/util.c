@@ -305,7 +305,7 @@ double swing(double x, double s) {
 }
 
 uint topow2(uint x) {
-	int y = 1;
+	uint y = 1;
 	while(y < x) y *= 2;
 	return y;
 }

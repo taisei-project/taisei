@@ -58,14 +58,14 @@ VertexArray* r_vertex_array_static_models(void) {
 void r_draw_quad(void) {
 	VertexArray *varr_saved = r_vertex_array_current();
 	r_vertex_array(&_r_models.varr);
-	r_draw(PRIM_TRIANGLE_FAN, 0, 4, NULL, 0);
+	r_draw(PRIM_TRIANGLE_FAN, 0, 4, NULL, 0, 0);
 	r_vertex_array(varr_saved);
 }
 
 void r_draw_quad_instanced(uint instances) {
 	VertexArray *varr_saved = r_vertex_array_current();
 	r_vertex_array(&_r_models.varr);
-	r_draw(PRIM_TRIANGLE_FAN, 0, 4, NULL, instances);
+	r_draw(PRIM_TRIANGLE_FAN, 0, 4, NULL, instances, 0);
 	r_vertex_array(varr_saved);
 }
 
@@ -75,7 +75,7 @@ void r_draw_model_ptr(Model *model) {
 	r_mat_mode(MM_TEXTURE);
 	r_mat_push();
 	r_mat_scale(1, -1, 1); // XXX: flipped texture workaround. can we get rid of this somehow?
-	r_draw(PRIM_TRIANGLES, 0, model->icount, model->indices, 0);
+	r_draw(PRIM_TRIANGLES, 0, model->icount, model->indices, 0, 0);
 	r_mat_pop();
 	r_mat_mode(MM_MODELVIEW);
 	r_vertex_array(varr_saved);
