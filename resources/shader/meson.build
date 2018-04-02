@@ -89,7 +89,7 @@ if get_option('validate_glsl') != 'false'
                 install : false,
                 build_always : false,
                 build_by_default : true,
-                depfile : '@BASENAME@.spv.d',
+                depfile : '@0@.d'.format(fname.underscorify()),
             )
         endforeach
     endif
