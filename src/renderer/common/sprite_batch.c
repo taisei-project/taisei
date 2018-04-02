@@ -17,9 +17,8 @@
 typedef struct SpriteAttribs {
 	mat4 transform;
 	float rgba[4];
-	float texrect[4];
+	FloatRect texrect;
 	float custom;
-	uint8_t flip[2];
 } SpriteAttribs;
 
 static struct SpriteBatchState {
@@ -46,19 +45,18 @@ void _r_sprite_batch_init(void) {
 
 	VertexAttribFormat fmt[] = {
 		// Per-vertex attributes (for the static models buffer, bound at 0)
-		{ { 3, VA_FLOAT, VA_CONVERT_FLOAT,            0 }, sz_vert, VERTEX_OFS(position),       0 },
-		{ { 3, VA_FLOAT, VA_CONVERT_FLOAT,            0 }, sz_vert, VERTEX_OFS(normal),         0 },
-		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT,            0 }, sz_vert, VERTEX_OFS(uv),             0 },
+		{ { 3, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(position),       0 },
+		{ { 3, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(normal),         0 },
+		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(uv),             0 },
 
 		// Per-instance attributes (for our own sprites buffer, bound at 1)
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT,            1 }, sz_attr, INSTANCE_OFS(transform[0]), 1 },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT,            1 }, sz_attr, INSTANCE_OFS(transform[1]), 1 },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT,            1 }, sz_attr, INSTANCE_OFS(transform[2]), 1 },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT,            1 }, sz_attr, INSTANCE_OFS(transform[3]), 1 },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT,            1 }, sz_attr, INSTANCE_OFS(rgba),         1 },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT,            1 }, sz_attr, INSTANCE_OFS(texrect),      1 },
-		{ { 1, VA_FLOAT, VA_CONVERT_FLOAT,            1 }, sz_attr, INSTANCE_OFS(custom),       1 },
-		{ { 2, VA_UBYTE, VA_CONVERT_FLOAT_NORMALIZED, 1 }, sz_attr, INSTANCE_OFS(flip),         1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(transform[0]), 1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(transform[1]), 1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(transform[2]), 1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(transform[3]), 1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(rgba),         1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(texrect),      1 },
+		{ { 1, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(custom),       1 },
 	};
 
 	#undef VERTEX_OFS
@@ -161,12 +159,21 @@ static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, VertexB
 		parse_color_array(params->color, attribs.rgba);
 	}
 
-	attribs.texrect[0] = spr->tex_area.x / spr->tex->w;
-	attribs.texrect[1] = spr->tex_area.y / spr->tex->h;
-	attribs.texrect[2] = spr->tex_area.w / spr->tex->w;
-	attribs.texrect[3] = spr->tex_area.h / spr->tex->h;
-	attribs.flip[0] = params->flip.x ? 0xFF : 0x0;
-	attribs.flip[1] = params->flip.y ? 0xFF : 0x0;
+	attribs.texrect.x = spr->tex_area.x / spr->tex->w;
+	attribs.texrect.y = spr->tex_area.y / spr->tex->h;
+	attribs.texrect.w = spr->tex_area.w / spr->tex->w;
+	attribs.texrect.h = spr->tex_area.h / spr->tex->h;
+
+	if(params->flip.x) {
+		attribs.texrect.x += attribs.texrect.w;
+		attribs.texrect.w *= -1;
+	}
+
+	if(params->flip.y) {
+		attribs.texrect.y += attribs.texrect.h;
+		attribs.texrect.h *= -1;
+	}
+
 	attribs.custom = params->custom;
 
 	r_vertex_buffer_append(vbuf, sizeof(attribs), &attribs);

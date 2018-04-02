@@ -18,7 +18,6 @@ layout(location = 3) in mat4  spriteVMTransform;
 layout(location = 7) in vec4  spriteRGBA;
 layout(location = 8) in vec4  spriteTexRegion;
 layout(location = 9) in float spriteCustomParam;
-layout(location = 10) in vec2  spriteTexFlip;
 
 #ifdef SPRITE_OUT_TEXCOORD_RAW
 out vec2 texCoordRaw;
@@ -42,10 +41,6 @@ out float customParam;
 #endif
 
 void main(void) {
-    vec2 uv = vertTexCoord;
-    uv.x = mix(uv.x, 1.0 - uv.x, spriteTexFlip.x);
-    uv.y = mix(uv.y, 1.0 - uv.y, spriteTexFlip.y);
-
     gl_Position = ctx.projectionMatrix * spriteVMTransform * vec4(vertPos, 0.0, 1.0);
 
     #ifdef SPRITE_OUT_COLOR
@@ -53,11 +48,11 @@ void main(void) {
     #endif
 
     #ifdef SPRITE_OUT_TEXCOORD_RAW
-    texCoordRaw = uv;
+    texCoordRaw = vertTexCoord;
     #endif
 
     #ifdef SPRITE_OUT_TEXCOORD
-    texCoord    = uv_to_region(spriteTexRegion, uv);
+    texCoord    = uv_to_region(spriteTexRegion, vertTexCoord);
     #endif
 
     #ifdef SPRITE_OUT_TEXREGION
