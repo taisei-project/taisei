@@ -11,3 +11,5 @@ if macos_app_bundle
         install_dir : join_paths(bundle_dir, 'Contents')
     )
 endif
+
+glslc_test_file = files('glslc-test.frag.glsl')

@@ -61,11 +61,38 @@ endforeach
 glsl_targets = []
 
 if get_option('validate_glsl') != 'false'
+    validate_glsl = false
+
     glslc_command = find_program('glslc',
         required : (get_option('validate_glsl') == 'true')
     )
 
     if glslc_command.found()
+        test_result = run_command(glslc_command,
+            '-fauto-bind-uniforms',
+            '-fauto-map-locations',
+            '--target-env=opengl',
+            '-fshader-stage=frag',
+            '-Werror',
+            glslc_test_file,
+            '-o',
+            join_paths(meson.current_build_dir(), 'glslc-test.spv')
+        )
+
+        if test_result.returncode() == 0
+            validate_glsl = true
+        else
+            message(test_result.stderr())
+
+            if get_option('validate_glsl') == 'auto'
+                message('glslc test failed, you probably have an incompatible version. GLSL validation will be disabled.')
+            else
+                error('glslc test failed, you probably have an incompatible version.')
+            endif
+        endif
+    endif
+
+    if validate_glsl
         foreach src : glsl_files
             fname = '@0@'.format(src)
             stage = fname.split('.')[-2]

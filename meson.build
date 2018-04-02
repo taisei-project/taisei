@@ -263,8 +263,8 @@ Summary:
         taisei_version_string
     )
 
-subdir('resources')
 subdir('misc')
+subdir('resources')
 subdir('doc')
 subdir('xdg')
 subdir('scripts')
