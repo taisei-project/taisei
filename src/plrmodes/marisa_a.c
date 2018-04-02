@@ -235,9 +235,9 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	Uniform *u_length = r_shader_uniform(shader, "length");
 	Texture *tex0 = get_tex("part/marisa_laser0");
 	Texture *tex1 = get_tex("part/marisa_laser1");
-	VertexBuffer *vbuf_saved = r_vertex_buffer_current();
+	VertexArray *varr_saved = r_vertex_array_current();
 
-	r_vertex_buffer(r_vertex_buffer_static_models());
+	r_vertex_array(r_vertex_array_static_models());
 	r_shader_ptr(shader);
 	r_uniform_ptr(u_clr0,      1, (float[]) { 1, 1, 1, 0.5 });
 	r_uniform_ptr(u_clr1,      1, (float[]) { 1, 1, 1, 0.8 });
@@ -288,7 +288,7 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 
 	r_shader("sprite_default");
 	r_blend(BLEND_ALPHA);
-	r_vertex_buffer(vbuf_saved);
+	r_vertex_array(varr_saved);
 }
 
 static int marisa_laser_fader(Enemy *e, int t) {

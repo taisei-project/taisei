@@ -44,14 +44,14 @@ bool check_model_path(const char *path) {
 
 typedef struct ModelLoadData {
 	ObjFileData *obj;
-	StaticModelVertex *verts;
+	GenericModelVertex *verts;
 	Model *model;
 } ModelLoadData;
 
 void* load_model_begin(const char *path, uint flags) {
 	Model *m = malloc(sizeof(Model));
 	ObjFileData *data = malloc(sizeof(ObjFileData));
-	StaticModelVertex *verts;
+	GenericModelVertex *verts;
 
 	parse_obj(path, data);
 
@@ -59,14 +59,14 @@ void* load_model_begin(const char *path, uint flags) {
 	m->indices = calloc(data->icount, sizeof(uint));
 	m->icount = data->icount;
 
-	verts = calloc(data->icount, sizeof(StaticModelVertex));
+	verts = calloc(data->icount, sizeof(GenericModelVertex));
 
 #define BADREF(filename,aux,n) { \
 	log_warn("OBJ file '%s': Index %d: bad %s index reference\n", filename, n, aux); \
 	goto fail; \
 }
 
-	memset(verts, 0, data->icount*sizeof(StaticModelVertex));
+	memset(verts, 0, data->icount*sizeof(GenericModelVertex));
 
 	for(uint i = 0; i < data->icount; i++) {
 		int xi, ni, ti;
@@ -125,10 +125,10 @@ void* load_model_end(void *opaque, const char *path, uint flags) {
 	}
 
 	for(int i = 0; i < ldata->obj->icount; ++i) {
-		ldata->model->indices[i] += ioffset / sizeof(StaticModelVertex);
+		ldata->model->indices[i] += ioffset / sizeof(GenericModelVertex);
 	}
 
-	r_vertex_buffer_append(vbuf, sizeof(StaticModelVertex) * ldata->obj->icount, ldata->verts);
+	r_vertex_buffer_append(vbuf, sizeof(GenericModelVertex) * ldata->obj->icount, ldata->verts);
 
 	free(ldata->verts);
 	free_obj(ldata->obj);

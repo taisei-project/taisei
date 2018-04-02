@@ -19,8 +19,8 @@
 void r_init(void) {
 	_r_init();
 	_r_mat_init();
-	_r_sprite_batch_init();
 	_r_models_init();
+	_r_sprite_batch_init();
 
 	// XXX: is it the right place for this?
 	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
@@ -160,7 +160,12 @@ const VertexAttribTypeInfo* r_vertex_attrib_type_info(VertexAttribType type) {
 	return va_type_info + idx;
 }
 
-void r_vertex_attrib_format_interleaved(size_t nattribs, VertexAttribSpec specs[nattribs], VertexAttribFormat formats[nattribs]) {
+VertexAttribFormat* r_vertex_attrib_format_interleaved(
+	size_t nattribs,
+	VertexAttribSpec specs[nattribs],
+	VertexAttribFormat formats[nattribs],
+	uint attachment
+) {
 	size_t stride = 0;
 	memset(formats, 0, sizeof(VertexAttribFormat) * nattribs);
 
@@ -181,5 +186,8 @@ void r_vertex_attrib_format_interleaved(size_t nattribs, VertexAttribSpec specs[
 
 	for(uint i = 0; i < nattribs; ++i) {
 		formats[i].stride = stride;
+		formats[i].attachment = attachment;
 	}
+
+	return formats + nattribs;
 }

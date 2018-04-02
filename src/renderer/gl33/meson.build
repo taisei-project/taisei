@@ -5,6 +5,7 @@ gl33_src = files(
     'shader_object.c',
     'shader_program.c',
     'texture.c',
+    'vertex_array.c',
     'vertex_buffer.c',
     'opengl.c',
 )

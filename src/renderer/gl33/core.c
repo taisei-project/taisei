@@ -15,6 +15,7 @@
 #include "shader_program.h"
 #include "render_target.h"
 #include "vertex_buffer.h"
+#include "vertex_array.h"
 #include "resource/resource.h"
 #include "resource/model.h"
 #include "glm.h"
@@ -42,11 +43,19 @@ static struct {
 	} render_target;
 
 	struct {
-		GLenum gl_vbo;
-		GLenum gl_vao;
-		VertexBuffer *active;
-		VertexBuffer *pending;
-	} vertex_buffer;
+		VertexArray *active;
+		VertexArray *pending;
+	} vertex_array;
+
+	struct {
+		GLuint active;
+		GLuint pending;
+	} vbo;
+
+	struct {
+		GLuint active;
+		GLuint pending;
+	} vao;
 
 	struct {
 		GLuint gl_prog;
@@ -386,47 +395,79 @@ Color r_color_current(void) {
 	return rgba(R.color[0], R.color[1], R.color[2], R.color[3]);
 }
 
-void gl33_sync_vertex_buffer(void) {
-	R.vertex_buffer.active = R.vertex_buffer.pending;
-
-	if(R.vertex_buffer.gl_vao != R.vertex_buffer.active->impl->gl_vao) {
-		R.vertex_buffer.gl_vao = R.vertex_buffer.active->impl->gl_vao;
-		glBindVertexArray(R.vertex_buffer.gl_vao);
-	}
-
-	if(R.vertex_buffer.gl_vbo != R.vertex_buffer.active->impl->gl_vbo) {
-		R.vertex_buffer.gl_vbo = R.vertex_buffer.active->impl->gl_vbo;
-		glBindBuffer(GL_ARRAY_BUFFER, R.vertex_buffer.active->impl->gl_vbo);
-	}
+void gl33_sync_vertex_array(void) {
+	R.vertex_array.active = R.vertex_array.pending;
+	gl33_sync_vao();
 }
 
 void gl33_vertex_buffer_deleted(VertexBuffer *vbuf) {
-	if(R.vertex_buffer.active == vbuf) {
-		R.vertex_buffer.active = NULL;
+	if(R.vbo.active == vbuf->impl->gl_handle) {
+		R.vbo.active = 0;
 	}
 
-	if(R.vertex_buffer.pending == vbuf) {
-		R.vertex_buffer.pending = NULL;
-		r_vertex_buffer(r_vertex_buffer_static_models());
-	}
-
-	if(R.vertex_buffer.gl_vao == vbuf->impl->gl_vao) {
-		R.vertex_buffer.gl_vao = 0;
-	}
-
-	if(R.vertex_buffer.gl_vbo == vbuf->impl->gl_vbo) {
-		R.vertex_buffer.gl_vbo = 0;
+	if(R.vbo.pending == vbuf->impl->gl_handle) {
+		R.vbo.pending = 0;
 	}
 }
 
-void r_vertex_buffer(VertexBuffer *vbuf) {
-	assert(vbuf->impl != NULL);
+void gl33_vertex_array_deleted(VertexArray *varr) {
+	if(R.vertex_array.active == varr) {
+		R.vertex_array.active = NULL;
+	}
 
-	R.vertex_buffer.pending = vbuf;
+	if(R.vertex_array.pending == varr) {
+		R.vertex_array.pending = NULL;
+		r_vertex_array(r_vertex_array_static_models());
+	}
+
+	if(R.vao.active == varr->impl->gl_handle) {
+		R.vao.active = 0;
+	}
+
+	if(R.vao.pending == varr->impl->gl_handle) {
+		R.vao.pending = 0;
+	}
 }
 
-VertexBuffer* r_vertex_buffer_current(void) {
-	return R.vertex_buffer.pending;
+void r_vertex_array(VertexArray *varr) {
+	assert(varr->impl != NULL);
+
+	R.vertex_array.pending = varr;
+	gl33_bind_vao(varr->impl->gl_handle);
+}
+
+VertexArray* r_vertex_array_current(void) {
+	return R.vertex_array.pending;
+}
+
+void gl33_sync_vbo(void) {
+	if(R.vbo.active != R.vbo.pending) {
+		R.vbo.active = R.vbo.pending;
+		glBindBuffer(GL_ARRAY_BUFFER, R.vbo.active);
+	}
+}
+
+void gl33_sync_vao(void) {
+	if(R.vao.active != R.vao.pending) {
+		R.vao.active = R.vao.pending;
+		glBindVertexArray(R.vao.active);
+	}
+}
+
+GLuint gl33_vbo_current(void) {
+	return R.vbo.pending;
+}
+
+GLuint gl33_vao_current(void) {
+	return R.vao.pending;
+}
+
+void gl33_bind_vbo(GLuint vbo) {
+	R.vbo.pending = vbo;
+}
+
+void gl33_bind_vao(GLuint vao) {
+	R.vao.pending = vao;
 }
 
 static void gl33_sync_state(void) {
@@ -439,7 +480,7 @@ static void gl33_sync_state(void) {
 	gl33_sync_uniforms(R.progs.active);
 	gl33_sync_texunits();
 	gl33_sync_render_target();
-	gl33_sync_vertex_buffer();
+	gl33_sync_vertex_array();
 	gl33_sync_blend_mode();
 
 	if(R.capabilities.active & cap_flag(RCAP_CULL_FACE)) {

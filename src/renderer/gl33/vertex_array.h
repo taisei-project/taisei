@@ -9,8 +9,13 @@
 #pragma once
 #include "taisei.h"
 
+#include "../api.h"
 #include "opengl.h"
 
-typedef struct VertexBufferImpl {
+struct VertexArrayImpl {
 	GLuint gl_handle;
-} VertexBufferImpl;
+	VertexBuffer **attachments;
+	uint num_attachments;
+	VertexAttribFormat *attribute_layout;
+	uint num_attributes;
+};

@@ -1,16 +1,24 @@
 
 #include "render_context.glslh"
 
+/*
+ * Per-vertex attributes
+ */
 layout(location = 0) in vec2  vertPos;
+// 1 - vec3 normal (not used)
+layout(location = 2) in vec2  vertTexCoord;
 
-layout(location = 1) in mat4  spriteVMTransform;
-// 2
-// 3
+/*
+ * Per-instance attributes
+ */
+layout(location = 3) in mat4  spriteVMTransform;
 // 4
-layout(location = 5) in vec4  spriteRGBA;
-layout(location = 6) in vec4  spriteTexRegion;
-layout(location = 7) in float spriteCustomParam;
-layout(location = 8) in vec2  spriteTexFlip;
+// 5
+// 6
+layout(location = 7) in vec4  spriteRGBA;
+layout(location = 8) in vec4  spriteTexRegion;
+layout(location = 9) in float spriteCustomParam;
+layout(location = 10) in vec2  spriteTexFlip;
 
 #ifdef SPRITE_OUT_TEXCOORD_RAW
 out vec2 texCoordRaw;
@@ -34,7 +42,7 @@ out float customParam;
 #endif
 
 void main(void) {
-    vec2 uv = vertPos + vec2(0.5);
+    vec2 uv = vertTexCoord;
     uv.x = mix(uv.x, 1.0 - uv.x, spriteTexFlip.x);
     uv.y = mix(uv.y, 1.0 - uv.y, spriteTexFlip.y);
 

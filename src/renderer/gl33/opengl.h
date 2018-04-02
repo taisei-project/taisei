@@ -73,6 +73,7 @@ typedef void (APIENTRY *tsglDeleteVertexArrays_ptr)(GLsizei n, const GLuint *arr
 typedef void (GLAPIENTRY *tsglDepthFunc_ptr)(GLenum func);
 typedef void (GLAPIENTRY *tsglDepthMask_ptr)(GLboolean flag);
 typedef void (GLAPIENTRY *tsglDisable_ptr)(GLenum cap);
+typedef void (APIENTRY *tsglDisableVertexAttribArray_ptr)(GLuint index);
 typedef void (GLAPIENTRY *tsglDrawArrays_ptr)(GLenum mode, GLint first, GLsizei count);
 typedef void (APIENTRY *tsglDrawArraysInstanced_ptr)(GLenum mode, GLint first, GLsizei count, GLsizei instancecount);
 typedef void (APIENTRY *tsglDrawBuffers_ptr)(GLsizei n, const GLenum *bufs);
@@ -151,6 +152,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #undef glDepthFunc
 #undef glDepthMask
 #undef glDisable
+#undef glDisableVertexAttribArray
 #undef glDrawArrays
 #undef glDrawArraysInstanced
 #undef glDrawBuffers
@@ -230,6 +232,7 @@ typedef void (GLAPIENTRY *tsglViewport_ptr)(GLint x, GLint y, GLsizei width, GLs
 #define glDepthFunc tsglDepthFunc
 #define glDepthMask tsglDepthMask
 #define glDisable tsglDisable
+#define glDisableVertexAttribArray tsglDisableVertexAttribArray
 #define glDrawArrays tsglDrawArrays
 #define glDrawArraysInstanced tsglDrawArraysInstanced
 #define glDrawBuffers tsglDrawBuffers
@@ -311,6 +314,7 @@ GLDEF(glDeleteVertexArrays, tsglDeleteVertexArrays, tsglDeleteVertexArrays_ptr) 
 GLDEF(glDepthFunc, tsglDepthFunc, tsglDepthFunc_ptr) \
 GLDEF(glDepthMask, tsglDepthMask, tsglDepthMask_ptr) \
 GLDEF(glDisable, tsglDisable, tsglDisable_ptr) \
+GLDEF(glDisableVertexAttribArray, tsglDisableVertexAttribArray, tsglDisableVertexAttribArray_ptr) \
 GLDEF(glDrawArrays, tsglDrawArrays, tsglDrawArrays_ptr) \
 GLDEF(glDrawArraysInstanced, tsglDrawArraysInstanced, tsglDrawArraysInstanced_ptr) \
 GLDEF(glDrawBuffers, tsglDrawBuffers, tsglDrawBuffers_ptr) \
@@ -396,6 +400,7 @@ GLAPI void APIENTRY glDeleteVertexArrays (GLsizei n, const GLuint *arrays);
 GLAPI void GLAPIENTRY glDepthFunc( GLenum func );
 GLAPI void GLAPIENTRY glDepthMask( GLboolean flag );
 GLAPI void GLAPIENTRY glDisable( GLenum cap );
+GLAPI void APIENTRY glDisableVertexAttribArray (GLuint index);
 GLAPI void GLAPIENTRY glDrawArrays( GLenum mode, GLint first, GLsizei count );
 GLAPI void APIENTRY glDrawArraysInstanced (GLenum mode, GLint first, GLsizei count, GLsizei instancecount);
 GLAPI void APIENTRY glDrawBuffers (GLsizei n, const GLenum *bufs);
@@ -474,6 +479,7 @@ GLAPI void GLAPIENTRY glViewport( GLint x, GLint y, GLsizei width, GLsizei heigh
 #define tsglDepthFunc glDepthFunc
 #define tsglDepthMask glDepthMask
 #define tsglDisable glDisable
+#define tsglDisableVertexAttribArray glDisableVertexAttribArray
 #define tsglDrawArrays glDrawArrays
 #define tsglDrawArraysInstanced glDrawArraysInstanced
 #define tsglDrawBuffers glDrawBuffers

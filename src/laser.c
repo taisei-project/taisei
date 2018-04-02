@@ -14,56 +14,53 @@
 #include "stageobjects.h"
 #include "renderer/api.h"
 
-typedef struct LaserQuadVertex {
-	float pos[2];
-
-	struct {
-		float s, y;
-	} uv;
-} LaserQuadVertex;
-
 static struct {
+	VertexArray varr;
 	VertexBuffer vbuf;
 	ShaderProgram *shader_generic;
-	LaserQuadVertex quad[4];
-} lasers = {
-	.quad = {
-		{ { -0.5, -0.5, }, { 0, 0 } },
-		{ { -0.5,  0.5, }, { 0, 1 } },
-		{ {  0.5,  0.5, }, { 1, 1 } },
-		{ {  0.5, -0.5, }, { 1, 0 } },
-	}
-};
+} lasers;
 
 typedef struct LaserInstancedAttribs {
 	float pos[2];
 	float delta[2];
 } LaserInstancedAttribs;
 
-static void lasers_vbuf_begin(void) {
-	r_vertex_buffer_invalidate(&lasers.vbuf);
-	r_vertex_buffer_append(&lasers.vbuf, sizeof(lasers.quad), lasers.quad);
-}
-
 void lasers_preload(void) {
 	preload_resource(RES_SHADER_PROGRAM, "laser_generic", RESF_DEFAULT);
 
+	size_t sz_vert = sizeof(GenericModelVertex);
+	size_t sz_attr = sizeof(LaserInstancedAttribs);
+
+	#define VERTEX_OFS(attr)   offsetof(GenericModelVertex,  attr)
+	#define INSTANCE_OFS(attr) offsetof(LaserInstancedAttribs, attr)
+
 	VertexAttribFormat fmt[] = {
-		// single quad, followed by a sequence of instanced attributes
-		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sizeof(LaserQuadVertex),       0                     },
-		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sizeof(LaserQuadVertex),       2     * sizeof(float) },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sizeof(LaserInstancedAttribs), 4 * 4 * sizeof(float) },
+		// Per-vertex attributes (for the static models buffer, bound at 0)
+		{ { 3, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(position),       0 },
+		{ { 3, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(normal),         0 },
+		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(uv),             0 },
+
+		// Per-instance attributes (for our own buffer, bound at 1)
+		// pos and delta packed into a single attribute
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(pos),          1 },
 	};
 
-	size_t capacity = sizeof(LaserQuadVertex) + 4096 * sizeof(LaserInstancedAttribs);
+	#undef VERTEX_OFS
+	#undef INSTANCE_OFS
 
-	r_vertex_buffer_create(&lasers.vbuf, capacity, sizeof(fmt)/sizeof(VertexAttribFormat), fmt);
-	lasers_vbuf_begin();
+	r_vertex_buffer_create(&lasers.vbuf, sizeof(LaserInstancedAttribs) * 4096, NULL);
+
+	r_vertex_array_create(&lasers.varr);
+	r_vertex_array_layout(&lasers.varr, sizeof(fmt)/sizeof(VertexAttribFormat), fmt);
+	r_vertex_array_attach_buffer(&lasers.varr, r_vertex_buffer_static_models(), 0);
+	r_vertex_array_attach_buffer(&lasers.varr, &lasers.vbuf, 1);
+	r_vertex_array_layout(&lasers.varr, sizeof(fmt)/sizeof(VertexAttribFormat), fmt);
 
 	lasers.shader_generic = r_shader_get("laser_generic");
 }
 
 void lasers_free(void) {
+	r_vertex_array_destroy(&lasers.varr);
 	r_vertex_buffer_destroy(&lasers.vbuf);
 }
 
@@ -171,7 +168,7 @@ static void draw_laser_curve_generic(Laser *l) {
 	r_uniform_int("span", instances);
 
 	LaserInstancedAttribs attrs[instances], *aptr = attrs;
-	lasers_vbuf_begin();
+	r_vertex_buffer_invalidate(&lasers.vbuf);
 
 	for(uint i = 0; i < instances; ++i, ++aptr) {
 		complex pos = l->prule(l, i * 0.5 + timeshift);
@@ -189,12 +186,11 @@ static void draw_laser_curve_generic(Laser *l) {
 
 void draw_lasers(int bgpass) {
 	Laser *laser;
-	VertexBuffer *vbuf_saved = r_vertex_buffer_current();
+	VertexArray *varr_saved = r_vertex_array_current();
 	ShaderProgram *prog_saved = r_shader_current();
 
 	r_texture(0, "part/lasercurve");
 	r_blend(BLEND_ADD);
-	r_vertex_buffer(&lasers.vbuf);
 
 	for(laser = global.lasers; laser; laser = laser->next) {
 		if(bgpass != laser->in_background) {
@@ -202,9 +198,14 @@ void draw_lasers(int bgpass) {
 		}
 
 		if(laser->shader) {
+			// Specialized lasers work with either vertex array,
+			// provided that the static models buffer is attached to it.
+			// We'll only ever draw the first quad, and only care about
+			// attributes 0 and 2 (vec3 position, vec2 uv)
 			r_shader_ptr(laser->shader);
 			draw_laser_curve_specialized(laser);
 		} else {
+			r_vertex_array(&lasers.varr);
 			r_shader_ptr(lasers.shader_generic);
 			draw_laser_curve_generic(laser);
 		}
@@ -212,7 +213,7 @@ void draw_lasers(int bgpass) {
 
 	r_blend(BLEND_ALPHA);
 	r_shader_ptr(prog_saved);
-	r_vertex_buffer(vbuf_saved);
+	r_vertex_array(varr_saved);
 	r_color4(1, 1, 1, 1);
 }
 

@@ -118,6 +118,12 @@ typedef struct VertexBuffer {
 	VertexBufferImpl *impl;
 } VertexBuffer;
 
+typedef struct VertexArrayImpl VertexArrayImpl;
+
+typedef struct VertexArray {
+	VertexArrayImpl *impl;
+} VertexArray;
+
 typedef enum VertexAttribType {
 	VA_FLOAT,
 	VA_BYTE,
@@ -150,9 +156,10 @@ typedef struct VertexAttribFormat {
 	VertexAttribSpec spec;
 	size_t stride;
 	size_t offset;
+	uint attachment;
 } VertexAttribFormat;
 
-typedef struct StaticModelVertex {
+typedef struct GenericModelVertex {
 	vec3 position;
 	vec3 normal;
 
@@ -160,7 +167,7 @@ typedef struct StaticModelVertex {
 		float s;
 		float t;
 	} uv;
-} StaticModelVertex;
+} GenericModelVertex;
 
 typedef enum UniformType {
 	UNIFORM_FLOAT,
@@ -408,14 +415,20 @@ void r_target_destroy(RenderTarget *target) attr_nonnull(1);
 void r_target(RenderTarget *target);
 RenderTarget* r_target_current(void);
 
-void r_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, uint nattribs, VertexAttribFormat attribs[nattribs]) attr_nonnull(1, 4);
+void r_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, void *data) attr_nonnull(1);
 void r_vertex_buffer_destroy(VertexBuffer *vbuf) attr_nonnull(1);
 void r_vertex_buffer_invalidate(VertexBuffer *vbuf) attr_nonnull(1);
 void r_vertex_buffer_write(VertexBuffer *vbuf, size_t offset, size_t data_size, void *data) attr_nonnull(1, 4);
 void r_vertex_buffer_append(VertexBuffer *vbuf, size_t data_size, void *data) attr_nonnull(1, 3);
 
-void r_vertex_buffer(VertexBuffer *vbuf) attr_nonnull(1);
-VertexBuffer* r_vertex_buffer_current(void);
+void r_vertex_array_create(VertexArray *varr) attr_nonnull(1);
+void r_vertex_array_destroy(VertexArray *varr) attr_nonnull(1);
+void r_vertex_array_attach_buffer(VertexArray *varr, VertexBuffer *vbuf, uint attachment) attr_nonnull(1, 2);
+VertexBuffer* r_vertex_array_get_attachment(VertexArray *varr, uint attachment)  attr_nonnull(1);
+void r_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]) attr_nonnull(1, 3);
+
+void r_vertex_array(VertexArray *varr) attr_nonnull(1);
+VertexArray* r_vertex_array_current(void);
 
 void r_clear(ClearBufferFlags flags);
 void r_clear_color4(float r, float g, float b, float a);
@@ -439,6 +452,7 @@ void r_init(void);
 void r_shutdown(void);
 
 VertexBuffer* r_vertex_buffer_static_models(void) attr_returns_nonnull;
+VertexArray* r_vertex_array_static_models(void) attr_returns_nonnull;
 
 void r_draw_quad(void);
 void r_draw_quad_instanced(uint instances);
@@ -458,10 +472,11 @@ void r_blend_unpack(BlendMode mode, UnpackedBlendMode *dest) attr_nonnull(2);
 const UniformTypeInfo* r_uniform_type_info(UniformType type) attr_returns_nonnull;
 const VertexAttribTypeInfo* r_vertex_attrib_type_info(VertexAttribType type);
 
-void r_vertex_attrib_format_interleaved(
+VertexAttribFormat* r_vertex_attrib_format_interleaved(
 	size_t nattribs,
 	VertexAttribSpec specs[nattribs],
-	VertexAttribFormat formats[nattribs]
+	VertexAttribFormat formats[nattribs],
+	uint attachment
 ) attr_nonnull(2, 3);
 
 static inline attr_must_inline
@@ -629,3 +644,4 @@ static inline attr_must_inline attr_nonnull(1)
 void r_draw_model(const char *model) {
 	r_draw_model_ptr(get_resource_data(RES_MODEL, model, RESF_UNSAFE));
 }
+

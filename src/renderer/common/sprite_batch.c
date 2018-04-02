@@ -14,21 +14,17 @@
 
 #define SPRITE_BATCH_CAPACITY 2048
 
-typedef struct Quad2DVertex {
-	float pos[2];
-} Quad2DVertex;
-
-typedef struct Sprite2DAttrs {
+typedef struct SpriteAttribs {
 	mat4 transform;
 	float rgba[4];
 	float texrect[4];
 	float custom;
 	uint8_t flip[2];
-} Sprite2DAttrs;
+} SpriteAttribs;
 
 static struct SpriteBatchState {
+	VertexArray varr;
 	VertexBuffer vbuf;
-	Quad2DVertex quad_2d[4];
 	Texture *tex;
 	ShaderProgram *shader;
 	BlendMode blend;
@@ -39,54 +35,50 @@ static struct SpriteBatchState {
 	uint depth_test_enabled : 1;
 	uint depth_write_enabled : 1;
 	uint num_pending;
-} _r_sprite_batch = {
-	.quad_2d = {
-		{ { -0.5, -0.5 } },
-		{ { -0.5,  0.5 } },
-		{ {  0.5,  0.5 } },
-		{ {  0.5, -0.5 } },
-	}
-};
-
-static void _r_sprite_batch_reset_buffer(void) {
-	r_vertex_buffer_invalidate(&_r_sprite_batch.vbuf);
-	r_vertex_buffer_append(&_r_sprite_batch.vbuf, sizeof(_r_sprite_batch.quad_2d), &_r_sprite_batch.quad_2d);
-}
+} _r_sprite_batch;
 
 void _r_sprite_batch_init(void) {
-	size_t sz_vert = sizeof(Quad2DVertex);
-	size_t sz_attr = sizeof(Sprite2DAttrs);
-	size_t sz_quad = sizeof(_r_sprite_batch.quad_2d);
+	size_t sz_vert = sizeof(GenericModelVertex);
+	size_t sz_attr = sizeof(SpriteAttribs);
 
-	#define QUAD_OFS(attr)     offsetof(Quad2DVertex,  attr)
-	#define INSTANCE_OFS(attr) offsetof(Sprite2DAttrs, attr) + sz_quad
+	#define VERTEX_OFS(attr)   offsetof(GenericModelVertex,  attr)
+	#define INSTANCE_OFS(attr) offsetof(SpriteAttribs, attr)
 
 	VertexAttribFormat fmt[] = {
-		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT,            0 }, sz_vert, QUAD_OFS(pos)              },
+		// Per-vertex attributes (for the static models buffer, bound at 0)
+		{ { 3, VA_FLOAT, VA_CONVERT_FLOAT,            0 }, sz_vert, VERTEX_OFS(position),       0 },
+		{ { 3, VA_FLOAT, VA_CONVERT_FLOAT,            0 }, sz_vert, VERTEX_OFS(normal),         0 },
+		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT,            0 }, sz_vert, VERTEX_OFS(uv),             0 },
 
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT,            1 }, sz_attr, INSTANCE_OFS(transform[0]) },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT,            1 }, sz_attr, INSTANCE_OFS(transform[1]) },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT,            1 }, sz_attr, INSTANCE_OFS(transform[2]) },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT,            1 }, sz_attr, INSTANCE_OFS(transform[3]) },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT,            1 }, sz_attr, INSTANCE_OFS(rgba)         },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT,            1 }, sz_attr, INSTANCE_OFS(texrect)      },
-		{ { 1, VA_FLOAT, VA_CONVERT_FLOAT,            1 }, sz_attr, INSTANCE_OFS(custom)       },
-		{ { 2, VA_UBYTE, VA_CONVERT_FLOAT_NORMALIZED, 1 }, sz_attr, INSTANCE_OFS(flip)         },
+		// Per-instance attributes (for our own sprites buffer, bound at 1)
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT,            1 }, sz_attr, INSTANCE_OFS(transform[0]), 1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT,            1 }, sz_attr, INSTANCE_OFS(transform[1]), 1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT,            1 }, sz_attr, INSTANCE_OFS(transform[2]), 1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT,            1 }, sz_attr, INSTANCE_OFS(transform[3]), 1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT,            1 }, sz_attr, INSTANCE_OFS(rgba),         1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT,            1 }, sz_attr, INSTANCE_OFS(texrect),      1 },
+		{ { 1, VA_FLOAT, VA_CONVERT_FLOAT,            1 }, sz_attr, INSTANCE_OFS(custom),       1 },
+		{ { 2, VA_UBYTE, VA_CONVERT_FLOAT_NORMALIZED, 1 }, sz_attr, INSTANCE_OFS(flip),         1 },
 	};
 
-	#undef QUAD_OFS
+	#undef VERTEX_OFS
 	#undef INSTANCE_OFS
 
 	r_vertex_buffer_create(
 		&_r_sprite_batch.vbuf,
-		sizeof(_r_sprite_batch.quad_2d) + SPRITE_BATCH_CAPACITY * sizeof(Sprite2DAttrs),
-		sizeof(fmt)/sizeof(*fmt),
-		fmt
+		sizeof(SpriteAttribs) * SPRITE_BATCH_CAPACITY,
+		NULL
 	);
-	_r_sprite_batch_reset_buffer();
+	r_vertex_buffer_invalidate(&_r_sprite_batch.vbuf);
+
+	r_vertex_array_create(&_r_sprite_batch.varr);
+	r_vertex_array_layout(&_r_sprite_batch.varr, sizeof(fmt)/sizeof(*fmt), fmt);
+	r_vertex_array_attach_buffer(&_r_sprite_batch.varr, r_vertex_buffer_static_models(), 0);
+	r_vertex_array_attach_buffer(&_r_sprite_batch.varr, &_r_sprite_batch.vbuf, 1);
 }
 
 void _r_sprite_batch_shutdown(void) {
+	r_vertex_array_destroy(&_r_sprite_batch.varr);
 	r_vertex_buffer_destroy(&_r_sprite_batch.vbuf);
 }
 
@@ -102,7 +94,7 @@ void r_flush_sprites(void) {
 
 	// log_warn("flush! %u", pending);
 
-	VertexBuffer *vbuf_saved = r_vertex_buffer_current();
+	VertexArray *varr_saved = r_vertex_array_current();
 	Texture *tex_saved = r_texture_current(0);
 	ShaderProgram *prog_saved = r_shader_current();
 	RenderTarget *target_saved = r_target_current();
@@ -113,7 +105,7 @@ void r_flush_sprites(void) {
 	DepthTestFunc depth_func_saved = r_depth_func_current();
 	CullFaceMode cull_mode_saved = r_cull_current();
 
-	r_vertex_buffer(&_r_sprite_batch.vbuf);
+	r_vertex_array(&_r_sprite_batch.varr);
 	r_texture_ptr(0, _r_sprite_batch.tex);
 	r_shader_ptr(_r_sprite_batch.shader);
 	r_target(_r_sprite_batch.render_target);
@@ -125,9 +117,9 @@ void r_flush_sprites(void) {
 	r_cull(_r_sprite_batch.cull_mode);
 
 	r_draw(PRIM_TRIANGLE_FAN, 0, 4, NULL, pending);
-	_r_sprite_batch_reset_buffer();
+	r_vertex_buffer_invalidate(&_r_sprite_batch.vbuf);
 
-	r_vertex_buffer(vbuf_saved);
+	r_vertex_array(varr_saved);
 	r_texture_ptr(0, tex_saved);
 	r_shader_ptr(prog_saved);
 	r_target(target_saved);
@@ -140,7 +132,7 @@ void r_flush_sprites(void) {
 }
 
 static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, VertexBuffer *vbuf) {
-	Sprite2DAttrs alignas(32) attribs;
+	SpriteAttribs alignas(32) attribs;
 	r_mat_current(MM_MODELVIEW, attribs.transform);
 
 	float scale_x = params->scale.x ? params->scale.x : 1;
