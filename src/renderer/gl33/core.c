@@ -61,8 +61,6 @@ static struct {
 		GLuint gl_prog;
 		ShaderProgram *active;
 		ShaderProgram *pending;
-		ShaderProgram *std;
-		ShaderProgram *std_notex;
 	} progs;
 
 	struct {
@@ -340,15 +338,7 @@ SDL_Window* r_create_window(const char *title, int x, int y, int w, int h, uint3
 }
 
 void _r_init(void) {
-	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
-		"standard",
-		"standardnotex",
-	NULL);
 
-	R.progs.std = get_resource_data(RES_SHADER_PROGRAM, "standard", RESF_PERMANENT);
-	R.progs.std_notex = get_resource_data(RES_SHADER_PROGRAM, "standardnotex", RESF_PERMANENT);
-
-	r_shader_standard();
 }
 
 void _r_shutdown(void) {

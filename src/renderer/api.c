@@ -39,6 +39,8 @@ void r_init(void) {
 
 	R.progs.standard = r_shader_get("standard");
 	R.progs.standardnotex = r_shader_get("standardnotex");
+
+	r_shader_ptr(R.progs.standard);
 }
 
 void r_shutdown(void) {
