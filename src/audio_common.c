@@ -175,7 +175,8 @@ static void bgm_cfg_volume_callback(ConfigIndex idx, ConfigValue v) {
 	audio_backend_set_bgm_volume(config_set_float(idx, v.f));
 }
 
-static void store_sfx_volume(const char *key, const char *val, Hashtable *ht) {
+static bool store_sfx_volume(const char *key, const char *val, void *data) {
+	Hashtable *ht = data;
 	int vol = atoi(val);
 
 	if(vol < 0 || vol > 128) {
@@ -188,12 +189,13 @@ static void store_sfx_volume(const char *key, const char *val, Hashtable *ht) {
 	if(vol != DEFAULT_SFX_VOLUME) {
 		hashtable_set_string(ht, key, (void*)(intptr_t)vol);
 	}
+	return true;
 }
 
 static void load_config_files(void) {
 	bgm_descriptions = parse_keyvalue_file(BGM_PATH_PREFIX "bgm.conf", HT_DYNAMIC_SIZE);
 	sfx_volumes = hashtable_new_stringkeys(HT_DYNAMIC_SIZE);
-	parse_keyvalue_file_cb(SFX_PATH_PREFIX "volumes.conf", (KVCallback)store_sfx_volume, sfx_volumes);
+	parse_keyvalue_file_cb(SFX_PATH_PREFIX "volumes.conf", store_sfx_volume, sfx_volumes);
 }
 
 static inline char* get_bgm_desc(char *name) {

@@ -23,7 +23,7 @@ Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 
 	char strbuf[strlen(ani) + sizeof("boss/")];
 	snprintf(strbuf, sizeof(strbuf), "boss/%s", ani);
-	aniplayer_create(&buf->ani, get_ani(strbuf));
+	aniplayer_create(&buf->ani, get_ani(strbuf), "main");
 
 	if(dialog) {
 		buf->dialog = get_sprite(dialog);
@@ -160,46 +160,42 @@ static bool attack_is_over(Attack *a) {
 }
 
 static void BossGlow(Projectile *p, int t) {
-	Animation *ani = (Animation *)REF(p->args[3]);
-	assert(ani != 0);
-
-	uint animationFrame = rint(creal(p->args[2]));
-	bool mirror = animationFrame / (ani->cols * ani->rows);
-	animationFrame = animationFrame % (ani->cols * ani->rows);
-
 	float s = 1.0+t/p->args[0]*0.5;
 	float fade = 1 - (1.5 - s);
 	float deform = 5 - 10 * fade * fade;
 
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { creal(p->pos), cimag(p->pos) },
+		.sprite_ptr = p->sprite,
 		.scale.both = s,
 		.blend = BLEND_ADD,
-		.sprite_ptr = ani->frames[animationFrame],
 		.color = derive_color(p->color, CLRMASK_A, rgba(0, 0, 0, 1.5 - s)),
 		.custom = deform,
 		.shader = "sprite_silhouette",
-		.flip.x = mirror,
 	});
 }
 
 static int boss_glow(Projectile *p, int t) {
 	if(t == EVENT_DEATH) {
-		free_ref(p->args[3]);
+		free(p->sprite);
 	}
 	return timeout_linear(p,t);
 }
 
 static Projectile* spawn_boss_glow(Boss *boss, Color clr, int timeout) {
+	// XXX: this is required because the Sprite returned by animation_get_frame is only temporarily valid
+	Sprite *s = calloc(1,sizeof(Sprite));
+	Sprite *tmp = aniplayer_get_frame(&boss->ani);
+	memcpy(s, tmp, sizeof(Sprite));
 	return PARTICLE(
+		.sprite_ptr = s,
 		// this is in sync with the boss position oscillation
 		.pos = boss->pos + 6 * sin(global.frames/25.0) * I,
 		.color = clr,
 		.rule = boss_glow,
 		.draw_rule = BossGlow,
-		.args = { timeout, 0, aniplayer_get_frame(&boss->ani), add_ref(global.boss->ani.ani)}, // the ref is needed just to pass a pointer :/
+		.args = { timeout },
 		.angle = M_PI * 2 * frand(),
-		.size = (1+I)*9000, // ensure it's drawn under everything else
 	);
 }
 
@@ -262,7 +258,7 @@ void draw_boss(Boss *boss) {
 	}
 
 	r_color4(1,1-red,1-red/2,boss_alpha);
-	aniplayer_play(&boss->ani,creal(boss->pos), cimag(boss->pos) + 6*sin(global.frames/25.0));
+	draw_sprite_batched_p(creal(boss->pos), cimag(boss->pos) + 6*sin(global.frames/25.0), aniplayer_get_frame(&boss->ani));
 	r_color4(1,1,1,1);
 
 	if(boss->current->type == AT_Move && global.frames - boss->current->starttime > 0 && boss_attack_is_final(boss, boss->current))
@@ -524,7 +520,7 @@ void boss_finish_current_attack(Boss *boss) {
 	boss->current->finished = true;
 	boss->current->rule(boss, EVENT_DEATH);
 
-	aniplayer_reset(&boss->ani);
+	aniplayer_soft_switch(&boss->ani,"main",0);
 
 	if(t != AT_Move) {
 		stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);

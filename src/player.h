@@ -84,6 +84,7 @@ typedef struct {
 	int inputflags;
 	bool gamepadmove;
 	complex lastmovedir;
+	int lastmovesequence; // used for animation
 	int axis_ud;
 	int axis_lr;
 

@@ -324,7 +324,7 @@ typedef struct ConfigParseState {
 	int first_entry;
 } ConfigParseState;
 
-static void config_set(const char *key, const char *val, void *data) {
+static bool config_set(const char *key, const char *val, void *data) {
 	ConfigEntry *e = config_find_entry(key);
 	ConfigParseState *state = data;
 
@@ -336,7 +336,7 @@ static void config_set(const char *key, const char *val, void *data) {
 			state->first_entry = CONFIGIDX_NUM;
 		}
 
-		return;
+		return true;
 	}
 
 	if(state->first_entry < 0) {
@@ -380,6 +380,8 @@ static void config_set(const char *key, const char *val, void *data) {
 			e->val.f = FLOATOF(val);
 			break;
 	}
+
+	return true;
 }
 
 #undef INTOF

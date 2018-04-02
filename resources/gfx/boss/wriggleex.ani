@@ -1,3 +1,9 @@
-rows = 3
-cols = 6
-speed = 5
+@sprite_count = 18
+
+main = d5 0 1 2 3 4 5
+midbossflyintro = d15 9 d8 10 11 6 7 8 d10 9 d3 10 11 6 7 8 
+
+fly = d4 6 7 8 9 10 11
+specialshot_charge = d4 12 13 14 15
+specialshot_hold = 15
+specialshot_release = d3 16 17 d10 9 10 11

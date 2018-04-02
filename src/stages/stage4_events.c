@@ -429,11 +429,13 @@ void kurumi_redspike(Boss *b, int time) {
 		}
 	} else {
 		AT(80) {
-			b->ani.stdrow = 1;
+			aniplayer_queue(&b->ani, "muda", 0);
 		}
+
 		AT(499) {
-			b->ani.stdrow = 0;
+			aniplayer_queue(&b->ani, "main", 0);
 		}
+		
 		FROM_TO_INT(80, 500, 40,200,2+2*(global.diff == D_Hard)) {
 			tsrand_fill(2);
 			complex offset = 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1));
@@ -596,7 +598,8 @@ void kurumi_breaker(Boss *b, int time) {
 
 	FROM_TO(60, 400, 100) {
 		play_sound("shot_special1");
-		aniplayer_queue(&b->ani,1,0,0);
+		aniplayer_queue(&b->ani,"muda",1);
+		aniplayer_queue(&b->ani,"main",0);
 		for(i = 0; i < 20; i++) {
 			PROJECTILE("bigball", b->pos, rgb(0.5,0,0.5), asymptotic,
 				.args = { cexp(2.0*I*M_PI/20.0*i), 3 },
@@ -700,8 +703,8 @@ void kurumi_aniwall(Boss *b, int time) {
 	if(time < 0)
 		return;
 
-	b->ani.stdrow = 1;
 	AT(0) {
+		aniplayer_queue(&b->ani, "muda", 0);
 		play_sound("laser1");
 		create_lasercurve2c(b->pos, 50, 80, rgb(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(0.4*I));
 		create_enemy1c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, aniwall_slave, 0.2*cexp(0.4*I));
@@ -737,7 +740,9 @@ void kurumi_sbreaker(Boss *b, int time) {
 
 	FROM_TO(60, dur, 100) {
 		play_sound("shot_special1");
-		aniplayer_queue(&b->ani,1,0,0);
+		aniplayer_queue(&b->ani, "muda", 4);
+		aniplayer_queue(&b->ani, "main", 0);
+
 		for(i = 0; i < 20; i++) {
 			PROJECTILE("bigball", b->pos, rgb(0.5, 0.0, 0.5), asymptotic,
 				.args = { cexp(2.0*I*M_PI/20.0*i), 3 },
@@ -823,7 +828,10 @@ void kurumi_blowwall(Boss *b, int time) {
 
 	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.04)
 
-	b->ani.stdrow=1;
+	AT(0) {
+		aniplayer_queue(&b->ani,"muda",0);
+	}
+	
 	AT(50)
 		bwlaser(b, 0.4, 1);
 
@@ -940,7 +948,8 @@ void kurumi_danmaku(Boss *b, int time) {
 	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.04)
 
 	AT(260) {
-		aniplayer_queue(&b->ani,1,4,0);
+		aniplayer_queue(&b->ani,"muda",4);
+		aniplayer_queue(&b->ani,"main",0);
 	}
 
 	AT(50) {
@@ -1296,9 +1305,10 @@ void kurumi_extra(Boss *b, int time) {
 	FROM_TO(190,200,1) {
 		GO_TO(b, sidepos+30*I,0.1)
 	}
-	b->ani.stdrow=0;
-	FROM_TO(190,300,1) {
-		b->ani.stdrow=1;
+
+	AT(190){
+		aniplayer_queue_frames(&b->ani, "muda", 110);
+		aniplayer_queue(&b->ani, "main", 0);
 	}
 
 	FROM_TO(300,400,1) {

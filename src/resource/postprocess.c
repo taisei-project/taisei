@@ -33,7 +33,7 @@ typedef struct PostprocessLoadData {
 	ResourceFlags resflags;
 } PostprocessLoadData;
 
-static void postprocess_load_callback(const char *key, const char *value, void *data) {
+static bool postprocess_load_callback(const char *key, const char *value, void *data) {
 	PostprocessLoadData *ldata = data;
 	PostprocessShader **slist = &ldata->list;
 	PostprocessShader *current = *slist;
@@ -46,7 +46,7 @@ static void postprocess_load_callback(const char *key, const char *value, void *
 		current->shader = get_resource_data(RES_SHADER_PROGRAM, value, ldata->resflags);
 
 		list_append(slist, current);
-		return;
+		return true;
 	}
 
 	for(PostprocessShader *c = current; c; c = c->next) {
@@ -55,13 +55,13 @@ static void postprocess_load_callback(const char *key, const char *value, void *
 
 	if(!current) {
 		log_warn("Uniform '%s' ignored: no active shader", key);
-		return;
+		return true;
 	}
 
 	if(!current->shader) {
 		// If loading the shader failed, just discard the uniforms.
 		// We will get rid of empty shader definitions later.
-		return;
+		return true;
 	}
 
 	const char *name = key;
@@ -69,7 +69,7 @@ static void postprocess_load_callback(const char *key, const char *value, void *
 
 	if(!uni) {
 		log_warn("No active uniform '%s' in shader", name);
-		return;
+		return true;
 	}
 
 	UniformType type = r_uniform_type(uni);
@@ -129,7 +129,7 @@ static void postprocess_load_callback(const char *key, const char *value, void *
 
 	if(val_idx == 0) {
 		log_warn("No values defined for uniform '%s'", name);
-		return;
+		return true;
 	}
 
 	assert(val_idx % type_info->elements == 0);
@@ -144,6 +144,8 @@ static void postprocess_load_callback(const char *key, const char *value, void *
 	for(int i = 0; i < val_idx; ++i) {
 		log_debug("u[%i] = (f: %f; i: %i)", i, psu->values[i].f, psu->values[i].i);
 	}
+
+	return true;
 }
 
 static void* delete_uniform(List **dest, List *data, void *arg) {

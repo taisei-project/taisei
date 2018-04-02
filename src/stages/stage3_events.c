@@ -589,7 +589,9 @@ void scuttle_deadly_dance(Boss *boss, int time) {
 		return;
 	}
 
-	boss->ani.stdrow=1;
+	AT(0) {
+		aniplayer_queue(&boss->ani, "dance", 0);
+	}
 	play_loop("shot1_loop");
 
 	FROM_TO(0, 120, 1)
@@ -1095,7 +1097,7 @@ void wriggle_light_singularity(Boss *boss, int time) {
 		}
 
 		play_sound("charge_generic");
-		boss->ani.stdrow = 0;
+		aniplayer_queue(&boss->ani, "main", 0);
 	}
 
 	if(time > 120) {
@@ -1107,7 +1109,9 @@ void wriggle_light_singularity(Boss *boss, int time) {
 	}
 
 	if(!((time+30) % 300)) {
-		aniplayer_queue(&boss->ani, 2, 0, 0);
+		aniplayer_queue(&boss->ani, "specialshot_charge", 1);
+		aniplayer_queue(&boss->ani, "specialshot_release", 1);
+		aniplayer_queue(&boss->ani, "main", 0);
 	}
 
 	if(!(time % 300)) {
@@ -1146,7 +1150,8 @@ void wriggle_light_singularity(Boss *boss, int time) {
 
 		play_sound("shot_special1");
 	} else if(!(time % 150)) {
-		aniplayer_queue(&boss->ani, 1, 1, 0);
+		aniplayer_queue(&boss->ani, "fly", 1);
+		aniplayer_queue(&boss->ani, "main", 0);
 	}
 }
 
@@ -1224,8 +1229,10 @@ void wriggle_firefly_storm(Boss *boss, int time) {
 
 	bool lun = global.diff == D_Lunatic;
 
+	AT(0) {
+		aniplayer_queue(&boss->ani,"fly",0);
+	}
 	FROM_TO_SND("shot1_loop", 30, 9000, 2) {
-		boss->ani.stdrow=1;
 
 		int i, cnt = 2;
 		for(i = 0; i < cnt; ++i) {

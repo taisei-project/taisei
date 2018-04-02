@@ -199,7 +199,13 @@ void BigFairy(Enemy *e, int t, bool render) {
 		.scale.both = s,
 	});
 
-	play_animation(get_ani("enemy/bigfairy"), creal(e->pos), cimag(e->pos), e->moving, e->dir);
+	const char *seqname = !e->moving ? "main" : (e->dir ? "left" : "right");
+	Animation *ani = get_ani("enemy/bigfairy");
+	Sprite *spr = animation_get_frame(ani,get_ani_sequence(ani, seqname),global.frames);
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = spr,
+		.pos = { creal(e->pos), cimag(e->pos) },
+	});
 }
 
 void Fairy(Enemy *e, int t, bool render) {
@@ -216,7 +222,13 @@ void Fairy(Enemy *e, int t, bool render) {
 		.scale.both = s,
 	});
 
-	play_animation(get_ani("enemy/fairy"), creal(e->pos), cimag(e->pos), e->moving, e->dir);
+	const char *seqname = !e->moving ? "main" : (e->dir ? "left" : "right");
+	Animation *ani = get_ani("enemy/fairy");
+	Sprite *spr = animation_get_frame(ani,get_ani_sequence(ani, seqname),global.frames);
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = spr,
+		.pos = { creal(e->pos), cimag(e->pos) },
+	});
 }
 
 void Swirl(Enemy *e, int t, bool render) {

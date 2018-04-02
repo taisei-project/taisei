@@ -48,7 +48,7 @@ void player_stage_post_init(Player *plr) {
 		plr->mode->procs.init(plr);
 	}
 
-	aniplayer_create(&plr->ani, get_ani(plr->mode->character->player_sprite_name));
+	aniplayer_create(&plr->ani, get_ani(plr->mode->character->player_sprite_name), "main");
 }
 
 void player_free(Player *plr) {
@@ -129,7 +129,11 @@ void player_draw(Player* plr) {
 			r_color4(0.4, 0.4, 1.0, 0.9);
 		}
 
-		aniplayer_play(&plr->ani, 0, 0);
+		Sprite *spr = aniplayer_get_frame(&plr->ani);
+		r_draw_sprite(&(SpriteParams) {
+			.sprite_ptr = spr,
+			.pos = { 0, 0 },
+		});
 		r_color3(1, 1, 1);
 
 		if(plr->focus) {
@@ -608,9 +612,19 @@ bool player_applymovement_gamepad(Player *plr) {
 	return true;
 }
 
-static void player_ani_moving(Player *plr, bool moving, bool dir) {
-	plr->ani.stdrow = !moving;
-	plr->ani.mirrored = dir;
+static void player_ani_moving(Player *plr, int dir) {
+	const char *seqname;
+	switch(dir) {
+	case -1: seqname = "left"; break;
+	case 0: seqname = "main"; break;
+	case 1: seqname = "right"; break;
+	default: log_fatal("Invalid player animation dir given");
+	}
+
+	if(plr->lastmovesequence == dir)
+		return;
+	aniplayer_hard_switch(&plr->ani,seqname,1);
+	plr->lastmovesequence = dir;
 }
 
 void player_applymovement(Player *plr) {
@@ -618,19 +632,20 @@ void player_applymovement(Player *plr) {
 		return;
 
 	bool gamepad = player_applymovement_gamepad(plr);
-	player_ani_moving(plr,false,false);
+	//player_ani_moving(plr,0);
 
-	int up      =   plr->inputflags & INFLAG_UP,
-		down    =   plr->inputflags & INFLAG_DOWN,
-		left    =   plr->inputflags & INFLAG_LEFT,
-		right   =   plr->inputflags & INFLAG_RIGHT;
+	int up      =   plr->inputflags & INFLAG_UP;
+	int down    =   plr->inputflags & INFLAG_DOWN;
+	int left    =   plr->inputflags & INFLAG_LEFT;
+	int right   =   plr->inputflags & INFLAG_RIGHT;
 
 	if(left && !right) {
-		player_ani_moving(plr,true,true);
+		player_ani_moving(plr,-1);
 	} else if(right && !left) {
-		player_ani_moving(plr,true,false);
+		player_ani_moving(plr,1);
+	} else {
+		player_ani_moving(plr,0);
 	}
-
 	if(gamepad)
 		return;
 

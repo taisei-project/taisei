@@ -489,7 +489,10 @@ bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data) 
 			*ptr = 0;
 		}
 
-		callback(key, val, data);
+		if(!callback(key, val, data)) {
+			++errors;
+			continue;
+		}
 	}
 
 	return !errors;
@@ -508,14 +511,16 @@ bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *dat
 	return status;
 }
 
-static void kvcallback_hashtable(const char *key, const char *val, Hashtable *ht) {
+static bool kvcallback_hashtable(const char *key, const char *val, void *data) {
+	Hashtable *ht = data;
 	hashtable_set_string(ht, key, strdup((void*)val));
+	return true;
 }
 
 Hashtable* parse_keyvalue_stream(SDL_RWops *strm, size_t tablesize) {
 	Hashtable *ht = hashtable_new_stringkeys(tablesize);
 
-	if(!parse_keyvalue_stream_cb(strm, (KVCallback)kvcallback_hashtable, ht)) {
+	if(!parse_keyvalue_stream_cb(strm, kvcallback_hashtable, ht)) {
 		hashtable_free(ht);
 		ht = NULL;
 	}
@@ -526,7 +531,7 @@ Hashtable* parse_keyvalue_stream(SDL_RWops *strm, size_t tablesize) {
 Hashtable* parse_keyvalue_file(const char *filename, size_t tablesize) {
 	Hashtable *ht = hashtable_new_stringkeys(tablesize);
 
-	if(!parse_keyvalue_file_cb(filename, (KVCallback)kvcallback_hashtable, ht)) {
+	if(!parse_keyvalue_file_cb(filename, kvcallback_hashtable, ht)) {
 		hashtable_free(ht);
 		ht = NULL;
 	}
@@ -534,7 +539,8 @@ Hashtable* parse_keyvalue_file(const char *filename, size_t tablesize) {
 	return ht;
 }
 
-static void kvcallback_spec(const char *key, const char *val, KVSpec *spec) {
+static bool kvcallback_spec(const char *key, const char *val, void *data) {
+	KVSpec *spec = data;
 	for(KVSpec *s = spec; s->name; ++s) {
 		if(!strcmp(key, s->name)) {
 			if(s->out_str) {
@@ -553,19 +559,20 @@ static void kvcallback_spec(const char *key, const char *val, KVSpec *spec) {
 				*s->out_double = strtod(val, NULL);
 			}
 
-			return;
+			return true;
 		}
 	}
 
 	log_warn("Unknown key '%s' with value '%s' ignored", key, val);
+	return true;
 }
 
 bool parse_keyvalue_stream_with_spec(SDL_RWops *strm, KVSpec *spec) {
-	return parse_keyvalue_stream_cb(strm, (KVCallback)kvcallback_spec, spec);
+	return parse_keyvalue_stream_cb(strm, kvcallback_spec, spec);
 }
 
 bool parse_keyvalue_file_with_spec(const char *filename, KVSpec *spec) {
-	return parse_keyvalue_file_cb(filename, (KVCallback)kvcallback_spec, spec);
+	return parse_keyvalue_file_cb(filename, kvcallback_spec, spec);
 }
 
 static void png_rwops_write_data(png_structp png_ptr, png_bytep data, png_size_t length) {

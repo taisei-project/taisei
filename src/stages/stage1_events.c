@@ -215,10 +215,10 @@ void cirno_perfect_freeze(Boss *c, int time) {
 	GO_AT(c, 160, 190, 2 + 1.0*I);
 
 	int d = max(0, global.diff - D_Normal);
-	AT(160-50*d)
-		c->ani.stdrow = 1;
+	AT(140-50*d)
+		aniplayer_queue(&c->ani,"(9)",0);
 	AT(220+30*d)
-		c->ani.stdrow = 0;
+		aniplayer_queue(&c->ani,"main",0);
 	FROM_TO_SND("shot1_loop", 160 - 50*d, 220 + 30*d, 6-global.diff/2) {
 		float r1, r2;
 
@@ -294,11 +294,9 @@ void cirno_iceplosion0(Boss *c, int time) {
 	if(time < 0)
 		return;
 
-	AT(20)
-		c->ani.stdrow = 1;
-	AT(30)
-		c->ani.stdrow = 0;
 	AT(20) {
+		aniplayer_queue(&c->ani,"(9)",1);
+		aniplayer_queue(&c->ani,"main",0);
 		play_sound("shot_special1");
 	}
 
@@ -345,9 +343,9 @@ void cirno_crystal_rain(Boss *c, int time) {
 	}
 
 	AT(100)
-		c->ani.stdrow = 1;
+		aniplayer_queue(&c->ani,"(9)",0);
 	AT(400)
-		c->ani.stdrow = 0;
+		aniplayer_queue(&c->ani,"main",0);
 	FROM_TO(100, 400, 120-20*global.diff - 10 * hdiff) {
 		float i;
 		bool odd = (hdiff? (_i&1) : 0);
@@ -378,9 +376,9 @@ void cirno_iceplosion1(Boss *c, int time) {
 		play_sound("shot_special1");
 	}
 	AT(20)
-		c->ani.stdrow = 1;
+		aniplayer_queue(&c->ani,"(9)",0);
 	AT(30)
-		c->ani.stdrow = 0;
+		aniplayer_queue(&c->ani,"main",0);
 
 	FROM_TO(20,30,2) {
 		int i;
@@ -539,7 +537,7 @@ void cirno_snow_halation(Boss *c, int time) {
 
 	if(cheater >= 8) {
 		GO_TO(c, global.plr.pos,0.05);
-		c->ani.stdrow = 1;
+		aniplayer_queue(&c->ani,"(9)",0);
 	} else {
 		GO_TO(c, VIEWPORT_W/2.0+100.0*I, 0.05);
 	}
@@ -547,7 +545,7 @@ void cirno_snow_halation(Boss *c, int time) {
 	AT(60) {
 		center = global.plr.pos;
 		rotation = (M_PI/2.0) * (1 + time / 300);
-		c->ani.stdrow = 1;
+		aniplayer_queue(&c->ani,"(9)",0);
 	}
 
 	const int interval = 3;
@@ -573,7 +571,7 @@ void cirno_snow_halation(Boss *c, int time) {
 	}
 
 	AT(100 + interval * projs/2) {
-		c->ani.stdrow = 0;
+		aniplayer_queue(&c->ani,"main",0);
 
 		if(cabs(global.plr.pos-center)>cabs(halation_calc_orb_pos(0,0,0,projs))) {
 			char *text[] = {
@@ -627,9 +625,10 @@ void cirno_icicle_fall(Boss *c, int time) {
 	GO_TO(c, VIEWPORT_W/2.0+120.0*I, 0.01);
 
 	AT(20)
-		c->ani.stdrow = 1;
+		aniplayer_queue(&c->ani,"(9)",0);
 	AT(200)
-		c->ani.stdrow = 0;
+		aniplayer_queue(&c->ani,"main",0);
+
 	FROM_TO(20,200,30-3*global.diff) {
 		play_sound("shot1");
 		for(float i = 2-0.2*global.diff; i < 5; i+=1./(1+global.diff)) {
@@ -711,9 +710,9 @@ void cirno_crystal_blizzard(Boss *c, int time) {
 	}
 
 	AT(330)
-		c->ani.stdrow = 1;
+		aniplayer_queue(&c->ani,"(9)",0);
 	AT(700)
-		c->ani.stdrow = 0;
+		aniplayer_queue(&c->ani,"main",0);
 	FROM_TO_SND("shot1_loop",330, 700, 1) {
 		GO_TO(c, global.plr.pos, 0.01);
 
@@ -756,7 +755,9 @@ void cirno_benchmark(Boss* b, int t) {
 
 	int N = 5000; // number of particles on the screen
 
-	b->ani.stdrow=1;
+	if(t == 0) {
+		aniplayer_queue(&b->ani, "(9)", 0);
+	}
 	double speed = 10;
 	int c = N*speed/VIEWPORT_H;
 	for(int i = 0; i < c; i++) {

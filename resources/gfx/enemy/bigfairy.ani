@@ -1,3 +1,5 @@
-rows = 2
-cols = 2
-speed = 15
+@sprite_count = 4
+
+main = d15 0 1
+left = m d15 2 3
+right = d15 2 3

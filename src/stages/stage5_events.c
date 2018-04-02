@@ -460,8 +460,7 @@ void iku_bolts(Boss *b, int time) {
 
 	FROM_TO(60, 400, 50) {
 		int i, c = 10+global.diff;
-		b->ani.mirrored = !b->ani.mirrored;
-		aniplayer_queue(&b->ani,1,0,5);
+
 		for(i = 0; i < c; i++) {
 			PROJECTILE("ball", b->pos, rgb(0.4, 1, 1), asymptotic,
 				.args = {
@@ -553,10 +552,8 @@ void iku_bolts2(Boss *b, int time) {
 	}
 
 	FROM_TO(0, 400, 60) {
-		b->ani.mirrored = !b->ani.mirrored;
-		aniplayer_queue(&b->ani,1,0,5);
-		create_lasercurve3c(creal(global.plr.pos), 100, 200, rgb(0.3,1,1), bolts2_laser, global.plr.pos, b->ani.mirrored*2-1, global.diff);
-		play_sound_ex("laser1", 0, false);
+		aniplayer_queue(&b->ani, (_i&1) ? "dashdown_left" : "dashdown_right",1);
+		aniplayer_queue(&b->ani, "main", 0);
 	}
 
 	FROM_TO_SND("shot1_loop", 0, 400, 5-global.diff)
@@ -676,8 +673,8 @@ void iku_lightning(Boss *b, int time) {
 	}
 
 	AT(100) {
-		b->ani.mirrored = !b->ani.mirrored;
-		aniplayer_queue(&b->ani,1,0,5);
+		aniplayer_queue(&b->ani, (_i&1) ? "dashdown_left" : "dashdown_right",1);
+		aniplayer_queue(&b->ani, "main", 0);
 		int c = 40;
 		int l = 200;
 		int s = 10;
@@ -712,8 +709,8 @@ void iku_bolts3(Boss *b, int time) {
 	}
 
 	FROM_TO(60, 400, 60) {
-		b->ani.mirrored = !b->ani.mirrored;
-		aniplayer_queue(&b->ani,1,0,5);
+		aniplayer_queue(&b->ani, (_i&1) ? "dashdown_left" : "dashdown_right",1);
+		aniplayer_queue(&b->ani, "main", 0);
 		int i, c = 10+global.diff;
 		complex n = cexp(I*carg(global.plr.pos-b->pos)+0.1*I-0.2*I*frand());
 		for(i = 0; i < c; i++) {
@@ -779,9 +776,8 @@ void iku_cathode(Boss *b, int t) {
 	TIMER(&t)
 
 	FROM_TO(37, 18000, 70-global.diff*10) {
-		aniplayer_reset(&b->ani);
-		aniplayer_queue_pro(&b->ani,1,0,3,10,4);
-		aniplayer_queue_pro(&b->ani,1,0,3,0,4)->backwards=true;
+		aniplayer_queue(&b->ani,"dashdown_wait",1);
+		aniplayer_queue(&b->ani,"main",0);
 	}
 	FROM_TO(50, 18000, 70-global.diff*10) {
 		int i;
@@ -819,9 +815,10 @@ void iku_induction(Boss *b, int t) {
 		return;
 	}
 
-	b->ani.stdrow=1;
-
 	TIMER(&t);
+	AT(0) {
+		aniplayer_queue(&b->ani, "dashdown_left", 0);
+	}
 
 	FROM_TO_SND("shot1_loop", 0, 18000, 8) {
 		play_sound("redirect");
@@ -959,8 +956,7 @@ int iku_extra_trigger_bullet(Projectile *p, int t) {
 void iku_extra_fire_trigger_bullet(void) {
 	Enemy *e = iku_extra_find_next_slave(global.boss->pos, 250);
 
-	global.boss->ani.mirrored = !global.boss->ani.mirrored;
-	aniplayer_queue(&global.boss->ani,1,0,5);
+	aniplayer_queue(&global.boss->ani,"dashdown_left",1);
 	if(!e) {
 		return;
 	}

@@ -1,3 +1,2 @@
-rows = 1
-cols = 1
-speed = 10
+@sprite_count = 1
+main = 0

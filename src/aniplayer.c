@@ -14,101 +14,76 @@
 #include "stageobjects.h"
 #include "objectpool_util.h"
 
-void aniplayer_create(AniPlayer *plr, Animation *ani) {
+void aniplayer_create(AniPlayer *plr, Animation *ani, const char *startsequence) {
 	memset(plr,0,sizeof(AniPlayer));
 	plr->ani = ani;
+
+	aniplayer_queue(plr,startsequence,0);
 }
 
-int aniplayer_get_frame(AniPlayer *plr) {
-	int col = (plr->clock/plr->ani->speed) % plr->ani->cols;
-	int row = plr->stdrow;
-	int speed = plr->ani->speed;
-	bool mirror = plr->mirrored;
-	if(plr->queue) {
-		AniSequence *s = plr->queue;
-		if(s->speed > 0)
-			speed = s->speed;
-		col = (s->clock/speed) % plr->ani->cols;
-		if(s->backwards)
-			col = ((s->duration-s->clock)/speed) % plr->ani->cols;
-		row = s->row;
-
-		mirror = s->mirrored;
-	}
-
-	return plr->ani->rows*plr->ani->cols*mirror+row*plr->ani->cols+col;
+Sprite *aniplayer_get_frame(AniPlayer *plr) {
+	assert(plr->queue != NULL);
+	return animation_get_frame(plr->ani, plr->queue->sequence, plr->queue->clock);
 }
 
 void aniplayer_free(AniPlayer *plr) {
-	plr->queuesize = 0; // prevent aniplayer_reset from messing with the queue, since we're going to wipe all of it anyway
+	plr->queuesize = 0;
 	list_free_all(&plr->queue);
-	aniplayer_reset(plr);
 }
 
-void aniplayer_reset(AniPlayer *plr) { // resets to a neutral state with empty queue.
-	plr->stdrow = 0;
-	if(plr->queuesize > 0) { // abort the animation in the fastest fluent way.
-		list_free_all(&plr->queue->next);
-		plr->queuesize = 1;
-		plr->queue->delay = 0;
+// Deletes the queue. If hard is set, even the last element is removed leaving the player in an invalid state.
+static void aniplayer_reset(AniPlayer *plr, bool hard) {
+	if(plr->queuesize == 0)
+		return;
+	if(hard) {
+		list_free_all(&plr->queue);
+		plr->queuesize = 0;
+		return;
 	}
+
+	list_free_all(&plr->queue->next);
+	plr->queuesize = 1;
 }
 
-AniSequence *aniplayer_queue(AniPlayer *plr, int row, int loops, int delay) {
-	AniSequence *s = calloc(1, sizeof(AniSequence));
+AniQueueEntry *aniplayer_queue(AniPlayer *plr, const char *seqname, int loops) {
+	AniQueueEntry *s = calloc(1, sizeof(AniQueueEntry));
 	list_append(&plr->queue, s);
 	plr->queuesize++;
-	s->row = row;
 
 	if(loops < 0)
 		log_fatal("Negative number of loops passed: %d",loops);
-
-	s->duration = (loops+1)*plr->ani->cols*plr->ani->speed;
-	s->delay = delay;
-	s->mirrored = plr->mirrored;
+	s->sequence = get_ani_sequence(plr->ani,seqname);
+	
+	s->duration = loops*s->sequence->length;
 
 	return s;
 }
 
-AniSequence *aniplayer_queue_pro(AniPlayer *plr, int row, int start, int end, int delay, int speed) {
-	AniSequence *s = aniplayer_queue(plr,row,0,delay);
-	// i bet you didn’t expect the _pro function calling the plain one
-	s->speed = speed;
-
-	if(speed <= 0)
-		speed = plr->ani->speed;
-	s->duration = end*speed;
-	s->clock = start*speed;
+AniQueueEntry *aniplayer_queue_frames(AniPlayer *plr, const char *seqname, int frames) {
+	AniQueueEntry *s = aniplayer_queue(plr, seqname, 0);
+	s->duration = frames;
 	return s;
+}
+
+AniQueueEntry *aniplayer_soft_switch(AniPlayer *plr, const char *seqname, int loops) {
+	aniplayer_reset(plr,false);
+	return aniplayer_queue(plr,seqname,loops);
+}
+
+AniQueueEntry *aniplayer_hard_switch(AniPlayer *plr, const char *seqname, int loops) {
+	aniplayer_reset(plr,true);
+	return aniplayer_queue(plr,seqname,loops);
 }
 
 void aniplayer_update(AniPlayer *plr) {
-	plr->clock++;
-	if(plr->queue) {
-		AniSequence *s = plr->queue;
-		if(s->clock < s->duration) {
-			s->clock++;
-		} else if(s->delay > 0) {
-			s->delay--;
-		} else {
-			free(list_pop(&plr->queue));
-			plr->queuesize--;
-			plr->clock = 0;
-		}
+	assert(plr->queue); // The queue should never be empty.
+	AniQueueEntry *s = plr->queue;
+
+	s->clock++;
+	// The last condition assures that animations only switch at their end points
+	if(s->clock >= s->duration && plr->queuesize > 1 && s->clock%s->sequence->length == 0) {
+		free(list_pop(&plr->queue));
+		plr->queuesize--;
 	}
 }
 
-void play_animation_frame(Animation *ani, float x, float y, int frame) {
-	bool mirror = frame / (ani->cols * ani->rows);
-	frame = frame % (ani->cols * ani->rows);
-	draw_animation_p(x, y, frame % ani->cols, frame / ani->cols, mirror, ani);
-}
-
-void aniplayer_play(AniPlayer *plr, float x, float y) {
-	int frame = aniplayer_get_frame(plr);
-	play_animation_frame(plr->ani,x,y,frame); // or as my grandpa always said: rather write 100 lines of new code than one old line twice.
-}
-
-void play_animation(Animation *ani, float x, float y, int row, bool xflip) { // the old way to draw animations without AniPlayer
-	draw_animation_p(x, y, (global.frames/ani->speed)%ani->cols, row, xflip, ani);
-}

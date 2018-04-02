@@ -12,19 +12,25 @@
 #include "resource.h"
 #include "sprite.h"
 
-struct Animation;
+// see animation_parse_sequence_spec implementation for a documentation of the
+// sequence format
+
+typedef struct AniSequenceFrame {
+	uint spriteidx;
+	bool mirrored;
+} AniSequenceFrame;
+
+typedef struct AniSequence {
+	AniSequenceFrame *frames;
+	int length;
+} AniSequence;
 
 typedef struct Animation {
-	// i'm emulating lao's fixed rows/cols table system,
-	// even though animations could have arbitrarily sized framegroups now.
-	// i just don't want to rewrite the whole animation system from scratch.
-	// be my guest if you want to try and do this the right way.
-
-	int rows;
-	int cols;
-	int speed;
-
-	Sprite **frames;
+	Hashtable *sequences;
+	
+	Sprite **sprites;
+	Sprite transformed_sprite; // temporary sprite used to apply animation transformations.
+	int sprite_count;
 } Animation;
 
 char* animation_path(const char *name);
@@ -34,12 +40,22 @@ void* load_animation_end(void *opaque, const char *filename, uint flags);
 void unload_animation(void *vani);
 
 Animation *get_ani(const char *name);
+AniSequence *get_ani_sequence(Animation *ani, const char *seqname);
 
-void draw_animation(float x, float y, int col, int row, bool xflip, const char *name);
-void draw_animation_p(float x, float y, int col, int row, bool xflip, Animation *ani);
+// Returns a sprite for the specified frame from an animation sequence named seqname. 
+// CAUTION: this sprite is only valid until the next call to this function.
+// 
+// The frames correspond 1:1 to real ingame frames, so
+//
+// 	draw_sprite_p(x, y, animation_get_frame(ani,"fly",global.frames));
+//
+// already gives you the fully functional animation rendering. You can use
+// an AniPlayer instance for queueing.
+// 
+// Note that seqframe loops (otherwise the example above wouldn’t work).
+// 
+Sprite *animation_get_frame(Animation *ani, AniSequence *seq, int seqframe);
 
-// XXX: another shitty animations hack. we need to rewrite this stuff eventually.
-Sprite* ani_frame_from_time(Animation *ani, int row, int time);
 
 extern ResourceHandler animation_res_handler;
 

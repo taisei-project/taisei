@@ -128,7 +128,10 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 // i/o utils
 //
 
-typedef void (*KVCallback)(const char *key, const char *value, void *data);
+// The callback should return true on success and false on error. In the case of
+// an error it is responsible for calling log_warn with a descriptive error
+// message.
+typedef bool (*KVCallback)(const char *key, const char *value, void *data);
 
 typedef struct KVSpec {
 	const char *name;

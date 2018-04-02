@@ -348,8 +348,8 @@ int scythe_reset(Enemy *e, int t) {
 
 void elly_frequency(Boss *b, int t) {
 	TIMER(&t);
-	b->ani.stdrow=1;
 	AT(EVENT_BIRTH) {
+		aniplayer_queue(&b->ani, "snipsnip", 0);
 		global.enemies->birthtime = global.frames;
 		global.enemies->logic_rule = scythe_infinity;
 		global.enemies->args[0] = 2;
@@ -363,8 +363,10 @@ void elly_frequency(Boss *b, int t) {
 }
 
 static void elly_clap(Boss *b, int claptime) {
-	aniplayer_queue_pro(&b->ani,2,0,3,claptime,5);
-	aniplayer_queue_pro(&b->ani,2,3,5,0,5);
+	aniplayer_queue(&b->ani, "clapyohands", 1);
+	aniplayer_queue_frames(&b->ani, "holdyohands", claptime);
+	aniplayer_queue(&b->ani, "unclapyohands", 1);
+	aniplayer_queue(&b->ani, "main", 0);
 }
 
 int scythe_newton(Enemy *e, int t) {
@@ -603,8 +605,8 @@ void elly_kepler(Boss *b, int t) {
 
 void elly_frequency2(Boss *b, int t) {
 	TIMER(&t);
-	b->ani.stdrow=1;
 	AT(0) {
+		aniplayer_queue(&b->ani, "snipsnip", 0);
 		global.enemies->birthtime = global.frames;
 		global.enemies->logic_rule = scythe_infinity;
 		global.enemies->args[0] = 4;
@@ -951,9 +953,11 @@ int baryon_reset(Enemy *baryon, int t) {
 void elly_eigenstate(Boss *b, int t) {
 	TIMER(&t);
 
-	b->ani.stdrow=1;
-	AT(0)
+	AT(0) {
+		aniplayer_queue(&b->ani, "snipsnip", 0);
 		set_baryon_rule(baryon_eigenstate);
+	}
+
 	AT(EVENT_DEATH)
 		set_baryon_rule(baryon_reset);
 }
@@ -1490,10 +1494,11 @@ void elly_baryonattack(Boss *b, int t) {
 }
 
 void elly_baryonattack2(Boss *b, int t) {
-	b->ani.stdrow=1;
 	TIMER(&t);
-	AT(0)
+	AT(0) {
+		aniplayer_queue(&b->ani, "snipsnip", 0);
 		set_baryon_rule(baryon_nattack);
+	}
 	AT(EVENT_DEATH)
 		set_baryon_rule(baryon_reset);
 

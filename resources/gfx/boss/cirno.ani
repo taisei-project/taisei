@@ -1,3 +1,6 @@
-rows = 2
-cols = 6
-speed = 5
+@sprite_count = 12
+
+main = d5 0 1 2 3 4 5
+
+# flexing animation
+(9) = d5 6 7 8 9 10 11
