@@ -330,6 +330,8 @@ static VFSZipFileTLS* vfs_zipfile_get_tls(VFSNode *node, bool create) {
 	zip_source_t *src = zip_source_function_create(vfs_zipfile_srcfunc, node, &tls->error);
 	zip_t *zip = tls->zip = zip_open_from_source(src, ZIP_RDONLY, &tls->error);
 
+	// FIXME: Taisei currently doesn't handle zip files without explicit directory entries correctly (file listing will not work)
+
 	if(!zip) {
 		char *r = vfs_repr_node(zdata->source, true);
 		vfs_set_error("Failed to open zip archive '%s': %s", r, zip_error_strerror(&tls->error));
