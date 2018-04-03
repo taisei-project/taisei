@@ -11,13 +11,14 @@
 #include "core.h"
 #include "shader_program.h"
 #include "shader_object.h"
+#include "debug.h"
 #include "../api.h"
 
-Uniform* r_shader_uniform(ShaderProgram *prog, const char *uniform_name) {
+Uniform* gl33_shader_uniform(ShaderProgram *prog, const char *uniform_name) {
 	return hashtable_get_string(prog->uniforms, uniform_name);
 }
 
-UniformType r_uniform_type(Uniform *uniform) {
+UniformType gl33_uniform_type(Uniform *uniform) {
 	return uniform->type;
 }
 
@@ -139,7 +140,7 @@ void gl33_sync_uniforms(ShaderProgram *prog) {
 	hashtable_foreach(prog->uniforms, gl33_sync_uniform, NULL);
 }
 
-void r_uniform_ptr(Uniform *uniform, uint count, const void *data) {
+void gl33_uniform(Uniform *uniform, uint count, const void *data) {
 	assert(count > 0);
 
 	if(uniform == NULL) {
@@ -377,7 +378,7 @@ static void* load_shader_program_end(void *opaque, const char *path, uint flags)
 	return prog;
 }
 
-ResourceHandler shader_program_res_handler = {
+ResourceHandler gl33_shader_program_res_handler = {
 	.type = RES_SHADER_PROGRAM,
 	.typename = "shader program",
 	.subdir = SHPROG_PATH_PREFIX,

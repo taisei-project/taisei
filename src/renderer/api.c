@@ -9,12 +9,13 @@
 #include "taisei.h"
 
 #include "api.h"
+#include "common/backend.h"
 #include "common/matstack.h"
 #include "common/sprite_batch.h"
 #include "common/models.h"
 #include "glm.h"
 
-#include <stdalign.h>
+#define B _r_backend.funcs
 
 static struct {
 	struct {
@@ -24,12 +25,15 @@ static struct {
 } R;
 
 void r_init(void) {
-	_r_init();
+	_r_backend_init();
+}
+
+void r_post_init(void) {
+	B.post_init();
 	_r_mat_init();
 	_r_models_init();
 	_r_sprite_batch_init();
 
-	// XXX: is it the right place for this?
 	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
 		"sprite_default",
 		"texture_post_load",
@@ -41,12 +45,14 @@ void r_init(void) {
 	R.progs.standardnotex = r_shader_get("standardnotex");
 
 	r_shader_ptr(R.progs.standard);
+
+	log_info("Rendering subsystem initialized (%s)", _r_backend.name);
 }
 
 void r_shutdown(void) {
 	_r_sprite_batch_shutdown();
 	_r_models_shutdown();
-	_r_shutdown();
+	B.shutdown();
 }
 
 void r_shader_standard(void) {
@@ -212,4 +218,224 @@ VertexAttribFormat* r_vertex_attrib_format_interleaved(
 	}
 
 	return formats + nattribs;
+}
+
+// TODO: Maybe implement the state tracker/redundant call elimination here somehow
+// instead of burdening the backend with it.
+//
+// For now though, enjoy this degeneracy since the internal backend interface is
+// nearly identical to the public API currently.
+//
+// A more realisic TODO would be to put assertions/argument validation here.
+
+SDL_Window* r_create_window(const char *title, int x, int y, int w, int h, uint32_t flags) {
+	return B.create_window(title, x, y, w, h, flags);
+}
+
+bool r_supports(RendererFeature feature) {
+	return B.supports(feature);
+}
+
+void r_capability(RendererCapability cap, bool value) {
+	B.capability(cap, value);
+}
+
+bool r_capability_current(RendererCapability cap) {
+	return B.capability_current(cap);
+}
+
+void r_color4(float r, float g, float b, float a) {
+	B.color4(r, g, b, a);
+}
+
+Color r_color_current(void) {
+	return B.color_current();
+}
+
+void r_blend(BlendMode mode) {
+	B.blend(mode);
+}
+
+BlendMode r_blend_current(void) {
+	return B.blend_current();
+}
+
+void r_cull(CullFaceMode mode) {
+	B.cull(mode);
+}
+
+CullFaceMode r_cull_current(void) {
+	return B.cull_current();
+}
+
+void r_depth_func(DepthTestFunc func) {
+	B.depth_func(func);
+}
+
+DepthTestFunc r_depth_func_current(void) {
+	return B.depth_func_current();
+}
+
+void r_shader_ptr(ShaderProgram *prog) {
+	B.shader(prog);
+}
+
+ShaderProgram* r_shader_current(void) {
+	return B.shader_current();
+}
+
+Uniform* r_shader_uniform(ShaderProgram *prog, const char *uniform_name) {
+	return B.shader_uniform(prog, uniform_name);
+}
+
+void r_uniform_ptr(Uniform *uniform, uint count, const void *data) {
+	B.uniform(uniform, count, data);
+}
+
+UniformType r_uniform_type(Uniform *uniform) {
+	return B.uniform_type(uniform);
+}
+
+void r_draw(Primitive prim, uint first, uint count, uint32_t *indices, uint instances, uint base_instance) {
+	B.draw(prim, first, count, indices, instances, base_instance);
+}
+
+void r_texture_create(Texture *tex, const TextureParams *params) {
+	B.texture_create(tex, params);
+}
+
+void r_texture_fill(Texture *tex, void *image_data) {
+	B.texture_fill(tex, image_data);
+}
+
+void r_texture_fill_region(Texture *tex, uint x, uint y, uint w, uint h, void *image_data) {
+	B.texture_fill_region(tex, x, y, w, h, image_data);
+}
+
+void r_texture_invalidate(Texture *tex) {
+	B.texture_invalidate(tex);
+}
+
+void r_texture_replace(Texture *tex, TextureType type, uint w, uint h, void *image_data) {
+	B.texture_replace(tex, type, w, h, image_data);
+}
+
+void r_texture_destroy(Texture *tex) {
+	B.texture_destroy(tex);
+}
+
+void r_texture_ptr(uint unit, Texture *tex) {
+	B.texture(unit, tex);
+}
+
+Texture* r_texture_current(uint unit) {
+	return B.texture_current(unit);
+}
+
+void r_target_create(RenderTarget *target) {
+	B.target_create(target);
+}
+
+void r_target_attach(RenderTarget *target, Texture *tex, RenderTargetAttachment attachment) {
+	B.target_attach(target, tex, attachment);
+}
+
+Texture* r_target_get_attachment(RenderTarget *target, RenderTargetAttachment attachment) {
+	return B.target_get_attachment(target, attachment);
+}
+
+void r_target_destroy(RenderTarget *target) {
+	B.target_destroy(target);
+}
+
+void r_target(RenderTarget *target) {
+	B.target(target);
+}
+
+RenderTarget* r_target_current(void) {
+	return B.target_current();
+}
+
+void r_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, void *data) {
+	B.vertex_buffer_create(vbuf, capacity, data);
+}
+
+void r_vertex_buffer_destroy(VertexBuffer *vbuf) {
+	B.vertex_buffer_destroy(vbuf);
+}
+
+void r_vertex_buffer_invalidate(VertexBuffer *vbuf) {
+	B.vertex_buffer_invalidate(vbuf);
+}
+
+void r_vertex_buffer_write(VertexBuffer *vbuf, size_t offset, size_t data_size, void *data) {
+	B.vertex_buffer_write(vbuf, offset, data_size, data);
+}
+
+void r_vertex_buffer_append(VertexBuffer *vbuf, size_t data_size, void *data) {
+	B.vertex_buffer_append(vbuf, data_size, data);
+}
+
+void r_vertex_array_create(VertexArray *varr) {
+	B.vertex_array_create(varr);
+}
+
+void r_vertex_array_destroy(VertexArray *varr) {
+	B.vertex_array_destroy(varr);
+}
+
+void r_vertex_array_attach_buffer(VertexArray *varr, VertexBuffer *vbuf, uint attachment) {
+	B.vertex_array_attach_buffer(varr, vbuf, attachment);
+}
+
+VertexBuffer* r_vertex_array_get_attachment(VertexArray *varr, uint attachment) {
+	return B.vertex_array_get_attachment(varr, attachment);
+}
+
+void r_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]) {
+	B.vertex_array_layout(varr, nattribs, attribs);
+}
+
+void r_vertex_array(VertexArray *varr) {
+	B.vertex_array(varr);
+}
+
+VertexArray* r_vertex_array_current(void) {
+	return B.vertex_array_current();
+}
+
+void r_clear(ClearBufferFlags flags) {
+	B.clear(flags);
+}
+
+void r_clear_color4(float r, float g, float b, float a) {
+	B.clear_color4(r, g, b, a);
+}
+
+Color r_clear_color_current(void) {
+	return B.clear_color_current();
+}
+
+void r_viewport_rect(IntRect rect) {
+	B.viewport_rect(rect);
+}
+
+void r_viewport_current(IntRect *out_rect) {
+	B.viewport_current(out_rect);
+}
+
+void r_vsync(VsyncMode mode) {
+	B.vsync(mode);
+}
+
+VsyncMode r_vsync_current(void) {
+	return B.vsync_current();
+}
+
+void r_swap(SDL_Window *window) {
+	B.swap(window);
+}
+
+uint8_t* r_screenshot(uint *out_width, uint *out_height) {
+	return B.screenshot(out_width, out_height);
 }

@@ -445,6 +445,8 @@ void video_init(void) {
 	video_init_sdl();
 	log_info("Using driver '%s'", SDL_GetCurrentVideoDriver());
 
+	r_init();
+
 	// Register all resolutions that are available in fullscreen
 
 	for(int s = 0; s < SDL_GetNumVideoDisplays(); ++s) {

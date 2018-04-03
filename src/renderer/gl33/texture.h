@@ -20,3 +20,10 @@ typedef struct TextureImpl {
 	GLenum fmt_internal;
 	GLenum fmt_external;
 } TextureImpl;
+
+void gl33_texture_create(Texture *tex, const TextureParams *params);
+void gl33_texture_invalidate(Texture *tex);
+void gl33_texture_fill(Texture *tex, void *image_data);
+void gl33_texture_fill_region(Texture *tex, uint x, uint y, uint w, uint h, void *image_data);
+void gl33_texture_replace(Texture *tex, TextureType type, uint w, uint h, void *image_data);
+void gl33_texture_destroy(Texture *tex);

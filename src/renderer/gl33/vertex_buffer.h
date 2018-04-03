@@ -14,3 +14,9 @@
 typedef struct VertexBufferImpl {
 	GLuint gl_handle;
 } VertexBufferImpl;
+
+void gl33_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, void *data);
+void gl33_vertex_buffer_destroy(VertexBuffer *vbuf);
+void gl33_vertex_buffer_invalidate(VertexBuffer *vbuf);
+void gl33_vertex_buffer_write(VertexBuffer *vbuf, size_t offset, size_t data_size, void *data);
+void gl33_vertex_buffer_append(VertexBuffer *vbuf, size_t data_size, void *data);

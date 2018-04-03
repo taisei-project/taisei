@@ -91,7 +91,7 @@ static void gl33_texture_set(Texture *tex, void *image_data) {
 	r_texture_ptr(unit, prev_tex);
 }
 
-void r_texture_create(Texture *tex, const TextureParams *params) {
+void gl33_texture_create(Texture *tex, const TextureParams *params) {
 	memset(tex, 0, sizeof(Texture));
 
 	tex->w = params->width;
@@ -124,16 +124,16 @@ void r_texture_create(Texture *tex, const TextureParams *params) {
 	r_texture_ptr(unit, prev_tex);
 }
 
-void r_texture_invalidate(Texture *tex) {
+void gl33_texture_invalidate(Texture *tex) {
 	gl33_texture_set(tex, NULL);
 }
 
-void r_texture_fill(Texture *tex, void *image_data) {
+void gl33_texture_fill(Texture *tex, void *image_data) {
 	// r_texture_fill_region(tex, 0, 0, tex->w, tex->h, image_data);
 	gl33_texture_set(tex, image_data);
 }
 
-void r_texture_fill_region(Texture *tex, uint x, uint y, uint w, uint h, void *image_data) {
+void gl33_texture_fill_region(Texture *tex, uint x, uint y, uint w, uint h, void *image_data) {
 	uint unit = gl33_active_texunit();
 	Texture *prev_tex = r_texture_current(unit);
 	r_texture_ptr(unit, tex);
@@ -148,7 +148,7 @@ void r_texture_fill_region(Texture *tex, uint x, uint y, uint w, uint h, void *i
 	r_texture_ptr(unit, prev_tex);
 }
 
-void r_texture_replace(Texture *tex, TextureType type, uint w, uint h, void *image_data) {
+void gl33_texture_replace(Texture *tex, TextureType type, uint w, uint h, void *image_data) {
 	assert(tex->impl != NULL);
 
 	tex->w = w;
@@ -163,7 +163,7 @@ void r_texture_replace(Texture *tex, TextureType type, uint w, uint h, void *ima
 	gl33_texture_set(tex, image_data);
 }
 
-void r_texture_destroy(Texture *tex) {
+void gl33_texture_destroy(Texture *tex) {
 	if(tex->impl) {
 		gl33_texture_deleted(tex);
 

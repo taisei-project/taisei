@@ -6,7 +6,21 @@ renderer_src = files(
 subdir('common')
 renderer_src += r_common_src
 
-renderer = get_option('renderer')
+modules = [
+    'gl33',
+    'null',
+]
 
-subdir(renderer)
-renderer_src += get_variable('@0@_src'.format(renderer))
+r_macro = []
+
+foreach m : modules
+    if get_option('r_@0@'.format(m))
+        subdir(m)
+        renderer_src += get_variable('r_@0@_src'.format(m))
+        r_macro += ['R(@0@)'.format(m)]
+    endif
+endforeach
+
+r_macro = ' '.join(r_macro)
+config.set('TAISEI_BUILDCONF_RENDERER_BACKENDS', r_macro)
+config.set_quoted('TAISEI_BUILDCONF_RENDERER_DEFAULT', get_option('r_default'))

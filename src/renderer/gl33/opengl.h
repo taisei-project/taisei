@@ -31,10 +31,10 @@ void unload_gl_library(void);
 #define GLAPIENTRY
 #endif
 
-#ifdef DEBUG
-#ifdef TAISEI_BUILDCONF_DEBUG_OPENGL
-#define DEBUG_GL
-#endif
+#if defined(DEBUG) && defined(TAISEI_BUILDCONF_DEBUG_OPENGL)
+	#define DEBUG_GL_DEFAULT 1
+#else
+	#define DEBUG_GL_DEFAULT 0
 #endif
 
 /*

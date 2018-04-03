@@ -15,7 +15,7 @@
 #include "vertex_buffer.h"
 #include "core.h"
 
-void r_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, void *data) {
+void gl33_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, void *data) {
 	capacity = topow2(capacity);
 
 	memset(vbuf, 0, sizeof(VertexBuffer));
@@ -33,7 +33,7 @@ void r_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, void *data) {
 	log_debug("Created VBO %u with %ukb of storage", vbuf->impl->gl_handle, vbuf->size / 1024);
 }
 
-void r_vertex_buffer_destroy(VertexBuffer *vbuf) {
+void gl33_vertex_buffer_destroy(VertexBuffer *vbuf) {
 	if(vbuf->impl) {
 		gl33_vertex_buffer_deleted(vbuf);
 		glDeleteBuffers(1, &vbuf->impl->gl_handle);
@@ -43,7 +43,7 @@ void r_vertex_buffer_destroy(VertexBuffer *vbuf) {
 	}
 }
 
-void r_vertex_buffer_invalidate(VertexBuffer *vbuf) {
+void gl33_vertex_buffer_invalidate(VertexBuffer *vbuf) {
 	assert(vbuf->impl != NULL);
 
 	GLuint vbo_saved = gl33_vbo_current();
@@ -55,7 +55,7 @@ void r_vertex_buffer_invalidate(VertexBuffer *vbuf) {
 	vbuf->offset = 0;
 }
 
-void r_vertex_buffer_write(VertexBuffer *vbuf, size_t offset, size_t data_size, void *data) {
+void gl33_vertex_buffer_write(VertexBuffer *vbuf, size_t offset, size_t data_size, void *data) {
 	assert(vbuf->impl != NULL);
 	assert(data_size > 0);
 	assert(offset + data_size <= vbuf->size);
@@ -67,7 +67,7 @@ void r_vertex_buffer_write(VertexBuffer *vbuf, size_t offset, size_t data_size, 
 	gl33_bind_vbo(vbo_saved);
 }
 
-void r_vertex_buffer_append(VertexBuffer *vbuf, size_t data_size, void *data) {
+void gl33_vertex_buffer_append(VertexBuffer *vbuf, size_t data_size, void *data) {
 	// log_debug("%u -> %u / %u", (uint)vbuf->offset, (uint)(vbuf->offset + data_size), (uint)vbuf->size);
 	r_vertex_buffer_write(vbuf, vbuf->offset, data_size, data);
 	vbuf->offset += data_size;

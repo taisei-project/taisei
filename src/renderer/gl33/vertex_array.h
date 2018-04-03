@@ -19,3 +19,9 @@ struct VertexArrayImpl {
 	VertexAttribFormat *attribute_layout;
 	uint num_attributes;
 };
+
+void gl33_vertex_array_create(VertexArray *varr);
+void gl33_vertex_array_destroy(VertexArray *varr);
+void gl33_vertex_array_attach_buffer(VertexArray *varr, VertexBuffer *vbuf, uint attachment);
+VertexBuffer* gl33_vertex_array_get_attachment(VertexArray *varr, uint attachment);
+void gl33_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]);

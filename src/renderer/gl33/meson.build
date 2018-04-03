@@ -1,6 +1,7 @@
 
-gl33_src = files(
+r_gl33_src = files(
     'core.c',
+    'debug.c',
     'render_target.c',
     'shader_object.c',
     'shader_program.c',

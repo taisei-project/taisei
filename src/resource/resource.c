@@ -26,16 +26,20 @@
 #include "postprocess.h"
 #include "sprite.h"
 
+#include "renderer/common/backend.h"
+
 ResourceHandler *_handlers[] = {
 	[RES_TEXTURE] = &texture_res_handler,
 	[RES_ANIM] = &animation_res_handler,
 	[RES_SFX] = &sfx_res_handler,
 	[RES_BGM] = &bgm_res_handler,
-	[RES_SHADER_OBJECT] = &shader_object_res_handler,
-	[RES_SHADER_PROGRAM] = &shader_program_res_handler,
 	[RES_MODEL] = &model_res_handler,
 	[RES_POSTPROCESS] = &postprocess_res_handler,
 	[RES_SPRITE] = &sprite_res_handler,
+
+	// FIXME: these are currently handled by the renderer backend completely
+	[RES_SHADER_OBJECT] = NULL,
+	[RES_SHADER_PROGRAM] = NULL,
 };
 
 Resources resources;
@@ -389,6 +393,9 @@ static void init_sdl_image(void) {
 }
 
 void init_resources(void) {
+	_handlers[RES_SHADER_OBJECT] = _r_backend.res_handlers.shader_object;
+	_handlers[RES_SHADER_PROGRAM] = _r_backend.res_handlers.shader_program;
+
 	init_sdl_image();
 
 	for(int i = 0; i < RES_NUMTYPES; ++i) {

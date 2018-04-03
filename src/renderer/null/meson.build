@@ -1,4 +1,4 @@
 
-null_src = files(
+r_null_src = files(
     'null.c'
 )

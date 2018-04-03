@@ -24,6 +24,4 @@ typedef struct ShaderObject {
 	ShaderObjectImpl *impl;
 } ShaderObject;
 
-extern ResourceHandler shader_object_res_handler;
-
 #define SHOBJ_PATH_PREFIX "res/shader/"

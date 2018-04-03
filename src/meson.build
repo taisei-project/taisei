@@ -57,8 +57,6 @@ elif get_option('intel_intrin')
     message('SSE 4.2 intrinsics can not be used')
 endif
 
-configure_file(configuration : config, output : 'build_config.h')
-
 taisei_src = files(
     'aniplayer.c',
     'assert.c',
@@ -112,6 +110,8 @@ subdir('resource')
 subdir('rwops')
 subdir('stages')
 subdir('vfs')
+
+configure_file(configuration : config, output : 'build_config.h')
 
 taisei_src += [
     menu_src,

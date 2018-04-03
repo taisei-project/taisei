@@ -11,6 +11,7 @@
 #include "util.h"
 #include "core.h"
 #include "shader_object.h"
+#include "debug.h"
 #include "vfs/pathutil.h"
 #include "rwops/rwops_autobuf.h"
 
@@ -215,7 +216,7 @@ static void unload_shader_object(void *vsha) {
 	free(shobj);
 }
 
-ResourceHandler shader_object_res_handler = {
+ResourceHandler gl33_shader_object_res_handler = {
 	.type = RES_SHADER_OBJECT,
 	.typename = "shader object",
 	.subdir = SHOBJ_PATH_PREFIX,

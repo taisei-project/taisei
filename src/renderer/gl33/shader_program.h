@@ -42,3 +42,9 @@ struct Uniform {
 };
 
 void gl33_sync_uniforms(ShaderProgram *prog);
+
+Uniform* gl33_shader_uniform(ShaderProgram *prog, const char *uniform_name);
+UniformType gl33_uniform_type(Uniform *uniform);
+void gl33_uniform(Uniform *uniform, uint count, const void *data);
+
+extern ResourceHandler gl33_shader_program_res_handler;

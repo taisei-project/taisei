@@ -22,13 +22,13 @@ static GLenum va_type_to_gl_type[] = {
 	[VA_UINT]   = GL_UNSIGNED_INT,
 };
 
-void r_vertex_array_create(VertexArray *varr) {
+void gl33_vertex_array_create(VertexArray *varr) {
 	memset(varr, 0, sizeof(*varr));
 	varr->impl = calloc(1, sizeof(VertexArrayImpl));
 	glGenVertexArrays(1, &varr->impl->gl_handle);
 }
 
-void r_vertex_array_destroy(VertexArray *varr) {
+void gl33_vertex_array_destroy(VertexArray *varr) {
 	if(varr->impl) {
 		gl33_vertex_array_deleted(varr);
 		glDeleteVertexArrays(1, &varr->impl->gl_handle);
@@ -104,7 +104,7 @@ static void gl33_vertex_array_update_layout(VertexArray *varr, uint attachment, 
 	gl33_bind_vao(vao_saved);
 }
 
-void r_vertex_array_attach_buffer(VertexArray *varr, VertexBuffer *vbuf, uint attachment) {
+void gl33_vertex_array_attach_buffer(VertexArray *varr, VertexBuffer *vbuf, uint attachment) {
 	assert(varr->impl != NULL);
 
 	// TODO: more efficient way of handling this?
@@ -117,7 +117,7 @@ void r_vertex_array_attach_buffer(VertexArray *varr, VertexBuffer *vbuf, uint at
 	gl33_vertex_array_update_layout(varr, attachment, varr->impl->num_attributes);
 }
 
-VertexBuffer* r_vertex_array_get_attachment(VertexArray *varr, uint attachment) {
+VertexBuffer* gl33_vertex_array_get_attachment(VertexArray *varr, uint attachment) {
 	assert(varr->impl != NULL);
 
 	if(varr->impl->num_attachments <= attachment) {
@@ -127,7 +127,7 @@ VertexBuffer* r_vertex_array_get_attachment(VertexArray *varr, uint attachment) 
 	return varr->impl->attachments[attachment];
 }
 
-void r_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]) {
+void gl33_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]) {
 	assert(varr->impl != NULL);
 
 	uint old_nattribs = varr->impl->num_attributes;

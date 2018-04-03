@@ -272,7 +272,7 @@ int main(int argc, char **argv) {
 	init_fonts();
 	video_init();
 	init_resources();
-	r_init();
+	r_post_init();
 	draw_loading_screen();
 	audio_init();
 	load_resources();

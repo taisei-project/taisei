@@ -94,6 +94,10 @@ typedef struct Texture {
 	TextureImpl *impl;
 } Texture;
 
+enum {
+	R_MAX_TEXUNITS = 8,
+};
+
 typedef enum RenderTargetAttachment {
 	RENDERTARGET_ATTACHMENT_DEPTH,
 	RENDERTARGET_ATTACHMENT_COLOR0,
@@ -364,11 +368,12 @@ SDL_Window* r_create_window(const char *title, int x, int y, int w, int h, uint3
 	attr_nonnull(1) attr_nodiscard;
 
 /*
- *	TODO: Document these.
+ *	TODO: Document these, and put them in an order that makes a little bit of sense.
  */
 
-void _r_init(void); // use r_init() instead
-void _r_shutdown(void); // use r_shutdown() instead
+void r_init(void);
+void r_post_init(void);
+void r_shutdown(void);
 
 bool r_supports(RendererFeature feature);
 
@@ -443,13 +448,6 @@ void r_swap(SDL_Window *window);
 
 uint8_t* r_screenshot(uint *out_width, uint *out_height) attr_nodiscard attr_nonnull(1, 2);
 
-/*
- *	Provided by the API module
- */
-
-void r_init(void);
-void r_shutdown(void);
-
 void r_mat_mode(MatrixMode mode);
 void r_mat_push(void);
 void r_mat_pop(void);
@@ -492,6 +490,10 @@ VertexAttribFormat* r_vertex_attrib_format_interleaved(
 	VertexAttribFormat formats[nattribs],
 	uint attachment
 ) attr_nonnull(2, 3);
+
+/*
+ * Small convenience wrappers
+ */
 
 static inline attr_must_inline
 void r_enable(RendererCapability cap) {

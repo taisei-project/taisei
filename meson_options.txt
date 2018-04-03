@@ -100,8 +100,22 @@ option(
 )
 
 option(
-    'renderer',
+    'r_default',
     type : 'combo',
     choices : ['gl33', 'null'],
-    description : 'Which rendering backend to use'
+    description : 'Which rendering backend to use by default'
+)
+
+option(
+    'r_gl33',
+    type : 'boolean',
+    value : true,
+    description : 'Build the OpenGL 3.3 Core renderer'
+)
+
+option(
+    'r_null',
+    type : 'boolean',
+    value : true,
+    description : 'Build the no-op renderer (nothing is displayed)'
 )

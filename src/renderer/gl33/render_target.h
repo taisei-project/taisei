@@ -20,3 +20,8 @@ struct RenderTargetImpl {
 };
 
 void gl33_target_initialize(RenderTarget *target);
+
+void gl33_target_create(RenderTarget *target);
+void gl33_target_attach(RenderTarget *target, Texture *tex, RenderTargetAttachment attachment);
+Texture* gl33_target_get_attachment(RenderTarget *target, RenderTargetAttachment attachment);
+void gl33_target_destroy(RenderTarget *target);
