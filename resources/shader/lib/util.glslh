@@ -28,11 +28,11 @@ float min3(vec3 c) {
     return min(c.x, min(c.y, c.z));
 }
 
-float smoothstep(float x) { // TODO: use glsl builtin function
+float _smoothstep(float x) { // TODO: use glsl builtin function
     return 1.0/(exp(8.*x)+1.0);
 }
 
-float smoothstep(float x, float b) { // TODO: use glsl smoothstep
+float _smoothstep(float x, float b) { // TODO: use glsl smoothstep
     x = clamp(x/b - 0.5, 0.0, 1.0);
     return x*x*(3.0 - 2.0*x);
 }

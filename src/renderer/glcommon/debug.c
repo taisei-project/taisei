@@ -11,7 +11,7 @@
 #include "debug.h"
 #include "util.h"
 
-static void APIENTRY gl33_debug(
+static void APIENTRY glcommon_debug(
 	GLenum source,
 	GLenum type,
 	GLuint id,
@@ -67,7 +67,7 @@ static void APIENTRY gl33_debug(
 	log_custom(lvl, "[%s, %s, %s, id:%i] %s", strsrc, strtype, strsev, id, message);
 }
 
-void gl33_debug_enable(void) {
+void glcommon_debug_enable(void) {
 	if(!glext.debug_output) {
 		log_warn("OpenGL debugging is not supported on your system");
 		return;
@@ -76,17 +76,17 @@ void gl33_debug_enable(void) {
 	GLuint unused = 0;
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-	glDebugMessageCallback(gl33_debug, NULL);
+	glDebugMessageCallback(glcommon_debug, NULL);
 	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, &unused, true);
 	log_info("Enabled OpenGL debugging");
 }
 
-void gl33_debug_object_label(GLenum identifier, GLuint name, const char *label) {
-	if(glext.KHR_debug) {
+void glcommon_debug_object_label(GLenum identifier, GLuint name, const char *label) {
+	if(glext.debug_output & (TSGL_EXTFLAG_NATIVE | TSGL_EXTFLAG_KHR)) {
 		glObjectLabel(identifier, name, strlen(label), label);
 	}
 }
 
-bool gl33_debug_requested(void) {
+bool glcommon_debug_requested(void) {
 	return getenvint("TAISEI_GL_DEBUG", DEBUG_GL_DEFAULT);
 }

@@ -5,41 +5,26 @@ from taiseilib.common import (
     update_text_file,
 )
 
-import re, argparse
+import re, argparse, itertools
 from pathlib import Path
 
+regex_glcall = re.compile(r'(gl[A-Z][a-zA-Z0-9]+)\(|ts(gl[A-Z][a-zA-Z0-9]+)')
+regex_glproto_template = r'(^GL_?API(?:CALL)?\s+([a-zA-Z_0-9\s]+?\**)\s*((?:GL_?)?APIENTRY)\s+%s\s*\(\s*(.*?)\s*\)\s*;)'
 
-profiles = {
-    'core': {
-        'headers': [
-            'SDL_opengl.h',
-            'SDL_opengl_glext.h',
-        ]
-    },
-    'es': {
-        'headers': [
-            'SDL_opengles2_gl2.h',
-            'SDL_opengles2_gl2ext.h',
-        ]
-    }
-}
-
-regex_glcall = re.compile(r'(gl[A-Z][a-zA-Z0-9]+)\(')
-regex_glproto_template = r'(^GLAPI\s+([a-zA-Z_0-9\s]+?\**)\s*((?:GL)?APIENTRY)\s+%s\s*\(\s*(.*?)\s*\);)'
 
 def write_header(args):
-    print(args)
-
     header = args.header
     srcdir = args.dir
     glfuncs = set(args.functions or [])
-    idir = args.sdl_headers
-    glheaders = '\n'.join((idir / h).read_text() for h in profiles[args.profile]['headers'])
+    glheaders = set(args.gl_headers or [])
 
-    print(srcdir)
+    for h in glheaders:
+        print("Using", h)
+
+    glheaders = '\n'.join(h.read_text() for h in glheaders)
 
     for src in srcdir.glob('**/*.c'):
-        for func in regex_glcall.findall(src.read_text()):
+        for func in filter(None, itertools.chain(*regex_glcall.findall(src.read_text()))):
             glfuncs.add(func)
 
     glfuncs = sorted(glfuncs)
@@ -51,7 +36,7 @@ def write_header(args):
         try:
             proto, rtype, callconv, params = re.findall(regex_glproto_template % func, glheaders, re.DOTALL|re.MULTILINE)[0]
         except IndexError:
-            print("Function '%s' not found in the GL headers. Either it really does not exist, or this script is bugged. Please check the opengl headers in %s\nUpdate aborted." % (func, idir))
+            print("Function '%s' not found in the GL headers. Either it really does not exist, or this script is bugged. Update aborted." % func)
             exit(1)
 
         proto = re.sub(r'\s+', ' ', proto, re.DOTALL|re.MULTILINE)
@@ -62,6 +47,8 @@ def write_header(args):
 
         typedefs.append(typedef)
         prototypes.append(proto)
+
+        print('Found %-50s: %s' % (func, proto))
 
     text = header.read_text()
 
@@ -97,16 +84,11 @@ def main(args):
         type=Path,
     )
 
-    parser.add_argument('--sdl-headers', '-I',
-        help='Where to look for the SDL headers (default: /usr/include/SDL2)',
-        default=Path('/usr/include/SDL2'),
+    parser.add_argument('--gl-header', '-H',
+        help='Header to look up functions in; may be specified multiple times',
         type=Path,
-    )
-
-    parser.add_argument('--profile', '-p',
-        help='Which OpenGL profile to target',
-        default='core',
-        choices=list(profiles),
+        dest='gl_headers',
+        action='append',
     )
 
     parser.add_argument('--function', '-f',

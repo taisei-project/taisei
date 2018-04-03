@@ -12,6 +12,7 @@
 #include "../api.h"
 #include "opengl.h"
 #include "resource/texture.h"
+#include "../common/backend.h"
 
 // Internal helper functions
 
@@ -42,3 +43,5 @@ void gl33_vertex_array_deleted(VertexArray *varr);
 void gl33_texture_deleted(Texture *tex);
 void gl33_render_target_deleted(RenderTarget *target);
 void gl33_shader_deleted(ShaderProgram *prog);
+
+extern RendererBackend _r_backend_gl33;

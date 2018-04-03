@@ -2,7 +2,7 @@
 #ifndef DEFS_H
 #define DEFS_H
 
-#if defined(GL_ARB_explicit_uniform_location) || defined(HAVE_GL_ARB_explicit_uniform_location)
+#if defined(GL_ARB_explicit_uniform_location)
     #extension GL_ARB_explicit_uniform_location : require
 #endif
 

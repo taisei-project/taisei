@@ -36,18 +36,12 @@ static GLuint r_wrap_to_gl_wrap(TextureWrapMode mode) {
 	return map[mode];
 }
 
-typedef struct TexTypeInfo {
-	GLuint internal_fmt;
-	GLuint external_fmt;
-	size_t pixel_size;
-} TexTypeInfo;
-
-static TexTypeInfo* tex_type_info(TextureType type) {
-	static TexTypeInfo map[] = {
-		[TEX_TYPE_DEFAULT]   = { GL_RGBA8,             GL_RGBA,            4 },
-		[TEX_TYPE_RGB]       = { GL_RGB8,              GL_RGBA,            3 },
-		[TEX_TYPE_RGBA]      = { GL_RGBA8,             GL_RGBA,            4 },
-		[TEX_TYPE_DEPTH]     = { GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, 1 },
+GLTextureTypeInfo* gl33_texture_type_info(TextureType type) {
+	static GLTextureTypeInfo map[] = {
+		[TEX_TYPE_DEFAULT]   = { GL_RGBA8,             GL_RGBA,            GL_UNSIGNED_BYTE,  4 },
+		[TEX_TYPE_RGB]       = { GL_RGB8,              GL_RGBA,            GL_UNSIGNED_BYTE,  3 },
+		[TEX_TYPE_RGBA]      = { GL_RGBA8,             GL_RGBA,            GL_UNSIGNED_BYTE,  4 },
+		[TEX_TYPE_DEPTH]     = { GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE,  1 },
 	};
 
 	assert((uint)type < sizeof(map)/sizeof(*map));
@@ -60,7 +54,7 @@ static void gl33_texture_set_assume_active(Texture *tex, void *image_data) {
 	gl33_bind_pbo(tex->impl->pbo);
 
 	if(tex->impl->pbo) {
-		size_t s = tex->w * tex->h * tex_type_info(tex->type)->pixel_size;
+		size_t s = tex->w * tex->h * GLVT.texture_type_info(tex->type)->pixel_size;
 		glBufferData(GL_PIXEL_UNPACK_BUFFER, s, image_data, GL_STREAM_DRAW);
 		image_data = NULL;
 	}
@@ -68,12 +62,12 @@ static void gl33_texture_set_assume_active(Texture *tex, void *image_data) {
 	glTexImage2D(
 		GL_TEXTURE_2D,
 		0,
-		tex->impl->fmt_internal,
+		tex->impl->type_info->internal_fmt,
 		tex->w,
 		tex->h,
 		0,
-		tex->impl->fmt_external,
-		GL_UNSIGNED_BYTE,
+		tex->impl->type_info->external_fmt,
+		tex->impl->type_info->component_type,
 		image_data
 	);
 
@@ -113,10 +107,9 @@ void gl33_texture_create(Texture *tex, const TextureParams *params) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(params->filter.downscale));
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(params->filter.upscale));
 
-	tex->impl->fmt_internal = tex_type_info(params->type)->internal_fmt;
-	tex->impl->fmt_external = tex_type_info(params->type)->external_fmt;
+	tex->impl->type_info = GLVT.texture_type_info(params->type);
 
-	if(params->stream) {
+	if(params->stream && glext.pixel_buffer_object) {
 		glGenBuffers(1, &tex->impl->pbo);
 	}
 
@@ -141,7 +134,7 @@ void gl33_texture_fill_region(Texture *tex, uint x, uint y, uint w, uint h, void
 	glTexSubImage2D(
 		GL_TEXTURE_2D, 0,
 		x, y, w, h,
-		tex_type_info(tex->type)->external_fmt,
+		GLVT.texture_type_info(tex->type)->external_fmt,
 		GL_UNSIGNED_BYTE,
 		image_data
 	);
@@ -156,8 +149,7 @@ void gl33_texture_replace(Texture *tex, TextureType type, uint w, uint h, void *
 
 	if(type != tex->type) {
 		tex->type = type;
-		tex->impl->fmt_internal = tex_type_info(type)->internal_fmt;
-		tex->impl->fmt_external = tex_type_info(type)->external_fmt;
+		tex->impl->type_info = GLVT.texture_type_info(type);
 	}
 
 	gl33_texture_set(tex, image_data);

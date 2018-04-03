@@ -102,7 +102,7 @@ option(
 option(
     'r_default',
     type : 'combo',
-    choices : ['gl33', 'null'],
+    choices : ['gl33', 'gles20', 'gles30', 'null'],
     description : 'Which rendering backend to use by default'
 )
 
@@ -111,6 +111,20 @@ option(
     type : 'boolean',
     value : true,
     description : 'Build the OpenGL 3.3 Core renderer'
+)
+
+option(
+    'r_gles20',
+    type : 'boolean',
+    value : true,
+    description : 'Build the OpenGL ES 2.0 renderer'
+)
+
+option(
+    'r_gles30',
+    type : 'boolean',
+    value : true,
+    description : 'Build the OpenGL ES 3.0 renderer'
 )
 
 option(

@@ -264,11 +264,11 @@ Summary:
     )
 
 subdir('misc')
+subdir('external')
 subdir('resources')
 subdir('doc')
 subdir('xdg')
 subdir('scripts')
-subdir('external')
 subdir('src')
 
 message(summary)

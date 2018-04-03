@@ -355,6 +355,9 @@ static void video_quality_callback(ConfigIndex idx, ConfigValue v) {
 }
 
 static void video_init_sdl(void) {
+	// XXX: workaround for an SDL bug: https://bugzilla.libsdl.org/show_bug.cgi?id=4127
+	SDL_SetHintWithPriority(SDL_HINT_FRAMEBUFFER_ACCELERATION, "0", SDL_HINT_OVERRIDE);
+
 	uint num_drivers = SDL_GetNumVideoDrivers();
 	void *buf;
 	SDL_RWops *out = SDL_RWAutoBuffer(&buf, 256);

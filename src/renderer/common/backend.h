@@ -100,6 +100,8 @@ typedef struct RendererBackend {
 		ResourceHandler *shader_object;
 		ResourceHandler *shader_program;
 	} res_handlers;
+
+	void *custom;
 } RendererBackend;
 
 extern RendererBackend *_r_backends[];

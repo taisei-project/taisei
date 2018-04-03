@@ -11,7 +11,7 @@
 #include "core.h"
 #include "shader_program.h"
 #include "shader_object.h"
-#include "debug.h"
+#include "../glcommon/debug.h"
 #include "../api.h"
 
 Uniform* gl33_shader_uniform(ShaderProgram *prog, const char *uniform_name) {
@@ -344,7 +344,7 @@ static void* load_shader_program_end(void *opaque, const char *path, uint flags)
 	ldata.shprog.gl_handle = glCreateProgram();
 
 	char *basename = resource_util_basename(SHPROG_PATH_PREFIX, path);
-	gl33_debug_object_label(GL_PROGRAM, ldata.shprog.gl_handle, basename);
+	glcommon_debug_object_label(GL_PROGRAM, ldata.shprog.gl_handle, basename);
 	free(basename);
 
 	for_each_shobject(&ldata, attach_shobject);

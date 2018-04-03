@@ -6,7 +6,9 @@
  * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
 #include "taisei.h"
 
-#include "../glcommon/opengl.h"
+#include "../common/backend.h"
+
+extern RendererBackend _r_backend_gles20;
+extern RendererBackend _r_backend_gles30;

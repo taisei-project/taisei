@@ -51,8 +51,9 @@ void _r_backend_init(void) {
 		backend = TAISEI_BUILDCONF_RENDERER_DEFAULT;
 	}
 
-	_r_set_backend(_r_find_backend(backend));
-	_r_backend.funcs.init();
+	RendererBackend *bptr = _r_find_backend(backend);
+	bptr->funcs.init();
+	_r_set_backend(bptr);
 
 	initialized = true;
 }

@@ -10,6 +10,6 @@
 
 #include "opengl.h"
 
-bool gl33_debug_requested(void);
-void gl33_debug_enable(void);
-void gl33_debug_object_label(GLenum identifier, GLuint name, const char *label);
+bool glcommon_debug_requested(void);
+void glcommon_debug_enable(void);
+void glcommon_debug_object_label(GLenum identifier, GLuint name, const char *label);

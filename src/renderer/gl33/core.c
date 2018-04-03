@@ -18,7 +18,8 @@
 #include "render_target.h"
 #include "vertex_buffer.h"
 #include "vertex_array.h"
-#include "debug.h"
+#include "../glcommon/debug.h"
+#include "../glcommon/vtable.h"
 #include "resource/resource.h"
 #include "resource/model.h"
 #include "glm.h"
@@ -193,15 +194,16 @@ static void gl33_init_context(SDL_Window *window) {
 		log_fatal("Could not create the OpenGL context: %s", SDL_GetError());
 	}
 
-	load_gl_functions();
-	check_gl_extensions();
+	glcommon_load_functions();
+	glcommon_check_extensions();
 
-	if(gl33_debug_requested()) {
-		gl33_debug_enable();
+	if(glcommon_debug_requested()) {
+		glcommon_debug_enable();
 	}
 
 	R.texunits.active = R.texunits.indexed;
 
+	// TODO: move this into generic r_init
 	r_enable(RCAP_DEPTH_TEST);
 	r_enable(RCAP_DEPTH_WRITE);
 	r_enable(RCAP_CULL_FACE);
@@ -215,10 +217,20 @@ static void gl33_init_context(SDL_Window *window) {
 	r_clear_color4(0, 0, 0, 1);
 	r_clear(CLEAR_ALL);
 
-	R.features |= r_feature_bit(RFEAT_DRAW_INSTANCED);
+	if(glext.instanced_arrays) {
+		R.features |= r_feature_bit(RFEAT_DRAW_INSTANCED);
 
-	if(glext.ARB_base_instance) {
-		R.features |= r_feature_bit(RFEAT_DRAW_INSTANCED_BASE_INSTANCE);
+		if(glext.base_instance) {
+			R.features |= r_feature_bit(RFEAT_DRAW_INSTANCED_BASE_INSTANCE);
+		}
+	}
+
+	if(glext.depth_texture) {
+		R.features |= r_feature_bit(RFEAT_DEPTH_TEXTURE);
+	}
+
+	if(glext.draw_buffers) {
+		R.features |= r_feature_bit(RFEAT_RENDERTARGET_MULTIPLE_OUTPUTS);
 	}
 }
 
@@ -438,6 +450,10 @@ void gl33_bind_vao(GLuint vao) {
 }
 
 void gl33_bind_pbo(GLuint pbo) {
+	if(!glext.pixel_buffer_object) {
+		return;
+	}
+
 	if(pbo != R.pbo) {
 		// r_flush_sprites();
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
@@ -548,11 +564,11 @@ void gl33_vertex_array_deleted(VertexArray *varr) {
  */
 
 static void gl33_init(void) {
-	load_gl_library();
+	glcommon_load_library();
 
 	SDL_GLcontextFlag ctxflags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG;
 
-	if(gl33_debug_requested()) {
+	if(glcommon_debug_requested()) {
 		ctxflags |= SDL_GL_CONTEXT_DEBUG_FLAG;
 	}
 
@@ -568,7 +584,7 @@ static void gl33_post_init(void) {
 }
 
 static void gl33_shutdown(void) {
-	unload_gl_library();
+	glcommon_unload_library();
 	SDL_GL_DeleteContext(R.gl_context);
 }
 
@@ -578,7 +594,7 @@ static SDL_Window* gl33_create_window(const char *title, int x, int y, int w, in
 	if(R.gl_context) {
 		SDL_GL_MakeCurrent(window, R.gl_context);
 	} else {
-		gl33_init_context(window);
+		GLVT.init_context(window);
 	}
 
 	return window;
@@ -872,5 +888,11 @@ RendererBackend _r_backend_gl33 = {
 	.res_handlers = {
 		.shader_object = &gl33_shader_object_res_handler,
 		.shader_program = &gl33_shader_program_res_handler,
+	},
+	.custom = &(GLBackendData) {
+		.vtable = {
+			.texture_type_info = gl33_texture_type_info,
+			.init_context = gl33_init_context,
+		}
 	},
 };

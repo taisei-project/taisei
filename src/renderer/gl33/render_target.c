@@ -74,17 +74,19 @@ void gl33_target_initialize(RenderTarget *target) {
 	if(!target->impl->initialized) {
 		// NOTE: this render target is guaranteed to be active at this point
 
-		GLenum drawbufs[RENDERTARGET_MAX_COLOR_ATTACHMENTS];
+		if(glext.draw_buffers) {
+			GLenum drawbufs[RENDERTARGET_MAX_COLOR_ATTACHMENTS];
 
-		for(int i = 0; i < RENDERTARGET_MAX_COLOR_ATTACHMENTS; ++i) {
-			if(target->impl->attachments[RENDERTARGET_ATTACHMENT_COLOR0 + i] != NULL) {
-				drawbufs[i] = GL_COLOR_ATTACHMENT0 + i;
-			} else {
-				drawbufs[i] = GL_NONE;
+			for(int i = 0; i < RENDERTARGET_MAX_COLOR_ATTACHMENTS; ++i) {
+				if(target->impl->attachments[RENDERTARGET_ATTACHMENT_COLOR0 + i] != NULL) {
+					drawbufs[i] = GL_COLOR_ATTACHMENT0 + i;
+				} else {
+					drawbufs[i] = GL_NONE;
+				}
 			}
-		}
 
-		glDrawBuffers(RENDERTARGET_MAX_COLOR_ATTACHMENTS, drawbufs);
+			glDrawBuffers(RENDERTARGET_MAX_COLOR_ATTACHMENTS, drawbufs);
+		}
 
 		Color cc_saved = r_clear_color_current();
 		r_clear_color4(0, 0, 0, 0);

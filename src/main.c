@@ -127,11 +127,18 @@ static int run_tests(void) {
 	return 0;
 }
 
+void sdl_log(void *userdata, int category, SDL_LogPriority priority, const char *message) {
+	log_debug("[%i %i] %s", category, priority, message);
+}
+
 static void init_sdl(void) {
 	SDL_version v;
 
 	if(SDL_Init(SDL_INIT_EVENTS) < 0)
 		log_fatal("SDL_Init() failed: %s", SDL_GetError());
+
+	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_DEBUG);
+	SDL_LogSetOutputFunction(sdl_log, NULL);
 
 	log_info("SDL initialized");
 

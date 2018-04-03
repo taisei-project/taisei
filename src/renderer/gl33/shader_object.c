@@ -11,7 +11,7 @@
 #include "util.h"
 #include "core.h"
 #include "shader_object.h"
-#include "debug.h"
+#include "../glcommon/debug.h"
 #include "vfs/pathutil.h"
 #include "rwops/rwops_autobuf.h"
 
@@ -203,7 +203,7 @@ static void* load_shader_object_end(void *opaque, const char *path, uint flags) 
 	GLuint gl_handle = ldata->shobj.impl->gl_handle;
 
 	char *basename = resource_util_basename(SHOBJ_PATH_PREFIX, path);
-	gl33_debug_object_label(GL_SHADER, gl_handle, basename);
+	glcommon_debug_object_label(GL_SHADER, gl_handle, basename);
 	free(basename);
 
 	// log_debug("Source code for %s:\n%s", path, ldata->src);
