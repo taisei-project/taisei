@@ -54,7 +54,7 @@ static bool include_shader(const char *path, SDL_RWops *dest, int include_level,
 		return false;
 	}
 
-	char linebuf[256]; // TODO: remove this dumb limitation
+	char linebuf[1024]; // TODO: remove this dumb limitation
 	int lineno = 1;
 	while(SDL_RWgets(stream, linebuf, sizeof(linebuf))) {
 		const char include[] = "#include";

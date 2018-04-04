@@ -1,6 +1,6 @@
 #version 330 core
 
-#include "interface/sprite.glslh"
+#include "interface/standard.glslh"
 
 void main(void) {
 	vec4 texel = texture(tex, texCoord);

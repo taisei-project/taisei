@@ -602,7 +602,13 @@ char* SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize) {
 	if(ptr == buf)
 		return NULL;
 
-	*ptr = 0;
+	if(ptr > end) {
+		*end = 0;
+		log_warn("Line too long (%zu bytes max): %s", bufsize, buf);
+	} else {
+		*ptr = 0;
+	}
+
 	return buf;
 }
 

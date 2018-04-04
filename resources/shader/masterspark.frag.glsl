@@ -1,7 +1,7 @@
 #version 330 core
 
 #include "lib/util.glslh"
-#include "interface/sprite.glslh"
+#include "interface/standard.glslh"
 
 uniform(1) float t;
 
