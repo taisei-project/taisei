@@ -183,12 +183,11 @@ static int boss_glow(Projectile *p, int t) {
 }
 
 static Projectile* spawn_boss_glow(Boss *boss, Color clr, int timeout) {
-	// XXX: this is required because the Sprite returned by animation_get_frame is only temporarily valid
-	Sprite *s = calloc(1,sizeof(Sprite));
-	Sprite *tmp = aniplayer_get_frame(&boss->ani);
-	memcpy(s, tmp, sizeof(Sprite));
+	// XXX: memdup is required because the Sprite returned by animation_get_frame is only temporarily valid
+	// XXX: this used to set size to 9000 to ensure it’s below everything but now that does not work anymore
+	//      maybe we can use a custom insertion rule? 
 	return PARTICLE(
-		.sprite_ptr = s,
+		.sprite_ptr = memdup(aniplayer_get_frame(&boss->ani), sizeof(Sprite)),
 		// this is in sync with the boss position oscillation
 		.pos = boss->pos + 6 * sin(global.frames/25.0) * I,
 		.color = clr,

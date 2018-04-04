@@ -554,6 +554,8 @@ void iku_bolts2(Boss *b, int time) {
 	FROM_TO(0, 400, 60) {
 		aniplayer_queue(&b->ani, (_i&1) ? "dashdown_left" : "dashdown_right",1);
 		aniplayer_queue(&b->ani, "main", 0);
+		create_lasercurve3c(creal(global.plr.pos), 100, 200, rgb(0.3,1,1), bolts2_laser, global.plr.pos, (_i&1)*2-1, global.diff);
+		play_sound_ex("laser1", 0, false); 
 	}
 
 	FROM_TO_SND("shot1_loop", 0, 400, 5-global.diff)

@@ -52,9 +52,11 @@ static bool animation_parse_sequence_spec(AniSequence *seq, const char *specstr)
 	while(isspace(*p))
 		p++;
 
-	#define ANISEQ_SPRITEIDX 0
-	#define ANISEQ_DELAY 1
-	#define ANISEQ_MIRROR 2
+	enum {
+		ANISEQ_SPRITEIDX,
+		ANISEQ_DELAY,
+		ANISEQ_MIRROR
+	};
 
 	int delay = 1; // standard frame duration: one frame.
 	bool mirrored = false;
@@ -79,7 +81,6 @@ static bool animation_parse_sequence_spec(AniSequence *seq, const char *specstr)
 		int arg = strtol(p,&endptr,10);
 
 		bool no_arg = endptr-p == 0;
-		log_info("cmd: %d %d %d", state, arg, no_arg);
 
 		if(*endptr != '\0' && !isspace(*endptr)) {
 			log_warn("AniSequence syntax error: '%s'[%d] contains unexpected character '%c'",specstr,command,*endptr);
@@ -132,9 +133,6 @@ static bool animation_parse_sequence_spec(AniSequence *seq, const char *specstr)
 		}
 		command++;
 	}
-	#undef ANISEQ_SPRITEIDX
-	#undef ANISEQ_DELAY
-	#undef ANISEQ_MIRROR
 
 	if(seq->length <= 0) {
 		log_warn("AniSequence syntax error: '%s' empty sequence.",specstr);
@@ -198,8 +196,8 @@ void* load_animation_begin(const char *filename, uint flags) {
 		return NULL;
 	}
 
-	if(ani->sprite_count < 0) {
-		log_warn("Animation sprite count of '%s' is negative?", name);
+	if(ani->sprite_count <= 0) {
+		log_warn("Animation sprite count of '%s' must be positive integer?", name);
 		hashtable_foreach(ani->sequences, free_sequence_callback, NULL);
 		hashtable_free(ani->sequences);
 		free(ani);

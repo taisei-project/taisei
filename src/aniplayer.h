@@ -37,7 +37,7 @@
 //
 // Examples:
 //
-// 1. make hina spin one loop
+// 1. make Hina spin one loop
 //
 // 	aniplayer_queue(&h->ani, "guruguru", 1);
 // 	aniplayer_queue(&h->ani, "main", 0);
@@ -48,14 +48,14 @@
 // not make much sense. If you want to play n-loops you need to provide
 // something to switch to.
 //
-// 2. make cirno flex for 30 frames
+// 2. make Cirno flex for 30 frames
 //
 // 	aniplayer_queue_frames(&c->ani, "(9)", 30);
-// 	aniplayer_queue(&c->ani, "main");
+// 	aniplayer_queue(&c->ani, "main", 0);
 //
 // Same story. This flavor is also useful in some spells.
 //
-// 3. make cirno flex for the whole spell
+// 3. make Cirno flex for the whole spell
 //
 //	aniplayer_queue(&c->ani, "(9)", 0);
 //
@@ -74,7 +74,7 @@ struct AniQueueEntry{
 	LIST_INTERFACE(AniQueueEntry);
 
 	AniSequence *sequence;
-	int clock; // frame counter. if clock == duration it’s over
+	int clock; // frame counter. As long as clock < duration this entry will keep running 
 	int duration; // number of frames this sequence will be drawn
 };
 
@@ -102,7 +102,7 @@ AniQueueEntry *aniplayer_hard_switch(AniPlayer *plr, const char *seqname, int mi
 // Useful in the stage code.
 AniQueueEntry *aniplayer_queue_frames(AniPlayer *plr, const char *seqname, int minframes) attr_nonnull(1);
 
-// AniPlayers use need to be actively updated in order to tick (unlike most of
-// the rest of the game which just uses global.frames as the counter). So you
+// AniPlayers need to be actively updated in order to tick (unlike most of
+// the rest of the game which just uses global.frames as a counter). So you
 // need to call this function once per frame to make an animation move.
 void aniplayer_update(AniPlayer *plr) attr_nonnull(1);
