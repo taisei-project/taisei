@@ -14,9 +14,6 @@
     #define uniform(l) uniform
 #endif
 
-#define CAT(a, b) PRIMITIVE_CAT(a, b)
-#define PRIMITIVE_CAT(a, b) a ## b
-
 #if __VERSION__ >= 420
     #define in(l) LOC(l) in
     #define out(l) LOC(l) out
