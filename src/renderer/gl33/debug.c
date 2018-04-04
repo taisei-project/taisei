@@ -52,10 +52,6 @@ static void APIENTRY gl33_debug(
 		case GL_DEBUG_SEVERITY_NOTIFICATION:    strsev  = "notify";                        break;
 	}
 
-	if(source == GL_DEBUG_SOURCE_SHADER_COMPILER && lvl1 == LOG_FATAL) {
-		lvl1 = LOG_WARN;
-	}
-
 	lvl = lvl1 > lvl0 ? lvl1 : lvl0;
 
 	if(source == GL_DEBUG_SOURCE_SHADER_COMPILER && type == GL_DEBUG_TYPE_ERROR) {
