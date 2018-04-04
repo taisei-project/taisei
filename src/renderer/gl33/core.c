@@ -714,7 +714,7 @@ static void gl33_target(RenderTarget *target) {
 	R.render_target.pending = target;
 }
 
-static RenderTarget *gl33_target_current() {
+static RenderTarget *gl33_target_current(void) {
 	return R.render_target.pending;
 }
 
