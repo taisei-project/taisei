@@ -21,7 +21,7 @@ Dependencies
 -  libzip >= 1.0
 -  libpng >= 1.5.0
 -  libjpeg
--  OpenGL >= 2.1
+-  OpenGL >= 3.3
 
 Build-only dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^
