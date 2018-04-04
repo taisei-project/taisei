@@ -1,0 +1,39 @@
+
+#ifndef I_SPRITE_H
+#define I_SPRITE_H
+
+#include "../lib/defs.glslh"
+
+#ifdef VERT_STAGE
+/*
+ * Per-vertex attributes
+ */
+attribute(0) vec2  vertPos;
+// 1 - vec3 normal (not used)
+attribute(2) vec2  vertTexCoord;
+
+/*
+ * Per-instance attributes
+ */
+attribute(3) mat4  spriteVMTransform;
+// 4
+// 5
+// 6
+attribute(7) vec4  spriteRGBA;
+attribute(8) vec4  spriteTexRegion;
+attribute(9) float spriteCustomParam;
+#endif
+
+#ifdef FRAG_STAGE
+out(0) vec4 fragColor;
+#endif
+
+uniform(0) sampler2D tex;
+
+varying(0) vec2 texCoordRaw;
+varying(1) vec2 texCoord;
+varying(2) vec4 texRegion;
+varying(3) vec4 color;
+varying(4) float customParam;
+
+#endif

@@ -441,8 +441,24 @@ const char* resource_util_filename(const char *path) {
 	return path;
 }
 
+static void* preload_shaders(const char *path, void *arg) {
+	if(!_handlers[RES_SHADER_PROGRAM]->procs.check(path)) {
+		return NULL;
+	}
+
+	char *name = resource_util_basename(SHPROG_PATH_PREFIX, path);
+	preload_resource(RES_SHADER_PROGRAM, name, RESF_PERMANENT);
+
+	return NULL;
+}
+
 void load_resources(void) {
 	menu_preload();
+
+	if(getenv("TAISEI_PRELOAD_SHADERS")) {
+		log_warn("Loading all shaders now due to TAISEI_PRELOAD_SHADERS");
+		vfs_dir_walk(SHPROG_PATH_PREFIX, preload_shaders, NULL);
+	}
 }
 
 void free_resources(bool all) {

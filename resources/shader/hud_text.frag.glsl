@@ -1,16 +1,13 @@
 #version 330 core
 
-uniform vec4 colorAtop;
-uniform vec4 colorAbot;
-uniform vec4 colorBtop;
-uniform vec4 colorBbot;
-uniform vec4 colortint;
-uniform float split;
+#include "interface/standard.glslh"
 
-uniform sampler2D tex;
-in vec2 texCoord;
-in vec2 texCoordRaw;
-out vec4 fragColor;
+uniform(1) vec4 colorAtop;
+uniform(2) vec4 colorAbot;
+uniform(3) vec4 colorBtop;
+uniform(4) vec4 colorBbot;
+uniform(5) vec4 colortint;
+uniform(6) float split;
 
 void main(void) {
 	vec4 texel = texture(tex, texCoord);

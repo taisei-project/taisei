@@ -1,10 +1,6 @@
 #version 330 core
 
-in vec2 texCoord;
-in vec2 texCoordRaw;
-out vec4 fragColor;
-
-uniform sampler2D tex;
+#include "interface/standard.glslh"
 
 void main(void) {
 	vec4 clr = texture(tex, texCoord);

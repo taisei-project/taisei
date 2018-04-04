@@ -1,19 +1,7 @@
 #version 330 core
 
-#include "lib/render_context.glslh"
-#include "lib/uv_to_region.glslh"
-
-uniform sampler2D tex;
-
-in vec2 texCoord;
-in vec2 texCoordRaw;
-in vec4 color;
-in float customParam;
-in vec4 texRegion;
-
-out vec4 fragColor;
-
-float pi = 2.0 * asin(1.0);
+#include "lib/util.glslh"
+#include "interface/sprite.glslh"
 
 vec2 g(vec2 x, float p) {
     return 0.5 * (pow(2.0 * x - 1.0, vec2(p)) + 1.0);

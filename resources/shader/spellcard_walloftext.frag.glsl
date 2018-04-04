@@ -1,18 +1,7 @@
 #version 330 core
 
-uniform sampler2D tex;
-uniform float w,h;
-uniform float ratio;
-uniform vec2 origin;
-uniform float t;
-
-in vec2 texCoord;
-in vec2 texCoordRaw;
-out vec4 fragColor;
-
-float smoothstep(float x) { // TODO: use glsl builtin function
-	return 1.0/(exp(8.*x)+1.0);
-}
+#include "lib/util.glslh"
+#include "interface/spellcard.glslh"
 
 void main(void) {
 	float n = 10.;

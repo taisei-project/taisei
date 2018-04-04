@@ -1,14 +1,10 @@
 #version 330 core
 
-uniform sampler2D tex;
-uniform float rad;
-uniform float phase;
+#include "lib/util.glslh"
+#include "interface/standard.glslh"
 
-in vec2 texCoord;
-in vec2 texCoordRaw;
-out vec4 fragColor;
-
-float pi = 2.0 * asin(1.0);
+uniform(1) float rad;
+uniform(2) float phase;
 
 void main(void) {
 	vec2 pos = texCoord;

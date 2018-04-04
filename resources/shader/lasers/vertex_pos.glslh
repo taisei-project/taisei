@@ -1,6 +1,6 @@
 
 vec2 laser_vertex_pos(vec2 origin, vec2 delta) {
-    vec2 v = position;
+    vec2 v = position.xy;
     float t1 = gl_InstanceID - span / 2;
     float tail = span / 1.9;
     float s = -0.75 / pow(tail, 2) * (t1 - tail) * (t1 + tail);

@@ -1,18 +1,14 @@
 #version 330 core
 
 #include "lib/render_context.glslh"
+#include "interface/standard.glslh"
 
-uniform sampler2D tex;
-uniform vec2 blur_orig; // center
-uniform vec2 fix_orig;
-uniform float blur_rad;  // radius of zoom effect
-uniform float rad;
-uniform float ratio; // texture h/w
-uniform vec4 color;
-
-in vec2 texCoord;
-in vec2 texCoordRaw;
-out vec4 fragColor;
+uniform(1) vec2 blur_orig; // center
+uniform(2) vec2 fix_orig;
+uniform(3) float blur_rad;  // radius of zoom effect
+uniform(4) float rad;
+uniform(5) float ratio; // texture h/w
+uniform(6) vec4 color;
 
 void main(void) {
 	vec2 pos = texCoordRaw;
@@ -24,7 +20,7 @@ void main(void) {
 	pos *= min(length(pos1)/blur_rad,1.0);
 	pos += blur_orig;
 	pos = clamp(pos, 0.005, 0.995);
-	pos = (ctx.textureMatrix * vec4(pos,0.0,1.0)).xy;
+	pos = (r_textureMatrix * vec4(pos,0.0,1.0)).xy;
 
 	fragColor = texture(tex, pos);
 

@@ -1,13 +1,8 @@
 #version 330 core
 
 #include "lib/render_context.glslh"
-
-uniform sampler2D tex;
-
-in vec2 texCoord;
-in vec2 texCoordRaw;
-out vec4 fragColor;
+#include "interface/standard.glslh"
 
 void main(void) {
-	fragColor = ctx.color * texture(tex, texCoord);
+	fragColor = r_color * texture(tex, texCoord);
 }

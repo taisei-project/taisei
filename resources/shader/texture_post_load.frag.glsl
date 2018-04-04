@@ -1,12 +1,13 @@
 #version 330 core
 
-uniform sampler2D tex;
-uniform int width;
-uniform int height;
+#include "interface/standard.glslh"
 
-in vec2 texCoord;
-in vec2 texCoordRaw;
-out vec4 fragColor;
+uniform(1) int width;
+uniform(2) int height;
+
+vec2 tc_normalize(ivec2 tc) {
+	return vec2(tc) / vec2(width, height);
+}
 
 ivec2 tc_denormalize(vec2 tc) {
 	return ivec2(tc * vec2(width, height));
@@ -17,12 +18,12 @@ vec4 replace_color(vec4 texel, vec4 neighbour) {
 }
 
 vec4 sampleofs(ivec2 origin, int ofsx, int ofsy) {
-	return texelFetch(tex, origin + ivec2(ofsx, ofsy), 0);
+	return texture(tex, tc_normalize(origin + ivec2(ofsx, ofsy)));
 }
 
 void main(void) {
 	ivec2 tc = tc_denormalize(texCoordRaw);
-	vec4 texel = texelFetch(tex, tc, 0);
+	vec4 texel = texture(tex, texCoordRaw);
 	vec4 new_texel = texel;
 
 	/*

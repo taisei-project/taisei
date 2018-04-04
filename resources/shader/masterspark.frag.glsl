@@ -1,15 +1,9 @@
 #version 330 core
 
-uniform float t;
+#include "lib/util.glslh"
+#include "interface/sprite.glslh"
 
-in vec2 texCoord;
-in vec2 texCoordRaw;
-out vec4 fragColor;
-
-float smoothstep(float x, float b) { // TODO: use glsl smoothstep
-	x = clamp(x/b - 0.5, 0.0, 1.0);
-	return x*x*(3.0 - 2.0*x);
-}
+uniform(1) float t;
 
 void main(void) {
 	vec2 r = vec2(texCoord.x-0.5,1.0-texCoord.y);

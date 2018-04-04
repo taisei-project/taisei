@@ -1,12 +1,9 @@
 #version 330 core
 
-uniform sampler2D tex;
-uniform int frames;
-uniform float strength;
+#include "interface/standard.glslh"
 
-in vec2 texCoord;
-in vec2 texCoordRaw;
-out vec4 fragColor;
+uniform(1) int frames;
+uniform(2) float strength;
 
 float f(float x) {
     return cos(floor(20.0 * x) - cos((30.0 * x)) * sin(floor(4.0 * x)));

@@ -1,16 +1,11 @@
 #version 330 core
 
 #include "lib/render_context.glslh"
+#include "interface/standard.glslh"
 
-uniform float t;
-
-uniform sampler2D tex;
-uniform vec2 plrpos;
-uniform float decay;
-
-in vec2 texCoord;
-in vec2 texCoordRaw;
-out vec4 fragColor;
+uniform(1) float t;
+uniform(2) vec2 plrpos;
+uniform(3) float decay;
 
 void main(void) {
 	vec2 r = texCoordRaw-plrpos;
@@ -19,5 +14,5 @@ void main(void) {
 	vec4 texel = texture(tex, r);
 	texel.a = 0.7*min(1.,t)*(1.-t*decay)*4.;
 
-	fragColor = texel*ctx.color;
+	fragColor = texel*r_color;
 }

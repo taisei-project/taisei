@@ -243,10 +243,10 @@ static void gl33_apply_capability(RendererCapability cap, bool value) {
 static void gl33_sync_state(void) {
 	gl33_sync_capabilities();
 	gl33_sync_shader();
-	r_uniform("ctx.modelViewMatrix", 1, _r_matrices.modelview.head);
-	r_uniform("ctx.projectionMatrix", 1, _r_matrices.projection.head);
-	r_uniform("ctx.textureMatrix", 1, _r_matrices.texture.head);
-	r_uniform("ctx.color", 1, R.color);
+	r_uniform("r_modelViewMatrix", 1, _r_matrices.modelview.head);
+	r_uniform("r_projectionMatrix", 1, _r_matrices.projection.head);
+	r_uniform("r_textureMatrix", 1, _r_matrices.texture.head);
+	r_uniform("r_color", 1, R.color);
 	gl33_sync_uniforms(R.progs.active);
 	gl33_sync_texunits();
 	gl33_sync_render_target();

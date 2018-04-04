@@ -1,0 +1,23 @@
+
+#ifndef I_STANDARD_H
+#define I_STANDARD_H
+
+#include "../lib/defs.glslh"
+
+#ifdef VERT_STAGE
+attribute(0) vec3 position;
+attribute(1) vec3 normalIn;
+attribute(2) vec2 texCoordRawIn;
+#endif
+
+#ifdef FRAG_STAGE
+out(0) vec4 fragColor;
+#endif
+
+uniform(0) sampler2D tex;
+
+varying(0) vec2 texCoord;
+varying(1) vec3 normal;
+varying(2) vec2 texCoordRaw;
+
+#endif

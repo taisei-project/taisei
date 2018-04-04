@@ -1,10 +1,8 @@
 #version 330 core
 
-uniform sampler2D tex;
+#include "interface/standard.glslh"
 
-in vec3 posModelView;
-in vec2 texCoord;
-out vec4 fragColor;
+in(3) vec3 posModelView;
 
 void main(void) {
 	vec4 texel = texture(tex, texCoord);

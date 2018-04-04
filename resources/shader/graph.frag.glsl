@@ -1,17 +1,16 @@
 #version 330 core
 
+#include "interface/standard.glslh"
+
 #define POINTS 120
 // #define INTERPOLATE
 
-in vec2 texCoord;
-out vec4 fragColor;
+uniform(1) vec3 color_low;
+uniform(2) vec3 color_mid;
+uniform(3) vec3 color_high;
+uniform(4) float points[POINTS];
 
-uniform vec3 color_low;
-uniform vec3 color_mid;
-uniform vec3 color_high;
-uniform float points[POINTS];
-
-float sample(float x) {
+float get_sample(float x) {
 	x = clamp(x, 0.0, 1.0) * float(POINTS - 1);
 
 	float f = floor(x);
@@ -30,7 +29,7 @@ float sample(float x) {
 void main(void) {
 	vec4 c = vec4(1.0);
 	vec2 coord = vec2(texCoord.x, 1.0 - texCoord.y); // TODO: move to vertex shader
-	float s = sample(coord.x);
+	float s = get_sample(coord.x);
 	c.a = float(coord.y <= s);
 	c.a *= (0.2 + 0.8 * s);
 	c.a = 0.05 + 0.95 * c.a;

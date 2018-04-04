@@ -265,3 +265,35 @@ int vfs_dir_list_order_ascending(const char **a, const char **b) {
 int vfs_dir_list_order_descending(const char **a, const char **b) {
 	return strcmp(*b, *a);
 }
+
+void* vfs_dir_walk(const char *path, void* (*visit)(const char *path, void *arg), void *arg) {
+	char npath[strlen(path) + 1];
+	vfs_path_normalize(path, npath);
+	strip_trailing_slashes(npath);
+
+	VFSDir *dir = vfs_dir_open(npath);
+	void *result = NULL;
+
+	if(!dir) {
+		return result;
+	}
+
+	for(const char *e; (e = vfs_dir_read(dir));) {
+		char fullpath[strlen(npath) + strlen(e) + 2];
+		snprintf(fullpath, sizeof(fullpath), "%s%c%s", npath, VFS_PATH_SEP, e);
+
+		if((result = visit(fullpath, arg))) {
+			return result;
+		}
+
+		if(!vfs_query(fullpath).is_dir) {
+			continue;
+		}
+
+		if((result = vfs_dir_walk(fullpath, visit, arg))) {
+			return result;
+		}
+	}
+
+	return result;
+}

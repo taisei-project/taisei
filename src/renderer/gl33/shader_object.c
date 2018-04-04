@@ -39,12 +39,14 @@ static bool check_shader_object_path(const char *path) {
 	return strendswith_any(path, (const char*[]){".vert.glsl", ".frag.glsl", NULL});
 }
 
-static bool include_shader(const char *path, SDL_RWops *dest, int include_level) {
+static bool include_shader(const char *path, SDL_RWops *dest, int include_level, ShaderObjectType shader_type) {
 	if(include_level > SHOBJ_MAX_INCLUDE_DEPTH) {
 		log_warn("%s: max include depth reached. Maybe there is an include cycle?",path);	
 		return false;
 	}
-		
+
+	log_debug("[%i] %s", include_level, path);
+
 	SDL_RWops *stream = vfs_open(path, VFS_MODE_READ);
 
 	if(!stream) {
@@ -99,7 +101,8 @@ static bool include_shader(const char *path, SDL_RWops *dest, int include_level)
 			*q = tmp;
 			
 			free(pathcopy);
-			bool rc = include_shader(newpath, dest, include_level+1);
+			SDL_RWprintf(dest, "#line 1 %i\n", include_level + 1);
+			bool rc = include_shader(newpath, dest, include_level+1, shader_type);
 			free(newpath);
 
 			if(!rc) {
@@ -111,7 +114,20 @@ static bool include_shader(const char *path, SDL_RWops *dest, int include_level)
 		} else {
 			SDL_RWwrite(dest, linebuf, 1, strlen(linebuf));
 		}
+
+		if(!strendswith(p, "\n")) {
+			SDL_WriteU8(dest, '\n');
+		}
+
 		lineno++;
+
+		if(strstartswith(p, "#version")) {
+			SDL_RWprintf(dest, "#define %s_STAGE\n#line %i %i\n",
+				shader_type == SHOBJ_FRAG ? "FRAG" : "VERT",
+				lineno,
+				include_level
+			);
+		}
 	}
 
 	SDL_RWclose(stream);
@@ -138,7 +154,7 @@ static void* load_shader_object_begin(const char *path, uint flags) {
 	char *src = NULL;
 	SDL_RWops *writer = SDL_RWAutoBuffer((void**)&src, 256);
 
-	if(!include_shader(path, writer, 0)) {
+	if(!include_shader(path, writer, 0, type)) {
 		SDL_RWclose(writer);
 		return NULL;
 	}

@@ -1,17 +1,7 @@
 #version 330 core
 
-uniform sampler2D tex;
-uniform vec2 origin;
-uniform float ratio; // texture h/w
-uniform float t;
-
-float smoothstep(float x) {
-	return 1.0/(exp(8.*x)+1.0);
-}
-
-in vec2 texCoord;
-in vec2 texCoordRaw;
-out vec4 fragColor;
+#include "lib/util.glslh"
+#include "interface/spellcard.glslh"
 
 void main(void) {
 	vec2 pos = texCoordRaw;

@@ -16,13 +16,11 @@ glsl_files += files(
     'maristar_bombbg.frag.glsl',
     'masterspark.frag.glsl',
     'negative.frag.glsl',
-    'recolor.frag.glsl',
     'spellcard_intro.frag.glsl',
     'spellcard_outro.frag.glsl',
     'spellcard_walloftext.frag.glsl',
     'sprite_bullet.frag.glsl',
     'sprite_bullet_apple.frag.glsl',
-    'sprite_common.frag.glsl',
     'sprite_default.frag.glsl',
     'sprite_default.vert.glsl',
     'sprite_silhouette.frag.glsl',
@@ -69,11 +67,12 @@ if get_option('validate_glsl') != 'false'
 
     if glslc_command.found()
         test_result = run_command(glslc_command,
-            '-fauto-bind-uniforms',
-            '-fauto-map-locations',
+            # '-fauto-bind-uniforms',
+            # '-fauto-map-locations',
             '--target-env=opengl',
             '-fshader-stage=frag',
-            '-Werror',
+            '-DFRAG_STAGE',
+            # '-Werror',
             glslc_test_file,
             '-o',
             join_paths(meson.current_build_dir(), 'glslc-test.spv')
@@ -101,11 +100,19 @@ if get_option('validate_glsl') != 'false'
                 input : src,
                 output : '@BASENAME@.spv',
                 command : [glslc_command,
-                    '-fauto-bind-uniforms',
-                    '-fauto-map-locations',
+                    # '-fauto-bind-uniforms',
+                    # '-fauto-map-locations',
+
+                    # XXX: glslc currently doesn't support ARB_explicit_uniform_location, so we have
+                    # to force a standard that supports it natively to check for location overlaps.
+                    '-std=430core',
+
+                    # TODO: somehow shut up that annoying warning caused by forcing glsl version.
+                    # '-Werror',
+
                     '--target-env=opengl',
                     '-fshader-stage=@0@'.format(stage),
-                    '-Werror',
+                    '-D@0@_STAGE'.format(stage.to_upper()),
                     '-MD',
                     '-MF',
                     '@DEPFILE@',

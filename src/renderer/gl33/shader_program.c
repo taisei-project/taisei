@@ -83,10 +83,10 @@ typedef struct MagicalUniform {
 } MagicalUniform;
 
 static MagicalUniform magical_unfiroms[] = {
-	{ "ctx.modelViewMatrix",  "mat4", UNIFORM_MAT4 },
-	{ "ctx.projectionMatrix", "mat4", UNIFORM_MAT4 },
-	{ "ctx.textureMatrix",    "mat4", UNIFORM_MAT4 },
-	{ "ctx.color",            "vec4", UNIFORM_VEC4 },
+	{ "r_modelViewMatrix",  "mat4", UNIFORM_MAT4 },
+	{ "r_projectionMatrix", "mat4", UNIFORM_MAT4 },
+	{ "r_textureMatrix",    "mat4", UNIFORM_MAT4 },
+	{ "r_color",            "vec4", UNIFORM_VEC4 },
 };
 
 static void gl33_update_uniform(Uniform *uniform, uint count, const void *data, size_t datasize) {

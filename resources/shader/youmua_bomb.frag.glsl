@@ -1,12 +1,9 @@
 #version 330 core
 
-uniform sampler2D tex;
+#include "lib/defs.glslh"
+#include "interface/standard.glslh"
 
-uniform float tbomb;
-
-in vec2 texCoord;
-in vec2 texCoordRaw;
-out vec4 fragColor;
+uniform(1) float tbomb;
 
 void main(void) {
 	vec2 pos = texCoordRaw;

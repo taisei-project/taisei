@@ -1,47 +1,11 @@
 
+#include "defs.glslh"
 #include "render_context.glslh"
-
-/*
- * Per-vertex attributes
- */
-layout(location = 0) in vec2  vertPos;
-// 1 - vec3 normal (not used)
-layout(location = 2) in vec2  vertTexCoord;
-
-/*
- * Per-instance attributes
- */
-layout(location = 3) in mat4  spriteVMTransform;
-// 4
-// 5
-// 6
-layout(location = 7) in vec4  spriteRGBA;
-layout(location = 8) in vec4  spriteTexRegion;
-layout(location = 9) in float spriteCustomParam;
-
-#ifdef SPRITE_OUT_TEXCOORD_RAW
-out vec2 texCoordRaw;
-#endif
-
-#ifdef SPRITE_OUT_TEXCOORD
-out vec2 texCoord;
-#include "uv_to_region.glslh"
-#endif
-
-#ifdef SPRITE_OUT_TEXREGION
-out vec4 texRegion;
-#endif
-
-#ifdef SPRITE_OUT_COLOR
-out vec4 color;
-#endif
-
-#ifdef SPRITE_OUT_CUSTOM
-out float customParam;
-#endif
+#include "util.glslh"
+#include "../interface/sprite.glslh"
 
 void main(void) {
-    gl_Position = ctx.projectionMatrix * spriteVMTransform * vec4(vertPos, 0.0, 1.0);
+    gl_Position = r_projectionMatrix * spriteVMTransform * vec4(vertPos, 0.0, 1.0);
 
     #ifdef SPRITE_OUT_COLOR
     color       = spriteRGBA;

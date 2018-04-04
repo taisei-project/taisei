@@ -1,9 +1,8 @@
 #version 330 core
 
 #include "lib/render_context.glslh"
-
-out vec4 fragColor;
+#include "interface/standard.glslh"
 
 void main(void) {
-    fragColor = ctx.color;
+    fragColor = r_color;
 }

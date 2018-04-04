@@ -1,19 +1,14 @@
 
 #include "../lib/render_context.glslh"
 #include "../lib/util.glslh"
+#include "../interface/standard.glslh"
 
-layout(location = 0) in vec2 position;
-layout(location = 2) in vec2 texCoordRawIn;
-
-out vec2 texCoord;
-out vec2 texCoordRaw;
-
-uniform vec2 origin;
-uniform float timeshift;
-uniform float width;
-uniform float width_exponent;
-uniform int span;
-uniform vec2 args[4];
+uniform(1) vec2 origin;
+uniform(2) float timeshift;
+uniform(3) float width;
+uniform(4) float width_exponent;
+uniform(5) int span;
+uniform(6) vec2 args[4];
 
 vec2 pos_rule(float t);
 
@@ -24,7 +19,7 @@ void main(void) {
 	vec2 d = p - pos_rule(gl_InstanceID * 0.5 + timeshift - 0.1);
 
 	vec2 pos     = laser_vertex_pos(p, d);
-	gl_Position  = ctx.modelViewMatrix * ctx.projectionMatrix * vec4(pos, 0.0, 1.0);
-	texCoord     = (ctx.textureMatrix * vec4(texCoordRawIn, 0.0, 1.0)).xy;
+	gl_Position  = r_modelViewMatrix * r_projectionMatrix * vec4(pos, 0.0, 1.0);
+	texCoord     = (r_textureMatrix * vec4(texCoordRawIn, 0.0, 1.0)).xy;
 	texCoordRaw  = texCoordRawIn;
 }

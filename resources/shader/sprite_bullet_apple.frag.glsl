@@ -1,13 +1,6 @@
 #version 330 core
 
-#include "lib/render_context.glslh"
-
-uniform sampler2D tex;
-
-in vec2 texCoord;
-in vec4 color;
-
-out vec4 fragColor;
+#include "interface/sprite.glslh"
 
 void main(void) {
     vec4 texel = texture(tex, texCoord);

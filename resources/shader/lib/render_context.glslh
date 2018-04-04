@@ -1,7 +1,12 @@
 
-uniform struct RenderContext {
-	mat4 modelViewMatrix;
-	mat4 projectionMatrix;
-	mat4 textureMatrix;
-	vec4 color;
-} ctx;
+#ifndef RENDER_CONTEXT_H
+#define RENDER_CONTEXT_H
+
+#include "defs.glslh"
+
+uniform(512) mat4 r_modelViewMatrix;
+uniform(513) mat4 r_projectionMatrix;
+uniform(514) mat4 r_textureMatrix;
+uniform(515) vec4 r_color;
+
+#endif

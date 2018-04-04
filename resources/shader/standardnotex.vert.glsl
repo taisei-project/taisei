@@ -1,9 +1,8 @@
 #version 330 core
 
 #include "lib/render_context.glslh"
-
-layout(location=0) in vec3 position;
+#include "interface/standard.glslh"
 
 void main(void) {
-    gl_Position = ctx.projectionMatrix * ctx.modelViewMatrix * vec4(position, 1.0);
+    gl_Position = r_projectionMatrix * r_modelViewMatrix * vec4(position, 1.0);
 }

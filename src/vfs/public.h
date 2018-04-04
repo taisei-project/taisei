@@ -46,6 +46,8 @@ VFSDir* vfs_dir_open(const char *path) attr_nonnull(1) attr_nodiscard;
 void vfs_dir_close(VFSDir *dir);
 const char* vfs_dir_read(VFSDir *dir) attr_nonnull(1);
 
+void* vfs_dir_walk(const char *path, void* (*visit)(const char *path, void *arg), void *arg);
+
 char** vfs_dir_list_sorted(const char *path, size_t *out_size, int (*compare)(const char**, const char**), bool (*filter)(const char*))
 	attr_nonnull(1, 2, 3) attr_nodiscard;
 void vfs_dir_list_free(char **list, size_t size);

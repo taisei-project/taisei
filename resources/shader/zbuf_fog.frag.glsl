@@ -1,16 +1,14 @@
 #version 330 core
 
-uniform sampler2D depth;
-uniform sampler2D tex;
-uniform float start;
-uniform float end;
-uniform float exponent;
-uniform float sphereness;
-uniform vec4 fog_color;
+#include "lib/defs.glslh"
+#include "interface/standard.glslh"
 
-in vec2 texCoord;
-in vec2 texCoordRaw;
-out vec4 fragColor;
+uniform(1) sampler2D depth;
+uniform(2) float start;
+uniform(3) float end;
+uniform(4) float exponent;
+uniform(5) float sphereness;
+uniform(6) vec4 fog_color;
 
 void main(void) {
 	vec2 pos = vec2(texCoord);
