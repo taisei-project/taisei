@@ -9,7 +9,7 @@ import sys
 import subprocess
 import itertools
 import shutil
-from os import environ, pathsep
+from os import chmod, environ, pathsep
 from pathlib import Path
 
 build_root = Path(environ['MESON_BUILD_ROOT'])
@@ -51,6 +51,7 @@ def fix_libs(opath):
         dst = str(dst)
         print('Installing {0} as {1}'.format(src, dst))
         shutil.copy(str(src), str(dst))
+        chmod(str(dst), 0o755)
 
     def fix(path):
         for lib in regex.findall(otool('-L', path)):
