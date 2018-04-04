@@ -87,6 +87,12 @@ Resources
    use a resource that hasn't been previously preloaded. Useful for
    developers to debug missing preloads. Doesn't affect optional resources.
 
+**TAISEI_PRELOAD_SHADERS**
+   | Default: ``0``
+
+   If ``1``, Taisei will load all shader programs at startup. This is mainly
+   useful for developers to quickly ensure that none of the fail to compile.
+
 Video and OpenGL
 ~~~~~~~~~~~~~~~~
 
@@ -104,6 +110,17 @@ Video and OpenGL
 
    Use ``SDL_VIDEODRIVER`` instead.
 
+**TAISEI_RENDERER**
+   | Default: ``gl33``
+
+   Selects the rendering backend to use. Currently available options are:
+
+      -  ``gl33``: the OpenGL 3.3 Core renderer
+      -  ``null``: the no-op renderer (nothing is displayed)
+
+   Note that the actual subset of usable backends, as well as the default
+   choice, can be controlled by build options.
+
 **TAISEI_LIBGL**
    | Default: unset
 
@@ -112,6 +129,13 @@ Video and OpenGL
    Takes precedence over ``SDL_OPENGL_LIBRARY`` if set. Has no effect if
    Taisei is linked to libgl (which is not recommended, because it's not
    portable).
+
+**TAISEI_GL_DEBUG**
+   | Default: ``0`` for release builds, ``1`` for debug builds
+
+   Enables OpenGL debugging. A debug context will be requested, all OpenGL
+   messages will be logged, and errors are fatal. Requires the ``KHR_debug``
+   or ``ARB_debug_output`` extension.
 
 **TAISEI_GL_EXT_OVERRIDES**
    | Default: unset
@@ -127,7 +151,12 @@ Video and OpenGL
 **TAISEI_FRAMERATE_GRAPHS**
    | Default: ``0`` for release builds, ``1`` for debug builds
 
-   if ``1``, framerate graphs will be drawn on the HUD.
+   If ``1``, framerate graphs will be drawn on the HUD.
+
+**TAISEI_OBJPOOL_STATS**
+   | Default: ``0`` for release builds, ``1`` for debug builds
+
+   Displays some statistics about usage of in-game objects.
 
 Timing
 ~~~~~~
