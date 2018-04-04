@@ -455,7 +455,7 @@ static void* preload_shaders(const char *path, void *arg) {
 void load_resources(void) {
 	menu_preload();
 
-	if(getenv("TAISEI_PRELOAD_SHADERS")) {
+	if(getenvint("TAISEI_PRELOAD_SHADERS", 0)) {
 		log_warn("Loading all shaders now due to TAISEI_PRELOAD_SHADERS");
 		vfs_dir_walk(SHPROG_PATH_PREFIX, preload_shaders, NULL);
 	}
