@@ -547,14 +547,22 @@ void iku_bolts2(Boss *b, int time) {
 	int t = time % 400;
 	TIMER(&t);
 
+	// FIXME: ANOTHER one of these... get rid of this hack when attacks have proper state
+	static bool flip_laser;
+
+	if(time == EVENT_BIRTH) {
+		flip_laser = true;
+	}
+
 	FROM_TO(0, 400, 2) {
 		cloud_common();
 	}
 
 	FROM_TO(0, 400, 60) {
-		aniplayer_queue(&b->ani, (_i&1) ? "dashdown_left" : "dashdown_right",1);
+		flip_laser = !flip_laser;
+		aniplayer_queue(&b->ani, flip_laser ? "dashdown_left" : "dashdown_right", 1);
 		aniplayer_queue(&b->ani, "main", 0);
-		create_lasercurve3c(creal(global.plr.pos), 100, 200, rgb(0.3,1,1), bolts2_laser, global.plr.pos, (_i&1)*2-1, global.diff);
+		create_lasercurve3c(creal(global.plr.pos), 100, 200, rgb(0.3,1,1), bolts2_laser, global.plr.pos, flip_laser*2-1, global.diff);
 		play_sound_ex("laser1", 0, false); 
 	}
 
