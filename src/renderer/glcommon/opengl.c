@@ -236,6 +236,7 @@ static void glcommon_ext_depth_texture(void) {
 	if(!glext.version.is_es || GLES_ATLEAST(3, 0)) {
 		glext.depth_texture = TSGL_EXTFLAG_NATIVE;
 		log_info("Using core functionality");
+		return;
 	}
 
 	const char *exts[] = {
