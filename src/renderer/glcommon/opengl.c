@@ -347,7 +347,6 @@ void glcommon_check_extensions(void) {
 	}
 
 	glext.version.is_es = strstartswith(glv, "OpenGL ES");
-	assert(glext.version.is_es);
 
 	log_info("OpenGL version: %s", glv);
 	log_info("OpenGL vendor: %s", (const char*)glGetString(GL_VENDOR));
