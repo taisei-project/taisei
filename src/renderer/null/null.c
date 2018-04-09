@@ -20,7 +20,7 @@ SDL_Window* null_create_window(const char *title, int x, int y, int w, int h, ui
 
 void null_init(void) { }
 void null_post_init(void) { }
-void null_shutdown() { }
+void null_shutdown(void) { }
 
 bool null_supports(RendererFeature feature) {
 	return true;
