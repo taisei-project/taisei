@@ -106,11 +106,17 @@ double approach(double v, double t, double d) attr_const;
 double psin(double) attr_const;
 int sign(double) attr_const;
 double swing(double x, double s) attr_const;
-uint topow2(uint x) attr_const;
+uint32_t topow2_u32(uint32_t  x) attr_const;
+uint64_t topow2_u64(uint64_t x) attr_const;
 float ftopow2(float x) attr_const;
 float smooth(float x) attr_const;
 float smoothreclamp(float x, float old_min, float old_max, float new_min, float new_max) attr_const;
 float sanitize_scale(float scale) attr_const;
+
+#define topow2(x) (_Generic((x), \
+	uint32_t: topow2_u32, \
+	uint64_t: topow2_u64 \
+)(x))
 
 #include <cglm/types.h>
 
@@ -145,8 +151,8 @@ typedef struct KVSpec {
 char* read_all(const char *filename, int *size);
 bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data);
 bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *data);
-Hashtable* parse_keyvalue_stream(SDL_RWops *strm, size_t tablesize);
-Hashtable* parse_keyvalue_file(const char *filename, size_t tablesize);
+Hashtable* parse_keyvalue_stream(SDL_RWops *strm);
+Hashtable* parse_keyvalue_file(const char *filename);
 bool parse_keyvalue_stream_with_spec(SDL_RWops *strm, KVSpec *spec);
 bool parse_keyvalue_file_with_spec(const char *filename, KVSpec *spec);
 void png_init_rwops_read(png_structp png, SDL_RWops *rwops);

@@ -193,8 +193,8 @@ static bool store_sfx_volume(const char *key, const char *val, void *data) {
 }
 
 static void load_config_files(void) {
-	bgm_descriptions = parse_keyvalue_file(BGM_PATH_PREFIX "bgm.conf", HT_DYNAMIC_SIZE);
-	sfx_volumes = hashtable_new_stringkeys(HT_DYNAMIC_SIZE);
+	bgm_descriptions = parse_keyvalue_file(BGM_PATH_PREFIX "bgm.conf");
+	sfx_volumes = hashtable_new_stringkeys();
 	parse_keyvalue_file_cb(SFX_PATH_PREFIX "volumes.conf", store_sfx_volume, sfx_volumes);
 }
 

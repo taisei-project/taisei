@@ -11,7 +11,7 @@
 
 #include "compat.h"
 
-#ifdef HAVE_INTEL_INTRIN
+#ifdef TAISEI_BUILDCONF_USE_SSE42
 	uint32_t crc32str_sse42(uint32_t crc, const char *str) attr_hot attr_pure;
 #else
 	#define crc32str_sse42 crc32str

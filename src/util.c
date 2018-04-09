@@ -304,10 +304,24 @@ double swing(double x, double s) {
 	return x * x * ((s + 1) * x + s) / 2 + 1;
 }
 
-uint topow2(uint x) {
-	uint y = 1;
-	while(y < x) y *= 2;
-	return y;
+uint32_t topow2_u32(uint32_t x) {
+	x -= 1;
+	x |= (x >> 1);
+	x |= (x >> 2);
+	x |= (x >> 4);
+	x |= (x >> 8);
+	x |= (x >> 16);
+	return x + 1;
+}
+
+uint64_t topow2_u64(uint64_t x) {
+	x -= 1;
+	x |= (x >> 1);
+	x |= (x >> 2);
+	x |= (x >> 4);
+	x |= (x >> 8);
+	x |= (x >> 16);
+	return x + 1;
 }
 
 float ftopow2(float x) {
@@ -517,8 +531,8 @@ static bool kvcallback_hashtable(const char *key, const char *val, void *data) {
 	return true;
 }
 
-Hashtable* parse_keyvalue_stream(SDL_RWops *strm, size_t tablesize) {
-	Hashtable *ht = hashtable_new_stringkeys(tablesize);
+Hashtable* parse_keyvalue_stream(SDL_RWops *strm) {
+	Hashtable *ht = hashtable_new_stringkeys();
 
 	if(!parse_keyvalue_stream_cb(strm, kvcallback_hashtable, ht)) {
 		hashtable_free(ht);
@@ -528,8 +542,8 @@ Hashtable* parse_keyvalue_stream(SDL_RWops *strm, size_t tablesize) {
 	return ht;
 }
 
-Hashtable* parse_keyvalue_file(const char *filename, size_t tablesize) {
-	Hashtable *ht = hashtable_new_stringkeys(tablesize);
+Hashtable* parse_keyvalue_file(const char *filename) {
+	Hashtable *ht = hashtable_new_stringkeys();
 
 	if(!parse_keyvalue_file_cb(filename, kvcallback_hashtable, ht)) {
 		hashtable_free(ht);

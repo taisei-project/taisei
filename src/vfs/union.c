@@ -95,7 +95,7 @@ static const char* vfs_union_iter(VFSNode *node, void **opaque) {
 		i->opaque = NULL;
 
 		 // XXX: this may not be the most efficient implementation of a "set" structure...
-		i->visited = hashtable_new_stringkeys(37);
+		i->visited = hashtable_new_stringkeys();
 
 		*opaque = i;
 	}

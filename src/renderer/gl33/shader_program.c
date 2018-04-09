@@ -165,7 +165,7 @@ static bool cache_uniforms(ShaderProgram *prog) {
 	int maxlen = 0;
 	GLint unicount;
 
-	prog->uniforms = hashtable_new_stringkeys(13);
+	prog->uniforms = hashtable_new_stringkeys();
 
 	glGetProgramiv(prog->gl_handle, GL_ACTIVE_UNIFORMS, &unicount);
 	glGetProgramiv(prog->gl_handle, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxlen);

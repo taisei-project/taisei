@@ -52,8 +52,8 @@ static inline ResourceHandler* get_handler(ResourceType type) {
 
 static void alloc_handler(ResourceHandler *h) {
 	assert(h != NULL);
-	h->mapping = hashtable_new_stringkeys(HT_DYNAMIC_SIZE);
-	h->async_load_data = hashtable_new_stringkeys(HT_DYNAMIC_SIZE);
+	h->mapping = hashtable_new_stringkeys();
+	h->async_load_data = hashtable_new_stringkeys();
 }
 
 static void unload_resource(Resource *res) {

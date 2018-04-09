@@ -186,7 +186,7 @@ void* load_animation_begin(const char *filename, uint flags) {
 	strcpy(name, basename);
 
 	Animation *ani = calloc(1, sizeof(Animation));
-	ani->sequences = hashtable_new_stringkeys(13);
+	ani->sequences = hashtable_new_stringkeys();
 
 	if(!parse_keyvalue_file_cb(filename, animation_parse_callback, ani)) {
 		hashtable_foreach(ani->sequences, free_sequence_callback, NULL);
@@ -251,11 +251,10 @@ void* load_animation_end(void *opaque, const char *filename, uint flags) {
 		ani->sprites[i] = res->data;
 	}
 
-	// XXX: This deadlocks in case of an error. I have no idea how those lock things work
-	//if(hashtable_foreach(ani->sequences, check_sequence_frame_callback, (void *)(intptr_t)ani->sprite_count) != 0) {
-	//	unload_animation(ani);
-	//	ani = NULL;
-	//}
+	if(hashtable_foreach(ani->sequences, check_sequence_frame_callback, (void *)(intptr_t)ani->sprite_count) != 0) {
+		unload_animation(ani);
+		ani = NULL;
+	}
 
 	free(data->basename);
 	free(data);

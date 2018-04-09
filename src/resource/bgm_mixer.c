@@ -52,7 +52,7 @@ void* load_bgm_begin(const char *path, uint flags) {
 	mus->impl = imus;
 
 	if(strendswith(path, ".bgm")) {
-		Hashtable *bgm = parse_keyvalue_file(path, 8);
+		Hashtable *bgm = parse_keyvalue_file(path);
 
 		if(!bgm) {
 			log_warn("Failed to parse bgm config '%s'", path);

@@ -87,7 +87,7 @@ static Font* load_font(char *vfspath, int size) {
 
 	Font *font = calloc(1, sizeof(Font));
 	font->ttf = ttf;
-	font->cache = hashtable_new_stringkeys(2048);
+	font->cache = hashtable_new_stringkeys();
 
 	return font;
 }
