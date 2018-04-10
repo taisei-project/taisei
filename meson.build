@@ -263,6 +263,8 @@ Summary:
         taisei_version_string
     )
 
+version_deps = []
+
 subdir('misc')
 subdir('external')
 subdir('resources')

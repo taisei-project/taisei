@@ -1,6 +1,4 @@
 
-version_deps = []
-
 version_deps += custom_target('version information',
     command : [preprocess_command, '@INPUT@', '@OUTPUT@'],
     build_always : true,
