@@ -115,7 +115,8 @@ float sanitize_scale(float scale) attr_const;
 
 #define topow2(x) (_Generic((x), \
 	uint32_t: topow2_u32, \
-	uint64_t: topow2_u64 \
+	uint64_t: topow2_u64, \
+	default: topow2_u64 \
 )(x))
 
 #include <cglm/types.h>
