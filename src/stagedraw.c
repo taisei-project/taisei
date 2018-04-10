@@ -54,7 +54,7 @@ void stage_draw_preload(void) {
 	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
 		"stagetext",
 		"ingame_menu",
-		"circleclipped_indicator",
+		"sprite_circleclipped_indicator",
 		"hud_text",
 	NULL);
 

@@ -383,6 +383,7 @@ void fade_out(float f) {
 void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxfrags, float alpha, float star_width) {
 	Sprite *star = get_sprite("star");
 	int i = 0;
+	float scale = star_width/star->w;
 
 	Color amul = rgba(alpha, alpha, alpha, alpha);
 	Color fill_clr = multiply_colors(rgba(1.0f, 1.0f, 1.0f, 1.0f), amul);
@@ -392,37 +393,48 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 	// XXX: move to call site?
 	y -= 2;
 
-	r_shader("circleclipped_indicator");
-	r_uniform_rgba("fill_color", fill_clr);
+	ShaderProgram *prog_saved = r_shader_current();
+	r_shader("sprite_circleclipped_indicator");
 	r_uniform_rgba("back_color", back_clr);
-	r_uniform_float("fill", 1);
 
-	begin_draw_sprite(x - star_width, y, star_width/star->w, star_width/star->w, star);
+	r_mat_push();
+	r_mat_translate(x - star_width, y, 0);
 
 	while(i < numstars) {
-		r_mat_translate(1, 0, 0);
-		r_draw_quad();
+		r_mat_translate(star_width, 0, 0);
+		r_draw_sprite(&(SpriteParams) {
+			.sprite_ptr = star,
+			.custom = 1,
+			.color = fill_clr,
+			.scale.both = scale,
+		});
 		i++;
 	}
 
 	if(numfrags) {
-		r_mat_translate(1, 0, 0);
-		r_uniform_rgba("fill_color", frag_clr);
-		r_uniform_float("fill", numfrags / (float)maxfrags);
-		r_draw_quad();
+		r_mat_translate(star_width, 0, 0);
+		r_draw_sprite(&(SpriteParams) {
+			.sprite_ptr = star,
+			.custom = numfrags / (float)maxfrags,
+			.color = frag_clr,
+			.scale.both = scale,
+		});
 		i++;
 	}
-
-	r_uniform_float("fill", 0);
 
 	while(i < maxstars) {
-		r_mat_translate(1, 0, 0);
-		r_draw_quad();
+		r_mat_translate(star_width, 0, 0);
+		r_draw_sprite(&(SpriteParams) {
+			.sprite_ptr = star,
+			.custom = 0,
+			.color = frag_clr,
+			.scale.both = scale,
+		});
 		i++;
 	}
 
-	end_draw_sprite();
-	r_shader_standard();
+	r_mat_pop();
+	r_shader_ptr(prog_saved);
 }
 
 //

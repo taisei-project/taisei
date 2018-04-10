@@ -203,7 +203,7 @@ void menu_preload(void) {
 	NULL);
 
 	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
-		"circleclipped_indicator",
+		"sprite_circleclipped_indicator",
 	NULL);
 
 	preload_resources(RES_SFX, RESF_PERMANENT | RESF_OPTIONAL,
