@@ -164,12 +164,22 @@ static void draw_spellbg(int t) {
 	r_mat_pop();
 }
 
+static inline bool should_draw_stage_bg(void) {
+	return (
+		!global.boss
+		|| !global.boss->current
+		|| !global.boss->current->draw_rule
+		|| global.boss->current->endtime
+		|| (global.frames - global.boss->current->starttime) < 1.25*ATTACK_START_DELAY
+	);
+}
+
 static void apply_bg_shaders(ShaderRule *shaderrules, FBOPair *fbos) {
 	Boss *b = global.boss;
 	if(b && b->current && b->current->draw_rule) {
 		int t = global.frames - b->current->starttime;
 
-		if(t < 4*ATTACK_START_DELAY || b->current->endtime) {
+		if(should_draw_stage_bg()) {
 			apply_shader_rules(shaderrules, fbos);
 		}
 
@@ -218,7 +228,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBOPair *fbos) {
 		swap_fbo_pair(fbos);
 		r_target(NULL);
 		r_shader_standard();
-	} else {
+	} else if(should_draw_stage_bg()) {
 		apply_shader_rules(shaderrules, fbos);
 	}
 }
@@ -263,13 +273,15 @@ static void stage_render_bg(StageInfo *stage) {
 	r_viewport(0, 0, bg_tex->w, bg_tex->h);
 	r_clear(CLEAR_ALL);
 
-	r_mat_push();
+	if(should_draw_stage_bg()) {
+		r_mat_push();
 		r_mat_translate(-(VIEWPORT_X+VIEWPORT_W/2), -(VIEWPORT_Y+VIEWPORT_H/2),0);
 		r_enable(RCAP_DEPTH_TEST);
 		stage->procs->draw();
-	r_mat_pop();
+		r_mat_pop();
+		swap_fbo_pair(&resources.fbo_pairs.bg);
+	}
 
-	swap_fbo_pair(&resources.fbo_pairs.bg);
 	apply_bg_shaders(stage->procs->shader_rules, &resources.fbo_pairs.bg);
 	return;
 }
