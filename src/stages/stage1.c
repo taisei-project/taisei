@@ -209,6 +209,7 @@ static void stage1_preload(void) {
 	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"zbuf_fog",
+		"lasers/linear",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/cirno",

@@ -55,7 +55,7 @@ if use_intel_intrin
     config.set('TAISEI_BUILDCONF_USE_SSE42', true)
     message('SSE 4.2 intrinsics will be used')
 elif get_option('intel_intrin')
-config.set('TAISEI_BUILDCONF_USE_SSE42', false)
+    config.set('TAISEI_BUILDCONF_USE_SSE42', false)
     message('SSE 4.2 intrinsics can not be used')
 endif
 

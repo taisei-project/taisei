@@ -111,7 +111,9 @@ void reset_sounds(void) {
 	for(HashtableIterator *i = hashtable_iter(get_resource_table(RES_SFX));
 		hashtable_iter_next(i, 0, (void**)&res);
 	) {
-		snd = res->data;
+		if(!(snd = res->data)) {
+			continue;
+		}
 
 		snd->lastplayframe = 0;
 		if(snd->islooping) {
@@ -130,7 +132,9 @@ void update_sounds(void) {
 	for(HashtableIterator *i = hashtable_iter(get_resource_table(RES_SFX));
 		hashtable_iter_next(i, 0, (void**)&res);
 	) {
-		snd = res->data;
+		if(!(snd = res->data)) {
+			continue;
+		}
 
 		if(snd->islooping && global.frames > snd->lastplayframe + LOOPTIMEOUTFRAMES) {
 			snd->islooping = false;

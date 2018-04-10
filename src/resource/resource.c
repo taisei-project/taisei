@@ -57,7 +57,9 @@ static void alloc_handler(ResourceHandler *h) {
 }
 
 static void unload_resource(Resource *res) {
-	get_handler(res->type)->procs.unload(res->data);
+	if(!(res->flags & RESF_FAILED)) {
+		get_handler(res->type)->procs.unload(res->data);
+	}
 	free(res);
 }
 
@@ -70,14 +72,11 @@ Resource* insert_resource(ResourceType type, const char *name, void *data, Resou
 	assert(source != NULL);
 
 	if(data == NULL) {
-		// Will only get here through some external loading mechanism (like laser snippets)
-
 		const char *typename = type_name(type);
 		if(!(flags & RESF_OPTIONAL)) {
 			log_fatal("Required %s '%s' couldn't be loaded", typename, name);
 		} else {
 			log_warn("Failed to load %s '%s'", typename, name);
-			return NULL;
 		}
 	}
 
@@ -101,8 +100,10 @@ Resource* insert_resource(ResourceType type, const char *name, void *data, Resou
 
 	hashtable_set_string(handler->mapping, name, res);
 
-	log_info("Loaded %s '%s' from '%s' (%s)", type_name(handler->type), name, source,
-		(flags & RESF_PERMANENT) ? "permanent" : "transient");
+	if(data) {
+		log_info("Loaded %s '%s' from '%s' (%s)", type_name(handler->type), name, source,
+			(flags & RESF_PERMANENT) ? "permanent" : "transient");
+	}
 
 	return res;
 }
@@ -211,6 +212,7 @@ static void resource_wait_for_all_async_loads(ResourceHandler *handler) {
 
 static Resource* load_resource(ResourceHandler *handler, const char *path, const char *name, ResourceFlags flags, bool async) {
 	Resource *res;
+	flags &= ~RESF_FAILED;
 
 	const char *typename = type_name(handler->type);
 	char *allocated_path = NULL;
@@ -235,13 +237,15 @@ static Resource* load_resource(ResourceHandler *handler, const char *path, const
 				log_warn("Failed to locate %s '%s'", typename, name);
 			}
 
-			return NULL;
+			flags |= RESF_FAILED;
 		}
 	} else if(!name) {
 		name = allocated_name = get_name(handler, path);
 	}
 
-	assert(handler->procs.check(path));
+	if(path) {
+		assert(handler->procs.check(path));
+	}
 
 	if(async) {
 		if(resource_check_async_load(handler, name)) {
@@ -259,6 +263,10 @@ static Resource* load_resource(ResourceHandler *handler, const char *path, const
 		return res;
 	}
 
+	if(flags & RESF_FAILED) {
+		return load_resource_finish(NULL, handler, path, name, allocated_path, allocated_name, flags);
+	}
+
 	if(async) {
 		// these will be freed when loading is done
 		path = allocated_path ? allocated_path : strdup(path);
@@ -271,27 +279,17 @@ static Resource* load_resource(ResourceHandler *handler, const char *path, const
 }
 
 static Resource* load_resource_finish(void *opaque, ResourceHandler *handler, const char *path, const char *name, char *allocated_path, char *allocated_name, ResourceFlags flags) {
-	const char *typename = type_name(handler->type);
-	void *raw = handler->procs.end_load(opaque, path, flags);
+	void *raw = (flags & RESF_FAILED) ? NULL : handler->procs.end_load(opaque, path, flags);
 
-	if(!raw) {
-		name = name ? name : "<name unknown>";
-		path = path ? path : "<path unknown>";
-
-		if(!(flags & RESF_OPTIONAL)) {
-			log_fatal("Required %s '%s' couldn't be loaded (%s)", typename, name, path);
-		} else {
-			log_warn("Failed to load %s '%s' (%s)", typename, name, path);
-		}
-
-		free(allocated_path);
-		free(allocated_name);
-
-		return NULL;
+	if(raw == NULL) {
+		flags |= RESF_FAILED;
 	}
 
+	name = name ? name : "<name unknown>";
+	path = path ? path : "<path unknown>";
+
 	char *sp = vfs_repr(path, true);
-	Resource *res = insert_resource(handler->type, name, raw, flags, sp);
+	Resource *res = insert_resource(handler->type, name, raw, flags, sp ? sp : path);
 	free(sp);
 
 	free(allocated_path);
@@ -322,7 +320,7 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 		if(!(flags & RESF_PRELOAD)) {
 			log_warn("%s '%s' was not preloaded", type_name(type), name);
 
-			if(!(flags & RESF_OPTIONAL) && getenvint("TAISEI_PRELOAD_REQUIRED", false)) {
+			if(getenvint("TAISEI_PRELOAD_REQUIRED", false)) {
 				log_fatal("Aborting due to TAISEI_PRELOAD_REQUIRED");
 			}
 		}
@@ -330,7 +328,7 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 		res = load_resource(handler, NULL, name, flags, false);
 	}
 
-	if(res && flags & RESF_PERMANENT && !(res->flags & RESF_PERMANENT)) {
+	if(res && (flags & RESF_PERMANENT) && !(res->flags & (RESF_PERMANENT | RESF_FAILED))) {
 		log_debug("Promoted %s '%s' to permanent", type_name(type), name);
 		res->flags |= RESF_PERMANENT;
 	}

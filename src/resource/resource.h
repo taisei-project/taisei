@@ -30,6 +30,7 @@ typedef enum ResourceFlags {
 	RESF_PERMANENT = 2,
 	RESF_PRELOAD = 4,
 	RESF_UNSAFE = 8,
+	RESF_FAILED = 16,
 } ResourceFlags;
 
 #define RESF_DEFAULT 0

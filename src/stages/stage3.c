@@ -175,6 +175,8 @@ static void stage3_preload(void) {
 		"zbuf_fog",
 		"glitch",
 		"maristar_bombbg",
+		"lasers/accelerated",
+		"lasers/sine_expanding",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/scuttle",
