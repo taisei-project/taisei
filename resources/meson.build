@@ -25,3 +25,5 @@ else
         install_subdir(dir, install_dir : data_path)
     endforeach
 endif
+
+resources_dir = meson.current_source_dir()

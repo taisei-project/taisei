@@ -51,3 +51,5 @@ zip_target = run_target('zip',
 )
 
 gen_opengl_header_command = find_program('./gen-opengl-header.py')
+
+gen_atlases_command = find_program('./gen-atlases.py')

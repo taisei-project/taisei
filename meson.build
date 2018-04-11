@@ -265,6 +265,7 @@ subdir('resources')
 subdir('doc')
 subdir('xdg')
 subdir('scripts')
+subdir('atlas')
 subdir('src')
 
 message(summary)
