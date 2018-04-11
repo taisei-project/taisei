@@ -203,17 +203,11 @@ else
     xdg_path = datadir
 endif
 
-if get_option('buildtype').startswith('debug')
-    config.set('TAISEI_BUILDCONF_DEBUG', true)
-    if have_backtrace
-        config.set('TAISEI_BUILDCONF_LOG_ENABLE_BACKTRACE', true)
-    endif
-endif
+is_debug_build = get_option('buildtype').startswith('debug')
 
-if host_machine.system() == 'windows' or host_machine.system() == 'darwin'
-        config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', true)
-endif
-
+config.set('TAISEI_BUILDCONF_DEBUG', is_debug_build)
+config.set('TAISEI_BUILDCONF_LOG_ENABLE_BACKTRACE', is_debug_build and have_backtrace)
+config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', host_machine.system() == 'windows' or host_machine.system() == 'darwin')
 config.set('TAISEI_BUILDCONF_DEBUG_OPENGL', get_option('debug_opengl'))
 
 if host_machine.system() == 'windows'
