@@ -3,9 +3,9 @@
 #include "lib/render_context.glslh"
 #include "interface/standard.glslh"
 
-uniform(1) float t;
-uniform(2) vec2 plrpos;
-uniform(3) float decay;
+UNIFORM(1) float t;
+UNIFORM(2) vec2 plrpos;
+UNIFORM(3) float decay;
 
 void main(void) {
 	vec2 r = texCoordRaw-plrpos;

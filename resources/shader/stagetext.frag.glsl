@@ -3,9 +3,9 @@
 #include "lib/render_context.glslh"
 #include "interface/standard.glslh"
 
-uniform(1) sampler2D trans;
-uniform(2) vec3 color;
-uniform(3) float t;
+UNIFORM(1) sampler2D trans;
+UNIFORM(2) vec3 color;
+UNIFORM(3) float t;
 
 void main(void) {
 	vec2 pos = texCoordRaw;

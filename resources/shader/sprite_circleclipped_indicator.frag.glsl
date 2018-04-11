@@ -3,7 +3,7 @@
 #include "lib/util.glslh"
 #include "interface/sprite.glslh"
 
-uniform(1) vec4 back_color;
+UNIFORM(1) vec4 back_color;
 
 void main(void) {
     float fill = customParam;

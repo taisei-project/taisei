@@ -4,8 +4,8 @@
 #include "lib/util.glslh"
 #include "interface/standard.glslh"
 
-uniform(1) vec3 color;
-uniform(2) float mixfactor;
+UNIFORM(1) vec3 color;
+UNIFORM(2) float mixfactor;
 
 void main(void) {
 	vec3 rgb = texture(tex, texCoord).rgb;

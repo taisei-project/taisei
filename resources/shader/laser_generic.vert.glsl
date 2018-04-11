@@ -4,12 +4,12 @@
 #include "lib/util.glslh"
 #include "interface/standard.glslh"
 
-attribute(3) vec4 instance_pos_delta;
+ATTRIBUTE(3) vec4 instance_pos_delta;
 
-uniform(1) float timeshift;
-uniform(2) float width;
-uniform(3) float width_exponent;
-uniform(4) int span;
+UNIFORM(1) float timeshift;
+UNIFORM(2) float width;
+UNIFORM(3) float width_exponent;
+UNIFORM(4) int span;
 
 #include "lasers/vertex_pos.glslh"
 

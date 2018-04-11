@@ -2,7 +2,7 @@
 
 #include "interface/standard.glslh"
 
-in(3) vec3 posRaw;
+VARYING(3) vec3 posRaw;
 
 void main(void) {
 	vec4 clr = clamp(vec4(0.0)+pow(1.0-posRaw.z*posRaw.z,5.)*vec4(0.1,0.5,0.9,1.0)+exp(-posRaw.z*10.0)*vec4(1.0),0.,1.);

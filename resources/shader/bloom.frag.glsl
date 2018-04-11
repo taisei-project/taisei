@@ -4,9 +4,9 @@
 #include "lib/render_context.glslh"
 #include "interface/standard.glslh"
 
-uniform(1) float intensity;
-uniform(2) float radius;
-uniform(3) int samples;
+UNIFORM(1) float intensity;
+UNIFORM(2) float radius;
+UNIFORM(3) int samples;
 
 void main(void) {
 	vec2 pos = vec2(texCoordRaw);

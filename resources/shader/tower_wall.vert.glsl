@@ -3,7 +3,7 @@
 #include "lib/render_context.glslh"
 #include "interface/standard.glslh"
 
-out(3) vec3 posModelView;
+VARYING(3) vec3 posModelView;
 
 void main(void) {
 	vec4 pos_mv = r_modelViewMatrix * vec4(position, 1.0);

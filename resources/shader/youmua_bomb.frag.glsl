@@ -3,7 +3,7 @@
 #include "lib/defs.glslh"
 #include "interface/standard.glslh"
 
-uniform(1) float tbomb;
+UNIFORM(1) float tbomb;
 
 void main(void) {
 	vec2 pos = texCoordRaw;

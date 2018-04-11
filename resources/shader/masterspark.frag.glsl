@@ -3,7 +3,7 @@
 #include "lib/util.glslh"
 #include "interface/standard.glslh"
 
-uniform(1) float t;
+UNIFORM(1) float t;
 
 void main(void) {
 	vec2 r = vec2(texCoord.x-0.5,1.0-texCoord.y);

@@ -3,12 +3,12 @@
 #include "../lib/util.glslh"
 #include "../interface/standard.glslh"
 
-uniform(1) vec2 origin;
-uniform(2) float timeshift;
-uniform(3) float width;
-uniform(4) float width_exponent;
-uniform(5) int span;
-uniform(6) vec2 args[4];
+UNIFORM(1) vec2 origin;
+UNIFORM(2) float timeshift;
+UNIFORM(3) float width;
+UNIFORM(4) float width_exponent;
+UNIFORM(5) int span;
+UNIFORM(6) vec2 args[4];
 
 vec2 pos_rule(float t);
 

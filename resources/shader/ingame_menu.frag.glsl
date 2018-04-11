@@ -3,8 +3,8 @@
 #include "lib/util.glslh"
 #include "interface/standard.glslh"
 
-uniform(1) float rad;
-uniform(2) float phase;
+UNIFORM(1) float rad;
+UNIFORM(2) float phase;
 
 void main(void) {
 	vec2 pos = texCoord;

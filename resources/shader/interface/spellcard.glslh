@@ -4,10 +4,10 @@
 
 #include "standard.glslh"
 
-uniform(1) float w;
-uniform(2) float h;
-uniform(3) float ratio;
-uniform(4) vec2 origin;
-uniform(5) float t;
+UNIFORM(1) float w;
+UNIFORM(2) float h;
+UNIFORM(3) float ratio;
+UNIFORM(4) vec2 origin;
+UNIFORM(5) float t;
 
 #endif

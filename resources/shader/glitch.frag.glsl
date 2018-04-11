@@ -2,8 +2,8 @@
 
 #include "interface/standard.glslh"
 
-uniform(1) int frames;
-uniform(2) float strength;
+UNIFORM(1) int frames;
+UNIFORM(2) float strength;
 
 float f(float x) {
     return cos(floor(20.0 * x) - cos((30.0 * x)) * sin(floor(4.0 * x)));

@@ -2,12 +2,12 @@
 
 #include "interface/standard.glslh"
 
-uniform(1) vec4 colorAtop;
-uniform(2) vec4 colorAbot;
-uniform(3) vec4 colorBtop;
-uniform(4) vec4 colorBbot;
-uniform(5) vec4 colortint;
-uniform(6) float split;
+UNIFORM(1) vec4 colorAtop;
+UNIFORM(2) vec4 colorAbot;
+UNIFORM(3) vec4 colorBtop;
+UNIFORM(4) vec4 colorBbot;
+UNIFORM(5) vec4 colortint;
+UNIFORM(6) float split;
 
 void main(void) {
 	vec4 texel = texture(tex, texCoord);

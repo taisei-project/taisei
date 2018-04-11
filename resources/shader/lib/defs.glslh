@@ -9,25 +9,24 @@
 #define LOC(l) layout(location = l)
 
 #if defined(GL_ARB_explicit_uniform_location) || __VERSION__ >= 430
-    #define uniform(l) LOC(l) uniform
+    #define UNIFORM(l) LOC(l) uniform
 #else
-    #define uniform(l) uniform
+    #define UNIFORM(l) uniform
 #endif
 
 #if __VERSION__ >= 420
-    #define in(l) LOC(l) in
-    #define out(l) LOC(l) out
-    #define attribute(l) in(l)
+    #define IN(l) LOC(l) in
+    #define OUT(l) LOC(l) out
 #else
-    #define in(l) in
-    #define out(l) out
-    #define attribute(l) LOC(l) in(l)
+    #define IN(l) in
+    #define OUT(l) out
 #endif
 
 #ifdef FRAG_STAGE
-    #define varying(l) in(l)
+    #define VARYING(l) IN(l)
 #else
-    #define varying(l) out(l)
+    #define VARYING(l) OUT(l)
+    #define ATTRIBUTE(l) LOC(l) in
 #endif
 
 #endif

@@ -3,12 +3,12 @@
 #include "lib/render_context.glslh"
 #include "interface/standard.glslh"
 
-uniform(1) vec2 blur_orig; // center
-uniform(2) vec2 fix_orig;
-uniform(3) float blur_rad;  // radius of zoom effect
-uniform(4) float rad;
-uniform(5) float ratio; // texture h/w
-uniform(6) vec4 color;
+UNIFORM(1) vec2 blur_orig; // center
+UNIFORM(2) vec2 fix_orig;
+UNIFORM(3) float blur_rad;  // radius of zoom effect
+UNIFORM(4) float rad;
+UNIFORM(5) float ratio; // texture h/w
+UNIFORM(6) vec4 color;
 
 void main(void) {
 	vec2 pos = texCoordRaw;

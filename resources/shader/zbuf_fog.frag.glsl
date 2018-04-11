@@ -3,12 +3,12 @@
 #include "lib/defs.glslh"
 #include "interface/standard.glslh"
 
-uniform(1) sampler2D depth;
-uniform(2) float start;
-uniform(3) float end;
-uniform(4) float exponent;
-uniform(5) float sphereness;
-uniform(6) vec4 fog_color;
+UNIFORM(1) sampler2D depth;
+UNIFORM(2) float start;
+UNIFORM(3) float end;
+UNIFORM(4) float exponent;
+UNIFORM(5) float sphereness;
+UNIFORM(6) vec4 fog_color;
 
 void main(void) {
 	vec2 pos = vec2(texCoord);

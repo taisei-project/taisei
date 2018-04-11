@@ -5,10 +5,10 @@
 #define POINTS 120
 // #define INTERPOLATE
 
-uniform(1) vec3 color_low;
-uniform(2) vec3 color_mid;
-uniform(3) vec3 color_high;
-uniform(4) float points[POINTS];
+UNIFORM(1) vec3 color_low;
+UNIFORM(2) vec3 color_mid;
+UNIFORM(3) vec3 color_high;
+UNIFORM(4) float points[POINTS];
 
 float get_sample(float x) {
 	x = clamp(x, 0.0, 1.0) * float(POINTS - 1);

@@ -2,7 +2,7 @@
 
 #include "interface/standard.glslh"
 
-in(3) vec3 posModelView;
+VARYING(3) vec3 posModelView;
 
 void main(void) {
 	vec4 texel = texture(tex, texCoord);

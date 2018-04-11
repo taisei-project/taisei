@@ -4,10 +4,10 @@
 
 #include "standard.glslh"
 
-uniform(1) vec4 color;
-uniform(2) float strength;
-uniform(3) vec3 lightvec;
+UNIFORM(1) vec4 color;
+UNIFORM(2) float strength;
+UNIFORM(3) vec3 lightvec;
 
-varying(3) vec3 l; // TODO: rename this?
+VARYING(3) vec3 l; // TODO: rename this?
 
 #endif

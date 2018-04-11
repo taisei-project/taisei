@@ -3,7 +3,7 @@
 #include "lib/render_context.glslh"
 #include "interface/standard.glslh"
 
-out(3) vec3 posRaw;
+VARYING(3) vec3 posRaw;
 
 void main(void) {
 	gl_Position = r_projectionMatrix * r_modelViewMatrix * vec4(position, 1.0);

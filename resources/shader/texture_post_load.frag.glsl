@@ -2,8 +2,8 @@
 
 #include "interface/standard.glslh"
 
-uniform(1) int width;
-uniform(2) int height;
+UNIFORM(1) int width;
+UNIFORM(2) int height;
 
 vec2 tc_normalize(ivec2 tc) {
 	return vec2(tc) / vec2(width, height);
