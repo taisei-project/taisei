@@ -33,6 +33,13 @@ static struct SpriteBatchState {
 	uint depth_test_enabled : 1;
 	uint depth_write_enabled : 1;
 	uint num_pending;
+
+	struct {
+		uint flushes;
+		uint sprites;
+		uint best_batch;
+		uint worst_batch;
+	} frame_stats;
 } _r_sprite_batch;
 
 void _r_sprite_batch_init(void) {
@@ -95,7 +102,21 @@ void r_flush_sprites(void) {
 	uint pending = _r_sprite_batch.num_pending;
 
 	// needs to be done early to thwart recursive callss
+
+	if(_r_sprite_batch.frame_stats.flushes) {
+		if(_r_sprite_batch.num_pending > _r_sprite_batch.frame_stats.best_batch) {
+			_r_sprite_batch.frame_stats.best_batch = _r_sprite_batch.num_pending;
+		}
+
+		if(_r_sprite_batch.num_pending < _r_sprite_batch.frame_stats.worst_batch) {
+			_r_sprite_batch.frame_stats.worst_batch = _r_sprite_batch.num_pending;
+		}
+	} else {
+		_r_sprite_batch.frame_stats.worst_batch = _r_sprite_batch.frame_stats.best_batch = _r_sprite_batch.num_pending;
+	}
+
 	_r_sprite_batch.num_pending = 0;
+	_r_sprite_batch.frame_stats.flushes++;
 
 	// log_warn("flush! %u", pending);
 
@@ -195,6 +216,7 @@ static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, VertexB
 	attribs.custom = params->custom;
 
 	r_vertex_buffer_append(vbuf, sizeof(attribs), &attribs);
+	_r_sprite_batch.frame_stats.sprites++;
 }
 
 void r_draw_sprite(const SpriteParams *params) {
@@ -289,4 +311,34 @@ void r_draw_sprite(const SpriteParams *params) {
 
 	_r_sprite_batch.num_pending++;
 	_r_sprite_batch_add(spr, params, &_r_sprite_batch.vbuf);
+}
+
+#include "resource/font.h"
+
+void _r_sprite_batch_end_frame(void) {
+#ifdef DEBUG
+	if(!_r_sprite_batch.frame_stats.flushes) {
+		return;
+	}
+
+	Color clr_saved = r_color_current();
+	ShaderProgram *prog_saved = r_shader_current();
+	r_shader_standard();
+	r_color4(1, 1, 1, 1);
+
+	static char buf[512];
+	snprintf(buf, sizeof(buf), "%6i sprites %6i flushes %9.02f spr/flush %6i best %6i worst",
+		_r_sprite_batch.frame_stats.sprites,
+		_r_sprite_batch.frame_stats.flushes,
+		(double)_r_sprite_batch.frame_stats.sprites / _r_sprite_batch.frame_stats.flushes,
+		_r_sprite_batch.frame_stats.best_batch,
+		_r_sprite_batch.frame_stats.worst_batch
+	);
+
+	draw_text(AL_Left, 0, font_line_spacing(_fonts.monotiny), buf, _fonts.monotiny);
+	memset(&_r_sprite_batch.frame_stats, 0, sizeof(_r_sprite_batch.frame_stats));
+
+	r_color(clr_saved);
+	r_shader_ptr(prog_saved);
+#endif
 }

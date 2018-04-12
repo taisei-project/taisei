@@ -11,3 +11,4 @@
 
 void _r_sprite_batch_init(void);
 void _r_sprite_batch_shutdown(void);
+void _r_sprite_batch_end_frame(void);
