@@ -1096,6 +1096,7 @@ void kurumi_extra_drainer_draw(Projectile *p, int time) {
 
 	r_blend(BLEND_ALPHA);
 	r_shader("sprite_default");
+	r_color4(1, 1, 1, 1);
 }
 
 int kurumi_extra_drainer(Projectile *p, int time) {
@@ -1163,9 +1164,9 @@ void kurumi_extra_fairy_visual(Enemy *e, int time, bool render) {
 	}
 
 	r_blend(BLEND_ADD);
-	r_shader("negative");
+	r_shader("sprite_negative");
 	Fairy(e, time, render);
-	r_shader_standard();
+	r_shader("sprite_default");
 	r_blend(BLEND_ALPHA);
 }
 
@@ -1176,9 +1177,9 @@ void kurumi_extra_bigfairy_visual(Enemy *e, int time, bool render) {
 	}
 
 	r_blend(BLEND_ADD);
-	r_shader("negative");
+	r_shader("sprite_negative");
 	BigFairy(e, time, render);
-	r_shader_standard();
+	r_shader("sprite_default");
 	r_blend(BLEND_ALPHA);
 }
 
