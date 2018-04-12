@@ -1,0 +1,12 @@
+
+#ifndef RENDER_CONTEXT_H
+#define RENDER_CONTEXT_H
+
+#include "defs.glslh"
+
+UNIFORM(512) mat4 r_modelViewMatrix;
+UNIFORM(513) mat4 r_projectionMatrix;
+UNIFORM(514) mat4 r_textureMatrix;
+UNIFORM(515) vec4 r_color;
+
+#endif

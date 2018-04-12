@@ -9,17 +9,11 @@
 #pragma once
 #include "taisei.h"
 
-#include <stdbool.h>
-#include <stdint.h>
 #include <stdlib.h>
 
 #include "list.h"
 
-#define HT_MIN_SIZE 15
-#define HT_MAX_SIZE 4095
-#define HT_COLLISION_TOLERANCE 5
-#define HT_DYNAMIC_SIZE 0
-#define HT_RESIZE_STEP 1
+#define HT_MIN_SIZE 16
 
 typedef struct Hashtable Hashtable;
 typedef struct HashtableIterator HashtableIterator;
@@ -27,10 +21,10 @@ typedef struct HashtableStats HashtableStats;
 typedef uint32_t hash_t;
 
 struct HashtableStats {
-	unsigned int free_buckets;
-	unsigned int collisions;
-	unsigned int max_per_bucket;
-	unsigned int num_elements;
+	uint free_buckets;
+	uint collisions;
+	uint max_per_bucket;
+	uint num_elements;
 };
 
 typedef bool (*HTCmpFunc)(void *key1, void *key2);
@@ -39,10 +33,10 @@ typedef void (*HTCopyFunc)(void **dstkey, void *srckey);
 typedef void (*HTFreeFunc)(void *key);
 typedef void* (*HTIterCallback)(void *key, void *data, void *arg);
 
-Hashtable* hashtable_new(size_t size, HTCmpFunc cmp_func, HTHashFunc hash_func, HTCopyFunc copy_func, HTFreeFunc free_func);
+Hashtable* hashtable_new(HTCmpFunc cmp_func, HTHashFunc hash_func, HTCopyFunc copy_func, HTFreeFunc free_func);
 void hashtable_free(Hashtable *ht);
-void* hashtable_get(Hashtable *ht, void *key) __attribute__((hot));
-void* hashtable_get_unsafe(Hashtable *ht, void *key) __attribute__((hot));
+void* hashtable_get(Hashtable *ht, void *key) attr_hot;
+void* hashtable_get_unsafe(Hashtable *ht, void *key) attr_hot;
 void hashtable_set(Hashtable *ht, void *key, void *data);
 void hashtable_unset(Hashtable *ht, void *key);
 void hashtable_unset_deferred(Hashtable *ht, void *key, ListContainer **list);
@@ -55,12 +49,12 @@ void* hashtable_foreach(Hashtable *ht, HTIterCallback callback, void *arg);
 HashtableIterator* hashtable_iter(Hashtable *ht);
 bool hashtable_iter_next(HashtableIterator *iter, void **out_key, void **out_data);
 
-bool hashtable_cmpfunc_string(void *str1, void *str2) __attribute__((hot));
-hash_t hashtable_hashfunc_string(void *vstr) __attribute__((hot));
-hash_t hashtable_hashfunc_string_sse42(void *vstr) __attribute__((hot));
+bool hashtable_cmpfunc_string(void *str1, void *str2) attr_hot;
+hash_t hashtable_hashfunc_string(void *vstr) attr_hot;
+hash_t hashtable_hashfunc_string_sse42(void *vstr) attr_hot;
 void hashtable_copyfunc_string(void **dst, void *src);
 #define hashtable_freefunc_string free
-Hashtable* hashtable_new_stringkeys(size_t size);
+Hashtable* hashtable_new_stringkeys(void);
 
 void* hashtable_get_string(Hashtable *ht, const char *key);
 void hashtable_set_string(Hashtable *ht, const char *key, void *data);

@@ -239,10 +239,8 @@ int stage2_accel_circle(Enemy *e, int t) {
 }
 
 static void wriggle_ani_flyin(Boss *w) {
-	aniplayer_queue_pro(&w->ani,1,3,3,120,0);
-	aniplayer_queue_pro(&w->ani,1,3,21,0,7);
-	aniplayer_queue_pro(&w->ani,1,3,33,0,3);
-	aniplayer_queue_pro(&w->ani,1,3,12,0,0);
+	aniplayer_queue(&w->ani,"midbossflyintro",1);
+	aniplayer_queue(&w->ani,"main",0);
 }
 
 static void wriggle_intro_stage2(Boss *w, int t) {
@@ -282,9 +280,15 @@ void wriggle_small_storm(Boss *w, int time) {
 	GO_AT(w, 60, 120, 1)
 	GO_AT(w, 180, 240, -1)
 
+	if(!((t+200-15)%200)) {
+		aniplayer_queue(&w->ani,"specialshot_charge",1);
+		aniplayer_queue(&w->ani,"specialshot_hold",20);
+		aniplayer_queue(&w->ani,"specialshot_release",1);
+		aniplayer_queue(&w->ani,"main",0);
+	}
+
 	if(!(t%200)) {
 		int i;
-		aniplayer_queue(&w->ani,1,0,0)->speed=4;
 		play_sound("shot_special1");
 
 		for(i = 0; i < 10+global.diff; i++) {
@@ -297,7 +301,8 @@ void wriggle_small_storm(Boss *w, int time) {
 }
 
 void wiggle_mid_flee(Boss *w, int t) {
-	w->ani.stdrow = 1;
+	if(t == 0)
+		aniplayer_queue(&w->ani, "fly", 0);
 	if(t >= 0) {
 		GO_TO(w, VIEWPORT_W/2 - 3.0 * t - 300 * I, 0.01)
 	}
@@ -332,7 +337,9 @@ void hina_cards1(Boss *h, int time) {
 	if(time < 0)
 		return;
 
-	h->ani.stdrow = 1;
+	AT(0) {
+		aniplayer_queue(&h->ani, "guruguru", 0);
+	}
 	FROM_TO(0, 500, 2-(global.diff > D_Normal)) {
 		play_sound_ex("shot1", 4, false);
 		PROJECTILE("card", h->pos+50*cexp(I*t/10), rgb(0.8,0.0,0.0), asymptotic, { (1.6+0.4*global.diff)*cexp(I*t/5.0), 3 });
@@ -352,9 +359,11 @@ void hina_amulet(Boss *h, int time) {
 	TIMER(&t);
 
 	complex d = global.plr.pos - h->pos;
-	h->ani.stdrow = 0;
-	FROM_TO_SND("shot1_loop", 0,200*(global.diff+0.5)/(D_Lunatic+0.5),1) {
-		h->ani.stdrow = 1;
+	int loopduration = 200*(global.diff+0.5)/(D_Lunatic+0.5);
+	AT(0) {
+		aniplayer_queue_frames(&h->ani,"guruguru",loopduration);
+	}
+	FROM_TO_SND("shot1_loop", 0,loopduration,1) {
 		float f = _i/30.0;
 		complex n = cexp(I*2*M_PI*f+I*carg(d)+0.7*time/200*I)/sqrt(0.5+global.diff);
 
@@ -446,7 +455,7 @@ void hina_bad_pick(Boss *h, int time) {
 	}
 
 	AT(200) {
-		aniplayer_queue(&h->ani,1,1,0);
+		aniplayer_queue(&h->ani,"guruguru",2);
 		play_sound("shot_special1");
 
 		int win = tsrand()%SLOTS;
@@ -484,7 +493,9 @@ void hina_wheel(Boss *h, int time) {
 
 	GO_TO(h, VIEWPORT_W/2+VIEWPORT_H/2*I, 0.02);
 
-	h->ani.stdrow = 1;
+	AT(0) {
+		aniplayer_queue(&h->ani,"guruguru",0);
+	}
 	if(time < 60) {
 		if(time == 0) {
 			if(global.diff > D_Normal) {
@@ -560,51 +571,45 @@ void hina_monty_slave_visual(Enemy *s, int time, bool render) {
 	}
 
 	Sprite *soul = get_sprite("proj/soul");
-	Shader *shader = recolor_get_shader();
 	double scale = fabs(swing(clamp(time / 60.0, 0, 1), 3)) * 1.25;
-
-	ColorTransform ct;
 
 	Color clr1 = rgba(1.0, 0.0, 0.0, 1.0);
 	Color clr2 = rgba(0.0, 0.0, 1.0, 1.0);
 	Color clr3 = rgba(psin(time*0.05), 0.0, 1.0 - psin(time*0.05), 1.0);
 
-	glUseProgram(shader->prog);
+	r_mat_push();
+	r_mat_translate(creal(s->pos), cimag(s->pos), 0);
 
-	glPushMatrix();
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+	r_blend(BLEND_ADD);
+	r_shader("sprite_bullet");
 
-	glTranslatef(creal(s->pos), cimag(s->pos), 0);
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = soul,
+		.rotation.angle = time * DEG2RAD,
+		.scale.x = scale * (0.6 + 0.6 * psin(time*0.1)),
+		.scale.y = scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)),
+		.color = clr1,
+	});
 
-	static_clrtransform_bullet(clr1, &ct);
-	recolor_apply_transform(&ct);
-	glPushMatrix();
-	glRotatef(time, 0, 0, 1);
-	glScalef(scale * (0.6 + 0.6 * psin(time*0.1)), scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), 0);
-	draw_sprite_p(0, 0, soul);
-	glPopMatrix();
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = soul,
+		.rotation.angle = time * DEG2RAD,
+		.scale.x = scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)),
+		.scale.y = scale * (0.6 + 0.6 * psin(time*0.1)),
+		.color = clr2,
+	});
 
-	static_clrtransform_bullet(clr2, &ct);
-	recolor_apply_transform(&ct);
-	glPushMatrix();
-	glRotatef(time, 0, 0, 1);
-	glScalef(scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0);
-	draw_sprite_p(0, 0, soul);
-	glPopMatrix();
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = soul,
+		.rotation.angle = -time * DEG2RAD,
+		.scale.both = scale,
+		.color = clr3,
+	});
 
-	static_clrtransform_bullet(clr3, &ct);
-	recolor_apply_transform(&ct);
-	glPushMatrix();
-	glRotatef(-time, 0, 0, 1);
-	// glScalef(scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)), scale * (0.6 + 0.6 * psin(time*0.1)), 0);
-	glScalef(scale, scale, 0);
-	draw_sprite_p(0, 0, soul);
-	glPopMatrix();
+	r_blend(BLEND_ALPHA);
+	r_mat_pop();
 
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-	glPopMatrix();
-
-	glUseProgram(0);
+	r_shader("sprite_default");
 }
 
 void hina_monty(Boss *h, int time) {
@@ -651,7 +656,8 @@ void hina_monty(Boss *h, int time) {
 
 		play_sound("laser1");
 		create_laserline_ab(h->pos, o, 15, 30, 60, rgb(1.0, 0.3, 0.3));
-		aniplayer_queue(&h->ani,1,0,0);
+		aniplayer_queue(&h->ani,"guruguru",1);
+		aniplayer_queue(&h->ani,"main",0);
 	}
 
 	AT(140) {
@@ -697,10 +703,11 @@ void hina_monty(Boss *h, int time) {
 		const int end = 540;
 		const int ncycles = (end - start) / cycle_dur;
 
-		AT(start)
-			h->ani.stdrow = 1;
-		AT(end)
-			h->ani.stdrow = 0;
+		AT(start) {
+			aniplayer_queue_frames(&h->ani,"guruguru",end-start);
+			aniplayer_queue(&h->ani,"main",0);
+		}
+
 		FROM_TO_INT(start, start + cycle_dur * ncycles - 1, cycle_dur, burst_dur, step) {
 			play_sound("shot1");
 
@@ -735,22 +742,20 @@ void hina_monty(Boss *h, int time) {
 }
 
 void hina_spell_bg(Boss *h, int time) {
-
-	glPushMatrix();
-	glTranslatef(VIEWPORT_W/2, VIEWPORT_H/2,0);
-	glPushMatrix();
-	glScalef(0.6,0.6,1);
+	r_mat_push();
+	r_mat_translate(VIEWPORT_W/2, VIEWPORT_H/2,0);
+	r_mat_push();
+	r_mat_scale(0.6,0.6,1);
 	draw_sprite(0, 0, "stage2/spellbg1");
-	glPopMatrix();
-	glBlendFunc(GL_ZERO, GL_SRC_COLOR);
-	glRotatef(time*5, 0,0,1);
+	r_mat_pop();
+	r_blend(BLEND_MOD);
+	r_mat_rotate_deg(time*5, 0,0,1);
 	draw_sprite(0, 0, "stage2/spellbg2");
-	glPopMatrix();
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	play_animation(get_ani("fire"),creal(h->pos), cimag(h->pos), 0);
-
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+	r_mat_pop();
+	r_blend(BLEND_ADD);
+	Animation *fireani = get_ani("fire");
+	draw_sprite_p(creal(h->pos), cimag(h->pos), animation_get_frame(fireani,get_ani_sequence(fireani,"main"), global.frames));
+	r_blend(BLEND_ALPHA);
 }
 
 Boss* stage2_spawn_hina(complex pos) {
@@ -763,8 +768,10 @@ Boss* stage2_spawn_hina(complex pos) {
 Boss *create_hina(void) {
 	Boss *hina = stage2_spawn_hina(VIEWPORT_W + 150 + 100.0*I);
 
-	aniplayer_queue(&hina->ani,0,2,0);
-	aniplayer_queue(&hina->ani,1,0,0);
+	aniplayer_queue(&hina->ani,"main",3);
+	aniplayer_queue(&hina->ani,"guruguru",1);
+	aniplayer_queue(&hina->ani,"main",0);
+
 	boss_add_attack(hina, AT_Move, "Introduction", 2, 0, hina_intro, NULL);
 	boss_add_attack(hina, AT_Normal, "Cards1", 30, 25000, hina_cards1, NULL);
 	boss_add_attack_from_info(hina, &stage2_spells.boss.amulet_of_harm, false);

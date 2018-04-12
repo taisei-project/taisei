@@ -12,6 +12,8 @@
 #include "global.h"
 #include "video.h"
 
+#include <time.h>
+
 //
 // string utils
 //
@@ -101,20 +103,29 @@ char* vstrfmt(const char *fmt, va_list args) {
 	size_t asize = 1;
 	char *out = NULL;
 
-	while(asize * 2 <= fmtlen)
+	while(asize <= fmtlen)
 		asize *= 2;
 
-	do {
-		asize *= 2;
+	for(;;) {
 		out = realloc(out, asize);
+
 		va_list nargs;
 		va_copy(nargs, args);
 		written = vsnprintf(out, asize, fmt, nargs);
 		va_end(nargs);
 
-	} while(written >= asize);
+		if(written < asize) {
+			break;
+		}
 
-	return realloc(out, strlen(out) + 1);
+		asize = written + 1;
+	}
+
+	if(asize > strlen(out) + 1) {
+		out = realloc(out, strlen(out) + 1);
+	}
+
+	return out;
 }
 
 char* strfmt(const char *fmt, ...) {
@@ -123,6 +134,20 @@ char* strfmt(const char *fmt, ...) {
 	char *str = vstrfmt(fmt, args);
 	va_end(args);
 	return str;
+}
+
+char* strftimealloc(const char *fmt, const struct tm *timeinfo) {
+	size_t sz_allocated = 64;
+
+	while(true) {
+		char str[sz_allocated];
+
+		if(strftime(str, sz_allocated, fmt, timeinfo)) {
+			return strdup(str);
+		}
+
+		sz_allocated *= 2;
+	};
 }
 
 char* copy_segment(const char *text, const char *delim, int *size) {
@@ -177,7 +202,7 @@ size_t ucs4len(const uint32_t *ucs4) {
 
 uint32_t* utf8_to_ucs4(const char *utf8) {
 	assert(utf8 != NULL);
-	uint32_t *ucs4 = (uint32_t*)SDL_iconv_string("UCS-4", "UTF-8", utf8, strlen(utf8) + 1);
+	uint32_t *ucs4 = (uint32_t*)(void*)SDL_iconv_string("UCS-4", "UTF-8", utf8, strlen(utf8) + 1);
 	assert(ucs4 != NULL);
 	return ucs4;
 }
@@ -279,10 +304,24 @@ double swing(double x, double s) {
 	return x * x * ((s + 1) * x + s) / 2 + 1;
 }
 
-unsigned int topow2(unsigned int x) {
-	int y = 1;
-	while(y < x) y *= 2;
-	return y;
+uint32_t topow2_u32(uint32_t x) {
+	x -= 1;
+	x |= (x >> 1);
+	x |= (x >> 2);
+	x |= (x >> 4);
+	x |= (x >> 8);
+	x |= (x >> 16);
+	return x + 1;
+}
+
+uint64_t topow2_u64(uint64_t x) {
+	x -= 1;
+	x |= (x >> 1);
+	x |= (x >> 2);
+	x |= (x >> 4);
+	x |= (x >> 8);
+	x |= (x >> 16);
+	return x + 1;
 }
 
 float ftopow2(float x) {
@@ -310,11 +349,10 @@ float sanitize_scale(float scale) {
 //
 
 void set_ortho_ex(float w, float h) {
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, w, h, 0, -100, 100);
-	glMatrixMode(GL_MODELVIEW);
-	glDisable(GL_DEPTH_TEST);
+	r_mat_mode(MM_PROJECTION);
+	r_mat_ortho( 0, w, h, 0, -100, 100);
+	r_mat_mode(MM_MODELVIEW);
+	r_disable(RCAP_DEPTH_TEST);
 }
 
 void set_ortho(void) {
@@ -324,18 +362,18 @@ void set_ortho(void) {
 void colorfill(float r, float g, float b, float a) {
 	if(a <= 0) return;
 
-	glDisable(GL_TEXTURE_2D);
-	glColor4f(r,g,b,a);
+	r_shader_standard_notex();
+	r_color4(r,g,b,a);
 
-	glPushMatrix();
-	glScalef(SCREEN_W,SCREEN_H,1);
-	glTranslatef(0.5,0.5,0);
+	r_mat_push();
+	r_mat_scale(SCREEN_W,SCREEN_H,1);
+	r_mat_translate(0.5,0.5,0);
 
-	draw_quad();
-	glPopMatrix();
+	r_draw_quad();
+	r_mat_pop();
 
-	glColor4f(1,1,1,1);
-	glEnable(GL_TEXTURE_2D);
+	r_color4(1,1,1,1);
+	r_shader_standard();
 }
 
 void fade_out(float f) {
@@ -344,9 +382,8 @@ void fade_out(float f) {
 
 void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxfrags, float alpha, float star_width) {
 	Sprite *star = get_sprite("star");
-	Shader *shader = get_shader("circleclipped_indicator");
-	static float clr[4];
 	int i = 0;
+	float scale = star_width/star->w;
 
 	Color amul = rgba(alpha, alpha, alpha, alpha);
 	Color fill_clr = multiply_colors(rgba(1.0f, 1.0f, 1.0f, 1.0f), amul);
@@ -356,40 +393,48 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 	// XXX: move to call site?
 	y -= 2;
 
-	glUseProgram(shader->prog);
-	parse_color_array(fill_clr, clr);
-	glUniform4fv(uniloc(shader, "fill_color"), 1, clr);
-	parse_color_array(back_clr, clr);
-	glUniform4fv(uniloc(shader, "back_color"), 1, clr);
-	glUniform1f(uniloc(shader, "fill"), 1);
+	ShaderProgram *prog_saved = r_shader_current();
+	r_shader("sprite_circleclipped_indicator");
+	r_uniform_rgba("back_color", back_clr);
 
-	begin_draw_sprite(x - star_width, y, star_width/star->w, star_width/star->w, true, star);
+	r_mat_push();
+	r_mat_translate(x - star_width, y, 0);
 
 	while(i < numstars) {
-		glTranslatef(1, 0, 0);
-		draw_quad();
+		r_mat_translate(star_width, 0, 0);
+		r_draw_sprite(&(SpriteParams) {
+			.sprite_ptr = star,
+			.custom = 1,
+			.color = fill_clr,
+			.scale.both = scale,
+		});
 		i++;
 	}
 
 	if(numfrags) {
-		glTranslatef(1, 0, 0);
-		parse_color_array(frag_clr, clr);
-		glUniform4fv(uniloc(shader, "fill_color"), 1, clr);
-		glUniform1f(uniloc(shader, "fill"), numfrags / (float)maxfrags);
-		draw_quad();
+		r_mat_translate(star_width, 0, 0);
+		r_draw_sprite(&(SpriteParams) {
+			.sprite_ptr = star,
+			.custom = numfrags / (float)maxfrags,
+			.color = frag_clr,
+			.scale.both = scale,
+		});
 		i++;
 	}
-
-	glUniform1f(uniloc(shader, "fill"), 0);
 
 	while(i < maxstars) {
-		glTranslatef(1, 0, 0);
-		draw_quad();
+		r_mat_translate(star_width, 0, 0);
+		r_draw_sprite(&(SpriteParams) {
+			.sprite_ptr = star,
+			.custom = 0,
+			.color = frag_clr,
+			.scale.both = scale,
+		});
 		i++;
 	}
 
-	end_draw_sprite();
-	glUseProgram(0);
+	r_mat_pop();
+	r_shader_ptr(prog_saved);
 }
 
 //
@@ -470,7 +515,10 @@ bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data) 
 			*ptr = 0;
 		}
 
-		callback(key, val, data);
+		if(!callback(key, val, data)) {
+			++errors;
+			continue;
+		}
 	}
 
 	return !errors;
@@ -489,14 +537,16 @@ bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *dat
 	return status;
 }
 
-static void kvcallback_hashtable(const char *key, const char *val, Hashtable *ht) {
+static bool kvcallback_hashtable(const char *key, const char *val, void *data) {
+	Hashtable *ht = data;
 	hashtable_set_string(ht, key, strdup((void*)val));
+	return true;
 }
 
-Hashtable* parse_keyvalue_stream(SDL_RWops *strm, size_t tablesize) {
-	Hashtable *ht = hashtable_new_stringkeys(tablesize);
+Hashtable* parse_keyvalue_stream(SDL_RWops *strm) {
+	Hashtable *ht = hashtable_new_stringkeys();
 
-	if(!parse_keyvalue_stream_cb(strm, (KVCallback)kvcallback_hashtable, ht)) {
+	if(!parse_keyvalue_stream_cb(strm, kvcallback_hashtable, ht)) {
 		hashtable_free(ht);
 		ht = NULL;
 	}
@@ -504,10 +554,10 @@ Hashtable* parse_keyvalue_stream(SDL_RWops *strm, size_t tablesize) {
 	return ht;
 }
 
-Hashtable* parse_keyvalue_file(const char *filename, size_t tablesize) {
-	Hashtable *ht = hashtable_new_stringkeys(tablesize);
+Hashtable* parse_keyvalue_file(const char *filename) {
+	Hashtable *ht = hashtable_new_stringkeys();
 
-	if(!parse_keyvalue_file_cb(filename, (KVCallback)kvcallback_hashtable, ht)) {
+	if(!parse_keyvalue_file_cb(filename, kvcallback_hashtable, ht)) {
 		hashtable_free(ht);
 		ht = NULL;
 	}
@@ -515,7 +565,8 @@ Hashtable* parse_keyvalue_file(const char *filename, size_t tablesize) {
 	return ht;
 }
 
-static void kvcallback_spec(const char *key, const char *val, KVSpec *spec) {
+static bool kvcallback_spec(const char *key, const char *val, void *data) {
+	KVSpec *spec = data;
 	for(KVSpec *s = spec; s->name; ++s) {
 		if(!strcmp(key, s->name)) {
 			if(s->out_str) {
@@ -534,19 +585,20 @@ static void kvcallback_spec(const char *key, const char *val, KVSpec *spec) {
 				*s->out_double = strtod(val, NULL);
 			}
 
-			return;
+			return true;
 		}
 	}
 
 	log_warn("Unknown key '%s' with value '%s' ignored", key, val);
+	return true;
 }
 
 bool parse_keyvalue_stream_with_spec(SDL_RWops *strm, KVSpec *spec) {
-	return parse_keyvalue_stream_cb(strm, (KVCallback)kvcallback_spec, spec);
+	return parse_keyvalue_stream_cb(strm, kvcallback_spec, spec);
 }
 
 bool parse_keyvalue_file_with_spec(const char *filename, KVSpec *spec) {
-	return parse_keyvalue_file_cb(filename, (KVCallback)kvcallback_spec, spec);
+	return parse_keyvalue_file_cb(filename, kvcallback_spec, spec);
 }
 
 static void png_rwops_write_data(png_structp png_ptr, png_bytep data, png_size_t length) {
@@ -583,7 +635,13 @@ char* SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize) {
 	if(ptr == buf)
 		return NULL;
 
-	*ptr = 0;
+	if(ptr > end) {
+		*end = 0;
+		log_warn("Line too long (%zu bytes max): %s", bufsize, buf);
+	} else {
+		*ptr = 0;
+	}
+
 	return buf;
 }
 
@@ -620,6 +678,12 @@ char* try_path(const char *prefix, const char *name, const char *ext) {
 //
 // misc utils
 //
+
+void* memdup(const void *src, size_t size) {
+	void *data = malloc(size);
+	memcpy(data, src, size);
+	return data;
+}
 
 int getenvint(const char *v, int defaultval) {
 	char *e = getenv(v);

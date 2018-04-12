@@ -1,0 +1,47 @@
+
+#ifndef UTIL_H
+#define UTIL_H
+
+#include "defs.glslh"
+
+const float pi = 3.141592653589793;
+
+vec2 dir(float a) {
+    return vec2(cos(a), sin(a));
+}
+
+float angle(vec2 v) {
+    return atan(v.y, v.x);
+}
+
+vec2 cmul(vec2 c1, vec2 c2) {
+    // complex multiplication
+    // x = real, y = imaginary
+    return vec2(c1.x*c2.x - c1.y*c2.y, c1.x*c2.y + c1.y*c2.x);
+}
+
+float lum(vec3 c) {
+    return 0.216 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+}
+
+float min3(vec3 c) {
+    return min(c.x, min(c.y, c.z));
+}
+
+float _smoothstep(float x) { // TODO: use glsl builtin function
+    return 1.0/(exp(8.*x)+1.0);
+}
+
+float _smoothstep(float x, float b) { // TODO: use glsl smoothstep
+    x = clamp(x/b - 0.5, 0.0, 1.0);
+    return x*x*(3.0 - 2.0*x);
+}
+
+vec2 uv_to_region(vec4 region, vec2 uv) {
+    return vec2(
+        mix(region.x, region.x + region.z, uv.x),
+        mix(region.y, region.y + region.w, uv.y)
+    );
+}
+
+#endif

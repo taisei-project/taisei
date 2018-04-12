@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include <stdint.h>
 #include "hirestime.h"
 
 typedef struct {

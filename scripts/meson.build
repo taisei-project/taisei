@@ -49,3 +49,7 @@ zip_outpath = join_paths(meson.build_root(), zip_filename)
 zip_target = run_target('zip',
     command: [zip_command, meson.build_root(), zip_outpath],
 )
+
+gen_opengl_header_command = find_program('./gen-opengl-header.py')
+
+gen_atlases_command = find_program('./gen-atlases.py')

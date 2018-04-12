@@ -11,7 +11,7 @@
 
 #include "util.h"
 #include "projectile.h"
-#include "resource/shader.h"
+#include "resource/shader_program.h"
 
 typedef struct Laser Laser;
 
@@ -35,7 +35,7 @@ struct Laser {
 	float width;
 	float width_exponent;
 
-	Shader *shader;
+	ShaderProgram *shader;
 
 	float collision_step;
 
@@ -55,6 +55,8 @@ struct Laser {
 #define create_lasercurve3c(p, time, deathtime, clr, rule, a0, a1, a2) create_laser(p, time, deathtime, clr, rule, 0, a0, a1, a2, 0)
 #define create_lasercurve4c(p, time, deathtime, clr, rule, a0, a1, a2, a3) create_laser(p, time, deathtime, clr, rule, 0, a0, a1, a2, a3)
 
+void lasers_preload(void);
+void lasers_free(void);
 
 Laser *create_laserline(complex pos, complex dir, float charge, float dur, Color clr);
 Laser *create_laserline_ab(complex a, complex b, float width, float charge, float dur, Color clr);

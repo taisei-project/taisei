@@ -46,141 +46,131 @@ struct stage2_spells_s stage2_spells = {
 	},
 };
 
-static void stage2_bg_leaves_draw(Vector pos) {
-	glUseProgram(get_shader("alpha_depth")->prog);
+static void stage2_bg_leaves_draw(vec3 pos) {
+	r_shader("alpha_depth");
 
-	glMatrixMode(GL_TEXTURE);
-	glLoadIdentity();
-	glScalef(-1,1,1);
-	glMatrixMode(GL_MODELVIEW);
+	r_mat_mode(MM_TEXTURE);
+	r_mat_identity();
+	r_mat_scale(-1,1,1);
+	r_mat_mode(MM_MODELVIEW);
 
-	Texture *leaves = get_tex("stage2/leaves");
-	glBindTexture(GL_TEXTURE_2D, leaves->gltex);
+	r_texture(0, "stage2/leaves");
 
-	glPushMatrix();
-	glTranslatef(pos[0]-360,pos[1],pos[2]+500);
-	glRotatef(-160,0,1,0);
-	glTranslatef(-50,0,0);
-	glScalef(1000,3000,1);
+	r_mat_push();
+	r_mat_translate(pos[0]-360,pos[1],pos[2]+500);
+	r_mat_rotate_deg(-160,0,1,0);
+	r_mat_translate(-50,0,0);
+	r_mat_scale(1000,3000,1);
 
-	draw_quad();
+	r_draw_quad();
 
-	glPopMatrix();
+	r_mat_pop();
 
-	glUseProgram(0);
+	r_shader_standard();
 
-	glMatrixMode(GL_TEXTURE);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
+	r_mat_mode(MM_TEXTURE);
+	r_mat_identity();
+	r_mat_mode(MM_MODELVIEW);
 }
 
-static void stage2_bg_grass_draw(Vector pos) {
-	glDisable(GL_DEPTH_TEST);
-	glBindTexture(GL_TEXTURE_2D, get_tex("stage2/roadgrass")->gltex);
+static void stage2_bg_grass_draw(vec3 pos) {
+	r_disable(RCAP_DEPTH_TEST);
+	r_texture(0, "stage2/roadgrass");
 
-	glPushMatrix();
-	glTranslatef(pos[0]+250,pos[1],pos[2]+40);
-	glRotatef(pos[2]/2-14,0,1,0);
+	r_mat_push();
+	r_mat_translate(pos[0]+250,pos[1],pos[2]+40);
+	r_mat_rotate_deg(pos[2]/2-14,0,1,0);
 
-	glScalef(-500,2000,1);
-	draw_quad();
-	glPopMatrix();
+	r_mat_scale(-500,2000,1);
+	r_draw_quad();
+	r_mat_pop();
 
-	glEnable(GL_DEPTH_TEST);
+	r_enable(RCAP_DEPTH_TEST);
 }
 
-static void stage2_bg_ground_draw(Vector pos) {
-	glPushMatrix();
-	glTranslatef(pos[0]-50,pos[1],pos[2]);
-	glScalef(-1000,1000,1);
+static void stage2_bg_ground_draw(vec3 pos) {
+	r_mat_push();
+	r_mat_translate(pos[0]-50,pos[1],pos[2]);
+	r_mat_scale(-1000,1000,1);
 
-	Texture *road = get_tex("stage2/roadstones");
+	r_texture(0, "stage2/roadstones");
 
-	glBindTexture(GL_TEXTURE_2D, road->gltex);
+	r_color4(0.08,0.,0.1,1);
+	r_shader_standard_notex();
+	r_draw_quad();
+	r_shader_standard();
+	r_color4(0.5,0.5,0.5,1);
+	r_draw_quad();
+	r_color4(1,1,1,1);
+	r_mat_translate(0,0,+10);
+	r_draw_quad();
 
-	glColor4f(0.08,0.,0.1,1);
-	glDisable(GL_TEXTURE_2D);
-	draw_quad();
-	glEnable(GL_TEXTURE_2D);
-	glColor4f(0.5,0.5,0.5,1);
-	draw_quad();
-	glColor4f(1,1,1,1);
-	glTranslatef(0,0,+10);
-	draw_quad();
+	r_mat_pop();
 
-	glPopMatrix();
+	r_mat_mode(MM_TEXTURE);
+	r_mat_identity();
+	r_mat_translate(global.frames/100.0,1*sin(global.frames/100.0),0);
+	r_mat_mode(MM_MODELVIEW);
 
-	glMatrixMode(GL_TEXTURE);
-	glLoadIdentity();
-	glTranslatef(global.frames/100.0,1*sin(global.frames/100.0),0);
-	glMatrixMode(GL_MODELVIEW);
+	r_mat_push();
 
-	glPushMatrix();
+	r_texture(0, "stage2/border");
 
-	Texture *border = get_tex("stage2/border");
-	glBindTexture(GL_TEXTURE_2D, border->gltex);
+	r_mat_translate(pos[0]+410,pos[1],pos[2]+600);
+	r_mat_rotate_deg(90,0,1,0);
+	r_mat_scale(1200,1000,1);
 
-	glTranslatef(pos[0]+410,pos[1],pos[2]+600);
-	glRotatef(90,0,1,0);
-	glScalef(1200,1000,1);
+	r_draw_quad();
 
-	draw_quad();
+	r_mat_pop();
 
-	glPopMatrix();
-
-	glMatrixMode(GL_TEXTURE);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
+	r_mat_mode(MM_TEXTURE);
+	r_mat_identity();
+	r_mat_mode(MM_MODELVIEW);
 }
 
-static Vector **stage2_bg_pos(Vector pos, float maxrange) {
-	Vector p = {0, 0, 0};
-	Vector r = {0, 1000, 0};
+static vec3 **stage2_bg_pos(vec3 pos, float maxrange) {
+	vec3 p = {0, 0, 0};
+	vec3 r = {0, 1000, 0};
 
 	return linear3dpos(pos, maxrange, p, r);
 }
 
-static Vector **stage2_bg_grass_pos(Vector pos, float maxrange) {
-	Vector p = {0, 0, 0};
-	Vector r = {0, 2000, 0};
+static vec3 **stage2_bg_grass_pos(vec3 pos, float maxrange) {
+	vec3 p = {0, 0, 0};
+	vec3 r = {0, 2000, 0};
 
 	return linear3dpos(pos, maxrange, p, r);
 }
 
-static Vector **stage2_bg_grass_pos2(Vector pos, float maxrange) {
-	Vector p = {0, 1234, 40};
-	Vector r = {0, 2000, 0};
+static vec3 **stage2_bg_grass_pos2(vec3 pos, float maxrange) {
+	vec3 p = {0, 1234, 40};
+	vec3 r = {0, 2000, 0};
 
 	return linear3dpos(pos, maxrange, p, r);
 }
 
 static void stage2_fog(FBO *fbo) {
-	Shader *shader = get_shader("zbuf_fog");
-
-	glUseProgram(shader->prog);
-	glUniform1i(uniloc(shader, "depth"),2);
-	glUniform4f(uniloc(shader, "fog_color"),0.05,0.0,0.03,1.0);
-	glUniform1f(uniloc(shader, "start"),0.2);
-	glUniform1f(uniloc(shader, "end"),0.8);
-	glUniform1f(uniloc(shader, "exponent"),3.0);
-	glUniform1f(uniloc(shader, "sphereness"),0);
-	glActiveTexture(GL_TEXTURE0 + 2);
-	glBindTexture(GL_TEXTURE_2D, fbo->depth);
-	glActiveTexture(GL_TEXTURE0);
-
+	r_shader("zbuf_fog");
+	r_uniform_int("tex", 0);
+	r_uniform_int("depth", 2);
+	r_uniform_vec4("fog_color", 0.05, 0.0, 0.03, 1.0);
+	r_uniform_float("start", 0.2);
+	r_uniform_float("end", 0.8);
+	r_uniform_float("exponent", 3.0);
+	r_uniform_float("sphereness", 0);
+	r_texture_ptr(2, r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_DEPTH));
 	draw_fbo_viewport(fbo);
-	glUseProgram(0);
+	r_shader_standard();
 }
 
 static void stage2_bloom(FBO *fbo) {
-	Shader *shader = get_shader("bloom");
-
-	glUseProgram(shader->prog);
-	glUniform1i(uniloc(shader, "samples"), 10);
-	glUniform1f(uniloc(shader, "intensity"), 0.05);
-	glUniform1f(uniloc(shader, "radius"), 0.03);
+	r_shader("bloom");
+	r_uniform_int("samples", 10);
+	r_uniform_float("intensity", 0.05);
+	r_uniform_float("radius", 0.03);
 	draw_fbo_viewport(fbo);
-	glUseProgram(0);
+	r_shader_standard();
 }
 
 static void stage2_start(void) {
@@ -209,10 +199,11 @@ static void stage2_preload(void) {
 		"stage2/spellbg2",
 		"dialog/hina",
 	NULL);
-	preload_resources(RES_SHADER, RESF_DEFAULT,
+	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"bloom",
 		"zbuf_fog",
 		"alpha_depth",
+		"lasers/linear",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/wriggle",

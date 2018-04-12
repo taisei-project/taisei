@@ -9,8 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include <stdnoreturn.h>
-#include <stdbool.h>
 #include <SDL.h>
 #include "compat.h"
 
@@ -86,7 +84,12 @@ bool log_initialized(void);
 //
 
 void _taisei_log(LogLevel lvl, bool is_backtrace, const char *funcname, const char *fmt, ...)
-	__attribute__((format(FORMAT_ATTR, 4, 5)));
+	attr_printf(4, 5);
 
 noreturn void _taisei_log_fatal(LogLevel lvl, const char *funcname, const char *fmt, ...)
-	__attribute__((format(FORMAT_ATTR, 3, 4)));
+	attr_printf(3, 4);
+
+#ifdef DEBUG
+	#undef UNREACHABLE
+	#define UNREACHABLE log_fatal("This code should never be reached")
+#endif

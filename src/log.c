@@ -29,12 +29,12 @@ typedef struct Logger {
 	LIST_INTERFACE(struct Logger);
 
 	SDL_RWops *out;
-	unsigned int levels;
+	uint levels;
 } Logger;
 
 static Logger *loggers = NULL;
-static unsigned int enabled_log_levels;
-static unsigned int backtrace_log_levels;
+static uint enabled_log_levels;
+static uint backtrace_log_levels;
 static SDL_mutex *log_mutex;
 
 // order must much the LogLevel enum after LOG_NONE

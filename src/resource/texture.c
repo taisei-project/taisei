@@ -13,8 +13,26 @@
 #include "texture.h"
 #include "resource.h"
 #include "global.h"
-#include "vbo.h"
 #include "video.h"
+#include "renderer/api.h"
+
+static void* load_texture_begin(const char *path, uint flags);
+static void* load_texture_end(void *opaque, const char *path, uint flags);
+static void free_texture(Texture *tex);
+
+ResourceHandler texture_res_handler = {
+	.type = RES_TEXTURE,
+	.typename = "texture",
+	.subdir = TEX_PATH_PREFIX,
+
+	.procs = {
+		.find = texture_path,
+		.check = check_texture_path,
+		.begin_load = load_texture_begin,
+		.end_load = load_texture_end,
+		.unload = (ResourceUnloadProc)free_texture,
+	},
+};
 
 static const char *texture_image_exts[] = {
 	// more are usable if you explicitly specify the source in a .tex file,
@@ -63,7 +81,7 @@ typedef struct ImageData {
 	uint32_t *pixels;
 } ImageData;
 
-void* load_texture_begin(const char *path, unsigned int flags) {
+static void* load_texture_begin(const char *path, uint flags) {
 	const char *source = path;
 	char *source_allocated = NULL;
 	SDL_Surface *surf = NULL;
@@ -134,44 +152,69 @@ static void texture_post_load(Texture *tex) {
 	// this is a bit hacky and not very efficient,
 	// but it's still much faster than fixing up the texture on the CPU
 
-	GLuint fbotex, fbo;
-	Shader *sha = get_shader("texture_post_load");
+	ShaderProgram *shader_saved = r_shader_current();
+	Texture *texture_saved = r_texture_current(0);
+	RenderTarget *target_saved = r_target_current();
+	BlendMode blend_saved = r_blend_current();
+	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
 
-	glEnable(GL_TEXTURE_2D);
-	glDisable(GL_BLEND);
-	glGenTextures(1, &fbotex);
-	glBindTexture(GL_TEXTURE_2D, fbotex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex->w, tex->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glGenFramebuffers(1, &fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbotex, 0);
-	glBindTexture(GL_TEXTURE_2D, tex->gltex);
-	glUseProgram(sha->prog);
-	glUniform1i(uniloc(sha, "width"), tex->w);
-	glUniform1i(uniloc(sha, "height"), tex->h);
-	glPushMatrix();
-	glLoadIdentity();
-	glViewport(0, 0, tex->w, tex->h);
-	set_ortho_ex(tex->w, tex->h);
-	glTranslatef(tex->w * 0.5, tex->h * 0.5, 0);
-	glScalef(tex->w, tex->h, 1);
-	glDrawArrays(GL_QUADS, 4, 4);
-	glPopMatrix();
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glDeleteFramebuffers(1, &fbo);
-	glDeleteTextures(1, &tex->gltex);
-	glUseProgram(0);
-	video_set_viewport();
-	set_ortho();
-	glEnable(GL_BLEND);
-	tex->gltex = fbotex;
+	IntRect viewport_saved;
+	r_viewport_current(&viewport_saved);
+
+	Texture fbo_tex;
+	RenderTarget fbo;
+
+	r_blend(BLEND_NONE);
+	r_disable(RCAP_CULL_FACE);
+	r_texture_create(&fbo_tex, &(TextureParams) {
+		.width = tex->w,
+		.height = tex->h,
+		.type = tex->type,
+		.filter = {
+			.upscale = TEX_FILTER_LINEAR,
+			.downscale = TEX_FILTER_LINEAR,
+		},
+		.wrap = {
+			.s = TEX_WRAP_REPEAT,
+			.t = TEX_WRAP_REPEAT,
+		},
+	});
+	r_target_create(&fbo);
+	r_target_attach(&fbo, &fbo_tex, RENDERTARGET_ATTACHMENT_COLOR0);
+	r_target(&fbo);
+	r_texture_ptr(0, tex);
+	r_shader("texture_post_load");
+	r_uniform_int("width", tex->w);
+	r_uniform_int("height", tex->h);
+	r_mat_push();
+	r_mat_identity();
+	r_mat_mode(MM_PROJECTION);
+	r_mat_push();
+	r_mat_identity();
+	r_mat_ortho(0, tex->w, tex->h, 0, -100, 100);
+	r_viewport(0, 0, tex->w, tex->h);
+	r_mat_mode(MM_MODELVIEW);
+	r_mat_scale(tex->w, tex->h, 1);
+	r_mat_translate(0.5, 0.5, 0);
+	r_mat_scale(1, -1, 1);
+	r_draw_quad();
+	r_mat_pop();
+	r_mat_mode(MM_PROJECTION);
+	r_mat_pop();
+	r_mat_mode(MM_MODELVIEW);
+	r_target(target_saved);
+	r_shader_ptr(shader_saved);
+	r_texture_ptr(0, texture_saved);
+	r_blend(blend_saved);
+	r_capability(RCAP_CULL_FACE, cullcap_saved);
+	r_target_destroy(&fbo);
+	r_texture_destroy(tex);
+	r_viewport_rect(viewport_saved);
+
+	memcpy(tex, &fbo_tex, sizeof(fbo_tex));
 }
 
-void* load_texture_end(void *opaque, const char *path, unsigned int flags) {
+static void* load_texture_end(void *opaque, const char *path, uint flags) {
 	SDL_Surface *surface = opaque;
 
 	if(!surface) {
@@ -188,7 +231,7 @@ void* load_texture_end(void *opaque, const char *path, unsigned int flags) {
 }
 
 Texture* get_tex(const char *name) {
-	return get_resource(RES_TEXTURE, name, RESF_DEFAULT | RESF_UNSAFE)->texture;
+	return r_texture_get(name);
 }
 
 Texture* prefix_get_tex(const char *name, const char *prefix) {
@@ -199,24 +242,26 @@ Texture* prefix_get_tex(const char *name, const char *prefix) {
 }
 
 void load_sdl_surf(SDL_Surface *surface, Texture *texture) {
-	glGenTextures(1, &texture->gltex);
-	glBindTexture(GL_TEXTURE_2D, texture->gltex);
-
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
 	SDL_LockSurface(surface);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+	r_texture_create(texture, &(TextureParams) {
+		.width = surface->w,
+		.height = surface->h,
+		.type = TEX_TYPE_RGBA,
+		.image_data = surface->pixels,
+		.filter = {
+			.upscale = TEX_FILTER_LINEAR,
+			.downscale = TEX_FILTER_LINEAR,
+		},
+		.wrap = {
+			.s = TEX_WRAP_REPEAT,
+			.t = TEX_WRAP_REPEAT,
+		},
+	});
 	SDL_UnlockSurface(surface);
-
-	texture->w = surface->w;
-	texture->h = surface->h;
 }
 
-void free_texture(Texture *tex) {
-	glDeleteTextures(1, &tex->gltex);
+static void free_texture(Texture *tex) {
+	r_texture_destroy(tex);
 	free(tex);
 }
 
@@ -232,8 +277,8 @@ void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex) {
 
 	draw_texture_state.drawing = true;
 
-	glBindTexture(GL_TEXTURE_2D, tex->gltex);
-	glPushMatrix();
+	r_texture_ptr(0, tex);
+	r_mat_push();
 
 	float x = dest.x;
 	float y = dest.y;
@@ -246,28 +291,28 @@ void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex) {
 	if(s != 1 || t != 1 || frag.x || frag.y) {
 		draw_texture_state.texture_matrix_tainted = true;
 
-		glMatrixMode(GL_TEXTURE);
-		glLoadIdentity();
+		r_mat_mode(MM_TEXTURE);
+		r_mat_identity();
 
-		glScalef(1.0/tex->w, 1.0/tex->h, 1);
+		r_mat_scale(1.0/tex->w, 1.0/tex->h, 1);
 
 		if(frag.x || frag.y) {
-			glTranslatef(frag.x, frag.y, 0);
+			r_mat_translate(frag.x, frag.y, 0);
 		}
 
 		if(s != 1 || t != 1) {
-			glScalef(frag.w, frag.h, 1);
+			r_mat_scale(frag.w, frag.h, 1);
 		}
 
-		glMatrixMode(GL_MODELVIEW);
+		r_mat_mode(MM_MODELVIEW);
 	}
 
 	if(x || y) {
-		glTranslatef(x, y, 0);
+		r_mat_translate(x, y, 0);
 	}
 
 	if(w != 1 || h != 1) {
-		glScalef(w, h, 1);
+		r_mat_scale(w, h, 1);
 	}
 }
 
@@ -278,18 +323,18 @@ void end_draw_texture(void) {
 
 	if(draw_texture_state.texture_matrix_tainted) {
 		draw_texture_state.texture_matrix_tainted = false;
-		glMatrixMode(GL_TEXTURE);
-		glLoadIdentity();
-		glMatrixMode(GL_MODELVIEW);
+		r_mat_mode(MM_TEXTURE);
+		r_mat_identity();
+		r_mat_mode(MM_MODELVIEW);
 	}
 
-	glPopMatrix();
+	r_mat_pop();
 	draw_texture_state.drawing = false;
 }
 
 void draw_texture_p(float x, float y, Texture *tex) {
 	begin_draw_texture((FloatRect){ x, y, tex->w, tex->h }, (FloatRect){ 0, 0, tex->w, tex->h }, tex);
-	draw_quad();
+	r_draw_quad();
 	end_draw_texture();
 }
 
@@ -299,7 +344,7 @@ void draw_texture(float x, float y, const char *name) {
 
 void draw_texture_with_size_p(float x, float y, float w, float h, Texture *tex) {
 	begin_draw_texture((FloatRect){ x, y, w, h }, (FloatRect){ 0, 0, tex->w, tex->h }, tex);
-	draw_quad();
+	r_draw_quad();
 	end_draw_texture();
 }
 
@@ -312,7 +357,7 @@ void fill_viewport(float xoff, float yoff, float ratio, const char *name) {
 }
 
 void fill_viewport_p(float xoff, float yoff, float ratio, float aspect, float angle, Texture *tex) {
-	glBindTexture(GL_TEXTURE_2D, tex->gltex);
+	r_texture_ptr(0, tex);
 
 	float rw, rh;
 
@@ -328,35 +373,35 @@ void fill_viewport_p(float xoff, float yoff, float ratio, float aspect, float an
 
 	if(xoff || yoff || rw != 1 || rh != 1 || angle) {
 		texture_matrix_tainted = true;
-		glMatrixMode(GL_TEXTURE);
+		r_mat_mode(MM_TEXTURE);
 
 		if(xoff || yoff) {
-			glTranslatef(xoff, yoff, 0);
+			r_mat_translate(xoff, yoff, 0);
 		}
 
 		if(rw != 1 || rh != 1) {
-			glScalef(rw, rh, 1);
+			r_mat_scale(rw, rh, 1);
 		}
 
 		if(angle) {
-			glTranslatef(0.5, 0.5, 0);
-			glRotatef(angle, 0, 0, 1);
-			glTranslatef(-0.5, -0.5, 0);
+			r_mat_translate(0.5, 0.5, 0);
+			r_mat_rotate_deg(angle, 0, 0, 1);
+			r_mat_translate(-0.5, -0.5, 0);
 		}
 
-		glMatrixMode(GL_MODELVIEW);
+		r_mat_mode(MM_MODELVIEW);
 	}
 
-	glPushMatrix();
-	glTranslatef(VIEWPORT_W*0.5, VIEWPORT_H*0.5, 0);
-	glScalef(VIEWPORT_W, VIEWPORT_H, 1);
-	draw_quad();
-	glPopMatrix();
+	r_mat_push();
+	r_mat_translate(VIEWPORT_W*0.5, VIEWPORT_H*0.5, 0);
+	r_mat_scale(VIEWPORT_W, VIEWPORT_H, 1);
+	r_draw_quad();
+	r_mat_pop();
 
 	if(texture_matrix_tainted) {
-		glMatrixMode(GL_TEXTURE);
-		glLoadIdentity();
-		glMatrixMode(GL_MODELVIEW);
+		r_mat_mode(MM_TEXTURE);
+		r_mat_identity();
+		r_mat_mode(MM_MODELVIEW);
 	}
 }
 
@@ -366,37 +411,35 @@ void fill_screen(const char *name) {
 
 void fill_screen_p(Texture *tex) {
 	begin_draw_texture((FloatRect){ SCREEN_W*0.5, SCREEN_H*0.5, SCREEN_W, SCREEN_H }, (FloatRect){ 0, 0, tex->w, tex->h }, tex);
-	draw_quad();
+	r_draw_quad();
 	end_draw_texture();
 }
 
 // draws a thin, w-width rectangle from point A to point B with a texture that
-// moving along the line.
-// As with fill_screen, the texture’s dimensions must be powers of two for the
-// loop to be gapless.
+// moves along the line.
 //
 void loop_tex_line_p(complex a, complex b, float w, float t, Texture *texture) {
 	complex d = b-a;
 	complex c = (b+a)/2;
-	glPushMatrix();
-	glTranslatef(creal(c),cimag(c),0);
-	glRotatef(180/M_PI*carg(d),0,0,1);
-	glScalef(cabs(d),w,1);
 
-	glMatrixMode(GL_TEXTURE);
-	glLoadIdentity();
-	glTranslatef(t, 0, 0);
-	glMatrixMode(GL_MODELVIEW);
+	r_mat_push();
+	r_mat_translate(creal(c),cimag(c),0);
+	r_mat_rotate_deg(180/M_PI*carg(d),0,0,1);
+	r_mat_scale(cabs(d),w,1);
 
-	glBindTexture(GL_TEXTURE_2D, texture->gltex);
+	r_mat_mode(MM_TEXTURE);
+	// r_mat_identity();
+	r_mat_translate(t, 0, 0);
+	r_mat_mode(MM_MODELVIEW);
 
-	draw_quad();
+	r_texture_ptr(0, texture);
+	r_draw_quad();
 
-	glMatrixMode(GL_TEXTURE);
-		glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
+	r_mat_mode(MM_TEXTURE);
+	r_mat_identity();
+	r_mat_mode(MM_MODELVIEW);
 
-	glPopMatrix();
+	r_mat_pop();
 }
 
 void loop_tex_line(complex a, complex b, float w, float t, const char *texture) {

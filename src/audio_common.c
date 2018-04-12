@@ -105,13 +105,20 @@ void play_loop(const char *name) {
 }
 
 void reset_sounds(void) {
-	Resource *snd;
-	for(HashtableIterator *i = hashtable_iter(resources.handlers[RES_SFX].mapping);
-			hashtable_iter_next(i, 0, (void**)&snd);) {
-		snd->sound->lastplayframe = 0;
-		if(snd->sound->islooping) {
-			snd->sound->islooping = false;
-			audio_backend_sound_stop_loop(snd->sound->impl);
+	Resource *res;
+	Sound *snd;
+
+	for(HashtableIterator *i = hashtable_iter(get_resource_table(RES_SFX));
+		hashtable_iter_next(i, 0, (void**)&res);
+	) {
+		if(!(snd = res->data)) {
+			continue;
+		}
+
+		snd->lastplayframe = 0;
+		if(snd->islooping) {
+			snd->islooping = false;
+			audio_backend_sound_stop_loop(snd->impl);
 		}
 	}
 
@@ -119,13 +126,19 @@ void reset_sounds(void) {
 }
 
 void update_sounds(void) {
-	Resource *snd;
+	Resource *res;
+	Sound *snd;
 
-	for(HashtableIterator *i = hashtable_iter(resources.handlers[RES_SFX].mapping);
-			hashtable_iter_next(i, 0, (void**)&snd);) {
-		if(snd->sound->islooping && global.frames > snd->sound->lastplayframe + LOOPTIMEOUTFRAMES) {
-			snd->sound->islooping = false;
-			audio_backend_sound_stop_loop(snd->sound->impl);
+	for(HashtableIterator *i = hashtable_iter(get_resource_table(RES_SFX));
+		hashtable_iter_next(i, 0, (void**)&res);
+	) {
+		if(!(snd = res->data)) {
+			continue;
+		}
+
+		if(snd->islooping && global.frames > snd->lastplayframe + LOOPTIMEOUTFRAMES) {
+			snd->islooping = false;
+			audio_backend_sound_stop_loop(snd->impl);
 		}
 	}
 
@@ -151,13 +164,11 @@ void stop_sounds(void) {
 }
 
 Sound* get_sound(const char *name) {
-	Resource *res = get_resource(RES_SFX, name, RESF_OPTIONAL);
-	return res ? res->sound : NULL;
+	return get_resource_data(RES_SFX, name, RESF_OPTIONAL);
 }
 
 Music* get_music(const char *name) {
-	Resource *res = get_resource(RES_BGM, name, RESF_OPTIONAL);
-	return res ? res->music : NULL;
+	return get_resource_data(RES_BGM, name, RESF_OPTIONAL);
 }
 
 static void sfx_cfg_volume_callback(ConfigIndex idx, ConfigValue v) {
@@ -168,7 +179,8 @@ static void bgm_cfg_volume_callback(ConfigIndex idx, ConfigValue v) {
 	audio_backend_set_bgm_volume(config_set_float(idx, v.f));
 }
 
-static void store_sfx_volume(const char *key, const char *val, Hashtable *ht) {
+static bool store_sfx_volume(const char *key, const char *val, void *data) {
+	Hashtable *ht = data;
 	int vol = atoi(val);
 
 	if(vol < 0 || vol > 128) {
@@ -181,12 +193,13 @@ static void store_sfx_volume(const char *key, const char *val, Hashtable *ht) {
 	if(vol != DEFAULT_SFX_VOLUME) {
 		hashtable_set_string(ht, key, (void*)(intptr_t)vol);
 	}
+	return true;
 }
 
 static void load_config_files(void) {
-	bgm_descriptions = parse_keyvalue_file(BGM_PATH_PREFIX "bgm.conf", HT_DYNAMIC_SIZE);
-	sfx_volumes = hashtable_new_stringkeys(HT_DYNAMIC_SIZE);
-	parse_keyvalue_file_cb(SFX_PATH_PREFIX "volumes.conf", (KVCallback)store_sfx_volume, sfx_volumes);
+	bgm_descriptions = parse_keyvalue_file(BGM_PATH_PREFIX "bgm.conf");
+	sfx_volumes = hashtable_new_stringkeys();
+	parse_keyvalue_file_cb(SFX_PATH_PREFIX "volumes.conf", store_sfx_volume, sfx_volumes);
 }
 
 static inline char* get_bgm_desc(char *name) {

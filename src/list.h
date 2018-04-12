@@ -40,17 +40,17 @@ typedef void* (*ListForeachCallback)(List **head, List *elem, void *arg);
 typedef int (*ListPriorityFunc)(List *elem);
 typedef List* (*ListInsertionRule)(List **dest, List *elem);
 
-List* list_insert(List **dest, List *elem);
-List* list_push(List **dest, List *elem);
-List* list_append(List **dest, List *elem);
-List* list_insert_at_priority_head(List **dest, List *elem, int prio, ListPriorityFunc prio_func) __attribute__((hot));
-List* list_insert_at_priority_tail(List **dest, List *elem, int prio, ListPriorityFunc prio_func) __attribute__((hot));
-List* list_pop(List **dest);
-List* list_unlink(List **dest, List *elem);
-void* list_foreach(List **dest, ListForeachCallback callback, void *arg);
+List* list_insert(List **dest, List *elem) attr_nonnull(1, 2);
+List* list_push(List **dest, List *elem) attr_nonnull(1, 2);
+List* list_append(List **dest, List *elem) attr_nonnull(1, 2);
+List* list_insert_at_priority_head(List **dest, List *elem, int prio, ListPriorityFunc prio_func) attr_hot attr_nonnull(1, 2, 4);
+List* list_insert_at_priority_tail(List **dest, List *elem, int prio, ListPriorityFunc prio_func) attr_hot attr_nonnull(1, 2, 4);
+List* list_pop(List **dest) attr_nonnull(1);
+List* list_unlink(List **dest, List *elem) attr_nonnull(1, 2);
+void* list_foreach(List **dest, ListForeachCallback callback, void *arg) attr_nonnull(1, 2);
 void* list_callback_free_element(List **dest, List *elem, void *arg);
-void list_free_all(List **dest);
-ListContainer* list_wrap_container(void *data);
+void list_free_all(List **dest) attr_nonnull(1);
+ListContainer* list_wrap_container(void *data) attr_nodiscard;
 
 // type-generic macros
 

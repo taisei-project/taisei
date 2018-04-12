@@ -66,18 +66,19 @@ void create_char_menu(MenuData *m) {
 
 void draw_char_menu(MenuData *menu) {
 	MenuData *mod = ((MenuData *)menu->context);
+	CullFaceMode cull_saved = r_cull_current();
 
 	draw_options_menu_bg(menu);
 	draw_menu_title(menu, "Select Character");
 
-	glPushMatrix();
-	glColor4f(0,0,0,0.7);
-	glTranslatef(SCREEN_W/4*3, SCREEN_H/2, 0);
-	glScalef(300, SCREEN_H, 1);
-	glDisable(GL_TEXTURE_2D);
-	draw_quad();
-	glEnable(GL_TEXTURE_2D);
-	glPopMatrix();
+	r_mat_push();
+	r_color4(0,0,0,0.7);
+	r_mat_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
+	r_mat_scale(300, SCREEN_H, 1);
+	r_shader_standard_notex();
+	r_draw_quad();
+	r_shader_standard();
+	r_mat_pop();
 
 	CharacterID current_char = 0;
 
@@ -93,71 +94,69 @@ void draw_char_menu(MenuData *menu) {
 			current_char = pchar->id;
 		}
 
-		glColor4f(1,1,1,1-menu->entries[i].drawdata*2);
+		r_color4(1,1,1,1-menu->entries[i].drawdata*2);
 		draw_sprite(SCREEN_W/3-200*menu->entries[i].drawdata, 2*SCREEN_H/3, spr);
 
-		glPushMatrix();
-		glTranslatef(SCREEN_W/4*3, SCREEN_H/3, 0);
+		r_mat_push();
+		r_mat_translate(SCREEN_W/4*3, SCREEN_H/3, 0);
 
-		glPushMatrix();
+		r_mat_push();
 
 		if(menu->entries[i].drawdata != 0) {
-			glTranslatef(0,-300*menu->entries[i].drawdata, 0);
-			glRotatef(180*menu->entries[i].drawdata, 1,0,0);
+			r_mat_translate(0,-300*menu->entries[i].drawdata, 0);
+			r_mat_rotate_deg(180*menu->entries[i].drawdata, 1,0,0);
 		}
 
 		draw_text(AL_Center, 0, 0, name, _fonts.mainmenu);
-		glPopMatrix();
+		r_mat_pop();
 
 		if(menu->entries[i].drawdata) {
-			glColor4f(1,1,1,1-menu->entries[i].drawdata*3);
+			r_color4(1,1,1,1-menu->entries[i].drawdata*3);
 		} else {
-			glColor4f(1,1,1,1);
+			r_color4(1,1,1,1);
 		}
 
 		draw_text(AL_Center, 0, 70, title, _fonts.standard);
-		glPopMatrix();
+		r_mat_pop();
 	}
 
-	glPushMatrix();
-	glTranslatef(SCREEN_W/4*3, SCREEN_H/3, 0);
+	r_mat_push();
+	r_mat_translate(SCREEN_W/4*3, SCREEN_H/3, 0);
 
 	for(int i = 0; i < mod->ecount; i++) {
 		PlayerMode *mode = plrmode_find(current_char, (ShotModeID)(uintptr_t)mod->entries[i].arg);
 		assert(mode != NULL);
 
 		if(mod->cursor == i) {
-			glColor4f(0.9,0.6,0.2,1);
+			r_color4(0.9,0.6,0.2,1);
 		} else {
-			glColor4f(1,1,1,1);
+			r_color4(1,1,1,1);
 		}
 
 		draw_text(AL_Center, 0, 200+40*i, mode->name, _fonts.standard);
 	}
 
-	glPopMatrix();
-	glColor4f(1,1,1,0.3*sin(menu->frames/20.0)+0.5);
+	r_mat_pop();
+	r_color4(1,1,1,0.3*sin(menu->frames/20.0)+0.5);
 
 	for(int i = 0; i <= 1; i++) {
-		glPushMatrix();
+		r_mat_push();
 
-		glTranslatef(60 + (SCREEN_W/2 - 30)*i, SCREEN_H/2+80, 0);
+		r_mat_translate(60 + (SCREEN_W/2 - 30)*i, SCREEN_H/2+80, 0);
 
 		if(i) {
-			glScalef(-1,1,1);
-			glCullFace(GL_FRONT);
+			r_mat_scale(-1,1,1);
+			r_cull(CULL_FRONT);
+		} else {
+			r_cull(CULL_BACK);
 		}
 
 		draw_sprite(0, 0, "menu/arrow");
-
-		glPopMatrix();
-
-		if(i) {
-			glCullFace(GL_BACK);
-		}
+		r_mat_pop();
 	}
 
-	glColor3f(1,1,1);
+	r_color3(1,1,1);
+	r_cull(cull_saved);
 }
 
 bool char_menu_input_handler(SDL_Event *event, void *arg) {

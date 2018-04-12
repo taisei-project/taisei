@@ -13,7 +13,6 @@
 #define VIDEO_ASPECT_RATIO ((double)SCREEN_W/SCREEN_H)
 
 #include <SDL.h>
-#include <stdbool.h>
 
 #define WINFLAGS_IS_FULLSCREEN(f)       ((f) & SDL_WINDOW_FULLSCREEN_DESKTOP)
 #define WINFLAGS_IS_FAKE_FULLSCREEN(f)  (WINFLAGS_IS_FULLSCREEN(f) == SDL_WINDOW_FULLSCREEN_DESKTOP)
@@ -31,7 +30,6 @@ typedef struct {
 	VideoMode current;
 	VideoMode real;
 	SDL_Window *window;
-	SDL_GLContext *glcontext;
 	float quality_factor;
 } Video;
 

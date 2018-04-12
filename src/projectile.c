@@ -13,7 +13,6 @@
 #include <stdlib.h>
 #include "global.h"
 #include "list.h"
-#include "vbo.h"
 #include "stageobjects.h"
 
 static ProjArgs defaults_proj = {
@@ -22,7 +21,8 @@ static ProjArgs defaults_proj = {
 	.dest = &global.projs,
 	.type = EnemyProj,
 	.color = RGB(1, 1, 1),
-	.color_transform_rule = proj_clrtransform_bullet,
+	.blend = BLEND_ALPHA,
+	.shader = "sprite_bullet",
 	.insertion_rule = proj_insert_sizeprio,
 };
 
@@ -32,7 +32,8 @@ static ProjArgs defaults_part = {
 	.dest = &global.particles,
 	.type = Particle,
 	.color = RGB(1, 1, 1),
-	.color_transform_rule = proj_clrtransform_particle,
+	.blend = BLEND_ALPHA,
+	.shader = "sprite_default",
 	.insertion_rule = list_append,
 	// .insertion_rule = proj_insert_sizeprio,
 };
@@ -52,8 +53,20 @@ static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
 		args->sprite_ptr = prefix_get_sprite(args->sprite, defaults->sprite);
 	}
 
+	if(!args->shader_ptr) {
+		if(args->shader) {
+			args->shader_ptr = r_shader_get(args->shader);
+		} else {
+			args->shader_ptr = defaults->shader_ptr;
+		}
+	}
+
 	if(!args->draw_rule) {
 		args->draw_rule = ProjDraw;
+	}
+
+	if(!args->blend) {
+		args->blend = defaults->blend;
 	}
 
 	if(!args->dest) {
@@ -66,10 +79,6 @@ static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
 
 	if(!args->color) {
 		args->color = defaults->color;
-	}
-
-	if(!args->color_transform_rule) {
-		args->color_transform_rule = defaults->color_transform_rule;
 	}
 
 	if(!args->insertion_rule) {
@@ -145,7 +154,9 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	p->angle = args->angle;
 	p->rule = args->rule;
 	p->draw_rule = args->draw_rule;
-	p->color_transform_rule = args->color_transform_rule;
+	p->shader = args->shader_ptr;
+	p->shader_custom_param = args->shader_custom_param;
+	p->blend = args->blend;
 	p->sprite = args->sprite_ptr;
 	p->type = args->type;
 	p->color = args->color;
@@ -323,72 +334,22 @@ void apply_projectile_collision(Projectile **projlist, Projectile *p, ProjCollis
 	}
 }
 
-void static_clrtransform_bullet(Color c, ColorTransform *out) {
-	memcpy(out, (&(ColorTransform) {
-		.B[0] = c & ~CLRMASK_A,
-		.B[1] = rgba(1, 1, 1, 0),
-		.A[1] = c &  CLRMASK_A,
-	}), sizeof(ColorTransform));
-}
-
-void static_clrtransform_particle(Color c, ColorTransform *out) {
-	memcpy(out, (&(ColorTransform) {
-		.R[1] = c & CLRMASK_R,
-		.G[1] = c & CLRMASK_G,
-		.B[1] = c & CLRMASK_B,
-		.A[1] = c & CLRMASK_A,
-	}), sizeof(ColorTransform));
-}
-
-void proj_clrtransform_bullet(Projectile *p, int t, Color c, ColorTransform *out) {
-	static_clrtransform_bullet(c, out);
-}
-
-void proj_clrtransform_particle(Projectile *p, int t, Color c, ColorTransform *out) {
-	static_clrtransform_particle(c, out);
-}
-
-typedef enum ProjBlendMode {
-	PBM_NORMAL,
-	PBM_ADD,
-	PBM_SUB,
-} ProjBlendMode;
-
-static inline void draw_projectile(Projectile *proj, ProjBlendMode *cur_blend_mode) {
-	ProjBlendMode blend_mode;
+static inline void draw_projectile(Projectile *proj) {
+	// TODO: get rid of these legacy flags
 
 	if(proj->flags & PFLAG_DRAWADD) {
-		blend_mode = PBM_ADD;
+		r_blend(BLEND_ADD);
 	} else if(proj->flags & PFLAG_DRAWSUB) {
-		blend_mode = PBM_SUB;
+		r_blend(BLEND_SUB);
 	} else {
-		blend_mode = PBM_NORMAL;
+		r_blend(proj->blend);
 	}
 
-	if(blend_mode != *cur_blend_mode) {
-		if(*cur_blend_mode == PBM_SUB) {
-			glBlendEquation(GL_FUNC_ADD);
-		}
-
-		switch(blend_mode) {
-			case PBM_NORMAL:
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-				break;
-
-			case PBM_ADD:
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-				break;
-
-			case PBM_SUB:
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-				glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
-				break;
-		}
-
-		*cur_blend_mode = blend_mode;
-	}
+	r_shader_ptr(proj->shader);
 
 #ifdef PROJ_DEBUG
+	Color color_saved = r_color_current();
+
 	if(proj->type == PlrProj) {
 		set_debug_info(&proj->debug);
 		log_fatal("Projectile with type PlrProj");
@@ -404,47 +365,35 @@ static inline void draw_projectile(Projectile *proj, ProjBlendMode *cur_blend_mo
 		log_fatal("Projectile modified its state in draw rule");
 	}
 
-	/*
-	int cur_shader;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &cur_shader); // NOTE: this can be really slow!
-
-	if(cur_shader != recolor_get_shader()->prog) {
+	if(r_shader_current() != proj->shader) {
 		set_debug_info(&proj->debug);
 		log_fatal("Bad shader after drawing projectile");
 	}
-	*/
+
+	if(r_color_current() != color_saved) {
+		set_debug_info(&proj->debug);
+		log_fatal("Bad color after drawing projectile");
+	}
 #else
 	proj->draw_rule(proj, global.frames - proj->birthtime);
 #endif
 }
 
 void draw_projectiles(Projectile *projs, ProjPredicate predicate) {
-	ProjBlendMode blend_mode = PBM_NORMAL;
-
-	glUseProgram(recolor_get_shader()->prog);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	if(predicate) {
 		for(Projectile *proj = projs; proj; proj = proj->next) {
 			if(predicate(proj)) {
-				draw_projectile(proj, &blend_mode);
+				draw_projectile(proj);
 			}
 		}
 	} else {
 		for(Projectile *proj = projs; proj; proj = proj->next) {
-			draw_projectile(proj, &blend_mode);
+			draw_projectile(proj);
 		}
 	}
 
-	glUseProgram(0);
-
-	if(blend_mode != PBM_NORMAL) {
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		if(blend_mode == PBM_SUB) {
-			glBlendEquation(GL_FUNC_ADD);
-		}
-	}
+	r_blend(BLEND_ALPHA);
+	r_shader("sprite_default");
 }
 
 bool projectile_in_viewport(Projectile *proj) {
@@ -469,7 +418,7 @@ Projectile* spawn_projectile_collision_effect(Projectile *proj) {
 		.pos = proj->pos,
 		.color = proj->color,
 		.flags = proj->flags | PFLAG_NOREFLECT,
-		.color_transform_rule = proj->color_transform_rule,
+		.shader_ptr = proj->shader,
 		.rule = timeout_linear,
 		.draw_rule = DeathShrink,
 		.angle = proj->angle,
@@ -487,7 +436,7 @@ Projectile* spawn_projectile_clear_effect(Projectile *proj) {
 		.pos = proj->pos,
 		.color = proj->color,
 		.flags = proj->flags | PFLAG_NOREFLECT,
-		.color_transform_rule = proj->color_transform_rule,
+		.shader_ptr = proj->shader,
 		.rule = timeout,
 		.draw_rule = Shrink,
 		.angle = proj->angle,
@@ -615,8 +564,8 @@ int asymptotic(Projectile *p, int t) { // v = a[0]*(a[1] + 1); a[1] -> 0
 }
 
 static inline void apply_common_transforms(Projectile *proj, int t) {
-	glTranslatef(creal(proj->pos), cimag(proj->pos), 0);
-	glRotatef(proj->angle*180/M_PI+90, 0, 0, 1);
+	r_mat_translate(creal(proj->pos), cimag(proj->pos), 0);
+	r_mat_rotate_deg(proj->angle*180/M_PI+90, 0, 0, 1);
 
 	if(t >= 16) {
 		return;
@@ -632,26 +581,23 @@ static inline void apply_common_transforms(Projectile *proj, int t) {
 
 	float s = 2.0-t/16.0;
 	if(s != 1) {
-		glScalef(s, s, 1);
+		r_mat_scale(s, s, 1);
 	}
 }
 
-static inline void apply_color(Projectile *proj, Color c) {
-	static ColorTransform ct;
-	proj->color_transform_rule(proj, global.frames - proj->birthtime, c, &ct);
-	recolor_apply_transform(&ct);
-}
-
 void ProjDrawCore(Projectile *proj, Color c) {
-	apply_color(proj, c);
-	draw_sprite_p(0, 0, proj->sprite);
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = proj->sprite,
+		.color = c,
+		.custom = proj->shader_custom_param,
+	});
 }
 
 void ProjDraw(Projectile *proj, int t) {
-	glPushMatrix();
+	r_mat_push();
 	apply_common_transforms(proj, t);
 	ProjDrawCore(proj, proj->color);
-	glPopMatrix();
+	r_mat_pop();
 }
 
 void ProjNoDraw(Projectile *proj, int t) {
@@ -660,77 +606,79 @@ void ProjNoDraw(Projectile *proj, int t) {
 int blast_timeout(Projectile *p, int t) {
 	if(t == 1) {
 		p->args[1] = frand()*360 + frand()*I;
-		p->args[2] = frand() + frand()*I;
+		p->args[2] = frand()     + frand()*I;
 	}
 
 	return timeout(p, t);
 }
 
 void Blast(Projectile *p, int t) {
-	glPushMatrix();
-	glTranslatef(creal(p->pos), cimag(p->pos), 0);
-	glRotatef(creal(p->args[1]), cimag(p->args[1]), creal(p->args[2]), cimag(p->args[2]));
+	r_mat_push();
+	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
+	r_mat_rotate_deg(creal(p->args[1]), cimag(p->args[1]), creal(p->args[2]), cimag(p->args[2]));
 	if(t != p->args[0] && p->args[0] != 0)
-		glScalef(t/p->args[0], t/p->args[0], 1);
+		r_mat_scale(t/p->args[0], t/p->args[0], 1);
 
-	apply_color(p, rgba(0.3, 0.6, 1.0, 1.0 - t/p->args[0]));
+	r_color4(0.3, 0.6, 1.0, 1.0 - t/p->args[0]);
 
-	draw_sprite_p(0,0,p->sprite);
-	glScalef(0.5+creal(p->args[2]),0.5+creal(p->args[2]),1);
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-	draw_sprite_p(0,0,p->sprite);
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-	glPopMatrix();
+	draw_sprite_batched_p(0,0,p->sprite);
+	r_mat_scale(0.5+creal(p->args[2]),0.5+creal(p->args[2]),1);
+	r_blend(BLEND_ADD);
+	draw_sprite_batched_p(0,0,p->sprite);
+	r_blend(BLEND_ALPHA);
+	r_mat_pop();
+
+	r_color4(1, 1, 1, 1);
 }
 
 void Shrink(Projectile *p, int t) {
-	glPushMatrix();
+	r_mat_push();
 	apply_common_transforms(p, t);
 
 	float s = 2.0-t/p->args[0]*2;
 	if(s != 1) {
-		glScalef(s, s, 1);
+		r_mat_scale(s, s, 1);
 	}
 
 	ProjDrawCore(p, p->color);
-	glPopMatrix();
+	r_mat_pop();
 }
 
 void DeathShrink(Projectile *p, int t) {
-	glPushMatrix();
+	r_mat_push();
 	apply_common_transforms(p, t);
 
 	float s = 2.0-t/p->args[0]*2;
 	if(s != 1) {
-		glScalef(s, 1, 1);
+		r_mat_scale(s, 1, 1);
 	}
 
 	ProjDrawCore(p, p->color);
-	glPopMatrix();
+	r_mat_pop();
 }
 
 void GrowFade(Projectile *p, int t) {
-	glPushMatrix();
+	r_mat_push();
 	apply_common_transforms(p, t);
 
 	float s = t/p->args[0]*(1 + (creal(p->args[2])? p->args[2] : p->args[1]));
 	if(s != 1) {
-		glScalef(s, s, 1);
+		r_mat_scale(s, s, 1);
 	}
 
 	ProjDrawCore(p, multiply_colors(p->color, rgba(1, 1, 1, 1 - t/p->args[0])));
-	glPopMatrix();
+	r_mat_pop();
 }
 
 void Fade(Projectile *p, int t) {
-	glPushMatrix();
+	r_mat_push();
 	apply_common_transforms(p, t);
 	ProjDrawCore(p, multiply_colors(p->color, rgba(1, 1, 1, 1 - t/p->args[0])));
-	glPopMatrix();
+	r_mat_pop();
 }
 
 void ScaleFade(Projectile *p, int t) {
-	glPushMatrix();
+	r_mat_push();
 	apply_common_transforms(p, t);
 
 	double scale_min = creal(p->args[2]);
@@ -743,9 +691,9 @@ void ScaleFade(Projectile *p, int t) {
 
 	Color c = multiply_colors(p->color, rgba(1, 1, 1, alpha));
 
-	glScalef(scale, scale, 1);
+	r_mat_scale(scale, scale, 1);
 	ProjDrawCore(p, c);
-	glPopMatrix();
+	r_mat_pop();
 }
 
 int timeout(Projectile *p, int t) {
@@ -786,13 +734,15 @@ void Petal(Projectile *p, int t) {
 	float r = sqrt(x*x+y*y+z*z);
 	x /= r; y /= r; z /= r;
 
-	glDisable(GL_CULL_FACE);
-	glPushMatrix();
-	glTranslatef(creal(p->pos), cimag(p->pos),0);
-	glRotatef(t*4.0 + cimag(p->args[3]), x, y, z);
+	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
+
+	r_disable(RCAP_CULL_FACE);
+	r_mat_push();
+	r_mat_translate(creal(p->pos), cimag(p->pos),0);
+	r_mat_rotate_deg(t*4.0 + cimag(p->args[3]), x, y, z);
 	ProjDrawCore(p, p->color);
-	glPopMatrix();
-	glEnable(GL_CULL_FACE);
+	r_mat_pop();
+	r_capability(RCAP_CULL_FACE, cullcap_saved);
 }
 
 void petal_explosion(int n, complex pos) {
@@ -809,8 +759,9 @@ void petal_explosion(int n, complex pos) {
 				afrand(4) + afrand(5)*I,
 				afrand(1) + 360.0*I*afrand(0),
 			},
-			// hack: never reflect these in stage1 water (GL_CULL_FACE conflict)
-			.flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
+			// TODO: maybe remove this noreflect, there shouldn't be a cull mode mess anymore
+			.flags = PFLAG_NOREFLECT,
+			.blend = BLEND_ADD,
 		);
 	}
 }
@@ -818,6 +769,11 @@ void petal_explosion(int n, complex pos) {
 void projectiles_preload(void) {
 	// XXX: maybe split this up into stage-specific preloads too?
 	// some of these are ubiquitous, but some only appear in very specific parts.
+
+	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
+		defaults_proj.shader,
+		defaults_part.shader,
+	NULL);
 
 	preload_resources(RES_TEXTURE, RESF_PERMANENT,
 		"part/lasercurve",
@@ -855,4 +811,7 @@ void projectiles_preload(void) {
 		"shot_special1",
 		"redirect",
 	NULL);
+
+	defaults_proj.shader_ptr = r_shader_get(defaults_proj.shader);
+	defaults_part.shader_ptr = r_shader_get(defaults_part.shader);
 }

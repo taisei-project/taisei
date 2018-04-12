@@ -6,8 +6,8 @@
  * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
  */
 
+#pragma once
 #include "taisei.h"
 
-#include <stdbool.h>
-
-bool vfs_mount_zipfile(const char *mountpoint, const char *zippath);
+bool vfs_mount_zipfile(const char *mountpoint, const char *zippath)
+	attr_nonnull(1, 2) attr_nodiscard;

@@ -29,11 +29,7 @@ enum {
 typedef struct EndingEntry EndingEntry;
 typedef struct Ending Ending;
 
-void add_ending_entry(Ending *e, int time, const char *msg, const char *sprite);
-
-void create_ending(Ending *e);
 void ending_loop(void);
-void free_ending(Ending *e);
 void ending_preload(void);
 
 /*

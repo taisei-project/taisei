@@ -9,8 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include <stdint.h>
-#include "taiseigl.h"
 #include "util.h"
 
 #define CLR_R ((Color)48)
@@ -39,24 +37,23 @@ typedef int16_t ColorComponent;
 #define rgba(r,g,b,a) RGBA(r,g,b,a)
 #define rgb(r,g,b) RGB(r,g,b)
 #else
-Color rgba(float r, float g, float b, float a) __attribute__((const));
-Color rgb(float r, float g, float b) __attribute__((const));
+Color rgba(float r, float g, float b, float a) attr_const;
+Color rgb(float r, float g, float b) attr_const;
 #endif
 
-Color hsla(float h, float s, float l, float a) __attribute__((const));
-Color hsl(float h, float s, float l) __attribute__((const));
+Color hsla(float h, float s, float l, float a) attr_const;
+Color hsl(float h, float s, float l) attr_const;
 
-void parse_color(Color clr, float *r, float *g, float *b, float *a);
-void parse_color_call(Color clr, tsglColor4f_ptr func);
-void parse_color_array(Color clr, float array[4]);
-Color derive_color(Color src, Color mask, Color mod) __attribute__((const));
-Color multiply_colors(Color c1, Color c2) __attribute__((const));
-Color add_colors(Color c1, Color c2) __attribute__((const));
-Color subtract_colors(Color c1, Color c2) __attribute__((const));
-Color mix_colors(Color c1, Color c2, double a) __attribute__((const));
-Color approach_color(Color src, Color dst, double delta) __attribute__((const));
-float color_component(Color clr, unsigned int ofs) __attribute__((const));
-char* color_str(Color c);
+void parse_color(Color clr, float *r, float *g, float *b, float *a) attr_nonnull(2, 3, 4, 5);
+void parse_color_array(Color clr, float array[4]) attr_nonnull(2);
+Color derive_color(Color src, Color mask, Color mod) attr_const;
+Color multiply_colors(Color c1, Color c2) attr_const;
+Color add_colors(Color c1, Color c2) attr_const;
+Color subtract_colors(Color c1, Color c2) attr_const;
+Color mix_colors(Color c1, Color c2, double a) attr_const;
+Color approach_color(Color src, Color dst, double delta) attr_const;
+float color_component(Color clr, uint ofs) attr_const;
+char* color_str(Color c) attr_returns_nonnull;
 
 #ifdef RGBA
 #undef RGBA

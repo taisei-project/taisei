@@ -95,10 +95,10 @@ void create_main_menu(MenuData *m) {
 }
 
 void draw_main_menu_bg(MenuData* menu) {
-	glColor4f(1,1,1,1);
+	r_color4(1,1,1,1);
 	fill_screen("menu/mainmenubg");
-	glColor4f(1,1,1,1);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_color4(1,1,1,1);
+	r_blend(BLEND_ALPHA);
 }
 
 static void update_main_menu(MenuData *menu) {
@@ -114,27 +114,32 @@ void draw_main_menu(MenuData *menu) {
 	draw_main_menu_bg(menu);
 	draw_sprite(150.5, 100, "menu/logo");
 
-	glPushMatrix();
-	glTranslatef(0, SCREEN_H-270, 0);
+	r_mat_push();
+	r_mat_translate(0, SCREEN_H-270, 0);
 	draw_menu_selector(50 + menu->drawdata[1]/2, menu->drawdata[2], 1.5 * menu->drawdata[1], 64, menu->frames);
 
 	for(int i = 0; i < menu->ecount; i++) {
 		float s = 5*sin(menu->frames/80.0 + 20*i);
 
 		if(menu->entries[i].action == NULL) {
-			glColor4f(0.2,0.3,0.5,0.7);
+			r_color4(0.2,0.3,0.5,0.7);
 		} else {
-			//glColor4f(1,1,1,0.7);
+			//render_color4(1,1,1,0.7);
 			float a = 1 - menu->entries[i].drawdata;
-			glColor4f(1, 0.7 + a, 0.4 + a, 0.7);
+			r_color4(1, 0.7 + a, 0.4 + a, 0.7);
 		}
 
 		draw_text(AL_Left, 50 + s, 35*i, menu->entries[i].name, _fonts.mainmenu);
 	}
 
-	glPopMatrix();
+	r_mat_pop();
 
-	glColor4f(1,1,1,1);
+	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
+	r_disable(RCAP_CULL_FACE);
+	r_blend(BLEND_ADD);
+	r_color4(1, 1, 1, 1);
+	r_shader("sprite_default");
+
 	for(int i = 0; i < 50; i++) { // who needs persistent state for a particle system?
 		int period = 900;
 		int t = menu->frames+100*i + 30*sin(35*i);
@@ -157,17 +162,17 @@ void draw_main_menu(MenuData *menu) {
 		if(posx > SCREEN_W+20 || posy < -20 || posy > SCREEN_H+20)
 			continue;
 
-		glDisable(GL_CULL_FACE);
-		glPushMatrix();
-		glTranslatef(posx,posy,0);
-		glScalef(0.2,0.2,0.2);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		glRotatef(2*(t%period),rx,ry,rz);
-		draw_sprite(0,0,"part/petal");
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_CULL_FACE);
-		glPopMatrix();
+		r_mat_push();
+		r_mat_translate(posx,posy,0);
+		r_mat_scale(0.2,0.2,0.2);
+		r_mat_rotate_deg(2*(t%period),rx,ry,rz);
+		draw_sprite_batched(0,0,"part/petal");
+		r_mat_pop();
 	}
+
+	r_shader_standard();
+	r_capability(RCAP_CULL_FACE, cullcap_saved);
+	r_blend(BLEND_ALPHA);
 
 	char version[32];
 	snprintf(version, sizeof(version), "v%s", TAISEI_VERSION);
@@ -197,8 +202,8 @@ void menu_preload(void) {
 		"star",
 	NULL);
 
-	preload_resources(RES_SHADER, RESF_PERMANENT,
-		"circleclipped_indicator",
+	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
+		"sprite_circleclipped_indicator",
 	NULL);
 
 	preload_resources(RES_SFX, RESF_PERMANENT | RESF_OPTIONAL,

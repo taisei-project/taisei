@@ -1,3 +1,7 @@
-rows = 3
-cols = 6
-speed = 5
+@sprite_count = 18
+
+main = d5 0 1 2 3 4 5
+snipsnip = d5 6 7 8 9 10 11
+clapyohands = d2 12 13 14
+holdyohands = d7 15 14 
+unclapyohands = d3 13 12  

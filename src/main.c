@@ -26,6 +26,7 @@
 #include "vfs/setup.h"
 #include "version.h"
 #include "credits.h"
+#include "renderer/api.h"
 
 static void taisei_shutdown(void) {
 	log_info("Shutting down");
@@ -126,11 +127,23 @@ static int run_tests(void) {
 	return 0;
 }
 
+/*
+void sdl_log(void *userdata, int category, SDL_LogPriority priority, const char *message) {
+	log_debug("[%i %i] %s", category, priority, message);
+}
+*/
+
 static void init_sdl(void) {
 	SDL_version v;
 
 	if(SDL_Init(SDL_INIT_EVENTS) < 0)
 		log_fatal("SDL_Init() failed: %s", SDL_GetError());
+
+	/*
+	 * TODO: refine this and make it optional
+	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_DEBUG);
+	SDL_LogSetOutputFunction(sdl_log, NULL);
+	*/
 
 	log_info("SDL initialized");
 
@@ -271,11 +284,13 @@ int main(int argc, char **argv) {
 	init_fonts();
 	video_init();
 	init_resources();
+	r_post_init();
 	draw_loading_screen();
 	audio_init();
 	load_resources();
 	gamepad_init();
 	progress_load();
+	r_shader_standard();
 
 	set_transition(TransLoader, 0, FADE_TIME*2);
 

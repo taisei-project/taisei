@@ -14,6 +14,8 @@
 #include "global.h"
 #include "stage.h"
 #include "stageutils.h"
+#include "glm.h"
+#include "resource/model.h"
 
 /*
  *  See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
@@ -62,8 +64,6 @@ struct stage4_spells_s stage4_spells = {
 };
 
 static void stage4_fog(FBO *fbo) {
-	Shader *shader = get_shader("zbuf_fog");
-
 	float f = 0;
 	int redtime = 5100 + STAGE4_MIDBOSS_MUSIC_TIME;
 
@@ -72,26 +72,24 @@ static void stage4_fog(FBO *fbo) {
 		f =  v < 0.1 ? v : 0.1;
 	}
 
-	glUseProgram(shader->prog);
-	glUniform1i(uniloc(shader, "depth"),2);
-	glUniform4f(uniloc(shader, "fog_color"),10*f,0,0.1-f,1.0);
-	glUniform1f(uniloc(shader, "start"),0.4);
-	glUniform1f(uniloc(shader, "end"),0.8);
-	glUniform1f(uniloc(shader, "exponent"),4.0);
-	glUniform1f(uniloc(shader, "sphereness"),0);
-	glActiveTexture(GL_TEXTURE0 + 2);
-	glBindTexture(GL_TEXTURE_2D, fbo->depth);
-	glActiveTexture(GL_TEXTURE0);
-
+	r_shader("zbuf_fog");
+	r_uniform_int("tex", 0);
+	r_uniform_int("depth", 2);
+	r_uniform_vec4("fog_color", 10.0*f, 0.0, 0.1-f, 1.0);
+	r_uniform_float("start", 0.4);
+	r_uniform_float("end", 0.8);
+	r_uniform_float("exponent", 4.0);
+	r_uniform_float("sphereness", 0);
+	r_texture_ptr(2, r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_DEPTH));
 	draw_fbo_viewport(fbo);
-	glUseProgram(0);
+	r_shader_standard();
 }
 
-static Vector **stage4_fountain_pos(Vector pos, float maxrange) {
-	Vector p = {0, 400, 1500};
-	Vector r = {0, 0, 3000};
+static vec3 **stage4_fountain_pos(vec3 pos, float maxrange) {
+	vec3 p = {0, 400, 1500};
+	vec3 r = {0, 0, 3000};
 
-	Vector **list = linear3dpos(pos, maxrange, p, r);
+	vec3 **list = linear3dpos(pos, maxrange, p, r);
 
 	int i;
 
@@ -103,34 +101,34 @@ static Vector **stage4_fountain_pos(Vector pos, float maxrange) {
 	return list;
 }
 
-static void stage4_fountain_draw(Vector pos) {
-	glBindTexture(GL_TEXTURE_2D, get_tex("stage2/border")->gltex);
+static void stage4_fountain_draw(vec3 pos) {
+	r_texture(0, "stage2/border");
 
-	glPushMatrix();
-	glTranslatef(pos[0], pos[1], pos[2]);
-	glRotatef(-90, 1,0,0);
-	glScalef(1000,3010,1);
+	r_mat_push();
+	r_mat_translate(pos[0], pos[1], pos[2]);
+	r_mat_rotate_deg(-90, 1,0,0);
+	r_mat_scale(1000,3010,1);
 
-	draw_quad();
+	r_draw_quad();
 
-	glPopMatrix();
+	r_mat_pop();
 }
 
-static Vector **stage4_lake_pos(Vector pos, float maxrange) {
-	Vector p = {0, 600, 0};
-	Vector d;
+static vec3 **stage4_lake_pos(vec3 pos, float maxrange) {
+	vec3 p = {0, 600, 0};
+	vec3 d;
 
 	int i;
 
 	for(i = 0; i < 3; i++)
 		d[i] = p[i] - pos[i];
 
-	if(length(d) > maxrange) {
+	if(glm_vec_norm(d) > maxrange) {
 		return NULL;
 	} else {
-		Vector **list = calloc(2, sizeof(Vector*));
+		vec3 **list = calloc(2, sizeof(vec3*));
 
-		list[0] = malloc(sizeof(Vector));
+		list[0] = malloc(sizeof(vec3));
 		for(i = 0; i < 3; i++)
 			(*list[0])[i] = p[i];
 		list[1] = NULL;
@@ -139,31 +137,27 @@ static Vector **stage4_lake_pos(Vector pos, float maxrange) {
 	}
 }
 
-static void stage4_lake_draw(Vector pos) {
-	glBindTexture(GL_TEXTURE_2D, get_tex("stage4/lake")->gltex);
+static void stage4_lake_draw(vec3 pos) {
+	r_texture(0, "stage4/lake");
+	r_mat_push();
+	r_mat_translate(pos[0], pos[1]+140, pos[2]);
+	r_mat_scale(15,15,15);
+	r_draw_model("lake");
+	r_mat_pop();
 
-	glPushMatrix();
-	glTranslatef(pos[0], pos[1]+140, pos[2]);
-	glScalef(15,15,15);
-
-	draw_model("lake");
-	glPopMatrix();
-
-	glPushMatrix();
-	glTranslatef(pos[0], pos[1]+944, pos[2]+50);
-	glScalef(30,30,30);
-
-	glBindTexture(GL_TEXTURE_2D, get_tex("stage4/mansion")->gltex);
-
-	draw_model("mansion");
-	glPopMatrix();
+	r_texture(0, "stage4/mansion");
+	r_mat_push();
+	r_mat_translate(pos[0], pos[1]+944, pos[2]+50);
+	r_mat_scale(30,30,30);
+	r_draw_model("mansion");
+	r_mat_pop();
 }
 
-static Vector **stage4_corridor_pos(Vector pos, float maxrange) {
-	Vector p = {0, 2400, 50};
-	Vector r = {0, 2000, 0};
+static vec3 **stage4_corridor_pos(vec3 pos, float maxrange) {
+	vec3 p = {0, 2400, 50};
+	vec3 r = {0, 2000, 0};
 
-	Vector **list = linear3dpos(pos, maxrange, p, r);
+	vec3 **list = linear3dpos(pos, maxrange, p, r);
 
 	int i;
 
@@ -175,63 +169,63 @@ static Vector **stage4_corridor_pos(Vector pos, float maxrange) {
 	return list;
 }
 
-static void stage4_corridor_draw(Vector pos) {
-	glBindTexture(GL_TEXTURE_2D, get_tex("stage4/planks")->gltex);
+static void stage4_corridor_draw(vec3 pos) {
+	r_texture(0, "stage4/planks");
 
-	glMatrixMode(GL_TEXTURE);
-	glScalef(1,2,1);
-	glMatrixMode(GL_MODELVIEW);
+	r_mat_mode(MM_TEXTURE);
+	r_mat_scale(1,2,1);
+	r_mat_mode(MM_MODELVIEW);
 
-	glPushMatrix();
-	glTranslatef(pos[0], pos[1], pos[2]);
+	r_mat_push();
+	r_mat_translate(pos[0], pos[1], pos[2]);
 
-	glPushMatrix();
-	glRotatef(180, 1,0,0);
-	glScalef(300,2000,1);
+	r_mat_push();
+	r_mat_rotate_deg(180, 1,0,0);
+	r_mat_scale(300,2000,1);
 
-	draw_quad();
-	glPopMatrix();
+	r_draw_quad();
+	r_mat_pop();
 
-	glBindTexture(GL_TEXTURE_2D, get_tex("stage4/wall")->gltex);
+	r_texture(0, "stage4/wall");
 
-	glMatrixMode(GL_TEXTURE);
-	glLoadIdentity();
-	glRotatef(90,0,0,1);
-	glScalef(1,10,1);
-	glMatrixMode(GL_MODELVIEW);
+	r_mat_mode(MM_TEXTURE);
+	r_mat_identity();
+	r_mat_rotate_deg(90,0,0,1);
+	r_mat_scale(1,10,1);
+	r_mat_mode(MM_MODELVIEW);
 
-	glPushMatrix();
-	glTranslatef(100,5,75);
-	glRotatef(90, 0,1,0);
-	glScalef(150,2000,1);
-	draw_quad();
-	glPopMatrix();
+	r_mat_push();
+	r_mat_translate(100,5,75);
+	r_mat_rotate_deg(90, 0,1,0);
+	r_mat_scale(150,2000,1);
+	r_draw_quad();
+	r_mat_pop();
 
-	glPushMatrix();
-	glTranslatef(-100,5,75);
-	glRotatef(180,1,0,0);
-	glRotatef(-90, 0,1,0);
-	glScalef(150,2000,1);
-	draw_quad();
-	glPopMatrix();
+	r_mat_push();
+	r_mat_translate(-100,5,75);
+	r_mat_rotate_deg(180,1,0,0);
+	r_mat_rotate_deg(-90, 0,1,0);
+	r_mat_scale(150,2000,1);
+	r_draw_quad();
+	r_mat_pop();
 
-	glMatrixMode(GL_TEXTURE);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
+	r_mat_mode(MM_TEXTURE);
+	r_mat_identity();
+	r_mat_mode(MM_MODELVIEW);
 
-	glDisable(GL_TEXTURE_2D);
+	r_shader_standard_notex();
 
-	glColor3f(0.01,0.01,0.01);
-	glPushMatrix();
-	glTranslatef(0,0,150);
-	glScalef(500,2000,1);
-	draw_quad();
-	glPopMatrix();
+	r_color3(0.01,0.01,0.01);
+	r_mat_push();
+	r_mat_translate(0,0,150);
+	r_mat_scale(500,2000,1);
+	r_draw_quad();
+	r_mat_pop();
 
-	glPopMatrix();
-	glColor3f(1,1,1);
+	r_mat_pop();
+	r_color3(1,1,1);
 
-	glEnable(GL_TEXTURE_2D);
+	r_shader_standard();
 }
 
 static void stage4_start(void) {
@@ -267,8 +261,10 @@ static void stage4_preload(void) {
 	preload_resources(RES_SPRITE, RESF_DEFAULT,
 		"stage6/scythe", // Stage 6 is also intentional
 	NULL);
-	preload_resources(RES_SHADER, RESF_DEFAULT,
+	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"zbuf_fog",
+		"sprite_negative",
+		"lasers/accelerated",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/kurumi",

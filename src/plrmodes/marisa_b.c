@@ -11,6 +11,7 @@
 #include "global.h"
 #include "plrmodes.h"
 #include "marisa.h"
+#include "renderer/api.h"
 
 static void marisa_star_trail_draw(Projectile *p, int t) {
 	float s = 1 - t / creal(p->args[0]);
@@ -19,14 +20,14 @@ static void marisa_star_trail_draw(Projectile *p, int t) {
 
 	// s = 1 + t / creal(p->args[0]);
 
-	glPushMatrix();
-	glTranslatef(creal(p->pos), cimag(p->pos), 0);
-	// glRotatef(t*10, 0, 0, 1);
-	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
-	glScalef(s, s, 1);
+	r_mat_push();
+	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
+	// render_rotate_deg(t*10, 0, 0, 1);
+	r_mat_rotate_deg(p->angle*180/M_PI+90, 0, 0, 1);
+	r_mat_scale(s, s, 1);
 	ProjDrawCore(p, clr);
-	glColor4f(1,1,1,1);
-	glPopMatrix();
+	r_color4(1,1,1,1);
+	r_mat_pop();
 }
 
 static int marisa_star_projectile(Projectile *p, int t) {
@@ -85,7 +86,7 @@ static int marisa_star_slave(Enemy *e, int t) {
 				// .draw_rule = marisa_star,
 				.args = { v, a },
 				.type = PlrProj + e->args[3],
-				.color_transform_rule = proj_clrtransform_particle,
+				.shader = "sprite_default",
 			);
 		}
 	}
@@ -193,26 +194,26 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 	parse_color_array(color,clr);
 	clr[3] = fade;
 
-	glPushMatrix();
-	glTranslatef(creal(e->pos),cimag(e->pos),0);
-	glPushMatrix();
-	glRotatef(carg(e->pos-global.plr.pos)*180/M_PI+90,0,0,1);
+	r_mat_push();
+	r_mat_translate(creal(e->pos),cimag(e->pos),0);
+	r_mat_push();
+	r_mat_rotate_deg(carg(e->pos-global.plr.pos)*180/M_PI+90,0,0,1);
 
-	glScalef(120*fade,VIEWPORT_H*1.5,1);
-	glTranslatef(0,-0.5,0);
+	r_mat_scale(120*fade,VIEWPORT_H*1.5,1);
+	r_mat_translate(0,-0.5,0);
 	marisa_common_masterspark_draw(BOMB_RECOVERY*tb);
 
-	glPopMatrix();
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glColor4f(clr[0],clr[1],clr[2],clr[3]);
-	glRotatef(t*10,0,0,1);
-	draw_sprite(0,0,"fairy_circle");
-	glScalef(0.6,0.6,1);
-	draw_sprite(0,0,"part/lightningball");
-	glPopMatrix();
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_mat_pop();
+	r_blend(BLEND_ADD);
+	r_color4(clr[0],clr[1],clr[2],clr[3]);
+	r_mat_rotate_deg(t*10,0,0,1);
+	draw_sprite_batched(0,0,"fairy_circle");
+	r_mat_scale(0.6,0.6,1);
+	draw_sprite_batched(0,0,"part/lightningball");
+	r_mat_pop();
+	r_blend(BLEND_ALPHA);
 
-	glColor4f(1,1,1,1);
+	r_color4(1,1,1,1);
 }
 
 
@@ -244,15 +245,15 @@ static void marisa_star_bombbg(Player *plr) {
 	if(t > 3./4)
 		fade = 1-t*4 + 3;
 
-	Shader *s = get_shader("maristar_bombbg");
-	glUseProgram(s->prog);
-	glUniform1f(uniloc(s,"t"), t);
-	glUniform1f(uniloc(s,"decay"), 1);
-	glUniform2f(uniloc(s,"plrpos"), creal(global.plr.pos)/VIEWPORT_W,cimag(global.plr.pos)/VIEWPORT_H);
-	glColor4f(1,1,1,0.6*fade);
+	ShaderProgram *s = r_shader_get("maristar_bombbg");
+	r_shader_ptr(s);
+	r_uniform_float("t", t);
+	r_uniform_float("decay", 1);
+	r_uniform_vec2("plrpos", creal(global.plr.pos)/VIEWPORT_W, cimag(global.plr.pos)/VIEWPORT_H);
+	r_color4(1,1,1,0.6*fade);
 	fill_viewport(0,0,1,"marisa_bombbg");
-	glColor4f(1,1,1,1);
-	glUseProgram(0);
+	r_color4(1,1,1,1);
+	r_shader_standard();
 }
 
 static void marisa_star_respawn_slaves(Player *plr, short npow) {
@@ -317,7 +318,7 @@ static void marisa_star_preload(void) {
 		NULL
 	);
 
-	preload_resources(RES_SHADER, flags,
+	preload_resources(RES_SHADER_PROGRAM, flags,
 		"masterspark",
 		"maristar_bombbg",
 		NULL

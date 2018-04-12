@@ -31,7 +31,7 @@ static void track_ending(int ending) {
 	progress.achieved_endings[ending]++;
 }
 
-void add_ending_entry(Ending *e, int dur, const char *msg, const char *sprite) {
+static void add_ending_entry(Ending *e, int dur, const char *msg, const char *sprite) {
 	EndingEntry *entry;
 	e->entries = realloc(e->entries, (++e->count)*sizeof(EndingEntry));
 	entry = &e->entries[e->count-1];
@@ -116,7 +116,7 @@ void good_ending_youmu(Ending *e) {
 	track_ending(ENDING_GOOD_2);
 }
 
-void create_ending(Ending *e) {
+static void create_ending(Ending *e) {
 	memset(e, 0, sizeof(Ending));
 
 	if(global.plr.continues_used) {
@@ -133,14 +133,14 @@ void create_ending(Ending *e) {
 	e->duration = 1<<23;
 }
 
-void free_ending(Ending *e) {
+static void free_ending(Ending *e) {
 	int i;
 	for(i = 0; i < e->count; i++)
 		free(e->entries[i].msg);
 	free(e->entries);
 }
 
-void ending_draw(Ending *e) {
+static void ending_draw(Ending *e) {
 	float s, d;
 
 	int t1 = global.frames-e->entries[e->pos].time;
@@ -153,23 +153,23 @@ void ending_draw(Ending *e) {
 	else
 		s = clamp(d*t2, 0.0, 1.0);
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	r_clear(CLEAR_ALL);
 
-	glColor4f(1,1,1,s);
+	r_color4(1,1,1,s);
 
 	if(e->entries[e->pos].sprite) {
 		draw_sprite_p(SCREEN_W/2, SCREEN_H/2, e->entries[e->pos].sprite);
 	}
 
 	draw_text_auto_wrapped(AL_Center, SCREEN_W/2, VIEWPORT_H*4/5, e->entries[e->pos].msg, SCREEN_W * 0.85, _fonts.standard);
-	glColor4f(1,1,1,1);
+	r_color4(1,1,1,1);
 }
 
 void ending_preload(void) {
 	preload_resource(RES_BGM, "ending", RESF_OPTIONAL);
 }
 
-bool ending_input_handler(SDL_Event *event, void *arg) {
+static bool ending_input_handler(SDL_Event *event, void *arg) {
 	Ending *e = arg;
 
 	TaiseiEvent type = TAISEI_EVENT(event->type);

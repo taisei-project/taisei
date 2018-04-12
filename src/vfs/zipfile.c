@@ -294,7 +294,7 @@ static VFSNodeFuncs vfs_funcs_zipfile = {
 static void vfs_zipfile_init_pathmap(VFSNode *node) {
 	VFSZipFileData *zdata = node->data1;
 	VFSZipFileTLS *tls = vfs_zipfile_get_tls(node, true);
-	zdata->pathmap = hashtable_new_stringkeys(HT_DYNAMIC_SIZE);
+	zdata->pathmap = hashtable_new_stringkeys();
 	zip_int64_t num = zip_get_num_entries(tls->zip, 0);
 
 	for(zip_int64_t i = 0; i < num; ++i) {

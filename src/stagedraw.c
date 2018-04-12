@@ -12,6 +12,7 @@
 #include "stagedraw.h"
 #include "stagetext.h"
 #include "video.h"
+#include "resource/postprocess.h"
 
 #ifdef DEBUG
 	#define GRAPHS_DEFAULT 1
@@ -23,19 +24,24 @@
 
 static struct {
 	struct {
-		Shader *shader;
-		uint32_t u_colorAtop;
-		uint32_t u_colorAbot;
-		uint32_t u_colorBtop;
-		uint32_t u_colorBbot;
-		uint32_t u_colortint;
-		uint32_t u_split;
+		ShaderProgram *shader;
+		Uniform *u_colorAtop;
+		Uniform *u_colorAbot;
+		Uniform *u_colorBtop;
+		Uniform *u_colorBbot;
+		Uniform *u_colortint;
+		Uniform *u_split;
 	} hud_text;
 	bool framerate_graphs;
 	bool objpool_stats;
+	PostprocessShader *viewport_pp;
 } stagedraw;
 
 void stage_draw_preload(void) {
+	preload_resources(RES_POSTPROCESS, RESF_OPTIONAL,
+		"viewport",
+	NULL);
+
 	preload_resources(RES_SPRITE, RESF_PERMANENT,
 		"star",
 		"hud",
@@ -45,37 +51,38 @@ void stage_draw_preload(void) {
 		"titletransition",
 	NULL);
 
-	preload_resources(RES_SHADER, RESF_PERMANENT,
-		"stagetitle",
+	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
+		"stagetext",
 		"ingame_menu",
-		"circleclipped_indicator",
+		"sprite_circleclipped_indicator",
 		"hud_text",
 	NULL);
 
-	stagedraw.hud_text.shader      = get_shader("hud_text");
-	stagedraw.hud_text.u_colorAtop = uniloc(stagedraw.hud_text.shader, "colorAtop");
-	stagedraw.hud_text.u_colorAbot = uniloc(stagedraw.hud_text.shader, "colorAbot");
-	stagedraw.hud_text.u_colorBtop = uniloc(stagedraw.hud_text.shader, "colorBtop");
-	stagedraw.hud_text.u_colorBbot = uniloc(stagedraw.hud_text.shader, "colorBbot");
-	stagedraw.hud_text.u_colortint = uniloc(stagedraw.hud_text.shader, "colortint");
-	stagedraw.hud_text.u_split     = uniloc(stagedraw.hud_text.shader, "split");
+	stagedraw.hud_text.shader      = r_shader_get("hud_text");
+	stagedraw.hud_text.u_colorAtop = r_shader_uniform(stagedraw.hud_text.shader, "colorAtop");
+	stagedraw.hud_text.u_colorAbot = r_shader_uniform(stagedraw.hud_text.shader, "colorAbot");
+	stagedraw.hud_text.u_colorBtop = r_shader_uniform(stagedraw.hud_text.shader, "colorBtop");
+	stagedraw.hud_text.u_colorBbot = r_shader_uniform(stagedraw.hud_text.shader, "colorBbot");
+	stagedraw.hud_text.u_colortint = r_shader_uniform(stagedraw.hud_text.shader, "colortint");
+	stagedraw.hud_text.u_split     = r_shader_uniform(stagedraw.hud_text.shader, "split");
 
-	glUseProgram(stagedraw.hud_text.shader->prog);
-	glUniform4f(stagedraw.hud_text.u_colorAtop, 0.70, 0.70, 0.70, 0.70);
-	glUniform4f(stagedraw.hud_text.u_colorAbot, 0.50, 0.50, 0.50, 0.50);
-	glUniform4f(stagedraw.hud_text.u_colorBtop, 1.00, 1.00, 1.00, 1.00);
-	glUniform4f(stagedraw.hud_text.u_colorBbot, 0.80, 0.80, 0.80, 0.80);
-	glUniform4f(stagedraw.hud_text.u_colortint, 1.00, 1.00, 1.00, 1.00);
-	glUseProgram(0);
+	r_uniform_ptr(stagedraw.hud_text.u_colorAtop, 1, (float[]){ 0.70, 0.70, 0.70, 0.70 });
+	r_uniform_ptr(stagedraw.hud_text.u_colorAbot, 1, (float[]){ 0.50, 0.50, 0.50, 0.50 });
+	r_uniform_ptr(stagedraw.hud_text.u_colorBtop, 1, (float[]){ 1.00, 1.00, 1.00, 1.00 });
+	r_uniform_ptr(stagedraw.hud_text.u_colorBbot, 1, (float[]){ 0.80, 0.80, 0.80, 0.80 });
+	r_uniform_ptr(stagedraw.hud_text.u_colortint, 1, (float[]){ 1.00, 1.00, 1.00, 1.00 });
 
 	stagedraw.framerate_graphs = getenvint("TAISEI_FRAMERATE_GRAPHS", GRAPHS_DEFAULT);
 	stagedraw.objpool_stats = getenvint("TAISEI_OBJPOOL_STATS", OBJPOOLSTATS_DEFAULT);
 
 	if(stagedraw.framerate_graphs) {
-		preload_resources(RES_SHADER, RESF_PERMANENT,
+		preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
 			"graph",
 		NULL);
 	}
+
+	stagedraw.viewport_pp = get_resource_data(RES_POSTPROCESS, "viewport", RESF_OPTIONAL);
+	r_shader_standard();
 }
 
 static void apply_shader_rules(ShaderRule *shaderrules, FBOPair *fbos) {
@@ -84,7 +91,7 @@ static void apply_shader_rules(ShaderRule *shaderrules, FBOPair *fbos) {
 	}
 
 	for(ShaderRule *rule = shaderrules; *rule; ++rule) {
-		glBindFramebuffer(GL_FRAMEBUFFER, fbos->back->fbo);
+		r_target(fbos->back);
 		(*rule)(fbos->front);
 		swap_fbo_pair(fbos);
 	}
@@ -99,26 +106,26 @@ static void draw_wall_of_text(float f, const char *txt) {
 	float w = VIEWPORT_W;
 	float h = VIEWPORT_H;
 
-	glPushMatrix();
-	glTranslatef(w/2, h/2, 0);
-	glScalef(w, h, 1.0);
+	r_mat_push();
+	r_mat_translate(w/2, h/2, 0);
+	r_mat_scale(w, h, 1.0);
 
-	Shader *shader = get_shader("spellcard_walloftext");
-	glUseProgram(shader->prog);
-	glUniform1f(uniloc(shader, "w"), spr.tex_area.w/spr.tex->w);
-	glUniform1f(uniloc(shader, "h"), spr.tex_area.h/spr.tex->h);
-	glUniform1f(uniloc(shader, "ratio"), h/w);
-	glUniform2f(uniloc(shader, "origin"), creal(global.boss->pos)/h, cimag(global.boss->pos)/w);
-	glUniform1f(uniloc(shader, "t"), f);
-	glBindTexture(GL_TEXTURE_2D, spr.tex->gltex);
-	draw_quad();
-	glUseProgram(0);
+	ShaderProgram *shader = r_shader_get("spellcard_walloftext");
+	r_shader_ptr(shader);
+	r_uniform_float("w", spr.tex_area.w/spr.tex->w);
+	r_uniform_float("h", spr.tex_area.h/spr.tex->h);
+	r_uniform_float("ratio", h/w);
+	r_uniform_vec2("origin", creal(global.boss->pos)/h, cimag(global.boss->pos)/w);
+	r_uniform_float("t", f);
+	r_texture_ptr(0, spr.tex);
+	r_draw_quad();
+	r_shader_standard();
 
-	glPopMatrix();
+	r_mat_pop();
 }
 
 static void draw_spellbg(int t) {
-	glPushMatrix();
+	r_mat_push();
 
 	Boss *b = global.boss;
 	b->current->draw_rule(b, t);
@@ -126,17 +133,17 @@ static void draw_spellbg(int t) {
 	if(b->current->type == AT_ExtraSpell)
 		draw_extraspell_bg(b, t);
 
-	glPushMatrix();
-	glTranslatef(creal(b->pos), cimag(b->pos), 0);
-	glRotatef(global.frames*7.0, 0, 0, -1);
+	r_mat_push();
+	r_mat_translate(creal(b->pos), cimag(b->pos), 0);
+	r_mat_rotate_deg(global.frames*7.0, 0, 0, -1);
 
 	if(t < 0) {
 		float f = 1.0 - t/(float)ATTACK_START_DELAY;
-		glScalef(f,f,f);
+		r_mat_scale(f,f,f);
 	}
 
 	draw_sprite(0, 0, "boss_spellcircle0");
-	glPopMatrix();
+	r_mat_pop();
 
 	float delay = ATTACK_START_DELAY;
 	if(b->current->type == AT_ExtraSpell)
@@ -146,15 +153,25 @@ static void draw_spellbg(int t) {
 		draw_wall_of_text(f, b->current->name);
 
 	if(t < ATTACK_START_DELAY && b->dialog) {
-		glPushMatrix();
+		r_mat_push();
 		float f = -0.5*t/(float)ATTACK_START_DELAY+0.5;
-		glColor4f(1,1,1,-f*f+2*f);
+		r_color4(1,1,1,-f*f+2*f);
 		draw_sprite_p(VIEWPORT_W*3/4-10*f*f,VIEWPORT_H*2/3-10*f*f,b->dialog);
-		glColor4f(1,1,1,1);
-		glPopMatrix();
+		r_color4(1,1,1,1);
+		r_mat_pop();
 	}
 
-	glPopMatrix();
+	r_mat_pop();
+}
+
+static inline bool should_draw_stage_bg(void) {
+	return (
+		!global.boss
+		|| !global.boss->current
+		|| !global.boss->current->draw_rule
+		|| global.boss->current->endtime
+		|| (global.frames - global.boss->current->starttime) < 1.25*ATTACK_START_DELAY
+	);
 }
 
 static void apply_bg_shaders(ShaderRule *shaderrules, FBOPair *fbos) {
@@ -162,36 +179,35 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBOPair *fbos) {
 	if(b && b->current && b->current->draw_rule) {
 		int t = global.frames - b->current->starttime;
 
-		if(t < 4*ATTACK_START_DELAY || b->current->endtime) {
+		if(should_draw_stage_bg()) {
 			apply_shader_rules(shaderrules, fbos);
 		}
 
-		glBindFramebuffer(GL_FRAMEBUFFER, fbos->back->fbo);
+		r_target(fbos->back);
 		draw_fbo_viewport(fbos->front);
 		draw_spellbg(t);
 		swap_fbo_pair(fbos);
-		glBindFramebuffer(GL_FRAMEBUFFER, fbos->back->fbo);
+		r_target(fbos->back);
 
 		complex pos = b->pos;
 		float ratio = (float)VIEWPORT_H/VIEWPORT_W;
 
 		if(t<ATTACK_START_DELAY) {
-			Shader *shader = get_shader("spellcard_intro");
-			glUseProgram(shader->prog);
+			r_shader("spellcard_intro");
 
-			glUniform1f(uniloc(shader, "ratio"), ratio);
-			glUniform2f(uniloc(shader, "origin"), creal(pos)/VIEWPORT_W, 1-cimag(pos)/VIEWPORT_H);
+			r_uniform_float("ratio", ratio);
+			r_uniform_vec2("origin", creal(pos)/VIEWPORT_W, 1-cimag(pos)/VIEWPORT_H);
 
 			float delay = ATTACK_START_DELAY;
 			if(b->current->type == AT_ExtraSpell)
 				delay = ATTACK_START_DELAY_EXTRA;
 			float duration = ATTACK_START_DELAY_EXTRA;
 
-			glUniform1f(uniloc(shader, "t"), (t+delay)/duration);
+			r_uniform_float("t", (t+delay)/duration);
 		} else if(b->current->endtime) {
 			int tn = global.frames - b->current->endtime;
-			Shader *shader = get_shader("spellcard_outro");
-			glUseProgram(shader->prog);
+			ShaderProgram *shader = r_shader_get("spellcard_outro");
+			r_shader_ptr(shader);
 
 			float delay = ATTACK_END_DELAY;
 
@@ -201,35 +217,30 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBOPair *fbos) {
 				delay = ATTACK_END_DELAY_EXTRA;
 			}
 
-			glUniform1f(uniloc(shader, "ratio"), ratio);
-			glUniform2f(uniloc(shader, "origin"), creal(pos)/VIEWPORT_W, 1-cimag(pos)/VIEWPORT_H);
-
-			glUniform1f(uniloc(shader, "t"), max(0,tn/delay+1));
-
+			r_uniform_float("ratio", ratio);
+			r_uniform_vec2("origin", creal(pos)/VIEWPORT_W, 1-cimag(pos)/VIEWPORT_H);
+			r_uniform_float("t", max(0,tn/delay+1));
 		} else {
-			glUseProgram(0);
+			r_shader_standard();
 		}
 
 		draw_fbo_viewport(fbos->front);
 		swap_fbo_pair(fbos);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glUseProgram(0);
-	} else {
+		r_target(NULL);
+		r_shader_standard();
+	} else if(should_draw_stage_bg()) {
 		apply_shader_rules(shaderrules, fbos);
 	}
 }
 
 static void apply_zoom_shader(void) {
-	Shader *shader = get_shader("boss_zoom");
-	glUseProgram(shader->prog);
+	r_shader("boss_zoom");
 
 	complex fpos = global.boss->pos;
 	complex pos = fpos + 15*cexp(I*global.frames/4.5);
 
-	glUniform2f(uniloc(shader, "blur_orig"),
-			creal(pos)/VIEWPORT_W, 1-cimag(pos)/VIEWPORT_H);
-	glUniform2f(uniloc(shader, "fix_orig"),
-			creal(fpos)/VIEWPORT_W, 1-cimag(fpos)/VIEWPORT_H);
+	r_uniform_vec2("blur_orig", creal(pos)  / VIEWPORT_W,  1-cimag(pos)  / VIEWPORT_H);
+	r_uniform_vec2("fix_orig",  creal(fpos) / VIEWPORT_W,  1-cimag(fpos) / VIEWPORT_H);
 
 	float spellcard_sup = 1;
 	// This factor is used to surpress the effect near the start of spell cards.
@@ -245,32 +256,32 @@ static void apply_zoom_shader(void) {
 		spellcard_sup = 1-t*t;
 	}
 
-	glUniform1f(uniloc(shader, "blur_rad"), 1.5*spellcard_sup*(0.2+0.025*sin(global.frames/15.0)));
-	glUniform1f(uniloc(shader, "rad"), 0.24);
-	glUniform1f(uniloc(shader, "ratio"), (float)VIEWPORT_H/VIEWPORT_W);
+	r_uniform_float("blur_rad", 1.5*spellcard_sup*(0.2+0.025*sin(global.frames/15.0)));
+	r_uniform_float("rad", 0.24);
+	r_uniform_float("ratio", (float)VIEWPORT_H/VIEWPORT_W);
 
 	if(global.boss->zoomcolor) {
-		static float clr[4];
-		parse_color_array(global.boss->zoomcolor, clr);
-		glUniform4fv(uniloc(shader, "color"), 1, clr);
+		r_uniform_rgba("color", global.boss->zoomcolor);
 	} else {
-		glUniform4f(uniloc(shader, "color"), 0.1, 0.2, 0.3, 1);
+		r_uniform_rgba("color", rgba(0.1, 0.2, 0.3, 1.0));
 	}
 }
 
 static void stage_render_bg(StageInfo *stage) {
-	glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo_pairs.bg.back->fbo);
-	float scale = resources.fbo_pairs.bg.back->scale;
-	glViewport(0, 0, scale*VIEWPORT_W, scale*VIEWPORT_H);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	r_target(resources.fbo_pairs.bg.back);
+	Texture *bg_tex = r_target_get_attachment(resources.fbo_pairs.bg.back, RENDERTARGET_ATTACHMENT_COLOR0);
+	r_viewport(0, 0, bg_tex->w, bg_tex->h);
+	r_clear(CLEAR_ALL);
 
-	glPushMatrix();
-		glTranslatef(-(VIEWPORT_X+VIEWPORT_W/2), -(VIEWPORT_Y+VIEWPORT_H/2),0);
-		glEnable(GL_DEPTH_TEST);
+	if(should_draw_stage_bg()) {
+		r_mat_push();
+		r_mat_translate(-(VIEWPORT_X+VIEWPORT_W/2), -(VIEWPORT_Y+VIEWPORT_H/2),0);
+		r_enable(RCAP_DEPTH_TEST);
 		stage->procs->draw();
-	glPopMatrix();
+		r_mat_pop();
+		swap_fbo_pair(&resources.fbo_pairs.bg);
+	}
 
-	swap_fbo_pair(&resources.fbo_pairs.bg);
 	apply_bg_shaders(stage->procs->shader_rules, &resources.fbo_pairs.bg);
 	return;
 }
@@ -280,6 +291,8 @@ bool stage_should_draw_particle(Projectile *p) {
 }
 
 static void stage_draw_objects(void) {
+	r_shader("sprite_default");
+
 	if(global.boss) {
 		draw_boss_background(global.boss);
 	}
@@ -305,11 +318,12 @@ static void stage_draw_objects(void) {
 		draw_dialog(global.dialog);
 	}
 
+	r_shader_standard();
 	stagetext_draw();
 }
 
-static void postprocess_prepare(FBO *fbo, Shader *s) {
-	glUniform1i(uniloc(s, "frames"), global.frames);
+static void postprocess_prepare(FBO *fbo, ShaderProgram *s) {
+	r_uniform_int("frames", global.frames);
 }
 
 void stage_draw_foreground(void) {
@@ -323,15 +337,15 @@ void stage_draw_foreground(void) {
 	float scale = fach;
 
 	// draw the foreground FBO
-	glPushMatrix();
-		glScalef(1/facw,1/fach,1);
-		glTranslatef(floorf(facw*VIEWPORT_X), floorf(fach*VIEWPORT_Y), 0);
-		glScalef(floorf(scale*VIEWPORT_W)/VIEWPORT_W,floorf(scale*VIEWPORT_H)/VIEWPORT_H,1);
+	r_mat_push();
+		r_mat_scale(1/facw,1/fach,1);
+		r_mat_translate(floorf(facw*VIEWPORT_X), floorf(fach*VIEWPORT_Y), 0);
+		r_mat_scale(floorf(scale*VIEWPORT_W)/VIEWPORT_W,floorf(scale*VIEWPORT_H)/VIEWPORT_H,1);
 		// apply the screenshake effect
 		if(global.shake_view) {
-			glTranslatef(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames*1.1+3),0);
-			glScalef(1+2*global.shake_view/VIEWPORT_W,1+2*global.shake_view/VIEWPORT_H,1);
-			glTranslatef(-global.shake_view,-global.shake_view,0);
+			r_mat_translate(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames*1.1+3),0);
+			r_mat_scale(1+2*global.shake_view/VIEWPORT_W,1+2*global.shake_view/VIEWPORT_H,1);
+			r_mat_translate(-global.shake_view,-global.shake_view,0);
 
 			if(global.shake_view_fade) {
 				global.shake_view -= global.shake_view_fade;
@@ -340,7 +354,7 @@ void stage_draw_foreground(void) {
 			}
 		}
 		draw_fbo(resources.fbo_pairs.fg.front);
-	glPopMatrix();
+	r_mat_pop();
 	set_ortho();
 }
 
@@ -351,6 +365,12 @@ void stage_draw_scene(StageInfo *stage) {
 	bool key_nobg = false;
 #endif
 
+	/*
+	r_clear(CLEAR_ALL);
+	stage_draw_objects();
+	return;
+	*/
+
 	bool draw_bg = !config_get_int(CONFIG_NO_STAGEBG) && !key_nobg;
 
 	if(draw_bg) {
@@ -359,10 +379,10 @@ void stage_draw_scene(StageInfo *stage) {
 	}
 
 	// switch to foreground FBO
-	glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo_pairs.fg.back->fbo);
-	float scale = resources.fbo_pairs.fg.back->scale;
-	glViewport(0, 0, scale*VIEWPORT_W, scale*VIEWPORT_H);
-	set_ortho_ex(VIEWPORT_W,VIEWPORT_H);
+	r_target(resources.fbo_pairs.fg.back);
+	Texture *fg_tex = r_target_get_attachment(resources.fbo_pairs.fg.back, RENDERTARGET_ATTACHMENT_COLOR0);
+	r_viewport(0, 0, fg_tex->w, fg_tex->h);
+	set_ortho_ex(VIEWPORT_W, VIEWPORT_H);
 
 	if(draw_bg) {
 		// enable boss background distortion
@@ -374,14 +394,14 @@ void stage_draw_scene(StageInfo *stage) {
 		draw_fbo(resources.fbo_pairs.bg.front);
 
 		// disable boss background distortion
-		glUseProgram(0);
+		r_shader_standard();
 
 		// draw bomb background
 		if(global.frames - global.plr.recovery < 0 && global.plr.mode->procs.bombbg) {
 			global.plr.mode->procs.bombbg(&global.plr);
 		}
 	} else if(!key_nobg) {
-		glClear(GL_COLOR_BUFFER_BIT);
+		r_clear(CLEAR_COLOR);
 	}
 
 	// draw the 2D objects
@@ -402,14 +422,14 @@ void stage_draw_scene(StageInfo *stage) {
 
 	// custom postprocessing
 	postprocess(
-		resources.stage_postprocess,
+		stagedraw.viewport_pp,
 		&resources.fbo_pairs.fg,
 		postprocess_prepare,
 		draw_fbo_viewport
 	);
 
 	// switch to main framebuffer
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	r_target(NULL);
 	video_set_viewport();
 	set_ortho();
 
@@ -419,10 +439,10 @@ void stage_draw_scene(StageInfo *stage) {
 }
 
 static inline void stage_draw_hud_power_value(float ypos, char *buf, size_t bufsize) {
-	glUniform1f(stagedraw.hud_text.u_split, -0.25);
+	r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { -0.25 });
 	snprintf(buf, bufsize, "%i.%02i", global.plr.power / 100, global.plr.power % 100);
 	draw_text(AL_Right, 170, (int)ypos, buf, _fonts.mono);
-	glUniform1f(stagedraw.hud_text.u_split, 0.0);
+	r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { 0.0 });
 }
 
 static float split_for_digits(uint32_t val, int maxdigits) {
@@ -433,14 +453,14 @@ static float split_for_digits(uint32_t val, int maxdigits) {
 
 static void stage_draw_hud_score(Alignment a, float xpos, float ypos, char *buf, size_t bufsize, uint32_t score) {
 	snprintf(buf, bufsize, "%010u", score);
-	glUniform1f(stagedraw.hud_text.u_split, split_for_digits(score, 10));
+	r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { split_for_digits(score, 10) });
 	draw_text(a, (int)xpos, (int)ypos, buf, _fonts.mono);
 }
 
 static void stage_draw_hud_scores(float ypos_hiscore, float ypos_score, char *buf, size_t bufsize) {
 	stage_draw_hud_score(AL_Right, 170, (int)ypos_hiscore, buf, bufsize, progress.hiscore);
 	stage_draw_hud_score(AL_Right, 170, (int)ypos_score,   buf, bufsize, global.plr.points);
-	glUniform1f(stagedraw.hud_text.u_split, 0.0);
+	r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { 0 });
 }
 
 static void stage_draw_hud_objpool_stats(float x, float y, float width, Font *font) {
@@ -478,19 +498,19 @@ struct labels_s {
 void stage_draw_hud_text(struct labels_s* labels) {
 	char buf[64];
 
-	glUseProgram(stagedraw.hud_text.shader->prog);
-	glUniform1f(stagedraw.hud_text.u_split, 0.0);
-	glUniform4f(stagedraw.hud_text.u_colortint, 1.00, 1.00, 1.00, 1.00);
+	r_shader_ptr(stagedraw.hud_text.shader);
+	r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { 0 });
+	r_uniform_ptr(stagedraw.hud_text.u_colortint, 1, (float[]) { 1.00, 1.00, 1.00, 1.00 });
 
 	// Labels
-	glUniform4f(stagedraw.hud_text.u_colortint, 0.70, 0.70, 0.70, 0.70);
+	r_uniform_ptr(stagedraw.hud_text.u_colortint, 1, (float[]) { 0.70, 0.70, 0.70, 0.70 });
 	draw_text(AL_Left, labels->x.ofs, labels->y.hiscore, "Hi-Score:", _fonts.hud);
 	draw_text(AL_Left, labels->x.ofs, labels->y.score,   "Score:",    _fonts.hud);
 	draw_text(AL_Left, labels->x.ofs, labels->y.lives,   "Lives:",    _fonts.hud);
 	draw_text(AL_Left, labels->x.ofs, labels->y.bombs,   "Spells:",   _fonts.hud);
 	draw_text(AL_Left, labels->x.ofs, labels->y.power,   "Power:",    _fonts.hud);
 	draw_text(AL_Left, labels->x.ofs, labels->y.graze,   "Graze:",    _fonts.hud);
-	glUniform4f(stagedraw.hud_text.u_colortint, 1.00, 1.00, 1.00, 1.00);
+	r_uniform_ptr(stagedraw.hud_text.u_colortint, 1, (float[]) { 1.00, 1.00, 1.00, 1.00 });
 
 	if(stagedraw.objpool_stats) {
 		stage_draw_hud_objpool_stats(labels->x.ofs, labels->y.graze + 32, 250, _fonts.monotiny);
@@ -501,10 +521,10 @@ void stage_draw_hud_text(struct labels_s* labels) {
 
 	// Lives and Bombs (N/A)
 	if(global.stage->type == STAGE_SPELL) {
-		glColor4f(1, 1, 1, 0.7);
+		r_color4(1, 1, 1, 0.7);
 		draw_text(AL_Left, -6, labels->y.lives, "N/A", _fonts.hud);
 		draw_text(AL_Left, -6, labels->y.bombs, "N/A", _fonts.hud);
-		glColor4f(1, 1, 1, 1.0);
+		r_color4(1, 1, 1, 1.0);
 	}
 
 	// Power value
@@ -512,12 +532,12 @@ void stage_draw_hud_text(struct labels_s* labels) {
 
 	// Graze value
 	snprintf(buf, sizeof(buf), "%05i", global.plr.graze);
-	glUniform1f(stagedraw.hud_text.u_split, split_for_digits(global.plr.graze, 5));
+	r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { split_for_digits(global.plr.graze, 5) });
 	draw_text(AL_Left, -6, (int)(labels->y.graze + labels->y.mono_ofs), buf, _fonts.mono);
-	glUniform1f(stagedraw.hud_text.u_split, 0.0);
+	r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { 0 });
 
 	// Warning: pops outer matrix!
-	glPopMatrix();
+	r_mat_pop();
 
 #ifdef DEBUG
 	snprintf(buf, sizeof(buf), "%.2f lfps, %.2f rfps, timer: %d, frames: %d",
@@ -547,38 +567,36 @@ void stage_draw_hud_text(struct labels_s* labels) {
 		snprintf(buf, sizeof(buf), "Replay: %s (%i fps)", global.replay.playername, global.replay_stage->fps);
 		int x = 0, y = SCREEN_H - 0.5 * stringheight(buf, _fonts.monosmall);
 
-		glUniform4f(stagedraw.hud_text.u_colortint, 0.50, 0.50, 0.50, 0.50);
+		r_uniform_ptr(stagedraw.hud_text.u_colortint, 1, (float[]) { 0.50, 0.50, 0.50, 0.50 });
 		draw_text(AL_Left, x, y, buf, _fonts.monosmall);
-		glUniform4f(stagedraw.hud_text.u_colortint, 1.00, 1.00, 1.00, 1.00);
+		r_uniform_ptr(stagedraw.hud_text.u_colortint, 1, (float[]) { 1.00, 1.00, 1.00, 1.00 });
 
 		if(global.replay_stage->desynced) {
 			x += stringwidth(buf, _fonts.monosmall);
 			strlcpy(buf, " (DESYNCED)", sizeof(buf));
 
-			glUniform4f(stagedraw.hud_text.u_colortint, 1.00, 0.20, 0.20, 0.60);
+			r_uniform_ptr(stagedraw.hud_text.u_colortint, 1, (float[]) { 1.00, 0.20, 0.20, 0.60 });
 			draw_text(AL_Left, x, y, buf, _fonts.monosmall);
-			glUniform4f(stagedraw.hud_text.u_colortint, 1.00, 1.00, 1.00, 1.00);
+			r_uniform_ptr(stagedraw.hud_text.u_colortint, 1, (float[]) { 1.00, 1.00, 1.00, 1.00 });
 		}
 	}
 #ifdef PLR_DPS_STATS
 	else if(global.frames) {
 		snprintf(buf, sizeof(buf), "Avg DPS: %.02f", global.plr.total_dmg / (global.frames / (double)FPS));
-		glUniform1f(stagedraw.hud_text.u_split, 8.0 / strlen(buf));
+		r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { 8.0 / strlen(buf) });
 		draw_text(AL_Left, 0, rint(SCREEN_H - 0.5 * stringheight(buf, _fonts.monosmall)), buf, _fonts.monosmall);
 	}
 #endif
 
-	glUseProgram(0);
+	r_shader_standard();
 }
 
 static void draw_graph(float x, float y, float w, float h) {
-	glPushMatrix();
-	glTranslatef(x + w/2, y + h/2, 0);
-	glScalef(w, h, 1);
-	glDisable(GL_TEXTURE_2D);
-	draw_quad();
-	glEnable(GL_TEXTURE_2D);
-	glPopMatrix();
+	r_mat_push();
+	r_mat_translate(x + w/2, y + h/2, 0);
+	r_mat_scale(w, h, 1);
+	r_draw_quad();
+	r_mat_pop();
 }
 
 static void fill_graph(int num_samples, float *samples, FPSCounter *fps) {
@@ -595,14 +613,6 @@ static void stage_draw_framerate_graphs(void) {
 	#define NUM_SAMPLES (sizeof(((FPSCounter){{0}}).frametimes) / sizeof(((FPSCounter){{0}}).frametimes[0]))
 	static float samples[NUM_SAMPLES];
 
-	Shader *s = get_shader("graph");
-	uint32_t u_points = uniloc(s, "points[0]");
-	uint32_t u_colors[3] = {
-		uniloc(s, "color_low"),
-		uniloc(s, "color_mid"),
-		uniloc(s, "color_high"),
-	};
-
 	float pad = 15;
 
 	float w = 260 - pad;
@@ -611,26 +621,26 @@ static void stage_draw_framerate_graphs(void) {
 	float x = SCREEN_W - w - pad;
 	float y = 100;
 
-	glUseProgram(s->prog);
+	r_shader("graph");
 
 	fill_graph(NUM_SAMPLES, samples, &global.fps.logic);
-	glUniform3f(u_colors[0], 0.0, 1.0, 1.0);
-	glUniform3f(u_colors[1], 1.0, 1.0, 0.0);
-	glUniform3f(u_colors[2], 1.0, 0.0, 0.0);
-	glUniform1fv(u_points, NUM_SAMPLES, samples);
+	r_uniform_vec3("color_low",  0.0, 1.0, 1.0);
+	r_uniform_vec3("color_mid",  1.0, 1.0, 0.0);
+	r_uniform_vec3("color_high", 1.0, 0.0, 0.0);
+	r_uniform("points[0]", NUM_SAMPLES, samples);
 	draw_graph(x, y, w, h);
 
 	// x -= w * 1.1;
 	y += h + 1;
 
 	fill_graph(NUM_SAMPLES, samples, &global.fps.busy);
-	glUniform3f(u_colors[0], 0.0, 1.0, 0.0);
-	glUniform3f(u_colors[1], 1.0, 0.0, 0.0);
-	glUniform3f(u_colors[2], 1.0, 0.0, 0.5);
-	glUniform1fv(u_points, NUM_SAMPLES, samples);
+	r_uniform_vec3("color_low",  0.0, 1.0, 0.0);
+	r_uniform_vec3("color_mid",  1.0, 0.0, 0.0);
+	r_uniform_vec3("color_high", 1.0, 0.0, 0.5);
+	r_uniform("points[0]", NUM_SAMPLES, samples);
 	draw_graph(x, y, w, h);
 
-	glUseProgram(0);
+	r_shader_standard();
 }
 
 void stage_draw_hud(void) {
@@ -659,15 +669,15 @@ void stage_draw_hud(void) {
 	labels.y.power   = label_cur_height+label_height*(i++);
 	labels.y.graze   = label_cur_height+label_height*(i++);
 
-	glPushMatrix();
-	glTranslatef(615, 0, 0);
+	r_mat_push();
+	r_mat_translate(615, 0, 0);
 
 	// Difficulty indicator
-	glPushMatrix();
-	glTranslatef((SCREEN_W - 615) * 0.25, SCREEN_H-170, 0);
-	glScalef(0.6, 0.6, 0);
+	r_mat_push();
+	r_mat_translate((SCREEN_W - 615) * 0.25, SCREEN_H-170, 0);
+	r_mat_scale(0.6, 0.6, 0);
 	draw_sprite(0, 0, difficulty_sprite_name(global.diff));
-	glPopMatrix();
+	r_mat_pop();
 
 	// Set up variables for Extra Spell indicator
 	float a = 1, s = 0, fadein = 1, fadeout = 1, fade = 1;
@@ -698,17 +708,17 @@ void stage_draw_hud(void) {
 	// Extra Spell indicator
 	if(s) {
 		float s2 = max(0, swing(s, 3));
-		glPushMatrix();
-		glTranslatef((SCREEN_W - 615) * 0.25 - 615 * (1 - pow(2*fadein-1, 2)), 340, 0);
-		glColor4f(0.3, 0.6, 0.7, 0.7 * s);
-		glRotatef(-25 + 360 * (1-s2), 0, 0, 1);
-		glScalef(s2, s2, 0);
+		r_mat_push();
+		r_mat_translate((SCREEN_W - 615) * 0.25 - 615 * (1 - pow(2*fadein-1, 2)), 340, 0);
+		r_color4(0.3, 0.6, 0.7, 0.7 * s);
+		r_mat_rotate_deg(-25 + 360 * (1-s2), 0, 0, 1);
+		r_mat_scale(s2, s2, 0);
 		draw_text(AL_Center,  1,  1, "Extra Spell!", _fonts.mainmenu);
 		draw_text(AL_Center, -1, -1, "Extra Spell!", _fonts.mainmenu);
-		glColor4f(1, 1, 1, s);
+		r_color4(1, 1, 1, s);
 		draw_text(AL_Center, 0, 0, "Extra Spell!", _fonts.mainmenu);
-		glColor4f(1, 1, 1, 1);
-		glPopMatrix();
+		r_color4(1, 1, 1, 1);
+		r_mat_pop();
 	}
 
 	// Warning: pops matrix!
@@ -723,8 +733,9 @@ void stage_draw_hud(void) {
 		float red = 0.5*exp(-0.5*(global.frames-global.boss->lastdamageframe)); // hit indicator
 		if(red > 1)
 			red = 0;
-		glColor4f(1,1,1,1-red);
+		
+		r_color4(1,1,1,1-red);
 		draw_sprite(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
-		glColor4f(1,1,1,1);
+		r_color4(1,1,1,1);
 	}
 }

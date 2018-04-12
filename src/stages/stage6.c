@@ -14,6 +14,7 @@
 #include "stage.h"
 #include "stageutils.h"
 #include "global.h"
+#include "resource/model.h"
 
 /*
  *  See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
@@ -77,11 +78,11 @@ enum {
 
 static float starpos[3*NUM_STARS];
 
-Vector **stage6_towerwall_pos(Vector pos, float maxrange) {
-	Vector p = {0, 0, -220};
-	Vector r = {0, 0, 300};
+vec3 **stage6_towerwall_pos(vec3 pos, float maxrange) {
+	vec3 p = {0, 0, -220};
+	vec3 r = {0, 0, 300};
 
-	Vector **list = linear3dpos(pos, maxrange, p, r);
+	vec3 **list = linear3dpos(pos, maxrange, p, r);
 
 	int i;
 
@@ -93,67 +94,67 @@ Vector **stage6_towerwall_pos(Vector pos, float maxrange) {
 	return list;
 }
 
-void stage6_towerwall_draw(Vector pos) {
-	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towerwall")->gltex);
+void stage6_towerwall_draw(vec3 pos) {
+	r_texture(0, "stage6/towerwall");
+	r_shader("tower_wall");
 
-	Shader *s = get_shader("tower_wall");
-	glUseProgram(s->prog);
+	r_mat_push();
+	r_mat_translate(pos[0], pos[1], pos[2]);
+	r_mat_scale(30,30,30);
+	r_draw_model("towerwall");
+	r_mat_pop();
 
-	glPushMatrix();
-	glTranslatef(pos[0], pos[1], pos[2]);
-	glScalef(30,30,30);
-	draw_model("towerwall");
-	glPopMatrix();
-
-	glUseProgram(0);
+	r_shader_standard();
 }
 
-static Vector **stage6_towertop_pos(Vector pos, float maxrange) {
-	Vector p = {0, 0, 70};
+static vec3 **stage6_towertop_pos(vec3 pos, float maxrange) {
+	vec3 p = {0, 0, 70};
 
 	return single3dpos(pos, maxrange, p);
 }
 
-static void stage6_towertop_draw(Vector pos) {
-	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towertop")->gltex);
+static void stage6_towertop_draw(vec3 pos) {
+	r_texture(0, "stage6/towertop");
 
-	glPushMatrix();
-	glTranslatef(pos[0], pos[1], pos[2]);
-	glScalef(28,28,28);
-	draw_model("towertop");
-	glPopMatrix();
+	r_mat_push();
+	r_mat_translate(pos[0], pos[1], pos[2]);
+	r_mat_scale(28,28,28);
+	r_draw_model("towertop");
+	r_mat_pop();
 }
 
-static Vector **stage6_skysphere_pos(Vector pos, float maxrange) {
+static vec3 **stage6_skysphere_pos(vec3 pos, float maxrange) {
 	return single3dpos(pos, maxrange, stage_3d_context.cx);
 }
 
-static void stage6_skysphere_draw(Vector pos) {
-	glDisable(GL_DEPTH_TEST);
-	Shader *s = get_shader("stage6_sky");
-	glUseProgram(s->prog);
+static void stage6_skysphere_draw(vec3 pos) {
+	r_disable(RCAP_DEPTH_TEST);
+	ShaderProgram *s = r_shader_get("stage6_sky");
+	r_shader_ptr(s);
 
-	glPushMatrix();
-	glTranslatef(pos[0], pos[1], pos[2]-30);
-	glScalef(150,150,150);
-	draw_model("skysphere");
+	r_mat_push();
+	r_mat_translate(pos[0], pos[1], pos[2]-30);
+	r_mat_scale(150,150,150);
+	r_draw_model("skysphere");
 
-	glUseProgram(0);
+	r_shader("sprite_default");
 
 	for(int i = 0; i < NUM_STARS; i++) {
-		glPushMatrix();
+		r_mat_push();
 		float x = starpos[3*i+0], y = starpos[3*i+1], z = starpos[3*i+2];
-		glColor4f(0.9,0.9,1,0.8*z);
-		glTranslatef(x,y,z);
-		glRotatef(180/M_PI*acos(starpos[3*i+2]),-y,x,0);
-		glScalef(1./4000,1./4000,1./4000);
-		draw_sprite(0,0,"part/smoothdot");
-		glPopMatrix();
+		r_color4(0.9,0.9,1,0.8*z);
+		r_mat_translate(x,y,z);
+		r_mat_rotate_deg(180/M_PI*acos(starpos[3*i+2]),-y,x,0);
+		r_mat_scale(1./4000,1./4000,1./4000);
+		draw_sprite_batched(0,0,"part/smoothdot");
+		r_mat_pop();
 	}
 
-	glPopMatrix();
-	glColor4f(1,1,1,1);
-	glEnable(GL_DEPTH_TEST);
+	r_shader_standard();
+
+	r_mat_pop();
+	r_color4(1,1,1,1);
+	r_enable(RCAP_DEPTH_TEST);
 }
 
 static void stage6_draw(void) {
@@ -277,9 +278,19 @@ static void stage6_preload(void) {
 		"proj/apple",
 		"dialog/elly",
 	NULL);
-	preload_resources(RES_SHADER, RESF_DEFAULT,
+	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"tower_wall",
 		"stage6_sky",
+		"sprite_bullet_apple",
+		"lasers/maxwell",
+		"lasers/elly_toe_fermion",
+		"lasers/elly_toe_photon",
+		"lasers/elly_toe_gluon",
+		"lasers/elly_toe_higgs",
+		"lasers/sine",
+		"lasers/circle",
+		"lasers/linear",
+		"lasers/accelerated",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/elly",

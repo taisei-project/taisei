@@ -84,6 +84,7 @@ typedef struct {
 	int inputflags;
 	bool gamepadmove;
 	complex lastmovedir;
+	int lastmovesequence; // used for animation
 	int axis_ud;
 	int axis_lr;
 
@@ -144,7 +145,7 @@ void player_add_life_fragments(Player *plr, int frags);
 void player_add_bomb_fragments(Player *plr, int frags);
 void player_add_lives(Player *plr, int lives);
 void player_add_bombs(Player *plr, int bombs);
-void player_add_points(Player *plr, unsigned int points);
+void player_add_points(Player *plr, uint points);
 
 void player_cancel_bomb(Player *plr, int delay);
 

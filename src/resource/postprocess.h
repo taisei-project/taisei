@@ -9,54 +9,41 @@
 #pragma once
 #include "taisei.h"
 
-#include "list.h"
-#include "hashtable.h"
-#include "shader.h"
+#include "resource.h"
+#include "shader_program.h"
 #include "fbo.h"
+#include "renderer/api.h"
 
 typedef struct PostprocessShader PostprocessShader;
 typedef struct PostprocessShaderUniform PostprocessShaderUniform;
+typedef union PostprocessShaderUniformValue PostprocessShaderUniformValue;
 
 struct PostprocessShader {
 	LIST_INTERFACE(PostprocessShader);
 
 	PostprocessShaderUniform *uniforms;
-	Shader *shader;
+	ShaderProgram *shader;
 };
 
-typedef enum PostprocessShaderUniformType {
-	PSU_FLOAT,
-	PSU_INT,
-	PSU_UINT,
-} PostprocessShaderUniformType;
-
-typedef union PostprocessShaderUniformValue {
-	void *v;
-	GLfloat *f;
-	GLint *i;
-	GLuint *u;
-} PostprocessShaderUniformValuePtr;
-
-typedef void (APIENTRY *PostprocessShaderUniformFuncPtr)(GLint, GLsizei, const GLvoid*);
+union PostprocessShaderUniformValue {
+	int i;
+	float f;
+};
 
 struct PostprocessShaderUniform {
 	LIST_INTERFACE(PostprocessShaderUniform);
 
-	PostprocessShaderUniformType type;
-	PostprocessShaderUniformValuePtr values;
-	PostprocessShaderUniformFuncPtr func;
-
-	int loc;
-	int size;
-	int amount;
+	Uniform *uniform;
+	PostprocessShaderUniformValue *values;
+	uint elements;
 };
 
 typedef void (*PostprocessDrawFuncPtr)(FBO*);
-typedef void (*PostprocessPrepareFuncPtr)(FBO*, Shader*);
+typedef void (*PostprocessPrepareFuncPtr)(FBO*, ShaderProgram*);
 
 char* postprocess_path(const char *path);
 
-PostprocessShader* postprocess_load(const char *path, unsigned int flags);
+PostprocessShader* postprocess_load(const char *path, uint flags);
 void postprocess_unload(PostprocessShader **list);
 void postprocess(PostprocessShader *ppshaders, FBOPair *fbos, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw);
 
@@ -66,6 +53,11 @@ void postprocess(PostprocessShader *ppshaders, FBOPair *fbos, PostprocessPrepare
 
 char* postprocess_path(const char *name);
 bool check_postprocess_path(const char *path);
-void* load_postprocess_begin(const char *path, unsigned int flags);
-void* load_postprocess_end(void *opaque, const char *path, unsigned int flags);
+void* load_postprocess_begin(const char *path, uint flags);
+void* load_postprocess_end(void *opaque, const char *path, uint flags);
 void unload_postprocess(void*);
+
+extern ResourceHandler postprocess_res_handler;
+
+#define PP_PATH_PREFIX SHPROG_PATH_PREFIX
+#define PP_EXTENSION ".pp"

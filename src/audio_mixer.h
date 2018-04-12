@@ -10,7 +10,6 @@
 #include "taisei.h"
 
 #include <SDL_mixer.h>
-#include <stdbool.h>
 
 // I needed to add this for supporting loop sounds since Mixer doesn’t remember
 // what channel a sound is playing on.

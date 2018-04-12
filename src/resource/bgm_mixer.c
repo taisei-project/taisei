@@ -14,6 +14,7 @@
 #include "resource.h"
 #include "bgm.h"
 #include "audio_mixer.h"
+#include "util.h"
 
 char* bgm_path(const char *name) {
 	return audio_mixer_sound_path(BGM_PATH_PREFIX, name, true);
@@ -45,13 +46,13 @@ static Mix_Music* load_mix_music(const char *path) {
 	return music;
 }
 
-void* load_bgm_begin(const char *path, unsigned int flags) {
+void* load_bgm_begin(const char *path, uint flags) {
 	Music *mus = calloc(1, sizeof(Music));
 	MixerInternalMusic *imus = calloc(1, sizeof(MixerInternalMusic));
 	mus->impl = imus;
 
 	if(strendswith(path, ".bgm")) {
-		Hashtable *bgm = parse_keyvalue_file(path, 8);
+		Hashtable *bgm = parse_keyvalue_file(path);
 
 		if(!bgm) {
 			log_warn("Failed to parse bgm config '%s'", path);
@@ -90,7 +91,7 @@ void* load_bgm_begin(const char *path, unsigned int flags) {
 	return mus;
 }
 
-void* load_bgm_end(void *opaque, const char *path, unsigned int flags) {
+void* load_bgm_end(void *opaque, const char *path, uint flags) {
 	return opaque;
 }
 

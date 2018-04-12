@@ -175,8 +175,8 @@ static void progress_read(SDL_RWops *file) {
 					uint8_t dflags = SDL_ReadU8(vfile);
 					StageInfo *info = stage_get(stg);
 
-					for(unsigned int diff = D_Easy; diff <= D_Lunatic; ++diff) {
-						if(dflags & (unsigned int)pow(2, diff - D_Easy)) {
+					for(uint diff = D_Easy; diff <= D_Lunatic; ++diff) {
+						if(dflags & (uint)pow(2, diff - D_Easy)) {
 							StageProgress *p = stage_get_progress_from_info(info, diff, true);
 							if(p) {
 								p->unlocked = true;
@@ -239,7 +239,7 @@ static void progress_read(SDL_RWops *file) {
 						log_warn("Multiple version information entries in progress file");
 					}
 
-					size_t read __attribute__((unused)) = taisei_version_read(vfile, &version_info);
+					attr_unused size_t read = taisei_version_read(vfile, &version_info);
 					assert(read == TAISEI_VERSION_SIZE);
 					char *vstr = taisei_version_tostring(&version_info);
 					log_info("Progress file from Taisei v%s", vstr);
@@ -390,7 +390,7 @@ static void progress_write_cmd_unlock_stages_with_difficulties(SDL_RWops *vfile,
 		for(Difficulty diff = D_Easy; diff <= D_Lunatic; ++diff) {
 			StageProgress *p = stage_get_progress_from_info(stg, diff, false);
 			if(p && p->unlocked) {
-				dflags |= (unsigned int)pow(2, diff - D_Easy);
+				dflags |= (uint)pow(2, diff - D_Easy);
 			}
 		}
 
@@ -587,11 +587,11 @@ static void progress_write_cmd_unknown(SDL_RWops *vfile, void **arg) {
 //  Test
 //
 
-__attribute__((unused)) static void progress_prepare_cmd_test(size_t *bufsize, void **arg) {
+attr_unused static void progress_prepare_cmd_test(size_t *bufsize, void **arg) {
 	*bufsize += CMD_HEADER_SIZE + sizeof(uint32_t);
 }
 
-__attribute__((unused)) static void progress_write_cmd_test(SDL_RWops *vfile, void **arg) {
+attr_unused static void progress_write_cmd_test(SDL_RWops *vfile, void **arg) {
 	SDL_WriteU8(vfile, 0x7f);
 	SDL_WriteLE16(vfile, sizeof(uint32_t));
 	SDL_WriteLE32(vfile, 0xdeadbeef);
@@ -615,7 +615,7 @@ static void progress_write(SDL_RWops *file) {
 	};
 
 	for(cmd_writer_t *w = cmdtable; w->prepare; ++w) {
-		size_t oldsize __attribute__((unused)) = bufsize;
+		attr_unused size_t oldsize = bufsize;
 		w->prepare(&bufsize, &w->data);
 		log_debug("prepare %i: %i", (int)(w - cmdtable), (int)(bufsize - oldsize));
 	}
@@ -629,7 +629,7 @@ static void progress_write(SDL_RWops *file) {
 	SDL_RWops *vfile = SDL_RWFromMem(buf, bufsize);
 
 	for(cmd_writer_t *w = cmdtable; w->prepare; ++w) {
-		size_t oldpos __attribute__((unused)) = SDL_RWtell(vfile);
+		attr_unused size_t oldpos = SDL_RWtell(vfile);
 		w->write(vfile, &w->data);
 		log_debug("write %i: %i", (int)(w - cmdtable), (int)(SDL_RWtell(vfile) - oldpos));
 	}

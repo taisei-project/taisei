@@ -11,7 +11,6 @@
 
 #include <SDL.h>
 #include <SDL_platform.h>
-#include <stdbool.h>
 #include <math.h>
 
 #include "util.h"
@@ -19,13 +18,11 @@
 
 #include "resource/sfx.h"
 #include "resource/bgm.h"
-#include "resource/shader.h"
 #include "resource/font.h"
 #include "resource/animation.h"
 
 #include "menu/menu.h"
 
-#include "taiseigl.h"
 #include "player.h"
 #include "projectile.h"
 #include "enemy.h"
@@ -37,7 +34,6 @@
 #include "refs.h"
 #include "config.h"
 #include "fbo.h"
-#include "vbo.h"
 #include "resource/resource.h"
 #include "replay.h"
 #include "random.h"
@@ -50,6 +46,7 @@
 #include "hirestime.h"
 #include "log.h"
 #include "framerate.h"
+#include "renderer/api.h"
 
 enum {
 	// defaults

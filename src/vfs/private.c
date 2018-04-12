@@ -112,7 +112,6 @@ static void vfs_free(VFSNode *node) {
 }
 
 void vfs_incref(VFSNode *node) {
-	assert(node != NULL);
 	SDL_AtomicIncRef(&node->refcount);
 }
 
@@ -130,7 +129,6 @@ bool vfs_decref(VFSNode *node) {
 }
 
 VFSInfo vfs_query_node(VFSNode *node) {
-	assert(node != NULL);
 	assert(node->funcs != NULL);
 	assert(node->funcs->query != NULL);
 
@@ -203,9 +201,9 @@ bool vfs_mount(VFSNode *root, const char *mountpoint, VFSNode *subtree) {
 	return result;
 }
 
-bool vfs_mount_or_decref(VFSNode *root, const char *mountpoint, VFSNode *node) {
-	if(!vfs_mount(vfs_root, mountpoint, node)) {
-		vfs_decref(node);
+bool vfs_mount_or_decref(VFSNode *root, const char *mountpoint, VFSNode *subtree) {
+	if(!vfs_mount(vfs_root, mountpoint, subtree)) {
+		vfs_decref(subtree);
 		return false;
 	}
 
@@ -227,7 +225,6 @@ void vfs_iter_stop(VFSNode *node, void **opaque) {
 }
 
 char* vfs_repr_node(VFSNode *node, bool try_syspath) {
-	assert(node != NULL);
 	assert(node->funcs != NULL);
 	assert(node->funcs->repr != NULL);
 	char *r;

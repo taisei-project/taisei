@@ -9,19 +9,9 @@
 #pragma once
 #include "taisei.h"
 
-#include "taiseigl.h"
+#include "renderer/api.h"
 
-typedef struct FBO {
-	GLuint fbo;
-	GLuint tex;
-	GLuint depth;
-
-	int nw, nh;
-	float scale;
-} FBO;
-
-#define FBO_FRONT 0
-#define FBO_BACK 1
+typedef RenderTarget FBO;
 
 typedef struct FBOPair {
 	/*
@@ -36,13 +26,24 @@ typedef struct FBOPair {
 	FBO *back;
 
 	struct {
-		FBO array[2];
-	} _fbopair_private;
+		FBO targets[2];
+	} _private;
 } FBOPair;
 
-void init_fbo_pair(FBOPair *pair, float scale, int type);
+void init_fbo_pair(FBOPair *pair, float scale, TextureType type);
 void delete_fbo_pair(FBOPair *pair);
 void swap_fbo_pair(FBOPair *pair);
 
 void draw_fbo(FBO *fbo);
 void draw_fbo_viewport(FBO *fbo);
+
+// TODO: rename and move this
+typedef struct Resources {
+	struct {
+		FBOPair bg;
+		FBOPair fg;
+		FBOPair rgba;
+	} fbo_pairs;
+} Resources;
+
+extern Resources resources;

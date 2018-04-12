@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include <stdbool.h>
 #include <SDL.h>
 #include "ending.h"
 
@@ -36,7 +35,7 @@ typedef struct StageProgress {
 	// keep this struct small if you can
 	// see stage_get_progress_from_info() in stage.c for more information
 
-	unsigned int unlocked : 1;
+	uint unlocked : 1;
 
 	uint32_t num_played;
 	uint32_t num_cleared;

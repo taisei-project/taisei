@@ -140,7 +140,7 @@ static SDL_RWops* common_alloc(SDL_RWops *wrapped, size_t bufsize, bool autoclos
 #ifdef DEBUG_ZRWOPS
 static void printbuf(void *buf, size_t size) {
 	tsfprintf(stdout, "[ ");
-	for(unsigned int i = 0; i < size; ++i) {
+	for(uint i = 0; i < size; ++i) {
 		tsfprintf(stdout, "%02x ", ((uint8_t*)buf)[i]);
 	}
 	tsfprintf(stdout, "]\n");

@@ -14,6 +14,7 @@
 #include "stage.h"
 #include "stageutils.h"
 #include "global.h"
+#include "resource/model.h"
 
 /*
  *  See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
@@ -58,31 +59,30 @@ struct {
 	float rad;
 } stagedata;
 
-static Vector **stage5_stairs_pos(Vector pos, float maxrange) {
-	Vector p = {0, 0, 0};
-	Vector r = {0, 0, 6000};
+static vec3 **stage5_stairs_pos(vec3 pos, float maxrange) {
+	vec3 p = {0, 0, 0};
+	vec3 r = {0, 0, 6000};
 
 	return linear3dpos(pos, maxrange, p, r);
 }
 
-static void stage5_stairs_draw(Vector pos) {
-	glBindTexture(GL_TEXTURE_2D, get_tex("stage5/tower")->gltex);
+static void stage5_stairs_draw(vec3 pos) {
+	r_texture(0, "stage5/tower");
 
-	glPushMatrix();
-	glTranslatef(pos[0], pos[1], pos[2]);
-	glScalef(300,300,300);
+	r_mat_push();
+	r_mat_translate(pos[0], pos[1], pos[2]);
+	r_mat_scale(300,300,300);
 
-	Shader *sha = get_shader("tower_light");
-	glUseProgram(sha->prog);
-	glUniform3f(uniloc(sha, "lightvec"), 0, 0, 0);
-	glUniform4f(uniloc(sha, "color"), 0.1, 0.1, 0.5, 1);
-	glUniform1f(uniloc(sha, "strength"), stagedata.light_strength);
+	r_shader("tower_light");
+	r_uniform_vec3("lightvec", 0, 0, 0);
+	r_uniform_vec4("color", 0.1, 0.1, 0.5, 1);
+	r_uniform_float("strength", stagedata.light_strength);
 
-	draw_model("tower");
+	r_draw_model("tower");
 
-	glPopMatrix();
+	r_mat_pop();
 
-	glUseProgram(0);
+	r_shader_standard();
 }
 
 static void stage5_draw(void) {
@@ -123,31 +123,31 @@ static void stage5_update(void) {
 void iku_spell_bg(Boss *b, int t) {
 	fill_viewport(0, 300, 1, "stage5/spell_bg");
 
-	glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+	r_blend(BLEND_MOD);
 	fill_viewport(0, t*0.001, 0.7, "stage5/noise");
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 
-	glPushMatrix();
-	glTranslatef(0, -100, 0);
+	r_mat_push();
+	r_mat_translate(0, -100, 0);
 
 	fill_viewport(t/100.0,0,0.5,"stage5/spell_clouds");
-	glPushMatrix();
-	glTranslatef(0, 100, 0);
+	r_mat_push();
+	r_mat_translate(0, 100, 0);
 	fill_viewport(t/100.0*0.75,0,0.6,"stage5/spell_clouds");
-	glPushMatrix();
-	glTranslatef(0, 100, 0);
+	r_mat_push();
+	r_mat_translate(0, 100, 0);
 	fill_viewport(t/100.0*0.5,0,0.7,"stage5/spell_clouds");
-	glPushMatrix();
-	glTranslatef(0, 100, 0);
+	r_mat_push();
+	r_mat_translate(0, 100, 0);
 	fill_viewport(t/100.0*0.25,0,0.8,"stage5/spell_clouds");
-	glPopMatrix();
-	glPopMatrix();
-	glPopMatrix();
-	glPopMatrix();
+	r_mat_pop();
+	r_mat_pop();
+	r_mat_pop();
+	r_mat_pop();
 
-	glColor4f(1,1,1,0.05*stagedata.light_strength);
+	r_color4(1,1,1,0.05*stagedata.light_strength);
 	fill_viewport(0, 300, 1, "stage5/spell_lightning");
-	glColor4f(1,1,1,1);
+	r_color4(1,1,1,1);
 }
 
 static void stage5_start(void) {
@@ -171,8 +171,12 @@ static void stage5_preload(void) {
 		"stage5/tower",
 		"dialog/iku",
 	NULL);
-	preload_resources(RES_SHADER, RESF_DEFAULT,
+	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"tower_light",
+		"lasers/linear",
+		"lasers/accelerated",
+		"lasers/iku_cathode",
+		"lasers/iku_lightning",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/iku",

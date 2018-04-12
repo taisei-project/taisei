@@ -9,11 +9,10 @@
 #pragma once
 #include "taisei.h"
 
-#include <stdint.h>
 #include "compat.h"
 
-#ifdef HAVE_INTEL_INTRIN
-	uint32_t crc32str_sse42(uint32_t crc, const char *str) __attribute__((hot, pure));
+#ifdef TAISEI_BUILDCONF_USE_SSE42
+	uint32_t crc32str_sse42(uint32_t crc, const char *str) attr_hot attr_pure;
 #else
 	#define crc32str_sse42 crc32str
 #endif

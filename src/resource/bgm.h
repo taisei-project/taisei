@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include <stdbool.h>
+#include "resource.h"
 
 typedef struct Music {
 	char *title;
@@ -18,8 +18,10 @@ typedef struct Music {
 
 char* bgm_path(const char *name);
 bool check_bgm_path(const char *path);
-void* load_bgm_begin(const char *path, unsigned int flags);
-void* load_bgm_end(void *opaque, const char *path, unsigned int flags);
+void* load_bgm_begin(const char *path, uint flags);
+void* load_bgm_end(void *opaque, const char *path, uint flags);
 void unload_bgm(void *snd);
+
+extern ResourceHandler bgm_res_handler;
 
 #define BGM_PATH_PREFIX "res/bgm/"

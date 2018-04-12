@@ -1,3 +1,8 @@
-rows = 2
-cols = 6
-speed = 5
+@sprite_count = 12
+
+main = d5 0 1 2 3 4 5
+
+dashdown_left = d5 6 7 8 9 10 11
+dashdown_right = m d5 6 7 8 9 10 11
+
+dashdown_wait = d5 6 7 d10 8 d5 9 10 11

@@ -48,12 +48,12 @@ void youmu_common_shot(Player *plr) {
 
 		PROJECTILE("youmu", plr->pos + 10 - I*20, c, linear, { -20.0*I },
 			.type = PlrProj+120,
-			.color_transform_rule = proj_clrtransform_particle,
+			.shader = "sprite_default",
 		);
 
 		PROJECTILE("youmu", plr->pos - 10 - I*20, c, linear, { -20.0*I },
 			.type = PlrProj+120,
-			.color_transform_rule = proj_clrtransform_particle,
+			.shader = "sprite_default",
 		);
 	}
 }
@@ -71,17 +71,17 @@ void youmu_common_bombbg(Player *plr) {
 	if(fade < 0)
 		fade = 0;
 
-	glColor4f(1,1,1,0.6*fade);
+	r_color4(1,1,1,0.6*fade);
 	fill_viewport_p(0.5,0.5,3,1,1200*t*(t-1.5),get_tex("youmu_bombbg1"));
-	glColor4f(1,1,1,1);
+	r_color4(1,1,1,1);
 }
 
 void youmu_common_draw_proj(Projectile *p, Color c, float scale) {
-	glPushMatrix();
-	glTranslatef(creal(p->pos), cimag(p->pos), 0);
-	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
-	glScalef(scale, scale, 1);
+	r_mat_push();
+	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
+	r_mat_rotate_deg(p->angle*180/M_PI+90, 0, 0, 1);
+	r_mat_scale(scale, scale, 1);
 	ProjDrawCore(p, c);
-	glPopMatrix();
+	r_mat_pop();
 }
 

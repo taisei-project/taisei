@@ -16,6 +16,7 @@
 #include "stagedraw.h"
 #include "video.h"
 #include "options.h"
+#include "renderer/api.h"
 
 static void return_to_title(MenuData *m, void *arg) {
 	global.game_over = GAMEOVER_ABORT;
@@ -136,16 +137,15 @@ void create_ingame_menu_replay(MenuData *m) {
 void draw_ingame_menu_bg(MenuData *menu, float f) {
 	float rad = f*IMENU_BLUR;
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	r_target(NULL);
 	video_set_viewport();
 	set_ortho();
 
-	Shader *shader = get_shader("ingame_menu");
-	glUseProgram(shader->prog);
-	glUniform1f(uniloc(shader, "rad"), rad);
-	glUniform1f(uniloc(shader, "phase"), menu->frames / 100.0);
+	r_shader("ingame_menu");
+	r_uniform_float("rad", rad);
+	r_uniform_float("phase", menu->frames / 100.0);
 	stage_draw_foreground();
-	glUseProgram(0);
+	r_shader_standard();
 }
 
 void update_ingame_menu(MenuData *menu) {
@@ -154,19 +154,19 @@ void update_ingame_menu(MenuData *menu) {
 }
 
 void draw_ingame_menu(MenuData *menu) {
-	glPushMatrix();
+	r_mat_push();
 
 	draw_ingame_menu_bg(menu, 1.0-menu_fade(menu));
 
-	glPushMatrix();
-	glTranslatef(VIEWPORT_X, VIEWPORT_Y, 0);
-	glTranslatef(VIEWPORT_W/2, VIEWPORT_H/4, 0);
+	r_mat_push();
+	r_mat_translate(VIEWPORT_X, VIEWPORT_Y, 0);
+	r_mat_translate(VIEWPORT_W/2, VIEWPORT_H/4, 0);
 
 	draw_menu_selector(0, menu->drawdata[0], menu->drawdata[1]*2, 41, menu->frames);
 
 	if(menu->context) {
 		float s = 0.3 + 0.2 * sin(menu->frames/10.0);
-		glColor4f(1-s/2, 1-s/2, 1-s, 1-menu_fade(menu));
+		r_color4(1-s/2, 1-s/2, 1-s, 1-menu_fade(menu));
 		draw_text(AL_Center, 0, -2 * 35, menu->context, _fonts.standard);
 	}
 
@@ -179,17 +179,17 @@ void draw_ingame_menu(MenuData *menu) {
 				s = 0.3 + 0.2*sin(menu->frames/7.0);
 			}
 
-			glColor4f(t-s,t-s,t-s/2, 1-menu_fade(menu));
+			r_color4(t-s,t-s,t-s/2, 1-menu_fade(menu));
 		} else {
-			glColor4f(0.5, 0.5, 0.5, 0.5 * (1-menu_fade(menu)));
+			r_color4(0.5, 0.5, 0.5, 0.5 * (1-menu_fade(menu)));
 		}
 
 		draw_text(AL_Center, 0, i*35, menu->entries[i].name, _fonts.standard);
 	}
 
-	glColor4f(1,1,1,1);
-	glPopMatrix();
-	glPopMatrix();
+	r_color4(1,1,1,1);
+	r_mat_pop();
+	r_mat_pop();
 
 	stage_draw_hud();
 }

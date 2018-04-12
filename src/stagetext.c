@@ -74,21 +74,17 @@ static void stagetext_draw_single(StageText *txt) {
 		txt->custom.predraw(txt, t, 1.0 - f);
 	}
 
-	Shader *sha = get_shader("stagetitle");
-	glUseProgram(sha->prog);
-	glUniform1i(uniloc(sha, "trans"), 1);
-	glUniform1f(uniloc(sha, "t"), 1.0 - f);
+	r_texture(1, "titletransition");
+	r_shader("stagetext");
+	r_uniform_int("trans", 1);
+	r_uniform_float("t", 1.0 - f);
 
-	glActiveTexture(GL_TEXTURE0 + 1);
-	glBindTexture(GL_TEXTURE_2D, get_tex("titletransition")->gltex);
-	glActiveTexture(GL_TEXTURE0);
-
-	glUniform3f(uniloc(sha, "color"), 0,0,0);
+	r_uniform_vec3("color", 0, 0, 0);
 	draw_text(txt->align, creal(txt->pos)+10*f*f+1, cimag(txt->pos)+10*f*f+1, txt->text, *txt->font);
-	glUniform3fv(uniloc(sha, "color"), 1, txt->clr);
+	r_uniform("color", 1, txt->clr);
 	draw_text(txt->align, creal(txt->pos)+10*f*f, cimag(txt->pos)+10*f*f, txt->text, *txt->font);
 
-	glUseProgram(0);
+	r_shader_standard();
 }
 
 void stagetext_draw(void) {

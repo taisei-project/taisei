@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include <stdbool.h>
 #include "transition.h"
 
 #define IMENU_BLUR 0.05

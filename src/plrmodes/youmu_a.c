@@ -11,6 +11,7 @@
 #include "global.h"
 #include "plrmodes.h"
 #include "youmu.h"
+#include "renderer/api.h"
 
 static Color myon_color(float f, float a) {
 	// return rgba(0.8+0.2*f, 0.9-0.4*sqrt(f), 1.0-0.2*f*f, a);
@@ -161,14 +162,6 @@ static void myon_proj_draw(Projectile *p, int t) {
 	youmu_common_draw_proj(p, c, 1);
 }
 
-static void myon_proj_clr_transform(Projectile *p, int t, Color c, ColorTransform *out) {
-	memcpy(out, (&(ColorTransform) {
-		.R[1] = rgba(1, 1, 1, 0),
-		.B[1] = multiply_colors(c, c) & ~CLRMASK_A,
-		.A[1] = c &  CLRMASK_A,
-	}), sizeof(ColorTransform));
-}
-
 static Projectile* youmu_mirror_myon_proj(char *tex, complex pos, double speed, double angle, double aoffs, double upfactor, int dmg) {
 	complex dir = cexp(I*(M_PI/2 + aoffs)) * upfactor + cexp(I * (angle + aoffs)) * (1 - upfactor);
 	dir = dir / cabs(dir);
@@ -199,8 +192,7 @@ static Projectile* youmu_mirror_myon_proj(char *tex, complex pos, double speed, 
 		.args = { speed*dir },
 		.draw_rule = myon_proj_draw,
 		.type = PlrProj+dmg,
-		// .flags = PFLAG_DRAWSUB,
-		.color_transform_rule = myon_proj_clr_transform,
+		.shader = "sprite_youmu_myon_shot",
 	);
 }
 
@@ -313,7 +305,7 @@ static int youmu_mirror_self_proj(Projectile *p, int t) {
 static Projectile* youmu_mirror_self_shot(Player *plr, complex ofs, complex vel, int dmg, double turntime) {
 	return PROJECTILE("youmu", plr->pos + ofs, 0,
 		.type = PlrProj+dmg,
-		.color_transform_rule = proj_clrtransform_particle,
+		.shader = "sprite_default",
 		.draw_rule = myon_proj_draw,
 		.rule = youmu_mirror_self_proj,
 		.args = {
@@ -363,7 +355,7 @@ static int youmu_split(Enemy *e, int t) {
 			.pos = VIEWPORT_W/2+x+(x>0)*VIEWPORT_H*I,
 			.rule = accelerated,
 			.draw_rule = Petal,
-			.color = rgba(0.1,0.1,0.5,t),
+			.color = rgba(0.1, 0.1, 0.5, min(60, t)),
 			.args = {
 				-10*I*x/fabs(x),
 				-I*x/fabs(x)+anfrand(4)*0.1,
@@ -381,13 +373,13 @@ static int youmu_split(Enemy *e, int t) {
 }
 
 static void youmu_mirror_shader(FBO *fbo) {
-	Shader *shader = get_shader("youmua_bomb");
+	ShaderProgram *shader = r_shader_get("youmua_bomb");
 
 	double t = player_get_bomb_progress(&global.plr,0);
-	glUseProgram(shader->prog);
-	glUniform1f(uniloc(shader, "tbomb"), t);
+	r_shader_ptr(shader);
+	r_uniform_float("tbomb", t);
 	draw_fbo_viewport(fbo);
-	glUseProgram(0);
+	r_shader_standard();
 
 	colorfill(1,1,1,max(0,1-10*t));
 }
@@ -422,8 +414,9 @@ static void youmu_mirror_preload(void) {
 		"youmu_bombbg1",
 	NULL);
 
-	preload_resources(RES_SHADER, flags,
+	preload_resources(RES_SHADER_PROGRAM, flags,
 		"youmua_bomb",
+		"sprite_youmu_myon_shot",
 	NULL);
 
 	preload_resources(RES_SFX, flags | RESF_OPTIONAL,

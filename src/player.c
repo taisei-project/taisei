@@ -48,7 +48,7 @@ void player_stage_post_init(Player *plr) {
 		plr->mode->procs.init(plr);
 	}
 
-	aniplayer_create(&plr->ani, get_ani(plr->mode->character->player_sprite_name));
+	aniplayer_create(&plr->ani, get_ani(plr->mode->character->player_sprite_name), "main");
 }
 
 void player_free(Player *plr) {
@@ -114,42 +114,37 @@ void player_draw(Player* plr) {
 
 	draw_enemies(plr->slaves);
 
-	glPushMatrix();
-		glTranslatef(creal(plr->pos), cimag(plr->pos), 0);
+	r_mat_push();
+		r_mat_translate(creal(plr->pos), cimag(plr->pos), 0);
 
 		if(plr->focus) {
-			glPushMatrix();
-				glRotatef(global.frames*10, 0, 0, 1);
-				glScalef(1, 1, 1);
-				glColor4f(1, 1, 1, 0.2 * (clamp(plr->focus, 0, 15) / 15.0));
-				draw_sprite(0, 0, "fairy_circle");
-				glColor4f(1,1,1,1);
-			glPopMatrix();
+			r_draw_sprite(&(SpriteParams) {
+				.sprite = "fairy_circle",
+				.rotation.angle = DEG2RAD * global.frames * 10,
+				.color = rgba(1, 1, 1, 0.2 * (clamp(plr->focus, 0, 15) / 15.0)),
+			});
 		}
-
-
-		int clr_changed = 0;
 
 		if(global.frames - abs(plr->recovery) < 0 && (global.frames/8)&1) {
-			glColor4f(0.4,0.4,1,0.9);
-			clr_changed = 1;
+			r_color4(0.4, 0.4, 1.0, 0.9);
 		}
 
-		aniplayer_play(&plr->ani,0,0);
-
-		if(clr_changed)
-			glColor3f(1,1,1);
+		Sprite *spr = aniplayer_get_frame(&plr->ani);
+		r_draw_sprite(&(SpriteParams) {
+			.sprite_ptr = spr,
+			.pos = { 0, 0 },
+		});
+		r_color3(1, 1, 1);
 
 		if(plr->focus) {
-			glPushMatrix();
-				glColor4f(1, 1, 1, plr->focus / 30.0);
-				glRotatef(global.frames, 0, 0, -1);
-				draw_sprite(0, 0, "focus");
-				glColor4f(1, 1, 1, 1);
-			glPopMatrix();
+			r_draw_sprite(&(SpriteParams) {
+				.sprite = "focus",
+				.rotation.angle = DEG2RAD * global.frames * -1,
+				.color = rgba(1, 1, 1, plr->focus / 30.0),
+			});
 		}
 
-	glPopMatrix();
+	r_mat_pop();
 }
 
 static void player_fail_spell(Player *plr) {
@@ -617,9 +612,19 @@ bool player_applymovement_gamepad(Player *plr) {
 	return true;
 }
 
-static void player_ani_moving(Player *plr, bool moving, bool dir) {
-	plr->ani.stdrow = !moving;
-	plr->ani.mirrored = dir;
+static void player_ani_moving(Player *plr, int dir) {
+	const char *seqname;
+	switch(dir) {
+	case -1: seqname = "left"; break;
+	case 0: seqname = "main"; break;
+	case 1: seqname = "right"; break;
+	default: log_fatal("Invalid player animation dir given");
+	}
+
+	if(plr->lastmovesequence == dir)
+		return;
+	aniplayer_hard_switch(&plr->ani,seqname,1);
+	plr->lastmovesequence = dir;
 }
 
 void player_applymovement(Player *plr) {
@@ -627,19 +632,20 @@ void player_applymovement(Player *plr) {
 		return;
 
 	bool gamepad = player_applymovement_gamepad(plr);
-	player_ani_moving(plr,false,false);
+	//player_ani_moving(plr,0);
 
-	int up      =   plr->inputflags & INFLAG_UP,
-		down    =   plr->inputflags & INFLAG_DOWN,
-		left    =   plr->inputflags & INFLAG_LEFT,
-		right   =   plr->inputflags & INFLAG_RIGHT;
+	int up      =   plr->inputflags & INFLAG_UP;
+	int down    =   plr->inputflags & INFLAG_DOWN;
+	int left    =   plr->inputflags & INFLAG_LEFT;
+	int right   =   plr->inputflags & INFLAG_RIGHT;
 
 	if(left && !right) {
-		player_ani_moving(plr,true,true);
+		player_ani_moving(plr,-1);
 	} else if(right && !left) {
-		player_ani_moving(plr,true,false);
+		player_ani_moving(plr,1);
+	} else {
+		player_ani_moving(plr,0);
 	}
-
 	if(gamepad)
 		return;
 
@@ -772,7 +778,7 @@ void player_add_bombs(Player *plr, int bombs) {
 }
 
 
-static void try_spawn_bonus_item(Player *plr, ItemType type, unsigned int oldpoints, unsigned int reqpoints) {
+static void try_spawn_bonus_item(Player *plr, ItemType type, uint oldpoints, uint reqpoints) {
 	int items = plr->points / reqpoints - oldpoints / reqpoints;
 
 	if(items > 0) {
@@ -782,8 +788,8 @@ static void try_spawn_bonus_item(Player *plr, ItemType type, unsigned int oldpoi
 	}
 }
 
-void player_add_points(Player *plr, unsigned int points) {
-	unsigned int old = plr->points;
+void player_add_points(Player *plr, uint points) {
+	uint old = plr->points;
 	plr->points += points;
 
 	if(global.stage->type != STAGE_SPELL) {

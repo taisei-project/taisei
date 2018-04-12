@@ -10,7 +10,6 @@
 #include "taisei.h"
 
 #include <SDL.h>
-#include <stdbool.h>
 
 SDL_RWops* SDL_RWpopen(const char *command, const char *mode);
 int SDL_RWConvertToPipe(SDL_RWops *stdio_rw);

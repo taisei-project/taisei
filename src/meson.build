@@ -1,6 +1,4 @@
 
-version_deps = []
-
 version_deps += custom_target('version information',
     command : [preprocess_command, '@INPUT@', '@OUTPUT@'],
     build_always : true,
@@ -52,14 +50,14 @@ if use_intel_intrin
     sse42_lib = static_library('taisei_sse42', 'util_sse42.c', c_args: taisei_c_args + ['-msse4.2'], install : false)
     sse42_dep = declare_dependency(link_with: sse42_lib)
     taisei_deps += sse42_dep
+    config.set('TAISEI_BUILDCONF_USE_SSE42', true)
     message('SSE 4.2 intrinsics will be used')
 elif get_option('intel_intrin')
+    config.set('TAISEI_BUILDCONF_USE_SSE42', false)
     message('SSE 4.2 intrinsics can not be used')
 endif
 
-configure_file(configuration : config, output : 'build_config.h')
-
-src_base = [
+taisei_src = files(
     'aniplayer.c',
     'assert.c',
     'audio_common.c',
@@ -85,125 +83,54 @@ src_base = [
     'list.c',
     'log.c',
     'main.c',
-    'matrix.c',
-    'menu/charselect.c',
-    'menu/common.c',
-    'menu/difficultyselect.c',
-    'menu/gameovermenu.c',
-    'menu/ingamemenu.c',
-    'menu/mainmenu.c',
-    'menu/menu.c',
-    'menu/options.c',
-    'menu/replayview.c',
-    'menu/savereplay.c',
-    'menu/spellpractice.c',
-    'menu/stagepractice.c',
-    'menu/stageselect.c',
-    'menu/submenus.c',
     'objectpool.c',
     'objectpool_util.c',
     'player.c',
     'plrmodes.c',
-    'plrmodes/marisa_a.c',
-    'plrmodes/marisa_b.c',
-    'plrmodes/marisa.c',
-    'plrmodes/youmu_a.c',
-    'plrmodes/youmu_b.c',
-    'plrmodes/youmu.c',
     'progress.c',
     'projectile.c',
     'random.c',
-    'recolor.c',
     'refs.c',
     'replay.c',
-    'resource/animation.c',
-    'resource/font.c',
-    'resource/model.c',
-    'resource/postprocess.c',
-    'resource/resource.c',
-    'resource/shader.c',
-    'resource/sprite.c',
-    'resource/texture.c',
-    'rwops/rwops_autobuf.c',
-    'rwops/rwops_dummy.c',
-    'rwops/rwops_segment.c',
-    'rwops/rwops_zlib.c',
     'stage.c',
     'stagedraw.c',
     'stageobjects.c',
-    'stages/stage1.c',
-    'stages/stage1_events.c',
-    'stages/stage2.c',
-    'stages/stage2_events.c',
-    'stages/stage3.c',
-    'stages/stage3_events.c',
-    'stages/stage4.c',
-    'stages/stage4_events.c',
-    'stages/stage5.c',
-    'stages/stage5_events.c',
-    'stages/stage6.c',
-    'stages/stage6_events.c',
     'stagetext.c',
     'stageutils.c',
-    'taiseigl.c',
     'transition.c',
     'util.c',
-    'vbo.c',
     'version.c',
-    'vfs/pathutil.c',
-    'vfs/private.c',
-    'vfs/public.c',
-    'vfs/setup.c',
-    'vfs/syspath_public.c',
-    'vfs/union.c',
-    'vfs/union_public.c',
-    'vfs/vdir.c',
-    'vfs/zipfile_public.c',
     'video.c',
+)
+
+subdir('menu')
+subdir('plrmodes')
+subdir('renderer')
+subdir('resource')
+subdir('rwops')
+subdir('stages')
+subdir('vfs')
+
+configure_file(configuration : config, output : 'build_config.h')
+
+taisei_src += [
+    menu_src,
+    plrmodes_src,
+    renderer_src,
+    resource_src,
+    rwops_src,
+    stages_src,
+    vfs_src,
 ]
 
 if taisei_deps.contains(dep_sdl2_mixer)
-    src_base += [
+    taisei_src += files(
         'audio_mixer.c',
-        'resource/bgm_mixer.c',
-        'resource/sfx_mixer.c',
-    ]
+    )
 else
-    src_base += [
+    taisei_src += files(
         'audio_null.c',
-        'resource/bgm_null.c',
-        'resource/sfx_null.c',
-    ]
-endif
-
-if taisei_deps.contains(dep_zip)
-    src_base += [
-        'rwops/rwops_zipfile.c',
-        'vfs/zipfile.c',
-        'vfs/zippath.c',
-    ]
-else
-    src_base += [
-        'vfs/zipfile_null.c',
-    ]
-endif
-
-if have_posix
-    src_base += [
-        'vfs/syspath_posix.c',
-        'rwops/rwops_pipe_posix.c',
-    ]
-elif host_machine.system() == 'windows'
-    src_base += [
-        # 'windows_misc.c',
-        'vfs/syspath_win32.c',
-        'rwops/rwops_pipe_null.c',
-    ]
-else
-    src_base += [
-        'vfs/syspath_posix.c',      # eeehh, maybe it'll work ¯\_(ツ)_/¯
-        'rwops/rwops_pipe_null.c',
-    ]
+    )
 endif
 
 if macos_app_bundle
@@ -212,7 +139,7 @@ else
     taisei_exe_name = 'taisei'
 endif
 
-taisei_exe = executable(taisei_exe_name, src_base, version_deps,
+taisei_exe = executable(taisei_exe_name, taisei_src, version_deps,
     dependencies : taisei_deps,
     c_args : taisei_c_args,
     gui_app : not get_option('win_console'),

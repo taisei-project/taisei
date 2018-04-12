@@ -429,11 +429,13 @@ void kurumi_redspike(Boss *b, int time) {
 		}
 	} else {
 		AT(80) {
-			b->ani.stdrow = 1;
+			aniplayer_queue(&b->ani, "muda", 0);
 		}
+
 		AT(499) {
-			b->ani.stdrow = 0;
+			aniplayer_queue(&b->ani, "main", 0);
 		}
+		
 		FROM_TO_INT(80, 500, 40,200,2+2*(global.diff == D_Hard)) {
 			tsrand_fill(2);
 			complex offset = 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1));
@@ -450,18 +452,18 @@ void kurumi_redspike(Boss *b, int time) {
 void kurumi_spell_bg(Boss *b, int time) {
 	float f = 0.5+0.5*sin(time/80.0);
 
-	glPushMatrix();
-	glTranslatef(VIEWPORT_W/2, VIEWPORT_H/2,0);
-	glScalef(0.6,0.6,1);
-	glColor3f(f,1-f,1-f);
+	r_mat_push();
+	r_mat_translate(VIEWPORT_W/2, VIEWPORT_H/2,0);
+	r_mat_scale(0.6,0.6,1);
+	r_color3(f,1-f,1-f);
 	draw_sprite(0, 0, "stage4/kurumibg1");
-	glColor3f(1,1,1);
-	glPopMatrix();
+	r_color3(1,1,1);
+	r_mat_pop();
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	r_blend(BLEND_ADD);
 	fill_viewport(time/300.0, time/300.0, 0.5, "stage4/kurumibg2");
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 
 }
 
@@ -596,7 +598,8 @@ void kurumi_breaker(Boss *b, int time) {
 
 	FROM_TO(60, 400, 100) {
 		play_sound("shot_special1");
-		aniplayer_queue(&b->ani,1,0,0);
+		aniplayer_queue(&b->ani,"muda",1);
+		aniplayer_queue(&b->ani,"main",0);
 		for(i = 0; i < 20; i++) {
 			PROJECTILE("bigball", b->pos, rgb(0.5,0,0.5), asymptotic,
 				.args = { cexp(2.0*I*M_PI/20.0*i), 3 },
@@ -700,8 +703,8 @@ void kurumi_aniwall(Boss *b, int time) {
 	if(time < 0)
 		return;
 
-	b->ani.stdrow = 1;
 	AT(0) {
+		aniplayer_queue(&b->ani, "muda", 0);
 		play_sound("laser1");
 		create_lasercurve2c(b->pos, 50, 80, rgb(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(0.4*I));
 		create_enemy1c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, aniwall_slave, 0.2*cexp(0.4*I));
@@ -737,7 +740,9 @@ void kurumi_sbreaker(Boss *b, int time) {
 
 	FROM_TO(60, dur, 100) {
 		play_sound("shot_special1");
-		aniplayer_queue(&b->ani,1,0,0);
+		aniplayer_queue(&b->ani, "muda", 4);
+		aniplayer_queue(&b->ani, "main", 0);
+
 		for(i = 0; i < 20; i++) {
 			PROJECTILE("bigball", b->pos, rgb(0.5, 0.0, 0.5), asymptotic,
 				.args = { cexp(2.0*I*M_PI/20.0*i), 3 },
@@ -823,7 +828,10 @@ void kurumi_blowwall(Boss *b, int time) {
 
 	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.04)
 
-	b->ani.stdrow=1;
+	AT(0) {
+		aniplayer_queue(&b->ani,"muda",0);
+	}
+	
 	AT(50)
 		bwlaser(b, 0.4, 1);
 
@@ -940,7 +948,8 @@ void kurumi_danmaku(Boss *b, int time) {
 	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.04)
 
 	AT(260) {
-		aniplayer_queue(&b->ani,1,4,0);
+		aniplayer_queue(&b->ani,"muda",4);
+		aniplayer_queue(&b->ani,"main",0);
 	}
 
 	AT(50) {
@@ -1073,23 +1082,21 @@ void kurumi_extra_drainer_draw(Projectile *p, int time) {
 	double a = 0.5 * creal(p->args[2]);
 	Texture *tex = get_tex("part/sinewave");
 
-	ColorTransform ct;
+	r_shader_standard();
+	r_blend(BLEND_ADD);
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-	static_clrtransform_particle(rgba(1.0, 0.5, 0.5, a), &ct);
-	recolor_apply_transform(&ct);
+	r_color4(1.0, 0.5, 0.5, a);
 	loop_tex_line_p(org, targ, 16, time * 0.01, tex);
 
-	static_clrtransform_particle(rgba(0.4, 0.2, 0.2, a), &ct);
-	recolor_apply_transform(&ct);
+	r_color4(0.4, 0.2, 0.2, a);
 	loop_tex_line_p(org, targ, 18, time * 0.0043, tex);
 
-	static_clrtransform_particle(rgba(0.5, 0.2, 0.5, a), &ct);
-	recolor_apply_transform(&ct);
+	r_color4(0.5, 0.2, 0.5, a);
 	loop_tex_line_p(org, targ, 24, time * 0.003, tex);
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
+	r_shader("sprite_default");
+	r_color4(1, 1, 1, 1);
 }
 
 int kurumi_extra_drainer(Projectile *p, int time) {
@@ -1134,21 +1141,20 @@ void kurumi_extra_create_drainer(Enemy *e) {
 		.draw_rule = kurumi_extra_drainer_draw,
 		.args = { add_ref(e) },
 		.type = FakeProj,
-		.color_transform_rule = proj_clrtransform_particle,
+		.shader = "sprite_default",
 	);
 }
 
 void kurumi_extra_swirl_visual(Enemy *e, int time, bool render) {
 	if(!render) {
-		Swirl(e, time, render);
+		// why the hell was this here?
+		// Swirl(e, time, render);
 		return;
 	}
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+	r_blend(BLEND_SUB);
 	Swirl(e, time, render);
-	glBlendEquation(GL_FUNC_ADD);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_blend(BLEND_ALPHA);
 }
 
 void kurumi_extra_fairy_visual(Enemy *e, int time, bool render) {
@@ -1157,11 +1163,11 @@ void kurumi_extra_fairy_visual(Enemy *e, int time, bool render) {
 		return;
 	}
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glUseProgram(get_shader("negative")->prog);
+	r_blend(BLEND_ADD);
+	r_shader("sprite_negative");
 	Fairy(e, time, render);
-	glUseProgram(0);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_shader("sprite_default");
+	r_blend(BLEND_ALPHA);
 }
 
 void kurumi_extra_bigfairy_visual(Enemy *e, int time, bool render) {
@@ -1170,11 +1176,11 @@ void kurumi_extra_bigfairy_visual(Enemy *e, int time, bool render) {
 		return;
 	}
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glUseProgram(get_shader("negative")->prog);
+	r_blend(BLEND_ADD);
+	r_shader("sprite_negative");
 	BigFairy(e, time, render);
-	glUseProgram(0);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_shader("sprite_default");
+	r_blend(BLEND_ALPHA);
 }
 
 int kurumi_extra_fairy(Enemy *e, int t) {
@@ -1300,9 +1306,10 @@ void kurumi_extra(Boss *b, int time) {
 	FROM_TO(190,200,1) {
 		GO_TO(b, sidepos+30*I,0.1)
 	}
-	b->ani.stdrow=0;
-	FROM_TO(190,300,1) {
-		b->ani.stdrow=1;
+
+	AT(190){
+		aniplayer_queue_frames(&b->ani, "muda", 110);
+		aniplayer_queue(&b->ani, "main", 0);
 	}
 
 	FROM_TO(300,400,1) {

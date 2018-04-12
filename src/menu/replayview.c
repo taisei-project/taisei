@@ -99,33 +99,33 @@ static void replayview_draw_stagemenu(MenuData *m) {
 	float height = (1+m->ecount) * 20;
 	float width  = 100;
 
-	glPushMatrix();
-	glTranslatef(SCREEN_W*0.5, SCREEN_H*0.5, 0);
-	glScalef(width, height, 1);
-	glColor4f(0.1, 0.1, 0.1, 0.7 * alpha);
-	glDisable(GL_TEXTURE_2D);
-	draw_quad();
-	glEnable(GL_TEXTURE_2D);
-	glPopMatrix();
+	r_mat_push();
+	r_mat_translate(SCREEN_W*0.5, SCREEN_H*0.5, 0);
+	r_mat_scale(width, height, 1);
+	r_color4(0.1, 0.1, 0.1, 0.7 * alpha);
+	r_shader_standard_notex();
+	r_draw_quad();
+	r_shader_standard();
+	r_mat_pop();
 
-	glPushMatrix();
-	glTranslatef(SCREEN_W*0.5, (SCREEN_H-(m->ecount-1)*20)*0.5, 0);
+	r_mat_push();
+	r_mat_translate(SCREEN_W*0.5, (SCREEN_H-(m->ecount-1)*20)*0.5, 0);
 
 	for(i = 0; i < m->ecount; ++i) {
 		MenuEntry *e = &(m->entries[i]);
 		float a = e->drawdata;
 
 		if(e->action == NULL) {
-			glColor4f(0.5, 0.5, 0.5, 0.5 * alpha);
+			r_color4(0.5, 0.5, 0.5, 0.5 * alpha);
 		} else {
 			float ia = 1-a;
-			glColor4f(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a) * alpha);
+			r_color4(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a) * alpha);
 		}
 
 		draw_text(AL_Center, 0, 20*i, e->name, _fonts.standard);
 	}
 
-	glPopMatrix();
+	r_mat_pop();
 }
 
 static void replayview_drawitem(void *n, int item, int cnt) {

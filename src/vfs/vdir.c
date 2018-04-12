@@ -131,5 +131,5 @@ static VFSNodeFuncs vfs_funcs_vdir = {
 
 void vfs_vdir_init(VFSNode *node) {
 	node->funcs = &vfs_funcs_vdir;
-	node->_contents_ = hashtable_new_stringkeys(HT_DYNAMIC_SIZE);
+	node->_contents_ = hashtable_new_stringkeys();
 }

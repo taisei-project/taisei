@@ -9,8 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include <stdint.h>
-
 #include "objectpool.h"
 
 void objpool_release_list(ObjectPool *pool, List **dest);

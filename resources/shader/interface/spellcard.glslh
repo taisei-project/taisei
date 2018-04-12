@@ -1,0 +1,13 @@
+
+#ifndef I_SPELLCARD_H
+#define I_SPELLCARD_H
+
+#include "standard.glslh"
+
+UNIFORM(1) float w;
+UNIFORM(2) float h;
+UNIFORM(3) float ratio;
+UNIFORM(4) vec2 origin;
+UNIFORM(5) float t;
+
+#endif

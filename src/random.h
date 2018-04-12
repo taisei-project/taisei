@@ -9,9 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include <stdint.h>
-#include <stdbool.h>
-
 #define CMWC_CYCLE 4096 // as Marsaglia recommends
 #define CMWC_C_MAX 809430660 // as Marsaglia recommends
 
@@ -40,11 +37,11 @@ void tsrand_unlock(RandomState *rnd);
 float frand(void);
 float nfrand(void);
 
-void __tsrand_fill_p(RandomState *rnd, int amount, const char *file, unsigned int line);
-void __tsrand_fill(int amount, const char *file, unsigned int line);
-uint32_t __tsrand_a(int idx, const char *file, unsigned int line);
-float __afrand(int idx, const char *file, unsigned int line);
-float __anfrand(int idx, const char *file, unsigned int line);
+void __tsrand_fill_p(RandomState *rnd, int amount, const char *file, uint line);
+void __tsrand_fill(int amount, const char *file, uint line);
+uint32_t __tsrand_a(int idx, const char *file, uint line);
+float __afrand(int idx, const char *file, uint line);
+float __anfrand(int idx, const char *file, uint line);
 
 #define tsrand_fill_p(rnd,amount) __tsrand_fill_p(rnd, amount, __FILE__, __LINE__)
 #define tsrand_fill(amount) __tsrand_fill(amount, __FILE__, __LINE__)

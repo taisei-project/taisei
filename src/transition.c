@@ -23,21 +23,21 @@ void TransFadeWhite(double fade) {
 }
 
 void TransLoader(double fade) {
-	glColor4f(1, 1, 1, fade);
+	r_color4(1, 1, 1, fade);
 	fill_screen("loading");
-	glColor4f(1, 1, 1, 1);
+	r_color4(1, 1, 1, 1);
 }
 
 void TransMenu(double fade) {
-	glColor4f(1, 1, 1, fade);
+	r_color4(1, 1, 1, fade);
 	fill_screen("menu/mainmenubg");
-	glColor4f(1, 1, 1, 1);
+	r_color4(1, 1, 1, 1);
 }
 
 void TransMenuDark(double fade) {
-	glColor4f(0.3, 0.3, 0.3, fade);
+	r_color4(0.3, 0.3, 0.3, fade);
 	fill_screen("menu/mainmenubg");
-	glColor4f(1, 1, 1, 1);
+	r_color4(1, 1, 1, 1);
 }
 
 void TransEmpty(double fade) { }

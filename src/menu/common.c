@@ -115,24 +115,24 @@ void start_game_no_difficulty_menu(MenuData *m, void *arg) {
 
 void draw_menu_selector(float x, float y, float w, float h, float t) {
 	Sprite *bg = get_sprite("part/smoke");
-	glPushMatrix();
-	glTranslatef(x, y, 0);
-	glScalef(w / bg->w, h / bg->h, 1);
-	glRotatef(t*2,0,0,1);
-	glColor4f(0,0,0,0.5 * (1 - transition.fade));
+	r_mat_push();
+	r_mat_translate(x, y, 0);
+	r_mat_scale(w / bg->w, h / bg->h, 1);
+	r_mat_rotate_deg(t*2,0,0,1);
+	r_color4(0,0,0,0.5 * (1 - transition.fade));
 	draw_sprite(0, 0, "part/smoke");
-	glPopMatrix();
+	r_mat_pop();
 }
 
 void draw_menu_title(MenuData *m, char *title) {
-	glColor4f(1, 1, 1, 1);
+	r_color4(1, 1, 1, 1);
 	draw_text(AL_Right, (stringwidth(title, _fonts.mainmenu) + 10) * (1.0-menu_fade(m)), 30, title, _fonts.mainmenu);
 }
 
 void draw_menu_list(MenuData *m, float x, float y, void (*draw)(void*, int, int)) {
-	glPushMatrix();
+	r_mat_push();
 	float offset = ((((m->ecount+5) * 20) > SCREEN_H)? min(0, SCREEN_H * 0.7 - y - m->drawdata[2]) : 0);
-	glTranslatef(x, y + offset, 0);
+	r_mat_translate(x, y + offset, 0);
 
 	draw_menu_selector(m->drawdata[0], m->drawdata[2], m->drawdata[1], 34, m->frames);
 
@@ -147,10 +147,10 @@ void draw_menu_list(MenuData *m, float x, float y, void (*draw)(void*, int, int)
 		float a = e->drawdata * 0.1;
 		float o = (p < 0? 1-p/(-y-10) : 1);
 		if(e->action == NULL)
-			glColor4f(0.5, 0.5, 0.5, 0.5*o);
+			r_color4(0.5, 0.5, 0.5, 0.5*o);
 		else {
 			float ia = 1-a;
-			glColor4f(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a)*o);
+			r_color4(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a)*o);
 		}
 
 		if(draw && i < m->ecount-1)
@@ -159,7 +159,7 @@ void draw_menu_list(MenuData *m, float x, float y, void (*draw)(void*, int, int)
 			draw_text(AL_Left, 20 - e->drawdata, 20*i, e->name, _fonts.standard);
 	}
 
-	glPopMatrix();
+	r_mat_pop();
 }
 
 void animate_menu_list_entry(MenuData *m, int i) {

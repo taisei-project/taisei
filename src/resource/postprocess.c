@@ -12,27 +12,28 @@
 #include "util.h"
 #include "postprocess.h"
 #include "resource.h"
+#include "renderer/api.h"
 
-static PostprocessShaderUniformFuncPtr get_uniform_func(PostprocessShaderUniformType type, int size) {
-	tsglUniform1fv_ptr   f_funcs[] = { glUniform1fv,  glUniform2fv,  glUniform3fv,  glUniform4fv };
-	tsglUniform1iv_ptr   i_funcs[] = { glUniform1iv,  glUniform2iv,  glUniform3iv,  glUniform4iv };
-	tsglUniform1uiv_ptr ui_funcs[] = { glUniform1uiv, glUniform2uiv, glUniform3uiv, glUniform4uiv };
+ResourceHandler postprocess_res_handler = {
+	.type = RES_POSTPROCESS,
+	.typename = "postprocessing pipeline",
+	.subdir = PP_PATH_PREFIX,
 
-	PostprocessShaderUniformFuncPtr *lists[] = {
-		(PostprocessShaderUniformFuncPtr*)  f_funcs,
-		(PostprocessShaderUniformFuncPtr*)  i_funcs,
-		(PostprocessShaderUniformFuncPtr*) ui_funcs,
-	};
-
-	return lists[type][size - 1];
-}
+	.procs = {
+		.find = postprocess_path,
+		.check = check_postprocess_path,
+		.begin_load = load_postprocess_begin,
+		.end_load = load_postprocess_end,
+		.unload = unload_postprocess,
+	},
+};
 
 typedef struct PostprocessLoadData {
 	PostprocessShader *list;
 	ResourceFlags resflags;
 } PostprocessLoadData;
 
-static void postprocess_load_callback(const char *key, const char *value, void *data) {
+static bool postprocess_load_callback(const char *key, const char *value, void *data) {
 	PostprocessLoadData *ldata = data;
 	PostprocessShader **slist = &ldata->list;
 	PostprocessShader *current = *slist;
@@ -40,10 +41,12 @@ static void postprocess_load_callback(const char *key, const char *value, void *
 	if(!strcmp(key, "@shader")) {
 		current = malloc(sizeof(PostprocessShader));
 		current->uniforms = NULL;
-		current->shader = get_resource(RES_SHADER, value, ldata->resflags)->shader;
+
+		// if loading this fails, get_resource will print a warning
+		current->shader = get_resource_data(RES_SHADER_PROGRAM, value, ldata->resflags);
+
 		list_append(slist, current);
-		log_debug("Shader added: %s (prog: %u)", value, current->shader->prog);
-		return;
+		return true;
 	}
 
 	for(PostprocessShader *c = current; c; c = c->next) {
@@ -51,89 +54,103 @@ static void postprocess_load_callback(const char *key, const char *value, void *
 	}
 
 	if(!current) {
-		log_warn("Must define a @shader before key '%s'", key);
-		return;
+		log_warn("Uniform '%s' ignored: no active shader", key);
+		return true;
 	}
 
-	char buf[strlen(key) + 1];
-	strcpy(buf, key);
+	if(!current->shader) {
+		// If loading the shader failed, just discard the uniforms.
+		// We will get rid of empty shader definitions later.
+		return true;
+	}
 
-	char *type = buf;
-	char *name;
+	const char *name = key;
+	Uniform *uni = r_shader_uniform(current->shader, name);
 
-	int utype;
-	int usize;
-	int asize;
-	int typesize;
+	if(!uni) {
+		log_warn("No active uniform '%s' in shader", name);
+		return true;
+	}
 
-	switch(*type) {
-		case 'f': utype = PSU_FLOAT; typesize = sizeof(GLfloat); break;
-		case 'i': utype = PSU_INT;   typesize = sizeof(GLint);   break;
-		case 'u': utype = PSU_UINT;  typesize = sizeof(GLuint);  break;
+	UniformType type = r_uniform_type(uni);
+	const UniformTypeInfo *type_info = r_uniform_type_info(type);
+
+	bool integer_type;
+
+	switch(type) {
+		case UNIFORM_INT:
+		case UNIFORM_IVEC2:
+		case UNIFORM_IVEC3:
+		case UNIFORM_IVEC4:
+		case UNIFORM_SAMPLER:
+			integer_type = true;
+			break;
+
 		default:
-			log_warn("Invalid type in key '%s'", key);
-			return;
+			integer_type = false;
+			break;
 	}
 
-	++type;
-	usize = strtol(type, &type, 10);
+	uint array_size = 0;
 
-	if(usize < 1 || usize > 4) {
-		log_warn("Invalid uniform size %i in key '%s' (must be in range [1, 4])", usize, key);
-		return;
-	}
+	PostprocessShaderUniformValue *values = NULL;
+	assert(sizeof(*values) == type_info->element_size);
+	uint val_idx = 0;
 
-	asize = strtol(type, &type, 10);
+	while(true) {
+		PostprocessShaderUniformValue v;
+		char *next = (char*)value;
 
-	if(asize < 1) {
-		log_warn("Negative uniform amount in key '%s'", key);
-		return;
-	}
+		if(integer_type) {
+			v.i = strtol(value, &next, 10);
+		} else {
+			v.f = strtof(value, &next);
+		}
 
-	name = type;
-	while(isspace(*name))
-		++name;
+		if(value == next) {
+			break;
+		}
 
-	PostprocessShaderUniformValuePtr vbuf;
-	vbuf.v = malloc(usize * asize * typesize);
+		value = next;
+		values = realloc(values, (++array_size) * type_info->elements * type_info->element_size);
+		values[val_idx] = v;
+		val_idx++;
 
-	for(int i = 0; i < usize * asize; ++i)  {
-		switch(utype) {
-			case PSU_FLOAT: vbuf.f[i] = strtof  (value, (char**)&value    ); break;
-			case PSU_INT:   vbuf.i[i] = strtol  (value, (char**)&value, 10); break;
-			case PSU_UINT:  vbuf.u[i] = strtoul (value, (char**)&value, 10); break;
+		for(int i = 1; i < type_info->elements; ++i, ++val_idx) {
+			PostprocessShaderUniformValue *v = values + val_idx;
+
+			if(integer_type) {
+				v->i = strtol(value, (char**)&value, 10);
+			} else {
+				v->f = strtof(value, (char**)&value);
+			}
 		}
 	}
 
-	PostprocessShaderUniform *uni = malloc(sizeof(PostprocessShaderUniform));
-	uni->loc = uniloc(current->shader, name);
-	uni->type = utype;
-	uni->size = usize;
-	uni->amount = asize;
-	uni->values.v = vbuf.v;
-	uni->func = get_uniform_func(utype, usize);
-	list_append(&current->uniforms, uni);
-
-	log_debug("Uniform added: (name: %s; loc: %i; prog: %u; type: %i; size: %i; num: %i)", name, uni->loc, current->shader->prog, uni->type, uni->size, uni->amount);
-
-	for(int i = 0; i < uni->size * uni->amount; ++i) {
-		log_debug("u[%i] = (f: %f; i: %i; u: %u)", i, uni->values.f[i], uni->values.i[i], uni->values.u[i]);
+	if(val_idx == 0) {
+		log_warn("No values defined for uniform '%s'", name);
+		return true;
 	}
-}
 
-PostprocessShader* postprocess_load(const char *path, ResourceFlags flags) {
-	flags &= ~RESF_OPTIONAL;
-	PostprocessLoadData *ldata = calloc(1, sizeof(PostprocessLoadData));
-	ldata->resflags = flags;
-	parse_keyvalue_file_cb(path, postprocess_load_callback, ldata);
-	PostprocessShader *list = ldata->list;
-	free(ldata);
-	return list;
+	assert(val_idx % type_info->elements == 0);
+
+	PostprocessShaderUniform *psu = calloc(1, sizeof(PostprocessShaderUniform));
+	psu->uniform = uni;
+	psu->values = values;
+	psu->elements = val_idx / type_info->elements;
+
+	list_append(&current->uniforms, psu);
+
+	for(int i = 0; i < val_idx; ++i) {
+		log_debug("u[%i] = (f: %f; i: %i)", i, psu->values[i].f, psu->values[i].i);
+	}
+
+	return true;
 }
 
 static void* delete_uniform(List **dest, List *data, void *arg) {
 	PostprocessShaderUniform *uni = (PostprocessShaderUniform*)data;
-	free(uni->values.v);
+	free(uni->values);
 	free(list_unlink(dest, data));
 	return NULL;
 }
@@ -145,6 +162,24 @@ static void* delete_shader(List **dest, List *data, void *arg) {
 	return NULL;
 }
 
+PostprocessShader* postprocess_load(const char *path, ResourceFlags flags) {
+	PostprocessLoadData *ldata = calloc(1, sizeof(PostprocessLoadData));
+	ldata->resflags = flags;
+	parse_keyvalue_file_cb(path, postprocess_load_callback, ldata);
+	PostprocessShader *list = ldata->list;
+	free(ldata);
+
+	for(PostprocessShader *s = list, *next; s; s = next) {
+		next = s->next;
+
+		if(!s->shader) {
+			delete_shader((List**)&list, (List*)s, NULL);
+		}
+	}
+
+	return list;
+}
+
 void postprocess_unload(PostprocessShader **list) {
 	list_foreach(list, delete_shader, NULL);
 }
@@ -154,25 +189,31 @@ void postprocess(PostprocessShader *ppshaders, FBOPair *fbos, PostprocessPrepare
 		return;
 	}
 
-	for(PostprocessShader *pps = ppshaders; pps; pps = pps->next) {
-		Shader *s = pps->shader;
+	ShaderProgram *shader_saved = r_shader_current();
+	BlendMode blend_saved = r_blend_current();
 
-		glBindFramebuffer(GL_FRAMEBUFFER, fbos->back->fbo);
-		glUseProgram(s->prog);
+	r_blend(BLEND_NONE);
+
+	for(PostprocessShader *pps = ppshaders; pps; pps = pps->next) {
+		ShaderProgram *s = pps->shader;
+
+		r_target(fbos->back);
+		r_shader_ptr(s);
 
 		if(prepare) {
 			prepare(fbos->back, s);
 		}
 
 		for(PostprocessShaderUniform *u = pps->uniforms; u; u = u->next) {
-			u->func(u->loc, u->amount, u->values.v);
+			r_uniform_ptr(u->uniform, u->elements, u->values);
 		}
 
 		draw(fbos->front);
 		swap_fbo_pair(fbos);
 	}
 
-	glUseProgram(0);
+	r_shader_ptr(shader_saved);
+	r_blend(blend_saved);
 }
 
 /*
@@ -180,18 +221,18 @@ void postprocess(PostprocessShader *ppshaders, FBOPair *fbos, PostprocessPrepare
  */
 
 char* postprocess_path(const char *name) {
-	return strjoin(SHA_PATH_PREFIX, name, ".pp", NULL);
+	return strjoin(PP_PATH_PREFIX, name, PP_EXTENSION, NULL);
 }
 
 bool check_postprocess_path(const char *path) {
-	return strendswith(path, SHA_EXTENSION);
+	return strendswith(path, PP_EXTENSION);
 }
 
-void* load_postprocess_begin(const char *path, unsigned int flags) {
+void* load_postprocess_begin(const char *path, uint flags) {
 	return (void*)true;
 }
 
-void* load_postprocess_end(void *opaque, const char *path, unsigned int flags) {
+void* load_postprocess_end(void *opaque, const char *path, uint flags) {
 	return postprocess_load(path, flags);
 }
 

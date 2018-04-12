@@ -16,6 +16,7 @@
 #include "list.h"
 #include "aniplayer.h"
 #include "stageobjects.h"
+#include "glm.h"
 
 #ifdef create_enemy_p
 #undef create_enemy_p
@@ -115,14 +116,14 @@ void draw_enemies(Enemy *enemies) {
 	for(e = enemies; e; e = e->next) {
 		if(e->visual_rule) {
 			if(e->alpha < 1) {
-				glColor4f(1,1,1,e->alpha);
+				r_color4(1,1,1,e->alpha);
 				reset = true;
 			}
 
 			draw_enemy(e);
 
 			if(reset) {
-				glColor4f(1,1,1,1);
+				r_color4(1,1,1,1);
 			}
 		}
 	}
@@ -157,21 +158,21 @@ void EnemyFlareShrink(Projectile *p, int t) {
 		return;
 	}
 
-	glPushMatrix();
+	r_mat_push();
 	float s = 2.0-t/p->args[0]*2;
 
-	glTranslatef(creal(e->pos + p->pos), cimag(e->pos + p->pos), 0);
+	r_mat_translate(creal(e->pos + p->pos), cimag(e->pos + p->pos), 0);
 
 	if(p->angle != M_PI*0.5) {
-		glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
+		r_mat_rotate_deg(p->angle*180/M_PI+90, 0, 0, 1);
 	}
 
 	if(s != 1) {
-		glScalef(s, s, 1);
+		r_mat_scale(s, s, 1);
 	}
 
 	ProjDrawCore(p, p->color);
-	glPopMatrix();
+	r_mat_pop();
 }
 
 void BigFairy(Enemy *e, int t, bool render) {
@@ -189,26 +190,22 @@ void BigFairy(Enemy *e, int t, bool render) {
 		return;
 	}
 
-	glPushMatrix();
-	glTranslatef(creal(e->pos), cimag(e->pos), 0);
-
 	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;
 
-	glPushMatrix();
-	glRotatef(global.frames*10,0,0,1);
-	glScalef(s, s, s);
-	draw_sprite(0,0,"fairy_circle");
-	glPopMatrix();
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "fairy_circle",
+		.pos = { creal(e->pos), cimag(e->pos) },
+		.rotation.angle = global.frames * 10 * DEG2RAD,
+		.scale.both = s,
+	});
 
-	if(e->dir) {
-		glCullFace(GL_FRONT);
-		glScalef(-1,1,1);
-	}
-	play_animation(get_ani("enemy/bigfairy"),0, 0, e->moving);
-	glPopMatrix();
-
-	if(e->dir)
-		glCullFace(GL_BACK);
+	const char *seqname = !e->moving ? "main" : (e->dir ? "left" : "right");
+	Animation *ani = get_ani("enemy/bigfairy");
+	Sprite *spr = animation_get_frame(ani,get_ani_sequence(ani, seqname),global.frames);
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = spr,
+		.pos = { creal(e->pos), cimag(e->pos) },
+	});
 }
 
 void Fairy(Enemy *e, int t, bool render) {
@@ -217,28 +214,21 @@ void Fairy(Enemy *e, int t, bool render) {
 	}
 
 	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;
-	glPushMatrix();
-	glTranslatef(creal(e->pos),cimag(e->pos),0);
 
-	glPushMatrix();
-	glRotatef(global.frames*10,0,0,1);
-	glScalef(s, s, s);
-	draw_sprite(0,0,"fairy_circle");
-	glPopMatrix();
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "fairy_circle",
+		.pos = { creal(e->pos), cimag(e->pos) },
+		.rotation.angle = global.frames * 10 * DEG2RAD,
+		.scale.both = s,
+	});
 
-	glPushMatrix();
-	if(e->dir) {
-		glCullFace(GL_FRONT);
-		glScalef(-1,1,1);
-	}
-	play_animation(get_ani("enemy/fairy"),0, 0, e->moving);
-	glPopMatrix();
-
-	glPopMatrix();
-
-	if(e->dir) {
-		glCullFace(GL_BACK);
-	}
+	const char *seqname = !e->moving ? "main" : (e->dir ? "left" : "right");
+	Animation *ani = get_ani("enemy/fairy");
+	Sprite *spr = animation_get_frame(ani,get_ani_sequence(ani, seqname),global.frames);
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = spr,
+		.pos = { creal(e->pos), cimag(e->pos) },
+	});
 }
 
 void Swirl(Enemy *e, int t, bool render) {
@@ -246,11 +236,11 @@ void Swirl(Enemy *e, int t, bool render) {
 		return;
 	}
 
-	glPushMatrix();
-	glTranslatef(creal(e->pos), cimag(e->pos),0);
-	glRotatef(t*15,0,0,1);
-	draw_sprite(0,0, "enemy/swirl");
-	glPopMatrix();
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "enemy/swirl",
+		.pos = { creal(e->pos), cimag(e->pos) },
+		.rotation.angle = t * 10 * DEG2RAD,
+	});
 }
 
 void process_enemies(Enemy **enemies) {

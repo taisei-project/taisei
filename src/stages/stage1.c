@@ -15,6 +15,7 @@
 #include "stage.h"
 #include "stageutils.h"
 #include "stagedraw.h"
+#include "resource/model.h"
 
 /*
  *  See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
@@ -61,91 +62,93 @@ static bool particle_filter(Projectile *part) {
 	return !(part->flags & PFLAG_NOREFLECT) && stage_should_draw_particle(part);
 }
 
-static void stage1_bg_draw(Vector pos) {
-	glPushMatrix();
-	glTranslatef(0,stage_3d_context.cx[1]+500,0);
-	glRotatef(180,1,0,0);
+static void stage1_bg_draw(vec3 pos) {
+	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
 
-	glDisable(GL_TEXTURE_2D);
-	glPushMatrix();
-	glScalef(1200,3000,1);
-	glColor4f(0,0.1,.1,1);
-	draw_quad();
-	glColor4f(1,1,1,1);
-	glPopMatrix();
-	glEnable(GL_TEXTURE_2D);
+	r_mat_push();
+	r_mat_translate(0,stage_3d_context.cx[1]+500,0);
+	r_mat_rotate_deg(180,1,0,0);
 
-	glPushMatrix();
-	glRotatef(30,1,0,0);
-	glScalef(.85,-.85,.85);
-	glTranslatef(-VIEWPORT_W/2,0,0);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
+	r_shader_standard_notex();
+	r_mat_push();
+	r_mat_scale(1200,3000,1);
+	r_color4(0,0.1,.1,1);
+	r_draw_quad();
+	r_color4(1,1,1,1);
+	r_mat_pop();
+
+	r_mat_push();
+	r_mat_rotate_deg(30,1,0,0);
+	r_mat_scale(.85,-.85,.85);
+	r_mat_translate(-VIEWPORT_W/2,0,0);
+	r_disable(RCAP_CULL_FACE);
+	r_disable(RCAP_DEPTH_TEST);
+
+	r_shader("sprite_default");
 	draw_projectiles(global.particles, particle_filter);
 	draw_enemies(global.enemies);
-	if(global.boss)
-		draw_boss(global.boss);
-	glPopMatrix();
-	glEnable(GL_CULL_FACE);
 
-	glDisable(GL_TEXTURE_2D);
-	glPushMatrix();
-	glScalef(1200,3000,1);
-	glColor4f(0,0.1,.1,0.8);
-	draw_quad();
-	glColor4f(1,1,1,1);
-	glPopMatrix();
-	glEnable(GL_DEPTH_TEST);
-	glPopMatrix();
-	glEnable(GL_TEXTURE_2D);
+	if(global.boss) {
+		draw_boss(global.boss);
+	}
+
+	r_shader_standard();
+	r_mat_pop();
+	r_capability(RCAP_CULL_FACE, cullcap_saved);
+
+	r_shader_standard_notex();
+	r_mat_push();
+	r_mat_scale(1200,3000,1);
+	r_color4(0,0.1,.1,0.8);
+	r_draw_quad();
+	r_color4(1,1,1,1);
+	r_mat_pop();
+	r_enable(RCAP_DEPTH_TEST);
+	r_mat_pop();
+	r_shader_standard();
 }
 
-static Vector **stage1_bg_pos(Vector p, float maxrange) {
-	Vector q = {0,0,0};
+static vec3 **stage1_bg_pos(vec3 p, float maxrange) {
+	vec3 q = {0,0,0};
 	return single3dpos(p, INFINITY, q);
 }
 
-static void stage1_smoke_draw(Vector pos) {
+static void stage1_smoke_draw(vec3 pos) {
 	float d = fabsf(pos[1]-stage_3d_context.cx[1]);
 
-	glDisable(GL_DEPTH_TEST);
-	glPushMatrix();
-	glTranslatef(pos[0]+200*sin(pos[1]), pos[1], pos[2]+200*sin(pos[1]/25.0));
-	glRotatef(90,-1,0,0);
-	glScalef(3.5,2,1);
-	glRotatef(global.frames,0,0,1);
+	r_disable(RCAP_DEPTH_TEST);
+	r_mat_push();
+	r_mat_translate(pos[0]+200*sin(pos[1]), pos[1], pos[2]+200*sin(pos[1]/25.0));
+	r_mat_rotate_deg(90,-1,0,0);
+	r_mat_scale(3.5,2,1);
+	r_mat_rotate_deg(global.frames,0,0,1);
 
-	glColor4f(.8,.8,.8,((d-500)*(d-500))/1.5e7);
+	r_color4(.8,.8,.8,((d-500)*(d-500))/1.5e7);
 	draw_sprite(0,0,"stage1/fog");
-	glColor4f(1,1,1,1);
+	r_color4(1,1,1,1);
 
-	glPopMatrix();
-	glEnable(GL_DEPTH_TEST);
+	r_mat_pop();
+	r_enable(RCAP_DEPTH_TEST);
 }
 
-static Vector **stage1_smoke_pos(Vector p, float maxrange) {
-	Vector q = {0,0,-300};
-	Vector r = {0,300,0};
+static vec3 **stage1_smoke_pos(vec3 p, float maxrange) {
+	vec3 q = {0,0,-300};
+	vec3 r = {0,300,0};
 	return linear3dpos(p, maxrange/2.0, q, r);
 }
 
 static void stage1_fog(FBO *fbo) {
-	Shader *shader = get_shader("zbuf_fog");
-
-	glUseProgram(shader->prog);
-	glUniform1i(uniloc(shader, "tex"), 0);
-	glUniform1i(uniloc(shader, "depth"), 1);
-	glUniform4f(uniloc(shader, "fog_color"), 0.8, 0.8, 0.8, 1.0);
-	glUniform1f(uniloc(shader, "start"), 0.0);
-	glUniform1f(uniloc(shader, "end"), 0.8);
-	glUniform1f(uniloc(shader, "exponent"), 3.0);
-	glUniform1f(uniloc(shader, "sphereness"), 0.2);
-	glActiveTexture(GL_TEXTURE0 + 1);
-	glBindTexture(GL_TEXTURE_2D, fbo->depth);
-	glActiveTexture(GL_TEXTURE0);
-
+	r_shader("zbuf_fog");
+	r_uniform_int("tex", 0);
+	r_uniform_int("depth", 1);
+	r_uniform_vec4("fog_color", 0.8, 0.8, 0.8, 1.0);
+	r_uniform_float("start", 0.0);
+	r_uniform_float("end", 0.8);
+	r_uniform_float("exponent", 3.0);
+	r_uniform_float("sphereness", 0.2);
+	r_texture_ptr(1, r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_DEPTH));
 	draw_fbo_viewport(fbo);
-	glUseProgram(0);
+	r_shader_standard();
 }
 
 static void stage1_draw(void) {
@@ -157,27 +160,29 @@ static void stage1_update(void) {
 	update_stage3d(&stage_3d_context);
 }
 
-static void stage1_reed_draw(Vector pos) {
-	float d = -55+50*sin(pos[1]/25.0);
-	glPushMatrix();
-	glTranslatef(pos[0]+200*sin(pos[1]), pos[1], d);
-	glRotatef(90,1,0,0);
-//glRotatef(90,0,0,1);
-	glScalef(80,80,80);
-	glColor4f(0.,0.05,0.05,1);
+static void stage1_reed_draw(vec3 pos) {
+	bool depthwrite_saved = r_capability_current(RCAP_DEPTH_WRITE);
+	DepthTestFunc depthfunc_saved = r_depth_func_current();
 
-	draw_model("reeds");
-	glTranslatef(0,-d/80,0);
-	glScalef(1,-1,1);
-	glTranslatef(0,d/80,0);
-	glDepthFunc(GL_GREATER);
-	glDepthMask(GL_FALSE);
-	glColor4f(0.,0.05,0.05,0.5);
-	draw_model("reeds");
-	glDepthMask(GL_TRUE);
-	glDepthFunc(GL_LEQUAL);
-	glColor4f(1,1,1,1);
-	glPopMatrix();
+	float d = -55+50*sin(pos[1]/25.0);
+	r_mat_push();
+	r_mat_translate(pos[0]+200*sin(pos[1]), pos[1], d);
+	r_mat_rotate_deg(90,1,0,0);
+	r_mat_scale(80,80,80);
+	r_color4(0.,0.05,0.05,1);
+	r_draw_model("reeds");
+	r_mat_translate(0,-d/80,0);
+	r_mat_scale(1,-1,1);
+	r_mat_translate(0,d/80,0);
+	r_depth_func(DEPTH_GREATER);
+	r_disable(RCAP_DEPTH_WRITE);
+	r_color4(0.,0.05,0.05,0.5);
+	r_draw_model("reeds");
+	r_color4(1,1,1,1);
+	r_mat_pop();
+
+	r_capability(RCAP_DEPTH_WRITE, depthwrite_saved);
+	r_depth_func(depthfunc_saved);
 }
 
 static void stage1_start(void) {
@@ -202,8 +207,9 @@ static void stage1_preload(void) {
 	preload_resources(RES_MODEL, RESF_DEFAULT,
 		"reeds",
 	NULL);
-	preload_resources(RES_SHADER, RESF_DEFAULT,
+	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"zbuf_fog",
+		"lasers/linear",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/cirno",

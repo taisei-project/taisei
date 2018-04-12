@@ -28,25 +28,20 @@ typedef struct HashtableElement {
 
 struct Hashtable {
 	HashtableElement **table;
-	size_t table_size;
 	HTCmpFunc cmp_func;
 	HTHashFunc hash_func;
 	HTCopyFunc copy_func;
 	HTFreeFunc free_func;
-#ifdef HT_USE_MUTEX
-	SDL_mutex *mutex;
-#else
-	SDL_atomic_t cur_operation;
-	SDL_atomic_t num_operations;
-#endif
 	size_t num_elements;
-	bool dynamic_size;
-};
+	size_t table_size;
+	size_t hash_mask;
 
-enum {
-	HT_OP_NONE,
-	HT_OP_READ,
-	HT_OP_WRITE,
+	struct {
+		SDL_mutex *mutex;
+		SDL_cond *cond;
+		uint readers;
+		bool writing;
+	} sync;
 };
 
 typedef struct HashtableIterator {
@@ -59,26 +54,9 @@ typedef struct HashtableIterator {
  *  Generic functions
  */
 
-static size_t constraint_size(size_t size) {
-	if(size < HT_MIN_SIZE)
-		return HT_MIN_SIZE;
-
-	if(size > HT_MAX_SIZE)
-		return HT_MAX_SIZE;
-
-	return size;
-}
-
-Hashtable* hashtable_new(size_t size, HTCmpFunc cmp_func, HTHashFunc hash_func, HTCopyFunc copy_func, HTFreeFunc free_func) {
+Hashtable* hashtable_new(HTCmpFunc cmp_func, HTHashFunc hash_func, HTCopyFunc copy_func, HTFreeFunc free_func) {
 	Hashtable *ht = malloc(sizeof(Hashtable));
-
-	if(size == HT_DYNAMIC_SIZE) {
-		size = constraint_size(0);
-		ht->dynamic_size = true;
-	} else {
-		size = constraint_size(size);
-		ht->dynamic_size = false;
-	}
+	size_t size = HT_MIN_SIZE;
 
 	if(!cmp_func) {
 		cmp_func = hashtable_cmpfunc_ptr;
@@ -90,64 +68,70 @@ Hashtable* hashtable_new(size_t size, HTCmpFunc cmp_func, HTHashFunc hash_func, 
 
 	ht->table = calloc(size, sizeof(HashtableElement*));
 	ht->table_size = size;
+	ht->hash_mask = size - 1;
 	ht->num_elements = 0;
 	ht->cmp_func = cmp_func;
 	ht->hash_func = hash_func;
 	ht->copy_func = copy_func;
 	ht->free_func = free_func;
 
-#ifdef HT_USE_MUTEX
-	ht->mutex = SDL_CreateMutex();
-#else
-	SDL_AtomicSet(&ht->cur_operation, HT_OP_NONE);
-	SDL_AtomicSet(&ht->num_operations, 0);
-#endif
+	ht->sync.writing = false;
+	ht->sync.readers = 0;
+	ht->sync.mutex = SDL_CreateMutex();
+	ht->sync.cond = SDL_CreateCond();
 
 	assert(ht->hash_func != NULL);
 
 	return ht;
 }
 
-#ifdef HT_USE_MUTEX
-static void hashtable_enter_state(Hashtable *ht, int state, bool mutex) {
-	SDL_LockMutex(ht->mutex);
-}
+static void hashtable_begin_write(Hashtable *ht) {
+	SDL_LockMutex(ht->sync.mutex);
 
-static void hashtable_idle_state(Hashtable *ht) {
-	SDL_UnlockMutex(ht->mutex);
-}
-#else
-static bool hashtable_try_enter_state(Hashtable *ht, int state, bool mutex) {
-	SDL_atomic_t *ptr = &ht->cur_operation;
-
-	if(!mutex) {
-		SDL_AtomicCAS(ptr, state, HT_OP_NONE);
+	while(ht->sync.writing || ht->sync.readers) {
+		SDL_CondWait(ht->sync.cond, ht->sync.mutex);
 	}
 
-	return SDL_AtomicCAS(ptr, HT_OP_NONE, state);
+	ht->sync.writing = true;
+	SDL_UnlockMutex(ht->sync.mutex);
 }
 
-static void hashtable_enter_state(Hashtable *ht, int state, bool mutex) {
-	while(!hashtable_try_enter_state(ht, state, mutex) || (mutex && SDL_AtomicGet(&ht->num_operations)));
-	SDL_AtomicIncRef(&ht->num_operations);
+static void hashtable_end_write(Hashtable *ht) {
+	SDL_LockMutex(ht->sync.mutex);
+	ht->sync.writing = false;
+	SDL_CondBroadcast(ht->sync.cond);
+	SDL_UnlockMutex(ht->sync.mutex);
 }
 
+static void hashtable_begin_read(Hashtable *ht) {
+	SDL_LockMutex(ht->sync.mutex);
 
-static void hashtable_idle_state(Hashtable *ht) {
-	if(SDL_AtomicDecRef(&ht->num_operations)) {
-		SDL_AtomicSet(&ht->cur_operation, HT_OP_NONE);
+	while(ht->sync.writing) {
+		SDL_CondWait(ht->sync.cond, ht->sync.mutex);
 	}
+
+	++ht->sync.readers;
+	SDL_UnlockMutex(ht->sync.mutex);
 }
-#endif
+
+static void hashtable_end_read(Hashtable *ht) {
+	SDL_LockMutex(ht->sync.mutex);
+
+	if(!--ht->sync.readers) {
+		SDL_CondSignal(ht->sync.cond);
+	}
+
+	SDL_UnlockMutex(ht->sync.mutex);
+}
 
 void hashtable_lock(Hashtable *ht) {
 	assert(ht != NULL);
-	hashtable_enter_state(ht, HT_OP_READ, false);
+	hashtable_begin_read(ht);
 }
 
 void hashtable_unlock(Hashtable *ht) {
 	assert(ht != NULL);
-	hashtable_idle_state(ht);
+	hashtable_end_read(ht);
 }
 
 static void* hashtable_delete_callback(List **vlist, List *velem, void *vht) {
@@ -172,9 +156,9 @@ static void hashtable_unset_all_internal(Hashtable *ht) {
 
 void hashtable_unset_all(Hashtable *ht) {
 	assert(ht != NULL);
-	hashtable_enter_state(ht, HT_OP_WRITE, true);
+	hashtable_begin_write(ht);
 	hashtable_unset_all_internal(ht);
-	hashtable_idle_state(ht);
+	hashtable_end_write(ht);
 }
 
 void hashtable_free(Hashtable *ht) {
@@ -184,9 +168,8 @@ void hashtable_free(Hashtable *ht) {
 
 	hashtable_unset_all(ht);
 
-#ifdef HT_USE_MUTEX
-	SDL_DestroyMutex(ht->mutex);
-#endif
+	SDL_DestroyCond(ht->sync.cond);
+	SDL_DestroyMutex(ht->sync.mutex);
 
 	free(ht->table);
 	free(ht);
@@ -196,23 +179,23 @@ void* hashtable_get(Hashtable *ht, void *key) {
 	assert(ht != NULL);
 
 	hash_t hash = ht->hash_func(key);
-	hashtable_enter_state(ht, HT_OP_READ, false);
-	HashtableElement *elems = ht->table[hash % ht->table_size];
+	hashtable_begin_read(ht);
+	HashtableElement *elems = ht->table[hash & ht->hash_mask];
 
 	for(HashtableElement *e = elems; e; e = e->next) {
 		if(hash == e->hash && ht->cmp_func(key, e->key)) {
-			hashtable_idle_state(ht);
+			hashtable_end_read(ht);
 			return e->data;
 		}
 	}
 
-	hashtable_idle_state(ht);
+	hashtable_end_read(ht);
 	return NULL;
 }
 
 void* hashtable_get_unsafe(Hashtable *ht, void *key) {
 	hash_t hash = ht->hash_func(key);
-	HashtableElement *elems = ht->table[hash % ht->table_size];
+	HashtableElement *elems = ht->table[hash & ht->hash_mask];
 
 	for(HashtableElement *e = elems; e; e = e->next) {
 		if(hash == e->hash && ht->cmp_func(key, e->key)) {
@@ -223,10 +206,8 @@ void* hashtable_get_unsafe(Hashtable *ht, void *key) {
 	return NULL;
 }
 
-static bool hashtable_set_internal(Hashtable *ht, HashtableElement **table, size_t table_size, hash_t hash, void *key, void *data) {
-	bool collisions_updated = false;
-	size_t idx = hash % table_size;
-
+static void hashtable_set_internal(Hashtable *ht, HashtableElement **table, size_t hash_mask, hash_t hash, void *key, void *data) {
+	size_t idx = hash & hash_mask;
 	HashtableElement *elems = table[idx], *elem;
 
 	for(HashtableElement *e = elems; e; e = e->next) {
@@ -237,90 +218,30 @@ static bool hashtable_set_internal(Hashtable *ht, HashtableElement **table, size
 
 			free(list_unlink(&elems, e));
 			ht->num_elements--;
-
-			if(elems) {
-				// we have just deleted an element from a bucket that had collisions.
-				collisions_updated = true;
-			}
-
 			break;
 		}
 	}
 
 	if(data) {
-		if(elems) {
-			// we are adding an element to a non-empty bucket.
-			// normally this is a new collision, unless we are replacing an existing element.
-			collisions_updated = !collisions_updated;
-		}
-
 		elem = malloc(sizeof(HashtableElement));
 		ht->copy_func(&elem->key, key);
 		elem->hash = ht->hash_func(elem->key);
 		elem->data = data;
 		list_push(&elems, elem);
-
 		ht->num_elements++;
 	}
 
 	table[idx] = elems;
-	return collisions_updated;
 }
 
-static int hashtable_check_collisions_with_new_size(Hashtable *ht, size_t size) {
-	int *ctable = calloc(sizeof(int), size);
-	int cols = 0;
-
-	for(size_t i = 0; i < ht->table_size; ++i) {
-		for(HashtableElement *e = ht->table[i]; e; e = e->next) {
-			size_t idx = e->hash % size;
-			++ctable[idx];
-
-			if(ctable[idx] > 1) {
-				++cols;
-			}
-		}
-	}
-
-	free(ctable);
-	return cols;
-}
-
-static size_t hashtable_find_optimal_size(Hashtable *ht) {
-	size_t best_size = ht->table_size;
-	int col_tolerance = min(HT_COLLISION_TOLERANCE + 1, max(ht->num_elements / 2, 1));
-	int min_cols = 0;
-
-	for(size_t s = best_size; s < HT_MAX_SIZE; s += HT_RESIZE_STEP) {
-		int cols = hashtable_check_collisions_with_new_size(ht, s);
-
-		if(cols < col_tolerance) {
-			log_debug("Optimal size for %p is %"PRIuMAX" (%i collisions)", (void*)ht, (uintmax_t)s, cols);
-			return s;
-		}
-
-		if(cols < min_cols) {
-			min_cols = cols;
-			best_size = s;
-		}
-	}
-
-	log_debug("Optimal size for %p is %"PRIuMAX" (%i collisions)", (void*)ht, (uintmax_t)best_size, min_cols);
-	return best_size;
-}
-
-static void hashtable_resize_internal(Hashtable *ht, size_t new_size) {
-	new_size = constraint_size(new_size);
-
-	if(new_size == ht->table_size) {
-		return;
-	}
-
+static void hashtable_resize(Hashtable *ht, size_t new_size) {
+	assert(new_size != ht->table_size);
 	HashtableElement **new_table = calloc(new_size, sizeof(HashtableElement*));
+	size_t new_hash_mask = new_size - 1;
 
 	for(size_t i = 0; i < ht->table_size; ++i) {
 		for(HashtableElement *e = ht->table[i]; e; e = e->next) {
-			hashtable_set_internal(ht, new_table, new_size, e->hash, e->key, e->data);
+			hashtable_set_internal(ht, new_table, new_hash_mask, e->hash, e->key, e->data);
 		}
 	}
 
@@ -331,14 +252,10 @@ static void hashtable_resize_internal(Hashtable *ht, size_t new_size) {
 
 	log_debug("Resized hashtable at %p: %"PRIuMAX" -> %"PRIuMAX"",
 		(void*)ht, (uintmax_t)ht->table_size, (uintmax_t)new_size);
+	// hashtable_print_stringkeys(ht);
 
 	ht->table_size = new_size;
-}
-
-void hashtable_resize(Hashtable *ht, size_t new_size) {
-	hashtable_enter_state(ht, HT_OP_WRITE, true);
-	hashtable_resize_internal(ht, new_size);
-	hashtable_idle_state(ht);
+	ht->hash_mask = new_hash_mask;
 }
 
 void hashtable_set(Hashtable *ht, void *key, void *data) {
@@ -346,14 +263,14 @@ void hashtable_set(Hashtable *ht, void *key, void *data) {
 
 	hash_t hash = ht->hash_func(key);
 
-	hashtable_enter_state(ht, HT_OP_WRITE, true);
-	bool update = hashtable_set_internal(ht, ht->table, ht->table_size, hash, key, data);
+	hashtable_begin_write(ht);
+	hashtable_set_internal(ht, ht->table, ht->hash_mask, hash, key, data);
 
-	if(ht->dynamic_size && update) {
-		hashtable_resize_internal(ht, hashtable_find_optimal_size(ht));
+	if(ht->num_elements == ht->table_size) {
+		hashtable_resize(ht, ht->table_size * 2);
 	}
 
-	hashtable_idle_state(ht);
+	hashtable_end_write(ht);
 }
 
 void hashtable_unset(Hashtable *ht, void *key) {
@@ -391,18 +308,19 @@ void* hashtable_foreach(Hashtable *ht, HTIterCallback callback, void *arg) {
 
 	void *ret = NULL;
 
-	hashtable_enter_state(ht, HT_OP_READ, false);
+	hashtable_begin_read(ht);
 
 	for(size_t i = 0; i < ht->table_size; ++i) {
 		for(HashtableElement *e = ht->table[i]; e; e = e->next) {
 			ret = callback(e->key, e->data, arg);
 			if(ret) {
+				hashtable_end_read(ht);
 				return ret;
 			}
 		}
 	}
 
-	hashtable_idle_state(ht);
+	hashtable_end_read(ht);
 
 	return ret;
 }
@@ -468,8 +386,8 @@ void hashtable_copyfunc_string(void **dst, void *src) {
 
 // #define hashtable_freefunc_string free
 
-Hashtable* hashtable_new_stringkeys(size_t size) {
-	return hashtable_new(size,
+Hashtable* hashtable_new_stringkeys(void) {
+	return hashtable_new(
 		hashtable_cmpfunc_string,
 		SDL_HasSSE42() ? hashtable_hashfunc_string_sse42 : hashtable_hashfunc_string,
 		hashtable_copyfunc_string,
@@ -562,7 +480,7 @@ void hashtable_print_stringkeys(Hashtable *ht) {
 	log_debug(
 		"%i total elements, %i unused buckets, %i collisions, max %i elems per bucket, %lu approx overhead",
 		stats.num_elements, stats.free_buckets, stats.collisions, stats.max_per_bucket,
-		(unsigned long int)hashtable_get_approx_overhead(ht)
+		(ulong)hashtable_get_approx_overhead(ht)
 	);
 }
 
@@ -596,7 +514,7 @@ int hashtable_test(void) {
 	};
 
 	const size_t elems = sizeof(mapping) / sizeof(char*);
-	Hashtable *ht = hashtable_new_stringkeys(128);
+	Hashtable *ht = hashtable_new_stringkeys();
 
 	for(int i = 0; i < elems; i += 2) {
 		hashtable_set_string(ht, mapping[i], (void*)mapping[i+1]);

@@ -11,6 +11,7 @@
 #include "global.h"
 #include "plrmodes.h"
 #include "marisa.h"
+#include "renderer/api.h"
 
 PlayerCharacter character_marisa = {
 	.id = PLR_CHAR_MARISA,
@@ -36,12 +37,12 @@ void marisa_common_shot(Player *plr, int dmg) {
 
 		PROJECTILE("marisa", plr->pos + 10 - 15.0*I, c, linear, { -20.0*I },
 			.type = PlrProj+dmg,
-			.color_transform_rule = proj_clrtransform_particle,
+			.shader = "sprite_default",
 		);
 
 		PROJECTILE("marisa", plr->pos - 10 - 15.0*I, c, linear, { -20.0*I },
 			.type = PlrProj+dmg,
-			.color_transform_rule = proj_clrtransform_particle,
+			.shader = "sprite_default",
 		);
 	}
 }
@@ -51,17 +52,13 @@ void marisa_common_slave_visual(Enemy *e, int t, bool render) {
 		return;
 	}
 
-	glPushMatrix();
-	glTranslatef(creal(e->pos), cimag(e->pos), -1);
-	// glRotatef(global.frames * 3, 0, 0, 1);
-	draw_sprite(0, 0, "part/smoothdot");
-	glPopMatrix();
+	draw_sprite_batched(creal(e->pos), cimag(e->pos), "part/smoothdot");
 }
 
 void marisa_common_masterspark_draw(int t) {
-	Shader *mshader = get_shader("masterspark");
-	glUseProgram(mshader->prog);
-	glUniform1f(uniloc(mshader,"t"),t);
-	draw_quad();
-	glUseProgram(0);
+	ShaderProgram *prog_saved = r_shader_current();
+	r_shader("masterspark");
+	r_uniform_float("t", t);
+	r_draw_quad();
+	r_shader_ptr(prog_saved);
 }

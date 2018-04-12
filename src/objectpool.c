@@ -25,7 +25,7 @@ struct ObjectPool {
 };
 
 static inline ObjectInterface* obj_ptr(ObjectPool *pool, char *objects, size_t idx) {
-	return (ObjectInterface*)(objects + idx * pool->size_of_object);
+	return (ObjectInterface*)(void*)(objects + idx * pool->size_of_object);
 }
 
 static void objpool_register_objects(ObjectPool *pool, char *objects) {
@@ -170,7 +170,7 @@ void objpool_get_stats(ObjectPool *pool, ObjectPoolStats *stats) {
 	stats->peak_usage = pool->peak_usage;
 }
 
-__attribute__((unused))
+attr_unused
 static bool objpool_object_in_subpool(ObjectPool *pool, ObjectInterface *object, char *objects) {
 	char *objofs = (char*)object;
 	char *minofs = objects;
@@ -193,7 +193,7 @@ static bool objpool_object_in_subpool(ObjectPool *pool, ObjectInterface *object,
 	return true;
 }
 
-__attribute__((unused))
+attr_unused
 static bool objpool_object_in_pool(ObjectPool *pool, ObjectInterface *object) {
 	if(objpool_object_in_subpool(pool, object, pool->objects)) {
 		return true;

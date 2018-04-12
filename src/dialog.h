@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include <stdbool.h>
 #include "resource/sprite.h"
 
 struct DialogMessage;
@@ -39,10 +38,19 @@ typedef struct Dialog {
 	int birthtime;
 } Dialog;
 
-Dialog *create_dialog(const char *left, const char *right);
-void dset_image(Dialog *d, Side side, const char *name);
-DialogMessage* dadd_msg(Dialog *d, Side side, const char *msg);
-void delete_dialog(Dialog *d);
+Dialog *create_dialog(const char *left, const char *right)
+	attr_returns_nonnull attr_nodiscard;
 
-void draw_dialog(Dialog *dialog);
+void dset_image(Dialog *d, Side side, const char *name)
+	attr_nonnull(1, 3);
+
+DialogMessage* dadd_msg(Dialog *d, Side side, const char *msg)
+	attr_nonnull(1, 3);
+
+void delete_dialog(Dialog *d)
+	attr_nonnull(1);
+
+void draw_dialog(Dialog *dialog)
+	attr_nonnull(1);
+
 bool page_dialog(Dialog **d);

@@ -1,0 +1,29 @@
+
+#include "defs.glslh"
+#include "render_context.glslh"
+#include "util.glslh"
+#include "../interface/sprite.glslh"
+
+void main(void) {
+    gl_Position = r_projectionMatrix * spriteVMTransform * vec4(vertPos, 0.0, 1.0);
+
+    #ifdef SPRITE_OUT_COLOR
+    color       = spriteRGBA;
+    #endif
+
+    #ifdef SPRITE_OUT_TEXCOORD_RAW
+    texCoordRaw = vertTexCoord;
+    #endif
+
+    #ifdef SPRITE_OUT_TEXCOORD
+    texCoord    = uv_to_region(spriteTexRegion, vertTexCoord);
+    #endif
+
+    #ifdef SPRITE_OUT_TEXREGION
+    texRegion   = spriteTexRegion;
+    #endif
+
+    #ifdef SPRITE_OUT_CUSTOM
+    customParam = spriteCustomParam;
+    #endif
+}

@@ -12,10 +12,9 @@
 
 #include "global.h"
 #include "video.h"
-#include "taiseigl.h"
+#include "renderer/api.h"
 
 Video video;
-static bool libgl_loaded = false;
 
 static VideoMode common_modes[] = {
 	{RESX, RESY},
@@ -61,108 +60,26 @@ void video_get_viewport_size(int *width, int *height) {
 	} else if(r < VIDEO_ASPECT_RATIO) {
 		h = w / VIDEO_ASPECT_RATIO;
 	}
+
 	*width = w;
 	*height = h;
 }
 
-
 void video_set_viewport(void) {
 	int w, h;
 	video_get_viewport_size(&w,&h);
-
-	glClear(GL_COLOR_BUFFER_BIT);
-	glViewport((video.current.width - w) / 2, (video.current.height - h) / 2, w, h);
+	r_viewport((video.current.width - w) / 2, (video.current.height - h) / 2, w, h);
 }
 
 static void video_update_vsync(void) {
 	if(global.frameskip || config_get_int(CONFIG_VSYNC) == 0) {
-		SDL_GL_SetSwapInterval(0);
+		r_vsync(VSYNC_NONE);
 	} else {
-		switch (config_get_int(CONFIG_VSYNC)) {
-			case 2: // adaptive
-				if(SDL_GL_SetSwapInterval(-1) < 0) {
-			case 1: // on
-					if(SDL_GL_SetSwapInterval(1) < 0) {
-						log_warn("SDL_GL_SetSwapInterval() failed: %s", SDL_GetError());
-					}
-				}
-			break;
+		switch(config_get_int(CONFIG_VSYNC)) {
+			case 1:  r_vsync(VSYNC_NORMAL);   break;
+			default: r_vsync(VSYNC_ADAPTIVE); break;
 		}
 	}
-}
-
-#ifdef DEBUG_GL
-static void APIENTRY video_gl_debug(
-	GLenum source,
-	GLenum type,
-	GLuint id,
-	GLenum severity,
-	GLsizei length,
-	const GLchar *message,
-	const void *arg
-) {
-	char *strtype = "unknown";
-	char *strsev = "unknown";
-	LogLevel lvl = LOG_DEBUG;
-
-	switch(type) {
-		case GL_DEBUG_TYPE_ERROR: strtype = "error"; lvl = LOG_FATAL; break;
-		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: strtype = "deprecated"; lvl = LOG_WARN; break;
-		case GL_DEBUG_TYPE_PORTABILITY: strtype = "portability"; break;
-		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: strtype = "undefined"; break;
-		case GL_DEBUG_TYPE_PERFORMANCE: strtype = "performance"; break;
-		case GL_DEBUG_TYPE_OTHER: strtype = "other"; break;
-	}
-
-	switch(severity) {
-		case GL_DEBUG_SEVERITY_LOW: strsev = "low"; break;
-		case GL_DEBUG_SEVERITY_MEDIUM: strsev = "medium"; break;
-		case GL_DEBUG_SEVERITY_HIGH: strsev = "high"; break;
-		case GL_DEBUG_SEVERITY_NOTIFICATION: strsev = "notify"; break;
-	}
-
-	if(type == GL_DEBUG_TYPE_OTHER && severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
-		// too verbose, spits a message every time some text is drawn
-		return;
-	}
-
-	log_custom(lvl, "[OpenGL debug, %s, %s] %i: %s", strtype, strsev, id, message);
-}
-
-static void APIENTRY video_gl_debug_enable(void) {
-	GLuint unused = 0;
-	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-	glDebugMessageCallback(video_gl_debug, NULL);
-	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, &unused, true);
-	log_info("Enabled OpenGL debugging");
-}
-#endif
-
-static void video_init_gl(void) {
-	video.glcontext = SDL_GL_CreateContext(video.window);
-
-	load_gl_functions();
-	check_gl_extensions();
-
-#ifdef DEBUG_GL
-	if(glext.debug_output) {
-		video_gl_debug_enable();
-	} else {
-		log_warn("OpenGL debugging is not supported by the implementation");
-	}
-#endif
-
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
-
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_BLEND);
-	glEnable(GL_TEXTURE_2D);
-	init_quadvbo();
-
-	glClear(GL_COLOR_BUFFER_BIT);
 }
 
 static void video_update_quality(void) {
@@ -177,13 +94,11 @@ static void video_update_quality(void) {
 
 	log_debug("q:%f, fg:%f, bg:%f, text:%f", q, fg, bg, text);
 
-	init_fbo_pair(&resources.fbo_pairs.bg, bg, GL_RGB);
-	init_fbo_pair(&resources.fbo_pairs.fg, fg, GL_RGB);
-	init_fbo_pair(&resources.fbo_pairs.rgba, fg, GL_RGBA);
+	init_fbo_pair(&resources.fbo_pairs.bg, bg, TEX_TYPE_RGB);
+	init_fbo_pair(&resources.fbo_pairs.fg, fg, TEX_TYPE_RGB);
+	init_fbo_pair(&resources.fbo_pairs.rgba, fg, TEX_TYPE_RGBA);
 
 	reload_fonts(text);
-
-	glClear(GL_COLOR_BUFFER_BIT);
 }
 
 static uint32_t get_fullscreen_flag(void) {
@@ -211,7 +126,7 @@ static void video_check_fullscreen_sanity(void) {
 static void video_update_mode_settings(void) {
 	SDL_ShowCursor(false);
 	video_update_vsync();
-	SDL_GL_GetDrawableSize(video.window, &video.current.width, &video.current.height);
+	SDL_GetWindowSize(video.window, &video.current.width, &video.current.height);
 	video.real.width = video.current.width;
 	video.real.height = video.current.height;
 	video_set_viewport();
@@ -236,39 +151,16 @@ static const char* modeflagsstr(uint32_t flags) {
 }
 
 static void video_new_window_internal(int w, int h, uint32_t flags, bool fallback) {
-	if(!libgl_loaded) {
-		load_gl_library();
-		libgl_loaded = true;
-	}
-
 	if(video.window) {
 		SDL_DestroyWindow(video.window);
 		video.window = NULL;
 	}
 
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
-#ifdef DEBUG_GL
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-#endif
-
 	char title[sizeof(WINDOW_TITLE) + strlen(TAISEI_VERSION) + 2];
 	snprintf(title, sizeof(title), "%s v%s", WINDOW_TITLE, TAISEI_VERSION);
-
-	video.window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, flags);
+	video.window = r_create_window(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, flags);
 
 	if(video.window) {
-		if(video.glcontext) {
-			SDL_GL_MakeCurrent(video.window, video.glcontext);
-		} else {
-			video_init_gl();
-		}
-
-		if(!video.glcontext) {
-			log_fatal("Error creating OpenGL context: %s", SDL_GetError());
-			return;
-		}
-
 		video_update_mode_settings();
 		return;
 	}
@@ -282,7 +174,7 @@ static void video_new_window_internal(int w, int h, uint32_t flags, bool fallbac
 }
 
 static void video_new_window(int w, int h, bool fs, bool resizable) {
-	uint32_t flags = SDL_WINDOW_OPENGL;
+	uint32_t flags = 0;
 
 	if(fs) {
 		flags |= get_fullscreen_flag();
@@ -365,22 +257,16 @@ void video_set_mode(int w, int h, bool fs, bool resizable) {
 
 void video_take_screenshot(void) {
 	SDL_RWops *out;
-	char *data;
 	char outfile[128], *outpath, *syspath;
 	time_t rawtime;
 	struct tm * timeinfo;
-	int w, h, rw, rh;
+	uint width, height;
+	uint8_t *pixels = r_screenshot(&width, &height);
 
-	w = video.current.width;
-	h = video.current.height;
-
-	rw = video.real.width;
-	rh = video.real.height;
-
-	rw = max(rw, w);
-	rh = max(rh, h);
-
-	data = malloc(3 * rw * rh);
+	if(!pixels) {
+		log_warn("Failed to take a screenshot");
+		return;
+	}
 
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
@@ -396,46 +282,40 @@ void video_take_screenshot(void) {
 
 	if(!out) {
 		log_warn("VFS error: %s", vfs_get_error());
-		free(data);
+		free(pixels);
 		return;
 	}
 
-	glReadBuffer(GL_FRONT);
-	glReadPixels(0, 0, rw, rh, GL_RGB, GL_UNSIGNED_BYTE, data);
-
 	png_structp png_ptr;
 	png_infop info_ptr;
-	png_byte **row_pointers;
 
 	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	png_setup_error_handlers(png_ptr);
 	info_ptr = png_create_info_struct(png_ptr);
 
 	png_set_IHDR(
-		png_ptr, info_ptr, w, h, 8, PNG_COLOR_TYPE_RGB,
+		png_ptr, info_ptr, width, height, 8, PNG_COLOR_TYPE_RGB,
 		PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT
 	);
 
-	row_pointers = png_malloc(png_ptr, h*sizeof(png_byte *));
+	png_byte *row_pointers[height];
 
-	for(int y = 0; y < h; y++) {
-		row_pointers[y] = png_malloc(png_ptr, 8*3*w);
-
-		memcpy(row_pointers[y], data + rw*3*(h-1-y), w*3);
+	for(int y = 0; y < height; y++) {
+		row_pointers[y] = png_malloc(png_ptr, width * 3);
+		memcpy(row_pointers[y], pixels + width * 3 * (height - 1 - y), width * 3);
 	}
 
 	png_init_rwops_write(png_ptr, out);
 	png_set_rows(png_ptr, info_ptr, row_pointers);
 	png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
 
-	for(int y = 0; y < h; y++)
+	for(int y = 0; y < height; y++) {
 		png_free(png_ptr, row_pointers[y]);
-
-	png_free(png_ptr, row_pointers);
+	}
 
 	png_destroy_write_struct(&png_ptr, &info_ptr);
 
-	free(data);
+	free(pixels);
 	SDL_RWclose(out);
 }
 
@@ -475,6 +355,23 @@ static void video_quality_callback(ConfigIndex idx, ConfigValue v) {
 }
 
 static void video_init_sdl(void) {
+	// XXX: workaround for an SDL bug: https://bugzilla.libsdl.org/show_bug.cgi?id=4127
+	SDL_SetHintWithPriority(SDL_HINT_FRAMEBUFFER_ACCELERATION, "0", SDL_HINT_OVERRIDE);
+
+	uint num_drivers = SDL_GetNumVideoDrivers();
+	void *buf;
+	SDL_RWops *out = SDL_RWAutoBuffer(&buf, 256);
+
+	SDL_RWprintf(out, "Available video drivers:");
+
+	for(uint i = 0; i < num_drivers; ++i) {
+		SDL_RWprintf(out, " %s", SDL_GetVideoDriver(i));
+	}
+
+	SDL_WriteU8(out, 0);
+	log_info("%s", (char*)buf);
+	SDL_RWclose(out);
+
 	char *prefer_drivers = getenv("TAISEI_PREFER_SDL_VIDEODRIVERS");
 	char *force_driver = getenv("TAISEI_VIDEO_DRIVER");
 
@@ -551,6 +448,8 @@ void video_init(void) {
 	video_init_sdl();
 	log_info("Using driver '%s'", SDL_GetCurrentVideoDriver());
 
+	r_init();
+
 	// Register all resolutions that are available in fullscreen
 
 	for(int s = 0; s < SDL_GetNumVideoDisplays(); ++s) {
@@ -606,13 +505,14 @@ void video_init(void) {
 
 void video_shutdown(void) {
 	SDL_DestroyWindow(video.window);
-	SDL_GL_DeleteContext(video.glcontext);
-	unload_gl_library();
+	r_shutdown();
 	free(video.modes);
 	SDL_VideoQuit();
 	events_unregister_handler(video_handle_window_event);
 }
 
 void video_swap_buffers(void) {
-	SDL_GL_SwapWindow(video.window);
+	r_target(NULL);
+	r_swap(video.window);
+	r_clear(CLEAR_COLOR);
 }

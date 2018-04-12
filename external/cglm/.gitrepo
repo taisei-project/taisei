@@ -1,0 +1,11 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/taisei-project/cglm
+	branch = taisei
+	commit = 5af24c6b834fd85bb41ae2520f7030c1b689152e
+	parent = cc41f444380def4cb5338aeda1204698d14d49f2
+	cmdver = 0.3.1

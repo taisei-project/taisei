@@ -10,7 +10,6 @@
 #include "taisei.h"
 
 #include <SDL_keycode.h>
-#include <stdbool.h>
 
 #define CONFIG_FILE "storage/config"
 
@@ -220,4 +219,4 @@ void config_set_callback(ConfigIndex idx, ConfigCallback callback);
 
 int config_set_int(ConfigIndex idx, int val);
 double config_set_float(ConfigIndex idx, double val);
-char* config_set_str(ConfigIndex idx, const char *val);
+char* config_set_str(ConfigIndex idx, const char *val) attr_nonnull(2) attr_returns_nonnull;

@@ -1,3 +1,4 @@
-rows = 2
-cols = 6
-speed = 6
+@sprite_count = 12
+
+main = d6 0 1 2 3 4 5
+guruguru = d6 6 7 8 9 10

@@ -12,6 +12,8 @@
 #include "global.h"
 #include "stages/stage6.h"
 #include "video.h"
+#include "resource/model.h"
+#include "renderer/api.h"
 
 typedef struct CreditsEntry {
 	char **data;
@@ -34,7 +36,9 @@ static struct {
 
 #define ENTRY_TIME 350
 
-void credits_fill(void) {
+static void credits_add(char *data, int time);
+
+static void credits_fill(void) {
 	// In case the shortened URLs break,
 	// Tuck V's YouTube: https://www.youtube.com/channel/UCaw73cuHLnFCSpjOtt_9pyg
 	// Lalasa's YouTube: https://www.youtube.com/channel/UCc6ePuGLYnKTkdDqxP3OB4Q
@@ -157,7 +161,7 @@ void credits_fill(void) {
 	credits_add("*\nAnd don't forget to take it easy!", 200);
 }
 
-void credits_add(char *data, int time) {
+static void credits_add(char *data, int time) {
 	CreditsEntry *e;
 	char *c, buf[256];
 	int l = 0, i = 0;
@@ -189,27 +193,22 @@ void credits_add(char *data, int time) {
 	credits.end += time + CREDITS_ENTRY_FADEOUT;
 }
 
-void credits_towerwall_draw(Vector pos) {
-	glBindTexture(GL_TEXTURE_2D, get_tex("stage6/towerwall")->gltex);
+static void credits_towerwall_draw(vec3 pos) {
+	r_texture(0, "stage6/towerwall");
 
-	Shader *s = get_shader("tower_wall");
-	glUseProgram(s->prog);
-	glUniform1i(uniloc(s, "lendiv"), 2800.0 + 300.0 * sin(global.frames / 77.7));
+	r_shader("tower_wall");
+	r_uniform_float("lendiv", 2800.0 + 300.0 * sin(global.frames / 77.7));
 
-	glPushMatrix();
-	glTranslatef(pos[0], pos[1], pos[2]);
-	glScalef(30,30,30);
-	draw_model("towerwall");
-	glPopMatrix();
+	r_mat_push();
+	r_mat_translate(pos[0], pos[1], pos[2]);
+	r_mat_scale(30,30,30);
+	r_draw_model("towerwall");
+	r_mat_pop();
 
-	glUseProgram(0);
+	r_shader_standard();
 }
 
-Vector **credits_skysphere_pos(Vector pos, float maxrange) {
-	return single3dpos(pos, maxrange, stage_3d_context.cx);
-}
-
-void credits_init(void) {
+static void credits_init(void) {
 	memset(&credits, 0, sizeof(credits));
 	init_stage3d(&stage_3d_context);
 
@@ -248,7 +247,7 @@ static double entry_height(CreditsEntry *e, double *head, double *body) {
 	return total;
 }
 
-void credits_draw_entry(CreditsEntry *e) {
+static void credits_draw_entry(CreditsEntry *e) {
 	int time = global.frames - 400;
 	float fadein = 1, fadeout = 1;
 
@@ -289,91 +288,91 @@ void credits_draw_entry(CreditsEntry *e) {
 		yukkuri_spr = get_sprite("yukkureimu");
 	}
 
-	glPushMatrix();
+	r_mat_push();
 
 	if(fadein < 1) {
-		glTranslatef(0, SCREEN_W * pow(1 - fadein,  2) *  0.5, 0);
+		r_mat_translate(0, SCREEN_W * pow(1 - fadein,  2) *  0.5, 0);
 	} else if(fadeout < 1) {
-		glTranslatef(0, SCREEN_W * pow(1 - fadeout, 2) * -0.5, 0);
+		r_mat_translate(0, SCREEN_W * pow(1 - fadeout, 2) * -0.5, 0);
 	}
 
 	// for debugging: draw a quad as tall as the entry is expected to be
 	/*
-	glPushMatrix();
-	glColor4f(1, 0, 0, fadein * fadeout);
-	glDisable(GL_TEXTURE_2D);
-	glScalef(300, h_total, 1);
-	draw_quad();
-	glEnable(GL_TEXTURE_2D);
-	glPopMatrix();
+	render_push();
+	render_color4(1, 0, 0, fadein * fadeout);
+	render_shader_standard_notex();
+	render_scale(300, h_total, 1);
+	render_draw_quad();
+	render_shader_standard();
+	render_pop();
 	*/
 
-	glColor4f(1, 1, 1, fadein * fadeout);
+	r_color4(1, 1, 1, fadein * fadeout);
 
 	if(yukkuri) {
-		glTranslatef(0, (-h_body) * 0.5, 0);
+		r_mat_translate(0, (-h_body) * 0.5, 0);
 	} else {
-		glTranslatef(0, (-h_body) * 0.5, 0);
+		r_mat_translate(0, (-h_body) * 0.5, 0);
 	}
 
 	for(int i = 0; i < e->lines; ++i) {
 		if(yukkuri && !i) {
-			glPushMatrix();
-			glScalef(CREDITS_YUKKURI_SCALE, CREDITS_YUKKURI_SCALE, 1.0);
+			r_mat_push();
+			r_mat_scale(CREDITS_YUKKURI_SCALE, CREDITS_YUKKURI_SCALE, 1.0);
 			draw_sprite_p(0, 10 * sin(global.frames / 10.0) * fadeout * fadein, yukkuri_spr);
-			glPopMatrix();
-			glTranslatef(0, yukkuri_spr->h * CREDITS_YUKKURI_SCALE * 0.5, 0);
+			r_mat_pop();
+			r_mat_translate(0, yukkuri_spr->h * CREDITS_YUKKURI_SCALE * 0.5, 0);
 		} else {
 			Font *font = i ? _fonts.standard : _fonts.mainmenu;
 			draw_text(AL_Center, 0, 0, e->data[i], font);
-			glTranslatef(0, font_line_spacing(font), 0);
+			r_mat_translate(0, font_line_spacing(font), 0);
 		}
 	}
 
-	glPopMatrix();
-	glColor4f(1, 1, 1, 1);
+	r_mat_pop();
+	r_color4(1, 1, 1, 1);
 }
 
-void credits_draw(void) {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	colorfill(1, 1, 1, 1); // don't use glClearColor for this, it screws up letterboxing
+static void credits_draw(void) {
+	r_clear(CLEAR_ALL);
+	colorfill(1, 1, 1, 1); // don't use r_clear_color4 for this, it screws up letterboxing
 
-	glPushMatrix();
-	glTranslatef(-SCREEN_W/2, 0, 0);
-	glEnable(GL_DEPTH_TEST);
+	r_mat_push();
+	r_mat_translate(-SCREEN_W/2, 0, 0);
+	r_enable(RCAP_DEPTH_TEST);
 
 	set_perspective_viewport(&stage_3d_context, 100, 9000, 0, 0, SCREEN_W, SCREEN_H);
 	draw_stage3d(&stage_3d_context, 10000);
 
-	glPopMatrix();
+	r_mat_pop();
 	set_ortho();
 
-	glPushMatrix();
-	glColor4f(0, 0, 0, credits.panelalpha * 0.7);
-	glTranslatef(SCREEN_W/4*3, SCREEN_H/2, 0);
-	glScalef(300, SCREEN_H, 1);
-	draw_quad();
-	glColor4f(1, 1, 1, 1);
-	glPopMatrix();
+	r_mat_push();
+	r_color4(0, 0, 0, credits.panelalpha * 0.7);
+	r_mat_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
+	r_mat_scale(300, SCREEN_H, 1);
+	r_draw_quad();
+	r_color4(1, 1, 1, 1);
+	r_mat_pop();
 
-	glPushMatrix();
-	glTranslatef(SCREEN_W/4*3, SCREEN_H/2, 0);
+	r_mat_push();
+	r_mat_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
 
 	for(int i = 0; i < credits.ecount; ++i) {
 		credits_draw_entry(&(credits.entries[i]));
 	}
 
-	glPopMatrix();
+	r_mat_pop();
 
 	draw_transition();
 }
 
-void credits_finish(void *arg) {
+static void credits_finish(void *arg) {
 	credits.end = 0;
 	set_transition(TransLoader, 0, FADE_TIME*10);
 }
 
-void credits_process(void) {
+static void credits_process(void) {
 	TIMER(&global.frames);
 
 	stage_3d_context.cx[2] = 200 - global.frames * 50;
@@ -392,7 +391,7 @@ void credits_process(void) {
 	}
 }
 
-void credits_free(void) {
+static void credits_free(void) {
 	int i, j;
 	for(i = 0; i < credits.ecount; ++i) {
 		CreditsEntry *e = &(credits.entries[i]);
@@ -406,7 +405,7 @@ void credits_free(void) {
 
 void credits_preload(void) {
 	preload_resource(RES_BGM, "credits", RESF_OPTIONAL);
-	preload_resource(RES_SHADER, "tower_wall", RESF_DEFAULT);
+	preload_resource(RES_SHADER_PROGRAM, "tower_wall", RESF_DEFAULT);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
 		"stage6/towerwall",
 		"yukkureimu",

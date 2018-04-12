@@ -12,59 +12,61 @@
 #include "global.h"
 #include "util.h"
 
-static void init_fbo(FBO *fbo, float scale, int type) {
-	glGenTextures(1, &fbo->tex);
-	glBindTexture(GL_TEXTURE_2D, fbo->tex);
+// TODO: rename and move this
+Resources resources;
 
-	fbo->scale = scale = sanitize_scale(scale);
-	fbo->nw = scale * VIEWPORT_W;
-	fbo->nh = scale * VIEWPORT_H;
+static void init_fbo(FBO *fbo, uint width, uint height, TextureType type) {
+	Texture *rgba = calloc(1, sizeof(Texture));
+	Texture *depth = calloc(1, sizeof(Texture));
 
-	log_debug("FBO %p: q=%f, w=%i, h=%i", (void*)fbo, fbo->scale, fbo->nw, fbo->nh);
+	r_texture_create(rgba, &(TextureParams) {
+		.width  = width,
+		.height = height,
+		.type = type,
+	});
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	r_texture_create(depth, &(TextureParams) {
+		.width  = width,
+		.height = height,
+		.type = TEX_TYPE_DEPTH,
+	});
 
-	glTexImage2D(GL_TEXTURE_2D, 0, type, fbo->nw, fbo->nh, 0, type, GL_UNSIGNED_BYTE, NULL);
+	r_target_create(fbo);
+	r_target_attach(fbo, rgba, RENDERTARGET_ATTACHMENT_COLOR0);
+	r_target_attach(fbo, depth, RENDERTARGET_ATTACHMENT_DEPTH);
 
-	glGenFramebuffers(1,&fbo->fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo->fbo);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbo->tex, 0);
+	log_debug("FBO %p: w=%i, h=%i", (void*)fbo, width, height);
+}
 
-	glGenTextures(1, &fbo->depth);
-	glBindTexture(GL_TEXTURE_2D, fbo->depth);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, fbo->nw, fbo->nh, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,fbo->depth, 0);
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+static void delete_tex(Texture *tex) {
+	r_texture_destroy(tex);
+	free(tex);
 }
 
 static void delete_fbo(FBO *fbo) {
-	glDeleteFramebuffers(1, &fbo->fbo);
-	glDeleteTextures(1, &fbo->depth);
-	glDeleteTextures(1, &fbo->tex);
+	delete_tex(r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_COLOR0));
+	delete_tex(r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_DEPTH));
+	r_target_destroy(fbo);
 }
 
-static void reinit_fbo(FBO *fbo, float scale, int type) {
-	if(!fbo->scale) {
-		// fbo was never initialized
-		init_fbo(fbo, scale, type);
-		return;
+static void reinit_fbo(FBO *fbo, float scale, TextureType type) {
+	scale = sanitize_scale(scale);
+	uint w = VIEWPORT_W * scale;
+	uint h = VIEWPORT_H * scale;
+
+	Texture *rgba;
+
+	if(fbo->impl) {
+		rgba = r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_COLOR0);
+	} else {
+		rgba = NULL;
 	}
 
-	if(fbo->scale != sanitize_scale(scale)) {
+	if(!rgba) {
+		init_fbo(fbo, w, h, type);
+	} else if(w != rgba->w || h != rgba->h) {
 		delete_fbo(fbo);
-		init_fbo(fbo, scale, type);
+		init_fbo(fbo, w, h, type);
 	}
 }
 
@@ -74,9 +76,9 @@ static void swap_fbos(FBO **fbo1, FBO **fbo2) {
 	*fbo2 = temp;
 }
 
-void init_fbo_pair(FBOPair *pair, float scale, int type) {
-	pair->front = pair->_fbopair_private.array + FBO_FRONT;
-	pair->back = pair->_fbopair_private.array + FBO_BACK;
+void init_fbo_pair(FBOPair *pair, float scale, TextureType type) {
+	pair->front = pair->_private.targets+0;
+	pair->back  = pair->_private.targets+1;
 
 	reinit_fbo(pair->front, scale, type);
 	reinit_fbo(pair->back, scale, type);
@@ -92,18 +94,24 @@ void swap_fbo_pair(FBOPair *pair) {
 }
 
 void draw_fbo(FBO *fbo) {
-	glPushMatrix();
-		glTranslatef(VIEWPORT_W/2., VIEWPORT_H/2., 0);
-		glScalef(VIEWPORT_W, VIEWPORT_H, 1);
-		glBindTexture(GL_TEXTURE_2D, fbo->tex);
-		glDrawArrays(GL_QUADS, 4, 4);
-	glPopMatrix();
+	CullFaceMode cull_saved = r_cull_current();
+	r_cull(CULL_FRONT);
+
+	r_mat_push();
+	r_texture_ptr(0, r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_COLOR0));
+	r_mat_scale(VIEWPORT_W, VIEWPORT_H, 1);
+	r_mat_translate(0.5, 0.5, 0);
+	r_mat_scale(1, -1, 1);
+	r_draw_quad();
+	r_mat_pop();
+
+	r_cull(cull_saved);
 }
 
 void draw_fbo_viewport(FBO *fbo) {
 	// assumption: rendering into another, identical FBO
 
-	glViewport(0, 0, fbo->scale*VIEWPORT_W, fbo->scale*VIEWPORT_H);
-	set_ortho_ex(VIEWPORT_W,VIEWPORT_H);
+	// r_viewport(0, 0, fbo->scale*VIEWPORT_W, fbo->scale*VIEWPORT_H);
+	set_ortho_ex(VIEWPORT_W, VIEWPORT_H);
 	draw_fbo(fbo);
 }

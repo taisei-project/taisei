@@ -85,6 +85,7 @@ foreach flag : [
             '-Wunreachable-code',
             '-Wunreachable-code-loop-increment',
             '-Wgnu',
+            '-Wcast-align',
         ]
     if cc.has_argument(flag)
         taisei_c_warnargs += flag
@@ -102,9 +103,18 @@ dep_sdl2_image  = dependency('SDL2_image',                      required : true,
 dep_zlib        = dependency('zlib',                            required : true,    static : static)
 dep_png         = dependency('libpng',  version : '>=1.5',      required : true,    static : static)
 dep_zip         = dependency('libzip',  version : '>=1.0',      required : false,   static : static)
+dep_cglm        = subproject('cglm').get_variable('cglm_dep')
 dep_m           = cc.find_library('m',                          required : false)
 
-taisei_deps = [dep_sdl2, dep_sdl2_ttf, dep_sdl2_image, dep_zlib, dep_png, dep_m]
+taisei_deps = [
+    dep_sdl2,
+    dep_sdl2_ttf,
+    dep_sdl2_image,
+    dep_zlib,
+    dep_png,
+    dep_m,
+    dep_cglm,
+]
 
 if host_machine.system() == 'windows'
     taisei_deps += cc.find_library('shlwapi')
@@ -193,17 +203,11 @@ else
     xdg_path = datadir
 endif
 
-if get_option('buildtype').startswith('debug')
-    config.set('TAISEI_BUILDCONF_DEBUG', true)
-    if have_backtrace
-        config.set('TAISEI_BUILDCONF_LOG_ENABLE_BACKTRACE', true)
-    endif
-endif
+is_debug_build = get_option('buildtype').startswith('debug')
 
-if host_machine.system() == 'windows' or host_machine.system() == 'darwin'
-        config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', true)
-endif
-
+config.set('TAISEI_BUILDCONF_DEBUG', is_debug_build)
+config.set('TAISEI_BUILDCONF_LOG_ENABLE_BACKTRACE', is_debug_build and have_backtrace)
+config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', host_machine.system() == 'windows' or host_machine.system() == 'darwin')
 config.set('TAISEI_BUILDCONF_DEBUG_OPENGL', get_option('debug_opengl'))
 
 if host_machine.system() == 'windows'
@@ -253,13 +257,16 @@ Summary:
         taisei_version_string
     )
 
-subdir('src')
-subdir('resources')
+version_deps = []
+
 subdir('misc')
+subdir('external')
+subdir('resources')
 subdir('doc')
 subdir('xdg')
 subdir('scripts')
-subdir('external')
+subdir('atlas')
+subdir('src')
 
 message(summary)
 

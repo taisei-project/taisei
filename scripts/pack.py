@@ -19,6 +19,9 @@ with ZipFile(archive, "w", ZIP_DEFLATED) as zf:
     for directory in directories:
         for root, dirs, files in os.walk(directory):
             for fn in files:
+                if fn == 'meson.build':
+                    continue
+
                 abspath = os.path.join(root, fn)
                 rel = os.path.join(os.path.basename(directory), os.path.relpath(abspath, directory))
 

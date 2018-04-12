@@ -589,7 +589,9 @@ void scuttle_deadly_dance(Boss *boss, int time) {
 		return;
 	}
 
-	boss->ani.stdrow=1;
+	AT(0) {
+		aniplayer_queue(&boss->ani, "dance", 0);
+	}
 	play_loop("shot1_loop");
 
 	FROM_TO(0, 120, 1)
@@ -657,46 +659,48 @@ void scuttle_spellbg(Boss *h, int time) {
 		a += (time / (float)ATTACK_START_DELAY);
 	float s = 0.3 + 0.7 * a;
 
-	glColor4f(.1, .1, .1, a);
+	r_color4(.1, .1, .1, a);
 	draw_sprite(VIEWPORT_W/2, VIEWPORT_H/2, "stage3/spellbg2");
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	r_blend(BLEND_ADD);
 
 	fill_viewport(-time/200.0 + 0.5, time/400.0+0.5, s, "stage3/spellbg1");
 
-	glColor4f(1, 1, 1, 0.1);
+	r_color4(1, 1, 1, 0.1);
 	fill_viewport(time/300.0 + 0.5, -time/340.0+0.5, s*0.5, "stage3/spellbg1");
-	Shader *sha = get_shader("maristar_bombbg");
-	glUseProgram(sha->prog);
-	glUniform1f(uniloc(sha,"t"), time/400.);
-	glUniform1f(uniloc(sha,"decay"), 0.);
-	glColor4f(1, 1, 1, 0.1);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glUniform2f(uniloc(sha,"plrpos"), 0.5,0.5);
+	r_shader("maristar_bombbg");
+	r_uniform_float("t", time/400.);
+	r_uniform_float("decay", 0.);
+	r_color4(1, 1, 1, 0.1); // XXX: why is this here?!
+	r_blend(BLEND_ADD);
+	r_uniform_vec2("plrpos", 0.5,0.5);
 	fill_viewport(0.0, 0.0, 1, "stage3/spellbg1");
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glUseProgram(0);
+	r_blend(BLEND_ALPHA);
+	r_shader_standard();
 
-
-	glColor4f(1, 1, 1, 1);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_color4(1, 1, 1, 1);
+	r_blend(BLEND_ALPHA);
 }
 
 void wriggle_spellbg(Boss *b, int time) {
-	glColor4f(1,1,1,1);
+	r_color4(1,1,1,1);
 	fill_viewport(0, 0, 768.0/1024.0, "stage3/wspellbg");
-	glColor4f(1,1,1,0.5);
-	glBlendEquation(GL_FUNC_SUBTRACT);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	r_color4(1,1,1,0.5);
+	r_blend(r_blend_compose(
+		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB,
+		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB
+	));
 	fill_viewport(sin(time) * 0.015, time / 50.0, 1, "stage3/wspellclouds");
-	glBlendEquation(GL_FUNC_ADD);
+	r_blend(BLEND_ADD);
 	fill_viewport(0, time / 70.0, 1, "stage3/wspellswarm");
-	glBlendEquation(GL_FUNC_SUBTRACT);
-	glColor4f(1,1,1,0.4);
+	r_blend(r_blend_compose(
+		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB,
+		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB
+	));
+	r_color4(1,1,1,0.4);
 	fill_viewport(cos(time) * 0.02, time / 30.0, 1, "stage3/wspellclouds");
 
-	glBlendEquation(GL_FUNC_ADD);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glColor4f(1,1,1,1);
+	r_blend(BLEND_ALPHA);
+	r_color4(1,1,1,1);
 }
 
 Boss* stage3_spawn_scuttle(complex pos) {
@@ -724,16 +728,14 @@ static void wriggle_slave_visual(Enemy *e, int time, bool render) {
 		return;
 
 	if(render) {
-		glPushMatrix();
-		glTranslatef(creal(e->pos),cimag(e->pos),0);
-		glRotatef(7*time,0,0,1);
-		glColor4f(0.8,1,0.4,1);
-		glScalef(0.7,0.7,1);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		draw_sprite(0,0,"fairy_circle");
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glColor3f(1,1,1);
-		glPopMatrix();
+		r_draw_sprite(&(SpriteParams) {
+			.sprite = "fairy_circle",
+			.rotation.angle = DEG2RAD * 7 * time,
+			.scale.both = 0.7,
+			.blend = BLEND_ADD,
+			.color = rgba(0.8, 1.0, 0.4, 1.0),
+			.pos = { creal(e->pos), cimag(e->pos) },
+		});
 	} else if(time % 5 == 0) {
 		tsrand_fill(2);
 		PARTICLE(
@@ -837,12 +839,12 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 
 static void wriggle_slave_part_draw(Projectile *p, int t) {
 	float b = 1 - t / p->args[0];
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glPushMatrix();
-	glTranslatef(creal(p->pos), cimag(p->pos), 0);
+	r_blend(BLEND_ADD);
+	r_mat_push();
+	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
 	ProjDrawCore(p, multiply_colors(p->color, rgba(b, b, b, 1)));
-	glPopMatrix();
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	r_mat_pop();
+	r_blend(BLEND_ALPHA);
 }
 
 static int wriggle_spell_slave(Enemy *e, int time) {
@@ -872,7 +874,7 @@ static int wriggle_spell_slave(Enemy *e, int time) {
 			.draw_rule = wriggle_slave_part_draw,
 			.rule = timeout,
 			.args = { 60 },
-			.color_transform_rule = proj_clrtransform_particle,
+			.shader = "sprite_default",
 			.flags = PFLAG_NOCLEAR | PFLAG_NOCLEAREFFECT | PFLAG_NOCOLLISIONEFFECT,
 		);
 	}
@@ -1095,7 +1097,7 @@ void wriggle_light_singularity(Boss *boss, int time) {
 		}
 
 		play_sound("charge_generic");
-		boss->ani.stdrow = 0;
+		aniplayer_queue(&boss->ani, "main", 0);
 	}
 
 	if(time > 120) {
@@ -1107,7 +1109,9 @@ void wriggle_light_singularity(Boss *boss, int time) {
 	}
 
 	if(!((time+30) % 300)) {
-		aniplayer_queue(&boss->ani, 2, 0, 0);
+		aniplayer_queue(&boss->ani, "specialshot_charge", 1);
+		aniplayer_queue(&boss->ani, "specialshot_release", 1);
+		aniplayer_queue(&boss->ani, "main", 0);
 	}
 
 	if(!(time % 300)) {
@@ -1146,28 +1150,29 @@ void wriggle_light_singularity(Boss *boss, int time) {
 
 		play_sound("shot_special1");
 	} else if(!(time % 150)) {
-		aniplayer_queue(&boss->ani, 1, 1, 0);
+		aniplayer_queue(&boss->ani, "fly", 1);
+		aniplayer_queue(&boss->ani, "main", 0);
 	}
 }
 
 static void wriggle_fstorm_proj_draw(Projectile *p, int time) {
 	float f = 1-min(time/60.0,1);
-	glPushMatrix();
-	glTranslatef(creal(p->pos), cimag(p->pos), 0);
-	glRotatef(p->angle*180/M_PI+90, 0, 0, 1);
+	r_mat_push();
+	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
+	r_mat_rotate_deg(p->angle*180/M_PI+90, 0, 0, 1);
 	ProjDrawCore(p, p->color);
 
 	if(f > 0) {
 		p->sprite = get_sprite("proj/ball");
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-		glScalef(f,f,f);
+		r_blend(BLEND_ADD);
+		r_mat_scale(f,f,f);
 		ProjDrawCore(p,time);
-		glScalef(1/f,1/f,1/f);
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+		r_mat_scale(1/f,1/f,1/f);
+		r_blend(BLEND_ALPHA);
 		p->sprite = get_sprite("proj/rice");
 	}
 
-	glPopMatrix();
+	r_mat_pop();
 }
 
 static int wriggle_fstorm_proj(Projectile *p, int time) {
@@ -1224,8 +1229,10 @@ void wriggle_firefly_storm(Boss *boss, int time) {
 
 	bool lun = global.diff == D_Lunatic;
 
+	AT(0) {
+		aniplayer_queue(&boss->ani,"fly",0);
+	}
 	FROM_TO_SND("shot1_loop", 30, 9000, 2) {
-		boss->ani.stdrow=1;
 
 		int i, cnt = 2;
 		for(i = 0; i < cnt; ++i) {
