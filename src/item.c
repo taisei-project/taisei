@@ -30,6 +30,22 @@ static Sprite* item_sprite(ItemType type) {
 	return get_sprite(map[type]);
 }
 
+static void ent_draw_item(EntityInterface *ent) {
+	Item *i = ENT_CAST(ent, Item);
+
+	Color c = rgba(1, 1, 1,
+		i->type == BPoint && !i->auto_collect
+			? clamp(2.0 - (global.frames - i->birthtime) / 60.0, 0.1, 1.0)
+			: 1.0
+	);
+
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = item_sprite(i->type),
+		.pos = { creal(i->pos), cimag(i->pos) },
+		.color = c,
+	});
+}
+
 static int item_prio(List *litem) {
 	Item *item = (Item*)litem;
 	return item->type;
@@ -45,6 +61,9 @@ Item* create_item(complex pos, complex v, ItemType type) {
 	// type = 1 + floor(Life * frand());
 
 	Item *i = (Item*)objpool_acquire(stage_object_pools.items);
+
+	// FIXME: use simpler/faster insertions when v1.2 compat is not needed
+	// list_push(&global.items, i);
 	list_insert_at_priority_tail(&global.items, i, type, item_prio);
 
 	i->pos = pos;
@@ -54,10 +73,15 @@ Item* create_item(complex pos, complex v, ItemType type) {
 	i->auto_collect = 0;
 	i->type = type;
 
+	i->ent.draw_layer = LAYER_ITEM | i->type;
+	i->ent.draw_func = ent_draw_item;
+	ent_register(&i->ent, ENT_ITEM);
+
 	return i;
 }
 
 void delete_item(Item *item) {
+	ent_unregister(&item->ent);
 	objpool_release(stage_object_pools.items, (ObjectInterface*)list_unlink(&global.items, item));
 }
 
@@ -70,22 +94,6 @@ Item* create_bpoint(complex pos) {
 	}
 
 	return i;
-}
-
-void draw_items(void) {
-	for(Item *i = global.items; i; i = i->next) {
-		Color c = rgba(1, 1, 1,
-			i->type == BPoint && !i->auto_collect
-				? clamp(2.0 - (global.frames - i->birthtime) / 60.0, 0.1, 1.0)
-				: 1.0
-		);
-
-		r_draw_sprite(&(SpriteParams) {
-			.sprite_ptr = item_sprite(i->type),
-			.pos = { creal(i->pos), cimag(i->pos) },
-			.color = c,
-		});
-	}
 }
 
 void delete_items(void) {

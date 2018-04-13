@@ -17,6 +17,7 @@
 #include "aniplayer.h"
 #include "stageobjects.h"
 #include "glm.h"
+#include "entity.h"
 
 #ifdef create_enemy_p
 #undef create_enemy_p
@@ -29,6 +30,8 @@ Enemy* _enemy_attach_dbginfo(Enemy *e, DebugInfo *dbg) {
 	return e;
 }
 #endif
+
+static void ent_draw_enemy(EntityInterface *ent);
 
 Enemy *create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyVisualRule visual_rule, EnemyLogicRule logic_rule,
 				  complex a1, complex a2, complex a3, complex a4) {
@@ -56,6 +59,10 @@ Enemy *create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyVisualRule visu
 	e->args[2] = a3;
 	e->args[3] = a4;
 
+	e->ent.draw_layer = LAYER_ENEMY;
+	e->ent.draw_func = ent_draw_enemy;
+	ent_register(&e->ent, ENT_ENEMY);
+
 	e->logic_rule(e, EVENT_BIRTH);
 	return e;
 }
@@ -81,6 +88,7 @@ void* _delete_enemy(List **enemies, List* enemy, void *arg) {
 
 	e->logic_rule(e, EVENT_DEATH);
 	del_ref(enemy);
+	ent_unregister(&e->ent);
 	objpool_release(stage_object_pools.enemies, (ObjectInterface*)list_unlink(enemies, enemy));
 
 	return NULL;
@@ -94,39 +102,30 @@ void delete_enemies(Enemy **enemies) {
 	list_foreach(enemies, _delete_enemy, NULL);
 }
 
-static void draw_enemy(Enemy *e) {
+static void ent_draw_enemy(EntityInterface *ent) {
+	Enemy *e = ENT_CAST(ent, Enemy);
+
+	if(!e->visual_rule) {
+		return;
+	}
+
 #ifdef ENEMY_DEBUG
 	static Enemy prev_state;
 	memcpy(&prev_state, e, sizeof(Enemy));
+#endif
+
+	if(e->alpha < 1) {
+		r_color4(1, 1, 1, e->alpha);
+	}
+
 	e->visual_rule(e, global.frames - e->birthtime, true);
 
+#ifdef ENEMY_DEBUG
 	if(memcmp(&prev_state, e, sizeof(Enemy))) {
 		set_debug_info(&e->debug);
 		log_fatal("Enemy modified its own state in draw rule");
 	}
-#else
-	e->visual_rule(e, global.frames - e->birthtime, true);
 #endif
-}
-
-void draw_enemies(Enemy *enemies) {
-	Enemy *e;
-	bool reset = false;
-
-	for(e = enemies; e; e = e->next) {
-		if(e->visual_rule) {
-			if(e->alpha < 1) {
-				r_color4(1,1,1,e->alpha);
-				reset = true;
-			}
-
-			draw_enemy(e);
-
-			if(reset) {
-				r_color4(1,1,1,1);
-			}
-		}
-	}
 }
 
 void killall(Enemy *enemies) {

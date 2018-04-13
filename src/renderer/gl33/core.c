@@ -604,18 +604,12 @@ static bool gl33_supports(RendererFeature feature) {
 	return R.features & r_feature_bit(feature);
 }
 
-static void gl33_capability(RendererCapability cap, bool value) {
-	r_capability_bits_t flag = r_capability_bit(cap);
-
-	if(value) {
-		R.capabilities.pending |=  flag;
-	} else {
-		R.capabilities.pending &= ~flag;
-	}
+static void gl33_capabilities(r_capability_bits_t capbits) {
+	R.capabilities.pending = capbits;
 }
 
-static bool gl33_capability_current(RendererCapability cap) {
-	return R.capabilities.pending & r_capability_bit(cap);
+static r_capability_bits_t gl33_capabilities_current(void) {
+	return R.capabilities.pending;
 }
 
 static void gl33_vsync(VsyncMode mode) {
@@ -833,8 +827,8 @@ RendererBackend _r_backend_gl33 = {
 		.shutdown = gl33_shutdown,
 		.create_window = gl33_create_window,
 		.supports = gl33_supports,
-		.capability = gl33_capability,
-		.capability_current = gl33_capability_current,
+		.capabilities = gl33_capabilities,
+		.capabilities_current = gl33_capabilities_current,
 		.draw = gl33_draw,
 		.color4 = gl33_color4,
 		.color_current = gl33_color_current,

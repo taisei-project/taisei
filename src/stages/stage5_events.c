@@ -1005,7 +1005,7 @@ int iku_extra_slave(Enemy *e, int t) {
 				new->args[1] = 1;
 				new->args[3] = global.frames + 55 - 5 * global.diff;
 
-				create_laserline_ab(e->pos, new->pos, 10, 30, e->args[2], rgb(0.3, 1, 1))->in_background = true;
+				create_laserline_ab(e->pos, new->pos, 10, 30, e->args[2], rgb(0.3, 1, 1))->ent.draw_layer = LAYER_LASER_LOW;
 
 				if(global.diff > D_Easy) {
 					int cnt = floor(global.diff * 2.5), i;

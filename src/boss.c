@@ -12,13 +12,14 @@
 #include "global.h"
 #include "stage.h"
 #include "stagetext.h"
+#include "entity.h"
+
+static void ent_draw_boss(EntityInterface *ent);
 
 Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
-	Boss *buf = malloc(sizeof(Boss));
-	memset(buf, 0, sizeof(Boss));
+	Boss *buf = calloc(1, sizeof(Boss));
 
-	buf->name = malloc(strlen(name) + 1);
-	strcpy(buf->name, name);
+	buf->name = strdup(name);
 	buf->pos = pos;
 
 	char strbuf[strlen(ani) + sizeof("boss/")];
@@ -30,6 +31,11 @@ Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 	}
 
 	buf->birthtime = global.frames;
+
+	buf->ent.draw_layer = LAYER_BOSS;
+	buf->ent.draw_func = ent_draw_boss;
+	ent_register(&buf->ent, ENT_BOSS);
+
 	return buf;
 }
 
@@ -184,8 +190,6 @@ static int boss_glow(Projectile *p, int t) {
 
 static Projectile* spawn_boss_glow(Boss *boss, Color clr, int timeout) {
 	// XXX: memdup is required because the Sprite returned by animation_get_frame is only temporarily valid
-	// XXX: this used to set size to 9000 to ensure it’s below everything but now that does not work anymore
-	//      maybe we can use a custom insertion rule? 
 	return PARTICLE(
 		.sprite_ptr = memdup(aniplayer_get_frame(&boss->ani), sizeof(Sprite)),
 		// this is in sync with the boss position oscillation
@@ -195,6 +199,7 @@ static Projectile* spawn_boss_glow(Boss *boss, Color clr, int timeout) {
 		.draw_rule = BossGlow,
 		.args = { timeout },
 		.angle = M_PI * 2 * frand(),
+		.layer = LAYER_PARTICLE_LOW,
 	);
 }
 
@@ -244,7 +249,11 @@ void draw_boss_background(Boss *boss) {
 	r_mat_pop();
 }
 
-void draw_boss(Boss *boss) {
+static void ent_draw_boss(EntityInterface *ent) {
+	// TODO: separate overlay from this
+
+	Boss *boss = ENT_CAST(ent, Boss);
+
 	float red = 0.5*exp(-0.5*(global.frames-boss->lastdamageframe));
 	if(red > 1)
 		red = 0;
@@ -370,7 +379,7 @@ void draw_boss(Boss *boss) {
 			}
 		}
 
-		r_color3(1,1,1);
+		// r_color3(1,1,1);
 	}
 }
 
@@ -771,6 +780,7 @@ static void free_attack(Attack *a) {
 
 void free_boss(Boss *boss) {
 	del_ref(boss);
+	ent_unregister(&boss->ent);
 
 	for(int i = 0; i < boss->acount; i++)
 		free_attack(&boss->attacks[i]);

@@ -73,6 +73,7 @@ static void spawn_stardust(complex pos, Color clr, int timeout, complex v) {
 		.args = { timeout, v, 0.2 + 0.1 * frand(), 1 },
 		.angle = M_PI*2*frand(),
 		.flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
+		.layer = LAYER_PARTICLE_LOW | 1,
 	);
 }
 
@@ -117,6 +118,7 @@ static void myon_spawn_trail(Enemy *e, int t) {
 		.draw_rule = Shrink,
 		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 		.angle = M_PI*2*frand(),
+		.layer = LAYER_PARTICLE_LOW,
 	);
 
 	spawn_stardust(pos, rgba(1, 1, 1, 0.1), 60, stardust_v);
@@ -338,7 +340,6 @@ static void youmu_mirror_shot(Player *plr) {
 	}
 }
 
-
 static int youmu_split(Enemy *e, int t) {
 	if(t < 0)
 		return 1;
@@ -390,7 +391,8 @@ static void youmu_mirror_bomb(Player *plr) {
 }
 
 static void youmu_mirror_init(Player *plr) {
-	create_enemy_p(&plr->slaves, 40.0*I, ENEMY_IMMUNE, NULL, youmu_mirror_myon, 0, 0, 0, 0);
+	Enemy *myon = create_enemy_p(&plr->slaves, 40.0*I, ENEMY_IMMUNE, NULL, youmu_mirror_myon, 0, 0, 0, 0);
+	myon->ent.draw_layer = LAYER_PLAYER_SLAVE;
 }
 
 static double youmu_mirror_speed_mod(Player *plr, double speed) {
@@ -429,12 +431,12 @@ PlayerMode plrmode_youmu_a = {
 	.character = &character_youmu,
 	.shot_mode = PLR_SHOT_YOUMU_MIRROR,
 	.procs = {
-		.bomb = youmu_mirror_bomb,
+	.bomb = youmu_mirror_bomb,
 	.speed_mod = youmu_mirror_speed_mod,
 	.bomb_shader = youmu_mirror_shader,
 	.bombbg = youmu_common_bombbg,
-		.shot = youmu_mirror_shot,
-		.init = youmu_mirror_init,
-		.preload = youmu_mirror_preload,
+	.shot = youmu_mirror_shot,
+	.init = youmu_mirror_init,
+	.preload = youmu_mirror_preload,
 	},
 };

@@ -11,6 +11,7 @@
 #include "../api.h"
 #include "matstack.h"
 #include "glm.h"
+#include "state.h"
 
 void matstack_reset(MatrixStack *ms) {
 	ms->head = ms->stack;
@@ -35,8 +36,13 @@ static inline vec4* active_matrix(void) {
 }
 
 void r_mat_mode(MatrixMode mode) {
+	_r_state_touch_matrix_mode();
 	assert((uint)mode < sizeof(_r_matrices.indexed) / sizeof(MatrixStack));
-	_r_matrices.active = &_r_matrices.indexed[mode];
+	_r_matrices.active = _r_matrices.indexed + mode;
+}
+
+MatrixMode r_mat_mode_current(void) {
+	return _r_matrices.active - _r_matrices.indexed;
 }
 
 void r_mat_push(void) {
@@ -69,6 +75,12 @@ void r_mat_ortho(float left, float right, float bottom, float top, float near, f
 
 void r_mat_perspective(float angle, float aspect, float near, float far) {
 	glm_perspective(angle, aspect, near, far, active_matrix());
+}
+
+void r_mat(MatrixMode mode, mat4 mat) {
+	assert((uint)mode < sizeof(_r_matrices.indexed) / sizeof(MatrixStack));
+	MatrixStack *stack = _r_matrices.indexed + (uint)mode;
+	glm_mat4_copy(mat, *stack->head);
 }
 
 void r_mat_current(MatrixMode mode, mat4 out_mat) {

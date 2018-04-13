@@ -13,6 +13,7 @@
 #include "stagetext.h"
 #include "video.h"
 #include "resource/postprocess.h"
+#include "entity.h"
 
 #ifdef DEBUG
 	#define GRAPHS_DEFAULT 1
@@ -290,6 +291,18 @@ bool stage_should_draw_particle(Projectile *p) {
 	return (p->flags & PFLAG_REQUIREDPARTICLE) || config_get_int(CONFIG_PARTICLES);
 }
 
+static bool stage_draw_predicate(EntityInterface *ent) {
+	if(ent->type == ENT_PROJECTILE) {
+		Projectile *p = ENT_CAST(ent, Projectile);
+
+		if(p->type == Particle) {
+			return stage_should_draw_particle(p);
+		}
+	}
+
+	return true;
+}
+
 static void stage_draw_objects(void) {
 	r_shader("sprite_default");
 
@@ -297,22 +310,11 @@ static void stage_draw_objects(void) {
 		draw_boss_background(global.boss);
 	}
 
-	player_draw(&global.plr);
-
-	draw_items();
-	draw_projectiles(global.projs, NULL);
-	draw_projectiles(global.particles,
+	ent_draw(
 		config_get_int(CONFIG_PARTICLES)
 			? NULL
-			: stage_should_draw_particle
+			: stage_draw_predicate
 	);
-	draw_lasers(true);
-	draw_enemies(global.enemies);
-	draw_lasers(false);
-
-	if(global.boss) {
-		draw_boss(global.boss);
-	}
 
 	if(global.dialog) {
 		draw_dialog(global.dialog);

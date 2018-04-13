@@ -13,6 +13,7 @@
 #include "common/matstack.h"
 #include "common/sprite_batch.h"
 #include "common/models.h"
+#include "common/state.h"
 #include "glm.h"
 
 #define B _r_backend.funcs
@@ -29,6 +30,7 @@ void r_init(void) {
 }
 
 void r_post_init(void) {
+	_r_state_init();
 	B.post_init();
 	_r_mat_init();
 	_r_models_init();
@@ -50,6 +52,7 @@ void r_post_init(void) {
 }
 
 void r_shutdown(void) {
+	_r_state_shutdown();
 	_r_sprite_batch_shutdown();
 	_r_models_shutdown();
 	B.shutdown();
@@ -237,14 +240,26 @@ bool r_supports(RendererFeature feature) {
 }
 
 void r_capability(RendererCapability cap, bool value) {
-	B.capability(cap, value);
+	r_capability_bits_t caps = B.capabilities_current(), newcaps;
+
+	if(value) {
+		newcaps = caps | r_capability_bit(cap);
+	} else {
+		newcaps = caps & ~r_capability_bit(cap);
+	}
+
+	if(caps != newcaps) {
+		_r_state_touch_capabilities();
+		B.capabilities(newcaps);
+	}
 }
 
 bool r_capability_current(RendererCapability cap) {
-	return B.capability_current(cap);
+	return B.capabilities_current() & r_capability_bit(cap);
 }
 
 void r_color4(float r, float g, float b, float a) {
+	_r_state_touch_color();
 	B.color4(r, g, b, a);
 }
 
@@ -253,6 +268,7 @@ Color r_color_current(void) {
 }
 
 void r_blend(BlendMode mode) {
+	_r_state_touch_blend_mode();
 	B.blend(mode);
 }
 
@@ -261,6 +277,7 @@ BlendMode r_blend_current(void) {
 }
 
 void r_cull(CullFaceMode mode) {
+	_r_state_touch_cull_mode();
 	B.cull(mode);
 }
 
@@ -269,6 +286,7 @@ CullFaceMode r_cull_current(void) {
 }
 
 void r_depth_func(DepthTestFunc func) {
+	_r_state_touch_depth_func();
 	B.depth_func(func);
 }
 
@@ -277,6 +295,7 @@ DepthTestFunc r_depth_func_current(void) {
 }
 
 void r_shader_ptr(ShaderProgram *prog) {
+	_r_state_touch_shader();
 	B.shader(prog);
 }
 
@@ -289,6 +308,7 @@ Uniform* r_shader_uniform(ShaderProgram *prog, const char *uniform_name) {
 }
 
 void r_uniform_ptr(Uniform *uniform, uint count, const void *data) {
+	_r_state_touch_uniform(uniform);
 	B.uniform(uniform, count, data);
 }
 
@@ -325,6 +345,7 @@ void r_texture_destroy(Texture *tex) {
 }
 
 void r_texture_ptr(uint unit, Texture *tex) {
+	_r_state_touch_texunit(unit);
 	B.texture(unit, tex);
 }
 
@@ -349,6 +370,7 @@ void r_target_destroy(RenderTarget *target) {
 }
 
 void r_target(RenderTarget *target) {
+	_r_state_touch_target();
 	B.target(target);
 }
 
@@ -397,6 +419,7 @@ void r_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat 
 }
 
 void r_vertex_array(VertexArray *varr) {
+	_r_state_touch_vertex_array();
 	B.vertex_array(varr);
 }
 
@@ -409,6 +432,7 @@ void r_clear(ClearBufferFlags flags) {
 }
 
 void r_clear_color4(float r, float g, float b, float a) {
+	_r_state_touch_clear_color();
 	B.clear_color4(r, g, b, a);
 }
 
@@ -417,6 +441,7 @@ Color r_clear_color_current(void) {
 }
 
 void r_viewport_rect(IntRect rect) {
+	_r_state_touch_viewport();
 	B.viewport_rect(rect);
 }
 
@@ -425,6 +450,7 @@ void r_viewport_current(IntRect *out_rect) {
 }
 
 void r_vsync(VsyncMode mode) {
+	_r_state_touch_vsync();
 	B.vsync(mode);
 }
 

@@ -15,6 +15,7 @@
 #include "color.h"
 #include "objectpool.h"
 #include "renderer/api.h"
+#include "entity.h"
 
 #ifdef DEBUG
 	#define PROJ_DEBUG
@@ -61,7 +62,7 @@ static const ProjFlags PFLAG_DRAWADD = (1 << 0);
 static const ProjFlags PFLAG_DRAWSUB = (1 << 1);
 
 struct Projectile {
-	OBJECT_INTERFACE(Projectile);
+	ENTITY_INTERFACE_NAMED(Projectile, ent);
 
 	complex pos;
 	complex pos0;
@@ -78,7 +79,7 @@ struct Projectile {
 	float angle;
 	ProjType type;
 	int max_viewport_dist;
-	int priority_override;
+	int priority_override; // FIXME: remove this when v1.2 compat is not needed
 	ProjFlags flags;
 	bool grazed;
 
@@ -105,9 +106,11 @@ typedef struct ProjArgs {
 	Sprite *sprite_ptr;
 	complex size;
 	int max_viewport_dist;
-	ListInsertionRule insertion_rule;
-	int priority_override;
+	drawlayer_t layer;
+	int priority_override; // FIXME: remove this when v1.2 compat is not needed
 } ProjArgs;
+
+#define PARTICLE_ADDITIVE_SUBLAYER (1 << 3)
 
 typedef enum ProjCollisionType {
 	PCOL_NONE                = 0,
@@ -123,7 +126,7 @@ typedef struct ProjCollisionResult {
 	bool fatal; // for the projectile
 	complex location;
 	int damage;
-	void *entity;
+	void *entity; // TODO: make this use the actual entity API
 } ProjCollisionResult;
 
 Projectile* create_projectile(ProjArgs *args);
@@ -143,7 +146,6 @@ Projectile* create_particle(ProjArgs *args);
 
 void delete_projectile(Projectile **dest, Projectile *proj);
 void delete_projectiles(Projectile **dest);
-void draw_projectiles(Projectile *projs, ProjPredicate predicate);
 
 void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col);
 void apply_projectile_collision(Projectile **projlist, Projectile *p, ProjCollisionResult *col);

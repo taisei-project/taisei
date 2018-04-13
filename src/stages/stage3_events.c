@@ -674,9 +674,8 @@ void scuttle_spellbg(Boss *h, int time) {
 	r_blend(BLEND_ADD);
 	r_uniform_vec2("plrpos", 0.5,0.5);
 	fill_viewport(0.0, 0.0, 1, "stage3/spellbg1");
-	r_blend(BLEND_ALPHA);
-	r_shader_standard();
 
+	r_shader_standard();
 	r_color4(1, 1, 1, 1);
 	r_blend(BLEND_ALPHA);
 }

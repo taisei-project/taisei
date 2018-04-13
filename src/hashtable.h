@@ -64,6 +64,7 @@ void hashtable_unset_deferred_string(Hashtable *ht, const char *key);
 void* hashtable_iter_free_data(void *key, void *data, void *arg);
 bool hashtable_cmpfunc_ptr(void *p1, void *p2);
 void hashtable_copyfunc_ptr(void **dst, void *src);
+hash_t hashtable_hashfunc_ptr(void *val);
 
 int hashtable_test(void);
 

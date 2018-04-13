@@ -464,7 +464,6 @@ void kurumi_spell_bg(Boss *b, int time) {
 	fill_viewport(time/300.0, time/300.0, 0.5, "stage4/kurumibg2");
 
 	r_blend(BLEND_ALPHA);
-
 }
 
 void kurumi_outro(Boss *b, int time) {
@@ -1093,10 +1092,6 @@ void kurumi_extra_drainer_draw(Projectile *p, int time) {
 
 	r_color4(0.5, 0.2, 0.5, a);
 	loop_tex_line_p(org, targ, 24, time * 0.003, tex);
-
-	r_blend(BLEND_ALPHA);
-	r_shader("sprite_default");
-	r_color4(1, 1, 1, 1);
 }
 
 int kurumi_extra_drainer(Projectile *p, int time) {

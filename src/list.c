@@ -108,11 +108,11 @@ static List* list_insert_at_priority(List **list_head, List *elem, int prio, Lis
 	return elem;
 }
 
-List* list_insert_at_priority_head(List **dest, List *elem, int prio, ListPriorityFunc prio_func){
+List* list_insert_at_priority_head(List **dest, List *elem, int prio, ListPriorityFunc prio_func) {
 	return list_insert_at_priority(dest, elem, prio, prio_func, true);
 }
 
-List* list_insert_at_priority_tail(List **dest, List *elem, int prio, ListPriorityFunc prio_func){
+List* list_insert_at_priority_tail(List **dest, List *elem, int prio, ListPriorityFunc prio_func) {
 	return list_insert_at_priority(dest, elem, prio, prio_func, false);
 }
 

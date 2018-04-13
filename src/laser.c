@@ -64,6 +64,8 @@ void lasers_free(void) {
 	r_vertex_buffer_destroy(&lasers.vbuf);
 }
 
+static void ent_draw_laser(EntityInterface *ent);
+
 Laser *create_laser(complex pos, float time, float deathtime, Color color, LaserPosRule prule, LaserLogicRule lrule, complex a0, complex a1, complex a2, complex a3) {
 	Laser *l = (Laser*)list_push(&global.lasers, objpool_acquire(stage_object_pools.lasers));
 
@@ -87,9 +89,12 @@ Laser *create_laser(complex pos, float time, float deathtime, Color color, Laser
 	l->width_exponent = 1.0;
 	l->speed = 1;
 	l->timeshift = 0;
-	l->in_background = false;
 	l->dead = false;
 	l->unclearable = false;
+
+	l->ent.draw_layer = LAYER_LASER_HIGH;
+	l->ent.draw_func = ent_draw_laser;
+	ent_register(&l->ent, ENT_LASER);
 
 	if(l->lrule)
 		l->lrule(l, EVENT_BIRTH);
@@ -184,37 +189,31 @@ static void draw_laser_curve_generic(Laser *l) {
 	r_draw(PRIM_TRIANGLE_FAN, 0, 4, NULL, instances, 0);
 }
 
-void draw_lasers(int bgpass) {
-	Laser *laser;
-	VertexArray *varr_saved = r_vertex_array_current();
-	ShaderProgram *prog_saved = r_shader_current();
+static void ent_draw_laser(EntityInterface *ent) {
+	Laser *laser = ENT_CAST(ent, Laser);
 
 	r_texture(0, "part/lasercurve");
 	r_blend(BLEND_ADD);
 
-	for(laser = global.lasers; laser; laser = laser->next) {
-		if(bgpass != laser->in_background) {
-			continue;
-		}
+	if(laser->shader) {
+		// Specialized lasers work with either vertex array,
+		// provided that the static models buffer is attached to it.
+		// We'll only ever draw the first quad, and only care about
+		// attributes 0 and 2 (vec3 position, vec2 uv)
 
-		if(laser->shader) {
-			// Specialized lasers work with either vertex array,
-			// provided that the static models buffer is attached to it.
-			// We'll only ever draw the first quad, and only care about
-			// attributes 0 and 2 (vec3 position, vec2 uv)
-			r_shader_ptr(laser->shader);
-			draw_laser_curve_specialized(laser);
-		} else {
+		VertexArray *va = r_vertex_array_current();
+
+		if(va != &lasers.varr && va != r_vertex_array_static_models()) {
 			r_vertex_array(&lasers.varr);
-			r_shader_ptr(lasers.shader_generic);
-			draw_laser_curve_generic(laser);
 		}
-	}
 
-	r_blend(BLEND_ALPHA);
-	r_shader_ptr(prog_saved);
-	r_vertex_array(varr_saved);
-	r_color4(1, 1, 1, 1);
+		r_shader_ptr(laser->shader);
+		draw_laser_curve_specialized(laser);
+	} else {
+		r_vertex_array(&lasers.varr);
+		r_shader_ptr(lasers.shader_generic);
+		draw_laser_curve_generic(laser);
+	}
 }
 
 void* _delete_laser(List **lasers, List *laser, void *arg) {
@@ -224,6 +223,7 @@ void* _delete_laser(List **lasers, List *laser, void *arg) {
 		l->lrule(l, EVENT_DEATH);
 
 	del_ref(laser);
+	ent_unregister(&l->ent);
 	objpool_release(stage_object_pools.lasers, (ObjectInterface*)list_unlink(lasers, laser));
 	return NULL;
 }

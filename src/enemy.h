@@ -12,6 +12,7 @@
 #include "util.h"
 #include "projectile.h"
 #include "objectpool.h"
+#include "entity.h"
 
 #ifdef DEBUG
 	#define ENEMY_DEBUG
@@ -27,7 +28,7 @@ enum {
 };
 
 struct Enemy {
-	OBJECT_INTERFACE(Enemy);
+	ENTITY_INTERFACE_NAMED(Enemy, ent);
 
 	complex pos;
 	complex pos0;
@@ -66,7 +67,6 @@ Enemy *create_enemy_p(
 #endif
 
 void delete_enemy(Enemy **enemies, Enemy* enemy);
-void draw_enemies(Enemy *enemies);
 void delete_enemies(Enemy **enemies);
 
 void process_enemies(Enemy **enemies);

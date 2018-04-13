@@ -81,6 +81,7 @@ static Projectile* youmu_homing_trail(Projectile *p, complex v, int to) {
 		.args = { to, v },
 		.flags = PFLAG_NOREFLECT,
 		.shader_ptr = p->shader,
+		.layer = LAYER_PARTICLE_LOW,
 	);
 }
 
@@ -122,7 +123,11 @@ static Projectile* youmu_trap_trail(Projectile *p, complex v, int t) {
 
 static int youmu_trap(Projectile *p, int t) {
 	if(t == EVENT_DEATH) {
-		PARTICLE("blast", p->pos, 0, blast_timeout, { 15 }, .draw_rule = Blast, .flags = PFLAG_REQUIREDPARTICLE);
+		PARTICLE("blast", p->pos, 0, blast_timeout, { 15 },
+			.draw_rule = Blast,
+			.flags = PFLAG_REQUIREDPARTICLE,
+			.layer = LAYER_PARTICLE_LOW,
+		);
 		return 1;
 	}
 
@@ -140,8 +145,17 @@ static int youmu_trap(Projectile *p, int t) {
 	p->shader_custom_param = charge;
 
 	if(!(global.plr.inputflags & INFLAG_FOCUS)) {
-		PARTICLE("blast", p->pos, 0, blast_timeout, { 20 }, .draw_rule = Blast, .flags = PFLAG_REQUIREDPARTICLE);
-		PARTICLE("blast", p->pos, 0, blast_timeout, { 23 }, .draw_rule = Blast, .flags = PFLAG_REQUIREDPARTICLE);
+		PARTICLE("blast", p->pos, 0, blast_timeout, { 20 },
+			.draw_rule = Blast,
+			.flags = PFLAG_REQUIREDPARTICLE,
+			.layer = LAYER_PARTICLE_LOW,
+		);
+
+		PARTICLE("blast", p->pos, 0, blast_timeout, { 23 },
+			.draw_rule = Blast,
+			.flags = PFLAG_REQUIREDPARTICLE,
+			.layer = LAYER_PARTICLE_LOW,
+		);
 
 		int cnt = rint(creal(p->args[2]) * (0.25 + 0.75 * charge));
 		int dmg = cimag(p->args[2]);

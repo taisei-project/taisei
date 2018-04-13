@@ -518,6 +518,7 @@ static void marisa_laser_respawn_slaves(Player *plr, short npow) {
 			MarisaLaserData *ld = calloc(1, sizeof(MarisaLaserData));
 			ld->prev_pos = e->pos + plr->pos;
 			e->args[3] = add_ref(ld);
+			e->ent.draw_layer = LAYER_PLAYER_SLAVE;
 		}
 	}
 }
@@ -532,6 +533,7 @@ static void marisa_laser_power(Player *plr, short npow) {
 
 static void marisa_laser_init(Player *plr) {
 	create_enemy_p(&plr->slaves, 0, ENEMY_IMMUNE, marisa_laser_renderer_visual, marisa_laser_renderer, 0, 0, 0, 0);
+	plr->slaves->ent.draw_layer = LAYER_PLAYER_SHOT;
 	marisa_laser_respawn_slaves(plr, plr->power);
 }
 

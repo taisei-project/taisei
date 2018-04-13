@@ -62,6 +62,26 @@ static bool particle_filter(Projectile *part) {
 	return !(part->flags & PFLAG_NOREFLECT) && stage_should_draw_particle(part);
 }
 
+static bool stage1_draw_predicate(EntityInterface *ent) {
+	if(ent->draw_layer == LAYER_PLAYER_SLAVE || ent->draw_layer == LAYER_PLAYER_FOCUS) {
+		return false;
+	}
+
+	if(ent->type == ENT_BOSS || ent->type == ENT_ENEMY) {
+		return true;
+	}
+
+	if(ent->type == ENT_PROJECTILE) {
+		Projectile *p = ENT_CAST(ent, Projectile);
+
+		if(p->type == Particle) {
+			return particle_filter(p);
+		}
+	}
+
+	return false;
+}
+
 static void stage1_bg_draw(vec3 pos) {
 	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
 
@@ -83,15 +103,8 @@ static void stage1_bg_draw(vec3 pos) {
 	r_mat_translate(-VIEWPORT_W/2,0,0);
 	r_disable(RCAP_CULL_FACE);
 	r_disable(RCAP_DEPTH_TEST);
-
 	r_shader("sprite_default");
-	draw_projectiles(global.particles, particle_filter);
-	draw_enemies(global.enemies);
-
-	if(global.boss) {
-		draw_boss(global.boss);
-	}
-
+	ent_draw(stage1_draw_predicate);
 	r_shader_standard();
 	r_mat_pop();
 	r_capability(RCAP_CULL_FACE, cullcap_saved);

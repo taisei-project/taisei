@@ -26,7 +26,6 @@ static void marisa_star_trail_draw(Projectile *p, int t) {
 	r_mat_rotate_deg(p->angle*180/M_PI+90, 0, 0, 1);
 	r_mat_scale(s, s, 1);
 	ProjDrawCore(p, clr);
-	r_color4(1,1,1,1);
 	r_mat_pop();
 }
 
@@ -46,6 +45,7 @@ static int marisa_star_projectile(Projectile *p, int t) {
 		.draw_rule = marisa_star_trail_draw,
 		.angle = p->angle,
 		.flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
+		.layer = LAYER_PARTICLE_LOW,
 	);
 
 	if(t == EVENT_DEATH) {
@@ -58,6 +58,7 @@ static int marisa_star_projectile(Projectile *p, int t) {
 			.args = { 40, 2 },
 			.angle = frand() * 2 * M_PI,
 			.flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
+			.layer = LAYER_PARTICLE_HIGH,
 		);
 	}
 
@@ -211,9 +212,6 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 	r_mat_scale(0.6,0.6,1);
 	draw_sprite_batched(0,0,"part/lightningball");
 	r_mat_pop();
-	r_blend(BLEND_ALPHA);
-
-	r_color4(1,1,1,1);
 }
 
 
@@ -283,6 +281,10 @@ static void marisa_star_respawn_slaves(Player *plr, short npow) {
 	if(npow >= 400) {
 		create_enemy_p(&plr->slaves,  30, ENEMY_IMMUNE, marisa_common_slave_visual, marisa_star_slave,  25+30.0*I, -0.6-2.0*I,  2-0.1*I, dmg);
 		create_enemy_p(&plr->slaves, -30, ENEMY_IMMUNE, marisa_common_slave_visual, marisa_star_slave, -25+30.0*I,  0.6-2.0*I, -2-0.1*I, dmg);
+	}
+
+	for(Enemy *e = plr->slaves; e; e = e->next) {
+		e->ent.draw_layer = LAYER_PLAYER_SLAVE;
 	}
 }
 

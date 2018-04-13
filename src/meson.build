@@ -71,6 +71,7 @@ taisei_src = files(
     'difficulty.c',
     'ending.c',
     'enemy.c',
+    'entity.c',
     'events.c',
     'fbo.c',
     'framerate.c',

@@ -26,8 +26,8 @@ bool null_supports(RendererFeature feature) {
 	return true;
 }
 
-void null_capability(RendererCapability cap, bool value) { }
-bool null_capability_current(RendererCapability cap) { return true; }
+void null_capabilities(r_capability_bits_t capbits) { }
+r_capability_bits_t null_capabilities_current(void) { return (r_capability_bits_t)-1; }
 
 void null_color4(float r, float g, float b, float a) { }
 Color null_color_current(void) { return rgba(0, 0, 0, 0); }
@@ -221,8 +221,8 @@ RendererBackend _r_backend_null = {
 		.shutdown = null_shutdown,
 		.create_window = null_create_window,
 		.supports = null_supports,
-		.capability = null_capability,
-		.capability_current = null_capability_current,
+		.capabilities = null_capabilities,
+		.capabilities_current = null_capabilities_current,
 		.draw = null_draw,
 		.color4 = null_color4,
 		.color_current = null_color_current,

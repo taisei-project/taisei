@@ -23,7 +23,7 @@ static ProjArgs defaults_proj = {
 	.color = RGB(1, 1, 1),
 	.blend = BLEND_ALPHA,
 	.shader = "sprite_bullet",
-	.insertion_rule = proj_insert_sizeprio,
+	.layer = LAYER_BULLET,
 };
 
 static ProjArgs defaults_part = {
@@ -34,8 +34,7 @@ static ProjArgs defaults_part = {
 	.color = RGB(1, 1, 1),
 	.blend = BLEND_ALPHA,
 	.shader = "sprite_default",
-	.insertion_rule = list_append,
-	// .insertion_rule = proj_insert_sizeprio,
+	.layer = LAYER_PARTICLE_HIGH,
 };
 
 static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
@@ -81,12 +80,16 @@ static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
 		args->color = defaults->color;
 	}
 
-	if(!args->insertion_rule) {
-		args->insertion_rule = defaults->insertion_rule;
-	}
-
 	if(!args->max_viewport_dist && (args->type == Particle || args->type >= PlrProj)) {
 		args->max_viewport_dist = 300;
+	}
+
+	if(!args->layer) {
+		if(args->type >= PlrProj) {
+			args->layer = LAYER_PLAYER_SHOT;
+		} else {
+			args->layer = defaults->layer;
+		}
 	}
 }
 
@@ -108,7 +111,10 @@ static void projectile_size(Projectile *p, double *w, double *h) {
 	}
 }
 
+static void ent_draw_projectile(EntityInterface *ent);
+
 static int projectile_sizeprio_func(List *vproj) {
+	// FIXME: remove this when v1.2 compat is not needed
 	Projectile *proj = (Projectile*)vproj;
 
 	if(proj->priority_override) {
@@ -119,27 +125,8 @@ static int projectile_sizeprio_func(List *vproj) {
 }
 
 List* proj_insert_sizeprio(List **dest, List *elem) {
+	// FIXME: remove this when v1.2 compat is not needed
 	return list_insert_at_priority_tail(dest, elem, projectile_sizeprio_func(elem), projectile_sizeprio_func);
-}
-
-static int projectile_colorprio_func(List *vproj) {
-	Projectile *p = (Projectile*)vproj;
-	Color c = p->color;
-	uint32_t c32 = 0;
-	float r, g, b, a;
-
-	// convert color to 32bit
-	parse_color(c, &r, &g, &b, &a);
-	c32 |= (((c & CLRMASK_R) >> CLR_R) & 0xFF) << 0;
-	c32 |= (((c & CLRMASK_G) >> CLR_G) & 0xFF) << 8;
-	c32 |= (((c & CLRMASK_B) >> CLR_B) & 0xFF) << 16;
-
-	return (int)c32;
-}
-
-List* proj_insert_colorprio(List **dest, List *elem) {
-	return list_insert_at_priority_head(dest, elem, projectile_colorprio_func(elem), projectile_colorprio_func);
-	// return list_push(dest, elem);
 }
 
 static Projectile* _create_projectile(ProjArgs *args) {
@@ -168,12 +155,49 @@ static Projectile* _create_projectile(ProjArgs *args) {
 
 	memcpy(p->args, args->args, sizeof(p->args));
 
+	p->ent.draw_layer = args->layer;
+
+	if(!(p->ent.draw_layer & LAYER_LOW_MASK)) {
+		switch(p->type) {
+			case EnemyProj:
+			case FakeProj: {
+				// 1. Large projectiles go below smaller ones.
+				drawlayer_low_t sublayer = (LAYER_LOW_MASK - (drawlayer_low_t)projectile_rect_area(p));
+
+				// 2. Additive projectiles go below others.
+				sublayer <<= 1;
+				sublayer |= 1 * (p->blend == BLEND_ADD || p->flags & PFLAG_DRAWADD);
+
+				// If specific blending order is required, then set up the sublayer manually.
+				p->ent.draw_layer |= sublayer;
+				break;
+			}
+
+			case Particle: {
+				// 1. Additive particles go above others.
+				drawlayer_low_t sublayer = (p->blend == BLEND_ADD || p->flags & PFLAG_DRAWADD) *  PARTICLE_ADDITIVE_SUBLAYER;
+
+				// If specific blending order is required, then set up the sublayer manually.
+				p->ent.draw_layer |= sublayer;
+				break;
+			}
+
+			default:
+				break;
+		}
+	}
+
+	p->ent.draw_func = ent_draw_projectile;
+	ent_register(&p->ent, ENT_PROJECTILE);
+
 	// BUG: this currently breaks some projectiles
 	//      enable this when they're fixed
 	// assert(rule != NULL);
 	// rule(p, EVENT_BIRTH);
 
-	return (Projectile*)args->insertion_rule((List**)args->dest, (List*)p);
+	// FIXME: use simpler/faster insertions when v1.2 compat is not needed
+	// return (Projectile*)list_push(args->dest, p);
+	return (Projectile*)proj_insert_sizeprio((List**)args->dest, (List*)p);
 }
 
 Projectile* create_projectile(ProjArgs *args) {
@@ -200,6 +224,7 @@ static void* _delete_projectile(List **projs, List *proj, void *arg) {
 	p->rule(p, EVENT_DEATH);
 
 	del_ref(proj);
+	ent_unregister(&p->ent);
 	objpool_release(stage_object_pools.projectiles, (ObjectInterface*)list_unlink(projs, proj));
 
 	return NULL;
@@ -334,7 +359,9 @@ void apply_projectile_collision(Projectile **projlist, Projectile *p, ProjCollis
 	}
 }
 
-static inline void draw_projectile(Projectile *proj) {
+static void ent_draw_projectile(EntityInterface *ent) {
+	Projectile *proj = ENT_CAST(ent, Projectile);
+
 	// TODO: get rid of these legacy flags
 
 	if(proj->flags & PFLAG_DRAWADD) {
@@ -348,8 +375,6 @@ static inline void draw_projectile(Projectile *proj) {
 	r_shader_ptr(proj->shader);
 
 #ifdef PROJ_DEBUG
-	Color color_saved = r_color_current();
-
 	if(proj->type == PlrProj) {
 		set_debug_info(&proj->debug);
 		log_fatal("Projectile with type PlrProj");
@@ -364,36 +389,9 @@ static inline void draw_projectile(Projectile *proj) {
 		set_debug_info(&proj->debug);
 		log_fatal("Projectile modified its state in draw rule");
 	}
-
-	if(r_shader_current() != proj->shader) {
-		set_debug_info(&proj->debug);
-		log_fatal("Bad shader after drawing projectile");
-	}
-
-	if(r_color_current() != color_saved) {
-		set_debug_info(&proj->debug);
-		log_fatal("Bad color after drawing projectile");
-	}
 #else
 	proj->draw_rule(proj, global.frames - proj->birthtime);
 #endif
-}
-
-void draw_projectiles(Projectile *projs, ProjPredicate predicate) {
-	if(predicate) {
-		for(Projectile *proj = projs; proj; proj = proj->next) {
-			if(predicate(proj)) {
-				draw_projectile(proj);
-			}
-		}
-	} else {
-		for(Projectile *proj = projs; proj; proj = proj->next) {
-			draw_projectile(proj);
-		}
-	}
-
-	r_blend(BLEND_ALPHA);
-	r_shader("sprite_default");
 }
 
 bool projectile_in_viewport(Projectile *proj) {
@@ -625,10 +623,7 @@ void Blast(Projectile *p, int t) {
 	r_mat_scale(0.5+creal(p->args[2]),0.5+creal(p->args[2]),1);
 	r_blend(BLEND_ADD);
 	draw_sprite_batched_p(0,0,p->sprite);
-	r_blend(BLEND_ALPHA);
 	r_mat_pop();
-
-	r_color4(1, 1, 1, 1);
 }
 
 void Shrink(Projectile *p, int t) {
@@ -734,15 +729,12 @@ void Petal(Projectile *p, int t) {
 	float r = sqrt(x*x+y*y+z*z);
 	x /= r; y /= r; z /= r;
 
-	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
-
 	r_disable(RCAP_CULL_FACE);
 	r_mat_push();
 	r_mat_translate(creal(p->pos), cimag(p->pos),0);
 	r_mat_rotate_deg(t*4.0 + cimag(p->args[3]), x, y, z);
 	ProjDrawCore(p, p->color);
 	r_mat_pop();
-	r_capability(RCAP_CULL_FACE, cullcap_saved);
 }
 
 void petal_explosion(int n, complex pos) {

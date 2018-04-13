@@ -1889,7 +1889,6 @@ static int elly_toe_boson(Projectile *p, int t) {
 				.draw_rule = Fade,
 				.args = { 10, p->args[0] },
 				.flags = PFLAG_DRAWADD,
-				.insertion_rule = proj_insert_colorprio,
 			);
 		}
 
@@ -1911,7 +1910,6 @@ static int elly_toe_boson(Projectile *p, int t) {
 				},
 				.angle = 0,
 				.flags = PFLAG_DRAWADD,
-				.insertion_rule = proj_insert_colorprio,
 			);
 		}
 	}
@@ -1937,7 +1935,6 @@ static int elly_toe_boson(Projectile *p, int t) {
 			.draw_rule = ScaleFade,
 			.args = { 50, 0, 5.00 },
 			.flags = PFLAG_DRAWADD,
-			.insertion_rule = proj_insert_colorprio,
 			.angle = M_PI*2*frand(),
 		);
 
@@ -1945,7 +1942,6 @@ static int elly_toe_boson(Projectile *p, int t) {
 			.draw_rule = ScaleFade,
 			.args = { 60, 0, 3 * I },
 			.flags = PFLAG_DRAWADD,
-			.insertion_rule = proj_insert_colorprio,
 			.angle = M_PI*2*frand(),
 		);
 
@@ -1964,7 +1960,6 @@ static int elly_toe_boson(Projectile *p, int t) {
 			.draw_rule = ScaleFade,
 			.args = { 30, p->args[0] * 2, 3 * I, M_PI*2*frand() },
 			.flags = PFLAG_DRAWADD,
-			.insertion_rule = proj_insert_colorprio,
 			.angle = 0,
 		);
 	}
@@ -1982,7 +1977,6 @@ static int elly_toe_boson(Projectile *p, int t) {
 				.draw_rule = Fade,
 				.args = { 10, p->args[0] },
 				.flags = PFLAG_DRAWADD | PFLAG_REQUIREDPARTICLE,
-				.insertion_rule = proj_insert_colorprio,
 		);
 	}
 
@@ -2047,7 +2041,6 @@ static int elly_toe_fermion(Projectile *p, int t) {
 			.draw_rule = ScaleFade,
 			.args = { min(t / 6.0, 10), 0, particle_scale * (1 + 2 * I) },
 			.flags = PFLAG_DRAWADD,
-			.insertion_rule = proj_insert_colorprio,
 			.angle = M_PI*2*frand(),
 		);
 	}
@@ -2065,7 +2058,6 @@ static int elly_toe_fermion(Projectile *p, int t) {
 				.draw_rule = ScaleFade,
 				.args = { 60, 0, 20 * I, add_ref(p) },
 				.flags = PFLAG_DRAWADD,
-				.insertion_rule = proj_insert_colorprio,
 				.angle = M_PI*2*frand(),
 			);
 		}
@@ -2186,7 +2178,6 @@ static void elly_toe_laser_particle(Laser *l, complex origin) {
 		.draw_rule = ScaleFade,
 		.args = { 30, 0, 2 * I, add_ref(l) },
 		.flags = PFLAG_DRAWADD,
-		.insertion_rule = proj_insert_colorprio,
 		.angle = M_PI*2*frand(),
 	);
 
@@ -2194,7 +2185,6 @@ static void elly_toe_laser_particle(Laser *l, complex origin) {
 		.draw_rule = ScaleFade,
 		.args = { 20, 0, 2 * I, add_ref(l) },
 		.flags = PFLAG_DRAWADD,
-		.insertion_rule = proj_insert_colorprio,
 		.angle = M_PI*2*frand(),
 	);
 
@@ -2202,7 +2192,6 @@ static void elly_toe_laser_particle(Laser *l, complex origin) {
 		.draw_rule = ScaleFade,
 		.args = { 40, 0, 1, add_ref(l) },
 		.flags = PFLAG_DRAWADD,
-		.insertion_rule = proj_insert_colorprio,
 		.angle = M_PI*2*frand(),
 	);
 }
@@ -2436,7 +2425,6 @@ void elly_theory(Boss *b, int time) {
 				.draw_rule = ScaleFade,
 				.args = { 120 + 20 * nfrand(), 0, 2 * (1 + 5 * I) },
 				.flags = PFLAG_DRAWADD,
-				.insertion_rule = proj_insert_colorprio,
 				.angle = M_PI*2*frand(),
 			);
 		}

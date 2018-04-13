@@ -191,6 +191,8 @@ StageProgress* stage_get_progress(uint16_t id, Difficulty diff, bool allocate) {
 }
 
 static void stage_start(StageInfo *stage) {
+	ent_init();
+
 	global.timer = 0;
 	global.frames = 0;
 	global.game_over = 0;
@@ -716,6 +718,7 @@ void stage_loop(StageInfo *stage) {
 	player_free(&global.plr);
 	tsrand_switch(&global.rand_visual);
 	free_all_refs();
+	ent_shutdown();
 	stage_objpools_free();
 	stop_sounds();
 }

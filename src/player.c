@@ -15,6 +15,7 @@
 #include "plrmodes.h"
 #include "stage.h"
 #include "stagetext.h"
+#include "entity.h"
 
 void player_init(Player *plr) {
 	memset(plr, 0, sizeof(Player));
@@ -35,6 +36,9 @@ void player_stage_pre_init(Player *plr) {
 	plrmode_preload(plr->mode);
 }
 
+static void ent_draw_player(EntityInterface *ent);
+static Enemy* player_spawn_focus_circle(void);
+
 void player_stage_post_init(Player *plr) {
 	assert(plr->mode != NULL);
 
@@ -49,12 +53,21 @@ void player_stage_post_init(Player *plr) {
 	}
 
 	aniplayer_create(&plr->ani, get_ani(plr->mode->character->player_sprite_name), "main");
+
+	plr->ent.draw_layer = LAYER_PLAYER;
+	plr->ent.draw_func = ent_draw_player;
+	ent_register(&plr->ent, ENT_PLAYER);
+
+	plr->focus_circle = player_spawn_focus_circle();
 }
 
 void player_free(Player *plr) {
 	if(plr->mode->procs.free) {
 		plr->mode->procs.free(plr);
 	}
+
+	ent_unregister(&plr->ent);
+	delete_enemy(&plr->focus_circle, plr->focus_circle);
 }
 
 static void player_full_power(Player *plr) {
@@ -107,44 +120,66 @@ void player_move(Player *plr, complex delta) {
 	}
 }
 
-void player_draw(Player* plr) {
+static void ent_draw_player(EntityInterface *ent) {
+	Player *plr = ENT_CAST(ent, Player);
+
 	// FIXME: death animation?
 	if(plr->deathtime > global.frames)
 		return;
 
-	draw_enemies(plr->slaves);
-
-	r_mat_push();
-		r_mat_translate(creal(plr->pos), cimag(plr->pos), 0);
-
-		if(plr->focus) {
-			r_draw_sprite(&(SpriteParams) {
-				.sprite = "fairy_circle",
-				.rotation.angle = DEG2RAD * global.frames * 10,
-				.color = rgba(1, 1, 1, 0.2 * (clamp(plr->focus, 0, 15) / 15.0)),
-			});
-		}
-
-		if(global.frames - abs(plr->recovery) < 0 && (global.frames/8)&1) {
-			r_color4(0.4, 0.4, 1.0, 0.9);
-		}
-
-		Sprite *spr = aniplayer_get_frame(&plr->ani);
+	if(plr->focus) {
 		r_draw_sprite(&(SpriteParams) {
-			.sprite_ptr = spr,
-			.pos = { 0, 0 },
+			.sprite = "fairy_circle",
+			.rotation.angle = DEG2RAD * global.frames * 10,
+			.color = rgba(1, 1, 1, 0.2 * (clamp(plr->focus, 0, 15) / 15.0)),
+			.pos = { creal(plr->pos), cimag(plr->pos) },
 		});
-		r_color3(1, 1, 1);
+	}
 
-		if(plr->focus) {
-			r_draw_sprite(&(SpriteParams) {
-				.sprite = "focus",
-				.rotation.angle = DEG2RAD * global.frames * -1,
-				.color = rgba(1, 1, 1, plr->focus / 30.0),
-			});
-		}
+	Color c;
 
-	r_mat_pop();
+	if(global.frames - abs(plr->recovery) < 0 && (global.frames/8)&1) {
+		c = rgba(0.4, 0.4, 1.0, 0.9);
+	} else {
+		c = rgba(1.0, 1.0, 1.0, 1.0);
+	}
+
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = aniplayer_get_frame(&plr->ani),
+		.pos = { creal(plr->pos), cimag(plr->pos) },
+		.color = c,
+	});
+}
+
+static int player_focus_circle_logic(Enemy *e, int t) {
+	return 1;
+}
+
+static void player_focus_circle_visual(Enemy *e, int t, bool render) {
+	if(!render || !creal(e->args[0])) {
+		return;
+	}
+
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "focus",
+		.rotation.angle = DEG2RAD * global.frames,
+		.color = rgba(1, 1, 1, creal(e->args[0])),
+		.pos = { creal(e->pos), cimag(e->pos) },
+	});
+
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "focus",
+		.rotation.angle = DEG2RAD * global.frames * -1,
+		.color = rgba(1, 1, 1, creal(e->args[0])),
+		.pos = { creal(e->pos), cimag(e->pos) },
+	});
+}
+
+static Enemy* player_spawn_focus_circle(void) {
+	Enemy *f = NULL;
+	create_enemy_p(&f, 0, ENEMY_IMMUNE, player_focus_circle_visual, player_focus_circle_logic, 0, 0, 0, 0);
+	f->ent.draw_layer = LAYER_PLAYER_FOCUS;
+	return f;
 }
 
 static void player_fail_spell(Player *plr) {
@@ -184,6 +219,7 @@ void player_logic(Player* plr) {
 
 	process_enemies(&plr->slaves);
 	aniplayer_update(&plr->ani);
+
 	if(plr->deathtime < -1) {
 		plr->deathtime++;
 		plr->pos -= I;
@@ -192,6 +228,9 @@ void player_logic(Player* plr) {
 	}
 
 	plr->focus = approach(plr->focus, (plr->inputflags & INFLAG_FOCUS) ? 30 : 0, 1);
+
+	plr->focus_circle->pos = plr->pos;
+	plr->focus_circle->args[0] = plr->focus / 30.0;
 
 	if(plr->mode->procs.think) {
 		plr->mode->procs.think(plr);

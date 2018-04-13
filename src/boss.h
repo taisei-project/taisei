@@ -14,6 +14,7 @@
 #include "aniplayer.h"
 #include "color.h"
 #include "projectile.h"
+#include "entity.h"
 
 enum {
 	ATTACK_START_DELAY = 60,
@@ -99,8 +100,7 @@ typedef struct Attack {
 } Attack;
 
 typedef struct Boss {
-	// XXX: temporary hack for binary compatibility of pos with Enemy and Projectile structs
-	OBJECT_INTERFACE(struct Boss);
+	ENTITY_INTERFACE_NAMED(struct Boss, ent);
 	complex pos;
 
 	Attack *attacks;
@@ -129,7 +129,6 @@ void free_boss(Boss *boss) attr_nonnull(1);
 void process_boss(Boss **boss) attr_nonnull(1);
 
 void draw_extraspell_bg(Boss *boss, int time) attr_nonnull(1);
-void draw_boss(Boss *boss) attr_nonnull(1);
 void draw_boss_background(Boss *boss) attr_nonnull(1);
 
 Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule)

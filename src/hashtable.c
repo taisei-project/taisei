@@ -424,6 +424,14 @@ void hashtable_copyfunc_ptr(void **dst, void *src) {
 	*dst = src;
 }
 
+hash_t hashtable_hashfunc_ptr(void *val) {
+	hash_t x = (uintptr_t)val & ((1u << 31u) - 1u);
+	x = ((x >> 16) ^ x) * 0x45d9f3b;
+	x = ((x >> 16) ^ x) * 0x45d9f3b;
+	x = (x >> 16) ^ x;
+	return x;
+}
+
 /*
  *  Diagnostic functions
  */

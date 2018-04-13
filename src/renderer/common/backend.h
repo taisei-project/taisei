@@ -20,8 +20,9 @@ typedef struct RendererFuncs {
 	SDL_Window* (*create_window)(const char *title, int x, int y, int w, int h, uint32_t flags);
 
 	bool (*supports)(RendererFeature feature);
-	void (*capability)(RendererCapability cap, bool value);
-	bool (*capability_current)(RendererCapability cap);
+
+	void (*capabilities)(r_capability_bits_t capbits);
+	r_capability_bits_t (*capabilities_current)(void);
 
 	void (*draw)(Primitive prim, uint first, uint count, uint32_t * indices, uint instances, uint base_instance);
 

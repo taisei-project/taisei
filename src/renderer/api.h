@@ -451,6 +451,7 @@ void r_swap(SDL_Window *window);
 uint8_t* r_screenshot(uint *out_width, uint *out_height) attr_nodiscard attr_nonnull(1, 2);
 
 void r_mat_mode(MatrixMode mode);
+MatrixMode r_mat_mode_current(void);
 void r_mat_push(void);
 void r_mat_pop(void);
 void r_mat_identity(void);
@@ -460,6 +461,7 @@ void r_mat_scale_v(vec3 v);
 void r_mat_ortho(float left, float right, float bottom, float top, float near, float far);
 void r_mat_perspective(float angle, float aspect, float near, float far);
 
+void r_mat(MatrixMode mode, mat4 mat);
 void r_mat_current(MatrixMode mode, mat4 out_mat);
 
 void r_shader_standard(void);
@@ -467,6 +469,9 @@ void r_shader_standard_notex(void);
 
 VertexBuffer* r_vertex_buffer_static_models(void) attr_returns_nonnull;
 VertexArray* r_vertex_array_static_models(void) attr_returns_nonnull;
+
+void r_state_push(void);
+void r_state_pop(void);
 
 void r_draw_quad(void);
 void r_draw_quad_instanced(uint instances);

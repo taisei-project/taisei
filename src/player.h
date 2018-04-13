@@ -18,6 +18,7 @@
 #include "gamepad.h"
 #include "aniplayer.h"
 #include "resource/animation.h"
+#include "entity.h"
 
 enum {
 	PLR_MAX_POWER = 400,
@@ -55,7 +56,11 @@ enum {
 	INFLAGS_MOVE = INFLAG_UP | INFLAG_DOWN | INFLAG_LEFT | INFLAG_RIGHT
 };
 
-typedef struct {
+typedef struct Player Player;
+
+struct Player {
+	ENTITY_INTERFACE_NAMED(Player, ent);
+
 	complex pos;
 	complex deathpos;
 	short focus;
@@ -80,6 +85,7 @@ typedef struct {
 	struct PlayerMode *mode;
 	AniPlayer ani;
 	Enemy *slaves;
+	Enemy *focus_circle;
 
 	int inputflags;
 	bool gamepadmove;
@@ -93,7 +99,7 @@ typedef struct {
 #ifdef PLR_DPS_STATS
 	int total_dmg;
 #endif
-} Player;
+};
 
 // this is used by both player and replay code
 enum {
@@ -124,7 +130,6 @@ void player_stage_post_init(Player *plr);
 
 void player_free(Player *plr);
 
-void player_draw(Player*);
 void player_logic(Player*);
 bool player_should_shoot(Player *plr, bool extra);
 

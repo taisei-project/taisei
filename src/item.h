@@ -12,6 +12,7 @@
 #include "util.h"
 #include "resource/texture.h"
 #include "objectpool.h"
+#include "entity.h"
 
 typedef struct Item Item;
 
@@ -28,7 +29,7 @@ typedef enum {
 } ItemType;
 
 struct Item {
-	OBJECT_INTERFACE(Item);
+	ENTITY_INTERFACE_NAMED(Item, ent);
 
 	int birthtime;
 	complex pos;
@@ -42,7 +43,6 @@ struct Item {
 
 Item *create_item(complex pos, complex v, ItemType type);
 void delete_item(Item *item);
-void draw_items(void);
 void delete_items(void);
 
 Item* create_bpoint(complex pos);
