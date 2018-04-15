@@ -41,7 +41,7 @@ typedef struct AnimationLoadData {
 	char *basename;
 } AnimationLoadData;
 
-// See header for documentation of this syntax.
+// See ANIMATION_FORMAT.rst for a documentation of this syntax.
 static bool animation_parse_sequence_spec(AniSequence *seq, const char *specstr) {
 	const char *delaytoken = "d";
 	const char *mirrortoken = "m";

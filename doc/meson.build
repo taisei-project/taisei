@@ -39,6 +39,7 @@ if get_option('docs')
     rst_docs = [
         'ENVIRON.rst',
         'GAME.rst',
+	'ANIMATION_FORMAT.rst'
     ]
 
     txt_docs = [
