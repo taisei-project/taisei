@@ -14,7 +14,7 @@
 #include "renderer/api.h"
 
 static void marisa_star_trail_draw(Projectile *p, int t) {
-	float s = 1 - t / creal(p->args[0]);
+	float s = 1 - t / (double)p->timeout;
 
 	Color clr = derive_color(p->color, CLRMASK_A, rgba(0, 0, 0, s*0.5));
 
@@ -40,12 +40,12 @@ static int marisa_star_projectile(Projectile *p, int t) {
 		.sprite_ptr = get_sprite("proj/maristar"),
 		.pos = p->pos,
 		.color = p->color,
-		.rule = timeout,
-		.args = { 8 },
+		.timeout = 8,
 		.draw_rule = marisa_star_trail_draw,
 		.angle = p->angle,
-		.flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
+		.flags = PFLAG_NOREFLECT,
 		.layer = LAYER_PARTICLE_LOW,
+		.blend = BLEND_ADD,
 	);
 
 	if(t == EVENT_DEATH) {
@@ -53,12 +53,13 @@ static int marisa_star_projectile(Projectile *p, int t) {
 			.sprite_ptr = get_sprite("proj/maristar"),
 			.pos = p->pos,
 			.color = p->color,
-			.rule = timeout,
+			.timeout = 40,
 			.draw_rule = GrowFade,
-			.args = { 40, 2 },
+			.args = { 0, 2 },
 			.angle = frand() * 2 * M_PI,
-			.flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
+			.flags = PFLAG_NOREFLECT,
 			.layer = LAYER_PARTICLE_HIGH,
+			.blend = BLEND_ADD,
 		);
 	}
 
@@ -99,8 +100,11 @@ static int marisa_star_slave(Enemy *e, int t) {
 
 
 static int marisa_star_orbit_star(Projectile *p, int t) { // XXX: because growfade is the worst
-	p->args[1] += p->args[1]/cabs(p->args[1])*0.05;
-	return timeout_linear(p,t);
+	if(t >= 0) {
+		p->args[0] += p->args[0]/cabs(p->args[0])*0.05;
+	}
+
+	return linear(p,t);
 }
 
 static Color marisa_slaveclr(int i, float low) {
@@ -149,10 +153,10 @@ static int marisa_star_orbit(Enemy *e, int t) {
 			.sprite_ptr = get_sprite("part/lightningball"),
 			.pos = e->pos,
 			.color = rgba(clr[0],clr[1],clr[2],clr[3]/2),
-			.rule = timeout,
+			.timeout = 10,
 			.draw_rule = Fade,
-			.flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
-			.args = { 10, 2 },
+			.flags = PFLAG_NOREFLECT,
+			.blend = BLEND_ADD,
 		);
 	}
 
@@ -163,8 +167,9 @@ static int marisa_star_orbit(Enemy *e, int t) {
 			.color = rgba(clr[0],clr[1],clr[2],1),
 			.rule = marisa_star_orbit_star,
 			.draw_rule = GrowFade,
+			.timeout = 150,
 			.flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
-			.args = { 150, -5*dir/cabs(dir), 3 },
+			.args = { -5*dir/cabs(dir), 3 },
 		);
 	}
 

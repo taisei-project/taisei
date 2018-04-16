@@ -149,8 +149,9 @@ static int myon_proj(Projectile *p, int t) {
 		.pos = p->pos,
 		.color = derive_color(p->color, CLRMASK_A, rgba(0, 0, 0, 0.075)),
 		.draw_rule = myon_draw_proj_trail,
-		.rule = timeout_linear,
-		.args = { 10, p->args[0]*0.8, 0.6, 0 },
+		.rule = linear,
+		.timeout = 10,
+		.args = { p->args[0]*0.8, 0.6, 0 },
 		.flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
 		.angle = p->angle,
 	);

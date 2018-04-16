@@ -218,10 +218,14 @@ int stage5_miner(Enemy *e, int t) {
 static void lightning_particle(complex pos, int t) {
 	if(!(t % 5)) {
 		char *part = frand() > 0.5 ? "lightning0" : "lightning1";
-		PARTICLE(part, pos, rgb(1.0, 1.0, 1.0), timeout,
-			.args = { 20 },
+		PARTICLE(
+			.sprite = part,
+			.pos = pos,
+			.color = rgb(1.0, 1.0, 1.0),
+			.timeout = 20,
 			.draw_rule = Fade,
-			.flags = PFLAG_DRAWADD | PFLAG_REQUIREDPARTICLE,
+			.flags = PFLAG_REQUIREDPARTICLE,
+			.blend = BLEND_ADD,
 			.angle = frand()*2*M_PI,
 		);
 	}
@@ -336,8 +340,10 @@ void iku_slave_visual(Enemy *e, int t, bool render) {
 			.color = rgba(0.1*alpha, 0.1*alpha, 0.6*alpha, 0.5*alpha),
 			.draw_rule = Fade,
 			.rule = enemy_flare,
-			.args = { 50, offset*0.1, add_ref(e) },
-			.flags = PFLAG_DRAWADD | PFLAG_REQUIREDPARTICLE,
+			.timeout = 50,
+			.args = { offset*0.1, add_ref(e) },
+			.flags = PFLAG_REQUIREDPARTICLE,
+			.blend = BLEND_ADD,
 		);
 	}
 }
@@ -442,7 +448,11 @@ static void cloud_common(void) {
 	float v = (afrand(2)+afrand(3))*0.5+1.0;
 
 	PROJECTILE(
+		// FIXME: add prototype, or shove it into the basic ones somehow,
+		// or just replace this with some thing else
 		.sprite_ptr = get_sprite("part/lightningball"),
+		.size = 48 * (1+I),
+
 		.pos = VIEWPORT_W*afrand(0)-15.0*I,
 		.color = rgba(0.2, 0.0, 0.4, 0.6),
 		.rule = accelerated,
@@ -626,9 +636,13 @@ static int zigzag_bullet(Projectile *p, int t) {
 	p->pos = p->pos0+(abs(((2*t)%l)-l/2)*I+t)*2*p->args[0];
 
 	if(t%2 == 0) {
-		PARTICLE("lightningball", p->pos, rgb(0.1,0.1,0.6), timeout, { 15 },
+		PARTICLE(
+			.sprite = "lightningball",
+			.pos = p->pos,
+			.color = rgb(0.1,0.1,0.6),
+			.timeout = 15,
 			.draw_rule = Fade,
-			.flags = PFLAG_DRAWADD,
+			.blend = BLEND_ADD,
 		);
 	}
 
@@ -667,9 +681,10 @@ void iku_lightning(Boss *b, int time) {
 			.pos = b->pos+l*n,
 			.color = rgb(0.1*alpha, 0.1*alpha, 0.6*alpha),
 			.draw_rule = Fade,
-			.flags = PFLAG_DRAWADD,
-			.rule = timeout_linear,
-			.args = { l/s, -s*n },
+			.blend = BLEND_ADD,
+			.rule = linear,
+			.timeout = l/s,
+			.args = { -s*n },
 		);
 	}
 
@@ -700,9 +715,10 @@ void iku_lightning(Boss *b, int time) {
 				.pos = b->pos,
 				.color = rgb(0.4, 0.4, 1.0),
 				.draw_rule = Fade,
-				.rule = timeout_linear,
-				.args = { l/s, s*n },
-				.flags = PFLAG_DRAWADD,
+				.rule = linear,
+				.timeout = l/s,
+				.args = { s*n },
+				.blend = BLEND_ADD,
 			);
 		}
 
@@ -898,10 +914,10 @@ void iku_extra_slave_visual(Enemy *e, int t, bool render) {
 			.sprite = "smoothdot",
 			.pos = offset,
 			.color = e->args[1] ? rgb(1.0, 0.5, 0.0) : rgb(0.0, 0.5, 0.5),
-			.draw_rule = EnemyFlareShrink,
+			.draw_rule = Shrink,
 			.rule = enemy_flare,
+			.timeout = 50,
 			.args = {
-				50,
 				(-50.0*I-offset)/50.0,
 				add_ref(e)
 			},
@@ -958,10 +974,10 @@ int iku_extra_trigger_bullet(Projectile *p, int t) {
 		.pos = p->pos + 3 * (anfrand(1)+I*anfrand(2)),
 		.angle = afrand(3) * 2 * M_PI,
 		.color = rgb(1.0, 0.7 + 0.2 * anfrand(4), 0.4),
-		.rule = timeout,
+		.timeout = 20,
 		.draw_rule = GrowFade,
-		.args = { 20, 2.4 },
-		.flags = PFLAG_DRAWADD,
+		.args = { 0, 2.4 },
+		.blend = BLEND_ADD,
 	);
 
 	return 1;

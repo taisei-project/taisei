@@ -15,7 +15,6 @@
 
 extern PlayerCharacter character_youmu;
 
-int youmu_common_particle_spin(Projectile *p, int t);
 void youmu_common_shot(Player *plr);
 void youmu_common_draw_proj(Projectile *p, Color c, float scale);
 void youmu_common_bombbg(Player *plr);

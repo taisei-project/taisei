@@ -35,15 +35,17 @@ void marisa_common_shot(Player *plr, int dmg) {
 	if(!(global.frames % 6)) {
 		Color c = rgb(1, 1, 1);
 
-		PROJECTILE("marisa", plr->pos + 10 - 15.0*I, c, linear, { -20.0*I },
-			.type = PlrProj+dmg,
-			.shader = "sprite_default",
-		);
-
-		PROJECTILE("marisa", plr->pos - 10 - 15.0*I, c, linear, { -20.0*I },
-			.type = PlrProj+dmg,
-			.shader = "sprite_default",
-		);
+		for(int i = -1; i < 2; i += 2) {
+			PROJECTILE(
+				.proto = pp_marisa,
+				.pos = plr->pos + 10 * i - 15.0*I,
+				.color = c,
+				.rule = linear,
+				.args = { -20.0*I },
+				.type = PlrProj+dmg,
+				.shader = "sprite_default",
+			);
+		}
 	}
 }
 

@@ -402,9 +402,10 @@ void player_death(Player *plr) {
 			PARTICLE(
 				.sprite = "flare",
 				.pos = plr->pos,
-				.rule = timeout_linear,
+				.rule = linear,
+				.timeout = 40,
 				.draw_rule = Shrink,
-				.args = { 40, (3+afrand(0)*7)*cexp(I*tsrand_a(1)) },
+				.args = { (3+afrand(0)*7)*cexp(I*tsrand_a(1)) },
 				.flags = PFLAG_NOREFLECT,
 			);
 		}
@@ -415,10 +416,11 @@ void player_death(Player *plr) {
 			.sprite = "blast",
 			.pos = plr->pos,
 			.color = rgba(1.0, 0.3, 0.3, 0.5),
-			.rule = timeout,
+			.timeout = 35,
 			.draw_rule = GrowFade,
-			.args = { 35, 2.4 },
-			.flags = PFLAG_DRAWADD | PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+			.args = { 0, 2.4 },
+			.blend = BLEND_ADD,
+			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 		);
 
 		plr->deathtime = global.frames + DEATHBOMB_TIME;
@@ -759,9 +761,10 @@ void player_graze(Player *plr, complex pos, int pts, int effect_intensity) {
 		PARTICLE(
 			.sprite = "flare",
 			.pos = pos,
-			.rule = timeout_linear,
+			.rule = linear,
+			.timeout = 5 + 5 * afrand(2),
 			.draw_rule = Shrink,
-			.args = { 5 + 5 * afrand(2), (1+afrand(0)*5)*cexp(I*M_PI*2*afrand(1)) },
+			.args = { 0, (1+afrand(0)*5)*cexp(I*M_PI*2*afrand(1)) },
 			.flags = PFLAG_NOREFLECT,
 		);
 	}

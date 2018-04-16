@@ -76,14 +76,19 @@ void* _delete_enemy(List **enemies, List* enemy, void *arg) {
 		for(int i = 0; i < 10; i++) {
 			tsrand_fill(2);
 
-			PARTICLE("flare", e->pos, 0, timeout_linear, .draw_rule = Fade,
-				.args = { 10, (3+afrand(0)*10)*cexp(I*afrand(1)*2*M_PI) },
+			PARTICLE(
+				.sprite = "flare",
+				.pos = e->pos,
+				.timeout = 10,
+				.rule = linear,
+				.draw_rule = Fade,
+				.args = { (3+afrand(0)*10)*cexp(I*afrand(1)*2*M_PI) },
 			);
 		}
 
-		PARTICLE("blast", e->pos, 0, blast_timeout, { 20 }, .draw_rule = Blast, .flags = PFLAG_REQUIREDPARTICLE);
-		PARTICLE("blast", e->pos, 0, blast_timeout, { 20 }, .draw_rule = Blast, .flags = PFLAG_REQUIREDPARTICLE);
-		PARTICLE("blast", e->pos, 0, blast_timeout, { 15 }, .draw_rule = GrowFade, .flags = PFLAG_REQUIREDPARTICLE);
+		PARTICLE(.proto = pp_blast, .pos = e->pos, .timeout = 20, .draw_rule = Blast, .flags = PFLAG_REQUIREDPARTICLE);
+		PARTICLE(.proto = pp_blast, .pos = e->pos, .timeout = 20, .draw_rule = Blast, .flags = PFLAG_REQUIREDPARTICLE);
+		PARTICLE(.proto = pp_blast, .pos = e->pos, .timeout = 15, .draw_rule = GrowFade, .flags = PFLAG_REQUIREDPARTICLE);
 	}
 
 	e->logic_rule(e, EVENT_DEATH);
@@ -135,43 +140,30 @@ void killall(Enemy *enemies) {
 		e->hp = 0;
 }
 
-int enemy_flare(Projectile *p, int t) { // a[0] timeout, a[1] velocity, a[2] ref to enemy
-	if(t >= creal(p->args[0]) || REF(p->args[2]) == NULL) {
+int enemy_flare(Projectile *p, int t) { // a[0] velocity, a[1] ref to enemy
+	if(t == EVENT_DEATH) {
+		free_ref(p->args[1]);
+		return ACTION_NONE;
+	}
+
+	Enemy *owner = REF(p->args[1]);
+
+	/*
+	if(REF(p->args[1]) == NULL) {
 		return ACTION_DESTROY;
-	} if(t == EVENT_DEATH) {
-		free_ref(p->args[2]);
-		return 1;
-	} else if(t < 0) {
-		return 1;
+	}
+	*/
+
+	if(t < 0) {
+		return ACTION_NONE;
 	}
 
-	p->pos += p->args[1];
-
-	return 1;
-}
-
-void EnemyFlareShrink(Projectile *p, int t) {
-	Enemy *e = (Enemy *)REF(p->args[2]);
-
-	if(e == NULL) {
-		return;
+	if(owner != NULL) {
+		p->args[3] = owner->pos;
 	}
 
-	r_mat_push();
-	float s = 2.0-t/p->args[0]*2;
-
-	r_mat_translate(creal(e->pos + p->pos), cimag(e->pos + p->pos), 0);
-
-	if(p->angle != M_PI*0.5) {
-		r_mat_rotate_deg(p->angle*180/M_PI+90, 0, 0, 1);
-	}
-
-	if(s != 1) {
-		r_mat_scale(s, s, 1);
-	}
-
-	ProjDrawCore(p, p->color);
-	r_mat_pop();
+	p->pos = p->pos0 + p->args[3] + p->args[0]*t;
+	return ACTION_NONE;
 }
 
 void BigFairy(Enemy *e, int t, bool render) {
@@ -179,9 +171,14 @@ void BigFairy(Enemy *e, int t, bool render) {
 		if(!(t % 5)) {
 			complex offset = (frand()-0.5)*30 + (frand()-0.5)*20.0*I;
 
-			PARTICLE("smoothdot", offset, rgb(0,0.2,0.3), enemy_flare,
-				.draw_rule = EnemyFlareShrink,
-				.args = { 50, (-50.0*I-offset)/50.0, add_ref(e) },
+			PARTICLE(
+				.sprite = "smoothdot",
+				.pos = offset,
+				.color = rgb(0,0.2,0.3),
+				.rule = enemy_flare,
+				.draw_rule = Shrink,
+				.timeout = 50,
+				.args = { (-50.0*I-offset)/50.0, add_ref(e) },
 				.flags = PFLAG_DRAWADD,
 			);
 		}

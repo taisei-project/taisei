@@ -186,9 +186,10 @@ static void charge_effect(Enemy *e, int t, int chargetime) {
 			.pos = e->pos+l*n,
 			.color = rgb(0.5, 0.5, 0.25),
 			.draw_rule = Fade,
-			.rule = timeout_linear,
-			.args = { l/s, -s*n },
-			.flags =  PFLAG_DRAWADD
+			.rule = linear,
+			.timeout = l/s,
+			.args = { -s*n },
+			.blend = BLEND_ADD,
 		);
 	}
 }
@@ -525,10 +526,10 @@ static int scuttle_lethbite_proj(Projectile *p, int time) {
 			PARTICLE(
 				.sprite = "smoothdot",
 				.color = clr,
-				.draw_rule = EnemyFlareShrink,
+				.draw_rule = Shrink,
 				.rule = enemy_flare,
+				.timeout = 100,
 				.args = {
-					100,
 					cexp(I*(M_PI*anfrand(0))) * (1 + afrand(1)),
 					add_ref(p)
 				},
@@ -739,14 +740,14 @@ static void wriggle_slave_visual(Enemy *e, int time, bool render) {
 			.sprite = "smoothdot",
 			.pos = 5*cexp(2*I*M_PI*afrand(0)),
 			.color = rgba(1,1,0.8,0.6),
-			.draw_rule = EnemyFlareShrink,
+			.draw_rule = Shrink,
 			.rule = enemy_flare,
+			.timeout = 60,
 			.args = {
-				60,
 				0.3*cexp(2*M_PI*I*afrand(1)),
 				add_ref(e),
 			},
-			.flags = PFLAG_DRAWADD,
+			.blend = BLEND_ADD,
 		);
 	}
 }
@@ -769,7 +770,7 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 			l->width = 15;
 
 			PROJECTILE(
-				.sprite_ptr = p->sprite,
+				.proto = p->proto,
 				.pos = p->pos,
 				.color = p->color,
 				.draw_rule = p->draw_rule,
@@ -807,9 +808,9 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 				.sprite = "blast",
 				.pos = p->pos,
 				.color = c,
-				.rule = timeout,
+				.timeout = 35 - 5 * frand(),
 				.draw_rule = GrowFade,
-				.args = { 35 - 5 * frand(), 1 + 0.5 * frand() },
+				.args = { 0, 1 + 0.5 * frand() },
 				.flags = PFLAG_DRAWADD,
 				.angle = M_PI * 2 * frand(),
 			);
@@ -835,13 +836,11 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 }
 
 static void wriggle_slave_part_draw(Projectile *p, int t) {
-	float b = 1 - t / p->args[0];
-	r_blend(BLEND_ADD);
+	float b = 1 - t / (double)p->timeout;
 	r_mat_push();
 	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
 	ProjDrawCore(p, multiply_colors(p->color, rgba(b, b, b, 1)));
 	r_mat_pop();
-	r_blend(BLEND_ALPHA);
 }
 
 static int wriggle_spell_slave(Enemy *e, int time) {
@@ -865,14 +864,18 @@ static int wriggle_spell_slave(Enemy *e, int time) {
 		float c = 0.5 * psin(time / 25.0);
 
 		PROJECTILE(
+			// FIXME: add prototype, or shove it into the basic ones somehow,
+			// or just replace this with some thing else
 			.sprite_ptr = get_sprite("part/smoothdot"),
+			.size = 16 + 16*I,
+
 			.pos = e->pos,
 			.color = rgb(1.0 - c, 0.5, 0.5 + c),
 			.draw_rule = wriggle_slave_part_draw,
-			.rule = timeout,
-			.args = { 60 },
+			.timeout = 60,
 			.shader = "sprite_default",
 			.flags = PFLAG_NOCLEAR | PFLAG_NOCLEAREFFECT | PFLAG_NOCOLLISIONEFFECT,
+			.blend = BLEND_ADD,
 		);
 	}
 
@@ -1160,13 +1163,16 @@ static void wriggle_fstorm_proj_draw(Projectile *p, int time) {
 	ProjDrawCore(p, p->color);
 
 	if(f > 0) {
+		// TODO: Maybe convert this into a particle effect?
+		// Being a nasty hack aside, this blend mode flip-flopping kills batching.
+		Sprite *s = p->sprite;
 		p->sprite = get_sprite("proj/ball");
 		r_blend(BLEND_ADD);
 		r_mat_scale(f,f,f);
 		ProjDrawCore(p,time);
 		r_mat_scale(1/f,1/f,1/f);
 		r_blend(BLEND_ALPHA);
-		p->sprite = get_sprite("proj/rice");
+		p->sprite = s;
 	}
 
 	r_mat_pop();
@@ -1197,14 +1203,17 @@ static int wriggle_fstorm_proj(Projectile *p, int time) {
 		p->angle = carg(p->args[1]);
 		p->birthtime = global.frames;
 		p->draw_rule = wriggle_fstorm_proj_draw;
-		p->sprite = get_sprite("proj/rice");
+		p->sprite = NULL;
+		projectile_set_prototype(p, pp_rice);
 
 		for(int i = 0; i < 3; ++i) {
 			tsrand_fill(2);
-			PARTICLE("flare", p->pos, 0, timeout_linear,
-				.args = {
-					60, (1+afrand(0))*cexp(I*tsrand_a(1))
-				},
+			PARTICLE(
+				.sprite = "flare",
+				.pos = p->pos,
+				.rule = linear,
+				.timeout = 60,
+				.args = { (1+afrand(0))*cexp(I*tsrand_a(1)) },
 				.draw_rule = Shrink,
 			);
 		}
@@ -1229,8 +1238,8 @@ void wriggle_firefly_storm(Boss *boss, int time) {
 	AT(0) {
 		aniplayer_queue(&boss->ani,"fly",0);
 	}
-	FROM_TO_SND("shot1_loop", 30, 9000, 2) {
 
+	FROM_TO_SND("shot1_loop", 30, 9000, 2) {
 		int i, cnt = 2;
 		for(i = 0; i < cnt; ++i) {
 			float r = tanh(sin(_i/200.));
@@ -1238,7 +1247,7 @@ void wriggle_firefly_storm(Boss *boss, int time) {
 			complex pos = 230*cexp(I*(_i*0.301+2*M_PI/cnt*i))*r;
 
 			PROJECTILE(
-				.sprite = (global.diff >= D_Hard) && !(i%10) ? "bigball" : "ball",
+				.proto = (global.diff >= D_Hard) && !(i%10) ? pp_bigball : pp_ball,
 				.pos = boss->pos+pos,
 				.color = rgb(0.2,0.2,0.6),
 				.rule = wriggle_fstorm_proj,
