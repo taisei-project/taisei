@@ -45,9 +45,9 @@ void _r_backend_init(void) {
 		return;
 	}
 
-	const char *backend = getenv("TAISEI_RENDERER");
+	const char *backend = env_get("TAISEI_RENDERER", "");
 
-	if(!backend || !*backend) {
+	if(!*backend) {
 		backend = TAISEI_BUILDCONF_RENDERER_DEFAULT;
 	}
 

@@ -51,7 +51,7 @@ static void time_update(void) {
 }
 
 void time_init(void) {
-	use_hires = getenvint("TAISEI_HIRES_TIMER", 1);
+	use_hires = env_get("TAISEI_HIRES_TIMER", 1);
 
 	if(use_hires) {
 		if(!(paranoia = SDL_CreateMutex())) {

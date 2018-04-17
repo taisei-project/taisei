@@ -1426,7 +1426,7 @@ void stage4_events(void) {
 
 	AT(0) {
 		stage_start_bgm("stage4");
-		stage4_skip(getenvint("STAGE4_TEST", 0));
+		// stage4_skip(env_get("STAGE4_TEST", 0));
 	}
 
 	AT(70) {

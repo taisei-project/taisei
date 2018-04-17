@@ -26,13 +26,13 @@ static char* get_default_res_path(void) {
 }
 
 static void get_core_paths(char **res, char **storage) {
-	if((*res = getenv("TAISEI_RES_PATH")) && **res) {
+	if(*(*res = (char*)env_get("TAISEI_RES_PATH", ""))) {
 		*res = strdup(*res);
 	} else {
 		*res = get_default_res_path();
 	}
 
-	if((*storage = getenv("TAISEI_STORAGE_PATH")) && **storage) {
+	if(*(*storage = (char*)env_get("TAISEI_STORAGE_PATH", ""))) {
 		*storage = strdup(*storage);
 	} else {
 		*storage = SDL_GetPrefPath("", "taisei");

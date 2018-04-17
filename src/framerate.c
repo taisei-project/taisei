@@ -65,10 +65,10 @@ void loop_at_fps(LogicFrameFunc logic_frame, RenderFrameFunc render_frame, void 
 	FrameAction rframe_action = RFRAME_SWAP;
 	FrameAction lframe_action = LFRAME_WAIT;
 
-	int32_t delay = getenvint("TAISEI_FRAMELIMITER_SLEEP", 0);
-	bool exact_delay = getenvint("TAISEI_FRAMELIMITER_SLEEP_EXACT", 1);
-	bool compensate = getenvint("TAISEI_FRAMELIMITER_COMPENSATE", 1);
-	bool uncapped_rendering_env = getenvint("TAISEI_FRAMELIMITER_LOGIC_ONLY", 0);
+	int32_t delay = env_get("TAISEI_FRAMELIMITER_SLEEP", 0);
+	bool exact_delay = env_get("TAISEI_FRAMELIMITER_SLEEP_EXACT", 1);
+	bool compensate = env_get("TAISEI_FRAMELIMITER_COMPENSATE", 1);
+	bool uncapped_rendering_env = env_get("TAISEI_FRAMELIMITER_LOGIC_ONLY", 0);
 	bool late_swap = config_get_int(CONFIG_VID_LATE_SWAP);
 
 	uint32_t frame_num = 0;

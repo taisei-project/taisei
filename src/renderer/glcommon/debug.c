@@ -88,5 +88,5 @@ void glcommon_debug_object_label(GLenum identifier, GLuint name, const char *lab
 }
 
 bool glcommon_debug_requested(void) {
-	return getenvint("TAISEI_GL_DEBUG", DEBUG_GL_DEFAULT);
+	return env_get("TAISEI_GL_DEBUG", DEBUG_GL_DEFAULT);
 }

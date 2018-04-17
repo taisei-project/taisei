@@ -1371,7 +1371,7 @@ void stage3_events(void) {
 
 	AT(0) {
 		stage_start_bgm("stage3");
-		stage3_skip(getenvint("STAGE3_TEST", 0));
+		// stage3_skip(env_get("STAGE3_TEST", 0));
 	}
 
 	FROM_TO(160, 300, 10) {

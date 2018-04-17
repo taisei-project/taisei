@@ -89,10 +89,10 @@ static void glcommon_gl_version(char *major, char *minor) {
 }
 
 ext_flag_t glcommon_check_extension(const char *ext) {
-	const char *overrides = getenv("TAISEI_GL_EXT_OVERRIDES");
+	const char *overrides = env_get("TAISEI_GL_EXT_OVERRIDES", "");
 	ext_flag_t flag = glcommon_ext_flag(ext);
 
-	if(overrides) {
+	if(*overrides) {
 		char buf[strlen(overrides)+1], *save, *arg, *e;
 		strcpy(buf, overrides);
 		arg = buf;
@@ -120,7 +120,7 @@ ext_flag_t glcommon_require_extension(const char *ext) {
 	ext_flag_t val = glcommon_check_extension(ext);
 
 	if(!val) {
-		if(getenvint("TAISEI_GL_REQUIRE_EXTENSION_FATAL", 0)) {
+		if(env_get("TAISEI_GL_REQUIRE_EXTENSION_FATAL", 0)) {
 			log_fatal("Required extension %s is not available", ext);
 		}
 
@@ -386,9 +386,9 @@ void glcommon_check_extensions(void) {
 
 void glcommon_load_library(void) {
 #ifndef LINK_TO_LIBGL
-	char *lib = getenv("TAISEI_LIBGL");
+	const char *lib = env_get("TAISEI_LIBGL", "");
 
-	if(lib && !*lib) {
+	if(!*lib) {
 		lib = NULL;
 	}
 

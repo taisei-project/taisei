@@ -685,16 +685,6 @@ void* memdup(const void *src, size_t size) {
 	return data;
 }
 
-int getenvint(const char *v, int defaultval) {
-	char *e = getenv(v);
-
-	if(e && *e) {
-		return atoi(e);
-	}
-
-	return defaultval;
-}
-
 noreturn static void png_error_handler(png_structp png_ptr, png_const_charp error_msg) {
 	log_warn("PNG error: %s", error_msg);
 	png_longjmp(png_ptr, 1);

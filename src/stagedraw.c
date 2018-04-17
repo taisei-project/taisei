@@ -73,8 +73,8 @@ void stage_draw_preload(void) {
 	r_uniform_ptr(stagedraw.hud_text.u_colorBbot, 1, (float[]){ 0.80, 0.80, 0.80, 0.80 });
 	r_uniform_ptr(stagedraw.hud_text.u_colortint, 1, (float[]){ 1.00, 1.00, 1.00, 1.00 });
 
-	stagedraw.framerate_graphs = getenvint("TAISEI_FRAMERATE_GRAPHS", GRAPHS_DEFAULT);
-	stagedraw.objpool_stats = getenvint("TAISEI_OBJPOOL_STATS", OBJPOOLSTATS_DEFAULT);
+	stagedraw.framerate_graphs = env_get("TAISEI_FRAMERATE_GRAPHS", GRAPHS_DEFAULT);
+	stagedraw.objpool_stats = env_get("TAISEI_OBJPOOL_STATS", OBJPOOLSTATS_DEFAULT);
 
 	if(stagedraw.framerate_graphs) {
 		preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,

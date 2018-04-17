@@ -21,6 +21,7 @@
 #include "compat.h"
 #include "hirestime.h"
 #include "assert.h"
+#include "env.h"
 
 //
 // string utils
@@ -172,7 +173,6 @@ char* try_path(const char *prefix, const char *name, const char *ext);
 //
 
 void* memdup(const void *src, size_t size);
-int getenvint(const char *v, int defaultval) attr_pure;
 void png_setup_error_handlers(png_structp png);
 uint32_t crc32str(uint32_t crc, const char *str) attr_hot attr_pure;
 
@@ -245,5 +245,13 @@ char* strtok();
 #undef sprintf
 attr_deprecated("Use snprintf or strfmt instead")
 int sprintf(char *, const char*, ...);
+
+#undef getenv
+attr_deprecated("Use env_get instead")
+char* getenv();
+
+#undef setenv
+attr_deprecated("Use env_set instead")
+int setenv();
 
 PRAGMA(GCC diagnostic pop)
