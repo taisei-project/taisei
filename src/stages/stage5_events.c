@@ -563,7 +563,7 @@ void iku_bolts2(Boss *b, int time) {
 		aniplayer_queue(&b->ani, flip_laser ? "dashdown_left" : "dashdown_right", 1);
 		aniplayer_queue(&b->ani, "main", 0);
 		create_lasercurve3c(creal(global.plr.pos), 100, 200, rgb(0.3,1,1), bolts2_laser, global.plr.pos, flip_laser*2-1, global.diff);
-		play_sound_ex("laser1", 0, false); 
+		play_sound_ex("laser1", 0, false);
 	}
 
 	FROM_TO_SND("shot1_loop", 0, 400, 5-global.diff)
@@ -1133,7 +1133,7 @@ void stage5_events(void) {
 
 	AT(0) {
 		stage_start_bgm("stage5");
-		// stage5_skip(env_get("STAGE5_TEST", 0));
+		stage5_skip(env_get("STAGE5_TEST", 0));
 	}
 
 	FROM_TO(60, 150, 15) {

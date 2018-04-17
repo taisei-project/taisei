@@ -435,7 +435,7 @@ void kurumi_redspike(Boss *b, int time) {
 		AT(499) {
 			aniplayer_queue(&b->ani, "main", 0);
 		}
-		
+
 		FROM_TO_INT(80, 500, 40,200,2+2*(global.diff == D_Hard)) {
 			tsrand_fill(2);
 			complex offset = 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1));
@@ -830,7 +830,7 @@ void kurumi_blowwall(Boss *b, int time) {
 	AT(0) {
 		aniplayer_queue(&b->ani,"muda",0);
 	}
-	
+
 	AT(50)
 		bwlaser(b, 0.4, 1);
 
@@ -1426,7 +1426,7 @@ void stage4_events(void) {
 
 	AT(0) {
 		stage_start_bgm("stage4");
-		// stage4_skip(env_get("STAGE4_TEST", 0));
+		stage4_skip(env_get("STAGE4_TEST", 0));
 	}
 
 	AT(70) {
