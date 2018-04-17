@@ -81,7 +81,7 @@ static int marisa_star_slave(Enemy *e, int t) {
 			a *= cexp(I*i*M_PI/20*sign(v)*focus);
 
 			PROJECTILE(
-				.sprite_ptr = get_sprite("proj/maristar"),
+				.proto = pp_maristar,
 				.pos = e->pos,
 				.color = rgb(1.0, 0.5, 1.0),
 				.rule = marisa_star_projectile,
