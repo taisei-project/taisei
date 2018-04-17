@@ -9,8 +9,6 @@ version_deps += custom_target('version information',
 if host_machine.system() == 'windows'
     winmod = import('windows')
 
-    # NOTE: this code requires https://github.com/mesonbuild/meson/pull/2815
-
     rcpath = join_paths(meson.current_build_dir(), 'taisei.rc')
     rcdefs = [
         '-DICONS_DIR=@0@'.format(join_paths(meson.source_root(), 'misc', 'icons'))
@@ -54,7 +52,7 @@ if use_intel_intrin
     message('SSE 4.2 intrinsics will be used')
 elif get_option('intel_intrin')
     config.set('TAISEI_BUILDCONF_USE_SSE42', false)
-    message('SSE 4.2 intrinsics can not be used')
+    warning('SSE 4.2 intrinsics can not be used')
 endif
 
 taisei_src = files(

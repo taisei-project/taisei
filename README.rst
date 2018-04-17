@@ -26,7 +26,7 @@ Dependencies
 Build-only dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^
 
--  meson >= 0.39.0 (build system)
+-  meson >= 0.45.0 (build system)
 -  Python >= 3.4
 -  pkg-config
 -  docutils (optional, for documentation)

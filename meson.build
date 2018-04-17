@@ -13,6 +13,12 @@ project('taisei', 'c',
     ]
 )
 
+meson_required = '0.45.0'
+
+if meson.version().version_compare('<@0@'.format(meson_required))
+    error('Your Meson version is too old: @0@; at least @1@ is required. Please update.'.format(meson.version(), meson_required))
+endif
+
 ver_fb = get_option('version_fallback').strip()
 version_fallback = ver_fb != '' ? ver_fb : meson.project_version()
 
@@ -47,7 +53,7 @@ eolconv = find_program(join_paths(scripts_dir, 'eolconv.py'))
 taisei_version_result = run_command(version_command, '{string}')
 
 if taisei_version_result.stderr() != ''
-    message(taisei_version_result.stderr().strip())
+    warning(taisei_version_result.stderr().strip())
 endif
 
 if taisei_version_result.returncode() != 0

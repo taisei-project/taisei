@@ -108,10 +108,10 @@ if get_option('validate_glsl') != 'false'
         if test_result.returncode() == 0
             validate_glsl = true
         else
-            message(test_result.stderr())
+            warning(test_result.stderr())
 
             if get_option('validate_glsl') == 'auto'
-                message('glslc test failed, you probably have an incompatible version. GLSL validation will be disabled.')
+                warning('glslc test failed, you probably have an incompatible version. GLSL validation will be disabled.')
             else
                 error('glslc test failed, you probably have an incompatible version.')
             endif
