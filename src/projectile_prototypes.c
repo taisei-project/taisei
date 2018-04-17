@@ -47,11 +47,22 @@ static void pp_basic_init_projectile(ProjPrototype *proto, Projectile *p) {
 
 #include "projectile_prototypes/basic.inc.h"
 
+static int pp_blast_rule(Projectile *p, int t) {
+	// TODO: move this into pp_blast_init_projectile when v1.2 compat is not needed
+
+	if(t == 1) {
+		p->args[1] = frand()*360 + frand()*I;
+		p->args[2] = frand()     + frand()*I;
+	}
+
+	return 1;
+}
+
 static void pp_blast_init_projectile(ProjPrototype *proto, Projectile *p) {
 	pp_basic_init_projectile(proto, p);
-	p->args[1] = frand()*360 + frand()*I;
-	p->args[2] = frand()     + frand()*I;
+	assert(p->rule == NULL);
 	assert(p->timeout > 0);
+	p->rule = pp_blast_rule;
 }
 
 ProjPrototype _pp_blast = {
