@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import pathlib, sys, re, itertools
+import pathlib, sys, re, itertools, contextlib
 
 header = r"""\1/*
  * This software is licensed under the terms of the MIT-License
@@ -18,4 +18,8 @@ header_regex = re.compile(r'^(#if 0.*?\s#endif\s*)?(?:\s*?/\*.*?\*/)?(?:\s*?(\n#
 
 if __name__ == '__main__':
     for path in itertools.chain(*((pathlib.Path(__file__).parent.parent / 'src').glob(p) for p in ('**/*.[ch]', '**/*.[ch].in'))):
+        with contextlib.suppress(IndexError):
+            if path.suffixes[-2] == '.inc':
+                continue
+
         path.write_text(header_regex.sub(header, path.read_text(), 1))
