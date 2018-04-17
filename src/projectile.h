@@ -86,7 +86,10 @@ struct Projectile {
 	int priority_override; // FIXME: remove this when v1.2 compat is not needed
 	ProjFlags flags;
 	bool grazed;
-	int timeout;
+
+	// XXX: this is in frames of course, but needs to be float
+	// to avoid subtle truncation and integer division gotchas.
+	float timeout;
 
 #ifdef PROJ_DEBUG
 	DebugInfo debug;
@@ -114,7 +117,10 @@ typedef struct ProjArgs {
 	int max_viewport_dist;
 	drawlayer_t layer;
 	int priority_override; // FIXME: remove this when v1.2 compat is not needed
-	int timeout;
+
+	// XXX: this is in frames of course, but needs to be float
+	// to avoid subtle truncation and integer division gotchas.
+	float timeout;
 } /* attr_designated_init */ ProjArgs;
 
 struct ProjPrototype {

@@ -1911,7 +1911,7 @@ static int elly_toe_boson(Projectile *p, int t) {
 					M_PI*2*frand(),
 				},
 				.angle = 0,
-				.flags = PFLAG_DRAWADD,
+				.blend = BLEND_ADD,
 			);
 		}
 	}
@@ -1968,8 +1968,9 @@ static int elly_toe_boson(Projectile *p, int t) {
 
 		PARTICLE("stardust", p->pos, p->color, elly_toe_boson_effect,
 			.draw_rule = ScaleFade,
-			.args = { 30, p->args[0] * 2, 3 * I, M_PI*2*frand() },
-			.flags = PFLAG_DRAWADD,
+			.timeout = 30,
+			.args = { 0, p->args[0] * 2, 3 * I, M_PI*2*frand() },
+			.blend = BLEND_ADD,
 			.angle = 0,
 		);
 	}
@@ -2057,7 +2058,7 @@ static int elly_toe_fermion(Projectile *p, int t) {
 			.timeout = min(t / 6.0, 10),
 			.draw_rule = ScaleFade,
 			.args = { 0, 0, particle_scale * (1 + 2 * I) },
-			.flags = PFLAG_DRAWADD,
+			.blend = BLEND_ADD,
 			.angle = M_PI*2*frand(),
 		);
 	}
@@ -2079,7 +2080,7 @@ static int elly_toe_fermion(Projectile *p, int t) {
 				.timeout = 60,
 				.draw_rule = ScaleFade,
 				.args = { add_ref(p), 0, 20 * I },
-				.flags = PFLAG_DRAWADD,
+				.blend = BLEND_ADD,
 				.angle = M_PI*2*frand(),
 			);
 		}
@@ -2171,15 +2172,11 @@ static complex elly_toe_laser_pos(Laser *l, float t) { // a[0]: direction, a[1]:
 static int elly_toe_laser_particle_rule(Projectile *p, int t) {
 	if(t == EVENT_DEATH) {
 		free_ref(p->args[3]);
-		return 1;
+		return ACTION_NONE;
 	}
 
 	if(t < 0) {
-		return 1;
-	}
-
-	if(t > creal(p->args[0])) {
-		return ACTION_DESTROY;
+		return ACTION_NONE;
 	}
 
 	Laser *l = REF(p->args[3]);
@@ -2190,7 +2187,7 @@ static int elly_toe_laser_particle_rule(Projectile *p, int t) {
 
 	p->pos = l->prule(l, 0);
 
-	return 1;
+	return ACTION_NONE;
 }
 
 static void elly_toe_laser_particle(Laser *l, complex origin) {
@@ -2198,22 +2195,25 @@ static void elly_toe_laser_particle(Laser *l, complex origin) {
 
 	PARTICLE("stardust", origin, c, elly_toe_laser_particle_rule,
 		.draw_rule = ScaleFade,
-		.args = { 30, 0, 2 * I, add_ref(l) },
-		.flags = PFLAG_DRAWADD,
+		.timeout = 30,
+		.args = { 0, 0, 2 * I, add_ref(l) },
+		.blend = BLEND_ADD,
 		.angle = M_PI*2*frand(),
 	);
 
 	PARTICLE("stain", origin, c, elly_toe_laser_particle_rule,
 		.draw_rule = ScaleFade,
-		.args = { 20, 0, 2 * I, add_ref(l) },
-		.flags = PFLAG_DRAWADD,
+		.timeout = 20,
+		.args = { 0, 0, 2 * I, add_ref(l) },
+		.blend = BLEND_ADD,
 		.angle = M_PI*2*frand(),
 	);
 
 	PARTICLE("smoothdot", origin, c, elly_toe_laser_particle_rule,
 		.draw_rule = ScaleFade,
-		.args = { 40, 0, 1, add_ref(l) },
-		.flags = PFLAG_DRAWADD,
+		.timeout = 20,
+		.args = { 0, 0, 1, add_ref(l) },
+		.blend = BLEND_ADD,
 		.angle = M_PI*2*frand(),
 	);
 }
