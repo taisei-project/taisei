@@ -716,8 +716,6 @@ void GrowFade(Projectile *p, int t) {
 
 void Fade(Projectile *p, int t) {
 	r_mat_push();
-	set_debug_info(&p->debug);
-	assert(p->timeout != 0);
 	apply_common_transforms(p, t);
 	ProjDrawCore(p, multiply_colors(p->color, rgba(1, 1, 1, 1 - t/(double)p->timeout)));
 	r_mat_pop();
