@@ -41,8 +41,9 @@ static void print_help(struct TsOption* opts) {
 }
 
 int cli_args(int argc, char **argv, CLIAction *a) {
-	struct TsOption taisei_opts[] =
-		{{{"replay", required_argument, 0, 'r'}, "Play a replay from %s", "FILE"},
+	struct TsOption taisei_opts[] = {
+		{{"replay", required_argument, 0, 'r'}, "Play a replay from %s", "FILE"},
+		{{"verify-replay", required_argument, 0, 'R'}, "Play a replay from %s in headless mode, crash as soon as it desyncs", "FILE"},
 #ifdef DEBUG
 		{{"play", no_argument, 0, 'p'}, "Play a specific stage", 0},
 		{{"sid", required_argument, 0, 'i'}, "Select stage by %s", "ID"},
@@ -105,6 +106,10 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 			a->type = CLI_PlayReplay;
 			a->filename = strdup(optarg);
 			break;
+		case 'R':
+			a->type = CLI_VerifyReplay;
+			a->filename = strdup(optarg);
+			break;
 		case 'p':
 			a->type = CLI_SelectStage;
 			break;
@@ -162,10 +167,18 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 	}
 
 	if(stageid) {
-		if(a->type != CLI_PlayReplay && a->type != CLI_SelectStage) {
-			log_warn("--sid was ignored");
-		} else if(!stage_get(stageid)) {
-			log_fatal("Invalid stage id: %X", stageid);
+		switch(a->type) {
+			case CLI_PlayReplay:
+			case CLI_VerifyReplay:
+			case CLI_SelectStage:
+				if(stage_get(stageid) == NULL) {
+					log_fatal("Invalid stage id: %X", stageid);
+				}
+				break;
+
+			default:
+				log_warn("--sid was ignored");
+				break;
 		}
 	}
 

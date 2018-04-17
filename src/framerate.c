@@ -71,6 +71,11 @@ void loop_at_fps(LogicFrameFunc logic_frame, RenderFrameFunc render_frame, void 
 	bool uncapped_rendering_env = env_get("TAISEI_FRAMELIMITER_LOGIC_ONLY", 0);
 	bool late_swap = config_get_int(CONFIG_VID_LATE_SWAP);
 
+	if(global.is_replay_verification) {
+		uncapped_rendering_env = false;
+		delay = 0;
+	}
+
 	uint32_t frame_num = 0;
 
 	// don't care about thread safety, we can render only on the main thread anyway
@@ -153,7 +158,7 @@ begin_frame:
 			fpscounter_update(&global.fps.logic);
 		}
 
-		if(!uncapped_rendering && frame_num % get_effective_frameskip()) {
+		if((!uncapped_rendering && frame_num % get_effective_frameskip()) || global.is_replay_verification) {
 			rframe_action = RFRAME_DROP;
 		} else {
 			rframe_action = render_frame(arg);

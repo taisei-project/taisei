@@ -14,6 +14,7 @@
 typedef enum {
 	CLI_RunNormally = 0,
 	CLI_PlayReplay,
+	CLI_VerifyReplay,
 	CLI_SelectStage,
 	CLI_DumpStages,
 	CLI_DumpVFSTree,

@@ -25,7 +25,11 @@ void init_global(CLIAction *cli) {
 	global.replaymode = REPLAY_RECORD;
 	global.frameskip = cli->frameskip;
 
-	if(global.frameskip) {
+	if(cli->type == CLI_VerifyReplay) {
+		global.is_headless = true;
+		global.is_replay_verification = true;
+		global.frameskip = 1;
+	} else if(global.frameskip) {
 		log_warn("FPS limiter disabled. Gotta go fast! (frameskip = %i)", global.frameskip);
 	}
 

@@ -31,8 +31,11 @@
 static void taisei_shutdown(void) {
 	log_info("Shutting down");
 
-	config_save();
-	progress_save();
+	if(!global.is_replay_verification) {
+		config_save();
+		progress_save();
+	}
+
 	progress_unload();
 
 	free_all_refs();
@@ -208,6 +211,7 @@ int main(int argc, char **argv) {
 
 	Replay replay = {0};
 	int replay_idx = 0;
+	bool headless = false;
 
 	init_log();
 
@@ -233,7 +237,7 @@ int main(int argc, char **argv) {
 
 		free_cli_action(&a);
 		return 0;
-	} else if(a.type == CLI_PlayReplay) {
+	} else if(a.type == CLI_PlayReplay || a.type == CLI_VerifyReplay) {
 		if(!replay_load_syspath(&replay, a.filename, REPLAY_READ_ALL)) {
 			free_cli_action(&a);
 			return 1;
@@ -244,6 +248,10 @@ int main(int argc, char **argv) {
 		if(replay_idx < 0) {
 			free_cli_action(&a);
 			return 1;
+		}
+
+		if(a.type == CLI_VerifyReplay) {
+			headless = true;
 		}
 	} else if(a.type == CLI_DumpVFSTree) {
 		vfs_setup(true);
@@ -269,13 +277,22 @@ int main(int argc, char **argv) {
 
 	free_cli_action(&a);
 	vfs_setup(false);
-	init_log_file();
+
+	if(headless) {
+		env_set("SDL_AUDIODRIVER", "dummy", true);
+		env_set("SDL_VIDEODRIVER", "dummy", true);
+		env_set("TAISEI_RENDERER", "null", true);
+		env_set("TAISEI_NOPRELOAD", true, false);
+		env_set("TAISEI_PRELOAD_REQUIRED", false, false);
+	} else {
+		init_log_file();
+	}
+
 	log_info("%s %s", TAISEI_VERSION_FULL, TAISEI_VERSION_BUILD_TYPE);
 	log_system_specs();
+	log_lib_versions();
 
 	config_load();
-
-	log_lib_versions();
 
 	init_sdl();
 	time_init();
@@ -286,11 +303,14 @@ int main(int argc, char **argv) {
 	init_resources();
 	r_post_init();
 	draw_loading_screen();
-	audio_init();
+
+	if(!headless) {
+		audio_init();
+	}
+
 	load_resources();
 	gamepad_init();
 	progress_load();
-	r_shader_standard();
 
 	set_transition(TransLoader, 0, FADE_TIME*2);
 
@@ -298,7 +318,7 @@ int main(int argc, char **argv) {
 
 	atexit(taisei_shutdown);
 
-	if(a.type == CLI_PlayReplay) {
+	if(a.type == CLI_PlayReplay || a.type == CLI_VerifyReplay) {
 		replay_play(&replay, replay_idx);
 		replay_destroy(&replay);
 		return 0;

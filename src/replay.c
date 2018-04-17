@@ -716,15 +716,22 @@ void replay_stage_check_desync(ReplayStage *stg, int time, uint16_t check, Repla
 
 	if(mode == REPLAY_PLAY) {
 		if(stg->desync_check && stg->desync_check != check) {
-			log_warn("Replay desync detected! %u != %u", stg->desync_check, check);
+			log_warn("Frame %d: replay desync detected! 0x%04x != 0x%04x", time, stg->desync_check, check);
 			stg->desynced = true;
+
+			if(global.is_replay_verification) {
+				// log_fatal("Replay verification failed");
+				exit(1);
+			}
+		} else if(global.is_replay_verification) {
+			log_info("Frame %d: 0x%04x OK", time, check);
 		} else {
-			log_debug("%u OK", check);
+			log_debug("Frame %d: 0x%04x OK", time, check);
 		}
 	}
 #ifdef REPLAY_WRITE_DESYNC_CHECKS
 	else {
-		// log_debug("%u", check);
+		// log_debug("0x%04x", check);
 		replay_stage_event(stg, time, EV_CHECK_DESYNC, (int16_t)check);
 	}
 #endif

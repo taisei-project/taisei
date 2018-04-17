@@ -31,6 +31,7 @@ void env_set_double(const char *var, double val, bool override)
 		const char* : env_get_string, \
 		char*       : env_get_string, \
 		void*       : env_get_string, \
+		bool        : env_get_int, \
 		int8_t      : env_get_int, \
 		uint8_t     : env_get_int, \
 		int16_t     : env_get_int, \
@@ -47,6 +48,7 @@ void env_set_double(const char *var, double val, bool override)
 		const char* : env_set_string, \
 		char*       : env_set_string, \
 		void*       : env_set_string, \
+		bool        : env_set_int, \
 		int8_t      : env_set_int, \
 		uint8_t     : env_set_int, \
 		int16_t     : env_set_int, \
