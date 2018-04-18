@@ -72,64 +72,6 @@ static void init_log_file(void) {
 	log_add_output(lvls_file, vfs_open("storage/log.txt", VFS_MODE_WRITE));
 }
 
-#ifdef CRC32_BENCHMARK
-// TODO: move all this crap somewhere
-
-static void hash_test_run(const char *str, uint32_t init, uint32_t (*hashfunc)(uint32_t, const char*)) {
-	hrtime_t begin = time_get();
-	for(int i = 0; i < 341346740; ++i) {
-		init = hashfunc(init, str);
-	}
-	log_debug("%08x %f", init, (double)(time_get() - begin));
-}
-
-static int hash_test(void) {
-	time_init();
-	const char *s;
-	s = "reimu";
-	log_info("-> %s", s);
-	hash_test_run(s, 0, crc32str);
-	hash_test_run(s, 0, crc32str_sse42);
-	s = "sphereness";
-	log_info("-> %s", s);
-	hash_test_run(s, 0, crc32str);
-	hash_test_run(s, 0, crc32str_sse42);
-	s = "res/textures/rabu_raibu.png";
-	log_info("-> %s", s);
-	hash_test_run(s, 0, crc32str);
-	hash_test_run(s, 0, crc32str_sse42);
-	return 1;
-}
-#else
-static int hash_test(void) {
-	return 0;
-}
-#endif
-
-static int run_tests(void) {
-	if(tsrand_test()) {
-		return 1;
-	}
-
-	if(zrwops_test()) {
-		return 1;
-	}
-
-	if(hashtable_test()) {
-		return 1;
-	}
-
-	if(color_test()) {
-		return 1;
-	}
-
-	if(hash_test()) {
-		return 1;
-	}
-
-	return 0;
-}
-
 /*
 void sdl_log(void *userdata, int category, SDL_LogPriority priority, const char *message) {
 	log_debug("[%i %i] %s", category, priority, message);
@@ -214,10 +156,6 @@ int main(int argc, char **argv) {
 	bool headless = false;
 
 	init_log();
-
-	if(run_tests()) {
-		return 0;
-	}
 
 	stage_init_array(); // cli_args depends on this
 

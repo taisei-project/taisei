@@ -66,8 +66,6 @@ bool hashtable_cmpfunc_ptr(void *p1, void *p2);
 void hashtable_copyfunc_ptr(void **dst, void *src);
 hash_t hashtable_hashfunc_ptr(void *val);
 
-int hashtable_test(void);
-
 void hashtable_print_stringkeys(Hashtable *ht);
 size_t hashtable_get_approx_overhead(Hashtable *ht);
 void hashtable_get_stats(Hashtable *ht, HashtableStats *stats);

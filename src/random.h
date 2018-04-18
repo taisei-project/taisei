@@ -21,8 +21,6 @@ struct RandomState {
 
 typedef struct RandomState RandomState;
 
-int tsrand_test(void);
-
 void tsrand_init(RandomState *rnd, uint32_t seed);
 void tsrand_switch(RandomState *rnd);
 void tsrand_seed_p(RandomState *rnd, uint32_t seed);

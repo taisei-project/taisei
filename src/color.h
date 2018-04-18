@@ -74,5 +74,3 @@ char* color_str(Color c) attr_returns_nonnull;
 	 (((Color)(ColorComponent)(CLR_ONEVALUE * (g)) & CLR_CMASK) << CLR_G) + \
 	 (((Color)(ColorComponent)(CLR_ONEVALUE * (b)) & CLR_CMASK) << CLR_B) + \
 	 (CLR_ONEVALUE << CLR_A))
-
-int color_test(void);

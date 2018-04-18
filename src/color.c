@@ -160,33 +160,3 @@ char* color_str(Color c) {
 	parse_color(c, &r, &g, &b, &a);
 	return strfmt("rgba(%f, %f, %f, %f) 0x%016"PRIxMAX, r, g, b, a, (uintmax_t)c);
 }
-
-// #define COLOR_TEST
-
-int color_test(void) {
-#ifdef COLOR_TEST
-	float clra[4];
-	Color clr1, clr2, clr3;
-
-	clr1 = rgba(0.1, 0.2, 0.3, 0.4);
-	parse_color_array(clr1, clra);
-	clr2 = rgba(clra[0], clra[1], clra[2], clra[3]);
-
-	clr3 = derive_color(clr1, CLRMASK_A, rgba(0, 0, 0, -1.0));
-	printf("1: %016"PRIxMAX" (%f %f %f %f)\n", (uintmax_t)clr1,
-		color_component(clr1, CLR_R), color_component(clr1, CLR_G), color_component(clr1, CLR_B), color_component(clr1, CLR_A));
-	printf("2: %016"PRIxMAX" (%f %f %f %f)\n", (uintmax_t)clr2,
-		color_component(clr2, CLR_R), color_component(clr2, CLR_G), color_component(clr2, CLR_B), color_component(clr2, CLR_A));
-	printf("3: %016"PRIxMAX" (%f %f %f %f)\n", (uintmax_t)clr3,
-		color_component(clr3, CLR_R), color_component(clr3, CLR_G), color_component(clr3, CLR_B), color_component(clr3, CLR_A));
-
-	assert(clr1 == clr2);
-	assert(color_component(clr3, CLR_R) == color_component(clr3, CLR_R));
-	assert(color_component(clr3, CLR_G) == color_component(clr3, CLR_G));
-	assert(color_component(clr3, CLR_B) == color_component(clr3, CLR_B));
-	assert(color_component(clr3, CLR_A) == -1.0);
-	return 1;
-#else
-	return 0;
-#endif
-}

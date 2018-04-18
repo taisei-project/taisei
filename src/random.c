@@ -90,53 +90,6 @@ float nfrand(void) {
 	return frand() * 2.0 - 1.0;
 }
 
-int tsrand_test(void) {
-#if defined(TSRAND_FLOATTEST)
-	RandomState rnd;
-
-	tsrand_init(&rnd, time(0));
-	tsrand_switch(&rnd);
-
-	for(int i = 0; i < 2000000; ++i) {
-		tsfprintf(stdout, "%f\n", frand());
-	}
-
-	return 1;
-#elif defined(TSRAND_SEEDTEST)
-	RandomState rnd;
-	tsrand_switch(&rnd);
-
-	int seed = 1337, i, j;
-	log_info("SEED: %d", seed);
-
-	for(i = 0; i < 5; ++i) {
-		log_info("RUN #%i", i);
-		tsrand_seed(seed);
-
-		for(j = 0; j < 5; ++j) {
-			log_info("-> %i", tsrand());
-		}
-	}
-
-	return 1;
-#elif defined(TSRAND_RAWTEST)
-	RandomState rnd;
-	SDL_RWops *out = SDL_RWFromFP(stdout, false);
-
-	tsrand_init(&rnd, time(0));
-	tsrand_switch(&rnd);
-
-	for(int i = 0; i < CMWC_CYCLE; ++i) {
-		SDL_WriteLE32(out, tsrand());
-	}
-
-	SDL_RWclose(out);
-	return 1;
-#else
-	return 0;
-#endif
-}
-
 // we use this to support multiple rands in a single statement without breaking replays across different builds
 
 static uint32_t tsrand_array[TSRAND_ARRAY_LIMIT];
