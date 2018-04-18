@@ -437,14 +437,15 @@ static int masterspark(Enemy *e, int t2) {
 		);
 		dir = -conj(dir);
 		PARTICLE(
-			.sprite="maristar_orbit",
-			.pos=global.plr.pos+40*dir,
-			.color=c,
-			.rule=masterspark_star,
-			.args={50, 10*dir-10*I,3},
-			.angle=nfrand(),
-			.flags=PFLAG_DRAWADD,
-			.draw_rule=GrowFade
+			.sprite = "maristar_orbit",
+			.pos = global.plr.pos+40*dir,
+			.color = c,
+			.rule = masterspark_star,
+			.timeout = 50,
+			.args = { 10 * dir - 10*I, 3 },
+			.angle = nfrand(),
+			.flags = PFLAG_DRAWADD,
+			.draw_rule = GrowFade
 		);
 		PARTICLE(
 			.sprite = "smoke",

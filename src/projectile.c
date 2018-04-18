@@ -705,6 +705,9 @@ void GrowFade(Projectile *p, int t) {
 	r_mat_push();
 	apply_common_transforms(p, t);
 
+	set_debug_info(&p->debug);
+	assert(p->timeout != 0);
+
 	float s = t/(double)p->timeout*(1 + (creal(p->args[2])? p->args[2] : p->args[1]));
 	if(s != 1) {
 		r_mat_scale(s, s, 1);
