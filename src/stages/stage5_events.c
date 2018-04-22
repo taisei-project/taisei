@@ -336,7 +336,7 @@ void iku_slave_visual(Enemy *e, int t, bool render) {
 
 		PARTICLE(
 			.sprite = "lightningball",
-			.pos = e->pos,
+			.pos = 0,
 			.color = rgba(0.1*alpha, 0.1*alpha, 0.6*alpha, 0.5*alpha),
 			.draw_rule = Fade,
 			.rule = enemy_flare,
