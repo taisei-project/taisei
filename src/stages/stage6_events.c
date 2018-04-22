@@ -2211,7 +2211,7 @@ static void elly_toe_laser_particle(Laser *l, complex origin) {
 
 	PARTICLE("smoothdot", origin, c, elly_toe_laser_particle_rule,
 		.draw_rule = ScaleFade,
-		.timeout = 20,
+		.timeout = 40,
 		.args = { 0, 0, 1, add_ref(l) },
 		.blend = BLEND_ADD,
 		.angle = M_PI*2*frand(),
