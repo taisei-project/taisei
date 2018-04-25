@@ -181,7 +181,7 @@ void draw_main_menu(MenuData *menu) {
 
 void draw_loading_screen(void) {
 	preload_resource(RES_TEXTURE, "loading", RESF_PERMANENT);
-	set_ortho();
+	set_ortho(SCREEN_W, SCREEN_H);
 	fill_screen("loading");
 	draw_text(AL_Right,SCREEN_W-5,SCREEN_H-10,TAISEI_VERSION,_fonts.small);
 	video_swap_buffers();

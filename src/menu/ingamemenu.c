@@ -139,7 +139,7 @@ void draw_ingame_menu_bg(MenuData *menu, float f) {
 
 	r_target(NULL);
 	video_set_viewport();
-	set_ortho();
+	set_ortho(SCREEN_W, SCREEN_H);
 
 	r_shader("ingame_menu");
 	r_uniform_float("rad", rad);

@@ -379,7 +379,7 @@ static void youmu_mirror_shader(FBO *fbo) {
 	double t = player_get_bomb_progress(&global.plr,0);
 	r_shader_ptr(shader);
 	r_uniform_float("tbomb", t);
-	draw_fbo_viewport(fbo);
+	draw_fbo(fbo);
 	r_shader_standard();
 
 	colorfill(1,1,1,max(0,1-10*t));

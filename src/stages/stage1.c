@@ -160,7 +160,7 @@ static void stage1_fog(FBO *fbo) {
 	r_uniform_float("exponent", 3.0);
 	r_uniform_float("sphereness", 0.2);
 	r_texture_ptr(1, r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_DEPTH));
-	draw_fbo_viewport(fbo);
+	draw_fbo(fbo);
 	r_shader_standard();
 }
 

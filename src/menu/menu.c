@@ -174,7 +174,7 @@ static FrameAction menu_render_frame(void *arg) {
 }
 
 int menu_loop(MenuData *menu) {
-	set_ortho();
+	set_ortho(SCREEN_W, SCREEN_H);
 
 	if(menu->begin) {
 		menu->begin(menu);

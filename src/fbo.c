@@ -107,11 +107,3 @@ void draw_fbo(FBO *fbo) {
 
 	r_cull(cull_saved);
 }
-
-void draw_fbo_viewport(FBO *fbo) {
-	// assumption: rendering into another, identical FBO
-
-	// r_viewport(0, 0, fbo->scale*VIEWPORT_W, fbo->scale*VIEWPORT_H);
-	set_ortho_ex(VIEWPORT_W, VIEWPORT_H);
-	draw_fbo(fbo);
-}

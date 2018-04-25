@@ -348,15 +348,13 @@ float sanitize_scale(float scale) {
 // gl/video utils
 //
 
-void set_ortho_ex(float w, float h) {
+void set_ortho(float w, float h) {
 	r_mat_mode(MM_PROJECTION);
-	r_mat_ortho( 0, w, h, 0, -100, 100);
+	r_mat_ortho(0, w, h, 0, -100, 100);
 	r_mat_mode(MM_MODELVIEW);
-	r_disable(RCAP_DEPTH_TEST);
-}
 
-void set_ortho(void) {
-	set_ortho_ex(SCREEN_W, SCREEN_H);
+	// FIXME: should we take this out of here and call it explicitly instead?
+	r_disable(RCAP_DEPTH_TEST);
 }
 
 void colorfill(float r, float g, float b, float a) {

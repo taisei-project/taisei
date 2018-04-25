@@ -233,7 +233,7 @@ void ending_loop(void) {
 	ending_preload();
 	create_ending(&e);
 	global.frames = 0;
-	set_ortho();
+	set_ortho(SCREEN_W, SCREEN_H);
 	start_bgm("ending");
 	loop_at_fps(ending_logic_frame, ending_render_frame, &e, FPS);
 	free_ending(&e);

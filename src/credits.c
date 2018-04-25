@@ -345,7 +345,7 @@ static void credits_draw(void) {
 	draw_stage3d(&stage_3d_context, 10000);
 
 	r_mat_pop();
-	set_ortho();
+	set_ortho(SCREEN_W, SCREEN_H);
 
 	r_mat_push();
 	r_color4(0, 0, 0, credits.panelalpha * 0.7);

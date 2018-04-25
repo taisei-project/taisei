@@ -102,7 +102,7 @@ static void stage3_tunnel(FBO *fbo) {
 	r_uniform_vec3("color", stgstate.clr_r, stgstate.clr_g, stgstate.clr_b);
 	r_uniform_float("mixfactor", stgstate.clr_mixfactor);
 	r_texture_ptr(2, r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_DEPTH));
-	draw_fbo_viewport(fbo);
+	draw_fbo(fbo);
 	r_shader_standard();
 }
 
@@ -116,7 +116,7 @@ static void stage3_fog(FBO *fbo) {
 	r_uniform_float("exponent", stgstate.fog_exp/2);
 	r_uniform_float("sphereness", 0);
 	r_texture_ptr(2, r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_DEPTH));
-	draw_fbo_viewport(fbo);
+	draw_fbo(fbo);
 	r_shader_standard();
 }
 
@@ -138,7 +138,7 @@ static void stage3_glitch(FBO *fbo) {
 		r_color4(1, 1, 1, 1);
 	}
 
-	draw_fbo_viewport(fbo);
+	draw_fbo(fbo);
 	r_shader_standard();
 }
 

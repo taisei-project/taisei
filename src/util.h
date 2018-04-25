@@ -126,8 +126,7 @@ float sanitize_scale(float scale) attr_const;
 // gl/video utils
 //
 
-void set_ortho(void);
-void set_ortho_ex(float w, float h);
+void set_ortho(float w, float h);
 void colorfill(float r, float g, float b, float a);
 void fade_out(float f);
 void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxfrags, float alpha, float star_width);

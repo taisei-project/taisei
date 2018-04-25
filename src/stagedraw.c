@@ -180,12 +180,14 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBOPair *fbos) {
 	if(b && b->current && b->current->draw_rule) {
 		int t = global.frames - b->current->starttime;
 
+		set_ortho(VIEWPORT_W, VIEWPORT_H);
+
 		if(should_draw_stage_bg()) {
 			apply_shader_rules(shaderrules, fbos);
 		}
 
 		r_target(fbos->back);
-		draw_fbo_viewport(fbos->front);
+		draw_fbo(fbos->front);
 		draw_spellbg(t);
 		swap_fbo_pair(fbos);
 		r_target(fbos->back);
@@ -225,11 +227,12 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBOPair *fbos) {
 			r_shader_standard();
 		}
 
-		draw_fbo_viewport(fbos->front);
+		draw_fbo(fbos->front);
 		swap_fbo_pair(fbos);
 		r_target(NULL);
 		r_shader_standard();
 	} else if(should_draw_stage_bg()) {
+		set_ortho(VIEWPORT_W, VIEWPORT_H);
 		apply_shader_rules(shaderrules, fbos);
 	}
 }
@@ -330,7 +333,7 @@ static void postprocess_prepare(FBO *fbo, ShaderProgram *s) {
 
 void stage_draw_foreground(void) {
 	int vw, vh;
-	video_get_viewport_size(&vw,&vh);
+	video_get_viewport_size(&vw, &vh);
 
 	// CAUTION: Very intricate pixel perfect scaling that will ruin your day.
 	float facw = (float)vw/SCREEN_W;
@@ -357,7 +360,6 @@ void stage_draw_foreground(void) {
 		}
 		draw_fbo(resources.fbo_pairs.fg.front);
 	r_mat_pop();
-	set_ortho();
 }
 
 void stage_draw_scene(StageInfo *stage) {
@@ -367,12 +369,6 @@ void stage_draw_scene(StageInfo *stage) {
 	bool key_nobg = false;
 #endif
 
-	/*
-	r_clear(CLEAR_ALL);
-	stage_draw_objects();
-	return;
-	*/
-
 	bool draw_bg = !config_get_int(CONFIG_NO_STAGEBG) && !key_nobg;
 
 	if(draw_bg) {
@@ -380,11 +376,12 @@ void stage_draw_scene(StageInfo *stage) {
 		stage_render_bg(stage);
 	}
 
-	// switch to foreground FBO
+	// prepare for 2D rendering into the game viewport framebuffer
 	r_target(resources.fbo_pairs.fg.back);
 	Texture *fg_tex = r_target_get_attachment(resources.fbo_pairs.fg.back, RENDERTARGET_ATTACHMENT_COLOR0);
 	r_viewport(0, 0, fg_tex->w, fg_tex->h);
-	set_ortho_ex(VIEWPORT_W, VIEWPORT_H);
+	set_ortho(VIEWPORT_W, VIEWPORT_H);
+	r_disable(RCAP_DEPTH_TEST);
 
 	if(draw_bg) {
 		// enable boss background distortion
@@ -407,7 +404,6 @@ void stage_draw_scene(StageInfo *stage) {
 	}
 
 	// draw the 2D objects
-	set_ortho_ex(VIEWPORT_W, VIEWPORT_H);
 	stage_draw_objects();
 
 	// everything drawn, now apply postprocessing
@@ -418,7 +414,7 @@ void stage_draw_scene(StageInfo *stage) {
 
 	// bomb effects shader if present and player bombing
 	if(global.frames - global.plr.recovery < 0 && global.plr.mode->procs.bomb_shader) {
-		ShaderRule rules[] = {global.plr.mode->procs.bomb_shader,0};
+		ShaderRule rules[] = { global.plr.mode->procs.bomb_shader, NULL };
 		apply_shader_rules(rules, &resources.fbo_pairs.fg);
 	}
 
@@ -427,15 +423,15 @@ void stage_draw_scene(StageInfo *stage) {
 		stagedraw.viewport_pp,
 		&resources.fbo_pairs.fg,
 		postprocess_prepare,
-		draw_fbo_viewport
+		draw_fbo
 	);
 
-	// switch to main framebuffer
+	// prepare for 2D rendering into the main framebuffer (actual screen)
 	r_target(NULL);
 	video_set_viewport();
-	set_ortho();
+	set_ortho(SCREEN_W, SCREEN_H);
 
-	// finally, draw stuff to the actual screen
+	// draw the game viewport and HUD
 	stage_draw_foreground();
 	stage_draw_hud();
 }

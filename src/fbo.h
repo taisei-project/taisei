@@ -35,7 +35,6 @@ void delete_fbo_pair(FBOPair *pair);
 void swap_fbo_pair(FBOPair *pair);
 
 void draw_fbo(FBO *fbo);
-void draw_fbo_viewport(FBO *fbo);
 
 // TODO: rename and move this
 typedef struct Resources {
