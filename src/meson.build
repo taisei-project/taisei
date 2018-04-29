@@ -109,6 +109,7 @@ subdir('renderer')
 subdir('resource')
 subdir('rwops')
 subdir('stages')
+subdir('dialog')
 subdir('vfs')
 
 configure_file(configuration : config, output : 'build_config.h')
@@ -121,6 +122,7 @@ taisei_src += [
     rwops_src,
     stages_src,
     vfs_src,
+    dialog_src,
 ]
 
 if taisei_deps.contains(dep_sdl2_mixer)

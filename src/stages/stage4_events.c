@@ -15,6 +15,9 @@
 #include "enemy.h"
 #include "laser.h"
 
+#include "dialog/youmu.h"
+#include "dialog/marisa.h"
+
 void kurumi_spell_bg(Boss*, int);
 void kurumi_slaveburst(Boss*, int);
 void kurumi_redspike(Boss*, int);
@@ -27,22 +30,15 @@ Dialog *stage4_dialog(void) {
 	PlayerCharacter *pc = global.plr.mode->character;
 	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/kurumi");
 
-	if(pc->id == PLR_CHAR_MARISA) {
-		dadd_msg(d,Right, "Halt, intruder!");
-		dadd_msg(d,Left, "Now here’s a face I haven’t seen in a long time. What’s this fancy house all about anyways? Decided to guard Yūka again, or is it somebody new?");
-		dadd_msg(d,Right, "It’s none of your business, that’s what it is. My friend is busy with some important work and she can’t be disturbed by nosy humans poking into where they don’t belong.");
-		dadd_msg(d,Left, "Now that’s no way to treat an old acquaintance! I know ya from before, so how about just givin’ me a backstage pass, eh?");
-		dadd_msg(d,Right, "If you know me as well as you think you do, you’d know that all you’re going to get acquainted with is the taste of your own blood!");
-		dadd_msg(d,Left, "Shoot, so that’s a no to my reservation, right?");
-	} else if(pc->id == PLR_CHAR_YOUMU) {
-		dadd_msg(d,Right, "Halt, intruder!");
-		dadd_msg(d,Left, "Oh, and who might you be?");
-		dadd_msg(d,Right, "Kuru— Hey, my name isn’t important for a nosy person like you to know!");
-		dadd_msg(d,Left, "I only wanted to know so I could refer to you politely. I don’t want to call you a “random somebody” in your own house.");
-		dadd_msg(d,Left, "Your house is very nice, by the way. Although I still think Hakugyokurō is bigger. Have you ever been there? Lady Yuyuko loves guests.");
-		dadd_msg(d,Right, "This isn’t my house, and you’re not allowed to snoop any more than you have! If you keep ignoring me, I’ll have to suck you dry right here where we stand!");
-		dadd_msg(d,Left, "It’s not your house, and yet you’re telling me to leave? You sound just as presumptuous as the other vampire I’ve met.");
-		dadd_msg(d,Right, "I can bet you that I’m much more frightening.");
+	switch(pc->id) {
+	case PLR_CHAR_MARISA:
+		dialog_marisa_stage4(d);
+		break;
+	case PLR_CHAR_YOUMU:
+		dialog_youmu_stage4(d);
+		break;
+	default:
+    		log_warn("No dialog available for this character.");		
 	}
 
 	dadd_msg(d, BGM, "stage4boss");
@@ -53,13 +49,17 @@ Dialog *stage4_dialog_end(void) {
 	PlayerCharacter *pc = global.plr.mode->character;
 	Dialog *d = create_dialog(pc->dialog_sprite_name, NULL);
 
-
-	if(pc->id == PLR_CHAR_MARISA) {
-		dadd_msg(d,Left, "Seems like the mastermind’s someone she’s close to, huh? Guess I gotta get ready for another blast from the past.");
-	} else if(pc->id == PLR_CHAR_YOUMU) {
-		dadd_msg(d,Left, "You’re not as scary as her, or even as good of a host. Maybe you should work on your manners and buy yourself a nice mansion to lord over instead of taking someone else’s.");
-
+	switch(pc->id) {
+	case PLR_CHAR_MARISA:
+		dialog_marisa_stage4_post(d);
+		break;
+	case PLR_CHAR_YOUMU:
+		dialog_youmu_stage4_post(d);
+		break;
+	default:
+    		log_warn("No dialog available for this character.");		
 	}
+
 	return d;
 }
 

@@ -13,18 +13,29 @@
 #include <global.h>
 #include <float.h>
 
+#include "dialog/youmu.h"
+#include "dialog/marisa.h"
+
 Dialog *stage5_post_mid_dialog(void) {
 	PlayerCharacter *pc = global.plr.mode->character;
 	Dialog *d = create_dialog(pc->dialog_sprite_name, NULL);
-	DialogMessage *m = NULL;
 
-	if(pc->id == PLR_CHAR_MARISA) {
-		m = dadd_msg(d, Left, "Hey, wait! …Did I just see an oarfish?");
-	} else if(pc->id == PLR_CHAR_YOUMU) {
-		m = dadd_msg(d, Left, "A messenger of Heaven! If I follow her, I’ll surely learn something about the incident!");
+	switch(pc->id) {
+	case PLR_CHAR_MARISA:
+		dialog_marisa_stage5_mid(d);
+		break;
+	case PLR_CHAR_YOUMU:
+		dialog_youmu_stage5_mid(d);
+		break;
+	default:
+    		log_warn("No dialog available for this character.");		
 	}
 
-	assert(m != NULL);
+	if(d->count != 1) {
+    		log_fatal("The stage 5 midboss dialog can only contain one line");
+	}
+	
+	DialogMessage *m = &d->messages[0];
 	m->timeout = global.frames + 120;
 
 	return d;
@@ -34,23 +45,15 @@ Dialog *stage5_boss_dialog(void) {
 	PlayerCharacter *pc = global.plr.mode->character;
 	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/iku");
 
-	if(pc->id == PLR_CHAR_MARISA) {
-		dadd_msg(d,Left, "I finally caught up to ya! I should’ve known that the Dragon’s messenger would be hard to chase down in the air.");
-		dadd_msg(d,Left, "Are you part of the incident too?");
-		dadd_msg(d,Right, "Weren’t those earlier bombs enough of a deterrent? As this world is cutting into the space of Heaven, only those authorized are allowed to investigate.");
-		dadd_msg(d,Right, "You’re not a Celestial or anyone else from Heaven. That means you cannot go further.");
-		dadd_msg(d,Left, "C’mon, you’re good at readin’ the atmosphere, right? Then ya should know that I’m not gonna back down after comin’ this far.");
-		dadd_msg(d,Right, "I don’t have time to reason with you, unfortunately.");
-		dadd_msg(d,Right, "When it comes to an average human sticking out arrogantly, there’s only one reasonable course of action for a bolt of lightning to take.");
-		dadd_msg(d,Right, "Prepare to be struck down from Heaven’s door!");
-	} else if(pc->id == PLR_CHAR_YOUMU) {
-		dadd_msg(d,Left, "You were quite difficult to pin down. Don’t worry; I’ll listen to whatever warning you have before I continue forward.");
-		dadd_msg(d,Right, "Hmm, you’re the groundskeeper of the Netherworld, correct?");
-		dadd_msg(d,Left, "That’s right. My mistress sent me here to investigate since the world of spirits has been put in jeopardy by this new world infringing on its boundaries.");
-		dadd_msg(d,Right, "I’m afraid I cannot let you pass. This new world is a great issue caused by an incredible new power. Only a Celestial or greater is qualified to handle such a dangerous occurrence.");
-		dadd_msg(d,Left, "That doesn’t seem fair considering I’ve solved incidents before. I know what I am doing, and Lady Yuyuko entrusted me with this.");
-		dadd_msg(d,Right, "If your confidence will not allow you to back down, then so be it. I will test you using all of Heaven’s might, and if you are unfit, you shall be cast down from this Tower of Babel!");
-		dadd_msg(d,Left, "I shall pass whatever test necessary if it will allow me to fulfill the wishes of Lady Yuyuko!");
+	switch(pc->id) {
+	case PLR_CHAR_MARISA:
+		dialog_marisa_stage5(d);
+		break;
+	case PLR_CHAR_YOUMU:
+		dialog_youmu_stage5(d);
+		break;
+	default:
+    		log_warn("No dialog available for this character.");		
 	}
 
 	dadd_msg(d, BGM, "stage5boss");
@@ -61,11 +64,15 @@ Dialog *stage5_post_boss_dialog(void) {
 	PlayerCharacter *pc = global.plr.mode->character;
 	Dialog *d = create_dialog(pc->dialog_sprite_name, NULL);
 
-	dadd_msg(d, Left, "I can see the top!");
-	if(pc->id == PLR_CHAR_MARISA) {
-		dadd_msg(d, Left, "I might not have the proper credentials, but I can definitely solve this incident. Just sit back and leave it to me!");
-	} else if(pc->id == PLR_CHAR_YOUMU) {
-		dadd_msg(d, Left, "As you can see, I have cut through your challenge. You can trust me to get to the heart of the matter and handle it swiftly and carefully.");
+	switch(pc->id) {
+	case PLR_CHAR_MARISA:
+		dialog_marisa_stage5_post(d);
+		break;
+	case PLR_CHAR_YOUMU:
+		dialog_youmu_stage5_post(d);
+		break;
+	default:
+    		log_warn("No dialog available for this character.");		
 	}
 
 	return d;

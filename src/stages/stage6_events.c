@@ -13,36 +13,23 @@
 #include "global.h"
 #include "stagetext.h"
 
+#include "dialog/youmu.h"
+#include "dialog/marisa.h"
+
 Dialog *stage6_dialog(void) {
 	PlayerCharacter *pc = global.plr.mode->character;
 	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/elly");
 
-	if(pc->id == PLR_CHAR_MARISA) {
-		dadd_msg(d,Left, "And so the big bad boss behind it all is…");
-		dadd_msg(d,Left, "Wait, Elly?!");
-		dadd_msg(d,Right, "That’s strange; I thought Kurumi was keeping people from sneaking into my laboratory.");
-		dadd_msg(d,Left, "You have a lab?! Last time we fought, ya were just some random guard. You didn’t even know any science!");
-		dadd_msg(d,Right, "After Yūka was defeated and left us for Gensōkyō, Kurumi and I decided we needed to do some soul searching and find another job.");
-		dadd_msg(d,Right, "We stranded ourselves in the Outside World on accident, and I found my true calling as a theoretical physicist.");
-		dadd_msg(d,Right, "This world I’ve built… this is a world dictated not by the madness of Gensōkyō, but one of reason, logic, and common sense!");
-		dadd_msg(d,Left, "Yeah, and that’s why it broke the barrier, didn’t it? You can’t have a borin’ world like this next t’ Gensōkyō without causin’ us issues.");
-		dadd_msg(d,Right, "An unenlightened fool like you wouldn’t understand… You’re even still using magic, of all things!");
-		dadd_msg(d,Left, "I understand enough to know that you’re the problem. And like any good mathematician, I’m gonna solve it by blastin’ it to bits!");
-		dadd_msg(d,Right, "No! You’ll never destroy my life’s work! I’ll dissect that nonsensical magic of yours, and then I’ll tear it apart!");
-	} else if(pc->id == PLR_CHAR_YOUMU) {
-		dadd_msg(d,Left, "Are you the one behind this new world?");
-		dadd_msg(d,Right, "That is correct.");
-		dadd_msg(d,Left, "Considering that scythe of yours, I’m really quite surprised that a shikigami would be behind everything.");
-		dadd_msg(d,Right, "That is because you completely misunderstand. I am not a shikigami, and never was. My duty was once to protect a powerful yōkai, but when she left for Gensōkyō, I was left behind.");
-		dadd_msg(d,Right, "Together with my friend, Kurumi, we left for the Outside World and were stranded there. But I gained an incredible new power once I realized my true calling as a theoretical physicist.");
-		dadd_msg(d,Left, "I don’t completely follow, but if you’re a yōkai, I can’t see how you could be a scientist. It goes against your nature.");
-		dadd_msg(d,Right, "An unenlightened fool such as yourself could never comprehend my transcendence.");
-		dadd_msg(d,Right, "I have become more than a simple yōkai, for I alone am now capable of discovering the secrets behind the illusion of reality!");
-		dadd_msg(d,Left, "Well, whatever you’re doing here is disintegrating the barrier of common sense and madness keeping Gensōkyō from collapsing into the Outside World.");
-		dadd_msg(d,Left, "You’re also infringing on the Netherworld’s space and my mistress is particularly upset about that. That means I have to stop you, no matter what.");
-		dadd_msg(d,Right, "Pitiful servant of the dead. You’ll never be able to stop my life’s work from being fulfilled! I’ll simply unravel that nonsense behind your half-and-half existence!");
+	switch(pc->id) {
+	case PLR_CHAR_MARISA:
+		dialog_marisa_stage6(d);
+		break;
+	case PLR_CHAR_YOUMU:
+		dialog_youmu_stage6(d);
+		break;
+	default:
+    		log_warn("No dialog available for this character.");		
 	}
-
 	dadd_msg(d, BGM, "stage6boss_phase1");
 	return d;
 }
@@ -51,9 +38,16 @@ static Dialog *stage6_interboss_dialog(void) {
 	PlayerCharacter *pc = global.plr.mode->character;
 	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/elly");
 
-	dadd_msg(d, Right, "You’ve gotten this far… I can’t believe it! But that will not matter once I show you the truth of this world, and every world.");
-	dadd_msg(d, Right, "Space, time, dimensions… it all becomes clear when you understand The Theory of Everything!");
-	dadd_msg(d, Right, "Prepare to see the barrier destroyed!");
+	switch(pc->id) {
+	case PLR_CHAR_MARISA:
+		dialog_marisa_stage6_inter(d);
+		break;
+	case PLR_CHAR_YOUMU:
+		dialog_youmu_stage6_inter(d);
+		break;
+	default:
+    		log_warn("No dialog available for this character.");		
+	}
 
 	return d;
 }
