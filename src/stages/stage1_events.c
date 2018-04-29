@@ -11,8 +11,7 @@
 #include "stage1_events.h"
 #include "global.h"
 #include "stagetext.h"
-#include "dialog/youmu.h"
-#include "dialog/marisa.h"
+#include "dialog/all.h"
 
 Dialog *stage1_dialog(void) {
 	PlayerCharacter *pc = global.plr.mode->character;

@@ -12,9 +12,7 @@
 #include "global.h"
 #include "stage.h"
 #include "enemy.h"
-
-#include "dialog/youmu.h"
-#include "dialog/marisa.h"
+#include "dialog/all.h"
 
 static Dialog *stage3_dialog(void) {
 	PlayerCharacter *pc = global.plr.mode->character;

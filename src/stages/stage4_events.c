@@ -14,9 +14,7 @@
 #include "stage.h"
 #include "enemy.h"
 #include "laser.h"
-
-#include "dialog/youmu.h"
-#include "dialog/marisa.h"
+#include "dialog/all.h"
 
 void kurumi_spell_bg(Boss*, int);
 void kurumi_slaveburst(Boss*, int);

@@ -12,9 +12,7 @@
 #include "stage6.h"
 #include "global.h"
 #include "stagetext.h"
-
-#include "dialog/youmu.h"
-#include "dialog/marisa.h"
+#include "dialog/all.h"
 
 Dialog *stage6_dialog(void) {
 	PlayerCharacter *pc = global.plr.mode->character;

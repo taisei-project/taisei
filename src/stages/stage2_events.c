@@ -12,6 +12,7 @@
 #include "global.h"
 #include "stage.h"
 #include "enemy.h"
+#include "dialog/all.h"
 
 Dialog *stage2_dialog(void) {
 	PlayerCharacter *pc = global.plr.mode->character;

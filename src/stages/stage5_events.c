@@ -10,11 +10,8 @@
 
 #include "stage5_events.h"
 #include "stage5.h"
-#include <global.h>
-#include <float.h>
-
-#include "dialog/youmu.h"
-#include "dialog/marisa.h"
+#include "global.h"
+#include "dialog/all.h"
 
 Dialog *stage5_post_mid_dialog(void) {
 	PlayerCharacter *pc = global.plr.mode->character;
