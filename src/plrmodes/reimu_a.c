@@ -17,6 +17,8 @@ static void reimu_spirit_preload(void) {
 
 	preload_resources(RES_SPRITE, flags,
 		"yinyang",
+		"proj/ofuda",
+		"proj/needle",
 	NULL);
 
 	preload_resources(RES_SHADER_PROGRAM, flags,
@@ -27,10 +29,84 @@ static void reimu_spirit_preload(void) {
 	//NULL);
 }
 
+static int reimu_spirit_needle(Projectile *p, int t) {
+	int r = linear(p, t);
+
+	if(t < 0) {
+		return r;
+	}
+
+	PARTICLE(
+		.sprite_ptr = p->sprite,
+		.color = multiply_colors(p->color, rgba(0.75, 0.5, 1, 0.5)),
+		.timeout = 12,
+		.pos = p->pos,
+		.args = { p->args[0] * 0.8, 0, 0+3*I },
+		.rule = linear,
+		.draw_rule = ScaleFade,
+		.layer = LAYER_PARTICLE_LOW,
+		.flags = PFLAG_NOREFLECT,
+		.blend = BLEND_ADD,
+	);
+
+	return r;
+}
+
+static int reimu_spirit_homing(Projectile *p, int t) {
+	if(t < 0) {
+		return ACTION_NONE;
+	}
+
+	p->args[3] = plrutil_homing_target(p->pos, p->args[3]);
+	double v = cabs(p->args[0]);
+	complex aimdir = cexp(I*carg(p->args[3] - p->pos));
+
+	double aim = (0.5 * pow(1 - t / p->timeout, 4));
+
+	p->args[0] += v * aim * aimdir;
+	p->args[0] = v * cexp(I*carg(p->args[0]));
+	p->angle = carg(p->args[0]);
+	p->pos += p->args[0];
+
+	return ACTION_NONE;
+}
+
 static void reimu_spirit_bomb(Player *p) {
 }
 
 static void reimu_spirit_shot(Player *p) {
+	reimu_common_shot(p, 175);
+}
+
+static void reimu_spirit_slave_shot(Enemy *e, int t) {
+	int st = global.frames + 2;
+
+	if(st % 3) {
+		return;
+	}
+
+	if(global.plr.inputflags & INFLAG_FOCUS) {
+		PROJECTILE(
+			.proto = pp_needle,
+			.pos = e->pos - 25.0*I,
+			.color = rgba(1, 1, 1, 0.5),
+			.rule = reimu_spirit_needle,
+			.args = { -20.0*I },
+			.type = PlrProj+30,
+			.shader = "sprite_default",
+		);
+	} else if(!(st % 6)) {
+		PROJECTILE(
+			.proto = pp_ofuda,
+			.pos = e->pos,
+			.color = rgba(1, 1, 1, 0.5),
+			.rule = reimu_spirit_homing,
+			.args = { -10.0*I, 0, 0, creal(e->pos) },
+			.type = PlrProj+45,
+			.timeout = 60,
+			.shader = "sprite_default",
+		);
+	}
 }
 
 static int reimu_spirit_slave(Enemy *e, int t) {
@@ -42,6 +118,10 @@ static int reimu_spirit_slave(Enemy *e, int t) {
 	}
 
 	GO_TO(e, global.plr.pos + e->args[!!(global.plr.inputflags & INFLAG_FOCUS)], 0.005 * cabs(e->args[0]));
+
+	if(player_should_shoot(&global.plr, true)) {
+		reimu_spirit_slave_shot(e, t);
+	}
 
 	return 1;
 }

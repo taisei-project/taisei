@@ -168,3 +168,6 @@ bool player_is_alive(Player *plr);
 double player_get_bomb_progress(Player *plr, double *out_speed);
 
 void player_preload(void);
+
+// FIXME: where should this be?
+complex plrutil_homing_target(complex org, complex fallback);

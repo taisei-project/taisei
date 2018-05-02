@@ -1062,3 +1062,30 @@ void player_preload(void) {
 		"extra_bomb",
 	NULL);
 }
+
+// FIXME: where should this be?
+
+complex plrutil_homing_target(complex org, complex fallback) {
+	double mindst = DBL_MAX;
+	complex target = fallback;
+
+	if(global.boss && boss_is_vulnerable(global.boss)) {
+		target = global.boss->pos;
+		mindst = cabs(target - org);
+	}
+
+	for(Enemy *e = global.enemies.first; e; e = e->next) {
+		if(e->hp == ENEMY_IMMUNE){
+			continue;
+		}
+
+		double dst = cabs(e->pos - org);
+
+		if(dst < mindst) {
+			mindst = dst;
+			target = e->pos;
+		}
+	}
+
+	return target;
+}

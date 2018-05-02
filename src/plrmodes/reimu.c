@@ -47,6 +47,61 @@ double reimu_common_property(Player *plr, PlrProperty prop) {
 	UNREACHABLE;
 }
 
+static int reimu_ofuda_trail(Projectile *p, int t) {
+	int r = linear(p, t);
+
+	if(t < 0) {
+		return r;
+	}
+
+	float g = color_component(p->color, CLR_G) * 0.95;
+	p->color = derive_color(p->color, CLRMASK_G, rgba(0, g, 0, 0));
+
+	return r;
+}
+
+static int reimu_ofuda(Projectile *p, int t) {
+	int r = linear(p, t);
+
+	if(t < 0) {
+		return r;
+	}
+
+	PARTICLE(
+		// .sprite_ptr = p->sprite,
+		.sprite = "hghost",
+		.color = p->color,
+		.timeout = 12,
+		.pos = p->pos + p->args[0] * 0.3,
+		.args = { p->args[0] * 0.5, 0, 1+2*I },
+		.rule = reimu_ofuda_trail,
+		.draw_rule = ScaleFade,
+		.layer = LAYER_PARTICLE_LOW,
+		.flags = PFLAG_NOREFLECT,
+	);
+
+	return r;
+}
+
+void reimu_common_shot(Player *plr, int dmg) {
+	if(!(global.frames % 4)) {
+		play_sound("generic_shot");
+	}
+
+	if(!(global.frames % 3)) {
+		int i = 1 - 2 * (bool)(global.frames % 6);
+		PROJECTILE(
+			.proto = pp_ofuda,
+			.pos = plr->pos + 10 * i - 15.0*I,
+			.color = rgba(1, 1, 1, 0.5),
+			.rule = reimu_ofuda,
+			.args = { -20.0*I },
+			.type = PlrProj+dmg,
+			.shader = "sprite_default",
+		);
+	}
+}
+
 void reimu_yinyang_visual(Enemy *e, int t, bool render) {
 	if(!render) {
 		return;

@@ -15,28 +15,7 @@
 #include "youmu.h"
 
 static complex youmu_homing_target(complex org, complex fallback) {
-	double mindst = DBL_MAX;
-	complex target = fallback;
-
-	if(global.boss && boss_is_vulnerable(global.boss)) {
-		target = global.boss->pos;
-		mindst = cabs(target - org);
-	}
-
-	for(Enemy *e = global.enemies.first; e; e = e->next) {
-		if(e->hp == ENEMY_IMMUNE){
-			continue;
-		}
-
-		double dst = cabs(e->pos - org);
-
-		if(dst < mindst) {
-			mindst = dst;
-			target = e->pos;
-		}
-	}
-
-	return target;
+	return plrutil_homing_target(org, fallback);
 }
 
 static void youmu_homing_draw_common(Projectile *p, float clrfactor, float scale, float alpha) {
