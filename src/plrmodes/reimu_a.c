@@ -12,7 +12,7 @@
 #include "plrmodes.h"
 #include "reimu.h"
 
-static void reimu_dream_preload(void) {
+static void reimu_spirit_preload(void) {
 	const int flags = RESF_DEFAULT;
 
 	preload_resources(RES_TEXTURE, flags,
@@ -26,13 +26,13 @@ static void reimu_dream_preload(void) {
 	//NULL);
 }
 
-static void reimu_dream_bomb(Player *p) {
+static void reimu_spirit_bomb(Player *p) {
 }
 
-static void reimu_dream_shot(Player *p) {
+static void reimu_spirit_shot(Player *p) {
 }
 
-static int reimu_dream_slave(Enemy *e, int t) {
+static int reimu_spirit_slave(Enemy *e, int t) {
 	TIMER(&t);
 
 	AT(EVENT_BIRTH) {
@@ -45,7 +45,7 @@ static int reimu_dream_slave(Enemy *e, int t) {
 	return 1;
 }
 
-static void reimu_dream_respawn_slaves(Player *plr, short npow) {
+static void reimu_spirit_respawn_slaves(Player *plr, short npow) {
 	Enemy *e = plr->slaves, *tmp;
 	double dmg = 56;
 
@@ -57,44 +57,44 @@ static void reimu_dream_respawn_slaves(Player *plr, short npow) {
 	}
 
 	if(npow / 100 == 1) {
-		create_enemy_p(&plr->slaves, 40.0*I, ENEMY_IMMUNE, reimu_yinyang_visual, reimu_dream_slave, 50.0*I, -50.0*I, -0.1*I, dmg);
+		create_enemy_p(&plr->slaves, 40.0*I, ENEMY_IMMUNE, reimu_yinyang_visual, reimu_spirit_slave, 50.0*I, -50.0*I, -0.1*I, dmg);
 	}
 
 	if(npow >= 200) {
-		create_enemy_p(&plr->slaves, 30.0*I+15, ENEMY_IMMUNE, reimu_yinyang_visual, reimu_dream_slave, +40, +20-30*I,  1-0.1*I, dmg);
-		create_enemy_p(&plr->slaves, 30.0*I-15, ENEMY_IMMUNE, reimu_yinyang_visual, reimu_dream_slave, -40, -20-30*I, -1-0.1*I, dmg);
+		create_enemy_p(&plr->slaves, 30.0*I+15, ENEMY_IMMUNE, reimu_yinyang_visual, reimu_spirit_slave, +40, +20-30*I,  1-0.1*I, dmg);
+		create_enemy_p(&plr->slaves, 30.0*I-15, ENEMY_IMMUNE, reimu_yinyang_visual, reimu_spirit_slave, -40, -20-30*I, -1-0.1*I, dmg);
 	}
 
 	if(npow / 100 == 3) {
-		create_enemy_p(&plr->slaves, -30.0*I, ENEMY_IMMUNE, reimu_yinyang_visual, reimu_dream_slave, 50.0*I, -50.0*I, -0.1*I, dmg);
+		create_enemy_p(&plr->slaves, -30.0*I, ENEMY_IMMUNE, reimu_yinyang_visual, reimu_spirit_slave, 50.0*I, -50.0*I, -0.1*I, dmg);
 	}
 
 	if(npow >= 400) {
-		create_enemy_p(&plr->slaves,  30, ENEMY_IMMUNE, reimu_yinyang_visual, reimu_dream_slave, +80, +40-20*I,  2-0.1*I, dmg);
-		create_enemy_p(&plr->slaves, -30, ENEMY_IMMUNE, reimu_yinyang_visual, reimu_dream_slave, -80, -40-20*I, -2-0.1*I, dmg);
+		create_enemy_p(&plr->slaves,  30, ENEMY_IMMUNE, reimu_yinyang_visual, reimu_spirit_slave, +80, +40-20*I,  2-0.1*I, dmg);
+		create_enemy_p(&plr->slaves, -30, ENEMY_IMMUNE, reimu_yinyang_visual, reimu_spirit_slave, -80, -40-20*I, -2-0.1*I, dmg);
 	}
 }
 
-static void reimu_dream_init(Player *plr) {
-	reimu_dream_respawn_slaves(plr, plr->power);
+static void reimu_spirit_init(Player *plr) {
+	reimu_spirit_respawn_slaves(plr, plr->power);
 }
 
-static void reimu_dream_power(Player *plr, short npow) {
+static void reimu_spirit_power(Player *plr, short npow) {
 	if(plr->power / 100 != npow / 100) {
-		reimu_dream_respawn_slaves(plr, npow);
+		reimu_spirit_respawn_slaves(plr, npow);
 	}
 }
 
 PlayerMode plrmode_reimu_a = {
-	.name = "Dream Sign",
+	.name = "Spirit Sign",
 	.character = &character_reimu,
 	.dialog = &dialog_reimu,
-	.shot_mode = PLR_SHOT_REIMU_DREAM,
+	.shot_mode = PLR_SHOT_REIMU_SPIRIT,
 	.procs = {
-		.init = reimu_dream_init,
-		.bomb = reimu_dream_bomb,
-		.shot = reimu_dream_shot,
-		.power = reimu_dream_power,
-		.preload = reimu_dream_preload,
+		.init = reimu_spirit_init,
+		.bomb = reimu_spirit_bomb,
+		.shot = reimu_spirit_shot,
+		.power = reimu_spirit_power,
+		.preload = reimu_spirit_preload,
 	},
 };

@@ -12,7 +12,7 @@
 #include "plrmodes.h"
 #include "reimu.h"
 
-static void reimu_spirit_preload(void) {
+static void reimu_dream_preload(void) {
 	const int flags = RESF_DEFAULT;
 
 	//preload_resources(RES_TEXTURE, flags,
@@ -25,23 +25,22 @@ static void reimu_spirit_preload(void) {
 	//NULL);
 }
 
-static void reimu_spirit_bomb(Player *p) {
+static void reimu_dream_bomb(Player *p) {
 }
-static void reimu_spirit_shot(Player *p) {
+static void reimu_dream_shot(Player *p) {
 }
-static void reimu_spirit_power(Player *p, short npow) {
+static void reimu_dream_power(Player *p, short npow) {
 }
 
 PlayerMode plrmode_reimu_b = {
-	.name = "Spirit Sign",
+	.name = "Dream Sign",
 	.character = &character_reimu,
 	.dialog = &dialog_reimu,
-	.shot_mode = PLR_SHOT_REIMU_SPIRIT,
+	.shot_mode = PLR_SHOT_REIMU_DREAM,
 	.procs = {
-		.bomb = reimu_spirit_bomb,
-		.shot = reimu_spirit_shot,
-		.power = reimu_spirit_power,
-		.preload = reimu_spirit_preload,
-
+		.bomb = reimu_dream_bomb,
+		.shot = reimu_dream_shot,
+		.power = reimu_dream_power,
+		.preload = reimu_dream_preload,
 	},
 };
