@@ -83,7 +83,6 @@ struct Projectile {
 	float angle;
 	ProjType type;
 	int max_viewport_dist;
-	int priority_override; // FIXME: remove this when v1.2 compat is not needed
 	ProjFlags flags;
 	bool grazed;
 
@@ -116,7 +115,6 @@ typedef struct ProjArgs {
 	complex size;
 	int max_viewport_dist;
 	drawlayer_t layer;
-	int priority_override; // FIXME: remove this when v1.2 compat is not needed
 
 	// XXX: this is in frames of course, but needs to be float
 	// to avoid subtle truncation and integer division gotchas.

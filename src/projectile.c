@@ -135,22 +135,6 @@ static double projectile_rect_area(Projectile *p) {
 
 static void ent_draw_projectile(EntityInterface *ent);
 
-static int projectile_sizeprio_func(List *vproj) {
-	// FIXME: remove this when v1.2 compat is not needed
-	Projectile *proj = (Projectile*)vproj;
-
-	if(proj->priority_override) {
-		return proj->priority_override;
-	}
-
-	return -rint(projectile_rect_area(proj));
-}
-
-List* proj_insert_sizeprio(List **dest, List *elem) {
-	// FIXME: remove this when v1.2 compat is not needed
-	return list_insert_at_priority_tail(dest, elem, projectile_sizeprio_func(elem), projectile_sizeprio_func);
-}
-
 static inline int proj_call_rule(Projectile *p, int t) {
 	if(p->timeout > 0 && t >= p->timeout) {
 		return ACTION_DESTROY;
@@ -197,7 +181,6 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	p->max_viewport_dist = args->max_viewport_dist;
 	p->size = args->size;
 	p->flags = args->flags;
-	p->priority_override = args->priority_override;
 	p->timeout = args->timeout;
 
 	memcpy(p->args, args->args, sizeof(p->args));
@@ -249,9 +232,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	//      enable this when they're fixed
 	// proj_call_rule(p, EVENT_BIRTH);
 
-	// FIXME: use simpler/faster insertions when v1.2 compat is not needed
-	// return (Projectile*)list_push(args->dest, p);
-	return (Projectile*)proj_insert_sizeprio((List**)args->dest, (List*)p);
+	return list_append(args->dest, p);
 }
 
 Projectile* create_projectile(ProjArgs *args) {

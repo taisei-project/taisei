@@ -451,7 +451,10 @@ void elly_newton(Boss *b, int t) {
 			case 2: c = rgb(0.8, 0.6, 0.0); break;
 		}
 
+		complex apple_pos = clamp(creal(global.plr.pos) + nfrand() * 64, apple->w*0.5, VIEWPORT_W - apple->w*0.5);
+
 		PROJECTILE(
+			.pos = apple_pos,
 			.proto = pp_apple,
 			.rule = newton_apple,
 			.args = {
@@ -459,8 +462,8 @@ void elly_newton(Boss *b, int t) {
 			},
 			.color = c,
 			.shader = "sprite_bullet_apple",
-			.priority_override = -28*28+1, // force it to be drawn above the balls
-		)->pos = clamp(creal(global.plr.pos) + nfrand() * 64, apple->w*0.5, VIEWPORT_W - apple->w*0.5);
+			.layer = LAYER_BULLET | 0xffff, // force them to render on top of the other bullets
+		);
 
 		play_sound("shot3");
 	}
