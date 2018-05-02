@@ -36,6 +36,7 @@ glsl_files = files(
     'sprite_negative.frag.glsl',
     'sprite_silhouette.frag.glsl',
     'sprite_silhouette.vert.glsl',
+    'sprite_yinyang.frag.glsl',
     'sprite_youmu_charged_shot.frag.glsl',
     'sprite_youmu_charged_shot.vert.glsl',
     'sprite_youmu_myon_shot.frag.glsl',

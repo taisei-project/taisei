@@ -38,6 +38,7 @@ PlayerMode plrmode_reimu_b = {
 	.dialog = &dialog_reimu,
 	.shot_mode = PLR_SHOT_REIMU_DREAM,
 	.procs = {
+		.property = reimu_common_property,
 		.bomb = reimu_dream_bomb,
 		.shot = reimu_dream_shot,
 		.power = reimu_dream_power,

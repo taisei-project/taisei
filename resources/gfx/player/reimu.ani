@@ -1,0 +1,5 @@
+@sprite_count = 8
+
+main = d10 4 5 6 7
+left = m d10 0 1 2 3
+right = d10 0 1 2 3

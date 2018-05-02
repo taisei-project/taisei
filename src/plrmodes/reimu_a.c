@@ -15,12 +15,13 @@
 static void reimu_spirit_preload(void) {
 	const int flags = RESF_DEFAULT;
 
-	preload_resources(RES_TEXTURE, flags,
+	preload_resources(RES_SPRITE, flags,
 		"yinyang",
 	NULL);
 
-	//preload_resources(RES_SHADER, flags,
-	//NULL);
+	preload_resources(RES_SHADER_PROGRAM, flags,
+		"sprite_yinyang",
+	NULL);
 
 	//preload_resources(RES_SFX, flags | RESF_OPTIONAL,
 	//NULL);
@@ -73,6 +74,10 @@ static void reimu_spirit_respawn_slaves(Player *plr, short npow) {
 		create_enemy_p(&plr->slaves,  30, ENEMY_IMMUNE, reimu_yinyang_visual, reimu_spirit_slave, +80, +40-20*I,  2-0.1*I, dmg);
 		create_enemy_p(&plr->slaves, -30, ENEMY_IMMUNE, reimu_yinyang_visual, reimu_spirit_slave, -80, -40-20*I, -2-0.1*I, dmg);
 	}
+
+	for(e = plr->slaves; e; e = e->next) {
+		e->ent.draw_layer = LAYER_PLAYER_SLAVE;
+	}
 }
 
 static void reimu_spirit_init(Player *plr) {
@@ -91,6 +96,7 @@ PlayerMode plrmode_reimu_a = {
 	.dialog = &dialog_reimu,
 	.shot_mode = PLR_SHOT_REIMU_SPIRIT,
 	.procs = {
+		.property = reimu_common_property,
 		.init = reimu_spirit_init,
 		.bomb = reimu_spirit_bomb,
 		.shot = reimu_spirit_shot,

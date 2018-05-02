@@ -11,7 +11,6 @@
 #include "global.h"
 #include "plrmodes.h"
 #include "reimu.h"
-#include "recolor.h"
 
 PlayerCharacter character_reimu = {
 	.id = PLR_CHAR_REIMU,
@@ -20,35 +19,44 @@ PlayerCharacter character_reimu = {
 	.full_name = "Hakurei Reimu",
 	.title = "Shrine Maiden",
 	.dialog_sprite_name = "dialog/reimu",
-	.player_sprite_name = "reimu",
+	.player_sprite_name = "player/reimu",
 	.ending = {
-		.good = good_ending_marisa,
-		.bad = bad_ending_marisa,
+		.good = good_ending_reimu,
+		.bad = bad_ending_reimu,
 	},
 };
+
+double reimu_common_property(Player *plr, PlrProperty prop) {
+	switch(prop) {
+		case PLR_PROP_BOMB_TIME:
+			return 300;
+
+		case PLR_PROP_COLLECT_RADIUS:
+			return (plr->inputflags & INFLAG_FOCUS) ? 60 : 30;
+
+		case PLR_PROP_SPEED:
+			return (plr->inputflags & INFLAG_FOCUS) ? 2.0 : 4.5;
+
+		case PLR_PROP_POC:
+			return VIEWPORT_H / 3.5;
+
+		case PLR_PROP_DEATHBOMB_WINDOW:
+			return 12;
+	}
+
+	UNREACHABLE;
+}
 
 void reimu_yinyang_visual(Enemy *e, int t, bool render) {
 	if(!render) {
 		return;
 	}
 
-	Shader *s = recolor_get_shader();
-	Color c = rgb(0.95, 0.75, 1.0);
-	float b = 1.0;
-	ColorTransform ct = {
-		.R[1] = rgba(-0.5, -0.5, -0.5, 0.0),
-		.G[1] = c & ~CLRMASK_A,
-		.B[1] = rgba(b, b, b, 0),
-		.A[1] = c &  CLRMASK_A,
-	};
-
-	glUseProgram(s->prog);
-	recolor_apply_transform(&ct);
-
-	glPushMatrix();
-	glTranslatef(creal(e->pos), cimag(e->pos), -1);
-	glRotatef(global.frames * 6, 0, 0, 1);
-	draw_texture_with_size(0, 0, 24, 24, "yinyang");
-	glPopMatrix();
-	glUseProgram(0);
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "yinyang",
+		.shader = "sprite_yinyang",
+		.pos = { creal(e->pos), cimag(e->pos) },
+		.rotation.angle = global.frames * 6 * DEG2RAD,
+		.color = rgb(0.95, 0.75, 1.0),
+	});
 }
