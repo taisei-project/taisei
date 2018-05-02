@@ -26,6 +26,27 @@ PlayerCharacter character_youmu = {
 	},
 };
 
+double youmu_common_property(Player *plr, PlrProperty prop) {
+	switch(prop) {
+		case PLR_PROP_BOMB_TIME:
+			return 300;
+
+		case PLR_PROP_COLLECT_RADIUS:
+			return (plr->inputflags & INFLAG_FOCUS) ? 60 : 30;
+
+		case PLR_PROP_SPEED:
+			return (plr->inputflags & INFLAG_FOCUS) ? 1.75 : 4.8;
+
+		case PLR_PROP_POC:
+			return VIEWPORT_H / 3.5;
+
+		case PLR_PROP_DEATHBOMB_WINDOW:
+			return 12;
+	}
+
+	UNREACHABLE;
+}
+
 void youmu_common_shot(Player *plr) {
 	if(!(global.frames % 4)) {
 		play_sound("generic_shot");

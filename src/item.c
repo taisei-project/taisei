@@ -125,11 +125,7 @@ void move_item(Item *i) {
 
 void process_items(void) {
 	Item *item = global.items, *del = NULL;
-	int v;
-
-	float r = 30;
-	if(global.plr.inputflags & INFLAG_FOCUS)
-		r *= 2;
+	float r = player_property(&global.plr, PLR_PROP_COLLECT_RADIUS);
 
 	while(item != NULL) {
 		if((item->type == Power && global.plr.power >= PLR_MAX_POWER) ||
@@ -144,7 +140,7 @@ void process_items(void) {
 		} else {
 			bool plr_alive = global.plr.deathtime <= global.frames && global.plr.deathtime == -1;
 
-			if((cimag(global.plr.pos) < POINT_OF_COLLECT && plr_alive)
+			if((cimag(global.plr.pos) < player_property(&global.plr, PLR_PROP_POC) && plr_alive)
 			|| global.frames - global.plr.recovery < 0)
 				item->auto_collect = 1;
 
@@ -158,7 +154,7 @@ void process_items(void) {
 
 		move_item(item);
 
-		v = collision_item(item);
+		int v = collision_item(item);
 		if(v == 1) {
 			switch(item->type) {
 			case Power:

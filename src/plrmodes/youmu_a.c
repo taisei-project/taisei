@@ -399,14 +399,6 @@ static void youmu_mirror_init(Player *plr) {
 	myon->ent.draw_layer = LAYER_PLAYER_SLAVE;
 }
 
-static double youmu_mirror_speed_mod(Player *plr, double speed) {
-	if(global.frames - plr->recovery < 0) {
-		speed /= 5.0;
-	}
-
-	return speed;
-}
-
 static void youmu_mirror_preload(void) {
 	const int flags = RESF_DEFAULT;
 
@@ -435,12 +427,12 @@ PlayerMode plrmode_youmu_a = {
 	.character = &character_youmu,
 	.shot_mode = PLR_SHOT_YOUMU_MIRROR,
 	.procs = {
-	.bomb = youmu_mirror_bomb,
-	.speed_mod = youmu_mirror_speed_mod,
-	.bomb_shader = youmu_mirror_shader,
-	.bombbg = youmu_common_bombbg,
-	.shot = youmu_mirror_shot,
-	.init = youmu_mirror_init,
-	.preload = youmu_mirror_preload,
+		.property = youmu_common_property,
+		.bomb = youmu_mirror_bomb,
+		.bomb_shader = youmu_mirror_shader,
+		.bombbg = youmu_common_bombbg,
+		.shot = youmu_mirror_shot,
+		.init = youmu_mirror_init,
+		.preload = youmu_mirror_preload,
 	},
 };

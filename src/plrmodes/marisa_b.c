@@ -207,7 +207,7 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 
 	r_mat_scale(120*fade,VIEWPORT_H*1.5,1);
 	r_mat_translate(0,-0.5,0);
-	marisa_common_masterspark_draw(BOMB_RECOVERY*tb);
+	marisa_common_masterspark_draw(global.plr.bombtotaltime*tb);
 
 	r_mat_pop();
 	r_blend(BLEND_ADD);
@@ -228,14 +228,6 @@ static void marisa_star_bomb(Player *plr) {
 		complex dir = cexp(2*I*M_PI/count*i);
 		create_enemy2c(plr->pos,ENEMY_IMMUNE,marisa_star_orbit_visual,marisa_star_orbit,i,dir);
 	}
-}
-
-static double marisa_star_speed_mod(Player *plr, double speed) {
-	if(global.frames - plr->recovery < 0) {
-		speed /= 5.0;
-	}
-
-	return speed;
 }
 
 static void marisa_star_bombbg(Player *plr) {
@@ -310,6 +302,23 @@ static void marisa_star_shot(Player *plr) {
 	marisa_common_shot(plr, 175 - 10*p);
 }
 
+static double marisa_star_property(Player *plr, PlrProperty prop) {
+	switch(prop) {
+		case PLR_PROP_SPEED: {
+			double s = marisa_common_property(plr, prop);
+
+			if(global.frames - plr->recovery < 0) {
+				s /= 4.0;
+			}
+
+			return s;
+		}
+
+		default:
+			return marisa_common_property(plr, prop);
+	}
+}
+
 static void marisa_star_preload(void) {
 	const int flags = RESF_DEFAULT;
 
@@ -342,10 +351,10 @@ PlayerMode plrmode_marisa_b = {
 	.character = &character_marisa,
 	.shot_mode = PLR_SHOT_MARISA_STAR,
 	.procs = {
+		.property = marisa_star_property,
 		.bomb = marisa_star_bomb,
 		.bombbg = marisa_star_bombbg,
 		.shot = marisa_star_shot,
-		.speed_mod = marisa_star_speed_mod,
 		.power = marisa_star_power,
 		.preload = marisa_star_preload,
 		.init = marisa_star_init,

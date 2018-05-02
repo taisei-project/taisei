@@ -81,6 +81,7 @@ struct Player {
 	int respawntime;
 	int bombcanceltime;
 	int bombcanceldelay;
+	int bombtotaltime;
 
 	struct PlayerMode *mode;
 	AniPlayer ani;

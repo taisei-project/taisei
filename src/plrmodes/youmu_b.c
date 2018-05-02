@@ -400,6 +400,7 @@ PlayerMode plrmode_youmu_b = {
 	.character = &character_youmu,
 	.shot_mode = PLR_SHOT_YOUMU_HAUNTING,
 	.procs = {
+		.property = youmu_common_property,
 		.bomb = youmu_haunting_bomb,
 		.bombbg = youmu_common_bombbg,
 		.shot = youmu_haunting_shot,

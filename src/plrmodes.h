@@ -28,14 +28,26 @@ typedef enum {
 typedef enum {
 	/* do not reorder - screws replays */
 
-	PLR_SHOT_MARISA_LASER = 0,
-	PLR_SHOT_MARISA_STAR = 1,
-
-	PLR_SHOT_YOUMU_MIRROR = 0,
-	PLR_SHOT_YOUMU_HAUNTING = 1,
-
+	PLR_SHOT_A,
+	PLR_SHOT_B,
 	NUM_SHOT_MODES_PER_CHARACTER,
+
+	PLR_SHOT_MARISA_LASER   = PLR_SHOT_A,
+	PLR_SHOT_MARISA_STAR    = PLR_SHOT_B,
+
+	PLR_SHOT_YOUMU_MIRROR   = PLR_SHOT_A,
+	PLR_SHOT_YOUMU_HAUNTING = PLR_SHOT_B,
 } ShotModeID;
+
+typedef enum {
+	// vpu = viewport units
+
+	PLR_PROP_SPEED,              // current player movement speed (vpu/frame)
+	PLR_PROP_POC,                // "point of collection" boundary: all items are auto-collected when player is above this (vpu)
+	PLR_PROP_COLLECT_RADIUS,     // how near the player has to be to an item before it's auto-collected (vpu)
+	PLR_PROP_BOMB_TIME,          // how long a bomb should last if it were to activate this frame; 0 prevents activation (frames)
+	PLR_PROP_DEATHBOMB_WINDOW,   // how much time the player has to recover with a bomb if they died in this frame (frames)
+} PlrProperty;
 
 typedef void (*PlrCharEndingProc)(Ending *e);
 
@@ -61,8 +73,8 @@ typedef void (*PlayerModeShotProc)(Player *plr);
 typedef void (*PlayerModeBombProc)(Player *plr);
 typedef void (*PlayerModeBombBgProc)(Player *plr);
 typedef void (*PlayerModePowerProc)(Player *plr, short npow);
-typedef double (*PlayerModeSpeedModProc)(Player *plr, double speed);
 typedef void (*PlayerModePreloadProc)(void);
+typedef double (*PlayerModePropertyProc)(Player *plr, PlrProperty prop);
 
 typedef struct PlayerMode {
 	const char *name;
@@ -78,8 +90,8 @@ typedef struct PlayerMode {
 		ShaderRule bomb_shader;
 		PlayerModeBombBgProc bombbg;
 		PlayerModePowerProc power;
-		PlayerModeSpeedModProc speed_mod;
 		PlayerModePreloadProc preload;
+		PlayerModePropertyProc property;
 	} procs;
 } PlayerMode;
 
@@ -94,3 +106,5 @@ PlayerMode* plrmode_find(CharacterID charid, ShotModeID shotid);
 int plrmode_repr(char *out, size_t outsize, PlayerMode *mode);
 PlayerMode* plrmode_parse(const char *name);
 void plrmode_preload(PlayerMode *mode);
+
+double player_property(Player *plr, PlrProperty prop);

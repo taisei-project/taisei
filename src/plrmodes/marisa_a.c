@@ -396,7 +396,7 @@ static void masterspark_visual(Enemy *e, int t2, bool render) {
 	r_mat_push();
 	r_mat_translate(creal(global.plr.pos),cimag(global.plr.pos)-40-VIEWPORT_H/2,0);
 	r_mat_scale(fade*800,VIEWPORT_H,1);
-	marisa_common_masterspark_draw(t*BOMB_RECOVERY);
+	marisa_common_masterspark_draw(t*global.plr.bombtotaltime);
 	r_mat_pop();
 }
 
@@ -572,16 +572,25 @@ static void marisa_laser_think(Player *plr) {
 	}
 }
 
-static double marisa_laser_speed_mod(Player *plr, double speed) {
-	if(global.frames - plr->recovery < 0) {
-		speed /= 5.0;
-	}
-
-	return speed;
-}
-
 static void marisa_laser_shot(Player *plr) {
 	marisa_common_shot(plr, 175 - 4 * (plr->power / 100));
+}
+
+static double marisa_laser_property(Player *plr, PlrProperty prop) {
+	switch(prop) {
+		case PLR_PROP_SPEED: {
+			double s = marisa_common_property(plr, prop);
+
+			if(global.frames - plr->recovery < 0) {
+				s /= 5.0;
+			}
+
+			return s;
+		}
+
+		default:
+			return marisa_common_property(plr, prop);
+	}
 }
 
 static void marisa_laser_preload(void) {
@@ -614,11 +623,11 @@ PlayerMode plrmode_marisa_a = {
 	.character = &character_marisa,
 	.shot_mode = PLR_SHOT_MARISA_LASER,
 	.procs = {
+		.property = marisa_laser_property,
 		.bomb = marisa_laser_bomb,
 		.bombbg = marisa_laser_bombbg,
 		.shot = marisa_laser_shot,
 		.power = marisa_laser_power,
-		.speed_mod = marisa_laser_speed_mod,
 		.preload = marisa_laser_preload,
 		.init = marisa_laser_init,
 		.think = marisa_laser_think,

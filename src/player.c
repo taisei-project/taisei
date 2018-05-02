@@ -36,6 +36,10 @@ void player_stage_pre_init(Player *plr) {
 	plrmode_preload(plr->mode);
 }
 
+double player_property(Player *plr, PlrProperty prop) {
+	return plr->mode->procs.property(plr, prop);
+}
+
 static void ent_draw_player(EntityInterface *ent);
 static Enemy* player_spawn_focus_circle(void);
 
@@ -45,6 +49,7 @@ void player_stage_post_init(Player *plr) {
 	// ensure the essential callbacks are there. other code tests only for the optional ones
 	assert(plr->mode->procs.shot != NULL);
 	assert(plr->mode->procs.bomb != NULL);
+	assert(plr->mode->procs.property != NULL);
 
 	delete_enemies(&global.plr.slaves);
 
@@ -98,17 +103,7 @@ bool player_set_power(Player *plr, short npow) {
 }
 
 void player_move(Player *plr, complex delta) {
-	float speed = 0.01*VIEWPORT_W;
-
-	if(plr->inputflags & INFLAG_FOCUS) {
-		speed /= 2.0;
-	}
-
-	if(plr->mode->procs.speed_mod) {
-		speed = plr->mode->procs.speed_mod(plr, speed);
-	}
-
-	delta *= speed;
+	delta *= player_property(plr, PLR_PROP_SPEED);
 	complex lastpos = plr->pos;
 	double x = clamp(creal(plr->pos) + creal(delta), PLR_MIN_BORDER_DIST, VIEWPORT_W - PLR_MIN_BORDER_DIST);
 	double y = clamp(cimag(plr->pos) + cimag(delta), PLR_MIN_BORDER_DIST, VIEWPORT_H - PLR_MIN_BORDER_DIST);
@@ -279,6 +274,12 @@ bool player_bomb(Player *plr) {
 	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell)
 		return false;
 
+	int bomb_time = floor(player_property(plr, PLR_PROP_BOMB_TIME));
+
+	if(bomb_time <= 0) {
+		return false;
+	}
+
 	if(global.frames - plr->recovery >= 0 && (plr->bombs > 0 || plr->iddqd) && global.frames - plr->respawntime >= 60) {
 		player_fail_spell(plr);
 		stage_clear_hazards(CLEAR_HAZARDS_ALL);
@@ -288,15 +289,17 @@ bool player_bomb(Player *plr) {
 		if(plr->deathtime > 0) {
 			plr->deathtime = -1;
 
-			if(plr->bombs)
+			if(plr->bombs) {
 				plr->bombs--;
+			}
 		}
 
 		if(plr->bombs < 0) {
 			plr->bombs = 0;
 		}
 
-		plr->recovery = global.frames + BOMB_RECOVERY;
+		plr->bombtotaltime = bomb_time;
+		plr->recovery = global.frames + plr->bombtotaltime;
 		plr->bombcanceltime = 0;
 		plr->bombcanceldelay = 0;
 
@@ -334,7 +337,7 @@ double player_get_bomb_progress(Player *plr, double *out_speed) {
 		return 1;
 	}
 
-	int start_time = plr->recovery - BOMB_RECOVERY;
+	int start_time = plr->recovery - plr->bombtotaltime;
 	int end_time = plr->recovery;
 
 	if(!plr->bombcanceltime || plr->bombcanceltime + plr->bombcanceldelay >= end_time) {
@@ -342,21 +345,21 @@ double player_get_bomb_progress(Player *plr, double *out_speed) {
 			*out_speed = 1.0;
 		}
 
-		return (BOMB_RECOVERY - (end_time - global.frames))/(double)BOMB_RECOVERY;
+		return (plr->bombtotaltime - (end_time - global.frames))/(double)plr->bombtotaltime;
 	}
 
 	int cancel_time = plr->bombcanceltime + plr->bombcanceldelay;
 	int passed_time = plr->bombcanceltime - start_time;
 
-	int shortened_total_time = (BOMB_RECOVERY - passed_time) - (end_time - cancel_time);
+	int shortened_total_time = (plr->bombtotaltime - passed_time) - (end_time - cancel_time);
 	int shortened_passed_time = (global.frames - plr->bombcanceltime);
 
-	double passed_fraction = passed_time / (double)BOMB_RECOVERY;
+	double passed_fraction = passed_time / (double)plr->bombtotaltime;
 	double shortened_fraction = shortened_passed_time / (double)shortened_total_time;
 	shortened_fraction *= (1 - passed_fraction);
 
 	if(out_speed != NULL) {
-		*out_speed = (BOMB_RECOVERY - passed_time) / (double)shortened_total_time;
+		*out_speed = (plr->bombtotaltime - passed_time) / (double)shortened_total_time;
 	}
 
 	return passed_fraction + shortened_fraction;
@@ -423,7 +426,7 @@ void player_death(Player *plr) {
 			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 		);
 
-		plr->deathtime = global.frames + DEATHBOMB_TIME;
+		plr->deathtime = global.frames + floor(player_property(plr, PLR_PROP_DEATHBOMB_WINDOW));
 	}
 }
 
