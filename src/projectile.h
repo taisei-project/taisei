@@ -35,10 +35,10 @@ typedef enum {
 	_InvalidProj,
 
 	EnemyProj, // hazard, collides with player
-	DeadProj, // no collision, will be converted to a BPoint item shortly
-	Particle, // no collision, not a hazard
-	FakeProj, // hazard, but no collision
-	PlrProj, // collides with enemies and bosses
+	DeadProj,  // no collision, will be converted to a BPoint item shortly
+	Particle,  // no collision, not a hazard
+	FakeProj,  // hazard, but no collision
+	PlrProj,   // collides with enemies and bosses
 } ProjType;
 
 typedef enum ProjFlags {
@@ -61,17 +61,21 @@ static const ProjFlags PFLAG_DRAWADD = (1 << 0);
 // attr_deprecated("Use .blend = BLEND_SUB instead")
 static const ProjFlags PFLAG_DRAWSUB = (1 << 1);
 
+// FIXME: prototype stuff awkwardly shoved in this header because of dependency cycles.
+typedef struct ProjPrototype ProjPrototype;
+
 struct Projectile {
 	ENTITY_INTERFACE_NAMED(Projectile, ent);
 
 	complex pos;
 	complex pos0;
-	complex size; // TODO: this is currently ignored if sprite is not NULL. we need to decouple hitareas from sprites.
+	complex size;
 	complex args[RULE_ARGC];
 	ProjRule rule;
 	ProjDrawRule draw_rule;
 	ShaderProgram *shader;
 	Sprite *sprite;
+	ProjPrototype *proto;
 	Color color;
 	float shader_custom_param; // FIXME: see renderer/api.c: struct SpriteParams
 	BlendMode blend;
@@ -79,9 +83,12 @@ struct Projectile {
 	float angle;
 	ProjType type;
 	int max_viewport_dist;
-	int priority_override; // FIXME: remove this when v1.2 compat is not needed
 	ProjFlags flags;
 	bool grazed;
+
+	// XXX: this is in frames of course, but needs to be float
+	// to avoid subtle truncation and integer division gotchas.
+	float timeout;
 
 #ifdef PROJ_DEBUG
 	DebugInfo debug;
@@ -100,6 +107,7 @@ typedef struct ProjArgs {
 	ProjDrawRule draw_rule;
 	const char *shader;
 	ShaderProgram *shader_ptr;
+	ProjPrototype *proto;
 	float shader_custom_param; // FIXME: see renderer/api.c: struct SpriteParams
 	Projectile **dest;
 	ProjType type;
@@ -107,8 +115,25 @@ typedef struct ProjArgs {
 	complex size;
 	int max_viewport_dist;
 	drawlayer_t layer;
-	int priority_override; // FIXME: remove this when v1.2 compat is not needed
-} ProjArgs;
+
+	// XXX: this is in frames of course, but needs to be float
+	// to avoid subtle truncation and integer division gotchas.
+	float timeout;
+} /* attr_designated_init */ ProjArgs;
+
+struct ProjPrototype {
+	void (*preload)(ProjPrototype *proto);
+	void (*process_args)(ProjPrototype *proto, ProjArgs *args);
+	void (*init_projectile)(ProjPrototype *proto, Projectile *p);
+	void (*deinit_projectile)(ProjPrototype *proto, Projectile *p);
+	void *private;
+};
+
+#define PP(name) \
+	extern ProjPrototype _pp_##name; \
+	extern ProjPrototype *pp_##name; \
+
+#include "projectile_prototypes/all.inc.h"
 
 #define PARTICLE_ADDITIVE_SUBLAYER (1 << 3)
 
@@ -157,6 +182,8 @@ bool projectile_is_clearable(Projectile *p);
 Projectile* spawn_projectile_collision_effect(Projectile *proj);
 Projectile* spawn_projectile_clear_effect(Projectile *proj);
 
+void projectile_set_prototype(Projectile *p, ProjPrototype *proto);
+
 bool clear_projectile(Projectile **projlist, Projectile *proj, bool force, bool now);
 
 int linear(Projectile *p, int t);
@@ -173,15 +200,9 @@ void Fade(Projectile *p, int t);
 void GrowFade(Projectile *p, int t);
 void ScaleFade(Projectile *p, int t);
 
-
 void Petal(Projectile *p, int t);
 void petal_explosion(int n, complex pos);
 
-int timeout(Projectile *p, int t);
-int timeout_linear(Projectile *p, int t);
-int timeout_linear_fixangle(Projectile *p, int t);
-
-int blast_timeout(Projectile *p, int t);
 void Blast(Projectile *p, int t);
 
 void projectiles_preload(void);

@@ -46,11 +46,6 @@ static void ent_draw_item(EntityInterface *ent) {
 	});
 }
 
-static int item_prio(List *litem) {
-	Item *item = (Item*)litem;
-	return item->type;
-}
-
 Item* create_item(complex pos, complex v, ItemType type) {
 	if((creal(pos) < 0 || creal(pos) > VIEWPORT_W)) {
 		// we need this because we clamp the item position to the viewport boundary during motion
@@ -61,10 +56,7 @@ Item* create_item(complex pos, complex v, ItemType type) {
 	// type = 1 + floor(Life * frand());
 
 	Item *i = (Item*)objpool_acquire(stage_object_pools.items);
-
-	// FIXME: use simpler/faster insertions when v1.2 compat is not needed
-	// list_push(&global.items, i);
-	list_insert_at_priority_tail(&global.items, i, type, item_prio);
+	list_append(&global.items, i);
 
 	i->pos = pos;
 	i->pos0 = pos;
@@ -89,7 +81,11 @@ Item* create_bpoint(complex pos) {
 	Item *i = create_item(pos, 0, BPoint);
 
 	if(i) {
-		PARTICLE("flare", pos, 0, timeout, { 30 }, .draw_rule = Fade);
+		PARTICLE(
+			.sprite = "flare",
+			.pos = pos, .timeout = 30,
+			.draw_rule = Fade
+		);
 		i->auto_collect = 10;
 	}
 

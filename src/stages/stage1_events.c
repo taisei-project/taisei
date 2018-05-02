@@ -72,7 +72,11 @@ int cirno_snowflake_proj(Projectile *p, int time) {
 			play_sound_ex("shot_special1", 30, false);
 			p->color = mix_colors(p->color, rgb(0.5, 0.5, 0.5), 0.5);
 
-			PARTICLE("stain", p->pos, rgba(0.9, 0.9, 1.0, 0.5), timeout, { 10 + 2 * creal(p->args[1]) },
+			PARTICLE(
+				.sprite = "stain",
+				.pos = p->pos,
+				.color = rgba(0.9, 0.9, 1.0, 0.5),
+				.timeout = 10 + 2 * creal(p->args[1]),
 				.draw_rule = GrowFade,
 				.angle = p->angle,
 				.flags = PFLAG_DRAWADD,
@@ -107,11 +111,23 @@ void cirno_icy(Boss *b, int time) {
 			complex phase = cexp(I*ang);
 
 			complex pos = b->pos+vel*t+dr*_i*phase;
-			PROJECTILE("crystal", pos+6*I*phase, rgb(0.0,0.1+0.1*size/5,0.8), cirno_snowflake_proj, { vel, _i, },
+
+			PROJECTILE(
+				.proto = pp_crystal,
+				.pos = pos+6*I*phase,
+				.color = rgb(0.0,0.1+0.1*size/5,0.8),
+				.rule = cirno_snowflake_proj,
+				.args = { vel, _i, },
 				.angle = ang+M_PI/4,
 				.max_viewport_dist = 64,
 			);
-			PROJECTILE("crystal", pos-6*I*phase, rgb(0.0,0.1+0.1*size/5,0.8), cirno_snowflake_proj, { vel, _i },
+
+			PROJECTILE(
+				.proto = pp_crystal,
+				.pos = pos-6*I*phase,
+				.color = rgb(0.0,0.1+0.1*size/5,0.8),
+				.rule = cirno_snowflake_proj,
+				.args = { vel, _i },
 				.angle = ang-M_PI/4,
 				.max_viewport_dist = 64,
 			);
@@ -122,7 +138,13 @@ void cirno_icy(Boss *b, int time) {
 				for(int j = -1; j <= 1; j+=2) {
 					complex phase2 = cexp(I*M_PI/4*j)*phase;
 					complex pos = pos0+(dr*(_i-split))*phase2;
-					PROJECTILE("crystal", pos, rgb(0.0,0.3*size/5,1), cirno_snowflake_proj, { vel, _i },
+
+					PROJECTILE(
+						.proto = pp_crystal,
+						.pos = pos,
+						.color = rgb(0.0,0.3*size/5,1),
+						.rule = cirno_snowflake_proj,
+						.args = { vel, _i },
 						.angle = ang+M_PI/4*j,
 						.max_viewport_dist = 64,
 					);
@@ -143,9 +165,8 @@ static Projectile* spawn_stain(complex pos, float angle, int to) {
 	return PARTICLE(
 		.sprite = "stain",
 		.pos = pos,
-		.rule = timeout,
 		.draw_rule = GrowFade,
-		.args = { to },
+		.timeout = to,
 		.angle = angle,
 		.flags = PFLAG_DRAWADD,
 	);
@@ -166,10 +187,11 @@ int cirno_pfreeze_frogs(Projectile *p, int t) {
 		linear(p, t);
 	else if(boss_t == 110) {
 		p->color = rgb(0.7,0.7,0.7);
-		PARTICLE("stain", p->pos,
-			.rule = timeout,
+		PARTICLE(
+			.sprite = "stain",
+			.pos = p->pos,
 			.draw_rule = GrowFade,
-			.args = { 30 },
+			.timeout = 30,
 			.angle = p->angle,
 			.flags = PFLAG_DRAWADD,
 		);
@@ -208,7 +230,13 @@ void cirno_perfect_freeze(Boss *c, int time) {
 		int i;
 		int n = global.diff;
 		for(i = 0; i < n; i++) {
-			PROJECTILE("ball", c->pos, rgb(r, g, b), cirno_pfreeze_frogs, { 4*cexp(I*tsrand()) });
+			PROJECTILE(
+				.proto = pp_ball,
+				.pos = c->pos,
+				.color = rgb(r, g, b),
+				.rule = cirno_pfreeze_frogs,
+				.args = { 4*cexp(I*tsrand()) },
+			);
 		}
 	}
 
@@ -230,8 +258,20 @@ void cirno_perfect_freeze(Boss *c, int time) {
 			r2 = nfrand();
 		}
 
-		PROJECTILE("rice", c->pos + 60, rgb(0.3, 0.4, 0.9), asymptotic, { (2.+0.2*global.diff)*cexp(I*(carg(global.plr.pos - c->pos) + 0.5*r1)), 2.5 });
-		PROJECTILE("rice", c->pos - 60, rgb(0.3, 0.4, 0.9), asymptotic, { (2.+0.2*global.diff)*cexp(I*(carg(global.plr.pos - c->pos) + 0.5*r2)), 2.5 });
+		PROJECTILE(
+			.proto = pp_rice,
+			.pos = c->pos + 60,
+			.color = rgb(0.3, 0.4, 0.9),
+			.rule = asymptotic,
+			.args = { (2.+0.2*global.diff)*cexp(I*(carg(global.plr.pos - c->pos) + 0.5*r1)), 2.5 }
+		);
+		PROJECTILE(
+			.proto = pp_rice,
+			.pos = c->pos - 60,
+			.color = rgb(0.3, 0.4, 0.9),
+			.rule = asymptotic,
+			.args = { (2.+0.2*global.diff)*cexp(I*(carg(global.plr.pos - c->pos) + 0.5*r2)), 2.5 }
+		);
 	}
 
 	GO_AT(c, 190, 220, -2);
@@ -304,12 +344,24 @@ void cirno_iceplosion0(Boss *c, int time) {
 		int i;
 		int n = 8+global.diff;
 		for(i = 0; i < n; i++) {
-			PROJECTILE("plainball", c->pos, rgb(0,0,0.5), asymptotic, { (3+_i/3.0)*cexp(I*(2*M_PI/n*i + carg(global.plr.pos-c->pos))), _i*0.7 });
+			PROJECTILE(
+				.proto = pp_plainball,
+				.pos = c->pos,
+				.color = rgb(0,0,0.5),
+				.rule = asymptotic,
+				.args = { (3+_i/3.0)*cexp(I*(2*M_PI/n*i + carg(global.plr.pos-c->pos))), _i*0.7 }
+			);
 		}
 	}
 
 	FROM_TO_SND("shot1_loop",40,100,1+2*(global.diff<D_Hard)) {
-		PROJECTILE("crystal", c->pos, rgb(0.3,0.3,0.8), accelerated, { global.diff/4.*cexp(2.0*I*M_PI*frand()) + 2.0*I, 0.002*cexp(I*(M_PI/10.0*(_i%20))) });
+		PROJECTILE(
+			.proto = pp_crystal,
+			.pos = c->pos,
+			.color = rgb(0.3,0.3,0.8),
+			.rule = accelerated,
+			.args = { global.diff/4.*cexp(2.0*I*M_PI*frand()) + 2.0*I, 0.002*cexp(I*(M_PI/10.0*(_i%20))) }
+		);
 	}
 
 	FROM_TO(150, 300, 30-5*global.diff) {
@@ -317,7 +369,13 @@ void cirno_iceplosion0(Boss *c, int time) {
 		int i;
 		play_sound("shot1");
 		for(i = 0; i < 20; i++) {
-			PROJECTILE("plainball", c->pos, rgb(0.04*_i,0.04*_i,0.4+0.04*_i), asymptotic, { (3+_i/4.0)*cexp(I*(2*M_PI/8.0*i + dif)), 2.5 });
+			PROJECTILE(
+				.proto = pp_plainball,
+				.pos = c->pos,
+				.color = rgb(0.04*_i,0.04*_i,0.4+0.04*_i),
+				.rule = asymptotic,
+				.args = { (3+_i/4.0)*cexp(I*(2*M_PI/8.0*i + dif)), 2.5 }
+			);
 		}
 	}
 }
@@ -339,7 +397,13 @@ void cirno_crystal_rain(Boss *c, int time) {
 
 	if(frand() > 0.95-0.1*global.diff) {
 		tsrand_fill(2);
-		PROJECTILE("crystal", VIEWPORT_W*afrand(0), rgb(0.2,0.2,0.4), accelerated, { 1.0*I, 0.01*I + (-0.005+0.005*global.diff)*anfrand(1) });
+		PROJECTILE(
+			.proto = pp_crystal,
+			.pos = VIEWPORT_W*afrand(0),
+			.color = rgb(0.2,0.2,0.4),
+			.rule = accelerated,
+			.args = { 1.0*I, 0.01*I + (-0.005+0.005*global.diff)*anfrand(1) }
+		);
 	}
 
 	AT(100)
@@ -353,7 +417,13 @@ void cirno_crystal_rain(Boss *c, int time) {
 
 		play_sound("shot_special1");
 		for(i = -n; i <= n; i++) {
-			PROJECTILE(odd? "plainball" : "bigball", c->pos, rgb(0.2,0.2,0.9), asymptotic, { 2*cexp(I*carg(global.plr.pos-c->pos)+0.3*I*i), 2.3 });
+			PROJECTILE(
+				.proto = odd? pp_plainball : pp_bigball,
+				.pos = c->pos,
+				.color = rgb(0.2,0.2,0.9),
+				.rule = asymptotic,
+				.args = { 2*cexp(I*carg(global.plr.pos-c->pos)+0.3*I*i), 2.3 }
+			);
 		}
 	}
 
@@ -446,10 +516,13 @@ static int halation_orb(Projectile *p, int time) {
 	}
 
 	if(!(time % 4)) {
-		PARTICLE("stain", p->pos, 0, timeout, { 20 },
+		PARTICLE(
+			.sprite = "stain",
+			.pos = p->pos,
+			.timeout = 20,
 			.draw_rule = GrowFade,
 			.angle = global.frames * 15,
-			.flags = PFLAG_DRAWADD,
+			.blend = BLEND_ADD,
 		);
 	}
 
@@ -670,7 +743,10 @@ void cirno_icicle_fall(Boss *c, int time) {
 
 int cirno_crystal_blizzard_proj(Projectile *p, int time) {
 	if(!(time % 12)) {
-		PARTICLE("stain", p->pos, 0, timeout, { 20 },
+		PARTICLE(
+			.sprite = "stain",
+			.pos = p->pos,
+			.timeout = 20,
 			.draw_rule = GrowFade,
 			.angle = global.frames * 15,
 			.flags = PFLAG_DRAWADD,

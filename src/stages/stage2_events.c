@@ -262,7 +262,13 @@ int wriggle_bug(Projectile *p, int t) {
 	if(global.boss && global.boss->current && !((global.frames - global.boss->current->starttime - 30) % 200)) {
 		play_sound("redirect");
 		p->args[0] *= cexp(I*(M_PI/3)*nfrand());
-		PARTICLE("flare", p->pos, 0, timeout, { 15, 5 }, .draw_rule = GrowFade);
+		PARTICLE(
+			.sprite = "flare",
+			.pos = p->pos,
+			.timeout = 15,
+			.args = { 0, 5 },
+			.draw_rule = GrowFade
+		);
 	}
 
 	return 1;

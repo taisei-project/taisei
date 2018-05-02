@@ -50,12 +50,12 @@ static void youmu_homing_draw_proj(Projectile *p, int t) {
 }
 
 static void youmu_homing_draw_trail(Projectile *p, int t) {
-	float a = clamp(1.0f - (float)t / p->args[0], 0, 1);
+	float a = clamp(1.0f - (float)t / p->timeout, 0, 1);
 	youmu_homing_draw_common(p, a, 5 * (1 - a), 0.15f * a);
 }
 
 static void youmu_trap_draw_trail(Projectile *p, int t) {
-	float a = clamp(1.0f - (float)t / p->args[0], 0, 1);
+	float a = clamp(1.0f - (float)t / p->timeout, 0, 1);
 	youmu_homing_draw_common(p, a, 2 - a, 0.15f * a);
 }
 
@@ -76,9 +76,10 @@ static Projectile* youmu_homing_trail(Projectile *p, complex v, int to) {
 		.pos = p->pos,
 		.color = p->color,
 		.angle = p->angle,
-		.rule = timeout_linear,
+		.rule = linear,
+		.timeout = to,
 		.draw_rule = youmu_homing_draw_trail,
-		.args = { to, v },
+		.args = { v },
 		.flags = PFLAG_NOREFLECT,
 		.shader_ptr = p->shader,
 		.layer = LAYER_PARTICLE_LOW,
@@ -123,7 +124,10 @@ static Projectile* youmu_trap_trail(Projectile *p, complex v, int t) {
 
 static int youmu_trap(Projectile *p, int t) {
 	if(t == EVENT_DEATH) {
-		PARTICLE("blast", p->pos, 0, blast_timeout, { 15 },
+		PARTICLE(
+			.proto = pp_blast,
+			.pos = p->pos,
+			.timeout = 15,
 			.draw_rule = Blast,
 			.flags = PFLAG_REQUIREDPARTICLE,
 			.layer = LAYER_PARTICLE_LOW,
@@ -145,13 +149,19 @@ static int youmu_trap(Projectile *p, int t) {
 	p->shader_custom_param = charge;
 
 	if(!(global.plr.inputflags & INFLAG_FOCUS)) {
-		PARTICLE("blast", p->pos, 0, blast_timeout, { 20 },
+		PARTICLE(
+			.proto = pp_blast,
+			.pos = p->pos,
+			.timeout = 20,
 			.draw_rule = Blast,
 			.flags = PFLAG_REQUIREDPARTICLE,
 			.layer = LAYER_PARTICLE_LOW,
 		);
 
-		PARTICLE("blast", p->pos, 0, blast_timeout, { 23 },
+		PARTICLE(
+			.proto = pp_blast,
+			.pos = p->pos,
+			.timeout = 23,
 			.draw_rule = Blast,
 			.flags = PFLAG_REQUIREDPARTICLE,
 			.layer = LAYER_PARTICLE_LOW,
@@ -191,7 +201,7 @@ static int youmu_trap(Projectile *p, int t) {
 }
 
 static void youmu_particle_slice_draw(Projectile *p, int t) {
-	double lifetime = creal(p->args[0]);
+	double lifetime = p->timeout;
 	double tt = t/lifetime;
 	double f = 0;
 	if(tt > 0.1) {
@@ -217,10 +227,10 @@ static void youmu_particle_slice_draw(Projectile *p, int t) {
 
 static int youmu_particle_slice_logic(Projectile *p, int t) {
 	if(t < 0) {
-		return 1;
+		return ACTION_NONE;
 	}
 
-	double lifetime = creal(p->args[0]);
+	double lifetime = p->timeout;
 	double tt = t/lifetime;
 	double a = 0;
 	if(tt > 0.) {
@@ -250,7 +260,7 @@ static int youmu_particle_slice_logic(Projectile *p, int t) {
 		);
 	}
 
-	return timeout(p, t);
+	return ACTION_NONE;
 }
 
 static void YoumuSlash(Enemy *e, int t, bool render) {
@@ -275,8 +285,9 @@ static int youmu_slash(Enemy *e, int t) {
 			.pos = e->pos+pos,
 			.draw_rule = youmu_particle_slice_draw,
 			.rule = youmu_particle_slice_logic,
-			.flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
-			.args = { 100 },
+			.flags = PFLAG_NOREFLECT,
+			.blend = BLEND_ADD,
+			.timeout = 100,
 			.angle = carg(pos),
 		);
 	}

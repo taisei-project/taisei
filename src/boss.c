@@ -166,7 +166,7 @@ static bool attack_is_over(Attack *a) {
 }
 
 static void BossGlow(Projectile *p, int t) {
-	float s = 1.0+t/p->args[0]*0.5;
+	float s = 1.0+t/(double)p->timeout*0.5;
 	float fade = 1 - (1.5 - s);
 	float deform = 5 - 10 * fade * fade;
 
@@ -185,7 +185,7 @@ static int boss_glow(Projectile *p, int t) {
 	if(t == EVENT_DEATH) {
 		free(p->sprite);
 	}
-	return timeout_linear(p,t);
+	return linear(p, t);
 }
 
 static Projectile* spawn_boss_glow(Boss *boss, Color clr, int timeout) {
@@ -197,7 +197,7 @@ static Projectile* spawn_boss_glow(Boss *boss, Color clr, int timeout) {
 		.color = clr,
 		.rule = boss_glow,
 		.draw_rule = BossGlow,
-		.args = { timeout },
+		.timeout = timeout,
 		.angle = M_PI * 2 * frand(),
 		.layer = LAYER_PARTICLE_LOW,
 	);
@@ -212,11 +212,14 @@ static void spawn_particle_effects(Boss *boss) {
 	bool is_extra = cur && cur->type == AT_ExtraSpell && global.frames >= cur->starttime;
 
 	if(!(global.frames % 13) && !is_extra) {
-		complex v = cexp(I*global.frames);
-
-		PARTICLE("smoke", v, shadowcolor, enemy_flare,
-			.draw_rule = EnemyFlareShrink,
-			.args = { 180, 0, add_ref(boss), },
+		PARTICLE(
+			.sprite = "smoke",
+			.pos = cexp(I*global.frames),
+			.color = shadowcolor,
+			.rule = enemy_flare,
+			.timeout = 180,
+			.draw_rule = Shrink,
+			.args = { 0, add_ref(boss), },
 			.angle = M_PI * 2 * frand(),
 			.flags = PFLAG_DRAWADD,
 		);
@@ -412,10 +415,11 @@ void boss_rule_extra(Boss *boss, float alpha) {
 				0.5 + 0.2 * psina * (1-v),
 				0.5 + 0.5 * psina *    v
 			),
-			.rule = timeout_linear,
+			.rule = linear,
+			.timeout = 30*lt,
 			.draw_rule = GrowFade,
 			.flags = PFLAG_DRAWADD,
-			.args = { 30*lt, vel * (1 - 2 * !(global.frames % 10)), 2.5 },
+			.args = { vel * (1 - 2 * !(global.frames % 10)), 2.5 },
 		);
 	}
 }
@@ -698,16 +702,18 @@ void process_boss(Boss **pboss) {
 
 			for(int i = 0; i < 256; i++) {
 				tsrand_fill(3);
-				PARTICLE("flare", boss->pos, 0, timeout_linear, .draw_rule = Fade,
-					.args = {
-						60 + 10 * afrand(2),
-						(3+afrand(0)*10)*cexp(I*tsrand_a(1))
-					},
+				PARTICLE(
+					.sprite = "flare",
+					.pos = boss->pos,
+					.timeout = 60 + 10 * afrand(2),
+					.rule = linear,
+					.draw_rule = Fade,
+					.args = { (3+afrand(0)*10)*cexp(I*tsrand_a(1)) },
 				);
 			}
 
-			PARTICLE("blast", boss->pos, 0, timeout, { 60, 3 }, .draw_rule = GrowFade);
-			PARTICLE("blast", boss->pos, 0, timeout, { 70, 2.5 }, .draw_rule = GrowFade);
+			PARTICLE("blast", boss->pos, 0, .timeout = 60, .args = { 0, 3.0 }, .draw_rule = GrowFade);
+			PARTICLE("blast", boss->pos, 0, .timeout = 70, .args = { 0, 2.5 }, .draw_rule = GrowFade);
 		}
 
 		play_sound_ex("bossdeath", BOSS_DEATH_DELAY * 2, false);
@@ -818,9 +824,10 @@ void boss_start_attack(Boss *b, Attack *a) {
 				.sprite = "stain",
 				.pos = VIEWPORT_W/2 + VIEWPORT_W/4*anfrand(0)+I*VIEWPORT_H/2+I*anfrand(1)*30,
 				.color = rgb(0.2,0.3,0.4),
-				.rule = timeout_linear,
+				.rule = linear,
+				.timeout = 50,
 				.draw_rule = GrowFade,
-				.args = { 50, sign(anfrand(2))*10*(1+afrand(3)) },
+				.args = { sign(anfrand(2))*10*(1+afrand(3)) },
 				.flags = PFLAG_DRAWADD,
 			);
 		}

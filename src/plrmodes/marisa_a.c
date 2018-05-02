@@ -91,12 +91,10 @@ static void trace_laser(Enemy *e, complex vel, int damage) {
 			PARTICLE(
 				.sprite = "flare",
 				.pos = col.location,
-				.rule = timeout_linear,
+				.rule = linear,
+				.timeout = 3 + 5 * afrand(2),
 				.draw_rule = Shrink,
-				.args = {
-					3 + 5 * afrand(2),
-					(2+afrand(0)*6)*cexp(I*M_PI*2*afrand(1))
-				},
+				.args = { (2+afrand(0)*6)*cexp(I*M_PI*2*afrand(1)) },
 				.flags = PFLAG_NOREFLECT,
 			);
 
@@ -403,8 +401,11 @@ static void masterspark_visual(Enemy *e, int t2, bool render) {
 }
 
 static int masterspark_star(Projectile *p, int t) {
-	p->args[1] += 0.1*p->args[1]/cabs(p->args[1]);
-	return timeout_linear(p,t);
+	if(t >= 0) {
+		p->args[0] += 0.1*p->args[0]/cabs(p->args[0]);
+	}
+
+	return linear(p, t);
 }
 
 static int masterspark(Enemy *e, int t2) {
@@ -424,35 +425,38 @@ static int masterspark(Enemy *e, int t2) {
 		complex dir = -cexp(1.2*I*nfrand())*I;
 		Color c = rgb(0.7+0.3*sin(t*30),0.7+0.3*cos(t*30),0.7+0.3*cos(t*3));
 		PARTICLE(
-			.sprite="maristar_orbit",
-			.pos=global.plr.pos+40*dir,
-			.color=c,
-			.rule=masterspark_star,
-			.args={50, 10*dir-10*I,3},
-			.angle=nfrand(),
-			.flags=PFLAG_DRAWADD,
-			.draw_rule=GrowFade
+			.sprite = "maristar_orbit",
+			.pos = global.plr.pos+40*dir,
+			.color = c,
+			.rule = masterspark_star,
+			.timeout = 50,
+			.args= { 10 * dir - 10*I, 3 },
+			.angle = nfrand(),
+			.blend = BLEND_ADD,
+			.draw_rule = GrowFade
 		);
 		dir = -conj(dir);
 		PARTICLE(
-			.sprite="maristar_orbit",
-			.pos=global.plr.pos+40*dir,
-			.color=c,
-			.rule=masterspark_star,
-			.args={50, 10*dir-10*I,3},
-			.angle=nfrand(),
-			.flags=PFLAG_DRAWADD,
-			.draw_rule=GrowFade
+			.sprite = "maristar_orbit",
+			.pos = global.plr.pos+40*dir,
+			.color = c,
+			.rule = masterspark_star,
+			.timeout = 50,
+			.args = { 10 * dir - 10*I, 3 },
+			.angle = nfrand(),
+			.flags = PFLAG_DRAWADD,
+			.draw_rule = GrowFade
 		);
 		PARTICLE(
-			.sprite="smoke",
-			.pos=global.plr.pos-40*I,
-			.color=rgb(0.9,1,1),
-			.rule=timeout_linear,
-			.args={50, -5*dir,3},
-			.angle=nfrand(),
-			.flags=PFLAG_DRAWADD,
-			.draw_rule=GrowFade
+			.sprite = "smoke",
+			.pos = global.plr.pos-40*I,
+			.color = rgb(0.9,1,1),
+			.rule = linear,
+			.timeout = 50,
+			.args = { -5*dir, 3 },
+			.angle = nfrand(),
+			.flags = PFLAG_DRAWADD,
+			.draw_rule = GrowFade
 		);
 	}
 

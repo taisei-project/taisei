@@ -78,6 +78,5 @@ void Swirl(Enemy*, int t, bool render);
 void BigFairy(Enemy*, int t, bool render);
 
 int enemy_flare(Projectile *p, int t);
-void EnemyFlareShrink(Projectile *p, int t);
 
 void enemies_preload(void);

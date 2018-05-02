@@ -38,15 +38,36 @@ static ProjArgs defaults_part = {
 };
 
 static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
-	int texargs = (bool)args->sprite + (bool)args->sprite_ptr + (bool)args->size;
+	// Detect the deprecated way to spawn projectiles and remap it to prototypes,
+	// if possible. This is so that I can conserve the remains of my sanity by
+	// not having to convert every single PROJECTILE call in the game manually
+	// and in one go. So, TODO: convert every single PROJECTILE call in the game
+	// and remove this mess.
 
-	if(texargs != 1) {
-		log_fatal("Exactly one of .sprite, .sprite_ptr, or .size is required");
+	if(!args->proto && args->sprite && args->size == 0) {
+		static struct {
+			const char *name;
+			ProjPrototype *proto;
+		} proto_map[] = {
+			#define PP(name) { #name, &_pp_##name },
+			#include "projectile_prototypes/all.inc.h"
+		};
+
+		for(int i = 0; i < sizeof(proto_map)/sizeof(*proto_map); ++i) {
+			if(!strcmp(args->sprite, proto_map[i].name)) {
+				args->proto = proto_map[i].proto;
+				args->sprite = NULL;
+				break;
+			}
+		}
 	}
 
-	if(!args->rule) {
-		log_fatal(".rule is required");
+	if(args->proto && args->proto->process_args) {
+		args->proto->process_args(args->proto, args);
+		return;
 	}
+
+	// TODO: move this stuff into prototypes along with the defaults?
 
 	if(args->sprite) {
 		args->sprite_ptr = prefix_get_sprite(args->sprite, defaults->sprite);
@@ -93,40 +114,49 @@ static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
 	}
 }
 
-static double projectile_rect_area(Projectile *p) {
-	if(p->sprite) {
-		return p->sprite->w * p->sprite->h;
-	} else {
-		return creal(p->size) * cimag(p->size);
-	}
-}
-
 static void projectile_size(Projectile *p, double *w, double *h) {
-	if(p->sprite) {
+	if(p->type == Particle && p->sprite != NULL) {
 		*w = p->sprite->w;
 		*h = p->sprite->h;
 	} else {
 		*w = creal(p->size);
 		*h = cimag(p->size);
 	}
+
+	assert(*w > 0);
+	assert(*h > 0);
+}
+
+static double projectile_rect_area(Projectile *p) {
+	double w, h;
+	projectile_size(p, &w, &h);
+	return w * h;
 }
 
 static void ent_draw_projectile(EntityInterface *ent);
 
-static int projectile_sizeprio_func(List *vproj) {
-	// FIXME: remove this when v1.2 compat is not needed
-	Projectile *proj = (Projectile*)vproj;
-
-	if(proj->priority_override) {
-		return proj->priority_override;
+static inline int proj_call_rule(Projectile *p, int t) {
+	if(p->timeout > 0 && t >= p->timeout) {
+		return ACTION_DESTROY;
 	}
 
-	return -rint(projectile_rect_area(proj));
+	if(p->rule) {
+		return p->rule(p, t);
+	}
+
+	return ACTION_NONE;
 }
 
-List* proj_insert_sizeprio(List **dest, List *elem) {
-	// FIXME: remove this when v1.2 compat is not needed
-	return list_insert_at_priority_tail(dest, elem, projectile_sizeprio_func(elem), projectile_sizeprio_func);
+void projectile_set_prototype(Projectile *p, ProjPrototype *proto) {
+	if(p->proto && p->proto->deinit_projectile) {
+		p->proto->deinit_projectile(p->proto, p);
+	}
+
+	if(proto && proto->init_projectile) {
+		proto->init_projectile(proto, p);
+	}
+
+	p->proto = proto;
 }
 
 static Projectile* _create_projectile(ProjArgs *args) {
@@ -151,11 +181,20 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	p->max_viewport_dist = args->max_viewport_dist;
 	p->size = args->size;
 	p->flags = args->flags;
-	p->priority_override = args->priority_override;
+	p->timeout = args->timeout;
 
 	memcpy(p->args, args->args, sizeof(p->args));
 
 	p->ent.draw_layer = args->layer;
+	p->ent.draw_func = ent_draw_projectile;
+
+	projectile_set_prototype(p, args->proto);
+
+	if((p->type == EnemyProj || p->type >= PlrProj) && (creal(p->size) <= 0 || cimag(p->size) <= 0)) {
+		// FIXME: debug info is not actually attached at this point!
+		set_debug_info(&p->debug);
+		log_fatal("Tried to spawn a projectile with invalid size %f x %f", creal(p->size), cimag(p->size));
+	}
 
 	if(!(p->ent.draw_layer & LAYER_LOW_MASK)) {
 		switch(p->type) {
@@ -168,16 +207,16 @@ static Projectile* _create_projectile(ProjArgs *args) {
 				sublayer <<= 1;
 				sublayer |= 1 * (p->blend == BLEND_ADD || p->flags & PFLAG_DRAWADD);
 
-				// If specific blending order is required, then set up the sublayer manually.
+				// If specific blending order is required, then you should set up the sublayer manually.
 				p->ent.draw_layer |= sublayer;
 				break;
 			}
 
 			case Particle: {
 				// 1. Additive particles go above others.
-				drawlayer_low_t sublayer = (p->blend == BLEND_ADD || p->flags & PFLAG_DRAWADD) *  PARTICLE_ADDITIVE_SUBLAYER;
+				drawlayer_low_t sublayer = (p->blend == BLEND_ADD || p->flags & PFLAG_DRAWADD) * PARTICLE_ADDITIVE_SUBLAYER;
 
-				// If specific blending order is required, then set up the sublayer manually.
+				// If specific blending order is required, then you should set up the sublayer manually.
 				p->ent.draw_layer |= sublayer;
 				break;
 			}
@@ -187,17 +226,13 @@ static Projectile* _create_projectile(ProjArgs *args) {
 		}
 	}
 
-	p->ent.draw_func = ent_draw_projectile;
 	ent_register(&p->ent, ENT_PROJECTILE);
 
 	// BUG: this currently breaks some projectiles
 	//      enable this when they're fixed
-	// assert(rule != NULL);
-	// rule(p, EVENT_BIRTH);
+	// proj_call_rule(p, EVENT_BIRTH);
 
-	// FIXME: use simpler/faster insertions when v1.2 compat is not needed
-	// return (Projectile*)list_push(args->dest, p);
-	return (Projectile*)proj_insert_sizeprio((List**)args->dest, (List*)p);
+	return list_append(args->dest, p);
 }
 
 Projectile* create_projectile(ProjArgs *args) {
@@ -221,7 +256,7 @@ Projectile* _proj_attach_dbginfo(Projectile *p, DebugInfo *dbg, const char *call
 
 static void* _delete_projectile(List **projs, List *proj, void *arg) {
 	Projectile *p = (Projectile*)proj;
-	p->rule(p, EVENT_DEATH);
+	proj_call_rule(p, EVENT_DEATH);
 
 	del_ref(proj);
 	ent_unregister(&p->ent);
@@ -413,14 +448,16 @@ Projectile* spawn_projectile_collision_effect(Projectile *proj) {
 
 	return PARTICLE(
 		.sprite_ptr = proj->sprite,
+		.size = proj->size,
 		.pos = proj->pos,
 		.color = proj->color,
 		.flags = proj->flags | PFLAG_NOREFLECT,
 		.shader_ptr = proj->shader,
-		.rule = timeout_linear,
+		.rule = linear,
 		.draw_rule = DeathShrink,
 		.angle = proj->angle,
-		.args = { 10, 5*cexp(I*proj->angle)},
+		.args = { 5*cexp(I*proj->angle) },
+		.timeout = 10,
 	);
 }
 
@@ -431,13 +468,14 @@ Projectile* spawn_projectile_clear_effect(Projectile *proj) {
 
 	return PARTICLE(
 		.sprite_ptr = proj->sprite,
+		.size = proj->size,
 		.pos = proj->pos,
 		.color = proj->color,
 		.flags = proj->flags | PFLAG_NOREFLECT,
 		.shader_ptr = proj->shader,
-		.rule = timeout,
 		.draw_rule = Shrink,
 		.angle = proj->angle,
+		.timeout = 10,
 		.args = { 10 },
 	);
 }
@@ -469,8 +507,7 @@ void process_projectiles(Projectile **projs, bool collision) {
 
 	for(Projectile *proj = *projs, *next; proj; proj = next) {
 		next = proj->next;
-
-		action = proj->rule(proj, global.frames - proj->birthtime);
+		action = proj_call_rule(proj, global.frames - proj->birthtime);
 
 		if(proj->type == DeadProj && killed < 5) {
 			killed++;
@@ -601,23 +638,16 @@ void ProjDraw(Projectile *proj, int t) {
 void ProjNoDraw(Projectile *proj, int t) {
 }
 
-int blast_timeout(Projectile *p, int t) {
-	if(t == 1) {
-		p->args[1] = frand()*360 + frand()*I;
-		p->args[2] = frand()     + frand()*I;
-	}
-
-	return timeout(p, t);
-}
-
 void Blast(Projectile *p, int t) {
 	r_mat_push();
 	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
 	r_mat_rotate_deg(creal(p->args[1]), cimag(p->args[1]), creal(p->args[2]), cimag(p->args[2]));
-	if(t != p->args[0] && p->args[0] != 0)
-		r_mat_scale(t/p->args[0], t/p->args[0], 1);
 
-	r_color4(0.3, 0.6, 1.0, 1.0 - t/p->args[0]);
+	if(t != p->timeout && p->timeout != 0) {
+		r_mat_scale(t/(double)p->timeout, t/(double)p->timeout, 1);
+	}
+
+	r_color4(0.3, 0.6, 1.0, 1.0 - t/(double)p->timeout);
 
 	draw_sprite_batched_p(0,0,p->sprite);
 	r_mat_scale(0.5+creal(p->args[2]),0.5+creal(p->args[2]),1);
@@ -630,7 +660,7 @@ void Shrink(Projectile *p, int t) {
 	r_mat_push();
 	apply_common_transforms(p, t);
 
-	float s = 2.0-t/p->args[0]*2;
+	float s = 2.0-t/(double)p->timeout*2;
 	if(s != 1) {
 		r_mat_scale(s, s, 1);
 	}
@@ -643,7 +673,7 @@ void DeathShrink(Projectile *p, int t) {
 	r_mat_push();
 	apply_common_transforms(p, t);
 
-	float s = 2.0-t/p->args[0]*2;
+	float s = 2.0-t/(double)p->timeout*2;
 	if(s != 1) {
 		r_mat_scale(s, 1, 1);
 	}
@@ -656,19 +686,22 @@ void GrowFade(Projectile *p, int t) {
 	r_mat_push();
 	apply_common_transforms(p, t);
 
-	float s = t/p->args[0]*(1 + (creal(p->args[2])? p->args[2] : p->args[1]));
+	set_debug_info(&p->debug);
+	assert(p->timeout != 0);
+
+	float s = t/(double)p->timeout*(1 + (creal(p->args[2])? p->args[2] : p->args[1]));
 	if(s != 1) {
 		r_mat_scale(s, s, 1);
 	}
 
-	ProjDrawCore(p, multiply_colors(p->color, rgba(1, 1, 1, 1 - t/p->args[0])));
+	ProjDrawCore(p, multiply_colors(p->color, rgba(1, 1, 1, 1 - t/(double)p->timeout)));
 	r_mat_pop();
 }
 
 void Fade(Projectile *p, int t) {
 	r_mat_push();
 	apply_common_transforms(p, t);
-	ProjDrawCore(p, multiply_colors(p->color, rgba(1, 1, 1, 1 - t/p->args[0])));
+	ProjDrawCore(p, multiply_colors(p->color, rgba(1, 1, 1, 1 - t/(double)p->timeout)));
 	r_mat_pop();
 }
 
@@ -678,7 +711,7 @@ void ScaleFade(Projectile *p, int t) {
 
 	double scale_min = creal(p->args[2]);
 	double scale_max = cimag(p->args[2]);
-	double timefactor = t / creal(p->args[0]);
+	double timefactor = t / (double)p->timeout;
 	double scale = scale_min * (1 - timefactor) + scale_max * timefactor;
 	double alpha = pow(1 - timefactor, 2);
 
@@ -689,36 +722,6 @@ void ScaleFade(Projectile *p, int t) {
 	r_mat_scale(scale, scale, 1);
 	ProjDrawCore(p, c);
 	r_mat_pop();
-}
-
-int timeout(Projectile *p, int t) {
-	if(t >= creal(p->args[0]))
-		return ACTION_DESTROY;
-
-	return 1;
-}
-
-int timeout_linear(Projectile *p, int t) {
-	if(t >= creal(p->args[0]))
-		return ACTION_DESTROY;
-	if(t < 0)
-		return 1;
-
-	p->angle = carg(p->args[1]);
-	p->pos = p->pos0 + p->args[1]*t;
-
-	return 1;
-}
-
-int timeout_linear_fixangle(Projectile *p, int t) {
-	if(t >= creal(p->args[0]))
-		return ACTION_DESTROY;
-	if(t < 0)
-		return 1;
-
-	p->pos = p->pos0 + p->args[1]*t;
-
-	return 1;
 }
 
 void Petal(Projectile *p, int t) {
@@ -743,7 +746,11 @@ void petal_explosion(int n, complex pos) {
 		float t = frand();
 		Color c = rgba(sin(5*t),cos(5*t),0.5,t);
 
-		PARTICLE("petal", pos, c, asymptotic,
+		PARTICLE(
+			.sprite = "petal",
+			.pos = pos,
+			.color = c,
+			.rule = asymptotic,
 			.draw_rule = Petal,
 			.args = {
 				(3+5*afrand(2))*cexp(I*M_PI*2*afrand(3)),
@@ -781,19 +788,6 @@ void projectiles_preload(void) {
 		"part/lightning1",
 		"part/lightningball",
 		"part/smoothdot",
-		"proj/ball",
-		"proj/bigball",
-		"proj/bullet",
-		"proj/card",
-		"proj/crystal",
-		"proj/flea",
-		"proj/hghost",
-		"proj/plainball",
-		"proj/rice",
-		"proj/soul",
-		"proj/thickrice",
-		"proj/wave",
-		"proj/youhoming",
 	NULL);
 
 	preload_resources(RES_SFX, RESF_PERMANENT,
@@ -803,6 +797,9 @@ void projectiles_preload(void) {
 		"shot_special1",
 		"redirect",
 	NULL);
+
+	#define PP(name) (_pp_##name).preload(&_pp_##name);
+	#include "projectile_prototypes/all.inc.h"
 
 	defaults_proj.shader_ptr = r_shader_get(defaults_proj.shader);
 	defaults_part.shader_ptr = r_shader_get(defaults_part.shader);

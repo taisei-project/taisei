@@ -89,6 +89,7 @@ taisei_src = files(
     'plrmodes.c',
     'progress.c',
     'projectile.c',
+    'projectile_prototypes.c',
     'random.c',
     'refs.c',
     'replay.c',

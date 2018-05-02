@@ -302,10 +302,11 @@ void KurumiSlave(Enemy *e, int t, bool render) {
 			.sprite = "smoothdot",
 			.pos = offset,
 			.color = rgb(0.3,0.0,0.0),
-			.draw_rule = EnemyFlareShrink,
+			.draw_rule = Shrink,
 			.rule = enemy_flare,
-			.args = { 50, (-50.0*I-offset)/50.0, add_ref(e) },
-			.flags = PFLAG_DRAWADD,
+			.timeout = 50,
+			.args = { (-50.0*I-offset)/50.0, add_ref(e) },
+			.blend = BLEND_ADD,
 		);
 	}
 }
@@ -681,9 +682,13 @@ void KurumiAniWallSlave(Enemy *e, int t, bool render) {
 	}
 
 	if(e->args[1]) {
-		PARTICLE("smoothdot", e->pos, rgb(1,1,1), timeout, { 30 },
+		PARTICLE(
+			.sprite = "smoothdot",
+			.pos = e->pos,
+			.color = rgb(1,1,1),
 			.draw_rule = Fade,
 			.flags = PFLAG_DRAWADD,
+			.timeout = 30,
 		);
 	}
 }
@@ -847,9 +852,9 @@ static Projectile* vapor_particle(complex pos, Color clr) {
 	return PARTICLE(
 		.sprite = "stain",
 		.color = clr,
-		.rule = timeout,
+		.timeout = 60,
 		.draw_rule = ScaleFade,
-		.args = { 60, 0, 0.0 + 5.0*I },
+		.args = { 0, 0, 0.0 + 5.0*I },
 		.pos = pos,
 		.angle = M_PI*2*frand(),
 		.flags = PFLAG_DRAWADD,
@@ -869,9 +874,9 @@ static int kdanmaku_proj(Projectile *p, int t) {
 		PARTICLE(
 			.sprite = "flare",
 			.color = rgb(1, 1, 1),
-			.rule = timeout,
+			.timeout = 30,
 			.draw_rule = ScaleFade,
-			.args = { 30, 0, 3.0 },
+			.args = { 0, 0, 3.0 },
 			.pos = p->pos,
 		);
 
@@ -1235,7 +1240,13 @@ int kurumi_extra_fairy(Enemy *e, int t) {
 
 	FROM_TO(attacktime,attacktime+flytime,20-global.diff*3) {
 		if(global.diff>D_Easy) {
-			PROJECTILE("ball", e->pos, rgba(0.1+0.07*_i, 0.3, 1-0.05*_i,0.8), timeout, { 50 }, .flags = PFLAG_DRAWADD);
+			PROJECTILE(
+				.proto = pp_ball,
+				.pos = e->pos,
+				.color = rgba(0.1+0.07*_i, 0.3, 1-0.05*_i,0.8),
+				.timeout = 50,
+				.blend = BLEND_ADD,
+			);
 		}
 	}
 	if(t > attacktime + flytime + 20 && global.boss) {

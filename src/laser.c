@@ -265,7 +265,12 @@ void process_lasers(void) {
 				}
 
 				if(kill_now) {
-					PARTICLE("flare", p, 0, timeout, { 20 }, .draw_rule = GrowFade);
+					PARTICLE(
+						.sprite = "flare",
+						.pos = p,
+						.timeout = 20,
+						.draw_rule = GrowFade
+					);
 					laser->deathtime = 0;
 				}
 			}
