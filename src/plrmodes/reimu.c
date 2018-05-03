@@ -102,16 +102,13 @@ void reimu_common_shot(Player *plr, int dmg) {
 	}
 }
 
-void reimu_yinyang_visual(Enemy *e, int t, bool render) {
-	if(!render) {
-		return;
-	}
-
+void reimu_common_draw_yinyang(Enemy *e, int t, Color c) {
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = "yinyang",
 		.shader = "sprite_yinyang",
 		.pos = { creal(e->pos), cimag(e->pos) },
 		.rotation.angle = global.frames * 6 * DEG2RAD,
-		.color = rgb(0.95, 0.75, 1.0),
+		// .color = rgb(0.95, 0.75, 1.0),
+		.color = c,
 	});
 }

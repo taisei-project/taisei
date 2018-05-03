@@ -12,6 +12,13 @@
 #include "plrmodes.h"
 #include "reimu.h"
 
+// FIXME: We probably need a better way to store shot-specific state.
+//        See also MarisaA.
+static struct {
+	uint prev_inputflags;
+	bool respawn_slaves;
+} reimu_spirit_state;
+
 static void reimu_spirit_preload(void) {
 	const int flags = RESF_DEFAULT;
 
@@ -107,11 +114,14 @@ static void reimu_spirit_shot(Player *p) {
 }
 
 static void reimu_spirit_slave_shot(Enemy *e, int t) {
-	int st = global.frames + 2;
+	// int st = global.frames + 2;
+	int st = t;
 
 	if(st % 3) {
 		return;
 	}
+
+	static int last_shot;
 
 	if(global.plr.inputflags & INFLAG_FOCUS) {
 		PROJECTILE(
@@ -120,9 +130,12 @@ static void reimu_spirit_slave_shot(Enemy *e, int t) {
 			.color = rgba(1, 1, 1, 0.5),
 			.rule = reimu_spirit_needle,
 			.args = { -20.0*I },
-			.type = PlrProj+30,
+			.type = PlrProj + cimag(e->args[2]),
 			.shader = "sprite_default",
 		);
+
+		log_debug("%d", global.frames - last_shot);
+		last_shot = global.frames;
 	} else if(!(st % 6)) {
 		PROJECTILE(
 			.proto = pp_ofuda,
@@ -130,7 +143,7 @@ static void reimu_spirit_slave_shot(Enemy *e, int t) {
 			.color = rgba(1, 1, 1, 0.5),
 			.rule = reimu_spirit_homing,
 			.args = { -10.0*I, 0, 0, creal(e->pos) },
-			.type = PlrProj+30,
+			.type = PlrProj + creal(e->args[2]),
 			.timeout = 60,
 			.shader = "sprite_default",
 		);
@@ -142,59 +155,174 @@ static int reimu_spirit_slave(Enemy *e, int t) {
 
 	AT(EVENT_BIRTH) {
 		e->pos = global.plr.pos;
-		return 1;
+		return ACTION_NONE;
 	}
 
-	GO_TO(e, global.plr.pos + e->args[!!(global.plr.inputflags & INFLAG_FOCUS)], 0.005 * cabs(e->args[0]));
+	if(t < 0) {
+		return ACTION_NONE;
+	}
+
+	if(creal(e->args[3]) != 0) {
+		int death_begin_time = creal(e->args[3]);
+		int death_duration = cimag(e->args[3]);
+		double death_progress = (t - death_begin_time) / (double)death_duration;
+
+		e->pos = global.plr.pos * death_progress + e->pos0 * (1 - death_progress);
+
+		if(death_progress >= 1) {
+			return ACTION_DESTROY;
+		}
+
+		return ACTION_NONE;
+	}
+
+	double speed = 0.005 * min(1, t / 12.0);
+
+	if(global.plr.inputflags & INFLAG_FOCUS) {
+		GO_TO(e, global.plr.pos + cimag(e->args[1]) * cexp(I*(e->args[0] + t * creal(e->args[1]))), speed * cabs(e->args[1]));
+	} else {
+		GO_TO(e, global.plr.pos + e->pos0, speed * cabs(e->pos0));
+	}
 
 	if(player_should_shoot(&global.plr, true)) {
 		reimu_spirit_slave_shot(e, t);
 	}
 
-	return 1;
+	return ACTION_NONE;
 }
 
-static void reimu_spirit_respawn_slaves(Player *plr, short npow) {
-	Enemy *e = plr->slaves, *tmp;
-	double dmg = 56;
+static int reimu_spirit_yinyang_flare(Projectile *p, int t) {
+	double a = p->angle;
+	int r = linear(p, t);
+	p->angle = a;
+	return r;
+}
 
-	while(e != 0) {
-		tmp = e;
-		e = e->next;
-		if(tmp->hp == ENEMY_IMMUNE)
-			delete_enemy(&plr->slaves, tmp);
+static void reimu_spirit_yinyang_focused_visual(Enemy *e, int t, bool render) {
+	if(!render && player_should_shoot(&global.plr, true)) {
+		PARTICLE(
+			.sprite = "stain",
+			.color = rgba(1, 0.0 + 0.5 * frand(), 0, 1),
+			.timeout = 12 + 2 * nfrand(),
+			.pos = e->pos,
+			.args = { -5*I * (1 + frand()), 0, 0.5 + 0*I },
+			.angle = 2*M_PI*frand(),
+			.rule = reimu_spirit_yinyang_flare,
+			.draw_rule = ScaleFade,
+			.layer = LAYER_PARTICLE_HIGH,
+			.flags = PFLAG_NOREFLECT,
+			.blend = BLEND_ADD,
+		);
 	}
 
-	if(npow / 100 == 1) {
-		create_enemy_p(&plr->slaves, 40.0*I, ENEMY_IMMUNE, reimu_yinyang_visual, reimu_spirit_slave, 50.0*I, -50.0*I, -0.1*I, dmg);
+	reimu_common_draw_yinyang(e, t, rgb(1.0, 0.8, 0.8));
+}
+
+static void reimu_spirit_yinyang_unfocused_visual(Enemy *e, int t, bool render) {
+	if(!render && player_should_shoot(&global.plr, true)) {
+		PARTICLE(
+			.sprite = "stain",
+			.color = rgba(1, 0.25, 0.0 + 0.5 * frand(), 1),
+			.timeout = 12 + 2 * nfrand(),
+			.pos = e->pos,
+			.args = { -5*I * (1 + frand()), 0, 0.5 + 0*I },
+			.angle = 2*M_PI*frand(),
+			.rule = reimu_spirit_yinyang_flare,
+			.draw_rule = ScaleFade,
+			.layer = LAYER_PARTICLE_HIGH,
+			.flags = PFLAG_NOREFLECT,
+			.blend = BLEND_ADD,
+		);
 	}
 
-	if(npow >= 200) {
-		create_enemy_p(&plr->slaves, 30.0*I+15, ENEMY_IMMUNE, reimu_yinyang_visual, reimu_spirit_slave, +40, +20-30*I,  1-0.1*I, dmg);
-		create_enemy_p(&plr->slaves, 30.0*I-15, ENEMY_IMMUNE, reimu_yinyang_visual, reimu_spirit_slave, -40, -20-30*I, -1-0.1*I, dmg);
+	reimu_common_draw_yinyang(e, t, rgb(0.95, 0.75, 1.0));
+}
+
+static inline Enemy* reimu_spirit_spawn_slave(Player *plr, complex pos, complex a0, complex a1, complex a2, complex a3, EnemyVisualRule visual) {
+	Enemy *e = create_enemy_p(&plr->slaves, pos, ENEMY_IMMUNE, visual, reimu_spirit_slave, a0, a1, a2, a3);
+	e->ent.draw_layer = LAYER_PLAYER_SLAVE;
+	return e;
+}
+
+static void reimu_spirit_kill_slaves(Enemy **slaves) {
+	for(Enemy *e = *slaves, *next; e; e = next) {
+		next = e->next;
+
+		if(e->hp == ENEMY_IMMUNE && creal(e->args[3]) == 0) {
+			// delete_enemy(slaves, e);
+			// e->args[3] = 1;
+			e->args[3] = global.frames - e->birthtime + 3 * I;
+			e->pos0 = e->pos;
+		}
+	}
+}
+
+static void reimu_spirit_respawn_slaves(Player *plr, short npow, complex param) {
+	double dmg_homing = 30; // every 6 frames
+	double dmg_needle = 30; // every 3 frames
+	complex dmg = dmg_homing + I * dmg_needle;
+	EnemyVisualRule visual;
+
+	if(plr->inputflags & INFLAG_FOCUS) {
+		visual = reimu_spirit_yinyang_focused_visual;
+	} else {
+		visual = reimu_spirit_yinyang_unfocused_visual;
 	}
 
-	if(npow / 100 == 3) {
-		create_enemy_p(&plr->slaves, -30.0*I, ENEMY_IMMUNE, reimu_yinyang_visual, reimu_spirit_slave, 50.0*I, -50.0*I, -0.1*I, dmg);
-	}
+	reimu_spirit_kill_slaves(&plr->slaves);
 
-	if(npow >= 400) {
-		create_enemy_p(&plr->slaves,  30, ENEMY_IMMUNE, reimu_yinyang_visual, reimu_spirit_slave, +80, +40-20*I,  2-0.1*I, dmg);
-		create_enemy_p(&plr->slaves, -30, ENEMY_IMMUNE, reimu_yinyang_visual, reimu_spirit_slave, -80, -40-20*I, -2-0.1*I, dmg);
-	}
-
-	for(e = plr->slaves; e; e = e->next) {
-		e->ent.draw_layer = LAYER_PLAYER_SLAVE;
+	switch(npow / 100) {
+		case 0:
+			break;
+		case 1:
+			reimu_spirit_spawn_slave(plr, 50.0*I, 0,          +0.10 + 50*I, dmg, 0, visual);
+			break;
+		case 2:
+			reimu_spirit_spawn_slave(plr, +40,    0,          +0.10 + 50*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, -40,    M_PI,       +0.10 + 50*I, dmg, 0, visual);
+			break;
+		case 3:
+			reimu_spirit_spawn_slave(plr, 50.0*I, 0*2*M_PI/3, +0.10 + 50*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, +40,    1*2*M_PI/3, +0.10 + 50*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, -40,    2*2*M_PI/3, +0.10 + 50*I, dmg, 0, visual);
+			break;
+		case 4:
+			reimu_spirit_spawn_slave(plr, +80,    0,          +0.10 + 40*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, -80,    M_PI,       +0.10 + 40*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, +40,    0,          -0.05 + 60*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, -40,    M_PI,       -0.05 + 60*I, dmg, 0, visual);
+			break;
+		default:
+			UNREACHABLE;
 	}
 }
 
 static void reimu_spirit_init(Player *plr) {
-	reimu_spirit_respawn_slaves(plr, plr->power);
+	memset(&reimu_spirit_state, 0, sizeof(reimu_spirit_state));
+	reimu_spirit_state.prev_inputflags = plr->inputflags;
+	reimu_spirit_respawn_slaves(plr, plr->power, 0);
+}
+
+static void reimu_spirit_think(Player *plr) {
+	if((bool)(reimu_spirit_state.prev_inputflags & INFLAG_FOCUS) ^ (bool)(plr->inputflags & INFLAG_FOCUS)) {
+		reimu_spirit_state.respawn_slaves = true;
+	}
+
+	if(reimu_spirit_state.respawn_slaves) {
+		if(plr->slaves) {
+			reimu_spirit_kill_slaves(&plr->slaves);
+		} else {
+			reimu_spirit_respawn_slaves(plr, plr->power, 0);
+			reimu_spirit_state.respawn_slaves = false;
+		}
+	}
+
+	reimu_spirit_state.prev_inputflags = plr->inputflags;
 }
 
 static void reimu_spirit_power(Player *plr, short npow) {
 	if(plr->power / 100 != npow / 100) {
-		reimu_spirit_respawn_slaves(plr, npow);
+		reimu_spirit_respawn_slaves(plr, npow, 0);
 	}
 }
 
@@ -206,6 +334,7 @@ PlayerMode plrmode_reimu_a = {
 	.procs = {
 		.property = reimu_common_property,
 		.init = reimu_spirit_init,
+		.think = reimu_spirit_think,
 		.bomb = reimu_spirit_bomb,
 		.shot = reimu_spirit_shot,
 		.power = reimu_spirit_power,

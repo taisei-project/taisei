@@ -1075,7 +1075,7 @@ complex plrutil_homing_target(complex org, complex fallback) {
 	}
 
 	for(Enemy *e = global.enemies.first; e; e = e->next) {
-		if(e->hp == ENEMY_IMMUNE){
+		if(e->hp == ENEMY_IMMUNE) {
 			continue;
 		}
 
