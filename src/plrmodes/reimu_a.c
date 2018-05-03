@@ -110,7 +110,7 @@ static void reimu_spirit_bomb(Player *p) {
 }
 
 static void reimu_spirit_shot(Player *p) {
-	reimu_common_shot(p, 175);
+	reimu_common_shot(p, 100 - 17 * (p->power / 100));
 }
 
 static void reimu_spirit_slave_shot(Enemy *e, int t) {
@@ -120,8 +120,6 @@ static void reimu_spirit_slave_shot(Enemy *e, int t) {
 	if(st % 3) {
 		return;
 	}
-
-	static int last_shot;
 
 	if(global.plr.inputflags & INFLAG_FOCUS) {
 		PROJECTILE(
@@ -133,9 +131,6 @@ static void reimu_spirit_slave_shot(Enemy *e, int t) {
 			.type = PlrProj + cimag(e->args[2]),
 			.shader = "sprite_default",
 		);
-
-		log_debug("%d", global.frames - last_shot);
-		last_shot = global.frames;
 	} else if(!(st % 6)) {
 		PROJECTILE(
 			.proto = pp_ofuda,
@@ -162,6 +157,10 @@ static int reimu_spirit_slave(Enemy *e, int t) {
 		return ACTION_NONE;
 	}
 
+	if(player_should_shoot(&global.plr, true)) {
+		reimu_spirit_slave_shot(e, t);
+	}
+
 	if(creal(e->args[3]) != 0) {
 		int death_begin_time = creal(e->args[3]);
 		int death_duration = cimag(e->args[3]);
@@ -182,10 +181,6 @@ static int reimu_spirit_slave(Enemy *e, int t) {
 		GO_TO(e, global.plr.pos + cimag(e->args[1]) * cexp(I*(e->args[0] + t * creal(e->args[1]))), speed * cabs(e->args[1]));
 	} else {
 		GO_TO(e, global.plr.pos + e->pos0, speed * cabs(e->pos0));
-	}
-
-	if(player_should_shoot(&global.plr, true)) {
-		reimu_spirit_slave_shot(e, t);
 	}
 
 	return ACTION_NONE;
@@ -258,8 +253,8 @@ static void reimu_spirit_kill_slaves(Enemy **slaves) {
 }
 
 static void reimu_spirit_respawn_slaves(Player *plr, short npow, complex param) {
-	double dmg_homing = 30; // every 6 frames
-	double dmg_needle = 30; // every 3 frames
+	double dmg_homing = 60; // every 6 frames
+	double dmg_needle = 80; // every 3 frames
 	complex dmg = dmg_homing + I * dmg_needle;
 	EnemyVisualRule visual;
 
@@ -275,22 +270,22 @@ static void reimu_spirit_respawn_slaves(Player *plr, short npow, complex param) 
 		case 0:
 			break;
 		case 1:
-			reimu_spirit_spawn_slave(plr, 50.0*I, 0,          +0.10 + 50*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, 50.0*I, 0,          +0.10 + 60*I, dmg, 0, visual);
 			break;
 		case 2:
-			reimu_spirit_spawn_slave(plr, +40,    0,          +0.10 + 50*I, dmg, 0, visual);
-			reimu_spirit_spawn_slave(plr, -40,    M_PI,       +0.10 + 50*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, +40,    0,          +0.10 + 60*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, -40,    M_PI,       +0.10 + 60*I, dmg, 0, visual);
 			break;
 		case 3:
-			reimu_spirit_spawn_slave(plr, 50.0*I, 0*2*M_PI/3, +0.10 + 50*I, dmg, 0, visual);
-			reimu_spirit_spawn_slave(plr, +40,    1*2*M_PI/3, +0.10 + 50*I, dmg, 0, visual);
-			reimu_spirit_spawn_slave(plr, -40,    2*2*M_PI/3, +0.10 + 50*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, 50.0*I, 0*2*M_PI/3, +0.10 + 60*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, +40,    1*2*M_PI/3, +0.10 + 60*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, -40,    2*2*M_PI/3, +0.10 + 60*I, dmg, 0, visual);
 			break;
 		case 4:
-			reimu_spirit_spawn_slave(plr, +80,    0,          +0.10 + 40*I, dmg, 0, visual);
-			reimu_spirit_spawn_slave(plr, -80,    M_PI,       +0.10 + 40*I, dmg, 0, visual);
-			reimu_spirit_spawn_slave(plr, +40,    0,          -0.05 + 60*I, dmg, 0, visual);
-			reimu_spirit_spawn_slave(plr, -40,    M_PI,       -0.05 + 60*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, +80,    0,          +0.10 + 60*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, -80,    M_PI,       +0.10 + 60*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, +40,    0,          -0.05 + 80*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, -40,    M_PI,       -0.05 + 80*I, dmg, 0, visual);
 			break;
 		default:
 			UNREACHABLE;
