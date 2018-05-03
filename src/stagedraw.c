@@ -572,6 +572,14 @@ struct labels_s {
 	} y;
 };
 
+static void draw_graph(float x, float y, float w, float h) {
+	r_mat_push();
+	r_mat_translate(x + w/2, y + h/2, 0);
+	r_mat_scale(w, h, 1);
+	r_draw_quad();
+	r_mat_pop();
+}
+
 void stage_draw_hud_text(struct labels_s* labels) {
 	char buf[64];
 
@@ -659,21 +667,52 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	}
 #ifdef PLR_DPS_STATS
 	else if(global.frames) {
-		snprintf(buf, sizeof(buf), "Avg DPS: %.02f", global.plr.total_dmg / (global.frames / (double)FPS));
+		int totaldmg = 0;
+		int framespan = sizeof(global.plr.dmglog)/sizeof(*global.plr.dmglog);
+		int graphspan = framespan;
+		static int max = 0;
+		float graph[framespan];
+
+		if(graphspan > 120) {
+			// shader limitation
+			graphspan = 120;
+		}
+
+		// hack to update the graph every frame
+		player_register_damage(&global.plr, 0);
+
+		for(int i = 0; i < framespan; ++i) {
+			totaldmg += global.plr.dmglog[i];
+
+			if(global.plr.dmglog[i] > max) {
+				max = global.plr.dmglog[i];
+			}
+		}
+
+		for(int i = 0; i < graphspan; ++i) {
+			if(max > 0) {
+				graph[i] = (float)global.plr.dmglog[i] / max;
+			} else {
+				graph[i] = 0;
+			}
+		}
+
+		snprintf(buf, sizeof(buf), "Avg DPS: %.02f", totaldmg / (framespan / (double)FPS));
 		r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { 8.0 / strlen(buf) });
-		draw_text(AL_Left, 0, rint(SCREEN_H - 0.5 * stringheight(buf, _fonts.monosmall)), buf, _fonts.monosmall);
+		float text_h = stringheight(buf, _fonts.monosmall);
+		float text_y = rint(SCREEN_H - 0.5 * text_h);
+		draw_text(AL_Left, 0, text_y, buf, _fonts.monosmall);
+
+		r_shader("graph");
+		r_uniform_vec3("color_low",  1.0, 0.0, 0.0);
+		r_uniform_vec3("color_mid",  1.0, 1.0, 0.0);
+		r_uniform_vec3("color_high", 0.0, 1.0, 0.0);
+		r_uniform("points[0]", graphspan, graph);
+		draw_graph(142, SCREEN_H - text_h, graphspan, text_h);
 	}
 #endif
 
 	r_shader_standard();
-}
-
-static void draw_graph(float x, float y, float w, float h) {
-	r_mat_push();
-	r_mat_translate(x + w/2, y + h/2, 0);
-	r_mat_scale(w, h, 1);
-	r_draw_quad();
-	r_mat_pop();
 }
 
 static void fill_graph(int num_samples, float *samples, FPSCounter *fps) {

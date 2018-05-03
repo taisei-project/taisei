@@ -1148,6 +1148,9 @@ int stage1_tritoss(Enemy *e, int t) {
 	return 1;
 }
 
+// #define DPSTEST
+// #define BULLET_TEST
+
 #ifdef BULLET_TEST
 static int proj_rotate(Projectile *p, int t) {
 	if(t < 0) {
@@ -1160,6 +1163,18 @@ static int proj_rotate(Projectile *p, int t) {
 }
 #endif
 
+#ifdef DPSTEST
+static int dpsdummy(Enemy *e, int t) {
+	e->hp = 9000;
+
+	if(t > 0) {
+		e->pos += e->args[0];
+	}
+
+	return ACTION_NONE;
+}
+#endif
+
 void stage1_events(void) {
 	TIMER(&global.timer);
 
@@ -1167,21 +1182,15 @@ void stage1_events(void) {
 		stage_start_bgm("stage1");
 	}
 
-#ifdef TASTE_THE_RAINBOW
-	FROM_TO(60, 1000000000, 30) {
-		int cnt = 16;
+#ifdef DPSTEST
+	AT(0) {
+		create_enemy1c(VIEWPORT_W/2 + VIEWPORT_H/3*I, 9000, BigFairy, dpsdummy, 0);
+		create_enemy1c(-64 + VIEWPORT_W/2 + VIEWPORT_H/3*I, 9000, BigFairy, dpsdummy, 0);
+		create_enemy1c(+64 + VIEWPORT_W/2 + VIEWPORT_H/3*I, 9000, BigFairy, dpsdummy, 0);
+	}
 
-		for(int i = 0; i < cnt; ++i) {
-			PROJECTILE(
-				.sprite = "bigball",
-				.pos = VIEWPORT_W * (i+0.5) / cnt,
-				.rule = timeout_linear,
-				.args = { 500, I },
-				.color = hsl(i/(cnt+1.0), 1.0, 0.5),
-				// .draw_rule = Fade,
-				// .flags = PFLAG_DRAWADD,
-			);
-		}
+	if(!(global.timer % 16)) {
+		create_enemy1c(-16 + VIEWPORT_H/5*I, 9000, Swirl, dpsdummy, 2);
 	}
 
 	return;

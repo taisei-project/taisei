@@ -99,7 +99,8 @@ struct Player {
 	bool iddqd;
 
 #ifdef PLR_DPS_STATS
-	int total_dmg;
+	int dmglogframe;
+	int dmglog[240];
 #endif
 };
 
@@ -153,6 +154,8 @@ void player_add_bomb_fragments(Player *plr, int frags);
 void player_add_lives(Player *plr, int lives);
 void player_add_bombs(Player *plr, int bombs);
 void player_add_points(Player *plr, uint points);
+
+void player_register_damage(Player *plr, int dmg);
 
 void player_cancel_bomb(Player *plr, int delay);
 

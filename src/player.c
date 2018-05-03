@@ -966,6 +966,18 @@ void player_add_points(Player *plr, uint points) {
 	}
 }
 
+void player_register_damage(Player *plr, int damage) {
+#ifdef PLR_DPS_STATS
+	while(global.frames > plr->dmglogframe) {
+		memmove(plr->dmglog + 1, plr->dmglog, sizeof(plr->dmglog) - sizeof(*plr->dmglog));
+		plr->dmglog[0] = 0;
+		plr->dmglogframe++;
+	}
+
+	plr->dmglog[0] += damage;
+#endif
+}
+
 void player_preload(void) {
 	const int flags = RESF_DEFAULT;
 
