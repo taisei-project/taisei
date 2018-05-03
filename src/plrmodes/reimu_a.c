@@ -19,6 +19,7 @@ static void reimu_spirit_preload(void) {
 		"yinyang",
 		"proj/ofuda",
 		"proj/needle",
+		"part/ofuda_glow",
 	NULL);
 
 	preload_resources(RES_SHADER_PROGRAM, flags,
@@ -52,6 +53,18 @@ static int reimu_spirit_needle(Projectile *p, int t) {
 	return r;
 }
 
+static int reimu_spirit_homing_trail(Projectile *p, int t) {
+	int r = linear(p, t);
+
+	if(t < 0) {
+		return r;
+	}
+
+	// p->angle = creal(p->args[1]) + cimag(p->args[1]) * t;
+
+	return r;
+}
+
 static int reimu_spirit_homing(Projectile *p, int t) {
 	if(t < 0) {
 		return ACTION_NONE;
@@ -67,6 +80,21 @@ static int reimu_spirit_homing(Projectile *p, int t) {
 	p->args[0] = v * cexp(I*carg(p->args[0]));
 	p->angle = carg(p->args[0]);
 	p->pos += p->args[0];
+
+	PARTICLE(
+		.sprite = "ofuda_glow",
+		// .color = rgba(0.5 + 0.5 + psin(global.frames * 0.75), psin(t*0.5), 1, 0.5),
+		.color = hsla(t * 0.1, 0.5, 0.75, 0.35),
+		.timeout = 12,
+		.pos = p->pos,
+		.args = { p->args[0] * (0.2 + 0.6 * frand()), t*0.1+p->angle + I * 0.1, 1+2*I },
+		.angle = p->angle,
+		.rule = reimu_spirit_homing_trail,
+		.draw_rule = ScaleFade,
+		.layer = LAYER_PARTICLE_LOW,
+		.flags = PFLAG_NOREFLECT,
+		.blend = BLEND_ADD,
+	);
 
 	return ACTION_NONE;
 }
@@ -102,7 +130,7 @@ static void reimu_spirit_slave_shot(Enemy *e, int t) {
 			.color = rgba(1, 1, 1, 0.5),
 			.rule = reimu_spirit_homing,
 			.args = { -10.0*I, 0, 0, creal(e->pos) },
-			.type = PlrProj+45,
+			.type = PlrProj+30,
 			.timeout = 60,
 			.shader = "sprite_default",
 		);
