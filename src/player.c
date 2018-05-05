@@ -656,19 +656,27 @@ bool player_applymovement_gamepad(Player *plr) {
 	return true;
 }
 
-static void player_ani_moving(Player *plr, int dir) {
-	const char *seqname;
+static const char *moveseqname(int dir) {
 	switch(dir) {
-	case -1: seqname = "left"; break;
-	case 0: seqname = "main"; break;
-	case 1: seqname = "right"; break;
+	case -1: return "left";
+	case 0: return "main";
+	case 1: return "right";
 	default: log_fatal("Invalid player animation dir given");
 	}
+}
 
+static void player_ani_moving(Player *plr, int dir) {
 	if(plr->lastmovesequence == dir)
 		return;
-	aniplayer_hard_switch(&plr->ani,seqname,1);
+	const char *seqname = moveseqname(dir);
+	const char *lastseqname = moveseqname(plr->lastmovesequence);
+
+	char *transition = strjoin(lastseqname,"2",seqname,NULL);
+
+	aniplayer_hard_switch(&plr->ani,transition,1);
+	aniplayer_queue(&plr->ani,seqname,0);
 	plr->lastmovesequence = dir;
+	free(transition);
 }
 
 void player_applymovement(Player *plr) {
