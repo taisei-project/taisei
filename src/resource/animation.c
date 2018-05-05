@@ -77,8 +77,13 @@ static bool animation_parse_sequence_spec(AniSequence *seq, const char *specstr)
 			return false;
 		}
 
-		char *endptr;
-		int arg = strtol(p,&endptr,10);
+		const char *endptr = p;
+		int arg	= 0;
+		if(!isspace(*p)) { // strtol will ignore leadingwhitespace and therefore eat the next sprite number if there is no arg!
+			char *tmp;
+			arg = strtol(p,&tmp,10);
+			endptr = tmp;
+		}
 
 		bool no_arg = endptr-p == 0;
 
@@ -111,7 +116,7 @@ static bool animation_parse_sequence_spec(AniSequence *seq, const char *specstr)
 			} else if(arg == 0 || arg == 1) {
 				mirrored = arg;
 			} else {
-				log_warn("AniSequence syntax error: '%s'[%d] mirror can only take 0 or 1 or nothing as an argument.",specstr,command);
+				log_warn("AniSequence syntax error: '%s'[%d] mirror can only take 0 or 1 or nothing as an argument. %s",specstr,command,endptr);
 				return false;
 			}
 		} else if(state == ANISEQ_SPRITEIDX) {
