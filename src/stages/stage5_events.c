@@ -881,7 +881,7 @@ void iku_spell_bg(Boss *b, int t);
 
 Enemy* iku_extra_find_next_slave(complex from, double playerbias) {
 	Enemy *nearest = NULL, *e;
-	double dist, mindist = DBL_MAX;
+	double dist, mindist = INFINITY;
 
 	complex org = from + playerbias * cexp(I*(carg(global.plr.pos - from)));
 
