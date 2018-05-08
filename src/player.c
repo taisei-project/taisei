@@ -147,7 +147,20 @@ static void ent_draw_player(EntityInterface *ent) {
 }
 
 static int player_focus_circle_logic(Enemy *e, int t) {
-	return 1;
+	if(t < 0) {
+		return ACTION_NONE;
+	}
+
+	double alpha = creal(e->args[0]);
+
+	if(t <= 1) {
+		alpha = min(0.1, alpha);
+	} else {
+		alpha = approach(alpha, (global.plr.inputflags & INFLAG_FOCUS) ? 1 : 0, 1/30.0);
+	}
+
+	e->args[0] = alpha;
+	return ACTION_NONE;
 }
 
 static void player_focus_circle_visual(Enemy *e, int t, bool render) {
@@ -155,18 +168,25 @@ static void player_focus_circle_visual(Enemy *e, int t, bool render) {
 		return;
 	}
 
+	int trans_frames = 12;
+	double trans_factor = 1 - min(trans_frames, t) / (double)trans_frames;
+	double rot_speed = DEG2RAD * global.frames * (1 + 3 * trans_factor);
+	double scale = 1.0 + trans_factor;
+
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = "focus",
-		.rotation.angle = DEG2RAD * global.frames,
+		.rotation.angle = rot_speed,
 		.color = rgba(1, 1, 1, creal(e->args[0])),
 		.pos = { creal(e->pos), cimag(e->pos) },
+		.scale.both = scale,
 	});
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = "focus",
-		.rotation.angle = DEG2RAD * global.frames * -1,
+		.rotation.angle = rot_speed * -1,
 		.color = rgba(1, 1, 1, creal(e->args[0])),
 		.pos = { creal(e->pos), cimag(e->pos) },
+		.scale.both = scale,
 	});
 }
 
@@ -223,9 +243,8 @@ void player_logic(Player* plr) {
 	}
 
 	plr->focus = approach(plr->focus, (plr->inputflags & INFLAG_FOCUS) ? 30 : 0, 1);
-
 	plr->focus_circle->pos = plr->pos;
-	plr->focus_circle->args[0] = plr->focus / 30.0;
+	process_enemies(&plr->focus_circle);
 
 	if(plr->mode->procs.think) {
 		plr->mode->procs.think(plr);
@@ -446,6 +465,10 @@ static PlrInputFlag key_to_inflag(KeyIndex key) {
 bool player_updateinputflags(Player *plr, PlrInputFlag flags) {
 	if(flags == plr->inputflags) {
 		return false;
+	}
+
+	if((flags & INFLAG_FOCUS) && !(plr->inputflags & INFLAG_FOCUS)) {
+		plr->focus_circle->birthtime = global.frames;
 	}
 
 	plr->inputflags = flags;

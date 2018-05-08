@@ -165,10 +165,18 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 				strlcpy(tmp, rpy->playername, sizeof(tmp));
 				break;
 
-			case 2:
-				plrmode_repr(tmp, sizeof(tmp), plrmode_find(rpy->stages[0].plr_char, rpy->stages[0].plr_shot));
-				tmp[0] = tmp[0] - 'a' + 'A';
+			case 2: {
+				PlayerMode *plrmode = plrmode_find(rpy->stages[0].plr_char, rpy->stages[0].plr_shot);
+
+				if(plrmode == NULL) {
+					strlcpy(tmp, "?????", sizeof(tmp));
+				} else {
+					plrmode_repr(tmp, sizeof(tmp), plrmode);
+					tmp[0] = tmp[0] - 'a' + 'A';
+				}
+
 				break;
+			}
 
 			case 3:
 				snprintf(tmp, sizeof(tmp), "%s", difficulty_name(rpy->stages[0].diff));
