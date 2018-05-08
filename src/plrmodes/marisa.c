@@ -36,7 +36,8 @@ double marisa_common_property(Player *plr, PlrProperty prop) {
 			return (plr->inputflags & INFLAG_FOCUS) ? 60 : 30;
 
 		case PLR_PROP_SPEED:
-			return (plr->inputflags & INFLAG_FOCUS) ? 2.2 : 5;
+			// NOTE: For equivalents in Touhou units, divide these by 1.25.
+			return (plr->inputflags & INFLAG_FOCUS) ? 2.75 : 6.25;
 
 		case PLR_PROP_POC:
 			return VIEWPORT_H / 3.5;
