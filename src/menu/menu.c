@@ -12,7 +12,7 @@
 #include "global.h"
 #include "video.h"
 
-MenuEntry *add_menu_entry(MenuData *menu, char *name, MenuAction action, void *arg) {
+MenuEntry *add_menu_entry(MenuData *menu, const char *name, MenuAction action, void *arg) {
 	menu->entries = realloc(menu->entries, (++menu->ecount)*sizeof(MenuEntry));
 	MenuEntry *e = menu->entries + menu->ecount - 1;
 	memset(e, 0, sizeof(MenuEntry));

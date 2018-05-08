@@ -74,7 +74,7 @@ struct MenuData {
 	MenuProc end;
 };
 
-MenuEntry *add_menu_entry(MenuData *menu, char *name, MenuAction action, void *arg);
+MenuEntry *add_menu_entry(MenuData *menu, const char *name, MenuAction action, void *arg);
 MenuEntry *add_menu_entry_f(MenuData *menu, char *name, MenuAction action, void *arg, int flags);
 
 void add_menu_separator(MenuData *menu);
