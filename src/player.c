@@ -71,6 +71,7 @@ void player_free(Player *plr) {
 		plr->mode->procs.free(plr);
 	}
 
+	aniplayer_free(&plr->ani);
 	ent_unregister(&plr->ent);
 	delete_enemy(&plr->focus_circle, plr->focus_circle);
 }
