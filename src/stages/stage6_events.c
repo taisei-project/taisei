@@ -1926,6 +1926,7 @@ static int elly_toe_boson(Projectile *p, int t) {
 
 	if(wrap_around(&p->pos) != 0) {
 		if(warps_left-- < 1) {
+			p->type = FakeProj; // prevent invisible collision at would-be warp location
 			return ACTION_DESTROY;
 		}
 
