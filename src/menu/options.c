@@ -656,6 +656,10 @@ void options_sub_controls(MenuData *parent, void *arg) {
 	add_menu_entry(m, "Disable background rendering (HoM effect)", do_nothing,
 		bind_keybinding(CONFIG_KEY_NOBACKGROUND)
 	);
+
+	add_menu_entry(m, "Toggle collision areas overlay", do_nothing,
+		bind_keybinding(CONFIG_KEY_HITAREAS)
+	);
 #endif
 
 	add_menu_separator(m);

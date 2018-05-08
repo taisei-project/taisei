@@ -5,4 +5,5 @@
 
 void main(void) {
     gl_Position = r_projectionMatrix * r_modelViewMatrix * vec4(position, 1.0);
+    texCoord = texCoordRaw = texCoordRawIn;
 }

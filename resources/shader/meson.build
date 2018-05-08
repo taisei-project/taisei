@@ -28,6 +28,8 @@ glsl_files = files(
     'sprite_circleclipped_indicator.vert.glsl',
     'sprite_default.frag.glsl',
     'sprite_default.vert.glsl',
+    'sprite_filled_circle.frag.glsl',
+    'sprite_filled_circle.vert.glsl',
     'sprite_negative.frag.glsl',
     'sprite_silhouette.frag.glsl',
     'sprite_silhouette.vert.glsl',

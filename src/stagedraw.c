@@ -36,6 +36,10 @@ static struct {
 	bool framerate_graphs;
 	bool objpool_stats;
 	PostprocessShader *viewport_pp;
+
+	#ifdef DEBUG
+		Sprite dummy;
+	#endif
 } stagedraw;
 
 void stage_draw_preload(void) {
@@ -57,6 +61,9 @@ void stage_draw_preload(void) {
 		"ingame_menu",
 		"sprite_circleclipped_indicator",
 		"hud_text",
+		#ifdef DEBUG
+		"sprite_filled_circle",
+		#endif
 	NULL);
 
 	stagedraw.hud_text.shader      = r_shader_get("hud_text");
@@ -84,6 +91,51 @@ void stage_draw_preload(void) {
 
 	stagedraw.viewport_pp = get_resource_data(RES_POSTPROCESS, "viewport", RESF_OPTIONAL);
 	r_shader_standard();
+
+	#ifdef DEBUG
+	stagedraw.dummy.tex = get_sprite("star")->tex;
+	stagedraw.dummy.w = 1;
+	stagedraw.dummy.h = 1;
+	#endif
+}
+
+static void stage_draw_collision_areas(void) {
+#ifdef DEBUG
+	static bool enabled, keystate_saved;
+	bool keystate = gamekeypressed(KEY_HITAREAS);
+
+	if(keystate ^ keystate_saved) {
+		if(keystate) {
+			enabled = !enabled;
+		}
+
+		keystate_saved = keystate;
+	}
+
+	if(!enabled) {
+		return;
+	}
+
+	r_shader("sprite_filled_circle");
+	r_uniform_vec4("color_inner", 0, 0, 0, 1);
+	r_uniform_vec4("color_outer", 1, 1, 1, 1);
+
+	float scale = 0.45; // TODO: bake this multiplier into the size itself
+
+	for(Projectile *p = global.projs; p; p = p->next) {
+		r_draw_sprite(&(SpriteParams) {
+			.sprite_ptr = &stagedraw.dummy,
+			.pos = { creal(p->pos), cimag(p->pos) },
+			.rotation.angle = p->angle + M_PI/2,
+			.scale = { .x = creal(p->size) * scale, .y = cimag(p->size) * scale },
+			.blend = BLEND_SUB,
+		});
+	}
+
+	// TODO: handle other objects the player may collide with (enemies, bosses...)
+
+	r_flush_sprites();
+#endif
 }
 
 static void apply_shader_rules(ShaderRule *shaderrules, FBOPair *fbos) {
@@ -323,6 +375,7 @@ static void stage_draw_objects(void) {
 		draw_dialog(global.dialog);
 	}
 
+	stage_draw_collision_areas();
 	r_shader_standard();
 	stagetext_draw();
 }

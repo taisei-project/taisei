@@ -55,6 +55,7 @@
 	CONFIGDEF_KEYBINDING(KEY_FPSLIMIT_OFF,      "key_fpslimit_off",     SDL_SCANCODE_RSHIFT) \
 	CONFIGDEF_KEYBINDING(KEY_STOP,              "key_stop",             SDL_SCANCODE_F1) \
 	CONFIGDEF_KEYBINDING(KEY_RESTART,           "key_restart",          SDL_SCANCODE_F2) \
+	CONFIGDEF_KEYBINDING(KEY_HITAREAS,          "key_hitareas",         SDL_SCANCODE_H) \
 
 
 #define GPKEYDEFS \
