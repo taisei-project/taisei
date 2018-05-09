@@ -53,7 +53,8 @@ void dialog_marisa_stage3_post(Dialog *d) {
 	M(Left, "So where's the finale?  Nothing's changed.");
 	M(Right, "I was lying!  I just wanted to take you down a peg with my new magic!");
 	M(Left, "Y'know, fly too close to the sun and ya get burned.  I'll be goin' to take care of some real threats now.");
-	M(Right, "Ugh, just wait and see!  I'll win anyway as long as you lose!");
+	M(Right, "Ugh, just wait and see!  This won't be over if I ever get the chance again!");
+	M(Left, "Yeah, yeah.  You'll need to be less crispy first, though.");
 }
 
 void dialog_marisa_stage4(Dialog *d) {
