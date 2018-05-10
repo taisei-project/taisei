@@ -452,6 +452,7 @@ static void cloud_common(void) {
 		// or just replace this with some thing else
 		.sprite_ptr = get_sprite("part/lightningball"),
 		.size = 48 * (1+I),
+		.collision_size = 21.6 * (1+I),
 
 		.pos = VIEWPORT_W*afrand(0)-15.0*I,
 		.color = rgba(0.2, 0.0, 0.4, 0.6),

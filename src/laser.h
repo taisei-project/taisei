@@ -64,9 +64,6 @@ Laser *create_laser(complex pos, float time, float deathtime, Color color, Laser
 void delete_lasers(void);
 void process_lasers(void);
 
-int collision_laser_line(Laser *l);
-int collision_laser_curve(Laser *l);
-
 bool clear_laser(Laser **laserlist, Laser *l, bool force, bool now);
 
 complex las_linear(Laser *l, float t);

@@ -69,7 +69,9 @@ struct Projectile {
 
 	complex pos;
 	complex pos0;
-	complex size;
+	complex prevpos; // used to lerp trajectory for collision detection; set this to pos if you intend to "teleport" the projectile in the rule!
+	complex size; // affects out-of-viewport culling and grazing
+	complex collision_size; // affects collision with player (TODO: make this work for player projectiles too?)
 	complex args[RULE_ARGC];
 	ProjRule rule;
 	ProjDrawRule draw_rule;
@@ -84,7 +86,9 @@ struct Projectile {
 	ProjType type;
 	int max_viewport_dist;
 	ProjFlags flags;
-	bool grazed;
+
+	short graze_counter;
+	int graze_counter_reset_timer;
 
 	// XXX: this is in frames of course, but needs to be float
 	// to avoid subtle truncation and integer division gotchas.
@@ -112,7 +116,8 @@ typedef struct ProjArgs {
 	Projectile **dest;
 	ProjType type;
 	Sprite *sprite_ptr;
-	complex size;
+	complex size; // affects default draw order, out-of-viewport culling, and grazing
+	complex collision_size; // affects collision with player (TODO: make this work for player projectiles too?)
 	int max_viewport_dist;
 	drawlayer_t layer;
 
@@ -207,5 +212,4 @@ void Blast(Projectile *p, int t);
 
 void projectiles_preload(void);
 
-List* proj_insert_sizeprio(List **dest, List *elem) attr_hot;
-List* proj_insert_colorprio(List **dest, List *elem);
+complex projectile_graze_size(Projectile *p);

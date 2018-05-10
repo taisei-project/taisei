@@ -16,6 +16,7 @@ typedef struct PPBasicPriv {
 	const char *sprite_name;
 	Sprite *sprite;
 	complex size;
+	complex collision_size;
 } PPBasicPriv;
 
 static void pp_basic_preload(ProjPrototype *proto) {
@@ -33,19 +34,26 @@ static void pp_basic_init_projectile(ProjPrototype *proto, Projectile *p) {
 	}
 
 	p->size = pdata->size;
+	p->collision_size = pdata->collision_size;
 }
 
-#define PP_BASIC(sprite, width, height) \
+#define _PP_BASIC(sprite, width, height, colwidth, colheight) \
 	ProjPrototype _pp_##sprite = { \
 		.preload = pp_basic_preload, \
 		.init_projectile = pp_basic_init_projectile, \
 		.private = (&(PPBasicPriv) { \
 			.sprite_name = "proj/" #sprite, \
 			.size = (width) + (height) * I, \
+			.collision_size = (colwidth) + (colheight) * I, \
 		}), \
 	}, *pp_##sprite = &_pp_##sprite; \
 
+#define PP_BASIC(sprite, width, height, colwidth, colheight) _PP_BASIC(sprite, width, height, colwidth, colheight)
 #include "projectile_prototypes/basic.inc.h"
+
+// TODO: customize defaults
+#define PP_PLAYER(sprite, width, height) _PP_BASIC(sprite, width, height, 0, 0)
+#include "projectile_prototypes/player.inc.h"
 
 static void pp_blast_init_projectile(ProjPrototype *proto, Projectile *p) {
 	pp_basic_init_projectile(proto, p);

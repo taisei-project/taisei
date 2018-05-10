@@ -159,6 +159,15 @@ void projectile_set_prototype(Projectile *p, ProjPrototype *proto) {
 	p->proto = proto;
 }
 
+complex projectile_graze_size(Projectile *p) {
+	if(p->type == EnemyProj && !(p->flags & PFLAG_NOGRAZE) && p->graze_counter < 5) {
+		complex s = (p->size * 420 /* graze it */) / (2 * p->graze_counter + 1);
+		return sqrt(creal(s)) + sqrt(cimag(s)) * I;
+	}
+
+	return 0;
+}
+
 static Projectile* _create_projectile(ProjArgs *args) {
 	if(IN_DRAW_CODE) {
 		log_fatal("Tried to spawn a projectile while in drawing code");
@@ -177,9 +186,9 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	p->sprite = args->sprite_ptr;
 	p->type = args->type;
 	p->color = args->color;
-	p->grazed = (bool)(args->flags & PFLAG_NOGRAZE);
 	p->max_viewport_dist = args->max_viewport_dist;
 	p->size = args->size;
+	p->collision_size = args->collision_size;
 	p->flags = args->flags;
 	p->timeout = args->timeout;
 
@@ -189,6 +198,8 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	p->ent.draw_func = ent_draw_projectile;
 
 	projectile_set_prototype(p, args->proto);
+	// p->collision_size *= 10;
+	// p->size *= 5;
 
 	if((p->type == EnemyProj || p->type >= PlrProj) && (creal(p->size) <= 0 || cimag(p->size) <= 0)) {
 		// FIXME: debug info is not actually attached at this point!
@@ -283,23 +294,33 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 	out_col->damage = 0;
 
 	if(p->type == EnemyProj) {
-		double w, h;
-		projectile_size(p, &w, &h);
+		Ellipse e_proj = {
+			.axes = p->collision_size,
+			.angle = p->angle + M_PI/2,
+		};
 
-		double angle = carg(global.plr.pos - p->pos) + p->angle;
-		double projr = sqrt(pow(w/2*cos(angle), 2) + pow(h/2*sin(angle), 2)) * 0.45;
-		double grazer = max(w, h);
-		double dst = cabs(global.plr.pos - p->pos);
-		grazer = (0.9 * sqrt(grazer) + 0.1 * grazer) * 6;
+		LineSegment seg = {
+			.a = global.plr.pos - global.plr.velocity - p->prevpos,
+			.b = global.plr.pos - p->pos
+		};
 
-		if(dst < projr + 1) {
+		// XXX: Edge case: projectile and player are both stationary.
+		if(cabs(seg.a - seg.b) < 1e-07) {
+			seg.a += I * 0.1;
+		}
+
+		if(lineseg_ellipse_intersect(seg, e_proj)) {
 			out_col->type = PCOL_PLAYER;
 			out_col->entity = &global.plr;
 			out_col->fatal = true;
-		} else if(!p->grazed && dst < grazer && global.frames - abs(global.plr.recovery) > 0) {
-			out_col->location = p->pos - grazer * 0.3 * cexp(I*carg(p->pos - global.plr.pos));
-			out_col->type = PCOL_PLAYER_GRAZE;
-			out_col->entity = &global.plr;
+		} else {
+			e_proj.axes = projectile_graze_size(p);
+
+			if(creal(e_proj.axes) > 1 && lineseg_ellipse_intersect(seg, e_proj)) {
+				out_col->type = PCOL_PLAYER_GRAZE;
+				out_col->entity = &global.plr;
+				out_col->location = global.plr.pos;
+			}
 		}
 	} else if(p->type >= PlrProj) {
 		int damage = p->type - PlrProj;
@@ -346,13 +367,14 @@ void apply_projectile_collision(Projectile **projlist, Projectile *p, ProjCollis
 		}
 
 		case PCOL_PLAYER_GRAZE: {
-			p->grazed = true;
-
 			if(p->flags & PFLAG_GRAZESPAM) {
 				player_graze(col->entity, col->location, 10, 2);
 			} else {
-				player_graze(col->entity, col->location, 50, 5);
+				player_graze(col->entity, col->location, 10 + 10 * p->graze_counter, 3 + p->graze_counter);
 			}
+
+			p->graze_counter++;
+			p->graze_counter_reset_timer = global.frames;
 
 			break;
 		}
@@ -507,7 +529,13 @@ void process_projectiles(Projectile **projs, bool collision) {
 
 	for(Projectile *proj = *projs, *next; proj; proj = next) {
 		next = proj->next;
+		proj->prevpos = proj->pos;
 		action = proj_call_rule(proj, global.frames - proj->birthtime);
+
+		if(proj->graze_counter && proj->graze_counter_reset_timer - global.frames <= -90) {
+			proj->graze_counter--;
+			proj->graze_counter_reset_timer = global.frames;
+		}
 
 		if(proj->type == DeadProj && killed < 5) {
 			killed++;

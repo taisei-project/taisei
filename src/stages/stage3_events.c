@@ -868,6 +868,7 @@ static int wriggle_spell_slave(Enemy *e, int time) {
 			// or just replace this with some thing else
 			.sprite_ptr = get_sprite("part/smoothdot"),
 			.size = 16 + 16*I,
+			.collision_size = 7.2 + 7.2*I,
 
 			.pos = e->pos,
 			.color = rgb(1.0 - c, 0.5, 0.5 + c),

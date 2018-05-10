@@ -866,7 +866,7 @@ static int kdanmaku_proj(Projectile *p, int t) {
 
 	if(t == time) {
 		p->color = rgb(0.6,0.3,1.0);
-		p->sprite = get_sprite("proj/bullet");
+		projectile_set_prototype(p, pp_bullet);
 		p->args[1] = (global.plr.pos - p->pos) * 0.001;
 
 		if(frand()<0.5)
