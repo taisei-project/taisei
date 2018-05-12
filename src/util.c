@@ -371,6 +371,10 @@ double lineseg_circle_intersect(LineSegment seg, Circle c) {
 	lv = cabs(v);
 	lm = cabs(m);
 
+	if(lv < c.radius) {
+		return 0;
+	}
+
 	if(lm == 0) {
 		return -1;
 	}
@@ -386,11 +390,6 @@ double lineseg_circle_intersect(LineSegment seg, Circle c) {
 		if(f >= 0 && f <= 1) { // it’s on the line!
 			return f;
 		}
-	}
-
-	// TODO: explain this
-	if(lv < c.radius) {
-		return 0;
 	}
 
 	return -1;

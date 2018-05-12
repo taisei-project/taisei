@@ -304,11 +304,6 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 			.b = global.plr.pos - p->pos
 		};
 
-		// XXX: Edge case: projectile and player are both stationary.
-		if(cabs(seg.a - seg.b) < 1e-07) {
-			seg.a += I * 0.1;
-		}
-
 		if(lineseg_ellipse_intersect(seg, e_proj)) {
 			out_col->type = PCOL_PLAYER;
 			out_col->entity = &global.plr;
