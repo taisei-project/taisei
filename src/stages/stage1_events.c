@@ -1189,15 +1189,17 @@ void stage1_events(void) {
 
 	if(!(global.frames % 36)) {
 		ProjPrototype *projs[] = {
-			// pp_thickrice,
-			// pp_rice,
-			pp_ball,
-			pp_plainball,
-			pp_bigball,
-			pp_soul,
+			pp_thickrice,
+			pp_rice,
+			// pp_ball,
+			// pp_plainball,
+			// pp_bigball,
+			// pp_soul,
 			pp_wave,
 			pp_card,
-			pp_bullet,
+			pp_bigball,
+			pp_plainball,
+			pp_ball,
 		};
 		int numprojs = sizeof(projs)/sizeof(*projs);
 
