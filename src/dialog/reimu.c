@@ -96,7 +96,7 @@ void dialog_reimu_stage5_post(Dialog *d) {
 	M(Left, "See? I’ve been solving incidents since the beginning. There is absolutely no one more qualified than me.");
 	M(Right, "You're still as unruly as ever.  But you passed, and you certainly hold great power.");
 	M(Right, "I'll let my superiors know that the Hakurei Shrine Maiden arrived to clear up this issue.");
-	M(Left, "Right, and I'll make sure it won't take too long.  Tell them to hold tight.");
+	M(Left, "Right, and I'll make sure it won't take too long.  Tell them to hold tight, and maybe slip me some yen later.");
 }
 
 void dialog_reimu_stage6(Dialog *d) {
