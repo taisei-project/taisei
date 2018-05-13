@@ -1140,6 +1140,7 @@ void kurumi_extra_create_drainer(Enemy *e) {
 		.args = { add_ref(e) },
 		.type = FakeProj,
 		.shader = "sprite_default",
+		.flags = PFLAG_NOCLEAR,
 	);
 }
 
