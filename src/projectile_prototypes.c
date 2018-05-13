@@ -27,11 +27,9 @@ static void pp_basic_preload(ProjPrototype *proto) {
 static void pp_basic_init_projectile(ProjPrototype *proto, Projectile *p) {
 	PPBasicPriv *pdata = proto->private;
 
-	if(!p->sprite) {
-		p->sprite = pdata->sprite
-			? pdata->sprite
-			: (pdata->sprite = get_sprite(pdata->sprite_name));
-	}
+	p->sprite = pdata->sprite
+		? pdata->sprite
+		: (pdata->sprite = get_sprite(pdata->sprite_name));
 
 	p->size = pdata->size;
 	p->collision_size = pdata->collision_size;
