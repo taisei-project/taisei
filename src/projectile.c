@@ -176,7 +176,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	Projectile *p = (Projectile*)objpool_acquire(stage_object_pools.projectiles);
 
 	p->birthtime = global.frames;
-	p->pos = p->pos0 = args->pos;
+	p->pos = p->pos0 = p->prevpos = args->pos;
 	p->angle = args->angle;
 	p->rule = args->rule;
 	p->draw_rule = args->draw_rule;
