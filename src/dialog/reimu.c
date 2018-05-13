@@ -72,7 +72,7 @@ void dialog_reimu_stage4(Dialog *d) {
 void dialog_reimu_stage4_post(Dialog *d) {
 	M(Left, "See, I don’t scare easily, so that didn’t work. You should have just told me your name.");
 	M(Right, "I didn't think it was possible, but you're so much stronger than before!");
-	M(Right, "Can't you remember that I'm Kurumi?");
+	M(Right, "Can't you remember? I'm Kurumi!");
 	M(Left, "You don't seem like the sort that is worth remembering after several years.");
 	M(Right, "Waah, so mean!  You were way cuter back then!");
 }
