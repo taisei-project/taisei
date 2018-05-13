@@ -246,6 +246,8 @@ bool clear_laser(Laser **laserlist, Laser *l, bool force, bool now) {
 	return true;
 }
 
+static bool collision_laser_curve(Laser *l);
+
 void process_lasers(void) {
 	Laser *laser = global.lasers, *del = NULL;
 
@@ -294,96 +296,53 @@ void process_lasers(void) {
 	}
 }
 
-// what this terrible function probably does:
-// is the point of shortest distance between the line through a and b
-// and a point c between a and b and closer than r? if yes return f so that a+f*(b-a) is that point.
-// otherwise return -1.
-double collision_line(complex a, complex b, complex c, float r) {
-	complex m,v;
-	double projection, lv, lm, distance;
-
-	m = b-a; // vector pointing along the line
-	v = a-c; // vector from collider to point A
-
-	lv = cabs(v);
-	lm = cabs(m);
-	if(lm == 0) {
-		return -1;
+static bool collision_laser_curve(Laser *l) {
+	if(l->width <= 3.0) {
+		return false;
 	}
 
-	projection = -creal(v*conj(m))/lm; // project v onto the line
-
-	// now the distance can be calculated by Pythagoras
-	distance = sqrt(lv*lv-projection*projection);
-	if(distance <= r) {
-		double f = projection/lm;
-		if(f >= 0 && f <= 1) // it’s on the line!
-			return f;
-	}
-
-	// now here is an additional check that becomes important if we use
-	// this to check collisions along a curve made out of multiple straight
-	// line segments.
-	// Imagine approaching a convex corner of the curve from outside. With
-	// just the above check there is a triangular death zone. This check
-	// here puts a circle in that zone.
-	if(lv < r)
-		return 0;
-
-	return -1;
-}
-
-int collision_laser_curve(Laser *l) {
-	float t_end = (global.frames - l->birthtime)*l->speed + l->timeshift; // end of the laser based on length
-	float t_death = l->deathtime*l->speed+l->timeshift; // end of the laser based on lifetime
+	float t_end = (global.frames - l->birthtime) * l->speed + l->timeshift; // end of the laser based on length
+	float t_death = l->deathtime * l->speed + l->timeshift; // end of the laser based on lifetime
 	float t = t_end - l->timespan;
-	complex last, pos;
-
 	bool grazed = false;
 
-	if(l->width <= 3.0)
-		return 0;
-
-	if(t < 0)
+	if(t < 0) {
 		t = 0;
+	}
 
-	//float t_start = t;
-
-	last = l->prule(l,t);
+	LineSegment segment = { .a = l->prule(l,t) };
+	Circle collision_area = { .origin = global.plr.pos };
 
 	for(t += l->collision_step; t <= min(t_end,t_death); t += l->collision_step) {
-		pos = l->prule(l,t);
-		float t1 = t-l->timespan/2; // i have no idea
-		float tail = l->timespan/1.9;
+		float t1 = t - l->timespan / 2; // i have no idea
+		float tail = l->timespan / 1.9;
+		float widthfac = -0.75 / pow(tail, 2) * (t1 - tail) * (t1 + tail);
+		widthfac = max(0.25, pow(widthfac, l->width_exponent));
 
-		float widthfac = -0.75/pow(tail,2)*(t1-tail)*(t1+tail);
+		segment.b = l->prule(l, t);
+		collision_area.radius = widthfac * l->width * 0.5 + 1;
 
-		//float widthfac = -(t-t_start)*(t-min(t_end,t_death))/pow((min(t_end,t_death)-t_start)/2.,2);
-		widthfac = max(0.25,pow(widthfac, l->width_exponent));
-
-		float collision_width = widthfac*l->width*0.5+1;
-
-		if(collision_line(last, pos, global.plr.pos, collision_width) >= 0) {
-			return 1;
+		if(lineseg_circle_intersect(segment, collision_area) >= 0) {
+			return true;
 		}
+
 		if(!grazed && !(global.frames % 7) && global.frames - abs(global.plr.recovery) > 0) {
-			float f = collision_line(last, pos, global.plr.pos, l->width*2+8);
+			collision_area.radius = l->width * 2+8;
+			float f = lineseg_circle_intersect(segment, collision_area);
 
 			if(f >= 0) {
-				player_graze(&global.plr, last+f*(pos-last), 7, 5);
+				player_graze(&global.plr, segment.a + f * (segment.b - segment.a), 7, 5);
 				grazed = true;
 			}
 		}
 
-		last = pos;
+		segment.a = segment.b;
 	}
 
-	pos = l->prule(l, min(t_end, t_death));
+	segment.b = l->prule(l, min(t_end, t_death));
+	collision_area.radius = l->width * 0.5; // WTF: what is this sorcery?
 
-	if(collision_line(last, pos, global.plr.pos, l->width*0.5) >= 0)
-		return 1;
-
-	return 0;
+	return lineseg_circle_intersect(segment, collision_area) >= 0;
 }
 
 complex las_linear(Laser *l, float t) {

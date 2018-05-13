@@ -452,6 +452,7 @@ static void cloud_common(void) {
 		// or just replace this with some thing else
 		.sprite_ptr = get_sprite("part/lightningball"),
 		.size = 48 * (1+I),
+		.collision_size = 21.6 * (1+I),
 
 		.pos = VIEWPORT_W*afrand(0)-15.0*I,
 		.color = rgba(0.2, 0.0, 0.4, 0.6),
@@ -784,7 +785,15 @@ int induction_bullet(Projectile *p, int time) {
 		if(t < 0)
 			return ACTION_DESTROY;
 	}
+
 	p->pos = induction_bullet_traj(p,t);
+
+	// FIXME: projectiles really should get called with EVENT_BIRTH and/or with time==0 consistently.
+	if(time == 1) {
+		// don't lerp; the spawn position is very different on hard/lunatic and would cause false hits
+		p->prevpos = p->pos;
+	}
+
 	p->angle = carg(p->args[0]*cexp(p->args[1]*t)*(1+p->args[1]*t));
 	return 1;
 }

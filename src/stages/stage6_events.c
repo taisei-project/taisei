@@ -502,26 +502,28 @@ int scythe_kepler(Enemy *e, int t) {
 	return 1;
 }
 
+static ProjPrototype* kepler_pick_bullet(int tier) {
+	switch(tier) {
+		case 0:  return pp_soul;
+		case 1:  return pp_bigball;
+		case 2:  return pp_ball;
+		default: return pp_flea;
+	}
+}
+
 int kepler_bullet(Projectile *p, int t) {
 	TIMER(&t);
 	int tier = round(creal(p->args[1]));
-	AT(1) {
-		char *tex;
-		switch(tier) {
-			case 0: tex = "proj/soul"; break;
-			case 1: tex = "proj/bigball"; break;
-			case 2: tex = "proj/ball"; break;
-			default: tex = "proj/flea";
-		}
-		p->sprite = get_sprite(tex);
 
-	}
 	AT(EVENT_DEATH) {
-		if(tier != 0)
+		if(tier != 0) {
 			free_ref(p->args[2]);
+		}
 	}
-	if(t < 0)
+
+	if(t < 0) {
 		return 1;
+	}
 
 	complex pos = p->pos0;
 
@@ -553,7 +555,7 @@ int kepler_bullet(Projectile *p, int t) {
 		play_sound("redirect");
 		if(tier <= 1+(global.diff>D_Hard) && cimag(p->args[1])*(tier+1) < n) {
 			PROJECTILE(
-				.sprite = "flea",
+				.proto = kepler_pick_bullet(tier + 1),
 				.pos = p->pos,
 				.color = rgb(0.3 + 0.3 * tier, 0.6 - 0.3 * tier, 1.0),
 				.rule = kepler_bullet,
@@ -590,11 +592,14 @@ void elly_kepler(Boss *b, int t) {
 		play_sound("shot_special1");
 		for(int i = 0; i < c; i++) {
 			complex n = cexp(I*2*M_PI/c*i+I*0.6*_i);
-			PROJECTILE("soul", b->pos, rgb(0.3,0.8,1), kepler_bullet, {
-				50*n,
-				0,
-				(1.4+0.1*global.diff)*n
-			});
+
+			PROJECTILE(
+				.proto = kepler_pick_bullet(0),
+				.pos = b->pos,
+				.color = rgb(0.3,0.8,1),
+				.rule = kepler_bullet,
+				.args = { 50*n, 0, (1.4+0.1*global.diff)*n }
+			);
 		}
 	}
 }
@@ -1925,6 +1930,8 @@ static int elly_toe_boson(Projectile *p, int t) {
 	int warps_initial = cimag(p->args[1]);
 
 	if(wrap_around(&p->pos) != 0) {
+		p->prevpos = p->pos; // don't lerp
+
 		if(warps_left-- < 1) {
 			p->type = FakeProj; // prevent invisible collision at would-be warp location
 			return ACTION_DESTROY;
@@ -2072,7 +2079,7 @@ static int elly_toe_fermion(Projectile *p, int t) {
 
 	if(elly_toe_its_yukawatime(p->pos)) {
 		if(!p->args[3]) {
-			p->sprite = get_sprite("proj/bigball");
+			projectile_set_prototype(p, pp_bigball);
 			p->args[3]=1;
 			play_sound_ex("shot_special1", 5, false);
 
@@ -2091,7 +2098,7 @@ static int elly_toe_fermion(Projectile *p, int t) {
 
 		p->pos0*=1.01;
 	} else if(p->args[3]) {
-		p->sprite = get_sprite("proj/ball");
+		projectile_set_prototype(p, pp_ball);
 		p->args[3]=0;
 	}
 
@@ -2104,12 +2111,12 @@ static int elly_toe_higgs(Projectile *p, int t) {
 
 	if(elly_toe_its_yukawatime(p->pos)) {
 		if(!p->args[3]) {
-			p->sprite = get_sprite("proj/rice");
+			projectile_set_prototype(p, pp_rice);
 			p->args[3]=1;
 		}
 		p->args[0]*=1.01;
 	} else if(p->args[3]) {
-		p->sprite = get_sprite("proj/flea");
+		projectile_set_prototype(p, pp_flea);
 		p->args[3]=0;
 	}
 

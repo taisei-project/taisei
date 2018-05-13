@@ -62,6 +62,7 @@ struct Player {
 	ENTITY_INTERFACE_NAMED(Player, ent);
 
 	complex pos;
+	complex velocity;
 	complex deathpos;
 	short focus;
 

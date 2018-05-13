@@ -114,6 +114,8 @@ void player_move(Player *plr, complex delta) {
 	if(cabs(realdir)) {
 		plr->lastmovedir = realdir / cabs(realdir);
 	}
+
+	plr->velocity = realdir;
 }
 
 static void ent_draw_player(EntityInterface *ent) {
@@ -704,6 +706,8 @@ static void player_ani_moving(Player *plr, int dir) {
 }
 
 void player_applymovement(Player *plr) {
+	plr->velocity = 0;
+
 	if(plr->deathtime < -1)
 		return;
 
@@ -722,8 +726,10 @@ void player_applymovement(Player *plr) {
 	} else {
 		player_ani_moving(plr,0);
 	}
-	if(gamepad)
+
+	if(gamepad) {
 		return;
+	}
 
 	complex direction = 0;
 
@@ -799,8 +805,9 @@ void player_graze(Player *plr, complex pos, int pts, int effect_intensity) {
 			.rule = linear,
 			.timeout = 5 + 5 * afrand(2),
 			.draw_rule = Shrink,
-			.args = { 0, (1+afrand(0)*5)*cexp(I*M_PI*2*afrand(1)) },
+			.args = { (1+afrand(0)*5)*cexp(I*M_PI*2*afrand(1)) },
 			.flags = PFLAG_NOREFLECT,
+			.layer = LAYER_PARTICLE_LOW,
 		);
 	}
 }

@@ -118,19 +118,42 @@ static void stage_draw_collision_areas(void) {
 
 	r_shader("sprite_filled_circle");
 	r_uniform_vec4("color_inner", 0, 0, 0, 1);
-	r_uniform_vec4("color_outer", 1, 1, 1, 1);
+	r_uniform_vec4("color_outer", 1, 1, 1, 0.1);
 
-	float scale = 0.45; // TODO: bake this multiplier into the size itself
+	for(Projectile *p = global.projs; p; p = p->next) {
+		complex gsize = projectile_graze_size(p);
+
+		if(creal(gsize)) {
+			r_draw_sprite(&(SpriteParams) {
+				.color = rgb(0, 0.5, 0.5),
+				.sprite_ptr = &stagedraw.dummy,
+				.pos = { creal(p->pos), cimag(p->pos) },
+				.rotation.angle = p->angle + M_PI/2,
+				.scale = { .x = creal(gsize), .y = cimag(gsize) },
+				.blend = BLEND_SUB,
+			});
+		}
+	}
+
+	r_flush_sprites();
+	r_uniform_vec4("color_inner", 0.0, 1.0, 0.0, 0.75);
+	r_uniform_vec4("color_outer", 0.0, 0.5, 0.5, 0.75);
 
 	for(Projectile *p = global.projs; p; p = p->next) {
 		r_draw_sprite(&(SpriteParams) {
 			.sprite_ptr = &stagedraw.dummy,
 			.pos = { creal(p->pos), cimag(p->pos) },
 			.rotation.angle = p->angle + M_PI/2,
-			.scale = { .x = creal(p->size) * scale, .y = cimag(p->size) * scale },
-			.blend = BLEND_SUB,
+			.scale = { .x = creal(p->collision_size), .y = cimag(p->collision_size) },
+			.blend = BLEND_ALPHA,
 		});
 	}
+
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = &stagedraw.dummy,
+		.pos = { creal(global.plr.pos), cimag(global.plr.pos) },
+		.scale.both = 2, // NOTE: actual player is a singular point
+	});
 
 	// TODO: handle other objects the player may collide with (enemies, bosses...)
 
@@ -399,6 +422,7 @@ void stage_draw_foreground(void) {
 		r_mat_scale(1/facw,1/fach,1);
 		r_mat_translate(floorf(facw*VIEWPORT_X), floorf(fach*VIEWPORT_Y), 0);
 		r_mat_scale(floorf(scale*VIEWPORT_W)/VIEWPORT_W,floorf(scale*VIEWPORT_H)/VIEWPORT_H,1);
+
 		// apply the screenshake effect
 		if(global.shake_view) {
 			r_mat_translate(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames*1.1+3),0);

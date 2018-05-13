@@ -849,7 +849,7 @@ void cirno_benchmark(Boss* b, int t) {
 			p->flags |= PFLAG_DRAWADD;
 
 		if(t > 700 && frand() > 0.5)
-			p->sprite = get_sprite("proj/plainball");
+			projectile_set_prototype(p, pp_plainball);
 
 		if(t > 1200 && frand() > 0.5)
 			p->color = rgb(1.0,0.2,0.8);
@@ -1142,6 +1142,14 @@ int stage1_tritoss(Enemy *e, int t) {
 	return 1;
 }
 
+#ifdef BULLET_TEST
+static int proj_rotate(Projectile *p, int t) {
+	p->angle = global.frames / 60.0;
+	// p->angle = M_PI/2;
+	return ACTION_NONE;
+}
+#endif
+
 void stage1_events(void) {
 	TIMER(&global.timer);
 
@@ -1164,6 +1172,47 @@ void stage1_events(void) {
 				// .flags = PFLAG_DRAWADD,
 			);
 		}
+	}
+
+	return;
+#endif
+
+#ifdef BULLET_TEST
+	if(!global.projs) {
+		PROJECTILE(
+			.proto = pp_rice,
+			.pos = (VIEWPORT_W + VIEWPORT_H * I) * 0.5,
+			.color = hsl(0.5, 1.0, 0.5),
+			.rule = proj_rotate,
+		);
+	}
+
+	if(!(global.frames % 36)) {
+		ProjPrototype *projs[] = {
+			pp_thickrice,
+			pp_rice,
+			// pp_ball,
+			// pp_plainball,
+			// pp_bigball,
+			// pp_soul,
+			pp_wave,
+			pp_card,
+			pp_bigball,
+			pp_plainball,
+			pp_ball,
+		};
+		int numprojs = sizeof(projs)/sizeof(*projs);
+
+		for(int i = 0; i < numprojs; ++i) {
+			PROJECTILE(
+				.proto = projs[i],
+				.pos = ((0.5 + i) * VIEWPORT_W/numprojs + 0 * I),
+				.color = hsl(0.5, 1.0, 0.5),
+				.rule = linear,
+				.args = { 1*I },
+			);
+		}
+
 	}
 
 	return;

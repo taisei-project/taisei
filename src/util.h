@@ -63,29 +63,17 @@ char* ucs4_to_utf8(const uint32_t *ucs4);
 // math utils
 //
 
-typedef struct FloatRect {
-	float x;
-	float y;
-	float w;
-	float h;
-} FloatRect;
-
-typedef struct IntRect {
-	int x;
-	int y;
-	int w;
-	int h;
-} IntRect;
-
 #include <complex.h>
 
 // These definitions are common but non-standard, so we provide our own
 #undef M_PI
 #undef M_PI_2
 #undef M_PI_4
+#undef M_E
 #define M_PI 3.14159265358979323846
 #define M_PI_2 1.57079632679489661923
 #define M_PI_4 0.78539816339744830962
+#define M_E 2.7182818284590452354
 
 #define DEG2RAD (M_PI/180.0)
 #define RAD2DEG (180.0/M_PI)
@@ -100,6 +88,41 @@ typedef struct IntRect {
 #undef min
 #undef max
 
+typedef struct FloatRect {
+	float x;
+	float y;
+	float w;
+	float h;
+} FloatRect;
+
+typedef struct IntRect {
+	int x;
+	int y;
+	int w;
+	int h;
+} IntRect;
+
+typedef struct Ellipse {
+	complex origin;
+	complex axes; // NOT half-axes!
+	double angle;
+} Ellipse;
+
+typedef struct LineSegment {
+	complex a;
+	complex b;
+} LineSegment;
+
+typedef struct Circle {
+	complex origin;
+	double radius;
+} Circle;
+
+typedef struct Rect {
+	complex top_left;
+	complex bottom_right;
+} Rect;
+
 double min(double, double) attr_const;
 double max(double, double) attr_const;
 double clamp(double, double, double) attr_const;
@@ -113,6 +136,10 @@ float ftopow2(float x) attr_const;
 float smooth(float x) attr_const;
 float smoothreclamp(float x, float old_min, float old_max, float new_min, float new_max) attr_const;
 float sanitize_scale(float scale) attr_const;
+
+bool point_in_ellipse(complex p, Ellipse e) attr_const;
+double lineseg_circle_intersect(LineSegment seg, Circle c) attr_const;
+bool lineseg_ellipse_intersect(LineSegment seg, Ellipse e) attr_const;
 
 #define topow2(x) (_Generic((x), \
 	uint32_t: topow2_u32, \
