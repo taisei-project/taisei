@@ -9,7 +9,6 @@
 #include "taisei.h"
 
 #include "global.h"
-
 #include "opengl.h"
 
 struct glext_s glext;

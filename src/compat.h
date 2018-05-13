@@ -15,6 +15,35 @@
 #include <stdint.h>
 #include <stdnoreturn.h>
 
+#ifdef _WIN32
+	// Include the god-awful windows.h header here so that we can fight the obnoxious namespace pollution it introduces.
+	// We obviously don't need it in every source file, but it's easier to do it globally and early than to try to infer
+	// just where down the maze of includes some of our dependencies happens to smuggle it in.
+	//
+	// *sigh*
+	//
+	// Goddamn it.
+
+	// Make sure we get the "unicode" (actually UTF-16) versions of win32 APIs; it defaults to legacy crippled ones.
+	#ifndef UNICODE
+		#define UNICODE
+	#endif
+	#ifndef _UNICODE
+		#define _UNICODE
+	#endif
+
+	// Ask windows.h to include a little bit less of the stupid crap we'll never use.
+	// Some of it actually clashes with our names.
+	#define WIN32_LEAN_AND_MEAN
+	#define NOGDI
+
+	#include <windows.h>
+
+	// far/near pointers are obviously very relevant for modern CPUs and totally deserve their very own, unprefixed keywords!
+	#undef near
+	#undef far
+#endif
+
 #ifndef offsetof
 	#ifdef __GNUC__
 		#define offsetof(type, field) __builtin_offsetof(type, field)
