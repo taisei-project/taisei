@@ -11,7 +11,6 @@
 #include "global.h"
 #include "plrmodes.h"
 #include "marisa.h"
-#include "renderer/api.h"
 
 PlayerCharacter character_marisa = {
 	.id = PLR_CHAR_MARISA,
