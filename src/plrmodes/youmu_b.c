@@ -87,8 +87,8 @@ static Projectile* youmu_homing_trail(Projectile *p, complex v, int to) {
 }
 
 static int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: aim (r: linear, i: accelerated), a[2]: timeout, a[3]: initial target
-	if(t == EVENT_DEATH) {
-		return 1;
+	if(t == EVENT_DEATH || t == EVENT_BIRTH) {
+		return ACTION_ACK;
 	}
 
 	if(t > creal(p->args[2])) {
@@ -132,9 +132,10 @@ static int youmu_trap(Projectile *p, int t) {
 			.flags = PFLAG_REQUIREDPARTICLE,
 			.layer = LAYER_PARTICLE_LOW,
 		);
-		return 1;
+		return ACTION_ACK;
 	}
 
+	// FIXME: replace this with timeout?
 	double expiretime = creal(p->args[1]);
 
 	if(t > expiretime) {
@@ -142,7 +143,7 @@ static int youmu_trap(Projectile *p, int t) {
 	}
 
 	if(t < 0) {
-		return 1;
+		return ACTION_ACK;
 	}
 
 	float charge = youmu_trap_charge(t);
@@ -227,7 +228,7 @@ static void youmu_particle_slice_draw(Projectile *p, int t) {
 
 static int youmu_particle_slice_logic(Projectile *p, int t) {
 	if(t < 0) {
-		return ACTION_NONE;
+		return ACTION_ACK;
 	}
 
 	double lifetime = p->timeout;
@@ -297,7 +298,7 @@ static int youmu_slash(Enemy *e, int t) {
 
 static int youmu_asymptotic(Projectile *p, int t) {
 	if(t < 0) {
-		return 1;
+		return ACTION_ACK;
 	}
 
 	p->angle = carg(p->args[0]);

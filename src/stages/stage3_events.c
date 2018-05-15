@@ -268,7 +268,7 @@ static int stage3_burstfairy(Enemy *e, int t) {
 
 static int stage3_chargefairy_proj(Projectile *p, int t) {
 	if(t < 0) {
-		return 0;
+		return ACTION_ACK;
 	}
 
 	/*
@@ -291,7 +291,7 @@ static int stage3_chargefairy_proj(Projectile *p, int t) {
 		p->pos += p->args[0] * (p->args[1] + 1);
 	}
 
-	return 0;
+	return ACTION_NONE;
 }
 
 static int stage3_chargefairy(Enemy *e, int t) {
@@ -483,7 +483,7 @@ static int scuttle_poison(Projectile *p, int time) {
 	int result = accelerated(p, time);
 
 	if(time < 0)
-		return 1;
+		return result;
 
 	if(!(time % (57 - global.diff * 3)) && p->type != DeadProj) {
 		float a = p->args[2];
@@ -507,6 +507,10 @@ static int scuttle_poison(Projectile *p, int time) {
 }
 
 static int scuttle_lethbite_proj(Projectile *p, int time) {
+	if(time < 0) {
+		return ACTION_ACK;
+	}
+
 	#define A0_PROJ_START 120
 	#define A0_PROJ_CHARGE 20
 	TIMER(&time)
@@ -755,9 +759,9 @@ static void wriggle_slave_visual(Enemy *e, int time, bool render) {
 static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 	if(time == EVENT_DEATH) {
 		free_ref(p->args[0]);
-		return 1;
+		return ACTION_ACK;
 	} else if(time < 0) {
-		return 1;
+		return ACTION_ACK;
 	}
 
 	if(time >= creal(p->args[1])) {
@@ -950,12 +954,10 @@ void wriggle_moonlight_rocket(Boss *boss, int time) {
 static int wriggle_ignite_laserbullet(Projectile *p, int time) {
 	if(time == EVENT_DEATH) {
 		free_ref(p->args[0]);
-		return 1;
-	} else if(time < 0)
-		return 1;
-
-	if(time < 0)
-		return 1;
+		return ACTION_ACK;
+	} else if(time < 0) {
+		return ACTION_ACK;
+	}
 
 	Laser *laser = (Laser*)REF(p->args[0]);
 
@@ -966,7 +968,7 @@ static int wriggle_ignite_laserbullet(Projectile *p, int time) {
 	p->angle = carg(p->args[3]);
 	p->pos = p->pos + p->args[3];
 
-	return 1;
+	return ACTION_NONE;
 }
 
 static void wriggle_ignite_warnlaser_logic(Laser *l, int time) {
@@ -1180,8 +1182,9 @@ static void wriggle_fstorm_proj_draw(Projectile *p, int time) {
 }
 
 static int wriggle_fstorm_proj(Projectile *p, int time) {
-	if(time < 0)
-		return 1;
+	if(time < 0) {
+		return ACTION_ACK;
+	}
 
 	if(cabs(global.plr.pos-p->pos) > 100) {
 		p->args[2]+=1;
@@ -1223,7 +1226,7 @@ static int wriggle_fstorm_proj(Projectile *p, int time) {
 	}
 
 	p->pos += p->args[1];
-	return 1;
+	return ACTION_NONE;
 }
 
 void wriggle_firefly_storm(Boss *boss, int time) {

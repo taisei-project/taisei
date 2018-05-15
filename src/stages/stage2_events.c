@@ -253,8 +253,9 @@ static void wriggle_intro_stage2(Boss *w, int t) {
 }
 
 int wriggle_bug(Projectile *p, int t) {
-	if(t < 0)
-		return 1;
+	if(t < 0) {
+		return ACTION_ACK;
+	}
 
 	p->pos += p->args[0];
 	p->angle = carg(p->args[0]);
@@ -271,7 +272,7 @@ int wriggle_bug(Projectile *p, int t) {
 		);
 	}
 
-	return 1;
+	return ACTION_NONE;
 }
 
 void wriggle_small_storm(Boss *w, int time) {
@@ -417,8 +418,9 @@ void hina_cards2(Boss *h, int time) {
 #define SLOTS 5
 
 static int bad_pick_bullet(Projectile *p, int t) {
-	if(t < 0)
-		return 1;
+	if(t < 0) {
+		return ACTION_ACK;
+	}
 
 	p->pos += p->args[0];
 	p->args[0] += p->args[1];
@@ -429,7 +431,7 @@ static int bad_pick_bullet(Projectile *p, int t) {
 	if(slot != targetslot)
 		p->args[0] = copysign(creal(p->args[0]),targetslot-slot)+I*cimag(p->args[0]);
 
-	return 1;
+	return ACTION_NONE;
 }
 
 void hina_bad_pick(Boss *h, int time) {
@@ -533,11 +535,19 @@ void hina_wheel(Boss *h, int time) {
 }
 
 static int timeout_deadproj_linear(Projectile *p, int time) {
-	if(time > creal(p->args[0]))
+	// TODO: maybe add a "clear on timeout" flag?
+
+	if(time < 0) {
+		return ACTION_ACK;
+	}
+
+	if(time > creal(p->args[0])) {
 		p->type = DeadProj;
+	}
+
 	p->pos += p->args[1];
 	p->angle = carg(p->args[1]);
-	return 1;
+	return ACTION_NONE;
 }
 
 int hina_monty_slave(Enemy *s, int time) {

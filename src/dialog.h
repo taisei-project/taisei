@@ -53,4 +53,5 @@ void delete_dialog(Dialog *d)
 void draw_dialog(Dialog *dialog)
 	attr_nonnull(1);
 
-bool page_dialog(Dialog **d);
+bool page_dialog(Dialog **d) attr_nonnull(1);
+void process_dialog(Dialog **d) attr_nonnull(1);

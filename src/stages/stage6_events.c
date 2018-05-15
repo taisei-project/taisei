@@ -108,6 +108,10 @@ int stage6_side(Enemy *e, int t) {
 }
 
 int wait_proj(Projectile *p, int t) {
+	if(t < 0) {
+		return ACTION_ACK;
+	}
+
 	if(t > creal(p->args[1])) {
 		if(t == creal(p->args[1]) + 1) {
 			play_sound_ex("redirect", 4, false);
@@ -124,7 +128,7 @@ int wait_proj(Projectile *p, int t) {
 		p->pos += p->args[0];
 	}
 
-	return 1;
+	return ACTION_NONE;
 }
 
 int stage6_flowermine(Enemy *e, int t) {
@@ -522,7 +526,7 @@ int kepler_bullet(Projectile *p, int t) {
 	}
 
 	if(t < 0) {
-		return 1;
+		return ACTION_ACK;
 	}
 
 	complex pos = p->pos0;
@@ -567,7 +571,7 @@ int kepler_bullet(Projectile *p, int t) {
 			);
 		}
 	}
-	return 1;
+	return ACTION_NONE;
 }
 
 
@@ -889,6 +893,10 @@ static void set_baryon_rule(EnemyLogicRule r) {
 }
 
 int eigenstate_proj(Projectile *p, int t) {
+	if(t < 0) {
+		return ACTION_ACK;
+	}
+
 	if(t == creal(p->args[2])) {
 		p->args[0] += p->args[3];
 	}
@@ -965,7 +973,7 @@ void elly_eigenstate(Boss *b, int t) {
 int broglie_particle(Projectile *p, int t) {
 	if(t == EVENT_DEATH) {
 		free_ref(p->args[0]);
-		return 1;
+		return ACTION_ACK;
 	}
 
 	/*
@@ -977,7 +985,7 @@ int broglie_particle(Projectile *p, int t) {
 	*/
 
 	if(t < 0) {
-		return 1;
+		return ACTION_ACK;
 	}
 
 	int scattertime = creal(p->args[1]);
@@ -1035,12 +1043,12 @@ void broglie_laser_logic(Laser *l, int t) {
 }
 
 int broglie_charge(Projectile *p, int t) {
-	if(t < 0) {
-		return 1;
+	if(t == EVENT_BIRTH) {
+		play_sound_ex("shot3", 10, false);
 	}
 
-	if(t == 1) {
-		play_sound_ex("shot3", 10, false);
+	if(t < 0) {
+		return ACTION_ACK;
 	}
 
 	int firetime = creal(p->args[1]);
@@ -1130,7 +1138,7 @@ int broglie_charge(Projectile *p, int t) {
 		}
 	}
 
-	return 1;
+	return ACTION_NONE;
 }
 
 int baryon_broglie(Enemy *e, int t) {
@@ -1311,7 +1319,7 @@ static void ricci_laser_logic(Laser *l, int t) {
 static int ricci_proj2(Projectile *p, int t) {
 	TIMER(&t);
 
-	if(t == 1) {
+	AT(EVENT_BIRTH) {
 		play_sound("shot3");
 	}
 
@@ -1334,11 +1342,11 @@ static int ricci_proj2(Projectile *p, int t) {
 		create_laser(p->pos, 1,  60, rgb(1.0, 0.0, 0), las_circle, ricci_laser_logic, -6*M_PI + 30*I, rad, add_ref(e), p->pos - e->pos)->width = 10;
 
 		free_ref(p->args[1]);
-		return 1;
+		return ACTION_ACK;
 	}
 
 	if(t < 0) {
-		return 1;
+		return ACTION_ACK;
 	}
 
 	Enemy *e = (Enemy*)REF(p->args[1]);
@@ -1352,7 +1360,7 @@ static int ricci_proj2(Projectile *p, int t) {
 	if(t > 30)
 		return ACTION_DESTROY;
 
-	return 1;
+	return ACTION_NONE;
 }
 
 int baryon_ricci(Enemy *e, int t) {
@@ -1401,8 +1409,9 @@ int baryon_ricci(Enemy *e, int t) {
 }
 
 static int ricci_proj(Projectile *p, int t) {
-	if(t < 0)
-		return 1;
+	if(t < 0) {
+		return ACTION_ACK;
+	}
 
 	if(!global.boss)
 		return ACTION_DESTROY;
@@ -1443,7 +1452,7 @@ static int ricci_proj(Projectile *p, int t) {
 		rgba(0, 0, cabs(shift)/20.0, a)
 	);
 
-	return 1;
+	return ACTION_NONE;
 }
 
 
@@ -1663,6 +1672,10 @@ int baryon_curvature(Enemy *e, int t) {
 }
 
 int curvature_bullet(Projectile *p, int t) {
+	if(t < 0) {
+		return ACTION_ACK;
+	}
+
 	if(REF(p->args[1]) == 0) {
 		return 0;
 	}
@@ -1681,10 +1694,14 @@ int curvature_bullet(Projectile *p, int t) {
 	if(t == EVENT_DEATH)
 		free_ref(p->args[1]);
 
-	return 1;
+	return ACTION_NONE;
 }
 
 int curvature_orbiter(Projectile *p, int t) {
+	if(t < 0) {
+		return ACTION_ACK;
+	}
+
 	const double w = 0.03;
 	if(REF(p->args[1]) != 0 && p->args[3] == 0) {
 		p->pos = ((Projectile *)REF(p->args[1]))->pos+p->args[0]*cexp(I*t*w);
@@ -1694,11 +1711,10 @@ int curvature_orbiter(Projectile *p, int t) {
 		p->pos += p->args[2];
 	}
 
-
 	if(t == EVENT_DEATH)
 		free_ref(p->args[1]);
 
-	return 1;
+	return ACTION_NONE;
 }
 
 static double saw(double t) {
@@ -1852,6 +1868,10 @@ static complex wrap_around(complex *pos) {
 }
 
 static int elly_toe_boson_effect(Projectile *p, int t) {
+	if(t < 0) {
+		return ACTION_ACK;
+	}
+
 	p->angle = creal(p->args[3]) * max(0, t) / (double)p->timeout;
 	return ACTION_NONE;
 }
@@ -1864,7 +1884,7 @@ static Color boson_color(int pos, int warps) {
 
 static int elly_toe_boson(Projectile *p, int t) {
 	if(t < 0) {
-		return 1;
+		return ACTION_ACK;
 	}
 
 	p->angle = carg(p->args[0]);
@@ -1897,7 +1917,7 @@ static int elly_toe_boson(Projectile *p, int t) {
 			);
 		}
 
-		return 1;
+		return ACTION_NONE;
 	}
 
 	if(t == activate_time) {
@@ -2007,7 +2027,7 @@ static int elly_toe_boson(Projectile *p, int t) {
 		);
 	}
 
-	return 1;
+	return ACTION_NONE;
 }
 
 #define FERMIONTIME 1000
@@ -2034,7 +2054,10 @@ static bool elly_toe_its_yukawatime(complex pos) {
 static int elly_toe_fermion_yukawa_effect(Projectile *p, int t) {
 	if(t == EVENT_DEATH) {
 		free_ref(p->args[0]);
-		return 1;
+	}
+
+	if(t < 0) {
+		return ACTION_ACK;
 	}
 
 	Projectile *master = REF(p->args[0]);
@@ -2047,10 +2070,13 @@ static int elly_toe_fermion_yukawa_effect(Projectile *p, int t) {
 }
 
 static int elly_toe_fermion(Projectile *p, int t) {
-	if(t < 0)
-		return 1;
-	if(t == 1)
+	if(t == EVENT_BIRTH) {
 		p->pos0 = 0;
+	}
+
+	if(t < 0) {
+		return ACTION_ACK;
+	}
 
 	int speeduptime = creal(p->args[2]);
 	if(t > speeduptime)
@@ -2075,7 +2101,7 @@ static int elly_toe_fermion(Projectile *p, int t) {
 	}
 
 	if(creal(p->args[3]) < 0) // add a way to disable the yukawa phase
-		return 1;
+		return ACTION_NONE;
 
 	if(elly_toe_its_yukawatime(p->pos)) {
 		if(!p->args[3]) {
@@ -2102,12 +2128,13 @@ static int elly_toe_fermion(Projectile *p, int t) {
 		p->args[3]=0;
 	}
 
-	return 1;
+	return ACTION_NONE;
 }
 
 static int elly_toe_higgs(Projectile *p, int t) {
-	if(t < 0)
-		return 1;
+	if(t < 0) {
+		return ACTION_ACK;
+	}
 
 	if(elly_toe_its_yukawatime(p->pos)) {
 		if(!p->args[3]) {
@@ -2132,7 +2159,7 @@ static int elly_toe_higgs(Projectile *p, int t) {
 	p->pos = p->pos0 + t * vel;
 	p->angle = carg(vel);
 
-	return 1;
+	return ACTION_NONE;
 }
 
 static complex elly_toe_laser_pos(Laser *l, float t) { // a[0]: direction, a[1]: type, a[2]: width
@@ -2183,11 +2210,10 @@ static complex elly_toe_laser_pos(Laser *l, float t) { // a[0]: direction, a[1]:
 static int elly_toe_laser_particle_rule(Projectile *p, int t) {
 	if(t == EVENT_DEATH) {
 		free_ref(p->args[3]);
-		return ACTION_NONE;
 	}
 
 	if(t < 0) {
-		return ACTION_NONE;
+		return ACTION_ACK;
 	}
 
 	Laser *l = REF(p->args[3]);

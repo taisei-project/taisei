@@ -60,7 +60,7 @@ void cirno_intro(Boss *c, int time) {
 
 int cirno_snowflake_proj(Projectile *p, int time) {
 	if(time < 0)
-		return 1;
+		return ACTION_ACK;
 
 	int split_time = 200 - 20*global.diff - creal(p->args[1]) * 3;
 
@@ -174,7 +174,7 @@ static Projectile* spawn_stain(complex pos, float angle, int to) {
 
 int cirno_pfreeze_frogs(Projectile *p, int t) {
 	if(t < 0)
-		return 1;
+		return ACTION_ACK;
 
 	Boss *parent = global.boss;
 
@@ -507,12 +507,8 @@ static complex halation_calc_orb_pos(complex center, float rotation, int proj, i
 }
 
 static int halation_orb(Projectile *p, int time) {
-	if(time == EVENT_DEATH) {
-		return 1;
-	}
-
 	if(time < 0) {
-		return 1;
+		return ACTION_ACK;
 	}
 
 	if(!(time % 4)) {
@@ -669,8 +665,13 @@ void cirno_snow_halation(Boss *c, int time) {
 int cirno_icicles(Projectile *p, int t) {
 	int turn = 60;
 
-	if(t < 0)
-		return 1;
+	if(t < 0) {
+		if(t == EVENT_BIRTH) {
+			p->angle = carg(p->args[0]);
+		}
+
+		return ACTION_ACK;
+	}
 
 	if(t < turn) {
 		p->pos += p->args[0]*pow(0.9,t);
@@ -685,7 +686,7 @@ int cirno_icicles(Projectile *p, int t) {
 
 	p->angle = carg(p->args[0]);
 
-	return 1;
+	return ACTION_NONE;
 }
 
 void cirno_icicle_fall(Boss *c, int time) {
@@ -742,6 +743,10 @@ void cirno_icicle_fall(Boss *c, int time) {
 }
 
 int cirno_crystal_blizzard_proj(Projectile *p, int time) {
+	if(time < 0) {
+		return ACTION_ACK;
+	}
+
 	if(!(time % 12)) {
 		PARTICLE(
 			.sprite = "stain",
@@ -1144,6 +1149,10 @@ int stage1_tritoss(Enemy *e, int t) {
 
 #ifdef BULLET_TEST
 static int proj_rotate(Projectile *p, int t) {
+	if(t < 0) {
+		return ACTION_ACK;
+	}
+
 	p->angle = global.frames / 60.0;
 	// p->angle = M_PI/2;
 	return ACTION_NONE;

@@ -135,13 +135,34 @@ static double projectile_rect_area(Projectile *p) {
 
 static void ent_draw_projectile(EntityInterface *ent);
 
+static inline char* event_name(int ev) {
+	switch(ev) {
+		case EVENT_BIRTH: return "EVENT_BIRTH";
+		case EVENT_DEATH: return "EVENT_DEATH";
+	}
+
+	log_fatal("Bad event %i", ev);
+}
+
 static inline int proj_call_rule(Projectile *p, int t) {
 	if(p->timeout > 0 && t >= p->timeout) {
 		return ACTION_DESTROY;
 	}
 
 	if(p->rule) {
-		return p->rule(p, t);
+		int a = p->rule(p, t);
+
+		if(t < 0 && a != ACTION_ACK) {
+			set_debug_info(&p->debug);
+			log_fatal(
+				"Projectile rule didn't acknowledge %s (returned %i, expected %i)",
+				event_name(t),
+				a,
+				ACTION_ACK
+			);
+		}
+
+		return a;
 	}
 
 	return ACTION_NONE;
@@ -239,9 +260,9 @@ static Projectile* _create_projectile(ProjArgs *args) {
 
 	ent_register(&p->ent, ENT_PROJECTILE);
 
-	// BUG: this currently breaks some projectiles
-	//      enable this when they're fixed
-	// proj_call_rule(p, EVENT_BIRTH);
+	// TODO: Maybe allow ACTION_DESTROY here?
+	// But in that case, code that uses this function's return value must be careful to not dereference a NULL pointer.
+	proj_call_rule(p, EVENT_BIRTH);
 
 	return list_append(args->dest, p);
 }
@@ -591,18 +612,30 @@ bool projectile_is_clearable(Projectile *p) {
 }
 
 int linear(Projectile *p, int t) { // sure is physics in here; a[0]: velocity
-	if(t < 0)
-		return 1;
+	if(t == EVENT_DEATH) {
+		return ACTION_ACK;
+	}
+
 	p->angle = carg(p->args[0]);
 	p->pos = p->pos0 + p->args[0]*t;
 
-	return 1;
+	if(t == EVENT_BIRTH) {
+		return ACTION_ACK;
+	}
+
+	return ACTION_NONE;
 }
 
 int accelerated(Projectile *p, int t) {
-	if(t < 0)
-		return 1;
+	if(t == EVENT_DEATH) {
+		return ACTION_ACK;
+	}
+
 	p->angle = carg(p->args[0]);
+
+	if(t == EVENT_BIRTH) {
+		return ACTION_ACK;
+	}
 
 	p->pos += p->args[0];
 	p->args[0] += p->args[1];
@@ -611,9 +644,16 @@ int accelerated(Projectile *p, int t) {
 }
 
 int asymptotic(Projectile *p, int t) { // v = a[0]*(a[1] + 1); a[1] -> 0
-	if(t < 0)
-		return 1;
+	if(t == EVENT_DEATH) {
+		return ACTION_ACK;
+	}
+
 	p->angle = carg(p->args[0]);
+
+
+	if(t == EVENT_BIRTH) {
+		return ACTION_ACK;
+	}
 
 	p->args[1] *= 0.8;
 	p->pos += p->args[0]*(p->args[1] + 1);

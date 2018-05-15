@@ -21,7 +21,7 @@ static Color myon_color(float f, float a) {
 
 static int myon_particle_rule(Projectile *p, int t) {
 	if(t < 0) {
-		return ACTION_NONE;
+		return ACTION_ACK;
 	}
 
 	p->pos += p->args[0];
@@ -40,7 +40,7 @@ static complex myon_tail_dir(void) {
 
 static int myon_flare_particle_rule(Projectile *p, int t) {
 	if(t < 0) {
-		return ACTION_NONE;
+		return ACTION_ACK;
 	}
 
 	// wiggle wiggle
@@ -137,7 +137,7 @@ static void myon_draw_proj_trail(Projectile *p, int t) {
 
 static int myon_proj(Projectile *p, int t) {
 	if(t < 0) {
-		return 1;
+		return ACTION_ACK;
 	}
 
 	linear(p, t);
@@ -159,7 +159,7 @@ static int myon_proj(Projectile *p, int t) {
 		.angle = p->angle,
 	);
 
-	return 1;
+	return ACTION_NONE;
 }
 
 static void myon_proj_draw(Projectile *p, int t) {
@@ -293,7 +293,7 @@ static int youmu_mirror_myon(Enemy *e, int t) {
 
 static int youmu_mirror_self_proj(Projectile *p, int t) {
 	if(t < 0) {
-		return 1;
+		return ACTION_ACK;
 	}
 
 	complex v0 = p->args[0];

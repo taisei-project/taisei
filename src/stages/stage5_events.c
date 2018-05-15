@@ -633,6 +633,10 @@ int lightning_slave(Enemy *e, int t) {
 }
 
 static int zigzag_bullet(Projectile *p, int t) {
+	if(t < 0) {
+		return ACTION_ACK;
+	}
+
 	int l = 50;
 	p->pos = p->pos0+(abs(((2*t)%l)-l/2)*I+t)*2*p->args[0];
 
@@ -647,7 +651,7 @@ static int zigzag_bullet(Projectile *p, int t) {
 		);
 	}
 
-	return 1;
+	return ACTION_NONE;
 }
 
 void iku_lightning(Boss *b, int time) {
@@ -775,8 +779,10 @@ static complex induction_bullet_traj(Projectile *p, float t) {
 }
 
 int induction_bullet(Projectile *p, int time) {
-	if(time < 0)
-		return 1;
+	if(time < 0) {
+		return ACTION_ACK;
+	}
+
 	float t = time*sqrt(global.diff);
 
 	if(global.diff > D_Normal && !p->args[2]) {
@@ -938,7 +944,11 @@ void iku_extra_slave_visual(Enemy *e, int t, bool render) {
 int iku_extra_trigger_bullet(Projectile *p, int t) {
 	if(t == EVENT_DEATH) {
 		free_ref(p->args[1]);
-		return 1;
+		return ACTION_ACK;
+	}
+
+	if(t < 0) {
+		return ACTION_ACK;
 	}
 
 	Enemy *target = REF(p->args[1]);
@@ -989,7 +999,7 @@ int iku_extra_trigger_bullet(Projectile *p, int t) {
 		.blend = BLEND_ADD,
 	);
 
-	return 1;
+	return ACTION_NONE;
 }
 
 void iku_extra_fire_trigger_bullet(void) {

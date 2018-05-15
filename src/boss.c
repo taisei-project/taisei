@@ -185,6 +185,7 @@ static int boss_glow(Projectile *p, int t) {
 	if(t == EVENT_DEATH) {
 		free(p->sprite);
 	}
+
 	return linear(p, t);
 }
 
@@ -575,6 +576,10 @@ void boss_finish_current_attack(Boss *boss) {
 
 void process_boss(Boss **pboss) {
 	Boss *boss = *pboss;
+
+	if(!boss) {
+		return;
+	}
 
 	aniplayer_update(&boss->ani);
 

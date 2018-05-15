@@ -130,6 +130,10 @@ void draw_dialog(Dialog *dialog) {
 }
 
 bool page_dialog(Dialog **d) {
+	if(!*d) {
+		return false;
+	}
+
 	int to = (*d)->messages[(*d)->pos].timeout;
 
 	if(to && to > global.frames) {
@@ -146,7 +150,25 @@ bool page_dialog(Dialog **d) {
 		// XXX: maybe this can be handled elsewhere?
 		if(!global.boss)
 			global.timer++;
+	} else if((*d)->messages[(*d)->pos].side == BGM) {
+		stage_start_bgm((*d)->messages[(*d)->pos].msg);
+		return page_dialog(d);
 	}
 
 	return true;
+}
+
+void process_dialog(Dialog **d) {
+	if(!*d) {
+		return;
+	}
+
+	int to = (*d)->messages[(*d)->pos].timeout;
+
+	if(
+		(to && to >= global.frames) ||
+		((global.plr.inputflags & INFLAG_SKIP) && global.frames - (*d)->page_time > 3)
+	) {
+		page_dialog(d);
+	}
 }

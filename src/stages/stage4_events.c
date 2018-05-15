@@ -500,10 +500,15 @@ Boss* create_kurumi_mid(void) {
 }
 
 int splitcard(Projectile *p, int t) {
+	if(t < 0) {
+		return ACTION_ACK;
+	}
+
 	if(t == creal(p->args[2])) {
 		p->color = rgb(0, color_component(p->color,CLR_B), color_component(p->color, CLR_G));
 		play_sound_ex("redirect", 10, false);
 	}
+
 	if(t > creal(p->args[2])) {
 		p->args[0] += 0.01*p->args[3];
 	}
@@ -556,8 +561,12 @@ void kurumi_boss_intro(Boss *b, int t) {
 }
 
 static int splitcard_elly(Projectile *p, int t) {
+	if(t < 0) {
+		return ACTION_ACK;
+	}
+
 	if(t == creal(p->args[2])) {
-			p->args[0]+=p->args[3];
+		p->args[0]+=p->args[3];
 		p->color = derive_color(p->color, CLRMASK_B, rgb(0,0,-color_component(p->color,CLR_B)));
 		play_sound_ex("redirect", 10, false);
 	}
@@ -609,8 +618,9 @@ void kurumi_breaker(Boss *b, int time) {
 }
 
 int aniwall_bullet(Projectile *p, int t) {
-	if(t < 0)
-		return 1;
+	if(t < 0) {
+		return ACTION_ACK;
+	}
 
 	if(t > creal(p->args[1])) {
 		if(global.diff > D_Normal) {
@@ -623,7 +633,7 @@ int aniwall_bullet(Projectile *p, int t) {
 	}
 
 	p->color = derive_color(p->color, CLRMASK_R, rgb(cimag(p->pos)/VIEWPORT_H, 0, 0));
-	return 1;
+	return ACTION_NONE;
 }
 
 int aniwall_slave(Enemy *e, int t) {
@@ -862,6 +872,10 @@ static Projectile* vapor_particle(complex pos, Color clr) {
 }
 
 static int kdanmaku_proj(Projectile *p, int t) {
+	if(t < 0) {
+		return ACTION_ACK;
+	}
+
 	int time = creal(p->args[0]);
 
 	if(t == time) {
@@ -889,7 +903,8 @@ static int kdanmaku_proj(Projectile *p, int t) {
 
 	p->pos += p->args[1];
 	p->angle = carg(p->args[1]);
-	return 1;
+
+	return ACTION_NONE;
 }
 
 int kdanmaku_slave(Enemy *e, int t) {
@@ -981,7 +996,7 @@ bool kurumi_extra_shield_expire(Enemy *e, int time) {
 
 int kurumi_extra_dead_shield_proj(Projectile *p, int time) {
 	if(time < 0) {
-		return 1;
+		return ACTION_ACK;
 	}
 
 	p->color = mix_colors(
@@ -1100,11 +1115,11 @@ void kurumi_extra_drainer_draw(Projectile *p, int time) {
 int kurumi_extra_drainer(Projectile *p, int time) {
 	if(time == EVENT_DEATH) {
 		free_ref(p->args[0]);
-		return 1;
+		return ACTION_ACK;
 	}
 
 	if(time < 0) {
-		return 1;
+		return ACTION_ACK;
 	}
 
 	Enemy *e = REF(p->args[0]);
@@ -1128,7 +1143,7 @@ int kurumi_extra_drainer(Projectile *p, int time) {
 		}
 	}
 
-	return 1;
+	return ACTION_NONE;
 }
 
 void kurumi_extra_create_drainer(Enemy *e) {

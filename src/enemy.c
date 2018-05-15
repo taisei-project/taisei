@@ -143,7 +143,7 @@ void killall(Enemy *enemies) {
 int enemy_flare(Projectile *p, int t) { // a[0] velocity, a[1] ref to enemy
 	if(t == EVENT_DEATH) {
 		free_ref(p->args[1]);
-		return ACTION_NONE;
+		return ACTION_ACK;
 	}
 
 	Enemy *owner = REF(p->args[1]);
@@ -154,8 +154,11 @@ int enemy_flare(Projectile *p, int t) { // a[0] velocity, a[1] ref to enemy
 	}
 	*/
 
-	if(t < 0) {
-		return ACTION_NONE;
+	int result = ACTION_NONE;
+
+	if(t == EVENT_BIRTH) {
+		t = 0;
+		result = ACTION_ACK;
 	}
 
 	if(owner != NULL) {
@@ -163,7 +166,7 @@ int enemy_flare(Projectile *p, int t) { // a[0] velocity, a[1] ref to enemy
 	}
 
 	p->pos = p->pos0 + p->args[3] + p->args[0]*t;
-	return ACTION_NONE;
+	return result;
 }
 
 void BigFairy(Enemy *e, int t, bool render) {

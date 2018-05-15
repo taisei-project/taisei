@@ -405,44 +405,26 @@ void stage_input(void) {
 static void stage_logic(void) {
 	player_logic(&global.plr);
 
+	process_boss(&global.boss);
 	process_enemies(&global.enemies);
 	process_projectiles(&global.projs, true);
 	process_items();
 	process_lasers();
 	process_projectiles(&global.particles, false);
+	process_dialog(&global.dialog);
 
 	update_sounds();
 
-	if(global.dialog) {
-		int to = global.dialog->messages[global.dialog->pos].timeout;
-
-		if(
-			(to && to >= global.frames) ||
-			((global.plr.inputflags & INFLAG_SKIP) && global.frames - global.dialog->page_time > 3)
-		) {
-			page_dialog(&global.dialog);
-		}
-	}
-
-	if(global.boss) {
-		process_boss(&global.boss);
-	}
-
 	global.frames++;
 
-	if(!global.dialog && (!global.boss || boss_is_fleeing(global.boss)))
+	if(!global.dialog && (!global.boss || boss_is_fleeing(global.boss))) {
 		global.timer++;
+	}
 
 	if(global.replaymode == REPLAY_PLAY &&
 		global.frames == global.replay_stage->events[global.replay_stage->numevents-1].frame - FADE_TIME &&
 		global.game_over != GAMEOVER_TRANSITIONING) {
 		stage_finish(GAMEOVER_DEFEAT);
-	}
-
-	// BGM handling
-	if(global.dialog && global.dialog->messages[global.dialog->pos].side == BGM) {
-		stage_start_bgm(global.dialog->messages[global.dialog->pos].msg);
-		page_dialog(&global.dialog);
 	}
 }
 
