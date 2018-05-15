@@ -73,6 +73,14 @@ taisei_c_warnargs = []
 taisei_c_args = []
 
 foreach flag : [
+            '-Werror=implicit-function-declaration',
+        ]
+    if cc.has_argument(flag)
+        taisei_c_args += flag
+    endif
+endforeach
+
+foreach flag : [
             '-Wpedantic',
             '-Wparentheses',
             '-Wtype-limits',

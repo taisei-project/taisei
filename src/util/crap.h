@@ -9,5 +9,4 @@
 #pragma once
 #include "taisei.h"
 
-// WARNING: This file intentionally shadows the standard header!
-#include "util/assert.h"
+void* memdup(const void *src, size_t size);

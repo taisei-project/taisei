@@ -12,7 +12,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "global.h"
-#include "glm.h"
+#include "util/glm.h"
 
 Stage3D stage_3d_context;
 

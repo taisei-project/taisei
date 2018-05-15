@@ -22,7 +22,7 @@
 #include "../glcommon/vtable.h"
 #include "resource/resource.h"
 #include "resource/model.h"
-#include "glm.h"
+#include "util/glm.h"
 
 typedef struct TextureUnit {
 	struct {

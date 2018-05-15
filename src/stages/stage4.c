@@ -14,7 +14,7 @@
 #include "global.h"
 #include "stage.h"
 #include "stageutils.h"
-#include "glm.h"
+#include "util/glm.h"
 #include "resource/model.h"
 
 /*

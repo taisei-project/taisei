@@ -10,7 +10,7 @@
 #include "taisei.h"
 
 #include "build_config.h"
-#include "compat.h"
+#include "util/compat.h"
 
 #ifdef TAISEI_BUILDCONF_DEBUG
 	#define DEBUG 1

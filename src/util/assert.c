@@ -10,6 +10,7 @@
 
 #include "assert.h"
 #include "util.h"
+#include "log.h"
 
 void _ts_assert_fail(const char *cond, const char *func, const char *file, int line, bool use_log) {
     use_log = use_log && log_initialized();

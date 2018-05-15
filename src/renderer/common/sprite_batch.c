@@ -10,7 +10,7 @@
 
 #include "sprite_batch.h"
 #include "../api.h"
-#include "glm.h"
+#include "util/glm.h"
 
 typedef struct SpriteAttribs {
 	mat4 transform;

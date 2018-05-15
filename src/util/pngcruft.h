@@ -9,5 +9,9 @@
 #pragma once
 #include "taisei.h"
 
-// WARNING: This file intentionally shadows the standard header!
-#include "util/assert.h"
+#include <png.h>
+#include <SDL.h>
+
+void png_init_rwops_read(png_structp png, SDL_RWops *rwops);
+void png_init_rwops_write(png_structp png, SDL_RWops *rwops);
+void png_setup_error_handlers(png_structp png);

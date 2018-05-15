@@ -10,7 +10,7 @@
 
 #include "../api.h"
 #include "matstack.h"
-#include "glm.h"
+#include "util/glm.h"
 #include "state.h"
 
 void matstack_reset(MatrixStack *ms) {

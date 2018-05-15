@@ -10,7 +10,6 @@
 #include "taisei.h"
 
 #include <SDL.h>
-#include "compat.h"
 
 typedef enum LogLevel {
 	LOG_NONE = 0,

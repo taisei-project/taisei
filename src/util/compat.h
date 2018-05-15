@@ -14,6 +14,9 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdnoreturn.h>
+#include <limits.h>
+#include <math.h>
+#include <complex.h>
 
 #ifdef _WIN32
 	// Include the god-awful windows.h header here so that we can fight the obnoxious namespace pollution it introduces.
@@ -44,6 +47,7 @@
 	#undef far
 #endif
 
+// This macro should be provided by stddef.h, but in practice it sometimes is not.
 #ifndef offsetof
 	#ifdef __GNUC__
 		#define offsetof(type, field) __builtin_offsetof(type, field)
@@ -71,6 +75,7 @@
 	#endif
 #endif
 
+// On windows, use the MinGW implementations of printf and friends instead of the crippled mscrt ones.
 #ifdef __USE_MINGW_ANSI_STDIO
 	#define FORMAT_ATTR __MINGW_PRINTF_FORMAT
 #else
@@ -91,6 +96,26 @@ typedef unsigned char uchar;
 
 #undef schar
 typedef signed char schar;
+
+// These definitions are common but non-standard, so we provide our own
+#undef M_PI
+#undef M_PI_2
+#undef M_PI_4
+#undef M_E
+#define M_PI 3.14159265358979323846
+#define M_PI_2 1.57079632679489661923
+#define M_PI_4 0.78539816339744830962
+#define M_E 2.7182818284590452354
+
+// This is a workaround to properly specify the type of our "complex" variables...
+// Taisei code always uses just "complex" when it actually means "complex double", which is not really correct.
+// gcc doesn't seem to care, other compilers do (e.g. clang)
+#undef complex
+#define complex _Complex double
+
+// Meeded for mingw; presumably yet again defined somewhere in windoze headers.
+#undef min
+#undef max
 
 /*
  * Abstract away the nasty GNU attribute syntax.

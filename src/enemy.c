@@ -16,7 +16,7 @@
 #include "list.h"
 #include "aniplayer.h"
 #include "stageobjects.h"
-#include "glm.h"
+#include "util/glm.h"
 #include "entity.h"
 
 #ifdef create_enemy_p

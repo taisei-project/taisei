@@ -10,6 +10,7 @@
 
 #include <locale.h>
 #include <SDL_image.h>
+#include <png.h>
 
 #include "global.h"
 #include "video.h"
@@ -18,9 +19,7 @@
 #include "menu/mainmenu.h"
 #include "menu/savereplay.h"
 #include "gamepad.h"
-#include "resource/bgm.h"
 #include "progress.h"
-#include "hashtable.h"
 #include "log.h"
 #include "cli.h"
 #include "vfs/setup.h"

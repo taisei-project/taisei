@@ -14,7 +14,7 @@
 #include "common/sprite_batch.h"
 #include "common/models.h"
 #include "common/state.h"
-#include "glm.h"
+#include "util/glm.h"
 
 #define B _r_backend.funcs
 

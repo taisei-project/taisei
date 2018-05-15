@@ -43,21 +43,8 @@ int main(int argc, char **argv) {
 }
 ''', name : 'SSE 4.2 intrinsics test')
 
-if use_intel_intrin
-    # All that just to append that -msse4.2 argument for this one file.
-    sse42_lib = static_library('taisei_sse42', 'util_sse42.c', c_args: taisei_c_args + ['-msse4.2'], install : false)
-    sse42_dep = declare_dependency(link_with: sse42_lib)
-    taisei_deps += sse42_dep
-    config.set('TAISEI_BUILDCONF_USE_SSE42', true)
-    message('SSE 4.2 intrinsics will be used')
-elif get_option('intel_intrin')
-    config.set('TAISEI_BUILDCONF_USE_SSE42', false)
-    warning('SSE 4.2 intrinsics can not be used')
-endif
-
 taisei_src = files(
     'aniplayer.c',
-    'assert.c',
     'audio_common.c',
     'boss.c',
     'cli.c',
@@ -70,7 +57,6 @@ taisei_src = files(
     'ending.c',
     'enemy.c',
     'entity.c',
-    'env.c',
     'events.c',
     'fbo.c',
     'framerate.c',
@@ -99,10 +85,11 @@ taisei_src = files(
     'stagetext.c',
     'stageutils.c',
     'transition.c',
-    'util.c',
     'version.c',
     'video.c',
 )
+
+sse42_src = []
 
 subdir('menu')
 subdir('plrmodes')
@@ -112,6 +99,23 @@ subdir('rwops')
 subdir('stages')
 subdir('dialog')
 subdir('vfs')
+subdir('util')
+
+if use_intel_intrin
+    sse42_lib = static_library(
+        'taisei_sse42',
+        sse42_src,
+        c_args : taisei_c_args + ['-msse4.2'],
+        install : false
+    )
+    sse42_dep = declare_dependency(link_with: sse42_lib)
+    taisei_deps += sse42_dep
+    config.set('TAISEI_BUILDCONF_USE_SSE42', true)
+    message('SSE 4.2 intrinsics will be used')
+elif get_option('intel_intrin')
+    config.set('TAISEI_BUILDCONF_USE_SSE42', false)
+    warning('SSE 4.2 intrinsics can not be used')
+endif
 
 configure_file(configuration : config, output : 'build_config.h')
 
@@ -124,6 +128,7 @@ taisei_src += [
     stages_src,
     vfs_src,
     dialog_src,
+    util_src,
 ]
 
 if taisei_deps.contains(dep_sdl2_mixer)

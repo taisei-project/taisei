@@ -13,6 +13,7 @@
 #include "global.h"
 #include "video.h"
 #include "renderer/api.h"
+#include "util/pngcruft.h"
 
 Video video;
 

@@ -6,13 +6,13 @@
  * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
-#include "taisei.h"
+#include "crap.h"
 
-#include "compat.h"
+#include <stdlib.h>
+#include <string.h>
 
-#ifdef TAISEI_BUILDCONF_USE_SSE42
-	uint32_t crc32str_sse42(uint32_t crc, const char *str) attr_hot attr_pure;
-#else
-	#define crc32str_sse42 crc32str
-#endif
+void* memdup(const void *src, size_t size) {
+	void *data = malloc(size);
+	memcpy(data, src, size);
+	return data;
+}
