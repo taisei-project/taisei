@@ -1,7 +1,7 @@
 project('taisei', 'c',
     license : 'MIT',
     version : 'v1.2',
-    meson_version : '>=0.39.0',
+    meson_version : '>=0.45.0',
     default_options : [
         'c_std=gnu11',
 
@@ -12,12 +12,6 @@ project('taisei', 'c',
         'b_ndebug=true',
     ]
 )
-
-meson_required = '0.45.0'
-
-if meson.version().version_compare('<@0@'.format(meson_required))
-    error('Your Meson version is too old: @0@; at least @1@ is required. Please update.'.format(meson.version(), meson_required))
-endif
 
 ver_fb = get_option('version_fallback').strip()
 version_fallback = ver_fb != '' ? ver_fb : meson.project_version()
