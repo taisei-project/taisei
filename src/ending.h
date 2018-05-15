@@ -17,7 +17,8 @@ enum {
 };
 
 enum {
-	// do not reorder these or change the values
+	// WARNING: Reordering this will break current progress files.
+
 	ENDING_BAD_1,
 	ENDING_BAD_2,
 	ENDING_GOOD_1,

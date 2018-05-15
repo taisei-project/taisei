@@ -17,17 +17,17 @@
 #include "dialog.h"
 
 typedef enum {
-	/* do not reorder - screws replays */
+	// WARNING: Reordering this will break current replays, and possibly even progress files.
 
-	PLR_CHAR_MARISA = 0,
-	PLR_CHAR_YOUMU = 1,
-	PLR_CHAR_REIMU = 2,
+	PLR_CHAR_REIMU = 0,
+	PLR_CHAR_MARISA = 1,
+	PLR_CHAR_YOUMU = 2,
 
 	NUM_CHARACTERS,
 } CharacterID;
 
 typedef enum {
-	/* do not reorder - screws replays */
+	// WARNING: Reordering this will break current replays, and possibly even progress files.
 
 	PLR_SHOT_A,
 	PLR_SHOT_B,

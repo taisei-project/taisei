@@ -18,18 +18,18 @@
 #include "plrmodes/reimu.h"
 
 static PlayerCharacter *player_characters[] = {
+	&character_reimu,
 	&character_marisa,
 	&character_youmu,
-	&character_reimu,
 };
 
 static PlayerMode *player_modes[] = {
+	&plrmode_reimu_a,
+	&plrmode_reimu_b,
 	&plrmode_marisa_a,
 	&plrmode_marisa_b,
 	&plrmode_youmu_a,
 	&plrmode_youmu_b,
-	&plrmode_reimu_a,
-	&plrmode_reimu_b,
 };
 
 PlayerCharacter* plrchar_get(CharacterID id) {
