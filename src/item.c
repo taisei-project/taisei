@@ -217,7 +217,7 @@ int collision_item(Item *i) {
 
 void spawn_item(complex pos, ItemType type) {
 	tsrand_fill(2);
-	create_item(pos, (12 + 6 * afrand(0)) * (cexp(I*(3*M_PI/2 + anfrand(1)*M_PI/11))), type);
+	create_item(pos, (12 + 6 * afrand(0)) * (cexp(I*(3*M_PI/2 + anfrand(1)*M_PI/11))) - 3*I, type);
 }
 
 void spawn_items(complex pos, ...) {
