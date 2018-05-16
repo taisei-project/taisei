@@ -145,27 +145,29 @@ static inline char* event_name(int ev) {
 }
 
 static inline int proj_call_rule(Projectile *p, int t) {
+	int result = ACTION_NONE;
+
 	if(p->timeout > 0 && t >= p->timeout) {
-		return ACTION_DESTROY;
-	}
+		result = ACTION_DESTROY;
+	} else if(p->rule != NULL) {
+		result = p->rule(p, t);
 
-	if(p->rule) {
-		int a = p->rule(p, t);
-
-		if(t < 0 && a != ACTION_ACK) {
+		if(t < 0 && result != ACTION_ACK) {
 			set_debug_info(&p->debug);
 			log_fatal(
 				"Projectile rule didn't acknowledge %s (returned %i, expected %i)",
 				event_name(t),
-				a,
+				result,
 				ACTION_ACK
 			);
 		}
-
-		return a;
 	}
 
-	return ACTION_NONE;
+	if(/*t == 0 ||*/ t == EVENT_BIRTH) {
+		p->prevpos = p->pos;
+	}
+
+	return result;
 }
 
 void projectile_set_prototype(Projectile *p, ProjPrototype *proto) {
@@ -324,6 +326,21 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 			.a = global.plr.pos - global.plr.velocity - p->prevpos,
 			.b = global.plr.pos - p->pos
 		};
+
+		attr_unused double seglen = cabs(seg.a - seg.b);
+
+		if(seglen > 30) {
+			log_debug(
+				seglen > VIEWPORT_W
+					? "Lerp over HUGE distance %f; this is ABSOLUTELY a bug! Player speed was %f. Spawned at %s:%d (%s)"
+					: "Lerp over large distance %f; this is either a bug or a very fast projectile, investigate. Player speed was %f. Spawned at %s:%d (%s)",
+				seglen,
+				cabs(global.plr.velocity),
+				p->debug.file,
+				p->debug.line,
+				p->debug.func
+			);
+		}
 
 		if(lineseg_ellipse_intersect(seg, e_proj)) {
 			out_col->type = PCOL_PLAYER;
@@ -617,11 +634,12 @@ int linear(Projectile *p, int t) { // sure is physics in here; a[0]: velocity
 	}
 
 	p->angle = carg(p->args[0]);
-	p->pos = p->pos0 + p->args[0]*t;
 
 	if(t == EVENT_BIRTH) {
 		return ACTION_ACK;
 	}
+
+	p->pos = p->pos0 + p->args[0]*t;
 
 	return ACTION_NONE;
 }
@@ -649,7 +667,6 @@ int asymptotic(Projectile *p, int t) { // v = a[0]*(a[1] + 1); a[1] -> 0
 	}
 
 	p->angle = carg(p->args[0]);
-
 
 	if(t == EVENT_BIRTH) {
 		return ACTION_ACK;
@@ -777,8 +794,6 @@ void ScaleFade(Projectile *p, int t) {
 	double timefactor = t / (double)p->timeout;
 	double scale = scale_min * (1 - timefactor) + scale_max * timefactor;
 	double alpha = pow(1 - timefactor, 2);
-
-	// log_debug("%f %f %f %f", scale_min, scale_max, timefactor, scale);
 
 	Color c = multiply_colors(p->color, rgba(1, 1, 1, alpha));
 
