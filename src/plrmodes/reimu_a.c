@@ -60,20 +60,71 @@ static int reimu_spirit_needle(Projectile *p, int t) {
 	return r;
 }
 
-static int reimu_spirit_homing_trail(Projectile *p, int t) {
-	int r = linear(p, t);
+#define REIMU_SPIRIT_HOMING_SCALE 0.75
 
+static void reimu_spirit_homing_draw(Projectile *p, int t) {
+	r_mat_push();
+	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
+	r_mat_rotate(p->angle + M_PI/2, 0, 0, 1);
+	r_mat_scale(REIMU_SPIRIT_HOMING_SCALE, REIMU_SPIRIT_HOMING_SCALE, 1);
+	ProjDrawCore(p, p->color);
+	r_mat_pop();
+}
+
+static Projectile* reimu_spirit_spawn_ofuda_particle(Projectile *p, int t) {
+	return PARTICLE(
+		.sprite = "ofuda_glow",
+		// .color = rgba(0.5 + 0.5 + psin(global.frames * 0.75), psin(t*0.5), 1, 0.5),
+		.color = hsla(t * 0.1, 0.5, 0.75, 0.35),
+		.timeout = 12,
+		.pos = p->pos,
+		.args = { p->args[0] * (0.2 + 0.6 * frand()), 0, (1+2*I) * REIMU_SPIRIT_HOMING_SCALE },
+		.angle = p->angle,
+		.rule = linear,
+		.draw_rule = ScaleFade,
+		.layer = LAYER_PARTICLE_LOW,
+		.flags = PFLAG_NOREFLECT,
+		.blend = BLEND_ADD,
+	);
+}
+
+static int reimu_spirit_homing_impact(Projectile *p, int t) {
 	if(t < 0) {
-		return r;
+		return ACTION_ACK;
 	}
 
-	// p->angle = creal(p->args[1]) + cimag(p->args[1]) * t;
+	Projectile *trail = reimu_spirit_spawn_ofuda_particle(p, global.frames);
+	trail->rule = NULL;
+	trail->timeout = 6;
+	trail->angle = p->angle;
+	trail->ent.draw_layer = LAYER_PLAYER_FOCUS - 1; // TODO: add a layer for "super high" particles?
+	trail->args[2] *= 1.5 * (1 - t/p->timeout);
+	p->angle += 0.2;
 
-	return r;
+	return ACTION_NONE;
+}
+
+static Projectile* reimu_spirit_spawn_homing_impact(Projectile *p, int t) {
+	return PARTICLE(
+		.proto = p->proto,
+		.color = p->color,
+		.timeout = 24,
+		.pos = p->pos,
+		.args = { 0, 0, (1+2*I) * REIMU_SPIRIT_HOMING_SCALE },
+		.angle = p->angle,
+		.rule = reimu_spirit_homing_impact,
+		.draw_rule = ScaleFade,
+		.layer = LAYER_PARTICLE_HIGH,
+		.flags = PFLAG_NOREFLECT,
+	);
 }
 
 static int reimu_spirit_homing(Projectile *p, int t) {
 	if(t < 0) {
+		if(t == EVENT_DEATH && projectile_in_viewport(p)) {
+			reimu_spirit_spawn_homing_impact(p, t);
+		}
+
 		return ACTION_ACK;
 	}
 
@@ -88,21 +139,7 @@ static int reimu_spirit_homing(Projectile *p, int t) {
 	p->angle = carg(p->args[0]);
 	p->pos += p->args[0];
 
-	PARTICLE(
-		.sprite = "ofuda_glow",
-		// .color = rgba(0.5 + 0.5 + psin(global.frames * 0.75), psin(t*0.5), 1, 0.5),
-		.color = hsla(t * 0.1, 0.5, 0.75, 0.35),
-		.timeout = 12,
-		.pos = p->pos,
-		.args = { p->args[0] * (0.2 + 0.6 * frand()), t*0.1+p->angle + I * 0.1, 1+2*I },
-		.angle = p->angle,
-		.rule = reimu_spirit_homing_trail,
-		.draw_rule = ScaleFade,
-		.layer = LAYER_PARTICLE_LOW,
-		.flags = PFLAG_NOREFLECT,
-		.blend = BLEND_ADD,
-	);
-
+	reimu_spirit_spawn_ofuda_particle(p, t);
 	return ACTION_NONE;
 }
 
@@ -137,10 +174,12 @@ static void reimu_spirit_slave_shot(Enemy *e, int t) {
 			.pos = e->pos,
 			.color = rgba(1, 1, 1, 0.5),
 			.rule = reimu_spirit_homing,
+			.draw_rule = reimu_spirit_homing_draw,
 			.args = { -10.0*I, 0, 0, creal(e->pos) },
 			.type = PlrProj + creal(e->args[2]),
 			.timeout = 60,
 			.shader = "sprite_default",
+			.flags = PFLAG_NOCOLLISIONEFFECT,
 		);
 	}
 }
