@@ -74,7 +74,7 @@ static int reimu_spirit_homing_trail(Projectile *p, int t) {
 
 static int reimu_spirit_homing(Projectile *p, int t) {
 	if(t < 0) {
-		return ACTION_NONE;
+		return ACTION_ACK;
 	}
 
 	p->args[3] = plrutil_homing_target(p->pos, p->args[3]);
