@@ -96,9 +96,11 @@ void delete_items(void) {
 	objpool_release_list(stage_object_pools.items, (List**)&global.items);
 }
 
-void move_item(Item *i) {
+complex move_item(Item *i) {
 	int t = global.frames - i->birthtime;
 	complex lim = 0 + 2.0*I;
+
+	complex oldpos = i->pos;
 
 	if(i->auto_collect) {
 		i->pos -= (7+i->auto_collect)*cexp(I*carg(i->pos - global.plr.pos));
@@ -121,38 +123,50 @@ void move_item(Item *i) {
 			i->birthtime = global.frames;
 		}
 	}
+
+	return i->pos - oldpos;
+}
+
+static bool item_out_of_bounds(Item *item) {
+	double margin = max(item_sprite(item->type)->w, item_sprite(item->type)->h);
+
+	return (
+		creal(item->pos) < -margin ||
+		creal(item->pos) > VIEWPORT_W + margin ||
+		cimag(item->pos) > VIEWPORT_H + margin
+	);
 }
 
 void process_items(void) {
 	Item *item = global.items, *del = NULL;
 	float r = player_property(&global.plr, PLR_PROP_COLLECT_RADIUS);
+	bool plr_alive = global.plr.deathtime <= global.frames && global.plr.deathtime == -1;
+	bool plr_bombing = global.frames - global.plr.recovery < 0;;
 
 	while(item != NULL) {
 		if((item->type == Power && global.plr.power >= PLR_MAX_POWER) ||
 			// just in case we ever have some weird spell that spawns those...
-		   (global.stage->type == STAGE_SPELL && (item->type == Life || item->type == Bomb))
+			(global.stage->type == STAGE_SPELL && (item->type == Life || item->type == Bomb))
 		) {
 			item->type = Point;
 		}
 
-		if(cabs(global.plr.pos - item->pos) < r) {
-			item->auto_collect = 1;
-		} else {
-			bool plr_alive = global.plr.deathtime <= global.frames && global.plr.deathtime == -1;
-
-			if((cimag(global.plr.pos) < player_property(&global.plr, PLR_PROP_POC) && plr_alive)
-			|| global.frames - global.plr.recovery < 0)
+		if(plr_alive) {
+			if(
+				(cabs(global.plr.pos - item->pos) < r) ||
+				(cimag(global.plr.pos) < player_property(&global.plr, PLR_PROP_POC)) ||
+				plr_bombing
+			) {
 				item->auto_collect = 1;
-
-			if(item->auto_collect && !plr_alive) {
-				item->auto_collect = 0;
-				item->pos0 = item->pos;
-				item->birthtime = global.frames;
-				item->v = -10*I + 5*nfrand();
 			}
+		} else if(item->auto_collect) {
+			item->auto_collect = 0;
+			item->pos0 = item->pos;
+			item->birthtime = global.frames;
+			item->v = -10*I + 5*nfrand();
 		}
 
-		move_item(item);
+		complex deltapos = move_item(item);
 
 		int v = collision_item(item);
 		if(v == 1) {
@@ -184,8 +198,7 @@ void process_items(void) {
 			}
 		}
 
-		if(v == 1 || creal(item->pos) < -9 || creal(item->pos) > VIEWPORT_W + 9
-			|| cimag(item->pos) > VIEWPORT_H + 8 ) {
+		if(v == 1 || (cimag(deltapos) > 0 && item_out_of_bounds(item))) {
 			del = item;
 			item = item->next;
 			delete_item(del);
