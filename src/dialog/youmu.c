@@ -34,7 +34,10 @@ void dialog_youmu_stage2(Dialog *d) {
 }
 
 void dialog_youmu_stage2_post(Dialog *d) {
-	M(Left, "It’s strange, but fighting a god makes me feel like some of my burdens are lifted. I wonder if she decided to bless me after all?");
+	M(Left, "It’s strange, but I feel as if my burdens have been lifted. Did you decide to bless me after all?");
+	M(Right, "It’s the least I can do since I cannot stop you. Are you sure you want to go through the tunnel?");
+	M(Left, "I don’t have a choice. I’m being ordered to by a power far beyond us both.");
+	M(Left, "She’s most definitely stronger than gods when she is angry.");
 }
 
 void dialog_youmu_stage3(Dialog *d) {
@@ -47,7 +50,11 @@ void dialog_youmu_stage3(Dialog *d) {
 }
 
 void dialog_youmu_stage3_post(Dialog *d) {
-	M(Left, "I never see any insect infestations while tending Hakugyokurō’s gardens. That’s a convenience of being half-dead.");
+	M(Right, "I surrender! Please don’t chop anything off!");
+	M(Left, "I suppose that as long as you don’t eat anything in my garden, I can let you go.");
+	M(Right, "I prefer meat, but not when it’s holding a skewer!");
+	M(Right, "Still, I wasn’t able to properly teach you a lesson. You better not lose, for I’ll be happy to strike you when you’re weak!");
+	M(Left, "I’m too busy to listen to this buzzing.");
 }
 
 void dialog_youmu_stage4(Dialog *d) {
@@ -62,7 +69,11 @@ void dialog_youmu_stage4(Dialog *d) {
 }
 
 void dialog_youmu_stage4_post(Dialog *d) {
-	M(Left, "You’re not as scary as her, or even as good of a host. Maybe you should work on your manners and buy yourself a nice mansion to lord over instead of taking someone else’s.");
+	M(Left, "You’re not as scary as her, or even as good of a host.");
+	M(Left, "Maybe you should work on your manners and buy yourself a nice mansion to lord over instead of taking someone else’s.");
+	M(Right, "I don’t care about being a stuffy noble! Just leave my friend alone to do her work!");
+	M(Left, "Normally I wouldn’t impose on someone who is busy, but I’ll have to make an exception for your mistress this time.");
+	M(Right, "…You’re really prim and proper, aren’t you?");
 }
 
 void dialog_youmu_stage5(Dialog *d) {
@@ -81,9 +92,11 @@ void dialog_youmu_stage5_mid(Dialog *d) {
 }
 
 void dialog_youmu_stage5_post(Dialog *d) {
-	M(Left, "I can see the top!");
-	M(Left, "As you can see, I have cut through your challenge. You can trust me to get to the heart of the matter and handle it swiftly and carefully.");
-}
+	M(Right, "You cut through the cloudbank, and now the storm has cleared. It is unconventional, but I trust you to end the incident.");
+	M(Left, "It’s a lot on my shoulders, but I must believe in my capacity for the sake of the Netherworld.");
+	M(Left, "As for you, if the Celestials give you any trouble, I’m certain my lady could speak to them on your behalf.");
+	M(Right, "Thank you. Now hurry, for the barrier is becoming thinner than ever!");
+}	
 
 void dialog_youmu_stage6(Dialog *d) {
 	M(Left, "Are you the one behind this new world?");
