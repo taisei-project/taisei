@@ -122,8 +122,8 @@ static void ent_draw_player(EntityInterface *ent) {
 	Player *plr = ENT_CAST(ent, Player);
 
 	// FIXME: death animation?
-	if(plr->deathtime > global.frames)
-		return;
+	//if(plr->deathtime > global.frames)
+		//return;
 
 	if(plr->focus) {
 		r_draw_sprite(&(SpriteParams) {
@@ -415,6 +415,20 @@ void player_realdeath(Player *plr) {
 	}
 }
 
+static void player_death_effect_draw(Projectile *p, int t) {
+	FBOPair *framebuffers = &resources.fbo_pairs.fg;
+	r_target(framebuffers->front);
+	r_texture(1, "static");
+	r_uniform_int("noise", 1);
+	r_uniform_int("frames", global.frames);
+	r_uniform_float("progress", t / p->timeout);
+	r_uniform_vec2("origin", creal(p->pos), VIEWPORT_H - cimag(p->pos));
+	r_uniform_vec2("clear_origin", creal(global.plr.pos), VIEWPORT_H - cimag(global.plr.pos));
+	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
+	draw_fbo(framebuffers->back);
+	swap_fbo_pair(framebuffers);
+}
+
 void player_death(Player *plr) {
 	if(plr->iddqd)
 		return;
@@ -446,6 +460,17 @@ void player_death(Player *plr) {
 			.args = { 0, 2.4 },
 			.blend = BLEND_ADD,
 			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		);
+
+		PARTICLE(
+			.pos = plr->pos,
+			.size = 1+I,
+			.timeout = 90,
+			.draw_rule = player_death_effect_draw,
+			.blend = BLEND_NONE,
+			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+			.layer = LAYER_OVERLAY,
+			.shader = "player_death",
 		);
 
 		plr->deathtime = global.frames + floor(player_property(plr, PLR_PROP_DEATHBOMB_WINDOW));
@@ -708,11 +733,10 @@ static void player_ani_moving(Player *plr, int dir) {
 void player_applymovement(Player *plr) {
 	plr->velocity = 0;
 
-	if(plr->deathtime < -1)
+	if(plr->deathtime != -1)
 		return;
 
 	bool gamepad = player_applymovement_gamepad(plr);
-	//player_ani_moving(plr,0);
 
 	int up      =   plr->inputflags & INFLAG_UP;
 	int down    =   plr->inputflags & INFLAG_DOWN;
@@ -735,8 +759,8 @@ void player_applymovement(Player *plr) {
 
 	if(up)      direction -= 1.0*I;
 	if(down)    direction += 1.0*I;
-	if(left)    direction -= 1;
-	if(right)   direction += 1;
+	if(left)    direction -= 1.0;
+	if(right)   direction += 1.0;
 
 	if(cabs(direction))
 		direction /= cabs(direction);
@@ -884,6 +908,14 @@ void player_add_points(Player *plr, uint points) {
 
 void player_preload(void) {
 	const int flags = RESF_DEFAULT;
+
+	preload_resources(RES_SHADER_PROGRAM, flags,
+		"player_death",
+	NULL);
+
+	preload_resources(RES_TEXTURE, flags,
+		"static",
+	NULL);
 
 	preload_resources(RES_SPRITE, flags,
 		"focus",

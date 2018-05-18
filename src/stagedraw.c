@@ -405,6 +405,8 @@ static void stage_draw_objects(void) {
 
 static void postprocess_prepare(FBO *fbo, ShaderProgram *s) {
 	r_uniform_int("frames", global.frames);
+	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
+	r_uniform_vec2("player", creal(global.plr.pos), VIEWPORT_H - cimag(global.plr.pos));
 }
 
 void stage_draw_foreground(void) {
