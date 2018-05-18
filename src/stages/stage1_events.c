@@ -625,7 +625,7 @@ void cirno_snow_halation(Boss *c, int time) {
 
 		for(int p = _i*2; p <= _i*2 + 1; ++p) {
 			PROJECTILE(
-				.sprite = "plainball",
+				.proto = pp_plainball,
 				.pos = halation_calc_orb_pos(center, rotation, p, projs),
 				.color = halation_color(0),
 				.rule = halation_orb,
@@ -634,7 +634,8 @@ void cirno_snow_halation(Boss *c, int time) {
 				},
 				.type = FakeProj,
 				.max_viewport_dist = 200,
-				.flags = PFLAG_DRAWADD,
+				.blend = BLEND_ADD,
+				.flags = PFLAG_NOCLEAR,
 			);
 		}
 	}
