@@ -443,8 +443,6 @@ static void player_death_effect_draw_sprite(Projectile *p, int t) {
 	sx = (1 - s) * (1 + (stretch_range - 1) * sx) + s * stretch_range * sx;
 	sy = 1 + pow(s, 3);
 
-	log_debug("%i %f %f", t, s, sx);
-
 	if(sx <= 0 || sy <= 0) {
 		return;
 	}
