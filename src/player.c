@@ -121,9 +121,9 @@ void player_move(Player *plr, complex delta) {
 static void ent_draw_player(EntityInterface *ent) {
 	Player *plr = ENT_CAST(ent, Player);
 
-	// FIXME: death animation?
-	//if(plr->deathtime > global.frames)
-		//return;
+	if(plr->deathtime > global.frames) {
+		return;
+	}
 
 	if(plr->focus) {
 		r_draw_sprite(&(SpriteParams) {
@@ -415,7 +415,7 @@ void player_realdeath(Player *plr) {
 	}
 }
 
-static void player_death_effect_draw(Projectile *p, int t) {
+static void player_death_effect_draw_overlay(Projectile *p, int t) {
 	FBOPair *framebuffers = &resources.fbo_pairs.fg;
 	r_target(framebuffers->front);
 	r_texture(1, "static");
@@ -427,6 +427,58 @@ static void player_death_effect_draw(Projectile *p, int t) {
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
 	draw_fbo(framebuffers->back);
 	swap_fbo_pair(framebuffers);
+
+	// This change must propagate, hence the r_state salsa. Yes, pop then push, I know what I'm doing.
+	r_state_pop();
+	r_target(framebuffers->back);
+	r_state_push();
+}
+
+static void player_death_effect_draw_sprite(Projectile *p, int t) {
+	float s = t / p->timeout;
+
+	float stretch_range = 3, sx, sy;
+
+	sx = 0.5 + 0.5 * cos(M_PI * (2 * pow(s, 0.5) + 1));
+	sx = (1 - s) * (1 + (stretch_range - 1) * sx) + s * stretch_range * sx;
+	sy = 1 + pow(s, 3);
+
+	log_debug("%i %f %f", t, s, sx);
+
+	if(sx <= 0 || sy <= 0) {
+		return;
+	}
+
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = p->sprite,
+		.pos = { creal(p->pos), cimag(p->pos) },
+		.scale = { .x = sx, .y = sy },
+	});
+}
+
+static int player_death_effect(Projectile *p, int t) {
+	if(t < 0) {
+		if(t == EVENT_DEATH) {
+			for(int i = 0; i < 12; ++i) {
+				PARTICLE(
+					.sprite = "blast",
+					.pos = p->pos + 2 * frand() * cexp(I*M_PI*2*frand()),
+					.color = rgba(0.3, 0.4, 1.0, 0.5),
+					.timeout = 12 + i + 2 * nfrand(),
+					.draw_rule = GrowFade,
+					.args = { 0, 20 + i },
+					.blend = BLEND_ADD,
+					.angle = M_PI*2*frand(),
+					.flags = PFLAG_NOREFLECT,
+					.layer = LAYER_OVERLAY,
+				);
+			}
+		}
+
+		return ACTION_ACK;
+	}
+
+	return ACTION_NONE;
 }
 
 void player_death(Player *plr) {
@@ -436,7 +488,7 @@ void player_death(Player *plr) {
 	if(plr->deathtime == -1 && global.frames - abs(plr->recovery) > 0) {
 		play_sound("death");
 
-		for(int i = 0; i < 20; i++) {
+		for(int i = 0; i < 60; i++) {
 			tsrand_fill(2);
 			PARTICLE(
 				.sprite = "flare",
@@ -466,11 +518,21 @@ void player_death(Player *plr) {
 			.pos = plr->pos,
 			.size = 1+I,
 			.timeout = 90,
-			.draw_rule = player_death_effect_draw,
+			.draw_rule = player_death_effect_draw_overlay,
 			.blend = BLEND_NONE,
 			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 			.layer = LAYER_OVERLAY,
 			.shader = "player_death",
+		);
+
+		PARTICLE(
+			.sprite_ptr = aniplayer_get_frame(&plr->ani),
+			.pos = plr->pos,
+			.timeout = 30,
+			.rule = player_death_effect,
+			.draw_rule = player_death_effect_draw_sprite,
+			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+			.layer = LAYER_PLAYER_FOCUS, // LAYER_OVERLAY | 1,
 		);
 
 		plr->deathtime = global.frames + floor(player_property(plr, PLR_PROP_DEATHBOMB_WINDOW));
