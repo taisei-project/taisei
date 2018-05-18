@@ -722,6 +722,10 @@ void process_boss(Boss **pboss) {
 		}
 
 		play_sound_ex("bossdeath", BOSS_DEATH_DELAY * 2, false);
+	} else {
+		if(cabs(boss->pos - global.plr.pos) < 16) {
+			player_death(&global.plr);
+		}
 	}
 
 	if(over) {
