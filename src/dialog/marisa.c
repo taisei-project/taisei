@@ -21,7 +21,7 @@ void dialog_marisa_stage1(Dialog *d) {
 }
 
 void dialog_marisa_stage1_post(Dialog *d) {
-	M(Right, "Waah, it's hot!  I'm gonna melt!");
+	M(Right, "Waah, it’s hot! I’m gonna melt!");
 	M(Left, "I’ve made the lake a lot warmer now, so ya can’t freeze anyone.");
 }
 
@@ -35,8 +35,8 @@ void dialog_marisa_stage2(Dialog *d) {
 
 void dialog_marisa_stage2_post(Dialog *d) {
 	M(Left, "Somehow I already feel luckier after beating ya. Fixin’ the border should be no sweat!");
-	M(Right, "It's as much as I can do since I cannot stop you.  But maybe you could reconsider…?");
-	M(Left, "Nope!  I'm way too excited!");
+	M(Right, "It’s as much as I can do since I cannot stop you. But maybe you could reconsider…?");
+	M(Left, "Nope! I’m way too excited!");
 }
 
 void dialog_marisa_stage3(Dialog *d) {
@@ -50,11 +50,11 @@ void dialog_marisa_stage3(Dialog *d) {
 }
 
 void dialog_marisa_stage3_post(Dialog *d) {
-	M(Left, "So where's the finale?  Nothing's changed.");
-	M(Right, "I was lying!  I just wanted to take you down a peg with my new magic!");
-	M(Left, "Y'know, fly too close to the sun and ya get burned.  I'll be goin' to take care of some real threats now.");
-	M(Right, "Ugh, just wait and see!  This won't be over if I ever get the chance again!");
-	M(Left, "Yeah, yeah.  You'll need to be less crispy first, though.");
+	M(Left, "So where’s the finale? Nothing’s changed.");
+	M(Right, "I was lying! I just wanted to take you down a peg with my new magic!");
+	M(Left, "Y’know, fly too close to the sun and ya get burned. I’ll be goin’ to take care of some real threats now.");
+	M(Right, "Ugh, just wait and see! This won’t be over if I ever get the chance again!");
+	M(Left, "Yeah, yeah. You’ll need to be less crispy first, though.");
 }
 
 void dialog_marisa_stage4(Dialog *d) {
@@ -67,11 +67,11 @@ void dialog_marisa_stage4(Dialog *d) {
 }
 
 void dialog_marisa_stage4_post(Dialog *d) {
-	M(Right, "Oh no, I lost!  She'll be really angry if someone interferes with her preparations!");
-	M(Left, "Right, got any tickets left then?  I'll probably be a little early, but I wanna meet the star of this show.");
-	M(Left, "She seems like somebody I'd know.");
-	M(Right, "Attendance might as well be free since I'm too drained to do anything about it.");
-	M(Left, "Now that's what I like t' hear!");
+	M(Right, "Oh no, I lost! She’ll be really angry if someone interferes with her preparations!");
+	M(Left, "Right, got any tickets left then? I’ll probably be a little early, but I wanna meet the star of this show.");
+	M(Left, "She seems like somebody I’d know.");
+	M(Right, "Attendance might as well be free since I’m too drained to do anything about it.");
+	M(Left, "Now that’s what I like t’ hear!");
 }
 
 void dialog_marisa_stage5(Dialog *d) {
@@ -92,11 +92,11 @@ void dialog_marisa_stage5_mid(Dialog *d) {
 }
 
 void dialog_marisa_stage5_post(Dialog *d) {
-	M(Right, "You weathered my assault well.  It is unconventional, but I'll let you take care of this.");
-	M(Left, "Ha, I'm always fixin' problems back home.  I've got all the right credentials!");
-	M(Right, "…I'm going to get into so much trouble, aren't I?");
-	M(Left, "If you want, I can put in a good word for ya in the bureaucracy.  Ask me later, all right?");
-	M(Right, "As much as I appreciate the offer, I'd rather not have you create a bigger mess.");
+	M(Right, "You weathered my assault well. It is unconventional, but I’ll let you take care of this.");
+	M(Left, "Ha, I’m always fixin’ problems back home. I’ve got all the right credentials!");
+	M(Right, "…I’m going to get into so much trouble, aren’t I?");
+	M(Left, "If you want, I can put in a good word for ya in the bureaucracy. Ask me later, all right?");
+	M(Right, "As much as I appreciate the offer, I’d rather not have you create a bigger mess.");
 	M(Left, "No guarantees!");
 }
 

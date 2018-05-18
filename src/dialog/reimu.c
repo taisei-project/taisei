@@ -35,9 +35,9 @@ void dialog_reimu_stage2(Dialog *d) {
 
 void dialog_reimu_stage2_post(Dialog *d) {
 	M(Left, "In the end, you only made things harder for the both of us.");
-	M(Right, "I'm sorry, Miss Shrine Maiden!  Would you like a blessing to make up for it?");
-	M(Left, "No need.  I'm the luckiest person in Gensokyo, at least when it's not about money.");
-	M(Left, "If you want to help, donate to my shrine.  I don't care if it's cursed.");
+	M(Right, "I’m sorry, Miss Shrine Maiden! Would you like a blessing to make up for it?");
+	M(Left, "No need. I’m the luckiest person in Gensokyo, at least when it’s not about money.");
+	M(Left, "If you want to help, donate to my shrine. I don’t care if it’s cursed.");
 }
 
 void dialog_reimu_stage3(Dialog *d) {
@@ -52,10 +52,10 @@ void dialog_reimu_stage3(Dialog *d) {
 
 void dialog_reimu_stage3_post(Dialog *d) {
 	M(Left, "If humans get drunk from moonshine, then I guess bugs can become intoxicated by sunshine too.");
-	M(Right, "Ugh, my head hurts.  Can't you go easy on me?");
-	M(Left, "I don't go easy on anyone that claims to be causing an incident.  But I can tell you are lying about that.");
-	M(Right, "There's no need to make fun of me for that!  You'll regret it if you lose later!");
-	M(Right, "I won't forget this humiliation!");
+	M(Right, "Ugh, my head hurts. Can’t you go easy on me?");
+	M(Left, "I don’t go easy on anyone that claims to be causing an incident. But I can tell you are lying about that.");
+	M(Right, "There’s no need to make fun of me for that! You’ll regret it if you lose later!");
+	M(Right, "I won’t forget this humiliation!");
 	M(Left, "Go take a nap already.");
 }
 
@@ -71,10 +71,10 @@ void dialog_reimu_stage4(Dialog *d) {
 
 void dialog_reimu_stage4_post(Dialog *d) {
 	M(Left, "See, I don’t scare easily, so that didn’t work. You should have just told me your name.");
-	M(Right, "I didn't think it was possible, but you're so much stronger than before!");
-	M(Right, "Can't you remember? I'm Kurumi!");
-	M(Left, "You don't seem like the sort that is worth remembering after several years.");
-	M(Right, "Waah, so mean!  You were way cuter back then!");
+	M(Right, "I didn’t think it was possible, but you’re so much stronger than before!");
+	M(Right, "Can’t you remember? I’m Kurumi!");
+	M(Left, "You don’t seem like the sort that is worth remembering after several years.");
+	M(Right, "Waah, so mean! You were way cuter back then!");
 }
 
 void dialog_reimu_stage5(Dialog *d) {
@@ -94,9 +94,9 @@ void dialog_reimu_stage5_mid(Dialog *d) {
 
 void dialog_reimu_stage5_post(Dialog *d) {
 	M(Left, "See? I’ve been solving incidents since the beginning. There is absolutely no one more qualified than me.");
-	M(Right, "You're still as unruly as ever.  But you passed, and you certainly hold great power.");
-	M(Right, "I'll let my superiors know that the Hakurei Shrine Maiden arrived to clear up this issue.");
-	M(Left, "Right, and I'll make sure it won't take too long.  Tell them to hold tight, and maybe slip me some yen later.");
+	M(Right, "You’re still as unruly as ever. But you passed, and you certainly hold great power.");
+	M(Right, "I’ll let my superiors know that the Hakurei Shrine Maiden arrived to clear up this issue.");
+	M(Left, "Right, and I’ll make sure it won’t take too long. Tell them to hold tight, and maybe slip me some yen later.");
 }
 
 void dialog_reimu_stage6(Dialog *d) {
