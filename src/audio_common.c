@@ -18,7 +18,6 @@
 CurrentBGM current_bgm = { .name = NULL };
 
 static char *saved_bgm;
-static Hashtable *bgm_descriptions;
 static Hashtable *sfx_volumes;
 
 static struct enqueued_sound {
@@ -197,7 +196,6 @@ static bool store_sfx_volume(const char *key, const char *val, void *data) {
 }
 
 static void load_config_files(void) {
-	bgm_descriptions = parse_keyvalue_file(BGM_PATH_PREFIX "bgm.conf");
 	sfx_volumes = hashtable_new_stringkeys();
 	parse_keyvalue_file_cb(SFX_PATH_PREFIX "volumes.conf", store_sfx_volume, sfx_volumes);
 }
@@ -205,12 +203,7 @@ static void load_config_files(void) {
 static inline char* get_bgm_desc(char *name) {
 	Music *music = get_music(name);
 	assert(music != NULL);
-
-	if(music->title) {
-		return music->title;
-	}
-
-	return bgm_descriptions ? (char*)hashtable_get_string(bgm_descriptions, name) : NULL;
+	return music->title;
 }
 
 int get_default_sfx_volume(const char *sfx) {
@@ -328,12 +321,6 @@ void audio_init(void) {
 
 void audio_shutdown(void) {
 	audio_backend_shutdown();
-
-	if(bgm_descriptions) {
-		hashtable_foreach(bgm_descriptions, hashtable_iter_free_data, NULL);
-		hashtable_free(bgm_descriptions);
-		bgm_descriptions = NULL;
-	}
 
 	if(sfx_volumes) {
 		hashtable_free(sfx_volumes);
