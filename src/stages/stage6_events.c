@@ -680,7 +680,8 @@ static void draw_baryon_connector(complex a, complex b) {
 
 void Baryon(Enemy *e, int t, bool render) {
 	Enemy *n;
-	float alpha = 1 - 0.8/(exp((cabs(global.plr.pos-e->pos)-100)/10)+1);
+	// float alpha = 1 - 0.8/(exp((cabs(global.plr.pos-e->pos)-100)/10)+1);
+	float alpha = 1;
 
 	if(!render) {
 		if(!(t % 10) && global.boss && cabs(e->pos - global.boss->pos) > 2) {
@@ -833,6 +834,7 @@ void elly_spawn_baryons(complex pos) {
 
 	for(i = 0; i < 6; i++) {
 		e = create_enemy3c(pos, ENEMY_IMMUNE, Baryon, baryon_unfold, 1.5*cexp(2.0*I*M_PI/6*i), i != 0 ? add_ref(last) : 0, i);
+		e->ent.draw_layer = LAYER_BACKGROUND;
 
 		if(i == 0) {
 			first = e;
@@ -844,7 +846,8 @@ void elly_spawn_baryons(complex pos) {
 	}
 
 	first->args[1] = add_ref(last);
-	create_enemy2c(pos, ENEMY_IMMUNE, BaryonCenter, baryon_center, 0, add_ref(first) + I*add_ref(middle));
+	e = create_enemy2c(pos, ENEMY_IMMUNE, BaryonCenter, baryon_center, 0, add_ref(first) + I*add_ref(middle));
+	e->ent.draw_layer = LAYER_BACKGROUND;
 }
 
 void elly_paradigm_shift(Boss *b, int t) {
@@ -1327,7 +1330,7 @@ static int ricci_proj2(Projectile *p, int t) {
 		Enemy *e = (Enemy*)REF(p->args[1]);
 
 		if(!e) {
-			return 1;
+			return ACTION_ACK;
 		}
 
 		// play_sound_ex("shot3",8, false);
@@ -1413,8 +1416,10 @@ static int ricci_proj(Projectile *p, int t) {
 		return ACTION_ACK;
 	}
 
-	if(!global.boss)
+	if(!global.boss) {
+		p->prevpos = p->pos;
 		return ACTION_DESTROY;
+	}
 
 	int time = global.frames-global.boss->current->starttime;
 
@@ -1444,6 +1449,7 @@ static int ricci_proj(Projectile *p, int t) {
 
 	p->pos = p->pos0 + p->args[0]*t+shift;
 	p->angle = carg(p->args[0]);
+	p->prevpos = p->pos;
 
 	float a = 0.5 + 0.5 * max(0,tanh((time-80)/100.))*clamp(influence,0.2,1);
 	a *= min(1, t / 20.0f);
@@ -2085,7 +2091,7 @@ static int elly_toe_fermion(Projectile *p, int t) {
 		p->pos0 += (p->args[0]-p->pos0)*0.01;
 	p->pos = global.boss->pos+p->pos0*cexp(I*0.01*t)+5*cexp(I*t*0.05+I*p->args[1]);
 
-	if(t % 5 == 0) {
+	if(t > 0 && t % 5 == 0) {
 		double particle_scale = min(1.0, 0.5 * p->sprite->w / 28.0);
 
 		PARTICLE(
