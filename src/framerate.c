@@ -158,6 +158,10 @@ begin_frame:
 			fpscounter_update(&global.fps.logic);
 		}
 
+		if(taisei_quit_requested()) {
+			break;
+		}
+
 		if((!uncapped_rendering && frame_num % get_effective_frameskip()) || global.is_replay_verification) {
 			rframe_action = RFRAME_DROP;
 		} else {

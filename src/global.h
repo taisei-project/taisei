@@ -134,5 +134,8 @@ extern Global global;
 
 void init_global(CLIAction *cli);
 
+void taisei_quit(void);
+bool taisei_quit_requested(void);
+
 // XXX: Move this somewhere?
 bool gamekeypressed(KeyIndex key);

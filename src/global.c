@@ -44,3 +44,15 @@ void init_global(CLIAction *cli) {
 bool gamekeypressed(KeyIndex key) {
 	return SDL_GetKeyboardState(NULL)[config_get_int(KEYIDX_TO_CFGIDX(key))] || gamepad_game_key_pressed(key);
 }
+
+static SDL_atomic_t quitting;
+
+void taisei_quit(void) {
+	if(SDL_AtomicCAS(&quitting, 0, 1)) {
+		log_info("Exit requested");
+	}
+}
+
+bool taisei_quit_requested(void) {
+	return SDL_AtomicGet(&quitting);
+}

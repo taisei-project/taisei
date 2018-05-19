@@ -703,4 +703,8 @@ void stage_loop(StageInfo *stage) {
 	ent_shutdown();
 	stage_objpools_free();
 	stop_sounds();
+
+	if(taisei_quit_requested()) {
+		global.game_over = GAMEOVER_ABORT;
+	}
 }

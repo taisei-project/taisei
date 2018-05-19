@@ -293,7 +293,8 @@ static void events_unregister_default_handlers(void) {
 }
 
 static bool events_handler_quit(SDL_Event *event, void *arg) {
-	exit(0);
+	taisei_quit();
+	return true;
 }
 
 static bool events_handler_keyrepeat_workaround(SDL_Event *event, void *arg) {
