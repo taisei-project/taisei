@@ -17,19 +17,23 @@
 
 Video video;
 
-static VideoMode common_modes[] = {
-	{RESX, RESY},
+typedef struct ScreenshotCommand {
+	LIST_INTERFACE(struct ScreenshotCommand);
+	char *dest_path;
+	void *data;
+	uint width;
+	uint height;
+} ScreenshotCommand;
 
-	{640, 480},
-	{800, 600},
-	{1024, 768},
-	{1280, 960},
-	{1152, 864},
-	{1400, 1050},
-	{1440, 1080},
-
-	{0, 0},
-};
+static struct {
+	struct {
+		ScreenshotCommand *queue;
+		SDL_mutex *mutex;
+		SDL_cond *cond;
+		SDL_Thread *thread;
+		bool running;
+	} screenshots;
+} _video;
 
 static void video_add_mode(int width, int height) {
 	if(video.modes) {
@@ -256,36 +260,23 @@ void video_set_mode(int w, int h, bool fs, bool resizable) {
 	SDL_SetWindowResizable(video.window, resizable);
 }
 
-void video_take_screenshot(void) {
-	SDL_RWops *out;
-	char outfile[128], *outpath, *syspath;
-	time_t rawtime;
-	struct tm * timeinfo;
-	uint width, height;
-	uint8_t *pixels = r_screenshot(&width, &height);
+static void video_screenshot_execute_command(ScreenshotCommand *cmd) {
+	log_debug("%u %u %s", cmd->width, cmd->height, cmd->dest_path);
 
-	if(!pixels) {
-		log_warn("Failed to take a screenshot");
+	uint width = cmd->width;
+	uint height = cmd->height;
+	uint8_t *pixels = cmd->data;
+
+	SDL_RWops *output = vfs_open(cmd->dest_path, VFS_MODE_WRITE);
+
+	if(!output) {
+		log_warn("VFS error: %s", vfs_get_error());
 		return;
 	}
 
-	time(&rawtime);
-	timeinfo = localtime(&rawtime);
-	strftime(outfile, 128, "taisei_%Y%m%d_%H-%M-%S%z.png", timeinfo);
-
-	outpath = strjoin("storage/screenshots/", outfile, NULL);
-	syspath = vfs_repr(outpath, true);
+	char *syspath = vfs_repr(cmd->dest_path, true);
 	log_info("Saving screenshot as %s", syspath);
 	free(syspath);
-
-	out = vfs_open(outpath, VFS_MODE_WRITE);
-	free(outpath);
-
-	if(!out) {
-		log_warn("VFS error: %s", vfs_get_error());
-		free(pixels);
-		return;
-	}
 
 	png_structp png_ptr;
 	png_infop info_ptr;
@@ -306,7 +297,7 @@ void video_take_screenshot(void) {
 		memcpy(row_pointers[y], pixels + width * 3 * (height - 1 - y), width * 3);
 	}
 
-	png_init_rwops_write(png_ptr, out);
+	png_init_rwops_write(png_ptr, output);
 	png_set_rows(png_ptr, info_ptr, row_pointers);
 	png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
 
@@ -315,9 +306,121 @@ void video_take_screenshot(void) {
 	}
 
 	png_destroy_write_struct(&png_ptr, &info_ptr);
+	SDL_RWclose(output);
+}
 
-	free(pixels);
-	SDL_RWclose(out);
+static void video_screenshot_free_command_resources(ScreenshotCommand *cmd) {
+	free(cmd->data);
+	free(cmd->dest_path);
+}
+
+static void video_screenshot_push_command(ScreenshotCommand *cmd) {
+	if(_video.screenshots.thread != NULL) {
+		log_debug("%u %u %s", cmd->width, cmd->height, cmd->dest_path);
+
+		SDL_LockMutex(_video.screenshots.mutex);
+		list_push(&_video.screenshots.queue, (ScreenshotCommand*)memdup(cmd, sizeof(*cmd)));
+		SDL_CondSignal(_video.screenshots.cond);
+		SDL_UnlockMutex(_video.screenshots.mutex);
+	} else {
+		video_screenshot_execute_command(cmd);
+		video_screenshot_free_command_resources(cmd);
+	}
+}
+
+static int video_screenshot_thread(void *arg) {
+	if(SDL_SetThreadPriority(SDL_THREAD_PRIORITY_LOW) < 0) {
+		log_warn("SDL_SetThreadPriority() failed: %s", SDL_GetError());
+	}
+
+	bool running = _video.screenshots.running;
+
+	while(running) {
+		SDL_LockMutex(_video.screenshots.mutex);
+		ScreenshotCommand *cmd = list_pop(&_video.screenshots.queue);
+		running = _video.screenshots.running;
+
+		if(running && !cmd) {
+			log_debug("Sleeping");
+			SDL_CondWait(_video.screenshots.cond, _video.screenshots.mutex);
+			log_debug("Waking up");
+		}
+
+		SDL_UnlockMutex(_video.screenshots.mutex);
+
+		if(cmd) {
+			video_screenshot_execute_command(cmd);
+			video_screenshot_free_command_resources(cmd);
+			free(cmd);
+		}
+	}
+
+	return 0;
+}
+
+static void video_stop_screenshot_thread(void) {
+	if(_video.screenshots.thread != NULL) {
+		SDL_LockMutex(_video.screenshots.mutex);
+		_video.screenshots.running = false;
+		SDL_CondSignal(_video.screenshots.cond);
+		SDL_UnlockMutex(_video.screenshots.mutex);
+		SDL_WaitThread(_video.screenshots.thread, NULL);
+		_video.screenshots.thread = NULL;
+	} else {
+		_video.screenshots.running = false;
+	}
+
+	SDL_DestroyCond(_video.screenshots.cond);
+	_video.screenshots.cond = NULL;
+
+	SDL_DestroyMutex(_video.screenshots.mutex);
+	_video.screenshots.mutex = NULL;
+}
+
+static void video_start_screenshot_thread(void) {
+	if(!(_video.screenshots.mutex = SDL_CreateMutex())) {
+		log_warn("SDL_CreateMutex() failed: %s", SDL_GetError());
+		video_stop_screenshot_thread();
+		return;
+	}
+
+	if(!(_video.screenshots.cond = SDL_CreateCond())) {
+		log_warn("SDL_CreateCond() failed: %s", SDL_GetError());
+		video_stop_screenshot_thread();
+		return;
+	}
+
+	_video.screenshots.running = true;
+
+	if(!(_video.screenshots.thread = SDL_CreateThread(video_screenshot_thread, "video.screenshot", NULL))) {
+		log_warn("SDL_CreateThread() failed: %s", SDL_GetError());
+		video_stop_screenshot_thread();
+		return;
+	}
+}
+
+void video_take_screenshot(void) {
+	ScreenshotCommand cmd;
+	memset(&cmd, 0, sizeof(cmd));
+	cmd.data = r_screenshot(&cmd.width, &cmd.height);
+
+	log_debug("Screenshot requested");
+
+	if(!cmd.data) {
+		log_warn("Failed to take a screenshot");
+		return;
+	}
+
+	char outfile[128];
+	time_t rawtime;
+	struct tm * timeinfo;
+
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	strftime(outfile, 128, "taisei_%Y%m%d_%H-%M-%S%z.png", timeinfo);
+	cmd.dest_path = strjoin("storage/screenshots/", outfile, NULL);;
+
+	video_screenshot_push_command(&cmd);
 }
 
 bool video_is_resizable(void) {
@@ -473,6 +576,20 @@ void video_init(void) {
 
 	// Then, add some common 4:3 modes for the windowed mode if they are not there yet.
 	// This is required for some multihead setups.
+	VideoMode common_modes[] = {
+		{RESX, RESY},
+
+		{640, 480},
+		{800, 600},
+		{1024, 768},
+		{1280, 960},
+		{1152, 864},
+		{1400, 1050},
+		{1440, 1080},
+
+		{0, 0},
+	};
+
 	for(int i = 0; common_modes[i].width; ++i) {
 		video_add_mode(common_modes[i].width, common_modes[i].height);
 	}
@@ -500,16 +617,19 @@ void video_init(void) {
 		.event_type = SDL_WINDOWEVENT,
 	};
 
+	video_start_screenshot_thread();
+
 	events_register_handler(&h);
 	log_info("Video subsystem initialized");
 }
 
 void video_shutdown(void) {
+	events_unregister_handler(video_handle_window_event);
 	SDL_DestroyWindow(video.window);
 	r_shutdown();
 	free(video.modes);
 	SDL_VideoQuit();
-	events_unregister_handler(video_handle_window_event);
+	video_stop_screenshot_thread();
 }
 
 void video_swap_buffers(void) {
