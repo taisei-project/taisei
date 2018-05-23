@@ -110,17 +110,6 @@ static bool try_begin_load_resource(ResourceType type, const char *name, Interna
 
 static void load_resource_finish(InternalResource *ires, void *opaque, const char *path, const char *name, char *allocated_path, char *allocated_name, ResourceFlags flags);
 
-/*
-static void finish_async_loads(void) {
-	SDL_Event evt;
-	uint32_t etype = MAKE_TAISEI_EVENT(TE_RESOURCE_ASYNC_LOADED);
-
-	while(SDL_PeepEvents(&evt, 1, SDL_GETEVENT, etype, etype)) {
-		resource_asyncload_handler(&evt, NULL);
-	}
-}
-*/
-
 static void finish_async_load(InternalResource *ires, ResourceAsyncLoadData *data) {
 	assert(ires == data->ires);
 	assert(ires->status == RES_STATUS_LOADING);
@@ -378,30 +367,6 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 
 		return &ires->res;
 	}
-
-	/*
-	resource_wait_for_async_load(handler, name);
-	res = hashtable_get(handler->mapping, (void*)name);
-
-	if(!res) {
-		if(!(flags & RESF_PRELOAD)) {
-			log_warn("%s '%s' was not preloaded", type_name(type), name);
-
-			if(env_get("TAISEI_PRELOAD_REQUIRED", false)) {
-				log_fatal("Aborting due to TAISEI_PRELOAD_REQUIRED");
-			}
-		}
-
-		res = load_resource(handler, NULL, name, flags, false);
-	}
-
-	if(res && (flags & RESF_PERMANENT) && !(res->flags & (RESF_PERMANENT | RESF_FAILED))) {
-		log_debug("Promoted %s '%s' to permanent", type_name(type), name);
-		res->flags |= RESF_PERMANENT;
-	}
-
-	return res;
-	*/
 }
 
 void* get_resource_data(ResourceType type, const char *name, ResourceFlags flags) {
