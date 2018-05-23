@@ -175,43 +175,61 @@ void hashtable_free(Hashtable *ht) {
 	free(ht);
 }
 
+static HashtableElement* hashtable_get_internal(Hashtable *ht, void *key, hash_t hash) {
+	HashtableElement *elems = ht->table[hash & ht->hash_mask];
+
+	for(HashtableElement *e = elems; e; e = e->next) {
+		if(hash == e->hash && ht->cmp_func(key, e->key)) {
+			return e;
+		}
+	}
+
+	return NULL;
+}
+
 void* hashtable_get(Hashtable *ht, void *key) {
 	assert(ht != NULL);
 
 	hash_t hash = ht->hash_func(key);
+	HashtableElement *elem;
+	void *data;
+
 	hashtable_begin_read(ht);
-	HashtableElement *elems = ht->table[hash & ht->hash_mask];
-
-	for(HashtableElement *e = elems; e; e = e->next) {
-		if(hash == e->hash && ht->cmp_func(key, e->key)) {
-			hashtable_end_read(ht);
-			return e->data;
-		}
-	}
-
+	elem = hashtable_get_internal(ht, key, hash);
+	data = elem ? elem->data : NULL;
 	hashtable_end_read(ht);
-	return NULL;
+
+	return data;
 }
 
 void* hashtable_get_unsafe(Hashtable *ht, void *key) {
+	assert(ht != NULL);
+
 	hash_t hash = ht->hash_func(key);
-	HashtableElement *elems = ht->table[hash & ht->hash_mask];
+	HashtableElement *elem;
+	void *data;
 
-	for(HashtableElement *e = elems; e; e = e->next) {
-		if(hash == e->hash && ht->cmp_func(key, e->key)) {
-			return e->data;
-		}
-	}
+	elem = hashtable_get_internal(ht, key, hash);
+	data = elem ? elem->data : NULL;
 
-	return NULL;
+	return data;
 }
 
-static void hashtable_set_internal(Hashtable *ht, HashtableElement **table, size_t hash_mask, hash_t hash, void *key, void *data) {
+static bool hashtable_set_internal(Hashtable *ht, HashtableElement **table, size_t hash_mask, hash_t hash, void *key, void *data, void* (*datafunc)(void*), bool allow_overwrite, void **val) {
 	size_t idx = hash & hash_mask;
 	HashtableElement *elems = table[idx], *elem;
+	void *result = NULL;
 
 	for(HashtableElement *e = elems; e; e = e->next) {
 		if(hash == e->hash && ht->cmp_func(key, e->key)) {
+			if(!allow_overwrite) {
+				if(val != NULL) {
+					*val = e->data;
+				}
+
+				return result;
+			}
+
 			if(ht->free_func) {
 				ht->free_func(e->key);
 			}
@@ -222,6 +240,14 @@ static void hashtable_set_internal(Hashtable *ht, HashtableElement **table, size
 		}
 	}
 
+	if(datafunc != NULL) {
+		data = datafunc(data);
+	}
+
+	if(val != NULL) {
+		*val = data;
+	}
+
 	if(data) {
 		elem = malloc(sizeof(HashtableElement));
 		ht->copy_func(&elem->key, key);
@@ -229,9 +255,11 @@ static void hashtable_set_internal(Hashtable *ht, HashtableElement **table, size
 		elem->data = data;
 		list_push(&elems, elem);
 		ht->num_elements++;
+		result = data;
 	}
 
 	table[idx] = elems;
+	return result;
 }
 
 static void hashtable_resize(Hashtable *ht, size_t new_size) {
@@ -241,7 +269,7 @@ static void hashtable_resize(Hashtable *ht, size_t new_size) {
 
 	for(size_t i = 0; i < ht->table_size; ++i) {
 		for(HashtableElement *e = ht->table[i]; e; e = e->next) {
-			hashtable_set_internal(ht, new_table, new_hash_mask, e->hash, e->key, e->data);
+			hashtable_set_internal(ht, new_table, new_hash_mask, e->hash, e->key, e->data, NULL, true, NULL);
 		}
 	}
 
@@ -264,13 +292,29 @@ void hashtable_set(Hashtable *ht, void *key, void *data) {
 	hash_t hash = ht->hash_func(key);
 
 	hashtable_begin_write(ht);
-	hashtable_set_internal(ht, ht->table, ht->hash_mask, hash, key, data);
+	hashtable_set_internal(ht, ht->table, ht->hash_mask, hash, key, data, NULL, true, NULL);
 
 	if(ht->num_elements == ht->table_size) {
 		hashtable_resize(ht, ht->table_size * 2);
 	}
 
 	hashtable_end_write(ht);
+}
+
+bool hashtable_try_set(Hashtable *ht, void *key, void *data, void* (*datafunc)(void*), void **val) {
+	assert(ht != NULL);
+
+	hash_t hash = ht->hash_func(key);
+
+	hashtable_begin_write(ht);
+	bool result = hashtable_set_internal(ht, ht->table, ht->hash_mask, hash, key, data, datafunc, false, val);
+
+	if(ht->num_elements == ht->table_size) {
+		hashtable_resize(ht, ht->table_size * 2);
+	}
+
+	hashtable_end_write(ht);
+	return result;
 }
 
 void hashtable_unset(Hashtable *ht, void *key) {

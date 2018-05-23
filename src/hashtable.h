@@ -38,6 +38,7 @@ void hashtable_free(Hashtable *ht);
 void* hashtable_get(Hashtable *ht, void *key) attr_hot;
 void* hashtable_get_unsafe(Hashtable *ht, void *key) attr_hot;
 void hashtable_set(Hashtable *ht, void *key, void *data);
+bool hashtable_try_set(Hashtable *ht, void *key, void *data, void* (*datafunc)(void*), void **val);
 void hashtable_unset(Hashtable *ht, void *key);
 void hashtable_unset_deferred(Hashtable *ht, void *key, ListContainer **list);
 void hashtable_unset_deferred_now(Hashtable *ht, ListContainer **list);

@@ -30,7 +30,6 @@ typedef enum ResourceFlags {
 	RESF_PERMANENT = 2,
 	RESF_PRELOAD = 4,
 	RESF_UNSAFE = 8,
-	RESF_FAILED = 16,
 } ResourceFlags;
 
 #define RESF_DEFAULT 0
@@ -62,6 +61,8 @@ typedef void* (*ResourceEndLoadProc)(void *opaque, const char *path, uint flags)
 // Unloads a resource, freeing all allocated to it memory.
 typedef void (*ResourceUnloadProc)(void *res);
 
+typedef struct ResourceHandlerPrivate ResourceHandlerPrivate;
+
 typedef struct ResourceHandler {
 	ResourceType type;
 
@@ -77,8 +78,7 @@ typedef struct ResourceHandler {
 		ResourceUnloadProc unload;
 	} procs;
 
-	Hashtable *mapping;
-	Hashtable *async_load_data;
+	ResourceHandlerPrivate *private;
 } ResourceHandler;
 
 typedef struct Resource {
@@ -93,10 +93,9 @@ void free_resources(bool all);
 
 Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags);
 void* get_resource_data(ResourceType type, const char *name, ResourceFlags flags);
-Resource* insert_resource(ResourceType type, const char *name, void *data, ResourceFlags flags, const char *source);
 void preload_resource(ResourceType type, const char *name, ResourceFlags flags);
 void preload_resources(ResourceType type, ResourceFlags flags, const char *firstname, ...) attr_sentinel;
-Hashtable* get_resource_table(ResourceType type);
+void* resource_for_each(ResourceType type, void* (*callback)(const char *name, Resource *res, void *arg), void *arg);
 
 void resource_util_strip_ext(char *path);
 char* resource_util_basename(const char *prefix, const char *path);
