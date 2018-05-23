@@ -338,6 +338,7 @@ bool task_wait(Task *task, void **result) {
 	void *_result = NULL;
 
 	SDL_LockMutex(task->mutex);
+	log_debug("%08lx %p %i", SDL_ThreadID(), (void*)task, task->status);
 
 	if(task->status == TASK_CANCELLED) {
 		success = false;
@@ -345,9 +346,11 @@ bool task_wait(Task *task, void **result) {
 		success = true;
 		_result = task->result;
 	} else {
+		log_debug("%08lx %p sleep", SDL_ThreadID(), (void*)task);
 		SDL_CondWait(task->cond, task->mutex);
 		_result = task->result;
 		success = (task->status == TASK_FINISHED);
+		log_debug("%08lx %p wake %i %i", SDL_ThreadID(), (void*)task, task->status, success);
 	}
 
 	SDL_UnlockMutex(task->mutex);

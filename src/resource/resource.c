@@ -45,7 +45,6 @@ ResourceHandler *_handlers[] = {
 
 typedef enum ResourceStatus {
 	RES_STATUS_LOADING,
-	RES_STATUS_HALF_LOADED,
 	RES_STATUS_LOADED,
 	RES_STATUS_FAILED,
 } ResourceStatus;
@@ -55,7 +54,16 @@ typedef struct InternalResource {
 	ResourceStatus status;
 	SDL_mutex *mutex;
 	SDL_cond *cond;
+	Task *async_task;
 } InternalResource;
+
+typedef struct ResourceAsyncLoadData {
+	InternalResource *ires;
+	char *path;
+	char *name;
+	ResourceFlags flags;
+	void *opaque;
+} ResourceAsyncLoadData;
 
 struct ResourceHandlerPrivate {
 	Hashtable *mapping;
@@ -100,8 +108,9 @@ static bool try_begin_load_resource(ResourceType type, const char *name, Interna
 	return hashtable_try_set(handler->private->mapping, (char*)name, (void*)(uintptr_t)type, datafunc_begin_load_resource, (void**)out_ires);
 }
 
-static bool resource_asyncload_handler(SDL_Event *evt, void *arg);
+static void load_resource_finish(InternalResource *ires, void *opaque, const char *path, const char *name, char *allocated_path, char *allocated_name, ResourceFlags flags);
 
+/*
 static void finish_async_loads(void) {
 	SDL_Event evt;
 	uint32_t etype = MAKE_TAISEI_EVENT(TE_RESOURCE_ASYNC_LOADED);
@@ -110,23 +119,42 @@ static void finish_async_loads(void) {
 		resource_asyncload_handler(&evt, NULL);
 	}
 }
+*/
+
+static void finish_async_load(InternalResource *ires, ResourceAsyncLoadData *data) {
+	assert(ires == data->ires);
+	assert(ires->status == RES_STATUS_LOADING);
+	load_resource_finish(ires, data->opaque, data->path, data->name, data->path, data->name, data->flags);
+	SDL_CondBroadcast(data->ires->cond);
+	assert(ires->status != RES_STATUS_LOADING);
+	free(data);
+}
 
 static ResourceStatus wait_for_resource_load(InternalResource *ires) {
 	SDL_LockMutex(ires->mutex);
 
-	while(ires->status == RES_STATUS_LOADING) {
-		SDL_CondWait(ires->cond, ires->mutex);
+	if(ires->async_task != NULL && SDL_ThreadID() == main_thread_id) {
+		assert(ires->status == RES_STATUS_LOADING);
+
+		ResourceAsyncLoadData *data;
+		Task *task = ires->async_task;
+		ires->async_task = NULL;
+
+		SDL_UnlockMutex(ires->mutex);
+
+		if(!task_finish(task, (void**)&data)) {
+			log_fatal("Internal error: ires->async_task failed");
+		}
+
+		SDL_LockMutex(ires->mutex);
+
+		if(ires->status == RES_STATUS_LOADING) {
+			finish_async_load(ires, data);
+		}
 	}
 
-	if(ires->status == RES_STATUS_HALF_LOADED) {
-		if(SDL_ThreadID() == main_thread_id) {
-			finish_async_loads();
-			assert(ires->status != RES_STATUS_HALF_LOADED);
-		} else {
-			do {
-				SDL_CondWait(ires->cond, ires->mutex);
-			} while(ires->status == RES_STATUS_HALF_LOADED);
-		}
+	while(ires->status == RES_STATUS_LOADING) {
+		SDL_CondWait(ires->cond, ires->mutex);
 	}
 
 	ResourceStatus status = ires->status;
@@ -153,52 +181,47 @@ static char* get_name(ResourceHandler *handler, const char *path) {
 	return resource_util_basename(handler->subdir, path);
 }
 
-typedef struct ResourceAsyncLoadData {
-	InternalResource *ires;
-	char *path;
-	char *name;
-	ResourceFlags flags;
-	void *opaque;
-} ResourceAsyncLoadData;
-
 static void* load_resource_async_task(void *vdata) {
 	ResourceAsyncLoadData *data = vdata;
 
 	SDL_LockMutex(data->ires->mutex);
 	data->opaque = get_ires_handler(data->ires)->procs.begin_load(data->path, data->flags);
-	data->ires->status = RES_STATUS_HALF_LOADED;
-	events_emit(TE_RESOURCE_ASYNC_LOADED, 0, data, NULL);
-	SDL_CondBroadcast(data->ires->cond);
+	events_emit(TE_RESOURCE_ASYNC_LOADED, 0, data->ires, data);
 	SDL_UnlockMutex(data->ires->mutex);
 
-	return NULL;
+	return data;
 }
-
-static void load_resource_finish(InternalResource *ires, void *opaque, const char *path, const char *name, char *allocated_path, char *allocated_name, ResourceFlags flags);
 
 static bool resource_asyncload_handler(SDL_Event *evt, void *arg) {
 	assert(SDL_ThreadID() == main_thread_id);
 
-	ResourceAsyncLoadData *data = evt->user.data1;
+	InternalResource *ires = evt->user.data1;
 
-	if(!data) {
+	SDL_LockMutex(ires->mutex);
+	Task *task = ires->async_task;
+	assert(!task || ires->status == RES_STATUS_LOADING);
+	ires->async_task = NULL;
+	SDL_UnlockMutex(ires->mutex);
+
+	if(task == NULL) {
 		return true;
 	}
 
-	SDL_LockMutex(data->ires->mutex);
+	ResourceAsyncLoadData *data, *verify_data;
 
-	if(data->ires->status != RES_STATUS_HALF_LOADED) {
-		SDL_UnlockMutex(data->ires->mutex);
-		return true;
+	if(!task_finish(task, (void**)&verify_data)) {
+		log_fatal("Internal error: data->ires->async_task failed");
 	}
 
-	char name[strlen(data->name) + 1];
-	strcpy(name, data->name);
+	SDL_LockMutex(ires->mutex);
 
-	load_resource_finish(data->ires, data->opaque, data->path, data->name, data->path, data->name, data->flags);
-	SDL_CondBroadcast(data->ires->cond);
-	SDL_UnlockMutex(data->ires->mutex);
-	free(data);
+	if(ires->status == RES_STATUS_LOADING) {
+		data = evt->user.data2;
+		assert(data == verify_data);
+		finish_async_load(ires, data);
+	}
+
+	SDL_UnlockMutex(ires->mutex);
 
 	return true;
 }
@@ -212,8 +235,7 @@ static void load_resource_async(InternalResource *ires, char *path, char *name, 
 	data->path = path;
 	data->name = name;
 	data->flags = flags;
-
-	task_detach(taskmgr_global_submit((TaskParams) { load_resource_async_task, data }));
+	ires->async_task = taskmgr_global_submit((TaskParams) { load_resource_async_task, data });
 }
 
 void load_resource(InternalResource *ires, const char *path, const char *name, ResourceFlags flags, bool async) {
