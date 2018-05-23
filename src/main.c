@@ -26,9 +26,12 @@
 #include "version.h"
 #include "credits.h"
 #include "renderer/api.h"
+#include "taskmanager.h"
 
 static void taisei_shutdown(void) {
 	log_info("Shutting down");
+
+	taskmgr_global_shutdown();
 
 	if(!global.is_replay_verification) {
 		config_save();
@@ -229,6 +232,7 @@ int main(int argc, char **argv) {
 	config_load();
 
 	init_sdl();
+	taskmgr_global_init();
 	time_init();
 	init_global(&a);
 	events_init();

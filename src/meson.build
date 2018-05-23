@@ -84,6 +84,7 @@ taisei_src = files(
     'stageobjects.c',
     'stagetext.c',
     'stageutils.c',
+    'taskmanager.c',
     'transition.c',
     'version.c',
     'video.c',

@@ -78,6 +78,8 @@ bool log_initialized(void);
 #define log_fatal(...) _taisei_log_fatal(LOG_FATAL, __func__, __VA_ARGS__)
 #define log_custom(lvl, ...) _taisei_log(lvl, false, __func__, __VA_ARGS__)
 
+#define log_sdl_error(funcname) log_warn("%s() failed: %s", funcname, SDL_GetError())
+
 //
 // don't call these directly, use the macros
 //
