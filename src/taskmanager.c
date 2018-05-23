@@ -415,16 +415,24 @@ bool task_abort(Task *task) {
 void taskmgr_global_init(void) {
 	assert(g_taskmgr == NULL);
 	g_taskmgr = taskmgr_create(0, SDL_THREAD_PRIORITY_LOW, "global");
-	assert(g_taskmgr != NULL);
 }
 
 void taskmgr_global_shutdown(void) {
-	assert(g_taskmgr != NULL);
-	taskmgr_finish(g_taskmgr);
-	g_taskmgr = NULL;
+	if(g_taskmgr != NULL) {
+		taskmgr_finish(g_taskmgr);
+		g_taskmgr = NULL;
+	}
 }
 
 Task* taskmgr_global_submit(TaskParams params) {
-	assert(g_taskmgr != NULL);
+	if(g_taskmgr == NULL) {
+		Task *t = calloc(1, sizeof(Task));
+		t->callback = params.callback;
+		t->userdata = params.userdata;
+		t->userdata_free_callback = params.userdata_free_callback;
+		t->result = params.callback(params.userdata);
+		return t;
+	}
+
 	return taskmgr_submit(g_taskmgr, params);
 }

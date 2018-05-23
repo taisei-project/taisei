@@ -56,6 +56,7 @@ void time_init(void) {
 	if(use_hires) {
 		if(!(paranoia = SDL_CreateMutex())) {
 			log_warn("Not using the system high resolution timer: SDL_CreateMutex() failed: %s", SDL_GetError());
+			use_hires = false;
 			return;
 		}
 
