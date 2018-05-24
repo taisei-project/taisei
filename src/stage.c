@@ -526,7 +526,7 @@ void stage_start_bgm(const char *bgm) {
 	if(current_bgm.title && current_bgm.started_at >= 0 && (!old_title || strcmp(current_bgm.title, old_title))) {
 		char txt[strlen(current_bgm.title) + 6];
 		snprintf(txt, sizeof(txt), "BGM: %s", current_bgm.title);
-		stagetext_add(txt, VIEWPORT_W-15 + I * (VIEWPORT_H-20), AL_Right, &_fonts.standard, rgb(1, 1, 1), 30, 85, 35, 35);
+		stagetext_add(txt, VIEWPORT_W-15 + I * (VIEWPORT_H-20), AL_Right, &_fonts.standard, rgb(1, 1, 1), 30, 180, 35, 35);
 	}
 
 	free(old_title);
