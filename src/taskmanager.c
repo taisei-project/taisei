@@ -210,6 +210,16 @@ TaskManager* taskmgr_create(uint numthreads, SDL_ThreadPriority prio, const char
 
 		if(!(mgr->threads[i] = SDL_CreateThread(taskmgr_thread, threadname, mgr))) {
 			log_sdl_error("SDL_CreateThread");
+
+			for(uint j = 0; j < i; ++j) {
+				SDL_DetachThread(mgr->threads[j]);
+				mgr->threads[j] = NULL;
+			}
+
+			SDL_LockMutex(mgr->mutex);
+			mgr->aborted = true;
+			SDL_CondBroadcast(mgr->cond);
+			SDL_UnlockMutex(mgr->mutex);
 			goto fail;
 		}
 	}
