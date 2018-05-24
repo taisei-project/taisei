@@ -1367,7 +1367,12 @@ static int ricci_proj2(Projectile *p, int t) {
 }
 
 int baryon_ricci(Enemy *e, int t) {
+	if(t < 0) {
+		return ACTION_ACK;
+	}
+
 	int num = creal(e->args[2])+0.5;
+
 	if(num % 2 == 1) {
 		GO_TO(e, global.boss->pos,0.1);
 	} else if(num == 0) {
@@ -1378,9 +1383,12 @@ int baryon_ricci(Enemy *e, int t) {
 			complex d = e->pos - VIEWPORT_W/2-VIEWPORT_H*I*2/3 + 100*sin(s*t/200.)+25*I*cos(s*t*3./500.);
 			e->pos += -0.5*d/cabs(d);
 		}
-
 	} else {
-		e->pos = global.boss->pos+(global.enemies->pos-global.boss->pos)*cexp(I*2*M_PI*(1./6*creal(e->args[2])));
+		for(Enemy *reference = global.enemies; reference; reference = reference->next) {
+			if(reference->logic_rule == baryon_ricci && (int)(creal(reference->args[2])+0.5) == 0) {
+				e->pos = global.boss->pos+(reference->pos-global.boss->pos)*cexp(I*2*M_PI*(1./6*creal(e->args[2])));
+			}
+		}
 	}
 
 	int time = global.frames - global.boss->current->starttime;
@@ -1421,21 +1429,31 @@ static int ricci_proj(Projectile *p, int t) {
 		return ACTION_DESTROY;
 	}
 
+	if(p->type == DeadProj) {
+		// p->pos += p->args[0];
+		p->prevpos = p->pos0 = p->pos;
+		p->birthtime = global.frames;
+		p->rule = asymptotic;
+		p->args[0] = cexp(I*M_PI*2*frand());
+		p->args[1] = 9;
+		return ACTION_NONE;
+	}
+
 	int time = global.frames-global.boss->current->starttime;
 
 	complex shift = 0;
-	Enemy *e;
-	int i = 0;
 	p->pos = p->pos0 + p->args[0]*t;
 
 	double influence = 0;
 
-	for(e = global.enemies; e; e = e->next, i++) {
-		if(e->visual_rule != Baryon) {
-			i--;
+	for(Enemy *e = global.enemies; e; e = e->next) {
+		if(e->logic_rule != baryon_ricci) {
 			continue;
 		}
-		if(i % 2 == 0) {
+
+		int num = creal(e->args[2])+0.5;
+
+		if(num % 2 == 0) {
 			double radius = SAFE_RADIUS(e);
 			complex d = e->pos-p->pos;
 			float s = 1.00 + 0.25 * (global.diff - D_Easy);
