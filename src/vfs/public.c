@@ -295,5 +295,6 @@ void* vfs_dir_walk(const char *path, void* (*visit)(const char *path, void *arg)
 		}
 	}
 
+	vfs_dir_close(dir);
 	return result;
 }

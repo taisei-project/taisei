@@ -14,26 +14,16 @@
 #include "video.h"
 #include "renderer/api.h"
 #include "util/pngcruft.h"
+#include "taskmanager.h"
 
 Video video;
 
-typedef struct ScreenshotCommand {
-	LIST_INTERFACE(struct ScreenshotCommand);
+typedef struct ScreenshotTaskData {
 	char *dest_path;
-	void *data;
+	uint8_t *pixels;
 	uint width;
 	uint height;
-} ScreenshotCommand;
-
-static struct {
-	struct {
-		ScreenshotCommand *queue;
-		SDL_mutex *mutex;
-		SDL_cond *cond;
-		SDL_Thread *thread;
-		bool running;
-	} screenshots;
-} _video;
+} ScreenshotTaskData;
 
 static void video_add_mode(int width, int height) {
 	if(video.modes) {
@@ -260,21 +250,22 @@ void video_set_mode(int w, int h, bool fs, bool resizable) {
 	SDL_SetWindowResizable(video.window, resizable);
 }
 
-static void video_screenshot_execute_command(ScreenshotCommand *cmd) {
-	log_debug("%u %u %s", cmd->width, cmd->height, cmd->dest_path);
+static void* video_screenshot_task(void *arg) {
+	ScreenshotTaskData *tdata = arg;
+	log_debug("%u %u %s", tdata->width, tdata->height, tdata->dest_path);
 
-	uint width = cmd->width;
-	uint height = cmd->height;
-	uint8_t *pixels = cmd->data;
+	uint width = tdata->width;
+	uint height = tdata->height;
+	uint8_t *pixels = tdata->pixels;
 
-	SDL_RWops *output = vfs_open(cmd->dest_path, VFS_MODE_WRITE);
+	SDL_RWops *output = vfs_open(tdata->dest_path, VFS_MODE_WRITE);
 
 	if(!output) {
 		log_warn("VFS error: %s", vfs_get_error());
-		return;
+		return NULL;
 	}
 
-	char *syspath = vfs_repr(cmd->dest_path, true);
+	char *syspath = vfs_repr(tdata->dest_path, true);
 	log_info("Saving screenshot as %s", syspath);
 	free(syspath);
 
@@ -307,106 +298,25 @@ static void video_screenshot_execute_command(ScreenshotCommand *cmd) {
 
 	png_destroy_write_struct(&png_ptr, &info_ptr);
 	SDL_RWclose(output);
+
+	return NULL;
 }
 
-static void video_screenshot_free_command_resources(ScreenshotCommand *cmd) {
-	free(cmd->data);
-	free(cmd->dest_path);
-}
-
-static void video_screenshot_push_command(ScreenshotCommand *cmd) {
-	if(_video.screenshots.thread != NULL) {
-		log_debug("%u %u %s", cmd->width, cmd->height, cmd->dest_path);
-
-		SDL_LockMutex(_video.screenshots.mutex);
-		list_push(&_video.screenshots.queue, (ScreenshotCommand*)memdup(cmd, sizeof(*cmd)));
-		SDL_CondSignal(_video.screenshots.cond);
-		SDL_UnlockMutex(_video.screenshots.mutex);
-	} else {
-		video_screenshot_execute_command(cmd);
-		video_screenshot_free_command_resources(cmd);
-	}
-}
-
-static int video_screenshot_thread(void *arg) {
-	if(SDL_SetThreadPriority(SDL_THREAD_PRIORITY_LOW) < 0) {
-		log_warn("SDL_SetThreadPriority() failed: %s", SDL_GetError());
-	}
-
-	bool running = _video.screenshots.running;
-
-	while(running) {
-		SDL_LockMutex(_video.screenshots.mutex);
-		ScreenshotCommand *cmd = list_pop(&_video.screenshots.queue);
-		running = _video.screenshots.running;
-
-		if(running && !cmd) {
-			log_debug("Sleeping");
-			SDL_CondWait(_video.screenshots.cond, _video.screenshots.mutex);
-			log_debug("Waking up");
-		}
-
-		SDL_UnlockMutex(_video.screenshots.mutex);
-
-		if(cmd) {
-			video_screenshot_execute_command(cmd);
-			video_screenshot_free_command_resources(cmd);
-			free(cmd);
-		}
-	}
-
-	return 0;
-}
-
-static void video_stop_screenshot_thread(void) {
-	if(_video.screenshots.thread != NULL) {
-		SDL_LockMutex(_video.screenshots.mutex);
-		_video.screenshots.running = false;
-		SDL_CondSignal(_video.screenshots.cond);
-		SDL_UnlockMutex(_video.screenshots.mutex);
-		SDL_WaitThread(_video.screenshots.thread, NULL);
-		_video.screenshots.thread = NULL;
-	} else {
-		_video.screenshots.running = false;
-	}
-
-	SDL_DestroyCond(_video.screenshots.cond);
-	_video.screenshots.cond = NULL;
-
-	SDL_DestroyMutex(_video.screenshots.mutex);
-	_video.screenshots.mutex = NULL;
-}
-
-static void video_start_screenshot_thread(void) {
-	if(!(_video.screenshots.mutex = SDL_CreateMutex())) {
-		log_warn("SDL_CreateMutex() failed: %s", SDL_GetError());
-		video_stop_screenshot_thread();
-		return;
-	}
-
-	if(!(_video.screenshots.cond = SDL_CreateCond())) {
-		log_warn("SDL_CreateCond() failed: %s", SDL_GetError());
-		video_stop_screenshot_thread();
-		return;
-	}
-
-	_video.screenshots.running = true;
-
-	if(!(_video.screenshots.thread = SDL_CreateThread(video_screenshot_thread, "video.screenshot", NULL))) {
-		log_warn("SDL_CreateThread() failed: %s", SDL_GetError());
-		video_stop_screenshot_thread();
-		return;
-	}
+static void video_screenshot_free_task_data(void *arg) {
+	ScreenshotTaskData *tdata = arg;
+	free(tdata->pixels);
+	free(tdata->dest_path);
+	free(tdata);
 }
 
 void video_take_screenshot(void) {
-	ScreenshotCommand cmd;
-	memset(&cmd, 0, sizeof(cmd));
-	cmd.data = r_screenshot(&cmd.width, &cmd.height);
+	ScreenshotTaskData tdata;
+	memset(&tdata, 0, sizeof(tdata));
+	tdata.pixels = r_screenshot(&tdata.width, &tdata.height);
 
 	log_debug("Screenshot requested");
 
-	if(!cmd.data) {
+	if(!tdata.pixels) {
 		log_warn("Failed to take a screenshot");
 		return;
 	}
@@ -418,9 +328,13 @@ void video_take_screenshot(void) {
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
 	strftime(outfile, 128, "taisei_%Y%m%d_%H-%M-%S%z.png", timeinfo);
-	cmd.dest_path = strjoin("storage/screenshots/", outfile, NULL);;
+	tdata.dest_path = strjoin("storage/screenshots/", outfile, NULL);;
 
-	video_screenshot_push_command(&cmd);
+	task_detach(taskmgr_global_submit((TaskParams) {
+		.callback = video_screenshot_task,
+		.userdata = memdup(&tdata, sizeof(tdata)),
+		.userdata_free_callback = video_screenshot_free_task_data,
+	}));
 }
 
 bool video_is_resizable(void) {
@@ -617,8 +531,6 @@ void video_init(void) {
 		.event_type = SDL_WINDOWEVENT,
 	};
 
-	video_start_screenshot_thread();
-
 	events_register_handler(&h);
 	log_info("Video subsystem initialized");
 }
@@ -629,7 +541,6 @@ void video_shutdown(void) {
 	r_shutdown();
 	free(video.modes);
 	SDL_VideoQuit();
-	video_stop_screenshot_thread();
 }
 
 void video_swap_buffers(void) {

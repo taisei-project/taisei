@@ -103,43 +103,31 @@ void play_loop(const char *name) {
 	}
 }
 
-void reset_sounds(void) {
-	Resource *res;
-	Sound *snd;
+static void* reset_sounds_callback(const char *name, Resource *res, void *arg) {
+	bool reset = (intptr_t)arg;
+	Sound *snd = res->data;
 
-	for(HashtableIterator *i = hashtable_iter(get_resource_table(RES_SFX));
-		hashtable_iter_next(i, 0, (void**)&res);
-	) {
-		if(!(snd = res->data)) {
-			continue;
+	if(snd) {
+		if(reset) {
+			snd->lastplayframe = 0;
 		}
 
-		snd->lastplayframe = 0;
-		if(snd->islooping) {
+		if(snd->islooping && (global.frames > snd->lastplayframe + LOOPTIMEOUTFRAMES || reset)) {
 			snd->islooping = false;
 			audio_backend_sound_stop_loop(snd->impl);
 		}
 	}
 
+	return NULL;
+}
+
+void reset_sounds(void) {
+	resource_for_each(RES_SFX, reset_sounds_callback, (void*)true);
 	list_foreach(&sound_queue, discard_enqueued_sound, NULL);
 }
 
 void update_sounds(void) {
-	Resource *res;
-	Sound *snd;
-
-	for(HashtableIterator *i = hashtable_iter(get_resource_table(RES_SFX));
-		hashtable_iter_next(i, 0, (void**)&res);
-	) {
-		if(!(snd = res->data)) {
-			continue;
-		}
-
-		if(snd->islooping && global.frames > snd->lastplayframe + LOOPTIMEOUTFRAMES) {
-			snd->islooping = false;
-			audio_backend_sound_stop_loop(snd->impl);
-		}
-	}
+	resource_for_each(RES_SFX, reset_sounds_callback, (void*)false);
 
 	for(struct enqueued_sound *s = sound_queue, *next; s; s = next) {
 		next = (struct enqueued_sound*)s->next;

@@ -15,6 +15,7 @@
 #include "video.h"
 #include "menu/mainmenu.h"
 #include "events.h"
+#include "taskmanager.h"
 
 #include "texture.h"
 #include "animation.h"
@@ -42,70 +43,123 @@ ResourceHandler *_handlers[] = {
 	[RES_SHADER_PROGRAM] = NULL,
 };
 
+typedef enum ResourceStatus {
+	RES_STATUS_LOADING,
+	RES_STATUS_LOADED,
+	RES_STATUS_FAILED,
+} ResourceStatus;
+
+typedef struct InternalResource {
+	Resource res;
+	ResourceStatus status;
+	SDL_mutex *mutex;
+	SDL_cond *cond;
+	Task *async_task;
+} InternalResource;
+
+typedef struct ResourceAsyncLoadData {
+	InternalResource *ires;
+	char *path;
+	char *name;
+	ResourceFlags flags;
+	void *opaque;
+} ResourceAsyncLoadData;
+
+struct ResourceHandlerPrivate {
+	Hashtable *mapping;
+};
+
 Resources resources;
 
-static SDL_threadID main_thread_id;
+static SDL_threadID main_thread_id; // TODO: move this somewhere else
 
 static inline ResourceHandler* get_handler(ResourceType type) {
 	return *(_handlers + type);
 }
 
-static void alloc_handler(ResourceHandler *h) {
-	assert(h != NULL);
-	h->mapping = hashtable_new_stringkeys();
-	h->async_load_data = hashtable_new_stringkeys();
+static inline ResourceHandler* get_ires_handler(InternalResource *ires) {
+	return get_handler(ires->res.type);
 }
 
-static void unload_resource(Resource *res) {
-	if(!(res->flags & RESF_FAILED)) {
-		get_handler(res->type)->procs.unload(res->data);
-	}
-	free(res);
+static void alloc_handler(ResourceHandler *h) {
+	assert(h != NULL);
+	h->private = calloc(1, sizeof(ResourceHandlerPrivate));
+	h->private->mapping = hashtable_new_stringkeys();
 }
 
 static const char* type_name(ResourceType type) {
 	return get_handler(type)->typename;
 }
 
-Resource* insert_resource(ResourceType type, const char *name, void *data, ResourceFlags flags, const char *source) {
-	assert(name != NULL);
-	assert(source != NULL);
+static void* datafunc_begin_load_resource(void *arg) {
+	ResourceType type = (intptr_t)arg;
 
-	if(data == NULL) {
-		const char *typename = type_name(type);
-		if(!(flags & RESF_OPTIONAL)) {
-			log_fatal("Required %s '%s' couldn't be loaded", typename, name);
-		} else {
-			log_warn("Failed to load %s '%s'", typename, name);
+	InternalResource *ires = calloc(1, sizeof(InternalResource));
+	ires->res.type = type;
+	ires->status = RES_STATUS_LOADING;
+	ires->mutex = SDL_CreateMutex();
+	ires->cond = SDL_CreateCond();
+
+	return ires;
+}
+
+static bool try_begin_load_resource(ResourceType type, const char *name, InternalResource **out_ires) {
+	ResourceHandler *handler = get_handler(type);
+	return hashtable_try_set(handler->private->mapping, (char*)name, (void*)(uintptr_t)type, datafunc_begin_load_resource, (void**)out_ires);
+}
+
+static void load_resource_finish(InternalResource *ires, void *opaque, const char *path, const char *name, char *allocated_path, char *allocated_name, ResourceFlags flags);
+
+static void finish_async_load(InternalResource *ires, ResourceAsyncLoadData *data) {
+	assert(ires == data->ires);
+	assert(ires->status == RES_STATUS_LOADING);
+	load_resource_finish(ires, data->opaque, data->path, data->name, data->path, data->name, data->flags);
+	SDL_CondBroadcast(data->ires->cond);
+	assert(ires->status != RES_STATUS_LOADING);
+	free(data);
+}
+
+static ResourceStatus wait_for_resource_load(InternalResource *ires) {
+	SDL_LockMutex(ires->mutex);
+
+	if(ires->async_task != NULL && SDL_ThreadID() == main_thread_id) {
+		assert(ires->status == RES_STATUS_LOADING);
+
+		ResourceAsyncLoadData *data;
+		Task *task = ires->async_task;
+		ires->async_task = NULL;
+
+		SDL_UnlockMutex(ires->mutex);
+
+		if(!task_finish(task, (void**)&data)) {
+			log_fatal("Internal error: ires->async_task failed");
+		}
+
+		SDL_LockMutex(ires->mutex);
+
+		if(ires->status == RES_STATUS_LOADING) {
+			finish_async_load(ires, data);
 		}
 	}
 
-	ResourceHandler *handler = get_handler(type);
-	Resource *oldres = hashtable_get_string(handler->mapping, name);
-	Resource *res = malloc(sizeof(Resource));
-
-	if(type == RES_MODEL || env_get("TAISEI_NOUNLOAD", false)) {
-		// FIXME: models can't be safely unloaded at runtime
-		flags |= RESF_PERMANENT;
+	while(ires->status == RES_STATUS_LOADING) {
+		SDL_CondWait(ires->cond, ires->mutex);
 	}
 
-	res->type = handler->type;
-	res->flags = flags;
-	res->data = data;
+	ResourceStatus status = ires->status;
+	SDL_UnlockMutex(ires->mutex);
 
-	if(oldres) {
-		log_warn("Replacing a previously loaded %s '%s'", type_name(type), name);
-		unload_resource(oldres);
+	return status;
+}
+
+static void unload_resource(InternalResource *ires) {
+	if(wait_for_resource_load(ires) == RES_STATUS_LOADED) {
+		get_handler(ires->res.type)->procs.unload(ires->res.data);
 	}
 
-	hashtable_set_string(handler->mapping, name, res);
-
-	if(data) {
-		log_info("Loaded %s '%s' from '%s' (%s)", type_name(handler->type), name, source,
-			(flags & RESF_PERMANENT) ? "permanent" : "transient");
-	}
-
-	return res;
+	SDL_DestroyCond(ires->cond);
+	SDL_DestroyMutex(ires->mutex);
+	free(ires);
 }
 
 static char* get_name(ResourceHandler *handler, const char *path) {
@@ -116,104 +170,65 @@ static char* get_name(ResourceHandler *handler, const char *path) {
 	return resource_util_basename(handler->subdir, path);
 }
 
-typedef struct ResourceAsyncLoadData {
-	ResourceHandler *handler;
-	char *path;
-	char *name;
-	ResourceFlags flags;
-	void *opaque;
-} ResourceAsyncLoadData;
-
-static int load_resource_async_thread(void *vdata) {
+static void* load_resource_async_task(void *vdata) {
 	ResourceAsyncLoadData *data = vdata;
 
-	SDL_SetThreadPriority(SDL_THREAD_PRIORITY_LOW);
-	data->opaque = data->handler->procs.begin_load(data->path, data->flags);
-	events_emit(TE_RESOURCE_ASYNC_LOADED, 0, data, NULL);
+	SDL_LockMutex(data->ires->mutex);
+	data->opaque = get_ires_handler(data->ires)->procs.begin_load(data->path, data->flags);
+	events_emit(TE_RESOURCE_ASYNC_LOADED, 0, data->ires, data);
+	SDL_UnlockMutex(data->ires->mutex);
 
-	return 0;
+	return data;
 }
-
-static Resource* load_resource_finish(void *opaque, ResourceHandler *handler, const char *path, const char *name, char *allocated_path, char *allocated_name, ResourceFlags flags);
 
 static bool resource_asyncload_handler(SDL_Event *evt, void *arg) {
 	assert(SDL_ThreadID() == main_thread_id);
 
-	ResourceAsyncLoadData *data = evt->user.data1;
+	InternalResource *ires = evt->user.data1;
 
-	if(!data) {
+	SDL_LockMutex(ires->mutex);
+	Task *task = ires->async_task;
+	assert(!task || ires->status == RES_STATUS_LOADING);
+	ires->async_task = NULL;
+	SDL_UnlockMutex(ires->mutex);
+
+	if(task == NULL) {
 		return true;
 	}
 
-	char name[strlen(data->name) + 1];
-	strcpy(name, data->name);
+	ResourceAsyncLoadData *data, *verify_data;
 
-	load_resource_finish(data->opaque, data->handler, data->path, data->name, data->path, data->name, data->flags);
-	hashtable_unset(data->handler->async_load_data, name);
-	free(data);
+	if(!task_finish(task, (void**)&verify_data)) {
+		log_fatal("Internal error: data->ires->async_task failed");
+	}
+
+	SDL_LockMutex(ires->mutex);
+
+	if(ires->status == RES_STATUS_LOADING) {
+		data = evt->user.data2;
+		assert(data == verify_data);
+		finish_async_load(ires, data);
+	}
+
+	SDL_UnlockMutex(ires->mutex);
 
 	return true;
 }
 
-static void load_resource_async(ResourceHandler *handler, char *path, char *name, ResourceFlags flags) {
-	log_debug("Loading %s '%s' asynchronously", type_name(handler->type), name);
-
+static void load_resource_async(InternalResource *ires, char *path, char *name, ResourceFlags flags) {
 	ResourceAsyncLoadData *data = malloc(sizeof(ResourceAsyncLoadData));
-	hashtable_set_string(handler->async_load_data, name, data);
 
-	data->handler = handler;
+	log_debug("Loading %s '%s' asynchronously", type_name(ires->res.type), name);
+
+	data->ires = ires;
 	data->path = path;
 	data->name = name;
 	data->flags = flags;
-
-	SDL_Thread *thread = SDL_CreateThread(load_resource_async_thread, __func__, data);
-
-	if(thread) {
-		SDL_DetachThread(thread);
-	} else {
-		log_warn("SDL_CreateThread() failed: %s", SDL_GetError());
-		log_warn("Falling back to synchronous loading. Use TAISEI_NOASYNC=1 to suppress this warning.");
-		load_resource_async_thread(data);
-	}
+	ires->async_task = taskmgr_global_submit((TaskParams) { load_resource_async_task, data });
 }
 
-static void update_async_load_state(void) {
-	SDL_Event evt;
-	uint32_t etype = MAKE_TAISEI_EVENT(TE_RESOURCE_ASYNC_LOADED);
-
-	while(SDL_PeepEvents(&evt, 1, SDL_GETEVENT, etype, etype)) {
-		resource_asyncload_handler(&evt, NULL);
-	}
-}
-
-static bool resource_check_async_load(ResourceHandler *handler, const char *name) {
-	if(SDL_ThreadID() == main_thread_id) {
-		update_async_load_state();
-	}
-
-	ResourceAsyncLoadData *data = hashtable_get_string(handler->async_load_data, name);
-	return data;
-}
-
-static void resource_wait_for_async_load(ResourceHandler *handler, const char *name) {
-	while(resource_check_async_load(handler, name));
-}
-
-static void resource_wait_for_all_async_loads(ResourceHandler *handler) {
-	char *key;
-
-	hashtable_lock(handler->async_load_data);
-	HashtableIterator *i = hashtable_iter(handler->async_load_data);
-	while(hashtable_iter_next(i, (void**)&key, NULL)) {
-		resource_check_async_load(handler, key);
-	}
-	hashtable_unlock(handler->async_load_data);
-}
-
-static Resource* load_resource(ResourceHandler *handler, const char *path, const char *name, ResourceFlags flags, bool async) {
-	Resource *res;
-	flags &= ~RESF_FAILED;
-
+void load_resource(InternalResource *ires, const char *path, const char *name, ResourceFlags flags, bool async) {
+	ResourceHandler *handler = get_ires_handler(ires);
 	const char *typename = type_name(handler->type);
 	char *allocated_path = NULL;
 	char *allocated_name = NULL;
@@ -237,7 +252,7 @@ static Resource* load_resource(ResourceHandler *handler, const char *path, const
 				log_warn("Failed to locate %s '%s'", typename, name);
 			}
 
-			flags |= RESF_FAILED;
+			ires->status = RES_STATUS_FAILED;
 		}
 	} else if(!name) {
 		name = allocated_name = get_name(handler, path);
@@ -247,76 +262,78 @@ static Resource* load_resource(ResourceHandler *handler, const char *path, const
 		assert(handler->procs.check(path));
 	}
 
-	if(async) {
-		if(resource_check_async_load(handler, name)) {
-			return NULL;
-		}
-	} else {
-		resource_wait_for_async_load(handler, name);
-	}
-
-	res = hashtable_get_string(handler->mapping, name);
-
-	if(res) {
-		log_warn("%s '%s' is already loaded", typename, name);
-		free(allocated_name);
-		return res;
-	}
-
-	if(flags & RESF_FAILED) {
-		return load_resource_finish(NULL, handler, path, name, allocated_path, allocated_name, flags);
+	if(ires->status == RES_STATUS_FAILED) {
+		load_resource_finish(ires, NULL, path, name, allocated_path, allocated_name, flags);
+		return;
 	}
 
 	if(async) {
 		// these will be freed when loading is done
 		path = allocated_path ? allocated_path : strdup(path);
 		name = allocated_name ? allocated_name : strdup(name);
-		load_resource_async(handler, (char*)path, (char*)name, flags);
-		return NULL;
+		load_resource_async(ires, (char*)path, (char*)name, flags);
+	} else {
+		load_resource_finish(ires, handler->procs.begin_load(path, flags), path, name, allocated_path, allocated_name, flags);
 	}
-
-	return load_resource_finish(handler->procs.begin_load(path, flags), handler, path, name, allocated_path, allocated_name, flags);
 }
 
-static Resource* load_resource_finish(void *opaque, ResourceHandler *handler, const char *path, const char *name, char *allocated_path, char *allocated_name, ResourceFlags flags) {
-	void *raw = (flags & RESF_FAILED) ? NULL : handler->procs.end_load(opaque, path, flags);
+static void finalize_resource(InternalResource *ires, const char *name, void *data, ResourceFlags flags, const char *source) {
+	assert(name != NULL);
+	assert(source != NULL);
 
-	if(raw == NULL) {
-		flags |= RESF_FAILED;
+	if(data == NULL) {
+		const char *typename = type_name(ires->res.type);
+		if(!(flags & RESF_OPTIONAL)) {
+			log_fatal("Required %s '%s' couldn't be loaded", typename, name);
+		} else {
+			log_warn("Failed to load %s '%s'", typename, name);
+		}
 	}
+
+	if(ires->res.type == RES_MODEL || env_get("TAISEI_NOUNLOAD", false)) {
+		// FIXME: models can't be safely unloaded at runtime
+		flags |= RESF_PERMANENT;
+	}
+
+	ires->res.flags = flags;
+	ires->res.data = data;
+
+	if(data) {
+		log_info("Loaded %s '%s' from '%s' (%s)", type_name(ires->res.type), name, source, (flags & RESF_PERMANENT) ? "permanent" : "transient");
+	}
+
+	ires->status = data ? RES_STATUS_LOADED : RES_STATUS_FAILED;
+}
+
+static void load_resource_finish(InternalResource *ires, void *opaque, const char *path, const char *name, char *allocated_path, char *allocated_name, ResourceFlags flags) {
+	void *raw = (ires->status == RES_STATUS_FAILED) ? NULL : get_ires_handler(ires)->procs.end_load(opaque, path, flags);
 
 	name = name ? name : "<name unknown>";
 	path = path ? path : "<path unknown>";
 
 	char *sp = vfs_repr(path, true);
-	Resource *res = insert_resource(handler->type, name, raw, flags, sp ? sp : path);
+	finalize_resource(ires, name, raw, flags, sp ? sp : path);
 	free(sp);
 
 	free(allocated_path);
 	free(allocated_name);
-
-	return res;
 }
 
 Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags) {
-	ResourceHandler *handler = get_handler(type);
+	InternalResource *ires;
 	Resource *res;
 
 	if(flags & RESF_UNSAFE) {
-		res = hashtable_get_unsafe(handler->mapping, (void*)name);
-		flags &= ~RESF_UNSAFE;
-	} else {
-		res = hashtable_get(handler->mapping, (void*)name);
+		ires = hashtable_get_unsafe(get_handler(type)->private->mapping, (char*)name);
+
+		if(ires != NULL && ires->status == RES_STATUS_LOADED) {
+			return &ires->res;
+		}
 	}
 
-	if(res) {
-		return res;
-	}
+	if(try_begin_load_resource(type, name, &ires)) {
+		SDL_LockMutex(ires->mutex);
 
-	resource_wait_for_async_load(handler, name);
-	res = hashtable_get(handler->mapping, (void*)name);
-
-	if(!res) {
 		if(!(flags & RESF_PRELOAD)) {
 			log_warn("%s '%s' was not preloaded", type_name(type), name);
 
@@ -325,15 +342,31 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 			}
 		}
 
-		res = load_resource(handler, NULL, name, flags, false);
-	}
+		load_resource(ires, NULL, name, flags, false);
+		SDL_CondBroadcast(ires->cond);
 
-	if(res && (flags & RESF_PERMANENT) && !(res->flags & (RESF_PERMANENT | RESF_FAILED))) {
-		log_debug("Promoted %s '%s' to permanent", type_name(type), name);
-		res->flags |= RESF_PERMANENT;
-	}
+		if(ires->status == RES_STATUS_FAILED) {
+			res = NULL;
+		} else {
+			assert(ires->status == RES_STATUS_LOADED);
+			assert(ires->res.data != NULL);
+			res = &ires->res;
+		}
 
-	return res;
+		SDL_UnlockMutex(ires->mutex);
+		return res;
+	} else {
+		ResourceStatus status = wait_for_resource_load(ires);
+
+		if(status == RES_STATUS_FAILED) {
+			return NULL;
+		}
+
+		assert(status == RES_STATUS_LOADED);
+		assert(ires->res.data != NULL);
+
+		return &ires->res;
+	}
 }
 
 void* get_resource_data(ResourceType type, const char *name, ResourceFlags flags) {
@@ -346,22 +379,17 @@ void* get_resource_data(ResourceType type, const char *name, ResourceFlags flags
 	return NULL;
 }
 
-Hashtable* get_resource_table(ResourceType type) {
-	return get_handler(type)->mapping;
-}
-
 void preload_resource(ResourceType type, const char *name, ResourceFlags flags) {
 	if(env_get("TAISEI_NOPRELOAD", false))
 		return;
 
-	ResourceHandler *handler = get_handler(type);
+	InternalResource *ires;
 
-	if(hashtable_get_string(handler->mapping, name) ||
-		hashtable_get_string(handler->async_load_data, name)) {
-		return;
+	if(try_begin_load_resource(type, name, &ires)) {
+		SDL_LockMutex(ires->mutex);
+		load_resource(ires, NULL, name, flags | RESF_PRELOAD, !env_get("TAISEI_NOASYNC", false));
+		SDL_UnlockMutex(ires->mutex);
 	}
-
-	load_resource(handler, NULL, name, flags | RESF_PRELOAD, !env_get("TAISEI_NOASYNC", false));
 }
 
 void preload_resources(ResourceType type, ResourceFlags flags, const char *firstname, ...) {
@@ -450,6 +478,24 @@ static void* preload_shaders(const char *path, void *arg) {
 	return NULL;
 }
 
+struct resource_for_each_arg {
+	void *(*callback)(const char *name, Resource *res, void *arg);
+	void *arg;
+};
+
+static void* resource_for_each_ht_adapter(void *key, void *data, void *varg) {
+	const char *name = key;
+	InternalResource *ires = data;
+	struct resource_for_each_arg *arg = varg;
+	return arg->callback(name, &ires->res, arg->arg);
+}
+
+void* resource_for_each(ResourceType type, void* (*callback)(const char *name, Resource *res, void *arg), void *arg) {
+	ResourceHandler *handler = get_handler(type);
+	struct resource_for_each_arg htarg = { callback, arg };
+	return hashtable_foreach(handler->private->mapping, resource_for_each_ht_adapter, &htarg);
+}
+
 void load_resources(void) {
 	menu_preload();
 
@@ -463,31 +509,46 @@ void free_resources(bool all) {
 	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
 		ResourceHandler *handler = get_handler(type);
 
-		resource_wait_for_all_async_loads(handler);
-
 		char *name;
-		Resource *res;
+		InternalResource *ires;
 		ListContainer *unset_list = NULL;
 
-		for(HashtableIterator *i = hashtable_iter(handler->mapping); hashtable_iter_next(i, (void**)&name, (void**)&res);) {
-			if(!all && res->flags & RESF_PERMANENT)
+		hashtable_lock(handler->private->mapping);
+		for(HashtableIterator *i = hashtable_iter(handler->private->mapping); hashtable_iter_next(i, (void**)&name, (void**)&ires);) {
+			if(!all && (ires->res.flags & RESF_PERMANENT)) {
 				continue;
+			}
 
-			attr_unused ResourceFlags flags = res->flags;
-			unload_resource(res);
-			log_debug("Unloaded %s '%s' (%s)", type_name(type), name,
-				(flags & RESF_PERMANENT) ? "permanent" : "transient"
-			);
+			list_push(&unset_list, list_wrap_container(name));
+		}
+		hashtable_unlock(handler->private->mapping);
+
+		for(ListContainer *c; (c = list_pop(&unset_list));) {
+			char *tmp = c->data;
+			char name[strlen(tmp) + 1];
+			strcpy(name, tmp);
+
+			ires = hashtable_get_string(handler->private->mapping, name);
+			attr_unused ResourceFlags flags = ires->res.flags;
 
 			if(!all) {
-				hashtable_unset_deferred(handler->mapping, name, &unset_list);
+				hashtable_unset_string(handler->private->mapping, name);
 			}
+
+			unload_resource(ires);
+			free(c);
+
+			log_debug(
+				"Unloaded %s '%s' (%s)",
+				type_name(type),
+				name,
+				(flags & RESF_PERMANENT) ? "permanent" : "transient"
+			);
 		}
 
 		if(all) {
-			hashtable_free(handler->mapping);
-		} else {
-			hashtable_unset_deferred_now(handler->mapping, &unset_list);
+			hashtable_free(handler->private->mapping);
+			free(handler->private);
 		}
 	}
 

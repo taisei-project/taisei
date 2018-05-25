@@ -6,6 +6,8 @@
  * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
  */
 
+#include "taisei.h"
+
 #include "crap.h"
 
 #include <stdlib.h>

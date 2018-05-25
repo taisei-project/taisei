@@ -7,6 +7,8 @@
  */
 
 #pragma once
+#include "taisei.h"
+
 #include "dialog.h"
 
 void dialog_reimu_stage1(Dialog *d);
