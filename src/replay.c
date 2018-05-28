@@ -31,6 +31,8 @@ ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, D
 	s = rpy->stages + rpy->numstages - 1;
 	memset(s, 0, sizeof(ReplayStage));
 
+	get_system_time(&s->init_time);
+
 	s->capacity = REPLAY_ALLOC_INITIAL;
 	s->events = (ReplayEvent*)malloc(sizeof(ReplayEvent) * s->capacity);
 

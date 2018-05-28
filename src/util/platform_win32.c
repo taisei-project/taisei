@@ -8,7 +8,30 @@
 
 #include "taisei.h"
 
-#include <windows.h>
+#include "assert.h"
+#include "stringops.h"
+
+static time_t win32time_to_posixtime(SYSTEMTIME *wtime) {
+	struct tm ptime = { 0 };
+
+	ptime.tm_year = wtime->wYear - 1900;
+	ptime.tm_mon = wtime->wMonth - 1;
+	ptime.tm_mday = wtime->wDay;
+	ptime.tm_hour = wtime->wHour;
+	ptime.tm_min = wtime->wMinute;
+	ptime.tm_sec = wtime->wSecond;
+	ptime.tm_isdst = -1;
+
+	return mktime(&ptime);
+}
+
+void get_system_time(SystemTime *systime) {
+	SYSTEMTIME ltime;
+	GetLocalTime(&ltime);
+
+	systime->tv_sec = win32time_to_posixtime(&ltime);
+	systime->tv_nsec = ltime.wMilliseconds * 1000000;
+}
 
 /*
  *  This is here for Windows laptops with hybrid graphics.

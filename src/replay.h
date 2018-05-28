@@ -80,7 +80,8 @@ typedef struct ReplayStage {
 
 	// initial game settings
 	uint16_t stage; // must match type of StageInfo.id in stage.h
-	uint32_t seed;  // this also happens to be the game initiation time - and we use this property, don't break it please
+	uint32_t seed;  // this also happens to be the game initiation time, and we currently use this property
+                  // NOTE: this might change eventually
 	uint8_t diff;
 
 	// initial player settings
@@ -111,6 +112,7 @@ typedef struct ReplayStage {
 
 	/* END stored fields */
 
+	SystemTime init_time;
 	ReplayEvent *events;
 
 	// events allocated (may be higher than numevents)

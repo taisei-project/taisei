@@ -10,7 +10,6 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <SDL.h>
 
 #include "stringops.h"
 #include "assert.h"
@@ -300,4 +299,19 @@ uint32_t crc32str(uint32_t crc, const char *str) {
 	}
 
 	return crc ^ ~0U;
+}
+
+size_t filename_timestamp(char *buf, size_t buf_size, SystemTime systime) {
+	assert(buf_size >= FILENAME_TIMESTAMP_MIN_BUF_SIZE);
+
+	char buf_msecs[4];
+	char buf_datetime[FILENAME_TIMESTAMP_MIN_BUF_SIZE - sizeof(buf_msecs)];
+	attr_unused size_t written;
+
+	written = snprintf(buf_msecs, sizeof(buf_msecs), "%03u", (uint)(systime.tv_nsec / 1000000));
+	assert(written == sizeof(buf_msecs) - 1);
+	written = strftime(buf_datetime, sizeof(buf_datetime), "%Y%m%d_%H-%M-%S", localtime(&systime.tv_sec));
+	assert(written != 0);
+
+	return snprintf(buf, buf_size, "%s-%s", buf_datetime, buf_msecs);
 }

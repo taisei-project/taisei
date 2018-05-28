@@ -146,10 +146,13 @@ have_posix      =       cc.has_header_symbol('unistd.h',    '_POSIX_VERSION')
 have_vla        = not   cc.has_header_symbol('unistd.h',    '__STDC_NO_VLA__')
 have_complex    = not   cc.has_header_symbol('unistd.h',    '__STDC_NO_COMPLEX__')
 have_backtrace  =       cc.has_header_symbol('execinfo.h',  'backtrace')
+have_timespec   =       cc.has_header_symbol('time.h',      'timespec_get')
 
 if not (have_vla and have_complex)
     error('Your C implementation needs to support complex numbers and variable-length arrays.')
 endif
+
+config.set('TAISEI_BUILDCONF_HAVE_TIMESPEC', have_timespec)
 
 macos_app_bundle = get_option('macos_bundle') and host_machine.system() == 'darwin'
 

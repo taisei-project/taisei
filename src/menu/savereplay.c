@@ -17,27 +17,23 @@
 #include "common.h"
 
 static void do_save_replay(Replay *rpy) {
-	char *strtime, *name;
-	time_t rawtime;
-	struct tm *timeinfo;
-
-	// time when the game was *initiated*
-	rawtime = (time_t)rpy->stages[0].seed;
-	timeinfo = localtime(&rawtime);
-	strtime = strftimealloc("%Y%m%d_%H-%M-%S%z", timeinfo);
-
+	char strtime[FILENAME_TIMESTAMP_MIN_BUF_SIZE], *name;
 	char prepr[16], drepr[16];
-	plrmode_repr(prepr, 16, plrmode_find(rpy->stages[0].plr_char, rpy->stages[0].plr_shot));
-	strlcpy(drepr, difficulty_name(rpy->stages[0].diff), 16);
+
+	assert(rpy->numstages > 0);
+	ReplayStage *stg = rpy->stages;
+
+	filename_timestamp(strtime, sizeof(strtime), stg->init_time);
+	plrmode_repr(prepr, 16, plrmode_find(stg->plr_char, stg->plr_shot));
+	strlcpy(drepr, difficulty_name(stg->diff), 16);
 	drepr[0] += 'a' - 'A';
 
 	if(rpy->numstages > 1) {
 		name = strfmt("taisei_%s_%s_%s", strtime, prepr, drepr);
 	} else {
-		name = strfmt("taisei_%s_stg%X_%s_%s", strtime, rpy->stages[0].stage, prepr, drepr);
+		name = strfmt("taisei_%s_stg%X_%s_%s", strtime, stg->stage, prepr, drepr);
 	}
 
-	free(strtime);
 	replay_save(rpy, name);
 	free(name);
 }

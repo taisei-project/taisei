@@ -321,14 +321,11 @@ void video_take_screenshot(void) {
 		return;
 	}
 
-	char outfile[128];
-	time_t rawtime;
-	struct tm * timeinfo;
-
-	time(&rawtime);
-	timeinfo = localtime(&rawtime);
-	strftime(outfile, 128, "taisei_%Y%m%d_%H-%M-%S%z.png", timeinfo);
-	tdata.dest_path = strjoin("storage/screenshots/", outfile, NULL);;
+	SystemTime systime;
+	char timestamp[FILENAME_TIMESTAMP_MIN_BUF_SIZE];
+	get_system_time(&systime);
+	filename_timestamp(timestamp, sizeof(timestamp), systime);
+	tdata.dest_path = strfmt("storage/screenshots/taisei_%s.png", timestamp);
 
 	task_detach(taskmgr_global_submit((TaskParams) {
 		.callback = video_screenshot_task,

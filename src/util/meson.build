@@ -21,5 +21,10 @@ if is_debug_build
 endif
 
 if host_machine.system() == 'windows'
-    util_src += files('windows_misc.c')
+    # NOTE: Even if we ever build this with something like Midipix, we'd
+    # probably still want to use the winapi implementation of this here.
+    util_src += files('platform_win32.c')
+else
+    # No have_posix check, it might just work.
+    util_src += files('platform_posix.c')
 endif
