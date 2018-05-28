@@ -5,6 +5,10 @@ from taiseilib.common import (
     run_main,
 )
 
+from concurrent.futures import (
+    ThreadPoolExecutor,
+)
+
 from pathlib import Path
 
 import os, sys, pprint
@@ -18,7 +22,9 @@ def main(args):
         print("This script should not be ran directly", file=sys.stderr)
         exit(1)
 
-    ninja('-vC', build_dir, *args[1:])
+    with ThreadPoolExecutor() as ex:
+        for target in args[1:]:
+            ex.submit(lambda: ninja('-vC', build_dir, target))
 
 if __name__ == '__main__':
     run_main(main)
