@@ -384,7 +384,6 @@ static inline GLuint fbo_num(RenderTarget *target) {
 
 void gl33_sync_render_target(void) {
 	if(fbo_num(R.render_target.active) != fbo_num(R.render_target.pending)) {
-		r_flush_sprites();
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo_num(R.render_target.pending));
 		R.render_target.active = R.render_target.pending;
 	}
