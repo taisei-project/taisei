@@ -35,7 +35,7 @@ Dialog *stage1_dialog(void) {
 
 static Dialog *stage1_postdialog(void) {
 	PlayerCharacter *pc = global.plr.mode->character;
-	Dialog *d = create_dialog(pc->dialog_sprite_name, NULL);
+	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/cirno");
 
 	switch(pc->id) {
 	case PLR_CHAR_MARISA:

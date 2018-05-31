@@ -59,7 +59,7 @@ Dialog *stage5_boss_dialog(void) {
 
 Dialog *stage5_post_boss_dialog(void) {
 	PlayerCharacter *pc = global.plr.mode->character;
-	Dialog *d = create_dialog(pc->dialog_sprite_name, NULL);
+	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/iku");
 
 	switch(pc->id) {
 	case PLR_CHAR_MARISA:

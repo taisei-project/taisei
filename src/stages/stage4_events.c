@@ -45,7 +45,7 @@ Dialog *stage4_dialog(void) {
 
 Dialog *stage4_dialog_end(void) {
 	PlayerCharacter *pc = global.plr.mode->character;
-	Dialog *d = create_dialog(pc->dialog_sprite_name, NULL);
+	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/kurumi");
 
 	switch(pc->id) {
 	case PLR_CHAR_MARISA:
