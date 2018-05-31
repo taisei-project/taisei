@@ -41,24 +41,24 @@ void main(void) {
 
     vec2 p = texCoord * viewport;
     float s = sqrt(pow(viewport.x, 2) + pow(viewport.y, 2));
-    float o = 32;
+    float o = 32 * (1 + progress);
     bvec3 mask = bvec3(false);
     float a = frames / 30.0;
 
     for(int i = 0; i < 3; ++i) {
         float q = 1.0 + 0.01 * i * progress;
 
-        mask[i] = mask[i] != in_circle(p,  vec2(0, 0),  1*a,       origin, s * f(pow(progress, 2.0), 1.0*q));
-        mask[i] = mask[i] != in_circle(p,  vec2(o, 0),  1*a,       origin, s * f(pow(progress, 2.0), 1.0*q));
-        mask[i] = mask[i] != in_circle(p,  vec2(0, o),  1*a,       origin, s * f(pow(progress, 2.0), 1.0*q));
-        mask[i] = mask[i] != in_circle(p, -vec2(o, 0),  1*a,       origin, s * f(pow(progress, 2.0), 1.0*q));
-        mask[i] = mask[i] != in_circle(p, -vec2(0, o),  1*a,       origin, s * f(pow(progress, 2.0), 1.0*q));
+        mask[i] = mask[i] != in_circle(p,  vec2(0, 0),  1*a,       origin, s * f(pow(progress * 1.5, 1.5), 1.0*q));
+        mask[i] = mask[i] != in_circle(p,  vec2(o, 0),  1*a,       origin, s * f(pow(progress * 1.5, 2.0), 1.0*q));
+        mask[i] = mask[i] != in_circle(p,  vec2(0, o),  1*a,       origin, s * f(pow(progress * 1.5, 2.0), 1.0*q));
+        mask[i] = mask[i] != in_circle(p, -vec2(o, 0),  1*a,       origin, s * f(pow(progress * 1.5, 2.0), 1.0*q));
+        mask[i] = mask[i] != in_circle(p, -vec2(0, o),  1*a,       origin, s * f(pow(progress * 1.5, 2.0), 1.0*q));
 
-        mask[i] = mask[i] != in_circle(p,  vec2(0, 0), -2*a, clear_origin, s * f(pow(progress, 2.0), 1.5*q));
-        mask[i] = mask[i] != in_circle(p,  vec2(o, 0), -2*a, clear_origin, s * f(pow(progress, 1.7), 1.5*q));
-        mask[i] = mask[i] != in_circle(p,  vec2(0, o), -2*a, clear_origin, s * f(pow(progress, 1.7), 1.5*q));
-        mask[i] = mask[i] != in_circle(p, -vec2(o, 0), -2*a, clear_origin, s * f(pow(progress, 1.7), 1.5*q));
-        mask[i] = mask[i] != in_circle(p, -vec2(0, o), -2*a, clear_origin, s * f(pow(progress, 1.7), 1.5*q));
+        mask[i] = mask[i] != in_circle(p,  vec2(0, 0), -2*a, clear_origin, s * (1 - pow(2 - 2 * progress, 4+0.10*i)));
+        mask[i] = mask[i] != in_circle(p,  vec2(o, 0), -2*a, clear_origin, s * (1 - pow(2 - 2 * progress, 2+0.05*i)));
+        mask[i] = mask[i] != in_circle(p, -vec2(o, 0), -2*a, clear_origin, s * (1 - pow(2 - 2 * progress, 2+0.05*i)));
+        mask[i] = mask[i] != in_circle(p,  vec2(0, o), -2*a, clear_origin, s * (1 - pow(2 - 2 * progress, 2+0.05*i)));
+        mask[i] = mask[i] != in_circle(p, -vec2(0, o), -2*a, clear_origin, s * (1 - pow(2 - 2 * progress, 2+0.05*i)));
     }
 
     fragColor = mix(pclr, nclr, vec4(mask, 0));
