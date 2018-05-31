@@ -794,8 +794,7 @@ int induction_bullet(Projectile *p, int time) {
 
 	p->pos = induction_bullet_traj(p,t);
 
-	// FIXME: projectiles really should get called with EVENT_BIRTH and/or with time==0 consistently.
-	if(time == 1) {
+	if(time == 0) {
 		// don't lerp; the spawn position is very different on hard/lunatic and would cause false hits
 		p->prevpos = p->pos;
 	}
