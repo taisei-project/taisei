@@ -119,7 +119,7 @@ static void finish_async_load(InternalResource *ires, ResourceAsyncLoadData *dat
 	free(data);
 }
 
-static ResourceStatus wait_for_resource_load(InternalResource *ires) {
+static ResourceStatus wait_for_resource_load(InternalResource *ires, uint32_t want_flags) {
 	SDL_LockMutex(ires->mutex);
 
 	if(ires->async_task != NULL && SDL_ThreadID() == main_thread_id) {
@@ -147,13 +147,24 @@ static ResourceStatus wait_for_resource_load(InternalResource *ires) {
 	}
 
 	ResourceStatus status = ires->status;
+
+	if(status == RES_STATUS_LOADED) {
+		uint32_t missing_flags = want_flags & ~ires->res.flags;
+
+		if(missing_flags) {
+			uint32_t new_flags = ires->res.flags | want_flags;
+			log_debug("Flags for %s at %p promoted from 0x%08x to 0x%08x", type_name(ires->res.type), (void*)ires, ires->res.flags, new_flags);
+			ires->res.flags = new_flags;
+		}
+	}
+
 	SDL_UnlockMutex(ires->mutex);
 
 	return status;
 }
 
 static void unload_resource(InternalResource *ires) {
-	if(wait_for_resource_load(ires) == RES_STATUS_LOADED) {
+	if(wait_for_resource_load(ires, 0) == RES_STATUS_LOADED) {
 		get_handler(ires->res.type)->procs.unload(ires->res.data);
 	}
 
@@ -356,7 +367,8 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 		SDL_UnlockMutex(ires->mutex);
 		return res;
 	} else {
-		ResourceStatus status = wait_for_resource_load(ires);
+		uint32_t promotion_flags = flags & RESF_PERMANENT;
+		ResourceStatus status = wait_for_resource_load(ires, promotion_flags);
 
 		if(status == RES_STATUS_FAILED) {
 			return NULL;
