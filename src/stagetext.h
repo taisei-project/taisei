@@ -14,6 +14,7 @@
 #include "resource/font.h"
 
 typedef struct StageText StageText;
+typedef LIST_ANCHOR(StageText) StageTextList;
 typedef void (*StageTextPreDrawFunc)(StageText* txt, int t, float alpha);
 
 typedef struct StageTextTable StageTextTable;

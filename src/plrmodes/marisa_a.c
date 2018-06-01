@@ -15,6 +15,7 @@
 
 // args are pain
 static float global_magicstar_alpha;
+static Enemy *laser_renderer;
 
 typedef struct MarisaLaserData {
 	struct {
@@ -54,7 +55,7 @@ static void draw_laser_beam(complex src, complex dst, double size, double step, 
 
 static void trace_laser(Enemy *e, complex vel, int damage) {
 	ProjCollisionResult col;
-	Projectile *lproj = NULL;
+	ProjectileList lproj = { .first = NULL };
 
 	MarisaLaserData *ld = REF(e->args[3]);
 
@@ -77,8 +78,8 @@ static void trace_laser(Enemy *e, complex vel, int damage) {
 		int original_hp;
 	} *prev_collisions = NULL;
 
-	while(lproj) {
-		timeofs = trace_projectile(lproj, &col, col_types | PCOL_VOID, timeofs);
+	while(lproj.first) {
+		timeofs = trace_projectile(lproj.first, &col, col_types | PCOL_VOID, timeofs);
 		struct enemy_col *c = NULL;
 
 		if(!first_found) {
@@ -109,7 +110,7 @@ static void trace_laser(Enemy *e, complex vel, int damage) {
 			col.fatal = false;
 		}
 
-		apply_projectile_collision(&lproj, lproj, &col);
+		apply_projectile_collision(&lproj, lproj.first, &col);
 
 		if(col.type == PCOL_BOSS) {
 			assert(!col.fatal);
@@ -181,8 +182,8 @@ static void marisa_laser_slave_visual(Enemy *e, int t, bool render) {
 		return;
 	}
 
-	float laser_alpha = global.plr.slaves->args[0];
-	float star_alpha = global.plr.slaves->args[1] * global_magicstar_alpha;
+	float laser_alpha = laser_renderer->args[0];
+	float star_alpha = laser_renderer->args[1] * global_magicstar_alpha;
 
 	draw_magic_star(e->pos, 0.75 * star_alpha,
 		rgb(1.0, 0.1, 0.1),
@@ -215,7 +216,7 @@ static float get_laser_alpha(Enemy *e, float a) {
 	return min(a, min(1, (global.frames - e->birthtime) * 0.1));
 }
 
-#define FOR_EACH_SLAVE(e) for(Enemy *e = global.plr.slaves; e; e = e->next) if(e != renderer)
+#define FOR_EACH_SLAVE(e) for(Enemy *e = global.plr.slaves.first; e; e = e->next) if(e != renderer)
 #define FOR_EACH_REAL_SLAVE(e) FOR_EACH_SLAVE(e) if(e->visual_rule == marisa_laser_slave_visual)
 
 static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
@@ -343,8 +344,8 @@ static int marisa_laser_slave(Enemy *e, int t) {
 		return 1;
 	}
 
-	if(t == EVENT_DEATH && !global.game_over && global.plr.slaves && creal(global.plr.slaves->args[0])) {
-		spawn_laser_fader(e, global.plr.slaves->args[0]);
+	if(t == EVENT_DEATH && !global.game_over && creal(laser_renderer->args[0])) {
+		spawn_laser_fader(e, laser_renderer->args[0]);
 
 		MarisaLaserData *ld = REF(e->args[3]);
 		free(ld);
@@ -488,7 +489,7 @@ static void marisa_laser_bomb(Player *plr) {
 }
 
 static void marisa_laser_respawn_slaves(Player *plr, short npow) {
-	Enemy *e = plr->slaves, *tmp;
+	Enemy *e = plr->slaves.first, *tmp;
 	double dmg = 8;
 
 	while(e != 0) {
@@ -517,7 +518,7 @@ static void marisa_laser_respawn_slaves(Player *plr, short npow) {
 		create_enemy_p(&plr->slaves, -17-30.0*I, ENEMY_IMMUNE, marisa_laser_slave_visual, marisa_laser_slave, -4-45.0*I, dmg, -M_PI/60, 0);
 	}
 
-	for(e = plr->slaves; e; e = e->next) {
+	for(e = plr->slaves.first; e; e = e->next) {
 		if(e->logic_rule == marisa_laser_slave) {
 			MarisaLaserData *ld = calloc(1, sizeof(MarisaLaserData));
 			ld->prev_pos = e->pos + plr->pos;
@@ -536,20 +537,19 @@ static void marisa_laser_power(Player *plr, short npow) {
 }
 
 static void marisa_laser_init(Player *plr) {
-	create_enemy_p(&plr->slaves, 0, ENEMY_IMMUNE, marisa_laser_renderer_visual, marisa_laser_renderer, 0, 0, 0, 0);
-	plr->slaves->ent.draw_layer = LAYER_PLAYER_SHOT;
+	laser_renderer = create_enemy_p(&plr->slaves, 0, ENEMY_IMMUNE, marisa_laser_renderer_visual, marisa_laser_renderer, 0, 0, 0, 0);
+	laser_renderer->ent.draw_layer = LAYER_PLAYER_SHOT;
 	marisa_laser_respawn_slaves(plr, plr->power);
 }
 
 static void marisa_laser_think(Player *plr) {
-	Enemy *laser_renderer = plr->slaves;
 	assert(laser_renderer != NULL);
 	assert(laser_renderer->logic_rule == marisa_laser_renderer);
 
 	if(creal(laser_renderer->args[0]) > 0) {
 		bool found = false;
 
-		for(Projectile *p = global.projs; p && !found; p = p->next) {
+		for(Projectile *p = global.projs.first; p && !found; p = p->next) {
 			if(p->type != EnemyProj) {
 				continue;
 			}

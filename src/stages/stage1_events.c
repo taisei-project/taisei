@@ -1308,7 +1308,7 @@ void stage1_events(void) {
 		create_enemy2c(VIEWPORT_W/2.0, 4000, BigFairy, stage1_tritoss, 2.0*I, -2.6*I);
 
 	AT(5000) {
-		killall(global.enemies);
+		killall(&global.enemies);
 		global.boss = create_cirno();
 	}
 

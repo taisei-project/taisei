@@ -13,6 +13,8 @@
 #include "youmu.h"
 #include "renderer/api.h"
 
+#define MYON (global.plr.slaves.first)
+
 static Color myon_color(float f, float a) {
 	// return rgba(0.8+0.2*f, 0.9-0.4*sqrt(f), 1.0-0.2*f*f, a);
 	// return rgba(0.8+0.2*f, 0.9-0.4*sqrt(f), 1.0-0.4*f*f, a);
@@ -32,7 +34,7 @@ static int myon_particle_rule(Projectile *p, int t) {
 }
 
 static complex myon_tail_dir(void) {
-	double angle = carg(global.plr.slaves->args[0]);
+	double angle = carg(MYON->args[0]);
 	complex dir = cexp(I*(0.1 * sin(global.frames * 0.05) + angle));
 	float f = abs(global.plr.focus) / 30.0;
 	return f * f * dir;
@@ -44,7 +46,7 @@ static int myon_flare_particle_rule(Projectile *p, int t) {
 	}
 
 	// wiggle wiggle
-	p->pos += 0.05 * (global.plr.slaves->pos - p->pos) * cexp(I * sin((t - global.frames * 2) * 0.1) * M_PI/8);
+	p->pos += 0.05 * (MYON->pos - p->pos) * cexp(I * sin((t - global.frames * 2) * 0.1) * M_PI/8);
 	p->args[0] = 3 * myon_tail_dir();
 	p->color = derive_color(p->color, CLRMASK_A, rgba(1, 1, 1, pow(1 - min(1, t / (double)p->timeout), 2)));
 

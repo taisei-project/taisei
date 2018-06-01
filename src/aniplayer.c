@@ -22,13 +22,13 @@ void aniplayer_create(AniPlayer *plr, Animation *ani, const char *startsequence)
 }
 
 Sprite *aniplayer_get_frame(AniPlayer *plr) {
-	assert(plr->queue != NULL);
-	return animation_get_frame(plr->ani, plr->queue->sequence, plr->queue->clock);
+	assert(plr->queue.first != NULL);
+	return animation_get_frame(plr->ani, plr->queue.first->sequence, plr->queue.first->clock);
 }
 
 void aniplayer_free(AniPlayer *plr) {
 	plr->queuesize = 0;
-	list_free_all(&plr->queue);
+	alist_free_all(&plr->queue);
 }
 
 // Deletes the queue. If hard is set, even the last element is removed leaving the player in an invalid state.
@@ -36,18 +36,19 @@ static void aniplayer_reset(AniPlayer *plr, bool hard) {
 	if(plr->queuesize == 0)
 		return;
 	if(hard) {
-		list_free_all(&plr->queue);
+		alist_free_all(&plr->queue);
 		plr->queuesize = 0;
 		return;
 	}
 
-	list_free_all(&plr->queue->next);
+	list_free_all(&plr->queue.first->next);
+	plr->queue.last = plr->queue.first;
 	plr->queuesize = 1;
 }
 
 AniQueueEntry *aniplayer_queue(AniPlayer *plr, const char *seqname, int loops) {
 	AniQueueEntry *s = calloc(1, sizeof(AniQueueEntry));
-	list_append(&plr->queue, s);
+	alist_append(&plr->queue, s);
 	plr->queuesize++;
 
 	if(loops < 0)
@@ -76,13 +77,13 @@ AniQueueEntry *aniplayer_hard_switch(AniPlayer *plr, const char *seqname, int lo
 }
 
 void aniplayer_update(AniPlayer *plr) {
-	assert(plr->queue); // The queue should never be empty.
-	AniQueueEntry *s = plr->queue;
+	assert(plr->queue.first != NULL); // The queue should never be empty.
+	AniQueueEntry *s = plr->queue.first;
 
 	s->clock++;
 	// The last condition assures that animations only switch at their end points
 	if(s->clock >= s->duration && plr->queuesize > 1 && s->clock%s->sequence->length == 0) {
-		free(list_pop(&plr->queue));
+		free(alist_pop(&plr->queue));
 		plr->queuesize--;
 	}
 }

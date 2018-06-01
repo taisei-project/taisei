@@ -87,12 +87,11 @@ typedef struct {
 	int8_t diff; // this holds values of type Difficulty, but should be signed to prevent obscure overflow errors
 	Player plr;
 
-	Projectile *projs;
-	Enemy *enemies;
-	Item *items;
-	Laser *lasers;
-
-	Projectile *particles;
+	ProjectileList projs;
+	ProjectileList particles;
+	EnemyList enemies;
+	ItemList items;
+	LaserList lasers;
 
 	int frames; // stage global timer
 	int timer; // stage event timer (freezes on bosses, dialogs, etc.)

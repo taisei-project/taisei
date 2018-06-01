@@ -86,8 +86,8 @@ struct Player {
 
 	struct PlayerMode *mode;
 	AniPlayer ani;
-	Enemy *slaves;
-	Enemy *focus_circle;
+	EnemyList slaves;
+	EnemyList focus_circle;
 
 	int inputflags;
 	bool gamepadmove;

@@ -13,7 +13,7 @@
 #include "util.h"
 
 struct TaskManager {
-	Task *queue;
+	LIST_ANCHOR(Task) queue;
 	SDL_mutex *mutex;
 	SDL_cond *cond;
 	uint numthreads;
@@ -105,7 +105,7 @@ static int taskmgr_thread(void *arg) {
 
 	while(running && !aborted) {
 		SDL_LockMutex(mgr->mutex);
-		Task *task = list_pop(&mgr->queue);
+		Task *task = alist_pop(&mgr->queue);
 
 		running = mgr->running;
 		aborted = mgr->aborted;
@@ -271,9 +271,9 @@ Task* taskmgr_submit(TaskManager *mgr, TaskParams params) {
 	SDL_LockMutex(mgr->mutex);
 
 	if(params.topmost) {
-		list_insert_at_priority_head(&mgr->queue, task, task->prio, task_prio_func);
+		alist_insert_at_priority_head(&mgr->queue, task, task->prio, task_prio_func);
 	} else {
-		list_insert_at_priority_tail(&mgr->queue, task, task->prio, task_prio_func);
+		alist_insert_at_priority_tail(&mgr->queue, task, task->prio, task_prio_func);
 	}
 
 	task->in_queue = true;

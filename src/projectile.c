@@ -266,7 +266,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	// But in that case, code that uses this function's return value must be careful to not dereference a NULL pointer.
 	proj_call_rule(p, EVENT_BIRTH);
 
-	return list_append(args->dest, p);
+	return alist_append(args->dest, p);
 }
 
 Projectile* create_projectile(ProjArgs *args) {
@@ -288,23 +288,23 @@ Projectile* _proj_attach_dbginfo(Projectile *p, DebugInfo *dbg, const char *call
 }
 #endif
 
-static void* _delete_projectile(List **projs, List *proj, void *arg) {
+static void* _delete_projectile(ListAnchor *projlist, List *proj, void *arg) {
 	Projectile *p = (Projectile*)proj;
 	proj_call_rule(p, EVENT_DEATH);
 
 	del_ref(proj);
 	ent_unregister(&p->ent);
-	objpool_release(stage_object_pools.projectiles, (ObjectInterface*)list_unlink(projs, proj));
+	objpool_release(stage_object_pools.projectiles, (ObjectInterface*)alist_unlink(projlist, proj));
 
 	return NULL;
 }
 
-void delete_projectile(Projectile **projs, Projectile *proj) {
-	_delete_projectile((List**)projs, (List*)proj, NULL);
+void delete_projectile(ProjectileList *projlist, Projectile *proj) {
+	_delete_projectile((ListAnchor*)projlist, (List*)proj, NULL);
 }
 
-void delete_projectiles(Projectile **projs) {
-	list_foreach(projs, _delete_projectile, NULL);
+void delete_projectiles(ProjectileList *projlist) {
+	alist_foreach(projlist, _delete_projectile, NULL);
 }
 
 void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
@@ -358,7 +358,7 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 	} else if(p->type >= PlrProj) {
 		int damage = p->type - PlrProj;
 
-		for(Enemy *e = global.enemies; e; e = e->next) {
+		for(Enemy *e = global.enemies.first; e; e = e->next) {
 			if(e->hp != ENEMY_IMMUNE && cabs(e->pos - p->pos) < 30) {
 				out_col->type = PCOL_ENEMY;
 				out_col->entity = e;
@@ -385,7 +385,7 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 	}
 }
 
-void apply_projectile_collision(Projectile **projlist, Projectile *p, ProjCollisionResult *col) {
+void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCollisionResult *col) {
 	switch(col->type) {
 		case PCOL_NONE: {
 			break;
@@ -528,7 +528,7 @@ Projectile* spawn_projectile_clear_effect(Projectile *proj) {
 	);
 }
 
-bool clear_projectile(Projectile **projlist, Projectile *proj, bool force, bool now) {
+bool clear_projectile(ProjectileList *projlist, Projectile *proj, bool force, bool now) {
 	if(proj->type >= PlrProj || (!force && !projectile_is_clearable(proj))) {
 		return false;
 	}
@@ -547,13 +547,13 @@ bool clear_projectile(Projectile **projlist, Projectile *proj, bool force, bool 
 	return true;
 }
 
-void process_projectiles(Projectile **projs, bool collision) {
+void process_projectiles(ProjectileList *projlist, bool collision) {
 	ProjCollisionResult col = { 0 };
 
 	char killed = 0;
 	int action;
 
-	for(Projectile *proj = *projs, *next; proj; proj = next) {
+	for(Projectile *proj = projlist->first, *next; proj; proj = next) {
 		next = proj->next;
 		proj->prevpos = proj->pos;
 		action = proj_call_rule(proj, global.frames - proj->birthtime);
@@ -567,7 +567,7 @@ void process_projectiles(Projectile **projs, bool collision) {
 			killed++;
 			action = ACTION_DESTROY;
 
-			if(clear_projectile(projs, proj, true, true)) {
+			if(clear_projectile(projlist, proj, true, true)) {
 				continue;
 			}
 		}
@@ -590,7 +590,7 @@ void process_projectiles(Projectile **projs, bool collision) {
 			col.fatal = true;
 		}
 
-		apply_projectile_collision(projs, proj, &col);
+		apply_projectile_collision(projlist, proj, &col);
 	}
 }
 

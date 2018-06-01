@@ -430,14 +430,14 @@ static void stage_logic(void) {
 
 void stage_clear_hazards(ClearHazardsFlags flags) {
 	if(flags & CLEAR_HAZARDS_BULLETS) {
-		for(Projectile *p = global.projs, *next; p; p = next) {
+		for(Projectile *p = global.projs.first, *next; p; p = next) {
 			next = p->next;
 			clear_projectile(&global.projs, p, flags & CLEAR_HAZARDS_FORCE, flags & CLEAR_HAZARDS_NOW);
 		}
 	}
 
 	if(flags & CLEAR_HAZARDS_LASERS) {
-		for(Laser *l = global.lasers, *next; l; l = next) {
+		for(Laser *l = global.lasers.first, *next; l; l = next) {
 			next = l->next;
 			clear_laser(&global.lasers, l, flags & CLEAR_HAZARDS_FORCE, flags & CLEAR_HAZARDS_NOW);
 		}

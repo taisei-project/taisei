@@ -358,7 +358,7 @@ void iku_mid_intro(Boss *b, int t) {
 	}
 
 	AT(960)
-		killall(global.enemies);
+		killall(&global.enemies);
 }
 
 static void midboss_dummy(Boss *b, int t) { }
@@ -658,7 +658,7 @@ void iku_lightning(Boss *b, int time) {
 	int t = time % 141;
 
 	if(time == EVENT_DEATH) {
-		killall(global.enemies);
+		killall(&global.enemies);
 		return;
 	}
 
@@ -899,7 +899,7 @@ Enemy* iku_extra_find_next_slave(complex from, double playerbias) {
 
 	complex org = from + playerbias * cexp(I*(carg(global.plr.pos - from)));
 
-	for(e = global.enemies; e; e = e->next) {
+	for(e = global.enemies.first; e; e = e->next) {
 		if(e->args[2]) {
 			continue;
 		}
@@ -1070,7 +1070,7 @@ int iku_extra_slave(Enemy *e, int t) {
 
 				e->args[2] = 1;
 
-				for(o = global.enemies; o; o = o->next) {
+				for(o = global.enemies.first; o; o = o->next) {
 					if(!o->args[2])
 						continue;
 
@@ -1087,7 +1087,7 @@ int iku_extra_slave(Enemy *e, int t) {
 					global.shake_view += 1;
 				}
 
-				for(l = global.lasers; l; l = l->next) {
+				for(l = global.lasers.first; l; l = l->next) {
 					l->deathtime = global.frames - l->birthtime + 20;
 				}
 
@@ -1108,7 +1108,7 @@ void iku_extra(Boss *b, int t) {
 	TIMER(&t);
 
 	AT(EVENT_DEATH) {
-		killall(global.enemies);
+		killall(&global.enemies);
 	}
 
 	if(t < 0) {
@@ -1294,7 +1294,7 @@ void stage5_events(void) {
 	}
 
 	AT(5600) {
-		killall(global.enemies);
+		killall(&global.enemies);
 	}
 
 	{

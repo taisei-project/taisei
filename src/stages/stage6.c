@@ -342,7 +342,7 @@ static void stage6_spellpractice_events(void) {
 	}
 
 	if(!global.boss) {
-		killall(global.enemies);
+		killall(&global.enemies);
 	}
 }
 

@@ -344,20 +344,34 @@ int scythe_reset(Enemy *e, int t) {
 	return 1;
 }
 
-void elly_frequency(Boss *b, int t) {
-	TIMER(&t);
-	AT(EVENT_BIRTH) {
-		aniplayer_queue(&b->ani, "snipsnip", 0);
-		global.enemies->birthtime = global.frames;
-		global.enemies->logic_rule = scythe_infinity;
-		global.enemies->args[0] = 2;
-	}
-	AT(EVENT_DEATH) {
-		global.enemies->birthtime = global.frames;
-		global.enemies->logic_rule = scythe_reset;
-		global.enemies->args[0] = 0;
+static Enemy* find_scythe(void) {
+	for(Enemy *e = global.enemies.first; e; e = e->next) {
+		if(e->visual_rule == Scythe) {
+			return e;
+		}
 	}
 
+	return NULL;
+}
+
+void elly_frequency(Boss *b, int t) {
+	TIMER(&t);
+	Enemy *scythe;
+
+	AT(EVENT_BIRTH) {
+		scythe = find_scythe();
+		aniplayer_queue(&b->ani, "snipsnip", 0);
+		scythe->birthtime = global.frames;
+		scythe->logic_rule = scythe_infinity;
+		scythe->args[0] = 2;
+	}
+
+	AT(EVENT_DEATH) {
+		scythe = find_scythe();
+		scythe->birthtime = global.frames;
+		scythe->logic_rule = scythe_reset;
+		scythe->args[0] = 0;
+	}
 }
 
 static void elly_clap(Boss *b, int claptime) {
@@ -390,7 +404,7 @@ int scythe_newton(Enemy *e, int t) {
 
 	FROM_TO(100, 10000, 3) {
 		Projectile *p;
-		for(p = global.projs; p; p = p->next) {
+		for(p = global.projs.first; p; p = p->next) {
 			if(
 				p->type == EnemyProj &&
 				cabs(p->pos-e->pos) < 50 &&
@@ -435,14 +449,16 @@ void elly_newton(Boss *b, int t) {
 	TIMER(&t);
 
 	AT(0) {
-		global.enemies->birthtime = global.frames;
-		global.enemies->logic_rule = scythe_newton;
+		Enemy *scythe = find_scythe();
+		scythe->birthtime = global.frames;
+		scythe->logic_rule = scythe_newton;
 		elly_clap(b,100);
 	}
 
 	AT(EVENT_DEATH) {
-		global.enemies->birthtime = global.frames;
-		global.enemies->logic_rule = scythe_reset;
+		Enemy *scythe = find_scythe();
+		scythe->birthtime = global.frames;
+		scythe->logic_rule = scythe_reset;
 	}
 
 	FROM_TO(30 + 60 * (D_Lunatic - global.diff), 10000000, 30 - 6 * global.diff) {
@@ -579,16 +595,18 @@ void elly_kepler(Boss *b, int t) {
 	TIMER(&t);
 
 	AT(0) {
-		global.enemies->birthtime = global.frames;
-		global.enemies->logic_rule = scythe_kepler;
+		Enemy *scythe = find_scythe();
+		scythe->birthtime = global.frames;
+		scythe->logic_rule = scythe_kepler;
 
 		PROJECTILE("soul", b->pos, rgb(0.3,0.8,1), kepler_bullet, { 50+10*global.diff });
 		elly_clap(b,20);
 	}
 
 	AT(EVENT_DEATH) {
-		global.enemies->birthtime = global.frames;
-		global.enemies->logic_rule = scythe_reset;
+		Enemy *scythe = find_scythe();
+		scythe->birthtime = global.frames;
+		scythe->logic_rule = scythe_reset;
 	}
 
 	FROM_TO(0, 100000, 20) {
@@ -610,16 +628,20 @@ void elly_kepler(Boss *b, int t) {
 
 void elly_frequency2(Boss *b, int t) {
 	TIMER(&t);
+
 	AT(0) {
+		Enemy *scythe = find_scythe();
 		aniplayer_queue(&b->ani, "snipsnip", 0);
-		global.enemies->birthtime = global.frames;
-		global.enemies->logic_rule = scythe_infinity;
-		global.enemies->args[0] = 4;
+		scythe->birthtime = global.frames;
+		scythe->logic_rule = scythe_infinity;
+		scythe->args[0] = 4;
 	}
+
 	AT(EVENT_DEATH) {
-		global.enemies->birthtime = global.frames;
-		global.enemies->logic_rule = scythe_reset;
-		global.enemies->args[0] = 0;
+		Enemy *scythe = find_scythe();
+		scythe->birthtime = global.frames;
+		scythe->logic_rule = scythe_reset;
+		scythe->args[0] = 0;
 	}
 
 	FROM_TO_SND("shot1_loop",0, 2000, 3-global.diff/2) {
@@ -771,7 +793,7 @@ int baryon_unfold(Enemy *baryon, int t) {
 	}
 
 	FROM_TO(0, timeout, 1) {
-		for(Enemy *e = global.enemies; e; e = e->next) {
+		for(Enemy *e = global.enemies.first; e; e = e->next) {
 			if(e->visual_rule == BaryonCenter) {
 				float f = t / (float)timeout;
 				float x = f;
@@ -860,9 +882,9 @@ void elly_paradigm_shift(Boss *b, int t) {
 	TIMER(&t);
 
 	AT(0) {
-		assert(global.enemies->visual_rule == Scythe);
-		global.enemies->birthtime = global.frames;
-		global.enemies->logic_rule = scythe_explode;
+		Enemy *scythe = find_scythe();
+		scythe->birthtime = global.frames;
+		scythe->logic_rule = scythe_explode;
 		elly_clap(b,150);
 	}
 
@@ -887,7 +909,7 @@ void elly_paradigm_shift(Boss *b, int t) {
 
 static void set_baryon_rule(EnemyLogicRule r) {
 	Enemy *e;
-	for(e = global.enemies; e; e = e->next) {
+	for(e = global.enemies.first; e; e = e->next) {
 		if(e->visual_rule == Baryon) {
 			e->birthtime = global.frames;
 			e->logic_rule = r;
@@ -948,7 +970,7 @@ int baryon_reset(Enemy *baryon, int t) {
 		return 1;
 	}
 
-	for(Enemy *e = global.enemies; e; e = e->next) {
+	for(Enemy *e = global.enemies.first; e; e = e->next) {
 		if(e->visual_rule == BaryonCenter) {
 			complex targ_pos = baryon->pos0 - e->pos0 + e->pos;
 			GO_TO(baryon, targ_pos, 0.1);
@@ -1161,7 +1183,7 @@ int baryon_broglie(Enemy *e, int t) {
 	TIMER(&t);
 	Enemy *master = NULL;
 
-	for(Enemy *en = global.enemies; en; en = en->next) {
+	for(Enemy *en = global.enemies.first; en; en = en->next) {
 		if(en->visual_rule == Baryon) {
 			master = en;
 			break;
@@ -1384,7 +1406,7 @@ int baryon_ricci(Enemy *e, int t) {
 			e->pos += -0.5*d/cabs(d);
 		}
 	} else {
-		for(Enemy *reference = global.enemies; reference; reference = reference->next) {
+		for(Enemy *reference = global.enemies.first; reference; reference = reference->next) {
 			if(reference->logic_rule == baryon_ricci && (int)(creal(reference->args[2])+0.5) == 0) {
 				e->pos = global.boss->pos+(reference->pos-global.boss->pos)*cexp(I*2*M_PI*(1./6*creal(e->args[2])));
 			}
@@ -1446,7 +1468,7 @@ static int ricci_proj(Projectile *p, int t) {
 
 	double influence = 0;
 
-	for(Enemy *e = global.enemies; e; e = e->next) {
+	for(Enemy *e = global.enemies.first; e; e = e->next) {
 		if(e->logic_rule != baryon_ricci) {
 			continue;
 		}
@@ -1810,7 +1832,7 @@ void elly_curvature(Boss *b, int t) {
 	AT(EVENT_DEATH) {
 		set_baryon_rule(baryon_reset);
 
-		for(Enemy *e = global.enemies; e; e = e->next) {
+		for(Enemy *e = global.enemies.first; e; e = e->next) {
 			if(e->logic_rule == curvature_slave) {
 				e->hp = 0;
 			}
@@ -1857,7 +1879,7 @@ void elly_baryon_explode(Boss *b, int t) {
 		global.shake_view_fade = 0.05;
 		play_sound("boom");
 		petal_explosion(100, b->pos + 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1)));
-		killall(global.enemies);
+		killall(&global.enemies);
 	}
 }
 

@@ -17,8 +17,20 @@ static void* objpool_release_list_callback(List **dest, List *elem, void *vpool)
 	return NULL;
 }
 
+static void* objpool_release_alist_callback(ListAnchor *list, List *elem, void *vpool) {
+	alist_unlink(list, elem);
+	objpool_release((ObjectPool*)vpool, (ObjectInterface*)elem);
+	return NULL;
+}
+
+#undef objpool_release_list
 void objpool_release_list(ObjectPool *pool, List **dest) {
 	list_foreach(dest, objpool_release_list_callback, pool);
+}
+
+#undef objpool_release_alist
+void objpool_release_alist(ObjectPool *pool, ListAnchor *list) {
+	alist_foreach(list, objpool_release_alist_callback, pool);
 }
 
 bool objpool_is_full(ObjectPool *pool) {

@@ -67,7 +67,7 @@ void lasers_free(void) {
 static void ent_draw_laser(EntityInterface *ent);
 
 Laser *create_laser(complex pos, float time, float deathtime, Color color, LaserPosRule prule, LaserLogicRule lrule, complex a0, complex a1, complex a2, complex a3) {
-	Laser *l = (Laser*)list_push(&global.lasers, objpool_acquire(stage_object_pools.lasers));
+	Laser *l = (Laser*)alist_push(&global.lasers, objpool_acquire(stage_object_pools.lasers));
 
 	l->birthtime = global.frames;
 	l->timespan = time;
@@ -216,7 +216,7 @@ static void ent_draw_laser(EntityInterface *ent) {
 	}
 }
 
-void* _delete_laser(List **lasers, List *laser, void *arg) {
+void* _delete_laser(ListAnchor *lasers, List *laser, void *arg) {
 	Laser *l = (Laser*)laser;
 
 	if(l->lrule)
@@ -224,19 +224,19 @@ void* _delete_laser(List **lasers, List *laser, void *arg) {
 
 	del_ref(laser);
 	ent_unregister(&l->ent);
-	objpool_release(stage_object_pools.lasers, (ObjectInterface*)list_unlink(lasers, laser));
+	objpool_release(stage_object_pools.lasers, (ObjectInterface*)alist_unlink(lasers, laser));
 	return NULL;
 }
 
-void delete_laser(Laser **lasers, Laser *laser) {
-	_delete_laser((List**)lasers, (List*)laser, NULL);
+void delete_laser(LaserList *lasers, Laser *laser) {
+	_delete_laser((ListAnchor*)lasers, (List*)laser, NULL);
 }
 
 void delete_lasers(void) {
-	list_foreach(&global.lasers, _delete_laser, NULL);
+	alist_foreach(&global.lasers, _delete_laser, NULL);
 }
 
-bool clear_laser(Laser **laserlist, Laser *l, bool force, bool now) {
+bool clear_laser(LaserList *laserlist, Laser *l, bool force, bool now) {
 	if(!force && l->unclearable) {
 		return false;
 	}
@@ -249,7 +249,7 @@ bool clear_laser(Laser **laserlist, Laser *l, bool force, bool now) {
 static bool collision_laser_curve(Laser *l);
 
 void process_lasers(void) {
-	Laser *laser = global.lasers, *del = NULL;
+	Laser *laser = global.lasers.first, *del = NULL;
 
 	while(laser != NULL) {
 		if(laser->dead) {

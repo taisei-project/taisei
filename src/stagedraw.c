@@ -120,7 +120,7 @@ static void stage_draw_collision_areas(void) {
 	r_uniform_vec4("color_inner", 0, 0, 0, 1);
 	r_uniform_vec4("color_outer", 1, 1, 1, 0.1);
 
-	for(Projectile *p = global.projs; p; p = p->next) {
+	for(Projectile *p = global.projs.first; p; p = p->next) {
 		complex gsize = projectile_graze_size(p);
 
 		if(creal(gsize)) {
@@ -139,7 +139,7 @@ static void stage_draw_collision_areas(void) {
 	r_uniform_vec4("color_inner", 0.0, 1.0, 0.0, 0.75);
 	r_uniform_vec4("color_outer", 0.0, 0.5, 0.5, 0.75);
 
-	for(Projectile *p = global.projs; p; p = p->next) {
+	for(Projectile *p = global.projs.first; p; p = p->next) {
 		r_draw_sprite(&(SpriteParams) {
 			.sprite_ptr = &stagedraw.dummy,
 			.pos = { creal(p->pos), cimag(p->pos) },

@@ -23,7 +23,7 @@ static complex youmu_homing_target(complex org, complex fallback) {
 		mindst = cabs(target - org);
 	}
 
-	for(Enemy *e = global.enemies; e; e = e->next) {
+	for(Enemy *e = global.enemies.first; e; e = e->next) {
 		if(e->hp == ENEMY_IMMUNE){
 			continue;
 		}

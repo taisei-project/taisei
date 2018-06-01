@@ -15,6 +15,7 @@
 #include "entity.h"
 
 typedef struct Item Item;
+typedef LIST_ANCHOR(Item) ItemList;
 
 typedef enum {
 	// from least important to most important

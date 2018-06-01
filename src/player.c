@@ -41,7 +41,7 @@ double player_property(Player *plr, PlrProperty prop) {
 }
 
 static void ent_draw_player(EntityInterface *ent);
-static Enemy* player_spawn_focus_circle(void);
+static void player_spawn_focus_circle(Player *plr);
 
 void player_stage_post_init(Player *plr) {
 	assert(plr->mode != NULL);
@@ -63,7 +63,7 @@ void player_stage_post_init(Player *plr) {
 	plr->ent.draw_func = ent_draw_player;
 	ent_register(&plr->ent, ENT_PLAYER);
 
-	plr->focus_circle = player_spawn_focus_circle();
+	player_spawn_focus_circle(plr);
 }
 
 void player_free(Player *plr) {
@@ -73,7 +73,7 @@ void player_free(Player *plr) {
 
 	aniplayer_free(&plr->ani);
 	ent_unregister(&plr->ent);
-	delete_enemy(&plr->focus_circle, plr->focus_circle);
+	delete_enemy(&plr->focus_circle, plr->focus_circle.first);
 }
 
 static void player_full_power(Player *plr) {
@@ -193,11 +193,9 @@ static void player_focus_circle_visual(Enemy *e, int t, bool render) {
 	});
 }
 
-static Enemy* player_spawn_focus_circle(void) {
-	Enemy *f = NULL;
-	create_enemy_p(&f, 0, ENEMY_IMMUNE, player_focus_circle_visual, player_focus_circle_logic, 0, 0, 0, 0);
+static void player_spawn_focus_circle(Player *plr) {
+	Enemy *f = create_enemy_p(&plr->focus_circle, 0, ENEMY_IMMUNE, player_focus_circle_visual, player_focus_circle_logic, 0, 0, 0, 0);
 	f->ent.draw_layer = LAYER_PLAYER_FOCUS;
-	return f;
 }
 
 static void player_fail_spell(Player *plr) {
@@ -246,7 +244,7 @@ void player_logic(Player* plr) {
 	}
 
 	plr->focus = approach(plr->focus, (plr->inputflags & INFLAG_FOCUS) ? 30 : 0, 1);
-	plr->focus_circle->pos = plr->pos;
+	plr->focus_circle.first->pos = plr->pos;
 	process_enemies(&plr->focus_circle);
 
 	if(plr->mode->procs.think) {
@@ -277,7 +275,7 @@ void player_logic(Player* plr) {
 
 		const int damage = 100;
 
-		for(Enemy *en = global.enemies; en; en = en->next) {
+		for(Enemy *en = global.enemies.first; en; en = en->next) {
 			if(en->hp > ENEMY_IMMUNE) {
 				en->hp -= damage;
 			}
@@ -556,7 +554,7 @@ bool player_updateinputflags(Player *plr, PlrInputFlag flags) {
 	}
 
 	if((flags & INFLAG_FOCUS) && !(plr->inputflags & INFLAG_FOCUS)) {
-		plr->focus_circle->birthtime = global.frames;
+		plr->focus_circle.first->birthtime = global.frames;
 	}
 
 	plr->inputflags = flags;

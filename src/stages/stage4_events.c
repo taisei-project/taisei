@@ -351,7 +351,7 @@ void kurumi_slaveburst(Boss *b, int time) {
 	TIMER(&t);
 
 	if(time == EVENT_DEATH)
-		killall(global.enemies);
+		killall(&global.enemies);
 
 	if(time < 0)
 		return;
@@ -395,7 +395,7 @@ void kurumi_redspike(Boss *b, int time) {
 	int t = time % 500;
 
 	if(time == EVENT_DEATH)
-		killall(global.enemies);
+		killall(&global.enemies);
 
 	if(time < 0)
 		return;
@@ -707,7 +707,7 @@ void kurumi_aniwall(Boss *b, int time) {
 	TIMER(&time);
 
 	AT(EVENT_DEATH) {
-		killall(global.enemies);
+		killall(&global.enemies);
 	}
 
 	GO_TO(b, VIEWPORT_W/2 + VIEWPORT_W/3*sin(time/200) + I*cimag(b->pos),0.03)
@@ -832,7 +832,7 @@ void kurumi_blowwall(Boss *b, int time) {
 	TIMER(&t);
 
 	if(time == EVENT_DEATH)
-		killall(global.enemies);
+		killall(&global.enemies);
 
 	if(time < 0) {
 		return;
@@ -958,7 +958,7 @@ void kurumi_danmaku(Boss *b, int time) {
 	TIMER(&t);
 
 	if(time == EVENT_DEATH)
-		killall(global.enemies);
+		killall(&global.enemies);
 	if(time < 0)
 		return;
 
@@ -1283,7 +1283,7 @@ void kurumi_extra(Boss *b, int time) {
 	TIMER(&t);
 
 	if(time == EVENT_DEATH) {
-		killall(global.enemies);
+		killall(&global.enemies);
 		return;
 	}
 
@@ -1346,7 +1346,7 @@ void kurumi_extra(Boss *b, int time) {
 		}
 	}
 	if((t == length-20 && global.diff == D_Easy)|| b->current->hp < shieldlimit) {
-		for(Enemy *e = global.enemies; e; e = e->next) {
+		for(Enemy *e = global.enemies.first; e; e = e->next) {
 			if(e->logic_rule == kurumi_extra_shield) {
 				e->args[2] = 1; // discharge extra shield
 				e->hp = 0;
@@ -1499,7 +1499,7 @@ void stage4_events(void) {
 	}
 
 	FROM_TO(3201, 3201 + midboss_time - 1, 1) {
-		if(!global.enemies) {
+		if(!global.enemies.first) {
 			create_enemy4c(VIEWPORT_W/2+160.0*I, ENEMY_IMMUNE, Scythe, scythe_post_mid, 0, 1+0.2*I, 0+1*I, 3201 + midboss_time - global.timer);
 		}
 	}

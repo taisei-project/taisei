@@ -33,14 +33,14 @@ Enemy* _enemy_attach_dbginfo(Enemy *e, DebugInfo *dbg) {
 
 static void ent_draw_enemy(EntityInterface *ent);
 
-Enemy *create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyVisualRule visual_rule, EnemyLogicRule logic_rule,
+Enemy *create_enemy_p(EnemyList *enemies, complex pos, int hp, EnemyVisualRule visual_rule, EnemyLogicRule logic_rule,
 				  complex a1, complex a2, complex a3, complex a4) {
 	if(IN_DRAW_CODE) {
 		log_fatal("Tried to spawn an enemy while in drawing code");
 	}
 
 	// XXX: some code relies on the insertion logic
-	Enemy *e = (Enemy*)list_insert(enemies, objpool_acquire(stage_object_pools.enemies));
+	Enemy *e = (Enemy*)alist_insert(enemies, enemies->first, objpool_acquire(stage_object_pools.enemies));
 	e->moving = false;
 	e->dir = 0;
 
@@ -67,7 +67,7 @@ Enemy *create_enemy_p(Enemy **enemies, complex pos, int hp, EnemyVisualRule visu
 	return e;
 }
 
-void* _delete_enemy(List **enemies, List* enemy, void *arg) {
+void* _delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 	Enemy *e = (Enemy*)enemy;
 
 	if(e->hp <= 0 && e->hp > ENEMY_IMMUNE) {
@@ -94,17 +94,17 @@ void* _delete_enemy(List **enemies, List* enemy, void *arg) {
 	e->logic_rule(e, EVENT_DEATH);
 	del_ref(enemy);
 	ent_unregister(&e->ent);
-	objpool_release(stage_object_pools.enemies, (ObjectInterface*)list_unlink(enemies, enemy));
+	objpool_release(stage_object_pools.enemies, (ObjectInterface*)alist_unlink(enemies, enemy));
 
 	return NULL;
 }
 
-void delete_enemy(Enemy **enemies, Enemy* enemy) {
-	_delete_enemy((List**)enemies, (List*)enemy, NULL);
+void delete_enemy(EnemyList *enemies, Enemy* enemy) {
+	_delete_enemy((ListAnchor*)enemies, (List*)enemy, NULL);
 }
 
-void delete_enemies(Enemy **enemies) {
-	list_foreach(enemies, _delete_enemy, NULL);
+void delete_enemies(EnemyList *enemies) {
+	alist_foreach(enemies, _delete_enemy, NULL);
 }
 
 static void ent_draw_enemy(EntityInterface *ent) {
@@ -133,11 +133,10 @@ static void ent_draw_enemy(EntityInterface *ent) {
 #endif
 }
 
-void killall(Enemy *enemies) {
-	Enemy *e;
-
-	for(e = enemies; e; e = e->next)
+void killall(EnemyList *enemies) {
+	for(Enemy *e = enemies->first; e; e = e->next) {
 		e->hp = 0;
+	}
 }
 
 int enemy_flare(Projectile *p, int t) { // a[0] velocity, a[1] ref to enemy
@@ -242,8 +241,8 @@ void Swirl(Enemy *e, int t, bool render) {
 	});
 }
 
-void process_enemies(Enemy **enemies) {
-	Enemy *enemy = *enemies, *del = NULL;
+void process_enemies(EnemyList *enemies) {
+	Enemy *enemy = enemies->first, *del = NULL;
 
 	while(enemy != NULL) {
 		int action = enemy->logic_rule(enemy, global.frames - enemy->birthtime);

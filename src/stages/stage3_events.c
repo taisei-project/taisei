@@ -939,7 +939,7 @@ void wriggle_moonlight_rocket(Boss *boss, int time) {
 	TIMER(&time)
 
 	AT(EVENT_DEATH) {
-		killall(global.enemies);
+		killall(&global.enemies);
 		return;
 	}
 
@@ -1000,7 +1000,7 @@ void wriggle_night_ignite(Boss *boss, int time) {
 	float dfactor = global.diff / (float)D_Lunatic;
 
 	if(time == EVENT_DEATH) {
-		killall(global.enemies);
+		killall(&global.enemies);
 		return;
 	}
 
@@ -1314,7 +1314,7 @@ static void wriggle_nonspell_common(Boss *boss, int time, int level) {
 		create_enemy4c(boss->pos, ENEMY_IMMUNE, wriggle_slave_visual, wriggle_nonspell_slave, add_ref(boss), i*2*M_PI/cnt, j, level);
 
 	AT(EVENT_DEATH) {
-		killall(global.enemies);
+		killall(&global.enemies);
 		return;
 	}
 
@@ -1446,7 +1446,7 @@ void stage3_events(void) {
 	}
 
 	FROM_TO(1800, 2200, 10) {
-		if(global.enemies == 0) {
+		if(global.enemies.first == NULL) {
 			int cnt = 2;
 			for(int i = 0; i <= cnt;i++) {
 				complex pos1 = VIEWPORT_W/2+VIEWPORT_W/3*nfrand() + VIEWPORT_H/5*I;

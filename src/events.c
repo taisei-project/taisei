@@ -14,8 +14,15 @@
 #include "video.h"
 #include "gamepad.h"
 
+typedef struct EventHandlerContainer {
+	LIST_INTERFACE(struct EventHandlerContainer);
+	EventHandler *handler;
+} EventHandlerContainer;
+
+typedef LIST_ANCHOR(EventHandlerContainer) EventHandlerList;
+
 static hrtime_t keyrepeat_paused_until;
-static ListContainer *global_handlers;
+static EventHandlerList global_handlers;
 
 uint32_t sdl_first_user_event;
 
@@ -49,7 +56,7 @@ void events_shutdown(void) {
 	events_unregister_default_handlers();
 
 #ifdef DEBUG
-	if(global_handlers) {
+	if(global_handlers.first) {
 		log_warn(
 			"Someone didn't unregister their handler. "
 			"Clean up after yourself, I'm not your personal maid. "
@@ -72,7 +79,7 @@ static bool events_invoke_handler(SDL_Event *event, EventHandler *handler) {
 }
 
 static int handler_container_prio_func(List *h) {
-	return ((EventHandler*)((ListContainer*)h)->data)->priority;
+	return ((EventHandlerContainer*)h)->handler->priority;
 }
 
 static EventPriority real_priority(EventPriority prio) {
@@ -84,7 +91,13 @@ static EventPriority real_priority(EventPriority prio) {
 	return prio;
 }
 
-static bool events_invoke_handlers(SDL_Event *event, ListContainer *h_list, EventHandler *h_array) {
+static EventHandlerContainer* ehandler_wrap_container(EventHandler *handler) {
+	EventHandlerContainer *c = calloc(1, sizeof(ListContainer));
+	c->handler = handler;
+	return c;
+}
+
+static bool events_invoke_handlers(SDL_Event *event, EventHandlerContainer *h_list, EventHandler *h_array) {
 	// invoke handlers from two sources (a list and an array) in the correct order according to priority
 	// list items take precedence
 	//
@@ -97,8 +110,8 @@ static bool events_invoke_handlers(SDL_Event *event, ListContainer *h_list, Even
 	if(h_list && !h_array) {
 		// case 1 (simplest): we have a list and no custom handlers
 
-		for(ListContainer *c = h_list; c; c = c->next) {
-			if((result = events_invoke_handler(event, (EventHandler*)c->data))) {
+		for(EventHandlerContainer *c = h_list; c; c = c->next) {
+			if((result = events_invoke_handler(event, c->handler))) {
 				break;
 			}
 		}
@@ -110,44 +123,31 @@ static bool events_invoke_handlers(SDL_Event *event, ListContainer *h_list, Even
 		// case 2 (suboptimal): we have both a list and a disordered array; need to do some actual work
 		// if you want to optimize this be my guest
 
-		ListContainer *merged_list = NULL;
-		ListContainer *prevc = NULL;
+		EventHandlerList merged_list = { .first = NULL };
 
 		// copy the list
-		for(ListContainer *c = h_list; c; c = c->next) {
-			ListContainer *newc = calloc(1, sizeof(ListContainer));
-			newc->data = c->data;
-			newc->prev = prevc;
-
-			if(prevc) {
-				prevc->next = newc;
-			}
-
-			if(!merged_list) {
-				merged_list = newc;
-			}
-
-			prevc = newc;
+		for(EventHandlerContainer *c = h_list; c; c = c->next) {
+			alist_append(&merged_list, ehandler_wrap_container(c->handler));
 		}
 
 		// merge the array into the list copy, respecting priority
 		for(EventHandler *h = h_array; h->proc; ++h) {
-			list_insert_at_priority_tail(
+			alist_insert_at_priority_tail(
 				&merged_list,
-				list_wrap_container(h),
+				ehandler_wrap_container(h),
 				real_priority(h->priority),
 				handler_container_prio_func
 			);
 		}
 
 		// iterate over the merged list
-		for(ListContainer *c = merged_list; c; c = c->next) {
-			if((result = events_invoke_handler(event, (EventHandler*)c->data))) {
+		for(EventHandlerContainer *c = merged_list.first; c; c = c->next) {
+			if((result = events_invoke_handler(event, c->handler))) {
 				break;
 			}
 		}
 
-		list_free_all(&merged_list);
+		alist_free_all(&merged_list);
 		return result;
 	}
 
@@ -177,9 +177,9 @@ void events_register_handler(EventHandler *handler) {
 	}
 
 	assert(handler_alloc->priority > EPRIO_DEFAULT);
-	list_insert_at_priority_tail(
+	alist_insert_at_priority_tail(
 		&global_handlers,
-		list_wrap_container(handler_alloc),
+		ehandler_wrap_container(handler_alloc),
 		handler_alloc->priority,
 		handler_container_prio_func
 	);
@@ -188,14 +188,13 @@ void events_register_handler(EventHandler *handler) {
 }
 
 void events_unregister_handler(EventHandlerProc proc) {
-	ListContainer *next;
-	for(ListContainer *c = global_handlers; c; c = next) {
-		EventHandler *h = c->data;
+	for(EventHandlerContainer *c = global_handlers.first, *next; c; c = next) {
+		EventHandler *h = c->handler;
 		next = c->next;
 
 		if(h->proc == proc) {
-			free(c->data);
-			free(list_unlink(&global_handlers, c));
+			free(c->handler);
+			free(alist_unlink(&global_handlers, c));
 			return;
 		}
 	}
@@ -229,7 +228,7 @@ void events_poll(EventHandler *handlers, EventFlags flags) {
 	events_emit(TE_FRAME, 0, NULL, NULL);
 
 	while(SDL_PollEvent(&event)) {
-		events_invoke_handlers(&event, global_handlers, handlers);
+		events_invoke_handlers(&event, global_handlers.first, handlers);
 	}
 }
 

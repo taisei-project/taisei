@@ -640,7 +640,7 @@ void hina_monty(Boss *h, int time) {
 	static complex targetpos;
 
 	if(time == EVENT_DEATH) {
-		killall(global.enemies);
+		killall(&global.enemies);
 		return;
 	}
 
@@ -662,9 +662,7 @@ void hina_monty(Boss *h, int time) {
 			create_laserline_ab(x, x + VIEWPORT_H*I, 20, 240, 600, rgb(1.0, 0.3, 1.0));
 		}
 
-		if(global.enemies) {
-			global.enemies->hp = 0;
-		}
+		killall(&global.enemies);
 	}
 
 	AT(120) {

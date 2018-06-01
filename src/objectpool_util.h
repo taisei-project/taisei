@@ -12,6 +12,13 @@
 #include "objectpool.h"
 
 void objpool_release_list(ObjectPool *pool, List **dest);
+void objpool_release_alist(ObjectPool *pool, ListAnchor *list);
 bool objpool_is_full(ObjectPool *pool);
 size_t objpool_object_contents_size(ObjectPool *pool);
 void *objpool_object_contents(ObjectPool *pool, ObjectInterface *obj, size_t *out_size);
+
+#define objpool_release_list(pool,dest) \
+	objpool_release_list(pool, LIST_CAST(dest, **))
+
+#define objpool_release_alist(pool,list) \
+	objpool_release_alist(pool, LIST_ANCHOR_CAST(list, *))

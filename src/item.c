@@ -56,7 +56,7 @@ Item* create_item(complex pos, complex v, ItemType type) {
 	// type = 1 + floor(Life * frand());
 
 	Item *i = (Item*)objpool_acquire(stage_object_pools.items);
-	list_append(&global.items, i);
+	alist_append(&global.items, i);
 
 	i->pos = pos;
 	i->pos0 = pos;
@@ -74,7 +74,7 @@ Item* create_item(complex pos, complex v, ItemType type) {
 
 void delete_item(Item *item) {
 	ent_unregister(&item->ent);
-	objpool_release(stage_object_pools.items, (ObjectInterface*)list_unlink(&global.items, item));
+	objpool_release(stage_object_pools.items, &alist_unlink(&global.items, item)->object_interface);
 }
 
 Item* create_bpoint(complex pos) {
@@ -93,7 +93,7 @@ Item* create_bpoint(complex pos) {
 }
 
 void delete_items(void) {
-	objpool_release_list(stage_object_pools.items, (List**)&global.items);
+	objpool_release_alist(stage_object_pools.items, &global.items);
 }
 
 complex move_item(Item *i) {
@@ -138,7 +138,7 @@ static bool item_out_of_bounds(Item *item) {
 }
 
 void process_items(void) {
-	Item *item = global.items, *del = NULL;
+	Item *item = global.items.first, *del = NULL;
 	float r = player_property(&global.plr, PLR_PROP_COLLECT_RADIUS);
 	bool plr_alive = global.plr.deathtime <= global.frames && global.plr.deathtime == -1;
 	bool plr_bombing = global.frames - global.plr.recovery < 0;;

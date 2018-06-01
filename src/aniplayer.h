@@ -82,7 +82,7 @@ typedef struct AniPlayer AniPlayer;
 struct AniPlayer{
 	Animation *ani;
 
-	AniQueueEntry *queue;
+	LIST_ANCHOR(AniQueueEntry) queue;
 	int queuesize;
 };
 

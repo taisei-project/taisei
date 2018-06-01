@@ -15,6 +15,7 @@
 #include "entity.h"
 
 typedef struct Laser Laser;
+typedef LIST_ANCHOR(Laser) LaserList;
 
 typedef complex (*LaserPosRule)(Laser* l, float time);
 typedef void (*LaserLogicRule)(Laser* l, int time);
@@ -64,7 +65,7 @@ Laser *create_laser(complex pos, float time, float deathtime, Color color, Laser
 void delete_lasers(void);
 void process_lasers(void);
 
-bool clear_laser(Laser **laserlist, Laser *l, bool force, bool now);
+bool clear_laser(LaserList *laserlist, Laser *l, bool force, bool now);
 
 complex las_linear(Laser *l, float t);
 complex las_accel(Laser *l, float t);
