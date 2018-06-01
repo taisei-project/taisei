@@ -33,6 +33,26 @@ Enemy* _enemy_attach_dbginfo(Enemy *e, DebugInfo *dbg) {
 
 static void ent_draw_enemy(EntityInterface *ent);
 
+static void fix_pos0_visual(Enemy *e) {
+	double x = creal(e->pos0_visual);
+	double y = cimag(e->pos0_visual);
+	double ofs = 21;
+
+	if(x <= 0 && x > -ofs) {
+		x = -ofs;
+	} else if(x >= VIEWPORT_W && x < VIEWPORT_W + ofs) {
+		x = VIEWPORT_W + ofs;
+	}
+
+	if(y <= 0 && y > -ofs) {
+		y = -ofs;
+	} else if(y >= VIEWPORT_H && y < VIEWPORT_H + ofs) {
+		y = VIEWPORT_H + ofs;
+	}
+
+	e->pos0_visual = x + y * I;
+}
+
 Enemy *create_enemy_p(EnemyList *enemies, complex pos, int hp, EnemyVisualRule visual_rule, EnemyLogicRule logic_rule,
 				  complex a1, complex a2, complex a3, complex a4) {
 	if(IN_DRAW_CODE) {
@@ -47,6 +67,8 @@ Enemy *create_enemy_p(EnemyList *enemies, complex pos, int hp, EnemyVisualRule v
 	e->birthtime = global.frames;
 	e->pos = pos;
 	e->pos0 = pos;
+	e->pos0_visual = pos;
+	fix_pos0_visual(e);
 
 	e->hp = hp;
 	e->alpha = 1.0;
@@ -107,6 +129,26 @@ void delete_enemies(EnemyList *enemies) {
 	alist_foreach(enemies, _delete_enemy, NULL);
 }
 
+static complex enemy_visual_pos(Enemy *enemy) {
+	double t = (global.frames - enemy->birthtime) / 30.0;
+
+	if(t >= 1) {
+		return enemy->pos;
+	}
+
+	complex p = enemy->pos - enemy->pos0;
+	p += t * enemy->pos0 + (1 - t) * enemy->pos0_visual;
+
+	return p;
+}
+
+static void call_visual_rule(Enemy *e, bool render) {
+	complex tmp = e->pos;
+	e->pos = enemy_visual_pos(e);
+	e->visual_rule(e, global.frames - e->birthtime, render);
+	e->pos = tmp;
+}
+
 static void ent_draw_enemy(EntityInterface *ent) {
 	Enemy *e = ENT_CAST(ent, Enemy);
 
@@ -119,11 +161,7 @@ static void ent_draw_enemy(EntityInterface *ent) {
 	memcpy(&prev_state, e, sizeof(Enemy));
 #endif
 
-	if(e->alpha < 1) {
-		r_color4(1, 1, 1, e->alpha);
-	}
-
-	e->visual_rule(e, global.frames - e->birthtime, true);
+	call_visual_rule(e, true);
 
 #ifdef ENEMY_DEBUG
 	if(memcmp(&prev_state, e, sizeof(Enemy))) {
@@ -185,6 +223,7 @@ void BigFairy(Enemy *e, int t, bool render) {
 	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;
 
 	r_draw_sprite(&(SpriteParams) {
+		.color = rgba(1, 1, 1, e->alpha),
 		.sprite = "fairy_circle",
 		.pos = { creal(e->pos), cimag(e->pos) },
 		.rotation.angle = global.frames * 10 * DEG2RAD,
@@ -194,7 +233,9 @@ void BigFairy(Enemy *e, int t, bool render) {
 	const char *seqname = !e->moving ? "main" : (e->dir ? "left" : "right");
 	Animation *ani = get_ani("enemy/bigfairy");
 	Sprite *spr = animation_get_frame(ani,get_ani_sequence(ani, seqname),global.frames);
+
 	r_draw_sprite(&(SpriteParams) {
+		.color = rgba(1, 1, 1, e->alpha),
 		.sprite_ptr = spr,
 		.pos = { creal(e->pos), cimag(e->pos) },
 	});
@@ -208,6 +249,7 @@ void Fairy(Enemy *e, int t, bool render) {
 	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;
 
 	r_draw_sprite(&(SpriteParams) {
+		.color = rgba(1, 1, 1, e->alpha),
 		.sprite = "fairy_circle",
 		.pos = { creal(e->pos), cimag(e->pos) },
 		.rotation.angle = global.frames * 10 * DEG2RAD,
@@ -217,7 +259,9 @@ void Fairy(Enemy *e, int t, bool render) {
 	const char *seqname = !e->moving ? "main" : (e->dir ? "left" : "right");
 	Animation *ani = get_ani("enemy/fairy");
 	Sprite *spr = animation_get_frame(ani,get_ani_sequence(ani, seqname),global.frames);
+
 	r_draw_sprite(&(SpriteParams) {
+		.color = rgba(1, 1, 1, e->alpha),
 		.sprite_ptr = spr,
 		.pos = { creal(e->pos), cimag(e->pos) },
 	});
@@ -229,6 +273,7 @@ void Swirl(Enemy *e, int t, bool render) {
 	}
 
 	r_draw_sprite(&(SpriteParams) {
+		.color = rgba(1, 1, 1, e->alpha),
 		.sprite = "enemy/swirl",
 		.pos = { creal(e->pos), cimag(e->pos) },
 		.rotation.angle = t * 10 * DEG2RAD,
@@ -295,7 +340,7 @@ void process_enemies(EnemyList *enemies) {
 		}
 
 		if(enemy->visual_rule) {
-			enemy->visual_rule(enemy, global.frames - enemy->birthtime, false);
+			call_visual_rule(enemy, false);
 		}
 	}
 }

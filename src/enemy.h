@@ -34,6 +34,7 @@ struct Enemy {
 
 	complex pos;
 	complex pos0;
+	complex pos0_visual;
 
 	long birthtime;
 
