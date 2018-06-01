@@ -894,9 +894,10 @@ Boss *create_cirno(void) {
 
 int stage1_burst(Enemy *e, int time) {
 	TIMER(&time);
-	AT(EVENT_DEATH) {
+
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 3, NULL);
-		return 1;
+		return ACTION_ACK;
 	}
 
 	FROM_TO(0, 60, 1) {
@@ -931,7 +932,7 @@ int stage1_burst(Enemy *e, int time) {
 
 int stage1_circletoss(Enemy *e, int time) {
 	TIMER(&time);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 2, Power, 1, NULL);
 		return 1;
 	}
@@ -966,7 +967,7 @@ int stage1_circletoss(Enemy *e, int time) {
 
 int stage1_sinepass(Enemy *e, int time) {
 	TIMER(&time);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		tsrand_fill(2);
 		spawn_items(e->pos, Point, afrand(0)>0.5, Power, afrand(1)>0.8, NULL);
 		return 1;
@@ -987,7 +988,7 @@ int stage1_sinepass(Enemy *e, int time) {
 
 int stage1_drop(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 2, Power, frand()>0.8, NULL);
 		return 1;
 	}
@@ -1010,7 +1011,7 @@ int stage1_drop(Enemy *e, int t) {
 
 int stage1_circle(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 3, Power, 2, NULL);
 		return 1;
 	}
@@ -1033,7 +1034,7 @@ int stage1_circle(Enemy *e, int t) {
 
 int stage1_multiburst(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 3, Power, 2, NULL);
 		return 1;
 	}
@@ -1063,7 +1064,7 @@ int stage1_multiburst(Enemy *e, int t) {
 
 int stage1_instantcircle(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 2, Power, 4, NULL);
 		return 1;
 	}
@@ -1101,7 +1102,7 @@ int stage1_instantcircle(Enemy *e, int t) {
 
 int stage1_tritoss(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 5, Power, 2, NULL);
 		return 1;
 	}
@@ -1308,7 +1309,7 @@ void stage1_events(void) {
 		create_enemy2c(VIEWPORT_W/2.0, 4000, BigFairy, stage1_tritoss, 2.0*I, -2.6*I);
 
 	AT(5000) {
-		killall(&global.enemies);
+		enemy_kill_all(&global.enemies);
 		global.boss = create_cirno();
 	}
 

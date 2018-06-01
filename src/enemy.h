@@ -25,7 +25,8 @@ typedef void (*EnemyVisualRule)(struct Enemy*, int t, bool render);
 
 enum {
 	ENEMY_IMMUNE = -9000,
-	ENEMY_BOMB = -9001
+	ENEMY_BOMB = -9001,
+	ENEMY_KILLED = -9002,
 };
 
 struct Enemy {
@@ -72,7 +73,10 @@ void delete_enemies(EnemyList *enemies);
 
 void process_enemies(EnemyList *enemies);
 
-void killall(EnemyList *enemies);
+bool enemy_is_vulnerable(Enemy *enemy);
+bool enemy_in_viewport(Enemy *enemy);
+void enemy_kill_all(EnemyList *enemies);
+bool enemy_damage(Enemy *enemy, int damage);
 
 void Fairy(Enemy*, int t, bool render);
 void Swirl(Enemy*, int t, bool render);

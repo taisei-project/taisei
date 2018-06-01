@@ -276,9 +276,7 @@ void player_logic(Player* plr) {
 		const int damage = 100;
 
 		for(Enemy *en = global.enemies.first; en; en = en->next) {
-			if(en->hp > ENEMY_IMMUNE) {
-				en->hp -= damage;
-			}
+			enemy_damage(en, damage);
 		}
 
 		if(global.boss) {

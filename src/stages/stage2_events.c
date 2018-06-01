@@ -53,7 +53,7 @@ Dialog *stage2_post_dialog(void) {
 
 int stage2_great_circle(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 5, Power, 4, NULL);
 		return 1;
 	}
@@ -98,7 +98,7 @@ int stage2_great_circle(Enemy *e, int t) {
 
 int stage2_small_spin_circle(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 2, NULL);
 		return 1;
 	}
@@ -131,7 +131,7 @@ int stage2_small_spin_circle(Enemy *e, int t) {
 
 int stage2_aim(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Power, 2, NULL);
 		return 1;
 	}
@@ -160,7 +160,7 @@ int stage2_aim(Enemy *e, int t) {
 
 int stage2_sidebox_trail(Enemy *e, int t) { // creal(a[0]): velocity, cimag(a[0]): angle, a[1]: d angle/dt, a[2]: time of acceleration
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 1, Power, 1, NULL);
 		return 1;
 	}
@@ -186,7 +186,7 @@ int stage2_sidebox_trail(Enemy *e, int t) { // creal(a[0]): velocity, cimag(a[0]
 
 int stage2_flea(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 2, NULL);
 		return 1;
 	}
@@ -215,7 +215,7 @@ int stage2_flea(Enemy *e, int t) {
 
 int stage2_accel_circle(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 1, Power, 3, NULL);
 		return 1;
 	}
@@ -640,7 +640,7 @@ void hina_monty(Boss *h, int time) {
 	static complex targetpos;
 
 	if(time == EVENT_DEATH) {
-		killall(&global.enemies);
+		enemy_kill_all(&global.enemies);
 		return;
 	}
 
@@ -662,7 +662,7 @@ void hina_monty(Boss *h, int time) {
 			create_laserline_ab(x, x + VIEWPORT_H*I, 20, 240, 600, rgb(1.0, 0.3, 1.0));
 		}
 
-		killall(&global.enemies);
+		enemy_kill_all(&global.enemies);
 	}
 
 	AT(120) {

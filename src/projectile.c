@@ -416,7 +416,7 @@ void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCol
 			Enemy *e = col->entity;
 			player_add_points(&global.plr, col->damage * 0.5);
 			player_register_damage(&global.plr, col->damage);
-			e->hp -= col->damage;
+			enemy_damage(e, col->damage);
 			break;
 		}
 

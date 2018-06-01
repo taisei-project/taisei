@@ -70,7 +70,7 @@ Enemy *create_enemy_p(EnemyList *enemies, complex pos, int hp, EnemyVisualRule v
 void* _delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 	Enemy *e = (Enemy*)enemy;
 
-	if(e->hp <= 0 && e->hp > ENEMY_IMMUNE) {
+	if(e->hp <= 0 && e->hp != ENEMY_IMMUNE) {
 		play_sound("enemydeath");
 
 		for(int i = 0; i < 10; i++) {
@@ -131,12 +131,6 @@ static void ent_draw_enemy(EntityInterface *ent) {
 		log_fatal("Enemy modified its own state in draw rule");
 	}
 #endif
-}
-
-void killall(EnemyList *enemies) {
-	for(Enemy *e = enemies->first; e; e = e->next) {
-		e->hp = 0;
-	}
 }
 
 int enemy_flare(Projectile *p, int t) { // a[0] velocity, a[1] ref to enemy
@@ -241,10 +235,52 @@ void Swirl(Enemy *e, int t, bool render) {
 	});
 }
 
-void process_enemies(EnemyList *enemies) {
-	Enemy *enemy = enemies->first, *del = NULL;
+bool enemy_is_vulnerable(Enemy *enemy) {
+	if(enemy->hp <= ENEMY_IMMUNE) {
+		return false;
+	}
 
-	while(enemy != NULL) {
+	return true;
+}
+
+bool enemy_in_viewport(Enemy *enemy) {
+	double s = 60; // TODO: make this adjustable
+
+	return
+		creal(enemy->pos) >= -s &&
+		creal(enemy->pos) <= VIEWPORT_W + s &&
+		cimag(enemy->pos) >= -s &&
+		cimag(enemy->pos) <= VIEWPORT_H + s;
+}
+
+void enemy_kill_all(EnemyList *enemies) {
+	for(Enemy *e = enemies->first; e; e = e->next) {
+		e->hp = ENEMY_KILLED;
+	}
+}
+
+bool enemy_damage(Enemy *enemy, int damage) {
+	if(!enemy_is_vulnerable(enemy)) {
+		return false;
+	}
+
+	if((enemy->hp -= damage) <= 0) {
+		enemy->hp = ENEMY_KILLED;
+	}
+
+	return true;
+}
+
+void process_enemies(EnemyList *enemies) {
+	for(Enemy *enemy = enemies->first, *next; enemy; enemy = next) {
+		next = enemy->next;
+
+		if(enemy->hp == ENEMY_KILLED) {
+			enemy->logic_rule(enemy, EVENT_KILLED);
+			delete_enemy(enemies, enemy);
+			continue;
+		}
+
 		int action = enemy->logic_rule(enemy, global.frames - enemy->birthtime);
 
 		if(enemy->hp > ENEMY_IMMUNE && enemy->alpha >= 1.0 && cabs(enemy->pos - global.plr.pos) < 7) {
@@ -253,19 +289,13 @@ void process_enemies(EnemyList *enemies) {
 
 		enemy->alpha = approach(enemy->alpha, 1.0, 1.0/60.0);
 
-		if((enemy->hp > ENEMY_IMMUNE
-		&& (creal(enemy->pos) < -20 || creal(enemy->pos) > VIEWPORT_W + 20
-		|| cimag(enemy->pos) < -20 || cimag(enemy->pos) > VIEWPORT_H + 20
-		|| enemy->hp <= 0)) || action == ACTION_DESTROY) {
-			del = enemy;
-			enemy = enemy->next;
-			delete_enemy(enemies, del);
-		} else {
-			if(enemy->visual_rule) {
-				enemy->visual_rule(enemy, global.frames - enemy->birthtime, false);
-			}
+		if((enemy->hp > ENEMY_IMMUNE && (!enemy_in_viewport(enemy) || enemy->hp <= 0)) || action == ACTION_DESTROY) {
+			delete_enemy(enemies, enemy);
+			continue;
+		}
 
-			enemy = enemy->next;
+		if(enemy->visual_rule) {
+			enemy->visual_rule(enemy, global.frames - enemy->birthtime, false);
 		}
 	}
 }

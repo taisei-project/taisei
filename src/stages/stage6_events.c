@@ -52,7 +52,7 @@ static Dialog *stage6_interboss_dialog(void) {
 
 int stage6_hacker(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 4, Power, 3, NULL);
 		return 1;
 	}
@@ -77,7 +77,7 @@ int stage6_hacker(Enemy *e, int t) {
 
 int stage6_side(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 4, Power, 3, NULL);
 		return 1;
 	}
@@ -133,7 +133,7 @@ int wait_proj(Projectile *p, int t) {
 
 int stage6_flowermine(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 4, Power, 3, NULL);
 		return 1;
 	}
@@ -1879,7 +1879,7 @@ void elly_baryon_explode(Boss *b, int t) {
 		global.shake_view_fade = 0.05;
 		play_sound("boom");
 		petal_explosion(100, b->pos + 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1)));
-		killall(&global.enemies);
+		enemy_kill_all(&global.enemies);
 	}
 }
 

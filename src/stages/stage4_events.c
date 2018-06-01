@@ -63,7 +63,7 @@ Dialog *stage4_dialog_end(void) {
 
 int stage4_splasher(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 1, Power, 3, Bomb, 1, NULL);
 		return 1;
 	}
@@ -96,7 +96,7 @@ int stage4_splasher(Enemy *e, int t) {
 
 int stage4_fodder(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Power, 1, NULL);
 		return 1;
 	}
@@ -120,7 +120,7 @@ int stage4_fodder(Enemy *e, int t) {
 
 int stage4_partcircle(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 2, Power, 1, NULL);
 		return 1;
 	}
@@ -148,7 +148,7 @@ int stage4_partcircle(Enemy *e, int t) {
 
 int stage4_cardbuster(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 1, Power, 2, NULL);
 		return 1;
 	}
@@ -179,7 +179,7 @@ int stage4_cardbuster(Enemy *e, int t) {
 
 int stage4_backfire(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 3, Power, 2, NULL);
 		return 1;
 	}
@@ -209,7 +209,7 @@ int stage4_backfire(Enemy *e, int t) {
 
 int stage4_bigcircle(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 1, Power, 3, NULL);
 
 		return 1;
@@ -258,9 +258,10 @@ int stage4_bigcircle(Enemy *e, int t) {
 }
 
 int stage4_explosive(Enemy *e, int t) {
-	if(t == EVENT_DEATH || (t >= 100 && global.diff >= D_Normal)) {
+	if(t == EVENT_KILLED || (t >= 100 && global.diff >= D_Normal)) {
 		int i;
-		if(t == EVENT_DEATH)
+
+		if(t == EVENT_KILLED)
 			spawn_items(e->pos, Power, 1, NULL);
 
 		int n = 10*global.diff;
@@ -351,7 +352,7 @@ void kurumi_slaveburst(Boss *b, int time) {
 	TIMER(&t);
 
 	if(time == EVENT_DEATH)
-		killall(&global.enemies);
+		enemy_kill_all(&global.enemies);
 
 	if(time < 0)
 		return;
@@ -395,7 +396,7 @@ void kurumi_redspike(Boss *b, int time) {
 	int t = time % 500;
 
 	if(time == EVENT_DEATH)
-		killall(&global.enemies);
+		enemy_kill_all(&global.enemies);
 
 	if(time < 0)
 		return;
@@ -520,7 +521,7 @@ int stage4_supercard(Enemy *e, int t) {
 	int time = t % 150;
 
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 2, Power, 3, NULL);
 		return 1;
 	}
@@ -707,7 +708,7 @@ void kurumi_aniwall(Boss *b, int time) {
 	TIMER(&time);
 
 	AT(EVENT_DEATH) {
-		killall(&global.enemies);
+		enemy_kill_all(&global.enemies);
 	}
 
 	GO_TO(b, VIEWPORT_W/2 + VIEWPORT_W/3*sin(time/200) + I*cimag(b->pos),0.03)
@@ -832,7 +833,7 @@ void kurumi_blowwall(Boss *b, int time) {
 	TIMER(&t);
 
 	if(time == EVENT_DEATH)
-		killall(&global.enemies);
+		enemy_kill_all(&global.enemies);
 
 	if(time < 0) {
 		return;
@@ -958,7 +959,7 @@ void kurumi_danmaku(Boss *b, int time) {
 	TIMER(&t);
 
 	if(time == EVENT_DEATH)
-		killall(&global.enemies);
+		enemy_kill_all(&global.enemies);
 	if(time < 0)
 		return;
 
@@ -1133,7 +1134,7 @@ int kurumi_extra_drainer(Projectile *p, int time) {
 			// TODO: maybe add a special sound for this?
 
 			int drain = clamp(4, 0, e->hp);
-			e->hp -= drain;
+			enemy_damage(e, drain);
 			global.boss->current->hp = min(global.boss->current->maxhp, global.boss->current->hp + drain * 2);
 		}
 	} else {
@@ -1199,7 +1200,7 @@ void kurumi_extra_bigfairy_visual(Enemy *e, int time, bool render) {
 
 int kurumi_extra_fairy(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 1, NULL);
 		return 1;
 	}
@@ -1283,7 +1284,7 @@ void kurumi_extra(Boss *b, int time) {
 	TIMER(&t);
 
 	if(time == EVENT_DEATH) {
-		killall(&global.enemies);
+		enemy_kill_all(&global.enemies);
 		return;
 	}
 
@@ -1381,7 +1382,7 @@ static int scythe_post_mid(Enemy *e, int t) {
 
 	int fleetime = creal(e->args[3]);
 
-	if(t == EVENT_DEATH) {
+	if(t == EVENT_KILLED) {
 		if(fleetime >= 300) {
 			spawn_items(e->pos, Life, 1, NULL);
 		}

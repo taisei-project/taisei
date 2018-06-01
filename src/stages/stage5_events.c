@@ -78,7 +78,7 @@ Dialog *stage5_post_boss_dialog(void) {
 
 int stage5_greeter(Enemy *e, int t) {
 	TIMER(&t)
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 2, Power, 2, NULL);
 		return 1;
 	}
@@ -109,7 +109,7 @@ int stage5_greeter(Enemy *e, int t) {
 
 int stage5_lightburst(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 4, Power, 2, NULL);
 		return 1;
 	}
@@ -136,7 +136,7 @@ int stage5_lightburst(Enemy *e, int t) {
 
 int stage5_swirl(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 1, NULL);
 		return 1;
 	}
@@ -157,7 +157,7 @@ int stage5_swirl(Enemy *e, int t) {
 
 int stage5_limiter(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 4, Power, 4, NULL);
 		return 1;
 	}
@@ -174,7 +174,7 @@ int stage5_limiter(Enemy *e, int t) {
 
 int stage5_laserfairy(Enemy *e, int t) {
 	TIMER(&t)
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 5, Power, 5, NULL);
 		return 1;
 	}
@@ -199,7 +199,7 @@ int stage5_laserfairy(Enemy *e, int t) {
 
 int stage5_miner(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 2, NULL);
 		return 1;
 	}
@@ -234,7 +234,7 @@ static void lightning_particle(complex pos, int t) {
 int stage5_magnetto(Enemy *e, int t) {
 	TIMER(&t);
 
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 5, Power, 5, NULL);
 		return 1;
 	}
@@ -287,7 +287,7 @@ int stage5_magnetto(Enemy *e, int t) {
 
 int stage5_explosion(Enemy *e, int t) {
 	TIMER(&t)
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 5, Power, 5, Life, (int)creal(e->args[1]), NULL);
 		play_sound("boom");
 		return 1;
@@ -358,7 +358,7 @@ void iku_mid_intro(Boss *b, int t) {
 	}
 
 	AT(960)
-		killall(&global.enemies);
+		enemy_kill_all(&global.enemies);
 }
 
 static void midboss_dummy(Boss *b, int t) { }
@@ -378,7 +378,7 @@ Boss *create_iku_mid(void) {
 
 int stage5_lightburst2(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 4, Power, 4, NULL);
 		return 1;
 	}
@@ -416,7 +416,7 @@ int stage5_lightburst2(Enemy *e, int t) {
 
 int stage5_superbullet(Enemy *e, int t) {
 	TIMER(&t);
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 4, Power, 3, NULL);
 		return 1;
 	}
@@ -658,7 +658,7 @@ void iku_lightning(Boss *b, int time) {
 	int t = time % 141;
 
 	if(time == EVENT_DEATH) {
-		killall(&global.enemies);
+		enemy_kill_all(&global.enemies);
 		return;
 	}
 
@@ -1108,7 +1108,7 @@ void iku_extra(Boss *b, int t) {
 	TIMER(&t);
 
 	AT(EVENT_DEATH) {
-		killall(&global.enemies);
+		enemy_kill_all(&global.enemies);
 	}
 
 	if(t < 0) {
@@ -1294,7 +1294,7 @@ void stage5_events(void) {
 	}
 
 	AT(5600) {
-		killall(&global.enemies);
+		enemy_kill_all(&global.enemies);
 	}
 
 	{

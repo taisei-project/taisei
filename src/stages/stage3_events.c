@@ -55,7 +55,7 @@ static Dialog *stage3_post_dialog(void) {
 static int stage3_enterswirl(Enemy *e, int t) {
 	TIMER(&t)
 
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 1, Power, 1, NULL);
 
 		float r, g;
@@ -86,7 +86,7 @@ static int stage3_enterswirl(Enemy *e, int t) {
 	}
 
 	AT(60) {
-		e->hp = 0;
+		e->hp = ENEMY_KILLED;
 	}
 
 	e->pos += e->args[0];
@@ -97,7 +97,7 @@ static int stage3_enterswirl(Enemy *e, int t) {
 static int stage3_slavefairy(Enemy *e, int t) {
 	TIMER(&t)
 
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 1, Power, 3, NULL);
 		return 1;
 	}
@@ -138,7 +138,7 @@ static int stage3_slavefairy(Enemy *e, int t) {
 static int stage3_slavefairy2(Enemy *e, int t) {
 	TIMER(&t)
 
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 1, Power, 3, NULL);
 		return 1;
 	}
@@ -197,7 +197,7 @@ static void charge_effect(Enemy *e, int t, int chargetime) {
 static int stage3_burstfairy(Enemy *e, int t) {
 	TIMER(&t)
 
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 2, Power, 5, NULL);
 		return 1;
 	}
@@ -297,7 +297,7 @@ static int stage3_chargefairy_proj(Projectile *p, int t) {
 static int stage3_chargefairy(Enemy *e, int t) {
 	TIMER(&t)
 
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 5, Power, 3, NULL);
 		return 1;
 	}
@@ -364,7 +364,7 @@ static int stage3_chargefairy(Enemy *e, int t) {
 static int stage3_bigfairy(Enemy *e, int t) {
 	TIMER(&t)
 
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 5, Power, 5, NULL);
 		if(creal(e->args[0]) && global.timer > 2800)
 			spawn_items(e->pos, Bomb, 1, NULL);
@@ -388,7 +388,7 @@ static int stage3_bigfairy(Enemy *e, int t) {
 	}
 
 	AT(creal(e->args[1]))
-		e->hp = 0;
+		e->hp = ENEMY_KILLED;
 
 	return 0;
 }
@@ -400,7 +400,7 @@ static int stage3_bitchswirl(Enemy *e, int t) {
 		return 1;
 	}
 
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 1, Power, 1, NULL);
 		return -1;
 	}
@@ -422,7 +422,7 @@ static int stage3_bitchswirl(Enemy *e, int t) {
 static int stage3_cornerfairy(Enemy *e, int t) {
 	TIMER(&t)
 
-	AT(EVENT_DEATH) {
+	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 5, Power, 5, NULL);
 		return -1;
 	}
@@ -939,7 +939,7 @@ void wriggle_moonlight_rocket(Boss *boss, int time) {
 	TIMER(&time)
 
 	AT(EVENT_DEATH) {
-		killall(&global.enemies);
+		enemy_kill_all(&global.enemies);
 		return;
 	}
 
@@ -1000,7 +1000,7 @@ void wriggle_night_ignite(Boss *boss, int time) {
 	float dfactor = global.diff / (float)D_Lunatic;
 
 	if(time == EVENT_DEATH) {
-		killall(&global.enemies);
+		enemy_kill_all(&global.enemies);
 		return;
 	}
 
@@ -1314,7 +1314,7 @@ static void wriggle_nonspell_common(Boss *boss, int time, int level) {
 		create_enemy4c(boss->pos, ENEMY_IMMUNE, wriggle_slave_visual, wriggle_nonspell_slave, add_ref(boss), i*2*M_PI/cnt, j, level);
 
 	AT(EVENT_DEATH) {
-		killall(&global.enemies);
+		enemy_kill_all(&global.enemies);
 		return;
 	}
 
