@@ -11,9 +11,15 @@
 
 #include "resource.h"
 
+typedef enum {
+	LS_OFF,
+	LS_LOOPING,
+	LS_FADEOUT,
+} LoopState;
+
 typedef struct Sound {
 	int lastplayframe;
-	bool islooping;
+	LoopState islooping;
 	void *impl;
 } Sound;
 

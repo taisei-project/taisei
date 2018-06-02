@@ -96,10 +96,12 @@ void play_loop(const char *name) {
 		return;
 	}
 
-	snd->lastplayframe = global.frames;
 	if(!snd->islooping) {
 		audio_backend_sound_loop(snd->impl, SNDGROUP_MAIN);
 		snd->islooping = true;
+	}
+	if(snd->islooping == LS_LOOPING) {
+		snd->lastplayframe = global.frames;
 	}
 }
 
@@ -113,8 +115,12 @@ static void* reset_sounds_callback(const char *name, Resource *res, void *arg) {
 		}
 
 		if(snd->islooping && (global.frames > snd->lastplayframe + LOOPTIMEOUTFRAMES || reset)) {
-			snd->islooping = false;
 			audio_backend_sound_stop_loop(snd->impl);
+			snd->islooping = LS_FADEOUT;
+		}
+
+		if(snd->islooping && (global.frames > snd->lastplayframe + LOOPTIMEOUTFRAMES + LOOPFADEOUT*60/1000. || reset)) {
+			snd->islooping = LS_OFF;
 		}
 	}
 

@@ -446,6 +446,7 @@ bool boss_damage(Boss *boss, int dmg) {
 	}
 
 	boss->current->hp -= dmg;
+	play_loop("damage_feedback");
 	return true;
 }
 

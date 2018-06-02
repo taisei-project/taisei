@@ -370,7 +370,7 @@ bool audio_backend_sound_stop_loop(void *impl) {
 		return false;
 	}
 
-	Mix_HaltChannel(snd->loopchan);
+	Mix_FadeOutChannel(snd->loopchan,LOOPFADEOUT);
 
 	return true;
 

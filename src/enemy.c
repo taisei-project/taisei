@@ -318,6 +318,9 @@ bool enemy_damage(Enemy *enemy, int damage) {
 		enemy->hp = ENEMY_KILLED;
 	}
 
+	play_loop("damage_feedback");
+
+
 	return true;
 }
 
