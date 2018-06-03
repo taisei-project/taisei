@@ -278,8 +278,8 @@ static inline Enemy* reimu_spirit_spawn_slave(Player *plr, complex pos, complex 
 	return e;
 }
 
-static void reimu_spirit_kill_slaves(Enemy **slaves) {
-	for(Enemy *e = *slaves, *next; e; e = next) {
+static void reimu_spirit_kill_slaves(EnemyList *slaves) {
+	for(Enemy *e = slaves->first, *next; e; e = next) {
 		next = e->next;
 
 		if(e->hp == ENEMY_IMMUNE && creal(e->args[3]) == 0) {
@@ -343,7 +343,7 @@ static void reimu_spirit_think(Player *plr) {
 	}
 
 	if(reimu_spirit_state.respawn_slaves) {
-		if(plr->slaves) {
+		if(plr->slaves.first) {
 			reimu_spirit_kill_slaves(&plr->slaves);
 		} else {
 			reimu_spirit_respawn_slaves(plr, plr->power, 0);
