@@ -38,6 +38,10 @@ static void fix_pos0_visual(Enemy *e) {
 	double y = cimag(e->pos0_visual);
 	double ofs = 21;
 
+	if(e->hp == ENEMY_IMMUNE) {
+		return;
+	}
+
 	if(x <= 0 && x > -ofs) {
 		x = -ofs;
 	} else if(x >= VIEWPORT_W && x < VIEWPORT_W + ofs) {
@@ -68,7 +72,6 @@ Enemy *create_enemy_p(EnemyList *enemies, complex pos, int hp, EnemyVisualRule v
 	e->pos = pos;
 	e->pos0 = pos;
 	e->pos0_visual = pos;
-	fix_pos0_visual(e);
 
 	e->hp = hp;
 	e->alpha = 1.0;
@@ -83,6 +86,8 @@ Enemy *create_enemy_p(EnemyList *enemies, complex pos, int hp, EnemyVisualRule v
 
 	e->ent.draw_layer = LAYER_ENEMY;
 	e->ent.draw_func = ent_draw_enemy;
+
+	fix_pos0_visual(e);
 	ent_register(&e->ent, ENT_ENEMY);
 
 	e->logic_rule(e, EVENT_BIRTH);
@@ -132,7 +137,7 @@ void delete_enemies(EnemyList *enemies) {
 static complex enemy_visual_pos(Enemy *enemy) {
 	double t = (global.frames - enemy->birthtime) / 30.0;
 
-	if(t >= 1) {
+	if(t >= 1 || enemy->hp == ENEMY_IMMUNE) {
 		return enemy->pos;
 	}
 
