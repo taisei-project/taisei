@@ -13,6 +13,7 @@
 
 #include "sprite.h"
 #include "hashtable.h"
+#include "resource.h"
 
 typedef enum {
 	AL_Center,
@@ -39,13 +40,6 @@ int font_line_spacing(Font *font);
 void shorten_text_up_to_width(char *s, float width, Font *font);
 void wrap_text(char *buf, size_t bufsize, const char *src, int width, Font *font);
 
-void init_fonts(void);
-void uninit_fonts(void);
-void load_fonts(float quality);
-void reload_fonts(float quality);
-void free_fonts(void);
-void update_font_cache(void);
-
 extern struct Fonts {
 	union {
 		struct {
@@ -61,3 +55,8 @@ extern struct Fonts {
 		Font *first;
 	};
 } _fonts;
+
+extern ResourceHandler font_res_handler;
+
+#define FONT_PATH_PREFIX "res/fonts/"
+#define FONT_EXTENSION ".font"

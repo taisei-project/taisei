@@ -13,17 +13,18 @@
 #include "util.h"
 #include "objectpool.h"
 #include "objectpool_util.h"
+#include "video.h"
 
 #define CACHE_EXPIRE_TIME 1000
 
 #ifdef DEBUG
-	// #define VERBOSE_CACHE_LOG
+// #define VERBOSE_CACHE_LOG
 #endif
 
 #ifdef VERBOSE_CACHE_LOG
-	#define CACHELOG(fmt, ...) log_debug(fmt, __VA_ARGS__)
+#define CACHELOG(fmt, ...) log_debug(fmt, __VA_ARGS__)
 #else
-	#define CACHELOG(fmt, ...)
+#define CACHELOG(fmt, ...)
 #endif
 
 typedef struct CacheEntry {
@@ -35,7 +36,7 @@ typedef struct CacheEntry {
 	uint32_t ref_time;
 
 	struct {
-		 // to simplify invalidation
+		// to simplify invalidation
 		Hashtable *ht;
 		char *ht_key;
 	} owner;
@@ -54,9 +55,71 @@ static FontRenderer font_renderer;
 struct Font {
 	TTF_Font *ttf;
 	Hashtable *cache;
+	char *source_path;
+	int base_size;
 };
 
 struct Fonts _fonts;
+
+static void fontrenderer_init(float quality);
+static void fontrenderer_free(void);
+static void reload_fonts(float quality);
+
+static bool fonts_event(SDL_Event *event, void *arg) {
+	reload_fonts(video.quality_factor * config_get_float(CONFIG_TEXT_QUALITY));
+	return false;
+}
+
+static void fonts_quality_config_callback(ConfigIndex idx, ConfigValue v) {
+	config_set_float(idx, v.f);
+	reload_fonts(video.quality_factor * v.f);
+}
+
+static void init_fonts(void) {
+	TTF_Init();
+	memset(&font_renderer, 0, sizeof(font_renderer));
+	cache_pool = OBJPOOL_ALLOC(CacheEntry, 512);
+	fontrenderer_init(video.quality_factor * config_get_float(CONFIG_TEXT_QUALITY));
+
+	events_register_handler(&(EventHandler) {
+		fonts_event, NULL, EPRIO_SYSTEM, MAKE_TAISEI_EVENT(TE_VIDEO_MODE_CHANGED)
+	});
+
+	config_set_callback(CONFIG_TEXT_QUALITY, fonts_quality_config_callback);
+
+	preload_resources(RES_FONT, RESF_PERMANENT,
+		"standard",
+		"big",
+		"small",
+		"hud",
+		"mono",
+		"monosmall",
+		"monotiny",
+	NULL);
+
+	_fonts.standard  = get_resource(RES_FONT, "standard", 0)->data;
+	_fonts.mainmenu  = get_resource(RES_FONT, "big", 0)->data;
+	_fonts.small     = get_resource(RES_FONT, "small", 0)->data;
+	_fonts.hud       = get_resource(RES_FONT, "hud", 0)->data;
+	_fonts.mono      = get_resource(RES_FONT, "mono", 0)->data;
+	_fonts.monosmall = get_resource(RES_FONT, "monosmall", 0)->data;
+	_fonts.monotiny  = get_resource(RES_FONT, "monotiny", 0)->data;
+}
+
+static void uninit_fonts(void) {
+	events_unregister_handler(fonts_event);
+	fontrenderer_free();
+	TTF_Quit();
+	objpool_free(cache_pool);
+}
+
+static char* font_path(const char *name) {
+	return strjoin(FONT_PATH_PREFIX, name, FONT_EXTENSION, NULL);
+}
+
+bool check_font_path(const char *path) {
+	return strstartswith(path, FONT_PATH_PREFIX) && strendswith(path, FONT_EXTENSION);
+}
 
 static TTF_Font* load_ttf(char *vfspath, int size) {
 	char *syspath = vfs_repr(vfspath, true);
@@ -73,7 +136,7 @@ static TTF_Font* load_ttf(char *vfspath, int size) {
 	TTF_Font *f = TTF_OpenFontRW(rwops, true, size);
 
 	if(!f) {
-		log_fatal("Failed to load font '%s' @ %i: %s", syspath, size, TTF_GetError());
+		log_warn("Failed to load TTF font '%s' @ %i: %s", syspath, size, TTF_GetError());
 	}
 
 	log_info("Loaded '%s' @ %i", syspath, size);
@@ -82,15 +145,56 @@ static TTF_Font* load_ttf(char *vfspath, int size) {
 	return f;
 }
 
-static Font* load_font(char *vfspath, int size) {
-	TTF_Font *ttf = load_ttf(vfspath, size);
+void* load_font_begin(const char *path, uint flags) {
+	Font font;
+	memset(&font, 0, sizeof(font));
 
-	Font *font = calloc(1, sizeof(Font));
-	font->ttf = ttf;
-	font->cache = hashtable_new_stringkeys();
+	if(!parse_keyvalue_file_with_spec(path, (KVSpec[]){
+		{ "source",  .out_str   = &font.source_path },
+		{ "size",    .out_int   = &font.base_size },
+		{ NULL }
+	})) {
+		log_warn("Failed to parse font file '%s'", path);
+		return NULL;
+	}
 
-	return font;
+	font.ttf = load_ttf(font.source_path, font.base_size);
+
+	if(!font.ttf) {
+		free(font.source_path);
+		return NULL;
+	}
+
+	font.cache = hashtable_new_stringkeys();
+
+	return memdup(&font, sizeof(font));
 }
+
+void* load_font_end(void *opaque, const char *path, uint flags) {
+	return opaque;
+}
+
+static void free_font(Font *font);
+
+void unload_font(void *vfont) {
+	free_font(vfont);
+}
+
+ResourceHandler font_res_handler = {
+	.type = RES_FONT,
+	.typename = "font",
+	.subdir = FONT_PATH_PREFIX,
+
+	.procs = {
+		.init = init_fonts,
+		.shutdown = uninit_fonts,
+		.find = font_path,
+		.check = check_font_path,
+		.begin_load = load_font_begin,
+		.end_load = load_font_end,
+		.unload = unload_font,
+	},
+};
 
 static void free_cache_entry(CacheEntry *e) {
 	if(!e) {
@@ -208,60 +312,42 @@ static SDL_Surface* fontrender_render(const char *text, Font *font) {
 	return surf;
 }
 
-void init_fonts(void) {
-	TTF_Init();
-	memset(&font_renderer, 0, sizeof(font_renderer));
-	cache_pool = OBJPOOL_ALLOC(CacheEntry, 512);
-}
+static void free_font_cache(Hashtable *cache) {
+	CacheEntry *e;
 
-void uninit_fonts(void) {
-	free_fonts();
-	TTF_Quit();
-}
-
-void load_fonts(float quality) {
-	fontrenderer_init(quality);
-	_fonts.standard  = load_font("res/fonts/LinBiolinum.ttf",           20);
-	_fonts.mainmenu  = load_font("res/fonts/immortal.ttf",              35);
-	_fonts.small     = load_font("res/fonts/LinBiolinum.ttf",           14);
-	_fonts.hud       = load_font("res/fonts/Laconic_Regular.otf",       19);
-	_fonts.mono      = load_font("res/fonts/ShareTechMono-Regular.ttf", 19);
-	_fonts.monosmall = load_font("res/fonts/ShareTechMono-Regular.ttf", 14);
-	_fonts.monotiny  = load_font("res/fonts/ShareTechMono-Regular.ttf", 10);
-}
-
-void reload_fonts(float quality) {
-	if(!font_renderer.quality) {
-		// never loaded
-		load_fonts(quality);
-		return;
-	}
-
-	if(font_renderer.quality != sanitize_scale(quality)) {
-		free_fonts();
-		load_fonts(quality);
+	for(HashtableIterator *i = hashtable_iter(cache); hashtable_iter_next(i, 0, (void**)&e);) {
+		free_cache_entry(e);
 	}
 }
 
 static void free_font(Font *font) {
-	CacheEntry *e;
 	TTF_CloseFont(font->ttf);
-
-	for(HashtableIterator *i = hashtable_iter(font->cache); hashtable_iter_next(i, 0, (void**)&e);) {
-		free_cache_entry(e);
-	}
-
+	free_font_cache(font->cache);
 	hashtable_free(font->cache);
+	free(font->source_path);
 	free(font);
 }
 
-void free_fonts(void) {
-	fontrenderer_free();
+static void reload_font(Font *font) {
+	TTF_CloseFont(font->ttf);
+	free_font_cache(font->cache);
+	hashtable_unset_all(font->cache);
+	font->ttf = load_ttf(font->source_path, font->base_size);
+}
 
-	Font **last = &_fonts.first + (sizeof(_fonts)/sizeof(Font*) - 1);
-	for(Font **font = &_fonts.first; font <= last; ++font) {
-		free_font(*font);
+static void* reload_font_callback(const char *name, Resource *res, void *varg) {
+	reload_font((Font*)res->data);
+	return NULL;
+}
+
+static void reload_fonts(float quality) {
+	if(font_renderer.quality == sanitize_scale(quality)) {
+		return;
 	}
+
+	fontrenderer_free();
+	fontrenderer_init(quality);
+	resource_for_each(RES_FONT, reload_font_callback, NULL);
 }
 
 static void draw_text_line(Alignment align, float x, float y, const char *text, Font *font) {

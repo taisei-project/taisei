@@ -92,8 +92,6 @@ static void video_update_quality(void) {
 	init_fbo_pair(&resources.fbo_pairs.bg, bg, TEX_TYPE_RGB);
 	init_fbo_pair(&resources.fbo_pairs.fg, fg, TEX_TYPE_RGB);
 	init_fbo_pair(&resources.fbo_pairs.rgba, fg, TEX_TYPE_RGBA);
-
-	reload_fonts(text);
 }
 
 static uint32_t get_fullscreen_flag(void) {
@@ -520,7 +518,6 @@ void video_init(void) {
 	config_set_callback(CONFIG_VID_RESIZABLE, video_cfg_resizable_callback);
 	config_set_callback(CONFIG_FG_QUALITY, video_quality_callback);
 	config_set_callback(CONFIG_BG_QUALITY, video_quality_callback);
-	config_set_callback(CONFIG_TEXT_QUALITY, video_quality_callback);
 
 	EventHandler h = {
 		.proc = video_handle_window_event,

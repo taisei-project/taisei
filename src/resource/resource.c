@@ -26,6 +26,7 @@
 #include "model.h"
 #include "postprocess.h"
 #include "sprite.h"
+#include "font.h"
 
 #include "renderer/common/backend.h"
 
@@ -37,6 +38,7 @@ ResourceHandler *_handlers[] = {
 	[RES_MODEL] = &model_res_handler,
 	[RES_POSTPROCESS] = &postprocess_res_handler,
 	[RES_SPRITE] = &sprite_res_handler,
+	[RES_FONT] = &font_res_handler,
 
 	// FIXME: these are currently handled by the renderer backend completely
 	[RES_SHADER_OBJECT] = NULL,
@@ -415,33 +417,19 @@ void preload_resources(ResourceType type, ResourceFlags flags, const char *first
 	va_end(args);
 }
 
-static void init_sdl_image(void) {
-	int want_flags = IMG_INIT_JPG | IMG_INIT_PNG;
-	int init_flags = IMG_Init(want_flags);
-
-	if((want_flags & init_flags) != want_flags) {
-		log_warn(
-			"SDL_image doesn't support some of the formats we want. "
-			"Requested: %i, got: %i. "
-			"Textures may fail to load",
-			want_flags,
-			init_flags
-		);
-	}
-}
-
 void init_resources(void) {
+	main_thread_id = SDL_ThreadID();
 	_handlers[RES_SHADER_OBJECT] = _r_backend.res_handlers.shader_object;
 	_handlers[RES_SHADER_PROGRAM] = _r_backend.res_handlers.shader_program;
-
-	init_sdl_image();
 
 	for(int i = 0; i < RES_NUMTYPES; ++i) {
 		ResourceHandler *h = get_handler(i);
 		alloc_handler(h);
-	}
 
-	main_thread_id = SDL_ThreadID();
+		if(h->procs.init != NULL) {
+			h->procs.init();
+		}
+	}
 
 	if(!env_get("TAISEI_NOASYNC", 0)) {
 		EventHandler h = {
@@ -559,6 +547,10 @@ void free_resources(bool all) {
 		}
 
 		if(all) {
+			if(handler->procs.shutdown != NULL) {
+				handler->procs.shutdown();
+			}
+
 			hashtable_free(handler->private->mapping);
 			free(handler->private);
 		}
@@ -575,6 +567,4 @@ void free_resources(bool all) {
 	if(!env_get("TAISEI_NOASYNC", 0)) {
 		events_unregister_handler(resource_asyncload_handler);
 	}
-
-	IMG_Quit();
 }

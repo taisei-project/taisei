@@ -22,6 +22,7 @@ typedef enum ResourceType {
 	RES_MODEL,
 	RES_POSTPROCESS,
 	RES_SPRITE,
+	RES_FONT,
 	RES_NUMTYPES,
 } ResourceType;
 
@@ -61,6 +62,12 @@ typedef void* (*ResourceEndLoadProc)(void *opaque, const char *path, uint flags)
 // Unloads a resource, freeing all allocated to it memory.
 typedef void (*ResourceUnloadProc)(void *res);
 
+// Called during resource subsystem initialization
+typedef void (*ResourceInit)(void);
+
+// Called during resource subsystem shutdown
+typedef void (*ResourceShutdown)(void);
+
 typedef struct ResourceHandlerPrivate ResourceHandlerPrivate;
 
 typedef struct ResourceHandler {
@@ -76,6 +83,8 @@ typedef struct ResourceHandler {
 		ResourceBeginLoadProc begin_load;
 		ResourceEndLoadProc end_load;
 		ResourceUnloadProc unload;
+		ResourceInit init;
+		ResourceShutdown shutdown;
 	} procs;
 
 	ResourceHandlerPrivate *private;

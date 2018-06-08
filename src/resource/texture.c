@@ -20,12 +20,29 @@ static void* load_texture_begin(const char *path, uint flags);
 static void* load_texture_end(void *opaque, const char *path, uint flags);
 static void free_texture(Texture *tex);
 
+static void init_sdl_image(void) {
+	int want_flags = IMG_INIT_JPG | IMG_INIT_PNG;
+	int init_flags = IMG_Init(want_flags);
+
+	if((want_flags & init_flags) != want_flags) {
+		log_warn(
+			"SDL_image doesn't support some of the formats we want. "
+			"Requested: %i, got: %i. "
+			"Textures may fail to load",
+			want_flags,
+			init_flags
+		);
+	}
+}
+
 ResourceHandler texture_res_handler = {
 	.type = RES_TEXTURE,
 	.typename = "texture",
 	.subdir = TEX_PATH_PREFIX,
 
 	.procs = {
+		.init = init_sdl_image,
+		.shutdown = IMG_Quit,
 		.find = texture_path,
 		.check = check_texture_path,
 		.begin_load = load_texture_begin,
