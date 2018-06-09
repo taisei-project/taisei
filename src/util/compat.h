@@ -113,6 +113,33 @@ typedef signed char schar;
 #undef complex
 #define complex _Complex double
 
+// In case the C11 CMPLX macro is not present, try our best to provide a substitute
+#if !defined CMPLX
+  #undef HAS_BUILTIN_COMPLEX
+
+  #if defined __has_builtin
+    #if __has_builtin(__builtin_complex)
+      #define HAS_BUILTIN_COMPLEX
+    #endif
+  #else
+    #if defined __GNUC__ && defined __GNUC_MINOR__
+      #if (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))
+        #define HAS_BUILTIN_COMPLEX
+      #endif
+    #endif
+  #endif
+
+  #if defined HAS_BUILTIN_COMPLEX
+    #define CMPLX(re,im) __builtin_complex((double)(re), (double)(im))
+  #elif defined __clang__
+    #define CMPLX(re,im) (__extension__ (_Complex double){(double)(re), (double)(im)})
+  #elif defined _Imaginary_I
+    #define CMPLX(re,im) (_Complex double)((double)(re) + _Imaginary_I * (double)(im))
+  #else
+    #define CMPLX(re,im) (_Complex double)((double)(re) + _Complex_I * (double)(im))
+  #endif
+#endif
+
 // Meeded for mingw; presumably yet again defined somewhere in windoze headers.
 #undef min
 #undef max

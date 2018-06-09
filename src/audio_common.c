@@ -178,8 +178,9 @@ static bool store_sfx_volume(const char *key, const char *val, void *data) {
 	log_debug("Default volume for %s is now %i", key, vol);
 
 	if(vol != DEFAULT_SFX_VOLUME) {
-		hashtable_set_string(ht, key, (void*)(intptr_t)vol);
+		hashtable_set(ht, key, vol);
 	}
+
 	return true;
 }
 
@@ -195,13 +196,8 @@ static inline char* get_bgm_desc(char *name) {
 }
 
 int get_default_sfx_volume(const char *sfx) {
-	void *v = hashtable_get_string(sfx_volumes, sfx);
-
-	if(v != NULL) {
-		return (intptr_t)v;
-	}
-
-	return DEFAULT_SFX_VOLUME;
+	int v = hashtable_get(sfx_volumes, sfx).int64;
+	return v ? v : DEFAULT_SFX_VOLUME;
 }
 
 void resume_bgm(void) {

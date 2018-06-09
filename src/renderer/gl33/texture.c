@@ -39,7 +39,9 @@ static GLuint r_wrap_to_gl_wrap(TextureWrapMode mode) {
 GLTextureTypeInfo* gl33_texture_type_info(TextureType type) {
 	static GLTextureTypeInfo map[] = {
 		[TEX_TYPE_DEFAULT]   = { GL_RGBA8,             GL_RGBA,            GL_UNSIGNED_BYTE,  4 },
-		[TEX_TYPE_RGB]       = { GL_RGB8,              GL_RGBA,            GL_UNSIGNED_BYTE,  3 },
+		[TEX_TYPE_R]         = { GL_R8,                GL_RED,             GL_UNSIGNED_BYTE,  1 },
+		[TEX_TYPE_RG]        = { GL_RG8,               GL_RG,              GL_UNSIGNED_BYTE,  2 },
+		[TEX_TYPE_RGB]       = { GL_RGB8,              GL_RGB,             GL_UNSIGNED_BYTE,  3 },
 		[TEX_TYPE_RGBA]      = { GL_RGBA8,             GL_RGBA,            GL_UNSIGNED_BYTE,  4 },
 		[TEX_TYPE_DEPTH]     = { GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE,  1 },
 	};

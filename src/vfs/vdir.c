@@ -13,13 +13,13 @@
 #define _contents_ data1
 
 static void vfs_vdir_attach_node(VFSNode *vdir, const char *name, VFSNode *node) {
-	VFSNode *oldnode = hashtable_get_string(vdir->_contents_, name);
+	VFSNode *oldnode = hashtable_get(vdir->_contents_, name).pointer;
 
 	if(oldnode) {
 		vfs_decref(oldnode);
 	}
 
-	hashtable_set_string(vdir->_contents_, name, node);
+	hashtable_set(vdir->_contents_, name, node);
 }
 
 static VFSNode* vfs_vdir_locate(VFSNode *vdir, const char *path) {
@@ -30,7 +30,7 @@ static VFSNode* vfs_vdir_locate(VFSNode *vdir, const char *path) {
 	strcpy(mutpath, path);
 	vfs_path_split_left(mutpath, &primpath, &subpath);
 
-	if((node = hashtable_get_string(vdir->_contents_, mutpath))) {
+	if((node = hashtable_get(vdir->_contents_, mutpath).pointer)) {
 		return vfs_locate(node, subpath);
 	}
 
@@ -44,7 +44,9 @@ static const char* vfs_vdir_iter(VFSNode *vdir, void **opaque) {
 		*opaque = hashtable_iter(vdir->_contents_);
 	}
 
-	if(!hashtable_iter_next((HashtableIterator*)*opaque, (void**)&ret, NULL)) {
+	HashtableIterator *wtf = *opaque;
+
+	if(!hashtable_iter_next(wtf, (void**)&ret, NULL)) {
 		*opaque = NULL;
 	}
 
@@ -90,12 +92,12 @@ static bool vfs_vdir_mount(VFSNode *vdir, const char *mountpoint, VFSNode *subtr
 static bool vfs_vdir_unmount(VFSNode *vdir, const char *mountpoint) {
 	VFSNode *mountee;
 
-	if(!(mountee = hashtable_get_string(vdir->_contents_, mountpoint))) {
+	if(!(mountee = hashtable_get(vdir->_contents_, mountpoint).pointer)) {
 		vfs_set_error("Mountpoint '%s' doesn't exist", mountpoint);
 		return false;
 	}
 
-	hashtable_unset_string(vdir->_contents_, mountpoint);
+	hashtable_unset(vdir->_contents_, mountpoint);
 	vfs_decref(mountee);
 	return true;
 }

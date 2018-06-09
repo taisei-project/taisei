@@ -52,29 +52,24 @@ void* load_bgm_begin(const char *path, uint flags) {
 	mus->impl = imus;
 
 	if(strendswith(path, ".bgm")) {
-		Hashtable *bgm = parse_keyvalue_file(path);
+		char *intro = NULL;
+		char *loop = NULL;
 
-		if(!bgm) {
+		if(parse_keyvalue_file_with_spec(path, (KVSpec[]) {
+			{ "intro",      .out_str    = &intro            },
+			{ "loop",       .out_str    = &loop             },
+			{ "title",      .out_str    = &mus->title       },
+			{ "loop_point", .out_double = &imus->loop_point },
+			{ NULL }
+		})) {
 			log_warn("Failed to parse bgm config '%s'", path);
 		} else {
-			imus->intro = load_mix_music(hashtable_get_string(bgm, "intro"));
-			imus->loop = load_mix_music(hashtable_get_string(bgm, "loop"));
-
-			char *loop_point = hashtable_get_string(bgm, "loop_point");
-
-			if(loop_point) {
-				imus->loop_point = strtod(loop_point, NULL);
-			}
-
-			mus->title = hashtable_get_string(bgm, "title");
-
-			if(mus->title) {
-				mus->title = strdup(mus->title);
-			}
-
-			hashtable_foreach(bgm, hashtable_iter_free_data, NULL);
-			hashtable_free(bgm);
+			imus->intro = load_mix_music(intro);
+			imus->loop = load_mix_music(loop);
 		}
+
+		free(intro);
+		free(loop);
 	} else {
 		imus->loop = load_mix_music(path);
 	}

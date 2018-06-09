@@ -22,6 +22,7 @@ typedef struct KVSpec {
 
 	char **out_str;
 	int *out_int;
+	long *out_long;
 	double *out_double;
 	float *out_float;
 } KVSpec;

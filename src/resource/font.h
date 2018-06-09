@@ -9,8 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL_ttf.h>
-
 #include "sprite.h"
 #include "hashtable.h"
 #include "resource.h"
@@ -25,7 +23,23 @@ enum {
 	AL_Flag_NoAdjust = 0x10,
 };
 
+typedef ulong charcode_t;
 typedef struct Font Font;
+
+typedef struct FontMetrics {
+	int ascent;
+	int descent;
+	int max_glyph_height;
+	int lineskip;
+} FontMetrics;
+
+typedef struct GlyphMetrics {
+	int bearing_x;
+	int bearing_y;
+	int width;
+	int height;
+	int advance;
+} GlyphMetrics;
 
 void draw_text(Alignment align, float x, float y, const char *text, Font *font);
 void draw_text_auto_wrapped(Alignment align, float x, float y, const char *text, int width, Font *font);

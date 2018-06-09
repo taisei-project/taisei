@@ -211,6 +211,7 @@ static void gl33_init_context(SDL_Window *window) {
 	r_cull(CULL_BACK);
 	r_blend(BLEND_ALPHA);
 
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 	glGetIntegerv(GL_VIEWPORT, &R.viewport.x);
 

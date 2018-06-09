@@ -15,7 +15,7 @@
 #include "../api.h"
 
 Uniform* gl33_shader_uniform(ShaderProgram *prog, const char *uniform_name) {
-	return hashtable_get_string(prog->uniforms, uniform_name);
+	return hashtable_get(prog->uniforms, uniform_name).pointer;
 }
 
 UniformType gl33_uniform_type(Uniform *uniform) {
@@ -112,9 +112,9 @@ static void gl33_commit_uniform(Uniform *uniform) {
 	assert(!memcmp(uniform->cache.commited.data, uniform->cache.pending.data, uniform->cache.commited.size));
 }
 
-static void* gl33_sync_uniform(void *key, void *data, void *arg) {
-	attr_unused const char *name = key;
-	Uniform *uniform = data;
+static void* gl33_sync_uniform(HashtableValue key, HashtableValue data, void *arg) {
+	attr_unused const char *name = key.pointer;
+	Uniform *uniform = data.pointer;
 
 	if(uniform->cache.update_count < 1) {
 		return NULL;
@@ -217,7 +217,7 @@ static bool cache_uniforms(ShaderProgram *prog) {
 		}
 
 		uni.location = loc;
-		hashtable_set_string(prog->uniforms, name, memdup(&uni, sizeof(uni)));
+		hashtable_set(prog->uniforms, name, memdup(&uni, sizeof(uni)));
 		log_debug("%s = %i", name, loc);
 	}
 
@@ -315,8 +315,8 @@ static void print_info_log(GLuint prog) {
 	}
 }
 
-static void* free_uniform(void *key, void *data, void *arg) {
-	Uniform *uniform = data;
+static void* free_uniform(HashtableValue key, HashtableValue data, void *arg) {
+	Uniform *uniform = data.pointer;
 	free(uniform->cache.commited.data);
 	free(uniform->cache.pending.data);
 	free(uniform);

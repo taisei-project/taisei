@@ -93,8 +93,8 @@ static const char* type_name(ResourceType type) {
 	return get_handler(type)->typename;
 }
 
-static void* datafunc_begin_load_resource(void *arg) {
-	ResourceType type = (intptr_t)arg;
+static HashtableValue datafunc_begin_load_resource(HashtableValue arg) {
+	ResourceType type = arg.int64;
 
 	InternalResource *ires = calloc(1, sizeof(InternalResource));
 	ires->res.type = type;
@@ -102,12 +102,22 @@ static void* datafunc_begin_load_resource(void *arg) {
 	ires->mutex = SDL_CreateMutex();
 	ires->cond = SDL_CreateCond();
 
-	return ires;
+	return (HashtableValue) { .pointer = ires };
 }
 
 static bool try_begin_load_resource(ResourceType type, const char *name, InternalResource **out_ires) {
 	ResourceHandler *handler = get_handler(type);
-	return hashtable_try_set(handler->private->mapping, (char*)name, (void*)(uintptr_t)type, datafunc_begin_load_resource, (void**)out_ires);
+
+	HashtableValue arg = { .int64 = type };
+	HashtableValue out;
+
+	bool result = hashtable_try_set(handler->private->mapping, name, arg, datafunc_begin_load_resource, &out);
+
+	if(out_ires) {
+		*out_ires = out.pointer;
+	}
+
+	return result;
 }
 
 static void load_resource_finish(InternalResource *ires, void *opaque, const char *path, const char *name, char *allocated_path, char *allocated_name, ResourceFlags flags);
@@ -337,7 +347,7 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 	Resource *res;
 
 	if(flags & RESF_UNSAFE) {
-		ires = hashtable_get_unsafe(get_handler(type)->private->mapping, (char*)name);
+		ires = hashtable_get_unsafe(get_handler(type)->private->mapping, name).pointer;
 
 		if(ires != NULL && ires->status == RES_STATUS_LOADED) {
 			return &ires->res;
@@ -483,9 +493,9 @@ struct resource_for_each_arg {
 	void *arg;
 };
 
-static void* resource_for_each_ht_adapter(void *key, void *data, void *varg) {
-	const char *name = key;
-	InternalResource *ires = data;
+static void* resource_for_each_ht_adapter(HashtableValue key, HashtableValue data, void *varg) {
+	const char *name = key.pointer;
+	InternalResource *ires = data.pointer;
 	struct resource_for_each_arg *arg = varg;
 	return arg->callback(name, &ires->res, arg->arg);
 }
@@ -528,11 +538,11 @@ void free_resources(bool all) {
 			char name[strlen(tmp) + 1];
 			strcpy(name, tmp);
 
-			ires = hashtable_get_string(handler->private->mapping, name);
+			ires = hashtable_get(handler->private->mapping, name).pointer;
 			attr_unused ResourceFlags flags = ires->res.flags;
 
 			if(!all) {
-				hashtable_unset_string(handler->private->mapping, name);
+				hashtable_unset(handler->private->mapping, name);
 			}
 
 			unload_resource(ires);

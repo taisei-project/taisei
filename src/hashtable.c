@@ -21,8 +21,8 @@
 
 typedef struct HashtableElement {
 	LIST_INTERFACE(struct HashtableElement);
-	void *data;
-	void *key;
+	HashtableValue data;
+	HashtableValue key;
 	hash_t hash;
 } HashtableElement;
 
@@ -59,11 +59,11 @@ Hashtable* hashtable_new(HTCmpFunc cmp_func, HTHashFunc hash_func, HTCopyFunc co
 	size_t size = HT_MIN_SIZE;
 
 	if(!cmp_func) {
-		cmp_func = hashtable_cmpfunc_ptr;
+		cmp_func = hashtable_cmpfunc_raw;
 	}
 
 	if(!copy_func) {
-		copy_func = hashtable_copyfunc_ptr;
+		copy_func = hashtable_copyfunc_raw;
 	}
 
 	ht->table = calloc(size, sizeof(HashtableElement*));
@@ -79,8 +79,6 @@ Hashtable* hashtable_new(HTCmpFunc cmp_func, HTHashFunc hash_func, HTCopyFunc co
 	ht->sync.readers = 0;
 	ht->sync.mutex = SDL_CreateMutex();
 	ht->sync.cond = SDL_CreateCond();
-
-	assert(ht->hash_func != NULL);
 
 	return ht;
 }
@@ -175,7 +173,7 @@ void hashtable_free(Hashtable *ht) {
 	free(ht);
 }
 
-static HashtableElement* hashtable_get_internal(Hashtable *ht, void *key, hash_t hash) {
+static HashtableElement* hashtable_get_internal(Hashtable *ht, HashtableValue key, hash_t hash) {
 	HashtableElement *elems = ht->table[hash & ht->hash_mask];
 
 	for(HashtableElement *e = elems; e; e = e->next) {
@@ -187,38 +185,44 @@ static HashtableElement* hashtable_get_internal(Hashtable *ht, void *key, hash_t
 	return NULL;
 }
 
-void* hashtable_get(Hashtable *ht, void *key) {
-	assert(ht != NULL);
-
+HashtableValue _hashtable_get_vunion(Hashtable *ht, HashtableValue key) {
 	hash_t hash = ht->hash_func(key);
 	HashtableElement *elem;
-	void *data;
+	HashtableValue data;
 
 	hashtable_begin_read(ht);
 	elem = hashtable_get_internal(ht, key, hash);
-	data = elem ? elem->data : NULL;
+	data = elem ? elem->data : HT_NULL_VAL;
 	hashtable_end_read(ht);
 
 	return data;
 }
 
-void* hashtable_get_unsafe(Hashtable *ht, void *key) {
-	assert(ht != NULL);
-
+HashtableValue _hashtable_get_unsafe_vunion(Hashtable *ht, HashtableValue key) {
 	hash_t hash = ht->hash_func(key);
 	HashtableElement *elem;
-	void *data;
+	HashtableValue data;
 
 	elem = hashtable_get_internal(ht, key, hash);
-	data = elem ? elem->data : NULL;
+	data = elem ? elem->data : HT_NULL_VAL;
 
 	return data;
 }
 
-static bool hashtable_set_internal(Hashtable *ht, HashtableElement **table, size_t hash_mask, hash_t hash, void *key, void *data, void* (*datafunc)(void*), bool allow_overwrite, void **val) {
+static bool hashtable_set_internal(
+	Hashtable *ht,
+	HashtableElement **table,
+	size_t hash_mask,
+	hash_t hash,
+	HashtableValue key,
+	HashtableValue data,
+	HashtableValue (*datafunc)(HashtableValue),
+	bool allow_overwrite,
+	HashtableValue *val
+) {
 	size_t idx = hash & hash_mask;
 	HashtableElement *elems = table[idx], *elem;
-	void *result = NULL;
+	bool was_set = false;
 
 	for(HashtableElement *e = elems; e; e = e->next) {
 		if(hash == e->hash && ht->cmp_func(key, e->key)) {
@@ -227,7 +231,7 @@ static bool hashtable_set_internal(Hashtable *ht, HashtableElement **table, size
 					*val = e->data;
 				}
 
-				return result;
+				return was_set;
 			}
 
 			if(ht->free_func) {
@@ -248,18 +252,18 @@ static bool hashtable_set_internal(Hashtable *ht, HashtableElement **table, size
 		*val = data;
 	}
 
-	if(data) {
+	if(!HT_IS_NULL(data)) {
 		elem = malloc(sizeof(HashtableElement));
 		ht->copy_func(&elem->key, key);
 		elem->hash = ht->hash_func(elem->key);
 		elem->data = data;
 		list_push(&elems, elem);
 		ht->num_elements++;
-		result = data;
+		was_set = true;
 	}
 
 	table[idx] = elems;
-	return result;
+	return was_set;
 }
 
 static void hashtable_resize(Hashtable *ht, size_t new_size) {
@@ -286,9 +290,7 @@ static void hashtable_resize(Hashtable *ht, size_t new_size) {
 	ht->hash_mask = new_hash_mask;
 }
 
-void hashtable_set(Hashtable *ht, void *key, void *data) {
-	assert(ht != NULL);
-
+void _hashtable_set_vunion_vunion(Hashtable *ht, HashtableValue key, HashtableValue data) {
 	hash_t hash = ht->hash_func(key);
 
 	hashtable_begin_write(ht);
@@ -301,9 +303,7 @@ void hashtable_set(Hashtable *ht, void *key, void *data) {
 	hashtable_end_write(ht);
 }
 
-bool hashtable_try_set(Hashtable *ht, void *key, void *data, void* (*datafunc)(void*), void **val) {
-	assert(ht != NULL);
-
+bool _hashtable_try_set_vunion_vunion(Hashtable *ht, HashtableValue key, HashtableValue data, HashtableValue (*datafunc)(HashtableValue), HashtableValue *val) {
 	hash_t hash = ht->hash_func(key);
 
 	hashtable_begin_write(ht);
@@ -317,30 +317,8 @@ bool hashtable_try_set(Hashtable *ht, void *key, void *data, void* (*datafunc)(v
 	return result;
 }
 
-void hashtable_unset(Hashtable *ht, void *key) {
+void _hashtable_unset_vunion(Hashtable *ht, HashtableValue key) {
 	hashtable_set(ht, key, NULL);
-}
-
-void hashtable_unset_deferred(Hashtable *ht, void *key, ListContainer **list) {
-	assert(ht != NULL);
-	ListContainer *c = list_push(list, list_wrap_container(NULL));
-	ht->copy_func(&c->data, key);
-}
-
-void hashtable_unset_deferred_now(Hashtable *ht, ListContainer **list) {
-	ListContainer *next;
-	assert(ht != NULL);
-
-	for(ListContainer *c = *list; c; c = next) {
-		next = c->next;
-		hashtable_unset(ht, c->data);
-
-		if(ht->free_func) {
-			ht->free_func(c->data);
-		}
-
-		free(list_unlink(list, c));
-	}
 }
 
 /*
@@ -377,7 +355,7 @@ HashtableIterator* hashtable_iter(Hashtable *ht) {
 	return iter;
 }
 
-bool hashtable_iter_next(HashtableIterator *iter, void **out_key, void **out_data) {
+bool _hashtable_iter_next_vunion_vunion(HashtableIterator *iter, HashtableValue *out_key, HashtableValue *out_data) {
 	Hashtable *ht = iter->hashtable;
 
 	if(iter->bucketnum == (size_t)-1) {
@@ -411,24 +389,25 @@ bool hashtable_iter_next(HashtableIterator *iter, void **out_key, void **out_dat
  *  Convenience functions for hashtables with string keys
  */
 
-bool hashtable_cmpfunc_string(void *str1, void *str2) {
-	return !strcmp((const char*)str1, (const char*)(str2));
+bool hashtable_cmpfunc_string(HashtableValue str1, HashtableValue str2) {
+	return !strcmp(str1.pointer, str2.pointer);
 }
 
-hash_t hashtable_hashfunc_string(void *vstr) {
-	return crc32str(0, (const char*)vstr);
+hash_t hashtable_hashfunc_string(HashtableValue vstr) {
+	return crc32str(0, vstr.pointer);
 }
 
-hash_t hashtable_hashfunc_string_sse42(void *vstr) {
-	return crc32str_sse42(0, (const char*)vstr);
+hash_t hashtable_hashfunc_string_sse42(HashtableValue vstr) {
+	return crc32str_sse42(0, vstr.pointer);
 }
 
-void hashtable_copyfunc_string(void **dst, void *src) {
-	*dst = malloc(strlen((char*)src) + 1);
-	strcpy(*dst, src);
+void hashtable_copyfunc_string(HashtableValue *dst, HashtableValue src) {
+	dst->pointer = strdup(src.pointer);
 }
 
-// #define hashtable_freefunc_string free
+void hashtable_freefunc_free(HashtableValue val) {
+	free(val.pointer);
+}
 
 Hashtable* hashtable_new_stringkeys(void) {
 	return hashtable_new(
@@ -439,37 +418,33 @@ Hashtable* hashtable_new_stringkeys(void) {
 	);
 }
 
-void* hashtable_get_string(Hashtable *ht, const char *key) {
-	return hashtable_get(ht, (void*)key);
-}
-
-void hashtable_set_string(Hashtable *ht, const char *key, void *data) {
-	hashtable_set(ht, (void*)key, data);
-}
-
-void hashtable_unset_string(Hashtable *ht, const char *key) {
-	hashtable_unset(ht, (void*)key);
-}
-
 /*
  *  Misc convenience functions
  */
 
-void* hashtable_iter_free_data(void *key, void *data, void *arg) {
-	free(data);
+void* hashtable_iter_free_data(HashtableValue key, HashtableValue data, void *arg) {
+	free(data.pointer);
 	return NULL;
 }
 
-bool hashtable_cmpfunc_ptr(void *p1, void *p2) {
-	return p1 == p2;
+bool hashtable_cmpfunc_ptr(HashtableValue p1, HashtableValue p2) {
+	return p1.pointer == p2.pointer;
 }
 
-void hashtable_copyfunc_ptr(void **dst, void *src) {
-	*dst = src;
+void hashtable_copyfunc_ptr(HashtableValue *dst, HashtableValue src) {
+	dst->pointer = src.pointer;
 }
 
-hash_t hashtable_hashfunc_ptr(void *val) {
-	hash_t x = (uintptr_t)val & ((1u << 31u) - 1u);
+bool hashtable_cmpfunc_raw(HashtableValue p1, HashtableValue p2) {
+	return !memcmp(&p1, &p2, sizeof(p1));
+}
+
+void hashtable_copyfunc_raw(HashtableValue *dst, HashtableValue src) {
+	memcpy(dst, &src, sizeof(*dst));
+}
+
+hash_t hashtable_hashfunc_int(HashtableValue val) {
+	hash_t x = val.uint64 & ((1u << 31u) - 1u);
 	x = ((x >> 16) ^ x) * 0x45d9f3b;
 	x = ((x >> 16) ^ x) * 0x45d9f3b;
 	x = (x >> 16) ^ x;
@@ -525,7 +500,7 @@ void hashtable_print_stringkeys(Hashtable *ht) {
 		log_debug("[bucket %"PRIuMAX"] %p", (uintmax_t)i, (void*)ht->table[i]);
 
 		for(HashtableElement *e = ht->table[i]; e; e = e->next) {
-			log_debug(" -- %s (%"PRIuMAX"): %p", (char*)e->key, (uintmax_t)e->hash, e->data);
+			log_debug(" -- %s (%"PRIuMAX"): %p", (char*)e->key.pointer, (uintmax_t)e->hash, e->data.pointer);
 		}
 	}
 

@@ -105,21 +105,21 @@ taisei_c_args += taisei_c_warnargs
 static = get_option('static')
 
 dep_sdl2        = dependency('sdl2',    version : '>=2.0.5',    required : true,    static : static)
-dep_sdl2_ttf    = dependency('SDL2_ttf',                        required : true,    static : static)
 dep_sdl2_mixer  = dependency('SDL2_mixer',                      required : false,   static : static)
 dep_sdl2_image  = dependency('SDL2_image',                      required : true,    static : static)
 dep_zlib        = dependency('zlib',                            required : true,    static : static)
 dep_png         = dependency('libpng',  version : '>=1.5',      required : true,    static : static)
 dep_zip         = dependency('libzip',  version : '>=1.0',      required : false,   static : static)
+dep_freetype    = dependency('freetype2',                       required : true,    static : static)
 dep_cglm        = subproject('cglm').get_variable('cglm_dep')
 dep_m           = cc.find_library('m',                          required : false)
 
 taisei_deps = [
     dep_sdl2,
-    dep_sdl2_ttf,
     dep_sdl2_image,
     dep_zlib,
     dep_png,
+    dep_freetype,
     dep_m,
     dep_cglm,
 ]

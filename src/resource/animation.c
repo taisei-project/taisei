@@ -173,12 +173,12 @@ static bool animation_parse_callback(const char *key, const char *value, void *d
 		return false;
 	}
 
-	hashtable_set_string(ani->sequences,key,seq);
+	hashtable_set(ani->sequences, key ,seq);
 	return true;
 }
 
-static void *free_sequence_callback(void *key, void *data, void *arg) {
-	AniSequence *seq = (AniSequence *)data;
+static void *free_sequence_callback(HashtableValue key, HashtableValue data, void *arg) {
+	AniSequence *seq = data.pointer;
 	free(seq->frames);
 	free(seq);
 
@@ -216,13 +216,13 @@ void* load_animation_begin(const char *filename, uint flags) {
 	return data;
 }
 
-static void *check_sequence_frame_callback(void *key, void *value, void *arg) {
+static void *check_sequence_frame_callback(HashtableValue key, HashtableValue value, void *arg) {
 	intptr_t sprite_count = (intptr_t)arg;
-	AniSequence *seq = value;
+	AniSequence *seq = value.pointer;
 	int errors = 0;
 	for(int i = 0; i < seq->length; i++) {
 		if(seq->frames[i].spriteidx >= sprite_count) {
-			log_warn("Animation sequence %s: Sprite index %d is higher than sprite_count.",(char *)key,seq->frames[i].spriteidx);
+			log_warn("Animation sequence %s: Sprite index %d is higher than sprite_count.", (char*)key.pointer, seq->frames[i].spriteidx);
 			errors++;
 		}
 	}
@@ -280,7 +280,7 @@ Animation *get_ani(const char *name) {
 }
 
 AniSequence *get_ani_sequence(Animation *ani, const char *seqname) {
-	AniSequence *seq = hashtable_get_string(ani->sequences,seqname);
+	AniSequence *seq = hashtable_get(ani->sequences, seqname).pointer;
 	if(seq == NULL) {
 		log_fatal("Sequence '%s' not found.",seqname);
 	}

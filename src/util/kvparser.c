@@ -86,7 +86,7 @@ bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *dat
 
 static bool kvcallback_hashtable(const char *key, const char *val, void *data) {
 	Hashtable *ht = data;
-	hashtable_set_string(ht, key, strdup((void*)val));
+	hashtable_set(ht, key, strdup(val));
 	return true;
 }
 
@@ -121,7 +121,11 @@ static bool kvcallback_spec(const char *key, const char *val, void *data) {
 			}
 
 			if(s->out_int) {
-				*s->out_int = strtol(val, NULL, 10);
+				*s->out_int = strtol(val, NULL, 0);
+			}
+
+			if(s->out_long) {
+				*s->out_long = strtol(val, NULL, 0);
 			}
 
 			if(s->out_float) {

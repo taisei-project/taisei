@@ -111,11 +111,11 @@ static const char* vfs_union_iter(VFSNode *node, void **opaque) {
 			continue;
 		}
 
-		if(hashtable_get_string(i->visited, r)) {
+		if(hashtable_get(i->visited, r).pointer) {
 			continue;
 		}
 
-		hashtable_set_string(i->visited, r, (void*)true);
+		hashtable_set(i->visited, r, (void*)true);
 		break;
 	}
 

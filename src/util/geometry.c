@@ -10,6 +10,8 @@
 
 #include "geometry.h"
 
+#include <string.h>
+
 bool point_in_ellipse(complex p, Ellipse e) {
 	double Xp = creal(p);
 	double Yp = cimag(p);
@@ -75,4 +77,108 @@ bool lineseg_ellipse_intersect(LineSegment seg, Ellipse e) {
 
 	Circle c = { .radius = creal(e.axes) / 2 };
 	return lineseg_circle_intersect(seg, c) >= 0;
+}
+
+bool rect_in_rect(Rect inner, Rect outer) {
+	return
+		rect_left(inner)   >= rect_left(outer)  &&
+		rect_right(inner)  <= rect_right(outer) &&
+		rect_top(inner)    >= rect_top(outer)   &&
+		rect_bottom(inner) <= rect_bottom(outer);
+}
+
+bool rect_rect_intersect(Rect r1, Rect r2, bool edges) {
+	if(
+		rect_bottom(r1) < rect_top(r2)    ||
+		rect_top(r1)    > rect_bottom(r2) ||
+		rect_left(r1)   > rect_right(r2)  ||
+		rect_right(r1)  < rect_left(r2)
+	) {
+		// Not even touching
+		return false;
+	}
+
+	if(!edges && (
+		rect_bottom(r1) == rect_top(r2)    ||
+		rect_top(r1)    == rect_bottom(r2) ||
+		rect_left(r1)   == rect_right(r2)  ||
+		rect_right(r1)  == rect_left(r2)
+	)) {
+		// Discard edge intersects
+		return false;
+	}
+
+	if(
+		(rect_left(r1) == rect_right(r2) && rect_bottom(r1) == rect_top(r2)) ||
+		(rect_left(r1) == rect_right(r2) && rect_bottom(r2) == rect_top(r1)) ||
+		(rect_left(r2) == rect_right(r1) && rect_bottom(r1) == rect_top(r2)) ||
+		(rect_left(r2) == rect_right(r1) && rect_bottom(r2) == rect_top(r1))
+	) {
+		// Discard corner intersects
+		return false;
+	}
+
+	return true;
+}
+
+bool rect_rect_intersection(Rect r1, Rect r2, bool edges, Rect *out) {
+	if(!rect_rect_intersect(r1, r2, edges)) {
+		return false;
+	}
+
+	out->top_left = CMPLX(
+    fmax(rect_left(r1), rect_left(r2)),
+		fmax(rect_top(r1), rect_top(r2))
+	);
+
+	out->bottom_right = CMPLX(
+    fmin(rect_right(r1), rect_right(r2)),
+		fmin(rect_bottom(r1), rect_bottom(r2))
+	);
+
+	return true;
+}
+
+bool rect_join(Rect *r1, Rect r2) {
+	if(rect_in_rect(r2, *r1)) {
+		return true;
+	}
+
+	if(rect_in_rect(*r1, r2)) {
+		memcpy(r1, &r2, sizeof(r2));
+		return true;
+	}
+
+	if(!rect_rect_intersect(*r1, r2, true)) {
+		return false;
+	}
+
+	if(rect_left(*r1) == rect_left(r2) && rect_right(*r1) == rect_right(r2)) {
+		// r2 is directly above/below r1
+		double y_min = fmin(rect_top(*r1), rect_top(r2));
+		double y_max = fmax(rect_bottom(*r1), rect_bottom(r2));
+
+		r1->top_left = CMPLX(creal(r1->top_left), y_min);
+		r1->bottom_right = CMPLX(creal(r1->bottom_right), y_max);
+
+		return true;
+	}
+
+	if(rect_top(*r1) == rect_top(r2) && rect_bottom(*r1) == rect_bottom(r2)) {
+		// r2 is directly left/right to r1
+		double x_min = fmin(rect_left(*r1), rect_left(r2));
+		double x_max = fmax(rect_right(*r1), rect_right(r2));
+
+		r1->top_left = CMPLX(x_min, cimag(r1->top_left));
+		r1->bottom_right = CMPLX(x_max, cimag(r1->bottom_right));
+
+		return true;
+	}
+
+	return false;
+}
+
+void rect_set_xywh(Rect *rect, double x, double y, double w, double h) {
+	rect->top_left = CMPLX(x, y);
+	rect->bottom_right = CMPLX(w, h) + rect->top_left;
 }
