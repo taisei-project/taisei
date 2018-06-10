@@ -1066,7 +1066,7 @@ void player_preload(void) {
 // FIXME: where should this be?
 
 complex plrutil_homing_target(complex org, complex fallback) {
-	double mindst = DBL_MAX;
+	double mindst = INFINITY;
 	complex target = fallback;
 
 	if(global.boss && boss_is_vulnerable(global.boss)) {
