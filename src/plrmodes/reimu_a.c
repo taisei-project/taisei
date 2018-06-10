@@ -249,7 +249,9 @@ static void reimu_spirit_yinyang_focused_visual(Enemy *e, int t, bool render) {
 		);
 	}
 
-	reimu_common_draw_yinyang(e, t, rgb(1.0, 0.8, 0.8));
+	if(render) {
+		reimu_common_draw_yinyang(e, t, rgb(1.0, 0.8, 0.8));
+	}
 }
 
 static void reimu_spirit_yinyang_unfocused_visual(Enemy *e, int t, bool render) {
@@ -269,7 +271,9 @@ static void reimu_spirit_yinyang_unfocused_visual(Enemy *e, int t, bool render) 
 		);
 	}
 
-	reimu_common_draw_yinyang(e, t, rgb(0.95, 0.75, 1.0));
+	if(render) {
+		reimu_common_draw_yinyang(e, t, rgb(0.95, 0.75, 1.0));
+	}
 }
 
 static inline Enemy* reimu_spirit_spawn_slave(Player *plr, complex pos, complex a0, complex a1, complex a2, complex a3, EnemyVisualRule visual) {
