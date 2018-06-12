@@ -360,6 +360,29 @@ bool audio_backend_sound_loop(void *impl, AudioBackendSoundGroup group) {
 	return true;
 }
 
+typedef struct CustomFadeout {
+	int duration; // in samples
+	int counter;
+} CustomFadeout;
+
+void custom_fadeout_free(int chan, void *udata) {
+	free(udata);
+}
+
+void custom_fadeout_proc(int chan, void *stream, int len, void *udata) {
+	CustomFadeout *e = udata;
+
+	assert(AUDIO_FORMAT == AUDIO_S16SYS); // if you wanna change the format, you get to implement it here. This is the hardcoded default format in SDL_Mixer by the way
+
+	int16_t *data = stream;
+	len /= 2;
+	for(int i = 0; i < len; i++) {
+		e->counter++;
+		data[i]*=1.-min(1,(double)e->counter/(double)e->duration);
+	}
+}
+
+
 bool audio_backend_sound_stop_loop(void *impl) {
 	if(!mixer_loaded)
 		return false;
@@ -370,7 +393,12 @@ bool audio_backend_sound_stop_loop(void *impl) {
 		return false;
 	}
 
-	Mix_FadeOutChannel(snd->loopchan,LOOPFADEOUT);
+	CustomFadeout *effect = calloc(1,sizeof(CustomFadeout));
+	effect->counter = 0;
+	effect->duration = LOOPFADEOUT*AUDIO_FREQ/1000;
+	Mix_ExpireChannel(snd->loopchan, LOOPFADEOUT);
+	
+	Mix_RegisterEffect(snd->loopchan, custom_fadeout_proc, custom_fadeout_free, effect);
 
 	return true;
 
