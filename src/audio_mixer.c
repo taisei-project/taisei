@@ -360,6 +360,7 @@ bool audio_backend_sound_loop(void *impl, AudioBackendSoundGroup group) {
 	return true;
 }
 
+// XXX: This custom fading effect circumvents https://bugzilla.libsdl.org/show_bug.cgi?id=2904
 typedef struct CustomFadeout {
 	int duration; // in samples
 	int counter;

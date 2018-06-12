@@ -16,7 +16,6 @@
 #define DEFAULT_SFX_VOLUME 100
 
 #define LOOPFADEOUT 50
-// XXX: THIS IS SPARTA. but this needs to be a property set in volumes.conf or wherever
 
 typedef struct CurrentBGM {
 	char *name;
