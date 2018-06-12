@@ -44,6 +44,7 @@ struct Enemy {
 	EnemyLogicRule logic_rule;
 	EnemyVisualRule visual_rule;
 
+	int spawn_hp;
 	int hp;
 
 	complex args[RULE_ARGC];

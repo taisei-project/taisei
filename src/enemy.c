@@ -73,6 +73,7 @@ Enemy *create_enemy_p(EnemyList *enemies, complex pos, int hp, EnemyVisualRule v
 	e->pos0 = pos;
 	e->pos0_visual = pos;
 
+	e->spawn_hp = hp;
 	e->hp = hp;
 	e->alpha = 1.0;
 
@@ -314,11 +315,15 @@ bool enemy_damage(Enemy *enemy, int damage) {
 		return false;
 	}
 
-	if((enemy->hp -= damage) <= 0) {
+	enemy->hp -= damage;
+
+	if(enemy->hp <= 0) {
 		enemy->hp = ENEMY_KILLED;
 	}
 
-	play_loop("damage_feedback");
+	if(enemy->hp < enemy->spawn_hp*0.3) {
+		play_loop("hit1");
+	}
 
 
 	return true;
