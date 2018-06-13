@@ -50,9 +50,7 @@ double marisa_common_property(Player *plr, PlrProperty prop) {
 }
 
 void marisa_common_shot(Player *plr, int dmg) {
-	if(!(global.frames % 4)) {
-		play_sound("generic_shot");
-	}
+	play_loop("generic_shot");
 
 	if(!(global.frames % 6)) {
 		Color c = rgb(1, 1, 1);

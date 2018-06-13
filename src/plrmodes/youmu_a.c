@@ -323,9 +323,7 @@ static Projectile* youmu_mirror_self_shot(Player *plr, complex ofs, complex vel,
 }
 
 static void youmu_mirror_shot(Player *plr) {
-	if(!(global.frames % 4)) {
-		play_sound("generic_shot");
-	}
+	play_loop("generic_shot");
 
 	int p = plr->power / 100;
 
