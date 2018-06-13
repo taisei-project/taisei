@@ -447,9 +447,9 @@ bool boss_damage(Boss *boss, int dmg) {
 
 	boss->current->hp -= dmg;
 	if(boss->current->hp < boss->current->maxhp*0.1) {
-		play_loop("hit0");
-	} else if(boss->current->hp < boss->current->maxhp*0.3) {
 		play_loop("hit1");
+	} else {
+		play_loop("hit0");
 	}
 	return true;
 }

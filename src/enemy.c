@@ -321,8 +321,10 @@ bool enemy_damage(Enemy *enemy, int damage) {
 		enemy->hp = ENEMY_KILLED;
 	}
 
-	if(enemy->hp < enemy->spawn_hp*0.3) {
+	if(enemy->hp < enemy->spawn_hp*0.1) {
 		play_loop("hit1");
+	} else {
+		play_loop("hit0");
 	}
 
 
