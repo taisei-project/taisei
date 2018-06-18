@@ -768,7 +768,7 @@ void stage_draw_hud(void) {
 		.x.ofs = -75,
 
 		// XXX: is there a more robust way to level the monospace font with the label one?
-		.y.mono_ofs = -0.5,
+		.y.mono_ofs = 0.5,
 	};
 
 	const float label_height = 33;

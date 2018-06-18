@@ -278,10 +278,10 @@ static FT_Error set_font_size(Font *fnt, uint pxsize, double scale) {
 
 	// Based on SDL_ttf
 	FT_Face face = fnt->face;
-	fixed_scale = FT_MulFix(face->size->metrics.y_scale, fixed_scale);
+	fixed_scale = face->size->metrics.y_scale;
 	fnt->metrics.ascent = FT_CEIL(FT_MulFix(face->ascender, fixed_scale));
 	fnt->metrics.descent = FT_CEIL(FT_MulFix(face->descender, fixed_scale));
-	fnt->metrics.max_glyph_height = fnt->metrics.ascent - fnt->metrics.descent + 1; // FIXME: is this +1 needed?
+	fnt->metrics.max_glyph_height = fnt->metrics.ascent - fnt->metrics.descent;
 	fnt->metrics.lineskip = FT_CEIL(FT_MulFix(face->height, fixed_scale));
 
 	return err;
@@ -401,21 +401,10 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 	}
 
 	Glyph *glyph = font->glyphs + font->glyphs_used - 1;
-	FT_Error err = FT_Load_Glyph(font->face, gindex, FT_LOAD_RENDER);
+	FT_Error err = FT_Load_Glyph(font->face, gindex, FT_LOAD_RENDER | FT_LOAD_TARGET_LIGHT);
 
 	if(err) {
 		log_warn("FT_Load_Glyph(%u) failed: %s", gindex, ft_error_str(err));
-		--font->glyphs_used;
-		return NULL;
-	}
-
-	if(font->face->glyph->bitmap.pixel_mode != FT_PIXEL_MODE_GRAY) {
-		log_warn(
-			"Glyph %u returned bitmap with pixel format %s. Only %s is supported, sorry. Ignoring",
-			gindex,
-			pixmode_name(font->face->glyph->bitmap.pixel_mode),
-			pixmode_name(FT_PIXEL_MODE_GRAY)
-		);
 		--font->glyphs_used;
 		return NULL;
 	}
@@ -426,17 +415,33 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 	glyph->metrics.height = FT_CEIL(font->face->glyph->metrics.height);
 	glyph->metrics.advance = FT_CEIL(font->face->glyph->metrics.horiAdvance);
 
-	if(!add_glyph_to_spritesheets(font, glyph, font->face->glyph->bitmap, spritesheets)) {
-		log_warn(
-			"Glyph %u can't fit into any spritesheets (padded bitmap size: %ux%u; max spritesheet size: %ux%u)",
-			gindex,
-			font->face->glyph->bitmap.width + 2 * GLYPH_SPRITE_PADDING,
-			font->face->glyph->bitmap.rows  + 2 * GLYPH_SPRITE_PADDING,
-			SS_WIDTH,
-			SS_HEIGHT
-		);
-		--font->glyphs_used;
-		return NULL;
+	if(font->face->glyph->bitmap.buffer == NULL) {
+		// Some glyphs may be invisible, but we still need the metrics data for them (e.g. space)
+		memset(&glyph->sprite, 0, sizeof(Sprite));
+	} else {
+		if(font->face->glyph->bitmap.pixel_mode != FT_PIXEL_MODE_GRAY) {
+			log_warn(
+				"Glyph %u returned bitmap with pixel format %s. Only %s is supported, sorry. Ignoring",
+				gindex,
+				pixmode_name(font->face->glyph->bitmap.pixel_mode),
+				pixmode_name(FT_PIXEL_MODE_GRAY)
+			);
+			--font->glyphs_used;
+			return NULL;
+		}
+
+		if(!add_glyph_to_spritesheets(font, glyph, font->face->glyph->bitmap, spritesheets)) {
+			log_warn(
+				"Glyph %u can't fit into any spritesheets (padded bitmap size: %ux%u; max spritesheet size: %ux%u)",
+				gindex,
+				font->face->glyph->bitmap.width + 2 * GLYPH_SPRITE_PADDING,
+				font->face->glyph->bitmap.rows  + 2 * GLYPH_SPRITE_PADDING,
+				SS_WIDTH,
+				SS_HEIGHT
+			);
+			--font->glyphs_used;
+			return NULL;
+		}
 	}
 
 	glyph->ft_index = gindex;
@@ -469,7 +474,7 @@ static void load_glyphs(Font *font) {
 			glyph = load_glyph(font, gindex, &spritesheets);
 
 			if(glyph == NULL) {
-				continue;
+				goto skip_glyph;
 			}
 
 			gofs = (ptrdiff_t)(glyph - font->glyphs) + 1;
@@ -479,8 +484,10 @@ static void load_glyphs(Font *font) {
 		}
 
 		hashtable_set(font->charcodes_to_glyph_ofs, charcode, gofs);
-		charcode = FT_Get_Next_Char(font->face, charcode, &gindex);
 		++num_charcodes;
+
+	skip_glyph:
+		charcode = FT_Get_Next_Char(font->face, charcode, &gindex);
 	}
 
 	hashtable_free(indices_to_glyph_ofs);
@@ -591,7 +598,11 @@ static Glyph* get_glyph(Font *fnt, charcode_t cp) {
 	uint64_t ofs = hashtable_get_unsafe(fnt->charcodes_to_glyph_ofs, cp).uint64;
 
 	if(ofs == 0) {
-		return NULL;
+		ofs = hashtable_get_unsafe(fnt->charcodes_to_glyph_ofs, UNICODE_UNKNOWN).uint64;
+
+		if(ofs == 0) {
+			return NULL;
+		}
 	}
 
 	return fnt->glyphs + (ofs - 1);
@@ -632,16 +643,130 @@ static void reload_fonts(double quality) {
 	resource_for_each(RES_FONT, reload_font_callback, NULL);
 }
 
-#include "hirestime.h"
+#include "global.h"
 
-static void draw_text_line(Alignment align, float x, float y, const char *text, Font *font) {
+static inline void apply_kerning(Font *font, Glyph *gprev, Glyph *gthis, double *x, double *y) {
+	FT_Vector kvec;
+
+	if(gamekeypressed(KEY_FOCUS)) {
+		return;
+	}
+
+	if(!FT_Get_Kerning(font->face, gprev->ft_index, gthis->ft_index, FT_KERNING_DEFAULT, &kvec)) {
+		*x += kvec.x >> 6;
+		*y += kvec.y >> 6;
+	}
+}
+
+static void text_bbox(Font *font, const char *text, uint maxlines, double *width, double *height) {
 	const char *tptr = text;
-	SpriteParams sp;
-	Glyph *prev_glyph;
+	Glyph *prev_glyph = NULL;
+	double x = 0, y = 0;
+	bool keming = FT_HAS_KERNING(font->face);
+	uint numlines = 0;
 
+	if(width) {
+		*width = 0;
+	}
+
+	double y_max = 0, y_min = 0;
+
+	while(*tptr) {
+		uint32_t uchar = utf8_getch(&tptr);
+
+		if(uchar == '\n') {
+			if(++numlines == maxlines) {
+				break;
+			}
+
+			if(width && x > *width) {
+				*width = x;
+			}
+
+			x = 0;
+			y += font->metrics.lineskip;
+
+			continue;
+		}
+
+		Glyph *glyph = get_glyph(font, uchar);
+
+		if(glyph == NULL) {
+			continue;
+		}
+
+		if(keming && prev_glyph) {
+			apply_kerning(font, prev_glyph, glyph, &x, &y);
+		}
+
+		x += glyph->metrics.advance;
+
+		double g_y = y - glyph->metrics.bearing_y;
+		double g_ymax = g_y + glyph->metrics.height;
+
+		if(g_y < y_min) {
+			y_min = g_y;
+		}
+
+		if(g_ymax > y_max) {
+			y_max = g_ymax;
+		}
+
+		prev_glyph = glyph;
+	}
+
+	if(width && x > *width) {
+		*width = x;
+	}
+
+	if(height) {
+		*height = y_max - y_min;
+	}
+}
+
+double text_width(Font *font, const char *text, uint maxlines) {
+	double w;
+	text_bbox(font, text, maxlines, &w, NULL);
+	return w / font->scale;
+}
+
+int stringwidth(char *s, Font *font) {
+	return text_width(font, s, 0);
+}
+
+int stringheight(char *s, Font *font) {
+	return font->metrics.max_glyph_height / font->scale;
+}
+
+static inline void adjust_xpos(Font *font, const char *text, Alignment align, double x_orig, double *x) {
+	double line_width;
+
+	switch(align) {
+		case AL_Left: {
+			*x = x_orig;
+			break;
+		}
+
+		case AL_Right: {
+			text_bbox(font, text, 1, &line_width, NULL);
+			*x = x_orig - line_width;
+			break;
+		}
+
+		case AL_Center: {
+			text_bbox(font, text, 1, &line_width, NULL);
+			*x = x_orig - line_width * 0.5;
+			break;
+		}
+	}
+}
+
+void draw_text(Alignment align, double x, double y, const char *text, Font *font) {
 	if(!*text) {
 		return;
 	}
+
+	align &= ~AL_Flag_NoAdjust;
 
 	bool scaled = false;
 
@@ -654,46 +779,43 @@ static void draw_text_line(Alignment align, float x, float y, const char *text, 
 		scaled = true;
 	}
 
-	memset(&sp, 0, sizeof(sp));
-
+	const char *tptr = text;
+	SpriteParams sp = { .sprite = NULL };
+	Glyph *prev_glyph = NULL;
+	double x_orig = x;
 	bool keming = FT_HAS_KERNING(font->face);
 
-	/*
-	Color c = rgba(1, 1, 1, 1);
+	sp.shader_ptr = r_shader_get("sprite_text_test");
+	sp.color = r_color_current();
+	sp.blend = r_blend_current();
 
-	if(keming && ((int)time_get()) % 2) {
-		keming = false;
-		c = rgba(1, 1, 0.5, 1);
-	}
-	*/
-
-	Color c = r_color_current();
+	adjust_xpos(font, text, align, x_orig, &x);
 
 	while(*tptr) {
 		uint32_t uchar = utf8_getch(&tptr);
-		Glyph *glyph = get_glyph(font, uchar);
 
-		log_debug("%08x [%c] %p", uchar, uchar, (void*) glyph);
+		if(uchar == '\n') {
+			adjust_xpos(font, text, align, x_orig, &x);
+			y += font->metrics.lineskip;
+			continue;
+		}
+
+		Glyph *glyph = get_glyph(font, uchar);
 
 		if(glyph == NULL) {
 			continue;
 		}
 
 		if(keming && prev_glyph) {
-			FT_Vector kvec;
-
-			if(!FT_Get_Kerning(font->face, prev_glyph->ft_index, glyph->ft_index, FT_KERNING_DEFAULT, &kvec)) {
-				x += kvec.x >> 6;
-				y += kvec.y >> 6;
-			}
+			apply_kerning(font, prev_glyph, glyph, &x, &y);
 		}
 
-		sp.sprite_ptr = &glyph->sprite;
-		sp.shader = "sprite_text_test";
-		sp.color = c; // r_color_current();
-		sp.pos.x = x + glyph->metrics.bearing_x + glyph->sprite.w * 0.5;
-		sp.pos.y = y - glyph->metrics.bearing_y + glyph->sprite.h * 0.5;
-		r_draw_sprite(&sp);
+		if(glyph->sprite.tex != NULL) {
+			sp.sprite_ptr = &glyph->sprite;
+			sp.pos.x = x + glyph->metrics.bearing_x + glyph->sprite.w * 0.5;
+			sp.pos.y = y - glyph->metrics.bearing_y + glyph->sprite.h * 0.5 - font->metrics.descent;
+			r_draw_sprite(&sp);
+		}
 
 		x += glyph->metrics.advance;
 		prev_glyph = glyph;
@@ -704,56 +826,14 @@ static void draw_text_line(Alignment align, float x, float y, const char *text, 
 	}
 }
 
-void draw_text(Alignment align, float x, float y, const char *text, Font *font) {
-	assert(text != NULL);
-
-	if(!*text) {
-		return;
-	}
-
-	char *nl;
-	char *buf = malloc(strlen(text)+1);
-	strcpy(buf, text);
-
-	if((nl = strchr(buf, '\n')) != NULL && strlen(nl) > 1) {
-		draw_text(align, x, y + font->metrics.lineskip / font->scale, nl+1, font);
-		*nl = '\0';
-	}
-
-	draw_text_line(align, x, y, buf, font);
-	free(buf);
-}
-
 void render_text(const char *text, Font *font, Sprite *out_spr) {
 
 }
 
-void draw_text_auto_wrapped(Alignment align, float x, float y, const char *text, int width, Font *font) {
+void draw_text_auto_wrapped(Alignment align, double x, double y, const char *text, double width, Font *font) {
 	char buf[strlen(text) * 2];
 	wrap_text(buf, sizeof(buf), text, width, font);
 	draw_text(align, x, y, buf, font);
-}
-
-static void string_dimensions(char *s, Font *font, int *w, int *h) {
-	if(w) {
-		*w = 8;
-	}
-
-	if(h) {
-		*h = 8;
-	}
-}
-
-int stringwidth(char *s, Font *font) {
-	int w;
-	string_dimensions(s, font, &w, NULL);
-	return w/* / font_renderer.quality*/;
-}
-
-int stringheight(char *s, Font *font) {
-	int h;
-	string_dimensions(s, font, NULL, &h);
-	return h/* / font_renderer.quality*/;
 }
 
 int charwidth(char c, Font *font) {
@@ -764,8 +844,7 @@ int charwidth(char c, Font *font) {
 }
 
 int font_line_spacing(Font *font) {
-	// return TTF_FontLineSkip(font->ttf)/* / font_renderer.quality*/;
-	return 8;
+	return font->metrics.lineskip / font->scale;
 }
 
 void shorten_text_up_to_width(char *s, float width, Font *font) {

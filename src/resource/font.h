@@ -41,8 +41,8 @@ typedef struct GlyphMetrics {
 	int advance;
 } GlyphMetrics;
 
-void draw_text(Alignment align, float x, float y, const char *text, Font *font);
-void draw_text_auto_wrapped(Alignment align, float x, float y, const char *text, int width, Font *font);
+void draw_text(Alignment align, double x, double y, const char *text, Font *font);
+void draw_text_auto_wrapped(Alignment align, double x, double y, const char *text, double width, Font *font);
 void render_text(const char *text, Font *font, Sprite *out_spr);
 
 int stringwidth(char *s, Font *font);

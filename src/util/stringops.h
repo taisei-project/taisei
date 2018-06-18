@@ -47,7 +47,7 @@ size_t ucs4len(const uint32_t *ucs4);
 uint32_t* utf8_to_ucs4(const char *utf8);
 char* ucs4_to_utf8(const uint32_t *ucs4);
 
-uint32_t utf8_getch(const char **src) attr_nonnull(1) attr_pure;
+uint32_t utf8_getch(const char **src) attr_nonnull(1);
 
 uint32_t crc32str(uint32_t crc, const char *str);
 

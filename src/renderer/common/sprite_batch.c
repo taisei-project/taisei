@@ -321,6 +321,8 @@ void _r_sprite_batch_end_frame(void) {
 		return;
 	}
 
+	r_flush_sprites();
+
 	Color clr_saved = r_color_current();
 	ShaderProgram *prog_saved = r_shader_current();
 	r_shader_standard();
