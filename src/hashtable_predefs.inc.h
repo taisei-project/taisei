@@ -124,6 +124,15 @@
 	 _HT_GENERICLIST_TS(name) \
 ))
 
+/*
+ * Type-generic wrappers around the core API.
+ *
+ * For the core API documentation, see hashtable.inc.h
+ *
+ * To find documentation about a macro called "ht_foo", search hashtable.inc.h
+ * for "ht_XXX_foo" (the XXX is literal).
+ */
+
 #define ht_create(ht) \
 	_HT_GENERIC(*(ht), create) (ht)
 

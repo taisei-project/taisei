@@ -58,3 +58,6 @@ extern uint32_t (*htutil_hashfunc_string)(uint32_t crc, const char *str);
 // Import public declarations for the predefined hashtable types.
 #define HT_DECL
 #include "hashtable_predefs.inc.h"
+
+// NOTE: For the hashtable API, see hashtable.inc.h
+// NOTE: For type-generic wrappers around the API, see hashtable_predefs.inc.h
