@@ -68,8 +68,6 @@ typedef void (*ResourceInit)(void);
 // Called during resource subsystem shutdown
 typedef void (*ResourceShutdown)(void);
 
-typedef struct ResourceHandlerPrivate ResourceHandlerPrivate;
-
 typedef struct ResourceHandler {
 	ResourceType type;
 
@@ -87,7 +85,9 @@ typedef struct ResourceHandler {
 		ResourceShutdown shutdown;
 	} procs;
 
-	ResourceHandlerPrivate *private;
+	struct {
+		ht_str2ptr_ts_t mapping;
+	} private;
 } ResourceHandler;
 
 typedef struct Resource {

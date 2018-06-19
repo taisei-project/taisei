@@ -72,7 +72,7 @@ struct Font {
 	uint glyphs_allocated;
 	uint glyphs_used;
 
-	Hashtable *charcodes_to_glyph_ofs;
+	ht_int2int_t charcodes_to_glyph_ofs;
 	Texture **textures;
 	uint num_textures;
 };
@@ -449,48 +449,47 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 }
 
 static void load_glyphs(Font *font) {
-	font->glyphs_allocated = 128;
-	font->glyphs_used = 0;
-	font->glyphs = malloc(sizeof(Glyph) * font->glyphs_allocated);
-
-	font->charcodes_to_glyph_ofs = hashtable_new(NULL, hashtable_hashfunc_int, NULL, NULL);
-	Hashtable *indices_to_glyph_ofs = hashtable_new(NULL, hashtable_hashfunc_int, NULL, NULL);
+	ht_int2int_t indices_to_glyph_ofs;
 	SpriteSheetAnchor spritesheets = { .first = NULL };
-
 	charcode_t charcode;
 	uint gindex;
 	uint num_charcodes = 0;
 	uint num_glyphs = 0;
 
+	font->glyphs_allocated = 128;
+	font->glyphs_used = 0;
+	font->glyphs = malloc(sizeof(Glyph) * font->glyphs_allocated);
+
+	ht_create(&font->charcodes_to_glyph_ofs);
+	ht_create(&indices_to_glyph_ofs);
+
 	charcode = FT_Get_First_Char(font->face, &gindex);
 
 	while(gindex != 0) {
 		Glyph *glyph;
-		uint64_t gofs = hashtable_get(indices_to_glyph_ofs, gindex).uint64;
+		int64_t gofs;
 
-		log_debug("charcode=%lu gindex=%u gofs=%lu", charcode, gindex, gofs);
-
-		if(gofs == 0) {
+		if(!ht_lookup(&indices_to_glyph_ofs, gindex, &gofs)) {
 			glyph = load_glyph(font, gindex, &spritesheets);
 
 			if(glyph == NULL) {
 				goto skip_glyph;
 			}
 
-			gofs = (ptrdiff_t)(glyph - font->glyphs) + 1;
-			hashtable_set(indices_to_glyph_ofs, gindex, gofs);
+			gofs = (ptrdiff_t)(glyph - font->glyphs);
+			ht_set(&indices_to_glyph_ofs, gindex, gofs);
 			log_debug("gofs=%lu", gofs);
 			++num_glyphs;
 		}
 
-		hashtable_set(font->charcodes_to_glyph_ofs, charcode, gofs);
+		ht_set(&font->charcodes_to_glyph_ofs, charcode, gofs);
 		++num_charcodes;
 
 	skip_glyph:
 		charcode = FT_Get_Next_Char(font->face, charcode, &gindex);
 	}
 
-	hashtable_free(indices_to_glyph_ofs);
+	ht_destroy(&indices_to_glyph_ofs);
 
 	if(font->glyphs_used < font->glyphs_allocated) {
 		font->glyphs = realloc(font->glyphs, sizeof(Glyph) * font->glyphs_used);
@@ -536,7 +535,7 @@ static void free_font_resources(Font *font) {
 		}
 	}
 
-	hashtable_free(font->charcodes_to_glyph_ofs);
+	ht_destroy(&font->charcodes_to_glyph_ofs);
 	free(font->source_path);
 	free(font->glyphs);
 
@@ -595,17 +594,16 @@ void unload_font(void *vfont) {
 }
 
 static Glyph* get_glyph(Font *fnt, charcode_t cp) {
-	uint64_t ofs = hashtable_get_unsafe(fnt->charcodes_to_glyph_ofs, cp).uint64;
+	int64_t ofs;
 
-	if(ofs == 0) {
-		ofs = hashtable_get_unsafe(fnt->charcodes_to_glyph_ofs, UNICODE_UNKNOWN).uint64;
-
-		if(ofs == 0) {
-			return NULL;
-		}
+	if(
+		!ht_lookup(&fnt->charcodes_to_glyph_ofs, cp, &ofs) &&
+		!ht_lookup(&fnt->charcodes_to_glyph_ofs, UNICODE_UNKNOWN, &ofs)
+	) {
+		return NULL;
 	}
 
-	return fnt->glyphs + (ofs - 1);
+	return fnt->glyphs + ofs;
 }
 
 ResourceHandler font_res_handler = {

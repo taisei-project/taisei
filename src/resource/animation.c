@@ -173,12 +173,12 @@ static bool animation_parse_callback(const char *key, const char *value, void *d
 		return false;
 	}
 
-	hashtable_set(ani->sequences, key ,seq);
+	ht_set(&ani->sequences, key, seq);
 	return true;
 }
 
-static void *free_sequence_callback(HashtableValue key, HashtableValue data, void *arg) {
-	AniSequence *seq = data.pointer;
+static void *free_sequence_callback(const char *key, void *data, void *arg) {
+	AniSequence *seq = data;
 	free(seq->frames);
 	free(seq);
 
@@ -191,20 +191,20 @@ void* load_animation_begin(const char *filename, uint flags) {
 	strcpy(name, basename);
 
 	Animation *ani = calloc(1, sizeof(Animation));
-	ani->sequences = hashtable_new_stringkeys();
+	ht_create(&ani->sequences);
 
 	if(!parse_keyvalue_file_cb(filename, animation_parse_callback, ani)) {
-		hashtable_foreach(ani->sequences, free_sequence_callback, NULL);
-		hashtable_free(ani->sequences);
+		ht_foreach(&ani->sequences, free_sequence_callback, NULL);
+		ht_destroy(&ani->sequences);
 		free(ani);
 		free(basename);
 		return NULL;
 	}
 
 	if(ani->sprite_count <= 0) {
-		log_warn("Animation sprite count of '%s' must be positive integer?", name);
-		hashtable_foreach(ani->sequences, free_sequence_callback, NULL);
-		hashtable_free(ani->sequences);
+		log_warn("Animation sprite count of '%s', must be positive integer", name);
+		ht_foreach(&ani->sequences, free_sequence_callback, NULL);
+		ht_destroy(&ani->sequences);
 		free(ani);
 		free(basename);
 		return NULL;
@@ -216,18 +216,29 @@ void* load_animation_begin(const char *filename, uint flags) {
 	return data;
 }
 
-static void *check_sequence_frame_callback(HashtableValue key, HashtableValue value, void *arg) {
-	intptr_t sprite_count = (intptr_t)arg;
-	AniSequence *seq = value.pointer;
+union check_sequence_frame_callback_arg {
+	int sprite_count, errors;
+};
+
+static void *check_sequence_frame_callback(const char *key, void *value, void *varg) {
+	AniSequence *seq = value;
+	union check_sequence_frame_callback_arg *arg = varg;
+	int sprite_count = arg->sprite_count;
 	int errors = 0;
+
 	for(int i = 0; i < seq->length; i++) {
 		if(seq->frames[i].spriteidx >= sprite_count) {
-			log_warn("Animation sequence %s: Sprite index %d is higher than sprite_count.", (char*)key.pointer, seq->frames[i].spriteidx);
+			log_warn("Animation sequence %s: Sprite index %d is higher than sprite_count.", key, seq->frames[i].spriteidx);
 			errors++;
 		}
 	}
 
-	return (void *)(intptr_t)errors;
+	if(errors) {
+		arg->errors = errors;
+		return arg;
+	}
+
+	return NULL;
 }
 
 void* load_animation_end(void *opaque, const char *filename, uint flags) {
@@ -256,7 +267,9 @@ void* load_animation_end(void *opaque, const char *filename, uint flags) {
 		ani->sprites[i] = res->data;
 	}
 
-	if(hashtable_foreach(ani->sequences, check_sequence_frame_callback, (void *)(intptr_t)ani->sprite_count) != 0) {
+	union check_sequence_frame_callback_arg arg = { ani->sprite_count };
+
+	if(ht_foreach(&ani->sequences, check_sequence_frame_callback, &arg) != NULL) {
 		unload_animation(ani);
 		ani = NULL;
 	}
@@ -269,8 +282,8 @@ void* load_animation_end(void *opaque, const char *filename, uint flags) {
 
 void unload_animation(void *vani) {
 	Animation *ani = vani;
-	hashtable_foreach(ani->sequences, free_sequence_callback, NULL);
-	hashtable_free(ani->sequences);
+	ht_foreach(&ani->sequences, free_sequence_callback, NULL);
+	ht_destroy(&ani->sequences);
 	free(ani->sprites);
 	free(ani);
 }
@@ -280,7 +293,8 @@ Animation *get_ani(const char *name) {
 }
 
 AniSequence *get_ani_sequence(Animation *ani, const char *seqname) {
-	AniSequence *seq = hashtable_get(ani->sequences, seqname).pointer;
+	AniSequence *seq = ht_get(&ani->sequences, seqname, NULL);
+
 	if(seq == NULL) {
 		log_fatal("Sequence '%s' not found.",seqname);
 	}

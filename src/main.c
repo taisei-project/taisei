@@ -212,6 +212,8 @@ int main(int argc, char **argv) {
 	}
 
 	free_cli_action(&a);
+
+	htutil_init();
 	vfs_setup(false);
 
 	if(headless) {
