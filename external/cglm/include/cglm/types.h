@@ -23,6 +23,18 @@ typedef vec4 mat4[4];
 
 typedef vec4 versor;
 
+#ifndef M_PI
+    #define M_PI 3.14159265358979323846
+#endif
+
+#ifndef M_PI_2
+    #define M_PI_2 1.57079632679489661923
+#endif
+
+#ifndef M_PI_4
+    #define M_PI_4 0.78539816339744830962
+#endif
+
 #define CGLM_PI    (float)M_PI
 #define CGLM_PI_2  (float)M_PI_2
 #define CGLM_PI_4  (float)M_PI_4
