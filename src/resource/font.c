@@ -103,6 +103,8 @@ typedef LIST_ANCHOR(SpriteSheet) SpriteSheetAnchor;
 static struct {
 	FT_Library lib;
 	ShaderProgram *default_shader;
+	RenderTarget render_buf;
+
 	struct {
 		SDL_mutex *new_face;
 		SDL_mutex *done_face;
@@ -158,9 +160,25 @@ static void init_fonts(void) {
 	NULL);
 
 	// WARNING: Preloading the default shader here is unsafe.
+
+	Texture *rtex = calloc(1, sizeof(*rtex));
+
+	r_texture_create(rtex, &(TextureParams) {
+		.filter = { TEX_FILTER_LINEAR, TEX_FILTER_LINEAR },
+		.wrap   = { TEX_WRAP_CLAMP, TEX_WRAP_CLAMP },
+		.type   = TEX_TYPE_R,
+		.stream = true,
+		.width  = 1024,
+		.height = 1024,
+	});
+
+	r_target_create(&globals.render_buf);
+	r_target_attach(&globals.render_buf, rtex, RENDERTARGET_ATTACHMENT_COLOR0);
 }
 
 static void shutdown_fonts(void) {
+	r_texture_destroy(r_target_get_attachment(&globals.render_buf, RENDERTARGET_ATTACHMENT_COLOR0));
+	r_target_destroy(&globals.render_buf);
 	events_unregister_handler(fonts_event);
 	FT_Done_FreeType(globals.lib);
 	SDL_DestroyMutex(globals.mutex.new_face);
@@ -847,12 +865,15 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 		sp.color = r_color_current();
 	}
 
-	// if(font->metrics.scale != 1) {
+	MatrixMode mm_prev = r_mat_mode_current();
+	r_mat_mode(MM_MODELVIEW);
+
+	if(font->metrics.scale != 1) {
 		r_mat_push();
 		r_mat_translate(x, y, 0);
 		r_mat_scale(iscale, iscale, 1);
 		x = y = 0;
-	// }
+	}
 
 	double x_orig = x;
 	adjust_xpos(font, text, params->align, x_orig, &x);
@@ -930,10 +951,11 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 	r_mat_pop();
 	r_mat_mode(MM_MODELVIEW);
 
-	// if(font->metrics.scale != 1) {
+	if(font->metrics.scale != 1) {
 		r_mat_pop();
-	// }
+	}
 
+	r_mat_mode(mm_prev);
 	return x_orig + (x - x_orig) / font->metrics.scale;
 }
 
@@ -946,6 +968,85 @@ double text_draw_wrapped(const char *text, double max_width, const TextParams *p
 	char buf[strlen(text) * 2 + 1];
 	text_wrap(font, text, max_width, buf, sizeof(buf));
 	return _text_draw(font, text, params);
+}
+
+void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbox) {
+	text_bbox(font, text, 0, out_bbox);
+	int bbox_width = out_bbox->x.max - out_bbox->x.min;
+	int bbox_height = out_bbox->y.max - out_bbox->y.min;
+	Texture *tex = r_target_get_attachment(&globals.render_buf, RENDERTARGET_ATTACHMENT_COLOR0);
+
+	int tex_new_w = bbox_width; // max(tex->w, bbox_width);
+	int tex_new_h = bbox_height; // max(tex->h, bbox_height);
+
+	if(tex_new_w != tex->w || tex_new_h != tex->h) {
+		log_info(
+			"Resizing texture: %ix%i --> %ix%i",
+			tex->w, tex->h,
+			tex_new_w, tex_new_h
+		);
+
+		r_texture_replace(tex, TEX_TYPE_R, tex_new_w, tex_new_h, NULL);
+	}
+
+	r_state_push();
+
+	r_target(&globals.render_buf);
+	r_clear_color4(0, 0, 0, 0);
+	r_clear(CLEAR_COLOR);
+
+	r_blend(BLEND_ALPHA);
+	r_enable(RCAP_CULL_FACE);
+	r_cull(CULL_FRONT);
+	r_disable(RCAP_DEPTH_TEST);
+
+	r_mat_mode(MM_MODELVIEW);
+	r_mat_push();
+	r_mat_identity();
+
+	r_mat_mode(MM_PROJECTION);
+	r_mat_push();
+	r_mat_identity();
+	// XXX: y-flipped because that's how our textures are...
+	r_mat_ortho(0, tex->w, 0, tex->h, -100, 100);
+	r_viewport(0, 0, tex->w, tex->h);
+
+	r_mat_mode(MM_TEXTURE);
+	r_mat_push();
+	r_mat_identity();
+
+	// HACK: Coordinates are in texel space, font scale must not be used.
+	// This probably should be exposed in the text_draw API.
+	double fontscale = font->metrics.scale;
+	font->metrics.scale = 1;
+
+	text_draw(text, &(TextParams) {
+		.font_ptr = font,
+		.pos = { -out_bbox->x.min, -out_bbox->y.min + font->metrics.descent },
+		.color = rgb(1, 1, 1),
+	});
+
+	font->metrics.scale = fontscale;
+	r_flush_sprites();
+
+	// r_mat_mode(MM_TEXTURE);
+	r_mat_pop();
+
+	r_mat_mode(MM_PROJECTION);
+	r_mat_pop();
+
+	r_mat_mode(MM_MODELVIEW);
+	r_mat_pop();
+
+	r_state_pop();
+
+	out_sprite->tex = tex;
+	out_sprite->tex_area.w = bbox_width;
+	out_sprite->tex_area.h = bbox_height;
+	out_sprite->tex_area.x = 0;
+	out_sprite->tex_area.y = 0;
+	out_sprite->w = bbox_width / font->metrics.scale;
+	out_sprite->h = bbox_height / font->metrics.scale;
 }
 
 void text_shorten(Font *font, char *text, double width) {

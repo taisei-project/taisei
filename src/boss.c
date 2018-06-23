@@ -43,13 +43,15 @@ void draw_boss_text(Alignment align, float x, float y, const char *text, const c
 	text_draw(text, &(TextParams) {
 		.pos = { x + 1, y + 1 },
 		.color = derive_color(rgb(0, 0, 0), CLRMASK_A, clr),
-		.font = fnt
+		.font = fnt,
+		.align = align,
 	});
 
 	text_draw(text, &(TextParams) {
 		.pos = { x, y },
 		.color = clr,
-		.font = fnt
+		.font = fnt,
+		.align = align,
 	});
 }
 

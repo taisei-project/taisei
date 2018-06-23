@@ -91,6 +91,9 @@ double text_draw(const char *text, const TextParams *params)
 double text_draw_wrapped(const char *text, double max_width, const TextParams *params)
 	attr_nonnull(1, 3);
 
+void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbox)
+	attr_nonnull(1, 2, 3, 4);
+
 void text_shorten(Font *font, char *text, double width)
 	attr_nonnull(1, 2);
 

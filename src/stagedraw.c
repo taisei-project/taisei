@@ -183,7 +183,18 @@ static void apply_shader_rules(ShaderRule *shaderrules, FBOPair *fbos) {
 
 static void draw_wall_of_text(float f, const char *txt) {
 	Sprite spr;
-	// render_text(txt, _fonts.standard, &spr);
+	BBox bbox;
+
+	text_render(txt, get_font("standard"), &spr, &bbox);
+
+	// FIXME: We may want to do something with the bbox and font metrics here...
+	// The bbox encloses the visible parts of all glyphs exactly, it makes no
+	// attempt to e.g. normalize the height with padding. Such details might not
+	// matter all that much here, though.
+	//
+	// More importantly, the shader currently assumes that the sprite takes up the
+	// entire texture. If it could handle any arbitrary sprite, then text_render
+	// wouldn't have to resize the texture per every new string of text.
 
 	float w = VIEWPORT_W;
 	float h = VIEWPORT_H;
