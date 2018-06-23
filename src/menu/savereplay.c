@@ -50,7 +50,10 @@ static void draw_saverpy_menu(MenuData *m) {
 	r_mat_push();
 	r_color4(1, 1, 1, 1);
 	r_mat_translate(SCREEN_W/2, SCREEN_H/2 - 100, 0);
-	draw_text(AL_Center, 0, 0, "Save Replay?", _fonts.mainmenu);
+	text_draw("Save Replay?", &(TextParams) {
+		.font = "big",
+		.align = ALIGN_CENTER,
+	});
 	r_mat_translate(0, 100, 0);
 
 	for(int i = 0; i < m->ecount; i++) {
@@ -64,8 +67,13 @@ static void draw_saverpy_menu(MenuData *m) {
 			r_color4(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, 0.7 + 0.3 * a);
 		}
 
-		if(e->name)
-			draw_text(AL_Center, -50 + 100 * i, 0, e->name, _fonts.mainmenu);
+		if(e->name) {
+			text_draw(e->name, &(TextParams) {
+				.font = "big",
+				.align = ALIGN_CENTER,
+				.pos = { -50 + 100 * i, 0 },
+			});
+		}
 	}
 
 	r_mat_pop();

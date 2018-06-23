@@ -19,6 +19,30 @@
 #include "events.h"
 #include "renderer/api.h"
 
+static void init_fonts(void);
+static void shutdown_fonts(void);
+static char* font_path(const char*);
+static bool check_font_path(const char*);
+static void* load_font_begin(const char*, uint);
+static void* load_font_end(void*, const char*, uint);
+static void unload_font(void*);
+
+ResourceHandler font_res_handler = {
+	.type = RES_FONT,
+	.typename = "font",
+	.subdir = FONT_PATH_PREFIX,
+
+	.procs = {
+		.init = init_fonts,
+		.shutdown = shutdown_fonts,
+		.find = font_path,
+		.check = check_font_path,
+		.begin_load = load_font_begin,
+		.end_load = load_font_end,
+		.unload = unload_font,
+	},
+};
+
 // Handy routines for converting from fixed point
 // From SDL_ttf
 #define FT_FLOOR(X) (((X) & -64) / 64)
@@ -54,27 +78,17 @@ typedef struct Glyph {
 } Glyph;
 
 struct Font {
-	FT_Face face;
 	char *source_path;
-	int base_size;
-	long base_face_idx;
-	double scale;
-	FT_Fixed fixed_scale;
-
-	struct {
-		int ascent;
-		int descent;
-		int max_glyph_height;
-		int lineskip;
-	} metrics;
-
 	Glyph *glyphs;
+	Texture **textures;
+	FT_Face face;
+	long base_face_idx;
+	int base_size;
 	uint glyphs_allocated;
 	uint glyphs_used;
-
-	ht_int2int_t charcodes_to_glyph_ofs;
-	Texture **textures;
 	uint num_textures;
+	ht_int2int_t charcodes_to_glyph_ofs;
+	FontMetrics metrics;
 };
 
 typedef struct SpriteSheet {
@@ -86,10 +100,9 @@ typedef struct SpriteSheet {
 
 typedef LIST_ANCHOR(SpriteSheet) SpriteSheetAnchor;
 
-struct Fonts _fonts;
-
 static struct {
 	FT_Library lib;
+	ShaderProgram *default_shader;
 	struct {
 		SDL_mutex *new_face;
 		SDL_mutex *done_face;
@@ -144,24 +157,14 @@ static void init_fonts(void) {
 		"monotiny",
 	NULL);
 
-	_fonts.standard  = get_resource(RES_FONT, "standard", 0)->data;
-	_fonts.mainmenu  = get_resource(RES_FONT, "big", 0)->data;
-	_fonts.small     = get_resource(RES_FONT, "small", 0)->data;
-	_fonts.hud       = get_resource(RES_FONT, "hud", 0)->data;
-	_fonts.mono      = get_resource(RES_FONT, "mono", 0)->data;
-	_fonts.monosmall = get_resource(RES_FONT, "monosmall", 0)->data;
-	_fonts.monotiny  = get_resource(RES_FONT, "monotiny", 0)->data;
+	// WARNING: Preloading the default shader here is unsafe.
 }
 
-static void uninit_fonts(void) {
+static void shutdown_fonts(void) {
 	events_unregister_handler(fonts_event);
 	FT_Done_FreeType(globals.lib);
 	SDL_DestroyMutex(globals.mutex.new_face);
 	SDL_DestroyMutex(globals.mutex.done_face);
-}
-
-void test_rectpack_stuff(void) {
-	// abort();
 }
 
 static char* font_path(const char *name) {
@@ -221,15 +224,7 @@ static FT_Face load_font_face(char *vfspath, long index) {
 	ftstream->pathname.pointer = syspath;
 	ftstream->read = ftstream_read;
 	ftstream->close = ftstream_close;
-
-	ssize_t stream_size = SDL_RWsize(rwops);
-
-	if(stream_size < 0) {
-		// "compressed stream" hint
-		ftstream->size = 0x7FFFFFFF;
-	} else {
-		ftstream->size = stream_size;
-	}
+	ftstream->size = SDL_RWsize(rwops);
 
 	FT_Open_Args ftargs;
 	memset(&ftargs, 0, sizeof(ftargs));
@@ -273,9 +268,6 @@ static FT_Error set_font_size(Font *fnt, uint pxsize, double scale) {
 		return err;
 	}
 
-	fnt->scale = scale;
-	fnt->fixed_scale = fixed_scale;
-
 	// Based on SDL_ttf
 	FT_Face face = fnt->face;
 	fixed_scale = face->size->metrics.y_scale;
@@ -283,10 +275,12 @@ static FT_Error set_font_size(Font *fnt, uint pxsize, double scale) {
 	fnt->metrics.descent = FT_CEIL(FT_MulFix(face->descender, fixed_scale));
 	fnt->metrics.max_glyph_height = fnt->metrics.ascent - fnt->metrics.descent;
 	fnt->metrics.lineskip = FT_CEIL(FT_MulFix(face->height, fixed_scale));
+	fnt->metrics.scale = scale;
 
 	return err;
 }
 
+// TODO: Figure out sensible values for these; maybe make them depend on font size in some way.
 #define SS_WIDTH 1024
 #define SS_HEIGHT 1024
 
@@ -305,6 +299,16 @@ static SpriteSheet* add_spritesheet(SpriteSheetAnchor *spritesheets) {
 		.wrap.t = TEX_WRAP_CLAMP,
 	});
 
+	// FIXME:
+	//
+  // This code just zeroes the texture out.
+	//
+	// We should add an r_texture_clear function to hide this monstrosity.
+	// It would also allow a non-GL backend to have a different implementation,
+	// if we ever get around to writing one.
+	//
+	// To future generations: if such a function is already in the renderer API,
+	// but this crap is still here, please convert it.
 	RenderTarget *prev_target = r_target_current();
 	RenderTarget atlast_rt;
 	Color cc_prev = r_clear_color_current();
@@ -321,6 +325,7 @@ static SpriteSheet* add_spritesheet(SpriteSheetAnchor *spritesheets) {
 	return ss;
 }
 
+// The padding is needed to prevent glyph edges from bleeding in due to linear filtering.
 #define GLYPH_SPRITE_PADDING 1
 
 static bool add_glyph_to_spritesheet(Font *font, Glyph *glyph, FT_Bitmap bitmap, SpriteSheet *ss) {
@@ -449,6 +454,8 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 }
 
 static void load_glyphs(Font *font) {
+	// TODO: A better idea would be to populate the glyph cache dynamically as needed.
+
 	ht_int2int_t indices_to_glyph_ofs;
 	SpriteSheetAnchor spritesheets = { .first = NULL };
 	charcode_t charcode;
@@ -606,22 +613,6 @@ static Glyph* get_glyph(Font *fnt, charcode_t cp) {
 	return fnt->glyphs + ofs;
 }
 
-ResourceHandler font_res_handler = {
-	.type = RES_FONT,
-	.typename = "font",
-	.subdir = FONT_PATH_PREFIX,
-
-	.procs = {
-		.init = init_fonts,
-		.shutdown = uninit_fonts,
-		.find = font_path,
-		.check = check_font_path,
-		.begin_load = load_font_begin,
-		.end_load = load_font_end,
-		.unload = unload_font,
-	},
-};
-
 static void reload_font(Font *font) {
 	// font->ttf = load_ttf(font->source_path, font->base_size);
 }
@@ -641,33 +632,23 @@ static void reload_fonts(double quality) {
 	resource_for_each(RES_FONT, reload_font_callback, NULL);
 }
 
-#include "global.h"
-
-static inline void apply_kerning(Font *font, Glyph *gprev, Glyph *gthis, double *x, double *y) {
+static inline int apply_kerning(Font *font, Glyph *gprev, Glyph *gthis) {
 	FT_Vector kvec;
 
-	if(gamekeypressed(KEY_FOCUS)) {
-		return;
+	if(!FT_Get_Kerning(font->face, gprev->ft_index, gthis->ft_index, FT_KERNING_DEFAULT, &kvec)) {
+		return kvec.x >> 6;
 	}
 
-	if(!FT_Get_Kerning(font->face, gprev->ft_index, gthis->ft_index, FT_KERNING_DEFAULT, &kvec)) {
-		*x += kvec.x >> 6;
-		*y += kvec.y >> 6;
-	}
+	return 0;
 }
 
-static void text_bbox(Font *font, const char *text, uint maxlines, double *width, double *height) {
+int text_width_raw(Font *font, const char *text, uint maxlines) {
 	const char *tptr = text;
 	Glyph *prev_glyph = NULL;
-	double x = 0, y = 0;
 	bool keming = FT_HAS_KERNING(font->face);
 	uint numlines = 0;
-
-	if(width) {
-		*width = 0;
-	}
-
-	double y_max = 0, y_min = 0;
+	int x = 0;
+	int width = 0;
 
 	while(*tptr) {
 		uint32_t uchar = utf8_getch(&tptr);
@@ -677,8 +658,50 @@ static void text_bbox(Font *font, const char *text, uint maxlines, double *width
 				break;
 			}
 
-			if(width && x > *width) {
-				*width = x;
+			if(x > width) {
+				width = x;
+			}
+
+			x = 0;
+			continue;
+		}
+
+		Glyph *glyph = get_glyph(font, uchar);
+
+		if(glyph == NULL) {
+			continue;
+		}
+
+		if(keming && prev_glyph) {
+			x += apply_kerning(font, prev_glyph, glyph);
+		}
+
+		x += glyph->metrics.advance;
+		prev_glyph = glyph;
+	}
+
+	if(x > width) {
+		width = x;
+	}
+
+	return width;
+}
+
+void text_bbox(Font *font, const char *text, uint maxlines, BBox *bbox) {
+	const char *tptr = text;
+	Glyph *prev_glyph = NULL;
+	bool keming = FT_HAS_KERNING(font->face);
+	uint numlines = 0;
+
+	memset(bbox, 0, sizeof(*bbox));
+	int x = 0, y = 0;
+
+	while(*tptr) {
+		uint32_t uchar = utf8_getch(&tptr);
+
+		if(uchar == '\n') {
+			if(++numlines == maxlines) {
+				break;
 			}
 
 			x = 0;
@@ -694,106 +717,180 @@ static void text_bbox(Font *font, const char *text, uint maxlines, double *width
 		}
 
 		if(keming && prev_glyph) {
-			apply_kerning(font, prev_glyph, glyph, &x, &y);
+			x += apply_kerning(font, prev_glyph, glyph);
 		}
 
-		x += glyph->metrics.advance;
+		int g_x0 = x + glyph->metrics.bearing_x;
+		int g_x1 = g_x0 + glyph->metrics.width;
 
-		double g_y = y - glyph->metrics.bearing_y;
-		double g_ymax = g_y + glyph->metrics.height;
+		bbox->x.max = max(bbox->x.max, g_x0);
+		bbox->x.max = max(bbox->x.max, g_x1);
+		bbox->x.min = min(bbox->x.min, g_x0);
+		bbox->x.min = min(bbox->x.min, g_x1);
 
-		if(g_y < y_min) {
-			y_min = g_y;
-		}
+		int g_y0 = y - glyph->metrics.bearing_y;
+		int g_y1 = g_y0 + glyph->metrics.height;
 
-		if(g_ymax > y_max) {
-			y_max = g_ymax;
-		}
+		bbox->y.max = max(bbox->y.max, g_y0);
+		bbox->y.max = max(bbox->y.max, g_y1);
+		bbox->y.min = min(bbox->y.min, g_y0);
+		bbox->y.min = min(bbox->y.min, g_y1);
 
 		prev_glyph = glyph;
-	}
-
-	if(width && x > *width) {
-		*width = x;
-	}
-
-	if(height) {
-		*height = y_max - y_min;
+		x += glyph->metrics.advance;
 	}
 }
 
 double text_width(Font *font, const char *text, uint maxlines) {
-	double w;
-	text_bbox(font, text, maxlines, &w, NULL);
-	return w / font->scale;
+	return text_width_raw(font, text, maxlines) / font->metrics.scale;
 }
 
-int stringwidth(char *s, Font *font) {
-	return text_width(font, s, 0);
+int text_height_raw(Font *font, const char *text, uint maxlines) {
+	// FIXME: I'm not sure this is correct. Perhaps it should consider max_glyph_height at least?
+
+	uint text_lines = 1;
+	const char *tptr = text;
+
+	while((tptr = strchr(tptr, '\n'))) {
+		if(text_lines++ == maxlines) {
+			break;
+		}
+	}
+
+	return font->metrics.lineskip * text_lines;
 }
 
-int stringheight(char *s, Font *font) {
-	return font->metrics.max_glyph_height / font->scale;
+double text_height(Font *font, const char *text, uint maxlines) {
+	return text_height_raw(font, text, maxlines) / font->metrics.scale;
 }
 
 static inline void adjust_xpos(Font *font, const char *text, Alignment align, double x_orig, double *x) {
 	double line_width;
 
 	switch(align) {
-		case AL_Left: {
+		case ALIGN_LEFT: {
 			*x = x_orig;
 			break;
 		}
 
-		case AL_Right: {
-			text_bbox(font, text, 1, &line_width, NULL);
+		case ALIGN_RIGHT: {
+			line_width = text_width_raw(font, text, 1);
 			*x = x_orig - line_width;
 			break;
 		}
 
-		case AL_Center: {
-			text_bbox(font, text, 1, &line_width, NULL);
+		case ALIGN_CENTER: {
+			line_width = text_width_raw(font, text, 1);
 			*x = x_orig - line_width * 0.5;
 			break;
 		}
 	}
 }
 
-void draw_text(Alignment align, double x, double y, const char *text, Font *font) {
-	if(!*text) {
-		return;
+Font* get_font(const char *font) {
+	return get_resource_data(RES_FONT, font, RESF_DEFAULT);
+}
+
+ShaderProgram* text_get_default_shader(void) {
+	if(globals.default_shader != NULL) {
+		return globals.default_shader;
 	}
 
-	align &= ~AL_Flag_NoAdjust;
+	return globals.default_shader = get_resource_data(RES_SHADER_PROGRAM, "text_default", RESF_PERMANENT | RESF_PRELOAD);
+}
 
-	bool scaled = false;
+// #define TEXT_DRAW_BBOX
 
-	if(font->scale != 1) {
-		double iscale = 1 / font->scale;
+attr_returns_nonnull
+static Font* font_from_params(const TextParams *params) {
+	Font *font = params->font_ptr;
+
+	if(font == NULL) {
+		if(params->font != NULL) {
+			font = get_font(params->font);
+		} else {
+			font = get_font("standard");
+		}
+	}
+
+	assert(font != NULL);
+	return font;
+}
+
+attr_nonnull(1, 2, 3)
+static double _text_draw(Font *font, const char *text, const TextParams *params) {
+	SpriteParams sp = { .sprite = NULL };
+	BBox bbox;
+	double x = params->pos.x;
+	double y = params->pos.y;
+	double iscale = 1 / font->metrics.scale;
+
+	text_bbox(font, text, 0, &bbox);
+	sp.shader_ptr = params->shader_ptr;
+
+	if(sp.shader_ptr == NULL) {
+		// don't defer this to r_draw_sprite; we don't want to call r_shader_get more than necessary.
+
+		if(params->shader != NULL) {
+			sp.shader_ptr = r_shader_get(params->shader);
+		} else {
+			sp.shader_ptr = text_get_default_shader();
+		}
+	}
+
+	sp.color = params->color;
+	sp.blend = params->blend;
+	sp.custom = params->custom;
+
+	if(sp.color == 0) {
+		// XXX: sprite batch code defaults this to rgb(1, 1, 1)
+		sp.color = r_color_current();
+	}
+
+	// if(font->metrics.scale != 1) {
 		r_mat_push();
 		r_mat_translate(x, y, 0);
 		r_mat_scale(iscale, iscale, 1);
 		x = y = 0;
-		scaled = true;
-	}
+	// }
 
-	const char *tptr = text;
-	SpriteParams sp = { .sprite = NULL };
-	Glyph *prev_glyph = NULL;
 	double x_orig = x;
+	adjust_xpos(font, text, params->align, x_orig, &x);
+
+	double bbox_w = bbox.x.max - bbox.x.min;
+	double bbox_h = bbox.y.max - bbox.y.min;
+
+	#ifdef TEXT_DRAW_BBOX
+	// TODO: align this correctly in the multi-line case
+	double bbox_x_mid = x + bbox.x.min + bbox_w * 0.5;
+	double bbox_y_mid = y + bbox.y.min - font->metrics.descent + bbox_h * 0.5;
+
+	r_state_push();
+	r_shader_standard_notex();
+	r_mat_push();
+	r_mat_translate(bbox_x_mid, bbox_y_mid, 0);
+	r_mat_scale(bbox_w, bbox_h, 0);
+	r_color(multiply_colors(rgba(1, 1, 1, 0.5), r_color_current()));
+	r_draw_quad();
+	r_mat_pop();
+	r_state_pop();
+	#endif
+
+	r_mat_mode(MM_TEXTURE);
+	r_mat_push();
+	r_mat_translate(0, 0.0, 0);
+	r_mat_scale(1/bbox_w, 1/bbox_h, 1.0);
+	r_mat_translate(-bbox.x.min - (x - x_orig), -bbox.y.min + font->metrics.descent, 0);
+
 	bool keming = FT_HAS_KERNING(font->face);
-
-	sp.shader_ptr = r_shader_get("sprite_text_test");
-	sp.color = r_color_current();
-	sp.blend = r_blend_current();
-
-	adjust_xpos(font, text, align, x_orig, &x);
+	Glyph *prev_glyph = NULL;
+	const char *tptr = text;
 
 	while(*tptr) {
 		uint32_t uchar = utf8_getch(&tptr);
 
 		if(uchar == '\n') {
-			adjust_xpos(font, text, align, x_orig, &x);
+			adjust_xpos(font, tptr, params->align, x_orig, &x);
 			y += font->metrics.lineskip;
 			continue;
 		}
@@ -805,67 +902,74 @@ void draw_text(Alignment align, double x, double y, const char *text, Font *font
 		}
 
 		if(keming && prev_glyph) {
-			apply_kerning(font, prev_glyph, glyph, &x, &y);
+			x += apply_kerning(font, prev_glyph, glyph);
 		}
 
 		if(glyph->sprite.tex != NULL) {
 			sp.sprite_ptr = &glyph->sprite;
 			sp.pos.x = x + glyph->metrics.bearing_x + glyph->sprite.w * 0.5;
 			sp.pos.y = y - glyph->metrics.bearing_y + glyph->sprite.h * 0.5 - font->metrics.descent;
+
+			r_mat_push();
+			r_mat_translate(sp.pos.x - x_orig, sp.pos.y, 0);
+			r_mat_scale(glyph->sprite.w, glyph->sprite.h, 1.0);
+			r_mat_translate(-0.5, -0.5, 0);
+
+			if(params->glyph_callback.func != NULL) {
+				params->glyph_callback.func(font, uchar, &sp, params->glyph_callback.userdata);
+			}
+
 			r_draw_sprite(&sp);
+			r_mat_pop();
 		}
 
 		x += glyph->metrics.advance;
 		prev_glyph = glyph;
 	}
 
-	if(scaled) {
+	r_mat_pop();
+	r_mat_mode(MM_MODELVIEW);
+
+	// if(font->metrics.scale != 1) {
 		r_mat_pop();
-	}
+	// }
+
+	return x_orig + (x - x_orig) / font->metrics.scale;
 }
 
-void render_text(const char *text, Font *font, Sprite *out_spr) {
-
+double text_draw(const char *text, const TextParams *params) {
+	return _text_draw(font_from_params(params), text, params);
 }
 
-void draw_text_auto_wrapped(Alignment align, double x, double y, const char *text, double width, Font *font) {
-	char buf[strlen(text) * 2];
-	wrap_text(buf, sizeof(buf), text, width, font);
-	draw_text(align, x, y, buf, font);
+double text_draw_wrapped(const char *text, double max_width, const TextParams *params) {
+	Font *font = font_from_params(params);
+	char buf[strlen(text) * 2 + 1];
+	text_wrap(font, text, max_width, buf, sizeof(buf));
+	return _text_draw(font, text, params);
 }
 
-int charwidth(char c, Font *font) {
-	char s[2];
-	s[0] = c;
-	s[1] = 0;
-	return stringwidth(s, font);
-}
+void text_shorten(Font *font, char *text, double width) {
+	// TODO: rewrite this to use utf8_getch
 
-int font_line_spacing(Font *font) {
-	return font->metrics.lineskip / font->scale;
-}
+	assert(!strchr(text, '\n'));
 
-void shorten_text_up_to_width(char *s, float width, Font *font) {
-	while(stringwidth(s, font) > width) {
-		int l = strlen(s);
+	while(text_width(font, text, 0) > width) {
+		int l = strlen(text);
 
 		if(l <= 1) {
 			return;
 		}
 
 		--l;
-		s[l] = 0;
+		text[l] = 0;
 
 		for(int i = 0; i < min(3, l); ++i) {
-			s[l - i - 1] = '.';
+			text[l - i - 1] = '.';
 		}
 	}
 }
 
-void wrap_text(char *buf, size_t bufsize, const char *src, int width, Font *font) {
-	assert(buf != NULL);
-	assert(src != NULL);
-	assert(font != NULL);
+void text_wrap(Font *font, const char *src, double width, char *buf, size_t bufsize) {
 	assert(bufsize > strlen(src) + 1);
 	assert(width > 0);
 
@@ -885,7 +989,7 @@ void wrap_text(char *buf, size_t bufsize, const char *src, int width, Font *font
 		}
 
 		if(*curline) {
-			curwidth = stringwidth(curline, font);
+			curwidth = text_width(font, curline, 0);
 		} else {
 			curwidth = 0;
 		}
@@ -895,14 +999,14 @@ void wrap_text(char *buf, size_t bufsize, const char *src, int width, Font *font
 		strcat(tmpbuf, " ");
 		strcat(tmpbuf, next);
 
-		int totalwidth = stringwidth(tmpbuf, font);
+		double totalwidth = text_width(font, tmpbuf, 0);
 
 		if(totalwidth > width) {
 			if(curwidth == 0) {
 				log_fatal(
 					"Single word '%s' won't fit on one line. "
-					"Word width: %i, max width: %i, source string: %s",
-					next, stringwidth(next, font), width, src
+					"Word width: %g, max width: %g, source string: %s",
+					next, text_width(font, tmpbuf, 0), width, src
 				);
 			}
 
@@ -912,9 +1016,26 @@ void wrap_text(char *buf, size_t bufsize, const char *src, int width, Font *font
 			if(*curline) {
 				strlcat(buf, " ", bufsize);
 			}
-
 		}
 
 		strlcat(buf, next, bufsize);
 	}
+}
+
+const FontMetrics* font_get_metrics(Font *font) {
+	return &font->metrics;
+}
+
+double font_get_lineskip(Font *font) {
+	return font->metrics.lineskip / font->metrics.scale;
+}
+
+const GlyphMetrics* font_get_char_metrics(Font *font, charcode_t c) {
+	Glyph *g = get_glyph(font, c);
+
+	if(!g) {
+		return NULL;
+	}
+
+	return &g->metrics;
 }

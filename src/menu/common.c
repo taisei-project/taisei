@@ -125,8 +125,12 @@ void draw_menu_selector(float x, float y, float w, float h, float t) {
 }
 
 void draw_menu_title(MenuData *m, char *title) {
-	r_color4(1, 1, 1, 1);
-	draw_text(AL_Right, (stringwidth(title, _fonts.mainmenu) + 10) * (1.0-menu_fade(m)), 30, title, _fonts.mainmenu);
+	text_draw(title, &(TextParams) {
+		.pos = { (text_width(get_font("big"), title, 0) + 10) * (1.0 - menu_fade(m)), 30 },
+		.align = ALIGN_RIGHT,
+		.font = "big",
+		.color = rgb(1, 1, 1),
+	});
 }
 
 void draw_menu_list(MenuData *m, float x, float y, void (*draw)(void*, int, int)) {
@@ -153,10 +157,11 @@ void draw_menu_list(MenuData *m, float x, float y, void (*draw)(void*, int, int)
 			r_color4(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a)*o);
 		}
 
-		if(draw && i < m->ecount-1)
+		if(draw && i < m->ecount-1) {
 			draw(e, i, m->ecount);
-		else if(e->name)
-			draw_text(AL_Left, 20 - e->drawdata, 20*i, e->name, _fonts.standard);
+		} else if(e->name) {
+			text_draw(e->name, &(TextParams) { .pos = { 20 - e->drawdata, 20*i } });
+		}
 	}
 
 	r_mat_pop();
@@ -175,7 +180,7 @@ void animate_menu_list_entries(MenuData *m) {
 
 void animate_menu_list(MenuData *m) {
 	MenuEntry *s = m->entries + m->cursor;
-	int w = stringwidth(s->name, _fonts.standard);
+	int w = text_width(get_font("standard"), s->name, 0);
 
 	m->drawdata[0] += (10 + w/2.0 - m->drawdata[0])/10.0;
 	m->drawdata[1] += (w*2 - m->drawdata[1])/10.0;

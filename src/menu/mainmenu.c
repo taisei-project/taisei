@@ -102,7 +102,7 @@ void draw_main_menu_bg(MenuData* menu) {
 }
 
 static void update_main_menu(MenuData *menu) {
-	menu->drawdata[1] += (stringwidth(menu->entries[menu->cursor].name, _fonts.mainmenu) - menu->drawdata[1])/10.0;
+	menu->drawdata[1] += (text_width(get_font("big"), menu->entries[menu->cursor].name, 0) - menu->drawdata[1])/10.0;
 	menu->drawdata[2] += (35*menu->cursor - menu->drawdata[2])/10.0;
 
 	for(int i = 0; i < menu->ecount; i++) {
@@ -129,7 +129,12 @@ void draw_main_menu(MenuData *menu) {
 			r_color4(1, 0.7 + a, 0.4 + a, 0.7);
 		}
 
-		draw_text(AL_Left, 50 + s, 35*i, menu->entries[i].name, _fonts.mainmenu);
+		text_draw(menu->entries[i].name, &(TextParams) {
+			.pos = { 50 + s, 35*i },
+			.font = "big",
+			.shader = "text_example",
+			.custom = time_get()
+		});
 	}
 
 	r_mat_pop();
@@ -176,14 +181,22 @@ void draw_main_menu(MenuData *menu) {
 
 	char version[32];
 	snprintf(version, sizeof(version), "v%s", TAISEI_VERSION);
-	draw_text(AL_Right,SCREEN_W-5,SCREEN_H-10,version,_fonts.small);
+	text_draw(TAISEI_VERSION, &(TextParams) {
+		.align = ALIGN_RIGHT,
+		.pos = { SCREEN_W-5, SCREEN_H-10 },
+		.font = "small",
+	});
 }
 
 void draw_loading_screen(void) {
 	preload_resource(RES_TEXTURE, "loading", RESF_PERMANENT);
 	set_ortho(SCREEN_W, SCREEN_H);
 	fill_screen("loading");
-	draw_text(AL_Right,SCREEN_W-5,SCREEN_H-10,TAISEI_VERSION,_fonts.small);
+	text_draw(TAISEI_VERSION, &(TextParams) {
+		.align = ALIGN_RIGHT,
+		.pos = { SCREEN_W-5, SCREEN_H-10 },
+		.font = "small",
+	});
 	video_swap_buffers();
 }
 

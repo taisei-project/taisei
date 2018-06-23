@@ -240,8 +240,6 @@ int main(int argc, char **argv) {
 	video_init();
 	init_resources();
 	r_post_init();
-	void test_rectpack_stuff(void);
-	test_rectpack_stuff();
 	draw_loading_screen();
 
 	if(!headless) {

@@ -79,7 +79,7 @@ void player_free(Player *plr) {
 static void player_full_power(Player *plr) {
 	play_sound("full_power");
 	stage_clear_hazards(CLEAR_HAZARDS_ALL);
-	stagetext_add("Full Power!", VIEWPORT_W * 0.5 + VIEWPORT_H * 0.33 * I, AL_Center, &_fonts.mainmenu, rgb(1, 1, 1), 0, 60, 20, 20);
+	stagetext_add("Full Power!", VIEWPORT_W * 0.5 + VIEWPORT_H * 0.33 * I, ALIGN_CENTER, get_font("big"), rgb(1, 1, 1), 0, 60, 20, 20);
 }
 
 bool player_set_power(Player *plr, short npow) {

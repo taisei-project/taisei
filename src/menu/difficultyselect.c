@@ -68,8 +68,10 @@ void draw_difficulty_menu(MenuData *menu) {
 	r_draw_quad();
 	r_mat_pop();
 	r_color3(1,1,1);
-	r_shader_standard();
-	draw_text(AL_Left, 40+35*menu->drawdata[0], -12, menu->entries[menu->cursor].name, _fonts.standard);
+
+	text_draw(menu->entries[menu->cursor].name, &(TextParams) {
+		.pos = { 40+35*menu->drawdata[0], -12 },
+	});
 
 	r_shader("sprite_default");
 	r_mat_pop();

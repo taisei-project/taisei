@@ -171,14 +171,14 @@ static void replayview_draw_messagebox(MenuData* m) {
 	// this context is shared with the parent menu
 	ReplayviewContext *ctx = m->context;
 	float alpha = 1 - ctx->sub_fade;
-	float height = font_line_spacing(_fonts.standard) * 2;
-	float width  = stringwidth(m->entries->name, _fonts.standard) + 64;
+	float height = font_get_lineskip(get_font("standard")) * 2;
+	float width  = text_width(get_font("standard"), m->entries->name, 0) + 64;
 	replayview_draw_submenu_bg(width, height, alpha);
 
 	r_mat_push();
 	r_mat_translate(SCREEN_W*0.5, SCREEN_H*0.5, 0);
 	r_color4(0.9, 0.6, 0.2, alpha);
-	draw_text(AL_Center, 0, 0, m->entries->name, _fonts.standard);
+	text_draw(m->entries->name, &(TextParams) { .align = ALIGN_CENTER });
 	r_mat_pop();
 }
 
@@ -205,7 +205,7 @@ static void replayview_draw_stagemenu(MenuData *m) {
 			r_color4(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a) * alpha);
 		}
 
-		draw_text(AL_Center, 0, 20*i, e->name, _fonts.standard);
+		text_draw(m->entries->name, &(TextParams) { .align = ALIGN_CENTER, .pos = { 0, 20*i } });
 	}
 
 	r_mat_pop();
@@ -232,19 +232,19 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 		for(j = 0; j < i; ++j)
 			o += sizes[j] * (SCREEN_W - 210)/columns;
 
-		Alignment a = AL_Center;
+		Alignment a = ALIGN_CENTER;
 
 		// hell yeah, another loop-switch sequence
 		switch(i) {
 			case 0:
-				a = AL_Left;
+				a = ALIGN_LEFT;
 				time_t t = rpy->stages[0].seed;
 				struct tm* timeinfo = localtime(&t);
 				strftime(tmp, sizeof(tmp), "%Y-%m-%d %H:%M", timeinfo);
 				break;
 
 			case 1:
-				a = AL_Center;
+				a = ALIGN_CENTER;
 				strlcpy(tmp, rpy->playername, sizeof(tmp));
 				break;
 
@@ -266,7 +266,7 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 				break;
 
 			case 4:
-				a = AL_Right;
+				a = ALIGN_RIGHT;
 				if(rpy->numstages == 1) {
 					StageInfo *stg = stage_get(rpy->stages[0].stage);
 
@@ -281,15 +281,15 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 				break;
 		}
 
-		shorten_text_up_to_width(tmp, csize, _fonts.standard);
+		text_shorten(get_font("standard"), tmp, csize);
 
 		switch(a) {
-			case AL_Center: o += csize * 0.5 - stringwidth(tmp, _fonts.standard) * 0.5;     break;
-			case AL_Right:  o += csize - stringwidth(tmp, _fonts.standard);                 break;
-			default:                                                                        break;
+			case ALIGN_CENTER: o += csize * 0.5 - text_width(get_font("standard"), tmp, 0) * 0.5; break;
+			case ALIGN_RIGHT:  o += csize - text_width(get_font("standard"), tmp, 0);             break;
+			default:                                                                              break;
 		}
 
-		draw_text(AL_Left, o + 10, 20*item, tmp, _fonts.standard);
+		text_draw(tmp, &(TextParams) { .pos = { o + 10, 20 * item } });
 	}
 }
 

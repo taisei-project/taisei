@@ -16,7 +16,7 @@ static StageText *textlist = NULL;
 
 #define NUM_PLACEHOLDER "........................"
 
-StageText* stagetext_add(const char *text, complex pos, Alignment align, Font **font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
+StageText* stagetext_add(const char *text, complex pos, Alignment align, Font *font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
 	StageText *t = malloc(sizeof(StageText));
 	list_append(&textlist, t);
 
@@ -24,13 +24,13 @@ StageText* stagetext_add(const char *text, complex pos, Alignment align, Font **
 	t->font = font;
 	t->pos = pos;
 	t->align = align;
+	t->color = clr;
 
 	t->time.spawn = global.frames + delay;
 	t->time.life = lifetime + fadeouttime;
 	t->time.fadein = fadeintime;
 	t->time.fadeout = fadeouttime;
 
-	parse_color_array(clr, t->clr);
 	memset(&t->custom, 0, sizeof(t->custom));
 
 	return t;
@@ -40,7 +40,7 @@ void stagetext_numeric_predraw(StageText *txt, int t, float a) {
 	snprintf(txt->text, sizeof(NUM_PLACEHOLDER), "%i", (int)((intptr_t)txt->custom.data1 * pow(a, 5)));
 }
 
-StageText* stagetext_add_numeric(int n, complex pos, Alignment align, Font **font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
+StageText* stagetext_add_numeric(int n, complex pos, Alignment align, Font *font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
 	StageText *t = stagetext_add(NUM_PLACEHOLDER, pos, align, font, clr, delay, lifetime, fadeintime, fadeouttime);
 	t->custom.data1 = (void*)(intptr_t)n;
 	t->custom.predraw = stagetext_numeric_predraw;
@@ -74,17 +74,28 @@ static void stagetext_draw_single(StageText *txt) {
 		txt->custom.predraw(txt, t, 1.0 - f);
 	}
 
+	r_state_push();
 	r_texture(1, "titletransition");
 	r_shader("stagetext");
-	r_uniform_int("trans", 1);
+	r_uniform_int("trans", 1); // FIXME: what is this for?
 	r_uniform_float("t", 1.0 - f);
 
-	r_uniform_vec3("color", 0, 0, 0);
-	draw_text(txt->align, creal(txt->pos)+10*f*f+1, cimag(txt->pos)+10*f*f+1, txt->text, *txt->font);
-	r_uniform("color", 1, txt->clr);
-	draw_text(txt->align, creal(txt->pos)+10*f*f, cimag(txt->pos)+10*f*f, txt->text, *txt->font);
+	TextParams params = { 0 };
+	params.font_ptr = txt->font;
+	params.blend = BLEND_ALPHA;
+	params.shader_ptr = r_shader_current();
 
-	r_shader_standard();
+	params.color = rgb(0, 0, 0);
+	params.pos.x = creal(txt->pos)+10*f*f+1;
+	params.pos.y = cimag(txt->pos)+10*f*f+1;
+	text_draw(txt->text, &params);
+
+	params.color = txt->color;
+	params.pos.x -= 1;
+	params.pos.y -= 1;
+	text_draw(txt->text, &params);
+
+	r_state_pop();
 }
 
 void stagetext_draw(void) {
@@ -98,7 +109,7 @@ static void stagetext_table_push(StageTextTable *tbl, StageText *txt, bool updat
 	list_append(&tbl->elems, list_wrap_container(txt));
 
 	if(update_pos) {
-		tbl->pos += stringheight(txt->text, *txt->font) * I;
+		tbl->pos += text_height(txt->font, txt->text, 0) * I;
 	}
 
 	tbl->delay += 5;
@@ -114,7 +125,7 @@ void stagetext_begin_table(StageTextTable *tbl, const char *title, Color titlecl
 	tbl->fadeouttime = fadeouttime;
 	tbl->delay = delay;
 
-	StageText *txt = stagetext_add(title, tbl->pos, AL_Center, &_fonts.mainmenu, titleclr, tbl->delay, lifetime, fadeintime, fadeouttime);
+	StageText *txt = stagetext_add(title, tbl->pos, ALIGN_CENTER, get_font("big"), titleclr, tbl->delay, lifetime, fadeintime, fadeouttime);
 	stagetext_table_push(tbl, txt, true);
 }
 
@@ -129,19 +140,19 @@ void stagetext_end_table(StageTextTable *tbl) {
 }
 
 static void stagetext_table_add_label(StageTextTable *tbl, const char *title) {
-	StageText *txt = stagetext_add(title, tbl->pos - tbl->width * 0.5, AL_Left, &_fonts.standard, tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
+	StageText *txt = stagetext_add(title, tbl->pos - tbl->width * 0.5, ALIGN_LEFT, get_font("standard"), tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
 	stagetext_table_push(tbl, txt, false);
 }
 
 void stagetext_table_add(StageTextTable *tbl, const char *title, const char *val) {
 	stagetext_table_add_label(tbl, title);
-	StageText *txt = stagetext_add(val, tbl->pos + tbl->width * 0.5, AL_Right, &_fonts.standard, tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
+	StageText *txt = stagetext_add(val, tbl->pos + tbl->width * 0.5, ALIGN_RIGHT, get_font("standard"), tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
 	stagetext_table_push(tbl, txt, true);
 }
 
 void stagetext_table_add_numeric(StageTextTable *tbl, const char *title, int n) {
 	stagetext_table_add_label(tbl, title);
-	StageText *txt = stagetext_add_numeric(n, tbl->pos + tbl->width * 0.5, AL_Right, &_fonts.standard, tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
+	StageText *txt = stagetext_add_numeric(n, tbl->pos + tbl->width * 0.5, ALIGN_RIGHT, get_font("standard"), tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
 	stagetext_table_push(tbl, txt, true);
 }
 
@@ -152,7 +163,7 @@ void stagetext_table_add_numeric_nonzero(StageTextTable *tbl, const char *title,
 }
 
 void stagetext_table_add_separator(StageTextTable *tbl) {
-	tbl->pos += I * 0.5 * stringheight("Love Live", _fonts.standard);
+	tbl->pos += I * 0.5 * font_get_lineskip(get_font("standard"));
 }
 
 void stagetext_table_test(void) {

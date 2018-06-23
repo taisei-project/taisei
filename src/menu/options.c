@@ -772,7 +772,9 @@ void draw_options_menu(MenuData *menu) {
 			r_color4(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a) * alpha);
 		}
 
-		draw_text(AL_Left, (1 + (bind ? bind->pad : 0)) * 20 - e->drawdata, 20*i, e->name, _fonts.standard);
+		text_draw(e->name, &(TextParams) {
+			.pos = { (1 + (bind ? bind->pad : 0)) * 20 - e->drawdata, 20*i }
+		});
 
 		if(bind) {
 			int j, origin = SCREEN_W - 220;
@@ -787,13 +789,14 @@ void draw_options_menu(MenuData *menu) {
 					if(bind->valrange_max) {
 						char tmp[16];   // who'd use a 16-digit number here anyway?
 						snprintf(tmp, 16, "%d", bind_getvalue(bind));
-						draw_text(AL_Right, origin, 20*i, tmp, _fonts.standard);
+						text_draw(tmp, &(TextParams) { .pos = { origin, 20*i }, .align = ALIGN_RIGHT });
 					} else if(bind->configentry == CONFIG_PRACTICE_POWER) {
 						int stars = PLR_MAX_POWER / 100;
 						draw_stars(origin - 20 * (stars - 0.5), 20*i, val, 0, stars, 100, alpha, 20);
 					} else for(j = bind->displaysingle? val : bind->valcount-1; (j+1) && (!bind->displaysingle || j == val); --j) {
-						if(j != bind->valcount-1 && !bind->displaysingle)
-							origin -= stringwidth(bind->values[j+1], _fonts.standard) + 5;
+						if(j != bind->valcount-1 && !bind->displaysingle) {
+							origin -= text_width(get_font("standard"), bind->values[j+1], 0) + 5;
+						}
 
 						if(val == j) {
 								r_color4(0.9, 0.6, 0.2, alpha);
@@ -801,7 +804,7 @@ void draw_options_menu(MenuData *menu) {
 								r_color4(0.5,0.5,0.5,0.7 * alpha);
 						}
 
-						draw_text(AL_Right, origin, 20*i, bind->values[j], _fonts.standard);
+						text_draw(bind->values[j], &(TextParams) { .pos = { origin, 20*i }, .align = ALIGN_RIGHT });
 					}
 					break;
 				}
@@ -809,7 +812,10 @@ void draw_options_menu(MenuData *menu) {
 				case BT_KeyBinding: {
 					if(bind->blockinput) {
 						r_color4(0.5, 1, 0.5, 1);
-						draw_text(AL_Right, origin, 20*i, "Press a key to assign, ESC to cancel", _fonts.standard);
+						text_draw("Press a key to assign, ESC to cancel", &(TextParams) {
+							.pos = { origin, 20*i },
+							.align = ALIGN_RIGHT,
+						});
 					} else {
 						const char *txt = SDL_GetScancodeName(config_get_int(bind->configentry));
 
@@ -817,12 +823,18 @@ void draw_options_menu(MenuData *menu) {
 							txt = "Unknown";
 						}
 
-						draw_text(AL_Right, origin, 20*i, txt, _fonts.standard);
+						text_draw(txt, &(TextParams) {
+							.pos = { origin, 20*i },
+							.align = ALIGN_RIGHT,
+						});
 					}
 
 					if(!caption_drawn) {
 						r_color4(1,1,1,0.7);
-						draw_text(AL_Center, (SCREEN_W - 200)/2, 20*(i-1), "Controls", _fonts.standard);
+						text_draw("Controls", &(TextParams) {
+							.pos = { (SCREEN_W - 200)/2, 20*(i-1) },
+							.align = ALIGN_CENTER,
+						});
 						caption_drawn = 1;
 					}
 					break;
@@ -846,13 +858,16 @@ void draw_options_menu(MenuData *menu) {
 
 						if(bind->valrange_max > 0) {
 							snprintf(buf, sizeof(buf), "#%i: %s", bind->selected + 1, gamepad_device_name(bind->selected));
-							shorten_text_up_to_width(buf, (SCREEN_W - 220) / 2, _fonts.standard);
+							text_shorten(get_font("standard"), buf, (SCREEN_W - 220) / 2);
 							txt = buf;
 						} else {
 							txt = "No devices available";
 						}
 
-						draw_text(AL_Right, origin, 20*i, txt, _fonts.standard);
+						text_draw(txt, &(TextParams) {
+							.pos = { origin, 20*i },
+							.align = ALIGN_RIGHT,
+						});
 					}
 
 					break;
@@ -864,16 +879,25 @@ void draw_options_menu(MenuData *menu) {
 
 					if(bind->blockinput) {
 						r_color4(0.5, 1, 0.5, 1);
-						draw_text(AL_Right, origin, 20*i,
-							is_axis ? "Move an axis to assign, Back to cancel"
-									: "Press a button to assign, Back to cancel",
-							_fonts.standard);
+						char *text = is_axis ? "Move an axis to assign, Back to cancel"
+						                     : "Press a button to assign, Back to cancel";
+
+						text_draw(text, &(TextParams) {
+							.pos = { origin, 20*i },
+							.align = ALIGN_RIGHT,
+						});
 					} else if(config_get_int(bind->configentry) >= 0) {
 						int id = config_get_int(bind->configentry);
 						const char *name = (is_axis ? gamepad_axis_name(id) : gamepad_button_name(id));
-						draw_text(AL_Right, origin, 20*i, name, _fonts.standard);
+						text_draw(name, &(TextParams) {
+							.pos = { origin, 20*i },
+							.align = ALIGN_RIGHT,
+						});
 					} else {
-						draw_text(AL_Right, origin, 20*i, "Unbound", _fonts.standard);
+						text_draw("Unbound", &(TextParams) {
+							.pos = { origin, 20*i },
+							.align = ALIGN_RIGHT,
+						});
 					}
 					break;
 				}
@@ -882,10 +906,16 @@ void draw_options_menu(MenuData *menu) {
 					if(bind->blockinput) {
 						r_color4(0.5, 1, 0.5, 1.0);
 						if(*bind->strvalue) {
-							draw_text(AL_Right, origin, 20*i, bind->strvalue, _fonts.standard);
+							text_draw(bind->strvalue, &(TextParams) {
+								.pos = { origin, 20*i },
+								.align = ALIGN_RIGHT,
+							});
 						}
 					} else {
-						draw_text(AL_Right, origin, 20*i, config_get_str(bind->configentry), _fonts.standard);
+						text_draw(config_get_str(bind->configentry), &(TextParams) {
+							.pos = { origin, 20*i },
+							.align = ALIGN_RIGHT,
+						});
 					}
 					break;
 				}
@@ -904,7 +934,10 @@ void draw_options_menu(MenuData *menu) {
 					}
 
 					snprintf(tmp, 16, "%dx%d", w, h);
-					draw_text(AL_Right, origin, 20*i, tmp, _fonts.standard);
+					text_draw(tmp, &(TextParams) {
+						.pos = { origin, 20*i },
+						.align = ALIGN_RIGHT,
+					});
 					break;
 				}
 
@@ -926,7 +959,10 @@ void draw_options_menu(MenuData *menu) {
 
 					r_mat_push();
 					r_mat_translate(origin - (w+cw) * 0.5, 20 * i, 0);
-					draw_text(AL_Right, -((w+cw) * 0.5 + 10), 0, tmp, _fonts.standard);
+					text_draw(tmp, &(TextParams) {
+						.pos = { -((w+cw) * 0.5 + 10), 0 },
+						.align = ALIGN_RIGHT,
+					});
 					r_shader_standard_notex();
 					r_mat_push();
 					r_mat_scale(w+cw, h, 1);

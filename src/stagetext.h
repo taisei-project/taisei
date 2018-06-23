@@ -23,11 +23,11 @@ struct StageText {
 	LIST_INTERFACE(StageText);
 
 	char *text;
-	Font **font;
+	Font *font;
 
 	complex pos;
 	Alignment align;
-	float clr[4];
+	Color color;
 
 	struct {
 		int spawn;
@@ -45,8 +45,8 @@ struct StageText {
 
 void stagetext_free(void);
 void stagetext_draw(void);
-StageText* stagetext_add(const char *text, complex pos, Alignment align, Font **font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime);
-StageText* stagetext_add_numeric(int n, complex pos, Alignment align, Font **font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime);
+StageText* stagetext_add(const char *text, complex pos, Alignment align, Font *font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime);
+StageText* stagetext_add_numeric(int n, complex pos, Alignment align, Font *font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime);
 
 struct StageTextTable {
 	complex pos;
