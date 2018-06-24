@@ -26,22 +26,29 @@
 static struct {
 	struct {
 		ShaderProgram *shader;
-		Uniform *u_colorAtop;
-		Uniform *u_colorAbot;
-		Uniform *u_colorBtop;
-		Uniform *u_colorBbot;
-		Uniform *u_colortint;
-		Uniform *u_split;
+		Font *font;
+
+		struct {
+			Color active;
+			Color inactive;
+			Color label;
+		} color;
 	} hud_text;
+
 	bool framerate_graphs;
 	bool objpool_stats;
 	PostprocessShader *viewport_pp;
-	Font *hud_font;
 
 	#ifdef DEBUG
 		Sprite dummy;
 	#endif
-} stagedraw;
+} stagedraw = {
+	.hud_text.color = {
+		.active   = RGBA(1.00, 1.00, 1.00, 1.00),
+		.inactive = RGBA(0.70, 0.70, 0.70, 0.70),
+		.label    = RGBA(0.70, 0.70, 0.70, 0.70),
+	}
+};
 
 void stage_draw_preload(void) {
 	preload_resources(RES_POSTPROCESS, RESF_OPTIONAL,
@@ -71,20 +78,6 @@ void stage_draw_preload(void) {
 		"hud",
 	NULL);
 
-	stagedraw.hud_text.shader      = r_shader_get("hud_text");
-	stagedraw.hud_text.u_colorAtop = r_shader_uniform(stagedraw.hud_text.shader, "colorAtop");
-	stagedraw.hud_text.u_colorAbot = r_shader_uniform(stagedraw.hud_text.shader, "colorAbot");
-	stagedraw.hud_text.u_colorBtop = r_shader_uniform(stagedraw.hud_text.shader, "colorBtop");
-	stagedraw.hud_text.u_colorBbot = r_shader_uniform(stagedraw.hud_text.shader, "colorBbot");
-	stagedraw.hud_text.u_colortint = r_shader_uniform(stagedraw.hud_text.shader, "colortint");
-	stagedraw.hud_text.u_split     = r_shader_uniform(stagedraw.hud_text.shader, "split");
-
-	r_uniform_ptr(stagedraw.hud_text.u_colorAtop, 1, (float[]){ 0.70, 0.70, 0.70, 0.70 });
-	r_uniform_ptr(stagedraw.hud_text.u_colorAbot, 1, (float[]){ 0.50, 0.50, 0.50, 0.50 });
-	r_uniform_ptr(stagedraw.hud_text.u_colorBtop, 1, (float[]){ 1.00, 1.00, 1.00, 1.00 });
-	r_uniform_ptr(stagedraw.hud_text.u_colorBbot, 1, (float[]){ 0.80, 0.80, 0.80, 0.80 });
-	r_uniform_ptr(stagedraw.hud_text.u_colortint, 1, (float[]){ 1.00, 1.00, 1.00, 1.00 });
-
 	stagedraw.framerate_graphs = env_get("TAISEI_FRAMERATE_GRAPHS", GRAPHS_DEFAULT);
 	stagedraw.objpool_stats = env_get("TAISEI_OBJPOOL_STATS", OBJPOOLSTATS_DEFAULT);
 
@@ -94,8 +87,10 @@ void stage_draw_preload(void) {
 		NULL);
 	}
 
-	stagedraw.hud_font = get_font("hud");
 	stagedraw.viewport_pp = get_resource_data(RES_POSTPROCESS, "viewport", RESF_OPTIONAL);
+	stagedraw.hud_text.shader = r_shader_get("hud_text");
+	stagedraw.hud_text.font = get_font("hud");
+
 	r_shader_standard();
 
 	#ifdef DEBUG
@@ -532,37 +527,59 @@ void stage_draw_scene(StageInfo *stage) {
 	stage_draw_hud();
 }
 
+struct glyphcb_state {
+	Color color;
+};
+
+static void draw_powerval_callback(Font *font, charcode_t charcode, SpriteParams *spr_params, void *userdata) {
+	struct glyphcb_state *st = userdata;
+
+	if(charcode == '.') {
+		st->color = stagedraw.hud_text.color.inactive;
+	}
+
+	spr_params->color = st->color;
+}
+
+static void draw_numeric_callback(Font *font, charcode_t charcode, SpriteParams *spr_params, void *userdata) {
+	struct glyphcb_state *st = userdata;
+
+	if(charcode != '0') {
+		st->color = stagedraw.hud_text.color.active;
+	}
+
+	spr_params->color = st->color;
+}
+
 static inline void stage_draw_hud_power_value(float ypos, char *buf, size_t bufsize) {
-	r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { -0.25 });
 	snprintf(buf, bufsize, "%i.%02i", global.plr.power / 100, global.plr.power % 100);
 	text_draw(buf, &(TextParams) {
 		.pos = { 170, ypos },
 		.font = "mono",
 		.align = ALIGN_RIGHT,
+		.glyph_callback = {
+			draw_powerval_callback,
+			&(struct glyphcb_state) { stagedraw.hud_text.color.active },
+		}
 	});
-	r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { 0.0 });
-}
-
-static float split_for_digits(uint32_t val, int maxdigits) {
-	int digits = val ? log10(val) + 1 : 0;
-	int remdigits = maxdigits - digits;
-	return max(0, (float)remdigits/maxdigits);
 }
 
 static void stage_draw_hud_score(Alignment a, float xpos, float ypos, char *buf, size_t bufsize, uint32_t score) {
 	snprintf(buf, bufsize, "%010u", score);
-	r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { split_for_digits(score, 10) });
 	text_draw(buf, &(TextParams) {
 		.pos = { xpos, ypos },
 		.font = "mono",
 		.align = ALIGN_RIGHT,
+		.glyph_callback = {
+			draw_numeric_callback,
+			&(struct glyphcb_state) { stagedraw.hud_text.color.inactive },
+		}
 	});
 }
 
 static void stage_draw_hud_scores(float ypos_hiscore, float ypos_score, char *buf, size_t bufsize) {
 	stage_draw_hud_score(ALIGN_RIGHT, 170, (int)ypos_hiscore, buf, bufsize, progress.hiscore);
 	stage_draw_hud_score(ALIGN_RIGHT, 170, (int)ypos_score,   buf, bufsize, global.plr.points);
-	r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { 0 });
 }
 
 static void stage_draw_hud_objpool_stats(float x, float y, float width) {
@@ -624,9 +641,10 @@ static void draw_graph(float x, float y, float w, float h) {
 
 static void draw_label(const char *label_str, double y_ofs, struct labels_s* labels) {
 	text_draw(label_str, &(TextParams) {
-		.font_ptr = stagedraw.hud_font,
+		.font_ptr = stagedraw.hud_text.font,
 		.shader_ptr = stagedraw.hud_text.shader,
 		.pos = { labels->x.ofs, y_ofs },
+		.color = stagedraw.hud_text.color.label,
 	});
 }
 
@@ -635,18 +653,14 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	Font *font;
 
 	r_shader_ptr(stagedraw.hud_text.shader);
-	r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { 0 });
-	r_uniform_ptr(stagedraw.hud_text.u_colortint, 1, (float[]) { 1.00, 1.00, 1.00, 1.00 });
 
 	// Labels
-	r_uniform_ptr(stagedraw.hud_text.u_colortint, 1, (float[]) { 0.70, 0.70, 0.70, 0.70 });
 	draw_label("Hi-Score:", labels->y.hiscore, labels);
 	draw_label("Score:",    labels->y.score,   labels);
 	draw_label("Lives:",    labels->y.lives,   labels);
 	draw_label("Spells:",   labels->y.bombs,   labels);
 	draw_label("Power:",    labels->y.power,   labels);
 	draw_label("Graze:",    labels->y.graze,   labels);
-	r_uniform_ptr(stagedraw.hud_text.u_colortint, 1, (float[]) { 1.00, 1.00, 1.00, 1.00 });
 
 	if(stagedraw.objpool_stats) {
 		stage_draw_hud_objpool_stats(labels->x.ofs, labels->y.graze + 32, 250);
@@ -658,8 +672,8 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	// Lives and Bombs (N/A)
 	if(global.stage->type == STAGE_SPELL) {
 		r_color4(1, 1, 1, 0.7);
-		text_draw("N/A", &(TextParams) { .pos = { -6, labels->y.lives }, .font_ptr = stagedraw.hud_font });
-		text_draw("N/A", &(TextParams) { .pos = { -6, labels->y.bombs }, .font_ptr = stagedraw.hud_font });
+		text_draw("N/A", &(TextParams) { .pos = { -6, labels->y.lives }, .font_ptr = stagedraw.hud_text.font });
+		text_draw("N/A", &(TextParams) { .pos = { -6, labels->y.bombs }, .font_ptr = stagedraw.hud_text.font });
 		r_color4(1, 1, 1, 1.0);
 	}
 
@@ -668,10 +682,15 @@ void stage_draw_hud_text(struct labels_s* labels) {
 
 	// Graze value
 	snprintf(buf, sizeof(buf), "%05i", global.plr.graze);
-	r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { split_for_digits(global.plr.graze, 5) });
-	// draw_text(ALIGN_LEFT, -6, (int)(labels->y.graze + labels->y.mono_ofs), buf, _fonts.mono);
-	text_draw(buf, &(TextParams) { .pos = { -6, labels->y.graze }, .shader_ptr = stagedraw.hud_text.shader, .font = "mono" });
-	r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { 0 });
+	text_draw(buf, &(TextParams) {
+		.pos = { -6, labels->y.graze },
+		.shader_ptr = stagedraw.hud_text.shader,
+		.font = "mono",
+		.glyph_callback = {
+			draw_numeric_callback,
+			&(struct glyphcb_state) { stagedraw.hud_text.color.inactive },
+		}
+	});
 
 	// Warning: pops outer matrix!
 	r_mat_pop();
@@ -712,18 +731,20 @@ void stage_draw_hud_text(struct labels_s* labels) {
 		snprintf(buf, sizeof(buf), "Replay: %s (%i fps)", global.replay.playername, global.replay_stage->fps);
 		int x = 0, y = SCREEN_H - 0.5 * text_height(font, buf, 0);
 
-		r_uniform_ptr(stagedraw.hud_text.u_colortint, 1, (float[]) { 0.50, 0.50, 0.50, 0.50 });
-		x += text_draw(buf, &(TextParams) { .pos = { x, y }, .font_ptr = font });
-		r_flush_sprites(); // I have no idea what i am doing and hope this is right!
-		r_uniform_ptr(stagedraw.hud_text.u_colortint, 1, (float[]) { 1.00, 1.00, 1.00, 1.00 });
+		x += text_draw(buf, &(TextParams) {
+			.pos = { x, y },
+			.font_ptr = font,
+			.color = stagedraw.hud_text.color.inactive,
+		});
 
 		if(global.replay_stage->desynced) {
 			strlcpy(buf, " (DESYNCED)", sizeof(buf));
 
-			r_uniform_ptr(stagedraw.hud_text.u_colortint, 1, (float[]) { 1.00, 0.20, 0.20, 0.60 });
-			text_draw(buf, &(TextParams) { .pos = { x, y }, .font_ptr = font });
-			r_flush_sprites(); // I have no idea what i am doing and hope this is right!
-			r_uniform_ptr(stagedraw.hud_text.u_colortint, 1, (float[]) { 1.00, 1.00, 1.00, 1.00 });
+			text_draw(buf, &(TextParams) {
+				.pos = { x, y },
+				.font_ptr = font,
+				.color = rgba(1.00, 0.20, 0.20, 0.60),
+			});
 		}
 	}
 #ifdef PLR_DPS_STATS
@@ -758,19 +779,21 @@ void stage_draw_hud_text(struct labels_s* labels) {
 			}
 		}
 
-		snprintf(buf, sizeof(buf), "Avg DPS: %.02f", totaldmg / (framespan / (double)FPS));
-		r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { 8.0 / strlen(buf) });
-		// float text_h = stringheight(buf, _fonts.monosmall);
-		// float text_y = rint(SCREEN_H - 0.5 * text_h);
-		// draw_text(ALIGN_LEFT, 0, text_y, buf, _fonts.monosmall);
-
+		snprintf(buf, sizeof(buf), "%.02f", totaldmg / (framespan / (double)FPS));
 		double text_h = text_height(font, buf, 0);
+		double x = 0, y = SCREEN_H - 0.5 * text_h;
+
+		x += text_draw("Avg DPS: ", &(TextParams) {
+			.pos = { x, y },
+			.font_ptr = font,
+			.color = stagedraw.hud_text.color.inactive,
+		});
 
 		text_draw(buf, &(TextParams) {
-			.pos = { 0, SCREEN_H - 0.5 * text_h },
+			.pos = { x, y },
 			.font_ptr = font,
+			.color = stagedraw.hud_text.color.active,
 		});
-		r_flush_sprites(); // I have no idea what i am doing and hope this is right!
 
 		r_shader("graph");
 		r_uniform_vec3("color_low",  1.0, 0.0, 0.0);
