@@ -55,7 +55,8 @@ void* load_bgm_begin(const char *path, uint flags) {
 		char *intro = NULL;
 		char *loop = NULL;
 
-		if(parse_keyvalue_file_with_spec(path, (KVSpec[]) {
+		if(!parse_keyvalue_file_with_spec(path, (KVSpec[]) {
+			{ "artist" }, // don’t print a warning because this field is supposed to be here
 			{ "intro",      .out_str    = &intro            },
 			{ "loop",       .out_str    = &loop             },
 			{ "title",      .out_str    = &mus->title       },
