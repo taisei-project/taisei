@@ -974,7 +974,7 @@ double text_draw_wrapped(const char *text, double max_width, const TextParams *p
 	Font *font = font_from_params(params);
 	char buf[strlen(text) * 2 + 1];
 	text_wrap(font, text, max_width, buf, sizeof(buf));
-	return _text_draw(font, text, params);
+	return _text_draw(font, buf, params);
 }
 
 void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbox) {
