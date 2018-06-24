@@ -1031,6 +1031,7 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 		.font_ptr = font,
 		.pos = { -out_bbox->x.min, -out_bbox->y.min + font->metrics.descent },
 		.color = rgb(1, 1, 1),
+		.shader = "text_default",
 	});
 
 	font->metrics.scale = fontscale;
