@@ -634,10 +634,6 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	char buf[64];
 	Font *font;
 
-	TextParams tparams;
-	tparams.font_ptr = stagedraw.hud_font;
-	tparams.shader_ptr = stagedraw.hud_text.shader;
-
 	r_shader_ptr(stagedraw.hud_text.shader);
 	r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { 0 });
 	r_uniform_ptr(stagedraw.hud_text.u_colortint, 1, (float[]) { 1.00, 1.00, 1.00, 1.00 });
@@ -659,14 +655,11 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	// Score/Hi-Score values
 	stage_draw_hud_scores(labels->y.hiscore + labels->y.mono_ofs, labels->y.score + labels->y.mono_ofs, buf, sizeof(buf));
 
-	tparams.pos.x = -6;
 	// Lives and Bombs (N/A)
 	if(global.stage->type == STAGE_SPELL) {
 		r_color4(1, 1, 1, 0.7);
-		tparams.pos.y = labels->y.lives;
-		text_draw("N/A", &tparams);
-		tparams.pos.y = labels->y.bombs;
-		text_draw("N/A", &tparams);
+		text_draw("N/A", &(TextParams) { .pos = { -6, labels->y.lives }, .font_ptr = stagedraw.hud_font });
+		text_draw("N/A", &(TextParams) { .pos = { -6, labels->y.bombs }, .font_ptr = stagedraw.hud_font });
 		r_color4(1, 1, 1, 1.0);
 	}
 
@@ -677,7 +670,6 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	snprintf(buf, sizeof(buf), "%05i", global.plr.graze);
 	r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { split_for_digits(global.plr.graze, 5) });
 	// draw_text(ALIGN_LEFT, -6, (int)(labels->y.graze + labels->y.mono_ofs), buf, _fonts.mono);
-	tparams.pos.y = labels ->y.graze; 
 	text_draw(buf, &(TextParams) { .pos = { -6, labels->y.graze }, .shader_ptr = stagedraw.hud_text.shader, .font = "mono" });
 	r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { 0 });
 
