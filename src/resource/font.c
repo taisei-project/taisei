@@ -867,13 +867,10 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 
 	MatrixMode mm_prev = r_mat_mode_current();
 	r_mat_mode(MM_MODELVIEW);
-
-	if(font->metrics.scale != 1) {
-		r_mat_push();
-		r_mat_translate(x, y, 0);
-		r_mat_scale(iscale, iscale, 1);
-		x = y = 0;
-	}
+	r_mat_push();
+	r_mat_translate(x, y, 0);
+	r_mat_scale(iscale, iscale, 1);
+	x = y = 0;
 
 	double x_orig = x;
 	adjust_xpos(font, text, params->align, x_orig, &x);
@@ -931,9 +928,17 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 			sp.pos.x = x + glyph->metrics.bearing_x + glyph->sprite.w * 0.5;
 			sp.pos.y = y - glyph->metrics.bearing_y + glyph->sprite.h * 0.5 - font->metrics.descent;
 
+			// HACK/FIXME: Glyphs have their sprite w/h unadjusted for scale.
+			// We have to temporarily fix that up here so that the shader gets resolution-independent dimensions.
+			float w_saved = sp.sprite_ptr->w;
+			float h_saved = sp.sprite_ptr->h;
+			sp.sprite_ptr->w /= font->metrics.scale;
+			sp.sprite_ptr->h /= font->metrics.scale;
+			sp.scale.both = font->metrics.scale;
+
 			r_mat_push();
 			r_mat_translate(sp.pos.x - x_orig, sp.pos.y, 0);
-			r_mat_scale(glyph->sprite.w, glyph->sprite.h, 1.0);
+			r_mat_scale(w_saved, h_saved, 1.0);
 			r_mat_translate(-0.5, -0.5, 0);
 
 			if(params->glyph_callback.func != NULL) {
@@ -941,6 +946,11 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 			}
 
 			r_draw_sprite(&sp);
+
+			// HACK/FIXME: See above.
+			sp.sprite_ptr->w = w_saved;
+			sp.sprite_ptr->h = h_saved;
+
 			r_mat_pop();
 		}
 
@@ -950,12 +960,9 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 
 	r_mat_pop();
 	r_mat_mode(MM_MODELVIEW);
-
-	if(font->metrics.scale != 1) {
-		r_mat_pop();
-	}
-
+	r_mat_pop();
 	r_mat_mode(mm_prev);
+
 	return x_orig + (x - x_orig) / font->metrics.scale;
 }
 
