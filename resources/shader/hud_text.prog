@@ -1,2 +1,2 @@
 
-glsl_objects = standard.vert hud_text.frag
+glsl_objects = text_default.vert hud_text.frag

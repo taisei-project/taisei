@@ -102,6 +102,7 @@ void draw_char_menu(MenuData *menu) {
 
 		r_mat_push();
 
+		r_shader("text_default");
 		if(menu->entries[i].drawdata != 0) {
 			r_mat_translate(0,-300*menu->entries[i].drawdata, 0);
 			r_mat_rotate_deg(180*menu->entries[i].drawdata, 1,0,0);
@@ -123,6 +124,7 @@ void draw_char_menu(MenuData *menu) {
 			.align = ALIGN_CENTER,
 			.pos = { 0, 70 },
 		});
+		r_shader_standard();
 		r_mat_pop();
 	}
 
@@ -139,10 +141,12 @@ void draw_char_menu(MenuData *menu) {
 			r_color4(1,1,1,1);
 		}
 
+		r_shader("text_default");
 		text_draw(mode->name, &(TextParams) {
 			.align = ALIGN_CENTER,
 			.pos = { 0, 200+40*i },
 		});
+		r_shader_standard();
 	}
 
 	r_mat_pop();

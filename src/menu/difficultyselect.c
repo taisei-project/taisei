@@ -69,6 +69,7 @@ void draw_difficulty_menu(MenuData *menu) {
 	r_mat_pop();
 	r_color3(1,1,1);
 
+	r_shader("text_default");
 	text_draw(menu->entries[menu->cursor].name, &(TextParams) {
 		.pos = { 40+35*menu->drawdata[0], -12 },
 	});

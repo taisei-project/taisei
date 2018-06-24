@@ -324,10 +324,12 @@ static void credits_draw_entry(CreditsEntry *e) {
 			r_mat_translate(0, yukkuri_spr->h * CREDITS_YUKKURI_SCALE * 0.5, 0);
 		} else {
 			Font *font = get_font(i ? "standard" : "big");
+			r_shader("text_default");
 			text_draw(e->data[i], &(TextParams) {
 				.align = ALIGN_CENTER,
 				.font_ptr = font,
 			});
+			r_shader_standard();
 			r_mat_translate(0, font_get_lineskip(font), 0);
 		}
 	}

@@ -164,6 +164,8 @@ void draw_ingame_menu(MenuData *menu) {
 
 	draw_menu_selector(0, menu->drawdata[0], menu->drawdata[1]*2, 41, menu->frames);
 
+	ShaderProgram *sh_prev = r_shader_current();
+	r_shader("text_default");
 	if(menu->context) {
 		float s = 0.3 + 0.2 * sin(menu->frames/10.0);
 		r_color4(1-s/2, 1-s/2, 1-s, 1-menu_fade(menu));
@@ -195,6 +197,7 @@ void draw_ingame_menu(MenuData *menu) {
 	r_color4(1,1,1,1);
 	r_mat_pop();
 	r_mat_pop();
+	r_shader_ptr(sh_prev);
 
 	stage_draw_hud();
 }

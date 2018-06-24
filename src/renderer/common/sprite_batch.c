@@ -347,6 +347,7 @@ void _r_sprite_batch_end_frame(void) {
 		.pos = { 0, font_get_lineskip(font) },
 		.font_ptr = font,
 		.color = rgb(1, 1, 1),
+		.shader = "text_default",
 	});
 
 	memset(&_r_sprite_batch.frame_stats, 0, sizeof(_r_sprite_batch.frame_stats));

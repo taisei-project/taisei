@@ -1,6 +1,7 @@
 #version 330 core
 
-#include "interface/standard.glslh"
+#include "lib/render_context.glslh"
+#include "interface/sprite.glslh"
 
 UNIFORM(1) vec4 colorAtop;
 UNIFORM(2) vec4 colorAbot;
@@ -33,9 +34,9 @@ void main(void) {
 		cBb = colorBbot;
 	}
 
-	fragColor = texel * colortint * (
+	fragColor = vec4(1.0,1.0,1.0,texel.r) * colortint * (
 		texCoord.x >= vsplit ?
-			mix(cBt, cBb, texCoord.y) :
-			mix(cAt, cAb, texCoord.y)
+			mix(cBt, cBb, texCoordOverlay.y) :
+			mix(cAt, cAb, texCoordOverlay.y)
 	);
 }

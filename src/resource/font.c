@@ -852,7 +852,7 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 		if(params->shader != NULL) {
 			sp.shader_ptr = r_shader_get(params->shader);
 		} else {
-			sp.shader_ptr = text_get_default_shader();
+			sp.shader_ptr = r_shader_current();
 		}
 	}
 

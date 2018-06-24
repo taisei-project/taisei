@@ -569,6 +569,8 @@ static void stage_draw_hud_objpool_stats(float x, float y, float width) {
 	ObjectPool **last = &stage_object_pools.first + (sizeof(StageObjectPools)/sizeof(ObjectPool*) - 1);
 	Font *font = get_font("monotiny");
 
+	ShaderProgram *sh_prev = r_shader_current();
+	r_shader("text_default");
 	for(ObjectPool **pool = &stage_object_pools.first; pool <= last; ++pool) {
 		ObjectPoolStats stats;
 		char buf[32];
@@ -593,6 +595,7 @@ static void stage_draw_hud_objpool_stats(float x, float y, float width) {
 
 		y += font_get_lineskip(font);
 	}
+	r_shader_ptr(sh_prev);
 }
 
 struct labels_s {
@@ -622,6 +625,7 @@ static void draw_graph(float x, float y, float w, float h) {
 static void draw_label(const char *label_str, double y_ofs, struct labels_s* labels) {
 	text_draw(label_str, &(TextParams) {
 		.font_ptr = stagedraw.hud_font,
+		.shader_ptr = stagedraw.hud_text.shader,
 		.pos = { labels->x.ofs, y_ofs },
 	});
 }
@@ -629,6 +633,10 @@ static void draw_label(const char *label_str, double y_ofs, struct labels_s* lab
 void stage_draw_hud_text(struct labels_s* labels) {
 	char buf[64];
 	Font *font;
+
+	TextParams tparams;
+	tparams.font_ptr = stagedraw.hud_font;
+	tparams.shader_ptr = stagedraw.hud_text.shader;
 
 	r_shader_ptr(stagedraw.hud_text.shader);
 	r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { 0 });
@@ -651,11 +659,14 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	// Score/Hi-Score values
 	stage_draw_hud_scores(labels->y.hiscore + labels->y.mono_ofs, labels->y.score + labels->y.mono_ofs, buf, sizeof(buf));
 
+	tparams.pos.x = -6;
 	// Lives and Bombs (N/A)
 	if(global.stage->type == STAGE_SPELL) {
 		r_color4(1, 1, 1, 0.7);
-		text_draw("N/A", &(TextParams) { .pos = { -6, labels->y.lives }, .font_ptr = stagedraw.hud_font });
-		text_draw("N/A", &(TextParams) { .pos = { -6, labels->y.bombs }, .font_ptr = stagedraw.hud_font });
+		tparams.pos.y = labels->y.lives;
+		text_draw("N/A", &tparams);
+		tparams.pos.y = labels->y.bombs;
+		text_draw("N/A", &tparams);
 		r_color4(1, 1, 1, 1.0);
 	}
 
@@ -666,7 +677,8 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	snprintf(buf, sizeof(buf), "%05i", global.plr.graze);
 	r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { split_for_digits(global.plr.graze, 5) });
 	// draw_text(ALIGN_LEFT, -6, (int)(labels->y.graze + labels->y.mono_ofs), buf, _fonts.mono);
-	text_draw(buf, &(TextParams) { .pos = { -6, labels->y.graze }, .font = "mono" });
+	tparams.pos.y = labels ->y.graze; 
+	text_draw(buf, &(TextParams) { .pos = { -6, labels->y.graze }, .shader_ptr = stagedraw.hud_text.shader, .font = "mono" });
 	r_uniform_ptr(stagedraw.hud_text.u_split, 1, (float[]) { 0 });
 
 	// Warning: pops outer matrix!
@@ -693,7 +705,6 @@ void stage_draw_hud_text(struct labels_s* labels) {
 #endif
 
 	// draw_text(ALIGN_RIGHT | AL_Flag_NoAdjust, SCREEN_W, rint(SCREEN_H - 0.5 * stringheight(buf, _fonts.monosmall)), buf, _fonts.monosmall);
-
 	font = get_font("monosmall");
 
 	text_draw(buf, &(TextParams) {
@@ -703,6 +714,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	});
 
 	if(global.replaymode == REPLAY_PLAY) {
+		r_shader("hud_text");
 		// XXX: does it make sense to use the monospace font here?
 
 		snprintf(buf, sizeof(buf), "Replay: %s (%i fps)", global.replay.playername, global.replay_stage->fps);
@@ -710,6 +722,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 
 		r_uniform_ptr(stagedraw.hud_text.u_colortint, 1, (float[]) { 0.50, 0.50, 0.50, 0.50 });
 		x += text_draw(buf, &(TextParams) { .pos = { x, y }, .font_ptr = font });
+		r_flush_sprites(); // I have no idea what i am doing and hope this is right!
 		r_uniform_ptr(stagedraw.hud_text.u_colortint, 1, (float[]) { 1.00, 1.00, 1.00, 1.00 });
 
 		if(global.replay_stage->desynced) {
@@ -717,6 +730,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 
 			r_uniform_ptr(stagedraw.hud_text.u_colortint, 1, (float[]) { 1.00, 0.20, 0.20, 0.60 });
 			text_draw(buf, &(TextParams) { .pos = { x, y }, .font_ptr = font });
+			r_flush_sprites(); // I have no idea what i am doing and hope this is right!
 			r_uniform_ptr(stagedraw.hud_text.u_colortint, 1, (float[]) { 1.00, 1.00, 1.00, 1.00 });
 		}
 	}
@@ -764,6 +778,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 			.pos = { 0, SCREEN_H - 0.5 * text_h },
 			.font_ptr = font,
 		});
+		r_flush_sprites(); // I have no idea what i am doing and hope this is right!
 
 		r_shader("graph");
 		r_uniform_vec3("color_low",  1.0, 0.0, 0.0);
@@ -878,6 +893,8 @@ void stage_draw_hud(void) {
 	// Power stars
 	draw_stars(0, labels.y.power, global.plr.power / 100, global.plr.power % 100, PLR_MAX_POWER / 100, 100, 1, 20);
 
+	ShaderProgram *sh_prev = r_shader_current();
+	r_shader("text_default");
 	// God Mode indicator
 	if(global.plr.iddqd) {
 		text_draw("GOD MODE", &(TextParams) { .pos = { -70, 475 }, .font = "big" });
@@ -891,6 +908,7 @@ void stage_draw_hud(void) {
 		r_color4(0.3, 0.6, 0.7, 0.7 * s);
 		r_mat_rotate_deg(-25 + 360 * (1-s2), 0, 0, 1);
 		r_mat_scale(s2, s2, 0);
+
 		text_draw("Extra Spell!", &(TextParams) { .pos = {  1,  1 }, .font = "big", .align = ALIGN_CENTER });
 		text_draw("Extra Spell!", &(TextParams) { .pos = { -1, -1 }, .font = "big", .align = ALIGN_CENTER });
 		r_color4(1, 1, 1, s);
@@ -899,6 +917,7 @@ void stage_draw_hud(void) {
 		r_mat_pop();
 	}
 
+	r_shader_ptr(sh_prev);
 	// Warning: pops matrix!
 	stage_draw_hud_text(&labels);
 

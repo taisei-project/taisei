@@ -53,6 +53,7 @@ static void draw_saverpy_menu(MenuData *m) {
 	text_draw("Save Replay?", &(TextParams) {
 		.font = "big",
 		.align = ALIGN_CENTER,
+		.shader = "text_default",
 	});
 	r_mat_translate(0, 100, 0);
 
@@ -72,6 +73,7 @@ static void draw_saverpy_menu(MenuData *m) {
 				.font = "big",
 				.align = ALIGN_CENTER,
 				.pos = { -50 + 100 * i, 0 },
+				.shader = "text_default"
 			});
 		}
 	}

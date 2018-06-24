@@ -120,6 +120,7 @@ void draw_dialog(Dialog *dialog) {
 	if(dialog->messages[dialog->pos].side == Right)
 		r_color3(0.6,0.6,1);
 
+	r_shader("text_default");
 	text_draw_wrapped(dialog->messages[dialog->pos].msg, VIEWPORT_W * 0.85, &(TextParams) {
 		.pos = { VIEWPORT_W/2, VIEWPORT_H-110 },
 		.align = ALIGN_CENTER

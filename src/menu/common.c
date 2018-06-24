@@ -125,12 +125,15 @@ void draw_menu_selector(float x, float y, float w, float h, float t) {
 }
 
 void draw_menu_title(MenuData *m, char *title) {
+	ShaderProgram *sh_prev = r_shader_current();
+	r_shader("text_default");
 	text_draw(title, &(TextParams) {
 		.pos = { (text_width(get_font("big"), title, 0) + 10) * (1.0 - menu_fade(m)), 30 },
 		.align = ALIGN_RIGHT,
 		.font = "big",
 		.color = rgb(1, 1, 1),
 	});
+	r_shader_ptr(sh_prev);
 }
 
 void draw_menu_list(MenuData *m, float x, float y, void (*draw)(void*, int, int)) {
@@ -160,7 +163,10 @@ void draw_menu_list(MenuData *m, float x, float y, void (*draw)(void*, int, int)
 		if(draw && i < m->ecount-1) {
 			draw(e, i, m->ecount);
 		} else if(e->name) {
+			ShaderProgram *sh_prev = r_shader_current();
+			r_shader("text_default");
 			text_draw(e->name, &(TextParams) { .pos = { 20 - e->drawdata, 20*i } });
+			r_shader_ptr(sh_prev);
 		}
 	}
 

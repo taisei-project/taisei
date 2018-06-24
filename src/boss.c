@@ -40,6 +40,8 @@ Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 }
 
 void draw_boss_text(Alignment align, float x, float y, const char *text, const char *fnt, Color clr) {
+	ShaderProgram *sh_prev = r_shader_current();
+	r_shader("text_default");
 	text_draw(text, &(TextParams) {
 		.pos = { x + 1, y + 1 },
 		.color = derive_color(rgb(0, 0, 0), CLRMASK_A, clr),
@@ -53,6 +55,7 @@ void draw_boss_text(Alignment align, float x, float y, const char *text, const c
 		.font = fnt,
 		.align = align,
 	});
+	r_shader_ptr(sh_prev);
 }
 
 void spell_opening(Boss *b, int time) {

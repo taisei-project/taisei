@@ -163,7 +163,7 @@ static void replayview_draw_submenu_bg(float width, float height, float alpha) {
 	r_color4(0.1, 0.1, 0.1, 0.7 * alpha);
 	r_shader_standard_notex();
 	r_draw_quad();
-	r_shader_standard();
+	r_shader("text_default");
 	r_mat_pop();
 }
 
@@ -330,6 +330,7 @@ static void replayview_draw(MenuData *m) {
 	ReplayviewContext *ctx = m->context;
 
 	draw_options_menu_bg(m);
+	r_shader("text_default");
 	draw_menu_title(m, "Replays");
 
 	draw_menu_list(m, 100, 100, replayview_drawitem);
@@ -337,6 +338,7 @@ static void replayview_draw(MenuData *m) {
 	if(ctx->submenu) {
 		ctx->submenu->draw(ctx->submenu);
 	}
+	r_shader_standard();
 }
 
 int replayview_cmp(const void *a, const void *b) {

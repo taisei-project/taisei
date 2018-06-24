@@ -117,7 +117,7 @@ void draw_main_menu(MenuData *menu) {
 	r_mat_push();
 	r_mat_translate(0, SCREEN_H-270, 0);
 	draw_menu_selector(50 + menu->drawdata[1]/2, menu->drawdata[2], 1.5 * menu->drawdata[1], 64, menu->frames);
-
+	r_shader("text_default");
 	for(int i = 0; i < menu->ecount; i++) {
 		float s = 5*sin(menu->frames/80.0 + 20*i);
 
@@ -175,7 +175,7 @@ void draw_main_menu(MenuData *menu) {
 		r_mat_pop();
 	}
 
-	r_shader_standard();
+	r_shader("text_default");
 	r_capability(RCAP_CULL_FACE, cullcap_saved);
 	r_blend(BLEND_ALPHA);
 
@@ -186,6 +186,7 @@ void draw_main_menu(MenuData *menu) {
 		.pos = { SCREEN_W-5, SCREEN_H-10 },
 		.font = "small",
 	});
+	r_shader_standard();
 }
 
 void draw_loading_screen(void) {
@@ -196,6 +197,7 @@ void draw_loading_screen(void) {
 		.align = ALIGN_RIGHT,
 		.pos = { SCREEN_W-5, SCREEN_H-10 },
 		.font = "small",
+		.shader = "text_default",
 	});
 	video_swap_buffers();
 }

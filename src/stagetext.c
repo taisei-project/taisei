@@ -27,9 +27,9 @@ StageText* stagetext_add(const char *text, complex pos, Alignment align, Font *f
 	t->color = clr;
 
 	t->time.spawn = global.frames + delay;
-	t->time.life = lifetime + fadeouttime;
 	t->time.fadein = fadeintime;
 	t->time.fadeout = fadeouttime;
+	t->time.life = lifetime + fadeouttime;
 
 	memset(&t->custom, 0, sizeof(t->custom));
 
@@ -77,8 +77,7 @@ static void stagetext_draw_single(StageText *txt) {
 	r_state_push();
 	r_texture(1, "titletransition");
 	r_shader("stagetext");
-	r_uniform_int("trans", 1); // FIXME: what is this for?
-	r_uniform_float("t", 1.0 - f);
+	r_uniform_int("trans", 1);
 
 	TextParams params = { 0 };
 	params.font_ptr = txt->font;
@@ -86,14 +85,11 @@ static void stagetext_draw_single(StageText *txt) {
 	params.blend = BLEND_ALPHA;
 	params.shader_ptr = r_shader_current();
 
-	params.color = rgb(0, 0, 0);
-	params.pos.x = creal(txt->pos)+10*f*f+1;
-	params.pos.y = cimag(txt->pos)+10*f*f+1;
-	text_draw(txt->text, &params);
+	params.custom = 1.0-f;
+	params.pos.x = creal(txt->pos)+10*f*f;
+	params.pos.y = cimag(txt->pos)+10*f*f;
 
 	params.color = txt->color;
-	params.pos.x -= 1;
-	params.pos.y -= 1;
 	text_draw(txt->text, &params);
 
 	r_state_pop();

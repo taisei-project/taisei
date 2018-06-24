@@ -772,6 +772,7 @@ void draw_options_menu(MenuData *menu) {
 			r_color4(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a) * alpha);
 		}
 
+		r_shader("text_default");
 		text_draw(e->name, &(TextParams) {
 			.pos = { (1 + (bind ? bind->pad : 0)) * 20 - e->drawdata, 20*i }
 		});
@@ -792,7 +793,9 @@ void draw_options_menu(MenuData *menu) {
 						text_draw(tmp, &(TextParams) { .pos = { origin, 20*i }, .align = ALIGN_RIGHT });
 					} else if(bind->configentry == CONFIG_PRACTICE_POWER) {
 						int stars = PLR_MAX_POWER / 100;
+						r_shader_standard();
 						draw_stars(origin - 20 * (stars - 0.5), 20*i, val, 0, stars, 100, alpha, 20);
+						r_shader("text_default");
 					} else for(j = bind->displaysingle? val : bind->valcount-1; (j+1) && (!bind->displaysingle || j == val); --j) {
 						if(j != bind->valcount-1 && !bind->displaysingle) {
 							origin -= text_width(get_font("standard"), bind->values[j+1], 0) + 5;
@@ -933,7 +936,7 @@ void draw_options_menu(MenuData *menu) {
 						h = m->height;
 					}
 
-					snprintf(tmp, 16, "%dx%d", w, h);
+					snprintf(tmp, 16, "%d×%d", w, h);
 					text_draw(tmp, &(TextParams) {
 						.pos = { origin, 20*i },
 						.align = ALIGN_RIGHT,
@@ -974,14 +977,14 @@ void draw_options_menu(MenuData *menu) {
 					r_color4(0.9, 0.6, 0.2, alpha);
 					r_draw_quad();
 					r_mat_pop();
-					r_shader_standard();
+					r_shader("text_default");
 
 					break;
 				}
 			}
 		}
 	}
-
+	r_shader_standard();
 	r_mat_pop();
 }
 
