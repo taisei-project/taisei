@@ -486,11 +486,18 @@ void* resource_for_each(ResourceType type, void* (*callback)(const char *name, R
 	void *result = NULL;
 
 	while(iter.has_data) {
-		if((result = callback(iter.key, iter.value, arg)) != NULL) {
-			break;
-		}
+		InternalResource *ires = iter.value;
+		char *key = iter.key;
 
 		ht_iter_next(&iter);
+
+		if(ires->res.data == NULL) {
+			continue;
+		}
+
+		if((result = callback(key, &ires->res, arg)) != NULL) {
+			break;
+		}
 	}
 
 	ht_iter_end(&iter);

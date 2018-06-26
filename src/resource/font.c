@@ -497,6 +497,19 @@ static Glyph* get_glyph(Font *fnt, charcode_t cp) {
 	return ofs < 0 ? NULL : fnt->glyphs + ofs;
 }
 
+attr_nonnull(1)
+static void wipe_glyph_cache(Font *font) {
+	ht_unset_all(&font->charcodes_to_glyph_ofs);
+	ht_unset_all(&font->ftindex_to_glyph_ofs);
+
+	for(SpriteSheet *ss = font->spritesheets.first, *next; ss; ss = next) {
+		next = ss->next;
+		delete_spritesheet(&font->spritesheets, ss);
+	}
+
+	font->glyphs_used = 0;
+}
+
 static void free_font_resources(Font *font) {
 	if(font->face) {
 		FT_Stream stream = font->face->stream;
@@ -508,16 +521,13 @@ static void free_font_resources(Font *font) {
 		}
 	}
 
+	wipe_glyph_cache(font);
+
 	ht_destroy(&font->charcodes_to_glyph_ofs);
 	ht_destroy(&font->ftindex_to_glyph_ofs);
 
 	free(font->source_path);
 	free(font->glyphs);
-
-	for(SpriteSheet *ss = font->spritesheets.first, *next; ss; ss = next) {
-		next = ss->next;
-		delete_spritesheet(&font->spritesheets, ss);
-	}
 }
 
 void* load_font_begin(const char *path, uint flags) {
@@ -568,23 +578,24 @@ void unload_font(void *vfont) {
 	free(vfont);
 }
 
-static void reload_font(Font *font) {
-	// font->ttf = load_ttf(font->source_path, font->base_size);
+struct rlfonts_arg {
+	double quality;
+};
+
+attr_nonnull(1)
+static void reload_font(Font *font, double quality) {
+	wipe_glyph_cache(font);
+	set_font_size(font, font->base_size, quality);
 }
 
 static void* reload_font_callback(const char *name, Resource *res, void *varg) {
-	reload_font((Font*)res->data);
+	struct rlfonts_arg *a = varg;
+	reload_font((Font*)res->data, a->quality);
 	return NULL;
 }
 
 static void reload_fonts(double quality) {
-	/*
-	if(font_renderer.quality == sanitize_scale(quality)) {
-		return;
-	}
-	*/
-
-	resource_for_each(RES_FONT, reload_font_callback, NULL);
+	resource_for_each(RES_FONT, reload_font_callback, &(struct rlfonts_arg) { quality });
 }
 
 static inline int apply_kerning(Font *font, uint prev_index, Glyph *gthis) {
