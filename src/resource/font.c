@@ -77,32 +77,33 @@ typedef struct Glyph {
 	ulong ft_index;
 } Glyph;
 
-struct Font {
-	char *source_path;
-	Glyph *glyphs;
-	Texture **textures;
-	FT_Face face;
-	long base_face_idx;
-	int base_size;
-	uint glyphs_allocated;
-	uint glyphs_used;
-	uint num_textures;
-	ht_int2int_t charcodes_to_glyph_ofs;
-	FontMetrics metrics;
-};
-
 typedef struct SpriteSheet {
 	LIST_INTERFACE(struct SpriteSheet);
-	Texture *tex;
+	Texture tex;
 	RectPack *rectpack;
 	uint glyphs;
 } SpriteSheet;
 
 typedef LIST_ANCHOR(SpriteSheet) SpriteSheetAnchor;
 
+struct Font {
+	char *source_path;
+	Glyph *glyphs;
+	SpriteSheetAnchor spritesheets;
+	FT_Face face;
+	long base_face_idx;
+	int base_size;
+	uint glyphs_allocated;
+	uint glyphs_used;
+	ht_int2int_t charcodes_to_glyph_ofs;
+	ht_int2int_t ftindex_to_glyph_ofs;
+	FontMetrics metrics;
+};
+
 static struct {
 	FT_Library lib;
 	ShaderProgram *default_shader;
+	Texture render_tex;
 	RenderTarget render_buf;
 
 	struct {
@@ -161,9 +162,7 @@ static void init_fonts(void) {
 
 	// WARNING: Preloading the default shader here is unsafe.
 
-	Texture *rtex = calloc(1, sizeof(*rtex));
-
-	r_texture_create(rtex, &(TextureParams) {
+	r_texture_create(&globals.render_tex, &(TextureParams) {
 		.filter = { TEX_FILTER_LINEAR, TEX_FILTER_LINEAR },
 		.wrap   = { TEX_WRAP_CLAMP, TEX_WRAP_CLAMP },
 		.type   = TEX_TYPE_R,
@@ -173,11 +172,11 @@ static void init_fonts(void) {
 	});
 
 	r_target_create(&globals.render_buf);
-	r_target_attach(&globals.render_buf, rtex, RENDERTARGET_ATTACHMENT_COLOR0);
+	r_target_attach(&globals.render_buf, &globals.render_tex, RENDERTARGET_ATTACHMENT_COLOR0);
 }
 
 static void shutdown_fonts(void) {
-	r_texture_destroy(r_target_get_attachment(&globals.render_buf, RENDERTARGET_ATTACHMENT_COLOR0));
+	r_texture_destroy(&globals.render_tex);
 	r_target_destroy(&globals.render_buf);
 	events_unregister_handler(fonts_event);
 	FT_Done_FreeType(globals.lib);
@@ -304,10 +303,9 @@ static FT_Error set_font_size(Font *fnt, uint pxsize, double scale) {
 
 static SpriteSheet* add_spritesheet(SpriteSheetAnchor *spritesheets) {
 	SpriteSheet *ss = calloc(1, sizeof(SpriteSheet));
-	ss->tex = calloc(1, sizeof(Texture));
 	ss->rectpack = rectpack_new(SS_WIDTH, SS_HEIGHT);
 
-	r_texture_create(ss->tex, &(TextureParams) {
+	r_texture_create(&ss->tex, &(TextureParams) {
 		.width = SS_WIDTH,
 		.height = SS_HEIGHT,
 		.type = TEX_TYPE_R,
@@ -331,7 +329,7 @@ static SpriteSheet* add_spritesheet(SpriteSheetAnchor *spritesheets) {
 	RenderTarget atlast_rt;
 	Color cc_prev = r_clear_color_current();
 	r_target_create(&atlast_rt);
-	r_target_attach(&atlast_rt, ss->tex, RENDERTARGET_ATTACHMENT_COLOR0);
+	r_target_attach(&atlast_rt, &ss->tex, RENDERTARGET_ATTACHMENT_COLOR0);
 	r_target(&atlast_rt);
 	r_clear_color4(0, 0, 0, 0);
 	r_clear(CLEAR_COLOR);
@@ -360,7 +358,7 @@ static bool add_glyph_to_spritesheet(Font *font, Glyph *glyph, FT_Bitmap bitmap,
 	sprite_pos.top_left += ofs;
 
 	r_texture_fill_region(
-		ss->tex,
+		&ss->tex,
 		rect_x(sprite_pos),
 		rect_y(sprite_pos),
 		bitmap.width,
@@ -368,7 +366,7 @@ static bool add_glyph_to_spritesheet(Font *font, Glyph *glyph, FT_Bitmap bitmap,
 		bitmap.buffer
 	);
 
-	glyph->sprite.tex = ss->tex;
+	glyph->sprite.tex = &ss->tex;
 	glyph->sprite.w = glyph->metrics.width; // bitmap.width / font->scale;
 	glyph->sprite.h = glyph->metrics.height; // bitmap.rows / font->scale;
 	glyph->sprite.tex_area.x = rect_x(sprite_pos);
@@ -408,22 +406,22 @@ static const char *const pixmode_name(FT_Pixel_Mode mode) {
 }
 
 static void delete_spritesheet(SpriteSheetAnchor *spritesheets, SpriteSheet *ss) {
-	// CAUTION: Do not destroy or free the texture here; the font will take ownership of it.
-	// Sprite sheets are transient objects that only exist to set up the glyph sprites and
-	// their backing textures.
-
+	r_texture_destroy(&ss->tex);
 	rectpack_free(ss->rectpack);
 	alist_unlink(spritesheets, ss);
 	free(ss);
 }
 
 static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesheets) {
+	log_debug("Loading glyph 0x%08x", gindex);
+
 	if(++font->glyphs_used == font->glyphs_allocated) {
 		font->glyphs_allocated *= 2;
 		font->glyphs = realloc(font->glyphs, sizeof(Glyph) * font->glyphs_allocated);
 	}
 
 	Glyph *glyph = font->glyphs + font->glyphs_used - 1;
+
 	FT_Error err = FT_Load_Glyph(font->face, gindex, FT_LOAD_RENDER | FT_LOAD_TARGET_LIGHT);
 
 	if(err) {
@@ -471,82 +469,32 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 	return glyph;
 }
 
-static void load_glyphs(Font *font) {
-	// TODO: A better idea would be to populate the glyph cache dynamically as needed.
+static Glyph* get_glyph(Font *fnt, charcode_t cp) {
+	int64_t ofs;
 
-	ht_int2int_t indices_to_glyph_ofs;
-	SpriteSheetAnchor spritesheets = { .first = NULL };
-	charcode_t charcode;
-	uint gindex;
-	uint num_charcodes = 0;
-	uint num_glyphs = 0;
-
-	font->glyphs_allocated = 128;
-	font->glyphs_used = 0;
-	font->glyphs = malloc(sizeof(Glyph) * font->glyphs_allocated);
-
-	ht_create(&font->charcodes_to_glyph_ofs);
-	ht_create(&indices_to_glyph_ofs);
-
-	charcode = FT_Get_First_Char(font->face, &gindex);
-
-	while(gindex != 0) {
+	if(!ht_lookup(&fnt->charcodes_to_glyph_ofs, cp, &ofs)) {
 		Glyph *glyph;
-		int64_t gofs;
+		uint ft_index = FT_Get_Char_Index(fnt->face, cp);
+		log_debug("Glyph for charcode 0x%08lx not cached", cp);
 
-		if(!ht_lookup(&indices_to_glyph_ofs, gindex, &gofs)) {
-			glyph = load_glyph(font, gindex, &spritesheets);
-
-			if(glyph == NULL) {
-				goto skip_glyph;
-			}
-
-			gofs = (ptrdiff_t)(glyph - font->glyphs);
-			ht_set(&indices_to_glyph_ofs, gindex, gofs);
-			log_debug("gofs=%lu", gofs);
-			++num_glyphs;
-		}
-
-		ht_set(&font->charcodes_to_glyph_ofs, charcode, gofs);
-		++num_charcodes;
-
-	skip_glyph:
-		charcode = FT_Get_Next_Char(font->face, charcode, &gindex);
-	}
-
-	ht_destroy(&indices_to_glyph_ofs);
-
-	if(font->glyphs_used < font->glyphs_allocated) {
-		font->glyphs = realloc(font->glyphs, sizeof(Glyph) * font->glyphs_used);
-		font->glyphs_allocated = font->glyphs_used;
-	}
-
-	uint num_textures = 0;
-
-	for(SpriteSheet *ss = spritesheets.first; ss; ss = ss->next) {
-		if(ss->glyphs) {
-			num_textures++;
-		}
-	}
-
-	if(num_textures == 0) {
-		log_warn("No usable glyphs in font at all!");
-	} else {
-		font->num_textures = num_textures;
-		font->textures = calloc(num_textures, sizeof(Texture*));
-		uint i = 0;
-
-		for(SpriteSheet *ss = spritesheets.first, *next; ss; ss = next) {
-			next = ss->next;
-
-			if(ss->glyphs) {
-				font->textures[i++] = ss->tex;
-				delete_spritesheet(&spritesheets, ss);
+		if(ft_index == 0 && cp != UNICODE_UNKNOWN) {
+			log_debug("Font has no glyph for charcode 0x%08lx", cp);
+			glyph = get_glyph(fnt, UNICODE_UNKNOWN);
+			ofs = glyph ? (ptrdiff_t)(glyph - fnt->glyphs) : -1;
+		} else {
+			if(ht_lookup(&fnt->ftindex_to_glyph_ofs, ft_index, &ofs)) {
+				glyph = fnt->glyphs + ofs;
+			} else {
+				glyph = load_glyph(fnt, ft_index, &fnt->spritesheets);
+				ofs = glyph ? (ptrdiff_t)(glyph - fnt->glyphs) : -1;
+				ht_set(&fnt->ftindex_to_glyph_ofs, ft_index, ofs);
 			}
 		}
+
+		ht_set(&fnt->charcodes_to_glyph_ofs, cp, ofs);
 	}
 
-	log_debug("num_charcodes=%u num_glyphs=%u", num_charcodes, num_glyphs);
+	return ofs < 0 ? NULL : fnt->glyphs + ofs;
 }
 
 static void free_font_resources(Font *font) {
@@ -561,17 +509,14 @@ static void free_font_resources(Font *font) {
 	}
 
 	ht_destroy(&font->charcodes_to_glyph_ofs);
+	ht_destroy(&font->ftindex_to_glyph_ofs);
+
 	free(font->source_path);
 	free(font->glyphs);
 
-	if(font->textures) {
-		for(uint i = 0; i < font->num_textures; ++i) {
-			Texture *tex = font->textures[i];
-			r_texture_destroy(tex);
-			free(tex);
-		}
-
-		free(font->textures);
+	for(SpriteSheet *ss = font->spritesheets.first, *next; ss; ss = next) {
+		next = ss->next;
+		delete_spritesheet(&font->spritesheets, ss);
 	}
 }
 
@@ -589,6 +534,9 @@ void* load_font_begin(const char *path, uint flags) {
 		return NULL;
 	}
 
+	ht_create(&font.charcodes_to_glyph_ofs);
+	ht_create(&font.ftindex_to_glyph_ofs);
+
 	if(!(font.face = load_font_face(font.source_path, font.base_face_idx))) {
 		free_font_resources(&font);
 		return NULL;
@@ -598,6 +546,9 @@ void* load_font_begin(const char *path, uint flags) {
 		free_font_resources(&font);
 		return NULL;
 	}
+
+	font.glyphs_allocated = 32;
+	font.glyphs = calloc(font.glyphs_allocated, sizeof(Glyph));
 
 	return memdup(&font, sizeof(font));
 }
@@ -609,26 +560,12 @@ void* load_font_end(void *opaque, const char *path, uint flags) {
 		return NULL;
 	}
 
-	load_glyphs(font);
 	return font;
 }
 
 void unload_font(void *vfont) {
 	free_font_resources(vfont);
 	free(vfont);
-}
-
-static Glyph* get_glyph(Font *fnt, charcode_t cp) {
-	int64_t ofs;
-
-	if(
-		!ht_lookup(&fnt->charcodes_to_glyph_ofs, cp, &ofs) &&
-		!ht_lookup(&fnt->charcodes_to_glyph_ofs, UNICODE_UNKNOWN, &ofs)
-	) {
-		return NULL;
-	}
-
-	return fnt->glyphs + ofs;
 }
 
 static void reload_font(Font *font) {
@@ -650,10 +587,10 @@ static void reload_fonts(double quality) {
 	resource_for_each(RES_FONT, reload_font_callback, NULL);
 }
 
-static inline int apply_kerning(Font *font, Glyph *gprev, Glyph *gthis) {
+static inline int apply_kerning(Font *font, uint prev_index, Glyph *gthis) {
 	FT_Vector kvec;
 
-	if(!FT_Get_Kerning(font->face, gprev->ft_index, gthis->ft_index, FT_KERNING_DEFAULT, &kvec)) {
+	if(!FT_Get_Kerning(font->face, prev_index, gthis->ft_index, FT_KERNING_DEFAULT, &kvec)) {
 		return kvec.x >> 6;
 	}
 
@@ -662,7 +599,7 @@ static inline int apply_kerning(Font *font, Glyph *gprev, Glyph *gthis) {
 
 int text_width_raw(Font *font, const char *text, uint maxlines) {
 	const char *tptr = text;
-	Glyph *prev_glyph = NULL;
+	uint prev_glyph_idx = 0;
 	bool keming = FT_HAS_KERNING(font->face);
 	uint numlines = 0;
 	int x = 0;
@@ -690,12 +627,12 @@ int text_width_raw(Font *font, const char *text, uint maxlines) {
 			continue;
 		}
 
-		if(keming && prev_glyph) {
-			x += apply_kerning(font, prev_glyph, glyph);
+		if(keming && prev_glyph_idx) {
+			x += apply_kerning(font, prev_glyph_idx, glyph);
 		}
 
 		x += glyph->metrics.advance;
-		prev_glyph = glyph;
+		prev_glyph_idx = glyph->ft_index;
 	}
 
 	if(x > width) {
@@ -707,7 +644,7 @@ int text_width_raw(Font *font, const char *text, uint maxlines) {
 
 void text_bbox(Font *font, const char *text, uint maxlines, BBox *bbox) {
 	const char *tptr = text;
-	Glyph *prev_glyph = NULL;
+	uint prev_glyph_idx = 0;
 	bool keming = FT_HAS_KERNING(font->face);
 	uint numlines = 0;
 
@@ -734,8 +671,8 @@ void text_bbox(Font *font, const char *text, uint maxlines, BBox *bbox) {
 			continue;
 		}
 
-		if(keming && prev_glyph) {
-			x += apply_kerning(font, prev_glyph, glyph);
+		if(keming && prev_glyph_idx) {
+			x += apply_kerning(font, prev_glyph_idx, glyph);
 		}
 
 		int g_x0 = x + glyph->metrics.bearing_x;
@@ -754,7 +691,7 @@ void text_bbox(Font *font, const char *text, uint maxlines, BBox *bbox) {
 		bbox->y.min = min(bbox->y.min, g_y0);
 		bbox->y.min = min(bbox->y.min, g_y1);
 
-		prev_glyph = glyph;
+		prev_glyph_idx = glyph->ft_index;
 		x += glyph->metrics.advance;
 	}
 }
@@ -901,7 +838,7 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 	r_mat_translate(-bbox.x.min - (x - x_orig), -bbox.y.min + font->metrics.descent, 0);
 
 	bool keming = FT_HAS_KERNING(font->face);
-	Glyph *prev_glyph = NULL;
+	uint prev_glyph_idx = 0;
 	const char *tptr = text;
 
 	while(*tptr) {
@@ -919,8 +856,8 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 			continue;
 		}
 
-		if(keming && prev_glyph) {
-			x += apply_kerning(font, prev_glyph, glyph);
+		if(keming && prev_glyph_idx) {
+			x += apply_kerning(font, prev_glyph_idx, glyph);
 		}
 
 		if(glyph->sprite.tex != NULL) {
@@ -955,7 +892,7 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 		}
 
 		x += glyph->metrics.advance;
-		prev_glyph = glyph;
+		prev_glyph_idx = glyph->ft_index;
 	}
 
 	r_mat_pop();
@@ -981,7 +918,7 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 	text_bbox(font, text, 0, out_bbox);
 	int bbox_width = out_bbox->x.max - out_bbox->x.min;
 	int bbox_height = out_bbox->y.max - out_bbox->y.min;
-	Texture *tex = r_target_get_attachment(&globals.render_buf, RENDERTARGET_ATTACHMENT_COLOR0);
+	Texture *tex = &globals.render_tex;
 
 	int tex_new_w = bbox_width; // max(tex->w, bbox_width);
 	int tex_new_h = bbox_height; // max(tex->h, bbox_height);
