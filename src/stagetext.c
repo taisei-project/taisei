@@ -76,7 +76,7 @@ static void stagetext_draw_single(StageText *txt) {
 
 	r_state_push();
 	r_texture(1, "titletransition");
-	r_shader("stagetext");
+	r_shader("text_stagetext");
 	r_uniform_int("trans", 1);
 
 	TextParams params = { 0 };

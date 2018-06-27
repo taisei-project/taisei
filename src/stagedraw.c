@@ -65,10 +65,10 @@ void stage_draw_preload(void) {
 	NULL);
 
 	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
-		"stagetext",
+		"text_stagetext",
 		"ingame_menu",
 		"sprite_circleclipped_indicator",
-		"hud_text",
+		"text_hud",
 		#ifdef DEBUG
 		"sprite_filled_circle",
 		#endif
@@ -88,7 +88,7 @@ void stage_draw_preload(void) {
 	}
 
 	stagedraw.viewport_pp = get_resource_data(RES_POSTPROCESS, "viewport", RESF_OPTIONAL);
-	stagedraw.hud_text.shader = r_shader_get("hud_text");
+	stagedraw.hud_text.shader = r_shader_get("text_hud");
 	stagedraw.hud_text.font = get_font("hud");
 
 	r_shader_standard();
@@ -725,7 +725,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	});
 
 	if(global.replaymode == REPLAY_PLAY) {
-		r_shader("hud_text");
+		r_shader("text_hud");
 		// XXX: does it make sense to use the monospace font here?
 
 		snprintf(buf, sizeof(buf), "Replay: %s (%i fps)", global.replay.playername, global.replay_stage->fps);
