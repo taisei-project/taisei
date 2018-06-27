@@ -45,6 +45,10 @@ static struct SpriteBatchState {
 } _r_sprite_batch;
 
 void _r_sprite_batch_init(void) {
+	#ifdef DEBUG
+	preload_resource(RES_FONT, "monotiny", RESF_PERMANENT);
+	#endif
+
 	size_t sz_vert = sizeof(GenericModelVertex);
 	size_t sz_attr = sizeof(SpriteAttribs);
 

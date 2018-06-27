@@ -65,10 +65,10 @@ void stage_draw_preload(void) {
 	NULL);
 
 	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
+		"text_hud",
 		"text_stagetext",
 		"ingame_menu",
 		"sprite_circleclipped_indicator",
-		"text_hud",
 		#ifdef DEBUG
 		"sprite_filled_circle",
 		#endif
@@ -76,6 +76,9 @@ void stage_draw_preload(void) {
 
 	preload_resources(RES_FONT, RESF_PERMANENT,
 		"hud",
+		"mono",
+		"small",
+		"monosmall",
 	NULL);
 
 	stagedraw.framerate_graphs = env_get("TAISEI_FRAMERATE_GRAPHS", GRAPHS_DEFAULT);
@@ -84,6 +87,12 @@ void stage_draw_preload(void) {
 	if(stagedraw.framerate_graphs) {
 		preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
 			"graph",
+		NULL);
+	}
+
+	if(stagedraw.objpool_stats) {
+		preload_resources(RES_FONT, RESF_PERMANENT,
+			"monotiny",
 		NULL);
 	}
 

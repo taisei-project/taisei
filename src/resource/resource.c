@@ -505,6 +505,15 @@ void* resource_for_each(ResourceType type, void* (*callback)(const char *name, R
 }
 
 void load_resources(void) {
+	for(uint i = 0; i < RES_NUMTYPES; ++i) {
+		ResourceHandler *h = get_handler(i);
+		assert(h != NULL);
+
+		if(h->procs.post_init) {
+			h->procs.post_init();
+		}
+	}
+
 	menu_preload();
 
 	if(env_get("TAISEI_PRELOAD_SHADERS", 0)) {

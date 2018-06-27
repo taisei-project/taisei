@@ -20,6 +20,7 @@
 #include "renderer/api.h"
 
 static void init_fonts(void);
+static void post_init_fonts(void);
 static void shutdown_fonts(void);
 static char* font_path(const char*);
 static bool check_font_path(const char*);
@@ -34,6 +35,7 @@ ResourceHandler font_res_handler = {
 
 	.procs = {
 		.init = init_fonts,
+		.post_init = post_init_fonts,
 		.shutdown = shutdown_fonts,
 		.find = font_path,
 		.check = check_font_path,
@@ -152,12 +154,6 @@ static void init_fonts(void) {
 
 	preload_resources(RES_FONT, RESF_PERMANENT,
 		"standard",
-		"big",
-		"small",
-		"hud",
-		"mono",
-		"monosmall",
-		"monotiny",
 	NULL);
 
 	// WARNING: Preloading the default shader here is unsafe.
@@ -173,6 +169,10 @@ static void init_fonts(void) {
 
 	r_target_create(&globals.render_buf);
 	r_target_attach(&globals.render_buf, &globals.render_tex, RENDERTARGET_ATTACHMENT_COLOR0);
+}
+
+static void post_init_fonts(void) {
+	globals.default_shader = get_resource_data(RES_SHADER_PROGRAM, "text_default", RESF_PERMANENT | RESF_PRELOAD);
 }
 
 static void shutdown_fonts(void) {
@@ -758,11 +758,7 @@ Font* get_font(const char *font) {
 }
 
 ShaderProgram* text_get_default_shader(void) {
-	if(globals.default_shader != NULL) {
-		return globals.default_shader;
-	}
-
-	return globals.default_shader = get_resource_data(RES_SHADER_PROGRAM, "text_default", RESF_PERMANENT | RESF_PRELOAD);
+	return globals.default_shader;
 }
 
 // #define TEXT_DRAW_BBOX

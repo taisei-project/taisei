@@ -63,10 +63,13 @@ typedef void* (*ResourceEndLoadProc)(void *opaque, const char *path, uint flags)
 typedef void (*ResourceUnloadProc)(void *res);
 
 // Called during resource subsystem initialization
-typedef void (*ResourceInit)(void);
+typedef void (*ResourceInitProc)(void);
+
+// Called after the resources and rendering subsystems have been initialized
+typedef void (*ResourcePostInitProc)(void);
 
 // Called during resource subsystem shutdown
-typedef void (*ResourceShutdown)(void);
+typedef void (*ResourceShutdownProc)(void);
 
 typedef struct ResourceHandler {
 	ResourceType type;
@@ -81,8 +84,9 @@ typedef struct ResourceHandler {
 		ResourceBeginLoadProc begin_load;
 		ResourceEndLoadProc end_load;
 		ResourceUnloadProc unload;
-		ResourceInit init;
-		ResourceShutdown shutdown;
+		ResourceInitProc init;
+		ResourcePostInitProc post_init;
+		ResourceShutdownProc shutdown;
 	} procs;
 
 	struct {

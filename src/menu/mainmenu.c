@@ -132,8 +132,8 @@ void draw_main_menu(MenuData *menu) {
 		text_draw(menu->entries[i].name, &(TextParams) {
 			.pos = { 50 + s, 35*i },
 			.font = "big",
-			.shader = "text_example",
-			.custom = time_get()
+			// .shader = "text_example",
+			// .custom = time_get()
 		});
 	}
 
@@ -193,17 +193,24 @@ void draw_loading_screen(void) {
 	preload_resource(RES_TEXTURE, "loading", RESF_PERMANENT);
 	set_ortho(SCREEN_W, SCREEN_H);
 	fill_screen("loading");
+	/*
 	text_draw(TAISEI_VERSION, &(TextParams) {
 		.align = ALIGN_RIGHT,
 		.pos = { SCREEN_W-5, SCREEN_H-10 },
 		.font = "small",
 		.shader = "text_default",
 	});
+	*/
 	video_swap_buffers();
 }
 
 void menu_preload(void) {
 	difficulty_preload();
+
+	preload_resources(RES_FONT, RESF_PERMANENT,
+		"big",
+		"small",
+	NULL);
 
 	preload_resources(RES_TEXTURE, RESF_PERMANENT,
 		"menu/mainmenubg",
