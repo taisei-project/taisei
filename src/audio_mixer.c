@@ -313,6 +313,7 @@ static int pick_channel(AudioBackendSoundGroup group, int defmixgroup) {
 static int audio_backend_sound_play_on_channel(int chan, MixerInternalSound *isnd) {
 	chan = Mix_PlayChannel(chan, isnd->ch, 0);
 
+	Mix_UnregisterAllEffects(chan);
 	if(chan < 0) {
 		log_warn("Mix_PlayChannel() failed: %s", Mix_GetError());
 		return false;
@@ -351,6 +352,7 @@ bool audio_backend_sound_loop(void *impl, AudioBackendSoundGroup group) {
 
 	MixerInternalSound *snd = (MixerInternalSound *)impl;
 	snd->loopchan = Mix_PlayChannel(pick_channel(group, MAIN_CHANNEL_GROUP), snd->ch, -1);
+	Mix_UnregisterAllEffects(snd->loopchan);
 
 	if(snd->loopchan == -1) {
 		log_warn("Mix_PlayChannel() failed: %s", Mix_GetError());
