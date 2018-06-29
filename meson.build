@@ -95,6 +95,7 @@ foreach flag : [
             '-Wgnu',
             '-Wcast-align',
             '-Wcast-align=strict',
+            '-Wno-long-long',
         ]
     if cc.has_argument(flag)
         taisei_c_warnargs += flag
