@@ -923,8 +923,15 @@ double text_draw_wrapped(const char *text, double max_width, const TextParams *p
 
 void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbox) {
 	text_bbox(font, text, 0, out_bbox);
+
 	int bbox_width = out_bbox->x.max - out_bbox->x.min;
 	int bbox_height = out_bbox->y.max - out_bbox->y.min;
+
+	if(bbox_height < font->metrics.max_glyph_height) {
+		out_bbox->y.min -= font->metrics.max_glyph_height - bbox_height;
+		bbox_height = out_bbox->y.max - out_bbox->y.min;
+	}
+
 	Texture *tex = &globals.render_tex;
 
 	int tex_new_w = bbox_width; // max(tex->w, bbox_width);
