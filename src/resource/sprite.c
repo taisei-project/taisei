@@ -60,7 +60,7 @@ void* load_sprite_begin(const char *path, uint flags) {
 		return state;
 	}
 
-	if(!parse_keyvalue_file_with_spec(path, (KVSpec[]){
+	if(!parse_keyvalue_file_with_spec(path, (KVSpec[]) {
 		{ "texture",  .out_str   = &state->texture_name },
 		{ "region_x", .out_float = &spr->tex_area.x },
 		{ "region_y", .out_float = &spr->tex_area.y },

@@ -23,7 +23,7 @@ typedef struct VFSZipFileTLS {
 
 typedef struct VFSZipFileData {
 	VFSNode *source;
-	Hashtable *pathmap;
+	ht_str2int_t pathmap;
 	SDL_TLSID tls_id;
 } VFSZipFileData;
 

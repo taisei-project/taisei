@@ -10,16 +10,16 @@
 
 #include "vdir.h"
 
-#define _contents_ data1
+#define VDIR_TABLE(vdir) ((ht_str2ptr_t*)((vdir)->data1))
 
 static void vfs_vdir_attach_node(VFSNode *vdir, const char *name, VFSNode *node) {
-	VFSNode *oldnode = hashtable_get_string(vdir->_contents_, name);
+	VFSNode *oldnode = ht_get(VDIR_TABLE(vdir), name, NULL);
 
 	if(oldnode) {
 		vfs_decref(oldnode);
 	}
 
-	hashtable_set_string(vdir->_contents_, name, node);
+	ht_set(VDIR_TABLE(vdir), name, node);
 }
 
 static VFSNode* vfs_vdir_locate(VFSNode *vdir, const char *path) {
@@ -30,7 +30,7 @@ static VFSNode* vfs_vdir_locate(VFSNode *vdir, const char *path) {
 	strcpy(mutpath, path);
 	vfs_path_split_left(mutpath, &primpath, &subpath);
 
-	if((node = hashtable_get_string(vdir->_contents_, mutpath))) {
+	if((node = ht_get(VDIR_TABLE(vdir), mutpath, NULL))) {
 		return vfs_locate(node, subpath);
 	}
 
@@ -38,21 +38,21 @@ static VFSNode* vfs_vdir_locate(VFSNode *vdir, const char *path) {
 }
 
 static const char* vfs_vdir_iter(VFSNode *vdir, void **opaque) {
-	char *ret = NULL;
+	ht_str2ptr_iter_t *iter = *opaque;
 
-	if(!*opaque) {
-		*opaque = hashtable_iter(vdir->_contents_);
+	if(!iter) {
+		iter = calloc(1, sizeof(*iter));
+		ht_iter_begin(VDIR_TABLE(vdir), iter);
+	} else {
+		ht_iter_next(iter);
 	}
 
-	if(!hashtable_iter_next((HashtableIterator*)*opaque, (void**)&ret, NULL)) {
-		*opaque = NULL;
-	}
-
-	return ret;
+	return iter->has_data ? iter->key : NULL;
 }
 
 static void vfs_vdir_iter_stop(VFSNode *vdir, void **opaque) {
 	if(*opaque) {
+		ht_iter_end((ht_str2ptr_iter_t*)*opaque);
 		free(*opaque);
 		*opaque = NULL;
 	}
@@ -66,15 +66,18 @@ static VFSInfo vfs_vdir_query(VFSNode *vdir) {
 }
 
 static void vfs_vdir_free(VFSNode *vdir) {
-	Hashtable *ht = vdir->_contents_;
-	HashtableIterator *i;
-	VFSNode *child;
+	ht_str2ptr_t *ht = VDIR_TABLE(vdir);
+	ht_str2ptr_iter_t iter;
 
-	for(i = hashtable_iter(ht); hashtable_iter_next(i, NULL, (void**)&child);) {
-		vfs_decref(child);
+	ht_iter_begin(ht, &iter);
+
+	for(; iter.has_data; ht_iter_next(&iter)) {
+		vfs_decref(iter.value);
 	}
 
-	hashtable_free(ht);
+	ht_iter_end(&iter);
+	ht_destroy(ht);
+	free(ht);
 }
 
 static bool vfs_vdir_mount(VFSNode *vdir, const char *mountpoint, VFSNode *subtree) {
@@ -90,12 +93,12 @@ static bool vfs_vdir_mount(VFSNode *vdir, const char *mountpoint, VFSNode *subtr
 static bool vfs_vdir_unmount(VFSNode *vdir, const char *mountpoint) {
 	VFSNode *mountee;
 
-	if(!(mountee = hashtable_get_string(vdir->_contents_, mountpoint))) {
+	if(!(mountee = ht_get(VDIR_TABLE(vdir), mountpoint, NULL))) {
 		vfs_set_error("Mountpoint '%s' doesn't exist", mountpoint);
 		return false;
 	}
 
-	hashtable_unset_string(vdir->_contents_, mountpoint);
+	ht_unset(VDIR_TABLE(vdir), mountpoint);
 	vfs_decref(mountee);
 	return true;
 }
@@ -131,5 +134,5 @@ static VFSNodeFuncs vfs_funcs_vdir = {
 
 void vfs_vdir_init(VFSNode *node) {
 	node->funcs = &vfs_funcs_vdir;
-	node->_contents_ = hashtable_new_stringkeys();
+	node->data1 = ht_str2ptr_new();
 }

@@ -161,7 +161,13 @@ static void ending_draw(Ending *e) {
 		draw_sprite_p(SCREEN_W/2, SCREEN_H/2, e->entries[e->pos].sprite);
 	}
 
-	draw_text_auto_wrapped(AL_Center, SCREEN_W/2, VIEWPORT_H*4/5, e->entries[e->pos].msg, SCREEN_W * 0.85, _fonts.standard);
+	r_shader("text_default");
+	text_draw_wrapped(e->entries[e->pos].msg, SCREEN_W * 0.85, &(TextParams) {
+		.pos = { SCREEN_W/2, VIEWPORT_H*4/5 },
+		.align = ALIGN_CENTER,
+	});
+	r_shader_standard();
+
 	r_color4(1,1,1,1);
 }
 

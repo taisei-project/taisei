@@ -85,31 +85,17 @@ bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *dat
 }
 
 static bool kvcallback_hashtable(const char *key, const char *val, void *data) {
-	Hashtable *ht = data;
-	hashtable_set_string(ht, key, strdup((void*)val));
+	ht_str2ptr_t *ht = data;
+	ht_set(ht, key, strdup(val));
 	return true;
 }
 
-Hashtable* parse_keyvalue_stream(SDL_RWops *strm) {
-	Hashtable *ht = hashtable_new_stringkeys();
-
-	if(!parse_keyvalue_stream_cb(strm, kvcallback_hashtable, ht)) {
-		hashtable_free(ht);
-		ht = NULL;
-	}
-
-	return ht;
+bool parse_keyvalue_stream(SDL_RWops *strm, ht_str2ptr_t *ht) {
+	return parse_keyvalue_stream_cb(strm, kvcallback_hashtable, ht);
 }
 
-Hashtable* parse_keyvalue_file(const char *filename) {
-	Hashtable *ht = hashtable_new_stringkeys();
-
-	if(!parse_keyvalue_file_cb(filename, kvcallback_hashtable, ht)) {
-		hashtable_free(ht);
-		ht = NULL;
-	}
-
-	return ht;
+bool parse_keyvalue_file(const char *filename, ht_str2ptr_t  *ht) {
+	return parse_keyvalue_file_cb(filename, kvcallback_hashtable, ht);
 }
 
 static bool kvcallback_spec(const char *key, const char *val, void *data) {
@@ -121,7 +107,11 @@ static bool kvcallback_spec(const char *key, const char *val, void *data) {
 			}
 
 			if(s->out_int) {
-				*s->out_int = strtol(val, NULL, 10);
+				*s->out_int = strtol(val, NULL, 0);
+			}
+
+			if(s->out_long) {
+				*s->out_long = strtol(val, NULL, 0);
 			}
 
 			if(s->out_float) {

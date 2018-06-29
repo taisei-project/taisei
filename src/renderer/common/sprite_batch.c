@@ -14,8 +14,10 @@
 
 typedef struct SpriteAttribs {
 	mat4 transform;
+	mat4 tex_transform;
 	float rgba[4];
 	FloatRect texrect;
+	float sprite_size[2];
 	float custom;
 } SpriteAttribs;
 
@@ -43,6 +45,10 @@ static struct SpriteBatchState {
 } _r_sprite_batch;
 
 void _r_sprite_batch_init(void) {
+	#ifdef DEBUG
+	preload_resource(RES_FONT, "monotiny", RESF_PERMANENT);
+	#endif
+
 	size_t sz_vert = sizeof(GenericModelVertex);
 	size_t sz_attr = sizeof(SpriteAttribs);
 
@@ -51,18 +57,23 @@ void _r_sprite_batch_init(void) {
 
 	VertexAttribFormat fmt[] = {
 		// Per-vertex attributes (for the static models buffer, bound at 0)
-		{ { 3, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(position),       0 },
-		{ { 3, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(normal),         0 },
-		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(uv),             0 },
+		{ { 3, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(position),           0 },
+		{ { 3, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(normal),             0 },
+		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(uv),                 0 },
 
 		// Per-instance attributes (for our own sprites buffer, bound at 1)
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(transform[0]), 1 },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(transform[1]), 1 },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(transform[2]), 1 },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(transform[3]), 1 },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(rgba),         1 },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(texrect),      1 },
-		{ { 1, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(custom),       1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(transform[0]),     1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(transform[1]),     1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(transform[2]),     1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(transform[3]),     1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(tex_transform[0]), 1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(tex_transform[1]), 1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(tex_transform[2]), 1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(tex_transform[3]), 1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(rgba),             1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(texrect),          1 },
+		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(sprite_size),      1 },
+		{ { 1, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(custom),           1 },
 	};
 
 	#undef VERTEX_OFS
@@ -171,6 +182,7 @@ void r_flush_sprites(void) {
 static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, VertexBuffer *vbuf) {
 	SpriteAttribs alignas(32) attribs;
 	r_mat_current(MM_MODELVIEW, attribs.transform);
+	r_mat_current(MM_TEXTURE, attribs.tex_transform);
 
 	float scale_x = params->scale.x ? params->scale.x : 1;
 	float scale_y = params->scale.y ? params->scale.y : scale_x;
@@ -213,6 +225,8 @@ static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, VertexB
 		attribs.texrect.h *= -1;
 	}
 
+	attribs.sprite_size[0] = spr->w;
+	attribs.sprite_size[1] = spr->h;
 	attribs.custom = params->custom;
 
 	r_vertex_buffer_append(vbuf, sizeof(attribs), &attribs);
@@ -321,24 +335,26 @@ void _r_sprite_batch_end_frame(void) {
 		return;
 	}
 
-	Color clr_saved = r_color_current();
-	ShaderProgram *prog_saved = r_shader_current();
-	r_shader_standard();
-	r_color4(1, 1, 1, 1);
+	r_flush_sprites();
 
 	static char buf[512];
 	snprintf(buf, sizeof(buf), "%6i sprites %6i flushes %9.02f spr/flush %6i best %6i worst",
 		_r_sprite_batch.frame_stats.sprites,
 		_r_sprite_batch.frame_stats.flushes,
-		(double)_r_sprite_batch.frame_stats.sprites / _r_sprite_batch.frame_stats.flushes,
+		_r_sprite_batch.frame_stats.sprites / (double)_r_sprite_batch.frame_stats.flushes,
 		_r_sprite_batch.frame_stats.best_batch,
 		_r_sprite_batch.frame_stats.worst_batch
 	);
 
-	draw_text(AL_Left, 0, font_line_spacing(_fonts.monotiny), buf, _fonts.monotiny);
+	Font *font = get_font("monotiny");
+	text_draw(buf, &(TextParams) {
+		.pos = { 0, font_get_lineskip(font) },
+		.font_ptr = font,
+		.color = rgb(1, 1, 1),
+		.shader = "text_default",
+	});
+
 	memset(&_r_sprite_batch.frame_stats, 0, sizeof(_r_sprite_batch.frame_stats));
 
-	r_color(clr_saved);
-	r_shader_ptr(prog_saved);
 #endif
 }

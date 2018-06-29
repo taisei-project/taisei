@@ -236,11 +236,11 @@ static double entry_height(CreditsEntry *e, double *head, double *body) {
 		if(*(e->data[0]) == '*') {
 			total += *head = get_tex("yukkureimu")->h * CREDITS_YUKKURI_SCALE;
 		} else {
-			total += *head = font_line_spacing(_fonts.mainmenu);
+			total += *head = font_get_lineskip(get_font("big"));
 		}
 
 		if(e->lines > 1) {
-			total += *body += (e->lines - 0.5) * font_line_spacing(_fonts.standard);
+			total += *body += (e->lines - 0.5) * font_get_lineskip(get_font("standard"));
 		}
 	}
 
@@ -323,9 +323,14 @@ static void credits_draw_entry(CreditsEntry *e) {
 			r_mat_pop();
 			r_mat_translate(0, yukkuri_spr->h * CREDITS_YUKKURI_SCALE * 0.5, 0);
 		} else {
-			Font *font = i ? _fonts.standard : _fonts.mainmenu;
-			draw_text(AL_Center, 0, 0, e->data[i], font);
-			r_mat_translate(0, font_line_spacing(font), 0);
+			Font *font = get_font(i ? "standard" : "big");
+			r_shader("text_default");
+			text_draw(e->data[i], &(TextParams) {
+				.align = ALIGN_CENTER,
+				.font_ptr = font,
+			});
+			r_shader_standard();
+			r_mat_translate(0, font_get_lineskip(font), 0);
 		}
 	}
 

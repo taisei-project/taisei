@@ -18,7 +18,7 @@
 CurrentBGM current_bgm = { .name = NULL };
 
 static char *saved_bgm;
-static Hashtable *sfx_volumes;
+static ht_str2int_t sfx_volumes;
 
 static struct enqueued_sound {
 	LIST_INTERFACE(struct enqueued_sound);
@@ -173,7 +173,6 @@ static void bgm_cfg_volume_callback(ConfigIndex idx, ConfigValue v) {
 }
 
 static bool store_sfx_volume(const char *key, const char *val, void *data) {
-	Hashtable *ht = data;
 	int vol = atoi(val);
 
 	if(vol < 0 || vol > 128) {
@@ -184,14 +183,15 @@ static bool store_sfx_volume(const char *key, const char *val, void *data) {
 	log_debug("Default volume for %s is now %i", key, vol);
 
 	if(vol != DEFAULT_SFX_VOLUME) {
-		hashtable_set_string(ht, key, (void*)(intptr_t)vol);
+		ht_set(&sfx_volumes, key, vol);
 	}
+
 	return true;
 }
 
 static void load_config_files(void) {
-	sfx_volumes = hashtable_new_stringkeys();
-	parse_keyvalue_file_cb(SFX_PATH_PREFIX "volumes.conf", store_sfx_volume, sfx_volumes);
+	ht_create(&sfx_volumes);
+	parse_keyvalue_file_cb(SFX_PATH_PREFIX "volumes.conf", store_sfx_volume, NULL);
 }
 
 static inline char* get_bgm_desc(char *name) {
@@ -201,13 +201,7 @@ static inline char* get_bgm_desc(char *name) {
 }
 
 int get_default_sfx_volume(const char *sfx) {
-	void *v = hashtable_get_string(sfx_volumes, sfx);
-
-	if(v != NULL) {
-		return (intptr_t)v;
-	}
-
-	return DEFAULT_SFX_VOLUME;
+	return ht_get(&sfx_volumes, sfx, DEFAULT_SFX_VOLUME);
 }
 
 void resume_bgm(void) {
@@ -315,9 +309,5 @@ void audio_init(void) {
 
 void audio_shutdown(void) {
 	audio_backend_shutdown();
-
-	if(sfx_volumes) {
-		hashtable_free(sfx_volumes);
-		sfx_volumes = NULL;
-	}
+	ht_destroy(&sfx_volumes);
 }

@@ -9,52 +9,111 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL_ttf.h>
-
 #include "sprite.h"
 #include "hashtable.h"
 #include "resource.h"
+#include "renderer/api.h"
 
 typedef enum {
-	AL_Center,
-	AL_Left,
-	AL_Right
+	ALIGN_LEFT = 0, // must be 0
+	ALIGN_CENTER,
+	ALIGN_RIGHT,
 } Alignment;
 
-enum {
-	AL_Flag_NoAdjust = 0x10,
-};
-
+typedef ulong charcode_t;
 typedef struct Font Font;
 
-void draw_text(Alignment align, float x, float y, const char *text, Font *font);
-void draw_text_auto_wrapped(Alignment align, float x, float y, const char *text, int width, Font *font);
-void render_text(const char *text, Font *font, Sprite *out_spr);
+typedef struct FontMetrics {
+	int ascent;
+	int descent;
+	int max_glyph_height;
+	int lineskip;
+	double scale;
+} FontMetrics;
 
-int stringwidth(char *s, Font *font);
-int stringheight(char *s, Font *font);
-int charwidth(char c, Font *font);
+typedef struct GlyphMetrics {
+	int bearing_x;
+	int bearing_y;
+	int width;
+	int height;
+	int advance;
+} GlyphMetrics;
 
-int font_line_spacing(Font *font);
+// TODO: maybe move this into util/geometry.h
+typedef struct BBox {
+	struct {
+		int min;
+		int max;
+	} x;
 
-void shorten_text_up_to_width(char *s, float width, Font *font);
-void wrap_text(char *buf, size_t bufsize, const char *src, int width, Font *font);
+	struct {
+		int min;
+		int max;
+	} y;
+} BBox;
 
-extern struct Fonts {
-	union {
-		struct {
-			Font *standard;
-			Font *mainmenu;
-			Font *small;
-			Font *hud;
-			Font *mono;
-			Font *monosmall;
-			Font *monotiny;
-		};
+typedef void (*GlyphDrawCallback)(Font *font, charcode_t charcode, SpriteParams *spr_params, void *userdata);
 
-		Font *first;
-	};
-} _fonts;
+typedef struct TextParams {
+	const char *font;
+	Font *font_ptr;
+	const char *shader;
+	ShaderProgram *shader_ptr;
+	struct {
+		GlyphDrawCallback func;
+		void *userdata;
+	} glyph_callback;
+	struct { double x, y; } pos;
+	Color color;
+	float custom;
+	BlendMode blend;
+	Alignment align;
+} TextParams;
+
+Font* get_font(const char *font)
+	attr_nonnull(1);
+
+ShaderProgram* text_get_default_shader(void)
+	attr_returns_nonnull;
+
+const FontMetrics* font_get_metrics(Font *font)
+	attr_nonnull(1) attr_returns_nonnull;
+
+double font_get_lineskip(Font *font)
+	attr_nonnull(1);
+
+const GlyphMetrics* font_get_char_metrics(Font *font, charcode_t c)
+	attr_nonnull(1);
+
+double text_draw(const char *text, const TextParams *params)
+	attr_nonnull(1, 2);
+
+double text_draw_wrapped(const char *text, double max_width, const TextParams *params)
+	attr_nonnull(1, 3);
+
+void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbox)
+	attr_nonnull(1, 2, 3, 4);
+
+void text_shorten(Font *font, char *text, double width)
+	attr_nonnull(1, 2);
+
+void text_wrap(Font *font, const char *src, double width, char *buf, size_t bufsize)
+	attr_nonnull(1, 2, 4);
+
+void text_bbox(Font *font, const char *text, uint maxlines, BBox *bbox)
+	attr_nonnull(1, 2, 4);
+
+int text_width_raw(Font *font, const char *text, uint maxlines)
+	attr_nonnull(1, 2);
+
+double text_width(Font *font, const char *text, uint maxlines)
+	attr_nonnull(1, 2);
+
+int text_height_raw(Font *font, const char *text, uint maxlines)
+	attr_nonnull(1, 2);
+
+double text_height(Font *font, const char *text, uint maxlines)
+	attr_nonnull(1, 2);
 
 extern ResourceHandler font_res_handler;
 

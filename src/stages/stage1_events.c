@@ -656,7 +656,7 @@ void cirno_snow_halation(Boss *c, int time) {
 			};
 
 			if(cheater < sizeof(text)/sizeof(text[0])) {
-				stagetext_add(text[cheater],global.boss->pos+100*I,AL_Center,&_fonts.hud,rgb(1,1,1),0,100,10,20);
+				stagetext_add(text[cheater], global.boss->pos+100*I, ALIGN_CENTER, get_font("hud"), rgb(1,1,1), 0, 100, 10, 20);
 				cheater++;
 			}
 		}

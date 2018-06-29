@@ -23,8 +23,7 @@ typedef struct AniSequence {
 } AniSequence;
 
 typedef struct Animation {
-	Hashtable *sequences;
-	
+	ht_str2ptr_t sequences;
 	Sprite **sprites;
 	Sprite transformed_sprite; // temporary sprite used to apply animation transformations.
 	int sprite_count;

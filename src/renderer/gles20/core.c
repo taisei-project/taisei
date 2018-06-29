@@ -52,6 +52,8 @@ static void gles30_init(void) {
 GLTextureTypeInfo* gles20_texture_type_info(TextureType type) {
 	static GLTextureTypeInfo map[] = {
 		[TEX_TYPE_DEFAULT] = { GL_RGBA,            GL_RGBA,            GL_UNSIGNED_BYTE,  4 },
+		[TEX_TYPE_R]       = { GL_RED,             GL_RED,             GL_UNSIGNED_BYTE,  1 },
+		[TEX_TYPE_RG]      = { GL_RG,              GL_RG,              GL_UNSIGNED_BYTE,  2 },
 		[TEX_TYPE_RGB]     = { GL_RGBA,            GL_RGBA,            GL_UNSIGNED_BYTE,  4 },
 		[TEX_TYPE_RGBA]    = { GL_RGBA,            GL_RGBA,            GL_UNSIGNED_BYTE,  4 },
 		[TEX_TYPE_DEPTH]   = { GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, 2 },

@@ -15,13 +15,18 @@ ATTRIBUTE(2) vec2  vertTexCoord;
 /*
  * Per-instance attributes
  */
-ATTRIBUTE(3) mat4  spriteVMTransform;
+ATTRIBUTE(3)   mat4  spriteVMTransform;
 // 4
 // 5
 // 6
-ATTRIBUTE(7) vec4  spriteRGBA;
-ATTRIBUTE(8) vec4  spriteTexRegion;
-ATTRIBUTE(9) float spriteCustomParam;
+ATTRIBUTE(7)   mat4  spriteTexTransform;
+// 8
+// 9
+// 10
+ATTRIBUTE(11)  vec4  spriteRGBA;
+ATTRIBUTE(12)  vec4  spriteTexRegion;
+ATTRIBUTE(13)  vec2  spriteDimensions;
+ATTRIBUTE(14)  float spriteCustomParam;
 #endif
 
 #ifdef FRAG_STAGE
@@ -30,10 +35,12 @@ OUT(0) vec4 fragColor;
 
 UNIFORM(0) sampler2D tex;
 
-VARYING(0) vec2 texCoordRaw;
-VARYING(1) vec2 texCoord;
-VARYING(2) vec4 texRegion;
-VARYING(3) vec4 color;
-VARYING(4) float customParam;
+VARYING(0) vec2  texCoordRaw;
+VARYING(1) vec2  texCoord;
+VARYING(2) vec2  texCoordOverlay;
+VARYING(3) vec4  texRegion;
+VARYING(4) vec4  color;
+VARYING(5) vec2  dimensions;
+VARYING(6) float customParam;
 
 #endif

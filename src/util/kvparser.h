@@ -22,13 +22,14 @@ typedef struct KVSpec {
 
 	char **out_str;
 	int *out_int;
+	long *out_long;
 	double *out_double;
 	float *out_float;
 } KVSpec;
 
 bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data);
 bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *data);
-Hashtable* parse_keyvalue_stream(SDL_RWops *strm);
-Hashtable* parse_keyvalue_file(const char *filename);
+bool parse_keyvalue_stream(SDL_RWops *strm, ht_str2ptr_t *hashtable);
+bool parse_keyvalue_file(const char *filename, ht_str2ptr_t *hashtable);
 bool parse_keyvalue_stream_with_spec(SDL_RWops *strm, KVSpec *spec);
 bool parse_keyvalue_file_with_spec(const char *filename, KVSpec *spec);

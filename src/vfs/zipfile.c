@@ -152,7 +152,7 @@ static void vfs_zipfile_free(VFSNode *node) {
 				vfs_decref(zdata->source);
 			}
 
-			hashtable_free(zdata->pathmap);
+			ht_destroy(&zdata->pathmap);
 			free(zdata);
 		}
 	}
@@ -186,9 +186,9 @@ static char* vfs_zipfile_repr(VFSNode *node) {
 static VFSNode* vfs_zipfile_locate(VFSNode *node, const char *path) {
 	VFSZipFileTLS *tls = vfs_zipfile_get_tls(node, true);
 	VFSZipFileData *zdata = node->data1;
-	zip_int64_t idx = (zip_int64_t)((intptr_t)hashtable_get_string(zdata->pathmap, path) - 1);
+	int64_t idx;
 
-	if(idx < 0) {
+	if(!ht_lookup(&zdata->pathmap, path, &idx)) {
 		idx = zip_name_locate(tls->zip, path, 0);
 	}
 
@@ -294,8 +294,9 @@ static VFSNodeFuncs vfs_funcs_zipfile = {
 static void vfs_zipfile_init_pathmap(VFSNode *node) {
 	VFSZipFileData *zdata = node->data1;
 	VFSZipFileTLS *tls = vfs_zipfile_get_tls(node, true);
-	zdata->pathmap = hashtable_new_stringkeys();
 	zip_int64_t num = zip_get_num_entries(tls->zip, 0);
+
+	ht_create(&zdata->pathmap);
 
 	for(zip_int64_t i = 0; i < num; ++i) {
 		const char *original = zip_get_name(tls->zip, i, 0);
@@ -311,7 +312,7 @@ static void vfs_zipfile_init_pathmap(VFSNode *node) {
 		}
 
 		if(strcmp(original, normalized)) {
-			hashtable_set_string(zdata->pathmap, normalized, (void*)((intptr_t)i + 1));
+			ht_set(&zdata->pathmap, normalized, i);
 		}
 	}
 }

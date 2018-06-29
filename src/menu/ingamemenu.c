@@ -150,7 +150,7 @@ void draw_ingame_menu_bg(MenuData *menu, float f) {
 
 void update_ingame_menu(MenuData *menu) {
 	menu->drawdata[0] += (menu->cursor*35 - menu->drawdata[0])/7.0;
-	menu->drawdata[1] += (stringwidth(menu->entries[menu->cursor].name, _fonts.standard) - menu->drawdata[1])/10.0;
+	menu->drawdata[1] += (text_width(get_font("standard"), menu->entries[menu->cursor].name, 0) - menu->drawdata[1])/10.0;
 }
 
 void draw_ingame_menu(MenuData *menu) {
@@ -164,14 +164,18 @@ void draw_ingame_menu(MenuData *menu) {
 
 	draw_menu_selector(0, menu->drawdata[0], menu->drawdata[1]*2, 41, menu->frames);
 
+	ShaderProgram *sh_prev = r_shader_current();
+	r_shader("text_default");
 	if(menu->context) {
 		float s = 0.3 + 0.2 * sin(menu->frames/10.0);
 		r_color4(1-s/2, 1-s/2, 1-s, 1-menu_fade(menu));
-		draw_text(AL_Center, 0, -2 * 35, menu->context, _fonts.standard);
+		text_draw(menu->context, &(TextParams) {
+			.align = ALIGN_CENTER,
+			.pos = { 0, -2 * 35 },
+		});
 	}
 
-	int i;
-	for(i = 0; i < menu->ecount; i++) {
+	for(int i = 0; i < menu->ecount; i++) {
 		if(menu->entries[i].action) {
 			float s = 0, t = 0.7;
 			if(i == menu->cursor) {
@@ -184,12 +188,16 @@ void draw_ingame_menu(MenuData *menu) {
 			r_color4(0.5, 0.5, 0.5, 0.5 * (1-menu_fade(menu)));
 		}
 
-		draw_text(AL_Center, 0, i*35, menu->entries[i].name, _fonts.standard);
+		text_draw(menu->entries[i].name, &(TextParams) {
+			.align = ALIGN_CENTER,
+			.pos = { 0, i * 35 },
+		});
 	}
 
 	r_color4(1,1,1,1);
 	r_mat_pop();
 	r_mat_pop();
+	r_shader_ptr(sh_prev);
 
 	stage_draw_hud();
 }

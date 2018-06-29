@@ -897,7 +897,7 @@ void elly_paradigm_shift(Boss *b, int t) {
 	AT(100) {
 		if(global.stage->type != STAGE_SPELL) {
 			stage_start_bgm("stage6boss_phase2");
-			stagetext_add("Paradigm Shift!", VIEWPORT_W/2+I*(VIEWPORT_H/2+64), AL_Center, &_fonts.mainmenu, rgb(1, 1, 1), 0, 120, 10, 30);
+			stagetext_add("Paradigm Shift!", VIEWPORT_W/2+I*(VIEWPORT_H/2+64), ALIGN_CENTER, get_font("big"), rgb(1, 1, 1), 0, 120, 10, 30);
 		}
 
 		elly_spawn_baryons(b->pos);
@@ -2507,7 +2507,7 @@ void elly_theory(Boss *b, int time) {
 	AT(symmetrytime) {
 		play_sound("charge_generic");
 		play_sound("boom");
-		stagetext_add("Symmetry broken!", VIEWPORT_W/2+I*VIEWPORT_H/4,AL_Center,&_fonts.mainmenu,rgb(1,1,1),0,100,10,20);
+		stagetext_add("Symmetry broken!", VIEWPORT_W/2+I*VIEWPORT_H/4, ALIGN_CENTER, get_font("big"), rgb(1,1,1), 0,100,10,20);
 		global.shake_view=10;
 		global.shake_view_fade=1;
 
@@ -2537,15 +2537,15 @@ void elly_theory(Boss *b, int time) {
 
 	AT(yukawatime) {
 		play_sound("charge_generic");
-		stagetext_add("Coupling the Higgs!", VIEWPORT_W/2+I*VIEWPORT_H/4,AL_Center,&_fonts.mainmenu,rgb(1,1,1),0,100,10,20);
+		stagetext_add("Coupling the Higgs!", VIEWPORT_W/2+I*VIEWPORT_H/4, ALIGN_CENTER, get_font("big"), rgb(1,1,1), 0,100,10,20);
 		global.shake_view=10;
 		global.shake_view_fade=1;
 	}
 
 	AT(breaktime) {
 		play_sound("charge_generic");
-		stagetext_add("Perturbation theory", VIEWPORT_W/2+I*VIEWPORT_H/4,AL_Center,&_fonts.mainmenu,rgb(1,1,1),0,100,10,20);
-		stagetext_add("breaking down!", VIEWPORT_W/2+I*VIEWPORT_H/4+30*I,AL_Center,&_fonts.mainmenu,rgb(1,1,1),0,100,10,20);
+		stagetext_add("Perturbation theory", VIEWPORT_W/2+I*VIEWPORT_H/4, ALIGN_CENTER, get_font("big"), rgb(1,1,1), 0,100,10,20);
+		stagetext_add("breaking down!", VIEWPORT_W/2+I*VIEWPORT_H/4+30*I, ALIGN_CENTER, get_font("big"), rgb(1,1,1), 0,100,10,20);
 		global.shake_view=10;
 		global.shake_view_fade=1;
 	}

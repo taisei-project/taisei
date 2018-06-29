@@ -39,24 +39,30 @@ Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 	return buf;
 }
 
-void draw_boss_text(Alignment align, float x, float y, const char *text, Font *fnt, Color clr) {
-	Color color_saved = r_color_current();
+void draw_boss_text(Alignment align, float x, float y, const char *text, const char *fnt, Color clr) {
+	ShaderProgram *sh_prev = r_shader_current();
+	r_shader("text_default");
+	text_draw(text, &(TextParams) {
+		.pos = { x + 1, y + 1 },
+		.color = derive_color(rgb(0, 0, 0), CLRMASK_A, clr),
+		.font = fnt,
+		.align = align,
+	});
 
-	r_shader_standard();
-	r_color(derive_color(rgb(0, 0, 0), CLRMASK_A, clr));
-	draw_text(align, x+1, y+1, text, fnt);
-	r_color(clr);
-	draw_text(align, x, y, text, fnt);
-	r_shader("sprite_default");
-
-	r_color(color_saved);
+	text_draw(text, &(TextParams) {
+		.pos = { x, y },
+		.color = clr,
+		.font = fnt,
+		.align = align,
+	});
+	r_shader_ptr(sh_prev);
 }
 
 void spell_opening(Boss *b, int time) {
 	complex x0 = VIEWPORT_W/2+I*VIEWPORT_H/3.5;
 	float f = clamp((time-40.)/60.,0,1);
 	complex x = x0 + (VIEWPORT_W+I*35 - x0) * f*(f+1)*0.5;
-	int strw = stringwidth(b->current->name,_fonts.standard);
+	int strw = text_width(get_font("standard"), b->current->name, 0);
 
 	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
 	r_disable(RCAP_CULL_FACE);
@@ -66,7 +72,7 @@ void spell_opening(Boss *b, int time) {
 	float scale = f+1.*(1-f)*(1-f)*(1-f);
 	r_mat_scale(scale,scale,1);
 	r_mat_rotate_deg(360*f,1,1,0);
-	draw_boss_text(AL_Right, strw/2*(1-f), 0, b->current->name, _fonts.standard, rgb(1, 1, 1));
+	draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, b->current->name, "standard", rgb(1, 1, 1));
 	r_mat_pop();
 
 	r_capability(RCAP_CULL_FACE, cullcap_saved);
@@ -276,7 +282,7 @@ static void ent_draw_boss(EntityInterface *ent) {
 	if(boss->current->type == AT_Move && global.frames - boss->current->starttime > 0 && boss_attack_is_final(boss, boss->current))
 		return;
 
-	draw_boss_text(AL_Left, 10, 20, boss->name, _fonts.standard, rgb(1, 1, 1));
+	draw_boss_text(ALIGN_LEFT, 10, 20, boss->name, "standard", rgb(1, 1, 1));
 
 	if(!boss->current)
 		return;
@@ -298,16 +304,19 @@ static void ent_draw_boss(EntityInterface *ent) {
 		}
 
 		snprintf(buf, sizeof(buf),  "%.2f", remaining);
-		draw_boss_text(AL_Center, VIEWPORT_W - 24, 10, buf, _fonts.standard, textclr);
+		draw_boss_text(ALIGN_CENTER, VIEWPORT_W - 24, 10, buf, "standard", textclr);
 
 		StageProgress *p = get_spellstage_progress(boss->current, NULL, false);
 		if(p) {
 			float a = clamp((global.frames - boss->current->starttime - 60) / 60.0, 0, 1);
 			snprintf(buf, sizeof(buf), "%u / %u", p->num_cleared, p->num_played);
-			draw_boss_text(AL_Right,
-				VIEWPORT_W + stringwidth(buf, _fonts.small) * pow(1 - a, 2),
-				35 + stringheight(buf, _fonts.small),
-				buf, _fonts.small, rgba(1, 1, 1, a)
+
+			Font *font = get_font("small");
+
+			draw_boss_text(ALIGN_RIGHT,
+				VIEWPORT_W + text_width(font, buf, 0) * pow(1 - a, 2),
+				35 + text_height(font, buf, 0),
+				buf, "small", rgba(1, 1, 1, a)
 			);
 		}
 

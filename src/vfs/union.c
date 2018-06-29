@@ -80,7 +80,7 @@ static VFSNode* vfs_union_locate(VFSNode *node, const char *path) {
 }
 
 typedef struct VFSUnionIterData {
-	Hashtable *visited;
+	ht_str2int_t visited; // XXX: this may not be the most efficient implementation of a "set" structure...
 	ListContainer *current;
 	void *opaque;
 } VFSUnionIterData;
@@ -93,10 +93,7 @@ static const char* vfs_union_iter(VFSNode *node, void **opaque) {
 		i = malloc(sizeof(VFSUnionIterData));
 		i->current = node->_members_;
 		i->opaque = NULL;
-
-		 // XXX: this may not be the most efficient implementation of a "set" structure...
-		i->visited = hashtable_new_stringkeys();
-
+		ht_create(&i->visited);
 		*opaque = i;
 	}
 
@@ -111,11 +108,11 @@ static const char* vfs_union_iter(VFSNode *node, void **opaque) {
 			continue;
 		}
 
-		if(hashtable_get_string(i->visited, r)) {
+		if(ht_get(&i->visited, r, false)) {
 			continue;
 		}
 
-		hashtable_set_string(i->visited, r, (void*)true);
+		ht_set(&i->visited, r, true);
 		break;
 	}
 
@@ -126,7 +123,7 @@ static void vfs_union_iter_stop(VFSNode *node, void **opaque) {
 	VFSUnionIterData *i = *opaque;
 
 	if(i) {
-		hashtable_free(i->visited);
+		ht_destroy(&i->visited);
 		free(i);
 	}
 

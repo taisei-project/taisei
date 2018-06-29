@@ -67,10 +67,6 @@ typedef struct ResourceAsyncLoadData {
 	void *opaque;
 } ResourceAsyncLoadData;
 
-struct ResourceHandlerPrivate {
-	Hashtable *mapping;
-};
-
 Resources resources;
 
 static SDL_threadID main_thread_id; // TODO: move this somewhere else
@@ -85,16 +81,19 @@ static inline ResourceHandler* get_ires_handler(InternalResource *ires) {
 
 static void alloc_handler(ResourceHandler *h) {
 	assert(h != NULL);
-	h->private = calloc(1, sizeof(ResourceHandlerPrivate));
-	h->private->mapping = hashtable_new_stringkeys();
+	ht_create(&h->private.mapping);
 }
 
 static const char* type_name(ResourceType type) {
 	return get_handler(type)->typename;
 }
 
-static void* datafunc_begin_load_resource(void *arg) {
-	ResourceType type = (intptr_t)arg;
+struct valfunc_arg {
+	ResourceType type;
+};
+
+static void* valfunc_begin_load_resource(void* arg) {
+	ResourceType type = ((struct valfunc_arg*)arg)->type;
 
 	InternalResource *ires = calloc(1, sizeof(InternalResource));
 	ires->res.type = type;
@@ -107,7 +106,8 @@ static void* datafunc_begin_load_resource(void *arg) {
 
 static bool try_begin_load_resource(ResourceType type, const char *name, InternalResource **out_ires) {
 	ResourceHandler *handler = get_handler(type);
-	return hashtable_try_set(handler->private->mapping, (char*)name, (void*)(uintptr_t)type, datafunc_begin_load_resource, (void**)out_ires);
+	struct valfunc_arg arg = { type };
+	return ht_try_set(&handler->private.mapping, name, &arg, valfunc_begin_load_resource, (void**)out_ires);
 }
 
 static void load_resource_finish(InternalResource *ires, void *opaque, const char *path, const char *name, char *allocated_path, char *allocated_name, ResourceFlags flags);
@@ -337,7 +337,9 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 	Resource *res;
 
 	if(flags & RESF_UNSAFE) {
-		ires = hashtable_get_unsafe(get_handler(type)->private->mapping, (char*)name);
+		// FIXME: I'm not sure we actually need this functionality.
+
+		ires = ht_get_unsafe(&get_handler(type)->private.mapping, name, NULL);
 
 		if(ires != NULL && ires->status == RES_STATUS_LOADED) {
 			return &ires->res;
@@ -478,25 +480,40 @@ static void* preload_shaders(const char *path, void *arg) {
 	return NULL;
 }
 
-struct resource_for_each_arg {
-	void *(*callback)(const char *name, Resource *res, void *arg);
-	void *arg;
-};
-
-static void* resource_for_each_ht_adapter(void *key, void *data, void *varg) {
-	const char *name = key;
-	InternalResource *ires = data;
-	struct resource_for_each_arg *arg = varg;
-	return arg->callback(name, &ires->res, arg->arg);
-}
-
 void* resource_for_each(ResourceType type, void* (*callback)(const char *name, Resource *res, void *arg), void *arg) {
-	ResourceHandler *handler = get_handler(type);
-	struct resource_for_each_arg htarg = { callback, arg };
-	return hashtable_foreach(handler->private->mapping, resource_for_each_ht_adapter, &htarg);
+	ht_str2ptr_ts_iter_t iter;
+	ht_iter_begin(&get_handler(type)->private.mapping, &iter);
+	void *result = NULL;
+
+	while(iter.has_data) {
+		InternalResource *ires = iter.value;
+		char *key = iter.key;
+
+		ht_iter_next(&iter);
+
+		if(ires->res.data == NULL) {
+			continue;
+		}
+
+		if((result = callback(key, &ires->res, arg)) != NULL) {
+			break;
+		}
+	}
+
+	ht_iter_end(&iter);
+	return result;
 }
 
 void load_resources(void) {
+	for(uint i = 0; i < RES_NUMTYPES; ++i) {
+		ResourceHandler *h = get_handler(i);
+		assert(h != NULL);
+
+		if(h->procs.post_init) {
+			h->procs.post_init();
+		}
+	}
+
 	menu_preload();
 
 	if(env_get("TAISEI_PRELOAD_SHADERS", 0)) {
@@ -506,33 +523,41 @@ void load_resources(void) {
 }
 
 void free_resources(bool all) {
+	ht_str2ptr_ts_iter_t iter;
+
 	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
 		ResourceHandler *handler = get_handler(type);
-
-		char *name;
 		InternalResource *ires;
-		ListContainer *unset_list = NULL;
+		ht_str2ptr_ts_key_list_t *unset_list = NULL, *unset_entry;
 
-		hashtable_lock(handler->private->mapping);
-		for(HashtableIterator *i = hashtable_iter(handler->private->mapping); hashtable_iter_next(i, (void**)&name, (void**)&ires);) {
+		ht_iter_begin(&handler->private.mapping, &iter);
+
+		for(; iter.has_data; ht_iter_next(&iter)) {
+			ires = iter.value;
+
 			if(!all && (ires->res.flags & RESF_PERMANENT)) {
 				continue;
 			}
 
-			list_push(&unset_list, list_wrap_container(name));
+			unset_entry = calloc(1, sizeof(*unset_entry));
+			unset_entry->key = iter.key;
+			list_push(&unset_list, unset_entry);
 		}
-		hashtable_unlock(handler->private->mapping);
 
-		for(ListContainer *c; (c = list_pop(&unset_list));) {
-			char *tmp = c->data;
+		ht_iter_end(&iter);
+
+		for(ht_str2ptr_ts_key_list_t *c; (c = list_pop(&unset_list));) {
+			char *tmp = c->key;
 			char name[strlen(tmp) + 1];
 			strcpy(name, tmp);
 
-			ires = hashtable_get_string(handler->private->mapping, name);
+			ires = ht_get(&handler->private.mapping, name, NULL);
+			assert(ires != NULL);
+
 			attr_unused ResourceFlags flags = ires->res.flags;
 
 			if(!all) {
-				hashtable_unset_string(handler->private->mapping, name);
+				ht_unset(&handler->private.mapping, name);
 			}
 
 			unload_resource(ires);
@@ -551,8 +576,7 @@ void free_resources(bool all) {
 				handler->procs.shutdown();
 			}
 
-			hashtable_free(handler->private->mapping);
-			free(handler->private);
+			ht_destroy(&handler->private.mapping);
 		}
 	}
 

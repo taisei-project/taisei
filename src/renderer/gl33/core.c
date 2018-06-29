@@ -211,6 +211,7 @@ static void gl33_init_context(SDL_Window *window) {
 	r_cull(CULL_BACK);
 	r_blend(BLEND_ALPHA);
 
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 	glGetIntegerv(GL_VIEWPORT, &R.viewport.x);
 
@@ -768,7 +769,7 @@ static Color gl33_clear_color_current(void) {
 
 static void gl33_viewport_rect(IntRect rect) {
 	if(memcmp(&R.viewport, &rect, sizeof(IntRect))) {
-		r_flush_sprites();
+		r_flush_sprites(); // FIXME: have the sprite batch track this instead.
 		memcpy(&R.viewport, &rect, sizeof(IntRect));
 		glViewport(rect.x, rect.y, rect.w, rect.h);
 	}

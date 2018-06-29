@@ -102,7 +102,7 @@ void draw_main_menu_bg(MenuData* menu) {
 }
 
 static void update_main_menu(MenuData *menu) {
-	menu->drawdata[1] += (stringwidth(menu->entries[menu->cursor].name, _fonts.mainmenu) - menu->drawdata[1])/10.0;
+	menu->drawdata[1] += (text_width(get_font("big"), menu->entries[menu->cursor].name, 0) - menu->drawdata[1])/10.0;
 	menu->drawdata[2] += (35*menu->cursor - menu->drawdata[2])/10.0;
 
 	for(int i = 0; i < menu->ecount; i++) {
@@ -117,7 +117,7 @@ void draw_main_menu(MenuData *menu) {
 	r_mat_push();
 	r_mat_translate(0, SCREEN_H-270, 0);
 	draw_menu_selector(50 + menu->drawdata[1]/2, menu->drawdata[2], 1.5 * menu->drawdata[1], 64, menu->frames);
-
+	r_shader("text_default");
 	for(int i = 0; i < menu->ecount; i++) {
 		float s = 5*sin(menu->frames/80.0 + 20*i);
 
@@ -129,7 +129,12 @@ void draw_main_menu(MenuData *menu) {
 			r_color4(1, 0.7 + a, 0.4 + a, 0.7);
 		}
 
-		draw_text(AL_Left, 50 + s, 35*i, menu->entries[i].name, _fonts.mainmenu);
+		text_draw(menu->entries[i].name, &(TextParams) {
+			.pos = { 50 + s, 35*i },
+			.font = "big",
+			// .shader = "text_example",
+			// .custom = time_get()
+		});
 	}
 
 	r_mat_pop();
@@ -170,25 +175,42 @@ void draw_main_menu(MenuData *menu) {
 		r_mat_pop();
 	}
 
-	r_shader_standard();
+	r_shader("text_default");
 	r_capability(RCAP_CULL_FACE, cullcap_saved);
 	r_blend(BLEND_ALPHA);
 
 	char version[32];
 	snprintf(version, sizeof(version), "v%s", TAISEI_VERSION);
-	draw_text(AL_Right,SCREEN_W-5,SCREEN_H-10,version,_fonts.small);
+	text_draw(TAISEI_VERSION, &(TextParams) {
+		.align = ALIGN_RIGHT,
+		.pos = { SCREEN_W-5, SCREEN_H-10 },
+		.font = "small",
+	});
+	r_shader_standard();
 }
 
 void draw_loading_screen(void) {
 	preload_resource(RES_TEXTURE, "loading", RESF_PERMANENT);
 	set_ortho(SCREEN_W, SCREEN_H);
 	fill_screen("loading");
-	draw_text(AL_Right,SCREEN_W-5,SCREEN_H-10,TAISEI_VERSION,_fonts.small);
+	/*
+	text_draw(TAISEI_VERSION, &(TextParams) {
+		.align = ALIGN_RIGHT,
+		.pos = { SCREEN_W-5, SCREEN_H-10 },
+		.font = "small",
+		.shader = "text_default",
+	});
+	*/
 	video_swap_buffers();
 }
 
 void menu_preload(void) {
 	difficulty_preload();
+
+	preload_resources(RES_FONT, RESF_PERMANENT,
+		"big",
+		"small",
+	NULL);
 
 	preload_resources(RES_TEXTURE, RESF_PERMANENT,
 		"menu/mainmenubg",

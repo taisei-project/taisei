@@ -18,7 +18,7 @@
 
 struct ShaderProgram {
 	GLuint gl_handle;
-	Hashtable *uniforms;
+	ht_str2ptr_t uniforms;
 };
 
 typedef void (*UniformSetter)(Uniform *uniform, uint count, const void *data);

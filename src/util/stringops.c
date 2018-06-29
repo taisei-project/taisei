@@ -180,6 +180,13 @@ char* strappend(char **dst, char *src) {
 	return *dst;
 }
 
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+	#define UCS4_ID "UCS-4BE"
+#else
+	#define UCS4_ID "UCS-4LE"
+#endif
+
 uint32_t* ucs4chr(const uint32_t *ucs4, uint32_t chr) {
 	for(; *ucs4 != chr; ++ucs4) {
 		if(!*ucs4) {
@@ -198,14 +205,14 @@ size_t ucs4len(const uint32_t *ucs4) {
 
 uint32_t* utf8_to_ucs4(const char *utf8) {
 	assert(utf8 != NULL);
-	uint32_t *ucs4 = (uint32_t*)(void*)SDL_iconv_string("UCS-4", "UTF-8", utf8, strlen(utf8) + 1);
+	uint32_t *ucs4 = (uint32_t*)(void*)SDL_iconv_string(UCS4_ID, "UTF-8", utf8, strlen(utf8) + 1);
 	assert(ucs4 != NULL);
 	return ucs4;
 }
 
 char* ucs4_to_utf8(const uint32_t *ucs4) {
 	assert(ucs4 != NULL);
-	char *utf8 = SDL_iconv_string("UTF-8", "UCS-4", (const char*)ucs4, sizeof(uint32_t) * (ucs4len(ucs4) + 1));
+	char *utf8 = SDL_iconv_string("UTF-8", UCS4_ID, (const char*)ucs4, sizeof(uint32_t) * (ucs4len(ucs4) + 1));
 	assert(utf8 != NULL);
 	return utf8;
 }
@@ -315,3 +322,94 @@ size_t filename_timestamp(char *buf, size_t buf_size, SystemTime systime) {
 
 	return snprintf(buf, buf_size, "%s-%s", buf_datetime, buf_msecs);
 }
+
+uint32_t utf8_getch(const char **src) {
+	// Ported from SDL_ttf and slightly modified
+
+	assert(*src != NULL);
+
+	const uint8_t *p = *(const uint8_t**)src;
+	size_t left = 0;
+	bool overlong = false;
+	uint32_t ch = UNICODE_UNKNOWN;
+
+	if(**src == 0) {
+		return UNICODE_UNKNOWN;
+	}
+
+	if(p[0] >= 0xFC) {
+		if((p[0] & 0xFE) == 0xFC) {
+			if(p[0] == 0xFC && (p[1] & 0xFC) == 0x80) {
+				overlong = true;
+			}
+			ch = p[0] & 0x01;
+			left = 5;
+		}
+	} else if(p[0] >= 0xF8) {
+		if((p[0] & 0xFC) == 0xF8) {
+			if(p[0] == 0xF8 && (p[1] & 0xF8) == 0x80) {
+				overlong = true;
+			}
+			ch = p[0] & 0x03;
+			left = 4;
+		}
+	} else if(p[0] >= 0xF0) {
+		if((p[0] & 0xF8) == 0xF0) {
+			if(p[0] == 0xF0 && (p[1] & 0xF0) == 0x80) {
+				overlong = true;
+			}
+			ch = p[0] & 0x07;
+			left = 3;
+		}
+	} else if(p[0] >= 0xE0) {
+		if((p[0] & 0xF0) == 0xE0) {
+			if(p[0] == 0xE0 && (p[1] & 0xE0) == 0x80) {
+				overlong = true;
+			}
+			ch = p[0] & 0x0F;
+			left = 2;
+		}
+	} else if(p[0] >= 0xC0) {
+		if((p[0] & 0xE0) == 0xC0) {
+			if((p[0] & 0xDE) == 0xC0) {
+				overlong = true;
+			}
+			ch = p[0] & 0x1F;
+			left = 1;
+		}
+	} else {
+		if((p[0] & 0x80) == 0x00) {
+			ch = p[0];
+		}
+	}
+
+	++*src;
+
+	while(left > 0 && **src != 0) {
+		++p;
+
+		if((p[0] & 0xC0) != 0x80) {
+			ch = UNICODE_UNKNOWN;
+			break;
+		}
+
+		ch <<= 6;
+		ch |= (p[0] & 0x3F);
+
+		++*src;
+		--left;
+	}
+
+	if(
+		overlong ||
+		left > 0 ||
+		(ch >= 0xD800 && ch <= 0xDFFF) ||
+		(ch == 0xFFFE || ch == 0xFFFF) ||
+		ch > 0x10FFFF
+	) {
+		ch = UNICODE_UNKNOWN;
+	}
+
+	return ch;
+}
+

@@ -19,8 +19,16 @@ void main(void) {
     texCoord    = uv_to_region(spriteTexRegion, vertTexCoord);
     #endif
 
+    #ifdef SPRITE_OUT_TEXCOORD_OVERLAY
+    texCoordOverlay = (spriteTexTransform * vec4(vertTexCoord, 0.0, 1.0)).xy;
+    #endif
+
     #ifdef SPRITE_OUT_TEXREGION
     texRegion   = spriteTexRegion;
+    #endif
+
+    #ifdef SPRITE_OUT_DIMENSIONS
+    dimensions = spriteDimensions;
     #endif
 
     #ifdef SPRITE_OUT_CUSTOM

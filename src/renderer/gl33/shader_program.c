@@ -15,7 +15,7 @@
 #include "../api.h"
 
 Uniform* gl33_shader_uniform(ShaderProgram *prog, const char *uniform_name) {
-	return hashtable_get_string(prog->uniforms, uniform_name);
+	return ht_get(&prog->uniforms, uniform_name, NULL);
 }
 
 UniformType gl33_uniform_type(Uniform *uniform) {
@@ -112,9 +112,9 @@ static void gl33_commit_uniform(Uniform *uniform) {
 	assert(!memcmp(uniform->cache.commited.data, uniform->cache.pending.data, uniform->cache.commited.size));
 }
 
-static void* gl33_sync_uniform(void *key, void *data, void *arg) {
+static void* gl33_sync_uniform(const char *key, void *value, void *arg) {
 	attr_unused const char *name = key;
-	Uniform *uniform = data;
+	Uniform *uniform = value;
 
 	if(uniform->cache.update_count < 1) {
 		return NULL;
@@ -137,7 +137,7 @@ static void* gl33_sync_uniform(void *key, void *data, void *arg) {
 }
 
 void gl33_sync_uniforms(ShaderProgram *prog) {
-	hashtable_foreach(prog->uniforms, gl33_sync_uniform, NULL);
+	ht_foreach(&prog->uniforms, gl33_sync_uniform, NULL);
 }
 
 void gl33_uniform(Uniform *uniform, uint count, const void *data) {
@@ -165,7 +165,7 @@ static bool cache_uniforms(ShaderProgram *prog) {
 	int maxlen = 0;
 	GLint unicount;
 
-	prog->uniforms = hashtable_new_stringkeys();
+	ht_create(&prog->uniforms);
 
 	glGetProgramiv(prog->gl_handle, GL_ACTIVE_UNIFORMS, &unicount);
 	glGetProgramiv(prog->gl_handle, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxlen);
@@ -217,7 +217,7 @@ static bool cache_uniforms(ShaderProgram *prog) {
 		}
 
 		uni.location = loc;
-		hashtable_set_string(prog->uniforms, name, memdup(&uni, sizeof(uni)));
+		ht_set(&prog->uniforms, name, memdup(&uni, sizeof(uni)));
 		log_debug("%s = %i", name, loc);
 	}
 
@@ -315,7 +315,7 @@ static void print_info_log(GLuint prog) {
 	}
 }
 
-static void* free_uniform(void *key, void *data, void *arg) {
+static void* free_uniform(const char *key, void *data, void *arg) {
 	Uniform *uniform = data;
 	free(uniform->cache.commited.data);
 	free(uniform->cache.pending.data);
@@ -327,8 +327,8 @@ static void unload_shader_program(void *vprog) {
 	ShaderProgram *prog = vprog;
 	gl33_shader_deleted(prog);
 	glDeleteProgram(prog->gl_handle);
-	hashtable_foreach(prog->uniforms, free_uniform, NULL);
-	hashtable_free(prog->uniforms);
+	ht_foreach(&prog->uniforms, free_uniform, NULL);
+	ht_destroy(&prog->uniforms);
 	free(prog);
 }
 
