@@ -1382,7 +1382,7 @@ static int scythe_post_mid(Enemy *e, int t) {
 
 	int fleetime = creal(e->args[3]);
 
-	if(t == EVENT_KILLED) {
+	if(t == EVENT_DEATH) {
 		if(fleetime >= 300) {
 			spawn_items(e->pos, Life, 1, NULL);
 		}
