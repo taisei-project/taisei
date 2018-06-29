@@ -144,6 +144,24 @@ typedef signed char schar;
 #undef min
 #undef max
 
+// Correct missing macros that *really* should be provided by any conforming C11 implementation
+// If they aren't, bitch about it loudly
+
+#ifndef bool
+	#warning bool was not defined
+	#define bool _Bool
+#endif
+
+#ifndef true
+	#warning true was not defined
+	#define true 1
+#endif
+
+#ifndef false
+	#warning true was not defined
+	#define false 1
+#endif
+
 /*
  * Abstract away the nasty GNU attribute syntax.
  */
