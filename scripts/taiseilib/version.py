@@ -49,13 +49,18 @@ def get(*, rootdir=None, fallback=None, args=common.default_args):
         rootdir = pathlib.Path(__file__).parent
 
     try:
-        git = subprocess.check_output(
-            shlex.split('git describe --tags --match v[0-9]*[!asz]'),
+        version_str = subprocess.check_output(
+            shlex.split('git describe --dirty --match v[0-9]*[!asz]'),
             cwd=str(rootdir),
             universal_newlines=True
-        )
+        ).strip()
 
-        version_str = git.strip()
+        if '-' in version_str:
+            version_str += '-' + subprocess.check_output(
+                shlex.split('git rev-parse --abbrev-ref HEAD'),
+                cwd=str(rootdir),
+                universal_newlines=True
+            ).strip()
     except (subprocess.SubprocessError, OSError) as e:
         if not fallback:
             raise
