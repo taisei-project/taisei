@@ -71,14 +71,14 @@ static void reimu_spirit_homing_draw(Projectile *p, int t) {
 	r_mat_pop();
 }
 
-static Projectile* reimu_spirit_spawn_ofuda_particle(Projectile *p, int t) {
+static Projectile* reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, double vfactor) {
 	return PARTICLE(
 		.sprite = "ofuda_glow",
 		// .color = rgba(0.5 + 0.5 + psin(global.frames * 0.75), psin(t*0.5), 1, 0.5),
-		.color = hsla(t * 0.1, 0.5, 0.75, 0.35),
+		.color = hsla(t * 0.1, 0.6, 0.7, 0.45),
 		.timeout = 12,
 		.pos = p->pos,
-		.args = { p->args[0] * (0.2 + 0.6 * frand()), 0, (1+2*I) * REIMU_SPIRIT_HOMING_SCALE },
+		.args = { p->args[0] * (0.6 + 0.4 * frand()) * vfactor, 0, (1+2*I) * REIMU_SPIRIT_HOMING_SCALE },
 		.angle = p->angle,
 		.rule = linear,
 		.draw_rule = ScaleFade,
@@ -93,7 +93,7 @@ static int reimu_spirit_homing_impact(Projectile *p, int t) {
 		return ACTION_ACK;
 	}
 
-	Projectile *trail = reimu_spirit_spawn_ofuda_particle(p, global.frames);
+	Projectile *trail = reimu_spirit_spawn_ofuda_particle(p, global.frames, 1);
 	trail->rule = NULL;
 	trail->timeout = 6;
 	trail->angle = p->angle;
@@ -108,7 +108,7 @@ static Projectile* reimu_spirit_spawn_homing_impact(Projectile *p, int t) {
 	return PARTICLE(
 		.proto = p->proto,
 		.color = p->color,
-		.timeout = 24,
+		.timeout = 32,
 		.pos = p->pos,
 		.args = { 0, 0, (1+2*I) * REIMU_SPIRIT_HOMING_SCALE },
 		.angle = p->angle,
@@ -117,6 +117,12 @@ static Projectile* reimu_spirit_spawn_homing_impact(Projectile *p, int t) {
 		.layer = LAYER_PARTICLE_HIGH,
 		.flags = PFLAG_NOREFLECT,
 	);
+}
+
+static inline double reimu_spirit_homing_aimfactor(double t, double maxt) {
+	t = clamp(t, 0, maxt);
+	double q = pow(1 - t / maxt, 3);
+	return 4 * q * (1 - q);
 }
 
 static int reimu_spirit_homing(Projectile *p, int t) {
@@ -130,16 +136,18 @@ static int reimu_spirit_homing(Projectile *p, int t) {
 
 	p->args[3] = plrutil_homing_target(p->pos, p->args[3]);
 	double v = cabs(p->args[0]);
+
 	complex aimdir = cexp(I*carg(p->args[3] - p->pos));
+	double aim = reimu_spirit_homing_aimfactor(t, p->args[1]);
 
-	double aim = (0.5 * pow(1 - t / p->timeout, 4));
-
-	p->args[0] += v * aim * aimdir;
+	p->args[0] += v * 0.25 * aim * aimdir;
 	p->args[0] = v * cexp(I*carg(p->args[0]));
 	p->angle = carg(p->args[0]);
-	p->pos += p->args[0];
 
-	reimu_spirit_spawn_ofuda_particle(p, t);
+	double s = 1;// max(pow(2*t/creal(p->args[1]), 2), 0.1); //(0.25 + 0.75 * (1 - aim));
+	p->pos += p->args[0] * s;
+	reimu_spirit_spawn_ofuda_particle(p, t, 0.5);
+
 	return ACTION_NONE;
 }
 
@@ -168,16 +176,18 @@ static void reimu_spirit_slave_shot(Enemy *e, int t) {
 			.type = PlrProj + cimag(e->args[2]),
 			.shader = "sprite_default",
 		);
-	} else if(!(st % 6)) {
+	} else if(!(st % 12)) {
+		complex v = -10 * I * cexp(I*cimag(e->args[0]));
+
 		PROJECTILE(
 			.proto = pp_ofuda,
 			.pos = e->pos,
-			.color = rgba(1, 1, 1, 0.5),
+			.color = rgba(1, 0.9, 0.95, 0.7),
 			.rule = reimu_spirit_homing,
 			.draw_rule = reimu_spirit_homing_draw,
-			.args = { -10.0*I, 0, 0, creal(e->pos) },
+			.args = { v , 60, 0, e->pos + v * VIEWPORT_H * VIEWPORT_W /*creal(e->pos)*/ },
 			.type = PlrProj + creal(e->args[2]),
-			.timeout = 60,
+			// .timeout = 60,
 			.shader = "sprite_default",
 			.flags = PFLAG_NOCOLLISIONEFFECT,
 		);
@@ -217,7 +227,7 @@ static int reimu_spirit_slave(Enemy *e, int t) {
 	double speed = 0.005 * min(1, t / 12.0);
 
 	if(global.plr.inputflags & INFLAG_FOCUS) {
-		GO_TO(e, global.plr.pos + cimag(e->args[1]) * cexp(I*(e->args[0] + t * creal(e->args[1]))), speed * cabs(e->args[1]));
+		GO_TO(e, global.plr.pos + cimag(e->args[1]) * cexp(I*(creal(e->args[0]) + t * creal(e->args[1]))), speed * cabs(e->args[1]));
 	} else {
 		GO_TO(e, global.plr.pos + e->pos0, speed * cabs(e->pos0));
 	}
@@ -296,8 +306,8 @@ static void reimu_spirit_kill_slaves(EnemyList *slaves) {
 }
 
 static void reimu_spirit_respawn_slaves(Player *plr, short npow, complex param) {
-	double dmg_homing = 60; // every 6 frames
-	double dmg_needle = 80; // every 3 frames
+	double dmg_homing = 100; // every 12 frames
+	double dmg_needle = 80;  // every 3 frames
 	complex dmg = dmg_homing + I * dmg_needle;
 	EnemyVisualRule visual;
 
@@ -313,22 +323,22 @@ static void reimu_spirit_respawn_slaves(Player *plr, short npow, complex param) 
 		case 0:
 			break;
 		case 1:
-			reimu_spirit_spawn_slave(plr, 50.0*I, 0,          +0.10 + 60*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, 50.0*I, 0                     , +0.10 + 60*I, dmg, 0, visual);
 			break;
 		case 2:
-			reimu_spirit_spawn_slave(plr, +40,    0,          +0.10 + 60*I, dmg, 0, visual);
-			reimu_spirit_spawn_slave(plr, -40,    M_PI,       +0.10 + 60*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, +40,    0           +M_PI/24*I, +0.10 + 60*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, -40,    M_PI        -M_PI/24*I, +0.10 + 60*I, dmg, 0, visual);
 			break;
 		case 3:
-			reimu_spirit_spawn_slave(plr, 50.0*I, 0*2*M_PI/3, +0.10 + 60*I, dmg, 0, visual);
-			reimu_spirit_spawn_slave(plr, +40,    1*2*M_PI/3, +0.10 + 60*I, dmg, 0, visual);
-			reimu_spirit_spawn_slave(plr, -40,    2*2*M_PI/3, +0.10 + 60*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, 50.0*I, 0*2*M_PI/3            , +0.10 + 60*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, +40,    1*2*M_PI/3  +M_PI/24*I, +0.10 + 60*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, -40,    2*2*M_PI/3  -M_PI/24*I, +0.10 + 60*I, dmg, 0, visual);
 			break;
 		case 4:
-			reimu_spirit_spawn_slave(plr, +80,    0,          +0.10 + 60*I, dmg, 0, visual);
-			reimu_spirit_spawn_slave(plr, -80,    M_PI,       +0.10 + 60*I, dmg, 0, visual);
-			reimu_spirit_spawn_slave(plr, +40,    0,          -0.05 + 80*I, dmg, 0, visual);
-			reimu_spirit_spawn_slave(plr, -40,    M_PI,       -0.05 + 80*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, +40,    0           +M_PI/32*I, +0.10 + 60*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, -40,    M_PI        -M_PI/32*I, +0.10 + 60*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, +80,    0           +M_PI/16*I, -0.05 + 80*I, dmg, 0, visual);
+			reimu_spirit_spawn_slave(plr, -80,    M_PI        -M_PI/16*I, -0.05 + 80*I, dmg, 0, visual);
 			break;
 		default:
 			UNREACHABLE;
