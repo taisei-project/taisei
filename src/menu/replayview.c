@@ -138,7 +138,6 @@ static MenuData* replayview_sub_messagebox(MenuData *parent, const char *message
 
 static void replayview_run(MenuData *menu, void *arg) {
 	ReplayviewItemContext *ctx = arg;
-	ReplayviewContext *menuctx = menu->context;
 	Replay *rpy = ctx->replay;
 
 	if(rpy->numstages > 1) {
