@@ -113,8 +113,10 @@ dep_zlib        = dependency('zlib',                            required : true,
 dep_png         = dependency('libpng',  version : '>=1.5',      required : true,    static : static)
 dep_zip         = dependency('libzip',  version : '>=1.0',      required : false,   static : static)
 dep_freetype    = dependency('freetype2',                       required : true,    static : static)
-dep_cglm        = subproject('cglm').get_variable('cglm_dep')
 dep_m           = cc.find_library('m',                          required : false)
+
+dep_cglm        = subproject('cglm').get_variable('cglm_dep')
+dep_glad        = subproject('glad').get_variable('glad_dep')
 
 taisei_deps = [
     dep_sdl2,
@@ -124,6 +126,7 @@ taisei_deps = [
     dep_freetype,
     dep_m,
     dep_cglm,
+    # don't add glad here
 ]
 
 if host_machine.system() == 'windows'

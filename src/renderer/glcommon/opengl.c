@@ -13,13 +13,7 @@
 
 struct glext_s glext;
 
-#ifndef LINK_TO_LIBGL
-#define GLDEF(glname,tsname,typename) typename tsname = NULL;
-GLDEFS
-#undef GLDEF
-#endif
-
-typedef void (*tsglproc_ptr)(void);
+typedef void (*glad_glproc_ptr)(void);
 
 static const char *const ext_vendor_table[] = {
 	#define TSGL_EXT_VENDOR(v) [_TSGL_EXTVNUM_##v] = #v,
@@ -53,38 +47,6 @@ static ext_flag_t glcommon_ext_flag(const char *ext) {
 	}
 
 	log_fatal("Unknown vendor '%s' in extension string %s", vendor, ext);
-}
-
-#ifndef LINK_TO_LIBGL
-static tsglproc_ptr glcommon_proc_address(const char *name) {
-	void *addr = SDL_GL_GetProcAddress(name);
-
-	if(!addr) {
-		log_warn("SDL_GL_GetProcAddress(\"%s\") failed: %s", name, SDL_GetError());
-	}
-
-	// shut up a stupid warning about conversion between data pointers and function pointers
-	// yes, such a conversion is not allowed by the standard, but when several major APIs
-	// (POSIX and SDL to name a few) require casting void* to a function pointer, that says something.
-	return *(tsglproc_ptr*)&addr;
-}
-#endif
-
-static void glcommon_gl_version(char *major, char *minor) {
-	// the glGetIntegerv way only works in >=3.0 contexts, so...
-
-	const char *vstr = (const char*)glGetString(GL_VERSION);
-
-	if(!vstr) {
-		*major = 1;
-		*minor = 1;
-		return;
-	}
-
-	const char *dot = strchr(vstr, '.');
-
-	*major = atoi(vstr);
-	*minor = atoi(dot+1);
 }
 
 ext_flag_t glcommon_check_extension(const char *ext) {
@@ -132,9 +94,9 @@ ext_flag_t glcommon_require_extension(const char *ext) {
 static void glcommon_ext_debug_output(void) {
 	if(
 		GL_ATLEAST(4, 3)
-		&& (glext.DebugMessageCallback = tsglDebugMessageCallback)
-		&& (glext.DebugMessageControl = tsglDebugMessageControl)
-		&& (glext.ObjectLabel = tsglObjectLabel)
+		&& (glext.DebugMessageCallback = glad_glDebugMessageCallback)
+		&& (glext.DebugMessageControl = glad_glDebugMessageControl)
+		&& (glext.ObjectLabel = glad_glObjectLabel)
 	) {
 		glext.debug_output = TSGL_EXTFLAG_NATIVE;
 		log_info("Using core functionality");
@@ -143,18 +105,18 @@ static void glcommon_ext_debug_output(void) {
 
 	if(glext.version.is_es) {
 		if((glext.debug_output = glcommon_check_extension("GL_KHR_debug"))
-			&& (glext.DebugMessageCallback = tsglDebugMessageCallbackKHR)
-			&& (glext.DebugMessageControl = tsglDebugMessageControlKHR)
-			&& (glext.ObjectLabel = tsglObjectLabelKHR)
+			&& (glext.DebugMessageCallback = glad_glDebugMessageCallbackKHR)
+			&& (glext.DebugMessageControl = glad_glDebugMessageControlKHR)
+			&& (glext.ObjectLabel = glad_glObjectLabelKHR)
 		) {
 			log_info("Using GL_KHR_debug");
 			return;
 		}
 	} else {
 		if((glext.debug_output = glcommon_check_extension("GL_KHR_debug"))
-			&& (glext.DebugMessageCallback = tsglDebugMessageCallback)
-			&& (glext.DebugMessageControl = tsglDebugMessageControl)
-			&& (glext.ObjectLabel = tsglObjectLabel)
+			&& (glext.DebugMessageCallback = glad_glDebugMessageCallback)
+			&& (glext.DebugMessageControl = glad_glDebugMessageControl)
+			&& (glext.ObjectLabel = glad_glObjectLabel)
 		) {
 			log_info("Using GL_KHR_debug");
 			return;
@@ -162,8 +124,8 @@ static void glcommon_ext_debug_output(void) {
 	}
 
 	if((glext.debug_output = glcommon_check_extension("GL_ARB_debug_output"))
-		&& (glext.DebugMessageCallback = tsglDebugMessageCallbackARB)
-		&& (glext.DebugMessageControl = tsglDebugMessageControlARB)
+		&& (glext.DebugMessageCallback = glad_glDebugMessageCallbackARB)
+		&& (glext.DebugMessageControl = glad_glDebugMessageControlARB)
 	) {
 		log_info("Using GL_ARB_debug_output");
 		return;
@@ -176,8 +138,8 @@ static void glcommon_ext_debug_output(void) {
 static void glcommon_ext_base_instance(void) {
 	if(
 		GL_ATLEAST(4, 2)
-		&& (glext.DrawArraysInstancedBaseInstance = tsglDrawArraysInstancedBaseInstance)
-		&& (glext.DrawElementsInstancedBaseInstance = tsglDrawElementsInstancedBaseInstance)
+		&& (glext.DrawArraysInstancedBaseInstance = glad_glDrawArraysInstancedBaseInstance)
+		&& (glext.DrawElementsInstancedBaseInstance = glad_glDrawElementsInstancedBaseInstance)
 	) {
 		glext.base_instance = TSGL_EXTFLAG_NATIVE;
 		log_info("Using core functionality");
@@ -185,16 +147,16 @@ static void glcommon_ext_base_instance(void) {
 	}
 
 	if((glext.base_instance = glcommon_check_extension("GL_ARB_base_instance"))
-		&& (glext.DrawArraysInstancedBaseInstance = tsglDrawArraysInstancedBaseInstance)
-		&& (glext.DrawElementsInstancedBaseInstance = tsglDrawElementsInstancedBaseInstance)
+		&& (glext.DrawArraysInstancedBaseInstance = glad_glDrawArraysInstancedBaseInstance)
+		&& (glext.DrawElementsInstancedBaseInstance = glad_glDrawElementsInstancedBaseInstance)
 	) {
 		log_info("Using GL_ARB_base_instance");
 		return;
 	}
 
 	if((glext.base_instance = glcommon_check_extension("GL_EXT_base_instance"))
-		&& (glext.DrawArraysInstancedBaseInstance = tsglDrawArraysInstancedBaseInstanceEXT)
-		&& (glext.DrawElementsInstancedBaseInstance = tsglDrawElementsInstancedBaseInstanceEXT)
+		&& (glext.DrawArraysInstancedBaseInstance = glad_glDrawArraysInstancedBaseInstanceEXT)
+		&& (glext.DrawElementsInstancedBaseInstance = glad_glDrawElementsInstancedBaseInstanceEXT)
 	) {
 		log_info("Using GL_EXT_base_instance");
 		return;
@@ -258,9 +220,9 @@ static void glcommon_ext_depth_texture(void) {
 static void glcommon_ext_instanced_arrays(void) {
 	if(
 		GL_ATLEAST(3, 3)
-		&& (glext.DrawArraysInstanced = tsglDrawArraysInstanced)
-		&& (glext.DrawElementsInstanced = tsglDrawElementsInstanced)
-		&& (glext.VertexAttribDivisor = tsglVertexAttribDivisor)
+		&& (glext.DrawArraysInstanced = glad_glDrawArraysInstanced)
+		&& (glext.DrawElementsInstanced = glad_glDrawElementsInstanced)
+		&& (glext.VertexAttribDivisor = glad_glVertexAttribDivisor)
 	) {
 		glext.instanced_arrays = TSGL_EXTFLAG_NATIVE;
 		log_info("Using core functionality");
@@ -268,38 +230,38 @@ static void glcommon_ext_instanced_arrays(void) {
 	}
 
 	if((glext.instanced_arrays = glcommon_check_extension("GL_ARB_instanced_arrays"))
-		&& (glext.DrawArraysInstanced = tsglDrawArraysInstancedARB)
-		&& (glext.DrawElementsInstanced = tsglDrawElementsInstancedARB)
-		&& (glext.VertexAttribDivisor = tsglVertexAttribDivisorARB)
+		&& (glext.DrawArraysInstanced = glad_glDrawArraysInstancedARB)
+		&& (glext.DrawElementsInstanced = glad_glDrawElementsInstancedARB)
+		&& (glext.VertexAttribDivisor = glad_glVertexAttribDivisorARB)
 	) {
-		log_info("Using GL_ARB_instanced_arrays");
+		log_info("Using GL_ARB_instanced_arrays (GL_ARB_draw_instanced assumed)");
 		return;
 	}
 
 	if((glext.instanced_arrays = glcommon_check_extension("GL_EXT_instanced_arrays"))
-		&& (glext.DrawArraysInstanced = tsglDrawArraysInstancedEXT)
-		&& (glext.DrawElementsInstanced = tsglDrawElementsInstancedEXT)
-		&& (glext.VertexAttribDivisor = tsglVertexAttribDivisorEXT)
+		&& (glext.DrawArraysInstanced = glad_glDrawArraysInstancedEXT)
+		&& (glext.DrawElementsInstanced = glad_glDrawElementsInstancedEXT)
+		&& (glext.VertexAttribDivisor = glad_glVertexAttribDivisorEXT)
 	) {
 		log_info("Using GL_EXT_instanced_arrays");
 		return;
 	}
 
 	if((glext.instanced_arrays = glcommon_check_extension("GL_ANGLE_instanced_arrays"))
-		&& (glext.DrawArraysInstanced = tsglDrawArraysInstancedANGLE)
-		&& (glext.DrawElementsInstanced = tsglDrawElementsInstancedANGLE)
-		&& (glext.VertexAttribDivisor = tsglVertexAttribDivisorANGLE)
+		&& (glext.DrawArraysInstanced = glad_glDrawArraysInstancedANGLE)
+		&& (glext.DrawElementsInstanced = glad_glDrawElementsInstancedANGLE)
+		&& (glext.VertexAttribDivisor = glad_glVertexAttribDivisorANGLE)
 	) {
 		log_info("Using GL_ANGLE_instanced_arrays");
 		return;
 	}
 
 	if((glext.instanced_arrays = glcommon_check_extension("GL_NV_instanced_arrays"))
-		&& (glext.DrawArraysInstanced = tsglDrawArraysInstancedNV)
-		&& (glext.DrawElementsInstanced = tsglDrawElementsInstancedNV)
-		&& (glext.VertexAttribDivisor = tsglVertexAttribDivisorNV)
+		&& (glext.DrawArraysInstanced = glad_glDrawArraysInstancedNV)
+		&& (glext.DrawElementsInstanced = glad_glDrawElementsInstancedNV)
+		&& (glext.VertexAttribDivisor = glad_glVertexAttribDivisorNV)
 	) {
-		log_info("Using GL_NV_instanced_arrays");
+		log_info("Using GL_NV_instanced_arrays (GL_NV_draw_instanced assumed)");
 		return;
 	}
 
@@ -310,7 +272,7 @@ static void glcommon_ext_instanced_arrays(void) {
 static void glcommon_ext_draw_buffers(void) {
 	if(
 		(GL_ATLEAST(2, 0) || GLES_ATLEAST(3, 0))
-		&& (glext.DrawBuffers = tsglDrawBuffers)
+		&& (glext.DrawBuffers = glad_glDrawBuffers)
 	) {
 		glext.draw_buffers = TSGL_EXTFLAG_NATIVE;
 		log_info("Using core functionality");
@@ -318,14 +280,14 @@ static void glcommon_ext_draw_buffers(void) {
 	}
 
 	if((glext.instanced_arrays = glcommon_check_extension("GL_ARB_draw_buffers"))
-		&& (glext.DrawBuffers = tsglDrawBuffersARB)
+		&& (glext.DrawBuffers = glad_glDrawBuffersARB)
 	) {
 		log_info("Using GL_ARB_draw_buffers");
 		return;
 	}
 
 	if((glext.instanced_arrays = glcommon_check_extension("GL_EXT_draw_buffers"))
-		&& (glext.DrawBuffers = tsglDrawBuffersEXT)
+		&& (glext.DrawBuffers = glad_glDrawBuffersEXT)
 	) {
 		log_info("Using GL_EXT_draw_buffers");
 		return;
@@ -337,7 +299,8 @@ static void glcommon_ext_draw_buffers(void) {
 
 void glcommon_check_extensions(void) {
 	memset(&glext, 0, sizeof(glext));
-	glcommon_gl_version(&glext.version.major, &glext.version.minor);
+	glext.version.major = GLVersion.major;
+	glext.version.minor = GLVersion.minor;
 
 	const char *glslv = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
 	const char *glv = (const char*)glGetString(GL_VERSION);
@@ -384,7 +347,6 @@ void glcommon_check_extensions(void) {
 }
 
 void glcommon_load_library(void) {
-#ifndef LINK_TO_LIBGL
 	const char *lib = env_get("TAISEI_LIBGL", "");
 
 	if(!*lib) {
@@ -394,19 +356,26 @@ void glcommon_load_library(void) {
 	if(SDL_GL_LoadLibrary(lib) < 0) {
 		log_fatal("SDL_GL_LoadLibrary() failed: %s", SDL_GetError());
 	}
-#endif
 }
 
 void glcommon_unload_library(void) {
-#ifndef LINK_TO_LIBGL
 	SDL_GL_UnloadLibrary();
-#endif
 }
 
 void glcommon_load_functions(void) {
-#ifndef LINK_TO_LIBGL
-#define GLDEF(glname,tsname,typename) tsname = (typename)glcommon_proc_address(#glname);
-	GLDEFS
-#undef GLDEF
-#endif
+	int profile;
+
+	if(SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile) < 0) {
+		log_fatal("SDL_GL_GetAttribute() failed: %s", SDL_GetError());
+	}
+
+	if(profile == SDL_GL_CONTEXT_PROFILE_ES) {
+		if(!gladLoadGLES2Loader(SDL_GL_GetProcAddress)) {
+			log_fatal("Failed to load OpenGL ES functions");
+		}
+	} else {
+		if(!gladLoadGLLoader(SDL_GL_GetProcAddress)) {
+			log_fatal("Failed to load OpenGL functions");
+		}
+	}
 }

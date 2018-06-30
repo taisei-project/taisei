@@ -10,3 +10,4 @@ r_gl33_src = files(
 )
 
 r_gl33_deps = ['glcommon']
+r_gl33_libdeps = r_glcommon_libdeps

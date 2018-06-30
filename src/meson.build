@@ -142,6 +142,8 @@ else
     )
 endif
 
+taisei_deps += renderer_deps
+
 if macos_app_bundle
     taisei_exe_name = 'Taisei'
 else

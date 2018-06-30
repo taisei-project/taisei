@@ -6,3 +6,5 @@ r_common_src = files(
     'state.c',
     'models.c',
 )
+
+r_common_libdeps = []

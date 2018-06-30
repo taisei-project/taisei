@@ -3,6 +3,8 @@ renderer_src = files(
     'api.c',
 )
 
+renderer_deps = []
+
 subdir('common')
 subdir('glcommon')
 
@@ -23,6 +25,8 @@ foreach m : modules
         renderer_src += get_variable('r_@0@_src'.format(m))
         r_macro += ['R(@0@)'.format(m)]
         needed_deps += get_variable('r_@0@_deps'.format(m))
+        included_deps += [m]
+        renderer_deps += get_variable('r_@0@_libdeps'.format(m))
     endif
 endforeach
 
@@ -30,6 +34,7 @@ foreach dep : needed_deps
     if not included_deps.contains(dep)
         included_deps += [dep]
         renderer_src += get_variable('r_@0@_src'.format(dep))
+        renderer_deps += get_variable('r_@0@_libdeps'.format(dep))
     endif
 endforeach
 

@@ -4,4 +4,3 @@ install_data(
     install_dir : data_path
 )
 
-subdir('gl-headers')

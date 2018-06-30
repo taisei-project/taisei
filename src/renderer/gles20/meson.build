@@ -4,3 +4,4 @@ r_gles20_src = files(
 )
 
 r_gles20_deps = ['gl33'] + r_gl33_deps
+r_gles20_libdeps = r_gl33_libdeps

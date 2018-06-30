@@ -4,17 +4,4 @@ r_glcommon_src = files(
     'debug.c',
 )
 
-headers_args = []
-
-foreach header : gl_headers
-    headers_args += ['-H', header]
-endforeach
-
-run_target('update-gl-header',
-    command: [
-        gen_opengl_header_command,
-        join_paths(meson.current_source_dir(), '..'),
-        files('opengl.h'),
-        headers_args,
-    ]
-)
+r_glcommon_libdeps = [dep_glad]

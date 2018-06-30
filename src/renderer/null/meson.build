@@ -4,3 +4,4 @@ r_null_src = files(
 )
 
 r_null_deps = []
+r_null_libdeps = []
