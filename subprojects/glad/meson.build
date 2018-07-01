@@ -54,6 +54,8 @@ glad_dep = declare_dependency(
   link_with : glad_lib
 )
 
-run_target('gen-gl-loader',
-    command : [glad_program, glad_args],
-)
+if glad_program.found()
+    run_target('gen-gl-loader',
+        command : [glad_program, glad_args],
+    )
+endif
