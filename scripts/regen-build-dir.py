@@ -70,16 +70,19 @@ def main(args):
 
     meson_options = set(re.findall(r'\[--([\w-]+)\s+.*?\]', subprocess.check_output(args.meson + ['--help']).decode('utf8'), re.A))
 
-    def opt_str_value(value):
+    def opt_str_value(opt, value):
         if isinstance(value, bool):
             # Meson <= 0.43.0 bug
             return str(value).lower()
-        else:
-            return str(value)
+
+        if opt == 'install_umask':
+            return '%04o' % int(value)
+
+        return str(value)
 
     for opt in build_options:
         name = opt['name']
-        value = opt_str_value(opt['value'])
+        value = opt_str_value(name, opt['value'])
 
         if name in meson_options:
             regen_cmdline.append('--{}={}'.format(name, value))
@@ -114,7 +117,7 @@ def main(args):
 
         for opt in build_options:
             name = opt['name']
-            value = opt_str_value(opt['value'])
+            value = opt_str_value(name, opt['value'])
             subprocess.call(args.meson + ['configure', '-D{}={}'.format(name, value)])
 
     print('')
