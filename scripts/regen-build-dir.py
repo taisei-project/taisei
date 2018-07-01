@@ -86,8 +86,6 @@ def main(args):
 
         if name in meson_options:
             regen_cmdline.append('--{}={}'.format(name, value))
-        else:
-            regen_cmdline.append('-D{}={}'.format(name, value))
 
     regen_cmdline += args.meson_args
 
@@ -113,12 +111,15 @@ def main(args):
             shutil.rmtree(meson_dir_bak, ignore_errors=True)
             meson_dir.rename(meson_dir_bak)
 
+        print('+', regen_cmdline)
         subprocess.check_call(regen_cmdline)
 
         for opt in build_options:
             name = opt['name']
             value = opt_str_value(name, opt['value'])
-            subprocess.call(args.meson + ['configure', '-D{}={}'.format(name, value)])
+            cmdline = args.meson + ['configure', '-D{}={}'.format(name, value)]
+            print('+', cmdline)
+            subprocess.call(cmdline)
 
     print('')
     print("Regeneration done. This process is not 100% reliable; you may want to check the output of 'meson configure'")
