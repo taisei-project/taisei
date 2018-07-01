@@ -1,8 +1,7 @@
 
 version_deps += custom_target('version information',
     command : [preprocess_command, '@INPUT@', '@OUTPUT@'],
-    build_by_default : true,
-    build_always_stale : true,
+    build_always : true,
     input : 'version_auto.c.in',
     output : 'version_auto.c',
 )
@@ -23,8 +22,7 @@ if host_machine.system() == 'windows'
 
     rc_target = custom_target('Windows resource file',
         command : [preprocess_command, rcdefs, '@INPUT@', '@OUTPUT@'],
-        build_by_default : true,
-        build_always_stale : true,
+        build_always : true,
         input : 'taisei.rc.in',
         output : 'taisei.rc',
     )

@@ -140,6 +140,7 @@ if validate_glsl
                 '@INPUT@', '-o', '@OUTPUT@'
             ],
             install : false,
+            build_always : false,
             build_by_default : true,
             depfile : '@0@.d'.format(fname.underscorify()),
         )

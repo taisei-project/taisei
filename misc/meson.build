@@ -4,8 +4,7 @@ if macos_app_bundle
 
     version_deps += custom_target('macOS property list',
         command : [preprocess_command, '@INPUT@', '@OUTPUT@'],
-        build_by_default : true,
-        build_always_stale : true,
+        build_always : true,
         input : 'Info.plist.in',
         output : 'Info.plist',
         install : true,
