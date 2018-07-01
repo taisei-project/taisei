@@ -47,6 +47,7 @@ void r_post_init(void) {
 	R.progs.standardnotex = r_shader_get("standardnotex");
 
 	r_shader_ptr(R.progs.standard);
+	r_color4(1, 1, 1, 1);
 
 	log_info("Rendering subsystem initialized (%s)", _r_backend.name);
 }
