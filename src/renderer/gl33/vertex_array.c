@@ -78,7 +78,7 @@ static void gl33_vertex_array_update_layout(VertexArray *varr, uint attachment, 
 					a->stride,
 					(void*)a->offset
 				);
-				glVertexAttribDivisor(i, a->spec.divisor);
+
 				break;
 
 			case VA_CONVERT_INT:
@@ -89,10 +89,16 @@ static void gl33_vertex_array_update_layout(VertexArray *varr, uint attachment, 
 					a->stride,
 					(void*)a->offset
 				);
-				glVertexAttribDivisor(i, a->spec.divisor);
+
 				break;
 
 			default: UNREACHABLE;
+		}
+
+		if(glVertexAttribDivisor != NULL) {
+			glVertexAttribDivisor(i, a->spec.divisor);
+		} else if(a->spec.divisor != 0) {
+			log_fatal("Renderer backend does not support instance attributes");
 		}
 	}
 
