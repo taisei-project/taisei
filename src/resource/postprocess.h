@@ -38,14 +38,14 @@ struct PostprocessShaderUniform {
 	uint elements;
 };
 
-typedef void (*PostprocessDrawFuncPtr)(Framebuffer*);
-typedef void (*PostprocessPrepareFuncPtr)(Framebuffer*, ShaderProgram*);
+typedef void (*PostprocessDrawFuncPtr)(Framebuffer* fb, double w, double h);
+typedef void (*PostprocessPrepareFuncPtr)(Framebuffer* fb, ShaderProgram *prog);
 
 char* postprocess_path(const char *path);
 
 PostprocessShader* postprocess_load(const char *path, uint flags);
 void postprocess_unload(PostprocessShader **list);
-void postprocess(PostprocessShader *ppshaders, FBPair *fbos, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw);
+void postprocess(PostprocessShader *ppshaders, FBPair *fbos, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw, double width, double height);
 
 /*
  *  Glue for resources api

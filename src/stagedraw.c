@@ -379,7 +379,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 		}
 
 		r_framebuffer(fbos->back);
-		draw_framebuffer_tex(fbos->front);
+		draw_framebuffer_tex(fbos->front, VIEWPORT_W, VIEWPORT_H);
 		draw_spellbg(t);
 		fbpair_swap(fbos);
 		r_framebuffer(fbos->back);
@@ -419,7 +419,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 			r_shader_standard();
 		}
 
-		draw_framebuffer_tex(fbos->front);
+		draw_framebuffer_tex(fbos->front, VIEWPORT_W, VIEWPORT_H);
 		fbpair_swap(fbos);
 		r_framebuffer(NULL);
 		r_shader_standard();
@@ -556,7 +556,7 @@ void stage_draw_foreground(void) {
 					global.shake_view = global.shake_view_fade = 0;
 			}
 		}
-		draw_framebuffer_tex(stage_get_fbpair(FBPAIR_FG)->front);
+		draw_framebuffer_tex(stage_get_fbpair(FBPAIR_FG)->front, VIEWPORT_W, VIEWPORT_H);
 	r_mat_pop();
 }
 
@@ -591,7 +591,7 @@ void stage_draw_scene(StageInfo *stage) {
 		}
 
 		// draw the 3D background
-		draw_framebuffer_tex(background->front);
+		draw_framebuffer_tex(background->front, VIEWPORT_W, VIEWPORT_H);
 
 		// disable boss background distortion
 		r_shader_standard();
@@ -624,7 +624,9 @@ void stage_draw_scene(StageInfo *stage) {
 		stagedraw.viewport_pp,
 		foreground,
 		postprocess_prepare,
-		draw_framebuffer_tex
+		draw_framebuffer_tex,
+		VIEWPORT_W,
+		VIEWPORT_H
 	);
 
 	// prepare for 2D rendering into the main framebuffer (actual screen)

@@ -422,7 +422,7 @@ static void player_death_effect_draw_overlay(Projectile *p, int t) {
 	r_uniform_vec2("origin", creal(p->pos), VIEWPORT_H - cimag(p->pos));
 	r_uniform_vec2("clear_origin", creal(global.plr.pos), VIEWPORT_H - cimag(global.plr.pos));
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
-	draw_framebuffer_tex(framebuffers->back);
+	draw_framebuffer_tex(framebuffers->back, VIEWPORT_W, VIEWPORT_H);
 	fbpair_swap(framebuffers);
 
 	// This change must propagate, hence the r_state salsa. Yes, pop then push, I know what I'm doing.

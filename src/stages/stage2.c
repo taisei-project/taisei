@@ -160,7 +160,7 @@ static void stage2_fog(Framebuffer *fb) {
 	r_uniform_float("exponent", 3.0);
 	r_uniform_float("sphereness", 0);
 	r_texture_ptr(2, r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
-	draw_framebuffer_tex(fb);
+	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
 }
 
@@ -169,7 +169,7 @@ static void stage2_bloom(Framebuffer *fb) {
 	r_uniform_int("samples", 10);
 	r_uniform_float("intensity", 0.05);
 	r_uniform_float("radius", 0.03);
-	draw_framebuffer_tex(fb);
+	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
 }
 

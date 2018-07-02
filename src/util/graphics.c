@@ -99,15 +99,13 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 	r_shader_ptr(prog_saved);
 }
 
-void draw_framebuffer_tex(Framebuffer *fb) {
+void draw_framebuffer_tex(Framebuffer *fb, double width, double height) {
 	CullFaceMode cull_saved = r_cull_current();
 	r_cull(CULL_FRONT);
 
-	// TODO: Make this work with any texture dimensions; don't hardcode VIEWPORT_{W,H}.
-
 	r_mat_push();
 	r_texture_ptr(0, r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_COLOR0));
-	r_mat_scale(VIEWPORT_W, VIEWPORT_H, 1);
+	r_mat_scale(width, height, 1);
 	r_mat_translate(0.5, 0.5, 0);
 	r_mat_scale(1, -1, 1);
 	r_draw_quad();

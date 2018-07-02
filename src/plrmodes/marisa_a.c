@@ -264,7 +264,7 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	r_blend(BLEND_ALPHA);
 	r_framebuffer(fbp_fg->back);
 	r_shader_standard();
-	draw_framebuffer_tex(fbp_aux->front);
+	draw_framebuffer_tex(fbp_aux->front, VIEWPORT_W, VIEWPORT_H);
 	r_shader_ptr(shader);
 	r_blend(BLEND_ADD);
 
