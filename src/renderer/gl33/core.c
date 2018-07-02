@@ -15,7 +15,7 @@
 #include "texture.h"
 #include "shader_object.h"
 #include "shader_program.h"
-#include "render_target.h"
+#include "framebuffer.h"
 #include "vertex_buffer.h"
 #include "vertex_array.h"
 #include "../glcommon/debug.h"
@@ -40,9 +40,9 @@ static struct {
 	} texunits;
 
 	struct {
-		RenderTarget *active;
-		RenderTarget *pending;
-	} render_target;
+		Framebuffer *active;
+		Framebuffer *pending;
+	} framebuffer;
 
 	struct {
 		VertexArray *active;
@@ -231,7 +231,7 @@ static void gl33_init_context(SDL_Window *window) {
 	}
 
 	if(glext.draw_buffers) {
-		R.features |= r_feature_bit(RFEAT_RENDERTARGET_MULTIPLE_OUTPUTS);
+		R.features |= r_feature_bit(RFEAT_FRAMEBUFFER_MULTIPLE_OUTPUTS);
 	}
 }
 
@@ -262,7 +262,7 @@ static void gl33_sync_state(void) {
 	r_uniform("r_color", 1, R.color);
 	gl33_sync_uniforms(R.progs.active);
 	gl33_sync_texunits();
-	gl33_sync_render_target();
+	gl33_sync_framebuffer();
 	gl33_sync_vertex_array();
 	gl33_sync_blend_mode();
 
@@ -372,25 +372,25 @@ void gl33_sync_depth_test_func(void) {
 	}
 }
 
-static inline GLuint fbo_num(RenderTarget *target) {
-	if(target == NULL) {
+static inline GLuint fbo_num(Framebuffer *fb) {
+	if(fb == NULL) {
 		return 0;
 	}
 
-	assert(target->impl != NULL);
-	assert(target->impl->gl_fbo != 0);
+	assert(fb->impl != NULL);
+	assert(fb->impl->gl_fbo != 0);
 
-	return target->impl->gl_fbo;
+	return fb->impl->gl_fbo;
 }
 
-void gl33_sync_render_target(void) {
-	if(fbo_num(R.render_target.active) != fbo_num(R.render_target.pending)) {
-		glBindFramebuffer(GL_FRAMEBUFFER, fbo_num(R.render_target.pending));
-		R.render_target.active = R.render_target.pending;
+void gl33_sync_framebuffer(void) {
+	if(fbo_num(R.framebuffer.active) != fbo_num(R.framebuffer.pending)) {
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo_num(R.framebuffer.pending));
+		R.framebuffer.active = R.framebuffer.pending;
 	}
 
-	if(R.render_target.active) {
-		gl33_target_initialize(R.render_target.active);
+	if(R.framebuffer.active) {
+		gl33_framebuffer_initialize(R.framebuffer.active);
 	}
 }
 
@@ -505,13 +505,13 @@ void gl33_texture_deleted(Texture *tex) {
 	}
 }
 
-void gl33_render_target_deleted(RenderTarget *target) {
-	if(R.render_target.pending == target) {
-		R.render_target.pending = NULL;
+void gl33_framebuffer_deleted(Framebuffer *fb) {
+	if(R.framebuffer.pending == fb) {
+		R.framebuffer.pending = NULL;
 	}
 
-	if(R.render_target.active == target) {
-		R.render_target.active = NULL;
+	if(R.framebuffer.active == fb) {
+		R.framebuffer.active = NULL;
 	}
 }
 
@@ -719,13 +719,13 @@ static Texture* gl33_texture_current(uint unit) {
 	return R.texunits.indexed[unit].tex2d.pending;
 }
 
-static void gl33_target(RenderTarget *target) {
-	assert(target == NULL || target->impl != NULL);
-	R.render_target.pending = target;
+static void gl33_framebuffer(Framebuffer *fb) {
+	assert(fb == NULL || fb->impl != NULL);
+	R.framebuffer.pending = fb;
 }
 
-static RenderTarget *gl33_target_current(void) {
-	return R.render_target.pending;
+static Framebuffer *gl33_framebuffer_current(void) {
+	return R.framebuffer.pending;
 }
 
 static void gl33_shader(ShaderProgram *prog) {
@@ -750,7 +750,7 @@ static void gl33_clear(ClearBufferFlags flags) {
 	}
 
 	r_flush_sprites();
-	gl33_sync_render_target();
+	gl33_sync_framebuffer();
 	glClear(mask);
 }
 
@@ -781,7 +781,7 @@ static void gl33_viewport_current(IntRect *out_rect) {
 
 static void gl33_swap(SDL_Window *window) {
 	r_flush_sprites();
-	gl33_sync_render_target();
+	gl33_sync_framebuffer();
 	SDL_GL_SwapWindow(window);
 	gl33_stats_post_frame();
 }
@@ -851,12 +851,12 @@ RendererBackend _r_backend_gl33 = {
 		.texture_replace = gl33_texture_replace,
 		.texture = gl33_texture,
 		.texture_current = gl33_texture_current,
-		.target_create = gl33_target_create,
-		.target_destroy = gl33_target_destroy,
-		.target_attach = gl33_target_attach,
-		.target_get_attachment = gl33_target_get_attachment,
-		.target = gl33_target,
-		.target_current = gl33_target_current,
+		.framebuffer_create = gl33_framebuffer_create,
+		.framebuffer_destroy = gl33_framebuffer_destroy,
+		.framebuffer_attach = gl33_framebuffer_attach,
+		.framebuffer_get_attachment = gl33_framebuffer_get_attachment,
+		.framebuffer = gl33_framebuffer,
+		.framebuffer_current = gl33_framebuffer_current,
 		.vertex_buffer_create = gl33_vertex_buffer_create,
 		.vertex_buffer_destroy = gl33_vertex_buffer_destroy,
 		.vertex_buffer_invalidate = gl33_vertex_buffer_invalidate,

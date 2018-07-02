@@ -353,29 +353,29 @@ Texture* r_texture_current(uint unit) {
 	return B.texture_current(unit);
 }
 
-void r_target_create(RenderTarget *target) {
-	B.target_create(target);
+void r_framebuffer_create(Framebuffer *fb) {
+	B.framebuffer_create(fb);
 }
 
-void r_target_attach(RenderTarget *target, Texture *tex, RenderTargetAttachment attachment) {
-	B.target_attach(target, tex, attachment);
+void r_framebuffer_attach(Framebuffer *fb, Texture *tex, FramebufferAttachment attachment) {
+	B.framebuffer_attach(fb, tex, attachment);
 }
 
-Texture* r_target_get_attachment(RenderTarget *target, RenderTargetAttachment attachment) {
-	return B.target_get_attachment(target, attachment);
+Texture* r_framebuffer_get_attachment(Framebuffer *fb, FramebufferAttachment attachment) {
+	return B.framebuffer_get_attachment(fb, attachment);
 }
 
-void r_target_destroy(RenderTarget *target) {
-	B.target_destroy(target);
+void r_framebuffer_destroy(Framebuffer *fb) {
+	B.framebuffer_destroy(fb);
 }
 
-void r_target(RenderTarget *target) {
-	_r_state_touch_target();
-	B.target(target);
+void r_framebuffer(Framebuffer *fb) {
+	_r_state_touch_framebuffer();
+	B.framebuffer(fb);
 }
 
-RenderTarget* r_target_current(void) {
-	return B.target_current();
+Framebuffer * r_framebuffer_current(void) {
+	return B.framebuffer_current();
 }
 
 void r_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, void *data) {

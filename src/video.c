@@ -538,7 +538,7 @@ void video_shutdown(void) {
 }
 
 void video_swap_buffers(void) {
-	r_target(NULL);
+	r_framebuffer(NULL);
 	r_swap(video.window);
 	r_clear(CLEAR_COLOR);
 }

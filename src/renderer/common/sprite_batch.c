@@ -28,7 +28,7 @@ static struct SpriteBatchState {
 	Texture *tex;
 	ShaderProgram *shader;
 	BlendMode blend;
-	RenderTarget *render_target;
+	Framebuffer *framebuffer;
 	CullFaceMode cull_mode;
 	DepthTestFunc depth_func;
 	uint cull_enabled : 1;
@@ -134,7 +134,7 @@ void r_flush_sprites(void) {
 	VertexArray *varr_saved = r_vertex_array_current();
 	Texture *tex_saved = r_texture_current(0);
 	ShaderProgram *prog_saved = r_shader_current();
-	RenderTarget *target_saved = r_target_current();
+	Framebuffer *fb_saved = r_framebuffer_current();
 	BlendMode blend_saved = r_blend_current();
 	bool cap_deptp_test_saved = r_capability_current(RCAP_DEPTH_TEST);
 	bool cap_depth_write_saved = r_capability_current(RCAP_DEPTH_WRITE);
@@ -145,7 +145,7 @@ void r_flush_sprites(void) {
 	r_vertex_array(&_r_sprite_batch.varr);
 	r_texture_ptr(0, _r_sprite_batch.tex);
 	r_shader_ptr(_r_sprite_batch.shader);
-	r_target(_r_sprite_batch.render_target);
+	r_framebuffer(_r_sprite_batch.framebuffer);
 	r_blend(_r_sprite_batch.blend);
 	r_capability(RCAP_DEPTH_TEST, _r_sprite_batch.depth_test_enabled);
 	r_capability(RCAP_DEPTH_WRITE, _r_sprite_batch.depth_write_enabled);
@@ -170,7 +170,7 @@ void r_flush_sprites(void) {
 	r_vertex_array(varr_saved);
 	r_texture_ptr(0, tex_saved);
 	r_shader_ptr(prog_saved);
-	r_target(target_saved);
+	r_framebuffer(fb_saved);
 	r_blend(blend_saved);
 	r_capability(RCAP_DEPTH_TEST, cap_deptp_test_saved);
 	r_capability(RCAP_DEPTH_WRITE, cap_depth_write_saved);
@@ -266,11 +266,11 @@ void r_draw_sprite(const SpriteParams *params) {
 		_r_sprite_batch.shader = prog;
 	}
 
-	RenderTarget *target = r_target_current();
+	Framebuffer *fb = r_framebuffer_current();
 
-	if(target != _r_sprite_batch.render_target) {
+	if(fb != _r_sprite_batch.framebuffer) {
 		r_flush_sprites();
-		_r_sprite_batch.render_target = target;
+		_r_sprite_batch.framebuffer = fb;
 	}
 
 	BlendMode blend = params->blend;

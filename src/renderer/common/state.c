@@ -100,7 +100,7 @@ void r_state_pop(void) {
 	}
 
 	RESTORE(RSTATE_RENDERTARGET) {
-		B.target(S.target);
+		B.framebuffer(S.framebuffer);
 	}
 
 	RESTORE(RSTATE_VERTEXARRAY) {
@@ -181,9 +181,9 @@ void _r_state_touch_texunit(uint unit) {
 	});
 }
 
-void _r_state_touch_target(void) {
+void _r_state_touch_framebuffer(void) {
 	TAINT(RSTATE_RENDERTARGET, {
-		S.target = B.target_current();
+		S.framebuffer = B.framebuffer_current();
 	});
 }
 

@@ -137,7 +137,7 @@ void create_ingame_menu_replay(MenuData *m) {
 void draw_ingame_menu_bg(MenuData *menu, float f) {
 	float rad = f*IMENU_BLUR;
 
-	r_target(NULL);
+	r_framebuffer(NULL);
 	video_set_viewport();
 	set_ortho(SCREEN_W, SCREEN_H);
 

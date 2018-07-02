@@ -80,7 +80,7 @@ static void stage4_fog(FBO *fbo) {
 	r_uniform_float("end", 0.8);
 	r_uniform_float("exponent", 4.0);
 	r_uniform_float("sphereness", 0);
-	r_texture_ptr(2, r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_DEPTH));
+	r_texture_ptr(2, r_framebuffer_get_attachment(fbo, FRAMEBUFFER_ATTACH_DEPTH));
 	draw_fbo(fbo);
 	r_shader_standard();
 }

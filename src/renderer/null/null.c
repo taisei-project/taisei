@@ -73,29 +73,29 @@ void null_texture_destroy(Texture *tex) {
 void null_texture(uint unit, Texture *tex) { }
 Texture* null_texture_current(uint unit) { return (void*)&placeholder; }
 
-struct RenderTargetImpl {
-	Texture *attachments[RENDERTARGET_MAX_ATTACHMENTS];
+struct FramebufferImpl {
+	Texture *attachments[FRAMEBUFFER_MAX_ATTACHMENTS];
 };
 
-void null_target_create(RenderTarget *target) {
-	target->impl = calloc(1, sizeof(RenderTargetImpl));
+void null_framebuffer_create(Framebuffer *framebuffer) {
+	framebuffer->impl = calloc(1, sizeof(FramebufferImpl));
 }
 
-void null_target_attach(RenderTarget *target, Texture *tex, RenderTargetAttachment attachment) {
-	target->impl->attachments[attachment] = tex;
+void null_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, FramebufferAttachment attachment) {
+	framebuffer->impl->attachments[attachment] = tex;
 }
 
-Texture* null_target_get_attachment(RenderTarget *target, RenderTargetAttachment attachment) {
-	return target->impl->attachments[attachment];
+Texture* null_framebuffer_attachment(Framebuffer *framebuffer, FramebufferAttachment attachment) {
+	return framebuffer->impl->attachments[attachment];
 }
 
-void null_target_destroy(RenderTarget *target) {
-	free(target->impl);
-	memset(target, 0, sizeof(RenderTarget));
+void null_framebuffer_destroy(Framebuffer *framebuffer) {
+	free(framebuffer->impl);
+	memset(framebuffer, 0, sizeof(Framebuffer));
 }
 
-void null_target(RenderTarget *target) { }
-RenderTarget* null_target_current(void) { return (void*)&placeholder; }
+void null_framebuffer(Framebuffer *framebuffer) { }
+Framebuffer* null_framebuffer_current(void) { return (void*)&placeholder; }
 
 void null_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, void *data) {
 	vbuf->offset = 0;
@@ -245,12 +245,12 @@ RendererBackend _r_backend_null = {
 		.texture_replace = null_texture_replace,
 		.texture = null_texture,
 		.texture_current = null_texture_current,
-		.target_create = null_target_create,
-		.target_destroy = null_target_destroy,
-		.target_attach = null_target_attach,
-		.target_get_attachment = null_target_get_attachment,
-		.target = null_target,
-		.target_current = null_target_current,
+		.framebuffer_create = null_framebuffer_create,
+		.framebuffer_destroy = null_framebuffer_destroy,
+		.framebuffer_attach = null_framebuffer_attach,
+		.framebuffer_get_attachment = null_framebuffer_attachment,
+		.framebuffer = null_framebuffer,
+		.framebuffer_current = null_framebuffer_current,
 		.vertex_buffer_create = null_vertex_buffer_create,
 		.vertex_buffer_destroy = null_vertex_buffer_destroy,
 		.vertex_buffer_invalidate = null_vertex_buffer_invalidate,

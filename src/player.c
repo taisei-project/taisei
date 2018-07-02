@@ -413,7 +413,7 @@ void player_realdeath(Player *plr) {
 
 static void player_death_effect_draw_overlay(Projectile *p, int t) {
 	FBOPair *framebuffers = &resources.fbo_pairs.fg;
-	r_target(framebuffers->front);
+	r_framebuffer(framebuffers->front);
 	r_texture(1, "static");
 	r_uniform_int("noise", 1);
 	r_uniform_int("frames", global.frames);
@@ -426,7 +426,7 @@ static void player_death_effect_draw_overlay(Projectile *p, int t) {
 
 	// This change must propagate, hence the r_state salsa. Yes, pop then push, I know what I'm doing.
 	r_state_pop();
-	r_target(framebuffers->back);
+	r_framebuffer(framebuffers->back);
 	r_state_push();
 }
 

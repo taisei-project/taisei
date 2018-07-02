@@ -106,7 +106,7 @@ static struct {
 	FT_Library lib;
 	ShaderProgram *default_shader;
 	Texture render_tex;
-	RenderTarget render_buf;
+	Framebuffer render_buf;
 
 	struct {
 		SDL_mutex *new_face;
@@ -167,8 +167,8 @@ static void init_fonts(void) {
 		.height = 1024,
 	});
 
-	r_target_create(&globals.render_buf);
-	r_target_attach(&globals.render_buf, &globals.render_tex, RENDERTARGET_ATTACHMENT_COLOR0);
+	r_framebuffer_create(&globals.render_buf);
+	r_framebuffer_attach(&globals.render_buf, &globals.render_tex, FRAMEBUFFER_ATTACH_COLOR0);
 }
 
 static void post_init_fonts(void) {
@@ -177,7 +177,7 @@ static void post_init_fonts(void) {
 
 static void shutdown_fonts(void) {
 	r_texture_destroy(&globals.render_tex);
-	r_target_destroy(&globals.render_buf);
+	r_framebuffer_destroy(&globals.render_buf);
 	events_unregister_handler(fonts_event);
 	FT_Done_FreeType(globals.lib);
 	SDL_DestroyMutex(globals.mutex.new_face);
@@ -317,7 +317,7 @@ static SpriteSheet* add_spritesheet(SpriteSheetAnchor *spritesheets) {
 
 	// FIXME:
 	//
-  // This code just zeroes the texture out.
+	// This code just zeroes the texture out.
 	//
 	// We should add an r_texture_clear function to hide this monstrosity.
 	// It would also allow a non-GL backend to have a different implementation,
@@ -325,17 +325,17 @@ static SpriteSheet* add_spritesheet(SpriteSheetAnchor *spritesheets) {
 	//
 	// To future generations: if such a function is already in the renderer API,
 	// but this crap is still here, please convert it.
-	RenderTarget *prev_target = r_target_current();
-	RenderTarget atlast_rt;
+	Framebuffer *prev_fb = r_framebuffer_current();
+	Framebuffer atlast_fb;
 	Color cc_prev = r_clear_color_current();
-	r_target_create(&atlast_rt);
-	r_target_attach(&atlast_rt, &ss->tex, RENDERTARGET_ATTACHMENT_COLOR0);
-	r_target(&atlast_rt);
+	r_framebuffer_create(&atlast_fb);
+	r_framebuffer_attach(&atlast_fb, &ss->tex, FRAMEBUFFER_ATTACH_COLOR0);
+	r_framebuffer(&atlast_fb);
 	r_clear_color4(0, 0, 0, 0);
 	r_clear(CLEAR_COLOR);
-	r_target(prev_target);
+	r_framebuffer(prev_fb);
 	r_clear_color(cc_prev);
-	r_target_destroy(&atlast_rt);
+	r_framebuffer_destroy(&atlast_fb);
 
 	alist_append(spritesheets, ss);
 	return ss;
@@ -949,7 +949,7 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 
 	r_state_push();
 
-	r_target(&globals.render_buf);
+	r_framebuffer(&globals.render_buf);
 	r_clear_color4(0, 0, 0, 0);
 	r_clear(CLEAR_COLOR);
 

@@ -21,7 +21,7 @@ typedef enum RendererFeature {
 	RFEAT_DRAW_INSTANCED,
 	RFEAT_DRAW_INSTANCED_BASE_INSTANCE,
 	RFEAT_DEPTH_TEXTURE,
-	RFEAT_RENDERTARGET_MULTIPLE_OUTPUTS,
+	RFEAT_FRAMEBUFFER_MULTIPLE_OUTPUTS,
 
 	NUM_RFEATS,
 } RendererFeature;
@@ -102,22 +102,22 @@ enum {
 	R_MAX_TEXUNITS = 8,
 };
 
-typedef enum RenderTargetAttachment {
-	RENDERTARGET_ATTACHMENT_DEPTH,
-	RENDERTARGET_ATTACHMENT_COLOR0,
-	RENDERTARGET_ATTACHMENT_COLOR1,
-	RENDERTARGET_ATTACHMENT_COLOR2,
-	RENDERTARGET_ATTACHMENT_COLOR3,
+typedef enum FramebufferAttachment {
+	FRAMEBUFFER_ATTACH_DEPTH,
+	FRAMEBUFFER_ATTACH_COLOR0,
+	FRAMEBUFFER_ATTACH_COLOR1,
+	FRAMEBUFFER_ATTACH_COLOR2,
+	FRAMEBUFFER_ATTACH_COLOR3,
 
-	RENDERTARGET_MAX_COLOR_ATTACHMENTS = 4,
-	RENDERTARGET_MAX_ATTACHMENTS = RENDERTARGET_ATTACHMENT_COLOR0 + RENDERTARGET_MAX_COLOR_ATTACHMENTS,
-} RenderTargetAttachment;
+	FRAMEBUFFER_MAX_COLOR_ATTACHMENTS = 4,
+	FRAMEBUFFER_MAX_ATTACHMENTS = FRAMEBUFFER_ATTACH_COLOR0 + FRAMEBUFFER_MAX_COLOR_ATTACHMENTS,
+} FramebufferAttachment;
 
-typedef struct RenderTargetImpl RenderTargetImpl;
+typedef struct FramebufferImpl FramebufferImpl;
 
-typedef struct RenderTarget {
-	RenderTargetImpl *impl;
-} RenderTarget;
+typedef struct Framebuffer {
+	FramebufferImpl *impl;
+} Framebuffer;
 
 typedef enum Primitive {
 	PRIM_POINTS,
@@ -353,8 +353,6 @@ typedef struct SpriteParams {
 		vec3 vector;
 	} rotation;
 
-	// FIXME: find a more efficient solution for this?
-	// this is needed to support some color transforms, but most sprites won't use this attribute
 	float custom;
 
 	struct {
@@ -415,13 +413,13 @@ void r_texture_destroy(Texture *tex) attr_nonnull(1);
 void r_texture_ptr(uint unit, Texture *tex);
 Texture* r_texture_current(uint unit);
 
-void r_target_create(RenderTarget *target) attr_nonnull(1);
-void r_target_attach(RenderTarget *target, Texture *tex, RenderTargetAttachment attachment) attr_nonnull(1);
-Texture* r_target_get_attachment(RenderTarget *target, RenderTargetAttachment attachment) attr_nonnull(1);
-void r_target_destroy(RenderTarget *target) attr_nonnull(1);
+void r_framebuffer_create(Framebuffer *fb) attr_nonnull(1);
+void r_framebuffer_attach(Framebuffer *fb, Texture *tex, FramebufferAttachment attachment) attr_nonnull(1);
+Texture* r_framebuffer_get_attachment(Framebuffer *fb, FramebufferAttachment attachment) attr_nonnull(1);
+void r_framebuffer_destroy(Framebuffer *fb) attr_nonnull(1);
 
-void r_target(RenderTarget *target);
-RenderTarget* r_target_current(void);
+void r_framebuffer(Framebuffer *fb);
+Framebuffer * r_framebuffer_current(void);
 
 void r_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, void *data) attr_nonnull(1);
 void r_vertex_buffer_destroy(VertexBuffer *vbuf) attr_nonnull(1);

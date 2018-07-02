@@ -177,7 +177,7 @@ static void apply_shader_rules(ShaderRule *shaderrules, FBOPair *fbos) {
 	}
 
 	for(ShaderRule *rule = shaderrules; *rule; ++rule) {
-		r_target(fbos->back);
+		r_framebuffer(fbos->back);
 		(*rule)(fbos->front);
 		swap_fbo_pair(fbos);
 	}
@@ -276,11 +276,11 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBOPair *fbos) {
 			apply_shader_rules(shaderrules, fbos);
 		}
 
-		r_target(fbos->back);
+		r_framebuffer(fbos->back);
 		draw_fbo(fbos->front);
 		draw_spellbg(t);
 		swap_fbo_pair(fbos);
-		r_target(fbos->back);
+		r_framebuffer(fbos->back);
 
 		complex pos = b->pos;
 		float ratio = (float)VIEWPORT_H/VIEWPORT_W;
@@ -319,7 +319,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBOPair *fbos) {
 
 		draw_fbo(fbos->front);
 		swap_fbo_pair(fbos);
-		r_target(NULL);
+		r_framebuffer(NULL);
 		r_shader_standard();
 	} else if(should_draw_stage_bg()) {
 		set_ortho(VIEWPORT_W, VIEWPORT_H);
@@ -362,8 +362,8 @@ static void apply_zoom_shader(void) {
 }
 
 static void stage_render_bg(StageInfo *stage) {
-	r_target(resources.fbo_pairs.bg.back);
-	Texture *bg_tex = r_target_get_attachment(resources.fbo_pairs.bg.back, RENDERTARGET_ATTACHMENT_COLOR0);
+	r_framebuffer(resources.fbo_pairs.bg.back);
+	Texture *bg_tex = r_framebuffer_get_attachment(resources.fbo_pairs.bg.back, FRAMEBUFFER_ATTACH_COLOR0);
 	r_viewport(0, 0, bg_tex->w, bg_tex->h);
 	r_clear(CLEAR_ALL);
 
@@ -471,8 +471,8 @@ void stage_draw_scene(StageInfo *stage) {
 	}
 
 	// prepare for 2D rendering into the game viewport framebuffer
-	r_target(resources.fbo_pairs.fg.back);
-	Texture *fg_tex = r_target_get_attachment(resources.fbo_pairs.fg.back, RENDERTARGET_ATTACHMENT_COLOR0);
+	r_framebuffer(resources.fbo_pairs.fg.back);
+	Texture *fg_tex = r_framebuffer_get_attachment(resources.fbo_pairs.fg.back, FRAMEBUFFER_ATTACH_COLOR0);
 	r_viewport(0, 0, fg_tex->w, fg_tex->h);
 	set_ortho(VIEWPORT_W, VIEWPORT_H);
 	r_disable(RCAP_DEPTH_TEST);
@@ -521,7 +521,7 @@ void stage_draw_scene(StageInfo *stage) {
 	);
 
 	// prepare for 2D rendering into the main framebuffer (actual screen)
-	r_target(NULL);
+	r_framebuffer(NULL);
 	video_set_viewport();
 	set_ortho(SCREEN_W, SCREEN_H);
 

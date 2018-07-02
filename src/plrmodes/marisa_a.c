@@ -242,7 +242,7 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	r_uniform_ptr(u_clr1,      1, (float[]) { 1, 1, 1, 0.8 });
 	r_uniform_ptr(u_clr_phase, 1, (float[]) { -1.5 * t/M_PI });
 	r_uniform_ptr(u_clr_freq,  1, (float[]) { 10.0 });
-	r_target(resources.fbo_pairs.rgba.front);
+	r_framebuffer(resources.fbo_pairs.rgba.front);
 	r_clear_color4(0, 0, 0, 0);
 	r_clear(CLEAR_COLOR);
 	r_clear_color4(0, 0, 0, 1);
@@ -259,7 +259,7 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	}
 
 	r_blend(BLEND_ALPHA);
-	r_target(resources.fbo_pairs.fg.back);
+	r_framebuffer(resources.fbo_pairs.fg.back);
 	r_shader_standard();
 	draw_fbo(resources.fbo_pairs.rgba.front);
 	r_shader_ptr(shader);

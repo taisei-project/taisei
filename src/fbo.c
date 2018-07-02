@@ -31,9 +31,9 @@ static void init_fbo(FBO *fbo, uint width, uint height, TextureType type) {
 		.type = TEX_TYPE_DEPTH,
 	});
 
-	r_target_create(fbo);
-	r_target_attach(fbo, rgba, RENDERTARGET_ATTACHMENT_COLOR0);
-	r_target_attach(fbo, depth, RENDERTARGET_ATTACHMENT_DEPTH);
+	r_framebuffer_create(fbo);
+	r_framebuffer_attach(fbo, rgba, FRAMEBUFFER_ATTACH_COLOR0);
+	r_framebuffer_attach(fbo, depth, FRAMEBUFFER_ATTACH_DEPTH);
 
 	log_debug("FBO %p: w=%i, h=%i", (void*)fbo, width, height);
 }
@@ -44,9 +44,9 @@ static void delete_tex(Texture *tex) {
 }
 
 static void delete_fbo(FBO *fbo) {
-	delete_tex(r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_COLOR0));
-	delete_tex(r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_DEPTH));
-	r_target_destroy(fbo);
+	delete_tex(r_framebuffer_get_attachment(fbo, FRAMEBUFFER_ATTACH_COLOR0));
+	delete_tex(r_framebuffer_get_attachment(fbo, FRAMEBUFFER_ATTACH_DEPTH));
+	r_framebuffer_destroy(fbo);
 }
 
 static void reinit_fbo(FBO *fbo, float scale, TextureType type) {
@@ -57,7 +57,7 @@ static void reinit_fbo(FBO *fbo, float scale, TextureType type) {
 	Texture *rgba;
 
 	if(fbo->impl) {
-		rgba = r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_COLOR0);
+		rgba = r_framebuffer_get_attachment(fbo, FRAMEBUFFER_ATTACH_COLOR0);
 	} else {
 		rgba = NULL;
 	}
@@ -77,8 +77,8 @@ static void swap_fbos(FBO **fbo1, FBO **fbo2) {
 }
 
 void init_fbo_pair(FBOPair *pair, float scale, TextureType type) {
-	pair->front = pair->_private.targets+0;
-	pair->back  = pair->_private.targets+1;
+	pair->front = pair->_private.framebuffers +0;
+	pair->back  = pair->_private.framebuffers +1;
 
 	reinit_fbo(pair->front, scale, type);
 	reinit_fbo(pair->back, scale, type);
@@ -98,7 +98,7 @@ void draw_fbo(FBO *fbo) {
 	r_cull(CULL_FRONT);
 
 	r_mat_push();
-	r_texture_ptr(0, r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_COLOR0));
+	r_texture_ptr(0, r_framebuffer_get_attachment(fbo, FRAMEBUFFER_ATTACH_COLOR0));
 	r_mat_scale(VIEWPORT_W, VIEWPORT_H, 1);
 	r_mat_translate(0.5, 0.5, 0);
 	r_mat_scale(1, -1, 1);

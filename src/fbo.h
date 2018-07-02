@@ -11,7 +11,7 @@
 
 #include "renderer/api.h"
 
-typedef RenderTarget FBO;
+typedef Framebuffer FBO;
 
 typedef struct FBOPair {
 	/*
@@ -26,7 +26,7 @@ typedef struct FBOPair {
 	FBO *back;
 
 	struct {
-		FBO targets[2];
+		FBO framebuffers[2];
 	} _private;
 } FBOPair;
 

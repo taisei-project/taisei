@@ -197,7 +197,7 @@ void postprocess(PostprocessShader *ppshaders, FBOPair *fbos, PostprocessPrepare
 	for(PostprocessShader *pps = ppshaders; pps; pps = pps->next) {
 		ShaderProgram *s = pps->shader;
 
-		r_target(fbos->back);
+		r_framebuffer(fbos->back);
 		r_shader_ptr(s);
 
 		if(prepare) {
