@@ -441,6 +441,8 @@ Color r_clear_color_current(void) {
 }
 
 void r_viewport_rect(IntRect rect) {
+	assert(rect.h > 0);
+	assert(rect.w > 0);
 	_r_state_touch_viewport();
 	B.viewport_rect(rect);
 }

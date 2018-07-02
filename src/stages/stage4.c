@@ -63,7 +63,7 @@ struct stage4_spells_s stage4_spells = {
 	},
 };
 
-static void stage4_fog(FBO *fbo) {
+static void stage4_fog(Framebuffer *fb) {
 	float f = 0;
 	int redtime = 5100 + STAGE4_MIDBOSS_MUSIC_TIME;
 
@@ -80,8 +80,8 @@ static void stage4_fog(FBO *fbo) {
 	r_uniform_float("end", 0.8);
 	r_uniform_float("exponent", 4.0);
 	r_uniform_float("sphereness", 0);
-	r_texture_ptr(2, r_framebuffer_get_attachment(fbo, FRAMEBUFFER_ATTACH_DEPTH));
-	draw_fbo(fbo);
+	r_texture_ptr(2, r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
+	draw_framebuffer_tex(fb);
 	r_shader_standard();
 }
 

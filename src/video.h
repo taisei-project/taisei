@@ -9,14 +9,22 @@
 #pragma once
 #include "taisei.h"
 
-#define WINDOW_TITLE "Taisei Project"
-#define VIDEO_ASPECT_RATIO ((double)SCREEN_W/SCREEN_H)
+// FIXME: This is just for IntRect, which probably should be placed elsewhere.
+#include "util/geometry.h"
 
 #include <SDL.h>
 
 #define WINFLAGS_IS_FULLSCREEN(f)       ((f) & SDL_WINDOW_FULLSCREEN_DESKTOP)
 #define WINFLAGS_IS_FAKE_FULLSCREEN(f)  (WINFLAGS_IS_FULLSCREEN(f) == SDL_WINDOW_FULLSCREEN_DESKTOP)
 #define WINFLAGS_IS_REAL_FULLSCREEN(f)  (WINFLAGS_IS_FULLSCREEN(f) == SDL_WINDOW_FULLSCREEN)
+
+#define WINDOW_TITLE "Taisei Project"
+#define VIDEO_ASPECT_RATIO ((double)SCREEN_W/SCREEN_H)
+
+enum {
+	SCREEN_W = 800,
+	SCREEN_H = 600,
+};
 
 typedef struct VideoMode {
 	int width;
@@ -28,9 +36,7 @@ typedef struct {
 	int mcount;
 	VideoMode intended;
 	VideoMode current;
-	VideoMode real;
 	SDL_Window *window;
-	float quality_factor;
 } Video;
 
 extern Video video;
@@ -38,6 +44,7 @@ extern Video video;
 void video_init(void);
 void video_shutdown(void);
 void video_set_mode(int w, int h, bool fs, bool resizable);
+void video_get_viewport(IntRect *vp);
 void video_get_viewport_size(int *width, int *height);
 void video_set_viewport(void);
 bool video_is_fullscreen(void);

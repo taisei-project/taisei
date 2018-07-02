@@ -27,10 +27,12 @@ typedef struct ScreenshotTaskData {
 
 static void video_add_mode(int width, int height) {
 	if(video.modes) {
-		int i; for(i = 0; i < video.mcount; ++i) {
-			VideoMode *m = &(video.modes[i]);
-			if(m->width == width && m->height == height)
+		for(uint i = 0; i < video.mcount; ++i) {
+			VideoMode *m = video.modes + i;
+
+			if(m->width == width && m->height == height) {
 				return;
+			}
 		}
 	}
 
@@ -60,10 +62,16 @@ void video_get_viewport_size(int *width, int *height) {
 	*height = h;
 }
 
+void video_get_viewport(IntRect *vp) {
+	video_get_viewport_size(&vp->w, &vp->h);
+	vp->x = (video.current.width  - vp->w) / 2;
+	vp->y = (video.current.height - vp->h) / 2;
+}
+
 void video_set_viewport(void) {
-	int w, h;
-	video_get_viewport_size(&w,&h);
-	r_viewport((video.current.width - w) / 2, (video.current.height - h) / 2, w, h);
+	IntRect vp;
+	video_get_viewport(&vp);
+	r_viewport_rect(vp);
 }
 
 static void video_update_vsync(void) {
@@ -75,23 +83,6 @@ static void video_update_vsync(void) {
 			default: r_vsync(VSYNC_ADAPTIVE); break;
 		}
 	}
-}
-
-static void video_update_quality(void) {
-	int vw, vh;
-	video_get_viewport_size(&vw, &vh);
-	float q = (float)vh / SCREEN_H;
-	video.quality_factor = q;
-
-	float fg = q * config_get_float(CONFIG_FG_QUALITY);
-	float bg = q * config_get_float(CONFIG_BG_QUALITY);
-	float text = q * config_get_float(CONFIG_TEXT_QUALITY);
-
-	log_debug("q:%f, fg:%f, bg:%f, text:%f", q, fg, bg, text);
-
-	init_fbo_pair(&resources.fbo_pairs.bg, bg, TEX_TYPE_RGB);
-	init_fbo_pair(&resources.fbo_pairs.fg, fg, TEX_TYPE_RGB);
-	init_fbo_pair(&resources.fbo_pairs.rgba, fg, TEX_TYPE_RGBA);
 }
 
 static uint32_t get_fullscreen_flag(void) {
@@ -120,10 +111,7 @@ static void video_update_mode_settings(void) {
 	SDL_ShowCursor(false);
 	video_update_vsync();
 	SDL_GetWindowSize(video.window, &video.current.width, &video.current.height);
-	video.real.width = video.current.width;
-	video.real.height = video.current.height;
 	video_set_viewport();
-	video_update_quality();
 	events_emit(TE_VIDEO_MODE_CHANGED, 0, NULL, NULL);
 
 	if(video_is_fullscreen() && !config_get_int(CONFIG_FULLSCREEN_DESKTOP)) {
@@ -362,11 +350,6 @@ static void video_cfg_resizable_callback(ConfigIndex idx, ConfigValue v) {
 	SDL_SetWindowResizable(video.window, config_set_int(idx, v.i));
 }
 
-static void video_quality_callback(ConfigIndex idx, ConfigValue v) {
-	config_set_float(idx, v.f);
-	video_update_quality();
-}
-
 static void video_init_sdl(void) {
 	// XXX: workaround for an SDL bug: https://bugzilla.libsdl.org/show_bug.cgi?id=4127
 	SDL_SetHintWithPriority(SDL_HINT_FRAMEBUFFER_ACCELERATION, "0", SDL_HINT_OVERRIDE);
@@ -429,10 +412,10 @@ static void video_init_sdl(void) {
 }
 
 static void video_handle_resize(int w, int h) {
+	log_debug("%ix%i --> %ix%i", video.current.width, video.current.height, w, h);
 	video.current.width = w;
 	video.current.height = h;
 	video_set_viewport();
-	video_update_quality();
 	events_emit(TE_VIDEO_MODE_CHANGED, 0, NULL, NULL);
 }
 
@@ -454,9 +437,6 @@ static bool video_handle_window_event(SDL_Event *event, void *arg) {
 
 void video_init(void) {
 	bool fullscreen_available = false;
-
-	memset(&video, 0, sizeof(video));
-	memset(&resources.fbo_pairs, 0, sizeof(resources.fbo_pairs));
 
 	video_init_sdl();
 	log_info("Using driver '%s'", SDL_GetCurrentVideoDriver());
@@ -487,6 +467,7 @@ void video_init(void) {
 	// This is required for some multihead setups.
 	VideoMode common_modes[] = {
 		{RESX, RESY},
+		{SCREEN_W, SCREEN_H},
 
 		{640, 480},
 		{800, 600},
@@ -516,8 +497,6 @@ void video_init(void) {
 	config_set_callback(CONFIG_FULLSCREEN, video_cfg_fullscreen_callback);
 	config_set_callback(CONFIG_VSYNC, video_cfg_vsync_callback);
 	config_set_callback(CONFIG_VID_RESIZABLE, video_cfg_resizable_callback);
-	config_set_callback(CONFIG_FG_QUALITY, video_quality_callback);
-	config_set_callback(CONFIG_BG_QUALITY, video_quality_callback);
 
 	EventHandler h = {
 		.proc = video_handle_window_event,

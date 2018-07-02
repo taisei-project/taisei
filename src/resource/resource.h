@@ -10,7 +10,6 @@
 #include "taisei.h"
 
 #include "hashtable.h"
-// #include "fbo.h"
 
 typedef enum ResourceType {
 	RES_TEXTURE,

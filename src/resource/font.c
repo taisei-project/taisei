@@ -115,7 +115,9 @@ static struct {
 } globals;
 
 static double global_font_scale(void) {
-	return sanitize_scale(video.quality_factor * config_get_float(CONFIG_TEXT_QUALITY));
+	int w, h;
+	video_get_viewport_size(&w, &h);
+	return sanitize_scale(((double)h / SCREEN_H) * config_get_float(CONFIG_TEXT_QUALITY));
 }
 
 static void reload_fonts(double quality);

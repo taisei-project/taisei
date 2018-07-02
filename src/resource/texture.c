@@ -179,7 +179,7 @@ static void texture_post_load(Texture *tex) {
 	r_viewport_current(&viewport_saved);
 
 	Texture fbo_tex;
-	Framebuffer fbo;
+	Framebuffer fb;
 
 	r_blend(BLEND_NONE);
 	r_disable(RCAP_CULL_FACE);
@@ -196,9 +196,9 @@ static void texture_post_load(Texture *tex) {
 			.t = TEX_WRAP_REPEAT,
 		},
 	});
-	r_framebuffer_create(&fbo);
-	r_framebuffer_attach(&fbo, &fbo_tex, FRAMEBUFFER_ATTACH_COLOR0);
-	r_framebuffer(&fbo);
+	r_framebuffer_create(&fb);
+	r_framebuffer_attach(&fb, &fbo_tex, FRAMEBUFFER_ATTACH_COLOR0);
+	r_framebuffer(&fb);
 	r_texture_ptr(0, tex);
 	r_shader("texture_post_load");
 	r_uniform_int("width", tex->w);
@@ -224,7 +224,7 @@ static void texture_post_load(Texture *tex) {
 	r_texture_ptr(0, texture_saved);
 	r_blend(blend_saved);
 	r_capability(RCAP_CULL_FACE, cullcap_saved);
-	r_framebuffer_destroy(&fbo);
+	r_framebuffer_destroy(&fb);
 	r_texture_destroy(tex);
 	r_viewport_rect(viewport_saved);
 

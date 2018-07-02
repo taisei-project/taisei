@@ -15,6 +15,7 @@
 #include "replay.h"
 #include "plrmodes.h"
 #include "common.h"
+#include "video.h"
 
 static void do_save_replay(Replay *rpy) {
 	char strtime[FILENAME_TIMESTAMP_MIN_BUF_SIZE], *name;

@@ -631,7 +631,7 @@ void stage_loop(StageInfo *stage) {
 
 	stage_objpools_alloc();
 	stage_preload();
-	stage_draw_preload();
+	stage_draw_init();
 
 	uint32_t seed = (uint32_t)time(0);
 	tsrand_switch(&global.rand_game);
@@ -696,6 +696,7 @@ void stage_loop(StageInfo *stage) {
 	}
 
 	stage->procs->end();
+	stage_draw_shutdown();
 	stage_free();
 	player_free(&global.plr);
 	tsrand_switch(&global.rand_visual);

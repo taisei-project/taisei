@@ -33,7 +33,6 @@
 #include "list.h"
 #include "refs.h"
 #include "config.h"
-#include "fbo.h"
 #include "resource/resource.h"
 #include "replay.h"
 #include "random.h"
@@ -52,9 +51,6 @@ enum {
 	// defaults
 	RESX = 800,
 	RESY = 600,
-
-	SCREEN_W = 800,
-	SCREEN_H = 600,
 
 	VIEWPORT_X = 40,
 	VIEWPORT_Y = 20,

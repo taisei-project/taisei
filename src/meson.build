@@ -58,7 +58,6 @@ taisei_src = files(
     'enemy.c',
     'entity.c',
     'events.c',
-    'fbo.c',
     'framerate.c',
     'gamepad.c',
     'global.c',

@@ -184,7 +184,7 @@ void postprocess_unload(PostprocessShader **list) {
 	list_foreach(list, delete_shader, NULL);
 }
 
-void postprocess(PostprocessShader *ppshaders, FBOPair *fbos, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw) {
+void postprocess(PostprocessShader *ppshaders, FBPair *fbos, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw) {
 	if(!ppshaders) {
 		return;
 	}
@@ -209,7 +209,7 @@ void postprocess(PostprocessShader *ppshaders, FBOPair *fbos, PostprocessPrepare
 		}
 
 		draw(fbos->front);
-		swap_fbo_pair(fbos);
+		fbpair_swap(fbos);
 	}
 
 	r_shader_ptr(shader_saved);

@@ -419,7 +419,7 @@ Texture* r_framebuffer_get_attachment(Framebuffer *fb, FramebufferAttachment att
 void r_framebuffer_destroy(Framebuffer *fb) attr_nonnull(1);
 
 void r_framebuffer(Framebuffer *fb);
-Framebuffer * r_framebuffer_current(void);
+Framebuffer* r_framebuffer_current(void);
 
 void r_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, void *data) attr_nonnull(1);
 void r_vertex_buffer_destroy(VertexBuffer *vbuf) attr_nonnull(1);

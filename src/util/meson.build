@@ -3,6 +3,7 @@ util_src = files(
     'assert.c',
     'crap.c',
     'env.c',
+    'fbpair.c',
     'geometry.c',
     'graphics.c',
     'io.c',

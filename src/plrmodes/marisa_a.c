@@ -12,6 +12,7 @@
 #include "plrmodes.h"
 #include "marisa.h"
 #include "renderer/api.h"
+#include "stagedraw.h"
 
 // args are pain
 static float global_magicstar_alpha;
@@ -235,6 +236,8 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	Texture *tex0 = get_tex("part/marisa_laser0");
 	Texture *tex1 = get_tex("part/marisa_laser1");
 	VertexArray *varr_saved = r_vertex_array_current();
+	FBPair *fbp_aux = stage_get_fbpair(FBPAIR_FG_AUX);
+	FBPair *fbp_fg = stage_get_fbpair(FBPAIR_FG);
 
 	r_vertex_array(r_vertex_array_static_models());
 	r_shader_ptr(shader);
@@ -242,7 +245,7 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	r_uniform_ptr(u_clr1,      1, (float[]) { 1, 1, 1, 0.8 });
 	r_uniform_ptr(u_clr_phase, 1, (float[]) { -1.5 * t/M_PI });
 	r_uniform_ptr(u_clr_freq,  1, (float[]) { 10.0 });
-	r_framebuffer(resources.fbo_pairs.rgba.front);
+	r_framebuffer(fbp_aux->front);
 	r_clear_color4(0, 0, 0, 0);
 	r_clear(CLEAR_COLOR);
 	r_clear_color4(0, 0, 0, 1);
@@ -259,9 +262,9 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	}
 
 	r_blend(BLEND_ALPHA);
-	r_framebuffer(resources.fbo_pairs.fg.back);
+	r_framebuffer(fbp_fg->back);
 	r_shader_standard();
-	draw_fbo(resources.fbo_pairs.rgba.front);
+	draw_framebuffer_tex(fbp_aux->front);
 	r_shader_ptr(shader);
 	r_blend(BLEND_ADD);
 

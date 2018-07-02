@@ -10,9 +10,20 @@
 #include "taisei.h"
 
 #include "stage.h"
+#include "util/graphics.h"
 
-void stage_draw_preload(void);
+typedef enum StageFBPair {
+	FBPAIR_BG,
+	FBPAIR_FG,
+	FBPAIR_FG_AUX,
+	NUM_FBPAIRS,
+} StageFBPair;
+
+void stage_draw_init(void);
+void stage_draw_shutdown(void);
 void stage_draw_hud(void);
 void stage_draw_foreground(void);
 void stage_draw_scene(StageInfo *stage);
 bool stage_should_draw_particle(Projectile *p);
+
+FBPair* stage_get_fbpair(StageFBPair id) attr_returns_nonnull;

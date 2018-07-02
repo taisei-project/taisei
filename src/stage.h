@@ -13,7 +13,7 @@
 #include "boss.h"
 #include "progress.h"
 #include "difficulty.h"
-#include "fbo.h"
+#include "util/graphics.h"
 
 /* taisei's strange macro language.
  *
@@ -56,7 +56,7 @@
 #define FROM_TO_INT_SND(snd,start,end,step,dur,istep) FROM_TO_INT(start,end,step,dur,2) { play_loop(snd); }FROM_TO_INT(start,end,step,dur,istep)
 
 typedef void (*StageProc)(void);
-typedef void (*ShaderRule)(FBO*);
+typedef void (*ShaderRule)(Framebuffer *);
 
 // two highest bits of uint16_t, WAY higher than the amount of spells in this game can ever possibly be
 #define STAGE_SPELL_BIT 0x8000

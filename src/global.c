@@ -19,7 +19,6 @@ void init_global(CLIAction *cli) {
 	tsrand_init(&global.rand_visual, time(0));
 	tsrand_switch(&global.rand_visual);
 
-	memset(&resources, 0, sizeof(Resources));
 	memset(&global.replay, 0, sizeof(Replay));
 
 	global.replaymode = REPLAY_RECORD;

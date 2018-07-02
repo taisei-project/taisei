@@ -13,6 +13,7 @@
 #include "options.h"
 #include "common.h"
 #include "global.h"
+#include "video.h"
 
 // FIXME: put this into the menu struct somehow (drawdata is a bad system)
 static Color diff_color;
