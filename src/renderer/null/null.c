@@ -75,7 +75,10 @@ Texture* null_texture_current(uint unit) { return (void*)&placeholder; }
 
 struct FramebufferImpl {
 	Texture *attachments[FRAMEBUFFER_MAX_ATTACHMENTS];
+	IntRect viewport;
 };
+
+static IntRect default_fb_viewport;
 
 void null_framebuffer_create(Framebuffer *framebuffer) {
 	framebuffer->impl = calloc(1, sizeof(FramebufferImpl));
@@ -92,6 +95,22 @@ Texture* null_framebuffer_attachment(Framebuffer *framebuffer, FramebufferAttach
 void null_framebuffer_destroy(Framebuffer *framebuffer) {
 	free(framebuffer->impl);
 	memset(framebuffer, 0, sizeof(Framebuffer));
+}
+
+void null_framebuffer_viewport(Framebuffer *framebuffer, IntRect vp) {
+	if(framebuffer) {
+		framebuffer->impl->viewport = vp;
+	} else {
+		default_fb_viewport = vp;
+	}
+}
+
+void null_framebuffer_viewport_current(Framebuffer *framebuffer, IntRect *vp) {
+	if(framebuffer) {
+		*vp = framebuffer->impl->viewport;
+	} else {
+		*vp = default_fb_viewport;
+	}
 }
 
 void null_framebuffer(Framebuffer *framebuffer) { }
@@ -139,14 +158,6 @@ VertexArray* null_vertex_array_current(void) { return (void*)&placeholder; }
 void null_clear(ClearBufferFlags flags) { }
 void null_clear_color4(float r, float g, float b, float a) { }
 Color null_clear_color_current(void) { return rgba(0, 0, 0, 0); }
-
-void null_viewport_rect(IntRect rect) { }
-void null_viewport_current(IntRect *out_rect) {
-	out_rect->x = 0;
-	out_rect->y = 0;
-	out_rect->w = 800;
-	out_rect->h = 600;
-}
 
 void null_vsync(VsyncMode mode) { }
 VsyncMode null_vsync_current(void) { return VSYNC_NONE; }
@@ -249,6 +260,8 @@ RendererBackend _r_backend_null = {
 		.framebuffer_destroy = null_framebuffer_destroy,
 		.framebuffer_attach = null_framebuffer_attach,
 		.framebuffer_get_attachment = null_framebuffer_attachment,
+		.framebuffer_viewport = null_framebuffer_viewport,
+		.framebuffer_viewport_current = null_framebuffer_viewport_current,
 		.framebuffer = null_framebuffer,
 		.framebuffer_current = null_framebuffer_current,
 		.vertex_buffer_create = null_vertex_buffer_create,
@@ -266,8 +279,6 @@ RendererBackend _r_backend_null = {
 		.clear = null_clear,
 		.clear_color4 = null_clear_color4,
 		.clear_color_current = null_clear_color_current,
-		.viewport_rect = null_viewport_rect,
-		.viewport_current = null_viewport_current,
 		.vsync = null_vsync,
 		.vsync_current = null_vsync_current,
 		.swap = null_swap,

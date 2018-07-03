@@ -365,6 +365,20 @@ Texture* r_framebuffer_get_attachment(Framebuffer *fb, FramebufferAttachment att
 	return B.framebuffer_get_attachment(fb, attachment);
 }
 
+void r_framebuffer_viewport(Framebuffer *fb, int x, int y, int w, int h) {
+	r_framebuffer_viewport_rect(fb, (IntRect) { x, y, w, h });
+}
+
+void r_framebuffer_viewport_rect(Framebuffer *fb, IntRect viewport) {
+	assert(viewport.h > 0);
+	assert(viewport.w > 0);
+	B.framebuffer_viewport(fb, viewport);
+}
+
+void r_framebuffer_viewport_current(Framebuffer *fb, IntRect *viewport) {
+	B.framebuffer_viewport_current(fb, viewport);
+}
+
 void r_framebuffer_destroy(Framebuffer *fb) {
 	B.framebuffer_destroy(fb);
 }
@@ -438,17 +452,6 @@ void r_clear_color4(float r, float g, float b, float a) {
 
 Color r_clear_color_current(void) {
 	return B.clear_color_current();
-}
-
-void r_viewport_rect(IntRect rect) {
-	assert(rect.h > 0);
-	assert(rect.w > 0);
-	_r_state_touch_viewport();
-	B.viewport_rect(rect);
-}
-
-void r_viewport_current(IntRect *out_rect) {
-	B.viewport_current(out_rect);
 }
 
 void r_vsync(VsyncMode mode) {

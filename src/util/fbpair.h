@@ -36,3 +36,5 @@ void fbpair_resize(FBPair *pair, FramebufferAttachment attachment, uint width, u
 void fbpair_resize_all(FBPair *pair, uint width, uint height) attr_nonnull(1);
 void fbpair_destroy(FBPair *pair) attr_nonnull(1);
 void fbpair_swap(FBPair *pair) attr_nonnull(1);
+void fbpair_viewport(FBPair *pair, int x, int y, int w, int h) attr_nonnull(1);
+void fbpair_viewport_rect(FBPair *pair, IntRect vp) attr_nonnull(1);

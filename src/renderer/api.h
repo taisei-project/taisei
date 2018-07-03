@@ -416,6 +416,9 @@ Texture* r_texture_current(uint unit);
 void r_framebuffer_create(Framebuffer *fb) attr_nonnull(1);
 void r_framebuffer_attach(Framebuffer *fb, Texture *tex, FramebufferAttachment attachment) attr_nonnull(1);
 Texture* r_framebuffer_get_attachment(Framebuffer *fb, FramebufferAttachment attachment) attr_nonnull(1);
+void r_framebuffer_viewport(Framebuffer *fb, int x, int y, int w, int h);
+void r_framebuffer_viewport_rect(Framebuffer *fb, IntRect viewport);
+void r_framebuffer_viewport_current(Framebuffer *fb, IntRect *viewport) attr_nonnull(2);
 void r_framebuffer_destroy(Framebuffer *fb) attr_nonnull(1);
 
 void r_framebuffer(Framebuffer *fb);
@@ -440,9 +443,6 @@ void r_clear(ClearBufferFlags flags);
 void r_clear_color4(float r, float g, float b, float a);
 Color r_clear_color_current(void);
 
-void r_viewport_rect(IntRect rect);
-void r_viewport_current(IntRect *out_rect) attr_nonnull(1);
-
 void r_vsync(VsyncMode mode);
 VsyncMode r_vsync_current(void);
 
@@ -463,6 +463,7 @@ void r_mat_perspective(float angle, float aspect, float near, float far);
 
 void r_mat(MatrixMode mode, mat4 mat);
 void r_mat_current(MatrixMode mode, mat4 out_mat);
+mat4* r_mat_current_ptr(MatrixMode mode);
 
 void r_shader_standard(void);
 void r_shader_standard_notex(void);
@@ -656,11 +657,6 @@ void r_clear_color(Color c) {
 	static float r, g, b, a;
 	parse_color(c, &r, &g, &b, &a);
 	r_clear_color4(r, g, b, a);
-}
-
-static inline attr_must_inline
-void r_viewport(int x, int y, int w, int h) {
-	r_viewport_rect((IntRect) { x, y, w, h });
 }
 
 static inline attr_must_inline attr_nonnull(1)

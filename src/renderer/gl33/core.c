@@ -92,9 +92,13 @@ static struct {
 		r_capability_bits_t pending;
 	} capabilities;
 
+	struct {
+		IntRect active;
+		IntRect default_framebuffer;
+	} viewport;
+
 	vec4 color;
 	vec4 clear_color;
-	IntRect viewport;
 	GLuint pbo;
 	r_feature_bits_t features;
 
@@ -213,7 +217,9 @@ static void gl33_init_context(SDL_Window *window) {
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	glGetIntegerv(GL_VIEWPORT, &R.viewport.x);
+	glGetIntegerv(GL_VIEWPORT, &R.viewport.default_framebuffer.x);
+
+	R.viewport.active = R.viewport.default_framebuffer;
 
 	r_clear_color4(0, 0, 0, 1);
 	r_clear(CLEAR_ALL);
@@ -253,7 +259,26 @@ static void gl33_apply_capability(RendererCapability cap, bool value) {
 	}
 }
 
+static inline IntRect* get_framebuffer_viewport(Framebuffer *fb) {
+	if(fb == NULL) {
+		return &R.viewport.default_framebuffer;
+	}
+
+	assert(fb->impl != NULL);
+	return &fb->impl->viewport;
+}
+
+static void gl33_sync_viewport(void) {
+	IntRect *vp = get_framebuffer_viewport(R.framebuffer.pending);
+
+	if(memcmp(&R.viewport.active, vp, sizeof(IntRect))) {
+		R.viewport.active = *vp;
+		glViewport(vp->x, vp->y, vp->w, vp->h);
+	}
+}
+
 static void gl33_sync_state(void) {
+
 	gl33_sync_capabilities();
 	gl33_sync_shader();
 	r_uniform("r_modelViewMatrix", 1, _r_matrices.modelview.head);
@@ -263,6 +288,7 @@ static void gl33_sync_state(void) {
 	gl33_sync_uniforms(R.progs.active);
 	gl33_sync_texunits();
 	gl33_sync_framebuffer();
+	gl33_sync_viewport();
 	gl33_sync_vertex_array();
 	gl33_sync_blend_mode();
 
@@ -728,6 +754,14 @@ static Framebuffer *gl33_framebuffer_current(void) {
 	return R.framebuffer.pending;
 }
 
+static void gl33_framebuffer_viewport(Framebuffer *fb, IntRect vp) {
+	memcpy(get_framebuffer_viewport(fb), &vp, sizeof(vp));
+}
+
+static void gl33_framebuffer_viewport_current(Framebuffer *fb, IntRect *out_rect) {
+	*out_rect = *get_framebuffer_viewport(fb);
+}
+
 static void gl33_shader(ShaderProgram *prog) {
 	assert(prog->gl_handle != 0);
 
@@ -767,18 +801,6 @@ static Color gl33_clear_color_current(void) {
 	return rgba(R.clear_color[0], R.clear_color[1], R.clear_color[2], R.clear_color[3]);
 }
 
-static void gl33_viewport_rect(IntRect rect) {
-	if(memcmp(&R.viewport, &rect, sizeof(IntRect))) {
-		r_flush_sprites(); // FIXME: have the sprite batch track this instead.
-		memcpy(&R.viewport, &rect, sizeof(IntRect));
-		glViewport(rect.x, rect.y, rect.w, rect.h);
-	}
-}
-
-static void gl33_viewport_current(IntRect *out_rect) {
-	memcpy(out_rect, &R.viewport, sizeof(R.viewport));
-}
-
 static void gl33_swap(SDL_Window *window) {
 	r_flush_sprites();
 	gl33_sync_framebuffer();
@@ -811,11 +833,25 @@ static DepthTestFunc gl33_depth_func_current(void) {
 }
 
 static uint8_t* gl33_screenshot(uint *out_width, uint *out_height) {
-	uint8_t *pixels = malloc(R.viewport.w * R.viewport.h * 3);
+	uint fbo = 0;
+	IntRect *vp = &R.viewport.default_framebuffer;
+
+	if(R.framebuffer.active != NULL) {
+		fbo = R.framebuffer.active->impl->gl_fbo;
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+	}
+
+	uint8_t *pixels = malloc(vp->w * vp->h * 3);
 	glReadBuffer(GL_FRONT);
-	glReadPixels(R.viewport.x, R.viewport.y, R.viewport.w, R.viewport.h, GL_RGB, GL_UNSIGNED_BYTE, pixels);
-	*out_width = R.viewport.w;
-	*out_height = R.viewport.h;
+	glReadPixels(vp->x, vp->y, vp->w, vp->h, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+	*out_width = vp->w;
+	*out_height = vp->h;
+
+	if(fbo != 0) {
+		// FIXME: Maybe we should only ever bind FBOs to GL_DRAW_FRAMEBUFFER?
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+	}
+
 	return pixels;
 }
 
@@ -855,6 +891,8 @@ RendererBackend _r_backend_gl33 = {
 		.framebuffer_destroy = gl33_framebuffer_destroy,
 		.framebuffer_attach = gl33_framebuffer_attach,
 		.framebuffer_get_attachment = gl33_framebuffer_get_attachment,
+		.framebuffer_viewport = gl33_framebuffer_viewport,
+		.framebuffer_viewport_current = gl33_framebuffer_viewport_current,
 		.framebuffer = gl33_framebuffer,
 		.framebuffer_current = gl33_framebuffer_current,
 		.vertex_buffer_create = gl33_vertex_buffer_create,
@@ -872,8 +910,6 @@ RendererBackend _r_backend_gl33 = {
 		.clear = gl33_clear,
 		.clear_color4 = gl33_clear_color4,
 		.clear_color_current = gl33_clear_color_current,
-		.viewport_rect = gl33_viewport_rect,
-		.viewport_current = gl33_viewport_current,
 		.vsync = gl33_vsync,
 		.vsync_current = gl33_vsync_current,
 		.swap = gl33_swap,

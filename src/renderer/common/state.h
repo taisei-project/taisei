@@ -24,7 +24,6 @@
 	RSTATE(TEXUNITS) \
 	RSTATE(RENDERTARGET) \
 	RSTATE(VERTEXARRAY) \
-	RSTATE(VIEWPORT) \
 	RSTATE(VSYNC) \
 
 typedef enum RendererStateID {
@@ -56,8 +55,8 @@ typedef struct RendererStateRollback {
 	// TODO uniforms
 	Texture *texunits[R_MAX_TEXUNITS];
 	Framebuffer *framebuffer;
+	// TODO framebuffer viewports, if we actually ever need to modify them at render time
 	VertexArray *varr;
-	IntRect viewport;
 	VsyncMode vsync;
 } RendererStateRollback;
 
@@ -73,7 +72,6 @@ void _r_state_touch_uniform(Uniform *uniform);
 void _r_state_touch_texunit(uint unit);
 void _r_state_touch_framebuffer(void);
 void _r_state_touch_vertex_array(void);
-void _r_state_touch_viewport(void);
 void _r_state_touch_vsync(void);
 
 void _r_state_init(void);

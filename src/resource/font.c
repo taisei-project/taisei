@@ -171,6 +171,7 @@ static void init_fonts(void) {
 
 	r_framebuffer_create(&globals.render_buf);
 	r_framebuffer_attach(&globals.render_buf, &globals.render_tex, FRAMEBUFFER_ATTACH_COLOR0);
+	r_framebuffer_viewport(&globals.render_buf, 0, 0, globals.render_tex.w, globals.render_tex.h);
 }
 
 static void post_init_fonts(void) {
@@ -947,6 +948,7 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 		);
 
 		r_texture_replace(tex, TEX_TYPE_R, tex_new_w, tex_new_h, NULL);
+		r_framebuffer_viewport(&globals.render_buf, 0, 0, tex_new_w, tex_new_h);
 	}
 
 	r_state_push();
@@ -969,7 +971,6 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 	r_mat_identity();
 	// XXX: y-flipped because that's how our textures are...
 	r_mat_ortho(0, tex->w, 0, tex->h, -100, 100);
-	r_viewport(0, 0, tex->w, tex->h);
 
 	r_mat_mode(MM_TEXTURE);
 	r_mat_push();

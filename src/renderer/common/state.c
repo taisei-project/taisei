@@ -107,10 +107,6 @@ void r_state_pop(void) {
 		B.vertex_array(S.varr);
 	}
 
-	RESTORE(RSTATE_VIEWPORT) {
-		B.viewport_rect(S.viewport);
-	}
-
 	RESTORE(RSTATE_VSYNC) {
 		B.vsync(S.vsync);
 	}
@@ -190,12 +186,6 @@ void _r_state_touch_framebuffer(void) {
 void _r_state_touch_vertex_array(void) {
 	TAINT(RSTATE_VERTEXARRAY, {
 		S.varr = B.vertex_array_current();
-	});
-}
-
-void _r_state_touch_viewport(void) {
-	TAINT(RSTATE_VIEWPORT, {
-		B.viewport_current(&S.viewport);
 	});
 }
 

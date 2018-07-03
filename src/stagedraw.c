@@ -83,6 +83,7 @@ static bool stage_draw_event_resize_framebuffers(SDL_Event *e, void *arg) {
 		int w, h;
 		set_fb_size(i, &w, &h);
 		fbpair_resize_all(stagedraw.fb_pairs + i, w, h);
+		fbpair_viewport(stagedraw.fb_pairs + i, 0, 0, w, h);
 	}
 
 	return false;
@@ -118,10 +119,12 @@ static void stage_draw_setup_framebuffers(void) {
 	a_color->tex_params.width = fg_width;
 	a_color->tex_params.height = fg_height;
 	fbpair_create(stagedraw.fb_pairs + FBPAIR_FG, 1, a);
+	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_FG, 0, 0, fg_width, fg_height);
 
 	// Foreground auxiliary: 1 RGBA texture per FB
 	a_color->tex_params.type = TEX_TYPE_RGBA;
 	fbpair_create(stagedraw.fb_pairs + FBPAIR_FG_AUX, 1, a);
+	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_FG_AUX, 0, 0, fg_width, fg_height);
 
 	// Background: 1 RGB texture + depth per FB
 	a_color->tex_params.type = TEX_TYPE_RGB;
@@ -131,6 +134,7 @@ static void stage_draw_setup_framebuffers(void) {
 	a_depth->tex_params.width = bg_width;
 	a_depth->tex_params.height = bg_height;
 	fbpair_create(stagedraw.fb_pairs + FBPAIR_BG, 2, a);
+	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_BG, 0, 0, bg_width, bg_height);
 }
 
 void stage_draw_init(void) {
@@ -467,8 +471,6 @@ static void stage_render_bg(StageInfo *stage) {
 	FBPair *background = stage_get_fbpair(FBPAIR_BG);
 
 	r_framebuffer(background->back);
-	Texture *bg_tex = r_framebuffer_get_attachment(background->back, FRAMEBUFFER_ATTACH_COLOR0);
-	r_viewport(0, 0, bg_tex->w, bg_tex->h);
 	r_clear(CLEAR_ALL);
 
 	if(should_draw_stage_bg()) {
@@ -579,8 +581,6 @@ void stage_draw_scene(StageInfo *stage) {
 
 	// prepare for 2D rendering into the game viewport framebuffer
 	r_framebuffer(foreground->back);
-	Texture *fg_tex = r_framebuffer_get_attachment(foreground->back, FRAMEBUFFER_ATTACH_COLOR0);
-	r_viewport(0, 0, fg_tex->w, fg_tex->h);
 	set_ortho(VIEWPORT_W, VIEWPORT_H);
 	r_disable(RCAP_DEPTH_TEST);
 
@@ -631,7 +631,6 @@ void stage_draw_scene(StageInfo *stage) {
 
 	// prepare for 2D rendering into the main framebuffer (actual screen)
 	r_framebuffer(NULL);
-	video_set_viewport();
 	set_ortho(SCREEN_W, SCREEN_H);
 
 	// draw the game viewport and HUD

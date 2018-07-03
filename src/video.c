@@ -68,10 +68,10 @@ void video_get_viewport(IntRect *vp) {
 	vp->y = (video.current.height - vp->h) / 2;
 }
 
-void video_set_viewport(void) {
+static void video_set_viewport(void) {
 	IntRect vp;
 	video_get_viewport(&vp);
-	r_viewport_rect(vp);
+	r_framebuffer_viewport_rect(NULL, vp);
 }
 
 static void video_update_vsync(void) {

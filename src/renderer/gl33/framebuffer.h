@@ -17,6 +17,7 @@ struct FramebufferImpl {
 	GLuint gl_fbo;
 	bool initialized;
 	Texture *attachments[FRAMEBUFFER_MAX_ATTACHMENTS];
+	IntRect viewport;
 };
 
 void gl33_framebuffer_initialize(Framebuffer *framebuffer);

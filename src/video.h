@@ -46,7 +46,6 @@ void video_shutdown(void);
 void video_set_mode(int w, int h, bool fs, bool resizable);
 void video_get_viewport(IntRect *vp);
 void video_get_viewport_size(int *width, int *height);
-void video_set_viewport(void);
 bool video_is_fullscreen(void);
 bool video_is_resizable(void);
 bool video_can_change_resolution(void);

@@ -31,6 +31,7 @@ static struct SpriteBatchState {
 	Framebuffer *framebuffer;
 	CullFaceMode cull_mode;
 	DepthTestFunc depth_func;
+	mat4 projection CGLM_ALIGN(32);
 	uint cull_enabled : 1;
 	uint depth_test_enabled : 1;
 	uint depth_write_enabled : 1;
@@ -129,18 +130,11 @@ void r_flush_sprites(void) {
 	_r_sprite_batch.num_pending = 0;
 	_r_sprite_batch.frame_stats.flushes++;
 
-	// log_warn("flush! %u", pending);
+	r_state_push();
 
-	VertexArray *varr_saved = r_vertex_array_current();
-	Texture *tex_saved = r_texture_current(0);
-	ShaderProgram *prog_saved = r_shader_current();
-	Framebuffer *fb_saved = r_framebuffer_current();
-	BlendMode blend_saved = r_blend_current();
-	bool cap_deptp_test_saved = r_capability_current(RCAP_DEPTH_TEST);
-	bool cap_depth_write_saved = r_capability_current(RCAP_DEPTH_WRITE);
-	bool cap_cull_saved = r_capability_current(RCAP_CULL_FACE);
-	DepthTestFunc depth_func_saved = r_depth_func_current();
-	CullFaceMode cull_mode_saved = r_cull_current();
+	r_mat_mode(MM_PROJECTION);
+	r_mat_push();
+	glm_mat4_copy(_r_sprite_batch.projection, *r_mat_current_ptr(MM_PROJECTION));
 
 	r_vertex_array(&_r_sprite_batch.varr);
 	r_texture_ptr(0, _r_sprite_batch.tex);
@@ -167,16 +161,8 @@ void r_flush_sprites(void) {
 		r_vertex_buffer_invalidate(&_r_sprite_batch.vbuf);
 	}
 
-	r_vertex_array(varr_saved);
-	r_texture_ptr(0, tex_saved);
-	r_shader_ptr(prog_saved);
-	r_framebuffer(fb_saved);
-	r_blend(blend_saved);
-	r_capability(RCAP_DEPTH_TEST, cap_deptp_test_saved);
-	r_capability(RCAP_DEPTH_WRITE, cap_depth_write_saved);
-	r_capability(RCAP_CULL_FACE, cap_cull_saved);
-	r_depth_func(depth_func_saved);
-	r_cull(cull_mode_saved);
+	r_mat_pop();
+	r_state_pop();
 }
 
 static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, VertexBuffer *vbuf) {
@@ -313,6 +299,13 @@ void r_draw_sprite(const SpriteParams *params) {
 	if(_r_sprite_batch.cull_mode != cull_mode) {
 		r_flush_sprites();
 		_r_sprite_batch.cull_mode = cull_mode;
+	}
+
+	mat4 *current_projection = r_mat_current_ptr(MM_PROJECTION);
+
+	if(memcmp(*current_projection, _r_sprite_batch.projection, sizeof(mat4))) {
+		r_flush_sprites();
+		glm_mat4_copy(*current_projection, _r_sprite_batch.projection);
 	}
 
 	if(_r_sprite_batch.vbuf.size - _r_sprite_batch.vbuf.offset < sizeof(SpriteAttribs)) {
