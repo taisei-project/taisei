@@ -332,24 +332,6 @@ bool video_can_change_resolution(void) {
 	return !video_is_fullscreen() || !config_get_int(CONFIG_FULLSCREEN_DESKTOP);
 }
 
-static void video_cfg_fullscreen_callback(ConfigIndex idx, ConfigValue v) {
-	video_set_mode(
-		config_get_int(CONFIG_VID_WIDTH),
-		config_get_int(CONFIG_VID_HEIGHT),
-		config_set_int(idx, v.i),
-		config_get_int(CONFIG_VID_RESIZABLE)
-	);
-}
-
-static void video_cfg_vsync_callback(ConfigIndex idx, ConfigValue v) {
-	config_set_int(idx, v.i);
-	video_update_vsync();
-}
-
-static void video_cfg_resizable_callback(ConfigIndex idx, ConfigValue v) {
-	SDL_SetWindowResizable(video.window, config_set_int(idx, v.i));
-}
-
 static void video_init_sdl(void) {
 	// XXX: workaround for an SDL bug: https://bugzilla.libsdl.org/show_bug.cgi?id=4127
 	SDL_SetHintWithPriority(SDL_HINT_FRAMEBUFFER_ACCELERATION, "0", SDL_HINT_OVERRIDE);
@@ -435,6 +417,31 @@ static bool video_handle_window_event(SDL_Event *event, void *arg) {
 	return true;
 }
 
+static bool video_handle_config_event(SDL_Event *evt, void *arg) {
+	ConfigValue *val = evt->user.data1;
+
+	switch(evt->user.code) {
+		case CONFIG_FULLSCREEN:
+			video_set_mode(
+				config_get_int(CONFIG_VID_WIDTH),
+				config_get_int(CONFIG_VID_HEIGHT),
+				val->i,
+				config_get_int(CONFIG_VID_RESIZABLE)
+			);
+			break;
+
+		case CONFIG_VID_RESIZABLE:
+			SDL_SetWindowResizable(video.window, val->i);
+			break;
+
+		case CONFIG_VSYNC:
+			video_update_vsync();
+			break;
+	}
+
+	return false;
+}
+
 void video_init(void) {
 	bool fullscreen_available = false;
 
@@ -494,22 +501,24 @@ void video_init(void) {
 		config_get_int(CONFIG_VID_RESIZABLE)
 	);
 
-	config_set_callback(CONFIG_FULLSCREEN, video_cfg_fullscreen_callback);
-	config_set_callback(CONFIG_VSYNC, video_cfg_vsync_callback);
-	config_set_callback(CONFIG_VID_RESIZABLE, video_cfg_resizable_callback);
-
-	EventHandler h = {
+	events_register_handler(&(EventHandler) {
 		.proc = video_handle_window_event,
 		.priority = EPRIO_SYSTEM,
 		.event_type = SDL_WINDOWEVENT,
-	};
+	});
 
-	events_register_handler(&h);
+	events_register_handler(&(EventHandler) {
+		.proc = video_handle_config_event,
+		.priority = EPRIO_SYSTEM,
+		.event_type = MAKE_TAISEI_EVENT(TE_CONFIG_UPDATED),
+	});
+
 	log_info("Video subsystem initialized");
 }
 
 void video_shutdown(void) {
 	events_unregister_handler(video_handle_window_event);
+	events_unregister_handler(video_handle_config_event);
 	SDL_DestroyWindow(video.window);
 	r_shutdown();
 	free(video.modes);

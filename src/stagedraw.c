@@ -76,14 +76,43 @@ static void set_fb_size(StageFBPair fb_id, int *w, int *h) {
 	*h = round(VIEWPORT_H * scale);
 }
 
-static bool stage_draw_event_resize_framebuffers(SDL_Event *e, void *arg) {
-	assert(TAISEI_EVENT(e->type) == TE_VIDEO_MODE_CHANGED);
+static void update_fb_size(StageFBPair fb_id) {
+	int w, h;
+	set_fb_size(fb_id, &w, &h);
+	fbpair_resize_all(stagedraw.fb_pairs + fb_id, w, h);
+	fbpair_viewport(stagedraw.fb_pairs + fb_id, 0, 0, w, h);
+}
 
-	for(uint i = 0; i < NUM_FBPAIRS; ++i) {
-		int w, h;
-		set_fb_size(i, &w, &h);
-		fbpair_resize_all(stagedraw.fb_pairs + i, w, h);
-		fbpair_viewport(stagedraw.fb_pairs + i, 0, 0, w, h);
+static bool stage_draw_event(SDL_Event *e, void *arg) {
+	if(!IS_TAISEI_EVENT(e->type)) {
+		return false;
+	}
+
+	switch(TAISEI_EVENT(e->type)) {
+		case TE_VIDEO_MODE_CHANGED: {
+			for(uint i = 0; i < NUM_FBPAIRS; ++i) {
+				update_fb_size(i);
+			}
+
+			break;
+		}
+
+		case TE_CONFIG_UPDATED: {
+			switch(e->user.code) {
+				case CONFIG_FG_QUALITY: {
+					update_fb_size(FBPAIR_FG);
+					update_fb_size(FBPAIR_FG_AUX);
+					break;
+				}
+
+				case CONFIG_BG_QUALITY: {
+					update_fb_size(FBPAIR_BG);
+					break;
+				}
+			}
+
+			break;
+		}
 	}
 
 	return false;
@@ -198,12 +227,12 @@ void stage_draw_init(void) {
 	stage_draw_setup_framebuffers();
 
 	events_register_handler(&(EventHandler) {
-		stage_draw_event_resize_framebuffers, NULL, EPRIO_SYSTEM, MAKE_TAISEI_EVENT(TE_VIDEO_MODE_CHANGED)
+		stage_draw_event, NULL, EPRIO_SYSTEM,
 	});
 }
 
 void stage_draw_shutdown(void) {
-	events_unregister_handler(stage_draw_event_resize_framebuffers);
+	events_unregister_handler(stage_draw_event);
 
 	for(uint i = 0; i < NUM_FBPAIRS; ++i) {
 		fbpair_destroy(stagedraw.fb_pairs + i);

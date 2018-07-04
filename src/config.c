@@ -17,7 +17,7 @@
 static bool config_initialized = false;
 
 CONFIGDEFS_EXPORT ConfigEntry configdefs[] = {
-	#define CONFIGDEF(type,entryname,default,ufield) {type, entryname, {.ufield = default}, NULL},
+	#define CONFIGDEF(type,entryname,default,ufield) { type, entryname, { .ufield = default } },
 	#define CONFIGDEF_KEYBINDING(id,entryname,default) CONFIGDEF(CONFIG_TYPE_KEYBINDING, entryname, default, i)
 	#define CONFIGDEF_GPKEYBINDING(id,entryname,default) CONFIGDEF(CONFIG_TYPE_GPKEYBINDING, entryname, default, i)
 	#define CONFIGDEF_INT(id,entryname,default) CONFIGDEF(CONFIG_TYPE_INT, entryname, default, i)
@@ -66,12 +66,60 @@ void config_init(void) {
 
 static void config_delete_unknown_entries(void);
 
+static void config_copy_value(ConfigEntryType type, ConfigValue *dst, ConfigValue src) {
+	switch(type) {
+		case CONFIG_TYPE_INT:
+		case CONFIG_TYPE_KEYBINDING:
+		case CONFIG_TYPE_GPKEYBINDING:
+			dst->i = src.i;
+			break;
+
+		case CONFIG_TYPE_FLOAT:
+			dst->f = src.f;
+			break;
+
+		case CONFIG_TYPE_STRING:
+			stralloc(&dst->s, src.s);
+			break;
+
+		default:
+			UNREACHABLE;
+	}
+}
+
+static int config_compare_values(ConfigEntryType type, ConfigValue val0, ConfigValue val1) {
+	switch(type) {
+		case CONFIG_TYPE_INT:
+		case CONFIG_TYPE_KEYBINDING:
+		case CONFIG_TYPE_GPKEYBINDING:
+			return (val0.i > val1.i) - (val0.i < val1.i);
+
+		case CONFIG_TYPE_FLOAT:
+			return (val0.f > val1.f) - (val0.f < val1.f);
+
+		case CONFIG_TYPE_STRING:
+			return strcmp(val0.s, val1.s);
+
+		default:
+			UNREACHABLE;
+	}
+}
+
+static void config_free_value(ConfigEntryType type, ConfigValue *val) {
+	switch(type) {
+		case CONFIG_TYPE_STRING:
+			free(val->s);
+			val->s = NULL;
+			break;
+
+		default:
+			break;
+	}
+}
+
 void config_shutdown(void) {
 	for(ConfigEntry *e = configdefs; e->name; ++e) {
-		if(e->type == CONFIG_TYPE_STRING) {
-			free(e->val.s);
-			e->val.s = NULL;
-		}
+		config_free_value(e->type, &e->val);
 	}
 
 	config_delete_unknown_entries();
@@ -152,58 +200,16 @@ KeyIndex config_key_from_gamepad_button(int btn) {
 
 static void config_set_val(ConfigIndex idx, ConfigValue v) {
 	ConfigEntry *e = config_get(idx);
-	ConfigCallback callback = e->callback;
-	bool difference = true;
 
-	switch(e->type) {
-		case CONFIG_TYPE_INT:
-		case CONFIG_TYPE_KEYBINDING:
-		case CONFIG_TYPE_GPKEYBINDING:
-			difference = e->val.i != v.i;
-			break;
-
-		case CONFIG_TYPE_FLOAT:
-			difference = e->val.f != v.f;
-			break;
-
-		case CONFIG_TYPE_STRING:
-			difference = strcmp(e->val.s, v.s);
-			break;
-	}
-
-	if(!difference) {
+	if(!config_compare_values(e->type, e->val, v)) {
 		return;
 	}
 
-	if(callback) {
-		e->callback = NULL;
-		callback(idx, v);
-		e->callback = callback;
-		return;
-	}
-
-#define PRINTVAL(t) log_debug("%s:" #t " = %" #t, e->name, e->val.t);
-
-	switch(e->type) {
-		case CONFIG_TYPE_INT:
-		case CONFIG_TYPE_KEYBINDING:
-		case CONFIG_TYPE_GPKEYBINDING:
-			e->val.i = v.i;
-			PRINTVAL(i)
-			break;
-
-		case CONFIG_TYPE_FLOAT:
-			e->val.f = v.f;
-			PRINTVAL(f)
-			break;
-
-		case CONFIG_TYPE_STRING:
-			stralloc(&e->val.s, v.s);
-			PRINTVAL(s)
-			break;
-	}
-
-#undef PRINTVAL
+	ConfigValue oldv = { 0 };
+	config_copy_value(e->type, &oldv, e->val);
+	config_copy_value(e->type, &e->val, v);
+	events_emit(TE_CONFIG_UPDATED, idx, &e->val, &oldv);
+	config_free_value(e->type, &oldv);
 }
 
 int config_set_int(ConfigIndex idx, int val) {
@@ -222,12 +228,6 @@ char* config_set_str(ConfigIndex idx, const char *val) {
 	ConfigValue v = {.s = (char*)val};
 	config_set_val(idx, v);
 	return config_get_str(idx);
-}
-
-void config_set_callback(ConfigIndex idx, ConfigCallback callback) {
-	ConfigEntry *e = config_get(idx);
-	assert(e->callback == NULL);
-	e->callback = callback;
 }
 
 static ConfigEntry* config_get_unknown_entry(const char *name) {

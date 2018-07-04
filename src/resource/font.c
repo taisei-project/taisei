@@ -123,13 +123,28 @@ static double global_font_scale(void) {
 static void reload_fonts(double quality);
 
 static bool fonts_event(SDL_Event *event, void *arg) {
-	reload_fonts(global_font_scale());
-	return false;
-}
+	if(!IS_TAISEI_EVENT(event->type)) {
+		return false;
+	}
 
-static void fonts_quality_config_callback(ConfigIndex idx, ConfigValue v) {
-	config_set_float(idx, v.f);
-	reload_fonts(global_font_scale());
+	switch(TAISEI_EVENT(event->type)) {
+		case TE_VIDEO_MODE_CHANGED: {
+			reload_fonts(global_font_scale());
+			break;
+		}
+
+		case TE_CONFIG_UPDATED: {
+			if(event->user.code == CONFIG_TEXT_QUALITY) {
+				ConfigValue *val = event->user.data1;
+				val->f = sanitize_scale(val->f);
+				reload_fonts(global_font_scale());
+			}
+
+			return false;
+		}
+	}
+
+	return false;
 }
 
 static void try_create_mutex(SDL_mutex **mtx) {
@@ -149,10 +164,8 @@ static void init_fonts(void) {
 	}
 
 	events_register_handler(&(EventHandler) {
-		fonts_event, NULL, EPRIO_SYSTEM, MAKE_TAISEI_EVENT(TE_VIDEO_MODE_CHANGED)
+		fonts_event, NULL, EPRIO_SYSTEM,
 	});
-
-	config_set_callback(CONFIG_TEXT_QUALITY, fonts_quality_config_callback);
 
 	preload_resources(RES_FONT, RESF_PERMANENT,
 		"standard",
@@ -587,8 +600,10 @@ struct rlfonts_arg {
 
 attr_nonnull(1)
 static void reload_font(Font *font, double quality) {
-	wipe_glyph_cache(font);
-	set_font_size(font, font->base_size, quality);
+	if(font->metrics.scale != quality) {
+		wipe_glyph_cache(font);
+		set_font_size(font, font->base_size, quality);
+	}
 }
 
 static void* reload_font_callback(const char *name, Resource *res, void *varg) {

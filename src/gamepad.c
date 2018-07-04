@@ -198,31 +198,7 @@ static int gamepad_find_device(char *guid_out, size_t guid_out_sz, int *out_loca
 	return -1;
 }
 
-static void gamepad_cfg_enabled_callback(ConfigIndex idx, ConfigValue v) {
-	config_set_int(idx, v.i);
-
-	if(v.i) {
-		gamepad_init();
-	} else {
-		gamepad_shutdown();
-	}
-}
-
-static void gamepad_setup_cfg_callbacks(void) {
-	static bool done = false;
-
-	if(done) {
-		return;
-	}
-
-	done = true;
-
-	config_set_callback(CONFIG_GAMEPAD_ENABLED, gamepad_cfg_enabled_callback);
-}
-
 void gamepad_init(void) {
-	gamepad_setup_cfg_callbacks();
-
 	if(!config_get_int(CONFIG_GAMEPAD_ENABLED) || gamepad.initialized) {
 		return;
 	}

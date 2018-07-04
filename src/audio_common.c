@@ -164,14 +164,6 @@ Music* get_music(const char *name) {
 	return get_resource_data(RES_BGM, name, RESF_OPTIONAL);
 }
 
-static void sfx_cfg_volume_callback(ConfigIndex idx, ConfigValue v) {
-	audio_backend_set_sfx_volume(config_set_float(idx, v.f));
-}
-
-static void bgm_cfg_volume_callback(ConfigIndex idx, ConfigValue v) {
-	audio_backend_set_bgm_volume(config_set_float(idx, v.f));
-}
-
 static bool store_sfx_volume(const char *key, const char *val, void *data) {
 	int vol = atoi(val);
 
@@ -300,14 +292,32 @@ void start_bgm(const char *name) {
 	log_info("Started %s", (current_bgm.title ? current_bgm.title : current_bgm.name));
 }
 
+static bool audio_config_updated(SDL_Event *evt, void *arg) {
+	ConfigValue *val = evt->user.data1;
+
+	switch(evt->user.code) {
+		case CONFIG_SFX_VOLUME:
+			audio_backend_set_sfx_volume(val->f);
+			break;
+
+		case CONFIG_BGM_VOLUME:
+			audio_backend_set_bgm_volume(val->f);
+			break;
+	}
+
+	return false;
+}
+
 void audio_init(void) {
 	load_config_files();
 	audio_backend_init();
-	config_set_callback(CONFIG_SFX_VOLUME, sfx_cfg_volume_callback);
-	config_set_callback(CONFIG_BGM_VOLUME, bgm_cfg_volume_callback);
+	events_register_handler(&(EventHandler) {
+		audio_config_updated, NULL, EPRIO_SYSTEM, MAKE_TAISEI_EVENT(TE_CONFIG_UPDATED)
+	});
 }
 
 void audio_shutdown(void) {
+	events_unregister_handler(audio_config_updated);
 	audio_backend_shutdown();
 	ht_destroy(&sfx_volumes);
 }
