@@ -9,6 +9,7 @@
 #include "taisei.h"
 
 #include "miscmath.h"
+#include "assert.h"
 
 double approach(double v, double t, double d) {
 	if(v < t) {
@@ -37,10 +38,15 @@ double min(double a, double b) {
 }
 
 double clamp(double f, double lower, double upper) {
-	if(f < lower)
+	assert(lower <= upper);
+
+	if(f < lower) {
 		return lower;
-	if(f > upper)
+	}
+
+	if(f > upper) {
 		return upper;
+	}
 
 	return f;
 }
