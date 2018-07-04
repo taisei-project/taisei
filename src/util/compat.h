@@ -18,6 +18,10 @@
 #include <math.h>
 #include <complex.h>
 
+#ifdef __FAST_MATH__
+	#error -ffast-math is prohibited
+#endif
+
 #ifdef _WIN32
 	// Include the god-awful windows.h header here so that we can fight the obnoxious namespace pollution it introduces.
 	// We obviously don't need it in every source file, but it's easier to do it globally and early than to try to infer
