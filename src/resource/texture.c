@@ -171,15 +171,12 @@ static void texture_post_load(Texture *tex) {
 
 	ShaderProgram *shader_saved = r_shader_current();
 	Texture *texture_saved = r_texture_current(0);
-	RenderTarget *target_saved = r_target_current();
+	Framebuffer *fb_saved = r_framebuffer_current();
 	BlendMode blend_saved = r_blend_current();
 	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
 
-	IntRect viewport_saved;
-	r_viewport_current(&viewport_saved);
-
 	Texture fbo_tex;
-	RenderTarget fbo;
+	Framebuffer fb;
 
 	r_blend(BLEND_NONE);
 	r_disable(RCAP_CULL_FACE);
@@ -196,9 +193,10 @@ static void texture_post_load(Texture *tex) {
 			.t = TEX_WRAP_REPEAT,
 		},
 	});
-	r_target_create(&fbo);
-	r_target_attach(&fbo, &fbo_tex, RENDERTARGET_ATTACHMENT_COLOR0);
-	r_target(&fbo);
+	r_framebuffer_create(&fb);
+	r_framebuffer_attach(&fb, &fbo_tex, FRAMEBUFFER_ATTACH_COLOR0);
+	r_framebuffer_viewport(&fb, 0, 0, tex->w, tex->h);
+	r_framebuffer(&fb);
 	r_texture_ptr(0, tex);
 	r_shader("texture_post_load");
 	r_uniform_int("width", tex->w);
@@ -209,7 +207,6 @@ static void texture_post_load(Texture *tex) {
 	r_mat_push();
 	r_mat_identity();
 	r_mat_ortho(0, tex->w, tex->h, 0, -100, 100);
-	r_viewport(0, 0, tex->w, tex->h);
 	r_mat_mode(MM_MODELVIEW);
 	r_mat_scale(tex->w, tex->h, 1);
 	r_mat_translate(0.5, 0.5, 0);
@@ -219,14 +216,13 @@ static void texture_post_load(Texture *tex) {
 	r_mat_mode(MM_PROJECTION);
 	r_mat_pop();
 	r_mat_mode(MM_MODELVIEW);
-	r_target(target_saved);
+	r_framebuffer(fb_saved);
 	r_shader_ptr(shader_saved);
 	r_texture_ptr(0, texture_saved);
 	r_blend(blend_saved);
 	r_capability(RCAP_CULL_FACE, cullcap_saved);
-	r_target_destroy(&fbo);
+	r_framebuffer_destroy(&fb);
 	r_texture_destroy(tex);
-	r_viewport_rect(viewport_saved);
 
 	memcpy(tex, &fbo_tex, sizeof(fbo_tex));
 }

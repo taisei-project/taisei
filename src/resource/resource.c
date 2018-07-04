@@ -67,8 +67,6 @@ typedef struct ResourceAsyncLoadData {
 	void *opaque;
 } ResourceAsyncLoadData;
 
-Resources resources;
-
 static SDL_threadID main_thread_id; // TODO: move this somewhere else
 
 static inline ResourceHandler* get_handler(ResourceType type) {
@@ -583,10 +581,6 @@ void free_resources(bool all) {
 	if(!all) {
 		return;
 	}
-
-	delete_fbo_pair(&resources.fbo_pairs.bg);
-	delete_fbo_pair(&resources.fbo_pairs.fg);
-	delete_fbo_pair(&resources.fbo_pairs.rgba);
 
 	if(!env_get("TAISEI_NOASYNC", 0)) {
 		events_unregister_handler(resource_asyncload_handler);

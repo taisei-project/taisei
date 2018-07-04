@@ -16,6 +16,7 @@
 #include "ending.h"
 #include "credits.h"
 #include "mainmenu.h"
+#include "video.h"
 
 static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty_menu) {
 	MenuData m;

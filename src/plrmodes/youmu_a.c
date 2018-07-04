@@ -377,13 +377,13 @@ static int youmu_split(Enemy *e, int t) {
 	return 1;
 }
 
-static void youmu_mirror_shader(FBO *fbo) {
+static void youmu_mirror_shader(Framebuffer *fb) {
 	ShaderProgram *shader = r_shader_get("youmua_bomb");
 
 	double t = player_get_bomb_progress(&global.plr,0);
 	r_shader_ptr(shader);
 	r_uniform_float("tbomb", t);
-	draw_fbo(fbo);
+	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
 
 	colorfill(1,1,1,max(0,1-10*t));

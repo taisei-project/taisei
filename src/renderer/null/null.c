@@ -73,29 +73,48 @@ void null_texture_destroy(Texture *tex) {
 void null_texture(uint unit, Texture *tex) { }
 Texture* null_texture_current(uint unit) { return (void*)&placeholder; }
 
-struct RenderTargetImpl {
-	Texture *attachments[RENDERTARGET_MAX_ATTACHMENTS];
+struct FramebufferImpl {
+	Texture *attachments[FRAMEBUFFER_MAX_ATTACHMENTS];
+	IntRect viewport;
 };
 
-void null_target_create(RenderTarget *target) {
-	target->impl = calloc(1, sizeof(RenderTargetImpl));
+static IntRect default_fb_viewport;
+
+void null_framebuffer_create(Framebuffer *framebuffer) {
+	framebuffer->impl = calloc(1, sizeof(FramebufferImpl));
 }
 
-void null_target_attach(RenderTarget *target, Texture *tex, RenderTargetAttachment attachment) {
-	target->impl->attachments[attachment] = tex;
+void null_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, FramebufferAttachment attachment) {
+	framebuffer->impl->attachments[attachment] = tex;
 }
 
-Texture* null_target_get_attachment(RenderTarget *target, RenderTargetAttachment attachment) {
-	return target->impl->attachments[attachment];
+Texture* null_framebuffer_attachment(Framebuffer *framebuffer, FramebufferAttachment attachment) {
+	return framebuffer->impl->attachments[attachment];
 }
 
-void null_target_destroy(RenderTarget *target) {
-	free(target->impl);
-	memset(target, 0, sizeof(RenderTarget));
+void null_framebuffer_destroy(Framebuffer *framebuffer) {
+	free(framebuffer->impl);
+	memset(framebuffer, 0, sizeof(Framebuffer));
 }
 
-void null_target(RenderTarget *target) { }
-RenderTarget* null_target_current(void) { return (void*)&placeholder; }
+void null_framebuffer_viewport(Framebuffer *framebuffer, IntRect vp) {
+	if(framebuffer) {
+		framebuffer->impl->viewport = vp;
+	} else {
+		default_fb_viewport = vp;
+	}
+}
+
+void null_framebuffer_viewport_current(Framebuffer *framebuffer, IntRect *vp) {
+	if(framebuffer) {
+		*vp = framebuffer->impl->viewport;
+	} else {
+		*vp = default_fb_viewport;
+	}
+}
+
+void null_framebuffer(Framebuffer *framebuffer) { }
+Framebuffer* null_framebuffer_current(void) { return (void*)&placeholder; }
 
 void null_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, void *data) {
 	vbuf->offset = 0;
@@ -139,14 +158,6 @@ VertexArray* null_vertex_array_current(void) { return (void*)&placeholder; }
 void null_clear(ClearBufferFlags flags) { }
 void null_clear_color4(float r, float g, float b, float a) { }
 Color null_clear_color_current(void) { return rgba(0, 0, 0, 0); }
-
-void null_viewport_rect(IntRect rect) { }
-void null_viewport_current(IntRect *out_rect) {
-	out_rect->x = 0;
-	out_rect->y = 0;
-	out_rect->w = 800;
-	out_rect->h = 600;
-}
 
 void null_vsync(VsyncMode mode) { }
 VsyncMode null_vsync_current(void) { return VSYNC_NONE; }
@@ -245,12 +256,14 @@ RendererBackend _r_backend_null = {
 		.texture_replace = null_texture_replace,
 		.texture = null_texture,
 		.texture_current = null_texture_current,
-		.target_create = null_target_create,
-		.target_destroy = null_target_destroy,
-		.target_attach = null_target_attach,
-		.target_get_attachment = null_target_get_attachment,
-		.target = null_target,
-		.target_current = null_target_current,
+		.framebuffer_create = null_framebuffer_create,
+		.framebuffer_destroy = null_framebuffer_destroy,
+		.framebuffer_attach = null_framebuffer_attach,
+		.framebuffer_get_attachment = null_framebuffer_attachment,
+		.framebuffer_viewport = null_framebuffer_viewport,
+		.framebuffer_viewport_current = null_framebuffer_viewport_current,
+		.framebuffer = null_framebuffer,
+		.framebuffer_current = null_framebuffer_current,
 		.vertex_buffer_create = null_vertex_buffer_create,
 		.vertex_buffer_destroy = null_vertex_buffer_destroy,
 		.vertex_buffer_invalidate = null_vertex_buffer_invalidate,
@@ -266,8 +279,6 @@ RendererBackend _r_backend_null = {
 		.clear = null_clear,
 		.clear_color4 = null_clear_color4,
 		.clear_color_current = null_clear_color_current,
-		.viewport_rect = null_viewport_rect,
-		.viewport_current = null_viewport_current,
 		.vsync = null_vsync,
 		.vsync_current = null_vsync_current,
 		.swap = null_swap,

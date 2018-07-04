@@ -100,15 +100,11 @@ void r_state_pop(void) {
 	}
 
 	RESTORE(RSTATE_RENDERTARGET) {
-		B.target(S.target);
+		B.framebuffer(S.framebuffer);
 	}
 
 	RESTORE(RSTATE_VERTEXARRAY) {
 		B.vertex_array(S.varr);
-	}
-
-	RESTORE(RSTATE_VIEWPORT) {
-		B.viewport_rect(S.viewport);
 	}
 
 	RESTORE(RSTATE_VSYNC) {
@@ -181,21 +177,15 @@ void _r_state_touch_texunit(uint unit) {
 	});
 }
 
-void _r_state_touch_target(void) {
+void _r_state_touch_framebuffer(void) {
 	TAINT(RSTATE_RENDERTARGET, {
-		S.target = B.target_current();
+		S.framebuffer = B.framebuffer_current();
 	});
 }
 
 void _r_state_touch_vertex_array(void) {
 	TAINT(RSTATE_VERTEXARRAY, {
 		S.varr = B.vertex_array_current();
-	});
-}
-
-void _r_state_touch_viewport(void) {
-	TAINT(RSTATE_VIEWPORT, {
-		B.viewport_current(&S.viewport);
 	});
 }
 

@@ -35,9 +35,11 @@ static struct {
 		} color;
 	} hud_text;
 
+	PostprocessShader *viewport_pp;
+	FBPair fb_pairs[NUM_FBPAIRS];
+
 	bool framerate_graphs;
 	bool objpool_stats;
-	PostprocessShader *viewport_pp;
 
 	#ifdef DEBUG
 		Sprite dummy;
@@ -50,7 +52,121 @@ static struct {
 	}
 };
 
-void stage_draw_preload(void) {
+static double fb_scale(void) {
+	int vp_width, vp_height;
+	video_get_viewport_size(&vp_width, &vp_height);
+	return (double)vp_height / SCREEN_H;
+}
+
+static void set_fb_size(StageFBPair fb_id, int *w, int *h) {
+	double scale = fb_scale();
+
+	switch(fb_id) {
+		case FBPAIR_BG:
+			scale *= config_get_float(CONFIG_BG_QUALITY);
+			break;
+
+		default:
+			scale *= config_get_float(CONFIG_FG_QUALITY);
+			break;
+	}
+
+	scale = sanitize_scale(scale);
+	*w = round(VIEWPORT_W * scale);
+	*h = round(VIEWPORT_H * scale);
+}
+
+static void update_fb_size(StageFBPair fb_id) {
+	int w, h;
+	set_fb_size(fb_id, &w, &h);
+	fbpair_resize_all(stagedraw.fb_pairs + fb_id, w, h);
+	fbpair_viewport(stagedraw.fb_pairs + fb_id, 0, 0, w, h);
+}
+
+static bool stage_draw_event(SDL_Event *e, void *arg) {
+	if(!IS_TAISEI_EVENT(e->type)) {
+		return false;
+	}
+
+	switch(TAISEI_EVENT(e->type)) {
+		case TE_VIDEO_MODE_CHANGED: {
+			for(uint i = 0; i < NUM_FBPAIRS; ++i) {
+				update_fb_size(i);
+			}
+
+			break;
+		}
+
+		case TE_CONFIG_UPDATED: {
+			switch(e->user.code) {
+				case CONFIG_FG_QUALITY: {
+					update_fb_size(FBPAIR_FG);
+					update_fb_size(FBPAIR_FG_AUX);
+					break;
+				}
+
+				case CONFIG_BG_QUALITY: {
+					update_fb_size(FBPAIR_BG);
+					break;
+				}
+			}
+
+			break;
+		}
+	}
+
+	return false;
+}
+
+static void stage_draw_setup_framebuffers(void) {
+	int fg_width, fg_height, bg_width, bg_height;
+	FBAttachmentConfig a[2], *a_color, *a_depth;
+	memset(a, 0, sizeof(a));
+
+	a_color = &a[0];
+	a_depth = &a[1];
+
+	a_color->attachment = FRAMEBUFFER_ATTACH_COLOR0;
+	a_depth->attachment = FRAMEBUFFER_ATTACH_DEPTH;
+
+	set_fb_size(FBPAIR_FG, &fg_width, &fg_height);
+	set_fb_size(FBPAIR_BG, &bg_width, &bg_height);
+
+	// Set up some parameters shared by all attachments
+	TextureParams tex_common = {
+		.filter.upscale = TEX_FILTER_LINEAR,
+		.filter.downscale = TEX_FILTER_LINEAR,
+		.wrap.s = TEX_WRAP_MIRROR,
+		.wrap.t = TEX_WRAP_MIRROR,
+	};
+
+	memcpy(&a_color->tex_params, &tex_common, sizeof(tex_common));
+	memcpy(&a_depth->tex_params, &tex_common, sizeof(tex_common));
+
+	// Foreground: 1 RGB texture per FB
+	a_color->tex_params.type = TEX_TYPE_RGB;
+	a_color->tex_params.width = fg_width;
+	a_color->tex_params.height = fg_height;
+	fbpair_create(stagedraw.fb_pairs + FBPAIR_FG, 1, a);
+	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_FG, 0, 0, fg_width, fg_height);
+
+	// Foreground auxiliary: 1 RGBA texture per FB
+	a_color->tex_params.type = TEX_TYPE_RGBA;
+	fbpair_create(stagedraw.fb_pairs + FBPAIR_FG_AUX, 1, a);
+	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_FG_AUX, 0, 0, fg_width, fg_height);
+
+	// Background: 1 RGB texture + depth per FB
+	a_color->tex_params.type = TEX_TYPE_RGB;
+	a_color->tex_params.width = bg_width;
+	a_color->tex_params.height = bg_height;
+	a_depth->tex_params.type = TEX_TYPE_DEPTH;
+	a_depth->tex_params.width = bg_width;
+	a_depth->tex_params.height = bg_height;
+	fbpair_create(stagedraw.fb_pairs + FBPAIR_BG, 2, a);
+	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_BG, 0, 0, bg_width, bg_height);
+}
+
+void stage_draw_init(void) {
 	preload_resources(RES_POSTPROCESS, RESF_OPTIONAL,
 		"viewport",
 	NULL);
@@ -107,6 +223,25 @@ void stage_draw_preload(void) {
 	stagedraw.dummy.w = 1;
 	stagedraw.dummy.h = 1;
 	#endif
+
+	stage_draw_setup_framebuffers();
+
+	events_register_handler(&(EventHandler) {
+		stage_draw_event, NULL, EPRIO_SYSTEM,
+	});
+}
+
+void stage_draw_shutdown(void) {
+	events_unregister_handler(stage_draw_event);
+
+	for(uint i = 0; i < NUM_FBPAIRS; ++i) {
+		fbpair_destroy(stagedraw.fb_pairs + i);
+	}
+}
+
+FBPair* stage_get_fbpair(StageFBPair id) {
+	assert(id >= 0 && id < NUM_FBPAIRS);
+	return stagedraw.fb_pairs + id;
 }
 
 static void stage_draw_collision_areas(void) {
@@ -171,15 +306,15 @@ static void stage_draw_collision_areas(void) {
 #endif
 }
 
-static void apply_shader_rules(ShaderRule *shaderrules, FBOPair *fbos) {
+static void apply_shader_rules(ShaderRule *shaderrules, FBPair *fbos) {
 	if(!shaderrules) {
 		return;
 	}
 
 	for(ShaderRule *rule = shaderrules; *rule; ++rule) {
-		r_target(fbos->back);
+		r_framebuffer(fbos->back);
 		(*rule)(fbos->front);
-		swap_fbo_pair(fbos);
+		fbpair_swap(fbos);
 	}
 
 	return;
@@ -265,7 +400,7 @@ static inline bool should_draw_stage_bg(void) {
 	);
 }
 
-static void apply_bg_shaders(ShaderRule *shaderrules, FBOPair *fbos) {
+static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 	Boss *b = global.boss;
 	if(b && b->current && b->current->draw_rule) {
 		int t = global.frames - b->current->starttime;
@@ -276,11 +411,11 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBOPair *fbos) {
 			apply_shader_rules(shaderrules, fbos);
 		}
 
-		r_target(fbos->back);
-		draw_fbo(fbos->front);
+		r_framebuffer(fbos->back);
+		draw_framebuffer_tex(fbos->front, VIEWPORT_W, VIEWPORT_H);
 		draw_spellbg(t);
-		swap_fbo_pair(fbos);
-		r_target(fbos->back);
+		fbpair_swap(fbos);
+		r_framebuffer(fbos->back);
 
 		complex pos = b->pos;
 		float ratio = (float)VIEWPORT_H/VIEWPORT_W;
@@ -317,9 +452,9 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBOPair *fbos) {
 			r_shader_standard();
 		}
 
-		draw_fbo(fbos->front);
-		swap_fbo_pair(fbos);
-		r_target(NULL);
+		draw_framebuffer_tex(fbos->front, VIEWPORT_W, VIEWPORT_H);
+		fbpair_swap(fbos);
+		r_framebuffer(NULL);
 		r_shader_standard();
 	} else if(should_draw_stage_bg()) {
 		set_ortho(VIEWPORT_W, VIEWPORT_H);
@@ -362,9 +497,9 @@ static void apply_zoom_shader(void) {
 }
 
 static void stage_render_bg(StageInfo *stage) {
-	r_target(resources.fbo_pairs.bg.back);
-	Texture *bg_tex = r_target_get_attachment(resources.fbo_pairs.bg.back, RENDERTARGET_ATTACHMENT_COLOR0);
-	r_viewport(0, 0, bg_tex->w, bg_tex->h);
+	FBPair *background = stage_get_fbpair(FBPAIR_BG);
+
+	r_framebuffer(background->back);
 	r_clear(CLEAR_ALL);
 
 	if(should_draw_stage_bg()) {
@@ -373,10 +508,10 @@ static void stage_render_bg(StageInfo *stage) {
 		r_enable(RCAP_DEPTH_TEST);
 		stage->procs->draw();
 		r_mat_pop();
-		swap_fbo_pair(&resources.fbo_pairs.bg);
+		fbpair_swap(background);
 	}
 
-	apply_bg_shaders(stage->procs->shader_rules, &resources.fbo_pairs.bg);
+	apply_bg_shaders(stage->procs->shader_rules, background);
 	return;
 }
 
@@ -418,7 +553,7 @@ static void stage_draw_objects(void) {
 	stagetext_draw();
 }
 
-static void postprocess_prepare(FBO *fbo, ShaderProgram *s) {
+static void postprocess_prepare(Framebuffer *fb, ShaderProgram *s) {
 	r_uniform_int("frames", global.frames);
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
 	r_uniform_vec2("player", creal(global.plr.pos), VIEWPORT_H - cimag(global.plr.pos));
@@ -434,7 +569,7 @@ void stage_draw_foreground(void) {
 	// confer video_update_quality to understand why this is fach. fach is equal to facw up to roundoff error.
 	float scale = fach;
 
-	// draw the foreground FBO
+	// draw the foreground Framebuffer
 	r_mat_push();
 		r_mat_scale(1/facw,1/fach,1);
 		r_mat_translate(floorf(facw*VIEWPORT_X), floorf(fach*VIEWPORT_Y), 0);
@@ -452,7 +587,7 @@ void stage_draw_foreground(void) {
 					global.shake_view = global.shake_view_fade = 0;
 			}
 		}
-		draw_fbo(resources.fbo_pairs.fg.front);
+		draw_framebuffer_tex(stage_get_fbpair(FBPAIR_FG)->front, VIEWPORT_W, VIEWPORT_H);
 	r_mat_pop();
 }
 
@@ -463,6 +598,9 @@ void stage_draw_scene(StageInfo *stage) {
 	bool key_nobg = false;
 #endif
 
+	FBPair *background = stage_get_fbpair(FBPAIR_BG);
+	FBPair *foreground = stage_get_fbpair(FBPAIR_FG);
+
 	bool draw_bg = !config_get_int(CONFIG_NO_STAGEBG) && !key_nobg;
 
 	if(draw_bg) {
@@ -471,9 +609,7 @@ void stage_draw_scene(StageInfo *stage) {
 	}
 
 	// prepare for 2D rendering into the game viewport framebuffer
-	r_target(resources.fbo_pairs.fg.back);
-	Texture *fg_tex = r_target_get_attachment(resources.fbo_pairs.fg.back, RENDERTARGET_ATTACHMENT_COLOR0);
-	r_viewport(0, 0, fg_tex->w, fg_tex->h);
+	r_framebuffer(foreground->back);
 	set_ortho(VIEWPORT_W, VIEWPORT_H);
 	r_disable(RCAP_DEPTH_TEST);
 
@@ -484,7 +620,7 @@ void stage_draw_scene(StageInfo *stage) {
 		}
 
 		// draw the 3D background
-		draw_fbo(resources.fbo_pairs.bg.front);
+		draw_framebuffer_tex(background->front, VIEWPORT_W, VIEWPORT_H);
 
 		// disable boss background distortion
 		r_shader_standard();
@@ -501,28 +637,29 @@ void stage_draw_scene(StageInfo *stage) {
 	stage_draw_objects();
 
 	// everything drawn, now apply postprocessing
-	swap_fbo_pair(&resources.fbo_pairs.fg);
+	fbpair_swap(foreground);
 
 	// stage postprocessing
-	apply_shader_rules(global.stage->procs->postprocess_rules, &resources.fbo_pairs.fg);
+	apply_shader_rules(global.stage->procs->postprocess_rules, foreground);
 
 	// bomb effects shader if present and player bombing
 	if(global.frames - global.plr.recovery < 0 && global.plr.mode->procs.bomb_shader) {
 		ShaderRule rules[] = { global.plr.mode->procs.bomb_shader, NULL };
-		apply_shader_rules(rules, &resources.fbo_pairs.fg);
+		apply_shader_rules(rules, foreground);
 	}
 
 	// custom postprocessing
 	postprocess(
 		stagedraw.viewport_pp,
-		&resources.fbo_pairs.fg,
+		foreground,
 		postprocess_prepare,
-		draw_fbo
+		draw_framebuffer_tex,
+		VIEWPORT_W,
+		VIEWPORT_H
 	);
 
 	// prepare for 2D rendering into the main framebuffer (actual screen)
-	r_target(NULL);
-	video_set_viewport();
+	r_framebuffer(NULL);
 	set_ortho(SCREEN_W, SCREEN_H);
 
 	// draw the game viewport and HUD

@@ -11,8 +11,8 @@
 
 #include "resource.h"
 #include "shader_program.h"
-#include "fbo.h"
 #include "renderer/api.h"
+#include "util/graphics.h"
 
 typedef struct PostprocessShader PostprocessShader;
 typedef struct PostprocessShaderUniform PostprocessShaderUniform;
@@ -38,14 +38,14 @@ struct PostprocessShaderUniform {
 	uint elements;
 };
 
-typedef void (*PostprocessDrawFuncPtr)(FBO*);
-typedef void (*PostprocessPrepareFuncPtr)(FBO*, ShaderProgram*);
+typedef void (*PostprocessDrawFuncPtr)(Framebuffer* fb, double w, double h);
+typedef void (*PostprocessPrepareFuncPtr)(Framebuffer* fb, ShaderProgram *prog);
 
 char* postprocess_path(const char *path);
 
 PostprocessShader* postprocess_load(const char *path, uint flags);
 void postprocess_unload(PostprocessShader **list);
-void postprocess(PostprocessShader *ppshaders, FBOPair *fbos, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw);
+void postprocess(PostprocessShader *ppshaders, FBPair *fbos, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw, double width, double height);
 
 /*
  *  Glue for resources api

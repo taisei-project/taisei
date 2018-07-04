@@ -12,6 +12,7 @@
 #include "options.h"
 #include "common.h"
 #include "global.h"
+#include "video.h"
 
 void set_player(MenuData *m, void *p) {
 	progress.game_settings.character = (CharacterID)(uintptr_t)p;

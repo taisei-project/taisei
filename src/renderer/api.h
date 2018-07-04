@@ -21,7 +21,7 @@ typedef enum RendererFeature {
 	RFEAT_DRAW_INSTANCED,
 	RFEAT_DRAW_INSTANCED_BASE_INSTANCE,
 	RFEAT_DEPTH_TEXTURE,
-	RFEAT_RENDERTARGET_MULTIPLE_OUTPUTS,
+	RFEAT_FRAMEBUFFER_MULTIPLE_OUTPUTS,
 
 	NUM_RFEATS,
 } RendererFeature;
@@ -102,22 +102,22 @@ enum {
 	R_MAX_TEXUNITS = 8,
 };
 
-typedef enum RenderTargetAttachment {
-	RENDERTARGET_ATTACHMENT_DEPTH,
-	RENDERTARGET_ATTACHMENT_COLOR0,
-	RENDERTARGET_ATTACHMENT_COLOR1,
-	RENDERTARGET_ATTACHMENT_COLOR2,
-	RENDERTARGET_ATTACHMENT_COLOR3,
+typedef enum FramebufferAttachment {
+	FRAMEBUFFER_ATTACH_DEPTH,
+	FRAMEBUFFER_ATTACH_COLOR0,
+	FRAMEBUFFER_ATTACH_COLOR1,
+	FRAMEBUFFER_ATTACH_COLOR2,
+	FRAMEBUFFER_ATTACH_COLOR3,
 
-	RENDERTARGET_MAX_COLOR_ATTACHMENTS = 4,
-	RENDERTARGET_MAX_ATTACHMENTS = RENDERTARGET_ATTACHMENT_COLOR0 + RENDERTARGET_MAX_COLOR_ATTACHMENTS,
-} RenderTargetAttachment;
+	FRAMEBUFFER_MAX_COLOR_ATTACHMENTS = 4,
+	FRAMEBUFFER_MAX_ATTACHMENTS = FRAMEBUFFER_ATTACH_COLOR0 + FRAMEBUFFER_MAX_COLOR_ATTACHMENTS,
+} FramebufferAttachment;
 
-typedef struct RenderTargetImpl RenderTargetImpl;
+typedef struct FramebufferImpl FramebufferImpl;
 
-typedef struct RenderTarget {
-	RenderTargetImpl *impl;
-} RenderTarget;
+typedef struct Framebuffer {
+	FramebufferImpl *impl;
+} Framebuffer;
 
 typedef enum Primitive {
 	PRIM_POINTS,
@@ -353,8 +353,6 @@ typedef struct SpriteParams {
 		vec3 vector;
 	} rotation;
 
-	// FIXME: find a more efficient solution for this?
-	// this is needed to support some color transforms, but most sprites won't use this attribute
 	float custom;
 
 	struct {
@@ -415,13 +413,16 @@ void r_texture_destroy(Texture *tex) attr_nonnull(1);
 void r_texture_ptr(uint unit, Texture *tex);
 Texture* r_texture_current(uint unit);
 
-void r_target_create(RenderTarget *target) attr_nonnull(1);
-void r_target_attach(RenderTarget *target, Texture *tex, RenderTargetAttachment attachment) attr_nonnull(1);
-Texture* r_target_get_attachment(RenderTarget *target, RenderTargetAttachment attachment) attr_nonnull(1);
-void r_target_destroy(RenderTarget *target) attr_nonnull(1);
+void r_framebuffer_create(Framebuffer *fb) attr_nonnull(1);
+void r_framebuffer_attach(Framebuffer *fb, Texture *tex, FramebufferAttachment attachment) attr_nonnull(1);
+Texture* r_framebuffer_get_attachment(Framebuffer *fb, FramebufferAttachment attachment) attr_nonnull(1);
+void r_framebuffer_viewport(Framebuffer *fb, int x, int y, int w, int h);
+void r_framebuffer_viewport_rect(Framebuffer *fb, IntRect viewport);
+void r_framebuffer_viewport_current(Framebuffer *fb, IntRect *viewport) attr_nonnull(2);
+void r_framebuffer_destroy(Framebuffer *fb) attr_nonnull(1);
 
-void r_target(RenderTarget *target);
-RenderTarget* r_target_current(void);
+void r_framebuffer(Framebuffer *fb);
+Framebuffer* r_framebuffer_current(void);
 
 void r_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, void *data) attr_nonnull(1);
 void r_vertex_buffer_destroy(VertexBuffer *vbuf) attr_nonnull(1);
@@ -441,9 +442,6 @@ VertexArray* r_vertex_array_current(void);
 void r_clear(ClearBufferFlags flags);
 void r_clear_color4(float r, float g, float b, float a);
 Color r_clear_color_current(void);
-
-void r_viewport_rect(IntRect rect);
-void r_viewport_current(IntRect *out_rect) attr_nonnull(1);
 
 void r_vsync(VsyncMode mode);
 VsyncMode r_vsync_current(void);
@@ -465,6 +463,7 @@ void r_mat_perspective(float angle, float aspect, float near, float far);
 
 void r_mat(MatrixMode mode, mat4 mat);
 void r_mat_current(MatrixMode mode, mat4 out_mat);
+mat4* r_mat_current_ptr(MatrixMode mode);
 
 void r_shader_standard(void);
 void r_shader_standard_notex(void);
@@ -658,11 +657,6 @@ void r_clear_color(Color c) {
 	static float r, g, b, a;
 	parse_color(c, &r, &g, &b, &a);
 	r_clear_color4(r, g, b, a);
-}
-
-static inline attr_must_inline
-void r_viewport(int x, int y, int w, int h) {
-	r_viewport_rect((IntRect) { x, y, w, h });
 }
 
 static inline attr_must_inline attr_nonnull(1)

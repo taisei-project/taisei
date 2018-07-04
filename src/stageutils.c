@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include "global.h"
 #include "util/glm.h"
+#include "video.h"
 
 Stage3D stage_3d_context;
 

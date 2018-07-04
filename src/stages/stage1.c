@@ -150,7 +150,7 @@ static vec3 **stage1_smoke_pos(vec3 p, float maxrange) {
 	return linear3dpos(p, maxrange/2.0, q, r);
 }
 
-static void stage1_fog(FBO *fbo) {
+static void stage1_fog(Framebuffer *fb) {
 	r_shader("zbuf_fog");
 	r_uniform_int("tex", 0);
 	r_uniform_int("depth", 1);
@@ -159,8 +159,8 @@ static void stage1_fog(FBO *fbo) {
 	r_uniform_float("end", 0.8);
 	r_uniform_float("exponent", 3.0);
 	r_uniform_float("sphereness", 0.2);
-	r_texture_ptr(1, r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_DEPTH));
-	draw_fbo(fbo);
+	r_texture_ptr(1, r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
+	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
 }
 

@@ -177,13 +177,10 @@ typedef union ConfigValue {
 	char *s;
 } ConfigValue;
 
-typedef void (*ConfigCallback)(ConfigIndex, ConfigValue);
-
 typedef struct ConfigEntry {
 	ConfigEntryType type;
 	char *name;
 	ConfigValue val;
-	ConfigCallback callback;
 } ConfigEntry;
 
 #define CONFIG_LOAD_BUFSIZE 256
@@ -199,7 +196,6 @@ void config_init(void);
 void config_shutdown(void);
 void config_load(void);
 void config_save(void);
-void config_set_callback(ConfigIndex idx, ConfigCallback callback);
 
 #ifndef DEBUG
 	#define CONFIG_RAWACCESS

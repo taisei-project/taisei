@@ -137,10 +137,6 @@ void create_ingame_menu_replay(MenuData *m) {
 void draw_ingame_menu_bg(MenuData *menu, float f) {
 	float rad = f*IMENU_BLUR;
 
-	r_target(NULL);
-	video_set_viewport();
-	set_ortho(SCREEN_W, SCREEN_H);
-
 	r_shader("ingame_menu");
 	r_uniform_float("rad", rad);
 	r_uniform_float("phase", menu->frames / 100.0);
@@ -154,6 +150,8 @@ void update_ingame_menu(MenuData *menu) {
 }
 
 void draw_ingame_menu(MenuData *menu) {
+	set_ortho(SCREEN_W, SCREEN_H);
+
 	r_mat_push();
 
 	draw_ingame_menu_bg(menu, 1.0-menu_fade(menu));

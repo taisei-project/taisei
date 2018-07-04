@@ -354,29 +354,43 @@ Texture* r_texture_current(uint unit) {
 	return B.texture_current(unit);
 }
 
-void r_target_create(RenderTarget *target) {
-	B.target_create(target);
+void r_framebuffer_create(Framebuffer *fb) {
+	B.framebuffer_create(fb);
 }
 
-void r_target_attach(RenderTarget *target, Texture *tex, RenderTargetAttachment attachment) {
-	B.target_attach(target, tex, attachment);
+void r_framebuffer_attach(Framebuffer *fb, Texture *tex, FramebufferAttachment attachment) {
+	B.framebuffer_attach(fb, tex, attachment);
 }
 
-Texture* r_target_get_attachment(RenderTarget *target, RenderTargetAttachment attachment) {
-	return B.target_get_attachment(target, attachment);
+Texture* r_framebuffer_get_attachment(Framebuffer *fb, FramebufferAttachment attachment) {
+	return B.framebuffer_get_attachment(fb, attachment);
 }
 
-void r_target_destroy(RenderTarget *target) {
-	B.target_destroy(target);
+void r_framebuffer_viewport(Framebuffer *fb, int x, int y, int w, int h) {
+	r_framebuffer_viewport_rect(fb, (IntRect) { x, y, w, h });
 }
 
-void r_target(RenderTarget *target) {
-	_r_state_touch_target();
-	B.target(target);
+void r_framebuffer_viewport_rect(Framebuffer *fb, IntRect viewport) {
+	assert(viewport.h > 0);
+	assert(viewport.w > 0);
+	B.framebuffer_viewport(fb, viewport);
 }
 
-RenderTarget* r_target_current(void) {
-	return B.target_current();
+void r_framebuffer_viewport_current(Framebuffer *fb, IntRect *viewport) {
+	B.framebuffer_viewport_current(fb, viewport);
+}
+
+void r_framebuffer_destroy(Framebuffer *fb) {
+	B.framebuffer_destroy(fb);
+}
+
+void r_framebuffer(Framebuffer *fb) {
+	_r_state_touch_framebuffer();
+	B.framebuffer(fb);
+}
+
+Framebuffer * r_framebuffer_current(void) {
+	return B.framebuffer_current();
 }
 
 void r_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, void *data) {
@@ -439,15 +453,6 @@ void r_clear_color4(float r, float g, float b, float a) {
 
 Color r_clear_color_current(void) {
 	return B.clear_color_current();
-}
-
-void r_viewport_rect(IntRect rect) {
-	_r_state_touch_viewport();
-	B.viewport_rect(rect);
-}
-
-void r_viewport_current(IntRect *out_rect) {
-	B.viewport_current(out_rect);
 }
 
 void r_vsync(VsyncMode mode) {

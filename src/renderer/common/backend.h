@@ -55,13 +55,15 @@ typedef struct RendererFuncs {
 	void (*texture)(uint unit, Texture *tex);
 	Texture* (*texture_current)(uint unit);
 
-	void (*target_create)(RenderTarget *target);
-	void (*target_destroy)(RenderTarget *target);
-	void (*target_attach)(RenderTarget *target, Texture *tex, RenderTargetAttachment attachment);
-	Texture* (*target_get_attachment)(RenderTarget *target, RenderTargetAttachment attachment);
+	void (*framebuffer_create)(Framebuffer *framebuffer);
+	void (*framebuffer_destroy)(Framebuffer *framebuffer);
+	void (*framebuffer_attach)(Framebuffer *framebuffer, Texture *tex, FramebufferAttachment attachment);
+	void (*framebuffer_viewport)(Framebuffer *framebuffer, IntRect vp);
+	void (*framebuffer_viewport_current)(Framebuffer *framebuffer, IntRect *vp);
+	Texture* (*framebuffer_get_attachment)(Framebuffer *framebuffer, FramebufferAttachment attachment);
 
-	void (*target)(RenderTarget *target);
-	RenderTarget* (*target_current)(void);
+	void (*framebuffer)(Framebuffer *framebuffer);
+	Framebuffer* (*framebuffer_current)(void);
 
 	void (*vertex_buffer_create)(VertexBuffer *vbuf, size_t capacity, void *data);
 	void (*vertex_buffer_destroy)(VertexBuffer *vbuf);
@@ -81,9 +83,6 @@ typedef struct RendererFuncs {
 	void (*clear)(ClearBufferFlags flags);
 	void (*clear_color4)(float r, float g, float b, float a);
 	Color (*clear_color_current)(void);
-
-	void (*viewport_rect)(IntRect rect);
-	void (*viewport_current)(IntRect *out_rect);
 
 	void (*vsync)(VsyncMode mode);
 	VsyncMode (*vsync_current)(void);

@@ -88,6 +88,11 @@ void r_mat_current(MatrixMode mode, mat4 out_mat) {
 	glm_mat4_copy(*_r_matrices.indexed[mode].head, out_mat);
 }
 
+mat4* r_mat_current_ptr(MatrixMode mode) {
+	assert((uint)mode < sizeof(_r_matrices.indexed) / sizeof(MatrixStack));
+	return _r_matrices.indexed[mode].head;
+}
+
 void _r_mat_init(void) {
 	matstack_reset(&_r_matrices.texture);
 	matstack_reset(&_r_matrices.modelview);

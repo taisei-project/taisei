@@ -15,6 +15,7 @@
 #include "plrmodes.h"
 #include "stage.h"
 #include "stagetext.h"
+#include "stagedraw.h"
 #include "entity.h"
 
 void player_init(Player *plr) {
@@ -412,8 +413,8 @@ void player_realdeath(Player *plr) {
 }
 
 static void player_death_effect_draw_overlay(Projectile *p, int t) {
-	FBOPair *framebuffers = &resources.fbo_pairs.fg;
-	r_target(framebuffers->front);
+	FBPair *framebuffers = stage_get_fbpair(FBPAIR_FG);
+	r_framebuffer(framebuffers->front);
 	r_texture(1, "static");
 	r_uniform_int("noise", 1);
 	r_uniform_int("frames", global.frames);
@@ -421,12 +422,12 @@ static void player_death_effect_draw_overlay(Projectile *p, int t) {
 	r_uniform_vec2("origin", creal(p->pos), VIEWPORT_H - cimag(p->pos));
 	r_uniform_vec2("clear_origin", creal(global.plr.pos), VIEWPORT_H - cimag(global.plr.pos));
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
-	draw_fbo(framebuffers->back);
-	swap_fbo_pair(framebuffers);
+	draw_framebuffer_tex(framebuffers->back, VIEWPORT_W, VIEWPORT_H);
+	fbpair_swap(framebuffers);
 
 	// This change must propagate, hence the r_state salsa. Yes, pop then push, I know what I'm doing.
 	r_state_pop();
-	r_target(framebuffers->back);
+	r_framebuffer(framebuffers->back);
 	r_state_push();
 }
 

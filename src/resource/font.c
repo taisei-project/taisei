@@ -106,7 +106,7 @@ static struct {
 	FT_Library lib;
 	ShaderProgram *default_shader;
 	Texture render_tex;
-	RenderTarget render_buf;
+	Framebuffer render_buf;
 
 	struct {
 		SDL_mutex *new_face;
@@ -115,19 +115,36 @@ static struct {
 } globals;
 
 static double global_font_scale(void) {
-	return sanitize_scale(video.quality_factor * config_get_float(CONFIG_TEXT_QUALITY));
+	int w, h;
+	video_get_viewport_size(&w, &h);
+	return sanitize_scale(((double)h / SCREEN_H) * config_get_float(CONFIG_TEXT_QUALITY));
 }
 
 static void reload_fonts(double quality);
 
 static bool fonts_event(SDL_Event *event, void *arg) {
-	reload_fonts(global_font_scale());
-	return false;
-}
+	if(!IS_TAISEI_EVENT(event->type)) {
+		return false;
+	}
 
-static void fonts_quality_config_callback(ConfigIndex idx, ConfigValue v) {
-	config_set_float(idx, v.f);
-	reload_fonts(global_font_scale());
+	switch(TAISEI_EVENT(event->type)) {
+		case TE_VIDEO_MODE_CHANGED: {
+			reload_fonts(global_font_scale());
+			break;
+		}
+
+		case TE_CONFIG_UPDATED: {
+			if(event->user.code == CONFIG_TEXT_QUALITY) {
+				ConfigValue *val = event->user.data1;
+				val->f = sanitize_scale(val->f);
+				reload_fonts(global_font_scale());
+			}
+
+			return false;
+		}
+	}
+
+	return false;
 }
 
 static void try_create_mutex(SDL_mutex **mtx) {
@@ -147,10 +164,8 @@ static void init_fonts(void) {
 	}
 
 	events_register_handler(&(EventHandler) {
-		fonts_event, NULL, EPRIO_SYSTEM, MAKE_TAISEI_EVENT(TE_VIDEO_MODE_CHANGED)
+		fonts_event, NULL, EPRIO_SYSTEM,
 	});
-
-	config_set_callback(CONFIG_TEXT_QUALITY, fonts_quality_config_callback);
 
 	preload_resources(RES_FONT, RESF_PERMANENT,
 		"standard",
@@ -167,8 +182,9 @@ static void init_fonts(void) {
 		.height = 1024,
 	});
 
-	r_target_create(&globals.render_buf);
-	r_target_attach(&globals.render_buf, &globals.render_tex, RENDERTARGET_ATTACHMENT_COLOR0);
+	r_framebuffer_create(&globals.render_buf);
+	r_framebuffer_attach(&globals.render_buf, &globals.render_tex, FRAMEBUFFER_ATTACH_COLOR0);
+	r_framebuffer_viewport(&globals.render_buf, 0, 0, globals.render_tex.w, globals.render_tex.h);
 }
 
 static void post_init_fonts(void) {
@@ -177,7 +193,7 @@ static void post_init_fonts(void) {
 
 static void shutdown_fonts(void) {
 	r_texture_destroy(&globals.render_tex);
-	r_target_destroy(&globals.render_buf);
+	r_framebuffer_destroy(&globals.render_buf);
 	events_unregister_handler(fonts_event);
 	FT_Done_FreeType(globals.lib);
 	SDL_DestroyMutex(globals.mutex.new_face);
@@ -317,7 +333,7 @@ static SpriteSheet* add_spritesheet(SpriteSheetAnchor *spritesheets) {
 
 	// FIXME:
 	//
-  // This code just zeroes the texture out.
+	// This code just zeroes the texture out.
 	//
 	// We should add an r_texture_clear function to hide this monstrosity.
 	// It would also allow a non-GL backend to have a different implementation,
@@ -325,17 +341,17 @@ static SpriteSheet* add_spritesheet(SpriteSheetAnchor *spritesheets) {
 	//
 	// To future generations: if such a function is already in the renderer API,
 	// but this crap is still here, please convert it.
-	RenderTarget *prev_target = r_target_current();
-	RenderTarget atlast_rt;
+	Framebuffer *prev_fb = r_framebuffer_current();
+	Framebuffer atlast_fb;
 	Color cc_prev = r_clear_color_current();
-	r_target_create(&atlast_rt);
-	r_target_attach(&atlast_rt, &ss->tex, RENDERTARGET_ATTACHMENT_COLOR0);
-	r_target(&atlast_rt);
+	r_framebuffer_create(&atlast_fb);
+	r_framebuffer_attach(&atlast_fb, &ss->tex, FRAMEBUFFER_ATTACH_COLOR0);
+	r_framebuffer(&atlast_fb);
 	r_clear_color4(0, 0, 0, 0);
 	r_clear(CLEAR_COLOR);
-	r_target(prev_target);
+	r_framebuffer(prev_fb);
 	r_clear_color(cc_prev);
-	r_target_destroy(&atlast_rt);
+	r_framebuffer_destroy(&atlast_fb);
 
 	alist_append(spritesheets, ss);
 	return ss;
@@ -584,8 +600,10 @@ struct rlfonts_arg {
 
 attr_nonnull(1)
 static void reload_font(Font *font, double quality) {
-	wipe_glyph_cache(font);
-	set_font_size(font, font->base_size, quality);
+	if(font->metrics.scale != quality) {
+		wipe_glyph_cache(font);
+		set_font_size(font, font->base_size, quality);
+	}
 }
 
 static void* reload_font_callback(const char *name, Resource *res, void *varg) {
@@ -945,11 +963,12 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 		);
 
 		r_texture_replace(tex, TEX_TYPE_R, tex_new_w, tex_new_h, NULL);
+		r_framebuffer_viewport(&globals.render_buf, 0, 0, tex_new_w, tex_new_h);
 	}
 
 	r_state_push();
 
-	r_target(&globals.render_buf);
+	r_framebuffer(&globals.render_buf);
 	r_clear_color4(0, 0, 0, 0);
 	r_clear(CLEAR_COLOR);
 
@@ -967,7 +986,6 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 	r_mat_identity();
 	// XXX: y-flipped because that's how our textures are...
 	r_mat_ortho(0, tex->w, 0, tex->h, -100, 100);
-	r_viewport(0, 0, tex->w, tex->h);
 
 	r_mat_mode(MM_TEXTURE);
 	r_mat_push();

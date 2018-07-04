@@ -97,16 +97,16 @@ static void stage3_bg_tunnel_draw(vec3 pos) {
 	r_mat_pop();
 }
 
-static void stage3_tunnel(FBO *fbo) {
+static void stage3_tunnel(Framebuffer *fb) {
 	r_shader("tunnel");
 	r_uniform_vec3("color", stgstate.clr_r, stgstate.clr_g, stgstate.clr_b);
 	r_uniform_float("mixfactor", stgstate.clr_mixfactor);
-	r_texture_ptr(2, r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_DEPTH));
-	draw_fbo(fbo);
+	r_texture_ptr(2, r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
+	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
 }
 
-static void stage3_fog(FBO *fbo) {
+static void stage3_fog(Framebuffer *fb) {
 	r_shader("zbuf_fog");
 	r_uniform_int("tex", 0);
 	r_uniform_int("depth", 2);
@@ -115,12 +115,12 @@ static void stage3_fog(FBO *fbo) {
 	r_uniform_float("end", 0.8);
 	r_uniform_float("exponent", stgstate.fog_exp/2);
 	r_uniform_float("sphereness", 0);
-	r_texture_ptr(2, r_target_get_attachment(fbo, RENDERTARGET_ATTACHMENT_DEPTH));
-	draw_fbo(fbo);
+	r_texture_ptr(2, r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
+	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
 }
 
-static void stage3_glitch(FBO *fbo) {
+static void stage3_glitch(Framebuffer *fb) {
 	float strength;
 
 	if(global.boss && global.boss->current && ATTACK_IS_SPELL(global.boss->current->type) && !strcmp(global.boss->name, "Scuttle")) {
@@ -138,7 +138,7 @@ static void stage3_glitch(FBO *fbo) {
 		r_color4(1, 1, 1, 1);
 	}
 
-	draw_fbo(fbo);
+	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
 }
 

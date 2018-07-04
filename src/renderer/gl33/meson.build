@@ -1,7 +1,7 @@
 
 r_gl33_src = files(
     'core.c',
-    'render_target.c',
+    'framebuffer.c',
     'shader_object.c',
     'shader_program.c',
     'texture.c',
