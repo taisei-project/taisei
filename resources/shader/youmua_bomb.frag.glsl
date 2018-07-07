@@ -1,6 +1,7 @@
 #version 330 core
 
 #include "lib/defs.glslh"
+#include "lib/render_context.glslh"
 #include "interface/standard.glslh"
 
 UNIFORM(1) float tbomb;
@@ -12,7 +13,7 @@ void main(void) {
 	float f = step(-pos.y*pos.y-abs(pos.x-0.5)+tbomb*(tbomb-0.8)*10.,0.);
 	vec3 clr0 = texture(tex, texCoord).rgb;
 	pos.y = pos.y*(1.0-abs(shift))+float(shift>0.)*shift;
-	vec3 clr = texture(tex, texCoord).rgb;
+	vec3 clr = texture(tex, vec2(r_textureMatrix*vec4(pos,0,1))).rgb;
 
 	clr = (1.-f)*clr0 + f*(atan((clr-vec3(+shift,0.01*tbomb,-shift))*(1.+4.*tbomb*(1.-pow(abs(pos.x-0.5),3.))))/0.8);
 
