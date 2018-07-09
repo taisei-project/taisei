@@ -29,7 +29,8 @@ void main(void) {
     for(float i = 0.0; i <= limit; i += step) {
         uv = apply_deform(uv_orig, deform * i);
         texel = texture(tex, uv_to_region(texRegion, uv));
-        fragColor += vec4(color.rgb, color.a * texel.a);
+        float a = float(uv.x >= 0 && uv.x <= 1 && uv.y >= 0 && uv.y <= 1);
+        fragColor += vec4(color.rgb, color.a * texel.a * a);
     }
 
     fragColor /= num;
