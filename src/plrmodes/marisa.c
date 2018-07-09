@@ -74,7 +74,15 @@ void marisa_common_slave_visual(Enemy *e, int t, bool render) {
 		return;
 	}
 
-	draw_sprite_batched(creal(e->pos), cimag(e->pos), "part/smoothdot");
+	r_mat_push();
+	ShaderProgram *current = r_shader_current();
+	r_mat_translate(creal(e->pos), cimag(e->pos), 0);
+	r_mat_rotate(0.05*t, 0, 0, 1);
+	r_shader("marisa_hakkero");
+	r_color4(0.2, 0.4, 0.5, 1);
+	draw_sprite_batched(0, 0, "hakkero");
+	r_shader_ptr(current);
+	r_mat_pop();
 }
 
 void marisa_common_masterspark_draw(int t) {
