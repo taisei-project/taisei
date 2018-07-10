@@ -61,10 +61,18 @@ void null_texture_create(Texture *tex, const TextureParams *params) {
 	tex->impl = (void*)&placeholder;
 }
 
-void null_texture_fill(Texture *tex, void *image_data) { }
-void null_texture_fill_region(Texture *tex, uint x, uint y, uint w, uint h, void *image_data) { }
+void null_texture_get_params(Texture *tex, TextureParams *params) {
+	memset(params, 0, sizeof(*params));
+	params->width = tex->w;
+	params->height = tex->h;
+	params->type = tex->type;
+}
+
+void null_texture_set_filter(Texture *tex, TextureFilterMode fmin, TextureFilterMode fmag) { }
+void null_texture_set_wrap(Texture *tex, TextureWrapMode fmin, TextureWrapMode fmag) { }
+void null_texture_fill(Texture *tex, uint mipmap, void *image_data) { }
+void null_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, uint w, uint h, void *image_data) { }
 void null_texture_invalidate(Texture *tex) { }
-void null_texture_replace(Texture *tex, TextureType type, uint w, uint h, void *image_data) { }
 
 void null_texture_destroy(Texture *tex) {
 	memset(tex, 0, sizeof(Texture));
@@ -84,12 +92,16 @@ void null_framebuffer_create(Framebuffer *framebuffer) {
 	framebuffer->impl = calloc(1, sizeof(FramebufferImpl));
 }
 
-void null_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, FramebufferAttachment attachment) {
+void null_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, uint mipmap, FramebufferAttachment attachment) {
 	framebuffer->impl->attachments[attachment] = tex;
 }
 
 Texture* null_framebuffer_attachment(Framebuffer *framebuffer, FramebufferAttachment attachment) {
 	return framebuffer->impl->attachments[attachment];
+}
+
+uint null_framebuffer_attachment_mipmap(Framebuffer *framebuffer, FramebufferAttachment attachment) {
+	return 0;
 }
 
 void null_framebuffer_destroy(Framebuffer *framebuffer) {
@@ -249,17 +261,20 @@ RendererBackend _r_backend_null = {
 		.uniform = null_uniform,
 		.uniform_type = null_uniform_type,
 		.texture_create = null_texture_create,
+		.texture_get_params = null_texture_get_params,
+		.texture_set_filter = null_texture_set_filter,
+		.texture_set_wrap = null_texture_set_wrap,
 		.texture_destroy = null_texture_destroy,
 		.texture_invalidate = null_texture_invalidate,
 		.texture_fill = null_texture_fill,
 		.texture_fill_region = null_texture_fill_region,
-		.texture_replace = null_texture_replace,
 		.texture = null_texture,
 		.texture_current = null_texture_current,
 		.framebuffer_create = null_framebuffer_create,
 		.framebuffer_destroy = null_framebuffer_destroy,
 		.framebuffer_attach = null_framebuffer_attach,
 		.framebuffer_get_attachment = null_framebuffer_attachment,
+		.framebuffer_get_attachment_mipmap = null_framebuffer_attachment_mipmap,
 		.framebuffer_viewport = null_framebuffer_viewport,
 		.framebuffer_viewport_current = null_framebuffer_viewport_current,
 		.framebuffer = null_framebuffer,

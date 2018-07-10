@@ -297,6 +297,27 @@ static void glcommon_ext_draw_buffers(void) {
 	log_warn("Extension not supported");
 }
 
+static void glcommon_ext_texture_filter_anisotropic(void) {
+	if(GL_ATLEAST(4, 6)) {
+		glext.texture_filter_anisotropic = TSGL_EXTFLAG_NATIVE;
+		log_info("Using core functionality");
+		return;
+	}
+
+	if((glext.texture_filter_anisotropic = glcommon_check_extension("GL_ARB_texture_filter_anisotropic"))) {
+		log_info("Using ARB_texture_filter_anisotropic");
+		return;
+	}
+
+	if((glext.texture_filter_anisotropic = glcommon_check_extension("GL_EXT_texture_filter_anisotropic"))) {
+		log_info("Using EXT_texture_filter_anisotropic");
+		return;
+	}
+
+	glext.texture_filter_anisotropic = 0;
+	log_warn("Extension not supported");
+}
+
 void glcommon_check_extensions(void) {
 	memset(&glext, 0, sizeof(glext));
 	glext.version.major = GLVersion.major;
@@ -344,6 +365,7 @@ void glcommon_check_extensions(void) {
 	glcommon_ext_draw_buffers();
 	glcommon_ext_instanced_arrays();
 	glcommon_ext_pixel_buffer_object();
+	glcommon_ext_texture_filter_anisotropic();
 }
 
 void glcommon_load_library(void) {

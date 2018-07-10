@@ -67,6 +67,7 @@ struct glext_s {
 	ext_flag_t pixel_buffer_object;
 	ext_flag_t depth_texture;
 	ext_flag_t draw_buffers;
+	ext_flag_t texture_filter_anisotropic;
 
 	//
 	// debug_output

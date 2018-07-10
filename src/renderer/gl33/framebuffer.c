@@ -27,8 +27,9 @@ void gl33_framebuffer_create(Framebuffer *framebuffer) {
 	glGenFramebuffers(1, &framebuffer->impl->gl_fbo);
 }
 
-void gl33_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, FramebufferAttachment attachment) {
+void gl33_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, uint mipmap, FramebufferAttachment attachment) {
 	assert(attachment >= 0 && attachment < FRAMEBUFFER_MAX_ATTACHMENTS);
+	assert(mipmap < tex->impl->params.mipmaps);
 
 	GLuint gl_tex = tex ? tex->impl->gl_handle : 0;
 	Framebuffer *prev_fb = r_framebuffer_current();
@@ -38,10 +39,11 @@ void gl33_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, Framebuffer
 
 	r_framebuffer(framebuffer);
 	gl33_sync_framebuffer();
-	glFramebufferTexture2D(GL_FRAMEBUFFER, r_attachment_to_gl_attachment[attachment], GL_TEXTURE_2D, gl_tex, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, r_attachment_to_gl_attachment[attachment], GL_TEXTURE_2D, gl_tex, mipmap);
 	r_framebuffer(prev_fb);
 
 	framebuffer->impl->attachments[attachment] = tex;
+	framebuffer->impl->attachment_mipmaps[attachment] = mipmap;
 
 	// need to update draw buffers
 	framebuffer->impl->initialized = false;
@@ -61,6 +63,14 @@ Texture* gl33_framebuffer_get_attachment(Framebuffer *framebuffer, FramebufferAt
 	return framebuffer->impl->attachments[attachment];
 }
 
+
+uint gl33_framebuffer_get_attachment_mipmap(Framebuffer *framebuffer, FramebufferAttachment attachment) {
+	assert(framebuffer->impl != NULL);
+	assert(attachment >= 0 && attachment < FRAMEBUFFER_MAX_ATTACHMENTS);
+
+	return framebuffer->impl->attachment_mipmaps[attachment];
+}
+
 void gl33_framebuffer_destroy(Framebuffer *framebuffer) {
 	if(framebuffer->impl != NULL) {
 		gl33_framebuffer_deleted(framebuffer);
@@ -70,7 +80,15 @@ void gl33_framebuffer_destroy(Framebuffer *framebuffer) {
 	}
 }
 
-void gl33_framebuffer_initialize(Framebuffer *framebuffer) {
+void gl33_framebuffer_taint(Framebuffer *framebuffer) {
+	for(uint i = 0; i < FRAMEBUFFER_MAX_ATTACHMENTS; ++i) {
+		if(framebuffer->impl->attachments[i] != NULL) {
+			gl33_texture_taint(framebuffer->impl->attachments[i]);
+		}
+	}
+}
+
+void gl33_framebuffer_prepare(Framebuffer *framebuffer) {
 	if(!framebuffer->impl->initialized) {
 		// NOTE: this framebuffer is guaranteed to be active at this point
 
@@ -87,13 +105,5 @@ void gl33_framebuffer_initialize(Framebuffer *framebuffer) {
 
 			glDrawBuffers(FRAMEBUFFER_MAX_COLOR_ATTACHMENTS, drawbufs);
 		}
-
-		Color cc_saved = r_clear_color_current();
-		r_clear_color4(0, 0, 0, 0);
-		// NOTE: r_clear would cause an infinite recursion here
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		r_clear_color(cc_saved);
-
-		framebuffer->impl->initialized = true;
 	}
 }

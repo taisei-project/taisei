@@ -91,12 +91,94 @@ bool check_texture_path(const char *path) {
 	return strendswith_any(path, texture_image_exts);
 }
 
-typedef struct ImageData {
-	int width;
-	int height;
-	int depth;
-	uint32_t *pixels;
-} ImageData;
+typedef struct TexLoadData {
+	SDL_Surface *surf;
+	TextureParams params;
+} TexLoadData;
+
+static void parse_filter(const char *val, TextureFilterMode *out, bool allow_mipmaps) {
+	if(!val) {
+		return;
+	}
+
+	char buf[strlen(val) + 1];
+	strcpy(buf, val);
+	char *ignore, *pbuf = strtok_r(buf, " \t", &ignore);
+
+	if(!SDL_strcasecmp(pbuf, "default")) {
+		return;
+	}
+
+	if(!SDL_strcasecmp(pbuf, "nearest")) {
+		*out = TEX_FILTER_NEAREST;
+		return;
+	}
+
+	if(!SDL_strcasecmp(pbuf, "linear")) {
+		*out = TEX_FILTER_LINEAR;
+		return;
+	}
+
+	if(allow_mipmaps) {
+		if(!SDL_strcasecmp(pbuf, "nearest_mipmap_nearest")) {
+			*out = TEX_FILTER_NEAREST_MIPMAP_NEAREST;
+			return;
+		}
+
+		if(!SDL_strcasecmp(pbuf, "nearest_mipmap_linear")) {
+			*out = TEX_FILTER_NEAREST_MIPMAP_LINEAR;
+			return;
+		}
+
+		if(!SDL_strcasecmp(pbuf, "linear_mipmap_nearest")) {
+			*out = TEX_FILTER_LINEAR_MIPMAP_NEAREST;
+			return;
+		}
+
+		if(!SDL_strcasecmp(pbuf, "linear_mipmap_linear")) {
+			*out = TEX_FILTER_LINEAR_MIPMAP_LINEAR;
+			return;
+		}
+	}
+
+	log_fatal("Bad value `%s`, assuming default", pbuf);
+}
+
+static void parse_wrap(const char *val, TextureWrapMode *out) {
+	if(!val) {
+		return;
+	}
+
+	char buf[strlen(val) + 1];
+	strcpy(buf, val);
+	char *ignore, *pbuf = strtok_r(buf, " \t", &ignore);
+
+	if(!SDL_strcasecmp(pbuf, "default")) {
+		return;
+	}
+
+	if(!SDL_strcasecmp(pbuf, "clamp")) {
+		*out = TEX_WRAP_CLAMP;
+		return;
+	}
+
+	if(!SDL_strcasecmp(pbuf, "mirror")) {
+		*out = TEX_WRAP_MIRROR;
+		return;
+	}
+
+	if(!SDL_strcasecmp(pbuf, "repeat")) {
+		*out = TEX_WRAP_REPEAT;
+		return;
+	}
+
+	log_warn("Bad value `%s`, assuming default", pbuf);
+}
+
+typedef struct TextureLoadData {
+	SDL_Surface *surf;
+	TextureParams params;
+} TextureLoadData;
 
 static void* load_texture_begin(const char *path, uint flags) {
 	const char *source = path;
@@ -104,10 +186,35 @@ static void* load_texture_begin(const char *path, uint flags) {
 	SDL_Surface *surf = NULL;
 	SDL_RWops *srcrw = NULL;
 
+	TextureLoadData ld = {
+		.params = {
+			.type = TEX_TYPE_RGBA,
+			.filter = {
+				.mag = TEX_FILTER_LINEAR,
+				.min = TEX_FILTER_LINEAR,
+			},
+			.wrap = {
+				.s = TEX_WRAP_REPEAT,
+				.t = TEX_WRAP_REPEAT,
+			},
+			.mipmap_mode = TEX_MIPMAP_MANUAL,
+			.mipmaps = 1,
+		}
+	};
+
 	if(strendswith(path, TEX_EXTENSION)) {
+		char *str_filter_min = NULL;
+		char *str_filter_mag = NULL;
+		char *str_wrap_s = NULL;
+		char *str_wrap_t = NULL;
+
 		if(!parse_keyvalue_file_with_spec(path, (KVSpec[]) {
-			{ "source", .out_str = &source_allocated },
-			// TODO: more parameters, e.g. filtering, wrap modes, post-load shaders, mipmaps, compression, etc.
+			{ "source",     .out_str  = &source_allocated },
+			{ "filter_min", .out_str  = &str_filter_min },
+			{ "filter_mag", .out_str  = &str_filter_mag },
+			{ "wrap_s",     .out_str  = &str_wrap_s },
+			{ "wrap_t",     .out_str  = &str_wrap_t },
+			{ "mipmaps",    .out_int  = (int*)&ld.params.mipmaps },
 			{ NULL }
 		})) {
 			free(source_allocated);
@@ -132,6 +239,18 @@ static void* load_texture_begin(const char *path, uint flags) {
 		}
 
 		source = source_allocated;
+
+		parse_filter(str_filter_min, &ld.params.filter.min, true);
+		free(str_filter_min);
+
+		parse_filter(str_filter_mag, &ld.params.filter.mag, false);
+		free(str_filter_mag);
+
+		parse_wrap(str_wrap_s, &ld.params.wrap.s);
+		free(str_wrap_s);
+
+		parse_wrap(str_wrap_t, &ld.params.wrap.t);
+		free(str_wrap_t);
 	}
 
 	srcrw = vfs_open(source, VFS_MODE_READ | VFS_MODE_SEEKABLE);
@@ -148,8 +267,11 @@ static void* load_texture_begin(const char *path, uint flags) {
 		surf = IMG_Load_RW(srcrw, false);
 	}
 
+	free(source_allocated);
+
 	if(!surf) {
 		log_warn("IMG_Load_RW failed: %s", IMG_GetError());
+		return NULL;
 	}
 
 	SDL_RWclose(srcrw);
@@ -162,7 +284,15 @@ static void* load_texture_begin(const char *path, uint flags) {
 		return NULL;
 	}
 
-	return converted_surf;
+	if(ld.params.mipmaps == 0) {
+		ld.params.mipmaps = TEX_MIPMAPS_MAX;
+	}
+
+	ld.params.width = converted_surf->w;
+	ld.params.height = converted_surf->h;
+	ld.surf = converted_surf;
+
+	return memdup(&ld, sizeof(ld));
 }
 
 static void texture_post_load(Texture *tex) {
@@ -176,31 +306,17 @@ static void texture_post_load(Texture *tex) {
 	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
 
 	Texture fbo_tex;
+	TextureParams params;
 	Framebuffer fb;
 
 	r_blend(BLEND_NONE);
 	r_disable(RCAP_CULL_FACE);
-	r_texture_create(&fbo_tex, &(TextureParams) {
-		.width = tex->w,
-		.height = tex->h,
-		.type = tex->type,
-		.filter = {
-			.upscale = TEX_FILTER_LINEAR,
-			.downscale = TEX_FILTER_LINEAR,
-		},
-		.wrap = {
-			.s = TEX_WRAP_REPEAT,
-			.t = TEX_WRAP_REPEAT,
-		},
-	});
-	r_framebuffer_create(&fb);
-	r_framebuffer_attach(&fb, &fbo_tex, FRAMEBUFFER_ATTACH_COLOR0);
-	r_framebuffer_viewport(&fb, 0, 0, tex->w, tex->h);
-	r_framebuffer(&fb);
+	r_texture_get_params(tex, &params);
+	params.mipmap_mode = TEX_MIPMAP_MANUAL;
+	r_texture_set_filter(tex, TEX_FILTER_LINEAR, TEX_FILTER_LINEAR);
+	r_texture_create(&fbo_tex, &params);
 	r_texture_ptr(0, tex);
 	r_shader("texture_post_load");
-	r_uniform_int("width", tex->w);
-	r_uniform_int("height", tex->h);
 	r_mat_push();
 	r_mat_identity();
 	r_mat_mode(MM_PROJECTION);
@@ -211,7 +327,15 @@ static void texture_post_load(Texture *tex) {
 	r_mat_scale(tex->w, tex->h, 1);
 	r_mat_translate(0.5, 0.5, 0);
 	r_mat_scale(1, -1, 1);
-	r_draw_quad();
+	r_framebuffer_create(&fb);
+
+	for(uint mipmap = 0; mipmap < params.mipmaps; ++mipmap) {
+		r_framebuffer_attach(&fb, &fbo_tex, mipmap, FRAMEBUFFER_ATTACH_COLOR0);
+		r_framebuffer_viewport(&fb, 0, 0, max(1, floor(tex->w / pow(2, mipmap))), max(1, floor(tex->h / pow(2, mipmap))));
+		r_framebuffer(&fb);
+		r_draw_quad();
+	}
+
 	r_mat_pop();
 	r_mat_mode(MM_PROJECTION);
 	r_mat_pop();
@@ -228,16 +352,20 @@ static void texture_post_load(Texture *tex) {
 }
 
 static void* load_texture_end(void *opaque, const char *path, uint flags) {
-	SDL_Surface *surface = opaque;
+	TextureLoadData *ld = opaque;
 
-	if(!surface) {
+	if(!ld) {
 		return NULL;
 	}
 
 	Texture *texture = malloc(sizeof(Texture));
 
-	load_sdl_surf(surface, texture);
-	SDL_FreeSurface(surface);
+	r_texture_create(texture, &ld->params);
+	SDL_LockSurface(ld->surf);
+	r_texture_fill(texture, 0, ld->surf->pixels);
+	SDL_UnlockSurface(ld->surf);
+	SDL_FreeSurface(ld->surf);
+	free(ld);
 
 	texture_post_load(texture);
 	return texture;
@@ -252,25 +380,6 @@ Texture* prefix_get_tex(const char *name, const char *prefix) {
 	Texture *tex = get_tex(full);
 	free(full);
 	return tex;
-}
-
-void load_sdl_surf(SDL_Surface *surface, Texture *texture) {
-	SDL_LockSurface(surface);
-	r_texture_create(texture, &(TextureParams) {
-		.width = surface->w,
-		.height = surface->h,
-		.type = TEX_TYPE_RGBA,
-		.image_data = surface->pixels,
-		.filter = {
-			.upscale = TEX_FILTER_LINEAR,
-			.downscale = TEX_FILTER_LINEAR,
-		},
-		.wrap = {
-			.s = TEX_WRAP_REPEAT,
-			.t = TEX_WRAP_REPEAT,
-		},
-	});
-	SDL_UnlockSurface(surface);
 }
 
 static void free_texture(Texture *tex) {

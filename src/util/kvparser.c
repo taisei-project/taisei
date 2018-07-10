@@ -122,6 +122,10 @@ static bool kvcallback_spec(const char *key, const char *val, void *data) {
 				*s->out_double = strtod(val, NULL);
 			}
 
+			if(s->out_bool) {
+				*s->out_bool = parse_bool(val, *s->out_bool);
+			}
+
 			return true;
 		}
 	}
@@ -136,4 +140,41 @@ bool parse_keyvalue_stream_with_spec(SDL_RWops *strm, KVSpec *spec) {
 
 bool parse_keyvalue_file_with_spec(const char *filename, KVSpec *spec) {
 	return parse_keyvalue_file_cb(filename, kvcallback_spec, spec);
+}
+
+bool parse_bool(const char *str, bool fallback) {
+	while(isspace(*str)) {
+		++str;
+	}
+
+	char buf[strlen(str) + 1], *bufp = buf;
+
+	while(*str && !isspace(*str)) {
+		*bufp++ = *str++;
+	}
+
+	*bufp = 0;
+	double numeric_val = strtod(buf, &bufp);
+
+	if(*buf && !*bufp) {
+		return (bool)numeric_val;
+	}
+
+	static const char *true_vals[]  = { "on",  "yes", "true",  NULL };
+	static const char *false_vals[] = { "off", "no",  "false", NULL };
+
+	for(const char **v = true_vals; v; ++v) {
+		if(!SDL_strcasecmp(buf, *v)) {
+			return true;
+		}
+	}
+
+	for(const char **v = false_vals; v; ++v) {
+		if(!SDL_strcasecmp(buf, *v)) {
+			return false;
+		}
+	}
+
+	log_warn("Bad value `%s`, assuming %s", buf, fallback ? "true" : "false");
+	return fallback;
 }

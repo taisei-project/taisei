@@ -18,7 +18,7 @@ static void fbpair_create_fb(Framebuffer *fb, uint num_attachments, FBAttachment
 	for(uint i = 0; i < num_attachments; ++i) {
 		Texture *tex = calloc(1, sizeof(Texture));
 		r_texture_create(tex, &attachments[i].tex_params);
-		r_framebuffer_attach(fb, tex, attachments[i].attachment);
+		r_framebuffer_attach(fb, tex, 0, attachments[i].attachment);
 	}
 }
 
@@ -44,12 +44,14 @@ static void fbpair_resize_fb(Framebuffer *fb, FramebufferAttachment attachment, 
 
 	// TODO: We could render a rescaled version of the old texture contents here
 
-	r_texture_replace(tex, tex->type, width, height, NULL);
-	r_state_push();
-	r_framebuffer(fb);
-	r_clear_color4(0, 0, 0, 0);
-	r_clear(CLEAR_ALL);
-	r_state_pop();
+	TextureParams params;
+	r_texture_get_params(tex, &params);
+	r_texture_destroy(tex);
+	params.width = width;
+	params.height = height;
+	params.mipmaps = 0; // FIXME
+	r_texture_create(tex, &params);
+	r_framebuffer_attach(fb, tex, 0, attachment);
 }
 
 void fbpair_create(FBPair *pair, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
@@ -70,15 +72,29 @@ void fbpair_swap(FBPair *pair) {
 	*(void**)&pair->back  = tmp;
 }
 
+static void fbpair_clear(FBPair *pair) {
+	r_state_push();
+	r_clear_color4(0, 0, 0, 0);
+	r_framebuffer(pair->framebuffers + 0);
+	r_clear(CLEAR_ALL);
+	r_framebuffer(pair->framebuffers + 1);
+	r_clear(CLEAR_ALL);
+	r_state_pop();
+}
+
 void fbpair_resize(FBPair *pair, FramebufferAttachment attachment, uint width, uint height) {
 	fbpair_resize_fb(pair->framebuffers + 0, attachment, width, height);
 	fbpair_resize_fb(pair->framebuffers + 1, attachment, width, height);
+	fbpair_clear(pair);
 }
 
 void fbpair_resize_all(FBPair *pair, uint width, uint height) {
 	for(uint i = 0; i < FRAMEBUFFER_MAX_ATTACHMENTS; ++i) {
-		fbpair_resize(pair, i, width, height);
+		fbpair_resize_fb(pair->framebuffers + 0, i, width, height);
+		fbpair_resize_fb(pair->framebuffers + 1, i, width, height);
 	}
+
+	fbpair_clear(pair);
 }
 
 void fbpair_viewport(FBPair *pair, int x, int y, int w, int h) {

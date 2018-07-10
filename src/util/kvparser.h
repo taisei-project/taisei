@@ -25,6 +25,7 @@ typedef struct KVSpec {
 	long *out_long;
 	double *out_double;
 	float *out_float;
+	bool *out_bool;
 } KVSpec;
 
 bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data);
@@ -33,3 +34,5 @@ bool parse_keyvalue_stream(SDL_RWops *strm, ht_str2ptr_t *hashtable);
 bool parse_keyvalue_file(const char *filename, ht_str2ptr_t *hashtable);
 bool parse_keyvalue_stream_with_spec(SDL_RWops *strm, KVSpec *spec);
 bool parse_keyvalue_file_with_spec(const char *filename, KVSpec *spec);
+
+bool parse_bool(const char *str, bool fallback) attr_nonnull(1);

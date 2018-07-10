@@ -183,7 +183,7 @@ static void init_fonts(void) {
 	});
 
 	r_framebuffer_create(&globals.render_buf);
-	r_framebuffer_attach(&globals.render_buf, &globals.render_tex, FRAMEBUFFER_ATTACH_COLOR0);
+	r_framebuffer_attach(&globals.render_buf, &globals.render_tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
 	r_framebuffer_viewport(&globals.render_buf, 0, 0, globals.render_tex.w, globals.render_tex.h);
 }
 
@@ -325,8 +325,8 @@ static SpriteSheet* add_spritesheet(SpriteSheetAnchor *spritesheets) {
 		.width = SS_WIDTH,
 		.height = SS_HEIGHT,
 		.type = TEX_TYPE_R,
-		.filter.upscale = TEX_FILTER_LINEAR,
-		.filter.downscale = TEX_FILTER_LINEAR,
+		.filter.mag = TEX_FILTER_LINEAR,
+		.filter.min = TEX_FILTER_LINEAR,
 		.wrap.s = TEX_WRAP_CLAMP,
 		.wrap.t = TEX_WRAP_CLAMP,
 	});
@@ -345,7 +345,7 @@ static SpriteSheet* add_spritesheet(SpriteSheetAnchor *spritesheets) {
 	Framebuffer atlast_fb;
 	Color cc_prev = r_clear_color_current();
 	r_framebuffer_create(&atlast_fb);
-	r_framebuffer_attach(&atlast_fb, &ss->tex, FRAMEBUFFER_ATTACH_COLOR0);
+	r_framebuffer_attach(&atlast_fb, &ss->tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
 	r_framebuffer(&atlast_fb);
 	r_clear_color4(0, 0, 0, 0);
 	r_clear(CLEAR_COLOR);
@@ -375,6 +375,7 @@ static bool add_glyph_to_spritesheet(Font *font, Glyph *glyph, FT_Bitmap bitmap,
 
 	r_texture_fill_region(
 		&ss->tex,
+		0,
 		rect_x(sprite_pos),
 		rect_y(sprite_pos),
 		bitmap.width,
@@ -962,7 +963,14 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 			tex_new_w, tex_new_h
 		);
 
-		r_texture_replace(tex, TEX_TYPE_R, tex_new_w, tex_new_h, NULL);
+		TextureParams params;
+		r_texture_get_params(tex, &params);
+		r_texture_destroy(tex);
+		params.width = tex_new_w;
+		params.height = tex_new_h;
+		params.mipmaps = 0;
+		r_texture_create(tex, &params);
+		r_framebuffer_attach(&globals.render_buf, tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
 		r_framebuffer_viewport(&globals.render_buf, 0, 0, tex_new_w, tex_new_h);
 	}
 

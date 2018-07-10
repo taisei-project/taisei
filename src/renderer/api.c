@@ -325,20 +325,28 @@ void r_texture_create(Texture *tex, const TextureParams *params) {
 	B.texture_create(tex, params);
 }
 
-void r_texture_fill(Texture *tex, void *image_data) {
-	B.texture_fill(tex, image_data);
+void r_texture_get_params(Texture *tex, TextureParams *params) {
+	B.texture_get_params(tex, params);
 }
 
-void r_texture_fill_region(Texture *tex, uint x, uint y, uint w, uint h, void *image_data) {
-	B.texture_fill_region(tex, x, y, w, h, image_data);
+void r_texture_set_filter(Texture *tex, TextureFilterMode fmin, TextureFilterMode fmag) {
+	B.texture_set_filter(tex, fmin, fmag);
+}
+
+void r_texture_set_wrap(Texture *tex, TextureWrapMode ws, TextureWrapMode wt) {
+	B.texture_set_wrap(tex, ws, wt);
+}
+
+void r_texture_fill(Texture *tex, uint mipmap, void *image_data) {
+	B.texture_fill(tex, mipmap, image_data);
+}
+
+void r_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, uint w, uint h, void *image_data) {
+	B.texture_fill_region(tex, mipmap, x, y, w, h, image_data);
 }
 
 void r_texture_invalidate(Texture *tex) {
 	B.texture_invalidate(tex);
-}
-
-void r_texture_replace(Texture *tex, TextureType type, uint w, uint h, void *image_data) {
-	B.texture_replace(tex, type, w, h, image_data);
 }
 
 void r_texture_destroy(Texture *tex) {
@@ -358,12 +366,16 @@ void r_framebuffer_create(Framebuffer *fb) {
 	B.framebuffer_create(fb);
 }
 
-void r_framebuffer_attach(Framebuffer *fb, Texture *tex, FramebufferAttachment attachment) {
-	B.framebuffer_attach(fb, tex, attachment);
+void r_framebuffer_attach(Framebuffer *fb, Texture *tex, uint mipmap, FramebufferAttachment attachment) {
+	B.framebuffer_attach(fb, tex, mipmap, attachment);
 }
 
 Texture* r_framebuffer_get_attachment(Framebuffer *fb, FramebufferAttachment attachment) {
 	return B.framebuffer_get_attachment(fb, attachment);
+}
+
+uint r_framebuffer_get_attachment_mipmap(Framebuffer *fb, FramebufferAttachment attachment) {
+	return B.framebuffer_get_attachment_mipmap(fb, attachment);
 }
 
 void r_framebuffer_viewport(Framebuffer *fb, int x, int y, int w, int h) {

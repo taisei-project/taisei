@@ -24,8 +24,8 @@ void gl33_bind_vao(GLuint vao);
 void gl33_bind_vbo(GLuint vbo);
 
 void gl33_sync_shader(void);
-void gl33_sync_texunit(uint unit);
-void gl33_sync_texunits(void);
+void gl33_sync_texunit(uint unit, bool prepare_rendering);
+void gl33_sync_texunits(bool prepare_rendering);
 void gl33_sync_framebuffer(void);
 void gl33_sync_vertex_array(void);
 void gl33_sync_blend_mode(void);

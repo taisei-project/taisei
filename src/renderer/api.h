@@ -48,26 +48,38 @@ typedef enum MatrixMode {
 } MatrixMode;
 
 typedef enum TextureType {
-	TEX_TYPE_DEFAULT,
-	TEX_TYPE_R,
-	TEX_TYPE_RG,
-	TEX_TYPE_RGB,
+	// NOTE: whichever is placed first here is considered the "default" where applicable.
 	TEX_TYPE_RGBA,
+	TEX_TYPE_RGB,
+	TEX_TYPE_RG,
+	TEX_TYPE_R,
 	TEX_TYPE_DEPTH,
 } TextureType;
 
 typedef enum TextureFilterMode {
-	TEX_FILTER_DEFAULT,
-	TEX_FILTER_NEAREST,
+	// NOTE: whichever is placed first here is considered the "default" where applicable.
 	TEX_FILTER_LINEAR,
+	TEX_FILTER_LINEAR_MIPMAP_NEAREST,
+	TEX_FILTER_LINEAR_MIPMAP_LINEAR,
+	TEX_FILTER_NEAREST,
+	TEX_FILTER_NEAREST_MIPMAP_NEAREST,
+	TEX_FILTER_NEAREST_MIPMAP_LINEAR,
 } TextureFilterMode;
 
 typedef enum TextureWrapMode {
-	TEX_WRAP_DEFAULT,
+	// NOTE: whichever is placed first here is considered the "default" where applicable.
 	TEX_WRAP_REPEAT,
 	TEX_WRAP_MIRROR,
 	TEX_WRAP_CLAMP,
 } TextureWrapMode;
+
+typedef enum TextureMipmapMode {
+	TEX_MIPMAP_MANUAL,
+	TEX_MIPMAP_AUTO,
+} TextureMipmapMode;
+
+#define TEX_ANISOTROPY_DEFAULT 1
+#define TEX_MIPMAPS_MAX ((uint)(-1))
 
 typedef struct TextureParams {
 	uint width;
@@ -75,8 +87,8 @@ typedef struct TextureParams {
 	TextureType type;
 
 	struct {
-		TextureFilterMode upscale;
-		TextureFilterMode downscale;
+		TextureFilterMode mag;
+		TextureFilterMode min;
 	} filter;
 
 	struct {
@@ -84,8 +96,9 @@ typedef struct TextureParams {
 		TextureWrapMode t;
 	} wrap;
 
+	int anisotropy;
 	uint mipmaps;
-	uint8_t *image_data;
+	TextureMipmapMode mipmap_mode;
 	bool stream;
 } attr_designated_init TextureParams;
 
@@ -404,18 +417,21 @@ UniformType r_uniform_type(Uniform *uniform);
 void r_draw(Primitive prim, uint first, uint count, uint32_t *indices, uint instances, uint base_instance);
 
 void r_texture_create(Texture *tex, const TextureParams *params) attr_nonnull(1, 2);
-void r_texture_fill(Texture *tex, void *image_data) attr_nonnull(1, 2);
-void r_texture_fill_region(Texture *tex, uint x, uint y, uint w, uint h, void *image_data) attr_nonnull(1, 6);
+void r_texture_get_params(Texture *tex, TextureParams *params) attr_nonnull(1, 2);
+void r_texture_set_filter(Texture *tex, TextureFilterMode fmin, TextureFilterMode fmag) attr_nonnull(1);
+void r_texture_set_wrap(Texture *tex, TextureWrapMode ws, TextureWrapMode wt) attr_nonnull(1);
+void r_texture_fill(Texture *tex, uint mipmap, void *image_data) attr_nonnull(1, 3);
+void r_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, uint w, uint h, void *image_data) attr_nonnull(1, 7);
 void r_texture_invalidate(Texture *tex) attr_nonnull(1);
-void r_texture_replace(Texture *tex, TextureType type, uint w, uint h, void *image_data) attr_nonnull(1);
 void r_texture_destroy(Texture *tex) attr_nonnull(1);
 
 void r_texture_ptr(uint unit, Texture *tex);
 Texture* r_texture_current(uint unit);
 
 void r_framebuffer_create(Framebuffer *fb) attr_nonnull(1);
-void r_framebuffer_attach(Framebuffer *fb, Texture *tex, FramebufferAttachment attachment) attr_nonnull(1);
+void r_framebuffer_attach(Framebuffer *fb, Texture *tex, uint mipmap, FramebufferAttachment attachment) attr_nonnull(1);
 Texture* r_framebuffer_get_attachment(Framebuffer *fb, FramebufferAttachment attachment) attr_nonnull(1);
+uint r_framebuffer_get_attachment_mipmap(Framebuffer *fb, FramebufferAttachment attachment) attr_nonnull(1);
 void r_framebuffer_viewport(Framebuffer *fb, int x, int y, int w, int h);
 void r_framebuffer_viewport_rect(Framebuffer *fb, IntRect viewport);
 void r_framebuffer_viewport_current(Framebuffer *fb, IntRect *viewport) attr_nonnull(2);

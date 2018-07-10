@@ -134,8 +134,8 @@ static void stage_draw_setup_framebuffers(void) {
 
 	// Set up some parameters shared by all attachments
 	TextureParams tex_common = {
-		.filter.upscale = TEX_FILTER_LINEAR,
-		.filter.downscale = TEX_FILTER_LINEAR,
+		.filter.min = TEX_FILTER_LINEAR,
+		.filter.mag = TEX_FILTER_LINEAR,
 		.wrap.s = TEX_WRAP_MIRROR,
 		.wrap.t = TEX_WRAP_MIRROR,
 	};

@@ -278,7 +278,6 @@ static void gl33_sync_viewport(void) {
 }
 
 static void gl33_sync_state(void) {
-
 	gl33_sync_capabilities();
 	gl33_sync_shader();
 	r_uniform("r_modelViewMatrix", 1, _r_matrices.modelview.head);
@@ -286,7 +285,7 @@ static void gl33_sync_state(void) {
 	r_uniform("r_textureMatrix", 1, _r_matrices.texture.head);
 	r_uniform("r_color", 1, R.color);
 	gl33_sync_uniforms(R.progs.active);
-	gl33_sync_texunits();
+	gl33_sync_texunits(true);
 	gl33_sync_framebuffer();
 	gl33_sync_viewport();
 	gl33_sync_vertex_array();
@@ -323,7 +322,7 @@ void gl33_sync_capabilities(void) {
 	R.capabilities.active = R.capabilities.pending;
 }
 
-void gl33_sync_texunit(uint unit) {
+void gl33_sync_texunit(uint unit, bool prepare_rendering) {
 	TextureUnit *u = R.texunits.indexed + unit;
 	Texture *tex = u->tex2d.pending;
 
@@ -340,11 +339,15 @@ void gl33_sync_texunit(uint unit) {
 		u->tex2d.gl_handle = tex->impl->gl_handle;
 		u->tex2d.active = tex;
 	}
+
+	if(prepare_rendering && u->tex2d.active != NULL) {
+		gl33_texture_prepare(u->tex2d.active);
+	}
 }
 
-void gl33_sync_texunits(void) {
+void gl33_sync_texunits(bool prepare_rendering) {
 	for(uint i = 0; i < R_MAX_TEXUNITS; ++i) {
-		gl33_sync_texunit(i);
+		gl33_sync_texunit(i, prepare_rendering);
 	}
 }
 
@@ -416,7 +419,7 @@ void gl33_sync_framebuffer(void) {
 	}
 
 	if(R.framebuffer.active) {
-		gl33_framebuffer_initialize(R.framebuffer.active);
+		gl33_framebuffer_prepare(R.framebuffer.active);
 	}
 }
 
@@ -880,17 +883,20 @@ RendererBackend _r_backend_gl33 = {
 		.uniform = gl33_uniform,
 		.uniform_type = gl33_uniform_type,
 		.texture_create = gl33_texture_create,
+		.texture_get_params = gl33_texture_get_params,
+		.texture_set_filter = gl33_texture_set_filter,
+		.texture_set_wrap = gl33_texture_set_wrap,
 		.texture_destroy = gl33_texture_destroy,
 		.texture_invalidate = gl33_texture_invalidate,
 		.texture_fill = gl33_texture_fill,
 		.texture_fill_region = gl33_texture_fill_region,
-		.texture_replace = gl33_texture_replace,
 		.texture = gl33_texture,
 		.texture_current = gl33_texture_current,
 		.framebuffer_create = gl33_framebuffer_create,
 		.framebuffer_destroy = gl33_framebuffer_destroy,
 		.framebuffer_attach = gl33_framebuffer_attach,
 		.framebuffer_get_attachment = gl33_framebuffer_get_attachment,
+		.framebuffer_get_attachment_mipmap = gl33_framebuffer_get_attachment_mipmap,
 		.framebuffer_viewport = gl33_framebuffer_viewport,
 		.framebuffer_viewport_current = gl33_framebuffer_viewport_current,
 		.framebuffer = gl33_framebuffer,
