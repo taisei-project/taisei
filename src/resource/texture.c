@@ -313,7 +313,7 @@ static void texture_post_load(Texture *tex) {
 	r_disable(RCAP_CULL_FACE);
 	r_texture_get_params(tex, &params);
 	params.mipmap_mode = TEX_MIPMAP_MANUAL;
-	r_texture_set_filter(tex, TEX_FILTER_LINEAR, TEX_FILTER_LINEAR);
+	r_texture_set_filter(tex, TEX_FILTER_NEAREST, TEX_FILTER_NEAREST);
 	r_texture_create(&fbo_tex, &params);
 	r_texture_ptr(0, tex);
 	r_shader("texture_post_load");

@@ -21,7 +21,7 @@ static ProjArgs defaults_proj = {
 	.dest = &global.projs,
 	.type = EnemyProj,
 	.color = RGB(1, 1, 1),
-	.blend = BLEND_ALPHA,
+	.blend = BLEND_PREMUL_ALPHA,
 	.shader = "sprite_bullet",
 	.layer = LAYER_BULLET,
 };
@@ -32,7 +32,7 @@ static ProjArgs defaults_part = {
 	.dest = &global.particles,
 	.type = Particle,
 	.color = RGB(1, 1, 1),
-	.blend = BLEND_ALPHA,
+	.blend = BLEND_PREMUL_ALPHA,
 	.shader = "sprite_default",
 	.layer = LAYER_PARTICLE_HIGH,
 };

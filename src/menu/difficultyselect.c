@@ -58,7 +58,7 @@ void draw_difficulty_menu(MenuData *menu) {
 	draw_options_menu_bg(menu);
 	draw_menu_title(menu, "Select Difficulty");
 
-	r_color(multiply_colors(diff_color, rgba(0.1, 0.1, 0.1, 0.7)));
+	r_color(multiply_colors(diff_color, rgba(0.07, 0.07, 0.07, 0.7)));
 
 	r_mat_push();
 	r_mat_translate(SCREEN_W/2+30 - 25*menu->drawdata[0], SCREEN_H/3 + 90*(0.7*menu->drawdata[0]),0);

@@ -757,14 +757,14 @@ void BaryonCenter(Enemy *e, int t, bool render) {
 		return;
 	}
 
-	r_blend(BLEND_ADD);
+	r_color4(1, 1, 1, 0);
 	r_mat_push();
 	r_mat_translate(creal(e->pos), cimag(e->pos), 0);
 	r_mat_rotate_deg(2*t, 0, 0, 1);
 	draw_sprite_batched(0, 0, "stage6/scythecircle");
 	r_mat_pop();
 	draw_sprite_batched(creal(e->pos), cimag(e->pos), "stage6/baryon");
-	r_blend(BLEND_ALPHA);
+	r_color4(1, 1, 1, 1);
 
 	l[0] = REF(creal(e->args[1]));
 	l[1] = REF(cimag(e->args[1]));
@@ -2619,14 +2619,13 @@ void elly_theory(Boss *b, int time) {
 void elly_spellbg_toe(Boss *b, int t) {
 	r_mat_push();
 	r_mat_translate(VIEWPORT_W/2,VIEWPORT_H/2,0);
-	float s = 0.75+0.0005*t;
+	float s = 0.75 + 0.0005 * t;
 	r_mat_scale(s,s,s);
-	r_mat_rotate_deg(t*0.1,0,0,1);
-	r_color4(.6,.6,.6,1);
+	r_mat_rotate_deg(t * 0.1, 0, 0, 1);
+	r_color4(0.6, 0.6, 0.6, 0.6);
 
 	draw_sprite(0,0,"stage6/spellbg_toe");
 	r_mat_pop();
-	r_blend(BLEND_ALPHA);
 
 	float positions[][2] = {
 		{-160,0},
@@ -2661,7 +2660,7 @@ void elly_spellbg_toe(Boss *b, int t) {
 		r_mat_pop();
 	}
 	
-	r_color4(1,1,1,1);
+	r_color4(1, 1, 1, 1);
 	r_shader_standard();
 }
 
@@ -2673,20 +2672,22 @@ void elly_spellbg_toe(Boss *b, int t) {
 
 void elly_spellbg_classic(Boss *b, int t) {
 	fill_viewport(0,0,0.7,"stage6/spellbg_classic");
+	// FIXME: blend
 	r_blend(BLEND_MOD);
-	r_color4(1,1,1,0);
+	r_color4(1, 1, 1, 0);
 	fill_viewport(0,-t*0.005,0.7,"stage6/spellbg_chalk");
-	r_blend(BLEND_ALPHA);
-	r_color4(1,1,1,1);
+	r_blend(BLEND_PREMUL_ALPHA);
+	r_color4(1, 1, 1, 1);
 }
 
 void elly_spellbg_modern(Boss *b, int t) {
 	fill_viewport(0,0,0.6,"stage6/spellbg_modern");
+	// FIXME: blend
 	r_blend(BLEND_MOD);
-	r_color4(1,1,1,0);
+	r_color4(1, 1, 1, 0);
 	fill_viewport(0,-t*0.005,0.7,"stage6/spellbg_chalk");
-	r_blend(BLEND_ALPHA);
-	r_color4(1,1,1,1);
+	r_blend(BLEND_PREMUL_ALPHA);
+	r_color4(1, 1, 1, 1);
 }
 
 void elly_spellbg_modern_dark(Boss *b, int t) {

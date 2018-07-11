@@ -11,6 +11,8 @@
 #include <stdio.h>
 #include "color.h"
 
+// TODO: either rewrite this mess to use actual fixed-point math, or just make Color a struct of 4 floats.
+
 static const float conv = 1.0f / CLR_ONEVALUE;
 
 #ifndef COLOR_INLINE
@@ -100,6 +102,24 @@ Color approach_color(Color src, Color dst, double delta) {
 		c1a[2] + (c2a[2] - c1a[2]) * delta,
 		c1a[3] + (c2a[3] - c1a[3]) * delta
 	);
+}
+
+Color color_multiply_alpha(Color clr) {
+	float r, g, b, a;
+	parse_color(clr, &r, &g, &b, &a);
+	return rgba(r*a, g*a, b*a, a);
+}
+
+Color color_demultiply_alpha(Color clr) {
+	float r, g, b, a;
+	parse_color(clr, &r, &g, &b, &a);
+
+	if(a == 0) {
+		// FIXME: what do we do in this case?
+		return clr;
+	}
+
+	return rgba(r/a, g/a, b/a, a);
 }
 
 static float hue_to_rgb(float v1, float v2, float vH) {

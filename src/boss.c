@@ -81,17 +81,18 @@ void spell_opening(Boss *b, int time) {
 void draw_extraspell_bg(Boss *boss, int time) {
 	// overlay for all extra spells
 
-	r_blend(BLEND_ADD);
-	r_color4(0.2,0.1,0,0.7);
+	float opacity = 0.7;
+	r_color4(0.2 * opacity, 0.1 * opacity, 0, 0);
 	fill_viewport(sin(time) * 0.015, time / 50.0, 1, "stage3/wspellclouds");
 	r_color4(1,1,1,1);
+	// FIXME: blend
 	r_blend(r_blend_compose(
 		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_MIN,
 		BLENDFACTOR_ZERO,      BLENDFACTOR_ONE, BLENDOP_MIN
 	));
 	fill_viewport(cos(time) * 0.015, time / 70.0, 1, "stage4/kurumibg2");
 	fill_viewport(sin(time+2.1) * 0.015, time / 30.0, 1, "stage4/kurumibg2");
-	r_blend(BLEND_ALPHA);
+	r_blend(BLEND_PREMUL_ALPHA);
 }
 
 Color boss_healthbar_color(AttackType atype) {
@@ -242,8 +243,6 @@ static void spawn_particle_effects(Boss *boss) {
 void draw_boss_background(Boss *boss) {
 	r_mat_push();
 	r_mat_translate(creal(boss->pos), cimag(boss->pos), 0);
-
-	r_blend(BLEND_ADD);
 	r_mat_rotate_deg(global.frames*4.0, 0, 0, -1);
 
 	float f = 0.8+0.1*sin(global.frames/8.0);
@@ -253,9 +252,11 @@ void draw_boss_background(Boss *boss) {
 		f -= t*(t-0.7)/max(0.01, 1-t);
 	}
 
-	r_mat_scale(f,f,f);
-	draw_sprite_batched(0, 0, "boss_circle");
-	r_blend(BLEND_ALPHA);
+	r_mat_scale(f, f, 1);
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "boss_circle",
+		.color = rgba(1, 1, 1, 0),
+	});
 	r_mat_pop();
 }
 

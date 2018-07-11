@@ -22,7 +22,9 @@ void set_ortho(float w, float h) {
 }
 
 void colorfill(float r, float g, float b, float a) {
-	if(a <= 0) return;
+	if(r <= 0 && g <= 0 && b <= 0 && a <= 0) {
+		return;
+	}
 
 	r_shader_standard_notex();
 	r_color4(r,g,b,a);
@@ -48,9 +50,9 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 	float scale = star_width/star->w;
 
 	Color amul = rgba(alpha, alpha, alpha, alpha);
-	Color fill_clr = multiply_colors(rgba(1.0f, 1.0f, 1.0f, 1.0f), amul);
-	Color back_clr = multiply_colors(rgba(0.2f, 0.6f, 1.0f, 0.2f), amul);
-	Color frag_clr = mix_colors(derive_color(back_clr, CLRMASK_A, alpha), fill_clr, 0.35f);
+	Color fill_clr = multiply_colors(rgba(1.00, 1.00, 1.00, 1.00), amul);
+	Color back_clr = multiply_colors(rgba(0.04, 0.12, 0.20, 0.20), amul);
+	Color frag_clr = multiply_colors(rgba(0.47, 0.56, 0.65, 0.65), amul);
 
 	// XXX: move to call site?
 	y -= 2;

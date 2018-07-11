@@ -592,14 +592,12 @@ void hina_monty_slave_visual(Enemy *s, int time, bool render) {
 	Sprite *soul = get_sprite("proj/soul");
 	double scale = fabs(swing(clamp(time / 60.0, 0, 1), 3)) * 1.25;
 
-	Color clr1 = rgba(1.0, 0.0, 0.0, 1.0);
-	Color clr2 = rgba(0.0, 0.0, 1.0, 1.0);
-	Color clr3 = rgba(psin(time*0.05), 0.0, 1.0 - psin(time*0.05), 1.0);
+	Color clr1 = rgba(1.0, 0.0, 0.0, 0.0);
+	Color clr2 = rgba(0.0, 0.0, 1.0, 0.0);
+	Color clr3 = rgba(psin(time*0.05), 0.0, 1.0 - psin(time*0.05), 0.0);
 
 	r_mat_push();
 	r_mat_translate(creal(s->pos), cimag(s->pos), 0);
-
-	r_blend(BLEND_ADD);
 	r_shader("sprite_bullet");
 
 	r_draw_sprite(&(SpriteParams) {
@@ -625,9 +623,7 @@ void hina_monty_slave_visual(Enemy *s, int time, bool render) {
 		.color = clr3,
 	});
 
-	r_blend(BLEND_ALPHA);
 	r_mat_pop();
-
 	r_shader("sprite_default");
 }
 
@@ -765,14 +761,15 @@ void hina_spell_bg(Boss *h, int time) {
 	r_mat_scale(0.6,0.6,1);
 	draw_sprite(0, 0, "stage2/spellbg1");
 	r_mat_pop();
+	// FIXME: blend
 	r_blend(BLEND_MOD);
 	r_mat_rotate_deg(time*5, 0,0,1);
 	draw_sprite(0, 0, "stage2/spellbg2");
 	r_mat_pop();
-	r_blend(BLEND_ADD);
+	r_blend(BLEND_PREMUL_ALPHA);
+	r_color4(1, 1, 1, 0);
 	Animation *fireani = get_ani("fire");
 	draw_sprite_p(creal(h->pos), cimag(h->pos), animation_get_frame(fireani,get_ani_sequence(fireani,"main"), global.frames));
-	r_blend(BLEND_ALPHA);
 }
 
 Boss* stage2_spawn_hina(complex pos) {

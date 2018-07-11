@@ -49,32 +49,38 @@ static void draw_saverpy_menu(MenuData *m) {
 	draw_menu_selector(SCREEN_W/2 + 100 * m->drawdata[0] - 50, SCREEN_H/2, 163, 81, m->frames);
 
 	r_mat_push();
-	r_color4(1, 1, 1, 1);
 	r_mat_translate(SCREEN_W/2, SCREEN_H/2 - 100, 0);
 	text_draw("Save Replay?", &(TextParams) {
 		.font = "big",
 		.align = ALIGN_CENTER,
 		.shader = "text_default",
+		.color = rgba(1, 1, 1, 1),
 	});
 	r_mat_translate(0, 100, 0);
 
 	for(int i = 0; i < m->ecount; i++) {
 		MenuEntry *e = &(m->entries[i]);
+		assert(e->name != NULL);
+
 		float a = e->drawdata * 0.1;
+		Color clr_unmul;
 
 		if(e->action == NULL) {
-			r_color4(0.5, 0.5, 0.5, 0.5);
+			clr_unmul = rgba(0.5, 0.5, 0.5, 0.5);
 		} else {
 			float ia = 1-a;
-			r_color4(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, 0.7 + 0.3 * a);
+			clr_unmul = rgba(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, 0.7 + 0.3 * a);
 		}
 
-		if(e->name) {
+		Color c = color_multiply_alpha(clr_unmul);
+
+		if(c != 0) {
 			text_draw(e->name, &(TextParams) {
 				.font = "big",
 				.align = ALIGN_CENTER,
 				.pos = { -50 + 100 * i, 0 },
-				.shader = "text_default"
+				.shader = "text_default",
+				.color = c,
 			});
 		}
 	}

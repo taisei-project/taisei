@@ -159,7 +159,8 @@ static void replayview_draw_submenu_bg(float width, float height, float alpha) {
 	r_mat_push();
 	r_mat_translate(SCREEN_W*0.5, SCREEN_H*0.5, 0);
 	r_mat_scale(width, height, 1);
-	r_color4(0.1, 0.1, 0.1, 0.7 * alpha);
+	alpha *= 0.7;
+	r_color4(0.1 * alpha, 0.1 * alpha, 0.1 * alpha, alpha);
 	r_shader_standard_notex();
 	r_draw_quad();
 	r_shader("text_default");
@@ -176,8 +177,16 @@ static void replayview_draw_messagebox(MenuData* m) {
 
 	r_mat_push();
 	r_mat_translate(SCREEN_W*0.5, SCREEN_H*0.5, 0);
-	r_color4(0.9, 0.6, 0.2, alpha);
-	text_draw(m->entries->name, &(TextParams) { .align = ALIGN_CENTER });
+
+	Color c = rgba(0.9 * alpha, 0.6 * alpha, 0.2 * alpha, alpha);
+
+	if(c != 0) {
+		text_draw(m->entries->name, &(TextParams) {
+			.align = ALIGN_CENTER,
+			.color = c,
+		});
+	}
+
 	r_mat_pop();
 }
 
@@ -197,14 +206,24 @@ static void replayview_draw_stagemenu(MenuData *m) {
 		MenuEntry *e = &(m->entries[i]);
 		float a = e->drawdata;
 
+		Color clr_unmul;
+
 		if(e->action == NULL) {
-			r_color4(0.5, 0.5, 0.5, 0.5 * alpha);
+			clr_unmul = rgba(0.5, 0.5, 0.5, 0.5 * alpha);
 		} else {
 			float ia = 1-a;
-			r_color4(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a) * alpha);
+			clr_unmul = rgba(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a) * alpha);
 		}
 
-		text_draw(m->entries->name, &(TextParams) { .align = ALIGN_CENTER, .pos = { 0, 20*i } });
+		Color c = color_multiply_alpha(clr_unmul);
+
+		if(c != 0) {
+			text_draw(e->name, &(TextParams) {
+				.align = ALIGN_CENTER,
+				.pos = { 0, 20*i },
+				.color = c,
+			});
+		}
 	}
 
 	r_mat_pop();
@@ -288,7 +307,10 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 			default:                                                                              break;
 		}
 
-		text_draw(tmp, &(TextParams) { .pos = { o + 10, 20 * item } });
+		text_draw(tmp, &(TextParams) {
+			.pos = { o + 10, 20 * item },
+			.shader = "text_default",
+		});
 	}
 }
 
@@ -329,7 +351,6 @@ static void replayview_draw(MenuData *m) {
 	ReplayviewContext *ctx = m->context;
 
 	draw_options_menu_bg(m);
-	r_shader("text_default");
 	draw_menu_title(m, "Replays");
 
 	draw_menu_list(m, 100, 100, replayview_drawitem);
@@ -337,6 +358,7 @@ static void replayview_draw(MenuData *m) {
 	if(ctx->submenu) {
 		ctx->submenu->draw(ctx->submenu);
 	}
+
 	r_shader_standard();
 }
 

@@ -454,16 +454,13 @@ void kurumi_spell_bg(Boss *b, int time) {
 
 	r_mat_push();
 	r_mat_translate(VIEWPORT_W/2, VIEWPORT_H/2,0);
-	r_mat_scale(0.6,0.6,1);
-	r_color3(f,1-f,1-f);
+	r_mat_scale(0.6, 0.6, 1);
+	r_color3(f, 1 - f, 1 - f);
 	draw_sprite(0, 0, "stage4/kurumibg1");
-	r_color3(1,1,1);
 	r_mat_pop();
-
-	r_blend(BLEND_ADD);
+	r_color4(1, 1, 1, 0);
 	fill_viewport(time/300.0, time/300.0, 0.5, "stage4/kurumibg2");
-
-	r_blend(BLEND_ALPHA);
+	r_color4(1, 1, 1, 1);
 }
 
 void kurumi_outro(Boss *b, int time) {
@@ -1167,9 +1164,10 @@ void kurumi_extra_swirl_visual(Enemy *e, int time, bool render) {
 		return;
 	}
 
+	// FIXME: blend
 	r_blend(BLEND_SUB);
 	Swirl(e, time, render);
-	r_blend(BLEND_ALPHA);
+	r_blend(BLEND_PREMUL_ALPHA);
 }
 
 void kurumi_extra_fairy_visual(Enemy *e, int time, bool render) {
@@ -1178,11 +1176,11 @@ void kurumi_extra_fairy_visual(Enemy *e, int time, bool render) {
 		return;
 	}
 
-	r_blend(BLEND_ADD);
+	// r_blend(BLEND_ADD);
 	r_shader("sprite_negative");
 	Fairy(e, time, render);
 	r_shader("sprite_default");
-	r_blend(BLEND_ALPHA);
+	// r_blend(BLEND_ALPHA);
 }
 
 void kurumi_extra_bigfairy_visual(Enemy *e, int time, bool render) {
@@ -1191,11 +1189,11 @@ void kurumi_extra_bigfairy_visual(Enemy *e, int time, bool render) {
 		return;
 	}
 
-	r_blend(BLEND_ADD);
+	// r_blend(BLEND_ADD);
 	r_shader("sprite_negative");
 	BigFairy(e, time, render);
 	r_shader("sprite_default");
-	r_blend(BLEND_ALPHA);
+	// r_blend(BLEND_ALPHA);
 }
 
 int kurumi_extra_fairy(Enemy *e, int t) {

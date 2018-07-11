@@ -980,7 +980,7 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 	r_clear_color4(0, 0, 0, 0);
 	r_clear(CLEAR_COLOR);
 
-	r_blend(BLEND_ALPHA);
+	r_blend(BLEND_PREMUL_ALPHA);
 	r_enable(RCAP_CULL_FACE);
 	r_cull(CULL_FRONT);
 	r_disable(RCAP_DEPTH_TEST);

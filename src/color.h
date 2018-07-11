@@ -52,6 +52,8 @@ Color add_colors(Color c1, Color c2) attr_const;
 Color subtract_colors(Color c1, Color c2) attr_const;
 Color mix_colors(Color c1, Color c2, double a) attr_const;
 Color approach_color(Color src, Color dst, double delta) attr_const;
+Color color_multiply_alpha(Color clr);
+Color color_demultiply_alpha(Color clr);
 float color_component(Color clr, uint ofs) attr_const;
 char* color_str(Color c) attr_returns_nonnull;
 

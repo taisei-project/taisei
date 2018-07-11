@@ -95,10 +95,8 @@ void create_main_menu(MenuData *m) {
 }
 
 void draw_main_menu_bg(MenuData* menu) {
-	r_color4(1,1,1,1);
+	r_color4(1, 1, 1, 1);
 	fill_screen("menu/mainmenubg");
-	r_color4(1,1,1,1);
-	r_blend(BLEND_ALPHA);
 }
 
 static void update_main_menu(MenuData *menu) {
@@ -118,15 +116,17 @@ void draw_main_menu(MenuData *menu) {
 	r_mat_translate(0, SCREEN_H-270, 0);
 	draw_menu_selector(50 + menu->drawdata[1]/2, menu->drawdata[2], 1.5 * menu->drawdata[1], 64, menu->frames);
 	r_shader("text_default");
+
+	float o = 0.7;
+
 	for(int i = 0; i < menu->ecount; i++) {
 		float s = 5*sin(menu->frames/80.0 + 20*i);
 
 		if(menu->entries[i].action == NULL) {
-			r_color4(0.2,0.3,0.5,0.7);
+			r_color4(0.2 * o, 0.3 * o, 0.5 * o, o);
 		} else {
-			//render_color4(1,1,1,0.7);
 			float a = 1 - menu->entries[i].drawdata;
-			r_color4(1, 0.7 + a, 0.4 + a, 0.7);
+			r_color4(o, min(1, 0.7 + a) * o, min(1, 0.4 + a) * o, o);
 		}
 
 		text_draw(menu->entries[i].name, &(TextParams) {
@@ -141,8 +141,7 @@ void draw_main_menu(MenuData *menu) {
 
 	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
 	r_disable(RCAP_CULL_FACE);
-	r_blend(BLEND_ADD);
-	r_color4(1, 1, 1, 1);
+	r_color4(1, 1, 1, 0);
 	r_shader("sprite_default");
 
 	for(int i = 0; i < 50; i++) { // who needs persistent state for a particle system?
@@ -177,7 +176,6 @@ void draw_main_menu(MenuData *menu) {
 
 	r_shader("text_default");
 	r_capability(RCAP_CULL_FACE, cullcap_saved);
-	r_blend(BLEND_ALPHA);
 
 	char version[32];
 	snprintf(version, sizeof(version), "v%s", TAISEI_VERSION);

@@ -73,7 +73,7 @@ void draw_char_menu(MenuData *menu) {
 	draw_menu_title(menu, "Select Character");
 
 	r_mat_push();
-	r_color4(0,0,0,0.7);
+	r_color4(0, 0, 0, 0.7);
 	r_mat_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
 	r_mat_scale(300, SCREEN_H, 1);
 	r_shader_standard_notex();
@@ -95,7 +95,9 @@ void draw_char_menu(MenuData *menu) {
 			current_char = pchar->id;
 		}
 
-		r_color4(1,1,1,1-menu->entries[i].drawdata*2);
+		float o = 1-menu->entries[i].drawdata*2;
+
+		r_color4(o, o, o, o);
 		draw_sprite(SCREEN_W/3-200*menu->entries[i].drawdata, 2*SCREEN_H/3, spr);
 
 		r_mat_push();
@@ -103,7 +105,6 @@ void draw_char_menu(MenuData *menu) {
 
 		r_mat_push();
 
-		r_shader("text_default");
 		if(menu->entries[i].drawdata != 0) {
 			r_mat_translate(0,-300*menu->entries[i].drawdata, 0);
 			r_mat_rotate_deg(180*menu->entries[i].drawdata, 1,0,0);
@@ -112,20 +113,29 @@ void draw_char_menu(MenuData *menu) {
 		text_draw(name, &(TextParams) {
 			.align = ALIGN_CENTER,
 			.font = "big",
+			.shader = "text_default",
 		});
+
 		r_mat_pop();
 
 		if(menu->entries[i].drawdata) {
-			r_color4(1,1,1,1-menu->entries[i].drawdata*3);
+			o = 1-menu->entries[i].drawdata*3;
 		} else {
-			r_color4(1,1,1,1);
+			o = 1;
 		}
 
-		text_draw(title, &(TextParams) {
-			.align = ALIGN_CENTER,
-			.pos = { 0, 70 },
-		});
-		r_shader_standard();
+		Color clr = rgba(o, o, o, o);
+
+		if(clr != 0) {
+			r_color(clr);
+
+			text_draw(title, &(TextParams) {
+				.align = ALIGN_CENTER,
+				.pos = { 0, 70 },
+				.shader = "text_default",
+			});
+		}
+
 		r_mat_pop();
 	}
 
@@ -137,21 +147,22 @@ void draw_char_menu(MenuData *menu) {
 		assert(mode != NULL);
 
 		if(mod->cursor == i) {
-			r_color4(0.9,0.6,0.2,1);
+			r_color4(0.9, 0.6, 0.2, 1);
 		} else {
-			r_color4(1,1,1,1);
+			r_color4(1, 1, 1, 1);
 		}
 
-		r_shader("text_default");
 		text_draw(mode->name, &(TextParams) {
 			.align = ALIGN_CENTER,
 			.pos = { 0, 200+40*i },
+			.shader = "text_default",
 		});
-		r_shader_standard();
 	}
 
 	r_mat_pop();
-	r_color4(1,1,1,0.3*sin(menu->frames/20.0)+0.5);
+
+	float o = 0.3*sin(menu->frames/20.0)+0.5;
+	r_color4(o, o, o, o);
 
 	for(int i = 0; i <= 1; i++) {
 		r_mat_push();
@@ -169,7 +180,7 @@ void draw_char_menu(MenuData *menu) {
 		r_mat_pop();
 	}
 
-	r_color3(1,1,1);
+	r_color3(1, 1, 1);
 	r_cull(cull_saved);
 }
 

@@ -82,7 +82,7 @@ static void stagetext_draw_single(StageText *txt) {
 	TextParams params = { 0 };
 	params.font_ptr = txt->font;
 	params.align = txt->align;
-	params.blend = BLEND_ALPHA;
+	params.blend = BLEND_PREMUL_ALPHA;
 	params.shader_ptr = r_shader_current();
 
 	params.custom = 1.0-f;

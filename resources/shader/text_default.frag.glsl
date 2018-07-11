@@ -3,5 +3,5 @@
 #include "interface/sprite.glslh"
 
 void main(void) {
-    fragColor = color * vec4(1, 1, 1, texture(tex, texCoord).r);
+    fragColor = color * vec4(texture(tex, texCoord).r);
 }

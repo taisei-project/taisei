@@ -662,37 +662,34 @@ void scuttle_spellbg(Boss *h, int time) {
 		a += (time / (float)ATTACK_START_DELAY);
 	float s = 0.3 + 0.7 * a;
 
-	r_color4(.1, .1, .1, a);
+	r_color4(0.1*a, 0.1*a, 0.1*a, 0);
 	draw_sprite(VIEWPORT_W/2, VIEWPORT_H/2, "stage3/spellbg2");
-	r_blend(BLEND_ADD);
-
 	fill_viewport(-time/200.0 + 0.5, time/400.0+0.5, s, "stage3/spellbg1");
-
-	r_color4(1, 1, 1, 0.1);
+	r_color4(0.1, 0.1, 0.1, 0);
 	fill_viewport(time/300.0 + 0.5, -time/340.0+0.5, s*0.5, "stage3/spellbg1");
 	r_shader("maristar_bombbg");
 	r_uniform_float("t", time/400.);
 	r_uniform_float("decay", 0.);
-	r_color4(1, 1, 1, 0.1); // XXX: why is this here?!
-	r_blend(BLEND_ADD);
+	r_color4(0.1, 0.1, 0.1, 0); // XXX: why is this here?!
 	r_uniform_vec2("plrpos", 0.5,0.5);
 	fill_viewport(0.0, 0.0, 1, "stage3/spellbg1");
 
 	r_shader_standard();
 	r_color4(1, 1, 1, 1);
-	r_blend(BLEND_ALPHA);
 }
 
 void wriggle_spellbg(Boss *b, int time) {
 	r_color4(1,1,1,1);
 	fill_viewport(0, 0, 768.0/1024.0, "stage3/wspellbg");
 	r_color4(1,1,1,0.5);
+	// FIXME: blend
 	r_blend(r_blend_compose(
 		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB,
 		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB
 	));
 	fill_viewport(sin(time) * 0.015, time / 50.0, 1, "stage3/wspellclouds");
-	r_blend(BLEND_ADD);
+	r_blend(BLEND_PREMUL_ALPHA);
+	r_color4(0.5, 0.5, 0.5, 0.0);
 	fill_viewport(0, time / 70.0, 1, "stage3/wspellswarm");
 	r_blend(r_blend_compose(
 		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB,
@@ -701,8 +698,8 @@ void wriggle_spellbg(Boss *b, int time) {
 	r_color4(1,1,1,0.4);
 	fill_viewport(cos(time) * 0.02, time / 30.0, 1, "stage3/wspellclouds");
 
-	r_blend(BLEND_ALPHA);
-	r_color4(1,1,1,1);
+	r_blend(BLEND_PREMUL_ALPHA);
+	r_color4(1, 1, 1, 1);
 }
 
 Boss* stage3_spawn_scuttle(complex pos) {
@@ -1167,14 +1164,14 @@ static void wriggle_fstorm_proj_draw(Projectile *p, int time) {
 
 	if(f > 0) {
 		// TODO: Maybe convert this into a particle effect?
-		// Being a nasty hack aside, this blend mode flip-flopping kills batching.
 		Sprite *s = p->sprite;
+		Color c = p->color;
 		p->sprite = get_sprite("proj/ball");
-		r_blend(BLEND_ADD);
+		p->color = derive_color(c, CLRMASK_A, rgba(0, 0, 0, 0));
 		r_mat_scale(f,f,f);
-		ProjDrawCore(p,time);
+		ProjDrawCore(p, time);
 		r_mat_scale(1/f,1/f,1/f);
-		r_blend(BLEND_ALPHA);
+		p->color = c;
 		p->sprite = s;
 	}
 
