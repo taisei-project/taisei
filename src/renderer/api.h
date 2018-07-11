@@ -192,8 +192,8 @@ typedef struct VertexAttribFormat {
 } VertexAttribFormat;
 
 typedef struct GenericModelVertex {
-	vec3 position;
-	vec3 normal;
+	float position[3];
+	float normal[3];
 
 	struct {
 		float s;
