@@ -52,7 +52,7 @@ glmc_mat4_mul(mat4 m1, mat4 m2, mat4 dest) {
 
 CGLM_EXPORT
 void
-glmc_mat4_mulN(mat4 * __restrict matrices[], int len, mat4 dest) {
+glmc_mat4_mulN(mat4 * __restrict matrices[], uint32_t len, mat4 dest) {
   glm_mat4_mulN(matrices, len, dest);
 }
 
@@ -60,6 +60,18 @@ CGLM_EXPORT
 void
 glmc_mat4_mulv(mat4 m, vec4 v, vec4 dest) {
   glm_mat4_mulv(m, v, dest);
+}
+
+CGLM_EXPORT
+void
+glmc_mat4_mulv3(mat4 m, vec3 v, float last, vec3 dest) {
+  glm_mat4_mulv3(m, v, last, dest);
+}
+
+CGLM_EXPORT
+void
+glmc_mat4_quat(mat4 m, versor dest) {
+  glm_mat4_quat(m, dest);
 }
 
 CGLM_EXPORT
@@ -102,6 +114,12 @@ CGLM_EXPORT
 void
 glmc_mat4_inv_precise(mat4 mat, mat4 dest) {
   glm_mat4_inv_precise(mat, dest);
+}
+
+CGLM_EXPORT
+void
+glmc_mat4_inv_fast(mat4 mat, mat4 dest) {
+  glm_mat4_inv_fast(mat, dest);
 }
 
 CGLM_EXPORT

@@ -9,35 +9,63 @@
 #define cglm_types_h
 
 #if defined(_MSC_VER)
-#  define CGLM_ALIGN(X) /* __declspec(align(X)) */
+/* do not use alignment for older visual studio versions */
+#if _MSC_VER < 1913 /*  Visual Studio 2017 version 15.6  */
+#  define CGLM_ALL_UNALIGNED
+#  define CGLM_ALIGN(X) /* no alignment */
+#else
+#  define CGLM_ALIGN(X) __declspec(align(X))
+#endif
 #else
 #  define CGLM_ALIGN(X) __attribute((aligned(X)))
 #endif
 
-typedef float vec3[3];
-typedef int  ivec3[3];
-typedef CGLM_ALIGN(16) float vec4[4];
+#ifndef CGLM_ALL_UNALIGNED
+#  define CGLM_ALIGN_IF(X) CGLM_ALIGN(X)
+#else
+#  define CGLM_ALIGN_IF(X) /* no alignment */
+#endif
 
-typedef vec3 mat3[3];
-typedef vec4 mat4[4];
+#ifdef __GNUC__
+#  define CGLM_ASSUME_ALIGNED(ptr, alignment) (__builtin_assume_aligned(ptr, alignment))
+#else
+#  define CGLM_ASSUME_ALIGNED(ptr, alignment) (ptr)
+#endif
 
-typedef vec4 versor;
+#if __STDC_VERSION__ >= 201112L
+#  include <stdalign.h>
+#  define CGLM_ALIGNOF(X) alignof(X)
+#elif defined ( _MSC_VER )
+#  define CGLM_ALIGNOF(X) __alignof(X)
+#else // assume GCC-compatible
+#  define CGLM_ALIGNOF(X) __alignof__(X)
+#endif
+
+typedef float                   vec2[2];
+typedef CGLM_ALIGN_IF(8)  float vec3[3];
+typedef int                    ivec3[3];
+typedef CGLM_ALIGN_IF(16) float vec4[4];
+
+typedef vec3                    mat3[3];
+typedef CGLM_ALIGN_IF(16) vec4  mat4[4];
+
+typedef vec4                    versor;
 
 #ifndef M_PI
-    #define M_PI 3.14159265358979323846
+#define M_PI 3.14159265358979323846
 #endif
 
 #ifndef M_PI_2
-    #define M_PI_2 1.57079632679489661923
+#define M_PI_2 1.57079632679489661923
 #endif
 
 #ifndef M_PI_4
-    #define M_PI_4 0.78539816339744830962
+#define M_PI_4 0.78539816339744830962
 #endif
 
-#define CGLM_PI    (float)M_PI
-#define CGLM_PI_2  (float)M_PI_2
-#define CGLM_PI_4  (float)M_PI_4
+#define CGLM_PI    ((float)M_PI)
+#define CGLM_PI_2  ((float)M_PI_2)
+#define CGLM_PI_4  ((float)M_PI_4)
 
 /*!
  * if you have axis order like vec3 orderVec = [0, 1, 2] or [0, 2, 1]...

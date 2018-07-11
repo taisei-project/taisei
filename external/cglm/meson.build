@@ -1,6 +1,6 @@
 project('cglm', 'c',
   license : 'MIT',
-  version : '0.3.3',
+  version : '0.4.8',
   default_options : [
     'c_std=c99',
     'warning_level=3',

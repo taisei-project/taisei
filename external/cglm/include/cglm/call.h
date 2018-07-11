@@ -24,6 +24,9 @@ extern "C" {
 #include "call/frustum.h"
 #include "call/box.h"
 #include "call/io.h"
+#include "call/project.h"
+#include "call/sphere.h"
+#include "call/ease.h"
 
 // TODO: call versions of these?
 #include "util.h"

@@ -45,6 +45,8 @@
 #define cglm_mat_h
 
 #include "common.h"
+#include "vec4.h"
+#include "vec3.h"
 
 #ifdef CGLM_SSE_FP
 #  include "simd/sse2/mat4.h"
@@ -58,7 +60,9 @@
 #  include "simd/neon/mat4.h"
 #endif
 
-#include <assert.h>
+#ifdef DEBUG
+# include <assert.h>
+#endif
 
 #define GLM_MAT4_IDENTITY_INIT  {{1.0f, 0.0f, 0.0f, 0.0f},                    \
                                  {0.0f, 1.0f, 0.0f, 0.0f},                    \
@@ -71,8 +75,8 @@
                                  {0.0f, 0.0f, 0.0f, 0.0f}}
 
 /* for C only */
-#define GLM_MAT4_IDENTITY (mat4)GLM_MAT4_IDENTITY_INIT
-#define GLM_MAT4_ZERO     (mat4)GLM_MAT4_ZERO_INIT
+#define GLM_MAT4_IDENTITY ((mat4)GLM_MAT4_IDENTITY_INIT)
+#define GLM_MAT4_ZERO     ((mat4)GLM_MAT4_ZERO_INIT)
 
 /* DEPRECATED! use _copy, _ucopy versions */
 #define glm_mat4_udup(mat, dest) glm_mat4_ucopy(mat, dest)
@@ -106,13 +110,13 @@ CGLM_INLINE
 void
 glm_mat4_copy(mat4 mat, mat4 dest) {
 #ifdef __AVX__
-  _mm256_store_ps(dest[0], _mm256_load_ps(mat[0]));
-  _mm256_store_ps(dest[2], _mm256_load_ps(mat[2]));
+  glmm_store256(dest[0], glmm_load256(mat[0]));
+  glmm_store256(dest[2], glmm_load256(mat[2]));
 #elif defined( __SSE__ ) || defined( __SSE2__ )
-  _mm_store_ps(dest[0], _mm_load_ps(mat[0]));
-  _mm_store_ps(dest[1], _mm_load_ps(mat[1]));
-  _mm_store_ps(dest[2], _mm_load_ps(mat[2]));
-  _mm_store_ps(dest[3], _mm_load_ps(mat[3]));
+  glmm_store(dest[0], glmm_load(mat[0]));
+  glmm_store(dest[1], glmm_load(mat[1]));
+  glmm_store(dest[2], glmm_load(mat[2]));
+  glmm_store(dest[3], glmm_load(mat[3]));
 #else
   glm_mat4_ucopy(mat, dest);
 #endif
@@ -135,7 +139,7 @@ glm_mat4_copy(mat4 mat, mat4 dest) {
 CGLM_INLINE
 void
 glm_mat4_identity(mat4 mat) {
-  mat4 t = GLM_MAT4_IDENTITY_INIT;
+  CGLM_ALIGN(16) mat4 t = GLM_MAT4_IDENTITY_INIT;
   glm_mat4_copy(t, mat);
 }
 
@@ -281,19 +285,17 @@ glm_mat4_mul(mat4 m1, mat4 m2, mat4 dest) {
  */
 CGLM_INLINE
 void
-glm_mat4_mulN(mat4 * __restrict matrices[], int len, mat4 dest) {
-  int i;
+glm_mat4_mulN(mat4 * __restrict matrices[], uint32_t len, mat4 dest) {
+  uint32_t i;
 
+#ifdef DEBUG
   assert(len > 1 && "there must be least 2 matrices to go!");
+#endif
 
-  glm_mat4_mul(*matrices[0],
-               *matrices[1],
-               dest);
+  glm_mat4_mul(*matrices[0], *matrices[1], dest);
 
   for (i = 2; i < len; i++)
-    glm_mat4_mul(dest,
-                 *matrices[i],
-                 dest);
+    glm_mat4_mul(dest, *matrices[i], dest);
 }
 
 /*!
@@ -319,20 +321,69 @@ glm_mat4_mulv(mat4 m, vec4 v, vec4 dest) {
 }
 
 /*!
- * @brief multiply vector with mat4's mat3 part(rotation)
+ * @brief convert mat4's rotation part to quaternion
  *
- * @param[in]  m    mat4(affine transform)
- * @param[in]  v    vec3
- * @param[out] dest vec3
+ * @param[in]  m    affine matrix
+ * @param[out] dest destination quaternion
  */
 CGLM_INLINE
 void
-glm_mat4_mulv3(mat4 m, vec3 v, vec3 dest) {
-  vec3 res;
-  res[0] = m[0][0] * v[0] + m[1][0] * v[1] + m[2][0] * v[2];
-  res[1] = m[0][1] * v[0] + m[1][1] * v[1] + m[2][1] * v[2];
-  res[2] = m[0][2] * v[0] + m[1][2] * v[1] + m[2][2] * v[2];
-  glm_vec_copy(res, dest);
+glm_mat4_quat(mat4 m, versor dest) {
+  float trace, r, rinv;
+
+  /* it seems using like m12 instead of m[1][2] causes extra instructions */
+
+  trace = m[0][0] + m[1][1] + m[2][2];
+  if (trace >= 0.0f) {
+    r       = sqrtf(1.0f + trace);
+    rinv    = 0.5f / r;
+
+    dest[0] = rinv * (m[1][2] - m[2][1]);
+    dest[1] = rinv * (m[2][0] - m[0][2]);
+    dest[2] = rinv * (m[0][1] - m[1][0]);
+    dest[3] = r    * 0.5f;
+  } else if (m[0][0] >= m[1][1] && m[0][0] >= m[2][2]) {
+    r       = sqrtf(1.0f - m[1][1] - m[2][2] + m[0][0]);
+    rinv    = 0.5f / r;
+
+    dest[0] = r    * 0.5f;
+    dest[1] = rinv * (m[0][1] + m[1][0]);
+    dest[2] = rinv * (m[0][2] + m[2][0]);
+    dest[3] = rinv * (m[1][2] - m[2][1]);
+  } else if (m[1][1] >= m[2][2]) {
+    r       = sqrtf(1.0f - m[0][0] - m[2][2] + m[1][1]);
+    rinv    = 0.5f / r;
+
+    dest[0] = rinv * (m[0][1] + m[1][0]);
+    dest[1] = r    * 0.5f;
+    dest[2] = rinv * (m[1][2] + m[2][1]);
+    dest[3] = rinv * (m[2][0] - m[0][2]);
+  } else {
+    r       = sqrtf(1.0f - m[0][0] - m[1][1] + m[2][2]);
+    rinv    = 0.5f / r;
+
+    dest[0] = rinv * (m[0][2] + m[2][0]);
+    dest[1] = rinv * (m[1][2] + m[2][1]);
+    dest[2] = r    * 0.5f;
+    dest[3] = rinv * (m[0][1] - m[1][0]);
+  }
+}
+
+/*!
+ * @brief multiply vector with mat4
+ *
+ * @param[in]  m    mat4(affine transform)
+ * @param[in]  v    vec3
+ * @param[in]  last 4th item to make it vec4
+ * @param[out] dest result vector (vec3)
+ */
+CGLM_INLINE
+void
+glm_mat4_mulv3(mat4 m, vec3 v, float last, vec3 dest) {
+  vec4 res;
+  glm_vec4(v, last, res);
+  glm_mat4_mulv(m, res, res);
+  glm_vec3(res, dest);
 }
 
 /*!
@@ -535,7 +586,7 @@ glm_mat4_inv_fast(mat4 mat, mat4 dest) {
 CGLM_INLINE
 void
 glm_mat4_swap_col(mat4 mat, int col1, int col2) {
-  vec4 tmp;
+  CGLM_ALIGN(16) vec4 tmp;
   glm_vec4_copy(mat[col1], tmp);
   glm_vec4_copy(mat[col2], mat[col1]);
   glm_vec4_copy(tmp, mat[col2]);
@@ -551,7 +602,7 @@ glm_mat4_swap_col(mat4 mat, int col1, int col2) {
 CGLM_INLINE
 void
 glm_mat4_swap_row(mat4 mat, int row1, int row2) {
-  vec4 tmp;
+  CGLM_ALIGN(16) vec4 tmp;
   tmp[0] = mat[0][row1];
   tmp[1] = mat[1][row1];
   tmp[2] = mat[2][row1];
@@ -568,5 +619,4 @@ glm_mat4_swap_row(mat4 mat, int row1, int row2) {
   mat[3][row2] = tmp[3];
 }
 
-#else
 #endif /* cglm_mat_h */

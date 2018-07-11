@@ -19,9 +19,15 @@
 #define cglm_util_h
 
 #include "common.h"
+#include <stdbool.h>
+
+#define GLM_MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
+#define GLM_MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 
 /*!
- * @brief get sign of 32 bit integer as +1 or -1
+ * @brief get sign of 32 bit integer as +1, -1, 0
+ *
+ * Important: It returns 0 for zero input
  *
  * @param val integer value
  */
@@ -29,6 +35,19 @@ CGLM_INLINE
 int
 glm_sign(int val) {
   return ((val >> 31) - (-val >> 31));
+}
+
+/*!
+ * @brief get sign of 32 bit float as +1, -1, 0
+ *
+ * Important: It returns 0 for zero/NaN input
+ *
+ * @param val float value
+ */
+CGLM_INLINE
+float
+glm_signf(float val) {
+  return (float)((val > 0.0f) - (val < 0.0f));
 }
 
 /*!
@@ -83,7 +102,6 @@ glm_make_deg(float *rad) {
 CGLM_INLINE
 float
 glm_pow2(float x) {
-
   return x * x;
 }
 
@@ -113,6 +131,79 @@ glm_max(float a, float b) {
   if (a > b)
     return a;
   return b;
+}
+
+/*!
+ * @brief clamp a number between min and max
+ *
+ * @param[in] val    value to clamp
+ * @param[in] minVal minimum value
+ * @param[in] maxVal maximum value
+ */
+CGLM_INLINE
+float
+glm_clamp(float val, float minVal, float maxVal) {
+  return glm_min(glm_max(val, minVal), maxVal);
+}
+
+/*!
+ * @brief linear interpolation between two number
+ *
+ * formula:  from + s * (to - from)
+ *
+ * @param[in]   from from value
+ * @param[in]   to   to value
+ * @param[in]   t    interpolant (amount) clamped between 0 and 1
+ */
+CGLM_INLINE
+float
+glm_lerp(float from, float to, float t) {
+  return from + glm_clamp(t, 0.0f, 1.0f) * (to - from);
+}
+
+/*!
+ * @brief check if two float equal with using EPSILON
+ *
+ * @param[in]   a   a
+ * @param[in]   b   b
+ */
+CGLM_INLINE
+bool
+glm_eq(float a, float b) {
+  return fabsf(a - b) <= FLT_EPSILON;
+}
+
+/*!
+ * @brief percentage of current value between start and end value
+ *
+ * maybe fraction could be alternative name.
+ *
+ * @param[in]   from    from value
+ * @param[in]   to      to value
+ * @param[in]   current current value
+ */
+CGLM_INLINE
+float
+glm_percent(float from, float to, float current) {
+  float t;
+
+  if ((t = to - from) == 0.0f)
+    return 1.0f;
+
+  return (current - from) / t;
+}
+
+/*!
+ * @brief clamped percentage of current value between start and end value
+ *
+ * @param[in]   from    from value
+ * @param[in]   to      to value
+ * @param[in]   current current value
+ */
+CGLM_INLINE
+float
+glm_percentc(float from, float to, float current) {
+  return glm_clamp(glm_percent(from, to, current), 0.0f, 1.0f);
 }
 
 #endif /* cglm_util_h */
