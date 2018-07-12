@@ -349,7 +349,7 @@ typedef struct SpriteParams {
 	const char *shader;
 	ShaderProgram *shader_ptr;
 
-	Color color;
+	const Color *color;
 	BlendMode blend;
 
 	struct {
@@ -401,7 +401,7 @@ void r_capability(RendererCapability cap, bool value);
 bool r_capability_current(RendererCapability cap);
 
 void r_color4(float r, float g, float b, float a);
-Color r_color_current(void);
+const Color* r_color_current(void);
 
 void r_blend(BlendMode mode);
 BlendMode r_blend_current(void);
@@ -462,7 +462,7 @@ VertexArray* r_vertex_array_current(void);
 
 void r_clear(ClearBufferFlags flags);
 void r_clear_color4(float r, float g, float b, float a);
-Color r_clear_color_current(void);
+const Color* r_clear_color_current(void);
 
 void r_vsync(VsyncMode mode);
 VsyncMode r_vsync_current(void);
@@ -581,10 +581,8 @@ void r_mat_scale(float sx, float sy, float sz) {
 }
 
 static inline attr_must_inline
-void r_color(Color c) {
-	static float r, g, b, a;
-	parse_color(c, &r, &g, &b, &a);
-	r_color4(r, g, b, a);
+void r_color(const Color *c) {
+	r_color4(c->r, c->g, c->b, c->a);
 }
 
 static inline attr_must_inline
@@ -638,17 +636,13 @@ void r_uniform_vec4(const char *name, float x, float y, float z, float w) {
 }
 
 static inline attr_must_inline
-void r_uniform_rgb(const char *name, Color c) {
-	static float r, g, b, a;
-	parse_color(c, &r, &g, &b, &a);
-	r_uniform_vec3(name, r, g, b);
+void r_uniform_rgb(const char *name, const Color *c) {
+	r_uniform_vec3(name, c->r, c->g, c->b);
 }
 
 static inline attr_must_inline
-void r_uniform_rgba(const char *name, Color c) {
-	static float r, g, b, a;
-	parse_color(c, &r, &g, &b, &a);
-	r_uniform_vec4(name, r, g, b, a);
+void r_uniform_rgba(const char *name, const Color *c) {
+	r_uniform_vec4(name, c->r, c->g, c->b, c->a);
 }
 
 static inline attr_must_inline
@@ -674,10 +668,8 @@ void r_clear_color3(float r, float g, float b) {
 }
 
 static inline attr_must_inline
-void r_clear_color(Color c) {
-	static float r, g, b, a;
-	parse_color(c, &r, &g, &b, &a);
-	r_clear_color4(r, g, b, a);
+void r_clear_color(const Color *c) {
+	r_clear_color4(c->r, c->g, c->b, c->a);
 }
 
 static inline attr_must_inline attr_nonnull(1)

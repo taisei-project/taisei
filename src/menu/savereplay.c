@@ -54,7 +54,7 @@ static void draw_saverpy_menu(MenuData *m) {
 		.font = "big",
 		.align = ALIGN_CENTER,
 		.shader = "text_default",
-		.color = rgba(1, 1, 1, 1),
+		.color = RGBA(1, 1, 1, 1),
 	});
 	r_mat_translate(0, 100, 0);
 
@@ -63,26 +63,22 @@ static void draw_saverpy_menu(MenuData *m) {
 		assert(e->name != NULL);
 
 		float a = e->drawdata * 0.1;
-		Color clr_unmul;
+		Color clr;
 
 		if(e->action == NULL) {
-			clr_unmul = rgba(0.5, 0.5, 0.5, 0.5);
+			clr = *RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.5);
 		} else {
 			float ia = 1-a;
-			clr_unmul = rgba(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, 0.7 + 0.3 * a);
+			clr = *RGBA_MUL_ALPHA(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, 0.7 + 0.3 * a);
 		}
 
-		Color c = color_multiply_alpha(clr_unmul);
-
-		if(c != 0) {
-			text_draw(e->name, &(TextParams) {
-				.font = "big",
-				.align = ALIGN_CENTER,
-				.pos = { -50 + 100 * i, 0 },
-				.shader = "text_default",
-				.color = c,
-			});
-		}
+		text_draw(e->name, &(TextParams) {
+			.font = "big",
+			.align = ALIGN_CENTER,
+			.pos = { -50 + 100 * i, 0 },
+			.shader = "text_default",
+			.color = &clr,
+		});
 	}
 
 	r_mat_pop();

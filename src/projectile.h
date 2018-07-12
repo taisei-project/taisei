@@ -103,7 +103,7 @@ struct Projectile {
 typedef struct ProjArgs {
 	const char *sprite;
 	complex pos;
-	Color color;
+	const Color *color;
 	ProjRule rule;
 	complex args[RULE_ARGC];
 	float angle;
@@ -196,7 +196,7 @@ int linear(Projectile *p, int t);
 int accelerated(Projectile *p, int t);
 int asymptotic(Projectile *p, int t);
 
-void ProjDrawCore(Projectile *proj, Color c);
+void ProjDrawCore(Projectile *proj, const Color *c);
 void ProjDraw(Projectile *p, int t);
 void ProjNoDraw(Projectile *proj, int t);
 

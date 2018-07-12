@@ -39,12 +39,12 @@ Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 	return buf;
 }
 
-void draw_boss_text(Alignment align, float x, float y, const char *text, const char *fnt, Color clr) {
+void draw_boss_text(Alignment align, float x, float y, const char *text, const char *fnt, const Color *clr) {
 	ShaderProgram *sh_prev = r_shader_current();
 	r_shader("text_default");
 	text_draw(text, &(TextParams) {
 		.pos = { x + 1, y + 1 },
-		.color = derive_color(rgb(0, 0, 0), CLRMASK_A, clr),
+		.color = RGBA(0, 0, 0, clr->a),
 		.font = fnt,
 		.align = align,
 	});
@@ -72,7 +72,7 @@ void spell_opening(Boss *b, int time) {
 	float scale = f+1.*(1-f)*(1-f)*(1-f);
 	r_mat_scale(scale,scale,1);
 	r_mat_rotate_deg(360*f,1,1,0);
-	draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, b->current->name, "standard", rgb(1, 1, 1));
+	draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, b->current->name, "standard", RGB(1, 1, 1));
 	r_mat_pop();
 
 	r_capability(RCAP_CULL_FACE, cullcap_saved);
@@ -95,13 +95,18 @@ void draw_extraspell_bg(Boss *boss, int time) {
 	r_blend(BLEND_PREMUL_ALPHA);
 }
 
-Color boss_healthbar_color(AttackType atype) {
-	switch(atype) {
-	default: case AT_Normal:        return rgb(1.00, 1.00, 1.00);
-	         case AT_Spellcard:     return rgb(1.00, 0.65, 0.65);
-	         case AT_SurvivalSpell: return rgb(0.50, 0.50, 1.00);
-	         case AT_ExtraSpell:    return rgb(1.00, 0.30, 0.20);
-	}
+const Color* boss_healthbar_color(AttackType atype) {
+	static const Color colors[] = {
+		[AT_Normal]        = { 1.00, 1.00, 1.00, 1.00 },
+		[AT_Move]          = { 1.00, 1.00, 1.00, 1.00 },
+		[AT_Spellcard]     = { 1.00, 0.65, 0.65, 1.00 },
+		[AT_SurvivalSpell] = { 0.50, 0.50, 1.00, 1.00 },
+		[AT_ExtraSpell]    = { 1.00, 0.30, 0.20, 1.00 },
+		[AT_Immediate]     = { 1.00, 1.00, 1.00, 1.00 },
+	};
+
+	assert(atype >= 0 && atype < sizeof(colors)/sizeof(*colors));
+	return colors + atype;
 }
 
 static StageProgress* get_spellstage_progress(Attack *a, StageInfo **out_stginfo, bool write) {
@@ -177,12 +182,15 @@ static void BossGlow(Projectile *p, int t) {
 	float fade = 1 - (1.5 - s);
 	float deform = 5 - 10 * fade * fade;
 
+	Color c = p->color;
+	c.a = 1.5 - s;
+
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { creal(p->pos), cimag(p->pos) },
 		.sprite_ptr = p->sprite,
 		.scale.both = s,
 		.blend = BLEND_ADD,
-		.color = derive_color(p->color, CLRMASK_A, rgba(0, 0, 0, 1.5 - s)),
+		.color = &c,
 		.custom = deform,
 		.shader = "sprite_silhouette",
 	});
@@ -196,7 +204,7 @@ static int boss_glow(Projectile *p, int t) {
 	return linear(p, t);
 }
 
-static Projectile* spawn_boss_glow(Boss *boss, Color clr, int timeout) {
+static Projectile* spawn_boss_glow(Boss *boss, const Color *clr, int timeout) {
 	// XXX: memdup is required because the Sprite returned by animation_get_frame is only temporarily valid
 	return PARTICLE(
 		.sprite_ptr = memdup(aniplayer_get_frame(&boss->ani), sizeof(Sprite)),
@@ -212,8 +220,8 @@ static Projectile* spawn_boss_glow(Boss *boss, Color clr, int timeout) {
 }
 
 static void spawn_particle_effects(Boss *boss) {
-	Color glowcolor = boss->glowcolor;
-	Color shadowcolor = boss->shadowcolor;
+	Color *glowcolor = &boss->glowcolor;
+	Color *shadowcolor = &boss->shadowcolor;
 
 	Attack *cur = boss->current;
 	bool is_spell = cur && ATTACK_IS_SPELL(cur->type) && !cur->endtime;
@@ -236,7 +244,9 @@ static void spawn_particle_effects(Boss *boss) {
 	if(!(global.frames % (2 + 2 * is_extra)) && (is_spell || boss_is_dying(boss))) {
 		float glowstr = 0.5;
 		float a = (1.0 - glowstr) + glowstr * pow(psin(global.frames/15.0), 1.0);
-		spawn_boss_glow(boss, multiply_colors(glowcolor, rgb(a, a, a)), 24);
+		Color c = *glowcolor;
+		color_mul_scalar(&c, a);
+		spawn_boss_glow(boss, &c, 24);
 	}
 }
 
@@ -255,7 +265,7 @@ void draw_boss_background(Boss *boss) {
 	r_mat_scale(f, f, 1);
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = "boss_circle",
-		.color = rgba(1, 1, 1, 0),
+		.color = RGBA(1, 1, 1, 0),
 	});
 	r_mat_pop();
 }
@@ -283,7 +293,7 @@ static void ent_draw_boss(EntityInterface *ent) {
 	if(boss->current->type == AT_Move && global.frames - boss->current->starttime > 0 && boss_attack_is_final(boss, boss->current))
 		return;
 
-	draw_boss_text(ALIGN_LEFT, 10, 20, boss->name, "standard", rgb(1, 1, 1));
+	draw_boss_text(ALIGN_LEFT, 10, 20, boss->name, "standard", RGB(1, 1, 1));
 
 	if(!boss->current)
 		return;
@@ -297,15 +307,15 @@ static void ent_draw_boss(EntityInterface *ent) {
 		Color textclr;
 
 		if(remaining < 6) {
-			textclr = rgb(1.0, 0.2, 0.2);
+			textclr = *RGB(1.0, 0.2, 0.2);
 		} else if(remaining < 11) {
-			textclr = rgb(1.0, 1.0, 0.2);
+			textclr = *RGB(1.0, 1.0, 0.2);
 		} else {
-			textclr = rgb(1.0, 1.0, 1.0);
+			textclr = *RGB(1.0, 1.0, 1.0);
 		}
 
 		snprintf(buf, sizeof(buf),  "%.2f", remaining);
-		draw_boss_text(ALIGN_CENTER, VIEWPORT_W - 24, 10, buf, "standard", textclr);
+		draw_boss_text(ALIGN_CENTER, VIEWPORT_W - 24, 10, buf, "standard", &textclr);
 
 		StageProgress *p = get_spellstage_progress(boss->current, NULL, false);
 		if(p) {
@@ -317,7 +327,7 @@ static void ent_draw_boss(EntityInterface *ent) {
 			draw_boss_text(ALIGN_RIGHT,
 				VIEWPORT_W + text_width(font, buf, 0) * pow(1 - a, 2),
 				35 + text_height(font, buf, 0),
-				buf, "small", rgba(1, 1, 1, a)
+				buf, "small", RGBA(1, 1, 1, a)
 			);
 		}
 
@@ -421,7 +431,7 @@ void boss_rule_extra(Boss *boss, float alpha) {
 		PARTICLE(
 			.sprite = (frand() < v*0.3 || lt > 1) ? "stain" : "arc",
 			.pos = boss->pos + dir * (100 + 50 * psin(alpha*global.frames/10.0+2*i)) * alpha,
-			.color = rgb(
+			.color = RGB(
 				1.0 - 0.5 * psina *    v,
 				0.5 + 0.2 * psina * (1-v),
 				0.5 + 0.5 * psina *    v
@@ -497,7 +507,7 @@ static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
 	player_add_points(plr, total);
 
 	StageTextTable tbl;
-	stagetext_begin_table(&tbl, title, rgb(1, 1, 1), rgb(1, 1, 1), VIEWPORT_W/2, 0,
+	stagetext_begin_table(&tbl, title, RGB(1, 1, 1), RGB(1, 1, 1), VIEWPORT_W/2, 0,
 		ATTACK_END_DELAY_SPELL * 2, ATTACK_END_DELAY_SPELL / 2, ATTACK_END_DELAY_SPELL);
 	stagetext_table_add_numeric_nonzero(&tbl, "Clear bonus", clear_bonus);
 	stagetext_table_add_numeric_nonzero(&tbl, "Time bonus", time_bonus);
@@ -697,7 +707,7 @@ void process_boss(Boss **pboss) {
 			.pos = boss->pos,
 			.rule = asymptotic,
 			.draw_rule = Petal,
-			.color = rgba(0.1+sin(10*t),0.1+cos(10*t),0.5,t),
+			.color = RGBA(0.1 + sin(10*t), 0.1 + cos(10*t), 0.5, t),
 			.args = {
 				sign(anfrand(5))*(3+t*5*afrand(0))*cexp(I*M_PI*8*t),
 				5+I,
@@ -717,7 +727,7 @@ void process_boss(Boss **pboss) {
 
 		if(t == 1) {
 			for(int i = 0; i < 10; ++i) {
-				spawn_boss_glow(boss, boss->glowcolor, 60 + 20 * i);
+				spawn_boss_glow(boss, &boss->glowcolor, 60 + 20 * i);
 			}
 
 			for(int i = 0; i < 256; i++) {
@@ -847,12 +857,11 @@ void boss_start_attack(Boss *b, Attack *a) {
 			PARTICLE(
 				.sprite = "stain",
 				.pos = VIEWPORT_W/2 + VIEWPORT_W/4*anfrand(0)+I*VIEWPORT_H/2+I*anfrand(1)*30,
-				.color = rgb(0.2,0.3,0.4),
+				.color = RGBA(0.2, 0.3, 0.4, 0.0),
 				.rule = linear,
 				.timeout = 50,
 				.draw_rule = GrowFade,
 				.args = { sign(anfrand(2))*10*(1+afrand(3)) },
-				.flags = PFLAG_DRAWADD,
 			);
 		}
 

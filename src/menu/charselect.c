@@ -124,17 +124,12 @@ void draw_char_menu(MenuData *menu) {
 			o = 1;
 		}
 
-		Color clr = rgba(o, o, o, o);
-
-		if(clr != 0) {
-			r_color(clr);
-
-			text_draw(title, &(TextParams) {
-				.align = ALIGN_CENTER,
-				.pos = { 0, 70 },
-				.shader = "text_default",
-			});
-		}
+		text_draw(title, &(TextParams) {
+			.align = ALIGN_CENTER,
+			.pos = { 0, 70 },
+			.shader = "text_default",
+			.color = RGBA(o, o, o, o);
+		});
 
 		r_mat_pop();
 	}

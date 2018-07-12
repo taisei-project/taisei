@@ -27,7 +27,7 @@ typedef struct RendererFuncs {
 	void (*draw)(Primitive prim, uint first, uint count, uint32_t * indices, uint instances, uint base_instance);
 
 	void (*color4)(float r, float g, float b, float a);
-	Color (*color_current)(void);
+	const Color* (*color_current)(void);
 
 	void (*blend)(BlendMode mode);
 	BlendMode (*blend_current)(void);
@@ -85,7 +85,7 @@ typedef struct RendererFuncs {
 
 	void (*clear)(ClearBufferFlags flags);
 	void (*clear_color4)(float r, float g, float b, float a);
-	Color (*clear_color_current)(void);
+	const Color* (*clear_color_current)(void);
 
 	void (*vsync)(VsyncMode mode);
 	VsyncMode (*vsync_current)(void);

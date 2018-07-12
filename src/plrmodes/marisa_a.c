@@ -145,14 +145,14 @@ static float set_alpha_dimmed(Uniform *u_alpha, float a) {
 	return set_alpha(u_alpha, a * a * 0.5);
 }
 
-static void draw_magic_star(complex pos, double a, Color c1, Color c2) {
+static void draw_magic_star(complex pos, double a, const Color *clr1, const Color *clr2) {
 	if(a <= 0) {
 		return;
 	}
 
-	Color mul = rgba(a, a, a, 0);
-	c1 = multiply_colors(c1, mul);
-	c2 = multiply_colors(c2, mul);
+	Color *mul = RGBA(a, a, a, 0);
+	Color *c1 = color_mul(COLOR_COPY(clr1), mul);
+	Color *c2 = color_mul(COLOR_COPY(clr2), mul);
 
 	Sprite *spr = get_sprite("part/magic_star");
 	r_shader("sprite_bullet");
@@ -185,8 +185,8 @@ static void marisa_laser_slave_visual(Enemy *e, int t, bool render) {
 	float star_alpha = laser_renderer->args[1] * global_magicstar_alpha;
 
 	draw_magic_star(e->pos, 0.75 * star_alpha,
-		rgb(1.0, 0.1, 0.1),
-		rgb(0.0, 0.1, 1.1)
+		RGB(1.0, 0.1, 0.1),
+		RGB(0.0, 0.1, 1.1)
 	);
 
 	marisa_common_slave_visual(e, t, render);
@@ -199,7 +199,7 @@ static void marisa_laser_slave_visual(Enemy *e, int t, bool render) {
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = "part/smoothdot",
-		.color = rgba(1, 1, 1, laser_alpha),
+		.color = RGBA_MUL_ALPHA(1, 1, 1, laser_alpha),
 		.pos = { creal(ld->trace_hit.first), cimag(ld->trace_hit.first) },
 	});
 }
@@ -420,7 +420,7 @@ static int masterspark(Enemy *e, int t2) {
 	float t = player_get_bomb_progress(&global.plr, NULL);
 	if(t2%2==0 && t < 3./4) {
 		complex dir = -cexp(1.2*I*nfrand())*I;
-		Color c = rgb(0.7+0.3*sin(t*30),0.7+0.3*cos(t*30),0.7+0.3*cos(t*3));
+		Color *c = RGB(0.7+0.3*sin(t*30), 0.7+0.3*cos(t*30), 0.7+0.3*cos(t*3));
 		PARTICLE(
 			.sprite = "maristar_orbit",
 			.pos = global.plr.pos+40*dir,
@@ -447,7 +447,7 @@ static int masterspark(Enemy *e, int t2) {
 		PARTICLE(
 			.sprite = "smoke",
 			.pos = global.plr.pos-40*I,
-			.color = rgb(0.9,1,1),
+			.color = RGB(0.9, 1, 1),
 			.rule = linear,
 			.timeout = 50,
 			.args = { -5*dir, 3 },

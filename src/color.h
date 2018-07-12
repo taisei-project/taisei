@@ -11,68 +11,74 @@
 
 #include "util.h"
 
-#define CLR_R ((Color)48)
-#define CLR_G ((Color)32)
-#define CLR_B ((Color)16)
-#define CLR_A ((Color)0)
+typedef struct Color {
+	float r, g, b, a;
+} Color;
 
-#define CLR_CMASK ((Color)0xffff)
-#define CLR_ONEVALUE ((Color)0xff)
+/*
+ * These macros return a pointer to a new Color instance, which is *block-scoped*,
+ * and has automatic storage-class.
+ */
 
-#define CLRMASK_R (CLR_CMASK << CLR_R)
-#define CLRMASK_G (CLR_CMASK << CLR_G)
-#define CLRMASK_B (CLR_CMASK << CLR_B)
-#define CLRMASK_A (CLR_CMASK << CLR_A)
+#define RGBA(r, g, b, a) (&(Color) { (r), (g), (b), (a) })
+#define RGBA_MUL_ALPHA(r, g, b, a) color_mul_alpha(RGBA((r), (g), (b), (a)))
+#define RGB(r, g, b) RGBA((r), (g), (b), 1)
 
-typedef uint64_t Color;
-typedef int16_t ColorComponent;
+#define HSLA(h, s, l, a) color_hsla((&(Color) { 0 }), (h), (s), (l), (a))
+#define HSLA_MUL_ALPHA(h, s, l, a) color_mul_alpha(HSLA((h), (s), (l), (a)))
+#define HSL(h, s, l) HSLA((h), (s), (l), 1)
 
-#ifndef COLOR_INLINE
-	#ifdef NDEBUG
-		#define COLOR_INLINE
-	#endif
-#endif
+#define COLOR_COPY(c) color_copy((&(Color) { 0 }), (c))
 
-#ifdef COLOR_INLINE
-#define rgba(r,g,b,a) RGBA(r,g,b,a)
-#define rgb(r,g,b) RGB(r,g,b)
-#else
-Color rgba(float r, float g, float b, float a) attr_const;
-Color rgb(float r, float g, float b) attr_const;
-#endif
+/*
+ * All of these modify the first argument in-place, and return it for convenience.
+ */
 
-Color hsla(float h, float s, float l, float a) attr_const;
-Color hsl(float h, float s, float l) attr_const;
+Color* color_copy(Color *dst, const Color *src)
+	attr_nonnull(1) attr_returns_nonnull;
 
-void parse_color(Color clr, float *r, float *g, float *b, float *a) attr_nonnull(2, 3, 4, 5);
-void parse_color_array(Color clr, float array[4]) attr_nonnull(2);
-Color derive_color(Color src, Color mask, Color mod) attr_const;
-Color multiply_colors(Color c1, Color c2) attr_const;
-Color add_colors(Color c1, Color c2) attr_const;
-Color subtract_colors(Color c1, Color c2) attr_const;
-Color mix_colors(Color c1, Color c2, double a) attr_const;
-Color approach_color(Color src, Color dst, double delta) attr_const;
-Color color_multiply_alpha(Color clr);
-Color color_demultiply_alpha(Color clr);
-float color_component(Color clr, uint ofs) attr_const;
-char* color_str(Color c) attr_returns_nonnull;
+Color* color_hsla(Color *clr, float h, float s, float l, float a)
+	attr_nonnull(1) attr_returns_nonnull;
 
-#ifdef RGBA
-#undef RGBA
-#endif
+Color* color_add(Color *clr, const Color *clr2)
+	attr_nonnull(1) attr_returns_nonnull;
 
-#ifdef RGB
-#undef RGB
-#endif
+Color* color_sub(Color *clr, const Color *clr2)
+	attr_nonnull(1) attr_returns_nonnull;
 
-#define RGBA(r,g,b,a) \
-	((((Color)(ColorComponent)(CLR_ONEVALUE * (r)) & CLR_CMASK) << CLR_R) + \
-	 (((Color)(ColorComponent)(CLR_ONEVALUE * (g)) & CLR_CMASK) << CLR_G) + \
-	 (((Color)(ColorComponent)(CLR_ONEVALUE * (b)) & CLR_CMASK) << CLR_B) + \
-	 (((Color)(ColorComponent)(CLR_ONEVALUE * (a)) & CLR_CMASK) << CLR_A))
+Color* color_mul(Color *clr, const Color *clr2)
+	attr_nonnull(1) attr_returns_nonnull;
 
-#define RGB(r,g,b) \
-	((((Color)(ColorComponent)(CLR_ONEVALUE * (r)) & CLR_CMASK) << CLR_R) + \
-	 (((Color)(ColorComponent)(CLR_ONEVALUE * (g)) & CLR_CMASK) << CLR_G) + \
-	 (((Color)(ColorComponent)(CLR_ONEVALUE * (b)) & CLR_CMASK) << CLR_B) + \
-	 (CLR_ONEVALUE << CLR_A))
+Color* color_mul_alpha(Color *clr)
+	attr_nonnull(1) attr_returns_nonnull;
+
+Color* color_mul_scalar(Color *clr, float scalar)
+	attr_nonnull(1) attr_returns_nonnull;
+
+Color* color_div(Color *clr, const Color *clr2)
+	attr_nonnull(1) attr_returns_nonnull;
+
+Color* color_div_alpha(Color *clr)
+	attr_nonnull(1) attr_returns_nonnull;
+
+Color* color_div_scalar(Color *clr, float scalar)
+	attr_nonnull(1) attr_returns_nonnull;
+
+Color* color_lerp(Color *clr, const Color *clr2, float a)
+	attr_nonnull(1) attr_returns_nonnull;
+
+Color* color_approach(Color *clr, const Color *clr2, float delta)
+	attr_nonnull(1) attr_returns_nonnull;
+
+Color* color_set_opacity(Color *clr, float opacity)
+	attr_nonnull(1) attr_returns_nonnull;
+
+/*
+ * End of color manipulation routines.
+ */
+
+bool color_equals(const Color *clr, const Color *clr2)
+	attr_nonnull(1, 2);
+
+char* color_str(const Color *clr)
+	attr_nonnull(1) attr_returns_nonnull attr_nodiscard;

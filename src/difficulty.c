@@ -11,37 +11,46 @@
 #include "difficulty.h"
 #include "resource/resource.h"
 
-const char* difficulty_name(Difficulty diff) {
-	switch(diff) {
-		case D_Easy:    return "Easy";
-		case D_Normal:  return "Normal";
-		case D_Hard:    return "Hard";
-		case D_Lunatic: return "Lunatic";
-		case D_Extra:   return "Extra";
-		default:        return "Unknown";
+typedef struct DiffDef {
+	const char *name;
+	const char *spr_name;
+	Color color;
+} DiffDef;
+
+static DiffDef diffs[] = {
+	{ "Easy",    "difficulty/easy",    { 0.5, 1.0, 0.5, 1.0 } },
+	{ "Normal",  "difficulty/normal",  { 0.5, 1.0, 0.5, 1.0 } },
+	{ "Hard",    "difficulty/hard",    { 0.5, 1.0, 0.5, 1.0 } },
+	{ "Lunatic", "difficulty/lunatic", { 0.5, 1.0, 0.5, 1.0 } },
+
+	// TODO: sprite for this
+	{ "Extra",   "difficulty/lunatic", { 0.5, 1.0, 0.5, 1.0 } },
+};
+
+static inline DiffDef* get_diff_def(Difficulty diff) {
+	uint idx = diff - D_Easy;
+
+	if(idx < sizeof(diffs)/sizeof(*diffs)) {
+		return diffs + idx;
 	}
+
+	return NULL;
+}
+
+const char* difficulty_name(Difficulty diff) {
+	DiffDef *d = get_diff_def(diff);
+	return d ? d->name : "Unknown";
 }
 
 const char* difficulty_sprite_name(Difficulty diff) {
-	switch(diff) {
-		case D_Easy:    return "difficulty/easy";
-		case D_Normal:  return "difficulty/normal";
-		case D_Hard:    return "difficulty/hard";
-		case D_Lunatic: return "difficulty/lunatic";
-		case D_Extra:   return "difficulty/lunatic";
-		default:        return "difficulty/unknown"; // This sprite is not supposed to exist.
-	}
+	DiffDef *d = get_diff_def(diff);
+	return d ? d->spr_name : "difficulty/unknown";
 }
 
-Color difficulty_color(Difficulty diff) {
-	switch(diff) {
-		case D_Easy:    return rgb(0.5, 1.0, 0.5);
-		case D_Normal:  return rgb(0.5, 0.5, 1.0);
-		case D_Hard:    return rgb(1.0, 0.5, 0.5);
-		case D_Lunatic: return rgb(1.0, 0.5, 1.0);
-		case D_Extra:   return rgb(0.5, 1.0, 1.0);
-		default:        return rgb(0.5, 0.5, 0.5);
-	}
+const Color* difficulty_color(Difficulty diff) {
+	static Color unknown_clr = { 0.5, 0.5, 0.5, 1.0 };
+	DiffDef *d = get_diff_def(diff);
+	return d ? &d->color : &unknown_clr;
 }
 
 void difficulty_preload(void) {

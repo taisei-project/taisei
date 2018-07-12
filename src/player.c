@@ -80,7 +80,7 @@ void player_free(Player *plr) {
 static void player_full_power(Player *plr) {
 	play_sound("full_power");
 	stage_clear_hazards(CLEAR_HAZARDS_ALL);
-	stagetext_add("Full Power!", VIEWPORT_W * 0.5 + VIEWPORT_H * 0.33 * I, ALIGN_CENTER, get_font("big"), rgb(1, 1, 1), 0, 60, 20, 20);
+	stagetext_add("Full Power!", VIEWPORT_W * 0.5 + VIEWPORT_H * 0.33 * I, ALIGN_CENTER, get_font("big"), RGB(1, 1, 1), 0, 60, 20, 20);
 }
 
 bool player_set_power(Player *plr, short npow) {
@@ -130,7 +130,7 @@ static void ent_draw_player(EntityInterface *ent) {
 		r_draw_sprite(&(SpriteParams) {
 			.sprite = "fairy_circle",
 			.rotation.angle = DEG2RAD * global.frames * 10,
-			.color = rgba(1, 1, 1, 0.2 * (clamp(plr->focus, 0, 15) / 15.0)),
+			.color = RGBA_MUL_ALPHA(1, 1, 1, 0.2 * (clamp(plr->focus, 0, 15) / 15.0)),
 			.pos = { creal(plr->pos), cimag(plr->pos) },
 		});
 	}
@@ -138,15 +138,15 @@ static void ent_draw_player(EntityInterface *ent) {
 	Color c;
 
 	if(global.frames - abs(plr->recovery) < 0 && (global.frames/8)&1) {
-		c = rgba(0.4, 0.4, 1.0, 0.9);
+		c = *RGBA_MUL_ALPHA(0.4, 0.4, 1.0, 0.9);
 	} else {
-		c = rgba(1.0, 1.0, 1.0, 1.0);
+		c = *RGBA_MUL_ALPHA(1.0, 1.0, 1.0, 1.0);
 	}
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = aniplayer_get_frame(&plr->ani),
 		.pos = { creal(plr->pos), cimag(plr->pos) },
-		.color = c,
+		.color = &c,
 	});
 }
 
@@ -180,7 +180,7 @@ static void player_focus_circle_visual(Enemy *e, int t, bool render) {
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = "focus",
 		.rotation.angle = rot_speed,
-		.color = rgba(1, 1, 1, creal(e->args[0])),
+		.color = RGBA(1, 1, 1, creal(e->args[0])),
 		.pos = { creal(e->pos), cimag(e->pos) },
 		.scale.both = scale,
 	});
@@ -188,7 +188,7 @@ static void player_focus_circle_visual(Enemy *e, int t, bool render) {
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = "focus",
 		.rotation.angle = rot_speed * -1,
-		.color = rgba(1, 1, 1, creal(e->args[0])),
+		.color = RGBA_MUL_ALPHA(1, 1, 1, creal(e->args[0])),
 		.pos = { creal(e->pos), cimag(e->pos) },
 		.scale.both = scale,
 	});
@@ -458,7 +458,7 @@ static int player_death_effect(Projectile *p, int t) {
 				PARTICLE(
 					.sprite = "blast",
 					.pos = p->pos + 2 * frand() * cexp(I*M_PI*2*frand()),
-					.color = rgba(0.3, 0.4, 1.0, 0.5),
+					.color = RGBA_MUL_ALPHA(0.3, 0.4, 1.0, 0.5),
 					.timeout = 12 + i + 2 * nfrand(),
 					.draw_rule = GrowFade,
 					.args = { 0, 20 + i },
@@ -501,7 +501,7 @@ void player_death(Player *plr) {
 		PARTICLE(
 			.sprite = "blast",
 			.pos = plr->pos,
-			.color = rgba(1.0, 0.3, 0.3, 0.5),
+			.color = RGBA_MUL_ALPHA(1.0, 0.3, 0.3, 0.5),
 			.timeout = 35,
 			.draw_rule = GrowFade,
 			.args = { 0, 2.4 },

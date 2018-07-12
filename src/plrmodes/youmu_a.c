@@ -15,10 +15,11 @@
 
 #define MYON (global.plr.slaves.first)
 
-static Color myon_color(float f, float a) {
-	// return rgba(0.8+0.2*f, 0.9-0.4*sqrt(f), 1.0-0.2*f*f, a);
-	// return rgba(0.8+0.2*f, 0.9-0.4*sqrt(f), 1.0-0.4*f*f, a);
-	return rgba(0.8+0.2*f, 0.9-0.4*sqrt(f), 1.0-0.35*f*f, a);
+static Color* myon_color(Color *c, float f, float a) {
+	// *RGBA_MUL_ALPHA(0.8+0.2*f, 0.9-0.4*sqrt(f), 1.0-0.2*f*f, a);
+	// *RGBA_MUL_ALPHA(0.8+0.2*f, 0.9-0.4*sqrt(f), 1.0-0.4*f*f, a);
+	*c = *RGBA_MUL_ALPHA(0.8+0.2*f, 0.9-0.4*sqrt(f), 1.0-0.35*f*f, a);
+	return c;
 }
 
 static int myon_particle_rule(Projectile *p, int t) {
@@ -26,9 +27,13 @@ static int myon_particle_rule(Projectile *p, int t) {
 		return ACTION_ACK;
 	}
 
+	// p->color = derive_color(color_lerp(myon_color(0.5, 0), p->color, 0.04), CLRMASK_A, p->color);
+	Color prev_color = p->color;
+	myon_color(&p->color, 0.5, prev_color.a);
+	color_lerp(&p->color, &prev_color, 0.04);
+
 	p->pos += p->args[0];
 	p->angle += 0.03 * (1 - 2 * (p->birthtime & 1));
-	p->color = derive_color(approach_color(p->color, myon_color(0.5, 0), 0.04), CLRMASK_A, p->color);
 
 	return ACTION_NONE;
 }
@@ -45,10 +50,12 @@ static int myon_flare_particle_rule(Projectile *p, int t) {
 		return ACTION_ACK;
 	}
 
+	// p->color = derive_color(p->color, CLRMASK_A, rgba(1, 1, 1, pow(1 - min(1, t / (double)p->timeout), 2)));
+	color_set_opacity(&p->color, pow(1 - min(1, t / (double)p->timeout), 2));
+
 	// wiggle wiggle
 	p->pos += 0.05 * (MYON->pos - p->pos) * cexp(I * sin((t - global.frames * 2) * 0.1) * M_PI/8);
 	p->args[0] = 3 * myon_tail_dir();
-	p->color = derive_color(p->color, CLRMASK_A, rgba(1, 1, 1, pow(1 - min(1, t / (double)p->timeout), 2)));
 
 	return myon_particle_rule(p, t);
 }
@@ -56,12 +63,14 @@ static int myon_flare_particle_rule(Projectile *p, int t) {
 static void myon_draw_trail(Projectile *p, int t) {
 	float fadein = clamp(t/10.0, p->args[2], 1);
 	float s = min(1, 1 - t / (double)p->timeout);
-	float a = color_component(p->color, CLR_A) * fadein;
-	Color c = derive_color(p->color, CLRMASK_A, rgba(0, 0, 0, a * s * s));
-	youmu_common_draw_proj(p, c, fadein * (2-s) * p->args[1]);
+	float a = p->color.a * fadein;
+	// Color c = derive_color(p->color, CLRMASK_A, rgba(0, 0, 0, a * s * s));
+	Color c = p->color;
+	color_set_opacity(&c, a * s * s);
+	youmu_common_draw_proj(p, &c, fadein * (2-s) * p->args[1]);
 }
 
-static void spawn_stardust(complex pos, Color clr, int timeout, complex v) {
+static void spawn_stardust(complex pos, Color *clr, int timeout, complex v) {
 	PARTICLE(
 		.sprite = "stardust",
 		.pos = pos+5*frand()*cexp(2.0*I*M_PI*frand()),
@@ -85,11 +94,13 @@ static void myon_spawn_trail(Enemy *e, int t) {
 	float f = abs(global.plr.focus) / 30.0;
 	stardust_v = f * stardust_v + (1 - f) * -I;
 
+	Color c;
+
 	if(player_should_shoot(&global.plr, true)) {
 		PARTICLE(
 			.sprite = "smoke",
 			.pos = pos+10*frand()*cexp(2.0*I*M_PI*frand()),
-			.color = myon_color(f, (1 + f) * 0.05),
+			.color = myon_color(&c, f, (1 + f) * 0.05),
 			.draw_rule = myon_draw_trail,
 			.rule = myon_particle_rule,
 			.timeout = 60,
@@ -102,7 +113,7 @@ static void myon_spawn_trail(Enemy *e, int t) {
 		PARTICLE(
 			.sprite = "flare",
 			.pos = pos+5*frand()*cexp(2.0*I*M_PI*frand()),
-			.color = rgba(1, 1, 1, 0.2),
+			.color = RGBA_MUL_ALPHA(1, 1, 1, 0.2),
 			.draw_rule = Shrink,
 			.rule = myon_particle_rule,
 			.timeout = 10,
@@ -115,7 +126,7 @@ static void myon_spawn_trail(Enemy *e, int t) {
 
 	PARTICLE(
 		.sprite = "myon",
-		.color = myon_color(f, 0.5),
+		.color = myon_color(&c, f, 0.5),
 		.pos = pos,
 		.rule = myon_flare_particle_rule,
 		.timeout = 40,
@@ -126,15 +137,17 @@ static void myon_spawn_trail(Enemy *e, int t) {
 		.layer = LAYER_PARTICLE_LOW,
 	);
 
-	spawn_stardust(pos, rgba(1, 1, 1, 0.1), 60, stardust_v);
+	spawn_stardust(pos, RGBA_MUL_ALPHA(1, 1, 1, 0.1), 60, stardust_v);
 }
 
 static void myon_draw_proj_trail(Projectile *p, int t) {
 	float time_progress = t / p->args[0];
 	float s = 2 * time_progress;
-	float a = color_component(p->color, CLR_A) * min(1, s) * (1 - time_progress);
-	Color c = derive_color(p->color, CLRMASK_A, rgba(0, 0, 0, a));
-	youmu_common_draw_proj(p, c, s * p->args[2]);
+	float a = p->color.a * min(1, s) * (1 - time_progress);
+	// Color c = derive_color(p->color, CLRMASK_A, rgba(0, 0, 0, a));
+	Color c = p->color;
+	color_set_opacity(&c, a);
+	youmu_common_draw_proj(p, &c, s * p->args[2]);
 }
 
 static int myon_proj(Projectile *p, int t) {
@@ -152,7 +165,8 @@ static int myon_proj(Projectile *p, int t) {
 	PARTICLE(
 		.sprite = "boss_shadow",
 		.pos = p->pos,
-		.color = derive_color(p->color, CLRMASK_A, rgba(0, 0, 0, 0.075)),
+		// .color = derive_color(p->color, CLRMASK_A, rgba(0, 0, 0, 0.075)),
+		.color = color_set_opacity(COLOR_COPY(&p->color), 0.075),
 		.draw_rule = myon_draw_proj_trail,
 		.rule = linear,
 		.timeout = 10,
@@ -166,7 +180,7 @@ static int myon_proj(Projectile *p, int t) {
 
 static void myon_proj_draw(Projectile *p, int t) {
 	float a = 1 - pow(1 - min(1, t / 10.0), 2);
-	Color c = multiply_colors(p->color, rgba(1, 1, 1, a));
+	Color *c = color_mul_scalar(COLOR_COPY(&p->color), a);
 	youmu_common_draw_proj(p, c, 1);
 }
 
@@ -176,24 +190,27 @@ static Projectile* youmu_mirror_myon_proj(char *tex, complex pos, double speed, 
 
 	// float f = ((global.plr.inputflags & INFLAG_FOCUS) == INFLAG_FOCUS);
 	float f = smoothreclamp(abs(global.plr.focus) / 30.0, 0, 1, 0, 1);
-	Color c, intermediate = rgb(1.0, 1.0, 1.0);
+	Color c, intermediate = { 1.0, 1.0, 1.0, 1.0 };
 
 	if(f < 0.5) {
-		c = mix_colors(
-			intermediate,
-			rgb(0.4, 0.6, 0.6),
+		c = *RGB(0.4, 0.6, 0.6);
+		color_lerp(
+			&c,
+			&intermediate,
 			f * 2
 		);
 	} else {
-		c = mix_colors(
-			myon_color(f, 1),
-			intermediate,
+		Color mc;
+		c = intermediate;
+		color_lerp(
+			&c,
+			myon_color(&mc, f, 1),
 			(f - 0.5) * 2
 		);
 	}
 
 	return PROJECTILE(
-		.color = c, // mix_colors(myon_color(f, 1), rgb(0.6, 0.8, 0.7), f),
+		.color = &c,
 		.sprite = tex,
 		.pos = pos,
 		.rule = myon_proj,
@@ -355,19 +372,21 @@ static int youmu_split(Enemy *e, int t) {
 	//FROM_TO(0, 220, 1) {
 		tsrand_fill(5);
 		double x = nfrand()*10;
+		Color *c = RGBA_MUL_ALPHA(0.1, 0.1, 0.5, clamp(min(60, t), 0, 1));
+		c->a = 0;
+
 		PARTICLE(
 			.sprite = "petal",
 			.pos = VIEWPORT_W/2+x+(x>0)*VIEWPORT_H*I,
 			.rule = accelerated,
 			.draw_rule = Petal,
-			.color = rgba(0.1, 0.1, 0.5, min(60, t)),
+			.color = c,
 			.args = {
 				-10*I*x/fabs(x),
 				-I*x/fabs(x)+anfrand(4)*0.1,
 				afrand(1) + afrand(2)*I,
 				afrand(3) + 360.0*I*afrand(0)
 			},
-			.flags = PFLAG_DRAWADD,
 		);
 	//}
 	FROM_TO(0, 220, 1) {
@@ -386,7 +405,8 @@ static void youmu_mirror_shader(Framebuffer *fb) {
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
 
-	colorfill(1,1,1,max(0,1-10*t));
+	float f = max(0,1 - 10*t);
+	colorfill(f, f, f, f);
 }
 
 static void youmu_mirror_bomb(Player *plr) {

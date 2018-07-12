@@ -52,7 +52,7 @@ void youmu_common_shot(Player *plr) {
 	play_loop("generic_shot");
 
 	if(!(global.frames % 6)) {
-		Color c = rgb(1, 1, 1);
+		Color *c = RGB(1, 1, 1);
 
 		PROJECTILE(
 			.proto = pp_youmu,

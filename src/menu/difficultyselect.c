@@ -29,7 +29,7 @@ void update_difficulty_menu(MenuData *menu) {
 		menu->entries[i].drawdata += 0.2 * (30*(i == menu->cursor) - menu->entries[i].drawdata);
 	}
 
-	diff_color = approach_color(diff_color, difficulty_color(menu->cursor + D_Easy), 0.1);
+	color_approach(&diff_color, difficulty_color(menu->cursor + D_Easy), 0.1);
 }
 
 void create_difficulty_menu(MenuData *m) {
@@ -58,7 +58,8 @@ void draw_difficulty_menu(MenuData *menu) {
 	draw_options_menu_bg(menu);
 	draw_menu_title(menu, "Select Difficulty");
 
-	r_color(multiply_colors(diff_color, rgba(0.07, 0.07, 0.07, 0.7)));
+	Color c = diff_color;
+	r_color(color_mul(&c, RGBA(0.07, 0.07, 0.07, 0.7)));
 
 	r_mat_push();
 	r_mat_translate(SCREEN_W/2+30 - 25*menu->drawdata[0], SCREEN_H/3 + 90*(0.7*menu->drawdata[0]),0);

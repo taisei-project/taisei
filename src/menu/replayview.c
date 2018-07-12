@@ -178,14 +178,10 @@ static void replayview_draw_messagebox(MenuData* m) {
 	r_mat_push();
 	r_mat_translate(SCREEN_W*0.5, SCREEN_H*0.5, 0);
 
-	Color c = rgba(0.9 * alpha, 0.6 * alpha, 0.2 * alpha, alpha);
-
-	if(c != 0) {
-		text_draw(m->entries->name, &(TextParams) {
-			.align = ALIGN_CENTER,
-			.color = c,
-		});
-	}
+	text_draw(m->entries->name, &(TextParams) {
+		.align = ALIGN_CENTER,
+		.color = RGBA_MUL_ALPHA(0.9, 0.6, 0.2, alpha),
+	});
 
 	r_mat_pop();
 }
@@ -206,24 +202,20 @@ static void replayview_draw_stagemenu(MenuData *m) {
 		MenuEntry *e = &(m->entries[i]);
 		float a = e->drawdata;
 
-		Color clr_unmul;
+		Color clr;
 
 		if(e->action == NULL) {
-			clr_unmul = rgba(0.5, 0.5, 0.5, 0.5 * alpha);
+			clr = *RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.5 * alpha);
 		} else {
 			float ia = 1-a;
-			clr_unmul = rgba(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a) * alpha);
+			clr = *RGBA_MUL_ALPHA(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a) * alpha);
 		}
 
-		Color c = color_multiply_alpha(clr_unmul);
-
-		if(c != 0) {
-			text_draw(e->name, &(TextParams) {
-				.align = ALIGN_CENTER,
-				.pos = { 0, 20*i },
-				.color = c,
-			});
-		}
+		text_draw(e->name, &(TextParams) {
+			.align = ALIGN_CENTER,
+			.pos = { 0, 20*i },
+			.color = &clr,
+		});
 	}
 
 	r_mat_pop();
