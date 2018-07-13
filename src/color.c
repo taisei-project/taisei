@@ -137,6 +137,7 @@ Color* color_hsla(Color *clr, float h, float s, float l, float a) {
 		clr->b = hue_to_rgb(v1, v2, h - (1.0/3.0));
 	}
 
+	clr->a = a;
 	return clr;
 }
 

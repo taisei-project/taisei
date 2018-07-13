@@ -79,7 +79,7 @@ int stage4_splasher(Enemy *e, int t) {
 		PROJECTILE(
 			.sprite = afrand(0) > 0.5 ? "rice" : "thickrice",
 			.pos = e->pos,
-			.color = rgb(0.8,0.3-0.1*afrand(1),0.5),
+			.color = RGB(0.8,0.3-0.1*afrand(1),0.5),
 			.rule = accelerated,
 			.args = {
 				e->args[0]/2+(1-2*afrand(2))+(1-2*afrand(3))*I,
@@ -108,7 +108,7 @@ int stage4_fodder(Enemy *e, int t) {
 
 	FROM_TO(100, 200, 22-global.diff*3) {
 		play_sound_ex("shot3",5,false);
-		PROJECTILE("ball", e->pos, rgb(1, 0.3, 0.5), asymptotic, {
+		PROJECTILE("ball", e->pos, RGB(1, 0.3, 0.5), asymptotic, {
 			2*cexp(I*M_PI*2*frand()),
 			3
 		});
@@ -136,7 +136,7 @@ int stage4_partcircle(Enemy *e, int t) {
 		for(i = 0; i < global.diff; i++) {
 			play_sound("shot2");
 			complex n = cexp(I*M_PI/16.0*_i + I*carg(e->args[0])-I*M_PI/4.0 + 0.01*I*i*(1-2*(creal(e->args[0]) > 0)));
-			PROJECTILE("wave", e->pos + (30)*n, rgb(1-0.2*i,0.5,0.7), asymptotic, { 2*n, 2+2*i });
+			PROJECTILE("wave", e->pos + (30)*n, RGB(1-0.2*i,0.5,0.7), asymptotic, { 2*n, 2+2*i });
 		}
 	}
 
@@ -167,11 +167,11 @@ int stage4_cardbuster(Enemy *e, int t) {
 
 	FROM_TO_SND("shot1_loop", 120, 120+c*global.diff, 1) {
 		if(_i&1)
-			PROJECTILE("card", e->pos + 30*n, rgb(0, 0.8, 0.2), accelerated, { (0.8+0.2*global.diff)*n, 0.01*(1+0.01*_i)*n });
+			PROJECTILE("card", e->pos + 30*n, RGB(0, 0.8, 0.2), accelerated, { (0.8+0.2*global.diff)*n, 0.01*(1+0.01*_i)*n });
 	}
 
 	FROM_TO_SND("shot1_loop", 300, 320+20*global.diff, 1) {
-		PROJECTILE("card", e->pos + 30*n, rgb(0, 0.7, 0.5), asymptotic, { (0.8+0.2*global.diff)*n, 0.4*I });
+		PROJECTILE("card", e->pos + 30*n, RGB(0, 0.7, 0.5), asymptotic, { (0.8+0.2*global.diff)*n, 0.4*I });
 	}
 
 	return 1;
@@ -201,7 +201,7 @@ int stage4_backfire(Enemy *e, int t) {
 		complex n = cexp(I*M_PI*frand()-I*copysign(M_PI/2.0, creal(e->args[0])));
 		int i;
 		for(i = 0; i < global.diff; i++)
-			PROJECTILE("wave", e->pos, rgb(0.2, 0.2, 1-0.2*i), asymptotic, { 2*n, 2+2*i });
+			PROJECTILE("wave", e->pos, RGB(0.2, 0.2, 1-0.2*i), asymptotic, { 2*n, 2+2*i });
 	}
 
 	return 1;
@@ -230,7 +230,7 @@ int stage4_bigcircle(Enemy *e, int t) {
 			PROJECTILE(
 				.sprite = "bigball",
 				.pos = e->pos,
-				.color = rgb(0,0.8-0.4*_i,0),
+				.color = RGB(0,0.8-0.4*_i,0),
 				.rule = asymptotic,
 				.args = {
 					2*cexp(2.0*I*M_PI/n*i+I*3*_i),
@@ -243,7 +243,7 @@ int stage4_bigcircle(Enemy *e, int t) {
 				PROJECTILE(
 					.sprite = "ball",
 					.pos = e->pos,
-					.color = rgb(0,0.3*_i,0.4),
+					.color = RGB(0,0.3*_i,0.4),
 					.rule = asymptotic,
 					.args = {
 						(1.5+global.diff*0.2)*cexp(I*3*(i+frand())),
@@ -273,7 +273,7 @@ int stage4_explosive(Enemy *e, int t) {
 			PROJECTILE(
 				.sprite = "ball",
 				.pos = e->pos,
-				.color = rgb(0.1+0.6*(i&1), 0.2, 1-0.6*(i&1)),
+				.color = RGB(0.1+0.6*(i&1), 0.2, 1-0.6*(i&1)),
 				.rule = accelerated,
 				.args = {
 					1.5*(1.1+0.3*global.diff)*cexp(I*angle),
@@ -302,7 +302,7 @@ void KurumiSlave(Enemy *e, int t, bool render) {
 		PARTICLE(
 			.sprite = "smoothdot",
 			.pos = offset,
-			.color = rgb(0.3,0.0,0.0),
+			.color = RGB(0.3,0.0,0.0),
 			.draw_rule = Shrink,
 			.rule = enemy_flare,
 			.timeout = 50,
@@ -333,8 +333,8 @@ int kurumi_burstslave(Enemy *e, int t) {
 
 	FROM_TO(0, 600, 18-2*global.diff) {
 		float r = cimag(e->pos)/VIEWPORT_H;
-		PROJECTILE("wave", e->pos + 10.0*I*e->args[0], rgb(r,0,0), accelerated, { 2.0*I*e->args[0], -0.01*e->args[1] });
-		PROJECTILE("wave", e->pos - 10.0*I*e->args[0], rgb(r,0,0), accelerated, {-2.0*I*e->args[0], -0.01*e->args[1] });
+		PROJECTILE("wave", e->pos + 10.0*I*e->args[0], RGB(r,0,0), accelerated, { 2.0*I*e->args[0], -0.01*e->args[1] });
+		PROJECTILE("wave", e->pos - 10.0*I*e->args[0], RGB(r,0,0), accelerated, {-2.0*I*e->args[0], -0.01*e->args[1] });
 		play_sound("shot1");
 	}
 
@@ -384,8 +384,8 @@ int kurumi_spikeslave(Enemy *e, int t) {
 
 	FROM_TO(0, 600, 18-2*global.diff) {
 		float r = cimag(e->pos)/VIEWPORT_H;
-		PROJECTILE("wave", e->pos + 10.0*I*e->args[0], rgb(r,0,0), linear, { 1.5*I*e->args[1], -0.01*e->args[0] });
-		PROJECTILE("wave", e->pos - 10.0*I*e->args[0], rgb(r,0,0), linear, {-1.5*I*e->args[1], -0.01*e->args[0] });
+		PROJECTILE("wave", e->pos + 10.0*I*e->args[0], RGB(r,0,0), linear, { 1.5*I*e->args[1], -0.01*e->args[0] });
+		PROJECTILE("wave", e->pos - 10.0*I*e->args[0], RGB(r,0,0), linear, {-1.5*I*e->args[1], -0.01*e->args[0] });
 		play_sound("shot1");
 	}
 
@@ -415,7 +415,7 @@ void kurumi_redspike(Boss *b, int time) {
 				PROJECTILE(
 					.sprite = "bigball",
 					.pos = b->pos,
-					.color = rgb(1.0, 0.0, 0.0),
+					.color = RGB(1.0, 0.0, 0.0),
 					.rule = asymptotic,
 					.args = {
 						(1+0.1*(global.diff == D_Normal))*3*cexp(2.0*I*M_PI/n*i+I*carg(global.plr.pos-b->pos)),
@@ -440,7 +440,7 @@ void kurumi_redspike(Boss *b, int time) {
 			tsrand_fill(2);
 			complex offset = 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1));
 			complex n = cexp(I*carg(global.plr.pos-b->pos-offset));
-			PROJECTILE("rice", b->pos+offset, rgb(1,0,0), accelerated,
+			PROJECTILE("rice", b->pos+offset, RGB(1,0,0), accelerated,
 				.args = { -1*n, 0.05*n },
 				.flags = PFLAG_DRAWADD,
 			);
@@ -468,16 +468,18 @@ void kurumi_outro(Boss *b, int time) {
 }
 
 void kurumi_global_rule(Boss *b, int time) {
+	// FIXME: avoid running this every frame!
+
 	if(b->current && ATTACK_IS_SPELL(b->current->type)) {
-		b->shadowcolor = rgba(0.0, 0.4, 0.5, 0.5);
+		b->shadowcolor = *RGBA_MUL_ALPHA(0.0, 0.4, 0.5, 0.5);
 	} else {
-		b->shadowcolor = rgba(1.0, 0.1, 0.0, 0.5);
+		b->shadowcolor = *RGBA_MUL_ALPHA(1.0, 0.1, 0.0, 0.5);
 	}
 }
 
 Boss* stage4_spawn_kurumi(complex pos) {
 	Boss* b = create_boss("Kurumi", "kurumi", "dialog/kurumi", pos);
-	b->glowcolor = rgba(0.5, 0.1, 0.0, 1.0);
+	b->glowcolor = *RGB(0.5, 0.1, 0.0);
 	b->global_rule = kurumi_global_rule;
 	return b;
 }
@@ -503,7 +505,7 @@ int splitcard(Projectile *p, int t) {
 	}
 
 	if(t == creal(p->args[2])) {
-		p->color = rgb(0, color_component(p->color,CLR_B), color_component(p->color, CLR_G));
+		p->color = *RGB(0, p->color.b, p->color.g);
 		play_sound_ex("redirect", 10, false);
 	}
 
@@ -542,7 +544,7 @@ int stage4_supercard(Enemy *e, int t) {
 		int i;
 		complex n = cexp(I*carg(global.plr.pos - e->pos) + 2*M_PI/20.*I*_i);
 		for(i = -1; i <= 1 && t; i++)
-			PROJECTILE("card", e->pos + 30*n, rgb(0,0.4,1-_i/40.0), splitcard,
+			PROJECTILE("card", e->pos + 30*n, RGB(0,0.4,1-_i/40.0), splitcard,
 				{1*n, 0.1*_i, 100-time+70, 1.4*I*i*n}
 						);
 	}
@@ -565,7 +567,9 @@ static int splitcard_elly(Projectile *p, int t) {
 
 	if(t == creal(p->args[2])) {
 		p->args[0]+=p->args[3];
-		p->color = derive_color(p->color, CLRMASK_B, rgb(0,0,-color_component(p->color,CLR_B)));
+		// p->color = derive_color(p->color, CLRMASK_B, RGB(0,0,-color_component(p->color,CLR_B)));
+		// FIXME: what was even the intention here?
+		p->color.b *= -1;
 		play_sound_ex("redirect", 10, false);
 	}
 
@@ -591,7 +595,7 @@ void kurumi_breaker(Boss *b, int time) {
 
 		for(i = 0; i < c; i++) {
 			complex n = cexp(2.0*I*M_PI/c*i);
-			PROJECTILE("rice", p, rgb(1,0,0.5), splitcard_elly, {
+			PROJECTILE("rice", p, RGB(1,0,0.5), splitcard_elly, {
 				3*n,
 				0,
 				kt,
@@ -606,7 +610,7 @@ void kurumi_breaker(Boss *b, int time) {
 		aniplayer_queue(&b->ani,"muda",1);
 		aniplayer_queue(&b->ani,"main",0);
 		for(i = 0; i < 20; i++) {
-			PROJECTILE("bigball", b->pos, rgb(0.5,0,0.5), asymptotic,
+			PROJECTILE("bigball", b->pos, RGB(0.5,0,0.5), asymptotic,
 				.args = { cexp(2.0*I*M_PI/20.0*i), 3 },
 				.flags = PFLAG_DRAWADD,
 			);
@@ -630,7 +634,7 @@ int aniwall_bullet(Projectile *p, int t) {
 		p->pos += p->args[0];
 	}
 
-	p->color = derive_color(p->color, CLRMASK_R, rgb(cimag(p->pos)/VIEWPORT_H, 0, 0));
+	p->color.r = cimag(p->pos)/VIEWPORT_H;
 	return ACTION_NONE;
 }
 
@@ -671,12 +675,11 @@ int aniwall_slave(Enemy *e, int t) {
 
 		e->pos += e->args[2];
 
-
 		if(!(t % 7-global.diff-2*(global.diff > D_Normal))) {
 			complex v = e->args[2]/cabs(e->args[2])*I*sign(creal(e->args[0]));
 			if(cimag(v) > -0.1 || global.diff >= D_Normal) {
 				play_sound("shot1");
-				PROJECTILE("ball", e->pos+I*v*20*nfrand(), rgb(1,0,0), aniwall_bullet, { 1*v, 40 });
+				PROJECTILE("ball", e->pos+I*v*20*nfrand(), RGB(1,0,0), aniwall_bullet, { 1*v, 40 });
 			}
 		}
 	}
@@ -693,7 +696,7 @@ void KurumiAniWallSlave(Enemy *e, int t, bool render) {
 		PARTICLE(
 			.sprite = "smoothdot",
 			.pos = e->pos,
-			.color = rgb(1,1,1),
+			.color = RGB(1,1,1),
 			.draw_rule = Fade,
 			.flags = PFLAG_DRAWADD,
 			.timeout = 30,
@@ -716,9 +719,9 @@ void kurumi_aniwall(Boss *b, int time) {
 	AT(0) {
 		aniplayer_queue(&b->ani, "muda", 0);
 		play_sound("laser1");
-		create_lasercurve2c(b->pos, 50, 80, rgb(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(0.4*I));
+		create_lasercurve2c(b->pos, 50, 80, RGB(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(0.4*I));
 		create_enemy1c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, aniwall_slave, 0.2*cexp(0.4*I));
-		create_lasercurve2c(b->pos, 50, 80, rgb(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(I*M_PI - 0.4*I));
+		create_lasercurve2c(b->pos, 50, 80, RGB(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(I*M_PI - 0.4*I));
 		create_enemy1c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, aniwall_slave, 0.2*cexp(I*M_PI - 0.4*I));
 	}
 }
@@ -739,7 +742,7 @@ void kurumi_sbreaker(Boss *b, int time) {
 		complex p = b->pos + 150*sin(_i/8.0)+100.0*I*cos(_i/15.0);
 
 		complex n = cexp(2.0*I*M_PI/c*_i);
-		PROJECTILE("rice", p, rgb(1.0, 0.0, 0.5), splitcard_elly, {
+		PROJECTILE("rice", p, RGB(1.0, 0.0, 0.5), splitcard_elly, {
 			2*n,
 			0,
 			kt,
@@ -754,7 +757,7 @@ void kurumi_sbreaker(Boss *b, int time) {
 		aniplayer_queue(&b->ani, "main", 0);
 
 		for(i = 0; i < 20; i++) {
-			PROJECTILE("bigball", b->pos, rgb(0.5, 0.0, 0.5), asymptotic,
+			PROJECTILE("bigball", b->pos, RGB(0.5, 0.0, 0.5), asymptotic,
 				.args = { cexp(2.0*I*M_PI/20.0*i), 3 },
 				.flags = PFLAG_DRAWADD,
 			);
@@ -799,7 +802,7 @@ int blowwall_slave(Enemy *e, int t) {
 			else
 				type = "plainball";
 
-			PROJECTILE(type, e->pos, rgb(1.0, 0.1, 0.1), asymptotic,
+			PROJECTILE(type, e->pos, RGB(1.0, 0.1, 0.1), asymptotic,
 				.args = { (1+3*f)*cexp(2.0*I*M_PI*frand()), 4 },
 				.flags = PFLAG_DRAWADD
 			);
@@ -813,7 +816,7 @@ int blowwall_slave(Enemy *e, int t) {
 }
 
 static void bwlaser(Boss *b, float arg, int slave) {
-	create_lasercurve2c(b->pos, 50, 100, rgb(1, 0.5+0.3*slave, 0.5+0.3*slave), las_accel, 0, (0.1+0.1*slave)*cexp(I*arg));
+	create_lasercurve2c(b->pos, 50, 100, RGB(1, 0.5+0.3*slave, 0.5+0.3*slave), las_accel, 0, (0.1+0.1*slave)*cexp(I*arg));
 
 	if(slave) {
 		play_sound("laser1");
@@ -856,7 +859,7 @@ void kurumi_blowwall(Boss *b, int time) {
 
 }
 
-static Projectile* vapor_particle(complex pos, Color clr) {
+static Projectile* vapor_particle(complex pos, const Color *clr) {
 	return PARTICLE(
 		.sprite = "stain",
 		.color = clr,
@@ -877,15 +880,17 @@ static int kdanmaku_proj(Projectile *p, int t) {
 	int time = creal(p->args[0]);
 
 	if(t == time) {
-		p->color = rgb(0.6,0.3,1.0);
+		p->color = *RGB(0.6, 0.3, 1.0);
 		projectile_set_prototype(p, pp_bullet);
 		p->args[1] = (global.plr.pos - p->pos) * 0.001;
 
-		if(frand()<0.5)
-			vapor_particle(p->pos, rgba(0.6, 0.3, 1.0, 1));
+		if(frand() < 0.5) {
+			vapor_particle(p->pos, RGBA(0.6, 0.3, 1.0, 0.0));
+		}
+
 		PARTICLE(
 			.sprite = "flare",
-			.color = rgb(1, 1, 1),
+			.color = RGB(1, 1, 1),
 			.timeout = 30,
 			.draw_rule = ScaleFade,
 			.args = { 0, 0, 3.0 },
@@ -936,13 +941,14 @@ int kdanmaku_slave(Enemy *e, int t) {
 		for(i = 0; i < n; i++) {
 			complex p = VIEWPORT_W/(float)n*(i+psin(t*t*i*i+t*t)) + I*cimag(e->pos);
 			if(cabs(p-global.plr.pos) > 60) {
-				PROJECTILE("thickrice", p, rgb(1, 0.5, 0.5), kdanmaku_proj,
+				PROJECTILE("thickrice", p, RGB(1, 0.5, 0.5), kdanmaku_proj,
 					.args = { 160, speed*0.5*cexp(2.0*I*M_PI*sin(245*t+i*i*3501)) },
 					.flags = PFLAG_DRAWADD,
 				);
 
-				if(frand()<0.5)
-					vapor_particle(p, rgba(1, 0.25 * frand(), 0.25 * frand(), 1));
+				if(frand()<0.5) {
+					vapor_particle(p, RGBA(1, 0.25 * frand(), 0.25 * frand(), 0.0));
+				}
 			}
 		}
 		play_sound_ex("redirect", 3, false);
@@ -969,8 +975,8 @@ void kurumi_danmaku(Boss *b, int time) {
 
 	AT(50) {
 		play_sound("laser1");
-		create_lasercurve2c(b->pos, 50, 100, rgb(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(I*carg(-b->pos)));
-		create_lasercurve2c(b->pos, 50, 100, rgb(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(I*carg(VIEWPORT_W-b->pos)));
+		create_lasercurve2c(b->pos, 50, 100, RGB(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(I*carg(-b->pos)));
+		create_lasercurve2c(b->pos, 50, 100, RGB(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(I*carg(VIEWPORT_W-b->pos)));
 		create_enemy3c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, kdanmaku_slave, 0.2*cexp(I*carg(-b->pos)), 0, 1);
 		create_enemy3c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, kdanmaku_slave, 0.2*cexp(I*carg(VIEWPORT_W-b->pos)), 0, 0);
 	}
@@ -997,9 +1003,9 @@ int kurumi_extra_dead_shield_proj(Projectile *p, int time) {
 		return ACTION_ACK;
 	}
 
-	p->color = mix_colors(
-		rgb(0.2, 0.1, 0.5),
-		rgb(2.0, 0.0, 0.0),
+	p->color = *color_lerp(
+		RGB(2.0, 0.0, 0.0),
+		RGB(0.2, 0.1, 0.5),
 	min(time / 60.0f, 1.0f));
 
 	return asymptotic(p, time);
@@ -1081,8 +1087,8 @@ int kurumi_extra_bigfairy1(Enemy *e, int time) {
 			complex arg = cexp(I*2*M_PI*i/count);
 			if(global.diff == D_Lunatic)
 				arg *= phase;
-			create_lasercurve2c(e->pos, 20, 200, rgb(1,0.3,0.7), las_accel, arg, 0.1*arg);
-			PROJECTILE("bullet", e->pos, rgb(1.0, 0.3, 0.7), accelerated, { arg, 0.1*arg });
+			create_lasercurve2c(e->pos, 20, 200, RGB(1,0.3,0.7), las_accel, arg, 0.1*arg);
+			PROJECTILE("bullet", e->pos, RGB(1.0, 0.3, 0.7), accelerated, { arg, 0.1*arg });
 		}
 
 		play_sound("laser1");
@@ -1215,7 +1221,7 @@ int kurumi_extra_fairy(Enemy *e, int t) {
 	}
 
 	/*FROM_TO(100, 200, 22-global.diff*3) {
-		PROJECTILE("ball", e->pos, rgb(1, 0.3, 0.5), asymptotic, 2*cexp(I*M_PI*2*frand()), 3);
+		PROJECTILE("ball", e->pos, RGB(1, 0.3, 0.5), asymptotic, 2*cexp(I*M_PI*2*frand()), 3);
 	}*/
 
 	int attacktime = creal(e->args[1]);
@@ -1230,7 +1236,7 @@ int kurumi_extra_fairy(Enemy *e, int t) {
 				for(int j = 0; j < count; j++) {
 					complex pos = len/2/tan(2*M_PI/corners)*I+(j/(double)count-0.5)*len;
 					pos *= cexp(I*2*M_PI/corners*i);
-					PROJECTILE("flea", e->pos+pos, rgb(1, 0.3, 0.5), linear, { vel+0.1*I*pos/cabs(pos) });
+					PROJECTILE("flea", e->pos+pos, RGB(1, 0.3, 0.5), linear, { vel+0.1*I*pos/cabs(pos) });
 				}
 			}
 		} else {
@@ -1240,7 +1246,7 @@ int kurumi_extra_fairy(Enemy *e, int t) {
 				double x = (j/(double)count-0.5)*2*M_PI;
 				complex pos = 0.5*cos(x)+sin(2*x) + (0.5*sin(x)+cos(2*x))*I;
 				pos*=vel/cabs(vel);
-				PROJECTILE("flea", e->pos+rad*pos, rgb(0.5, 0.3, 1), linear, { vel+0.1*pos });
+				PROJECTILE("flea", e->pos+rad*pos, RGB(0.5, 0.3, 1), linear, { vel+0.1*pos });
 			}
 		}
 	}
@@ -1258,7 +1264,7 @@ int kurumi_extra_fairy(Enemy *e, int t) {
 			PROJECTILE(
 				.proto = pp_ball,
 				.pos = e->pos,
-				.color = rgba(0.1+0.07*_i, 0.3, 1-0.05*_i,0.8),
+				.color = RGBA_MUL_ALPHA(0.1+0.07*_i, 0.3, 1-0.05*_i, 0.8),
 				.timeout = 50,
 				.blend = BLEND_ADD,
 			);
@@ -1425,7 +1431,7 @@ static int scythe_post_mid(Enemy *e, int t) {
 		struct projentry *pe = &projs[_i % (sizeof(projs)/sizeof(struct projentry))];
 
 		double ca = creal(e->args[1]) + _i/60.0;
-		Color c = rgb(cos(ca), sin(ca), cos(ca+2.1));
+		Color *c = RGB(cos(ca), sin(ca), cos(ca+2.1));
 
 		play_sound_ex(pe->snd, 3, true);
 		PROJECTILE(pe->proj, shotorg, c, asymptotic, {
