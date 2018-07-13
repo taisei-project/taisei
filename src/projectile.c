@@ -208,7 +208,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	p->blend = args->blend;
 	p->sprite = args->sprite_ptr;
 	p->type = args->type;
-	p->color = args->color;
+	p->color = *args->color;
 	p->max_viewport_dist = args->max_viewport_dist;
 	p->size = args->size;
 	p->collision_size = args->collision_size;
@@ -498,7 +498,7 @@ Projectile* spawn_projectile_collision_effect(Projectile *proj) {
 		.sprite_ptr = proj->sprite,
 		.size = proj->size,
 		.pos = proj->pos,
-		.color = proj->color,
+		.color = &proj->color,
 		.flags = proj->flags | PFLAG_NOREFLECT,
 		.shader_ptr = proj->shader,
 		.rule = linear,
@@ -518,7 +518,7 @@ Projectile* spawn_projectile_clear_effect(Projectile *proj) {
 		.sprite_ptr = proj->sprite,
 		.size = proj->size,
 		.pos = proj->pos,
-		.color = proj->color,
+		.color = &proj->color,
 		.flags = proj->flags | PFLAG_NOREFLECT,
 		.shader_ptr = proj->shader,
 		.draw_rule = Shrink,
@@ -693,7 +693,7 @@ static inline void apply_common_transforms(Projectile *proj, int t) {
 	}
 }
 
-void ProjDrawCore(Projectile *proj, Color c) {
+void ProjDrawCore(Projectile *proj, const Color *c) {
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = proj->sprite,
 		.color = c,
@@ -704,7 +704,7 @@ void ProjDrawCore(Projectile *proj, Color c) {
 void ProjDraw(Projectile *proj, int t) {
 	r_mat_push();
 	apply_common_transforms(proj, t);
-	ProjDrawCore(proj, proj->color);
+	ProjDrawCore(proj, &proj->color);
 	r_mat_pop();
 }
 
@@ -738,7 +738,7 @@ void Shrink(Projectile *p, int t) {
 		r_mat_scale(s, s, 1);
 	}
 
-	ProjDrawCore(p, p->color);
+	ProjDrawCore(p, &p->color);
 	r_mat_pop();
 }
 
@@ -751,7 +751,7 @@ void DeathShrink(Projectile *p, int t) {
 		r_mat_scale(s, 1, 1);
 	}
 
-	ProjDrawCore(p, p->color);
+	ProjDrawCore(p, &p->color);
 	r_mat_pop();
 }
 
@@ -767,14 +767,14 @@ void GrowFade(Projectile *p, int t) {
 		r_mat_scale(s, s, 1);
 	}
 
-	ProjDrawCore(p, multiply_colors(p->color, rgba(1, 1, 1, 1 - t/(double)p->timeout)));
+	ProjDrawCore(p, color_mul_scalar(COLOR_COPY(&p->color), 1 - t/(double)p->timeout));
 	r_mat_pop();
 }
 
 void Fade(Projectile *p, int t) {
 	r_mat_push();
 	apply_common_transforms(p, t);
-	ProjDrawCore(p, multiply_colors(p->color, rgba(1, 1, 1, 1 - t/(double)p->timeout)));
+	ProjDrawCore(p, color_mul_scalar(COLOR_COPY(&p->color), 1 - t/(double)p->timeout));
 	r_mat_pop();
 }
 
@@ -788,10 +788,8 @@ void ScaleFade(Projectile *p, int t) {
 	double scale = scale_min * (1 - timefactor) + scale_max * timefactor;
 	double alpha = pow(1 - timefactor, 2);
 
-	Color c = multiply_colors(p->color, rgba(1, 1, 1, alpha));
-
 	r_mat_scale(scale, scale, 1);
-	ProjDrawCore(p, c);
+	ProjDrawCore(p, color_mul_scalar(COLOR_COPY(&p->color), alpha));
 	r_mat_pop();
 }
 
@@ -807,7 +805,7 @@ void Petal(Projectile *p, int t) {
 	r_mat_push();
 	r_mat_translate(creal(p->pos), cimag(p->pos),0);
 	r_mat_rotate_deg(t*4.0 + cimag(p->args[3]), x, y, z);
-	ProjDrawCore(p, p->color);
+	ProjDrawCore(p, &p->color);
 	r_mat_pop();
 }
 
@@ -815,12 +813,11 @@ void petal_explosion(int n, complex pos) {
 	for(int i = 0; i < n; i++) {
 		tsrand_fill(6);
 		float t = frand();
-		Color c = rgba(sin(5*t),cos(5*t),0.5,t);
 
 		PARTICLE(
 			.sprite = "petal",
 			.pos = pos,
-			.color = c,
+			.color = RGBA_MUL_ALPHA(sin(5*t), cos(5*t), 0.5, t),
 			.rule = asymptotic,
 			.draw_rule = Petal,
 			.args = {

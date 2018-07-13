@@ -40,8 +40,10 @@ static complex youmu_homing_target(complex org, complex fallback) {
 }
 
 static void youmu_homing_draw_common(Projectile *p, float clrfactor, float scale, float alpha) {
-	Color c = multiply_colors(p->color, rgba(0.7f + 0.3f * clrfactor, 0.9f + 0.1f * clrfactor, 1, alpha));
-	youmu_common_draw_proj(p, c, scale);
+	Color c = p->color;
+	color_mul(&c, RGBA(0.7f + 0.3f * clrfactor, 0.9f + 0.1f * clrfactor, 1, 1));
+	color_mul_scalar(&c, alpha);
+	youmu_common_draw_proj(p, &c, scale);
 }
 
 static void youmu_homing_draw_proj(Projectile *p, int t) {
@@ -74,7 +76,7 @@ static Projectile* youmu_homing_trail(Projectile *p, complex v, int to) {
 	return PARTICLE(
 		.sprite_ptr = p->sprite,
 		.pos = p->pos,
-		.color = p->color,
+		.color = &p->color,
 		.angle = p->angle,
 		.rule = linear,
 		.timeout = to,
@@ -177,7 +179,7 @@ static int youmu_trap(Projectile *p, int t) {
 			float a = (i / (float)cnt) * M_PI * 2;
 			complex dir = cexp(I*(a));
 
-			PROJECTILE("youmu", p->pos, rgb(1, 1, 1), youmu_homing,
+			PROJECTILE("youmu", p->pos, RGB(1, 1, 1), youmu_homing,
 				.args = { 5 * (1 + charge) * dir, (1 + charge) * aim, dur + charge*I, creal(p->pos) - VIEWPORT_H*I },
 				.type = PlrProj + dmg,
 				.draw_rule = youmu_trap_draw_child_proj,
@@ -217,7 +219,7 @@ static void youmu_particle_slice_draw(Projectile *p, int t) {
 	r_mat_rotate_deg(p->angle/M_PI*180,0,0,1);
 	r_mat_scale(f,1,1);
 	//draw_texture(0,0,"part/youmu_slice");
-	ProjDrawCore(p, p->color);
+	ProjDrawCore(p, &p->color);
 	r_mat_pop();
 
 	double slicelen = 500;
@@ -234,13 +236,15 @@ static int youmu_particle_slice_logic(Projectile *p, int t) {
 	double lifetime = p->timeout;
 	double tt = t/lifetime;
 	double a = 0;
+
 	if(tt > 0.) {
 		a = min(1,(tt-0.)/0.2);
 	}
 	if(tt > 0.5) {
 		a = max(0,1-(tt-0.5)/0.5);
 	}
-	p->color = rgba(1, 1, 1,a);
+
+	p->color = *RGBA(a, a, a, a);
 
 	complex phase = cexp(p->angle*I);
 	if(t%5 == 0) {
@@ -250,7 +254,7 @@ static int youmu_particle_slice_logic(Projectile *p, int t) {
 			.pos = p->pos-400*phase,
 			.rule = accelerated,
 			.draw_rule = Petal,
-			.color = rgba(0.1,0.1,0.5,1),
+			.color = RGB(0.1, 0.1, 0.5),
 			.args = {
 				phase,
 				phase*cexp(0.1*I),
@@ -327,7 +331,7 @@ static void youmu_haunting_power_shot(Player *plr, int p) {
 			.sprite = "hghost",
 			.pos =  plr->pos,
 			.rule = youmu_asymptotic,
-			.color = rgba(0.8 + 0.2 * (1-np), 1.0, 0.9 + 0.1 * sqrt(1-np), 1.0),
+			.color = RGB(0.8 + 0.2 * (1-np), 1.0, 0.9 + 0.1 * sqrt(1-np)),
 			.draw_rule = youmu_homing_draw_proj,
 			.args = { speed * dir * (1 - 0.25 * (1 - np)), 3 * (1 - pow(1 - np, 2)), 60, },
 			.type = PlrProj+30,
@@ -348,7 +352,7 @@ static void youmu_haunting_shot(Player *plr) {
 				int pdmg = 120 - 18 * 4 * (1 - pow(1 - pwr / 4.0, 1.5));
 				complex aim = 0.75;
 
-				PROJECTILE("youhoming", plr->pos, rgb(1, 1, 1), youmu_trap,
+				PROJECTILE("youhoming", plr->pos, RGB(1, 1, 1), youmu_trap,
 					.args = { -30.0*I, 120, pcnt+pdmg*I, aim },
 					.type = PlrProj+1000,
 					.shader = "sprite_youmu_charged_shot",
@@ -356,7 +360,7 @@ static void youmu_haunting_shot(Player *plr) {
 			}
 		} else {
 			if(!(global.frames % 6)) {
-				PROJECTILE("hghost", plr->pos, rgb(0.75, 0.9, 1), youmu_homing,
+				PROJECTILE("hghost", plr->pos, RGB(0.75, 0.9, 1), youmu_homing,
 					.args = { -10.0*I, 0.1 + 0.2*I, 60, VIEWPORT_W*0.5 },
 					.type = PlrProj+120,
 					.shader = "sprite_default",

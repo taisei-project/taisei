@@ -31,6 +31,7 @@ Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 	}
 
 	buf->birthtime = global.frames;
+	buf->zoomcolor = *RGBA(0.1, 0.2, 0.3, 1.0);
 
 	buf->ent.draw_layer = LAYER_BOSS;
 	buf->ent.draw_func = ent_draw_boss;

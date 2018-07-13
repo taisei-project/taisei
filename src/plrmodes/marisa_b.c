@@ -181,7 +181,7 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 	}
 
 	float tb = player_get_bomb_progress(&global.plr, NULL);
-	Color color = marisa_slaveclr(rint(creal(e->args[0])),0.2);
+	Color color = marisa_slaveclr(rint(creal(e->args[0])), 0.2);
 
 	float fade = 1;
 
@@ -195,9 +195,7 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 		fade *= fade;
 	}
 
-	float clr[4];
-	parse_color_array(color,clr);
-	clr[3] = fade;
+	color_mul_scalar(&color, fade);
 
 	r_mat_push();
 	r_mat_translate(creal(e->pos),cimag(e->pos),0);
@@ -210,7 +208,7 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 
 	r_mat_pop();
 	r_blend(BLEND_ADD);
-	r_color4(clr[0],clr[1],clr[2],clr[3]);
+	r_color(&color);
 	r_mat_rotate_deg(t*10,0,0,1);
 	draw_sprite_batched(0,0,"fairy_circle");
 	r_mat_scale(0.6,0.6,1);

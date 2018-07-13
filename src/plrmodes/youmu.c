@@ -94,7 +94,7 @@ void youmu_common_bombbg(Player *plr) {
 	r_color4(1,1,1,1);
 }
 
-void youmu_common_draw_proj(Projectile *p, Color c, float scale) {
+void youmu_common_draw_proj(Projectile *p, const Color *c, float scale) {
 	r_mat_push();
 	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
 	r_mat_rotate_deg(p->angle*180/M_PI+90, 0, 0, 1);

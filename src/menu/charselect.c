@@ -128,7 +128,7 @@ void draw_char_menu(MenuData *menu) {
 			.align = ALIGN_CENTER,
 			.pos = { 0, 70 },
 			.shader = "text_default",
-			.color = RGBA(o, o, o, o);
+			.color = RGBA(o, o, o, o),
 		});
 
 		r_mat_pop();

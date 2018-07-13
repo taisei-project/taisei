@@ -49,10 +49,9 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 	int i = 0;
 	float scale = star_width/star->w;
 
-	Color amul = rgba(alpha, alpha, alpha, alpha);
-	Color fill_clr = multiply_colors(rgba(1.00, 1.00, 1.00, 1.00), amul);
-	Color back_clr = multiply_colors(rgba(0.04, 0.12, 0.20, 0.20), amul);
-	Color frag_clr = multiply_colors(rgba(0.47, 0.56, 0.65, 0.65), amul);
+	Color *fill_clr = color_mul_scalar(RGBA(1.00, 1.00, 1.00, 1.00), alpha);
+	Color *back_clr = color_mul_scalar(RGBA(0.04, 0.12, 0.20, 0.20), alpha);
+	Color *frag_clr = color_mul_scalar(RGBA(0.47, 0.56, 0.65, 0.65), alpha);
 
 	// XXX: move to call site?
 	y -= 2;

@@ -16,7 +16,7 @@ static StageText *textlist = NULL;
 
 #define NUM_PLACEHOLDER "........................"
 
-StageText* stagetext_add(const char *text, complex pos, Alignment align, Font *font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
+StageText* stagetext_add(const char *text, complex pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
 	StageText *t = malloc(sizeof(StageText));
 	list_append(&textlist, t);
 
@@ -24,7 +24,7 @@ StageText* stagetext_add(const char *text, complex pos, Alignment align, Font *f
 	t->font = font;
 	t->pos = pos;
 	t->align = align;
-	t->color = clr;
+	t->color = *clr;
 
 	t->time.spawn = global.frames + delay;
 	t->time.fadein = fadeintime;
@@ -40,7 +40,7 @@ void stagetext_numeric_predraw(StageText *txt, int t, float a) {
 	snprintf(txt->text, sizeof(NUM_PLACEHOLDER), "%i", (int)((intptr_t)txt->custom.data1 * pow(a, 5)));
 }
 
-StageText* stagetext_add_numeric(int n, complex pos, Alignment align, Font *font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
+StageText* stagetext_add_numeric(int n, complex pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
 	StageText *t = stagetext_add(NUM_PLACEHOLDER, pos, align, font, clr, delay, lifetime, fadeintime, fadeouttime);
 	t->custom.data1 = (void*)(intptr_t)n;
 	t->custom.predraw = stagetext_numeric_predraw;
@@ -89,7 +89,7 @@ static void stagetext_draw_single(StageText *txt) {
 	params.pos.x = creal(txt->pos)+10*f*f;
 	params.pos.y = cimag(txt->pos)+10*f*f;
 
-	params.color = txt->color;
+	params.color = &txt->color;
 	text_draw(txt->text, &params);
 
 	r_state_pop();
@@ -112,10 +112,10 @@ static void stagetext_table_push(StageTextTable *tbl, StageText *txt, bool updat
 	tbl->delay += 5;
 }
 
-void stagetext_begin_table(StageTextTable *tbl, const char *title, Color titleclr, Color clr, double width, int delay, int lifetime, int fadeintime, int fadeouttime) {
+void stagetext_begin_table(StageTextTable *tbl, const char *title, const Color *titleclr, const Color *clr, double width, int delay, int lifetime, int fadeintime, int fadeouttime) {
 	memset(tbl, 0, sizeof(StageTextTable));
 	tbl->pos = VIEWPORT_W/2 + VIEWPORT_H/2*I;
-	tbl->clr = clr;
+	tbl->clr = *clr;
 	tbl->width = width;
 	tbl->lifetime = lifetime;
 	tbl->fadeintime = fadeintime;
@@ -137,19 +137,19 @@ void stagetext_end_table(StageTextTable *tbl) {
 }
 
 static void stagetext_table_add_label(StageTextTable *tbl, const char *title) {
-	StageText *txt = stagetext_add(title, tbl->pos - tbl->width * 0.5, ALIGN_LEFT, get_font("standard"), tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
+	StageText *txt = stagetext_add(title, tbl->pos - tbl->width * 0.5, ALIGN_LEFT, get_font("standard"), &tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
 	stagetext_table_push(tbl, txt, false);
 }
 
 void stagetext_table_add(StageTextTable *tbl, const char *title, const char *val) {
 	stagetext_table_add_label(tbl, title);
-	StageText *txt = stagetext_add(val, tbl->pos + tbl->width * 0.5, ALIGN_RIGHT, get_font("standard"), tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
+	StageText *txt = stagetext_add(val, tbl->pos + tbl->width * 0.5, ALIGN_RIGHT, get_font("standard"), &tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
 	stagetext_table_push(tbl, txt, true);
 }
 
 void stagetext_table_add_numeric(StageTextTable *tbl, const char *title, int n) {
 	stagetext_table_add_label(tbl, title);
-	StageText *txt = stagetext_add_numeric(n, tbl->pos + tbl->width * 0.5, ALIGN_RIGHT, get_font("standard"), tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
+	StageText *txt = stagetext_add_numeric(n, tbl->pos + tbl->width * 0.5, ALIGN_RIGHT, get_font("standard"), &tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
 	stagetext_table_push(tbl, txt, true);
 }
 
@@ -165,7 +165,7 @@ void stagetext_table_add_separator(StageTextTable *tbl) {
 
 void stagetext_table_test(void) {
 	StageTextTable tbl;
-	stagetext_begin_table(&tbl, "Test", rgb(1, 1, 1), rgb(1, 1, 1), VIEWPORT_W/2, 60, 300, 30, 60);
+	stagetext_begin_table(&tbl, "Test", RGB(1, 1, 1), RGB(1, 1, 1), VIEWPORT_W/2, 60, 300, 30, 60);
 	stagetext_table_add(&tbl, "foo", "bar");
 	stagetext_table_add(&tbl, "qwerty", "asdfg");
 	stagetext_table_add(&tbl, "top", "kek");

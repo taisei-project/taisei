@@ -264,7 +264,7 @@ void r_color4(float r, float g, float b, float a) {
 	B.color4(r, g, b, a);
 }
 
-Color r_color_current(void) {
+const Color* r_color_current(void) {
 	return B.color_current();
 }
 
@@ -463,7 +463,7 @@ void r_clear_color4(float r, float g, float b, float a) {
 	B.clear_color4(r, g, b, a);
 }
 
-Color r_clear_color_current(void) {
+const Color* r_clear_color_current(void) {
 	return B.clear_color_current();
 }
 

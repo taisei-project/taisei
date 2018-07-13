@@ -12,7 +12,8 @@
 #include "resource/shader_object.h"
 #include "../common/backend.h"
 
-char placeholder;
+static char placeholder;
+static Color dummycolor;
 
 SDL_Window* null_create_window(const char *title, int x, int y, int w, int h, uint32_t flags) {
 	return SDL_CreateWindow(title, x, y, w, h, flags);
@@ -30,7 +31,7 @@ void null_capabilities(r_capability_bits_t capbits) { }
 r_capability_bits_t null_capabilities_current(void) { return (r_capability_bits_t)-1; }
 
 void null_color4(float r, float g, float b, float a) { }
-Color null_color_current(void) { return rgba(0, 0, 0, 0); }
+const Color* null_color_current(void) { return &dummycolor; }
 
 void null_blend(BlendMode mode) { }
 BlendMode null_blend_current(void) { return BLEND_NONE; }
@@ -169,7 +170,7 @@ VertexArray* null_vertex_array_current(void) { return (void*)&placeholder; }
 
 void null_clear(ClearBufferFlags flags) { }
 void null_clear_color4(float r, float g, float b, float a) { }
-Color null_clear_color_current(void) { return rgba(0, 0, 0, 0); }
+const Color* null_clear_color_current(void) { return &dummycolor; }
 
 void null_vsync(VsyncMode mode) { }
 VsyncMode null_vsync_current(void) { return VSYNC_NONE; }

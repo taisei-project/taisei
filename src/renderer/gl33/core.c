@@ -97,8 +97,8 @@ static struct {
 		IntRect default_framebuffer;
 	} viewport;
 
-	vec4 color;
-	vec4 clear_color;
+	Color color;
+	Color clear_color;
 	GLuint pbo;
 	r_feature_bits_t features;
 
@@ -283,7 +283,7 @@ static void gl33_sync_state(void) {
 	r_uniform("r_modelViewMatrix", 1, _r_matrices.modelview.head);
 	r_uniform("r_projectionMatrix", 1, _r_matrices.projection.head);
 	r_uniform("r_textureMatrix", 1, _r_matrices.texture.head);
-	r_uniform("r_color", 1, R.color);
+	r_uniform("r_color", 1, &R.color.r);
 	gl33_sync_uniforms(R.progs.active);
 	gl33_sync_texunits(true);
 	gl33_sync_framebuffer();
@@ -677,12 +677,14 @@ static VsyncMode gl33_vsync_current(void) {
 }
 
 static void gl33_color4(float r, float g, float b, float a) {
-	glm_vec4_copy((vec4) { r, g, b, a }, R.color);
-	// r_uniform_vec4("ctx.color", r, g, b, a);
+	R.color.r = r;
+	R.color.g = g;
+	R.color.b = b;
+	R.color.a = a;
 }
 
-static Color gl33_color_current(void) {
-	return rgba(R.color[0], R.color[1], R.color[2], R.color[3]);
+static const Color* gl33_color_current(void) {
+	return &R.color;
 }
 
 static void gl33_vertex_array(VertexArray *varr) {
@@ -792,16 +794,16 @@ static void gl33_clear(ClearBufferFlags flags) {
 }
 
 static void gl33_clear_color4(float r, float g, float b, float a) {
-	vec4 cc = { r, g, b, a };
+	Color cc = { r, g, b, a };
 
-	if(!memcmp(R.clear_color, cc, sizeof(cc))) {
-		memcpy(R.clear_color, cc, sizeof(cc));
+	if(!memcmp(&R.clear_color, &cc, sizeof(cc))) {
+		memcpy(&R.clear_color, &cc, sizeof(cc));
 		glClearColor(r, g, b, a);
 	}
 }
 
-static Color gl33_clear_color_current(void) {
-	return rgba(R.clear_color[0], R.clear_color[1], R.clear_color[2], R.clear_color[3]);
+static const Color* gl33_clear_color_current(void) {
+	return &R.clear_color;
 }
 
 static void gl33_swap(SDL_Window *window) {
