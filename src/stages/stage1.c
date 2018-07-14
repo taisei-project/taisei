@@ -136,7 +136,8 @@ static void stage1_smoke_draw(vec3 pos) {
 	r_mat_scale(3.5,2,1);
 	r_mat_rotate_deg(global.frames,0,0,1);
 
-	r_color4(.8,.8,.8,((d-500)*(d-500))/1.5e7);
+	float o = ((d-500)*(d-500))/1.5e7;
+	r_color(RGBA_MUL_ALPHA(0.8,0.8,0.8,o));
 	draw_sprite(0,0,"stage1/fog");
 	r_color4(1,1,1,1);
 

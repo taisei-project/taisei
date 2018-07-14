@@ -420,7 +420,7 @@ static int masterspark(Enemy *e, int t2) {
 	float t = player_get_bomb_progress(&global.plr, NULL);
 	if(t2%2==0 && t < 3./4) {
 		complex dir = -cexp(1.2*I*nfrand())*I;
-		Color *c = RGB(0.7+0.3*sin(t*30), 0.7+0.3*cos(t*30), 0.7+0.3*cos(t*3));
+		Color *c = RGBA(0.7 + 0.3 * sin(t * 30), 0.7 + 0.3 * cos(t * 30), 0.7 + 0.3 * cos(t * 3), 0);
 		PARTICLE(
 			.sprite = "maristar_orbit",
 			.pos = global.plr.pos+40*dir,
@@ -429,7 +429,6 @@ static int masterspark(Enemy *e, int t2) {
 			.timeout = 50,
 			.args= { 10 * dir - 10*I, 3 },
 			.angle = nfrand(),
-			.blend = BLEND_ADD,
 			.draw_rule = GrowFade
 		);
 		dir = -conj(dir);
@@ -441,18 +440,16 @@ static int masterspark(Enemy *e, int t2) {
 			.timeout = 50,
 			.args = { 10 * dir - 10*I, 3 },
 			.angle = nfrand(),
-			.flags = PFLAG_DRAWADD,
 			.draw_rule = GrowFade
 		);
 		PARTICLE(
 			.sprite = "smoke",
 			.pos = global.plr.pos-40*I,
-			.color = RGB(0.9, 1, 1),
+			.color = RGBA(0.9, 1, 1, 0),
 			.rule = linear,
 			.timeout = 50,
 			.args = { -5*dir, 3 },
 			.angle = nfrand(),
-			.flags = PFLAG_DRAWADD,
 			.draw_rule = GrowFade
 		);
 	}
