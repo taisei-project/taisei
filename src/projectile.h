@@ -56,7 +56,7 @@ typedef enum ProjFlags {
 	PFLAG_REQUIREDPARTICLE = (1 << 10),
 } ProjFlags;
 
-// attr_deprecated("Use .blend = BLEND_ADD instead")
+attr_deprecated("Use color with alpha == 0 instead")
 static const ProjFlags PFLAG_DRAWADD = (1 << 0);
 
 // attr_deprecated("Use .blend = BLEND_SUB instead")

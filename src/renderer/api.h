@@ -292,7 +292,7 @@ typedef enum BlendMode {
 		BLENDFACTOR_ONE, BLENDFACTOR_INV_SRC_ALPHA, BLENDOP_ADD
 	),
 
-	BLEND_ADD = BLENDMODE_COMPOSE(
+	_BLEND_ADD = BLENDMODE_COMPOSE(
 		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_ADD,
 		BLENDFACTOR_ZERO,      BLENDFACTOR_ONE, BLENDOP_ADD
 	),
@@ -307,6 +307,9 @@ typedef enum BlendMode {
 		BLENDFACTOR_ZERO, BLENDFACTOR_ONE,       BLENDOP_ADD
 	),
 } BlendMode;
+
+attr_deprecated("Use color with alpha == 0 instead")
+static const BlendMode BLEND_ADD = _BLEND_ADD;
 
 typedef struct UnpackedBlendModePart {
 	BlendOp op;
