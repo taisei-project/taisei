@@ -858,7 +858,7 @@ void boss_start_attack(Boss *b, Attack *a) {
 			PARTICLE(
 				.sprite = "stain",
 				.pos = VIEWPORT_W/2 + VIEWPORT_W/4*anfrand(0)+I*VIEWPORT_H/2+I*anfrand(1)*30,
-				.color = RGBA(0.2, 0.3, 0.4, 0.0),
+				.color = RGBA(0.4, 0.6, 0.8, 0.0),
 				.rule = linear,
 				.timeout = 50,
 				.draw_rule = GrowFade,

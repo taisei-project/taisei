@@ -180,7 +180,7 @@ static void player_focus_circle_visual(Enemy *e, int t, bool render) {
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = "focus",
 		.rotation.angle = rot_speed,
-		.color = RGBA(1, 1, 1, creal(e->args[0])),
+		.color = RGBA_MUL_ALPHA(1, 1, 1, creal(e->args[0])),
 		.pos = { creal(e->pos), cimag(e->pos) },
 		.scale.both = scale,
 	});

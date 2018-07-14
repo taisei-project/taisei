@@ -720,11 +720,12 @@ void Blast(Projectile *p, int t) {
 		r_mat_scale(t/(double)p->timeout, t/(double)p->timeout, 1);
 	}
 
-	r_color4(0.3, 0.6, 1.0, 1.0 - t/(double)p->timeout);
+	float fade = 1.0 - t / (double)p->timeout;
+	r_color(RGBA_MUL_ALPHA(0.3, 0.6, 1.0, fade));
 
 	draw_sprite_batched_p(0,0,p->sprite);
 	r_mat_scale(0.5+creal(p->args[2]),0.5+creal(p->args[2]),1);
-	r_blend(BLEND_ADD);
+	r_color4(0.3 * fade, 0.6 * fade, 1.0 * fade, 0);
 	draw_sprite_batched_p(0,0,p->sprite);
 	r_mat_pop();
 }

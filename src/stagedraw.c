@@ -382,7 +382,7 @@ static void draw_spellbg(int t) {
 	if(t < ATTACK_START_DELAY && b->dialog) {
 		r_mat_push();
 		float f = -0.5*t/(float)ATTACK_START_DELAY+0.5;
-		r_color4(1,1,1,-f*f+2*f);
+		r_color(RGBA_MUL_ALPHA(1,1,1,-f*f+2*f));
 		draw_sprite_p(VIEWPORT_W*3/4-10*f*f,VIEWPORT_H*2/3-10*f*f,b->dialog);
 		r_color4(1,1,1,1);
 		r_mat_pop();

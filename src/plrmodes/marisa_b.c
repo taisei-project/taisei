@@ -229,22 +229,13 @@ static void marisa_star_bomb(Player *plr) {
 
 static void marisa_star_bombbg(Player *plr) {
 	float t = player_get_bomb_progress(&global.plr, NULL);
-	float fade = 1;
-
-	if(t < 1./6)
-		fade = t*6;
-
-	if(t > 3./4)
-		fade = 1-t*4 + 3;
-
+	
 	ShaderProgram *s = r_shader_get("maristar_bombbg");
 	r_shader_ptr(s);
 	r_uniform_float("t", t);
 	r_uniform_float("decay", 1);
 	r_uniform_vec2("plrpos", creal(global.plr.pos)/VIEWPORT_W, cimag(global.plr.pos)/VIEWPORT_H);
-	r_color4(1,1,1,0.6*fade);
 	fill_viewport(0,0,1,"marisa_bombbg");
-	r_color4(1,1,1,1);
 	r_shader_standard();
 }
 
