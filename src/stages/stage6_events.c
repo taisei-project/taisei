@@ -1105,7 +1105,7 @@ int broglie_charge(Projectile *p, int t) {
 		double s_freq = 0.10 + 0.01 * attack_num;
 
 		for(int lnum = 0; lnum < 2; ++lnum) {
-			Laser *l = create_lasercurve4c(p->pos, 75, 100, 0, las_sine,
+			Laser *l = create_lasercurve4c(p->pos, 75, 100, RGB(1,1,1), las_sine,
 				5*aim, s_ampl, s_freq, lnum * M_PI +
 				I*(hue + lnum * (M_PI/12)/(M_PI/2)));
 
