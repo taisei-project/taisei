@@ -184,12 +184,11 @@ static void charge_effect(Enemy *e, int t, int chargetime) {
 		PARTICLE(
 			.sprite = "flare",
 			.pos = e->pos+l*n,
-			.color = RGB(0.5, 0.5, 0.25),
+			.color = RGBA(0.5, 0.5, 0.25, 0),
 			.draw_rule = Fade,
 			.rule = linear,
 			.timeout = l/s,
 			.args = { -s*n },
-			.blend = BLEND_ADD,
 		);
 	}
 }
@@ -528,7 +527,7 @@ static int scuttle_lethbite_proj(Projectile *p, int time) {
 
 			PARTICLE(
 				.sprite = "smoothdot",
-				.color = RGBA_MUL_ALPHA(1.0, 0.8, 0.8, 0.8),
+				.color = RGBA(0.8, 0.6, 0.6, 0),
 				.draw_rule = Shrink,
 				.rule = enemy_flare,
 				.timeout = 100,
@@ -536,7 +535,6 @@ static int scuttle_lethbite_proj(Projectile *p, int time) {
 					cexp(I*(M_PI*anfrand(0))) * (1 + afrand(1)),
 					add_ref(p)
 				},
-				.flags = PFLAG_DRAWADD,
 			);
 
 			float offset = global.frames/15.0;
@@ -661,7 +659,7 @@ void scuttle_spellbg(Boss *h, int time) {
 		a += (time / (float)ATTACK_START_DELAY);
 	float s = 0.3 + 0.7 * a;
 
-	r_color4(0.1*a, 0.1*a, 0.1*a, 0);
+	r_color4(0.1*a, 0.1*a, 0.1*a, a);
 	draw_sprite(VIEWPORT_W/2, VIEWPORT_H/2, "stage3/spellbg2");
 	fill_viewport(-time/200.0 + 0.5, time/400.0+0.5, s, "stage3/spellbg1");
 	r_color4(0.1, 0.1, 0.1, 0);
@@ -669,7 +667,6 @@ void scuttle_spellbg(Boss *h, int time) {
 	r_shader("maristar_bombbg");
 	r_uniform_float("t", time/400.);
 	r_uniform_float("decay", 0.);
-	r_color4(0.1, 0.1, 0.1, 0); // XXX: why is this here?!
 	r_uniform_vec2("plrpos", 0.5,0.5);
 	fill_viewport(0.0, 0.0, 1, "stage3/spellbg1");
 
@@ -730,8 +727,7 @@ static void wriggle_slave_visual(Enemy *e, int time, bool render) {
 			.sprite = "fairy_circle",
 			.rotation.angle = DEG2RAD * 7 * time,
 			.scale.both = 0.7,
-			.blend = BLEND_ADD,
-			.color = RGB(0.8, 1.0, 0.4),
+			.color = RGBA(0.8, 1.0, 0.4, 0),
 			.pos = { creal(e->pos), cimag(e->pos) },
 		});
 	} else if(time % 5 == 0) {
@@ -739,7 +735,7 @@ static void wriggle_slave_visual(Enemy *e, int time, bool render) {
 		PARTICLE(
 			.sprite = "smoothdot",
 			.pos = 5*cexp(2*I*M_PI*afrand(0)),
-			.color = RGBA_MUL_ALPHA(1.0, 1.0, 0.8, 0.6),
+			.color = RGBA(0.6, 0.6, 0.5, 0),
 			.draw_rule = Shrink,
 			.rule = enemy_flare,
 			.timeout = 60,
@@ -747,7 +743,6 @@ static void wriggle_slave_visual(Enemy *e, int time, bool render) {
 				0.3*cexp(2*M_PI*I*afrand(1)),
 				add_ref(e),
 			},
-			.blend = BLEND_ADD,
 		);
 	}
 }
@@ -786,7 +781,7 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 		} else {
 			int cnt = 22, i;
 			float rot = (global.frames - global.boss->current->starttime) * 0.0037 * (global.diff);
-			Color *c = HSL(fmod(rot, M_PI*2)/(M_PI/2), 1.0, 0.5);
+			Color *c = HSLA(fmod(rot, M_PI*2)/(M_PI/2), 1.0, 0.5, 0);
 
 			for(i = 0; i < cnt; ++i) {
 				float f = (float)i/cnt;
@@ -800,7 +795,6 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 						(1.0 + psin(M_PI*18*f)) * cexp(I*(2.0*M_PI*f+rot)),
 						2 + 2 * global.diff
 					},
-					.flags = PFLAG_DRAWADD,
 				);
 			}
 
@@ -811,7 +805,6 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 				.timeout = 35 - 5 * frand(),
 				.draw_rule = GrowFade,
 				.args = { 0, 1 + 0.5 * frand() },
-				.flags = PFLAG_DRAWADD,
 				.angle = M_PI * 2 * frand(),
 			);
 
@@ -871,12 +864,11 @@ static int wriggle_spell_slave(Enemy *e, int time) {
 			.collision_size = 7.2 + 7.2*I,
 
 			.pos = e->pos,
-			.color = RGB(1.0 - c, 0.5, 0.5 + c),
+			.color = RGBA(1.0 - c, 0.5, 0.5 + c, 0),
 			.draw_rule = wriggle_slave_part_draw,
 			.timeout = 60,
 			.shader = "sprite_default",
 			.flags = PFLAG_NOCLEAR | PFLAG_NOCLEAREFFECT | PFLAG_NOCOLLISIONEFFECT,
-			.blend = BLEND_ADD,
 		);
 	}
 
@@ -905,19 +897,17 @@ static int wriggle_spell_slave(Enemy *e, int time) {
 		FROM_TO(300, 1000000, 180) {
 			int cnt = 5, i;
 			for(i = 0; i < cnt; ++i) {
-				PROJECTILE("ball", e->pos, RGB(0.5, 1.0, 0.5), accelerated,
+				PROJECTILE("ball", e->pos, RGBA(0.5, 1.0, 0.5, 0), accelerated,
 					.args = {
 						0, 0.02 * cexp(I*i*2*M_PI/cnt)
 					},
-					.flags = PFLAG_DRAWADD,
 				);
 
 				if(global.diff > D_Hard) {
-					PROJECTILE("ball", e->pos, RGB(1.0, 1.0, 0.5), accelerated,
+					PROJECTILE("ball", e->pos, RGBA(1.0, 1.0, 0.5, 0), accelerated,
 						.args = {
 							0, 0.01 * cexp(I*i*2*M_PI/cnt)
 						},
-						.flags = PFLAG_DRAWADD,
 					);
 				}
 			}
@@ -987,7 +977,7 @@ static void wriggle_ignite_warnlaser_logic(Laser *l, int time) {
 
 static void wriggle_ignite_warnlaser(Laser *l) {
 	float f = 6;
-	create_laser(l->pos, 90, 120, 0, l->prule, wriggle_ignite_warnlaser_logic, f*l->args[0], l->args[1], f*l->args[2], l->args[3]);
+	create_laser(l->pos, 90, 120, RGB(1,1,1), l->prule, wriggle_ignite_warnlaser_logic, f*l->args[0], l->args[1], f*l->args[2], l->args[3]);
 }
 
 void wriggle_night_ignite(Boss *boss, int time) {
@@ -1031,9 +1021,9 @@ void wriggle_night_ignite(Boss *boss, int time) {
 		wriggle_ignite_warnlaser(l3);
 
 		for(int i = 0; i < 5 + 15 * dfactor; ++i) {
-			PROJECTILE("plainball", boss->pos, RGB(c, c, 1.0), wriggle_ignite_laserbullet, { add_ref(l1), i }, .flags = PFLAG_DRAWADD);
-			PROJECTILE("bigball",   boss->pos, RGB(1.0, c, c), wriggle_ignite_laserbullet, { add_ref(l2), i }, .flags = PFLAG_DRAWADD);
-			PROJECTILE("plainball", boss->pos, RGB(c, c, 1.0), wriggle_ignite_laserbullet, { add_ref(l3), i }, .flags = PFLAG_DRAWADD);
+			PROJECTILE("plainball", boss->pos, RGBA(c, c, 1.0, 0), wriggle_ignite_laserbullet, { add_ref(l1), i });
+			PROJECTILE("bigball",   boss->pos, RGBA(1.0, c, c, 0), wriggle_ignite_laserbullet, { add_ref(l2), i });
+			PROJECTILE("plainball", boss->pos, RGBA(c, c, 1.0, 0), wriggle_ignite_laserbullet, { add_ref(l3), i });
 
 			// FIXME: better sound
 			play_sound("shot1");
@@ -1137,13 +1127,12 @@ void wriggle_light_singularity(Boss *boss, int time) {
 			PROJECTILE(
 				.sprite = ptype,
 				.pos = boss->pos,
-				.color = HSL(a/(M_PI*2) + colorofs, 1.0, 0.5),
+				.color = HSLA(a/(M_PI*2) + colorofs, 1.0, 0.5, 0),
 				.rule = asymptotic,
 				.args = {
 					dir * (1.2 - 0.2 * global.diff),
 					20
 				},
-				.flags = PFLAG_DRAWADD,
 			);
 		}
 
