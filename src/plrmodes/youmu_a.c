@@ -130,9 +130,8 @@ static void myon_draw_proj_trail(Projectile *p, int t) {
 	float time_progress = t / p->args[0];
 	float s = 2 * time_progress;
 	float a = p->color.a * min(1, s) * (1 - time_progress);
-	// Color c = derive_color(p->color, CLRMASK_A, rgba(0, 0, 0, a));
 	Color c = p->color;
-	color_set_opacity(&c, a);
+	color_mul_scalar(&c,a);
 	youmu_common_draw_proj(p, &c, s * p->args[2]);
 }
 
