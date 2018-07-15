@@ -478,13 +478,12 @@ void hina_bad_pick(Boss *h, int time) {
 			for(j = 0; j < cnt; j++) {
 				complex o = VIEWPORT_W/SLOTS*(i + j/(cnt-1));
 
-				PROJECTILE("ball", o, RGB(0.7,0,0.0), bad_pick_bullet,
+				PROJECTILE("ball", o, RGBA(0.7, 0.0, 0.0, 0.0), bad_pick_bullet,
 					.args = {
 						0,
 						0.005*nfrand() + 0.005*I * (1 + psin(i + j + global.frames)),
 						i
 					},
-					.flags = PFLAG_DRAWADD,
 				);
 			}
 		}
@@ -696,13 +695,12 @@ void hina_monty(Boss *h, int time) {
 			complex o = !top*VIEWPORT_H*I + cwidth*(bad_pos + i/(double)(cnt - 1));
 
 			PROJECTILE("ball", o,
-				.color = top ? RGB(0, 0, 0.7) : RGB(0.7, 0, 0),
+				.color = top ? RGBA(0, 0, 0.7, 0) : RGBA(0.7, 0, 0, 0),
 				.rule = accelerated,
 				.args = {
 					0,
 					(top ? -0.5 : 1) * 0.004 * (sin((M_PI * 4 * i / (cnt - 1)))*0.1*global.diff - I*(1 + psin(i + global.frames)))
 				},
-				.flags = PFLAG_DRAWADD,
 			);
 		}
 	}
@@ -761,7 +759,6 @@ void hina_spell_bg(Boss *h, int time) {
 	r_mat_scale(0.6,0.6,1);
 	draw_sprite(0, 0, "stage2/spellbg1");
 	r_mat_pop();
-	// FIXME: blend
 	r_blend(BLEND_MOD);
 	r_mat_rotate_deg(time*5, 0,0,1);
 	draw_sprite(0, 0, "stage2/spellbg2");
@@ -769,7 +766,8 @@ void hina_spell_bg(Boss *h, int time) {
 	r_blend(BLEND_PREMUL_ALPHA);
 	r_color4(1, 1, 1, 0);
 	Animation *fireani = get_ani("fire");
-	draw_sprite_p(creal(h->pos), cimag(h->pos), animation_get_frame(fireani,get_ani_sequence(fireani,"main"), global.frames));
+	draw_sprite_p(creal(h->pos), cimag(h->pos), animation_get_frame(fireani, get_ani_sequence(fireani, "main"), global.frames));
+	r_color4(1, 1, 1, 1);
 }
 
 Boss* stage2_spawn_hina(complex pos) {
