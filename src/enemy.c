@@ -214,12 +214,11 @@ void BigFairy(Enemy *e, int t, bool render) {
 			PARTICLE(
 				.sprite = "smoothdot",
 				.pos = offset,
-				.color = RGB(0.0, 0.2, 0.3),
+				.color = RGBA(0.0, 0.2, 0.3, 0.0),
 				.rule = enemy_flare,
 				.draw_rule = Shrink,
 				.timeout = 50,
 				.args = { (-50.0*I-offset)/50.0, add_ref(e) },
-				.flags = PFLAG_DRAWADD,
 			);
 		}
 

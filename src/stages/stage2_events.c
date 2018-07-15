@@ -320,7 +320,7 @@ void wiggle_mid_flee(Boss *w, int t) {
 
 Boss *create_wriggle_mid(void) {
 	Boss* wriggle = create_boss("Wriggle", "wriggle", NULL, VIEWPORT_W + 150 - 30.0*I);
-	wriggle->glowcolor = *RGBA_MUL_ALPHA(0.2, 0.4, 0.5, 0.5);
+	wriggle->glowcolor = *RGB(0.2, 0.4, 0.5);
 	wriggle->shadowcolor = *RGBA_MUL_ALPHA(0.4, 0.2, 0.6, 0.5);
 	wriggle_ani_flyin(wriggle);
 	boss_add_attack(wriggle, AT_Move, "Introduction", 4, 0, wriggle_intro_stage2, NULL);

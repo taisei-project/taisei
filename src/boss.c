@@ -182,15 +182,15 @@ static void BossGlow(Projectile *p, int t) {
 	float s = 1.0+t/(double)p->timeout*0.5;
 	float fade = 1 - (1.5 - s);
 	float deform = 5 - 10 * fade * fade;
-
 	Color c = p->color;
-	c.a = 1.5 - s;
+
+	c.a = 0;
+	color_mul_scalar(&c, 1.5 - s);
 
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { creal(p->pos), cimag(p->pos) },
 		.sprite_ptr = p->sprite,
 		.scale.both = s,
-		.blend = BLEND_ADD,
 		.color = &c,
 		.custom = deform,
 		.shader = "sprite_silhouette",
@@ -232,22 +232,19 @@ static void spawn_particle_effects(Boss *boss) {
 		PARTICLE(
 			.sprite = "smoke",
 			.pos = cexp(I*global.frames),
-			.color = shadowcolor,
+			.color = RGBA(shadowcolor->r, shadowcolor->g, shadowcolor->b, 0.0),
 			.rule = enemy_flare,
 			.timeout = 180,
 			.draw_rule = Shrink,
 			.args = { 0, add_ref(boss), },
 			.angle = M_PI * 2 * frand(),
-			.flags = PFLAG_DRAWADD,
 		);
 	}
 
 	if(!(global.frames % (2 + 2 * is_extra)) && (is_spell || boss_is_dying(boss))) {
 		float glowstr = 0.5;
-		float a = (1.0 - glowstr) + glowstr * pow(psin(global.frames/15.0), 1.0);
-		Color c = *glowcolor;
-		color_mul_scalar(&c, a);
-		spawn_boss_glow(boss, &c, 24);
+		float a = (1.0 - glowstr) + glowstr * psin(global.frames/15.0);
+		spawn_boss_glow(boss, color_mul_scalar(COLOR_COPY(glowcolor), a), 24);
 	}
 }
 
@@ -432,15 +429,15 @@ void boss_rule_extra(Boss *boss, float alpha) {
 		PARTICLE(
 			.sprite = (frand() < v*0.3 || lt > 1) ? "stain" : "arc",
 			.pos = boss->pos + dir * (100 + 50 * psin(alpha*global.frames/10.0+2*i)) * alpha,
-			.color = RGB(
+			.color = RGBA(
 				1.0 - 0.5 * psina *    v,
 				0.5 + 0.2 * psina * (1-v),
-				0.5 + 0.5 * psina *    v
+				0.5 + 0.5 * psina *    v,
+				0.0
 			),
 			.rule = linear,
 			.timeout = 30*lt,
 			.draw_rule = GrowFade,
-			.flags = PFLAG_DRAWADD,
 			.args = { vel * (1 - 2 * !(global.frames % 10)), 2.5 },
 		);
 	}
@@ -703,19 +700,21 @@ void process_boss(Boss **pboss) {
 		float t = (global.frames - boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
 		tsrand_fill(6);
 
+		Color *clr = RGBA_MUL_ALPHA(0.1 + sin(10*t), 0.1 + cos(10*t), 0.5, t);
+		clr->a = 0;
+
 		PARTICLE(
 			.sprite = "petal",
 			.pos = boss->pos,
 			.rule = asymptotic,
 			.draw_rule = Petal,
-			.color = RGBA(0.1 + sin(10*t), 0.1 + cos(10*t), 0.5, t),
+			.color = clr,
 			.args = {
 				sign(anfrand(5))*(3+t*5*afrand(0))*cexp(I*M_PI*8*t),
 				5+I,
 				afrand(2) + afrand(3)*I,
 				afrand(4) + 360.0*I*afrand(1)
 			},
-			.flags = PFLAG_DRAWADD,
 		);
 
 		if(!extra) {

@@ -2705,7 +2705,7 @@ void elly_spellbg_modern_dark(Boss *b, int t) {
 
 
 static void elly_global_rule(Boss *b, int time) {
-	global.boss->glowcolor = *HSLA_MUL_ALPHA(time/120.0, 1.0, 0.25, 0.5);
+	global.boss->glowcolor = *HSL(time/120.0, 1.0, 0.25);
 	global.boss->shadowcolor = *HSLA_MUL_ALPHA((time+20)/120.0, 1.0, 0.25, 0.5);
 }
 

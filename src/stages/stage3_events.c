@@ -700,7 +700,7 @@ void wriggle_spellbg(Boss *b, int time) {
 
 Boss* stage3_spawn_scuttle(complex pos) {
 	Boss *scuttle = create_boss("Scuttle", "scuttle", 0, pos);
-	scuttle->glowcolor = *RGBA_MUL_ALPHA(0.5, 0.6, 0.3, 0.5);
+	scuttle->glowcolor = *RGB(0.5, 0.6, 0.3);
 	scuttle->shadowcolor = *RGBA_MUL_ALPHA(0.7, 0.3, 0.1, 0.5);
 	return scuttle;
 }
