@@ -14,6 +14,7 @@
 #include "player.h"
 #include "ending.h"
 #include "stage.h"
+#include "dialog.h"
 
 typedef enum {
 	/* do not reorder - screws replays */
@@ -79,6 +80,7 @@ typedef double (*PlayerModePropertyProc)(Player *plr, PlrProperty prop);
 typedef struct PlayerMode {
 	const char *name;
 	PlayerCharacter *character;
+	PlayerDialogProcs *dialog;
 	ShotModeID shot_mode;
 
 	struct {

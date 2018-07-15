@@ -11,16 +11,4 @@
 
 #include "dialog.h"
 
-void dialog_reimu_stage1(Dialog *d);
-void dialog_reimu_stage1_post(Dialog *d);
-void dialog_reimu_stage2(Dialog *d);
-void dialog_reimu_stage2_post(Dialog *d);
-void dialog_reimu_stage3(Dialog *d);
-void dialog_reimu_stage3_post(Dialog *d);
-void dialog_reimu_stage4(Dialog *d);
-void dialog_reimu_stage4_post(Dialog *d);
-void dialog_reimu_stage5(Dialog *d);
-void dialog_reimu_stage5_mid(Dialog *d);
-void dialog_reimu_stage5_post(Dialog *d);
-void dialog_reimu_stage6(Dialog *d);
-void dialog_reimu_stage6_inter(Dialog *d);
+extern PlayerDialogProcs dialog_reimu;

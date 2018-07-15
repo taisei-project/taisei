@@ -9,11 +9,10 @@
 #include "taisei.h"
 
 #include "youmu.h"
-#include "dialog.h"
 
 #define M(side,message) dadd_msg(d,side,message)
 
-void dialog_youmu_stage1(Dialog *d) {
+static void dialog_youmu_stage1_pre_boss(Dialog *d) {
 	M(Left, "The temperature of the lake almost resembles the Netherworld’s. Good thing I don’t get cold easily.");
 	M(Right, "What’s that? You think you can’t get cold?");
 	M(Left, "I don’t just think that, I know that. I’m half-phantom, so even my body is cold.");
@@ -21,11 +20,11 @@ void dialog_youmu_stage1(Dialog *d) {
 	M(Right, "Let’s see if phantoms are good as soft-serve ice cream!");
 }
 
-void dialog_youmu_stage1_post(Dialog *d) {
+static void dialog_youmu_stage1_post_boss(Dialog *d) {
 	M(Left, "Lady Yuyuko would probably like trying such an unusual flavor of ice cream. I hope she never gets that idea.");
 }
 
-void dialog_youmu_stage2(Dialog *d) {
+static void dialog_youmu_stage2_pre_boss(Dialog *d) {
 	M(Right, "I can’t let you pass any further than this. Please go back down the mountain.");
 	M(Left, "Are you a goddess? It’s nice of you to be looking out for me, but the Netherworld has been put at risk due to this incident.");
 	M(Left, "I have to keep going.");
@@ -33,14 +32,14 @@ void dialog_youmu_stage2(Dialog *d) {
 	M(Left, "My mistress won’t like it if I tell her I was stopped by divine intervention. You’ll have to come up with another excuse.");
 }
 
-void dialog_youmu_stage2_post(Dialog *d) {
+static void dialog_youmu_stage2_post_boss(Dialog *d) {
 	M(Left, "It’s strange, but I feel as if my burdens have been lifted. Did you decide to bless me after all?");
 	M(Right, "It’s the least I can do since I cannot stop you. Are you sure you want to go through the tunnel?");
 	M(Left, "I don’t have a choice. I’m being ordered to by a power far beyond us both.");
 	M(Left, "She’s most definitely stronger than gods when she is angry.");
 }
 
-void dialog_youmu_stage3(Dialog *d) {
+static void dialog_youmu_stage3_pre_boss(Dialog *d) {
 	M(Left, "Huh, why is it that I feel like I’ve fought you before? But when I try to recall anything, my skin crawls and I seem to forget immediately.");
 	M(Right, "Maybe it’s because you realized the true power of us insects?");
 	M(Left, "No, I think it’s because I was too disgusted.");
@@ -49,7 +48,7 @@ void dialog_youmu_stage3(Dialog *d) {
 	M(Left, "If I cut legs off of an insect, do they squirm all on their own? How gross!");
 }
 
-void dialog_youmu_stage3_post(Dialog *d) {
+static void dialog_youmu_stage3_post_boss(Dialog *d) {
 	M(Right, "I surrender! Please don’t chop anything off!");
 	M(Left, "I suppose that as long as you don’t eat anything in my garden, I can let you go.");
 	M(Right, "I prefer meat, but not when it’s holding a skewer!");
@@ -57,7 +56,7 @@ void dialog_youmu_stage3_post(Dialog *d) {
 	M(Left, "I’m too busy to listen to this buzzing.");
 }
 
-void dialog_youmu_stage4(Dialog *d) {
+static void dialog_youmu_stage4_pre_boss(Dialog *d) {
 	M(Right, "Halt, intruder!");
 	M(Left, "Oh, and who might you be?");
 	M(Right, "Kuru— Hey, my name isn’t important for a nosy person like you to know!");
@@ -68,7 +67,7 @@ void dialog_youmu_stage4(Dialog *d) {
 	M(Right, "I can bet you that I’m much more frightening.");
 }
 
-void dialog_youmu_stage4_post(Dialog *d) {
+static void dialog_youmu_stage4_post_boss(Dialog *d) {
 	M(Left, "You’re not as scary as her, or even as good of a host.");
 	M(Left, "Maybe you should work on your manners and buy yourself a nice mansion to lord over instead of taking someone else’s.");
 	M(Right, "I don’t care about being a stuffy noble! Just leave my friend alone to do her work!");
@@ -76,7 +75,7 @@ void dialog_youmu_stage4_post(Dialog *d) {
 	M(Right, "…You’re really prim and proper, aren’t you?");
 }
 
-void dialog_youmu_stage5(Dialog *d) {
+static void dialog_youmu_stage5_pre_boss(Dialog *d) {
 	M(Left, "You were quite difficult to pin down. Don’t worry; I’ll listen to whatever warning you have before I continue forward.");
 	M(Right, "Hmm, you’re the groundskeeper of the Netherworld, correct?");
 	M(Left, "That’s right. My mistress sent me here to investigate since the world of spirits has been put in jeopardy by this new world infringing on its boundaries.");
@@ -86,19 +85,19 @@ void dialog_youmu_stage5(Dialog *d) {
 	M(Left, "I shall pass whatever test necessary if it will allow me to fulfill the wishes of Lady Yuyuko!");
 }
 
-void dialog_youmu_stage5_mid(Dialog *d) {
+static void dialog_youmu_stage5_post_midboss(Dialog *d) {
 	// this dialog must contain only one page
 	M(Left, "A messenger of Heaven! If I follow her, I’ll surely learn something about the incident!");
 }
 
-void dialog_youmu_stage5_post(Dialog *d) {
+static void dialog_youmu_stage5_post_boss(Dialog *d) {
 	M(Right, "You cut through the cloudbank, and now the storm has cleared. It is unconventional, but I trust you to end the incident.");
 	M(Left, "It’s a lot on my shoulders, but I must believe in my capacity for the sake of the Netherworld.");
 	M(Left, "As for you, if the Celestials give you any trouble, I’m certain my lady could speak to them on your behalf.");
 	M(Right, "Thank you. Now hurry, for the barrier is becoming thinner than ever!");
 }	
 
-void dialog_youmu_stage6(Dialog *d) {
+static void dialog_youmu_stage6_pre_boss(Dialog *d) {
 	M(Left, "Are you the one behind this new world?");
 	M(Right, "That is correct.");
 	M(Left, "Considering that scythe of yours, I’m really quite surprised that a shikigami would be behind everything.");
@@ -112,9 +111,24 @@ void dialog_youmu_stage6(Dialog *d) {
 	M(Right, "Pitiful servant of the dead. You’ll never be able to stop my life’s work from being fulfilled! I’ll simply unravel that nonsense behind your half-and-half existence!");
 }
 
-void dialog_youmu_stage6_inter(Dialog *d) {
+static void dialog_youmu_stage6_pre_final(Dialog *d) {
 	M(Right, "You’ve gotten this far… I can’t believe it! But that will not matter once I show you the truth of this world, and every world.");
 	M(Right, "Space, time, dimensions… it all becomes clear when you understand The Theory of Everything!");
 	M(Right, "Prepare to see the barrier destroyed!");
 }
 
+PlayerDialogProcs dialog_youmu = {
+	.stage1_pre_boss = dialog_youmu_stage1_pre_boss,
+	.stage1_post_boss = dialog_youmu_stage1_post_boss,
+	.stage2_pre_boss = dialog_youmu_stage2_pre_boss,
+	.stage2_post_boss = dialog_youmu_stage2_post_boss,
+	.stage3_pre_boss = dialog_youmu_stage3_pre_boss,
+	.stage3_post_boss = dialog_youmu_stage3_post_boss,
+	.stage4_pre_boss = dialog_youmu_stage4_pre_boss,
+	.stage4_post_boss = dialog_youmu_stage4_post_boss,
+	.stage5_post_midboss = dialog_youmu_stage5_post_midboss,
+	.stage5_pre_boss = dialog_youmu_stage5_pre_boss,
+	.stage5_post_boss = dialog_youmu_stage5_post_boss,
+	.stage6_pre_boss = dialog_youmu_stage6_pre_boss,
+	.stage6_pre_final = dialog_youmu_stage6_pre_final,
+};

@@ -11,43 +11,19 @@
 #include "stage1_events.h"
 #include "global.h"
 #include "stagetext.h"
-#include "dialog/all.h"
 
-Dialog *stage1_dialog(void) {
-	PlayerCharacter *pc = global.plr.mode->character;
-	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/cirno");
-
-        switch(pc->id) {
-	case PLR_CHAR_MARISA:
-		dialog_marisa_stage1(d);
-		break;
-	case PLR_CHAR_YOUMU:
-		dialog_youmu_stage1(d);
-		break;
-	default:
-    		log_warn("No dialog available for this character.");		
-	}
-
+static Dialog *stage1_dialog_pre_boss(void) {
+	PlayerMode *pm = global.plr.mode;
+	Dialog *d = create_dialog(pm->character->dialog_sprite_name, "dialog/cirno");
+	pm->dialog->stage1_pre_boss(d);
 	dadd_msg(d, BGM, "stage1boss");
-
 	return d;
 }
 
-static Dialog *stage1_postdialog(void) {
-	PlayerCharacter *pc = global.plr.mode->character;
-	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/cirno");
-
-	switch(pc->id) {
-	case PLR_CHAR_MARISA:
-		dialog_marisa_stage1_post(d);
-		break;
-	case PLR_CHAR_YOUMU:
-		dialog_youmu_stage1_post(d);
-		break;
-	default:
-    		log_warn("No dialog available for this character.");		
-	}
-
+static Dialog *stage1_dialog_post_boss(void) {
+	PlayerMode *pm = global.plr.mode;
+	Dialog *d = create_dialog(pm->character->dialog_sprite_name, "dialog/cirno");
+	pm->dialog->stage1_post_boss(d);
 	return d;
 }
 
@@ -324,7 +300,7 @@ void cirno_intro_boss(Boss *c, int time) {
 	GO_TO(c, VIEWPORT_W/2.0 + 100.0*I, 0.05);
 
 	AT(120)
-		global.dialog = stage1_dialog();
+		global.dialog = stage1_dialog_pre_boss();
 }
 
 void cirno_iceplosion0(Boss *c, int time) {
@@ -1314,7 +1290,7 @@ void stage1_events(void) {
 	}
 
 	AT(5100) {
-		global.dialog = stage1_postdialog();
+		global.dialog = stage1_dialog_post_boss();
 	}
 
 	AT(5400 - FADE_TIME) {

@@ -12,42 +12,19 @@
 #include "global.h"
 #include "stage.h"
 #include "enemy.h"
-#include "dialog/all.h"
 
-Dialog *stage2_dialog(void) {
-	PlayerCharacter *pc = global.plr.mode->character;
-	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/hina");
-
-	switch(pc->id) {
-	case PLR_CHAR_MARISA:
-		dialog_marisa_stage2(d);
-		break;
-	case PLR_CHAR_YOUMU:
-		dialog_youmu_stage2(d);
-		break;
-	default:
-    		log_warn("No dialog available for this character.");		
-	}
-
+static Dialog *stage2_dialog_pre_boss(void) {
+	PlayerMode *pm = global.plr.mode;
+	Dialog *d = create_dialog(pm->character->dialog_sprite_name, "dialog/hina");
+	pm->dialog->stage2_pre_boss(d);
 	dadd_msg(d, BGM, "stage2boss");
 	return d;
 }
 
-Dialog *stage2_post_dialog(void) {
-	PlayerCharacter *pc = global.plr.mode->character;
-	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/hina");
-
-	switch(pc->id) {
-	case PLR_CHAR_MARISA:
-		dialog_marisa_stage2_post(d);
-		break;
-	case PLR_CHAR_YOUMU:
-		dialog_youmu_stage2_post(d);
-		break;
-	default:
-    		log_warn("No dialog available for this character.");		
-	}
-
+static Dialog *stage2_dialog_post_boss(void) {
+	PlayerMode *pm = global.plr.mode;
+	Dialog *d = create_dialog(pm->character->dialog_sprite_name, "dialog/hina");
+	pm->dialog->stage2_post_boss(d);
 	return d;
 }
 
@@ -335,7 +312,7 @@ void hina_intro(Boss *h, int time) {
 	TIMER(&time);
 
 	AT(100)
-		global.dialog = stage2_dialog();
+		global.dialog = stage2_dialog_pre_boss();
 
 	GO_TO(h, VIEWPORT_W/2 + 100.0*I, 0.05);
 }
@@ -876,7 +853,7 @@ void stage2_events(void) {
 	}
 
 	AT(5180) {
-		global.dialog = stage2_post_dialog();
+		global.dialog = stage2_dialog_post_boss();
 	}
 
 	AT(5340 - FADE_TIME) {

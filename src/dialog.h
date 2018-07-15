@@ -55,3 +55,20 @@ void draw_dialog(Dialog *dialog)
 
 bool page_dialog(Dialog **d) attr_nonnull(1);
 void process_dialog(Dialog **d) attr_nonnull(1);
+
+// FIXME: might not be the best place for this
+typedef struct PlayerDialogProcs {
+	void (*stage1_pre_boss)(Dialog *d);
+	void (*stage1_post_boss)(Dialog *d);
+	void (*stage2_pre_boss)(Dialog *d);
+	void (*stage2_post_boss)(Dialog *d);
+	void (*stage3_pre_boss)(Dialog *d);
+	void (*stage3_post_boss)(Dialog *d);
+	void (*stage4_pre_boss)(Dialog *d);
+	void (*stage4_post_boss)(Dialog *d);
+	void (*stage5_post_midboss)(Dialog *d);
+	void (*stage5_pre_boss)(Dialog *d);
+	void (*stage5_post_boss)(Dialog *d);
+	void (*stage6_pre_boss)(Dialog *d);
+	void (*stage6_pre_final)(Dialog *d);
+} PlayerDialogProcs;

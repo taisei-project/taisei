@@ -12,7 +12,7 @@
 
 #define M(side,message) dadd_msg(d,side,message)
 
-void dialog_marisa_stage1(Dialog *d) {
+static void dialog_marisa_stage1_pre_boss(Dialog *d) {
 	M(Left, "It’s gotten pretty cold ’round here. I wish I brought a sweater.");
 	M(Right, "Every time there’s an incident, we fairies show up to stop weak humans like you from spoiling the fun!");
 	M(Left, "So, you’re callin’ me weak?");
@@ -20,12 +20,12 @@ void dialog_marisa_stage1(Dialog *d) {
 	M(Left, "I’d like to see ya try.");
 }
 
-void dialog_marisa_stage1_post(Dialog *d) {
+static void dialog_marisa_stage1_post_boss(Dialog *d) {
 	M(Right, "Waah, it’s hot! I’m gonna melt!");
 	M(Left, "I’ve made the lake a lot warmer now, so ya can’t freeze anyone.");
 }
 
-void dialog_marisa_stage2(Dialog *d) {
+static void dialog_marisa_stage2_pre_boss(Dialog *d) {
 	M(Right, "I can’t let you pass any further than this. Please go back down the mountain.");
 	M(Left, "So, is that your misfortune talkin’?");
 	M(Right, "Exploring that tunnel is only going to lead you to ruin. I’ll protect you by driving you away!");
@@ -33,13 +33,13 @@ void dialog_marisa_stage2(Dialog *d) {
 	M(Right, "A bad attitude like that is destined to be cursed from the beginning. I’ll send you packing home as a favor to you, so you don’t get hurt further by your terrible ideas!");
 }
 
-void dialog_marisa_stage2_post(Dialog *d) {
+static void dialog_marisa_stage2_post_boss(Dialog *d) {
 	M(Left, "Somehow I already feel luckier after beating ya. Fixin’ the border should be no sweat!");
 	M(Right, "It’s as much as I can do since I cannot stop you. But maybe you could reconsider…?");
 	M(Left, "Nope! I’m way too excited!");
 }
 
-void dialog_marisa_stage3(Dialog *d) {
+static void dialog_marisa_stage3_pre_boss(Dialog *d) {
 	M(Left, "Huh, didn’t expect a bug to make it this far down the tunnel.");
 	M(Right, "All of this beautiful light, and you didn’t expect me to be drawn to it?");
 	M(Left, "I expected ya to lose, that’s all.");
@@ -49,7 +49,7 @@ void dialog_marisa_stage3(Dialog *d) {
 	M(Right, "Ha! Watch me put on a grand light show that will put your dud fireworks to shame!");
 }
 
-void dialog_marisa_stage3_post(Dialog *d) {
+static void dialog_marisa_stage3_post_boss(Dialog *d) {
 	M(Left, "So where’s the finale? Nothing’s changed.");
 	M(Right, "I was lying! I just wanted to take you down a peg with my new magic!");
 	M(Left, "Y’know, fly too close to the sun and ya get burned. I’ll be goin’ to take care of some real threats now.");
@@ -57,7 +57,7 @@ void dialog_marisa_stage3_post(Dialog *d) {
 	M(Left, "Yeah, yeah. You’ll need to be less crispy first, though.");
 }
 
-void dialog_marisa_stage4(Dialog *d) {
+static void dialog_marisa_stage4_pre_boss(Dialog *d) {
 	M(Right, "Halt, intruder!");
 	M(Left, "Now here’s a face I haven’t seen in a long time. What’s this fancy house all about anyways? Decided to guard Yūka again, or is it somebody new?");
 	M(Right, "It’s none of your business, that’s what it is. My friend is busy with some important work and she can’t be disturbed by nosy humans poking into where they don’t belong.");
@@ -66,7 +66,7 @@ void dialog_marisa_stage4(Dialog *d) {
 	M(Left, "Shoot, so that’s a no to my reservation, right?");
 }
 
-void dialog_marisa_stage4_post(Dialog *d) {
+static void dialog_marisa_stage4_post_boss(Dialog *d) {
 	M(Right, "Oh no, I lost! She’ll be really angry if someone interferes with her preparations!");
 	M(Left, "Right, got any tickets left then? I’ll probably be a little early, but I wanna meet the star of this show.");
 	M(Left, "She seems like somebody I’d know.");
@@ -74,7 +74,7 @@ void dialog_marisa_stage4_post(Dialog *d) {
 	M(Left, "Now that’s what I like t’ hear!");
 }
 
-void dialog_marisa_stage5(Dialog *d) {
+static void dialog_marisa_stage5_pre_boss(Dialog *d) {
 	M(Left, "I finally caught up to ya! I should’ve known that the Dragon’s messenger would be hard to chase down in the air.");
 	M(Left, "Are you part of the incident too?");
 	M(Right, "Weren’t those earlier bombs enough of a deterrent? As this world is cutting into the space of Heaven, only those authorized are allowed to investigate.");
@@ -85,13 +85,12 @@ void dialog_marisa_stage5(Dialog *d) {
 	M(Right, "Prepare to be struck down from Heaven’s door!");
 }
 
-void dialog_marisa_stage5_mid(Dialog *d) {
+static void dialog_marisa_stage5_post_midboss(Dialog *d) {
 	// this dialog must contain only one page
 	M(Left, "Hey, wait! …Did I just see an oarfish?");
-
 }
 
-void dialog_marisa_stage5_post(Dialog *d) {
+static void dialog_marisa_stage5_post_boss(Dialog *d) {
 	M(Right, "You weathered my assault well. It is unconventional, but I’ll let you take care of this.");
 	M(Left, "Ha, I’m always fixin’ problems back home. I’ve got all the right credentials!");
 	M(Right, "…I’m going to get into so much trouble, aren’t I?");
@@ -100,7 +99,7 @@ void dialog_marisa_stage5_post(Dialog *d) {
 	M(Left, "No guarantees!");
 }
 
-void dialog_marisa_stage6(Dialog *d) {
+static void dialog_marisa_stage6_pre_boss(Dialog *d) {
 	M(Left, "And so the big bad boss behind it all is…");
 	M(Left, "Wait, Elly?!");
 	M(Right, "That’s strange; I thought Kurumi was keeping people from sneaking into my research facility.");
@@ -112,11 +111,26 @@ void dialog_marisa_stage6(Dialog *d) {
 	M(Right, "An unenlightened fool like you wouldn’t understand… You’re even still using magic, of all things!");
 	M(Left, "I understand enough to know that you’re the problem. And like any good mathematician, I’m gonna solve it by blastin’ it to bits!");
 	M(Right, "No! You’ll never destroy my life’s work! I’ll dissect that nonsensical magic of yours, and then I’ll tear it apart!");
-
 }
 
-void dialog_marisa_stage6_inter(Dialog *d) {
+static void dialog_marisa_stage6_pre_final(Dialog *d) {
 	M(Right, "You’ve gotten this far… I can’t believe it! But that will not matter once I show you the truth of this world, and every world.");
 	M(Right, "Space, time, dimensions… it all becomes clear when you understand The Theory of Everything!");
 	M(Right, "Prepare to see the barrier destroyed!");
 }
+
+PlayerDialogProcs dialog_marisa = {
+	.stage1_pre_boss = dialog_marisa_stage1_pre_boss,
+	.stage1_post_boss = dialog_marisa_stage1_post_boss,
+	.stage2_pre_boss = dialog_marisa_stage2_pre_boss,
+	.stage2_post_boss = dialog_marisa_stage2_post_boss,
+	.stage3_pre_boss = dialog_marisa_stage3_pre_boss,
+	.stage3_post_boss = dialog_marisa_stage3_post_boss,
+	.stage4_pre_boss = dialog_marisa_stage4_pre_boss,
+	.stage4_post_boss = dialog_marisa_stage4_post_boss,
+	.stage5_post_midboss = dialog_marisa_stage5_post_midboss,
+	.stage5_pre_boss = dialog_marisa_stage5_pre_boss,
+	.stage5_post_boss = dialog_marisa_stage5_post_boss,
+	.stage6_pre_boss = dialog_marisa_stage6_pre_boss,
+	.stage6_pre_final = dialog_marisa_stage6_pre_final,
+};

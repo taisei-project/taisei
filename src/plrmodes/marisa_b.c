@@ -349,6 +349,7 @@ static void marisa_star_preload(void) {
 PlayerMode plrmode_marisa_b = {
 	.name = "Star Sign",
 	.character = &character_marisa,
+	.dialog = &dialog_marisa,
 	.shot_mode = PLR_SHOT_MARISA_STAR,
 	.procs = {
 		.property = marisa_star_property,

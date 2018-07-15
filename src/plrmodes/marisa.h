@@ -12,6 +12,7 @@
 #include "plrmodes.h"
 #include "marisa_a.h"
 #include "marisa_b.h"
+#include "dialog/marisa.h"
 
 extern PlayerCharacter character_marisa;
 

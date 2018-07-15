@@ -14,7 +14,6 @@
 #include "stage.h"
 #include "enemy.h"
 #include "laser.h"
-#include "dialog/all.h"
 
 void kurumi_spell_bg(Boss*, int);
 void kurumi_slaveburst(Boss*, int);
@@ -24,40 +23,19 @@ void kurumi_blowwall(Boss*, int);
 void kurumi_danmaku(Boss*, int);
 void kurumi_extra(Boss*, int);
 
-Dialog *stage4_dialog(void) {
-	PlayerCharacter *pc = global.plr.mode->character;
-	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/kurumi");
-
-	switch(pc->id) {
-	case PLR_CHAR_MARISA:
-		dialog_marisa_stage4(d);
-		break;
-	case PLR_CHAR_YOUMU:
-		dialog_youmu_stage4(d);
-		break;
-	default:
-    		log_warn("No dialog available for this character.");		
-	}
-
+static Dialog *stage4_dialog_pre_boss(void) {
+	PlayerMode *pm = global.plr.mode;
+	Dialog *d = create_dialog(pm->character->dialog_sprite_name, "dialog/kurumi");
+	pm->dialog->stage4_pre_boss(d);
 	dadd_msg(d, BGM, "stage4boss");
 	return d;
 }
 
-Dialog *stage4_dialog_end(void) {
-	PlayerCharacter *pc = global.plr.mode->character;
-	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/kurumi");
-
-	switch(pc->id) {
-	case PLR_CHAR_MARISA:
-		dialog_marisa_stage4_post(d);
-		break;
-	case PLR_CHAR_YOUMU:
-		dialog_youmu_stage4_post(d);
-		break;
-	default:
-    		log_warn("No dialog available for this character.");		
-	}
-
+static Dialog *stage4_dialog_post_boss(void) {
+	PlayerMode *pm = global.plr.mode;
+	Dialog *d = create_dialog(pm->character->dialog_sprite_name, "dialog/kurumi");
+	pm->dialog->stage4_post_boss(d);
+	dadd_msg(d, BGM, "stage4boss");
 	return d;
 }
 
@@ -558,7 +536,7 @@ void kurumi_boss_intro(Boss *b, int t) {
 	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.015);
 
 	AT(120)
-		global.dialog = stage4_dialog();
+		global.dialog = stage4_dialog_pre_boss();
 }
 
 static int splitcard_elly(Projectile *p, int t) {
@@ -1525,7 +1503,7 @@ void stage4_events(void) {
 		global.boss = create_kurumi();
 
 	AT(5400 + midboss_time)
-		global.dialog = stage4_dialog_end();
+		global.dialog = stage4_dialog_post_boss();
 
 	AT(5550 + midboss_time - FADE_TIME) {
 		stage_finish(GAMEOVER_WIN);

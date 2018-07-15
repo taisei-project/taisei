@@ -11,70 +11,30 @@
 #include "stage5_events.h"
 #include "stage5.h"
 #include "global.h"
-#include "dialog/all.h"
 
-Dialog *stage5_post_mid_dialog(void) {
-	PlayerCharacter *pc = global.plr.mode->character;
-	Dialog *d = create_dialog(pc->dialog_sprite_name, NULL);
-
-	switch(pc->id) {
-	case PLR_CHAR_MARISA:
-		dialog_marisa_stage5_mid(d);
-		break;
-	case PLR_CHAR_YOUMU:
-		dialog_youmu_stage5_mid(d);
-		break;
-	default:
-    		log_warn("No dialog available for this character.");		
-	}
-
-	if(d->count != 1) {
-    		log_fatal("The stage 5 midboss dialog can only contain one line");
-	}
-	
-	DialogMessage *m = &d->messages[0];
-	m->timeout = global.frames + 120;
-
+static Dialog *stage5_dialog_post_midboss(void) {
+	PlayerMode *pm = global.plr.mode;
+	Dialog *d = create_dialog(pm->character->dialog_sprite_name, NULL);
+	pm->dialog->stage5_post_midboss(d);
+	assert(d->count == 1);
+	d->messages->timeout = global.frames + 120;
 	return d;
 }
 
-Dialog *stage5_boss_dialog(void) {
-	PlayerCharacter *pc = global.plr.mode->character;
-	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/iku");
-
-	switch(pc->id) {
-	case PLR_CHAR_MARISA:
-		dialog_marisa_stage5(d);
-		break;
-	case PLR_CHAR_YOUMU:
-		dialog_youmu_stage5(d);
-		break;
-	default:
-    		log_warn("No dialog available for this character.");		
-	}
-
+static Dialog *stage5_dialog_pre_boss(void) {
+	PlayerMode *pm = global.plr.mode;
+	Dialog *d = create_dialog(pm->character->dialog_sprite_name, "dialog/iku");
+	pm->dialog->stage5_pre_boss(d);
 	dadd_msg(d, BGM, "stage5boss");
 	return d;
 }
 
-Dialog *stage5_post_boss_dialog(void) {
-	PlayerCharacter *pc = global.plr.mode->character;
-	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/iku");
-
-	switch(pc->id) {
-	case PLR_CHAR_MARISA:
-		dialog_marisa_stage5_post(d);
-		break;
-	case PLR_CHAR_YOUMU:
-		dialog_youmu_stage5_post(d);
-		break;
-	default:
-    		log_warn("No dialog available for this character.");		
-	}
-
+static Dialog *stage5_dialog_post_boss(void) {
+	PlayerMode *pm = global.plr.mode;
+	Dialog *d = create_dialog(pm->character->dialog_sprite_name, "dialog/iku");
+	pm->dialog->stage5_pre_boss(d);
 	return d;
 }
-
 
 int stage5_greeter(Enemy *e, int t) {
 	TIMER(&t)
@@ -440,7 +400,7 @@ void iku_intro(Boss *b, int t) {
 	GO_TO(b, VIEWPORT_W/2+240.0*I, 0.015);
 
 	if(t == 160)
-		global.dialog = stage5_boss_dialog();
+		global.dialog = stage5_dialog_pre_boss();
 }
 
 static void cloud_common(void) {
@@ -1222,7 +1182,7 @@ void stage5_events(void) {
 		global.boss = create_iku_mid();
 
 	AT(2920) {
-		global.dialog = stage5_post_mid_dialog();
+		global.dialog = stage5_dialog_post_midboss();
 
 		// XXX: this shitty hack is needed to force the dialog to not reopen immediately when it's closed with the shot button
 		global.timer++;
@@ -1327,7 +1287,7 @@ void stage5_events(void) {
 	}
 
 	AT(6980) {
-		global.dialog = stage5_post_boss_dialog();
+		global.dialog = stage5_dialog_post_boss();
 	}
 
 	AT(7210 - FADE_TIME) {

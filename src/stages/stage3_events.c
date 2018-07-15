@@ -12,44 +12,20 @@
 #include "global.h"
 #include "stage.h"
 #include "enemy.h"
-#include "dialog/all.h"
 
-static Dialog *stage3_dialog(void) {
-	PlayerCharacter *pc = global.plr.mode->character;
-	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/wriggle");
-
-	switch(pc->id) {
-	case PLR_CHAR_MARISA:
-		dialog_marisa_stage3(d);
-		break;
-	case PLR_CHAR_YOUMU:
-		dialog_youmu_stage3(d);
-		break;
-	default:
-    		log_warn("No dialog available for this character.");		
-	}
+static Dialog *stage3_dialog_pre_boss(void) {
+	PlayerMode *pm = global.plr.mode;
+	Dialog *d = create_dialog(pm->character->dialog_sprite_name, "dialog/wriggle");
+	pm->dialog->stage3_pre_boss(d);
 	dadd_msg(d, BGM, "stage3boss");
-
 	return d;
 }
 
-static Dialog *stage3_post_dialog(void) {
-	PlayerCharacter *pc = global.plr.mode->character;
-	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/wriggle");
-
-	switch(pc->id) {
-	case PLR_CHAR_MARISA:
-		dialog_marisa_stage3_post(d);
-		break;
-	case PLR_CHAR_YOUMU:
-		dialog_youmu_stage3_post(d);
-		break;
-	default:
-    		log_warn("No dialog available for this character.");		
-	}
-	
+static Dialog *stage3_dialog_post_boss(void) {
+	PlayerMode *pm = global.plr.mode;
+	Dialog *d = create_dialog(pm->character->dialog_sprite_name, "dialog/wriggle");
+	pm->dialog->stage3_post_boss(d);
 	return d;
-
 }
 
 static int stage3_enterswirl(Enemy *e, int t) {
@@ -1347,7 +1323,7 @@ static void stage3_boss_nonspell3(Boss *boss, int time) {
 
 static void stage3_boss_intro(Boss *boss, int time) {
 	if(time == 110)
-		global.dialog = stage3_dialog();
+		global.dialog = stage3_dialog_pre_boss();
 
 	GO_TO(boss, VIEWPORT_W/2.0 + 100.0*I, 0.03);
 }
@@ -1600,8 +1576,9 @@ void stage3_events(void) {
 	AT(5300 + midboss_time) {
 		global.boss = stage3_create_boss();
 	}
+
 	AT(5400 + midboss_time) {
-		global.dialog = stage3_post_dialog();
+		global.dialog = stage3_dialog_post_boss();
 	}
 
 	AT(5700 + midboss_time - FADE_TIME) {

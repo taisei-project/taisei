@@ -51,6 +51,8 @@ void player_stage_post_init(Player *plr) {
 	assert(plr->mode->procs.shot != NULL);
 	assert(plr->mode->procs.bomb != NULL);
 	assert(plr->mode->procs.property != NULL);
+	assert(plr->mode->character != NULL);
+	assert(plr->mode->dialog != NULL);
 
 	delete_enemies(&global.plr.slaves);
 

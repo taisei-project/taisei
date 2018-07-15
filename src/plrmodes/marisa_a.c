@@ -624,6 +624,7 @@ static void marisa_laser_preload(void) {
 PlayerMode plrmode_marisa_a = {
 	.name = "Laser Sign",
 	.character = &character_marisa,
+	.dialog = &dialog_marisa,
 	.shot_mode = PLR_SHOT_MARISA_LASER,
 	.procs = {
 		.property = marisa_laser_property,

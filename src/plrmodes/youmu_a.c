@@ -425,6 +425,7 @@ static void youmu_mirror_preload(void) {
 PlayerMode plrmode_youmu_a = {
 	.name = "Mirror Sign",
 	.character = &character_youmu,
+	.dialog = &dialog_youmu,
 	.shot_mode = PLR_SHOT_YOUMU_MIRROR,
 	.procs = {
 		.property = youmu_common_property,

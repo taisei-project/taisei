@@ -12,9 +12,9 @@
 #include "plrmodes.h"
 #include "youmu_a.h"
 #include "youmu_b.h"
+#include "dialog/youmu.h"
 
 extern PlayerCharacter character_youmu;
-
 
 double youmu_common_property(Player *plr, PlrProperty prop);
 void youmu_common_shot(Player *plr);

@@ -399,6 +399,7 @@ static void youmu_haunting_preload(void) {
 PlayerMode plrmode_youmu_b = {
 	.name = "Haunting Sign",
 	.character = &character_youmu,
+	.dialog = &dialog_youmu,
 	.shot_mode = PLR_SHOT_YOUMU_HAUNTING,
 	.procs = {
 		.property = youmu_common_property,

@@ -11,16 +11,4 @@
 
 #include "dialog.h"
 
-void dialog_youmu_stage1(Dialog *d);
-void dialog_youmu_stage1_post(Dialog *d);
-void dialog_youmu_stage2(Dialog *d);
-void dialog_youmu_stage2_post(Dialog *d);
-void dialog_youmu_stage3(Dialog *d);
-void dialog_youmu_stage3_post(Dialog *d);
-void dialog_youmu_stage4(Dialog *d);
-void dialog_youmu_stage4_post(Dialog *d);
-void dialog_youmu_stage5(Dialog *d);
-void dialog_youmu_stage5_mid(Dialog *d);
-void dialog_youmu_stage5_post(Dialog *d);
-void dialog_youmu_stage6(Dialog *d);
-void dialog_youmu_stage6_inter(Dialog *d);
+extern PlayerDialogProcs dialog_youmu;

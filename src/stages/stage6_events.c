@@ -12,41 +12,19 @@
 #include "stage6.h"
 #include "global.h"
 #include "stagetext.h"
-#include "dialog/all.h"
 
-Dialog *stage6_dialog(void) {
-	PlayerCharacter *pc = global.plr.mode->character;
-	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/elly");
-
-	switch(pc->id) {
-	case PLR_CHAR_MARISA:
-		dialog_marisa_stage6(d);
-		break;
-	case PLR_CHAR_YOUMU:
-		dialog_youmu_stage6(d);
-		break;
-	default:
-    		log_warn("No dialog available for this character.");		
-	}
+static Dialog *stage6_dialog_pre_boss(void) {
+	PlayerMode *pm = global.plr.mode;
+	Dialog *d = create_dialog(pm->character->dialog_sprite_name, "dialog/elly");
+	pm->dialog->stage6_pre_boss(d);
 	dadd_msg(d, BGM, "stage6boss_phase1");
 	return d;
 }
 
-static Dialog *stage6_interboss_dialog(void) {
-	PlayerCharacter *pc = global.plr.mode->character;
-	Dialog *d = create_dialog(pc->dialog_sprite_name, "dialog/elly");
-
-	switch(pc->id) {
-	case PLR_CHAR_MARISA:
-		dialog_marisa_stage6_inter(d);
-		break;
-	case PLR_CHAR_YOUMU:
-		dialog_youmu_stage6_inter(d);
-		break;
-	default:
-    		log_warn("No dialog available for this character.");		
-	}
-
+static Dialog *stage6_dialog_pre_final(void) {
+	PlayerMode *pm = global.plr.mode;
+	Dialog *d = create_dialog(pm->character->dialog_sprite_name, "dialog/elly");
+	pm->dialog->stage6_pre_final(d);
 	return d;
 }
 
@@ -290,7 +268,7 @@ void elly_intro(Boss *b, int t) {
 	}
 
 	AT(300)
-		global.dialog = stage6_dialog();
+		global.dialog = stage6_dialog_pre_boss();
 }
 
 int scythe_infinity(Enemy *e, int t) {
@@ -2707,7 +2685,7 @@ Boss* stage6_spawn_elly(complex pos) {
 }
 
 static void elly_insert_interboss_dialog(Boss *b, int t) {
-	global.dialog = stage6_interboss_dialog();
+	global.dialog = stage6_dialog_pre_final();
 }
 
 static void elly_begin_toe(Boss *b, int t) {
