@@ -32,7 +32,7 @@ static Dialog *stage5_dialog_pre_boss(void) {
 static Dialog *stage5_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = create_dialog(pm->character->dialog_sprite_name, "dialog/iku");
-	pm->dialog->stage5_pre_boss(d);
+	pm->dialog->stage5_post_boss(d);
 	return d;
 }
 
