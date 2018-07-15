@@ -75,11 +75,10 @@ int cirno_snowflake_proj(Projectile *p, int time) {
 			PARTICLE(
 				.sprite = "stain",
 				.pos = p->pos,
-				.color = RGBA_MUL_ALPHA(0.9, 0.9, 1.0, 0.5),
+				.color = RGBA_MUL_ALPHA(0.45, 0.45, 0.5, 0.0),
 				.timeout = 10 + 2 * creal(p->args[1]),
 				.draw_rule = GrowFade,
 				.angle = p->angle,
-				.flags = PFLAG_DRAWADD,
 			);
 		}
 
@@ -168,7 +167,7 @@ static Projectile* spawn_stain(complex pos, float angle, int to) {
 		.draw_rule = GrowFade,
 		.timeout = to,
 		.angle = angle,
-		.flags = PFLAG_DRAWADD,
+		.color = RGBA(1, 1, 1, 0),
 	);
 }
 
@@ -187,16 +186,7 @@ int cirno_pfreeze_frogs(Projectile *p, int t) {
 		linear(p, t);
 	else if(boss_t == 110) {
 		p->color = *RGB(0.7, 0.7, 0.7);
-
-		PARTICLE(
-			.sprite = "stain",
-			.pos = p->pos,
-			.draw_rule = GrowFade,
-			.timeout = 30,
-			.angle = p->angle,
-			.flags = PFLAG_DRAWADD,
-		);
-
+		spawn_stain(p->pos, p->angle, 30);
 		spawn_stain(p->pos, p->angle, 30);
 		play_sound("shot_special1");
 	}
@@ -283,16 +273,15 @@ void cirno_perfect_freeze(Boss *c, int time) {
 }
 
 void cirno_pfreeze_bg(Boss *c, int time) {
-	r_color4(0.5,0.5,0.5,1);
+	r_color4(0.5, 0.5, 0.5, 1.0);
 	fill_viewport(time/700.0, time/700.0, 1, "stage1/cirnobg");
-	r_color4(0.7,0.7,0.7,0.5);
-	// FIXME: blend
+	r_color4(0.7, 0.7, 0.7, 0.5);
 	r_blend(BLEND_MOD);
 	fill_viewport(-time/700.0 + 0.5, time/700.0+0.5, 0.4, "stage1/cirnobg");
-	r_blend(BLEND_ADD);
-	fill_viewport(0, -time/100.0, 0, "stage1/snowlayer");
 	r_blend(BLEND_PREMUL_ALPHA);
-	r_color4(1,1,1,1);
+	r_color4(0.35, 0.35, 0.35, 0.0);
+	fill_viewport(0, -time/100.0, 0, "stage1/snowlayer");
+	r_color4(1.0, 1.0, 1.0, 1.0);
 }
 
 void cirno_mid_flee(Boss *c, int time) {
@@ -517,14 +506,7 @@ static int halation_orb(Projectile *p, int time) {
 	}
 
 	if(!(time % 4)) {
-		PARTICLE(
-			.sprite = "stain",
-			.pos = p->pos,
-			.timeout = 20,
-			.draw_rule = GrowFade,
-			.angle = global.frames * 15,
-			.blend = BLEND_ADD,
-		);
+		spawn_stain(p->pos, global.frames * 15, 20);
 	}
 
 	complex center = p->args[0];
@@ -629,17 +611,20 @@ void cirno_snow_halation(Boss *c, int time) {
 		int halate_time = 35 - _i * interval;
 
 		for(int p = _i*2; p <= _i*2 + 1; ++p) {
+			Color clr;
+			halation_color(&clr, 0);
+			clr.a = 0;
+
 			PROJECTILE(
 				.proto = pp_plainball,
 				.pos = halation_calc_orb_pos(center, rotation, p, projs),
-				.color = halation_color(&(Color){0}, 0),
+				.color = &clr,
 				.rule = halation_orb,
 				.args = {
 					center, rotation, p + I * projs, halate_time
 				},
 				.type = FakeProj,
 				.max_viewport_dist = 200,
-				.blend = BLEND_ADD,
 				.flags = PFLAG_NOCLEAR,
 			);
 		}
@@ -754,14 +739,7 @@ int cirno_crystal_blizzard_proj(Projectile *p, int time) {
 	}
 
 	if(!(time % 12)) {
-		PARTICLE(
-			.sprite = "stain",
-			.pos = p->pos,
-			.timeout = 20,
-			.draw_rule = GrowFade,
-			.angle = global.frames * 15,
-			.flags = PFLAG_DRAWADD,
-		);
+		spawn_stain(p->pos, global.frames * 15, 20);
 	}
 
 	if(time > 100 + global.diff * 100) {
@@ -808,13 +786,12 @@ void cirno_crystal_blizzard(Boss *c, int time) {
 			PROJECTILE(
 				.sprite = "wave",
 				.pos = c->pos,
-				.color = RGB(0.2, 0.2, 0.4),
+				.color = RGBA(0.2, 0.2, 0.4, 0.0),
 				.rule = cirno_crystal_blizzard_proj,
 				.args = {
 					20 * (0.1 + 0.1 * anfrand(0)) * cexp(I*(carg(global.plr.pos - c->pos) + anfrand(1) * 0.2)),
 					5
 				},
-				.flags = PFLAG_DRAWADD,
 			);
 		}
 
@@ -825,10 +802,9 @@ void cirno_crystal_blizzard(Boss *c, int time) {
 				PROJECTILE(
 					.sprite = "ball",
 					.pos = c->pos,
-					.color = RGB(0.1, 0.1, 0.5),
+					.color = RGBA(0.1, 0.1, 0.5, 0.0),
 					.rule = accelerated,
 					.args = { 0, 0.01 * cexp(I*(global.frames/20.0 + 2*i*M_PI/cnt)) },
-					.flags = PFLAG_DRAWADD,
 				);
 			}
 		}
@@ -856,14 +832,14 @@ void cirno_benchmark(Boss* b, int t) {
 			.flags = PFLAG_NOGRAZE,
 		);
 
-		if(t > 350 && frand() > 0.5)
-			p->flags |= PFLAG_DRAWADD;
-
 		if(t > 700 && frand() > 0.5)
 			projectile_set_prototype(p, pp_plainball);
 
 		if(t > 1200 && frand() > 0.5)
-			p->color = *RGB(1.0,0.2,0.8);
+			p->color = *RGB(1.0, 0.2, 0.8);
+
+		if(t > 350 && frand() > 0.5)
+			p->color.a = 0;
 	}
 }
 
