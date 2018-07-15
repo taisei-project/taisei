@@ -116,11 +116,14 @@ static int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: aim (r:
 	return 1;
 }
 
-static Projectile* youmu_trap_trail(Projectile *p, complex v, int t) {
+static Projectile* youmu_trap_trail(Projectile *p, complex v, int t, bool additive) {
 	Projectile *trail = youmu_homing_trail(p, v, t);
 	trail->draw_rule = youmu_trap_draw_trail;
 	// trail->args[3] = global.frames - p->birthtime;
 	trail->shader_custom_param = p->shader_custom_param;
+
+	if(additive)
+		trail->color.a = 0;
 	return trail;
 }
 
@@ -179,12 +182,11 @@ static int youmu_trap(Projectile *p, int t) {
 			float a = (i / (float)cnt) * M_PI * 2;
 			complex dir = cexp(I*(a));
 
-			PROJECTILE("youmu", p->pos, RGB(1, 1, 1), youmu_homing,
+			PROJECTILE("youmu", p->pos, RGBA(1, 1, 1, 0), youmu_homing,
 				.args = { 5 * (1 + charge) * dir, (1 + charge) * aim, dur + charge*I, creal(p->pos) - VIEWPORT_H*I },
 				.type = PlrProj + dmg,
 				.draw_rule = youmu_trap_draw_child_proj,
 				.shader = "sprite_youmu_charged_shot",
-				.flags = PFLAG_DRAWADD,
 			);
 		}
 
@@ -198,8 +200,8 @@ static int youmu_trap(Projectile *p, int t) {
 	p->angle = global.frames + t;
 	p->pos += p->args[0] * (0.01 + 0.99 * max(0, (10 - t) / 10.0));
 
-	youmu_trap_trail(p, cexp(I*p->angle), 30 * (1 + charge))->flags |= PFLAG_DRAWADD;
-	youmu_trap_trail(p, cexp(I*-p->angle), 30);
+	youmu_trap_trail(p, cexp(I*p->angle), 30 * (1 + charge), true);
+	youmu_trap_trail(p, cexp(I*-p->angle), 30, false);
 	return 1;
 }
 
@@ -244,7 +246,7 @@ static int youmu_particle_slice_logic(Projectile *p, int t) {
 		a = max(0,1-(tt-0.5)/0.5);
 	}
 
-	p->color = *RGBA(a, a, a, a);
+	p->color = *RGBA(a, a, a, 0);
 
 	complex phase = cexp(p->angle*I);
 	if(t%5 == 0) {
@@ -254,14 +256,13 @@ static int youmu_particle_slice_logic(Projectile *p, int t) {
 			.pos = p->pos-400*phase,
 			.rule = accelerated,
 			.draw_rule = Petal,
-			.color = RGB(0.1, 0.1, 0.5),
+			.color = RGBA(0.1, 0.1, 0.5, 0),
 			.args = {
 				phase,
 				phase*cexp(0.1*I),
 				afrand(1) + afrand(2)*I,
 				afrand(3) + 360.0*I*afrand(0)
 			},
-			.flags = PFLAG_DRAWADD,
 		);
 	}
 
@@ -287,11 +288,11 @@ static int youmu_slash(Enemy *e, int t) {
 	complex pos = cexp(I*_i)*(100+10*_i*_i*0.01);
 		PARTICLE(
 			.sprite = "youmu_slice",
+			.color = RGBA(1, 1, 1, 0),
 			.pos = e->pos+pos,
 			.draw_rule = youmu_particle_slice_draw,
 			.rule = youmu_particle_slice_logic,
 			.flags = PFLAG_NOREFLECT,
-			.blend = BLEND_ADD,
 			.timeout = 100,
 			.angle = carg(pos),
 		);

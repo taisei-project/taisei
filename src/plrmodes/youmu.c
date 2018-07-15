@@ -89,7 +89,8 @@ void youmu_common_bombbg(Player *plr) {
 	if(fade < 0)
 		fade = 0;
 
-	r_color4(1,1,1,0.6*fade);
+	fade *= 0.6;
+	r_color4(fade, fade, fade, fade);
 	fill_viewport_p(0.5,0.5,3,1,1200*t*(t-1.5),get_tex("youmu_bombbg1"));
 	r_color4(1,1,1,1);
 }

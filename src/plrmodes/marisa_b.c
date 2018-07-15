@@ -31,9 +31,9 @@ static void marisa_star_trail_draw(Projectile *p, int t) {
 
 static int marisa_star_projectile(Projectile *p, int t) {
 	float c = 0.3 * psin(t * 0.2);
-	p->color = *RGBA(1 - c, 0.7 + 0.3 * psin(t * 0.1), 0.9 + c/3);
-	Color *c = COLOR_COPY(&p->color);
-	c->a = 0;
+	p->color = *RGB(1 - c, 0.7 + 0.3 * psin(t * 0.1), 0.9 + c/3);
+	Color *clr = COLOR_COPY(&p->color);
+	clr->a = 0;
 
 	int r = accelerated(p, t);
 	p->angle = t * 10;
@@ -41,7 +41,7 @@ static int marisa_star_projectile(Projectile *p, int t) {
 	PARTICLE(
 		.sprite_ptr = get_sprite("proj/maristar"),
 		.pos = p->pos,
-		.color = &c,
+		.color = clr,
 		.timeout = 8,
 		.draw_rule = marisa_star_trail_draw,
 		.angle = p->angle,
@@ -53,7 +53,7 @@ static int marisa_star_projectile(Projectile *p, int t) {
 		PARTICLE(
 			.sprite_ptr = get_sprite("proj/maristar"),
 			.pos = p->pos,
-			.color = &c,
+			.color = clr,
 			.timeout = 40,
 			.draw_rule = GrowFade,
 			.args = { 0, 2 },
@@ -148,15 +148,20 @@ static int marisa_star_orbit(Enemy *e, int t) {
 		color.a = 1 - (tb - fadetime) / (1 - fadetime);
 	}
 
+	color_mul_alpha(&color);
+	color.a = 0;
+
 	if(t%1 == 0) {
+		Color *color2 = COLOR_COPY(&color);
+		color_mul_scalar(color2, 0.5);
+		
 		PARTICLE(
 			.sprite_ptr = get_sprite("part/lightningball"),
 			.pos = e->pos,
-			.color = RGBA(color.r, color.g, color.b, color.a / 2),
+			.color = color2,
 			.timeout = 10,
 			.draw_rule = Fade,
 			.flags = PFLAG_NOREFLECT,
-			.blend = BLEND_ADD,
 		);
 	}
 
@@ -164,11 +169,11 @@ static int marisa_star_orbit(Enemy *e, int t) {
 		PARTICLE(
 			.sprite = "maristar_orbit",
 			.pos = e->pos,
-			.color = RGB(color.r, color.g, color.b),
+			.color = &color,
 			.rule = marisa_star_orbit_star,
 			.draw_rule = GrowFade,
 			.timeout = 150,
-			.flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
+			.flags = PFLAG_NOREFLECT,
 			.args = { -5*dir/cabs(dir), 3 },
 		);
 	}
@@ -208,7 +213,7 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 	marisa_common_masterspark_draw(global.plr.bombtotaltime*tb);
 
 	r_mat_pop();
-	r_blend(BLEND_ADD);
+	color.a = 0;
 	r_color(&color);
 	r_mat_rotate_deg(t*10,0,0,1);
 	draw_sprite_batched(0,0,"fairy_circle");
