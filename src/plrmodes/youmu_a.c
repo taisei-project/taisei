@@ -18,7 +18,7 @@
 static Color* myon_color(Color *c, float f, float a) {
 	// *RGBA_MUL_ALPHA(0.8+0.2*f, 0.9-0.4*sqrt(f), 1.0-0.2*f*f, a);
 	// *RGBA_MUL_ALPHA(0.8+0.2*f, 0.9-0.4*sqrt(f), 1.0-0.4*f*f, a);
-	*c = *RGBA_MUL_ALPHA(0.8+0.2*f, 0.9-0.4*sqrt(f), 1.0-0.35*f*f, a);
+	*c = *RGBA((0.8+0.2*f)*a, (0.9-0.4*sqrt(f))*a, (1.0-0.35*f*f)*a, 0);
 	return c;
 }
 
@@ -27,10 +27,7 @@ static int myon_particle_rule(Projectile *p, int t) {
 		return ACTION_ACK;
 	}
 
-	// p->color = derive_color(color_lerp(myon_color(0.5, 0), p->color, 0.04), CLRMASK_A, p->color);
-	Color prev_color = p->color;
-	myon_color(&p->color, 0.5, prev_color.a);
-	color_lerp(&p->color, &prev_color, 0.04);
+	myon_color(&p->color, clamp(creal(p->args[3]) + t / p->timeout, 0, 1), 0.5 * (1 - sqrt(t / p->timeout)));
 
 	p->pos += p->args[0];
 	p->angle += 0.03 * (1 - 2 * (p->birthtime & 1));
@@ -50,8 +47,7 @@ static int myon_flare_particle_rule(Projectile *p, int t) {
 		return ACTION_ACK;
 	}
 
-	// p->color = derive_color(p->color, CLRMASK_A, rgba(1, 1, 1, pow(1 - min(1, t / (double)p->timeout), 2)));
-	color_set_opacity(&p->color, pow(1 - min(1, t / (double)p->timeout), 2));
+	myon_color(&p->color, creal(p->args[3]), pow(1 - min(1, t / (double)p->timeout), 2));
 
 	// wiggle wiggle
 	p->pos += 0.05 * (MYON->pos - p->pos) * cexp(I * sin((t - global.frames * 2) * 0.1) * M_PI/8);
@@ -63,24 +59,21 @@ static int myon_flare_particle_rule(Projectile *p, int t) {
 static void myon_draw_trail(Projectile *p, int t) {
 	float fadein = clamp(t/10.0, p->args[2], 1);
 	float s = min(1, 1 - t / (double)p->timeout);
-	float a = p->color.a * fadein;
-	// Color c = derive_color(p->color, CLRMASK_A, rgba(0, 0, 0, a * s * s));
-	Color c = p->color;
-	color_set_opacity(&c, a * s * s);
+	float a = p->color.r*fadein;
+	Color c;
+	myon_color(&c, creal(p->args[3]), a * s * s);
 	youmu_common_draw_proj(p, &c, fadein * (2-s) * p->args[1]);
 }
 
-static void spawn_stardust(complex pos, Color *clr, int timeout, complex v) {
+static void spawn_stardust(complex pos, float myon_color_f, int timeout, complex v) {
 	PARTICLE(
 		.sprite = "stardust",
 		.pos = pos+5*frand()*cexp(2.0*I*M_PI*frand()),
-		.color = clr,
 		.draw_rule = myon_draw_trail,
 		.rule = myon_particle_rule,
 		.timeout = timeout,
-		.args = { v, 0.2 + 0.1 * frand(), 1 },
+		.args = { v, 0.2 + 0.1 * frand(), 0, myon_color_f },
 		.angle = M_PI*2*frand(),
-		.blend = BLEND_ADD,
 		.flags = PFLAG_NOREFLECT,
 		.layer = LAYER_PARTICLE_LOW | 1,
 	);
@@ -94,18 +87,14 @@ static void myon_spawn_trail(Enemy *e, int t) {
 	float f = abs(global.plr.focus) / 30.0;
 	stardust_v = f * stardust_v + (1 - f) * -I;
 
-	Color c;
-
 	if(player_should_shoot(&global.plr, true)) {
 		PARTICLE(
 			.sprite = "smoke",
 			.pos = pos+10*frand()*cexp(2.0*I*M_PI*frand()),
-			.color = myon_color(&c, f, (1 + f) * 0.05),
 			.draw_rule = myon_draw_trail,
 			.rule = myon_particle_rule,
 			.timeout = 60,
-			.args = { -I*0.0*cexp(I*M_PI/16*sin(t)), -0.2, 0 },
-			.blend = BLEND_ADD,
+			.args = { -I*0.0*cexp(I*M_PI/16*sin(t)), -0.2, 0, f },
 			.flags = PFLAG_NOREFLECT,
 			.angle = M_PI*2*frand(),
 		);
@@ -113,12 +102,10 @@ static void myon_spawn_trail(Enemy *e, int t) {
 		PARTICLE(
 			.sprite = "flare",
 			.pos = pos+5*frand()*cexp(2.0*I*M_PI*frand()),
-			.color = RGBA_MUL_ALPHA(1, 1, 1, 0.2),
 			.draw_rule = Shrink,
 			.rule = myon_particle_rule,
 			.timeout = 10,
-			.args = { cexp(I*M_PI*2*frand())*0.5, 0.2, 0 },
-			.blend = BLEND_ADD,
+			.args = { cexp(I*M_PI*2*frand())*0.5, 0.2, 0, f },
 			.flags = PFLAG_NOREFLECT,
 			.angle = M_PI*2*frand(),
 		);
@@ -126,18 +113,17 @@ static void myon_spawn_trail(Enemy *e, int t) {
 
 	PARTICLE(
 		.sprite = "myon",
-		.color = myon_color(&c, f, 0.5),
 		.pos = pos,
 		.rule = myon_flare_particle_rule,
 		.timeout = 40,
-		.args = { f * stardust_v },
+		.args = { f * stardust_v, 0, 0, f },
 		.draw_rule = Shrink,
 		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 		.angle = M_PI*2*frand(),
 		.layer = LAYER_PARTICLE_LOW,
 	);
 
-	spawn_stardust(pos, RGBA_MUL_ALPHA(1, 1, 1, 0.1), 60, stardust_v);
+	spawn_stardust(pos, f, 60, stardust_v);
 }
 
 static void myon_draw_proj_trail(Projectile *p, int t) {
@@ -162,16 +148,20 @@ static int myon_proj(Projectile *p, int t) {
 
 	// spawn_stardust(p->pos, multiply_colors(p->color, myon_color(abs(global.plr.focus) / 30.0, 0.1)), 20, p->args[0]*0.1);
 
+	Color *c = COLOR_COPY(&p->color);
+	color_mul_scalar(c, 0.075);
+	c->a = 0;
+
 	PARTICLE(
 		.sprite = "boss_shadow",
 		.pos = p->pos,
 		// .color = derive_color(p->color, CLRMASK_A, rgba(0, 0, 0, 0.075)),
-		.color = color_set_opacity(COLOR_COPY(&p->color), 0.075),
+		.color = c,
 		.draw_rule = myon_draw_proj_trail,
 		.rule = linear,
 		.timeout = 10,
 		.args = { p->args[0]*0.8, 0.6, 0 },
-		.flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
+		.flags = PFLAG_NOREFLECT,
 		.angle = p->angle,
 	);
 
