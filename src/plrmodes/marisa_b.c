@@ -16,8 +16,9 @@
 static void marisa_star_trail_draw(Projectile *p, int t) {
 	float s = 1 - t / (double)p->timeout;
 
-	// Color clr = derive_color(p->color, CLRMASK_A, rgba(0, 0, 0, s*0.5));
-	Color *clr = color_set_opacity(COLOR_COPY(&p->color), s * 0.5);
+	Color *clr = COLOR_COPY(&p->color);
+
+	color_mul_scalar(clr, s * 0.5);
 
 	r_mat_push();
 	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
@@ -30,7 +31,9 @@ static void marisa_star_trail_draw(Projectile *p, int t) {
 
 static int marisa_star_projectile(Projectile *p, int t) {
 	float c = 0.3 * psin(t * 0.2);
-	p->color = *RGB(1 - c, 0.7 + 0.3 * psin(t * 0.1), 0.9 + c/3);
+	p->color = *RGBA(1 - c, 0.7 + 0.3 * psin(t * 0.1), 0.9 + c/3);
+	Color *c = COLOR_COPY(&p->color);
+	c->a = 0;
 
 	int r = accelerated(p, t);
 	p->angle = t * 10;
@@ -38,27 +41,25 @@ static int marisa_star_projectile(Projectile *p, int t) {
 	PARTICLE(
 		.sprite_ptr = get_sprite("proj/maristar"),
 		.pos = p->pos,
-		.color = &p->color,
+		.color = &c,
 		.timeout = 8,
 		.draw_rule = marisa_star_trail_draw,
 		.angle = p->angle,
 		.flags = PFLAG_NOREFLECT,
 		.layer = LAYER_PARTICLE_LOW,
-		.blend = BLEND_ADD,
 	);
 
 	if(t == EVENT_DEATH) {
 		PARTICLE(
 			.sprite_ptr = get_sprite("proj/maristar"),
 			.pos = p->pos,
-			.color = &p->color,
+			.color = &c,
 			.timeout = 40,
 			.draw_rule = GrowFade,
 			.args = { 0, 2 },
 			.angle = frand() * 2 * M_PI,
 			.flags = PFLAG_NOREFLECT,
 			.layer = LAYER_PARTICLE_HIGH,
-			.blend = BLEND_ADD,
 		);
 	}
 
