@@ -43,8 +43,6 @@ typedef enum {
 } ProjType;
 
 typedef enum ProjFlags {
-	// PFLAG_DRAWADD = (1 << 0),
-	// PFLAG_DRAWSUB = (1 << 1),
 	PFLAG_NOSPAWNZOOM = (1 << 2),
 	PFLAG_NOGRAZE = (1 << 3),
 	PFLAG_NOCLEAR = (1 << 4),
@@ -55,12 +53,6 @@ typedef enum ProjFlags {
 	PFLAG_NOREFLECT = (1 << 9),
 	PFLAG_REQUIREDPARTICLE = (1 << 10),
 } ProjFlags;
-
-attr_deprecated("Use color with alpha == 0 instead")
-static const ProjFlags PFLAG_DRAWADD = (1 << 0);
-
-// attr_deprecated("Use .blend = BLEND_SUB instead")
-static const ProjFlags PFLAG_DRAWSUB = (1 << 1);
 
 // FIXME: prototype stuff awkwardly shoved in this header because of dependency cycles.
 typedef struct ProjPrototype ProjPrototype;

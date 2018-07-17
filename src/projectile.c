@@ -230,36 +230,6 @@ static Projectile* _create_projectile(ProjArgs *args) {
 		log_fatal("Tried to spawn a projectile with invalid size %f x %f", creal(p->size), cimag(p->size));
 	}
 
-	if(!(p->ent.draw_layer & LAYER_LOW_MASK)) {
-		switch(p->type) {
-			case EnemyProj:
-			case FakeProj: {
-				// 1. Large projectiles go below smaller ones.
-				drawlayer_low_t sublayer = (LAYER_LOW_MASK - (drawlayer_low_t)projectile_rect_area(p));
-
-				// 2. Additive projectiles go below others.
-				sublayer <<= 1;
-				sublayer |= 1 * (p->blend == BLEND_ADD || p->flags & PFLAG_DRAWADD);
-
-				// If specific blending order is required, then you should set up the sublayer manually.
-				p->ent.draw_layer |= sublayer;
-				break;
-			}
-
-			case Particle: {
-				// 1. Additive particles go above others.
-				drawlayer_low_t sublayer = (p->blend == BLEND_ADD || p->flags & PFLAG_DRAWADD) * PARTICLE_ADDITIVE_SUBLAYER;
-
-				// If specific blending order is required, then you should set up the sublayer manually.
-				p->ent.draw_layer |= sublayer;
-				break;
-			}
-
-			default:
-				break;
-		}
-	}
-
 	ent_register(&p->ent, ENT_PROJECTILE);
 
 	// TODO: Maybe allow ACTION_DESTROY here?
@@ -445,16 +415,7 @@ void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCol
 static void ent_draw_projectile(EntityInterface *ent) {
 	Projectile *proj = ENT_CAST(ent, Projectile);
 
-	// TODO: get rid of these legacy flags
-
-	if(proj->flags & PFLAG_DRAWADD) {
-		r_blend(BLEND_ADD);
-	} else if(proj->flags & PFLAG_DRAWSUB) {
-		r_blend(BLEND_SUB);
-	} else {
-		r_blend(proj->blend);
-	}
-
+	r_blend(proj->blend);
 	r_shader_ptr(proj->shader);
 
 #ifdef PROJ_DEBUG
