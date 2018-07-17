@@ -190,7 +190,7 @@ int stage5_laserfairy(Enemy *e, int t) {
 		complex n = cexp(I*carg(global.plr.pos-e->pos)+(0.2-0.02*global.diff)*I*_i);
 		float fac = (0.5+0.2*global.diff);
 		create_lasercurve2c(e->pos, 100, 300, RGB(0.7, 0.3, 1), las_accel, fac*4*n, fac*0.05*n);
-		PROJECTILE("plainball", e->pos, RGB(0.7, 0.3, 1), accelerated, { fac*4*n, fac*0.05*n }, .flags = PFLAG_DRAWADD);
+		PROJECTILE("plainball", e->pos, RGBA(0.7, 0.3, 1, 0), accelerated, { fac*4*n, fac*0.05*n });
 		play_sound_ex("shot_special1", 0, true);
 	}
 
@@ -221,11 +221,10 @@ static void lightning_particle(complex pos, int t) {
 		PARTICLE(
 			.sprite = part,
 			.pos = pos,
-			.color = RGB(1.0, 1.0, 1.0),
+			.color = RGBA(1.0, 1.0, 1.0, 0.0),
 			.timeout = 20,
 			.draw_rule = Fade,
 			.flags = PFLAG_REQUIREDPARTICLE,
-			.blend = BLEND_ADD,
 			.angle = frand()*2*M_PI,
 		);
 	}
@@ -267,13 +266,12 @@ int stage5_magnetto(Enemy *e, int t) {
 			complex dir = cexp(I*(M_PI*i + M_PI/8*sin(2*(t-140)/70.0 * M_PI) + carg(e->args[1] - e->pos)));
 
 			PROJECTILE("ball", e->pos,
-				.color = RGB(0.1 + 0.5 * pow((t - 140) / 140.0, 2), 0.0, 0.8),
+				.color = RGBA(0.1 + 0.5 * pow((t - 140) / 140.0, 2), 0.0, 0.8, 0.0),
 				.rule = accelerated,
 				.args = {
 					(-2 + (global.diff == D_Hard)) * dir,
 					0.02 * dir * (!i || global.diff != D_Lunatic),
 				},
-				.flags = PFLAG_DRAWADD,
 			);
 		}
 	}
@@ -298,7 +296,7 @@ int stage5_explosion(Enemy *e, int t) {
 	}
 
 	FROM_TO(90, 300, 7-global.diff) {
-		PROJECTILE("soul", e->pos, RGB(0,0,1), asymptotic, { 4*cexp(0.5*I*_i), 3 }, .flags = PFLAG_DRAWADD);
+		PROJECTILE("soul", e->pos, RGBA(0, 0, 1, 0), asymptotic, { 4*cexp(0.5*I*_i), 3 });
 		play_sound("shot_special1");
 	}
 
@@ -334,16 +332,18 @@ void iku_slave_visual(Enemy *e, int t, bool render) {
 			alpha *= 0.03;
 		}
 
+		Color *clr = RGBA_MUL_ALPHA(0.1*alpha, 0.1*alpha, 0.6*alpha, 0.5*alpha);
+		clr->a = 0;
+
 		PARTICLE(
 			.sprite = "lightningball",
 			.pos = 0,
-			.color = RGBA_MUL_ALPHA(0.1*alpha, 0.1*alpha, 0.6*alpha, 0.5*alpha),
+			.color = clr,
 			.draw_rule = Fade,
 			.rule = enemy_flare,
 			.timeout = 50,
 			.args = { offset*0.1, add_ref(e) },
 			.flags = PFLAG_REQUIREDPARTICLE,
-			.blend = BLEND_ADD,
 		);
 	}
 }
@@ -477,12 +477,11 @@ void iku_bolts(Boss *b, int time) {
 		int i, c = 10+global.diff;
 
 		for(i = 0; i < c; i++) {
-			PROJECTILE("ball", b->pos, RGB(0.4, 1, 1), asymptotic,
+			PROJECTILE("ball", b->pos, RGBA(0.4, 1.0, 1.0, 0), asymptotic,
 				.args = {
 					(i+2)*0.4*cexp(I*carg(global.plr.pos-b->pos))+0.2*(global.diff-1)*frand(),
 					3
 				},
-				.flags = PFLAG_DRAWADD,
 			);
 		}
 
@@ -527,12 +526,11 @@ void iku_atmospheric(Boss *b, int time) {
 			PROJECTILE(
 				.sprite = "ball",
 				.pos = p1+(p2-p1)/c*i,
-				.color = RGB(1-1/(1+fabs(0.1*i)), 0.5-0.1*abs(i), 1),
+				.color = RGBA(1-1/(1+fabs(0.1*i)), 0.5-0.1*abs(i), 1, 0),
 				.rule = accelerated,
 				.args = {
 					0, (0.004+0.001*global.diff)*cexp(I*carg(p2-p1)+I*M_PI/2+0.2*I*i)
 				},
-				.flags = PFLAG_DRAWADD,
 			);
 		}
 
@@ -608,14 +606,13 @@ int lightning_slave(Enemy *e, int t) {
 
 	FROM_TO(0, 200, 3)
 		if(cabs(e->pos-global.plr.pos) > 60) {
-			Color *clr = RGB(1-1/(1+0.01*_i), 0.5-0.01*_i, 1);
+			Color *clr = RGBA(1-1/(1+0.01*_i), 0.5-0.01*_i, 1, 0);
 
 			Projectile *p = PROJECTILE("wave", e->pos, clr, asymptotic,
 				.args = {
 					0.75*e->args[0]/cabs(e->args[0])*I,
 					10
 				},
-				.flags = PFLAG_DRAWADD,
 			);
 
 			if(projectile_in_viewport(p)) {
@@ -644,10 +641,9 @@ static int zigzag_bullet(Projectile *p, int t) {
 		PARTICLE(
 			.sprite = "lightningball",
 			.pos = p->pos,
-			.color = RGB(0.1,0.1,0.6),
+			.color = RGBA(0.1, 0.1, 0.6, 0.0),
 			.timeout = 15,
 			.draw_rule = Fade,
-			.blend = BLEND_ADD,
 		);
 	}
 
@@ -684,9 +680,8 @@ void iku_lightning(Boss *b, int time) {
 		PARTICLE(
 			.sprite = "lightningball",
 			.pos = b->pos+l*n,
-			.color = RGB(0.1*alpha, 0.1*alpha, 0.6*alpha),
+			.color = RGBA(0.1*alpha, 0.1*alpha, 0.6*alpha, 0),
 			.draw_rule = Fade,
-			.blend = BLEND_ADD,
 			.rule = linear,
 			.timeout = l/s,
 			.args = { -s*n },
@@ -696,9 +691,8 @@ void iku_lightning(Boss *b, int time) {
 	if(global.diff >= D_Hard && time > 0 && !(time%100)) {
 		int c = 7 + 2 * (global.diff == D_Lunatic);
 		for(int i = 0; i<c; i++) {
-			PROJECTILE("bigball", b->pos, RGB(0.5,0.1,1), zigzag_bullet,
+			PROJECTILE("bigball", b->pos, RGBA(0.5, 0.1, 1.0, 0.0), zigzag_bullet,
 				.args = { cexp(2*M_PI*I/c*i+I*carg(global.plr.pos-b->pos)) },
-				.flags = PFLAG_DRAWADD,
 			);
 		}
 
@@ -718,12 +712,11 @@ void iku_lightning(Boss *b, int time) {
 			PARTICLE(
 				.sprite = "smoke",
 				.pos = b->pos,
-				.color = RGB(0.4, 0.4, 1.0),
+				.color = RGBA(0.4, 0.4, 1.0, 0.0),
 				.draw_rule = Fade,
 				.rule = linear,
 				.timeout = l/s,
 				.args = { s*n },
-				.blend = BLEND_ADD,
 			);
 		}
 
@@ -749,12 +742,11 @@ void iku_bolts3(Boss *b, int time) {
 		int i, c = 10+global.diff;
 		complex n = cexp(I*carg(global.plr.pos-b->pos)+0.1*I-0.2*I*frand());
 		for(i = 0; i < c; i++) {
-			PROJECTILE("ball", b->pos, RGB(0.4, 1, 1), asymptotic,
+			PROJECTILE("ball", b->pos, RGBA(0.4, 1.0, 1.0, 0.0), asymptotic,
 				.args = {
 					(i+2)*0.4*n+0.2*(global.diff-1)*frand(),
 					3
 				},
-				.flags = PFLAG_DRAWADD,
 			);
 		}
 
@@ -829,13 +821,12 @@ void iku_cathode(Boss *b, int t) {
 
 		double speedmod = 1-0.3*(global.diff == D_Lunatic);
 		for(i = 0; i < c; i++) {
-			PROJECTILE("bigball", b->pos, RGB(0.2, 0.4, 1), induction_bullet,
+			PROJECTILE("bigball", b->pos, RGBA(0.2, 0.4, 1.0, 0.0), induction_bullet,
 				.args = {
 					speedmod*2*cexp(2.0*I*M_PI*frand()),
 					speedmod*0.01*I*(1-2*(_i&1)),
 					1
 				},
-				.flags = PFLAG_DRAWADD,
 			);
 			if(i < c*3/4)
 				create_lasercurve2c(b->pos, 60, 200, RGB(0.4, 1, 1), cathode_laser, 2*cexp(2.0*I*M_PI*M_PI*frand()), 0.015*I*(1-2*(_i&1)));
@@ -872,7 +863,7 @@ void iku_induction(Boss *b, int t) {
 		int c2 = 6-(global.diff/4);
 		for(i = 0; i < c; i++) {
 			for(j = 0; j < 2; j++) {
-				Color *clr = RGB(1-1/(1+0.1*(_i%c2)), 0.5-0.1*(_i%c2), 1);
+				Color *clr = RGBA(1-1/(1+0.1*(_i%c2)), 0.5-0.1*(_i%c2), 1.0, 0.0);
 				float shift = 0.6*(_i/c2);
 				float a = -0.0002*(global.diff-D_Easy);
 				if(global.diff == D_Hard)
@@ -882,7 +873,6 @@ void iku_induction(Boss *b, int t) {
 						2*cexp(2.0*I*M_PI/c*i+I*M_PI/2+I*shift),
 						(0.01+0.001*global.diff)*I*(1-2*j)+a
 					},
-					.flags = PFLAG_DRAWADD,
 					.max_viewport_dist = 400*(global.diff>=D_Hard),
 				);
 			}
@@ -927,7 +917,7 @@ void iku_extra_slave_visual(Enemy *e, int t, bool render) {
 		PARTICLE(
 			.sprite = "smoothdot",
 			.pos = offset,
-			.color = e->args[1] ? RGB(1.0, 0.5, 0.0) : RGB(0.0, 0.5, 0.5),
+			.color = e->args[1] ? RGBA(1.0, 0.5, 0.0, 0.0) : RGBA(0.0, 0.5, 0.5, 0.0),
 			.draw_rule = Shrink,
 			.rule = enemy_flare,
 			.timeout = 50,
@@ -935,7 +925,6 @@ void iku_extra_slave_visual(Enemy *e, int t, bool render) {
 				(-50.0*I-offset)/50.0,
 				add_ref(e)
 			},
-			.flags = PFLAG_DRAWADD,
 		);
 	}
 }
@@ -974,8 +963,8 @@ int iku_extra_trigger_bullet(Projectile *p, int t) {
 		int cnt = 6 + 2 * global.diff;
 		for(int i = 0; i < cnt; ++i) {
 			complex dir = cexp(I*(t + i*2*M_PI/cnt));
-			PROJECTILE("bigball", p->pos, RGB(1, 0.5, 0), asymptotic, { 1.1*dir, 5  }, .flags = PFLAG_DRAWADD);
-			PROJECTILE("bigball", p->pos, RGB(0, 0.5, 1), asymptotic, {     dir, 10 }, .flags = PFLAG_DRAWADD);
+			PROJECTILE("bigball", p->pos, RGBA(1.0, 0.5, 0.0, 0.0), asymptotic, { 1.1*dir, 5  });
+			PROJECTILE("bigball", p->pos, RGBA(0.0, 0.5, 1.0, 0.0), asymptotic, {     dir, 10 });
 		}
 		global.shake_view += 5;
 		global.shake_view_fade = 0.2;
@@ -991,11 +980,10 @@ int iku_extra_trigger_bullet(Projectile *p, int t) {
 		.sprite = afrand(0) > 0.5 ? "lightning0" : "lightning1",
 		.pos = p->pos + 3 * (anfrand(1)+I*anfrand(2)),
 		.angle = afrand(3) * 2 * M_PI,
-		.color = RGB(1.0, 0.7 + 0.2 * anfrand(4), 0.4),
+		.color = RGBA(1.0, 0.7 + 0.2 * anfrand(4), 0.4, 0.0),
 		.timeout = 20,
 		.draw_rule = GrowFade,
 		.args = { 0, 2.4 },
-		.blend = BLEND_ADD,
 	);
 
 	return ACTION_NONE;
@@ -1050,9 +1038,8 @@ int iku_extra_slave(Enemy *e, int t) {
 					double r = frand() * 2 * M_PI;
 
 					for(i = 0; i < cnt; ++i) {
-						PROJECTILE("rice", e->pos, RGB(1, 1, 0), asymptotic,
+						PROJECTILE("rice", e->pos, RGBA(1, 1, 0, 0), asymptotic,
 							.args = { 2*cexp(I*(r+i*2*M_PI/cnt)), 2 },
-							.flags = PFLAG_DRAWADD,
 						);
 					}
 
@@ -1075,9 +1062,8 @@ int iku_extra_slave(Enemy *e, int t) {
 						continue;
 
 					for(i = 0; i < cnt; ++i) {
-						PROJECTILE("ball", o->pos, RGB(0, 1, 1), asymptotic,
+						PROJECTILE("ball", o->pos, RGBA(0, 1, 1, 0), asymptotic,
 							.args = { 1.5*cexp(I*(t + i*2*M_PI/cnt)), 8},
-							.flags = PFLAG_DRAWADD,
 						);
 					}
 

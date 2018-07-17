@@ -123,7 +123,6 @@ static void stage5_update(void) {
 void iku_spell_bg(Boss *b, int t) {
 	fill_viewport(0, 300, 1, "stage5/spell_bg");
 
-	// FIXME: blend
 	r_blend(BLEND_MOD);
 	fill_viewport(0, t*0.001, 0.7, "stage5/noise");
 	r_blend(BLEND_PREMUL_ALPHA);
