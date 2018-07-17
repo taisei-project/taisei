@@ -653,8 +653,8 @@ void hina_monty(Boss *h, int time) {
 
 		for(int i = 0; i < 2; ++i) {
 			int x = cwidth * (1 + i);
-			create_laserline_ab(x, x + VIEWPORT_H*I, 15, 30, 60, RGB(0.3, 1.0, 1.0));
-			create_laserline_ab(x, x + VIEWPORT_H*I, 20, 240, 600, RGB(1.0, 0.3, 1.0));
+			create_laserline_ab(x, x + VIEWPORT_H*I, 15, 30, 60, RGBA(0.3, 1.0, 1.0, 0.0));
+			create_laserline_ab(x, x + VIEWPORT_H*I, 20, 240, 600, RGBA(1.0, 0.3, 1.0, 0.0));
 		}
 
 		enemy_kill_all(&global.enemies);
@@ -667,7 +667,7 @@ void hina_monty(Boss *h, int time) {
 		complex o = cwidth * (0.5 + slave_pos) + VIEWPORT_H/2.0*I - 200.0*I;
 
 		play_sound("laser1");
-		create_laserline_ab(h->pos, o, 15, 30, 60, RGB(1.0, 0.3, 0.3));
+		create_laserline_ab(h->pos, o, 15, 30, 60, RGBA(1.0, 0.3, 0.3, 0.0));
 		aniplayer_queue(&h->ani,"guruguru",1);
 		aniplayer_queue(&h->ani,"main",0);
 	}

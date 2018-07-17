@@ -761,7 +761,7 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 			complex accel = (0.1 + 0.2 * (global.diff / (float)D_Lunatic)) * dist / cabs(dist);
 			float deathtime = sqrt(2*cabs(dist)/cabs(accel));
 
-			Laser *l = create_lasercurve2c(p->pos, deathtime, deathtime, RGB(0.4, 0.9, 1.0), las_accel, 0, accel);
+			Laser *l = create_lasercurve2c(p->pos, deathtime, deathtime, RGBA(0.4, 0.9, 1.0, 0.0), las_accel, 0, accel);
 			l->width = 15;
 
 			PROJECTILE(
@@ -879,12 +879,12 @@ static int wriggle_spell_slave(Enemy *e, int time) {
 		Laser *l;
 		float dt = 60;
 
-		l = create_lasercurve4c(e->pos, dt, dt, RGB(1.0, 1.0, 0.5), las_sine_expanding, 2.5*dir, M_PI/20, 0.2, 0);
+		l = create_lasercurve4c(e->pos, dt, dt, RGBA(1.0, 1.0, 0.5, 0.0), las_sine_expanding, 2.5*dir, M_PI/20, 0.2, 0);
 		PROJECTILE("ball", e->pos, RGB(1.0, 0.4, 0.6), wriggle_rocket_laserbullet, {
 			add_ref(l), dt-1, 1
 		});
 
-		l = create_lasercurve4c(e->pos, dt, dt, RGB(0.5, 1.0, 0.5), las_sine_expanding, 2.5*dir, M_PI/20, 0.2, M_PI);
+		l = create_lasercurve4c(e->pos, dt, dt, RGBA(0.5, 1.0, 0.5, 0.0), las_sine_expanding, 2.5*dir, M_PI/20, 0.2, M_PI);
 		PROJECTILE("ball", e->pos, RGB(1.0, 0.4, 0.6), wriggle_rocket_laserbullet, {
 			add_ref(l), dt-1, 1
 		});
@@ -972,12 +972,12 @@ static void wriggle_ignite_warnlaser_logic(Laser *l, int time) {
 	}
 
 	l->width = laser_charge(l, time, 90, 10);
-	l->color = *color_lerp(RGB(0.2, 0.2, 1), RGB(1, 0.2, 0.2), time / l->deathtime);
+	l->color = *color_lerp(RGBA(0.2, 0.2, 1, 0), RGBA(1, 0.2, 0.2, 0), time / l->deathtime);
 }
 
 static void wriggle_ignite_warnlaser(Laser *l) {
 	float f = 6;
-	create_laser(l->pos, 90, 120, RGB(1,1,1), l->prule, wriggle_ignite_warnlaser_logic, f*l->args[0], l->args[1], f*l->args[2], l->args[3]);
+	create_laser(l->pos, 90, 120, RGBA(1, 1, 1, 0), l->prule, wriggle_ignite_warnlaser_logic, f*l->args[0], l->args[1], f*l->args[2], l->args[3]);
 }
 
 void wriggle_night_ignite(Boss *boss, int time) {
@@ -1011,13 +1011,13 @@ void wriggle_night_ignite(Boss *boss, int time) {
 		double amp = M_PI/5;
 		double freq = 0.05;
 
-		Laser *l1 = create_lasercurve3c(boss->pos, lt, dt, RGB(b, b, 1.0), las_sine_expanding, vel, amp, freq);
+		Laser *l1 = create_lasercurve3c(boss->pos, lt, dt, RGBA(b, b, 1.0, 0.0), las_sine_expanding, vel, amp, freq);
 		wriggle_ignite_warnlaser(l1);
 
-		Laser *l2 = create_lasercurve3c(boss->pos, lt * 1.5, dt, RGB(1.0, b, b), las_sine_expanding, vel, amp, freq - 0.002 * min(global.diff, D_Hard));
+		Laser *l2 = create_lasercurve3c(boss->pos, lt * 1.5, dt, RGBA(1.0, b, b, 0.0), las_sine_expanding, vel, amp, freq - 0.002 * min(global.diff, D_Hard));
 		wriggle_ignite_warnlaser(l2);
 
-		Laser *l3 = create_lasercurve3c(boss->pos, lt, dt, RGB(b, b, 1.0), las_sine_expanding, vel, amp, freq - 0.004 * min(global.diff, D_Hard));
+		Laser *l3 = create_lasercurve3c(boss->pos, lt, dt, RGBA(b, b, 1.0, 0.0), las_sine_expanding, vel, amp, freq - 0.004 * min(global.diff, D_Hard));
 		wriggle_ignite_warnlaser(l3);
 
 		for(int i = 0; i < 5 + 15 * dfactor; ++i) {
@@ -1051,7 +1051,7 @@ static void wriggle_singularity_laser_logic(Laser *l, int time) {
 	l->args[3] = time / 10.0;
 	l->args[0] *= cexp(I*(M_PI/500.0) * (0.7 + 0.35 * global.diff));
 
-	l->color = *HSL((carg(l->args[0]) + M_PI) / (M_PI * 2), 1.0, 0.5);
+	l->color = *HSLA((carg(l->args[0]) + M_PI) / (M_PI * 2), 1.0, 0.5, 0.0);
 }
 
 void wriggle_light_singularity(Boss *boss, int time) {
@@ -1081,7 +1081,7 @@ void wriggle_light_singularity(Boss *boss, int time) {
 			double amp = (4.0/cnt) * (M_PI/5.0);
 			double freq = 0.05;
 
-			create_laser(boss->pos, 200, 10000, RGB(0.0, 0.2, 1.0), las_sine_expanding,
+			create_laser(boss->pos, 200, 10000, RGBA(0.0, 0.2, 1.0, 0.0), las_sine_expanding,
 				wriggle_singularity_laser_logic, vel, amp, freq, 0);
 		}
 

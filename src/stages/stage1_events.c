@@ -492,6 +492,7 @@ static void halation_laser(Laser *l, int time) {
 
 	if(time >= 0) {
 		halation_color(&l->color, l->width / cimag(l->args[1]));
+		l->color.a = 0;
 	}
 }
 

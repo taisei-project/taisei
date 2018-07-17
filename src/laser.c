@@ -193,7 +193,6 @@ static void ent_draw_laser(EntityInterface *ent) {
 	Laser *laser = ENT_CAST(ent, Laser);
 
 	r_texture(0, "part/lasercurve");
-	r_blend(BLEND_ADD);
 
 	if(laser->shader) {
 		// Specialized lasers work with either vertex array,

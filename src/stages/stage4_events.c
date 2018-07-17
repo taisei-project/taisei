@@ -712,9 +712,9 @@ void kurumi_aniwall(Boss *b, int time) {
 	AT(0) {
 		aniplayer_queue(&b->ani, "muda", 0);
 		play_sound("laser1");
-		create_lasercurve2c(b->pos, 50, 80, RGB(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(0.4*I));
+		create_lasercurve2c(b->pos, 50, 80, RGBA(1.0, 0.8, 0.8, 0.0), las_accel, 0, 0.2*cexp(0.4*I));
 		create_enemy1c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, aniwall_slave, 0.2*cexp(0.4*I));
-		create_lasercurve2c(b->pos, 50, 80, RGB(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(I*M_PI - 0.4*I));
+		create_lasercurve2c(b->pos, 50, 80, RGBA(1.0, 0.8, 0.8, 0.0), las_accel, 0, 0.2*cexp(I*M_PI - 0.4*I));
 		create_enemy1c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, aniwall_slave, 0.2*cexp(I*M_PI - 0.4*I));
 	}
 }
@@ -807,7 +807,7 @@ int blowwall_slave(Enemy *e, int t) {
 }
 
 static void bwlaser(Boss *b, float arg, int slave) {
-	create_lasercurve2c(b->pos, 50, 100, RGB(1, 0.5+0.3*slave, 0.5+0.3*slave), las_accel, 0, (0.1+0.1*slave)*cexp(I*arg));
+	create_lasercurve2c(b->pos, 50, 100, RGBA(1.0, 0.5+0.3*slave, 0.5+0.3*slave, 0.0), las_accel, 0, (0.1+0.1*slave)*cexp(I*arg));
 
 	if(slave) {
 		play_sound("laser1");
@@ -964,8 +964,8 @@ void kurumi_danmaku(Boss *b, int time) {
 
 	AT(50) {
 		play_sound("laser1");
-		create_lasercurve2c(b->pos, 50, 100, RGB(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(I*carg(-b->pos)));
-		create_lasercurve2c(b->pos, 50, 100, RGB(1, 0.8, 0.8), las_accel, 0, 0.2*cexp(I*carg(VIEWPORT_W-b->pos)));
+		create_lasercurve2c(b->pos, 50, 100, RGBA(1.0, 0.8, 0.8, 0.0), las_accel, 0, 0.2*cexp(I*carg(-b->pos)));
+		create_lasercurve2c(b->pos, 50, 100, RGBA(1.0, 0.8, 0.8, 0.0), las_accel, 0, 0.2*cexp(I*carg(VIEWPORT_W-b->pos)));
 		create_enemy3c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, kdanmaku_slave, 0.2*cexp(I*carg(-b->pos)), 0, 1);
 		create_enemy3c(b->pos, ENEMY_IMMUNE, KurumiAniWallSlave, kdanmaku_slave, 0.2*cexp(I*carg(VIEWPORT_W-b->pos)), 0, 0);
 	}
@@ -1075,7 +1075,7 @@ int kurumi_extra_bigfairy1(Enemy *e, int time) {
 			complex arg = cexp(I*2*M_PI*i/count);
 			if(global.diff == D_Lunatic)
 				arg *= phase;
-			create_lasercurve2c(e->pos, 20, 200, RGB(1,0.3,0.7), las_accel, arg, 0.1*arg);
+			create_lasercurve2c(e->pos, 20, 200, RGBA(1.0, 0.3, 0.7, 0.0), las_accel, arg, 0.1*arg);
 			PROJECTILE("bullet", e->pos, RGB(1.0, 0.3, 0.7), accelerated, { arg, 0.1*arg });
 		}
 

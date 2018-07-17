@@ -189,7 +189,7 @@ int stage5_laserfairy(Enemy *e, int t) {
 	FROM_TO(100, 700, (7-global.diff)*(1+(int)creal(e->args[1]))) {
 		complex n = cexp(I*carg(global.plr.pos-e->pos)+(0.2-0.02*global.diff)*I*_i);
 		float fac = (0.5+0.2*global.diff);
-		create_lasercurve2c(e->pos, 100, 300, RGB(0.7, 0.3, 1), las_accel, fac*4*n, fac*0.05*n);
+		create_lasercurve2c(e->pos, 100, 300, RGBA(0.7, 0.3, 1, 0), las_accel, fac*4*n, fac*0.05*n);
 		PROJECTILE("plainball", e->pos, RGBA(0.7, 0.3, 1, 0), accelerated, { fac*4*n, fac*0.05*n });
 		play_sound_ex("shot_special1", 0, true);
 	}
@@ -307,7 +307,7 @@ int stage5_explosion(Enemy *e, int t) {
 	}
 
 	FROM_TO(500-30*(global.diff-D_Easy), 800, 100-10*global.diff) {
-		create_laserline(e->pos, 10*cexp(I*carg(global.plr.pos-e->pos)+0.04*I*(1-2*frand())), 60, 120, RGB(1, 0.3, 1));
+		create_laserline(e->pos, 10*cexp(I*carg(global.plr.pos-e->pos)+0.04*I*(1-2*frand())), 60, 120, RGBA(1, 0.3, 1, 0));
 		play_sound_delayed("laser1", 0, true, 45);
 	}
 
@@ -575,7 +575,7 @@ void iku_bolts2(Boss *b, int time) {
 		flip_laser = !flip_laser;
 		aniplayer_queue(&b->ani, flip_laser ? "dashdown_left" : "dashdown_right", 1);
 		aniplayer_queue(&b->ani, "main", 0);
-		create_lasercurve3c(creal(global.plr.pos), 100, 200, RGB(0.3,1,1), bolts2_laser, global.plr.pos, flip_laser*2-1, global.diff);
+		create_lasercurve3c(creal(global.plr.pos), 100, 200, RGBA(0.3, 1, 1, 0), bolts2_laser, global.plr.pos, flip_laser*2-1, global.diff);
 		play_sound_ex("laser1", 0, false);
 	}
 
@@ -829,7 +829,7 @@ void iku_cathode(Boss *b, int t) {
 				},
 			);
 			if(i < c*3/4)
-				create_lasercurve2c(b->pos, 60, 200, RGB(0.4, 1, 1), cathode_laser, 2*cexp(2.0*I*M_PI*M_PI*frand()), 0.015*I*(1-2*(_i&1)));
+				create_lasercurve2c(b->pos, 60, 200, RGBA(0.4, 1, 1, 0), cathode_laser, 2*cexp(2.0*I*M_PI*M_PI*frand()), 0.015*I*(1-2*(_i&1)));
 		}
 
 		// XXX: better ideas?
@@ -1031,7 +1031,7 @@ int iku_extra_slave(Enemy *e, int t) {
 				new->args[1] = 1;
 				new->args[3] = global.frames + 55 - 5 * global.diff;
 
-				create_laserline_ab(e->pos, new->pos, 10, 30, e->args[2], RGB(0.3, 1, 1))->ent.draw_layer = LAYER_LASER_LOW;
+				create_laserline_ab(e->pos, new->pos, 10, 30, e->args[2], RGBA(0.3, 1, 1, 0))->ent.draw_layer = LAYER_LASER_LOW;
 
 				if(global.diff > D_Easy) {
 					int cnt = floor(global.diff * 2.5), i;

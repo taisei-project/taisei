@@ -682,7 +682,7 @@ void elly_maxwell(Boss *b, int t) {
 
 	}
 	FROM_TO(40, 159, 5) {
-		create_laser(b->pos, 200, 10000, RGB(0,0.2,1), maxwell_laser, maxwell_laser_logic, cexp(2.0*I*M_PI/24*_i)*VIEWPORT_H*0.005, 200+15.0*I, 0, 0);
+		create_laser(b->pos, 200, 10000, RGBA(0, 0.2, 1, 0.0), maxwell_laser, maxwell_laser_logic, cexp(2.0*I*M_PI/24*_i)*VIEWPORT_H*0.005, 200+15.0*I, 0, 0);
 	}
 
 }
@@ -1047,7 +1047,7 @@ void broglie_laser_logic(Laser *l, int t) {
 	double hue = cimag(l->args[3]);
 
 	if(t == EVENT_BIRTH) {
-		l->color = *HSL(hue, 1.0, 0.5);
+		l->color = *HSLA(hue, 1.0, 0.5, 0.0);
 	}
 
 	if(t < 0) {
@@ -1056,7 +1056,7 @@ void broglie_laser_logic(Laser *l, int t) {
 
 	int dt = l->timespan * l->speed;
 	float charge = min(1, pow((double)t / dt, 4));
-	l->color = *HSL(hue, 1.0, 0.5 + 0.2 * charge);
+	l->color = *HSLA(hue, 1.0, 0.5 + 0.2 * charge, 0.0);
 	l->width_exponent = 1.0 - 0.5 * charge;
 }
 
@@ -1100,7 +1100,7 @@ int broglie_charge(Projectile *p, int t) {
 		double s_freq = 0.10 + 0.01 * attack_num;
 
 		for(int lnum = 0; lnum < 2; ++lnum) {
-			Laser *l = create_lasercurve4c(p->pos, 75, 100, RGB(1,1,1), las_sine,
+			Laser *l = create_lasercurve4c(p->pos, 75, 100, RGBA(1, 1, 1, 0), las_sine,
 				5*aim, s_ampl, s_freq, lnum * M_PI +
 				I*(hue + lnum * (M_PI/12)/(M_PI/2)));
 
@@ -1357,11 +1357,11 @@ static int ricci_proj2(Projectile *p, int t) {
 
 		double rad = SAFE_RADIUS_MAX * (0.6 - 0.2 * (double)(D_Lunatic - global.diff) / 3);
 
-		create_laser(p->pos, 12, 60, RGB(0.2, 1, 0.5), las_circle, ricci_laser_logic,  6*M_PI +  0*I, rad, add_ref(e), p->pos - e->pos);
-		create_laser(p->pos, 12, 60, RGB(0.2, 0.4, 1), las_circle, ricci_laser_logic,  6*M_PI + 30*I, rad, add_ref(e), p->pos - e->pos);
+		create_laser(p->pos, 12, 60, RGBA(0.2, 1, 0.5, 0), las_circle, ricci_laser_logic,  6*M_PI +  0*I, rad, add_ref(e), p->pos - e->pos);
+		create_laser(p->pos, 12, 60, RGBA(0.2, 0.4, 1, 0), las_circle, ricci_laser_logic,  6*M_PI + 30*I, rad, add_ref(e), p->pos - e->pos);
 
-		create_laser(p->pos, 1,  60, RGB(1.0, 0.0, 0), las_circle, ricci_laser_logic, -6*M_PI +  0*I, rad, add_ref(e), p->pos - e->pos)->width = 10;
-		create_laser(p->pos, 1,  60, RGB(1.0, 0.0, 0), las_circle, ricci_laser_logic, -6*M_PI + 30*I, rad, add_ref(e), p->pos - e->pos)->width = 10;
+		create_laser(p->pos, 1,  60, RGBA(1.0, 0.0, 0, 0), las_circle, ricci_laser_logic, -6*M_PI +  0*I, rad, add_ref(e), p->pos - e->pos)->width = 10;
+		create_laser(p->pos, 1,  60, RGBA(1.0, 0.0, 0, 0), las_circle, ricci_laser_logic, -6*M_PI + 30*I, rad, add_ref(e), p->pos - e->pos)->width = 10;
 
 		free_ref(p->args[1]);
 		return ACTION_ACK;
@@ -1620,7 +1620,7 @@ int baryon_lhc(Enemy *e, int t) {
 		if(g == 2 || g == 5) {
 			play_sound_delayed("laser1",10,true,200);
 
-			Laser *l = create_laser(e->pos, 200, 300, RGB(0.1+0.9*(g>3),0,1-0.9*(g>3)), las_linear, lhc_laser_logic, (1-2*(g>3))*VIEWPORT_W*0.005, 200+30.0*I, add_ref(e), 0);
+			Laser *l = create_laser(e->pos, 200, 300, RGBA(0.1+0.9*(g>3), 0, 1-0.9*(g>3), 0), las_linear, lhc_laser_logic, (1-2*(g>3))*VIEWPORT_W*0.005, 200+30.0*I, add_ref(e), 0);
 			l->unclearable = true;
 		}
 	}
@@ -1655,7 +1655,7 @@ void elly_lhc(Boss *b, int t) {
 		for(i = 0; i < c; i++) {
 			complex v = 3*cexp(2.0*I*M_PI*frand());
 			tsrand_fill(4);
-			create_lasercurve2c(pos, 70+20*global.diff, 300, RGB(1, 1, 1), las_accel, v, 0.02*frand()*copysign(1,creal(v)))->width=15;
+			create_lasercurve2c(pos, 70+20*global.diff, 300, RGBA(1, 1, 1, 0), las_accel, v, 0.02*frand()*copysign(1,creal(v)))->width=15;
 
 			PROJECTILE("soul",    pos, RGBA(0.4, 0.0, 1.0, 0.0), linear,
 				.args = { (1+2.5*afrand(0))*cexp(2.0*I*M_PI*afrand(1)) },
@@ -2211,19 +2211,19 @@ static complex elly_toe_laser_pos(Laser *l, float t) { // a[0]: direction, a[1]:
 		switch(type) {
 		case 0:
 			l->shader = r_shader_get_optional("lasers/elly_toe_fermion");
-			l->color = *RGB(0.4, 0.4, 1.0);
+			l->color = *RGBA(0.4, 0.4, 1.0, 0.0);
 			break;
 		case 1:
 			l->shader = r_shader_get_optional("lasers/elly_toe_photon");
-			l->color = *RGB(1.0, 0.4, 0.4);
+			l->color = *RGBA(1.0, 0.4, 0.4, 0.0);
 			break;
 		case 2:
 			l->shader = r_shader_get_optional("lasers/elly_toe_gluon");
-			l->color = *RGB(0.4, 1.0, 0.4);
+			l->color = *RGBA(0.4, 1.0, 0.4, 0.0);
 			break;
 		case 3:
 			l->shader = r_shader_get_optional("lasers/elly_toe_higgs");
-			l->color = *RGB(1.0, 0.4, 1.0);
+			l->color = *RGBA(1.0, 0.4, 1.0, 0.0);
 			break;
 		default:
 			log_fatal("Unknown Elly laser type.");
@@ -2323,7 +2323,7 @@ static void elly_toe_laser_logic(Laser *l, int t) {
 		complex origin = l->prule(l,t);
 		complex newdir = cexp(0.3*I);
 
-		Laser *l1 = create_laser(origin,LASER_LENGTH,LASER_LENGTH,RGB(1,1,1),
+		Laser *l1 = create_laser(origin,LASER_LENGTH,LASER_LENGTH,RGBA(1, 1, 1, 0),
 			elly_toe_laser_pos,elly_toe_laser_logic,
 			l->args[0]*newdir,
 			newtype,
@@ -2331,7 +2331,7 @@ static void elly_toe_laser_logic(Laser *l, int t) {
 			0
 		);
 
-		Laser *l2 = create_laser(origin,LASER_LENGTH,LASER_LENGTH,RGB(1,1,1),
+		Laser *l2 = create_laser(origin,LASER_LENGTH,LASER_LENGTH,RGBA(1, 1, 1, 0),
 			elly_toe_laser_pos,elly_toe_laser_logic,
 			l->args[0]/newdir,
 			newtype2,
@@ -2577,7 +2577,7 @@ void elly_theory(Boss *b, int time) {
 		complex phase = cexp(2*I*M_PI*frand());
 		int count = 8;
 		for(int i = 0; i < count; i++) {
-			create_laser(b->pos,LASER_LENGTH,LASER_LENGTH/2,RGB(1,1,1),
+			create_laser(b->pos,LASER_LENGTH,LASER_LENGTH/2,RGBA(1, 1, 1, 0),
 				elly_toe_laser_pos,elly_toe_laser_logic,
 				2*cexp(2*I*M_PI/count*i)*phase,
 				0,
