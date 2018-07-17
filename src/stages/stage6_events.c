@@ -185,22 +185,20 @@ int scythe_mid(Enemy *e, int t) {
 	PROJECTILE(
 		.sprite = "bigball",
 		.pos = e->pos + 80*n,
-		.color = RGB(0.2, 0.5-0.5*cimag(n), 0.5+0.5*creal(n)),
+		.color = RGBA(0.2, 0.5-0.5*cimag(n), 0.5+0.5*creal(n), 0.0),
 		.rule = wait_proj,
 		.args = {
 			global.diff*cexp(0.6*I)*n,
 			100
 		},
-		.flags = PFLAG_DRAWADD,
 	);
 
 	if(global.diff > D_Normal && t&1) {
-		Projectile *p = PROJECTILE("ball", e->pos + 80*n, RGB(0, 0.2, 0.5), accelerated,
+		Projectile *p = PROJECTILE("ball", e->pos + 80*n, RGBA(0, 0.2, 0.5, 0.0), accelerated,
 			.args = {
 				n,
 				0.01*global.diff*cexp(I*carg(global.plr.pos - e->pos - 80*n))
 			},
-			.flags = PFLAG_DRAWADD,
 		);
 
 		if(projectile_in_viewport(p)) {
@@ -241,12 +239,11 @@ void Scythe(Enemy *e, int t, bool render) {
 	PARTICLE(
 		.sprite = "smoothdot",
 		.pos = e->pos+100*creal(e->args[2])*frand()*cexp(2.0*I*M_PI*frand()),
-		.color = RGB(1.0, 0.1, 1.0),
+		.color = RGBA(1.0, 0.1, 1.0, 0.0),
 		.draw_rule = GrowFade,
 		.rule = linear,
 		.timeout = 60,
 		.args = { -I+1, -I+1 }, // XXX: what the fuck?
-		.flags = PFLAG_DRAWADD,
 	);
 }
 
@@ -710,11 +707,10 @@ void Baryon(Enemy *e, int t, bool render) {
 			PARTICLE(
 				.sprite = "stain",
 				.pos = e->pos+10*frand()*cexp(2.0*I*M_PI*frand()),
-				.color = RGB(0, 1*alpha, 0.7*alpha),
+				.color = RGBA(0, 1*alpha, 0.7*alpha, 0.0),
 				.draw_rule = Fade,
 				.timeout = 50,
 				.angle = 2*M_PI*frand(),
-				.flags = PFLAG_DRAWADD,
 			);
 		}
 
@@ -739,19 +735,17 @@ void BaryonCenter(Enemy *e, int t, bool render) {
 	if(!render) {
 		complex p = e->pos+40*frand()*cexp(2.0*I*M_PI*frand());
 
-		PARTICLE("flare", p, RGB(0.0, 1.0, 1.0),
+		PARTICLE("flare", p, RGBA(0.0, 1.0, 1.0, 0.0),
 			.draw_rule = GrowFade,
 			.rule = linear,
 			.timeout = 50,
 			.args = { 1-I },
-			.flags = PFLAG_DRAWADD,
 		);
 
-		PARTICLE("stain", p, RGB(0.0, 1.0, 0.2),
+		PARTICLE("stain", p, RGBA(0.0, 1.0, 0.2, 0.0),
 			.draw_rule = Fade,
 			.timeout = 50,
 			.angle = 2*M_PI*frand(),
-			.flags = PFLAG_DRAWADD,
 		);
 
 		return;
@@ -948,7 +942,7 @@ int baryon_eigenstate(Enemy *e, int t) {
 			for(j = 0; j < 3; j++) {
 				PROJECTILE(.sprite = "plainball",
 					.pos = e->pos + 60*cexp(2.0*I*M_PI/c*i),
-					.color = RGB(j == 0, j == 1, j == 2),
+					.color = RGBA(j == 0, j == 1, j == 2, 0.0),
 					.rule = eigenstate_proj,
 					.args = {
 						1*n,
@@ -956,7 +950,6 @@ int baryon_eigenstate(Enemy *e, int t) {
 						60,
 						0.6*I*n*(j-1)*cexp(0.4*I-0.1*I*global.diff)
 					},
-					.flags = PFLAG_DRAWADD,
 				);
 			}
 		}
@@ -1085,14 +1078,16 @@ int broglie_charge(Projectile *p, int t) {
 		global.shake_view = 5.0;
 		global.shake_view_fade = 0.25;
 
+		Color clr = p->color;
+		clr.a = 0;
+
 		PARTICLE(
 			.sprite = "blast",
 			.pos = p->pos,
-			.color = &p->color,
+			.color = &clr,
 			.timeout = 35,
 			.draw_rule = GrowFade,
 			.args = { 0, 2.4 },
-			.flags = PFLAG_DRAWADD,
 		);
 
 		int attack_num = creal(p->args[2]);
@@ -1121,7 +1116,7 @@ int broglie_charge(Projectile *p, int t) {
 				PROJECTILE(
 					.sprite = fast ? "thickrice" : "rice",
 					.pos = l->prule(l, ofs),
-					.color = HSL(hue + lnum * (M_PI/12)/(M_PI/2), 1.0, 0.5),
+					.color = HSLA(hue + lnum * (M_PI/12)/(M_PI/2), 1.0, 0.5, 0.0),
 					.rule = broglie_particle,
 					.args = {
 						add_ref(l),
@@ -1130,7 +1125,7 @@ int broglie_charge(Projectile *p, int t) {
 						(1 + 2 * ((global.diff - 1) / (double)(D_Lunatic - 1))) * M_PI/11 + s_freq*10*I
 					},
 					.draw_rule = ProjNoDraw,
-					.flags = PFLAG_DRAWADD | PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT,
+					.flags = PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT,
 					.type = FakeProj,
 				);
 			}
@@ -1150,15 +1145,17 @@ int broglie_charge(Projectile *p, int t) {
 			float l = 50*frand()+25;
 			float s = 4+f;
 
+			Color *clr = color_lerp(RGB(1, 1, 1), &p->color, clamp((1 - f * 0.5), 0.0, 1.0));
+			clr->a = 0;
+
 			PARTICLE(
 				.sprite = "flare",
 				.pos = p->pos+l*n,
-				.color = color_lerp(RGB(1, 1, 1), &p->color, clamp((1 - f * 0.5), 0.0, 1.0)),
+				.color = clr,
 				.draw_rule = Fade,
 				.rule = linear,
 				.timeout = l/s,
 				.args = { -s*n },
-				.blend = BLEND_ADD,
 			);
 		}
 	}
@@ -1222,7 +1219,7 @@ int baryon_broglie(Enemy *e, int t) {
 		PROJECTILE(
 			.sprite = "ball",
 			.pos = e->pos + 15*n,
-			.color = HSL(hue, 1.0, 0.55),
+			.color = HSLA(hue, 1.0, 0.55, 0.0),
 			.rule = broglie_charge,
 			.args = {
 				n,
@@ -1230,7 +1227,7 @@ int baryon_broglie(Enemy *e, int t) {
 				attack_num,
 				hue
 			},
-			.flags = PFLAG_DRAWADD | PFLAG_NOCLEAR,
+			.flags = PFLAG_NOCLEAR,
 			.angle = (2*M_PI*_i)/cnt + aim_angle,
 		);
 	}
@@ -1426,13 +1423,12 @@ int baryon_ricci(Enemy *e, int t) {
 				PROJECTILE(
 					.sprite = "ball",
 					.pos = 15*n,
-					.color = RGB(0.0, 0.5, 0.1),
+					.color = RGBA(0.0, 0.5, 0.1, 0.0),
 					.rule = ricci_proj2,
 					.args = {
 						-n,
 						add_ref(e),
 					},
-					.flags = PFLAG_DRAWADD,
 				);
 			}
 		}
@@ -1500,10 +1496,13 @@ static int ricci_proj(Projectile *p, int t) {
 	);
 	*/
 
-	// FIXME: I don't know if I'm doing this correctly...
-	p->color.r = 0.5 * a;
-	p->color.b = cabs(shift)/20.0 * a;
-	p->color.a = a;
+	p->color.r = 0.5;
+	p->color.g = 0;
+	p->color.b = cabs(shift)/20.0;
+	p->color.a = 0;
+	// HACK: default bullet shader multiplies final color by (1 - customParam).
+	// This is currently the only way to influence the white part, sadly.
+	p->shader_custom_param = (1 - a);
 
 	return ACTION_NONE;
 }
@@ -1528,7 +1527,7 @@ void elly_ricci(Boss *b, int t) {
 			complex pos = 0.5 * w/(float)c + fmod(w/(float)c*(i+0.5*_i),w) + (VIEWPORT_H+10)*I;
 
 			PROJECTILE("ball", pos, RGBA(0, 0, 0, 0), ricci_proj, { -v*I },
-				.flags = PFLAG_DRAWADD | PFLAG_NOSPAWNZOOM | PFLAG_NOCLEAR | PFLAG_GRAZESPAM,
+				.flags = PFLAG_NOSPAWNZOOM | PFLAG_NOCLEAR | PFLAG_GRAZESPAM,
 				.max_viewport_dist = SAFE_RADIUS_MAX,
 			);
 		}
@@ -1658,22 +1657,19 @@ void elly_lhc(Boss *b, int t) {
 			tsrand_fill(4);
 			create_lasercurve2c(pos, 70+20*global.diff, 300, RGB(1, 1, 1), las_accel, v, 0.02*frand()*copysign(1,creal(v)))->width=15;
 
-			PROJECTILE("soul",    pos, RGB(0.4, 0.0, 1.0), linear,
+			PROJECTILE("soul",    pos, RGBA(0.4, 0.0, 1.0, 0.0), linear,
 				.args = { (1+2.5*afrand(0))*cexp(2.0*I*M_PI*afrand(1)) },
-				.flags = PFLAG_DRAWADD
 			);
-			PROJECTILE("bigball", pos, RGB(1.0, 0.0, 0.4), linear,
+			PROJECTILE("bigball", pos, RGBA(1.0, 0.0, 0.4, 0.0), linear,
 				.args = { (1+2.5*afrand(2))*cexp(2.0*I*M_PI*afrand(3)) },
-				.flags = PFLAG_DRAWADD
 			);
 		}
 	}
 
 	FROM_TO(0, 100000,7-global.diff) {
 		play_sound_ex("shot2",10,false);
-		PROJECTILE("ball", b->pos, RGB(0, 0.4,1), asymptotic,
+		PROJECTILE("ball", b->pos, RGBA(0.0, 0.4, 1.0, 0.0), asymptotic,
 			.args = { cexp(2.0*I*_i), 3 },
-			.flags = PFLAG_DRAWADD,
 		);
 	}
 
@@ -1714,9 +1710,8 @@ int baryon_curvature(Enemy *e, int t) {
 		complex pos = e->pos+60*anfrand(0)+I*60*anfrand(1);
 
 		if(cabs(pos - global.plr.pos) > 100) {
-			PROJECTILE("ball", pos, RGB(1, 0.4,1), linear,
+			PROJECTILE("ball", pos, RGBA(1.0, 0.4, 1.0, 0.0), linear,
 				.args = { cexp(I*carg(global.plr.pos-pos)) },
-				.flags = PFLAG_DRAWADD,
 			  );
 		}
 	}
@@ -1804,23 +1799,21 @@ int curvature_slave(Enemy *e, int t) {
 		Projectile *p =PROJECTILE(
 			.sprite = "bigball",
 			.pos = global.boss->pos,
-			.color = RGB(0.5, 0.4,1),
+			.color = RGBA(0.5, 0.4, 1.0, 0.0),
 			.rule = linear,
 			.args = { 4*I*cexp(I*M_PI*2/5*saw(t/100.)) },
-			.flags = PFLAG_DRAWADD,
 		);
 
 		if(global.diff == D_Lunatic) {
 			PROJECTILE(
 				.sprite = "plainball",
 				.pos = global.boss->pos,
-				.color = RGB(0.2, 0.4,1),
+				.color = RGBA(0.2, 0.4, 1.0, 0.0),
 				.rule = curvature_orbiter,
 				.args = {
 					40*cexp(I*t/400),
 					add_ref(p)
 				},
-				.flags = PFLAG_DRAWADD,
 			);
 		}
 	}
@@ -1946,6 +1939,9 @@ static int elly_toe_boson(Projectile *p, int t) {
 	int num_in_trail = cimag(p->args[2]);
 	assert(activate_time >= 0);
 
+	Color thiscolor_additive = p->color;
+	thiscolor_additive.a = 0;
+
 	if(t < activate_time) {
 		float fract = clamp(2 * (t+1) / (float)activate_time, 0, 1);
 
@@ -1961,12 +1957,11 @@ static int elly_toe_boson(Projectile *p, int t) {
 			PARTICLE(
 				.sprite = "smoothdot",
 				.pos = p->pos,
-				.color = &p->color,
+				.color = &thiscolor_additive,
 				.rule = linear,
 				.timeout = 10,
 				.draw_rule = Fade,
 				.args = { 0, p->args[0] },
-				.blend = BLEND_ADD,
 			);
 		}
 
@@ -1981,7 +1976,7 @@ static int elly_toe_boson(Projectile *p, int t) {
 			PARTICLE(
 				.sprite = "stain",
 				.pos = p->pos,
-				.color = RGB(i==0, i==1, i==2),
+				.color = RGBA(i==0, i==1, i==2, 0.0),
 				.rule = elly_toe_boson_effect,
 				.draw_rule = ScaleFade,
 				.timeout = 60,
@@ -1992,7 +1987,6 @@ static int elly_toe_boson(Projectile *p, int t) {
 					M_PI*2*frand(),
 				},
 				.angle = 0,
-				.blend = BLEND_ADD,
 			);
 		}
 	}
@@ -2020,41 +2014,31 @@ static int elly_toe_boson(Projectile *p, int t) {
 		PARTICLE(
 			.sprite = "myon",
 			.pos = prev_pos,
-			.color = &p->color,
+			.color = &thiscolor_additive,
 			.timeout = 50,
 			.draw_rule = ScaleFade,
 			.args = { 0, 0, 5.00 },
-			.blend = BLEND_ADD,
 			.angle = M_PI*2*frand(),
 		);
 
 		PARTICLE(
 			.sprite = "stardust",
 			.pos = prev_pos,
-			.color = &p->color,
+			.color = &thiscolor_additive,
 			.timeout = 60,
 			.draw_rule = ScaleFade,
 			.args = { 0, 0, 3 * I },
-			.blend = BLEND_ADD,
 			.angle = M_PI*2*frand(),
 		);
 
-		// p->color = RGB(1.0 - warps_left, 0, warps_left + color_component(p->color,CLR_B));
-		/*
-		p->color = derive_color(
-			subtract_colors(RGB(1, 1, 1), p->color),
-			CLRMASK_A,
-			rgba(0, 0, 0, color_component(p->color, CLR_A))
-		);
-		*/
-
 		boson_color(&p->color, num_in_trail, warps_initial - warps_left);
+		thiscolor_additive = p->color;
+		thiscolor_additive.a = 0;
 
-		PARTICLE("stardust", p->pos, &p->color, elly_toe_boson_effect,
+		PARTICLE("stardust", p->pos, &thiscolor_additive, elly_toe_boson_effect,
 			.draw_rule = ScaleFade,
 			.timeout = 30,
 			.args = { 0, p->args[0] * 2, 3 * I, M_PI*2*frand() },
-			.blend = BLEND_ADD,
 			.angle = 0,
 		);
 	}
@@ -2068,15 +2052,19 @@ static int elly_toe_boson(Projectile *p, int t) {
 		// Re [a b^*] behaves like the 2D vector scalar product
 		float tOvershoot = creal(pos0*conj(dir))/creal(p->args[0]*conj(dir));
 		posLookahead -= p->args[0]*tOvershoot;
+
+		Color *clr = boson_color(&(Color){0}, num_in_trail, warps_initial - warps_left + 1);
+		clr->a = 0;
+
 		PARTICLE(
 			.sprite = "smoothdot",
 			.pos = posLookahead,
-			.color = boson_color(&(Color){0}, num_in_trail, warps_initial - warps_left + 1),
+			.color = clr,
 			.timeout = 10,
 			.rule = linear,
 			.draw_rule = Fade,
 			.args = { p->args[0] },
-			.flags = PFLAG_DRAWADD | PFLAG_REQUIREDPARTICLE,
+			.flags = PFLAG_REQUIREDPARTICLE,
 		);
 	}
 
@@ -2138,17 +2126,19 @@ static int elly_toe_fermion(Projectile *p, int t) {
 		p->pos0 += (p->args[0]-p->pos0)*0.01;
 	p->pos = global.boss->pos+p->pos0*cexp(I*0.01*t)+5*cexp(I*t*0.05+I*p->args[1]);
 
+	Color thiscolor_additive = p->color;
+	thiscolor_additive.a = 0;
+
 	if(t > 0 && t % 5 == 0) {
 		double particle_scale = min(1.0, 0.5 * p->sprite->w / 28.0);
 
 		PARTICLE(
 			.sprite = "stardust",
 			.pos = p->pos,
-			.color = &p->color,
+			.color = &thiscolor_additive,
 			.timeout = min(t / 6.0, 10),
 			.draw_rule = ScaleFade,
 			.args = { 0, 0, particle_scale * (1 + 2 * I) },
-			.blend = BLEND_ADD,
 			.angle = M_PI*2*frand(),
 		);
 	}
@@ -2165,12 +2155,11 @@ static int elly_toe_fermion(Projectile *p, int t) {
 			PARTICLE(
 				.sprite = "myon",
 				.pos = p->pos,
-				.color = &p->color,
+				.color = &thiscolor_additive,
 				.rule = elly_toe_fermion_yukawa_effect,
 				.timeout = 60,
 				.draw_rule = ScaleFade,
 				.args = { add_ref(p), 0, 20 * I },
-				.blend = BLEND_ADD,
 				.angle = M_PI*2*frand(),
 			);
 		}
@@ -2282,12 +2271,12 @@ static int elly_toe_laser_particle_rule(Projectile *p, int t) {
 
 static void elly_toe_laser_particle(Laser *l, complex origin) {
 	Color *c = color_mul(COLOR_COPY(&l->color), &l->color);
+	c->a = 0;
 
 	PARTICLE("stardust", origin, c, elly_toe_laser_particle_rule,
 		.draw_rule = ScaleFade,
 		.timeout = 30,
 		.args = { 0, 0, 2 * I, add_ref(l) },
-		.blend = BLEND_ADD,
 		.angle = M_PI*2*frand(),
 	);
 
@@ -2295,7 +2284,6 @@ static void elly_toe_laser_particle(Laser *l, complex origin) {
 		.draw_rule = ScaleFade,
 		.timeout = 20,
 		.args = { 0, 0, 2 * I, add_ref(l) },
-		.blend = BLEND_ADD,
 		.angle = M_PI*2*frand(),
 	);
 
@@ -2303,7 +2291,6 @@ static void elly_toe_laser_particle(Laser *l, complex origin) {
 		.draw_rule = ScaleFade,
 		.timeout = 40,
 		.args = { 0, 0, 1, add_ref(l) },
-		.blend = BLEND_ADD,
 		.angle = M_PI*2*frand(),
 	);
 }
@@ -2493,14 +2480,13 @@ void elly_theory(Boss *b, int time) {
 
 		complex dest = 100*cexp(I*1*_i);
 		for(int clr = 0; clr < 3; clr++) {
-			PROJECTILE("ball", b->pos, RGB(clr==0,clr==1,clr==2),
+			PROJECTILE("ball", b->pos, RGBA(clr==0, clr==1, clr==2, 0),
 				.rule = elly_toe_fermion,
 				.args = {
 					dest,
 					clr*2*M_PI/3,
 					40,
 				},
-				.flags=PFLAG_DRAWADD,
 				.max_viewport_dist=50,
 			);
 		}
@@ -2533,11 +2519,10 @@ void elly_theory(Boss *b, int time) {
 			PARTICLE(
 				.sprite = "stain",
 				.pos = b->pos,
-				.color = RGB(0.3, 0.3, 1.0),
+				.color = RGBA(0.3, 0.3, 1.0, 0.0),
 				.timeout = 120 + 20 * nfrand(),
 				.draw_rule = ScaleFade,
 				.args = { 0, 0, 2 * (1 + 5 * I) },
-				.blend = BLEND_ADD,
 				.angle = M_PI*2*frand(),
 			);
 		}
@@ -2607,7 +2592,7 @@ void elly_theory(Boss *b, int time) {
 		// play_sound("shot_special1");
 
 		for(int clr = 0; clr < 3; clr++) {
-			PROJECTILE("soul", b->pos, RGB(clr==0,clr==1,clr==2),
+			PROJECTILE("soul", b->pos, RGBA(clr==0, clr==1, clr==2, 0),
 				.rule = elly_toe_fermion,
 				.args = {
 					50*cexp(1.3*I*_i),
@@ -2615,7 +2600,6 @@ void elly_theory(Boss *b, int time) {
 					40,
 					-1,
 				},
-				.flags=PFLAG_DRAWADD,
 				.max_viewport_dist=50,
 			);
 		}
@@ -2625,15 +2609,15 @@ void elly_theory(Boss *b, int time) {
 }
 
 void elly_spellbg_toe(Boss *b, int t) {
-	r_mat_push();
-	r_mat_translate(VIEWPORT_W/2,VIEWPORT_H/2,0);
-	float s = 0.75 + 0.0005 * t;
-	r_mat_scale(s,s,s);
-	r_mat_rotate_deg(t * 0.1, 0, 0, 1);
-	r_color4(0.6, 0.6, 0.6, 0.6);
+	r_shader("sprite_default");
 
-	draw_sprite(0,0,"stage6/spellbg_toe");
-	r_mat_pop();
+	r_draw_sprite(&(SpriteParams) {
+		.pos = { VIEWPORT_W/2, VIEWPORT_H/2 },
+		.scale.both = 0.75 + 0.0005 * t,
+		.rotation.angle = t * 0.1 * DEG2RAD,
+		.sprite = "stage6/spellbg_toe",
+		.color = RGB(0.6, 0.6, 0.6),
+	});
 
 	float positions[][2] = {
 		{-160,0},
@@ -2651,14 +2635,12 @@ void elly_spellbg_toe(Boss *b, int t) {
 		YUKAWATIME,
 	};
 
-	r_shader("sprite_default");
-
 	int count = sizeof(delays)/sizeof(int);
 	for(int i = 0; i < count; i++) {
 		if(t<delays[i])
 			break;
 		
-		r_color4(1,1,1,0.5*clamp((t-delays[i])*0.1,0,1));
+		r_color(RGBA_MUL_ALPHA(1, 1, 1, 0.5*clamp((t-delays[i])*0.1,0,1)));
 		char *texname = strfmt("stage6/toelagrangian/%d",i);
 		float wobble = max(0,t-BREAKTIME)*0.03;
 		r_mat_push();
@@ -2680,7 +2662,6 @@ void elly_spellbg_toe(Boss *b, int t) {
 
 void elly_spellbg_classic(Boss *b, int t) {
 	fill_viewport(0,0,0.7,"stage6/spellbg_classic");
-	// FIXME: blend
 	r_blend(BLEND_MOD);
 	r_color4(1, 1, 1, 0);
 	fill_viewport(0,-t*0.005,0.7,"stage6/spellbg_chalk");
@@ -2690,7 +2671,6 @@ void elly_spellbg_classic(Boss *b, int t) {
 
 void elly_spellbg_modern(Boss *b, int t) {
 	fill_viewport(0,0,0.6,"stage6/spellbg_modern");
-	// FIXME: blend
 	r_blend(BLEND_MOD);
 	r_color4(1, 1, 1, 0);
 	fill_viewport(0,-t*0.005,0.7,"stage6/spellbg_chalk");
