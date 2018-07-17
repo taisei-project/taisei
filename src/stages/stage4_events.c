@@ -230,26 +230,24 @@ int stage4_bigcircle(Enemy *e, int t) {
 			PROJECTILE(
 				.sprite = "bigball",
 				.pos = e->pos,
-				.color = RGB(0,0.8-0.4*_i,0),
+				.color = RGBA(0, 0.8 - 0.4 * _i, 0, 0),
 				.rule = asymptotic,
 				.args = {
 					2*cexp(2.0*I*M_PI/n*i+I*3*_i),
 					3*sin(6*M_PI/n*i)
 				},
-				.flags = PFLAG_DRAWADD,
 			);
 
 			if(global.diff > D_Easy) {
 				PROJECTILE(
 					.sprite = "ball",
 					.pos = e->pos,
-					.color = RGB(0,0.3*_i,0.4),
+					.color = RGBA(0, 0.3 * _i, 0.4, 0),
 					.rule = asymptotic,
 					.args = {
 						(1.5+global.diff*0.2)*cexp(I*3*(i+frand())),
 						I*5*sin(6*M_PI/n*i)
 					},
-					.flags = PFLAG_DRAWADD,
 				);
 			}
 		}
@@ -302,12 +300,11 @@ void KurumiSlave(Enemy *e, int t, bool render) {
 		PARTICLE(
 			.sprite = "smoothdot",
 			.pos = offset,
-			.color = RGB(0.3,0.0,0.0),
+			.color = RGBA(0.3, 0.0, 0.0, 0.0),
 			.draw_rule = Shrink,
 			.rule = enemy_flare,
 			.timeout = 50,
 			.args = { (-50.0*I-offset)/50.0, add_ref(e) },
-			.blend = BLEND_ADD,
 		);
 	}
 }
@@ -415,13 +412,12 @@ void kurumi_redspike(Boss *b, int time) {
 				PROJECTILE(
 					.sprite = "bigball",
 					.pos = b->pos,
-					.color = RGB(1.0, 0.0, 0.0),
+					.color = RGBA(1.0, 0.0, 0.0, 0.0),
 					.rule = asymptotic,
 					.args = {
 						(1+0.1*(global.diff == D_Normal))*3*cexp(2.0*I*M_PI/n*i+I*carg(global.plr.pos-b->pos)),
 						3
 					},
-					.flags = PFLAG_DRAWADD,
 				);
 			}
 
@@ -440,9 +436,8 @@ void kurumi_redspike(Boss *b, int time) {
 			tsrand_fill(2);
 			complex offset = 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1));
 			complex n = cexp(I*carg(global.plr.pos-b->pos-offset));
-			PROJECTILE("rice", b->pos+offset, RGB(1,0,0), accelerated,
+			PROJECTILE("rice", b->pos+offset, RGBA(1, 0, 0, 0), accelerated,
 				.args = { -1*n, 0.05*n },
-				.flags = PFLAG_DRAWADD,
 			);
 			play_sound_ex("warp",0,false);
 		}
@@ -610,9 +605,8 @@ void kurumi_breaker(Boss *b, int time) {
 		aniplayer_queue(&b->ani,"muda",1);
 		aniplayer_queue(&b->ani,"main",0);
 		for(i = 0; i < 20; i++) {
-			PROJECTILE("bigball", b->pos, RGB(0.5,0,0.5), asymptotic,
+			PROJECTILE("bigball", b->pos, RGBA(0.5, 0.0, 0.5, 0.0), asymptotic,
 				.args = { cexp(2.0*I*M_PI/20.0*i), 3 },
-				.flags = PFLAG_DRAWADD,
 			);
 		}
 	}
@@ -696,9 +690,8 @@ void KurumiAniWallSlave(Enemy *e, int t, bool render) {
 		PARTICLE(
 			.sprite = "smoothdot",
 			.pos = e->pos,
-			.color = RGB(1,1,1),
+			.color = RGBA(1, 1, 1, 0),
 			.draw_rule = Fade,
-			.flags = PFLAG_DRAWADD,
 			.timeout = 30,
 		);
 	}
@@ -757,9 +750,8 @@ void kurumi_sbreaker(Boss *b, int time) {
 		aniplayer_queue(&b->ani, "main", 0);
 
 		for(i = 0; i < 20; i++) {
-			PROJECTILE("bigball", b->pos, RGB(0.5, 0.0, 0.5), asymptotic,
+			PROJECTILE("bigball", b->pos, RGBA(0.5, 0.0, 0.5, 0.0), asymptotic,
 				.args = { cexp(2.0*I*M_PI/20.0*i), 3 },
-				.flags = PFLAG_DRAWADD,
 			);
 		}
 	}
@@ -802,9 +794,8 @@ int blowwall_slave(Enemy *e, int t) {
 			else
 				type = "plainball";
 
-			PROJECTILE(type, e->pos, RGB(1.0, 0.1, 0.1), asymptotic,
+			PROJECTILE(type, e->pos, RGBA(1.0, 0.1, 0.1, 0.0), asymptotic,
 				.args = { (1+3*f)*cexp(2.0*I*M_PI*frand()), 4 },
-				.flags = PFLAG_DRAWADD
 			);
 		}
 
@@ -868,7 +859,6 @@ static Projectile* vapor_particle(complex pos, const Color *clr) {
 		.args = { 0, 0, 0.0 + 5.0*I },
 		.pos = pos,
 		.angle = M_PI*2*frand(),
-		.flags = PFLAG_DRAWADD,
 	);
 }
 
@@ -880,7 +870,7 @@ static int kdanmaku_proj(Projectile *p, int t) {
 	int time = creal(p->args[0]);
 
 	if(t == time) {
-		p->color = *RGB(0.6, 0.3, 1.0);
+		p->color = *RGBA(0.6, 0.3, 1.0, 0.0);
 		projectile_set_prototype(p, pp_bullet);
 		p->args[1] = (global.plr.pos - p->pos) * 0.001;
 
@@ -941,9 +931,8 @@ int kdanmaku_slave(Enemy *e, int t) {
 		for(i = 0; i < n; i++) {
 			complex p = VIEWPORT_W/(float)n*(i+psin(t*t*i*i+t*t)) + I*cimag(e->pos);
 			if(cabs(p-global.plr.pos) > 60) {
-				PROJECTILE("thickrice", p, RGB(1, 0.5, 0.5), kdanmaku_proj,
+				PROJECTILE("thickrice", p, RGBA(1.0, 0.5, 0.5, 0.0), kdanmaku_proj,
 					.args = { 160, speed*0.5*cexp(2.0*I*M_PI*sin(245*t+i*i*3501)) },
-					.flags = PFLAG_DRAWADD,
 				);
 
 				if(frand()<0.5) {
@@ -1004,8 +993,8 @@ int kurumi_extra_dead_shield_proj(Projectile *p, int time) {
 	}
 
 	p->color = *color_lerp(
-		RGB(2.0, 0.0, 0.0),
-		RGB(0.2, 0.1, 0.5),
+		RGBA(2.0, 0.0, 0.0, 0.0),
+		RGBA(0.2, 0.1, 0.5, 0.0),
 	min(time / 60.0f, 1.0f));
 
 	return asymptotic(p, time);
@@ -1035,7 +1024,6 @@ int kurumi_extra_dead_shield(Enemy *e, int time) {
 			tsrand_fill(2);
 			PROJECTILE("ball", e->pos, 0, kurumi_extra_dead_shield_proj,
 				.args = { 1.5 * (1 + afrand(0)) * dir, 4 + anfrand(1) },
-				.flags = PFLAG_DRAWADD,
 			);
 		}
 
@@ -1104,15 +1092,14 @@ void kurumi_extra_drainer_draw(Projectile *p, int time) {
 	Texture *tex = get_tex("part/sinewave");
 
 	r_shader_standard();
-	r_blend(BLEND_ADD);
 
-	r_color4(1.0, 0.5, 0.5, a);
+	r_color4(1.0 * a, 0.5 * a, 0.5 * a, 0);
 	loop_tex_line_p(org, targ, 16, time * 0.01, tex);
 
-	r_color4(0.4, 0.2, 0.2, a);
+	r_color4(0.4 * a, 0.2 * a, 0.2 * a, 0);
 	loop_tex_line_p(org, targ, 18, time * 0.0043, tex);
 
-	r_color4(0.5, 0.2, 0.5, a);
+	r_color4(0.5 * a, 0.2 * a, 0.5 * a, 0);
 	loop_tex_line_p(org, targ, 24, time * 0.003, tex);
 }
 
@@ -1261,12 +1248,14 @@ int kurumi_extra_fairy(Enemy *e, int t) {
 
 	FROM_TO(attacktime,attacktime+flytime,20-global.diff*3) {
 		if(global.diff>D_Easy) {
+			Color *clr = RGBA_MUL_ALPHA(0.1 + 0.07 * _i, 0.3, 1 - 0.05 * _i, 0.8);
+			clr->a = 0;
+
 			PROJECTILE(
 				.proto = pp_ball,
 				.pos = e->pos,
-				.color = RGBA_MUL_ALPHA(0.1+0.07*_i, 0.3, 1-0.05*_i, 0.8),
+				.color = clr,
 				.timeout = 50,
-				.blend = BLEND_ADD,
 			);
 		}
 	}
