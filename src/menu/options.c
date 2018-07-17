@@ -909,11 +909,13 @@ void draw_options_menu(MenuData *menu) {
 						text_draw(name, &(TextParams) {
 							.pos = { origin, 20*i },
 							.align = ALIGN_RIGHT,
+							.color = &clr,
 						});
 					} else {
 						text_draw("Unbound", &(TextParams) {
 							.pos = { origin, 20*i },
 							.align = ALIGN_RIGHT,
+							.color = &clr,
 						});
 					}
 					break;
@@ -981,6 +983,7 @@ void draw_options_menu(MenuData *menu) {
 					text_draw(tmp, &(TextParams) {
 						.pos = { -((w+cw) * 0.5 + 10), 0 },
 						.align = ALIGN_RIGHT,
+						.color = &clr,
 					});
 					r_shader_standard_notex();
 					r_mat_push();
