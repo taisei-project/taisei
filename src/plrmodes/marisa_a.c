@@ -239,15 +239,19 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 
 	r_vertex_array(r_vertex_array_static_models());
 	r_shader_ptr(shader);
-	r_uniform_ptr(u_clr0,      1, (float[]) { 1, 1, 1, 0.5 });
-	r_uniform_ptr(u_clr1,      1, (float[]) { 1, 1, 1, 0.8 });
+	r_uniform_ptr(u_clr0,      1, (float[]) { 0.5, 0.5, 0.5, 0.0 });
+	r_uniform_ptr(u_clr1,      1, (float[]) { 0.8, 0.8, 0.8, 0.0 });
 	r_uniform_ptr(u_clr_phase, 1, (float[]) { -1.5 * t/M_PI });
 	r_uniform_ptr(u_clr_freq,  1, (float[]) { 10.0 });
-	r_framebuffer(fbp_aux->front);
+	r_framebuffer(fbp_aux->back);
 	r_clear_color4(0, 0, 0, 0);
 	r_clear(CLEAR_COLOR);
-	r_clear_color4(0, 0, 0, 1);
-	r_color4(1, 1, 1, 0);
+	r_color4(1, 1, 1, 1);
+
+	r_blend(r_blend_compose(
+		BLENDFACTOR_SRC_COLOR, BLENDFACTOR_ONE, BLENDOP_MAX,
+		BLENDFACTOR_SRC_COLOR, BLENDFACTOR_ONE, BLENDOP_MAX
+	));
 
 	FOR_EACH_SLAVE(e) {
 		if(set_alpha(u_alpha, get_laser_alpha(e, a))) {
@@ -255,6 +259,17 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 			draw_laser_beam(e->pos, ld->trace_hit.last, 32, 128, -0.02 * t, tex1, u_length);
 		}
 	}
+
+	r_blend(BLEND_PREMUL_ALPHA);
+	fbpair_swap(fbp_aux);
+
+	r_framebuffer(fbp_aux->back);
+	r_clear_color4(0, 0, 0, 0);
+	r_clear(CLEAR_COLOR);
+	r_texture_ptr(0, r_framebuffer_get_attachment(fbp_aux->front, FRAMEBUFFER_ATTACH_COLOR0));
+	r_shader("max_to_alpha");
+	draw_framebuffer_tex(fbp_aux->front, VIEWPORT_W, VIEWPORT_H);
+	fbpair_swap(fbp_aux);
 
 	r_framebuffer(fbp_fg->back);
 	r_shader_standard();
@@ -272,7 +287,7 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 		}
 	}
 
-	r_uniform_ptr(u_clr0, 1, (float[]) { 2.0, 1.0, 1.0, 0.0 });
+	r_uniform_ptr(u_clr0, 1, (float[]) { 2.0, 1.0, 2.0, 0.0 });
 	r_uniform_ptr(u_clr1, 1, (float[]) { 0.1, 0.1, 1.0, 0.0 });
 
 	FOR_EACH_SLAVE(e) {
@@ -282,6 +297,7 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 		}
 	}
 
+	r_clear_color4(0, 0, 0, 1);
 	r_shader("sprite_default");
 	r_vertex_array(varr_saved);
 }
@@ -604,6 +620,7 @@ static void marisa_laser_preload(void) {
 	preload_resources(RES_SHADER_PROGRAM, flags,
 		"marisa_laser",
 		"masterspark",
+		"max_to_alpha",
 	NULL);
 
 	preload_resources(RES_SFX, flags | RESF_OPTIONAL,

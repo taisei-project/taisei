@@ -19,6 +19,7 @@ glsl_files = files(
     'marisa_laser.frag.glsl',
     'maristar_bombbg.frag.glsl',
     'masterspark.frag.glsl',
+    'max_to_alpha.frag.glsl',
     'player_death.frag.glsl',
     'spellcard_intro.frag.glsl',
     'spellcard_outro.frag.glsl',
