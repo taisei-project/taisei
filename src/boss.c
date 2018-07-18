@@ -81,19 +81,20 @@ void spell_opening(Boss *b, int time) {
 
 void draw_extraspell_bg(Boss *boss, int time) {
 	// overlay for all extra spells
+	// FIXME: Please replace this with something that doesn't look like shit.
 
 	float opacity = 0.7;
 	r_color4(0.2 * opacity, 0.1 * opacity, 0, 0);
 	fill_viewport(sin(time) * 0.015, time / 50.0, 1, "stage3/wspellclouds");
-	r_color4(1,1,1,1);
-	// FIXME: blend
+	r_color4(2000, 2000, 2000, 0);
 	r_blend(r_blend_compose(
-		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_MIN,
+		BLENDFACTOR_SRC_COLOR, BLENDFACTOR_ONE, BLENDOP_MIN,
 		BLENDFACTOR_ZERO,      BLENDFACTOR_ONE, BLENDOP_MIN
 	));
 	fill_viewport(cos(time) * 0.015, time / 70.0, 1, "stage4/kurumibg2");
-	fill_viewport(sin(time+2.1) * 0.015, time / 30.0, 1, "stage4/kurumibg2");
+	fill_viewport(sin(time*1.1+2.1) * 0.015, time / 30.0, 1, "stage4/kurumibg2");
 	r_blend(BLEND_PREMUL_ALPHA);
+	r_color4(1, 1, 1, 1);
 }
 
 const Color* boss_healthbar_color(AttackType atype) {
