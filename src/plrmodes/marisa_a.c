@@ -487,9 +487,9 @@ static void marisa_laser_bombbg(Player *plr) {
 	if(t > 3./4)
 		fade = 1-t*4 + 3;
 
-	r_color4(1,1,1,0.8*fade);
-	fill_viewport(sin(t*0.3),t*3*(1+t*3),1,"marisa_bombbg");
-	r_color4(1,1,1,1);
+	r_color4(0.8 * fade, 0.8 * fade, 0.8 * fade, 0.8 * fade);
+	fill_viewport(sin(t * 0.3), t * 3 * (1 + t * 3), 1, "marisa_bombbg");
+	r_color4(1, 1, 1, 1);
 }
 
 static void marisa_laser_bomb(Player *plr) {
