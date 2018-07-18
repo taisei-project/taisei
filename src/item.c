@@ -33,7 +33,7 @@ static Sprite* item_sprite(ItemType type) {
 static void ent_draw_item(EntityInterface *ent) {
 	Item *i = ENT_CAST(ent, Item);
 
-	Color *c = RGBA(1, 1, 1,
+	Color *c = RGBA_MUL_ALPHA(1, 1, 1,
 		i->type == BPoint && !i->auto_collect
 			? clamp(2.0 - (global.frames - i->birthtime) / 60.0, 0.1, 1.0)
 			: 1.0
