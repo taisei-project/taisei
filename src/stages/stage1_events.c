@@ -275,8 +275,8 @@ void cirno_perfect_freeze(Boss *c, int time) {
 void cirno_pfreeze_bg(Boss *c, int time) {
 	r_color4(0.5, 0.5, 0.5, 1.0);
 	fill_viewport(time/700.0, time/700.0, 1, "stage1/cirnobg");
-	r_color4(0.7, 0.7, 0.7, 0.5);
 	r_blend(BLEND_MOD);
+	r_color4(0.7, 0.7, 0.7, 0.5);
 	fill_viewport(-time/700.0 + 0.5, time/700.0+0.5, 0.4, "stage1/cirnobg");
 	r_blend(BLEND_PREMUL_ALPHA);
 	r_color4(0.35, 0.35, 0.35, 0.0);

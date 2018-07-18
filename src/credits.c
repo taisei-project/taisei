@@ -307,7 +307,7 @@ static void credits_draw_entry(CreditsEntry *e) {
 	render_pop();
 	*/
 
-	r_color4(1, 1, 1, fadein * fadeout);
+	r_color(RGBA_MUL_ALPHA(1, 1, 1, fadein * fadeout));
 
 	if(yukkuri) {
 		r_mat_translate(0, (-h_body) * 0.5, 0);

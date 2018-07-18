@@ -699,15 +699,13 @@ static void draw_baryon_connector(complex a, complex b) {
 
 void Baryon(Enemy *e, int t, bool render) {
 	Enemy *n;
-	// float alpha = 1 - 0.8/(exp((cabs(global.plr.pos-e->pos)-100)/10)+1);
-	float alpha = 1;
 
 	if(!render) {
 		if(!(t % 10) && global.boss && cabs(e->pos - global.boss->pos) > 2) {
 			PARTICLE(
 				.sprite = "stain",
 				.pos = e->pos+10*frand()*cexp(2.0*I*M_PI*frand()),
-				.color = RGBA(0, 1*alpha, 0.7*alpha, 0.0),
+				.color = RGBA(0, 1, 0.7, 0.0),
 				.draw_rule = Fade,
 				.timeout = 50,
 				.angle = 2*M_PI*frand(),
@@ -717,13 +715,13 @@ void Baryon(Enemy *e, int t, bool render) {
 		return;
 	}
 
-	r_color4(1.0,1.0,1.0,alpha);
 	draw_sprite_batched(creal(e->pos), cimag(e->pos), "stage6/baryon");
-	r_color4(1.0,1.0,1.0,1.0);
 
 	n = REF(e->args[1]);
-	if(!n)
+
+	if(!n) {
 		return;
+	}
 
 	draw_baryon_connector(e->pos, n->pos);
 }

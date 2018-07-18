@@ -285,9 +285,9 @@ static void ent_draw_boss(EntityInterface *ent) {
 		boss_alpha = (1 - t) + 0.3;
 	}
 
-	r_color4(1,1-red,1-red/2,boss_alpha);
+	r_color(RGBA_MUL_ALPHA(1, 1-red, 1-red/2, boss_alpha));
 	draw_sprite_batched_p(creal(boss->pos), cimag(boss->pos) + 6*sin(global.frames/25.0), aniplayer_get_frame(&boss->ani));
-	r_color4(1,1,1,1);
+	r_color4(1, 1, 1, 1);
 
 	if(boss->current->type == AT_Move && global.frames - boss->current->starttime > 0 && boss_attack_is_final(boss, boss->current))
 		return;
@@ -389,7 +389,7 @@ static void ent_draw_boss(EntityInterface *ent) {
 		r_shader("sprite_default");
 
 		// remaining spells
-		r_color4(1,1,1,0.7);
+		r_color4(0.7, 0.7, 0.7, 0.7);
 		Sprite *star = get_sprite("star");
 
 		for(int x = 0, i = boss->acount-1; i > nextspell; i--) {

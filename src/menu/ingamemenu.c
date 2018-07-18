@@ -166,7 +166,7 @@ void draw_ingame_menu(MenuData *menu) {
 	r_shader("text_default");
 	if(menu->context) {
 		float s = 0.3 + 0.2 * sin(menu->frames/10.0);
-		r_color4(1-s/2, 1-s/2, 1-s, 1-menu_fade(menu));
+		r_color(RGBA_MUL_ALPHA(1-s/2, 1-s/2, 1-s, 1-menu_fade(menu)));
 		text_draw(menu->context, &(TextParams) {
 			.align = ALIGN_CENTER,
 			.pos = { 0, -2 * 35 },
@@ -181,9 +181,9 @@ void draw_ingame_menu(MenuData *menu) {
 				s = 0.3 + 0.2*sin(menu->frames/7.0);
 			}
 
-			r_color4(t-s,t-s,t-s/2, 1-menu_fade(menu));
+			r_color(RGBA_MUL_ALPHA(t-s, t-s, t-s/2, 1-menu_fade(menu)));
 		} else {
-			r_color4(0.5, 0.5, 0.5, 0.5 * (1-menu_fade(menu)));
+			r_color(RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.5 * (1-menu_fade(menu))));
 		}
 
 		text_draw(menu->entries[i].name, &(TextParams) {

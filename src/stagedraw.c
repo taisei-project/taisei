@@ -807,7 +807,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 
 	// Lives and Bombs (N/A)
 	if(global.stage->type == STAGE_SPELL) {
-		r_color4(1, 1, 1, 0.7);
+		r_color4(0.7, 0.7, 0.7, 0.7);
 		text_draw("N/A", &(TextParams) { .pos = { -6, labels->y.lives }, .font_ptr = stagedraw.hud_text.font });
 		text_draw("N/A", &(TextParams) { .pos = { -6, labels->y.bombs }, .font_ptr = stagedraw.hud_text.font });
 		r_color4(1, 1, 1, 1.0);
@@ -1056,13 +1056,13 @@ void stage_draw_hud(void) {
 		float s2 = max(0, swing(s, 3));
 		r_mat_push();
 		r_mat_translate((SCREEN_W - 615) * 0.25 - 615 * (1 - pow(2*fadein-1, 2)), 340, 0);
-		r_color4(0.3, 0.6, 0.7, 0.7 * s);
+		r_color(RGBA_MUL_ALPHA(0.3, 0.6, 0.7, 0.7 * s));
 		r_mat_rotate_deg(-25 + 360 * (1-s2), 0, 0, 1);
 		r_mat_scale(s2, s2, 0);
 
 		text_draw("Extra Spell!", &(TextParams) { .pos = {  1,  1 }, .font = "big", .align = ALIGN_CENTER });
 		text_draw("Extra Spell!", &(TextParams) { .pos = { -1, -1 }, .font = "big", .align = ALIGN_CENTER });
-		r_color4(1, 1, 1, s);
+		r_color4(s, s, s, s);
 		text_draw("Extra Spell!", &(TextParams) { .pos = {  0,  0 }, .font = "big", .align = ALIGN_CENTER });
 		r_color4(1, 1, 1, 1);
 		r_mat_pop();
@@ -1082,8 +1082,8 @@ void stage_draw_hud(void) {
 		if(red > 1)
 			red = 0;
 		
-		r_color4(1,1,1,1-red);
+		r_color4(1 - red, 1 - red, 1 - red, 1 - red);
 		draw_sprite(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
-		r_color4(1,1,1,1);
+		r_color4(1, 1, 1, 1);
 	}
 }
