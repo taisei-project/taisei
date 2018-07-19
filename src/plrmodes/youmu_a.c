@@ -15,10 +15,10 @@
 
 #define MYON (global.plr.slaves.first)
 
-static Color* myon_color(Color *c, float f, float a) {
+static Color* myon_color(Color *c, float f, float opacity, float alpha) {
 	// *RGBA_MUL_ALPHA(0.8+0.2*f, 0.9-0.4*sqrt(f), 1.0-0.2*f*f, a);
-	// *RGBA_MUL_ALPHA(0.8+0.2*f, 0.9-0.4*sqrt(f), 1.0-0.4*f*f, a);
-	*c = *RGBA((0.8+0.2*f)*a, (0.9-0.4*sqrt(f))*a, (1.0-0.35*f*f)*a, 0);
+	*c = *RGBA_MUL_ALPHA(0.8+0.2*f, 0.9-0.4*sqrt(f), 1.0-0.35*f*f, opacity);
+	c->a *= alpha;
 	return c;
 }
 
@@ -27,7 +27,7 @@ static int myon_particle_rule(Projectile *p, int t) {
 		return ACTION_ACK;
 	}
 
-	myon_color(&p->color, clamp(creal(p->args[3]) + t / p->timeout, 0, 1), 0.5 * (1 - sqrt(t / p->timeout)));
+	myon_color(&p->color, clamp(creal(p->args[3]) + t / p->timeout, 0, 1), 0.5 * (1 - sqrt(t / p->timeout)), 0);
 
 	p->pos += p->args[0];
 	p->angle += 0.03 * (1 - 2 * (p->birthtime & 1));
@@ -47,13 +47,13 @@ static int myon_flare_particle_rule(Projectile *p, int t) {
 		return ACTION_ACK;
 	}
 
-	myon_color(&p->color, creal(p->args[3]), pow(1 - min(1, t / (double)p->timeout), 2));
-
 	// wiggle wiggle
 	p->pos += 0.05 * (MYON->pos - p->pos) * cexp(I * sin((t - global.frames * 2) * 0.1) * M_PI/8);
 	p->args[0] = 3 * myon_tail_dir();
 
-	return myon_particle_rule(p, t);
+	int r = myon_particle_rule(p, t);
+	myon_color(&p->color, creal(p->args[3]), pow(1 - min(1, t / (double)p->timeout), 2), 0.95);
+	return r;
 }
 
 static void myon_draw_trail(Projectile *p, int t) {
@@ -61,7 +61,7 @@ static void myon_draw_trail(Projectile *p, int t) {
 	float s = min(1, 1 - t / (double)p->timeout);
 	float a = p->color.r*fadein;
 	Color c;
-	myon_color(&c, creal(p->args[3]), a * s * s);
+	myon_color(&c, creal(p->args[3]), a * s * s, 0);
 	youmu_common_draw_proj(p, &c, fadein * (2-s) * p->args[1]);
 }
 
@@ -193,7 +193,7 @@ static Projectile* youmu_mirror_myon_proj(char *tex, complex pos, double speed, 
 		c = intermediate;
 		color_lerp(
 			&c,
-			myon_color(&mc, f, 1),
+			myon_color(&mc, f, 1, 1),
 			(f - 0.5) * 2
 		);
 	}
