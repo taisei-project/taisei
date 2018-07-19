@@ -127,12 +127,6 @@ static void projectile_size(Projectile *p, double *w, double *h) {
 	assert(*h > 0);
 }
 
-static double projectile_rect_area(Projectile *p) {
-	double w, h;
-	projectile_size(p, &w, &h);
-	return w * h;
-}
-
 static void ent_draw_projectile(EntityInterface *ent);
 
 static inline char* event_name(int ev) {
