@@ -159,18 +159,18 @@ static int myon_proj(Projectile *p, int t) {
 		.draw_rule = myon_draw_proj_trail,
 		.rule = linear,
 		.timeout = 10,
-		.args = { p->args[0]*0.8, 0.8 },
+		.args = { p->args[0]*0.8, 0.6 },
 		.flags = PFLAG_NOREFLECT,
 		.angle = p->angle,
 	);
+
+	p->shader_custom_param = pow(1 - min(1, t / 10.0), 2);
 
 	return ACTION_NONE;
 }
 
 static void myon_proj_draw(Projectile *p, int t) {
-	float a = 1 - pow(1 - min(1, t / 10.0), 2);
-	Color *c = color_mul_scalar(COLOR_COPY(&p->color), a);
-	youmu_common_draw_proj(p, c, 1);
+	youmu_common_draw_proj(p, &p->color, 1);
 }
 
 static Projectile* youmu_mirror_myon_proj(char *tex, complex pos, double speed, double angle, double aoffs, double upfactor, int dmg) {
