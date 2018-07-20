@@ -72,7 +72,7 @@ struct Projectile {
 	Sprite *sprite;
 	ProjPrototype *proto;
 	Color color;
-	float shader_custom_param; // FIXME: see renderer/api.c: struct SpriteParams
+	ShaderCustomParams shader_params;
 	BlendMode blend;
 	int birthtime;
 	float angle;
@@ -105,7 +105,7 @@ typedef struct ProjArgs {
 	const char *shader;
 	ShaderProgram *shader_ptr;
 	ProjPrototype *proto;
-	float shader_custom_param; // FIXME: see renderer/api.c: struct SpriteParams
+	const ShaderCustomParams *shader_params;
 	ProjectileList *dest;
 	ProjType type;
 	Sprite *sprite_ptr;

@@ -18,7 +18,7 @@ typedef struct SpriteAttribs {
 	float rgba[4];
 	FloatRect texrect;
 	float sprite_size[2];
-	float custom;
+	float custom[4];
 } SpriteAttribs;
 
 static struct SpriteBatchState {
@@ -74,7 +74,7 @@ void _r_sprite_batch_init(void) {
 		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(rgba),             1 },
 		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(texrect),          1 },
 		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(sprite_size),      1 },
-		{ { 1, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(custom),           1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(custom),           1 },
 	};
 
 	#undef VERTEX_OFS
@@ -187,7 +187,7 @@ static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, VertexB
 		}
 	}
 
-	glm_scale(attribs.transform, (vec3) { scale_x * spr->w, scale_y * spr->h });
+	glm_scale(attribs.transform, (vec3) { scale_x * spr->w, scale_y * spr->h, 1 });
 
 	if(params->color == NULL) {
 		// XXX: should we use r_color_current here?
@@ -213,7 +213,12 @@ static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, VertexB
 
 	attribs.sprite_size[0] = spr->w;
 	attribs.sprite_size[1] = spr->h;
-	attribs.custom = params->custom;
+
+	if(params->shader_params != NULL) {
+		memcpy(attribs.custom, params->shader_params, sizeof(attribs.custom));
+	} else {
+		memset(attribs.custom, 0, sizeof(attribs.custom));
+	}
 
 	r_vertex_buffer_append(vbuf, sizeof(attribs), &attribs);
 	_r_sprite_batch.frame_stats.sprites++;

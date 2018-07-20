@@ -198,7 +198,6 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	p->rule = args->rule;
 	p->draw_rule = args->draw_rule;
 	p->shader = args->shader_ptr;
-	p->shader_custom_param = args->shader_custom_param;
 	p->blend = args->blend;
 	p->sprite = args->sprite_ptr;
 	p->type = args->type;
@@ -208,6 +207,10 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	p->collision_size = args->collision_size;
 	p->flags = args->flags;
 	p->timeout = args->timeout;
+
+	if(args->shader_params != NULL) {
+		p->shader_params = *args->shader_params;
+	}
 
 	memcpy(p->args, args->args, sizeof(p->args));
 
@@ -652,7 +655,7 @@ void ProjDrawCore(Projectile *proj, const Color *c) {
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = proj->sprite,
 		.color = c,
-		.custom = proj->shader_custom_param,
+		// .custom = proj->shader_custom_param,
 	});
 }
 

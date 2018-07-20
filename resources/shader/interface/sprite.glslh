@@ -26,7 +26,7 @@ ATTRIBUTE(7)   mat4  spriteTexTransform;
 ATTRIBUTE(11)  vec4  spriteRGBA;
 ATTRIBUTE(12)  vec4  spriteTexRegion;
 ATTRIBUTE(13)  vec2  spriteDimensions;
-ATTRIBUTE(14)  float spriteCustomParam;
+ATTRIBUTE(14)  vec4  spriteCustomParams;
 #endif
 
 #ifdef FRAG_STAGE
@@ -41,6 +41,6 @@ VARYING(2) vec2  texCoordOverlay;
 VARYING(3) vec4  texRegion;
 VARYING(4) vec4  color;
 VARYING(5) vec2  dimensions;
-VARYING(6) float customParam;
+VARYING(6) vec4  customParams;
 
 #endif

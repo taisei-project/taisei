@@ -6,7 +6,7 @@
 UNIFORM(1) vec4 back_color;
 
 void main(void) {
-    float fill = customParam;
+	float fill = customParams.r;
 	vec2 tc = texCoord;
 	vec4 texel = texture(tex, tc);
 	tc = texCoordRaw - vec2(0.5);

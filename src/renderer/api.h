@@ -345,6 +345,11 @@ typedef enum VsyncMode {
 	VSYNC_ADAPTIVE,
 } VsyncMode;
 
+typedef union ShaderCustomParams {
+	float vector[4];
+	Color color;
+} ShaderCustomParams;
+
 typedef struct SpriteParams {
 	const char *sprite;
 	Sprite *sprite_ptr;
@@ -374,7 +379,7 @@ typedef struct SpriteParams {
 		vec3 vector;
 	} rotation;
 
-	float custom;
+	const ShaderCustomParams *shader_params;
 
 	struct {
 		unsigned int x : 1;

@@ -111,7 +111,8 @@ static int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: aim (r:
 	Projectile *trail = youmu_homing_trail(p, 0.5 * p->args[0], 12);
 	trail->args[2] = p->args[2];
 
-	p->shader_custom_param = trail->shader_custom_param = cimag(p->args[2]);
+	p->shader_params.vector[0] = cimag(p->args[2]);
+	trail->shader_params.vector[0] = cimag(p->args[2]);
 
 	return 1;
 }
@@ -120,10 +121,12 @@ static Projectile* youmu_trap_trail(Projectile *p, complex v, int t, bool additi
 	Projectile *trail = youmu_homing_trail(p, v, t);
 	trail->draw_rule = youmu_trap_draw_trail;
 	// trail->args[3] = global.frames - p->birthtime;
-	trail->shader_custom_param = p->shader_custom_param;
+	trail->shader_params.vector[0] = p->shader_params.vector[0];
 
-	if(additive)
+	if(additive) {
 		trail->color.a = 0;
+	}
+
 	return trail;
 }
 
@@ -152,7 +155,7 @@ static int youmu_trap(Projectile *p, int t) {
 	}
 
 	float charge = youmu_trap_charge(t);
-	p->shader_custom_param = charge;
+	p->shader_params.vector[0] = charge;
 
 	if(!(global.plr.inputflags & INFLAG_FOCUS)) {
 		PARTICLE(

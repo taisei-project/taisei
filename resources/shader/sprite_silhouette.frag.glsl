@@ -18,7 +18,7 @@ void main(void) {
     vec2 uv = texCoordRaw;
     vec2 uv_orig = uv;
     vec4 texel;
-    float deform = customParam;
+    float deform = customParams.r;
 
     const float limit = 1.0;
     const float step = 0.25;

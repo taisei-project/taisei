@@ -85,7 +85,7 @@ static void stagetext_draw_single(StageText *txt) {
 	params.blend = BLEND_PREMUL_ALPHA;
 	params.shader_ptr = r_shader_current();
 
-	params.custom = 1.0-f;
+	params.shader_params = &(ShaderCustomParams){{ 1 - f }},
 	params.pos.x = creal(txt->pos)+10*f*f;
 	params.pos.y = cimag(txt->pos)+10*f*f;
 

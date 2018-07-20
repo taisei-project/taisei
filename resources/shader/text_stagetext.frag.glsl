@@ -11,7 +11,7 @@ float tc_mask(vec2 tc) {
 }
 
 void main(void) {
-    float t = customParam;
+    float t = customParams.r;
     vec2 tc = texCoord;
     vec2 tc_overlay = texCoordOverlay;
     vec2 f = tc_overlay - vec2(0.5);

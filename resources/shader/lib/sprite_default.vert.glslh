@@ -32,6 +32,6 @@ void main(void) {
     #endif
 
     #ifdef SPRITE_OUT_CUSTOM
-    customParam = spriteCustomParam;
+    customParams = spriteCustomParams;
     #endif
 }

@@ -164,7 +164,7 @@ static int myon_proj(Projectile *p, int t) {
 		.angle = p->angle,
 	);
 
-	p->shader_custom_param = pow(1 - min(1, t / 10.0), 2);
+	p->shader_params.vector[0] = pow(1 - min(1, t / 10.0), 2);
 
 	return ACTION_NONE;
 }

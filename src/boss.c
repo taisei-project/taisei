@@ -193,7 +193,7 @@ static void BossGlow(Projectile *p, int t) {
 		.sprite_ptr = p->sprite,
 		.scale.both = s,
 		.color = &c,
-		.custom = deform,
+		.shader_params = &(ShaderCustomParams){{ deform }},
 		.shader = "sprite_silhouette",
 	});
 }

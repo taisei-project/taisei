@@ -1498,9 +1498,9 @@ static int ricci_proj(Projectile *p, int t) {
 	p->color.g = 0;
 	p->color.b = cabs(shift)/20.0;
 	p->color.a = 0;
-	// HACK: default bullet shader multiplies final color by (1 - customParam).
+	// HACK: default bullet shader multiplies final color by (1 - param[0]).
 	// This is currently the only way to influence the white part, sadly.
-	p->shader_custom_param = (1 - a);
+	p->shader_params.vector[0] = (1 - a);
 
 	return ACTION_NONE;
 }

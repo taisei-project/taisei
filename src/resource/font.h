@@ -65,7 +65,7 @@ typedef struct TextParams {
 	} glyph_callback;
 	struct { double x, y; } pos;
 	const Color *color;
-	float custom;
+	const ShaderCustomParams *shader_params;
 	BlendMode blend;
 	Alignment align;
 } TextParams;

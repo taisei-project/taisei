@@ -10,7 +10,7 @@ void main(void) {
 
     // Transform local glyph texture coordinates.
     tc *= dimensions;
-    tc.x += 5 * sin(3 * tc_overlay.y + customParam);
+    tc.x += 5 * sin(3 * tc_overlay.y + customParams.r);
     tc /= dimensions;
 
     // Compute alpha multiplier used to chop off unwanted texels from the atlas.

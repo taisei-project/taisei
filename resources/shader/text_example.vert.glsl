@@ -27,8 +27,8 @@ void main(void) {
     // Fragment shader needs to know the sprite dimensions so that it can denormalize texCoord for processing.
     dimensions = spriteDimensions;
 
-    // Arbitrary custom parameter provided by the application. You can use it to pass e.g. times/frames.
-    customParam = spriteCustomParam;
+    // Arbitrary parameters provided by the application. You can use this to pass e.g. times/frames.
+    customParams = spriteCustomParams;
 
     // Should be obvious.
     color = spriteRGBA;

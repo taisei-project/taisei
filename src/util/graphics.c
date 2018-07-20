@@ -67,7 +67,7 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 		r_mat_translate(star_width, 0, 0);
 		r_draw_sprite(&(SpriteParams) {
 			.sprite_ptr = star,
-			.custom = 1,
+			.shader_params = &(ShaderCustomParams){{ 1 }},
 			.color = fill_clr,
 			.scale.both = scale,
 		});
@@ -78,7 +78,7 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 		r_mat_translate(star_width, 0, 0);
 		r_draw_sprite(&(SpriteParams) {
 			.sprite_ptr = star,
-			.custom = numfrags / (float)maxfrags,
+			.shader_params = &(ShaderCustomParams){{ numfrags / (float)maxfrags }},
 			.color = frag_clr,
 			.scale.both = scale,
 		});
@@ -89,7 +89,7 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 		r_mat_translate(star_width, 0, 0);
 		r_draw_sprite(&(SpriteParams) {
 			.sprite_ptr = star,
-			.custom = 0,
+			.shader_params = &(ShaderCustomParams){{ 0 }},
 			.color = frag_clr,
 			.scale.both = scale,
 		});
