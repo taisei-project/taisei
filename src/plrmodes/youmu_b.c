@@ -42,8 +42,23 @@ static complex youmu_homing_target(complex org, complex fallback) {
 static void youmu_homing_draw_common(Projectile *p, float clrfactor, float scale, float alpha) {
 	Color c = p->color;
 	color_mul(&c, RGBA(0.7f + 0.3f * clrfactor, 0.9f + 0.1f * clrfactor, 1, 1));
-	color_mul_scalar(&c, alpha);
-	youmu_common_draw_proj(p, &c, scale);
+
+	if(alpha <= 0) {
+		return;
+	}
+
+	bool special_snowflake_shader_bullshit = p->shader_params.vector[1] != 0;
+
+	if(special_snowflake_shader_bullshit) {
+		// FIXME: maybe move this to logic someh-- nah. Don't even bother with this crap.
+		float old = p->shader_params.vector[1];
+		p->shader_params.vector[1] = alpha;
+		youmu_common_draw_proj(p, &c, scale);
+		p->shader_params.vector[1] = old;
+	} else {
+		color_mul_scalar(&c, alpha);
+		youmu_common_draw_proj(p, &c, scale);
+	}
 }
 
 static void youmu_homing_draw_proj(Projectile *p, int t) {
@@ -84,6 +99,7 @@ static Projectile* youmu_homing_trail(Projectile *p, complex v, int to) {
 		.args = { v },
 		.flags = PFLAG_NOREFLECT,
 		.shader_ptr = p->shader,
+		.shader_params = &p->shader_params,
 		.layer = LAYER_PARTICLE_LOW,
 	);
 }
@@ -185,11 +201,12 @@ static int youmu_trap(Projectile *p, int t) {
 			float a = (i / (float)cnt) * M_PI * 2;
 			complex dir = cexp(I*(a));
 
-			PROJECTILE("youmu", p->pos, RGBA(1, 1, 1, 0), youmu_homing,
+			PROJECTILE("youmu", p->pos, RGBA(1, 1, 1, 0.85), youmu_homing,
 				.args = { 5 * (1 + charge) * dir, (1 + charge) * aim, dur + charge*I, creal(p->pos) - VIEWPORT_H*I },
 				.type = PlrProj + dmg,
 				.draw_rule = youmu_trap_draw_child_proj,
 				.shader = "sprite_youmu_charged_shot",
+				.shader_params = &(ShaderCustomParams){{ 0, 1 }},
 			);
 		}
 
@@ -335,7 +352,7 @@ static void youmu_haunting_power_shot(Player *plr, int p) {
 			.sprite = "hghost",
 			.pos =  plr->pos,
 			.rule = youmu_asymptotic,
-			.color = RGB(0.8 + 0.2 * (1-np), 1.0, 0.9 + 0.1 * sqrt(1-np)),
+			.color = RGB(0.7 + 0.3 * (1-np), 0.8 + 0.2 * sqrt(1-np), 1.0),
 			.draw_rule = youmu_homing_draw_proj,
 			.args = { speed * dir * (1 - 0.25 * (1 - np)), 3 * (1 - pow(1 - np, 2)), 60, },
 			.type = PlrProj+30,
@@ -360,6 +377,7 @@ static void youmu_haunting_shot(Player *plr) {
 					.args = { -30.0*I, 120, pcnt+pdmg*I, aim },
 					.type = PlrProj+1000,
 					.shader = "sprite_youmu_charged_shot",
+					.shader_params = &(ShaderCustomParams){{ 0, 1 }},
 				);
 			}
 		} else {

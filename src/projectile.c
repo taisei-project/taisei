@@ -655,7 +655,7 @@ void ProjDrawCore(Projectile *proj, const Color *c) {
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = proj->sprite,
 		.color = c,
-		// .custom = proj->shader_custom_param,
+		.shader_params = &proj->shader_params,
 	});
 }
 

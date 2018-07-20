@@ -20,4 +20,5 @@ void main(void) {
     fragColor.g += texel.g * color.g;
     fragColor.rgb += texel.b * mix(vec3(0.0, 0.0, color.b), vec3(2.0 * color.r, 0.0, 0.0), 0.75 * charge);
     fragColor.a = texel.a * color.a;
+    fragColor *= customParams.g;
 }
