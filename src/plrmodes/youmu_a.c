@@ -127,12 +127,12 @@ static void myon_spawn_trail(Enemy *e, int t) {
 }
 
 static void myon_draw_proj_trail(Projectile *p, int t) {
-	float time_progress = t / p->args[0];
+	float time_progress = t / p->timeout;
 	float s = 2 * time_progress;
-	float a = p->color.a * min(1, s) * (1 - time_progress);
+	float a = min(1, s) * (1 - time_progress);
 	Color c = p->color;
-	color_mul_scalar(&c,a);
-	youmu_common_draw_proj(p, &c, s * p->args[2]);
+	color_mul_scalar(&c, a);
+	youmu_common_draw_proj(p, &c, s * p->args[1]);
 }
 
 static int myon_proj(Projectile *p, int t) {
@@ -159,7 +159,7 @@ static int myon_proj(Projectile *p, int t) {
 		.draw_rule = myon_draw_proj_trail,
 		.rule = linear,
 		.timeout = 10,
-		.args = { p->args[0]*0.8, 0.6, 0 },
+		.args = { p->args[0]*0.8, 0.8 },
 		.flags = PFLAG_NOREFLECT,
 		.angle = p->angle,
 	);
