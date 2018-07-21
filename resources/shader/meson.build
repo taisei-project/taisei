@@ -21,6 +21,7 @@ glsl_files = files(
     'masterspark.frag.glsl',
     'max_to_alpha.frag.glsl',
     'player_death.frag.glsl',
+    'reimu_gap.frag.glsl',
     'spellcard_intro.frag.glsl',
     'spellcard_outro.frag.glsl',
     'spellcard_walloftext.frag.glsl',
