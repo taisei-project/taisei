@@ -176,7 +176,7 @@ static void reimu_dream_bomb(Player *p) {
 }
 
 static void reimu_dream_bullet_warp(Projectile *p, int t) {
-	if(creal(p->args[3]) > global.plr.power / 100) {
+	if(creal(p->args[3]) > 0 /*global.plr.power / 100*/) {
 		return;
 	}
 
@@ -225,25 +225,77 @@ static int reimu_dream_ofuda(Projectile *p, int t) {
 		reimu_dream_bullet_warp(p, t);
 	}
 
-	return reimu_common_ofuda(p, t);
+	complex ov = p->args[0];
+	double s = cabs(ov);
+	p->args[0] *= clamp(s * (1.5 - t / 10.0), s*0.5, 1.5*s) / s;
+	int r = reimu_common_ofuda(p, t);
+	p->args[0] = ov;
+
+	return r;
+}
+
+static int reimu_dream_needle(Projectile *p, int t) {
+	if(t >= 0) {
+		reimu_dream_bullet_warp(p, t);
+	}
+
+	p->angle = carg(p->args[0]);
+
+	if(t < 0) {
+		return ACTION_ACK;
+	}
+
+	p->pos += p->args[0];
+
+	PARTICLE(
+		.sprite_ptr = p->sprite,
+		.color = multiply_colors(p->color, rgba(0.75, 0.5, 1, 0.5)),
+		.timeout = 12,
+		.pos = p->pos,
+		.args = { p->args[0] * 0.8, 0, 0+3*I },
+		.rule = linear,
+		.draw_rule = ScaleFade,
+		.layer = LAYER_PARTICLE_LOW,
+		.flags = PFLAG_NOREFLECT,
+		.blend = BLEND_ADD,
+	);
+
+	return ACTION_NONE;
 }
 
 static void reimu_dream_shot(Player *p) {
 	play_loop("generic_shot");
-	int dmg = 175;
+	int dmg = 75;
 
-	if(!(global.frames % 3)) {
-		int i = 1 - 2 * (bool)(global.frames % 6);
-		complex dir = i * ((p->inputflags & INFLAG_FOCUS) ? 1 : I);
-		PROJECTILE(
-			.proto = pp_ofuda,
-			.pos = p->pos,
-			.color = rgba(1, 1, 1, 0.5),
-			.rule = reimu_dream_ofuda,
-			.args = { -20.0 * dir },
-			.type = PlrProj+dmg,
-			.shader = "sprite_default",
-		);
+	if(!(global.frames % 6)) {
+		for(int i = -1; i < 2; i += 2) {
+			complex shot_dir = i * ((p->inputflags & INFLAG_FOCUS) ? 1 : I);
+			complex spread_dir = shot_dir * cexp(I*M_PI*0.5);
+
+			if(!(global.frames % 12)) {
+				PROJECTILE(
+					.proto = pp_needle,
+					.pos = p->pos,
+					.color = rgba(1, 1, 1, 0.5),
+					.rule = reimu_dream_needle,
+					.args = { -20.0 * shot_dir },
+					.type = PlrProj+dmg*2,
+					.shader = "sprite_default",
+				);
+			} else {
+				for(int j = -1; j < 2; j += 2) {
+					PROJECTILE(
+						.proto = pp_ofuda,
+						.pos = p->pos + 10 * j * spread_dir,
+						.color = rgba(1, 1, 1, 0.5),
+						.rule = reimu_dream_ofuda,
+						.args = { -20.0 * shot_dir },
+						.type = PlrProj+dmg,
+						.shader = "sprite_default",
+					);
+				}
+			}
+		}
 	}
 }
 

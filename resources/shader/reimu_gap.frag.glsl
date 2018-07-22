@@ -32,7 +32,7 @@ void main(void) {
 
 	const float h0 = 1;
 	const float h1 = h0 * 0.8;
-	const vec4 gap_color = vec4(0.9, 0, 1, 1);
+	const vec4 gap_color = vec4(0.75, 0, 0.4, 1);
 
 	for(int i = 0; i < NUM_GAPS; ++i) {
 		vec2 gap = gaps[i];
