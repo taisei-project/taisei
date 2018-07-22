@@ -48,4 +48,15 @@ vec4 color_mul_alpha(vec4 c) {
     return vec4(c.rgb * c.a, c.a);
 }
 
+mat2 rot(float a) {
+    return mat2(cos(a), -sin(a), sin(a), cos(a));
+}
+
+float line_segment(vec2 p, vec2 a, vec2 b, float thickness) {
+    vec2 pa = p - a;
+    vec2 ba = b - a;
+    float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+    return smoothstep(thickness, 0.0, length(pa - ba*h));
+}
+
 #endif

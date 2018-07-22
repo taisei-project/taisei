@@ -5,12 +5,14 @@
 #include "lib/util.glslh"
 
 #define NUM_GAPS 4
+// #define DRAW_LINKS
 
 UNIFORM(1) vec2 viewport;
 UNIFORM(2) float time;
-UNIFORM(3) vec4 gaps[NUM_GAPS];
-UNIFORM(7) float gap_angles[NUM_GAPS];
-UNIFORM(11) vec2 gap_flipmasks[NUM_GAPS];
+UNIFORM(3) vec2 gap_size;
+UNIFORM(4) vec2 gaps[NUM_GAPS];
+UNIFORM(8) float gap_angles[NUM_GAPS];
+UNIFORM(12) int gap_links[NUM_GAPS];
 
 void main(void) {
 	vec4 bg = texture(tex, texCoord);
@@ -32,21 +34,44 @@ void main(void) {
 	const float h1 = h0 * 0.8;
 	const vec4 gap_color = vec4(0.9, 0, 1, 1);
 
-	for(int i = 0; i < 4; ++i) {
-		vec4 gap = gaps[i];
-		float a = gap_angles[i];
-		mat2 m = mat2(cos(a), -sin(a), sin(a), cos(a));
-		float edge = length(m * (frag_loc - gap.xy) / gap.zw );
+	for(int i = 0; i < NUM_GAPS; ++i) {
+		vec2 gap = gaps[i];
+		float gap_angle = gap_angles[i];
+		int link = gap_links[i];
+
+		vec2 next_gap = gaps[link];
+		float next_gap_angle = gap_angles[link];
+
+		mat2 gap_rot = rot(gap_angle);
+		float edge = length(gap_rot * (frag_loc - gap) / gap_size);
 		float gap_mask = smoothstep(h0, h1, edge);
 
 		vec2 tc_inv = 1 - texCoord;
-		vec2 tc;
-		tc.x = mix(texCoord.x, tc_inv.x, gap_flipmasks[i].x);
-		tc.y = mix(texCoord.y, tc_inv.y, gap_flipmasks[i].y);
+		float _ = time * 0.2;//0.5 + 0.5 * sin(time);
+
+		vec2 tc = vec2(texCoord.x, 1 - texCoord.y) * viewport;
+		tc -= gap.xy;
+		tc *= rot((next_gap_angle - gap_angle));
+		tc += next_gap.xy;
+		tc /= viewport;
+		tc.y = 1 - tc.y;
 
 		fragColor = mix(fragColor, mix(gap_color, texture(tex, tc), 1 - pow(edge, 3)), gap_mask);
 	}
 
-	// fragColor = r_color * smoothstep(1, 0.8, length((texCoord - 0.5) * 2));
-	// fragColor = bg;
+	#ifdef DRAW_LINKS
+	for(int i = 0; i < NUM_GAPS; ++i) {
+		vec2 gap = gaps[i];
+		float gap_angle = gap_angles[i];
+		int link = gap_links[i];
+
+		vec2 next_gap = gaps[link];
+		float next_gap_angle = gap_angles[link];
+
+		vec2 l = texCoord * viewport;
+		l.y = viewport.y - l.y;
+
+		fragColor = mix(fragColor, vec4(float(i&1), i/float(NUM_GAPS-1), 1-i/float(NUM_GAPS-1), 1), line_segment(l, gap, next_gap, 1));
+	}
+	#endif
 }

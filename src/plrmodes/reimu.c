@@ -61,12 +61,18 @@ static int reimu_ofuda_trail(Projectile *p, int t) {
 	return r;
 }
 
-static int reimu_ofuda(Projectile *p, int t) {
-	int r = linear(p, t);
-
-	if(t < 0) {
-		return r;
+int reimu_common_ofuda(Projectile *p, int t) {
+	if(t == EVENT_DEATH) {
+		return ACTION_ACK;
 	}
+
+	p->angle = carg(p->args[0]);
+
+	if(t == EVENT_BIRTH) {
+		return ACTION_ACK;
+	}
+
+	p->pos += p->args[0];
 
 	PARTICLE(
 		// .sprite_ptr = p->sprite,
@@ -81,13 +87,11 @@ static int reimu_ofuda(Projectile *p, int t) {
 		.flags = PFLAG_NOREFLECT,
 	);
 
-	return r;
+	return ACTION_NONE;
 }
 
 void reimu_common_shot(Player *plr, int dmg) {
-	if(!(global.frames % 4)) {
-		play_sound("generic_shot");
-	}
+	play_loop("generic_shot");
 
 	if(!(global.frames % 3)) {
 		int i = 1 - 2 * (bool)(global.frames % 6);
@@ -95,7 +99,7 @@ void reimu_common_shot(Player *plr, int dmg) {
 			.proto = pp_ofuda,
 			.pos = plr->pos + 10 * i - 15.0*I,
 			.color = rgba(1, 1, 1, 0.5),
-			.rule = reimu_ofuda,
+			.rule = reimu_common_ofuda,
 			.args = { -20.0*I },
 			.type = PlrProj+dmg,
 			.shader = "sprite_default",
