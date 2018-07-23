@@ -40,8 +40,25 @@ static complex youmu_homing_target(complex org, complex fallback) {
 }
 
 static void youmu_homing_draw_common(Projectile *p, float clrfactor, float scale, float alpha) {
-	Color c = multiply_colors(p->color, rgba(0.7f + 0.3f * clrfactor, 0.9f + 0.1f * clrfactor, 1, alpha));
-	youmu_common_draw_proj(p, c, scale);
+	Color c = p->color;
+	color_mul(&c, RGBA(0.7f + 0.3f * clrfactor, 0.9f + 0.1f * clrfactor, 1, 1));
+
+	if(alpha <= 0) {
+		return;
+	}
+
+	bool special_snowflake_shader_bullshit = p->shader_params.vector[1] != 0;
+
+	if(special_snowflake_shader_bullshit) {
+		// FIXME: maybe move this to logic someh-- nah. Don't even bother with this crap.
+		float old = p->shader_params.vector[1];
+		p->shader_params.vector[1] = alpha;
+		youmu_common_draw_proj(p, &c, scale);
+		p->shader_params.vector[1] = old;
+	} else {
+		color_mul_scalar(&c, alpha);
+		youmu_common_draw_proj(p, &c, scale);
+	}
 }
 
 static void youmu_homing_draw_proj(Projectile *p, int t) {
@@ -74,7 +91,7 @@ static Projectile* youmu_homing_trail(Projectile *p, complex v, int to) {
 	return PARTICLE(
 		.sprite_ptr = p->sprite,
 		.pos = p->pos,
-		.color = p->color,
+		.color = &p->color,
 		.angle = p->angle,
 		.rule = linear,
 		.timeout = to,
@@ -82,6 +99,7 @@ static Projectile* youmu_homing_trail(Projectile *p, complex v, int to) {
 		.args = { v },
 		.flags = PFLAG_NOREFLECT,
 		.shader_ptr = p->shader,
+		.shader_params = &p->shader_params,
 		.layer = LAYER_PARTICLE_LOW,
 	);
 }
@@ -109,16 +127,22 @@ static int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: aim (r:
 	Projectile *trail = youmu_homing_trail(p, 0.5 * p->args[0], 12);
 	trail->args[2] = p->args[2];
 
-	p->shader_custom_param = trail->shader_custom_param = cimag(p->args[2]);
+	p->shader_params.vector[0] = cimag(p->args[2]);
+	trail->shader_params.vector[0] = cimag(p->args[2]);
 
 	return 1;
 }
 
-static Projectile* youmu_trap_trail(Projectile *p, complex v, int t) {
+static Projectile* youmu_trap_trail(Projectile *p, complex v, int t, bool additive) {
 	Projectile *trail = youmu_homing_trail(p, v, t);
 	trail->draw_rule = youmu_trap_draw_trail;
 	// trail->args[3] = global.frames - p->birthtime;
-	trail->shader_custom_param = p->shader_custom_param;
+	trail->shader_params.vector[0] = p->shader_params.vector[0];
+
+	if(additive) {
+		trail->color.a = 0;
+	}
+
 	return trail;
 }
 
@@ -147,7 +171,7 @@ static int youmu_trap(Projectile *p, int t) {
 	}
 
 	float charge = youmu_trap_charge(t);
-	p->shader_custom_param = charge;
+	p->shader_params.vector[0] = charge;
 
 	if(!(global.plr.inputflags & INFLAG_FOCUS)) {
 		PARTICLE(
@@ -177,12 +201,12 @@ static int youmu_trap(Projectile *p, int t) {
 			float a = (i / (float)cnt) * M_PI * 2;
 			complex dir = cexp(I*(a));
 
-			PROJECTILE("youmu", p->pos, rgb(1, 1, 1), youmu_homing,
+			PROJECTILE("youmu", p->pos, RGBA(1, 1, 1, 0.85), youmu_homing,
 				.args = { 5 * (1 + charge) * dir, (1 + charge) * aim, dur + charge*I, creal(p->pos) - VIEWPORT_H*I },
 				.type = PlrProj + dmg,
 				.draw_rule = youmu_trap_draw_child_proj,
 				.shader = "sprite_youmu_charged_shot",
-				.flags = PFLAG_DRAWADD,
+				.shader_params = &(ShaderCustomParams){{ 0, 1 }},
 			);
 		}
 
@@ -196,8 +220,8 @@ static int youmu_trap(Projectile *p, int t) {
 	p->angle = global.frames + t;
 	p->pos += p->args[0] * (0.01 + 0.99 * max(0, (10 - t) / 10.0));
 
-	youmu_trap_trail(p, cexp(I*p->angle), 30 * (1 + charge))->flags |= PFLAG_DRAWADD;
-	youmu_trap_trail(p, cexp(I*-p->angle), 30);
+	youmu_trap_trail(p, cexp(I*p->angle), 30 * (1 + charge), true);
+	youmu_trap_trail(p, cexp(I*-p->angle), 30, false);
 	return 1;
 }
 
@@ -217,7 +241,7 @@ static void youmu_particle_slice_draw(Projectile *p, int t) {
 	r_mat_rotate_deg(p->angle/M_PI*180,0,0,1);
 	r_mat_scale(f,1,1);
 	//draw_texture(0,0,"part/youmu_slice");
-	ProjDrawCore(p, p->color);
+	ProjDrawCore(p, &p->color);
 	r_mat_pop();
 
 	double slicelen = 500;
@@ -234,13 +258,15 @@ static int youmu_particle_slice_logic(Projectile *p, int t) {
 	double lifetime = p->timeout;
 	double tt = t/lifetime;
 	double a = 0;
+
 	if(tt > 0.) {
 		a = min(1,(tt-0.)/0.2);
 	}
 	if(tt > 0.5) {
 		a = max(0,1-(tt-0.5)/0.5);
 	}
-	p->color = rgba(1, 1, 1,a);
+
+	p->color = *RGBA(a, a, a, 0);
 
 	complex phase = cexp(p->angle*I);
 	if(t%5 == 0) {
@@ -250,14 +276,13 @@ static int youmu_particle_slice_logic(Projectile *p, int t) {
 			.pos = p->pos-400*phase,
 			.rule = accelerated,
 			.draw_rule = Petal,
-			.color = rgba(0.1,0.1,0.5,1),
+			.color = RGBA(0.1, 0.1, 0.5, 0),
 			.args = {
 				phase,
 				phase*cexp(0.1*I),
 				afrand(1) + afrand(2)*I,
 				afrand(3) + 360.0*I*afrand(0)
 			},
-			.flags = PFLAG_DRAWADD,
 		);
 	}
 
@@ -283,11 +308,11 @@ static int youmu_slash(Enemy *e, int t) {
 	complex pos = cexp(I*_i)*(100+10*_i*_i*0.01);
 		PARTICLE(
 			.sprite = "youmu_slice",
+			.color = RGBA(1, 1, 1, 0),
 			.pos = e->pos+pos,
 			.draw_rule = youmu_particle_slice_draw,
 			.rule = youmu_particle_slice_logic,
 			.flags = PFLAG_NOREFLECT,
-			.blend = BLEND_ADD,
 			.timeout = 100,
 			.angle = carg(pos),
 		);
@@ -327,7 +352,7 @@ static void youmu_haunting_power_shot(Player *plr, int p) {
 			.sprite = "hghost",
 			.pos =  plr->pos,
 			.rule = youmu_asymptotic,
-			.color = rgba(0.8 + 0.2 * (1-np), 1.0, 0.9 + 0.1 * sqrt(1-np), 1.0),
+			.color = RGB(0.7 + 0.3 * (1-np), 0.8 + 0.2 * sqrt(1-np), 1.0),
 			.draw_rule = youmu_homing_draw_proj,
 			.args = { speed * dir * (1 - 0.25 * (1 - np)), 3 * (1 - pow(1 - np, 2)), 60, },
 			.type = PlrProj+30,
@@ -348,15 +373,16 @@ static void youmu_haunting_shot(Player *plr) {
 				int pdmg = 120 - 18 * 4 * (1 - pow(1 - pwr / 4.0, 1.5));
 				complex aim = 0.75;
 
-				PROJECTILE("youhoming", plr->pos, rgb(1, 1, 1), youmu_trap,
+				PROJECTILE("youhoming", plr->pos, RGB(1, 1, 1), youmu_trap,
 					.args = { -30.0*I, 120, pcnt+pdmg*I, aim },
 					.type = PlrProj+1000,
 					.shader = "sprite_youmu_charged_shot",
+					.shader_params = &(ShaderCustomParams){{ 0, 1 }},
 				);
 			}
 		} else {
 			if(!(global.frames % 6)) {
-				PROJECTILE("hghost", plr->pos, rgb(0.75, 0.9, 1), youmu_homing,
+				PROJECTILE("hghost", plr->pos, RGB(0.75, 0.9, 1), youmu_homing,
 					.args = { -10.0*I, 0.1 + 0.2*I, 60, VIEWPORT_W*0.5 },
 					.type = PlrProj+120,
 					.shader = "sprite_default",

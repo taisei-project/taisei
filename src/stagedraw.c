@@ -46,9 +46,10 @@ static struct {
 	#endif
 } stagedraw = {
 	.hud_text.color = {
-		.active   = RGBA(1.00, 1.00, 1.00, 1.00),
-		.inactive = RGBA(0.70, 0.70, 0.70, 0.70),
-		.label    = RGBA(0.70, 0.70, 0.70, 0.70),
+		// NOTE: premultiplied alpha
+		.active   = { 1.00, 1.00, 1.00, 1.00 },
+		.inactive = { 0.49, 0.49, 0.49, 0.70 },
+		.label    = { 0.49, 0.49, 0.49, 0.70 },
 	}
 };
 
@@ -270,7 +271,7 @@ static void stage_draw_collision_areas(void) {
 
 		if(creal(gsize)) {
 			r_draw_sprite(&(SpriteParams) {
-				.color = rgb(0, 0.5, 0.5),
+				.color = RGB(0, 0.5, 0.5),
 				.sprite_ptr = &stagedraw.dummy,
 				.pos = { creal(p->pos), cimag(p->pos) },
 				.rotation.angle = p->angle + M_PI/2,
@@ -381,7 +382,7 @@ static void draw_spellbg(int t) {
 	if(t < ATTACK_START_DELAY && b->dialog) {
 		r_mat_push();
 		float f = -0.5*t/(float)ATTACK_START_DELAY+0.5;
-		r_color4(1,1,1,-f*f+2*f);
+		r_color(RGBA_MUL_ALPHA(1,1,1,-f*f+2*f));
 		draw_sprite_p(VIEWPORT_W*3/4-10*f*f,VIEWPORT_H*2/3-10*f*f,b->dialog);
 		r_color4(1,1,1,1);
 		r_mat_pop();
@@ -488,12 +489,7 @@ static void apply_zoom_shader(void) {
 	r_uniform_float("blur_rad", 1.5*spellcard_sup*(0.2+0.025*sin(global.frames/15.0)));
 	r_uniform_float("rad", 0.24);
 	r_uniform_float("ratio", (float)VIEWPORT_H/VIEWPORT_W);
-
-	if(global.boss->zoomcolor) {
-		r_uniform_rgba("color", global.boss->zoomcolor);
-	} else {
-		r_uniform_rgba("color", rgba(0.1, 0.2, 0.3, 1.0));
-	}
+	r_uniform_rgba("color", &global.boss->zoomcolor);
 }
 
 static void stage_render_bg(StageInfo *stage) {
@@ -668,14 +664,14 @@ void stage_draw_scene(StageInfo *stage) {
 }
 
 struct glyphcb_state {
-	Color color;
+	Color *color;
 };
 
 static void draw_powerval_callback(Font *font, charcode_t charcode, SpriteParams *spr_params, void *userdata) {
 	struct glyphcb_state *st = userdata;
 
 	if(charcode == '.') {
-		st->color = stagedraw.hud_text.color.inactive;
+		st->color = &stagedraw.hud_text.color.inactive;
 	}
 
 	spr_params->color = st->color;
@@ -685,7 +681,7 @@ static void draw_numeric_callback(Font *font, charcode_t charcode, SpriteParams 
 	struct glyphcb_state *st = userdata;
 
 	if(charcode != '0') {
-		st->color = stagedraw.hud_text.color.active;
+		st->color = &stagedraw.hud_text.color.active;
 	}
 
 	spr_params->color = st->color;
@@ -699,7 +695,7 @@ static inline void stage_draw_hud_power_value(float ypos, char *buf, size_t bufs
 		.align = ALIGN_RIGHT,
 		.glyph_callback = {
 			draw_powerval_callback,
-			&(struct glyphcb_state) { stagedraw.hud_text.color.active },
+			&(struct glyphcb_state) { &stagedraw.hud_text.color.active },
 		}
 	});
 }
@@ -712,7 +708,7 @@ static void stage_draw_hud_score(Alignment a, float xpos, float ypos, char *buf,
 		.align = ALIGN_RIGHT,
 		.glyph_callback = {
 			draw_numeric_callback,
-			&(struct glyphcb_state) { stagedraw.hud_text.color.inactive },
+			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive },
 		}
 	});
 }
@@ -784,7 +780,7 @@ static void draw_label(const char *label_str, double y_ofs, struct labels_s* lab
 		.font_ptr = stagedraw.hud_text.font,
 		.shader_ptr = stagedraw.hud_text.shader,
 		.pos = { labels->x.ofs, y_ofs },
-		.color = stagedraw.hud_text.color.label,
+		.color = &stagedraw.hud_text.color.label,
 	});
 }
 
@@ -811,7 +807,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 
 	// Lives and Bombs (N/A)
 	if(global.stage->type == STAGE_SPELL) {
-		r_color4(1, 1, 1, 0.7);
+		r_color4(0.7, 0.7, 0.7, 0.7);
 		text_draw("N/A", &(TextParams) { .pos = { -6, labels->y.lives }, .font_ptr = stagedraw.hud_text.font });
 		text_draw("N/A", &(TextParams) { .pos = { -6, labels->y.bombs }, .font_ptr = stagedraw.hud_text.font });
 		r_color4(1, 1, 1, 1.0);
@@ -828,7 +824,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 		.font = "mono",
 		.glyph_callback = {
 			draw_numeric_callback,
-			&(struct glyphcb_state) { stagedraw.hud_text.color.inactive },
+			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive },
 		}
 	});
 
@@ -874,7 +870,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 		x += text_draw(buf, &(TextParams) {
 			.pos = { x, y },
 			.font_ptr = font,
-			.color = stagedraw.hud_text.color.inactive,
+			.color = &stagedraw.hud_text.color.inactive,
 		});
 
 		if(global.replay_stage->desynced) {
@@ -883,7 +879,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 			text_draw(buf, &(TextParams) {
 				.pos = { x, y },
 				.font_ptr = font,
-				.color = rgba(1.00, 0.20, 0.20, 0.60),
+				.color = RGBA_MUL_ALPHA(1.00, 0.20, 0.20, 0.60),
 			});
 		}
 	}
@@ -926,13 +922,13 @@ void stage_draw_hud_text(struct labels_s* labels) {
 		x += text_draw("Avg DPS: ", &(TextParams) {
 			.pos = { x, y },
 			.font_ptr = font,
-			.color = stagedraw.hud_text.color.inactive,
+			.color = &stagedraw.hud_text.color.inactive,
 		});
 
 		text_draw(buf, &(TextParams) {
 			.pos = { x, y },
 			.font_ptr = font,
-			.color = stagedraw.hud_text.color.active,
+			.color = &stagedraw.hud_text.color.active,
 		});
 
 		r_shader("graph");
@@ -1060,13 +1056,13 @@ void stage_draw_hud(void) {
 		float s2 = max(0, swing(s, 3));
 		r_mat_push();
 		r_mat_translate((SCREEN_W - 615) * 0.25 - 615 * (1 - pow(2*fadein-1, 2)), 340, 0);
-		r_color4(0.3, 0.6, 0.7, 0.7 * s);
+		r_color(RGBA_MUL_ALPHA(0.3, 0.6, 0.7, 0.7 * s));
 		r_mat_rotate_deg(-25 + 360 * (1-s2), 0, 0, 1);
 		r_mat_scale(s2, s2, 0);
 
 		text_draw("Extra Spell!", &(TextParams) { .pos = {  1,  1 }, .font = "big", .align = ALIGN_CENTER });
 		text_draw("Extra Spell!", &(TextParams) { .pos = { -1, -1 }, .font = "big", .align = ALIGN_CENTER });
-		r_color4(1, 1, 1, s);
+		r_color4(s, s, s, s);
 		text_draw("Extra Spell!", &(TextParams) { .pos = {  0,  0 }, .font = "big", .align = ALIGN_CENTER });
 		r_color4(1, 1, 1, 1);
 		r_mat_pop();
@@ -1086,8 +1082,8 @@ void stage_draw_hud(void) {
 		if(red > 1)
 			red = 0;
 		
-		r_color4(1,1,1,1-red);
+		r_color4(1 - red, 1 - red, 1 - red, 1 - red);
 		draw_sprite(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
-		r_color4(1,1,1,1);
+		r_color4(1, 1, 1, 1);
 	}
 }

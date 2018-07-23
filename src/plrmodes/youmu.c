@@ -52,7 +52,7 @@ void youmu_common_shot(Player *plr) {
 	play_loop("generic_shot");
 
 	if(!(global.frames % 6)) {
-		Color c = rgb(1, 1, 1);
+		Color *c = RGB(1, 1, 1);
 
 		PROJECTILE(
 			.proto = pp_youmu,
@@ -89,12 +89,13 @@ void youmu_common_bombbg(Player *plr) {
 	if(fade < 0)
 		fade = 0;
 
-	r_color4(1,1,1,0.6*fade);
+	fade *= 0.6;
+	r_color4(fade, fade, fade, fade);
 	fill_viewport_p(0.5,0.5,3,1,1200*t*(t-1.5),get_tex("youmu_bombbg1"));
 	r_color4(1,1,1,1);
 }
 
-void youmu_common_draw_proj(Projectile *p, Color c, float scale) {
+void youmu_common_draw_proj(Projectile *p, const Color *c, float scale) {
 	r_mat_push();
 	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
 	r_mat_rotate_deg(p->angle*180/M_PI+90, 0, 0, 1);

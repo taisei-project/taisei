@@ -4,7 +4,7 @@
 
 #include "defs.glslh"
 
-const float pi = 3.141592653589793;
+const float pi = 3.141592653589793; // as supplied by google
 
 vec2 dir(float a) {
     return vec2(cos(a), sin(a));
@@ -42,6 +42,10 @@ vec2 uv_to_region(vec4 region, vec2 uv) {
         mix(region.x, region.x + region.z, uv.x),
         mix(region.y, region.y + region.w, uv.y)
     );
+}
+
+vec4 color_mul_alpha(vec4 c) {
+    return vec4(c.rgb * c.a, c.a);
 }
 
 #endif

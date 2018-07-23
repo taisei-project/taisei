@@ -10,7 +10,7 @@ void main(void) {
 
     // Transform local glyph texture coordinates.
     tc *= dimensions;
-    tc.x += 5 * sin(3 * tc_overlay.y + customParam);
+    tc.x += 5 * sin(3 * tc_overlay.y + customParams.r);
     tc /= dimensions;
 
     // Compute alpha multiplier used to chop off unwanted texels from the atlas.
@@ -20,7 +20,7 @@ void main(void) {
     vec2 tc_atlas = uv_to_region(texRegion, tc);
 
     // Display the glyph.
-    fragColor = color * vec4(1, 1, 1, texture(tex, tc_atlas).r * a);
+    fragColor = color * vec4(texture(tex, tc_atlas).r * a);
 
     // Visualize global overlay coordinates. You could use them to span a texture across all glyphs.
     fragColor *= vec4(tc_overlay.x, tc_overlay.y, 0, 1);

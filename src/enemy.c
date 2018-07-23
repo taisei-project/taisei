@@ -214,12 +214,11 @@ void BigFairy(Enemy *e, int t, bool render) {
 			PARTICLE(
 				.sprite = "smoothdot",
 				.pos = offset,
-				.color = rgb(0,0.2,0.3),
+				.color = RGBA(0.0, 0.2, 0.3, 0.0),
 				.rule = enemy_flare,
 				.draw_rule = Shrink,
 				.timeout = 50,
 				.args = { (-50.0*I-offset)/50.0, add_ref(e) },
-				.flags = PFLAG_DRAWADD,
 			);
 		}
 
@@ -229,7 +228,7 @@ void BigFairy(Enemy *e, int t, bool render) {
 	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;
 
 	r_draw_sprite(&(SpriteParams) {
-		.color = rgba(1, 1, 1, e->alpha),
+		.color = RGBA(1, 1, 1, e->alpha),
 		.sprite = "fairy_circle",
 		.pos = { creal(e->pos), cimag(e->pos) },
 		.rotation.angle = global.frames * 10 * DEG2RAD,
@@ -241,7 +240,7 @@ void BigFairy(Enemy *e, int t, bool render) {
 	Sprite *spr = animation_get_frame(ani,get_ani_sequence(ani, seqname),global.frames);
 
 	r_draw_sprite(&(SpriteParams) {
-		.color = rgba(1, 1, 1, e->alpha),
+		.color = RGBA(1, 1, 1, e->alpha),
 		.sprite_ptr = spr,
 		.pos = { creal(e->pos), cimag(e->pos) },
 	});
@@ -255,7 +254,7 @@ void Fairy(Enemy *e, int t, bool render) {
 	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;
 
 	r_draw_sprite(&(SpriteParams) {
-		.color = rgba(1, 1, 1, e->alpha),
+		.color = RGBA(1, 1, 1, e->alpha),
 		.sprite = "fairy_circle",
 		.pos = { creal(e->pos), cimag(e->pos) },
 		.rotation.angle = global.frames * 10 * DEG2RAD,
@@ -267,7 +266,7 @@ void Fairy(Enemy *e, int t, bool render) {
 	Sprite *spr = animation_get_frame(ani,get_ani_sequence(ani, seqname),global.frames);
 
 	r_draw_sprite(&(SpriteParams) {
-		.color = rgba(1, 1, 1, e->alpha),
+		.color = RGBA(1, 1, 1, e->alpha),
 		.sprite_ptr = spr,
 		.pos = { creal(e->pos), cimag(e->pos) },
 	});
@@ -279,7 +278,7 @@ void Swirl(Enemy *e, int t, bool render) {
 	}
 
 	r_draw_sprite(&(SpriteParams) {
-		.color = rgba(1, 1, 1, e->alpha),
+		.color = RGBA(1, 1, 1, e->alpha),
 		.sprite = "enemy/swirl",
 		.pos = { creal(e->pos), cimag(e->pos) },
 		.rotation.angle = t * 10 * DEG2RAD,

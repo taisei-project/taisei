@@ -18,7 +18,7 @@ typedef struct SpriteAttribs {
 	float rgba[4];
 	FloatRect texrect;
 	float sprite_size[2];
-	float custom;
+	float custom[4];
 } SpriteAttribs;
 
 static struct SpriteBatchState {
@@ -74,7 +74,7 @@ void _r_sprite_batch_init(void) {
 		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(rgba),             1 },
 		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(texrect),          1 },
 		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(sprite_size),      1 },
-		{ { 1, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(custom),           1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(custom),           1 },
 	};
 
 	#undef VERTEX_OFS
@@ -187,13 +187,13 @@ static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, VertexB
 		}
 	}
 
-	glm_scale(attribs.transform, (vec3) { scale_x * spr->w, scale_y * spr->h });
+	glm_scale(attribs.transform, (vec3) { scale_x * spr->w, scale_y * spr->h, 1 });
 
-	if(params->color == 0) {
+	if(params->color == NULL) {
 		// XXX: should we use r_color_current here?
-		parse_color_array(rgba(1, 1, 1, 1), attribs.rgba);
+		attribs.rgba[0] = attribs.rgba[1] = attribs.rgba[2] = attribs.rgba[3] = 1;
 	} else {
-		parse_color_array(params->color, attribs.rgba);
+		memcpy(attribs.rgba, params->color, sizeof(attribs.rgba));
 	}
 
 	attribs.texrect.x = spr->tex_area.x / spr->tex->w;
@@ -213,7 +213,12 @@ static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, VertexB
 
 	attribs.sprite_size[0] = spr->w;
 	attribs.sprite_size[1] = spr->h;
-	attribs.custom = params->custom;
+
+	if(params->shader_params != NULL) {
+		memcpy(attribs.custom, params->shader_params, sizeof(attribs.custom));
+	} else {
+		memset(attribs.custom, 0, sizeof(attribs.custom));
+	}
 
 	r_vertex_buffer_append(vbuf, sizeof(attribs), &attribs);
 	_r_sprite_batch.frame_stats.sprites++;
@@ -343,7 +348,7 @@ void _r_sprite_batch_end_frame(void) {
 	text_draw(buf, &(TextParams) {
 		.pos = { 0, font_get_lineskip(font) },
 		.font_ptr = font,
-		.color = rgb(1, 1, 1),
+		.color = RGB(1, 1, 1),
 		.shader = "text_default",
 	});
 

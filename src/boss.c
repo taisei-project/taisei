@@ -31,6 +31,7 @@ Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 	}
 
 	buf->birthtime = global.frames;
+	buf->zoomcolor = *RGBA(0.1, 0.2, 0.3, 1.0);
 
 	buf->ent.draw_layer = LAYER_BOSS;
 	buf->ent.draw_func = ent_draw_boss;
@@ -39,12 +40,12 @@ Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 	return buf;
 }
 
-void draw_boss_text(Alignment align, float x, float y, const char *text, const char *fnt, Color clr) {
+void draw_boss_text(Alignment align, float x, float y, const char *text, const char *fnt, const Color *clr) {
 	ShaderProgram *sh_prev = r_shader_current();
 	r_shader("text_default");
 	text_draw(text, &(TextParams) {
 		.pos = { x + 1, y + 1 },
-		.color = derive_color(rgb(0, 0, 0), CLRMASK_A, clr),
+		.color = RGBA(0, 0, 0, clr->a),
 		.font = fnt,
 		.align = align,
 	});
@@ -72,7 +73,7 @@ void spell_opening(Boss *b, int time) {
 	float scale = f+1.*(1-f)*(1-f)*(1-f);
 	r_mat_scale(scale,scale,1);
 	r_mat_rotate_deg(360*f,1,1,0);
-	draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, b->current->name, "standard", rgb(1, 1, 1));
+	draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, b->current->name, "standard", RGB(1, 1, 1));
 	r_mat_pop();
 
 	r_capability(RCAP_CULL_FACE, cullcap_saved);
@@ -80,27 +81,34 @@ void spell_opening(Boss *b, int time) {
 
 void draw_extraspell_bg(Boss *boss, int time) {
 	// overlay for all extra spells
+	// FIXME: Please replace this with something that doesn't look like shit.
 
-	r_blend(BLEND_ADD);
-	r_color4(0.2,0.1,0,0.7);
+	float opacity = 0.7;
+	r_color4(0.2 * opacity, 0.1 * opacity, 0, 0);
 	fill_viewport(sin(time) * 0.015, time / 50.0, 1, "stage3/wspellclouds");
-	r_color4(1,1,1,1);
+	r_color4(2000, 2000, 2000, 0);
 	r_blend(r_blend_compose(
-		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_MIN,
+		BLENDFACTOR_SRC_COLOR, BLENDFACTOR_ONE, BLENDOP_MIN,
 		BLENDFACTOR_ZERO,      BLENDFACTOR_ONE, BLENDOP_MIN
 	));
 	fill_viewport(cos(time) * 0.015, time / 70.0, 1, "stage4/kurumibg2");
-	fill_viewport(sin(time+2.1) * 0.015, time / 30.0, 1, "stage4/kurumibg2");
-	r_blend(BLEND_ALPHA);
+	fill_viewport(sin(time*1.1+2.1) * 0.015, time / 30.0, 1, "stage4/kurumibg2");
+	r_blend(BLEND_PREMUL_ALPHA);
+	r_color4(1, 1, 1, 1);
 }
 
-Color boss_healthbar_color(AttackType atype) {
-	switch(atype) {
-	default: case AT_Normal:        return rgb(1.00, 1.00, 1.00);
-	         case AT_Spellcard:     return rgb(1.00, 0.65, 0.65);
-	         case AT_SurvivalSpell: return rgb(0.50, 0.50, 1.00);
-	         case AT_ExtraSpell:    return rgb(1.00, 0.30, 0.20);
-	}
+const Color* boss_healthbar_color(AttackType atype) {
+	static const Color colors[] = {
+		[AT_Normal]        = { 1.00, 1.00, 1.00, 1.00 },
+		[AT_Move]          = { 1.00, 1.00, 1.00, 1.00 },
+		[AT_Spellcard]     = { 1.00, 0.65, 0.65, 1.00 },
+		[AT_SurvivalSpell] = { 0.50, 0.50, 1.00, 1.00 },
+		[AT_ExtraSpell]    = { 1.00, 0.30, 0.20, 1.00 },
+		[AT_Immediate]     = { 1.00, 1.00, 1.00, 1.00 },
+	};
+
+	assert(atype >= 0 && atype < sizeof(colors)/sizeof(*colors));
+	return colors + atype;
 }
 
 static StageProgress* get_spellstage_progress(Attack *a, StageInfo **out_stginfo, bool write) {
@@ -175,14 +183,17 @@ static void BossGlow(Projectile *p, int t) {
 	float s = 1.0+t/(double)p->timeout*0.5;
 	float fade = 1 - (1.5 - s);
 	float deform = 5 - 10 * fade * fade;
+	Color c = p->color;
+
+	c.a = 0;
+	color_mul_scalar(&c, 1.5 - s);
 
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { creal(p->pos), cimag(p->pos) },
 		.sprite_ptr = p->sprite,
 		.scale.both = s,
-		.blend = BLEND_ADD,
-		.color = derive_color(p->color, CLRMASK_A, rgba(0, 0, 0, 1.5 - s)),
-		.custom = deform,
+		.color = &c,
+		.shader_params = &(ShaderCustomParams){{ deform }},
 		.shader = "sprite_silhouette",
 	});
 }
@@ -195,7 +206,7 @@ static int boss_glow(Projectile *p, int t) {
 	return linear(p, t);
 }
 
-static Projectile* spawn_boss_glow(Boss *boss, Color clr, int timeout) {
+static Projectile* spawn_boss_glow(Boss *boss, const Color *clr, int timeout) {
 	// XXX: memdup is required because the Sprite returned by animation_get_frame is only temporarily valid
 	return PARTICLE(
 		.sprite_ptr = memdup(aniplayer_get_frame(&boss->ani), sizeof(Sprite)),
@@ -211,8 +222,8 @@ static Projectile* spawn_boss_glow(Boss *boss, Color clr, int timeout) {
 }
 
 static void spawn_particle_effects(Boss *boss) {
-	Color glowcolor = boss->glowcolor;
-	Color shadowcolor = boss->shadowcolor;
+	Color *glowcolor = &boss->glowcolor;
+	Color *shadowcolor = &boss->shadowcolor;
 
 	Attack *cur = boss->current;
 	bool is_spell = cur && ATTACK_IS_SPELL(cur->type) && !cur->endtime;
@@ -222,28 +233,25 @@ static void spawn_particle_effects(Boss *boss) {
 		PARTICLE(
 			.sprite = "smoke",
 			.pos = cexp(I*global.frames),
-			.color = shadowcolor,
+			.color = RGBA(shadowcolor->r, shadowcolor->g, shadowcolor->b, 0.0),
 			.rule = enemy_flare,
 			.timeout = 180,
 			.draw_rule = Shrink,
 			.args = { 0, add_ref(boss), },
 			.angle = M_PI * 2 * frand(),
-			.flags = PFLAG_DRAWADD,
 		);
 	}
 
 	if(!(global.frames % (2 + 2 * is_extra)) && (is_spell || boss_is_dying(boss))) {
 		float glowstr = 0.5;
-		float a = (1.0 - glowstr) + glowstr * pow(psin(global.frames/15.0), 1.0);
-		spawn_boss_glow(boss, multiply_colors(glowcolor, rgb(a, a, a)), 24);
+		float a = (1.0 - glowstr) + glowstr * psin(global.frames/15.0);
+		spawn_boss_glow(boss, color_mul_scalar(COLOR_COPY(glowcolor), a), 24);
 	}
 }
 
 void draw_boss_background(Boss *boss) {
 	r_mat_push();
 	r_mat_translate(creal(boss->pos), cimag(boss->pos), 0);
-
-	r_blend(BLEND_ADD);
 	r_mat_rotate_deg(global.frames*4.0, 0, 0, -1);
 
 	float f = 0.8+0.1*sin(global.frames/8.0);
@@ -253,9 +261,11 @@ void draw_boss_background(Boss *boss) {
 		f -= t*(t-0.7)/max(0.01, 1-t);
 	}
 
-	r_mat_scale(f,f,f);
-	draw_sprite_batched(0, 0, "boss_circle");
-	r_blend(BLEND_ALPHA);
+	r_mat_scale(f, f, 1);
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "boss_circle",
+		.color = RGBA(1, 1, 1, 0),
+	});
 	r_mat_pop();
 }
 
@@ -275,14 +285,14 @@ static void ent_draw_boss(EntityInterface *ent) {
 		boss_alpha = (1 - t) + 0.3;
 	}
 
-	r_color4(1,1-red,1-red/2,boss_alpha);
+	r_color(RGBA_MUL_ALPHA(1, 1-red, 1-red/2, boss_alpha));
 	draw_sprite_batched_p(creal(boss->pos), cimag(boss->pos) + 6*sin(global.frames/25.0), aniplayer_get_frame(&boss->ani));
-	r_color4(1,1,1,1);
+	r_color4(1, 1, 1, 1);
 
 	if(boss->current->type == AT_Move && global.frames - boss->current->starttime > 0 && boss_attack_is_final(boss, boss->current))
 		return;
 
-	draw_boss_text(ALIGN_LEFT, 10, 20, boss->name, "standard", rgb(1, 1, 1));
+	draw_boss_text(ALIGN_LEFT, 10, 20, boss->name, "standard", RGB(1, 1, 1));
 
 	if(!boss->current)
 		return;
@@ -296,15 +306,15 @@ static void ent_draw_boss(EntityInterface *ent) {
 		Color textclr;
 
 		if(remaining < 6) {
-			textclr = rgb(1.0, 0.2, 0.2);
+			textclr = *RGB(1.0, 0.2, 0.2);
 		} else if(remaining < 11) {
-			textclr = rgb(1.0, 1.0, 0.2);
+			textclr = *RGB(1.0, 1.0, 0.2);
 		} else {
-			textclr = rgb(1.0, 1.0, 1.0);
+			textclr = *RGB(1.0, 1.0, 1.0);
 		}
 
 		snprintf(buf, sizeof(buf),  "%.2f", remaining);
-		draw_boss_text(ALIGN_CENTER, VIEWPORT_W - 24, 10, buf, "standard", textclr);
+		draw_boss_text(ALIGN_CENTER, VIEWPORT_W - 24, 10, buf, "standard", &textclr);
 
 		StageProgress *p = get_spellstage_progress(boss->current, NULL, false);
 		if(p) {
@@ -316,7 +326,7 @@ static void ent_draw_boss(EntityInterface *ent) {
 			draw_boss_text(ALIGN_RIGHT,
 				VIEWPORT_W + text_width(font, buf, 0) * pow(1 - a, 2),
 				35 + text_height(font, buf, 0),
-				buf, "small", rgba(1, 1, 1, a)
+				buf, "small", RGBA(1, 1, 1, a)
 			);
 		}
 
@@ -379,7 +389,7 @@ static void ent_draw_boss(EntityInterface *ent) {
 		r_shader("sprite_default");
 
 		// remaining spells
-		r_color4(1,1,1,0.7);
+		r_color4(0.7, 0.7, 0.7, 0.7);
 		Sprite *star = get_sprite("star");
 
 		for(int x = 0, i = boss->acount-1; i > nextspell; i--) {
@@ -420,15 +430,15 @@ void boss_rule_extra(Boss *boss, float alpha) {
 		PARTICLE(
 			.sprite = (frand() < v*0.3 || lt > 1) ? "stain" : "arc",
 			.pos = boss->pos + dir * (100 + 50 * psin(alpha*global.frames/10.0+2*i)) * alpha,
-			.color = rgb(
+			.color = RGBA(
 				1.0 - 0.5 * psina *    v,
 				0.5 + 0.2 * psina * (1-v),
-				0.5 + 0.5 * psina *    v
+				0.5 + 0.5 * psina *    v,
+				0.0
 			),
 			.rule = linear,
 			.timeout = 30*lt,
 			.draw_rule = GrowFade,
-			.flags = PFLAG_DRAWADD,
 			.args = { vel * (1 - 2 * !(global.frames % 10)), 2.5 },
 		);
 	}
@@ -496,7 +506,7 @@ static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
 	player_add_points(plr, total);
 
 	StageTextTable tbl;
-	stagetext_begin_table(&tbl, title, rgb(1, 1, 1), rgb(1, 1, 1), VIEWPORT_W/2, 0,
+	stagetext_begin_table(&tbl, title, RGB(1, 1, 1), RGB(1, 1, 1), VIEWPORT_W/2, 0,
 		ATTACK_END_DELAY_SPELL * 2, ATTACK_END_DELAY_SPELL / 2, ATTACK_END_DELAY_SPELL);
 	stagetext_table_add_numeric_nonzero(&tbl, "Clear bonus", clear_bonus);
 	stagetext_table_add_numeric_nonzero(&tbl, "Time bonus", time_bonus);
@@ -691,19 +701,21 @@ void process_boss(Boss **pboss) {
 		float t = (global.frames - boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
 		tsrand_fill(6);
 
+		Color *clr = RGBA_MUL_ALPHA(0.1 + sin(10*t), 0.1 + cos(10*t), 0.5, t);
+		clr->a = 0;
+
 		PARTICLE(
 			.sprite = "petal",
 			.pos = boss->pos,
 			.rule = asymptotic,
 			.draw_rule = Petal,
-			.color = rgba(0.1+sin(10*t),0.1+cos(10*t),0.5,t),
+			.color = clr,
 			.args = {
 				sign(anfrand(5))*(3+t*5*afrand(0))*cexp(I*M_PI*8*t),
 				5+I,
 				afrand(2) + afrand(3)*I,
 				afrand(4) + 360.0*I*afrand(1)
 			},
-			.flags = PFLAG_DRAWADD,
 		);
 
 		if(!extra) {
@@ -716,7 +728,7 @@ void process_boss(Boss **pboss) {
 
 		if(t == 1) {
 			for(int i = 0; i < 10; ++i) {
-				spawn_boss_glow(boss, boss->glowcolor, 60 + 20 * i);
+				spawn_boss_glow(boss, &boss->glowcolor, 60 + 20 * i);
 			}
 
 			for(int i = 0; i < 256; i++) {
@@ -846,12 +858,11 @@ void boss_start_attack(Boss *b, Attack *a) {
 			PARTICLE(
 				.sprite = "stain",
 				.pos = VIEWPORT_W/2 + VIEWPORT_W/4*anfrand(0)+I*VIEWPORT_H/2+I*anfrand(1)*30,
-				.color = rgb(0.2,0.3,0.4),
+				.color = RGBA(0.2, 0.3, 0.4, 0.0),
 				.rule = linear,
 				.timeout = 50,
 				.draw_rule = GrowFade,
 				.args = { sign(anfrand(2))*10*(1+afrand(3)) },
-				.flags = PFLAG_DRAWADD,
 			);
 		}
 

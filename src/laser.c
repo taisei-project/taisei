@@ -66,14 +66,14 @@ void lasers_free(void) {
 
 static void ent_draw_laser(EntityInterface *ent);
 
-Laser *create_laser(complex pos, float time, float deathtime, Color color, LaserPosRule prule, LaserLogicRule lrule, complex a0, complex a1, complex a2, complex a3) {
+Laser *create_laser(complex pos, float time, float deathtime, const Color *color, LaserPosRule prule, LaserLogicRule lrule, complex a0, complex a1, complex a2, complex a3) {
 	Laser *l = (Laser*)alist_push(&global.lasers, objpool_acquire(stage_object_pools.lasers));
 
 	l->birthtime = global.frames;
 	l->timespan = time;
 	l->deathtime = deathtime;
 	l->pos = pos;
-	l->color = color;
+	l->color = *color;
 
 	l->args[0] = a0;
 	l->args[1] = a1;
@@ -104,11 +104,11 @@ Laser *create_laser(complex pos, float time, float deathtime, Color color, Laser
 	return l;
 }
 
-Laser *create_laserline(complex pos, complex dir, float charge, float dur, Color clr) {
+Laser *create_laserline(complex pos, complex dir, float charge, float dur, const Color *clr) {
 	return create_laserline_ab(pos, (pos)+(dir)*VIEWPORT_H*1.4/cabs(dir), cabs(dir), charge, dur, clr);
 }
 
-Laser *create_laserline_ab(complex a, complex b, float width, float charge, float dur, Color clr) {
+Laser *create_laserline_ab(complex a, complex b, float width, float charge, float dur, const Color *clr) {
 	complex m = (b-a)*0.005;
 
 	return create_laser(a, 200, dur, clr, las_linear, static_laser, m, charge + I*width, 0, 0);
@@ -148,7 +148,7 @@ static void draw_laser_curve_specialized(Laser *l) {
 		return;
 	}
 
-	r_color(l->color);
+	r_color(&l->color);
 	r_uniform_complex("origin", l->pos);
 	r_uniform_complex_array("args[0]", 4, l->args);
 	r_uniform_float("timeshift", timeshift);
@@ -166,7 +166,7 @@ static void draw_laser_curve_generic(Laser *l) {
 		return;
 	}
 
-	r_color(l->color);
+	r_color(&l->color);
 	r_uniform_float("timeshift", timeshift);
 	r_uniform_float("width", l->width);
 	r_uniform_float("width_exponent", l->width_exponent);
@@ -193,7 +193,6 @@ static void ent_draw_laser(EntityInterface *ent) {
 	Laser *laser = ENT_CAST(ent, Laser);
 
 	r_texture(0, "part/lasercurve");
-	r_blend(BLEND_ADD);
 
 	if(laser->shader) {
 		// Specialized lasers work with either vertex array,

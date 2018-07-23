@@ -43,8 +43,6 @@ typedef enum {
 } ProjType;
 
 typedef enum ProjFlags {
-	// PFLAG_DRAWADD = (1 << 0),
-	// PFLAG_DRAWSUB = (1 << 1),
 	PFLAG_NOSPAWNZOOM = (1 << 2),
 	PFLAG_NOGRAZE = (1 << 3),
 	PFLAG_NOCLEAR = (1 << 4),
@@ -55,12 +53,6 @@ typedef enum ProjFlags {
 	PFLAG_NOREFLECT = (1 << 9),
 	PFLAG_REQUIREDPARTICLE = (1 << 10),
 } ProjFlags;
-
-// attr_deprecated("Use .blend = BLEND_ADD instead")
-static const ProjFlags PFLAG_DRAWADD = (1 << 0);
-
-// attr_deprecated("Use .blend = BLEND_SUB instead")
-static const ProjFlags PFLAG_DRAWSUB = (1 << 1);
 
 // FIXME: prototype stuff awkwardly shoved in this header because of dependency cycles.
 typedef struct ProjPrototype ProjPrototype;
@@ -80,7 +72,7 @@ struct Projectile {
 	Sprite *sprite;
 	ProjPrototype *proto;
 	Color color;
-	float shader_custom_param; // FIXME: see renderer/api.c: struct SpriteParams
+	ShaderCustomParams shader_params;
 	BlendMode blend;
 	int birthtime;
 	float angle;
@@ -103,7 +95,7 @@ struct Projectile {
 typedef struct ProjArgs {
 	const char *sprite;
 	complex pos;
-	Color color;
+	const Color *color;
 	ProjRule rule;
 	complex args[RULE_ARGC];
 	float angle;
@@ -113,7 +105,7 @@ typedef struct ProjArgs {
 	const char *shader;
 	ShaderProgram *shader_ptr;
 	ProjPrototype *proto;
-	float shader_custom_param; // FIXME: see renderer/api.c: struct SpriteParams
+	const ShaderCustomParams *shader_params;
 	ProjectileList *dest;
 	ProjType type;
 	Sprite *sprite_ptr;
@@ -196,7 +188,7 @@ int linear(Projectile *p, int t);
 int accelerated(Projectile *p, int t);
 int asymptotic(Projectile *p, int t);
 
-void ProjDrawCore(Projectile *proj, Color c);
+void ProjDrawCore(Projectile *proj, const Color *c);
 void ProjDraw(Projectile *p, int t);
 void ProjNoDraw(Projectile *proj, int t);
 

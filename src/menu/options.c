@@ -724,7 +724,7 @@ void create_options_menu(MenuData *m) {
 // --- Drawing the menu --- //
 
 void draw_options_menu_bg(MenuData* menu) {
-	r_color4(0.3, 0.3, 0.3, 0.9 + 0.1 * sin(menu->frames/100.0));
+	r_color(RGBA_MUL_ALPHA(0.3, 0.3, 0.3, 0.9 + 0.1 * sin(menu->frames/100.0)));
 	fill_screen("menu/mainmenubg");
 	r_color4(1, 1, 1, 1);
 }
@@ -757,24 +757,27 @@ void draw_options_menu(MenuData *menu) {
 	for(i = 0; i < menu->ecount; i++) {
 		MenuEntry *e = menu->entries + i;
 		OptionBinding *bind = bind_get(menu, i);
+		Color clr;
 
-		if(!e->name)
+		if(!e->name) {
 			continue;
+		}
 
 		float a = e->drawdata * 0.1;
 		float alpha = (!bind || bind_isactive(bind))? 1 : 0.5;
 
 		if(e->action == NULL) {
-			r_color4(0.5, 0.5, 0.5, 0.7 * alpha);
+			clr = *RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.7 * alpha);
 		} else {
-			//render_color4(0.7 + 0.3 * (1-a), 1, 1, (0.7 + 0.3 * a) * alpha);
 			float ia = 1-a;
-			r_color4(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a) * alpha);
+			clr = *RGBA_MUL_ALPHA(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a) * alpha);
 		}
 
 		r_shader("text_default");
+
 		text_draw(e->name, &(TextParams) {
-			.pos = { (1 + (bind ? bind->pad : 0)) * 20 - e->drawdata, 20*i }
+			.pos = { (1 + (bind ? bind->pad : 0)) * 20 - e->drawdata, 20*i },
+			.color = &clr,
 		});
 
 		if(bind) {
@@ -790,7 +793,12 @@ void draw_options_menu(MenuData *menu) {
 					if(bind->valrange_max) {
 						char tmp[16];   // who'd use a 16-digit number here anyway?
 						snprintf(tmp, 16, "%d", bind_getvalue(bind));
-						text_draw(tmp, &(TextParams) { .pos = { origin, 20*i }, .align = ALIGN_RIGHT });
+
+						text_draw(tmp, &(TextParams) {
+							.pos = { origin, 20*i },
+							.align = ALIGN_RIGHT,
+							.color = &clr,
+						});
 					} else if(bind->configentry == CONFIG_PRACTICE_POWER) {
 						int stars = PLR_MAX_POWER / 100;
 						r_shader_standard();
@@ -802,22 +810,26 @@ void draw_options_menu(MenuData *menu) {
 						}
 
 						if(val == j) {
-								r_color4(0.9, 0.6, 0.2, alpha);
+							clr = *RGBA_MUL_ALPHA(0.9, 0.6, 0.2, alpha);
 						} else {
-								r_color4(0.5,0.5,0.5,0.7 * alpha);
+							clr = *RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.7 * alpha);
 						}
 
-						text_draw(bind->values[j], &(TextParams) { .pos = { origin, 20*i }, .align = ALIGN_RIGHT });
+						text_draw(bind->values[j], &(TextParams) {
+							.pos = { origin, 20*i },
+							.align = ALIGN_RIGHT,
+							.color = &clr,
+						});
 					}
 					break;
 				}
 
 				case BT_KeyBinding: {
 					if(bind->blockinput) {
-						r_color4(0.5, 1, 0.5, 1);
 						text_draw("Press a key to assign, ESC to cancel", &(TextParams) {
 							.pos = { origin, 20*i },
 							.align = ALIGN_RIGHT,
+							.color = RGBA(0.5, 1, 0.5, 1),
 						});
 					} else {
 						const char *txt = SDL_GetScancodeName(config_get_int(bind->configentry));
@@ -829,14 +841,15 @@ void draw_options_menu(MenuData *menu) {
 						text_draw(txt, &(TextParams) {
 							.pos = { origin, 20*i },
 							.align = ALIGN_RIGHT,
+							.color = &clr,
 						});
 					}
 
 					if(!caption_drawn) {
-						r_color4(1,1,1,0.7);
 						text_draw("Controls", &(TextParams) {
 							.pos = { (SCREEN_W - 200)/2, 20*(i-1) },
 							.align = ALIGN_CENTER,
+							.color = RGBA(0.7, 0.7, 0.7, 0.7),
 						});
 						caption_drawn = 1;
 					}
@@ -870,6 +883,7 @@ void draw_options_menu(MenuData *menu) {
 						text_draw(txt, &(TextParams) {
 							.pos = { origin, 20*i },
 							.align = ALIGN_RIGHT,
+							.color = &clr,
 						});
 					}
 
@@ -881,13 +895,13 @@ void draw_options_menu(MenuData *menu) {
 					bool is_axis = (bind->type == BT_GamepadAxisBinding);
 
 					if(bind->blockinput) {
-						r_color4(0.5, 1, 0.5, 1);
 						char *text = is_axis ? "Move an axis to assign, Back to cancel"
 						                     : "Press a button to assign, Back to cancel";
 
 						text_draw(text, &(TextParams) {
 							.pos = { origin, 20*i },
 							.align = ALIGN_RIGHT,
+							.color = RGBA(0.5, 1, 0.5, 1),
 						});
 					} else if(config_get_int(bind->configentry) >= 0) {
 						int id = config_get_int(bind->configentry);
@@ -895,11 +909,13 @@ void draw_options_menu(MenuData *menu) {
 						text_draw(name, &(TextParams) {
 							.pos = { origin, 20*i },
 							.align = ALIGN_RIGHT,
+							.color = &clr,
 						});
 					} else {
 						text_draw("Unbound", &(TextParams) {
 							.pos = { origin, 20*i },
 							.align = ALIGN_RIGHT,
+							.color = &clr,
 						});
 					}
 					break;
@@ -907,17 +923,18 @@ void draw_options_menu(MenuData *menu) {
 
 				case BT_StrValue: {
 					if(bind->blockinput) {
-						r_color4(0.5, 1, 0.5, 1.0);
 						if(*bind->strvalue) {
 							text_draw(bind->strvalue, &(TextParams) {
 								.pos = { origin, 20*i },
 								.align = ALIGN_RIGHT,
+								.color = RGBA(0.5, 1, 0.5, 1.0),
 							});
 						}
 					} else {
 						text_draw(config_get_str(bind->configentry), &(TextParams) {
 							.pos = { origin, 20*i },
 							.align = ALIGN_RIGHT,
+							.color = &clr,
 						});
 					}
 					break;
@@ -940,6 +957,7 @@ void draw_options_menu(MenuData *menu) {
 					text_draw(tmp, &(TextParams) {
 						.pos = { origin, 20*i },
 						.align = ALIGN_RIGHT,
+						.color = &clr,
 					});
 					break;
 				}
@@ -965,16 +983,17 @@ void draw_options_menu(MenuData *menu) {
 					text_draw(tmp, &(TextParams) {
 						.pos = { -((w+cw) * 0.5 + 10), 0 },
 						.align = ALIGN_RIGHT,
+						.color = &clr,
 					});
 					r_shader_standard_notex();
 					r_mat_push();
 					r_mat_scale(w+cw, h, 1);
-					r_color4(1, 1, 1, (0.1 + 0.2 * a) * alpha);
+					r_color(RGBA_MUL_ALPHA(1, 1, 1, (0.1 + 0.2 * a) * alpha));
 					r_draw_quad();
 					r_mat_pop();
 					r_mat_translate(w * (pos - 0.5), 0, 0);
 					r_mat_scale(cw, h, 0);
-					r_color4(0.9, 0.6, 0.2, alpha);
+					r_color(RGBA_MUL_ALPHA(0.9, 0.6, 0.2, alpha));
 					r_draw_quad();
 					r_mat_pop();
 					r_shader("text_default");

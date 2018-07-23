@@ -126,15 +126,13 @@ void draw_menu_selector(float x, float y, float w, float h, float t) {
 }
 
 void draw_menu_title(MenuData *m, char *title) {
-	ShaderProgram *sh_prev = r_shader_current();
-	r_shader("text_default");
 	text_draw(title, &(TextParams) {
 		.pos = { (text_width(get_font("big"), title, 0) + 10) * (1.0 - menu_fade(m)), 30 },
 		.align = ALIGN_RIGHT,
 		.font = "big",
-		.color = rgb(1, 1, 1),
+		.color = RGB(1, 1, 1),
+		.shader = "text_default",
 	});
-	r_shader_ptr(sh_prev);
 }
 
 void draw_menu_list(MenuData *m, float x, float y, void (*draw)(void*, int, int)) {
@@ -154,12 +152,17 @@ void draw_menu_list(MenuData *m, float x, float y, void (*draw)(void*, int, int)
 
 		float a = e->drawdata * 0.1;
 		float o = (p < 0? 1-p/(-y-10) : 1);
-		if(e->action == NULL)
-			r_color4(0.5, 0.5, 0.5, 0.5*o);
-		else {
+
+		Color clr;
+
+		if(e->action == NULL) {
+			clr = *RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.5*o);
+		} else {
 			float ia = 1-a;
-			r_color4(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a)*o);
+			clr = *RGBA_MUL_ALPHA(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a)*o);
 		}
+
+		r_color(&clr);
 
 		if(draw && i < m->ecount-1) {
 			draw(e, i, m->ecount);

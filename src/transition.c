@@ -19,23 +19,23 @@ void TransFadeBlack(double fade) {
 }
 
 void TransFadeWhite(double fade) {
-	colorfill(1, 1, 1, fade);
+	colorfill(fade, fade, fade, fade);
 }
 
 void TransLoader(double fade) {
-	r_color4(1, 1, 1, fade);
+	r_color4(fade, fade, fade, fade);
 	fill_screen("loading");
 	r_color4(1, 1, 1, 1);
 }
 
 void TransMenu(double fade) {
-	r_color4(1, 1, 1, fade);
+	r_color4(fade, fade, fade, fade);
 	fill_screen("menu/mainmenubg");
 	r_color4(1, 1, 1, 1);
 }
 
 void TransMenuDark(double fade) {
-	r_color4(0.3, 0.3, 0.3, fade);
+	r_color4(fade * 0.3, fade * 0.3, fade * 0.3, fade);
 	fill_screen("menu/mainmenubg");
 	r_color4(1, 1, 1, 1);
 }

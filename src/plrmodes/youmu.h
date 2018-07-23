@@ -18,5 +18,5 @@ extern PlayerCharacter character_youmu;
 
 double youmu_common_property(Player *plr, PlrProperty prop);
 void youmu_common_shot(Player *plr);
-void youmu_common_draw_proj(Projectile *p, Color c, float scale);
+void youmu_common_draw_proj(Projectile *p, const Color *c, float scale);
 void youmu_common_bombbg(Player *plr);

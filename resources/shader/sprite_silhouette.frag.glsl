@@ -18,7 +18,7 @@ void main(void) {
     vec2 uv = texCoordRaw;
     vec2 uv_orig = uv;
     vec4 texel;
-    float deform = customParam;
+    float deform = customParams.r;
 
     const float limit = 1.0;
     const float step = 0.25;
@@ -30,7 +30,7 @@ void main(void) {
         uv = apply_deform(uv_orig, deform * i);
         texel = texture(tex, uv_to_region(texRegion, uv));
         float a = float(uv.x >= 0 && uv.x <= 1 && uv.y >= 0 && uv.y <= 1);
-        fragColor += vec4(color.rgb, color.a * texel.a * a);
+        fragColor += color * texel.a * a;
     }
 
     fragColor /= num;

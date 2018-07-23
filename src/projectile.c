@@ -21,7 +21,7 @@ static ProjArgs defaults_proj = {
 	.dest = &global.projs,
 	.type = EnemyProj,
 	.color = RGB(1, 1, 1),
-	.blend = BLEND_ALPHA,
+	.blend = BLEND_PREMUL_ALPHA,
 	.shader = "sprite_bullet",
 	.layer = LAYER_BULLET,
 };
@@ -32,7 +32,7 @@ static ProjArgs defaults_part = {
 	.dest = &global.particles,
 	.type = Particle,
 	.color = RGB(1, 1, 1),
-	.blend = BLEND_ALPHA,
+	.blend = BLEND_PREMUL_ALPHA,
 	.shader = "sprite_default",
 	.layer = LAYER_PARTICLE_HIGH,
 };
@@ -127,12 +127,6 @@ static void projectile_size(Projectile *p, double *w, double *h) {
 	assert(*h > 0);
 }
 
-static double projectile_rect_area(Projectile *p) {
-	double w, h;
-	projectile_size(p, &w, &h);
-	return w * h;
-}
-
 static void ent_draw_projectile(EntityInterface *ent);
 
 static inline char* event_name(int ev) {
@@ -204,16 +198,19 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	p->rule = args->rule;
 	p->draw_rule = args->draw_rule;
 	p->shader = args->shader_ptr;
-	p->shader_custom_param = args->shader_custom_param;
 	p->blend = args->blend;
 	p->sprite = args->sprite_ptr;
 	p->type = args->type;
-	p->color = args->color;
+	p->color = *args->color;
 	p->max_viewport_dist = args->max_viewport_dist;
 	p->size = args->size;
 	p->collision_size = args->collision_size;
 	p->flags = args->flags;
 	p->timeout = args->timeout;
+
+	if(args->shader_params != NULL) {
+		p->shader_params = *args->shader_params;
+	}
 
 	memcpy(p->args, args->args, sizeof(p->args));
 
@@ -228,36 +225,6 @@ static Projectile* _create_projectile(ProjArgs *args) {
 		// FIXME: debug info is not actually attached at this point!
 		set_debug_info(&p->debug);
 		log_fatal("Tried to spawn a projectile with invalid size %f x %f", creal(p->size), cimag(p->size));
-	}
-
-	if(!(p->ent.draw_layer & LAYER_LOW_MASK)) {
-		switch(p->type) {
-			case EnemyProj:
-			case FakeProj: {
-				// 1. Large projectiles go below smaller ones.
-				drawlayer_low_t sublayer = (LAYER_LOW_MASK - (drawlayer_low_t)projectile_rect_area(p));
-
-				// 2. Additive projectiles go below others.
-				sublayer <<= 1;
-				sublayer |= 1 * (p->blend == BLEND_ADD || p->flags & PFLAG_DRAWADD);
-
-				// If specific blending order is required, then you should set up the sublayer manually.
-				p->ent.draw_layer |= sublayer;
-				break;
-			}
-
-			case Particle: {
-				// 1. Additive particles go above others.
-				drawlayer_low_t sublayer = (p->blend == BLEND_ADD || p->flags & PFLAG_DRAWADD) * PARTICLE_ADDITIVE_SUBLAYER;
-
-				// If specific blending order is required, then you should set up the sublayer manually.
-				p->ent.draw_layer |= sublayer;
-				break;
-			}
-
-			default:
-				break;
-		}
 	}
 
 	ent_register(&p->ent, ENT_PROJECTILE);
@@ -445,16 +412,7 @@ void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCol
 static void ent_draw_projectile(EntityInterface *ent) {
 	Projectile *proj = ENT_CAST(ent, Projectile);
 
-	// TODO: get rid of these legacy flags
-
-	if(proj->flags & PFLAG_DRAWADD) {
-		r_blend(BLEND_ADD);
-	} else if(proj->flags & PFLAG_DRAWSUB) {
-		r_blend(BLEND_SUB);
-	} else {
-		r_blend(proj->blend);
-	}
-
+	r_blend(proj->blend);
 	r_shader_ptr(proj->shader);
 
 #ifdef PROJ_DEBUG
@@ -498,7 +456,7 @@ Projectile* spawn_projectile_collision_effect(Projectile *proj) {
 		.sprite_ptr = proj->sprite,
 		.size = proj->size,
 		.pos = proj->pos,
-		.color = proj->color,
+		.color = &proj->color,
 		.flags = proj->flags | PFLAG_NOREFLECT,
 		.shader_ptr = proj->shader,
 		.rule = linear,
@@ -518,7 +476,7 @@ Projectile* spawn_projectile_clear_effect(Projectile *proj) {
 		.sprite_ptr = proj->sprite,
 		.size = proj->size,
 		.pos = proj->pos,
-		.color = proj->color,
+		.color = &proj->color,
 		.flags = proj->flags | PFLAG_NOREFLECT,
 		.shader_ptr = proj->shader,
 		.draw_rule = Shrink,
@@ -693,18 +651,18 @@ static inline void apply_common_transforms(Projectile *proj, int t) {
 	}
 }
 
-void ProjDrawCore(Projectile *proj, Color c) {
+void ProjDrawCore(Projectile *proj, const Color *c) {
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = proj->sprite,
 		.color = c,
-		.custom = proj->shader_custom_param,
+		.shader_params = &proj->shader_params,
 	});
 }
 
 void ProjDraw(Projectile *proj, int t) {
 	r_mat_push();
 	apply_common_transforms(proj, t);
-	ProjDrawCore(proj, proj->color);
+	ProjDrawCore(proj, &proj->color);
 	r_mat_pop();
 }
 
@@ -720,11 +678,12 @@ void Blast(Projectile *p, int t) {
 		r_mat_scale(t/(double)p->timeout, t/(double)p->timeout, 1);
 	}
 
-	r_color4(0.3, 0.6, 1.0, 1.0 - t/(double)p->timeout);
+	float fade = 1.0 - t / (double)p->timeout;
+	r_color(RGBA_MUL_ALPHA(0.3, 0.6, 1.0, fade));
 
 	draw_sprite_batched_p(0,0,p->sprite);
 	r_mat_scale(0.5+creal(p->args[2]),0.5+creal(p->args[2]),1);
-	r_blend(BLEND_ADD);
+	r_color4(0.3 * fade, 0.6 * fade, 1.0 * fade, 0);
 	draw_sprite_batched_p(0,0,p->sprite);
 	r_mat_pop();
 }
@@ -738,7 +697,7 @@ void Shrink(Projectile *p, int t) {
 		r_mat_scale(s, s, 1);
 	}
 
-	ProjDrawCore(p, p->color);
+	ProjDrawCore(p, &p->color);
 	r_mat_pop();
 }
 
@@ -751,7 +710,7 @@ void DeathShrink(Projectile *p, int t) {
 		r_mat_scale(s, 1, 1);
 	}
 
-	ProjDrawCore(p, p->color);
+	ProjDrawCore(p, &p->color);
 	r_mat_pop();
 }
 
@@ -767,14 +726,14 @@ void GrowFade(Projectile *p, int t) {
 		r_mat_scale(s, s, 1);
 	}
 
-	ProjDrawCore(p, multiply_colors(p->color, rgba(1, 1, 1, 1 - t/(double)p->timeout)));
+	ProjDrawCore(p, color_mul_scalar(COLOR_COPY(&p->color), 1 - t/(double)p->timeout));
 	r_mat_pop();
 }
 
 void Fade(Projectile *p, int t) {
 	r_mat_push();
 	apply_common_transforms(p, t);
-	ProjDrawCore(p, multiply_colors(p->color, rgba(1, 1, 1, 1 - t/(double)p->timeout)));
+	ProjDrawCore(p, color_mul_scalar(COLOR_COPY(&p->color), 1 - t/(double)p->timeout));
 	r_mat_pop();
 }
 
@@ -788,10 +747,8 @@ void ScaleFade(Projectile *p, int t) {
 	double scale = scale_min * (1 - timefactor) + scale_max * timefactor;
 	double alpha = pow(1 - timefactor, 2);
 
-	Color c = multiply_colors(p->color, rgba(1, 1, 1, alpha));
-
 	r_mat_scale(scale, scale, 1);
-	ProjDrawCore(p, c);
+	ProjDrawCore(p, color_mul_scalar(COLOR_COPY(&p->color), alpha));
 	r_mat_pop();
 }
 
@@ -807,7 +764,7 @@ void Petal(Projectile *p, int t) {
 	r_mat_push();
 	r_mat_translate(creal(p->pos), cimag(p->pos),0);
 	r_mat_rotate_deg(t*4.0 + cimag(p->args[3]), x, y, z);
-	ProjDrawCore(p, p->color);
+	ProjDrawCore(p, &p->color);
 	r_mat_pop();
 }
 
@@ -815,12 +772,11 @@ void petal_explosion(int n, complex pos) {
 	for(int i = 0; i < n; i++) {
 		tsrand_fill(6);
 		float t = frand();
-		Color c = rgba(sin(5*t),cos(5*t),0.5,t);
 
 		PARTICLE(
 			.sprite = "petal",
 			.pos = pos,
-			.color = c,
+			.color = RGBA_MUL_ALPHA(sin(5*t) * t, cos(5*t) * t, 0.5 * t, 0),
 			.rule = asymptotic,
 			.draw_rule = Petal,
 			.args = {
@@ -831,7 +787,6 @@ void petal_explosion(int n, complex pos) {
 			},
 			// TODO: maybe remove this noreflect, there shouldn't be a cull mode mess anymore
 			.flags = PFLAG_NOREFLECT,
-			.blend = BLEND_ADD,
 		);
 	}
 }

@@ -92,9 +92,9 @@ static void stage1_bg_draw(vec3 pos) {
 	r_shader_standard_notex();
 	r_mat_push();
 	r_mat_scale(1200,3000,1);
-	r_color4(0,0.1,.1,1);
+	r_color4(0, 0.1, 0.1, 1);
 	r_draw_quad();
-	r_color4(1,1,1,1);
+	r_color4(1, 1, 1, 1);
 	r_mat_pop();
 
 	r_mat_push();
@@ -112,9 +112,9 @@ static void stage1_bg_draw(vec3 pos) {
 	r_shader_standard_notex();
 	r_mat_push();
 	r_mat_scale(1200,3000,1);
-	r_color4(0,0.1,.1,0.8);
+	r_color4(0, 0.08, 0.08, 0.8);
 	r_draw_quad();
-	r_color4(1,1,1,1);
+	r_color4(1, 1, 1, 1);
 	r_mat_pop();
 	r_enable(RCAP_DEPTH_TEST);
 	r_mat_pop();
@@ -136,7 +136,8 @@ static void stage1_smoke_draw(vec3 pos) {
 	r_mat_scale(3.5,2,1);
 	r_mat_rotate_deg(global.frames,0,0,1);
 
-	r_color4(.8,.8,.8,((d-500)*(d-500))/1.5e7);
+	float o = ((d-500)*(d-500))/1.5e7;
+	r_color(RGBA_MUL_ALPHA(0.8,0.8,0.8,o));
 	draw_sprite(0,0,"stage1/fog");
 	r_color4(1,1,1,1);
 
@@ -182,14 +183,14 @@ static void stage1_reed_draw(vec3 pos) {
 	r_mat_translate(pos[0]+200*sin(pos[1]), pos[1], d);
 	r_mat_rotate_deg(90,1,0,0);
 	r_mat_scale(80,80,80);
-	r_color4(0.,0.05,0.05,1);
+	r_color4(0.0,0.05,0.05,1);
 	r_draw_model("reeds");
 	r_mat_translate(0,-d/80,0);
 	r_mat_scale(1,-1,1);
 	r_mat_translate(0,d/80,0);
 	r_depth_func(DEPTH_GREATER);
 	r_disable(RCAP_DEPTH_WRITE);
-	r_color4(0.,0.05,0.05,0.5);
+	r_color(RGBA_MUL_ALPHA(0.0,0.05,0.05,0.5));
 	r_draw_model("reeds");
 	r_color4(1,1,1,1);
 	r_mat_pop();

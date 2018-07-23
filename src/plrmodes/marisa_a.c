@@ -145,19 +145,18 @@ static float set_alpha_dimmed(Uniform *u_alpha, float a) {
 	return set_alpha(u_alpha, a * a * 0.5);
 }
 
-static void draw_magic_star(complex pos, double a, Color c1, Color c2) {
+static void draw_magic_star(complex pos, double a, const Color *clr1, const Color *clr2) {
 	if(a <= 0) {
 		return;
 	}
 
-	Color mul = rgba(1, 1, 1, a);
-	c1 = multiply_colors(c1, mul);
-	c2 = multiply_colors(c2, mul);
+	Color *mul = RGBA(a, a, a, 0);
+	Color *c1 = color_mul(COLOR_COPY(clr1), mul);
+	Color *c2 = color_mul(COLOR_COPY(clr2), mul);
 
 	Sprite *spr = get_sprite("part/magic_star");
 	r_shader("sprite_bullet");
 
-	r_blend(BLEND_ADD);
 	r_mat_push();
 		r_mat_translate(creal(pos), cimag(pos), -1);
 		r_mat_push();
@@ -171,7 +170,6 @@ static void draw_magic_star(complex pos, double a, Color c1, Color c2) {
 			draw_sprite_batched_p(0, 0, spr);
 		r_mat_pop();
 	r_mat_pop();
-	r_blend(BLEND_ALPHA);
 	r_color4(1, 1, 1, 1);
 
 	r_shader("sprite_default");
@@ -187,8 +185,8 @@ static void marisa_laser_slave_visual(Enemy *e, int t, bool render) {
 	float star_alpha = laser_renderer->args[1] * global_magicstar_alpha;
 
 	draw_magic_star(e->pos, 0.75 * star_alpha,
-		rgb(1.0, 0.1, 0.1),
-		rgb(0.0, 0.1, 1.1)
+		RGB(1.0, 0.1, 0.1),
+		RGB(0.0, 0.1, 1.1)
 	);
 
 	marisa_common_slave_visual(e, t, render);
@@ -201,7 +199,7 @@ static void marisa_laser_slave_visual(Enemy *e, int t, bool render) {
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = "part/smoothdot",
-		.color = rgba(1, 1, 1, laser_alpha),
+		.color = RGBA_MUL_ALPHA(1, 1, 1, laser_alpha),
 		.pos = { creal(ld->trace_hit.first), cimag(ld->trace_hit.first) },
 	});
 }
@@ -241,14 +239,15 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 
 	r_vertex_array(r_vertex_array_static_models());
 	r_shader_ptr(shader);
-	r_uniform_ptr(u_clr0,      1, (float[]) { 1, 1, 1, 0.5 });
-	r_uniform_ptr(u_clr1,      1, (float[]) { 1, 1, 1, 0.8 });
+	r_uniform_ptr(u_clr0,      1, (float[]) { 0.5, 0.5, 0.5, 0.0 });
+	r_uniform_ptr(u_clr1,      1, (float[]) { 0.8, 0.8, 0.8, 0.0 });
 	r_uniform_ptr(u_clr_phase, 1, (float[]) { -1.5 * t/M_PI });
 	r_uniform_ptr(u_clr_freq,  1, (float[]) { 10.0 });
-	r_framebuffer(fbp_aux->front);
+	r_framebuffer(fbp_aux->back);
 	r_clear_color4(0, 0, 0, 0);
 	r_clear(CLEAR_COLOR);
-	r_clear_color4(0, 0, 0, 1);
+	r_color4(1, 1, 1, 1);
+
 	r_blend(r_blend_compose(
 		BLENDFACTOR_SRC_COLOR, BLENDFACTOR_ONE, BLENDOP_MAX,
 		BLENDFACTOR_SRC_COLOR, BLENDFACTOR_ONE, BLENDOP_MAX
@@ -261,15 +260,25 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 		}
 	}
 
-	r_blend(BLEND_ALPHA);
+	r_blend(BLEND_PREMUL_ALPHA);
+	fbpair_swap(fbp_aux);
+
+	r_framebuffer(fbp_aux->back);
+	r_clear_color4(0, 0, 0, 0);
+	r_clear(CLEAR_COLOR);
+	r_texture_ptr(0, r_framebuffer_get_attachment(fbp_aux->front, FRAMEBUFFER_ATTACH_COLOR0));
+	r_shader("max_to_alpha");
+	draw_framebuffer_tex(fbp_aux->front, VIEWPORT_W, VIEWPORT_H);
+	fbpair_swap(fbp_aux);
+
 	r_framebuffer(fbp_fg->back);
 	r_shader_standard();
+	r_color4(1, 1, 1, 1);
 	draw_framebuffer_tex(fbp_aux->front, VIEWPORT_W, VIEWPORT_H);
 	r_shader_ptr(shader);
-	r_blend(BLEND_ADD);
 
-	r_uniform_ptr(u_clr0, 1, (float[]) { 1.0, 0.0, 0.0, 0.5 });
-	r_uniform_ptr(u_clr1, 1, (float[]) { 1.0, 0.0, 0.0, 1.0 });
+	r_uniform_ptr(u_clr0, 1, (float[]) { 0.5, 0.0, 0.0, 0.0 });
+	r_uniform_ptr(u_clr1, 1, (float[]) { 1.0, 0.0, 0.0, 0.0 });
 
 	FOR_EACH_SLAVE(e) {
 		if(set_alpha_dimmed(u_alpha, get_laser_alpha(e, a))) {
@@ -278,8 +287,8 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 		}
 	}
 
-	r_uniform_ptr(u_clr0, 1, (float[]) { 1.0, 0.5, 1.0, 2.0 });
-	r_uniform_ptr(u_clr1, 1, (float[]) { 0.1, 0.1, 1.0, 1.0 });
+	r_uniform_ptr(u_clr0, 1, (float[]) { 2.0, 1.0, 2.0, 0.0 });
+	r_uniform_ptr(u_clr1, 1, (float[]) { 0.1, 0.1, 1.0, 0.0 });
 
 	FOR_EACH_SLAVE(e) {
 		if(set_alpha_dimmed(u_alpha, get_laser_alpha(e, a))) {
@@ -288,8 +297,8 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 		}
 	}
 
+	r_clear_color4(0, 0, 0, 1);
 	r_shader("sprite_default");
-	r_blend(BLEND_ALPHA);
 	r_vertex_array(varr_saved);
 }
 
@@ -427,7 +436,7 @@ static int masterspark(Enemy *e, int t2) {
 	float t = player_get_bomb_progress(&global.plr, NULL);
 	if(t2%2==0 && t < 3./4) {
 		complex dir = -cexp(1.2*I*nfrand())*I;
-		Color c = rgb(0.7+0.3*sin(t*30),0.7+0.3*cos(t*30),0.7+0.3*cos(t*3));
+		Color *c = RGBA(0.7 + 0.3 * sin(t * 30), 0.7 + 0.3 * cos(t * 30), 0.7 + 0.3 * cos(t * 3), 0);
 		PARTICLE(
 			.sprite = "maristar_orbit",
 			.pos = global.plr.pos+40*dir,
@@ -436,7 +445,6 @@ static int masterspark(Enemy *e, int t2) {
 			.timeout = 50,
 			.args= { 10 * dir - 10*I, 3 },
 			.angle = nfrand(),
-			.blend = BLEND_ADD,
 			.draw_rule = GrowFade
 		);
 		dir = -conj(dir);
@@ -448,18 +456,16 @@ static int masterspark(Enemy *e, int t2) {
 			.timeout = 50,
 			.args = { 10 * dir - 10*I, 3 },
 			.angle = nfrand(),
-			.flags = PFLAG_DRAWADD,
 			.draw_rule = GrowFade
 		);
 		PARTICLE(
 			.sprite = "smoke",
 			.pos = global.plr.pos-40*I,
-			.color = rgb(0.9,1,1),
+			.color = RGBA(0.9, 1, 1, 0),
 			.rule = linear,
 			.timeout = 50,
 			.args = { -5*dir, 3 },
 			.angle = nfrand(),
-			.flags = PFLAG_DRAWADD,
 			.draw_rule = GrowFade
 		);
 	}
@@ -481,9 +487,9 @@ static void marisa_laser_bombbg(Player *plr) {
 	if(t > 3./4)
 		fade = 1-t*4 + 3;
 
-	r_color4(1,1,1,0.8*fade);
-	fill_viewport(sin(t*0.3),t*3*(1+t*3),1,"marisa_bombbg");
-	r_color4(1,1,1,1);
+	r_color4(0.8 * fade, 0.8 * fade, 0.8 * fade, 0.8 * fade);
+	fill_viewport(sin(t * 0.3), t * 3 * (1 + t * 3), 1, "marisa_bombbg");
+	r_color4(1, 1, 1, 1);
 }
 
 static void marisa_laser_bomb(Player *plr) {
@@ -614,6 +620,7 @@ static void marisa_laser_preload(void) {
 	preload_resources(RES_SHADER_PROGRAM, flags,
 		"marisa_laser",
 		"masterspark",
+		"max_to_alpha",
 	NULL);
 
 	preload_resources(RES_SFX, flags | RESF_OPTIONAL,

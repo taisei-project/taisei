@@ -155,7 +155,7 @@ static void ending_draw(Ending *e) {
 
 	r_clear(CLEAR_ALL);
 
-	r_color4(1,1,1,s);
+	r_color4(s, s, s, s);
 
 	if(e->entries[e->pos].sprite) {
 		draw_sprite_p(SCREEN_W/2, SCREEN_H/2, e->entries[e->pos].sprite);

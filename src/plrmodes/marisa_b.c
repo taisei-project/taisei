@@ -16,9 +16,9 @@
 static void marisa_star_trail_draw(Projectile *p, int t) {
 	float s = 1 - t / (double)p->timeout;
 
-	Color clr = derive_color(p->color, CLRMASK_A, rgba(0, 0, 0, s*0.5));
+	Color *clr = COLOR_COPY(&p->color);
 
-	// s = 1 + t / creal(p->args[0]);
+	color_mul_scalar(clr, s * 0.5);
 
 	r_mat_push();
 	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
@@ -31,7 +31,9 @@ static void marisa_star_trail_draw(Projectile *p, int t) {
 
 static int marisa_star_projectile(Projectile *p, int t) {
 	float c = 0.3 * psin(t * 0.2);
-	p->color = rgb(1 - c, 0.7 + 0.3 * psin(t * 0.1), 0.9 + c/3);
+	p->color = *RGB(1 - c, 0.7 + 0.3 * psin(t * 0.1), 0.9 + c/3);
+	Color *clr = COLOR_COPY(&p->color);
+	clr->a = 0;
 
 	int r = accelerated(p, t);
 	p->angle = t * 10;
@@ -39,27 +41,25 @@ static int marisa_star_projectile(Projectile *p, int t) {
 	PARTICLE(
 		.sprite_ptr = get_sprite("proj/maristar"),
 		.pos = p->pos,
-		.color = p->color,
+		.color = clr,
 		.timeout = 8,
 		.draw_rule = marisa_star_trail_draw,
 		.angle = p->angle,
 		.flags = PFLAG_NOREFLECT,
 		.layer = LAYER_PARTICLE_LOW,
-		.blend = BLEND_ADD,
 	);
 
 	if(t == EVENT_DEATH) {
 		PARTICLE(
 			.sprite_ptr = get_sprite("proj/maristar"),
 			.pos = p->pos,
-			.color = p->color,
+			.color = clr,
 			.timeout = 40,
 			.draw_rule = GrowFade,
 			.args = { 0, 2 },
 			.angle = frand() * 2 * M_PI,
 			.flags = PFLAG_NOREFLECT,
 			.layer = LAYER_PARTICLE_HIGH,
-			.blend = BLEND_ADD,
 		);
 	}
 
@@ -83,7 +83,7 @@ static int marisa_star_slave(Enemy *e, int t) {
 			PROJECTILE(
 				.proto = pp_maristar,
 				.pos = e->pos,
-				.color = rgb(1.0, 0.5, 1.0),
+				.color = RGB(1.0, 0.5, 1.0),
 				.rule = marisa_star_projectile,
 				// .draw_rule = marisa_star,
 				.args = { v, a },
@@ -109,18 +109,19 @@ static int marisa_star_orbit_star(Projectile *p, int t) { // XXX: because growfa
 
 static Color marisa_slaveclr(int i, float low) {
 	Color slaveclrs[] = {
-		rgb(1.,low,low),
-		rgb(1.,1.,low),
-		rgb(low,1.,low),
-		rgb(low,1.,1.),
-		rgb(1.,low,1.)
+		{ 1.0, low, low, 1.0 },
+		{ 1.0, 1.0, low, 1.0 },
+		{ low, 1.0, low, 1.0 },
+		{ low, 1.0, 1.0, 1.0 },
+		{ 1.0, low, 1.0, 1.0 },
 	};
 
+	assert(i >= 0 && i < sizeof(slaveclrs)/sizeof(*slaveclrs));
 	return slaveclrs[i];
 }
 
 static int marisa_star_orbit(Enemy *e, int t) {
-	Color color = marisa_slaveclr(rint(creal(e->args[0])),0.5);
+	Color color = marisa_slaveclr(rint(creal(e->args[0])), 0.5);
 
 	float tb = player_get_bomb_progress(&global.plr, NULL);
 	if(t == EVENT_BIRTH) {
@@ -141,22 +142,26 @@ static int marisa_star_orbit(Enemy *e, int t) {
 	complex dir = e->args[1]*r*cexp(I*(sqrt(1000+t*t+0.01*t*t*t))*0.04);
 	e->pos = global.plr.pos+dir;
 
-	float clr[4];
-	parse_color_array(color,clr);
 	float fadetime = 3./4;
+
 	if(tb >= fadetime) {
-		clr[3] = 1-(tb-fadetime)/(1-fadetime);
+		color.a = 1 - (tb - fadetime) / (1 - fadetime);
 	}
 
+	color_mul_alpha(&color);
+	color.a = 0;
+
 	if(t%1 == 0) {
+		Color *color2 = COLOR_COPY(&color);
+		color_mul_scalar(color2, 0.5);
+		
 		PARTICLE(
 			.sprite_ptr = get_sprite("part/lightningball"),
 			.pos = e->pos,
-			.color = rgba(clr[0],clr[1],clr[2],clr[3]/2),
+			.color = color2,
 			.timeout = 10,
 			.draw_rule = Fade,
 			.flags = PFLAG_NOREFLECT,
-			.blend = BLEND_ADD,
 		);
 	}
 
@@ -164,11 +169,11 @@ static int marisa_star_orbit(Enemy *e, int t) {
 		PARTICLE(
 			.sprite = "maristar_orbit",
 			.pos = e->pos,
-			.color = rgba(clr[0],clr[1],clr[2],1),
+			.color = &color,
 			.rule = marisa_star_orbit_star,
 			.draw_rule = GrowFade,
 			.timeout = 150,
-			.flags = PFLAG_DRAWADD | PFLAG_NOREFLECT,
+			.flags = PFLAG_NOREFLECT,
 			.args = { -5*dir/cabs(dir), 3 },
 		);
 	}
@@ -182,7 +187,7 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 	}
 
 	float tb = player_get_bomb_progress(&global.plr, NULL);
-	Color color = marisa_slaveclr(rint(creal(e->args[0])),0.2);
+	Color color = marisa_slaveclr(rint(creal(e->args[0])), 0.2);
 
 	float fade = 1;
 
@@ -196,9 +201,7 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 		fade *= fade;
 	}
 
-	float clr[4];
-	parse_color_array(color,clr);
-	clr[3] = fade;
+	color_mul_scalar(&color, fade);
 
 	r_mat_push();
 	r_mat_translate(creal(e->pos),cimag(e->pos),0);
@@ -210,8 +213,8 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 	marisa_common_masterspark_draw(global.plr.bombtotaltime*tb);
 
 	r_mat_pop();
-	r_blend(BLEND_ADD);
-	r_color4(clr[0],clr[1],clr[2],clr[3]);
+	color.a = 0;
+	r_color(&color);
 	r_mat_rotate_deg(t*10,0,0,1);
 	draw_sprite_batched(0,0,"fairy_circle");
 	r_mat_scale(0.6,0.6,1);
@@ -232,22 +235,13 @@ static void marisa_star_bomb(Player *plr) {
 
 static void marisa_star_bombbg(Player *plr) {
 	float t = player_get_bomb_progress(&global.plr, NULL);
-	float fade = 1;
-
-	if(t < 1./6)
-		fade = t*6;
-
-	if(t > 3./4)
-		fade = 1-t*4 + 3;
-
+	
 	ShaderProgram *s = r_shader_get("maristar_bombbg");
 	r_shader_ptr(s);
 	r_uniform_float("t", t);
 	r_uniform_float("decay", 1);
 	r_uniform_vec2("plrpos", creal(global.plr.pos)/VIEWPORT_W, cimag(global.plr.pos)/VIEWPORT_H);
-	r_color4(1,1,1,0.6*fade);
 	fill_viewport(0,0,1,"marisa_bombbg");
-	r_color4(1,1,1,1);
 	r_shader_standard();
 }
 

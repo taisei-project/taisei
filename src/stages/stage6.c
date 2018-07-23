@@ -142,7 +142,7 @@ static void stage6_skysphere_draw(vec3 pos) {
 	for(int i = 0; i < NUM_STARS; i++) {
 		r_mat_push();
 		float x = starpos[3*i+0], y = starpos[3*i+1], z = starpos[3*i+2];
-		r_color4(0.9,0.9,1,0.8*z);
+		r_color(RGBA_MUL_ALPHA(0.9, 0.9, 1.0, 0.8 * z));
 		r_mat_translate(x,y,z);
 		r_mat_rotate_deg(180/M_PI*acos(starpos[3*i+2]),-y,x,0);
 		r_mat_scale(1./4000,1./4000,1./4000);

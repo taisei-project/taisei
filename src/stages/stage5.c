@@ -125,7 +125,7 @@ void iku_spell_bg(Boss *b, int t) {
 
 	r_blend(BLEND_MOD);
 	fill_viewport(0, t*0.001, 0.7, "stage5/noise");
-	r_blend(BLEND_ALPHA);
+	r_blend(BLEND_PREMUL_ALPHA);
 
 	r_mat_push();
 	r_mat_translate(0, -100, 0);
@@ -145,7 +145,8 @@ void iku_spell_bg(Boss *b, int t) {
 	r_mat_pop();
 	r_mat_pop();
 
-	r_color4(1,1,1,0.05*stagedata.light_strength);
+	float opacity = 0.05*stagedata.light_strength;
+	r_color4(opacity, opacity, opacity, opacity);
 	fill_viewport(0, 300, 1, "stage5/spell_lightning");
 	r_color4(1,1,1,1);
 }

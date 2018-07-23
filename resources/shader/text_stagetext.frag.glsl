@@ -11,7 +11,7 @@ float tc_mask(vec2 tc) {
 }
 
 void main(void) {
-    float t = customParam;
+    float t = customParams.r;
     vec2 tc = texCoord;
     vec2 tc_overlay = texCoordOverlay;
     vec2 f = tc_overlay - vec2(0.5);
@@ -22,18 +22,16 @@ void main(void) {
 
     float a = tc_mask(tc);
 
-    vec4 texel = texture(tex, uv_to_region(texRegion, tc));
-    vec4 textfrag = vec4(color.rgb, a * color.a * texel.r);
+    vec4 textfrag = color * texture(tex, uv_to_region(texRegion, tc)).r * a;
 
     tc -= vec2(1) / dimensions;
     a = tc_mask(tc);
 
-    texel = texture(tex, uv_to_region(texRegion, tc));
-    vec4 shadowfrag = vec4(vec3(0), a * color.a * texel.r);
+    vec4 shadowfrag = vec4(vec3(0), color.a) * texture(tex, uv_to_region(texRegion, tc)).r * a;
 
     fragColor = textfrag;
     fragColor = mix(shadowfrag, textfrag, sqrt(textfrag.a));
 
     tc_overlay = clamp(tc_overlay,0.01,0.99); // The overlay coordinates are outside of [0,1] in the padding region, so we make sure there are no wrap around artifacts when a bit of text is distorted to this region.
-    fragColor.a *= clamp((texture(trans, tc_overlay).r + 0.5) * 2.5 * t-0.5, 0.0, 1.0);
+    fragColor *= clamp((texture(trans, tc_overlay).r + 0.5) * 2.5 * t-0.5, 0.0, 1.0);
 }

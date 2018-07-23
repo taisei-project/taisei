@@ -11,95 +11,86 @@
 #include <stdio.h>
 #include "color.h"
 
-static const float conv = 1.0f / CLR_ONEVALUE;
+#define COLOR_OP(c1, op, c2) do { \
+	(c1)->r = (c1)->r op (c2)->r; \
+	(c1)->g = (c1)->g op (c2)->g; \
+	(c1)->b = (c1)->b op (c2)->b; \
+	(c1)->a = (c1)->a op (c2)->a; \
+} while(0);
 
-#ifndef COLOR_INLINE
-
-Color rgba(float r, float g, float b, float a) {
-	assert(!r || isnormal(r));
-	assert(!g || isnormal(g));
-	assert(!b || isnormal(b));
-	assert(!a || isnormal(a));
-
-	return RGBA(r, g, b, a);
+Color* color_copy(Color *dst, const Color *src) {
+	*dst = *src;
+	return dst;
 }
 
-Color rgb(float r, float g, float b) {
-	assert(!r || isnormal(r));
-	assert(!g || isnormal(g));
-	assert(!b || isnormal(b));
-
-	return RGB(r, g, b);
+Color* color_add(Color *clr, const Color *clr2) {
+	COLOR_OP(clr, +, clr2);
+	return clr;
 }
 
-#endif
-
-void parse_color(Color clr, float *r, float *g, float *b, float *a) {
-	*r = (ColorComponent)((clr >> CLR_R) & CLR_CMASK) * conv;
-	*g = (ColorComponent)((clr >> CLR_G) & CLR_CMASK) * conv;
-	*b = (ColorComponent)((clr >> CLR_B) & CLR_CMASK) * conv;
-	*a = (ColorComponent)((clr >> CLR_A) & CLR_CMASK) * conv;
+Color* color_sub(Color *clr, const Color *clr2) {
+	COLOR_OP(clr, -, clr2);
+	return clr;
 }
 
-void parse_color_array(Color clr, float array[4]) {
-	parse_color(clr, array, array+1, array+2, array+3);
+Color* color_mul(Color *clr, const Color *clr2) {
+	COLOR_OP(clr, *, clr2);
+	return clr;
 }
 
-Color derive_color(Color src, Color mask, Color mod) {
-	return (src & ~mask) | (mod & mask);
+Color* color_mul_alpha(Color *clr) {
+	clr->r *= clr->a;
+	clr->g *= clr->a;
+	clr->b *= clr->a;
+	return clr;
 }
 
-float color_component(Color clr, uint ofs) {
-	return (ColorComponent)((clr >> ofs) & CLR_CMASK) * conv;
+Color* color_mul_scalar(Color *clr, float scalar) {
+	clr->r *= scalar;
+	clr->g *= scalar;
+	clr->b *= scalar;
+	clr->a *= scalar;
+	return clr;
 }
 
-Color multiply_colors(Color c1, Color c2) {
-	float c1a[4], c2a[4];
-	parse_color_array(c1, c1a);
-	parse_color_array(c2, c2a);
-	return rgba(c1a[0]*c2a[0], c1a[1]*c2a[1], c1a[2]*c2a[2], c1a[3]*c2a[3]);
+Color* color_div(Color *clr, const Color *clr2) {
+	COLOR_OP(clr, /, clr2);
+	return clr;
 }
 
-Color add_colors(Color c1, Color c2) {
-	float c1a[4], c2a[4];
-	parse_color_array(c1, c1a);
-	parse_color_array(c2, c2a);
-	return rgba(c1a[0]+c2a[0], c1a[1]+c2a[1], c1a[2]+c2a[2], c1a[3]+c2a[3]);
+Color* color_div_alpha(Color *clr) {
+	if(clr->a != 0) {
+		clr->r /= clr->a;
+		clr->g /= clr->a;
+		clr->b /= clr->a;
+	}
+
+	return clr;
 }
 
-Color subtract_colors(Color c1, Color c2) {
-	float c1a[4], c2a[4];
-	parse_color_array(c1, c1a);
-	parse_color_array(c2, c2a);
-	return rgba(c1a[0]-c2a[0], c1a[1]-c2a[1], c1a[2]-c2a[2], c1a[3]-c2a[3]);
+Color* color_div_scalar(Color *clr, float scalar) {
+	clr->r /= scalar;
+	clr->g /= scalar;
+	clr->b /= scalar;
+	clr->a /= scalar;
+	return clr;
 }
 
-Color divide_colors(Color c1, Color c2) {
-	float c1a[4], c2a[4];
-	parse_color_array(c1, c1a);
-	parse_color_array(c2, c2a);
-	return rgba(c1a[0]/c2a[0], c1a[1]/c2a[1], c1a[2]/c2a[2], c1a[3]/c2a[3]);
+Color* color_lerp(Color *clr, const Color *clr2, float a) {
+	float ia = 1 - a;
+	clr->r = clr->r * ia + clr2->r * a;
+	clr->g = clr->g * ia + clr2->g * a;
+	clr->b = clr->b * ia + clr2->b * a;
+	clr->a = clr->a * ia + clr2->a * a;
+	return clr;
 }
 
-Color mix_colors(Color c1, Color c2, double a) {
-	float c1a[4], c2a[4];
-	double f1 = a;
-	double f2 = 1 - f1;
-	parse_color_array(c1, c1a);
-	parse_color_array(c2, c2a);
-	return rgba(f1*c1a[0]+f2*c2a[0], f1*c1a[1]+f2*c2a[1], f1*c1a[2]+f2*c2a[2], f1*c1a[3]+f2*c2a[3]);
-}
-
-Color approach_color(Color src, Color dst, double delta) {
-	float c1a[4], c2a[4];
-	parse_color_array(src, c1a);
-	parse_color_array(dst, c2a);
-	return rgba(
-		c1a[0] + (c2a[0] - c1a[0]) * delta,
-		c1a[1] + (c2a[1] - c1a[1]) * delta,
-		c1a[2] + (c2a[2] - c1a[2]) * delta,
-		c1a[3] + (c2a[3] - c1a[3]) * delta
-	);
+Color* color_approach(Color *clr, const Color *clr2, float delta) {
+	clr->r += (clr2->r - clr->r) * delta;
+	clr->g += (clr2->g - clr->g) * delta;
+	clr->b += (clr2->b - clr->b) * delta;
+	clr->a += (clr2->a - clr->a) * delta;
+	return clr;
 }
 
 static float hue_to_rgb(float v1, float v2, float vH) {
@@ -126,11 +117,9 @@ static float hue_to_rgb(float v1, float v2, float vH) {
 	return v1;
 }
 
-Color hsla(float h, float s, float l, float a) {
-	float r, g, b;
-
+Color* color_hsla(Color *clr, float h, float s, float l, float a) {
 	if(s == 0) {
-		r = g = b = l;
+		clr->r = clr->g = clr->b = l;
 	} else {
 		float v1, v2;
 		h = fmod(h, 1.0);
@@ -143,20 +132,42 @@ Color hsla(float h, float s, float l, float a) {
 
 		v1 = 2.0 * l - v2;
 
-		r = hue_to_rgb(v1, v2, h + (1.0/3.0));
-		g = hue_to_rgb(v1, v2, h);
-		b = hue_to_rgb(v1, v2, h - (1.0/3.0));
+		clr->r = hue_to_rgb(v1, v2, h + (1.0/3.0));
+		clr->g = hue_to_rgb(v1, v2, h);
+		clr->b = hue_to_rgb(v1, v2, h - (1.0/3.0));
 	}
 
-	return rgba(r, g, b, a);
+	clr->a = a;
+	return clr;
 }
 
-Color hsl(float h, float s, float l) {
-	return hsla(h, s, l, 1.0);
+Color* color_set_opacity(Color *clr, float opacity) {
+	// FIXME: is this correct?
+
+	if(clr->a != 0) {
+		opacity /= clr->a;
+	}
+
+	color_mul_scalar(clr, opacity);
+	return clr;
 }
 
-char* color_str(Color c) {
-	float r, g, b, a;
-	parse_color(c, &r, &g, &b, &a);
-	return strfmt("rgba(%f, %f, %f, %f) 0x%016"PRIxMAX, r, g, b, a, (uintmax_t)c);
+bool color_equals(const Color *clr, const Color *clr2) {
+	return (
+		clr->r == clr2->r &&
+		clr->g == clr2->g &&
+		clr->b == clr2->b &&
+		clr->a == clr2->a
+	);
+}
+
+char* color_str(const Color *clr) {
+	return strfmt(
+		"RGBA(%f, %f, %f, %f) at %p",
+		clr->r,
+		clr->g,
+		clr->b,
+		clr->a,
+		(void*)clr
+	);
 }

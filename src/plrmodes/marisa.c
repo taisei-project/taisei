@@ -53,7 +53,7 @@ void marisa_common_shot(Player *plr, int dmg) {
 	play_loop("generic_shot");
 
 	if(!(global.frames % 6)) {
-		Color c = rgb(1, 1, 1);
+		Color *c = RGB(1, 1, 1);
 
 		for(int i = -1; i < 2; i += 2) {
 			PROJECTILE(

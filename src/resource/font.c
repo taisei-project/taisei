@@ -343,14 +343,14 @@ static SpriteSheet* add_spritesheet(SpriteSheetAnchor *spritesheets) {
 	// but this crap is still here, please convert it.
 	Framebuffer *prev_fb = r_framebuffer_current();
 	Framebuffer atlast_fb;
-	Color cc_prev = r_clear_color_current();
+	Color cc_prev = *r_clear_color_current();
 	r_framebuffer_create(&atlast_fb);
 	r_framebuffer_attach(&atlast_fb, &ss->tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
 	r_framebuffer(&atlast_fb);
 	r_clear_color4(0, 0, 0, 0);
 	r_clear(CLEAR_COLOR);
 	r_framebuffer(prev_fb);
-	r_clear_color(cc_prev);
+	r_clear_color(&cc_prev);
 	r_framebuffer_destroy(&atlast_fb);
 
 	alist_append(spritesheets, ss);
@@ -821,10 +821,10 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 
 	sp.color = params->color;
 	sp.blend = params->blend;
-	sp.custom = params->custom;
+	sp.shader_params = params->shader_params;
 
-	if(sp.color == 0) {
-		// XXX: sprite batch code defaults this to rgb(1, 1, 1)
+	if(sp.color == NULL) {
+		// XXX: sprite batch code defaults this to RGB(1, 1, 1)
 		sp.color = r_color_current();
 	}
 
@@ -851,7 +851,7 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 	r_mat_push();
 	r_mat_translate(bbox_x_mid, bbox_y_mid, 0);
 	r_mat_scale(bbox_w, bbox_h, 0);
-	r_color(multiply_colors(rgba(1, 1, 1, 0.5), r_color_current()));
+	r_color(color_mul(RGBA(0.5, 0.5, 0.5, 0.5), r_color_current()));
 	r_draw_quad();
 	r_mat_pop();
 	r_state_pop();
@@ -980,7 +980,7 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 	r_clear_color4(0, 0, 0, 0);
 	r_clear(CLEAR_COLOR);
 
-	r_blend(BLEND_ALPHA);
+	r_blend(BLEND_PREMUL_ALPHA);
 	r_enable(RCAP_CULL_FACE);
 	r_cull(CULL_FRONT);
 	r_disable(RCAP_DEPTH_TEST);
@@ -1007,7 +1007,7 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 	text_draw(text, &(TextParams) {
 		.font_ptr = font,
 		.pos = { -out_bbox->x.min, -out_bbox->y.min + font->metrics.descent },
-		.color = rgb(1, 1, 1),
+		.color = RGB(1, 1, 1),
 		.shader = "text_default",
 	});
 

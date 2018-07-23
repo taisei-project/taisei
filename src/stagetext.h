@@ -45,8 +45,8 @@ struct StageText {
 
 void stagetext_free(void);
 void stagetext_draw(void);
-StageText* stagetext_add(const char *text, complex pos, Alignment align, Font *font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime);
-StageText* stagetext_add_numeric(int n, complex pos, Alignment align, Font *font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime);
+StageText* stagetext_add(const char *text, complex pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime);
+StageText* stagetext_add_numeric(int n, complex pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime);
 
 struct StageTextTable {
 	complex pos;
@@ -59,7 +59,7 @@ struct StageTextTable {
 	ListContainer *elems;
 };
 
-void stagetext_begin_table(StageTextTable *tbl, const char *title, Color titleclr, Color clr, double width, int delay, int lifetime, int fadeintime, int fadeouttime);
+void stagetext_begin_table(StageTextTable *tbl, const char *title, const Color *titleclr, const Color *clr, double width, int delay, int lifetime, int fadeintime, int fadeouttime);
 void stagetext_end_table(StageTextTable *tbl);
 void stagetext_table_add(StageTextTable *tbl, const char *title, const char *val);
 void stagetext_table_add_numeric(StageTextTable *tbl, const char *title, int n);
