@@ -147,7 +147,7 @@ static void reimu_dream_gap_renderer_visual(Enemy *e, int t, bool render) {
 					cimag(stretch_vector) * GAP_LENGTH * ofs
 				},
 				.rotation.angle = global.frames * -6 * DEG2RAD,
-				.color = rgb(0.95, 0.75, 1.0),
+				.color = RGB(0.95, 0.75, 1.0),
 				.scale.both = 0.5,
 			});
 		}
@@ -247,9 +247,12 @@ static int reimu_dream_needle(Projectile *p, int t) {
 
 	p->pos += p->args[0];
 
+	Color *c = color_mul(COLOR_COPY(&p->color), RGBA_MUL_ALPHA(0.75, 0.5, 1, 0.5));
+	c->a = 0;
+
 	PARTICLE(
 		.sprite_ptr = p->sprite,
-		.color = multiply_colors(p->color, rgba(0.75, 0.5, 1, 0.5)),
+		.color = c,
 		.timeout = 12,
 		.pos = p->pos,
 		.args = { p->args[0] * 0.8, 0, 0+3*I },
@@ -257,7 +260,6 @@ static int reimu_dream_needle(Projectile *p, int t) {
 		.draw_rule = ScaleFade,
 		.layer = LAYER_PARTICLE_LOW,
 		.flags = PFLAG_NOREFLECT,
-		.blend = BLEND_ADD,
 	);
 
 	return ACTION_NONE;
@@ -276,7 +278,7 @@ static void reimu_dream_shot(Player *p) {
 				PROJECTILE(
 					.proto = pp_needle,
 					.pos = p->pos,
-					.color = rgba(1, 1, 1, 0.5),
+					.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),
 					.rule = reimu_dream_needle,
 					.args = { -20.0 * shot_dir },
 					.type = PlrProj+dmg*2,
@@ -287,7 +289,7 @@ static void reimu_dream_shot(Player *p) {
 					PROJECTILE(
 						.proto = pp_ofuda,
 						.pos = p->pos + 10 * j * spread_dir,
-						.color = rgba(1, 1, 1, 0.5),
+						.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),
 						.rule = reimu_dream_ofuda,
 						.args = { -20.0 * shot_dir },
 						.type = PlrProj+dmg,

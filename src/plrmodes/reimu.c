@@ -55,8 +55,7 @@ static int reimu_ofuda_trail(Projectile *p, int t) {
 		return r;
 	}
 
-	float g = color_component(p->color, CLR_G) * 0.95;
-	p->color = derive_color(p->color, CLRMASK_G, rgba(0, g, 0, 0));
+	p->color.g *= 0.95;
 
 	return r;
 }
@@ -77,7 +76,7 @@ int reimu_common_ofuda(Projectile *p, int t) {
 	PARTICLE(
 		// .sprite_ptr = p->sprite,
 		.sprite = "hghost",
-		.color = p->color,
+		.color = &p->color,
 		.timeout = 12,
 		.pos = p->pos + p->args[0] * 0.3,
 		.args = { p->args[0] * 0.5, 0, 1+2*I },
@@ -98,7 +97,7 @@ void reimu_common_shot(Player *plr, int dmg) {
 		PROJECTILE(
 			.proto = pp_ofuda,
 			.pos = plr->pos + 10 * i - 15.0*I,
-			.color = rgba(1, 1, 1, 0.5),
+			.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),
 			.rule = reimu_common_ofuda,
 			.args = { -20.0*I },
 			.type = PlrProj+dmg,
@@ -107,7 +106,7 @@ void reimu_common_shot(Player *plr, int dmg) {
 	}
 }
 
-void reimu_common_draw_yinyang(Enemy *e, int t, Color c) {
+void reimu_common_draw_yinyang(Enemy *e, int t, const Color *c) {
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = "yinyang",
 		.shader = "sprite_yinyang",

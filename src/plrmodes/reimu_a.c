@@ -44,9 +44,13 @@ static int reimu_spirit_needle(Projectile *p, int t) {
 		return r;
 	}
 
+	Color c = p->color;
+	color_mul(&c, RGBA_MUL_ALPHA(0.75, 0.5, 1, 0.5));
+	c.a = 0;
+
 	PARTICLE(
 		.sprite_ptr = p->sprite,
-		.color = multiply_colors(p->color, rgba(0.75, 0.5, 1, 0.5)),
+		.color = &c,
 		.timeout = 12,
 		.pos = p->pos,
 		.args = { p->args[0] * 0.8, 0, 0+3*I },
@@ -54,7 +58,6 @@ static int reimu_spirit_needle(Projectile *p, int t) {
 		.draw_rule = ScaleFade,
 		.layer = LAYER_PARTICLE_LOW,
 		.flags = PFLAG_NOREFLECT,
-		.blend = BLEND_ADD,
 	);
 
 	return r;
@@ -67,15 +70,18 @@ static void reimu_spirit_homing_draw(Projectile *p, int t) {
 	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
 	r_mat_rotate(p->angle + M_PI/2, 0, 0, 1);
 	r_mat_scale(REIMU_SPIRIT_HOMING_SCALE, REIMU_SPIRIT_HOMING_SCALE, 1);
-	ProjDrawCore(p, p->color);
+	ProjDrawCore(p, &p->color);
 	r_mat_pop();
 }
 
 static Projectile* reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, double vfactor) {
+	Color *c = HSLA_MUL_ALPHA(t * 0.1, 0.6, 0.7, 0.45);
+	c->a = 0;
+
 	return PARTICLE(
 		.sprite = "ofuda_glow",
 		// .color = rgba(0.5 + 0.5 + psin(global.frames * 0.75), psin(t*0.5), 1, 0.5),
-		.color = hsla(t * 0.1, 0.6, 0.7, 0.45),
+		.color = c,
 		.timeout = 12,
 		.pos = p->pos,
 		.args = { p->args[0] * (0.6 + 0.4 * frand()) * vfactor, 0, (1+2*I) * REIMU_SPIRIT_HOMING_SCALE },
@@ -84,7 +90,6 @@ static Projectile* reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, doubl
 		.draw_rule = ScaleFade,
 		.layer = LAYER_PARTICLE_LOW,
 		.flags = PFLAG_NOREFLECT,
-		.blend = BLEND_ADD,
 	);
 }
 
@@ -107,7 +112,7 @@ static int reimu_spirit_homing_impact(Projectile *p, int t) {
 static Projectile* reimu_spirit_spawn_homing_impact(Projectile *p, int t) {
 	return PARTICLE(
 		.proto = p->proto,
-		.color = p->color,
+		.color = &p->color,
 		.timeout = 32,
 		.pos = p->pos,
 		.args = { 0, 0, (1+2*I) * REIMU_SPIRIT_HOMING_SCALE },
@@ -170,7 +175,7 @@ static void reimu_spirit_slave_shot(Enemy *e, int t) {
 		PROJECTILE(
 			.proto = pp_needle,
 			.pos = e->pos - 25.0*I,
-			.color = rgba(1, 1, 1, 0.5),
+			.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),
 			.rule = reimu_spirit_needle,
 			.args = { -20.0*I },
 			.type = PlrProj + cimag(e->args[2]),
@@ -182,7 +187,7 @@ static void reimu_spirit_slave_shot(Enemy *e, int t) {
 		PROJECTILE(
 			.proto = pp_ofuda,
 			.pos = e->pos,
-			.color = rgba(1, 0.9, 0.95, 0.7),
+			.color = RGBA_MUL_ALPHA(1, 0.9, 0.95, 0.7),
 			.rule = reimu_spirit_homing,
 			.draw_rule = reimu_spirit_homing_draw,
 			.args = { v , 60, 0, e->pos + v * VIEWPORT_H * VIEWPORT_W /*creal(e->pos)*/ },
@@ -246,7 +251,7 @@ static void reimu_spirit_yinyang_focused_visual(Enemy *e, int t, bool render) {
 	if(!render && player_should_shoot(&global.plr, true)) {
 		PARTICLE(
 			.sprite = "stain",
-			.color = rgba(1, 0.0 + 0.5 * frand(), 0, 1),
+			.color = RGBA(1, 0.0 + 0.5 * frand(), 0, 0),
 			.timeout = 12 + 2 * nfrand(),
 			.pos = e->pos,
 			.args = { -5*I * (1 + frand()), 0, 0.5 + 0*I },
@@ -255,12 +260,11 @@ static void reimu_spirit_yinyang_focused_visual(Enemy *e, int t, bool render) {
 			.draw_rule = ScaleFade,
 			.layer = LAYER_PARTICLE_HIGH,
 			.flags = PFLAG_NOREFLECT,
-			.blend = BLEND_ADD,
 		);
 	}
 
 	if(render) {
-		reimu_common_draw_yinyang(e, t, rgb(1.0, 0.8, 0.8));
+		reimu_common_draw_yinyang(e, t, RGB(1.0, 0.8, 0.8));
 	}
 }
 
@@ -268,7 +272,7 @@ static void reimu_spirit_yinyang_unfocused_visual(Enemy *e, int t, bool render) 
 	if(!render && player_should_shoot(&global.plr, true)) {
 		PARTICLE(
 			.sprite = "stain",
-			.color = rgba(1, 0.25, 0.0 + 0.5 * frand(), 1),
+			.color = RGBA(1, 0.25, 0.0 + 0.5 * frand(), 0),
 			.timeout = 12 + 2 * nfrand(),
 			.pos = e->pos,
 			.args = { -5*I * (1 + frand()), 0, 0.5 + 0*I },
@@ -277,12 +281,11 @@ static void reimu_spirit_yinyang_unfocused_visual(Enemy *e, int t, bool render) 
 			.draw_rule = ScaleFade,
 			.layer = LAYER_PARTICLE_HIGH,
 			.flags = PFLAG_NOREFLECT,
-			.blend = BLEND_ADD,
 		);
 	}
 
 	if(render) {
-		reimu_common_draw_yinyang(e, t, rgb(0.95, 0.75, 1.0));
+		reimu_common_draw_yinyang(e, t, RGB(0.95, 0.75, 1.0));
 	}
 }
 
