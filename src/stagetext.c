@@ -69,6 +69,14 @@ static void stagetext_draw_single(StageText *txt) {
 
 	int t = global.frames - txt->time.spawn;
 	float f = 1.0 - clamp((txt->time.life - t) / (float)txt->time.fadeout, 0, clamp(t / (float)txt->time.fadein, 0, 1));
+	float ofs_x, ofs_y;
+
+	if(txt->time.life - t < txt->time.fadeout) {
+		ofs_y = 10 * pow(f, 2);
+		ofs_x = 0;
+	} else {
+		ofs_x = ofs_y = 10 * pow(f, 2);
+	}
 
 	if(txt->custom.predraw) {
 		txt->custom.predraw(txt, t, 1.0 - f);
@@ -81,8 +89,8 @@ static void stagetext_draw_single(StageText *txt) {
 	params.shader_ptr = r_shader_get("text_stagetext");
 	params.shader_params = &(ShaderCustomParams){{ 1 - f }},
 	params.aux_textures[0] = get_tex("titletransition");
-	params.pos.x = creal(txt->pos)+10*f*f;
-	params.pos.y = cimag(txt->pos)+10*f*f;
+	params.pos.x = creal(txt->pos) + ofs_x;
+	params.pos.y = cimag(txt->pos) + ofs_y;
 	params.color = &txt->color;
 
 	text_draw(txt->text, &params);

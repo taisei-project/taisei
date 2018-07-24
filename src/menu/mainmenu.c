@@ -184,6 +184,7 @@ void draw_main_menu(MenuData *menu) {
 		.pos = { SCREEN_W-5, SCREEN_H-10 },
 		.font = "small",
 	});
+
 	r_shader_standard();
 }
 
