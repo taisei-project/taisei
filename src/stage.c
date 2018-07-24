@@ -251,6 +251,10 @@ static void stage_ingame_menu_loop(MenuData *menu) {
 }
 
 void stage_pause(void) {
+	if(global.game_over == GAMEOVER_TRANSITIONING) {
+		return;
+	}
+
 	MenuData menu;
 
 	if(global.replaymode == REPLAY_PLAY) {
@@ -561,9 +565,8 @@ static FrameAction stage_logic_frame(void *arg) {
 			stage->procs->event();
 		}
 
-		if(stage->type == STAGE_SPELL && !global.boss && global.game_over != GAMEOVER_RESTART) {
-			stage_finish(GAMEOVER_WIN);
-			fstate->transition_delay = 60;
+		if(stage->type == STAGE_SPELL && !global.boss && !fstate->transition_delay) {
+			fstate->transition_delay = 120;
 		}
 
 		stage->procs->update();
@@ -573,7 +576,9 @@ static FrameAction stage_logic_frame(void *arg) {
 	stage_logic();
 
 	if(fstate->transition_delay) {
-		--fstate->transition_delay;
+		if(!--fstate->transition_delay) {
+			stage_finish(GAMEOVER_WIN);
+		}
 	} else {
 		update_transition();
 	}
