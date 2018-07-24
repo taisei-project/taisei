@@ -1188,12 +1188,6 @@ static bool options_text_input_handler(SDL_Event *event, void *arg) {
 		return true;
 	}
 
-	if(t == MAKE_TAISEI_EVENT(TE_MENU_ABORT)) {
-		play_ui_sound("hit");
-		b->blockinput = false;
-		return true;
-	}
-
 	if(t == SDL_KEYDOWN) {
 		SDL_Scancode scan = event->key.keysym.scancode;
 
