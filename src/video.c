@@ -238,7 +238,6 @@ void video_set_mode(int w, int h, bool fs, bool resizable) {
 
 static void* video_screenshot_task(void *arg) {
 	ScreenshotTaskData *tdata = arg;
-	log_debug("%u %u %s", tdata->width, tdata->height, tdata->dest_path);
 
 	uint width = tdata->width;
 	uint height = tdata->height;
@@ -299,8 +298,6 @@ void video_take_screenshot(void) {
 	ScreenshotTaskData tdata;
 	memset(&tdata, 0, sizeof(tdata));
 	tdata.pixels = r_screenshot(&tdata.width, &tdata.height);
-
-	log_debug("Screenshot requested");
 
 	if(!tdata.pixels) {
 		log_warn("Failed to take a screenshot");

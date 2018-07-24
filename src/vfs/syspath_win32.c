@@ -45,8 +45,6 @@ static void _vfs_set_error_win32(const char *file, int line) {
 		0, NULL
 	);
 
-	log_debug("%p", buf);
-
 	char *errstr = WIN_StringToUTF8(buf);
 	LocalFree(buf);
 	vfs_set_error("Win32 error %lu: %s [%s:%i]", err, errstr, file, line);

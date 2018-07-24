@@ -45,7 +45,7 @@ static bool include_shader(const char *path, SDL_RWops *dest, int include_level,
 		return false;
 	}
 
-	log_debug("[%i] %s", include_level, path);
+	// log_debug("[%i] %s", include_level, path);
 
 	SDL_RWops *stream = vfs_open(path, VFS_MODE_READ);
 

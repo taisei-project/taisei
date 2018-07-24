@@ -152,7 +152,7 @@ void r_flush_sprites(void) {
 		_r_sprite_batch.base_instance += pending;
 
 		if(_r_sprite_batch.vbuf.size - _r_sprite_batch.vbuf.offset < sizeof(SpriteAttribs)) {
-			log_debug("Invalidating after %u sprites", _r_sprite_batch.base_instance);
+			// log_debug("Invalidating after %u sprites", _r_sprite_batch.base_instance);
 			r_vertex_buffer_invalidate(&_r_sprite_batch.vbuf);
 			_r_sprite_batch.base_instance = 0;
 		}

@@ -430,7 +430,7 @@ static void delete_spritesheet(SpriteSheetAnchor *spritesheets, SpriteSheet *ss)
 }
 
 static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesheets) {
-	log_debug("Loading glyph 0x%08x", gindex);
+	// log_debug("Loading glyph 0x%08x", gindex);
 
 	if(++font->glyphs_used == font->glyphs_allocated) {
 		font->glyphs_allocated *= 2;
@@ -492,7 +492,7 @@ static Glyph* get_glyph(Font *fnt, charcode_t cp) {
 	if(!ht_lookup(&fnt->charcodes_to_glyph_ofs, cp, &ofs)) {
 		Glyph *glyph;
 		uint ft_index = FT_Get_Char_Index(fnt->face, cp);
-		log_debug("Glyph for charcode 0x%08lx not cached", cp);
+		// log_debug("Glyph for charcode 0x%08lx not cached", cp);
 
 		if(ft_index == 0 && cp != UNICODE_UNKNOWN) {
 			log_debug("Font has no glyph for charcode 0x%08lx", cp);

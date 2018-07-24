@@ -41,8 +41,6 @@ struct Task {
 static TaskManager *g_taskmgr;
 
 static void taskmgr_free(TaskManager *mgr) {
-	log_debug("%08lx freeing task manager %p", SDL_ThreadID(), (void*)mgr);
-
 	if(mgr->mutex != NULL) {
 		SDL_DestroyMutex(mgr->mutex);
 	}
@@ -57,8 +55,6 @@ static void taskmgr_free(TaskManager *mgr) {
 static void task_free(Task *task) {
 	assert(!task->in_queue);
 	assert(task->disowned);
-
-	log_debug("%08lx freeing task %p", SDL_ThreadID(), (void*)task);
 
 	if(task->userdata_free_callback != NULL) {
 		task->userdata_free_callback(task->userdata);
@@ -78,8 +74,6 @@ static void task_free(Task *task) {
 static int taskmgr_thread(void *arg) {
 	TaskManager *mgr = arg;
 	attr_unused SDL_threadID tid = SDL_ThreadID();
-
-	log_debug("%08lx stage 1", tid);
 
 	if(SDL_SetThreadPriority(mgr->thread_prio) < 0) {
 		log_sdl_error("SDL_SetThreadPriority");
@@ -101,8 +95,6 @@ static int taskmgr_thread(void *arg) {
 		SDL_UnlockMutex(mgr->mutex);
 	} while(!running && !aborted);
 
-	log_debug("%08lx stage 2", tid);
-
 	while(running && !aborted) {
 		SDL_LockMutex(mgr->mutex);
 		Task *task = alist_pop(&mgr->queue);
@@ -111,15 +103,12 @@ static int taskmgr_thread(void *arg) {
 		aborted = mgr->aborted;
 
 		if(running && task == NULL && !aborted) {
-			log_debug("%08lx sleep: %i %i %p", tid, running, aborted, (void*)task);
 			SDL_CondWait(mgr->cond, mgr->mutex);
-			log_debug("%08lx wake", tid);
 		}
 
 		SDL_UnlockMutex(mgr->mutex);
 
 		if(task != NULL) {
-			log_debug("%08lx taking task %p", tid, (void*)task);
 			SDL_LockMutex(task->mutex);
 
 			bool task_disowned = task->disowned;
@@ -129,7 +118,6 @@ static int taskmgr_thread(void *arg) {
 			}
 
 			if(task->status == TASK_PENDING) {
-				log_debug("%08lx task %p running", tid, (void*)task);
 				task->status = TASK_RUNNING;
 
 				SDL_UnlockMutex(task->mutex);
@@ -139,8 +127,6 @@ static int taskmgr_thread(void *arg) {
 				assert(task->in_queue);
 				task->in_queue = false;
 				(void)SDL_AtomicDecRef(&mgr->numtasks);
-
-				log_debug("%08lx task %p done", tid, (void*)task);
 
 				if((task_disowned = task->disowned)) {
 					SDL_UnlockMutex(task->mutex);
@@ -156,8 +142,6 @@ static int taskmgr_thread(void *arg) {
 				(void)SDL_AtomicDecRef(&mgr->numtasks);
 				SDL_UnlockMutex(task->mutex);
 
-				log_debug("%08lx task %p is cancelled", tid, (void*)task);
-
 				if(task_disowned) {
 					task_free(task);
 				}
@@ -167,7 +151,6 @@ static int taskmgr_thread(void *arg) {
 		}
 	}
 
-	log_debug("%08lx thread exiting", tid);
 	return 0;
 }
 
@@ -341,14 +324,12 @@ bool task_wait(Task *task, void **result) {
 	bool success = false;
 
 	if(task == NULL) {
-		log_debug("%08lx task was null", SDL_ThreadID());
 		return success;
 	}
 
 	void *_result = NULL;
 
 	SDL_LockMutex(task->mutex);
-	log_debug("%08lx %p %i", SDL_ThreadID(), (void*)task, task->status);
 
 	if(task->status == TASK_CANCELLED) {
 		success = false;
@@ -356,11 +337,9 @@ bool task_wait(Task *task, void **result) {
 		success = true;
 		_result = task->result;
 	} else {
-		log_debug("%08lx %p sleep", SDL_ThreadID(), (void*)task);
 		SDL_CondWait(task->cond, task->mutex);
 		_result = task->result;
 		success = (task->status == TASK_FINISHED);
-		log_debug("%08lx %p wake %i %i", SDL_ThreadID(), (void*)task, task->status, success);
 	}
 
 	SDL_UnlockMutex(task->mutex);
