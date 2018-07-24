@@ -66,6 +66,7 @@ typedef struct TextParams {
 	struct { double x, y; } pos;
 	const Color *color;
 	const ShaderCustomParams *shader_params;
+	Texture *aux_textures[NUM_SPRITE_AUX_TEXTURES];
 	BlendMode blend;
 	Alignment align;
 } TextParams;

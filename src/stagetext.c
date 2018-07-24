@@ -74,25 +74,18 @@ static void stagetext_draw_single(StageText *txt) {
 		txt->custom.predraw(txt, t, 1.0 - f);
 	}
 
-	r_state_push();
-	r_texture(1, "titletransition");
-	r_shader("text_stagetext");
-	r_uniform_int("trans", 1);
-
 	TextParams params = { 0 };
 	params.font_ptr = txt->font;
 	params.align = txt->align;
 	params.blend = BLEND_PREMUL_ALPHA;
-	params.shader_ptr = r_shader_current();
-
+	params.shader_ptr = r_shader_get("text_stagetext");
 	params.shader_params = &(ShaderCustomParams){{ 1 - f }},
+	params.aux_textures[0] = get_tex("titletransition");
 	params.pos.x = creal(txt->pos)+10*f*f;
 	params.pos.y = cimag(txt->pos)+10*f*f;
-
 	params.color = &txt->color;
-	text_draw(txt->text, &params);
 
-	r_state_pop();
+	text_draw(txt->text, &params);
 }
 
 void stagetext_draw(void) {

@@ -822,6 +822,7 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 	sp.color = params->color;
 	sp.blend = params->blend;
 	sp.shader_params = params->shader_params;
+	memcpy(sp.aux_textures, params->aux_textures, sizeof(sp.aux_textures));
 
 	if(sp.color == NULL) {
 		// XXX: sprite batch code defaults this to RGB(1, 1, 1)

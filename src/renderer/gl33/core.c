@@ -12,6 +12,7 @@
 #include "../api.h"
 #include "../common/matstack.h"
 #include "../common/backend.h"
+#include "../common/sprite_batch.h"
 #include "texture.h"
 #include "shader_object.h"
 #include "shader_program.h"
@@ -515,6 +516,8 @@ uint gl33_activate_texunit(uint unit) {
 }
 
 void gl33_texture_deleted(Texture *tex) {
+	_r_sprite_batch_texture_deleted(tex);
+
 	for(uint i = 0; i < R_MAX_TEXUNITS; ++i) {
 		if(R.texunits.indexed[i].tex2d.pending == tex) {
 			R.texunits.indexed[i].tex2d.pending = NULL;

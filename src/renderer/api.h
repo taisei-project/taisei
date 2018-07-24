@@ -350,12 +350,16 @@ typedef union ShaderCustomParams {
 	Color color;
 } ShaderCustomParams;
 
+#define NUM_SPRITE_AUX_TEXTURES (R_MAX_TEXUNITS - 1)
+
 typedef struct SpriteParams {
 	const char *sprite;
 	Sprite *sprite_ptr;
 
 	const char *shader;
 	ShaderProgram *shader_ptr;
+
+	Texture *aux_textures[NUM_SPRITE_AUX_TEXTURES];
 
 	const Color *color;
 	BlendMode blend;

@@ -35,6 +35,10 @@ OUT(0) vec4 fragColor;
 
 UNIFORM(0) sampler2D tex;
 
+// For why this is 7, see NUM_SPRITE_AUX_TEXTURES api.h.
+// This line is here just in case you're grepping for "R_MAX_TEXUNITS".
+UNIFORM(64) sampler2D tex_aux[7];
+
 VARYING(0) vec2  texCoordRaw;
 VARYING(1) vec2  texCoord;
 VARYING(2) vec2  texCoordOverlay;

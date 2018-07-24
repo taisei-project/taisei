@@ -25,7 +25,8 @@ static struct SpriteBatchState {
 	VertexArray varr;
 	VertexBuffer vbuf;
 	uint base_instance;
-	Texture *tex;
+	Texture *primary_texture;
+	Texture *aux_textures[R_MAX_TEXUNITS - 1];
 	ShaderProgram *shader;
 	BlendMode blend;
 	Framebuffer *framebuffer;
@@ -137,8 +138,23 @@ void r_flush_sprites(void) {
 	glm_mat4_copy(_r_sprite_batch.projection, *r_mat_current_ptr(MM_PROJECTION));
 
 	r_vertex_array(&_r_sprite_batch.varr);
-	r_texture_ptr(0, _r_sprite_batch.tex);
 	r_shader_ptr(_r_sprite_batch.shader);
+	r_texture_ptr(0, _r_sprite_batch.primary_texture);
+
+	int aux_samplers[NUM_SPRITE_AUX_TEXTURES] = { 0 };
+
+	for(uint i = 0; i < NUM_SPRITE_AUX_TEXTURES; ++i) {
+		Texture *tex = _r_sprite_batch.aux_textures[i];
+
+		if(tex != NULL) {
+			r_texture_ptr(i + 1, tex);
+			aux_samplers[i] = i + 1;
+		}
+	}
+
+	r_uniform_int("tex", 0);
+	r_uniform("tex_aux[0]", NUM_SPRITE_AUX_TEXTURES, aux_samplers);
+
 	r_framebuffer(_r_sprite_batch.framebuffer);
 	r_blend(_r_sprite_batch.blend);
 	r_capability(RCAP_DEPTH_TEST, _r_sprite_batch.depth_test_enabled);
@@ -235,9 +251,18 @@ void r_draw_sprite(const SpriteParams *params) {
 		spr = get_sprite(params->sprite);
 	}
 
-	if(spr->tex != _r_sprite_batch.tex) {
+	if(spr->tex != _r_sprite_batch.primary_texture) {
 		r_flush_sprites();
-		_r_sprite_batch.tex = spr->tex;
+		_r_sprite_batch.primary_texture = spr->tex;
+	}
+
+	for(uint i = 0; i < NUM_SPRITE_AUX_TEXTURES; ++i) {
+		Texture *aux_tex = params->aux_textures[i];
+
+		if(aux_tex != NULL && aux_tex != _r_sprite_batch.aux_textures[i]) {
+			r_flush_sprites();
+			_r_sprite_batch.aux_textures[i] = aux_tex;
+		}
 	}
 
 	ShaderProgram *prog = params->shader_ptr;
@@ -355,4 +380,16 @@ void _r_sprite_batch_end_frame(void) {
 	memset(&_r_sprite_batch.frame_stats, 0, sizeof(_r_sprite_batch.frame_stats));
 
 #endif
+}
+
+void _r_sprite_batch_texture_deleted(Texture *tex) {
+	if(_r_sprite_batch.primary_texture == tex) {
+		_r_sprite_batch.primary_texture = NULL;
+	}
+
+	for(uint i = 0; i < NUM_SPRITE_AUX_TEXTURES; ++i) {
+		if(_r_sprite_batch.aux_textures[i] == tex) {
+			_r_sprite_batch.aux_textures[i] = NULL;
+		}
+	}
 }
