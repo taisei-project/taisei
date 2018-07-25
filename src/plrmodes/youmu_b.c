@@ -283,6 +283,7 @@ static int youmu_particle_slice_logic(Projectile *p, int t) {
 				afrand(1) + afrand(2)*I,
 				afrand(3) + 360.0*I*afrand(0)
 			},
+			.layer = LAYER_PARTICLE_HIGH | 0x2,
 		);
 	}
 
@@ -315,6 +316,7 @@ static int youmu_slash(Enemy *e, int t) {
 			.flags = PFLAG_NOREFLECT,
 			.timeout = 100,
 			.angle = carg(pos),
+			.layer = LAYER_PARTICLE_HIGH | 0x1,
 		);
 	}
 
