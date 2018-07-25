@@ -19,7 +19,12 @@ typedef struct SpriteAttribs {
 	FloatRect texrect;
 	float sprite_size[2];
 	float custom[4];
+
+	// offset of this == size without padding.
+	char end_of_fields;
 } SpriteAttribs;
+
+#define SIZEOF_SPRITE_ATTRIBS (offsetof(SpriteAttribs, end_of_fields))
 
 static struct SpriteBatchState {
 	VertexArray varr;
@@ -52,7 +57,7 @@ void _r_sprite_batch_init(void) {
 	#endif
 
 	size_t sz_vert = sizeof(GenericModelVertex);
-	size_t sz_attr = sizeof(SpriteAttribs);
+	size_t sz_attr = SIZEOF_SPRITE_ATTRIBS;
 
 	#define VERTEX_OFS(attr)   offsetof(GenericModelVertex,  attr)
 	#define INSTANCE_OFS(attr) offsetof(SpriteAttribs, attr)
@@ -91,7 +96,7 @@ void _r_sprite_batch_init(void) {
 
 	r_vertex_buffer_create(
 		&_r_sprite_batch.vbuf,
-		sizeof(SpriteAttribs) * capacity,
+		sz_attr * capacity,
 		NULL
 	);
 	r_vertex_buffer_invalidate(&_r_sprite_batch.vbuf);
@@ -167,7 +172,7 @@ void r_flush_sprites(void) {
 		r_draw(PRIM_TRIANGLE_FAN, 0, 4, NULL, pending, _r_sprite_batch.base_instance);
 		_r_sprite_batch.base_instance += pending;
 
-		if(_r_sprite_batch.vbuf.size - _r_sprite_batch.vbuf.offset < sizeof(SpriteAttribs)) {
+		if(_r_sprite_batch.vbuf.size - _r_sprite_batch.vbuf.offset < SIZEOF_SPRITE_ATTRIBS) {
 			// log_debug("Invalidating after %u sprites", _r_sprite_batch.base_instance);
 			r_vertex_buffer_invalidate(&_r_sprite_batch.vbuf);
 			_r_sprite_batch.base_instance = 0;
@@ -236,7 +241,7 @@ static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, VertexB
 		memset(attribs.custom, 0, sizeof(attribs.custom));
 	}
 
-	r_vertex_buffer_append(vbuf, sizeof(attribs), &attribs);
+	r_vertex_buffer_append(vbuf, SIZEOF_SPRITE_ATTRIBS, &attribs);
 	_r_sprite_batch.frame_stats.sprites++;
 }
 
@@ -338,9 +343,9 @@ void r_draw_sprite(const SpriteParams *params) {
 		glm_mat4_copy(*current_projection, _r_sprite_batch.projection);
 	}
 
-	if(_r_sprite_batch.vbuf.size - _r_sprite_batch.vbuf.offset < sizeof(SpriteAttribs)) {
+	if(_r_sprite_batch.vbuf.size - _r_sprite_batch.vbuf.offset < SIZEOF_SPRITE_ATTRIBS) {
 		if(!r_supports(RFEAT_DRAW_INSTANCED_BASE_INSTANCE)) {
-			log_warn("Vertex buffer exhausted (%zu needed for next sprite, %u remaining), flush forced", sizeof(SpriteAttribs), _r_sprite_batch.vbuf.size - _r_sprite_batch.vbuf.offset);
+			log_warn("Vertex buffer exhausted (%zu needed for next sprite, %u remaining), flush forced", SIZEOF_SPRITE_ATTRIBS, _r_sprite_batch.vbuf.size - _r_sprite_batch.vbuf.offset);
 		}
 
 		r_flush_sprites();
