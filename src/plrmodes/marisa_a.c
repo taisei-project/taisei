@@ -391,12 +391,14 @@ static int marisa_laser_slave(Enemy *e, int t) {
 		return 1;
 	}
 
-	if(t == EVENT_DEATH && !global.game_over && creal(laser_renderer->args[0])) {
-		spawn_laser_fader(e, laser_renderer->args[0]);
+	if(t == EVENT_DEATH) {
+		if(!global.game_over && creal(laser_renderer->args[0])) {
+			spawn_laser_fader(e, laser_renderer->args[0]);
+		}
 
 		MarisaLaserData *ld = REF(e->args[3]);
-		free(ld);
 		free_ref(e->args[3]);
+		free(ld);
 		return 1;
 	}
 
