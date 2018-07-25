@@ -226,9 +226,10 @@ void BigFairy(Enemy *e, int t, bool render) {
 	}
 
 	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;
+	Color *clr = RGBA_MUL_ALPHA(1, 1, 1, e->alpha);
 
 	r_draw_sprite(&(SpriteParams) {
-		.color = RGBA(1, 1, 1, e->alpha),
+		.color = clr,
 		.sprite = "fairy_circle",
 		.pos = { creal(e->pos), cimag(e->pos) },
 		.rotation.angle = global.frames * 10 * DEG2RAD,
@@ -240,7 +241,7 @@ void BigFairy(Enemy *e, int t, bool render) {
 	Sprite *spr = animation_get_frame(ani,get_ani_sequence(ani, seqname),global.frames);
 
 	r_draw_sprite(&(SpriteParams) {
-		.color = RGBA(1, 1, 1, e->alpha),
+		.color = clr,
 		.sprite_ptr = spr,
 		.pos = { creal(e->pos), cimag(e->pos) },
 	});
@@ -252,9 +253,10 @@ void Fairy(Enemy *e, int t, bool render) {
 	}
 
 	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;
+	Color *clr = RGBA_MUL_ALPHA(1, 1, 1, e->alpha);
 
 	r_draw_sprite(&(SpriteParams) {
-		.color = RGBA(1, 1, 1, e->alpha),
+		.color = clr,
 		.sprite = "fairy_circle",
 		.pos = { creal(e->pos), cimag(e->pos) },
 		.rotation.angle = global.frames * 10 * DEG2RAD,
@@ -266,7 +268,7 @@ void Fairy(Enemy *e, int t, bool render) {
 	Sprite *spr = animation_get_frame(ani,get_ani_sequence(ani, seqname),global.frames);
 
 	r_draw_sprite(&(SpriteParams) {
-		.color = RGBA(1, 1, 1, e->alpha),
+		.color = clr,
 		.sprite_ptr = spr,
 		.pos = { creal(e->pos), cimag(e->pos) },
 	});
@@ -278,7 +280,7 @@ void Swirl(Enemy *e, int t, bool render) {
 	}
 
 	r_draw_sprite(&(SpriteParams) {
-		.color = RGBA(1, 1, 1, e->alpha),
+		.color = RGBA_MUL_ALPHA(1, 1, 1, e->alpha),
 		.sprite = "enemy/swirl",
 		.pos = { creal(e->pos), cimag(e->pos) },
 		.rotation.angle = t * 10 * DEG2RAD,
