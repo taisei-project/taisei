@@ -74,15 +74,13 @@ void marisa_common_slave_visual(Enemy *e, int t, bool render) {
 		return;
 	}
 
-	r_mat_push();
-	ShaderProgram *current = r_shader_current();
-	r_mat_translate(creal(e->pos), cimag(e->pos), 0);
-	r_mat_rotate(0.05*t, 0, 0, 1);
-	r_shader("marisa_hakkero");
-	r_color4(0.2, 0.4, 0.5, 1);
-	draw_sprite_batched(0, 0, "hakkero");
-	r_shader_ptr(current);
-	r_mat_pop();
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "hakkero",
+		.shader = "marisa_hakkero",
+		.pos = { creal(e->pos), cimag(e->pos) },
+		.rotation.angle = t * 0.05,
+		.color = RGB(0.2, 0.4, 0.5),
+	});
 }
 
 void marisa_common_masterspark_draw(int t) {
