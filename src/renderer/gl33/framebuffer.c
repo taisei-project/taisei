@@ -52,17 +52,8 @@ void gl33_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, uint mipmap
 Texture* gl33_framebuffer_get_attachment(Framebuffer *framebuffer, FramebufferAttachment attachment) {
 	assert(framebuffer->impl != NULL);
 	assert(attachment >= 0 && attachment < FRAMEBUFFER_MAX_ATTACHMENTS);
-
-	if(!framebuffer->impl->initialized) {
-		Framebuffer *prev_fb = r_framebuffer_current();
-		r_framebuffer(framebuffer);
-		gl33_sync_framebuffer(); // implicitly initializes!
-		r_framebuffer(prev_fb);
-	}
-
 	return framebuffer->impl->attachments[attachment];
 }
-
 
 uint gl33_framebuffer_get_attachment_mipmap(Framebuffer *framebuffer, FramebufferAttachment attachment) {
 	assert(framebuffer->impl != NULL);
@@ -105,5 +96,7 @@ void gl33_framebuffer_prepare(Framebuffer *framebuffer) {
 
 			glDrawBuffers(FRAMEBUFFER_MAX_COLOR_ATTACHMENTS, drawbufs);
 		}
+
+		framebuffer->impl->initialized = true;
 	}
 }
