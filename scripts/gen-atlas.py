@@ -111,7 +111,7 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, border=1, force_single=Fa
         # Fine-tuned for least area used after crop
         sort_algo=rectpack.SORT_SSIDE,
         bin_algo=rectpack.PackingBin.BFF,
-        pack_algo=rectpack.MaxRectsBl
+        pack_algo=rectpack.MaxRectsBl,
     )
 
     binsize = list(binsize)
@@ -225,8 +225,10 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, border=1, force_single=Fa
         executor.shutdown(wait=True)
 
         # Only now, if everything is ok so far, copy everything to the destination, possibly overwriting previous results
-        for path in dst.glob('atlas_{}_*.png'.format(atlasname)):
-            path.unlink()
+        pattern = re.compile('^atlas_{}_\d+.png$'.format(re.escape(atlasname)))
+        for path in dst.iterdir():
+            if pattern.match(path.name):
+                path.unlink()
 
         targets = list(temp_dst.glob('**/*'))
 
