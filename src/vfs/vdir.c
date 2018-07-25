@@ -41,7 +41,7 @@ static const char* vfs_vdir_iter(VFSNode *vdir, void **opaque) {
 	ht_str2ptr_iter_t *iter = *opaque;
 
 	if(!iter) {
-		iter = calloc(1, sizeof(*iter));
+		iter = *opaque = calloc(1, sizeof(*iter));
 		ht_iter_begin(VDIR_TABLE(vdir), iter);
 	} else {
 		ht_iter_next(iter);
