@@ -406,7 +406,8 @@ static int marisa_laser_slave(Enemy *e, int t) {
 		return 1;
 	}
 
-	e->pos = global.plr.pos + (1 - global.plr.focus/30.0)*e->pos0 + (global.plr.focus/30.0)*e->args[0];
+	complex target_pos = global.plr.pos + (1 - global.plr.focus/30.0)*e->pos0 + (global.plr.focus/30.0)*e->args[0];
+	e->pos += (target_pos - e->pos) * 0.5;
 
 	MarisaLaserData *ld = REF(e->args[3]);
 	complex pdelta = e->pos - ld->prev_pos;
@@ -547,6 +548,12 @@ static void marisa_laser_bomb(Player *plr) {
 	create_enemy_p(&plr->slaves, 40.0*I, ENEMY_BOMB, masterspark_visual, masterspark, 280,0,0,0);
 }
 
+static Enemy* marisa_laser_spawn_slave(Player *plr, complex pos, complex a0, complex a1, complex a2, complex a3) {
+	Enemy *e = create_enemy_p(&plr->slaves, pos, ENEMY_IMMUNE, marisa_laser_slave_visual, marisa_laser_slave, a0, a1, a2, a3);
+	e->pos = plr->pos;
+	return e;
+}
+
 static void marisa_laser_respawn_slaves(Player *plr, short npow) {
 	Enemy *e = plr->slaves.first, *tmp;
 	double dmg = 8;
@@ -560,27 +567,27 @@ static void marisa_laser_respawn_slaves(Player *plr, short npow) {
 	}
 
 	if(npow / 100 == 1) {
-		create_enemy_p(&plr->slaves, -40.0*I, ENEMY_IMMUNE, marisa_laser_slave_visual, marisa_laser_slave, -40.0*I, dmg, 0, 0);
+		marisa_laser_spawn_slave(plr, -40.0*I, -40.0*I, dmg, 0, 0);
 	}
 
 	if(npow >= 200) {
-		create_enemy_p(&plr->slaves, 25-5.0*I, ENEMY_IMMUNE, marisa_laser_slave_visual, marisa_laser_slave, 9-40.0*I, dmg,   -M_PI/30, 0);
-		create_enemy_p(&plr->slaves, -25-5.0*I, ENEMY_IMMUNE, marisa_laser_slave_visual, marisa_laser_slave, -9-40.0*I, dmg,  M_PI/30, 0);
+		marisa_laser_spawn_slave(plr,  25-5.0*I,  9-40.0*I, dmg, -M_PI/30, 0);
+		marisa_laser_spawn_slave(plr, -25-5.0*I, -9-40.0*I, dmg,  M_PI/30, 0);
 	}
 
 	if(npow / 100 == 3) {
-		create_enemy_p(&plr->slaves, -30.0*I, ENEMY_IMMUNE, marisa_laser_slave_visual, marisa_laser_slave, -55.0*I, dmg, 0, 0);
+		marisa_laser_spawn_slave(plr, -30.0*I, -55.0*I, dmg, 0, 0);
 	}
 
 	if(npow >= 400) {
-		create_enemy_p(&plr->slaves, 17-30.0*I, ENEMY_IMMUNE, marisa_laser_slave_visual, marisa_laser_slave, 18-55.0*I, dmg, M_PI/60, 0);
-		create_enemy_p(&plr->slaves, -17-30.0*I, ENEMY_IMMUNE, marisa_laser_slave_visual, marisa_laser_slave, -18-55.0*I, dmg, -M_PI/60, 0);
+		marisa_laser_spawn_slave(plr,  17-30.0*I,  18-55.0*I, dmg,  M_PI/60, 0);
+		marisa_laser_spawn_slave(plr, -17-30.0*I, -18-55.0*I, dmg, -M_PI/60, 0);
 	}
 
 	for(e = plr->slaves.first; e; e = e->next) {
 		if(e->logic_rule == marisa_laser_slave) {
 			MarisaLaserData *ld = calloc(1, sizeof(MarisaLaserData));
-			ld->prev_pos = e->pos + plr->pos;
+			ld->prev_pos = e->pos;
 			e->args[3] = add_ref(ld);
 			e->ent.draw_layer = LAYER_PLAYER_SLAVE;
 		}
