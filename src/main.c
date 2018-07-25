@@ -153,6 +153,7 @@ int main(int argc, char **argv) {
 	int replay_idx = 0;
 	bool headless = false;
 
+	htutil_init();
 	init_log();
 
 	stage_init_array(); // cli_args depends on this
@@ -213,7 +214,6 @@ int main(int argc, char **argv) {
 
 	free_cli_action(&a);
 
-	htutil_init();
 	vfs_setup(false);
 
 	if(headless) {
