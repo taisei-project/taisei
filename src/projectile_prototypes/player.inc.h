@@ -7,5 +7,6 @@ PP_PLAYER(youhoming,   50, 50)
 PP_PLAYER(youmu,       16, 24)
 PP_PLAYER(ofuda,       16, 26)
 PP_PLAYER(needle,      14, 72)
+PP_PLAYER(needle2,      7, 65)
 
 #undef PP_PLAYER

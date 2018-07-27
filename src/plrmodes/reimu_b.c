@@ -227,7 +227,7 @@ static int reimu_dream_ofuda(Projectile *p, int t) {
 
 	complex ov = p->args[0];
 	double s = cabs(ov);
-	p->args[0] *= clamp(s * (1.5 - t / 10.0), s*0.5, 1.5*s) / s;
+	p->args[0] *= clamp(s * (1.5 - t / 10.0), s*1.0, 1.5*s) / s;
 	int r = reimu_common_ofuda(p, t);
 	p->args[0] = ov;
 
@@ -274,47 +274,125 @@ static void reimu_dream_shot(Player *p) {
 			complex shot_dir = i * ((p->inputflags & INFLAG_FOCUS) ? 1 : I);
 			complex spread_dir = shot_dir * cexp(I*M_PI*0.5);
 
-			if(!(global.frames % 12)) {
+			for(int j = -1; j < 2; j += 2) {
 				PROJECTILE(
-					.proto = pp_needle,
-					.pos = p->pos,
+					.proto = pp_ofuda,
+					.pos = p->pos + 10 * j * spread_dir,
 					.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),
-					.rule = reimu_dream_needle,
+					.rule = reimu_dream_ofuda,
 					.args = { -20.0 * shot_dir },
-					.type = PlrProj+dmg*2,
+					.type = PlrProj+dmg,
 					.shader = "sprite_default",
 				);
-			} else {
-				for(int j = -1; j < 2; j += 2) {
-					PROJECTILE(
-						.proto = pp_ofuda,
-						.pos = p->pos + 10 * j * spread_dir,
-						.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),
-						.rule = reimu_dream_ofuda,
-						.args = { -20.0 * shot_dir },
-						.type = PlrProj+dmg,
-						.shader = "sprite_default",
-					);
-				}
 			}
 		}
 	}
 }
 
-static void reimu_dream_power(Player *p, short npow) {
+static void reimu_dream_slave_visual(Enemy *e, int t, bool render) {
+	if(render) {
+		r_draw_sprite(&(SpriteParams) {
+			.sprite = "yinyang",
+			.shader = "sprite_yinyang",
+			.pos = {
+				creal(e->pos),
+				cimag(e->pos),
+			},
+			.rotation.angle = global.frames * -6 * DEG2RAD,
+			.color = RGB(0.95, 0.75, 1.0),
+			.scale.both = 0.5,
+		});
+	}
 }
 
-static Enemy* reimu_dream_gap_spawn(EnemyList *elist, complex pos, complex a0, complex a1, complex a2, complex a3) {
-	Enemy *gap = create_enemy_p(elist, pos, ENEMY_IMMUNE, NULL, reimu_dream_gap, a0, a1, a2, a3);
+static int reimu_dream_slave(Enemy *e, int t) {
+	if(t < 0) {
+		return ACTION_ACK;
+	}
+
+	// double a = M_PI * psin(t * 0.1) + creal(e->args[0]) + M_PI/2;
+	double a = t * -0.1 + creal(e->args[0]) + M_PI/2;
+	complex ofs = e->pos0;
+	complex shotdir = e->args[1];
+
+	if(global.plr.inputflags & INFLAG_FOCUS) {
+		ofs = cimag(ofs) + I * creal(ofs);
+		shotdir = cimag(shotdir) + I * creal(shotdir);
+	}
+
+	if(t == 0) {
+		e->pos = global.plr.pos;
+	} else {
+		double x = creal(ofs);
+		double y = cimag(ofs);
+		complex tpos = global.plr.pos + x * sin(a) + y * I * cos(a);
+		e->pos += (tpos - e->pos) * 0.5;
+	}
+
+	if(player_should_shoot(&global.plr, true)) {
+		if(!(global.frames % 6)) {
+			PROJECTILE(
+				.proto = pp_needle2,
+				.pos = e->pos,
+				.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),
+				.rule = reimu_dream_needle,
+				.args = { 20.0 * shotdir },
+				.type = PlrProj + 40,
+				.shader = "sprite_default",
+			);
+		}
+	}
+
+	return ACTION_NONE;
+}
+
+static Enemy* reimu_dream_spawn_slave(Player *plr, complex pos, complex a0, complex a1, complex a2, complex a3) {
+	Enemy *e = create_enemy_p(&plr->slaves, pos, ENEMY_IMMUNE, reimu_dream_slave_visual, reimu_dream_slave, a0, a1, a2, a3);
+	e->ent.draw_layer = LAYER_PLAYER_SLAVE;
+	return e;
+}
+
+static void reimu_dream_kill_slaves(EnemyList *slaves) {
+	for(Enemy *e = slaves->first, *next; e; e = next) {
+		next = e->next;
+
+		if(e->logic_rule == reimu_dream_slave) {
+			delete_enemy(slaves, e);
+		}
+	}
+}
+
+static void reimu_dream_respawn_slaves(Player *plr, short npow) {
+	double dmg_homing = 100; // every 12 frames
+	double dmg_needle = 80;  // every 3 frames
+	complex dmg = dmg_homing + I * dmg_needle;
+
+	reimu_dream_kill_slaves(&plr->slaves);
+
+	int p = 2 * (npow / 100);
+	double s = 1;
+	for(int i = 0; i < p; ++i, s = -s) {
+		reimu_dream_spawn_slave(plr, 48+32*I, ((double)i/p)*(M_PI*2),     s*I, 0, 0);
+	}
+}
+
+static void reimu_dream_power(Player *p, short npow) {
+	if(p->power / 100 != npow / 100) {
+		reimu_dream_respawn_slaves(p, npow);
+	}
+}
+
+static Enemy* reimu_dream_spawn_gap(Player *plr, complex pos, complex a0, complex a1, complex a2, complex a3) {
+	Enemy *gap = create_enemy_p(&plr->slaves, pos, ENEMY_IMMUNE, NULL, reimu_dream_gap, a0, a1, a2, a3);
 	gap->ent.draw_layer = LAYER_PLAYER_SLAVE;
 	return gap;
 }
 
 static void reimu_dream_init(Player *plr) {
-	Enemy* left   = reimu_dream_gap_spawn(&plr->slaves, -1, I, 0, 0, 0);
-	Enemy* top    = reimu_dream_gap_spawn(&plr->slaves, -I, 1, 0, 0, 0);
-	Enemy* right  = reimu_dream_gap_spawn(&plr->slaves,  1, I, 0, 0, 0);
-	Enemy* bottom = reimu_dream_gap_spawn(&plr->slaves,  I, 1, 0, 0, 0);
+	Enemy* left   = reimu_dream_spawn_gap(plr, -1, I, 0, 0, 0);
+	Enemy* top    = reimu_dream_spawn_gap(plr, -I, 1, 0, 0, 0);
+	Enemy* right  = reimu_dream_spawn_gap(plr,  1, I, 0, 0, 0);
+	Enemy* bottom = reimu_dream_spawn_gap(plr,  I, 1, 0, 0, 0);
 
 	reimu_dream_gap_link(top, left);
 	reimu_dream_gap_link(bottom, right);
@@ -326,6 +404,8 @@ static void reimu_dream_init(Player *plr) {
 	FOR_EACH_GAP(gap) {
 		gap->args[3] = creal(gap->args[3]) + I*idx++;
 	}
+
+	reimu_dream_respawn_slaves(plr, plr->power);
 }
 
 PlayerMode plrmode_reimu_b = {
