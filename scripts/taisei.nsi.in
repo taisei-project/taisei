@@ -10,8 +10,7 @@ Name "Taisei Project"
 !define APPNAME "Taisei Project"
 
 OutFile "@OUTPUT@"
-SetCompressor /SOLID lzma
-SetCompressorDictSize 64
+SetCompressor /SOLID zlib
 
 !define VERSION "@VERSION({string})@"
 !define PATCH "0"
