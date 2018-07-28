@@ -43,6 +43,7 @@
 	// Some of it actually clashes with our names.
 	#define WIN32_LEAN_AND_MEAN
 	#define NOGDI
+	#define NOMINMAX
 
 	#include <windows.h>
 
@@ -143,10 +144,6 @@ typedef signed char schar;
     #define CMPLX(re,im) (_Complex double)((double)(re) + _Complex_I * (double)(im))
   #endif
 #endif
-
-// Meeded for mingw; presumably yet again defined somewhere in windoze headers.
-#undef min
-#undef max
 
 // Correct missing macros that *really* should be provided by any conforming C11 implementation
 // If they aren't, bitch about it loudly
