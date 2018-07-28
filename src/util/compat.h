@@ -145,42 +145,6 @@ typedef signed char schar;
   #endif
 #endif
 
-// Correct missing macros that *really* should be provided by any conforming C11 implementation
-// If they aren't, bitch about it loudly
-
-#ifndef bool
-	#warning bool was not defined
-	#define bool _Bool
-#endif
-
-#ifndef true
-	#warning true was not defined
-	#define true 1
-#endif
-
-#ifndef false
-	#warning true was not defined
-	#define false 1
-#endif
-
-/* ... okay, so the above does not help for the ppc64le build on OBS, FOR FUCK KNOWS WHAT REASON
- * e.g.:
- *
- * [   46s] ../src/rwops/rwops_segment.h:14:72: error: unknown type name ‘bool’; did you mean ‘_Bool’?
- * [   46s]  SDL_RWops* SDL_RWWrapSegment(SDL_RWops *src, size_t start, size_t end, bool *autoclose);
- * [   46s]                                                                         ^~~~
- * [   46s]                                                                         _Bool
- *
- * ..and so on.
- *
- * My best guess is that some header down the line undefs bool for whatever bizarre reason!
- * If this does not fix it, I'm done.
- */
-
-#undef bool
-typedef _Bool bool;
-#define bool _Bool
-
 /*
  * Abstract away the nasty GNU attribute syntax.
  */
