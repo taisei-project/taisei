@@ -175,6 +175,30 @@ static void reimu_dream_preload(void) {
 static void reimu_dream_bomb(Player *p) {
 }
 
+static void reimu_dream_spawn_warp_effect(complex pos, bool exit) {
+	PARTICLE(
+		.sprite = "myon",
+		.pos = pos,
+		.color = RGBA(0.5, 0.5, 0.5, 0.5),
+		.timeout = 20,
+		.angle = frand() * M_PI * 2,
+		.draw_rule = ScaleFade,
+		.args = { 0, 0, 1 + 2 * I },
+		.layer = LAYER_PLAYER_FOCUS,
+	);
+
+	PARTICLE(
+		.sprite = exit ? "stain" : "stardust",
+		.pos = pos,
+		.color = RGBA(0.75, 0.4 * frand(), 0.4, 0),
+		.timeout = 20,
+		.angle = frand() * M_PI * 2,
+		.draw_rule = ScaleFade,
+		.args = { 0, 0, 0.25 + 1.5 * I },
+		.layer = LAYER_PLAYER_FOCUS,
+	);
+}
+
 static void reimu_dream_bullet_warp(Projectile *p, int t) {
 	if(creal(p->args[3]) > 0 /*global.plr.power / 100*/) {
 		return;
@@ -208,13 +232,14 @@ static void reimu_dream_bullet_warp(Projectile *p, int t) {
 				fract = cimag(o - gap_bbox.top_left) / cimag(gap_size);
 			}
 
-			// fract = 0.1 + 0.8 * psin(global.frames * 0.93814);
-
 			Enemy *ngap = reimu_dream_gap_get_linked(gap);
 			o = ngap->pos + ngap->args[0] * GAP_LENGTH * (1 - fract - 0.5);
 
+			reimu_dream_spawn_warp_effect(gap->pos + gap->args[0] * GAP_LENGTH * (fract - 0.5), false);
+			reimu_dream_spawn_warp_effect(o, true);
+
 			p->args[0] = -cabs(p->args[0]) * ngap->pos0;
-			p->pos = o;
+			p->pos = o + p->args[0];
 			p->args[3] += 1;
 		}
 	}
