@@ -45,7 +45,7 @@ static void play_sound_internal(const char *name, bool is_ui, int cooldown, bool
 
 	Sound *snd = get_sound(name);
 
-	if(!snd || (!is_ui && snd->lastplayframe + 3 + cooldown >= global.frames) || snd->islooping) {
+	if(!snd || (!is_ui && snd->lastplayframe + 3 + cooldown >= global.frames)) {
 		return;
 	}
 
