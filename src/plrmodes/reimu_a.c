@@ -156,7 +156,102 @@ static int reimu_spirit_homing(Projectile *p, int t) {
 	return ACTION_NONE;
 }
 
+static const Color *reimu_spirit_orb_color(Color *c, int i) {
+	*c = *RGBA((0.2 + (i==0))/1.2, (0.2 + (i==1))/1.2, (0.2 + 1.5*(i==2))/1.2, 0.0);
+	return c;
+}
+
+static void reimu_spirit_bomb_orb_visual(Enemy *e, int t, bool render) {
+	if(!render)
+		return;
+	complex pos = e->pos;
+
+	for(int i = 0; i < 3; i++) {
+		complex offset = (10 + pow(t, 0.5)) * cexp(I * (2 * M_PI / 3*i + sqrt(1 + t * t / 300.0)));
+
+		Color c;
+		r_draw_sprite(&(SpriteParams) {
+			.sprite = "proj/glowball",
+			.shader = "sprite_bullet",
+			.pos = { creal(pos+offset), cimag(pos+offset) },
+			.color = reimu_spirit_orb_color(&c, i),
+
+//			.shader_params = &(ShaderCustomParams) {.vector = {0.3,0,0,0}},
+		});
+	}
+}
+
+static int reimu_spirit_bomb_orb(Enemy *e, int t) {
+	int index = creal(e->args[1]) + 0.5;
+	if(t == EVENT_BIRTH && index == 0) {
+		global.shake_view = 4;
+	}
+
+	if(t == EVENT_DEATH) {
+		global.shake_view = 20;
+		global.shake_view_fade = 0.6;
+
+		int count = 21;
+		double offset = frand();
+		for(int i = 0; i < count; i++) {
+			Color c;
+			PARTICLE(
+				.sprite_ptr = get_sprite("proj/glowball"),
+				.shader = "sprite_bullet",
+				.color = reimu_spirit_orb_color(&c, i%3),
+				.timeout = 60,
+				.pos = e->pos,
+				.args = { cexp(I * 2 * M_PI / count * (i + offset)) * 15 },
+				.angle = 2*M_PI*frand(),
+				.rule = linear,
+				.draw_rule = Fade,
+				.flags = PFLAG_NOREFLECT,
+			);
+		}
+	}
+
+	if(t < 0) {
+		return ACTION_ACK;
+	}
+
+	if(global.frames - global.plr.recovery > 0) {
+		return ACTION_DESTROY;
+	}
+
+	double circletime = 100+20*index;
+
+	complex target_circle = global.plr.pos + 10 * sqrt(t) * e->args[0]*(1 + 0.1 * sin(0.2*t));
+	e->args[0] *= cexp(I*0.1);
+                                                                            
+	double circlestrength = 1 / (1 + exp(t-circletime));
+	
+	e->args[3] = plrutil_homing_target(e->pos, e->args[3]);
+	complex target_homing = e->args[3];
+
+	e->pos += 0.3 * (circlestrength * (target_circle - e->pos) + 0.2 * (1-circlestrength) * (target_homing - e->pos));
+
+	for(int i = 0; i < 3 && circlestrength < 0.3; i++) {
+		Color c;
+		PARTICLE(
+			.sprite_ptr = get_sprite("part/stain"),
+			.color = reimu_spirit_orb_color(&c, i),
+			.pos = e->pos + 10 * cexp(I*2*M_PI/3*(i+t*0.1)),
+			.angle = 2*M_PI*frand(),
+			.timeout = 60,
+			.draw_rule = ScaleFade,
+			.args = { 0, 0.8, 0.8, 0.8},
+		);
+	}
+	
+	return ACTION_NONE;
+}
+
 static void reimu_spirit_bomb(Player *p) {
+	int count = 6;
+	for(int i = 0; i < count; i++) {
+		create_enemy_p(&p->slaves, p->pos, ENEMY_BOMB, reimu_spirit_bomb_orb_visual, reimu_spirit_bomb_orb, cexp(I*2*M_PI/count*i),i,0,0);
+	}
+
 }
 
 static void reimu_spirit_shot(Player *p) {
