@@ -96,6 +96,29 @@ static Enemy* reimu_dream_gap_get_linked(Enemy *gap) {
 	return REF(creal(gap->args[3]));
 }
 
+static void reimu_dream_gap_draw_lights(int time, double strength) {
+	if(strength <= 0) {
+		return;
+	}
+
+	r_texture(0, "gaplight");
+	r_shader("reimu_gap_light");
+	r_uniform_float("time", time / 60.0);
+	r_uniform_float("strength", strength);
+
+	FOR_EACH_GAP(gap) {
+		const float len = GAP_LENGTH * 3 * sqrt(log(strength + 1) / 0.693);
+		complex center = gap->pos - gap->pos0 * (len * 0.5 - GAP_WIDTH * 0.6);
+
+		r_mat_push();
+		r_mat_translate(creal(center), cimag(center), 0);
+		r_mat_rotate(carg(gap->pos0)+M_PI, 0, 0, 1);
+		r_mat_scale(len, GAP_LENGTH, 1);
+		r_draw_quad();
+		r_mat_pop();
+	}
+}
+
 static void reimu_dream_gap_renderer_visual(Enemy *e, int t, bool render) {
 	if(!render) {
 		return;
@@ -154,11 +177,19 @@ static void reimu_dream_gap_renderer_visual(Enemy *e, int t, bool render) {
 
 		r_mat_pop();
 	}
+
+	reimu_dream_gap_draw_lights(t, pow(e->args[0], 2));
 }
 
 static int reimu_dream_gap_renderer(Enemy *e, int t) {
 	if(t < 0) {
 		return ACTION_ACK;
+	}
+
+	if(global.frames - global.plr.recovery < 0) {
+		e->args[0] = approach(e->args[0], 1.0, 0.1);
+	} else {
+		e->args[0] = approach(e->args[0], 0.0, 0.025);
 	}
 
 	return ACTION_NONE;
@@ -388,16 +419,13 @@ static void reimu_dream_kill_slaves(EnemyList *slaves) {
 }
 
 static void reimu_dream_respawn_slaves(Player *plr, short npow) {
-	double dmg_homing = 100; // every 12 frames
-	double dmg_needle = 80;  // every 3 frames
-	complex dmg = dmg_homing + I * dmg_needle;
-
 	reimu_dream_kill_slaves(&plr->slaves);
 
 	int p = 2 * (npow / 100);
 	double s = 1;
+
 	for(int i = 0; i < p; ++i, s = -s) {
-		reimu_dream_spawn_slave(plr, 48+32*I, ((double)i/p)*(M_PI*2),     s*I, 0, 0);
+		reimu_dream_spawn_slave(plr, 48+32*I, ((double)i/p)*(M_PI*2), s*I, 0, 0);
 	}
 }
 
