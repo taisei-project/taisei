@@ -87,7 +87,8 @@ static int marisa_star_slave(Enemy *e, int t) {
 				.rule = marisa_star_projectile,
 				// .draw_rule = marisa_star,
 				.args = { v, a },
-				.type = PlrProj + e->args[3],
+				.type = PlrProj,
+				.damage = e->args[3],
 				.shader = "sprite_default",
 			);
 		}

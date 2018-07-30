@@ -20,6 +20,7 @@ static ProjArgs defaults_proj = {
 	.draw_rule = ProjDraw,
 	.dest = &global.projs,
 	.type = EnemyProj,
+	.damage_type = DMG_ENEMY_SHOT,
 	.color = RGB(1, 1, 1),
 	.blend = BLEND_PREMUL_ALPHA,
 	.shader = "sprite_bullet",
@@ -31,6 +32,7 @@ static ProjArgs defaults_part = {
 	.draw_rule = ProjDraw,
 	.dest = &global.particles,
 	.type = Particle,
+	.damage_type = DMG_UNDEFINED,
 	.color = RGB(1, 1, 1),
 	.blend = BLEND_PREMUL_ALPHA,
 	.shader = "sprite_default",
@@ -101,17 +103,27 @@ static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
 		args->color = defaults->color;
 	}
 
-	if(!args->max_viewport_dist && (args->type == Particle || args->type >= PlrProj)) {
+	if(!args->max_viewport_dist && (args->type == Particle || args->type == PlrProj)) {
 		args->max_viewport_dist = 300;
 	}
 
 	if(!args->layer) {
-		if(args->type >= PlrProj) {
+		if(args->type == PlrProj) {
 			args->layer = LAYER_PLAYER_SHOT;
 		} else {
 			args->layer = defaults->layer;
 		}
 	}
+
+	if(args->damage_type == DMG_UNDEFINED) {
+		args->damage_type = defaults->damage_type;
+
+		if(args->type == PlrProj && args->damage_type == DMG_ENEMY_SHOT) {
+			args->damage_type = DMG_PLAYER_SHOT;
+		}
+	}
+
+	assert(args->type <= PlrProj);
 }
 
 static void projectile_size(Projectile *p, double *w, double *h) {
@@ -207,6 +219,8 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	p->collision_size = args->collision_size;
 	p->flags = args->flags;
 	p->timeout = args->timeout;
+	p->damage = args->damage;
+	p->damage_type = args->damage_type;
 
 	if(args->shader_params != NULL) {
 		p->shader_params = *args->shader_params;
@@ -221,9 +235,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	// p->collision_size *= 10;
 	// p->size *= 5;
 
-	if((p->type == EnemyProj || p->type >= PlrProj) && (creal(p->size) <= 0 || cimag(p->size) <= 0)) {
-		// FIXME: debug info is not actually attached at this point!
-		set_debug_info(&p->debug);
+	if((p->type == EnemyProj || p->type == PlrProj) && (creal(p->size) <= 0 || cimag(p->size) <= 0)) {
 		log_fatal("Tried to spawn a projectile with invalid size %f x %f", creal(p->size), cimag(p->size));
 	}
 
@@ -281,7 +293,8 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 	out_col->entity = NULL;
 	out_col->fatal = false;
 	out_col->location = p->pos;
-	out_col->damage = 0;
+	out_col->damage.amount = p->damage;
+	out_col->damage.type = p->damage_type;
 
 	if(p->type == EnemyProj) {
 		Ellipse e_proj = {
@@ -310,27 +323,24 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 		}
 
 		if(lineseg_ellipse_intersect(seg, e_proj)) {
-			out_col->type = PCOL_PLAYER;
-			out_col->entity = &global.plr;
+			out_col->type = PCOL_ENTITY;
+			out_col->entity = &global.plr.ent;
 			out_col->fatal = true;
 		} else {
 			e_proj.axes = projectile_graze_size(p);
 
 			if(creal(e_proj.axes) > 1 && lineseg_ellipse_intersect(seg, e_proj)) {
 				out_col->type = PCOL_PLAYER_GRAZE;
-				out_col->entity = &global.plr;
+				out_col->entity = &global.plr.ent;
 				out_col->location = global.plr.pos;
 			}
 		}
-	} else if(p->type >= PlrProj) {
-		int damage = p->type - PlrProj;
-
+	} else if(p->type == PlrProj) {
 		for(Enemy *e = global.enemies.first; e; e = e->next) {
 			if(e->hp != ENEMY_IMMUNE && cabs(e->pos - p->pos) < 30) {
-				out_col->type = PCOL_ENEMY;
-				out_col->entity = e;
+				out_col->type = PCOL_ENTITY;
+				out_col->entity = &e->ent;
 				out_col->fatal = true;
-				out_col->damage = damage;
 
 				return;
 			}
@@ -338,10 +348,9 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 
 		if(global.boss && cabs(global.boss->pos - p->pos) < 42) {
 			if(boss_is_vulnerable(global.boss)) {
-				out_col->type = PCOL_BOSS;
-				out_col->entity = global.boss;
+				out_col->type = PCOL_ENTITY;
+				out_col->entity = &global.boss->ent;
 				out_col->fatal = true;
-				out_col->damage = damage;
 			}
 		}
 	}
@@ -358,19 +367,11 @@ void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCol
 			break;
 		}
 
-		case PCOL_PLAYER: {
-			if(global.frames - abs(((Player*)col->entity)->recovery) >= 0) {
-				player_death(col->entity);
-			}
-
-			break;
-		}
-
 		case PCOL_PLAYER_GRAZE: {
 			if(p->flags & PFLAG_GRAZESPAM) {
-				player_graze(col->entity, col->location, 10, 2);
+				player_graze(ENT_CAST(col->entity, Player), col->location, 10, 2);
 			} else {
-				player_graze(col->entity, col->location, 10 + 10 * p->graze_counter, 3 + p->graze_counter);
+				player_graze(ENT_CAST(col->entity, Player), col->location, 10 + 10 * p->graze_counter, 3 + p->graze_counter);
 			}
 
 			p->graze_counter++;
@@ -379,19 +380,11 @@ void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCol
 			break;
 		}
 
-		case PCOL_ENEMY: {
-			Enemy *e = col->entity;
-			player_add_points(&global.plr, col->damage * 0.5);
-			player_register_damage(&global.plr, col->damage);
-			enemy_damage(e, col->damage);
-			break;
-		}
-
-		case PCOL_BOSS: {
-			if(boss_damage(col->entity, col->damage)) {
-				player_add_points(&global.plr, col->damage * 0.2);
-				player_register_damage(&global.plr, col->damage);
+		case PCOL_ENTITY: {
+			if(ent_damage(col->entity, &col->damage) == DMG_RESULT_OK) {
+				player_register_damage(&global.plr, col->entity, &col->damage);
 			}
+
 			break;
 		}
 
@@ -416,11 +409,6 @@ static void ent_draw_projectile(EntityInterface *ent) {
 	r_shader_ptr(proj->shader);
 
 #ifdef PROJ_DEBUG
-	if(proj->type == PlrProj) {
-		set_debug_info(&proj->debug);
-		log_fatal("Projectile with type PlrProj");
-	}
-
 	static Projectile prev_state;
 	memcpy(&prev_state, proj, sizeof(Projectile));
 
@@ -487,7 +475,7 @@ Projectile* spawn_projectile_clear_effect(Projectile *proj) {
 }
 
 bool clear_projectile(ProjectileList *projlist, Projectile *proj, bool force, bool now) {
-	if(proj->type >= PlrProj || (!force && !projectile_is_clearable(proj))) {
+	if(proj->type == PlrProj || (!force && !projectile_is_clearable(proj))) {
 		return false;
 	}
 

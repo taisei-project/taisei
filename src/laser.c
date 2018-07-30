@@ -277,7 +277,7 @@ void process_lasers(void) {
 			}
 		} else {
 			if(collision_laser_curve(laser)) {
-				player_death(&global.plr);
+				ent_damage(&global.plr.ent, &(DamageInfo) { .type = DMG_ENEMY_SHOT });
 			}
 
 			if(laser->lrule) {

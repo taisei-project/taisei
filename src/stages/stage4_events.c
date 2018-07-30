@@ -1101,8 +1101,8 @@ int kurumi_extra_drainer(Projectile *p, int time) {
 		if(time > 40 && e->hp > 0) {
 			// TODO: maybe add a special sound for this?
 
-			int drain = min(4, e->hp);
-			enemy_damage(e, drain);
+			float drain = min(4, e->hp);
+			ent_damage(&e->ent, &(DamageInfo) { .amount = drain });
 			global.boss->current->hp = min(global.boss->current->maxhp, global.boss->current->hp + drain * 2);
 		}
 	} else {

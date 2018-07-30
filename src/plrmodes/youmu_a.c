@@ -173,7 +173,7 @@ static void myon_proj_draw(Projectile *p, int t) {
 	youmu_common_draw_proj(p, &p->color, 1);
 }
 
-static Projectile* youmu_mirror_myon_proj(char *tex, complex pos, double speed, double angle, double aoffs, double upfactor, int dmg) {
+static Projectile* youmu_mirror_myon_proj(char *tex, complex pos, double speed, double angle, double aoffs, double upfactor, float dmg) {
 	complex dir = cexp(I*(M_PI/2 + aoffs)) * upfactor + cexp(I * (angle + aoffs)) * (1 - upfactor);
 	dir = dir / cabs(dir);
 
@@ -205,7 +205,8 @@ static Projectile* youmu_mirror_myon_proj(char *tex, complex pos, double speed, 
 		.rule = myon_proj,
 		.args = { speed*dir },
 		.draw_rule = myon_proj_draw,
-		.type = PlrProj+dmg,
+		.type = PlrProj,
+		.damage = dmg,
 		.shader = "sprite_youmu_myon_shot",
 	);
 }
@@ -316,9 +317,10 @@ static int youmu_mirror_self_proj(Projectile *p, int t) {
 	return 1;
 }
 
-static Projectile* youmu_mirror_self_shot(Player *plr, complex ofs, complex vel, int dmg, double turntime) {
+static Projectile* youmu_mirror_self_shot(Player *plr, complex ofs, complex vel, float dmg, double turntime) {
 	return PROJECTILE("youmu", plr->pos + ofs, 0,
-		.type = PlrProj+dmg,
+		.type = PlrProj,
+		.damage = dmg,
 		.shader = "sprite_default",
 		.draw_rule = myon_proj_draw,
 		.rule = youmu_mirror_self_proj,

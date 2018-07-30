@@ -75,17 +75,19 @@ struct Projectile {
 	ShaderCustomParams shader_params;
 	BlendMode blend;
 	int birthtime;
+	float damage;
 	float angle;
 	ProjType type;
+	DamageType damage_type;
 	int max_viewport_dist;
 	ProjFlags flags;
-
-	short graze_counter;
-	int graze_counter_reset_timer;
 
 	// XXX: this is in frames of course, but needs to be float
 	// to avoid subtle truncation and integer division gotchas.
 	float timeout;
+
+	int graze_counter_reset_timer;
+	short graze_counter;
 
 #ifdef PROJ_DEBUG
 	DebugInfo debug;
@@ -111,6 +113,8 @@ typedef struct ProjArgs {
 	Sprite *sprite_ptr;
 	complex size; // affects default draw order, out-of-viewport culling, and grazing
 	complex collision_size; // affects collision with player (TODO: make this work for player projectiles too?)
+	float damage;
+	DamageType damage_type;
 	int max_viewport_dist;
 	drawlayer_t layer;
 
@@ -137,19 +141,17 @@ struct ProjPrototype {
 
 typedef enum ProjCollisionType {
 	PCOL_NONE                = 0,
-	PCOL_ENEMY               = (1 << 0),
-	PCOL_BOSS                = (1 << 1),
-	PCOL_PLAYER              = (1 << 2),
-	PCOL_PLAYER_GRAZE        = (1 << 3),
-	PCOL_VOID                = (1 << 4),
+	PCOL_ENTITY              = (1 << 0),
+	PCOL_PLAYER_GRAZE        = (1 << 1),
+	PCOL_VOID                = (1 << 2),
 } ProjCollisionType;
 
 typedef struct ProjCollisionResult {
 	ProjCollisionType type;
 	bool fatal; // for the projectile
 	complex location;
-	int damage;
-	void *entity; // TODO: make this use the actual entity API
+	DamageInfo damage;
+	EntityInterface *entity;
 } ProjCollisionResult;
 
 Projectile* create_projectile(ProjArgs *args);

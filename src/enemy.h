@@ -44,8 +44,8 @@ struct Enemy {
 	EnemyLogicRule logic_rule;
 	EnemyVisualRule visual_rule;
 
-	int spawn_hp;
-	int hp;
+	float spawn_hp;
+	float hp;
 
 	complex args[RULE_ARGC];
 	float alpha;
@@ -61,7 +61,7 @@ struct Enemy {
 #define create_enemy1c(p,h,d,l,a1) create_enemy_p(&global.enemies,p,h,d,l,a1,0,0,0)
 
 Enemy *create_enemy_p(
-	EnemyList *enemies, complex pos, int hp, EnemyVisualRule draw_rule, EnemyLogicRule logic_rule,
+	EnemyList *enemies, complex pos, float hp, EnemyVisualRule draw_rule, EnemyLogicRule logic_rule,
 	complex a1, complex a2, complex a3, complex a4
 );
 
@@ -78,7 +78,6 @@ void process_enemies(EnemyList *enemies);
 bool enemy_is_vulnerable(Enemy *enemy);
 bool enemy_in_viewport(Enemy *enemy);
 void enemy_kill_all(EnemyList *enemies);
-bool enemy_damage(Enemy *enemy, int damage);
 
 void Fairy(Enemy*, int t, bool render);
 void Swirl(Enemy*, int t, bool render);

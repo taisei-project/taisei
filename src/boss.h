@@ -67,7 +67,7 @@ typedef struct AttackInfo {
 	AttackType type;
 	char *name;
 	float timeout;
-	int hp;
+	float hp;
 
 	BossRule rule;
 	BossRule draw_rule;
@@ -81,13 +81,11 @@ typedef struct Attack {
 	AttackType type;
 
 	int starttime;
-
 	int timeout;
-
-	int maxhp;
-	int hp;
-
 	int endtime;
+
+	float maxhp;
+	float hp;
 
 	bool finished;
 	int failtime;
@@ -142,8 +140,6 @@ void boss_finish_current_attack(Boss *boss) attr_nonnull(1);
 bool boss_is_dying(Boss *boss) attr_nonnull(1); // true if the last attack is over but the BOSS_DEATH_DELAY has not elapsed.
 bool boss_is_fleeing(Boss *boss) attr_nonnull(1);
 bool boss_is_vulnerable(Boss *boss) attr_nonnull(1);
-
-bool boss_damage(Boss *boss, int dmg) attr_nonnull(1); // subtract dmg hitpoints from hp returns true on success
 
 void boss_death(Boss **boss) attr_nonnull(1);
 void boss_kill_projectiles(void);

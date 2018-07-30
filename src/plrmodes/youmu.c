@@ -60,7 +60,8 @@ void youmu_common_shot(Player *plr) {
 			.color = c,
 			.rule = linear,
 			.args = { -20.0*I },
-			.type = PlrProj+120,
+			.type = PlrProj,
+			.damage = 120,
 			.shader = "sprite_default",
 		);
 
@@ -70,7 +71,8 @@ void youmu_common_shot(Player *plr) {
 			.color = c,
 			.rule = linear,
 			.args = { -20.0*I },
-			.type = PlrProj+120,
+			.type = PlrProj,
+			.damage = 120,
 			.shader = "sprite_default",
 		);
 	}

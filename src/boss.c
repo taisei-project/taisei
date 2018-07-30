@@ -15,6 +15,7 @@
 #include "entity.h"
 
 static void ent_draw_boss(EntityInterface *ent);
+static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg);
 
 Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 	Boss *buf = calloc(1, sizeof(Boss));
@@ -35,6 +36,7 @@ Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 
 	buf->ent.draw_layer = LAYER_BOSS;
 	buf->ent.draw_func = ent_draw_boss;
+	buf->ent.damage_func = ent_damage_boss;
 	ent_register(&buf->ent, ENT_BOSS);
 
 	return buf;
@@ -456,20 +458,25 @@ bool boss_is_vulnerable(Boss *boss) {
 	return boss->current && boss->current->type != AT_Move && boss->current->type != AT_SurvivalSpell && boss->current->starttime < global.frames && !boss->current->finished;
 }
 
-bool boss_damage(Boss *boss, int dmg) {
-	if(!boss_is_vulnerable(boss))
-		return false;
+static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg) {
+	Boss *boss = ENT_CAST(ent, Boss);
 
-	if(dmg > 0 && global.frames-boss->lastdamageframe > 2) {
+	if(!boss_is_vulnerable(boss) || dmg->type == DMG_ENEMY_SHOT || dmg->type == DMG_ENEMY_COLLISION) {
+		return DMG_RESULT_IMMUNE;
+	}
+
+	if(dmg->amount > 0 && global.frames-boss->lastdamageframe > 2) {
 		boss->lastdamageframe = global.frames;
 	}
 
-	boss->current->hp -= dmg;
-	if(boss->current->hp < boss->current->maxhp*0.1) {
+	boss->current->hp -= dmg->amount;
+
+	if(boss->current->hp < boss->current->maxhp * 0.1) {
 		play_loop("hit1");
 	} else {
 		play_loop("hit0");
 	}
+
 	return true;
 }
 

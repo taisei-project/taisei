@@ -54,7 +54,7 @@ static void draw_laser_beam(complex src, complex dst, double size, double step, 
 	r_mat_pop();
 }
 
-static void trace_laser(Enemy *e, complex vel, int damage) {
+static void trace_laser(Enemy *e, complex vel, float damage) {
 	ProjCollisionResult col;
 	ProjectileList lproj = { .first = NULL };
 
@@ -64,14 +64,15 @@ static void trace_laser(Enemy *e, complex vel, int damage) {
 		.dest = &lproj,
 		.pos = e->pos,
 		.size = 28*(1+I),
-		.type = PlrProj + damage,
+		.type = PlrProj,
+		.damage = damage,
 		.rule = linear,
 		.args = { vel },
 	);
 
 	bool first_found = false;
 	int timeofs = 0;
-	int col_types = (PCOL_ENEMY | PCOL_BOSS);
+	int col_types = PCOL_ENTITY;
 
 	struct enemy_col {
 		LIST_INTERFACE(struct enemy_col);
@@ -100,9 +101,9 @@ static void trace_laser(Enemy *e, complex vel, int damage) {
 				.flags = PFLAG_NOREFLECT,
 			);
 
-			if(col.type == PCOL_ENEMY) {
+			if(col.type == PCOL_ENTITY && col.entity->type == ENT_ENEMY) {
 				c = malloc(sizeof(struct enemy_col));
-				c->enemy = col.entity;
+				c->enemy = ENT_CAST(col.entity, Enemy);
 				list_push(&prev_collisions, c);
 			} else {
 				col_types &= ~col.type;
@@ -112,10 +113,6 @@ static void trace_laser(Enemy *e, complex vel, int damage) {
 		}
 
 		apply_projectile_collision(&lproj, lproj.first, &col);
-
-		if(col.type == PCOL_BOSS) {
-			assert(!col.fatal);
-		}
 
 		if(c) {
 			c->original_hp = ((Enemy*)col.entity)->hp;

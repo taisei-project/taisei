@@ -155,7 +155,7 @@ void player_add_lives(Player *plr, int lives);
 void player_add_bombs(Player *plr, int bombs);
 void player_add_points(Player *plr, uint points);
 
-void player_register_damage(Player *plr, int dmg);
+void player_register_damage(Player *plr, EntityInterface *target, const DamageInfo *damage);
 
 void player_cancel_bomb(Player *plr, int delay);
 

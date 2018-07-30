@@ -49,7 +49,7 @@ double marisa_common_property(Player *plr, PlrProperty prop) {
 	UNREACHABLE;
 }
 
-void marisa_common_shot(Player *plr, int dmg) {
+void marisa_common_shot(Player *plr, float dmg) {
 	play_loop("generic_shot");
 
 	if(!(global.frames % 6)) {
@@ -62,7 +62,8 @@ void marisa_common_shot(Player *plr, int dmg) {
 				.color = c,
 				.rule = linear,
 				.args = { -20.0*I },
-				.type = PlrProj+dmg,
+				.type = PlrProj,
+				.damage = dmg,
 				.shader = "sprite_default",
 			);
 		}

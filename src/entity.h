@@ -48,13 +48,35 @@ typedef enum EntityType {
 
 typedef struct EntityInterface EntityInterface;
 typedef struct EntityListNode EntityListNode;
+
+typedef enum DamageType {
+	DMG_UNDEFINED,
+	DMG_ENEMY_SHOT,
+	DMG_ENEMY_COLLISION,
+	DMG_PLAYER_SHOT,
+	DMG_PLAYER_BOMB,
+} DamageType;
+
+typedef enum DamageResult {
+	DMG_RESULT_OK,
+	DMG_RESULT_IMMUNE,
+	DMG_RESULT_INAPPLICABLE,
+} DamageResult;
+
+typedef struct DamageInfo {
+	float amount;
+	DamageType type;
+} DamageInfo;
+
 typedef void (*EntityDrawFunc)(EntityInterface *ent);
 typedef bool (*EntityPredicate)(EntityInterface *ent);
+typedef DamageResult (*EntityDamageFunc)(EntityInterface *target, const DamageInfo *damage);
 
 #define ENTITY_INTERFACE_BASE(typename) struct { \
 	OBJECT_INTERFACE(typename); \
 	EntityType type; \
 	EntityDrawFunc draw_func; \
+	EntityDamageFunc damage_func; \
 	drawlayer_t draw_layer; \
 	uint32_t spawn_id; \
 	uint index; \
@@ -107,6 +129,8 @@ static inline attr_must_inline const char* ent_type_name(EntityType type) {
 
 void ent_init(void);
 void ent_shutdown(void);
-void ent_register(EntityInterface *ent, EntityType type);
-void ent_unregister(EntityInterface *ent);
+void ent_register(EntityInterface *ent, EntityType type) attr_nonnull(1);
+void ent_unregister(EntityInterface *ent) attr_nonnull(1);
 void ent_draw(EntityPredicate predicate);
+DamageResult ent_damage(EntityInterface *ent, const DamageInfo *damage) attr_nonnull(1, 2);
+void ent_area_damage(complex origin, float radius, const DamageInfo *damage) attr_nonnull(3);

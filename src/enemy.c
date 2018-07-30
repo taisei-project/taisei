@@ -32,6 +32,7 @@ Enemy* _enemy_attach_dbginfo(Enemy *e, DebugInfo *dbg) {
 #endif
 
 static void ent_draw_enemy(EntityInterface *ent);
+static DamageResult ent_damage_enemy(EntityInterface *ienemy, const DamageInfo *dmg);
 
 static void fix_pos0_visual(Enemy *e) {
 	double x = creal(e->pos0_visual);
@@ -57,7 +58,7 @@ static void fix_pos0_visual(Enemy *e) {
 	e->pos0_visual = x + y * I;
 }
 
-Enemy *create_enemy_p(EnemyList *enemies, complex pos, int hp, EnemyVisualRule visual_rule, EnemyLogicRule logic_rule,
+Enemy *create_enemy_p(EnemyList *enemies, complex pos, float hp, EnemyVisualRule visual_rule, EnemyLogicRule logic_rule,
 				  complex a1, complex a2, complex a3, complex a4) {
 	if(IN_DRAW_CODE) {
 		log_fatal("Tried to spawn an enemy while in drawing code");
@@ -87,6 +88,7 @@ Enemy *create_enemy_p(EnemyList *enemies, complex pos, int hp, EnemyVisualRule v
 
 	e->ent.draw_layer = LAYER_ENEMY;
 	e->ent.draw_func = ent_draw_enemy;
+	e->ent.damage_func = ent_damage_enemy;
 
 	fix_pos0_visual(e);
 	ent_register(&e->ent, ENT_ENEMY);
@@ -311,25 +313,26 @@ void enemy_kill_all(EnemyList *enemies) {
 	}
 }
 
-bool enemy_damage(Enemy *enemy, int damage) {
-	if(!enemy_is_vulnerable(enemy)) {
-		return false;
+static DamageResult ent_damage_enemy(EntityInterface *ienemy, const DamageInfo *dmg) {
+	Enemy *enemy = ENT_CAST(ienemy, Enemy);
+
+	if(!enemy_is_vulnerable(enemy) || dmg->type == DMG_ENEMY_SHOT || dmg->type == DMG_ENEMY_COLLISION) {
+		return DMG_RESULT_IMMUNE;
 	}
 
-	enemy->hp -= damage;
+	enemy->hp -= dmg->amount;
 
 	if(enemy->hp <= 0) {
 		enemy->hp = ENEMY_KILLED;
 	}
 
-	if(enemy->hp < enemy->spawn_hp*0.1) {
+	if(enemy->hp < enemy->spawn_hp * 0.1) {
 		play_loop("hit1");
 	} else {
 		play_loop("hit0");
 	}
 
-
-	return true;
+	return DMG_RESULT_OK;
 }
 
 void process_enemies(EnemyList *enemies) {
@@ -345,7 +348,7 @@ void process_enemies(EnemyList *enemies) {
 		int action = enemy->logic_rule(enemy, global.frames - enemy->birthtime);
 
 		if(enemy->hp > ENEMY_IMMUNE && enemy->alpha >= 1.0 && cabs(enemy->pos - global.plr.pos) < 7) {
-			player_death(&global.plr);
+			ent_damage(&global.plr.ent, &(DamageInfo) { .type = DMG_ENEMY_COLLISION });
 		}
 
 		enemy->alpha = approach(enemy->alpha, 1.0, 1.0/60.0);

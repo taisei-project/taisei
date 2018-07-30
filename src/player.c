@@ -42,6 +42,8 @@ double player_property(Player *plr, PlrProperty prop) {
 }
 
 static void ent_draw_player(EntityInterface *ent);
+static DamageResult ent_damage_player(EntityInterface *ent, const DamageInfo *dmg);
+
 static void player_spawn_focus_circle(Player *plr);
 
 void player_stage_post_init(Player *plr) {
@@ -64,6 +66,7 @@ void player_stage_post_init(Player *plr) {
 
 	plr->ent.draw_layer = LAYER_PLAYER;
 	plr->ent.draw_func = ent_draw_player;
+	plr->ent.damage_func = ent_damage_player;
 	ent_register(&plr->ent, ENT_PLAYER);
 
 	player_spawn_focus_circle(plr);
@@ -276,14 +279,16 @@ void player_logic(Player* plr) {
 			}
 		}
 
-		const int damage = 100;
+		DamageInfo dmg;
+		dmg.amount = 100;
+		dmg.type = DMG_PLAYER_BOMB;
 
 		for(Enemy *en = global.enemies.first; en; en = en->next) {
-			enemy_damage(en, damage);
+			ent_damage(&en->ent, &dmg);
 		}
 
 		if(global.boss) {
-			boss_damage(global.boss, damage);
+			ent_damage(&global.boss->ent, &dmg);
 		}
 
 		stage_clear_hazards(CLEAR_HAZARDS_ALL);
@@ -532,6 +537,21 @@ void player_death(Player *plr) {
 
 		plr->deathtime = global.frames + floor(player_property(plr, PLR_PROP_DEATHBOMB_WINDOW));
 	}
+}
+
+static DamageResult ent_damage_player(EntityInterface *ent, const DamageInfo *dmg) {
+	Player *plr = ENT_CAST(ent, Player);
+
+	if(
+		(global.frames - abs(plr->recovery) < 0) ||
+		plr->iddqd ||
+		(dmg->type != DMG_ENEMY_SHOT && dmg->type != DMG_ENEMY_COLLISION)
+	) {
+		return DMG_RESULT_IMMUNE;
+	}
+
+	player_death(plr);
+	return DMG_RESULT_OK;
 }
 
 static PlrInputFlag key_to_inflag(KeyIndex key) {
@@ -963,7 +983,28 @@ void player_add_points(Player *plr, uint points) {
 	}
 }
 
-void player_register_damage(Player *plr, int damage) {
+void player_register_damage(Player *plr, EntityInterface *target, const DamageInfo *damage) {
+	if(damage->type != DMG_PLAYER_SHOT && damage->type != DMG_PLAYER_BOMB) {
+		return;
+	}
+
+	if(target != NULL) {
+		switch(target->type) {
+			case ENT_ENEMY: {
+				player_add_points(&global.plr, damage->amount * 0.5);
+				break;
+			}
+
+			case ENT_BOSS: {
+				player_add_points(&global.plr, damage->amount * 0.2);
+				break;
+			}
+
+			default: break;
+		}
+	}
+
+
 #ifdef PLR_DPS_STATS
 	while(global.frames > plr->dmglogframe) {
 		memmove(plr->dmglog + 1, plr->dmglog, sizeof(plr->dmglog) - sizeof(*plr->dmglog));
@@ -971,7 +1012,7 @@ void player_register_damage(Player *plr, int damage) {
 		plr->dmglogframe++;
 	}
 
-	plr->dmglog[0] += damage;
+	plr->dmglog[0] += damage->amount;
 #endif
 }
 

@@ -11,6 +11,7 @@
 #include "entity.h"
 #include "util.h"
 #include "renderer/api.h"
+#include "global.h"
 
 static struct {
 	EntityInterface **array;
@@ -109,5 +110,25 @@ void ent_draw(EntityPredicate predicate) {
 				r_state_pop();
 			}
 		}
+	}
+}
+
+DamageResult ent_damage(EntityInterface *ent, const DamageInfo *damage) {
+	if(ent->damage_func == NULL) {
+		return DMG_RESULT_INAPPLICABLE;
+	}
+
+	return ent->damage_func(ent, damage);
+}
+
+void ent_area_damage(complex origin, float radius, const DamageInfo *damage) {
+	for(Enemy *e = global.enemies.first; e; e = e->next) {
+		if(cabs(origin - e->pos) < radius) {
+			ent_damage(&e->ent, damage);
+		}
+	}
+
+	if(global.boss && cabs(origin - global.boss->pos) < radius) {
+		ent_damage(&global.boss->ent, damage);
 	}
 }

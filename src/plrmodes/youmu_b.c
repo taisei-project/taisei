@@ -203,7 +203,8 @@ static int youmu_trap(Projectile *p, int t) {
 
 			PROJECTILE("youmu", p->pos, RGBA(1, 1, 1, 0.85), youmu_homing,
 				.args = { 5 * (1 + charge) * dir, (1 + charge) * aim, dur + charge*I, creal(p->pos) - VIEWPORT_H*I },
-				.type = PlrProj + dmg,
+				.type = PlrProj,
+				.damage = dmg,
 				.draw_rule = youmu_trap_draw_child_proj,
 				.shader = "sprite_youmu_charged_shot",
 				.shader_params = &(ShaderCustomParams){{ 0, 1 }},
@@ -357,7 +358,8 @@ static void youmu_haunting_power_shot(Player *plr, int p) {
 			.color = RGB(0.7 + 0.3 * (1-np), 0.8 + 0.2 * sqrt(1-np), 1.0),
 			.draw_rule = youmu_homing_draw_proj,
 			.args = { speed * dir * (1 - 0.25 * (1 - np)), 3 * (1 - pow(1 - np, 2)), 60, },
-			.type = PlrProj+30,
+			.type = PlrProj,
+			.damage = 30,
 			.shader = "sprite_default",
 		);
 	}
@@ -386,7 +388,8 @@ static void youmu_haunting_shot(Player *plr) {
 			if(!(global.frames % 6)) {
 				PROJECTILE("hghost", plr->pos, RGB(0.75, 0.9, 1), youmu_homing,
 					.args = { -10.0*I, 0.1 + 0.2*I, 60, VIEWPORT_W*0.5 },
-					.type = PlrProj+120,
+					.type = PlrProj,
+					.damage = 120,
 					.shader = "sprite_default",
 				);
 			}
