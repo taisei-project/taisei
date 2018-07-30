@@ -273,7 +273,8 @@ static void reimu_spirit_slave_shot(Enemy *e, int t) {
 			.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),
 			.rule = reimu_spirit_needle,
 			.args = { -20.0*I },
-			.type = PlrProj + cimag(e->args[2]),
+			.type = PlrProj,
+			.damage = cimag(e->args[2]),
 			.shader = "sprite_default",
 		);
 	} else if(!(st % 12)) {
@@ -286,7 +287,8 @@ static void reimu_spirit_slave_shot(Enemy *e, int t) {
 			.rule = reimu_spirit_homing,
 			.draw_rule = reimu_spirit_homing_draw,
 			.args = { v , 60, 0, e->pos + v * VIEWPORT_H * VIEWPORT_W /*creal(e->pos)*/ },
-			.type = PlrProj + creal(e->args[2]),
+			.type = PlrProj,
+			.damage = creal(e->args[2]),
 			// .timeout = 60,
 			.shader = "sprite_default",
 			.flags = PFLAG_NOCOLLISIONEFFECT,

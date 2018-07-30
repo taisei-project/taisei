@@ -337,7 +337,8 @@ static void reimu_dream_shot(Player *p) {
 					.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),
 					.rule = reimu_dream_ofuda,
 					.args = { -20.0 * shot_dir },
-					.type = PlrProj+dmg,
+					.type = PlrProj,
+					.damage = dmg,
 					.shader = "sprite_default",
 				);
 			}
@@ -393,7 +394,8 @@ static int reimu_dream_slave(Enemy *e, int t) {
 				.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),
 				.rule = reimu_dream_needle,
 				.args = { 20.0 * shotdir },
-				.type = PlrProj + 40,
+				.type = PlrProj,
+				.damage = 40,
 				.shader = "sprite_default",
 			);
 		}
