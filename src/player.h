@@ -158,6 +158,7 @@ void player_add_points(Player *plr, uint points);
 void player_register_damage(Player *plr, EntityInterface *target, const DamageInfo *damage);
 
 void player_cancel_bomb(Player *plr, int delay);
+void player_placeholder_bomb_logic(Player *plr);
 
 // Progress is normalized from 0: bomb start to 1: bomb end
 double player_get_bomb_progress(Player *plr, double *out_speed);

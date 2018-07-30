@@ -227,6 +227,26 @@ bool player_should_shoot(Player *plr, bool extra) {
 			(!extra || (global.frames - plr->recovery >= 0 && (plr->deathtime >= -1 && plr->deathtime < global.frames)));
 }
 
+void player_placeholder_bomb_logic(Player *plr) {
+	if(global.frames - plr->recovery >= 0 || plr->bombcanceltime) {
+		return;
+	}
+
+	DamageInfo dmg;
+	dmg.amount = 100;
+	dmg.type = DMG_PLAYER_BOMB;
+
+	for(Enemy *en = global.enemies.first; en; en = en->next) {
+		ent_damage(&en->ent, &dmg);
+	}
+
+	if(global.boss) {
+		ent_damage(&global.boss->ent, &dmg);
+	}
+
+	stage_clear_hazards(CLEAR_HAZARDS_ALL);
+}
+
 void player_logic(Player* plr) {
 	if(plr->continuetime == global.frames) {
 		plr->lives = PLR_START_LIVES;
@@ -279,19 +299,6 @@ void player_logic(Player* plr) {
 			}
 		}
 
-		DamageInfo dmg;
-		dmg.amount = 100;
-		dmg.type = DMG_PLAYER_BOMB;
-
-		for(Enemy *en = global.enemies.first; en; en = en->next) {
-			ent_damage(&en->ent, &dmg);
-		}
-
-		if(global.boss) {
-			ent_damage(&global.boss->ent, &dmg);
-		}
-
-		stage_clear_hazards(CLEAR_HAZARDS_ALL);
 		player_fail_spell(plr);
 	}
 }

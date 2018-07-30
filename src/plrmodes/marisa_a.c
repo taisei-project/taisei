@@ -633,6 +633,8 @@ static void marisa_laser_think(Player *plr) {
 	} else {
 		global_magicstar_alpha = 1.0;
 	}
+
+	player_placeholder_bomb_logic(plr);
 }
 
 static void marisa_laser_shot(Player *plr) {

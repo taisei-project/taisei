@@ -438,5 +438,6 @@ PlayerMode plrmode_youmu_b = {
 		.bombbg = youmu_common_bombbg,
 		.shot = youmu_haunting_shot,
 		.preload = youmu_haunting_preload,
+		.think = player_placeholder_bomb_logic,
 	},
 };

@@ -446,5 +446,6 @@ PlayerMode plrmode_youmu_a = {
 		.shot = youmu_mirror_shot,
 		.init = youmu_mirror_init,
 		.preload = youmu_mirror_preload,
+		.think = player_placeholder_bomb_logic,
 	},
 };

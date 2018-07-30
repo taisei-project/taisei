@@ -223,7 +223,6 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 	r_mat_pop();
 }
 
-
 static void marisa_star_bomb(Player *plr) {
 	play_sound("bomb_marisa_b");
 
@@ -354,5 +353,6 @@ PlayerMode plrmode_marisa_b = {
 		.power = marisa_star_power,
 		.preload = marisa_star_preload,
 		.init = marisa_star_init,
+		.think = player_placeholder_bomb_logic,
 	},
 };
