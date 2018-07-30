@@ -379,7 +379,8 @@ static void youmu_haunting_shot(Player *plr) {
 
 				PROJECTILE("youhoming", plr->pos, RGB(1, 1, 1), youmu_trap,
 					.args = { -30.0*I, 120, pcnt+pdmg*I, aim },
-					.type = PlrProj+1000,
+					.type = PlrProj,
+					.damage = 1000,
 					.shader = "sprite_youmu_charged_shot",
 					.shader_params = &(ShaderCustomParams){{ 0, 1 }},
 				);
