@@ -64,8 +64,48 @@ static complex reimu_dream_gap_target_pos(Enemy *e) {
 	return x + I * y;
 }
 
-static void reimu_dream_gap_bomb(Enemy *e, int t) {
+static int reimu_dream_gap_bomb_projectile(Projectile *p, int t) {
+	if(t == EVENT_BIRTH) {
+		return ACTION_ACK;
+	}
 
+	if(t == EVENT_DEATH) {
+		return ACTION_ACK;
+	}
+
+	p->pos += p->args[0];
+
+	return ACTION_NONE;
+}
+
+static void reimu_dream_gap_bomb_projectile_draw(Projectile *p, int t) {
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = p->sprite,
+		.shader_ptr = p->shader,
+		.color = &p->color,
+		.shader_params = &p->shader_params,
+		.pos = { creal(p->pos), cimag(p->pos) },
+		.scale.both = 0.75 * clamp(t / 5.0, 0.1, 1.0),
+	});
+}
+
+static void reimu_dream_gap_bomb(Enemy *e, int t) {
+	if(!(t % 4)) {
+		PROJECTILE(
+			.sprite = "glowball",
+			.size = 32 * (1 + I),
+			.color = HSLA(t/30.0, 0.5, 0.5, 0.5),
+			.pos = e->pos + e->args[0] * (frand() - 0.5) * GAP_LENGTH * 0.5,
+			.rule = reimu_dream_gap_bomb_projectile,
+			.draw_rule = reimu_dream_gap_bomb_projectile_draw,
+			.type = PlrProj,
+			.damage_type = DMG_PLAYER_BOMB,
+			.damage = 200,
+			.args = { -20 * e->pos0 },
+		);
+
+		global.shake_view += 5;
+	}
 }
 
 static int reimu_dream_gap(Enemy *e, int t) {
@@ -78,12 +118,16 @@ static int reimu_dream_gap(Enemy *e, int t) {
 		return ACTION_ACK;
 	}
 
-	complex new_pos = reimu_dream_gap_target_pos(e);
-
-	if(t == 0) {
-		e->pos = new_pos;
+	if(player_is_bomb_active(&global.plr)) {
+		reimu_dream_gap_bomb(e, t + cimag(e->args[3]));
 	} else {
-		e->pos += (new_pos - e->pos) * 0.1;
+		complex new_pos = reimu_dream_gap_target_pos(e);
+
+		if(t == 0) {
+			e->pos = new_pos;
+		} else {
+			e->pos += (new_pos - e->pos) * 0.1;
+		}
 	}
 
 	return ACTION_NONE;
@@ -474,6 +518,12 @@ static Enemy* reimu_dream_spawn_gap(Player *plr, complex pos, complex a0, comple
 	return gap;
 }
 
+static void reimu_dream_think(Player *plr) {
+	if(player_is_bomb_active(plr)) {
+		global.shake_view_fade = max(global.shake_view_fade, 5);
+	}
+}
+
 static void reimu_dream_init(Player *plr) {
 	Enemy* left   = reimu_dream_spawn_gap(plr, -1, I, 0, 0, 0);
 	Enemy* top    = reimu_dream_spawn_gap(plr, -I, 1, 0, 0, 0);
@@ -507,5 +557,6 @@ PlayerMode plrmode_reimu_b = {
 		.power = reimu_dream_power,
 		.init = reimu_dream_init,
 		.preload = reimu_dream_preload,
+		.think = reimu_dream_think,
 	},
 };
