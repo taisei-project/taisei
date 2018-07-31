@@ -60,7 +60,7 @@ ObjectPool *objpool_alloc(size_t obj_size, size_t max_objects, const char *tag) 
 }
 
 static char *objpool_add_extent(ObjectPool *pool) {
-	pool->extents = realloc(pool->extents, (++pool->num_extents) * sizeof(pool->extents));
+	pool->extents = realloc(pool->extents, (++pool->num_extents) * sizeof(*pool->extents));
 	char *extent = pool->extents[pool->num_extents - 1] = calloc(pool->max_objects, pool->size_of_object);
 	objpool_register_objects(pool, extent);
 	return extent;

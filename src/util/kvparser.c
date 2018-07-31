@@ -163,13 +163,13 @@ bool parse_bool(const char *str, bool fallback) {
 	static const char *true_vals[]  = { "on",  "yes", "true",  NULL };
 	static const char *false_vals[] = { "off", "no",  "false", NULL };
 
-	for(const char **v = true_vals; v; ++v) {
+	for(const char **v = true_vals; *v; ++v) {
 		if(!SDL_strcasecmp(buf, *v)) {
 			return true;
 		}
 	}
 
-	for(const char **v = false_vals; v; ++v) {
+	for(const char **v = false_vals; *v; ++v) {
 		if(!SDL_strcasecmp(buf, *v)) {
 			return false;
 		}

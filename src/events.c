@@ -91,7 +91,7 @@ static EventPriority real_priority(EventPriority prio) {
 }
 
 static EventHandlerContainer* ehandler_wrap_container(EventHandler *handler) {
-	EventHandlerContainer *c = calloc(1, sizeof(ListContainer));
+	EventHandlerContainer *c = calloc(1, sizeof(*c));
 	c->handler = handler;
 	return c;
 }

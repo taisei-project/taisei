@@ -246,8 +246,7 @@ static void youmu_particle_slice_draw(Projectile *p, int t) {
 	r_mat_pop();
 
 	double slicelen = 500;
-	f = sqrt(f);
-	complex slicepos=p->pos-(tt>0.1)*slicelen*I*cexp(I*p->angle)*(5*pow(tt-0.1,1.1)-0.5);
+	complex slicepos = p->pos-(tt>0.1)*slicelen*I*cexp(I*p->angle)*(5*pow(tt-0.1,1.1)-0.5);
 	draw_sprite_batched_p(creal(slicepos), cimag(slicepos), aniplayer_get_frame(&global.plr.ani));
 }
 

@@ -769,14 +769,15 @@ void process_boss(Boss **pboss) {
 		log_debug("Current attack [%s] is over", boss->current->name);
 
 		for(;;) {
-			boss->current++;
-
-			if(boss->current - boss->attacks >= boss->acount) {
+			if(boss->current == boss->attacks + boss->acount - 1) {
 				// no more attacks, die
 				boss->current = NULL;
 				boss_death(pboss);
 				break;
 			}
+
+			boss->current++;
+			assert(boss->current != NULL);
 
 			if(boss->current->type == AT_Immediate) {
 				boss->current->starttime = global.frames;

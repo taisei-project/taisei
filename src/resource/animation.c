@@ -261,7 +261,7 @@ void* load_animation_end(void *opaque, const char *filename, uint flags) {
 			log_warn("Animation frame '%s' not found but @sprite_count was %d",buf,ani->sprite_count);
 			unload_animation(ani);
 			ani = NULL;
-			break;
+			goto done;
 		}
 
 		ani->sprites[i] = res->data;
@@ -274,6 +274,7 @@ void* load_animation_end(void *opaque, const char *filename, uint flags) {
 		ani = NULL;
 	}
 
+done:
 	free(data->basename);
 	free(data);
 

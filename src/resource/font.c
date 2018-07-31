@@ -498,14 +498,10 @@ static Glyph* get_glyph(Font *fnt, charcode_t cp) {
 			log_debug("Font has no glyph for charcode 0x%08lx", cp);
 			glyph = get_glyph(fnt, UNICODE_UNKNOWN);
 			ofs = glyph ? (ptrdiff_t)(glyph - fnt->glyphs) : -1;
-		} else {
-			if(ht_lookup(&fnt->ftindex_to_glyph_ofs, ft_index, &ofs)) {
-				glyph = fnt->glyphs + ofs;
-			} else {
-				glyph = load_glyph(fnt, ft_index, &fnt->spritesheets);
-				ofs = glyph ? (ptrdiff_t)(glyph - fnt->glyphs) : -1;
-				ht_set(&fnt->ftindex_to_glyph_ofs, ft_index, ofs);
-			}
+		} else if(!ht_lookup(&fnt->ftindex_to_glyph_ofs, ft_index, &ofs)) {
+			glyph = load_glyph(fnt, ft_index, &fnt->spritesheets);
+			ofs = glyph ? (ptrdiff_t)(glyph - fnt->glyphs) : -1;
+			ht_set(&fnt->ftindex_to_glyph_ofs, ft_index, ofs);
 		}
 
 		ht_set(&fnt->charcodes_to_glyph_ofs, cp, ofs);
