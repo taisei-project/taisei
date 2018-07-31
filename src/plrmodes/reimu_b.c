@@ -64,6 +64,10 @@ static complex reimu_dream_gap_target_pos(Enemy *e) {
 	return x + I * y;
 }
 
+static void reimu_dream_gap_bomb(Enemy *e, int t) {
+
+}
+
 static int reimu_dream_gap(Enemy *e, int t) {
 	if(t == EVENT_DEATH) {
 		free_ref(creal(e->args[3]));
@@ -186,7 +190,7 @@ static int reimu_dream_gap_renderer(Enemy *e, int t) {
 		return ACTION_ACK;
 	}
 
-	if(global.frames - global.plr.recovery < 0) {
+	if(player_is_bomb_active(&global.plr)) {
 		e->args[0] = approach(e->args[0], 1.0, 0.1);
 	} else {
 		e->args[0] = approach(e->args[0], 0.0, 0.025);
@@ -204,6 +208,33 @@ static void reimu_dream_preload(void) {
 }
 
 static void reimu_dream_bomb(Player *p) {
+}
+
+static void reimu_dream_bomb_bg(Player *p) {
+	// TODO: this is a basic placeholder
+
+	float t = player_get_bomb_progress(&global.plr, NULL);
+	float fade = t;
+
+	if(t < 0.2) {
+		fade = t / 0.2;
+	} else if(t > 0.8) {
+		fade = 1 - (t - 0.8) / 0.2;
+	} else {
+		fade = 1;
+	}
+
+	fade *= 0.5;
+
+	r_mat_push();
+	r_state_push();
+	r_shader_standard_notex();
+	r_color4(0, 0, 0, fade);
+	r_mat_scale(VIEWPORT_W, VIEWPORT_H, 1);
+	r_mat_translate(0.5, 0.5, 0);
+	r_draw_quad();
+	r_state_pop();
+	r_mat_pop();
 }
 
 static void reimu_dream_spawn_warp_effect(complex pos, bool exit) {
@@ -471,6 +502,7 @@ PlayerMode plrmode_reimu_b = {
 	.procs = {
 		.property = reimu_common_property,
 		.bomb = reimu_dream_bomb,
+		.bombbg = reimu_dream_bomb_bg,
 		.shot = reimu_dream_shot,
 		.power = reimu_dream_power,
 		.init = reimu_dream_init,

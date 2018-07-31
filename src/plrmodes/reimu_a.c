@@ -214,7 +214,7 @@ static int reimu_spirit_bomb_orb(Enemy *e, int t) {
 		return ACTION_ACK;
 	}
 
-	if(global.frames - global.plr.recovery > 0) {
+	if(!player_is_bomb_active(&global.plr) > 0) {
 		return ACTION_DESTROY;
 	}
 
