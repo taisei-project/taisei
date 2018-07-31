@@ -518,7 +518,7 @@ static int masterspark(Enemy *e, int t2) {
 		);
 	}
 
-	if(t >= 1 || global.frames - global.plr.recovery >= 0) {
+	if(t >= 1 || !player_is_bomb_active(&global.plr)) {
 		return ACTION_DESTROY;
 	}
 
@@ -646,7 +646,7 @@ static double marisa_laser_property(Player *plr, PlrProperty prop) {
 		case PLR_PROP_SPEED: {
 			double s = marisa_common_property(plr, prop);
 
-			if(global.frames - plr->recovery < 0) {
+			if(player_is_bomb_active(plr)) {
 				s /= 5.0;
 			}
 

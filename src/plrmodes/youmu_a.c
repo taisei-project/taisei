@@ -254,7 +254,7 @@ static int youmu_mirror_myon(Enemy *e, int t) {
 
 	e->args[1] += (e->args[0] - e->args[1]) * 0.1;
 
-	if(player_should_shoot(&global.plr, true) && global.plr.deathtime >= -1) {
+	if(player_should_shoot(&global.plr, true)) {
 		int v1 = -10;
 		int v2 = -10;
 
@@ -356,9 +356,10 @@ static int youmu_split(Enemy *e, int t) {
 	if(t < 0)
 		return 1;
 
-	if(global.frames - global.plr.recovery > 0) {
+	if(!player_is_bomb_active(&global.plr)) {
 		return ACTION_DESTROY;
 	}
+
 	TIMER(&t);
 	//FROM_TO(0, 220, 1) {
 		tsrand_fill(5);

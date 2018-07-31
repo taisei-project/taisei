@@ -622,7 +622,7 @@ void stage_draw_scene(StageInfo *stage) {
 		r_shader_standard();
 
 		// draw bomb background
-		if(global.frames - global.plr.recovery < 0 && global.plr.mode->procs.bombbg) {
+		if(global.plr.mode->procs.bombbg && player_is_bomb_active(&global.plr)) {
 			global.plr.mode->procs.bombbg(&global.plr);
 		}
 	} else if(!key_nobg) {
@@ -639,7 +639,7 @@ void stage_draw_scene(StageInfo *stage) {
 	apply_shader_rules(global.stage->procs->postprocess_rules, foreground);
 
 	// bomb effects shader if present and player bombing
-	if(global.frames - global.plr.recovery < 0 && global.plr.mode->procs.bomb_shader) {
+	if(global.plr.mode->procs.bomb_shader && player_is_bomb_active(&global.plr)) {
 		ShaderRule rules[] = { global.plr.mode->procs.bomb_shader, NULL };
 		apply_shader_rules(rules, foreground);
 	}

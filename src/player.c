@@ -142,7 +142,7 @@ static void ent_draw_player(EntityInterface *ent) {
 
 	Color c;
 
-	if(global.frames - abs(plr->recovery) < 0 && (global.frames/8)&1) {
+	if(!player_is_vulnerable(plr) && (global.frames/8)&1) {
 		c = *RGBA_MUL_ALPHA(0.4, 0.4, 1.0, 0.9);
 	} else {
 		c = *RGBA_MUL_ALPHA(1.0, 1.0, 1.0, 1.0);
@@ -223,12 +223,16 @@ static void player_fail_spell(Player *plr) {
 }
 
 bool player_should_shoot(Player *plr, bool extra) {
-	return (plr->inputflags & INFLAG_SHOT) && !global.dialog &&
-			(!extra || (global.frames - plr->recovery >= 0 && (plr->deathtime >= -1 && plr->deathtime < global.frames)));
+	return
+		(plr->inputflags & INFLAG_SHOT) &&
+		!global.dialog &&
+		player_is_alive(&global.plr) &&
+		// TODO: maybe get rid of this?
+		(!extra || !player_is_bomb_active(plr));
 }
 
 void player_placeholder_bomb_logic(Player *plr) {
-	if(global.frames - plr->recovery >= 0 || plr->bombcanceltime) {
+	if(!player_is_bomb_active(plr)) {
 		return;
 	}
 
@@ -287,7 +291,7 @@ void player_logic(Player* plr) {
 		stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
 	}
 
-	if(global.frames - plr->recovery < 0) {
+	if(player_is_bomb_active(plr)) {
 		if(plr->bombcanceltime) {
 			int bctime = plr->bombcanceltime + plr->bombcanceldelay;
 
@@ -313,7 +317,7 @@ bool player_bomb(Player *plr) {
 		return false;
 	}
 
-	if(global.frames - plr->recovery >= 0 && (plr->bombs > 0 || plr->iddqd) && global.frames - plr->respawntime >= 60) {
+	if(!player_is_bomb_active(plr) && (plr->bombs > 0 || plr->iddqd) && global.frames - plr->respawntime >= 60) {
 		player_fail_spell(plr);
 		stage_clear_hazards(CLEAR_HAZARDS_ALL);
 		plr->mode->procs.bomb(plr);
@@ -342,9 +346,20 @@ bool player_bomb(Player *plr) {
 	return false;
 }
 
+bool player_is_bomb_active(Player *plr) {
+	return global.frames - plr->recovery < 0;
+}
+
+bool player_is_vulnerable(Player *plr) {
+	return global.frames - abs(plr->recovery) >= 0 && !plr->iddqd && player_is_alive(plr);
+}
+
+bool player_is_alive(Player *plr) {
+	return plr->deathtime >= -1 && plr->deathtime < global.frames;
+}
+
 void player_cancel_bomb(Player *plr, int delay) {
-	if(global.frames - plr->recovery >= 0) {
-		// not bombing
+	if(!player_is_bomb_active(plr)) {
 		return;
 	}
 
@@ -362,7 +377,7 @@ void player_cancel_bomb(Player *plr, int delay) {
 }
 
 double player_get_bomb_progress(Player *plr, double *out_speed) {
-	if(global.frames - plr->recovery >= 0) {
+	if(!player_is_bomb_active(plr)) {
 		if(out_speed != NULL) {
 			*out_speed = 1.0;
 		}
@@ -490,68 +505,66 @@ static int player_death_effect(Projectile *p, int t) {
 }
 
 void player_death(Player *plr) {
-	if(plr->iddqd)
+	if(!player_is_vulnerable(plr)) {
 		return;
-
-	if(plr->deathtime == -1 && global.frames - abs(plr->recovery) > 0) {
-		play_sound("death");
-
-		for(int i = 0; i < 60; i++) {
-			tsrand_fill(2);
-			PARTICLE(
-				.sprite = "flare",
-				.pos = plr->pos,
-				.rule = linear,
-				.timeout = 40,
-				.draw_rule = Shrink,
-				.args = { (3+afrand(0)*7)*cexp(I*tsrand_a(1)) },
-				.flags = PFLAG_NOREFLECT,
-			);
-		}
-
-		stage_clear_hazards(CLEAR_HAZARDS_ALL);
-
-		PARTICLE(
-			.sprite = "blast",
-			.pos = plr->pos,
-			.color = RGBA(0.5, 0.15, 0.15, 0),
-			.timeout = 35,
-			.draw_rule = GrowFade,
-			.args = { 0, 2.4 },
-			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
-		);
-
-		PARTICLE(
-			.pos = plr->pos,
-			.size = 1+I,
-			.timeout = 90,
-			.draw_rule = player_death_effect_draw_overlay,
-			.blend = BLEND_NONE,
-			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
-			.layer = LAYER_OVERLAY,
-			.shader = "player_death",
-		);
-
-		PARTICLE(
-			.sprite_ptr = aniplayer_get_frame(&plr->ani),
-			.pos = plr->pos,
-			.timeout = 30,
-			.rule = player_death_effect,
-			.draw_rule = player_death_effect_draw_sprite,
-			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
-			.layer = LAYER_PLAYER_FOCUS, // LAYER_OVERLAY | 1,
-		);
-
-		plr->deathtime = global.frames + floor(player_property(plr, PLR_PROP_DEATHBOMB_WINDOW));
 	}
+
+	play_sound("death");
+
+	for(int i = 0; i < 60; i++) {
+		tsrand_fill(2);
+		PARTICLE(
+			.sprite = "flare",
+			.pos = plr->pos,
+			.rule = linear,
+			.timeout = 40,
+			.draw_rule = Shrink,
+			.args = { (3+afrand(0)*7)*cexp(I*tsrand_a(1)) },
+			.flags = PFLAG_NOREFLECT,
+		);
+	}
+
+	stage_clear_hazards(CLEAR_HAZARDS_ALL);
+
+	PARTICLE(
+		.sprite = "blast",
+		.pos = plr->pos,
+		.color = RGBA(0.5, 0.15, 0.15, 0),
+		.timeout = 35,
+		.draw_rule = GrowFade,
+		.args = { 0, 2.4 },
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+	);
+
+	PARTICLE(
+		.pos = plr->pos,
+		.size = 1+I,
+		.timeout = 90,
+		.draw_rule = player_death_effect_draw_overlay,
+		.blend = BLEND_NONE,
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		.layer = LAYER_OVERLAY,
+		.shader = "player_death",
+	);
+
+	PARTICLE(
+		.sprite_ptr = aniplayer_get_frame(&plr->ani),
+		.pos = plr->pos,
+		.timeout = 30,
+		.rule = player_death_effect,
+		.draw_rule = player_death_effect_draw_sprite,
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		.layer = LAYER_PLAYER_FOCUS, // LAYER_OVERLAY | 1,
+	);
+
+	plr->deathtime = global.frames + floor(player_property(plr, PLR_PROP_DEATHBOMB_WINDOW));
 }
 
 static DamageResult ent_damage_player(EntityInterface *ent, const DamageInfo *dmg) {
 	Player *plr = ENT_CAST(ent, Player);
 
 	if(
-		(global.frames - abs(plr->recovery) < 0) ||
-		plr->iddqd ||
+		!player_is_vulnerable(plr) ||
 		(dmg->type != DMG_ENEMY_SHOT && dmg->type != DMG_ENEMY_COLLISION)
 	) {
 		return DMG_RESULT_IMMUNE;

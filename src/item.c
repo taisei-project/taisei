@@ -140,8 +140,8 @@ static bool item_out_of_bounds(Item *item) {
 void process_items(void) {
 	Item *item = global.items.first, *del = NULL;
 	float r = player_property(&global.plr, PLR_PROP_COLLECT_RADIUS);
-	bool plr_alive = global.plr.deathtime <= global.frames && global.plr.deathtime == -1;
-	bool plr_bombing = global.frames - global.plr.recovery < 0;;
+	bool plr_alive = player_is_alive(&global.plr);
+	bool plr_bombing = player_is_bomb_active(&global.plr);
 
 	while(item != NULL) {
 		if((item->type == Power && global.plr.power >= PLR_MAX_POWER) ||
