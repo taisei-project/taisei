@@ -301,7 +301,7 @@ static double marisa_star_property(Player *plr, PlrProperty prop) {
 		case PLR_PROP_SPEED: {
 			double s = marisa_common_property(plr, prop);
 
-			if(player_is_bomb_active(plr) < 0) {
+			if(player_is_bomb_active(plr)) {
 				s /= 4.0;
 			}
 
