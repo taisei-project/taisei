@@ -33,3 +33,10 @@ float sanitize_scale(float scale) attr_const;
 )(x))
 
 #include <cglm/types.h>
+
+typedef float vec2_noalign[2];
+typedef float vec3_noalign[3];
+typedef int ivec3_noalign[3];
+typedef float vec4_noalign[4];
+typedef vec3_noalign mat3_noalign[3];
+typedef vec4_noalign mat4_noalign[4];

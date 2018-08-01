@@ -13,16 +13,16 @@
 #include "resource.h"
 
 typedef struct ObjFileData {
-	vec3 *xs;
+	vec3_noalign *xs;
 	int xcount;
 
-	vec3 *normals;
+	vec3_noalign *normals;
 	int ncount;
 
-	vec3 *texcoords;
+	vec3_noalign *texcoords;
 	int tcount;
 
-	ivec3 *indices;
+	ivec3_noalign *indices;
 	int icount;
 
 	int fverts;

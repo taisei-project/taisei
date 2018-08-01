@@ -75,7 +75,7 @@ void* load_model_begin(const char *path, uint flags) {
 		if(xi < 0 || xi >= data->xcount)
 			BADREF(path, "vertex", i);
 
-		memcpy(verts[i].position, data->xs[xi], sizeof(vec3));
+		memcpy(verts[i].position, data->xs[xi], sizeof(vec3_noalign));
 
 		if(data->tcount) {
 			ti = data->indices[i][1]-1;
@@ -91,7 +91,7 @@ void* load_model_begin(const char *path, uint flags) {
 			if(ni < 0 || ni >= data->ncount)
 				BADREF(path, "normal", ni);
 
-			memcpy(verts[i].normal, data->normals[ni], sizeof(vec3));
+			memcpy(verts[i].normal, data->normals[ni], sizeof(vec3_noalign));
 		}
 
 		m->indices[i] = i;
@@ -160,7 +160,7 @@ static void parse_obj(const char *filename, ObjFileData *data) {
 	}
 
 	char line[256], *save;
-	vec3 buf;
+	vec3_noalign buf;
 	char mode;
 	int linen = 0;
 
@@ -192,22 +192,22 @@ static void parse_obj(const char *filename, ObjFileData *data) {
 
 			switch(mode) {
 			case 'v':
-				data->xs = realloc(data->xs, sizeof(vec3)*(++data->xcount));
-				memcpy(data->xs[data->xcount-1], buf, sizeof(vec3));
+				data->xs = realloc(data->xs, sizeof(vec3_noalign)*(++data->xcount));
+				memcpy(data->xs[data->xcount-1], buf, sizeof(vec3_noalign));
 				break;
 			case 't':
-				data->texcoords = realloc(data->texcoords, sizeof(vec3)*(++data->tcount));
-				memcpy(data->texcoords[data->tcount-1], buf, sizeof(vec3));
+				data->texcoords = realloc(data->texcoords, sizeof(vec3_noalign)*(++data->tcount));
+				memcpy(data->texcoords[data->tcount-1], buf, sizeof(vec3_noalign));
 				break;
 			case 'n':
-				data->normals = realloc(data->normals, sizeof(vec3)*(++data->ncount));
-				memcpy(data->normals[data->ncount-1], buf, sizeof(vec3));
+				data->normals = realloc(data->normals, sizeof(vec3_noalign)*(++data->ncount));
+				memcpy(data->normals[data->ncount-1], buf, sizeof(vec3_noalign));
 				break;
 			}
 		} else if(mode == 'f') {
 			char *segment, *seg;
 			int j = 0, jj;
-			ivec3 ibuf;
+			ivec3_noalign ibuf;
 			memset(ibuf, 0, sizeof(ibuf));
 
 			while((segment = strtok_r(NULL, " \n", &save))) {
@@ -235,8 +235,8 @@ static void parse_obj(const char *filename, ObjFileData *data) {
 				if(jj == 0 || jj > 3 || segment[0] == '/')
 					log_fatal("OBJ file '%s:%d': Parsing error: Corrupt face definition", filename,linen);
 
-				data->indices = realloc(data->indices, sizeof(ivec3)*(++data->icount));
-				memcpy(data->indices[data->icount-1], ibuf, sizeof(ivec3));
+				data->indices = realloc(data->indices, sizeof(ivec3_noalign)*(++data->icount));
+				memcpy(data->indices[data->icount-1], ibuf, sizeof(ivec3_noalign));
 			}
 
 			if(data->fverts == 0)
