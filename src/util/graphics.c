@@ -114,3 +114,42 @@ void draw_framebuffer_tex(Framebuffer *fb, double width, double height) {
 
 	r_cull(cull_saved);
 }
+
+void fbutil_create_attachments(Framebuffer *fb, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
+	for(uint i = 0; i < num_attachments; ++i) {
+		Texture *tex = calloc(1, sizeof(Texture));
+		log_debug("%i %i", attachments[i].tex_params.width, attachments[i].tex_params.height);
+		r_texture_create(tex, &attachments[i].tex_params);
+		r_framebuffer_attach(fb, tex, 0, attachments[i].attachment);
+	}
+}
+
+void fbutil_destroy_attachments(Framebuffer *fb) {
+	for(uint i = 0; i < FRAMEBUFFER_MAX_ATTACHMENTS; ++i) {
+		Texture *tex = r_framebuffer_get_attachment(fb, i);
+
+		if(tex != NULL) {
+			r_texture_destroy(tex);
+			free(tex);
+		}
+	}
+}
+
+void fbutil_resize_attachment(Framebuffer *fb, FramebufferAttachment attachment, uint width, uint height) {
+	Texture *tex = r_framebuffer_get_attachment(fb, attachment);
+
+	if(tex == NULL || (tex->w == width && tex->h == height)) {
+		return;
+	}
+
+	// TODO: We could render a rescaled version of the old texture contents here
+
+	TextureParams params;
+	r_texture_get_params(tex, &params);
+	r_texture_destroy(tex);
+	params.width = width;
+	params.height = height;
+	params.mipmaps = 0; // FIXME
+	r_texture_create(tex, &params);
+	r_framebuffer_attach(fb, tex, 0, attachment);
+}

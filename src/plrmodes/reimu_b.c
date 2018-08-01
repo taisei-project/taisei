@@ -25,6 +25,9 @@
 #define NUM_GAPS 4
 #define FOR_EACH_GAP(gap) for(Enemy *gap = global.plr.slaves.first; gap; gap = gap->next) if(gap->logic_rule == reimu_dream_gap)
 
+static Framebuffer *bomb_buffer;
+static Enemy *gap_renderer;
+
 static complex reimu_dream_gap_target_pos(Enemy *e) {
 	double x, y;
 
@@ -126,7 +129,7 @@ static int reimu_dream_gap(Enemy *e, int t) {
 		if(t == 0) {
 			e->pos = new_pos;
 		} else {
-			e->pos += (new_pos - e->pos) * 0.1;
+			e->pos += (new_pos - e->pos) * 0.1 * (1 - sqrt(gap_renderer->args[0]));
 		}
 	}
 
@@ -254,31 +257,36 @@ static void reimu_dream_preload(void) {
 static void reimu_dream_bomb(Player *p) {
 }
 
+static void capture_frame(Framebuffer *dest, Framebuffer *src) {
+	r_state_push();
+	r_framebuffer(dest);
+	r_shader_standard();
+	r_color4(1, 1, 1, 1);
+	r_blend(BLEND_NONE);
+	draw_framebuffer_tex(src, VIEWPORT_W, VIEWPORT_H);
+	r_state_pop();
+}
+
 static void reimu_dream_bomb_bg(Player *p) {
-	// TODO: this is a basic placeholder
+	float a = gap_renderer->args[0];
 
-	float t = player_get_bomb_progress(&global.plr, NULL);
-	float fade = t;
-
-	if(t < 0.2) {
-		fade = t / 0.2;
-	} else if(t > 0.8) {
-		fade = 1 - (t - 0.8) / 0.2;
-	} else {
-		fade = 1;
+	if(a <= 0) {
+		return;
 	}
 
-	fade *= 0.5;
-
-	r_mat_push();
 	r_state_push();
-	r_shader_standard_notex();
-	r_color4(0, 0, 0, fade);
-	r_mat_scale(VIEWPORT_W, VIEWPORT_H, 1);
-	r_mat_translate(0.5, 0.5, 0);
-	r_draw_quad();
+	r_color(HSLA_MUL_ALPHA(global.frames / 30.0, 0.2, 0.9, a));
+
+	r_shader("reimu_bomb_bg");
+	r_texture(1, "runes");
+	r_uniform_int("runes", 1);
+	r_uniform_float("zoom", VIEWPORT_H / sqrt(VIEWPORT_W*VIEWPORT_W + VIEWPORT_H*VIEWPORT_H));
+	r_uniform_vec2("aspect", VIEWPORT_W / (float)VIEWPORT_H, 1);
+	r_uniform_float("time", 9000 + 3 * global.frames / 60.0);
+	draw_framebuffer_tex(bomb_buffer, VIEWPORT_W, VIEWPORT_H);
+
 	r_state_pop();
-	r_mat_pop();
+	capture_frame(bomb_buffer, r_framebuffer_current());
 }
 
 static void reimu_dream_spawn_warp_effect(complex pos, bool exit) {
@@ -533,8 +541,8 @@ static void reimu_dream_init(Player *plr) {
 	reimu_dream_gap_link(top, left);
 	reimu_dream_gap_link(bottom, right);
 
-	Enemy *r = create_enemy_p(&plr->slaves, 0, ENEMY_IMMUNE, reimu_dream_gap_renderer_visual, reimu_dream_gap_renderer, 0, 0, 0, 0);
-	r->ent.draw_layer = LAYER_PLAYER_FOCUS;
+	gap_renderer= create_enemy_p(&plr->slaves, 0, ENEMY_IMMUNE, reimu_dream_gap_renderer_visual, reimu_dream_gap_renderer, 0, 0, 0, 0);
+	gap_renderer->ent.draw_layer = LAYER_PLAYER_FOCUS;
 
 	int idx = 0;
 	FOR_EACH_GAP(gap) {
@@ -542,6 +550,16 @@ static void reimu_dream_init(Player *plr) {
 	}
 
 	reimu_dream_respawn_slaves(plr, plr->power);
+
+	FBAttachmentConfig cfg;
+	memset(&cfg, 0, sizeof(cfg));
+	cfg.attachment = FRAMEBUFFER_ATTACH_COLOR0;
+	cfg.tex_params.type = TEX_TYPE_RGB;
+	cfg.tex_params.filter.min = TEX_FILTER_LINEAR;
+	cfg.tex_params.filter.mag = TEX_FILTER_LINEAR;
+	cfg.tex_params.wrap.s = TEX_WRAP_MIRROR;
+	cfg.tex_params.wrap.t = TEX_WRAP_MIRROR;
+	bomb_buffer = stage_add_foreground_framebuffer(1, 1, &cfg);
 }
 
 PlayerMode plrmode_reimu_b = {

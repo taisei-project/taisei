@@ -23,6 +23,13 @@
 	#define OBJPOOLSTATS_DEFAULT 0
 #endif
 
+typedef struct CustomFramebuffer {
+	LIST_INTERFACE(struct CustomFramebuffer);
+	Framebuffer fb;
+	float scale;
+	StageFBPair scaling_base;
+} CustomFramebuffer;
+
 static struct {
 	struct {
 		ShaderProgram *shader;
@@ -37,6 +44,7 @@ static struct {
 
 	PostprocessShader *viewport_pp;
 	FBPair fb_pairs[NUM_FBPAIRS];
+	CustomFramebuffer *custom_fbs;
 
 	bool framerate_graphs;
 	bool objpool_stats;
@@ -82,6 +90,21 @@ static void update_fb_size(StageFBPair fb_id) {
 	set_fb_size(fb_id, &w, &h);
 	fbpair_resize_all(stagedraw.fb_pairs + fb_id, w, h);
 	fbpair_viewport(stagedraw.fb_pairs + fb_id, 0, 0, w, h);
+
+	if(fb_id != FBPAIR_FG_AUX) {
+		for(CustomFramebuffer *cfb = stagedraw.custom_fbs; cfb; cfb = cfb->next) {
+			if(cfb->scaling_base == fb_id) {
+				int sw = w * cfb->scale;
+				int sh = h * cfb->scale;
+
+				for(uint i = 0; i < FRAMEBUFFER_MAX_ATTACHMENTS; ++i) {
+					fbutil_resize_attachment(&cfb->fb, i, sw, sh);
+				}
+
+				r_framebuffer_viewport(&cfb->fb, 0, 0, sw, sh);
+			}
+		}
+	}
 }
 
 static bool stage_draw_event(SDL_Event *e, void *arg) {
@@ -167,6 +190,58 @@ static void stage_draw_setup_framebuffers(void) {
 	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_BG, 0, 0, bg_width, bg_height);
 }
 
+static Framebuffer* add_custom_framebuffer(StageFBPair fbtype, float scale_factor, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
+	CustomFramebuffer *cfb = calloc(1, sizeof(*cfb));
+	list_push(&stagedraw.custom_fbs, cfb);
+
+	FBAttachmentConfig cfg[num_attachments];
+	memcpy(cfg, attachments, sizeof(cfg));
+
+	int width, height;
+	set_fb_size(fbtype, &width, &height);
+	cfb->scale = scale_factor;
+	width *= scale_factor;
+	height *= scale_factor;
+
+	for(uint i = 0; i < num_attachments; ++i) {
+		cfg[i].tex_params.width = width;
+		cfg[i].tex_params.height = height;
+	}
+
+	r_framebuffer_create(&cfb->fb);
+	fbutil_create_attachments(&cfb->fb, num_attachments, cfg);
+	r_framebuffer_viewport(&cfb->fb, 0, 0, width, height);
+
+	r_state_push();
+	r_framebuffer(&cfb->fb);
+	r_clear_color4(0, 0, 0, 0);
+	r_clear(CLEAR_ALL);
+	r_state_pop();
+
+	return &cfb->fb;
+}
+
+Framebuffer* stage_add_foreground_framebuffer(float scale_factor, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
+	return add_custom_framebuffer(FBPAIR_FG, scale_factor, num_attachments, attachments);
+}
+
+Framebuffer* stage_add_background_framebuffer(float scale_factor, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
+	return add_custom_framebuffer(FBPAIR_BG, scale_factor, num_attachments, attachments);
+}
+
+static void stage_draw_destroy_framebuffers(void) {
+	for(uint i = 0; i < NUM_FBPAIRS; ++i) {
+		fbpair_destroy(stagedraw.fb_pairs + i);
+	}
+
+	for(CustomFramebuffer *cfb = stagedraw.custom_fbs, *next; cfb; cfb = next) {
+		next = cfb->next;
+		fbutil_destroy_attachments(&cfb->fb);
+		r_framebuffer_destroy(&cfb->fb);
+		free(list_unlink(&stagedraw.custom_fbs, cfb));
+	}
+}
+
 void stage_draw_init(void) {
 	preload_resources(RES_POSTPROCESS, RESF_OPTIONAL,
 		"viewport",
@@ -234,10 +309,7 @@ void stage_draw_init(void) {
 
 void stage_draw_shutdown(void) {
 	events_unregister_handler(stage_draw_event);
-
-	for(uint i = 0; i < NUM_FBPAIRS; ++i) {
-		fbpair_destroy(stagedraw.fb_pairs + i);
-	}
+	stage_draw_destroy_framebuffers();
 }
 
 FBPair* stage_get_fbpair(StageFBPair id) {

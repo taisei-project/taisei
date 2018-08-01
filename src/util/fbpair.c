@@ -11,47 +11,20 @@
 #include "fbpair.h"
 #include "global.h"
 #include "util.h"
+#include "util/graphics.h"
 
 static void fbpair_create_fb(Framebuffer *fb, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
 	r_framebuffer_create(fb);
-
-	for(uint i = 0; i < num_attachments; ++i) {
-		Texture *tex = calloc(1, sizeof(Texture));
-		r_texture_create(tex, &attachments[i].tex_params);
-		r_framebuffer_attach(fb, tex, 0, attachments[i].attachment);
-	}
+	fbutil_create_attachments(fb, num_attachments, attachments);
 }
 
 static void fbpair_destroy_fb(Framebuffer *fb) {
-	for(uint i = 0; i < FRAMEBUFFER_MAX_ATTACHMENTS; ++i) {
-		Texture *tex = r_framebuffer_get_attachment(fb, i);
-
-		if(tex != NULL) {
-			r_texture_destroy(tex);
-			free(tex);
-		}
-	}
-
+	fbutil_destroy_attachments(fb);
 	r_framebuffer_destroy(fb);
 }
 
 static void fbpair_resize_fb(Framebuffer *fb, FramebufferAttachment attachment, uint width, uint height) {
-	Texture *tex = r_framebuffer_get_attachment(fb, attachment);
-
-	if(tex == NULL || (tex->w == width && tex->h == height)) {
-		return;
-	}
-
-	// TODO: We could render a rescaled version of the old texture contents here
-
-	TextureParams params;
-	r_texture_get_params(tex, &params);
-	r_texture_destroy(tex);
-	params.width = width;
-	params.height = height;
-	params.mipmaps = 0; // FIXME
-	r_texture_create(tex, &params);
-	r_framebuffer_attach(fb, tex, 0, attachment);
+	fbutil_resize_attachment(fb, attachment, width, height);
 }
 
 void fbpair_create(FBPair *pair, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {

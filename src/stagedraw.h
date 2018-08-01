@@ -27,3 +27,5 @@ void stage_draw_scene(StageInfo *stage);
 bool stage_should_draw_particle(Projectile *p);
 
 FBPair* stage_get_fbpair(StageFBPair id) attr_returns_nonnull;
+Framebuffer* stage_add_foreground_framebuffer(float scale_factor, uint num_attachments, FBAttachmentConfig attachments[num_attachments]);
+Framebuffer* stage_add_background_framebuffer(float scale_factor, uint num_attachments, FBAttachmentConfig attachments[num_attachments]);
