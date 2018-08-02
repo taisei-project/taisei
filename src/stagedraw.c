@@ -694,7 +694,9 @@ void stage_draw_scene(StageInfo *stage) {
 		r_shader_standard();
 
 		// draw bomb background
-		if(global.plr.mode->procs.bombbg && player_is_bomb_active(&global.plr)) {
+		// FIXME: we need a more flexible and consistent way for entities to hook
+		// into the various stages of scene drawing code.
+		if(global.plr.mode->procs.bombbg /*&& player_is_bomb_active(&global.plr)*/) {
 			global.plr.mode->procs.bombbg(&global.plr);
 		}
 	} else if(!key_nobg) {
