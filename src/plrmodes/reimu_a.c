@@ -235,7 +235,7 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 
 
 	complex homing = target_homing - p->pos;
-	p->pos += 0.3 * (circlestrength * (target_circle - p->pos) + 0.2 * (1-circlestrength) * (homing + 2*homing/cabs(homing)));
+	p->pos += 0.3 * (circlestrength * (target_circle - p->pos) + 0.2 * (1-circlestrength) * (homing + 2*homing/(cabs(homing)+0.01)));
 
 	for(int i = 0; i < 3 && circlestrength < 0.3; i++) {
 		Color c;
