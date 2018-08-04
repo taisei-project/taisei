@@ -161,9 +161,7 @@ static const Color *reimu_spirit_orb_color(Color *c, int i) {
 	return c;
 }
 
-static void reimu_spirit_bomb_orb_visual(Projectile *p, int t, bool render) {
-	if(!render)
-		return;
+static void reimu_spirit_bomb_orb_visual(Projectile *p, int t) {
 	complex pos = p->pos;
 
 	for(int i = 0; i < 3; i++) {
