@@ -275,7 +275,6 @@ static void reimu_spirit_bomb_bg(Player *p) {
 		alpha = min(1,10*t);
 	if(t > 0.7)
 		alpha *= 1-pow((t-0.7)/0.3,4);
-	log_warn("alpha %f", alpha);
 	
 	reimu_common_bomb_bg(p, alpha);
 }
