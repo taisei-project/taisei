@@ -195,7 +195,6 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 		double range = 300;
 
 		ent_area_damage(p->pos, range, &(DamageInfo){damage, DMG_PLAYER_BOMB});
-
 		int count = 21;
 		double offset = frand();
 		for(int i = 0; i < count; i++) {
@@ -266,7 +265,19 @@ static void reimu_spirit_bomb(Player *p) {
 			.size = 10 + 10*I,
 		);
 	}
+}
 
+static void reimu_spirit_bomb_bg(Player *p) {
+	double speed;
+	double t = player_get_bomb_progress(p, &speed);
+	float alpha = 0;
+	if(t > 0)
+		alpha = min(1,10*t);
+	if(t > 0.7)
+		alpha *= 1-pow((t-0.7)/0.3,4);
+	log_warn("alpha %f", alpha);
+	
+	reimu_common_bomb_bg(p, alpha);
 }
 
 static void reimu_spirit_shot(Player *p) {
@@ -465,6 +476,7 @@ static void reimu_spirit_init(Player *plr) {
 	memset(&reimu_spirit_state, 0, sizeof(reimu_spirit_state));
 	reimu_spirit_state.prev_inputflags = plr->inputflags;
 	reimu_spirit_respawn_slaves(plr, plr->power, 0);
+	reimu_common_bomb_buffer_init();
 }
 
 static void reimu_spirit_think(Player *plr) {
@@ -500,6 +512,7 @@ PlayerMode plrmode_reimu_a = {
 		.init = reimu_spirit_init,
 		.think = reimu_spirit_think,
 		.bomb = reimu_spirit_bomb,
+		.bombbg = reimu_spirit_bomb_bg,
 		.shot = reimu_spirit_shot,
 		.power = reimu_spirit_power,
 		.preload = reimu_spirit_preload,

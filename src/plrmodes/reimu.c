@@ -11,6 +11,9 @@
 #include "global.h"
 #include "plrmodes.h"
 #include "reimu.h"
+#include "stagedraw.h"
+
+static Framebuffer *bomb_buffer;
 
 PlayerCharacter character_reimu = {
 	.id = PLR_CHAR_REIMU,
@@ -116,4 +119,45 @@ void reimu_common_draw_yinyang(Enemy *e, int t, const Color *c) {
 		// .color = rgb(0.95, 0.75, 1.0),
 		.color = c,
 	});
+}
+
+static void capture_frame(Framebuffer *dest, Framebuffer *src) {
+	r_state_push();
+	r_framebuffer(dest);
+	r_shader_standard();
+	r_color4(1, 1, 1, 1);
+	r_blend(BLEND_NONE);
+	draw_framebuffer_tex(src, VIEWPORT_W, VIEWPORT_H);
+	r_state_pop();
+}
+
+void reimu_common_bomb_bg(Player *p, float alpha) {
+	if(alpha <= 0)
+		return;
+
+	r_state_push();
+	r_color(HSLA_MUL_ALPHA(global.frames / 30.0, 0.2, 0.9, alpha));
+
+	r_shader("reimu_bomb_bg");
+	r_texture(1, "runes");
+	r_uniform_int("runes", 1);
+	r_uniform_float("zoom", VIEWPORT_H / sqrt(VIEWPORT_W*VIEWPORT_W + VIEWPORT_H*VIEWPORT_H));
+	r_uniform_vec2("aspect", VIEWPORT_W / (float)VIEWPORT_H, 1);
+	r_uniform_float("time", 9000 + 3 * global.frames / 60.0);
+	draw_framebuffer_tex(bomb_buffer, VIEWPORT_W, VIEWPORT_H);
+
+	r_state_pop();
+	capture_frame(bomb_buffer, r_framebuffer_current());
+}
+
+void reimu_common_bomb_buffer_init(void) {
+	FBAttachmentConfig cfg;
+	memset(&cfg, 0, sizeof(cfg));
+	cfg.attachment = FRAMEBUFFER_ATTACH_COLOR0;
+	cfg.tex_params.type = TEX_TYPE_RGB;
+	cfg.tex_params.filter.min = TEX_FILTER_LINEAR;
+	cfg.tex_params.filter.mag = TEX_FILTER_LINEAR;
+	cfg.tex_params.wrap.s = TEX_WRAP_MIRROR;
+	cfg.tex_params.wrap.t = TEX_WRAP_MIRROR;
+	bomb_buffer = stage_add_foreground_framebuffer(1, 1, &cfg);
 }
