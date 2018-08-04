@@ -161,10 +161,10 @@ static const Color *reimu_spirit_orb_color(Color *c, int i) {
 	return c;
 }
 
-static void reimu_spirit_bomb_orb_visual(Enemy *e, int t, bool render) {
+static void reimu_spirit_bomb_orb_visual(Projectile *p, int t, bool render) {
 	if(!render)
 		return;
-	complex pos = e->pos;
+	complex pos = p->pos;
 
 	for(int i = 0; i < 3; i++) {
 		complex offset = (10 + pow(t, 0.5)) * cexp(I * (2 * M_PI / 3*i + sqrt(1 + t * t / 300.0)));
@@ -181,15 +181,22 @@ static void reimu_spirit_bomb_orb_visual(Enemy *e, int t, bool render) {
 	}
 }
 
-static int reimu_spirit_bomb_orb(Enemy *e, int t) {
-	int index = creal(e->args[1]) + 0.5;
-	if(t == EVENT_BIRTH && index == 0) {
-		global.shake_view = 4;
+static int reimu_spirit_bomb_orb(Projectile *p, int t) {
+	int index = creal(p->args[1]) + 0.5;
+	if(t == EVENT_BIRTH) {
+		if(index == 0)
+			global.shake_view = 4;
+		p->args[3] = global.plr.pos;
 	}
 
 	if(t == EVENT_DEATH) {
 		global.shake_view = 20;
 		global.shake_view_fade = 0.6;
+
+		double damage = 2000;
+		double range = 300;
+
+		ent_area_damage(p->pos, range, &(DamageInfo){damage, DMG_PLAYER_BOMB});
 
 		int count = 21;
 		double offset = frand();
@@ -200,7 +207,7 @@ static int reimu_spirit_bomb_orb(Enemy *e, int t) {
 				.shader = "sprite_bullet",
 				.color = reimu_spirit_orb_color(&c, i%3),
 				.timeout = 60,
-				.pos = e->pos,
+				.pos = p->pos,
 				.args = { cexp(I * 2 * M_PI / count * (i + offset)) * 15 },
 				.angle = 2*M_PI*frand(),
 				.rule = linear,
@@ -220,22 +227,24 @@ static int reimu_spirit_bomb_orb(Enemy *e, int t) {
 
 	double circletime = 100+20*index;
 
-	complex target_circle = global.plr.pos + 10 * sqrt(t) * e->args[0]*(1 + 0.1 * sin(0.2*t));
-	e->args[0] *= cexp(I*0.1);
+	complex target_circle = global.plr.pos + 10 * sqrt(t) * p->args[0]*(1 + 0.1 * sin(0.2*t));
+	p->args[0] *= cexp(I*0.1);
                                                                             
 	double circlestrength = 1 / (1 + exp(t-circletime));
 	
-	e->args[3] = plrutil_homing_target(e->pos, e->args[3]);
-	complex target_homing = e->args[3];
+	p->args[3] = plrutil_homing_target(p->pos, p->args[3]);
+	complex target_homing = p->args[3];
 
-	e->pos += 0.3 * (circlestrength * (target_circle - e->pos) + 0.2 * (1-circlestrength) * (target_homing - e->pos));
+
+	complex homing = target_homing - p->pos;
+	p->pos += 0.3 * (circlestrength * (target_circle - p->pos) + 0.2 * (1-circlestrength) * (homing + 2*homing/cabs(homing)));
 
 	for(int i = 0; i < 3 && circlestrength < 0.3; i++) {
 		Color c;
 		PARTICLE(
 			.sprite_ptr = get_sprite("part/stain"),
 			.color = reimu_spirit_orb_color(&c, i),
-			.pos = e->pos + 10 * cexp(I*2*M_PI/3*(i+t*0.1)),
+			.pos = p->pos + 10 * cexp(I*2*M_PI/3*(i+t*0.1)),
 			.angle = 2*M_PI*frand(),
 			.timeout = 60,
 			.draw_rule = ScaleFade,
@@ -249,7 +258,15 @@ static int reimu_spirit_bomb_orb(Enemy *e, int t) {
 static void reimu_spirit_bomb(Player *p) {
 	int count = 6;
 	for(int i = 0; i < count; i++) {
-		create_enemy_p(&p->slaves, p->pos, ENEMY_BOMB, reimu_spirit_bomb_orb_visual, reimu_spirit_bomb_orb, cexp(I*2*M_PI/count*i),i,0,0);
+		PROJECTILE(
+			.pos = p->pos,
+			.draw_rule = reimu_spirit_bomb_orb_visual,
+			.rule = reimu_spirit_bomb_orb,
+			.args = { cexp(I*2*M_PI/count*i), i, 0, 0},
+			.type = PlrProj,
+			.damage = 0,
+			.size = 10 + 10*I,
+		);
 	}
 
 }
@@ -259,7 +276,6 @@ static void reimu_spirit_shot(Player *p) {
 }
 
 static void reimu_spirit_slave_shot(Enemy *e, int t) {
-	// int st = global.frames + 2;
 	int st = t;
 
 	if(st % 3) {
@@ -274,6 +290,7 @@ static void reimu_spirit_slave_shot(Enemy *e, int t) {
 			.rule = reimu_spirit_needle,
 			.args = { -20.0*I },
 			.type = PlrProj,
+			.damage_type = DMG_PLAYER_SHOT,
 			.damage = cimag(e->args[2]),
 			.shader = "sprite_default",
 		);
@@ -288,6 +305,7 @@ static void reimu_spirit_slave_shot(Enemy *e, int t) {
 			.draw_rule = reimu_spirit_homing_draw,
 			.args = { v , 60, 0, e->pos + v * VIEWPORT_H * VIEWPORT_W /*creal(e->pos)*/ },
 			.type = PlrProj,
+			.damage_type = DMG_PLAYER_SHOT,
 			.damage = creal(e->args[2]),
 			// .timeout = 60,
 			.shader = "sprite_default",

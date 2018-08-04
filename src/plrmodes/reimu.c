@@ -100,7 +100,8 @@ void reimu_common_shot(Player *plr, int dmg) {
 			.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),
 			.rule = reimu_common_ofuda,
 			.args = { -20.0*I },
-			.type = PlrProj+dmg,
+			.type = PlrProj,
+			.damage = dmg,
 			.shader = "sprite_default",
 		);
 	}
