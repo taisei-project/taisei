@@ -269,7 +269,12 @@ Projectile* _proj_attach_dbginfo(Projectile *p, DebugInfo *dbg, const char *call
 
 static void* _delete_projectile(ListAnchor *projlist, List *proj, void *arg) {
 	Projectile *p = (Projectile*)proj;
+	ProjectileListInterface *out_list_pointers = arg;
 	proj_call_rule(p, EVENT_DEATH);
+
+	if(out_list_pointers) {
+		*&out_list_pointers->list_interface = p->list_interface;
+	}
 
 	del_ref(proj);
 	ent_unregister(&p->ent);
@@ -278,8 +283,8 @@ static void* _delete_projectile(ListAnchor *projlist, List *proj, void *arg) {
 	return NULL;
 }
 
-void delete_projectile(ProjectileList *projlist, Projectile *proj) {
-	_delete_projectile((ListAnchor*)projlist, (List*)proj, NULL);
+void delete_projectile(ProjectileList *projlist, Projectile *proj, ProjectileListInterface *out_list_pointers) {
+	_delete_projectile((ListAnchor*)projlist, (List*)proj, out_list_pointers);
 }
 
 void delete_projectiles(ProjectileList *projlist) {
@@ -361,7 +366,7 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 	}
 }
 
-void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCollisionResult *col) {
+void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCollisionResult *col, ProjectileListInterface *out_list_pointers) {
 	switch(col->type) {
 		case PCOL_NONE: {
 			break;
@@ -398,7 +403,9 @@ void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCol
 	}
 
 	if(col->fatal) {
-		delete_projectile(projlist, p);
+		delete_projectile(projlist, p, out_list_pointers);
+	} else {
+		*&out_list_pointers->list_interface = p->list_interface;
 	}
 }
 
@@ -474,8 +481,13 @@ Projectile* spawn_projectile_clear_effect(Projectile *proj) {
 	);
 }
 
-bool clear_projectile(ProjectileList *projlist, Projectile *proj, bool force, bool now) {
+bool clear_projectile(ProjectileList *projlist, Projectile *proj, bool force, bool now, ProjectileListInterface *out_list_pointers) {
 	if(proj->type == PlrProj || (!force && !projectile_is_clearable(proj))) {
+
+		if(out_list_pointers) {
+			*&out_list_pointers->list_interface = proj->list_interface;
+		}
+
 		return false;
 	}
 
@@ -485,9 +497,13 @@ bool clear_projectile(ProjectileList *projlist, Projectile *proj, bool force, bo
 		}
 
 		spawn_projectile_clear_effect(proj);
-		delete_projectile(projlist, proj);
+		delete_projectile(projlist, proj, out_list_pointers);
 	} else {
 		proj->type = DeadProj;
+
+		if(out_list_pointers) {
+			*&out_list_pointers->list_interface = proj->list_interface;
+		}
 	}
 
 	return true;
@@ -495,14 +511,15 @@ bool clear_projectile(ProjectileList *projlist, Projectile *proj, bool force, bo
 
 void process_projectiles(ProjectileList *projlist, bool collision) {
 	ProjCollisionResult col = { 0 };
+	ProjectileListInterface list_ptrs;
 
 	char killed = 0;
 	int action;
 
-	for(Projectile *proj = projlist->first, *next; proj; proj = next) {
-		next = proj->next;
+	for(Projectile *proj = projlist->first; proj; proj = list_ptrs.next) {
 		proj->prevpos = proj->pos;
 		action = proj_call_rule(proj, global.frames - proj->birthtime);
+		*&list_ptrs.list_interface = proj->list_interface;
 
 		if(proj->graze_counter && proj->graze_counter_reset_timer - global.frames <= -90) {
 			proj->graze_counter--;
@@ -513,7 +530,7 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 			killed++;
 			action = ACTION_DESTROY;
 
-			if(clear_projectile(projlist, proj, true, true)) {
+			if(clear_projectile(projlist, proj, true, true, &list_ptrs)) {
 				continue;
 			}
 		}
@@ -536,7 +553,7 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 			col.fatal = true;
 		}
 
-		apply_projectile_collision(projlist, proj, &col);
+		apply_projectile_collision(projlist, proj, &col, &list_ptrs);
 	}
 }
 

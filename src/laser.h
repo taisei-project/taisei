@@ -77,3 +77,5 @@ complex las_circle(Laser *l, float t);
 
 float laser_charge(Laser *l, int t, float charge, float width);
 void static_laser(Laser *l, int t);
+
+bool laser_intersects_circle(Laser *l, Circle circle);

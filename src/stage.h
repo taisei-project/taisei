@@ -125,6 +125,8 @@ typedef enum ClearHazardsFlags {
 } ClearHazardsFlags;
 
 void stage_clear_hazards(ClearHazardsFlags flags);
+void stage_clear_hazards_at(complex origin, double radius, ClearHazardsFlags flags);
+void stage_clear_hazards_predicate(bool (*predicate)(EntityInterface *ent, void *arg), void *arg, ClearHazardsFlags flags);
 
 #include "stages/stage1.h"
 #include "stages/stage2.h"

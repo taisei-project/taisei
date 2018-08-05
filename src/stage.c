@@ -432,20 +432,55 @@ static void stage_logic(void) {
 	}
 }
 
-void stage_clear_hazards(ClearHazardsFlags flags) {
+void stage_clear_hazards_predicate(bool (*predicate)(EntityInterface *ent, void *arg), void *arg, ClearHazardsFlags flags) {
 	if(flags & CLEAR_HAZARDS_BULLETS) {
-		for(Projectile *p = global.projs.first, *next; p; p = next) {
-			next = p->next;
-			clear_projectile(&global.projs, p, flags & CLEAR_HAZARDS_FORCE, flags & CLEAR_HAZARDS_NOW);
+		ProjectileListInterface list_ptrs;
+
+		for(Projectile *p = global.projs.first; p; p = list_ptrs.next) {
+			if(!predicate || predicate(&p->ent, arg)) {
+				clear_projectile(&global.projs, p, flags & CLEAR_HAZARDS_FORCE, flags & CLEAR_HAZARDS_NOW, &list_ptrs);
+			} else {
+				*&list_ptrs.list_interface = p->list_interface;
+			}
 		}
 	}
 
 	if(flags & CLEAR_HAZARDS_LASERS) {
 		for(Laser *l = global.lasers.first, *next; l; l = next) {
 			next = l->next;
-			clear_laser(&global.lasers, l, flags & CLEAR_HAZARDS_FORCE, flags & CLEAR_HAZARDS_NOW);
+
+			if(!predicate || predicate(&l->ent, arg)) {
+				clear_laser(&global.lasers, l, flags & CLEAR_HAZARDS_FORCE, flags & CLEAR_HAZARDS_NOW);
+			}
 		}
 	}
+}
+
+void stage_clear_hazards(ClearHazardsFlags flags) {
+	stage_clear_hazards_predicate(NULL, NULL, flags);
+}
+
+static bool proximity_predicate(EntityInterface *ent, void *varg) {
+	Circle *area = varg;
+
+	switch(ent->type) {
+		case ENT_PROJECTILE: {
+			Projectile *p = ENT_CAST(ent, Projectile);
+			return cabs(p->pos - area->origin) < area->radius;
+		}
+
+		case ENT_LASER: {
+			Laser *l = ENT_CAST(ent, Laser);
+			return laser_intersects_circle(l, *area);
+		}
+
+		default: UNREACHABLE;
+	}
+}
+
+void stage_clear_hazards_at(complex origin, double radius, ClearHazardsFlags flags) {
+	Circle area = { origin, radius };
+	stage_clear_hazards_predicate(proximity_predicate, &area, flags);
 }
 
 static void stage_free(void) {

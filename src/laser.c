@@ -344,6 +344,42 @@ static bool collision_laser_curve(Laser *l) {
 	return lineseg_circle_intersect(segment, collision_area) >= 0;
 }
 
+bool laser_intersects_circle(Laser *l, Circle circle) {
+	// TODO: lots of copypasta from the function above here, maybe refactor both somehow.
+
+	float t_end = (global.frames - l->birthtime) * l->speed + l->timeshift; // end of the laser based on length
+	float t_death = l->deathtime * l->speed + l->timeshift; // end of the laser based on lifetime
+	float t = t_end - l->timespan;
+
+	if(t < 0) {
+		t = 0;
+	}
+
+	LineSegment segment = { .a = l->prule(l, t) };
+	double orig_radius = circle.radius;
+
+	for(t += l->collision_step; t <= min(t_end, t_death); t += l->collision_step) {
+		float t1 = t - l->timespan / 2; // i have no idea
+		float tail = l->timespan / 1.9;
+		float widthfac = -0.75 / pow(tail, 2) * (t1 - tail) * (t1 + tail);
+		widthfac = max(0.25, pow(widthfac, l->width_exponent));
+
+		segment.b = l->prule(l, t);
+		circle.radius = orig_radius + widthfac * l->width * 0.5 + 1;
+
+		if(lineseg_circle_intersect(segment, circle) >= 0) {
+			return true;
+		}
+
+		segment.a = segment.b;
+	}
+
+	segment.b = l->prule(l, min(t_end, t_death));
+	circle.radius = orig_radius + l->width * 0.5; // WTF: what is this sorcery?
+
+	return lineseg_circle_intersect(segment, circle) >= 0;
+}
+
 complex las_linear(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		l->shader = r_shader_get_optional("lasers/linear");

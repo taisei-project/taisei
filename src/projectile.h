@@ -27,6 +27,7 @@ enum {
 
 typedef struct Projectile Projectile;
 typedef LIST_ANCHOR(Projectile) ProjectileList;
+typedef LIST_INTERFACE(Projectile) ProjectileListInterface;
 
 typedef int (*ProjRule)(Projectile *p, int t);
 typedef void (*ProjDrawRule)(Projectile *p, int t);
@@ -169,11 +170,11 @@ Projectile* create_particle(ProjArgs *args);
 #define PROJECTILE(...) _PROJ_GENERIC_SPAWN(create_projectile, __VA_ARGS__)
 #define PARTICLE(...) _PROJ_GENERIC_SPAWN(create_particle, __VA_ARGS__)
 
-void delete_projectile(ProjectileList *projlist, Projectile *proj);
+void delete_projectile(ProjectileList *projlist, Projectile *proj, ProjectileListInterface *out_list_pointers);
 void delete_projectiles(ProjectileList *projlist);
 
 void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col);
-void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCollisionResult *col);
+void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCollisionResult *col, ProjectileListInterface *out_list_pointers);
 int trace_projectile(Projectile *p, ProjCollisionResult *out_col, ProjCollisionType stopflags, int timeofs);
 bool projectile_in_viewport(Projectile *proj);
 void process_projectiles(ProjectileList *projlist, bool collision);
@@ -184,7 +185,7 @@ Projectile* spawn_projectile_clear_effect(Projectile *proj);
 
 void projectile_set_prototype(Projectile *p, ProjPrototype *proto);
 
-bool clear_projectile(ProjectileList *projlist, Projectile *proj, bool force, bool now);
+bool clear_projectile(ProjectileList *projlist, Projectile *proj, bool force, bool now, ProjectileListInterface *out_list_pointers);
 
 int linear(Projectile *p, int t);
 int accelerated(Projectile *p, int t);
