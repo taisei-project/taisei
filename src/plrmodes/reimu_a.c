@@ -179,12 +179,27 @@ static void reimu_spirit_bomb_orb_visual(Projectile *p, int t) {
 	}
 }
 
+static int reimu_spirit_bomb_orb_trail(Projectile *p, int t) {
+	if(t < 0) {
+		return ACTION_ACK;
+	}
+
+	p->pos += p->args[0];
+	p->angle -= 0.05;
+
+	// p->color = *HSLA(2.0*t/p->timeout, 0.5, 0.5, 0.0);
+
+	return ACTION_NONE;
+}
+
 static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 	int index = creal(p->args[1]) + 0.5;
+
 	if(t == EVENT_BIRTH) {
 		if(index == 0)
 			global.shake_view = 4;
 		p->args[3] = global.plr.pos;
+		return ACTION_ACK;
 	}
 
 	if(t == EVENT_DEATH) {
@@ -197,24 +212,37 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 		ent_area_damage(p->pos, range, &(DamageInfo){damage, DMG_PLAYER_BOMB});
 		int count = 21;
 		double offset = frand();
+
 		for(int i = 0; i < count; i++) {
-			Color c;
 			PARTICLE(
 				.sprite_ptr = get_sprite("proj/glowball"),
 				.shader = "sprite_bullet",
-				.color = reimu_spirit_orb_color(&c, i%3),
+				.color = HSLA(3 * (float)i / count + offset, 1, 0.5, 0), // reimu_spirit_orb_color(&(Color){0}, i%3),w
 				.timeout = 60,
 				.pos = p->pos,
 				.args = { cexp(I * 2 * M_PI / count * (i + offset)) * 15 },
 				.angle = 2*M_PI*frand(),
 				.rule = linear,
 				.draw_rule = Fade,
+				.layer = LAYER_BOSS,
 				.flags = PFLAG_NOREFLECT,
 			);
 		}
-	}
 
-	if(t < 0) {
+		for(int i = 0; i < 3; ++i) {
+			PARTICLE(
+				.sprite = "blast",
+				.size = 64 * (I+1),
+				.color = reimu_spirit_orb_color(&(Color){0}, i),
+				.pos = p->pos + 30 * cexp(I*2*M_PI/3*(i+t*0.1)),
+				.timeout = 40,
+				.draw_rule = ScaleFade,
+				.layer = LAYER_BOSS,
+				.args = { 0, 0, 7.5*I },
+			);
+		}
+
+		stage_clear_hazards_at(p->pos, 256, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
 		return ACTION_ACK;
 	}
 
@@ -224,28 +252,37 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 
 	double circletime = 100+20*index;
 
+	if(t == circletime) {
+		p->args[3] = global.plr.pos - 128*I;
+	}
+
 	complex target_circle = global.plr.pos + 10 * sqrt(t) * p->args[0]*(1 + 0.1 * sin(0.2*t));
-	p->args[0] *= cexp(I*0.1);
-                                                                            
-	double circlestrength = 1 / (1 + exp(t-circletime));
-	
+	p->args[0] *= cexp(I*0.12);
+
+	double circlestrength = 1.0 / (1 + exp(t-circletime));
+
 	p->args[3] = plrutil_homing_target(p->pos, p->args[3]);
 	complex target_homing = p->args[3];
-
-
 	complex homing = target_homing - p->pos;
-	p->pos += 0.3 * (circlestrength * (target_circle - p->pos) + 0.2 * (1-circlestrength) * (homing + 2*homing/(cabs(homing)+0.01)));
+	complex v = 0.3 * (circlestrength * (target_circle - p->pos) + 0.2 * (1-circlestrength) * (homing + 2*homing/(cabs(homing)+0.01)));
+	p->args[2] += (v - p->args[2]) * 0.2;
+	p->pos += p->args[2];
 
-	for(int i = 0; i < 3 && circlestrength < 0.3; i++) {
-		Color c;
+	for(int i = 0; i < 3 /*&& circlestrength < 1*/; i++) {
+		complex pos = p->pos + 10 * cexp(I*2*M_PI/3*(i+t*0.1));
+		complex v = global.plr.pos - pos;
+		v *= 3 * circlestrength / cabs(v);
+
 		PARTICLE(
 			.sprite_ptr = get_sprite("part/stain"),
-			.color = reimu_spirit_orb_color(&c, i),
-			.pos = p->pos + 10 * cexp(I*2*M_PI/3*(i+t*0.1)),
+			// .color = reimu_spirit_orb_color(&(Color){0}, i),
+			.color = HSLA(t/p->timeout, 0.5, 0.5, 0.0),
+			.pos = pos,
 			.angle = 2*M_PI*frand(),
-			.timeout = 60,
+			.timeout = 30,
 			.draw_rule = ScaleFade,
-			.args = { 0, 0.8, 0.8, 0.8},
+			.rule = reimu_spirit_bomb_orb_trail,
+			.args = { v, 0, 0.8 },
 		);
 	}
 	
@@ -260,14 +297,20 @@ static void reimu_spirit_bomb(Player *p) {
 			.draw_rule = reimu_spirit_bomb_orb_visual,
 			.rule = reimu_spirit_bomb_orb,
 			.args = { cexp(I*2*M_PI/count*i), i, 0, 0},
+			.timeout = 160 + 20 * i,
 			.type = PlrProj,
 			.damage = 0,
 			.size = 10 + 10*I,
+			.layer = LAYER_PLAYER_FOCUS - 1,
 		);
 	}
 }
 
 static void reimu_spirit_bomb_bg(Player *p) {
+	if(!player_is_bomb_active(p)) {
+		return;
+	}
+
 	double speed;
 	double t = player_get_bomb_progress(p, &speed);
 	float alpha = 0;
@@ -277,6 +320,7 @@ static void reimu_spirit_bomb_bg(Player *p) {
 		alpha *= 1-pow((t-0.7)/0.3,4);
 	
 	reimu_common_bomb_bg(p, alpha);
+	colorfill(0, 0.05 * alpha, 0.1 * alpha, alpha * 0.5);
 }
 
 static void reimu_spirit_shot(Player *p) {
@@ -501,13 +545,27 @@ static void reimu_spirit_power(Player *plr, short npow) {
 	}
 }
 
+double reimu_spirit_property(Player *plr, PlrProperty prop) {
+	double base_value = reimu_common_property(plr, prop);
+
+	switch(prop) {
+		case PLR_PROP_SPEED: {
+			return base_value * (pow(player_get_bomb_progress(plr, NULL), 0.5));
+		}
+
+		default: {
+			return base_value;
+		}
+	}
+}
+
 PlayerMode plrmode_reimu_a = {
 	.name = "Spirit Sign",
 	.character = &character_reimu,
 	.dialog = &dialog_reimu,
 	.shot_mode = PLR_SHOT_REIMU_SPIRIT,
 	.procs = {
-		.property = reimu_common_property,
+		.property = reimu_spirit_property,
 		.init = reimu_spirit_init,
 		.think = reimu_spirit_think,
 		.bomb = reimu_spirit_bomb,

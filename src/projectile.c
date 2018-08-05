@@ -232,6 +232,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	p->ent.draw_func = ent_draw_projectile;
 
 	projectile_set_prototype(p, args->proto);
+
 	// p->collision_size *= 10;
 	// p->size *= 5;
 
@@ -244,6 +245,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	// TODO: Maybe allow ACTION_DESTROY here?
 	// But in that case, code that uses this function's return value must be careful to not dereference a NULL pointer.
 	proj_call_rule(p, EVENT_BIRTH);
+
 
 	return alist_append(args->dest, p);
 }
