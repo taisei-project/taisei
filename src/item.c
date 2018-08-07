@@ -84,7 +84,8 @@ Item* create_bpoint(complex pos) {
 		PARTICLE(
 			.sprite = "flare",
 			.pos = pos, .timeout = 30,
-			.draw_rule = Fade
+			.draw_rule = Fade,
+			.layer = LAYER_BULLET+1
 		);
 		i->auto_collect = 10;
 	}
