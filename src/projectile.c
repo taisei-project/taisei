@@ -406,7 +406,7 @@ void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCol
 
 	if(col->fatal) {
 		delete_projectile(projlist, p, out_list_pointers);
-	} else {
+	} else if(out_list_pointers) {
 		*&out_list_pointers->list_interface = p->list_interface;
 	}
 }
