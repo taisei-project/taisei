@@ -118,7 +118,13 @@ DamageResult ent_damage(EntityInterface *ent, const DamageInfo *damage) {
 		return DMG_RESULT_INAPPLICABLE;
 	}
 
-	return ent->damage_func(ent, damage);
+	DamageResult res = ent->damage_func(ent, damage);
+
+	if(res == DMG_RESULT_OK) {
+		player_register_damage(&global.plr, ent, damage);
+	}
+
+	return res;
 }
 
 void ent_area_damage(complex origin, float radius, const DamageInfo *damage) {

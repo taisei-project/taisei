@@ -102,7 +102,7 @@ static void reimu_dream_gap_bomb(Enemy *e, int t) {
 			.draw_rule = reimu_dream_gap_bomb_projectile_draw,
 			.type = PlrProj,
 			.damage_type = DMG_PLAYER_BOMB,
-			.damage = 200,
+			.damage = 100,
 			.args = { -20 * e->pos0 },
 		);
 
@@ -282,7 +282,7 @@ static void reimu_dream_spawn_warp_effect(complex pos, bool exit) {
 	PARTICLE(
 		.sprite = exit ? "stain" : "stardust",
 		.pos = pos,
-		.color = RGBA(0.75, 0.4 * frand(), 0.4, 0),
+		.color = color_mul_scalar(RGBA(0.75, 0.4 * frand(), 0.4, 0), 0.8),
 		.timeout = 20,
 		.angle = frand() * M_PI * 2,
 		.draw_rule = ScaleFade,
@@ -364,7 +364,7 @@ static int reimu_dream_needle(Projectile *p, int t) {
 
 	p->pos += p->args[0];
 
-	Color *c = color_mul(COLOR_COPY(&p->color), RGBA_MUL_ALPHA(0.75, 0.5, 1, 0.5));
+	Color *c = color_mul(COLOR_COPY(&p->color), RGBA_MUL_ALPHA(0.75, 0.5, 1, 0.35));
 	c->a = 0;
 
 	PARTICLE(
@@ -384,7 +384,7 @@ static int reimu_dream_needle(Projectile *p, int t) {
 
 static void reimu_dream_shot(Player *p) {
 	play_loop("generic_shot");
-	int dmg = 75;
+	int dmg = 50;
 
 	if(!(global.frames % 6)) {
 		for(int i = -1; i < 2; i += 2) {
@@ -452,11 +452,11 @@ static int reimu_dream_slave(Enemy *e, int t) {
 			PROJECTILE(
 				.proto = pp_needle2,
 				.pos = e->pos,
-				.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),
+				.color = RGBA_MUL_ALPHA(1, 1, 1, 0.35),
 				.rule = reimu_dream_needle,
 				.args = { 20.0 * shotdir },
 				.type = PlrProj,
-				.damage = 40,
+				.damage = 35,
 				.shader = "sprite_default",
 			);
 		}

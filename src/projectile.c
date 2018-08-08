@@ -370,9 +370,9 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 
 void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCollisionResult *col, ProjectileListInterface *out_list_pointers) {
 	switch(col->type) {
-		case PCOL_NONE: {
+		case PCOL_NONE:
+		case PCOL_VOID:
 			break;
-		}
 
 		case PCOL_PLAYER_GRAZE: {
 			if(p->flags & PFLAG_GRAZESPAM) {
@@ -388,20 +388,12 @@ void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCol
 		}
 
 		case PCOL_ENTITY: {
-			if(ent_damage(col->entity, &col->damage) == DMG_RESULT_OK) {
-				player_register_damage(&global.plr, col->entity, &col->damage);
-			}
-
+			ent_damage(col->entity, &col->damage);
 			break;
 		}
 
-		case PCOL_VOID: {
-			break;
-		}
-
-		default: {
-			log_fatal("Invalid collision type %x", col->type);
-		}
+		default:
+			UNREACHABLE;
 	}
 
 	if(col->fatal) {
