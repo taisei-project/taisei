@@ -132,7 +132,7 @@ static inline double reimu_spirit_homing_aimfactor(double t, double maxt) {
 
 static int reimu_spirit_homing(Projectile *p, int t) {
 	if(t < 0) {
-		if(t == EVENT_DEATH && projectile_in_viewport(p)) {
+		if(t == EVENT_DEATH && !global.game_over && projectile_in_viewport(p)) {
 			reimu_spirit_spawn_homing_impact(p, t);
 		}
 
@@ -203,6 +203,10 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 	}
 
 	if(t == EVENT_DEATH) {
+		if(global.game_over) {
+			return ACTION_ACK;
+		}
+
 		global.shake_view = 20;
 		global.shake_view_fade = 0.6;
 
