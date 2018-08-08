@@ -107,6 +107,10 @@ static void reimu_dream_gap_bomb(Enemy *e, int t) {
 		);
 
 		global.shake_view += 5;
+
+		if(!(t % 16)) {
+			play_sound("boon");
+		}
 	}
 }
 
@@ -254,6 +258,7 @@ static void reimu_dream_preload(void) {
 }
 
 static void reimu_dream_bomb(Player *p) {
+	play_sound("bomb_marisa_a");
 }
 
 static void reimu_dream_bomb_bg(Player *p) {

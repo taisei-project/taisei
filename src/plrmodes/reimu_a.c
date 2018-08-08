@@ -210,6 +210,8 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 		double range = 300;
 
 		ent_area_damage(p->pos, range, &(DamageInfo){damage, DMG_PLAYER_BOMB});
+		stage_clear_hazards_at(p->pos, range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
+
 		int count = 21;
 		double offset = frand();
 
@@ -242,7 +244,9 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 			);
 		}
 
-		stage_clear_hazards_at(p->pos, 256, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
+		play_sound("boom");
+		play_sound("spellend");
+
 		return ACTION_ACK;
 	}
 
@@ -254,6 +258,7 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 
 	if(t == circletime) {
 		p->args[3] = global.plr.pos - 128*I;
+		play_sound("redirect");
 	}
 
 	complex target_circle = global.plr.pos + 10 * sqrt(t) * p->args[0]*(1 + 0.1 * sin(0.2*t));
@@ -291,6 +296,7 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 
 static void reimu_spirit_bomb(Player *p) {
 	int count = 6;
+
 	for(int i = 0; i < count; i++) {
 		PROJECTILE(
 			.pos = p->pos,
@@ -304,6 +310,9 @@ static void reimu_spirit_bomb(Player *p) {
 			.layer = LAYER_PLAYER_FOCUS - 1,
 		);
 	}
+
+	play_sound("bomb_reimu_a");
+	play_sound("bomb_marisa_b");
 }
 
 static void reimu_spirit_bomb_bg(Player *p) {
