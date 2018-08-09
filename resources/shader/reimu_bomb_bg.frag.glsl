@@ -116,5 +116,7 @@ void main(void) {
 
 	float rune_factor = texture(runes, runes_uv).r;
 	fragColor.rgb = pow(fragColor.rgb, vec3(1 + (1 - 2 * rune_factor) * 0.1));
+	// fragColor = mix(fragColor, 0.9 * fragColor + vec4(0.1), rune_factor * r_color);
+	fragColor += r_color * rune_factor * 0.1;
 	fragColor.a *= (1 - rune_factor * 0.1);
 }
