@@ -77,6 +77,15 @@ static int reimu_dream_gap_bomb_projectile(Projectile *p, int t) {
 
 	p->pos += p->args[0];
 
+	if(!(t % 3)) {
+		double range = GAP_LENGTH * 0.35;
+		double damage = 50;
+		// Yes, I know, this is inefficient as hell, but I'm too lazy to write a
+		// stage_clear_hazards_inside_rectangle function.
+		stage_clear_hazards_at(p->pos, range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
+		ent_area_damage(p->pos, range, &(DamageInfo) { damage, DMG_PLAYER_BOMB });
+	}
+
 	return ACTION_NONE;
 }
 
@@ -102,7 +111,7 @@ static void reimu_dream_gap_bomb(Enemy *e, int t) {
 			.draw_rule = reimu_dream_gap_bomb_projectile_draw,
 			.type = PlrProj,
 			.damage_type = DMG_PLAYER_BOMB,
-			.damage = 100,
+			.damage = 75,
 			.args = { -20 * e->pos0 },
 		);
 
