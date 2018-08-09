@@ -156,7 +156,7 @@ static int reimu_spirit_homing(Projectile *p, int t) {
 	return ACTION_NONE;
 }
 
-static const Color *reimu_spirit_orb_color(Color *c, int i) {
+static Color *reimu_spirit_orb_color(Color *c, int i) {
 	*c = *RGBA((0.2 + (i==0))/1.2, (0.2 + (i==1))/1.2, (0.2 + 1.5*(i==2))/1.2, 0.0);
 	return c;
 }
@@ -190,6 +190,24 @@ static int reimu_spirit_bomb_orb_trail(Projectile *p, int t) {
 	// p->color = *HSLA(2.0*t/p->timeout, 0.5, 0.5, 0.0);
 
 	return ACTION_NONE;
+}
+
+static void reimu_spirit_bomb_orb_draw_impact(Projectile *p, int t) {
+	float attack = min(1, (7 + 5 * p->args[0]) * t / p->timeout);
+	float decay = t / p->timeout;
+
+	Color c = p->color;
+	color_lerp(&c, RGBA(0.2, 0.1, 0, 1.0), decay);
+	color_mul_scalar(&c, pow(1 - decay, 2) * 0.75);
+
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = p->sprite,
+		.pos = { creal(p->pos), cimag(p->pos) },
+		.color = &c,
+		.shader_ptr = p->shader,
+		.shader_params = &p->shader_params,
+		.scale.both = (0.75 + 0.25 / (pow(decay, 3.0) + 1.0)) + sqrt(5 * (1 - attack)),
+	});
 }
 
 static int reimu_spirit_bomb_orb(Projectile *p, int t) {
@@ -239,12 +257,22 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 			PARTICLE(
 				.sprite = "blast",
 				.size = 64 * (I+1),
-				.color = reimu_spirit_orb_color(&(Color){0}, i),
+				.color = color_mul_scalar(reimu_spirit_orb_color(&(Color){0}, i), 2),
 				.pos = p->pos + 30 * cexp(I*2*M_PI/3*(i+t*0.1)),
 				.timeout = 40,
 				.draw_rule = ScaleFade,
-				.layer = LAYER_BOSS,
+				.layer = LAYER_BOSS + 2,
 				.args = { 0, 0, 7.5*I },
+			);
+
+			PARTICLE(
+				.sprite = "fantasyseal_impact",
+				.color = reimu_spirit_orb_color(&(Color){0}, i),
+				.pos = p->pos + 2 * cexp(I*2*M_PI/3*(i+t*0.1)),
+				.timeout = 120,
+				.draw_rule = reimu_spirit_bomb_orb_draw_impact,
+				.layer = LAYER_BOSS + 1,
+				.args = { frand() },
 			);
 		}
 
