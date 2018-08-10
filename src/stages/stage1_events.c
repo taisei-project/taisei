@@ -1144,12 +1144,12 @@ void stage1_events(void) {
 #ifdef DPSTEST
 	AT(0) {
 		create_enemy1c(VIEWPORT_W/2 + VIEWPORT_H/3*I, 9000, BigFairy, dpsdummy, 0);
-		//create_enemy1c(-64 + VIEWPORT_W/2 + VIEWPORT_H/3*I, 9000, BigFairy, dpsdummy, 0);
-		//create_enemy1c(+64 + VIEWPORT_W/2 + VIEWPORT_H/3*I, 9000, BigFairy, dpsdummy, 0);
+		create_enemy1c(-64 + VIEWPORT_W/2 + VIEWPORT_H/3*I, 9000, BigFairy, dpsdummy, 0);
+		create_enemy1c(+64 + VIEWPORT_W/2 + VIEWPORT_H/3*I, 9000, BigFairy, dpsdummy, 0);
 	}
 
 	if(!(global.timer % 16)) {
-		//create_enemy1c(-16 + VIEWPORT_H/5*I, 9000, Swirl, dpsdummy, 2);
+		create_enemy1c(-16 + VIEWPORT_H/5*I, 9000, Swirl, dpsdummy, 2);
 	}
 
 	return;

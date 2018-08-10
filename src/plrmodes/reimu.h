@@ -17,7 +17,6 @@ extern PlayerMode plrmode_reimu_a;
 extern PlayerMode plrmode_reimu_b;
 
 double reimu_common_property(Player *plr, PlrProperty prop);
-void reimu_common_shot(Player *plr, int dmg);
 int reimu_common_ofuda(Projectile *p, int t);
 void reimu_common_draw_yinyang(Enemy *e, int t, const Color *c);
 void reimu_common_bomb_bg(Player *p, float alpha);

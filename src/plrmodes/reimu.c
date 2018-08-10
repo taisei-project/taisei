@@ -92,24 +92,6 @@ int reimu_common_ofuda(Projectile *p, int t) {
 	return ACTION_NONE;
 }
 
-void reimu_common_shot(Player *plr, int dmg) {
-	play_loop("generic_shot");
-
-	if(!(global.frames % 3)) {
-		int i = 1 - 2 * (bool)(global.frames % 6);
-		PROJECTILE(
-			.proto = pp_ofuda,
-			.pos = plr->pos + 10 * i - 15.0*I,
-			.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),
-			.rule = reimu_common_ofuda,
-			.args = { -20.0*I },
-			.type = PlrProj,
-			.damage = dmg,
-			.shader = "sprite_default",
-		);
-	}
-}
-
 void reimu_common_draw_yinyang(Enemy *e, int t, const Color *c) {
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = "yinyang",

@@ -365,7 +365,42 @@ static void reimu_spirit_bomb_bg(Player *p) {
 }
 
 static void reimu_spirit_shot(Player *p) {
-	reimu_common_shot(p, 100 - 17 * (p->power / 100));
+	play_loop("generic_shot");
+
+	if(!(global.frames % 3)) {
+		int i = 1 - 2 * (bool)(global.frames % 6);
+		PROJECTILE(
+			.proto = pp_ofuda,
+			.pos = p->pos + 10 * i - 15.0*I,
+			.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),
+			.rule = reimu_common_ofuda,
+			.args = { -20.0*I },
+			.type = PlrProj,
+			.damage = 100 - 8 * (p->power / 100),
+			.shader = "sprite_default",
+		);
+	}
+
+	for(int pwr = 0; pwr <= p->power/100; ++pwr) {
+		int t = (global.frames - 5 * pwr);
+
+		if(!(t % 16)) {
+			for(int i = -1; i < 2; i += 2) {
+				float spread = i * M_PI/32 * (1 + 0.35 * pwr);
+
+				PROJECTILE(
+					.proto = pp_hakurei_seal,
+					.pos = p->pos - I + 5 * i,
+					.color = color_mul_scalar(RGBA(1, 1, 1, 0.5), 0.7),
+					.rule = linear,
+					.args = { -18.0*I*cexp(I*spread) },
+					.type = PlrProj,
+					.damage = 60 - 5 * (p->power / 100),
+					.shader = "sprite_default",
+				);
+			}
+		}
+	}
 }
 
 static void reimu_spirit_slave_shot(Enemy *e, int t) {
@@ -517,8 +552,8 @@ static void reimu_spirit_kill_slaves(EnemyList *slaves) {
 }
 
 static void reimu_spirit_respawn_slaves(Player *plr, short npow, complex param) {
-	double dmg_homing = 100; // every 12 frames
-	double dmg_needle = 90; // every 3 frames
+	double dmg_homing = 120 - 12 * plr->power / 100; // every 12 frames
+	double dmg_needle = 90 - 10 * plr->power / 100; // every 3 frames
 	complex dmg = dmg_homing + I * dmg_needle;
 	EnemyVisualRule visual;
 
