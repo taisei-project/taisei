@@ -142,6 +142,7 @@ static void video_new_window_internal(int w, int h, uint32_t flags, bool fallbac
 	video.window = r_create_window(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, flags);
 
 	if(video.window) {
+		SDL_SetWindowMinimumSize(video.window, SCREEN_W / 4, SCREEN_H / 4);
 		video_update_mode_settings();
 		return;
 	}

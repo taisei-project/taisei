@@ -8,15 +8,17 @@ atlases = [
     'common_ui',
     'huge',
     'portraits',
-    'reimu',
 ]
 
 atlas_common_args = [
     '--width',  '4096',
     '--height', '4096',
-    '--border', '1',
-    '--single',
+    '--multiple',
     '--crop',
+
+    # Padding to prevent filter bleeding.
+    # 1 is normally enough, but not when mipmaps are involved.
+    '--border', '2',
 ]
 
 atlas_profiles = [

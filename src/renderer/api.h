@@ -78,7 +78,7 @@ typedef enum TextureMipmapMode {
 	TEX_MIPMAP_AUTO,
 } TextureMipmapMode;
 
-#define TEX_ANISOTROPY_DEFAULT 1
+#define TEX_ANISOTROPY_DEFAULT 8
 #define TEX_MIPMAPS_MAX ((uint)(-1))
 
 typedef struct TextureParams {
@@ -96,7 +96,7 @@ typedef struct TextureParams {
 		TextureWrapMode t;
 	} wrap;
 
-	int anisotropy;
+	uint anisotropy;
 	uint mipmaps;
 	TextureMipmapMode mipmap_mode;
 	bool stream;

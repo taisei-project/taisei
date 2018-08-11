@@ -142,38 +142,6 @@ static float set_alpha_dimmed(Uniform *u_alpha, float a) {
 	return set_alpha(u_alpha, a * a * 0.5);
 }
 
-/*
-static void draw_magic_star(complex pos, double a, const Color *clr1, const Color *clr2) {
-	if(a <= 0) {
-		return;
-	}
-
-	Color *mul = RGBA(a, a, a, 0);
-	Color *c1 = color_mul(COLOR_COPY(clr1), mul);
-	Color *c2 = color_mul(COLOR_COPY(clr2), mul);
-
-	Sprite *spr = get_sprite("part/magic_star");
-	r_shader("sprite_bullet");
-
-	r_mat_push();
-		r_mat_translate(creal(pos), cimag(pos), -1);
-		r_mat_push();
-			r_color(c1);
-			r_mat_rotate_deg(global.frames * 3, 0, 0, 1);
-			draw_sprite_batched_p(0, 0, spr);
-		r_mat_pop();
-		r_mat_push();
-			r_color(c2);
-			r_mat_rotate_deg(global.frames * -3, 0, 0, 1);
-			draw_sprite_batched_p(0, 0, spr);
-		r_mat_pop();
-	r_mat_pop();
-	r_color4(1, 1, 1, 1);
-
-	r_shader("sprite_default");
-}
-*/
-
 static void marisa_laser_slave_visual(Enemy *e, int t, bool render) {
 	if(!render) {
 		marisa_common_slave_visual(e, t, render);
@@ -181,15 +149,6 @@ static void marisa_laser_slave_visual(Enemy *e, int t, bool render) {
 	}
 
 	float laser_alpha = laser_renderer->args[0];
-
-	/*
-	float star_alpha = laser_renderer->args[1] * global_magicstar_alpha;
-
-	draw_magic_star(e->pos, 0.75 * star_alpha,
-		RGB(1.0, 0.1, 0.1),
-		RGB(0.0, 0.1, 1.1)
-	);
-	*/
 
 	ShaderCustomParams shader_params;
 	shader_params.color = *RGBA(0.2, 0.4, 0.5, laser_renderer->args[1] * 0.75);
@@ -668,7 +627,6 @@ static void marisa_laser_preload(void) {
 	preload_resources(RES_SPRITE, flags,
 		"proj/marisa",
 		"part/maristar_orbit",
-		"part/magic_star",
 	NULL);
 
 	preload_resources(RES_TEXTURE, flags,

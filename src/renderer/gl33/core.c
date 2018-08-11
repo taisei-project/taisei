@@ -735,6 +735,10 @@ static void gl33_draw(Primitive prim, uint first, uint count, uint32_t *indices,
 	}
 
 	gl33_stats_post_draw();
+
+	if(R.framebuffer.active) {
+		gl33_framebuffer_taint(R.framebuffer.active);
+	}
 }
 
 static void gl33_texture(uint unit, Texture *tex) {

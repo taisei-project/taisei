@@ -55,6 +55,8 @@ static const char *texture_image_exts[] = {
 	// more are usable if you explicitly specify the source in a .tex file,
 	// but these are the ones we officially support, and are tried in this
 	// order for source auto-detection.
+	//
+	// FIXME: overriding extension in the .tex file currently doesn't work!
 	".png",
 	".jpg",
 	".jpeg",
@@ -191,14 +193,19 @@ static void* load_texture_begin(const char *path, uint flags) {
 			.type = TEX_TYPE_RGBA,
 			.filter = {
 				.mag = TEX_FILTER_LINEAR,
-				.min = TEX_FILTER_LINEAR,
+				.min = TEX_FILTER_LINEAR_MIPMAP_LINEAR,
 			},
 			.wrap = {
 				.s = TEX_WRAP_REPEAT,
 				.t = TEX_WRAP_REPEAT,
 			},
+			.mipmaps = TEX_MIPMAPS_MAX,
+			.anisotropy = TEX_ANISOTROPY_DEFAULT,
+
+			// Manual because we don't want mipmaps generated until we've applied the
+			// post-load shader, which will premultiply alpha.
+			// Mipmaps and filtering are basically broken without premultiplied alpha.
 			.mipmap_mode = TEX_MIPMAP_MANUAL,
-			.mipmaps = 1,
 		}
 	};
 
@@ -215,6 +222,7 @@ static void* load_texture_begin(const char *path, uint flags) {
 			{ "wrap_s",     .out_str  = &str_wrap_s },
 			{ "wrap_t",     .out_str  = &str_wrap_t },
 			{ "mipmaps",    .out_int  = (int*)&ld.params.mipmaps },
+			{ "anisotropy", .out_int  = (int*)&ld.params.anisotropy },
 			{ NULL }
 		})) {
 			free(source_allocated);
@@ -312,7 +320,7 @@ static void texture_post_load(Texture *tex) {
 	r_blend(BLEND_NONE);
 	r_disable(RCAP_CULL_FACE);
 	r_texture_get_params(tex, &params);
-	params.mipmap_mode = TEX_MIPMAP_MANUAL;
+	params.mipmap_mode = TEX_MIPMAP_AUTO;
 	r_texture_set_filter(tex, TEX_FILTER_NEAREST, TEX_FILTER_NEAREST);
 	r_texture_create(&fbo_tex, &params);
 	r_texture_ptr(0, tex);
@@ -328,14 +336,10 @@ static void texture_post_load(Texture *tex) {
 	r_mat_translate(0.5, 0.5, 0);
 	r_mat_scale(1, -1, 1);
 	r_framebuffer_create(&fb);
-
-	for(uint mipmap = 0; mipmap < params.mipmaps; ++mipmap) {
-		r_framebuffer_attach(&fb, &fbo_tex, mipmap, FRAMEBUFFER_ATTACH_COLOR0);
-		r_framebuffer_viewport(&fb, 0, 0, max(1, floor(tex->w / pow(2, mipmap))), max(1, floor(tex->h / pow(2, mipmap))));
-		r_framebuffer(&fb);
-		r_draw_quad();
-	}
-
+	r_framebuffer_attach(&fb, &fbo_tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
+	r_framebuffer_viewport(&fb, 0, 0, tex->w, tex->h);
+	r_framebuffer(&fb);
+	r_draw_quad();
 	r_mat_pop();
 	r_mat_mode(MM_PROJECTION);
 	r_mat_pop();

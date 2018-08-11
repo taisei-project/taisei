@@ -28,3 +28,4 @@ void gl33_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, uint mipmap
 Texture *gl33_framebuffer_get_attachment(Framebuffer *framebuffer, FramebufferAttachment attachment);
 uint gl33_framebuffer_get_attachment_mipmap(Framebuffer *framebuffer, FramebufferAttachment attachment);
 void gl33_framebuffer_destroy(Framebuffer *framebuffer);
+void gl33_framebuffer_taint(Framebuffer *framebuffer);
