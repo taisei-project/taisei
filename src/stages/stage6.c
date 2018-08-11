@@ -281,7 +281,6 @@ static void stage6_preload(void) {
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"tower_wall",
 		"stage6_sky",
-		"sprite_bullet_apple",
 		"lasers/maxwell",
 		"lasers/elly_toe_fermion",
 		"lasers/elly_toe_photon",

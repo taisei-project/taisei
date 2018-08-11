@@ -456,7 +456,6 @@ void elly_newton(Boss *b, int t) {
 				0, 0.05*I, M_PI*2*frand()
 			},
 			.color = c,
-			.shader = "sprite_bullet_apple",
 			.layer = LAYER_BULLET | 0xffff, // force them to render on top of the other bullets
 		);
 
