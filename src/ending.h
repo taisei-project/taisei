@@ -17,12 +17,14 @@ enum {
 };
 
 enum {
-	// do not reorder these or change the values
+	// WARNING: Reordering this will break current progress files.
+
 	ENDING_BAD_1,
 	ENDING_BAD_2,
 	ENDING_GOOD_1,
 	ENDING_GOOD_2,
-
+	ENDING_BAD_3,
+	ENDING_GOOD_3,
 	NUM_ENDINGS,
 };
 
@@ -37,5 +39,7 @@ void ending_preload(void);
  */
 void bad_ending_marisa(Ending *e);
 void bad_ending_youmu(Ending *e);
+void bad_ending_reimu(Ending *e);
 void good_ending_marisa(Ending *e);
 void good_ending_youmu(Ending *e);
+void good_ending_reimu(Ending *e);

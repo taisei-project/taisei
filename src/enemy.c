@@ -66,6 +66,7 @@ Enemy *create_enemy_p(EnemyList *enemies, complex pos, float hp, EnemyVisualRule
 
 	// XXX: some code relies on the insertion logic
 	Enemy *e = (Enemy*)alist_insert(enemies, enemies->first, objpool_acquire(stage_object_pools.enemies));
+	// Enemy *e = (Enemy*)alist_append(enemies, objpool_acquire(stage_object_pools.enemies));
 	e->moving = false;
 	e->dir = 0;
 

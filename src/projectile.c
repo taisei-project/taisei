@@ -232,6 +232,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	p->ent.draw_func = ent_draw_projectile;
 
 	projectile_set_prototype(p, args->proto);
+
 	// p->collision_size *= 10;
 	// p->size *= 5;
 
@@ -244,6 +245,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	// TODO: Maybe allow ACTION_DESTROY here?
 	// But in that case, code that uses this function's return value must be careful to not dereference a NULL pointer.
 	proj_call_rule(p, EVENT_BIRTH);
+
 
 	return alist_append(args->dest, p);
 }
@@ -368,9 +370,9 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 
 void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCollisionResult *col, ProjectileListInterface *out_list_pointers) {
 	switch(col->type) {
-		case PCOL_NONE: {
+		case PCOL_NONE:
+		case PCOL_VOID:
 			break;
-		}
 
 		case PCOL_PLAYER_GRAZE: {
 			if(p->flags & PFLAG_GRAZESPAM) {
@@ -386,25 +388,17 @@ void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCol
 		}
 
 		case PCOL_ENTITY: {
-			if(ent_damage(col->entity, &col->damage) == DMG_RESULT_OK) {
-				player_register_damage(&global.plr, col->entity, &col->damage);
-			}
-
+			ent_damage(col->entity, &col->damage);
 			break;
 		}
 
-		case PCOL_VOID: {
-			break;
-		}
-
-		default: {
-			log_fatal("Invalid collision type %x", col->type);
-		}
+		default:
+			UNREACHABLE;
 	}
 
 	if(col->fatal) {
 		delete_projectile(projlist, p, out_list_pointers);
-	} else {
+	} else if(out_list_pointers) {
 		*&out_list_pointers->list_interface = p->list_interface;
 	}
 }

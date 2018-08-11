@@ -234,6 +234,10 @@ static void marisa_star_bomb(Player *plr) {
 }
 
 static void marisa_star_bombbg(Player *plr) {
+	if(!player_is_bomb_active(plr)) {
+		return;
+	}
+
 	float t = player_get_bomb_progress(&global.plr, NULL);
 	
 	ShaderProgram *s = r_shader_get("maristar_bombbg");

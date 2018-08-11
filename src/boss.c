@@ -489,7 +489,7 @@ static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg)
 		play_loop("hit0");
 	}
 
-	return true;
+	return DMG_RESULT_OK;
 }
 
 static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
@@ -769,7 +769,7 @@ void process_boss(Boss **pboss) {
 		play_sound_ex("bossdeath", BOSS_DEATH_DELAY * 2, false);
 	} else {
 		if(cabs(boss->pos - global.plr.pos) < 16) {
-			player_death(&global.plr);
+			ent_damage(&global.plr.ent, &(DamageInfo) { .type = DMG_ENEMY_COLLISION });
 		}
 	}
 

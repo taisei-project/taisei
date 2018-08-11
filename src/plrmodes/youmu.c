@@ -79,6 +79,10 @@ void youmu_common_shot(Player *plr) {
 }
 
 void youmu_common_bombbg(Player *plr) {
+	if(!player_is_bomb_active(plr)) {
+		return;
+	}
+
 	float t = player_get_bomb_progress(&global.plr, NULL);
 	float fade = 1;
 

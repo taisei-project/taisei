@@ -15,13 +15,17 @@
 #include "plrmodes.h"
 #include "plrmodes/marisa.h"
 #include "plrmodes/youmu.h"
+#include "plrmodes/reimu.h"
 
 static PlayerCharacter *player_characters[] = {
+	&character_reimu,
 	&character_marisa,
 	&character_youmu,
 };
 
 static PlayerMode *player_modes[] = {
+	&plrmode_reimu_a,
+	&plrmode_reimu_b,
 	&plrmode_marisa_a,
 	&plrmode_marisa_b,
 	&plrmode_youmu_a,
