@@ -39,6 +39,12 @@ Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 	buf->ent.damage_func = ent_damage_boss;
 	ent_register(&buf->ent, ENT_BOSS);
 
+	// This is not necessary because the default will be set at the start of every attack.
+	// But who knows. Maybe this will be triggered somewhen. If bosses without attacks start
+	// taking over the world, I will be the one who put in this weak point to make them vulnerable.
+	buf->bomb_damage_multiplier = 1.0;
+	buf->shot_damage_multiplier = 1.0;
+
 	return buf;
 }
 
@@ -461,7 +467,13 @@ bool boss_is_vulnerable(Boss *boss) {
 static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg) {
 	Boss *boss = ENT_CAST(ent, Boss);
 
-	if(!boss_is_vulnerable(boss) || dmg->type == DMG_ENEMY_SHOT || dmg->type == DMG_ENEMY_COLLISION) {
+	float factor = 1.0;
+	if(dmg->type == DMG_PLAYER_SHOT)
+		factor = boss->shot_damage_multiplier;
+	if(dmg->type == DMG_PLAYER_BOMB)
+		factor = boss->bomb_damage_multiplier;
+
+	if(!boss_is_vulnerable(boss) || dmg->type == DMG_ENEMY_SHOT || dmg->type == DMG_ENEMY_COLLISION || factor == 0) {
 		return DMG_RESULT_IMMUNE;
 	}
 
@@ -469,7 +481,7 @@ static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg)
 		boss->lastdamageframe = global.frames;
 	}
 
-	boss->current->hp -= dmg->amount;
+	boss->current->hp -= dmg->amount*factor;
 
 	if(boss->current->hp < boss->current->maxhp * 0.1) {
 		play_loop("hit1");
@@ -854,6 +866,10 @@ void boss_start_attack(Boss *b, Attack *a) {
 			p->unlocked = true;
 		}
 	}
+
+	// This should go before a->rule(b,EVENT_BIRTH), so it doesn’t reset values set by the attack rule.
+	b->bomb_damage_multiplier = 1.0;
+	b->shot_damage_multiplier = 1.0;
 
 	a->starttime = global.frames + (a->type == AT_ExtraSpell? ATTACK_START_DELAY_EXTRA : ATTACK_START_DELAY);
 	a->rule(b, EVENT_BIRTH);
