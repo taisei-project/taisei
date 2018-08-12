@@ -197,6 +197,12 @@ complex projectile_graze_size(Projectile *p) {
 	return 0;
 }
 
+static double projectile_rect_area(Projectile *p) {
+	double w, h;
+	projectile_size(p, &w, &h);
+	return w * h;
+}
+
 static Projectile* _create_projectile(ProjArgs *args) {
 	if(IN_DRAW_CODE) {
 		log_fatal("Tried to spawn a projectile while in drawing code");
@@ -238,6 +244,23 @@ static Projectile* _create_projectile(ProjArgs *args) {
 
 	if((p->type == EnemyProj || p->type == PlrProj) && (creal(p->size) <= 0 || cimag(p->size) <= 0)) {
 		log_fatal("Tried to spawn a projectile with invalid size %f x %f", creal(p->size), cimag(p->size));
+	}
+
+	if(!(p->ent.draw_layer & LAYER_LOW_MASK)) {
+		switch(p->type) {
+			case EnemyProj:
+			case FakeProj: {
+				// Large projectiles go below smaller ones.
+				drawlayer_low_t sublayer = (LAYER_LOW_MASK - (drawlayer_low_t)projectile_rect_area(p));
+				// If specific blending order is required, then you should set up the sublayer manually.
+				p->ent.draw_layer |= sublayer;
+				break;
+			}
+
+			default: {
+				break;
+			}
+		}
 	}
 
 	ent_register(&p->ent, ENT_PROJECTILE);
