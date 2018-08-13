@@ -15,7 +15,6 @@
 #include "stagedraw.h"
 
 // args are pain
-static float global_magicstar_alpha;
 static Enemy *laser_renderer;
 
 typedef struct MarisaLaserData {
@@ -571,32 +570,6 @@ static void marisa_laser_init(Player *plr) {
 static void marisa_laser_think(Player *plr) {
 	assert(laser_renderer != NULL);
 	assert(laser_renderer->logic_rule == marisa_laser_renderer);
-
-	if(creal(laser_renderer->args[0]) > 0) {
-		bool found = false;
-
-		for(Projectile *p = global.projs.first; p && !found; p = p->next) {
-			if(p->type != EnemyProj) {
-				continue;
-			}
-
-			for(Enemy *slave = laser_renderer->next; slave; slave = slave->next) {
-				if(slave->visual_rule == marisa_laser_slave_visual && cabs(slave->pos - p->pos) < 30) {
-					found = true;
-					break;
-				}
-			}
-		}
-
-		if(found) {
-			global_magicstar_alpha = approach(global_magicstar_alpha, 0.25, 0.15);
-		} else {
-			global_magicstar_alpha = approach(global_magicstar_alpha, 1.00, 0.08);
-		}
-	} else {
-		global_magicstar_alpha = 1.0;
-	}
-
 	player_placeholder_bomb_logic(plr);
 }
 
