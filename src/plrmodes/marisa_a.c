@@ -331,7 +331,7 @@ static void marisa_laser_flash_draw(Projectile *p, int t) {
 	c->r *= (1 - t / p->timeout);
 
 	complex pos = p->pos;
-	pos += p->args[0] * 15;
+	pos += p->args[0] * 10;
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = spr,
