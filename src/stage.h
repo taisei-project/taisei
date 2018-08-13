@@ -66,6 +66,7 @@ typedef enum StageType {
 	STAGE_STORY = 1,
 	STAGE_EXTRA,
 	STAGE_SPELL,
+	STAGE_SPECIAL,
 } StageType;
 
 typedef struct StageProcs StageProcs;

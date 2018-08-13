@@ -26,6 +26,11 @@
 #include "stagedraw.h"
 #include "stageobjects.h"
 
+#ifdef DEBUG
+	#define DPSTEST
+	#include "stages/dpstest.h"
+#endif
+
 static size_t numstages = 0;
 StageInfo *stages = NULL;
 
@@ -64,7 +69,7 @@ static void add_spellpractice_stages(int *spellnum, bool (*filter)(AttackInfo*),
 	for(int i = 0 ;; ++i) {
 		StageInfo *s = stages + i;
 
-		if(s->type == STAGE_SPELL) {
+		if(s->type == STAGE_SPELL || !s->spell) {
 			break;
 		}
 
@@ -101,6 +106,12 @@ void stage_init_array(void) {
 	add_stage(4, &stage4_procs, STAGE_STORY, "Stage 4", "Forgotten Mansion",           (AttackInfo*)&stage4_spells, D_Any);
 	add_stage(5, &stage5_procs, STAGE_STORY, "Stage 5", "Climbing the Tower of Babel", (AttackInfo*)&stage5_spells, D_Any);
 	add_stage(6, &stage6_procs, STAGE_STORY, "Stage 6", "Roof of the World",           (AttackInfo*)&stage6_spells, D_Any);
+
+#ifdef DPSTEST
+	add_stage(0x40|0, &stage_dpstest_single_procs, STAGE_SPECIAL, "DPS Test", "Single target", NULL, D_Normal);
+	add_stage(0x40|1, &stage_dpstest_multi_procs, STAGE_SPECIAL, "DPS Test", "Multiple targets", NULL, D_Normal);
+	add_stage(0x40|2, &stage_dpstest_boss_procs, STAGE_SPECIAL, "DPS Test", "Boss", NULL, D_Normal);
+#endif
 
 	// generate spellpractice stages
 	add_spellpractice_stages(&spellnum, spellfilter_normal, STAGE_SPELL_BIT);

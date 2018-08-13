@@ -13,3 +13,9 @@ stages_src = files(
     'stage6.c',
     'stage6_events.c',
 )
+
+if is_debug_build
+    stages_src += files(
+        'dpstest.c',
+    )
+endif

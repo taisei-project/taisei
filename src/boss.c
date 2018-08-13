@@ -134,7 +134,7 @@ static StageProgress* get_spellstage_progress(Attack *a, StageInfo **out_stginfo
 			}
 		}
 #if DEBUG
-		else if(a->type == AT_Spellcard || a->type == AT_ExtraSpell) {
+		else if((a->type == AT_Spellcard || a->type == AT_ExtraSpell) && global.stage->type != STAGE_SPECIAL) {
 			log_warn("FIXME: spellcard '%s' is not available in spell practice mode!", a->name);
 		}
 #endif
@@ -297,13 +297,13 @@ static void ent_draw_boss(EntityInterface *ent) {
 	draw_sprite_batched_p(creal(boss->pos), cimag(boss->pos) + 6*sin(global.frames/25.0), aniplayer_get_frame(&boss->ani));
 	r_color4(1, 1, 1, 1);
 
+	if(!boss->current)
+		return;
+
 	if(boss->current->type == AT_Move && global.frames - boss->current->starttime > 0 && boss_attack_is_final(boss, boss->current))
 		return;
 
 	draw_boss_text(ALIGN_LEFT, 10, 20, boss->name, "standard", RGB(1, 1, 1));
-
-	if(!boss->current)
-		return;
 
 	if(ATTACK_IS_SPELL(boss->current->type))
 		spell_opening(boss, global.frames - boss->current->starttime);
@@ -341,6 +341,9 @@ static void ent_draw_boss(EntityInterface *ent) {
 		int maxhpspan = 0;
 		int hpspan = 0;
 		int nextspell, prevspell;
+
+		// FIXME: this does not work when the boss has just one attack!
+
 		for(nextspell = 0; nextspell < boss->acount - 1; nextspell++) {
 			if(boss_should_skip_attack(boss,&boss->attacks[nextspell]))
 				continue;
@@ -348,7 +351,6 @@ static void ent_draw_boss(EntityInterface *ent) {
 			if(ATTACK_IS_SPELL(t) && !attack_is_over(&boss->attacks[nextspell]))
 				break;
 		}
-
 
 		for(prevspell = nextspell; prevspell > 0; prevspell--) {
 			if(boss_should_skip_attack(boss,&boss->attacks[prevspell]))

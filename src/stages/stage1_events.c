@@ -1107,7 +1107,6 @@ int stage1_tritoss(Enemy *e, int t) {
 	return 1;
 }
 
-// #define DPSTEST
 // #define BULLET_TEST
 
 #ifdef BULLET_TEST
@@ -1122,38 +1121,12 @@ static int proj_rotate(Projectile *p, int t) {
 }
 #endif
 
-#ifdef DPSTEST
-static int dpsdummy(Enemy *e, int t) {
-	e->hp = 9000;
-
-	if(t > 0) {
-		e->pos += e->args[0];
-	}
-
-	return ACTION_NONE;
-}
-#endif
-
 void stage1_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
 		stage_start_bgm("stage1");
 	}
-
-#ifdef DPSTEST
-	AT(0) {
-		create_enemy1c(VIEWPORT_W/2 + VIEWPORT_H/3*I, 9000, BigFairy, dpsdummy, 0);
-		create_enemy1c(-64 + VIEWPORT_W/2 + VIEWPORT_H/3*I, 9000, BigFairy, dpsdummy, 0);
-		create_enemy1c(+64 + VIEWPORT_W/2 + VIEWPORT_H/3*I, 9000, BigFairy, dpsdummy, 0);
-	}
-
-	if(!(global.timer % 16)) {
-		create_enemy1c(-16 + VIEWPORT_H/5*I, 9000, Swirl, dpsdummy, 2);
-	}
-
-	return;
-#endif
 
 #ifdef BULLET_TEST
 	if(!global.projs) {
