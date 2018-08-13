@@ -3,5 +3,10 @@
 texture = atlas_portraits_0
 region_x = 2
 region_y = 2
-region_w = 351
-region_h = 500
+region_w = 701
+region_h = 1000
+
+# -- Pasted from the override file --
+
+w = 350.5
+h = 500
