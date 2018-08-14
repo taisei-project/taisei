@@ -154,7 +154,7 @@ static void marisa_laser_slave_visual(Enemy *e, int t, bool render) {
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = "hakkero",
-		.shader = "marisa_hakkero",
+		.shader = "sprite_hakkero",
 		.pos = { creal(e->pos), cimag(e->pos) },
 		.rotation.angle = t * 0.05,
 		.color = color_lerp(RGB(0.2, 0.4, 0.5), RGB(1.0, 1.0, 1.0), 0.25 * pow(psin(t / 6.0), 2) * laser_renderer->args[1]),
@@ -600,6 +600,7 @@ static void marisa_laser_preload(void) {
 	preload_resources(RES_SPRITE, flags,
 		"proj/marisa",
 		"part/maristar_orbit",
+		"hakkero",
 	NULL);
 
 	preload_resources(RES_TEXTURE, flags,
@@ -612,6 +613,11 @@ static void marisa_laser_preload(void) {
 		"marisa_laser",
 		"masterspark",
 		"max_to_alpha",
+		"sprite_hakkero",
+	NULL);
+
+	preload_resources(RES_ANIM, flags,
+		"fire",
 	NULL);
 
 	preload_resources(RES_SFX, flags | RESF_OPTIONAL,

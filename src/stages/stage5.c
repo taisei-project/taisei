@@ -186,6 +186,11 @@ static void stage5_preload(void) {
 	preload_resources(RES_MODEL, RESF_DEFAULT,
 		"tower",
 	NULL);
+	preload_resources(RES_SFX, RESF_OPTIONAL,
+		"boom",
+		"laser1",
+		"enemydeath",
+	NULL);
 }
 
 static void stage5_end(void) {

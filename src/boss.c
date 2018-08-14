@@ -964,6 +964,7 @@ Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move) {
 void boss_preload(void) {
 	preload_resources(RES_SFX, RESF_OPTIONAL,
 		"charge_generic",
+		"charge_extra",
 		"spellend",
 		"spellclear",
 		"timeout1",

@@ -261,8 +261,30 @@ static int reimu_dream_gap_renderer(Enemy *e, int t) {
 static void reimu_dream_preload(void) {
 	const int flags = RESF_DEFAULT;
 
+	preload_resources(RES_SPRITE, flags,
+		"yinyang",
+		"proj/ofuda",
+		"proj/needle2",
+		"proj/glowball",
+		"part/myon",
+		"part/stardust",
+	NULL);
+
+	preload_resources(RES_TEXTURE, flags,
+		"runes",
+		"gaplight",
+	NULL);
+
 	preload_resources(RES_SHADER_PROGRAM, flags,
+		"sprite_yinyang",
 		"reimu_gap",
+		"reimu_gap_light",
+		"reimu_bomb_bg",
+	NULL);
+
+	preload_resources(RES_SFX, flags | RESF_OPTIONAL,
+		"bomb_marisa_a",
+		"boon",
 	NULL);
 }
 

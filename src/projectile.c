@@ -841,6 +841,7 @@ void projectiles_preload(void) {
 	preload_resources(RES_SFX, RESF_PERMANENT,
 		"shot1",
 		"shot2",
+		"shot3",
 		"shot1_loop",
 		"shot_special1",
 		"redirect",

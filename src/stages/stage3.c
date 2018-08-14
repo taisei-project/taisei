@@ -182,6 +182,9 @@ static void stage3_preload(void) {
 		"boss/scuttle",
 		"boss/wriggleex",
 	NULL);
+	preload_resources(RES_SFX, RESF_OPTIONAL,
+		"laser1",
+	NULL);
 }
 
 static void stage3_end(void) {

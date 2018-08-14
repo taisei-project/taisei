@@ -76,7 +76,7 @@ void marisa_common_slave_visual(Enemy *e, int t, bool render) {
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = "hakkero",
-		.shader = "marisa_hakkero",
+		.shader = "sprite_hakkero",
 		.pos = { creal(e->pos), cimag(e->pos) },
 		.rotation.angle = t * 0.05,
 		.color = RGB(0.2, 0.4, 0.5),

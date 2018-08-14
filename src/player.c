@@ -1060,6 +1060,8 @@ void player_preload(void) {
 		"full_power",
 		"extra_life",
 		"extra_bomb",
+		"hit0",
+		"hit1",
 	NULL);
 }
 

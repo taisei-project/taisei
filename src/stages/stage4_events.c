@@ -1005,9 +1005,7 @@ int kurumi_extra_dead_shield(Enemy *e, int time) {
 			);
 		}
 
-		// FIXME: needs a more powerful 'explosion' sound
-		play_sound("shot_special1");
-		play_sound("enemy_death");
+		play_sound("boom");
 	}
 
 	return 1;

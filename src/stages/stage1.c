@@ -228,6 +228,9 @@ static void stage1_preload(void) {
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/cirno",
 	NULL);
+	preload_resources(RES_SFX, RESF_OPTIONAL,
+		"laser1",
+	NULL);
 }
 
 static void stage1_end(void) {

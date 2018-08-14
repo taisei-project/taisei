@@ -26,15 +26,26 @@ static void reimu_spirit_preload(void) {
 		"yinyang",
 		"proj/ofuda",
 		"proj/needle",
+		"proj/glowball",
+		"proj/hakurei_seal",
 		"part/ofuda_glow",
+		"part/fantasyseal_impact",
+	NULL);
+
+	preload_resources(RES_TEXTURE, flags,
+		"runes",
 	NULL);
 
 	preload_resources(RES_SHADER_PROGRAM, flags,
 		"sprite_yinyang",
+		"reimu_bomb_bg",
 	NULL);
 
-	//preload_resources(RES_SFX, flags | RESF_OPTIONAL,
-	//NULL);
+	preload_resources(RES_SFX, flags | RESF_OPTIONAL,
+		"boom",
+		"bomb_reimu_a",
+		"bomb_marisa_b",
+	NULL);
 }
 
 static int reimu_spirit_needle(Projectile *p, int t) {

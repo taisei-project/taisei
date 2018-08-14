@@ -273,6 +273,17 @@ static void stage4_preload(void) {
 		"mansion",
 		"lake",
 	NULL);
+	preload_resources(RES_TEXTURE, RESF_OPTIONAL,
+		"part/sinewave",
+	NULL);
+	preload_resources(RES_SFX, RESF_OPTIONAL,
+		"laser1",
+		"boom",
+	NULL);
+
+	// XXX: Special case for spell practice of the god damn extra spell, because it always needs a special case.
+	// TODO: Maybe add spell-specific preloads instead of putting everything into the stage one?
+	enemies_preload();
 }
 
 static void stage4_end(void) {

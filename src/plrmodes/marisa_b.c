@@ -324,24 +324,22 @@ static void marisa_star_preload(void) {
 		"proj/marisa",
 		"proj/maristar",
 		"part/maristar_orbit",
-		NULL
-	);
+		"hakkero",
+	NULL);
 
 	preload_resources(RES_TEXTURE, flags,
 		"marisa_bombbg",
-		NULL
-	);
+	NULL);
 
 	preload_resources(RES_SHADER_PROGRAM, flags,
 		"masterspark",
 		"maristar_bombbg",
-		NULL
-	);
+		"sprite_hakkero",
+	NULL);
 
 	preload_resources(RES_SFX, flags | RESF_OPTIONAL,
 		"bomb_marisa_b",
-		NULL
-	);
+	NULL);
 }
 
 PlayerMode plrmode_marisa_b = {

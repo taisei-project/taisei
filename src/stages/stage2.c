@@ -210,6 +210,9 @@ static void stage2_preload(void) {
 		"boss/hina",
 		"fire",
 	NULL);
+	preload_resources(RES_SFX, RESF_OPTIONAL,
+		"laser1",
+	NULL);
 }
 
 static void stage2_end(void) {

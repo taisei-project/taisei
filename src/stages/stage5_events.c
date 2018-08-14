@@ -966,7 +966,7 @@ void iku_extra_fire_trigger_bullet(void) {
 	});
 
 	play_sound("shot_special1");
-	play_sound("enemy_death");
+	play_sound("enemydeath");
 	play_sound("shot2");
 }
 

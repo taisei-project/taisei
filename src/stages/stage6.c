@@ -302,6 +302,8 @@ static void stage6_preload(void) {
 	preload_resources(RES_SFX, RESF_DEFAULT | RESF_OPTIONAL,
 		"warp",
 		"noise1",
+		"boom",
+		"laser1",
 	NULL);
 }
 
