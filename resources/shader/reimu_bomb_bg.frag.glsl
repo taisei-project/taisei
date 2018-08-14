@@ -84,7 +84,11 @@ void main(void) {
 	mat2 m_g = rot(dd * 0.00009 * kek) / (1 + ld * -0.0004 * kek);
 	mat2 m_b = rot(dd * 0.00012 * kek) / (1 + ld * -0.0002 * kek);
 
-	const int samples = 24;
+	m_r = m_r * m_r * m_r;
+	m_g = m_g * m_g * m_g;
+	m_b = m_b * m_b * m_b;
+
+	const int samples = 8;
 	const float isamples = 1.0 / samples;
 
 	for(int i = 0; i < samples; ++i) {
