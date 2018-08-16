@@ -100,12 +100,12 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 	r_shader_ptr(prog_saved);
 }
 
-void draw_framebuffer_tex(Framebuffer *fb, double width, double height) {
+void draw_framebuffer_attachment(Framebuffer *fb, double width, double height, FramebufferAttachment attachment) {
 	CullFaceMode cull_saved = r_cull_current();
 	r_cull(CULL_FRONT);
 
 	r_mat_push();
-	r_texture_ptr(0, r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_COLOR0));
+	r_texture_ptr(0, r_framebuffer_get_attachment(fb, attachment));
 	r_mat_scale(width, height, 1);
 	r_mat_translate(0.5, 0.5, 0);
 	r_mat_scale(1, -1, 1);
@@ -113,6 +113,10 @@ void draw_framebuffer_tex(Framebuffer *fb, double width, double height) {
 	r_mat_pop();
 
 	r_cull(cull_saved);
+}
+
+void draw_framebuffer_tex(Framebuffer *fb, double width, double height) {
+	draw_framebuffer_attachment(fb, width, height, FRAMEBUFFER_ATTACH_COLOR0);
 }
 
 void fbutil_create_attachments(Framebuffer *fb, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {

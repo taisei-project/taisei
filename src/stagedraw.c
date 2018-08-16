@@ -42,6 +42,11 @@ static struct {
 		} color;
 	} hud_text;
 
+	struct {
+		ShaderProgram *fxaa;
+		ShaderProgram *copy_depth;
+	} shaders;
+
 	PostprocessShader *viewport_pp;
 	FBPair fb_pairs[NUM_FBPAIRS];
 	CustomFramebuffer *custom_fbs;
@@ -261,6 +266,12 @@ void stage_draw_init(void) {
 		"text_stagetext",
 		"ingame_menu",
 		"sprite_circleclipped_indicator",
+		"copy_depth",
+
+		// TODO: Maybe don't preload this if FXAA is disabled.
+		// But then we also have to handle the edge case of it being enabled later mid-game.
+		"fxaa",
+
 		#ifdef DEBUG
 		"sprite_filled_circle",
 		#endif
@@ -291,6 +302,8 @@ void stage_draw_init(void) {
 	stagedraw.viewport_pp = get_resource_data(RES_POSTPROCESS, "viewport", RESF_OPTIONAL);
 	stagedraw.hud_text.shader = r_shader_get("text_hud");
 	stagedraw.hud_text.font = get_font("hud");
+	stagedraw.shaders.fxaa = r_shader_get("fxaa");
+	stagedraw.shaders.copy_depth = r_shader_get("copy_depth");
 
 	r_shader_standard();
 
@@ -473,6 +486,55 @@ static inline bool should_draw_stage_bg(void) {
 	);
 }
 
+static void fxaa_rule(Framebuffer *fb) {
+	r_state_push();
+	r_enable(RCAP_DEPTH_TEST);
+	r_depth_func(DEPTH_ALWAYS);
+	r_shader_ptr(stagedraw.shaders.fxaa);
+	r_uniform_int("depth", 1);
+	r_texture_ptr(1, r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
+	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
+	r_state_pop();
+}
+
+static void copydepth_rule(Framebuffer *fb) {
+	r_state_push();
+	r_enable(RCAP_DEPTH_TEST);
+	r_depth_func(DEPTH_ALWAYS);
+	r_shader_ptr(stagedraw.shaders.copy_depth);
+	draw_framebuffer_attachment(fb, VIEWPORT_W, VIEWPORT_H, FRAMEBUFFER_ATTACH_DEPTH);
+	r_state_pop();
+}
+
+static void finish_3d_scene(FBPair *fbpair) {
+	// Here we synchronize the depth buffers of both framebuffers in the pair.
+	// The FXAA shader has this built-in, so we don't need to do the copy_depth
+	// pass in that case.
+
+	// The reason for this is that, normally, depth testing is disabled during
+	// the stage-specific post-processing ping-pong. This applies to depth writes
+	// as well. Therefore, only one of the framebuffers will get a depth write in
+	// a given frame. In the worst case, this will be the same framebuffer every
+	// time, leaving the other one's depth buffer undefined. In the best case,
+	// they will alternate. If a shader down the post-processing pipeline happens
+	// to sample the "unlucky" buffer, it'll probably either completely destroy
+	// the background rendering, or the sample will lag 1 frame behind.
+
+	// This flew past the radar for a long time. Now that I actually had to waste
+	// my evening debugging this peculiarity, I figured I might as well document
+	// it here. It is possible to solve this problem without an additional pass,
+	// but that would require a bit of refactoring. This is the simplest solution
+	// as far as I can tell.
+
+	if(config_get_int(CONFIG_FXAA)) {
+		apply_shader_rules((ShaderRule[]) { fxaa_rule, NULL }, fbpair);
+	} else {
+		apply_shader_rules((ShaderRule[]) { copydepth_rule, NULL }, fbpair);
+		// Swap because we didn't touch the color buffer.
+		fbpair_swap(fbpair);
+	}
+}
+
 static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 	Boss *b = global.boss;
 	if(b && b->current && b->current->draw_rule) {
@@ -481,6 +543,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 		set_ortho(VIEWPORT_W, VIEWPORT_H);
 
 		if(should_draw_stage_bg()) {
+			finish_3d_scene(fbos);
 			apply_shader_rules(shaderrules, fbos);
 		}
 
@@ -531,6 +594,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 		r_shader_standard();
 	} else if(should_draw_stage_bg()) {
 		set_ortho(VIEWPORT_W, VIEWPORT_H);
+		finish_3d_scene(fbos);
 		apply_shader_rules(shaderrules, fbos);
 	}
 }
@@ -580,6 +644,7 @@ static void stage_render_bg(StageInfo *stage) {
 	}
 
 	apply_bg_shaders(stage->procs->shader_rules, background);
+
 	return;
 }
 

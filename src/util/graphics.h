@@ -16,6 +16,7 @@ void colorfill(float r, float g, float b, float a);
 void fade_out(float f);
 void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxfrags, float alpha, float star_width);
 void draw_framebuffer_tex(Framebuffer *fb, double width, double height);
+void draw_framebuffer_attachment(Framebuffer *fb, double width, double height, FramebufferAttachment attachment);
 
 void fbutil_create_attachments(Framebuffer *fb, uint num_attachments, FBAttachmentConfig attachments[num_attachments]);
 void fbutil_destroy_attachments(Framebuffer *fb);

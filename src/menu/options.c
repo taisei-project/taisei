@@ -409,6 +409,11 @@ void options_sub_video(MenuData *parent, void *arg) {
 		bind_addvalue(b, "off");
 		bind_addvalue(b, "adaptive");
 
+	add_menu_entry(m, "Anti-aliasing", do_nothing,
+		b = bind_option(CONFIG_FXAA, bind_common_int_get, bind_common_int_set)
+	);	bind_addvalue(b, "none");
+		bind_addvalue(b, "fxaa");
+
 #ifdef DEBUG
 	add_menu_entry(m, "Swap buffers", do_nothing,
 		b = bind_option(CONFIG_VID_LATE_SWAP, bind_common_onoff_get, bind_common_onoff_set)
