@@ -83,7 +83,7 @@ static Projectile* youmu_homing_trail(Projectile *p, complex v, int to) {
 	);
 }
 
-static int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: aim (r: linear, i: accelerated), a[2]: timeout, a[3]: initial target
+static int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: aim (r: base, i: gain), a[2]: (r: timeout, i: charge), a[3]: initial target
 	if(t == EVENT_DEATH || t == EVENT_BIRTH) {
 		return ACTION_ACK;
 	}
@@ -98,7 +98,10 @@ static int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: aim (r:
 	complex aimdir = cexp(I*carg(p->args[3] - p->pos));
 
 	p->args[0] += creal(p->args[1]) * aimdir;
-	p->args[0] = v * cexp(I*carg(p->args[0])) + cimag(p->args[1]) * aimdir;
+	// p->args[0] = v * cexp(I*carg(p->args[0])) + cimag(p->args[1]) * aimdir;
+	p->args[0] *= v / cabs(p->args[0]);
+
+	p->args[1] = creal(p->args[1]) + cimag(p->args[1]) * (1 + I);
 
 	p->angle = carg(p->args[0]);
 	p->pos += p->args[0];
@@ -171,7 +174,7 @@ static int youmu_trap(Projectile *p, int t) {
 			.layer = LAYER_PARTICLE_LOW,
 		);
 
-		int cnt = rint(creal(p->args[2]) * (0.25 + 0.75 * charge));
+		int cnt = round(creal(p->args[2]));
 		int dmg = cimag(p->args[2]);
 		complex aim = p->args[3];
 
@@ -181,7 +184,7 @@ static int youmu_trap(Projectile *p, int t) {
 			complex dir = cexp(I*(a));
 
 			PROJECTILE("youmu", p->pos, RGBA(1, 1, 1, 0.85), youmu_homing,
-				.args = { 5 * (1 + charge) * dir, (1 + charge) * aim, dur + charge*I, creal(p->pos) - VIEWPORT_H*I },
+				.args = { 5 * (1 + charge) * dir, aim, dur + charge*I, creal(p->pos) - VIEWPORT_H*I },
 				.type = PlrProj,
 				.damage = dmg,
 				.draw_rule = youmu_trap_draw_child_proj,
@@ -353,7 +356,7 @@ static void youmu_haunting_shot(Player *plr) {
 			if(!(global.frames % (45 - 4 * pwr))) {
 				int pcnt = 11 + pwr * 4;
 				int pdmg = 120 - 18 * 4 * (1 - pow(1 - pwr / 4.0, 1.5));
-				complex aim = 0.75;
+				complex aim = 0.15*I;
 
 				PROJECTILE("youhoming", plr->pos, RGB(1, 1, 1), youmu_trap,
 					.args = { -30.0*I, 120, pcnt+pdmg*I, aim },
@@ -366,7 +369,7 @@ static void youmu_haunting_shot(Player *plr) {
 		} else {
 			if(!(global.frames % 6)) {
 				PROJECTILE("hghost", plr->pos, RGB(0.75, 0.9, 1), youmu_homing,
-					.args = { -10.0*I, 0.1 + 0.2*I, 60, VIEWPORT_W*0.5 },
+					.args = { -10.0*I, 0.02*I, 60, VIEWPORT_W*0.5 },
 					.type = PlrProj,
 					.damage = 120,
 					.shader = "sprite_default",
