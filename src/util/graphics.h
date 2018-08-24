@@ -23,3 +23,6 @@ void fbutil_destroy_attachments(Framebuffer *fb);
 void fbutil_resize_attachment(Framebuffer *fb, FramebufferAttachment attachment, uint width, uint height);
 
 void init_blur_shader(ShaderProgram *prog, size_t kernel_size, float sigma);
+
+void flip_bitmap(char *data, size_t rows, size_t row_length);
+void flip_bitmap_copy(char *dst, const char *src, size_t rows, size_t row_length);

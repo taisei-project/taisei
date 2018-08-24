@@ -131,6 +131,11 @@ void* load_sprite_end(void *opaque, const char *path, uint flags) {
 		}
 	}
 
+	// FIXME: is there a better way?
+	if(r_supports(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN)) {
+		spr->tex_area.y = tex_h_flt - spr->tex_area.y - spr->tex_area.h;
+	}
+
 	free(basename);
 	return spr;
 }

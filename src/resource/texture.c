@@ -292,6 +292,12 @@ static void* load_texture_begin(const char *path, uint flags) {
 		return NULL;
 	}
 
+	if(r_supports(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN)) {
+		SDL_LockSurface(converted_surf);
+		flip_bitmap(converted_surf->pixels, converted_surf->h, converted_surf->w * 4);
+		SDL_UnlockSurface(converted_surf);
+	}
+
 	if(ld.params.mipmaps == 0) {
 		ld.params.mipmaps = TEX_MIPMAPS_MAX;
 	}
@@ -334,7 +340,6 @@ static void texture_post_load(Texture *tex) {
 	r_mat_mode(MM_MODELVIEW);
 	r_mat_scale(tex->w, tex->h, 1);
 	r_mat_translate(0.5, 0.5, 0);
-	r_mat_scale(1, -1, 1);
 	r_framebuffer_create(&fb);
 	r_framebuffer_attach(&fb, &fbo_tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
 	r_framebuffer_viewport(&fb, 0, 0, tex->w, tex->h);
