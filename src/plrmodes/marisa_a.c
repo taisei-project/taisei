@@ -185,7 +185,7 @@ static float get_laser_alpha(Enemy *e, float a) {
 	return min(a, min(1, (global.frames - e->birthtime) * 0.1));
 }
 
-#define FOR_EACH_SLAVE(e) for(Enemy *e = global.plr.slaves.first; e; e = e->next) if(e != renderer)
+#define FOR_EACH_SLAVE(e) for(Enemy *e = global.plr.slaves.first; e; e = e->next) if(e->visual_rule == marisa_laser_fader_visual || e->visual_rule == marisa_laser_slave_visual)
 #define FOR_EACH_REAL_SLAVE(e) FOR_EACH_SLAVE(e) if(e->visual_rule == marisa_laser_slave_visual)
 
 static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
