@@ -26,54 +26,127 @@ static void uset_float(Uniform *uniform, uint count, const void *data) {
 	glUniform1fv(uniform->location, count, (float*)data);
 }
 
+static void uget_float(Uniform *uniform, uint count, void *data) {
+	for(uint i = 0; i < count; ++i) {
+		glGetUniformfv(uniform->prog->gl_handle, uniform->location + i, ((GLfloat*)data) + i);
+	}
+}
+
+
 static void uset_vec2(Uniform *uniform, uint count, const void *data) {
 	glUniform2fv(uniform->location, count, (float*)data);
 }
+
+static void uget_vec2(Uniform *uniform, uint count, void *data) {
+	for(uint i = 0; i < count; ++i) {
+		glGetUniformfv(uniform->prog->gl_handle, uniform->location + i, ((GLfloat*)data) + i * 2);
+	}
+}
+
 
 static void uset_vec3(Uniform *uniform, uint count, const void *data) {
 	glUniform3fv(uniform->location, count, (float*)data);
 }
 
+static void uget_vec3(Uniform *uniform, uint count, void *data) {
+	for(uint i = 0; i < count; ++i) {
+		glGetUniformfv(uniform->prog->gl_handle, uniform->location + i, ((GLfloat*)data) + i * 3);
+	}
+}
+
+
 static void uset_vec4(Uniform *uniform, uint count, const void *data) {
 	glUniform4fv(uniform->location, count, (float*)data);
 }
+
+static void uget_vec4(Uniform *uniform, uint count, void *data) {
+	for(uint i = 0; i < count; ++i) {
+		glGetUniformfv(uniform->prog->gl_handle, uniform->location + i, ((GLfloat*)data) + i * 4);
+	}
+}
+
 
 static void uset_int(Uniform *uniform, uint count, const void *data) {
 	glUniform1iv(uniform->location, count, (int*)data);
 }
 
+static void uget_int(Uniform *uniform, uint count, void *data) {
+	for(uint i = 0; i < count; ++i) {
+		glGetUniformiv(uniform->prog->gl_handle, uniform->location + i, ((GLint*)data) + i);
+	}
+}
+
+
 static void uset_ivec2(Uniform *uniform, uint count, const void *data) {
 	glUniform2iv(uniform->location, count, (int*)data);
 }
+
+static void uget_ivec2(Uniform *uniform, uint count, void *data) {
+	for(uint i = 0; i < count; ++i) {
+		glGetUniformiv(uniform->prog->gl_handle, uniform->location + i, ((GLint*)data) + i * 2);
+	}
+}
+
 
 static void uset_ivec3(Uniform *uniform, uint count, const void *data) {
 	glUniform3iv(uniform->location, count, (int*)data);
 }
 
+static void uget_ivec3(Uniform *uniform, uint count, void *data) {
+	for(uint i = 0; i < count; ++i) {
+		glGetUniformiv(uniform->prog->gl_handle, uniform->location + i, ((GLint*)data) + i * 3);
+	}
+}
+
+
 static void uset_ivec4(Uniform *uniform, uint count, const void *data) {
 	glUniform4iv(uniform->location, count, (int*)data);
 }
+
+static void uget_ivec4(Uniform *uniform, uint count, void *data) {
+	for(uint i = 0; i < count; ++i) {
+		glGetUniformiv(uniform->prog->gl_handle, uniform->location + i, ((GLint*)data) + i * 4);
+	}
+}
+
 
 static void uset_mat3(Uniform *uniform, uint count, const void *data) {
 	glUniformMatrix3fv(uniform->location, count, false, (float*)data);
 }
 
+static void uget_mat3(Uniform *uniform, uint count, void *data) {
+	for(uint i = 0; i < count; ++i) {
+		glGetUniformfv(uniform->prog->gl_handle, uniform->location + i, ((GLfloat*)data) + i * 9);
+	}
+}
+
+
 static void uset_mat4(Uniform *uniform, uint count, const void *data) {
 	glUniformMatrix4fv(uniform->location, count, false, (float*)data);
 }
 
-static UniformSetter type_to_setter[] = {
-	[UNIFORM_FLOAT]   = uset_float,
-	[UNIFORM_VEC2]    = uset_vec2,
-	[UNIFORM_VEC3]    = uset_vec3,
-	[UNIFORM_VEC4]    = uset_vec4,
-	[UNIFORM_INT]     = uset_int,
-	[UNIFORM_IVEC2]   = uset_ivec2,
-	[UNIFORM_IVEC3]   = uset_ivec3,
-	[UNIFORM_IVEC4]   = uset_ivec4,
-	[UNIFORM_SAMPLER] = uset_int,
-	[UNIFORM_MAT3]    = uset_mat3,
-	[UNIFORM_MAT4]    = uset_mat4,
+static void uget_mat4(Uniform *uniform, uint count, void *data) {
+	for(uint i = 0; i < count; ++i) {
+		glGetUniformfv(uniform->prog->gl_handle, uniform->location + i, ((GLfloat*)data) + i * 16);
+	}
+}
+
+
+static struct {
+	void (*setter)(Uniform *uniform, uint count, const void *data);
+	void (*getter)(Uniform *uniform, uint count, void *data);
+} type_to_accessors[] = {
+	[UNIFORM_FLOAT]   = { uset_float, uget_float },
+	[UNIFORM_VEC2]    = { uset_vec2,  uget_vec2 },
+	[UNIFORM_VEC3]    = { uset_vec3,  uget_vec3 },
+	[UNIFORM_VEC4]    = { uset_vec4,  uget_vec4 },
+	[UNIFORM_INT]     = { uset_int,   uget_int },
+	[UNIFORM_IVEC2]   = { uset_ivec2, uget_ivec2 },
+	[UNIFORM_IVEC3]   = { uset_ivec3, uget_ivec3 },
+	[UNIFORM_IVEC4]   = { uset_ivec4, uget_ivec4 },
+	[UNIFORM_SAMPLER] = { uset_int,   uget_int },
+	[UNIFORM_MAT3]    = { uset_mat3,  uget_mat3 },
+	[UNIFORM_MAT4]    = { uset_mat4,  uget_mat4 },
 };
 
 typedef struct MagicalUniform {
@@ -90,11 +163,12 @@ static MagicalUniform magical_unfiroms[] = {
 };
 
 static void gl33_update_uniform(Uniform *uniform, uint count, const void *data, size_t datasize) {
-	memcpy(uniform->cache.pending.data, data, datasize);
-
-	if(count > uniform->cache.update_count) {
-		uniform->cache.update_count = count;
+	if(datasize > uniform->buffer_size) {
+		// might happen when unused array elements get optimized out
+		datasize = uniform->buffer_size;
 	}
+
+	memcpy(uniform->cache.pending, data, datasize);
 
 	if(datasize > uniform->cache.update_size) {
 		uniform->cache.update_size = datasize;
@@ -102,32 +176,21 @@ static void gl33_update_uniform(Uniform *uniform, uint count, const void *data, 
 }
 
 static void gl33_commit_uniform(Uniform *uniform) {
-	memcpy(uniform->cache.commited.data, uniform->cache.pending.data, uniform->cache.update_size);
-	type_to_setter[uniform->type](uniform, uniform->cache.update_count, uniform->cache.commited.data);
+	memcpy(uniform->cache.commited, uniform->cache.pending, uniform->buffer_size);
+	type_to_accessors[uniform->type].setter(uniform, uniform->array_size, uniform->cache.commited);
 
 	uniform->cache.update_size = 0;
-	uniform->cache.update_count = 0;
-
-	assert(uniform->cache.commited.size == uniform->cache.pending.size);
-	assert(!memcmp(uniform->cache.commited.data, uniform->cache.pending.data, uniform->cache.commited.size));
 }
 
 static void* gl33_sync_uniform(const char *key, void *value, void *arg) {
 	attr_unused const char *name = key;
 	Uniform *uniform = value;
 
-	if(uniform->cache.update_count < 1) {
+	if(uniform->cache.update_size == 0) {
 		return NULL;
 	}
 
-	if(
-		uniform->cache.commited.data == NULL ||
-		uniform->cache.commited.size < uniform->cache.update_size
-	) {
-		uniform->cache.commited.data = realloc(uniform->cache.commited.data, uniform->cache.update_size);
-		uniform->cache.commited.size = uniform->cache.update_size;
-		gl33_commit_uniform(uniform);
-	} else if(memcmp(uniform->cache.commited.data, uniform->cache.pending.data, uniform->cache.update_size)) {
+	if(memcmp(uniform->cache.commited, uniform->cache.pending, uniform->cache.update_size)) {
 		gl33_commit_uniform(uniform);
 	} else {
 		// log_debug("uniform %u:%s (shader %u) update of size %zu ignored", uniform->location, name, uniform->prog->gl_handle, uniform->cache.update_size);
@@ -148,17 +211,10 @@ void gl33_uniform(Uniform *uniform, uint count, const void *data) {
 	}
 
 	assert(uniform->prog != NULL);
-	assert(uniform->type >= 0 && uniform->type < sizeof(type_to_setter)/sizeof(UniformSetter));
+	assert(uniform->type >= 0 && uniform->type < sizeof(type_to_accessors)/sizeof(*type_to_accessors));
 	const UniformTypeInfo *typeinfo = r_uniform_type_info(uniform->type);
 	size_t datasize = typeinfo->elements * typeinfo->element_size * count;
-
-	if(datasize > uniform->cache.pending.size) {
-		uniform->cache.pending.data = realloc(uniform->cache.pending.data, datasize);
-		uniform->cache.pending.size = datasize;
-		gl33_update_uniform(uniform, count, data, datasize);
-	} else if(memcmp(uniform->cache.pending.data, data, datasize)) {
-		gl33_update_uniform(uniform, count, data, datasize);
-	}
+	gl33_update_uniform(uniform, count, data, datasize);
 }
 
 static bool cache_uniforms(ShaderProgram *prog) {
@@ -216,9 +272,18 @@ static bool cache_uniforms(ShaderProgram *prog) {
 			}
 		}
 
+		const UniformTypeInfo *typeinfo = r_uniform_type_info(uni.type);
+
 		uni.location = loc;
+		uni.array_size = size;
+		uni.buffer_size = size * typeinfo->element_size * typeinfo->elements;
+		uni.cache.commited = malloc(uni.buffer_size);
+		uni.cache.pending = malloc(uni.buffer_size);
+
+		type_to_accessors[uni.type].getter(&uni, size, uni.cache.commited);
+
 		ht_set(&prog->uniforms, name, memdup(&uni, sizeof(uni)));
-		log_debug("%s = %i", name, loc);
+		log_debug("%s = %i [array elements: %i; size: %zi bytes]", name, loc, size, uni.buffer_size);
 	}
 
 	return true;
@@ -317,8 +382,8 @@ static void print_info_log(GLuint prog) {
 
 static void* free_uniform(const char *key, void *data, void *arg) {
 	Uniform *uniform = data;
-	free(uniform->cache.commited.data);
-	free(uniform->cache.pending.data);
+	free(uniform->cache.commited);
+	free(uniform->cache.pending);
 	free(uniform);
 	return NULL;
 }

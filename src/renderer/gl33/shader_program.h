@@ -21,22 +21,16 @@ struct ShaderProgram {
 	ht_str2ptr_t uniforms;
 };
 
-typedef void (*UniformSetter)(Uniform *uniform, uint count, const void *data);
-
-typedef struct UniformCache {
-	void *data;
-	size_t size;
-} UniformCache;
-
 struct Uniform {
 	ShaderProgram *prog;
 	uint location;
 	UniformType type;
+	size_t array_size;
+	size_t buffer_size;
 
 	struct {
-		UniformCache pending;
-		UniformCache commited;
-		uint update_count;
+		void *pending;
+		void *commited;
 		size_t update_size;
 	} cache;
 };
