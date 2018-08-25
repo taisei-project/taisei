@@ -878,6 +878,15 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 	r_mat_scale(1/bbox_w, 1/bbox_h, 1.0);
 	r_mat_translate(-bbox.x.min - (x - x_orig), -bbox.y.min + font->metrics.descent, 0);
 
+	// FIXME: is there a better way?
+	float texmat_offset_sign;
+
+	if(r_supports(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN)) {
+		texmat_offset_sign = -1;
+	} else {
+		texmat_offset_sign = 1;
+	}
+
 	bool keming = FT_HAS_KERNING(font->face);
 	uint prev_glyph_idx = 0;
 	const char *tptr = text;
@@ -915,7 +924,7 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 			sp.scale.both = font->metrics.scale;
 
 			r_mat_push();
-			r_mat_translate(sp.pos.x - x_orig, sp.pos.y, 0);
+			r_mat_translate(sp.pos.x - x_orig, sp.pos.y * texmat_offset_sign, 0);
 			r_mat_scale(w_saved, h_saved, 1.0);
 			r_mat_translate(-0.5, -0.5, 0);
 

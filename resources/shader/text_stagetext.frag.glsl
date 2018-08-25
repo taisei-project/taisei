@@ -10,7 +10,7 @@ float tc_mask(vec2 tc) {
 
 void main(void) {
     float t = customParams.r;
-    vec2 tc = texCoord;
+    vec2 tc = flip_native_to_topleft(texCoord);
     vec2 tc_overlay = texCoordOverlay;
 
     tc *= dimensions;
@@ -19,12 +19,12 @@ void main(void) {
     tc /= dimensions;
 
     float a = tc_mask(tc);
-    vec4 textfrag = color * texture(tex, uv_to_region(texRegion, tc)).r * a;
+    vec4 textfrag = color * texture(tex, uv_to_region(texRegion, flip_topleft_to_native(tc))).r * a;
 
     tc -= vec2(1) / dimensions;
     a = tc_mask(tc);
 
-    vec4 shadowfrag = vec4(vec3(0), color.a) * texture(tex, uv_to_region(texRegion, tc)).r * a;
+    vec4 shadowfrag = vec4(vec3(0), color.a) * texture(tex, uv_to_region(texRegion, flip_topleft_to_native(tc))).r * a;
 
     fragColor = textfrag;
     fragColor = mix(shadowfrag, textfrag, sqrt(textfrag.a));
