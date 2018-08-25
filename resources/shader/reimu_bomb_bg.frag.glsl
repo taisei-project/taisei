@@ -67,7 +67,7 @@ void main(void) {
 	vec2 uv = texCoord;
 	float ld, dd;
 
-	float yy = yinyang_spin(uv, aspect * zoom, -time, ld, dd);
+	float yy = yinyang_spin(flip_native_to_topleft(uv), aspect * zoom, -time, ld, dd);
 
 	vec2 uv_r = uv;
 	vec2 uv_g = uv;
@@ -115,10 +115,10 @@ void main(void) {
 	vec2 runes_uv = (uv - 0.5) * rot(pi * 0.5) + 0.5;
 	float line = floor(runes_uv.y * rune_lines);
 	runes_uv.x += 0.931223 * line + time * 0.1 * cos(pi * line);
-	runes_uv.y *= -rune_lines;
+	runes_uv.y *= rune_lines;
 	runes_uv = runes_transform_uv(runes_uv);
 
-	float rune_factor = texture(runes, runes_uv).r;
+	float rune_factor = texture(runes, flip_bottomleft_to_native(runes_uv)).r;
 	fragColor.rgb = pow(fragColor.rgb, vec3(1 + (1 - 2 * rune_factor) * 0.1));
 	// fragColor = mix(fragColor, 0.9 * fragColor + vec4(0.1), rune_factor * r_color);
 	fragColor += r_color * rune_factor * 0.1;
