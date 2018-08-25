@@ -401,6 +401,7 @@ static void masterspark_visual(Enemy *e, int t2, bool render) {
 
 	float t = player_get_bomb_progress(&global.plr, NULL);
 	float fade = 1;
+	complex diroffset = e->args[0];
 
 	if(t < 1./6) {
 		fade = t*6;
@@ -413,15 +414,20 @@ static void masterspark_visual(Enemy *e, int t2, bool render) {
 	}
 
 	r_mat_push();
-	r_mat_translate(creal(global.plr.pos),cimag(global.plr.pos)-40-VIEWPORT_H/2,0);
-	r_mat_scale(fade*800,VIEWPORT_H,1);
-	marisa_common_masterspark_draw(t*global.plr.bombtotaltime);
+	r_mat_translate(creal(global.plr.pos), cimag(global.plr.pos), 0);
+	r_mat_rotate(carg(diroffset), 0, 0, 1);
+	r_mat_translate(0, - 40 - VIEWPORT_H/2, 0);
+
+	Color color = *HSL(t2/100., 1, 0.5);
+	r_mat_scale(fade * 800, VIEWPORT_H, 1);
+	marisa_common_masterspark_draw(t * global.plr.bombtotaltime, &color);
 	r_mat_pop();
 }
 
 static int masterspark_star(Projectile *p, int t) {
 	if(t >= 0) {
 		p->args[0] += 0.1*p->args[0]/cabs(p->args[0]);
+		p->angle += 0.1;
 	}
 
 	return linear(p, t);
@@ -438,18 +444,20 @@ static int masterspark(Enemy *e, int t2) {
 
 	if(t2 < 0)
 		return 1;
+	e->args[0] *= cexp(I*0.005*creal(global.plr.velocity));
+	complex diroffset = e->args[0];
 
 	float t = player_get_bomb_progress(&global.plr, NULL);
 	if(t2%2==0 && t < 3./4) {
 		complex dir = -cexp(1.2*I*nfrand())*I;
-		Color *c = RGBA(0.7 + 0.3 * sin(t * 30), 0.7 + 0.3 * cos(t * 30), 0.7 + 0.3 * cos(t * 3), 0);
+		Color *c = HSLA(-t,1,0.5,0);
 		PARTICLE(
 			.sprite = "maristar_orbit",
 			.pos = global.plr.pos+40*dir,
 			.color = c,
 			.rule = masterspark_star,
 			.timeout = 50,
-			.args= { 10 * dir - 10*I, 3 },
+			.args= { (10 * dir - 10*I)*diroffset, 6 },
 			.angle = nfrand(),
 			.draw_rule = GrowFade
 		);
@@ -460,17 +468,17 @@ static int masterspark(Enemy *e, int t2) {
 			.color = c,
 			.rule = masterspark_star,
 			.timeout = 50,
-			.args = { 10 * dir - 10*I, 3 },
+			.args = { (10 * dir - 10*I)*diroffset, 6 },
 			.angle = nfrand(),
 			.draw_rule = GrowFade
 		);
 		PARTICLE(
 			.sprite = "smoke",
 			.pos = global.plr.pos-40*I,
-			.color = RGBA(0.9, 1, 1, 0),
+			.color = HSLA(2*t,1,2,0), //RGBA(0.3, 0.6, 1, 0),
 			.rule = linear,
 			.timeout = 50,
-			.args = { -5*dir, 3 },
+			.args = { -7*dir + 7*I, 6 },
 			.angle = nfrand(),
 			.draw_rule = GrowFade
 		);
@@ -504,7 +512,7 @@ static void marisa_laser_bombbg(Player *plr) {
 
 static void marisa_laser_bomb(Player *plr) {
 	play_sound("bomb_marisa_a");
-	create_enemy_p(&plr->slaves, 40.0*I, ENEMY_BOMB, masterspark_visual, masterspark, 280,0,0,0);
+	create_enemy_p(&plr->slaves, 40.0*I, ENEMY_BOMB, masterspark_visual, masterspark, 1,0,0,0);
 }
 
 static Enemy* marisa_laser_spawn_slave(Player *plr, complex pos, complex a0, complex a1, complex a2, complex a3) {

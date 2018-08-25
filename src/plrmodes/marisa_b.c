@@ -102,27 +102,22 @@ static int marisa_star_slave(Enemy *e, int t) {
 
 static int marisa_star_orbit_star(Projectile *p, int t) { // XXX: because growfade is the worst
 	if(t >= 0) {
-		p->args[0] += p->args[0]/cabs(p->args[0])*0.05;
+		p->args[0] += p->args[0]/cabs(p->args[0])*0.15;
+		p->angle += 0.1;
 	}
 
 	return linear(p,t);
 }
 
 static Color marisa_slaveclr(int i, float low) {
-	Color slaveclrs[] = {
-		{ 1.0, low, low, 1.0 },
-		{ 1.0, 1.0, low, 1.0 },
-		{ low, 1.0, low, 1.0 },
-		{ low, 1.0, 1.0, 1.0 },
-		{ 1.0, low, 1.0, 1.0 },
-	};
+	int numslaves = 5;
+	assert(i >= 0 && i < numslaves);
 
-	assert(i >= 0 && i < sizeof(slaveclrs)/sizeof(*slaveclrs));
-	return slaveclrs[i];
+	return *HSLA(i/(float)numslaves, 1, low, 1);
 }
 
 static int marisa_star_orbit(Enemy *e, int t) {
-	Color color = marisa_slaveclr(rint(creal(e->args[0])), 0.5);
+	Color color = marisa_slaveclr(rint(creal(e->args[0])), 0.6);
 
 	float tb = player_get_bomb_progress(&global.plr, NULL);
 	if(t == EVENT_BIRTH) {
@@ -140,7 +135,7 @@ static int marisa_star_orbit(Enemy *e, int t) {
 	}
 
 	double r = 100*pow(tanh(t/20.),2);
-	complex dir = e->args[1]*r*cexp(I*(sqrt(1000+t*t+0.01*t*t*t))*0.04);
+	complex dir = e->args[1]*r*cexp(I*(sqrt(1000+t*t+0.03*t*t*t))*0.04);
 	e->pos = global.plr.pos+dir;
 
 	float fadetime = 3./4;
@@ -157,11 +152,13 @@ static int marisa_star_orbit(Enemy *e, int t) {
 		color_mul_scalar(color2, 0.5);
 		
 		PARTICLE(
-			.sprite_ptr = get_sprite("part/lightningball"),
+			.sprite_ptr = get_sprite("part/maristar_orbit"),
 			.pos = e->pos,
 			.color = color2,
 			.timeout = 10,
-			.draw_rule = Fade,
+			.angle = t*0.1,
+			.draw_rule = GrowFade,
+			.args = { 1, tb*4},
 			.flags = PFLAG_NOREFLECT,
 		);
 	}
@@ -175,7 +172,7 @@ static int marisa_star_orbit(Enemy *e, int t) {
 			.draw_rule = GrowFade,
 			.timeout = 150,
 			.flags = PFLAG_NOREFLECT,
-			.args = { -5*dir/cabs(dir), 3 },
+			.args = { -5*dir/cabs(dir), 5 },
 		);
 	}
 
@@ -209,9 +206,9 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 	r_mat_push();
 	r_mat_rotate_deg(carg(e->pos-global.plr.pos)*180/M_PI+90,0,0,1);
 
-	r_mat_scale(120*fade,VIEWPORT_H*1.5,1);
+	r_mat_scale(250*fade,VIEWPORT_H*1.5,1);
 	r_mat_translate(0,-0.5,0);
-	marisa_common_masterspark_draw(global.plr.bombtotaltime*tb);
+	marisa_common_masterspark_draw(global.plr.bombtotaltime*tb, &color);
 
 	r_mat_pop();
 	color.a = 0;

@@ -83,9 +83,10 @@ void marisa_common_slave_visual(Enemy *e, int t, bool render) {
 	});
 }
 
-void marisa_common_masterspark_draw(int t) {
+void marisa_common_masterspark_draw(int t, Color *tint) {
 	ShaderProgram *prog_saved = r_shader_current();
 	r_shader("masterspark");
+	r_uniform_vec3("tint", tint->r, tint->g, tint->b);
 	r_uniform_float("t", t);
 	r_draw_quad();
 	r_shader_ptr(prog_saved);
