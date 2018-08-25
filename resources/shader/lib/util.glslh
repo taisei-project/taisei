@@ -77,4 +77,56 @@ vec3 hsv2rgb(vec3 c) {
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 
+float flip_topleft_to_native(float x) {
+#ifdef NATIVE_ORIGIN_BOTTOMLEFT
+    return 1 - x;
+#else
+    return x;
+#endif
+}
+
+vec2 flip_topleft_to_native(vec2 v) {
+    v.y = flip_topleft_to_native(v.y);
+    return v;
+}
+
+float flip_bottomleft_to_native(float x) {
+#ifdef NATIVE_ORIGIN_TOPLEFT
+    return 1 - x;
+#else
+    return x;
+#endif
+}
+
+vec2 flip_bottomleft_to_native(vec2 v) {
+    v.y = flip_bottomleft_to_native(v.y);
+    return v;
+}
+
+float flip_native_to_topleft(float x) {
+#ifdef NATIVE_ORIGIN_TOPLEFT
+    return x;
+#else
+    return 1 - x;
+#endif
+}
+
+vec2 flip_native_to_topleft(vec2 v) {
+    v.y = flip_native_to_topleft(v.y);
+    return v;
+}
+
+float flip_native_to_bottomleft(float x) {
+#ifdef NATIVE_ORIGIN_BOTTOMLEFT
+    return x;
+#else
+    return 1 - x;
+#endif
+}
+
+vec2 flip_native_to_bottomleft(vec2 v) {
+    v.y = flip_native_to_bottomleft(v.y);
+    return v;
+}
+
 #endif
