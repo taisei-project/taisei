@@ -29,9 +29,9 @@ float get_sample(float x) {
 
 void main(void) {
 	vec4 c = vec4(1.0);
-	vec2 coord = vec2(texCoord.x, 1.0 - texCoord.y); // TODO: move to vertex shader
+	vec2 coord = flip_native_to_bottomleft(texCoord); // TODO: move to vertex shader
 	float s = get_sample(coord.x);
-	
+
 	c.a = float(coord.y <= s);
 	c.a *= (0.2 + 0.8 * s);
 	c.a = 0.05 + 0.95 * c.a;
