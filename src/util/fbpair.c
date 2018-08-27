@@ -30,41 +30,43 @@ static void fbpair_resize_fb(Framebuffer *fb, FramebufferAttachment attachment, 
 void fbpair_create(FBPair *pair, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
 	assert(num_attachments > 0 && num_attachments <= FRAMEBUFFER_MAX_ATTACHMENTS);
 	memset(pair, 0, sizeof(*pair));
-	fbpair_create_fb(*(void**)&pair->front = pair->framebuffers + 0, num_attachments, attachments);
-	fbpair_create_fb(*(void**)&pair->back  = pair->framebuffers + 1, num_attachments, attachments);
+	fbpair_create_fb(pair->front = calloc(1, sizeof(Framebuffer)), num_attachments, attachments);
+	fbpair_create_fb(pair->back  = calloc(1, sizeof(Framebuffer)), num_attachments, attachments);
 }
 
 void fbpair_destroy(FBPair *pair) {
-	fbpair_destroy_fb(pair->framebuffers + 0);
-	fbpair_destroy_fb(pair->framebuffers + 1);
+	fbpair_destroy_fb(pair->front);
+	fbpair_destroy_fb(pair->back);
+	free(pair->front);
+	free(pair->back);
 }
 
 void fbpair_swap(FBPair *pair) {
 	void *tmp = pair->front;
-	*(void**)&pair->front = pair->back;
-	*(void**)&pair->back  = tmp;
+	pair->front = pair->back;
+	pair->back  = tmp;
 }
 
 static void fbpair_clear(FBPair *pair) {
 	r_state_push();
 	r_clear_color4(0, 0, 0, 0);
-	r_framebuffer(pair->framebuffers + 0);
+	r_framebuffer(pair->front);
 	r_clear(CLEAR_ALL);
-	r_framebuffer(pair->framebuffers + 1);
+	r_framebuffer(pair->back);
 	r_clear(CLEAR_ALL);
 	r_state_pop();
 }
 
 void fbpair_resize(FBPair *pair, FramebufferAttachment attachment, uint width, uint height) {
-	fbpair_resize_fb(pair->framebuffers + 0, attachment, width, height);
-	fbpair_resize_fb(pair->framebuffers + 1, attachment, width, height);
+	fbpair_resize_fb(pair->front, attachment, width, height);
+	fbpair_resize_fb(pair->back, attachment, width, height);
 	fbpair_clear(pair);
 }
 
 void fbpair_resize_all(FBPair *pair, uint width, uint height) {
 	for(uint i = 0; i < FRAMEBUFFER_MAX_ATTACHMENTS; ++i) {
-		fbpair_resize_fb(pair->framebuffers + 0, i, width, height);
-		fbpair_resize_fb(pair->framebuffers + 1, i, width, height);
+		fbpair_resize_fb(pair->front, i, width, height);
+		fbpair_resize_fb(pair->back, i, width, height);
 	}
 
 	fbpair_clear(pair);

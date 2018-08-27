@@ -15,6 +15,7 @@
 #include "common/models.h"
 #include "common/state.h"
 #include "util/glm.h"
+#include "util/graphics.h"
 
 #define B _r_backend.funcs
 
@@ -29,6 +30,12 @@ void r_init(void) {
 	_r_backend_init();
 }
 
+typedef struct BlurInfo {
+	const char *progname;
+	int kernel_size;
+	float sigma;
+} BlurInfo;
+
 void r_post_init(void) {
 	_r_state_init();
 	B.post_init();
@@ -42,6 +49,21 @@ void r_post_init(void) {
 		"standard",
 		"standardnotex",
 	NULL);
+
+	BlurInfo blurs[] = {
+		// { "blur5",   5, 1.25, },
+		// { "blur9",   9, 1.85, },
+		// { "blur13", 13, 2.45, },
+		{ "blur25", 25, 4.25, },
+	};
+
+	for(int i = 0; i < sizeof(blurs)/sizeof(*blurs); ++i) {
+		preload_resource(RES_SHADER_PROGRAM, blurs[i].progname, RESF_PERMANENT);
+	}
+
+	for(int i = 0; i < sizeof(blurs)/sizeof(*blurs); ++i) {
+		init_blur_shader(r_shader_get(blurs[i].progname), blurs[i].kernel_size, blurs[i].sigma);
+	}
 
 	R.progs.standard = r_shader_get("standard");
 	R.progs.standardnotex = r_shader_get("standardnotex");

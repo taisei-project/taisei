@@ -67,7 +67,17 @@ static bool stage1_draw_predicate(EntityInterface *ent) {
 		return false;
 	}
 
-	if(ent->type == ENT_BOSS || ent->type == ENT_ENEMY) {
+	if(ent->type == ENT_BOSS) {
+		return true;
+	}
+
+	if(ent->type == ENT_ENEMY) {
+		Enemy *e = ENT_CAST(ent, Enemy);
+
+		if(e->hp == ENEMY_BOMB) {
+			return false;
+		}
+
 		return true;
 	}
 

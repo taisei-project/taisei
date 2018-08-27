@@ -401,27 +401,18 @@ static void masterspark_visual(Enemy *e, int t2, bool render) {
 
 	float t = player_get_bomb_progress(&global.plr, NULL);
 	float fade = 1;
-	complex diroffset = e->args[0];
 
 	if(t < 1./6) {
 		fade = t*6;
-		fade = sqrt(fade);
+		fade = pow(fade, 1.0/3.0);
 	}
 
-	if(t > 3./4) {
-		fade = 1-t*4 + 3;
-		fade *= fade;
+	if(t > 4./5) {
+		fade = 1-t*5 + 4;
+		fade = pow(fade, 5);
 	}
 
-	r_mat_push();
-	r_mat_translate(creal(global.plr.pos), cimag(global.plr.pos), 0);
-	r_mat_rotate(carg(diroffset), 0, 0, 1);
-	r_mat_translate(0, - 40 - VIEWPORT_H/2, 0);
-
-	Color color = *HSL(t2/100., 1, 0.5);
-	r_mat_scale(fade * 800, VIEWPORT_H, 1);
-	marisa_common_masterspark_draw(t * global.plr.bombtotaltime, &color);
-	r_mat_pop();
+	marisa_common_masterspark_draw(global.plr.pos - 30 * I, 800 + I * VIEWPORT_H * 1.25, carg(e->args[0]), t2, fade);
 }
 
 static int masterspark_star(Projectile *p, int t) {
@@ -434,30 +425,37 @@ static int masterspark_star(Projectile *p, int t) {
 }
 
 static int masterspark(Enemy *e, int t2) {
+	// FIXME: This may interact badly with other view shake effects...
+	// We need a proper system for this stuff.
+
 	if(t2 == EVENT_BIRTH) {
 		global.shake_view = 8;
 		return 1;
 	} else if(t2 == EVENT_DEATH) {
-		global.shake_view=0;
+		global.shake_view = 0;
 		return 1;
 	}
 
 	if(t2 < 0)
 		return 1;
-	e->args[0] *= cexp(I*0.005*creal(global.plr.velocity));
+
+	e->args[0] *= cexp(I*(0.005*creal(global.plr.velocity) + nfrand() * 0.005));
 	complex diroffset = e->args[0];
 
 	float t = player_get_bomb_progress(&global.plr, NULL);
-	if(t2%2==0 && t < 3./4) {
-		complex dir = -cexp(1.2*I*nfrand())*I;
-		Color *c = HSLA(-t,1,0.5,0);
+
+	if(t >= 3.0/4.0) {
+		global.shake_view = 8 * (1 - t * 4 + 3);
+	} else if(t2 % 2 == 0) {
+		complex dir = -cexp(1.5*I*sin(t2*M_PI*1.12))*I;
+		Color *c = HSLA(-t*5.321,1,0.5,0.5*frand());
 		PARTICLE(
 			.sprite = "maristar_orbit",
 			.pos = global.plr.pos+40*dir,
 			.color = c,
 			.rule = masterspark_star,
 			.timeout = 50,
-			.args= { (10 * dir - 10*I)*diroffset, 6 },
+			.args= { (10 * dir - 10*I)*diroffset, 4 },
 			.angle = nfrand(),
 			.draw_rule = GrowFade
 		);
@@ -468,7 +466,7 @@ static int masterspark(Enemy *e, int t2) {
 			.color = c,
 			.rule = masterspark_star,
 			.timeout = 50,
-			.args = { (10 * dir - 10*I)*diroffset, 6 },
+			.args = { (10 * dir - 10*I)*diroffset, 4 },
 			.angle = nfrand(),
 			.draw_rule = GrowFade
 		);
@@ -512,7 +510,8 @@ static void marisa_laser_bombbg(Player *plr) {
 
 static void marisa_laser_bomb(Player *plr) {
 	play_sound("bomb_marisa_a");
-	create_enemy_p(&plr->slaves, 40.0*I, ENEMY_BOMB, masterspark_visual, masterspark, 1,0,0,0);
+	Enemy *e = create_enemy_p(&plr->slaves, 0.0*I, ENEMY_BOMB, masterspark_visual, masterspark, 1,0,0,0);
+	e->ent.draw_layer = LAYER_PLAYER_FOCUS - 1;
 }
 
 static Enemy* marisa_laser_spawn_slave(Player *plr, complex pos, complex a0, complex a1, complex a2, complex a3) {
@@ -609,6 +608,7 @@ static void marisa_laser_preload(void) {
 		"proj/marisa",
 		"part/maristar_orbit",
 		"hakkero",
+		"masterspark_ring",
 	NULL);
 
 	preload_resources(RES_TEXTURE, flags,

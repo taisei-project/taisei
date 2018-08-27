@@ -201,16 +201,10 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 
 	color_mul_scalar(&color, fade);
 
+	marisa_common_masterspark_draw(e->pos, 250*fade + VIEWPORT_H*1.5*I, carg(e->pos - global.plr.pos) + M_PI/2, global.plr.bombtotaltime * tb, fade);
+
 	r_mat_push();
 	r_mat_translate(creal(e->pos),cimag(e->pos),0);
-	r_mat_push();
-	r_mat_rotate_deg(carg(e->pos-global.plr.pos)*180/M_PI+90,0,0,1);
-
-	r_mat_scale(250*fade,VIEWPORT_H*1.5,1);
-	r_mat_translate(0,-0.5,0);
-	marisa_common_masterspark_draw(global.plr.bombtotaltime*tb, &color);
-
-	r_mat_pop();
 	color.a = 0;
 	r_color(&color);
 	r_mat_rotate_deg(t*10,0,0,1);
@@ -226,7 +220,8 @@ static void marisa_star_bomb(Player *plr) {
 	int count = 5; // might as well be hard coded. We are talking marisa here.
 	for(int i = 0; i < 5; i++) {
 		complex dir = cexp(2*I*M_PI/count*i);
-		create_enemy2c(plr->pos,ENEMY_IMMUNE,marisa_star_orbit_visual,marisa_star_orbit,i,dir);
+		Enemy *e = create_enemy2c(plr->pos, ENEMY_BOMB, marisa_star_orbit_visual, marisa_star_orbit, i ,dir);
+		e->ent.draw_layer = LAYER_PLAYER_FOCUS - 1;
 	}
 }
 
@@ -322,6 +317,7 @@ static void marisa_star_preload(void) {
 		"proj/maristar",
 		"part/maristar_orbit",
 		"hakkero",
+		"masterspark_ring",
 	NULL);
 
 	preload_resources(RES_TEXTURE, flags,

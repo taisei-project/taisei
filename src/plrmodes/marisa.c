@@ -11,6 +11,7 @@
 #include "global.h"
 #include "plrmodes.h"
 #include "marisa.h"
+#include "stagedraw.h"
 
 PlayerCharacter character_marisa = {
 	.id = PLR_CHAR_MARISA,
@@ -83,11 +84,76 @@ void marisa_common_slave_visual(Enemy *e, int t, bool render) {
 	});
 }
 
-void marisa_common_masterspark_draw(int t, Color *tint) {
-	ShaderProgram *prog_saved = r_shader_current();
+static void draw_masterspark_ring(int t, float width) {
+	float sy = sqrt(t / 500.0) * 6;
+	float sx = sy * width / 800;
+
+	if(sx == 0 || sy == 0) {
+		return;
+	}
+
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "masterspark_ring",
+		.shader = "sprite_default",
+		.pos = { 0, -t*t*0.4 + 2 },
+		.color = RGBA(0.5, 0.5, 0.5, 0.0),
+		.scale = { .x = sx, .y = sy * sy * 1.5 },
+	});
+}
+
+static void draw_masterspark_beam(complex origin, complex size, float angle, int t, float alpha) {
+	r_mat_push();
+	r_mat_translate(creal(origin), cimag(origin), 0);
+	r_mat_rotate(angle, 0, 0, 1);
+
 	r_shader("masterspark");
-	r_uniform_vec3("tint", tint->r, tint->g, tint->b);
 	r_uniform_float("t", t);
+
+	r_mat_push();
+	r_mat_translate(0, cimag(size) * -0.5, 0);
+	r_mat_scale(alpha * creal(size), cimag(size), 1);
 	r_draw_quad();
-	r_shader_ptr(prog_saved);
+	r_mat_pop();
+
+	for(int i = 0; i < 4; i++) {
+		draw_masterspark_ring(t % 20 + 10 * i, alpha * creal(size));
+	}
+
+	r_mat_pop();
+}
+
+void marisa_common_masterspark_draw(complex origin, complex size, float angle, int t, float alpha) {
+	r_state_push();
+
+	float blur = 1.0 - alpha;
+
+	if(blur == 0) {
+		draw_masterspark_beam(origin, size, angle, t, alpha);
+	} else {
+		Framebuffer *main_fb = r_framebuffer_current();
+		FBPair *aux = stage_get_fbpair(FBPAIR_FG_AUX);
+
+		r_framebuffer(aux->back);
+		r_clear_color4(0, 0, 0, 0);
+		r_clear(CLEAR_COLOR);
+
+		draw_masterspark_beam(origin, size, angle, t, alpha);
+
+		r_shader("blur25");
+		r_uniform_vec2("blur_resolution", VIEWPORT_W, VIEWPORT_H);
+		r_uniform_vec2("blur_direction", blur, 0);
+
+		fbpair_swap(aux);
+		r_framebuffer(aux->back);
+		r_clear(CLEAR_COLOR);
+		draw_framebuffer_tex(aux->front, VIEWPORT_W, VIEWPORT_H);
+
+		r_uniform_vec2("blur_direction", 0, blur);
+
+		fbpair_swap(aux);
+		r_framebuffer(main_fb);
+		draw_framebuffer_tex(aux->front, VIEWPORT_W, VIEWPORT_H);
+	}
+
+	r_state_pop();
 }

@@ -10,6 +10,10 @@ glsl_files = files(
 # @begin glsl
     'alpha_depth.frag.glsl',
     'bloom.frag.glsl',
+    'blur13.frag.glsl',
+    'blur25.frag.glsl',
+    'blur5.frag.glsl',
+    'blur9.frag.glsl',
     'boss_zoom.frag.glsl',
     'copy_depth.frag.glsl',
     'fxaa.frag.glsl',

@@ -20,10 +20,8 @@ typedef struct FBPair {
 	 *      4. Rinse, repeat.
 	 */
 
-	Framebuffer *const front;
-	Framebuffer *const back;
-
-	Framebuffer framebuffers[2];
+	Framebuffer *front;
+	Framebuffer *back;
 } FBPair;
 
 typedef struct FBAttachmentConfig {

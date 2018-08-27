@@ -157,3 +157,9 @@ void fbutil_resize_attachment(Framebuffer *fb, FramebufferAttachment attachment,
 	r_texture_create(tex, &params);
 	r_framebuffer_attach(fb, tex, 0, attachment);
 }
+
+void init_blur_shader(ShaderProgram *prog, size_t kernel_size, float sigma) {
+	float kernel[kernel_size];
+	gaussian_kernel_1d(kernel_size, sigma, kernel);
+	r_uniform_ptr(r_shader_uniform(prog, "blur_kernel[0]"), kernel_size, kernel);
+}

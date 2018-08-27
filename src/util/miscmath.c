@@ -106,3 +106,28 @@ float smoothreclamp(float x, float old_min, float old_max, float new_min, float 
 float sanitize_scale(float scale) {
 	return max(0.1, scale);
 }
+
+float normpdf(float x, float sigma) {
+    return 0.39894 * exp(-0.5 * pow(x, 2) / pow(sigma, 2)) / sigma;
+}
+
+void gaussian_kernel_1d(size_t size, float sigma, float kernel[size]) {
+	assert(size & 1);
+
+	double sum = 0.0;
+	size_t halfsize = size / 2;
+
+	kernel[halfsize] = normpdf(0, sigma);
+	sum += kernel[halfsize];
+
+	for(size_t i = 1; i <= halfsize; ++i) {
+		float k = normpdf(i, sigma);
+		kernel[halfsize + i] = kernel[halfsize - i] = k;
+		sum += k * 2;
+
+	}
+
+	for(size_t i = 0; i < size; ++i) {
+		kernel[i] /= sum;
+	}
+}

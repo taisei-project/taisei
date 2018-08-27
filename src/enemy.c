@@ -101,7 +101,7 @@ Enemy *create_enemy_p(EnemyList *enemies, complex pos, float hp, EnemyVisualRule
 void* _delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 	Enemy *e = (Enemy*)enemy;
 
-	if(e->hp <= 0 && e->hp != ENEMY_IMMUNE) {
+	if(e->hp <= 0 && e->hp != ENEMY_IMMUNE && e->hp != ENEMY_BOMB) {
 		play_sound("enemydeath");
 
 		for(int i = 0; i < 10; i++) {
