@@ -240,6 +240,8 @@ static void gl33_init_context(SDL_Window *window) {
 	if(glext.draw_buffers) {
 		R.features |= r_feature_bit(RFEAT_FRAMEBUFFER_MULTIPLE_OUTPUTS);
 	}
+
+	R.features |= r_feature_bit(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN);
 }
 
 static void gl33_apply_capability(RendererCapability cap, bool value) {

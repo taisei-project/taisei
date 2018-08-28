@@ -26,10 +26,10 @@ void _r_models_init(void) {
 	}, fmt, 0);
 
 	GenericModelVertex quad[4] = {
-		{ { -0.5, -0.5,  0.0 }, { 0, 0, 1 }, { 0, 0 } },
-		{ { -0.5,  0.5,  0.0 }, { 0, 0, 1 }, { 0, 1 } },
-		{ {  0.5,  0.5,  0.0 }, { 0, 0, 1 }, { 1, 1 } },
-		{ {  0.5, -0.5,  0.0 }, { 0, 0, 1 }, { 1, 0 } },
+		{ { -0.5, -0.5,  0.0 }, { 0, 0, 1 }, { 0, 1 } },
+		{ { -0.5,  0.5,  0.0 }, { 0, 0, 1 }, { 0, 0 } },
+		{ {  0.5,  0.5,  0.0 }, { 0, 0, 1 }, { 1, 0 } },
+		{ {  0.5, -0.5,  0.0 }, { 0, 0, 1 }, { 1, 1 } },
 	};
 
 	r_vertex_buffer_create(&_r_models.vbuf, 8192 * sizeof(GenericModelVertex), NULL);
@@ -72,11 +72,6 @@ void r_draw_quad_instanced(uint instances) {
 void r_draw_model_ptr(Model *model) {
 	VertexArray *varr_saved = r_vertex_array_current();
 	r_vertex_array(&_r_models.varr);
-	r_mat_mode(MM_TEXTURE);
-	r_mat_push();
-	r_mat_scale(1, -1, 1); // XXX: flipped texture workaround. can we get rid of this somehow?
 	r_draw(PRIM_TRIANGLES, 0, model->icount, model->indices, 0, 0);
-	r_mat_pop();
-	r_mat_mode(MM_MODELVIEW);
 	r_vertex_array(varr_saved);
 }

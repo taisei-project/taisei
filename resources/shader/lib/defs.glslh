@@ -29,4 +29,8 @@
     #define ATTRIBUTE(l) LOC(l) in
 #endif
 
+#if !defined(NATIVE_ORIGIN_TOPLEFT) && !defined(NATIVE_ORIGIN_BOTTOMLEFT)
+    #define NATIVE_ORIGIN_BOTTOMLEFT
+#endif
+
 #endif

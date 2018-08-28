@@ -14,6 +14,7 @@
 #include "font.h"
 #include "util.h"
 #include "util/rectpack.h"
+#include "util/graphics.h"
 #include "config.h"
 #include "video.h"
 #include "events.h"
@@ -375,15 +376,30 @@ static bool add_glyph_to_spritesheet(Font *font, Glyph *glyph, FT_Bitmap bitmap,
 	sprite_pos.bottom_right += ofs;
 	sprite_pos.top_left += ofs;
 
-	r_texture_fill_region(
-		&ss->tex,
-		0,
-		rect_x(sprite_pos),
-		rect_y(sprite_pos),
-		bitmap.width,
-		bitmap.rows,
-		bitmap.buffer
-	);
+	if(r_supports(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN)) {
+		char buffer[bitmap.width * bitmap.rows];
+		flip_bitmap_copy(buffer, (char*)bitmap.buffer, bitmap.rows, bitmap.width);
+		r_texture_fill_region(
+			&ss->tex,
+			0,
+			rect_x(sprite_pos),
+			rect_y(sprite_pos),
+			bitmap.width,
+			bitmap.rows,
+			buffer
+		);
+	} else {
+		r_texture_fill_region(
+			&ss->tex,
+			0,
+			rect_x(sprite_pos),
+			rect_y(sprite_pos),
+			bitmap.width,
+			bitmap.rows,
+			bitmap.buffer
+		);
+	}
+
 
 	glyph->sprite.tex = &ss->tex;
 	glyph->sprite.w = glyph->metrics.width; // bitmap.width / font->scale;
@@ -862,6 +878,15 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 	r_mat_scale(1/bbox_w, 1/bbox_h, 1.0);
 	r_mat_translate(-bbox.x.min - (x - x_orig), -bbox.y.min + font->metrics.descent, 0);
 
+	// FIXME: is there a better way?
+	float texmat_offset_sign;
+
+	if(r_supports(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN)) {
+		texmat_offset_sign = -1;
+	} else {
+		texmat_offset_sign = 1;
+	}
+
 	bool keming = FT_HAS_KERNING(font->face);
 	uint prev_glyph_idx = 0;
 	const char *tptr = text;
@@ -899,7 +924,7 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 			sp.scale.both = font->metrics.scale;
 
 			r_mat_push();
-			r_mat_translate(sp.pos.x - x_orig, sp.pos.y, 0);
+			r_mat_translate(sp.pos.x - x_orig, sp.pos.y * texmat_offset_sign, 0);
 			r_mat_scale(w_saved, h_saved, 1.0);
 			r_mat_translate(-0.5, -0.5, 0);
 
@@ -981,7 +1006,7 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 
 	r_blend(BLEND_PREMUL_ALPHA);
 	r_enable(RCAP_CULL_FACE);
-	r_cull(CULL_FRONT);
+	r_cull(CULL_BACK);
 	r_disable(RCAP_DEPTH_TEST);
 
 	r_mat_mode(MM_MODELVIEW);
@@ -991,8 +1016,7 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 	r_mat_mode(MM_PROJECTION);
 	r_mat_push();
 	r_mat_identity();
-	// XXX: y-flipped because that's how our textures are...
-	r_mat_ortho(0, tex->w, 0, tex->h, -100, 100);
+	r_mat_ortho(0, tex->w, tex->h, 0, -100, 100);
 
 	r_mat_mode(MM_TEXTURE);
 	r_mat_push();

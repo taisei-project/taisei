@@ -410,7 +410,11 @@ static void draw_wall_of_text(float f, const char *txt) {
 	Sprite spr;
 	BBox bbox;
 
-	text_render(txt, get_font("standard"), &spr, &bbox);
+	char buf[strlen(txt) + 4];
+	memcpy(buf, txt, sizeof(buf) - 4);
+	memcpy(buf + sizeof(buf) - 4, " ~ ", 4);
+
+	text_render(buf, get_font("standard"), &spr, &bbox);
 
 	// FIXME: The shader currently assumes that the sprite takes up the entire texture.
 	// If it could handle any arbitrary sprite, then text_render wouldn't have to resize // the texture per every new string of text.
@@ -427,7 +431,7 @@ static void draw_wall_of_text(float f, const char *txt) {
 	r_uniform_float("w", spr.tex_area.w/spr.tex->w);
 	r_uniform_float("h", spr.tex_area.h/spr.tex->h);
 	r_uniform_float("ratio", h/w);
-	r_uniform_vec2("origin", creal(global.boss->pos)/h, cimag(global.boss->pos)/w);
+	r_uniform_vec2("origin", creal(global.boss->pos)/h, cimag(global.boss->pos)/w); // what the fuck?
 	r_uniform_float("t", f);
 	r_texture_ptr(0, spr.tex);
 	r_draw_quad();

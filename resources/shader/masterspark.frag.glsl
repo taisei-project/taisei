@@ -12,7 +12,7 @@ float smootherstep(float x, float width) {
 }
 
 void main(void) {
-	vec2 r = vec2(texCoord.x - 0.5, 1.0 - texCoord.y);
+	vec2 r = vec2(texCoord.x - 0.5, flip_native_to_bottomleft(texCoord.y));
 
 	// globally distort the coordinate system a little bit for a more interesting/dynamic shape
 	r.x -= 0.005 * sin(r.y * 13.32 - t * 0.53);
