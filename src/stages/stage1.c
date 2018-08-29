@@ -51,6 +51,8 @@ struct stage1_spells_s stage1_spells = {
 	},
 };
 
+static FBPair stage1_bg_fbpair;
+
 #ifdef SPELL_BENCHMARK
 AttackInfo stage1_spell_benchmark = {
 	{-1, -1, -1, -1, 127}, AT_SurvivalSpell, "Profiling ~ ベンチマーク", 40, 40000,
@@ -92,8 +94,10 @@ static bool stage1_draw_predicate(EntityInterface *ent) {
 	return false;
 }
 
-static void stage1_bg_draw(vec3 pos) {
-	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
+static void stage1_water_draw(vec3 pos) {
+	// don't even ask
+
+	r_state_push();
 
 	r_mat_push();
 	r_mat_translate(0,stage_3d_context.cx[1]+500,0);
@@ -107,28 +111,85 @@ static void stage1_bg_draw(vec3 pos) {
 	r_color4(1, 1, 1, 1);
 	r_mat_pop();
 
-	r_mat_push();
-	r_mat_rotate_deg(30,1,0,0);
-	r_mat_scale(.85,-.85,.85);
-	r_mat_translate(-VIEWPORT_W/2,0,0);
 	r_disable(RCAP_CULL_FACE);
 	r_disable(RCAP_DEPTH_TEST);
+
+	Framebuffer *bg_fb = r_framebuffer_current();
+	FBPair *fbpair = &stage1_bg_fbpair;
+	r_framebuffer(fbpair->back);
+	r_mat_mode(MM_PROJECTION);
+	r_mat_push();
+	set_ortho(VIEWPORT_W, VIEWPORT_H);
+	r_mat_mode(MM_MODELVIEW);
+	r_mat_push();
+	r_mat_identity();
+	r_mat_push();
+
+	float z = 0.75;
+	float zo = -0.05;
+
+	r_mat_translate(VIEWPORT_W * 0.5 * (1 - z), VIEWPORT_H * 0.5 * (1 - z), 0);
+	r_mat_scale(z, z, 1);
+	r_clear_color4(0, 0.08, 0.08, 1);
+	r_clear(CLEAR_ALL);
 	r_shader("sprite_default");
+
 	ent_draw(stage1_draw_predicate);
-	r_shader_standard();
+
+	r_mat_push();
+	r_shader_standard_notex();
+	r_mat_translate(VIEWPORT_W*0.5, VIEWPORT_H*0.5, 0);
+	r_mat_scale(VIEWPORT_W/z, VIEWPORT_H/z, 1);
+	r_color4(0, 0.08, 0.08, 0.8);
+	r_draw_quad();
 	r_mat_pop();
-	r_capability(RCAP_CULL_FACE, cullcap_saved);
+
+	r_mat_pop();
+
+	fbpair_swap(fbpair);
+	r_framebuffer(fbpair->back);
+	r_shader("blur5");
+	r_uniform_vec2("blur_resolution", VIEWPORT_W, VIEWPORT_H);
+	r_uniform_vec2("blur_direction", 1, 0);
+	draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
+	fbpair_swap(fbpair);
+	r_framebuffer(fbpair->back);
+	r_uniform_vec2("blur_direction", 0, 1);
+	draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
+	fbpair_swap(fbpair);
+
+	r_mat_pop();
+	r_mat_mode(MM_PROJECTION);
+	r_mat_pop();
+	r_mat_mode(MM_MODELVIEW);
+	r_framebuffer(bg_fb);
+
+	r_shader_standard();
+
+	r_enable(RCAP_DEPTH_TEST);
+	r_disable(RCAP_DEPTH_WRITE);
+
+	r_shader("stage1_water");
+	r_uniform_float("time", 0.5 * global.frames / (float)FPS);
+	r_texture_ptr(1, r_framebuffer_get_attachment(bg_fb, FRAMEBUFFER_ATTACH_DEPTH));
+
+	r_mat_push();
+	r_mat_translate(0, 70, 0);
+	r_mat_rotate_deg(10,1,0,0);
+	r_mat_scale(.85/(z+zo),-.85/(z+zo),.85);
+	r_mat_translate(-VIEWPORT_W/2,0,0);
+	draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
+	r_mat_pop();
 
 	r_shader_standard_notex();
 	r_mat_push();
 	r_mat_scale(1200,3000,1);
-	r_color4(0, 0.08, 0.08, 0.8);
+	r_color4(0, 0.08, 0.08, 0.08);
 	r_draw_quad();
-	r_color4(1, 1, 1, 1);
 	r_mat_pop();
-	r_enable(RCAP_DEPTH_TEST);
+
 	r_mat_pop();
-	r_shader_standard();
+	r_state_pop();
 }
 
 static vec3 **stage1_bg_pos(vec3 p, float maxrange) {
@@ -139,20 +200,22 @@ static vec3 **stage1_bg_pos(vec3 p, float maxrange) {
 static void stage1_smoke_draw(vec3 pos) {
 	float d = fabsf(pos[1]-stage_3d_context.cx[1]);
 
+	r_state_push();
+	r_shader("sprite_default");
 	r_disable(RCAP_DEPTH_TEST);
+	r_cull(CULL_BACK);
 	r_mat_push();
 	r_mat_translate(pos[0]+200*sin(pos[1]), pos[1], pos[2]+200*sin(pos[1]/25.0));
 	r_mat_rotate_deg(90,-1,0,0);
 	r_mat_scale(3.5,2,1);
 	r_mat_rotate_deg(global.frames,0,0,1);
-
 	float o = ((d-500)*(d-500))/1.5e7;
-	r_color(RGBA_MUL_ALPHA(0.8,0.8,0.8,o));
-	draw_sprite(0,0,"stage1/fog");
-	r_color4(1,1,1,1);
-
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "stage1/fog",
+		.color = RGBA(0.8 * o, 0.8 * o, 0.8 * o, o * 0.5),
+	});
 	r_mat_pop();
-	r_enable(RCAP_DEPTH_TEST);
+	r_state_pop();
 }
 
 static vec3 **stage1_smoke_pos(vec3 p, float maxrange) {
@@ -184,40 +247,71 @@ static void stage1_update(void) {
 	update_stage3d(&stage_3d_context);
 }
 
-static void stage1_reed_draw(vec3 pos) {
-	bool depthwrite_saved = r_capability_current(RCAP_DEPTH_WRITE);
-	DepthTestFunc depthfunc_saved = r_depth_func_current();
+static inline uint32_t floathash(float f) {
+	return (union { uint32_t i; float f; }){ .f = f }.i;
+}
 
+static void stage1_waterplants_draw(vec3 pos) {
+	r_state_push();
+
+	// stateless pseudo-random fuckery
+	int tile = floathash(pos[1] * 3124312) & 1;
+	float offs = 200 * sin(2*M_PI*remainder(3214.322211333 * floathash(pos[1]), M_E));
 	float d = -55+50*sin(pos[1]/25.0);
 	r_mat_push();
-	r_mat_translate(pos[0]+200*sin(pos[1]), pos[1], d);
-	r_mat_rotate_deg(90,1,0,0);
-	r_mat_scale(80,80,80);
-	r_color4(0.0,0.05,0.05,1);
-	r_draw_model("reeds");
-	r_mat_translate(0,-d/80,0);
-	r_mat_scale(1,-1,1);
-	r_mat_translate(0,d/80,0);
+	r_mat_translate(pos[0]+offs, pos[1], d);
+	r_mat_rotate(2*M_PI*sin(32.234*pos[1]) + global.frames / 800.0, 0, 0, 1);
+
+	Sprite spr = { 0 };
+	spr.w = spr.h = 1;
+	spr.tex = get_tex("stage1/waterplants");
+	spr.tex_area.w = spr.tex->w * 0.5;
+	spr.tex_area.h = spr.tex->h;
+	spr.tex_area.x = spr.tex_area.w * tile;
+
+	float a = 0.8;
+	float s = 160 * (1 + 2 * psin(13.12993*pos[1]));
+	r_mat_scale(s, s, 1);
 	r_depth_func(DEPTH_GREATER);
 	r_disable(RCAP_DEPTH_WRITE);
-	r_color(RGBA_MUL_ALPHA(0.0,0.05,0.05,0.5));
-	r_draw_model("reeds");
-	r_color4(1,1,1,1);
+	r_cull(CULL_FRONT);
+	r_mat_mode(MM_TEXTURE);
+	r_mat_push();
+	r_mat_scale(0.5, 1, 1);
+	r_mat_translate(tile, 0, 0);
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = &spr,
+		.shader = "sprite_default",
+		.flip.x = floathash(pos[1] * 231544.213) & 1,
+		.flip.y = floathash(pos[1] * 941233.513) & 1,
+		.color = RGBA(0.5*a, 0.4*a, 0.5*a, 0.5*a),
+	});
 	r_mat_pop();
-
-	r_capability(RCAP_DEPTH_WRITE, depthwrite_saved);
-	r_depth_func(depthfunc_saved);
+	r_mat_mode(MM_MODELVIEW);
+	r_mat_pop();
+	r_state_pop();
 }
 
 static void stage1_start(void) {
 	init_stage3d(&stage_3d_context);
-	add_model(&stage_3d_context, stage1_bg_draw, stage1_bg_pos);
+	add_model(&stage_3d_context, stage1_water_draw, stage1_bg_pos);
+	add_model(&stage_3d_context, stage1_waterplants_draw, stage1_smoke_pos);
 	add_model(&stage_3d_context, stage1_smoke_draw, stage1_smoke_pos);
-	add_model(&stage_3d_context, stage1_reed_draw, stage1_smoke_pos);
 
 	stage_3d_context.crot[0] = 60;
 	stage_3d_context.cx[2] = 700;
 	stage_3d_context.cv[1] = 4;
+
+	FBAttachmentConfig cfg = { 0 };
+	cfg.attachment = FRAMEBUFFER_ATTACH_COLOR0;
+	cfg.tex_params.filter.min = TEX_FILTER_LINEAR;
+	cfg.tex_params.filter.mag = TEX_FILTER_LINEAR;
+	cfg.tex_params.type = TEX_TYPE_RGB;
+	cfg.tex_params.wrap.s = TEX_WRAP_CLAMP;
+	cfg.tex_params.wrap.t = TEX_WRAP_CLAMP;
+
+	stage1_bg_fbpair.front = stage_add_background_framebuffer(0.5, 1, &cfg);
+	stage1_bg_fbpair.back = stage_add_background_framebuffer(0.5, 1, &cfg);
 }
 
 static void stage1_preload(void) {
@@ -226,10 +320,8 @@ static void stage1_preload(void) {
 		"stage1/cirnobg",
 		"stage1/fog",
 		"stage1/snowlayer",
+		"stage1/waterplants",
 		"dialog/cirno",
-	NULL);
-	preload_resources(RES_MODEL, RESF_DEFAULT,
-		"reeds",
 	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"zbuf_fog",

@@ -161,7 +161,7 @@ static MagicalUniform magical_unfiroms[] = {
 	{ "r_textureMatrix",    "mat4", UNIFORM_MAT4 },
 	{ "r_color",            "vec4", UNIFORM_VEC4 },
 };
-
+static void gl33_commit_uniform(Uniform *uniform);
 static void gl33_update_uniform(Uniform *uniform, uint count, const void *data, size_t datasize) {
 	if(datasize > uniform->buffer_size) {
 		// might happen when unused array elements get optimized out

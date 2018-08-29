@@ -50,6 +50,7 @@ glsl_files = files(
     'sprite_youmu_charged_shot.frag.glsl',
     'sprite_youmu_charged_shot.vert.glsl',
     'sprite_youmu_myon_shot.frag.glsl',
+    'stage1_water.frag.glsl',
     'stage6_sky.frag.glsl',
     'stage6_sky.vert.glsl',
     'standard.frag.glsl',

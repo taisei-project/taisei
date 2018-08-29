@@ -51,7 +51,7 @@ void r_post_init(void) {
 	NULL);
 
 	BlurInfo blurs[] = {
-		// { "blur5",   5, 1.25, },
+		{ "blur5",   5, 1.25, },
 		// { "blur9",   9, 1.85, },
 		// { "blur13", 13, 2.45, },
 		{ "blur25", 25, 4.25, },

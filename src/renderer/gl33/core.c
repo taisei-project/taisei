@@ -806,7 +806,7 @@ static void gl33_clear(ClearBufferFlags flags) {
 static void gl33_clear_color4(float r, float g, float b, float a) {
 	Color cc = { r, g, b, a };
 
-	if(!memcmp(&R.clear_color, &cc, sizeof(cc))) {
+	if(memcmp(&R.clear_color, &cc, sizeof(cc))) {
 		memcpy(&R.clear_color, &cc, sizeof(cc));
 		glClearColor(r, g, b, a);
 	}
