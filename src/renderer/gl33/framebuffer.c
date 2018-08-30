@@ -39,7 +39,7 @@ void gl33_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, uint mipmap
 
 	r_framebuffer(framebuffer);
 	gl33_sync_framebuffer();
-	glFramebufferTexture2D(GL_FRAMEBUFFER, r_attachment_to_gl_attachment[attachment], GL_TEXTURE_2D, gl_tex, mipmap);
+	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, r_attachment_to_gl_attachment[attachment], GL_TEXTURE_2D, gl_tex, mipmap);
 	r_framebuffer(prev_fb);
 
 	framebuffer->impl->attachments[attachment] = tex;

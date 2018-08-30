@@ -165,6 +165,7 @@ begin_frame:
 		if((!uncapped_rendering && frame_num % get_effective_frameskip()) || global.is_replay_verification) {
 			rframe_action = RFRAME_DROP;
 		} else {
+			r_clear(CLEAR_ALL);
 			rframe_action = render_frame(arg);
 			fpscounter_update(&global.fps.render);
 

@@ -218,6 +218,7 @@ static void gl33_init_context(SDL_Window *window) {
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	glReadBuffer(GL_BACK);
 	glGetIntegerv(GL_VIEWPORT, &R.viewport.default_framebuffer.x);
 
 	R.viewport.active = R.viewport.default_framebuffer;
@@ -417,7 +418,7 @@ static inline GLuint fbo_num(Framebuffer *fb) {
 
 void gl33_sync_framebuffer(void) {
 	if(fbo_num(R.framebuffer.active) != fbo_num(R.framebuffer.pending)) {
-		glBindFramebuffer(GL_FRAMEBUFFER, fbo_num(R.framebuffer.pending));
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_num(R.framebuffer.pending));
 		R.framebuffer.active = R.framebuffer.pending;
 	}
 
@@ -848,25 +849,11 @@ static DepthTestFunc gl33_depth_func_current(void) {
 }
 
 static uint8_t* gl33_screenshot(uint *out_width, uint *out_height) {
-	uint fbo = 0;
 	IntRect *vp = &R.viewport.default_framebuffer;
-
-	if(R.framebuffer.active != NULL) {
-		fbo = R.framebuffer.active->impl->gl_fbo;
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-	}
-
 	uint8_t *pixels = malloc(vp->w * vp->h * 3);
-	glReadBuffer(GL_FRONT);
 	glReadPixels(vp->x, vp->y, vp->w, vp->h, GL_RGB, GL_UNSIGNED_BYTE, pixels);
 	*out_width = vp->w;
 	*out_height = vp->h;
-
-	if(fbo != 0) {
-		// FIXME: Maybe we should only ever bind FBOs to GL_DRAW_FRAMEBUFFER?
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
-	}
-
 	return pixels;
 }
 
