@@ -681,6 +681,10 @@ static void stage_draw_objects(void) {
 			: stage_draw_predicate
 	);
 
+	if(global.boss) {
+		draw_boss_hud(global.boss);
+	}
+
 	if(global.dialog) {
 		draw_dialog(global.dialog);
 	}

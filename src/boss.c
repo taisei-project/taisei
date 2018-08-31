@@ -296,7 +296,9 @@ static void ent_draw_boss(EntityInterface *ent) {
 	r_color(RGBA_MUL_ALPHA(1, 1-red, 1-red/2, boss_alpha));
 	draw_sprite_batched_p(creal(boss->pos), cimag(boss->pos) + 6*sin(global.frames/25.0), aniplayer_get_frame(&boss->ani));
 	r_color4(1, 1, 1, 1);
+}
 
+void draw_boss_hud(Boss *boss) {
 	if(!boss->current)
 		return;
 
@@ -412,7 +414,7 @@ static void ent_draw_boss(EntityInterface *ent) {
 			}
 		}
 
-		// r_color3(1,1,1);
+		r_color4(1, 1, 1, 1);
 	}
 }
 
