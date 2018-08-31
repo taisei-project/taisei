@@ -88,3 +88,36 @@ void aniplayer_update(AniPlayer *plr) {
 	}
 }
 
+// TODO: maybe move this
+
+static const char *moveseqname(int dir) {
+	switch(dir) {
+		case -1: return "left";
+		case  0: return "main";
+		case  1: return "right";
+		default: UNREACHABLE;
+	}
+}
+
+void aniutil_side_motion(AniPlayer *ani, float dir, int *lastseq, bool instant) {
+	int seq = sign(dir) * (fabs(dir) > 0.25);
+
+	if(*lastseq == seq) {
+		return;
+	}
+
+	const char *seqname = moveseqname(seq);
+
+	if(instant) {
+		aniplayer_hard_switch(ani, seqname, 1);
+		*lastseq = seq;
+		return;
+	}
+
+	const char *lastseqname = moveseqname(*lastseq);
+	char transition[16];
+	snprintf(transition, sizeof(transition), "%s2%s", lastseqname, seqname);
+	aniplayer_hard_switch(ani, transition, 1);
+	aniplayer_queue(ani, seqname, 0);
+	*lastseq = seq;
+}

@@ -8,6 +8,7 @@ atlases = [
     'common_ui',
     'huge',
     'portraits',
+    'newart'
 ]
 
 atlas_common_args = [

@@ -64,7 +64,7 @@ Enemy *create_enemy_p(EnemyList *enemies, complex pos, float hp, EnemyVisualRule
 		log_fatal("Tried to spawn an enemy while in drawing code");
 	}
 
-	// XXX: some code relies on the insertion logic
+	// FIXME: This insertion logic is pretty broken, but some code still relies on it.
 	Enemy *e = (Enemy*)alist_insert(enemies, enemies->first, objpool_acquire(stage_object_pools.enemies));
 	// Enemy *e = (Enemy*)alist_append(enemies, objpool_acquire(stage_object_pools.enemies));
 	e->moving = false;
@@ -74,6 +74,7 @@ Enemy *create_enemy_p(EnemyList *enemies, complex pos, float hp, EnemyVisualRule
 	e->pos = pos;
 	e->pos0 = pos;
 	e->pos0_visual = pos;
+	e->prevpos = pos;
 
 	e->spawn_hp = hp;
 	e->hp = hp;
@@ -122,6 +123,11 @@ void* _delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 		PARTICLE(.proto = pp_blast, .pos = e->pos, .timeout = 15, .draw_rule = GrowFade, .flags = PFLAG_REQUIREDPARTICLE);
 	}
 
+	if(e->has_aniplayer) {
+		aniplayer_free(&e->ani);
+		e->has_aniplayer = false;
+	}
+
 	e->logic_rule(e, EVENT_DEATH);
 	del_ref(enemy);
 	ent_unregister(&e->ent);
@@ -138,24 +144,27 @@ void delete_enemies(EnemyList *enemies) {
 	alist_foreach(enemies, _delete_enemy, NULL);
 }
 
-static complex enemy_visual_pos(Enemy *enemy) {
+static complex enemy_visual_pos(Enemy *enemy, complex pos) {
 	double t = (global.frames - enemy->birthtime) / 30.0;
 
 	if(t >= 1 || enemy->hp == ENEMY_IMMUNE) {
-		return enemy->pos;
+		return pos;
 	}
 
-	complex p = enemy->pos - enemy->pos0;
+	complex p = pos - enemy->pos0;
 	p += t * enemy->pos0 + (1 - t) * enemy->pos0_visual;
 
 	return p;
 }
 
 static void call_visual_rule(Enemy *e, bool render) {
-	complex tmp = e->pos;
-	e->pos = enemy_visual_pos(e);
+	complex tmp_pos = e->pos;
+	complex tmp_prevpos = e->prevpos;
+	e->pos = enemy_visual_pos(e, e->pos);
+	e->prevpos = enemy_visual_pos(e, e->prevpos);
 	e->visual_rule(e, global.frames - e->birthtime, render);
-	e->pos = tmp;
+	e->pos = tmp_pos;
+	e->prevpos = tmp_prevpos;
 }
 
 static void ent_draw_enemy(EntityInterface *ent) {
@@ -175,7 +184,8 @@ static void ent_draw_enemy(EntityInterface *ent) {
 #ifdef ENEMY_DEBUG
 	if(memcmp(&prev_state, e, sizeof(Enemy))) {
 		set_debug_info(&e->debug);
-		log_fatal("Enemy modified its own state in draw rule");
+		// FIXME: change this back to log_fatal once the insertion logic is fixed.
+		log_warn("Enemy modified its own state in draw rule");
 	}
 #endif
 }
@@ -251,28 +261,26 @@ void BigFairy(Enemy *e, int t, bool render) {
 }
 
 void Fairy(Enemy *e, int t, bool render) {
+	if(!e->has_aniplayer) {
+		if(t != 0) {
+			log_warn("BUG: aniplayer missing at frame %i (insertion logic bug)", t);
+		}
+
+		aniplayer_create(&e->ani, get_ani("enemy/fairy_red"), "main");
+		e->has_aniplayer = true;
+	}
+
 	if(!render) {
+		aniutil_side_motion(&e->ani, creal(e->pos - e->prevpos), &e->last_ani_sequence, t == 0);
+		aniplayer_update(&e->ani);
 		return;
 	}
 
-	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;
 	Color *clr = RGBA_MUL_ALPHA(1, 1, 1, e->alpha);
 
 	r_draw_sprite(&(SpriteParams) {
 		.color = clr,
-		.sprite = "fairy_circle",
-		.pos = { creal(e->pos), cimag(e->pos) },
-		.rotation.angle = global.frames * 10 * DEG2RAD,
-		.scale.both = s,
-	});
-
-	const char *seqname = !e->moving ? "main" : (e->dir ? "left" : "right");
-	Animation *ani = get_ani("enemy/fairy");
-	Sprite *spr = animation_get_frame(ani,get_ani_sequence(ani, seqname),global.frames);
-
-	r_draw_sprite(&(SpriteParams) {
-		.color = clr,
-		.sprite_ptr = spr,
+		.sprite_ptr = aniplayer_get_frame(&e->ani),
 		.pos = { creal(e->pos), cimag(e->pos) },
 	});
 }
@@ -346,6 +354,7 @@ void process_enemies(EnemyList *enemies) {
 			continue;
 		}
 
+		enemy->prevpos = enemy->pos;
 		int action = enemy->logic_rule(enemy, global.frames - enemy->birthtime);
 
 		if(enemy->hp > ENEMY_IMMUNE && enemy->alpha >= 1.0 && cabs(enemy->pos - global.plr.pos) < 7) {

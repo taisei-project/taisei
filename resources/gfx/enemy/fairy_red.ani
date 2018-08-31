@@ -1,0 +1,12 @@
+@sprite_count = 7
+
+main       =   d10 0 1 2 1
+left       = m d10 3 4 5 4
+right      =   d10 3 4 5 4
+
+main2left  = m d10 6
+main2right =   d10 6
+left2main  = m d10 6 m 0
+left2right = m d10 6 m 0 6
+right2main =   d10 6 0
+right2left =   d10 6 0 m 6

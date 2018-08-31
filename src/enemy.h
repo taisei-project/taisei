@@ -13,6 +13,7 @@
 #include "projectile.h"
 #include "objectpool.h"
 #include "entity.h"
+#include "aniplayer.h"
 
 #ifdef DEBUG
 	#define ENEMY_DEBUG
@@ -35,8 +36,13 @@ struct Enemy {
 	complex pos;
 	complex pos0;
 	complex pos0_visual;
+	complex prevpos;
 
-	long birthtime;
+	AniPlayer ani;
+	bool has_aniplayer;
+	int last_ani_sequence;
+
+	uint birthtime;
 
 	int dir;
 	bool moving;

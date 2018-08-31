@@ -106,3 +106,7 @@ AniQueueEntry *aniplayer_queue_frames(AniPlayer *plr, const char *seqname, int m
 // the rest of the game which just uses global.frames as a counter). So you
 // need to call this function once per frame to make an animation move.
 void aniplayer_update(AniPlayer *plr) attr_nonnull(1);
+
+// TODO: maybe move this
+
+void aniutil_side_motion(AniPlayer *ani, float dir, int *lastseq, bool instant) attr_nonnull(1, 3);
