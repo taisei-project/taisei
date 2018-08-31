@@ -88,8 +88,25 @@ static bool ingame_menu_input_handler(SDL_Event *event, void *arg) {
 	}
 }
 
+static bool ingame_menu_input_filter(SDL_Event *event, void *arg) {
+	MenuData *menu = arg;
+
+	if(menu->state == MS_Normal) {
+		return false;
+	}
+
+	switch(TAISEI_EVENT(event->type)) {
+		// workaround for #136
+		case TE_MENU_ACCEPT:
+			return true;
+	}
+
+	return false;
+}
+
 static void ingame_menu_input(MenuData *m) {
-	events_poll((EventHandler[]){
+	events_poll((EventHandler[]) {
+		{ .proc = ingame_menu_input_filter, .arg = m },
 		{ .proc = menu_input_handler, .arg = m },
 		{ .proc = ingame_menu_input_handler, .arg = m },
 		{ NULL }
