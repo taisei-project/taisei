@@ -94,7 +94,10 @@ Item* create_bpoint(complex pos) {
 }
 
 void delete_items(void) {
-	objpool_release_alist(stage_object_pools.items, &global.items);
+	for(Item *i = global.items.first, *next; i; i = next) {
+		next = i->next;
+		delete_item(i);
+	}
 }
 
 complex move_item(Item *i) {
