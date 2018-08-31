@@ -68,7 +68,6 @@ taisei_src = files(
     'list.c',
     'log.c',
     'main.c',
-    'objectpool.c',
     'objectpool_util.c',
     'player.c',
     'plrmodes.c',
@@ -88,6 +87,16 @@ taisei_src = files(
     'version.c',
     'video.c',
 )
+
+if get_option('objpools')
+    taisei_src += files(
+        'objectpool.c',
+    )
+else
+    taisei_src += files(
+        'objectpool_fake.c',
+    )
+endif
 
 sse42_src = []
 

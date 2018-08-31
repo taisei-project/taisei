@@ -34,7 +34,7 @@ void objpool_free(ObjectPool *pool) {
 }
 
 void objpool_get_stats(ObjectPool *pool, ObjectPoolStats *stats) {
-	memset(&stats, 0, sizeof(ObjectPoolStats));
+	memset(stats, 0, sizeof(ObjectPoolStats));
 	stats->tag = "<N/A>";
 }
 

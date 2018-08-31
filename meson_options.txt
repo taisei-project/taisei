@@ -133,3 +133,10 @@ option(
     value : true,
     description : 'Build the no-op renderer (nothing is displayed)'
 )
+
+option(
+    'objpools',
+    type : 'boolean',
+    value : true,
+    description : 'Pre-allocate memory for game objects (disable for debugging only)'
+)
