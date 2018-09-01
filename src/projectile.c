@@ -36,7 +36,7 @@ static ProjArgs defaults_part = {
 	.color = RGB(1, 1, 1),
 	.blend = BLEND_PREMUL_ALPHA,
 	.shader = "sprite_default",
-	.layer = LAYER_PARTICLE_HIGH,
+	.layer = LAYER_PARTICLE_MID,
 };
 
 static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
@@ -123,6 +123,10 @@ static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
 		}
 	}
 
+	if(args->type == EnemyProj && args->proto) {
+		// args->proto = pp_crystal;
+	}
+
 	assert(args->type <= PlrProj);
 }
 
@@ -167,6 +171,10 @@ static inline int proj_call_rule(Projectile *p, int t) {
 				ACTION_ACK
 			);
 		}
+
+		if(t > 12 && p->type == EnemyProj && frand() < 0.1) {
+			// p->type = DeadProj;
+		}
 	}
 
 	if(/*t == 0 ||*/ t == EVENT_BIRTH) {
@@ -202,6 +210,8 @@ static double projectile_rect_area(Projectile *p) {
 	projectile_size(p, &w, &h);
 	return w * h;
 }
+
+static Projectile* spawn_bullet_spawning_effect(Projectile *p);
 
 static Projectile* _create_projectile(ProjArgs *args) {
 	if(IN_DRAW_CODE) {
@@ -268,9 +278,10 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	// TODO: Maybe allow ACTION_DESTROY here?
 	// But in that case, code that uses this function's return value must be careful to not dereference a NULL pointer.
 	proj_call_rule(p, EVENT_BIRTH);
+	alist_append(args->dest, p);
 
-
-	return alist_append(args->dest, p);
+	spawn_bullet_spawning_effect(p);
+	return p;
 }
 
 Projectile* create_projectile(ProjArgs *args) {
@@ -479,25 +490,6 @@ Projectile* spawn_projectile_collision_effect(Projectile *proj) {
 	);
 }
 
-Projectile* spawn_projectile_clear_effect(Projectile *proj) {
-	if(proj->flags & PFLAG_NOCLEAREFFECT) {
-		return NULL;
-	}
-
-	return PARTICLE(
-		.sprite_ptr = proj->sprite,
-		.size = proj->size,
-		.pos = proj->pos,
-		.color = &proj->color,
-		.flags = proj->flags | PFLAG_NOREFLECT,
-		.shader_ptr = proj->shader,
-		.draw_rule = Shrink,
-		.angle = proj->angle,
-		.timeout = 10,
-		.args = { 10 },
-	);
-}
-
 bool clear_projectile(ProjectileList *projlist, Projectile *proj, bool force, bool now, ProjectileListInterface *out_list_pointers) {
 	if(proj->type == PlrProj || (!force && !projectile_is_clearable(proj))) {
 
@@ -509,11 +501,12 @@ bool clear_projectile(ProjectileList *projlist, Projectile *proj, bool force, bo
 	}
 
 	if(now) {
+		Projectile *effect = spawn_projectile_clear_effect(proj);
+
 		if(!(proj->flags & PFLAG_NOCLEARBONUS)) {
-			create_bpoint(proj->pos);
+			effect->args[0] = add_ref(create_bpoint(proj->pos));
 		}
 
-		spawn_projectile_clear_effect(proj);
 		delete_projectile(projlist, proj, out_list_pointers);
 	} else {
 		proj->type = DeadProj;
@@ -543,7 +536,7 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 			proj->graze_counter_reset_timer = global.frames;
 		}
 
-		if(proj->type == DeadProj && killed < 5) {
+		if(proj->type == DeadProj && killed < 10) {
 			killed++;
 			action = ACTION_DESTROY;
 
@@ -651,26 +644,196 @@ int asymptotic(Projectile *p, int t) { // v = a[0]*(a[1] + 1); a[1] -> 0
 	return 1;
 }
 
+static inline bool proj_uses_spawning_effect(Projectile *proj) {
+	if(proj->flags & PFLAG_NOSPAWNZOOM) {
+		return false;
+	}
+
+	if(proj->type != EnemyProj && proj->type != FakeProj) {
+		return false;
+	}
+
+	return true;
+}
+
+static float proj_spawn_effect_factor(Projectile *proj, int t) {
+	static const int maxt = 16;
+
+	if(t >= maxt || !proj_uses_spawning_effect(proj)) {
+		return 1;
+	}
+
+	return t / (float)maxt;
+}
+
 static inline void apply_common_transforms(Projectile *proj, int t) {
 	r_mat_translate(creal(proj->pos), cimag(proj->pos), 0);
 	r_mat_rotate_deg(proj->angle*180/M_PI+90, 0, 0, 1);
 
-	if(t >= 16) {
-		return;
-	}
+	/*
+	float s = 0.75 + 0.25 * proj_spawn_effect_factor(proj, t);
 
-	if(proj->flags & PFLAG_NOSPAWNZOOM) {
-		return;
-	}
-
-	if(proj->type != EnemyProj && proj->type != FakeProj) {
-		return;
-	}
-
-	float s = 2.0-t/16.0;
 	if(s != 1) {
 		r_mat_scale(s, s, 1);
 	}
+	*/
+}
+
+static void bullet_highlight_draw(Projectile *p, int t) {
+	float timefactor = t / p->timeout;
+	float sx = creal(p->args[0]);
+	float sy = cimag(p->args[0]);
+
+	float opacity = pow(1 - timefactor, 2);
+	opacity = min(1, 1.5 * opacity) * min(1, timefactor * 10);
+
+	r_mat_mode(MM_TEXTURE);
+	r_mat_push();
+	r_mat_translate(0.5, 0.5, 0);
+	r_mat_rotate(p->args[1], 0, 0, 1);
+	r_mat_translate(-0.5, -0.5, 0);
+
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = p->sprite,
+		.shader_ptr = p->shader,
+		.shader_params = &(ShaderCustomParams) {{ 1 - opacity }},
+		.color = &p->color,
+		.scale = { .x = sx, .y = sy },
+		.rotation.angle = p->angle + M_PI * 0.5,
+		.pos = { creal(p->pos), cimag(p->pos) }
+	});
+
+	r_mat_pop();
+}
+
+static Projectile* spawn_projectile_highlight_effect_internal(Projectile *p, bool flare) {
+	if(!p->sprite) {
+		return NULL;
+	}
+
+	Color clr = p->color;
+	clr.r = fmax(0.1, clr.r);
+	clr.g = fmax(0.1, clr.g);
+	clr.b = fmax(0.1, clr.b);
+	float h, s, l;
+	color_get_hsl(&clr, &h, &s, &l);
+	s = s > 0 ? 0.75 : 0;
+	l = 0.5;
+	color_hsla(&clr, h, s, l, 0.2);
+
+	float sx, sy;
+
+	if(flare) {
+		sx = pow(p->sprite->w, 0.7);
+		sy = pow(p->sprite->h, 0.7);
+
+		PARTICLE(
+			.sprite = "stardust",
+			.size = p->size * 4.5,
+			.layer = LAYER_PARTICLE_HIGH | 0x40,
+			.draw_rule = ScaleFade,
+			.args = { 0, 0, (0 + 2*I) * 0.1 * fmax(sx, sy) },
+			.angle = frand() * M_PI * 2,
+			.pos = p->pos,
+			.flags = PFLAG_NOREFLECT,
+			.timeout = 24,
+			.color = &clr,
+		);
+	}
+
+	sx = pow((1.5 * p->sprite->w + 0.5 * p->sprite->h) * 0.5, 0.65);
+	sy = pow((1.5 * p->sprite->h + 0.5 * p->sprite->w) * 0.5, 0.65);
+
+	return PARTICLE(
+		.sprite = "bullet_cloud",
+		.size = p->size * 4.5,
+		.shader = "sprite_bullet",
+		.layer = LAYER_PARTICLE_HIGH | 0x80,
+		.draw_rule = bullet_highlight_draw,
+		.args = { 0.125 * (sx + I * sy), frand() * M_PI * 2 },
+		.angle = p->angle,
+		.pos = p->pos,
+		.flags = PFLAG_NOREFLECT,
+		.timeout = 32,
+		.color = &clr,
+	);
+}
+
+Projectile* spawn_projectile_highlight_effect(Projectile *p) {
+	return spawn_projectile_highlight_effect_internal(p, true);
+}
+
+static Projectile* spawn_bullet_spawning_effect(Projectile *p) {
+	if(proj_uses_spawning_effect(p)) {
+		return spawn_projectile_highlight_effect(p);
+	}
+
+	return NULL;
+}
+
+static void projectile_clear_effect_draw(Projectile *p, int t) {
+	r_mat_push();
+	apply_common_transforms(p, t);
+
+	float timefactor = t / p->timeout;
+	float plrfactor = clamp(1 - (cabs(p->pos - global.plr.pos) - 64) / 128, 0, 1);
+	plrfactor *= clamp(timefactor * 10, 0, 1);
+	float f = 1 - (1 - timefactor) * (1 - plrfactor);
+
+	Sprite spr = *p->sprite;
+	Sprite *ispr = get_sprite("item/bullet_point");
+	spr.w = f * ispr->w + (1 - f) * spr.w;
+	spr.h = f * ispr->h + (1 - f) * spr.h;
+
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = &spr,
+		.color = RGBA(p->color.r, p->color.g, p->color.b, p->color.a * (1 - 0)),
+		.shader_params = &(ShaderCustomParams){{ f }},
+		// .scale.both = 1 + 0.5 * sqrt(tf),
+	});
+
+	r_mat_pop();
+}
+
+static int projectile_clear_effect_logic(Projectile *p, int t) {
+	if(t == EVENT_DEATH) {
+		free_ref(p->args[0]);
+		return ACTION_ACK;
+	}
+
+	if(t == EVENT_BIRTH) {
+		return ACTION_ACK;
+	}
+
+	Item *i = REF(p->args[0]);
+
+	if(i != NULL) {
+		p->pos = i->pos;
+	}
+
+	return ACTION_NONE;
+}
+
+Projectile* spawn_projectile_clear_effect(Projectile *proj) {
+	if(proj->flags & PFLAG_NOCLEAREFFECT) {
+		return NULL;
+	}
+
+	// spawn_projectile_highlight_effect_internal(proj, false);
+
+	return PARTICLE(
+		.sprite_ptr = proj->sprite,
+		.size = proj->size,
+		.pos = proj->pos,
+		.color = &proj->color,
+		.flags = proj->flags | PFLAG_NOREFLECT,
+		.shader = "sprite_bullet_dead",
+		.rule = projectile_clear_effect_logic,
+		.draw_rule = projectile_clear_effect_draw,
+		.angle = proj->angle,
+		.timeout = 24,
+		.args = { 10 },
+	);
 }
 
 void ProjDrawCore(Projectile *proj, const Color *c) {
@@ -684,7 +847,31 @@ void ProjDrawCore(Projectile *proj, const Color *c) {
 void ProjDraw(Projectile *proj, int t) {
 	r_mat_push();
 	apply_common_transforms(proj, t);
-	ProjDrawCore(proj, &proj->color);
+
+	float eff = proj_spawn_effect_factor(proj, t);
+
+	/*
+	if(eff < 1 && proj->color.a > 0) {
+		Color c = proj->color;
+		c.a *= sqrt(eff);
+		ProjDrawCore(proj, &c);
+	} else {
+		ProjDrawCore(proj, &proj->color);
+	}
+	*/
+
+	if(eff < 1) {
+		float o = proj->shader_params.vector[0];
+		float a = min(1, eff * 2);
+		proj->shader_params.vector[0] = 1 - (1 - o) * a;
+		Color c = proj->color;
+		c.a *= eff;//sqrt(eff);
+		ProjDrawCore(proj, &c);
+		proj->shader_params.vector[0] = o;
+	} else {
+		ProjDrawCore(proj, &proj->color);
+	}
+
 	r_mat_pop();
 }
 

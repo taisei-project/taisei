@@ -240,13 +240,7 @@ int wriggle_bug(Projectile *p, int t) {
 	if(global.boss && global.boss->current && !((global.frames - global.boss->current->starttime - 30) % 200)) {
 		play_sound("redirect");
 		p->args[0] *= cexp(I*(M_PI/3)*nfrand());
-		PARTICLE(
-			.sprite = "flare",
-			.pos = p->pos,
-			.timeout = 15,
-			.args = { 0, 5 },
-			.draw_rule = GrowFade
-		);
+		spawn_projectile_highlight_effect(p);
 	}
 
 	return ACTION_NONE;

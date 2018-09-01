@@ -182,6 +182,7 @@ bool projectile_is_clearable(Projectile *p);
 
 Projectile* spawn_projectile_collision_effect(Projectile *proj);
 Projectile* spawn_projectile_clear_effect(Projectile *proj);
+Projectile* spawn_projectile_highlight_effect(Projectile *proj);
 
 void projectile_set_prototype(Projectile *p, ProjPrototype *proto);
 

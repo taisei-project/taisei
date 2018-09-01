@@ -258,9 +258,9 @@ static int stage3_chargefairy_proj(Projectile *p, int t) {
 	t -= creal(p->args[2]);
 
 	if(t == 0) {
-		// FIXME: particle effect
 		play_sound("redirect");
 		play_sound("shot_special1");
+		spawn_projectile_highlight_effect(p);
 	} else if(t > 0) {
 		p->args[1] *= 0.8;
 		p->pos += p->args[0] * (p->args[1] + 1);
@@ -525,6 +525,7 @@ static int scuttle_lethbite_proj(Projectile *p, int time) {
 
 		play_sound("redirect");
 		play_sound("shot1");
+		spawn_projectile_highlight_effect(p);
 	}
 
 	return asymptotic(p, time);
@@ -822,6 +823,10 @@ static int wriggle_spell_slave(Enemy *e, int time) {
 	if(!boss)
 		return ACTION_DESTROY;
 
+	AT(EVENT_BIRTH) {
+		e->ent.draw_layer = LAYER_BULLET - 1;
+	}
+
 	AT(EVENT_DEATH) {
 		free_ref(e->args[0]);
 		return 1;
@@ -844,7 +849,7 @@ static int wriggle_spell_slave(Enemy *e, int time) {
 			.draw_rule = wriggle_slave_part_draw,
 			.timeout = 60,
 			.shader = "sprite_default",
-			.flags = PFLAG_NOCLEAR | PFLAG_NOCLEAREFFECT | PFLAG_NOCOLLISIONEFFECT,
+			.flags = PFLAG_NOCLEAR | PFLAG_NOCLEAREFFECT | PFLAG_NOCOLLISIONEFFECT | PFLAG_NOSPAWNZOOM,
 		);
 	}
 
@@ -1169,6 +1174,7 @@ static int wriggle_fstorm_proj(Projectile *p, int time) {
 		p->draw_rule = wriggle_fstorm_proj_draw;
 		p->sprite = NULL;
 		projectile_set_prototype(p, pp_rice);
+		spawn_projectile_highlight_effect(p);
 
 		for(int i = 0; i < 3; ++i) {
 			tsrand_fill(2);

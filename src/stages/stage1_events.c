@@ -47,6 +47,7 @@ int cirno_snowflake_proj(Projectile *p, int time) {
 			play_sound_ex("redirect", 30, false);
 			play_sound_ex("shot_special1", 30, false);
 			color_lerp(&p->color, RGB(0.5, 0.5, 0.5), 0.5);
+			spawn_projectile_highlight_effect(p);
 
 			PARTICLE(
 				.sprite = "stain",
@@ -164,6 +165,7 @@ int cirno_pfreeze_frogs(Projectile *p, int t) {
 		p->color = *RGB(0.7, 0.7, 0.7);
 		spawn_stain(p->pos, p->angle, 30);
 		spawn_stain(p->pos, p->angle, 30);
+		spawn_projectile_highlight_effect(p);
 		play_sound("shot_special1");
 	}
 
@@ -171,6 +173,7 @@ int cirno_pfreeze_frogs(Projectile *p, int t) {
 		p->pos0 = p->pos;
 		p->args[0] = (1.8+0.2*global.diff)*cexp(I*2*M_PI*frand());
 		spawn_stain(p->pos, p->angle, 30);
+		spawn_projectile_highlight_effect(p);
 		play_sound_ex("shot2", 0, false);
 	}
 
@@ -648,6 +651,7 @@ int cirno_icicles(Projectile *p, int t) {
 		if(global.diff > D_Normal)
 			p->args[0] += 0.05*nfrand();
 		play_sound("redirect");
+		spawn_projectile_highlight_effect(p);
 	} else if(t > turn) {
 		p->pos += p->args[0];
 	}

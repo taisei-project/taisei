@@ -512,7 +512,6 @@ static void reimu_spirit_yinyang_focused_visual(Enemy *e, int t, bool render) {
 			.angle = 2*M_PI*frand(),
 			.rule = reimu_spirit_yinyang_flare,
 			.draw_rule = ScaleFade,
-			.layer = LAYER_PARTICLE_HIGH,
 			.flags = PFLAG_NOREFLECT,
 		);
 	}
@@ -533,7 +532,6 @@ static void reimu_spirit_yinyang_unfocused_visual(Enemy *e, int t, bool render) 
 			.angle = 2*M_PI*frand(),
 			.rule = reimu_spirit_yinyang_flare,
 			.draw_rule = ScaleFade,
-			.layer = LAYER_PARTICLE_HIGH,
 			.flags = PFLAG_NOREFLECT,
 		);
 	}

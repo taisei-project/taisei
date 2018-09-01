@@ -480,6 +480,7 @@ int splitcard(Projectile *p, int t) {
 	if(t == creal(p->args[2])) {
 		p->color = *RGB(0, p->color.b, p->color.g);
 		play_sound_ex("redirect", 10, false);
+		spawn_projectile_highlight_effect(p);
 	}
 
 	if(t > creal(p->args[2])) {
@@ -544,6 +545,7 @@ static int splitcard_elly(Projectile *p, int t) {
 		// FIXME: what was even the intention here?
 		p->color.b *= -1;
 		play_sound_ex("redirect", 10, false);
+		spawn_projectile_highlight_effect(p);
 	}
 
 	return asymptotic(p, t);

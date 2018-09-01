@@ -308,6 +308,9 @@ void player_logic(Player* plr) {
 }
 
 bool player_bomb(Player *plr) {
+	stage_clear_hazards(CLEAR_HAZARDS_ALL);
+	return true;
+
 	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell)
 		return false;
 

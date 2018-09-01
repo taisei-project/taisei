@@ -93,13 +93,7 @@ int wait_proj(Projectile *p, int t) {
 	if(t > creal(p->args[1])) {
 		if(t == creal(p->args[1]) + 1) {
 			play_sound_ex("redirect", 4, false);
-			PARTICLE("flare", p->pos, 0, linear,
-				.args = {
-					-p->args[0] * 0.5
-				},
-				.timeout = 60,
-				.draw_rule = Shrink,
-			);
+			spawn_projectile_highlight_effect(p);
 		}
 
 		p->angle = carg(p->args[0]);
@@ -395,6 +389,7 @@ int scythe_newton(Enemy *e, int t) {
 				p->args[0] = (2+0.125*global.diff)*cexp(I*2*M_PI*frand());
 				p->color = *RGBA_MUL_ALPHA(frand(), 0, 1, 0.8);
 				p->args[2] = 1;
+				spawn_projectile_highlight_effect(p);
 			}
 		}
 	}
@@ -1100,7 +1095,7 @@ int broglie_charge(Projectile *p, int t) {
 						(1 + 2 * ((global.diff - 1) / (double)(D_Lunatic - 1))) * M_PI/11 + s_freq*10*I
 					},
 					.draw_rule = ProjNoDraw,
-					.flags = PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT,
+					.flags = PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT | PFLAG_NOSPAWNZOOM,
 					.type = FakeProj,
 				);
 			}
