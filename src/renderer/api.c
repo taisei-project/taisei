@@ -330,11 +330,6 @@ Uniform* r_shader_uniform(ShaderProgram *prog, const char *uniform_name) {
 	return B.shader_uniform(prog, uniform_name);
 }
 
-void r_uniform_ptr(Uniform *uniform, uint count, const void *data) {
-	_r_state_touch_uniform(uniform);
-	B.uniform(uniform, count, data);
-}
-
 UniformType r_uniform_type(Uniform *uniform) {
 	return B.uniform_type(uniform);
 }
@@ -505,4 +500,261 @@ void r_swap(SDL_Window *window) {
 
 uint8_t* r_screenshot(uint *out_width, uint *out_height) {
 	return B.screenshot(out_width, out_height);
+}
+
+// uniforms garbage; hope your compiler is smart enough to inline most of this
+
+void r_uniform_ptr_unsafe(Uniform *uniform, uint offset, uint count, void *data) {
+	if(uniform) B.uniform(uniform, offset, count, data);
+}
+
+void _r_uniform_ptr_float(Uniform *uniform, float value) {
+	if(uniform) B.uniform(uniform, 0, 1, &value);
+}
+
+void _r_uniform_float(const char *uniform, float value) {
+	_r_uniform_ptr_float(r_shader_current_uniform(uniform), value);
+}
+
+void _r_uniform_ptr_float_array(Uniform *uniform, uint offset, uint count, float elements[count]) {
+	if(uniform && count) B.uniform(uniform, offset, count, elements);
+}
+
+void _r_uniform_float_array(const char *uniform, uint offset, uint count, float elements[count]) {
+	_r_uniform_ptr_float_array(r_shader_current_uniform(uniform), offset, count, elements);
+}
+
+void _r_uniform_ptr_vec2(Uniform *uniform, float x, float y) {
+	_r_uniform_ptr_vec2_vec(uniform, (vec2_noalign) { x, y });
+}
+
+void _r_uniform_vec2(const char *uniform, float x, float y) {
+	_r_uniform_vec2_vec(uniform, (vec2_noalign) { x, y });
+}
+
+void _r_uniform_ptr_vec2_vec(Uniform *uniform, vec2_noalign value) {
+	if(uniform) B.uniform(uniform, 0, 1, value);
+}
+
+void _r_uniform_vec2_vec(const char *uniform, vec2_noalign value) {
+	_r_uniform_ptr_vec2_vec(r_shader_current_uniform(uniform), value);
+}
+
+void _r_uniform_ptr_vec2_complex(Uniform *uniform, complex value) {
+	if(uniform) B.uniform(uniform, 0, 1, (vec2_noalign) { creal(value), cimag(value) });
+}
+
+void _r_uniform_vec2_complex(const char *uniform, complex value) {
+	_r_uniform_ptr_vec2_complex(r_shader_current_uniform(uniform), value);
+}
+
+void _r_uniform_ptr_vec2_array(Uniform *uniform, uint offset, uint count, vec2_noalign elements[count]) {
+	if(uniform && count) B.uniform(uniform, offset, count, elements);
+}
+
+void _r_uniform_vec2_array(const char *uniform, uint offset, uint count, vec2_noalign elements[count]) {
+	_r_uniform_ptr_vec2_array(r_shader_current_uniform(uniform), offset, count, elements);
+}
+
+void _r_uniform_ptr_vec2_array_complex(Uniform *uniform, uint offset, uint count, complex elements[count]) {
+	if(uniform && count) {
+		float arr[2 * count];
+		complex *eptr = elements;
+		float *aptr = arr, *aend = arr + sizeof(arr)/sizeof(*arr);
+
+		do {
+			*aptr++ = creal(*eptr);
+			*aptr++ = cimag(*eptr++);
+		} while(aptr < aend);
+
+		B.uniform(uniform, offset, count, arr);
+	}
+}
+
+void _r_uniform_vec2_array_complex(const char *uniform, uint offset, uint count, complex elements[count]) {
+	_r_uniform_ptr_vec2_array_complex(r_shader_current_uniform(uniform), offset, count, elements);
+}
+
+void _r_uniform_ptr_vec3(Uniform *uniform, float x, float y, float z) {
+	if(uniform) B.uniform(uniform, 0, 1, (vec3_noalign) { x, y, z });
+}
+
+void _r_uniform_vec3(const char *uniform, float x, float y, float z) {
+	_r_uniform_ptr_vec3(r_shader_current_uniform(uniform), x, y, z);
+}
+
+void _r_uniform_ptr_vec3_vec(Uniform *uniform, vec3_noalign value) {
+	if(uniform) B.uniform(uniform, 0, 1, value);
+}
+
+void _r_uniform_vec3_vec(const char *uniform, vec3_noalign value) {
+	_r_uniform_ptr_vec3_vec(r_shader_current_uniform(uniform), value);
+}
+
+void _r_uniform_ptr_vec3_rgb(Uniform *uniform, const Color *rgb) {
+	_r_uniform_ptr_vec3(uniform, rgb->r, rgb->g, rgb->b);
+}
+
+void _r_uniform_vec3_rgb(const char *uniform, const Color *rgb) {
+	_r_uniform_ptr_vec3_rgb(r_shader_current_uniform(uniform), rgb);
+}
+
+void _r_uniform_ptr_vec3_array(Uniform *uniform, uint offset, uint count, vec3_noalign elements[count]) {
+	if(uniform) B.uniform(uniform, offset, count, elements);
+}
+
+void _r_uniform_vec3_array(const char *uniform, uint offset, uint count, vec3_noalign elements[count]) {
+	_r_uniform_ptr_vec3_array(r_shader_current_uniform(uniform), offset, count, elements);
+}
+
+void _r_uniform_ptr_vec4(Uniform *uniform, float x, float y, float z, float w) {
+	if(uniform) B.uniform(uniform, 0, 1, (vec4_noalign) { x, y, z, w });
+}
+
+void _r_uniform_vec4(const char *uniform, float x, float y, float z, float w) {
+	_r_uniform_ptr_vec4(r_shader_current_uniform(uniform), x, y, z, w);
+}
+
+void _r_uniform_ptr_vec4_vec(Uniform *uniform, vec4_noalign value) {
+	if(uniform) B.uniform(uniform, 0, 1, value);
+}
+
+void _r_uniform_vec4_vec(const char *uniform, vec4_noalign value) {
+	_r_uniform_ptr_vec4_vec(r_shader_current_uniform(uniform), value);
+}
+
+void _r_uniform_ptr_vec4_rgba(Uniform *uniform, const Color *rgba) {
+	_r_uniform_ptr_vec4(uniform, rgba->r, rgba->g, rgba->b, rgba->a);
+}
+
+void _r_uniform_vec4_rgba(const char *uniform, const Color *rgba) {
+	_r_uniform_ptr_vec4_rgba(r_shader_current_uniform(uniform), rgba);
+}
+
+void _r_uniform_ptr_vec4_array(Uniform *uniform, uint offset, uint count, vec4_noalign elements[count]) {
+	if(uniform) B.uniform(uniform, offset, count, elements);
+}
+
+void _r_uniform_vec4_array(const char *uniform, uint offset, uint count, vec4_noalign elements[count]) {
+	_r_uniform_ptr_vec4_array(r_shader_current_uniform(uniform), offset, count, elements);
+}
+
+void _r_uniform_ptr_mat3(Uniform *uniform, mat3_noalign value) {
+	if(uniform) B.uniform(uniform, 0, 1, value);
+}
+
+void _r_uniform_mat3(const char *uniform, mat3_noalign value) {
+	_r_uniform_ptr_mat3(r_shader_current_uniform(uniform), value);
+}
+
+void _r_uniform_ptr_mat3_array(Uniform *uniform, uint offset, uint count, mat3_noalign elements[count]) {
+	if(uniform) B.uniform(uniform, offset, count, elements);
+}
+
+void _r_uniform_mat3_array(const char *uniform, uint offset, uint count, mat3_noalign elements[count]) {
+	_r_uniform_ptr_mat3_array(r_shader_current_uniform(uniform), offset, count, elements);
+}
+
+void _r_uniform_ptr_mat4(Uniform *uniform, mat4_noalign value) {
+	if(uniform) B.uniform(uniform, 0, 1, value);
+}
+
+void _r_uniform_mat4(const char *uniform, mat4_noalign value) {
+	_r_uniform_ptr_mat4(r_shader_current_uniform(uniform), value);
+}
+
+void _r_uniform_ptr_mat4_array(Uniform *uniform, uint offset, uint count, mat4_noalign elements[count]) {
+	if(uniform) B.uniform(uniform, offset, count, elements);
+}
+
+void _r_uniform_mat4_array(const char *uniform, uint offset, uint count, mat4_noalign elements[count]) {
+	_r_uniform_ptr_mat4_array(r_shader_current_uniform(uniform), offset, count, elements);
+}
+
+void _r_uniform_ptr_int(Uniform *uniform, int value) {
+	if(uniform) B.uniform(uniform, 0, 1, &value);
+}
+
+void _r_uniform_int(const char *uniform, int value) {
+	_r_uniform_ptr_int(r_shader_current_uniform(uniform), value);
+}
+
+void _r_uniform_ptr_int_array(Uniform *uniform, uint offset, uint count, int elements[count]) {
+	if(uniform) B.uniform(uniform, offset, count, elements);
+}
+
+void _r_uniform_int_array(const char *uniform, uint offset, uint count, int elements[count]) {
+	_r_uniform_ptr_int_array(r_shader_current_uniform(uniform), offset, count, elements);
+}
+
+void _r_uniform_ptr_ivec2(Uniform *uniform, int x, int y) {
+	_r_uniform_ptr_ivec2_vec(uniform, (ivec2_noalign) { x, y });
+}
+
+void _r_uniform_ivec2(const char *uniform, int x, int y) {
+	_r_uniform_ivec2_vec(uniform, (ivec2_noalign) { x, y });
+}
+
+void _r_uniform_ptr_ivec2_vec(Uniform *uniform, ivec2_noalign value) {
+	if(uniform) B.uniform(uniform, 0, 1, value);
+}
+
+void _r_uniform_ivec2_vec(const char *uniform, ivec2_noalign value) {
+	_r_uniform_ptr_ivec2_vec(r_shader_current_uniform(uniform), value);
+}
+
+void _r_uniform_ptr_ivec2_array(Uniform *uniform, uint offset, uint count, ivec2_noalign elements[count]) {
+	if(uniform && count) B.uniform(uniform, offset, count, elements);
+}
+
+void _r_uniform_ivec2_array(const char *uniform, uint offset, uint count, ivec2_noalign elements[count]) {
+	_r_uniform_ptr_ivec2_array(r_shader_current_uniform(uniform), offset, count, elements);
+}
+
+void _r_uniform_ptr_ivec3(Uniform *uniform, int x, int y, int z) {
+	if(uniform) B.uniform(uniform, 0, 1, (ivec3_noalign) { x, y, z });
+}
+
+void _r_uniform_ivec3(const char *uniform, int x, int y, int z) {
+	_r_uniform_ptr_ivec3(r_shader_current_uniform(uniform), x, y, z);
+}
+
+void _r_uniform_ptr_ivec3_vec(Uniform *uniform, ivec3_noalign value) {
+	if(uniform) B.uniform(uniform, 0, 1, value);
+}
+
+void _r_uniform_ivec3_vec(const char *uniform, ivec3_noalign value) {
+	_r_uniform_ptr_ivec3_vec(r_shader_current_uniform(uniform), value);
+}
+
+void _r_uniform_ptr_ivec3_array(Uniform *uniform, uint offset, uint count, ivec3_noalign elements[count]) {
+	if(uniform) B.uniform(uniform, offset, count, elements);
+}
+
+void _r_uniform_ivec3_array(const char *uniform, uint offset, uint count, ivec3_noalign elements[count]) {
+	_r_uniform_ptr_ivec3_array(r_shader_current_uniform(uniform), offset, count, elements);
+}
+
+void _r_uniform_ptr_ivec4(Uniform *uniform, int x, int y, int z, int w) {
+	if(uniform) B.uniform(uniform, 0, 1, (ivec4_noalign) { x, y, z, w });
+}
+
+void _r_uniform_ivec4(const char *uniform, int x, int y, int z, int w) {
+	_r_uniform_ptr_ivec4(r_shader_current_uniform(uniform), x, y, z, w);
+}
+
+void _r_uniform_ptr_ivec4_vec(Uniform *uniform, ivec4_noalign value) {
+	if(uniform) B.uniform(uniform, 0, 1, value);
+}
+
+void _r_uniform_ivec4_vec(const char *uniform, ivec4_noalign value) {
+	_r_uniform_ptr_ivec4_vec(r_shader_current_uniform(uniform), value);
+}
+
+void _r_uniform_ptr_ivec4_array(Uniform *uniform, uint offset, uint count, ivec4_noalign elements[count]) {
+	if(uniform) B.uniform(uniform, offset, count, elements);
+}
+
+void _r_uniform_ivec4_array(const char *uniform, uint offset, uint count, ivec4_noalign elements[count]) {
+	_r_uniform_ptr_ivec4_array(r_shader_current_uniform(uniform), offset, count, elements);
 }

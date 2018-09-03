@@ -205,7 +205,7 @@ void postprocess(PostprocessShader *ppshaders, FBPair *fbos, PostprocessPrepareF
 		}
 
 		for(PostprocessShaderUniform *u = pps->uniforms; u; u = u->next) {
-			r_uniform_ptr(u->uniform, u->elements, u->values);
+			r_uniform_ptr_unsafe(u->uniform, 0, u->elements, u->values);
 		}
 
 		draw(fbos->front, width, height);

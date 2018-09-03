@@ -23,15 +23,18 @@ struct ShaderProgram {
 
 struct Uniform {
 	ShaderProgram *prog;
+	size_t elem_size; // bytes
+	uint array_size; // elements
 	uint location;
 	UniformType type;
-	size_t array_size;
-	size_t buffer_size;
 
 	struct {
-		void *pending;
-		void *commited;
-		size_t update_size;
+		// buffer size = elem_size * array_size
+		char *pending;
+		char *commited;
+
+		uint update_first_idx;
+		uint update_last_idx;
 	} cache;
 };
 
@@ -39,6 +42,6 @@ void gl33_sync_uniforms(ShaderProgram *prog);
 
 Uniform* gl33_shader_uniform(ShaderProgram *prog, const char *uniform_name);
 UniformType gl33_uniform_type(Uniform *uniform);
-void gl33_uniform(Uniform *uniform, uint count, const void *data);
+void gl33_uniform(Uniform *uniform, uint offset, uint count, const void *data);
 
 extern ResourceHandler gl33_shader_program_res_handler;

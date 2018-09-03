@@ -36,9 +36,11 @@ void gaussian_kernel_1d(size_t size, float sigma, float kernel[size]) attr_nonnu
 
 #include <cglm/types.h>
 
-typedef float vec2_noalign[2];
-typedef float vec3_noalign[3];
-typedef int ivec3_noalign[3];
-typedef float vec4_noalign[4];
-typedef vec3_noalign mat3_noalign[3];
-typedef vec4_noalign mat4_noalign[4];
+typedef float         vec2_noalign[2];
+typedef int          ivec2_noalign[2];
+typedef float         vec3_noalign[3];
+typedef int          ivec3_noalign[3];
+typedef float         vec4_noalign[4];
+typedef int          ivec4_noalign[4];
+typedef vec3_noalign  mat3_noalign[3];
+typedef vec4_noalign  mat4_noalign[4];

@@ -149,8 +149,8 @@ static void draw_laser_curve_specialized(Laser *l) {
 	}
 
 	r_color(&l->color);
-	r_uniform_complex("origin", l->pos);
-	r_uniform_complex_array("args[0]", 4, l->args);
+	r_uniform_vec2_complex("origin", l->pos);
+	r_uniform_vec2_array_complex("args[0]", 0, 4, l->args);
 	r_uniform_float("timeshift", timeshift);
 	r_uniform_float("width", l->width);
 	r_uniform_float("width_exponent", l->width_exponent);

@@ -158,7 +158,7 @@ void r_flush_sprites(void) {
 	}
 
 	r_uniform_int("tex", 0);
-	r_uniform("tex_aux[0]", NUM_SPRITE_AUX_TEXTURES, aux_samplers);
+	r_uniform_int_array("tex_aux[0]", 0, NUM_SPRITE_AUX_TEXTURES, aux_samplers);
 
 	r_framebuffer(_r_sprite_batch.framebuffer);
 	r_blend(_r_sprite_batch.blend);

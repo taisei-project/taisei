@@ -58,7 +58,7 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 
 	ShaderProgram *prog_saved = r_shader_current();
 	r_shader("sprite_circleclipped_indicator");
-	r_uniform_rgba("back_color", back_clr);
+	r_uniform_vec4_rgba("back_color", back_clr);
 
 	r_mat_push();
 	r_mat_translate(x - star_width, y, 0);
@@ -160,7 +160,7 @@ void fbutil_resize_attachment(Framebuffer *fb, FramebufferAttachment attachment,
 void init_blur_shader(ShaderProgram *prog, size_t kernel_size, float sigma) {
 	float kernel[kernel_size];
 	gaussian_kernel_1d(kernel_size, sigma, kernel);
-	r_uniform_ptr(r_shader_uniform(prog, "blur_kernel[0]"), kernel_size, kernel);
+	r_uniform_float_array(r_shader_uniform(prog, "blur_kernel[0]"), 0, kernel_size, kernel);
 }
 
 void flip_bitmap(char *data, size_t rows, size_t row_length) {

@@ -629,7 +629,7 @@ static void apply_zoom_shader(void) {
 	r_uniform_float("blur_rad", 1.5*spellcard_sup*(0.2+0.025*sin(global.frames/15.0)));
 	r_uniform_float("rad", 0.24);
 	r_uniform_float("ratio", (float)VIEWPORT_H/VIEWPORT_W);
-	r_uniform_rgba("color", &global.boss->zoomcolor);
+	r_uniform_vec4_rgba("color", &global.boss->zoomcolor);
 }
 
 static void stage_render_bg(StageInfo *stage) {
@@ -1082,7 +1082,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 		r_uniform_vec3("color_low",  1.0, 0.0, 0.0);
 		r_uniform_vec3("color_mid",  1.0, 1.0, 0.0);
 		r_uniform_vec3("color_high", 0.0, 1.0, 0.0);
-		r_uniform("points[0]", graphspan, graph);
+		r_uniform_float_array("points[0]", 0, graphspan, graph);
 		draw_graph(142, SCREEN_H - text_h, graphspan, text_h);
 	}
 #endif
@@ -1118,7 +1118,7 @@ static void stage_draw_framerate_graphs(void) {
 	r_uniform_vec3("color_low",  0.0, 1.0, 1.0);
 	r_uniform_vec3("color_mid",  1.0, 1.0, 0.0);
 	r_uniform_vec3("color_high", 1.0, 0.0, 0.0);
-	r_uniform("points[0]", NUM_SAMPLES, samples);
+	r_uniform_float_array("points[0]", 0, NUM_SAMPLES, samples);
 	draw_graph(x, y, w, h);
 
 	// x -= w * 1.1;
@@ -1128,7 +1128,7 @@ static void stage_draw_framerate_graphs(void) {
 	r_uniform_vec3("color_low",  0.0, 1.0, 0.0);
 	r_uniform_vec3("color_mid",  1.0, 0.0, 0.0);
 	r_uniform_vec3("color_high", 1.0, 0.0, 0.5);
-	r_uniform("points[0]", NUM_SAMPLES, samples);
+	r_uniform_float_array("points[0]", 0, NUM_SAMPLES, samples);
 	draw_graph(x, y, w, h);
 
 	r_shader_standard();

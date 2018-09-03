@@ -42,7 +42,7 @@ typedef struct RendererFuncs {
 	ShaderProgram* (*shader_current)(void);
 
 	Uniform* (*shader_uniform)(ShaderProgram *prog, const char *uniform_name);
-	void (*uniform)(Uniform *uniform, uint count, const void *data);
+	void (*uniform)(Uniform *uniform, uint offset, uint count, const void *data);
 	UniformType (*uniform_type)(Uniform *uniform);
 
 	void (*texture_create)(Texture *tex, const TextureParams *params);

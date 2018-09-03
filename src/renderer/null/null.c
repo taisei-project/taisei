@@ -49,7 +49,7 @@ Uniform* null_shader_uniform(ShaderProgram *prog, const char *uniform_name) {
 	return (void*)&placeholder;
 }
 
-void null_uniform(Uniform *uniform, uint count, const void *data) { }
+void null_uniform(Uniform *uniform, uint offset, uint count, const void *data) { }
 
 UniformType null_uniform_type(Uniform *uniform) { return UNIFORM_FLOAT; }
 

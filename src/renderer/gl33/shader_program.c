@@ -22,8 +22,8 @@ UniformType gl33_uniform_type(Uniform *uniform) {
 	return uniform->type;
 }
 
-static void uset_float(Uniform *uniform, uint count, const void *data) {
-	glUniform1fv(uniform->location, count, (float*)data);
+static void uset_float(Uniform *uniform, uint offset, uint count, const void *data) {
+	glUniform1fv(uniform->location + offset, count, (float*)data);
 }
 
 static void uget_float(Uniform *uniform, uint count, void *data) {
@@ -33,8 +33,8 @@ static void uget_float(Uniform *uniform, uint count, void *data) {
 }
 
 
-static void uset_vec2(Uniform *uniform, uint count, const void *data) {
-	glUniform2fv(uniform->location, count, (float*)data);
+static void uset_vec2(Uniform *uniform, uint offset, uint count, const void *data) {
+	glUniform2fv(uniform->location + offset, count, (float*)data);
 }
 
 static void uget_vec2(Uniform *uniform, uint count, void *data) {
@@ -44,8 +44,8 @@ static void uget_vec2(Uniform *uniform, uint count, void *data) {
 }
 
 
-static void uset_vec3(Uniform *uniform, uint count, const void *data) {
-	glUniform3fv(uniform->location, count, (float*)data);
+static void uset_vec3(Uniform *uniform, uint offset, uint count, const void *data) {
+	glUniform3fv(uniform->location + offset, count, (float*)data);
 }
 
 static void uget_vec3(Uniform *uniform, uint count, void *data) {
@@ -55,8 +55,8 @@ static void uget_vec3(Uniform *uniform, uint count, void *data) {
 }
 
 
-static void uset_vec4(Uniform *uniform, uint count, const void *data) {
-	glUniform4fv(uniform->location, count, (float*)data);
+static void uset_vec4(Uniform *uniform, uint offset, uint count, const void *data) {
+	glUniform4fv(uniform->location + offset, count, (float*)data);
 }
 
 static void uget_vec4(Uniform *uniform, uint count, void *data) {
@@ -66,8 +66,8 @@ static void uget_vec4(Uniform *uniform, uint count, void *data) {
 }
 
 
-static void uset_int(Uniform *uniform, uint count, const void *data) {
-	glUniform1iv(uniform->location, count, (int*)data);
+static void uset_int(Uniform *uniform, uint offset, uint count, const void *data) {
+	glUniform1iv(uniform->location + offset, count, (int*)data);
 }
 
 static void uget_int(Uniform *uniform, uint count, void *data) {
@@ -77,8 +77,8 @@ static void uget_int(Uniform *uniform, uint count, void *data) {
 }
 
 
-static void uset_ivec2(Uniform *uniform, uint count, const void *data) {
-	glUniform2iv(uniform->location, count, (int*)data);
+static void uset_ivec2(Uniform *uniform, uint offset, uint count, const void *data) {
+	glUniform2iv(uniform->location + offset, count, (int*)data);
 }
 
 static void uget_ivec2(Uniform *uniform, uint count, void *data) {
@@ -88,8 +88,8 @@ static void uget_ivec2(Uniform *uniform, uint count, void *data) {
 }
 
 
-static void uset_ivec3(Uniform *uniform, uint count, const void *data) {
-	glUniform3iv(uniform->location, count, (int*)data);
+static void uset_ivec3(Uniform *uniform, uint offset, uint count, const void *data) {
+	glUniform3iv(uniform->location + offset, count, (int*)data);
 }
 
 static void uget_ivec3(Uniform *uniform, uint count, void *data) {
@@ -99,8 +99,8 @@ static void uget_ivec3(Uniform *uniform, uint count, void *data) {
 }
 
 
-static void uset_ivec4(Uniform *uniform, uint count, const void *data) {
-	glUniform4iv(uniform->location, count, (int*)data);
+static void uset_ivec4(Uniform *uniform, uint offset, uint count, const void *data) {
+	glUniform4iv(uniform->location + offset, count, (int*)data);
 }
 
 static void uget_ivec4(Uniform *uniform, uint count, void *data) {
@@ -110,8 +110,8 @@ static void uget_ivec4(Uniform *uniform, uint count, void *data) {
 }
 
 
-static void uset_mat3(Uniform *uniform, uint count, const void *data) {
-	glUniformMatrix3fv(uniform->location, count, false, (float*)data);
+static void uset_mat3(Uniform *uniform, uint offset, uint count, const void *data) {
+	glUniformMatrix3fv(uniform->location + offset, count, false, (float*)data);
 }
 
 static void uget_mat3(Uniform *uniform, uint count, void *data) {
@@ -121,8 +121,8 @@ static void uget_mat3(Uniform *uniform, uint count, void *data) {
 }
 
 
-static void uset_mat4(Uniform *uniform, uint count, const void *data) {
-	glUniformMatrix4fv(uniform->location, count, false, (float*)data);
+static void uset_mat4(Uniform *uniform, uint offset, uint count, const void *data) {
+	glUniformMatrix4fv(uniform->location + offset, count, false, (float*)data);
 }
 
 static void uget_mat4(Uniform *uniform, uint count, void *data) {
@@ -133,7 +133,7 @@ static void uget_mat4(Uniform *uniform, uint count, void *data) {
 
 
 static struct {
-	void (*setter)(Uniform *uniform, uint count, const void *data);
+	void (*setter)(Uniform *uniform, uint offset, uint count, const void *data);
 	void (*getter)(Uniform *uniform, uint count, void *data);
 } type_to_accessors[] = {
 	[UNIFORM_FLOAT]   = { uset_float, uget_float },
@@ -161,41 +161,64 @@ static MagicalUniform magical_unfiroms[] = {
 	{ "r_textureMatrix",    "mat4", UNIFORM_MAT4 },
 	{ "r_color",            "vec4", UNIFORM_VEC4 },
 };
-static void gl33_commit_uniform(Uniform *uniform);
-static void gl33_update_uniform(Uniform *uniform, uint count, const void *data, size_t datasize) {
-	if(datasize > uniform->buffer_size) {
-		// might happen when unused array elements get optimized out
-		datasize = uniform->buffer_size;
+
+static void gl33_update_uniform(Uniform *uniform, uint offset, uint count, const void *data) {
+	if(offset >= uniform->array_size) {
+		// completely out of range
+		return;
 	}
 
-	memcpy(uniform->cache.pending, data, datasize);
+	if(offset + count > uniform->array_size) {
+		// partially out of range
+		count = uniform->array_size - offset;
+	}
 
-	if(datasize > uniform->cache.update_size) {
-		uniform->cache.update_size = datasize;
+	uint idx_first = offset;
+	uint idx_last = offset + count - 1;
+
+	assert(idx_last < uniform->array_size);
+	assert(idx_first <= idx_last);
+
+	memcpy(uniform->cache.pending + offset, data, count * uniform->elem_size);
+
+	if(idx_first < uniform->cache.update_first_idx) {
+		uniform->cache.update_first_idx = idx_first;
+	}
+
+	if(idx_last > uniform->cache.update_last_idx) {
+		uniform->cache.update_last_idx = idx_last;
 	}
 }
 
 static void gl33_commit_uniform(Uniform *uniform) {
-	memcpy(uniform->cache.commited, uniform->cache.pending, uniform->buffer_size);
-	type_to_accessors[uniform->type].setter(uniform, uniform->array_size, uniform->cache.commited);
+	if(uniform->cache.update_first_idx > uniform->cache.update_last_idx) {
+		return;
+	}
 
-	uniform->cache.update_size = 0;
+	uint update_count = uniform->cache.update_last_idx - uniform->cache.update_first_idx + 1;
+	size_t update_ofs = uniform->cache.update_first_idx * uniform->elem_size;
+	size_t update_sz  = update_count * uniform->elem_size;
+
+	assert(update_sz + update_ofs <= uniform->elem_size * uniform->array_size);
+
+	if(memcmp(uniform->cache.commited + update_ofs, uniform->cache.pending + update_ofs, update_sz)) {
+		memcpy(uniform->cache.commited + update_ofs, uniform->cache.pending + update_ofs, update_sz);
+
+		type_to_accessors[uniform->type].setter(
+			uniform,
+			uniform->cache.update_first_idx,
+			update_count,
+			uniform->cache.commited + update_ofs
+		);
+	}
+
+	uniform->cache.update_first_idx = uniform->array_size;
+	uniform->cache.update_last_idx = 0;
 }
 
 static void* gl33_sync_uniform(const char *key, void *value, void *arg) {
-	attr_unused const char *name = key;
 	Uniform *uniform = value;
-
-	if(uniform->cache.update_size == 0) {
-		return NULL;
-	}
-
-	if(memcmp(uniform->cache.commited, uniform->cache.pending, uniform->cache.update_size)) {
-		gl33_commit_uniform(uniform);
-	} else {
-		// log_debug("uniform %u:%s (shader %u) update of size %zu ignored", uniform->location, name, uniform->prog->gl_handle, uniform->cache.update_size);
-	}
-
+	gl33_commit_uniform(uniform);
 	return NULL;
 }
 
@@ -203,18 +226,12 @@ void gl33_sync_uniforms(ShaderProgram *prog) {
 	ht_foreach(&prog->uniforms, gl33_sync_uniform, NULL);
 }
 
-void gl33_uniform(Uniform *uniform, uint count, const void *data) {
+void gl33_uniform(Uniform *uniform, uint offset, uint count, const void *data) {
 	assert(count > 0);
-
-	if(uniform == NULL) {
-		return;
-	}
-
+	assert(uniform != NULL);
 	assert(uniform->prog != NULL);
 	assert(uniform->type >= 0 && uniform->type < sizeof(type_to_accessors)/sizeof(*type_to_accessors));
-	const UniformTypeInfo *typeinfo = r_uniform_type_info(uniform->type);
-	size_t datasize = typeinfo->elements * typeinfo->element_size * count;
-	gl33_update_uniform(uniform, count, data, datasize);
+	gl33_update_uniform(uniform, offset, count, data);
 }
 
 static bool cache_uniforms(ShaderProgram *prog) {
@@ -276,14 +293,15 @@ static bool cache_uniforms(ShaderProgram *prog) {
 
 		uni.location = loc;
 		uni.array_size = size;
-		uni.buffer_size = size * typeinfo->element_size * typeinfo->elements;
-		uni.cache.commited = malloc(uni.buffer_size);
-		uni.cache.pending = malloc(uni.buffer_size);
+		uni.elem_size = typeinfo->element_size * typeinfo->elements;
+		uni.cache.commited = calloc(uni.array_size, uni.elem_size);
+		uni.cache.pending = calloc(uni.array_size, uni.elem_size);
+		uni.cache.update_first_idx = uni.array_size;
 
 		type_to_accessors[uni.type].getter(&uni, size, uni.cache.commited);
 
 		ht_set(&prog->uniforms, name, memdup(&uni, sizeof(uni)));
-		log_debug("%s = %i [array elements: %i; size: %zi bytes]", name, loc, size, uni.buffer_size);
+		log_debug("%s = %i [array elements: %i; size: %zi bytes]", name, loc, uni.array_size, uni.array_size * uni.elem_size);
 	}
 
 	return true;

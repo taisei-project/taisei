@@ -284,10 +284,10 @@ static void gl33_sync_viewport(void) {
 static void gl33_sync_state(void) {
 	gl33_sync_capabilities();
 	gl33_sync_shader();
-	r_uniform("r_modelViewMatrix", 1, _r_matrices.modelview.head);
-	r_uniform("r_projectionMatrix", 1, _r_matrices.projection.head);
-	r_uniform("r_textureMatrix", 1, _r_matrices.texture.head);
-	r_uniform("r_color", 1, &R.color.r);
+	r_uniform_mat4("r_modelViewMatrix", *_r_matrices.modelview.head);
+	r_uniform_mat4("r_projectionMatrix", *_r_matrices.projection.head);
+	r_uniform_mat4("r_textureMatrix", *_r_matrices.texture.head);
+	r_uniform_vec4_rgba("r_color", &R.color);
 	gl33_sync_uniforms(R.progs.active);
 	gl33_sync_texunits(true);
 	gl33_sync_framebuffer();

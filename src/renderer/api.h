@@ -429,8 +429,133 @@ void r_shader_ptr(ShaderProgram *prog) attr_nonnull(1);
 ShaderProgram* r_shader_current(void) attr_returns_nonnull;
 
 Uniform* r_shader_uniform(ShaderProgram *prog, const char *uniform_name) attr_nonnull(1, 2);
-void r_uniform_ptr(Uniform *uniform, uint count, const void *data) attr_nonnull(3);
 UniformType r_uniform_type(Uniform *uniform);
+void r_uniform_ptr_unsafe(Uniform *uniform, uint offset, uint count, void *data);
+
+#define _R_UNIFORM_GENERIC(suffix, uniform, ...) (_Generic(uniform, \
+	 char* : _r_uniform_##suffix, \
+	 Uniform* : _r_uniform_ptr_##suffix \
+))(uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_float(Uniform *uniform, float value);
+void _r_uniform_float(const char *uniform, float value) attr_nonnull(1);
+#define r_uniform_float(uniform, ...) _R_UNIFORM_GENERIC(float, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_float_array(Uniform *uniform, uint offset, uint count, float elements[count]) attr_nonnull(4);
+void _r_uniform_float_array(const char *uniform, uint offset, uint count, float elements[count]) attr_nonnull(1, 4);
+#define r_uniform_float_array(uniform, ...) _R_UNIFORM_GENERIC(float_array, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_vec2(Uniform *uniform, float x, float y) attr_nonnull(1);
+void _r_uniform_vec2(const char *uniform, float x, float y) attr_nonnull(1);
+#define r_uniform_vec2(uniform, ...) _R_UNIFORM_GENERIC(vec2, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_vec2_vec(Uniform *uniform, vec2_noalign value) attr_nonnull(2);
+void _r_uniform_vec2_vec(const char *uniform, vec2_noalign value) attr_nonnull(1, 2);
+#define r_uniform_vec2_vec(uniform, ...) _R_UNIFORM_GENERIC(vec2_vec, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_vec2_complex(Uniform *uniform, complex value);
+void _r_uniform_vec2_complex(const char *uniform, complex value) attr_nonnull(1);
+#define r_uniform_vec2_complex(uniform, ...) _R_UNIFORM_GENERIC(vec2_complex, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_vec2_array(Uniform *uniform, uint offset, uint count, vec2_noalign elements[count]) attr_nonnull(4);
+void _r_uniform_vec2_array(const char *uniform, uint offset, uint count, vec2_noalign elements[count]) attr_nonnull(1, 4);
+#define r_uniform_vec2_array(uniform, ...) _R_UNIFORM_GENERIC(vec2_array, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_vec2_array_complex(Uniform *uniform, uint offset, uint count, complex elements[count]) attr_nonnull(4);
+void _r_uniform_vec2_array_complex(const char *uniform, uint offset, uint count, complex elements[count]) attr_nonnull(1, 4);
+#define r_uniform_vec2_array_complex(uniform, ...) _R_UNIFORM_GENERIC(vec2_array_complex, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_vec3(Uniform *uniform, float x, float y, float z);
+void _r_uniform_vec3(const char *uniform, float x, float y, float z) attr_nonnull(1);
+#define r_uniform_vec3(uniform, ...) _R_UNIFORM_GENERIC(vec3, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_vec3_vec(Uniform *uniform, vec3_noalign value) attr_nonnull(2);
+void _r_uniform_vec3_vec(const char *uniform, vec3_noalign value) attr_nonnull(1, 2);
+#define r_uniform_vec3_vec(uniform, ...) _R_UNIFORM_GENERIC(vec3_vec, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_vec3_rgb(Uniform *uniform, const Color *rgb) attr_nonnull(2);
+void _r_uniform_vec3_rgb(const char *uniform, const Color *rgb) attr_nonnull(1, 2);
+#define r_uniform_vec3_rgb(uniform, ...) _R_UNIFORM_GENERIC(vec3_rgb, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_vec3_array(Uniform *uniform, uint offset, uint count, vec3_noalign elements[count]) attr_nonnull(4);
+void _r_uniform_vec3_array(const char *uniform, uint offset, uint count, vec3_noalign elements[count]) attr_nonnull(1, 4);
+#define r_uniform_vec3_array(uniform, ...) _R_UNIFORM_GENERIC(vec3_array, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_vec4(Uniform *uniform, float x, float y, float z, float w);
+void _r_uniform_vec4(const char *uniform, float x, float y, float z, float w) attr_nonnull(1);
+#define r_uniform_vec4(uniform, ...) _R_UNIFORM_GENERIC(vec4, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_vec4_vec(Uniform *uniform, vec4_noalign value) attr_nonnull(2);
+void _r_uniform_vec4_vec(const char *uniform, vec4_noalign value) attr_nonnull(1, 2);
+#define r_uniform_vec4_vec(uniform, ...) _R_UNIFORM_GENERIC(vec4_vec, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_vec4_rgba(Uniform *uniform, const Color *rgba) attr_nonnull(2);
+void _r_uniform_vec4_rgba(const char *uniform, const Color *rgba) attr_nonnull(1, 2);
+#define r_uniform_vec4_rgba(uniform, ...) _R_UNIFORM_GENERIC(vec4_rgba, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_vec4_array(Uniform *uniform, uint offset, uint count, vec4_noalign elements[count]) attr_nonnull(4);
+void _r_uniform_vec4_array(const char *uniform, uint offset, uint count, vec4_noalign elements[count]) attr_nonnull(1, 4);
+#define r_uniform_vec4_array(uniform, ...) _R_UNIFORM_GENERIC(vec4_array, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_mat3(Uniform *uniform, mat3_noalign value) attr_nonnull(2);
+void _r_uniform_mat3(const char *uniform, mat3_noalign value) attr_nonnull(1, 2);
+#define r_uniform_mat3(uniform, ...) _R_UNIFORM_GENERIC(mat3, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_mat3_array(Uniform *uniform, uint offset, uint count, mat3_noalign elements[count]) attr_nonnull(4);
+void _r_uniform_mat3_array(const char *uniform, uint offset, uint count, mat3_noalign elements[count]) attr_nonnull(1, 4);
+#define r_uniform_mat3_array(uniform, ...) _R_UNIFORM_GENERIC(mat3_array, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_mat4(Uniform *uniform, mat4_noalign value) attr_nonnull(2);
+void _r_uniform_mat4(const char *uniform, mat4_noalign value) attr_nonnull(1, 2);
+#define r_uniform_mat4(uniform, ...) _R_UNIFORM_GENERIC(mat4, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_mat4_array(Uniform *uniform, uint offset, uint count, mat4_noalign elements[count]) attr_nonnull(4);
+void _r_uniform_mat4_array(const char *uniform, uint offset, uint count, mat4_noalign elements[count]) attr_nonnull(1, 4);
+#define r_uniform_mat4_array(uniform, ...) _R_UNIFORM_GENERIC(mat4_array, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_int(Uniform *uniform, int value);
+void _r_uniform_int(const char *uniform, int value) attr_nonnull(1);
+#define r_uniform_int(uniform, ...) _R_UNIFORM_GENERIC(int, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_int_array(Uniform *uniform, uint offset, uint count, int elements[count]) attr_nonnull(4);
+void _r_uniform_int_array(const char *uniform, uint offset, uint count, int elements[count]) attr_nonnull(1, 4);
+#define r_uniform_int_array(uniform, ...) _R_UNIFORM_GENERIC(int_array, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_ivec2(Uniform *uniform, int x, int y);
+void _r_uniform_ivec2(const char *uniform, int x, int y) attr_nonnull(1);
+#define r_uniform_ivec2(uniform, ...) _R_UNIFORM_GENERIC(ivec2, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_ivec2_vec(Uniform *uniform, ivec2_noalign value) attr_nonnull(2);
+void _r_uniform_ivec2_vec(const char *uniform, ivec2_noalign value) attr_nonnull(1, 2);
+#define r_uniform_ivec2_vec(uniform, ...) _R_UNIFORM_GENERIC(ivec2_vec, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_ivec2_array(Uniform *uniform, uint offset, uint count, ivec2_noalign elements[count]) attr_nonnull(4);
+void _r_uniform_ivec2_array(const char *uniform, uint offset, uint count, ivec2_noalign elements[count]) attr_nonnull(1, 4);
+#define r_uniform_ivec2_array(uniform, ...) _R_UNIFORM_GENERIC(ivec2_array, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_ivec3(Uniform *uniform, int x, int y, int z);
+void _r_uniform_ivec3(const char *uniform, int x, int y, int z) attr_nonnull(1);
+#define r_uniform_ivec3(uniform, ...) _R_UNIFORM_GENERIC(ivec3, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_ivec3_vec(Uniform *uniform, ivec3_noalign value) attr_nonnull(2);
+void _r_uniform_ivec3_vec(const char *uniform, ivec3_noalign value) attr_nonnull(1, 2);
+#define r_uniform_ivec3_vec(uniform, ...) _R_UNIFORM_GENERIC(ivec3_vec, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_ivec3_array(Uniform *uniform, uint offset, uint count, ivec3_noalign elements[count]) attr_nonnull(4);
+void _r_uniform_ivec3_array(const char *uniform, uint offset, uint count, ivec3_noalign elements[count]) attr_nonnull(1, 4);
+#define r_uniform_ivec3_array(uniform, ...) _R_UNIFORM_GENERIC(ivec3_array, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_ivec4(Uniform *uniform, int x, int y, int z, int w);
+void _r_uniform_ivec4(const char *uniform, int x, int y, int z, int w) attr_nonnull(1);
+#define r_uniform_ivec4(uniform, ...) _R_UNIFORM_GENERIC(ivec4, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_ivec4_vec(Uniform *uniform, ivec4_noalign value) attr_nonnull(2);
+void _r_uniform_ivec4_vec(const char *uniform, ivec4_noalign value) attr_nonnull(1, 2);
+#define r_uniform_ivec4_vec(uniform, ...) _R_UNIFORM_GENERIC(ivec4_vec, uniform, __VA_ARGS__)
+
+void _r_uniform_ptr_ivec4_array(Uniform *uniform, uint offset, uint count, ivec4_noalign elements[count]) attr_nonnull(4);
+void _r_uniform_ivec4_array(const char *uniform, uint offset, uint count, ivec4_noalign elements[count]) attr_nonnull(1, 4);
+#define r_uniform_ivec4_array(uniform, ...) _R_UNIFORM_GENERIC(ivec4_array, uniform, __VA_ARGS__)
 
 void r_draw(Primitive prim, uint first, uint count, uint32_t *indices, uint instances, uint base_instance);
 
@@ -616,63 +741,6 @@ void r_texture(uint unit, const char *tex) {
 static inline attr_must_inline
 Uniform* r_shader_current_uniform(const char *name) {
 	return r_shader_uniform(r_shader_current(), name);
-}
-
-static inline attr_must_inline
-void r_uniform(const char *name, uint count, void *data) {
-	r_uniform_ptr(r_shader_current_uniform(name), count, data);
-}
-
-static inline attr_must_inline
-void r_uniform_float(const char *name, float v) {
-	r_uniform(name, 1, (float[1]) { v });
-}
-
-static inline attr_must_inline
-void r_uniform_int(const char *name, int v) {
-	r_uniform(name, 1, (int[1]) { v });
-}
-
-static inline attr_must_inline
-void r_uniform_vec2(const char *name, float x, float y) {
-	r_uniform(name, 1, (float[2]) { x, y } );
-}
-
-static inline attr_must_inline
-void r_uniform_vec3(const char *name, float x, float y, float z) {
-	r_uniform(name, 1, (vec3) { x, y, z });
-}
-
-static inline attr_must_inline
-void r_uniform_vec4(const char *name, float x, float y, float z, float w) {
-	r_uniform(name, 1, (vec4) { x, y, z, w });
-}
-
-static inline attr_must_inline
-void r_uniform_rgb(const char *name, const Color *c) {
-	r_uniform_vec3(name, c->r, c->g, c->b);
-}
-
-static inline attr_must_inline
-void r_uniform_rgba(const char *name, const Color *c) {
-	r_uniform_vec4(name, c->r, c->g, c->b, c->a);
-}
-
-static inline attr_must_inline
-void r_uniform_complex(const char *name, complex z) {
-	r_uniform(name, 1, (float[]) { creal(z), cimag(z) });
-}
-
-static inline attr_must_inline
-void r_uniform_complex_array(const char *name, uint count, complex z[count]) {
-	float data[count * 2], *ptr = data;
-
-	for(int i = 0; i < count; ++i) {
-		*ptr++ = creal(z[i]);
-		*ptr++ = cimag(z[i]);
-	}
-
-	r_uniform(name, count, data);
 }
 
 static inline attr_must_inline
