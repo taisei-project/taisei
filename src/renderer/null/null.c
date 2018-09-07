@@ -80,48 +80,31 @@ void null_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, uint w,
 void null_texture_invalidate(Texture *tex) { }
 void null_texture_destroy(Texture *tex) { }
 
-struct FramebufferImpl {
-	Texture *attachments[FRAMEBUFFER_MAX_ATTACHMENTS];
-	IntRect viewport;
-};
-
 static IntRect default_fb_viewport;
 
-void null_framebuffer_create(Framebuffer *framebuffer) {
-	framebuffer->impl = calloc(1, sizeof(FramebufferImpl));
+Framebuffer* null_framebuffer_create(void) {
+	return (void*)&placeholder;
 }
 
-void null_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, uint mipmap, FramebufferAttachment attachment) {
-	framebuffer->impl->attachments[attachment] = tex;
-}
+void null_framebuffer_set_debug_label(Framebuffer *fb, const char *label) { }
+const char* null_framebuffer_get_debug_label(Framebuffer *fb) { return "null framebuffer"; }
+
+void null_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, uint mipmap, FramebufferAttachment attachment) { }
 
 Texture* null_framebuffer_attachment(Framebuffer *framebuffer, FramebufferAttachment attachment) {
-	return framebuffer->impl->attachments[attachment];
+	return (void*)&placeholder;
 }
 
 uint null_framebuffer_attachment_mipmap(Framebuffer *framebuffer, FramebufferAttachment attachment) {
 	return 0;
 }
 
-void null_framebuffer_destroy(Framebuffer *framebuffer) {
-	free(framebuffer->impl);
-	memset(framebuffer, 0, sizeof(Framebuffer));
-}
+void null_framebuffer_destroy(Framebuffer *framebuffer) { }
 
-void null_framebuffer_viewport(Framebuffer *framebuffer, IntRect vp) {
-	if(framebuffer) {
-		framebuffer->impl->viewport = vp;
-	} else {
-		default_fb_viewport = vp;
-	}
-}
+void null_framebuffer_viewport(Framebuffer *framebuffer, IntRect vp) { }
 
 void null_framebuffer_viewport_current(Framebuffer *framebuffer, IntRect *vp) {
-	if(framebuffer) {
-		*vp = framebuffer->impl->viewport;
-	} else {
-		*vp = default_fb_viewport;
-	}
+	*vp = default_fb_viewport;
 }
 
 void null_framebuffer(Framebuffer *framebuffer) { }
@@ -271,6 +254,8 @@ RendererBackend _r_backend_null = {
 		.texture_fill = null_texture_fill,
 		.texture_fill_region = null_texture_fill_region,
 		.framebuffer_create = null_framebuffer_create,
+		.framebuffer_get_debug_label = null_framebuffer_get_debug_label,
+		.framebuffer_set_debug_label = null_framebuffer_set_debug_label,
 		.framebuffer_destroy = null_framebuffer_destroy,
 		.framebuffer_attach = null_framebuffer_attach,
 		.framebuffer_get_attachment = null_framebuffer_attachment,

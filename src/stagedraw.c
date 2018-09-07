@@ -25,7 +25,7 @@
 
 typedef struct CustomFramebuffer {
 	LIST_INTERFACE(struct CustomFramebuffer);
-	Framebuffer fb;
+	Framebuffer *fb;
 	float scale;
 	StageFBPair scaling_base;
 } CustomFramebuffer;
@@ -103,10 +103,10 @@ static void update_fb_size(StageFBPair fb_id) {
 				int sh = h * cfb->scale;
 
 				for(uint i = 0; i < FRAMEBUFFER_MAX_ATTACHMENTS; ++i) {
-					fbutil_resize_attachment(&cfb->fb, i, sw, sh);
+					fbutil_resize_attachment(cfb->fb, i, sw, sh);
 				}
 
-				r_framebuffer_viewport(&cfb->fb, 0, 0, sw, sh);
+				r_framebuffer_viewport(cfb->fb, 0, 0, sw, sh);
 			}
 		}
 	}
@@ -213,17 +213,17 @@ static Framebuffer* add_custom_framebuffer(StageFBPair fbtype, float scale_facto
 		cfg[i].tex_params.height = height;
 	}
 
-	r_framebuffer_create(&cfb->fb);
-	fbutil_create_attachments(&cfb->fb, num_attachments, cfg);
-	r_framebuffer_viewport(&cfb->fb, 0, 0, width, height);
+	cfb->fb = r_framebuffer_create();
+	fbutil_create_attachments(cfb->fb, num_attachments, cfg);
+	r_framebuffer_viewport(cfb->fb, 0, 0, width, height);
 
 	r_state_push();
-	r_framebuffer(&cfb->fb);
+	r_framebuffer(cfb->fb);
 	r_clear_color4(0, 0, 0, 0);
 	r_clear(CLEAR_ALL);
 	r_state_pop();
 
-	return &cfb->fb;
+	return cfb->fb;
 }
 
 Framebuffer* stage_add_foreground_framebuffer(float scale_factor, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
@@ -241,8 +241,8 @@ static void stage_draw_destroy_framebuffers(void) {
 
 	for(CustomFramebuffer *cfb = stagedraw.custom_fbs, *next; cfb; cfb = next) {
 		next = cfb->next;
-		fbutil_destroy_attachments(&cfb->fb);
-		r_framebuffer_destroy(&cfb->fb);
+		fbutil_destroy_attachments(cfb->fb);
+		r_framebuffer_destroy(cfb->fb);
 		free(list_unlink(&stagedraw.custom_fbs, cfb));
 	}
 }

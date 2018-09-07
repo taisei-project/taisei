@@ -22,7 +22,7 @@ typedef struct Texture {
 	GLuint pbo;
 	TextureParams params;
 	bool mipmaps_outdated;
-	char debug_label[128];
+	char debug_label[R_DEBUG_LABEL_SIZE];
 } TextureImpl;
 
 Texture* gl33_texture_create(const TextureParams *params);

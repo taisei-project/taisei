@@ -10,6 +10,7 @@
 
 #include "framebuffer.h"
 #include "core.h"
+#include "../glcommon/debug.h"
 
 static GLuint r_attachment_to_gl_attachment[] = {
 	[FRAMEBUFFER_ATTACH_DEPTH] = GL_DEPTH_ATTACHMENT,
@@ -21,10 +22,11 @@ static GLuint r_attachment_to_gl_attachment[] = {
 
 static_assert(sizeof(r_attachment_to_gl_attachment)/sizeof(GLuint) == FRAMEBUFFER_MAX_ATTACHMENTS, "");
 
-void gl33_framebuffer_create(Framebuffer *framebuffer) {
-	memset(framebuffer, 0, sizeof(Framebuffer));
-	framebuffer->impl = calloc(1, sizeof(FramebufferImpl));
-	glGenFramebuffers(1, &framebuffer->impl->gl_fbo);
+Framebuffer* gl33_framebuffer_create(void) {
+	Framebuffer *fb = calloc(1, sizeof(Framebuffer));
+	glGenFramebuffers(1, &fb->gl_fbo);
+	snprintf(fb->debug_label, sizeof(fb->debug_label), "FBO #%i", fb->gl_fbo);
+	return fb;
 }
 
 void gl33_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, uint mipmap, FramebufferAttachment attachment) {
@@ -35,59 +37,53 @@ void gl33_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, uint mipmap
 	Framebuffer *prev_fb = r_framebuffer_current();
 
 	// make sure gl33_sync_framebuffer doesn't call gl33_framebuffer_initialize here
-	framebuffer->impl->initialized = true;
+	framebuffer->initialized = true;
 
 	r_framebuffer(framebuffer);
 	gl33_sync_framebuffer();
 	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, r_attachment_to_gl_attachment[attachment], GL_TEXTURE_2D, gl_tex, mipmap);
 	r_framebuffer(prev_fb);
 
-	framebuffer->impl->attachments[attachment] = tex;
-	framebuffer->impl->attachment_mipmaps[attachment] = mipmap;
+	framebuffer->attachments[attachment] = tex;
+	framebuffer->attachment_mipmaps[attachment] = mipmap;
 
 	// need to update draw buffers
-	framebuffer->impl->initialized = false;
+	framebuffer->initialized = false;
 }
 
 Texture* gl33_framebuffer_get_attachment(Framebuffer *framebuffer, FramebufferAttachment attachment) {
-	assert(framebuffer->impl != NULL);
 	assert(attachment >= 0 && attachment < FRAMEBUFFER_MAX_ATTACHMENTS);
-	return framebuffer->impl->attachments[attachment];
+	return framebuffer->attachments[attachment];
 }
 
 uint gl33_framebuffer_get_attachment_mipmap(Framebuffer *framebuffer, FramebufferAttachment attachment) {
-	assert(framebuffer->impl != NULL);
 	assert(attachment >= 0 && attachment < FRAMEBUFFER_MAX_ATTACHMENTS);
-
-	return framebuffer->impl->attachment_mipmaps[attachment];
+	return framebuffer->attachment_mipmaps[attachment];
 }
 
 void gl33_framebuffer_destroy(Framebuffer *framebuffer) {
-	if(framebuffer->impl != NULL) {
-		gl33_framebuffer_deleted(framebuffer);
-		glDeleteFramebuffers(1, &framebuffer->impl->gl_fbo);
-		free(framebuffer->impl);
-		framebuffer->impl = NULL;
-	}
+	gl33_framebuffer_deleted(framebuffer);
+	glDeleteFramebuffers(1, &framebuffer->gl_fbo);
+	free(framebuffer);
 }
 
 void gl33_framebuffer_taint(Framebuffer *framebuffer) {
 	for(uint i = 0; i < FRAMEBUFFER_MAX_ATTACHMENTS; ++i) {
-		if(framebuffer->impl->attachments[i] != NULL) {
-			gl33_texture_taint(framebuffer->impl->attachments[i]);
+		if(framebuffer->attachments[i] != NULL) {
+			gl33_texture_taint(framebuffer->attachments[i]);
 		}
 	}
 }
 
 void gl33_framebuffer_prepare(Framebuffer *framebuffer) {
-	if(!framebuffer->impl->initialized) {
-		// NOTE: this framebuffer is guaranteed to be active at this point
+	if(!framebuffer->initialized) {
+		// NOTE: this framebuffer is guaranteed to be bound at this point
 
 		if(glext.draw_buffers) {
 			GLenum drawbufs[FRAMEBUFFER_MAX_COLOR_ATTACHMENTS];
 
 			for(int i = 0; i < FRAMEBUFFER_MAX_COLOR_ATTACHMENTS; ++i) {
-				if(framebuffer->impl->attachments[FRAMEBUFFER_ATTACH_COLOR0 + i] != NULL) {
+				if(framebuffer->attachments[FRAMEBUFFER_ATTACH_COLOR0 + i] != NULL) {
 					drawbufs[i] = GL_COLOR_ATTACHMENT0 + i;
 				} else {
 					drawbufs[i] = GL_NONE;
@@ -97,6 +93,24 @@ void gl33_framebuffer_prepare(Framebuffer *framebuffer) {
 			glDrawBuffers(FRAMEBUFFER_MAX_COLOR_ATTACHMENTS, drawbufs);
 		}
 
-		framebuffer->impl->initialized = true;
+		framebuffer->initialized = true;
 	}
+}
+
+void gl33_framebuffer_set_debug_label(Framebuffer *fb, const char *label) {
+	if(label) {
+		log_debug("\"%s\" renamed to \"%s\"", fb->debug_label, label);
+		strlcpy(fb->debug_label, label, sizeof(fb->debug_label));
+	} else {
+		char tmp[sizeof(fb->debug_label)];
+		snprintf(tmp, sizeof(tmp), "FBO #%i", fb->gl_fbo);
+		log_debug("\"%s\" renamed to \"%s\"", fb->debug_label, tmp);
+		strlcpy(fb->debug_label, tmp, sizeof(fb->debug_label));
+	}
+
+	glcommon_debug_object_label(GL_FRAMEBUFFER, fb->gl_fbo, fb->debug_label);
+}
+
+const char* gl33_framebuffer_get_debug_label(Framebuffer* fb) {
+	return fb->debug_label;
 }

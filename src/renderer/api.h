@@ -17,6 +17,10 @@
 #include "resource/model.h"
 #include "resource/sprite.h"
 
+enum {
+	R_DEBUG_LABEL_SIZE = 128,
+};
+
 typedef enum RendererFeature {
 	RFEAT_DRAW_INSTANCED,
 	RFEAT_DRAW_INSTANCED_BASE_INSTANCE,
@@ -116,11 +120,7 @@ typedef enum FramebufferAttachment {
 	FRAMEBUFFER_MAX_ATTACHMENTS = FRAMEBUFFER_ATTACH_COLOR0 + FRAMEBUFFER_MAX_COLOR_ATTACHMENTS,
 } FramebufferAttachment;
 
-typedef struct FramebufferImpl FramebufferImpl;
-
-typedef struct Framebuffer {
-	FramebufferImpl *impl;
-} Framebuffer;
+typedef struct Framebuffer Framebuffer;
 
 typedef enum Primitive {
 	PRIM_POINTS,
@@ -592,7 +592,9 @@ void r_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, uint w, ui
 void r_texture_invalidate(Texture *tex) attr_nonnull(1);
 void r_texture_destroy(Texture *tex) attr_nonnull(1);
 
-void r_framebuffer_create(Framebuffer *fb) attr_nonnull(1);
+Framebuffer* r_framebuffer_create(void);
+const char* r_framebuffer_get_debug_label(Framebuffer *fb) attr_nonnull(1);
+void r_framebuffer_set_debug_label(Framebuffer *fb, const char* label) attr_nonnull(1);
 void r_framebuffer_attach(Framebuffer *fb, Texture *tex, uint mipmap, FramebufferAttachment attachment) attr_nonnull(1);
 Texture* r_framebuffer_get_attachment(Framebuffer *fb, FramebufferAttachment attachment) attr_nonnull(1);
 uint r_framebuffer_get_attachment_mipmap(Framebuffer *fb, FramebufferAttachment attachment) attr_nonnull(1);

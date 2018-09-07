@@ -312,8 +312,7 @@ static inline IntRect* get_framebuffer_viewport(Framebuffer *fb) {
 		return &R.viewport.default_framebuffer;
 	}
 
-	assert(fb->impl != NULL);
-	return &fb->impl->viewport;
+	return &fb->viewport;
 }
 
 static void gl33_sync_viewport(void) {
@@ -571,10 +570,8 @@ static inline GLuint fbo_num(Framebuffer *fb) {
 		return 0;
 	}
 
-	assert(fb->impl != NULL);
-	assert(fb->impl->gl_fbo != 0);
-
-	return fb->impl->gl_fbo;
+	assert(fb->gl_fbo != 0);
+	return fb->gl_fbo;
 }
 
 void gl33_sync_framebuffer(void) {
@@ -922,7 +919,6 @@ static void gl33_draw(Primitive prim, uint first, uint count, uint32_t *indices,
 }
 
 static void gl33_framebuffer(Framebuffer *fb) {
-	assert(fb == NULL || fb->impl != NULL);
 	R.framebuffer.pending = fb;
 }
 
@@ -1055,6 +1051,8 @@ RendererBackend _r_backend_gl33 = {
 		.framebuffer_create = gl33_framebuffer_create,
 		.framebuffer_destroy = gl33_framebuffer_destroy,
 		.framebuffer_attach = gl33_framebuffer_attach,
+		.framebuffer_get_debug_label = gl33_framebuffer_get_debug_label,
+		.framebuffer_set_debug_label = gl33_framebuffer_set_debug_label,
 		.framebuffer_get_attachment = gl33_framebuffer_get_attachment,
 		.framebuffer_get_attachment_mipmap = gl33_framebuffer_get_attachment_mipmap,
 		.framebuffer_viewport = gl33_framebuffer_viewport,

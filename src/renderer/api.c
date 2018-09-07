@@ -394,8 +394,16 @@ void r_texture_destroy(Texture *tex) {
 	B.texture_destroy(tex);
 }
 
-void r_framebuffer_create(Framebuffer *fb) {
-	B.framebuffer_create(fb);
+Framebuffer* r_framebuffer_create(void) {
+	return B.framebuffer_create();
+}
+
+const char* r_framebuffer_get_debug_label(Framebuffer *fb) {
+	return B.framebuffer_get_debug_label(fb);
+}
+
+void r_framebuffer_set_debug_label(Framebuffer *fb, const char *label) {
+	B.framebuffer_set_debug_label(fb, label);
 }
 
 void r_framebuffer_attach(Framebuffer *fb, Texture *tex, uint mipmap, FramebufferAttachment attachment) {

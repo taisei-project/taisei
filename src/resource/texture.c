@@ -320,7 +320,7 @@ static Texture* texture_post_load(Texture *tex) {
 
 	Texture *fbo_tex;
 	TextureParams params;
-	Framebuffer fb;
+	Framebuffer *fb;
 
 	r_blend(BLEND_NONE);
 	r_disable(RCAP_CULL_FACE);
@@ -339,10 +339,10 @@ static Texture* texture_post_load(Texture *tex) {
 	r_mat_mode(MM_MODELVIEW);
 	r_mat_scale(params.width, params.height, 1);
 	r_mat_translate(0.5, 0.5, 0);
-	r_framebuffer_create(&fb);
-	r_framebuffer_attach(&fb, fbo_tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
-	r_framebuffer_viewport(&fb, 0, 0, params.width, params.height);
-	r_framebuffer(&fb);
+	fb = r_framebuffer_create();
+	r_framebuffer_attach(fb, fbo_tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
+	r_framebuffer_viewport(fb, 0, 0, params.width, params.height);
+	r_framebuffer(fb);
 	r_draw_quad();
 	r_mat_pop();
 	r_mat_mode(MM_PROJECTION);
@@ -352,7 +352,7 @@ static Texture* texture_post_load(Texture *tex) {
 	r_shader_ptr(shader_saved);
 	r_blend(blend_saved);
 	r_capability(RCAP_CULL_FACE, cullcap_saved);
-	r_framebuffer_destroy(&fb);
+	r_framebuffer_destroy(fb);
 	r_texture_destroy(tex);
 
 	return fbo_tex;

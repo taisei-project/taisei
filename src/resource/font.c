@@ -111,7 +111,7 @@ static struct {
 	FT_Library lib;
 	ShaderProgram *default_shader;
 	Texture *render_tex;
-	Framebuffer render_buf;
+	Framebuffer *render_buf;
 
 	struct {
 		SDL_mutex *new_face;
@@ -193,9 +193,9 @@ static void init_fonts(void) {
 	r_texture_set_debug_label(globals.render_tex, buf);
 	#endif
 
-	r_framebuffer_create(&globals.render_buf);
-	r_framebuffer_attach(&globals.render_buf, globals.render_tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
-	r_framebuffer_viewport(&globals.render_buf, 0, 0, 1024, 1024);
+	globals.render_buf = r_framebuffer_create();
+	r_framebuffer_attach(globals.render_buf, globals.render_tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
+	r_framebuffer_viewport(globals.render_buf, 0, 0, 1024, 1024);
 }
 
 static void post_init_fonts(void) {
@@ -204,7 +204,7 @@ static void post_init_fonts(void) {
 
 static void shutdown_fonts(void) {
 	r_texture_destroy(globals.render_tex);
-	r_framebuffer_destroy(&globals.render_buf);
+	r_framebuffer_destroy(globals.render_buf);
 	events_unregister_handler(fonts_event);
 	FT_Done_FreeType(globals.lib);
 	SDL_DestroyMutex(globals.mutex.new_face);
@@ -361,16 +361,15 @@ static SpriteSheet* add_spritesheet(Font *font, SpriteSheetAnchor *spritesheets)
 	// To future generations: if such a function is already in the renderer API,
 	// but this crap is still here, please convert it.
 	Framebuffer *prev_fb = r_framebuffer_current();
-	Framebuffer atlast_fb;
+	Framebuffer *atlas_fb = r_framebuffer_create();
 	Color cc_prev = *r_clear_color_current();
-	r_framebuffer_create(&atlast_fb);
-	r_framebuffer_attach(&atlast_fb, ss->tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
-	r_framebuffer(&atlast_fb);
+	r_framebuffer_attach(atlas_fb, ss->tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
+	r_framebuffer(atlas_fb);
 	r_clear_color4(0, 0, 0, 0);
 	r_clear(CLEAR_COLOR);
 	r_framebuffer(prev_fb);
 	r_clear_color(&cc_prev);
-	r_framebuffer_destroy(&atlast_fb);
+	r_framebuffer_destroy(atlas_fb);
 
 	alist_append(spritesheets, ss);
 	return ss;
@@ -1018,13 +1017,13 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 		r_texture_set_debug_label(tex, buf);
 		#endif
 
-		r_framebuffer_attach(&globals.render_buf, tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
-		r_framebuffer_viewport(&globals.render_buf, 0, 0, tex_new_w, tex_new_h);
+		r_framebuffer_attach(globals.render_buf, tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
+		r_framebuffer_viewport(globals.render_buf, 0, 0, tex_new_w, tex_new_h);
 	}
 
 	r_state_push();
 
-	r_framebuffer(&globals.render_buf);
+	r_framebuffer(globals.render_buf);
 	r_clear_color4(0, 0, 0, 0);
 	r_clear(CLEAR_COLOR);
 
