@@ -55,32 +55,30 @@ UniformType null_uniform_type(Uniform *uniform) { return UNIFORM_FLOAT; }
 
 void null_draw(Primitive prim, uint first, uint count, uint32_t *indices, uint instances, uint base_instance) { }
 
-void null_texture_create(Texture *tex, const TextureParams *params) {
-	tex->w = params->width;
-	tex->h = params->height;
-	tex->type = params->type;
-	tex->impl = (void*)&placeholder;
+Texture* null_texture_create(const TextureParams *params) {
+	return (void*)&placeholder;
+}
+
+void null_texture_get_size(Texture *tex, uint mipmap, uint *width, uint *height) {
+	if(width) *width = 1;
+	if(height) *height = 1;
 }
 
 void null_texture_get_params(Texture *tex, TextureParams *params) {
 	memset(params, 0, sizeof(*params));
-	params->width = tex->w;
-	params->height = tex->h;
-	params->type = tex->type;
+	params->width = 1;
+	params->height = 1;
+	params->type = TEX_TYPE_RGBA;
 }
 
+void null_texture_set_debug_label(Texture *tex, const char *label) { }
+const char* null_texture_get_debug_label(Texture *tex) { return "null texture"; }
 void null_texture_set_filter(Texture *tex, TextureFilterMode fmin, TextureFilterMode fmag) { }
 void null_texture_set_wrap(Texture *tex, TextureWrapMode fmin, TextureWrapMode fmag) { }
 void null_texture_fill(Texture *tex, uint mipmap, void *image_data) { }
 void null_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, uint w, uint h, void *image_data) { }
 void null_texture_invalidate(Texture *tex) { }
-
-void null_texture_destroy(Texture *tex) {
-	memset(tex, 0, sizeof(Texture));
-}
-
-void null_texture(uint unit, Texture *tex) { }
-Texture* null_texture_current(uint unit) { return (void*)&placeholder; }
+void null_texture_destroy(Texture *tex) { }
 
 struct FramebufferImpl {
 	Texture *attachments[FRAMEBUFFER_MAX_ATTACHMENTS];
@@ -263,14 +261,15 @@ RendererBackend _r_backend_null = {
 		.uniform_type = null_uniform_type,
 		.texture_create = null_texture_create,
 		.texture_get_params = null_texture_get_params,
+		.texture_get_size = null_texture_get_size,
+		.texture_get_debug_label = null_texture_get_debug_label,
+		.texture_set_debug_label = null_texture_set_debug_label,
 		.texture_set_filter = null_texture_set_filter,
 		.texture_set_wrap = null_texture_set_wrap,
 		.texture_destroy = null_texture_destroy,
 		.texture_invalidate = null_texture_invalidate,
 		.texture_fill = null_texture_fill,
 		.texture_fill_region = null_texture_fill_region,
-		.texture = null_texture,
-		.texture_current = null_texture_current,
 		.framebuffer_create = null_framebuffer_create,
 		.framebuffer_destroy = null_framebuffer_destroy,
 		.framebuffer_attach = null_framebuffer_attach,

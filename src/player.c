@@ -444,8 +444,7 @@ void player_realdeath(Player *plr) {
 static void player_death_effect_draw_overlay(Projectile *p, int t) {
 	FBPair *framebuffers = stage_get_fbpair(FBPAIR_FG);
 	r_framebuffer(framebuffers->front);
-	r_texture(1, "static");
-	r_uniform_int("noise", 1);
+	r_uniform_sampler("noise", "static");
 	r_uniform_int("frames", global.frames);
 	r_uniform_float("progress", t / p->timeout);
 	r_uniform_vec2("origin", creal(p->pos), VIEWPORT_H - cimag(p->pos));

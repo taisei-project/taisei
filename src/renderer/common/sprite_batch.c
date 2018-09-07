@@ -31,7 +31,7 @@ static struct SpriteBatchState {
 	VertexBuffer vbuf;
 	uint base_instance;
 	Texture *primary_texture;
-	Texture *aux_textures[R_MAX_TEXUNITS - 1];
+	Texture *aux_textures[NUM_SPRITE_AUX_TEXTURES];
 	ShaderProgram *shader;
 	BlendMode blend;
 	Framebuffer *framebuffer;
@@ -144,22 +144,8 @@ void r_flush_sprites(void) {
 
 	r_vertex_array(&_r_sprite_batch.varr);
 	r_shader_ptr(_r_sprite_batch.shader);
-	r_texture_ptr(0, _r_sprite_batch.primary_texture);
-
-	int aux_samplers[NUM_SPRITE_AUX_TEXTURES] = { 0 };
-
-	for(uint i = 0; i < NUM_SPRITE_AUX_TEXTURES; ++i) {
-		Texture *tex = _r_sprite_batch.aux_textures[i];
-
-		if(tex != NULL) {
-			r_texture_ptr(i + 1, tex);
-			aux_samplers[i] = i + 1;
-		}
-	}
-
-	r_uniform_int("tex", 0);
-	r_uniform_int_array("tex_aux[0]", 0, NUM_SPRITE_AUX_TEXTURES, aux_samplers);
-
+	r_uniform_sampler("tex", _r_sprite_batch.primary_texture);
+	r_uniform_sampler_array("tex_aux[0]", 0, NUM_SPRITE_AUX_TEXTURES, _r_sprite_batch.aux_textures);
 	r_framebuffer(_r_sprite_batch.framebuffer);
 	r_blend(_r_sprite_batch.blend);
 	r_capability(RCAP_DEPTH_TEST, _r_sprite_batch.depth_test_enabled);
@@ -217,10 +203,13 @@ static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, VertexB
 		memcpy(attribs.rgba, params->color, sizeof(attribs.rgba));
 	}
 
-	attribs.texrect.x = spr->tex_area.x / spr->tex->w;
-	attribs.texrect.y = spr->tex_area.y / spr->tex->h;
-	attribs.texrect.w = spr->tex_area.w / spr->tex->w;
-	attribs.texrect.h = spr->tex_area.h / spr->tex->h;
+	uint tw, th;
+	r_texture_get_size(spr->tex, 0, &tw, &th);
+
+	attribs.texrect.x = spr->tex_area.x / tw;
+	attribs.texrect.y = spr->tex_area.y / th;
+	attribs.texrect.w = spr->tex_area.w / tw;
+	attribs.texrect.h = spr->tex_area.h / th;
 
 	if(params->flip.x) {
 		attribs.texrect.x += attribs.texrect.w;

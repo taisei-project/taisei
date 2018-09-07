@@ -12,6 +12,9 @@
 #define DEG2RAD (M_PI/180.0)
 #define RAD2DEG (180.0/M_PI)
 
+intmax_t imin(intmax_t, intmax_t) attr_const;
+intmax_t imax(intmax_t, intmax_t) attr_const;
+intmax_t iclamp(intmax_t, intmax_t, intmax_t) attr_const;
 double min(double, double) attr_const;
 double max(double, double) attr_const;
 double clamp(double, double, double) attr_const;

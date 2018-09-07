@@ -426,14 +426,16 @@ static void draw_wall_of_text(float f, const char *txt) {
 	r_mat_translate(w/2, h/2, 0);
 	r_mat_scale(w, h, 1.0);
 
-	ShaderProgram *shader = r_shader_get("spellcard_walloftext");
-	r_shader_ptr(shader);
-	r_uniform_float("w", spr.tex_area.w/spr.tex->w);
-	r_uniform_float("h", spr.tex_area.h/spr.tex->h);
+	uint tw, th;
+	r_texture_get_size(spr.tex, 0, &tw, &th);
+
+	r_shader("spellcard_walloftext");
+	r_uniform_float("w", spr.tex_area.w / tw);
+	r_uniform_float("h", spr.tex_area.h / th);
 	r_uniform_float("ratio", h/w);
 	r_uniform_vec2("origin", creal(global.boss->pos)/h, cimag(global.boss->pos)/w); // what the fuck?
 	r_uniform_float("t", f);
-	r_texture_ptr(0, spr.tex);
+	r_uniform_sampler("tex", spr.tex);
 	r_draw_quad();
 	r_shader_standard();
 
@@ -495,8 +497,7 @@ static void fxaa_rule(Framebuffer *fb) {
 	r_enable(RCAP_DEPTH_TEST);
 	r_depth_func(DEPTH_ALWAYS);
 	r_shader_ptr(stagedraw.shaders.fxaa);
-	r_uniform_int("depth", 1);
-	r_texture_ptr(1, r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
+	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_state_pop();
 }

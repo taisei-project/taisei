@@ -22,6 +22,10 @@ struct ShaderProgram {
 };
 
 struct Uniform {
+	// these are for sampler uniforms
+	LIST_INTERFACE(Uniform);
+	Texture **textures;
+
 	ShaderProgram *prog;
 	size_t elem_size; // bytes
 	uint array_size; // elements
@@ -43,5 +47,6 @@ void gl33_sync_uniforms(ShaderProgram *prog);
 Uniform* gl33_shader_uniform(ShaderProgram *prog, const char *uniform_name);
 UniformType gl33_uniform_type(Uniform *uniform);
 void gl33_uniform(Uniform *uniform, uint offset, uint count, const void *data);
+void gl33_unref_texture_from_samplers(Texture *tex);
 
 extern ResourceHandler gl33_shader_program_res_handler;

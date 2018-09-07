@@ -14,6 +14,8 @@
 #include "../glcommon/debug.h"
 #include "../api.h"
 
+static Uniform *sampler_uniforms;
+
 Uniform* gl33_shader_uniform(ShaderProgram *prog, const char *uniform_name) {
 	return ht_get(&prog->uniforms, uniform_name, NULL);
 }
@@ -163,15 +165,9 @@ static MagicalUniform magical_unfiroms[] = {
 };
 
 static void gl33_update_uniform(Uniform *uniform, uint offset, uint count, const void *data) {
-	if(offset >= uniform->array_size) {
-		// completely out of range
-		return;
-	}
-
-	if(offset + count > uniform->array_size) {
-		// partially out of range
-		count = uniform->array_size - offset;
-	}
+	// these are validated properly in gl33_uniform
+	assert(offset < uniform->array_size);
+	assert(offset + count <= uniform->array_size);
 
 	uint idx_first = offset;
 	uint idx_last = offset + count - 1;
@@ -218,6 +214,21 @@ static void gl33_commit_uniform(Uniform *uniform) {
 
 static void* gl33_sync_uniform(const char *key, void *value, void *arg) {
 	Uniform *uniform = value;
+
+	// special case: for sampler uniforms, we have to construct the actual data from the texture pointers array.
+	if(uniform->type == UNIFORM_SAMPLER) {
+		for(uint i = 0; i < uniform->array_size; ++i) {
+			Texture *tex = uniform->textures[i];
+
+			if(tex == NULL) {
+				continue;
+			}
+
+			GLuint unit = gl33_bind_texture(tex, true);
+			gl33_update_uniform(uniform, i, 1, &unit);
+		}
+	}
+
 	gl33_commit_uniform(uniform);
 	return NULL;
 }
@@ -231,7 +242,24 @@ void gl33_uniform(Uniform *uniform, uint offset, uint count, const void *data) {
 	assert(uniform != NULL);
 	assert(uniform->prog != NULL);
 	assert(uniform->type >= 0 && uniform->type < sizeof(type_to_accessors)/sizeof(*type_to_accessors));
-	gl33_update_uniform(uniform, offset, count, data);
+
+	if(offset >= uniform->array_size) {
+		// completely out of range
+		return;
+	}
+
+	if(offset + count > uniform->array_size) {
+		// partially out of range
+		count = uniform->array_size - offset;
+	}
+
+	// special case: for sampler uniforms, data is an array of Texture pointers that we'll have to bind later.
+	if(uniform->type == UNIFORM_SAMPLER) {
+		Texture **textures = (Texture**)data;
+		memcpy(uniform->textures + offset, textures, sizeof(Texture*) * count);
+	} else {
+		gl33_update_uniform(uniform, offset, count, data);
+	}
 }
 
 static bool cache_uniforms(ShaderProgram *prog) {
@@ -293,18 +321,44 @@ static bool cache_uniforms(ShaderProgram *prog) {
 
 		uni.location = loc;
 		uni.array_size = size;
-		uni.elem_size = typeinfo->element_size * typeinfo->elements;
+
+		if(uni.type == UNIFORM_SAMPLER) {
+			uni.elem_size = sizeof(GLint);
+			uni.textures = calloc(uni.array_size, sizeof(Texture*));
+		} else {
+			uni.elem_size = typeinfo->element_size * typeinfo->elements;
+		}
+
 		uni.cache.commited = calloc(uni.array_size, uni.elem_size);
 		uni.cache.pending = calloc(uni.array_size, uni.elem_size);
 		uni.cache.update_first_idx = uni.array_size;
 
 		type_to_accessors[uni.type].getter(&uni, size, uni.cache.commited);
 
-		ht_set(&prog->uniforms, name, memdup(&uni, sizeof(uni)));
+		Uniform *new_uni = memdup(&uni, sizeof(uni));
+
+		if(uni.type == UNIFORM_SAMPLER) {
+			list_push(&sampler_uniforms, new_uni);
+		}
+
+		ht_set(&prog->uniforms, name, new_uni);
 		log_debug("%s = %i [array elements: %i; size: %zi bytes]", name, loc, uni.array_size, uni.array_size * uni.elem_size);
 	}
 
 	return true;
+}
+
+void gl33_unref_texture_from_samplers(Texture *tex) {
+	for(Uniform *u = sampler_uniforms; u; u = u->next) {
+		assert(u->type == UNIFORM_SAMPLER);
+		assert(u->textures != NULL);
+
+		for(Texture **slot = u->textures; slot < u->textures + u->array_size; ++slot) {
+			if(*slot == tex) {
+				*slot = NULL;
+			}
+		}
+	}
 }
 
 /*
@@ -400,6 +454,12 @@ static void print_info_log(GLuint prog) {
 
 static void* free_uniform(const char *key, void *data, void *arg) {
 	Uniform *uniform = data;
+
+	if(uniform->type == UNIFORM_SAMPLER) {
+		list_unlink(&sampler_uniforms, uniform);
+	}
+
+	free(uniform->textures);
 	free(uniform->cache.commited);
 	free(uniform->cache.pending);
 	free(uniform);

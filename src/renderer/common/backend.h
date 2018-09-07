@@ -45,17 +45,17 @@ typedef struct RendererFuncs {
 	void (*uniform)(Uniform *uniform, uint offset, uint count, const void *data);
 	UniformType (*uniform_type)(Uniform *uniform);
 
-	void (*texture_create)(Texture *tex, const TextureParams *params);
+	Texture* (*texture_create)(const TextureParams *params);
 	void (*texture_get_params)(Texture *tex, TextureParams *params);
+	void (*texture_get_size)(Texture *tex, uint mipmap, uint *width, uint *height);
+	const char* (*texture_get_debug_label)(Texture *tex);
+	void (*texture_set_debug_label)(Texture *tex, const char *label);
 	void (*texture_set_filter)(Texture *tex, TextureFilterMode fmin, TextureFilterMode fmag);
 	void (*texture_set_wrap)(Texture *tex, TextureWrapMode ws, TextureWrapMode wt);
 	void (*texture_destroy)(Texture *tex);
 	void (*texture_invalidate)(Texture *tex);
 	void (*texture_fill)(Texture *tex, uint mipmap, void *image_data);
 	void (*texture_fill_region)(Texture *tex, uint mipmap, uint x, uint y, uint w, uint h, void *image_data);
-
-	void (*texture)(uint unit, Texture *tex);
-	Texture* (*texture_current)(uint unit);
 
 	void (*framebuffer_create)(Framebuffer *framebuffer);
 	void (*framebuffer_destroy)(Framebuffer *framebuffer);

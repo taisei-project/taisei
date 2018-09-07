@@ -149,6 +149,7 @@ static void draw_laser_curve_specialized(Laser *l) {
 	}
 
 	r_color(&l->color);
+	r_uniform_sampler("tex", "part/lasercurve");
 	r_uniform_vec2_complex("origin", l->pos);
 	r_uniform_vec2_array_complex("args[0]", 0, 4, l->args);
 	r_uniform_float("timeshift", timeshift);
@@ -167,6 +168,7 @@ static void draw_laser_curve_generic(Laser *l) {
 	}
 
 	r_color(&l->color);
+	r_uniform_sampler("tex", "part/lasercurve");
 	r_uniform_float("timeshift", timeshift);
 	r_uniform_float("width", l->width);
 	r_uniform_float("width_exponent", l->width_exponent);
@@ -191,8 +193,6 @@ static void draw_laser_curve_generic(Laser *l) {
 
 static void ent_draw_laser(EntityInterface *ent) {
 	Laser *laser = ENT_CAST(ent, Laser);
-
-	r_texture(0, "part/lasercurve");
 
 	if(laser->shader) {
 		// Specialized lasers work with either vertex array,

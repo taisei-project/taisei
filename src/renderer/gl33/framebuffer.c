@@ -29,9 +29,9 @@ void gl33_framebuffer_create(Framebuffer *framebuffer) {
 
 void gl33_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, uint mipmap, FramebufferAttachment attachment) {
 	assert(attachment >= 0 && attachment < FRAMEBUFFER_MAX_ATTACHMENTS);
-	assert(mipmap < tex->impl->params.mipmaps);
+	assert(!tex || mipmap < tex->params.mipmaps);
 
-	GLuint gl_tex = tex ? tex->impl->gl_handle : 0;
+	GLuint gl_tex = tex ? tex->gl_handle : 0;
 	Framebuffer *prev_fb = r_framebuffer_current();
 
 	// make sure gl33_sync_framebuffer doesn't call gl33_framebuffer_initialize here

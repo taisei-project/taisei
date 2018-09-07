@@ -103,18 +103,7 @@ typedef struct TextureParams {
 	bool stream;
 } attr_designated_init TextureParams;
 
-typedef struct TextureImpl TextureImpl;
-
-typedef struct Texture {
-	uint w;
-	uint h;
-	TextureType type;
-	TextureImpl *impl;
-} Texture;
-
-enum {
-	R_MAX_TEXUNITS = 8,
-};
+typedef struct Texture Texture;
 
 typedef enum FramebufferAttachment {
 	FRAMEBUFFER_ATTACH_DEPTH,
@@ -351,7 +340,7 @@ typedef union ShaderCustomParams {
 	Color color;
 } ShaderCustomParams;
 
-#define NUM_SPRITE_AUX_TEXTURES (R_MAX_TEXUNITS - 1)
+#define NUM_SPRITE_AUX_TEXTURES 3
 
 typedef struct SpriteParams {
 	const char *sprite;
@@ -432,7 +421,7 @@ Uniform* r_shader_uniform(ShaderProgram *prog, const char *uniform_name) attr_no
 UniformType r_uniform_type(Uniform *uniform);
 void r_uniform_ptr_unsafe(Uniform *uniform, uint offset, uint count, void *data);
 
-#define _R_UNIFORM_GENERIC(suffix, uniform, ...) (_Generic(uniform, \
+#define _R_UNIFORM_GENERIC(suffix, uniform, ...) (_Generic((uniform), \
 	 char* : _r_uniform_##suffix, \
 	 Uniform* : _r_uniform_ptr_##suffix \
 ))(uniform, __VA_ARGS__)
@@ -557,19 +546,51 @@ void _r_uniform_ptr_ivec4_array(Uniform *uniform, uint offset, uint count, ivec4
 void _r_uniform_ivec4_array(const char *uniform, uint offset, uint count, ivec4_noalign elements[count]) attr_nonnull(1, 4);
 #define r_uniform_ivec4_array(uniform, ...) _R_UNIFORM_GENERIC(ivec4_array, uniform, __VA_ARGS__)
 
+void _r_uniform_ptr_sampler_ptr(Uniform *uniform, Texture *tex) attr_nonnull(2);
+void _r_uniform_sampler_ptr(const char *uniform, Texture *tex) attr_nonnull(1, 2);
+void _r_uniform_ptr_sampler(Uniform *uniform, const char *tex) attr_nonnull(2);
+void _r_uniform_sampler(const char *uniform, const char *tex) attr_nonnull(1, 2);
+#define r_uniform_sampler(uniform, tex) (_Generic((uniform), \
+	char*         : _Generic((tex), \
+			char*     : _r_uniform_sampler, \
+			Texture*  : _r_uniform_sampler_ptr \
+	), \
+	Uniform*      : _Generic((tex), \
+			char*     : _r_uniform_ptr_sampler, \
+			Texture*  : _r_uniform_ptr_sampler_ptr \
+	) \
+))(uniform, tex)
+
+void _r_uniform_ptr_sampler_array_ptr(Uniform *uniform, uint offset, uint count, Texture *values[count]) attr_nonnull(4);
+void _r_uniform_sampler_array_ptr(const char *uniform, uint offset, uint count, Texture *values[count]) attr_nonnull(1, 4);
+void _r_uniform_ptr_sampler_array(Uniform *uniform, uint offset, uint count, const char *values[count]) attr_nonnull(4);
+void _r_uniform_sampler_array(const char *uniform, uint offset, uint count, const char *values[count]) attr_nonnull(4);
+#define r_uniform_sampler_array(uniform, offset, count, values) (_Generic(uniform, \
+	 char*        : _Generic((values), \
+			char**    : _r_uniform_sampler_array, \
+			Texture** : _r_uniform_sampler_array_ptr \
+	), \
+	 Uniform*     : _Generic((values), \
+			char**    : _r_uniform_ptr_sampler_array, \
+			Texture** : _r_uniform_ptr_sampler_array_ptr \
+	) \
+))(uniform, offset, count, values)
+
 void r_draw(Primitive prim, uint first, uint count, uint32_t *indices, uint instances, uint base_instance);
 
-void r_texture_create(Texture *tex, const TextureParams *params) attr_nonnull(1, 2);
+Texture* r_texture_create(const TextureParams *params) attr_nonnull(1);
+void r_texture_get_size(Texture *tex, uint mipmap, uint *width, uint *height) attr_nonnull(1);
+uint r_texture_get_width(Texture *tex, uint mipmap) attr_nonnull(1);
+uint r_texture_get_height(Texture *tex, uint mipmap) attr_nonnull(1);
 void r_texture_get_params(Texture *tex, TextureParams *params) attr_nonnull(1, 2);
+const char* r_texture_get_debug_label(Texture *tex) attr_nonnull(1);
+void r_texture_set_debug_label(Texture *tex, const char *label) attr_nonnull(1);
 void r_texture_set_filter(Texture *tex, TextureFilterMode fmin, TextureFilterMode fmag) attr_nonnull(1);
 void r_texture_set_wrap(Texture *tex, TextureWrapMode ws, TextureWrapMode wt) attr_nonnull(1);
 void r_texture_fill(Texture *tex, uint mipmap, void *image_data) attr_nonnull(1, 3);
 void r_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, uint w, uint h, void *image_data) attr_nonnull(1, 7);
 void r_texture_invalidate(Texture *tex) attr_nonnull(1);
 void r_texture_destroy(Texture *tex) attr_nonnull(1);
-
-void r_texture_ptr(uint unit, Texture *tex);
-Texture* r_texture_current(uint unit);
 
 void r_framebuffer_create(Framebuffer *fb) attr_nonnull(1);
 void r_framebuffer_attach(Framebuffer *fb, Texture *tex, uint mipmap, FramebufferAttachment attachment) attr_nonnull(1);
@@ -731,11 +752,6 @@ void r_color3(float r, float g, float b) {
 static inline attr_must_inline attr_nonnull(1)
 void r_shader(const char *prog) {
 	r_shader_ptr(r_shader_get(prog));
-}
-
-static inline attr_must_inline
-void r_texture(uint unit, const char *tex) {
-	r_texture_ptr(unit, r_texture_get(tex));
 }
 
 static inline attr_must_inline

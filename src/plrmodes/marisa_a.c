@@ -42,7 +42,7 @@ static void draw_laser_beam(complex src, complex dst, double size, double step, 
 	r_mat_scale(cabs(dir) / step, 1, 1);
 	r_mat_mode(MM_MODELVIEW);
 
-	r_texture_ptr(0, tex);
+	r_uniform_sampler("tex", tex);
 	r_uniform_float(u_length, cabs(dir) / step);
 	r_draw_quad();
 
@@ -236,7 +236,6 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	r_framebuffer(fbp_aux->back);
 	r_clear_color4(0, 0, 0, 0);
 	r_clear(CLEAR_COLOR);
-	r_texture_ptr(0, r_framebuffer_get_attachment(fbp_aux->front, FRAMEBUFFER_ATTACH_COLOR0));
 	r_shader("max_to_alpha");
 	draw_framebuffer_tex(fbp_aux->front, VIEWPORT_W, VIEWPORT_H);
 	fbpair_swap(fbp_aux);

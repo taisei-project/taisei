@@ -127,12 +127,12 @@ bool rect_rect_intersection(Rect r1, Rect r2, bool edges, Rect *out) {
 	}
 
 	out->top_left = CMPLX(
-    fmax(rect_left(r1), rect_left(r2)),
+		fmax(rect_left(r1), rect_left(r2)),
 		fmax(rect_top(r1), rect_top(r2))
 	);
 
 	out->bottom_right = CMPLX(
-    fmin(rect_right(r1), rect_right(r2)),
+		fmin(rect_right(r1), rect_right(r2)),
 		fmin(rect_bottom(r1), rect_bottom(r2))
 	);
 

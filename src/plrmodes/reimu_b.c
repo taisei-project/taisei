@@ -164,8 +164,8 @@ static void reimu_dream_gap_draw_lights(int time, double strength) {
 		return;
 	}
 
-	r_texture(0, "gaplight");
 	r_shader("reimu_gap_light");
+	r_uniform_sampler("tex", "gaplight");
 	r_uniform_float("time", time / 60.0);
 	r_uniform_float("strength", strength);
 

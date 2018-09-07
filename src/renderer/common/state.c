@@ -89,12 +89,6 @@ void r_state_pop(void) {
 		// TODO
 	}
 
-	RESTORE(RSTATE_TEXUNITS) {
-		for(uint i = 0; i < R_MAX_TEXUNITS; ++i) {
-			B.texture(i, S.texunits[i]);
-		}
-	}
-
 	RESTORE(RSTATE_RENDERTARGET) {
 		B.framebuffer(S.framebuffer);
 	}
@@ -163,14 +157,6 @@ void _r_state_touch_shader(void) {
 
 void _r_state_touch_uniform(Uniform *uniform) {
 	// TODO
-}
-
-void _r_state_touch_texunit(uint unit) {
-	TAINT(RSTATE_TEXUNITS, {
-		for(uint i = 0; i < R_MAX_TEXUNITS; ++i) {
-			S.texunits[i] = B.texture_current(i);
-		}
-	});
 }
 
 void _r_state_touch_framebuffer(void) {

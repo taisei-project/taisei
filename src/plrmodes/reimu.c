@@ -121,8 +121,7 @@ void reimu_common_bomb_bg(Player *p, float alpha) {
 	r_color(HSLA_MUL_ALPHA(global.frames / 30.0, 0.2, 0.9, alpha));
 
 	r_shader("reimu_bomb_bg");
-	r_texture(1, "runes");
-	r_uniform_int("runes", 1);
+	r_uniform_sampler("runes", "runes");
 	r_uniform_float("zoom", VIEWPORT_H / sqrt(VIEWPORT_W*VIEWPORT_W + VIEWPORT_H*VIEWPORT_H));
 	r_uniform_vec2("aspect", VIEWPORT_W / (float)VIEWPORT_H, 1);
 	r_uniform_float("time", 9000 + 3 * global.frames / 60.0);
