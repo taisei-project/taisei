@@ -70,13 +70,20 @@ typedef struct RendererFuncs {
 	void (*framebuffer)(Framebuffer *framebuffer);
 	Framebuffer* (*framebuffer_current)(void);
 
-	void (*vertex_buffer_create)(VertexBuffer *vbuf, size_t capacity, void *data);
+	VertexBuffer* (*vertex_buffer_create)(size_t capacity, void *data);
+	const char* (*vertex_buffer_get_debug_label)(VertexBuffer *vbuf);
+	void (*vertex_buffer_set_debug_label)(VertexBuffer *vbuf, const char *label);
 	void (*vertex_buffer_destroy)(VertexBuffer *vbuf);
 	void (*vertex_buffer_invalidate)(VertexBuffer *vbuf);
 	void (*vertex_buffer_write)(VertexBuffer *vbuf, size_t offset, size_t data_size, void *data);
 	void (*vertex_buffer_append)(VertexBuffer *vbuf, size_t data_size, void *data);
+	size_t (*vertex_buffer_get_capacity)(VertexBuffer *vbuf);
+	size_t (*vertex_buffer_get_cursor)(VertexBuffer *vbuf);
+	void (*vertex_buffer_set_cursor)(VertexBuffer *vbuf, size_t pos);
 
-	void (*vertex_array_create)(VertexArray *varr);
+	VertexArray* (*vertex_array_create)(void);
+	const char* (*vertex_array_get_debug_label)(VertexArray *varr);
+	void (*vertex_array_set_debug_label)(VertexArray *varr, const char *label);
 	void (*vertex_array_destroy)(VertexArray *varr);
 	void (*vertex_array_layout)(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]);
 	void (*vertex_array_attach_buffer)(VertexArray *varr, VertexBuffer *vbuf, uint attachment);

@@ -110,42 +110,24 @@ void null_framebuffer_viewport_current(Framebuffer *framebuffer, IntRect *vp) {
 void null_framebuffer(Framebuffer *framebuffer) { }
 Framebuffer* null_framebuffer_current(void) { return (void*)&placeholder; }
 
-void null_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, void *data) {
-	vbuf->offset = 0;
-	vbuf->size = capacity;
-	vbuf->impl = (void*)&placeholder;
-}
-
-void null_vertex_buffer_destroy(VertexBuffer *vbuf) {
-	memset(vbuf, 0, sizeof(VertexBuffer));
-}
-
-void null_vertex_buffer_invalidate(VertexBuffer *vbuf) {
-	vbuf->offset = 0;
-}
-
+VertexBuffer* null_vertex_buffer_create(size_t capacity, void *data) { return (void*)&placeholder; }
+void null_vertex_buffer_set_debug_label(VertexBuffer *vbuf, const char *label) { }
+const char* null_vertex_buffer_get_debug_label(VertexBuffer *vbuf) { return "null vertex buffer"; }
+void null_vertex_buffer_destroy(VertexBuffer *vbuf) { }
+void null_vertex_buffer_invalidate(VertexBuffer *vbuf) { }
 void null_vertex_buffer_write(VertexBuffer *vbuf, size_t offset, size_t data_size, void *data) { }
+void null_vertex_buffer_append(VertexBuffer *vbuf, size_t data_size, void *data) { }
+size_t null_vertex_buffer_get_capacity(VertexBuffer *vbuf) { return 1 << 16; }
+size_t null_vertex_buffer_get_cursor(VertexBuffer *vbuf) { return 0; }
+void null_vertex_buffer_set_cursor(VertexBuffer *vbuf, size_t pos) { }
 
-void null_vertex_buffer_append(VertexBuffer *vbuf, size_t data_size, void *data) {
-	vbuf->offset += data_size;
-}
-
-void null_vertex_array_create(VertexArray *varr) {
-	varr->impl = (void*)&placeholder;
-}
-
-void null_vertex_array_destroy(VertexArray *varr) {
-	memset(varr, 0, sizeof(VertexArray));
-}
-
+VertexArray* null_vertex_array_create(void) { return (void*)&placeholder; }
+void null_vertex_array_set_debug_label(VertexArray *varr, const char *label) { }
+const char* null_vertex_array_get_debug_label(VertexArray *varr) { return "null vertex array"; }
+void null_vertex_array_destroy(VertexArray *varr) { }
 void null_vertex_array_attach_buffer(VertexArray *varr, VertexBuffer *vbuf, uint attachment) { }
-
-VertexBuffer* null_vertex_array_get_attachment(VertexArray *varr, uint attachment) {
-	return (void*)&placeholder;
-}
-
+VertexBuffer* null_vertex_array_get_attachment(VertexArray *varr, uint attachment) { return (void*)&placeholder; }
 void null_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]) { }
-
 void null_vertex_array(VertexArray *varr) { }
 VertexArray* null_vertex_array_current(void) { return (void*)&placeholder; }
 
@@ -265,11 +247,18 @@ RendererBackend _r_backend_null = {
 		.framebuffer = null_framebuffer,
 		.framebuffer_current = null_framebuffer_current,
 		.vertex_buffer_create = null_vertex_buffer_create,
+		.vertex_buffer_get_debug_label = null_vertex_buffer_get_debug_label,
+		.vertex_buffer_set_debug_label = null_vertex_buffer_set_debug_label,
 		.vertex_buffer_destroy = null_vertex_buffer_destroy,
 		.vertex_buffer_invalidate = null_vertex_buffer_invalidate,
 		.vertex_buffer_write = null_vertex_buffer_write,
 		.vertex_buffer_append = null_vertex_buffer_append,
+		.vertex_buffer_get_capacity = null_vertex_buffer_get_capacity,
+		.vertex_buffer_get_cursor = null_vertex_buffer_get_cursor,
+		.vertex_buffer_set_cursor = null_vertex_buffer_set_cursor,
 		.vertex_array_create = null_vertex_array_create,
+		.vertex_array_get_debug_label = null_vertex_array_get_debug_label,
+		.vertex_array_set_debug_label = null_vertex_array_set_debug_label,
 		.vertex_array_destroy = null_vertex_array_destroy,
 		.vertex_array_layout = null_vertex_array_layout,
 		.vertex_array_attach_buffer = null_vertex_array_attach_buffer,

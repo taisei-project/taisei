@@ -17,8 +17,14 @@
 #include "resource/model.h"
 #include "resource/sprite.h"
 
+typedef struct Texture Texture;
+typedef struct Framebuffer Framebuffer;
+typedef struct VertexBuffer VertexBuffer;
+typedef struct VertexArray VertexArray;
+
 enum {
 	R_DEBUG_LABEL_SIZE = 128,
+	R_NUM_SPRITE_AUX_TEXTURES = 3,
 };
 
 typedef enum RendererFeature {
@@ -83,8 +89,12 @@ typedef enum TextureMipmapMode {
 	TEX_MIPMAP_AUTO,
 } TextureMipmapMode;
 
-#define TEX_ANISOTROPY_DEFAULT 8
-#define TEX_MIPMAPS_MAX ((uint)(-1))
+enum {
+	TEX_ANISOTROPY_DEFAULT = 8,
+	// TEX_MIPMAPS_MAX = ((uint)(-1)),
+	// pedantic out-of-range warning
+	#define TEX_MIPMAPS_MAX ((uint)(-1))
+};
 
 typedef struct TextureParams {
 	uint width;
@@ -107,8 +117,6 @@ typedef struct TextureParams {
 	bool stream;
 } attr_designated_init TextureParams;
 
-typedef struct Texture Texture;
-
 typedef enum FramebufferAttachment {
 	FRAMEBUFFER_ATTACH_DEPTH,
 	FRAMEBUFFER_ATTACH_COLOR0,
@@ -120,8 +128,6 @@ typedef enum FramebufferAttachment {
 	FRAMEBUFFER_MAX_ATTACHMENTS = FRAMEBUFFER_ATTACH_COLOR0 + FRAMEBUFFER_MAX_COLOR_ATTACHMENTS,
 } FramebufferAttachment;
 
-typedef struct Framebuffer Framebuffer;
-
 typedef enum Primitive {
 	PRIM_POINTS,
 	PRIM_LINE_STRIP,
@@ -131,20 +137,6 @@ typedef enum Primitive {
 	PRIM_TRIANGLE_FAN,
 	PRIM_TRIANGLES,
 } Primitive;
-
-typedef struct VertexBufferImpl VertexBufferImpl;
-
-typedef struct VertexBuffer {
-	uint size;
-	uint offset;
-	VertexBufferImpl *impl;
-} VertexBuffer;
-
-typedef struct VertexArrayImpl VertexArrayImpl;
-
-typedef struct VertexArray {
-	VertexArrayImpl *impl;
-} VertexArray;
 
 typedef enum VertexAttribType {
 	VA_FLOAT,
@@ -340,8 +332,6 @@ typedef union ShaderCustomParams {
 	Color color;
 } ShaderCustomParams;
 
-#define NUM_SPRITE_AUX_TEXTURES 3
-
 typedef struct SpriteParams {
 	const char *sprite;
 	Sprite *sprite_ptr;
@@ -349,7 +339,7 @@ typedef struct SpriteParams {
 	const char *shader;
 	ShaderProgram *shader_ptr;
 
-	Texture *aux_textures[NUM_SPRITE_AUX_TEXTURES];
+	Texture *aux_textures[R_NUM_SPRITE_AUX_TEXTURES];
 
 	const Color *color;
 	BlendMode blend;
@@ -606,13 +596,20 @@ void r_framebuffer_destroy(Framebuffer *fb) attr_nonnull(1);
 void r_framebuffer(Framebuffer *fb);
 Framebuffer* r_framebuffer_current(void);
 
-void r_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, void *data) attr_nonnull(1);
+VertexBuffer* r_vertex_buffer_create(size_t capacity, void *data);
+const char* r_vertex_buffer_get_debug_label(VertexBuffer *vbuf) attr_nonnull(1);
+void r_vertex_buffer_set_debug_label(VertexBuffer *vbuf, const char* label) attr_nonnull(1);
 void r_vertex_buffer_destroy(VertexBuffer *vbuf) attr_nonnull(1);
 void r_vertex_buffer_invalidate(VertexBuffer *vbuf) attr_nonnull(1);
 void r_vertex_buffer_write(VertexBuffer *vbuf, size_t offset, size_t data_size, void *data) attr_nonnull(1, 4);
 void r_vertex_buffer_append(VertexBuffer *vbuf, size_t data_size, void *data) attr_nonnull(1, 3);
+size_t r_vertex_buffer_get_capacity(VertexBuffer *vbuf) attr_nonnull(1);
+size_t r_vertex_buffer_get_cursor(VertexBuffer *vbuf) attr_nonnull(1);
+void r_vertex_buffer_seek_cursor(VertexBuffer *vbuf, ssize_t offset, int whence) attr_nonnull(1);
 
-void r_vertex_array_create(VertexArray *varr) attr_nonnull(1);
+VertexArray* r_vertex_array_create(void);
+const char* r_vertex_array_get_debug_label(VertexArray *varr) attr_nonnull(1);
+void r_vertex_array_set_debug_label(VertexArray *varr, const char* label) attr_nonnull(1);
 void r_vertex_array_destroy(VertexArray *varr) attr_nonnull(1);
 void r_vertex_array_attach_buffer(VertexArray *varr, VertexBuffer *vbuf, uint attachment) attr_nonnull(1, 2);
 VertexBuffer* r_vertex_array_get_attachment(VertexArray *varr, uint attachment)  attr_nonnull(1);

@@ -12,15 +12,18 @@
 #include "../api.h"
 #include "opengl.h"
 
-struct VertexArrayImpl {
-	GLuint gl_handle;
+struct VertexArray {
 	VertexBuffer **attachments;
-	uint num_attachments;
 	VertexAttribFormat *attribute_layout;
+	GLuint gl_handle;
+	uint num_attachments;
 	uint num_attributes;
+	char debug_label[R_DEBUG_LABEL_SIZE];
 };
 
-void gl33_vertex_array_create(VertexArray *varr);
+VertexArray* gl33_vertex_array_create(void);
+const char* gl33_vertex_array_get_debug_label(VertexArray *varr);
+void gl33_vertex_array_set_debug_label(VertexArray *varr, const char *label);
 void gl33_vertex_array_destroy(VertexArray *varr);
 void gl33_vertex_array_attach_buffer(VertexArray *varr, VertexBuffer *vbuf, uint attachment);
 VertexBuffer* gl33_vertex_array_get_attachment(VertexArray *varr, uint attachment);

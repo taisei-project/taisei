@@ -445,8 +445,16 @@ Framebuffer * r_framebuffer_current(void) {
 	return B.framebuffer_current();
 }
 
-void r_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, void *data) {
-	B.vertex_buffer_create(vbuf, capacity, data);
+VertexBuffer* r_vertex_buffer_create(size_t capacity, void *data) {
+	return B.vertex_buffer_create(capacity, data);
+}
+
+const char* r_vertex_buffer_get_debug_label(VertexBuffer *vbuf) {
+	return B.vertex_buffer_get_debug_label(vbuf);
+}
+
+void r_vertex_buffer_set_debug_label(VertexBuffer *vbuf, const char* label) {
+	B.vertex_buffer_set_debug_label(vbuf, label);
 }
 
 void r_vertex_buffer_destroy(VertexBuffer *vbuf) {
@@ -465,8 +473,37 @@ void r_vertex_buffer_append(VertexBuffer *vbuf, size_t data_size, void *data) {
 	B.vertex_buffer_append(vbuf, data_size, data);
 }
 
-void r_vertex_array_create(VertexArray *varr) {
-	B.vertex_array_create(varr);
+size_t r_vertex_buffer_get_capacity(VertexBuffer *vbuf) {
+	return B.vertex_buffer_get_capacity(vbuf);
+}
+
+size_t r_vertex_buffer_get_cursor(VertexBuffer *vbuf) {
+	return B.vertex_buffer_get_cursor(vbuf);
+}
+
+void r_vertex_buffer_seek_cursor(VertexBuffer *vbuf, ssize_t offset, int whence) {
+	size_t pos;
+
+	switch(whence) {
+		case SEEK_CUR: pos = r_vertex_buffer_get_cursor(vbuf) + offset; break;
+		case SEEK_END: pos = r_vertex_buffer_get_capacity(vbuf) + offset; break;
+		case SEEK_SET: pos = offset; break;
+		default: UNREACHABLE;
+	}
+
+	B.vertex_buffer_set_cursor(vbuf, pos);
+}
+
+VertexArray* r_vertex_array_create(void) {
+	return B.vertex_array_create();
+}
+
+const char* r_vertex_array_get_debug_label(VertexArray *varr) {
+	return B.vertex_array_get_debug_label(varr);
+}
+
+void r_vertex_array_set_debug_label(VertexArray *varr, const char* label) {
+	B.vertex_array_set_debug_label(varr, label);
 }
 
 void r_vertex_array_destroy(VertexArray *varr) {

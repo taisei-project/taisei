@@ -739,11 +739,11 @@ void gl33_shader_deleted(ShaderProgram *prog) {
 }
 
 void gl33_vertex_buffer_deleted(VertexBuffer *vbuf) {
-	if(R.vbo.active == vbuf->impl->gl_handle) {
+	if(R.vbo.active == vbuf->gl_handle) {
 		R.vbo.active = 0;
 	}
 
-	if(R.vbo.pending == vbuf->impl->gl_handle) {
+	if(R.vbo.pending == vbuf->gl_handle) {
 		R.vbo.pending = 0;
 	}
 }
@@ -758,11 +758,11 @@ void gl33_vertex_array_deleted(VertexArray *varr) {
 		r_vertex_array(r_vertex_array_static_models());
 	}
 
-	if(R.vao.active == varr->impl->gl_handle) {
+	if(R.vao.active == varr->gl_handle) {
 		R.vao.active = 0;
 	}
 
-	if(R.vao.pending == varr->impl->gl_handle) {
+	if(R.vao.pending == varr->gl_handle) {
 		R.vao.pending = 0;
 	}
 }
@@ -868,10 +868,8 @@ static const Color* gl33_color_current(void) {
 }
 
 static void gl33_vertex_array(VertexArray *varr) {
-	assert(varr->impl != NULL);
-
 	R.vertex_array.pending = varr;
-	gl33_bind_vao(varr->impl->gl_handle);
+	gl33_bind_vao(varr->gl_handle);
 }
 
 static VertexArray* gl33_vertex_array_current(void) {
@@ -1060,12 +1058,19 @@ RendererBackend _r_backend_gl33 = {
 		.framebuffer = gl33_framebuffer,
 		.framebuffer_current = gl33_framebuffer_current,
 		.vertex_buffer_create = gl33_vertex_buffer_create,
+		.vertex_buffer_set_debug_label = gl33_vertex_buffer_set_debug_label,
+		.vertex_buffer_get_debug_label = gl33_vertex_buffer_get_debug_label,
 		.vertex_buffer_destroy = gl33_vertex_buffer_destroy,
 		.vertex_buffer_invalidate = gl33_vertex_buffer_invalidate,
 		.vertex_buffer_write = gl33_vertex_buffer_write,
 		.vertex_buffer_append = gl33_vertex_buffer_append,
-		.vertex_array_create = gl33_vertex_array_create,
+		.vertex_buffer_get_capacity = gl33_vertex_buffer_get_capacity,
+		.vertex_buffer_get_cursor = gl33_vertex_buffer_get_cursor,
+		.vertex_buffer_set_cursor = gl33_vertex_buffer_set_cursor,
 		.vertex_array_destroy = gl33_vertex_array_destroy,
+		.vertex_array_create = gl33_vertex_array_create,
+		.vertex_array_set_debug_label = gl33_vertex_array_set_debug_label,
+		.vertex_array_get_debug_label = gl33_vertex_array_get_debug_label,
 		.vertex_array_layout = gl33_vertex_array_layout,
 		.vertex_array_attach_buffer = gl33_vertex_array_attach_buffer,
 		.vertex_array_get_attachment = gl33_vertex_array_get_attachment,
