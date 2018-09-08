@@ -46,7 +46,7 @@ void null_shader(ShaderProgram *prog) { }
 ShaderProgram* null_shader_current(void) { return (void*)&placeholder; }
 
 Uniform* null_shader_uniform(ShaderProgram *prog, const char *uniform_name) {
-	return (void*)&placeholder;
+	return NULL;
 }
 
 void null_uniform(Uniform *uniform, uint offset, uint count, const void *data) { }
