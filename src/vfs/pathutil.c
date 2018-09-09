@@ -95,6 +95,28 @@ void vfs_path_split_right(char *path, char **lpath, char **rpath) {
 	}
 }
 
+void vfs_path_resolve_relative(char *buf, size_t bufsize, const char *basepath, const char *relpath) {
+	assert(bufsize >= strlen(basepath) + strlen(relpath) + 1);
+
+	if(!*basepath) {
+		strcpy(buf, relpath);
+		return;
+	}
+
+	strcpy(buf, basepath);
+	char *end = strrchr(buf, 0);
+
+	while(end > buf) {
+		if(end[-1] == VFS_PATH_SEP) {
+			break;
+		}
+
+		--end;
+	}
+
+	strcpy(end, relpath);
+}
+
 void vfs_path_root_prefix(char *path) {
 	if(!strchr(VFS_PATH_SEPS, *path)) {
 		memmove(path+1, path, strlen(path)+1);

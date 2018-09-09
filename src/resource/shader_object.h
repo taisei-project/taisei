@@ -11,16 +11,15 @@
 
 #include "resource.h"
 
-typedef enum ShaderObjectType {
-	SHOBJ_VERT,
-	SHOBJ_FRAG,
-	SHOBJ_NUM_TYPES,
-} ShaderObjectType;
+typedef enum ShaderStage {
+	SHADER_STAGE_VERTEX,
+	SHADER_STAGE_FRAGMENT,
+} ShaderStage;
 
 typedef struct ShaderObjectImpl ShaderObjectImpl;
 
 typedef struct ShaderObject {
-	ShaderObjectType type;
+	ShaderStage stage;
 	ShaderObjectImpl *impl;
 } ShaderObject;
 
