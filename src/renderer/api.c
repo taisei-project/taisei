@@ -317,6 +317,42 @@ DepthTestFunc r_depth_func_current(void) {
 	return B.depth_func_current();
 }
 
+bool r_shader_language_supported(const ShaderLangInfo *lang, ShaderLangInfo *out_alternative) {
+	return B.shader_language_supported(lang, out_alternative);
+}
+
+ShaderObject* r_shader_object_compile(ShaderSource *source) {
+	return B.shader_object_compile(source);
+}
+
+void r_shader_object_destroy(ShaderObject *shobj) {
+	B.shader_object_destroy(shobj);
+}
+
+void r_shader_object_set_debug_label(ShaderObject *shobj, const char *label) {
+	B.shader_object_set_debug_label(shobj, label);
+}
+
+const char* r_shader_object_get_debug_label(ShaderObject *shobj) {
+	return B.shader_object_get_debug_label(shobj);
+}
+
+ShaderProgram* r_shader_program_link(uint num_objects, ShaderObject *shobjs[num_objects]) {
+	return B.shader_program_link(num_objects, shobjs);
+}
+
+void r_shader_program_destroy(ShaderProgram *prog) {
+	B.shader_program_destroy(prog);
+}
+
+void r_shader_program_set_debug_label(ShaderProgram *prog, const char *label) {
+	B.shader_program_set_debug_label(prog, label);
+}
+
+const char* r_shader_program_get_debug_label(ShaderProgram *prog) {
+	return B.shader_program_get_debug_label(prog);
+}
+
 void r_shader_ptr(ShaderProgram *prog) {
 	_r_state_touch_shader();
 	B.shader(prog);

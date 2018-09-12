@@ -39,10 +39,8 @@ ResourceHandler *_handlers[] = {
 	[RES_POSTPROCESS] = &postprocess_res_handler,
 	[RES_SPRITE] = &sprite_res_handler,
 	[RES_FONT] = &font_res_handler,
-
-	// FIXME: these are currently handled by the renderer backend completely
-	[RES_SHADER_OBJECT] = NULL,
-	[RES_SHADER_PROGRAM] = NULL,
+	[RES_SHADER_OBJECT] = &shader_object_res_handler,
+	[RES_SHADER_PROGRAM] = &shader_program_res_handler,
 };
 
 typedef enum ResourceStatus {
@@ -419,8 +417,6 @@ void preload_resources(ResourceType type, ResourceFlags flags, const char *first
 
 void init_resources(void) {
 	main_thread_id = SDL_ThreadID();
-	_handlers[RES_SHADER_OBJECT] = _r_backend.res_handlers.shader_object;
-	_handlers[RES_SHADER_PROGRAM] = _r_backend.res_handlers.shader_program;
 
 	for(int i = 0; i < RES_NUMTYPES; ++i) {
 		ResourceHandler *h = get_handler(i);

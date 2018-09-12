@@ -42,6 +42,18 @@ CullFaceMode null_cull_current(void) { return CULL_BACK; }
 void null_depth_func(DepthTestFunc func) { }
 DepthTestFunc null_depth_func_current(void) { return DEPTH_LESS; }
 
+bool null_shader_language_supported(const ShaderLangInfo *lang, ShaderLangInfo *out_alternative) { return true; }
+
+ShaderObject* null_shader_object_compile(ShaderSource *source) { return (void*)&placeholder; }
+void null_shader_object_destroy(ShaderObject *shobj) { }
+void null_shader_object_set_debug_label(ShaderObject *shobj, const char *label) { }
+const char* null_shader_object_get_debug_label(ShaderObject *shobj) { return "Null shader object"; }
+
+ShaderProgram* null_shader_program_link(uint num_objects, ShaderObject *shobjs[num_objects]) { return (void*)&placeholder; }
+void null_shader_program_destroy(ShaderProgram *prog) { }
+void null_shader_program_set_debug_label(ShaderProgram *prog, const char *label) { }
+const char* null_shader_program_get_debug_label(ShaderProgram *prog) { return "Null shader program"; }
+
 void null_shader(ShaderProgram *prog) { }
 ShaderProgram* null_shader_current(void) { return (void*)&placeholder; }
 
@@ -219,6 +231,15 @@ RendererBackend _r_backend_null = {
 		.cull_current = null_cull_current,
 		.depth_func = null_depth_func,
 		.depth_func_current = null_depth_func_current,
+		.shader_language_supported = null_shader_language_supported,
+		.shader_object_compile = null_shader_object_compile,
+		.shader_object_destroy = null_shader_object_destroy,
+		.shader_object_set_debug_label = null_shader_object_set_debug_label,
+		.shader_object_get_debug_label = null_shader_object_get_debug_label,
+		.shader_program_link = null_shader_program_link,
+		.shader_program_destroy = null_shader_program_destroy,
+		.shader_program_set_debug_label = null_shader_program_set_debug_label,
+		.shader_program_get_debug_label = null_shader_program_get_debug_label,
 		.shader = null_shader,
 		.shader_current = null_shader_current,
 		.shader_uniform = null_shader_uniform,
@@ -272,9 +293,5 @@ RendererBackend _r_backend_null = {
 		.vsync_current = null_vsync_current,
 		.swap = null_swap,
 		.screenshot = null_screenshot,
-	},
-	.res_handlers = {
-		.shader_object = &null_shader_object_res_handler,
-		.shader_program = &null_shader_program_res_handler,
 	},
 };

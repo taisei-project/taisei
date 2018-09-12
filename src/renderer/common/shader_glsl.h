@@ -6,9 +6,8 @@
  * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
  */
 
+#pragma once
 #include "taisei.h"
-
-#include "resource/shader_object.h"
 
 typedef enum GLSLProfile {
 	GLSL_PROFILE_NONE,
@@ -22,6 +21,8 @@ typedef struct GLSLVersion {
 	GLSLProfile profile;
 } GLSLVersion;
 
+#include "shader.h"
+
 typedef struct GLSLMacro {
 	const char *name;
 	const char *value;
@@ -34,11 +35,4 @@ typedef struct GLSLSourceOptions {
 	GLSLMacro *macros;
 } GLSLSourceOptions;
 
-typedef struct GLSLSource {
-	GLSLVersion version;
-	ShaderStage stage;
-	size_t content_size;
-	char *content;
-} GLSLSource;
-
-bool glsl_load_source(const char *path, GLSLSource *out, const GLSLSourceOptions *options) attr_nonnull(1, 2, 3);
+bool glsl_load_source(const char *path, ShaderSource *out, const GLSLSourceOptions *options) attr_nonnull(1, 2, 3);

@@ -143,15 +143,5 @@ const char* gl33_vertex_array_get_debug_label(VertexArray *varr) {
 }
 
 void gl33_vertex_array_set_debug_label(VertexArray *varr, const char *label) {
-	if(label) {
-		log_debug("\"%s\" renamed to \"%s\"", varr->debug_label, label);
-		strlcpy(varr->debug_label, label, sizeof(varr->debug_label));
-	} else {
-		char tmp[sizeof(varr->debug_label)];
-		snprintf(tmp, sizeof(tmp), "VAO #%i", varr->gl_handle);
-		log_debug("\"%s\" renamed to \"%s\"", varr->debug_label, tmp);
-		strlcpy(varr->debug_label, tmp, sizeof(varr->debug_label));
-	}
-
-	glcommon_debug_object_label(GL_VERTEX_ARRAY, varr->gl_handle, varr->debug_label);
+	glcommon_set_debug_label(varr->debug_label, "VAO", GL_VERTEX_ARRAY, varr->gl_handle, label);
 }

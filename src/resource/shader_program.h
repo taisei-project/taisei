@@ -13,5 +13,7 @@
 
 typedef struct ShaderProgram ShaderProgram;
 
+extern ResourceHandler shader_program_res_handler;
+
 #define SHPROG_PATH_PREFIX "res/shader/"
 #define SHPROG_EXT ".prog"

@@ -23,7 +23,7 @@ enum {
 
 typedef struct GLSLParseState {
 	const GLSLSourceOptions *options;
-	GLSLSource *src;
+	ShaderSource *src;
 	SDL_RWops *dest;
 	bool version_defined;
 } GLSLParseState;
@@ -63,8 +63,8 @@ static const char* profile_suffix(GLSLProfile prof) {
 }
 
 static void glsl_write_version(GLSLFileParseState *fstate, GLSLVersion version) {
-	const char *profile = profile_suffix(fstate->global->src->version.profile);
-	SDL_RWprintf(fstate->global->dest, "#version %i%s\n", fstate->global->src->version.version, profile);
+	const char *profile = profile_suffix(fstate->global->src->lang.glsl.version.profile);
+	SDL_RWprintf(fstate->global->dest, "#version %i%s\n", fstate->global->src->lang.glsl.version.version, profile);
 	fstate->need_lineno_marker = true;
 }
 
@@ -75,7 +75,11 @@ static void glsl_write_header(GLSLFileParseState *fstate) {
 		fstate->global->options->stage == SHADER_STAGE_FRAGMENT ? "FRAG" : "VERT"
 	);
 
-	// TODO: write the custom macros here
+	if(fstate->global->options->macros) {
+		for(GLSLMacro *macro = fstate->global->options->macros; macro->name; ++macro) {
+			SDL_RWprintf(fstate->global->dest, "#define %s %s\n", macro->name, macro->value);
+		}
+	}
 
 	fstate->need_lineno_marker = true;
 }
@@ -158,10 +162,10 @@ bool glsl_try_write_header(GLSLFileParseState *fstate) {
 		return false;
 	}
 
-	fstate->global->src->version = fstate->global->options->version;
+	fstate->global->src->lang.glsl.version = fstate->global->options->version;
 	fstate->global->version_defined = true;
 
-	glsl_write_version(fstate, fstate->global->src->version);
+	glsl_write_version(fstate, fstate->global->src->lang.glsl.version);
 	glsl_write_header(fstate);
 
 	return true;
@@ -251,7 +255,7 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 			bool version_matches = !memcmp(&shader_v, &opt_v, sizeof(GLSLVersion));
 
 			if(opt_v.version == 0 || version_matches) {
-				fstate->global->src->version = shader_v;
+				fstate->global->src->lang.glsl.version = shader_v;
 			} else if(fstate->global->options->force_version) {
 				log_warn(
 					"%s:%d: version %i%s forced (source uses %i%s)",
@@ -259,7 +263,7 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 					opt_v.version, profile_suffix(opt_v.profile),
 					shader_v.version, profile_suffix(shader_v.profile)
 				);
-				fstate->global->src->version = opt_v;
+				fstate->global->src->lang.glsl.version = opt_v;
 			} else {
 				log_warn(
 					"%s:%d: source overrides version to %i%s (default is %i%s)",
@@ -267,12 +271,12 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 					shader_v.version, profile_suffix(shader_v.profile),
 					opt_v.version, profile_suffix(opt_v.profile)
 				);
-				fstate->global->src->version = shader_v;
+				fstate->global->src->lang.glsl.version = shader_v;
 			}
 
 			fstate->global->version_defined = true;
 
-			glsl_write_version(fstate, fstate->global->src->version);
+			glsl_write_version(fstate, fstate->global->src->lang.glsl.version);
 			glsl_write_header(fstate);
 		} else {
 			if(*p && !glsl_try_write_header(fstate)) {
@@ -291,13 +295,14 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 	return true;
 }
 
-bool glsl_load_source(const char *path, GLSLSource *out, const GLSLSourceOptions *options) {
+bool glsl_load_source(const char *path, ShaderSource *out, const GLSLSourceOptions *options) {
 	void *bufdata_ptr;
 	SDL_RWops *out_buf = SDL_RWAutoBuffer(&bufdata_ptr, 1024);
 	assert(out_buf != NULL);
 
+	out->lang.lang = SHLANG_GLSL;
+	out->lang.glsl.version = options->version;
 	out->stage = options->stage;
-	out->version = options->version;
 	out->content = NULL;
 	out->content_size = 0;
 

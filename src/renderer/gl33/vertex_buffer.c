@@ -82,15 +82,5 @@ const char* gl33_vertex_buffer_get_debug_label(VertexBuffer *vbuf) {
 }
 
 void gl33_vertex_buffer_set_debug_label(VertexBuffer *vbuf, const char *label) {
-	if(label) {
-		log_debug("\"%s\" renamed to \"%s\"", vbuf->debug_label, label);
-		strlcpy(vbuf->debug_label, label, sizeof(vbuf->debug_label));
-	} else {
-		char tmp[sizeof(vbuf->debug_label)];
-		snprintf(tmp, sizeof(tmp), "VBO #%i", vbuf->gl_handle);
-		log_debug("\"%s\" renamed to \"%s\"", vbuf->debug_label, tmp);
-		strlcpy(vbuf->debug_label, tmp, sizeof(vbuf->debug_label));
-	}
-
-	glcommon_debug_object_label(GL_BUFFER, vbuf->gl_handle, vbuf->debug_label);
+	glcommon_set_debug_label(vbuf->debug_label, "VBO", GL_BUFFER, vbuf->gl_handle, label);
 }

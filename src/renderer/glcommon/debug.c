@@ -10,6 +10,7 @@
 
 #include "debug.h"
 #include "util.h"
+#include "../api.h"
 
 static void APIENTRY glcommon_debug(
 	GLenum source,
@@ -89,4 +90,18 @@ void glcommon_debug_object_label(GLenum identifier, GLuint name, const char *lab
 
 bool glcommon_debug_requested(void) {
 	return env_get("TAISEI_GL_DEBUG", DEBUG_GL_DEFAULT);
+}
+
+void glcommon_set_debug_label(char *label_storage, const char *kind_name, GLenum gl_enum, GLuint gl_handle, const char *label) {
+	if(label) {
+		log_debug("%s \"%s\" renamed to \"%s\"", kind_name, label_storage, label);
+		strlcpy(label_storage, label, R_DEBUG_LABEL_SIZE);
+	} else {
+		char tmp[R_DEBUG_LABEL_SIZE];
+		snprintf(tmp, sizeof(tmp), "%s #%i", kind_name, gl_handle);
+		log_debug("%s \"%s\" renamed to \"%s\"", kind_name, label_storage, tmp);
+		strlcpy(label_storage, tmp, R_DEBUG_LABEL_SIZE);
+	}
+
+	glcommon_debug_object_label(gl_enum, gl_handle, label_storage);
 }

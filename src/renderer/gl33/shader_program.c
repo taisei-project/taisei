@@ -361,81 +361,6 @@ void gl33_unref_texture_from_samplers(Texture *tex) {
 	}
 }
 
-/*
- * Resource API
- */
-
-static char* shader_program_path(const char *name) {
-	return strjoin(SHPROG_PATH_PREFIX, name, SHPROG_EXT, NULL);
-}
-
-static bool check_shader_program_path(const char *path) {
-	return strendswith(path, SHPROG_EXT) && strstartswith(path, SHPROG_PATH_PREFIX);
-}
-
-struct shprog_load_data {
-	ShaderProgram shprog;
-	int num_objects;
-	uint load_flags;
-	char *objlist;
-};
-
-static void for_each_shobject(struct shprog_load_data *ldata, void (*func)(const char *obj, struct shprog_load_data *ldata)) {
-	const char *rawobjects = ldata->objlist;
-	char buf[strlen(rawobjects) + 1];
-	strcpy(buf, rawobjects);
-	char *objname, *bufptr = buf;
-	strcpy(buf, rawobjects);
-
-	while((objname = strtok_r(NULL, " \t", &bufptr))) {
-		if(*objname) {
-			func(objname, ldata);
-		}
-	}
-}
-
-static void preload_shobject(const char *name, struct shprog_load_data *ldata) {
-	preload_resource(RES_SHADER_OBJECT, name, ldata->load_flags);
-	++ldata->num_objects;
-}
-
-static void* load_shader_program_begin(const char *path, uint flags) {
-	struct shprog_load_data ldata;
-	memset(&ldata, 0, sizeof(ldata));
-	ldata.load_flags = flags;
-
-	if(!parse_keyvalue_file_with_spec(path, (KVSpec[]){
-		{ "glsl_objects", .out_str = &ldata.objlist },
-		{ NULL }
-	})) {
-		free(ldata.objlist);
-		return NULL;
-	}
-
-	if(ldata.objlist) {
-		for_each_shobject(&ldata, preload_shobject);
-	}
-
-	if(!ldata.num_objects) {
-		log_warn("%s: no shader objects to link", path);
-		free(ldata.objlist);
-		return NULL;
-	}
-
-	return memdup(&ldata, sizeof(ldata));
-}
-
-static void attach_shobject(const char *name, struct shprog_load_data *ldata) {
-	ShaderObject *shobj = get_resource_data(RES_SHADER_OBJECT, name, ldata->load_flags);
-
-	if(!shobj) {
-		return;
-	}
-
-	glAttachShader(ldata->shprog.gl_handle, shobj->impl->gl_handle);
-	--ldata->num_objects;
-}
-
 static void print_info_log(GLuint prog) {
 	GLint len = 0, alen = 0;
 	glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &len);
@@ -466,8 +391,7 @@ static void* free_uniform(const char *key, void *data, void *arg) {
 	return NULL;
 }
 
-static void unload_shader_program(void *vprog) {
-	ShaderProgram *prog = vprog;
+void gl33_shader_program_destroy(ShaderProgram *prog) {
 	gl33_shader_deleted(prog);
 	glDeleteProgram(prog->gl_handle);
 	ht_foreach(&prog->uniforms, free_uniform, NULL);
@@ -475,62 +399,41 @@ static void unload_shader_program(void *vprog) {
 	free(prog);
 }
 
-static void* load_shader_program_end(void *opaque, const char *path, uint flags) {
-	if(!opaque) {
-		return NULL;
+ShaderProgram* gl33_shader_program_link(uint num_objects, ShaderObject *shobjs[num_objects]) {
+	ShaderProgram *prog = calloc(1, sizeof(*prog));
+
+	prog->gl_handle = glCreateProgram();
+	snprintf(prog->debug_label, sizeof(prog->debug_label), "Shader program #%i", prog->gl_handle);
+
+	for(int i = 0; i < num_objects; ++i) {
+		glAttachShader(prog->gl_handle, shobjs[i]->gl_handle);
 	}
 
-	struct shprog_load_data ldata;
-	memcpy(&ldata, opaque, sizeof(ldata));
-	free(opaque);
+	glLinkProgram(prog->gl_handle);
+	print_info_log(prog->gl_handle);
 
-	ldata.shprog.gl_handle = glCreateProgram();
+	GLint link_status;
+	glGetProgramiv(prog->gl_handle, GL_LINK_STATUS, &link_status);
 
-	char *basename = resource_util_basename(SHPROG_PATH_PREFIX, path);
-	glcommon_debug_object_label(GL_PROGRAM, ldata.shprog.gl_handle, basename);
-	free(basename);
-
-	for_each_shobject(&ldata, attach_shobject);
-	free(ldata.objlist);
-
-	if(ldata.num_objects) {
-		log_warn("Failed to attach some shaders");
-		glDeleteProgram(ldata.shprog.gl_handle);
-		return NULL;
-	}
-
-	GLint status;
-
-	glLinkProgram(ldata.shprog.gl_handle);
-	print_info_log(ldata.shprog.gl_handle);
-	glGetProgramiv(ldata.shprog.gl_handle, GL_LINK_STATUS, &status);
-
-	if(!status) {
+	if(!link_status) {
 		log_warn("Failed to link the shader program");
-		glDeleteProgram(ldata.shprog.gl_handle);
+		glDeleteProgram(prog->gl_handle);
+		free(prog);
 		return NULL;
 	}
-
-	ShaderProgram *prog = memdup(&ldata.shprog, sizeof(ldata.shprog));
 
 	if(!cache_uniforms(prog)) {
-		unload_shader_program(prog);
-		prog = NULL;
+		gl33_shader_program_destroy(prog);
+		return NULL;
 	}
 
 	return prog;
 }
 
-ResourceHandler gl33_shader_program_res_handler = {
-	.type = RES_SHADER_PROGRAM,
-	.typename = "shader program",
-	.subdir = SHPROG_PATH_PREFIX,
+void gl33_shader_program_set_debug_label(ShaderProgram *prog, const char *label) {
+	glcommon_set_debug_label(prog->debug_label, "Shader program", GL_PROGRAM, prog->gl_handle, label);
+}
 
-	.procs = {
-		.find = shader_program_path,
-		.check = check_shader_program_path,
-		.begin_load = load_shader_program_begin,
-		.end_load = load_shader_program_end,
-		.unload = unload_shader_program,
-	},
-};
+const char* gl33_shader_program_get_debug_label(ShaderProgram *prog) {
+	return prog->debug_label;
+}

@@ -26,6 +26,9 @@ typedef struct KVSpec {
 	double *out_double;
 	float *out_float;
 	bool *out_bool;
+
+	KVCallback callback;
+	void *callback_data;
 } KVSpec;
 
 bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data);
@@ -36,3 +39,7 @@ bool parse_keyvalue_stream_with_spec(SDL_RWops *strm, KVSpec *spec);
 bool parse_keyvalue_file_with_spec(const char *filename, KVSpec *spec);
 
 bool parse_bool(const char *str, bool fallback) attr_nonnull(1);
+
+bool kvparser_deprecation(const char *key, const char *val, void *data);
+
+#define KVSPEC_DEPRECATED(new) .callback = kvparser_deprecation, .callback_data = (new)

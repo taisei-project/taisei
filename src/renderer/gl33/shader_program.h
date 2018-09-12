@@ -13,12 +13,12 @@
 #include "hashtable.h"
 #include "../api.h"
 #include "opengl.h"
-#include "resource/resource.h"
 #include "resource/shader_program.h"
 
 struct ShaderProgram {
 	GLuint gl_handle;
 	ht_str2ptr_t uniforms;
+	char debug_label[R_DEBUG_LABEL_SIZE];
 };
 
 struct Uniform {
@@ -44,9 +44,12 @@ struct Uniform {
 
 void gl33_sync_uniforms(ShaderProgram *prog);
 
+ShaderProgram* gl33_shader_program_link(uint num_objects, ShaderObject *shobjs[num_objects]);
+void gl33_shader_program_destroy(ShaderProgram *prog);
+void gl33_shader_program_set_debug_label(ShaderProgram *prog, const char *label);
+const char* gl33_shader_program_get_debug_label(ShaderProgram *prog);
+
 Uniform* gl33_shader_uniform(ShaderProgram *prog, const char *uniform_name);
 UniformType gl33_uniform_type(Uniform *uniform);
 void gl33_uniform(Uniform *uniform, uint offset, uint count, const void *data);
 void gl33_unref_texture_from_samplers(Texture *tex);
-
-extern ResourceHandler gl33_shader_program_res_handler;

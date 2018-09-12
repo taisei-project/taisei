@@ -12,8 +12,15 @@
 #include "resource/shader_object.h"
 #include "opengl.h"
 
-typedef struct ShaderObjectImpl {
+struct ShaderObject {
 	GLuint gl_handle;
-} ShaderObjectImpl;
+	ShaderStage stage;
+	char debug_label[R_DEBUG_LABEL_SIZE];
+};
 
-extern ResourceHandler gl33_shader_object_res_handler;
+bool gl33_shader_language_supported(const ShaderLangInfo *lang, ShaderLangInfo *out_alternative);
+
+ShaderObject* gl33_shader_object_compile(ShaderSource *source);
+void gl33_shader_object_destroy(ShaderObject *shobj);
+void gl33_shader_object_set_debug_label(ShaderObject *shobj, const char *label);
+const char* gl33_shader_object_get_debug_label(ShaderObject *shobj);

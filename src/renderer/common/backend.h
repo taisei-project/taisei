@@ -10,7 +10,6 @@
 #include "taisei.h"
 
 #include "../api.h"
-#include "resource/resource.h"
 
 typedef struct RendererFuncs {
 	void (*init)(void);
@@ -37,6 +36,18 @@ typedef struct RendererFuncs {
 
 	void (*depth_func)(DepthTestFunc depth_func);
 	DepthTestFunc (*depth_func_current)(void);
+
+	bool (*shader_language_supported)(const ShaderLangInfo *lang, ShaderLangInfo *out_alternative);
+
+	ShaderObject* (*shader_object_compile)(ShaderSource *source);
+	void (*shader_object_destroy)(ShaderObject *shobj);
+	void (*shader_object_set_debug_label)(ShaderObject *shobj, const char *label);
+	const char* (*shader_object_get_debug_label)(ShaderObject *shobj);
+
+	ShaderProgram* (*shader_program_link)(uint num_objects, ShaderObject *shobjs[num_objects]);
+	void (*shader_program_destroy)(ShaderProgram *prog);
+	void (*shader_program_set_debug_label)(ShaderProgram *prog, const char *label);
+	const char* (*shader_program_get_debug_label)(ShaderProgram *prog);
 
 	void (*shader)(ShaderProgram *prog);
 	ShaderProgram* (*shader_current)(void);
@@ -107,12 +118,6 @@ typedef struct RendererFuncs {
 typedef struct RendererBackend {
 	const char *name;
 	RendererFuncs funcs;
-
-	struct {
-		ResourceHandler *shader_object;
-		ResourceHandler *shader_program;
-	} res_handlers;
-
 	void *custom;
 } RendererBackend;
 

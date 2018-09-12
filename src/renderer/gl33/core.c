@@ -233,7 +233,7 @@ static void gl33_init_texunits(void) {
 		alist_append(&R.texunits.list, u);
 	}
 
-	log_warn("Using %i texturing units (%i available)", R.texunits.limit, texunits_available);
+	log_info("Using %i texturing units (%i available)", R.texunits.limit, texunits_available);
 }
 
 static void gl33_init_context(SDL_Window *window) {
@@ -1030,6 +1030,15 @@ RendererBackend _r_backend_gl33 = {
 		.cull_current = gl33_cull_current,
 		.depth_func = gl33_depth_func,
 		.depth_func_current = gl33_depth_func_current,
+		.shader_language_supported = gl33_shader_language_supported,
+		.shader_object_compile = gl33_shader_object_compile,
+		.shader_object_destroy = gl33_shader_object_destroy,
+		.shader_object_set_debug_label = gl33_shader_object_set_debug_label,
+		.shader_object_get_debug_label = gl33_shader_object_get_debug_label,
+		.shader_program_link = gl33_shader_program_link,
+		.shader_program_destroy = gl33_shader_program_destroy,
+		.shader_program_set_debug_label = gl33_shader_program_set_debug_label,
+		.shader_program_get_debug_label = gl33_shader_program_get_debug_label,
 		.shader = gl33_shader,
 		.shader_current = gl33_shader_current,
 		.shader_uniform = gl33_shader_uniform,
@@ -1083,10 +1092,6 @@ RendererBackend _r_backend_gl33 = {
 		.vsync_current = gl33_vsync_current,
 		.swap = gl33_swap,
 		.screenshot = gl33_screenshot,
-	},
-	.res_handlers = {
-		.shader_object = &gl33_shader_object_res_handler,
-		.shader_program = &gl33_shader_program_res_handler,
 	},
 	.custom = &(GLBackendData) {
 		.vtable = {

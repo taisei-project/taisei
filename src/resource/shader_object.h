@@ -11,16 +11,8 @@
 
 #include "resource.h"
 
-typedef enum ShaderStage {
-	SHADER_STAGE_VERTEX,
-	SHADER_STAGE_FRAGMENT,
-} ShaderStage;
+typedef struct ShaderObject ShaderObject;
 
-typedef struct ShaderObjectImpl ShaderObjectImpl;
-
-typedef struct ShaderObject {
-	ShaderStage stage;
-	ShaderObjectImpl *impl;
-} ShaderObject;
+extern ResourceHandler shader_object_res_handler;
 
 #define SHOBJ_PATH_PREFIX "res/shader/"

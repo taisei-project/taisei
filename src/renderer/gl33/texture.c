@@ -268,15 +268,5 @@ const char* gl33_texture_get_debug_label(Texture *tex) {
 }
 
 void gl33_texture_set_debug_label(Texture *tex, const char *label) {
-	if(label) {
-		log_debug("\"%s\" renamed to \"%s\"", tex->debug_label, label);
-		strlcpy(tex->debug_label, label, sizeof(tex->debug_label));
-	} else {
-		char tmp[sizeof(tex->debug_label)];
-		snprintf(tmp, sizeof(tmp), "Texture #%i", tex->gl_handle);
-		log_debug("\"%s\" renamed to \"%s\"", tex->debug_label, tmp);
-		strlcpy(tex->debug_label, tmp, sizeof(tex->debug_label));
-	}
-
-	glcommon_debug_object_label(GL_TEXTURE, tex->gl_handle, tex->debug_label);
+	glcommon_set_debug_label(tex->debug_label, "Texture", GL_TEXTURE, tex->gl_handle, label);
 }

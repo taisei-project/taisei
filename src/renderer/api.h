@@ -16,11 +16,14 @@
 #include "resource/texture.h"
 #include "resource/model.h"
 #include "resource/sprite.h"
+#include "common/shader.h"
 
 typedef struct Texture Texture;
 typedef struct Framebuffer Framebuffer;
 typedef struct VertexBuffer VertexBuffer;
 typedef struct VertexArray VertexArray;
+typedef struct ShaderObject ShaderObject;
+typedef struct ShaderProgram ShaderProgram;
 
 enum {
 	R_DEBUG_LABEL_SIZE = 128,
@@ -403,6 +406,18 @@ CullFaceMode r_cull_current(void);
 
 void r_depth_func(DepthTestFunc func);
 DepthTestFunc r_depth_func_current(void);
+
+bool r_shader_language_supported(const ShaderLangInfo *lang, ShaderLangInfo *out_alternative) attr_nonnull(1);
+
+ShaderObject* r_shader_object_compile(ShaderSource *source) attr_nonnull(1);
+void r_shader_object_destroy(ShaderObject *shobj) attr_nonnull(1);
+void r_shader_object_set_debug_label(ShaderObject *shobj, const char *label) attr_nonnull(1);
+const char* r_shader_object_get_debug_label(ShaderObject *shobj) attr_nonnull(1);
+
+ShaderProgram* r_shader_program_link(uint num_objects, ShaderObject *shobjs[num_objects]) attr_nonnull(2);
+void r_shader_program_destroy(ShaderProgram *prog);
+void r_shader_program_set_debug_label(ShaderProgram *prog, const char *label) attr_nonnull(1);
+const char* r_shader_program_get_debug_label(ShaderProgram *prog) attr_nonnull(1);
 
 void r_shader_ptr(ShaderProgram *prog) attr_nonnull(1);
 ShaderProgram* r_shader_current(void) attr_returns_nonnull;

@@ -98,17 +98,7 @@ void gl33_framebuffer_prepare(Framebuffer *framebuffer) {
 }
 
 void gl33_framebuffer_set_debug_label(Framebuffer *fb, const char *label) {
-	if(label) {
-		log_debug("\"%s\" renamed to \"%s\"", fb->debug_label, label);
-		strlcpy(fb->debug_label, label, sizeof(fb->debug_label));
-	} else {
-		char tmp[sizeof(fb->debug_label)];
-		snprintf(tmp, sizeof(tmp), "FBO #%i", fb->gl_fbo);
-		log_debug("\"%s\" renamed to \"%s\"", fb->debug_label, tmp);
-		strlcpy(fb->debug_label, tmp, sizeof(fb->debug_label));
-	}
-
-	glcommon_debug_object_label(GL_FRAMEBUFFER, fb->gl_fbo, fb->debug_label);
+	glcommon_set_debug_label(fb->debug_label, "FBO", GL_FRAMEBUFFER, fb->gl_fbo, label);
 }
 
 const char* gl33_framebuffer_get_debug_label(Framebuffer* fb) {

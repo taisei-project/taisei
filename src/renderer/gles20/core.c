@@ -23,7 +23,6 @@ static void gles_init(RendererBackend *gles_backend, int major, int minor) {
 	RendererFuncs original_funcs;
 	memcpy(&original_funcs, &gles_backend->funcs, sizeof(original_funcs));
 	memcpy(&gles_backend->funcs, &_r_backend_gl33.funcs, sizeof(gles_backend->funcs));
-	memcpy(&gles_backend->res_handlers, &_r_backend_gl33.res_handlers, sizeof(gles_backend->res_handlers));
 	gles_backend->funcs.init = original_funcs.init;
 
 	SDL_GLcontextFlag ctxflags = 0;
