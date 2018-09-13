@@ -1,2 +1,2 @@
 
-glsl_objects = standard.vert standard.frag
+objects = standard.vert standard.frag

@@ -1,1 +1,1 @@
-glsl_objects = standard.vert glitch.frag
+objects = standard.vert glitch.frag

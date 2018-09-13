@@ -1,1 +1,1 @@
-glsl_objects = standard.vert youmua_bomb.frag
+objects = standard.vert youmua_bomb.frag

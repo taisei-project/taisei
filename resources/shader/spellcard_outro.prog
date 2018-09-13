@@ -1,2 +1,2 @@
 
-glsl_objects = standard.vert spellcard_outro.frag
+objects = standard.vert spellcard_outro.frag

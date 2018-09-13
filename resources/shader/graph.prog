@@ -1,2 +1,2 @@
 
-glsl_objects = standard.vert graph.frag
+objects = standard.vert graph.frag

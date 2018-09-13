@@ -1,2 +1,2 @@
 
-glsl_objects = standard.vert ingame_menu.frag
+objects = standard.vert ingame_menu.frag

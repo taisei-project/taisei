@@ -1,2 +1,2 @@
 
-glsl_objects = standard.vert zbuf_fog.frag
+objects = standard.vert zbuf_fog.frag

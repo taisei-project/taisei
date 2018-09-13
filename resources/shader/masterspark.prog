@@ -1,1 +1,1 @@
-glsl_objects = standard.vert masterspark.frag
+objects = standard.vert masterspark.frag

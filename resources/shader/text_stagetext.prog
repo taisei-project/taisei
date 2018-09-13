@@ -1,2 +1,2 @@
 
-glsl_objects = text_example.vert text_stagetext.frag
+objects = text_example.vert text_stagetext.frag
