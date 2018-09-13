@@ -91,6 +91,7 @@ void null_texture_fill(Texture *tex, uint mipmap, void *image_data) { }
 void null_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, uint w, uint h, void *image_data) { }
 void null_texture_invalidate(Texture *tex) { }
 void null_texture_destroy(Texture *tex) { }
+void null_texture_clear(Texture *tex, const Color *color) { }
 
 static IntRect default_fb_viewport;
 
@@ -241,6 +242,7 @@ RendererBackend _r_backend_null = {
 		.texture_invalidate = null_texture_invalidate,
 		.texture_fill = null_texture_fill,
 		.texture_fill_region = null_texture_fill_region,
+		.texture_clear = null_texture_clear,
 		.framebuffer_create = null_framebuffer_create,
 		.framebuffer_get_debug_label = null_framebuffer_get_debug_label,
 		.framebuffer_set_debug_label = null_framebuffer_set_debug_label,
