@@ -236,6 +236,20 @@ void gl33_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, uint w,
 	tex->mipmaps_outdated = true;
 }
 
+void gl44_texture_clear(Texture *tex, const Color *clr) {
+	for(int i = 0; i < tex->params.mipmaps; ++i) {
+		glClearTexImage(tex->gl_handle, i, GL_RGBA, GL_FLOAT, &clr->r);
+	}
+}
+
+void gl33_texture_clear(Texture *tex, const Color *clr) {
+	// TODO: maybe find a more efficient method
+	Framebuffer *temp_fb = r_framebuffer_create();
+	r_framebuffer_attach(temp_fb, tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
+	r_framebuffer_clear(temp_fb, CLEAR_COLOR, clr, 1);
+	r_framebuffer_destroy(temp_fb);
+}
+
 void gl33_texture_destroy(Texture *tex) {
 	gl33_texture_deleted(tex);
 

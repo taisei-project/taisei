@@ -252,7 +252,7 @@ static void gl33_init_context(SDL_Window *window) {
 	}
 
 	gl33_init_texunits();
-	gl33_set_clear_depth(0);
+	gl33_set_clear_depth(1);
 	gl33_set_clear_color(RGBA(0, 0, 0, 0));
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -279,6 +279,10 @@ static void gl33_init_context(SDL_Window *window) {
 	}
 
 	R.features |= r_feature_bit(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN);
+
+	if(glext.clear_texture) {
+		_r_backend.funcs.texture_clear = gl44_texture_clear;
+	}
 }
 
 static void gl33_apply_capability(RendererCapability cap, bool value) {
@@ -1032,6 +1036,7 @@ RendererBackend _r_backend_gl33 = {
 		.texture_invalidate = gl33_texture_invalidate,
 		.texture_fill = gl33_texture_fill,
 		.texture_fill_region = gl33_texture_fill_region,
+		.texture_clear = gl33_texture_clear,
 		.framebuffer_create = gl33_framebuffer_create,
 		.framebuffer_destroy = gl33_framebuffer_destroy,
 		.framebuffer_attach = gl33_framebuffer_attach,

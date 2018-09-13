@@ -350,21 +350,7 @@ static SpriteSheet* add_spritesheet(Font *font, SpriteSheetAnchor *spritesheets)
 	r_texture_set_debug_label(ss->tex, buf);
 #endif
 
-	// FIXME:
-	//
-	// This code just zeroes the texture out.
-	//
-	// We should add an r_texture_clear function to hide this monstrosity.
-	// It would also allow a non-GL backend to have a different implementation,
-	// if we ever get around to writing one.
-	//
-	// To future generations: if such a function is already in the renderer API,
-	// but this crap is still here, please convert it.
-	Framebuffer *atlas_fb = r_framebuffer_create();
-	r_framebuffer_attach(atlas_fb, ss->tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
-	r_framebuffer_clear(atlas_fb, CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
-	r_framebuffer_destroy(atlas_fb);
-
+	r_texture_clear(ss->tex, RGBA(0, 0, 0, 0));
 	alist_append(spritesheets, ss);
 	return ss;
 }

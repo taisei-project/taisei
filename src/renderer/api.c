@@ -433,6 +433,10 @@ void r_texture_invalidate(Texture *tex) {
 	B.texture_invalidate(tex);
 }
 
+void r_texture_clear(Texture *tex, const Color *clr) {
+	B.texture_clear(tex, clr);
+}
+
 void r_texture_destroy(Texture *tex) {
 	B.texture_destroy(tex);
 }

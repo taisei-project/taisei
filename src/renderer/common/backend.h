@@ -67,6 +67,7 @@ typedef struct RendererFuncs {
 	void (*texture_invalidate)(Texture *tex);
 	void (*texture_fill)(Texture *tex, uint mipmap, void *image_data);
 	void (*texture_fill_region)(Texture *tex, uint mipmap, uint x, uint y, uint w, uint h, void *image_data);
+	void (*texture_clear)(Texture *tex, const Color *clr);
 
 	Framebuffer* (*framebuffer_create)(void);
 	const char* (*framebuffer_get_debug_label)(Framebuffer *framebuffer);

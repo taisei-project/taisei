@@ -122,6 +122,7 @@ void gl33_framebuffer_clear(Framebuffer *framebuffer, ClearBufferFlags flags, co
 	r_flush_sprites();
 
 	Framebuffer *fb_saved = r_framebuffer_current();
+	r_framebuffer(framebuffer);
 	gl33_sync_framebuffer();
 	glClear(glflags);
 	r_framebuffer(fb_saved);

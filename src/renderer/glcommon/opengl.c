@@ -318,6 +318,22 @@ static void glcommon_ext_texture_filter_anisotropic(void) {
 	log_warn("Extension not supported");
 }
 
+static void glcommon_ext_clear_texture(void) {
+	if(GL_ATLEAST(4, 4)) {
+		glext.clear_texture = TSGL_EXTFLAG_NATIVE;
+		log_info("Using core functionality");
+		return;
+	}
+
+	if((glext.clear_texture = glcommon_check_extension("GL_ARB_clear_texture"))) {
+		log_info("Using GL_ARB_clear_texture");
+		return;
+	}
+
+	glext.clear_texture = 0;
+	log_warn("Extension not supported");
+}
+
 void glcommon_check_extensions(void) {
 	memset(&glext, 0, sizeof(glext));
 	glext.version.major = GLVersion.major;
@@ -360,6 +376,7 @@ void glcommon_check_extensions(void) {
 	}
 
 	glcommon_ext_base_instance();
+	glcommon_ext_clear_texture();
 	glcommon_ext_debug_output();
 	glcommon_ext_depth_texture();
 	glcommon_ext_draw_buffers();

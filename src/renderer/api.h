@@ -595,6 +595,7 @@ void r_texture_set_wrap(Texture *tex, TextureWrapMode ws, TextureWrapMode wt) at
 void r_texture_fill(Texture *tex, uint mipmap, void *image_data) attr_nonnull(1, 3);
 void r_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, uint w, uint h, void *image_data) attr_nonnull(1, 7);
 void r_texture_invalidate(Texture *tex) attr_nonnull(1);
+void r_texture_clear(Texture *tex, const Color *clr) attr_nonnull(1, 2);
 void r_texture_destroy(Texture *tex) attr_nonnull(1);
 
 Framebuffer* r_framebuffer_create(void);

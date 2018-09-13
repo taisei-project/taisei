@@ -6,6 +6,7 @@ glad_extensions = [
     'GL_ANGLE_depth_texture',
     'GL_ANGLE_instanced_arrays',
     'GL_ARB_base_instance',
+    'GL_ARB_clear_texture',
     'GL_ARB_debug_output',
     'GL_ARB_depth_texture',
     'GL_ARB_draw_buffers',

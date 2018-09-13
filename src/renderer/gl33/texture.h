@@ -37,6 +37,8 @@ void gl33_texture_fill(Texture *tex, uint mipmap, void *image_data);
 void gl33_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, uint w, uint h, void *image_data);
 void gl33_texture_prepare(Texture *tex);
 void gl33_texture_taint(Texture *tex);
+void gl44_texture_clear(Texture *tex, const Color *clr);
+void gl33_texture_clear(Texture *tex, const Color *clr);
 void gl33_texture_destroy(Texture *tex);
 
 GLTextureTypeInfo* gl33_texture_type_info(TextureType type);
