@@ -334,6 +334,14 @@ static void glcommon_ext_clear_texture(void) {
 	log_warn("Extension not supported");
 }
 
+void shim_glClearDepth(GLdouble depthval) {
+	glClearDepthf(depthval);
+}
+
+void shim_glClearDepthf(GLfloat depthval) {
+	glClearDepth(depthval);
+}
+
 void glcommon_check_extensions(void) {
 	memset(&glext, 0, sizeof(glext));
 	glext.version.major = GLVersion.major;
@@ -383,6 +391,18 @@ void glcommon_check_extensions(void) {
 	glcommon_ext_instanced_arrays();
 	glcommon_ext_pixel_buffer_object();
 	glcommon_ext_texture_filter_anisotropic();
+
+	// GLES has only glClearDepthf
+	// Core has only glClearDepth until GL 4.1
+	assert(glClearDepth || glClearDepthf);
+
+	if(!glClearDepth) {
+		glClearDepth = shim_glClearDepth;
+	}
+
+	if(!glClearDepthf) {
+		glClearDepthf = shim_glClearDepthf;
+	}
 }
 
 void glcommon_load_library(void) {
