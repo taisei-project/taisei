@@ -70,6 +70,13 @@ void r_post_init(void) {
 
 	r_shader_ptr(R.progs.standard);
 	r_color4(1, 1, 1, 1);
+	r_enable(RCAP_DEPTH_TEST);
+	r_enable(RCAP_DEPTH_WRITE);
+	r_enable(RCAP_CULL_FACE);
+	r_depth_func(DEPTH_LEQUAL);
+	r_cull(CULL_BACK);
+	r_blend(BLEND_PREMUL_ALPHA);
+	r_framebuffer_clear(NULL, CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
 
 	log_info("Rendering subsystem initialized (%s)", _r_backend.name);
 }
@@ -454,6 +461,10 @@ uint r_framebuffer_get_attachment_mipmap(Framebuffer *fb, FramebufferAttachment 
 	return B.framebuffer_get_attachment_mipmap(fb, attachment);
 }
 
+void r_framebuffer_clear(Framebuffer *fb, ClearBufferFlags flags, const Color *colorval, float depthval) {
+	B.framebuffer_clear(fb, flags, colorval, depthval);
+}
+
 void r_framebuffer_viewport(Framebuffer *fb, int x, int y, int w, int h) {
 	r_framebuffer_viewport_rect(fb, (IntRect) { x, y, w, h });
 }
@@ -565,19 +576,6 @@ void r_vertex_array(VertexArray *varr) {
 
 VertexArray* r_vertex_array_current(void) {
 	return B.vertex_array_current();
-}
-
-void r_clear(ClearBufferFlags flags) {
-	B.clear(flags);
-}
-
-void r_clear_color4(float r, float g, float b, float a) {
-	_r_state_touch_clear_color();
-	B.clear_color4(r, g, b, a);
-}
-
-const Color* r_clear_color_current(void) {
-	return B.clear_color_current();
 }
 
 void r_vsync(VsyncMode mode) {

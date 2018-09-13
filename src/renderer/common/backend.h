@@ -77,6 +77,7 @@ typedef struct RendererFuncs {
 	void (*framebuffer_viewport_current)(Framebuffer *framebuffer, IntRect *vp);
 	Texture* (*framebuffer_get_attachment)(Framebuffer *framebuffer, FramebufferAttachment attachment);
 	uint (*framebuffer_get_attachment_mipmap)(Framebuffer *framebuffer, FramebufferAttachment attachment);
+	void (*framebuffer_clear)(Framebuffer *framebuffer, ClearBufferFlags flags, const Color *colorval, float depthval);
 
 	void (*framebuffer)(Framebuffer *framebuffer);
 	Framebuffer* (*framebuffer_current)(void);
@@ -102,10 +103,6 @@ typedef struct RendererFuncs {
 
 	void (*vertex_array)(VertexArray *varr) attr_nonnull(1);
 	VertexArray* (*vertex_array_current)(void);
-
-	void (*clear)(ClearBufferFlags flags);
-	void (*clear_color4)(float r, float g, float b, float a);
-	const Color* (*clear_color_current)(void);
 
 	void (*vsync)(VsyncMode mode);
 	VsyncMode (*vsync_current)(void);

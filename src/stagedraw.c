@@ -216,12 +216,7 @@ static Framebuffer* add_custom_framebuffer(StageFBPair fbtype, float scale_facto
 	cfb->fb = r_framebuffer_create();
 	fbutil_create_attachments(cfb->fb, num_attachments, cfg);
 	r_framebuffer_viewport(cfb->fb, 0, 0, width, height);
-
-	r_state_push();
-	r_framebuffer(cfb->fb);
-	r_clear_color4(0, 0, 0, 0);
-	r_clear(CLEAR_ALL);
-	r_state_pop();
+	r_framebuffer_clear(cfb->fb, CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
 
 	return cfb->fb;
 }
@@ -637,7 +632,7 @@ static void stage_render_bg(StageInfo *stage) {
 	FBPair *background = stage_get_fbpair(FBPAIR_BG);
 
 	r_framebuffer(background->back);
-	r_clear(CLEAR_ALL);
+	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
 
 	if(should_draw_stage_bg()) {
 		r_mat_push();
@@ -774,7 +769,7 @@ void stage_draw_scene(StageInfo *stage) {
 			global.plr.mode->procs.bombbg(&global.plr);
 		}
 	} else if(!key_nobg) {
-		r_clear(CLEAR_COLOR);
+		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 1), 1);
 	}
 
 	// draw the 2D objects

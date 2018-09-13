@@ -94,33 +94,18 @@ void null_texture_destroy(Texture *tex) { }
 
 static IntRect default_fb_viewport;
 
-Framebuffer* null_framebuffer_create(void) {
-	return (void*)&placeholder;
-}
-
+Framebuffer* null_framebuffer_create(void) { return (void*)&placeholder; }
 void null_framebuffer_set_debug_label(Framebuffer *fb, const char *label) { }
 const char* null_framebuffer_get_debug_label(Framebuffer *fb) { return "null framebuffer"; }
-
 void null_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, uint mipmap, FramebufferAttachment attachment) { }
-
-Texture* null_framebuffer_attachment(Framebuffer *framebuffer, FramebufferAttachment attachment) {
-	return (void*)&placeholder;
-}
-
-uint null_framebuffer_attachment_mipmap(Framebuffer *framebuffer, FramebufferAttachment attachment) {
-	return 0;
-}
-
+Texture* null_framebuffer_attachment(Framebuffer *framebuffer, FramebufferAttachment attachment) { return (void*)&placeholder; }
+uint null_framebuffer_attachment_mipmap(Framebuffer *framebuffer, FramebufferAttachment attachment) { return 0; }
 void null_framebuffer_destroy(Framebuffer *framebuffer) { }
-
 void null_framebuffer_viewport(Framebuffer *framebuffer, IntRect vp) { }
-
-void null_framebuffer_viewport_current(Framebuffer *framebuffer, IntRect *vp) {
-	*vp = default_fb_viewport;
-}
-
+void null_framebuffer_viewport_current(Framebuffer *framebuffer, IntRect *vp) { *vp = default_fb_viewport; }
 void null_framebuffer(Framebuffer *framebuffer) { }
 Framebuffer* null_framebuffer_current(void) { return (void*)&placeholder; }
+void null_framebuffer_clear(Framebuffer *framebuffer, ClearBufferFlags flags, const Color *colorval, float depthval) { }
 
 VertexBuffer* null_vertex_buffer_create(size_t capacity, void *data) { return (void*)&placeholder; }
 void null_vertex_buffer_set_debug_label(VertexBuffer *vbuf, const char *label) { }
@@ -267,6 +252,7 @@ RendererBackend _r_backend_null = {
 		.framebuffer_viewport_current = null_framebuffer_viewport_current,
 		.framebuffer = null_framebuffer,
 		.framebuffer_current = null_framebuffer_current,
+		.framebuffer_clear = null_framebuffer_clear,
 		.vertex_buffer_create = null_vertex_buffer_create,
 		.vertex_buffer_get_debug_label = null_vertex_buffer_get_debug_label,
 		.vertex_buffer_set_debug_label = null_vertex_buffer_set_debug_label,
@@ -286,9 +272,6 @@ RendererBackend _r_backend_null = {
 		.vertex_array_get_attachment = null_vertex_array_get_attachment,
 		.vertex_array = null_vertex_array,
 		.vertex_array_current = null_vertex_array_current,
-		.clear = null_clear,
-		.clear_color4 = null_clear_color4,
-		.clear_color_current = null_clear_color_current,
 		.vsync = null_vsync,
 		.vsync_current = null_vsync_current,
 		.swap = null_swap,

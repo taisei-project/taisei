@@ -23,6 +23,9 @@ void gl33_bind_pbo(GLuint pbo);
 void gl33_bind_vao(GLuint vao);
 void gl33_bind_vbo(GLuint vbo);
 
+void gl33_set_clear_color(const Color *color);
+void gl33_set_clear_depth(float depth);
+
 void gl33_sync_shader(void);
 void gl33_sync_texunit(TextureUnit *unit, bool prepare_rendering, bool ensure_active) attr_nonnull(1);
 void gl33_sync_texunits(bool prepare_rendering);

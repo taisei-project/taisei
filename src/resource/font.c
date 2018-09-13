@@ -360,15 +360,9 @@ static SpriteSheet* add_spritesheet(Font *font, SpriteSheetAnchor *spritesheets)
 	//
 	// To future generations: if such a function is already in the renderer API,
 	// but this crap is still here, please convert it.
-	Framebuffer *prev_fb = r_framebuffer_current();
 	Framebuffer *atlas_fb = r_framebuffer_create();
-	Color cc_prev = *r_clear_color_current();
 	r_framebuffer_attach(atlas_fb, ss->tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
-	r_framebuffer(atlas_fb);
-	r_clear_color4(0, 0, 0, 0);
-	r_clear(CLEAR_COLOR);
-	r_framebuffer(prev_fb);
-	r_clear_color(&cc_prev);
+	r_framebuffer_clear(atlas_fb, CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
 	r_framebuffer_destroy(atlas_fb);
 
 	alist_append(spritesheets, ss);
@@ -1024,8 +1018,7 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 	r_state_push();
 
 	r_framebuffer(globals.render_buf);
-	r_clear_color4(0, 0, 0, 0);
-	r_clear(CLEAR_COLOR);
+	r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
 
 	r_blend(BLEND_PREMUL_ALPHA);
 	r_enable(RCAP_CULL_FACE);

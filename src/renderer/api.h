@@ -293,7 +293,7 @@ typedef enum BlendMode {
 	),
 } BlendMode;
 
-attr_deprecated("Use color with alpha == 0 instead")
+attr_deprecated("Use BLEND_PREMUL_ALPHA and a color with alpha == 0 instead")
 static const BlendMode BLEND_ADD = _BLEND_ADD;
 
 typedef struct UnpackedBlendModePart {
@@ -607,6 +607,7 @@ void r_framebuffer_viewport(Framebuffer *fb, int x, int y, int w, int h);
 void r_framebuffer_viewport_rect(Framebuffer *fb, IntRect viewport);
 void r_framebuffer_viewport_current(Framebuffer *fb, IntRect *viewport) attr_nonnull(2);
 void r_framebuffer_destroy(Framebuffer *fb) attr_nonnull(1);
+void r_framebuffer_clear(Framebuffer *fb, ClearBufferFlags flags, const Color *colorval, float depthval);
 
 void r_framebuffer(Framebuffer *fb);
 Framebuffer* r_framebuffer_current(void);
@@ -632,10 +633,6 @@ void r_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat 
 
 void r_vertex_array(VertexArray *varr) attr_nonnull(1);
 VertexArray* r_vertex_array_current(void);
-
-void r_clear(ClearBufferFlags flags);
-void r_clear_color4(float r, float g, float b, float a);
-const Color* r_clear_color_current(void);
 
 void r_vsync(VsyncMode mode);
 VsyncMode r_vsync_current(void);
@@ -774,13 +771,8 @@ Uniform* r_shader_current_uniform(const char *name) {
 }
 
 static inline attr_must_inline
-void r_clear_color3(float r, float g, float b) {
-	r_clear_color4(r, g, b, 1.0);
-}
-
-static inline attr_must_inline
-void r_clear_color(const Color *c) {
-	r_clear_color4(c->r, c->g, c->b, c->a);
+void r_clear(ClearBufferFlags flags, const Color *colorval, float depthval) {
+	r_framebuffer_clear(r_framebuffer_current(), flags, colorval, depthval);
 }
 
 static inline attr_must_inline attr_nonnull(1)

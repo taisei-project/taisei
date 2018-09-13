@@ -187,7 +187,7 @@ static void ending_draw(Ending *e) {
 	else
 		s = clamp(d*t2, 0.0, 1.0);
 
-	r_clear(CLEAR_ALL);
+	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
 
 	r_color4(s, s, s, s);
 

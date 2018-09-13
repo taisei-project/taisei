@@ -108,6 +108,7 @@ static struct {
 
 	Color color;
 	Color clear_color;
+	float clear_depth;
 	GLuint pbo;
 	r_feature_bits_t features;
 
@@ -251,14 +252,8 @@ static void gl33_init_context(SDL_Window *window) {
 	}
 
 	gl33_init_texunits();
-
-	// TODO: move this into generic r_init
-	r_enable(RCAP_DEPTH_TEST);
-	r_enable(RCAP_DEPTH_WRITE);
-	r_enable(RCAP_CULL_FACE);
-	r_depth_func(DEPTH_LEQUAL);
-	r_cull(CULL_BACK);
-	r_blend(BLEND_PREMUL_ALPHA);
+	gl33_set_clear_depth(0);
+	gl33_set_clear_color(RGBA(0, 0, 0, 0));
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -266,9 +261,6 @@ static void gl33_init_context(SDL_Window *window) {
 	glGetIntegerv(GL_VIEWPORT, &R.viewport.default_framebuffer.x);
 
 	R.viewport.active = R.viewport.default_framebuffer;
-
-	r_clear_color4(0, 0, 0, 1);
-	r_clear(CLEAR_ALL);
 
 	if(glext.instanced_arrays) {
 		R.features |= r_feature_bit(RFEAT_DRAW_INSTANCED);
@@ -942,33 +934,18 @@ static ShaderProgram *gl33_shader_current(void) {
 	return R.progs.pending;
 }
 
-static void gl33_clear(ClearBufferFlags flags) {
-	GLbitfield mask = 0;
-
-	if(flags & CLEAR_COLOR) {
-		mask |= GL_COLOR_BUFFER_BIT;
-	}
-
-	if(flags & CLEAR_DEPTH) {
-		mask |= GL_DEPTH_BUFFER_BIT;
-	}
-
-	r_flush_sprites();
-	gl33_sync_framebuffer();
-	glClear(mask);
-}
-
-static void gl33_clear_color4(float r, float g, float b, float a) {
-	Color cc = { r, g, b, a };
-
-	if(memcmp(&R.clear_color, &cc, sizeof(cc))) {
-		memcpy(&R.clear_color, &cc, sizeof(cc));
-		glClearColor(r, g, b, a);
+void gl33_set_clear_color(const Color *color) {
+	if(memcmp(&R.clear_color, color, sizeof(*color))) {
+		memcpy(&R.clear_color, color, sizeof(*color));
+		glClearColor(color->r, color->g, color->b, color->a);
 	}
 }
 
-static const Color* gl33_clear_color_current(void) {
-	return &R.clear_color;
+void gl33_set_clear_depth(float depth) {
+	if(R.clear_depth != depth) {
+		R.clear_depth = depth;
+		glClearDepth(depth);
+	}
 }
 
 static void gl33_swap(SDL_Window *window) {
@@ -1066,6 +1043,7 @@ RendererBackend _r_backend_gl33 = {
 		.framebuffer_viewport_current = gl33_framebuffer_viewport_current,
 		.framebuffer = gl33_framebuffer,
 		.framebuffer_current = gl33_framebuffer_current,
+		.framebuffer_clear = gl33_framebuffer_clear,
 		.vertex_buffer_create = gl33_vertex_buffer_create,
 		.vertex_buffer_set_debug_label = gl33_vertex_buffer_set_debug_label,
 		.vertex_buffer_get_debug_label = gl33_vertex_buffer_get_debug_label,
@@ -1085,9 +1063,6 @@ RendererBackend _r_backend_gl33 = {
 		.vertex_array_get_attachment = gl33_vertex_array_get_attachment,
 		.vertex_array = gl33_vertex_array,
 		.vertex_array_current = gl33_vertex_array_current,
-		.clear = gl33_clear,
-		.clear_color4 = gl33_clear_color4,
-		.clear_color_current = gl33_clear_color_current,
 		.vsync = gl33_vsync,
 		.vsync_current = gl33_vsync_current,
 		.swap = gl33_swap,

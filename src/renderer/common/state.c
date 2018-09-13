@@ -65,10 +65,6 @@ void r_state_pop(void) {
 		B.color4(S.color.r, S.color.g, S.color.b, S.color.a);
 	}
 
-	RESTORE(RSTATE_CLEARCOLOR) {
-		B.clear_color4(S.clear_color.r, S.clear_color.g, S.clear_color.b, S.clear_color.a);
-	}
-
 	RESTORE(RSTATE_BLENDMODE) {
 		B.blend(S.blend_mode);
 	}
@@ -123,12 +119,6 @@ void _r_state_touch_matrix_mode(void) {
 void _r_state_touch_color(void) {
 	TAINT(RSTATE_COLOR, {
 		S.color = *B.color_current();
-	});
-}
-
-void _r_state_touch_clear_color(void) {
-	TAINT(RSTATE_CLEARCOLOR, {
-		S.clear_color = *B.clear_color_current();
 	});
 }
 

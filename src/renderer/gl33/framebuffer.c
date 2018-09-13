@@ -104,3 +104,25 @@ void gl33_framebuffer_set_debug_label(Framebuffer *fb, const char *label) {
 const char* gl33_framebuffer_get_debug_label(Framebuffer* fb) {
 	return fb->debug_label;
 }
+
+void gl33_framebuffer_clear(Framebuffer *framebuffer, ClearBufferFlags flags, const Color *colorval, float depthval) {
+	GLuint glflags = 0;
+
+	if(flags & CLEAR_COLOR) {
+		glflags |= GL_COLOR_BUFFER_BIT;
+		assert(colorval != NULL);
+		gl33_set_clear_color(colorval);
+	}
+
+	if(flags & CLEAR_DEPTH) {
+		glflags |= GL_DEPTH_BUFFER_BIT;
+		gl33_set_clear_depth(depthval);
+	}
+
+	r_flush_sprites();
+
+	Framebuffer *fb_saved = r_framebuffer_current();
+	gl33_sync_framebuffer();
+	glClear(glflags);
+	r_framebuffer(fb_saved);
+}

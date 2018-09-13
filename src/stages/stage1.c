@@ -130,8 +130,7 @@ static void stage1_water_draw(vec3 pos) {
 
 	r_mat_translate(VIEWPORT_W * 0.5 * (1 - z), VIEWPORT_H * 0.5 * (1 - z), 0);
 	r_mat_scale(z, z, 1);
-	r_clear_color4(0, 0.08, 0.08, 1);
-	r_clear(CLEAR_ALL);
+	r_clear(CLEAR_ALL, RGBA(0, 0.08, 0.08, 1), 1);
 	r_shader("sprite_default");
 
 	ent_draw(stage1_draw_predicate);

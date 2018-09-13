@@ -338,8 +338,8 @@ static void credits_draw_entry(CreditsEntry *e) {
 }
 
 static void credits_draw(void) {
-	r_clear(CLEAR_ALL);
-	colorfill(1, 1, 1, 1); // don't use r_clear_color4 for this, it screws up letterboxing
+	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
+	colorfill(1, 1, 1, 1); // don't use r_clear for this, it screws up letterboxing
 
 	r_mat_push();
 	r_mat_translate(-SCREEN_W/2, 0, 0);
