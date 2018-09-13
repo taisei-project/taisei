@@ -140,64 +140,6 @@ void null_swap(SDL_Window *window) { }
 
 uint8_t* null_screenshot(uint *out_width, uint *out_height) { return NULL; }
 
-/*
- * Resource API
- */
-
-static char* shader_program_path(const char *name) {
-	return strjoin(SHPROG_PATH_PREFIX, name, SHPROG_EXT, NULL);
-}
-
-static bool check_shader_program_path(const char *path) {
-	return strendswith(path, SHPROG_EXT) && strstartswith(path, SHPROG_PATH_PREFIX);
-}
-
-static void* load_shader_program_begin(const char *path, uint flags) {
-	return &placeholder;
-}
-
-static void* load_shader_program_end(void *opaque, const char *path, uint flags) {
-	return &placeholder;
-}
-
-static void unload_shader_program(void *vprog) { }
-
-ResourceHandler null_shader_program_res_handler = {
-	.type = RES_SHADER_PROGRAM,
-	.typename = "shader program",
-	.subdir = SHPROG_PATH_PREFIX,
-
-	.procs = {
-		.find = shader_program_path,
-		.check = check_shader_program_path,
-		.begin_load = load_shader_program_begin,
-		.end_load = load_shader_program_end,
-		.unload = unload_shader_program,
-	},
-};
-
-static char* shader_object_path(const char *name) {
-	return NULL;
-}
-
-static bool check_shader_object_path(const char *path) {
-	return false;
-}
-
-ResourceHandler null_shader_object_res_handler = {
-	.type = RES_SHADER_OBJECT,
-	.typename = "shader object",
-	.subdir = SHOBJ_PATH_PREFIX,
-
-	.procs = {
-		.find = shader_object_path,
-		.check = check_shader_object_path,
-		.begin_load = load_shader_program_begin,
-		.end_load = load_shader_program_end,
-		.unload = unload_shader_program,
-	},
-};
-
 RendererBackend _r_backend_null = {
 	.name = "null",
 	.funcs = {
