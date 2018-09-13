@@ -219,7 +219,7 @@ static void glcommon_ext_depth_texture(void) {
 
 static void glcommon_ext_instanced_arrays(void) {
 	if(
-		GL_ATLEAST(3, 3)
+		(GL_ATLEAST(3, 3) || GLES_ATLEAST(3, 0))
 		&& (glext.DrawArraysInstanced = glad_glDrawArraysInstanced)
 		&& (glext.DrawElementsInstanced = glad_glDrawElementsInstanced)
 		&& (glext.VertexAttribDivisor = glad_glVertexAttribDivisor)
