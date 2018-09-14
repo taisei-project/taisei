@@ -12,6 +12,9 @@
 #define DEG2RAD (M_PI/180.0)
 #define RAD2DEG (180.0/M_PI)
 
+intmax_t imin(intmax_t, intmax_t) attr_const;
+intmax_t imax(intmax_t, intmax_t) attr_const;
+intmax_t iclamp(intmax_t, intmax_t, intmax_t) attr_const;
 double min(double, double) attr_const;
 double max(double, double) attr_const;
 double clamp(double, double, double) attr_const;
@@ -36,9 +39,11 @@ void gaussian_kernel_1d(size_t size, float sigma, float kernel[size]) attr_nonnu
 
 #include <cglm/types.h>
 
-typedef float vec2_noalign[2];
-typedef float vec3_noalign[3];
-typedef int ivec3_noalign[3];
-typedef float vec4_noalign[4];
-typedef vec3_noalign mat3_noalign[3];
-typedef vec4_noalign mat4_noalign[4];
+typedef float         vec2_noalign[2];
+typedef int          ivec2_noalign[2];
+typedef float         vec3_noalign[3];
+typedef int          ivec3_noalign[3];
+typedef float         vec4_noalign[4];
+typedef int          ivec4_noalign[4];
+typedef vec3_noalign  mat3_noalign[3];
+typedef vec4_noalign  mat4_noalign[4];

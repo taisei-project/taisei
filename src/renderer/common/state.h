@@ -15,13 +15,11 @@
 	RSTATE(CAPABILITIES) \
 	RSTATE(MATMODE) \
 	RSTATE(COLOR) \
-	RSTATE(CLEARCOLOR) \
 	RSTATE(BLENDMODE) \
 	RSTATE(CULLMODE) \
 	RSTATE(DEPTHFUNC) \
 	RSTATE(SHADER) \
 	RSTATE(SHADER_UNIFORMS) \
-	RSTATE(TEXUNITS) \
 	RSTATE(RENDERTARGET) \
 	RSTATE(VERTEXARRAY) \
 	RSTATE(VSYNC) \
@@ -47,13 +45,11 @@ typedef struct RendererStateRollback {
 	r_capability_bits_t capabilities;
 	MatrixMode matmode;
 	Color color;
-	Color clear_color;
 	BlendMode blend_mode;
 	CullFaceMode cull_mode;
 	DepthTestFunc depth_func;
 	ShaderProgram *shader;
 	// TODO uniforms
-	Texture *texunits[R_MAX_TEXUNITS];
 	Framebuffer *framebuffer;
 	// TODO framebuffer viewports, if we actually ever need to modify them at render time
 	VertexArray *varr;
@@ -63,13 +59,11 @@ typedef struct RendererStateRollback {
 void _r_state_touch_capabilities(void);
 void _r_state_touch_matrix_mode(void);
 void _r_state_touch_color(void);
-void _r_state_touch_clear_color(void);
 void _r_state_touch_blend_mode(void);
 void _r_state_touch_cull_mode(void);
 void _r_state_touch_depth_func(void);
 void _r_state_touch_shader(void);
 void _r_state_touch_uniform(Uniform *uniform);
-void _r_state_touch_texunit(uint unit);
 void _r_state_touch_framebuffer(void);
 void _r_state_touch_vertex_array(void);
 void _r_state_touch_vsync(void);

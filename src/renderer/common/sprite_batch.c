@@ -27,11 +27,11 @@ typedef struct SpriteAttribs {
 #define SIZEOF_SPRITE_ATTRIBS (offsetof(SpriteAttribs, end_of_fields))
 
 static struct SpriteBatchState {
-	VertexArray varr;
-	VertexBuffer vbuf;
+	VertexArray *varr;
+	VertexBuffer *vbuf;
 	uint base_instance;
 	Texture *primary_texture;
-	Texture *aux_textures[R_MAX_TEXUNITS - 1];
+	Texture *aux_textures[R_NUM_SPRITE_AUX_TEXTURES];
 	ShaderProgram *shader;
 	BlendMode blend;
 	Framebuffer *framebuffer;
@@ -94,22 +94,20 @@ void _r_sprite_batch_init(void) {
 		capacity = 1 << 11;
 	}
 
-	r_vertex_buffer_create(
-		&_r_sprite_batch.vbuf,
-		sz_attr * capacity,
-		NULL
-	);
-	r_vertex_buffer_invalidate(&_r_sprite_batch.vbuf);
+	_r_sprite_batch.vbuf = r_vertex_buffer_create(sz_attr * capacity, NULL);
+	r_vertex_buffer_set_debug_label(_r_sprite_batch.vbuf, "Sprite batch vertex buffer");
+	r_vertex_buffer_invalidate(_r_sprite_batch.vbuf);
 
-	r_vertex_array_create(&_r_sprite_batch.varr);
-	r_vertex_array_layout(&_r_sprite_batch.varr, sizeof(fmt)/sizeof(*fmt), fmt);
-	r_vertex_array_attach_buffer(&_r_sprite_batch.varr, r_vertex_buffer_static_models(), 0);
-	r_vertex_array_attach_buffer(&_r_sprite_batch.varr, &_r_sprite_batch.vbuf, 1);
+	_r_sprite_batch.varr = r_vertex_array_create();
+	r_vertex_array_set_debug_label(_r_sprite_batch.varr, "Sprite batch vertex array");
+	r_vertex_array_layout(_r_sprite_batch.varr, sizeof(fmt)/sizeof(*fmt), fmt);
+	r_vertex_array_attach_buffer(_r_sprite_batch.varr, r_vertex_buffer_static_models(), 0);
+	r_vertex_array_attach_buffer(_r_sprite_batch.varr, _r_sprite_batch.vbuf, 1);
 }
 
 void _r_sprite_batch_shutdown(void) {
-	r_vertex_array_destroy(&_r_sprite_batch.varr);
-	r_vertex_buffer_destroy(&_r_sprite_batch.vbuf);
+	r_vertex_array_destroy(_r_sprite_batch.varr);
+	r_vertex_buffer_destroy(_r_sprite_batch.vbuf);
 }
 
 void r_flush_sprites(void) {
@@ -142,24 +140,10 @@ void r_flush_sprites(void) {
 	r_mat_push();
 	glm_mat4_copy(_r_sprite_batch.projection, *r_mat_current_ptr(MM_PROJECTION));
 
-	r_vertex_array(&_r_sprite_batch.varr);
+	r_vertex_array(_r_sprite_batch.varr);
 	r_shader_ptr(_r_sprite_batch.shader);
-	r_texture_ptr(0, _r_sprite_batch.primary_texture);
-
-	int aux_samplers[NUM_SPRITE_AUX_TEXTURES] = { 0 };
-
-	for(uint i = 0; i < NUM_SPRITE_AUX_TEXTURES; ++i) {
-		Texture *tex = _r_sprite_batch.aux_textures[i];
-
-		if(tex != NULL) {
-			r_texture_ptr(i + 1, tex);
-			aux_samplers[i] = i + 1;
-		}
-	}
-
-	r_uniform_int("tex", 0);
-	r_uniform("tex_aux[0]", NUM_SPRITE_AUX_TEXTURES, aux_samplers);
-
+	r_uniform_sampler("tex", _r_sprite_batch.primary_texture);
+	r_uniform_sampler_array("tex_aux[0]", 0, R_NUM_SPRITE_AUX_TEXTURES, _r_sprite_batch.aux_textures);
 	r_framebuffer(_r_sprite_batch.framebuffer);
 	r_blend(_r_sprite_batch.blend);
 	r_capability(RCAP_DEPTH_TEST, _r_sprite_batch.depth_test_enabled);
@@ -172,14 +156,16 @@ void r_flush_sprites(void) {
 		r_draw(PRIM_TRIANGLE_FAN, 0, 4, NULL, pending, _r_sprite_batch.base_instance);
 		_r_sprite_batch.base_instance += pending;
 
-		if(_r_sprite_batch.vbuf.size - _r_sprite_batch.vbuf.offset < SIZEOF_SPRITE_ATTRIBS) {
+		size_t remaining = r_vertex_buffer_get_capacity(_r_sprite_batch.vbuf) - r_vertex_buffer_get_cursor(_r_sprite_batch.vbuf);
+
+		if(remaining < SIZEOF_SPRITE_ATTRIBS) {
 			// log_debug("Invalidating after %u sprites", _r_sprite_batch.base_instance);
-			r_vertex_buffer_invalidate(&_r_sprite_batch.vbuf);
+			r_vertex_buffer_invalidate(_r_sprite_batch.vbuf);
 			_r_sprite_batch.base_instance = 0;
 		}
 	} else {
 		r_draw(PRIM_TRIANGLE_FAN, 0, 4, NULL, pending, 0);
-		r_vertex_buffer_invalidate(&_r_sprite_batch.vbuf);
+		r_vertex_buffer_invalidate(_r_sprite_batch.vbuf);
 	}
 
 	r_mat_pop();
@@ -217,10 +203,13 @@ static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, VertexB
 		memcpy(attribs.rgba, params->color, sizeof(attribs.rgba));
 	}
 
-	attribs.texrect.x = spr->tex_area.x / spr->tex->w;
-	attribs.texrect.y = spr->tex_area.y / spr->tex->h;
-	attribs.texrect.w = spr->tex_area.w / spr->tex->w;
-	attribs.texrect.h = spr->tex_area.h / spr->tex->h;
+	uint tw, th;
+	r_texture_get_size(spr->tex, 0, &tw, &th);
+
+	attribs.texrect.x = spr->tex_area.x / tw;
+	attribs.texrect.y = spr->tex_area.y / th;
+	attribs.texrect.w = spr->tex_area.w / tw;
+	attribs.texrect.h = spr->tex_area.h / th;
 
 	if(params->flip.x) {
 		attribs.texrect.x += attribs.texrect.w;
@@ -261,7 +250,7 @@ void r_draw_sprite(const SpriteParams *params) {
 		_r_sprite_batch.primary_texture = spr->tex;
 	}
 
-	for(uint i = 0; i < NUM_SPRITE_AUX_TEXTURES; ++i) {
+	for(uint i = 0; i < R_NUM_SPRITE_AUX_TEXTURES; ++i) {
 		Texture *aux_tex = params->aux_textures[i];
 
 		if(aux_tex != NULL && aux_tex != _r_sprite_batch.aux_textures[i]) {
@@ -343,16 +332,18 @@ void r_draw_sprite(const SpriteParams *params) {
 		glm_mat4_copy(*current_projection, _r_sprite_batch.projection);
 	}
 
-	if(_r_sprite_batch.vbuf.size - _r_sprite_batch.vbuf.offset < SIZEOF_SPRITE_ATTRIBS) {
+	size_t remaining = r_vertex_buffer_get_capacity(_r_sprite_batch.vbuf) - r_vertex_buffer_get_cursor(_r_sprite_batch.vbuf);
+
+	if(remaining < SIZEOF_SPRITE_ATTRIBS) {
 		if(!r_supports(RFEAT_DRAW_INSTANCED_BASE_INSTANCE)) {
-			log_warn("Vertex buffer exhausted (%zu needed for next sprite, %u remaining), flush forced", SIZEOF_SPRITE_ATTRIBS, _r_sprite_batch.vbuf.size - _r_sprite_batch.vbuf.offset);
+			log_warn("Vertex buffer exhausted (%zu needed for next sprite, %zu remaining), flush forced", SIZEOF_SPRITE_ATTRIBS, remaining);
 		}
 
 		r_flush_sprites();
 	}
 
 	_r_sprite_batch.num_pending++;
-	_r_sprite_batch_add(spr, params, &_r_sprite_batch.vbuf);
+	_r_sprite_batch_add(spr, params, _r_sprite_batch.vbuf);
 }
 
 #include "resource/font.h"
@@ -392,7 +383,7 @@ void _r_sprite_batch_texture_deleted(Texture *tex) {
 		_r_sprite_batch.primary_texture = NULL;
 	}
 
-	for(uint i = 0; i < NUM_SPRITE_AUX_TEXTURES; ++i) {
+	for(uint i = 0; i < R_NUM_SPRITE_AUX_TEXTURES; ++i) {
 		if(_r_sprite_batch.aux_textures[i] == tex) {
 			_r_sprite_batch.aux_textures[i] = NULL;
 		}

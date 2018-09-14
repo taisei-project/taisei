@@ -1,2 +1,2 @@
 
-glsl_objects = standard.vert reimu_gap.frag
+objects = standard.vert reimu_gap.frag

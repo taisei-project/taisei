@@ -73,14 +73,12 @@ static void stage4_fog(Framebuffer *fb) {
 	}
 
 	r_shader("zbuf_fog");
-	r_uniform_int("tex", 0);
-	r_uniform_int("depth", 2);
+	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	r_uniform_vec4("fog_color", 10.0*f, 0.0, 0.1-f, 1.0);
 	r_uniform_float("start", 0.4);
 	r_uniform_float("end", 0.8);
 	r_uniform_float("exponent", 4.0);
 	r_uniform_float("sphereness", 0);
-	r_texture_ptr(2, r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
 }
@@ -102,7 +100,7 @@ static vec3 **stage4_fountain_pos(vec3 pos, float maxrange) {
 }
 
 static void stage4_fountain_draw(vec3 pos) {
-	r_texture(0, "stage2/border");
+	r_uniform_sampler("tex", "stage2/border");
 
 	r_mat_push();
 	r_mat_translate(pos[0], pos[1], pos[2]);
@@ -138,14 +136,14 @@ static vec3 **stage4_lake_pos(vec3 pos, float maxrange) {
 }
 
 static void stage4_lake_draw(vec3 pos) {
-	r_texture(0, "stage4/lake");
+	r_uniform_sampler("tex", "stage4/lake");
 	r_mat_push();
 	r_mat_translate(pos[0], pos[1]+140, pos[2]);
 	r_mat_scale(15,15,15);
 	r_draw_model("lake");
 	r_mat_pop();
 
-	r_texture(0, "stage4/mansion");
+	r_uniform_sampler("tex", "stage4/mansion");
 	r_mat_push();
 	r_mat_translate(pos[0], pos[1]+944, pos[2]+50);
 	r_mat_scale(30,30,30);
@@ -170,7 +168,7 @@ static vec3 **stage4_corridor_pos(vec3 pos, float maxrange) {
 }
 
 static void stage4_corridor_draw(vec3 pos) {
-	r_texture(0, "stage4/planks");
+	r_uniform_sampler("tex", "stage4/planks");
 
 	r_mat_mode(MM_TEXTURE);
 	r_mat_scale(1,2,1);
@@ -186,7 +184,7 @@ static void stage4_corridor_draw(vec3 pos) {
 	r_draw_quad();
 	r_mat_pop();
 
-	r_texture(0, "stage4/wall");
+	r_uniform_sampler("tex", "stage4/wall");
 
 	r_mat_mode(MM_TEXTURE);
 	r_mat_identity();

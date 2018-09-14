@@ -25,5 +25,6 @@ char* vfs_path_normalize_inplace(char *path);
 void vfs_path_split_left(char *path, char **lpath, char **rpath);
 void vfs_path_split_right(char *path, char **lpath, char **rpath);
 void vfs_path_root_prefix(char *path);
+void vfs_path_resolve_relative(char *buf, size_t bufsize, const char *basepath, const char *relpath); // NOTE: doesn't normalize
 
 char* vfs_syspath_normalize_inplace(char *path);

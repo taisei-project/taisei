@@ -29,15 +29,37 @@ double psin(double x) {
 	return 0.5 + 0.5 * sin(x);
 }
 
-double max(double a, double b) {
-	return (a > b)? a : b;
+double min(double a, double b) {
+	return (a < b) ? a : b;
 }
 
-double min(double a, double b) {
-	return (a < b)? a : b;
+double max(double a, double b) {
+	return (a > b) ? a : b;
+}
+
+intmax_t imin(intmax_t a, intmax_t b) {
+	return (a < b) ? a : b;
+}
+
+intmax_t imax(intmax_t a, intmax_t b) {
+	return (a > b) ? a : b;
 }
 
 double clamp(double f, double lower, double upper) {
+	assert(lower <= upper);
+
+	if(f < lower) {
+		return lower;
+	}
+
+	if(f > upper) {
+		return upper;
+	}
+
+	return f;
+}
+
+intmax_t iclamp(intmax_t f, intmax_t lower, intmax_t upper) {
 	assert(lower <= upper);
 
 	if(f < lower) {

@@ -10,7 +10,6 @@
 #include "taisei.h"
 
 #include "../api.h"
-#include "resource/resource.h"
 
 typedef struct RendererFuncs {
 	void (*init)(void);
@@ -38,43 +37,66 @@ typedef struct RendererFuncs {
 	void (*depth_func)(DepthTestFunc depth_func);
 	DepthTestFunc (*depth_func_current)(void);
 
+	bool (*shader_language_supported)(const ShaderLangInfo *lang, ShaderLangInfo *out_alternative);
+
+	ShaderObject* (*shader_object_compile)(ShaderSource *source);
+	void (*shader_object_destroy)(ShaderObject *shobj);
+	void (*shader_object_set_debug_label)(ShaderObject *shobj, const char *label);
+	const char* (*shader_object_get_debug_label)(ShaderObject *shobj);
+
+	ShaderProgram* (*shader_program_link)(uint num_objects, ShaderObject *shobjs[num_objects]);
+	void (*shader_program_destroy)(ShaderProgram *prog);
+	void (*shader_program_set_debug_label)(ShaderProgram *prog, const char *label);
+	const char* (*shader_program_get_debug_label)(ShaderProgram *prog);
+
 	void (*shader)(ShaderProgram *prog);
 	ShaderProgram* (*shader_current)(void);
 
 	Uniform* (*shader_uniform)(ShaderProgram *prog, const char *uniform_name);
-	void (*uniform)(Uniform *uniform, uint count, const void *data);
+	void (*uniform)(Uniform *uniform, uint offset, uint count, const void *data);
 	UniformType (*uniform_type)(Uniform *uniform);
 
-	void (*texture_create)(Texture *tex, const TextureParams *params);
+	Texture* (*texture_create)(const TextureParams *params);
 	void (*texture_get_params)(Texture *tex, TextureParams *params);
+	void (*texture_get_size)(Texture *tex, uint mipmap, uint *width, uint *height);
+	const char* (*texture_get_debug_label)(Texture *tex);
+	void (*texture_set_debug_label)(Texture *tex, const char *label);
 	void (*texture_set_filter)(Texture *tex, TextureFilterMode fmin, TextureFilterMode fmag);
 	void (*texture_set_wrap)(Texture *tex, TextureWrapMode ws, TextureWrapMode wt);
 	void (*texture_destroy)(Texture *tex);
 	void (*texture_invalidate)(Texture *tex);
 	void (*texture_fill)(Texture *tex, uint mipmap, void *image_data);
 	void (*texture_fill_region)(Texture *tex, uint mipmap, uint x, uint y, uint w, uint h, void *image_data);
+	void (*texture_clear)(Texture *tex, const Color *clr);
 
-	void (*texture)(uint unit, Texture *tex);
-	Texture* (*texture_current)(uint unit);
-
-	void (*framebuffer_create)(Framebuffer *framebuffer);
+	Framebuffer* (*framebuffer_create)(void);
+	const char* (*framebuffer_get_debug_label)(Framebuffer *framebuffer);
+	void (*framebuffer_set_debug_label)(Framebuffer *framebuffer, const char *label);
 	void (*framebuffer_destroy)(Framebuffer *framebuffer);
 	void (*framebuffer_attach)(Framebuffer *framebuffer, Texture *tex, uint mipmap, FramebufferAttachment attachment);
 	void (*framebuffer_viewport)(Framebuffer *framebuffer, IntRect vp);
 	void (*framebuffer_viewport_current)(Framebuffer *framebuffer, IntRect *vp);
 	Texture* (*framebuffer_get_attachment)(Framebuffer *framebuffer, FramebufferAttachment attachment);
 	uint (*framebuffer_get_attachment_mipmap)(Framebuffer *framebuffer, FramebufferAttachment attachment);
+	void (*framebuffer_clear)(Framebuffer *framebuffer, ClearBufferFlags flags, const Color *colorval, float depthval);
 
 	void (*framebuffer)(Framebuffer *framebuffer);
 	Framebuffer* (*framebuffer_current)(void);
 
-	void (*vertex_buffer_create)(VertexBuffer *vbuf, size_t capacity, void *data);
+	VertexBuffer* (*vertex_buffer_create)(size_t capacity, void *data);
+	const char* (*vertex_buffer_get_debug_label)(VertexBuffer *vbuf);
+	void (*vertex_buffer_set_debug_label)(VertexBuffer *vbuf, const char *label);
 	void (*vertex_buffer_destroy)(VertexBuffer *vbuf);
 	void (*vertex_buffer_invalidate)(VertexBuffer *vbuf);
 	void (*vertex_buffer_write)(VertexBuffer *vbuf, size_t offset, size_t data_size, void *data);
 	void (*vertex_buffer_append)(VertexBuffer *vbuf, size_t data_size, void *data);
+	size_t (*vertex_buffer_get_capacity)(VertexBuffer *vbuf);
+	size_t (*vertex_buffer_get_cursor)(VertexBuffer *vbuf);
+	void (*vertex_buffer_set_cursor)(VertexBuffer *vbuf, size_t pos);
 
-	void (*vertex_array_create)(VertexArray *varr);
+	VertexArray* (*vertex_array_create)(void);
+	const char* (*vertex_array_get_debug_label)(VertexArray *varr);
+	void (*vertex_array_set_debug_label)(VertexArray *varr, const char *label);
 	void (*vertex_array_destroy)(VertexArray *varr);
 	void (*vertex_array_layout)(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]);
 	void (*vertex_array_attach_buffer)(VertexArray *varr, VertexBuffer *vbuf, uint attachment);
@@ -82,10 +104,6 @@ typedef struct RendererFuncs {
 
 	void (*vertex_array)(VertexArray *varr) attr_nonnull(1);
 	VertexArray* (*vertex_array_current)(void);
-
-	void (*clear)(ClearBufferFlags flags);
-	void (*clear_color4)(float r, float g, float b, float a);
-	const Color* (*clear_color_current)(void);
 
 	void (*vsync)(VsyncMode mode);
 	VsyncMode (*vsync_current)(void);
@@ -98,12 +116,6 @@ typedef struct RendererFuncs {
 typedef struct RendererBackend {
 	const char *name;
 	RendererFuncs funcs;
-
-	struct {
-		ResourceHandler *shader_object;
-		ResourceHandler *shader_program;
-	} res_handlers;
-
 	void *custom;
 } RendererBackend;
 

@@ -1,2 +1,2 @@
 
-glsl_objects = sprite_circleclipped_indicator.vert sprite_circleclipped_indicator.frag
+objects = sprite_circleclipped_indicator.vert sprite_circleclipped_indicator.frag

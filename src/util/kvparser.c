@@ -100,6 +100,7 @@ bool parse_keyvalue_file(const char *filename, ht_str2ptr_t  *ht) {
 
 static bool kvcallback_spec(const char *key, const char *val, void *data) {
 	KVSpec *spec = data;
+
 	for(KVSpec *s = spec; s->name; ++s) {
 		if(!strcmp(key, s->name)) {
 			if(s->out_str) {
@@ -124,6 +125,10 @@ static bool kvcallback_spec(const char *key, const char *val, void *data) {
 
 			if(s->out_bool) {
 				*s->out_bool = parse_bool(val, *s->out_bool);
+			}
+
+			if(s->callback) {
+				return s->callback(key, val, s->callback_data);
 			}
 
 			return true;
@@ -177,4 +182,10 @@ bool parse_bool(const char *str, bool fallback) {
 
 	log_warn("Bad value `%s`, assuming %s", buf, fallback ? "true" : "false");
 	return fallback;
+}
+
+bool kvparser_deprecation(const char *key, const char *val, void *data) {
+	const char *alt = data;
+	log_warn("'%s' is deprecated, use '%s' instead", key, alt);
+	return true;
 }

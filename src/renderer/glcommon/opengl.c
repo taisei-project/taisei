@@ -8,8 +8,11 @@
 
 #include "taisei.h"
 
-#include "global.h"
+// #include "global.h"
+#include "util.h"
+#include "rwops/rwops_autobuf.h"
 #include "opengl.h"
+#include "shaders.h"
 
 struct glext_s glext;
 
@@ -219,7 +222,7 @@ static void glcommon_ext_depth_texture(void) {
 
 static void glcommon_ext_instanced_arrays(void) {
 	if(
-		GL_ATLEAST(3, 3)
+		(GL_ATLEAST(3, 3) || GLES_ATLEAST(3, 0))
 		&& (glext.DrawArraysInstanced = glad_glDrawArraysInstanced)
 		&& (glext.DrawElementsInstanced = glad_glDrawElementsInstanced)
 		&& (glext.VertexAttribDivisor = glad_glVertexAttribDivisor)
@@ -318,6 +321,30 @@ static void glcommon_ext_texture_filter_anisotropic(void) {
 	log_warn("Extension not supported");
 }
 
+static void glcommon_ext_clear_texture(void) {
+	if(GL_ATLEAST(4, 4)) {
+		glext.clear_texture = TSGL_EXTFLAG_NATIVE;
+		log_info("Using core functionality");
+		return;
+	}
+
+	if((glext.clear_texture = glcommon_check_extension("GL_ARB_clear_texture"))) {
+		log_info("Using GL_ARB_clear_texture");
+		return;
+	}
+
+	glext.clear_texture = 0;
+	log_warn("Extension not supported");
+}
+
+void shim_glClearDepth(GLdouble depthval) {
+	glClearDepthf(depthval);
+}
+
+void shim_glClearDepthf(GLfloat depthval) {
+	glClearDepth(depthval);
+}
+
 void glcommon_check_extensions(void) {
 	memset(&glext, 0, sizeof(glext));
 	glext.version.major = GLVersion.major;
@@ -360,12 +387,27 @@ void glcommon_check_extensions(void) {
 	}
 
 	glcommon_ext_base_instance();
+	glcommon_ext_clear_texture();
 	glcommon_ext_debug_output();
 	glcommon_ext_depth_texture();
 	glcommon_ext_draw_buffers();
 	glcommon_ext_instanced_arrays();
 	glcommon_ext_pixel_buffer_object();
 	glcommon_ext_texture_filter_anisotropic();
+
+	// GLES has only glClearDepthf
+	// Core has only glClearDepth until GL 4.1
+	assert(glClearDepth || glClearDepthf);
+
+	if(!glClearDepth) {
+		glClearDepth = shim_glClearDepth;
+	}
+
+	if(!glClearDepthf) {
+		glClearDepthf = shim_glClearDepthf;
+	}
+
+	glcommon_build_shader_lang_table();
 }
 
 void glcommon_load_library(void) {
@@ -382,6 +424,7 @@ void glcommon_load_library(void) {
 
 void glcommon_unload_library(void) {
 	SDL_GL_UnloadLibrary();
+	glcommon_free_shader_lang_table();
 }
 
 void glcommon_load_functions(void) {

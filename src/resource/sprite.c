@@ -105,9 +105,11 @@ void* load_sprite_end(void *opaque, const char *path, uint flags) {
 	}
 
 	spr->tex = res->data;
+	uint tw, th;
+	r_texture_get_size(spr->tex, 0, &tw, &th);
 
-	float tex_w_flt = spr->tex->w;
-	float tex_h_flt = spr->tex->h;
+	float tex_w_flt = tw;
+	float tex_h_flt = th;
 
 	struct infermap {
 		const char *dstname;

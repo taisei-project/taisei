@@ -84,7 +84,8 @@ static void stage3_bg_tunnel_draw(vec3 pos) {
 	r_mat_push();
 	r_mat_translate(pos[0], pos[1], pos[2]);
 
-	r_texture(0, "stage3/border");
+	r_uniform_sampler("tex", "stage3/border");
+
 	for(i = 0; i < n; i++) {
 		r_mat_push();
 		r_mat_rotate_deg(360.0/n*i + stgstate.tunnel_angle, 0, 1, 0);
@@ -101,21 +102,18 @@ static void stage3_tunnel(Framebuffer *fb) {
 	r_shader("tunnel");
 	r_uniform_vec3("color", stgstate.clr_r, stgstate.clr_g, stgstate.clr_b);
 	r_uniform_float("mixfactor", stgstate.clr_mixfactor);
-	r_texture_ptr(2, r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
 }
 
 static void stage3_fog(Framebuffer *fb) {
 	r_shader("zbuf_fog");
-	r_uniform_int("tex", 0);
-	r_uniform_int("depth", 2);
+	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	r_uniform_vec4("fog_color", stgstate.fog_brightness, stgstate.fog_brightness, stgstate.fog_brightness, 1.0);
 	r_uniform_float("start", 0.2);
 	r_uniform_float("end", 0.8);
 	r_uniform_float("exponent", stgstate.fog_exp/2);
 	r_uniform_float("sphereness", 0);
-	r_texture_ptr(2, r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
 }

@@ -14,6 +14,8 @@
 #include "../glcommon/debug.h"
 #include "../api.h"
 
+static Uniform *sampler_uniforms;
+
 Uniform* gl33_shader_uniform(ShaderProgram *prog, const char *uniform_name) {
 	return ht_get(&prog->uniforms, uniform_name, NULL);
 }
@@ -22,8 +24,8 @@ UniformType gl33_uniform_type(Uniform *uniform) {
 	return uniform->type;
 }
 
-static void uset_float(Uniform *uniform, uint count, const void *data) {
-	glUniform1fv(uniform->location, count, (float*)data);
+static void uset_float(Uniform *uniform, uint offset, uint count, const void *data) {
+	glUniform1fv(uniform->location + offset, count, (float*)data);
 }
 
 static void uget_float(Uniform *uniform, uint count, void *data) {
@@ -33,8 +35,8 @@ static void uget_float(Uniform *uniform, uint count, void *data) {
 }
 
 
-static void uset_vec2(Uniform *uniform, uint count, const void *data) {
-	glUniform2fv(uniform->location, count, (float*)data);
+static void uset_vec2(Uniform *uniform, uint offset, uint count, const void *data) {
+	glUniform2fv(uniform->location + offset, count, (float*)data);
 }
 
 static void uget_vec2(Uniform *uniform, uint count, void *data) {
@@ -44,8 +46,8 @@ static void uget_vec2(Uniform *uniform, uint count, void *data) {
 }
 
 
-static void uset_vec3(Uniform *uniform, uint count, const void *data) {
-	glUniform3fv(uniform->location, count, (float*)data);
+static void uset_vec3(Uniform *uniform, uint offset, uint count, const void *data) {
+	glUniform3fv(uniform->location + offset, count, (float*)data);
 }
 
 static void uget_vec3(Uniform *uniform, uint count, void *data) {
@@ -55,8 +57,8 @@ static void uget_vec3(Uniform *uniform, uint count, void *data) {
 }
 
 
-static void uset_vec4(Uniform *uniform, uint count, const void *data) {
-	glUniform4fv(uniform->location, count, (float*)data);
+static void uset_vec4(Uniform *uniform, uint offset, uint count, const void *data) {
+	glUniform4fv(uniform->location + offset, count, (float*)data);
 }
 
 static void uget_vec4(Uniform *uniform, uint count, void *data) {
@@ -66,8 +68,8 @@ static void uget_vec4(Uniform *uniform, uint count, void *data) {
 }
 
 
-static void uset_int(Uniform *uniform, uint count, const void *data) {
-	glUniform1iv(uniform->location, count, (int*)data);
+static void uset_int(Uniform *uniform, uint offset, uint count, const void *data) {
+	glUniform1iv(uniform->location + offset, count, (int*)data);
 }
 
 static void uget_int(Uniform *uniform, uint count, void *data) {
@@ -77,8 +79,8 @@ static void uget_int(Uniform *uniform, uint count, void *data) {
 }
 
 
-static void uset_ivec2(Uniform *uniform, uint count, const void *data) {
-	glUniform2iv(uniform->location, count, (int*)data);
+static void uset_ivec2(Uniform *uniform, uint offset, uint count, const void *data) {
+	glUniform2iv(uniform->location + offset, count, (int*)data);
 }
 
 static void uget_ivec2(Uniform *uniform, uint count, void *data) {
@@ -88,8 +90,8 @@ static void uget_ivec2(Uniform *uniform, uint count, void *data) {
 }
 
 
-static void uset_ivec3(Uniform *uniform, uint count, const void *data) {
-	glUniform3iv(uniform->location, count, (int*)data);
+static void uset_ivec3(Uniform *uniform, uint offset, uint count, const void *data) {
+	glUniform3iv(uniform->location + offset, count, (int*)data);
 }
 
 static void uget_ivec3(Uniform *uniform, uint count, void *data) {
@@ -99,8 +101,8 @@ static void uget_ivec3(Uniform *uniform, uint count, void *data) {
 }
 
 
-static void uset_ivec4(Uniform *uniform, uint count, const void *data) {
-	glUniform4iv(uniform->location, count, (int*)data);
+static void uset_ivec4(Uniform *uniform, uint offset, uint count, const void *data) {
+	glUniform4iv(uniform->location + offset, count, (int*)data);
 }
 
 static void uget_ivec4(Uniform *uniform, uint count, void *data) {
@@ -110,8 +112,8 @@ static void uget_ivec4(Uniform *uniform, uint count, void *data) {
 }
 
 
-static void uset_mat3(Uniform *uniform, uint count, const void *data) {
-	glUniformMatrix3fv(uniform->location, count, false, (float*)data);
+static void uset_mat3(Uniform *uniform, uint offset, uint count, const void *data) {
+	glUniformMatrix3fv(uniform->location + offset, count, false, (float*)data);
 }
 
 static void uget_mat3(Uniform *uniform, uint count, void *data) {
@@ -121,8 +123,8 @@ static void uget_mat3(Uniform *uniform, uint count, void *data) {
 }
 
 
-static void uset_mat4(Uniform *uniform, uint count, const void *data) {
-	glUniformMatrix4fv(uniform->location, count, false, (float*)data);
+static void uset_mat4(Uniform *uniform, uint offset, uint count, const void *data) {
+	glUniformMatrix4fv(uniform->location + offset, count, false, (float*)data);
 }
 
 static void uget_mat4(Uniform *uniform, uint count, void *data) {
@@ -133,7 +135,7 @@ static void uget_mat4(Uniform *uniform, uint count, void *data) {
 
 
 static struct {
-	void (*setter)(Uniform *uniform, uint count, const void *data);
+	void (*setter)(Uniform *uniform, uint offset, uint count, const void *data);
 	void (*getter)(Uniform *uniform, uint count, void *data);
 } type_to_accessors[] = {
 	[UNIFORM_FLOAT]   = { uset_float, uget_float },
@@ -161,41 +163,73 @@ static MagicalUniform magical_unfiroms[] = {
 	{ "r_textureMatrix",    "mat4", UNIFORM_MAT4 },
 	{ "r_color",            "vec4", UNIFORM_VEC4 },
 };
-static void gl33_commit_uniform(Uniform *uniform);
-static void gl33_update_uniform(Uniform *uniform, uint count, const void *data, size_t datasize) {
-	if(datasize > uniform->buffer_size) {
-		// might happen when unused array elements get optimized out
-		datasize = uniform->buffer_size;
+
+static void gl33_update_uniform(Uniform *uniform, uint offset, uint count, const void *data) {
+	// these are validated properly in gl33_uniform
+	assert(offset < uniform->array_size);
+	assert(offset + count <= uniform->array_size);
+
+	uint idx_first = offset;
+	uint idx_last = offset + count - 1;
+
+	assert(idx_last < uniform->array_size);
+	assert(idx_first <= idx_last);
+
+	memcpy(uniform->cache.pending + offset, data, count * uniform->elem_size);
+
+	if(idx_first < uniform->cache.update_first_idx) {
+		uniform->cache.update_first_idx = idx_first;
 	}
 
-	memcpy(uniform->cache.pending, data, datasize);
-
-	if(datasize > uniform->cache.update_size) {
-		uniform->cache.update_size = datasize;
+	if(idx_last > uniform->cache.update_last_idx) {
+		uniform->cache.update_last_idx = idx_last;
 	}
 }
 
 static void gl33_commit_uniform(Uniform *uniform) {
-	memcpy(uniform->cache.commited, uniform->cache.pending, uniform->buffer_size);
-	type_to_accessors[uniform->type].setter(uniform, uniform->array_size, uniform->cache.commited);
+	if(uniform->cache.update_first_idx > uniform->cache.update_last_idx) {
+		return;
+	}
 
-	uniform->cache.update_size = 0;
+	uint update_count = uniform->cache.update_last_idx - uniform->cache.update_first_idx + 1;
+	size_t update_ofs = uniform->cache.update_first_idx * uniform->elem_size;
+	size_t update_sz  = update_count * uniform->elem_size;
+
+	assert(update_sz + update_ofs <= uniform->elem_size * uniform->array_size);
+
+	if(memcmp(uniform->cache.commited + update_ofs, uniform->cache.pending + update_ofs, update_sz)) {
+		memcpy(uniform->cache.commited + update_ofs, uniform->cache.pending + update_ofs, update_sz);
+
+		type_to_accessors[uniform->type].setter(
+			uniform,
+			uniform->cache.update_first_idx,
+			update_count,
+			uniform->cache.commited + update_ofs
+		);
+	}
+
+	uniform->cache.update_first_idx = uniform->array_size;
+	uniform->cache.update_last_idx = 0;
 }
 
 static void* gl33_sync_uniform(const char *key, void *value, void *arg) {
-	attr_unused const char *name = key;
 	Uniform *uniform = value;
 
-	if(uniform->cache.update_size == 0) {
-		return NULL;
+	// special case: for sampler uniforms, we have to construct the actual data from the texture pointers array.
+	if(uniform->type == UNIFORM_SAMPLER) {
+		for(uint i = 0; i < uniform->array_size; ++i) {
+			Texture *tex = uniform->textures[i];
+
+			if(tex == NULL) {
+				continue;
+			}
+
+			GLuint unit = gl33_bind_texture(tex, true);
+			gl33_update_uniform(uniform, i, 1, &unit);
+		}
 	}
 
-	if(memcmp(uniform->cache.commited, uniform->cache.pending, uniform->cache.update_size)) {
-		gl33_commit_uniform(uniform);
-	} else {
-		// log_debug("uniform %u:%s (shader %u) update of size %zu ignored", uniform->location, name, uniform->prog->gl_handle, uniform->cache.update_size);
-	}
-
+	gl33_commit_uniform(uniform);
 	return NULL;
 }
 
@@ -203,18 +237,29 @@ void gl33_sync_uniforms(ShaderProgram *prog) {
 	ht_foreach(&prog->uniforms, gl33_sync_uniform, NULL);
 }
 
-void gl33_uniform(Uniform *uniform, uint count, const void *data) {
+void gl33_uniform(Uniform *uniform, uint offset, uint count, const void *data) {
 	assert(count > 0);
+	assert(uniform != NULL);
+	assert(uniform->prog != NULL);
+	assert(uniform->type >= 0 && uniform->type < sizeof(type_to_accessors)/sizeof(*type_to_accessors));
 
-	if(uniform == NULL) {
+	if(offset >= uniform->array_size) {
+		// completely out of range
 		return;
 	}
 
-	assert(uniform->prog != NULL);
-	assert(uniform->type >= 0 && uniform->type < sizeof(type_to_accessors)/sizeof(*type_to_accessors));
-	const UniformTypeInfo *typeinfo = r_uniform_type_info(uniform->type);
-	size_t datasize = typeinfo->elements * typeinfo->element_size * count;
-	gl33_update_uniform(uniform, count, data, datasize);
+	if(offset + count > uniform->array_size) {
+		// partially out of range
+		count = uniform->array_size - offset;
+	}
+
+	// special case: for sampler uniforms, data is an array of Texture pointers that we'll have to bind later.
+	if(uniform->type == UNIFORM_SAMPLER) {
+		Texture **textures = (Texture**)data;
+		memcpy(uniform->textures + offset, textures, sizeof(Texture*) * count);
+	} else {
+		gl33_update_uniform(uniform, offset, count, data);
+	}
 }
 
 static bool cache_uniforms(ShaderProgram *prog) {
@@ -276,92 +321,44 @@ static bool cache_uniforms(ShaderProgram *prog) {
 
 		uni.location = loc;
 		uni.array_size = size;
-		uni.buffer_size = size * typeinfo->element_size * typeinfo->elements;
-		uni.cache.commited = malloc(uni.buffer_size);
-		uni.cache.pending = malloc(uni.buffer_size);
+
+		if(uni.type == UNIFORM_SAMPLER) {
+			uni.elem_size = sizeof(GLint);
+			uni.textures = calloc(uni.array_size, sizeof(Texture*));
+		} else {
+			uni.elem_size = typeinfo->element_size * typeinfo->elements;
+		}
+
+		uni.cache.commited = calloc(uni.array_size, uni.elem_size);
+		uni.cache.pending = calloc(uni.array_size, uni.elem_size);
+		uni.cache.update_first_idx = uni.array_size;
 
 		type_to_accessors[uni.type].getter(&uni, size, uni.cache.commited);
 
-		ht_set(&prog->uniforms, name, memdup(&uni, sizeof(uni)));
-		log_debug("%s = %i [array elements: %i; size: %zi bytes]", name, loc, size, uni.buffer_size);
+		Uniform *new_uni = memdup(&uni, sizeof(uni));
+
+		if(uni.type == UNIFORM_SAMPLER) {
+			list_push(&sampler_uniforms, new_uni);
+		}
+
+		ht_set(&prog->uniforms, name, new_uni);
+		log_debug("%s = %i [array elements: %i; size: %zi bytes]", name, loc, uni.array_size, uni.array_size * uni.elem_size);
 	}
 
 	return true;
 }
 
-/*
- * Resource API
- */
+void gl33_unref_texture_from_samplers(Texture *tex) {
+	for(Uniform *u = sampler_uniforms; u; u = u->next) {
+		assert(u->type == UNIFORM_SAMPLER);
+		assert(u->textures != NULL);
 
-static char* shader_program_path(const char *name) {
-	return strjoin(SHPROG_PATH_PREFIX, name, SHPROG_EXT, NULL);
-}
-
-static bool check_shader_program_path(const char *path) {
-	return strendswith(path, SHPROG_EXT) && strstartswith(path, SHPROG_PATH_PREFIX);
-}
-
-struct shprog_load_data {
-	ShaderProgram shprog;
-	int num_objects;
-	uint load_flags;
-	char *objlist;
-};
-
-static void for_each_shobject(struct shprog_load_data *ldata, void (*func)(const char *obj, struct shprog_load_data *ldata)) {
-	const char *rawobjects = ldata->objlist;
-	char buf[strlen(rawobjects) + 1];
-	strcpy(buf, rawobjects);
-	char *objname, *bufptr = buf;
-	strcpy(buf, rawobjects);
-
-	while((objname = strtok_r(NULL, " \t", &bufptr))) {
-		if(*objname) {
-			func(objname, ldata);
+		for(Texture **slot = u->textures; slot < u->textures + u->array_size; ++slot) {
+			if(*slot == tex) {
+				*slot = NULL;
+			}
 		}
 	}
-}
-
-static void preload_shobject(const char *name, struct shprog_load_data *ldata) {
-	preload_resource(RES_SHADER_OBJECT, name, ldata->load_flags);
-	++ldata->num_objects;
-}
-
-static void* load_shader_program_begin(const char *path, uint flags) {
-	struct shprog_load_data ldata;
-	memset(&ldata, 0, sizeof(ldata));
-	ldata.load_flags = flags;
-
-	if(!parse_keyvalue_file_with_spec(path, (KVSpec[]){
-		{ "glsl_objects", .out_str = &ldata.objlist },
-		{ NULL }
-	})) {
-		free(ldata.objlist);
-		return NULL;
-	}
-
-	if(ldata.objlist) {
-		for_each_shobject(&ldata, preload_shobject);
-	}
-
-	if(!ldata.num_objects) {
-		log_warn("%s: no shader objects to link", path);
-		free(ldata.objlist);
-		return NULL;
-	}
-
-	return memdup(&ldata, sizeof(ldata));
-}
-
-static void attach_shobject(const char *name, struct shprog_load_data *ldata) {
-	ShaderObject *shobj = get_resource_data(RES_SHADER_OBJECT, name, ldata->load_flags);
-
-	if(!shobj) {
-		return;
-	}
-
-	glAttachShader(ldata->shprog.gl_handle, shobj->impl->gl_handle);
-	--ldata->num_objects;
 }
 
 static void print_info_log(GLuint prog) {
@@ -382,14 +379,19 @@ static void print_info_log(GLuint prog) {
 
 static void* free_uniform(const char *key, void *data, void *arg) {
 	Uniform *uniform = data;
+
+	if(uniform->type == UNIFORM_SAMPLER) {
+		list_unlink(&sampler_uniforms, uniform);
+	}
+
+	free(uniform->textures);
 	free(uniform->cache.commited);
 	free(uniform->cache.pending);
 	free(uniform);
 	return NULL;
 }
 
-static void unload_shader_program(void *vprog) {
-	ShaderProgram *prog = vprog;
+void gl33_shader_program_destroy(ShaderProgram *prog) {
 	gl33_shader_deleted(prog);
 	glDeleteProgram(prog->gl_handle);
 	ht_foreach(&prog->uniforms, free_uniform, NULL);
@@ -397,62 +399,41 @@ static void unload_shader_program(void *vprog) {
 	free(prog);
 }
 
-static void* load_shader_program_end(void *opaque, const char *path, uint flags) {
-	if(!opaque) {
-		return NULL;
+ShaderProgram* gl33_shader_program_link(uint num_objects, ShaderObject *shobjs[num_objects]) {
+	ShaderProgram *prog = calloc(1, sizeof(*prog));
+
+	prog->gl_handle = glCreateProgram();
+	snprintf(prog->debug_label, sizeof(prog->debug_label), "Shader program #%i", prog->gl_handle);
+
+	for(int i = 0; i < num_objects; ++i) {
+		glAttachShader(prog->gl_handle, shobjs[i]->gl_handle);
 	}
 
-	struct shprog_load_data ldata;
-	memcpy(&ldata, opaque, sizeof(ldata));
-	free(opaque);
+	glLinkProgram(prog->gl_handle);
+	print_info_log(prog->gl_handle);
 
-	ldata.shprog.gl_handle = glCreateProgram();
+	GLint link_status;
+	glGetProgramiv(prog->gl_handle, GL_LINK_STATUS, &link_status);
 
-	char *basename = resource_util_basename(SHPROG_PATH_PREFIX, path);
-	glcommon_debug_object_label(GL_PROGRAM, ldata.shprog.gl_handle, basename);
-	free(basename);
-
-	for_each_shobject(&ldata, attach_shobject);
-	free(ldata.objlist);
-
-	if(ldata.num_objects) {
-		log_warn("Failed to attach some shaders");
-		glDeleteProgram(ldata.shprog.gl_handle);
-		return NULL;
-	}
-
-	GLint status;
-
-	glLinkProgram(ldata.shprog.gl_handle);
-	print_info_log(ldata.shprog.gl_handle);
-	glGetProgramiv(ldata.shprog.gl_handle, GL_LINK_STATUS, &status);
-
-	if(!status) {
+	if(!link_status) {
 		log_warn("Failed to link the shader program");
-		glDeleteProgram(ldata.shprog.gl_handle);
+		glDeleteProgram(prog->gl_handle);
+		free(prog);
 		return NULL;
 	}
-
-	ShaderProgram *prog = memdup(&ldata.shprog, sizeof(ldata.shprog));
 
 	if(!cache_uniforms(prog)) {
-		unload_shader_program(prog);
-		prog = NULL;
+		gl33_shader_program_destroy(prog);
+		return NULL;
 	}
 
 	return prog;
 }
 
-ResourceHandler gl33_shader_program_res_handler = {
-	.type = RES_SHADER_PROGRAM,
-	.typename = "shader program",
-	.subdir = SHPROG_PATH_PREFIX,
+void gl33_shader_program_set_debug_label(ShaderProgram *prog, const char *label) {
+	glcommon_set_debug_label(prog->debug_label, "Shader program", GL_PROGRAM, prog->gl_handle, label);
+}
 
-	.procs = {
-		.find = shader_program_path,
-		.check = check_shader_program_path,
-		.begin_load = load_shader_program_begin,
-		.end_load = load_shader_program_end,
-		.unload = unload_shader_program,
-	},
-};
+const char* gl33_shader_program_get_debug_label(ShaderProgram *prog) {
+	return prog->debug_label;
+}

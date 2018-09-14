@@ -118,11 +118,12 @@ fail:
 void* load_model_end(void *opaque, const char *path, uint flags) {
 	VertexBuffer *vbuf= r_vertex_buffer_static_models();
 	ModelLoadData *ldata = opaque;
-	size_t ioffset = vbuf->offset;
 
 	if(!ldata) {
 		return NULL;
 	}
+
+	size_t ioffset = r_vertex_buffer_get_cursor(vbuf);
 
 	for(int i = 0; i < ldata->obj->icount; ++i) {
 		ldata->model->indices[i] += ioffset / sizeof(GenericModelVertex);

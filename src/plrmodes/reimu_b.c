@@ -164,8 +164,8 @@ static void reimu_dream_gap_draw_lights(int time, double strength) {
 		return;
 	}
 
-	r_texture(0, "gaplight");
 	r_shader("reimu_gap_light");
+	r_uniform_sampler("tex", "gaplight");
 	r_uniform_float("time", time / 60.0);
 	r_uniform_float("strength", strength);
 
@@ -214,9 +214,9 @@ static void reimu_dream_gap_renderer_visual(Enemy *e, int t, bool render) {
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
 	r_uniform_float("time", t / (float)FPS);
 	r_uniform_vec2("gap_size", GAP_WIDTH/2.0, GAP_LENGTH/2.0);
-	r_uniform("gaps[0]", NUM_GAPS, gaps);
-	r_uniform("gap_angles[0]", NUM_GAPS, angles);
-	r_uniform("gap_links[0]", NUM_GAPS, links);
+	r_uniform_vec2_array("gaps[0]", 0, NUM_GAPS, gaps);
+	r_uniform_float_array("gap_angles[0]", 0, NUM_GAPS, angles);
+	r_uniform_int_array("gap_links[0]", 0, NUM_GAPS, links);
 	draw_framebuffer_tex(framebuffers->front, VIEWPORT_W, VIEWPORT_H);
 
 	FOR_EACH_GAP(gap) {

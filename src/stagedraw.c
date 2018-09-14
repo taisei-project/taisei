@@ -25,7 +25,7 @@
 
 typedef struct CustomFramebuffer {
 	LIST_INTERFACE(struct CustomFramebuffer);
-	Framebuffer fb;
+	Framebuffer *fb;
 	float scale;
 	StageFBPair scaling_base;
 } CustomFramebuffer;
@@ -103,10 +103,10 @@ static void update_fb_size(StageFBPair fb_id) {
 				int sh = h * cfb->scale;
 
 				for(uint i = 0; i < FRAMEBUFFER_MAX_ATTACHMENTS; ++i) {
-					fbutil_resize_attachment(&cfb->fb, i, sw, sh);
+					fbutil_resize_attachment(cfb->fb, i, sw, sh);
 				}
 
-				r_framebuffer_viewport(&cfb->fb, 0, 0, sw, sh);
+				r_framebuffer_viewport(cfb->fb, 0, 0, sw, sh);
 			}
 		}
 	}
@@ -213,17 +213,12 @@ static Framebuffer* add_custom_framebuffer(StageFBPair fbtype, float scale_facto
 		cfg[i].tex_params.height = height;
 	}
 
-	r_framebuffer_create(&cfb->fb);
-	fbutil_create_attachments(&cfb->fb, num_attachments, cfg);
-	r_framebuffer_viewport(&cfb->fb, 0, 0, width, height);
+	cfb->fb = r_framebuffer_create();
+	fbutil_create_attachments(cfb->fb, num_attachments, cfg);
+	r_framebuffer_viewport(cfb->fb, 0, 0, width, height);
+	r_framebuffer_clear(cfb->fb, CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
 
-	r_state_push();
-	r_framebuffer(&cfb->fb);
-	r_clear_color4(0, 0, 0, 0);
-	r_clear(CLEAR_ALL);
-	r_state_pop();
-
-	return &cfb->fb;
+	return cfb->fb;
 }
 
 Framebuffer* stage_add_foreground_framebuffer(float scale_factor, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
@@ -241,8 +236,8 @@ static void stage_draw_destroy_framebuffers(void) {
 
 	for(CustomFramebuffer *cfb = stagedraw.custom_fbs, *next; cfb; cfb = next) {
 		next = cfb->next;
-		fbutil_destroy_attachments(&cfb->fb);
-		r_framebuffer_destroy(&cfb->fb);
+		fbutil_destroy_attachments(cfb->fb);
+		r_framebuffer_destroy(cfb->fb);
 		free(list_unlink(&stagedraw.custom_fbs, cfb));
 	}
 }
@@ -426,14 +421,16 @@ static void draw_wall_of_text(float f, const char *txt) {
 	r_mat_translate(w/2, h/2, 0);
 	r_mat_scale(w, h, 1.0);
 
-	ShaderProgram *shader = r_shader_get("spellcard_walloftext");
-	r_shader_ptr(shader);
-	r_uniform_float("w", spr.tex_area.w/spr.tex->w);
-	r_uniform_float("h", spr.tex_area.h/spr.tex->h);
+	uint tw, th;
+	r_texture_get_size(spr.tex, 0, &tw, &th);
+
+	r_shader("spellcard_walloftext");
+	r_uniform_float("w", spr.tex_area.w / tw);
+	r_uniform_float("h", spr.tex_area.h / th);
 	r_uniform_float("ratio", h/w);
 	r_uniform_vec2("origin", creal(global.boss->pos)/h, cimag(global.boss->pos)/w); // what the fuck?
 	r_uniform_float("t", f);
-	r_texture_ptr(0, spr.tex);
+	r_uniform_sampler("tex", spr.tex);
 	r_draw_quad();
 	r_shader_standard();
 
@@ -495,8 +492,7 @@ static void fxaa_rule(Framebuffer *fb) {
 	r_enable(RCAP_DEPTH_TEST);
 	r_depth_func(DEPTH_ALWAYS);
 	r_shader_ptr(stagedraw.shaders.fxaa);
-	r_uniform_int("depth", 1);
-	r_texture_ptr(1, r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
+	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_state_pop();
 }
@@ -629,14 +625,14 @@ static void apply_zoom_shader(void) {
 	r_uniform_float("blur_rad", 1.5*spellcard_sup*(0.2+0.025*sin(global.frames/15.0)));
 	r_uniform_float("rad", 0.24);
 	r_uniform_float("ratio", (float)VIEWPORT_H/VIEWPORT_W);
-	r_uniform_rgba("color", &global.boss->zoomcolor);
+	r_uniform_vec4_rgba("color", &global.boss->zoomcolor);
 }
 
 static void stage_render_bg(StageInfo *stage) {
 	FBPair *background = stage_get_fbpair(FBPAIR_BG);
 
 	r_framebuffer(background->back);
-	r_clear(CLEAR_ALL);
+	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
 
 	if(should_draw_stage_bg()) {
 		r_mat_push();
@@ -773,7 +769,7 @@ void stage_draw_scene(StageInfo *stage) {
 			global.plr.mode->procs.bombbg(&global.plr);
 		}
 	} else if(!key_nobg) {
-		r_clear(CLEAR_COLOR);
+		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 1), 1);
 	}
 
 	// draw the 2D objects
@@ -1082,7 +1078,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 		r_uniform_vec3("color_low",  1.0, 0.0, 0.0);
 		r_uniform_vec3("color_mid",  1.0, 1.0, 0.0);
 		r_uniform_vec3("color_high", 0.0, 1.0, 0.0);
-		r_uniform("points[0]", graphspan, graph);
+		r_uniform_float_array("points[0]", 0, graphspan, graph);
 		draw_graph(142, SCREEN_H - text_h, graphspan, text_h);
 	}
 #endif
@@ -1118,7 +1114,7 @@ static void stage_draw_framerate_graphs(void) {
 	r_uniform_vec3("color_low",  0.0, 1.0, 1.0);
 	r_uniform_vec3("color_mid",  1.0, 1.0, 0.0);
 	r_uniform_vec3("color_high", 1.0, 0.0, 0.0);
-	r_uniform("points[0]", NUM_SAMPLES, samples);
+	r_uniform_float_array("points[0]", 0, NUM_SAMPLES, samples);
 	draw_graph(x, y, w, h);
 
 	// x -= w * 1.1;
@@ -1128,7 +1124,7 @@ static void stage_draw_framerate_graphs(void) {
 	r_uniform_vec3("color_low",  0.0, 1.0, 0.0);
 	r_uniform_vec3("color_mid",  1.0, 0.0, 0.0);
 	r_uniform_vec3("color_high", 1.0, 0.0, 0.5);
-	r_uniform("points[0]", NUM_SAMPLES, samples);
+	r_uniform_float_array("points[0]", 0, NUM_SAMPLES, samples);
 	draw_graph(x, y, w, h);
 
 	r_shader_standard();

@@ -13,32 +13,43 @@
 #include "hashtable.h"
 #include "../api.h"
 #include "opengl.h"
-#include "resource/resource.h"
 #include "resource/shader_program.h"
 
 struct ShaderProgram {
 	GLuint gl_handle;
 	ht_str2ptr_t uniforms;
+	char debug_label[R_DEBUG_LABEL_SIZE];
 };
 
 struct Uniform {
+	// these are for sampler uniforms
+	LIST_INTERFACE(Uniform);
+	Texture **textures;
+
 	ShaderProgram *prog;
+	size_t elem_size; // bytes
+	uint array_size; // elements
 	uint location;
 	UniformType type;
-	size_t array_size;
-	size_t buffer_size;
 
 	struct {
-		void *pending;
-		void *commited;
-		size_t update_size;
+		// buffer size = elem_size * array_size
+		char *pending;
+		char *commited;
+
+		uint update_first_idx;
+		uint update_last_idx;
 	} cache;
 };
 
 void gl33_sync_uniforms(ShaderProgram *prog);
 
+ShaderProgram* gl33_shader_program_link(uint num_objects, ShaderObject *shobjs[num_objects]);
+void gl33_shader_program_destroy(ShaderProgram *prog);
+void gl33_shader_program_set_debug_label(ShaderProgram *prog, const char *label);
+const char* gl33_shader_program_get_debug_label(ShaderProgram *prog);
+
 Uniform* gl33_shader_uniform(ShaderProgram *prog, const char *uniform_name);
 UniformType gl33_uniform_type(Uniform *uniform);
-void gl33_uniform(Uniform *uniform, uint count, const void *data);
-
-extern ResourceHandler gl33_shader_program_res_handler;
+void gl33_uniform(Uniform *uniform, uint offset, uint count, const void *data);
+void gl33_unref_texture_from_samplers(Texture *tex);

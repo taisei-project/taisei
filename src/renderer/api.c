@@ -70,6 +70,13 @@ void r_post_init(void) {
 
 	r_shader_ptr(R.progs.standard);
 	r_color4(1, 1, 1, 1);
+	r_enable(RCAP_DEPTH_TEST);
+	r_enable(RCAP_DEPTH_WRITE);
+	r_enable(RCAP_CULL_FACE);
+	r_depth_func(DEPTH_LEQUAL);
+	r_cull(CULL_BACK);
+	r_blend(BLEND_PREMUL_ALPHA);
+	r_framebuffer_clear(NULL, CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
 
 	log_info("Rendering subsystem initialized (%s)", _r_backend.name);
 }
@@ -187,7 +194,7 @@ const UniformTypeInfo* r_uniform_type_info(UniformType type) {
 		[UNIFORM_IVEC2]   = {  2, sizeof(int)   },
 		[UNIFORM_IVEC3]   = {  3, sizeof(int)   },
 		[UNIFORM_IVEC4]   = {  4, sizeof(int)   },
-		[UNIFORM_SAMPLER] = {  1, sizeof(int)   },
+		[UNIFORM_SAMPLER] = {  1, sizeof(void*) },
 		[UNIFORM_MAT3]    = {  9, sizeof(float) },
 		[UNIFORM_MAT4]    = { 16, sizeof(float) },
 	};
@@ -317,6 +324,42 @@ DepthTestFunc r_depth_func_current(void) {
 	return B.depth_func_current();
 }
 
+bool r_shader_language_supported(const ShaderLangInfo *lang, ShaderLangInfo *out_alternative) {
+	return B.shader_language_supported(lang, out_alternative);
+}
+
+ShaderObject* r_shader_object_compile(ShaderSource *source) {
+	return B.shader_object_compile(source);
+}
+
+void r_shader_object_destroy(ShaderObject *shobj) {
+	B.shader_object_destroy(shobj);
+}
+
+void r_shader_object_set_debug_label(ShaderObject *shobj, const char *label) {
+	B.shader_object_set_debug_label(shobj, label);
+}
+
+const char* r_shader_object_get_debug_label(ShaderObject *shobj) {
+	return B.shader_object_get_debug_label(shobj);
+}
+
+ShaderProgram* r_shader_program_link(uint num_objects, ShaderObject *shobjs[num_objects]) {
+	return B.shader_program_link(num_objects, shobjs);
+}
+
+void r_shader_program_destroy(ShaderProgram *prog) {
+	B.shader_program_destroy(prog);
+}
+
+void r_shader_program_set_debug_label(ShaderProgram *prog, const char *label) {
+	B.shader_program_set_debug_label(prog, label);
+}
+
+const char* r_shader_program_get_debug_label(ShaderProgram *prog) {
+	return B.shader_program_get_debug_label(prog);
+}
+
 void r_shader_ptr(ShaderProgram *prog) {
 	_r_state_touch_shader();
 	B.shader(prog);
@@ -330,11 +373,6 @@ Uniform* r_shader_uniform(ShaderProgram *prog, const char *uniform_name) {
 	return B.shader_uniform(prog, uniform_name);
 }
 
-void r_uniform_ptr(Uniform *uniform, uint count, const void *data) {
-	_r_state_touch_uniform(uniform);
-	B.uniform(uniform, count, data);
-}
-
 UniformType r_uniform_type(Uniform *uniform) {
 	return B.uniform_type(uniform);
 }
@@ -343,12 +381,36 @@ void r_draw(Primitive prim, uint first, uint count, uint32_t *indices, uint inst
 	B.draw(prim, first, count, indices, instances, base_instance);
 }
 
-void r_texture_create(Texture *tex, const TextureParams *params) {
-	B.texture_create(tex, params);
+Texture* r_texture_create(const TextureParams *params) {
+	return B.texture_create(params);
+}
+
+void r_texture_get_size(Texture *tex, uint mipmap, uint *width, uint *height) {
+	B.texture_get_size(tex, mipmap, width, height);
+}
+
+uint r_texture_get_width(Texture *tex, uint mipmap) {
+	uint w;
+	B.texture_get_size(tex, mipmap, &w, NULL);
+	return w;
+}
+
+uint r_texture_get_height(Texture *tex, uint mipmap) {
+	uint h;
+	B.texture_get_size(tex, mipmap, NULL, &h);
+	return h;
 }
 
 void r_texture_get_params(Texture *tex, TextureParams *params) {
 	B.texture_get_params(tex, params);
+}
+
+const char* r_texture_get_debug_label(Texture *tex) {
+	return B.texture_get_debug_label(tex);
+}
+
+void r_texture_set_debug_label(Texture *tex, const char *label) {
+	B.texture_set_debug_label(tex, label);
 }
 
 void r_texture_set_filter(Texture *tex, TextureFilterMode fmin, TextureFilterMode fmag) {
@@ -371,21 +433,24 @@ void r_texture_invalidate(Texture *tex) {
 	B.texture_invalidate(tex);
 }
 
+void r_texture_clear(Texture *tex, const Color *clr) {
+	B.texture_clear(tex, clr);
+}
+
 void r_texture_destroy(Texture *tex) {
 	B.texture_destroy(tex);
 }
 
-void r_texture_ptr(uint unit, Texture *tex) {
-	_r_state_touch_texunit(unit);
-	B.texture(unit, tex);
+Framebuffer* r_framebuffer_create(void) {
+	return B.framebuffer_create();
 }
 
-Texture* r_texture_current(uint unit) {
-	return B.texture_current(unit);
+const char* r_framebuffer_get_debug_label(Framebuffer *fb) {
+	return B.framebuffer_get_debug_label(fb);
 }
 
-void r_framebuffer_create(Framebuffer *fb) {
-	B.framebuffer_create(fb);
+void r_framebuffer_set_debug_label(Framebuffer *fb, const char *label) {
+	B.framebuffer_set_debug_label(fb, label);
 }
 
 void r_framebuffer_attach(Framebuffer *fb, Texture *tex, uint mipmap, FramebufferAttachment attachment) {
@@ -398,6 +463,10 @@ Texture* r_framebuffer_get_attachment(Framebuffer *fb, FramebufferAttachment att
 
 uint r_framebuffer_get_attachment_mipmap(Framebuffer *fb, FramebufferAttachment attachment) {
 	return B.framebuffer_get_attachment_mipmap(fb, attachment);
+}
+
+void r_framebuffer_clear(Framebuffer *fb, ClearBufferFlags flags, const Color *colorval, float depthval) {
+	B.framebuffer_clear(fb, flags, colorval, depthval);
 }
 
 void r_framebuffer_viewport(Framebuffer *fb, int x, int y, int w, int h) {
@@ -427,8 +496,16 @@ Framebuffer * r_framebuffer_current(void) {
 	return B.framebuffer_current();
 }
 
-void r_vertex_buffer_create(VertexBuffer *vbuf, size_t capacity, void *data) {
-	B.vertex_buffer_create(vbuf, capacity, data);
+VertexBuffer* r_vertex_buffer_create(size_t capacity, void *data) {
+	return B.vertex_buffer_create(capacity, data);
+}
+
+const char* r_vertex_buffer_get_debug_label(VertexBuffer *vbuf) {
+	return B.vertex_buffer_get_debug_label(vbuf);
+}
+
+void r_vertex_buffer_set_debug_label(VertexBuffer *vbuf, const char* label) {
+	B.vertex_buffer_set_debug_label(vbuf, label);
 }
 
 void r_vertex_buffer_destroy(VertexBuffer *vbuf) {
@@ -447,8 +524,37 @@ void r_vertex_buffer_append(VertexBuffer *vbuf, size_t data_size, void *data) {
 	B.vertex_buffer_append(vbuf, data_size, data);
 }
 
-void r_vertex_array_create(VertexArray *varr) {
-	B.vertex_array_create(varr);
+size_t r_vertex_buffer_get_capacity(VertexBuffer *vbuf) {
+	return B.vertex_buffer_get_capacity(vbuf);
+}
+
+size_t r_vertex_buffer_get_cursor(VertexBuffer *vbuf) {
+	return B.vertex_buffer_get_cursor(vbuf);
+}
+
+void r_vertex_buffer_seek_cursor(VertexBuffer *vbuf, ssize_t offset, int whence) {
+	size_t pos;
+
+	switch(whence) {
+		case SEEK_CUR: pos = r_vertex_buffer_get_cursor(vbuf) + offset; break;
+		case SEEK_END: pos = r_vertex_buffer_get_capacity(vbuf) + offset; break;
+		case SEEK_SET: pos = offset; break;
+		default: UNREACHABLE;
+	}
+
+	B.vertex_buffer_set_cursor(vbuf, pos);
+}
+
+VertexArray* r_vertex_array_create(void) {
+	return B.vertex_array_create();
+}
+
+const char* r_vertex_array_get_debug_label(VertexArray *varr) {
+	return B.vertex_array_get_debug_label(varr);
+}
+
+void r_vertex_array_set_debug_label(VertexArray *varr, const char* label) {
+	B.vertex_array_set_debug_label(varr, label);
 }
 
 void r_vertex_array_destroy(VertexArray *varr) {
@@ -476,19 +582,6 @@ VertexArray* r_vertex_array_current(void) {
 	return B.vertex_array_current();
 }
 
-void r_clear(ClearBufferFlags flags) {
-	B.clear(flags);
-}
-
-void r_clear_color4(float r, float g, float b, float a) {
-	_r_state_touch_clear_color();
-	B.clear_color4(r, g, b, a);
-}
-
-const Color* r_clear_color_current(void) {
-	return B.clear_color_current();
-}
-
 void r_vsync(VsyncMode mode) {
 	_r_state_touch_vsync();
 	B.vsync(mode);
@@ -505,4 +598,334 @@ void r_swap(SDL_Window *window) {
 
 uint8_t* r_screenshot(uint *out_width, uint *out_height) {
 	return B.screenshot(out_width, out_height);
+}
+
+// uniforms garbage; hope your compiler is smart enough to inline most of this
+
+#define ASSERT_UTYPE(uniform, type) do { if(uniform) assert(r_uniform_type(uniform) == type); } while(0)
+
+void r_uniform_ptr_unsafe(Uniform *uniform, uint offset, uint count, void *data) {
+	if(uniform) B.uniform(uniform, offset, count, data);
+}
+
+void _r_uniform_ptr_float(Uniform *uniform, float value) {
+	ASSERT_UTYPE(uniform, UNIFORM_FLOAT);
+	if(uniform) B.uniform(uniform, 0, 1, &value);
+}
+
+void _r_uniform_float(const char *uniform, float value) {
+	_r_uniform_ptr_float(r_shader_current_uniform(uniform), value);
+}
+
+void _r_uniform_ptr_float_array(Uniform *uniform, uint offset, uint count, float elements[count]) {
+	ASSERT_UTYPE(uniform, UNIFORM_FLOAT);
+	if(uniform && count) B.uniform(uniform, offset, count, elements);
+}
+
+void _r_uniform_float_array(const char *uniform, uint offset, uint count, float elements[count]) {
+	_r_uniform_ptr_float_array(r_shader_current_uniform(uniform), offset, count, elements);
+}
+
+void _r_uniform_ptr_vec2(Uniform *uniform, float x, float y) {
+	_r_uniform_ptr_vec2_vec(uniform, (vec2_noalign) { x, y });
+}
+
+void _r_uniform_vec2(const char *uniform, float x, float y) {
+	_r_uniform_vec2_vec(uniform, (vec2_noalign) { x, y });
+}
+
+void _r_uniform_ptr_vec2_vec(Uniform *uniform, vec2_noalign value) {
+	ASSERT_UTYPE(uniform, UNIFORM_VEC2);
+	if(uniform) B.uniform(uniform, 0, 1, value);
+}
+
+void _r_uniform_vec2_vec(const char *uniform, vec2_noalign value) {
+	_r_uniform_ptr_vec2_vec(r_shader_current_uniform(uniform), value);
+}
+
+void _r_uniform_ptr_vec2_complex(Uniform *uniform, complex value) {
+	ASSERT_UTYPE(uniform, UNIFORM_VEC2);
+	if(uniform) B.uniform(uniform, 0, 1, (vec2_noalign) { creal(value), cimag(value) });
+}
+
+void _r_uniform_vec2_complex(const char *uniform, complex value) {
+	_r_uniform_ptr_vec2_complex(r_shader_current_uniform(uniform), value);
+}
+
+void _r_uniform_ptr_vec2_array(Uniform *uniform, uint offset, uint count, vec2_noalign elements[count]) {
+	ASSERT_UTYPE(uniform, UNIFORM_VEC2);
+	if(uniform && count) B.uniform(uniform, offset, count, elements);
+}
+
+void _r_uniform_vec2_array(const char *uniform, uint offset, uint count, vec2_noalign elements[count]) {
+	_r_uniform_ptr_vec2_array(r_shader_current_uniform(uniform), offset, count, elements);
+}
+
+void _r_uniform_ptr_vec2_array_complex(Uniform *uniform, uint offset, uint count, complex elements[count]) {
+	ASSERT_UTYPE(uniform, UNIFORM_VEC2);
+	if(uniform && count) {
+		float arr[2 * count];
+		complex *eptr = elements;
+		float *aptr = arr, *aend = arr + sizeof(arr)/sizeof(*arr);
+
+		do {
+			*aptr++ = creal(*eptr);
+			*aptr++ = cimag(*eptr++);
+		} while(aptr < aend);
+
+		B.uniform(uniform, offset, count, arr);
+	}
+}
+
+void _r_uniform_vec2_array_complex(const char *uniform, uint offset, uint count, complex elements[count]) {
+	_r_uniform_ptr_vec2_array_complex(r_shader_current_uniform(uniform), offset, count, elements);
+}
+
+void _r_uniform_ptr_vec3(Uniform *uniform, float x, float y, float z) {
+	ASSERT_UTYPE(uniform, UNIFORM_VEC3);
+	if(uniform) B.uniform(uniform, 0, 1, (vec3_noalign) { x, y, z });
+}
+
+void _r_uniform_vec3(const char *uniform, float x, float y, float z) {
+	_r_uniform_ptr_vec3(r_shader_current_uniform(uniform), x, y, z);
+}
+
+void _r_uniform_ptr_vec3_vec(Uniform *uniform, vec3_noalign value) {
+	ASSERT_UTYPE(uniform, UNIFORM_VEC3);
+	if(uniform) B.uniform(uniform, 0, 1, value);
+}
+
+void _r_uniform_vec3_vec(const char *uniform, vec3_noalign value) {
+	_r_uniform_ptr_vec3_vec(r_shader_current_uniform(uniform), value);
+}
+
+void _r_uniform_ptr_vec3_rgb(Uniform *uniform, const Color *rgb) {
+	_r_uniform_ptr_vec3(uniform, rgb->r, rgb->g, rgb->b);
+}
+
+void _r_uniform_vec3_rgb(const char *uniform, const Color *rgb) {
+	_r_uniform_ptr_vec3_rgb(r_shader_current_uniform(uniform), rgb);
+}
+
+void _r_uniform_ptr_vec3_array(Uniform *uniform, uint offset, uint count, vec3_noalign elements[count]) {
+	ASSERT_UTYPE(uniform, UNIFORM_VEC3);
+	if(uniform) B.uniform(uniform, offset, count, elements);
+}
+
+void _r_uniform_vec3_array(const char *uniform, uint offset, uint count, vec3_noalign elements[count]) {
+	_r_uniform_ptr_vec3_array(r_shader_current_uniform(uniform), offset, count, elements);
+}
+
+void _r_uniform_ptr_vec4(Uniform *uniform, float x, float y, float z, float w) {
+	ASSERT_UTYPE(uniform, UNIFORM_VEC4);
+	if(uniform) B.uniform(uniform, 0, 1, (vec4_noalign) { x, y, z, w });
+}
+
+void _r_uniform_vec4(const char *uniform, float x, float y, float z, float w) {
+	_r_uniform_ptr_vec4(r_shader_current_uniform(uniform), x, y, z, w);
+}
+
+void _r_uniform_ptr_vec4_vec(Uniform *uniform, vec4_noalign value) {
+	ASSERT_UTYPE(uniform, UNIFORM_VEC4);
+	if(uniform) B.uniform(uniform, 0, 1, value);
+}
+
+void _r_uniform_vec4_vec(const char *uniform, vec4_noalign value) {
+	_r_uniform_ptr_vec4_vec(r_shader_current_uniform(uniform), value);
+}
+
+void _r_uniform_ptr_vec4_rgba(Uniform *uniform, const Color *rgba) {
+	_r_uniform_ptr_vec4(uniform, rgba->r, rgba->g, rgba->b, rgba->a);
+}
+
+void _r_uniform_vec4_rgba(const char *uniform, const Color *rgba) {
+	_r_uniform_ptr_vec4_rgba(r_shader_current_uniform(uniform), rgba);
+}
+
+void _r_uniform_ptr_vec4_array(Uniform *uniform, uint offset, uint count, vec4_noalign elements[count]) {
+	ASSERT_UTYPE(uniform, UNIFORM_VEC4);
+	if(uniform) B.uniform(uniform, offset, count, elements);
+}
+
+void _r_uniform_vec4_array(const char *uniform, uint offset, uint count, vec4_noalign elements[count]) {
+	_r_uniform_ptr_vec4_array(r_shader_current_uniform(uniform), offset, count, elements);
+}
+
+void _r_uniform_ptr_mat3(Uniform *uniform, mat3_noalign value) {
+	ASSERT_UTYPE(uniform, UNIFORM_MAT3);
+	if(uniform) B.uniform(uniform, 0, 1, value);
+}
+
+void _r_uniform_mat3(const char *uniform, mat3_noalign value) {
+	_r_uniform_ptr_mat3(r_shader_current_uniform(uniform), value);
+}
+
+void _r_uniform_ptr_mat3_array(Uniform *uniform, uint offset, uint count, mat3_noalign elements[count]) {
+	ASSERT_UTYPE(uniform, UNIFORM_MAT3);
+	if(uniform) B.uniform(uniform, offset, count, elements);
+}
+
+void _r_uniform_mat3_array(const char *uniform, uint offset, uint count, mat3_noalign elements[count]) {
+	_r_uniform_ptr_mat3_array(r_shader_current_uniform(uniform), offset, count, elements);
+}
+
+void _r_uniform_ptr_mat4(Uniform *uniform, mat4_noalign value) {
+	ASSERT_UTYPE(uniform, UNIFORM_MAT4);
+	if(uniform) B.uniform(uniform, 0, 1, value);
+}
+
+void _r_uniform_mat4(const char *uniform, mat4_noalign value) {
+	_r_uniform_ptr_mat4(r_shader_current_uniform(uniform), value);
+}
+
+void _r_uniform_ptr_mat4_array(Uniform *uniform, uint offset, uint count, mat4_noalign elements[count]) {
+	ASSERT_UTYPE(uniform, UNIFORM_MAT4);
+	if(uniform) B.uniform(uniform, offset, count, elements);
+}
+
+void _r_uniform_mat4_array(const char *uniform, uint offset, uint count, mat4_noalign elements[count]) {
+	_r_uniform_ptr_mat4_array(r_shader_current_uniform(uniform), offset, count, elements);
+}
+
+void _r_uniform_ptr_int(Uniform *uniform, int value) {
+	ASSERT_UTYPE(uniform, UNIFORM_INT);
+	if(uniform) B.uniform(uniform, 0, 1, &value);
+}
+
+void _r_uniform_int(const char *uniform, int value) {
+	_r_uniform_ptr_int(r_shader_current_uniform(uniform), value);
+}
+
+void _r_uniform_ptr_int_array(Uniform *uniform, uint offset, uint count, int elements[count]) {
+	ASSERT_UTYPE(uniform, UNIFORM_INT);
+	if(uniform) B.uniform(uniform, offset, count, elements);
+}
+
+void _r_uniform_int_array(const char *uniform, uint offset, uint count, int elements[count]) {
+	_r_uniform_ptr_int_array(r_shader_current_uniform(uniform), offset, count, elements);
+}
+
+void _r_uniform_ptr_ivec2(Uniform *uniform, int x, int y) {
+	_r_uniform_ptr_ivec2_vec(uniform, (ivec2_noalign) { x, y });
+}
+
+void _r_uniform_ivec2(const char *uniform, int x, int y) {
+	_r_uniform_ivec2_vec(uniform, (ivec2_noalign) { x, y });
+}
+
+void _r_uniform_ptr_ivec2_vec(Uniform *uniform, ivec2_noalign value) {
+	ASSERT_UTYPE(uniform, UNIFORM_IVEC2);
+	if(uniform) B.uniform(uniform, 0, 1, value);
+}
+
+void _r_uniform_ivec2_vec(const char *uniform, ivec2_noalign value) {
+	_r_uniform_ptr_ivec2_vec(r_shader_current_uniform(uniform), value);
+}
+
+void _r_uniform_ptr_ivec2_array(Uniform *uniform, uint offset, uint count, ivec2_noalign elements[count]) {
+	ASSERT_UTYPE(uniform, UNIFORM_IVEC2);
+	if(uniform && count) B.uniform(uniform, offset, count, elements);
+}
+
+void _r_uniform_ivec2_array(const char *uniform, uint offset, uint count, ivec2_noalign elements[count]) {
+	_r_uniform_ptr_ivec2_array(r_shader_current_uniform(uniform), offset, count, elements);
+}
+
+void _r_uniform_ptr_ivec3(Uniform *uniform, int x, int y, int z) {
+	ASSERT_UTYPE(uniform, UNIFORM_IVEC3);
+	if(uniform) B.uniform(uniform, 0, 1, (ivec3_noalign) { x, y, z });
+}
+
+void _r_uniform_ivec3(const char *uniform, int x, int y, int z) {
+	_r_uniform_ptr_ivec3(r_shader_current_uniform(uniform), x, y, z);
+}
+
+void _r_uniform_ptr_ivec3_vec(Uniform *uniform, ivec3_noalign value) {
+	ASSERT_UTYPE(uniform, UNIFORM_IVEC3);
+	if(uniform) B.uniform(uniform, 0, 1, value);
+}
+
+void _r_uniform_ivec3_vec(const char *uniform, ivec3_noalign value) {
+	_r_uniform_ptr_ivec3_vec(r_shader_current_uniform(uniform), value);
+}
+
+void _r_uniform_ptr_ivec3_array(Uniform *uniform, uint offset, uint count, ivec3_noalign elements[count]) {
+	ASSERT_UTYPE(uniform, UNIFORM_IVEC3);
+	if(uniform) B.uniform(uniform, offset, count, elements);
+}
+
+void _r_uniform_ivec3_array(const char *uniform, uint offset, uint count, ivec3_noalign elements[count]) {
+	_r_uniform_ptr_ivec3_array(r_shader_current_uniform(uniform), offset, count, elements);
+}
+
+void _r_uniform_ptr_ivec4(Uniform *uniform, int x, int y, int z, int w) {
+	ASSERT_UTYPE(uniform, UNIFORM_IVEC4);
+	if(uniform) B.uniform(uniform, 0, 1, (ivec4_noalign) { x, y, z, w });
+}
+
+void _r_uniform_ivec4(const char *uniform, int x, int y, int z, int w) {
+	_r_uniform_ptr_ivec4(r_shader_current_uniform(uniform), x, y, z, w);
+}
+
+void _r_uniform_ptr_ivec4_vec(Uniform *uniform, ivec4_noalign value) {
+	ASSERT_UTYPE(uniform, UNIFORM_IVEC4);
+	if(uniform) B.uniform(uniform, 0, 1, value);
+}
+
+void _r_uniform_ivec4_vec(const char *uniform, ivec4_noalign value) {
+	_r_uniform_ptr_ivec4_vec(r_shader_current_uniform(uniform), value);
+}
+
+void _r_uniform_ptr_ivec4_array(Uniform *uniform, uint offset, uint count, ivec4_noalign elements[count]) {
+	ASSERT_UTYPE(uniform, UNIFORM_IVEC4);
+	if(uniform) B.uniform(uniform, offset, count, elements);
+}
+
+void _r_uniform_ivec4_array(const char *uniform, uint offset, uint count, ivec4_noalign elements[count]) {
+	_r_uniform_ptr_ivec4_array(r_shader_current_uniform(uniform), offset, count, elements);
+}
+
+void _r_uniform_ptr_sampler_ptr(Uniform *uniform, Texture *tex) {
+	ASSERT_UTYPE(uniform, UNIFORM_SAMPLER);
+	if(uniform) B.uniform(uniform, 0, 1, &tex);
+}
+
+void _r_uniform_sampler_ptr(const char *uniform, Texture *tex) {
+	_r_uniform_ptr_sampler_ptr(r_shader_current_uniform(uniform), tex);
+}
+
+void _r_uniform_ptr_sampler(Uniform *uniform, const char *tex) {
+	ASSERT_UTYPE(uniform, UNIFORM_SAMPLER);
+	if(uniform) B.uniform(uniform, 0, 1, (Texture*[]) { get_tex(tex) });
+}
+
+void _r_uniform_sampler(const char *uniform, const char *tex) {
+	_r_uniform_ptr_sampler(r_shader_current_uniform(uniform), tex);
+}
+
+void _r_uniform_ptr_sampler_array_ptr(Uniform *uniform, uint offset, uint count, Texture *values[count]) {
+	ASSERT_UTYPE(uniform, UNIFORM_SAMPLER);
+	if(uniform && count) B.uniform(uniform, offset, count, values);
+}
+
+void _r_uniform_sampler_array_ptr(const char *uniform, uint offset, uint count, Texture *values[count]) {
+	_r_uniform_ptr_sampler_array_ptr(r_shader_current_uniform(uniform), offset, count, values);
+}
+
+void _r_uniform_ptr_sampler_array(Uniform *uniform, uint offset, uint count, const char *values[count]) {
+	ASSERT_UTYPE(uniform, UNIFORM_SAMPLER);
+	if(uniform && count) {
+		Texture *arr[count], **aptr = arr, **aend = aptr + count;
+		const char **vptr = values;
+
+		do {
+			*aptr++ = get_tex(*vptr++);
+		} while(aptr < aend);
+
+		B.uniform(uniform, 0, 1, arr);
+	}
+}
+
+void _r_uniform_sampler_array(const char *uniform, uint offset, uint count, const char *values[count]) {
+	_r_uniform_ptr_sampler_array(r_shader_current_uniform(uniform), offset, count, values);
 }

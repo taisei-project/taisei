@@ -9,11 +9,9 @@
 #pragma once
 #include "taisei.h"
 
-#include "resource.h"
+#include "../common/shader.h"
 
-typedef struct ShaderProgram ShaderProgram;
+extern ShaderLangInfo *glcommon_shader_lang_table;
 
-extern ResourceHandler shader_program_res_handler;
-
-#define SHPROG_PATH_PREFIX "res/shader/"
-#define SHPROG_EXT ".prog"
+void glcommon_build_shader_lang_table(void);
+void glcommon_free_shader_lang_table(void);

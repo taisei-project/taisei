@@ -95,8 +95,8 @@ vec3 **stage6_towerwall_pos(vec3 pos, float maxrange) {
 }
 
 void stage6_towerwall_draw(vec3 pos) {
-	r_texture(0, "stage6/towerwall");
 	r_shader("tower_wall");
+	r_uniform_sampler("tex", "stage6/towerwall");
 
 	r_mat_push();
 	r_mat_translate(pos[0], pos[1], pos[2]);
@@ -114,7 +114,7 @@ static vec3 **stage6_towertop_pos(vec3 pos, float maxrange) {
 }
 
 static void stage6_towertop_draw(vec3 pos) {
-	r_texture(0, "stage6/towertop");
+	r_uniform_sampler("tex", "stage6/towertop");
 
 	r_mat_push();
 	r_mat_translate(pos[0], pos[1], pos[2]);

@@ -194,9 +194,8 @@ static void credits_add(char *data, int time) {
 }
 
 static void credits_towerwall_draw(vec3 pos) {
-	r_texture(0, "stage6/towerwall");
-
 	r_shader("tower_wall");
+	r_uniform_sampler("tex", "stage6/towerwall");
 	r_uniform_float("lendiv", 2800.0 + 300.0 * sin(global.frames / 77.7));
 
 	r_mat_push();
@@ -234,7 +233,7 @@ static double entry_height(CreditsEntry *e, double *head, double *body) {
 
 	if(e->lines > 0) {
 		if(*(e->data[0]) == '*') {
-			total += *head = get_tex("yukkureimu")->h * CREDITS_YUKKURI_SCALE;
+			total += *head = r_texture_get_height(get_tex("yukkureimu"), 0) * CREDITS_YUKKURI_SCALE;
 		} else {
 			total += *head = font_get_lineskip(get_font("big"));
 		}
@@ -339,8 +338,8 @@ static void credits_draw_entry(CreditsEntry *e) {
 }
 
 static void credits_draw(void) {
-	r_clear(CLEAR_ALL);
-	colorfill(1, 1, 1, 1); // don't use r_clear_color4 for this, it screws up letterboxing
+	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
+	colorfill(1, 1, 1, 1); // don't use r_clear for this, it screws up letterboxing
 
 	r_mat_push();
 	r_mat_translate(-SCREEN_W/2, 0, 0);

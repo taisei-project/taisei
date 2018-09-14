@@ -13,11 +13,6 @@
 #include "util.h"
 #include "util/graphics.h"
 
-static void fbpair_create_fb(Framebuffer *fb, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
-	r_framebuffer_create(fb);
-	fbutil_create_attachments(fb, num_attachments, attachments);
-}
-
 static void fbpair_destroy_fb(Framebuffer *fb) {
 	fbutil_destroy_attachments(fb);
 	r_framebuffer_destroy(fb);
@@ -30,15 +25,13 @@ static void fbpair_resize_fb(Framebuffer *fb, FramebufferAttachment attachment, 
 void fbpair_create(FBPair *pair, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
 	assert(num_attachments > 0 && num_attachments <= FRAMEBUFFER_MAX_ATTACHMENTS);
 	memset(pair, 0, sizeof(*pair));
-	fbpair_create_fb(pair->front = calloc(1, sizeof(Framebuffer)), num_attachments, attachments);
-	fbpair_create_fb(pair->back  = calloc(1, sizeof(Framebuffer)), num_attachments, attachments);
+	fbutil_create_attachments(pair->front = r_framebuffer_create(), num_attachments, attachments);
+	fbutil_create_attachments(pair->back  = r_framebuffer_create(), num_attachments, attachments);
 }
 
 void fbpair_destroy(FBPair *pair) {
 	fbpair_destroy_fb(pair->front);
 	fbpair_destroy_fb(pair->back);
-	free(pair->front);
-	free(pair->back);
 }
 
 void fbpair_swap(FBPair *pair) {
@@ -48,13 +41,8 @@ void fbpair_swap(FBPair *pair) {
 }
 
 static void fbpair_clear(FBPair *pair) {
-	r_state_push();
-	r_clear_color4(0, 0, 0, 0);
-	r_framebuffer(pair->front);
-	r_clear(CLEAR_ALL);
-	r_framebuffer(pair->back);
-	r_clear(CLEAR_ALL);
-	r_state_pop();
+	r_framebuffer_clear(pair->front, CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+	r_framebuffer_clear(pair->back, CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
 }
 
 void fbpair_resize(FBPair *pair, FramebufferAttachment attachment, uint width, uint height) {

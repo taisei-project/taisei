@@ -42,8 +42,8 @@ static void draw_laser_beam(complex src, complex dst, double size, double step, 
 	r_mat_scale(cabs(dir) / step, 1, 1);
 	r_mat_mode(MM_MODELVIEW);
 
-	r_texture_ptr(0, tex);
-	r_uniform_ptr(u_length, 1, (float[]) { cabs(dir) / step });
+	r_uniform_sampler("tex", tex);
+	r_uniform_float(u_length, cabs(dir) / step);
 	r_draw_quad();
 
 	r_mat_mode(MM_TEXTURE);
@@ -131,7 +131,7 @@ static void trace_laser(Enemy *e, complex vel, float damage) {
 
 static float set_alpha(Uniform *u_alpha, float a) {
 	if(a) {
-		r_uniform_ptr(u_alpha, 1, (float[]) { a });
+		r_uniform_float(u_alpha, a);
 	}
 
 	return a;
@@ -209,13 +209,12 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 
 	r_vertex_array(r_vertex_array_static_models());
 	r_shader_ptr(shader);
-	r_uniform_ptr(u_clr0,      1, (float[]) { 0.5, 0.5, 0.5, 0.0 });
-	r_uniform_ptr(u_clr1,      1, (float[]) { 0.8, 0.8, 0.8, 0.0 });
-	r_uniform_ptr(u_clr_phase, 1, (float[]) { -1.5 * t/M_PI });
-	r_uniform_ptr(u_clr_freq,  1, (float[]) { 10.0 });
+	r_uniform_vec4(u_clr0,       0.5, 0.5, 0.5, 0.0);
+	r_uniform_vec4(u_clr1,       0.8, 0.8, 0.8, 0.0);
+	r_uniform_float(u_clr_phase, -1.5 * t/M_PI);
+	r_uniform_float(u_clr_freq,  10.0);
 	r_framebuffer(fbp_aux->back);
-	r_clear_color4(0, 0, 0, 0);
-	r_clear(CLEAR_COLOR);
+	r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
 	r_color4(1, 1, 1, 1);
 
 	r_blend(r_blend_compose(
@@ -234,9 +233,7 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	fbpair_swap(fbp_aux);
 
 	r_framebuffer(fbp_aux->back);
-	r_clear_color4(0, 0, 0, 0);
-	r_clear(CLEAR_COLOR);
-	r_texture_ptr(0, r_framebuffer_get_attachment(fbp_aux->front, FRAMEBUFFER_ATTACH_COLOR0));
+	r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
 	r_shader("max_to_alpha");
 	draw_framebuffer_tex(fbp_aux->front, VIEWPORT_W, VIEWPORT_H);
 	fbpair_swap(fbp_aux);
@@ -247,8 +244,8 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	draw_framebuffer_tex(fbp_aux->front, VIEWPORT_W, VIEWPORT_H);
 	r_shader_ptr(shader);
 
-	r_uniform_ptr(u_clr0, 1, (float[]) { 0.5, 0.0, 0.0, 0.0 });
-	r_uniform_ptr(u_clr1, 1, (float[]) { 1.0, 0.0, 0.0, 0.0 });
+	r_uniform_vec4(u_clr0, 0.5, 0.0, 0.0, 0.0);
+	r_uniform_vec4(u_clr1, 1.0, 0.0, 0.0, 0.0);
 
 	FOR_EACH_SLAVE(e) {
 		if(set_alpha_dimmed(u_alpha, get_laser_alpha(e, a))) {
@@ -257,8 +254,8 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 		}
 	}
 
-	r_uniform_ptr(u_clr0, 1, (float[]) { 2.0, 1.0, 2.0, 0.0 });
-	r_uniform_ptr(u_clr1, 1, (float[]) { 0.1, 0.1, 1.0, 0.0 });
+	r_uniform_vec4(u_clr0, 2.0, 1.0, 2.0, 0.0);
+	r_uniform_vec4(u_clr1, 0.1, 0.1, 1.0, 0.0);
 
 	FOR_EACH_SLAVE(e) {
 		if(set_alpha_dimmed(u_alpha, get_laser_alpha(e, a))) {
@@ -267,7 +264,6 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 		}
 	}
 
-	r_clear_color4(0, 0, 0, 1);
 	r_shader("sprite_default");
 	r_vertex_array(varr_saved);
 }

@@ -82,7 +82,7 @@ typedef struct Glyph {
 
 typedef struct SpriteSheet {
 	LIST_INTERFACE(struct SpriteSheet);
-	Texture tex;
+	Texture *tex;
 	RectPack *rectpack;
 	uint glyphs;
 } SpriteSheet;
@@ -101,13 +101,17 @@ struct Font {
 	ht_int2int_t charcodes_to_glyph_ofs;
 	ht_int2int_t ftindex_to_glyph_ofs;
 	FontMetrics metrics;
+
+#ifdef DEBUG
+	char debug_label[64];
+#endif
 };
 
 static struct {
 	FT_Library lib;
 	ShaderProgram *default_shader;
-	Texture render_tex;
-	Framebuffer render_buf;
+	Texture *render_tex;
+	Framebuffer *render_buf;
 
 	struct {
 		SDL_mutex *new_face;
@@ -174,7 +178,7 @@ static void init_fonts(void) {
 
 	// WARNING: Preloading the default shader here is unsafe.
 
-	r_texture_create(&globals.render_tex, &(TextureParams) {
+	globals.render_tex = r_texture_create(&(TextureParams) {
 		.filter = { TEX_FILTER_LINEAR, TEX_FILTER_LINEAR },
 		.wrap   = { TEX_WRAP_CLAMP, TEX_WRAP_CLAMP },
 		.type   = TEX_TYPE_R,
@@ -183,9 +187,15 @@ static void init_fonts(void) {
 		.height = 1024,
 	});
 
-	r_framebuffer_create(&globals.render_buf);
-	r_framebuffer_attach(&globals.render_buf, &globals.render_tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
-	r_framebuffer_viewport(&globals.render_buf, 0, 0, globals.render_tex.w, globals.render_tex.h);
+	#ifdef DEBUG
+	char buf[128];
+	snprintf(buf, sizeof(buf), "Font render texture");
+	r_texture_set_debug_label(globals.render_tex, buf);
+	#endif
+
+	globals.render_buf = r_framebuffer_create();
+	r_framebuffer_attach(globals.render_buf, globals.render_tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
+	r_framebuffer_viewport(globals.render_buf, 0, 0, 1024, 1024);
 }
 
 static void post_init_fonts(void) {
@@ -193,8 +203,8 @@ static void post_init_fonts(void) {
 }
 
 static void shutdown_fonts(void) {
-	r_texture_destroy(&globals.render_tex);
-	r_framebuffer_destroy(&globals.render_buf);
+	r_texture_destroy(globals.render_tex);
+	r_framebuffer_destroy(globals.render_buf);
 	events_unregister_handler(fonts_event);
 	FT_Done_FreeType(globals.lib);
 	SDL_DestroyMutex(globals.mutex.new_face);
@@ -318,11 +328,11 @@ static FT_Error set_font_size(Font *fnt, uint pxsize, double scale) {
 #define SS_WIDTH 1024
 #define SS_HEIGHT 1024
 
-static SpriteSheet* add_spritesheet(SpriteSheetAnchor *spritesheets) {
+static SpriteSheet* add_spritesheet(Font *font, SpriteSheetAnchor *spritesheets) {
 	SpriteSheet *ss = calloc(1, sizeof(SpriteSheet));
 	ss->rectpack = rectpack_new(SS_WIDTH, SS_HEIGHT);
 
-	r_texture_create(&ss->tex, &(TextureParams) {
+	ss->tex = r_texture_create(&(TextureParams) {
 		.width = SS_WIDTH,
 		.height = SS_HEIGHT,
 		.type = TEX_TYPE_R,
@@ -334,28 +344,13 @@ static SpriteSheet* add_spritesheet(SpriteSheetAnchor *spritesheets) {
 		.mipmap_mode = TEX_MIPMAP_AUTO,
 	});
 
-	// FIXME:
-	//
-	// This code just zeroes the texture out.
-	//
-	// We should add an r_texture_clear function to hide this monstrosity.
-	// It would also allow a non-GL backend to have a different implementation,
-	// if we ever get around to writing one.
-	//
-	// To future generations: if such a function is already in the renderer API,
-	// but this crap is still here, please convert it.
-	Framebuffer *prev_fb = r_framebuffer_current();
-	Framebuffer atlast_fb;
-	Color cc_prev = *r_clear_color_current();
-	r_framebuffer_create(&atlast_fb);
-	r_framebuffer_attach(&atlast_fb, &ss->tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
-	r_framebuffer(&atlast_fb);
-	r_clear_color4(0, 0, 0, 0);
-	r_clear(CLEAR_COLOR);
-	r_framebuffer(prev_fb);
-	r_clear_color(&cc_prev);
-	r_framebuffer_destroy(&atlast_fb);
+#ifdef DEBUG
+	char buf[128];
+	snprintf(buf, sizeof(buf), "Font %s spritesheet", font->debug_label);
+	r_texture_set_debug_label(ss->tex, buf);
+#endif
 
+	r_texture_clear(ss->tex, RGBA(0, 0, 0, 0));
 	alist_append(spritesheets, ss);
 	return ss;
 }
@@ -380,7 +375,7 @@ static bool add_glyph_to_spritesheet(Font *font, Glyph *glyph, FT_Bitmap bitmap,
 		char buffer[bitmap.width * bitmap.rows];
 		flip_bitmap_copy(buffer, (char*)bitmap.buffer, bitmap.rows, bitmap.width);
 		r_texture_fill_region(
-			&ss->tex,
+			ss->tex,
 			0,
 			rect_x(sprite_pos),
 			rect_y(sprite_pos),
@@ -390,7 +385,7 @@ static bool add_glyph_to_spritesheet(Font *font, Glyph *glyph, FT_Bitmap bitmap,
 		);
 	} else {
 		r_texture_fill_region(
-			&ss->tex,
+			ss->tex,
 			0,
 			rect_x(sprite_pos),
 			rect_y(sprite_pos),
@@ -401,7 +396,7 @@ static bool add_glyph_to_spritesheet(Font *font, Glyph *glyph, FT_Bitmap bitmap,
 	}
 
 
-	glyph->sprite.tex = &ss->tex;
+	glyph->sprite.tex = ss->tex;
 	glyph->sprite.w = glyph->metrics.width; // bitmap.width / font->scale;
 	glyph->sprite.h = glyph->metrics.height; // bitmap.rows / font->scale;
 	glyph->sprite.tex_area.x = rect_x(sprite_pos);
@@ -423,7 +418,7 @@ static bool add_glyph_to_spritesheets(Font *font, Glyph *glyph, FT_Bitmap bitmap
 		}
 	}
 
-	return add_glyph_to_spritesheet(font, glyph, bitmap, add_spritesheet(spritesheets));
+	return add_glyph_to_spritesheet(font, glyph, bitmap, add_spritesheet(font, spritesheets));
 }
 
 static const char *const pixmode_name(FT_Pixel_Mode mode) {
@@ -441,7 +436,7 @@ static const char *const pixmode_name(FT_Pixel_Mode mode) {
 }
 
 static void delete_spritesheet(SpriteSheetAnchor *spritesheets, SpriteSheet *ss) {
-	r_texture_destroy(&ss->tex);
+	r_texture_destroy(ss->tex);
 	rectpack_free(ss->rectpack);
 	alist_unlink(spritesheets, ss);
 	free(ss);
@@ -591,17 +586,16 @@ void* load_font_begin(const char *path, uint flags) {
 	font.glyphs_allocated = 32;
 	font.glyphs = calloc(font.glyphs_allocated, sizeof(Glyph));
 
+#ifdef DEBUG
+	char *basename = resource_util_basename(FONT_PATH_PREFIX, path);
+	strlcpy(font.debug_label, basename, sizeof(font.debug_label));
+#endif
+
 	return memdup(&font, sizeof(font));
 }
 
 void* load_font_end(void *opaque, const char *path, uint flags) {
-	Font *font = opaque;
-
-	if(font == NULL) {
-		return NULL;
-	}
-
-	return font;
+	return opaque;
 }
 
 void unload_font(void *vfont) {
@@ -975,15 +969,17 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 		bbox_height = out_bbox->y.max - out_bbox->y.min;
 	}
 
-	Texture *tex = &globals.render_tex;
+	Texture *tex = globals.render_tex;
 
 	int tex_new_w = bbox_width; // max(tex->w, bbox_width);
 	int tex_new_h = bbox_height; // max(tex->h, bbox_height);
+	uint tex_w, tex_h;
+	r_texture_get_size(tex, 0, &tex_w, &tex_h);
 
-	if(tex_new_w != tex->w || tex_new_h != tex->h) {
+	if(tex_new_w != tex_w || tex_new_h != tex_h) {
 		log_info(
 			"Resizing texture: %ix%i --> %ix%i",
-			tex->w, tex->h,
+			tex_w, tex_h,
 			tex_new_w, tex_new_h
 		);
 
@@ -993,16 +989,22 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 		params.width = tex_new_w;
 		params.height = tex_new_h;
 		params.mipmaps = 0;
-		r_texture_create(tex, &params);
-		r_framebuffer_attach(&globals.render_buf, tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
-		r_framebuffer_viewport(&globals.render_buf, 0, 0, tex_new_w, tex_new_h);
+		globals.render_tex = tex = r_texture_create(&params);
+
+		#ifdef DEBUG
+		char buf[128];
+		snprintf(buf, sizeof(buf), "Font render texture");
+		r_texture_set_debug_label(tex, buf);
+		#endif
+
+		r_framebuffer_attach(globals.render_buf, tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
+		r_framebuffer_viewport(globals.render_buf, 0, 0, tex_new_w, tex_new_h);
 	}
 
 	r_state_push();
 
-	r_framebuffer(&globals.render_buf);
-	r_clear_color4(0, 0, 0, 0);
-	r_clear(CLEAR_COLOR);
+	r_framebuffer(globals.render_buf);
+	r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
 
 	r_blend(BLEND_PREMUL_ALPHA);
 	r_enable(RCAP_CULL_FACE);
@@ -1016,7 +1018,7 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 	r_mat_mode(MM_PROJECTION);
 	r_mat_push();
 	r_mat_identity();
-	r_mat_ortho(0, tex->w, tex->h, 0, -100, 100);
+	r_mat_ortho(0, tex_new_w, tex_new_h, 0, -100, 100);
 
 	r_mat_mode(MM_TEXTURE);
 	r_mat_push();

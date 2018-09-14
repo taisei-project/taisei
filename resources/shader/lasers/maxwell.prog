@@ -1,1 +1,1 @@
-glsl_objects = lasers/maxwell.vert standard.frag
+objects = lasers/maxwell.vert standard.frag

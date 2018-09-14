@@ -15,8 +15,8 @@
 #include "renderer/api.h"
 
 static struct {
-	VertexArray varr;
-	VertexBuffer vbuf;
+	VertexArray *varr;
+	VertexBuffer *vbuf;
 	ShaderProgram *shader_generic;
 } lasers;
 
@@ -48,20 +48,22 @@ void lasers_preload(void) {
 	#undef VERTEX_OFS
 	#undef INSTANCE_OFS
 
-	r_vertex_buffer_create(&lasers.vbuf, sizeof(LaserInstancedAttribs) * 4096, NULL);
+	lasers.vbuf = r_vertex_buffer_create(sizeof(LaserInstancedAttribs) * 4096, NULL);
+	r_vertex_buffer_set_debug_label(lasers.vbuf, "Lasers vertex buffer");
 
-	r_vertex_array_create(&lasers.varr);
-	r_vertex_array_layout(&lasers.varr, sizeof(fmt)/sizeof(VertexAttribFormat), fmt);
-	r_vertex_array_attach_buffer(&lasers.varr, r_vertex_buffer_static_models(), 0);
-	r_vertex_array_attach_buffer(&lasers.varr, &lasers.vbuf, 1);
-	r_vertex_array_layout(&lasers.varr, sizeof(fmt)/sizeof(VertexAttribFormat), fmt);
+	lasers.varr = r_vertex_array_create();
+	r_vertex_array_set_debug_label(lasers.varr, "Lasers vertex array");
+	r_vertex_array_layout(lasers.varr, sizeof(fmt)/sizeof(VertexAttribFormat), fmt);
+	r_vertex_array_attach_buffer(lasers.varr, r_vertex_buffer_static_models(), 0);
+	r_vertex_array_attach_buffer(lasers.varr, lasers.vbuf, 1);
+	r_vertex_array_layout(lasers.varr, sizeof(fmt)/sizeof(VertexAttribFormat), fmt);
 
 	lasers.shader_generic = r_shader_get("laser_generic");
 }
 
 void lasers_free(void) {
-	r_vertex_array_destroy(&lasers.varr);
-	r_vertex_buffer_destroy(&lasers.vbuf);
+	r_vertex_array_destroy(lasers.varr);
+	r_vertex_buffer_destroy(lasers.vbuf);
 }
 
 static void ent_draw_laser(EntityInterface *ent);
@@ -149,8 +151,9 @@ static void draw_laser_curve_specialized(Laser *l) {
 	}
 
 	r_color(&l->color);
-	r_uniform_complex("origin", l->pos);
-	r_uniform_complex_array("args[0]", 4, l->args);
+	r_uniform_sampler("tex", "part/lasercurve");
+	r_uniform_vec2_complex("origin", l->pos);
+	r_uniform_vec2_array_complex("args[0]", 0, 4, l->args);
 	r_uniform_float("timeshift", timeshift);
 	r_uniform_float("width", l->width);
 	r_uniform_float("width_exponent", l->width_exponent);
@@ -167,13 +170,14 @@ static void draw_laser_curve_generic(Laser *l) {
 	}
 
 	r_color(&l->color);
+	r_uniform_sampler("tex", "part/lasercurve");
 	r_uniform_float("timeshift", timeshift);
 	r_uniform_float("width", l->width);
 	r_uniform_float("width_exponent", l->width_exponent);
 	r_uniform_int("span", instances);
 
 	LaserInstancedAttribs attrs[instances], *aptr = attrs;
-	r_vertex_buffer_invalidate(&lasers.vbuf);
+	r_vertex_buffer_invalidate(lasers.vbuf);
 
 	for(uint i = 0; i < instances; ++i, ++aptr) {
 		complex pos = l->prule(l, i * 0.5 + timeshift);
@@ -185,14 +189,12 @@ static void draw_laser_curve_generic(Laser *l) {
 		aptr->delta[1] = cimag(delta);
 	}
 
-	r_vertex_buffer_append(&lasers.vbuf, sizeof(attrs), &attrs);
+	r_vertex_buffer_append(lasers.vbuf, sizeof(attrs), &attrs);
 	r_draw(PRIM_TRIANGLE_FAN, 0, 4, NULL, instances, 0);
 }
 
 static void ent_draw_laser(EntityInterface *ent) {
 	Laser *laser = ENT_CAST(ent, Laser);
-
-	r_texture(0, "part/lasercurve");
 
 	if(laser->shader) {
 		// Specialized lasers work with either vertex array,
@@ -202,14 +204,14 @@ static void ent_draw_laser(EntityInterface *ent) {
 
 		VertexArray *va = r_vertex_array_current();
 
-		if(va != &lasers.varr && va != r_vertex_array_static_models()) {
-			r_vertex_array(&lasers.varr);
+		if(va != lasers.varr && va != r_vertex_array_static_models()) {
+			r_vertex_array(lasers.varr);
 		}
 
 		r_shader_ptr(laser->shader);
 		draw_laser_curve_specialized(laser);
 	} else {
-		r_vertex_array(&lasers.varr);
+		r_vertex_array(lasers.varr);
 		r_shader_ptr(lasers.shader_generic);
 		draw_laser_curve_generic(laser);
 	}

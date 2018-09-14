@@ -58,7 +58,7 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 
 	ShaderProgram *prog_saved = r_shader_current();
 	r_shader("sprite_circleclipped_indicator");
-	r_uniform_rgba("back_color", back_clr);
+	r_uniform_vec4_rgba("back_color", back_clr);
 
 	r_mat_push();
 	r_mat_translate(x - star_width, y, 0);
@@ -105,7 +105,7 @@ void draw_framebuffer_attachment(Framebuffer *fb, double width, double height, F
 	r_cull(CULL_BACK);
 
 	r_mat_push();
-	r_texture_ptr(0, r_framebuffer_get_attachment(fb, attachment));
+	r_uniform_sampler("tex", r_framebuffer_get_attachment(fb, attachment));
 	r_mat_scale(width, height, 1);
 	r_mat_translate(0.5, 0.5, 0);
 	r_draw_quad();
@@ -118,11 +118,27 @@ void draw_framebuffer_tex(Framebuffer *fb, double width, double height) {
 	draw_framebuffer_attachment(fb, width, height, FRAMEBUFFER_ATTACH_COLOR0);
 }
 
+static const char* attachment_name(FramebufferAttachment a) {
+	static const char *map[FRAMEBUFFER_MAX_ATTACHMENTS] = {
+		[FRAMEBUFFER_ATTACH_DEPTH] = "depth",
+		[FRAMEBUFFER_ATTACH_COLOR0] = "color0",
+		[FRAMEBUFFER_ATTACH_COLOR1] = "color1",
+		[FRAMEBUFFER_ATTACH_COLOR2] = "color2",
+		[FRAMEBUFFER_ATTACH_COLOR3] = "color3",
+	};
+
+	assert((uint)a < FRAMEBUFFER_MAX_ATTACHMENTS);
+	return map[(uint)a];
+}
+
 void fbutil_create_attachments(Framebuffer *fb, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
+	char buf[128];
+
 	for(uint i = 0; i < num_attachments; ++i) {
-		Texture *tex = calloc(1, sizeof(Texture));
 		log_debug("%i %i", attachments[i].tex_params.width, attachments[i].tex_params.height);
-		r_texture_create(tex, &attachments[i].tex_params);
+		Texture *tex = r_texture_create(&attachments[i].tex_params);
+		snprintf(buf, sizeof(buf), "FB %p %s attachment", (void*)fb, attachment_name(attachments[i].attachment));
+		r_texture_set_debug_label(tex, buf);
 		r_framebuffer_attach(fb, tex, 0, attachments[i].attachment);
 	}
 }
@@ -133,7 +149,6 @@ void fbutil_destroy_attachments(Framebuffer *fb) {
 
 		if(tex != NULL) {
 			r_texture_destroy(tex);
-			free(tex);
 		}
 	}
 }
@@ -141,7 +156,14 @@ void fbutil_destroy_attachments(Framebuffer *fb) {
 void fbutil_resize_attachment(Framebuffer *fb, FramebufferAttachment attachment, uint width, uint height) {
 	Texture *tex = r_framebuffer_get_attachment(fb, attachment);
 
-	if(tex == NULL || (tex->w == width && tex->h == height)) {
+	if(tex == NULL) {
+		return;
+	}
+
+	uint tw, th;
+	r_texture_get_size(tex, 0, &tw, &th);
+
+	if(tw == width && th == height) {
 		return;
 	}
 
@@ -153,14 +175,13 @@ void fbutil_resize_attachment(Framebuffer *fb, FramebufferAttachment attachment,
 	params.width = width;
 	params.height = height;
 	params.mipmaps = 0; // FIXME
-	r_texture_create(tex, &params);
-	r_framebuffer_attach(fb, tex, 0, attachment);
+	r_framebuffer_attach(fb, r_texture_create(&params), 0, attachment);
 }
 
 void init_blur_shader(ShaderProgram *prog, size_t kernel_size, float sigma) {
 	float kernel[kernel_size];
 	gaussian_kernel_1d(kernel_size, sigma, kernel);
-	r_uniform_ptr(r_shader_uniform(prog, "blur_kernel[0]"), kernel_size, kernel);
+	r_uniform_float_array(r_shader_uniform(prog, "blur_kernel[0]"), 0, kernel_size, kernel);
 }
 
 void flip_bitmap(char *data, size_t rows, size_t row_length) {

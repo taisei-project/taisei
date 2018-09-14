@@ -54,7 +54,7 @@ static void stage2_bg_leaves_draw(vec3 pos) {
 	r_mat_scale(-1,1,1);
 	r_mat_mode(MM_MODELVIEW);
 
-	r_texture(0, "stage2/leaves");
+	r_uniform_sampler("tex", "stage2/leaves");
 
 	r_mat_push();
 	r_mat_translate(pos[0]-360,pos[1],pos[2]+500);
@@ -75,7 +75,7 @@ static void stage2_bg_leaves_draw(vec3 pos) {
 
 static void stage2_bg_grass_draw(vec3 pos) {
 	r_disable(RCAP_DEPTH_TEST);
-	r_texture(0, "stage2/roadgrass");
+	r_uniform_sampler("tex", "stage2/roadgrass");
 
 	r_mat_push();
 	r_mat_translate(pos[0]+250,pos[1],pos[2]+40);
@@ -93,12 +93,11 @@ static void stage2_bg_ground_draw(vec3 pos) {
 	r_mat_translate(pos[0]-50,pos[1],pos[2]);
 	r_mat_scale(-1000,1000,1);
 
-	r_texture(0, "stage2/roadstones");
-
 	r_color4(0.08,0.,0.1,1);
 	r_shader_standard_notex();
 	r_draw_quad();
 	r_shader_standard();
+	r_uniform_sampler("tex", "stage2/roadstones");
 	r_color4(0.5,0.5,0.5,1);
 	r_draw_quad();
 	r_color4(1,1,1,1);
@@ -114,7 +113,7 @@ static void stage2_bg_ground_draw(vec3 pos) {
 
 	r_mat_push();
 
-	r_texture(0, "stage2/border");
+	r_uniform_sampler("tex", "stage2/border");
 
 	r_mat_translate(pos[0]+410,pos[1],pos[2]+600);
 	r_mat_rotate_deg(90,0,1,0);
@@ -152,14 +151,12 @@ static vec3 **stage2_bg_grass_pos2(vec3 pos, float maxrange) {
 
 static void stage2_fog(Framebuffer *fb) {
 	r_shader("zbuf_fog");
-	r_uniform_int("tex", 0);
-	r_uniform_int("depth", 2);
+	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	r_uniform_vec4("fog_color", 0.05, 0.0, 0.03, 1.0);
 	r_uniform_float("start", 0.2);
 	r_uniform_float("end", 0.8);
 	r_uniform_float("exponent", 3.0);
 	r_uniform_float("sphereness", 0);
-	r_texture_ptr(2, r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
 }

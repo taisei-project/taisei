@@ -65,10 +65,6 @@ void r_state_pop(void) {
 		B.color4(S.color.r, S.color.g, S.color.b, S.color.a);
 	}
 
-	RESTORE(RSTATE_CLEARCOLOR) {
-		B.clear_color4(S.clear_color.r, S.clear_color.g, S.clear_color.b, S.clear_color.a);
-	}
-
 	RESTORE(RSTATE_BLENDMODE) {
 		B.blend(S.blend_mode);
 	}
@@ -87,12 +83,6 @@ void r_state_pop(void) {
 
 	RESTORE(RSTATE_SHADER_UNIFORMS) {
 		// TODO
-	}
-
-	RESTORE(RSTATE_TEXUNITS) {
-		for(uint i = 0; i < R_MAX_TEXUNITS; ++i) {
-			B.texture(i, S.texunits[i]);
-		}
 	}
 
 	RESTORE(RSTATE_RENDERTARGET) {
@@ -132,12 +122,6 @@ void _r_state_touch_color(void) {
 	});
 }
 
-void _r_state_touch_clear_color(void) {
-	TAINT(RSTATE_CLEARCOLOR, {
-		S.clear_color = *B.clear_color_current();
-	});
-}
-
 void _r_state_touch_blend_mode(void) {
 	TAINT(RSTATE_BLENDMODE, {
 		S.blend_mode = B.blend_current();
@@ -163,14 +147,6 @@ void _r_state_touch_shader(void) {
 
 void _r_state_touch_uniform(Uniform *uniform) {
 	// TODO
-}
-
-void _r_state_touch_texunit(uint unit) {
-	TAINT(RSTATE_TEXUNITS, {
-		for(uint i = 0; i < R_MAX_TEXUNITS; ++i) {
-			S.texunits[i] = B.texture_current(i);
-		}
-	});
 }
 
 void _r_state_touch_framebuffer(void) {

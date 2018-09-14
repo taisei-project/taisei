@@ -134,8 +134,7 @@ void marisa_common_masterspark_draw(complex origin, complex size, float angle, i
 		FBPair *aux = stage_get_fbpair(FBPAIR_FG_AUX);
 
 		r_framebuffer(aux->back);
-		r_clear_color4(0, 0, 0, 0);
-		r_clear(CLEAR_COLOR);
+		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
 
 		draw_masterspark_beam(origin, size, angle, t, alpha);
 
@@ -145,7 +144,7 @@ void marisa_common_masterspark_draw(complex origin, complex size, float angle, i
 
 		fbpair_swap(aux);
 		r_framebuffer(aux->back);
-		r_clear(CLEAR_COLOR);
+		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
 		draw_framebuffer_tex(aux->front, VIEWPORT_W, VIEWPORT_H);
 
 		r_uniform_vec2("blur_direction", 0, blur);

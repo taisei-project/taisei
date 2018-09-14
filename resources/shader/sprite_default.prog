@@ -1,1 +1,1 @@
-glsl_objects = sprite_default.vert sprite_default.frag
+objects = sprite_default.vert sprite_default.frag

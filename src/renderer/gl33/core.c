@@ -24,20 +24,28 @@
 #include "resource/resource.h"
 #include "resource/model.h"
 #include "util/glm.h"
+#include "util/env.h"
 
 typedef struct TextureUnit {
+	LIST_INTERFACE(struct TextureUnit);
+
 	struct {
 		GLuint gl_handle;
 		Texture *active;
 		Texture *pending;
+		bool locked;
 	} tex2d;
 } TextureUnit;
 
+#define TU_INDEX(unit) ((ptrdiff_t)((unit) - R.texunits.array))
+
 static struct {
 	struct {
-		TextureUnit indexed[R_MAX_TEXUNITS];
+		TextureUnit *array;
+		LIST_ANCHOR(TextureUnit) list;
 		TextureUnit *active;
 		TextureUnit *pending;
+		GLint limit;
 	} texunits;
 
 	struct {
@@ -100,6 +108,7 @@ static struct {
 
 	Color color;
 	Color clear_color;
+	float clear_depth;
 	GLuint pbo;
 	r_feature_bits_t features;
 
@@ -192,6 +201,42 @@ static inline void gl33_stats_post_frame(void) {
 	#endif
 }
 
+static void gl33_init_texunits(void) {
+	GLint texunits_available, texunits_capped, texunits_max, texunits_min = 4;
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &texunits_available);
+
+	if(texunits_available < texunits_min) {
+		log_fatal("GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS is %i; at least %i is expected.", texunits_available, texunits_min);
+	}
+
+	texunits_max = env_get_int("GL33_MAX_NUM_TEXUNITS", 32);
+
+	if(texunits_max == 0) {
+		texunits_max = texunits_available;
+	} else {
+		texunits_max = iclamp(texunits_max, texunits_min, texunits_available);
+	}
+
+	texunits_capped = imin(texunits_max, texunits_available);
+	R.texunits.limit = env_get_int("GL33_NUM_TEXUNITS", texunits_capped);
+
+	if(R.texunits.limit == 0) {
+		R.texunits.limit = texunits_available;
+	} else {
+		R.texunits.limit = iclamp(R.texunits.limit, texunits_min, texunits_available);
+	}
+
+	R.texunits.array = calloc(R.texunits.limit, sizeof(TextureUnit));
+	R.texunits.active = R.texunits.array;
+
+	for(int i = 0; i < R.texunits.limit; ++i) {
+		TextureUnit *u = R.texunits.array + i;
+		alist_append(&R.texunits.list, u);
+	}
+
+	log_info("Using %i texturing units (%i available)", R.texunits.limit, texunits_available);
+}
+
 static void gl33_init_context(SDL_Window *window) {
 	R.gl_context = SDL_GL_CreateContext(window);
 
@@ -206,15 +251,9 @@ static void gl33_init_context(SDL_Window *window) {
 		glcommon_debug_enable();
 	}
 
-	R.texunits.active = R.texunits.indexed;
-
-	// TODO: move this into generic r_init
-	r_enable(RCAP_DEPTH_TEST);
-	r_enable(RCAP_DEPTH_WRITE);
-	r_enable(RCAP_CULL_FACE);
-	r_depth_func(DEPTH_LEQUAL);
-	r_cull(CULL_BACK);
-	r_blend(BLEND_PREMUL_ALPHA);
+	gl33_init_texunits();
+	gl33_set_clear_depth(1);
+	gl33_set_clear_color(RGBA(0, 0, 0, 0));
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -222,9 +261,6 @@ static void gl33_init_context(SDL_Window *window) {
 	glGetIntegerv(GL_VIEWPORT, &R.viewport.default_framebuffer.x);
 
 	R.viewport.active = R.viewport.default_framebuffer;
-
-	r_clear_color4(0, 0, 0, 1);
-	r_clear(CLEAR_ALL);
 
 	if(glext.instanced_arrays) {
 		R.features |= r_feature_bit(RFEAT_DRAW_INSTANCED);
@@ -243,6 +279,10 @@ static void gl33_init_context(SDL_Window *window) {
 	}
 
 	R.features |= r_feature_bit(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN);
+
+	if(glext.clear_texture) {
+		_r_backend.funcs.texture_clear = gl44_texture_clear;
+	}
 }
 
 static void gl33_apply_capability(RendererCapability cap, bool value) {
@@ -268,8 +308,7 @@ static inline IntRect* get_framebuffer_viewport(Framebuffer *fb) {
 		return &R.viewport.default_framebuffer;
 	}
 
-	assert(fb->impl != NULL);
-	return &fb->impl->viewport;
+	return &fb->viewport;
 }
 
 static void gl33_sync_viewport(void) {
@@ -284,10 +323,10 @@ static void gl33_sync_viewport(void) {
 static void gl33_sync_state(void) {
 	gl33_sync_capabilities();
 	gl33_sync_shader();
-	r_uniform("r_modelViewMatrix", 1, _r_matrices.modelview.head);
-	r_uniform("r_projectionMatrix", 1, _r_matrices.projection.head);
-	r_uniform("r_textureMatrix", 1, _r_matrices.texture.head);
-	r_uniform("r_color", 1, &R.color.r);
+	r_uniform_mat4("r_modelViewMatrix", *_r_matrices.modelview.head);
+	r_uniform_mat4("r_projectionMatrix", *_r_matrices.projection.head);
+	r_uniform_mat4("r_textureMatrix", *_r_matrices.texture.head);
+	r_uniform_vec4_rgba("r_color", &R.color);
 	gl33_sync_uniforms(R.progs.active);
 	gl33_sync_texunits(true);
 	gl33_sync_framebuffer();
@@ -326,32 +365,149 @@ void gl33_sync_capabilities(void) {
 	R.capabilities.active = R.capabilities.pending;
 }
 
-void gl33_sync_texunit(uint unit, bool prepare_rendering) {
-	TextureUnit *u = R.texunits.indexed + unit;
-	Texture *tex = u->tex2d.pending;
+attr_nonnull(1)
+static void gl33_activate_texunit(TextureUnit *unit) {
+	assert(unit >= R.texunits.array && unit < R.texunits.array + R.texunits.limit);
 
-	if(tex == NULL) {
-		if(u->tex2d.gl_handle != 0) {
-			gl33_activate_texunit(unit);
-			glBindTexture(GL_TEXTURE_2D, 0);
-			u->tex2d.gl_handle = 0;
-			u->tex2d.active = tex;
-		}
-	} else if(u->tex2d.gl_handle != tex->impl->gl_handle) {
-		gl33_activate_texunit(unit);
-		glBindTexture(GL_TEXTURE_2D, tex->impl->gl_handle);
-		u->tex2d.gl_handle = tex->impl->gl_handle;
-		u->tex2d.active = tex;
+	if(R.texunits.active != unit) {
+		glActiveTexture(GL_TEXTURE0 + TU_INDEX(unit));
+		R.texunits.active = unit;
+#ifdef GL33_DEBUG_TEXUNITS
+		log_debug("Activated unit %i", (uint)TU_INDEX(unit));
+#endif
+	}
+}
+
+static int gl33_texunit_priority(TextureUnit *u) {
+	if(u->tex2d.locked) {
+		assert(u->tex2d.pending);
+		return 3;
 	}
 
-	if(prepare_rendering && u->tex2d.active != NULL) {
-		gl33_texture_prepare(u->tex2d.active);
+	if(u->tex2d.pending) {
+		return 2;
+	}
+
+	if(u->tex2d.active) {
+		return 1;
+	}
+
+	return 0;
+}
+
+static int gl33_texunit_priority_callback(List *elem) {
+	TextureUnit *u = (TextureUnit*)elem;
+	return gl33_texunit_priority(u);
+}
+
+attr_unused static void texture_str(Texture *tex, char *buf, size_t bufsize) {
+	if(tex == NULL) {
+		snprintf(buf, bufsize, "None");
+	} else {
+		snprintf(buf, bufsize, "\"%s\" (#%i; at %p)", tex->debug_label, tex->gl_handle, (void*)tex);
+	}
+}
+
+attr_unused static void gl33_dump_texunits(void) {
+	log_debug("=== BEGIN DUMP ===");
+
+	for(TextureUnit *u = R.texunits.list.first; u; u = u->next) {
+		char buf1[128], buf2[128];
+		texture_str(u->tex2d.active, buf1, sizeof(buf1));
+		texture_str(u->tex2d.pending, buf2, sizeof(buf2));
+		log_debug("[Unit %u | %i] bound: %s; pending: %s", (uint)TU_INDEX(u), gl33_texunit_priority(u), buf1, buf2);
+	}
+
+	log_debug("=== END DUMP ===");
+}
+
+static void gl33_relocate_texuint(TextureUnit *unit) {
+	int prio = gl33_texunit_priority(unit);
+
+	alist_unlink(&R.texunits.list, unit);
+
+	if(prio > 1) {
+		alist_insert_at_priority_tail(&R.texunits.list, unit, prio, gl33_texunit_priority_callback);
+	} else {
+		alist_insert_at_priority_head(&R.texunits.list, unit, prio, gl33_texunit_priority_callback);
+	}
+
+#ifdef GL33_DEBUG_TEXUNITS
+	// gl33_dump_texunits();
+	// log_debug("Relocated unit %u", (uint)TU_INDEX(unit));
+#endif
+}
+
+attr_nonnull(1)
+static void gl33_set_texunit_binding(TextureUnit *unit, Texture *tex, bool lock) {
+	assert(!unit->tex2d.locked);
+
+	if(unit->tex2d.pending == tex) {
+		return;
+	}
+
+	if(unit->tex2d.pending != NULL) {
+		assert(unit->tex2d.pending->binding_unit == unit);
+		unit->tex2d.pending->binding_unit = NULL;
+	}
+
+	unit->tex2d.pending = tex;
+
+	if(tex) {
+		tex->binding_unit = unit;
+	}
+
+	if(lock) {
+		unit->tex2d.locked = true;
+	}
+
+	gl33_relocate_texuint(unit);
+}
+
+void gl33_sync_texunit(TextureUnit *unit, bool prepare_rendering, bool ensure_active) {
+	Texture *tex = unit->tex2d.pending;
+
+#ifdef GL33_DEBUG_TEXUNITS
+	if(unit->tex2d.pending != unit->tex2d.active) {
+		attr_unused char buf1[128], buf2[128];
+		texture_str(unit->tex2d.active, buf1, sizeof(buf1));
+		texture_str(unit->tex2d.pending, buf2, sizeof(buf2));
+		log_debug("[Unit %u] %s ===> %s", (uint)TU_INDEX(unit), buf1, buf2);
+	}
+#endif
+
+	if(tex == NULL) {
+		if(unit->tex2d.gl_handle != 0) {
+			gl33_activate_texunit(unit);
+			glBindTexture(GL_TEXTURE_2D, 0);
+			unit->tex2d.gl_handle = 0;
+			unit->tex2d.active = NULL;
+			gl33_relocate_texuint(unit);
+		}
+	} else if(unit->tex2d.gl_handle != tex->gl_handle) {
+		gl33_activate_texunit(unit);
+		glBindTexture(GL_TEXTURE_2D, tex->gl_handle);
+		unit->tex2d.gl_handle = tex->gl_handle;
+
+		if(unit->tex2d.active == NULL) {
+			unit->tex2d.active = tex;
+			gl33_relocate_texuint(unit);
+		} else {
+			unit->tex2d.active = tex;
+		}
+	} else if(ensure_active) {
+		gl33_activate_texunit(unit);
+	}
+
+	if(prepare_rendering && unit->tex2d.active != NULL) {
+		gl33_texture_prepare(unit->tex2d.active);
+		unit->tex2d.locked = false;
 	}
 }
 
 void gl33_sync_texunits(bool prepare_rendering) {
-	for(uint i = 0; i < R_MAX_TEXUNITS; ++i) {
-		gl33_sync_texunit(i, prepare_rendering);
+	for(TextureUnit *u = R.texunits.array; u < R.texunits.array + R.texunits.limit; ++u) {
+		gl33_sync_texunit(u, prepare_rendering, false);
 	}
 }
 
@@ -410,10 +566,8 @@ static inline GLuint fbo_num(Framebuffer *fb) {
 		return 0;
 	}
 
-	assert(fb->impl != NULL);
-	assert(fb->impl->gl_fbo != 0);
-
-	return fb->impl->gl_fbo;
+	assert(fb->gl_fbo != 0);
+	return fb->gl_fbo;
 }
 
 void gl33_sync_framebuffer(void) {
@@ -474,6 +628,27 @@ void gl33_sync_blend_mode(void) {
 	}
 }
 
+uint gl33_bind_texture(Texture *texture, bool for_rendering) {
+	if(!texture->binding_unit) {
+		assert(R.texunits.list.first->tex2d.pending != texture);
+
+		if(
+			R.texunits.list.first->tex2d.pending &&
+			R.texunits.list.first->tex2d.pending != R.texunits.list.first->tex2d.active
+		) {
+			log_warn("Ran out of texturing units, expect rendering errors!");
+		}
+
+		gl33_set_texunit_binding(R.texunits.list.first, texture, for_rendering);
+	} else /* if(for_rendering) */ {
+		texture->binding_unit->tex2d.locked |= for_rendering;
+		gl33_relocate_texuint(texture->binding_unit);
+	}
+
+	assert(texture->binding_unit->tex2d.pending == texture);
+	return TU_INDEX(texture->binding_unit);
+}
+
 void gl33_bind_vbo(GLuint vbo) {
 	R.vbo.pending = vbo;
 }
@@ -502,40 +677,34 @@ GLuint gl33_vao_current(void) {
 	return R.vao.pending;
 }
 
-uint gl33_active_texunit(void) {
-	return (uintptr_t)(R.texunits.active - R.texunits.indexed);
-}
-
-uint gl33_activate_texunit(uint unit) {
-	assert(unit < R_MAX_TEXUNITS);
-	uint prev_unit = gl33_active_texunit();
-
-	if(prev_unit != unit) {
-		glActiveTexture(GL_TEXTURE0 + unit);
-		R.texunits.active = R.texunits.indexed + unit;
-	}
-
-	return prev_unit;
-}
-
 void gl33_texture_deleted(Texture *tex) {
 	_r_sprite_batch_texture_deleted(tex);
+	gl33_unref_texture_from_samplers(tex);
 
-	for(uint i = 0; i < R_MAX_TEXUNITS; ++i) {
-		if(R.texunits.indexed[i].tex2d.pending == tex) {
-			R.texunits.indexed[i].tex2d.pending = NULL;
+	for(TextureUnit *unit = R.texunits.array; unit < R.texunits.array + R.texunits.limit; ++unit) {
+		bool bump = false;
+
+		if(unit->tex2d.pending == tex) {
+			unit->tex2d.pending = NULL;
+			unit->tex2d.locked = false;
+			bump = true;
 		}
 
-		if(R.texunits.indexed[i].tex2d.active == tex) {
-			R.texunits.indexed[i].tex2d.active= NULL;
+		if(unit->tex2d.active == tex) {
+			assert(unit->tex2d.gl_handle == tex->gl_handle);
+			unit->tex2d.active = NULL;
+			unit->tex2d.gl_handle = 0;
+			bump = true;
+		} else {
+			assert(unit->tex2d.gl_handle != tex->gl_handle);
 		}
 
-		if(R.texunits.indexed[i].tex2d.gl_handle == tex->impl->gl_handle) {
-			R.texunits.indexed[i].tex2d.gl_handle = 0;
+		if(bump) {
+			gl33_relocate_texuint(unit);
 		}
 	}
 
-	if(R.pbo == tex->impl->pbo) {
+	if(R.pbo == tex->pbo) {
 		R.pbo = 0;
 	}
 }
@@ -566,11 +735,11 @@ void gl33_shader_deleted(ShaderProgram *prog) {
 }
 
 void gl33_vertex_buffer_deleted(VertexBuffer *vbuf) {
-	if(R.vbo.active == vbuf->impl->gl_handle) {
+	if(R.vbo.active == vbuf->gl_handle) {
 		R.vbo.active = 0;
 	}
 
-	if(R.vbo.pending == vbuf->impl->gl_handle) {
+	if(R.vbo.pending == vbuf->gl_handle) {
 		R.vbo.pending = 0;
 	}
 }
@@ -585,11 +754,11 @@ void gl33_vertex_array_deleted(VertexArray *varr) {
 		r_vertex_array(r_vertex_array_static_models());
 	}
 
-	if(R.vao.active == varr->impl->gl_handle) {
+	if(R.vao.active == varr->gl_handle) {
 		R.vao.active = 0;
 	}
 
-	if(R.vao.pending == varr->impl->gl_handle) {
+	if(R.vao.pending == varr->gl_handle) {
 		R.vao.pending = 0;
 	}
 }
@@ -695,10 +864,8 @@ static const Color* gl33_color_current(void) {
 }
 
 static void gl33_vertex_array(VertexArray *varr) {
-	assert(varr->impl != NULL);
-
 	R.vertex_array.pending = varr;
-	gl33_bind_vao(varr->impl->gl_handle);
+	gl33_bind_vao(varr->gl_handle);
 }
 
 static VertexArray* gl33_vertex_array_current(void) {
@@ -745,24 +912,7 @@ static void gl33_draw(Primitive prim, uint first, uint count, uint32_t *indices,
 	}
 }
 
-static void gl33_texture(uint unit, Texture *tex) {
-	assert(unit < R_MAX_TEXUNITS);
-
-	if(tex != NULL) {
-		assert(tex->impl != NULL);
-		assert(tex->impl->gl_handle != 0);
-	}
-
-	R.texunits.indexed[unit].tex2d.pending = tex;
-}
-
-static Texture* gl33_texture_current(uint unit) {
-	assert(unit < R_MAX_TEXUNITS);
-	return R.texunits.indexed[unit].tex2d.pending;
-}
-
 static void gl33_framebuffer(Framebuffer *fb) {
-	assert(fb == NULL || fb->impl != NULL);
 	R.framebuffer.pending = fb;
 }
 
@@ -788,33 +938,18 @@ static ShaderProgram *gl33_shader_current(void) {
 	return R.progs.pending;
 }
 
-static void gl33_clear(ClearBufferFlags flags) {
-	GLbitfield mask = 0;
-
-	if(flags & CLEAR_COLOR) {
-		mask |= GL_COLOR_BUFFER_BIT;
-	}
-
-	if(flags & CLEAR_DEPTH) {
-		mask |= GL_DEPTH_BUFFER_BIT;
-	}
-
-	r_flush_sprites();
-	gl33_sync_framebuffer();
-	glClear(mask);
-}
-
-static void gl33_clear_color4(float r, float g, float b, float a) {
-	Color cc = { r, g, b, a };
-
-	if(memcmp(&R.clear_color, &cc, sizeof(cc))) {
-		memcpy(&R.clear_color, &cc, sizeof(cc));
-		glClearColor(r, g, b, a);
+void gl33_set_clear_color(const Color *color) {
+	if(memcmp(&R.clear_color, color, sizeof(*color))) {
+		memcpy(&R.clear_color, color, sizeof(*color));
+		glClearColor(color->r, color->g, color->b, color->a);
 	}
 }
 
-static const Color* gl33_clear_color_current(void) {
-	return &R.clear_color;
+void gl33_set_clear_depth(float depth) {
+	if(R.clear_depth != depth) {
+		R.clear_depth = depth;
+		glClearDepth(depth);
+	}
 }
 
 static void gl33_swap(SDL_Window *window) {
@@ -876,53 +1011,67 @@ RendererBackend _r_backend_gl33 = {
 		.cull_current = gl33_cull_current,
 		.depth_func = gl33_depth_func,
 		.depth_func_current = gl33_depth_func_current,
+		.shader_language_supported = gl33_shader_language_supported,
+		.shader_object_compile = gl33_shader_object_compile,
+		.shader_object_destroy = gl33_shader_object_destroy,
+		.shader_object_set_debug_label = gl33_shader_object_set_debug_label,
+		.shader_object_get_debug_label = gl33_shader_object_get_debug_label,
+		.shader_program_link = gl33_shader_program_link,
+		.shader_program_destroy = gl33_shader_program_destroy,
+		.shader_program_set_debug_label = gl33_shader_program_set_debug_label,
+		.shader_program_get_debug_label = gl33_shader_program_get_debug_label,
 		.shader = gl33_shader,
 		.shader_current = gl33_shader_current,
 		.shader_uniform = gl33_shader_uniform,
 		.uniform = gl33_uniform,
 		.uniform_type = gl33_uniform_type,
 		.texture_create = gl33_texture_create,
+		.texture_get_size = gl33_texture_get_size,
 		.texture_get_params = gl33_texture_get_params,
+		.texture_get_debug_label = gl33_texture_get_debug_label,
+		.texture_set_debug_label = gl33_texture_set_debug_label,
 		.texture_set_filter = gl33_texture_set_filter,
 		.texture_set_wrap = gl33_texture_set_wrap,
 		.texture_destroy = gl33_texture_destroy,
 		.texture_invalidate = gl33_texture_invalidate,
 		.texture_fill = gl33_texture_fill,
 		.texture_fill_region = gl33_texture_fill_region,
-		.texture = gl33_texture,
-		.texture_current = gl33_texture_current,
+		.texture_clear = gl33_texture_clear,
 		.framebuffer_create = gl33_framebuffer_create,
 		.framebuffer_destroy = gl33_framebuffer_destroy,
 		.framebuffer_attach = gl33_framebuffer_attach,
+		.framebuffer_get_debug_label = gl33_framebuffer_get_debug_label,
+		.framebuffer_set_debug_label = gl33_framebuffer_set_debug_label,
 		.framebuffer_get_attachment = gl33_framebuffer_get_attachment,
 		.framebuffer_get_attachment_mipmap = gl33_framebuffer_get_attachment_mipmap,
 		.framebuffer_viewport = gl33_framebuffer_viewport,
 		.framebuffer_viewport_current = gl33_framebuffer_viewport_current,
 		.framebuffer = gl33_framebuffer,
 		.framebuffer_current = gl33_framebuffer_current,
+		.framebuffer_clear = gl33_framebuffer_clear,
 		.vertex_buffer_create = gl33_vertex_buffer_create,
+		.vertex_buffer_set_debug_label = gl33_vertex_buffer_set_debug_label,
+		.vertex_buffer_get_debug_label = gl33_vertex_buffer_get_debug_label,
 		.vertex_buffer_destroy = gl33_vertex_buffer_destroy,
 		.vertex_buffer_invalidate = gl33_vertex_buffer_invalidate,
 		.vertex_buffer_write = gl33_vertex_buffer_write,
 		.vertex_buffer_append = gl33_vertex_buffer_append,
-		.vertex_array_create = gl33_vertex_array_create,
+		.vertex_buffer_get_capacity = gl33_vertex_buffer_get_capacity,
+		.vertex_buffer_get_cursor = gl33_vertex_buffer_get_cursor,
+		.vertex_buffer_set_cursor = gl33_vertex_buffer_set_cursor,
 		.vertex_array_destroy = gl33_vertex_array_destroy,
+		.vertex_array_create = gl33_vertex_array_create,
+		.vertex_array_set_debug_label = gl33_vertex_array_set_debug_label,
+		.vertex_array_get_debug_label = gl33_vertex_array_get_debug_label,
 		.vertex_array_layout = gl33_vertex_array_layout,
 		.vertex_array_attach_buffer = gl33_vertex_array_attach_buffer,
 		.vertex_array_get_attachment = gl33_vertex_array_get_attachment,
 		.vertex_array = gl33_vertex_array,
 		.vertex_array_current = gl33_vertex_array_current,
-		.clear = gl33_clear,
-		.clear_color4 = gl33_clear_color4,
-		.clear_color_current = gl33_clear_color_current,
 		.vsync = gl33_vsync,
 		.vsync_current = gl33_vsync_current,
 		.swap = gl33_swap,
 		.screenshot = gl33_screenshot,
-	},
-	.res_handlers = {
-		.shader_object = &gl33_shader_object_res_handler,
-		.shader_program = &gl33_shader_program_res_handler,
 	},
 	.custom = &(GLBackendData) {
 		.vtable = {

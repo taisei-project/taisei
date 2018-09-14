@@ -67,13 +67,12 @@ static vec3 **stage5_stairs_pos(vec3 pos, float maxrange) {
 }
 
 static void stage5_stairs_draw(vec3 pos) {
-	r_texture(0, "stage5/tower");
-
 	r_mat_push();
 	r_mat_translate(pos[0], pos[1], pos[2]);
 	r_mat_scale(300,300,300);
 
 	r_shader("tower_light");
+	r_uniform_sampler("tex", "stage5/tower");
 	r_uniform_vec3("lightvec", 0, 0, 0);
 	r_uniform_vec4("color", 0.1, 0.1, 0.5, 1);
 	r_uniform_float("strength", stagedata.light_strength);

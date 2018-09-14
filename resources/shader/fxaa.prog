@@ -1,2 +1,2 @@
 
-glsl_objects = fxaa.vert fxaa.frag
+objects = fxaa.vert fxaa.frag

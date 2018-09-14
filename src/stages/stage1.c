@@ -130,8 +130,7 @@ static void stage1_water_draw(vec3 pos) {
 
 	r_mat_translate(VIEWPORT_W * 0.5 * (1 - z), VIEWPORT_H * 0.5 * (1 - z), 0);
 	r_mat_scale(z, z, 1);
-	r_clear_color4(0, 0.08, 0.08, 1);
-	r_clear(CLEAR_ALL);
+	r_clear(CLEAR_ALL, RGBA(0, 0.08, 0.08, 1), 1);
 	r_shader("sprite_default");
 
 	ent_draw(stage1_draw_predicate);
@@ -171,7 +170,6 @@ static void stage1_water_draw(vec3 pos) {
 
 	r_shader("stage1_water");
 	r_uniform_float("time", 0.5 * global.frames / (float)FPS);
-	r_texture_ptr(1, r_framebuffer_get_attachment(bg_fb, FRAMEBUFFER_ATTACH_DEPTH));
 
 	r_mat_push();
 	r_mat_translate(0, 70, 0);
@@ -226,14 +224,12 @@ static vec3 **stage1_smoke_pos(vec3 p, float maxrange) {
 
 static void stage1_fog(Framebuffer *fb) {
 	r_shader("zbuf_fog");
-	r_uniform_int("tex", 0);
-	r_uniform_int("depth", 1);
+	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	r_uniform_vec4("fog_color", 0.8, 0.8, 0.8, 1.0);
 	r_uniform_float("start", 0.0);
 	r_uniform_float("end", 0.8);
 	r_uniform_float("exponent", 3.0);
 	r_uniform_float("sphereness", 0.2);
-	r_texture_ptr(1, r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
 }
@@ -265,8 +261,10 @@ static void stage1_waterplants_draw(vec3 pos) {
 	Sprite spr = { 0 };
 	spr.w = spr.h = 1;
 	spr.tex = get_tex("stage1/waterplants");
-	spr.tex_area.w = spr.tex->w * 0.5;
-	spr.tex_area.h = spr.tex->h;
+	uint tw, th;
+	r_texture_get_size(spr.tex, 0, &tw, &th);
+	spr.tex_area.w = tw * 0.5;
+	spr.tex_area.h = th;
 	spr.tex_area.x = spr.tex_area.w * tile;
 
 	float a = 0.8;

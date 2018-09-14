@@ -1,1 +1,1 @@
-glsl_objects = sprite_bullet.vert sprite_youmu_myon_shot.frag
+objects = sprite_bullet.vert sprite_youmu_myon_shot.frag

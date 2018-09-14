@@ -1,1 +1,1 @@
-glsl_objects = lasers/iku_lightning.vert standard.frag
+objects = lasers/iku_lightning.vert standard.frag

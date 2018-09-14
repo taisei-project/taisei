@@ -309,41 +309,40 @@ static void* load_texture_begin(const char *path, uint flags) {
 	return memdup(&ld, sizeof(ld));
 }
 
-static void texture_post_load(Texture *tex) {
+static Texture* texture_post_load(Texture *tex) {
 	// this is a bit hacky and not very efficient,
 	// but it's still much faster than fixing up the texture on the CPU
 
 	ShaderProgram *shader_saved = r_shader_current();
-	Texture *texture_saved = r_texture_current(0);
 	Framebuffer *fb_saved = r_framebuffer_current();
 	BlendMode blend_saved = r_blend_current();
 	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
 
-	Texture fbo_tex;
+	Texture *fbo_tex;
 	TextureParams params;
-	Framebuffer fb;
+	Framebuffer *fb;
 
 	r_blend(BLEND_NONE);
 	r_disable(RCAP_CULL_FACE);
 	r_texture_get_params(tex, &params);
 	params.mipmap_mode = TEX_MIPMAP_AUTO;
 	r_texture_set_filter(tex, TEX_FILTER_NEAREST, TEX_FILTER_NEAREST);
-	r_texture_create(&fbo_tex, &params);
-	r_texture_ptr(0, tex);
+	fbo_tex = r_texture_create(&params);
 	r_shader("texture_post_load");
+	r_uniform_sampler("tex", tex);
 	r_mat_push();
 	r_mat_identity();
 	r_mat_mode(MM_PROJECTION);
 	r_mat_push();
 	r_mat_identity();
-	r_mat_ortho(0, tex->w, tex->h, 0, -100, 100);
+	r_mat_ortho(0, params.width, params.height, 0, -100, 100);
 	r_mat_mode(MM_MODELVIEW);
-	r_mat_scale(tex->w, tex->h, 1);
+	r_mat_scale(params.width, params.height, 1);
 	r_mat_translate(0.5, 0.5, 0);
-	r_framebuffer_create(&fb);
-	r_framebuffer_attach(&fb, &fbo_tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
-	r_framebuffer_viewport(&fb, 0, 0, tex->w, tex->h);
-	r_framebuffer(&fb);
+	fb = r_framebuffer_create();
+	r_framebuffer_attach(fb, fbo_tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
+	r_framebuffer_viewport(fb, 0, 0, params.width, params.height);
+	r_framebuffer(fb);
 	r_draw_quad();
 	r_mat_pop();
 	r_mat_mode(MM_PROJECTION);
@@ -351,13 +350,12 @@ static void texture_post_load(Texture *tex) {
 	r_mat_mode(MM_MODELVIEW);
 	r_framebuffer(fb_saved);
 	r_shader_ptr(shader_saved);
-	r_texture_ptr(0, texture_saved);
 	r_blend(blend_saved);
 	r_capability(RCAP_CULL_FACE, cullcap_saved);
-	r_framebuffer_destroy(&fb);
+	r_framebuffer_destroy(fb);
 	r_texture_destroy(tex);
 
-	memcpy(tex, &fbo_tex, sizeof(fbo_tex));
+	return fbo_tex;
 }
 
 static void* load_texture_end(void *opaque, const char *path, uint flags) {
@@ -367,16 +365,20 @@ static void* load_texture_end(void *opaque, const char *path, uint flags) {
 		return NULL;
 	}
 
-	Texture *texture = malloc(sizeof(Texture));
+	char *basename = resource_util_basename(TEX_PATH_PREFIX, path);
+	Texture *texture = r_texture_create(&ld->params);
+	r_texture_set_debug_label(texture, basename);
 
-	r_texture_create(texture, &ld->params);
 	SDL_LockSurface(ld->surf);
 	r_texture_fill(texture, 0, ld->surf->pixels);
 	SDL_UnlockSurface(ld->surf);
 	SDL_FreeSurface(ld->surf);
 	free(ld);
 
-	texture_post_load(texture);
+	texture = texture_post_load(texture);
+	r_texture_set_debug_label(texture, basename);
+	free(basename);
+
 	return texture;
 }
 
@@ -393,7 +395,6 @@ Texture* prefix_get_tex(const char *name, const char *prefix) {
 
 static void free_texture(Texture *tex) {
 	r_texture_destroy(tex);
-	free(tex);
 }
 
 static struct draw_texture_state {
@@ -408,16 +409,19 @@ void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex) {
 
 	draw_texture_state.drawing = true;
 
-	r_texture_ptr(0, tex);
+	r_uniform_sampler("tex", tex);
 	r_mat_push();
+
+	uint tw, th;
+	r_texture_get_size(tex, 0, &tw, &th);
 
 	float x = dest.x;
 	float y = dest.y;
 	float w = dest.w;
 	float h = dest.h;
 
-	float s = frag.w/tex->w;
-	float t = frag.h/tex->h;
+	float s = frag.w/tw;
+	float t = frag.h/th;
 
 	if(s != 1 || t != 1 || frag.x || frag.y) {
 		draw_texture_state.texture_matrix_tainted = true;
@@ -425,7 +429,7 @@ void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex) {
 		r_mat_mode(MM_TEXTURE);
 		r_mat_identity();
 
-		r_mat_scale(1.0/tex->w, 1.0/tex->h, 1);
+		r_mat_scale(1.0/tw, 1.0/th, 1);
 
 		if(frag.x || frag.y) {
 			r_mat_translate(frag.x, frag.y, 0);
@@ -464,7 +468,9 @@ void end_draw_texture(void) {
 }
 
 void draw_texture_p(float x, float y, Texture *tex) {
-	begin_draw_texture((FloatRect){ x, y, tex->w, tex->h }, (FloatRect){ 0, 0, tex->w, tex->h }, tex);
+	uint tw, th;
+	r_texture_get_size(tex, 0, &tw, &th);
+	begin_draw_texture((FloatRect){ x, y, tw, th }, (FloatRect){ 0, 0, tw, th }, tex);
 	r_draw_quad();
 	end_draw_texture();
 }
@@ -474,7 +480,9 @@ void draw_texture(float x, float y, const char *name) {
 }
 
 void draw_texture_with_size_p(float x, float y, float w, float h, Texture *tex) {
-	begin_draw_texture((FloatRect){ x, y, w, h }, (FloatRect){ 0, 0, tex->w, tex->h }, tex);
+	uint tw, th;
+	r_texture_get_size(tex, 0, &tw, &th);
+	begin_draw_texture((FloatRect){ x, y, w, h }, (FloatRect){ 0, 0, tw, th }, tex);
 	r_draw_quad();
 	end_draw_texture();
 }
@@ -488,7 +496,7 @@ void fill_viewport(float xoff, float yoff, float ratio, const char *name) {
 }
 
 void fill_viewport_p(float xoff, float yoff, float ratio, float aspect, float angle, Texture *tex) {
-	r_texture_ptr(0, tex);
+	r_uniform_sampler("tex", tex);
 
 	float rw, rh;
 
@@ -541,7 +549,9 @@ void fill_screen(const char *name) {
 }
 
 void fill_screen_p(Texture *tex) {
-	begin_draw_texture((FloatRect){ SCREEN_W*0.5, SCREEN_H*0.5, SCREEN_W, SCREEN_H }, (FloatRect){ 0, 0, tex->w, tex->h }, tex);
+	uint tw, th;
+	r_texture_get_size(tex, 0, &tw, &th);
+	begin_draw_texture((FloatRect){ SCREEN_W*0.5, SCREEN_H*0.5, SCREEN_W, SCREEN_H }, (FloatRect){ 0, 0, tw, th }, tex);
 	r_draw_quad();
 	end_draw_texture();
 }
@@ -563,7 +573,7 @@ void loop_tex_line_p(complex a, complex b, float w, float t, Texture *texture) {
 	r_mat_translate(t, 0, 0);
 	r_mat_mode(MM_MODELVIEW);
 
-	r_texture_ptr(0, texture);
+	r_uniform_sampler("tex", texture);
 	r_draw_quad();
 
 	r_mat_mode(MM_TEXTURE);

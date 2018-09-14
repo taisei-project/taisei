@@ -7,8 +7,10 @@ resource_src = files(
     'postprocess.c',
     'resource.c',
     'sfx.c',
+    'shader_object.c',
+    'shader_program.c',
     'sprite.c',
-    'texture.c'
+    'texture.c',
 )
 
 if taisei_deps.contains(dep_sdl2_mixer)

@@ -11,17 +11,8 @@
 
 #include "resource.h"
 
-typedef enum ShaderObjectType {
-	SHOBJ_VERT,
-	SHOBJ_FRAG,
-	SHOBJ_NUM_TYPES,
-} ShaderObjectType;
+typedef struct ShaderObject ShaderObject;
 
-typedef struct ShaderObjectImpl ShaderObjectImpl;
-
-typedef struct ShaderObject {
-	ShaderObjectType type;
-	ShaderObjectImpl *impl;
-} ShaderObject;
+extern ResourceHandler shader_object_res_handler;
 
 #define SHOBJ_PATH_PREFIX "res/shader/"
