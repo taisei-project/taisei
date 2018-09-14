@@ -412,12 +412,6 @@ static bool events_handler_key_down(SDL_Event *event, void *arg) {
 		}
 	}
 
-	if (!repeat) {
-		if(scan == config_get_int(CONFIG_KEY_TOGGLE_AUDIO)) {
-			config_set_int(CONFIG_MUTE_AUDIO, !config_get_int(CONFIG_MUTE_AUDIO));
-		}
-	}
-
 	return false;
 }
 
@@ -452,6 +446,11 @@ static bool events_handler_hotkeys(SDL_Event *event, void *arg) {
 
 	if((scan == SDL_SCANCODE_RETURN && (mod & KMOD_ALT)) || scan == config_get_int(CONFIG_KEY_FULLSCREEN)) {
 		config_set_int(CONFIG_FULLSCREEN, !config_get_int(CONFIG_FULLSCREEN));
+		return true;
+	}
+
+	if(scan == config_get_int(CONFIG_KEY_TOGGLE_AUDIO)) {
+		config_set_int(CONFIG_MUTE_AUDIO, !config_get_int(CONFIG_MUTE_AUDIO));
 		return true;
 	}
 
