@@ -36,3 +36,5 @@ typedef struct GLSLSourceOptions {
 } GLSLSourceOptions;
 
 bool glsl_load_source(const char *path, ShaderSource *out, const GLSLSourceOptions *options) attr_nonnull(1, 2, 3);
+char* glsl_parse_version(const char *str, GLSLVersion *out_version);
+int glsl_format_version(char *buf, size_t bufsize, GLSLVersion version);

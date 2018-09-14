@@ -13,6 +13,12 @@
 
 #include "assert.h"
 
+// NOTE: The ability to query supported GLSL versions was added in GL 4.3,
+// but it's not exposed by any extension. This is pretty silly.
+#ifndef GL_NUM_SHADING_LANGUAGE_VERSIONS
+	#define GL_NUM_SHADING_LANGUAGE_VERSIONS  0x82E9
+#endif
+
 #define TSGL_EXT_VENDORS \
 	TSGL_EXT_VENDOR(NATIVE) \
 	TSGL_EXT_VENDOR(KHR) \

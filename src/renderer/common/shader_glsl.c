@@ -52,19 +52,10 @@ static void glsl_write_lineno(GLSLFileParseState *fstate) {
 	fstate->need_lineno_marker = false;
 }
 
-static const char* profile_suffix(GLSLProfile prof) {
-	switch(prof) {
-		case GLSL_PROFILE_CORE:          return " core";
-		case GLSL_PROFILE_COMPATIBILITY: return " compatibility";
-		case GLSL_PROFILE_ES:            return " es";
-		case GLSL_PROFILE_NONE:          return "";
-		default: UNREACHABLE;
-	}
-}
-
 static void glsl_write_version(GLSLFileParseState *fstate, GLSLVersion version) {
-	const char *profile = profile_suffix(fstate->global->src->lang.glsl.version.profile);
-	SDL_RWprintf(fstate->global->dest, "#version %i%s\n", fstate->global->src->lang.glsl.version.version, profile);
+	char buf[32];
+	glsl_format_version(buf, sizeof(buf), fstate->global->src->lang.glsl.version);
+	SDL_RWprintf(fstate->global->dest, "#version %s\n", buf);
 	fstate->need_lineno_marker = true;
 }
 
@@ -84,7 +75,7 @@ static void glsl_write_header(GLSLFileParseState *fstate) {
 	fstate->need_lineno_marker = true;
 }
 
-static char* glsl_parse_include(GLSLFileParseState *fstate, char *p) {
+static char* glsl_parse_include_directive(GLSLFileParseState *fstate, char *p) {
 	char *filename;
 	p += sizeof(INCLUDE_DIRECTIVE) - 1;
 	skip_space(&p);
@@ -113,40 +104,13 @@ static char* glsl_parse_include(GLSLFileParseState *fstate, char *p) {
 	return filename;
 }
 
-static GLSLVersion glsl_parse_version(GLSLFileParseState *fstate, char *p) {
-	GLSLVersion version = { 0, GLSL_PROFILE_NONE };
-	char *end;
+static GLSLVersion glsl_parse_version_directive(GLSLFileParseState *fstate, char *p) {
+	GLSLVersion version;
 	p += sizeof(INCLUDE_DIRECTIVE) - 1;
-	skip_space(&p);
 
-	version.version = strtol(p, &end, 10);
-
-	if(p == end) {
-		log_warn("%s:%d: malformed %s directive: version number expected.", fstate->path, fstate->lineno, VERSION_DIRECTIVE);
-		return version;
-	}
-
-	if(version.version < 100) {
-		log_warn("%s:%d: malformed %s directive: bad version number %i.", fstate->path, fstate->lineno, VERSION_DIRECTIVE, version.version);
-		version.version = 0;
-		return version;
-	}
-
-	p = end;
-	skip_space(&p);
-
-	if(*p == 0) {
-		return version;
-	}
-
-	if(!strncmp(p, "core", 4)) {
-		version.profile = GLSL_PROFILE_CORE;
-	} else if(!strncmp(p, "compatibility", 13)) {
-		version.profile = GLSL_PROFILE_COMPATIBILITY;
-	} else if(!strncmp(p, "es", 2)) {
-		version.profile = GLSL_PROFILE_ES;
-	} else {
-		log_warn("%s:%d: unknown profile in %s directive.", fstate->path, fstate->lineno, VERSION_DIRECTIVE);
+	if(glsl_parse_version(p, &version) == p) {
+		log_warn("%s:%d: malformed %s directive.", fstate->path, fstate->lineno, VERSION_DIRECTIVE);
+		return (GLSLVersion) { 0, GLSL_PROFILE_NONE };
 	}
 
 	return version;
@@ -210,7 +174,7 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 				return false;
 			}
 
-			char *filename = glsl_parse_include(fstate, p);
+			char *filename = glsl_parse_include_directive(fstate, p);
 
 			if(filename == NULL) {
 				SDL_RWclose(stream);
@@ -244,7 +208,7 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 				return false;
 			}
 
-			GLSLVersion shader_v = glsl_parse_version(fstate, p);
+			GLSLVersion shader_v = glsl_parse_version_directive(fstate, p);
 
 			if(shader_v.version == 0) {
 				SDL_RWclose(stream);
@@ -256,22 +220,24 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 
 			if(opt_v.version == 0 || version_matches) {
 				fstate->global->src->lang.glsl.version = shader_v;
-			} else if(fstate->global->options->force_version) {
-				log_warn(
-					"%s:%d: version %i%s forced (source uses %i%s)",
-					fstate->path, fstate->lineno,
-					opt_v.version, profile_suffix(opt_v.profile),
-					shader_v.version, profile_suffix(shader_v.profile)
-				);
-				fstate->global->src->lang.glsl.version = opt_v;
 			} else {
-				log_warn(
-					"%s:%d: source overrides version to %i%s (default is %i%s)",
-					fstate->path, fstate->lineno,
-					shader_v.version, profile_suffix(shader_v.profile),
-					opt_v.version, profile_suffix(opt_v.profile)
-				);
-				fstate->global->src->lang.glsl.version = shader_v;
+				char buf_opt[32], buf_shader[32];
+				glsl_format_version(buf_opt, sizeof(buf_opt), opt_v);
+				glsl_format_version(buf_shader, sizeof(buf_shader), shader_v);
+
+				if(fstate->global->options->force_version) {
+					log_warn(
+						"%s:%d: version %s forced (source uses %s)",
+						fstate->path, fstate->lineno, buf_opt, buf_shader
+					);
+					fstate->global->src->lang.glsl.version = opt_v;
+				} else {
+					log_warn(
+						"%s:%d: source overrides version to %s (default is %s)",
+						fstate->path, fstate->lineno, buf_shader, buf_opt
+					);
+					fstate->global->src->lang.glsl.version = shader_v;
+				}
 			}
 
 			fstate->global->version_defined = true;
@@ -326,4 +292,68 @@ bool glsl_load_source(const char *path, ShaderSource *out, const GLSLSourceOptio
 
 	SDL_RWclose(out_buf);
 	return result;
+}
+
+static inline const char* profile_suffix(GLSLVersion version) {
+	if(version.version == 100) {
+		return "";
+	}
+
+	switch(version.profile) {
+		case GLSL_PROFILE_CORE:          return " core";
+		case GLSL_PROFILE_COMPATIBILITY: return " compatibility";
+		case GLSL_PROFILE_ES:            return " es";
+		case GLSL_PROFILE_NONE:          return "";
+		default: UNREACHABLE;
+	}
+}
+
+int glsl_format_version(char *buf, size_t bufsize, GLSLVersion version) {
+	return snprintf(buf, bufsize, "%i%s", version.version, profile_suffix(version));
+}
+
+char* glsl_parse_version(const char *str, GLSLVersion *out_version) {
+	char *end, *p = (char*)str, *orig = (char*)str;
+
+	skip_space(&p);
+	out_version->version = strtol(p, &end, 10);
+	out_version->profile = GLSL_PROFILE_NONE;
+
+	if(p == end) {
+		log_warn("Malformed version '%s': version number expected.", str);
+		return orig;
+	}
+
+	if(out_version->version < 100) {
+		log_warn("Malformed version '%s': bad version number.", str);
+		return orig;
+	}
+
+	p = end;
+	skip_space(&p);
+
+	if(out_version->version == 100) {
+		out_version->profile = GLSL_PROFILE_ES;
+	}
+
+	if(*p == 0) {
+		return p;
+	}
+
+	if(out_version->version != 100) {
+		if(!strncmp(p, "core", 4)) {
+			out_version->profile = GLSL_PROFILE_CORE;
+			p += 4;
+		} else if(!strncmp(p, "compatibility", 13)) {
+			out_version->profile = GLSL_PROFILE_COMPATIBILITY;
+			p += 13;
+		} else if(!strncmp(p, "es", 2)) {
+			out_version->profile = GLSL_PROFILE_ES;
+			p += 2;
+		} else {
+			log_warn("Unknown profile in version '%s' ignored", str);
+		}
+	}
+
+	return p;
 }

@@ -12,9 +12,25 @@
 #include "core.h"
 #include "shader_object.h"
 #include "../glcommon/debug.h"
+#include "../glcommon/shaders.h"
 
 bool gl33_shader_language_supported(const ShaderLangInfo *lang, ShaderLangInfo *out_alternative) {
-	// TODO: actually ask the implementation which versions it supports
+	if(glcommon_shader_lang_table) {
+		for(ShaderLangInfo *l = glcommon_shader_lang_table; l->lang != SHLANG_INVALID; ++l) {
+			if(!memcmp(l, lang, sizeof(*l))) {
+				return true;
+			}
+		}
+
+		if(out_alternative) {
+			*out_alternative = *glcommon_shader_lang_table;
+		}
+
+		return false;
+	}
+
+	// No table. Should never actually happen, but let's just hope it works, right?
+
 	bool supported = lang->lang == SHLANG_GLSL;
 
 	if(!supported && out_alternative) {

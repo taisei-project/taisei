@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 typedef enum ShaderStage {
+	SHADER_STAGE_INVALID,
 	SHADER_STAGE_VERTEX,
 	SHADER_STAGE_FRAGMENT,
 } ShaderStage;

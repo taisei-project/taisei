@@ -8,8 +8,11 @@
 
 #include "taisei.h"
 
-#include "global.h"
+// #include "global.h"
+#include "util.h"
+#include "rwops/rwops_autobuf.h"
 #include "opengl.h"
+#include "shaders.h"
 
 struct glext_s glext;
 
@@ -403,6 +406,8 @@ void glcommon_check_extensions(void) {
 	if(!glClearDepthf) {
 		glClearDepthf = shim_glClearDepthf;
 	}
+
+	glcommon_build_shader_lang_table();
 }
 
 void glcommon_load_library(void) {
@@ -419,6 +424,7 @@ void glcommon_load_library(void) {
 
 void glcommon_unload_library(void) {
 	SDL_GL_UnloadLibrary();
+	glcommon_free_shader_lang_table();
 }
 
 void glcommon_load_functions(void) {
