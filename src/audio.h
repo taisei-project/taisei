@@ -79,3 +79,5 @@ void fade_bgm(double fadetime);
 void resume_bgm(void);
 void save_bgm(void); // XXX: this is broken
 void restore_bgm(void); // XXX: this is broken
+
+void mute_audio_handler(void);

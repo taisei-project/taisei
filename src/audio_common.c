@@ -305,6 +305,8 @@ static bool audio_config_updated(SDL_Event *evt, void *arg) {
 			break;
 	}
 
+	mute_audio_handler();
+
 	return false;
 }
 
@@ -320,4 +322,14 @@ void audio_shutdown(void) {
 	events_unregister_handler(audio_config_updated);
 	audio_backend_shutdown();
 	ht_destroy(&sfx_volumes);
+}
+
+void mute_audio_handler(void) {
+	if (config_get_int(CONFIG_MUTE_AUDIO) == 1) {
+		audio_backend_set_sfx_volume(0.0);
+		audio_backend_set_bgm_volume(0.0);
+	} else {
+		audio_backend_set_sfx_volume(config_get_float(CONFIG_SFX_VOLUME));
+		audio_backend_set_bgm_volume(config_get_float(CONFIG_BGM_VOLUME));
+	}
 }
