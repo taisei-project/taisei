@@ -274,16 +274,14 @@ bool spirv_transpile(const ShaderSource *in, ShaderSource *out, const SPIRVTrans
 		.debug_info = true,
 	});
 
-	if(!result) {
-		return false;
-	}
-
-	result = spirv_decompile(&spirv, out, &(SPIRVDecompileOptions) {
-		.lang = options->lang,
-	});
-
 	if(result) {
-		log_debug("%s: translated code:\n%s", options->filename, out->content);
+		result = spirv_decompile(&spirv, out, &(SPIRVDecompileOptions) {
+			.lang = options->lang,
+		});
+
+		if(result) {
+			log_debug("%s: translated code:\n%s", options->filename, out->content);
+		}
 	}
 
 	free(spirv.content);
