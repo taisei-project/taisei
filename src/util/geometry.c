@@ -25,11 +25,29 @@ bool point_in_ellipse(complex p, Ellipse e) {
 	) <= 1;
 }
 
+// If segment_ellipse_nonintersection_heuristic returns true, then the
+// segment and ellipse do not intersect. However, **the converse is not true**.
+// Used for quick returning false in real intersection functions.
+static bool segment_ellipse_nonintersection_heuristic(LineSegment seg, Ellipse e) {
+	Rect seg_bbox = {
+		.top_left = fmin(creal(seg.a), creal(seg.b)) + I * fmin(cimag(seg.a), cimag(seg.b)),
+		.bottom_right = fmax(creal(seg.a), creal(seg.b)) + I * fmax(cimag(seg.a), cimag(seg.b))
+	};
+
+	float largest_radius = fmax(creal(e.axes), cimag(e.axes))/2;
+	Rect e_bbox = {
+		.top_left = e.origin - largest_radius - I*largest_radius,
+		.bottom_right = e.origin + largest_radius + I*largest_radius
+	};
+
+	return !rect_rect_intersect(seg_bbox, e_bbox, true);
+}
+
 // Is the point of shortest distance between the line through a and b
 // and a point c between a and b and closer than r?
 // if yes, return f so that a+f*(b-a) is that point.
 // otherwise return -1.
-double lineseg_circle_intersect(LineSegment seg, Circle c) {
+static double lineseg_circle_intersect_fallback(LineSegment seg, Circle c) {
 	complex m, v;
 	double projection, lv, lm, distance;
 
@@ -64,9 +82,16 @@ double lineseg_circle_intersect(LineSegment seg, Circle c) {
 }
 
 bool lineseg_ellipse_intersect(LineSegment seg, Ellipse e) {
+	if (segment_ellipse_nonintersection_heuristic(seg, e)) {
+		return 0;
+	}
+
 	// Transform the coordinate system so that the ellipse becomes a circle
 	// with origin at (0, 0) and diameter equal to its X axis. Then we can
 	// calculate the segment-circle intersection.
+
+	seg.a -= e.origin;
+	seg.b -= e.origin;
 
 	double ratio = creal(e.axes) / cimag(e.axes);
 	complex rotation = cexp(I * -e.angle);
@@ -76,7 +101,15 @@ bool lineseg_ellipse_intersect(LineSegment seg, Ellipse e) {
 	seg.b = creal(seg.b) + I * ratio * cimag(seg.b);
 
 	Circle c = { .radius = creal(e.axes) / 2 };
-	return lineseg_circle_intersect(seg, c) >= 0;
+	return lineseg_circle_intersect_fallback(seg, c) >= 0;
+}
+
+double lineseg_circle_intersect(LineSegment seg, Circle c) {
+	Ellipse e = { .origin = c.origin, .axes = 2*c.radius + I*2*c.radius };
+	if (segment_ellipse_nonintersection_heuristic(seg, e)) {
+		return 0;
+	}
+	return lineseg_circle_intersect_fallback(seg, c) >= 0;
 }
 
 bool rect_in_rect(Rect inner, Rect outer) {
