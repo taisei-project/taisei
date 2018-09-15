@@ -310,6 +310,7 @@ void audio_init(void) {
 	events_register_handler(&(EventHandler) {
 		audio_config_updated, NULL, EPRIO_SYSTEM, MAKE_TAISEI_EVENT(TE_CONFIG_UPDATED)
 	});
+	audio_config_updated(NULL, NULL);
 }
 
 void audio_shutdown(void) {
