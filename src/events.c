@@ -449,5 +449,10 @@ static bool events_handler_hotkeys(SDL_Event *event, void *arg) {
 		return true;
 	}
 
+	if(scan == config_get_int(CONFIG_KEY_TOGGLE_AUDIO)) {
+		config_set_int(CONFIG_MUTE_AUDIO, !config_get_int(CONFIG_MUTE_AUDIO));
+		return true;
+	}
+
 	return false;
 }

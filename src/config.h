@@ -56,6 +56,7 @@
 	CONFIGDEF_KEYBINDING(KEY_STOP,              "key_stop",             SDL_SCANCODE_F1) \
 	CONFIGDEF_KEYBINDING(KEY_RESTART,           "key_restart",          SDL_SCANCODE_F2) \
 	CONFIGDEF_KEYBINDING(KEY_HITAREAS,          "key_hitareas",         SDL_SCANCODE_H) \
+	CONFIGDEF_KEYBINDING(KEY_TOGGLE_AUDIO,      "key_toggle_audio",     SDL_SCANCODE_M) \
 
 
 #define GPKEYDEFS \
@@ -85,6 +86,7 @@
 	CONFIGDEF_INT       (MIXER_CHUNKSIZE,           "mixer_chunksize",                      1024) \
 	CONFIGDEF_FLOAT     (SFX_VOLUME,                "sfx_volume",                           1.0) \
 	CONFIGDEF_FLOAT     (BGM_VOLUME,                "bgm_volume",                           1.0) \
+	CONFIGDEF_INT       (MUTE_AUDIO,                "mute_audio",                           0) \
 	CONFIGDEF_INT       (NO_STAGEBG,                "disable_stagebg",                      0) \
 	CONFIGDEF_INT       (SAVE_RPY,                  "save_rpy",                             2) \
 	CONFIGDEF_INT       (SPELLSTAGE_AUTORESTART,    "spellpractice_restart_on_fail",        0) \

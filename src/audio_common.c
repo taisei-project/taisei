@@ -293,16 +293,12 @@ void start_bgm(const char *name) {
 }
 
 static bool audio_config_updated(SDL_Event *evt, void *arg) {
-	ConfigValue *val = evt->user.data1;
-
-	switch(evt->user.code) {
-		case CONFIG_SFX_VOLUME:
-			audio_backend_set_sfx_volume(val->f);
-			break;
-
-		case CONFIG_BGM_VOLUME:
-			audio_backend_set_bgm_volume(val->f);
-			break;
+	if (config_get_int(CONFIG_MUTE_AUDIO) == 1) {
+		audio_backend_set_sfx_volume(0.0);
+		audio_backend_set_bgm_volume(0.0);
+	} else {
+		audio_backend_set_sfx_volume(config_get_float(CONFIG_SFX_VOLUME));
+		audio_backend_set_bgm_volume(config_get_float(CONFIG_BGM_VOLUME));
 	}
 
 	return false;
@@ -314,6 +310,7 @@ void audio_init(void) {
 	events_register_handler(&(EventHandler) {
 		audio_config_updated, NULL, EPRIO_SYSTEM, MAKE_TAISEI_EVENT(TE_CONFIG_UPDATED)
 	});
+	audio_config_updated(NULL, NULL);
 }
 
 void audio_shutdown(void) {

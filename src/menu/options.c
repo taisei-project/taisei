@@ -631,6 +631,12 @@ void options_sub_controls(MenuData *parent, void *arg) {
 
 	add_menu_separator(m);
 
+	add_menu_entry(m, "Toggle audio", do_nothing,
+		bind_keybinding(CONFIG_KEY_TOGGLE_AUDIO)
+	);
+
+	add_menu_separator(m);
+
 	add_menu_entry(m, "Stop the game immediately", do_nothing,
 		bind_keybinding(CONFIG_KEY_STOP)
 	);
@@ -716,6 +722,10 @@ void create_options_menu(MenuData *m) {
 	add_menu_entry(m, "BGM Volume", do_nothing,
 		b = bind_scale(CONFIG_BGM_VOLUME, 0, 1, 0.1)
 	);	bind_setdependence(b, bind_audio_dependence);
+
+	add_menu_entry(m, "Mute audio", do_nothing,
+		b = bind_option(CONFIG_MUTE_AUDIO,  bind_common_onoff_get, bind_common_onoff_set)
+	);	bind_onoff(b);
 
 	add_menu_separator(m);
 	add_menu_entry(m, "Video options…", options_sub_video, NULL);
