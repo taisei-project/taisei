@@ -93,6 +93,13 @@ option(
 )
 
 option(
+    'shader_transpiler',
+    type : 'boolean',
+    value : false,
+    description : 'Enable shader trans-compilation. Requires shaderc'
+)
+
+option(
     'validate_glsl',
     type : 'combo',
     choices : ['auto', 'true', 'false'],
