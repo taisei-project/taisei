@@ -421,12 +421,12 @@ void r_texture_set_wrap(Texture *tex, TextureWrapMode ws, TextureWrapMode wt) {
 	B.texture_set_wrap(tex, ws, wt);
 }
 
-void r_texture_fill(Texture *tex, uint mipmap, void *image_data) {
+void r_texture_fill(Texture *tex, uint mipmap, const Pixmap *image_data) {
 	B.texture_fill(tex, mipmap, image_data);
 }
 
-void r_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, uint w, uint h, void *image_data) {
-	B.texture_fill_region(tex, mipmap, x, y, w, h, image_data);
+void r_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const Pixmap *image_data) {
+	B.texture_fill_region(tex, mipmap, x, y, image_data);
 }
 
 void r_texture_invalidate(Texture *tex) {
@@ -596,8 +596,8 @@ void r_swap(SDL_Window *window) {
 	B.swap(window);
 }
 
-uint8_t* r_screenshot(uint *out_width, uint *out_height) {
-	return B.screenshot(out_width, out_height);
+bool r_screenshot(Pixmap *out) {
+	return B.screenshot(out);
 }
 
 // uniforms garbage; hope your compiler is smart enough to inline most of this

@@ -371,30 +371,20 @@ static bool add_glyph_to_spritesheet(Font *font, Glyph *glyph, FT_Bitmap bitmap,
 	sprite_pos.bottom_right += ofs;
 	sprite_pos.top_left += ofs;
 
-	if(r_supports(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN)) {
-		char buffer[bitmap.width * bitmap.rows];
-		flip_bitmap_copy(buffer, (char*)bitmap.buffer, bitmap.rows, bitmap.width);
-		r_texture_fill_region(
-			ss->tex,
-			0,
-			rect_x(sprite_pos),
-			rect_y(sprite_pos),
-			bitmap.width,
-			bitmap.rows,
-			buffer
-		);
-	} else {
-		r_texture_fill_region(
-			ss->tex,
-			0,
-			rect_x(sprite_pos),
-			rect_y(sprite_pos),
-			bitmap.width,
-			bitmap.rows,
-			bitmap.buffer
-		);
-	}
+	Pixmap glyph_px;
+	glyph_px.format = PIXMAP_FORMAT_R8;
+	glyph_px.width = bitmap.width;
+	glyph_px.height = bitmap.rows;
+	glyph_px.origin = PIXMAP_ORIGIN_TOPLEFT;
+	glyph_px.data.untyped = bitmap.buffer;
 
+	r_texture_fill_region(
+		ss->tex,
+		0,
+		rect_x(sprite_pos),
+		rect_y(sprite_pos),
+		&glyph_px
+	);
 
 	glyph->sprite.tex = ss->tex;
 	glyph->sprite.w = glyph->metrics.width; // bitmap.width / font->scale;

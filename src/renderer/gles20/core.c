@@ -49,12 +49,41 @@ static void gles30_init(void) {
 }
 
 GLTextureTypeInfo* gles20_texture_type_info(TextureType type) {
+	static GLTextureFormatTuple color_formats[] = {
+		{ GL_RED,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8     },
+		// { GL_RED,  GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16    },
+		// { GL_RED,  GL_UNSIGNED_INT,   PIXMAP_FORMAT_R32    },
+
+		{ GL_RG,   GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RG8    },
+		// { GL_RG,   GL_UNSIGNED_SHORT, PIXMAP_FORMAT_RG16   },
+		// { GL_RG,   GL_UNSIGNED_INT,   PIXMAP_FORMAT_RG32   },
+
+		{ GL_RGB,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGB8   },
+		// { GL_RGB,  GL_UNSIGNED_SHORT, PIXMAP_FORMAT_RGB16  },
+		// { GL_RGB,  GL_UNSIGNED_INT,   PIXMAP_FORMAT_RGB32  },
+
+		{ GL_RGBA, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGBA8  },
+		// { GL_RGBA, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_RGBA16 },
+		// { GL_RGBA, GL_UNSIGNED_INT,   PIXMAP_FORMAT_RGBA32 },
+
+		{ 0 }
+	};
+
+	// XXX: I'm not sure about this. Perhaps it's better to not support depth texture uploading at all?
+	static GLTextureFormatTuple depth_formats[] = {
+		// { GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8 },
+		{ GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 },
+		// { GL_DEPTH_COMPONENT, GL_UNSIGNED_INT,   PIXMAP_FORMAT_R32 },
+
+		{ 0 }
+	};
+
 	static GLTextureTypeInfo map[] = {
-		[TEX_TYPE_R]       = { GL_RED,             GL_RED,             GL_UNSIGNED_BYTE,  1 },
-		[TEX_TYPE_RG]      = { GL_RG,              GL_RG,              GL_UNSIGNED_BYTE,  2 },
-		[TEX_TYPE_RGB]     = { GL_RGBA,            GL_RGBA,            GL_UNSIGNED_BYTE,  4 },
-		[TEX_TYPE_RGBA]    = { GL_RGBA,            GL_RGBA,            GL_UNSIGNED_BYTE,  4 },
-		[TEX_TYPE_DEPTH]   = { GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, 2 },
+		[TEX_TYPE_R]         = { GL_R8,    1, color_formats, { GL_RED,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8    } },
+		[TEX_TYPE_RG]        = { GL_RG8,   2, color_formats, { GL_RG,   GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RG8   } },
+		[TEX_TYPE_RGB]       = { GL_RGB8,  3, color_formats, { GL_RGB,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGB8  } },
+		[TEX_TYPE_RGBA]      = { GL_RGBA8, 4, color_formats, { GL_RGBA, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGBA8 } },
+		[TEX_TYPE_DEPTH]     = { GL_DEPTH_COMPONENT16, 2, depth_formats, { GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 } },
 	};
 
 	assert((uint)type < sizeof(map)/sizeof(*map));

@@ -65,8 +65,8 @@ typedef struct RendererFuncs {
 	void (*texture_set_wrap)(Texture *tex, TextureWrapMode ws, TextureWrapMode wt);
 	void (*texture_destroy)(Texture *tex);
 	void (*texture_invalidate)(Texture *tex);
-	void (*texture_fill)(Texture *tex, uint mipmap, void *image_data);
-	void (*texture_fill_region)(Texture *tex, uint mipmap, uint x, uint y, uint w, uint h, void *image_data);
+	void (*texture_fill)(Texture *tex, uint mipmap, const Pixmap *image_data);
+	void (*texture_fill_region)(Texture *tex, uint mipmap, uint x, uint y, const Pixmap *image_data);
 	void (*texture_clear)(Texture *tex, const Color *clr);
 
 	Framebuffer* (*framebuffer_create)(void);
@@ -110,7 +110,7 @@ typedef struct RendererFuncs {
 
 	void (*swap)(SDL_Window *window);
 
-	uint8_t* (*screenshot)(uint *out_width, uint *out_height);
+	bool (*screenshot)(Pixmap *dst);
 } RendererFuncs;
 
 typedef struct RendererBackend {

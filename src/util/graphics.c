@@ -11,6 +11,7 @@
 #include "graphics.h"
 #include "global.h"
 #include "video.h"
+#include "pixmap.h"
 
 void set_ortho(float w, float h) {
 	r_mat_mode(MM_PROJECTION);
@@ -182,20 +183,4 @@ void init_blur_shader(ShaderProgram *prog, size_t kernel_size, float sigma) {
 	float kernel[kernel_size];
 	gaussian_kernel_1d(kernel_size, sigma, kernel);
 	r_uniform_float_array(r_shader_uniform(prog, "blur_kernel[0]"), 0, kernel_size, kernel);
-}
-
-void flip_bitmap(char *data, size_t rows, size_t row_length) {
-	char swap_buffer[row_length];
-
-	for(size_t row = 0; row < rows / 2; ++row) {
-		memcpy(swap_buffer, data + row * row_length, row_length);
-		memcpy(data + row * row_length, data + (rows - row - 1) * row_length, row_length);
-		memcpy(data + (rows - row - 1) * row_length, swap_buffer, row_length);
-	}
-}
-
-void flip_bitmap_copy(char *dst, const char *src, size_t rows, size_t row_length) {
-	for(size_t row = 0, irow = rows - 1; row < rows; ++row, --irow) {
-		memcpy(dst + irow * row_length, src + row * row_length, row_length);
-	}
 }

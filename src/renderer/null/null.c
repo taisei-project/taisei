@@ -87,8 +87,8 @@ void null_texture_set_debug_label(Texture *tex, const char *label) { }
 const char* null_texture_get_debug_label(Texture *tex) { return "null texture"; }
 void null_texture_set_filter(Texture *tex, TextureFilterMode fmin, TextureFilterMode fmag) { }
 void null_texture_set_wrap(Texture *tex, TextureWrapMode fmin, TextureWrapMode fmag) { }
-void null_texture_fill(Texture *tex, uint mipmap, void *image_data) { }
-void null_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, uint w, uint h, void *image_data) { }
+void null_texture_fill(Texture *tex, uint mipmap, const Pixmap *image_data) { }
+void null_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const Pixmap *image_data) { }
 void null_texture_invalidate(Texture *tex) { }
 void null_texture_destroy(Texture *tex) { }
 void null_texture_clear(Texture *tex, const Color *color) { }
@@ -138,7 +138,7 @@ VsyncMode null_vsync_current(void) { return VSYNC_NONE; }
 
 void null_swap(SDL_Window *window) { }
 
-uint8_t* null_screenshot(uint *out_width, uint *out_height) { return NULL; }
+bool null_screenshot(Pixmap *dest) { return false; }
 
 RendererBackend _r_backend_null = {
 	.name = "null",

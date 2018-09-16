@@ -40,12 +40,41 @@ static GLuint r_wrap_to_gl_wrap(TextureWrapMode mode) {
 }
 
 GLTextureTypeInfo* gl33_texture_type_info(TextureType type) {
+	static GLTextureFormatTuple color_formats[] = {
+		{ GL_RED,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8     },
+		{ GL_RED,  GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16    },
+		{ GL_RED,  GL_UNSIGNED_INT,   PIXMAP_FORMAT_R32    },
+
+		{ GL_RG,   GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RG8    },
+		{ GL_RG,   GL_UNSIGNED_SHORT, PIXMAP_FORMAT_RG16   },
+		{ GL_RG,   GL_UNSIGNED_INT,   PIXMAP_FORMAT_RG32   },
+
+		{ GL_RGB,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGB8   },
+		{ GL_RGB,  GL_UNSIGNED_SHORT, PIXMAP_FORMAT_RGB16  },
+		{ GL_RGB,  GL_UNSIGNED_INT,   PIXMAP_FORMAT_RGB32  },
+
+		{ GL_RGBA, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGBA8  },
+		{ GL_RGBA, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_RGBA16 },
+		{ GL_RGBA, GL_UNSIGNED_INT,   PIXMAP_FORMAT_RGBA32 },
+
+		{ 0 }
+	};
+
+	// XXX: I'm not sure about this. Perhaps it's better to not support depth texture uploading at all?
+	static GLTextureFormatTuple depth_formats[] = {
+		{ GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8 },
+		{ GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 },
+		{ GL_DEPTH_COMPONENT, GL_UNSIGNED_INT,   PIXMAP_FORMAT_R32 },
+
+		{ 0 }
+	};
+
 	static GLTextureTypeInfo map[] = {
-		[TEX_TYPE_R]         = { GL_R8,                GL_RED,             GL_UNSIGNED_BYTE,  1 },
-		[TEX_TYPE_RG]        = { GL_RG8,               GL_RG,              GL_UNSIGNED_BYTE,  2 },
-		[TEX_TYPE_RGB]       = { GL_RGB8,              GL_RGB,             GL_UNSIGNED_BYTE,  3 },
-		[TEX_TYPE_RGBA]      = { GL_RGBA8,             GL_RGBA,            GL_UNSIGNED_BYTE,  4 },
-		[TEX_TYPE_DEPTH]     = { GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE,  1 },
+		[TEX_TYPE_R]         = { GL_R8,    1, color_formats, { GL_RED,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8    } },
+		[TEX_TYPE_RG]        = { GL_RG8,   2, color_formats, { GL_RG,   GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RG8   } },
+		[TEX_TYPE_RGB]       = { GL_RGB8,  3, color_formats, { GL_RGB,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGB8  } },
+		[TEX_TYPE_RGBA]      = { GL_RGBA8, 4, color_formats, { GL_RGBA, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGBA8 } },
+		[TEX_TYPE_DEPTH]     = { GL_DEPTH_COMPONENT16, 2, depth_formats, { GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 } },
 	};
 
 	assert((uint)type < sizeof(map)/sizeof(*map));
@@ -76,16 +105,26 @@ void gl33_texture_get_size(Texture *tex, uint mipmap, uint *width, uint *height)
 	}
 }
 
-static void gl33_texture_set(Texture *tex, uint mipmap, void *image_data) {
+static GLTextureFormatTuple* prepare_pixmap(Texture *tex, const Pixmap *px_in, Pixmap *px_out) {
+	GLTextureFormatTuple *fmt = glcommon_find_best_pixformat(tex->params.type, px_in->format);
+	pixmap_convert_alloc(px_in, px_out, fmt->px_fmt);
+	pixmap_flip_to_origin_inplace(px_out, PIXMAP_ORIGIN_BOTTOMLEFT);
+	return fmt;
+}
+
+static void gl33_texture_set(Texture *tex, uint mipmap, const Pixmap *image) {
 	assert(mipmap < tex->params.mipmaps);
+
+	Pixmap pix;
+	GLTextureFormatTuple *fmt = prepare_pixmap(tex, image, &pix);
+	void *image_data = pix.data.untyped;
 
 	gl33_bind_texture(tex, false);
 	gl33_sync_texunit(tex->binding_unit, false, true);
 	gl33_bind_pbo(tex->pbo);
 
 	if(tex->pbo) {
-		size_t s = tex->params.width * tex->params.height * GLVT.texture_type_info(tex->params.type)->pixel_size;
-		glBufferData(GL_PIXEL_UNPACK_BUFFER, s, image_data, GL_STREAM_DRAW);
+		glBufferData(GL_PIXEL_UNPACK_BUFFER, pixmap_data_size(&pix), image_data, GL_STREAM_DRAW);
 		image_data = NULL;
 	}
 
@@ -99,10 +138,12 @@ static void gl33_texture_set(Texture *tex, uint mipmap, void *image_data) {
 		width,
 		height,
 		0,
-		tex->type_info->external_fmt,
-		tex->type_info->component_type,
+		fmt->gl_fmt,
+		fmt->gl_type,
 		image_data
 	);
+
+	free(pix.data.untyped);
 
 	gl33_bind_pbo(0);
 	tex->mipmaps_outdated = true;
@@ -163,8 +204,8 @@ Texture* gl33_texture_create(const TextureParams *params) {
 			width,
 			height,
 			0,
-			tex->type_info->external_fmt,
-			tex->type_info->component_type,
+			tex->type_info->primary_external_format.gl_fmt,
+			tex->type_info->primary_external_format.gl_type,
 			NULL
 		);
 	}
@@ -214,25 +255,29 @@ void gl33_texture_invalidate(Texture *tex) {
 	}
 }
 
-void gl33_texture_fill(Texture *tex, uint mipmap, void *image_data) {
+void gl33_texture_fill(Texture *tex, uint mipmap, const Pixmap *image) {
 	assert(mipmap == 0 || tex->params.mipmap_mode != TEX_MIPMAP_AUTO);
-	gl33_texture_set(tex, mipmap, image_data);
+	gl33_texture_set(tex, mipmap, image);
 }
 
-void gl33_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, uint w, uint h, void *image_data) {
+void gl33_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const Pixmap *image) {
 	assert(mipmap == 0 || tex->params.mipmap_mode != TEX_MIPMAP_AUTO);
 
 	gl33_bind_texture(tex, false);
 	gl33_sync_texunit(tex->binding_unit, false, true);
 
+	Pixmap pix;
+	GLTextureFormatTuple *fmt = prepare_pixmap(tex, image, &pix);
+
 	glTexSubImage2D(
 		GL_TEXTURE_2D, mipmap,
-		x, y, w, h,
-		GLVT.texture_type_info(tex->params.type)->external_fmt,
-		GL_UNSIGNED_BYTE,
-		image_data
+		x, y, pix.width, pix.height,
+		fmt->gl_fmt,
+		fmt->gl_type,
+		pix.data.untyped
 	);
 
+	free(pix.data.untyped);
 	tex->mipmaps_outdated = true;
 }
 

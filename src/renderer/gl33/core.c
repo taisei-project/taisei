@@ -983,13 +983,15 @@ static DepthTestFunc gl33_depth_func_current(void) {
 	return R.depth_test.func.pending;
 }
 
-static uint8_t* gl33_screenshot(uint *out_width, uint *out_height) {
+static bool gl33_screenshot(Pixmap *out) {
 	IntRect *vp = &R.viewport.default_framebuffer;
-	uint8_t *pixels = malloc(vp->w * vp->h * 3);
-	glReadPixels(vp->x, vp->y, vp->w, vp->h, GL_RGB, GL_UNSIGNED_BYTE, pixels);
-	*out_width = vp->w;
-	*out_height = vp->h;
-	return pixels;
+	out->width = vp->w;
+	out->height = vp->h;
+	out->format = PIXMAP_FORMAT_RGB8;
+	out->origin = PIXMAP_ORIGIN_BOTTOMLEFT;
+	out->data.untyped = pixmap_alloc_buffer_for_copy(out);
+	glReadPixels(vp->x, vp->y, vp->w, vp->h, GL_RGB, GL_UNSIGNED_BYTE, out->data.untyped);
+	return true;
 }
 
 RendererBackend _r_backend_gl33 = {
