@@ -200,7 +200,7 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	Uniform *u_clr_phase = r_shader_uniform(shader, "color_phase");
 	Uniform *u_clr_freq = r_shader_uniform(shader, "color_freq");
 	Uniform *u_alpha = r_shader_uniform(shader, "alphamod");
-	Uniform *u_length = r_shader_uniform(shader, "length");
+	Uniform *u_length = r_shader_uniform(shader, "laser_length");
 	Texture *tex0 = get_tex("part/marisa_laser0");
 	Texture *tex1 = get_tex("part/marisa_laser1");
 	VertexArray *varr_saved = r_vertex_array_current();
