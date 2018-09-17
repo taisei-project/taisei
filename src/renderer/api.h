@@ -138,7 +138,6 @@ typedef enum Primitive {
 	PRIM_LINE_LOOP,
 	PRIM_LINES,
 	PRIM_TRIANGLE_STRIP,
-	PRIM_TRIANGLE_FAN,
 	PRIM_TRIANGLES,
 } Primitive;
 

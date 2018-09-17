@@ -153,7 +153,7 @@ void r_flush_sprites(void) {
 	r_cull(_r_sprite_batch.cull_mode);
 
 	if(r_supports(RFEAT_DRAW_INSTANCED_BASE_INSTANCE)) {
-		r_draw(PRIM_TRIANGLE_FAN, 0, 4, NULL, pending, _r_sprite_batch.base_instance);
+		r_draw(PRIM_TRIANGLE_STRIP, 0, 4, NULL, pending, _r_sprite_batch.base_instance);
 		_r_sprite_batch.base_instance += pending;
 
 		size_t remaining = r_vertex_buffer_get_capacity(_r_sprite_batch.vbuf) - r_vertex_buffer_get_cursor(_r_sprite_batch.vbuf);
@@ -164,7 +164,7 @@ void r_flush_sprites(void) {
 			_r_sprite_batch.base_instance = 0;
 		}
 	} else {
-		r_draw(PRIM_TRIANGLE_FAN, 0, 4, NULL, pending, 0);
+		r_draw(PRIM_TRIANGLE_STRIP, 0, 4, NULL, pending, 0);
 		r_vertex_buffer_invalidate(_r_sprite_batch.vbuf);
 	}
 

@@ -129,7 +129,6 @@ static GLenum prim_to_gl_prim[] = {
 	[PRIM_LINE_LOOP]      = GL_LINE_LOOP,
 	[PRIM_LINES]          = GL_LINES,
 	[PRIM_TRIANGLE_STRIP] = GL_TRIANGLE_STRIP,
-	[PRIM_TRIANGLE_FAN]   = GL_TRIANGLE_FAN,
 	[PRIM_TRIANGLES]      = GL_TRIANGLES,
 };
 
