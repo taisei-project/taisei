@@ -21,8 +21,6 @@ Video video;
 typedef struct ScreenshotTaskData {
 	char *dest_path;
 	Pixmap image;
-	uint width;
-	uint height;
 } ScreenshotTaskData;
 
 static void video_add_mode(int width, int height) {
@@ -243,8 +241,8 @@ static void* video_screenshot_task(void *arg) {
 	pixmap_convert_inplace_realloc(&tdata->image, PIXMAP_FORMAT_RGB8);
 	pixmap_flip_to_origin_inplace(&tdata->image, PIXMAP_ORIGIN_BOTTOMLEFT);
 
-	uint width = tdata->width;
-	uint height = tdata->height;
+	uint width = tdata->image.width;
+	uint height = tdata->image.height;
 	uint8_t *pixels = tdata->image.data.untyped;
 
 	SDL_RWops *output = vfs_open(tdata->dest_path, VFS_MODE_WRITE);

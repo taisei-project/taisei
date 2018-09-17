@@ -24,6 +24,7 @@ static void gles_init(RendererBackend *gles_backend, int major, int minor) {
 	memcpy(&original_funcs, &gles_backend->funcs, sizeof(original_funcs));
 	memcpy(&gles_backend->funcs, &_r_backend_gl33.funcs, sizeof(gles_backend->funcs));
 	gles_backend->funcs.init = original_funcs.init;
+	gles_backend->funcs.screenshot = original_funcs.screenshot;
 
 	SDL_GLcontextFlag ctxflags = 0;
 
@@ -90,10 +91,23 @@ GLTextureTypeInfo* gles20_texture_type_info(TextureType type) {
 	return map + type;
 }
 
+static bool gles20_screenshot(Pixmap *out) {
+	IntRect vp;
+	r_framebuffer_viewport_current(NULL, &vp);
+	out->width = vp.w;
+	out->height = vp.h;
+	out->format = PIXMAP_FORMAT_RGBA8;
+	out->origin = PIXMAP_ORIGIN_BOTTOMLEFT;
+	out->data.untyped = pixmap_alloc_buffer_for_copy(out);
+	glReadPixels(vp.x, vp.y, vp.w, vp.h, GL_RGBA, GL_UNSIGNED_BYTE, out->data.untyped);
+	return true;
+}
+
 RendererBackend _r_backend_gles20 = {
 	.name = "gles20",
 	.funcs = {
 		.init = gles20_init,
+		.screenshot = gles20_screenshot,
 	},
 	.custom = &(GLBackendData) {
 		.vtable = {
@@ -107,6 +121,7 @@ RendererBackend _r_backend_gles30 = {
 	.name = "gles30",
 	.funcs = {
 		.init = gles30_init,
+		.screenshot = gles20_screenshot,
 	},
 	.custom = &(GLBackendData) {
 		.vtable = {
