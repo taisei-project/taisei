@@ -78,6 +78,20 @@ ShaderObject* gl33_shader_object_compile(ShaderSource *source) {
 	);
 
 	glCompileShader(gl_handle);
+
+#ifdef DEBUG
+	if(GLAD_GL_ANGLE_translated_shader_source) {
+		GLint srclen;
+		glGetShaderiv(gl_handle, GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE, &srclen);
+
+		if(srclen > 0) {
+			char buf[srclen];
+			glGetTranslatedShaderSourceANGLE(gl_handle, sizeof(buf), NULL, buf);
+			log_debug("Final shader source (as translated by ANGLE):\n%s", buf);
+		}
+	}
+#endif
+
 	glGetShaderiv(gl_handle, GL_COMPILE_STATUS, &status);
 	print_info_log(gl_handle);
 

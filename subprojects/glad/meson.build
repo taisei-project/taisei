@@ -5,6 +5,7 @@ glad_api = ['gl=3.3', 'gles2=3.0']
 glad_extensions = [
     'GL_ANGLE_depth_texture',
     'GL_ANGLE_instanced_arrays',
+    'GL_ANGLE_translated_shader_source',
     'GL_ARB_base_instance',
     'GL_ARB_clear_texture',
     'GL_ARB_debug_output',
