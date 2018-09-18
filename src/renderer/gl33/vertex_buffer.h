@@ -18,6 +18,12 @@ typedef struct VertexBuffer {
 		struct {
 			char padding[offsetof(SDL_RWops, hidden)];
 
+			struct {
+				char *buffer;
+				size_t update_begin;
+				size_t update_end;
+			} cache;
+
 			size_t offset;
 			size_t size;
 			GLuint gl_handle;

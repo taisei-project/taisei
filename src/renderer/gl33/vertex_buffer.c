@@ -53,11 +53,9 @@ static size_t gl33_vertex_buffer_stream_write(SDL_RWops *rw, const void *data, s
 	assert(vbuf->offset + total_size <= vbuf->size);
 
 	if(total_size > 0) {
-		GLuint vbo_saved = gl33_vbo_current();
-		gl33_bind_vbo(vbuf->gl_handle);
-		gl33_sync_vbo();
-		glBufferSubData(GL_ARRAY_BUFFER, vbuf->offset, total_size, data);
-		gl33_bind_vbo(vbo_saved);
+		memcpy(vbuf->cache.buffer + vbuf->offset, data, total_size);
+		vbuf->cache.update_begin = min(vbuf->offset, vbuf->cache.update_begin);
+		vbuf->cache.update_end = max(vbuf->offset + total_size, vbuf->cache.update_end);
 		vbuf->offset += total_size;
 	}
 
@@ -81,6 +79,9 @@ SDL_RWops* gl33_vertex_buffer_get_stream(VertexBuffer *vbuf) {
 VertexBuffer* gl33_vertex_buffer_create(size_t capacity, void *data) {
 	VertexBuffer *vbuf = calloc(1, sizeof(VertexBuffer));
 	vbuf->size = capacity = topow2(capacity);
+	vbuf->cache.buffer = calloc(1, capacity);
+	vbuf->cache.update_begin = capacity;
+
 	glGenBuffers(1, &vbuf->gl_handle);
 
 	GLuint vbo_saved = gl33_vbo_current();
@@ -103,6 +104,7 @@ VertexBuffer* gl33_vertex_buffer_create(size_t capacity, void *data) {
 }
 
 void gl33_vertex_buffer_destroy(VertexBuffer *vbuf) {
+	free(vbuf->cache.buffer);
 	gl33_vertex_buffer_deleted(vbuf);
 	glDeleteBuffers(1, &vbuf->gl_handle);
 	log_debug("Deleted VBO %u with %zukb of storage", vbuf->gl_handle, vbuf->size / 1024);
@@ -127,5 +129,19 @@ void gl33_vertex_buffer_set_debug_label(VertexBuffer *vbuf, const char *label) {
 }
 
 void gl33_vertex_buffer_flush(VertexBuffer *vbuf) {
+	if(vbuf->cache.update_begin >= vbuf->cache.update_end) {
+		return;
+	}
 
+	size_t update_size = vbuf->cache.update_end - vbuf->cache.update_begin;
+	assert(update_size > 0);
+
+	GLuint vbo_saved = gl33_vbo_current();
+	gl33_bind_vbo(vbuf->gl_handle);
+	gl33_sync_vbo();
+	glBufferSubData(GL_ARRAY_BUFFER, vbuf->cache.update_begin, update_size, vbuf->cache.buffer + vbuf->cache.update_begin);
+	gl33_bind_vbo(vbo_saved);
+
+	vbuf->cache.update_begin = vbuf->size;
+	vbuf->cache.update_end = 0;
 }
