@@ -65,6 +65,7 @@ struct glext_s {
 		char major;
 		char minor;
 		bool is_es;
+		bool is_ANGLE;
 	} version;
 
 	ext_flag_t debug_output;
