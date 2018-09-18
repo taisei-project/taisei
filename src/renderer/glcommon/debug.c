@@ -110,5 +110,5 @@ void glcommon_set_debug_label(char *label_storage, const char *kind_name, GLenum
 		strlcpy(label_storage, tmp, R_DEBUG_LABEL_SIZE);
 	}
 
-	// glcommon_debug_object_label(gl_enum, gl_handle, label_storage);
+	glcommon_debug_object_label(gl_enum, gl_handle, label_storage);
 }

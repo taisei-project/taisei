@@ -24,9 +24,11 @@ VertexBuffer* gl33_vertex_buffer_create(size_t capacity, void *data) {
 	GLuint vbo_saved = gl33_vbo_current();
 	gl33_bind_vbo(vbuf->gl_handle);
 	gl33_sync_vbo();
+	assert(glIsBuffer(vbuf->gl_handle));
 	glBufferData(GL_ARRAY_BUFFER, capacity, data, GL_STATIC_DRAW);
 	gl33_bind_vbo(vbo_saved);
 
+	snprintf(vbuf->debug_label, sizeof(vbuf->debug_label), "VBO #%i", vbuf->gl_handle);
 	log_debug("Created VBO %u with %zukb of storage", vbuf->gl_handle, vbuf->size / 1024);
 	return vbuf;
 }

@@ -26,6 +26,12 @@ static GLenum va_type_to_gl_type[] = {
 VertexArray* gl33_vertex_array_create(void) {
 	VertexArray *varr = calloc(1, sizeof(VertexArray));
 	glGenVertexArrays(1, &varr->gl_handle);
+	// A VAO must be bound before it's considered valid.
+	// https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glIsVertexArray.xhtml
+	// https://www.khronos.org/registry/OpenGL-Refpages/es3/html/glIsVertexArray.xhtml
+	gl33_bind_vao(varr->gl_handle);
+	gl33_sync_vao();
+	assert(glIsVertexArray(varr->gl_handle));
 	snprintf(varr->debug_label, sizeof(varr->debug_label), "VAO #%i", varr->gl_handle);
 	return varr;
 }
