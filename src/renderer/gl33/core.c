@@ -256,8 +256,11 @@ static void gl33_init_context(SDL_Window *window) {
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	glReadBuffer(GL_BACK);
 	glGetIntegerv(GL_VIEWPORT, &R.viewport.default_framebuffer.x);
+
+	if(glReadBuffer != NULL) {
+		glReadBuffer(GL_BACK);
+	}
 
 	R.viewport.active = R.viewport.default_framebuffer;
 
