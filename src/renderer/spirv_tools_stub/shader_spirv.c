@@ -11,6 +11,9 @@
 #include "../common/shader_spirv.h"
 #include "util.h"
 
+void spirv_init_compiler(void) { }
+void spirv_shutdown_compiler(void) { }
+
 bool spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompileOptions *options) {
 	log_warn("Compiled without SPIR-V support");
 	return false;

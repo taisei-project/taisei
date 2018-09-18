@@ -40,6 +40,8 @@ typedef struct SPIRVTranspileOptions {
 	const char *filename;
 } SPIRVTranspileOptions;
 
+void spirv_init_compiler(void);
+void spirv_shutdown_compiler(void);
 bool spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompileOptions *options) attr_nonnull(1, 2, 3);
 bool spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDecompileOptions *options) attr_nonnull(1, 2, 3);
 bool spirv_transpile(const ShaderSource *in, ShaderSource *out, const SPIRVTranspileOptions *options);

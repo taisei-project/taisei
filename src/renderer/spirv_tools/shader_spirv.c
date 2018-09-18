@@ -16,10 +16,6 @@
 
 static shaderc_compiler_t spirv_compiler;
 
-static void spirv_release_compiler(void) {
-	shaderc_compiler_release(spirv_compiler);
-}
-
 static inline shaderc_optimization_level resolve_opt_level(SPIRVOptimizationLevel lvl) {
 	switch(lvl) {
 		case SPIRV_OPTIMIZE_NONE:        return shaderc_optimization_level_zero;
@@ -65,6 +61,22 @@ static inline shaderc_shader_kind resolve_kind(ShaderStage stage) {
 	}
 }
 
+void spirv_init_compiler(void) {
+	if(spirv_compiler == NULL) {
+		spirv_compiler = shaderc_compiler_initialize();
+		if(spirv_compiler == NULL) {
+			log_warn("Failed to initialize the compiler");
+		}
+	}
+}
+
+void spirv_shutdown_compiler(void) {
+	if(spirv_compiler != NULL) {
+		shaderc_compiler_release(spirv_compiler);
+		spirv_compiler = NULL;
+	}
+}
+
 bool spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompileOptions *options) {
 	if(in->lang.lang != SHLANG_GLSL) {
 		log_warn("Unsupported source language");
@@ -72,12 +84,8 @@ bool spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompile
 	}
 
 	if(spirv_compiler == NULL) {
-		spirv_compiler = shaderc_compiler_initialize();
-		if(spirv_compiler == NULL) {
-			log_warn("Failed to initialize the compiler");
-			return false;
-		}
-		atexit(spirv_release_compiler);
+		log_warn("Compiler is not initialized");
+		return false;
 	}
 
 	shaderc_compile_options_t opts = shaderc_compile_options_initialize();

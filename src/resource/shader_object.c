@@ -148,6 +148,8 @@ ResourceHandler shader_object_res_handler = {
 	.subdir = SHOBJ_PATH_PREFIX,
 
 	.procs = {
+		.init = spirv_init_compiler,
+		.shutdown = spirv_shutdown_compiler,
 		.find = shader_object_path,
 		.check = check_shader_object_path,
 		.begin_load = load_shader_object_begin,
