@@ -618,11 +618,7 @@ const char* r_vertex_buffer_get_debug_label(VertexBuffer *vbuf) attr_nonnull(1);
 void r_vertex_buffer_set_debug_label(VertexBuffer *vbuf, const char* label) attr_nonnull(1);
 void r_vertex_buffer_destroy(VertexBuffer *vbuf) attr_nonnull(1);
 void r_vertex_buffer_invalidate(VertexBuffer *vbuf) attr_nonnull(1);
-void r_vertex_buffer_write(VertexBuffer *vbuf, size_t offset, size_t data_size, void *data) attr_nonnull(1, 4);
-void r_vertex_buffer_append(VertexBuffer *vbuf, size_t data_size, void *data) attr_nonnull(1, 3);
-size_t r_vertex_buffer_get_capacity(VertexBuffer *vbuf) attr_nonnull(1);
-size_t r_vertex_buffer_get_cursor(VertexBuffer *vbuf) attr_nonnull(1);
-void r_vertex_buffer_seek_cursor(VertexBuffer *vbuf, ssize_t offset, int whence) attr_nonnull(1);
+SDL_RWops* r_vertex_buffer_get_stream(VertexBuffer *vbuf) attr_nonnull(1);
 
 VertexArray* r_vertex_array_create(void);
 const char* r_vertex_array_get_debug_label(VertexArray *varr) attr_nonnull(1);

@@ -512,6 +512,11 @@ void gl33_sync_texunits(bool prepare_rendering) {
 
 void gl33_sync_vertex_array(void) {
 	R.vertex_array.active = R.vertex_array.pending;
+
+	if(R.vertex_array.active != NULL) {
+		gl33_vertex_array_flush_buffers(R.vertex_array.active);
+	}
+
 	gl33_sync_vao();
 }
 
@@ -1055,11 +1060,7 @@ RendererBackend _r_backend_gl33 = {
 		.vertex_buffer_get_debug_label = gl33_vertex_buffer_get_debug_label,
 		.vertex_buffer_destroy = gl33_vertex_buffer_destroy,
 		.vertex_buffer_invalidate = gl33_vertex_buffer_invalidate,
-		.vertex_buffer_write = gl33_vertex_buffer_write,
-		.vertex_buffer_append = gl33_vertex_buffer_append,
-		.vertex_buffer_get_capacity = gl33_vertex_buffer_get_capacity,
-		.vertex_buffer_get_cursor = gl33_vertex_buffer_get_cursor,
-		.vertex_buffer_set_cursor = gl33_vertex_buffer_set_cursor,
+		.vertex_buffer_get_stream = gl33_vertex_buffer_get_stream,
 		.vertex_array_destroy = gl33_vertex_array_destroy,
 		.vertex_array_create = gl33_vertex_array_create,
 		.vertex_array_set_debug_label = gl33_vertex_array_set_debug_label,

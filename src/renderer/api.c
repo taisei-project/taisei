@@ -516,33 +516,8 @@ void r_vertex_buffer_invalidate(VertexBuffer *vbuf) {
 	B.vertex_buffer_invalidate(vbuf);
 }
 
-void r_vertex_buffer_write(VertexBuffer *vbuf, size_t offset, size_t data_size, void *data) {
-	B.vertex_buffer_write(vbuf, offset, data_size, data);
-}
-
-void r_vertex_buffer_append(VertexBuffer *vbuf, size_t data_size, void *data) {
-	B.vertex_buffer_append(vbuf, data_size, data);
-}
-
-size_t r_vertex_buffer_get_capacity(VertexBuffer *vbuf) {
-	return B.vertex_buffer_get_capacity(vbuf);
-}
-
-size_t r_vertex_buffer_get_cursor(VertexBuffer *vbuf) {
-	return B.vertex_buffer_get_cursor(vbuf);
-}
-
-void r_vertex_buffer_seek_cursor(VertexBuffer *vbuf, ssize_t offset, int whence) {
-	size_t pos;
-
-	switch(whence) {
-		case SEEK_CUR: pos = r_vertex_buffer_get_cursor(vbuf) + offset; break;
-		case SEEK_END: pos = r_vertex_buffer_get_capacity(vbuf) + offset; break;
-		case SEEK_SET: pos = offset; break;
-		default: UNREACHABLE;
-	}
-
-	B.vertex_buffer_set_cursor(vbuf, pos);
+SDL_RWops* r_vertex_buffer_get_stream(VertexBuffer *vbuf) {
+	return B.vertex_buffer_get_stream(vbuf);
 }
 
 VertexArray* r_vertex_array_create(void) {

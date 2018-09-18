@@ -189,7 +189,10 @@ static void draw_laser_curve_generic(Laser *l) {
 		aptr->delta[1] = cimag(delta);
 	}
 
-	r_vertex_buffer_append(lasers.vbuf, sizeof(attrs), &attrs);
+	SDL_RWops *stream = r_vertex_buffer_get_stream(lasers.vbuf);
+	SDL_RWseek(stream, 0, RW_SEEK_SET);
+	SDL_RWwrite(stream, &attrs, sizeof(attrs), 1);
+
 	r_draw(PRIM_TRIANGLE_STRIP, 0, 4, NULL, instances, 0);
 }
 

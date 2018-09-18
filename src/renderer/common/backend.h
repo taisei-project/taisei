@@ -88,11 +88,7 @@ typedef struct RendererFuncs {
 	void (*vertex_buffer_set_debug_label)(VertexBuffer *vbuf, const char *label);
 	void (*vertex_buffer_destroy)(VertexBuffer *vbuf);
 	void (*vertex_buffer_invalidate)(VertexBuffer *vbuf);
-	void (*vertex_buffer_write)(VertexBuffer *vbuf, size_t offset, size_t data_size, void *data);
-	void (*vertex_buffer_append)(VertexBuffer *vbuf, size_t data_size, void *data);
-	size_t (*vertex_buffer_get_capacity)(VertexBuffer *vbuf);
-	size_t (*vertex_buffer_get_cursor)(VertexBuffer *vbuf);
-	void (*vertex_buffer_set_cursor)(VertexBuffer *vbuf, size_t pos);
+	SDL_RWops* (*vertex_buffer_get_stream)(VertexBuffer *vbuf);
 
 	VertexArray* (*vertex_array_create)(void);
 	const char* (*vertex_array_get_debug_label)(VertexArray *varr);

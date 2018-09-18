@@ -151,3 +151,11 @@ const char* gl33_vertex_array_get_debug_label(VertexArray *varr) {
 void gl33_vertex_array_set_debug_label(VertexArray *varr, const char *label) {
 	glcommon_set_debug_label(varr->debug_label, "VAO", GL_VERTEX_ARRAY, varr->gl_handle, label);
 }
+
+void gl33_vertex_array_flush_buffers(VertexArray *varr) {
+	for(uint i = 0; i < varr->num_attachments; ++i) {
+		if(varr->attachments[i] != NULL) {
+			gl33_vertex_buffer_flush(varr->attachments[i]);
+		}
+	}
+}

@@ -156,7 +156,8 @@ void r_flush_sprites(void) {
 		r_draw(PRIM_TRIANGLE_STRIP, 0, 4, NULL, pending, _r_sprite_batch.base_instance);
 		_r_sprite_batch.base_instance += pending;
 
-		size_t remaining = r_vertex_buffer_get_capacity(_r_sprite_batch.vbuf) - r_vertex_buffer_get_cursor(_r_sprite_batch.vbuf);
+		SDL_RWops *stream = r_vertex_buffer_get_stream(_r_sprite_batch.vbuf);
+		size_t remaining = SDL_RWsize(stream) - SDL_RWtell(stream);
 
 		if(remaining < SIZEOF_SPRITE_ATTRIBS) {
 			// log_debug("Invalidating after %u sprites", _r_sprite_batch.base_instance);
@@ -172,7 +173,7 @@ void r_flush_sprites(void) {
 	r_state_pop();
 }
 
-static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, VertexBuffer *vbuf) {
+static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, SDL_RWops *stream) {
 	SpriteAttribs alignas(32) attribs;
 	r_mat_current(MM_MODELVIEW, attribs.transform);
 	r_mat_current(MM_TEXTURE, attribs.tex_transform);
@@ -230,7 +231,7 @@ static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, VertexB
 		memset(attribs.custom, 0, sizeof(attribs.custom));
 	}
 
-	r_vertex_buffer_append(vbuf, SIZEOF_SPRITE_ATTRIBS, &attribs);
+	SDL_RWwrite(stream, &attribs, SIZEOF_SPRITE_ATTRIBS, 1);
 	_r_sprite_batch.frame_stats.sprites++;
 }
 
@@ -332,7 +333,8 @@ void r_draw_sprite(const SpriteParams *params) {
 		glm_mat4_copy(*current_projection, _r_sprite_batch.projection);
 	}
 
-	size_t remaining = r_vertex_buffer_get_capacity(_r_sprite_batch.vbuf) - r_vertex_buffer_get_cursor(_r_sprite_batch.vbuf);
+	SDL_RWops *stream = r_vertex_buffer_get_stream(_r_sprite_batch.vbuf);
+	size_t remaining = SDL_RWsize(stream) - SDL_RWtell(stream);
 
 	if(remaining < SIZEOF_SPRITE_ATTRIBS) {
 		if(!r_supports(RFEAT_DRAW_INSTANCED_BASE_INSTANCE)) {
@@ -343,7 +345,7 @@ void r_draw_sprite(const SpriteParams *params) {
 	}
 
 	_r_sprite_batch.num_pending++;
-	_r_sprite_batch_add(spr, params, _r_sprite_batch.vbuf);
+	_r_sprite_batch_add(spr, params, stream);
 }
 
 #include "resource/font.h"

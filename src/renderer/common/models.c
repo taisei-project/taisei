@@ -40,7 +40,9 @@ void _r_models_init(void) {
 	r_vertex_array_layout(_r_models.varr, 3, fmt);
 	r_vertex_array_attach_buffer(_r_models.varr, _r_models.vbuf, 0);
 
-	r_vertex_buffer_append(_r_models.vbuf, sizeof(quad), quad);
+	SDL_RWops *stream = r_vertex_buffer_get_stream(_r_models.vbuf);
+	SDL_RWwrite(stream, quad, sizeof(quad), 1);
+
 	r_vertex_array(_r_models.varr);
 }
 

@@ -28,3 +28,4 @@ void gl33_vertex_array_destroy(VertexArray *varr);
 void gl33_vertex_array_attach_buffer(VertexArray *varr, VertexBuffer *vbuf, uint attachment);
 VertexBuffer* gl33_vertex_array_get_attachment(VertexArray *varr, uint attachment);
 void gl33_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]);
+void gl33_vertex_array_flush_buffers(VertexArray *varr);
