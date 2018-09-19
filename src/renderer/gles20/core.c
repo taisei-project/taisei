@@ -90,11 +90,8 @@ GLTextureTypeInfo* gles30_texture_type_info(TextureType type) {
 	};
 
 	static GLTextureTypeInfo map[] = {
-		// WARNING: Mesa bug: mipmap generation fails if GL_RED is used here.
-		// https://bugs.freedesktop.org/show_bug.cgi?id=107989
 		[TEX_TYPE_R]         = { GL_R8,   1, color_formats, { GL_RED,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8    } },
-
-		[TEX_TYPE_RG]        = { GL_RG,   2, color_formats, { GL_RG,   GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RG8   } },
+		[TEX_TYPE_RG]        = { GL_RG8,  2, color_formats, { GL_RG,   GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RG8   } },
 		[TEX_TYPE_RGB]       = { GL_RGB,  3, color_formats, { GL_RGB,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGB8  } },
 		[TEX_TYPE_RGBA]      = { GL_RGBA, 4, color_formats, { GL_RGBA, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGBA8 } },
 
