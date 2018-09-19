@@ -50,40 +50,55 @@ static void gles30_init(void) {
 }
 
 GLTextureTypeInfo* gles20_texture_type_info(TextureType type) {
+	#define FMT_R     { GL_RED,             GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8    }
+	#define FMT_RG    { GL_RG,              GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RG8   }
+	#define FMT_RGB   { GL_RGB,             GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGB8  }
+	#define FMT_RGBA  { GL_RGBA,            GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGBA8 }
+	#define FMT_DEPTH { GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16   }
+
+	static GLTextureFormatTuple formats_r[]     = { FMT_R,     { 0 } };
+	static GLTextureFormatTuple formats_rg[]    = { FMT_RG,    { 0 } };
+	static GLTextureFormatTuple formats_rgb[]   = { FMT_RGB,   { 0 } };
+	static GLTextureFormatTuple formats_rgba[]  = { FMT_RGBA,  { 0 } };
+	static GLTextureFormatTuple formats_depth[] = { FMT_DEPTH, { 0 } };
+
+	static GLTextureTypeInfo map[] = {
+		[TEX_TYPE_R]         = { GL_RGBA, 4, formats_r, FMT_R },
+		[TEX_TYPE_RG]        = { GL_RGBA, 4, formats_rg, FMT_RG },
+		[TEX_TYPE_RGB]       = { GL_RGBA, 4, formats_rgb, FMT_RGB },
+		[TEX_TYPE_RGBA]      = { GL_RGBA, 4, formats_rgba, FMT_RGBA },
+		[TEX_TYPE_DEPTH]     = { GL_DEPTH_COMPONENT, 2, formats_depth, FMT_DEPTH },
+	};
+
+	assert((uint)type < sizeof(map)/sizeof(*map));
+	return map + type;
+}
+
+GLTextureTypeInfo* gles30_texture_type_info(TextureType type) {
 	static GLTextureFormatTuple color_formats[] = {
 		{ GL_RED,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8     },
-		// { GL_RED,  GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16    },
-		// { GL_RED,  GL_UNSIGNED_INT,   PIXMAP_FORMAT_R32    },
-
 		{ GL_RG,   GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RG8    },
-		// { GL_RG,   GL_UNSIGNED_SHORT, PIXMAP_FORMAT_RG16   },
-		// { GL_RG,   GL_UNSIGNED_INT,   PIXMAP_FORMAT_RG32   },
-
 		{ GL_RGB,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGB8   },
-		// { GL_RGB,  GL_UNSIGNED_SHORT, PIXMAP_FORMAT_RGB16  },
-		// { GL_RGB,  GL_UNSIGNED_INT,   PIXMAP_FORMAT_RGB32  },
-
 		{ GL_RGBA, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGBA8  },
-		// { GL_RGBA, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_RGBA16 },
-		// { GL_RGBA, GL_UNSIGNED_INT,   PIXMAP_FORMAT_RGBA32 },
-
 		{ 0 }
 	};
 
 	// XXX: I'm not sure about this. Perhaps it's better to not support depth texture uploading at all?
 	static GLTextureFormatTuple depth_formats[] = {
-		// { GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8 },
 		{ GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 },
-		// { GL_DEPTH_COMPONENT, GL_UNSIGNED_INT,   PIXMAP_FORMAT_R32 },
-
 		{ 0 }
 	};
 
 	static GLTextureTypeInfo map[] = {
-		[TEX_TYPE_R]         = { GL_RED,  1, color_formats, { GL_RED,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8    } },
+		// WARNING: Mesa bug: mipmap generation fails if GL_RED is used here.
+		// https://bugs.freedesktop.org/show_bug.cgi?id=107989
+		[TEX_TYPE_R]         = { GL_R8,   1, color_formats, { GL_RED,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8    } },
+
 		[TEX_TYPE_RG]        = { GL_RG,   2, color_formats, { GL_RG,   GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RG8   } },
 		[TEX_TYPE_RGB]       = { GL_RGB,  3, color_formats, { GL_RGB,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGB8  } },
 		[TEX_TYPE_RGBA]      = { GL_RGBA, 4, color_formats, { GL_RGBA, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGBA8 } },
+
+		// WARNING: ANGLE bug(?): texture binding fails if a sized format is used here.
 		[TEX_TYPE_DEPTH]     = { GL_DEPTH_COMPONENT, 2, depth_formats, { GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 } },
 	};
 
@@ -111,7 +126,7 @@ RendererBackend _r_backend_gles20 = {
 	},
 	.custom = &(GLBackendData) {
 		.vtable = {
-			.texture_type_info = gles20_texture_type_info,
+			.texture_type_info = gles30_texture_type_info,
 			.init_context = gles20_init_context,
 		}
 	},
@@ -125,7 +140,7 @@ RendererBackend _r_backend_gles30 = {
 	},
 	.custom = &(GLBackendData) {
 		.vtable = {
-			.texture_type_info = gles20_texture_type_info,
+			.texture_type_info = gles30_texture_type_info,
 			.init_context = gles20_init_context,
 		}
 	},
