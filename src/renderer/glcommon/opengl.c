@@ -372,7 +372,7 @@ void glcommon_check_extensions(void) {
 	const char *exts = (const char*)glGetString(GL_EXTENSIONS);
 
 	if(exts) {
-		log_debug("Supported extensions: %s", exts);
+		log_info("Supported extensions: %s", exts);
 	} else {
 		void *buf;
 		SDL_RWops *writer = SDL_RWAutoBuffer(&buf, 1024);
@@ -386,7 +386,7 @@ void glcommon_check_extensions(void) {
 		}
 
 		SDL_WriteU8(writer, 0);
-		log_debug("%s", (char*)buf);
+		log_info("%s", (char*)buf);
 		SDL_RWclose(writer);
 	}
 
