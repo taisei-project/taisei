@@ -90,6 +90,9 @@ bool lineseg_ellipse_intersect(LineSegment seg, Ellipse e) {
 	// with origin at (0, 0) and diameter equal to its X axis. Then we can
 	// calculate the segment-circle intersection.
 
+	seg.a -= e.origin;
+	seg.b -= e.origin;
+
 	double ratio = creal(e.axes) / cimag(e.axes);
 	complex rotation = cexp(I * -e.angle);
 	seg.a *= rotation;
@@ -102,7 +105,7 @@ bool lineseg_ellipse_intersect(LineSegment seg, Ellipse e) {
 }
 
 double lineseg_circle_intersect(LineSegment seg, Circle c) {
-	Ellipse e = { .origin = c.origin, .axes = c.radius + I*c.radius };
+	Ellipse e = { .origin = c.origin, .axes = 2*c.radius + I*2*c.radius };
 	if (segment_ellipse_nonintersection_heuristic(seg, e)) {
 		return 0;
 	}
