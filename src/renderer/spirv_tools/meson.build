@@ -7,7 +7,12 @@ else
     dep_shaderc = cc.find_library('shaderc_shared', required: true)
 endif
 
-dep_crossc = subproject('crossc').get_variable('crossc_dep')
+dep_crossc = dependency('crossc',
+    required : true,
+    static : get_option('static'),
+    version : '>=1.5.0',
+    fallback : ['crossc', 'crossc_dep']
+)
 
 r_spirv_tools_src = files(
     'shader_spirv.c'
