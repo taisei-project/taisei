@@ -26,18 +26,7 @@ static void gles_init(RendererBackend *gles_backend, int major, int minor) {
 	gles_backend->funcs.init = original_funcs.init;
 	gles_backend->funcs.screenshot = original_funcs.screenshot;
 
-	SDL_GLcontextFlag ctxflags = 0;
-
-	if(glcommon_debug_requested()) {
-		ctxflags |= SDL_GL_CONTEXT_DEBUG_FLAG;
-	}
-
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, minor);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, ctxflags);
-
+	glcommon_setup_attributes(SDL_GL_CONTEXT_PROFILE_ES, major, minor, 0);
 	glcommon_load_library();
 }
 

@@ -8,10 +8,10 @@
 
 #include "taisei.h"
 
-// #include "global.h"
 #include "util.h"
 #include "rwops/rwops_autobuf.h"
 #include "opengl.h"
+#include "debug.h"
 #include "shaders.h"
 
 struct glext_s glext;
@@ -447,4 +447,20 @@ void glcommon_load_functions(void) {
 			log_fatal("Failed to load OpenGL functions");
 		}
 	}
+}
+
+void glcommon_setup_attributes(SDL_GLprofile profile, uint major, uint minor, SDL_GLcontextFlag ctxflags) {
+	if(glcommon_debug_requested()) {
+		ctxflags |= SDL_GL_CONTEXT_DEBUG_FLAG;
+	}
+
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, profile);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, minor);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, ctxflags);
 }

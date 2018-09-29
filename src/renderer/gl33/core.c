@@ -775,20 +775,12 @@ void gl33_vertex_array_deleted(VertexArray *varr) {
  */
 
 static void gl33_init(void) {
+	glcommon_setup_attributes(
+		SDL_GL_CONTEXT_PROFILE_CORE,
+		3, 3,
+		SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG
+	);
 	glcommon_load_library();
-
-	SDL_GLcontextFlag ctxflags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG;
-
-	if(glcommon_debug_requested()) {
-		ctxflags |= SDL_GL_CONTEXT_DEBUG_FLAG;
-	}
-
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, ctxflags);
 }
 
 static void gl33_post_init(void) {
