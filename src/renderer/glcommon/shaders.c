@@ -130,6 +130,12 @@ static void glcommon_build_shader_lang_table_fallback(void) {
 	GLSLProfile profile = GLSL_PROFILE_NONE;
 	uint major, minor;
 
+	if(glslvstr == NULL) {
+		log_warn("Failed to obtain the GLSL version string");
+		glcommon_free_shader_lang_table();
+		return;
+	}
+
 	if(strstartswith(glslvstr, gles_prefix)) {
 		glslvstr += strlen(gles_prefix);
 		profile = GLSL_PROFILE_ES;
