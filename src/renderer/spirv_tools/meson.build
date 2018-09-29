@@ -19,3 +19,13 @@ r_spirv_tools_src = files(
 )
 
 r_spirv_tools_libdeps = [dep_shaderc, dep_crossc]
+
+if host_machine.system() == 'windows' and get_option('b_lto') and get_option('static')
+    error(
+'''
+
+ -!-  LTO is known to break glslang on Windows.
+ -!-  Please disable it with `meson configure -Db_lto=false`.
+ -!-  If you *really* want to use LTO, force it via compiler args or patch this check out.
+''')
+endif
