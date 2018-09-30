@@ -12,4 +12,8 @@ if macos_app_bundle
     )
 endif
 
+if angle_enabled and host_machine.system() == 'windows'
+    install_data('taisei-angle.bat', install_dir : bindir)
+endif
+
 glslc_test_file = files('glslc-test.frag.glsl')

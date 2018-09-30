@@ -70,4 +70,14 @@ if get_option('docs')
             depend_files : files('taisei.css')
         )
     endforeach
+
+    if angle_enabled and host_machine.system() == 'windows'
+        custom_target(f,
+            command : [eolconv, eol, '@INPUT@', '@OUTPUT@'],
+            input : 'LICENSE.ANGLE',
+            output : 'LICENSE.txt',
+            install : true,
+            install_dir : join_paths(bindir, 'ANGLE')
+        )
+    endif
 endif
