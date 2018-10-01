@@ -6,6 +6,6 @@
 [subrepo]
 	remote = https://github.com/taisei-project/SDL_GameControllerDB
 	branch = master
-	commit = 60d39a1c46f267e0b3e094efa39a6a6100ff2cee
-	parent = ba5d4358efcc764d240afe795844fa8b3dee81ad
+	commit = 2c1b295e9f2329ed5bf8bb3902de7e1c63cedb45
+	parent = 2414474c89dc02401667a1b2d525976e9892b439
 	cmdver = 0.3.1

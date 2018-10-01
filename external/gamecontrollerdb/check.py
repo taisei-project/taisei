@@ -35,7 +35,7 @@ import copy
 FILE_HEADER = "# Game Controller DB for SDL in %s format\n" \
         "# Source: https://github.com/gabomdq/SDL_GameControllerDB\n"
 
-sdl_version = "2.0.6"
+sdl_version = "2.0.8"
 
 mappings_dict = OrderedDict([
     ("Windows", {}),
@@ -69,10 +69,13 @@ class Mapping:
         "-a": re.compile(r"^[0-9]+\~?$"),
         "a": re.compile(r"^[0-9]+\~?$"),
         "b": re.compile(r"^[0-9]+$"),
-        "h": re.compile(r"^[0-9]+\.(1|2|4|8|3|6|12|9)$"),
+        "h": re.compile(r"^[0-9]+\.(1|2|4|8)$"),
     }
 
     def __init__(self, mapping_string, line_number, add_missing_platform = False):
+        if not mapping_string.endswith(",\n") and not mapping_string.endswith(","):
+            raise ValueError("Mapping should end with comma (,)")
+
         self.guid = ""
         self.name = ""
         self.platform = ""
@@ -463,7 +466,7 @@ def main():
             out_file.write("\n")
             out_file.write("# " + platform + "\n")
             sorted_p_dict = sorted(p_dict.items(),
-                    key=lambda x: x[1].name.lower())
+                    key=lambda x: ("%s\x00%s" % (x[1].name, x[0])).lower())
 
             for guid,mapping in sorted_p_dict:
                 out_file.write(mapping.serialize() + "\n")
