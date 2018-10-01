@@ -9,8 +9,9 @@
 #pragma once
 #include "taisei.h"
 
-#include "glad/glad.h"
+#include <SDL.h>
 
+#include "glad/glad.h"
 #include "assert.h"
 
 // NOTE: The ability to query supported GLSL versions was added in GL 4.3,
@@ -53,6 +54,7 @@ void glcommon_check_extensions(void);
 void glcommon_unload_library(void);
 ext_flag_t glcommon_check_extension(const char *ext);
 ext_flag_t glcommon_require_extension(const char *ext);
+void glcommon_setup_attributes(SDL_GLprofile profile, uint major, uint minor, SDL_GLcontextFlag ctxflags);
 
 #if defined(DEBUG) && defined(TAISEI_BUILDCONF_DEBUG_OPENGL)
 	#define DEBUG_GL_DEFAULT 1
@@ -65,6 +67,7 @@ struct glext_s {
 		char major;
 		char minor;
 		bool is_es;
+		bool is_ANGLE;
 	} version;
 
 	ext_flag_t debug_output;

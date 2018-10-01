@@ -9,7 +9,7 @@ UNIFORM(2) vec2 origin;
 UNIFORM(3) vec2 clear_origin;
 UNIFORM(4) int frames;
 UNIFORM(5) float progress;
-UNIFORM(6) sampler2D noise;
+UNIFORM(6) sampler2D noise_tex;
 
 bool in_circle(vec2 pos, vec2 ofs, float a, vec2 origin, float radius) {
     mat2 m = mat2(cos(a), -sin(a), sin(a), cos(a));
@@ -33,7 +33,7 @@ vec3 invert(vec3 v) {
 }
 
 void main(void) {
-    vec3 colormod = texture(noise, vec2(texCoord.x + frames/43.0 * sin(texCoord.y * 42), texCoord.y - frames/30.0)).rgb;
+    vec3 colormod = texture(noise_tex, vec2(texCoord.x + frames/43.0 * sin(texCoord.y * 42), texCoord.y - frames/30.0)).rgb;
     vec4 pclr = texture(tex, texCoord);
     vec4 nclr = pclr;
     nclr.rgb = colormod * vec3(lum(invert(nclr.rgb)));

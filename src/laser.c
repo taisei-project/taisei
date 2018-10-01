@@ -158,7 +158,7 @@ static void draw_laser_curve_specialized(Laser *l) {
 	r_uniform_float("width", l->width);
 	r_uniform_float("width_exponent", l->width_exponent);
 	r_uniform_int("span", instances);
-	r_draw(PRIM_TRIANGLE_FAN, 0, 4, NULL, instances, 0);
+	r_draw(PRIM_TRIANGLE_STRIP, 0, 4, NULL, instances, 0);
 }
 
 static void draw_laser_curve_generic(Laser *l) {
@@ -189,8 +189,11 @@ static void draw_laser_curve_generic(Laser *l) {
 		aptr->delta[1] = cimag(delta);
 	}
 
-	r_vertex_buffer_append(lasers.vbuf, sizeof(attrs), &attrs);
-	r_draw(PRIM_TRIANGLE_FAN, 0, 4, NULL, instances, 0);
+	SDL_RWops *stream = r_vertex_buffer_get_stream(lasers.vbuf);
+	SDL_RWseek(stream, 0, RW_SEEK_SET);
+	SDL_RWwrite(stream, &attrs, sizeof(attrs), 1);
+
+	r_draw(PRIM_TRIANGLE_STRIP, 0, 4, NULL, instances, 0);
 }
 
 static void ent_draw_laser(EntityInterface *ent) {

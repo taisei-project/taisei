@@ -65,8 +65,8 @@ typedef struct RendererFuncs {
 	void (*texture_set_wrap)(Texture *tex, TextureWrapMode ws, TextureWrapMode wt);
 	void (*texture_destroy)(Texture *tex);
 	void (*texture_invalidate)(Texture *tex);
-	void (*texture_fill)(Texture *tex, uint mipmap, void *image_data);
-	void (*texture_fill_region)(Texture *tex, uint mipmap, uint x, uint y, uint w, uint h, void *image_data);
+	void (*texture_fill)(Texture *tex, uint mipmap, const Pixmap *image_data);
+	void (*texture_fill_region)(Texture *tex, uint mipmap, uint x, uint y, const Pixmap *image_data);
 	void (*texture_clear)(Texture *tex, const Color *clr);
 
 	Framebuffer* (*framebuffer_create)(void);
@@ -88,11 +88,7 @@ typedef struct RendererFuncs {
 	void (*vertex_buffer_set_debug_label)(VertexBuffer *vbuf, const char *label);
 	void (*vertex_buffer_destroy)(VertexBuffer *vbuf);
 	void (*vertex_buffer_invalidate)(VertexBuffer *vbuf);
-	void (*vertex_buffer_write)(VertexBuffer *vbuf, size_t offset, size_t data_size, void *data);
-	void (*vertex_buffer_append)(VertexBuffer *vbuf, size_t data_size, void *data);
-	size_t (*vertex_buffer_get_capacity)(VertexBuffer *vbuf);
-	size_t (*vertex_buffer_get_cursor)(VertexBuffer *vbuf);
-	void (*vertex_buffer_set_cursor)(VertexBuffer *vbuf, size_t pos);
+	SDL_RWops* (*vertex_buffer_get_stream)(VertexBuffer *vbuf);
 
 	VertexArray* (*vertex_array_create)(void);
 	const char* (*vertex_array_get_debug_label)(VertexArray *varr);
@@ -110,7 +106,7 @@ typedef struct RendererFuncs {
 
 	void (*swap)(SDL_Window *window);
 
-	uint8_t* (*screenshot)(uint *out_width, uint *out_height);
+	bool (*screenshot)(Pixmap *dst);
 } RendererFuncs;
 
 typedef struct RendererBackend {

@@ -421,12 +421,12 @@ void r_texture_set_wrap(Texture *tex, TextureWrapMode ws, TextureWrapMode wt) {
 	B.texture_set_wrap(tex, ws, wt);
 }
 
-void r_texture_fill(Texture *tex, uint mipmap, void *image_data) {
+void r_texture_fill(Texture *tex, uint mipmap, const Pixmap *image_data) {
 	B.texture_fill(tex, mipmap, image_data);
 }
 
-void r_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, uint w, uint h, void *image_data) {
-	B.texture_fill_region(tex, mipmap, x, y, w, h, image_data);
+void r_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const Pixmap *image_data) {
+	B.texture_fill_region(tex, mipmap, x, y, image_data);
 }
 
 void r_texture_invalidate(Texture *tex) {
@@ -516,33 +516,8 @@ void r_vertex_buffer_invalidate(VertexBuffer *vbuf) {
 	B.vertex_buffer_invalidate(vbuf);
 }
 
-void r_vertex_buffer_write(VertexBuffer *vbuf, size_t offset, size_t data_size, void *data) {
-	B.vertex_buffer_write(vbuf, offset, data_size, data);
-}
-
-void r_vertex_buffer_append(VertexBuffer *vbuf, size_t data_size, void *data) {
-	B.vertex_buffer_append(vbuf, data_size, data);
-}
-
-size_t r_vertex_buffer_get_capacity(VertexBuffer *vbuf) {
-	return B.vertex_buffer_get_capacity(vbuf);
-}
-
-size_t r_vertex_buffer_get_cursor(VertexBuffer *vbuf) {
-	return B.vertex_buffer_get_cursor(vbuf);
-}
-
-void r_vertex_buffer_seek_cursor(VertexBuffer *vbuf, ssize_t offset, int whence) {
-	size_t pos;
-
-	switch(whence) {
-		case SEEK_CUR: pos = r_vertex_buffer_get_cursor(vbuf) + offset; break;
-		case SEEK_END: pos = r_vertex_buffer_get_capacity(vbuf) + offset; break;
-		case SEEK_SET: pos = offset; break;
-		default: UNREACHABLE;
-	}
-
-	B.vertex_buffer_set_cursor(vbuf, pos);
+SDL_RWops* r_vertex_buffer_get_stream(VertexBuffer *vbuf) {
+	return B.vertex_buffer_get_stream(vbuf);
 }
 
 VertexArray* r_vertex_array_create(void) {
@@ -596,8 +571,8 @@ void r_swap(SDL_Window *window) {
 	B.swap(window);
 }
 
-uint8_t* r_screenshot(uint *out_width, uint *out_height) {
-	return B.screenshot(out_width, out_height);
+bool r_screenshot(Pixmap *out) {
+	return B.screenshot(out);
 }
 
 // uniforms garbage; hope your compiler is smart enough to inline most of this

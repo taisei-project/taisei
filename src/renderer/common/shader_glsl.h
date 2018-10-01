@@ -9,6 +9,8 @@
 #pragma once
 #include "taisei.h"
 
+#include "shader_defs.h"
+
 typedef enum GLSLProfile {
 	GLSL_PROFILE_NONE,
 	GLSL_PROFILE_CORE,
@@ -20,8 +22,6 @@ typedef struct GLSLVersion {
 	uint version;
 	GLSLProfile profile;
 } GLSLVersion;
-
-#include "shader.h"
 
 typedef struct GLSLMacro {
 	const char *name;

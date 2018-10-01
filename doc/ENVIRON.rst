@@ -116,10 +116,12 @@ Video and OpenGL
    Selects the rendering backend to use. Currently available options are:
 
       -  ``gl33``: the OpenGL 3.3 Core renderer
+      -  ``gles30``: the OpenGL ES 3.0 renderer
       -  ``null``: the no-op renderer (nothing is displayed)
 
    Note that the actual subset of usable backends, as well as the default
-   choice, can be controlled by build options.
+   choice, can be controlled by build options. The ``gles30`` backend is not
+   built by default.
 
 **TAISEI_LIBGL**
    | Default: unset

@@ -9,6 +9,7 @@ util_src = files(
     'io.c',
     'kvparser.c',
     'miscmath.c',
+    'pixmap.c',
     'pngcruft.c',
     'rectpack.c',
     'stringops.c',

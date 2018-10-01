@@ -29,6 +29,12 @@ if host_machine.system() == 'windows'
         nsis_defs += '-DTAISEI_64BIT=0'
     endif
 
+    if angle_enabled
+        nsis_defs += '-DUSE_ANGLE=1'
+    else
+        nsis_defs += '-DUSE_ANGLE=0'
+    endif
+
     nsis_target = run_target('nsis',
         command: [
             nsis_command,

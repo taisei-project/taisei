@@ -8,32 +8,16 @@
 
 #include "taisei.h"
 
-#include <SDL_image.h>
-
 #include "texture.h"
 #include "resource.h"
 #include "global.h"
 #include "video.h"
 #include "renderer/api.h"
+#include "util/pixmap.h"
 
 static void* load_texture_begin(const char *path, uint flags);
 static void* load_texture_end(void *opaque, const char *path, uint flags);
 static void free_texture(Texture *tex);
-
-static void init_sdl_image(void) {
-	int want_flags = IMG_INIT_JPG | IMG_INIT_PNG;
-	int init_flags = IMG_Init(want_flags);
-
-	if((want_flags & init_flags) != want_flags) {
-		log_warn(
-			"SDL_image doesn't support some of the formats we want. "
-			"Requested: %i, got: %i. "
-			"Textures may fail to load",
-			want_flags,
-			init_flags
-		);
-	}
-}
 
 ResourceHandler texture_res_handler = {
 	.type = RES_TEXTURE,
@@ -41,8 +25,6 @@ ResourceHandler texture_res_handler = {
 	.subdir = TEX_PATH_PREFIX,
 
 	.procs = {
-		.init = init_sdl_image,
-		.shutdown = IMG_Quit,
 		.find = texture_path,
 		.check = check_texture_path,
 		.begin_load = load_texture_begin,
@@ -178,15 +160,13 @@ static void parse_wrap(const char *val, TextureWrapMode *out) {
 }
 
 typedef struct TextureLoadData {
-	SDL_Surface *surf;
+	Pixmap pixmap;
 	TextureParams params;
 } TextureLoadData;
 
 static void* load_texture_begin(const char *path, uint flags) {
 	const char *source = path;
 	char *source_allocated = NULL;
-	SDL_Surface *surf = NULL;
-	SDL_RWops *srcrw = NULL;
 
 	TextureLoadData ld = {
 		.params = {
@@ -261,50 +241,26 @@ static void* load_texture_begin(const char *path, uint flags) {
 		free(str_wrap_t);
 	}
 
-	srcrw = vfs_open(source, VFS_MODE_READ | VFS_MODE_SEEKABLE);
-
-	if(!srcrw) {
-		log_warn("VFS error: %s", vfs_get_error());
+	if(!pixmap_load_file(source, &ld.pixmap)) {
 		free(source_allocated);
+		log_warn("%s: couldn't load texture image", source);
 		return NULL;
-	}
-
-	if(strendswith(source, ".tga")) {
-		surf = IMG_LoadTGA_RW(srcrw);
-	} else {
-		surf = IMG_Load_RW(srcrw, false);
 	}
 
 	free(source_allocated);
 
-	if(!surf) {
-		log_warn("IMG_Load_RW failed: %s", IMG_GetError());
-		return NULL;
-	}
-
-	SDL_RWclose(srcrw);
-
-	SDL_Surface *converted_surf = SDL_ConvertSurfaceFormat(surf, SDL_PIXELFORMAT_RGBA32, 0);
-	SDL_FreeSurface(surf);
-
-	if(!converted_surf) {
-		log_warn("SDL_ConvertSurfaceFormat(): failed: %s", SDL_GetError());
-		return NULL;
-	}
-
 	if(r_supports(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN)) {
-		SDL_LockSurface(converted_surf);
-		flip_bitmap(converted_surf->pixels, converted_surf->h, converted_surf->w * 4);
-		SDL_UnlockSurface(converted_surf);
+		pixmap_flip_to_origin_inplace(&ld.pixmap, PIXMAP_ORIGIN_BOTTOMLEFT);
+	} else {
+		pixmap_flip_to_origin_inplace(&ld.pixmap, PIXMAP_ORIGIN_TOPLEFT);
 	}
 
 	if(ld.params.mipmaps == 0) {
 		ld.params.mipmaps = TEX_MIPMAPS_MAX;
 	}
 
-	ld.params.width = converted_surf->w;
-	ld.params.height = converted_surf->h;
-	ld.surf = converted_surf;
+	ld.params.width = ld.pixmap.width;
+	ld.params.height = ld.pixmap.height;
 
 	return memdup(&ld, sizeof(ld));
 }
@@ -368,11 +324,8 @@ static void* load_texture_end(void *opaque, const char *path, uint flags) {
 	char *basename = resource_util_basename(TEX_PATH_PREFIX, path);
 	Texture *texture = r_texture_create(&ld->params);
 	r_texture_set_debug_label(texture, basename);
-
-	SDL_LockSurface(ld->surf);
-	r_texture_fill(texture, 0, ld->surf->pixels);
-	SDL_UnlockSurface(ld->surf);
-	SDL_FreeSurface(ld->surf);
+	r_texture_fill(texture, 0, &ld->pixmap);
+	free(ld->pixmap.data.untyped);
 	free(ld);
 
 	texture = texture_post_load(texture);

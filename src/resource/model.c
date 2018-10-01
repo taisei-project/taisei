@@ -123,13 +123,14 @@ void* load_model_end(void *opaque, const char *path, uint flags) {
 		return NULL;
 	}
 
-	size_t ioffset = r_vertex_buffer_get_cursor(vbuf);
+	SDL_RWops *stream = r_vertex_buffer_get_stream(vbuf);
+	size_t ioffset = SDL_RWtell(stream);
 
 	for(int i = 0; i < ldata->obj->icount; ++i) {
 		ldata->model->indices[i] += ioffset / sizeof(GenericModelVertex);
 	}
 
-	r_vertex_buffer_append(vbuf, sizeof(GenericModelVertex) * ldata->obj->icount, ldata->verts);
+	SDL_RWwrite(stream, ldata->verts, sizeof(GenericModelVertex), ldata->obj->icount);
 
 	free(ldata->verts);
 	free_obj(ldata->obj);

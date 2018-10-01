@@ -43,6 +43,7 @@ preprocessor = generator(preprocess_script,
 )
 
 eolconv = find_program(join_paths(scripts_dir, 'eolconv.py'))
+host_eol_style = host_machine.system() == 'windows' ? 'crlf' : 'lf'
 
 taisei_version_result = run_command(version_command, '{string}')
 
@@ -185,7 +186,7 @@ else
     endif
 
     if config.get('TAISEI_BUILDCONF_RELATIVE_DATA_PATH')
-        bindir = ''
+        bindir = '.'
     else
         bindir = get_option('bindir')
     endif
@@ -226,6 +227,8 @@ config.set('TAISEI_BUILDCONF_LOG_ENABLE_BACKTRACE', is_debug_build and have_back
 config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', host_machine.system() == 'windows' or host_machine.system() == 'darwin')
 config.set('TAISEI_BUILDCONF_DEBUG_OPENGL', get_option('debug_opengl'))
 
+angle_enabled = get_option('install_angle')
+
 if host_machine.system() == 'windows'
     custom_target('COPYING.txt',
         command : [eolconv, 'crlf', '@INPUT@', '@OUTPUT@'],
@@ -234,8 +237,20 @@ if host_machine.system() == 'windows'
         install : true,
         install_dir : doc_path
     )
+
+    if angle_enabled
+        install_data(
+            get_option('angle_libgles'),
+            get_option('angle_libegl'),
+            install_dir : join_paths(bindir, 'ANGLE'),
+        )
+    endif
 else
     install_data('COPYING', install_dir : doc_path)
+
+    if angle_enabled
+        error('install_angle is only available for Windows targets at the moment')
+    endif
 endif
 
 systype = (have_posix ? 'POSIX (@0@)' : '@0@').format(host_machine.system())

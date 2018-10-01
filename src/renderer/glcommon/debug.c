@@ -65,6 +65,13 @@ static void APIENTRY glcommon_debug(
 		lvl = LOG_WARN;
 	}
 
+	if(lvl == LOG_FATAL && glext.version.is_ANGLE && !strcmp(message, "Invalid operation.")) {
+		// HACK: Workaround for an ANGLE bug. Seems like it always reports the original array size for
+		// uniform arrays, even if the arrays has been partially optimized out. Accessing the non-existent
+		// elements then generates a GL_INVALID_OPERATION error, which should be safe to ignore.
+		lvl = LOG_WARN;
+	}
+
 	log_custom(lvl, "[%s, %s, %s, id:%i] %s", strsrc, strtype, strsev, id, message);
 }
 
@@ -103,5 +110,5 @@ void glcommon_set_debug_label(char *label_storage, const char *kind_name, GLenum
 		strlcpy(label_storage, tmp, R_DEBUG_LABEL_SIZE);
 	}
 
-	// glcommon_debug_object_label(gl_enum, gl_handle, label_storage);
+	glcommon_debug_object_label(gl_enum, gl_handle, label_storage);
 }

@@ -129,7 +129,6 @@ static GLenum prim_to_gl_prim[] = {
 	[PRIM_LINE_LOOP]      = GL_LINE_LOOP,
 	[PRIM_LINES]          = GL_LINES,
 	[PRIM_TRIANGLE_STRIP] = GL_TRIANGLE_STRIP,
-	[PRIM_TRIANGLE_FAN]   = GL_TRIANGLE_FAN,
 	[PRIM_TRIANGLES]      = GL_TRIANGLES,
 };
 
@@ -257,8 +256,11 @@ static void gl33_init_context(SDL_Window *window) {
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	glReadBuffer(GL_BACK);
 	glGetIntegerv(GL_VIEWPORT, &R.viewport.default_framebuffer.x);
+
+	if(glReadBuffer != NULL) {
+		glReadBuffer(GL_BACK);
+	}
 
 	R.viewport.active = R.viewport.default_framebuffer;
 
@@ -513,6 +515,11 @@ void gl33_sync_texunits(bool prepare_rendering) {
 
 void gl33_sync_vertex_array(void) {
 	R.vertex_array.active = R.vertex_array.pending;
+
+	if(R.vertex_array.active != NULL) {
+		gl33_vertex_array_flush_buffers(R.vertex_array.active);
+	}
+
 	gl33_sync_vao();
 }
 
@@ -768,20 +775,12 @@ void gl33_vertex_array_deleted(VertexArray *varr) {
  */
 
 static void gl33_init(void) {
+	glcommon_setup_attributes(
+		SDL_GL_CONTEXT_PROFILE_CORE,
+		3, 3,
+		SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG
+	);
 	glcommon_load_library();
-
-	SDL_GLcontextFlag ctxflags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG;
-
-	if(glcommon_debug_requested()) {
-		ctxflags |= SDL_GL_CONTEXT_DEBUG_FLAG;
-	}
-
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, ctxflags);
 }
 
 static void gl33_post_init(void) {
@@ -983,13 +982,15 @@ static DepthTestFunc gl33_depth_func_current(void) {
 	return R.depth_test.func.pending;
 }
 
-static uint8_t* gl33_screenshot(uint *out_width, uint *out_height) {
+static bool gl33_screenshot(Pixmap *out) {
 	IntRect *vp = &R.viewport.default_framebuffer;
-	uint8_t *pixels = malloc(vp->w * vp->h * 3);
-	glReadPixels(vp->x, vp->y, vp->w, vp->h, GL_RGB, GL_UNSIGNED_BYTE, pixels);
-	*out_width = vp->w;
-	*out_height = vp->h;
-	return pixels;
+	out->width = vp->w;
+	out->height = vp->h;
+	out->format = PIXMAP_FORMAT_RGB8;
+	out->origin = PIXMAP_ORIGIN_BOTTOMLEFT;
+	out->data.untyped = pixmap_alloc_buffer_for_copy(out);
+	glReadPixels(vp->x, vp->y, vp->w, vp->h, GL_RGB, GL_UNSIGNED_BYTE, out->data.untyped);
+	return true;
 }
 
 RendererBackend _r_backend_gl33 = {
@@ -1054,11 +1055,7 @@ RendererBackend _r_backend_gl33 = {
 		.vertex_buffer_get_debug_label = gl33_vertex_buffer_get_debug_label,
 		.vertex_buffer_destroy = gl33_vertex_buffer_destroy,
 		.vertex_buffer_invalidate = gl33_vertex_buffer_invalidate,
-		.vertex_buffer_write = gl33_vertex_buffer_write,
-		.vertex_buffer_append = gl33_vertex_buffer_append,
-		.vertex_buffer_get_capacity = gl33_vertex_buffer_get_capacity,
-		.vertex_buffer_get_cursor = gl33_vertex_buffer_get_cursor,
-		.vertex_buffer_set_cursor = gl33_vertex_buffer_set_cursor,
+		.vertex_buffer_get_stream = gl33_vertex_buffer_get_stream,
 		.vertex_array_destroy = gl33_vertex_array_destroy,
 		.vertex_array_create = gl33_vertex_array_create,
 		.vertex_array_set_debug_label = gl33_vertex_array_set_debug_label,

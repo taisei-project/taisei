@@ -11,13 +11,7 @@
 
 #include "../api.h"
 #include "../common/backend.h"
-
-typedef struct GLTextureTypeInfo {
-	GLuint internal_fmt;
-	GLuint external_fmt;
-	GLuint component_type;
-	size_t pixel_size;
-} GLTextureTypeInfo;
+#include "texture.h"
 
 typedef struct GLVTable {
 	GLTextureTypeInfo* (*texture_type_info)(TextureType type);

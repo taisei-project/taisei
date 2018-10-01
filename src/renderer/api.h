@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "util.h"
+#include "util/pixmap.h"
 #include "color.h"
 #include "resource/resource.h"
 #include "resource/shader_program.h"
@@ -137,7 +138,6 @@ typedef enum Primitive {
 	PRIM_LINE_LOOP,
 	PRIM_LINES,
 	PRIM_TRIANGLE_STRIP,
-	PRIM_TRIANGLE_FAN,
 	PRIM_TRIANGLES,
 } Primitive;
 
@@ -592,8 +592,8 @@ const char* r_texture_get_debug_label(Texture *tex) attr_nonnull(1);
 void r_texture_set_debug_label(Texture *tex, const char *label) attr_nonnull(1);
 void r_texture_set_filter(Texture *tex, TextureFilterMode fmin, TextureFilterMode fmag) attr_nonnull(1);
 void r_texture_set_wrap(Texture *tex, TextureWrapMode ws, TextureWrapMode wt) attr_nonnull(1);
-void r_texture_fill(Texture *tex, uint mipmap, void *image_data) attr_nonnull(1, 3);
-void r_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, uint w, uint h, void *image_data) attr_nonnull(1, 7);
+void r_texture_fill(Texture *tex, uint mipmap, const Pixmap *image_data) attr_nonnull(1, 3);
+void r_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const Pixmap *image_data) attr_nonnull(1, 5);
 void r_texture_invalidate(Texture *tex) attr_nonnull(1);
 void r_texture_clear(Texture *tex, const Color *clr) attr_nonnull(1, 2);
 void r_texture_destroy(Texture *tex) attr_nonnull(1);
@@ -618,11 +618,7 @@ const char* r_vertex_buffer_get_debug_label(VertexBuffer *vbuf) attr_nonnull(1);
 void r_vertex_buffer_set_debug_label(VertexBuffer *vbuf, const char* label) attr_nonnull(1);
 void r_vertex_buffer_destroy(VertexBuffer *vbuf) attr_nonnull(1);
 void r_vertex_buffer_invalidate(VertexBuffer *vbuf) attr_nonnull(1);
-void r_vertex_buffer_write(VertexBuffer *vbuf, size_t offset, size_t data_size, void *data) attr_nonnull(1, 4);
-void r_vertex_buffer_append(VertexBuffer *vbuf, size_t data_size, void *data) attr_nonnull(1, 3);
-size_t r_vertex_buffer_get_capacity(VertexBuffer *vbuf) attr_nonnull(1);
-size_t r_vertex_buffer_get_cursor(VertexBuffer *vbuf) attr_nonnull(1);
-void r_vertex_buffer_seek_cursor(VertexBuffer *vbuf, ssize_t offset, int whence) attr_nonnull(1);
+SDL_RWops* r_vertex_buffer_get_stream(VertexBuffer *vbuf) attr_nonnull(1);
 
 VertexArray* r_vertex_array_create(void);
 const char* r_vertex_array_get_debug_label(VertexArray *varr) attr_nonnull(1);
@@ -640,7 +636,7 @@ VsyncMode r_vsync_current(void);
 
 void r_swap(SDL_Window *window);
 
-uint8_t* r_screenshot(uint *out_width, uint *out_height) attr_nodiscard attr_nonnull(1, 2);
+bool r_screenshot(Pixmap *dest) attr_nodiscard attr_nonnull(1);
 
 void r_mat_mode(MatrixMode mode);
 MatrixMode r_mat_mode_current(void);

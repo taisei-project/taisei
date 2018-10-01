@@ -9,30 +9,23 @@
 #pragma once
 #include "taisei.h"
 
-typedef enum ShaderStage {
-	SHADER_STAGE_INVALID,
-	SHADER_STAGE_VERTEX,
-	SHADER_STAGE_FRAGMENT,
-} ShaderStage;
-
-typedef enum ShaderLanguage {
-	SHLANG_INVALID,
-	SHLANG_GLSL,
-} ShaderLanguage;
-
-typedef struct ShaderSource ShaderSource;
-
+#include "shader_defs.h"
 #include "shader_glsl.h"
+#include "shader_spirv.h"
 
-typedef struct ShaderLangInfo {
+struct ShaderLangInfo {
 	ShaderLanguage lang;
 
 	union {
 		struct {
 			GLSLVersion version;
 		} glsl;
+
+		struct {
+			SPIRVTarget target;
+		} spirv;
 	};
-} ShaderLangInfo;
+};
 
 struct ShaderSource {
 	char *content;

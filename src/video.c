@@ -20,9 +20,7 @@ Video video;
 
 typedef struct ScreenshotTaskData {
 	char *dest_path;
-	uint8_t *pixels;
-	uint width;
-	uint height;
+	Pixmap image;
 } ScreenshotTaskData;
 
 static void video_add_mode(int width, int height) {
@@ -240,9 +238,12 @@ void video_set_mode(int w, int h, bool fs, bool resizable) {
 static void* video_screenshot_task(void *arg) {
 	ScreenshotTaskData *tdata = arg;
 
-	uint width = tdata->width;
-	uint height = tdata->height;
-	uint8_t *pixels = tdata->pixels;
+	pixmap_convert_inplace_realloc(&tdata->image, PIXMAP_FORMAT_RGB8);
+	pixmap_flip_to_origin_inplace(&tdata->image, PIXMAP_ORIGIN_BOTTOMLEFT);
+
+	uint width = tdata->image.width;
+	uint height = tdata->image.height;
+	uint8_t *pixels = tdata->image.data.untyped;
 
 	SDL_RWops *output = vfs_open(tdata->dest_path, VFS_MODE_WRITE);
 
@@ -290,7 +291,7 @@ static void* video_screenshot_task(void *arg) {
 
 static void video_screenshot_free_task_data(void *arg) {
 	ScreenshotTaskData *tdata = arg;
-	free(tdata->pixels);
+	free(tdata->image.data.untyped);
 	free(tdata->dest_path);
 	free(tdata);
 }
@@ -298,9 +299,8 @@ static void video_screenshot_free_task_data(void *arg) {
 void video_take_screenshot(void) {
 	ScreenshotTaskData tdata;
 	memset(&tdata, 0, sizeof(tdata));
-	tdata.pixels = r_screenshot(&tdata.width, &tdata.height);
 
-	if(!tdata.pixels) {
+	if(!r_screenshot(&tdata.image)) {
 		log_warn("Failed to take a screenshot");
 		return;
 	}

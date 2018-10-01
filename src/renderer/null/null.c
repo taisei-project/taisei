@@ -87,8 +87,8 @@ void null_texture_set_debug_label(Texture *tex, const char *label) { }
 const char* null_texture_get_debug_label(Texture *tex) { return "null texture"; }
 void null_texture_set_filter(Texture *tex, TextureFilterMode fmin, TextureFilterMode fmag) { }
 void null_texture_set_wrap(Texture *tex, TextureWrapMode fmin, TextureWrapMode fmag) { }
-void null_texture_fill(Texture *tex, uint mipmap, void *image_data) { }
-void null_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, uint w, uint h, void *image_data) { }
+void null_texture_fill(Texture *tex, uint mipmap, const Pixmap *image_data) { }
+void null_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const Pixmap *image_data) { }
 void null_texture_invalidate(Texture *tex) { }
 void null_texture_destroy(Texture *tex) { }
 void null_texture_clear(Texture *tex, const Color *color) { }
@@ -108,16 +108,33 @@ void null_framebuffer(Framebuffer *framebuffer) { }
 Framebuffer* null_framebuffer_current(void) { return (void*)&placeholder; }
 void null_framebuffer_clear(Framebuffer *framebuffer, ClearBufferFlags flags, const Color *colorval, float depthval) { }
 
+static int64_t null_vertex_buffer_stream_seek(SDL_RWops *rw, int64_t offset, int whence) { return 0; }
+static int64_t null_vertex_buffer_stream_size(SDL_RWops *rw) { return (1 << 16); }
+static size_t null_vertex_buffer_stream_write(SDL_RWops *rw, const void *data, size_t size, size_t num) { return num; }
+static int null_vertex_buffer_stream_close(SDL_RWops *rw) { return 0; }
+
+static size_t null_vertex_buffer_stream_read(SDL_RWops *rw, void *data, size_t size, size_t num) {
+	SDL_SetError("Stream is write-only");
+	return 0;
+}
+
+static SDL_RWops dummy_stream = {
+	.seek = null_vertex_buffer_stream_seek,
+	.size = null_vertex_buffer_stream_size,
+	.write = null_vertex_buffer_stream_write,
+	.read = null_vertex_buffer_stream_read,
+	.close = null_vertex_buffer_stream_close,
+};
+
+SDL_RWops* null_vertex_buffer_get_stream(VertexBuffer *vbuf) {
+	return &dummy_stream;
+}
+
 VertexBuffer* null_vertex_buffer_create(size_t capacity, void *data) { return (void*)&placeholder; }
 void null_vertex_buffer_set_debug_label(VertexBuffer *vbuf, const char *label) { }
 const char* null_vertex_buffer_get_debug_label(VertexBuffer *vbuf) { return "null vertex buffer"; }
 void null_vertex_buffer_destroy(VertexBuffer *vbuf) { }
 void null_vertex_buffer_invalidate(VertexBuffer *vbuf) { }
-void null_vertex_buffer_write(VertexBuffer *vbuf, size_t offset, size_t data_size, void *data) { }
-void null_vertex_buffer_append(VertexBuffer *vbuf, size_t data_size, void *data) { }
-size_t null_vertex_buffer_get_capacity(VertexBuffer *vbuf) { return 1 << 16; }
-size_t null_vertex_buffer_get_cursor(VertexBuffer *vbuf) { return 0; }
-void null_vertex_buffer_set_cursor(VertexBuffer *vbuf, size_t pos) { }
 
 VertexArray* null_vertex_array_create(void) { return (void*)&placeholder; }
 void null_vertex_array_set_debug_label(VertexArray *varr, const char *label) { }
@@ -138,7 +155,7 @@ VsyncMode null_vsync_current(void) { return VSYNC_NONE; }
 
 void null_swap(SDL_Window *window) { }
 
-uint8_t* null_screenshot(uint *out_width, uint *out_height) { return NULL; }
+bool null_screenshot(Pixmap *dest) { return false; }
 
 RendererBackend _r_backend_null = {
 	.name = "null",
@@ -202,11 +219,7 @@ RendererBackend _r_backend_null = {
 		.vertex_buffer_set_debug_label = null_vertex_buffer_set_debug_label,
 		.vertex_buffer_destroy = null_vertex_buffer_destroy,
 		.vertex_buffer_invalidate = null_vertex_buffer_invalidate,
-		.vertex_buffer_write = null_vertex_buffer_write,
-		.vertex_buffer_append = null_vertex_buffer_append,
-		.vertex_buffer_get_capacity = null_vertex_buffer_get_capacity,
-		.vertex_buffer_get_cursor = null_vertex_buffer_get_cursor,
-		.vertex_buffer_set_cursor = null_vertex_buffer_set_cursor,
+		.vertex_buffer_get_stream = null_vertex_buffer_get_stream,
 		.vertex_array_create = null_vertex_array_create,
 		.vertex_array_get_debug_label = null_vertex_array_get_debug_label,
 		.vertex_array_set_debug_label = null_vertex_array_set_debug_label,

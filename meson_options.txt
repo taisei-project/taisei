@@ -33,6 +33,25 @@ option(
 )
 
 option(
+    'install_angle',
+    type : 'boolean',
+    value : 'false',
+    description : 'Install pre-built ANGLE libraries. Only makes sense with a GLES backend. Currently only supported on Windows'
+)
+
+option(
+    'angle_libgles',
+    type : 'string',
+    description : 'Path to ANGLE\'s libGLESv2 dynamic library (see install_angle)'
+)
+
+option(
+    'angle_libegl',
+    type : 'string',
+    description : 'Path to ANGLE\'s libEGL dynamic library (see install_angle)'
+)
+
+option(
     'win_console',
     type : 'boolean',
     value : false,
@@ -93,6 +112,13 @@ option(
 )
 
 option(
+    'shader_transpiler',
+    type : 'boolean',
+    value : false,
+    description : 'Enable shader trans-compilation. Requires shaderc'
+)
+
+option(
     'validate_glsl',
     type : 'combo',
     choices : ['auto', 'true', 'false'],
@@ -116,14 +142,14 @@ option(
 option(
     'r_gles20',
     type : 'boolean',
-    value : true,
-    description : 'Build the OpenGL ES 2.0 renderer'
+    value : false,
+    description : 'Build the OpenGL ES 2.0 renderer (incomplete)'
 )
 
 option(
     'r_gles30',
     type : 'boolean',
-    value : true,
+    value : false,
     description : 'Build the OpenGL ES 3.0 renderer'
 )
 

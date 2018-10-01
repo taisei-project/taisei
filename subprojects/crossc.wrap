@@ -1,0 +1,6 @@
+[wrap-git]
+directory=crossc
+url=https://github.com/taisei-project/crossc.git
+push-url=git@github.com:taisei-project/crossc.git
+clone-recursive=true
+revision=v1.5.0

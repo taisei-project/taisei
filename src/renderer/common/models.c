@@ -26,10 +26,10 @@ void _r_models_init(void) {
 	}, fmt, 0);
 
 	GenericModelVertex quad[4] = {
-		{ { -0.5, -0.5,  0.0 }, { 0, 0, 1 }, { 0, 1 } },
-		{ { -0.5,  0.5,  0.0 }, { 0, 0, 1 }, { 0, 0 } },
-		{ {  0.5,  0.5,  0.0 }, { 0, 0, 1 }, { 1, 0 } },
 		{ {  0.5, -0.5,  0.0 }, { 0, 0, 1 }, { 1, 1 } },
+		{ { -0.5, -0.5,  0.0 }, { 0, 0, 1 }, { 0, 1 } },
+		{ {  0.5,  0.5,  0.0 }, { 0, 0, 1 }, { 1, 0 } },
+		{ { -0.5,  0.5,  0.0 }, { 0, 0, 1 }, { 0, 0 } },
 	};
 
 	_r_models.vbuf = r_vertex_buffer_create(8192 * sizeof(GenericModelVertex), NULL);
@@ -40,7 +40,9 @@ void _r_models_init(void) {
 	r_vertex_array_layout(_r_models.varr, 3, fmt);
 	r_vertex_array_attach_buffer(_r_models.varr, _r_models.vbuf, 0);
 
-	r_vertex_buffer_append(_r_models.vbuf, sizeof(quad), quad);
+	SDL_RWops *stream = r_vertex_buffer_get_stream(_r_models.vbuf);
+	SDL_RWwrite(stream, quad, sizeof(quad), 1);
+
 	r_vertex_array(_r_models.varr);
 }
 
@@ -60,14 +62,14 @@ VertexArray* r_vertex_array_static_models(void) {
 void r_draw_quad(void) {
 	VertexArray *varr_saved = r_vertex_array_current();
 	r_vertex_array(_r_models.varr);
-	r_draw(PRIM_TRIANGLE_FAN, 0, 4, NULL, 0, 0);
+	r_draw(PRIM_TRIANGLE_STRIP, 0, 4, NULL, 0, 0);
 	r_vertex_array(varr_saved);
 }
 
 void r_draw_quad_instanced(uint instances) {
 	VertexArray *varr_saved = r_vertex_array_current();
 	r_vertex_array(_r_models.varr);
-	r_draw(PRIM_TRIANGLE_FAN, 0, 4, NULL, instances, 0);
+	r_draw(PRIM_TRIANGLE_STRIP, 0, 4, NULL, instances, 0);
 	r_vertex_array(varr_saved);
 }
 

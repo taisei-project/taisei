@@ -67,7 +67,7 @@ def main(args):
 
         uninstall_files = ('\n'+indent).join('Delete "{}\\{}"'.format(instdir, path) for path in files)
         uninstall_dirs  = ('\n'+indent).join('RMDir "{}\\{}"'.format(instdir, path) for path in dirs)
-        uninstall_commands = ('\n\n'+indent).join((uninstall_files, uninstall_dirs))
+        uninstall_commands = indent + ('\n\n'+indent).join((uninstall_files, uninstall_dirs))
 
         print(uninstall_commands)
 
@@ -83,7 +83,7 @@ def main(args):
             args=args
         )
 
-        nsis_cmd = shlex.split('makensis -V4 -NOCD -INPUTCHARSET UTF8 -WX -')
+        nsis_cmd = shlex.split('makensis -V3 -NOCD -INPUTCHARSET UTF8 -WX -')
 
         with subprocess.Popen(nsis_cmd, stdin=subprocess.PIPE, cwd=str(args.build_dir)) as proc:
             proc.stdin.write(script.encode('utf-8'))

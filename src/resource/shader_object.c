@@ -71,8 +71,7 @@ static void* load_shader_object_begin(const char *path, uint flags) {
 			};
 
 			if(!glsl_load_source(path, &ldata->source, &opts)) {
-				free(ldata);
-				return NULL;
+				goto fail;
 			}
 
 			break;
@@ -81,14 +80,40 @@ static void* load_shader_object_begin(const char *path, uint flags) {
 		default: UNREACHABLE;
 	}
 
-	if(!r_shader_language_supported(&ldata->source.lang, NULL)) {
-		log_warn("%s: shading language not supported by backend", path);
+	ShaderLangInfo altlang = { SHLANG_INVALID };
+
+	if(!r_shader_language_supported(&ldata->source.lang, &altlang)) {
+		if(altlang.lang == SHLANG_INVALID) {
+			log_warn("%s: shading language not supported by backend", path);
+			goto fail;
+		}
+
+		log_warn("%s: shading language not supported by backend, attempting to translate", path);
+
+		assert(r_shader_language_supported(&altlang, NULL));
+
+		ShaderSource newsrc;
+		bool result = spirv_transpile(&ldata->source, &newsrc, &(SPIRVTranspileOptions) {
+			.lang = &altlang,
+			.optimization_level = SPIRV_OPTIMIZE_PERFORMANCE,
+			.filename = path,
+		});
+
+		if(!result) {
+			log_warn("%s: translation failed", path);
+			goto fail;
+		}
+
 		free(ldata->source.content);
-		free(ldata);
-		return NULL;
+		ldata->source = newsrc;
 	}
 
 	return ldata;
+
+fail:
+	free(ldata->source.content);
+	free(ldata);
+	return NULL;
 }
 
 static void* load_shader_object_end(void *opaque, const char *path, uint flags) {
@@ -123,6 +148,8 @@ ResourceHandler shader_object_res_handler = {
 	.subdir = SHOBJ_PATH_PREFIX,
 
 	.procs = {
+		.init = spirv_init_compiler,
+		.shutdown = spirv_shutdown_compiler,
 		.find = shader_object_path,
 		.check = check_shader_object_path,
 		.begin_load = load_shader_object_begin,

@@ -19,6 +19,14 @@ included_deps = []
 needed_deps = ['common']
 r_macro = []
 
+if get_option('shader_transpiler')
+    subdir('spirv_tools')
+    needed_deps += ['spirv_tools']
+else
+    subdir('spirv_tools_stub')
+    needed_deps += ['spirv_tools_stub']
+endif
+
 foreach m : modules
     subdir(m)
     if get_option('r_@0@'.format(m))
