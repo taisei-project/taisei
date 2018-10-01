@@ -43,6 +43,7 @@ preprocessor = generator(preprocess_script,
 )
 
 eolconv = find_program(join_paths(scripts_dir, 'eolconv.py'))
+host_eol_style = host_machine.system() == 'windows' ? 'crlf' : 'lf'
 
 taisei_version_result = run_command(version_command, '{string}')
 

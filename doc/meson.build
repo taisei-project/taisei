@@ -5,15 +5,18 @@ if get_option('docs')
         'rst2html5.py',
         'rst2html5-docutils',
         'rst2html5-3',
+        'rst2html53',
         'rst2html5-3.py',
         'rst2html4',
         'rst2html4.py',
         'rst2html4-3',
+        'rst2html43',
         'rst2html4-3.py',
         'rst2html4-docutils',
         'rst2html',
         'rst2html.py',
         'rst2html-3',
+        'rst2html3',
         'rst2html-3.py',
         'rst2html-docutils',
         required : false
@@ -39,7 +42,7 @@ if get_option('docs')
     rst_docs = [
         'ENVIRON.rst',
         'GAME.rst',
-	'ANIMATION_FORMAT.rst'
+        # 'ANIMATION_FORMAT.rst'
     ]
 
     txt_docs = [
@@ -47,11 +50,9 @@ if get_option('docs')
         'STORY.txt',
     ]
 
-    eol = host_machine.system() == 'windows' ? 'crlf' : 'lf'
-
     foreach f : txt_docs
         custom_target(f,
-            command : [eolconv, eol, '@INPUT@', '@OUTPUT@'],
+            command : [eolconv, host_eol_style, '@INPUT@', '@OUTPUT@'],
             input : f,
             output : f,
             install : true,
@@ -62,7 +63,7 @@ if get_option('docs')
     foreach f : rst_docs
         name = f.split('.')[0] + '.html'
         custom_target(name,
-            command : [eolconv, eol, '@INPUT@', '@OUTPUT@'],
+            command : [eolconv, host_eol_style, '@INPUT@', '@OUTPUT@'],
             input : rst_to_html.process(f),
             output : name,
             install : true,
@@ -73,7 +74,7 @@ if get_option('docs')
 
     if angle_enabled and host_machine.system() == 'windows'
         custom_target(f,
-            command : [eolconv, eol, '@INPUT@', '@OUTPUT@'],
+            command : [eolconv, host_eol_style, '@INPUT@', '@OUTPUT@'],
             input : 'LICENSE.ANGLE',
             output : 'LICENSE.txt',
             install : true,

@@ -20,7 +20,8 @@ if host_machine.system() == 'windows'
         rcdefs += ['-DBUILDTYPE_DEFINE=#define RELEASE_BUILD']
     endif
 
-    rc_target = custom_target('Windows resource file',
+    # https://github.com/mesonbuild/meson/issues/4301
+    rc_target = custom_target('windows-resource',
         command : [preprocess_command, rcdefs, '@INPUT@', '@OUTPUT@'],
         build_always : true,
         input : 'taisei.rc.in',
