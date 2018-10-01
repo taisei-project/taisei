@@ -142,14 +142,14 @@ option(
 option(
     'r_gles20',
     type : 'boolean',
-    value : true,
-    description : 'Build the OpenGL ES 2.0 renderer'
+    value : false,
+    description : 'Build the OpenGL ES 2.0 renderer (incomplete)'
 )
 
 option(
     'r_gles30',
     type : 'boolean',
-    value : true,
+    value : false,
     description : 'Build the OpenGL ES 3.0 renderer'
 )
 
