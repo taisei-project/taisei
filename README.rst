@@ -22,7 +22,9 @@ Dependencies
 -  libpng >= 1.5.0
 -  libjpeg
 -  freetype2
--  OpenGL >= 3.3
+-  OpenGL >= 3.3, or OpenGL ES >= 3.0
+-  libshaderc (optional, for OpenGL ES backends)
+-  crossc >= 1.5.0 (optional, for OpenGL ES backends)
 
 Build-only dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -53,6 +55,22 @@ maintainer’s choice. Alternatively you may want to add
     $prefix/data/
 
 ``install_relative`` is always set when building for Windows.
+
+The OpenGL ES 3.0 backend is not built by default. To enable it, do:
+
+::
+
+    meson configure -Dr_gles30=true -Dshader_transpiler=true
+
+See `here <doc/ENVIRON.rst>`__ for information on how to activate it.
+Alternatively, do this to make GLES 3.0 the default backend:
+
+::
+
+    meson configure -Dr_default=gles30
+
+Note that while it's also possible to enable a GLES 2.0 backend, it's currently
+not functional.
 
 Where are my replays, screenshots and settings?
 -----------------------------------------------
