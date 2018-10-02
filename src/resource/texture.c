@@ -461,6 +461,12 @@ void fill_viewport_p(float xoff, float yoff, float ratio, float aspect, float an
 		rh = ratio;
 	}
 
+	if(r_supports(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN)) {
+		// FIXME: we should somehow account for this globally if possible...
+		yoff *= -1;
+		yoff += (1 - ratio);
+	}
+
 	bool texture_matrix_tainted = false;
 
 	if(xoff || yoff || rw != 1 || rh != 1 || angle) {
