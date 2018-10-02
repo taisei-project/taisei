@@ -717,13 +717,8 @@ void stage_draw_foreground(void) {
 			r_mat_translate(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames*1.1+3),0);
 			r_mat_scale(1+2*global.shake_view/VIEWPORT_W,1+2*global.shake_view/VIEWPORT_H,1);
 			r_mat_translate(-global.shake_view,-global.shake_view,0);
-
-			if(global.shake_view_fade) {
-				global.shake_view -= global.shake_view_fade;
-				if(global.shake_view <= 0)
-					global.shake_view = global.shake_view_fade = 0;
-			}
 		}
+
 		draw_framebuffer_tex(stage_get_fbpair(FBPAIR_FG)->front, VIEWPORT_W, VIEWPORT_H);
 	r_mat_pop();
 }

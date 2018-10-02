@@ -604,6 +604,15 @@ static FrameAction stage_logic_frame(void *arg) {
 	StageInfo *stage = fstate->stage;
 
 	stage_update_fps(fstate);
+
+	if(global.shake_view_fade) {
+		global.shake_view -= global.shake_view_fade;
+
+		if(global.shake_view <= 0) {
+			global.shake_view = global.shake_view_fade = 0;
+		}
+	}
+
 	((global.replaymode == REPLAY_PLAY) ? replay_input : stage_input)();
 
 	if(global.game_over != GAMEOVER_TRANSITIONING) {
