@@ -12,6 +12,8 @@
 #include "util.h"
 #include "resource.h"
 
+#include "renderer/api.h"
+
 typedef struct ObjFileData {
 	vec3_noalign *xs;
 	int xcount;
@@ -28,11 +30,13 @@ typedef struct ObjFileData {
 	int fverts;
 } ObjFileData;
 
-typedef struct Model {
-	uint *indices;
-	int icount;
-	int fverts;
-} Model;
+struct Model {
+	VertexArray *vertex_array;
+	size_t num_vertices;
+	size_t offset;
+	Primitive primitive;
+	bool indexed;
+};
 
 char* model_path(const char *name);
 bool check_model_path(const char *path);

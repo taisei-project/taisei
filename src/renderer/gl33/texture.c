@@ -119,11 +119,15 @@ static void gl33_texture_set(Texture *tex, uint mipmap, const Pixmap *image) {
 	GLTextureFormatTuple *fmt = prepare_pixmap(tex, image, &pix);
 	void *image_data = pix.data.untyped;
 
+	GLuint prev_pbo;
+
 	gl33_bind_texture(tex, false);
 	gl33_sync_texunit(tex->binding_unit, false, true);
-	gl33_bind_pbo(tex->pbo);
 
 	if(tex->pbo) {
+		prev_pbo = gl33_buffer_current(GL33_BUFFER_BINDING_PIXEL_UNPACK);
+		gl33_bind_buffer(GL33_BUFFER_BINDING_PIXEL_UNPACK, tex->pbo);
+		gl33_sync_buffer(GL33_BUFFER_BINDING_PIXEL_UNPACK);
 		glBufferData(GL_PIXEL_UNPACK_BUFFER, pixmap_data_size(&pix), image_data, GL_STREAM_DRAW);
 		image_data = NULL;
 	}
@@ -145,7 +149,10 @@ static void gl33_texture_set(Texture *tex, uint mipmap, const Pixmap *image) {
 
 	free(pix.data.untyped);
 
-	gl33_bind_pbo(0);
+	if(tex->pbo) {
+		gl33_bind_buffer(GL33_BUFFER_BINDING_PIXEL_UNPACK, prev_pbo);
+	}
+
 	tex->mipmaps_outdated = true;
 }
 

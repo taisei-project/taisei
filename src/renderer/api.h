@@ -12,19 +12,18 @@
 #include "util.h"
 #include "util/pixmap.h"
 #include "color.h"
-#include "resource/resource.h"
-#include "resource/shader_program.h"
-#include "resource/texture.h"
-#include "resource/model.h"
-#include "resource/sprite.h"
 #include "common/shader.h"
+#include "resource/resource.h"
 
 typedef struct Texture Texture;
 typedef struct Framebuffer Framebuffer;
 typedef struct VertexBuffer VertexBuffer;
 typedef struct VertexArray VertexArray;
+typedef struct IndexBuffer IndexBuffer;
 typedef struct ShaderObject ShaderObject;
 typedef struct ShaderProgram ShaderProgram;
+typedef struct Sprite Sprite;
+typedef struct Model Model;
 
 enum {
 	R_DEBUG_LABEL_SIZE = 128,
@@ -581,7 +580,8 @@ void _r_uniform_sampler_array(const char *uniform, uint offset, uint count, cons
 	) \
 ))(uniform, offset, count, values)
 
-void r_draw(Primitive prim, uint first, uint count, uint32_t *indices, uint instances, uint base_instance);
+void r_draw(VertexArray *varr, Primitive prim, uint firstvert, uint count, uint instances, uint base_instance);
+void r_draw_indexed(VertexArray *varr, Primitive prim, uint firstidx, uint count, uint instances, uint base_instance);
 
 Texture* r_texture_create(const TextureParams *params) attr_nonnull(1);
 void r_texture_get_size(Texture *tex, uint mipmap, uint *width, uint *height) attr_nonnull(1);
@@ -620,16 +620,26 @@ void r_vertex_buffer_destroy(VertexBuffer *vbuf) attr_nonnull(1);
 void r_vertex_buffer_invalidate(VertexBuffer *vbuf) attr_nonnull(1);
 SDL_RWops* r_vertex_buffer_get_stream(VertexBuffer *vbuf) attr_nonnull(1);
 
+IndexBuffer* r_index_buffer_create(size_t max_elements);
+size_t r_index_buffer_get_capacity(IndexBuffer *ibuf) attr_nonnull(1);
+const char* r_index_buffer_get_debug_label(IndexBuffer *ibuf) attr_nonnull(1);
+void r_index_buffer_set_debug_label(IndexBuffer *ibuf, const char *label) attr_nonnull(1);
+void r_index_buffer_set_offset(IndexBuffer *ibuf, size_t offset) attr_nonnull(1);
+size_t r_index_buffer_get_offset(IndexBuffer *ibuf) attr_nonnull(1);
+void r_index_buffer_add_indices(IndexBuffer *ibuf, uint index_ofs, size_t num_indices, uint indices[num_indices]) attr_nonnull(1, 4);
+void r_index_buffer_destroy(IndexBuffer *ibuf) attr_nonnull(1);
+
 VertexArray* r_vertex_array_create(void);
 const char* r_vertex_array_get_debug_label(VertexArray *varr) attr_nonnull(1);
 void r_vertex_array_set_debug_label(VertexArray *varr, const char* label) attr_nonnull(1);
 void r_vertex_array_destroy(VertexArray *varr) attr_nonnull(1);
-void r_vertex_array_attach_buffer(VertexArray *varr, VertexBuffer *vbuf, uint attachment) attr_nonnull(1, 2);
-VertexBuffer* r_vertex_array_get_attachment(VertexArray *varr, uint attachment)  attr_nonnull(1);
+void r_vertex_array_attach_vertex_buffer(VertexArray *varr, VertexBuffer *vbuf, uint attachment) attr_nonnull(1, 2);
+VertexBuffer* r_vertex_array_get_vertex_attachment(VertexArray *varr, uint attachment)  attr_nonnull(1);
+void r_vertex_array_attach_index_buffer(VertexArray *varr, IndexBuffer *ibuf) attr_nonnull(1);
+IndexBuffer* r_vertex_array_get_index_attachment(VertexArray *varr)  attr_nonnull(1);
 void r_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]) attr_nonnull(1, 3);
 
-void r_vertex_array(VertexArray *varr) attr_nonnull(1);
-VertexArray* r_vertex_array_current(void);
+void r_model_add_static(Model *out_mdl, Primitive prim, size_t num_vertices, GenericModelVertex vertices[num_vertices], uint indices[num_vertices]);
 
 void r_vsync(VsyncMode mode);
 VsyncMode r_vsync_current(void);
@@ -664,7 +674,7 @@ void r_state_pop(void);
 
 void r_draw_quad(void);
 void r_draw_quad_instanced(uint instances);
-void r_draw_model_ptr(Model *model) attr_nonnull(1);
+void r_draw_model_ptr(Model *model, uint instances, uint base_instance) attr_nonnull(1);
 void r_draw_sprite(const SpriteParams *params) attr_nonnull(1);
 
 void r_flush_sprites(void);
@@ -774,7 +784,12 @@ void r_clear(ClearBufferFlags flags, const Color *colorval, float depthval) {
 
 static inline attr_must_inline attr_nonnull(1)
 void r_draw_model(const char *model) {
-	r_draw_model_ptr(get_resource_data(RES_MODEL, model, RESF_UNSAFE));
+	r_draw_model_ptr(get_resource_data(RES_MODEL, model, RESF_UNSAFE), 0, 0);
+}
+
+static inline attr_must_inline attr_nonnull(1)
+void r_draw_model_instanced(const char *model, uint instances, uint base_instance) {
+	r_draw_model_ptr(get_resource_data(RES_MODEL, model, RESF_UNSAFE), instances, base_instance);
 }
 
 static inline attr_must_inline

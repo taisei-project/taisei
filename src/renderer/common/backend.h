@@ -23,7 +23,8 @@ typedef struct RendererFuncs {
 	void (*capabilities)(r_capability_bits_t capbits);
 	r_capability_bits_t (*capabilities_current)(void);
 
-	void (*draw)(Primitive prim, uint first, uint count, uint32_t * indices, uint instances, uint base_instance);
+	void (*draw)(VertexArray *varr, Primitive prim, uint firstvert, uint count, uint instances, uint base_instance);
+	void (*draw_indexed)(VertexArray *varr, Primitive prim, uint firstidx, uint count, uint instances, uint base_instance);
 
 	void (*color4)(float r, float g, float b, float a);
 	const Color* (*color_current)(void);
@@ -90,16 +91,24 @@ typedef struct RendererFuncs {
 	void (*vertex_buffer_invalidate)(VertexBuffer *vbuf);
 	SDL_RWops* (*vertex_buffer_get_stream)(VertexBuffer *vbuf);
 
+	IndexBuffer* (*index_buffer_create)(size_t max_elements);
+	size_t (*index_buffer_get_capacity)(IndexBuffer *ibuf);
+	const char* (*index_buffer_get_debug_label)(IndexBuffer *ibuf);
+	void (*index_buffer_set_debug_label)(IndexBuffer *ibuf, const char *label);
+	void (*index_buffer_set_offset)(IndexBuffer *ibuf, size_t offset);
+	size_t (*index_buffer_get_offset)(IndexBuffer *ibuf);
+	void (*index_buffer_add_indices)(IndexBuffer *ibuf, uint index_ofs, size_t num_indices, uint indices[num_indices]);
+	void (*index_buffer_destroy)(IndexBuffer *ibuf);
+
 	VertexArray* (*vertex_array_create)(void);
 	const char* (*vertex_array_get_debug_label)(VertexArray *varr);
 	void (*vertex_array_set_debug_label)(VertexArray *varr, const char *label);
 	void (*vertex_array_destroy)(VertexArray *varr);
 	void (*vertex_array_layout)(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]);
-	void (*vertex_array_attach_buffer)(VertexArray *varr, VertexBuffer *vbuf, uint attachment);
-	VertexBuffer* (*vertex_array_get_attachment)(VertexArray *varr, uint attachment);
-
-	void (*vertex_array)(VertexArray *varr) attr_nonnull(1);
-	VertexArray* (*vertex_array_current)(void);
+	void (*vertex_array_attach_vertex_buffer)(VertexArray *varr, VertexBuffer *vbuf, uint attachment);
+	void (*vertex_array_attach_index_buffer)(VertexArray *varr, IndexBuffer *ibuf);
+	VertexBuffer* (*vertex_array_get_vertex_attachment)(VertexArray *varr, uint attachment);
+	IndexBuffer* (*vertex_array_get_index_attachment)(VertexArray *varr);
 
 	void (*vsync)(VsyncMode mode);
 	VsyncMode (*vsync_current)(void);

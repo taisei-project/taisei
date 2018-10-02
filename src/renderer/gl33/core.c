@@ -17,7 +17,9 @@
 #include "shader_object.h"
 #include "shader_program.h"
 #include "framebuffer.h"
+#include "common_buffer.h"
 #include "vertex_buffer.h"
+#include "index_buffer.h"
 #include "vertex_array.h"
 #include "../glcommon/debug.h"
 #include "../glcommon/vtable.h"
@@ -54,14 +56,9 @@ static struct {
 	} framebuffer;
 
 	struct {
-		VertexArray *active;
-		VertexArray *pending;
-	} vertex_array;
-
-	struct {
 		GLuint active;
 		GLuint pending;
-	} vbo;
+	} buffer_objects[GL33_NUM_BUFFER_BINDINGS];
 
 	struct {
 		GLuint active;
@@ -109,7 +106,6 @@ static struct {
 	Color color;
 	Color clear_color;
 	float clear_depth;
-	GLuint pbo;
 	r_feature_bits_t features;
 
 	SDL_GLContext *gl_context;
@@ -333,7 +329,7 @@ static void gl33_sync_state(void) {
 	gl33_sync_texunits(true);
 	gl33_sync_framebuffer();
 	gl33_sync_viewport();
-	gl33_sync_vertex_array();
+	gl33_sync_vao();
 	gl33_sync_blend_mode();
 
 	if(R.capabilities.active & r_capability_bit(RCAP_CULL_FACE)) {
@@ -513,27 +509,29 @@ void gl33_sync_texunits(bool prepare_rendering) {
 	}
 }
 
-void gl33_sync_vertex_array(void) {
-	R.vertex_array.active = R.vertex_array.pending;
-
-	if(R.vertex_array.active != NULL) {
-		gl33_vertex_array_flush_buffers(R.vertex_array.active);
-	}
-
-	gl33_sync_vao();
-}
-
-void gl33_sync_vbo(void) {
-	if(R.vbo.active != R.vbo.pending) {
-		R.vbo.active = R.vbo.pending;
-		glBindBuffer(GL_ARRAY_BUFFER, R.vbo.active);
-	}
-}
-
 void gl33_sync_vao(void) {
 	if(R.vao.active != R.vao.pending) {
 		R.vao.active = R.vao.pending;
 		glBindVertexArray(R.vao.active);
+	}
+}
+
+GLenum gl33_bindidx_to_glenum(BufferBindingIndex bindidx) {
+	static GLenum map[] = {
+		[GL33_BUFFER_BINDING_ARRAY] = GL_ARRAY_BUFFER,
+		[GL33_BUFFER_BINDING_COPY_WRITE] = GL_COPY_WRITE_BUFFER,
+		[GL33_BUFFER_BINDING_PIXEL_UNPACK] = GL_PIXEL_UNPACK_BUFFER,
+	};
+
+	static_assert(sizeof(map) == sizeof(GLenum) * GL33_NUM_BUFFER_BINDINGS, "Fix the lookup table");
+	assert((uint)bindidx < GL33_NUM_BUFFER_BINDINGS);
+	return map[bindidx];
+}
+
+void gl33_sync_buffer(BufferBindingIndex bindidx) {
+	if(R.buffer_objects[bindidx].active != R.buffer_objects[bindidx].pending) {
+		R.buffer_objects[bindidx].active = R.buffer_objects[bindidx].pending;
+		glBindBuffer(gl33_bindidx_to_glenum(bindidx), R.buffer_objects[bindidx].active);
 	}
 }
 
@@ -656,28 +654,16 @@ uint gl33_bind_texture(Texture *texture, bool for_rendering) {
 	return TU_INDEX(texture->binding_unit);
 }
 
-void gl33_bind_vbo(GLuint vbo) {
-	R.vbo.pending = vbo;
+void gl33_bind_buffer(BufferBindingIndex bindidx, GLuint gl_handle) {
+	R.buffer_objects[bindidx].pending = gl_handle;
 }
 
 void gl33_bind_vao(GLuint vao) {
 	R.vao.pending = vao;
 }
 
-void gl33_bind_pbo(GLuint pbo) {
-	if(!glext.pixel_buffer_object) {
-		return;
-	}
-
-	if(pbo != R.pbo) {
-		// r_flush_sprites();
-		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
-		R.pbo = pbo;
-	}
-}
-
-GLuint gl33_vbo_current(void) {
-	return R.vbo.pending;
+GLuint gl33_buffer_current(BufferBindingIndex bindidx) {
+	return R.buffer_objects[bindidx].pending;
 }
 
 GLuint gl33_vao_current(void) {
@@ -711,8 +697,12 @@ void gl33_texture_deleted(Texture *tex) {
 		}
 	}
 
-	if(R.pbo == tex->pbo) {
-		R.pbo = 0;
+	if(R.buffer_objects[GL33_BUFFER_BINDING_PIXEL_UNPACK].pending == tex->pbo) {
+		R.buffer_objects[GL33_BUFFER_BINDING_PIXEL_UNPACK].pending = 0;
+	}
+
+	if(R.buffer_objects[GL33_BUFFER_BINDING_PIXEL_UNPACK].active == tex->pbo) {
+		R.buffer_objects[GL33_BUFFER_BINDING_PIXEL_UNPACK].active = 0;
 	}
 }
 
@@ -741,26 +731,27 @@ void gl33_shader_deleted(ShaderProgram *prog) {
 	}
 }
 
-void gl33_vertex_buffer_deleted(VertexBuffer *vbuf) {
-	if(R.vbo.active == vbuf->gl_handle) {
-		R.vbo.active = 0;
+void gl33_buffer_deleted(CommonBuffer *cbuf) {
+	if(R.buffer_objects[cbuf->bindidx].active == cbuf->gl_handle) {
+		R.buffer_objects[cbuf->bindidx].active = 0;
 	}
 
-	if(R.vbo.pending == vbuf->gl_handle) {
-		R.vbo.pending = 0;
+	if(R.buffer_objects[cbuf->bindidx].pending == cbuf->gl_handle) {
+		R.buffer_objects[cbuf->bindidx].pending = 0;
+	}
+}
+
+void gl33_vertex_buffer_deleted(VertexBuffer *vbuf) {
+	if(R.buffer_objects[GL33_BUFFER_BINDING_ARRAY].active == vbuf->cbuf.gl_handle) {
+		R.buffer_objects[GL33_BUFFER_BINDING_ARRAY].active = 0;
+	}
+
+	if(R.buffer_objects[GL33_BUFFER_BINDING_ARRAY].pending == vbuf->cbuf.gl_handle) {
+		R.buffer_objects[GL33_BUFFER_BINDING_ARRAY].pending = 0;
 	}
 }
 
 void gl33_vertex_array_deleted(VertexArray *varr) {
-	if(R.vertex_array.active == varr) {
-		R.vertex_array.active = NULL;
-	}
-
-	if(R.vertex_array.pending == varr) {
-		R.vertex_array.pending = NULL;
-		r_vertex_array(r_vertex_array_static_models());
-	}
-
 	if(R.vao.active == varr->gl_handle) {
 		R.vao.active = 0;
 	}
@@ -862,53 +853,69 @@ static const Color* gl33_color_current(void) {
 	return &R.color;
 }
 
-static void gl33_vertex_array(VertexArray *varr) {
-	R.vertex_array.pending = varr;
-	gl33_bind_vao(varr->gl_handle);
-}
-
-static VertexArray* gl33_vertex_array_current(void) {
-	return R.vertex_array.pending;
-}
-
-static void gl33_draw(Primitive prim, uint first, uint count, uint32_t *indices, uint instances, uint base_instance) {
+static void gl33_draw(VertexArray *varr, Primitive prim, uint firstvert, uint count, uint instances, uint base_instance) {
 	assert(count > 0);
 	assert((uint)prim < sizeof(prim_to_gl_prim)/sizeof(GLenum));
-
-	r_flush_sprites();
-
 	GLuint gl_prim = prim_to_gl_prim[prim];
-	gl33_sync_state();
-
-	gl33_stats_pre_draw();
-
-	if(indices == NULL) {
-		if(instances) {
-			if(base_instance) {
-				glDrawArraysInstancedBaseInstance(gl_prim, first, count, instances, base_instance);
-			} else {
-				glDrawArraysInstanced(gl_prim, first, count, instances);
-			}
-		} else {
-			glDrawArrays(gl_prim, first, count);
-		}
-	} else {
-		if(instances) {
-			if(base_instance) {
-				glDrawElementsInstancedBaseInstance(gl_prim, count, GL_UNSIGNED_INT, indices, instances, base_instance);
-			} else {
-				glDrawElementsInstanced(gl_prim, count, GL_UNSIGNED_INT, indices, instances);
-			}
-		} else {
-			glDrawElements(gl_prim, count, GL_UNSIGNED_INT, indices);
-		}
-	}
 
 	gl33_stats_post_draw();
+	gl33_stats_pre_draw();
+	r_flush_sprites();
+	GLuint prev_vao = gl33_vao_current();
+	gl33_bind_vao(varr->gl_handle);
+	gl33_sync_state();
+	gl33_vertex_array_flush_buffers(varr);
+
+	if(instances) {
+		if(base_instance) {
+			glDrawArraysInstancedBaseInstance(gl_prim, firstvert, count, instances, base_instance);
+		} else {
+			glDrawArraysInstanced(gl_prim, firstvert, count, instances);
+		}
+	} else {
+		glDrawArrays(gl_prim, firstvert, count);
+	}
 
 	if(R.framebuffer.active) {
 		gl33_framebuffer_taint(R.framebuffer.active);
 	}
+
+	gl33_bind_vao(prev_vao);
+	gl33_stats_post_draw();
+}
+
+static void gl33_draw_indexed(VertexArray *varr, Primitive prim, uint firstidx, uint count, uint instances, uint base_instance) {
+	assert(count > 0);
+	assert((uint)prim < sizeof(prim_to_gl_prim)/sizeof(GLenum));
+	assert(varr->index_attachment != NULL);
+	GLuint gl_prim = prim_to_gl_prim[prim];
+
+	gl33_stats_post_draw();
+	gl33_stats_pre_draw();
+	r_flush_sprites();
+	GLuint prev_vao = gl33_vao_current();
+	gl33_bind_vao(varr->gl_handle);
+	gl33_sync_state();
+	gl33_vertex_array_flush_buffers(varr);
+
+	uintptr_t iofs = firstidx * sizeof(gl33_ibo_index_t);
+
+	if(instances) {
+		if(base_instance) {
+			glDrawElementsInstancedBaseInstance(gl_prim, count, GL33_IBO_GL_DATATYPE, (void*)iofs, instances, base_instance);
+		} else {
+			glDrawElementsInstanced(gl_prim, count, GL33_IBO_GL_DATATYPE, (void*)iofs, instances);
+		}
+	} else {
+		glDrawElements(gl_prim, count, GL33_IBO_GL_DATATYPE, (void*)iofs);
+	}
+
+	if(R.framebuffer.active) {
+		gl33_framebuffer_taint(R.framebuffer.active);
+	}
+
+	gl33_bind_vao(prev_vao);
+	gl33_stats_post_draw();
 }
 
 static void gl33_framebuffer(Framebuffer *fb) {
@@ -1004,6 +1011,7 @@ RendererBackend _r_backend_gl33 = {
 		.capabilities = gl33_capabilities,
 		.capabilities_current = gl33_capabilities_current,
 		.draw = gl33_draw,
+		.draw_indexed = gl33_draw_indexed,
 		.color4 = gl33_color4,
 		.color_current = gl33_color_current,
 		.blend = gl33_blend,
@@ -1056,15 +1064,23 @@ RendererBackend _r_backend_gl33 = {
 		.vertex_buffer_destroy = gl33_vertex_buffer_destroy,
 		.vertex_buffer_invalidate = gl33_vertex_buffer_invalidate,
 		.vertex_buffer_get_stream = gl33_vertex_buffer_get_stream,
+		.index_buffer_create = gl33_index_buffer_create,
+		.index_buffer_get_capacity = gl33_index_buffer_get_capacity,
+		.index_buffer_get_debug_label = gl33_index_buffer_get_debug_label,
+		.index_buffer_set_debug_label = gl33_index_buffer_set_debug_label,
+		.index_buffer_set_offset = gl33_index_buffer_set_offset,
+		.index_buffer_get_offset = gl33_index_buffer_get_offset,
+		.index_buffer_add_indices = gl33_index_buffer_add_indices,
+		.index_buffer_destroy = gl33_index_buffer_destroy,
 		.vertex_array_destroy = gl33_vertex_array_destroy,
 		.vertex_array_create = gl33_vertex_array_create,
 		.vertex_array_set_debug_label = gl33_vertex_array_set_debug_label,
 		.vertex_array_get_debug_label = gl33_vertex_array_get_debug_label,
 		.vertex_array_layout = gl33_vertex_array_layout,
-		.vertex_array_attach_buffer = gl33_vertex_array_attach_buffer,
-		.vertex_array_get_attachment = gl33_vertex_array_get_attachment,
-		.vertex_array = gl33_vertex_array,
-		.vertex_array_current = gl33_vertex_array_current,
+		.vertex_array_attach_vertex_buffer = gl33_vertex_array_attach_vertex_buffer,
+		.vertex_array_get_vertex_attachment = gl33_vertex_array_get_vertex_attachment,
+		.vertex_array_attach_index_buffer = gl33_vertex_array_attach_index_buffer,
+		.vertex_array_get_index_attachment = gl33_vertex_array_get_index_attachment,
 		.vsync = gl33_vsync,
 		.vsync_current = gl33_vsync_current,
 		.swap = gl33_swap,

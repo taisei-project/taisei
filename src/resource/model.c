@@ -17,6 +17,9 @@
 #include "resource.h"
 #include "renderer/api.h"
 
+// TODO: Rewrite all of this mess, maybe even consider a different format
+// IQM for instance: http://sauerbraten.org/iqm/
+
 ResourceHandler model_res_handler = {
 	.type = RES_MODEL,
 	.typename = "model",
@@ -43,21 +46,19 @@ bool check_model_path(const char *path) {
 }
 
 typedef struct ModelLoadData {
-	ObjFileData *obj;
 	GenericModelVertex *verts;
-	Model *model;
+	uint *indices;
+	uint icount;
 } ModelLoadData;
 
 void* load_model_begin(const char *path, uint flags) {
-	Model *m = malloc(sizeof(Model));
 	ObjFileData *data = malloc(sizeof(ObjFileData));
 	GenericModelVertex *verts;
 
 	parse_obj(path, data);
 
-	m->fverts = data->fverts;
-	m->indices = calloc(data->icount, sizeof(uint));
-	m->icount = data->icount;
+	uint *indices = calloc(data->icount, sizeof(uint));
+	uint icount = data->icount;
 
 	verts = calloc(data->icount, sizeof(GenericModelVertex));
 
@@ -94,21 +95,23 @@ void* load_model_begin(const char *path, uint flags) {
 			memcpy(verts[i].normal, data->normals[ni], sizeof(vec3_noalign));
 		}
 
-		m->indices[i] = i;
+		indices[i] = i;
 	}
+
+	free_obj(data);
+	free(data);
 
 #undef BADREF
 
 	ModelLoadData *ldata = malloc(sizeof(ModelLoadData));
-	ldata->obj = data;
 	ldata->verts = verts;
-	ldata->model = m;
+	ldata->indices = indices;
+	ldata->icount = icount;
 
 	return ldata;
 
 fail:
-	free(m->indices);
-	free(m);
+	free(indices);
 	free(verts);
 	free_obj(data);
 	free(data);
@@ -116,33 +119,23 @@ fail:
 }
 
 void* load_model_end(void *opaque, const char *path, uint flags) {
-	VertexBuffer *vbuf= r_vertex_buffer_static_models();
 	ModelLoadData *ldata = opaque;
 
 	if(!ldata) {
 		return NULL;
 	}
 
-	SDL_RWops *stream = r_vertex_buffer_get_stream(vbuf);
-	size_t ioffset = SDL_RWtell(stream);
-
-	for(int i = 0; i < ldata->obj->icount; ++i) {
-		ldata->model->indices[i] += ioffset / sizeof(GenericModelVertex);
-	}
-
-	SDL_RWwrite(stream, ldata->verts, sizeof(GenericModelVertex), ldata->obj->icount);
+	Model *model = calloc(1, sizeof(Model));
+	r_model_add_static(model, PRIM_TRIANGLES, ldata->icount, ldata->verts, ldata->indices);
 
 	free(ldata->verts);
-	free_obj(ldata->obj);
-	free(ldata->obj);
-	Model *m = ldata->model;
+	free(ldata->indices);
 	free(ldata);
 
-	return m;
+	return model;
 }
 
 void unload_model(void *model) { // Does not delete elements from the VBO, so doing this at runtime is leaking VBO space
-	free(((Model*)model)->indices);
 	free(model);
 }
 

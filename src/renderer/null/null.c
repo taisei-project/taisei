@@ -65,7 +65,7 @@ void null_uniform(Uniform *uniform, uint offset, uint count, const void *data) {
 
 UniformType null_uniform_type(Uniform *uniform) { return UNIFORM_FLOAT; }
 
-void null_draw(Primitive prim, uint first, uint count, uint32_t *indices, uint instances, uint base_instance) { }
+void null_draw(VertexArray *varr, Primitive prim, uint first, uint count, uint instances, uint base_instance) { }
 
 Texture* null_texture_create(const TextureParams *params) {
 	return (void*)&placeholder;
@@ -136,15 +136,24 @@ const char* null_vertex_buffer_get_debug_label(VertexBuffer *vbuf) { return "nul
 void null_vertex_buffer_destroy(VertexBuffer *vbuf) { }
 void null_vertex_buffer_invalidate(VertexBuffer *vbuf) { }
 
+IndexBuffer* null_index_buffer_create(size_t max_elements) { return (void*)&placeholder; }
+size_t null_index_buffer_get_capacity(IndexBuffer *ibuf) { return UINT32_MAX; }
+const char* null_index_buffer_get_debug_label(IndexBuffer *ibuf) { return "null index buffer"; }
+void null_index_buffer_set_debug_label(IndexBuffer *ibuf, const char *label) { }
+void null_index_buffer_set_offset(IndexBuffer *ibuf, size_t offset) { }
+size_t null_index_buffer_get_offset(IndexBuffer *ibuf) { return 0; }
+void null_index_buffer_add_indices(IndexBuffer *ibuf, uint index_ofs, size_t num_elements, uint indices[num_elements]) { }
+void null_index_buffer_destroy(IndexBuffer *ibuf) { }
+
 VertexArray* null_vertex_array_create(void) { return (void*)&placeholder; }
 void null_vertex_array_set_debug_label(VertexArray *varr, const char *label) { }
 const char* null_vertex_array_get_debug_label(VertexArray *varr) { return "null vertex array"; }
 void null_vertex_array_destroy(VertexArray *varr) { }
-void null_vertex_array_attach_buffer(VertexArray *varr, VertexBuffer *vbuf, uint attachment) { }
-VertexBuffer* null_vertex_array_get_attachment(VertexArray *varr, uint attachment) { return (void*)&placeholder; }
+void null_vertex_array_attach_vertex_buffer(VertexArray *varr, VertexBuffer *vbuf, uint attachment) { }
+void null_vertex_array_attach_index_buffer(VertexArray *varr, IndexBuffer *vbuf) { }
+VertexBuffer* null_vertex_array_get_vertex_attachment(VertexArray *varr, uint attachment) { return (void*)&placeholder; }
+IndexBuffer* null_vertex_array_get_index_attachment(VertexArray *varr) { return (void*)&placeholder; }
 void null_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]) { }
-void null_vertex_array(VertexArray *varr) { }
-VertexArray* null_vertex_array_current(void) { return (void*)&placeholder; }
 
 void null_clear(ClearBufferFlags flags) { }
 void null_clear_color4(float r, float g, float b, float a) { }
@@ -168,6 +177,7 @@ RendererBackend _r_backend_null = {
 		.capabilities = null_capabilities,
 		.capabilities_current = null_capabilities_current,
 		.draw = null_draw,
+		.draw_indexed = null_draw,
 		.color4 = null_color4,
 		.color_current = null_color_current,
 		.blend = null_blend,
@@ -220,15 +230,23 @@ RendererBackend _r_backend_null = {
 		.vertex_buffer_destroy = null_vertex_buffer_destroy,
 		.vertex_buffer_invalidate = null_vertex_buffer_invalidate,
 		.vertex_buffer_get_stream = null_vertex_buffer_get_stream,
+		.index_buffer_create = null_index_buffer_create,
+		.index_buffer_get_capacity = null_index_buffer_get_capacity,
+		.index_buffer_get_debug_label = null_index_buffer_get_debug_label,
+		.index_buffer_set_debug_label = null_index_buffer_set_debug_label,
+		.index_buffer_set_offset = null_index_buffer_set_offset,
+		.index_buffer_get_offset = null_index_buffer_get_offset,
+		.index_buffer_add_indices = null_index_buffer_add_indices,
+		.index_buffer_destroy = null_index_buffer_destroy,
 		.vertex_array_create = null_vertex_array_create,
 		.vertex_array_get_debug_label = null_vertex_array_get_debug_label,
 		.vertex_array_set_debug_label = null_vertex_array_set_debug_label,
 		.vertex_array_destroy = null_vertex_array_destroy,
 		.vertex_array_layout = null_vertex_array_layout,
-		.vertex_array_attach_buffer = null_vertex_array_attach_buffer,
-		.vertex_array_get_attachment = null_vertex_array_get_attachment,
-		.vertex_array = null_vertex_array,
-		.vertex_array_current = null_vertex_array_current,
+		.vertex_array_attach_vertex_buffer = null_vertex_array_attach_vertex_buffer,
+		.vertex_array_get_vertex_attachment = null_vertex_array_get_vertex_attachment,
+		.vertex_array_attach_index_buffer = null_vertex_array_attach_index_buffer,
+		.vertex_array_get_index_attachment = null_vertex_array_get_index_attachment,
 		.vsync = null_vsync,
 		.vsync_current = null_vsync_current,
 		.swap = null_swap,

@@ -16,6 +16,8 @@
 #include "common/state.h"
 #include "util/glm.h"
 #include "util/graphics.h"
+#include "resource/texture.h"
+#include "resource/sprite.h"
 
 #define B _r_backend.funcs
 
@@ -377,8 +379,12 @@ UniformType r_uniform_type(Uniform *uniform) {
 	return B.uniform_type(uniform);
 }
 
-void r_draw(Primitive prim, uint first, uint count, uint32_t *indices, uint instances, uint base_instance) {
-	B.draw(prim, first, count, indices, instances, base_instance);
+void r_draw(VertexArray *varr, Primitive prim, uint firstvert, uint count, uint instances, uint base_instance) {
+	B.draw(varr, prim, firstvert, count, instances, base_instance);
+}
+
+void r_draw_indexed(VertexArray* varr, Primitive prim, uint firstidx, uint count, uint instances, uint base_instance) {
+	B.draw_indexed(varr, prim, firstidx, count, instances, base_instance);
 }
 
 Texture* r_texture_create(const TextureParams *params) {
@@ -520,6 +526,38 @@ SDL_RWops* r_vertex_buffer_get_stream(VertexBuffer *vbuf) {
 	return B.vertex_buffer_get_stream(vbuf);
 }
 
+IndexBuffer* r_index_buffer_create(size_t max_elements) {
+	return B.index_buffer_create(max_elements);
+}
+
+size_t r_index_buffer_get_capacity(IndexBuffer *ibuf) {
+	return B.index_buffer_get_capacity(ibuf);
+}
+
+const char* r_index_buffer_get_debug_label(IndexBuffer *ibuf) {
+	return B.index_buffer_get_debug_label(ibuf);
+}
+
+void r_index_buffer_set_debug_label(IndexBuffer *ibuf, const char *label) {
+	B.index_buffer_set_debug_label(ibuf, label);
+}
+
+void r_index_buffer_set_offset(IndexBuffer *ibuf, size_t offset) {
+	B.index_buffer_set_offset(ibuf, offset);
+}
+
+size_t r_index_buffer_get_offset(IndexBuffer *ibuf) {
+	return B.index_buffer_get_offset(ibuf);
+}
+
+void r_index_buffer_add_indices(IndexBuffer *ibuf, uint index_ofs, size_t num_indices, uint indices[num_indices]) {
+	B.index_buffer_add_indices(ibuf, index_ofs, num_indices, indices);
+}
+
+void r_index_buffer_destroy(IndexBuffer *ibuf) {
+	B.index_buffer_destroy(ibuf);
+}
+
 VertexArray* r_vertex_array_create(void) {
 	return B.vertex_array_create();
 }
@@ -536,25 +574,24 @@ void r_vertex_array_destroy(VertexArray *varr) {
 	B.vertex_array_destroy(varr);
 }
 
-void r_vertex_array_attach_buffer(VertexArray *varr, VertexBuffer *vbuf, uint attachment) {
-	B.vertex_array_attach_buffer(varr, vbuf, attachment);
+void r_vertex_array_attach_vertex_buffer(VertexArray *varr, VertexBuffer *vbuf, uint attachment) {
+	B.vertex_array_attach_vertex_buffer(varr, vbuf, attachment);
 }
 
-VertexBuffer* r_vertex_array_get_attachment(VertexArray *varr, uint attachment) {
-	return B.vertex_array_get_attachment(varr, attachment);
+VertexBuffer* r_vertex_array_get_vertex_attachment(VertexArray *varr, uint attachment) {
+	return B.vertex_array_get_vertex_attachment(varr, attachment);
+}
+
+void r_vertex_array_attach_index_buffer(VertexArray *varr, IndexBuffer *ibuf) {
+	B.vertex_array_attach_index_buffer(varr, ibuf);
+}
+
+IndexBuffer* r_vertex_array_get_index_attachment(VertexArray *varr) {
+	return B.vertex_array_get_index_attachment(varr);
 }
 
 void r_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]) {
 	B.vertex_array_layout(varr, nattribs, attribs);
-}
-
-void r_vertex_array(VertexArray *varr) {
-	_r_state_touch_vertex_array();
-	B.vertex_array(varr);
-}
-
-VertexArray* r_vertex_array_current(void) {
-	return B.vertex_array_current();
 }
 
 void r_vsync(VsyncMode mode) {

@@ -11,6 +11,8 @@
 #include "sprite_batch.h"
 #include "../api.h"
 #include "util/glm.h"
+#include "resource/sprite.h"
+#include "resource/model.h"
 
 typedef struct SpriteAttribs {
 	mat4 transform;
@@ -42,6 +44,8 @@ static struct SpriteBatchState {
 	uint depth_test_enabled : 1;
 	uint depth_write_enabled : 1;
 	uint num_pending;
+
+	Model quad;
 
 	struct {
 		uint flushes;
@@ -101,8 +105,14 @@ void _r_sprite_batch_init(void) {
 	_r_sprite_batch.varr = r_vertex_array_create();
 	r_vertex_array_set_debug_label(_r_sprite_batch.varr, "Sprite batch vertex array");
 	r_vertex_array_layout(_r_sprite_batch.varr, sizeof(fmt)/sizeof(*fmt), fmt);
-	r_vertex_array_attach_buffer(_r_sprite_batch.varr, r_vertex_buffer_static_models(), 0);
-	r_vertex_array_attach_buffer(_r_sprite_batch.varr, _r_sprite_batch.vbuf, 1);
+	r_vertex_array_attach_vertex_buffer(_r_sprite_batch.varr, r_vertex_buffer_static_models(), 0);
+	r_vertex_array_attach_vertex_buffer(_r_sprite_batch.varr, _r_sprite_batch.vbuf, 1);
+
+	_r_sprite_batch.quad.indexed = false;
+	_r_sprite_batch.quad.num_vertices = 4;
+	_r_sprite_batch.quad.offset = 0;
+	_r_sprite_batch.quad.primitive = PRIM_TRIANGLE_STRIP;
+	_r_sprite_batch.quad.vertex_array = _r_sprite_batch.varr;
 }
 
 void _r_sprite_batch_shutdown(void) {
@@ -140,7 +150,6 @@ void r_flush_sprites(void) {
 	r_mat_push();
 	glm_mat4_copy(_r_sprite_batch.projection, *r_mat_current_ptr(MM_PROJECTION));
 
-	r_vertex_array(_r_sprite_batch.varr);
 	r_shader_ptr(_r_sprite_batch.shader);
 	r_uniform_sampler("tex", _r_sprite_batch.primary_texture);
 	r_uniform_sampler_array("tex_aux[0]", 0, R_NUM_SPRITE_AUX_TEXTURES, _r_sprite_batch.aux_textures);
@@ -153,7 +162,7 @@ void r_flush_sprites(void) {
 	r_cull(_r_sprite_batch.cull_mode);
 
 	if(r_supports(RFEAT_DRAW_INSTANCED_BASE_INSTANCE)) {
-		r_draw(PRIM_TRIANGLE_STRIP, 0, 4, NULL, pending, _r_sprite_batch.base_instance);
+		r_draw_model_ptr(&_r_sprite_batch.quad, pending, _r_sprite_batch.base_instance);
 		_r_sprite_batch.base_instance += pending;
 
 		SDL_RWops *stream = r_vertex_buffer_get_stream(_r_sprite_batch.vbuf);
@@ -165,7 +174,7 @@ void r_flush_sprites(void) {
 			_r_sprite_batch.base_instance = 0;
 		}
 	} else {
-		r_draw(PRIM_TRIANGLE_STRIP, 0, 4, NULL, pending, 0);
+		r_draw_model_ptr(&_r_sprite_batch.quad, pending, 0);
 		r_vertex_buffer_invalidate(_r_sprite_batch.vbuf);
 	}
 

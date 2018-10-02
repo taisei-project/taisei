@@ -9,33 +9,11 @@
 #pragma once
 #include "taisei.h"
 
-#include "opengl.h"
-#include <SDL.h>
+#include "common_buffer.h"
 
 typedef struct VertexBuffer {
-	union {
-		SDL_RWops stream;
-		struct {
-			char padding[offsetof(SDL_RWops, hidden)];
-
-			struct {
-				char *buffer;
-				size_t update_begin;
-				size_t update_end;
-			} cache;
-
-			size_t offset;
-			size_t size;
-			GLuint gl_handle;
-			char debug_label[R_DEBUG_LABEL_SIZE];
-		};
-	};
+	CommonBuffer cbuf;
 } VertexBuffer;
-
-static_assert(
-	offsetof(VertexBuffer, stream) == 0,
-	"stream should be the first member in VertexBuffer for simplicity"
-);
 
 VertexBuffer* gl33_vertex_buffer_create(size_t capacity, void *data);
 const char* gl33_vertex_buffer_get_debug_label(VertexBuffer *vbuf);

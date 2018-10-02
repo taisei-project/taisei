@@ -13,11 +13,13 @@
 #include "list.h"
 #include "stageobjects.h"
 #include "renderer/api.h"
+#include "resource/model.h"
 
 static struct {
 	VertexArray *varr;
 	VertexBuffer *vbuf;
 	ShaderProgram *shader_generic;
+	Model quad_generic;
 } lasers;
 
 typedef struct LaserInstancedAttribs {
@@ -54,9 +56,15 @@ void lasers_preload(void) {
 	lasers.varr = r_vertex_array_create();
 	r_vertex_array_set_debug_label(lasers.varr, "Lasers vertex array");
 	r_vertex_array_layout(lasers.varr, sizeof(fmt)/sizeof(VertexAttribFormat), fmt);
-	r_vertex_array_attach_buffer(lasers.varr, r_vertex_buffer_static_models(), 0);
-	r_vertex_array_attach_buffer(lasers.varr, lasers.vbuf, 1);
+	r_vertex_array_attach_vertex_buffer(lasers.varr, r_vertex_buffer_static_models(), 0);
+	r_vertex_array_attach_vertex_buffer(lasers.varr, lasers.vbuf, 1);
 	r_vertex_array_layout(lasers.varr, sizeof(fmt)/sizeof(VertexAttribFormat), fmt);
+
+	lasers.quad_generic.indexed = false;
+	lasers.quad_generic.num_vertices = 4;
+	lasers.quad_generic.offset = 0;
+	lasers.quad_generic.primitive = PRIM_TRIANGLE_STRIP;
+	lasers.quad_generic.vertex_array = lasers.varr;
 
 	lasers.shader_generic = r_shader_get("laser_generic");
 }
@@ -150,6 +158,7 @@ static void draw_laser_curve_specialized(Laser *l) {
 		return;
 	}
 
+	r_shader_ptr(l->shader);
 	r_color(&l->color);
 	r_uniform_sampler("tex", "part/lasercurve");
 	r_uniform_vec2_complex("origin", l->pos);
@@ -158,7 +167,7 @@ static void draw_laser_curve_specialized(Laser *l) {
 	r_uniform_float("width", l->width);
 	r_uniform_float("width_exponent", l->width_exponent);
 	r_uniform_int("span", instances);
-	r_draw(PRIM_TRIANGLE_STRIP, 0, 4, NULL, instances, 0);
+	r_draw_quad_instanced(instances);
 }
 
 static void draw_laser_curve_generic(Laser *l) {
@@ -169,6 +178,7 @@ static void draw_laser_curve_generic(Laser *l) {
 		return;
 	}
 
+	r_shader_ptr(lasers.shader_generic);
 	r_color(&l->color);
 	r_uniform_sampler("tex", "part/lasercurve");
 	r_uniform_float("timeshift", timeshift);
@@ -176,46 +186,30 @@ static void draw_laser_curve_generic(Laser *l) {
 	r_uniform_float("width_exponent", l->width_exponent);
 	r_uniform_int("span", instances);
 
-	LaserInstancedAttribs attrs[instances], *aptr = attrs;
+	SDL_RWops *stream = r_vertex_buffer_get_stream(lasers.vbuf);
 	r_vertex_buffer_invalidate(lasers.vbuf);
 
-	for(uint i = 0; i < instances; ++i, ++aptr) {
+	for(uint i = 0; i < instances; ++i) {
 		complex pos = l->prule(l, i * 0.5 + timeshift);
 		complex delta = pos - l->prule(l, i * 0.5 + timeshift - 0.1);
 
-		aptr->pos[0] = creal(pos);
-		aptr->pos[1] = cimag(pos);
-		aptr->delta[0] = creal(delta);
-		aptr->delta[1] = cimag(delta);
+		LaserInstancedAttribs attr;
+		attr.pos[0] = creal(pos);
+		attr.pos[1] = cimag(pos);
+		attr.delta[0] = creal(delta);
+		attr.delta[1] = cimag(delta);
+		SDL_RWwrite(stream, &attr, sizeof(attr), 1);
 	}
 
-	SDL_RWops *stream = r_vertex_buffer_get_stream(lasers.vbuf);
-	SDL_RWseek(stream, 0, RW_SEEK_SET);
-	SDL_RWwrite(stream, &attrs, sizeof(attrs), 1);
-
-	r_draw(PRIM_TRIANGLE_STRIP, 0, 4, NULL, instances, 0);
+	r_draw_model_ptr(&lasers.quad_generic, instances, 0);
 }
 
 static void ent_draw_laser(EntityInterface *ent) {
 	Laser *laser = ENT_CAST(ent, Laser);
 
 	if(laser->shader) {
-		// Specialized lasers work with either vertex array,
-		// provided that the static models buffer is attached to it.
-		// We'll only ever draw the first quad, and only care about
-		// attributes 0 and 2 (vec3 position, vec2 uv)
-
-		VertexArray *va = r_vertex_array_current();
-
-		if(va != lasers.varr && va != r_vertex_array_static_models()) {
-			r_vertex_array(lasers.varr);
-		}
-
-		r_shader_ptr(laser->shader);
 		draw_laser_curve_specialized(laser);
 	} else {
-		r_vertex_array(lasers.varr);
-		r_shader_ptr(lasers.shader_generic);
 		draw_laser_curve_generic(laser);
 	}
 }

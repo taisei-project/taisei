@@ -21,7 +21,6 @@
 	RSTATE(SHADER) \
 	RSTATE(SHADER_UNIFORMS) \
 	RSTATE(RENDERTARGET) \
-	RSTATE(VERTEXARRAY) \
 	RSTATE(VSYNC) \
 
 typedef enum RendererStateID {
@@ -51,8 +50,6 @@ typedef struct RendererStateRollback {
 	ShaderProgram *shader;
 	// TODO uniforms
 	Framebuffer *framebuffer;
-	// TODO framebuffer viewports, if we actually ever need to modify them at render time
-	VertexArray *varr;
 	VsyncMode vsync;
 } RendererStateRollback;
 
@@ -65,7 +62,6 @@ void _r_state_touch_depth_func(void);
 void _r_state_touch_shader(void);
 void _r_state_touch_uniform(Uniform *uniform);
 void _r_state_touch_framebuffer(void);
-void _r_state_touch_vertex_array(void);
 void _r_state_touch_vsync(void);
 
 void _r_state_init(void);

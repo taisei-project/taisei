@@ -89,10 +89,6 @@ void r_state_pop(void) {
 		B.framebuffer(S.framebuffer);
 	}
 
-	RESTORE(RSTATE_VERTEXARRAY) {
-		B.vertex_array(S.varr);
-	}
-
 	RESTORE(RSTATE_VSYNC) {
 		B.vsync(S.vsync);
 	}
@@ -152,12 +148,6 @@ void _r_state_touch_uniform(Uniform *uniform) {
 void _r_state_touch_framebuffer(void) {
 	TAINT(RSTATE_RENDERTARGET, {
 		S.framebuffer = B.framebuffer_current();
-	});
-}
-
-void _r_state_touch_vertex_array(void) {
-	TAINT(RSTATE_VERTEXARRAY, {
-		S.varr = B.vertex_array_current();
 	});
 }
 
