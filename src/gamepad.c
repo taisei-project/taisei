@@ -577,7 +577,9 @@ static void gamepad_button(GamepadButton button, int state, bool is_repeat) {
 
 				if(e->button == button) {
 					for(int j = 0; j < sizeof(e->events)/sizeof(e->events[0]) && e->events[j] > TE_INVALID; ++j) {
-						events_emit(e->events[j], 0, indev, NULL);
+						if(e->events[j] != TE_MENU_ACCEPT || !is_repeat) {
+							events_emit(e->events[j], 0, indev, NULL);
+						}
 					}
 
 					break;

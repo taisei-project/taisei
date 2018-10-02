@@ -389,7 +389,7 @@ static bool events_handler_key_down(SDL_Event *event, void *arg) {
 
 	if(!repeat || transition.state == TRANS_IDLE) {
 		for(struct eventmap_s *m = menu_event_map; m->scancode != SDL_SCANCODE_UNKNOWN; ++m) {
-			if(scan == m->scancode) {
+			if(scan == m->scancode && (!repeat || m->event != TE_MENU_ACCEPT)) {
 				events_emit(m->event, 0, (void*)(intptr_t)INDEV_KEYBOARD, NULL);
 				break;
 			}
