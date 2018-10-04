@@ -144,8 +144,10 @@ struct glext_s {
 	*/
 };
 
+#define GL_VERSION_INT(mjr, mnr) (((mjr) << 8) + (mnr))
+
 #undef GLANY_ATLEAST
-#define GLANY_ATLEAST(mjr, mnr) (glext.version.major >= (mjr) && glext.version.minor >= (mnr))
+#define GLANY_ATLEAST(mjr, mnr) (GL_VERSION_INT((mjr), (mnr)) <= GL_VERSION_INT(glext.version.major, glext.version.minor))
 
 #undef GL_ATLEAST
 #define GL_ATLEAST(mjr, mnr) (!glext.version.is_es && GLANY_ATLEAST(mjr, mnr))
