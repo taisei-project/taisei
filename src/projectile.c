@@ -837,7 +837,6 @@ Projectile* spawn_projectile_clear_effect(Projectile *proj) {
 		.draw_rule = projectile_clear_effect_draw,
 		.angle = proj->angle,
 		.timeout = 24,
-		.args = { 10 },
 	);
 }
 
