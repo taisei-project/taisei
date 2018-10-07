@@ -502,9 +502,14 @@ bool clear_projectile(ProjectileList *projlist, Projectile *proj, bool force, bo
 
 	if(now) {
 		Projectile *effect = spawn_projectile_clear_effect(proj);
+		Item *clear_item = NULL;
 
 		if(!(proj->flags & PFLAG_NOCLEARBONUS)) {
-			effect->args[0] = add_ref(create_bpoint(proj->pos));
+			clear_item = create_bpoint(proj->pos);
+		}
+
+		if(clear_item != NULL && effect != NULL) {
+			effect->args[0] = add_ref(clear_item);
 		}
 
 		delete_projectile(projlist, proj, out_list_pointers);
