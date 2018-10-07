@@ -810,6 +810,10 @@ static int projectile_clear_effect_logic(Projectile *p, int t) {
 		return ACTION_ACK;
 	}
 
+	if((int)p->args[0] < 0) {
+		return ACTION_NONE;
+	}
+
 	Item *i = REF(p->args[0]);
 
 	if(i != NULL) {
@@ -837,6 +841,7 @@ Projectile* spawn_projectile_clear_effect(Projectile *proj) {
 		.draw_rule = projectile_clear_effect_draw,
 		.angle = proj->angle,
 		.timeout = 24,
+		.args = { -1 },
 	);
 }
 
