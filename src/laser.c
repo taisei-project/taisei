@@ -12,6 +12,7 @@
 #include "global.h"
 #include "list.h"
 #include "stageobjects.h"
+#include "stagedraw.h"
 #include "renderer/api.h"
 #include "resource/model.h"
 
@@ -20,12 +21,17 @@ static struct {
 	VertexBuffer *vbuf;
 	ShaderProgram *shader_generic;
 	Model quad_generic;
+	Framebuffer *saved_fb;
+	Framebuffer *render_fb;
 } lasers;
 
 typedef struct LaserInstancedAttribs {
 	float pos[2];
 	float delta[2];
 } LaserInstancedAttribs;
+
+static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg);
+static void lasers_ent_postdraw_hook(EntityInterface *ent, void *arg);
 
 void lasers_preload(void) {
 	preload_resource(RES_SHADER_PROGRAM, "laser_generic", RESF_DEFAULT);
@@ -60,6 +66,19 @@ void lasers_preload(void) {
 	r_vertex_array_attach_vertex_buffer(lasers.varr, lasers.vbuf, 1);
 	r_vertex_array_layout(lasers.varr, sizeof(fmt)/sizeof(VertexAttribFormat), fmt);
 
+	FBAttachmentConfig cfg;
+	memset(&cfg, 0, sizeof(cfg));
+	cfg.attachment = FRAMEBUFFER_ATTACH_COLOR0;
+	cfg.tex_params.type = TEX_TYPE_RGBA;
+	cfg.tex_params.filter.min = TEX_FILTER_LINEAR;
+	cfg.tex_params.filter.mag = TEX_FILTER_LINEAR;
+	cfg.tex_params.wrap.s = TEX_WRAP_MIRROR;
+	cfg.tex_params.wrap.t = TEX_WRAP_MIRROR;
+	lasers.render_fb = stage_add_foreground_framebuffer(1, 1, &cfg);
+
+	ent_hook_pre_draw(lasers_ent_predraw_hook, NULL);
+	ent_hook_pre_draw(lasers_ent_postdraw_hook, NULL);
+
 	lasers.quad_generic.indexed = false;
 	lasers.quad_generic.num_vertices = 4;
 	lasers.quad_generic.offset = 0;
@@ -72,6 +91,8 @@ void lasers_preload(void) {
 void lasers_free(void) {
 	r_vertex_array_destroy(lasers.varr);
 	r_vertex_buffer_destroy(lasers.vbuf);
+	ent_unhook_pre_draw(lasers_ent_predraw_hook);
+	ent_unhook_pre_draw(lasers_ent_postdraw_hook);
 }
 
 static void ent_draw_laser(EntityInterface *ent);
@@ -211,6 +232,61 @@ static void ent_draw_laser(EntityInterface *ent) {
 		draw_laser_curve_specialized(laser);
 	} else {
 		draw_laser_curve_generic(laser);
+	}
+}
+
+static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg) {
+	if(ent && ent->type == ENT_LASER) {
+		if(lasers.saved_fb != NULL) {
+			return;
+		}
+
+		lasers.saved_fb = r_framebuffer_current();
+		r_framebuffer(lasers.render_fb);
+		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+	} else {
+		if(lasers.saved_fb == NULL) {
+			return;
+		}
+
+		FBPair *fbpair = stage_get_fbpair(FBPAIR_FG_AUX);
+
+		r_framebuffer(lasers.saved_fb);
+		r_state_push();
+
+		// Ambient glow pass (large kernel)
+		r_framebuffer(fbpair->back);
+		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+		r_shader("blur25");
+		r_uniform_vec2("blur_resolution", VIEWPORT_W, VIEWPORT_H);
+		r_uniform_vec2("blur_direction", 1, 0);
+		draw_framebuffer_tex(lasers.render_fb, VIEWPORT_W, VIEWPORT_H);
+		fbpair_swap(fbpair);
+		r_framebuffer(lasers.saved_fb);
+		r_uniform_vec2("blur_direction", 0, 1);
+		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
+
+		// Smoothed laser curves pass (small kernel)
+		r_framebuffer(fbpair->back);
+		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+		r_shader("blur5");
+		r_uniform_vec2("blur_resolution", VIEWPORT_W, VIEWPORT_H);
+		r_uniform_vec2("blur_direction", 1, 0);
+		draw_framebuffer_tex(lasers.render_fb, VIEWPORT_W, VIEWPORT_H);
+		fbpair_swap(fbpair);
+		r_framebuffer(lasers.saved_fb);
+		r_uniform_vec2("blur_direction", 0, 1);
+		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
+
+		r_state_pop();
+		lasers.saved_fb = NULL;
+	}
+}
+
+static void lasers_ent_postdraw_hook(EntityInterface *ent, void *arg) {
+	if(ent == NULL) {
+		// Edge case when the last entity drawn is a laser
+		lasers_ent_predraw_hook(NULL, arg);
 	}
 }
 
