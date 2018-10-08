@@ -154,6 +154,8 @@ static inline char* event_name(int ev) {
 	log_fatal("Bad event %i", ev);
 }
 
+static Projectile* spawn_bullet_spawning_effect(Projectile *p);
+
 static inline int proj_call_rule(Projectile *p, int t) {
 	int result = ACTION_NONE;
 
@@ -179,6 +181,10 @@ static inline int proj_call_rule(Projectile *p, int t) {
 
 	if(/*t == 0 ||*/ t == EVENT_BIRTH) {
 		p->prevpos = p->pos;
+	}
+
+	if(t == 0) {
+		spawn_bullet_spawning_effect(p);
 	}
 
 	return result;
@@ -210,8 +216,6 @@ static double projectile_rect_area(Projectile *p) {
 	projectile_size(p, &w, &h);
 	return w * h;
 }
-
-static Projectile* spawn_bullet_spawning_effect(Projectile *p);
 
 static Projectile* _create_projectile(ProjArgs *args) {
 	if(IN_DRAW_CODE) {
@@ -280,7 +284,6 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	proj_call_rule(p, EVENT_BIRTH);
 	alist_append(args->dest, p);
 
-	spawn_bullet_spawning_effect(p);
 	return p;
 }
 
