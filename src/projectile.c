@@ -831,18 +831,28 @@ Projectile* spawn_projectile_clear_effect(Projectile *proj) {
 
 	// spawn_projectile_highlight_effect_internal(proj, false);
 
+	ShaderProgram *shader = proj->shader;
+	uint32_t layer = LAYER_PARTICLE_BULLET_CLEAR;
+
+	if(proj->shader == defaults_proj.shader_ptr) {
+		// HACK
+		shader = r_shader_get("sprite_bullet_dead");
+		layer |= 0x1;
+	}
+
 	return PARTICLE(
 		.sprite_ptr = proj->sprite,
 		.size = proj->size,
 		.pos = proj->pos,
 		.color = &proj->color,
 		.flags = proj->flags | PFLAG_NOREFLECT,
-		.shader = "sprite_bullet_dead",
+		.shader_ptr = shader,
 		.rule = projectile_clear_effect_logic,
 		.draw_rule = projectile_clear_effect_draw,
 		.angle = proj->angle,
 		.timeout = 24,
 		.args = { -1 },
+		.layer = layer,
 	);
 }
 
