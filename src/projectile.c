@@ -724,7 +724,7 @@ static Projectile* spawn_projectile_highlight_effect_internal(Projectile *p, boo
 	color_get_hsl(&clr, &h, &s, &l);
 	s = s > 0 ? 0.75 : 0;
 	l = 0.5;
-	color_hsla(&clr, h, s, l, 0.2);
+	color_hsla(&clr, h, s, l, 0.05);
 
 	float sx, sy;
 
@@ -737,17 +737,18 @@ static Projectile* spawn_projectile_highlight_effect_internal(Projectile *p, boo
 			.size = p->size * 4.5,
 			.layer = LAYER_PARTICLE_HIGH | 0x40,
 			.draw_rule = ScaleFade,
-			.args = { 0, 0, (0 + 2*I) * 0.1 * fmax(sx, sy) },
+			.args = { 0, 0, (0 + 2*I) * 0.1 * fmax(sx, sy) * (1 - 0.2 * frand()) },
 			.angle = frand() * M_PI * 2,
-			.pos = p->pos,
+			.pos = p->pos + frand() * 8 * cexp(I*M_PI*2*frand()),
 			.flags = PFLAG_NOREFLECT,
-			.timeout = 24,
+			.timeout = 24 + 2 * nfrand(),
 			.color = &clr,
 		);
 	}
 
 	sx = pow((1.5 * p->sprite->w + 0.5 * p->sprite->h) * 0.5, 0.65);
 	sy = pow((1.5 * p->sprite->h + 0.5 * p->sprite->w) * 0.5, 0.65);
+	clr.a = 0.2;
 
 	return PARTICLE(
 		.sprite = "bullet_cloud",
@@ -757,9 +758,9 @@ static Projectile* spawn_projectile_highlight_effect_internal(Projectile *p, boo
 		.draw_rule = bullet_highlight_draw,
 		.args = { 0.125 * (sx + I * sy), frand() * M_PI * 2 },
 		.angle = p->angle,
-		.pos = p->pos,
+		.pos = p->pos + frand() * 5 * cexp(I*M_PI*2*frand()),
 		.flags = PFLAG_NOREFLECT,
-		.timeout = 32,
+		.timeout = 32 + 2 * nfrand(),
 		.color = &clr,
 	);
 }
