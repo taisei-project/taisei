@@ -1654,13 +1654,54 @@ int baryon_explode(Enemy *e, int t) {
 		free_ref(e->args[1]);
 		petal_explosion(35, e->pos);
 		play_sound("boom");
-		global.shake_view = min(30, global.shake_view + 10);
+		global.shake_view = max(15, global.shake_view);
+
+		for(int i = 0; i < 3; ++i) {
+			PARTICLE(
+				.sprite = "starburst",
+				.color = RGBA(0.2 + frand() * 0.3, 0.5 + 0.5 * frand(), frand(), 0),
+				.pos = e->pos,
+				.timeout = 200 + 24 * frand() + 5 * i,
+				.draw_rule = ScaleFade,
+				.args = { 0, 0, (1 + I) * (1 + 0.2 * frand()) },
+				.angle = frand() * 2 * M_PI,
+				.layer = LAYER_PARTICLE_HIGH | 0x41,
+			);
+		}
+
+		for(int i = 0; i < 8; ++i) {
+			Color *clr = RGBA(0.2 + frand() * 0.1, 0.6 + 0.4 * frand(), 0.5 + 0.5 * frand(), 0);
+			color_mul_scalar(clr, 0.2);
+
+			PARTICLE(
+				.sprite = "blast",
+				.size = 32*(1+I), // HACK: ignore prototype
+				.pos = e->pos + cexp(4*frand() + I*M_PI*frand()*2),
+				.color = clr,
+				.timeout = 78 + 6 * nfrand() + 4 * i,
+				.draw_rule = ScaleFade,
+				.args = { 0, 0, 1 + 10*I * (0.5 + 0.5 * frand()) },
+				.layer = LAYER_PARTICLE_HIGH | 0x42,
+			);
+		}
+
 		return 1;
 	}
 
-	GO_TO(e, global.boss->pos + (e->pos0-global.boss->pos)*(1.5+0.2*sin(t*0.1)), 0.04);
+	GO_TO(e, global.boss->pos + (e->pos0-global.boss->pos)*(1.0+0.2*sin(t*0.1)) * cexp(I*t*t*0.0004), 0.05);
 
-	if(frand() < t / 1000.0) {
+	PARTICLE(
+		.sprite = "smoke",
+		.pos = e->pos+10*frand()*cexp(2.0*I*M_PI*frand()),
+		.color = RGBA(0.2 * frand(), 0.5, 0.4 * frand(), 0.1 * frand()),
+		.rule = asymptotic,
+		.draw_rule = ScaleFade,
+		.args = { cexp(I*2*M_PI*frand()) * (1 + t/300.0), (1 + t / 200.0), (1 + 0.5*I) * (t / 200.0) },
+		.timeout = 60,
+		.layer = LAYER_PARTICLE_HIGH | 0x40,
+	);
+
+	if(t > 150 && frand() < 0.05) {
 		e->hp = 0;
 		return 1;
 	}
@@ -1834,8 +1875,8 @@ void elly_baryon_explode(Boss *b, int t) {
 	}
 
 	FROM_TO(0, 200, 1) {
-		tsrand_fill(2);
-		petal_explosion(1, b->pos + 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1)));
+		// tsrand_fill(2);
+		// petal_explosion(1, b->pos + 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1)));
 		global.shake_view = max(global.shake_view, 5 * _i / 200.0);
 
 		if(_i > 30) {

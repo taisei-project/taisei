@@ -1008,7 +1008,7 @@ void petal_explosion(int n, complex pos) {
 		PARTICLE(
 			.sprite = "petal",
 			.pos = pos,
-			.color = RGBA_MUL_ALPHA(sin(5*t) * t, cos(5*t) * t, 0.5 * t, 0),
+			.color = RGBA(sin(5*t) * t, cos(5*t) * t, 0.5 * t, 0),
 			.rule = asymptotic,
 			.draw_rule = Petal,
 			.args = {
