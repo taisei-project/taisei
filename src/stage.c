@@ -511,6 +511,7 @@ static void stage_free(void) {
 		global.boss = NULL;
 	}
 
+	projectiles_free();
 	lasers_free();
 	stagetext_free();
 }

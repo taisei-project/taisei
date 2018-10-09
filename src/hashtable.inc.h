@@ -290,7 +290,7 @@ typedef HT_KEY_TYPE HT_TYPE(key);
  *
  * If HT_KEY_CONST is defined, this type has the 'const' qualifier.
  */
-typedef const HT_KEY_TYPE HT_TYPE(const_key);
+typedef HT_KEY_CONST HT_KEY_TYPE HT_TYPE(const_key);
 
 /*
  * ht_XXX_value_t

@@ -208,5 +208,6 @@ void petal_explosion(int n, complex pos);
 void Blast(Projectile *p, int t);
 
 void projectiles_preload(void);
+void projectiles_free(void);
 
 complex projectile_graze_size(Projectile *p);

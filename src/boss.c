@@ -202,7 +202,7 @@ static void BossGlow(Projectile *p, int t) {
 		.scale.both = s,
 		.color = &c,
 		.shader_params = &(ShaderCustomParams){{ deform }},
-		.shader = "sprite_silhouette",
+		.shader_ptr = p->shader,
 	});
 }
 
@@ -224,8 +224,8 @@ static Projectile* spawn_boss_glow(Boss *boss, const Color *clr, int timeout) {
 		.rule = boss_glow,
 		.draw_rule = BossGlow,
 		.timeout = timeout,
-		.angle = M_PI * 2 * frand(),
 		.layer = LAYER_PARTICLE_LOW,
+		.shader = "sprite_silhouette",
 	);
 }
 

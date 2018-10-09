@@ -15,6 +15,8 @@
 #include "list.h"
 #include "stageobjects.h"
 
+ht_ptr2int_t shader_sublayer_map;
+
 static ProjArgs defaults_proj = {
 	.sprite = "proj/",
 	.draw_rule = ProjDraw,
@@ -261,11 +263,26 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	}
 
 	if(!(p->ent.draw_layer & LAYER_LOW_MASK)) {
+		drawlayer_low_t sublayer;
+
 		switch(p->type) {
 			case EnemyProj:
 			case FakeProj: {
-				// Large projectiles go below smaller ones.
-				drawlayer_low_t sublayer = (LAYER_LOW_MASK - (drawlayer_low_t)projectile_rect_area(p));
+				// 1. Large projectiles go below smaller ones.
+				sublayer = LAYER_LOW_MASK - (drawlayer_low_t)projectile_rect_area(p);
+				sublayer = (sublayer << 4) & LAYER_LOW_MASK;
+				// 2. Group by shader (hardcoded precedence).
+				sublayer |= ht_get(&shader_sublayer_map, p->shader, 0) & 0xf;
+				// If specific blending order is required, then you should set up the sublayer manually.
+				p->ent.draw_layer |= sublayer;
+				break;
+			}
+
+			case Particle: {
+				// 1. Group by shader (hardcoded precedence).
+				sublayer = ht_get(&shader_sublayer_map, p->shader, 0) & 0xf;
+				sublayer <<= 4;
+				sublayer |= 0x100;
 				// If specific blending order is required, then you should set up the sublayer manually.
 				p->ent.draw_layer |= sublayer;
 				break;
@@ -1025,18 +1042,26 @@ void petal_explosion(int n, complex pos) {
 }
 
 void projectiles_preload(void) {
-	// XXX: maybe split this up into stage-specific preloads too?
-	// some of these are ubiquitous, but some only appear in very specific parts.
-
-	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
+	const char *shaders[] = {
+		// This array defines a shader-based fallback draw order
+		"sprite_silhouette",
 		defaults_proj.shader,
 		defaults_part.shader,
-	NULL);
+	};
 
+	const uint num_shaders = sizeof(shaders)/sizeof(*shaders);
+
+	for(uint i = 0; i < num_shaders; ++i) {
+		preload_resource(RES_SHADER_PROGRAM, shaders[i], RESF_PERMANENT);
+	}
+
+	// FIXME: Why is this here?
 	preload_resources(RES_TEXTURE, RESF_PERMANENT,
 		"part/lasercurve",
 	NULL);
 
+	// TODO: Maybe split this up into stage-specific preloads too?
+	// some of these are ubiquitous, but some only appear in very specific parts.
 	preload_resources(RES_SPRITE, RESF_PERMANENT,
 		"part/blast",
 		"part/flare",
@@ -1061,6 +1086,16 @@ void projectiles_preload(void) {
 	#define PP(name) (_pp_##name).preload(&_pp_##name);
 	#include "projectile_prototypes/all.inc.h"
 
+	ht_create(&shader_sublayer_map);
+
+	for(uint i = 0; i < num_shaders; ++i) {
+		ht_set(&shader_sublayer_map, r_shader_get(shaders[i]), i + 1);
+	}
+
 	defaults_proj.shader_ptr = r_shader_get(defaults_proj.shader);
 	defaults_part.shader_ptr = r_shader_get(defaults_part.shader);
+}
+
+void projectiles_free(void) {
+	ht_destroy(&shader_sublayer_map);
 }
