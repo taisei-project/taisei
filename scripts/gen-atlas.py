@@ -16,6 +16,7 @@ from tempfile import (
 
 from contextlib import (
     ExitStack,
+    suppress,
 )
 
 from concurrent.futures import (
@@ -31,6 +32,13 @@ from taiseilib.common import (
     update_text_file,
     TaiseiError,
 )
+
+re_comment = re.compile(r'#.*')
+re_keyval = re.compile(r'([a-z0-9_-]+)\s*=\s*(.+)', re.I)
+
+
+class ConfigSyntaxError(Exception):
+    pass
 
 
 def write_sprite_def(dst, texture, region, size, overrides=None):
@@ -52,6 +60,7 @@ def write_sprite_def(dst, texture, region, size, overrides=None):
 
     update_text_file(dst, text)
 
+
 def write_texture_def(dst, texture, global_overrides=None, local_overrides=None):
     dst.parent.mkdir(exist_ok=True, parents=True)
 
@@ -68,6 +77,7 @@ def write_texture_def(dst, texture, global_overrides=None, local_overrides=None)
 
     update_text_file(dst, text)
 
+
 def write_override_template(dst, size):
     dst.parent.mkdir(exist_ok=True, parents=True)
 
@@ -80,6 +90,28 @@ def write_override_template(dst, size):
     ).format(size=size)
 
     update_text_file(dst.with_suffix(dst.suffix + '.renameme'), text)
+
+
+def parse_sprite_conf(path):
+    conf = {}
+
+    with suppress(FileNotFoundError):
+        with open(path, 'r') as f:
+            for line in f.readlines():
+                line = re_comment.sub('', line)
+                line = line.strip()
+
+                if not line:
+                    continue
+
+                try:
+                    key, val = re_keyval.findall(line)[0]
+                except IndexError:
+                    raise ConfigSyntaxError(line)
+
+                conf[key] = val
+
+    return conf
 
 
 def get_override_file_name(basename):
@@ -108,6 +140,11 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, border=1, force_single=Fa
     src = Path(src).resolve()
     dst = Path(dst).resolve()
 
+    sprite_configs = {}
+
+    def get_border(sprite, default_border=border):
+        return max(default_border, int(sprite_configs[sprite].get('border', default_border)))
+
     try:
         texture_local_overrides = (src / 'atlas.tex').read_text()
     except FileNotFoundError:
@@ -125,6 +162,9 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, border=1, force_single=Fa
     for path in src.glob('**/*.png'):
         img = Image.open(path)
         sprite_name = path.relative_to(src).with_suffix('').as_posix()
+        sprite_config_path = overrides / (get_override_file_name(sprite_name) + '.conf')
+        sprite_configs[sprite_name] = parse_sprite_conf(sprite_config_path)
+        border = get_border(sprite_name)
         rects.append((img.size[0]+border*2, img.size[1]+border*2, (img, sprite_name)))
 
     total_images = len(rects)
@@ -208,6 +248,7 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, border=1, force_single=Fa
             for rect in bin:
                 rotated = False
                 img, name = rect.rid
+                border = get_border(name)
 
                 if tuple(img.size) != (rect.width  - border*2, rect.height - border*2) and \
                    tuple(img.size) == (rect.height - border*2, rect.width  - border*2):
