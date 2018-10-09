@@ -736,7 +736,8 @@ static Projectile* spawn_projectile_highlight_effect_internal(Projectile *p, boo
 		sy = pow(p->sprite->h, 0.7);
 
 		PARTICLE(
-			.sprite = "stardust",
+			.sprite = "stardust_green",
+			.shader = "sprite_bullet",
 			.size = p->size * 4.5,
 			.layer = LAYER_PARTICLE_HIGH | 0x40,
 			.draw_rule = ScaleFade,
