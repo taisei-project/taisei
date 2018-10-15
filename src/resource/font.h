@@ -24,31 +24,31 @@ typedef ulong charcode_t;
 typedef struct Font Font;
 
 typedef struct FontMetrics {
-	int ascent;
-	int descent;
-	int max_glyph_height;
-	int lineskip;
-	double scale;
+	float ascent;
+	float descent;
+	float max_glyph_height;
+	float lineskip;
+	float texture_scale;
 } FontMetrics;
 
 typedef struct GlyphMetrics {
-	int bearing_x;
-	int bearing_y;
-	int width;
-	int height;
-	int advance;
+	float bearing_x;
+	float bearing_y;
+	float width;
+	float height;
+	float advance;
 } GlyphMetrics;
 
 // TODO: maybe move this into util/geometry.h
 typedef struct BBox {
 	struct {
-		int min;
-		int max;
+		float min;
+		float max;
 	} x;
 
 	struct {
-		int min;
-		int max;
+		float min;
+		float max;
 	} y;
 } BBox;
 
@@ -104,10 +104,10 @@ void text_wrap(Font *font, const char *src, double width, char *buf, size_t bufs
 void text_bbox(Font *font, const char *text, uint maxlines, BBox *bbox)
 	attr_nonnull(1, 2, 4);
 
-int text_width_raw(Font *font, const char *text, uint maxlines)
+float text_width_raw(Font *font, const char *text, uint maxlines)
 	attr_nonnull(1, 2);
 
-double text_width(Font *font, const char *text, uint maxlines)
+float text_width(Font *font, const char *text, uint maxlines)
 	attr_nonnull(1, 2);
 
 int text_height_raw(Font *font, const char *text, uint maxlines)

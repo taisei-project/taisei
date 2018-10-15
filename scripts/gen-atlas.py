@@ -245,6 +245,7 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, border=1, force_single=Fa
 
             print('Atlas texture area: ', rootimg.size[0] * rootimg.size[1])
             rootimg.save(dstfile)
+            rootimg.close()
 
             if leanify:
                 executor.submit(lambda: subprocess.check_call(["leanify", '-v', str(dstfile)]))

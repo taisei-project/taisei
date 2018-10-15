@@ -98,45 +98,58 @@ bool parse_keyvalue_file(const char *filename, ht_str2ptr_t  *ht) {
 	return parse_keyvalue_file_cb(filename, kvcallback_hashtable, ht);
 }
 
-static bool kvcallback_spec(const char *key, const char *val, void *data) {
-	KVSpec *spec = data;
+static bool handle_kvspec(const char *key, const char *val, KVSpec *s) {
+	if(s->out_str) {
+		stralloc(s->out_str, val);
+	}
 
-	for(KVSpec *s = spec; s->name; ++s) {
+	if(s->out_int) {
+		*s->out_int = strtol(val, NULL, 0);
+	}
+
+	if(s->out_long) {
+		*s->out_long = strtol(val, NULL, 0);
+	}
+
+	if(s->out_float) {
+		*s->out_float = strtod(val, NULL);
+	}
+
+	if(s->out_double) {
+		*s->out_double = strtod(val, NULL);
+	}
+
+	if(s->out_bool) {
+		*s->out_bool = parse_bool(val, *s->out_bool);
+	}
+
+	if(s->callback) {
+		return s->callback(key, val, s->callback_data);
+	}
+
+	return true;
+}
+
+bool apply_keyvalue_specs(const char *key, const char *val, KVSpec *specs) {
+	KVSpec *s;
+	static KVSpec null_spec = { 0 };
+
+	for(s = specs; s->name; ++s) {
 		if(!strcmp(key, s->name)) {
-			if(s->out_str) {
-				stralloc(s->out_str, val);
-			}
-
-			if(s->out_int) {
-				*s->out_int = strtol(val, NULL, 0);
-			}
-
-			if(s->out_long) {
-				*s->out_long = strtol(val, NULL, 0);
-			}
-
-			if(s->out_float) {
-				*s->out_float = strtod(val, NULL);
-			}
-
-			if(s->out_double) {
-				*s->out_double = strtod(val, NULL);
-			}
-
-			if(s->out_bool) {
-				*s->out_bool = parse_bool(val, *s->out_bool);
-			}
-
-			if(s->callback) {
-				return s->callback(key, val, s->callback_data);
-			}
-
-			return true;
+			return handle_kvspec(key, val, s);
 		}
+	}
+
+	if(memcmp(s, &null_spec, sizeof(*s))) {
+		return handle_kvspec(key, val, s);
 	}
 
 	log_warn("Unknown key '%s' with value '%s' ignored", key, val);
 	return true;
+}
+
+static bool kvcallback_spec(const char *key, const char *val, void *data) {
+	return apply_keyvalue_specs(key, val, data);
 }
 
 bool parse_keyvalue_stream_with_spec(SDL_RWops *strm, KVSpec *spec) {

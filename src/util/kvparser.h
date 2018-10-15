@@ -37,6 +37,7 @@ bool parse_keyvalue_stream(SDL_RWops *strm, ht_str2ptr_t *hashtable);
 bool parse_keyvalue_file(const char *filename, ht_str2ptr_t *hashtable);
 bool parse_keyvalue_stream_with_spec(SDL_RWops *strm, KVSpec *spec);
 bool parse_keyvalue_file_with_spec(const char *filename, KVSpec *spec);
+bool apply_keyvalue_specs(const char *key, const char *val, KVSpec *specs);
 
 bool parse_bool(const char *str, bool fallback) attr_nonnull(1);
 
