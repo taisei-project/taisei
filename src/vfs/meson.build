@@ -1,14 +1,16 @@
 
 vfs_src = files(
+    'nodeapi.c',
     'pathutil.c',
     'private.c',
     'public.c',
+    'readonly_wrapper.c',
     'setup.c',
     'syspath_public.c',
     'union.c',
     'union_public.c',
     'vdir.c',
-    'zipfile_public.c'
+    'zipfile_public.c',
 )
 
 if taisei_deps.contains(dep_zip)

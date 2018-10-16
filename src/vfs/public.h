@@ -14,14 +14,16 @@
 #include "syspath_public.h"
 #include "union_public.h"
 #include "zipfile_public.h"
+#include "readonly_wrapper_public.h"
 
 typedef struct VFSInfo {
-	uint error: 1;
-	uint exists : 1;
-	uint is_dir : 1;
+	uchar error       : 1;
+	uchar exists      : 1;
+	uchar is_dir      : 1;
+	uchar is_readonly : 1;
 } VFSInfo;
 
-#define VFSINFO_ERROR ((VFSInfo){.error = true, 0})
+#define VFSINFO_ERROR ((VFSInfo) { .error = true, 0 })
 
 typedef enum VFSOpenMode {
 	VFS_MODE_READ = 1,

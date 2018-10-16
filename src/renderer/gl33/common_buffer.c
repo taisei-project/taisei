@@ -1,4 +1,3 @@
-
 /*
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.

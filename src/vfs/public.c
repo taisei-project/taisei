@@ -39,15 +39,7 @@ bool vfs_unmount(const char *path) {
 	VFSNode *node = vfs_locate(vfs_root, parent);
 
 	if(node) {
-		bool result;
-
-		if(node->funcs->unmount) {
-			result = node->funcs->unmount(node, subdir);
-		} else {
-			result = false;
-			vfs_set_error("Node '%s' doesn't support unmounting", parent);
-		}
-
+		bool result = vfs_node_unmount(node, subdir);
 		vfs_decref(node);
 		return result;
 	}
@@ -65,11 +57,8 @@ SDL_RWops* vfs_open(const char *path, VFSOpenMode mode) {
 	if(node) {
 		assert(node->funcs != NULL);
 
-		if(node->funcs->open) {
-			// expected to set error on failure
-			rwops = node->funcs->open(node, mode);
-		} else {
-			vfs_set_error("Node '%s' can't be opened as a file", path);
+		if(!(rwops = vfs_node_open(node, mode))) {
+			vfs_set_error("Can't open '%s': %s", path, vfs_get_error());
 		}
 
 		vfs_decref(node);
@@ -91,7 +80,7 @@ VFSInfo vfs_query(const char *path) {
 		// is not an error condition. If we can't tell whether it
 		// exists or not, that is an error.
 
-		VFSInfo i = vfs_query_node(node);
+		VFSInfo i = vfs_node_query(node);
 		vfs_decref(node);
 		return i;
 	}
@@ -106,32 +95,28 @@ bool vfs_mkdir(const char *path) {
 	VFSNode *node = vfs_locate(vfs_root, path);
 	bool ok = false;
 
-	if(node && node->funcs->mkdir) {
-		ok = node->funcs->mkdir(node, NULL);
+	if(node) {
+		ok = vfs_node_mkdir(node, NULL);
 		vfs_decref(node);
-		return ok;
-	}
 
-	vfs_decref(node);
+		if(ok) {
+			return ok;
+		}
+	}
 
 	char *parent, *subdir;
 	vfs_path_split_right(p, &parent, &subdir);
 	node = vfs_locate(vfs_root, parent);
 
 	if(node) {
-		if(node->funcs->mkdir) {
-			ok = node->funcs->mkdir(node, subdir);
-			node->funcs->mkdir(node, subdir);
-			return ok;
-		} else {
-			vfs_set_error("Node '%s' does not support creation of subdirectories", parent);
-		}
+		ok = vfs_node_mkdir(node, subdir);
+		vfs_decref(node);
+		return ok;
 	} else {
 		vfs_set_error("Node '%s' does not exist", parent);
+		vfs_decref(node);
+		return false;
 	}
-
-	vfs_decref(node);
-	return false;
 }
 
 void vfs_mkdir_required(const char *path) {
@@ -146,7 +131,7 @@ char* vfs_repr(const char *path, bool try_syspath) {
 	VFSNode *node = vfs_locate(vfs_root, path);
 
 	if(node) {
-		char *p = vfs_repr_node(node, try_syspath);
+		char *p = vfs_node_repr(node, try_syspath);
 		vfs_decref(node);
 		return p;
 	}
@@ -185,7 +170,7 @@ VFSDir* vfs_dir_open(const char *path) {
 	VFSNode *node = vfs_locate(vfs_root, path);
 
 	if(node) {
-		if(node->funcs->iter && vfs_query_node(node).is_dir) {
+		if(node->funcs->iter && vfs_node_query(node).is_dir) {
 			VFSDir *d = calloc(1, sizeof(VFSDir));
 			d->node = node;
 			return d;
@@ -202,14 +187,14 @@ VFSDir* vfs_dir_open(const char *path) {
 
 void vfs_dir_close(VFSDir *dir) {
 	if(dir) {
-		vfs_iter_stop(dir->node, &dir->opaque);
+		vfs_node_iter_stop(dir->node, &dir->opaque);
 		vfs_decref(dir->node);
 		free(dir);
 	}
 }
 
 const char* vfs_dir_read(VFSDir *dir) {
-	return vfs_iter(dir->node, &dir->opaque);
+	return vfs_node_iter(dir->node, &dir->opaque);
 }
 
 char** vfs_dir_list_sorted(const char *path, size_t *out_size, int (*compare)(const char**, const char**), bool (*filter)(const char*)) {

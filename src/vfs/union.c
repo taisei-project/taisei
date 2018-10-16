@@ -45,7 +45,7 @@ static VFSNode* vfs_union_locate(VFSNode *node, const char *path) {
 		VFSNode *o = vfs_locate(n, path);
 
 		if(o) {
-			VFSInfo i = vfs_query_node(o);
+			VFSInfo i = vfs_node_query(o);
 
 			if(vfs_union_mount_internal(u, NULL, o, i, false)) {
 				prim_info = i;
@@ -99,10 +99,10 @@ static const char* vfs_union_iter(VFSNode *node, void **opaque) {
 
 	while(i->current) {
 		VFSNode *n = (VFSNode*)i->current->data;
-		r = vfs_iter(n, &i->opaque);
+		r = vfs_node_iter(n, &i->opaque);
 
 		if(!r) {
-			vfs_iter_stop(n, &i->opaque);
+			vfs_node_iter_stop(n, &i->opaque);
 			i->opaque = NULL;
 			i->current = i->current->next;
 			continue;
@@ -132,7 +132,10 @@ static void vfs_union_iter_stop(VFSNode *node, void **opaque) {
 
 static VFSInfo vfs_union_query(VFSNode *node) {
 	if(node->_primary_member_) {
-		return vfs_query_node(node->_primary_member_);
+		VFSInfo i = vfs_node_query(node->_primary_member_);
+		// can't trust the primary member here, others might be writable'
+		i.is_readonly = false;
+		return i;
 	}
 
 	vfs_set_error("Union object has no members");
@@ -142,7 +145,7 @@ static VFSInfo vfs_union_query(VFSNode *node) {
 static bool vfs_union_mount_internal(VFSNode *unode, const char *mountpoint, VFSNode *mountee, VFSInfo info, bool seterror) {
 	if(!info.exists) {
 		if(seterror) {
-			char *r = vfs_repr_node(mountee, true);
+			char *r = vfs_node_repr(mountee, true);
 			vfs_set_error("Mountee doesn't represent a usable resource: %s", r);
 			free(r);
 		}
@@ -151,7 +154,7 @@ static bool vfs_union_mount_internal(VFSNode *unode, const char *mountpoint, VFS
 	}
 
 	if(seterror && !info.is_dir) {
-		char *r = vfs_repr_node(mountee, true);
+		char *r = vfs_node_repr(mountee, true);
 		vfs_set_error("Mountee is not a directory: %s", r);
 		free(r);
 		return false;
@@ -169,18 +172,14 @@ static bool vfs_union_mount(VFSNode *unode, const char *mountpoint, VFSNode *mou
 		return false;
 	}
 
-	return vfs_union_mount_internal(unode, NULL, mountee, vfs_query_node(mountee), true);
+	return vfs_union_mount_internal(unode, NULL, mountee, vfs_node_query(mountee), true);
 }
 
 static SDL_RWops* vfs_union_open(VFSNode *unode, VFSOpenMode mode) {
 	VFSNode *n = unode->_primary_member_;
 
 	if(n) {
-		if(n->funcs->open) {
-			return n->funcs->open(n, mode);
-		} else {
-			vfs_set_error("Primary union member can't be opened as a file");
-		}
+		return vfs_node_open(n, mode);
 	} else {
 		vfs_set_error("Union object has no members");
 	}
@@ -194,7 +193,7 @@ static char* vfs_union_repr(VFSNode *node) {
 	for(ListContainer *c = node->_members_; c; c = c->next) {
 		VFSNode *n = c->data;
 
-		strappend(&mlist, r = vfs_repr_node(n, false));
+		strappend(&mlist, r = vfs_node_repr(n, false));
 		free(r);
 
 		if(c->next) {
@@ -209,11 +208,7 @@ static char* vfs_union_syspath(VFSNode *node) {
 	VFSNode *n = node->_primary_member_;
 
 	if(n) {
-		if(n->funcs->syspath) {
-			return n->funcs->syspath(n);
-		} else {
-			vfs_set_error("Primary union member doesn't represent a real filesystem path");
-		}
+		return vfs_node_syspath(n);
 	}
 
 	vfs_set_error("Union object has no members");
@@ -224,11 +219,7 @@ static bool vfs_union_mkdir(VFSNode *node, const char *subdir) {
 	VFSNode *n = node->_primary_member_;
 
 	if(n) {
-		if(n->funcs->mkdir) {
-			return n->funcs->mkdir(node, subdir);
-		} else {
-			vfs_set_error("Primary union member doesn't support directory creation");
-		}
+		return vfs_node_mkdir(n, subdir);
 	}
 
 	vfs_set_error("Union object has no members");

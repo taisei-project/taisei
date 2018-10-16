@@ -56,7 +56,7 @@ static struct pkg_loader_t* find_loader(const char *str) {
 	}
 
 	for(struct pkg_loader_t *l = pkg_loaders; l->ext; ++l) {
-		if(strendswith(buf, l->ext)){
+		if(strendswith(buf, l->ext)) {
 			return l;
 		}
 	}
@@ -110,16 +110,16 @@ void vfs_setup(bool silent) {
 	char *p = NULL;
 
 	struct mpoint_t {
-		const char *dest;   const char *syspath;                            bool mkdir; bool loadpaks;
+		const char *dest;   const char *syspath;                      bool loadpaks; uint flags;
 	} mpts[] = {
 		// per-user directory, where configs, replays, screenshots, etc. get stored
-		{"storage",         storage_path,                                   true,       false},
+		{"storage",         storage_path,                             false,         VFS_SYSPATH_MOUNT_MKDIR },
 
 		// system-wide directory, contains all of the game assets
-		{"resdirs",         res_path,                                       false,      true},
+		{"resdirs",         res_path,                                 true,          VFS_SYSPATH_MOUNT_READONLY },
 
 		// subpath of storage, files here override the global assets
-		{"resdirs",         p = strfmt("%s/resources", storage_path),       true,       true},
+		{"resdirs",         p = strfmt("%s/resources", storage_path), true,          VFS_SYSPATH_MOUNT_MKDIR | VFS_SYSPATH_MOUNT_READONLY },
 		{NULL}
 	};
 
@@ -138,7 +138,7 @@ void vfs_setup(bool silent) {
 	for(struct mpoint_t *mp = mpts; mp->dest; ++mp) {
 		if(mp->loadpaks) {
 			// mount it to a temporary mountpoint to get a list of packages from this directory
-			if(!vfs_mount_syspath("tmp", mp->syspath, mp->mkdir)) {
+			if(!vfs_mount_syspath("tmp", mp->syspath, mp->flags)) {
 				log_fatal("Failed to mount '%s': %s", mp->syspath, vfs_get_error());
 			}
 
@@ -154,10 +154,8 @@ void vfs_setup(bool silent) {
 			// now mount it to the intended destination, and remove the temporary mountpoint
 			vfs_mount_alias(mp->dest, "tmp");
 			vfs_unmount("tmp");
-		} else {
-			if(!vfs_mount_syspath(mp->dest, mp->syspath, mp->mkdir)) {
-				log_fatal("Failed to mount '%s': %s", mp->syspath, vfs_get_error());
-			}
+		} else if(!vfs_mount_syspath(mp->dest, mp->syspath, mp->flags)) {
+			log_fatal("Failed to mount '%s': %s", mp->syspath, vfs_get_error());
 		}
 	}
 
@@ -172,6 +170,7 @@ void vfs_setup(bool silent) {
 
 	vfs_mount_alias("res", "respkgs");
 	vfs_mount_alias("res", "resdirs");
+	// vfs_make_readonly("res");
 
 	vfs_unmount("resdirs");
 	vfs_unmount("respkgs");

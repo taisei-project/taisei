@@ -128,35 +128,13 @@ bool vfs_decref(VFSNode *node) {
 	return false;
 }
 
-VFSInfo vfs_query_node(VFSNode *node) {
-	assert(node->funcs != NULL);
-	assert(node->funcs->query != NULL);
-
-	return node->funcs->query(node);
-}
-
 VFSNode* vfs_locate(VFSNode *root, const char *path) {
-	assert(root != NULL);
-	assert(path != NULL);
-	assert(root->funcs != NULL);
-
-#ifndef NDEBUG
-	char buf[strlen(path)+1];
-	strcpy(buf, path);
-	vfs_path_normalize(path, buf);
-	assert(!strcmp(path, buf));
-#endif
-
 	if(!*path) {
 		vfs_incref(root);
 		return root;
 	}
 
-	if(root->funcs->locate) {
-		return root->funcs->locate(root, path);
-	}
-
-	return NULL;
+	return vfs_node_locate(root, path);
 }
 
 bool vfs_mount(VFSNode *root, const char *mountpoint, VFSNode *subtree) {
@@ -172,12 +150,10 @@ bool vfs_mount(VFSNode *root, const char *mountpoint, VFSNode *subtree) {
 	if((mpnode = vfs_locate(root, mountpoint))) {
 		// mountpoint already exists - try to merge with the target node
 
-		if(mpnode->funcs->mount) {
-			// expected to set error on failure
-			result = mpnode->funcs->mount(mpnode, NULL, subtree);
-		} else {
-			result = false;
-			vfs_set_error("Mountpoint '%s' already exists and does not support merging", mountpoint);
+		result = vfs_node_mount(mpnode, NULL, subtree);
+
+		if(!result) {
+			vfs_set_error("Mountpoint '%s' already exists, merging failed: %s", mountpoint, vfs_get_error());
 		}
 
 		vfs_decref(mpnode);
@@ -187,17 +163,16 @@ bool vfs_mount(VFSNode *root, const char *mountpoint, VFSNode *subtree) {
 	if((mpnode = vfs_locate(root, mpbase))) {
 		// try to become a subnode of parent (conventional mount)
 
-		if(mpnode->funcs->mount) {
-			// expected to set error on failure
-			result = mpnode->funcs->mount(mpnode, mpname, subtree);
-		} else {
-			result = false;
-			vfs_set_error("Parent directory '%s' of mountpoint '%s' does not support mounting", mpbase, mountpoint);
+		result = vfs_node_mount(mpnode, mpname, subtree);
+
+		if(!result) {
+			vfs_set_error("Can't create mountpoint '%s' in '%s': %s", mountpoint, mpbase, vfs_get_error());
 		}
 
 		vfs_decref(mpnode);
 	}
 
+	// error set by vfs_locate
 	return result;
 }
 
@@ -210,49 +185,13 @@ bool vfs_mount_or_decref(VFSNode *root, const char *mountpoint, VFSNode *subtree
 	return true;
 }
 
-const char* vfs_iter(VFSNode *node, void **opaque) {
-	if(node->funcs->iter) {
-		return node->funcs->iter(node, opaque);
-	}
-
-	return NULL;
-}
-
-void vfs_iter_stop(VFSNode *node, void **opaque) {
-	if(node->funcs->iter_stop) {
-		node->funcs->iter_stop(node, opaque);
-	}
-}
-
-char* vfs_repr_node(VFSNode *node, bool try_syspath) {
-	assert(node->funcs != NULL);
-	assert(node->funcs->repr != NULL);
-	char *r;
-
-	if(try_syspath && node->funcs->syspath) {
-		if((r = node->funcs->syspath(node))) {
-			return r;
-		}
-	}
-
-	VFSInfo i = vfs_query_node(node);
-	char *o = node->funcs->repr(node);
-
-	r = strfmt("<%s (e:%i x:%i d:%i)>", o,
-		i.error, i.exists, i.is_dir
-	);
-
-	free(o);
-	return r;
-}
-
 void vfs_print_tree_recurse(SDL_RWops *dest, VFSNode *root, char *prefix, const char *name) {
 	void *o = NULL;
-	bool is_dir = vfs_query_node(root).is_dir;
+	bool is_dir = vfs_node_query(root).is_dir;
 	char *newprefix = strfmt("%s%s%s", prefix, name, is_dir ? (char[]){VFS_PATH_SEP, 0} : "");
 	char *r;
 
-	SDL_RWprintf(dest, "%s = %s\n", newprefix, r = vfs_repr_node(root, false));
+	SDL_RWprintf(dest, "%s = %s\n", newprefix, r = vfs_node_repr(root, false));
 	free(r);
 
 	if(!is_dir) {
@@ -260,7 +199,7 @@ void vfs_print_tree_recurse(SDL_RWops *dest, VFSNode *root, char *prefix, const 
 		return;
 	}
 
-	for(const char *n; (n = vfs_iter(root, &o));) {
+	for(const char *n; (n = vfs_node_iter(root, &o));) {
 		VFSNode *node = vfs_locate(root, n);
 		if(node) {
 			vfs_print_tree_recurse(dest, node, newprefix, n);
@@ -268,7 +207,7 @@ void vfs_print_tree_recurse(SDL_RWops *dest, VFSNode *root, char *prefix, const 
 		}
 	}
 
-	vfs_iter_stop(root, &o);
+	vfs_node_iter_stop(root, &o);
 	free(newprefix);
 }
 

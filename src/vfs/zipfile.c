@@ -28,14 +28,9 @@ static zip_int64_t vfs_zipfile_srcfunc(void *userdata, void *data, zip_uint64_t 
 
 	switch(cmd) {
 		case ZIP_SOURCE_OPEN: {
-			if(!source->funcs->open) {
-				return -1;
-			}
-
-			tls->stream = source->funcs->open(source, VFS_MODE_READ);
+			tls->stream = vfs_node_open(source, VFS_MODE_READ);
 
 			if(!tls->stream) {
-				LOG_SDL_ERROR;
 				zip_error_set(&tls->error, ZIP_ER_OPEN, 0);
 				return -1;
 			}
@@ -162,22 +157,18 @@ static VFSInfo vfs_zipfile_query(VFSNode *node) {
 	return (VFSInfo) {
 		.exists = true,
 		.is_dir = true,
+		.is_readonly = true,
 	};
 }
 
 static char* vfs_zipfile_syspath(VFSNode *node) {
 	VFSZipFileData *zdata = node->data1;
-
-	if(zdata->source->funcs->syspath) {
-		return zdata->source->funcs->syspath(zdata->source);
-	}
-
-	return NULL;
+	return vfs_node_syspath(zdata->source);
 }
 
 static char* vfs_zipfile_repr(VFSNode *node) {
 	VFSZipFileData *zdata = node->data1;
-	char *srcrepr = vfs_repr_node(zdata->source, false);
+	char *srcrepr = vfs_node_repr(zdata->source, false);
 	char *ziprepr = strfmt("zip archive %s", srcrepr);
 	free(srcrepr);
 	return ziprepr;
@@ -334,7 +325,7 @@ static VFSZipFileTLS* vfs_zipfile_get_tls(VFSNode *node, bool create) {
 	// FIXME: Taisei currently doesn't handle zip files without explicit directory entries correctly (file listing will not work)
 
 	if(!zip) {
-		char *r = vfs_repr_node(zdata->source, true);
+		char *r = vfs_node_repr(zdata->source, true);
 		vfs_set_error("Failed to open zip archive '%s': %s", r, zip_error_strerror(&tls->error));
 		free(r);
 		vfs_zipfile_free_tls(tls);

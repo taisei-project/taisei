@@ -9,8 +9,9 @@
 #include "taisei.h"
 
 #include "syspath.h"
+#include "readonly_wrapper.h"
 
-bool vfs_mount_syspath(const char *mountpoint, const char *fspath, bool mkdir) {
+bool vfs_mount_syspath(const char *mountpoint, const char *fspath, uint flags) {
 	VFSNode *rdir = vfs_alloc();
 
 	if(!vfs_syspath_init(rdir, fspath)) {
@@ -19,13 +20,16 @@ bool vfs_mount_syspath(const char *mountpoint, const char *fspath, bool mkdir) {
 		return false;
 	}
 
-	assert(rdir->funcs);
-	assert(rdir->funcs->mkdir);
-
-	if(mkdir && !rdir->funcs->mkdir(rdir, NULL)) {
+	if((flags & VFS_SYSPATH_MOUNT_MKDIR) && !vfs_node_mkdir(rdir, NULL)) {
 		vfs_set_error("Can't create directory: %s", vfs_get_error());
 		vfs_decref(rdir);
 		return false;
+	}
+
+	if(flags & VFS_SYSPATH_MOUNT_READONLY) {
+		VFSNode *rdir_ro = vfs_ro_wrap(rdir);
+		vfs_decref(rdir);
+		rdir = rdir_ro;
 	}
 
 	return vfs_mount_or_decref(vfs_root, mountpoint, rdir);

@@ -19,58 +19,55 @@
 #include "pathutil.h"
 
 typedef struct VFSNode VFSNode;
+typedef struct VFSNodeFuncs VFSNodeFuncs;
+typedef void (*VFSShutdownHandler)(void *arg);
 
-typedef char* (*VFSReprFunc)(VFSNode*) attr_nonnull(1);
-typedef void (*VFSFreeFunc)(VFSNode*) attr_nonnull(1);
-typedef VFSInfo (*VFSQueryFunc)(VFSNode*) attr_nonnull(1);
-typedef char* (*VFSSysPathFunc)(VFSNode*) attr_nonnull(1);
-typedef bool (*VFSMountFunc)(VFSNode *mountroot, const char *subname, VFSNode *mountee) attr_nonnull(1, 3);
-typedef bool (*VFSUnmountFunc)(VFSNode *mountroot, const char *subname) attr_nonnull(1);
-typedef VFSNode* (*VFSLocateFunc)(VFSNode *dirnode, const char* path) attr_nonnull(1, 2);
-typedef const char* (*VFSIterFunc)(VFSNode *dirnode, void **opaque) attr_nonnull(1);
-typedef void (*VFSIterStopFunc)(VFSNode *dirnode, void **opaque) attr_nonnull(1);
-typedef bool (*VFSMkDirFunc)(VFSNode *parent, const char *subdir) attr_nonnull(1);
-typedef SDL_RWops* (*VFSOpenFunc)(VFSNode *filenode, VFSOpenMode mode) attr_nonnull(1);
+struct VFSNodeFuncs {
+	char*       (*repr)(VFSNode *node) attr_nonnull(1);
+	void        (*free)(VFSNode *node) attr_nonnull(1);
+	VFSInfo     (*query)(VFSNode *node) attr_nonnull(1);
+	char*       (*syspath)(VFSNode *node) attr_nonnull(1);
+	bool        (*mount)(VFSNode *mountroot, const char *subname, VFSNode *mountee) attr_nonnull(1, 3);
+	bool        (*unmount)(VFSNode *mountroot, const char *subname) attr_nonnull(1);
+	VFSNode*    (*locate)(VFSNode *dirnode, const char* path) attr_nonnull(1, 2);
+	const char* (*iter)(VFSNode *dirnode, void **opaque) attr_nonnull(1);
+	void        (*iter_stop)(VFSNode *dirnode, void **opaque) attr_nonnull(1);
+	bool        (*mkdir)(VFSNode *parent, const char *subdir) attr_nonnull(1);
+	SDL_RWops*  (*open)(VFSNode *filenode, VFSOpenMode mode) attr_nonnull(1);
+};
 
-typedef struct VFSNodeFuncs {
-	VFSReprFunc repr;
-	VFSFreeFunc free;
-	VFSQueryFunc query;
-	VFSMountFunc mount;
-	VFSUnmountFunc unmount;
-	VFSSysPathFunc syspath;
-	VFSLocateFunc locate;
-	VFSIterFunc iter;
-	VFSIterStopFunc iter_stop;
-	VFSMkDirFunc mkdir;
-	VFSOpenFunc open;
-} VFSNodeFuncs;
-
-typedef struct VFSNode {
+struct VFSNode {
 	VFSNodeFuncs *funcs;
 	SDL_atomic_t refcount;
 	void *data1;
 	void *data2;
-} VFSNode;
-
-typedef void (*VFSShutdownHandler)(void *arg);
+};
 
 extern VFSNode *vfs_root;
 
 VFSNode* vfs_alloc(void);
 void vfs_incref(VFSNode *node) attr_nonnull(1);
 bool vfs_decref(VFSNode *node);
-char* vfs_repr_node(VFSNode *node, bool try_syspath) attr_nonnull(1);
-VFSNode* vfs_locate(VFSNode *root, const char *path) attr_nodiscard;
-VFSInfo vfs_query_node(VFSNode *node) attr_nonnull(1) attr_nodiscard;
 bool vfs_mount(VFSNode *root, const char *mountpoint, VFSNode *subtree) attr_nonnull(1, 3) attr_nodiscard;
 bool vfs_mount_or_decref(VFSNode *root, const char *mountpoint, VFSNode *subtree) attr_nonnull(1, 3) attr_nodiscard;
-const char* vfs_iter(VFSNode *node, void **opaque) attr_nonnull(1);
-void vfs_iter_stop(VFSNode *node, void **opaque) attr_nonnull(1);
+VFSNode* vfs_locate(VFSNode *root, const char *path) attr_nonnull(1, 2) attr_nodiscard;
+
+// Light wrappers around the virtual functions, safe to call even on nodes that
+// don't implement the corresponding method. "free" is not included, there should
+// be no reason to call it. It wouldn't do what you'd expect anyway; use vfs_decref.
+char* vfs_node_repr(VFSNode *node, bool try_syspath) attr_nonnull(1);
+VFSInfo vfs_node_query(VFSNode *node) attr_nonnull(1) attr_nodiscard;
+char* vfs_node_syspath(VFSNode *node) attr_nonnull(1) attr_nodiscard;
+bool vfs_node_mount(VFSNode *mountroot, const char *subname, VFSNode *mountee) attr_nonnull(1, 3);
+bool vfs_node_unmount(VFSNode *mountroot, const char *subname) attr_nonnull(1);
+VFSNode* vfs_node_locate(VFSNode *root, const char *path) attr_nonnull(1, 2) attr_nodiscard;
+const char* vfs_node_iter(VFSNode *node, void **opaque) attr_nonnull(1);
+void vfs_node_iter_stop(VFSNode *node, void **opaque) attr_nonnull(1);
+bool vfs_node_mkdir(VFSNode *parent, const char *subdir) attr_nonnull(1);
+SDL_RWops* vfs_node_open(VFSNode *filenode, VFSOpenMode mode) attr_nonnull(1);
 
 void vfs_set_error(char *fmt, ...) attr_printf(1, 2);
 void vfs_set_error_from_sdl(void);
 
 void vfs_hook_on_shutdown(VFSShutdownHandler, void *arg);
-
 void vfs_print_tree_recurse(SDL_RWops *dest, VFSNode *root, char *prefix, const char *name) attr_nonnull(1, 2, 3, 4);

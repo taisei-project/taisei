@@ -108,7 +108,7 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
 	if(!ok && errno == EEXIST) {
 		VFSNode *n = vfs_locate(node, subdir);
 
-		if(n && vfs_query_node(n).is_dir) {
+		if(n && vfs_node_query(n).is_dir) {
 			ok = true;
 		} else {
 			vfs_set_error("%s already exists, and is not a directory", p);

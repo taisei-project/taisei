@@ -24,7 +24,7 @@ static void vfs_zippath_free(VFSNode *node) {
 
 static char* vfs_zippath_repr(VFSNode *node) {
 	VFSZipPathData *zdata = node->data1;
-	char *ziprepr = vfs_repr_node(zdata->zipnode, false);
+	char *ziprepr = vfs_node_repr(zdata->zipnode, false);
 	char *zpathrepr = strfmt("%s '%s' in %s",
 		zdata->info.is_dir ? "directory" : "file", vfs_zippath_name(node), ziprepr);
 	free(ziprepr);
@@ -33,7 +33,7 @@ static char* vfs_zippath_repr(VFSNode *node) {
 
 static char* vfs_zippath_syspath(VFSNode *node) {
 	VFSZipPathData *zdata = node->data1;
-	char *zippath = vfs_repr_node(zdata->zipnode, true);
+	char *zippath = vfs_node_repr(zdata->zipnode, true);
 	char *subpath = strfmt("%s%c%s", zippath, vfs_syspath_preferred_separator, vfs_zippath_name(node));
 	free(zippath);
 	return subpath;
@@ -124,6 +124,7 @@ void vfs_zippath_init(VFSNode *node, VFSNode *zipnode, VFSZipFileTLS *tls, zip_i
 	node->data1 = zdata;
 
 	zdata->info.exists = true;
+	zdata->info.is_readonly = true;
 
 	if('/' == *(strchr(vfs_zippath_name(node), 0) - 1)) {
 		zdata->info.is_dir = true;
