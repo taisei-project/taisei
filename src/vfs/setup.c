@@ -11,6 +11,7 @@
 #include "build_config.h"
 #include "public.h"
 #include "setup.h"
+#include "error.h"
 
 static char* get_default_res_path(void) {
 	char *res;
@@ -39,11 +40,27 @@ static void get_core_paths(char **res, char **storage) {
 	}
 }
 
+static bool vfs_mount_pkgdir(const char *dst, const char *src) {
+	VFSInfo stat = vfs_query(src);
+
+	if(stat.error) {
+		return false;
+	}
+
+	if(!stat.exists || !stat.is_dir) {
+		vfs_set_error("Not a directory");
+		return false;
+	}
+
+	return vfs_mount_alias(dst, src);
+}
+
 static struct pkg_loader_t {
 	const char *const ext;
 	bool (*mount)(const char *mp, const char *arg);
 } pkg_loaders[] = {
 	{ ".zip",       vfs_mount_zipfile },
+	{ ".pkgdir",    vfs_mount_pkgdir  },
 	{ NULL },
 };
 

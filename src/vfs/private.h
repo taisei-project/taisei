@@ -17,6 +17,7 @@
 
 #include "public.h"
 #include "pathutil.h"
+#include "error.h"
 
 typedef struct VFSNode VFSNode;
 typedef struct VFSNodeFuncs VFSNodeFuncs;
@@ -65,9 +66,6 @@ const char* vfs_node_iter(VFSNode *node, void **opaque) attr_nonnull(1);
 void vfs_node_iter_stop(VFSNode *node, void **opaque) attr_nonnull(1);
 bool vfs_node_mkdir(VFSNode *parent, const char *subdir) attr_nonnull(1);
 SDL_RWops* vfs_node_open(VFSNode *filenode, VFSOpenMode mode) attr_nonnull(1);
-
-void vfs_set_error(char *fmt, ...) attr_printf(1, 2);
-void vfs_set_error_from_sdl(void);
 
 void vfs_hook_on_shutdown(VFSShutdownHandler, void *arg);
 void vfs_print_tree_recurse(SDL_RWops *dest, VFSNode *root, char *prefix, const char *name) attr_nonnull(1, 2, 3, 4);
