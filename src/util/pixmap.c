@@ -14,68 +14,119 @@
 
 // NOTE: this is pretty stupid and not at all optimized, patches welcome
 
-#define _CONV_FUNCNAME	convert_x8_to_x8
+#define _CONV_FUNCNAME	convert_u8_to_u8
 #define _CONV_IN_MAX	UINT8_MAX
 #define _CONV_IN_TYPE	uint8_t
 #define _CONV_OUT_MAX	UINT8_MAX
 #define _CONV_OUT_TYPE	uint8_t
 #include "pixmap_conversion.inc.h"
 
-#define _CONV_FUNCNAME	convert_x8_to_x16
+#define _CONV_FUNCNAME	convert_u8_to_u16
 #define _CONV_IN_MAX	UINT8_MAX
 #define _CONV_IN_TYPE	uint8_t
 #define _CONV_OUT_MAX	UINT16_MAX
 #define _CONV_OUT_TYPE	uint16_t
 #include "pixmap_conversion.inc.h"
 
-#define _CONV_FUNCNAME	convert_x8_to_x32
+#define _CONV_FUNCNAME	convert_u8_to_u32
 #define _CONV_IN_MAX	UINT8_MAX
 #define _CONV_IN_TYPE	uint8_t
 #define _CONV_OUT_MAX	UINT32_MAX
 #define _CONV_OUT_TYPE	uint32_t
 #include "pixmap_conversion.inc.h"
 
-#define _CONV_FUNCNAME	convert_x16_to_x8
+#define _CONV_FUNCNAME	convert_u8_to_f32
+#define _CONV_IN_MAX	UINT8_MAX
+#define _CONV_IN_TYPE	uint8_t
+#define _CONV_OUT_MAX	1.0f
+#define _CONV_OUT_TYPE	float
+#include "pixmap_conversion.inc.h"
+
+#define _CONV_FUNCNAME	convert_u16_to_u8
 #define _CONV_IN_MAX	UINT16_MAX
 #define _CONV_IN_TYPE	uint16_t
 #define _CONV_OUT_MAX	UINT8_MAX
 #define _CONV_OUT_TYPE	uint8_t
 #include "pixmap_conversion.inc.h"
 
-#define _CONV_FUNCNAME	convert_x16_to_x16
+#define _CONV_FUNCNAME	convert_u16_to_u16
 #define _CONV_IN_MAX	UINT16_MAX
 #define _CONV_IN_TYPE	uint16_t
 #define _CONV_OUT_MAX	UINT16_MAX
 #define _CONV_OUT_TYPE	uint16_t
 #include "pixmap_conversion.inc.h"
 
-#define _CONV_FUNCNAME	convert_x16_to_x32
+#define _CONV_FUNCNAME	convert_u16_to_u32
 #define _CONV_IN_MAX	UINT16_MAX
 #define _CONV_IN_TYPE	uint16_t
 #define _CONV_OUT_MAX	UINT32_MAX
 #define _CONV_OUT_TYPE	uint32_t
 #include "pixmap_conversion.inc.h"
 
-#define _CONV_FUNCNAME	convert_x32_to_x8
+#define _CONV_FUNCNAME	convert_u16_to_f32
+#define _CONV_IN_MAX	UINT16_MAX
+#define _CONV_IN_TYPE	uint16_t
+#define _CONV_OUT_MAX	1.0f
+#define _CONV_OUT_TYPE	float
+#include "pixmap_conversion.inc.h"
+
+#define _CONV_FUNCNAME	convert_u32_to_u8
 #define _CONV_IN_MAX	UINT32_MAX
 #define _CONV_IN_TYPE	uint32_t
 #define _CONV_OUT_MAX	UINT8_MAX
 #define _CONV_OUT_TYPE	uint8_t
 #include "pixmap_conversion.inc.h"
 
-#define _CONV_FUNCNAME	convert_x32_to_x16
+#define _CONV_FUNCNAME	convert_u32_to_u16
 #define _CONV_IN_MAX	UINT32_MAX
 #define _CONV_IN_TYPE	uint32_t
 #define _CONV_OUT_MAX	UINT16_MAX
 #define _CONV_OUT_TYPE	uint16_t
 #include "pixmap_conversion.inc.h"
 
-#define _CONV_FUNCNAME	convert_x32_to_x32
+#define _CONV_FUNCNAME	convert_u32_to_u32
 #define _CONV_IN_MAX	UINT32_MAX
 #define _CONV_IN_TYPE	uint32_t
 #define _CONV_OUT_MAX	UINT32_MAX
 #define _CONV_OUT_TYPE	uint32_t
 #include "pixmap_conversion.inc.h"
+
+#define _CONV_FUNCNAME	convert_u32_to_f32
+#define _CONV_IN_MAX	UINT32_MAX
+#define _CONV_IN_TYPE	uint32_t
+#define _CONV_OUT_MAX	1.0f
+#define _CONV_OUT_TYPE	float
+#include "pixmap_conversion.inc.h"
+
+#define _CONV_FUNCNAME	convert_f32_to_u8
+#define _CONV_IN_MAX	1.0f
+#define _CONV_IN_TYPE	float
+#define _CONV_OUT_MAX	UINT8_MAX
+#define _CONV_OUT_TYPE	uint8_t
+#include "pixmap_conversion.inc.h"
+
+#define _CONV_FUNCNAME	convert_f32_to_u16
+#define _CONV_IN_MAX	1.0f
+#define _CONV_IN_TYPE	float
+#define _CONV_OUT_MAX	UINT16_MAX
+#define _CONV_OUT_TYPE	uint16_t
+#include "pixmap_conversion.inc.h"
+
+#define _CONV_FUNCNAME	convert_f32_to_u32
+#define _CONV_IN_MAX	1.0f
+#define _CONV_IN_TYPE	float
+#define _CONV_OUT_MAX	UINT32_MAX
+#define _CONV_OUT_TYPE	uint32_t
+#include "pixmap_conversion.inc.h"
+
+#define _CONV_FUNCNAME	convert_f32_to_f32
+#define _CONV_IN_MAX	1.0f
+#define _CONV_IN_TYPE	float
+#define _CONV_OUT_MAX	1.0f
+#define _CONV_OUT_TYPE	float
+#include "pixmap_conversion.inc.h"
+
+#define DEPTH_FLOAT_BIT (1 << 10)
 
 typedef void (*convfunc_t)(
 	size_t in_elements,
@@ -86,7 +137,7 @@ typedef void (*convfunc_t)(
 	void *default_pixel
 );
 
-#define CONV(in, out) { convert_x##in##_to_x##out, in, out }
+#define CONV(in, in_depth, out, out_depth) { convert_##in##_to_##out, in_depth, out_depth }
 
 struct conversion_def {
 	convfunc_t func;
@@ -95,17 +146,25 @@ struct conversion_def {
 };
 
 struct conversion_def conversion_table[] = {
-	CONV(8,   8),
-	CONV(8,  16),
-	CONV(8,  32),
+	CONV(u8,   8,   u8,   8),
+	CONV(u8,   8,   u16, 16),
+	CONV(u8,   8,   u32, 32),
+	CONV(u8,   8,   f32, 32 | DEPTH_FLOAT_BIT),
 
-	CONV(16,  8),
-	CONV(16, 16),
-	CONV(16, 32),
+	CONV(u16, 16,   u8,   8),
+	CONV(u16, 16,   u16, 16),
+	CONV(u16, 16,   u32, 32),
+	CONV(u16, 16,   f32, 32 | DEPTH_FLOAT_BIT),
 
-	CONV(32,  8),
-	CONV(32, 16),
-	CONV(32, 32),
+	CONV(u32, 32,   u8,   8),
+	CONV(u32, 16,   u16, 16),
+	CONV(u32, 32,   u32, 32),
+	CONV(u32, 32,   f32, 32 | DEPTH_FLOAT_BIT),
+
+	CONV(f32, 32 | DEPTH_FLOAT_BIT, u8,   8),
+	CONV(f32, 16 | DEPTH_FLOAT_BIT, u16, 16),
+	CONV(f32, 32 | DEPTH_FLOAT_BIT, u32, 32),
+	CONV(f32, 32 | DEPTH_FLOAT_BIT, f32, 32 | DEPTH_FLOAT_BIT),
 
 	{ 0 }
 };
@@ -124,11 +183,13 @@ static void* default_pixel(uint depth) {
 	static uint8_t  default_u8[]  = { 0, 0, 0, UINT8_MAX  };
 	static uint16_t default_u16[] = { 0, 0, 0, UINT16_MAX };
 	static uint32_t default_u32[] = { 0, 0, 0, UINT32_MAX };
+	static float    default_f32[] = { 0, 0, 0, 1.0f       };
 
 	switch(depth) {
 		case 8:  return default_u8;
 		case 16: return default_u16;
 		case 32: return default_u32;
+		case 32 | DEPTH_FLOAT_BIT: return default_f32;
 		default: UNREACHABLE;
 	}
 }
@@ -171,8 +232,8 @@ void pixmap_convert(const Pixmap *src, Pixmap *dst, PixmapFormat format) {
 	dst->format = format;
 
 	struct conversion_def *cv = find_conversion(
-		PIXMAP_FORMAT_DEPTH(src->format),
-		PIXMAP_FORMAT_DEPTH(dst->format)
+		PIXMAP_FORMAT_DEPTH(src->format) | (PIXMAP_FORMAT_IS_FLOAT(src->format) * DEPTH_FLOAT_BIT),
+		PIXMAP_FORMAT_DEPTH(dst->format) | (PIXMAP_FORMAT_IS_FLOAT(dst->format) * DEPTH_FLOAT_BIT)
 	);
 
 	cv->func(
@@ -181,7 +242,7 @@ void pixmap_convert(const Pixmap *src, Pixmap *dst, PixmapFormat format) {
 		num_pixels,
 		src->data.untyped,
 		dst->data.untyped,
-		default_pixel(PIXMAP_FORMAT_DEPTH(dst->format))
+		default_pixel(PIXMAP_FORMAT_DEPTH(dst->format) | (PIXMAP_FORMAT_IS_FLOAT(dst->format) * DEPTH_FLOAT_BIT))
 	);
 }
 

@@ -135,6 +135,118 @@ static void parse_wrap(const char *val, TextureWrapMode *out) {
 	log_warn("Bad value `%s`, assuming default", pbuf);
 }
 
+static TextureType pixmap_format_to_texture_type(PixmapFormat fmt) {
+	PixmapLayout layout = PIXMAP_FORMAT_LAYOUT(fmt);
+	uint depth = PIXMAP_FORMAT_DEPTH(fmt);
+	bool is_float = PIXMAP_FORMAT_IS_FLOAT(fmt);
+
+	if(is_float) {
+		switch(layout) {
+			case PIXMAP_LAYOUT_R:    return TEX_TYPE_R_32_FLOAT;
+			case PIXMAP_LAYOUT_RG:   return TEX_TYPE_RG_32_FLOAT;
+			case PIXMAP_LAYOUT_RGB:  return TEX_TYPE_RGB_32_FLOAT;
+			case PIXMAP_LAYOUT_RGBA: return TEX_TYPE_RGBA_32_FLOAT;
+		}
+
+		UNREACHABLE;
+	}
+
+	if(depth > 8) {
+		switch(layout) {
+			case PIXMAP_LAYOUT_R:    return TEX_TYPE_R_16;
+			case PIXMAP_LAYOUT_RG:   return TEX_TYPE_RG_16;
+			case PIXMAP_LAYOUT_RGB:  return TEX_TYPE_RGB_16;
+			case PIXMAP_LAYOUT_RGBA: return TEX_TYPE_RGBA_16;
+		}
+
+		UNREACHABLE;
+	}
+
+	switch(layout) {
+		case PIXMAP_LAYOUT_R:    return TEX_TYPE_R_8;
+		case PIXMAP_LAYOUT_RG:   return TEX_TYPE_RG_8;
+		case PIXMAP_LAYOUT_RGB:  return TEX_TYPE_RGB_8;
+		case PIXMAP_LAYOUT_RGBA: return TEX_TYPE_RGBA_8;
+	}
+
+	UNREACHABLE;
+}
+
+static bool parse_format(const char *val, PixmapFormat *out) {
+	if(!val) {
+		return true;
+	}
+
+	uint channels = 0;
+
+	char buf[strlen(val) + 1];
+	strcpy(buf, val);
+
+	if(*val) {
+		char *c = strrchr(buf, 0) - 1;
+		while(isspace(*c) && c >= buf) {
+			*c-- = 0;
+		}
+	}
+
+	val = buf;
+
+	for(uint i = 4; i >= 1; --i) {
+		if(!SDL_strncasecmp(val, "rgba", i)) {
+			channels = i;
+			break;
+		}
+	}
+
+	if(channels < 1) {
+		log_warn("Invalid format '%s': bad channels specification, expected one of: RGBA, RGB, RG, R", val);
+		return false;
+	}
+
+	assert(channels <= 4);
+
+	char *end;
+	uint depth = strtol(val + channels, &end, 10);
+
+	if(val + channels == end) {
+		log_warn("Invalid format '%s': bad depth specification, expected an integer", val);
+		return false;
+	}
+
+	if(depth != 8 && depth != 16 && depth != 32) {
+		log_warn("Invalid format '%s': invalid bit depth %d, only 8, 16, and 32 are currently supported", val, depth);
+		return false;
+	}
+
+	while(isspace(*end)) {
+		++end;
+	}
+
+	bool is_float = false;
+
+	if(*end) {
+		if(!SDL_strcasecmp(end, "u") || !SDL_strcasecmp(end, "uint")) {
+			// is_float = false;
+		} else if(!SDL_strcasecmp(end, "f") || !SDL_strcasecmp(end, "float")) {
+			is_float = true;
+		} else {
+			log_warn("Invalid format '%s': bad type specification, expected one of: U, UINT, F, FLOAT, or nothing", val);
+			return false;
+		}
+	}
+
+	if(depth == 32 && !is_float) {
+		log_warn("Invalid format '%s': bit depth %d is currently only supported for floating point pixels", val, depth);
+		return false;
+	} else if(depth < 32 && is_float) {
+		log_warn("Bit depth %d is currently not supported for floating point pixels, promoting to 32", depth);
+		depth = 32;
+	}
+
+	*out = PIXMAP_MAKE_FORMAT(channels, depth) | (is_float * PIXMAP_FLOAT_BIT);
+	return true;
+}
+
 typedef struct TextureLoadData {
 	Pixmap pixmap;
 	TextureParams params;
@@ -146,7 +258,6 @@ static void* load_texture_begin(const char *path, uint flags) {
 
 	TextureLoadData ld = {
 		.params = {
-			.type = TEX_TYPE_RGBA,
 			.filter = {
 				.mag = TEX_FILTER_LINEAR,
 				.min = TEX_FILTER_LINEAR_MIPMAP_LINEAR,
@@ -165,11 +276,14 @@ static void* load_texture_begin(const char *path, uint flags) {
 		}
 	};
 
+	PixmapFormat override_format = 0;
+
 	if(strendswith(path, TEX_EXTENSION)) {
 		char *str_filter_min = NULL;
 		char *str_filter_mag = NULL;
 		char *str_wrap_s = NULL;
 		char *str_wrap_t = NULL;
+		char *str_format = NULL;
 
 		if(!parse_keyvalue_file_with_spec(path, (KVSpec[]) {
 			{ "source",     .out_str  = &source_allocated },
@@ -177,6 +291,7 @@ static void* load_texture_begin(const char *path, uint flags) {
 			{ "filter_mag", .out_str  = &str_filter_mag },
 			{ "wrap_s",     .out_str  = &str_wrap_s },
 			{ "wrap_t",     .out_str  = &str_wrap_t },
+			{ "format",     .out_str  = &str_format },
 			{ "mipmaps",    .out_int  = (int*)&ld.params.mipmaps },
 			{ "anisotropy", .out_int  = (int*)&ld.params.anisotropy },
 			{ NULL }
@@ -215,6 +330,15 @@ static void* load_texture_begin(const char *path, uint flags) {
 
 		parse_wrap(str_wrap_t, &ld.params.wrap.t);
 		free(str_wrap_t);
+
+		bool format_ok = parse_format(str_format, &override_format);
+		free(str_format);
+
+		if(!format_ok) {
+			free(source_allocated);
+			log_warn("%s: bad or unsupported pixel format specification", path);
+			return NULL;
+		}
 	}
 
 	if(!pixmap_load_file(source, &ld.pixmap)) {
@@ -230,6 +354,15 @@ static void* load_texture_begin(const char *path, uint flags) {
 	} else {
 		pixmap_flip_to_origin_inplace(&ld.pixmap, PIXMAP_ORIGIN_TOPLEFT);
 	}
+
+	override_format = override_format ? override_format : ld.pixmap.format;
+	ld.params.type = pixmap_format_to_texture_type(override_format);
+	log_debug("%s: %d channels, %d bits per channel, %s",
+		path,
+		PIXMAP_FORMAT_LAYOUT(override_format),
+		PIXMAP_FORMAT_DEPTH(override_format),
+		PIXMAP_FORMAT_IS_FLOAT(override_format) ? "float" : "uint"
+	);
 
 	if(ld.params.mipmaps == 0) {
 		ld.params.mipmaps = TEX_MIPMAPS_MAX;

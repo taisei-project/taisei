@@ -63,11 +63,29 @@ typedef enum MatrixMode {
 
 typedef enum TextureType {
 	// NOTE: whichever is placed first here is considered the "default" where applicable.
-	TEX_TYPE_RGBA,
-	TEX_TYPE_RGB,
-	TEX_TYPE_RG,
-	TEX_TYPE_R,
-	TEX_TYPE_DEPTH,
+	TEX_TYPE_RGBA_8,
+	TEX_TYPE_RGB_8,
+	TEX_TYPE_RG_8,
+	TEX_TYPE_R_8,
+	TEX_TYPE_DEPTH_8,
+
+	TEX_TYPE_RGBA_16,
+	TEX_TYPE_RGB_16,
+	TEX_TYPE_RG_16,
+	TEX_TYPE_R_16,
+	TEX_TYPE_DEPTH_16,
+
+	TEX_TYPE_RGBA_32_FLOAT,
+	TEX_TYPE_RGB_32_FLOAT,
+	TEX_TYPE_RG_32_FLOAT,
+	TEX_TYPE_R_32_FLOAT,
+	TEX_TYPE_DEPTH_32_FLOAT,
+
+	TEX_TYPE_RGBA = TEX_TYPE_RGBA_8,
+	TEX_TYPE_RGB = TEX_TYPE_RGB_8,
+	TEX_TYPE_RG = TEX_TYPE_RG_8,
+	TEX_TYPE_R = TEX_TYPE_R_8,
+	TEX_TYPE_DEPTH = TEX_TYPE_DEPTH_8,
 } TextureType;
 
 typedef enum TextureFilterMode {
