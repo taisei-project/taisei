@@ -20,9 +20,9 @@ Dependencies
 -  zlib
 -  libzip >= 1.0
 -  libpng >= 1.5.0
--  libwebpdecoder
+-  libwebpdecoder >= 0.5 or libwebp >= 0.5
 -  freetype2
--  OpenGL >= 3.3, or OpenGL ES >= 3.0
+-  OpenGL >= 3.3 or OpenGL ES >= 3.0
 -  libshaderc (optional, for OpenGL ES backends)
 -  crossc >= 1.5.0 (optional, for OpenGL ES backends)
 
