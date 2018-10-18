@@ -31,3 +31,6 @@ else
     # No have_posix check, it might just work.
     util_src += files('platform_posix.c')
 endif
+
+subdir('pixmap_loaders')
+util_src += pixmap_loaders_src

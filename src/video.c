@@ -256,36 +256,60 @@ static void* video_screenshot_task(void *arg) {
 	log_info("Saving screenshot as %s", syspath);
 	free(syspath);
 
+	const char *error = NULL;
 	png_structp png_ptr;
 	png_infop info_ptr;
 
-	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-	png_setup_error_handlers(png_ptr);
+	png_byte *volatile row_pointers[height];
+	memset((void*)row_pointers, 0, sizeof(row_pointers));
+
+	png_ptr = pngutil_create_write_struct();
+
+	if(png_ptr == NULL) {
+		error = "pngutil_create_write_struct() failed";
+		goto done;
+	}
+
 	info_ptr = png_create_info_struct(png_ptr);
+
+	if(info_ptr == NULL) {
+		error = "png_create_info_struct() failed";
+		goto done;
+	}
+
+	if(setjmp(png_jmpbuf(png_ptr))) {
+		error = "PNG error";
+		goto done;
+	}
 
 	png_set_IHDR(
 		png_ptr, info_ptr, width, height, 8, PNG_COLOR_TYPE_RGB,
 		PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT
 	);
 
-	png_byte *row_pointers[height];
-
 	for(int y = 0; y < height; y++) {
 		row_pointers[y] = png_malloc(png_ptr, width * 3);
 		memcpy(row_pointers[y], pixels + width * 3 * (height - 1 - y), width * 3);
 	}
 
-	png_init_rwops_write(png_ptr, output);
-	png_set_rows(png_ptr, info_ptr, row_pointers);
+	pngutil_init_rwops_write(png_ptr, output);
+	png_set_rows(png_ptr, info_ptr, (void*)row_pointers);
 	png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
+
+done:
+	if(error) {
+		log_warn("Couldn't save screenshot: %s", error);
+	}
 
 	for(int y = 0; y < height; y++) {
 		png_free(png_ptr, row_pointers[y]);
 	}
 
-	png_destroy_write_struct(&png_ptr, &info_ptr);
-	SDL_RWclose(output);
+	if(png_ptr != NULL) {
+		png_destroy_write_struct(&png_ptr, info_ptr ? &info_ptr : NULL);
+	}
 
+	SDL_RWclose(output);
 	return NULL;
 }
 

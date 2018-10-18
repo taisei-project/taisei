@@ -16,11 +16,11 @@ Installation
 Dependencies
 ^^^^^^^^^^^^
 
--  SDL2 >= 2.0.5, SDL2_mixer, SDL2_image
+-  SDL2 >= 2.0.5, SDL2_mixer
 -  zlib
 -  libzip >= 1.0
 -  libpng >= 1.5.0
--  libjpeg
+-  libwebpdecoder
 -  freetype2
 -  OpenGL >= 3.3, or OpenGL ES >= 3.0
 -  libshaderc (optional, for OpenGL ES backends)

@@ -8,8 +8,6 @@
 
 #include "taisei.h"
 
-#include <SDL_image.h>
-
 #include "resource.h"
 #include "config.h"
 #include "video.h"

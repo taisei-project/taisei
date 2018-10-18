@@ -11,37 +11,45 @@
 #include "pngcruft.h"
 #include "log.h"
 
-static void png_rwops_write_data(png_structp png_ptr, png_bytep data, png_size_t length) {
+static void pngutil_rwops_write_data(png_structp png_ptr, png_bytep data, png_size_t length) {
 	SDL_RWops *out = png_get_io_ptr(png_ptr);
 	SDL_RWwrite(out, data, length, 1);
 }
 
-static void png_rwops_flush_data(png_structp png_ptr) {
+static void pngutil_rwops_flush_data(png_structp png_ptr) {
 	// no flush operation in SDL_RWops
 }
 
-static void png_rwops_read_data(png_structp png_ptr, png_bytep data, png_size_t length) {
+static void pngutil_rwops_read_data(png_structp png_ptr, png_bytep data, png_size_t length) {
 	SDL_RWops *out = png_get_io_ptr(png_ptr);
 	SDL_RWread(out, data, length, 1);
 }
 
-void png_init_rwops_read(png_structp png, SDL_RWops *rwops) {
-	png_set_read_fn(png, rwops, png_rwops_read_data);
+void pngutil_init_rwops_read(png_structp png, SDL_RWops *rwops) {
+	png_set_read_fn(png, rwops, pngutil_rwops_read_data);
 }
 
-void png_init_rwops_write(png_structp png, SDL_RWops *rwops) {
-	png_set_write_fn(png, rwops, png_rwops_write_data, png_rwops_flush_data);
+void pngutil_init_rwops_write(png_structp png, SDL_RWops *rwops) {
+	png_set_write_fn(png, rwops, pngutil_rwops_write_data, pngutil_rwops_flush_data);
 }
 
-noreturn static void png_error_handler(png_structp png_ptr, png_const_charp error_msg) {
+noreturn static void pngutil_error_handler(png_structp png_ptr, png_const_charp error_msg) {
 	log_warn("PNG error: %s", error_msg);
 	png_longjmp(png_ptr, 1);
 }
 
-static void png_warning_handler(png_structp png_ptr, png_const_charp warning_msg) {
+static void pngutil_warning_handler(png_structp png_ptr, png_const_charp warning_msg) {
 	log_warn("PNG warning: %s", warning_msg);
 }
 
-void png_setup_error_handlers(png_structp png) {
-	png_set_error_fn(png, NULL, png_error_handler, png_warning_handler);
+void pngutil_setup_error_handlers(png_structp png) {
+	png_set_error_fn(png, NULL, pngutil_error_handler, pngutil_warning_handler);
+}
+
+png_structp pngutil_create_read_struct(void) {
+	return png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, pngutil_error_handler, pngutil_warning_handler);
+}
+
+png_structp pngutil_create_write_struct(void) {
+	return png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, pngutil_error_handler, pngutil_warning_handler);
 }

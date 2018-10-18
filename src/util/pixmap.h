@@ -147,3 +147,6 @@ size_t pixmap_data_size(const Pixmap *px) attr_nonnull(1);
 bool pixmap_load_file(const char *path, Pixmap *dst) attr_nonnull(1, 2) attr_nodiscard;
 bool pixmap_load_stream(SDL_RWops *stream, Pixmap *dst) attr_nonnull(1, 2) attr_nodiscard;
 bool pixmap_load_stream_tga(SDL_RWops *stream, Pixmap *dst) attr_nonnull(1, 2) attr_nodiscard;
+
+bool pixmap_check_filename(const char *path);
+char* pixmap_source_path(const char *prefix, const char *path);

@@ -8,10 +8,9 @@
 
 #include "taisei.h"
 
-#include <SDL_image.h>
-
 #include "pixmap.h"
 #include "util.h"
+#include "pixmap_loaders/loaders.h"
 
 // NOTE: this is pretty stupid and not at all optimized, patches welcome
 
@@ -279,84 +278,52 @@ void pixmap_flip_to_origin_inplace(Pixmap *src, PixmapOrigin origin) {
 	src->origin = origin;
 }
 
-static void quit_sdl_image(void) {
-	IMG_Quit();
-}
-
-static void init_sdl_image(void) {
-	static bool sdlimage_initialized = false;
-
-	if(sdlimage_initialized) {
-		return;
-	}
-
-	sdlimage_initialized = true;
-
-	int want_flags = IMG_INIT_JPG | IMG_INIT_PNG;
-	int init_flags = IMG_Init(want_flags);
-
-	if((want_flags & init_flags) != want_flags) {
-		log_warn(
-			"SDL_image doesn't support some of the formats we want. "
-			"Requested: %i, got: %i. "
-			"Textures may fail to load",
-			want_flags,
-			init_flags
-		);
-	}
-
-	atexit(quit_sdl_image);
-}
-
-static bool pixmap_load_finish(SDL_Surface *surf, Pixmap *dst) {
-	SDL_Surface *cv_surf = SDL_ConvertSurfaceFormat(surf, SDL_PIXELFORMAT_RGBA32, 0);
-	SDL_FreeSurface(surf);
-
-	if(cv_surf == NULL) {
-		log_warn("SDL_ConvertSurfaceFormat() failed: %s", SDL_GetError());
-		return false;
-	}
-
-	// NOTE: 32 in SDL_PIXELFORMAT_RGBA32 is bits per pixel; 8 in PIXMAP_FORMAT_RGBA8 is bits per channel.
-	dst->format = PIXMAP_FORMAT_RGBA8;
-	dst->width = cv_surf->w;
-	dst->height = cv_surf->h;
-	dst->origin = PIXMAP_ORIGIN_TOPLEFT;
-	dst->data.rgba8 = pixmap_alloc_buffer_for_copy(dst);
-
-	SDL_LockSurface(cv_surf);
-	memcpy(dst->data.rgba8, cv_surf->pixels, pixmap_data_size(dst));
-	SDL_UnlockSurface(cv_surf);
-	SDL_FreeSurface(cv_surf);
-
-	return true;
-}
-
 bool pixmap_load_stream_tga(SDL_RWops *stream, Pixmap *dst) {
-	init_sdl_image();
-	SDL_Surface *surf = IMG_LoadTGA_RW(stream);
+	return false;
+}
 
-	if(surf == NULL) {
-		log_warn("IMG_LoadTGA_RW() failed: %s", IMG_GetError());
-		return false;
+static PixmapLoader *pixmap_loaders[] = {
+	&pixmap_loader_png,
+	&pixmap_loader_webp,
+	NULL,
+};
+
+static PixmapLoader* pixmap_loader_for_filename(const char *file) {
+	char *ext = strrchr(file, '.');
+
+	if(!ext || !*(++ext)) {
+		return NULL;
 	}
 
-	return pixmap_load_finish(surf, dst);
+	for(PixmapLoader **loader = pixmap_loaders; *loader; ++loader) {
+		PixmapLoader *l = *loader;
+		for(const char **l_ext = l->filename_exts; *l_ext; ++l_ext) {
+			if(!SDL_strcasecmp(*l_ext, ext)) {
+				return l;
+			}
+		}
+	}
+
+	return NULL;
 }
 
 bool pixmap_load_stream(SDL_RWops *stream, Pixmap *dst) {
-	init_sdl_image();
-	SDL_Surface *surf = IMG_Load_RW(stream, false);
+	for(PixmapLoader **loader = pixmap_loaders; *loader; ++loader) {
+		bool match = (*loader)->probe(stream);
+		SDL_RWseek(stream, 0, RW_SEEK_SET);
 
-	if(surf == NULL) {
-		log_warn("IMG_Load_RW() failed: %s", IMG_GetError());
-		return false;
+		if(match) {
+			return (*loader)->load(stream, dst);
+		}
 	}
 
-	return pixmap_load_finish(surf, dst);
+	log_warn("Image format not recognized");
+	return false;
 }
 
 bool pixmap_load_file(const char *path, Pixmap *dst) {
+	// TODO: Make this work without having to read the whole file into memory
+	// (that is what the VFS_MODE_SEEKABLE bit currently does with zip archives).
 	SDL_RWops *stream = vfs_open(path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
 	if(!stream) {
@@ -364,14 +331,44 @@ bool pixmap_load_file(const char *path, Pixmap *dst) {
 		return false;
 	}
 
-	bool result;
-
-	if(strendswith(path, ".tga")) {
-		result = pixmap_load_stream_tga(stream, dst);
-	} else {
-		result = pixmap_load_stream(stream, dst);
-	}
-
+	bool result = pixmap_load_stream(stream, dst);
 	SDL_RWclose(stream);
 	return result;
+}
+
+bool pixmap_check_filename(const char *path) {
+	return (bool)pixmap_loader_for_filename(path);
+}
+
+char* pixmap_source_path(const char *prefix, const char *path) {
+	char base_path[strlen(prefix) + strlen(path) + 1];
+	strcpy(base_path, prefix);
+	strcpy(base_path + strlen(prefix), path);
+
+	if(pixmap_check_filename(base_path) && vfs_query(base_path).exists) {
+		return strdup(base_path);
+	}
+
+	char *dot = strrchr(path, '.');
+
+	if(dot) {
+		*dot = 0;
+	}
+
+	for(PixmapLoader **loader = pixmap_loaders; *loader; ++loader) {
+		PixmapLoader *l = *loader;
+		for(const char **l_ext = l->filename_exts; *l_ext; ++l_ext) {
+			char ext[strlen(*l_ext) + 2];
+			ext[0] = '.';
+			strcpy(ext + 1, *l_ext);
+
+			char *p = try_path("", base_path, ext);
+
+			if(p != NULL) {
+				return p;
+			}
+		}
+	}
+
+	return NULL;
 }

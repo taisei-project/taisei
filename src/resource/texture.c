@@ -33,30 +33,6 @@ ResourceHandler texture_res_handler = {
 	},
 };
 
-static const char *texture_image_exts[] = {
-	// more are usable if you explicitly specify the source in a .tex file,
-	// but these are the ones we officially support, and are tried in this
-	// order for source auto-detection.
-	//
-	// FIXME: overriding extension in the .tex file currently doesn't work!
-	".png",
-	".jpg",
-	".jpeg",
-	NULL
-};
-
-static char* texture_image_path(const char *name) {
-	char *p = NULL;
-
-	for(const char **ext = texture_image_exts; *ext; ++ext) {
-		if((p = try_path(TEX_PATH_PREFIX, name, *ext))) {
-			return p;
-		}
-	}
-
-	return NULL;
-}
-
 char* texture_path(const char *name) {
 	char *p = NULL;
 
@@ -64,7 +40,7 @@ char* texture_path(const char *name) {
 		return p;
 	}
 
-	return texture_image_path(name);
+	return pixmap_source_path(TEX_PATH_PREFIX, name);
 }
 
 bool check_texture_path(const char *path) {
@@ -72,7 +48,7 @@ bool check_texture_path(const char *path) {
 		return true;
 	}
 
-	return strendswith_any(path, texture_image_exts);
+	return pixmap_check_filename(path);
 }
 
 typedef struct TexLoadData {
@@ -211,7 +187,7 @@ static void* load_texture_begin(const char *path, uint flags) {
 
 		if(!source_allocated) {
 			char *basename = resource_util_basename(TEX_PATH_PREFIX, path);
-			source_allocated = texture_image_path(basename);
+			source_allocated = pixmap_source_path(TEX_PATH_PREFIX, basename);
 
 			if(!source_allocated) {
 				log_warn("%s: couldn't infer source path from texture name", basename);

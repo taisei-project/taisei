@@ -9,11 +9,14 @@
 #pragma once
 #include "taisei.h"
 
-#include <png.h>
 #include <SDL.h>
+#include "../pixmap.h"
 
-void pngutil_init_rwops_read(png_structp png, SDL_RWops *rwops);
-void pngutil_init_rwops_write(png_structp png, SDL_RWops *rwops);
-void pngutil_setup_error_handlers(png_structp png);
-png_structp pngutil_create_read_struct(void);
-png_structp pngutil_create_write_struct(void);
+typedef struct PixmapLoader {
+	bool (*probe)(SDL_RWops *stream);
+	bool (*load)(SDL_RWops *stream, Pixmap *pixmap);
+	const char **filename_exts;
+} PixmapLoader;
+
+extern PixmapLoader pixmap_loader_png;
+extern PixmapLoader pixmap_loader_webp;
