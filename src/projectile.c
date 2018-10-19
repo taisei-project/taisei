@@ -1037,6 +1037,7 @@ void petal_explosion(int n, complex pos) {
 			},
 			// TODO: maybe remove this noreflect, there shouldn't be a cull mode mess anymore
 			.flags = PFLAG_NOREFLECT,
+			.layer = LAYER_PARTICLE_PETAL,
 		);
 	}
 }

@@ -1652,56 +1652,86 @@ int baryon_explode(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
 		free_ref(e->args[1]);
-		petal_explosion(35, e->pos);
+		petal_explosion(24, e->pos);
 		play_sound("boom");
 		global.shake_view = max(15, global.shake_view);
 
-		for(int i = 0; i < 3; ++i) {
+		for(uint i = 0; i < 3; ++i) {
 			PARTICLE(
-				.sprite = "starburst",
-				.color = RGBA(0.2 + frand() * 0.3, 0.5 + 0.5 * frand(), frand(), 0),
-				.pos = e->pos,
-				.timeout = 200 + 24 * frand() + 5 * i,
+				.sprite = "smoke",
+				.pos = e->pos+10*frand()*cexp(2.0*I*M_PI*frand()),
+				.color = RGBA(0.2 * frand(), 0.5, 0.4 * frand(), 1.0),
+				.rule = asymptotic,
 				.draw_rule = ScaleFade,
-				.args = { 0, 0, (1 + I) * (1 + 0.2 * frand()) },
-				.angle = frand() * 2 * M_PI,
-				.layer = LAYER_PARTICLE_HIGH | 0x41,
+				.args = { cexp(I*2*M_PI*frand()) * 0.25, 2, (1 + 3*I) },
+				.timeout = 600 + 50 * nfrand(),
+				.layer = LAYER_PARTICLE_HIGH | 0x40,
 			);
 		}
 
-		for(int i = 0; i < 8; ++i) {
-			Color *clr = RGBA(0.2 + frand() * 0.1, 0.6 + 0.4 * frand(), 0.5 + 0.5 * frand(), 0);
-			color_mul_scalar(clr, 0.2);
+		PARTICLE(
+			.sprite = "blast_huge_halo",
+			.pos = e->pos + cexp(4*frand() + I*M_PI*frand()*2),
+			.color = RGBA(0.2 + frand() * 0.1, 0.6 + 0.4 * frand(), 0.5 + 0.5 * frand(), 0),
+			.timeout = 500 + 24 * frand() + 5,
+			.draw_rule = ScaleFade,
+			.args = { 0, 0, (0.25 + 2.5*I) * (1 + 0.2 * frand()) },
+			.layer = LAYER_PARTICLE_HIGH | 0x41,
+			.angle = frand() * 2 * M_PI,
+		);
 
-			PARTICLE(
-				.sprite = "blast",
-				.size = 32*(1+I), // HACK: ignore prototype
-				.pos = e->pos + cexp(4*frand() + I*M_PI*frand()*2),
-				.color = clr,
-				.timeout = 78 + 6 * nfrand() + 4 * i,
-				.draw_rule = ScaleFade,
-				.args = { 0, 0, 1 + 10*I * (0.5 + 0.5 * frand()) },
-				.layer = LAYER_PARTICLE_HIGH | 0x42,
-			);
-		}
+		PARTICLE(
+			.sprite = "blast_huge_rays",
+			.color = color_add(RGBA(0.2 + frand() * 0.3, 0.5 + 0.5 * frand(), frand(), 0.0), RGBA(1, 1, 1, 0)),
+			.pos = e->pos,
+			.timeout = 300 + 38 * frand(),
+			.draw_rule = ScaleFade,
+			.args = { 0, 0, (0 + 5*I) * (1 + 0.2 * frand()) },
+			.angle = frand() * 2 * M_PI,
+			.layer = LAYER_PARTICLE_HIGH | 0x42,
+		);
+
+		PARTICLE(
+			.sprite = "blast_huge_halo",
+			.pos = e->pos,
+			.color = RGBA(3.0, 1.0, 2.0, 1.0),
+			.timeout = 60 + 5 * nfrand(),
+			.draw_rule = ScaleFade,
+			.args = { 0, 0, (0.25 + 3.5*I) * (1 + 0.2 * frand()) },
+			.layer = LAYER_PARTICLE_HIGH | 0x41,
+			.angle = frand() * 2 * M_PI,
+		);
 
 		return 1;
 	}
 
 	GO_TO(e, global.boss->pos + (e->pos0-global.boss->pos)*(1.0+0.2*sin(t*0.1)) * cexp(I*t*t*0.0004), 0.05);
 
-	PARTICLE(
-		.sprite = "smoke",
-		.pos = e->pos+10*frand()*cexp(2.0*I*M_PI*frand()),
-		.color = RGBA(0.2 * frand(), 0.5, 0.4 * frand(), 0.1 * frand()),
-		.rule = asymptotic,
-		.draw_rule = ScaleFade,
-		.args = { cexp(I*2*M_PI*frand()) * (1 + t/300.0), (1 + t / 200.0), (1 + 0.5*I) * (t / 200.0) },
-		.timeout = 60,
-		.layer = LAYER_PARTICLE_HIGH | 0x40,
-	);
+	if(!(t % 6)) {
+		PARTICLE(
+			.sprite = "blast_huge_halo",
+			.pos = e->pos,
+			.color = RGBA(3.0, 1.0, 2.0, 1.0),
+			.timeout = 10,
+			.draw_rule = ScaleFade,
+			.args = { 0, 0, (t / 120.0 + 0*I) * (1 + 0.2 * frand()) },
+			.layer = LAYER_PARTICLE_HIGH | 0x41,
+			.angle = frand() * 2 * M_PI,
+		);
+	}/* else {
+		PARTICLE(
+			.sprite = "smoke",
+			.pos = e->pos+10*frand()*cexp(2.0*I*M_PI*frand()),
+			.color = RGBA(0.2 * frand(), 0.5, 0.4 * frand(), 0.1 * frand()),
+			.rule = asymptotic,
+			.draw_rule = ScaleFade,
+			.args = { cexp(I*2*M_PI*frand()) * (1 + t/300.0), (1 + t / 200.0), (1 + 0.5*I) * (t / 200.0) },
+			.timeout = 60,
+			.layer = LAYER_PARTICLE_HIGH | 0x40,
+		);
+	}*/
 
-	if(t > 150 && frand() < 0.05) {
+	if(t > 120 && frand() < (t - 120) / 300.0) {
 		e->hp = 0;
 		return 1;
 	}

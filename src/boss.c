@@ -739,6 +739,7 @@ void process_boss(Boss **pboss) {
 				afrand(2) + afrand(3)*I,
 				afrand(4) + 360.0*I*afrand(1)
 			},
+			.layer = LAYER_PARTICLE_PETAL,
 		);
 
 		if(!extra) {

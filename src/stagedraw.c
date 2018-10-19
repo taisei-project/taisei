@@ -173,7 +173,7 @@ static void stage_draw_setup_framebuffers(void) {
 	memcpy(&a_depth->tex_params, &tex_common, sizeof(tex_common));
 
 	// Foreground: 1 RGB texture per FB
-	a_color->tex_params.type = TEX_TYPE_RGB;
+	a_color->tex_params.type = TEX_TYPE_RGB_16;
 	a_color->tex_params.width = fg_width;
 	a_color->tex_params.height = fg_height;
 	fbpair_create(stagedraw.fb_pairs + FBPAIR_FG, 1, a);
