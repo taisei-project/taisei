@@ -1,2 +1,2 @@
 
-objects = standard.vert reimu_gap.frag
+objects = reimu_gap.vert reimu_gap.frag
