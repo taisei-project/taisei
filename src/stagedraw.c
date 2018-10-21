@@ -26,7 +26,11 @@
 typedef struct CustomFramebuffer {
 	LIST_INTERFACE(struct CustomFramebuffer);
 	Framebuffer *fb;
-	float scale;
+
+	struct {
+		float worst, best;
+	} scale;
+
 	StageFBPair scaling_base;
 } CustomFramebuffer;
 
@@ -72,8 +76,23 @@ static double fb_scale(void) {
 	return (double)vp_height / SCREEN_H;
 }
 
-static void set_fb_size(StageFBPair fb_id, int *w, int *h) {
+static void set_fb_size(StageFBPair fb_id, int *w, int *h, float scale_worst, float scale_best) {
 	double scale = fb_scale();
+
+	if(fb_id == FBPAIR_FG_AUX) {
+		scale_worst *= 0.5;
+	}
+
+	int pp_qual = config_get_int(CONFIG_POSTPROCESS);
+
+	// We might lerp between these in the future
+	if(pp_qual < 2) {
+		scale *= scale_worst;
+	} else {
+		scale *= scale_best;
+	}
+
+	log_debug("%u %f %f %f %i", fb_id, scale, scale_worst, scale_best, pp_qual);
 
 	switch(fb_id) {
 		case FBPAIR_BG:
@@ -90,23 +109,26 @@ static void set_fb_size(StageFBPair fb_id, int *w, int *h) {
 	*h = round(VIEWPORT_H * scale);
 }
 
+static inline void set_custom_fb_size(CustomFramebuffer *cfb, int *w, int *h) {
+	set_fb_size(cfb->scaling_base, w, h, cfb->scale.worst, cfb->scale.best);
+}
+
 static void update_fb_size(StageFBPair fb_id) {
 	int w, h;
-	set_fb_size(fb_id, &w, &h);
+	set_fb_size(fb_id, &w, &h, 1, 1);
 	fbpair_resize_all(stagedraw.fb_pairs + fb_id, w, h);
 	fbpair_viewport(stagedraw.fb_pairs + fb_id, 0, 0, w, h);
 
 	if(fb_id != FBPAIR_FG_AUX) {
 		for(CustomFramebuffer *cfb = stagedraw.custom_fbs; cfb; cfb = cfb->next) {
 			if(cfb->scaling_base == fb_id) {
-				int sw = w * cfb->scale;
-				int sh = h * cfb->scale;
+				set_custom_fb_size(cfb, &w, &h);
 
 				for(uint i = 0; i < FRAMEBUFFER_MAX_ATTACHMENTS; ++i) {
-					fbutil_resize_attachment(cfb->fb, i, sw, sh);
+					fbutil_resize_attachment(cfb->fb, i, w, h);
 				}
 
-				r_framebuffer_viewport(cfb->fb, 0, 0, sw, sh);
+				r_framebuffer_viewport(cfb->fb, 0, 0, w, h);
 			}
 		}
 	}
@@ -128,6 +150,10 @@ static bool stage_draw_event(SDL_Event *e, void *arg) {
 
 		case TE_CONFIG_UPDATED: {
 			switch(e->user.code) {
+				case CONFIG_POSTPROCESS:
+					log_warn("WTF!");
+					update_fb_size(FBPAIR_BG);
+					// fallthrough
 				case CONFIG_FG_QUALITY: {
 					update_fb_size(FBPAIR_FG);
 					update_fb_size(FBPAIR_FG_AUX);
@@ -148,7 +174,7 @@ static bool stage_draw_event(SDL_Event *e, void *arg) {
 }
 
 static void stage_draw_setup_framebuffers(void) {
-	int fg_width, fg_height, bg_width, bg_height;
+	int fg_width, fg_height, bg_width, bg_height, fga_width, fga_height;
 	FBAttachmentConfig a[2], *a_color, *a_depth;
 	memset(a, 0, sizeof(a));
 
@@ -158,8 +184,9 @@ static void stage_draw_setup_framebuffers(void) {
 	a_color->attachment = FRAMEBUFFER_ATTACH_COLOR0;
 	a_depth->attachment = FRAMEBUFFER_ATTACH_DEPTH;
 
-	set_fb_size(FBPAIR_FG, &fg_width, &fg_height);
-	set_fb_size(FBPAIR_BG, &bg_width, &bg_height);
+	set_fb_size(FBPAIR_FG, &fg_width, &fg_height, 1, 1);
+	set_fb_size(FBPAIR_FG_AUX, &fga_width, &fga_height, 1, 1);
+	set_fb_size(FBPAIR_BG, &bg_width, &bg_height, 1, 1);
 
 	// Set up some parameters shared by all attachments
 	TextureParams tex_common = {
@@ -178,11 +205,17 @@ static void stage_draw_setup_framebuffers(void) {
 	a_color->tex_params.height = fg_height;
 	fbpair_create(stagedraw.fb_pairs + FBPAIR_FG, 1, a);
 	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_FG, 0, 0, fg_width, fg_height);
+	r_framebuffer_set_debug_label(stagedraw.fb_pairs[FBPAIR_FG].front, "Stage FG FB 1");
+	r_framebuffer_set_debug_label(stagedraw.fb_pairs[FBPAIR_FG].back, "Stage FG FB 2");
 
 	// Foreground auxiliary: 1 RGBA texture per FB
 	a_color->tex_params.type = TEX_TYPE_RGBA;
+	a_color->tex_params.width = fga_width;
+	a_color->tex_params.height = fga_height;
 	fbpair_create(stagedraw.fb_pairs + FBPAIR_FG_AUX, 1, a);
-	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_FG_AUX, 0, 0, fg_width, fg_height);
+	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_FG_AUX, 0, 0, fga_width, fga_height);
+	r_framebuffer_set_debug_label(stagedraw.fb_pairs[FBPAIR_FG_AUX].front, "Stage FG AUX FB 1");
+	r_framebuffer_set_debug_label(stagedraw.fb_pairs[FBPAIR_FG_AUX].back, "Stage FG AUX FB 2");
 
 	// Background: 1 RGB texture + depth per FB
 	a_color->tex_params.type = TEX_TYPE_RGB;
@@ -193,9 +226,11 @@ static void stage_draw_setup_framebuffers(void) {
 	a_depth->tex_params.height = bg_height;
 	fbpair_create(stagedraw.fb_pairs + FBPAIR_BG, 2, a);
 	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_BG, 0, 0, bg_width, bg_height);
+	r_framebuffer_set_debug_label(stagedraw.fb_pairs[FBPAIR_BG].front, "Stage BG FB 1");
+	r_framebuffer_set_debug_label(stagedraw.fb_pairs[FBPAIR_BG].back, "Stage BG FB 2");
 }
 
-static Framebuffer* add_custom_framebuffer(StageFBPair fbtype, float scale_factor, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
+static Framebuffer* add_custom_framebuffer(const char *label, StageFBPair fbtype, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
 	CustomFramebuffer *cfb = calloc(1, sizeof(*cfb));
 	list_push(&stagedraw.custom_fbs, cfb);
 
@@ -203,10 +238,10 @@ static Framebuffer* add_custom_framebuffer(StageFBPair fbtype, float scale_facto
 	memcpy(cfg, attachments, sizeof(cfg));
 
 	int width, height;
-	set_fb_size(fbtype, &width, &height);
-	cfb->scale = scale_factor;
-	width *= scale_factor;
-	height *= scale_factor;
+	cfb->scale.worst = scale_worst;
+	cfb->scale.best = scale_best;
+	cfb->scaling_base = fbtype;
+	set_custom_fb_size(cfb, &width, &height);
 
 	for(uint i = 0; i < num_attachments; ++i) {
 		cfg[i].tex_params.width = width;
@@ -217,16 +252,17 @@ static Framebuffer* add_custom_framebuffer(StageFBPair fbtype, float scale_facto
 	fbutil_create_attachments(cfb->fb, num_attachments, cfg);
 	r_framebuffer_viewport(cfb->fb, 0, 0, width, height);
 	r_framebuffer_clear(cfb->fb, CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+	r_framebuffer_set_debug_label(cfb->fb, label);
 
 	return cfb->fb;
 }
 
-Framebuffer* stage_add_foreground_framebuffer(float scale_factor, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
-	return add_custom_framebuffer(FBPAIR_FG, scale_factor, num_attachments, attachments);
+Framebuffer* stage_add_foreground_framebuffer(const char *label, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
+	return add_custom_framebuffer(label, FBPAIR_FG, scale_worst, scale_best, num_attachments, attachments);
 }
 
-Framebuffer* stage_add_background_framebuffer(float scale_factor, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
-	return add_custom_framebuffer(FBPAIR_BG, scale_factor, num_attachments, attachments);
+Framebuffer* stage_add_background_framebuffer(const char *label, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
+	return add_custom_framebuffer(label, FBPAIR_BG, scale_worst, scale_best, num_attachments, attachments);
 }
 
 static void stage_draw_destroy_framebuffers(void) {

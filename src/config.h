@@ -98,6 +98,7 @@
 	CONFIGDEF_INT       (FOCUS_LOSS_PAUSE,          "focus_loss_pause",                     1) \
 	CONFIGDEF_INT       (PARTICLES,                 "particles",                            1) \
 	CONFIGDEF_INT       (FXAA,                      "fxaa",                                 1) \
+	CONFIGDEF_INT       (POSTPROCESS,               "postprocess",                          2) \
 	KEYDEFS \
 	CONFIGDEF_INT       (GAMEPAD_ENABLED,           "gamepad_enabled",                      0) \
 	CONFIGDEF_STRING    (GAMEPAD_DEVICE,            "gamepad_device",                       "default") \

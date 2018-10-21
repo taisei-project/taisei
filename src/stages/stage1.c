@@ -147,35 +147,52 @@ static void stage1_water_draw(vec3 pos) {
 
 	fbpair_swap(fbpair);
 	r_framebuffer(fbpair->back);
-	r_shader("blur5");
-	r_uniform_vec2("blur_resolution", VIEWPORT_W, VIEWPORT_H);
-	r_uniform_vec2("blur_direction", 1, 0);
-	draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
-	fbpair_swap(fbpair);
-	r_framebuffer(fbpair->back);
-	r_uniform_vec2("blur_direction", 0, 1);
-	draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
-	fbpair_swap(fbpair);
+
+	int pp_quality = config_get_int(CONFIG_POSTPROCESS);
+
+	if(pp_quality > 1) {
+		r_shader("blur5");
+		r_uniform_vec2("blur_resolution", VIEWPORT_W, VIEWPORT_H);
+		r_uniform_vec2("blur_direction", 1, 0);
+		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
+		fbpair_swap(fbpair);
+		r_framebuffer(fbpair->back);
+		r_uniform_vec2("blur_direction", 0, 1);
+		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
+		fbpair_swap(fbpair);
+		r_framebuffer(fbpair->back);
+	}
+
+	if(pp_quality == 1) {
+		r_shader("stage1_water");
+		r_uniform_float("time", 0.5 * global.frames / (float)FPS);
+		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
+		fbpair_swap(fbpair);
+	}
 
 	r_mat_pop();
 	r_mat_mode(MM_PROJECTION);
 	r_mat_pop();
 	r_mat_mode(MM_MODELVIEW);
-	r_framebuffer(bg_fb);
-
-	r_shader_standard();
 
 	r_enable(RCAP_DEPTH_TEST);
 	r_disable(RCAP_DEPTH_WRITE);
 
-	r_shader("stage1_water");
-	r_uniform_float("time", 0.5 * global.frames / (float)FPS);
+	r_framebuffer(bg_fb);
+
+	if(pp_quality > 1) {
+		r_shader("stage1_water");
+		r_uniform_float("time", 0.5 * global.frames / (float)FPS);
+	} else {
+		r_shader_standard();
+	}
 
 	r_mat_push();
 	r_mat_translate(0, 70, 0);
 	r_mat_rotate_deg(10,1,0,0);
 	r_mat_scale(.85/(z+zo),-.85/(z+zo),.85);
 	r_mat_translate(-VIEWPORT_W/2,0,0);
+	r_color4(1, 1, 1, 1);
 	draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
 	r_mat_pop();
 
@@ -308,8 +325,8 @@ static void stage1_start(void) {
 	cfg.tex_params.wrap.s = TEX_WRAP_CLAMP;
 	cfg.tex_params.wrap.t = TEX_WRAP_CLAMP;
 
-	stage1_bg_fbpair.front = stage_add_background_framebuffer(0.5, 1, &cfg);
-	stage1_bg_fbpair.back = stage_add_background_framebuffer(0.5, 1, &cfg);
+	stage1_bg_fbpair.front = stage_add_background_framebuffer("Stage 1 water FB 1", 0.2, 0.5, 1, &cfg);
+	stage1_bg_fbpair.back = stage_add_background_framebuffer("Stage 1 water FB 2", 0.2, 0.5, 1, &cfg);
 }
 
 static void stage1_preload(void) {

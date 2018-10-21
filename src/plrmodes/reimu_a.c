@@ -180,8 +180,8 @@ static void reimu_spirit_bomb_orb_visual(Projectile *p, int t) {
 
 		Color c;
 		r_draw_sprite(&(SpriteParams) {
-			.sprite = "proj/glowball",
-			.shader = "sprite_bullet",
+			.sprite_ptr = p->sprite,
+			.shader_ptr = p->shader,
 			.pos = { creal(pos+offset), cimag(pos+offset) },
 			.color = reimu_spirit_orb_color(&c, i),
 
@@ -342,6 +342,7 @@ static void reimu_spirit_bomb(Player *p) {
 
 	for(int i = 0; i < count; i++) {
 		PROJECTILE(
+			.sprite = "glowball",
 			.pos = p->pos,
 			.draw_rule = reimu_spirit_bomb_orb_visual,
 			.rule = reimu_spirit_bomb_orb,
@@ -351,6 +352,7 @@ static void reimu_spirit_bomb(Player *p) {
 			.damage = 0,
 			.size = 10 + 10*I,
 			.layer = LAYER_PLAYER_FOCUS - 1,
+			.flags = PFLAG_NOREFLECT,
 		);
 	}
 

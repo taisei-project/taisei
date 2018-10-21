@@ -74,7 +74,7 @@ void lasers_preload(void) {
 	cfg.tex_params.filter.mag = TEX_FILTER_LINEAR;
 	cfg.tex_params.wrap.s = TEX_WRAP_MIRROR;
 	cfg.tex_params.wrap.t = TEX_WRAP_MIRROR;
-	lasers.render_fb = stage_add_foreground_framebuffer(1, 1, &cfg);
+	lasers.render_fb = stage_add_foreground_framebuffer("Lasers FB", 0.5, 1, 1, &cfg);
 
 	ent_hook_pre_draw(lasers_ent_predraw_hook, NULL);
 	ent_hook_pre_draw(lasers_ent_postdraw_hook, NULL);
@@ -236,6 +236,12 @@ static void ent_draw_laser(EntityInterface *ent) {
 }
 
 static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg) {
+	int pp_quality = config_get_int(CONFIG_POSTPROCESS);
+
+	if(pp_quality < 1) {
+		return;
+	}
+
 	if(ent && ent->type == ENT_LASER) {
 		if(lasers.saved_fb != NULL) {
 			return;
@@ -254,17 +260,19 @@ static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg) {
 		r_framebuffer(lasers.saved_fb);
 		r_state_push();
 
-		// Ambient glow pass (large kernel)
-		r_framebuffer(fbpair->back);
-		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
-		r_shader("blur25");
-		r_uniform_vec2("blur_resolution", VIEWPORT_W, VIEWPORT_H);
-		r_uniform_vec2("blur_direction", 1, 0);
-		draw_framebuffer_tex(lasers.render_fb, VIEWPORT_W, VIEWPORT_H);
-		fbpair_swap(fbpair);
-		r_framebuffer(lasers.saved_fb);
-		r_uniform_vec2("blur_direction", 0, 1);
-		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
+		if(pp_quality > 1) {
+			// Ambient glow pass (large kernel)
+			r_framebuffer(fbpair->back);
+			r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+			r_shader("blur25");
+			r_uniform_vec2("blur_resolution", VIEWPORT_W, VIEWPORT_H);
+			r_uniform_vec2("blur_direction", 1, 0);
+			draw_framebuffer_tex(lasers.render_fb, VIEWPORT_W, VIEWPORT_H);
+			fbpair_swap(fbpair);
+			r_framebuffer(lasers.saved_fb);
+			r_uniform_vec2("blur_direction", 0, 1);
+			draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
+		}
 
 		// Smoothed laser curves pass (small kernel)
 		r_framebuffer(fbpair->back);
@@ -274,8 +282,20 @@ static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg) {
 		r_uniform_vec2("blur_direction", 1, 0);
 		draw_framebuffer_tex(lasers.render_fb, VIEWPORT_W, VIEWPORT_H);
 		fbpair_swap(fbpair);
-		r_framebuffer(lasers.saved_fb);
 		r_uniform_vec2("blur_direction", 0, 1);
+
+		if(pp_quality < 2) {
+			// Since the aux framebuffers are smaller in this case, it's actually
+			// a bit faster to finish the blur pass there, and then blend it onto
+			// the main Framebuffer.
+			r_framebuffer(fbpair->back);
+			r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+			draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
+			fbpair_swap(fbpair);
+			r_shader_standard();
+		}
+
+		r_framebuffer(lasers.saved_fb);
 		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
 
 		r_state_pop();
