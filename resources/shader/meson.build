@@ -36,7 +36,6 @@ glsl_files = files(
     'spellcard_walloftext.frag.glsl',
     'sprite_bullet.frag.glsl',
     'sprite_bullet.vert.glsl',
-    'sprite_bullet_dead.frag.glsl',
     'sprite_circleclipped_indicator.frag.glsl',
     'sprite_circleclipped_indicator.vert.glsl',
     'sprite_default.frag.glsl',
