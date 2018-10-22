@@ -151,7 +151,6 @@ static bool stage_draw_event(SDL_Event *e, void *arg) {
 		case TE_CONFIG_UPDATED: {
 			switch(e->user.code) {
 				case CONFIG_POSTPROCESS:
-					log_warn("WTF!");
 					update_fb_size(FBPAIR_BG);
 					// fallthrough
 				case CONFIG_FG_QUALITY: {
