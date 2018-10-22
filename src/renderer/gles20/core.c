@@ -52,65 +52,77 @@ GLTextureTypeInfo* gles20_texture_type_info(TextureType type) {
 	static GLTextureFormatTuple formats_depth[] = { FMT_DEPTH, { 0 } };
 
 	static GLTextureTypeInfo map[] = {
-		[TEX_TYPE_R_8]            = { GL_RGBA, 4, formats_r, FMT_R },
-		[TEX_TYPE_RG_8]           = { GL_RGBA, 4, formats_rg, FMT_RG },
-		[TEX_TYPE_RGB_8]          = { GL_RGBA, 4, formats_rgb, FMT_RGB },
-		[TEX_TYPE_RGBA_8]         = { GL_RGBA, 4, formats_rgba, FMT_RGBA },
-		[TEX_TYPE_DEPTH_8]        = { GL_DEPTH_COMPONENT, 2, formats_depth, FMT_DEPTH },
+		[TEX_TYPE_R_8]            = { GL_RGBA, formats_r,    FMT_R    },
+		[TEX_TYPE_RG_8]           = { GL_RGBA, formats_rg,   FMT_RG   },
+		[TEX_TYPE_RGB_8]          = { GL_RGBA, formats_rgb,  FMT_RGB  },
+		[TEX_TYPE_RGBA_8]         = { GL_RGBA, formats_rgba, FMT_RGBA },
 
-		[TEX_TYPE_R_16]           = { GL_RGBA, 4, formats_r, FMT_R },
-		[TEX_TYPE_RG_16]          = { GL_RGBA, 4, formats_rg, FMT_RG },
-		[TEX_TYPE_RGB_16]         = { GL_RGBA, 4, formats_rgb, FMT_RGB },
-		[TEX_TYPE_RGBA_16]        = { GL_RGBA, 4, formats_rgba, FMT_RGBA },
-		[TEX_TYPE_DEPTH_16]       = { GL_DEPTH_COMPONENT, 2, formats_depth, FMT_DEPTH },
+		[TEX_TYPE_R_16]           = { GL_RGBA, formats_r,    FMT_R    },
+		[TEX_TYPE_RG_16]          = { GL_RGBA, formats_rg,   FMT_RG   },
+		[TEX_TYPE_RGB_16]         = { GL_RGBA, formats_rgb,  FMT_RGB  },
+		[TEX_TYPE_RGBA_16]        = { GL_RGBA, formats_rgba, FMT_RGBA },
 
-		[TEX_TYPE_R_32_FLOAT]     = { GL_RGBA, 4, formats_r, FMT_R },
-		[TEX_TYPE_RG_32_FLOAT]    = { GL_RGBA, 4, formats_rg, FMT_RG },
-		[TEX_TYPE_RGB_32_FLOAT]   = { GL_RGBA, 4, formats_rgb, FMT_RGB },
-		[TEX_TYPE_RGBA_32_FLOAT]  = { GL_RGBA, 4, formats_rgba, FMT_RGBA },
-		[TEX_TYPE_DEPTH_32_FLOAT] = { GL_DEPTH_COMPONENT, 2, formats_depth, FMT_DEPTH },
+		[TEX_TYPE_R_32_FLOAT]     = { GL_RGBA, formats_r,    FMT_R    },
+		[TEX_TYPE_RG_32_FLOAT]    = { GL_RGBA, formats_rg,   FMT_RG   },
+		[TEX_TYPE_RGB_32_FLOAT]   = { GL_RGBA, formats_rgb,  FMT_RGB  },
+		[TEX_TYPE_RGBA_32_FLOAT]  = { GL_RGBA, formats_rgba, FMT_RGBA },
+
+		// WARNING: ANGLE bug(?): texture binding fails if a sized format is used here.
+		[TEX_TYPE_DEPTH_8]        = { GL_DEPTH_COMPONENT, formats_depth, FMT_DEPTH },
+		[TEX_TYPE_DEPTH_16]       = { GL_DEPTH_COMPONENT, formats_depth, FMT_DEPTH },
+		[TEX_TYPE_DEPTH_32_FLOAT] = { GL_DEPTH_COMPONENT, formats_depth, FMT_DEPTH },
 	};
+
+	#undef FMT_R
+	#undef FMT_RG
+	#undef FMT_RGB
+	#undef FMT_RGBA
+	#undef FMT_DEPTH
 
 	assert((uint)type < sizeof(map)/sizeof(*map));
 	return map + type;
 }
 
 GLTextureTypeInfo* gles30_texture_type_info(TextureType type) {
-	static GLTextureFormatTuple color_formats[] = {
-		{ GL_RED,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8     },
-		{ GL_RG,   GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RG8    },
-		{ GL_RGB,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGB8   },
-		{ GL_RGBA, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGBA8  },
-		{ 0 }
-	};
+	#define FMT_R     { GL_RED,             GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8    }
+	#define FMT_RG    { GL_RG,              GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RG8   }
+	#define FMT_RGB   { GL_RGB,             GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGB8  }
+	#define FMT_RGBA  { GL_RGBA,            GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGBA8 }
+	#define FMT_DEPTH { GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16   }
 
-	// XXX: I'm not sure about this. Perhaps it's better to not support depth texture uploading at all?
-	static GLTextureFormatTuple depth_formats[] = {
-		{ GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 },
-		{ 0 }
-	};
+	static GLTextureFormatTuple formats_r[]     = { FMT_R,     { 0 } };
+	static GLTextureFormatTuple formats_rg[]    = { FMT_RG,    { 0 } };
+	static GLTextureFormatTuple formats_rgb[]   = { FMT_RGB,   { 0 } };
+	static GLTextureFormatTuple formats_rgba[]  = { FMT_RGBA,  { 0 } };
+	static GLTextureFormatTuple formats_depth[] = { FMT_DEPTH, { 0 } };
 
 	static GLTextureTypeInfo map[] = {
-		[TEX_TYPE_R_8]           = { GL_R8,   1, color_formats, { GL_RED,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8    } },
-		[TEX_TYPE_RG_8]          = { GL_RG8,  2, color_formats, { GL_RG,   GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RG8   } },
-		[TEX_TYPE_RGB_8]         = { GL_RGB,  3, color_formats, { GL_RGB,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGB8  } },
-		[TEX_TYPE_RGBA_8]        = { GL_RGBA, 4, color_formats, { GL_RGBA, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGBA8 } },
+		[TEX_TYPE_R_8]            = { GL_R8,    formats_r,    FMT_R    },
+		[TEX_TYPE_RG_8]           = { GL_RG8,   formats_rg,   FMT_RG   },
+		[TEX_TYPE_RGB_8]          = { GL_RGB8,  formats_rgb,  FMT_RGB  },
+		[TEX_TYPE_RGBA_8]         = { GL_RGBA8, formats_rgba, FMT_RGBA },
 
-		[TEX_TYPE_R_16]          = { GL_R8,   1, color_formats, { GL_RED,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8    } },
-		[TEX_TYPE_RG_16]         = { GL_RG8,  2, color_formats, { GL_RG,   GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RG8   } },
-		[TEX_TYPE_RGB_16]        = { GL_RGB,  3, color_formats, { GL_RGB,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGB8  } },
-		[TEX_TYPE_RGBA_16]       = { GL_RGBA, 4, color_formats, { GL_RGBA, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGBA8 } },
+		[TEX_TYPE_R_16]           = { GL_R8,    formats_r,    FMT_R    },
+		[TEX_TYPE_RG_16]          = { GL_RG8,   formats_rg,   FMT_RG   },
+		[TEX_TYPE_RGB_16]         = { GL_RGB8,  formats_rgb,  FMT_RGB  },
+		[TEX_TYPE_RGBA_16]        = { GL_RGBA8, formats_rgba, FMT_RGBA },
 
-		[TEX_TYPE_R_32_FLOAT]    = { GL_R8,   1, color_formats, { GL_RED,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8    } },
-		[TEX_TYPE_RG_32_FLOAT]   = { GL_RG8,  2, color_formats, { GL_RG,   GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RG8   } },
-		[TEX_TYPE_RGB_32_FLOAT]  = { GL_RGB,  3, color_formats, { GL_RGB,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGB8  } },
-		[TEX_TYPE_RGBA_32_FLOAT] = { GL_RGBA, 4, color_formats, { GL_RGBA, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGBA8 } },
+		[TEX_TYPE_R_32_FLOAT]     = { GL_R8,    formats_r,    FMT_R    },
+		[TEX_TYPE_RG_32_FLOAT]    = { GL_RG8,   formats_rg,   FMT_RG   },
+		[TEX_TYPE_RGB_32_FLOAT]   = { GL_RGB8,  formats_rgb,  FMT_RGB  },
+		[TEX_TYPE_RGBA_32_FLOAT]  = { GL_RGBA8, formats_rgba, FMT_RGBA },
 
 		// WARNING: ANGLE bug(?): texture binding fails if a sized format is used here.
-		[TEX_TYPE_DEPTH_8]        = { GL_DEPTH_COMPONENT, 2, depth_formats, { GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 } },
-		[TEX_TYPE_DEPTH_16]       = { GL_DEPTH_COMPONENT, 2, depth_formats, { GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 } },
-		[TEX_TYPE_DEPTH_32_FLOAT] = { GL_DEPTH_COMPONENT, 2, depth_formats, { GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 } },
+		[TEX_TYPE_DEPTH_8]        = { GL_DEPTH_COMPONENT, formats_depth, FMT_DEPTH },
+		[TEX_TYPE_DEPTH_16]       = { GL_DEPTH_COMPONENT, formats_depth, FMT_DEPTH },
+		[TEX_TYPE_DEPTH_32_FLOAT] = { GL_DEPTH_COMPONENT, formats_depth, FMT_DEPTH },
 	};
+
+	#undef FMT_R
+	#undef FMT_RG
+	#undef FMT_RGB
+	#undef FMT_RGBA
+	#undef FMT_DEPTH
 
 	assert((uint)type < sizeof(map)/sizeof(*map));
 	return map + type;

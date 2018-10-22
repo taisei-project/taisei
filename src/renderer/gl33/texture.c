@@ -70,23 +70,23 @@ GLTextureTypeInfo* gl33_texture_type_info(TextureType type) {
 	};
 
 	static GLTextureTypeInfo map[] = {
-		[TEX_TYPE_R_8]            = { GL_R8,     1, color_formats, { GL_RED,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8    } },
-		[TEX_TYPE_RG_8]           = { GL_RG8,    2, color_formats, { GL_RG,   GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RG8   } },
-		[TEX_TYPE_RGB_8]          = { GL_RGB8,   3, color_formats, { GL_RGB,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGB8  } },
-		[TEX_TYPE_RGBA_8]         = { GL_RGBA8,  4, color_formats, { GL_RGBA, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGBA8 } },
-		[TEX_TYPE_DEPTH_8]        = { GL_DEPTH_COMPONENT16, 2, depth_formats, { GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 } },
+		[TEX_TYPE_R_8]            = { GL_R8,     color_formats, { GL_RED,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8    } },
+		[TEX_TYPE_RG_8]           = { GL_RG8,    color_formats, { GL_RG,   GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RG8   } },
+		[TEX_TYPE_RGB_8]          = { GL_RGB8,   color_formats, { GL_RGB,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGB8  } },
+		[TEX_TYPE_RGBA_8]         = { GL_RGBA8,  color_formats, { GL_RGBA, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGBA8 } },
+		[TEX_TYPE_DEPTH_8]        = { GL_DEPTH_COMPONENT16, depth_formats, { GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 } },
 
-		[TEX_TYPE_R_16]           = { GL_R16,     1, color_formats, { GL_RED,  GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_R16    } },
-		[TEX_TYPE_RG_16]          = { GL_RG16,    2, color_formats, { GL_RG,   GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_RG16   } },
-		[TEX_TYPE_RGB_16]         = { GL_RGB16,   3, color_formats, { GL_RGB,  GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_RGB16  } },
-		[TEX_TYPE_RGBA_16]        = { GL_RGBA16,  4, color_formats, { GL_RGBA, GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_RGBA16 } },
-		[TEX_TYPE_DEPTH_16]       = { GL_DEPTH_COMPONENT16, 2, depth_formats, { GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 } },
+		[TEX_TYPE_R_16]           = { GL_R16,    color_formats, { GL_RED,  GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_R16    } },
+		[TEX_TYPE_RG_16]          = { GL_RG16,   color_formats, { GL_RG,   GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_RG16   } },
+		[TEX_TYPE_RGB_16]         = { GL_RGB16,  color_formats, { GL_RGB,  GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_RGB16  } },
+		[TEX_TYPE_RGBA_16]        = { GL_RGBA16, color_formats, { GL_RGBA, GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_RGBA16 } },
+		[TEX_TYPE_DEPTH_16]       = { GL_DEPTH_COMPONENT16, depth_formats, { GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 } },
 
-		[TEX_TYPE_R_32_FLOAT]     = { GL_R32F,    1, color_formats, { GL_RED,  GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_R16    } },
-		[TEX_TYPE_RG_32_FLOAT]    = { GL_RG32F,   2, color_formats, { GL_RG,   GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_RG16   } },
-		[TEX_TYPE_RGB_32_FLOAT]   = { GL_RGB32F,  3, color_formats, { GL_RGB,  GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_RGB16  } },
-		[TEX_TYPE_RGBA_32_FLOAT]  = { GL_RGBA32F, 4, color_formats, { GL_RGBA, GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_RGBA16 } },
-		[TEX_TYPE_DEPTH_32_FLOAT] = { GL_DEPTH_COMPONENT32, 2, depth_formats, { GL_DEPTH_COMPONENT32F, GL_FLOAT, PIXMAP_FORMAT_R32 } },
+		[TEX_TYPE_R_32_FLOAT]     = { GL_R32F,    color_formats, { GL_RED,  GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_R16    } },
+		[TEX_TYPE_RG_32_FLOAT]    = { GL_RG32F,   color_formats, { GL_RG,   GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_RG16   } },
+		[TEX_TYPE_RGB_32_FLOAT]   = { GL_RGB32F,  color_formats, { GL_RGB,  GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_RGB16  } },
+		[TEX_TYPE_RGBA_32_FLOAT]  = { GL_RGBA32F, color_formats, { GL_RGBA, GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_RGBA16 } },
+		[TEX_TYPE_DEPTH_32_FLOAT] = { GL_DEPTH_COMPONENT32, depth_formats, { GL_DEPTH_COMPONENT32F, GL_FLOAT, PIXMAP_FORMAT_R32 } },
 	};
 
 	assert((uint)type < sizeof(map)/sizeof(*map));

@@ -21,7 +21,6 @@ typedef struct GLTextureFormatTuple {
 
 typedef struct GLTextureTypeInfo {
 	GLuint internal_fmt;
-	size_t internal_pixel_size;
 	GLTextureFormatTuple *external_formats;
 	GLTextureFormatTuple primary_external_format;
 } GLTextureTypeInfo;
