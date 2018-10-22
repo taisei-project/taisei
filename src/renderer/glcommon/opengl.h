@@ -78,6 +78,12 @@ struct glext_s {
 	ext_flag_t draw_buffers;
 	ext_flag_t texture_filter_anisotropic;
 	ext_flag_t clear_texture;
+	ext_flag_t texture_norm16;
+	ext_flag_t texture_rg;
+	ext_flag_t texture_float_linear;
+	ext_flag_t texture_half_float_linear;
+	ext_flag_t color_buffer_float;
+	ext_flag_t float_blend;
 
 	//
 	// debug_output

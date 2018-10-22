@@ -337,11 +337,107 @@ static void glcommon_ext_clear_texture(void) {
 	log_warn("Extension not supported");
 }
 
-void shim_glClearDepth(GLdouble depthval) {
+static void glcommon_ext_texture_norm16(void) {
+	if(!glext.version.is_es) {
+		glext.texture_norm16 = TSGL_EXTFLAG_NATIVE;
+		log_info("Using core functionality");
+		return;
+	}
+
+	if((glext.texture_norm16 = glcommon_check_extension("GL_EXT_texture_norm16"))) {
+		log_info("Using core GL_EXT_texture_norm16");
+		return;
+	}
+
+	glext.texture_norm16 = 0;
+	log_warn("Extension not supported");
+}
+
+static void glcommon_ext_texture_rg(void) {
+	if(!glext.version.is_es) {
+		glext.texture_rg = TSGL_EXTFLAG_NATIVE;
+		log_info("Using core functionality");
+		return;
+	}
+
+	if((glext.texture_rg = glcommon_check_extension("GL_EXT_texture_rg"))) {
+		log_info("Using core GL_EXT_texture_rg");
+		return;
+	}
+
+	glext.texture_rg = 0;
+	log_warn("Extension not supported");
+}
+
+static void glcommon_ext_texture_float_linear(void) {
+	if(!glext.version.is_es) {
+		glext.texture_float_linear = TSGL_EXTFLAG_NATIVE;
+		log_info("Using core functionality");
+		return;
+	}
+
+	if((glext.texture_float_linear = glcommon_check_extension("GL_OES_texture_float_linear"))) {
+		log_info("Using core GL_OES_texture_float_linear");
+		return;
+	}
+
+	glext.texture_float_linear = 0;
+	log_warn("Extension not supported");
+}
+
+static void glcommon_ext_texture_half_float_linear(void) {
+	if(!glext.version.is_es) {
+		glext.texture_half_float_linear = TSGL_EXTFLAG_NATIVE;
+		log_info("Using core functionality");
+		return;
+	}
+
+	if((glext.texture_half_float_linear = glcommon_check_extension("GL_OES_texture_half_float_linear"))) {
+		log_info("Using core GL_OES_texture_half_float_linear");
+		return;
+	}
+
+	glext.texture_half_float_linear = 0;
+	log_warn("Extension not supported");
+}
+
+static void glcommon_ext_color_buffer_float(void) {
+	if(!glext.version.is_es) {
+		glext.color_buffer_float = TSGL_EXTFLAG_NATIVE;
+		log_info("Using core functionality");
+		return;
+	}
+
+	if((glext.color_buffer_float = glcommon_check_extension("GL_EXT_color_buffer_float"))) {
+		log_info("Using core GL_EXT_color_buffer_float");
+		return;
+	}
+
+	glext.color_buffer_float = 0;
+	log_warn("Extension not supported");
+}
+
+static void glcommon_ext_float_blend(void) {
+	if(!glext.version.is_es) {
+		glext.float_blend = TSGL_EXTFLAG_NATIVE;
+		log_info("Using core functionality");
+		return;
+	}
+
+	if((glext.float_blend = glcommon_check_extension("GL_EXT_float_blend"))) {
+		log_info("Using core GL_EXT_float_blend");
+		return;
+	}
+
+	glext.float_blend = 0;
+	log_warn("Extension not supported");
+}
+
+static void shim_glClearDepth(GLdouble depthval) {
 	glClearDepthf(depthval);
 }
 
-void shim_glClearDepthf(GLfloat depthval) {
+static void shim_glClearDepthf(GLfloat depthval) {
 	glClearDepth(depthval);
 }
 
@@ -392,12 +488,18 @@ void glcommon_check_extensions(void) {
 
 	glcommon_ext_base_instance();
 	glcommon_ext_clear_texture();
+	glcommon_ext_color_buffer_float();
 	glcommon_ext_debug_output();
 	glcommon_ext_depth_texture();
 	glcommon_ext_draw_buffers();
+	glcommon_ext_float_blend();
 	glcommon_ext_instanced_arrays();
 	glcommon_ext_pixel_buffer_object();
 	glcommon_ext_texture_filter_anisotropic();
+	glcommon_ext_texture_float_linear();
+	glcommon_ext_texture_half_float_linear();
+	glcommon_ext_texture_norm16();
+	glcommon_ext_texture_rg();
 
 	// GLES has only glClearDepthf
 	// Core has only glClearDepth until GL 4.1
