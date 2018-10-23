@@ -9,7 +9,7 @@
 #include "taisei.h"
 
 #include "vertex_buffer.h"
-#include "core.h"
+#include "gl33.h"
 #include "../glcommon/debug.h"
 
 VertexBuffer* gl33_vertex_buffer_create(size_t capacity, void *data) {

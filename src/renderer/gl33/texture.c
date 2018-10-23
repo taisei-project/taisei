@@ -11,7 +11,7 @@
 #include "texture.h"
 #include "../api.h"
 #include "opengl.h"
-#include "core.h"
+#include "gl33.h"
 #include "../glcommon/debug.h"
 
 static GLuint r_filter_to_gl_filter(TextureFilterMode mode) {
@@ -200,7 +200,10 @@ Texture* gl33_texture_create(const TextureParams *params) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, r_wrap_to_gl_wrap(p->wrap.t));
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(p->filter.min));
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(p->filter.mag));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, p->mipmaps - 1);
+
+	if(!glext.version.is_es || GLES_ATLEAST(3, 0)) {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, p->mipmaps - 1);
+	}
 
 	if(glext.texture_filter_anisotropic) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, p->anisotropy);

@@ -8,7 +8,7 @@
 
 #include "taisei.h"
 
-#include "core.h"
+#include "gl33.h"
 #include "../api.h"
 #include "../common/matstack.h"
 #include "../common/backend.h"
@@ -118,15 +118,6 @@ static struct {
 	} stats;
 	#endif
 } R;
-
-static GLenum prim_to_gl_prim[] = {
-	[PRIM_POINTS]         = GL_POINTS,
-	[PRIM_LINE_STRIP]     = GL_LINE_STRIP,
-	[PRIM_LINE_LOOP]      = GL_LINE_LOOP,
-	[PRIM_LINES]          = GL_LINES,
-	[PRIM_TRIANGLE_STRIP] = GL_TRIANGLE_STRIP,
-	[PRIM_TRIANGLES]      = GL_TRIANGLES,
-};
 
 /*
  * Internal functions
@@ -344,6 +335,20 @@ static void gl33_sync_state(void) {
 /*
  * Exported functions
  */
+
+GLenum gl33_prim_to_gl_prim(Primitive prim) {
+	static GLenum map[] = {
+		[PRIM_POINTS]         = GL_POINTS,
+		[PRIM_LINE_STRIP]     = GL_LINE_STRIP,
+		[PRIM_LINE_LOOP]      = GL_LINE_LOOP,
+		[PRIM_LINES]          = GL_LINES,
+		[PRIM_TRIANGLE_STRIP] = GL_TRIANGLE_STRIP,
+		[PRIM_TRIANGLES]      = GL_TRIANGLES,
+	};
+
+	assert((uint)prim < sizeof(map)/sizeof(*map));
+	return map[prim];
+}
 
 void gl33_sync_capabilities(void) {
 	if(R.capabilities.active == R.capabilities.pending) {
@@ -853,18 +858,31 @@ static const Color* gl33_color_current(void) {
 	return &R.color;
 }
 
-static void gl33_draw(VertexArray *varr, Primitive prim, uint firstvert, uint count, uint instances, uint base_instance) {
-	assert(count > 0);
-	assert((uint)prim < sizeof(prim_to_gl_prim)/sizeof(GLenum));
-	GLuint gl_prim = prim_to_gl_prim[prim];
-
-	gl33_stats_post_draw();
+void gl33_begin_draw(VertexArray *varr, void **state) {
 	gl33_stats_pre_draw();
 	r_flush_sprites();
 	GLuint prev_vao = gl33_vao_current();
 	gl33_bind_vao(varr->gl_handle);
 	gl33_sync_state();
 	gl33_vertex_array_flush_buffers(varr);
+	*state = (void*)(uintptr_t)prev_vao;
+}
+
+void gl33_end_draw(void *state) {
+	if(R.framebuffer.active) {
+		gl33_framebuffer_taint(R.framebuffer.active);
+	}
+
+	gl33_bind_vao((uintptr_t)state);
+	gl33_stats_post_draw();
+}
+
+static void gl33_draw(VertexArray *varr, Primitive prim, uint firstvert, uint count, uint instances, uint base_instance) {
+	assert(count > 0);
+	GLuint gl_prim = gl33_prim_to_gl_prim(prim);
+
+	void *state;
+	gl33_begin_draw(varr, &state);
 
 	if(instances) {
 		if(base_instance) {
@@ -876,27 +894,16 @@ static void gl33_draw(VertexArray *varr, Primitive prim, uint firstvert, uint co
 		glDrawArrays(gl_prim, firstvert, count);
 	}
 
-	if(R.framebuffer.active) {
-		gl33_framebuffer_taint(R.framebuffer.active);
-	}
-
-	gl33_bind_vao(prev_vao);
-	gl33_stats_post_draw();
+	gl33_end_draw(state);
 }
 
 static void gl33_draw_indexed(VertexArray *varr, Primitive prim, uint firstidx, uint count, uint instances, uint base_instance) {
 	assert(count > 0);
-	assert((uint)prim < sizeof(prim_to_gl_prim)/sizeof(GLenum));
 	assert(varr->index_attachment != NULL);
-	GLuint gl_prim = prim_to_gl_prim[prim];
+	GLuint gl_prim = gl33_prim_to_gl_prim(prim);
 
-	gl33_stats_post_draw();
-	gl33_stats_pre_draw();
-	r_flush_sprites();
-	GLuint prev_vao = gl33_vao_current();
-	gl33_bind_vao(varr->gl_handle);
-	gl33_sync_state();
-	gl33_vertex_array_flush_buffers(varr);
+	void *state;
+	gl33_begin_draw(varr, &state);
 
 	uintptr_t iofs = firstidx * sizeof(gl33_ibo_index_t);
 
@@ -910,12 +917,7 @@ static void gl33_draw_indexed(VertexArray *varr, Primitive prim, uint firstidx, 
 		glDrawElements(gl_prim, count, GL33_IBO_GL_DATATYPE, (void*)iofs);
 	}
 
-	if(R.framebuffer.active) {
-		gl33_framebuffer_taint(R.framebuffer.active);
-	}
-
-	gl33_bind_vao(prev_vao);
-	gl33_stats_post_draw();
+	gl33_end_draw(state);
 }
 
 static void gl33_framebuffer(Framebuffer *fb) {

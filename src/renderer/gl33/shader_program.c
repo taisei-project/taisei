@@ -8,7 +8,7 @@
 
 #include "taisei.h"
 
-#include "core.h"
+#include "gl33.h"
 #include "shader_program.h"
 #include "shader_object.h"
 #include "../glcommon/debug.h"

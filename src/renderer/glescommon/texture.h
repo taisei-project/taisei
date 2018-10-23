@@ -9,5 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-void* memdup(const void *src, size_t size);
-void inherit_missing_pointers(uint num, void *dest[num], void *const base[num]);
+#include "../glcommon/texture.h"
+
+void gles_init_texformats_table(void);
+GLTextureTypeInfo* gles_texture_type_info(TextureType type);

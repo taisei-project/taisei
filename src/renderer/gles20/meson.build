@@ -1,8 +1,8 @@
 
 r_gles20_src = files(
-    'core.c',
-    'texture.c',
+    'gles20.c',
+    'index_buffer.c',
 )
 
-r_gles20_deps = ['gl33'] + r_gl33_deps
-r_gles20_libdeps = r_gl33_libdeps
+r_gles20_deps = ['glescommon'] + r_glescommon_deps
+r_gles20_libdeps = r_glescommon_libdeps

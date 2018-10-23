@@ -11,7 +11,7 @@
 #include "vertex_array.h"
 #include "vertex_buffer.h"
 #include "index_buffer.h"
-#include "core.h"
+#include "gl33.h"
 #include "../glcommon/debug.h"
 
 static GLenum va_type_to_gl_type[] = {

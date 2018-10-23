@@ -345,7 +345,7 @@ static void glcommon_ext_texture_norm16(void) {
 	}
 
 	if((glext.texture_norm16 = glcommon_check_extension("GL_EXT_texture_norm16"))) {
-		log_info("Using core GL_EXT_texture_norm16");
+		log_info("Using GL_EXT_texture_norm16");
 		return;
 	}
 
@@ -361,7 +361,7 @@ static void glcommon_ext_texture_rg(void) {
 	}
 
 	if((glext.texture_rg = glcommon_check_extension("GL_EXT_texture_rg"))) {
-		log_info("Using core GL_EXT_texture_rg");
+		log_info("Using GL_EXT_texture_rg");
 		return;
 	}
 
@@ -377,7 +377,7 @@ static void glcommon_ext_texture_float_linear(void) {
 	}
 
 	if((glext.texture_float_linear = glcommon_check_extension("GL_OES_texture_float_linear"))) {
-		log_info("Using core GL_OES_texture_float_linear");
+		log_info("Using GL_OES_texture_float_linear");
 		return;
 	}
 
@@ -393,7 +393,7 @@ static void glcommon_ext_texture_half_float_linear(void) {
 	}
 
 	if((glext.texture_half_float_linear = glcommon_check_extension("GL_OES_texture_half_float_linear"))) {
-		log_info("Using core GL_OES_texture_half_float_linear");
+		log_info("Using GL_OES_texture_half_float_linear");
 		return;
 	}
 
@@ -409,7 +409,7 @@ static void glcommon_ext_color_buffer_float(void) {
 	}
 
 	if((glext.color_buffer_float = glcommon_check_extension("GL_EXT_color_buffer_float"))) {
-		log_info("Using core GL_EXT_color_buffer_float");
+		log_info("Using GL_EXT_color_buffer_float");
 		return;
 	}
 
@@ -425,11 +425,57 @@ static void glcommon_ext_float_blend(void) {
 	}
 
 	if((glext.float_blend = glcommon_check_extension("GL_EXT_float_blend"))) {
-		log_info("Using core GL_EXT_float_blend");
+		log_info("Using GL_EXT_float_blend");
 		return;
 	}
 
 	glext.float_blend = 0;
+	log_warn("Extension not supported");
+}
+
+static void glcommon_ext_vertex_array_object(void) {
+	if((GL_ATLEAST(3, 0) || GLES_ATLEAST(3, 0))
+		&& (glext.BindVertexArray = glad_glBindVertexArray)
+		&& (glext.DeleteVertexArrays = glad_glDeleteVertexArrays)
+		&& (glext.GenVertexArrays = glad_glGenVertexArrays)
+		&& (glext.IsVertexArray = glad_glIsVertexArray)
+	) {
+		glext.vertex_array_object = TSGL_EXTFLAG_NATIVE;
+		log_info("Using core functionality");
+		return;
+	}
+
+	if((glext.vertex_array_object = glcommon_check_extension("GL_ARB_vertex_array_object"))
+		&& (glext.BindVertexArray = glad_glBindVertexArray)
+		&& (glext.DeleteVertexArrays = glad_glDeleteVertexArrays)
+		&& (glext.GenVertexArrays = glad_glGenVertexArrays)
+		&& (glext.IsVertexArray = glad_glIsVertexArray)
+	) {
+		log_info("Using GL_ARB_vertex_array_object");
+		return;
+	}
+
+	if((glext.vertex_array_object = glcommon_check_extension("GL_OES_vertex_array_object"))
+		&& (glext.BindVertexArray = glad_glBindVertexArrayOES)
+		&& (glext.DeleteVertexArrays = glad_glDeleteVertexArraysOES)
+		&& (glext.GenVertexArrays = glad_glGenVertexArraysOES)
+		&& (glext.IsVertexArray = glad_glIsVertexArrayOES)
+	) {
+		log_info("Using GL_OES_vertex_array_object");
+		return;
+	}
+
+	if((glext.vertex_array_object = glcommon_check_extension("GL_APPLE_vertex_array_object"))
+		&& (glext.BindVertexArray = glad_glBindVertexArrayAPPLE)
+		&& (glext.DeleteVertexArrays = glad_glDeleteVertexArraysAPPLE)
+		&& (glext.GenVertexArrays = glad_glGenVertexArraysAPPLE)
+		&& (glext.IsVertexArray = glad_glIsVertexArrayAPPLE)
+	) {
+		log_info("Using GL_APPLE_vertex_array_object");
+		return;
+	}
+
+	glext.vertex_array_object = 0;
 	log_warn("Extension not supported");
 }
 
@@ -500,6 +546,7 @@ void glcommon_check_extensions(void) {
 	glcommon_ext_texture_half_float_linear();
 	glcommon_ext_texture_norm16();
 	glcommon_ext_texture_rg();
+	glcommon_ext_vertex_array_object();
 
 	// GLES has only glClearDepthf
 	// Core has only glClearDepth until GL 4.1

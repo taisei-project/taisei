@@ -57,3 +57,8 @@ void _r_backend_init(void) {
 
 	initialized = true;
 }
+
+void _r_backend_inherit(RendererBackend *dest, const RendererBackend *base) {
+	static const uint num_funcs = sizeof(dest->funcs)/sizeof(dest->funcs.init);
+	inherit_missing_pointers(num_funcs, (void**)&dest->funcs, (void**)&base->funcs);
+}

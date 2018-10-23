@@ -1,12 +1,24 @@
 
+default_backend = get_option('r_default')
+
+if not get_option('r_@0@'.format(default_backend))
+    error('Default renderer \'@0@\' is not enabled. Enable it with -Dr_@0@=true, or set r_default to something else.'.format(default_backend))
+endif
+
 renderer_src = files(
     'api.c',
 )
 
 renderer_deps = []
 
+# NOTE: Order matters here.
+subdir('null')
 subdir('common')
 subdir('glcommon')
+subdir('gl33')
+subdir('glescommon')
+subdir('gles20')
+subdir('gles30')
 
 modules = [
     'gl33',
@@ -28,7 +40,6 @@ else
 endif
 
 foreach m : modules
-    subdir(m)
     if get_option('r_@0@'.format(m))
         renderer_src += get_variable('r_@0@_src'.format(m))
         r_macro += ['R(@0@)'.format(m)]

@@ -6,6 +6,7 @@ glad_extensions = [
     'GL_ANGLE_depth_texture',
     'GL_ANGLE_instanced_arrays',
     'GL_ANGLE_translated_shader_source',
+    'GL_APPLE_vertex_array_object',
     'GL_ARB_base_instance',
     'GL_ARB_clear_texture',
     'GL_ARB_debug_output',
@@ -15,6 +16,7 @@ glad_extensions = [
     'GL_ARB_instanced_arrays',
     'GL_ARB_pixel_buffer_object',
     'GL_ARB_texture_filter_anisotropic',
+    'GL_ARB_vertex_array_object',
     'GL_ATI_draw_buffers',
     'GL_EXT_base_instance',
     'GL_EXT_color_buffer_float',
@@ -33,6 +35,7 @@ glad_extensions = [
     'GL_OES_depth_texture',
     'GL_OES_texture_float_linear',
     'GL_OES_texture_half_float_linear',
+    'GL_OES_vertex_array_object',
     'GL_SGIX_depth_texture',
 ]
 

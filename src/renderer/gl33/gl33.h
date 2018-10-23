@@ -27,6 +27,10 @@ typedef enum BufferBindingIndex {
 
 // Internal helper functions
 
+GLenum gl33_prim_to_gl_prim(Primitive prim);
+void gl33_begin_draw(VertexArray *varr, void **state);
+void gl33_end_draw(void *state);
+
 uint gl33_bind_texture(Texture *texture, bool for_rendering);
 
 void gl33_bind_vao(GLuint vao);

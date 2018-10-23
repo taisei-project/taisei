@@ -9,7 +9,7 @@
 #include "taisei.h"
 
 #include "framebuffer.h"
-#include "core.h"
+#include "gl33.h"
 #include "../glcommon/debug.h"
 
 static GLuint r_attachment_to_gl_attachment[] = {

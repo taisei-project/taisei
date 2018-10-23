@@ -128,3 +128,4 @@ extern RendererBackend *_r_backends[];
 extern RendererBackend _r_backend;
 
 void _r_backend_init(void);
+void _r_backend_inherit(RendererBackend *dest, const RendererBackend *base);

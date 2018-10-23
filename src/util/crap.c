@@ -9,6 +9,7 @@
 #include "taisei.h"
 
 #include "crap.h"
+#include "assert.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -17,4 +18,14 @@ void* memdup(const void *src, size_t size) {
 	void *data = malloc(size);
 	memcpy(data, src, size);
 	return data;
+}
+
+static_assert(sizeof(void*) == sizeof(void (*)(void)), "Can't store function pointers in void* :(");
+
+void inherit_missing_pointers(uint num, void *dest[num], void *const base[num]) {
+	for(uint i = 0; i < num; ++i) {
+		if(dest[i] == NULL) {
+			dest[i] = base[i];
+		}
+	}
 }

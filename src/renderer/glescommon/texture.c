@@ -9,7 +9,6 @@
 #include "taisei.h"
 
 #include "texture.h"
-#include "core.h"
 #include "../glcommon/opengl.h"
 
 #define FMT_R8      { GL_RED,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8      }
@@ -62,7 +61,7 @@ static inline void set_format(TextureType t, GLenum internal, GLTextureFormatTup
 	gles_texformats[t].external_formats[0] = external;
 }
 
-void gles20_init_texformats_table(void) {
+void gles_init_texformats_table(void) {
 	bool is_gles3 = GLES_ATLEAST(3, 0);
 	bool have_rg = glext.texture_rg;
 	bool have_16bit = glext.texture_norm16;
@@ -165,7 +164,7 @@ void gles20_init_texformats_table(void) {
 	}
 }
 
-GLTextureTypeInfo* gles20_texture_type_info(TextureType type) {
+GLTextureTypeInfo* gles_texture_type_info(TextureType type) {
 	assert((uint)type < sizeof(gles_texformats)/sizeof(*gles_texformats));
 	return gles_texformats + type;
 }

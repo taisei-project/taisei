@@ -9,8 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include "../glcommon/texture.h"
+#include "../common/backend.h"
 
-void gles20_init_texformats_table(void);
-GLTextureTypeInfo* gles20_texture_type_info(TextureType type);
-
+extern RendererBackend _r_backend_gles20;

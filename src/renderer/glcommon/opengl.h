@@ -70,20 +70,21 @@ struct glext_s {
 		bool is_ANGLE;
 	} version;
 
-	ext_flag_t debug_output;
-	ext_flag_t instanced_arrays;
 	ext_flag_t base_instance;
-	ext_flag_t pixel_buffer_object;
+	ext_flag_t clear_texture;
+	ext_flag_t color_buffer_float;
+	ext_flag_t debug_output;
 	ext_flag_t depth_texture;
 	ext_flag_t draw_buffers;
+	ext_flag_t float_blend;
+	ext_flag_t instanced_arrays;
+	ext_flag_t pixel_buffer_object;
 	ext_flag_t texture_filter_anisotropic;
-	ext_flag_t clear_texture;
-	ext_flag_t texture_norm16;
-	ext_flag_t texture_rg;
 	ext_flag_t texture_float_linear;
 	ext_flag_t texture_half_float_linear;
-	ext_flag_t color_buffer_float;
-	ext_flag_t float_blend;
+	ext_flag_t texture_norm16;
+	ext_flag_t texture_rg;
+	ext_flag_t vertex_array_object;
 
 	//
 	// debug_output
@@ -148,6 +149,26 @@ struct glext_s {
 	#undef glClearTexSubImage
 	#define glClearTexSubImage (glext.ClearTexSubImage)
 	*/
+
+	//
+	// 	vertex_array_object
+	//
+
+	PFNGLBINDVERTEXARRAYPROC BindVertexArray;
+	#undef glBindVertexArray
+	#define glBindVertexArray (glext.BindVertexArray)
+
+	PFNGLDELETEVERTEXARRAYSPROC DeleteVertexArrays;
+	#undef glDeleteVertexArrays
+	#define glDeleteVertexArrays (glext.DeleteVertexArrays)
+
+	PFNGLGENVERTEXARRAYSPROC GenVertexArrays;
+	#undef glGenVertexArrays
+	#define glGenVertexArrays (glext.GenVertexArrays)
+
+	PFNGLISVERTEXARRAYPROC IsVertexArray;
+	#undef glIsVertexArray
+	#define glIsVertexArray (glext.IsVertexArray)
 };
 
 #define GL_VERSION_INT(mjr, mnr) (((mjr) << 8) + (mnr))

@@ -9,5 +9,8 @@
 #pragma once
 #include "taisei.h"
 
-void* memdup(const void *src, size_t size);
-void inherit_missing_pointers(uint num, void *dest[num], void *const base[num]);
+#include "../glcommon/vtable.h"
+
+void gles_init(RendererBackend *gles_backend, int major, int minor);
+void gles_init_context(SDL_Window *w);
+bool gles_screenshot(Pixmap *out);

@@ -9,7 +9,7 @@
 #include "taisei.h"
 
 #include "index_buffer.h"
-#include "core.h"
+#include "gl33.h"
 #include "../glcommon/debug.h"
 
 IndexBuffer* gl33_index_buffer_create(size_t max_elements) {
