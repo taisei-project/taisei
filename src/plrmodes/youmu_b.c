@@ -120,6 +120,7 @@ static Projectile* youmu_trap_trail(Projectile *p, complex v, int t, bool additi
 	trail->draw_rule = youmu_trap_draw_trail;
 	// trail->args[3] = global.frames - p->birthtime;
 	trail->shader_params.vector[0] = p->shader_params.vector[0];
+	trail->flags |= PFLAG_REQUIREDPARTICLE;
 
 	if(additive) {
 		trail->color.a = 0;
@@ -266,6 +267,7 @@ static int youmu_particle_slice_logic(Projectile *p, int t) {
 				afrand(3) + 360.0*I*afrand(0)
 			},
 			.layer = LAYER_PARTICLE_HIGH | 0x2,
+			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 		);
 	}
 
@@ -295,7 +297,7 @@ static int youmu_slash(Enemy *e, int t) {
 			.pos = e->pos+pos,
 			.draw_rule = youmu_particle_slice_draw,
 			.rule = youmu_particle_slice_logic,
-			.flags = PFLAG_NOREFLECT,
+			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 			.timeout = 100,
 			.angle = carg(pos),
 			.layer = LAYER_PARTICLE_HIGH | 0x1,

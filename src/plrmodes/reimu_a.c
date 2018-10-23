@@ -100,7 +100,7 @@ static Projectile* reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, doubl
 		.rule = linear,
 		.draw_rule = ScaleFade,
 		.layer = LAYER_PARTICLE_LOW,
-		.flags = PFLAG_NOREFLECT,
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 	);
 }
 
@@ -131,7 +131,7 @@ static Projectile* reimu_spirit_spawn_homing_impact(Projectile *p, int t) {
 		.rule = reimu_spirit_homing_impact,
 		.draw_rule = ScaleFade,
 		.layer = LAYER_PARTICLE_HIGH,
-		.flags = PFLAG_NOREFLECT,
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 	);
 }
 
@@ -260,7 +260,7 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 				.rule = linear,
 				.draw_rule = Fade,
 				.layer = LAYER_BOSS,
-				.flags = PFLAG_NOREFLECT,
+				.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 			);
 		}
 
@@ -274,6 +274,7 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 				.draw_rule = ScaleFade,
 				.layer = LAYER_BOSS + 2,
 				.args = { 0, 0, 7.5*I },
+				.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 			);
 
 			PARTICLE(
@@ -284,6 +285,7 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 				.draw_rule = reimu_spirit_bomb_orb_draw_impact,
 				.layer = LAYER_BOSS + 1,
 				.args = { frand() },
+				.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 			);
 		}
 

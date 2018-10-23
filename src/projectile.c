@@ -491,6 +491,7 @@ Projectile* spawn_projectile_collision_effect(Projectile *proj) {
 	if(proj->flags & PFLAG_NOCOLLISIONEFFECT) {
 		return NULL;
 	}
+
 	if(proj->sprite == NULL) {
 		return NULL;
 	}
@@ -500,7 +501,7 @@ Projectile* spawn_projectile_collision_effect(Projectile *proj) {
 		.size = proj->size,
 		.pos = proj->pos,
 		.color = &proj->color,
-		.flags = proj->flags | PFLAG_NOREFLECT,
+		.flags = proj->flags | PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 		.shader_ptr = proj->shader,
 		.rule = linear,
 		.draw_rule = DeathShrink,
@@ -780,7 +781,7 @@ static Projectile* spawn_projectile_highlight_effect_internal(Projectile *p, boo
 		.args = { 0.125 * (sx + I * sy), frand() * M_PI * 2 },
 		.angle = p->angle,
 		.pos = p->pos + frand() * 5 * cexp(I*M_PI*2*frand()),
-		.flags = PFLAG_NOREFLECT,
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 		.timeout = 32 + 2 * nfrand(),
 		.color = &clr,
 	);
@@ -866,7 +867,7 @@ Projectile* spawn_projectile_clear_effect(Projectile *proj) {
 		.size = proj->size,
 		.pos = proj->pos,
 		.color = &proj->color,
-		.flags = proj->flags | PFLAG_NOREFLECT,
+		.flags = proj->flags | PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 		.shader_ptr = shader,
 		.rule = projectile_clear_effect_logic,
 		.draw_rule = projectile_clear_effect_draw,
@@ -1036,7 +1037,7 @@ void petal_explosion(int n, complex pos) {
 				afrand(1) + 360.0*I*afrand(0),
 			},
 			// TODO: maybe remove this noreflect, there shouldn't be a cull mode mess anymore
-			.flags = PFLAG_NOREFLECT,
+			.flags = PFLAG_NOREFLECT | (n % 2 ? 0 : PFLAG_REQUIREDPARTICLE),
 			.layer = LAYER_PARTICLE_PETAL,
 		);
 	}

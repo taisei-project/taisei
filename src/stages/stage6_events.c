@@ -216,6 +216,7 @@ void Scythe(Enemy *e, int t, bool render) {
 		.rule = linear,
 		.timeout = 60,
 		.args = { -I+1, -I+1 }, // XXX: what the fuck?
+		.flags = PFLAG_REQUIREDPARTICLE,
 	);
 }
 
@@ -1678,6 +1679,7 @@ int baryon_explode(Enemy *e, int t) {
 			.args = { 0, 0, (0.25 + 2.5*I) * (1 + 0.2 * frand()) },
 			.layer = LAYER_PARTICLE_HIGH | 0x41,
 			.angle = frand() * 2 * M_PI,
+			.flags = PFLAG_REQUIREDPARTICLE,
 		);
 
 		PARTICLE(
@@ -1689,6 +1691,7 @@ int baryon_explode(Enemy *e, int t) {
 			.args = { 0, 0, (0 + 5*I) * (1 + 0.2 * frand()) },
 			.angle = frand() * 2 * M_PI,
 			.layer = LAYER_PARTICLE_HIGH | 0x42,
+			.flags = PFLAG_REQUIREDPARTICLE,
 		);
 
 		PARTICLE(
@@ -1717,6 +1720,7 @@ int baryon_explode(Enemy *e, int t) {
 			.args = { 0, 0, (t / 120.0 + 0*I) * (1 + 0.2 * frand()) },
 			.layer = LAYER_PARTICLE_HIGH | 0x41,
 			.angle = frand() * 2 * M_PI,
+			.flags = PFLAG_REQUIREDPARTICLE,
 		);
 	}/* else {
 		PARTICLE(

@@ -226,6 +226,7 @@ static Projectile* spawn_boss_glow(Boss *boss, const Color *clr, int timeout) {
 		.timeout = timeout,
 		.layer = LAYER_PARTICLE_LOW,
 		.shader = "sprite_silhouette",
+		.flags = PFLAG_REQUIREDPARTICLE,
 	);
 }
 
@@ -740,6 +741,7 @@ void process_boss(Boss **pboss) {
 				afrand(4) + 360.0*I*afrand(1)
 			},
 			.layer = LAYER_PARTICLE_PETAL,
+			.flags = PFLAG_REQUIREDPARTICLE,
 		);
 
 		if(!extra) {

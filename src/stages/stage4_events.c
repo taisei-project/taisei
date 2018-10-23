@@ -283,6 +283,7 @@ void KurumiSlave(Enemy *e, int t, bool render) {
 			.rule = enemy_flare,
 			.timeout = 50,
 			.args = { (-50.0*I-offset)/50.0, add_ref(e) },
+			.flags = PFLAG_REQUIREDPARTICLE,
 		);
 	}
 }
@@ -855,7 +856,11 @@ static int kdanmaku_proj(Projectile *p, int t) {
 		p->args[1] = (global.plr.pos - p->pos) * 0.001;
 
 		if(frand() < 0.5) {
-			vapor_particle(p->pos, RGBA(0.6, 0.3, 1.0, 0.0));
+			Projectile *v = vapor_particle(p->pos, RGBA(0.6, 0.3, 1.0, 0.0));
+
+			if(frand() < 0.5) {
+				v->flags |= PFLAG_REQUIREDPARTICLE;
+			}
 		}
 
 		PARTICLE(
