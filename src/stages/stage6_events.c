@@ -1054,11 +1054,13 @@ int broglie_charge(Projectile *p, int t) {
 
 		PARTICLE(
 			.sprite = "blast",
+			.size = 16*(1+I), // HACK: thwart prototype (see TODO in projectile.c)
 			.pos = p->pos,
 			.color = &clr,
 			.timeout = 35,
 			.draw_rule = GrowFade,
 			.args = { 0, 2.4 },
+			.flags = PFLAG_REQUIREDPARTICLE,
 		);
 
 		int attack_num = creal(p->args[2]);
@@ -2032,6 +2034,7 @@ static int elly_toe_boson(Projectile *p, int t) {
 					M_PI*2*frand(),
 				},
 				.angle = 0,
+				.flags = PFLAG_REQUIREDPARTICLE,
 			);
 		}
 	}
@@ -2074,6 +2077,7 @@ static int elly_toe_boson(Projectile *p, int t) {
 			.draw_rule = ScaleFade,
 			.args = { 0, 0, 3 * I },
 			.angle = M_PI*2*frand(),
+			.flags = PFLAG_REQUIREDPARTICLE,
 		);
 
 		boson_color(&p->color, num_in_trail, warps_initial - warps_left);
@@ -2085,6 +2089,7 @@ static int elly_toe_boson(Projectile *p, int t) {
 			.timeout = 30,
 			.args = { 0, p->args[0] * 2, 3 * I, M_PI*2*frand() },
 			.angle = 0,
+			.flags = PFLAG_REQUIREDPARTICLE,
 		);
 	}
 
@@ -2330,6 +2335,7 @@ static void elly_toe_laser_particle(Laser *l, complex origin) {
 		.timeout = 20,
 		.args = { 0, 0, 2 * I, add_ref(l) },
 		.angle = M_PI*2*frand(),
+		.flags = PFLAG_REQUIREDPARTICLE,
 	);
 
 	PARTICLE("smoothdot", origin, c, elly_toe_laser_particle_rule,
@@ -2337,6 +2343,7 @@ static void elly_toe_laser_particle(Laser *l, complex origin) {
 		.timeout = 40,
 		.args = { 0, 0, 1, add_ref(l) },
 		.angle = M_PI*2*frand(),
+		.flags = PFLAG_REQUIREDPARTICLE,
 	);
 }
 
@@ -2552,12 +2559,13 @@ void elly_theory(Boss *b, int time) {
 
 		PARTICLE(
 			.sprite = "blast",
+			.size = 16*(1+I), // HACK: thwart prototype (see TODO in projectile.c)
 			.pos = b->pos,
-			.color = RGBA_MUL_ALPHA(1.0, 0.3, 0.3, 0.5),
+			.color = RGBA(1.0, 0.3, 0.3, 0.0),
 			.timeout = 60,
 			.draw_rule = GrowFade,
 			.args = { 0, 4 },
-			// .flags = PFLAG_DRAWADD,
+			.flags = PFLAG_REQUIREDPARTICLE,
 		);
 
 		for(int i = 0; i < 10; ++i) {
