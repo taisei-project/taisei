@@ -197,7 +197,7 @@ static void stage5_end(void) {
 }
 
 void stage5_skip(int t) {
-	skip_background_anim(&stage_3d_context, stage5_update, t, &global.timer, &global.frames);
+	skip_background_anim(stage5_update, t, &global.timer, &global.frames);
 
 	int mskip = global.timer;
 
@@ -208,17 +208,18 @@ void stage5_skip(int t) {
 	audio_backend_music_set_position(mskip / (double)FPS);
 }
 
+static void stage5_spellpractice_start(void) {
+	stage5_start();
+	skip_background_anim(stage5_update, 6960, &global.timer, NULL);
+
+	global.boss = stage5_spawn_iku(BOSS_DEFAULT_SPAWN_POS);
+	boss_add_attack_from_info(global.boss, global.stage->spell, true);
+	boss_start_attack(global.boss, global.boss->attacks);
+
+	stage_start_bgm("stage5boss");
+}
+
 static void stage5_spellpractice_events(void) {
-	TIMER(&global.timer);
-
-	AT(0) {
-		skip_background_anim(&stage_3d_context, stage5_update, 6960, &global.timer, NULL);
-		global.boss = stage5_spawn_iku(BOSS_DEFAULT_SPAWN_POS);
-		boss_add_attack_from_info(global.boss, global.stage->spell, true);
-		boss_start_attack(global.boss, global.boss->attacks);
-
-		stage_start_bgm("stage5boss");
-	}
 }
 
 ShaderRule stage5_shaders[] = { NULL };
@@ -235,8 +236,8 @@ StageProcs stage5_procs = {
 };
 
 StageProcs stage5_spell_procs = {
+	.begin = stage5_spellpractice_start,
 	.preload = stage5_preload,
-	.begin = stage5_start,
 	.end = stage5_end,
 	.draw = stage5_draw,
 	.update = stage5_update,

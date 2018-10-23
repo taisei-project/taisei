@@ -126,7 +126,7 @@ void player_init(Player *plr);
 // State that is not supposed to be preserved between stages is reset here, and any plrmode-specific resources are preloaded.
 void player_stage_pre_init(Player *plr);
 
-// This is called right before the stage's begin proc. After that, the actual game loop starts.
+// This is called right after the stage's begin proc. After that, the actual game loop starts.
 void player_stage_post_init(Player *plr);
 
 // Yes, that's 3 different initialization functions right here.

@@ -351,27 +351,28 @@ static void stage3_update(void) {
 
 void scuttle_spellbg(Boss*, int t);
 
-static void stage3_spellpractice_events(void) {
-	TIMER(&global.timer);
+static void stage3_spellpractice_start(void) {
+	stage3_start();
 
-	AT(0) {
-		if(global.stage->spell->draw_rule == scuttle_spellbg) {
-			skip_background_anim(&stage_3d_context, stage3_update, 2800, &global.timer, NULL);
-			global.boss = stage3_spawn_scuttle(BOSS_DEFAULT_SPAWN_POS);
-			stage_start_bgm("scuttle");
-		} else {
-			skip_background_anim(&stage_3d_context, stage3_update, 5300 + STAGE3_MIDBOSS_TIME, &global.timer, NULL);
-			global.boss = stage3_spawn_wriggle_ex(BOSS_DEFAULT_SPAWN_POS);
-			stage_start_bgm("stage3boss");
-		}
-
-		boss_add_attack_from_info(global.boss, global.stage->spell, true);
-		boss_start_attack(global.boss, global.boss->attacks);
+	if(global.stage->spell->draw_rule == scuttle_spellbg) {
+		skip_background_anim(stage3_update, 2800, &global.timer, NULL);
+		global.boss = stage3_spawn_scuttle(BOSS_DEFAULT_SPAWN_POS);
+		stage_start_bgm("scuttle");
+	} else {
+		skip_background_anim(stage3_update, 5300 + STAGE3_MIDBOSS_TIME, &global.timer, NULL);
+		global.boss = stage3_spawn_wriggle_ex(BOSS_DEFAULT_SPAWN_POS);
+		stage_start_bgm("stage3boss");
 	}
+
+	boss_add_attack_from_info(global.boss, global.stage->spell, true);
+	boss_start_attack(global.boss, global.boss->attacks);
+}
+
+static void stage3_spellpractice_events(void) {
 }
 
 void stage3_skip(int t) {
-	skip_background_anim(&stage_3d_context, stage3_update, t, &global.timer, &global.frames);
+	skip_background_anim(stage3_update, t, &global.timer, &global.frames);
 	audio_backend_music_set_position(global.timer / (double)FPS);
 }
 
@@ -391,8 +392,8 @@ StageProcs stage3_procs = {
 };
 
 StageProcs stage3_spell_procs = {
+	.begin = stage3_spellpractice_start,
 	.preload = stage3_preload,
-	.begin = stage3_start,
 	.end = stage3_end,
 	.draw = stage3_draw,
 	.update = stage3_update,

@@ -315,33 +315,32 @@ void elly_intro(Boss*, int);
 void elly_spawn_baryons(complex pos);
 int scythe_reset(Enemy *e, int t);
 
-static void stage6_spellpractice_events(void) {
-	TIMER(&global.timer);
+static void stage6_spellpractice_start(void) {
+	stage6_start();
+	skip_background_anim(stage6_update, 3800, &global.timer, &global.frames);
 
-	AT(0) {
-		skip_background_anim(&stage_3d_context, stage6_update, 3800, &global.timer, &global.frames);
-		global.boss = stage6_spawn_elly(BOSS_DEFAULT_SPAWN_POS);
+	global.boss = stage6_spawn_elly(BOSS_DEFAULT_SPAWN_POS);
+	AttackInfo *s = global.stage->spell;
 
-		AttackInfo *s = global.stage->spell;
-
-		if(STG6_SPELL_NEEDS_SCYTHE(s)) {
-			create_enemy3c(-32 + 32*I, ENEMY_IMMUNE, Scythe, scythe_reset, 0, 1+0.2*I, 1);
-			stage_start_bgm("stage6boss_phase1");
-		} else if(STG6_SPELL_NEEDS_BARYON(s)) {
-			elly_spawn_baryons(global.boss->pos);
-			stage_start_bgm("stage6boss_phase2");
-		} else if(s == &stage6_spells.final.theory_of_everything) {
-			start_fall_over();
-			skip_background_anim(&stage_3d_context, stage6_update, 300, &global.timer, &global.frames);
-			stage_start_bgm("stage6boss_phase3");
-		} else {
-			stage_start_bgm("stage6boss_phase2");
-		}
-
-		boss_add_attack_from_info(global.boss, global.stage->spell, true);
-		boss_start_attack(global.boss, global.boss->attacks);
+	if(STG6_SPELL_NEEDS_SCYTHE(s)) {
+		create_enemy3c(-32 + 32*I, ENEMY_IMMUNE, Scythe, scythe_reset, 0, 1+0.2*I, 1);
+		stage_start_bgm("stage6boss_phase1");
+	} else if(STG6_SPELL_NEEDS_BARYON(s)) {
+		elly_spawn_baryons(global.boss->pos);
+		stage_start_bgm("stage6boss_phase2");
+	} else if(s == &stage6_spells.final.theory_of_everything) {
+		start_fall_over();
+		skip_background_anim(stage6_update, 300, &global.timer, &global.frames);
+		stage_start_bgm("stage6boss_phase3");
+	} else {
+		stage_start_bgm("stage6boss_phase2");
 	}
 
+	boss_add_attack_from_info(global.boss, global.stage->spell, true);
+	boss_start_attack(global.boss, global.boss->attacks);
+}
+
+static void stage6_spellpractice_events(void) {
 	if(!global.boss) {
 		enemy_kill_all(&global.enemies);
 	}
@@ -361,8 +360,8 @@ StageProcs stage6_procs = {
 };
 
 StageProcs stage6_spell_procs = {
+	.begin = stage6_spellpractice_start,
 	.preload = stage6_preload,
-	.begin = stage6_start,
 	.end = stage6_end,
 	.draw = stage6_draw,
 	.update = stage6_update,

@@ -337,17 +337,18 @@ static void stage1_end(void) {
 	free_stage3d(&stage_3d_context);
 }
 
+static void stage1_spellpractice_start(void) {
+	stage1_start();
+
+	Boss* cirno = stage1_spawn_cirno(BOSS_DEFAULT_SPAWN_POS);
+	boss_add_attack_from_info(cirno, global.stage->spell, true);
+	boss_start_attack(cirno, cirno->attacks);
+	global.boss = cirno;
+
+	stage_start_bgm("stage1boss");
+}
+
 static void stage1_spellpractice_events(void) {
-	TIMER(&global.timer);
-
-	AT(0) {
-		Boss* cirno = stage1_spawn_cirno(BOSS_DEFAULT_SPAWN_POS);
-		boss_add_attack_from_info(cirno, global.stage->spell, true);
-		boss_start_attack(cirno, cirno->attacks);
-		global.boss = cirno;
-
-		stage_start_bgm("stage1boss");
-	}
 }
 
 ShaderRule stage1_shaders[] = { stage1_fog, NULL };
@@ -364,8 +365,8 @@ StageProcs stage1_procs = {
 };
 
 StageProcs stage1_spell_procs = {
+	.begin = stage1_spellpractice_start,
 	.preload = stage1_preload,
-	.begin = stage1_start,
 	.end = stage1_end,
 	.draw = stage1_draw,
 	.update = stage1_update,

@@ -52,4 +52,4 @@ vec3 **linear3dpos(vec3 q, float maxrange, vec3 p, vec3 r);
 
 vec3 **single3dpos(vec3 q, float maxrange, vec3 p);
 
-void skip_background_anim(Stage3D *s3d, void (*update_func)(void), int frames, int *timer, int *timer2);
+void skip_background_anim(void (*update_func)(void), int frames, int *timer, int *timer2);

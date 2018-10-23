@@ -148,22 +148,16 @@ vec3 **single3dpos(vec3 q, float maxrange, vec3 p) {
 	}
 }
 
-void skip_background_anim(Stage3D *s3d, void (*update_func)(void), int frames, int *timer, int *timer2) {
-	// FIXME: This function is broken.
-	// It must not modify the timers if frames <= 0.
-	// Fix this when we no longer need v1.2 compat.
-
+void skip_background_anim(void (*update_func)(void), int frames, int *timer, int *timer2) {
 	int targetframes = *timer + frames;
 
-	while(++(*timer) < targetframes) {
+	while(*timer < targetframes) {
+		++*timer;
+
 		if(timer2) {
-			++(*timer2);
+			++*timer2;
 		}
 
 		update_func();
-	}
-
-	if(timer2) {
-		++(*timer2);
 	}
 }

@@ -309,21 +309,22 @@ static void stage4_update(void) {
 		stage_3d_context.cv[1] += 0.02;
 }
 
+static void stage4_spellpractice_start(void) {
+	stage4_start();
+	skip_background_anim(stage4_update, 3200, &global.frames, NULL);
+
+	global.boss = stage4_spawn_kurumi(BOSS_DEFAULT_SPAWN_POS);
+	boss_add_attack_from_info(global.boss, global.stage->spell, true);
+	boss_start_attack(global.boss, global.boss->attacks);
+
+	stage_start_bgm("stage4boss");
+}
+
 static void stage4_spellpractice_events(void) {
-	TIMER(&global.timer);
-
-	AT(0) {
-		skip_background_anim(&stage_3d_context, stage4_update, 3200, &global.frames, NULL);
-		global.boss = stage4_spawn_kurumi(BOSS_DEFAULT_SPAWN_POS);
-		boss_add_attack_from_info(global.boss, global.stage->spell, true);
-		boss_start_attack(global.boss, global.boss->attacks);
-
-		stage_start_bgm("stage4boss");
-	}
 }
 
 void stage4_skip(int t) {
-	skip_background_anim(&stage_3d_context, stage4_update, t, &global.timer, &global.frames);
+	skip_background_anim(stage4_update, t, &global.timer, &global.frames);
 	audio_backend_music_set_position(global.timer / (double)FPS);
 }
 
@@ -341,8 +342,8 @@ StageProcs stage4_procs = {
 };
 
 StageProcs stage4_spell_procs = {
+	.begin = stage4_spellpractice_start,
 	.preload = stage4_preload,
-	.begin = stage4_start,
 	.end = stage4_end,
 	.draw = stage4_draw,
 	.update = stage4_update,

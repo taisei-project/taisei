@@ -234,19 +234,19 @@ static void stage2_update(void) {
 	update_stage3d(&stage_3d_context);
 }
 
+static void stage2_spellpractice_start(void) {
+	stage2_start();
+	skip_background_anim(stage2_update, 180, &global.frames, NULL);
+
+	Boss* hina = stage2_spawn_hina(BOSS_DEFAULT_SPAWN_POS);
+	boss_add_attack_from_info(hina, global.stage->spell, true);
+	boss_start_attack(hina, hina->attacks);
+	global.boss = hina;
+
+	stage_start_bgm("stage2boss");
+}
+
 static void stage2_spellpractice_events(void) {
-	TIMER(&global.timer);
-
-	AT(0) {
-		skip_background_anim(&stage_3d_context, stage2_update, 180, &global.frames, NULL);
-
-		Boss* hina = stage2_spawn_hina(BOSS_DEFAULT_SPAWN_POS);
-		boss_add_attack_from_info(hina, global.stage->spell, true);
-		boss_start_attack(hina, hina->attacks);
-		global.boss = hina;
-
-		stage_start_bgm("stage2boss");
-	}
 }
 
 ShaderRule stage2_shaders[] = { stage2_fog, stage2_bloom, NULL };
@@ -263,8 +263,8 @@ StageProcs stage2_procs = {
 };
 
 StageProcs stage2_spell_procs = {
+	.begin = stage2_spellpractice_start,
 	.preload = stage2_preload,
-	.begin = stage2_start,
 	.end = stage2_end,
 	.draw = stage2_draw,
 	.update = stage2_update,
