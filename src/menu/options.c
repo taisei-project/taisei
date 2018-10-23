@@ -409,12 +409,7 @@ void options_sub_video(MenuData *parent, void *arg) {
 		bind_addvalue(b, "off");
 		bind_addvalue(b, "adaptive");
 
-	add_menu_entry(m, "Anti-aliasing", do_nothing,
-		b = bind_option(CONFIG_FXAA, bind_common_int_get, bind_common_int_set)
-	);	bind_addvalue(b, "none");
-		bind_addvalue(b, "fxaa");
-
-#ifdef DEBUG
+#if 0
 	add_menu_entry(m, "Swap buffers", do_nothing,
 		b = bind_option(CONFIG_VID_LATE_SWAP, bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_addvalue(b, "late");
@@ -429,6 +424,26 @@ void options_sub_video(MenuData *parent, void *arg) {
 
 	add_menu_separator(m);
 
+	add_menu_entry(m, "Overall rendering quality", do_nothing,
+		b = bind_scale(CONFIG_FG_QUALITY, 0.1, 1.0, 0.05)
+	);
+
+	add_menu_entry(m, "Draw background", do_nothing,
+		b = bind_option(CONFIG_NO_STAGEBG, bind_common_onoff_inverted_get, bind_common_onoff_inverted_set)
+	);	bind_onoff(b);
+
+	add_menu_entry(m, "Background rendering quality", do_nothing,
+		b = bind_scale(CONFIG_BG_QUALITY, 0.1, 1.0, 0.05)
+	);	b->dependence = bind_bgquality_dependence;
+		b->pad++;
+
+	add_menu_separator(m);
+
+	add_menu_entry(m, "Anti-aliasing", do_nothing,
+		b = bind_option(CONFIG_FXAA, bind_common_int_get, bind_common_int_set)
+	);	bind_addvalue(b, "none");
+		bind_addvalue(b, "fxaa");
+
 	add_menu_entry(m, "Particle effects", do_nothing,
 		b = bind_option(CONFIG_PARTICLES, bind_common_int_get, bind_common_int_set)
 	);	bind_addvalue(b, "minimal");
@@ -439,24 +454,6 @@ void options_sub_video(MenuData *parent, void *arg) {
 	);	bind_addvalue(b, "minimal");
 		bind_addvalue(b, "fast");
 		bind_addvalue(b, "full");
-
-	add_menu_entry(m, "Draw background", do_nothing,
-		b = bind_option(CONFIG_NO_STAGEBG, bind_common_onoff_inverted_get, bind_common_onoff_inverted_set)
-	);	bind_onoff(b);
-
-	add_menu_separator(m);
-
-	add_menu_entry(m, "Stage viewport quality", do_nothing,
-		b = bind_scale(CONFIG_FG_QUALITY, 0.1, 1.0, 0.05)
-	);
-
-	add_menu_entry(m, "Stage background quality", do_nothing,
-		b = bind_scale(CONFIG_BG_QUALITY, 0.1, 1.0, 0.05)
-	);	b->dependence = bind_bgquality_dependence;
-
-	add_menu_entry(m, "Text quality", do_nothing,
-		b = bind_scale(CONFIG_TEXT_QUALITY, 0.1, 1.0, 0.05)
-	);
 
 	add_menu_separator(m);
 	add_menu_entry(m, "Back", menu_commonaction_close, NULL);

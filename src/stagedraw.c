@@ -97,7 +97,7 @@ static void set_fb_size(StageFBPair fb_id, int *w, int *h, float scale_worst, fl
 	switch(fb_id) {
 		case FBPAIR_BG:
 			scale *= config_get_float(CONFIG_BG_QUALITY);
-			break;
+			// fallthrough
 
 		default:
 			scale *= config_get_float(CONFIG_FG_QUALITY);
@@ -151,18 +151,14 @@ static bool stage_draw_event(SDL_Event *e, void *arg) {
 		case TE_CONFIG_UPDATED: {
 			switch(e->user.code) {
 				case CONFIG_POSTPROCESS:
+				case CONFIG_BG_QUALITY:
 					update_fb_size(FBPAIR_BG);
 					// fallthrough
-				case CONFIG_FG_QUALITY: {
+
+				case CONFIG_FG_QUALITY:
 					update_fb_size(FBPAIR_FG);
 					update_fb_size(FBPAIR_FG_AUX);
 					break;
-				}
-
-				case CONFIG_BG_QUALITY: {
-					update_fb_size(FBPAIR_BG);
-					break;
-				}
 			}
 
 			break;
