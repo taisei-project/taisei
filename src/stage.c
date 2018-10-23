@@ -734,8 +734,8 @@ void stage_loop(StageInfo *stage) {
 		stg->playpos = 0;
 	}
 
-	player_stage_post_init(&global.plr);
 	stage->procs->begin();
+	player_stage_post_init(&global.plr);
 
 	if(global.stage->type != STAGE_SPELL) {
 		display_stage_title(stage);
