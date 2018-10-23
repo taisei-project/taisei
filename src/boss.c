@@ -865,7 +865,7 @@ void boss_start_attack(Boss *b, Attack *a) {
 	if(p) {
 		++p->num_played;
 
-		if(!p->unlocked && !global.plr.continues_used) {
+		if(!p->unlocked) {
 			log_info("Spellcard unlocked! %s: %s", i->title, i->subtitle);
 			p->unlocked = true;
 		}

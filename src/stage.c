@@ -714,10 +714,7 @@ void stage_loop(StageInfo *stage) {
 			log_debug("You cleared this stage %u times", p->num_cleared);
 
 			++p->num_played;
-
-			if(!global.plr.continues_used) {
-				p->unlocked = true;
-			}
+			p->unlocked = true;
 		}
 	} else {
 		if(!global.replay_stage) {
