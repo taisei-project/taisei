@@ -21,5 +21,5 @@ void main(void) {
 	// at the rim, invert colors
 	fragColor = mix(clr, vec4(1.0) - vec4(clr.rgb,0.), step(r, rmin + t * (0.1 + 0.1 * sin(10 * r))));
 
-	fragColor *= float(r > rmin);
+	fragColor *= step(rmin, r);
 }
