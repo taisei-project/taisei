@@ -69,9 +69,17 @@ void draw_boss_text(Alignment align, float x, float y, const char *text, const c
 
 void spell_opening(Boss *b, int time) {
 	complex x0 = VIEWPORT_W/2+I*VIEWPORT_H/3.5;
-	float f = clamp((time-40.)/60.,0,1);
+	float f = clamp((time - 40.0) / 60.0, 0, 1);
+	float f2 = clamp(time / 80.0, 0, 1);
 	complex x = x0 + (VIEWPORT_W+I*35 - x0) * f*(f+1)*0.5;
 	int strw = text_width(get_font("standard"), b->current->name, 0);
+
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "spell",
+		.pos = { (VIEWPORT_W - 128) * (1 - pow(1 - f2, 5)) -256 * pow(1 - f2, 2), 26 },
+		.color = RGBA(f2, f2, f2, f2 * f2 * 0.5),
+		.scale.both = 3 - 2 * (1 - pow(1 - f2, 3)),
+	});
 
 	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
 	r_disable(RCAP_CULL_FACE);
@@ -308,8 +316,9 @@ void draw_boss_hud(Boss *boss) {
 
 	draw_boss_text(ALIGN_LEFT, 10, 20, boss->name, "standard", RGB(1, 1, 1));
 
-	if(ATTACK_IS_SPELL(boss->current->type))
+	if(ATTACK_IS_SPELL(boss->current->type)) {
 		spell_opening(boss, global.frames - boss->current->starttime);
+	}
 
 	if(boss->current->type != AT_Move && boss->current->type != AT_Immediate) {
 		char buf[16];
