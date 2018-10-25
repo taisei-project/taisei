@@ -59,6 +59,10 @@ float line_segment(vec2 p, vec2 a, vec2 b, float thickness) {
     return smoothstep(thickness, 0.0, length(pa - ba*h));
 }
 
+vec4 alphaCompose(vec4 bg, vec4 fg) {
+    return fg + bg * (1.0 - fg.a);
+}
+
 // Taken from http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
 
 vec3 rgb2hsv(vec3 c) {

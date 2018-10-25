@@ -115,11 +115,11 @@ void draw_extraspell_bg(Boss *boss, int time) {
 
 const Color* boss_healthbar_color(AttackType atype) {
 	static const Color colors[] = {
-		[AT_Normal]        = { 0.20, 0.20, 1.00, 1.00 },
+		[AT_Normal]        = { 0.50, 0.50, 0.60, 1.00 },
 		[AT_Move]          = { 1.00, 1.00, 1.00, 1.00 },
-		[AT_Spellcard]     = { 1.00, 0.20, 0.20, 1.00 },
-		[AT_SurvivalSpell] = { 0.20, 0.20, 1.00, 1.00 },
-		[AT_ExtraSpell]    = { 1.00, 0.30, 0.10, 1.00 },
+		[AT_Spellcard]     = { 1.00, 0.00, 0.00, 1.00 },
+		[AT_SurvivalSpell] = { 0.00, 1.00, 0.00, 1.00 },
+		[AT_ExtraSpell]    = { 1.00, 0.40, 0.00, 1.00 },
 		[AT_Immediate]     = { 1.00, 1.00, 1.00, 1.00 },
 	};
 
@@ -255,13 +255,11 @@ static void update_healthbar(Boss *boss) {
 			spell = a_cur;
 		}
 
-		if(spell->type == AT_SurvivalSpell) {
-			spell = NULL;
-		}
-
+		/*
 		if(a_cur->type == AT_SurvivalSpell) {
 			target_opacity = 0.0;
 		}
+		*/
 
 		if(non && non->type == AT_Normal && non->maxhp > 0) {
 			total_hp += 3 * non->hp;
@@ -270,10 +268,25 @@ static void update_healthbar(Boss *boss) {
 		}
 
 		if(spell && ATTACK_IS_SPELL(spell->type)) {
-			total_hp += spell->hp;
-			total_maxhp += spell->maxhp;
+			float spell_hp;
+			float spell_maxhp;
+
+			if(spell->type == AT_SurvivalSpell) {
+				spell_maxhp = max(1, total_maxhp * 0.25);
+				spell_hp = spell_maxhp;
+
+				if(spell == a_cur) {
+					spell_hp *= (1.0 - max(0, global.frames - spell->starttime) / spell->timeout);
+				}
+			} else {
+				spell_hp = spell->hp;
+				spell_maxhp = spell->maxhp;
+			}
+
+			total_hp += spell_hp;
+			total_maxhp += spell_maxhp;
+			target_altfill = spell_maxhp / total_maxhp;
 			boss->healthbar.fill_altcolor = *boss_healthbar_color(spell->type);
-			target_altfill = spell->maxhp / total_maxhp;
 		}
 
 		if(total_maxhp > 0) {
@@ -281,7 +294,18 @@ static void update_healthbar(Boss *boss) {
 		}
 	}
 
-	boss->healthbar.opacity += (target_opacity - boss->healthbar.opacity) * update_speed;
+	float opacity_delta = (target_opacity - boss->healthbar.opacity) * update_speed;
+
+	if(boss_is_dying(boss)) {
+		opacity_delta *= 0.25;
+	}
+
+	boss->healthbar.opacity += opacity_delta;
+
+	if(boss_is_vulnerable(boss) || (a_cur && a_cur->type == AT_SurvivalSpell && global.frames - a_cur->starttime > 0)) {
+		update_speed *= (1 + 4 * pow(1 - target_fill, 2));
+	}
+
 	boss->healthbar.fill_total += (target_fill - boss->healthbar.fill_total) * update_speed;
 	boss->healthbar.fill_alt += (target_altfill - boss->healthbar.fill_alt) * update_speed;
 }
@@ -296,11 +320,11 @@ static void draw_radial_healthbar(Boss *boss) {
 	r_mat_translate(creal(boss->pos), cimag(boss->pos), 0);
 	r_mat_scale(192, 192, 0);
 	r_shader("healthbar");
-	r_uniform_vec4_rgba("borderColor",   RGBA(0.5, 0.5, 0.5, 0.5));
-	r_uniform_vec4_rgba("glowColor",     RGBA(0.5, 0.5, 1.0, 0.5));
+	r_uniform_vec4_rgba("borderColor",   RGBA(0.75, 0.75, 0.75, 0.75));
+	r_uniform_vec4_rgba("glowColor",     RGBA(0.5, 0.5, 1.0, 0.75));
 	r_uniform_vec4_rgba("fillColor",     &boss->healthbar.fill_color);
 	r_uniform_vec4_rgba("altFillColor",  &boss->healthbar.fill_altcolor);
-	r_uniform_vec4_rgba("coreFillColor", RGBA(1.0, 1.0, 1.0, 1.0));
+	r_uniform_vec4_rgba("coreFillColor", RGBA(0.8, 0.8, 0.8, 0.5));
 	r_uniform_vec2("fill", boss->healthbar.fill_total, boss->healthbar.fill_alt);
 	r_uniform_float("opacity", boss->healthbar.opacity);
 	r_draw_quad();

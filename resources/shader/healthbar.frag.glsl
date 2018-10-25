@@ -46,20 +46,25 @@ void main(void) {
 
     float fillShrink = 0.01;
     float fillFactor = sdf(0.01, i0raw * (1.0 - fillShrink)) - sdf(0.01, o1raw * (1.0 + fillShrink));
-    float fillTrail = max(0.02 * min(1.0, hp * 32.0), 0.00001);
-    fillFactor *= smoothstep(0.5 + fillTrail, 0.5, normMinAngle - normAngle + 0.5);
-    fillFactor *= smoothstep(0.5 - fillTrail, 0.5, normMaxAngle - normAngle + 0.5);
 
-    float altFactor = 1.0;
+    float fillEdgeFactor;
+    float fillTrail = max(0.02 * min(1.0, hp * 32.0), 0.00001);
+    fillEdgeFactor  = smoothstep(0.5 + fillTrail, 0.5, normMinAngle - normAngle + 0.5);
+    fillEdgeFactor *= smoothstep(0.5 - fillTrail, 0.5, normMaxAngle - normAngle + 0.5);
+
+    float coreFactor = pow(fillFactor, 4.0) * fillEdgeFactor;
+    fillFactor *= fillEdgeFactor;
+
+    float altFactor;
     float altTrail = max(0.02 * min(1.0, alt * 32.0), 0.00001);
     altFactor  = smoothstep(0.5 + altTrail, 0.5, normMinAltAngle - normAngle + 0.5);
     altFactor *= smoothstep(0.5 - altTrail, 0.5, normMaxAltAngle - normAngle + 0.5);
 
-    vec4 effectiveFillColor = mix(mix(fillColor, altFillColor, altFactor), coreFillColor, pow(fillFactor, 4.0));
+    vec4 effectiveFillColor = alphaCompose(mix(fillColor, altFillColor, altFactor), coreFillColor * coreFactor);
 
-    fragColor = mix(vec4(0), glowColor, glow);
-    fragColor = mix(fragColor, effectiveFillColor, fillFactor);
-    fragColor = mix(fragColor, borderColor, inner);
-    fragColor = mix(fragColor, borderColor, outer);
+    fragColor = alphaCompose(vec4(0), glowColor * glow);
+    fragColor = alphaCompose(fragColor, effectiveFillColor * fillFactor);
+    fragColor = alphaCompose(fragColor, borderColor * inner);
+    fragColor = alphaCompose(fragColor, borderColor * outer);
     fragColor *= opacity;
 }
