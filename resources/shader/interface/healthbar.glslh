@@ -1,0 +1,27 @@
+
+#ifndef I_HEALTHBAR_H
+#define I_HEALTHBAR_H
+
+#include "../lib/defs.glslh"
+
+#ifdef VERT_STAGE
+ATTRIBUTE(0) vec3 position;
+ATTRIBUTE(2) vec2 texCoordRawIn;
+#endif
+
+#ifdef FRAG_STAGE
+OUT(0) vec4 fragColor;
+#endif
+
+VARYING(0) vec2 texCoord;
+VARYING(1) vec4 fillNormAngles;
+
+#endif
+
+UNIFORM(0) vec4 borderColor;
+UNIFORM(1) vec4 glowColor;
+UNIFORM(2) vec4 fillColor;
+UNIFORM(3) vec4 altFillColor;
+UNIFORM(4) vec4 coreFillColor;
+UNIFORM(5) vec2 fill;
+UNIFORM(6) float opacity;

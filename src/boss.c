@@ -115,11 +115,11 @@ void draw_extraspell_bg(Boss *boss, int time) {
 
 const Color* boss_healthbar_color(AttackType atype) {
 	static const Color colors[] = {
-		[AT_Normal]        = { 1.00, 1.00, 1.00, 1.00 },
+		[AT_Normal]        = { 0.20, 0.20, 1.00, 1.00 },
 		[AT_Move]          = { 1.00, 1.00, 1.00, 1.00 },
-		[AT_Spellcard]     = { 1.00, 0.65, 0.65, 1.00 },
-		[AT_SurvivalSpell] = { 0.50, 0.50, 1.00, 1.00 },
-		[AT_ExtraSpell]    = { 1.00, 0.30, 0.20, 1.00 },
+		[AT_Spellcard]     = { 1.00, 0.20, 0.20, 1.00 },
+		[AT_SurvivalSpell] = { 0.20, 0.20, 1.00, 1.00 },
+		[AT_ExtraSpell]    = { 1.00, 0.30, 0.10, 1.00 },
 		[AT_Immediate]     = { 1.00, 1.00, 1.00, 1.00 },
 	};
 
@@ -193,6 +193,119 @@ static bool boss_attack_is_final(Boss *boss, Attack *a) {
 
 static bool attack_is_over(Attack *a) {
 	return a->hp <= 0 && global.frames > a->endtime;
+}
+
+static void update_healthbar(Boss *boss) {
+	bool player_nearby = cabs(boss->pos - global.plr.pos) < 128;
+	float update_speed = 0.1;
+	float target_opacity = 1.0;
+	float target_fill = 0.0;
+	float target_altfill = 0.0;
+
+	if(boss_is_dying(boss) || boss_is_fleeing(boss)) {
+		target_opacity = 0.0;
+	}
+
+	if(player_nearby) {
+		target_opacity *= 0.25;
+	}
+
+	Attack *a_prev = NULL;
+	Attack *a_cur = NULL;
+	Attack *a_next = NULL;
+
+	for(uint i = 0; i < boss->acount; ++i) {
+		Attack *a = boss->attacks + i;
+
+		if(boss_should_skip_attack(boss, a) || a->type == AT_Move) {
+			continue;
+		}
+
+		if(a_cur != NULL) {
+			a_next = a;
+			break;
+		}
+
+		if(a == boss->current) {
+			a_cur = boss->current;
+			continue;
+		}
+
+		if(attack_is_over(a)) {
+			a_prev = a;
+		}
+	}
+
+	/*
+	log_debug("prev = %s", a_prev ? a_prev->name : NULL);
+	log_debug("cur = %s", a_cur ? a_cur->name : NULL);
+	log_debug("next = %s", a_next ? a_next->name : NULL);
+	*/
+
+	if(a_cur != NULL) {
+		float total_maxhp = 0, total_hp = 0;
+
+		Attack *spell, *non;
+
+		if(a_cur->type == AT_Normal) {
+			non = a_cur;
+			spell = a_next;
+		} else {
+			non = a_prev;
+			spell = a_cur;
+		}
+
+		if(spell->type == AT_SurvivalSpell) {
+			spell = NULL;
+		}
+
+		if(a_cur->type == AT_SurvivalSpell) {
+			target_opacity = 0.0;
+		}
+
+		if(non && non->type == AT_Normal && non->maxhp > 0) {
+			total_hp += 3 * non->hp;
+			total_maxhp += 3 * non->maxhp;
+			boss->healthbar.fill_color = *boss_healthbar_color(non->type);
+		}
+
+		if(spell && ATTACK_IS_SPELL(spell->type)) {
+			total_hp += spell->hp;
+			total_maxhp += spell->maxhp;
+			boss->healthbar.fill_altcolor = *boss_healthbar_color(spell->type);
+			target_altfill = spell->maxhp / total_maxhp;
+		}
+
+		if(total_maxhp > 0) {
+			target_fill = total_hp / total_maxhp;
+		}
+	}
+
+	boss->healthbar.opacity += (target_opacity - boss->healthbar.opacity) * update_speed;
+	boss->healthbar.fill_total += (target_fill - boss->healthbar.fill_total) * update_speed;
+	boss->healthbar.fill_alt += (target_altfill - boss->healthbar.fill_alt) * update_speed;
+}
+
+static void draw_radial_healthbar(Boss *boss) {
+	if(boss->healthbar.opacity == 0) {
+		return;
+	}
+
+	r_state_push();
+	r_mat_push();
+	r_mat_translate(creal(boss->pos), cimag(boss->pos), 0);
+	r_mat_scale(192, 192, 0);
+	r_shader("healthbar");
+	r_uniform_vec4_rgba("borderColor",   RGBA(0.5, 0.5, 0.5, 0.5));
+	r_uniform_vec4_rgba("glowColor",     RGBA(0.5, 0.5, 1.0, 0.5));
+	r_uniform_vec4_rgba("fillColor",     &boss->healthbar.fill_color);
+	r_uniform_vec4_rgba("altFillColor",  &boss->healthbar.fill_altcolor);
+	r_uniform_vec4_rgba("coreFillColor", RGBA(1.0, 1.0, 1.0, 1.0));
+	r_uniform_vec2("fill", boss->healthbar.fill_total, boss->healthbar.fill_alt);
+	r_uniform_float("opacity", boss->healthbar.opacity);
+	r_draw_quad();
+	r_mat_pop();
+	r_state_pop();
 }
 
 static void BossGlow(Projectile *p, int t) {
@@ -308,6 +421,8 @@ static void ent_draw_boss(EntityInterface *ent) {
 }
 
 void draw_boss_hud(Boss *boss) {
+	draw_radial_healthbar(boss);
+
 	if(!boss->current)
 		return;
 
@@ -379,6 +494,7 @@ void draw_boss_hud(Boss *boss) {
 			return;
 		}
 
+		/*
 		r_shader_standard_notex();
 		r_mat_push();
 		r_mat_translate(10,2,0);
@@ -408,6 +524,8 @@ void draw_boss_hud(Boss *boss) {
 		}
 
 		r_mat_pop();
+		*/
+
 		r_shader("sprite_default");
 
 		// remaining spells
@@ -639,6 +757,7 @@ void process_boss(Boss **pboss) {
 	}
 
 	aniplayer_update(&boss->ani);
+	update_healthbar(boss);
 
 	if(boss->global_rule) {
 		boss->global_rule(boss, global.frames - boss->birthtime);
@@ -1000,6 +1119,7 @@ void boss_preload(void) {
 		"spellcard_outro",
 		"spellcard_walloftext",
 		"sprite_silhouette",
+		"healthbar",
 	NULL);
 
 	StageInfo *s = global.stage;
