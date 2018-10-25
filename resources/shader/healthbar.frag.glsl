@@ -25,7 +25,7 @@ void main(void) {
 
     float globalDist = 1.08;
     float iDist = globalDist / 0.90;
-    float oDist = globalDist / 0.95;
+    float oDist = globalDist / 0.96;
     float circleW = 1.01;
 
     float smoothing = fwidth(uv.x) * globalDist;

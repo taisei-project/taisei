@@ -318,7 +318,7 @@ static void draw_radial_healthbar(Boss *boss) {
 	r_state_push();
 	r_mat_push();
 	r_mat_translate(creal(boss->pos), cimag(boss->pos), 0);
-	r_mat_scale(192, 192, 0);
+	r_mat_scale(220, 220, 0);
 	r_shader("healthbar");
 	r_uniform_vec4_rgba("borderColor",   RGBA(0.75, 0.75, 0.75, 0.75));
 	r_uniform_vec4_rgba("glowColor",     RGBA(0.5, 0.5, 1.0, 0.75));
