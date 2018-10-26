@@ -255,11 +255,9 @@ static void update_healthbar(Boss *boss) {
 			spell = a_cur;
 		}
 
-		/*
 		if(a_cur->type == AT_SurvivalSpell) {
 			target_opacity = 0.0;
 		}
-		*/
 
 		if(non && non->type == AT_Normal && non->maxhp > 0) {
 			total_hp += 3 * non->hp;
@@ -272,12 +270,7 @@ static void update_healthbar(Boss *boss) {
 			float spell_maxhp;
 
 			if(spell->type == AT_SurvivalSpell) {
-				spell_maxhp = max(1, total_maxhp * 0.25);
-				spell_hp = spell_maxhp;
-
-				if(spell == a_cur) {
-					spell_hp *= (1.0 - max(0, global.frames - spell->starttime) / spell->timeout);
-				}
+				spell_hp = spell_maxhp = max(1, total_maxhp * 0.1);
 			} else {
 				spell_hp = spell->hp;
 				spell_maxhp = spell->maxhp;
