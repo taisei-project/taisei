@@ -1,0 +1,3 @@
+
+objects = healthbar_linear.vert healthbar_linear.frag
+

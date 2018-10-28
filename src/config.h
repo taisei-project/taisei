@@ -99,6 +99,7 @@
 	CONFIGDEF_INT       (PARTICLES,                 "particles",                            1) \
 	CONFIGDEF_INT       (FXAA,                      "fxaa",                                 1) \
 	CONFIGDEF_INT       (POSTPROCESS,               "postprocess",                          2) \
+	CONFIGDEF_INT       (HEALTHBAR_STYLE,           "healthbar_style",                      1) \
 	KEYDEFS \
 	CONFIGDEF_INT       (GAMEPAD_ENABLED,           "gamepad_enabled",                      0) \
 	CONFIGDEF_STRING    (GAMEPAD_DEVICE,            "gamepad_device",                       "default") \

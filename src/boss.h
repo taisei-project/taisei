@@ -134,6 +134,11 @@ typedef struct Boss {
 		Color fill_color;
 		Color fill_altcolor;
 	} healthbar;
+
+	struct {
+		float global_opacity;
+		float spell_opacity;
+	};
 } Boss;
 
 Boss* create_boss(char *name, char *ani, char *dialog, complex pos) attr_nonnull(1, 2) attr_returns_nonnull;

@@ -717,6 +717,11 @@ void create_options_menu(MenuData *m) {
 		b = bind_option(CONFIG_SHOT_INVERTED,   bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 
+	add_menu_entry(m, "Boss healthbar style", do_nothing,
+		b = bind_option(CONFIG_HEALTHBAR_STYLE,   bind_common_int_get, bind_common_int_set)
+	);	bind_addvalue(b, "classic");
+		bind_addvalue(b, "modern");
+
 	add_menu_separator(m);
 
 	add_menu_entry(m, "SFX Volume", do_nothing,
