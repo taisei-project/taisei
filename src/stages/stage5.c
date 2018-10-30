@@ -24,29 +24,29 @@
 struct stage5_spells_s stage5_spells = {
 	.boss = {
 		.atmospheric_discharge = {
-			{ 0,  1,  2,  3}, AT_Spellcard, "High Voltage ~ Atmospheric Discharge", 60, 44000,
+			{ 0,  1,  2,  3}, AT_Spellcard, "High Voltage “Atmospheric Discharge”", 60, 44000,
 			iku_atmospheric, iku_spell_bg, BOSS_DEFAULT_GO_POS
 		},
 		.artificial_lightning = {
-			{ 4,  5,  6,  7}, AT_Spellcard, "Charge Sign ~ Artificial Lightning", 75, 60000,
+			{ 4,  5,  6,  7}, AT_Spellcard, "Charge Sign “Artificial Lightning”", 75, 60000,
 			iku_lightning, iku_spell_bg, BOSS_DEFAULT_GO_POS
 		},
 		.induction_field = {
-			{12, 13, -1, -1}, AT_Spellcard, "Current Sign ~ Induction Field", 60, 50000,
+			{12, 13, -1, -1}, AT_Spellcard, "Current Sign “Induction Field”", 60, 50000,
 			iku_induction, iku_spell_bg, BOSS_DEFAULT_GO_POS
 		},
 		.inductive_resonance = {
-			{-1, -1, 14, 15}, AT_Spellcard, "Current Sign ~ Inductive Resonance", 60, 50000,
+			{-1, -1, 14, 15}, AT_Spellcard, "Current Sign “Inductive Resonance”", 60, 50000,
 			iku_induction, iku_spell_bg, BOSS_DEFAULT_GO_POS
 		},
 		.natural_cathode = {
-			{ 8,  9, 10, 11}, AT_Spellcard, "Spark Sign ~ Natural Cathode", 60, 44000,
+			{ 8,  9, 10, 11}, AT_Spellcard, "Spark Sign “Natural Cathode”", 60, 44000,
 			iku_cathode, iku_spell_bg, BOSS_DEFAULT_GO_POS
 		},
 	},
 
 	.extra.overload = {
-		{ 0,  1,  2,  3}, AT_ExtraSpell, "Circuit Sign ~ Overload", 60, 44000,
+		{ 0,  1,  2,  3}, AT_ExtraSpell, "Circuit Sign “Overload”", 60, 44000,
 		iku_extra, iku_spell_bg, BOSS_DEFAULT_GO_POS
 	},
 };
