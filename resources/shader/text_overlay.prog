@@ -1,2 +1,2 @@
 
-objects = text_example.vert text_overlay.frag
+objects = text_default.vert text_overlay.frag

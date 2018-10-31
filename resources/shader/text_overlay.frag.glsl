@@ -4,18 +4,16 @@
 #include "interface/sprite.glslh"
 #include "lib/util.glslh"
 
-float tc_mask(vec2 tc) {
-    return float(tc.x >= 0 && tc.x <= 1 && tc.y >= 0 && tc.y <= 1);
-}
-
 void main(void) {
-    float gradient = 0.8 + 0.2 * flip_native_to_bottomleft(texCoordOverlay.y);
+    float gradient = 0.5 + 0.5 * flip_native_to_bottomleft(texCoordOverlay.y);
     vec2 tc = flip_native_to_topleft(texCoord);
-    float a = tc_mask(tc);
-    vec4 textfrag = color * texture(tex, uv_to_region(texRegion, flip_topleft_to_native(tc))).r * a;
-    textfrag.rgb *= gradient;
-    tc -= vec2(1) / dimensions;
-    a = tc_mask(tc);
-    vec4 shadowfrag = vec4(vec3(0), texture(tex, uv_to_region(texRegion, flip_topleft_to_native(tc))).r * color.a * a);
-    fragColor = mix(shadowfrag, textfrag, sqrt(textfrag.a));
+
+    vec3 outlines = texture(tex, flip_topleft_to_native(tc)).rgb;
+    vec4 clr = vec4(color.rgb * gradient, color.a);
+
+    vec4 border = vec4(vec3(0), 0.75 * outlines.g * clr.a);
+    vec4 fill = clr * outlines.r;
+    vec4 highlight = vec4(vec3(0.25 * outlines.b), 0);
+
+    fragColor = alphaCompose(border, alphaCompose(fill, highlight));
 }
