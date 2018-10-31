@@ -10,6 +10,7 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include FT_STROKER_H
 
 #include "font.h"
 #include "util.h"
@@ -76,6 +77,7 @@ static const char* ft_error_str(FT_Error err_code) {
 
 typedef struct Glyph {
 	Sprite sprite;
+	Sprite outline_sprite;
 	GlyphMetrics metrics;
 	ulong ft_index;
 } Glyph;
@@ -94,6 +96,7 @@ struct Font {
 	Glyph *glyphs;
 	SpriteSheetAnchor spritesheets;
 	FT_Face face;
+	FT_Stroker stroker;
 	long base_face_idx;
 	int base_size;
 	uint glyphs_allocated;
@@ -181,7 +184,7 @@ static void init_fonts(void) {
 	globals.render_tex = r_texture_create(&(TextureParams) {
 		.filter = { TEX_FILTER_LINEAR, TEX_FILTER_LINEAR },
 		.wrap   = { TEX_WRAP_CLAMP, TEX_WRAP_CLAMP },
-		.type   = TEX_TYPE_R,
+		.type   = TEX_TYPE_RGBA,
 		.stream = true,
 		.width  = 1024,
 		.height = 1024,
@@ -312,6 +315,13 @@ static FT_Error set_font_size(Font *fnt, uint pxsize, double scale) {
 		return err;
 	}
 
+	if((err = FT_Stroker_New(globals.lib, &fnt->stroker))) {
+		log_warn("FT_Stroker_New() failed: %s", ft_error_str(err));
+		return err;
+	}
+
+	FT_Stroker_Set(fnt->stroker, FT_MulFix(1 * 64, fixed_scale), FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
+
 	// Based on SDL_ttf
 	FT_Face face = fnt->face;
 	fixed_scale = face->size->metrics.y_scale;
@@ -335,7 +345,7 @@ static SpriteSheet* add_spritesheet(Font *font, SpriteSheetAnchor *spritesheets)
 	ss->tex = r_texture_create(&(TextureParams) {
 		.width = SS_WIDTH,
 		.height = SS_HEIGHT,
-		.type = TEX_TYPE_R,
+		.type = TEX_TYPE_RGB_8,
 		.filter.mag = TEX_FILTER_LINEAR,
 		.filter.min = TEX_FILTER_LINEAR,
 		.wrap.s = TEX_WRAP_CLAMP,
@@ -358,9 +368,9 @@ static SpriteSheet* add_spritesheet(Font *font, SpriteSheetAnchor *spritesheets)
 // The padding is needed to prevent glyph edges from bleeding in due to linear filtering.
 #define GLYPH_SPRITE_PADDING 1
 
-static bool add_glyph_to_spritesheet(Font *font, Glyph *glyph, FT_Bitmap bitmap, SpriteSheet *ss) {
-	uint padded_w = bitmap.width + 2 * GLYPH_SPRITE_PADDING;
-	uint padded_h = bitmap.rows + 2 * GLYPH_SPRITE_PADDING;
+static bool add_glyph_to_spritesheet(Font *font, Sprite *sprite, Pixmap *pixmap, SpriteSheet *ss) {
+	uint padded_w = pixmap->width + 2 * GLYPH_SPRITE_PADDING;
+	uint padded_h = pixmap->height + 2 * GLYPH_SPRITE_PADDING;
 	Rect sprite_pos;
 
 	if(!rectpack_add(ss->rectpack, padded_w, padded_h, &sprite_pos)) {
@@ -371,44 +381,37 @@ static bool add_glyph_to_spritesheet(Font *font, Glyph *glyph, FT_Bitmap bitmap,
 	sprite_pos.bottom_right += ofs;
 	sprite_pos.top_left += ofs;
 
-	Pixmap glyph_px;
-	glyph_px.format = PIXMAP_FORMAT_R8;
-	glyph_px.width = bitmap.width;
-	glyph_px.height = bitmap.rows;
-	glyph_px.origin = PIXMAP_ORIGIN_TOPLEFT;
-	glyph_px.data.untyped = bitmap.buffer;
-
 	r_texture_fill_region(
 		ss->tex,
 		0,
 		rect_x(sprite_pos),
 		rect_y(sprite_pos),
-		&glyph_px
+		pixmap
 	);
 
-	glyph->sprite.tex = ss->tex;
-	glyph->sprite.w = glyph->metrics.width; // bitmap.width / font->scale;
-	glyph->sprite.h = glyph->metrics.height; // bitmap.rows / font->scale;
-	glyph->sprite.tex_area.x = rect_x(sprite_pos);
-	glyph->sprite.tex_area.y = rect_y(sprite_pos);
-	glyph->sprite.tex_area.w = bitmap.width;
-	glyph->sprite.tex_area.h = bitmap.rows;
+	sprite->tex = ss->tex;
+	sprite->w = pixmap->width;
+	sprite->h = pixmap->height;
+	sprite->tex_area.x = rect_x(sprite_pos);
+	sprite->tex_area.y = rect_y(sprite_pos);
+	sprite->tex_area.w = pixmap->width;
+	sprite->tex_area.h = pixmap->height;
 
 	++ss->glyphs;
 
 	return true;
 }
 
-static bool add_glyph_to_spritesheets(Font *font, Glyph *glyph, FT_Bitmap bitmap, SpriteSheetAnchor *spritesheets) {
+static bool add_glyph_to_spritesheets(Font *font, Sprite *sprite, Pixmap *pixmap, SpriteSheetAnchor *spritesheets) {
 	bool result;
 
 	for(SpriteSheet *ss = spritesheets->first; ss; ss = ss->next) {
-		if((result = add_glyph_to_spritesheet(font, glyph, bitmap, ss))) {
+		if((result = add_glyph_to_spritesheet(font, sprite, pixmap, ss))) {
 			return result;
 		}
 	}
 
-	return add_glyph_to_spritesheet(font, glyph, bitmap, add_spritesheet(font, spritesheets));
+	return add_glyph_to_spritesheet(font, sprite, pixmap, add_spritesheet(font, spritesheets));
 }
 
 static const char *const pixmode_name(FT_Pixel_Mode mode) {
@@ -442,7 +445,7 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 
 	Glyph *glyph = font->glyphs + font->glyphs_used - 1;
 
-	FT_Error err = FT_Load_Glyph(font->face, gindex, FT_LOAD_RENDER | FT_LOAD_TARGET_LIGHT);
+	FT_Error err = FT_Load_Glyph(font->face, gindex, FT_LOAD_NO_BITMAP | FT_LOAD_TARGET_LIGHT);
 
 	if(err) {
 		log_warn("FT_Load_Glyph(%u) failed: %s", gindex, ft_error_str(err));
@@ -456,34 +459,152 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 	glyph->metrics.height = FT_CEIL(font->face->glyph->metrics.height);
 	glyph->metrics.advance = FT_CEIL(font->face->glyph->metrics.horiAdvance);
 
-	if(font->face->glyph->bitmap.buffer == NULL) {
+	FT_Glyph g_src = NULL, g_fill = NULL, g_border = NULL, g_inner = NULL;
+	FT_BitmapGlyph g_bm_fill = NULL, g_bm_border = NULL, g_bm_inner = NULL;
+	FT_Get_Glyph(font->face->glyph, &g_src);
+	FT_Glyph_Copy(g_src, &g_fill);
+	FT_Glyph_Copy(g_src, &g_border);
+	FT_Glyph_Copy(g_src, &g_inner);
+
+	assert(g_src->format == FT_GLYPH_FORMAT_OUTLINE);
+
+	bool have_bitmap = FT_Glyph_To_Bitmap(&g_fill, FT_RENDER_MODE_LIGHT, NULL, true) == FT_Err_Ok;
+
+	if(have_bitmap) {
+		have_bitmap = ((FT_BitmapGlyph)g_fill)->bitmap.width > 0;
+	}
+
+	if(!have_bitmap) {
 		// Some glyphs may be invisible, but we still need the metrics data for them (e.g. space)
 		memset(&glyph->sprite, 0, sizeof(Sprite));
 	} else {
-		if(font->face->glyph->bitmap.pixel_mode != FT_PIXEL_MODE_GRAY) {
+		FT_Glyph_StrokeBorder(&g_border, font->stroker, false, true);
+		FT_Glyph_To_Bitmap(&g_border, FT_RENDER_MODE_LIGHT, NULL, true);
+
+		FT_Glyph_StrokeBorder(&g_inner, font->stroker, true, true);
+		FT_Glyph_To_Bitmap(&g_inner, FT_RENDER_MODE_LIGHT, NULL, true);
+
+		g_bm_fill = (FT_BitmapGlyph)g_fill;
+		g_bm_border = (FT_BitmapGlyph)g_border;
+		g_bm_inner = (FT_BitmapGlyph)g_inner;
+
+		if(
+			g_bm_fill->bitmap.pixel_mode != FT_PIXEL_MODE_GRAY ||
+			g_bm_border->bitmap.pixel_mode != FT_PIXEL_MODE_GRAY ||
+			g_bm_inner->bitmap.pixel_mode != FT_PIXEL_MODE_GRAY
+		) {
 			log_warn(
 				"Glyph %u returned bitmap with pixel format %s. Only %s is supported, sorry. Ignoring",
 				gindex,
-				pixmode_name(font->face->glyph->bitmap.pixel_mode),
+				pixmode_name(g_bm_fill->bitmap.pixel_mode),
 				pixmode_name(FT_PIXEL_MODE_GRAY)
 			);
+
+			FT_Done_Glyph(g_src);
+			FT_Done_Glyph(g_fill);
+			FT_Done_Glyph(g_border);
+			FT_Done_Glyph(g_inner);
 			--font->glyphs_used;
 			return NULL;
 		}
 
-		if(!add_glyph_to_spritesheets(font, glyph, font->face->glyph->bitmap, spritesheets)) {
+		Pixmap px;
+		px.origin = PIXMAP_ORIGIN_TOPLEFT;
+		px.format = PIXMAP_FORMAT_RGB8;
+		px.width = imax(g_bm_fill->bitmap.width, imax(g_bm_border->bitmap.width, g_bm_inner->bitmap.width));
+		px.height = imax(g_bm_fill->bitmap.rows, imax(g_bm_border->bitmap.rows, g_bm_inner->bitmap.rows));
+		px.data.rg8 = pixmap_alloc_buffer_for_copy(&px);
+
+		log_debug(
+			"(%i %i) (%i %i) (%i %i)",
+			g_bm_fill->top,
+			g_bm_fill->left,
+			g_bm_border->top,
+			g_bm_border->left,
+			g_bm_inner->top,
+			g_bm_inner->left
+		);
+
+		int ref_left = g_bm_border->left;
+		int ref_top = g_bm_border->top;
+
+		ssize_t fill_ofs_x   =  (g_bm_fill->left    - ref_left);
+		ssize_t fill_ofs_y   = -(g_bm_fill->top    - ref_top);
+		ssize_t border_ofs_x =  (g_bm_border->left - ref_left);
+		ssize_t border_ofs_y = -(g_bm_border->top  - ref_top);
+		ssize_t inner_ofs_x  =  (g_bm_inner->left  - ref_left);
+		ssize_t inner_ofs_y  = -(g_bm_inner->top   - ref_top);
+
+		for(ssize_t x = 0; x < px.width; ++x) {
+			for(ssize_t y = 0; y < px.height; ++y) {
+				PixelRGB8 *p = px.data.rgb8 + (x + y * px.width);
+
+				ssize_t fill_coord_x = x - fill_ofs_x;
+				ssize_t fill_coord_y = y - fill_ofs_y;
+				ssize_t border_coord_x = x - border_ofs_x;
+				ssize_t border_coord_y = y - border_ofs_y;
+				ssize_t inner_coord_x = x - inner_ofs_x;
+				ssize_t inner_coord_y = y - inner_ofs_y;
+
+				ssize_t fill_index = fill_coord_x + fill_coord_y * g_bm_fill->bitmap.pitch;
+				ssize_t border_index = border_coord_x + border_coord_y * g_bm_border->bitmap.pitch;
+				ssize_t inner_index = inner_coord_x + inner_coord_y * g_bm_inner->bitmap.pitch;
+
+				if(
+					fill_coord_x >= 0 && fill_coord_x < g_bm_fill->bitmap.width &&
+					fill_coord_y >= 0 && fill_coord_y < g_bm_fill->bitmap.rows
+				) {
+					p->r = g_bm_fill->bitmap.buffer[fill_index];
+				} else {
+					p->r = 0;
+				}
+
+				if(
+					border_coord_x >= 0 && border_coord_x < g_bm_border->bitmap.width &&
+					border_coord_y >= 0 && border_coord_y < g_bm_border->bitmap.rows
+				) {
+					p->g = g_bm_border->bitmap.buffer[border_index];
+				} else {
+					p->g = 0;
+				}
+
+				if(
+					inner_coord_x >= 0 && inner_coord_x < g_bm_inner->bitmap.width &&
+					inner_coord_y >= 0 && inner_coord_y < g_bm_inner->bitmap.rows
+				) {
+					p->b = g_bm_inner->bitmap.buffer[inner_index];
+				} else {
+					p->b = 0;
+				}
+			}
+		}
+
+		if(!add_glyph_to_spritesheets(font, &glyph->sprite, &px, spritesheets)) {
 			log_warn(
-				"Glyph %u can't fit into any spritesheets (padded bitmap size: %ux%u; max spritesheet size: %ux%u)",
+				"Glyph %u fill can't fit into any spritesheets (padded bitmap size: %zux%zu; max spritesheet size: %ux%u)",
 				gindex,
-				font->face->glyph->bitmap.width + 2 * GLYPH_SPRITE_PADDING,
-				font->face->glyph->bitmap.rows  + 2 * GLYPH_SPRITE_PADDING,
+				px.width + 2 * GLYPH_SPRITE_PADDING,
+				px.height + 2 * GLYPH_SPRITE_PADDING,
 				SS_WIDTH,
 				SS_HEIGHT
 			);
+
+			free(px.data.rg8);
+			FT_Done_Glyph(g_src);
+			FT_Done_Glyph(g_fill);
+			FT_Done_Glyph(g_border);
+			FT_Done_Glyph(g_inner);
 			--font->glyphs_used;
 			return NULL;
 		}
+
+		free(px.data.rg8);
 	}
+
+	FT_Done_Glyph(g_src);
+	FT_Done_Glyph(g_fill);
+	FT_Done_Glyph(g_border);
+	FT_Done_Glyph(g_inner);
 
 	glyph->ft_index = gindex;
 	return glyph;
@@ -535,6 +656,10 @@ static void free_font_resources(Font *font) {
 			free(stream->pathname.pointer);
 			free(stream);
 		}
+	}
+
+	if(font->stroker) {
+		FT_Stroker_Done(font->stroker);
 	}
 
 	wipe_glyph_cache(font);
@@ -896,10 +1021,11 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 			x += apply_kerning(font, prev_glyph_idx, glyph);
 		}
 
+		sp.sprite_ptr = &glyph->sprite;
+
 		if(glyph->sprite.tex != NULL) {
-			sp.sprite_ptr = &glyph->sprite;
-			sp.pos.x = x + glyph->metrics.bearing_x + glyph->sprite.w * 0.5;
-			sp.pos.y = y - glyph->metrics.bearing_y + glyph->sprite.h * 0.5 - font->metrics.descent;
+			sp.pos.x = x + glyph->metrics.bearing_x + sp.sprite_ptr->w * 0.5;
+			sp.pos.y = y - glyph->metrics.bearing_y + sp.sprite_ptr->h * 0.5 - font->metrics.descent;
 
 			// HACK/FIXME: Glyphs have their sprite w/h unadjusted for scale.
 			// We have to temporarily fix that up here so that the shader gets resolution-independent dimensions.
