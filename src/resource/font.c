@@ -837,6 +837,9 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 	double x_orig = x;
 	adjust_xpos(font, text, params->align, x_orig, &x);
 
+	// bbox.y.max = imax(bbox.y.max, font->metrics.ascent);
+	// bbox.y.min = imin(bbox.y.min, font->metrics.descent);
+
 	double bbox_w = bbox.x.max - bbox.x.min;
 	double bbox_h = bbox.y.max - bbox.y.min;
 
@@ -858,7 +861,6 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 
 	r_mat_mode(MM_TEXTURE);
 	r_mat_push();
-	r_mat_translate(0, 0.0, 0);
 	r_mat_scale(1/bbox_w, 1/bbox_h, 1.0);
 	r_mat_translate(-bbox.x.min - (x - x_orig), -bbox.y.min + font->metrics.descent, 0);
 
@@ -913,7 +915,7 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 			r_mat_translate(-0.5, -0.5, 0);
 
 			if(params->glyph_callback.func != NULL) {
-				params->glyph_callback.func(font, uchar, &sp, params->glyph_callback.userdata);
+				x += params->glyph_callback.func(font, uchar, &sp, params->glyph_callback.userdata);
 			}
 
 			r_draw_sprite(&sp);

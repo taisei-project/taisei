@@ -836,17 +836,7 @@ struct glyphcb_state {
 	Color *color;
 };
 
-static void draw_powerval_callback(Font *font, charcode_t charcode, SpriteParams *spr_params, void *userdata) {
-	struct glyphcb_state *st = userdata;
-
-	if(charcode == '.') {
-		st->color = &stagedraw.hud_text.color.inactive;
-	}
-
-	spr_params->color = st->color;
-}
-
-static void draw_numeric_callback(Font *font, charcode_t charcode, SpriteParams *spr_params, void *userdata) {
+static int draw_numeric_callback(Font *font, charcode_t charcode, SpriteParams *spr_params, void *userdata) {
 	struct glyphcb_state *st = userdata;
 
 	if(charcode != '0') {
@@ -854,19 +844,21 @@ static void draw_numeric_callback(Font *font, charcode_t charcode, SpriteParams 
 	}
 
 	spr_params->color = st->color;
+	return 0;
 }
 
-static inline void stage_draw_hud_power_value(float ypos, char *buf, size_t bufsize) {
-	snprintf(buf, bufsize, "%i.%02i", global.plr.power / 100, global.plr.power % 100);
-	text_draw(buf, &(TextParams) {
-		.pos = { 170, ypos },
-		.font = "mono",
-		.align = ALIGN_RIGHT,
-		.glyph_callback = {
-			draw_powerval_callback,
-			&(struct glyphcb_state) { &stagedraw.hud_text.color.active },
-		}
-	});
+static inline void stage_draw_hud_power_value(float ypos) {
+	draw_fraction(
+		global.plr.power / 100.0,
+		ALIGN_RIGHT,
+		170,
+		ypos,
+		get_font("mono"),
+		get_font("monosmall"),
+		&stagedraw.hud_text.color.active,
+		&stagedraw.hud_text.color.inactive,
+		false
+	);
 }
 
 static void stage_draw_hud_score(Alignment a, float xpos, float ypos, char *buf, size_t bufsize, uint32_t score) {
@@ -983,7 +975,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	}
 
 	// Power value
-	stage_draw_hud_power_value(labels->y.power + labels->y.mono_ofs, buf, sizeof(buf));
+	stage_draw_hud_power_value(labels->y.power + labels->y.mono_ofs);
 
 	// Graze value
 	snprintf(buf, sizeof(buf), "%05i", global.plr.graze);

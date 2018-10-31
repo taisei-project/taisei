@@ -101,6 +101,72 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 	r_shader_ptr(prog_saved);
 }
 
+static int draw_fraction_callback(Font *font, charcode_t charcode, SpriteParams *spr_params, void *userdata) {
+	// Sorry, this is the least horrible hack i could think of.
+	// Drawing the dot separately looks awful with the HUD shader because of how
+	// the overlay texture coords are calculated - which is some witchcraft by
+	// the way. I don't remember how and what and why I did there.
+	//
+	// The turn value here gets added to this character's advance metric.
+
+	if(charcode == '.') {
+		return -font_get_char_metrics(font, charcode)->advance / 3;
+	}
+
+	return 0;
+}
+
+double draw_fraction(double value, Alignment a, double pos_x, double pos_y, Font *f_int, Font *f_fract, const Color *c_int, const Color *c_fract, bool zero_pad) {
+	double val_int, val_fract;
+	char buf_int[4], buf_fract[4];
+	val_fract = modf(value, &val_int);
+
+	snprintf(buf_int, sizeof(buf_int), zero_pad ? "%02i" : "%i", (int)val_int);
+	snprintf(buf_fract, sizeof(buf_fract), ".%02i", (int)floor(val_fract * 100));
+
+	double w_int = zero_pad || val_int > 9 ? text_width(f_int, "99", 0) : text_width(f_int, "9", 0);
+	double w_fract = text_width(f_fract, "99", 0);
+	double w_total = w_int + (w_fract * (1 + 1/6.0));
+
+	switch(a) {
+		case ALIGN_CENTER:
+			pos_x -= w_total * 0.5;
+			break;
+
+		case ALIGN_RIGHT:
+			pos_x -= w_total;
+			break;
+
+		case ALIGN_LEFT:
+			break;
+
+		default: UNREACHABLE;
+	}
+
+	double ofs_int = font_get_metrics(f_int)->descent / font_get_metrics(f_int)->scale;
+	double ofs_fract = font_get_metrics(f_fract)->descent / font_get_metrics(f_fract)->scale - ofs_int;
+	ofs_int = 0;
+
+	text_draw(buf_int, &(TextParams) {
+		.pos = { pos_x, pos_y + ofs_int },
+		.color = c_int,
+		.font_ptr = f_int,
+		.align = ALIGN_LEFT,
+	});
+
+	pos_x += w_int - w_fract / 6;
+
+	pos_x += text_draw(buf_fract, &(TextParams) {
+		.pos = { pos_x, pos_y + ofs_fract },
+		.color = c_fract,
+		.font_ptr = f_fract,
+		.align = ALIGN_LEFT,
+		.glyph_callback = { draw_fraction_callback, NULL },
+	});
+
+	return pos_x;
+}
+
 void draw_framebuffer_attachment(Framebuffer *fb, double width, double height, FramebufferAttachment attachment) {
 	CullFaceMode cull_saved = r_cull_current();
 	r_cull(CULL_BACK);

@@ -52,7 +52,7 @@ typedef struct BBox {
 	} y;
 } BBox;
 
-typedef void (*GlyphDrawCallback)(Font *font, charcode_t charcode, SpriteParams *spr_params, void *userdata);
+typedef int (*GlyphDrawCallback)(Font *font, charcode_t charcode, SpriteParams *spr_params, void *userdata);
 
 typedef struct TextParams {
 	const char *font;

@@ -48,23 +48,14 @@ Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 	return buf;
 }
 
-void draw_boss_text(Alignment align, float x, float y, const char *text, const char *fnt, const Color *clr) {
-	ShaderProgram *sh_prev = r_shader_current();
-	r_shader("text_default");
-	text_draw(text, &(TextParams) {
-		.pos = { x + 1, y + 1 },
-		.color = RGBA(0, 0, 0, clr->a),
-		.font = fnt,
-		.align = align,
-	});
-
-	text_draw(text, &(TextParams) {
+static double draw_boss_text(Alignment align, float x, float y, const char *text, Font *fnt, const Color *clr) {
+	return text_draw(text, &(TextParams) {
+		.shader = "text_overlay",
 		.pos = { x, y },
 		.color = clr,
-		.font = fnt,
+		.font_ptr = fnt,
 		.align = align,
 	});
-	r_shader_ptr(sh_prev);
 }
 
 void draw_extraspell_bg(Boss *boss, int time) {
@@ -341,16 +332,18 @@ static void draw_linear_healthbar(Boss *boss) {
 }
 
 static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
+	Font *font = get_font("standard");
 	complex x0 = VIEWPORT_W/2+I*VIEWPORT_H/3.5;
 	float f = clamp((time - 40.0) / 60.0, 0, 1);
 	float f2 = clamp(time / 80.0, 0, 1);
-	float y_offset = healthbar_radial * -15;
-	complex x = x0 + ((VIEWPORT_W - 10) + I*(35 + y_offset) - x0) * f*(f+1)*0.5;
-	int strw = text_width(get_font("standard"), b->current->name, 0);
+	float y_offset = 26 + healthbar_radial * -15;
+	float y_text_offset = 5 - font_get_metrics(font)->descent;
+	complex x = x0 + ((VIEWPORT_W - 10) + I*(y_offset + y_text_offset) - x0) * f*(f+1)*0.5;
+	int strw = text_width(font, b->current->name, 0);
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = "spell",
-		.pos = { (VIEWPORT_W - 128) * (1 - pow(1 - f2, 5)) -256 * pow(1 - f2, 2), 26 + y_offset },
+		.pos = { (VIEWPORT_W - 128) * (1 - pow(1 - f2, 5)) -256 * pow(1 - f2, 2), y_offset },
 		.color = RGBA(f2, f2, f2, f2 * f2 * 0.5),
 		.scale.both = 3 - 2 * (1 - pow(1 - f2, 3)),
 	});
@@ -363,7 +356,7 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	float scale = f+1.*(1-f)*(1-f)*(1-f);
 	r_mat_scale(scale,scale,1);
 	r_mat_rotate_deg(360*f,1,1,0);
-	draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, b->current->name, "standard", RGB(1, 1, 1));
+	draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, b->current->name, font, RGB(1, 1, 1));
 	r_mat_pop();
 
 	r_capability(RCAP_CULL_FACE, cullcap_saved);
@@ -379,8 +372,8 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 
 		draw_boss_text(ALIGN_RIGHT,
 			(VIEWPORT_W - 10) + (text_width(font, buf, 0) + 10) * pow(1 - a, 2),
-			35 + text_height(font, buf, 0) + y_offset,
-			buf, "small", RGBA(1, 1, 1, a)
+			text_height(font, buf, 0) + y_offset + y_text_offset,
+			buf, font, RGBA(1, 1, 1, a)
 		);
 	}
 }
@@ -514,33 +507,46 @@ void draw_boss_hud(Boss *boss) {
 		return;
 	}
 
-	draw_boss_text(ALIGN_LEFT, 10, 20 + 8 * !radial_style, boss->name, "standard", RGB(1, 1, 1));
+	draw_boss_text(ALIGN_LEFT, 10, 20 + 8 * !radial_style, boss->name, get_font("standard"), RGB(1, 1, 1));
 
 	if(ATTACK_IS_SPELL(boss->current->type)) {
 		draw_spell_name(boss, global.frames - boss->current->starttime, radial_style);
 	}
 
 	if(boss->current->type != AT_Move && boss->current->type != AT_Immediate) {
-		char buf[16];
-		float remaining = max(0, (boss->current->timeout - global.frames + boss->current->starttime)/(float)FPS);
-		Color textclr;
+		double remaining = clamp((boss->current->timeout - global.frames + boss->current->starttime)/(double)FPS, 0, 99.99);
+		Color clr_int, clr_fract;
 
 		if(remaining < 6) {
-			textclr = *RGB(1.0, 0.2, 0.2);
+			clr_int = *RGB(1.0, 0.2, 0.2);
 		} else if(remaining < 11) {
-			textclr = *RGB(1.0, 1.0, 0.2);
+			clr_int = *RGB(1.0, 1.0, 0.2);
 		} else {
-			textclr = *RGB(1.0, 1.0, 1.0);
+			clr_int = *RGB(1.0, 1.0, 1.0);
 		}
 
-		snprintf(buf, sizeof(buf),  "%.2f", remaining);
+		clr_fract = *RGBA(clr_int.r * 0.5, clr_int.g * 0.5, clr_int.b * 0.5, clr_int.a);
+
+		Font *f_int = get_font("mono");
+		Font *f_fract = get_font("monosmall");
+		double pos_x, pos_y;
+
+		Alignment align;
 
 		if(radial_style) {
-			draw_boss_text(ALIGN_CENTER, VIEWPORT_W/2, 42, buf, "standard", &textclr);
+			// pos_x = (VIEWPORT_W - w_total) * 0.5;
+			pos_x = VIEWPORT_W / 2;
+			pos_y = 64;
+			align = ALIGN_CENTER;
 		} else {
-			draw_boss_text(ALIGN_CENTER, VIEWPORT_W - 24, 10, buf, "standard", &textclr);
+			// pos_x = VIEWPORT_W - w_total - 10;
+			pos_x = VIEWPORT_W - 10;
+			pos_y = 12;
+			align = ALIGN_RIGHT;
 		}
 
+		r_shader("text_overlay");
+		draw_fraction(remaining, align, pos_x, pos_y, f_int, f_fract, &clr_int, &clr_fract, true);
 		r_shader("sprite_default");
 
 		// remaining spells

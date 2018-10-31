@@ -977,7 +977,7 @@ void draw_options_menu(MenuData *menu) {
 						h = m->height;
 					}
 
-					snprintf(tmp, 16, "%d×%d", w, h);
+					snprintf(tmp, 16, "%dx%d", w, h);
 					text_draw(tmp, &(TextParams) {
 						.pos = { origin, 20*i },
 						.align = ALIGN_RIGHT,
