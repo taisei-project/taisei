@@ -355,12 +355,15 @@ static void credits_draw(void) {
 	r_color4(0, 0, 0, credits.panelalpha * 0.7);
 	r_mat_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
 	r_mat_scale(300, SCREEN_H, 1);
+	r_shader_standard_notex();
 	r_draw_quad();
 	r_color4(1, 1, 1, 1);
 	r_mat_pop();
 
 	r_mat_push();
 	r_mat_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
+
+	r_shader_standard();
 
 	for(int i = 0; i < credits.ecount; ++i) {
 		credits_draw_entry(&(credits.entries[i]));
