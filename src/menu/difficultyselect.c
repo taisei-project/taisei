@@ -40,9 +40,9 @@ void create_difficulty_menu(MenuData *m) {
 	m->flags = MF_Transient | MF_Abortable;
 
 	add_menu_entry(m, "“All those bullets confuse me!”\nYou will be stuck here forever", set_difficulty, (void *)D_Easy);
-	add_menu_entry(m, "“So this isn’t about shooting things?”\nSomewhat challenging", set_difficulty, (void *)D_Normal);
-	add_menu_entry(m, "“Why can’t I beat this?”\nActually challenging", set_difficulty, (void *)D_Hard);
-	add_menu_entry(m, "“What is pain?”\nAsian mode", set_difficulty, (void *)D_Lunatic);
+	add_menu_entry(m, "“So it's not just about shooting stuff?”\nSomewhat challenging", set_difficulty, (void *)D_Normal);
+	add_menu_entry(m, "“Pain is my ally!”\nActually challenging", set_difficulty, (void *)D_Hard);
+	add_menu_entry(m, "“I have no fear.”\nWe never playtested this one", set_difficulty, (void *)D_Lunatic);
 
 	for(int i = 0; i < m->ecount; ++i) {
 		Difficulty d = (Difficulty)(uintptr_t)m->entries[i].arg;

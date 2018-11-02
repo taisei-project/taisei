@@ -69,13 +69,6 @@ static void credits_fill(void) {
 	), ENTRY_TIME);
 
 	credits_add((
-		"InsideI\n"
-		"Mikhail Novik\n"
-		"Bandcamp: https://is.gd/owojix\n\n"
-		"Sound effects"
-	), ENTRY_TIME);
-
-	credits_add((
 		"Lalasa\n"
 		"Ola Kruzel\n"
 		"okruzel@comcast.net\n"
@@ -113,6 +106,13 @@ static void credits_fill(void) {
 		"ZUN\n"
 		"for Tōhō Project\n"
 		"http://www16.big.or.jp/~zun/"
+	), ENTRY_TIME);
+
+	credits_add((
+		"InsideI\n"
+		"Mikhail Novik\n"
+		"Bandcamp: https://is.gd/owojix\n\n"
+		"Various sound effects"
 	), ENTRY_TIME);
 
 	credits_add((

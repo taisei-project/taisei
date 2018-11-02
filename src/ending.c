@@ -160,9 +160,6 @@ static void create_ending(Ending *e) {
 		add_ending_entry(e, 400, "Sorry, extra stage isn’t done yet. ^^", NULL);
 	}
 
-	if(global.diff == D_Lunatic)
-		add_ending_entry(e, 400, "Lunatic? Nice! Be sure to upload it somewhere including a commentary of your agony. We are into that kind of- I mean it helps with balancing! Did you know the devs can only play Easy and Normal? I’m sure you had a lot of fun with creative patterns such as Natural Cathode or ToE or whatever happens in Stage 4. Anyways catch ya laterr...", NULL);
-
 	add_ending_entry(e, 400, "", NULL); // this is important
 	e->duration = 1<<23;
 }

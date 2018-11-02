@@ -21,7 +21,8 @@ static void dialog_reimu_stage1_pre_boss(Dialog *d) {
 }
 
 static void dialog_reimu_stage1_post_boss(Dialog *d) {
-	M(Left, "A~ah, it’s snowing during springtime. It’s actually a bit pretty to look at.");
+	M(Left, "A~ah, what a sight! It’s snowing during springtime.");
+	M(Left, "A little too cold for my taste, though. I'd rather get going.");
 }
 
 static void dialog_reimu_stage2_pre_boss(Dialog *d) {
