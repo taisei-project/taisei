@@ -170,7 +170,13 @@ static void update_healthbar(Boss *boss) {
 	float target_fill = 0.0;
 	float target_altfill = 0.0;
 
-	if(boss_is_dying(boss) || boss_is_fleeing(boss)) {
+	if(
+		boss_is_dying(boss) ||
+		boss_is_fleeing(boss) ||
+		!boss->current ||
+		boss->current->type == AT_Move ||
+		global.dialog
+	) {
 		target_opacity = 0.0;
 	}
 
@@ -282,6 +288,30 @@ static void update_healthbar(Boss *boss) {
 
 static void update_hud(Boss *boss) {
 	update_healthbar(boss);
+
+	float update_speed = 0.1;
+	float target_opacity = 1.0;
+	float target_spell_opacity = 1.0;
+
+	if(boss_is_dying(boss) || boss_is_fleeing(boss)) {
+		update_speed *= 0.25;
+		target_opacity = 0.0;
+	}
+
+	if(!boss->current || boss->current->type == AT_Move || global.dialog) {
+		target_opacity = 0.0;
+	}
+
+	if(!boss->current || !ATTACK_IS_SPELL(boss->current->type) || boss->current->finished) {
+		target_spell_opacity = 0.0;
+	}
+
+	if(cimag(global.plr.pos) < 128) {
+		target_opacity *= 0.25;
+	}
+
+	boss->hud.global_opacity += (target_opacity - boss->hud.global_opacity) * update_speed;
+	boss->hud.spell_opacity += (target_spell_opacity - boss->hud.spell_opacity) * update_speed;
 }
 
 static void draw_radial_healthbar(Boss *boss) {
@@ -307,7 +337,9 @@ static void draw_radial_healthbar(Boss *boss) {
 }
 
 static void draw_linear_healthbar(Boss *boss) {
-	if(boss->healthbar.opacity == 0) {
+	float opacity = boss->healthbar.opacity * boss->hud.global_opacity;
+
+	if(opacity == 0) {
 		return;
 	}
 
@@ -325,7 +357,7 @@ static void draw_linear_healthbar(Boss *boss) {
 	r_uniform_vec4_rgba("altFillColor",  &boss->healthbar.fill_altcolor);
 	r_uniform_vec4_rgba("coreFillColor", RGBA(0.8, 0.8, 0.8, 0.5));
 	r_uniform_vec2("fill", boss->healthbar.fill_total, boss->healthbar.fill_alt);
-	r_uniform_float("opacity", boss->healthbar.opacity);
+	r_uniform_float("opacity", opacity);
 	r_draw_quad();
 	r_mat_pop();
 	r_state_pop();
@@ -340,11 +372,14 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	float y_text_offset = 5 - font_get_metrics(font)->descent;
 	complex x = x0 + ((VIEWPORT_W - 10) + I*(y_offset + y_text_offset) - x0) * f*(f+1)*0.5;
 	int strw = text_width(font, b->current->name, 0);
+	float opacity = b->hud.spell_opacity * b->hud.global_opacity;
+
+	log_debug("%f %f", b->hud.spell_opacity, b->hud.global_opacity);
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = "spell",
 		.pos = { (VIEWPORT_W - 128) * (1 - pow(1 - f2, 5)) -256 * pow(1 - f2, 2), y_offset },
-		.color = RGBA(f2, f2, f2, f2 * f2 * 0.5),
+		.color = color_mul_scalar(RGBA(1, 1, 1, f2 * 0.5), opacity * f2) ,
 		.scale.both = 3 - 2 * (1 - pow(1 - f2, 3)),
 	});
 
@@ -356,7 +391,7 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	float scale = f+1.*(1-f)*(1-f)*(1-f);
 	r_mat_scale(scale,scale,1);
 	r_mat_rotate_deg(360*f,1,1,0);
-	draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, b->current->name, font, RGB(1, 1, 1));
+	draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, b->current->name, font, color_mul_scalar(RGBA(1, 1, 1, 1), opacity));
 	r_mat_pop();
 
 	r_capability(RCAP_CULL_FACE, cullcap_saved);
@@ -373,7 +408,7 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 		draw_boss_text(ALIGN_RIGHT,
 			(VIEWPORT_W - 10) + (text_width(font, buf, 0) + 10) * pow(1 - a, 2),
 			text_height(font, buf, 0) + y_offset + y_text_offset,
-			buf, font, RGBA(1, 1, 1, a)
+			buf, font, color_mul_scalar(RGBA(1, 1, 1, 1), a * opacity)
 		);
 	}
 }
@@ -507,13 +542,15 @@ void draw_boss_hud(Boss *boss) {
 		return;
 	}
 
-	draw_boss_text(ALIGN_LEFT, 10, 20 + 8 * !radial_style, boss->name, get_font("standard"), RGB(1, 1, 1));
+	float o = boss->hud.global_opacity;
 
-	if(ATTACK_IS_SPELL(boss->current->type)) {
-		draw_spell_name(boss, global.frames - boss->current->starttime, radial_style);
-	}
+	if(o > 0) {
+		draw_boss_text(ALIGN_LEFT, 10, 20 + 8 * !radial_style, boss->name, get_font("standard"), RGBA(o, o, o, o));
 
-	if(boss->current->type != AT_Move && boss->current->type != AT_Immediate) {
+		if(ATTACK_IS_SPELL(boss->current->type)) {
+			draw_spell_name(boss, global.frames - boss->current->starttime, radial_style);
+		}
+
 		double remaining = clamp((boss->current->timeout - global.frames + boss->current->starttime)/(double)FPS, 0, 99.99);
 		Color clr_int, clr_fract;
 
@@ -525,6 +562,7 @@ void draw_boss_hud(Boss *boss) {
 			clr_int = *RGB(1.0, 1.0, 1.0);
 		}
 
+		color_mul_scalar(&clr_int, o);
 		clr_fract = *RGBA(clr_int.r * 0.5, clr_int.g * 0.5, clr_int.b * 0.5, clr_int.a);
 
 		Font *f_int = get_font("mono");
@@ -550,7 +588,7 @@ void draw_boss_hud(Boss *boss) {
 		r_shader("sprite_default");
 
 		// remaining spells
-		r_color4(0.7, 0.7, 0.7, 0.7);
+		r_color4(0.7 * o, 0.7 * o, 0.7 * o, 0.7 * o);
 		Sprite *star = get_sprite("star");
 		float x = 10 + star->w * 0.5;
 		bool spell_found = false;

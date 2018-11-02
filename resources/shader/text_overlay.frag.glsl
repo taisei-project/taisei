@@ -13,7 +13,7 @@ void main(void) {
 
     vec4 border = vec4(vec3(0), 0.75 * outlines.g * clr.a);
     vec4 fill = clr * outlines.r;
-    vec4 highlight = vec4(vec3(0.25 * outlines.b), 0);
+    vec4 highlight = vec4(vec3(0.25 * outlines.b) * clr.a, 0);
 
     fragColor = alphaCompose(border, alphaCompose(fill, highlight));
 }

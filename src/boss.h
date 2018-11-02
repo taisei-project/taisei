@@ -138,7 +138,7 @@ typedef struct Boss {
 	struct {
 		float global_opacity;
 		float spell_opacity;
-	};
+	} hud;
 } Boss;
 
 Boss* create_boss(char *name, char *ani, char *dialog, complex pos) attr_nonnull(1, 2) attr_returns_nonnull;
