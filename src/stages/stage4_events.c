@@ -918,6 +918,7 @@ int kdanmaku_slave(Enemy *e, int t) {
 			if(cabs(p-global.plr.pos) > 60) {
 				PROJECTILE("thickrice", p, RGBA(1.0, 0.5, 0.5, 0.0), kdanmaku_proj,
 					.args = { 160, speed*0.5*cexp(2.0*I*M_PI*sin(245*t+i*i*3501)) },
+					.flags = PFLAG_NOSPAWNFLARE,
 				);
 
 				if(frand()<0.5) {

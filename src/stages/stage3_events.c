@@ -849,7 +849,7 @@ static int wriggle_spell_slave(Enemy *e, int time) {
 			.draw_rule = wriggle_slave_part_draw,
 			.timeout = 60,
 			.shader = "sprite_default",
-			.flags = PFLAG_NOCLEAR | PFLAG_NOCLEAREFFECT | PFLAG_NOCOLLISIONEFFECT | PFLAG_NOSPAWNZOOM,
+			.flags = PFLAG_NOCLEAR | PFLAG_NOCLEAREFFECT | PFLAG_NOCOLLISIONEFFECT | PFLAG_NOSPAWNEFFECTS,
 		);
 	}
 

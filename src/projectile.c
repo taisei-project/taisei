@@ -670,8 +670,8 @@ int asymptotic(Projectile *p, int t) { // v = a[0]*(a[1] + 1); a[1] -> 0
 	return 1;
 }
 
-static inline bool proj_uses_spawning_effect(Projectile *proj) {
-	if(proj->flags & PFLAG_NOSPAWNZOOM) {
+static inline bool proj_uses_spawning_effect(Projectile *proj, ProjFlags effect_flag) {
+	if((proj->flags & effect_flag) == effect_flag) {
 		return false;
 	}
 
@@ -685,7 +685,7 @@ static inline bool proj_uses_spawning_effect(Projectile *proj) {
 static float proj_spawn_effect_factor(Projectile *proj, int t) {
 	static const int maxt = 16;
 
-	if(t >= maxt || !proj_uses_spawning_effect(proj)) {
+	if(t >= maxt || !proj_uses_spawning_effect(proj, PFLAG_NOSPAWNFADE)) {
 		return 1;
 	}
 
@@ -792,7 +792,7 @@ Projectile* spawn_projectile_highlight_effect(Projectile *p) {
 }
 
 static Projectile* spawn_bullet_spawning_effect(Projectile *p) {
-	if(proj_uses_spawning_effect(p)) {
+	if(proj_uses_spawning_effect(p, PFLAG_NOSPAWNFLARE)) {
 		return spawn_projectile_highlight_effect(p);
 	}
 

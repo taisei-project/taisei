@@ -1098,7 +1098,7 @@ int broglie_charge(Projectile *p, int t) {
 						(1 + 2 * ((global.diff - 1) / (double)(D_Lunatic - 1))) * M_PI/11 + s_freq*10*I
 					},
 					.draw_rule = ProjNoDraw,
-					.flags = PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT | PFLAG_NOSPAWNZOOM,
+					.flags = PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT | PFLAG_NOSPAWNEFFECTS,
 					.type = FakeProj,
 				);
 			}
@@ -1500,7 +1500,7 @@ void elly_ricci(Boss *b, int t) {
 			complex pos = 0.5 * w/(float)c + fmod(w/(float)c*(i+0.5*_i),w) + (VIEWPORT_H+10)*I;
 
 			PROJECTILE("ball", pos, RGBA(0, 0, 0, 0), ricci_proj, { -v*I },
-				.flags = PFLAG_NOSPAWNZOOM | PFLAG_NOCLEAR | PFLAG_GRAZESPAM,
+				.flags = PFLAG_NOSPAWNEFFECTS | PFLAG_NOCLEAR | PFLAG_GRAZESPAM,
 				.max_viewport_dist = SAFE_RADIUS_MAX,
 			);
 		}

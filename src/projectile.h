@@ -44,7 +44,8 @@ typedef enum {
 } ProjType;
 
 typedef enum ProjFlags {
-	PFLAG_NOSPAWNZOOM = (1 << 2),
+	PFLAG_NOSPAWNFLARE = (1 << 0),
+	PFLAG_NOSPAWNFADE = (1 << 1),
 	PFLAG_NOGRAZE = (1 << 3),
 	PFLAG_NOCLEAR = (1 << 4),
 	PFLAG_NOCLEAREFFECT = (1 << 5),
@@ -53,6 +54,8 @@ typedef enum ProjFlags {
 	PFLAG_GRAZESPAM = (1 << 8),
 	PFLAG_NOREFLECT = (1 << 9),
 	PFLAG_REQUIREDPARTICLE = (1 << 10),
+
+	PFLAG_NOSPAWNEFFECTS = PFLAG_NOSPAWNFADE | PFLAG_NOSPAWNFLARE,
 } ProjFlags;
 
 // FIXME: prototype stuff awkwardly shoved in this header because of dependency cycles.
