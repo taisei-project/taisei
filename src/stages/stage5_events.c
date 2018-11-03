@@ -125,8 +125,9 @@ int stage5_limiter(Enemy *e, int t) {
 	e->pos += e->args[0];
 
 	FROM_TO_SND("shot1_loop", 0, 1200, 3) {
-		PROJECTILE("rice", e->pos, RGB(0.5,0.1,0.2), asymptotic, { 10*cexp(I*carg(global.plr.pos-e->pos)+0.2*I-0.1*I*(global.diff/4)+3.0*I/(_i+1)), 2 });
-		PROJECTILE("rice", e->pos, RGB(0.5,0.1,0.2), asymptotic, { 10*cexp(I*carg(global.plr.pos-e->pos)-0.2*I+0.1*I*(global.diff/4)-3.0*I/(_i+1)), 2 });
+		uint f = PFLAG_NOSPAWNFADE;
+		PROJECTILE("rice", e->pos, RGB(0.5,0.1,0.2), asymptotic, { 10*cexp(I*carg(global.plr.pos-e->pos)+0.2*I-0.1*I*(global.diff/4)+3.0*I/(_i+1)), 2 }, .flags = f);
+		PROJECTILE("rice", e->pos, RGB(0.5,0.1,0.2), asymptotic, { 10*cexp(I*carg(global.plr.pos-e->pos)-0.2*I+0.1*I*(global.diff/4)-3.0*I/(_i+1)), 2 }, .flags = f);
 	}
 
 	return 1;
