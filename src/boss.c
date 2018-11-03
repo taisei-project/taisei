@@ -551,7 +551,7 @@ void draw_boss_hud(Boss *boss) {
 			draw_spell_name(boss, global.frames - boss->current->starttime, radial_style);
 		}
 
-		double remaining = clamp((boss->current->timeout - global.frames + boss->current->starttime)/(double)FPS, 0, 99.99);
+		double remaining = clamp((boss->current->timeout - global.frames + boss->current->starttime)/(double)FPS, 0, 99.999);
 		Color clr_int, clr_fract;
 
 		if(remaining < 6) {
