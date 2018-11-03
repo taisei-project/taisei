@@ -131,7 +131,7 @@ static void gl33_texture_set(Texture *tex, uint mipmap, const Pixmap *image) {
 	GLTextureFormatTuple *fmt = prepare_pixmap(tex, image, &pix);
 	void *image_data = pix.data.untyped;
 
-	GLuint prev_pbo;
+	GLuint prev_pbo = 0;
 
 	gl33_bind_texture(tex, false);
 	gl33_sync_texunit(tex->binding_unit, false, true);
