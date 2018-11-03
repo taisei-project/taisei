@@ -247,6 +247,31 @@ int stage5_explosion(Enemy *e, int t) {
 	TIMER(&t)
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 5, Power, 5, Life, (int)creal(e->args[1]), NULL);
+
+		PARTICLE(
+			.sprite = "blast_huge_rays",
+			.color = color_add(RGBA(0, 0.2 + 0.5 * frand(), 0.5 + 0.5 * frand(), 0.0), RGBA(1, 1, 1, 0)),
+			.pos = e->pos,
+			.timeout = 60 + 10 * frand(),
+			.draw_rule = ScaleFade,
+			.args = { 0, 0, (0 + 3*I) * (1 + 0.2 * frand()) },
+			.angle = frand() * 2 * M_PI,
+			.layer = LAYER_PARTICLE_HIGH | 0x42,
+			.flags = PFLAG_REQUIREDPARTICLE,
+		);
+
+		PARTICLE(
+			.sprite = "blast_huge_halo",
+			.pos = e->pos,
+			.color = RGBA(0.3 * frand(), 0.3 * frand(), 1.0, 0),
+			.timeout = 200 + 24 * frand(),
+			.draw_rule = ScaleFade,
+			.args = { 0, 0, (0.25 + 2.5*I) * (1 + 0.2 * frand()) },
+			.layer = LAYER_PARTICLE_HIGH | 0x41,
+			.angle = frand() * 2 * M_PI,
+			.flags = PFLAG_REQUIREDPARTICLE,
+		);
+
 		play_sound("boom");
 		return 1;
 	}
