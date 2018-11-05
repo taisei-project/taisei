@@ -858,7 +858,7 @@ static int kdanmaku_proj(Projectile *p, int t) {
 		if(frand() < 0.5) {
 			Projectile *v = vapor_particle(p->pos, RGBA(0.6, 0.3, 1.0, 0.0));
 
-			if(frand() < 0.5) {
+			if(frand() < 0.4) {
 				v->flags |= PFLAG_REQUIREDPARTICLE;
 			}
 		}
