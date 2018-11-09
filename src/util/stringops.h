@@ -15,6 +15,7 @@
 #define UNICODE_UNKNOWN 0xFFFD
 #define UNICODE_BOM_NATIVE  0xFEFF
 #define UNICODE_BOM_SWAPPED 0xFFFE
+#define UNICODE_ELLIPSIS 0x2026
 
 #undef strlcat
 #define strlcat SDL_strlcat
@@ -44,8 +45,12 @@ char* strftimealloc(const char *fmt, const struct tm *timeinfo);
 
 uint32_t* ucs4chr(const uint32_t *ucs4, uint32_t chr);
 size_t ucs4len(const uint32_t *ucs4);
-uint32_t* utf8_to_ucs4(const char *utf8);
-char* ucs4_to_utf8(const uint32_t *ucs4);
+
+void utf8_to_ucs4(const char *utf8, size_t bufsize, uint32_t buf[bufsize]) attr_nonnull(1, 3);
+uint32_t* utf8_to_ucs4_alloc(const char *utf8) attr_nonnull(1) attr_returns_nonnull attr_nodiscard;
+
+void ucs4_to_utf8(const uint32_t *ucs4, size_t bufsize, char buf[bufsize]) attr_nonnull(1, 3);
+char* ucs4_to_utf8_alloc(const uint32_t *ucs4) attr_nonnull(1) attr_returns_nonnull attr_nodiscard;
 
 uint32_t utf8_getch(const char **src) attr_nonnull(1);
 

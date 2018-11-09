@@ -898,7 +898,6 @@ void draw_options_menu(MenuData *menu) {
 
 						if(bind->valrange_max > 0) {
 							snprintf(buf, sizeof(buf), "#%i: %s", bind->selected + 1, gamepad_device_name(bind->selected));
-							text_shorten(get_font("standard"), buf, (SCREEN_W - 220) / 2);
 							txt = buf;
 						} else {
 							txt = "No devices available";
@@ -908,6 +907,7 @@ void draw_options_menu(MenuData *menu) {
 							.pos = { origin, 20*i },
 							.align = ALIGN_RIGHT,
 							.color = &clr,
+							.max_width = (SCREEN_W - 220) / 2,
 						});
 					}
 
@@ -1194,13 +1194,13 @@ static bool options_text_input_handler(SDL_Event *event, void *arg) {
 			 * EFFICIENT AS FUCK
 			 */
 
-			uint32_t *u = utf8_to_ucs4(b->strvalue);
+			uint32_t *u = utf8_to_ucs4_alloc(b->strvalue);
 			size_t ulen = ucs4len(u);
 
 			if(ulen > max_len) {
 				*(u + max_len) = 0;
 				free(b->strvalue);
-				b->strvalue = ucs4_to_utf8(u);
+				b->strvalue = ucs4_to_utf8_alloc(u);
 				snd = "hit";
 			}
 
@@ -1234,7 +1234,7 @@ static bool options_text_input_handler(SDL_Event *event, void *arg) {
 			 * MORE EFFICIENT THAN FUCK
 			 */
 
-			uint32_t *u = utf8_to_ucs4(b->strvalue);
+			uint32_t *u = utf8_to_ucs4_alloc(b->strvalue);
 
 			if(*u) {
 				play_ui_sound("generic_shot");
@@ -1244,7 +1244,7 @@ static bool options_text_input_handler(SDL_Event *event, void *arg) {
 			}
 
 			free(b->strvalue);
-			b->strvalue = ucs4_to_utf8(u);
+			b->strvalue = ucs4_to_utf8_alloc(u);
 			free(u);
 		}
 

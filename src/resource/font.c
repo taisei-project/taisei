@@ -750,8 +750,8 @@ static inline int apply_kerning(Font *font, uint prev_index, Glyph *gthis) {
 	return 0;
 }
 
-int text_width_raw(Font *font, const char *text, uint maxlines) {
-	const char *tptr = text;
+int text_ucs4_width_raw(Font *font, const uint32_t *text, uint maxlines) {
+	const uint32_t *tptr = text;
 	uint prev_glyph_idx = 0;
 	bool keming = FT_HAS_KERNING(font->face);
 	uint numlines = 0;
@@ -759,7 +759,7 @@ int text_width_raw(Font *font, const char *text, uint maxlines) {
 	int width = 0;
 
 	while(*tptr) {
-		uint32_t uchar = utf8_getch(&tptr);
+		uint32_t uchar = *tptr++;
 
 		if(uchar == '\n') {
 			if(++numlines == maxlines) {
@@ -795,8 +795,14 @@ int text_width_raw(Font *font, const char *text, uint maxlines) {
 	return width;
 }
 
-void text_bbox(Font *font, const char *text, uint maxlines, BBox *bbox) {
-	const char *tptr = text;
+int text_width_raw(Font *font, const char *text, uint maxlines) {
+	uint32_t buf[strlen(text) + 1];
+	utf8_to_ucs4(text, sizeof(buf), buf);
+	return text_ucs4_width_raw(font, buf, maxlines);
+}
+
+void text_ucs4_bbox(Font *font, const uint32_t *text, uint maxlines, BBox *bbox) {
+	const uint32_t *tptr = text;
 	uint prev_glyph_idx = 0;
 	bool keming = FT_HAS_KERNING(font->face);
 	uint numlines = 0;
@@ -805,7 +811,7 @@ void text_bbox(Font *font, const char *text, uint maxlines, BBox *bbox) {
 	int x = 0, y = 0;
 
 	while(*tptr) {
-		uint32_t uchar = utf8_getch(&tptr);
+		uint32_t uchar = *tptr++;
 
 		if(uchar == '\n') {
 			if(++numlines == maxlines) {
@@ -849,17 +855,27 @@ void text_bbox(Font *font, const char *text, uint maxlines, BBox *bbox) {
 	}
 }
 
+void text_bbox(Font *font, const char *text, uint maxlines, BBox *bbox) {
+	uint32_t buf[strlen(text) + 1];
+	utf8_to_ucs4(text, sizeof(buf), buf);
+	text_ucs4_bbox(font, buf, maxlines, bbox);
+}
+
+double text_ucs4_width(Font *font, const uint32_t *text, uint maxlines) {
+	return text_ucs4_width_raw(font, text, maxlines) / font->metrics.scale;
+}
+
 double text_width(Font *font, const char *text, uint maxlines) {
 	return text_width_raw(font, text, maxlines) / font->metrics.scale;
 }
 
-int text_height_raw(Font *font, const char *text, uint maxlines) {
+int text_ucs4_height_raw(Font *font, const uint32_t *text, uint maxlines) {
 	// FIXME: I'm not sure this is correct. Perhaps it should consider max_glyph_height at least?
 
 	uint text_lines = 1;
-	const char *tptr = text;
+	const uint32_t *tptr = text;
 
-	while((tptr = strchr(tptr, '\n'))) {
+	while((tptr = ucs4chr(tptr, '\n'))) {
 		if(text_lines++ == maxlines) {
 			break;
 		}
@@ -868,11 +884,21 @@ int text_height_raw(Font *font, const char *text, uint maxlines) {
 	return font->metrics.lineskip * text_lines;
 }
 
+int text_height_raw(Font *font, const char *text, uint maxlines) {
+	uint32_t buf[strlen(text) + 1];
+	utf8_to_ucs4(text, sizeof(buf), buf);
+	return text_ucs4_height_raw(font, buf, maxlines);
+}
+
+double text_ucs4_height(Font *font, const uint32_t *text, uint maxlines) {
+	return text_ucs4_height_raw(font, text, maxlines) / font->metrics.scale;
+}
+
 double text_height(Font *font, const char *text, uint maxlines) {
 	return text_height_raw(font, text, maxlines) / font->metrics.scale;
 }
 
-static inline void adjust_xpos(Font *font, const char *text, Alignment align, double x_orig, double *x) {
+static inline void adjust_xpos(Font *font, const uint32_t *ucs4text, Alignment align, double x_orig, double *x) {
 	double line_width;
 
 	switch(align) {
@@ -882,13 +908,13 @@ static inline void adjust_xpos(Font *font, const char *text, Alignment align, do
 		}
 
 		case ALIGN_RIGHT: {
-			line_width = text_width_raw(font, text, 1);
+			line_width = text_ucs4_width_raw(font, ucs4text, 1);
 			*x = x_orig - line_width;
 			break;
 		}
 
 		case ALIGN_CENTER: {
-			line_width = text_width_raw(font, text, 1);
+			line_width = text_ucs4_width_raw(font, ucs4text, 1);
 			*x = x_orig - line_width * 0.5;
 			break;
 		}
@@ -922,14 +948,14 @@ static Font* font_from_params(const TextParams *params) {
 }
 
 attr_nonnull(1, 2, 3)
-static double _text_draw(Font *font, const char *text, const TextParams *params) {
+static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextParams *params) {
 	SpriteParams sp = { .sprite = NULL };
 	BBox bbox;
 	double x = params->pos.x;
 	double y = params->pos.y;
 	double iscale = 1 / font->metrics.scale;
 
-	text_bbox(font, text, 0, &bbox);
+	text_ucs4_bbox(font, ucs4text, 0, &bbox);
 	sp.shader_ptr = params->shader_ptr;
 
 	if(sp.shader_ptr == NULL) {
@@ -960,7 +986,7 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 	x = y = 0;
 
 	double x_orig = x;
-	adjust_xpos(font, text, params->align, x_orig, &x);
+	adjust_xpos(font, ucs4text, params->align, x_orig, &x);
 
 	// bbox.y.max = imax(bbox.y.max, font->metrics.ascent);
 	// bbox.y.min = imin(bbox.y.min, font->metrics.descent);
@@ -1000,10 +1026,10 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 
 	bool keming = FT_HAS_KERNING(font->face);
 	uint prev_glyph_idx = 0;
-	const char *tptr = text;
+	const uint32_t *tptr = ucs4text;
 
 	while(*tptr) {
-		uint32_t uchar = utf8_getch(&tptr);
+		uint32_t uchar = *tptr++;
 
 		if(uchar == '\n') {
 			adjust_xpos(font, tptr, params->align, x_orig, &x);
@@ -1065,8 +1091,32 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 	return x_orig + (x - x_orig) / font->metrics.scale;
 }
 
+static double _text_draw(Font *font, const char *text, const TextParams *params) {
+	uint32_t buf[strlen(text) + 1];
+	utf8_to_ucs4(text, sizeof(buf), buf);
+
+	if(params->max_width > 0) {
+		text_ucs4_shorten(font, buf, params->max_width);
+	}
+
+	return _text_ucs4_draw(font, buf, params);
+}
+
 double text_draw(const char *text, const TextParams *params) {
 	return _text_draw(font_from_params(params), text, params);
+}
+
+double text_ucs4_draw(const uint32_t *text, const TextParams *params) {
+	Font *font = font_from_params(params);
+
+	if(params->max_width > 0) {
+		uint32_t buf[ucs4len(text) + 1];
+		memcpy(buf, text, sizeof(buf));
+		text_ucs4_shorten(font, buf, params->max_width);
+		return _text_ucs4_draw(font, buf, params);
+	}
+
+	return _text_ucs4_draw(font, text, params);
 }
 
 double text_draw_wrapped(const char *text, double max_width, const TextParams *params) {
@@ -1177,25 +1227,24 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 	out_sprite->h = bbox_height / font->metrics.scale;
 }
 
-void text_shorten(Font *font, char *text, double width) {
-	// TODO: rewrite this to use utf8_getch
+void text_ucs4_shorten(Font *font, uint32_t *text, double width) {
+	assert(!ucs4chr(text, '\n'));
 
-	assert(!strchr(text, '\n'));
+	if(text_ucs4_width(font, text, 0) <= width) {
+		return;
+	}
 
-	while(text_width(font, text, 0) > width) {
-		int l = strlen(text);
+	int l = ucs4len(text);
 
-		if(l <= 1) {
+	do {
+		if(l < 1) {
 			return;
 		}
 
-		--l;
 		text[l] = 0;
-
-		for(int i = 0; i < min(3, l); ++i) {
-			text[l - i - 1] = '.';
-		}
-	}
+		text[l - 1] = UNICODE_ELLIPSIS;
+		--l;
+	} while(text_ucs4_width(font, text, 0) > width);
 }
 
 void text_wrap(Font *font, const char *src, double width, char *buf, size_t bufsize) {

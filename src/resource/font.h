@@ -67,6 +67,7 @@ typedef struct TextParams {
 	const Color *color;
 	const ShaderCustomParams *shader_params;
 	Texture *aux_textures[R_NUM_SPRITE_AUX_TEXTURES];
+	double max_width;
 	BlendMode blend;
 	Alignment align;
 } TextParams;
@@ -77,44 +78,37 @@ Font* get_font(const char *font)
 ShaderProgram* text_get_default_shader(void)
 	attr_returns_nonnull;
 
-const FontMetrics* font_get_metrics(Font *font)
-	attr_nonnull(1) attr_returns_nonnull;
+const FontMetrics* font_get_metrics(Font *font) attr_nonnull(1) attr_returns_nonnull;
 
-double font_get_lineskip(Font *font)
-	attr_nonnull(1);
+double font_get_lineskip(Font *font) attr_nonnull(1);
 
-const GlyphMetrics* font_get_char_metrics(Font *font, charcode_t c)
-	attr_nonnull(1);
+const GlyphMetrics* font_get_char_metrics(Font *font, charcode_t c) attr_nonnull(1);
 
-double text_draw(const char *text, const TextParams *params)
-	attr_nonnull(1, 2);
+double text_draw(const char *text, const TextParams *params) attr_nonnull(1, 2);
+double text_ucs4_draw(const uint32_t *text, const TextParams *params) attr_nonnull(1, 2);
 
-double text_draw_wrapped(const char *text, double max_width, const TextParams *params)
-	attr_nonnull(1, 3);
+double text_draw_wrapped(const char *text, double max_width, const TextParams *params) attr_nonnull(1, 3);
 
-void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbox)
-	attr_nonnull(1, 2, 3, 4);
+void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbox) attr_nonnull(1, 2, 3, 4);
 
-void text_shorten(Font *font, char *text, double width)
-	attr_nonnull(1, 2);
+void text_ucs4_shorten(Font *font, uint32_t *text, double width) attr_nonnull(1, 2);
 
-void text_wrap(Font *font, const char *src, double width, char *buf, size_t bufsize)
-	attr_nonnull(1, 2, 4);
+void text_wrap(Font *font, const char *src, double width, char *buf, size_t bufsize) attr_nonnull(1, 2, 4);
 
-void text_bbox(Font *font, const char *text, uint maxlines, BBox *bbox)
-	attr_nonnull(1, 2, 4);
+void text_bbox(Font *font, const char *text, uint maxlines, BBox *bbox) attr_nonnull(1, 2, 4);
+void text_ucs4_bbox(Font *font, const uint32_t *text, uint maxlines, BBox *bbox) attr_nonnull(1, 2, 4);
 
-int text_width_raw(Font *font, const char *text, uint maxlines)
-	attr_nonnull(1, 2);
+int text_width_raw(Font *font, const char *text, uint maxlines) attr_nonnull(1, 2);
+int text_ucs4_width_raw(Font *font, const uint32_t *text, uint maxlines) attr_nonnull(1, 2);
 
-double text_width(Font *font, const char *text, uint maxlines)
-	attr_nonnull(1, 2);
+double text_width(Font *font, const char *text, uint maxlines) attr_nonnull(1, 2);
+double text_ucs4_width(Font *font, const uint32_t *text, uint maxlines) attr_nonnull(1, 2);
 
-int text_height_raw(Font *font, const char *text, uint maxlines)
-	attr_nonnull(1, 2);
+int text_height_raw(Font *font, const char *text, uint maxlines) attr_nonnull(1, 2);
+int text_ucs4_height_raw(Font *font, const uint32_t *text, uint maxlines) attr_nonnull(1, 2);
 
-double text_height(Font *font, const char *text, uint maxlines)
-	attr_nonnull(1, 2);
+double text_height(Font *font, const char *text, uint maxlines) attr_nonnull(1, 2);
+double text_ucs4_height(Font *font, const uint32_t *text, uint maxlines) attr_nonnull(1, 2);
 
 extern ResourceHandler font_res_handler;
 

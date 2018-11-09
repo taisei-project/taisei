@@ -231,34 +231,41 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 
 	Replay *rpy = ictx->replay;
 
-	float sizes[] = {1.2, 1.45, 0.8, 0.8, 0.75};
-	int columns = 5, i, j;
+	float sizes[] = { 0.825, 0.575, 2.65, 0.65, 0.65, 0.65 };
+	int columns = sizeof(sizes)/sizeof(float), i, j;
+	float base_size = (SCREEN_W - 110.0) / columns;
+
+	time_t t = rpy->stages[0].seed;
+	struct tm* timeinfo = localtime(&t);
 
 	for(i = 0; i < columns; ++i) {
 		char tmp[128];
-		float csize = sizes[i] * (SCREEN_W - 210)/columns;
+		float csize = sizes[i] * base_size;
 		float o = 0;
 
 		for(j = 0; j < i; ++j)
-			o += sizes[j] * (SCREEN_W - 210)/columns;
+			o += sizes[j] * base_size;
 
 		Alignment a = ALIGN_CENTER;
 
-		// hell yeah, another loop-switch sequence
 		switch(i) {
 			case 0:
 				a = ALIGN_LEFT;
-				time_t t = rpy->stages[0].seed;
-				struct tm* timeinfo = localtime(&t);
-				strftime(tmp, sizeof(tmp), "%Y-%m-%d %H:%M", timeinfo);
+				strftime(tmp, sizeof(tmp), "%Y-%m-%d", timeinfo);
 				break;
 
 			case 1:
 				a = ALIGN_CENTER;
+				strftime(tmp, sizeof(tmp), "%H:%M", timeinfo);
+				break;
+
+			case 2:
+				a = ALIGN_LEFT;
 				strlcpy(tmp, rpy->playername, sizeof(tmp));
 				break;
 
-			case 2: {
+			case 3: {
+				a = ALIGN_RIGHT;
 				PlayerMode *plrmode = plrmode_find(rpy->stages[0].plr_char, rpy->stages[0].plr_shot);
 
 				if(plrmode == NULL) {
@@ -271,12 +278,13 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 				break;
 			}
 
-			case 3:
+			case 4:
+				a = ALIGN_CENTER;
 				snprintf(tmp, sizeof(tmp), "%s", difficulty_name(rpy->stages[0].diff));
 				break;
 
-			case 4:
-				a = ALIGN_RIGHT;
+			case 5:
+				a = ALIGN_LEFT;
 				if(rpy->numstages == 1) {
 					StageInfo *stg = stage_get(rpy->stages[0].stage);
 
@@ -291,8 +299,6 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 				break;
 		}
 
-		text_shorten(get_font("standard"), tmp, csize);
-
 		switch(a) {
 			case ALIGN_CENTER: o += csize * 0.5 - text_width(get_font("standard"), tmp, 0) * 0.5; break;
 			case ALIGN_RIGHT:  o += csize - text_width(get_font("standard"), tmp, 0);             break;
@@ -302,6 +308,7 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 		text_draw(tmp, &(TextParams) {
 			.pos = { o + 10, 20 * item },
 			.shader = "text_default",
+			.max_width = csize,
 		});
 	}
 }
@@ -332,8 +339,8 @@ static void replayview_logic(MenuData *m) {
 		}
 	}
 
-	m->drawdata[0] = SCREEN_W/2 - 100;
-	m->drawdata[1] = (SCREEN_W - 200)*1.75;
+	m->drawdata[0] = SCREEN_W/2 - 50;
+	m->drawdata[1] = (SCREEN_W - 100)*1.75;
 	m->drawdata[2] += (20*m->cursor - m->drawdata[2])/10.0;
 
 	animate_menu_list_entries(m);
@@ -345,7 +352,7 @@ static void replayview_draw(MenuData *m) {
 	draw_options_menu_bg(m);
 	draw_menu_title(m, "Replays");
 
-	draw_menu_list(m, 100, 100, replayview_drawitem);
+	draw_menu_list(m, 50, 100, replayview_drawitem);
 
 	if(ctx->submenu) {
 		ctx->submenu->draw(ctx->submenu);
