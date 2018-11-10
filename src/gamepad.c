@@ -261,6 +261,7 @@ void gamepad_shutdown(void) {
 	}
 
 	free(gamepad.axes);
+	free(gamepad.buttons);
 	free(gamepad.devices.id_map);
 
 	SDL_GameControllerEventState(SDL_IGNORE);
