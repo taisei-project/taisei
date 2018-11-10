@@ -82,6 +82,10 @@ typedef struct EventHandler {
 	void *arg;
 	EventPriority priority;
 	uint32_t event_type; // if 0, this handler gets all events
+
+	struct {
+		bool removal_pending;
+	} _private;
 } EventHandler;
 
 extern uint32_t sdl_first_user_event;

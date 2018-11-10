@@ -23,6 +23,7 @@ typedef LIST_ANCHOR(EventHandlerContainer) EventHandlerList;
 
 static hrtime_t keyrepeat_paused_until;
 static EventHandlerList global_handlers;
+static int global_handlers_lock = 0;
 
 uint32_t sdl_first_user_event;
 
@@ -68,6 +69,7 @@ void events_shutdown(void) {
 
 static bool events_invoke_handler(SDL_Event *event, EventHandler *handler) {
 	assert(handler->proc != NULL);
+	assert(global_handlers_lock > 0);
 
 	if(!handler->event_type || handler->event_type == event->type) {
 		bool result = handler->proc(event, handler->arg);
@@ -96,7 +98,7 @@ static EventHandlerContainer* ehandler_wrap_container(EventHandler *handler) {
 	return c;
 }
 
-static bool events_invoke_handlers(SDL_Event *event, EventHandlerContainer *h_list, EventHandler *h_array) {
+static bool _events_invoke_handlers(SDL_Event *event, EventHandlerContainer *h_list, EventHandler *h_array) {
 	// invoke handlers from two sources (a list and an array) in the correct order according to priority
 	// list items take precedence
 	//
@@ -110,6 +112,10 @@ static bool events_invoke_handlers(SDL_Event *event, EventHandlerContainer *h_li
 		// case 1 (simplest): we have a list and no custom handlers
 
 		for(EventHandlerContainer *c = h_list; c; c = c->next) {
+			if(c->handler->_private.removal_pending) {
+				continue;
+			}
+
 			if((result = events_invoke_handler(event, c->handler))) {
 				break;
 			}
@@ -141,6 +147,10 @@ static bool events_invoke_handlers(SDL_Event *event, EventHandlerContainer *h_li
 
 		// iterate over the merged list
 		for(EventHandlerContainer *c = merged_list.first; c; c = c->next) {
+			if(c->handler->_private.removal_pending) {
+				continue;
+			}
+
 			if((result = events_invoke_handler(event, c->handler))) {
 				break;
 			}
@@ -163,6 +173,24 @@ static bool events_invoke_handlers(SDL_Event *event, EventHandlerContainer *h_li
 	}
 
 	// case 4 (unlikely): huh? okay then
+	return result;
+}
+
+static bool events_invoke_handlers(SDL_Event *event, EventHandlerContainer *h_list, EventHandler *h_array) {
+	++global_handlers_lock;
+	bool result = _events_invoke_handlers(event, h_list, h_array);
+
+	if(--global_handlers_lock == 0) {
+		for(EventHandlerContainer *c = global_handlers.first, *next; c; c = next) {
+			next = c->next;
+
+			if(c->handler->_private.removal_pending) {
+				free(c->handler);
+				free(alist_unlink(&global_handlers, c));
+			}
+		}
+	}
+
 	return result;
 }
 
@@ -192,6 +220,12 @@ void events_unregister_handler(EventHandlerProc proc) {
 		next = c->next;
 
 		if(h->proc == proc) {
+			if(global_handlers_lock) {
+				assert(global_handlers_lock > 0);
+				c->handler->_private.removal_pending = true;
+				return;
+			}
+
 			free(c->handler);
 			free(alist_unlink(&global_handlers, c));
 			return;
