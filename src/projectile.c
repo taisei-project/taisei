@@ -393,7 +393,7 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 			if(creal(e_proj.axes) > 1 && lineseg_ellipse_intersect(seg, e_proj)) {
 				out_col->type = PCOL_PLAYER_GRAZE;
 				out_col->entity = &global.plr.ent;
-				out_col->location = global.plr.pos;
+				out_col->location = p->pos;
 			}
 		}
 	} else if(p->type == PlrProj) {

@@ -916,28 +916,32 @@ void player_graze(Player *plr, complex pos, int pts, int effect_intensity, const
 		plr->graze = 0xffff;
 	}
 
+	pos = (pos + plr->pos) * 0.5;
+
 	player_add_points(plr, pts);
 	play_sound("graze");
 
 	Color *c = COLOR_COPY(color);
-	// color_mul_scalar(c, 0.6);
 	color_add(c, RGBA(1, 1, 1, 1));
+	color_mul_scalar(c, 0.5);
 	c->a = 0;
 
 	for(int i = 0; i < effect_intensity; ++i) {
 		tsrand_fill(4);
 
 		PARTICLE(
-			.sprite = "flare",
+			.sprite = "graze",
 			.color = c,
 			.pos = pos,
 			.rule = asymptotic,
-			.timeout = 12 + 5 * afrand(2),
+			.timeout = 24 + 5 * afrand(2),
 			.draw_rule = ScaleFade,
-			.args = { 0.25 * (1+afrand(0)*5)*cexp(I*M_PI*2*afrand(1)), 12 * (1 + 0.5 * anfrand(3)), 1 },
+			.args = { 0.2 * (1+afrand(0)*5)*cexp(I*M_PI*2*afrand(1)), 16 * (1 + 0.5 * anfrand(3)), 1 },
 			.flags = PFLAG_NOREFLECT,
 			// .layer = LAYER_PARTICLE_LOW,
 		);
+
+		color_mul_scalar(c, 0.4);
 	}
 }
 
