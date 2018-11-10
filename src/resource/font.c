@@ -515,16 +515,6 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 		px.height = imax(g_bm_fill->bitmap.rows, imax(g_bm_border->bitmap.rows, g_bm_inner->bitmap.rows));
 		px.data.rg8 = pixmap_alloc_buffer_for_copy(&px);
 
-		log_debug(
-			"(%i %i) (%i %i) (%i %i)",
-			g_bm_fill->top,
-			g_bm_fill->left,
-			g_bm_border->top,
-			g_bm_border->left,
-			g_bm_inner->top,
-			g_bm_inner->left
-		);
-
 		int ref_left = g_bm_border->left;
 		int ref_top = g_bm_border->top;
 
