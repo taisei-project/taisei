@@ -12,6 +12,7 @@
 #include "global.h"
 #include "stage.h"
 #include "stagetext.h"
+#include "stagedraw.h"
 #include "entity.h"
 
 static void ent_draw_boss(EntityInterface *ent);
@@ -1017,6 +1018,24 @@ void process_boss(Boss **pboss) {
 	}
 }
 
+static void boss_death_effect_draw_overlay(Projectile *p, int t) {
+	FBPair *framebuffers = stage_get_fbpair(FBPAIR_FG);
+	r_framebuffer(framebuffers->front);
+	r_uniform_sampler("noise_tex", "static");
+	r_uniform_int("frames", global.frames);
+	r_uniform_float("progress", t / p->timeout);
+	r_uniform_vec2("origin", creal(p->pos), VIEWPORT_H - cimag(p->pos));
+	r_uniform_vec2("clear_origin", creal(p->pos), VIEWPORT_H - cimag(p->pos));
+	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
+	draw_framebuffer_tex(framebuffers->back, VIEWPORT_W, VIEWPORT_H);
+	fbpair_swap(framebuffers);
+
+	// This change must propagate, hence the r_state salsa. Yes, pop then push, I know what I'm doing.
+	r_state_pop();
+	r_framebuffer(framebuffers->back);
+	r_state_push();
+}
+
 void boss_death(Boss **boss) {
 	Attack *a = boss_get_final_attack(*boss);
 	bool fleed = false;
@@ -1035,6 +1054,17 @@ void boss_death(Boss **boss) {
 	if(!fleed) {
 		stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
 	}
+
+	PARTICLE(
+		.pos = (*boss)->pos,
+		.size = 1+I,
+		.timeout = 120,
+		.draw_rule = boss_death_effect_draw_overlay,
+		.blend = BLEND_NONE,
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		.layer = LAYER_OVERLAY,
+		.shader = "boss_death",
+	);
 
 	free_boss(*boss);
 	*boss = NULL;
@@ -1185,6 +1215,7 @@ void boss_preload(void) {
 
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"boss_zoom",
+		"boss_death",
 		"spellcard_intro",
 		"spellcard_outro",
 		"spellcard_walloftext",
