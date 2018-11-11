@@ -374,8 +374,6 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	int strw = text_width(font, b->current->name, 0);
 	float opacity = b->hud.spell_opacity * b->hud.global_opacity;
 
-	log_debug("%f %f", b->hud.spell_opacity, b->hud.global_opacity);
-
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = "spell",
 		.pos = { (VIEWPORT_W - 128) * (1 - pow(1 - f2, 5)) -256 * pow(1 - f2, 2), y_offset },
