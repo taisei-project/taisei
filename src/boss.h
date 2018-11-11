@@ -138,6 +138,7 @@ typedef struct Boss {
 	struct {
 		float global_opacity;
 		float spell_opacity;
+		float attack_timer;
 	} hud;
 } Boss;
 

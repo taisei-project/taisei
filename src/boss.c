@@ -310,6 +310,11 @@ static void update_hud(Boss *boss) {
 		target_opacity *= 0.25;
 	}
 
+	if(boss->current && !boss->current->finished && boss->current->type != AT_Move) {
+		int frames = boss->current->timeout + imin(0, boss->current->starttime - global.frames);
+		boss->hud.attack_timer = clamp((frames)/(double)FPS, 0, 99.999);
+	}
+
 	boss->hud.global_opacity += (target_opacity - boss->hud.global_opacity) * update_speed;
 	boss->hud.spell_opacity += (target_spell_opacity - boss->hud.spell_opacity) * update_speed;
 }
@@ -549,7 +554,7 @@ void draw_boss_hud(Boss *boss) {
 			draw_spell_name(boss, global.frames - boss->current->starttime, radial_style);
 		}
 
-		double remaining = clamp((boss->current->timeout - global.frames + boss->current->starttime)/(double)FPS, 0, 99.999);
+		float remaining = boss->hud.attack_timer;
 		Color clr_int, clr_fract;
 
 		if(remaining < 6) {
