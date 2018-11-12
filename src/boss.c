@@ -1082,18 +1082,18 @@ void boss_death(Boss **boss) {
 
 	if(!fleed) {
 		stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
-	}
 
-	PARTICLE(
-		.pos = (*boss)->pos,
-		.size = 1+I,
-		.timeout = 120,
-		.draw_rule = boss_death_effect_draw_overlay,
-		.blend = BLEND_NONE,
-		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
-		.layer = LAYER_OVERLAY,
-		.shader = "boss_death",
-	);
+		PARTICLE(
+			.pos = (*boss)->pos,
+			.size = 1+I,
+			.timeout = 120,
+			.draw_rule = boss_death_effect_draw_overlay,
+			.blend = BLEND_NONE,
+			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+			.layer = LAYER_OVERLAY,
+			.shader = "boss_death",
+		);
+	}
 
 	free_boss(*boss);
 	*boss = NULL;
