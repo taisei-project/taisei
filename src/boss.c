@@ -369,6 +369,18 @@ static void draw_linear_healthbar(Boss *boss) {
 	r_state_pop();
 }
 
+static void draw_spell_warning(Font *font, float y_pos, float f, float opacity) {
+	static const char *msg = "~ Spell Card Attack! ~";
+
+	float msg_width = text_width(font, msg, 0);
+	float flash = 0.2 + 0.8 * pow(psin(M_PI + 5 * M_PI * f), 0.5);
+	f = 0.15 * f + 0.85 * (0.5 * pow(2 * f - 1, 3) + 0.5);
+	opacity *= 1 - 2 * fabs(f - 0.5);
+	complex pos = (VIEWPORT_W + msg_width) * f - msg_width * 0.5 + I * y_pos;
+
+	draw_boss_text(ALIGN_CENTER, creal(pos), cimag(pos), msg, font, color_mul_scalar(RGBA(1, flash, flash, 1), opacity));
+}
+
 static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	Font *font = get_font("standard");
 	complex x0 = VIEWPORT_W/2+I*VIEWPORT_H/3.5;
@@ -390,15 +402,32 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
 	r_disable(RCAP_CULL_FACE);
 
+	int delay = b->current->type == AT_ExtraSpell ? ATTACK_START_DELAY_EXTRA : ATTACK_START_DELAY;
+	float warn_progress = clamp((time + delay) / 120.0, 0, 1);
+
 	r_mat_push();
-	r_mat_translate(creal(x),cimag(x),0);
+	r_mat_translate(creal(x), cimag(x),0);
 	float scale = f+1.*(1-f)*(1-f)*(1-f);
 	r_mat_scale(scale,scale,1);
 	r_mat_rotate_deg(360*f,1,1,0);
-	draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, b->current->name, font, color_mul_scalar(RGBA(1, 1, 1, 1), opacity));
+
+	float spellname_opacity = opacity * min(1, warn_progress/0.6);
+	draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, b->current->name, font, color_mul_scalar(RGBA(1, 1, 1, 1), spellname_opacity));
+
+	if(spellname_opacity < 1) {
+		r_mat_push();
+		r_mat_scale(2 - spellname_opacity, 2 - spellname_opacity, 1);
+		draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, b->current->name, font, color_mul_scalar(RGBA(1, 1, 1, 1), spellname_opacity * 0.5));
+		r_mat_pop();
+	}
+
 	r_mat_pop();
 
 	r_capability(RCAP_CULL_FACE, cullcap_saved);
+
+	if(warn_progress < 1) {
+		draw_spell_warning(font, cimag(x0) - font_get_lineskip(font), warn_progress, opacity);
+	}
 
 	StageProgress *p = get_spellstage_progress(b->current, NULL, false);
 
