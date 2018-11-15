@@ -21,7 +21,7 @@ char vfs_syspath_preferred_separator = '\\';
 
 // taken from SDL
 #define WIN_StringToUTF8(S) SDL_iconv_string("UTF-8", "UTF-16LE", (char *)(S), (SDL_wcslen(S)+1)*sizeof(WCHAR))
-#define WIN_UTF8ToString(S) (WCHAR *)SDL_iconv_string("UTF-16LE", "UTF-8", (char *)(S), SDL_strlen(S)+1)
+#define WIN_UTF8ToString(S) (WCHAR*)(void*)SDL_iconv_string("UTF-16LE", "UTF-8", (char *)(S), SDL_strlen(S)+1)
 
 static bool vfs_syspath_init_internal(VFSNode *node, char *path);
 
@@ -190,7 +190,7 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
 	if(!ok && err == ERROR_ALREADY_EXISTS) {
 		VFSNode *n = vfs_locate(node, subdir);
 
-		if(n && vfs_query_node(n).is_dir) {
+		if(n && vfs_node_query(n).is_dir) {
 			ok = true;
 		} else {
 			vfs_set_error("%s already exists, and is not a directory", p);
