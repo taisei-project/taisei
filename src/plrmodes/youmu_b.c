@@ -411,6 +411,10 @@ static void youmu_haunting_preload(void) {
 	NULL);
 }
 
+static void youmu_haunting_init(Player *plr) {
+	youmu_common_bomb_buffer_init();
+}
+
 PlayerMode plrmode_youmu_b = {
 	.name = "Haunting Sign",
 	.character = &character_youmu,
@@ -420,6 +424,7 @@ PlayerMode plrmode_youmu_b = {
 		.property = youmu_common_property,
 		.bomb = youmu_haunting_bomb,
 		.bombbg = youmu_common_bombbg,
+		.init = youmu_haunting_init,
 		.shot = youmu_haunting_shot,
 		.preload = youmu_haunting_preload,
 		.think = player_placeholder_bomb_logic,

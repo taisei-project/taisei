@@ -77,6 +77,7 @@ glsl_files = files(
     'tower_wall.frag.glsl',
     'tower_wall.vert.glsl',
     'tunnel.frag.glsl',
+    'youmu_bomb_bg.frag.glsl',
     'youmua_bomb.frag.glsl',
     'zbuf_fog.frag.glsl',
 # @end glsl

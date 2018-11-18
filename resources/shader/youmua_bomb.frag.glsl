@@ -3,24 +3,24 @@
 #include "lib/defs.glslh"
 #include "lib/render_context.glslh"
 #include "interface/standard.glslh"
+#include "lib/util.glslh"
 
 UNIFORM(1) float tbomb;
+UNIFORM(2) vec2 myon;
 
 void main(void) {
-	vec2 pos = texCoordRaw;
+	vec2 pos = texCoord;
 
-	// During the end of the bomb, the screen splits and the originalColor is revealed again
-	float inSplitArea = step(-pos.y * pos.y - abs(pos.x - 0.5) + tbomb * (tbomb-0.8) * 10, 0);
-	vec3 originalColor = texture(tex, texCoord).rgb;
+	vec2 relativePos = pos-myon;
+	float radius = length(relativePos);
+	float angle = atan(relativePos.y, relativePos.x);
+	float envelope = tbomb*(1-tbomb);
 
-	// In the remaining area, the left and right half get shifted up/down
-	float shift = (2 * float(pos.x<0.5) - 1) * 0.1 * sqrt(tbomb);
-	pos.y = pos.y * (1 - abs(shift)) + float(shift > 0) * shift;
-	vec3 shiftedColor = texture(tex, vec2(r_textureMatrix * vec4(pos, 0, 1))).rgb;
+	float bladeFac = mod(angle*3+10*radius*radius-200*tbomb,2*pi)/2/pi;
+	float angleDistortion = bladeFac*exp(-radius*radius/envelope/envelope);
+	angle += angleDistortion;
+	pos = myon + radius*vec2(cos(angle), sin(angle));
 
-	shiftedColor -= vec3(+shift,0.01*tbomb,-shift); // red/blue shift
-	shiftedColor *= 1 + 4 * tbomb * (1 - pow(abs(pos.x - 0.5), 3)); // boost intensity
-
-	// put everything together applying a tanh against overflows.
-	fragColor = vec4(mix(originalColor, tanh(shiftedColor), inSplitArea), 1);
+	float bladeShine = pow(bladeFac,4)/(1+pow(radius/envelope,5));
+	fragColor = texture(tex, pos)+vec4(0.5,0,1,0)*bladeShine;
 }

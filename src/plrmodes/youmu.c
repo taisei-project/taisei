@@ -11,6 +11,7 @@
 #include "global.h"
 #include "plrmodes.h"
 #include "youmu.h"
+#include "stagedraw.h"
 
 PlayerCharacter character_youmu = {
 	.id = PLR_CHAR_YOUMU,
@@ -78,6 +79,18 @@ void youmu_common_shot(Player *plr) {
 	}
 }
 
+static Framebuffer *bomb_buffer;
+
+static void capture_frame(Framebuffer *dest, Framebuffer *src) {
+	r_state_push();
+	r_framebuffer(dest);
+	r_shader_standard();
+	r_color4(1, 1, 1, 1);
+	r_blend(BLEND_NONE);
+	draw_framebuffer_tex(src, VIEWPORT_W, VIEWPORT_H);
+	r_state_pop();
+}
+
 void youmu_common_bombbg(Player *plr) {
 	if(!player_is_bomb_active(plr)) {
 		return;
@@ -95,10 +108,16 @@ void youmu_common_bombbg(Player *plr) {
 	if(fade < 0)
 		fade = 0;
 
-	fade *= 0.6;
+	r_state_push();
 	r_color4(fade, fade, fade, fade);
-	fill_viewport_p(0.5,0.5,3,1,1200*t*(t-1.5),get_tex("youmu_bombbg1"));
-	r_color4(1,1,1,1);
+	r_shader("youmu_bomb_bg");
+	r_uniform_sampler("petals", "youmu_bombbg1");
+	r_uniform_float("time", t);
+
+	draw_framebuffer_tex(bomb_buffer, VIEWPORT_W, VIEWPORT_H);
+	r_state_pop();
+
+	capture_frame(bomb_buffer, r_framebuffer_current());
 }
 
 void youmu_common_draw_proj(Projectile *p, const Color *c, float scale) {
@@ -108,5 +127,17 @@ void youmu_common_draw_proj(Projectile *p, const Color *c, float scale) {
 	r_mat_scale(scale, scale, 1);
 	ProjDrawCore(p, c);
 	r_mat_pop();
+}
+
+void youmu_common_bomb_buffer_init(void) {
+	FBAttachmentConfig cfg;
+	memset(&cfg, 0, sizeof(cfg));
+	cfg.attachment = FRAMEBUFFER_ATTACH_COLOR0;
+	cfg.tex_params.type = TEX_TYPE_RGB;
+	cfg.tex_params.filter.min = TEX_FILTER_LINEAR;
+	cfg.tex_params.filter.mag = TEX_FILTER_LINEAR;
+	cfg.tex_params.wrap.s = TEX_WRAP_MIRROR;
+	cfg.tex_params.wrap.t = TEX_WRAP_MIRROR;
+	bomb_buffer = stage_add_background_framebuffer("Youmu bomb FB", 0.25, 1, 1, &cfg);
 }
 
