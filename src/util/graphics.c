@@ -101,6 +101,7 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 	r_shader_ptr(prog_saved);
 }
 
+/*
 static int draw_fraction_callback(Font *font, charcode_t charcode, SpriteParams *spr_params, void *userdata) {
 	// Sorry, this is the least horrible hack i could think of.
 	// Drawing the dot separately looks awful with the HUD shader because of how
@@ -115,18 +116,25 @@ static int draw_fraction_callback(Font *font, charcode_t charcode, SpriteParams 
 
 	return 0;
 }
+*/
 
 double draw_fraction(double value, Alignment a, double pos_x, double pos_y, Font *f_int, Font *f_fract, const Color *c_int, const Color *c_fract, bool zero_pad) {
 	double val_int, val_fract;
 	char buf_int[4], buf_fract[4];
 	val_fract = modf(value, &val_int);
 
+	bool kern_int = font_get_kerning_enabled(f_int);
+	bool kern_fract = font_get_kerning_enabled(f_fract);
+
+	font_set_kerning_enabled(f_int, 0);
+	font_set_kerning_enabled(f_fract, 0);
+
 	snprintf(buf_int, sizeof(buf_int), zero_pad ? "%02i" : "%i", (int)val_int);
 	snprintf(buf_fract, sizeof(buf_fract), ".%02i", (int)floor(val_fract * 100));
 
-	double w_int = zero_pad || val_int > 9 ? text_width(f_int, "99", 0) : text_width(f_int, "9", 0);
-	double w_fract = text_width(f_fract, "99", 0);
-	double w_total = w_int + (w_fract * (1 + 1/6.0));
+	double w_int = text_width(f_int, buf_int, 0);
+	double w_fract = text_width(f_fract, buf_fract, 0);
+	double w_total = w_int + w_fract;
 
 	switch(a) {
 		case ALIGN_CENTER:
@@ -147,22 +155,22 @@ double draw_fraction(double value, Alignment a, double pos_x, double pos_y, Font
 	double ofs_fract = font_get_metrics(f_fract)->descent / font_get_metrics(f_fract)->scale - ofs_int;
 	ofs_int = 0;
 
-	text_draw(buf_int, &(TextParams) {
+	pos_x += text_draw(buf_int, &(TextParams) {
 		.pos = { pos_x, pos_y + ofs_int },
 		.color = c_int,
 		.font_ptr = f_int,
 		.align = ALIGN_LEFT,
 	});
 
-	pos_x += w_int - w_fract / 6;
-
 	pos_x += text_draw(buf_fract, &(TextParams) {
 		.pos = { pos_x, pos_y + ofs_fract },
 		.color = c_fract,
 		.font_ptr = f_fract,
 		.align = ALIGN_LEFT,
-		.glyph_callback = { draw_fraction_callback, NULL },
 	});
+
+	font_set_kerning_enabled(f_int, kern_int);
+	font_set_kerning_enabled(f_fract, kern_fract);
 
 	return pos_x;
 }

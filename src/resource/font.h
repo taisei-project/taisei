@@ -110,6 +110,11 @@ int text_ucs4_height_raw(Font *font, const uint32_t *text, uint maxlines) attr_n
 double text_height(Font *font, const char *text, uint maxlines) attr_nonnull(1, 2);
 double text_ucs4_height(Font *font, const uint32_t *text, uint maxlines) attr_nonnull(1, 2);
 
+// FIXME: come up with a better, stateless API for this
+bool font_get_kerning_available(Font *font) attr_nonnull(1);
+bool font_get_kerning_enabled(Font *font) attr_nonnull(1);
+void font_set_kerning_enabled(Font *font, bool newval) attr_nonnull(1);
+
 extern ResourceHandler font_res_handler;
 
 #define FONT_PATH_PREFIX "res/fonts/"

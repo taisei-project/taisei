@@ -598,8 +598,8 @@ void draw_boss_hud(Boss *boss) {
 		color_mul_scalar(&clr_int, o);
 		clr_fract = *RGBA(clr_int.r * 0.5, clr_int.g * 0.5, clr_int.b * 0.5, clr_int.a);
 
-		Font *f_int = get_font("mono");
-		Font *f_fract = get_font("monosmall");
+		Font *f_int = get_font("standard");
+		Font *f_fract = get_font("small");
 		double pos_x, pos_y;
 
 		Alignment align;

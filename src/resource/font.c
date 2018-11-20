@@ -104,6 +104,7 @@ struct Font {
 	ht_int2int_t charcodes_to_glyph_ofs;
 	ht_int2int_t ftindex_to_glyph_ofs;
 	FontMetrics metrics;
+	bool kerning;
 
 #ifdef DEBUG
 	char debug_label[64];
@@ -332,6 +333,18 @@ static FT_Error set_font_size(Font *fnt, uint pxsize, double scale) {
 	fnt->metrics.scale = scale;
 
 	return err;
+}
+
+bool font_get_kerning_available(Font *font) {
+	return FT_HAS_KERNING(font->face);
+}
+
+bool font_get_kerning_enabled(Font *font) {
+	return font->kerning;
+}
+
+void font_set_kerning_enabled(Font *font, bool newval) {
+	font->kerning = (newval && FT_HAS_KERNING(font->face));
 }
 
 // TODO: Figure out sensible values for these; maybe make them depend on font size in some way.
@@ -696,6 +709,7 @@ void* load_font_begin(const char *path, uint flags) {
 	strlcpy(font.debug_label, basename, sizeof(font.debug_label));
 #endif
 
+	font_set_kerning_enabled(&font, true);
 	return memdup(&font, sizeof(font));
 }
 
@@ -733,6 +747,10 @@ static void reload_fonts(double quality) {
 static inline int apply_kerning(Font *font, uint prev_index, Glyph *gthis) {
 	FT_Vector kvec;
 
+	if(!font_get_kerning_enabled(font) || prev_index == 0) {
+		return 0;
+	}
+
 	if(!FT_Get_Kerning(font->face, prev_index, gthis->ft_index, FT_KERNING_DEFAULT, &kvec)) {
 		return kvec.x >> 6;
 	}
@@ -743,7 +761,6 @@ static inline int apply_kerning(Font *font, uint prev_index, Glyph *gthis) {
 int text_ucs4_width_raw(Font *font, const uint32_t *text, uint maxlines) {
 	const uint32_t *tptr = text;
 	uint prev_glyph_idx = 0;
-	bool keming = FT_HAS_KERNING(font->face);
 	uint numlines = 0;
 	int x = 0;
 	int width = 0;
@@ -770,10 +787,7 @@ int text_ucs4_width_raw(Font *font, const uint32_t *text, uint maxlines) {
 			continue;
 		}
 
-		if(keming && prev_glyph_idx) {
-			x += apply_kerning(font, prev_glyph_idx, glyph);
-		}
-
+		x += apply_kerning(font, prev_glyph_idx, glyph);
 		x += glyph->metrics.advance;
 		prev_glyph_idx = glyph->ft_index;
 	}
@@ -794,7 +808,6 @@ int text_width_raw(Font *font, const char *text, uint maxlines) {
 void text_ucs4_bbox(Font *font, const uint32_t *text, uint maxlines, BBox *bbox) {
 	const uint32_t *tptr = text;
 	uint prev_glyph_idx = 0;
-	bool keming = FT_HAS_KERNING(font->face);
 	uint numlines = 0;
 
 	memset(bbox, 0, sizeof(*bbox));
@@ -820,9 +833,7 @@ void text_ucs4_bbox(Font *font, const uint32_t *text, uint maxlines, BBox *bbox)
 			continue;
 		}
 
-		if(keming && prev_glyph_idx) {
-			x += apply_kerning(font, prev_glyph_idx, glyph);
-		}
+		x += apply_kerning(font, prev_glyph_idx, glyph);
 
 		int g_x0 = x + glyph->metrics.bearing_x;
 		int g_x1 = g_x0 + glyph->metrics.width;
@@ -1014,7 +1025,6 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 		texmat_offset_sign = 1;
 	}
 
-	bool keming = FT_HAS_KERNING(font->face);
 	uint prev_glyph_idx = 0;
 	const uint32_t *tptr = ucs4text;
 
@@ -1033,9 +1043,7 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 			continue;
 		}
 
-		if(keming && prev_glyph_idx) {
-			x += apply_kerning(font, prev_glyph_idx, glyph);
-		}
+		x += apply_kerning(font, prev_glyph_idx, glyph);
 
 		sp.sprite_ptr = &glyph->sprite;
 

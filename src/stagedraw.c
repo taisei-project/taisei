@@ -853,8 +853,8 @@ static inline void stage_draw_hud_power_value(float ypos) {
 		ALIGN_RIGHT,
 		170,
 		ypos,
-		get_font("mono"),
-		get_font("monosmall"),
+		get_font("standard"),
+		get_font("small"),
 		&stagedraw.hud_text.color.active,
 		&stagedraw.hud_text.color.inactive,
 		false
