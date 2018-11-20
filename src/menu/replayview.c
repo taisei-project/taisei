@@ -231,7 +231,7 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 
 	Replay *rpy = ictx->replay;
 
-	float sizes[] = { 0.825, 0.575, 2.65, 0.65, 0.65, 0.65 };
+	float sizes[] = { 1.2, 2.2, 0.5, 0.55, 0.55 };
 	int columns = sizeof(sizes)/sizeof(float), i, j;
 	float base_size = (SCREEN_W - 110.0) / columns;
 
@@ -251,20 +251,15 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 		switch(i) {
 			case 0:
 				a = ALIGN_LEFT;
-				strftime(tmp, sizeof(tmp), "%Y-%m-%d", timeinfo);
+				strftime(tmp, sizeof(tmp), "%Y-%m-%d  %H:%M", timeinfo);
 				break;
 
 			case 1:
-				a = ALIGN_CENTER;
-				strftime(tmp, sizeof(tmp), "%H:%M", timeinfo);
-				break;
-
-			case 2:
 				a = ALIGN_LEFT;
 				strlcpy(tmp, rpy->playername, sizeof(tmp));
 				break;
 
-			case 3: {
+			case 2: {
 				a = ALIGN_RIGHT;
 				PlayerMode *plrmode = plrmode_find(rpy->stages[0].plr_char, rpy->stages[0].plr_shot);
 
@@ -278,12 +273,12 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 				break;
 			}
 
-			case 4:
+			case 3:
 				a = ALIGN_CENTER;
 				snprintf(tmp, sizeof(tmp), "%s", difficulty_name(rpy->stages[0].diff));
 				break;
 
-			case 5:
+			case 4:
 				a = ALIGN_LEFT;
 				if(rpy->numstages == 1) {
 					StageInfo *stg = stage_get(rpy->stages[0].stage);
