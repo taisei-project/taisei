@@ -56,6 +56,8 @@ uint32_t utf8_getch(const char **src) attr_nonnull(1);
 
 uint32_t crc32str(uint32_t crc, const char *str);
 
+void format_huge_num(uint digits, uint num, size_t bufsize, char *buf);
+
 // XXX: Not sure if this is the appropriate header for this
 
 #ifdef TAISEI_BUILDCONF_HAVE_TIMESPEC

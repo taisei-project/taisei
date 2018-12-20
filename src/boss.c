@@ -271,20 +271,20 @@ static void update_healthbar(Boss *boss) {
 		}
 	}
 
-	float opacity_delta = (target_opacity - boss->healthbar.opacity) * update_speed;
+	float opacity_update_speed = update_speed;
 
 	if(boss_is_dying(boss)) {
-		opacity_delta *= 0.25;
+		opacity_update_speed *= 0.25;
 	}
 
-	boss->healthbar.opacity += opacity_delta;
+	fapproach_asymptotic_p(&boss->healthbar.opacity, target_opacity, opacity_update_speed, 1e-3);
 
 	if(boss_is_vulnerable(boss) || (a_cur && a_cur->type == AT_SurvivalSpell && global.frames - a_cur->starttime > 0)) {
 		update_speed *= (1 + 4 * pow(1 - target_fill, 2));
 	}
 
-	boss->healthbar.fill_total += (target_fill - boss->healthbar.fill_total) * update_speed;
-	boss->healthbar.fill_alt += (target_altfill - boss->healthbar.fill_alt) * update_speed;
+	fapproach_asymptotic_p(&boss->healthbar.fill_total, target_fill, update_speed, 1e-3);
+	fapproach_asymptotic_p(&boss->healthbar.fill_alt, target_altfill, update_speed, 1e-3);
 }
 
 static void update_hud(Boss *boss) {
@@ -293,6 +293,7 @@ static void update_hud(Boss *boss) {
 	float update_speed = 0.1;
 	float target_opacity = 1.0;
 	float target_spell_opacity = 1.0;
+	float target_plrproximity_opacity = 1.0;
 
 	if(boss_is_dying(boss) || boss_is_fleeing(boss)) {
 		update_speed *= 0.25;
@@ -308,7 +309,7 @@ static void update_hud(Boss *boss) {
 	}
 
 	if(cimag(global.plr.pos) < 128) {
-		target_opacity *= 0.25;
+		target_plrproximity_opacity = 0.25;
 	}
 
 	if(boss->current && !boss->current->finished && boss->current->type != AT_Move) {
@@ -316,8 +317,9 @@ static void update_hud(Boss *boss) {
 		boss->hud.attack_timer = clamp((frames)/(double)FPS, 0, 99.999);
 	}
 
-	boss->hud.global_opacity += (target_opacity - boss->hud.global_opacity) * update_speed;
-	boss->hud.spell_opacity += (target_spell_opacity - boss->hud.spell_opacity) * update_speed;
+	fapproach_asymptotic_p(&boss->hud.global_opacity, target_opacity, update_speed, 1e-2);
+	fapproach_asymptotic_p(&boss->hud.spell_opacity, target_spell_opacity, update_speed, 1e-2);
+	fapproach_asymptotic_p(&boss->hud.plrproximity_opacity, target_plrproximity_opacity, update_speed, 1e-2);
 }
 
 static void draw_radial_healthbar(Boss *boss) {
@@ -343,7 +345,7 @@ static void draw_radial_healthbar(Boss *boss) {
 }
 
 static void draw_linear_healthbar(Boss *boss) {
-	float opacity = boss->healthbar.opacity * boss->hud.global_opacity;
+	float opacity = boss->healthbar.opacity * boss->hud.global_opacity * boss->hud.plrproximity_opacity;
 
 	if(opacity == 0) {
 		return;
@@ -390,7 +392,9 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	float y_text_offset = 5 - font_get_metrics(font)->descent;
 	complex x = x0 + ((VIEWPORT_W - 10) + I*(y_offset + y_text_offset) - x0) * f*(f+1)*0.5;
 	int strw = text_width(font, b->current->name, 0);
-	float opacity = b->hud.spell_opacity * b->hud.global_opacity;
+
+	float opacity_noplr = b->hud.spell_opacity * b->hud.global_opacity;
+	float opacity = opacity_noplr * b->hud.plrproximity_opacity;
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = "spell",
@@ -411,13 +415,15 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	r_mat_scale(scale,scale,1);
 	r_mat_rotate_deg(360*f,1,1,0);
 
-	float spellname_opacity = opacity * min(1, warn_progress/0.6);
+	float spellname_opacity_noplr = opacity_noplr * min(1, warn_progress/0.6);
+	float spellname_opacity = spellname_opacity_noplr * b->hud.plrproximity_opacity;
+
 	draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, b->current->name, font, color_mul_scalar(RGBA(1, 1, 1, 1), spellname_opacity));
 
-	if(spellname_opacity < 1) {
+	if(spellname_opacity_noplr < 1) {
 		r_mat_push();
-		r_mat_scale(2 - spellname_opacity, 2 - spellname_opacity, 1);
-		draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, b->current->name, font, color_mul_scalar(RGBA(1, 1, 1, 1), spellname_opacity * 0.5));
+		r_mat_scale(2 - spellname_opacity_noplr, 2 - spellname_opacity_noplr, 1);
+		draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, b->current->name, font, color_mul_scalar(RGBA(1, 1, 1, 1), spellname_opacity_noplr * 0.5));
 		r_mat_pop();
 	}
 
@@ -575,7 +581,7 @@ void draw_boss_hud(Boss *boss) {
 		return;
 	}
 
-	float o = boss->hud.global_opacity;
+	float o = boss->hud.global_opacity * boss->hud.plrproximity_opacity;
 
 	if(o > 0) {
 		draw_boss_text(ALIGN_LEFT, 10, 20 + 8 * !radial_style, boss->name, get_font("standard"), RGBA(o, o, o, o));

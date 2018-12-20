@@ -824,10 +824,20 @@ void draw_options_menu(MenuData *menu) {
 							.color = &clr,
 						});
 					} else if(bind->configentry == CONFIG_PRACTICE_POWER) {
-						int stars = PLR_MAX_POWER / 100;
-						r_shader_standard();
-						draw_stars(origin - 20 * (stars - 0.5), 20*i, val, 0, stars, 100, alpha, 20);
-						r_shader("text_default");
+						Font *fnt_int = get_font("standard");
+						Font *fnt_fract = get_font("small");
+
+						draw_fraction(
+							val,
+							ALIGN_RIGHT,
+							origin,
+							20*i,
+							fnt_int,
+							fnt_fract,
+							&clr,
+							&clr,
+							false
+						);
 					} else for(j = bind->displaysingle? val : bind->valcount-1; (j+1) && (!bind->displaysingle || j == val); --j) {
 						if(j != bind->valcount-1 && !bind->displaysingle) {
 							origin -= text_width(get_font("standard"), bind->values[j+1], 0) + 5;

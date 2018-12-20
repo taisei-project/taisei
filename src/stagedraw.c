@@ -43,6 +43,9 @@ static struct {
 			Color active;
 			Color inactive;
 			Color label;
+			Color label_power;
+			Color label_value;
+			Color label_graze;
 		} color;
 	} hud_text;
 
@@ -64,9 +67,12 @@ static struct {
 } stagedraw = {
 	.hud_text.color = {
 		// NOTE: premultiplied alpha
-		.active   = { 1.00, 1.00, 1.00, 1.00 },
-		.inactive = { 0.49, 0.49, 0.49, 0.70 },
-		.label    = { 0.49, 0.49, 0.49, 0.70 },
+		.active      = { 1.00, 1.00, 1.00, 1.00 },
+		.inactive    = { 0.50, 0.50, 0.50, 0.70 },
+		.label       = { 1.00, 1.00, 1.00, 1.00 },
+		.label_power = { 1.00, 0.50, 0.50, 1.00 },
+		.label_value = { 0.30, 0.60, 1.00, 1.00 },
+		.label_graze = { 0.50, 1.00, 0.50, 1.00 },
 	}
 };
 
@@ -304,7 +310,6 @@ void stage_draw_init(void) {
 	NULL);
 
 	preload_resources(RES_FONT, RESF_PERMANENT,
-		"hud",
 		"mono",
 		"small",
 		"monosmall",
@@ -327,7 +332,7 @@ void stage_draw_init(void) {
 
 	stagedraw.viewport_pp = get_resource_data(RES_POSTPROCESS, "viewport", RESF_OPTIONAL);
 	stagedraw.hud_text.shader = r_shader_get("text_hud");
-	stagedraw.hud_text.font = get_font("hud");
+	stagedraw.hud_text.font = get_font("standard");
 	stagedraw.shaders.fxaa = r_shader_get("fxaa");
 	stagedraw.shaders.copy_depth = r_shader_get("copy_depth");
 
@@ -839,7 +844,7 @@ struct glyphcb_state {
 static int draw_numeric_callback(Font *font, charcode_t charcode, SpriteParams *spr_params, void *userdata) {
 	struct glyphcb_state *st = userdata;
 
-	if(charcode != '0') {
+	if(charcode != '0' && charcode != ',') {
 		st->color = &stagedraw.hud_text.color.active;
 	}
 
@@ -847,14 +852,36 @@ static int draw_numeric_callback(Font *font, charcode_t charcode, SpriteParams *
 	return 0;
 }
 
-static inline void stage_draw_hud_power_value(float ypos) {
-	draw_fraction(
+static inline void stage_draw_hud_power_value(float xpos, float ypos) {
+	Font *fnt_int = get_font("standard");
+	Font *fnt_fract = get_font("small");
+
+	xpos = draw_fraction(
 		global.plr.power / 100.0,
-		ALIGN_RIGHT,
-		170,
+		ALIGN_LEFT,
+		xpos,
 		ypos,
-		get_font("standard"),
-		get_font("small"),
+		fnt_int,
+		fnt_fract,
+		&stagedraw.hud_text.color.active,
+		&stagedraw.hud_text.color.inactive,
+		false
+	);
+
+	xpos += text_draw(" / ", &(TextParams) {
+		.pos = { xpos, ypos },
+		.color = &stagedraw.hud_text.color.active,
+		.align = ALIGN_LEFT,
+		.font_ptr = fnt_int,
+	});
+
+	draw_fraction(
+		PLR_MAX_POWER / 100.0,
+		ALIGN_LEFT,
+		xpos,
+		ypos,
+		fnt_int,
+		fnt_fract,
 		&stagedraw.hud_text.color.active,
 		&stagedraw.hud_text.color.inactive,
 		false
@@ -862,21 +889,28 @@ static inline void stage_draw_hud_power_value(float ypos) {
 }
 
 static void stage_draw_hud_score(Alignment a, float xpos, float ypos, char *buf, size_t bufsize, uint32_t score) {
-	snprintf(buf, bufsize, "%010u", score);
+	format_huge_num(10, score, bufsize, buf);
+
+	Font *fnt = get_font("standard");
+	bool kern_saved = font_get_kerning_enabled(fnt);
+	font_set_kerning_enabled(fnt, false);
+
 	text_draw(buf, &(TextParams) {
 		.pos = { xpos, ypos },
-		.font = "mono",
+		.font = "standard",
 		.align = ALIGN_RIGHT,
 		.glyph_callback = {
 			draw_numeric_callback,
 			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive },
 		}
 	});
+
+	font_set_kerning_enabled(fnt, kern_saved);
 }
 
 static void stage_draw_hud_scores(float ypos_hiscore, float ypos_score, char *buf, size_t bufsize) {
-	stage_draw_hud_score(ALIGN_RIGHT, 170, (int)ypos_hiscore, buf, bufsize, progress.hiscore);
-	stage_draw_hud_score(ALIGN_RIGHT, 170, (int)ypos_score,   buf, bufsize, global.plr.points);
+	stage_draw_hud_score(ALIGN_RIGHT, 170, ypos_hiscore, buf, bufsize, progress.hiscore);
+	stage_draw_hud_score(ALIGN_RIGHT, 170, ypos_score,   buf, bufsize, global.plr.points);
 }
 
 static void stage_draw_hud_objpool_stats(float x, float y, float width) {
@@ -918,12 +952,12 @@ struct labels_s {
 	} x;
 
 	struct {
-		float mono_ofs;
 		float hiscore;
 		float score;
 		float lives;
 		float bombs;
 		float power;
+		float value;
 		float graze;
 	} y;
 };
@@ -936,12 +970,12 @@ static void draw_graph(float x, float y, float w, float h) {
 	r_mat_pop();
 }
 
-static void draw_label(const char *label_str, double y_ofs, struct labels_s* labels) {
+static void draw_label(const char *label_str, double y_ofs, struct labels_s* labels, Color *clr) {
 	text_draw(label_str, &(TextParams) {
 		.font_ptr = stagedraw.hud_text.font,
 		.shader_ptr = stagedraw.hud_text.shader,
 		.pos = { labels->x.ofs, y_ofs },
-		.color = &stagedraw.hud_text.color.label,
+		.color = clr,
 	});
 }
 
@@ -952,42 +986,70 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	r_shader_ptr(stagedraw.hud_text.shader);
 
 	// Labels
-	draw_label("Hi-Score:", labels->y.hiscore, labels);
-	draw_label("Score:",    labels->y.score,   labels);
-	draw_label("Lives:",    labels->y.lives,   labels);
-	draw_label("Spells:",   labels->y.bombs,   labels);
-	draw_label("Power:",    labels->y.power,   labels);
-	draw_label("Graze:",    labels->y.graze,   labels);
+	draw_label("Hi-Score:",    labels->y.hiscore, labels, &stagedraw.hud_text.color.label);
+	draw_label("Score:",       labels->y.score,   labels, &stagedraw.hud_text.color.label);
+	draw_label("Lives:",       labels->y.lives,   labels, &stagedraw.hud_text.color.label);
+	draw_label("Spell Cards:", labels->y.bombs,   labels, &stagedraw.hud_text.color.label);
+
+	r_mat_push();
+	r_mat_translate(28, 0, 0);
+	draw_label("Power:",       labels->y.power,   labels, &stagedraw.hud_text.color.label_power);
+	draw_label("Value:",       labels->y.value,   labels, &stagedraw.hud_text.color.label_value);
+	draw_label("Graze:",       labels->y.graze,   labels, &stagedraw.hud_text.color.label_graze);
+	r_mat_pop();
 
 	if(stagedraw.objpool_stats) {
 		stage_draw_hud_objpool_stats(labels->x.ofs, labels->y.graze + 32, 250);
 	}
 
 	// Score/Hi-Score values
-	stage_draw_hud_scores(labels->y.hiscore + labels->y.mono_ofs, labels->y.score + labels->y.mono_ofs, buf, sizeof(buf));
+	stage_draw_hud_scores(labels->y.hiscore, labels->y.score, buf, sizeof(buf));
 
 	// Lives and Bombs (N/A)
 	if(global.stage->type == STAGE_SPELL) {
 		r_color4(0.7, 0.7, 0.7, 0.7);
-		text_draw("N/A", &(TextParams) { .pos = { -6, labels->y.lives }, .font_ptr = stagedraw.hud_text.font });
-		text_draw("N/A", &(TextParams) { .pos = { -6, labels->y.bombs }, .font_ptr = stagedraw.hud_text.font });
+		text_draw("N/A", &(TextParams) { .pos = { 170, labels->y.lives }, .font_ptr = stagedraw.hud_text.font, .align = ALIGN_RIGHT });
+		text_draw("N/A", &(TextParams) { .pos = { 170, labels->y.bombs }, .font_ptr = stagedraw.hud_text.font, .align = ALIGN_RIGHT });
 		r_color4(1, 1, 1, 1.0);
 	}
 
-	// Power value
-	stage_draw_hud_power_value(labels->y.power + labels->y.mono_ofs);
+	r_mat_push();
+	r_mat_translate(16, 0, 0);
 
-	// Graze value
-	snprintf(buf, sizeof(buf), "%05i", global.plr.graze);
+	// Power value
+	stage_draw_hud_power_value(0, labels->y.power);
+
+	Font *fnt = get_font("standard");
+	bool kern_saved = font_get_kerning_enabled(fnt);
+	font_set_kerning_enabled(fnt, false);
+
+	// Point Item Value... value
+	// TODO: placeholder until the mechanic is actually implemented/powersurge is merged
+	format_huge_num(6, 9001, sizeof(buf), buf);
 	text_draw(buf, &(TextParams) {
-		.pos = { -6, labels->y.graze },
+		.pos = { 0, labels->y.value },
 		.shader_ptr = stagedraw.hud_text.shader,
-		.font = "mono",
+		.font_ptr = fnt,
 		.glyph_callback = {
 			draw_numeric_callback,
 			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive },
 		}
 	});
+
+	// Graze value
+	format_huge_num(6, global.plr.graze, sizeof(buf), buf);
+	text_draw(buf, &(TextParams) {
+		.pos = { 0, labels->y.graze },
+		.shader_ptr = stagedraw.hud_text.shader,
+		.font_ptr = fnt,
+		.glyph_callback = {
+			draw_numeric_callback,
+			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive },
+		}
+	});
+
+	font_set_kerning_enabled(fnt, kern_saved);
+	r_mat_pop();
 
 	// Warning: pops outer matrix!
 	r_mat_pop();
@@ -1155,9 +1217,6 @@ void stage_draw_hud(void) {
 	// Set up positions of most HUD elements
 	static struct labels_s labels = {
 		.x.ofs = -75,
-
-		// XXX: is there a more robust way to level the monospace font with the label one?
-		// .y.mono_ofs = 0.5,
 	};
 
 	const float label_height = 33;
@@ -1168,21 +1227,17 @@ void stage_draw_hud(void) {
 	labels.y.hiscore = label_cur_height+label_height*(i++);
 	labels.y.score   = label_cur_height+label_height*(i++);
 
-	label_cur_height = 180; i = 0;
+	label_cur_height = 140; i = 0;
 	labels.y.lives   = label_cur_height+label_height*(i++);
 	labels.y.bombs   = label_cur_height+label_height*(i++);
+
+	label_cur_height = 240; i = 0;
 	labels.y.power   = label_cur_height+label_height*(i++);
+	labels.y.value   = label_cur_height+label_height*(i++);
 	labels.y.graze   = label_cur_height+label_height*(i++);
 
 	r_mat_push();
 	r_mat_translate(615, 0, 0);
-
-	// Difficulty indicator
-	r_mat_push();
-	r_mat_translate((SCREEN_W - 615) * 0.25, SCREEN_H-170, 0);
-	r_mat_scale(0.6, 0.6, 0);
-	draw_sprite(0, 0, difficulty_sprite_name(global.diff));
-	r_mat_pop();
 
 	// Set up variables for Extra Spell indicator
 	float a = 1, s = 0, fadein = 1, fadeout = 1, fade = 1;
@@ -1198,12 +1253,88 @@ void stage_draw_hud(void) {
 
 	// Lives and Bombs
 	if(global.stage->type != STAGE_SPELL) {
-		draw_stars(0, labels.y.lives, global.plr.lives, global.plr.life_fragments, PLR_MAX_LIVES, PLR_MAX_LIFE_FRAGMENTS, a, 20);
-		draw_stars(0, labels.y.bombs, global.plr.bombs, global.plr.bomb_fragments, PLR_MAX_BOMBS, PLR_MAX_BOMB_FRAGMENTS, a, 20);
+		r_mat_push();
+		r_mat_translate(0, font_get_metrics(get_font("standard"))->descent * 0.5, 0);
+
+		Sprite *spr_life = get_sprite("hud/heart");
+		Sprite *spr_bomb = get_sprite("hud/star");
+
+		float spacing = 1;
+		float pos_lives = 170 - (PLR_MAX_LIVES - 0.5) * spr_life->w - (PLR_MAX_LIVES - 1.5) * spacing;
+		float pos_bombs = 170 - (PLR_MAX_BOMBS - 0.5) * spr_bomb->w - (PLR_MAX_BOMBS - 1.5) * spacing;
+
+		draw_fragments(&(DrawFragmentsParams) {
+			.fill = spr_life,
+			.pos = { pos_lives, labels.y.lives },
+			.origin_offset = { 0, 0 },
+			.limits = { PLR_MAX_LIVES, PLR_MAX_LIFE_FRAGMENTS },
+			.filled = { global.plr.lives, global.plr.life_fragments },
+			.alpha = a,
+			.spacing = 1,
+			.color = {
+				.fill = RGBA(1, 1, 1, 1),
+				.back = RGBA(0, 0, 0, 0.5),
+				.frag = RGBA(0.5, 0.5, 0.6, 0.5),
+			}
+		});
+
+		draw_fragments(&(DrawFragmentsParams) {
+			.fill = spr_bomb,
+			.pos = { pos_bombs, labels.y.bombs },
+			.origin_offset = { 0, 0.05 },
+			.limits = { PLR_MAX_BOMBS, PLR_MAX_BOMB_FRAGMENTS },
+			.filled = { global.plr.bombs, global.plr.bomb_fragments },
+			.alpha = a,
+			.spacing = 1,
+			.color = {
+				.fill = RGBA(1, 1, 1, 1),
+				.back = RGBA(0, 0, 0, 0.5),
+				.frag = RGBA(0.5, 0.5, 0.6, 0.5),
+			}
+		});
+
+		r_mat_pop();
 	}
 
-	// Power stars
-	draw_stars(0, labels.y.power, global.plr.power / 100, global.plr.power % 100, PLR_MAX_POWER / 100, 100, 1, 20);
+	// Difficulty indicator
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = difficulty_sprite_name(global.diff),
+		.pos = { (SCREEN_W - 615) * 0.25, SCREEN_H-170 },
+		.scale.both = 0.6,
+		.shader = "sprite_default",
+	});
+
+	// Power/Item icons
+	r_mat_push();
+	r_mat_translate(14 + labels.x.ofs, font_get_metrics(get_font("standard"))->descent * 0.5, 0);
+
+	r_draw_sprite(&(SpriteParams) {
+		.pos = { 2, labels.y.power + 2 },
+		.sprite = "item/power",
+		.shader = "sprite_default",
+		.color = RGBA(0, 0, 0, 0.5),
+	});
+
+	r_draw_sprite(&(SpriteParams) {
+		.pos = { 0, labels.y.power },
+		.sprite = "item/power",
+		.shader = "sprite_default",
+	});
+
+	r_draw_sprite(&(SpriteParams) {
+		.pos = { 2, labels.y.value + 2 },
+		.sprite = "item/point",
+		.shader = "sprite_default",
+		.color = RGBA(0, 0, 0, 0.5),
+	});
+
+	r_draw_sprite(&(SpriteParams) {
+		.pos = { 0, labels.y.value },
+		.sprite = "item/point",
+		.shader = "sprite_default",
+	});
+
+	r_mat_pop();
 
 	ShaderProgram *sh_prev = r_shader_current();
 	r_shader("text_default");

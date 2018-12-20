@@ -45,54 +45,57 @@ void fade_out(float f) {
 	colorfill(0, 0, 0, f);
 }
 
-void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxfrags, float alpha, float star_width) {
-	Sprite *star = get_sprite("star");
+void draw_fragments(const DrawFragmentsParams *params) {
 	int i = 0;
-	float scale = star_width/star->w;
 
-	Color *fill_clr = color_mul_scalar(RGBA(1.00, 1.00, 1.00, 1.00), alpha);
-	Color *back_clr = color_mul_scalar(RGBA(0.04, 0.12, 0.20, 0.20), alpha);
-	Color *frag_clr = color_mul_scalar(RGBA(0.47, 0.56, 0.65, 0.65), alpha);
+	const Color *fill_clr = params->color.fill;
+	const Color *back_clr = params->color.back;
+	const Color *frag_clr = params->color.frag;
 
-	// XXX: move to call site?
-	y -= 2;
+	if(params->alpha < 1) {
+		fill_clr = color_mul_scalar(COLOR_COPY(fill_clr), params->alpha);
+		frag_clr = color_mul_scalar(COLOR_COPY(frag_clr), params->alpha);
+		back_clr = color_mul_scalar(COLOR_COPY(back_clr), params->alpha);
+	}
 
 	ShaderProgram *prog_saved = r_shader_current();
 	r_shader("sprite_circleclipped_indicator");
 	r_uniform_vec4_rgba("back_color", back_clr);
+	r_uniform_vec2_vec("origin_ofs", (float*)&params->origin_offset);
+
+	r_flush_sprites();
+
+	float spacing = params->spacing + params->fill->w;
 
 	r_mat_push();
-	r_mat_translate(x - star_width, y, 0);
+	r_mat_translate(params->pos.x - spacing, params->pos.y, 0);
 
-	while(i < numstars) {
-		r_mat_translate(star_width, 0, 0);
+	while(i < params->filled.elements) {
+		r_mat_translate(spacing, 0, 0);
 		r_draw_sprite(&(SpriteParams) {
-			.sprite_ptr = star,
+			.sprite_ptr = params->fill,
 			.shader_params = &(ShaderCustomParams){{ 1 }},
 			.color = fill_clr,
-			.scale.both = scale,
 		});
 		i++;
 	}
 
-	if(numfrags) {
-		r_mat_translate(star_width, 0, 0);
+	if(params->filled.fragments) {
+		r_mat_translate(spacing, 0, 0);
 		r_draw_sprite(&(SpriteParams) {
-			.sprite_ptr = star,
-			.shader_params = &(ShaderCustomParams){{ numfrags / (float)maxfrags }},
+			.sprite_ptr = params->fill,
+			.shader_params = &(ShaderCustomParams){{ params->filled.fragments / (float)params->limits.fragments }},
 			.color = frag_clr,
-			.scale.both = scale,
 		});
 		i++;
 	}
 
-	while(i < maxstars) {
-		r_mat_translate(star_width, 0, 0);
+	while(i < params->limits.elements) {
+		r_mat_translate(spacing, 0, 0);
 		r_draw_sprite(&(SpriteParams) {
-			.sprite_ptr = star,
+			.sprite_ptr = params->fill,
 			.shader_params = &(ShaderCustomParams){{ 0 }},
 			.color = frag_clr,
-			.scale.both = scale,
 		});
 		i++;
 	}
@@ -100,23 +103,6 @@ void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxf
 	r_mat_pop();
 	r_shader_ptr(prog_saved);
 }
-
-/*
-static int draw_fraction_callback(Font *font, charcode_t charcode, SpriteParams *spr_params, void *userdata) {
-	// Sorry, this is the least horrible hack i could think of.
-	// Drawing the dot separately looks awful with the HUD shader because of how
-	// the overlay texture coords are calculated - which is some witchcraft by
-	// the way. I don't remember how and what and why I did there.
-	//
-	// The turn value here gets added to this character's advance metric.
-
-	if(charcode == '.') {
-		return -font_get_char_metrics(font, charcode)->advance / 3;
-	}
-
-	return 0;
-}
-*/
 
 double draw_fraction(double value, Alignment a, double pos_x, double pos_y, Font *f_int, Font *f_fract, const Color *c_int, const Color *c_fract, bool zero_pad) {
 	double val_int, val_fract;

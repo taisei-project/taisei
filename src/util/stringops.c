@@ -12,6 +12,7 @@
 #include <stdlib.h>
 
 #include "stringops.h"
+#include "miscmath.h"
 #include "assert.h"
 
 bool strendswith(const char *s, const char *e) {
@@ -428,4 +429,29 @@ uint32_t utf8_getch(const char **src) {
 	}
 
 	return ch;
+}
+
+void format_huge_num(uint digits, uint num, size_t bufsize, char *buf) {
+	assert(digits > 0);
+
+	div_t separators = div(digits, 3);
+	uint len = digits + (separators.quot + !!separators.rem);
+	assert(bufsize >= len);
+
+	char *p = buf;
+
+	// WARNING: i must be signed here
+	for(int i = 0; i < digits; ++i) {
+		if(i && !((i - separators.rem) % 3)) {
+			*p++ = ',';
+		}
+
+		div_t n = div(num, ipow10(digits - i - 1));
+		*p++ = '0' + n.quot;
+
+		num = n.rem;
+	}
+
+	*p = 0;
+	assert(p == buf + len - 1);
 }
