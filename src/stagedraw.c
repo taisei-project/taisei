@@ -1299,7 +1299,7 @@ void stage_draw_hud(void) {
 	// Difficulty indicator
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = difficulty_sprite_name(global.diff),
-		.pos = { (SCREEN_W - 615) * 0.25, SCREEN_H-170 },
+		.pos = { (SCREEN_W - 615) * 0.25, SCREEN_H - 250 },
 		.scale.both = 0.6,
 		.shader = "sprite_default",
 	});
