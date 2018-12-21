@@ -999,7 +999,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	r_mat_pop();
 
 	if(stagedraw.objpool_stats) {
-		stage_draw_hud_objpool_stats(labels->x.ofs, labels->y.graze + 32, 250);
+		stage_draw_hud_objpool_stats(labels->x.ofs, 390, 250);
 	}
 
 	// Score/Hi-Score values
@@ -1074,7 +1074,6 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	}
 #endif
 
-	// draw_text(ALIGN_RIGHT | AL_Flag_NoAdjust, SCREEN_W, rint(SCREEN_H - 0.5 * stringheight(buf, _fonts.monosmall)), buf, _fonts.monosmall);
 	font = get_font("monosmall");
 
 	text_draw(buf, &(TextParams) {
@@ -1180,13 +1179,13 @@ static void stage_draw_framerate_graphs(void) {
 	#define NUM_SAMPLES (sizeof(((FPSCounter){{0}}).frametimes) / sizeof(((FPSCounter){{0}}).frametimes[0]))
 	static float samples[NUM_SAMPLES];
 
-	float pad = 15;
+	float pad = 10;
 
 	float w = 260 - pad;
 	float h = 30;
 
 	float x = SCREEN_W - w - pad;
-	float y = 100;
+	float y = 320;
 
 	r_shader("graph");
 
@@ -1213,6 +1212,9 @@ static void stage_draw_framerate_graphs(void) {
 void stage_draw_hud(void) {
 	// Background
 	draw_sprite(SCREEN_W/2.0, SCREEN_H/2.0, "hud");
+
+	// TODO: refactor this whole mess of arcane magic numbers into something more sensible
+	// hahaha who am I kidding, nobody is gonna do that.
 
 	// Set up positions of most HUD elements
 	static struct labels_s labels = {
@@ -1299,7 +1301,7 @@ void stage_draw_hud(void) {
 	// Difficulty indicator
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = difficulty_sprite_name(global.diff),
-		.pos = { (SCREEN_W - 615) * 0.25, SCREEN_H - 250 },
+		.pos = { (SCREEN_W - 615) * 0.25, 400 },
 		.scale.both = 0.6,
 		.shader = "sprite_default",
 	});
@@ -1338,9 +1340,20 @@ void stage_draw_hud(void) {
 
 	ShaderProgram *sh_prev = r_shader_current();
 	r_shader("text_default");
+
 	// God Mode indicator
 	if(global.plr.iddqd) {
-		text_draw("GOD MODE", &(TextParams) { .pos = { -70, 475 }, .font = "big" });
+		Font *fnt = get_font("standard");
+		const char *txt = "God Mode is enabled!";
+		float w = text_width(fnt, txt, 0);
+
+		text_draw(txt, &(TextParams) {
+			.pos = { -615 + VIEWPORT_X + VIEWPORT_W + (SCREEN_W - VIEWPORT_X - VIEWPORT_W) * 0.5, 450 },
+			.font_ptr = fnt,
+			.shader = "text_overlay",
+			.align = ALIGN_CENTER,
+			.color = RGB(1.0, 0.5, 0.2),
+		});
 	}
 
 	// Extra Spell indicator
@@ -1351,6 +1364,8 @@ void stage_draw_hud(void) {
 		r_color(RGBA_MUL_ALPHA(0.3, 0.6, 0.7, 0.7 * s));
 		r_mat_rotate_deg(-25 + 360 * (1-s2), 0, 0, 1);
 		r_mat_scale(s2, s2, 0);
+
+		// TODO: replace this with a shader
 
 		text_draw("Extra Spell!", &(TextParams) { .pos = {  1,  1 }, .font = "big", .align = ALIGN_CENTER });
 		text_draw("Extra Spell!", &(TextParams) { .pos = { -1, -1 }, .font = "big", .align = ALIGN_CENTER });
