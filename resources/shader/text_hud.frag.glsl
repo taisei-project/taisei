@@ -1,12 +1,20 @@
 #version 330 core
 
 #include "lib/render_context.glslh"
-#include "lib/util.glslh"
 #include "interface/sprite.glslh"
+#include "lib/util.glslh"
 
 void main(void) {
-	vec4 texel = texture(tex, texCoord);
-	float gradient = 0.8 + 0.2 * flip_native_to_bottomleft(texCoordOverlay.y);
-	fragColor = color * texel.r * gradient;
-	fragColor.rgb *= gradient;
+    float gradient = 0.5 + 0.5 * flip_native_to_bottomleft(texCoordOverlay.y);
+    vec2 tc = flip_native_to_topleft(texCoord);
+
+    vec3 outlines = texture(tex, flip_topleft_to_native(tc)).rgb;
+    vec4 clr = vec4(color.rgb * gradient, color.a);
+
+    vec4 border = vec4(vec3(0), 0.75 * outlines.g * clr.a);
+    vec4 fill = clr * outlines.r;
+    vec4 highlight = vec4(vec3(0.15 * outlines.b) * clr.a, 0);
+
+    fragColor = alphaCompose(border, alphaCompose(fill, highlight));
+    // fragColor = alphaCompose(border, fill);
 }

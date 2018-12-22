@@ -51,7 +51,7 @@ Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 
 static double draw_boss_text(Alignment align, float x, float y, const char *text, Font *fnt, const Color *clr) {
 	return text_draw(text, &(TextParams) {
-		.shader = "text_overlay",
+		.shader = "text_hud",
 		.pos = { x, y },
 		.color = clr,
 		.font_ptr = fnt,
@@ -622,7 +622,7 @@ void draw_boss_hud(Boss *boss) {
 			align = ALIGN_RIGHT;
 		}
 
-		r_shader("text_overlay");
+		r_shader("text_hud");
 		draw_fraction(remaining, align, pos_x, pos_y, f_int, f_fract, &clr_int, &clr_fract, true);
 		r_shader("sprite_default");
 
@@ -1241,11 +1241,12 @@ void boss_preload(void) {
 	NULL);
 
 	preload_resources(RES_SPRITE, RESF_DEFAULT,
-		"boss_indicator",
-		"part/boss_shadow",
-		"part/arc",
-		"boss_spellcircle0",
 		"boss_circle",
+		"boss_indicator",
+		"boss_spellcircle0",
+		"part/arc",
+		"part/boss_shadow",
+		"spell",
 	NULL);
 
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,

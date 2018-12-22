@@ -285,6 +285,8 @@ void stage_draw_init(void) {
 	NULL);
 
 	preload_resources(RES_SPRITE, RESF_PERMANENT,
+		"hud/heart",
+		"hud/star",
 		"star",
 		"hud",
 	NULL);
@@ -1083,7 +1085,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	});
 
 	if(global.replaymode == REPLAY_PLAY) {
-		r_shader("text_hud");
+		r_shader_ptr(stagedraw.hud_text.shader);
 		// XXX: does it make sense to use the monospace font here?
 
 		snprintf(buf, sizeof(buf), "Replay: %s (%i fps)", global.replay.playername, global.replay_stage->fps);
@@ -1345,12 +1347,11 @@ void stage_draw_hud(void) {
 	if(global.plr.iddqd) {
 		Font *fnt = get_font("standard");
 		const char *txt = "God Mode is enabled!";
-		float w = text_width(fnt, txt, 0);
 
 		text_draw(txt, &(TextParams) {
 			.pos = { -615 + VIEWPORT_X + VIEWPORT_W + (SCREEN_W - VIEWPORT_X - VIEWPORT_W) * 0.5, 450 },
 			.font_ptr = fnt,
-			.shader = "text_overlay",
+			.shader_ptr = stagedraw.hud_text.shader,
 			.align = ALIGN_CENTER,
 			.color = RGB(1.0, 0.5, 0.2),
 		});

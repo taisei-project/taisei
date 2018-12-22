@@ -1049,6 +1049,7 @@ void projectiles_preload(void) {
 		"sprite_silhouette",
 		defaults_proj.shader,
 		defaults_part.shader,
+		"sprite_bullet_dead",
 	};
 
 	const uint num_shaders = sizeof(shaders)/sizeof(*shaders);
@@ -1066,14 +1067,17 @@ void projectiles_preload(void) {
 	// some of these are ubiquitous, but some only appear in very specific parts.
 	preload_resources(RES_SPRITE, RESF_PERMANENT,
 		"part/blast",
+		"part/bullet_cloud",
 		"part/flare",
-		"part/petal",
-		"part/smoke",
-		"part/stain",
+		"part/graze",
 		"part/lightning0",
 		"part/lightning1",
 		"part/lightningball",
+		"part/petal",
+		"part/smoke",
 		"part/smoothdot",
+		"part/stain",
+		"part/stardust_green",
 	NULL);
 
 	preload_resources(RES_SFX, RESF_PERMANENT,

@@ -164,12 +164,14 @@ static void stage5_start(void) {
 static void stage5_preload(void) {
 	preload_resources(RES_BGM, RESF_OPTIONAL, "stage5", "stage5boss", NULL);
 	preload_resources(RES_SPRITE, RESF_DEFAULT,
+		"dialog/iku",
+		"part/blast_huge_halo",
+		"part/blast_huge_rays",
 		"stage5/noise",
 		"stage5/spell_bg",
 		"stage5/spell_clouds",
 		"stage5/spell_lightning",
 		"stage5/tower",
-		"dialog/iku",
 	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"tower_light",

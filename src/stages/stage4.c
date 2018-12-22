@@ -277,6 +277,7 @@ static void stage4_preload(void) {
 	preload_resources(RES_SFX, RESF_OPTIONAL,
 		"laser1",
 		"boom",
+		"warp",
 	NULL);
 
 	// XXX: Special case for spell practice of the god damn extra spell, because it always needs a special case.
