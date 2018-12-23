@@ -604,6 +604,10 @@ static FrameAction stage_logic_frame(void *arg) {
 
 	stage_update_fps(fstate);
 
+	if(global.shake_view > 30) {
+		global.shake_view = 30;
+	}
+
 	if(global.shake_view_fade) {
 		global.shake_view -= global.shake_view_fade;
 
