@@ -516,12 +516,19 @@ static void draw_spellbg(int t) {
 }
 
 static inline bool should_draw_stage_bg(void) {
+	if(!global.boss)
+		return false;
+
+	int render_delay = 1.25*ATTACK_START_DELAY; // hand tuned... not ideal
+	if(global.boss->current->type == AT_ExtraSpell)
+		render_delay = 0;
+	
 	return (
 		!global.boss
 		|| !global.boss->current
 		|| !global.boss->current->draw_rule
 		|| global.boss->current->endtime
-		|| (global.frames - global.boss->current->starttime) < 1.25*ATTACK_START_DELAY
+		|| (global.frames - global.boss->current->starttime) < render_delay
 	);
 }
 
