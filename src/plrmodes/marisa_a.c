@@ -405,7 +405,7 @@ static void masterspark_visual(Enemy *e, int t2, bool render) {
 		fade = pow(fade, 5);
 	}
 
-	marisa_common_masterspark_draw(global.plr.pos - 30 * I, 800 + I * VIEWPORT_H * 1.25, carg(e->args[0]), t2, fade);
+	marisa_common_masterspark_draw(1, &(MarisaBeamInfo){global.plr.pos - 30 * I, 800 + I * VIEWPORT_H * 1.25, carg(e->args[0]), t2}, fade);
 }
 
 static int masterspark_star(Projectile *p, int t) {
