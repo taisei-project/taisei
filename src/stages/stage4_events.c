@@ -837,7 +837,7 @@ static Projectile* vapor_particle(complex pos, const Color *clr) {
 		.color = clr,
 		.timeout = 60,
 		.draw_rule = ScaleFade,
-		.args = { 0, 0, 0.0 + 5.0*I },
+		.args = { 0, 0, 0.2 + 2.0*I },
 		.pos = pos,
 		.angle = M_PI*2*frand(),
 	);
@@ -921,7 +921,7 @@ int kdanmaku_slave(Enemy *e, int t) {
 					.flags = PFLAG_NOSPAWNFLARE,
 				);
 
-				if(frand()<0.5) {
+				if(frand()<0.4) {
 					vapor_particle(p, RGBA(1, 0.25 * frand(), 0.25 * frand(), 0.0));
 				}
 			}
