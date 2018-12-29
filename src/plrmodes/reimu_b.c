@@ -306,18 +306,18 @@ static void reimu_dream_spawn_warp_effect(complex pos, bool exit) {
 		.timeout = 20,
 		.angle = frand() * M_PI * 2,
 		.draw_rule = ScaleFade,
-		.args = { 0, 0, 1 + 2 * I },
+		.args = { 0, 0, 0.2 + 1 * I },
 		.layer = LAYER_PLAYER_FOCUS,
 	);
 
 	PARTICLE(
 		.sprite = exit ? "stain" : "stardust",
 		.pos = pos,
-		.color = color_mul_scalar(RGBA(0.75, 0.4 * frand(), 0.4, 0), 0.8),
+		.color = color_mul_scalar(RGBA(0.75, 0.4 * frand(), 0.4, 0), 0.8-0.4*exit),
 		.timeout = 20,
 		.angle = frand() * M_PI * 2,
 		.draw_rule = ScaleFade,
-		.args = { 0, 0, 0.25 + 1.5 * I },
+		.args = { 0, 0, 0.1 + 0.6 * I },
 		.layer = LAYER_PLAYER_FOCUS,
 	);
 }

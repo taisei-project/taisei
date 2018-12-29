@@ -141,10 +141,11 @@ static Projectile* spawn_stain(complex pos, float angle, int to) {
 	return PARTICLE(
 		.sprite = "stain",
 		.pos = pos,
-		.draw_rule = GrowFade,
+		.draw_rule = ScaleFade,
 		.timeout = to,
 		.angle = angle,
-		.color = RGBA(1, 1, 1, 0),
+		.color = RGBA(0.4, 0.4, 0.4, 0),
+		.args = {0, 0, 0.8*I}
 	);
 }
 

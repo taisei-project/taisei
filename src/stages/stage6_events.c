@@ -674,13 +674,14 @@ void Baryon(Enemy *e, int t, bool render) {
 	Enemy *n;
 
 	if(!render) {
-		if(!(t % 10) && global.boss && cabs(e->pos - global.boss->pos) > 2) {
+		if(!(t % 5) && global.boss && cabs(e->pos - global.boss->pos) > 2) {
 			PARTICLE(
 				.sprite = "stain",
+				.size = 100*(1+I),
 				.pos = e->pos+10*frand()*cexp(2.0*I*M_PI*frand()),
-				.color = RGBA(0, 1, 0.7, 0.0),
+				.color = RGBA(0, 0.4, 0.3, 0.0),
 				.draw_rule = Fade,
-				.timeout = 50,
+				.timeout = 20,
 				.angle = 2*M_PI*frand(),
 			);
 		}
@@ -713,7 +714,7 @@ void BaryonCenter(Enemy *e, int t, bool render) {
 			.args = { 1-I },
 		);
 
-		PARTICLE("stain", p, RGBA(0.0, 1.0, 0.2, 0.0),
+		PARTICLE("stain", p, RGBA(0.0, 0.5, 0.1, 0.0),
 			.draw_rule = Fade,
 			.timeout = 50,
 			.angle = 2*M_PI*frand(),

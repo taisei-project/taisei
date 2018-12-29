@@ -57,6 +57,7 @@ static int reimu_spirit_needle(Projectile *p, int t) {
 
 	Color c = p->color;
 	color_mul(&c, RGBA_MUL_ALPHA(0.75, 0.5, 1, 0.5));
+	color_mul_scalar(&c, 0.6);
 	c.a = 0;
 
 	PARTICLE(
@@ -64,7 +65,7 @@ static int reimu_spirit_needle(Projectile *p, int t) {
 		.color = &c,
 		.timeout = 12,
 		.pos = p->pos,
-		.args = { p->args[0] * 0.8, 0, 0+3*I },
+		.args = { p->args[0] * 0.8, 0, 0+2*I },
 		.rule = linear,
 		.draw_rule = ScaleFade,
 		.layer = LAYER_PARTICLE_LOW,
@@ -86,7 +87,7 @@ static void reimu_spirit_homing_draw(Projectile *p, int t) {
 }
 
 static Projectile* reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, double vfactor) {
-	Color *c = HSLA_MUL_ALPHA(t * 0.1, 0.6, 0.7, 0.45);
+	Color *c = HSLA_MUL_ALPHA(t * 0.1, 0.6, 0.7, 0.2);
 	c->a = 0;
 
 	return PARTICLE(
@@ -95,7 +96,7 @@ static Projectile* reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, doubl
 		.color = c,
 		.timeout = 12,
 		.pos = p->pos,
-		.args = { p->args[0] * (0.6 + 0.4 * frand()) * vfactor, 0, (1+2*I) * REIMU_SPIRIT_HOMING_SCALE },
+		.args = { p->args[0] * (0.6 + 0.4 * frand()) * vfactor, 0, (0.5+1*I) * REIMU_SPIRIT_HOMING_SCALE },
 		.angle = p->angle,
 		.rule = linear,
 		.draw_rule = ScaleFade,
@@ -126,7 +127,7 @@ static Projectile* reimu_spirit_spawn_homing_impact(Projectile *p, int t) {
 		.color = &p->color,
 		.timeout = 32,
 		.pos = p->pos,
-		.args = { 0, 0, (1+2*I) * REIMU_SPIRIT_HOMING_SCALE },
+		.args = { 0, 0, (0.5+1.5*I) * REIMU_SPIRIT_HOMING_SCALE },
 		.angle = p->angle,
 		.rule = reimu_spirit_homing_impact,
 		.draw_rule = ScaleFade,
@@ -326,13 +327,13 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 		PARTICLE(
 			.sprite_ptr = get_sprite("part/stain"),
 			// .color = reimu_spirit_orb_color(&(Color){0}, i),
-			.color = HSLA(t/p->timeout, 0.5, 0.5, 0.0),
+			.color = HSLA(t/p->timeout, 0.3, 0.3, 0.0),
 			.pos = pos,
 			.angle = 2*M_PI*frand(),
 			.timeout = 30,
 			.draw_rule = ScaleFade,
 			.rule = reimu_spirit_bomb_orb_trail,
-			.args = { v, 0, 0.8 },
+			.args = { v, 0, 0.4 },
 		);
 	}
 	
@@ -509,10 +510,10 @@ static void reimu_spirit_yinyang_focused_visual(Enemy *e, int t, bool render) {
 	if(!render && player_should_shoot(&global.plr, true)) {
 		PARTICLE(
 			.sprite = "stain",
-			.color = RGBA(1, 0.0 + 0.5 * frand(), 0, 0),
+			.color = RGBA(0.5, 0.0 + 0.25 * frand(), 0, 0),
 			.timeout = 12 + 2 * nfrand(),
 			.pos = e->pos,
-			.args = { -5*I * (1 + frand()), 0, 0.5 + 0*I },
+			.args = { -5*I * (1 + frand()), 0, 0.3 + 0*I },
 			.angle = 2*M_PI*frand(),
 			.rule = reimu_spirit_yinyang_flare,
 			.draw_rule = ScaleFade,
@@ -529,10 +530,10 @@ static void reimu_spirit_yinyang_unfocused_visual(Enemy *e, int t, bool render) 
 	if(!render && player_should_shoot(&global.plr, true)) {
 		PARTICLE(
 			.sprite = "stain",
-			.color = RGBA(1, 0.25, 0.0 + 0.5 * frand(), 0),
+			.color = RGBA(0.5, 0.125, 0.0 + 0.25 * frand(), 0),
 			.timeout = 12 + 2 * nfrand(),
 			.pos = e->pos,
-			.args = { -5*I * (1 + frand()), 0, 0.5 + 0*I },
+			.args = { -5*I * (1 + frand()), 0, 0.3 + 0*I },
 			.angle = 2*M_PI*frand(),
 			.rule = reimu_spirit_yinyang_flare,
 			.draw_rule = ScaleFade,
