@@ -2015,7 +2015,7 @@ static int elly_toe_boson(Projectile *p, int t) {
 		return ACTION_NONE;
 	}
 
-	if(t == activate_time) {
+	if(t == activate_time && num_in_trail == 3) {
 		play_sound("shot_special1");
 		play_sound("redirect");
 
@@ -2030,7 +2030,7 @@ static int elly_toe_boson(Projectile *p, int t) {
 				.args = {
 					0,
 					p->args[0] * 1.0,
-					0.5 * (0.8 + 2.0 * I),
+					0.5 * (0.4 + 2.0 * I),
 					M_PI*2*frand(),
 				},
 				.angle = 0,
@@ -2075,7 +2075,7 @@ static int elly_toe_boson(Projectile *p, int t) {
 			.color = &thiscolor_additive,
 			.timeout = 60,
 			.draw_rule = ScaleFade,
-			.args = { 0, 0, 3 * I },
+			.args = { 0, 0, 2 * I },
 			.angle = M_PI*2*frand(),
 			.flags = PFLAG_REQUIREDPARTICLE,
 		);
@@ -2087,7 +2087,7 @@ static int elly_toe_boson(Projectile *p, int t) {
 		PARTICLE("stardust", p->pos, &thiscolor_additive, elly_toe_boson_effect,
 			.draw_rule = ScaleFade,
 			.timeout = 30,
-			.args = { 0, p->args[0] * 2, 3 * I, M_PI*2*frand() },
+			.args = { 0, p->args[0] * 2, 2 * I, M_PI*2*frand() },
 			.angle = 0,
 			.flags = PFLAG_REQUIREDPARTICLE,
 		);
@@ -2188,7 +2188,7 @@ static int elly_toe_fermion(Projectile *p, int t) {
 			.color = &thiscolor_additive,
 			.timeout = min(t / 6.0, 10),
 			.draw_rule = ScaleFade,
-			.args = { 0, 0, particle_scale * (1 + 2 * I) },
+			.args = { 0, 0, particle_scale * (0.5 + 2 * I) },
 			.angle = M_PI*2*frand(),
 		);
 	}
@@ -2203,15 +2203,16 @@ static int elly_toe_fermion(Projectile *p, int t) {
 			play_sound_ex("shot_special1", 5, false);
 
 			PARTICLE(
-				.sprite = "myon",
+				.sprite_ptr = get_sprite("part/blast"),
 				.pos = p->pos,
 				.color = &thiscolor_additive,
 				.rule = elly_toe_fermion_yukawa_effect,
 				.timeout = 60,
 				.draw_rule = ScaleFade,
-				.args = { add_ref(p), 0, 20 * I },
+				.args = { add_ref(p), 0, 0 + 1 * I },
 				.angle = M_PI*2*frand(),
 			);
+
 		}
 
 		p->pos0*=1.01;
@@ -2326,14 +2327,14 @@ static void elly_toe_laser_particle(Laser *l, complex origin) {
 	PARTICLE("stardust", origin, c, elly_toe_laser_particle_rule,
 		.draw_rule = ScaleFade,
 		.timeout = 30,
-		.args = { 0, 0, 2 * I, add_ref(l) },
+		.args = { 0, 0, 1.5 * I, add_ref(l) },
 		.angle = M_PI*2*frand(),
 	);
 
-	PARTICLE("stain", origin, c, elly_toe_laser_particle_rule,
+	PARTICLE("stain", origin, color_mul_scalar(COLOR_COPY(c),0.5), elly_toe_laser_particle_rule,
 		.draw_rule = ScaleFade,
 		.timeout = 20,
-		.args = { 0, 0, 2 * I, add_ref(l) },
+		.args = { 0, 0, 1 * I, add_ref(l) },
 		.angle = M_PI*2*frand(),
 		.flags = PFLAG_REQUIREDPARTICLE,
 	);
@@ -2558,24 +2559,23 @@ void elly_theory(Boss *b, int time) {
 		global.shake_view_fade=1;
 
 		PARTICLE(
-			.sprite = "blast",
-			.size = 16*(1+I), // HACK: thwart prototype (see TODO in projectile.c)
+			.sprite_ptr = get_sprite("part/blast"),
 			.pos = b->pos,
 			.color = RGBA(1.0, 0.3, 0.3, 0.0),
 			.timeout = 60,
-			.draw_rule = GrowFade,
-			.args = { 0, 4 },
+			.draw_rule = ScaleFade,
+			.args = { 0, 0, 5*I },
 			.flags = PFLAG_REQUIREDPARTICLE,
 		);
 
-		for(int i = 0; i < 10; ++i) {
+		for(int i = 0; i < 5; ++i) {
 			PARTICLE(
 				.sprite = "stain",
 				.pos = b->pos,
 				.color = RGBA(0.3, 0.3, 1.0, 0.0),
-				.timeout = 120 + 20 * nfrand(),
+				.timeout = 100 + 20 * nfrand(),
 				.draw_rule = ScaleFade,
-				.args = { 0, 0, 2 * (1 + 5 * I) },
+				.args = { 0, 0, 2 * (0.4 + 2 * I) },
 				.angle = M_PI*2*frand(),
 			);
 		}

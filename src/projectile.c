@@ -996,7 +996,7 @@ void ScaleFade(Projectile *p, int t) {
 	double scale_max = cimag(p->args[2]);
 	double timefactor = t / (double)p->timeout;
 	double scale = scale_min * (1 - timefactor) + scale_max * timefactor;
-	double alpha = pow(1 - timefactor, 2);
+	double alpha = fabs(1 - timefactor);
 
 	r_mat_scale(scale, scale, 1);
 	ProjDrawCore(p, color_mul_scalar(COLOR_COPY(&p->color), alpha));
