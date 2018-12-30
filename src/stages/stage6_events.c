@@ -674,7 +674,7 @@ void Baryon(Enemy *e, int t, bool render) {
 	Enemy *n;
 
 	if(!render) {
-		if(!(t % 5) && global.boss && cabs(e->pos - global.boss->pos) > 2) {
+		if(!(t % 10) && global.boss && cabs(e->pos - global.boss->pos) > 2) {
 			PARTICLE(
 				.sprite = "stain",
 				.size = 100*(1+I),
@@ -1629,14 +1629,29 @@ void elly_lhc(Boss *b, int t) {
 		for(i = 0; i < c; i++) {
 			complex v = 3*cexp(2.0*I*M_PI*frand());
 			tsrand_fill(4);
-			create_lasercurve2c(pos, 70+20*global.diff, 300, RGBA(1, 1, 1, 0), las_accel, v, 0.02*frand()*copysign(1,creal(v)))->width=15;
+			create_lasercurve2c(pos, 70+20*global.diff, 300, RGBA(0.5, 0.3, 0.9, 0), las_accel, v, 0.02*frand()*copysign(1,creal(v)))->width=15;
 
 			PROJECTILE("soul",    pos, RGBA(0.4, 0.0, 1.0, 0.0), linear,
 				.args = { (1+2.5*afrand(0))*cexp(2.0*I*M_PI*afrand(1)) },
+				.flags = PFLAG_NOSPAWNFLARE,
 			);
 			PROJECTILE("bigball", pos, RGBA(1.0, 0.0, 0.4, 0.0), linear,
 				.args = { (1+2.5*afrand(2))*cexp(2.0*I*M_PI*afrand(3)) },
+				.flags = PFLAG_NOSPAWNFLARE,
 			);
+
+			if(i < 5) {
+				PARTICLE(
+					.sprite = "stain",
+					.pos = pos,
+					.color = RGBA(0.3, 0.3, 1.0, 0.0),
+					.timeout = 60,
+					.rule = linear,
+					.draw_rule = ScaleFade,
+					.args = { (10+2*frand())*cexp(2*M_PI*I*i/5), 0, 2+5*I },
+					.flags = PFLAG_REQUIREDPARTICLE,
+				);
+			}
 		}
 	}
 
