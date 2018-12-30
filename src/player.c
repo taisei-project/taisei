@@ -142,8 +142,9 @@ static void ent_draw_player(EntityInterface *ent) {
 
 	Color c;
 
-	if(!player_is_vulnerable(plr) && (global.frames/8)&1) {
-		c = *RGBA_MUL_ALPHA(0.4, 0.4, 1.0, 0.9);
+	if(!player_is_vulnerable(plr)) {
+		float f = 0.3*sin(0.1*global.frames);
+		c = *RGBA_MUL_ALPHA(1.0+f, 1.0, 1.0-f, 0.7+f);
 	} else {
 		c = *RGBA_MUL_ALPHA(1.0, 1.0, 1.0, 1.0);
 	}
