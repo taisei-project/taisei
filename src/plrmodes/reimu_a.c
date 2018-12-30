@@ -87,7 +87,7 @@ static void reimu_spirit_homing_draw(Projectile *p, int t) {
 }
 
 static Projectile* reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, double vfactor) {
-	Color *c = HSLA_MUL_ALPHA(t * 0.1, 0.6, 0.7, 0.2);
+	Color *c = HSLA_MUL_ALPHA(t * 0.1, 0.6, 0.7, 0.3);
 	c->a = 0;
 
 	return PARTICLE(
@@ -96,7 +96,7 @@ static Projectile* reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, doubl
 		.color = c,
 		.timeout = 12,
 		.pos = p->pos,
-		.args = { p->args[0] * (0.6 + 0.4 * frand()) * vfactor, 0, (0.5+1*I) * REIMU_SPIRIT_HOMING_SCALE },
+		.args = { p->args[0] * (0.6 + 0.4 * frand()) * vfactor, 0, (1+1.5*I) * REIMU_SPIRIT_HOMING_SCALE },
 		.angle = p->angle,
 		.rule = linear,
 		.draw_rule = ScaleFade,
@@ -127,7 +127,7 @@ static Projectile* reimu_spirit_spawn_homing_impact(Projectile *p, int t) {
 		.color = &p->color,
 		.timeout = 32,
 		.pos = p->pos,
-		.args = { 0, 0, (0.5+1.5*I) * REIMU_SPIRIT_HOMING_SCALE },
+		.args = { 0, 0, (1+1.5*I) * REIMU_SPIRIT_HOMING_SCALE },
 		.angle = p->angle,
 		.rule = reimu_spirit_homing_impact,
 		.draw_rule = ScaleFade,
@@ -511,9 +511,9 @@ static void reimu_spirit_yinyang_focused_visual(Enemy *e, int t, bool render) {
 		PARTICLE(
 			.sprite = "stain",
 			.color = RGBA(0.5, 0.0 + 0.25 * frand(), 0, 0),
-			.timeout = 12 + 2 * nfrand(),
+			.timeout = 8 + 2 * nfrand(),
 			.pos = e->pos,
-			.args = { -5*I * (1 + frand()), 0, 0.3 + 0*I },
+			.args = { -5*I * (1 + frand()), 0, 0.25 + 0*I },
 			.angle = 2*M_PI*frand(),
 			.rule = reimu_spirit_yinyang_flare,
 			.draw_rule = ScaleFade,
@@ -531,9 +531,9 @@ static void reimu_spirit_yinyang_unfocused_visual(Enemy *e, int t, bool render) 
 		PARTICLE(
 			.sprite = "stain",
 			.color = RGBA(0.5, 0.125, 0.0 + 0.25 * frand(), 0),
-			.timeout = 12 + 2 * nfrand(),
+			.timeout = 8 + 2 * nfrand(),
 			.pos = e->pos,
-			.args = { -5*I * (1 + frand()), 0, 0.3 + 0*I },
+			.args = { -5*I * (1 + frand()), 0, 0.25 + 0*I },
 			.angle = 2*M_PI*frand(),
 			.rule = reimu_spirit_yinyang_flare,
 			.draw_rule = ScaleFade,

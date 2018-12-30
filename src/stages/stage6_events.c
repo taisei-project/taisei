@@ -2016,28 +2016,26 @@ static int elly_toe_boson(Projectile *p, int t) {
 		return ACTION_NONE;
 	}
 
-	if(t == activate_time && num_in_trail == 3) {
+	if(t == activate_time && num_in_trail == 2) {
 		play_sound("shot_special1");
 		play_sound("redirect");
 
-		for(int i = 0; i < 3; ++i) {
 			PARTICLE(
-				.sprite = "stain",
+				.sprite_ptr = get_sprite("part/blast"),
 				.pos = p->pos,
-				.color = RGBA(i==0, i==1, i==2, 0.0),
+				.color = HSLA(carg(p->args[0]),0.5,0.5,0),
 				.rule = elly_toe_boson_effect,
 				.draw_rule = ScaleFade,
 				.timeout = 60,
 				.args = {
 					0,
 					p->args[0] * 1.0,
-					0.5 * (0.4 + 2.0 * I),
+					0. + 1.0 * I,
 					M_PI*2*frand(),
 				},
 				.angle = 0,
 				.flags = PFLAG_REQUIREDPARTICLE,
 			);
-		}
 	}
 
 	p->pos += p->args[0];
