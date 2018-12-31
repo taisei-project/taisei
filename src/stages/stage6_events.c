@@ -2555,6 +2555,7 @@ void elly_theory(Boss *b, int time) {
 					40,
 				},
 				.max_viewport_dist=50,
+                                .flags = PFLAG_NOSPAWNFLARE,
 			);
 		}
 	}
@@ -2633,6 +2634,7 @@ void elly_theory(Boss *b, int time) {
 				PROJECTILE("flea", b->pos, RGB(dir*(time>symmetrytime),0,1),
 					.rule = elly_toe_higgs,
 					.args = { v },
+                                        .flags = PFLAG_NOSPAWNFLARE,
 				);
 			}
 		}
@@ -2668,6 +2670,7 @@ void elly_theory(Boss *b, int time) {
 					-1,
 				},
 				.max_viewport_dist=50,
+                                .flags = PFLAG_NOSPAWNFLARE,
 			);
 		}
 	}
