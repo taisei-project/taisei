@@ -5,6 +5,17 @@
 #include "lib/util.glslh"
 
 // #define DRAW_LINKS
+#define BBOX_TEST
+// #define BBOX_TEST_DEBUG
+
+bool posInBBox(vec2 pos, vec2 origin, float size) {
+	return all(bvec4(
+		pos.x > origin.x - size,
+		pos.x < origin.x + size,
+		pos.y > origin.y - size,
+		pos.y < origin.y + size
+	));
+}
 
 void main(void) {
 	vec4 bg = texture(tex, texCoord);
@@ -12,6 +23,22 @@ void main(void) {
 
 	vec2 frag_loc = texCoord * viewport;
 	frag_loc.y = viewport.y - frag_loc.y;
+
+	#ifdef BBOX_TEST
+	float gap_bbox = max(gap_size.x, gap_size.y);
+
+	if(!any(bvec4(
+		posInBBox(frag_loc, gaps[0], gap_bbox),
+		posInBBox(frag_loc, gaps[1], gap_bbox),
+		posInBBox(frag_loc, gaps[2], gap_bbox),
+		posInBBox(frag_loc, gaps[3], gap_bbox)
+	))) {
+		#ifdef BBOX_TEST_DEBUG
+		fragColor = vec4(0.0, 0.0, 0.0, 1.0);
+		#endif
+		return;
+	}
+	#endif
 
 	float t = time * 6;
 	const float mag = 0.5;
