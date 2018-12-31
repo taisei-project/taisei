@@ -657,7 +657,7 @@ void boss_rule_extra(Boss *boss, float alpha) {
 		return;
 	}
 
-	int cnt = 10 * max(1, alpha);
+	int cnt = 5 * max(1, alpha);
 	alpha = min(2, alpha);
 	int lt = 1;
 
@@ -676,12 +676,12 @@ void boss_rule_extra(Boss *boss, float alpha) {
 		PARTICLE(
 			.sprite = (frand() < v*0.3 || lt > 1) ? "stain" : "arc",
 			.pos = boss->pos + dir * (100 + 50 * psin(alpha*global.frames/10.0+2*i)) * alpha,
-			.color = RGBA(
+			.color = color_mul_scalar(RGBA(
 				1.0 - 0.5 * psina *    v,
 				0.5 + 0.2 * psina * (1-v),
 				0.5 + 0.5 * psina *    v,
 				0.0
-			),
+			), 0.8),
 			.rule = linear,
 			.timeout = 30*lt,
 			.draw_rule = GrowFade,
