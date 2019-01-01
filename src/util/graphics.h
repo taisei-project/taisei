@@ -55,5 +55,3 @@ void draw_framebuffer_attachment(Framebuffer *fb, double width, double height, F
 void fbutil_create_attachments(Framebuffer *fb, uint num_attachments, FBAttachmentConfig attachments[num_attachments]);
 void fbutil_destroy_attachments(Framebuffer *fb);
 void fbutil_resize_attachment(Framebuffer *fb, FramebufferAttachment attachment, uint width, uint height);
-
-void init_blur_shader(ShaderProgram *prog, size_t kernel_size, float sigma);

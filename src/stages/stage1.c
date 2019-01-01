@@ -339,6 +339,7 @@ static void stage1_preload(void) {
 		"dialog/cirno",
 	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
+		"blur5",
 		"lasers/linear",
 		"stage1_water",
 		"zbuf_fog",

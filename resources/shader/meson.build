@@ -14,6 +14,7 @@ glsl_files = files(
     'blur25.frag.glsl',
     'blur5.frag.glsl',
     'blur9.frag.glsl',
+    'boss_death.frag.glsl',
     'boss_zoom.frag.glsl',
     'copy_depth.frag.glsl',
     'fxaa.frag.glsl',

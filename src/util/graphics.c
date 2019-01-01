@@ -238,9 +238,3 @@ void fbutil_resize_attachment(Framebuffer *fb, FramebufferAttachment attachment,
 	params.mipmaps = 0; // FIXME
 	r_framebuffer_attach(fb, r_texture_create(&params), 0, attachment);
 }
-
-void init_blur_shader(ShaderProgram *prog, size_t kernel_size, float sigma) {
-	float kernel[kernel_size];
-	gaussian_kernel_1d(kernel_size, sigma, kernel);
-	r_uniform_float_array(r_shader_uniform(prog, "blur_kernel[0]"), 0, kernel_size, kernel);
-}

@@ -621,6 +621,8 @@ static void marisa_laser_preload(void) {
 	NULL);
 
 	preload_resources(RES_SHADER_PROGRAM, flags,
+		"blur25",
+		"blur5",
 		"marisa_laser",
 		"masterspark",
 		"max_to_alpha",

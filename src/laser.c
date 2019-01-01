@@ -34,7 +34,11 @@ static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg);
 static void lasers_ent_postdraw_hook(EntityInterface *ent, void *arg);
 
 void lasers_preload(void) {
-	preload_resource(RES_SHADER_PROGRAM, "laser_generic", RESF_DEFAULT);
+	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
+		"blur25",
+		"blur5",
+		"laser_generic",
+	NULL);
 
 	size_t sz_vert = sizeof(GenericModelVertex);
 	size_t sz_attr = sizeof(LaserInstancedAttribs);
