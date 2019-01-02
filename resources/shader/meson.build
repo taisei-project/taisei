@@ -32,6 +32,7 @@ glsl_files = files(
     'masterspark.frag.glsl',
     'max_to_alpha.frag.glsl',
     'player_death.frag.glsl',
+    'reaction_diffusion.frag.glsl',
     'reimu_bomb_bg.frag.glsl',
     'reimu_gap.frag.glsl',
     'reimu_gap.vert.glsl',

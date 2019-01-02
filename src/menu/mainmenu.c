@@ -24,6 +24,12 @@
 #include "version.h"
 #include "plrmodes.h"
 
+
+typedef struct main_menu_context main_menu_context;
+struct main_menu_context {
+	FBPair reaction_diffusion_buffer;
+};
+
 void enter_stagepractice(MenuData *menu, void *arg) {
 	MenuData m;
 
@@ -72,8 +78,72 @@ static void begin_main_menu(MenuData *m) {
 
 static void update_main_menu(MenuData *menu);
 
+static void init_fbo(main_menu_context *ctx) {
+	FBAttachmentConfig cfg;
+	memset(&cfg, 0, sizeof(cfg));
+	cfg.attachment = FRAMEBUFFER_ATTACH_COLOR0;
+	cfg.tex_params.type = TEX_TYPE_RGB;
+	cfg.tex_params.filter.min = TEX_FILTER_NEAREST;
+	cfg.tex_params.filter.mag = TEX_FILTER_NEAREST;
+	cfg.tex_params.wrap.s = TEX_WRAP_MIRROR;
+	cfg.tex_params.wrap.t = TEX_WRAP_MIRROR;
+	
+	int width = SCREEN_W/2, height = SCREEN_H/2;
+	cfg.tex_params.width = width;
+	cfg.tex_params.height = height;
+
+	fbpair_create(&ctx->reaction_diffusion_buffer, 1, &cfg);
+	fbpair_viewport(&ctx->reaction_diffusion_buffer, 0, 0, width, height);
+
+
+}
+
+static void draw_reaction_diffusion(MenuData *menu) {
+	main_menu_context *ctx = menu->context;
+
+	float f = 0.0867;
+	float k = 0.0699;
+
+	if(menu->frames == 2) {
+
+		float A0 = 0.5 + sqrt(0.25-(k+f)*(k+f)/f);
+		float B0 = f/(k+f) * (1-A0);
+		r_framebuffer_clear(ctx->reaction_diffusion_buffer.front, CLEAR_ALL, RGBA(A0, B0, 0, 0), 1);
+		r_state_push();
+		r_shader_standard();
+		r_color4(1,.1,0,0);
+		r_mat_push();
+		r_mat_scale(6/8.*1,0.1,1);
+		r_framebuffer(ctx->reaction_diffusion_buffer.front);
+		draw_sprite_batched(0,0,"part/flare");
+		r_mat_pop();
+		r_state_pop();
+	}
+
+	
+	r_state_push();
+	//r_shader("standard");
+	r_color4(1,1,1,1);
+	r_blend(BLEND_NONE);
+	r_framebuffer(ctx->reaction_diffusion_buffer.back);
+	r_shader("reaction_diffusion");
+	r_uniform_float("dt", 0.8);
+	r_uniform_vec2("diffusion_coefficient", 1.3, 0.3);
+	r_uniform_float("F", f);
+	r_uniform_float("K", k);
+	draw_framebuffer_tex(ctx->reaction_diffusion_buffer.front, SCREEN_W, SCREEN_H);
+	fbpair_swap(&ctx->reaction_diffusion_buffer);
+	r_state_pop();
+	r_color4(0,1,0,0);
+	draw_framebuffer_tex(ctx->reaction_diffusion_buffer.front, SCREEN_W, SCREEN_H);
+	r_color4(1,1,1,1);
+}
+
 void create_main_menu(MenuData *m) {
 	create_menu(m);
+
+	m->context = calloc(1, sizeof(main_menu_context));
+	init_fbo(m->context);
 	m->draw = draw_main_menu;
 	m->logic = update_main_menu;
 	m->begin = begin_main_menu;
@@ -97,6 +167,7 @@ void create_main_menu(MenuData *m) {
 void draw_main_menu_bg(MenuData* menu) {
 	r_color4(1, 1, 1, 1);
 	fill_screen("menu/mainmenubg");
+	draw_reaction_diffusion(menu);
 }
 
 static void update_main_menu(MenuData *menu) {
