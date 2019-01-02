@@ -12,6 +12,7 @@
 #include "stage6.h"
 #include "global.h"
 #include "stagetext.h"
+#include "stagedraw.h"
 
 static Dialog *stage6_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
@@ -671,40 +672,59 @@ static void draw_baryon_connector(complex a, complex b) {
 }
 
 void Baryon(Enemy *e, int t, bool render) {
-	Enemy *n;
-
-	if(!render) {
-		if(!(t % 10) && global.boss && cabs(e->pos - global.boss->pos) > 2) {
-			PARTICLE(
-				.sprite = "stain",
-				.size = 100*(1+I),
-				.pos = e->pos+10*frand()*cexp(2.0*I*M_PI*frand()),
-				.color = RGBA(0, 0.4, 0.3, 0.0),
-				.draw_rule = Fade,
-				.timeout = 20,
-				.angle = 2*M_PI*frand(),
-			);
-		}
-
+	if(render) {
+		// the center piece draws the nodes; applying the postprocessing effect is easier this way.
 		return;
 	}
 
+	/*
+	if(!(t % 10) && global.boss && cabs(e->pos - global.boss->pos) > 2) {
+		PARTICLE(
+			.sprite = "stain",
+			.size = 100*(1+I),
+			.pos = e->pos+10*frand()*cexp(2.0*I*M_PI*frand()),
+			.color = RGBA(0, 0.4, 0.3, 0.0),
+			.draw_rule = Fade,
+			.timeout = 20,
+			.angle = 2*M_PI*frand(),
+		);
+	}
+	*/
+}
+
+void draw_baryons(Enemy *e, int t) {
+	// r_color4(1, 1, 1, 0.8);
+	r_mat_push();
+	r_mat_translate(creal(e->pos), cimag(e->pos), 0);
+	r_mat_rotate_deg(2*t, 0, 0, 1);
+	draw_sprite_batched(0, 0, "stage6/scythecircle");
+	r_mat_pop();
 	draw_sprite_batched(creal(e->pos), cimag(e->pos), "stage6/baryon");
+	r_color4(1, 1, 1, 1);
 
-	n = REF(e->args[1]);
+	Enemy *link0 = REF(creal(e->args[1]));
+	Enemy *link1 = REF(cimag(e->args[1]));
 
-	if(!n) {
-		return;
+	if(link0 && link1) {
+		draw_baryon_connector(e->pos, link0->pos);
+		draw_baryon_connector(e->pos, link1->pos);
 	}
 
-	draw_baryon_connector(e->pos, n->pos);
+	for(Enemy *e = global.enemies.first; e; e = e->next) {
+		if(e->visual_rule == Baryon) {
+			draw_sprite_batched(creal(e->pos), cimag(e->pos), "stage6/baryon");
+			Enemy *n = REF(e->args[1]);
+
+			if(n != NULL) {
+				draw_baryon_connector(e->pos, n->pos);
+			}
+		}
+	}
 }
 
 void BaryonCenter(Enemy *e, int t, bool render) {
-	Enemy *l[2];
-	int i;
-
 	if(!render) {
+		/*
 		complex p = e->pos+40*frand()*cexp(2.0*I*M_PI*frand());
 
 		PARTICLE("flare", p, RGBA(0.0, 1.0, 1.0, 0.0),
@@ -719,27 +739,62 @@ void BaryonCenter(Enemy *e, int t, bool render) {
 			.timeout = 50,
 			.angle = 2*M_PI*frand(),
 		);
+		*/
 
 		return;
 	}
 
-	r_color4(1, 1, 1, 0);
-	r_mat_push();
-	r_mat_translate(creal(e->pos), cimag(e->pos), 0);
-	r_mat_rotate_deg(2*t, 0, 0, 1);
-	draw_sprite_batched(0, 0, "stage6/scythecircle");
-	r_mat_pop();
-	draw_sprite_batched(creal(e->pos), cimag(e->pos), "stage6/baryon");
+	r_state_push();
+	r_shader("baryon_feedback");
+	r_uniform_vec2("blur_resolution", 0.5*VIEWPORT_W, 0.5*VIEWPORT_H);
+	r_uniform_float("hue_shift", 0);
+	r_uniform_float("time", t/60.0);
+
+	r_framebuffer(baryon_aux_fb);
+	r_blend(BLEND_NONE);
+	r_uniform_vec2("blur_direction", 1, 0);
+	// r_uniform_float("hue_shift", 0.04 * sin(global.frames/30.0));
+	r_uniform_float("hue_shift", 0.01);
+	r_color4(0.95, 0.88, 0.9, 0.5);
+	draw_framebuffer_tex(baryon_fbpair.front, VIEWPORT_W, VIEWPORT_H);
+
+	fbpair_swap(&baryon_fbpair);
+
+	r_framebuffer(baryon_fbpair.back);
+	r_uniform_vec2("blur_direction", 0, 1);
 	r_color4(1, 1, 1, 1);
+	draw_framebuffer_tex(baryon_aux_fb, VIEWPORT_W, VIEWPORT_H);
 
-	l[0] = REF(creal(e->args[1]));
-	l[1] = REF(cimag(e->args[1]));
+	// r_blend(BLEND_PREMUL_ALPHA);
+	// r_shader("sprite_default");
+	// draw_baryons(e, t);
+	r_state_pop();
 
-	if(!l[0] || !l[1])
-		return;
+	r_shader("sprite_default");
+	draw_baryons(e, t);
 
-	for(i = 0; i < 2; i++) {
-		draw_baryon_connector(e->pos, l[i]->pos);
+	r_shader_standard();
+	fbpair_swap(&baryon_fbpair);
+	r_color4(0.7, 0.7, 0.7, 0.7);
+	draw_framebuffer_tex(baryon_fbpair.front, VIEWPORT_W, VIEWPORT_H);
+
+	r_color4(1, 1, 1, 1);
+	r_framebuffer(baryon_fbpair.front);
+	r_shader("sprite_default");
+	draw_baryons(e, t);
+
+	for(Enemy *e = global.enemies.first; e; e = e->next) {
+		if(e->visual_rule == Baryon) {
+			complex p = e->pos;//+10*frand()*cexp(2.0*I*M_PI*frand());
+
+			r_draw_sprite(&(SpriteParams) {
+				.sprite = "part/myon",
+				.color = RGBA(1, 0.2, 1.0, 0.7),
+				.pos = { creal(p), cimag(p) },
+				.rotation.angle = (creal(e->args[0]) - t) / 16.0, // frand()*M_PI*2,
+				.scale.both = 2,
+			});
+		}
 	}
 }
 

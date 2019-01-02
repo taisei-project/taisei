@@ -15,6 +15,7 @@
 #include "stageutils.h"
 #include "global.h"
 #include "resource/model.h"
+#include "stagedraw.h"
 
 /*
  *  See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
@@ -77,6 +78,8 @@ enum {
 };
 
 static float starpos[3*NUM_STARS];
+Framebuffer *baryon_aux_fb;
+FBPair baryon_fbpair;
 
 vec3 **stage6_towerwall_pos(vec3 pos, float maxrange) {
 	vec3 p = {0, 0, -220};
@@ -246,6 +249,18 @@ static void stage6_start(void) {
 //  stage_3d_context.cx[2] = 295;
 //  stage_3d_context.crot[0] = 90;
 //  stage_3d_context.crot[2] = 381.415100;
+
+	FBAttachmentConfig cfg;
+	memset(&cfg, 0, sizeof(cfg));
+	cfg.attachment = FRAMEBUFFER_ATTACH_COLOR0;
+	cfg.tex_params.type = TEX_TYPE_RGBA;
+	cfg.tex_params.filter.min = TEX_FILTER_LINEAR;
+	cfg.tex_params.filter.mag = TEX_FILTER_LINEAR;
+	cfg.tex_params.wrap.s = TEX_WRAP_MIRROR;
+	cfg.tex_params.wrap.t = TEX_WRAP_MIRROR;
+	baryon_fbpair.front = stage_add_background_framebuffer("Baryon FB 1", 0.25, 0.5, 1, &cfg);
+	baryon_fbpair.back = stage_add_background_framebuffer("Baryon FB 2", 0.25, 0.5, 1, &cfg);
+	baryon_aux_fb = stage_add_background_framebuffer("Baryon FB AUX", 0.25, 0.5, 1, &cfg);
 }
 
 static void stage6_preload(void) {
@@ -281,17 +296,18 @@ static void stage6_preload(void) {
 		"stage6/toelagrangian/4",
 	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
-		"tower_wall",
-		"stage6_sky",
-		"lasers/maxwell",
+		"baryon_feedback",
+		"lasers/accelerated",
+		"lasers/circle",
 		"lasers/elly_toe_fermion",
-		"lasers/elly_toe_photon",
 		"lasers/elly_toe_gluon",
 		"lasers/elly_toe_higgs",
-		"lasers/sine",
-		"lasers/circle",
+		"lasers/elly_toe_photon",
 		"lasers/linear",
-		"lasers/accelerated",
+		"lasers/maxwell",
+		"lasers/sine",
+		"stage6_sky",
+		"tower_wall",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/elly",
