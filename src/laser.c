@@ -81,7 +81,7 @@ void lasers_preload(void) {
 	lasers.render_fb = stage_add_foreground_framebuffer("Lasers FB", 0.5, 1, 1, &cfg);
 
 	ent_hook_pre_draw(lasers_ent_predraw_hook, NULL);
-	ent_hook_pre_draw(lasers_ent_postdraw_hook, NULL);
+	ent_hook_post_draw(lasers_ent_postdraw_hook, NULL);
 
 	lasers.quad_generic.indexed = false;
 	lasers.quad_generic.num_vertices = 4;
@@ -96,7 +96,7 @@ void lasers_free(void) {
 	r_vertex_array_destroy(lasers.varr);
 	r_vertex_buffer_destroy(lasers.vbuf);
 	ent_unhook_pre_draw(lasers_ent_predraw_hook);
-	ent_unhook_pre_draw(lasers_ent_postdraw_hook);
+	ent_unhook_post_draw(lasers_ent_postdraw_hook);
 }
 
 static void ent_draw_laser(EntityInterface *ent);
