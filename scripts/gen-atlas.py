@@ -328,7 +328,7 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, tex_format=texture_format
         executor.shutdown(wait=True)
 
         # Only now, if everything is ok so far, copy everything to the destination, possibly overwriting previous results
-        pattern = re.compile(rf'^atlas_{re.escape(atlasname)}_\d+.({"|".join(texture_formats)})$')
+        pattern = re.compile(rf'^atlas_{re.escape(atlasname)}_\d+.({"|".join(texture_formats + ["tex"])})$')
         for path in dst.iterdir():
             if pattern.match(path.name):
                 path.unlink()
