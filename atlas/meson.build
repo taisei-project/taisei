@@ -23,11 +23,18 @@ atlas_common_args = [
 
 atlas_profiles = [
     ['', [
-        '--leanify',
+        '--no-leanify',
+        '--format', 'webp',
     ]],
 
     ['-fast', [
         '--no-leanify',
+        '--format', 'png',
+    ]],
+
+    ['-png', [
+        '--leanify',
+        '--format', 'png',
     ]],
 ]
 
