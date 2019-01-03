@@ -21,6 +21,7 @@ from contextlib import (
 
 from concurrent.futures import (
     ThreadPoolExecutor,
+    as_completed,
 )
 
 from PIL import (
@@ -32,6 +33,23 @@ from taiseilib.common import (
     update_text_file,
     TaiseiError,
 )
+
+
+#
+# To the reasonable person wondering why this god-awful script invokes
+# an ImageMagick subprocess even though I've just imported PIL:
+#
+# It used to just use PIL to handle image composition. That is, until
+# I discovered the fact that PIL/Pillow does not support multichannel
+# 16-bits per pixel images.
+# https://github.com/python-pillow/Pillow/issues/2107#issuecomment-246007526
+#
+# Now PIL is only used to extract the image size, though I guess I might
+# as well just parse the output of `identify` at this point.
+#
+# Fuck software tbqh.
+#
+
 
 texture_formats = ['png', 'webp']
 
@@ -124,19 +142,6 @@ def get_override_file_name(basename):
     return f'{basename}.spr'
 
 
-def random_fill(img, region):
-    import random
-    from PIL import ImageDraw
-
-    draw = ImageDraw.Draw(img)
-    gen = lambda: tuple((lambda: random.randrange(100, 255))() for i in range(3))
-    fill = *gen(), 255
-    outline = *gen(), 255
-
-    draw.rectangle((region[0], region[1], region[2] - 1, region[3] - 1), fill=fill, outline=outline)
-    del draw
-
-
 def gen_atlas(overrides, src, dst, binsize, atlasname, tex_format=texture_formats[0], border=1, force_single=False, crop=True, leanify=True):
     overrides = Path(overrides).resolve()
     src = Path(src).resolve()
@@ -168,7 +173,8 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, tex_format=texture_format
             sprite_config_path = overrides / (get_override_file_name(sprite_name) + '.conf')
             sprite_configs[sprite_name] = parse_sprite_conf(sprite_config_path)
             border = get_border(sprite_name)
-            rects.append((img.size[0]+border*2, img.size[1]+border*2, (img, sprite_name)))
+            rects.append((img.size[0]+border*2, img.size[1]+border*2, (path, sprite_name)))
+            img.close()
 
     total_images = len(rects)
 
@@ -218,6 +224,8 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, tex_format=texture_format
             f'{missing} sprite{"s were" if missing > 1 else " was"} not packed (bin size is too small?)'
         )
 
+    futures = []
+
     with ExitStack() as stack:
         # Do everything in a temporary directory first
         temp_dst = Path(stack.enter_context(TemporaryDirectory(prefix=f'taisei-atlas-{atlasname}')))
@@ -248,30 +256,20 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, tex_format=texture_format
             else:
                 actual_size = (bin.width, bin.height)
 
-            rootimg = Image.new('RGBA', tuple(actual_size), (0, 0, 0, 0))
+            composite_cmd = [
+                'convert',
+                '-verbose',
+                '-size', f'{actual_size[0]}x{actual_size[1]}',
+                'xc:none',
+            ]
 
             for rect in bin:
-                rotated = False
-                img, name = rect.rid
+                img_path, name = rect.rid
                 border = get_border(name)
 
-                if tuple(img.size) != (rect.width  - border*2, rect.height - border*2) and \
-                   tuple(img.size) == (rect.height - border*2, rect.width  - border*2):
-                    rotated = True
-
-                region = (rect.x + border, rect.y + border, rect.x + rect.width - border, rect.y + rect.height - border)
-
-                print(rect, region, name)
-
-                if rotated:
-                    rimg = img.transpose(Image.ROTATE_90)
-                    rootimg.paste(rimg, region)
-                    rimg.close()
-                else:
-                    rootimg.paste(img, region)
-
-                img.close()
-                # random_fill(rootimg, region)
+                composite_cmd += [
+                    str(img_path), '-geometry', '{:+}{:+}'.format(rect.x + border, rect.y + border), '-composite'
+                ]
 
                 override_path = overrides / get_override_file_name(name)
 
@@ -284,16 +282,17 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, tex_format=texture_format
                 write_sprite_def(
                     temp_dst / f'{name}.spr',
                     textureid,
-                    (region[0], region[1], region[2] - region[0], region[3] - region[1]),
+                    (rect.x + border, rect.y + border, rect.width - border * 2, rect.height - border * 2),
                     img.size,
                     overrides=override_contents
                 )
 
-            print('Atlas texture area: ', rootimg.size[0] * rootimg.size[1])
-            rootimg.save(dstfile)
+            composite_cmd += [str(dstfile)]
 
             @executor.submit
-            def postprocess(dstfile=dstfile):
+            def process(dstfile=dstfile):
+                subprocess.check_call(composite_cmd)
+
                 oldfmt = dstfile.suffix[1:].lower()
 
                 if oldfmt != tex_format:
@@ -319,7 +318,13 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, tex_format=texture_format
                 if leanify:
                     subprocess.check_call(['leanify', '-v', str(dstfile)])
 
-        # Wait for subprocesses to complete
+            futures.append(process)
+
+        # Wait for subprocesses to complete.
+        # The loop is needed in order to present exceptions.
+        for future in as_completed(futures):
+            future.result()
+
         executor.shutdown(wait=True)
 
         # Only now, if everything is ok so far, copy everything to the destination, possibly overwriting previous results
