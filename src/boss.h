@@ -124,9 +124,23 @@ typedef struct Boss {
 	// These are publicly accessible damage multipliers *you* can use to buff your spells.
 	// Just change the numbers. global.shake_view style. 1.0 is the default.
 	// If a new attack starts, they are reset. Nothing can go wrong!
-
 	float bomb_damage_multiplier;
 	float shot_damage_multiplier;
+
+	struct {
+		float opacity;
+		float fill_total;
+		float fill_alt;
+		Color fill_color;
+		Color fill_altcolor;
+	} healthbar;
+
+	struct {
+		float global_opacity;
+		float spell_opacity;
+		float plrproximity_opacity;
+		float attack_timer;
+	} hud;
 } Boss;
 
 Boss* create_boss(char *name, char *ani, char *dialog, complex pos) attr_nonnull(1, 2) attr_returns_nonnull;

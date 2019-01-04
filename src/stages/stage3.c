@@ -23,28 +23,28 @@
 struct stage3_spells_s stage3_spells = {
 	.mid = {
 		.deadly_dance = {
-			{ 0,  1,  2,  3}, AT_SurvivalSpell, "Venom Sign ~ Deadly Dance", 14, 40000,
+			{ 0,  1,  2,  3}, AT_SurvivalSpell, "Venom Sign “Deadly Dance”", 14, 40000,
 			scuttle_deadly_dance, scuttle_spellbg, BOSS_DEFAULT_GO_POS
 		},
 	},
 
 	.boss = {
 		.moonlight_rocket = {
-			{ 6,  7,  8,  9}, AT_Spellcard, "Firefly Sign ~ Moonlight Rocket", 35, 40000,
+			{ 6,  7,  8,  9}, AT_Spellcard, "Firefly Sign “Moonlight Rocket”", 35, 40000,
 			wriggle_moonlight_rocket, wriggle_spellbg, BOSS_DEFAULT_GO_POS
 		},
 		.wriggle_night_ignite = {
-			{10, 11, 12, 13}, AT_Spellcard, "Light Source ~ Wriggle Night Ignite", 50, 46000,
+			{10, 11, 12, 13}, AT_Spellcard, "Light Source “Wriggle Night Ignite”", 50, 46000,
 			wriggle_night_ignite, wriggle_spellbg, BOSS_DEFAULT_GO_POS
 		},
 		.firefly_storm = {
-			{14, 15, 16, 17}, AT_Spellcard, "Bug Sign ~ Firefly Storm", 45, 45000,
+			{14, 15, 16, 17}, AT_Spellcard, "Bug Sign “Firefly Storm”", 45, 45000,
 			wriggle_firefly_storm, wriggle_spellbg, BOSS_DEFAULT_GO_POS
 		},
 	},
 
 	.extra.light_singularity = {
-		{ 0,  1,  2,  3}, AT_ExtraSpell, "Lamp Sign ~ Light Singularity", 75, 45000,
+		{ 0,  1,  2,  3}, AT_ExtraSpell, "Lamp Sign “Light Singularity”", 75, 45000,
 		wriggle_light_singularity, wriggle_spellbg, BOSS_DEFAULT_GO_POS
 	},
 };

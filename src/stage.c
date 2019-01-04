@@ -202,8 +202,6 @@ StageProgress* stage_get_progress(uint16_t id, Difficulty diff, bool allocate) {
 }
 
 static void stage_start(StageInfo *stage) {
-	ent_init();
-
 	global.timer = 0;
 	global.frames = 0;
 	global.game_over = 0;
@@ -513,6 +511,7 @@ static void stage_free(void) {
 		global.boss = NULL;
 	}
 
+	projectiles_free();
 	lasers_free();
 	stagetext_free();
 }
@@ -605,6 +604,10 @@ static FrameAction stage_logic_frame(void *arg) {
 
 	stage_update_fps(fstate);
 
+	if(global.shake_view > 30) {
+		global.shake_view = 30;
+	}
+
 	if(global.shake_view_fade) {
 		global.shake_view -= global.shake_view_fade;
 
@@ -689,6 +692,7 @@ void stage_loop(StageInfo *stage) {
 	// I really want to separate all of the game state from the global struct sometime
 	global.stage = stage;
 
+	ent_init();
 	stage_objpools_alloc();
 	stage_preload();
 	stage_draw_init();

@@ -179,6 +179,8 @@ static int marisa_star_orbit(Enemy *e, int t) {
 	return 1;
 }
 
+
+#define NUM_MARISTAR_SLAVES 5
 static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 	if(!render) {
 		return;
@@ -201,7 +203,16 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 
 	color_mul_scalar(&color, fade);
 
-	marisa_common_masterspark_draw(e->pos, 250*fade + VIEWPORT_H*1.5*I, carg(e->pos - global.plr.pos) + M_PI/2, global.plr.bombtotaltime * tb, fade);
+	if(e->args[0] == 0) {
+		MarisaBeamInfo beams[NUM_MARISTAR_SLAVES];
+		for(int i = 0; i < NUM_MARISTAR_SLAVES; i++) {
+			beams[i].origin = global.plr.pos + (e->pos-global.plr.pos)*cexp(I*2*M_PI/NUM_MARISTAR_SLAVES*i);
+			beams[i].size = 250*fade+VIEWPORT_H*1.5*I;
+			beams[i].angle = carg(e->pos - global.plr.pos) + M_PI/2 + 2*M_PI/NUM_MARISTAR_SLAVES*i;
+			beams[i].t = global.plr.bombtotaltime * tb;
+		}
+		marisa_common_masterspark_draw(NUM_MARISTAR_SLAVES, beams, fade);
+	}
 
 	r_mat_push();
 	r_mat_translate(creal(e->pos),cimag(e->pos),0);
@@ -217,13 +228,13 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 static void marisa_star_bomb(Player *plr) {
 	play_sound("bomb_marisa_b");
 
-	int count = 5; // might as well be hard coded. We are talking marisa here.
-	for(int i = 0; i < 5; i++) {
-		complex dir = cexp(2*I*M_PI/count*i);
+	for(int i = 0; i < NUM_MARISTAR_SLAVES; i++) {
+		complex dir = cexp(2*I*M_PI/NUM_MARISTAR_SLAVES*i);
 		Enemy *e = create_enemy2c(plr->pos, ENEMY_BOMB, marisa_star_orbit_visual, marisa_star_orbit, i ,dir);
 		e->ent.draw_layer = LAYER_PLAYER_FOCUS - 1;
 	}
 }
+#undef NUM_MARISTAR_SLAVES
 
 static void marisa_star_bombbg(Player *plr) {
 	if(!player_is_bomb_active(plr)) {

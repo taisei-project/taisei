@@ -22,8 +22,8 @@
 
 enum {
 	PLR_MAX_POWER = 400,
-	PLR_MAX_LIVES = 9,
-	PLR_MAX_BOMBS = 9,
+	PLR_MAX_LIVES = 8,
+	PLR_MAX_BOMBS = 8,
 
 	PLR_MAX_LIFE_FRAGMENTS = 5,
 	PLR_MAX_BOMB_FRAGMENTS = 5,
@@ -142,7 +142,7 @@ void player_move(Player*, complex delta);
 
 void player_realdeath(Player*);
 void player_death(Player*);
-void player_graze(Player *plr, complex pos, int pts, int effect_intensity);
+void player_graze(Player *plr, complex pos, int pts, int effect_intensity, const Color *color);
 
 void player_event(Player *plr, uint8_t type, uint16_t value, bool *out_useful, bool *out_cheat);
 bool player_event_with_replay(Player *plr, uint8_t type, uint16_t value);

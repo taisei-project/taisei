@@ -25,6 +25,52 @@ double approach(double v, double t, double d) {
 	return v;
 }
 
+float fapproach(float v, float t, float d) {
+	if(v < t) {
+		v += d;
+		if(v > t)
+			return t;
+	} else if(v > t) {
+		v -= d;
+		if(v < t)
+			return t;
+	}
+
+	return v;
+}
+
+void approach_p(double *v, double t, double d) {
+	*v = approach(*v, t, d);
+}
+
+void fapproach_p(float *v, float t, float d) {
+	*v = fapproach(*v, t, d);
+}
+
+double approach_asymptotic(double val, double target, double rate, double epsilon) {
+	if(fabs(val - target) < epsilon || rate >= 1) {
+		return target;
+	}
+
+	return val + (target - val) * rate;
+}
+
+float fapproach_asymptotic(float val, float target, float rate, float epsilon) {
+	if(fabsf(val - target) < epsilon || rate >= 1) {
+		return target;
+	}
+
+	return val + (target - val) * rate;
+}
+
+void approach_asymptotic_p(double *val, double target, double rate, double epsilon) {
+	*val = approach_asymptotic(*val, target, rate, epsilon);
+}
+
+void fapproach_asymptotic_p(float *val, float target, float rate, float epsilon) {
+	*val = fapproach_asymptotic(*val, target, rate, epsilon);
+}
+
 double psin(double x) {
 	return 0.5 + 0.5 * sin(x);
 }
@@ -106,6 +152,7 @@ uint64_t topow2_u64(uint64_t x) {
 	x |= (x >> 4);
 	x |= (x >> 8);
 	x |= (x >> 16);
+	x |= (x >> 32);
 	return x + 1;
 }
 
@@ -152,4 +199,22 @@ void gaussian_kernel_1d(size_t size, float sigma, float kernel[size]) {
 	for(size_t i = 0; i < size; ++i) {
 		kernel[i] /= sum;
 	}
+}
+
+uint ipow10(uint n) {
+	static uint pow10[] = {
+		1,
+		10,
+		100,
+		1000,
+		10000,
+		100000,
+		1000000,
+		10000000,
+		100000000,
+		1000000000,
+	};
+
+	assert(n < sizeof(pow10)/sizeof(*pow10));
+	return pow10[n];
 }

@@ -15,6 +15,7 @@
 #include "stageutils.h"
 #include "global.h"
 #include "resource/model.h"
+#include "stagedraw.h"
 
 /*
  *  See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
@@ -24,48 +25,48 @@
 struct stage6_spells_s stage6_spells = {
 	.scythe = {
 		.occams_razor = {
-			{ 0,  1,  2,  3}, AT_Spellcard, "Newton Sign ~ Occam’s Razor", 50, 60000,
+			{ 0,  1,  2,  3}, AT_Spellcard, "Newton Sign “Occam’s Razor”", 50, 60000,
 			elly_newton, elly_spellbg_classic, BOSS_DEFAULT_GO_POS
 		},
 		.orbital_clockwork = {
-			{24, 25, 26, 27}, AT_Spellcard, "Kepler Sign ~ Orbital Clockwork", 45, 60000,
+			{24, 25, 26, 27}, AT_Spellcard, "Kepler Sign “Orbital Clockwork”", 45, 60000,
 			elly_kepler, elly_spellbg_classic, BOSS_DEFAULT_GO_POS
 		},
 		.wave_theory = {
-			{ 4,  5,  6,  7}, AT_Spellcard, "Maxwell Sign ~ Wave Theory", 25, 30000,
+			{ 4,  5,  6,  7}, AT_Spellcard, "Maxwell Sign “Wave Theory”", 25, 30000,
 			elly_maxwell, elly_spellbg_classic, BOSS_DEFAULT_GO_POS
 		},
 	},
 
 	.baryon = {
 		.many_world_interpretation = {
-			{ 8,  9, 10, 11}, AT_Spellcard, "Eigenstate ~ Many-World Interpretation", 40, 60000,
+			{ 8,  9, 10, 11}, AT_Spellcard, "Eigenstate “Many-World Interpretation”", 40, 60000,
 			elly_eigenstate, elly_spellbg_modern, BOSS_DEFAULT_GO_POS
 		},
 		.wave_particle_duality = {
-			{28, 29, 30, 31}, AT_Spellcard, "de Broglie Sign ~ Wave-Particle Duality", 60, 70000,
+			{28, 29, 30, 31}, AT_Spellcard, "de Broglie Sign “Wave-Particle Duality”", 60, 70000,
 			elly_broglie, elly_spellbg_modern_dark, BOSS_DEFAULT_GO_POS
 		},
 		.spacetime_curvature = {
-			{12, 13, 14, 15}, AT_Spellcard, "Ricci Sign ~ Spacetime Curvature", 50, 90000,
+			{12, 13, 14, 15}, AT_Spellcard, "Ricci Sign “Spacetime Curvature”", 50, 90000,
 			elly_ricci, elly_spellbg_modern, BOSS_DEFAULT_GO_POS
 		},
 		.higgs_boson_uncovered = {
-			{16, 17, 18, 19}, AT_Spellcard, "LHC ~ Higgs Boson Uncovered", 75, 60000,
+			{16, 17, 18, 19}, AT_Spellcard, "LHC “Higgs Boson Uncovered”", 75, 60000,
 			elly_lhc, elly_spellbg_modern, BOSS_DEFAULT_GO_POS
 		}
 	},
 
 	.extra = {
 		.curvature_domination = {
-			{ 0,  1,  2,  3}, AT_ExtraSpell, "Forgotten Universe ~ Curvature Domination", 60, 60000,
+			{ 0,  1,  2,  3}, AT_ExtraSpell, "Forgotten Universe “Curvature Domination”", 60, 60000,
 			elly_curvature, elly_spellbg_modern, BOSS_DEFAULT_GO_POS
 		}
 	},
 
 	.final = {
 		.theory_of_everything = {
-			{20, 21, 22, 23}, AT_SurvivalSpell, "Tower of Truth ~ Theory of Everything", 70, 40000,
+			{20, 21, 22, 23}, AT_SurvivalSpell, "Tower of Truth “Theory of Everything”", 70, 40000,
 			elly_theory, elly_spellbg_toe, ELLY_TOE_TARGET_POS}
 	},
 };
@@ -77,6 +78,8 @@ enum {
 };
 
 static float starpos[3*NUM_STARS];
+Framebuffer *baryon_aux_fb;
+FBPair baryon_fbpair;
 
 vec3 **stage6_towerwall_pos(vec3 pos, float maxrange) {
 	vec3 p = {0, 0, -220};
@@ -246,6 +249,18 @@ static void stage6_start(void) {
 //  stage_3d_context.cx[2] = 295;
 //  stage_3d_context.crot[0] = 90;
 //  stage_3d_context.crot[2] = 381.415100;
+
+	FBAttachmentConfig cfg;
+	memset(&cfg, 0, sizeof(cfg));
+	cfg.attachment = FRAMEBUFFER_ATTACH_COLOR0;
+	cfg.tex_params.type = TEX_TYPE_RGBA;
+	cfg.tex_params.filter.min = TEX_FILTER_LINEAR;
+	cfg.tex_params.filter.mag = TEX_FILTER_LINEAR;
+	cfg.tex_params.wrap.s = TEX_WRAP_MIRROR;
+	cfg.tex_params.wrap.t = TEX_WRAP_MIRROR;
+	baryon_fbpair.front = stage_add_background_framebuffer("Baryon FB 1", 0.25, 0.5, 1, &cfg);
+	baryon_fbpair.back = stage_add_background_framebuffer("Baryon FB 2", 0.25, 0.5, 1, &cfg);
+	baryon_aux_fb = stage_add_background_framebuffer("Baryon FB AUX", 0.25, 0.5, 1, &cfg);
 }
 
 static void stage6_preload(void) {
@@ -260,36 +275,39 @@ static void stage6_preload(void) {
 		"stage6/towerwall",
 	NULL);
 	preload_resources(RES_SPRITE, RESF_DEFAULT,
-		"stage6/baryon_connector",
+		"dialog/elly",
+		"part/blast_huge_halo",
+		"part/blast_huge_rays",
+		"part/myon",
+		"part/stardust",
+		"proj/apple",
 		"stage6/baryon",
-		"stage6/scythecircle",
+		"stage6/baryon_center",
+		"stage6/baryon_connector",
 		"stage6/scythe",
+		"stage6/spellbg_chalk",
+		"stage6/spellbg_classic",
+		"stage6/spellbg_modern",
+		"stage6/spellbg_toe",
 		"stage6/toelagrangian/0",
 		"stage6/toelagrangian/1",
 		"stage6/toelagrangian/2",
 		"stage6/toelagrangian/3",
 		"stage6/toelagrangian/4",
-		"stage6/spellbg_chalk",
-		"stage6/spellbg_classic",
-		"stage6/spellbg_modern",
-		"stage6/spellbg_toe",
-		"part/stardust",
-		"part/myon",
-		"proj/apple",
-		"dialog/elly",
 	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
-		"tower_wall",
-		"stage6_sky",
-		"lasers/maxwell",
+		"baryon_feedback",
+		"lasers/accelerated",
+		"lasers/circle",
 		"lasers/elly_toe_fermion",
-		"lasers/elly_toe_photon",
 		"lasers/elly_toe_gluon",
 		"lasers/elly_toe_higgs",
-		"lasers/sine",
-		"lasers/circle",
+		"lasers/elly_toe_photon",
 		"lasers/linear",
-		"lasers/accelerated",
+		"lasers/maxwell",
+		"lasers/sine",
+		"stage6_sky",
+		"tower_wall",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/elly",

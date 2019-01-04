@@ -122,13 +122,32 @@ static void draw_masterspark_beam(complex origin, complex size, float angle, int
 	r_mat_pop();
 }
 
-void marisa_common_masterspark_draw(complex origin, complex size, float angle, int t, float alpha) {
+
+void marisa_common_masterspark_draw(int numBeams, MarisaBeamInfo *beamInfos, float alpha) {
 	r_state_push();
 
 	float blur = 1.0 - alpha;
+	int pp_quality = config_get_int(CONFIG_POSTPROCESS);
 
-	if(blur == 0) {
-		draw_masterspark_beam(origin, size, angle, t, alpha);
+	if(pp_quality < 1 || (pp_quality < 2 && blur == 0)) {
+		Framebuffer *main_fb = r_framebuffer_current();
+		FBPair *aux = stage_get_fbpair(FBPAIR_FG_AUX);
+
+		r_framebuffer(aux->back);
+		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+		for(int i = 0; i < numBeams; i++) {
+			draw_masterspark_beam(beamInfos[i].origin, beamInfos[i].size, beamInfos[i].angle, beamInfos[i].t, alpha);
+		}
+
+		fbpair_swap(aux);
+		r_framebuffer(main_fb);
+		r_shader_standard();
+		r_color4(1, 1, 1, 1);
+		draw_framebuffer_tex(aux->front, VIEWPORT_W, VIEWPORT_H);
+	} else if(blur == 0) {
+		for(int i = 0; i < numBeams; i++) {
+			draw_masterspark_beam(beamInfos[i].origin, beamInfos[i].size, beamInfos[i].angle, beamInfos[i].t, alpha);
+		}
 	} else {
 		Framebuffer *main_fb = r_framebuffer_current();
 		FBPair *aux = stage_get_fbpair(FBPAIR_FG_AUX);
@@ -136,9 +155,16 @@ void marisa_common_masterspark_draw(complex origin, complex size, float angle, i
 		r_framebuffer(aux->back);
 		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
 
-		draw_masterspark_beam(origin, size, angle, t, alpha);
+		for(int i = 0; i < numBeams; i++) {
+			draw_masterspark_beam(beamInfos[i].origin, beamInfos[i].size, beamInfos[i].angle, beamInfos[i].t, alpha);
+		}
 
-		r_shader("blur25");
+		if(pp_quality > 1) {
+			r_shader("blur25");
+		} else {
+			r_shader("blur5");
+		}
+
 		r_uniform_vec2("blur_resolution", VIEWPORT_W, VIEWPORT_H);
 		r_uniform_vec2("blur_direction", blur, 0);
 

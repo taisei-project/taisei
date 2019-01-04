@@ -29,6 +29,19 @@ Framebuffer* gl33_framebuffer_create(void) {
 	return fb;
 }
 
+attr_unused static inline char* attachment_str(FramebufferAttachment a) {
+	#define A(x) case x: return #x;
+	switch(a) {
+		A(FRAMEBUFFER_ATTACH_COLOR0)
+		A(FRAMEBUFFER_ATTACH_COLOR1)
+		A(FRAMEBUFFER_ATTACH_COLOR2)
+		A(FRAMEBUFFER_ATTACH_COLOR3)
+		A(FRAMEBUFFER_ATTACH_DEPTH)
+		default: UNREACHABLE;
+	}
+	#undef A
+}
+
 void gl33_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, uint mipmap, FramebufferAttachment attachment) {
 	assert(attachment >= 0 && attachment < FRAMEBUFFER_MAX_ATTACHMENTS);
 	assert(!tex || mipmap < tex->params.mipmaps);
@@ -49,6 +62,12 @@ void gl33_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, uint mipmap
 
 	// need to update draw buffers
 	framebuffer->initialized = false;
+
+	if(tex) {
+		log_debug("%s %s = %s (%ux%u mip %u)", framebuffer->debug_label, attachment_str(attachment), tex->debug_label, tex->params.width, tex->params.height, mipmap);
+	} else {
+		log_debug("%s %s = NULL", framebuffer->debug_label, attachment_str(attachment));
+	}
 }
 
 Texture* gl33_framebuffer_get_attachment(Framebuffer *framebuffer, FramebufferAttachment attachment) {

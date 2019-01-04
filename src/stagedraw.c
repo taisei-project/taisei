@@ -26,7 +26,11 @@
 typedef struct CustomFramebuffer {
 	LIST_INTERFACE(struct CustomFramebuffer);
 	Framebuffer *fb;
-	float scale;
+
+	struct {
+		float worst, best;
+	} scale;
+
 	StageFBPair scaling_base;
 } CustomFramebuffer;
 
@@ -39,6 +43,9 @@ static struct {
 			Color active;
 			Color inactive;
 			Color label;
+			Color label_power;
+			Color label_value;
+			Color label_graze;
 		} color;
 	} hud_text;
 
@@ -60,9 +67,12 @@ static struct {
 } stagedraw = {
 	.hud_text.color = {
 		// NOTE: premultiplied alpha
-		.active   = { 1.00, 1.00, 1.00, 1.00 },
-		.inactive = { 0.49, 0.49, 0.49, 0.70 },
-		.label    = { 0.49, 0.49, 0.49, 0.70 },
+		.active      = { 1.00, 1.00, 1.00, 1.00 },
+		.inactive    = { 0.50, 0.50, 0.50, 0.70 },
+		.label       = { 1.00, 1.00, 1.00, 1.00 },
+		.label_power = { 1.00, 0.50, 0.50, 1.00 },
+		.label_value = { 0.30, 0.60, 1.00, 1.00 },
+		.label_graze = { 0.50, 1.00, 0.50, 1.00 },
 	}
 };
 
@@ -72,13 +82,28 @@ static double fb_scale(void) {
 	return (double)vp_height / SCREEN_H;
 }
 
-static void set_fb_size(StageFBPair fb_id, int *w, int *h) {
+static void set_fb_size(StageFBPair fb_id, int *w, int *h, float scale_worst, float scale_best) {
 	double scale = fb_scale();
+
+	if(fb_id == FBPAIR_FG_AUX) {
+		scale_worst *= 0.5;
+	}
+
+	int pp_qual = config_get_int(CONFIG_POSTPROCESS);
+
+	// We might lerp between these in the future
+	if(pp_qual < 2) {
+		scale *= scale_worst;
+	} else {
+		scale *= scale_best;
+	}
+
+	log_debug("%u %f %f %f %i", fb_id, scale, scale_worst, scale_best, pp_qual);
 
 	switch(fb_id) {
 		case FBPAIR_BG:
 			scale *= config_get_float(CONFIG_BG_QUALITY);
-			break;
+			// fallthrough
 
 		default:
 			scale *= config_get_float(CONFIG_FG_QUALITY);
@@ -90,23 +115,26 @@ static void set_fb_size(StageFBPair fb_id, int *w, int *h) {
 	*h = round(VIEWPORT_H * scale);
 }
 
+static inline void set_custom_fb_size(CustomFramebuffer *cfb, int *w, int *h) {
+	set_fb_size(cfb->scaling_base, w, h, cfb->scale.worst, cfb->scale.best);
+}
+
 static void update_fb_size(StageFBPair fb_id) {
 	int w, h;
-	set_fb_size(fb_id, &w, &h);
+	set_fb_size(fb_id, &w, &h, 1, 1);
 	fbpair_resize_all(stagedraw.fb_pairs + fb_id, w, h);
 	fbpair_viewport(stagedraw.fb_pairs + fb_id, 0, 0, w, h);
 
 	if(fb_id != FBPAIR_FG_AUX) {
 		for(CustomFramebuffer *cfb = stagedraw.custom_fbs; cfb; cfb = cfb->next) {
 			if(cfb->scaling_base == fb_id) {
-				int sw = w * cfb->scale;
-				int sh = h * cfb->scale;
+				set_custom_fb_size(cfb, &w, &h);
 
 				for(uint i = 0; i < FRAMEBUFFER_MAX_ATTACHMENTS; ++i) {
-					fbutil_resize_attachment(cfb->fb, i, sw, sh);
+					fbutil_resize_attachment(cfb->fb, i, w, h);
 				}
 
-				r_framebuffer_viewport(cfb->fb, 0, 0, sw, sh);
+				r_framebuffer_viewport(cfb->fb, 0, 0, w, h);
 			}
 		}
 	}
@@ -128,16 +156,15 @@ static bool stage_draw_event(SDL_Event *e, void *arg) {
 
 		case TE_CONFIG_UPDATED: {
 			switch(e->user.code) {
-				case CONFIG_FG_QUALITY: {
+				case CONFIG_POSTPROCESS:
+				case CONFIG_BG_QUALITY:
+					update_fb_size(FBPAIR_BG);
+					// fallthrough
+
+				case CONFIG_FG_QUALITY:
 					update_fb_size(FBPAIR_FG);
 					update_fb_size(FBPAIR_FG_AUX);
 					break;
-				}
-
-				case CONFIG_BG_QUALITY: {
-					update_fb_size(FBPAIR_BG);
-					break;
-				}
 			}
 
 			break;
@@ -148,7 +175,7 @@ static bool stage_draw_event(SDL_Event *e, void *arg) {
 }
 
 static void stage_draw_setup_framebuffers(void) {
-	int fg_width, fg_height, bg_width, bg_height;
+	int fg_width, fg_height, bg_width, bg_height, fga_width, fga_height;
 	FBAttachmentConfig a[2], *a_color, *a_depth;
 	memset(a, 0, sizeof(a));
 
@@ -158,8 +185,9 @@ static void stage_draw_setup_framebuffers(void) {
 	a_color->attachment = FRAMEBUFFER_ATTACH_COLOR0;
 	a_depth->attachment = FRAMEBUFFER_ATTACH_DEPTH;
 
-	set_fb_size(FBPAIR_FG, &fg_width, &fg_height);
-	set_fb_size(FBPAIR_BG, &bg_width, &bg_height);
+	set_fb_size(FBPAIR_FG, &fg_width, &fg_height, 1, 1);
+	set_fb_size(FBPAIR_FG_AUX, &fga_width, &fga_height, 1, 1);
+	set_fb_size(FBPAIR_BG, &bg_width, &bg_height, 1, 1);
 
 	// Set up some parameters shared by all attachments
 	TextureParams tex_common = {
@@ -173,16 +201,22 @@ static void stage_draw_setup_framebuffers(void) {
 	memcpy(&a_depth->tex_params, &tex_common, sizeof(tex_common));
 
 	// Foreground: 1 RGB texture per FB
-	a_color->tex_params.type = TEX_TYPE_RGB;
+	a_color->tex_params.type = TEX_TYPE_RGB_16;
 	a_color->tex_params.width = fg_width;
 	a_color->tex_params.height = fg_height;
 	fbpair_create(stagedraw.fb_pairs + FBPAIR_FG, 1, a);
 	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_FG, 0, 0, fg_width, fg_height);
+	r_framebuffer_set_debug_label(stagedraw.fb_pairs[FBPAIR_FG].front, "Stage FG FB 1");
+	r_framebuffer_set_debug_label(stagedraw.fb_pairs[FBPAIR_FG].back, "Stage FG FB 2");
 
 	// Foreground auxiliary: 1 RGBA texture per FB
 	a_color->tex_params.type = TEX_TYPE_RGBA;
+	a_color->tex_params.width = fga_width;
+	a_color->tex_params.height = fga_height;
 	fbpair_create(stagedraw.fb_pairs + FBPAIR_FG_AUX, 1, a);
-	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_FG_AUX, 0, 0, fg_width, fg_height);
+	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_FG_AUX, 0, 0, fga_width, fga_height);
+	r_framebuffer_set_debug_label(stagedraw.fb_pairs[FBPAIR_FG_AUX].front, "Stage FG AUX FB 1");
+	r_framebuffer_set_debug_label(stagedraw.fb_pairs[FBPAIR_FG_AUX].back, "Stage FG AUX FB 2");
 
 	// Background: 1 RGB texture + depth per FB
 	a_color->tex_params.type = TEX_TYPE_RGB;
@@ -193,9 +227,11 @@ static void stage_draw_setup_framebuffers(void) {
 	a_depth->tex_params.height = bg_height;
 	fbpair_create(stagedraw.fb_pairs + FBPAIR_BG, 2, a);
 	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_BG, 0, 0, bg_width, bg_height);
+	r_framebuffer_set_debug_label(stagedraw.fb_pairs[FBPAIR_BG].front, "Stage BG FB 1");
+	r_framebuffer_set_debug_label(stagedraw.fb_pairs[FBPAIR_BG].back, "Stage BG FB 2");
 }
 
-static Framebuffer* add_custom_framebuffer(StageFBPair fbtype, float scale_factor, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
+static Framebuffer* add_custom_framebuffer(const char *label, StageFBPair fbtype, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
 	CustomFramebuffer *cfb = calloc(1, sizeof(*cfb));
 	list_push(&stagedraw.custom_fbs, cfb);
 
@@ -203,10 +239,10 @@ static Framebuffer* add_custom_framebuffer(StageFBPair fbtype, float scale_facto
 	memcpy(cfg, attachments, sizeof(cfg));
 
 	int width, height;
-	set_fb_size(fbtype, &width, &height);
-	cfb->scale = scale_factor;
-	width *= scale_factor;
-	height *= scale_factor;
+	cfb->scale.worst = scale_worst;
+	cfb->scale.best = scale_best;
+	cfb->scaling_base = fbtype;
+	set_custom_fb_size(cfb, &width, &height);
 
 	for(uint i = 0; i < num_attachments; ++i) {
 		cfg[i].tex_params.width = width;
@@ -217,16 +253,17 @@ static Framebuffer* add_custom_framebuffer(StageFBPair fbtype, float scale_facto
 	fbutil_create_attachments(cfb->fb, num_attachments, cfg);
 	r_framebuffer_viewport(cfb->fb, 0, 0, width, height);
 	r_framebuffer_clear(cfb->fb, CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+	r_framebuffer_set_debug_label(cfb->fb, label);
 
 	return cfb->fb;
 }
 
-Framebuffer* stage_add_foreground_framebuffer(float scale_factor, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
-	return add_custom_framebuffer(FBPAIR_FG, scale_factor, num_attachments, attachments);
+Framebuffer* stage_add_foreground_framebuffer(const char *label, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
+	return add_custom_framebuffer(label, FBPAIR_FG, scale_worst, scale_best, num_attachments, attachments);
 }
 
-Framebuffer* stage_add_background_framebuffer(float scale_factor, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
-	return add_custom_framebuffer(FBPAIR_BG, scale_factor, num_attachments, attachments);
+Framebuffer* stage_add_background_framebuffer(const char *label, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
+	return add_custom_framebuffer(label, FBPAIR_BG, scale_worst, scale_best, num_attachments, attachments);
 }
 
 static void stage_draw_destroy_framebuffers(void) {
@@ -248,6 +285,8 @@ void stage_draw_init(void) {
 	NULL);
 
 	preload_resources(RES_SPRITE, RESF_PERMANENT,
+		"hud/heart",
+		"hud/star",
 		"star",
 		"hud",
 	NULL);
@@ -273,7 +312,6 @@ void stage_draw_init(void) {
 	NULL);
 
 	preload_resources(RES_FONT, RESF_PERMANENT,
-		"hud",
 		"mono",
 		"small",
 		"monosmall",
@@ -296,7 +334,7 @@ void stage_draw_init(void) {
 
 	stagedraw.viewport_pp = get_resource_data(RES_POSTPROCESS, "viewport", RESF_OPTIONAL);
 	stagedraw.hud_text.shader = r_shader_get("text_hud");
-	stagedraw.hud_text.font = get_font("hud");
+	stagedraw.hud_text.font = get_font("standard");
 	stagedraw.shaders.fxaa = r_shader_get("fxaa");
 	stagedraw.shaders.copy_depth = r_shader_get("copy_depth");
 
@@ -478,12 +516,19 @@ static void draw_spellbg(int t) {
 }
 
 static inline bool should_draw_stage_bg(void) {
+	if(!global.boss)
+		return true;
+
+	int render_delay = 1.25*ATTACK_START_DELAY; // hand tuned... not ideal
+	if(global.boss->current->type == AT_ExtraSpell)
+		render_delay = 0;
+	
 	return (
 		!global.boss
 		|| !global.boss->current
 		|| !global.boss->current->draw_rule
 		|| global.boss->current->endtime
-		|| (global.frames - global.boss->current->starttime) < 1.25*ATTACK_START_DELAY
+		|| (global.frames - global.boss->current->starttime) < render_delay
 	);
 }
 
@@ -805,55 +850,76 @@ struct glyphcb_state {
 	Color *color;
 };
 
-static void draw_powerval_callback(Font *font, charcode_t charcode, SpriteParams *spr_params, void *userdata) {
+static int draw_numeric_callback(Font *font, charcode_t charcode, SpriteParams *spr_params, void *userdata) {
 	struct glyphcb_state *st = userdata;
 
-	if(charcode == '.') {
-		st->color = &stagedraw.hud_text.color.inactive;
-	}
-
-	spr_params->color = st->color;
-}
-
-static void draw_numeric_callback(Font *font, charcode_t charcode, SpriteParams *spr_params, void *userdata) {
-	struct glyphcb_state *st = userdata;
-
-	if(charcode != '0') {
+	if(charcode != '0' && charcode != ',') {
 		st->color = &stagedraw.hud_text.color.active;
 	}
 
 	spr_params->color = st->color;
+	return 0;
 }
 
-static inline void stage_draw_hud_power_value(float ypos, char *buf, size_t bufsize) {
-	snprintf(buf, bufsize, "%i.%02i", global.plr.power / 100, global.plr.power % 100);
-	text_draw(buf, &(TextParams) {
-		.pos = { 170, ypos },
-		.font = "mono",
-		.align = ALIGN_RIGHT,
-		.glyph_callback = {
-			draw_powerval_callback,
-			&(struct glyphcb_state) { &stagedraw.hud_text.color.active },
-		}
+static inline void stage_draw_hud_power_value(float xpos, float ypos) {
+	Font *fnt_int = get_font("standard");
+	Font *fnt_fract = get_font("small");
+
+	xpos = draw_fraction(
+		global.plr.power / 100.0,
+		ALIGN_LEFT,
+		xpos,
+		ypos,
+		fnt_int,
+		fnt_fract,
+		&stagedraw.hud_text.color.active,
+		&stagedraw.hud_text.color.inactive,
+		false
+	);
+
+	xpos += text_draw(" / ", &(TextParams) {
+		.pos = { xpos, ypos },
+		.color = &stagedraw.hud_text.color.active,
+		.align = ALIGN_LEFT,
+		.font_ptr = fnt_int,
 	});
+
+	draw_fraction(
+		PLR_MAX_POWER / 100.0,
+		ALIGN_LEFT,
+		xpos,
+		ypos,
+		fnt_int,
+		fnt_fract,
+		&stagedraw.hud_text.color.active,
+		&stagedraw.hud_text.color.inactive,
+		false
+	);
 }
 
 static void stage_draw_hud_score(Alignment a, float xpos, float ypos, char *buf, size_t bufsize, uint32_t score) {
-	snprintf(buf, bufsize, "%010u", score);
+	format_huge_num(10, score, bufsize, buf);
+
+	Font *fnt = get_font("standard");
+	bool kern_saved = font_get_kerning_enabled(fnt);
+	font_set_kerning_enabled(fnt, false);
+
 	text_draw(buf, &(TextParams) {
 		.pos = { xpos, ypos },
-		.font = "mono",
+		.font = "standard",
 		.align = ALIGN_RIGHT,
 		.glyph_callback = {
 			draw_numeric_callback,
 			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive },
 		}
 	});
+
+	font_set_kerning_enabled(fnt, kern_saved);
 }
 
 static void stage_draw_hud_scores(float ypos_hiscore, float ypos_score, char *buf, size_t bufsize) {
-	stage_draw_hud_score(ALIGN_RIGHT, 170, (int)ypos_hiscore, buf, bufsize, progress.hiscore);
-	stage_draw_hud_score(ALIGN_RIGHT, 170, (int)ypos_score,   buf, bufsize, global.plr.points);
+	stage_draw_hud_score(ALIGN_RIGHT, 170, ypos_hiscore, buf, bufsize, progress.hiscore);
+	stage_draw_hud_score(ALIGN_RIGHT, 170, ypos_score,   buf, bufsize, global.plr.points);
 }
 
 static void stage_draw_hud_objpool_stats(float x, float y, float width) {
@@ -895,12 +961,12 @@ struct labels_s {
 	} x;
 
 	struct {
-		float mono_ofs;
 		float hiscore;
 		float score;
 		float lives;
 		float bombs;
 		float power;
+		float value;
 		float graze;
 	} y;
 };
@@ -913,12 +979,12 @@ static void draw_graph(float x, float y, float w, float h) {
 	r_mat_pop();
 }
 
-static void draw_label(const char *label_str, double y_ofs, struct labels_s* labels) {
+static void draw_label(const char *label_str, double y_ofs, struct labels_s* labels, Color *clr) {
 	text_draw(label_str, &(TextParams) {
 		.font_ptr = stagedraw.hud_text.font,
 		.shader_ptr = stagedraw.hud_text.shader,
 		.pos = { labels->x.ofs, y_ofs },
-		.color = &stagedraw.hud_text.color.label,
+		.color = clr,
 	});
 }
 
@@ -929,42 +995,70 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	r_shader_ptr(stagedraw.hud_text.shader);
 
 	// Labels
-	draw_label("Hi-Score:", labels->y.hiscore, labels);
-	draw_label("Score:",    labels->y.score,   labels);
-	draw_label("Lives:",    labels->y.lives,   labels);
-	draw_label("Spells:",   labels->y.bombs,   labels);
-	draw_label("Power:",    labels->y.power,   labels);
-	draw_label("Graze:",    labels->y.graze,   labels);
+	draw_label("Hi-Score:",    labels->y.hiscore, labels, &stagedraw.hud_text.color.label);
+	draw_label("Score:",       labels->y.score,   labels, &stagedraw.hud_text.color.label);
+	draw_label("Lives:",       labels->y.lives,   labels, &stagedraw.hud_text.color.label);
+	draw_label("Spell Cards:", labels->y.bombs,   labels, &stagedraw.hud_text.color.label);
+
+	r_mat_push();
+	r_mat_translate(28, 0, 0);
+	draw_label("Power:",       labels->y.power,   labels, &stagedraw.hud_text.color.label_power);
+	draw_label("Value:",       labels->y.value,   labels, &stagedraw.hud_text.color.label_value);
+	draw_label("Graze:",       labels->y.graze,   labels, &stagedraw.hud_text.color.label_graze);
+	r_mat_pop();
 
 	if(stagedraw.objpool_stats) {
-		stage_draw_hud_objpool_stats(labels->x.ofs, labels->y.graze + 32, 250);
+		stage_draw_hud_objpool_stats(labels->x.ofs, 390, 250);
 	}
 
 	// Score/Hi-Score values
-	stage_draw_hud_scores(labels->y.hiscore + labels->y.mono_ofs, labels->y.score + labels->y.mono_ofs, buf, sizeof(buf));
+	stage_draw_hud_scores(labels->y.hiscore, labels->y.score, buf, sizeof(buf));
 
 	// Lives and Bombs (N/A)
 	if(global.stage->type == STAGE_SPELL) {
 		r_color4(0.7, 0.7, 0.7, 0.7);
-		text_draw("N/A", &(TextParams) { .pos = { -6, labels->y.lives }, .font_ptr = stagedraw.hud_text.font });
-		text_draw("N/A", &(TextParams) { .pos = { -6, labels->y.bombs }, .font_ptr = stagedraw.hud_text.font });
+		text_draw("N/A", &(TextParams) { .pos = { 170, labels->y.lives }, .font_ptr = stagedraw.hud_text.font, .align = ALIGN_RIGHT });
+		text_draw("N/A", &(TextParams) { .pos = { 170, labels->y.bombs }, .font_ptr = stagedraw.hud_text.font, .align = ALIGN_RIGHT });
 		r_color4(1, 1, 1, 1.0);
 	}
 
-	// Power value
-	stage_draw_hud_power_value(labels->y.power + labels->y.mono_ofs, buf, sizeof(buf));
+	r_mat_push();
+	r_mat_translate(16, 0, 0);
 
-	// Graze value
-	snprintf(buf, sizeof(buf), "%05i", global.plr.graze);
+	// Power value
+	stage_draw_hud_power_value(0, labels->y.power);
+
+	Font *fnt = get_font("standard");
+	bool kern_saved = font_get_kerning_enabled(fnt);
+	font_set_kerning_enabled(fnt, false);
+
+	// Point Item Value... value
+	// TODO: placeholder until the mechanic is actually implemented/powersurge is merged
+	format_huge_num(6, 9001, sizeof(buf), buf);
 	text_draw(buf, &(TextParams) {
-		.pos = { -6, labels->y.graze },
+		.pos = { 0, labels->y.value },
 		.shader_ptr = stagedraw.hud_text.shader,
-		.font = "mono",
+		.font_ptr = fnt,
 		.glyph_callback = {
 			draw_numeric_callback,
 			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive },
 		}
 	});
+
+	// Graze value
+	format_huge_num(6, global.plr.graze, sizeof(buf), buf);
+	text_draw(buf, &(TextParams) {
+		.pos = { 0, labels->y.graze },
+		.shader_ptr = stagedraw.hud_text.shader,
+		.font_ptr = fnt,
+		.glyph_callback = {
+			draw_numeric_callback,
+			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive },
+		}
+	});
+
+	font_set_kerning_enabled(fnt, kern_saved);
+	r_mat_pop();
 
 	// Warning: pops outer matrix!
 	r_mat_pop();
@@ -989,7 +1083,6 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	}
 #endif
 
-	// draw_text(ALIGN_RIGHT | AL_Flag_NoAdjust, SCREEN_W, rint(SCREEN_H - 0.5 * stringheight(buf, _fonts.monosmall)), buf, _fonts.monosmall);
 	font = get_font("monosmall");
 
 	text_draw(buf, &(TextParams) {
@@ -999,7 +1092,7 @@ void stage_draw_hud_text(struct labels_s* labels) {
 	});
 
 	if(global.replaymode == REPLAY_PLAY) {
-		r_shader("text_hud");
+		r_shader_ptr(stagedraw.hud_text.shader);
 		// XXX: does it make sense to use the monospace font here?
 
 		snprintf(buf, sizeof(buf), "Replay: %s (%i fps)", global.replay.playername, global.replay_stage->fps);
@@ -1095,13 +1188,13 @@ static void stage_draw_framerate_graphs(void) {
 	#define NUM_SAMPLES (sizeof(((FPSCounter){{0}}).frametimes) / sizeof(((FPSCounter){{0}}).frametimes[0]))
 	static float samples[NUM_SAMPLES];
 
-	float pad = 15;
+	float pad = 10;
 
 	float w = 260 - pad;
 	float h = 30;
 
 	float x = SCREEN_W - w - pad;
-	float y = 100;
+	float y = 320;
 
 	r_shader("graph");
 
@@ -1129,12 +1222,12 @@ void stage_draw_hud(void) {
 	// Background
 	draw_sprite(SCREEN_W/2.0, SCREEN_H/2.0, "hud");
 
+	// TODO: refactor this whole mess of arcane magic numbers into something more sensible
+	// hahaha who am I kidding, nobody is gonna do that.
+
 	// Set up positions of most HUD elements
 	static struct labels_s labels = {
 		.x.ofs = -75,
-
-		// XXX: is there a more robust way to level the monospace font with the label one?
-		// .y.mono_ofs = 0.5,
 	};
 
 	const float label_height = 33;
@@ -1145,21 +1238,17 @@ void stage_draw_hud(void) {
 	labels.y.hiscore = label_cur_height+label_height*(i++);
 	labels.y.score   = label_cur_height+label_height*(i++);
 
-	label_cur_height = 180; i = 0;
+	label_cur_height = 140; i = 0;
 	labels.y.lives   = label_cur_height+label_height*(i++);
 	labels.y.bombs   = label_cur_height+label_height*(i++);
+
+	label_cur_height = 240; i = 0;
 	labels.y.power   = label_cur_height+label_height*(i++);
+	labels.y.value   = label_cur_height+label_height*(i++);
 	labels.y.graze   = label_cur_height+label_height*(i++);
 
 	r_mat_push();
 	r_mat_translate(615, 0, 0);
-
-	// Difficulty indicator
-	r_mat_push();
-	r_mat_translate((SCREEN_W - 615) * 0.25, SCREEN_H-170, 0);
-	r_mat_scale(0.6, 0.6, 0);
-	draw_sprite(0, 0, difficulty_sprite_name(global.diff));
-	r_mat_pop();
 
 	// Set up variables for Extra Spell indicator
 	float a = 1, s = 0, fadein = 1, fadeout = 1, fade = 1;
@@ -1175,18 +1264,104 @@ void stage_draw_hud(void) {
 
 	// Lives and Bombs
 	if(global.stage->type != STAGE_SPELL) {
-		draw_stars(0, labels.y.lives, global.plr.lives, global.plr.life_fragments, PLR_MAX_LIVES, PLR_MAX_LIFE_FRAGMENTS, a, 20);
-		draw_stars(0, labels.y.bombs, global.plr.bombs, global.plr.bomb_fragments, PLR_MAX_BOMBS, PLR_MAX_BOMB_FRAGMENTS, a, 20);
+		r_mat_push();
+		r_mat_translate(0, font_get_metrics(get_font("standard"))->descent * 0.5, 0);
+
+		Sprite *spr_life = get_sprite("hud/heart");
+		Sprite *spr_bomb = get_sprite("hud/star");
+
+		float spacing = 1;
+		float pos_lives = 170 - (PLR_MAX_LIVES - 0.5) * spr_life->w - (PLR_MAX_LIVES - 1.5) * spacing;
+		float pos_bombs = 170 - (PLR_MAX_BOMBS - 0.5) * spr_bomb->w - (PLR_MAX_BOMBS - 1.5) * spacing;
+
+		draw_fragments(&(DrawFragmentsParams) {
+			.fill = spr_life,
+			.pos = { pos_lives, labels.y.lives },
+			.origin_offset = { 0, 0 },
+			.limits = { PLR_MAX_LIVES, PLR_MAX_LIFE_FRAGMENTS },
+			.filled = { global.plr.lives, global.plr.life_fragments },
+			.alpha = a,
+			.spacing = 1,
+			.color = {
+				.fill = RGBA(1, 1, 1, 1),
+				.back = RGBA(0, 0, 0, 0.5),
+				.frag = RGBA(0.5, 0.5, 0.6, 0.5),
+			}
+		});
+
+		draw_fragments(&(DrawFragmentsParams) {
+			.fill = spr_bomb,
+			.pos = { pos_bombs, labels.y.bombs },
+			.origin_offset = { 0, 0.05 },
+			.limits = { PLR_MAX_BOMBS, PLR_MAX_BOMB_FRAGMENTS },
+			.filled = { global.plr.bombs, global.plr.bomb_fragments },
+			.alpha = a,
+			.spacing = 1,
+			.color = {
+				.fill = RGBA(1, 1, 1, 1),
+				.back = RGBA(0, 0, 0, 0.5),
+				.frag = RGBA(0.5, 0.5, 0.6, 0.5),
+			}
+		});
+
+		r_mat_pop();
 	}
 
-	// Power stars
-	draw_stars(0, labels.y.power, global.plr.power / 100, global.plr.power % 100, PLR_MAX_POWER / 100, 100, 1, 20);
+	// Difficulty indicator
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = difficulty_sprite_name(global.diff),
+		.pos = { (SCREEN_W - 615) * 0.25, 400 },
+		.scale.both = 0.6,
+		.shader = "sprite_default",
+	});
+
+	// Power/Item icons
+	r_mat_push();
+	r_mat_translate(14 + labels.x.ofs, font_get_metrics(get_font("standard"))->descent * 0.5, 0);
+
+	r_draw_sprite(&(SpriteParams) {
+		.pos = { 2, labels.y.power + 2 },
+		.sprite = "item/power",
+		.shader = "sprite_default",
+		.color = RGBA(0, 0, 0, 0.5),
+	});
+
+	r_draw_sprite(&(SpriteParams) {
+		.pos = { 0, labels.y.power },
+		.sprite = "item/power",
+		.shader = "sprite_default",
+	});
+
+	r_draw_sprite(&(SpriteParams) {
+		.pos = { 2, labels.y.value + 2 },
+		.sprite = "item/point",
+		.shader = "sprite_default",
+		.color = RGBA(0, 0, 0, 0.5),
+	});
+
+	r_draw_sprite(&(SpriteParams) {
+		.pos = { 0, labels.y.value },
+		.sprite = "item/point",
+		.shader = "sprite_default",
+	});
+
+	r_mat_pop();
 
 	ShaderProgram *sh_prev = r_shader_current();
 	r_shader("text_default");
+
 	// God Mode indicator
 	if(global.plr.iddqd) {
-		text_draw("GOD MODE", &(TextParams) { .pos = { -70, 475 }, .font = "big" });
+		Font *fnt = get_font("standard");
+		const char *txt = "God Mode is enabled!";
+
+		text_draw(txt, &(TextParams) {
+			.pos = { -615 + VIEWPORT_X + VIEWPORT_W + (SCREEN_W - VIEWPORT_X - VIEWPORT_W) * 0.5, 450 },
+			.font_ptr = fnt,
+			.shader_ptr = stagedraw.hud_text.shader,
+			.align = ALIGN_CENTER,
+			.color = RGB(1.0, 0.5, 0.2),
+		});
 	}
 
 	// Extra Spell indicator
@@ -1197,6 +1372,8 @@ void stage_draw_hud(void) {
 		r_color(RGBA_MUL_ALPHA(0.3, 0.6, 0.7, 0.7 * s));
 		r_mat_rotate_deg(-25 + 360 * (1-s2), 0, 0, 1);
 		r_mat_scale(s2, s2, 0);
+
+		// TODO: replace this with a shader
 
 		text_draw("Extra Spell!", &(TextParams) { .pos = {  1,  1 }, .font = "big", .align = ALIGN_CENTER });
 		text_draw("Extra Spell!", &(TextParams) { .pos = { -1, -1 }, .font = "big", .align = ALIGN_CENTER });

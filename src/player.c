@@ -142,8 +142,9 @@ static void ent_draw_player(EntityInterface *ent) {
 
 	Color c;
 
-	if(!player_is_vulnerable(plr) && (global.frames/8)&1) {
-		c = *RGBA_MUL_ALPHA(0.4, 0.4, 1.0, 0.9);
+	if(!player_is_vulnerable(plr)) {
+		float f = 0.3*sin(0.1*global.frames);
+		c = *RGBA_MUL_ALPHA(1.0+f, 1.0, 1.0-f, 0.7+f);
 	} else {
 		c = *RGBA_MUL_ALPHA(1.0, 1.0, 1.0, 1.0);
 	}
@@ -308,6 +309,9 @@ void player_logic(Player* plr) {
 }
 
 bool player_bomb(Player *plr) {
+	// stage_clear_hazards(CLEAR_HAZARDS_ALL);
+	// return true;
+
 	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell)
 		return false;
 
@@ -907,28 +911,38 @@ void player_fix_input(Player *plr) {
 	}
 }
 
-void player_graze(Player *plr, complex pos, int pts, int effect_intensity) {
+void player_graze(Player *plr, complex pos, int pts, int effect_intensity, const Color *color) {
 	if(!(++plr->graze)) {
 		log_warn("Graze counter overflow");
 		plr->graze = 0xffff;
 	}
 
+	pos = (pos + plr->pos) * 0.5;
+
 	player_add_points(plr, pts);
 	play_sound("graze");
 
+	Color *c = COLOR_COPY(color);
+	color_add(c, RGBA(1, 1, 1, 1));
+	color_mul_scalar(c, 0.5);
+	c->a = 0;
+
 	for(int i = 0; i < effect_intensity; ++i) {
-		tsrand_fill(3);
+		tsrand_fill(4);
 
 		PARTICLE(
-			.sprite = "flare",
+			.sprite = "graze",
+			.color = c,
 			.pos = pos,
-			.rule = linear,
-			.timeout = 5 + 5 * afrand(2),
-			.draw_rule = Shrink,
-			.args = { (1+afrand(0)*5)*cexp(I*M_PI*2*afrand(1)) },
+			.rule = asymptotic,
+			.timeout = 24 + 5 * afrand(2),
+			.draw_rule = ScaleSquaredFade,
+			.args = { 0.2 * (1+afrand(0)*5)*cexp(I*M_PI*2*afrand(1)), 16 * (1 + 0.5 * anfrand(3)), 1 },
 			.flags = PFLAG_NOREFLECT,
-			.layer = LAYER_PARTICLE_LOW,
+			// .layer = LAYER_PARTICLE_LOW,
 		);
+
+		color_mul_scalar(c, 0.4);
 	}
 }
 

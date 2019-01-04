@@ -45,60 +45,120 @@ void fade_out(float f) {
 	colorfill(0, 0, 0, f);
 }
 
-void draw_stars(int x, int y, int numstars, int numfrags, int maxstars, int maxfrags, float alpha, float star_width) {
-	Sprite *star = get_sprite("star");
+void draw_fragments(const DrawFragmentsParams *params) {
 	int i = 0;
-	float scale = star_width/star->w;
 
-	Color *fill_clr = color_mul_scalar(RGBA(1.00, 1.00, 1.00, 1.00), alpha);
-	Color *back_clr = color_mul_scalar(RGBA(0.04, 0.12, 0.20, 0.20), alpha);
-	Color *frag_clr = color_mul_scalar(RGBA(0.47, 0.56, 0.65, 0.65), alpha);
+	const Color *fill_clr = params->color.fill;
+	const Color *back_clr = params->color.back;
+	const Color *frag_clr = params->color.frag;
 
-	// XXX: move to call site?
-	y -= 2;
+	if(params->alpha < 1) {
+		fill_clr = color_mul_scalar(COLOR_COPY(fill_clr), params->alpha);
+		frag_clr = color_mul_scalar(COLOR_COPY(frag_clr), params->alpha);
+		back_clr = color_mul_scalar(COLOR_COPY(back_clr), params->alpha);
+	}
 
 	ShaderProgram *prog_saved = r_shader_current();
 	r_shader("sprite_circleclipped_indicator");
 	r_uniform_vec4_rgba("back_color", back_clr);
+	r_uniform_vec2_vec("origin_ofs", (float*)&params->origin_offset);
+
+	r_flush_sprites();
+
+	float spacing = params->spacing + params->fill->w;
 
 	r_mat_push();
-	r_mat_translate(x - star_width, y, 0);
+	r_mat_translate(params->pos.x - spacing, params->pos.y, 0);
 
-	while(i < numstars) {
-		r_mat_translate(star_width, 0, 0);
+	while(i < params->filled.elements) {
+		r_mat_translate(spacing, 0, 0);
 		r_draw_sprite(&(SpriteParams) {
-			.sprite_ptr = star,
+			.sprite_ptr = params->fill,
 			.shader_params = &(ShaderCustomParams){{ 1 }},
 			.color = fill_clr,
-			.scale.both = scale,
 		});
 		i++;
 	}
 
-	if(numfrags) {
-		r_mat_translate(star_width, 0, 0);
+	if(params->filled.fragments) {
+		r_mat_translate(spacing, 0, 0);
 		r_draw_sprite(&(SpriteParams) {
-			.sprite_ptr = star,
-			.shader_params = &(ShaderCustomParams){{ numfrags / (float)maxfrags }},
+			.sprite_ptr = params->fill,
+			.shader_params = &(ShaderCustomParams){{ params->filled.fragments / (float)params->limits.fragments }},
 			.color = frag_clr,
-			.scale.both = scale,
 		});
 		i++;
 	}
 
-	while(i < maxstars) {
-		r_mat_translate(star_width, 0, 0);
+	while(i < params->limits.elements) {
+		r_mat_translate(spacing, 0, 0);
 		r_draw_sprite(&(SpriteParams) {
-			.sprite_ptr = star,
+			.sprite_ptr = params->fill,
 			.shader_params = &(ShaderCustomParams){{ 0 }},
 			.color = frag_clr,
-			.scale.both = scale,
 		});
 		i++;
 	}
 
 	r_mat_pop();
 	r_shader_ptr(prog_saved);
+}
+
+double draw_fraction(double value, Alignment a, double pos_x, double pos_y, Font *f_int, Font *f_fract, const Color *c_int, const Color *c_fract, bool zero_pad) {
+	double val_int, val_fract;
+	char buf_int[4], buf_fract[4];
+	val_fract = modf(value, &val_int);
+
+	bool kern_int = font_get_kerning_enabled(f_int);
+	bool kern_fract = font_get_kerning_enabled(f_fract);
+
+	font_set_kerning_enabled(f_int, 0);
+	font_set_kerning_enabled(f_fract, 0);
+
+	snprintf(buf_int, sizeof(buf_int), zero_pad ? "%02i" : "%i", (int)val_int);
+	snprintf(buf_fract, sizeof(buf_fract), ".%02i", (int)floor(val_fract * 100));
+
+	double w_int = text_width(f_int, buf_int, 0);
+	double w_fract = text_width(f_fract, buf_fract, 0);
+	double w_total = w_int + w_fract;
+
+	switch(a) {
+		case ALIGN_CENTER:
+			pos_x -= w_total * 0.5;
+			break;
+
+		case ALIGN_RIGHT:
+			pos_x -= w_total;
+			break;
+
+		case ALIGN_LEFT:
+			break;
+
+		default: UNREACHABLE;
+	}
+
+	double ofs_int = font_get_metrics(f_int)->descent / font_get_metrics(f_int)->scale;
+	double ofs_fract = font_get_metrics(f_fract)->descent / font_get_metrics(f_fract)->scale - ofs_int;
+	ofs_int = 0;
+
+	pos_x += text_draw(buf_int, &(TextParams) {
+		.pos = { pos_x, pos_y + ofs_int },
+		.color = c_int,
+		.font_ptr = f_int,
+		.align = ALIGN_LEFT,
+	});
+
+	pos_x += text_draw(buf_fract, &(TextParams) {
+		.pos = { pos_x, pos_y + ofs_fract },
+		.color = c_fract,
+		.font_ptr = f_fract,
+		.align = ALIGN_LEFT,
+	});
+
+	font_set_kerning_enabled(f_int, kern_int);
+	font_set_kerning_enabled(f_fract, kern_fract);
+
+	return pos_x;
 }
 
 void draw_framebuffer_attachment(Framebuffer *fb, double width, double height, FramebufferAttachment attachment) {
@@ -177,10 +237,4 @@ void fbutil_resize_attachment(Framebuffer *fb, FramebufferAttachment attachment,
 	params.height = height;
 	params.mipmaps = 0; // FIXME
 	r_framebuffer_attach(fb, r_texture_create(&params), 0, attachment);
-}
-
-void init_blur_shader(ShaderProgram *prog, size_t kernel_size, float sigma) {
-	float kernel[kernel_size];
-	gaussian_kernel_1d(kernel_size, sigma, kernel);
-	r_uniform_float_array(r_shader_uniform(prog, "blur_kernel[0]"), 0, kernel_size, kernel);
 }

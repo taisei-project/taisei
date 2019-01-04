@@ -283,6 +283,7 @@ void KurumiSlave(Enemy *e, int t, bool render) {
 			.rule = enemy_flare,
 			.timeout = 50,
 			.args = { (-50.0*I-offset)/50.0, add_ref(e) },
+			.flags = PFLAG_REQUIREDPARTICLE,
 		);
 	}
 }
@@ -480,6 +481,7 @@ int splitcard(Projectile *p, int t) {
 	if(t == creal(p->args[2])) {
 		p->color = *RGB(0, p->color.b, p->color.g);
 		play_sound_ex("redirect", 10, false);
+		spawn_projectile_highlight_effect(p);
 	}
 
 	if(t > creal(p->args[2])) {
@@ -544,6 +546,7 @@ static int splitcard_elly(Projectile *p, int t) {
 		// FIXME: what was even the intention here?
 		p->color.b *= -1;
 		play_sound_ex("redirect", 10, false);
+		spawn_projectile_highlight_effect(p);
 	}
 
 	return asymptotic(p, t);
@@ -834,7 +837,7 @@ static Projectile* vapor_particle(complex pos, const Color *clr) {
 		.color = clr,
 		.timeout = 60,
 		.draw_rule = ScaleFade,
-		.args = { 0, 0, 0.0 + 5.0*I },
+		.args = { 0, 0, 0.2 + 2.0*I },
 		.pos = pos,
 		.angle = M_PI*2*frand(),
 	);
@@ -853,7 +856,11 @@ static int kdanmaku_proj(Projectile *p, int t) {
 		p->args[1] = (global.plr.pos - p->pos) * 0.001;
 
 		if(frand() < 0.5) {
-			vapor_particle(p->pos, RGBA(0.6, 0.3, 1.0, 0.0));
+			Projectile *v = vapor_particle(p->pos, color_mul_scalar(COLOR_COPY(&p->color), 0.5));
+
+			if(frand() < 0.5) {
+				v->flags |= PFLAG_REQUIREDPARTICLE;
+			}
 		}
 
 		PARTICLE(
@@ -870,6 +877,7 @@ static int kdanmaku_proj(Projectile *p, int t) {
 
 	if(t > time && cabs(p->args[1]) < 2) {
 		p->args[1] *= 1.02;
+		fapproach_p(&p->color.a, 1, 0.025);
 	}
 
 	p->pos += p->args[1];
@@ -911,10 +919,11 @@ int kdanmaku_slave(Enemy *e, int t) {
 			if(cabs(p-global.plr.pos) > 60) {
 				PROJECTILE("thickrice", p, RGBA(1.0, 0.5, 0.5, 0.0), kdanmaku_proj,
 					.args = { 160, speed*0.5*cexp(2.0*I*M_PI*sin(245*t+i*i*3501)) },
+					.flags = PFLAG_NOSPAWNFLARE,
 				);
 
-				if(frand()<0.5) {
-					vapor_particle(p, RGBA(1, 0.25 * frand(), 0.25 * frand(), 0.0));
+				if(frand() < 0.5) {
+					vapor_particle(p, RGBA(0.5, 0.125 * frand(), 0.125 * frand(), 0.1));
 				}
 			}
 		}

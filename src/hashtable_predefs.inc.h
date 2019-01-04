@@ -98,6 +98,33 @@
 #include "hashtable_incproxy.inc.h"
 
 /*
+ * ptr2int
+ *
+ * Maps pointers to 64-bit integers.
+ */
+#define HT_SUFFIX                      ptr2int
+#define HT_KEY_TYPE                    void*
+#define HT_VALUE_TYPE                  int64_t
+#define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_uint64((uintptr_t)(key))
+#define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = (void*)(src))
+#define HT_KEY_CONST
+#include "hashtable_incproxy.inc.h"
+
+/*
+ * ptr2int_ts
+ *
+ * Maps pointers to 64-bit integers (thread-safe).
+ */
+#define HT_SUFFIX                      ptr2int_ts
+#define HT_KEY_TYPE                    void*
+#define HT_VALUE_TYPE                  int64_t
+#define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_uint64((uintptr_t)(key))
+#define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = (void*)(src))
+#define HT_KEY_CONST
+#define HT_THREAD_SAFE
+#include "hashtable_incproxy.inc.h"
+
+/*
  * C11 generic selection witchcraft.
  */
 
@@ -107,13 +134,15 @@
 #define _HT_GENERICLIST_NONTS(name) \
 	_HT_GENERIC_MAP(str2ptr, name), \
 	_HT_GENERIC_MAP(str2int, name), \
-	_HT_GENERIC_MAP(int2int, name)
+	_HT_GENERIC_MAP(int2int, name), \
+	_HT_GENERIC_MAP(ptr2int, name)
 
 // Add all the thread-safe types here.
 #define _HT_GENERICLIST_TS(name) \
 	_HT_GENERIC_MAP(str2ptr_ts, name), \
 	_HT_GENERIC_MAP(str2int_ts, name), \
-	_HT_GENERIC_MAP(int2int_ts, name)
+	_HT_GENERIC_MAP(int2int_ts, name), \
+	_HT_GENERIC_MAP(ptr2int_ts, name)
 
 #define _HT_GENERIC(ht_expr, name) (_Generic((ht_expr), \
 	 _HT_GENERICLIST_NONTS(name), \

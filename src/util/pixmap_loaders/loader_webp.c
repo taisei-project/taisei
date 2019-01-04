@@ -60,8 +60,10 @@ static bool px_webp_load(SDL_RWops *stream, Pixmap *pixmap) {
 
 	// NOTE: We read the image upside down here to avoid needing to flip it for
 	// the GL backend. This is just a slight optimization, not a hard dependency.
-	config.options.flip = true;
-	pixmap->origin = PIXMAP_ORIGIN_BOTTOMLEFT;
+	// config.options.flip = true;
+	// pixmap->origin = PIXMAP_ORIGIN_BOTTOMLEFT;
+	// BUG: Unfortunately, the decoder seems to ignore the flip option, at least in
+	// some instances.
 
 	// TODO: Make sure this isn't counter-productive with our own inter-resource
 	// loading parallelism.

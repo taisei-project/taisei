@@ -12,6 +12,7 @@
 #include <stdlib.h>
 
 #include "stringops.h"
+#include "miscmath.h"
 #include "assert.h"
 
 bool strendswith(const char *s, const char *e) {
@@ -203,15 +204,32 @@ size_t ucs4len(const uint32_t *ucs4) {
 	return len;
 }
 
-uint32_t* utf8_to_ucs4(const char *utf8) {
-	assert(utf8 != NULL);
+void utf8_to_ucs4(const char *utf8, size_t bufsize, uint32_t buf[bufsize]) {
+	uint32_t *bufptr = buf;
+	assert(bufsize > 0);
+
+	while(*utf8) {
+		*bufptr++ = utf8_getch(&utf8);
+		assert(bufptr < buf + bufsize);
+	}
+
+	*bufptr++ = 0;
+}
+
+uint32_t* utf8_to_ucs4_alloc(const char *utf8) {
 	uint32_t *ucs4 = (uint32_t*)(void*)SDL_iconv_string(UCS4_ID, "UTF-8", utf8, strlen(utf8) + 1);
 	assert(ucs4 != NULL);
 	return ucs4;
 }
 
-char* ucs4_to_utf8(const uint32_t *ucs4) {
-	assert(ucs4 != NULL);
+void ucs4_to_utf8(const uint32_t *ucs4, size_t bufsize, char buf[bufsize]) {
+	assert(bufsize > ucs4len(ucs4));
+	char *temp = ucs4_to_utf8_alloc(ucs4);
+	memcpy(buf, temp, bufsize);
+	free(temp);
+}
+
+char* ucs4_to_utf8_alloc(const uint32_t *ucs4) {
 	char *utf8 = SDL_iconv_string("UTF-8", UCS4_ID, (const char*)ucs4, sizeof(uint32_t) * (ucs4len(ucs4) + 1));
 	assert(utf8 != NULL);
 	return utf8;
@@ -413,3 +431,27 @@ uint32_t utf8_getch(const char **src) {
 	return ch;
 }
 
+void format_huge_num(uint digits, uint num, size_t bufsize, char *buf) {
+	assert(digits > 0);
+
+	div_t separators = div(digits, 3);
+	uint len = digits + (separators.quot + !!separators.rem);
+	assert(bufsize >= len);
+
+	char *p = buf;
+
+	// WARNING: i must be signed here
+	for(int i = 0; i < digits; ++i) {
+		if(i && !((i - separators.rem) % 3)) {
+			*p++ = ',';
+		}
+
+		div_t n = div(num, ipow10(digits - i - 1));
+		*p++ = '0' + n.quot;
+
+		num = n.rem;
+	}
+
+	*p = 0;
+	assert(p == buf + len - 1);
+}

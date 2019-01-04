@@ -13,12 +13,51 @@
 #include "renderer/api.h"
 #include "global.h"
 
+typedef struct EntityDrawHook EntityDrawHook;
+typedef LIST_ANCHOR(EntityDrawHook) EntityDrawHookList;
+
+struct EntityDrawHook {
+	LIST_INTERFACE(EntityDrawHook);
+	EntityDrawHookCallback callback;
+	void *arg;
+};
+
 static struct {
 	EntityInterface **array;
 	uint num;
 	uint capacity;
 	uint32_t total_spawns;
+
+	struct {
+		EntityDrawHookList pre_draw;
+		EntityDrawHookList post_draw;
+	} hooks;
 } entities;
+
+static void add_hook(EntityDrawHookList *list, EntityDrawHookCallback cb, void *arg) {
+	EntityDrawHook *hook = calloc(1, sizeof(*hook));
+	hook->callback = cb;
+	hook->arg = arg;
+	alist_append(list, hook);
+}
+
+static void remove_hook(EntityDrawHookList *list, EntityDrawHookCallback cb) {
+	for(EntityDrawHook *hook = list->first; hook; hook = hook->next) {
+		if(hook->callback == cb) {
+			alist_unlink(list, hook);
+			free(hook);
+			return;
+		}
+	}
+
+	UNREACHABLE;
+}
+
+static void call_hooks(EntityDrawHookList *list, EntityInterface *ent) {
+	for(EntityDrawHook *hook = list->first; hook; hook = hook->next) {
+		hook->callback(ent, hook->arg);
+	}
+}
 
 #define FOR_EACH_ENT(ent) for(EntityInterface **_ent = entities.array, *ent = *entities.array; _ent < entities.array + entities.num; ent = *(++_ent))
 
@@ -38,6 +77,9 @@ void ent_shutdown(void) {
 	}
 
 	free(entities.array);
+
+	assert(entities.hooks.post_draw.first == NULL);
+	assert(entities.hooks.pre_draw.first == NULL);
 }
 
 void ent_register(EntityInterface *ent, EntityType type) {
@@ -86,6 +128,7 @@ static int ent_cmp(const void *ptr1, const void *ptr2) {
 }
 
 void ent_draw(EntityPredicate predicate) {
+	call_hooks(&entities.hooks.pre_draw, NULL);
 	qsort(entities.array, entities.num, sizeof(EntityInterface*), ent_cmp);
 
 	if(predicate) {
@@ -94,9 +137,11 @@ void ent_draw(EntityPredicate predicate) {
 			assert(entities.array[ent->index] == ent);
 
 			if(ent->draw_func && predicate(ent)) {
+				call_hooks(&entities.hooks.pre_draw, ent);
 				r_state_push();
 				ent->draw_func(ent);
 				r_state_pop();
+				call_hooks(&entities.hooks.post_draw, ent);
 			}
 		}
 	} else {
@@ -105,12 +150,16 @@ void ent_draw(EntityPredicate predicate) {
 			assert(entities.array[ent->index] == ent);
 
 			if(ent->draw_func) {
+				call_hooks(&entities.hooks.pre_draw, ent);
 				r_state_push();
 				ent->draw_func(ent);
 				r_state_pop();
+				call_hooks(&entities.hooks.post_draw, ent);
 			}
 		}
 	}
+
+	call_hooks(&entities.hooks.post_draw, NULL);
 }
 
 DamageResult ent_damage(EntityInterface *ent, const DamageInfo *damage) {
@@ -137,4 +186,20 @@ void ent_area_damage(complex origin, float radius, const DamageInfo *damage) {
 	if(global.boss && cabs(origin - global.boss->pos) < radius) {
 		ent_damage(&global.boss->ent, damage);
 	}
+}
+
+void ent_hook_pre_draw(EntityDrawHookCallback callback, void *arg) {
+	add_hook(&entities.hooks.pre_draw, callback, arg);
+}
+
+void ent_unhook_pre_draw(EntityDrawHookCallback callback) {
+	remove_hook(&entities.hooks.pre_draw, callback);
+}
+
+void ent_hook_post_draw(EntityDrawHookCallback callback, void *arg) {
+	add_hook(&entities.hooks.post_draw, callback, arg);
+}
+
+void ent_unhook_post_draw(EntityDrawHookCallback callback) {
+	remove_hook(&entities.hooks.post_draw, callback);
 }

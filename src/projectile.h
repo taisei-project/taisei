@@ -44,7 +44,8 @@ typedef enum {
 } ProjType;
 
 typedef enum ProjFlags {
-	PFLAG_NOSPAWNZOOM = (1 << 2),
+	PFLAG_NOSPAWNFLARE = (1 << 0),
+	PFLAG_NOSPAWNFADE = (1 << 1),
 	PFLAG_NOGRAZE = (1 << 3),
 	PFLAG_NOCLEAR = (1 << 4),
 	PFLAG_NOCLEAREFFECT = (1 << 5),
@@ -53,6 +54,8 @@ typedef enum ProjFlags {
 	PFLAG_GRAZESPAM = (1 << 8),
 	PFLAG_NOREFLECT = (1 << 9),
 	PFLAG_REQUIREDPARTICLE = (1 << 10),
+
+	PFLAG_NOSPAWNEFFECTS = PFLAG_NOSPAWNFADE | PFLAG_NOSPAWNFLARE,
 } ProjFlags;
 
 // FIXME: prototype stuff awkwardly shoved in this header because of dependency cycles.
@@ -182,6 +185,7 @@ bool projectile_is_clearable(Projectile *p);
 
 Projectile* spawn_projectile_collision_effect(Projectile *proj);
 Projectile* spawn_projectile_clear_effect(Projectile *proj);
+Projectile* spawn_projectile_highlight_effect(Projectile *proj);
 
 void projectile_set_prototype(Projectile *p, ProjPrototype *proto);
 
@@ -200,6 +204,7 @@ void DeathShrink(Projectile *p, int t);
 void Fade(Projectile *p, int t);
 void GrowFade(Projectile *p, int t);
 void ScaleFade(Projectile *p, int t);
+void ScaleSquaredFade(Projectile *p, int t);
 
 void Petal(Projectile *p, int t);
 void petal_explosion(int n, complex pos);
@@ -207,5 +212,6 @@ void petal_explosion(int n, complex pos);
 void Blast(Projectile *p, int t);
 
 void projectiles_preload(void);
+void projectiles_free(void);
 
 complex projectile_graze_size(Projectile *p);

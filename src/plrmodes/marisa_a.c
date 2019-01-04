@@ -379,7 +379,7 @@ static int marisa_laser_slave(Enemy *e, int t) {
 			.draw_rule = marisa_laser_flash_draw,
 			.timeout = 8,
 			.args = { dir, 0, 0.6 + 0.2*I, },
-			.flags = PFLAG_NOREFLECT,
+			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 			// .layer = LAYER_PARTICLE_LOW,
 		);
 	}
@@ -405,7 +405,7 @@ static void masterspark_visual(Enemy *e, int t2, bool render) {
 		fade = pow(fade, 5);
 	}
 
-	marisa_common_masterspark_draw(global.plr.pos - 30 * I, 800 + I * VIEWPORT_H * 1.25, carg(e->args[0]), t2, fade);
+	marisa_common_masterspark_draw(1, &(MarisaBeamInfo){global.plr.pos - 30 * I, 800 + I * VIEWPORT_H * 1.25, carg(e->args[0]), t2}, fade);
 }
 
 static int masterspark_star(Projectile *p, int t) {
@@ -442,6 +442,13 @@ static int masterspark(Enemy *e, int t2) {
 	} else if(t2 % 2 == 0) {
 		complex dir = -cexp(1.5*I*sin(t2*M_PI*1.12))*I;
 		Color *c = HSLA(-t*5.321,1,0.5,0.5*frand());
+
+		uint flags = PFLAG_NOREFLECT;
+
+		if(t2 % 4 == 0) {
+			flags |= PFLAG_REQUIREDPARTICLE;
+		}
+
 		PARTICLE(
 			.sprite = "maristar_orbit",
 			.pos = global.plr.pos+40*dir,
@@ -450,7 +457,8 @@ static int masterspark(Enemy *e, int t2) {
 			.timeout = 50,
 			.args= { (10 * dir - 10*I)*diroffset, 4 },
 			.angle = nfrand(),
-			.draw_rule = GrowFade
+			.draw_rule = GrowFade,
+			.flags = flags,
 		);
 		dir = -conj(dir);
 		PARTICLE(
@@ -461,7 +469,8 @@ static int masterspark(Enemy *e, int t2) {
 			.timeout = 50,
 			.args = { (10 * dir - 10*I)*diroffset, 4 },
 			.angle = nfrand(),
-			.draw_rule = GrowFade
+			.draw_rule = GrowFade,
+			.flags = flags,
 		);
 		PARTICLE(
 			.sprite = "smoke",
@@ -471,7 +480,8 @@ static int masterspark(Enemy *e, int t2) {
 			.timeout = 50,
 			.args = { -7*dir + 7*I, 6 },
 			.angle = nfrand(),
-			.draw_rule = GrowFade
+			.draw_rule = GrowFade,
+			.flags = flags,
 		);
 	}
 
@@ -611,6 +621,8 @@ static void marisa_laser_preload(void) {
 	NULL);
 
 	preload_resources(RES_SHADER_PROGRAM, flags,
+		"blur25",
+		"blur5",
 		"marisa_laser",
 		"masterspark",
 		"max_to_alpha",

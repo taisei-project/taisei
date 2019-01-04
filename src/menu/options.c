@@ -409,12 +409,7 @@ void options_sub_video(MenuData *parent, void *arg) {
 		bind_addvalue(b, "off");
 		bind_addvalue(b, "adaptive");
 
-	add_menu_entry(m, "Anti-aliasing", do_nothing,
-		b = bind_option(CONFIG_FXAA, bind_common_int_get, bind_common_int_set)
-	);	bind_addvalue(b, "none");
-		bind_addvalue(b, "fxaa");
-
-#ifdef DEBUG
+#if 0
 	add_menu_entry(m, "Swap buffers", do_nothing,
 		b = bind_option(CONFIG_VID_LATE_SWAP, bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_addvalue(b, "late");
@@ -429,27 +424,36 @@ void options_sub_video(MenuData *parent, void *arg) {
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, "Draw particle effects", do_nothing,
-		b = bind_option(CONFIG_PARTICLES, bind_common_onoff_get, bind_common_onoff_set)
-	);	bind_onoff(b);
+	add_menu_entry(m, "Overall rendering quality", do_nothing,
+		b = bind_scale(CONFIG_FG_QUALITY, 0.1, 1.0, 0.05)
+	);
 
 	add_menu_entry(m, "Draw background", do_nothing,
 		b = bind_option(CONFIG_NO_STAGEBG, bind_common_onoff_inverted_get, bind_common_onoff_inverted_set)
 	);	bind_onoff(b);
 
-	add_menu_separator(m);
-
-	add_menu_entry(m, "Stage viewport quality", do_nothing,
-		b = bind_scale(CONFIG_FG_QUALITY, 0.1, 1.0, 0.05)
-	);
-
-	add_menu_entry(m, "Stage background quality", do_nothing,
+	add_menu_entry(m, "Background rendering quality", do_nothing,
 		b = bind_scale(CONFIG_BG_QUALITY, 0.1, 1.0, 0.05)
 	);	b->dependence = bind_bgquality_dependence;
+		b->pad++;
 
-	add_menu_entry(m, "Text quality", do_nothing,
-		b = bind_scale(CONFIG_TEXT_QUALITY, 0.1, 1.0, 0.05)
-	);
+	add_menu_separator(m);
+
+	add_menu_entry(m, "Anti-aliasing", do_nothing,
+		b = bind_option(CONFIG_FXAA, bind_common_int_get, bind_common_int_set)
+	);	bind_addvalue(b, "none");
+		bind_addvalue(b, "fxaa");
+
+	add_menu_entry(m, "Particle effects", do_nothing,
+		b = bind_option(CONFIG_PARTICLES, bind_common_int_get, bind_common_int_set)
+	);	bind_addvalue(b, "minimal");
+		bind_addvalue(b, "full");
+
+	add_menu_entry(m, "Postprocessing effects", do_nothing,
+		b = bind_option(CONFIG_POSTPROCESS, bind_common_int_get, bind_common_int_set)
+	);	bind_addvalue(b, "minimal");
+		bind_addvalue(b, "fast");
+		bind_addvalue(b, "full");
 
 	add_menu_separator(m);
 	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
@@ -713,6 +717,11 @@ void create_options_menu(MenuData *m) {
 		b = bind_option(CONFIG_SHOT_INVERTED,   bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 
+	add_menu_entry(m, "Boss healthbar style", do_nothing,
+		b = bind_option(CONFIG_HEALTHBAR_STYLE,   bind_common_int_get, bind_common_int_set)
+	);	bind_addvalue(b, "classic");
+		bind_addvalue(b, "modern");
+
 	add_menu_separator(m);
 
 	add_menu_entry(m, "SFX Volume", do_nothing,
@@ -815,10 +824,20 @@ void draw_options_menu(MenuData *menu) {
 							.color = &clr,
 						});
 					} else if(bind->configentry == CONFIG_PRACTICE_POWER) {
-						int stars = PLR_MAX_POWER / 100;
-						r_shader_standard();
-						draw_stars(origin - 20 * (stars - 0.5), 20*i, val, 0, stars, 100, alpha, 20);
-						r_shader("text_default");
+						Font *fnt_int = get_font("standard");
+						Font *fnt_fract = get_font("small");
+
+						draw_fraction(
+							val,
+							ALIGN_RIGHT,
+							origin,
+							20*i,
+							fnt_int,
+							fnt_fract,
+							&clr,
+							&clr,
+							false
+						);
 					} else for(j = bind->displaysingle? val : bind->valcount-1; (j+1) && (!bind->displaysingle || j == val); --j) {
 						if(j != bind->valcount-1 && !bind->displaysingle) {
 							origin -= text_width(get_font("standard"), bind->values[j+1], 0) + 5;
@@ -889,7 +908,6 @@ void draw_options_menu(MenuData *menu) {
 
 						if(bind->valrange_max > 0) {
 							snprintf(buf, sizeof(buf), "#%i: %s", bind->selected + 1, gamepad_device_name(bind->selected));
-							text_shorten(get_font("standard"), buf, (SCREEN_W - 220) / 2);
 							txt = buf;
 						} else {
 							txt = "No devices available";
@@ -899,6 +917,7 @@ void draw_options_menu(MenuData *menu) {
 							.pos = { origin, 20*i },
 							.align = ALIGN_RIGHT,
 							.color = &clr,
+							.max_width = (SCREEN_W - 220) / 2,
 						});
 					}
 
@@ -968,7 +987,7 @@ void draw_options_menu(MenuData *menu) {
 						h = m->height;
 					}
 
-					snprintf(tmp, 16, "%d×%d", w, h);
+					snprintf(tmp, 16, "%dx%d", w, h);
 					text_draw(tmp, &(TextParams) {
 						.pos = { origin, 20*i },
 						.align = ALIGN_RIGHT,
@@ -1185,13 +1204,13 @@ static bool options_text_input_handler(SDL_Event *event, void *arg) {
 			 * EFFICIENT AS FUCK
 			 */
 
-			uint32_t *u = utf8_to_ucs4(b->strvalue);
+			uint32_t *u = utf8_to_ucs4_alloc(b->strvalue);
 			size_t ulen = ucs4len(u);
 
 			if(ulen > max_len) {
 				*(u + max_len) = 0;
 				free(b->strvalue);
-				b->strvalue = ucs4_to_utf8(u);
+				b->strvalue = ucs4_to_utf8_alloc(u);
 				snd = "hit";
 			}
 
@@ -1225,7 +1244,7 @@ static bool options_text_input_handler(SDL_Event *event, void *arg) {
 			 * MORE EFFICIENT THAN FUCK
 			 */
 
-			uint32_t *u = utf8_to_ucs4(b->strvalue);
+			uint32_t *u = utf8_to_ucs4_alloc(b->strvalue);
 
 			if(*u) {
 				play_ui_sound("generic_shot");
@@ -1235,7 +1254,7 @@ static bool options_text_input_handler(SDL_Event *event, void *arg) {
 			}
 
 			free(b->strvalue);
-			b->strvalue = ucs4_to_utf8(u);
+			b->strvalue = ucs4_to_utf8_alloc(u);
 			free(u);
 		}
 

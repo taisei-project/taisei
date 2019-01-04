@@ -141,6 +141,32 @@ Color* color_hsla(Color *clr, float h, float s, float l, float a) {
 	return clr;
 }
 
+void color_get_hsl(const Color *c, float *out_h, float *out_s, float *out_l) {
+	float r = clamp(c->r, 0, 1);
+	float g = clamp(c->g, 0, 1);
+	float b = clamp(c->b, 0, 1);
+
+	float maxv = max(max(r, g), b);
+	float minv = min(min(r, g), b);
+	float h = 0, s = 0, d = maxv - minv, l = (maxv + minv) / 2;
+
+	if(maxv != minv) {
+		s = l > 0.5 ? d / (2 - maxv - minv) : d / (maxv + minv);
+		if(maxv == r) {
+			h = (g - b) / d + (g < b ? 6 : 0);
+		} else if(maxv == g) {
+			h = (b - r) / d + 2;
+		} else if(maxv == b) {
+			h = (r - g) / d + 4;
+		}
+		h /= 6;
+	}
+
+	if(out_h) *out_h = h;
+	if(out_s) *out_s = s;
+	if(out_l) *out_l = l;
+}
+
 Color* color_set_opacity(Color *clr, float opacity) {
 	// FIXME: is this correct?
 

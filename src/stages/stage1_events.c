@@ -47,6 +47,7 @@ int cirno_snowflake_proj(Projectile *p, int time) {
 			play_sound_ex("redirect", 30, false);
 			play_sound_ex("shot_special1", 30, false);
 			color_lerp(&p->color, RGB(0.5, 0.5, 0.5), 0.5);
+			spawn_projectile_highlight_effect(p);
 
 			PARTICLE(
 				.sprite = "stain",
@@ -140,10 +141,11 @@ static Projectile* spawn_stain(complex pos, float angle, int to) {
 	return PARTICLE(
 		.sprite = "stain",
 		.pos = pos,
-		.draw_rule = GrowFade,
+		.draw_rule = ScaleFade,
 		.timeout = to,
 		.angle = angle,
-		.color = RGBA(1, 1, 1, 0),
+		.color = RGBA(0.4, 0.4, 0.4, 0),
+		.args = {0, 0, 0.8*I}
 	);
 }
 
@@ -164,6 +166,7 @@ int cirno_pfreeze_frogs(Projectile *p, int t) {
 		p->color = *RGB(0.7, 0.7, 0.7);
 		spawn_stain(p->pos, p->angle, 30);
 		spawn_stain(p->pos, p->angle, 30);
+		spawn_projectile_highlight_effect(p);
 		play_sound("shot_special1");
 	}
 
@@ -171,6 +174,7 @@ int cirno_pfreeze_frogs(Projectile *p, int t) {
 		p->pos0 = p->pos;
 		p->args[0] = (1.8+0.2*global.diff)*cexp(I*2*M_PI*frand());
 		spawn_stain(p->pos, p->angle, 30);
+		spawn_projectile_highlight_effect(p);
 		play_sound_ex("shot2", 0, false);
 	}
 
@@ -623,7 +627,7 @@ void cirno_snow_halation(Boss *c, int time) {
 			};
 
 			if(cheater < sizeof(text)/sizeof(text[0])) {
-				stagetext_add(text[cheater], global.boss->pos+100*I, ALIGN_CENTER, get_font("hud"), RGB(1,1,1), 0, 100, 10, 20);
+				stagetext_add(text[cheater], global.boss->pos+100*I, ALIGN_CENTER, get_font("standard"), RGB(1,1,1), 0, 100, 10, 20);
 				cheater++;
 			}
 		}
@@ -648,6 +652,7 @@ int cirno_icicles(Projectile *p, int t) {
 		if(global.diff > D_Normal)
 			p->args[0] += 0.05*nfrand();
 		play_sound("redirect");
+		spawn_projectile_highlight_effect(p);
 	} else if(t > turn) {
 		p->pos += p->args[0];
 	}

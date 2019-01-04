@@ -36,16 +36,16 @@ float warpedNoise(vec2 p) {
 }
 
 void main(void) {
-	vec2 uv = flip_native_to_bottomleft(texCoord - vec2(0, time * 0.2)) * rot(-pi/4);
+	vec2 uv = flip_native_to_bottomleft(texCoord - vec2(0, 2+time * 0.2)) * rot(-pi/4);
 
 	float n = warpedNoise(uv * 4);
-	float n2 = warpedNoise(uv * 4 + 0.005);
 
-	float bump  = max(n2 - n, 0) / 0.02 * 0.7071;
-	float bump2 = max(n - n2, 0) / 0.02 * 0.7071;
+	float duv = dFdx(uv.x);
+	float bump  = dFdx(n)/duv*0.05;
+	float bump2 = dFdy(n)/duv*0.05;
 
-	bump  = bump  * bump  * 0.5 + pow(bump,  4) * 0.5;
-	bump2 = bump2 * bump2 * 0.5 + pow(bump2, 4) * 0.5;
+	bump  = bump  * bump  * 0.5;
+	bump2 = bump2 * bump2 * 0.5;
 
 	vec4 cmod = vec4(0.5, 0.8, 0.8, 1.0);
 
@@ -53,5 +53,5 @@ void main(void) {
 	uv += 0.25 * vec2(bump, bump2);
 	uv = flip_bottomleft_to_native(uv);
 
-	fragColor = mix(cmod * texture(tex, uv), vec4(0.8, 0.8, 1.0, 1.0), (sqrt(bump2) - sqrt(bump) * 0.25) * 0.05);
+	fragColor = mix(cmod * texture(tex, uv), vec4(0.8, 0.8, 1.0, 1.0), (bump2 - bump * 0.25) * 0.05);
 }

@@ -40,6 +40,9 @@ Color* color_copy(Color *dst, const Color *src)
 Color* color_hsla(Color *clr, float h, float s, float l, float a)
 	attr_nonnull(1) attr_returns_nonnull;
 
+void color_get_hsl(const Color *c, float *out_h, float *out_s, float *out_l)
+	attr_nonnull(1);
+
 Color* color_add(Color *clr, const Color *clr2)
 	attr_nonnull(1) attr_returns_nonnull;
 

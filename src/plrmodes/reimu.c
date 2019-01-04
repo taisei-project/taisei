@@ -140,5 +140,5 @@ void reimu_common_bomb_buffer_init(void) {
 	cfg.tex_params.filter.mag = TEX_FILTER_LINEAR;
 	cfg.tex_params.wrap.s = TEX_WRAP_MIRROR;
 	cfg.tex_params.wrap.t = TEX_WRAP_MIRROR;
-	bomb_buffer = stage_add_foreground_framebuffer(1, 1, &cfg);
+	bomb_buffer = stage_add_background_framebuffer("Reimu bomb FB", 0.25, 1, 1, &cfg);
 }

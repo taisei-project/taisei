@@ -12,6 +12,7 @@
 #include "global.h"
 #include "stage.h"
 #include "stagetext.h"
+#include "stagedraw.h"
 #include "entity.h"
 
 static void ent_draw_boss(EntityInterface *ent);
@@ -48,43 +49,14 @@ Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 	return buf;
 }
 
-void draw_boss_text(Alignment align, float x, float y, const char *text, const char *fnt, const Color *clr) {
-	ShaderProgram *sh_prev = r_shader_current();
-	r_shader("text_default");
-	text_draw(text, &(TextParams) {
-		.pos = { x + 1, y + 1 },
-		.color = RGBA(0, 0, 0, clr->a),
-		.font = fnt,
-		.align = align,
-	});
-
-	text_draw(text, &(TextParams) {
+static double draw_boss_text(Alignment align, float x, float y, const char *text, Font *fnt, const Color *clr) {
+	return text_draw(text, &(TextParams) {
+		.shader = "text_hud",
 		.pos = { x, y },
 		.color = clr,
-		.font = fnt,
+		.font_ptr = fnt,
 		.align = align,
 	});
-	r_shader_ptr(sh_prev);
-}
-
-void spell_opening(Boss *b, int time) {
-	complex x0 = VIEWPORT_W/2+I*VIEWPORT_H/3.5;
-	float f = clamp((time-40.)/60.,0,1);
-	complex x = x0 + (VIEWPORT_W+I*35 - x0) * f*(f+1)*0.5;
-	int strw = text_width(get_font("standard"), b->current->name, 0);
-
-	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
-	r_disable(RCAP_CULL_FACE);
-
-	r_mat_push();
-	r_mat_translate(creal(x),cimag(x),0);
-	float scale = f+1.*(1-f)*(1-f)*(1-f);
-	r_mat_scale(scale,scale,1);
-	r_mat_rotate_deg(360*f,1,1,0);
-	draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, b->current->name, "standard", RGB(1, 1, 1));
-	r_mat_pop();
-
-	r_capability(RCAP_CULL_FACE, cullcap_saved);
 }
 
 void draw_extraspell_bg(Boss *boss, int time) {
@@ -105,13 +77,17 @@ void draw_extraspell_bg(Boss *boss, int time) {
 	r_color4(1, 1, 1, 1);
 }
 
+static inline bool healthbar_style_is_radial(void) {
+	return config_get_int(CONFIG_HEALTHBAR_STYLE) > 0;
+}
+
 const Color* boss_healthbar_color(AttackType atype) {
 	static const Color colors[] = {
-		[AT_Normal]        = { 1.00, 1.00, 1.00, 1.00 },
+		[AT_Normal]        = { 0.50, 0.50, 0.60, 1.00 },
 		[AT_Move]          = { 1.00, 1.00, 1.00, 1.00 },
-		[AT_Spellcard]     = { 1.00, 0.65, 0.65, 1.00 },
-		[AT_SurvivalSpell] = { 0.50, 0.50, 1.00, 1.00 },
-		[AT_ExtraSpell]    = { 1.00, 0.30, 0.20, 1.00 },
+		[AT_Spellcard]     = { 1.00, 0.00, 0.00, 1.00 },
+		[AT_SurvivalSpell] = { 0.00, 1.00, 0.00, 1.00 },
+		[AT_ExtraSpell]    = { 1.00, 0.40, 0.00, 1.00 },
 		[AT_Immediate]     = { 1.00, 1.00, 1.00, 1.00 },
 	};
 
@@ -187,6 +163,295 @@ static bool attack_is_over(Attack *a) {
 	return a->hp <= 0 && global.frames > a->endtime;
 }
 
+static void update_healthbar(Boss *boss) {
+	bool radial = healthbar_style_is_radial();
+	bool player_nearby = radial && cabs(boss->pos - global.plr.pos) < 128;
+	float update_speed = 0.1;
+	float target_opacity = 1.0;
+	float target_fill = 0.0;
+	float target_altfill = 0.0;
+
+	if(
+		boss_is_dying(boss) ||
+		boss_is_fleeing(boss) ||
+		!boss->current ||
+		boss->current->type == AT_Move ||
+		global.dialog
+	) {
+		target_opacity = 0.0;
+	}
+
+	if(player_nearby) {
+		target_opacity *= 0.25;
+	}
+
+	Attack *a_prev = NULL;
+	Attack *a_cur = NULL;
+	Attack *a_next = NULL;
+
+	for(uint i = 0; i < boss->acount; ++i) {
+		Attack *a = boss->attacks + i;
+
+		if(boss_should_skip_attack(boss, a) || a->type == AT_Move) {
+			continue;
+		}
+
+		if(a_cur != NULL) {
+			a_next = a;
+			break;
+		}
+
+		if(a == boss->current) {
+			a_cur = boss->current;
+			continue;
+		}
+
+		if(attack_is_over(a)) {
+			a_prev = a;
+		}
+	}
+
+	/*
+	log_debug("prev = %s", a_prev ? a_prev->name : NULL);
+	log_debug("cur = %s", a_cur ? a_cur->name : NULL);
+	log_debug("next = %s", a_next ? a_next->name : NULL);
+	*/
+
+	if(a_cur != NULL) {
+		float total_maxhp = 0, total_hp = 0;
+
+		Attack *spell, *non;
+
+		if(a_cur->type == AT_Normal) {
+			non = a_cur;
+			spell = a_next;
+		} else {
+			non = a_prev;
+			spell = a_cur;
+		}
+
+		if(non && non->type == AT_Normal && non->maxhp > 0) {
+			total_hp += 3 * non->hp;
+			total_maxhp += 3 * non->maxhp;
+			boss->healthbar.fill_color = *boss_healthbar_color(non->type);
+		}
+
+		if(spell && ATTACK_IS_SPELL(spell->type)) {
+			float spell_hp;
+			float spell_maxhp;
+
+			if(spell->type == AT_SurvivalSpell) {
+				spell_hp = spell_maxhp = max(1, total_maxhp * 0.1);
+			} else {
+				spell_hp = spell->hp;
+				spell_maxhp = spell->maxhp;
+			}
+
+			total_hp += spell_hp;
+			total_maxhp += spell_maxhp;
+			target_altfill = spell_maxhp / total_maxhp;
+			boss->healthbar.fill_altcolor = *boss_healthbar_color(spell->type);
+		}
+
+		if(a_cur->type == AT_SurvivalSpell) {
+			target_altfill = 1;
+			target_fill = 0;
+
+			if(radial) {
+				target_opacity = 0.0;
+			}
+		} else if(total_maxhp > 0) {
+			total_maxhp = max(0.001, total_maxhp);
+
+			if(total_hp > 0) {
+				total_hp = max(0.001, total_hp);
+			}
+
+			target_fill = total_hp / total_maxhp;
+		}
+	}
+
+	float opacity_update_speed = update_speed;
+
+	if(boss_is_dying(boss)) {
+		opacity_update_speed *= 0.25;
+	}
+
+	fapproach_asymptotic_p(&boss->healthbar.opacity, target_opacity, opacity_update_speed, 1e-3);
+
+	if(boss_is_vulnerable(boss) || (a_cur && a_cur->type == AT_SurvivalSpell && global.frames - a_cur->starttime > 0)) {
+		update_speed *= (1 + 4 * pow(1 - target_fill, 2));
+	}
+
+	fapproach_asymptotic_p(&boss->healthbar.fill_total, target_fill, update_speed, 1e-3);
+	fapproach_asymptotic_p(&boss->healthbar.fill_alt, target_altfill, update_speed, 1e-3);
+}
+
+static void update_hud(Boss *boss) {
+	update_healthbar(boss);
+
+	float update_speed = 0.1;
+	float target_opacity = 1.0;
+	float target_spell_opacity = 1.0;
+	float target_plrproximity_opacity = 1.0;
+
+	if(boss_is_dying(boss) || boss_is_fleeing(boss)) {
+		update_speed *= 0.25;
+		target_opacity = 0.0;
+	}
+
+	if(!boss->current || boss->current->type == AT_Move || global.dialog) {
+		target_opacity = 0.0;
+	}
+
+	if(!boss->current || !ATTACK_IS_SPELL(boss->current->type) || boss->current->finished) {
+		target_spell_opacity = 0.0;
+	}
+
+	if(cimag(global.plr.pos) < 128) {
+		target_plrproximity_opacity = 0.25;
+	}
+
+	if(boss->current && !boss->current->finished && boss->current->type != AT_Move) {
+		int frames = boss->current->timeout + imin(0, boss->current->starttime - global.frames);
+		boss->hud.attack_timer = clamp((frames)/(double)FPS, 0, 99.999);
+	}
+
+	fapproach_asymptotic_p(&boss->hud.global_opacity, target_opacity, update_speed, 1e-2);
+	fapproach_asymptotic_p(&boss->hud.spell_opacity, target_spell_opacity, update_speed, 1e-2);
+	fapproach_asymptotic_p(&boss->hud.plrproximity_opacity, target_plrproximity_opacity, update_speed, 1e-2);
+}
+
+static void draw_radial_healthbar(Boss *boss) {
+	if(boss->healthbar.opacity == 0) {
+		return;
+	}
+
+	r_state_push();
+	r_mat_push();
+	r_mat_translate(creal(boss->pos), cimag(boss->pos), 0);
+	r_mat_scale(220, 220, 0);
+	r_shader("healthbar_radial");
+	r_uniform_vec4_rgba("borderColor",   RGBA(0.75, 0.75, 0.75, 0.75));
+	r_uniform_vec4_rgba("glowColor",     RGBA(0.5, 0.5, 1.0, 0.75));
+	r_uniform_vec4_rgba("fillColor",     &boss->healthbar.fill_color);
+	r_uniform_vec4_rgba("altFillColor",  &boss->healthbar.fill_altcolor);
+	r_uniform_vec4_rgba("coreFillColor", RGBA(0.8, 0.8, 0.8, 0.5));
+	r_uniform_vec2("fill", boss->healthbar.fill_total, boss->healthbar.fill_alt);
+	r_uniform_float("opacity", boss->healthbar.opacity);
+	r_draw_quad();
+	r_mat_pop();
+	r_state_pop();
+}
+
+static void draw_linear_healthbar(Boss *boss) {
+	float opacity = boss->healthbar.opacity * boss->hud.global_opacity * boss->hud.plrproximity_opacity;
+
+	if(opacity == 0) {
+		return;
+	}
+
+	const float width = VIEWPORT_W * 0.9;
+	const float height = 24;
+
+	r_state_push();
+	r_mat_push();
+	r_mat_translate(1 + width/2, height/2 - 3, 0);
+	r_mat_scale(width, height, 0);
+	r_shader("healthbar_linear");
+	r_uniform_vec4_rgba("borderColor",   RGBA(0.75, 0.75, 0.75, 0.75));
+	r_uniform_vec4_rgba("glowColor",     RGBA(0.5, 0.5, 1.0, 0.75));
+	r_uniform_vec4_rgba("fillColor",     &boss->healthbar.fill_color);
+	r_uniform_vec4_rgba("altFillColor",  &boss->healthbar.fill_altcolor);
+	r_uniform_vec4_rgba("coreFillColor", RGBA(0.8, 0.8, 0.8, 0.5));
+	r_uniform_vec2("fill", boss->healthbar.fill_total, boss->healthbar.fill_alt);
+	r_uniform_float("opacity", opacity);
+	r_draw_quad();
+	r_mat_pop();
+	r_state_pop();
+}
+
+static void draw_spell_warning(Font *font, float y_pos, float f, float opacity) {
+	static const char *msg = "~ Spell Card Attack! ~";
+
+	float msg_width = text_width(font, msg, 0);
+	float flash = 0.2 + 0.8 * pow(psin(M_PI + 5 * M_PI * f), 0.5);
+	f = 0.15 * f + 0.85 * (0.5 * pow(2 * f - 1, 3) + 0.5);
+	opacity *= 1 - 2 * fabs(f - 0.5);
+	complex pos = (VIEWPORT_W + msg_width) * f - msg_width * 0.5 + I * y_pos;
+
+	draw_boss_text(ALIGN_CENTER, creal(pos), cimag(pos), msg, font, color_mul_scalar(RGBA(1, flash, flash, 1), opacity));
+}
+
+static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
+	Font *font = get_font("standard");
+	complex x0 = VIEWPORT_W/2+I*VIEWPORT_H/3.5;
+	float f = clamp((time - 40.0) / 60.0, 0, 1);
+	float f2 = clamp(time / 80.0, 0, 1);
+	float y_offset = 26 + healthbar_radial * -15;
+	float y_text_offset = 5 - font_get_metrics(font)->descent;
+	complex x = x0 + ((VIEWPORT_W - 10) + I*(y_offset + y_text_offset) - x0) * f*(f+1)*0.5;
+	int strw = text_width(font, b->current->name, 0);
+
+	float opacity_noplr = b->hud.spell_opacity * b->hud.global_opacity;
+	float opacity = opacity_noplr * b->hud.plrproximity_opacity;
+
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "spell",
+		.pos = { (VIEWPORT_W - 128) * (1 - pow(1 - f2, 5)) -256 * pow(1 - f2, 2), y_offset },
+		.color = color_mul_scalar(RGBA(1, 1, 1, f2 * 0.5), opacity * f2) ,
+		.scale.both = 3 - 2 * (1 - pow(1 - f2, 3)),
+	});
+
+	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
+	r_disable(RCAP_CULL_FACE);
+
+	int delay = b->current->type == AT_ExtraSpell ? ATTACK_START_DELAY_EXTRA : ATTACK_START_DELAY;
+	float warn_progress = clamp((time + delay) / 120.0, 0, 1);
+
+	r_mat_push();
+	r_mat_translate(creal(x), cimag(x),0);
+	float scale = f+1.*(1-f)*(1-f)*(1-f);
+	r_mat_scale(scale,scale,1);
+	r_mat_rotate_deg(360*f,1,1,0);
+
+	float spellname_opacity_noplr = opacity_noplr * min(1, warn_progress/0.6);
+	float spellname_opacity = spellname_opacity_noplr * b->hud.plrproximity_opacity;
+
+	draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, b->current->name, font, color_mul_scalar(RGBA(1, 1, 1, 1), spellname_opacity));
+
+	if(spellname_opacity_noplr < 1) {
+		r_mat_push();
+		r_mat_scale(2 - spellname_opacity_noplr, 2 - spellname_opacity_noplr, 1);
+		draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, b->current->name, font, color_mul_scalar(RGBA(1, 1, 1, 1), spellname_opacity_noplr * 0.5));
+		r_mat_pop();
+	}
+
+	r_mat_pop();
+
+	r_capability(RCAP_CULL_FACE, cullcap_saved);
+
+	if(warn_progress < 1) {
+		draw_spell_warning(font, cimag(x0) - font_get_lineskip(font), warn_progress, opacity);
+	}
+
+	StageProgress *p = get_spellstage_progress(b->current, NULL, false);
+
+	if(p) {
+		char buf[16];
+		float a = clamp((global.frames - b->current->starttime - 60) / 60.0, 0, 1);
+		snprintf(buf, sizeof(buf), "%u / %u", p->num_cleared, p->num_played);
+
+		Font *font = get_font("small");
+
+		draw_boss_text(ALIGN_RIGHT,
+			(VIEWPORT_W - 10) + (text_width(font, buf, 0) + 10) * pow(1 - a, 2),
+			text_height(font, buf, 0) + y_offset + y_text_offset,
+			buf, font, color_mul_scalar(RGBA(1, 1, 1, 1), a * opacity)
+		);
+	}
+}
+
 static void BossGlow(Projectile *p, int t) {
 	float s = 1.0+t/(double)p->timeout*0.5;
 	float fade = 1 - (1.5 - s);
@@ -202,7 +467,7 @@ static void BossGlow(Projectile *p, int t) {
 		.scale.both = s,
 		.color = &c,
 		.shader_params = &(ShaderCustomParams){{ deform }},
-		.shader = "sprite_silhouette",
+		.shader_ptr = p->shader,
 	});
 }
 
@@ -224,8 +489,9 @@ static Projectile* spawn_boss_glow(Boss *boss, const Color *clr, int timeout) {
 		.rule = boss_glow,
 		.draw_rule = BossGlow,
 		.timeout = timeout,
-		.angle = M_PI * 2 * frand(),
 		.layer = LAYER_PARTICLE_LOW,
+		.shader = "sprite_silhouette",
+		.flags = PFLAG_REQUIREDPARTICLE,
 	);
 }
 
@@ -299,118 +565,86 @@ static void ent_draw_boss(EntityInterface *ent) {
 }
 
 void draw_boss_hud(Boss *boss) {
-	if(!boss->current)
+	bool radial_style = healthbar_style_is_radial();
+
+	if(radial_style) {
+		draw_radial_healthbar(boss);
+	} else {
+		draw_linear_healthbar(boss);
+	}
+
+	if(!boss->current) {
 		return;
+	}
 
-	if(boss->current->type == AT_Move && global.frames - boss->current->starttime > 0 && boss_attack_is_final(boss, boss->current))
+	if(boss->current->type == AT_Move && global.frames - boss->current->starttime > 0 && boss_attack_is_final(boss, boss->current)) {
 		return;
+	}
 
-	draw_boss_text(ALIGN_LEFT, 10, 20, boss->name, "standard", RGB(1, 1, 1));
+	float o = boss->hud.global_opacity * boss->hud.plrproximity_opacity;
 
-	if(ATTACK_IS_SPELL(boss->current->type))
-		spell_opening(boss, global.frames - boss->current->starttime);
+	if(o > 0) {
+		draw_boss_text(ALIGN_LEFT, 10, 20 + 8 * !radial_style, boss->name, get_font("standard"), RGBA(o, o, o, o));
 
-	if(boss->current->type != AT_Move && boss->current->type != AT_Immediate) {
-		char buf[16];
-		float remaining = max(0, (boss->current->timeout - global.frames + boss->current->starttime)/(float)FPS);
-		Color textclr;
+		if(ATTACK_IS_SPELL(boss->current->type)) {
+			draw_spell_name(boss, global.frames - boss->current->starttime, radial_style);
+		}
+
+		float remaining = boss->hud.attack_timer;
+		Color clr_int, clr_fract;
 
 		if(remaining < 6) {
-			textclr = *RGB(1.0, 0.2, 0.2);
+			clr_int = *RGB(1.0, 0.2, 0.2);
 		} else if(remaining < 11) {
-			textclr = *RGB(1.0, 1.0, 0.2);
+			clr_int = *RGB(1.0, 1.0, 0.2);
 		} else {
-			textclr = *RGB(1.0, 1.0, 1.0);
+			clr_int = *RGB(1.0, 1.0, 1.0);
 		}
 
-		snprintf(buf, sizeof(buf),  "%.2f", remaining);
-		draw_boss_text(ALIGN_CENTER, VIEWPORT_W - 24, 10, buf, "standard", &textclr);
+		color_mul_scalar(&clr_int, o);
+		clr_fract = *RGBA(clr_int.r * 0.5, clr_int.g * 0.5, clr_int.b * 0.5, clr_int.a);
 
-		StageProgress *p = get_spellstage_progress(boss->current, NULL, false);
-		if(p) {
-			float a = clamp((global.frames - boss->current->starttime - 60) / 60.0, 0, 1);
-			snprintf(buf, sizeof(buf), "%u / %u", p->num_cleared, p->num_played);
+		Font *f_int = get_font("standard");
+		Font *f_fract = get_font("small");
+		double pos_x, pos_y;
 
-			Font *font = get_font("small");
+		Alignment align;
 
-			draw_boss_text(ALIGN_RIGHT,
-				VIEWPORT_W + text_width(font, buf, 0) * pow(1 - a, 2),
-				35 + text_height(font, buf, 0),
-				buf, "small", RGBA(1, 1, 1, a)
-			);
+		if(radial_style) {
+			// pos_x = (VIEWPORT_W - w_total) * 0.5;
+			pos_x = VIEWPORT_W / 2;
+			pos_y = 64;
+			align = ALIGN_CENTER;
+		} else {
+			// pos_x = VIEWPORT_W - w_total - 10;
+			pos_x = VIEWPORT_W - 10;
+			pos_y = 12;
+			align = ALIGN_RIGHT;
 		}
 
-		int maxhpspan = 0;
-		int hpspan = 0;
-		int nextspell, prevspell;
-
-		// FIXME: this does not work when the boss has just one attack!
-
-		for(nextspell = 0; nextspell < boss->acount - 1; nextspell++) {
-			if(boss_should_skip_attack(boss,&boss->attacks[nextspell]))
-				continue;
-			int t = boss->attacks[nextspell].type;
-			if(ATTACK_IS_SPELL(t) && !attack_is_over(&boss->attacks[nextspell]))
-				break;
-		}
-
-		for(prevspell = nextspell; prevspell > 0; prevspell--) {
-			if(boss_should_skip_attack(boss,&boss->attacks[prevspell]))
-				continue;
-
-			int t = boss->attacks[prevspell].type;
-			if(ATTACK_IS_SPELL(t) && attack_is_over(&boss->attacks[prevspell]))
-				break;
-			maxhpspan += boss->attacks[prevspell].maxhp;
-			hpspan += boss->attacks[prevspell].hp;
-		}
-
-		if(!maxhpspan) {
-			return;
-		}
-
-		r_shader_standard_notex();
-		r_mat_push();
-		r_mat_translate(10,2,0);
-		r_mat_scale((VIEWPORT_W-60)/(float)maxhpspan,1,1);
-
-		// background shadow
-		r_mat_push();
-		r_color4(0,0,0,0.65);
-		r_mat_scale(hpspan+2, 4, 1);
-		r_mat_translate(0.5, 0.5, 0);
-		r_draw_quad();
-		r_mat_pop();
-
-		// actual health bar
-		for(int i = nextspell; i > prevspell; i--) {
-			if(boss_should_skip_attack(boss,&boss->attacks[i]))
-				continue;
-
-			r_color(boss_healthbar_color(boss->attacks[i].type));
-
-			r_mat_push();
-			r_mat_scale(boss->attacks[i].hp, 2, 1);
-			r_mat_translate(+0.5, 0.5, 0);
-			r_draw_quad();
-			r_mat_pop();
-			r_mat_translate(boss->attacks[i].hp, 0, 0);
-		}
-
-		r_mat_pop();
+		r_shader("text_hud");
+		draw_fraction(remaining, align, pos_x, pos_y, f_int, f_fract, &clr_int, &clr_fract, true);
 		r_shader("sprite_default");
 
 		// remaining spells
-		r_color4(0.7, 0.7, 0.7, 0.7);
+		r_color4(0.7 * o, 0.7 * o, 0.7 * o, 0.7 * o);
 		Sprite *star = get_sprite("star");
+		float x = 10 + star->w * 0.5;
+		bool spell_found = false;
 
-		for(int x = 0, i = boss->acount-1; i > nextspell; i--) {
+		for(Attack *a = boss->current; a && a < boss->attacks + boss->acount; ++a) {
 			if(
-				ATTACK_IS_SPELL(boss->attacks[i].type) &&
-				(boss->attacks[i].type != AT_ExtraSpell) &&
-				!boss_should_skip_attack(boss, &boss->attacks[i])
+				ATTACK_IS_SPELL(a->type) &&
+				(a->type != AT_ExtraSpell) &&
+				!boss_should_skip_attack(boss, a)
 			) {
-				draw_sprite_batched_p(x += star->w * 1.1, 40, star);
+				// I guess we can just always skip the first one
+				if(spell_found) {
+					draw_sprite_batched_p(x, 40 + 8 * !radial_style, star);
+					x += star->w * 1.1;
+				} else {
+					spell_found = true;
+				}
 			}
 		}
 
@@ -423,7 +657,7 @@ void boss_rule_extra(Boss *boss, float alpha) {
 		return;
 	}
 
-	int cnt = 10 * max(1, alpha);
+	int cnt = 5 * max(1, alpha);
 	alpha = min(2, alpha);
 	int lt = 1;
 
@@ -442,12 +676,12 @@ void boss_rule_extra(Boss *boss, float alpha) {
 		PARTICLE(
 			.sprite = (frand() < v*0.3 || lt > 1) ? "stain" : "arc",
 			.pos = boss->pos + dir * (100 + 50 * psin(alpha*global.frames/10.0+2*i)) * alpha,
-			.color = RGBA(
+			.color = color_mul_scalar(RGBA(
 				1.0 - 0.5 * psina *    v,
 				0.5 + 0.2 * psina * (1-v),
 				0.5 + 0.5 * psina *    v,
 				0.0
-			),
+			), 0.8),
 			.rule = linear,
 			.timeout = 30*lt,
 			.draw_rule = GrowFade,
@@ -629,6 +863,7 @@ void process_boss(Boss **pboss) {
 	}
 
 	aniplayer_update(&boss->ani);
+	update_hud(boss);
 
 	if(boss->global_rule) {
 		boss->global_rule(boss, global.frames - boss->birthtime);
@@ -739,6 +974,8 @@ void process_boss(Boss **pboss) {
 				afrand(2) + afrand(3)*I,
 				afrand(4) + 360.0*I*afrand(1)
 			},
+			.layer = LAYER_PARTICLE_PETAL,
+			.flags = PFLAG_REQUIREDPARTICLE,
 		);
 
 		if(!extra) {
@@ -816,6 +1053,24 @@ void process_boss(Boss **pboss) {
 	}
 }
 
+static void boss_death_effect_draw_overlay(Projectile *p, int t) {
+	FBPair *framebuffers = stage_get_fbpair(FBPAIR_FG);
+	r_framebuffer(framebuffers->front);
+	r_uniform_sampler("noise_tex", "static");
+	r_uniform_int("frames", global.frames);
+	r_uniform_float("progress", t / p->timeout);
+	r_uniform_vec2("origin", creal(p->pos), VIEWPORT_H - cimag(p->pos));
+	r_uniform_vec2("clear_origin", creal(p->pos), VIEWPORT_H - cimag(p->pos));
+	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
+	draw_framebuffer_tex(framebuffers->back, VIEWPORT_W, VIEWPORT_H);
+	fbpair_swap(framebuffers);
+
+	// This change must propagate, hence the r_state salsa. Yes, pop then push, I know what I'm doing.
+	r_state_pop();
+	r_framebuffer(framebuffers->back);
+	r_state_push();
+}
+
 void boss_death(Boss **boss) {
 	Attack *a = boss_get_final_attack(*boss);
 	bool fleed = false;
@@ -833,6 +1088,17 @@ void boss_death(Boss **boss) {
 
 	if(!fleed) {
 		stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
+
+		PARTICLE(
+			.pos = (*boss)->pos,
+			.size = 1+I,
+			.timeout = 120,
+			.draw_rule = boss_death_effect_draw_overlay,
+			.blend = BLEND_NONE,
+			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+			.layer = LAYER_OVERLAY,
+			.shader = "boss_death",
+		);
 	}
 
 	free_boss(*boss);
@@ -975,19 +1241,23 @@ void boss_preload(void) {
 	NULL);
 
 	preload_resources(RES_SPRITE, RESF_DEFAULT,
-		"boss_indicator",
-		"part/boss_shadow",
-		"part/arc",
-		"boss_spellcircle0",
 		"boss_circle",
+		"boss_indicator",
+		"boss_spellcircle0",
+		"part/arc",
+		"part/boss_shadow",
+		"spell",
 	NULL);
 
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"boss_zoom",
+		"boss_death",
 		"spellcard_intro",
 		"spellcard_outro",
 		"spellcard_walloftext",
 		"sprite_silhouette",
+		"healthbar_linear",
+		"healthbar_radial",
 	NULL);
 
 	StageInfo *s = global.stage;

@@ -12,6 +12,7 @@
 #include "stage6.h"
 #include "global.h"
 #include "stagetext.h"
+#include "stagedraw.h"
 
 static Dialog *stage6_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
@@ -93,13 +94,7 @@ int wait_proj(Projectile *p, int t) {
 	if(t > creal(p->args[1])) {
 		if(t == creal(p->args[1]) + 1) {
 			play_sound_ex("redirect", 4, false);
-			PARTICLE("flare", p->pos, 0, linear,
-				.args = {
-					-p->args[0] * 0.5
-				},
-				.timeout = 60,
-				.draw_rule = Shrink,
-			);
+			spawn_projectile_highlight_effect(p);
 		}
 
 		p->angle = carg(p->args[0]);
@@ -222,6 +217,7 @@ void Scythe(Enemy *e, int t, bool render) {
 		.rule = linear,
 		.timeout = 60,
 		.args = { -I+1, -I+1 }, // XXX: what the fuck?
+		.flags = PFLAG_REQUIREDPARTICLE,
 	);
 }
 
@@ -395,6 +391,7 @@ int scythe_newton(Enemy *e, int t) {
 				p->args[0] = (2+0.125*global.diff)*cexp(I*2*M_PI*frand());
 				p->color = *RGBA_MUL_ALPHA(frand(), 0, 1, 0.8);
 				p->args[2] = 1;
+				spawn_projectile_highlight_effect(p);
 			}
 		}
 	}
@@ -675,39 +672,59 @@ static void draw_baryon_connector(complex a, complex b) {
 }
 
 void Baryon(Enemy *e, int t, bool render) {
-	Enemy *n;
-
-	if(!render) {
-		if(!(t % 10) && global.boss && cabs(e->pos - global.boss->pos) > 2) {
-			PARTICLE(
-				.sprite = "stain",
-				.pos = e->pos+10*frand()*cexp(2.0*I*M_PI*frand()),
-				.color = RGBA(0, 1, 0.7, 0.0),
-				.draw_rule = Fade,
-				.timeout = 50,
-				.angle = 2*M_PI*frand(),
-			);
-		}
-
+	if(render) {
+		// the center piece draws the nodes; applying the postprocessing effect is easier this way.
 		return;
 	}
 
+	/*
+	if(!(t % 10) && global.boss && cabs(e->pos - global.boss->pos) > 2) {
+		PARTICLE(
+			.sprite = "stain",
+			.size = 100*(1+I),
+			.pos = e->pos+10*frand()*cexp(2.0*I*M_PI*frand()),
+			.color = RGBA(0, 0.4, 0.3, 0.0),
+			.draw_rule = Fade,
+			.timeout = 20,
+			.angle = 2*M_PI*frand(),
+		);
+	}
+	*/
+}
+
+void draw_baryons(Enemy *e, int t) {
+	// r_color4(1, 1, 1, 0.8);
+	r_mat_push();
+	r_mat_translate(creal(e->pos), cimag(e->pos), 0);
+	r_mat_rotate_deg(2*t, 0, 0, 1);
+	draw_sprite_batched(0, 0, "stage6/baryon_center");
+	r_mat_pop();
 	draw_sprite_batched(creal(e->pos), cimag(e->pos), "stage6/baryon");
+	r_color4(1, 1, 1, 1);
 
-	n = REF(e->args[1]);
+	Enemy *link0 = REF(creal(e->args[1]));
+	Enemy *link1 = REF(cimag(e->args[1]));
 
-	if(!n) {
-		return;
+	if(link0 && link1) {
+		draw_baryon_connector(e->pos, link0->pos);
+		draw_baryon_connector(e->pos, link1->pos);
 	}
 
-	draw_baryon_connector(e->pos, n->pos);
+	for(Enemy *e = global.enemies.first; e; e = e->next) {
+		if(e->visual_rule == Baryon) {
+			draw_sprite_batched(creal(e->pos), cimag(e->pos), "stage6/baryon");
+			Enemy *n = REF(e->args[1]);
+
+			if(n != NULL) {
+				draw_baryon_connector(e->pos, n->pos);
+			}
+		}
+	}
 }
 
 void BaryonCenter(Enemy *e, int t, bool render) {
-	Enemy *l[2];
-	int i;
-
 	if(!render) {
+		/*
 		complex p = e->pos+40*frand()*cexp(2.0*I*M_PI*frand());
 
 		PARTICLE("flare", p, RGBA(0.0, 1.0, 1.0, 0.0),
@@ -717,32 +734,72 @@ void BaryonCenter(Enemy *e, int t, bool render) {
 			.args = { 1-I },
 		);
 
-		PARTICLE("stain", p, RGBA(0.0, 1.0, 0.2, 0.0),
+		PARTICLE("stain", p, RGBA(0.0, 0.5, 0.1, 0.0),
 			.draw_rule = Fade,
 			.timeout = 50,
 			.angle = 2*M_PI*frand(),
 		);
+		*/
 
 		return;
 	}
 
-	r_color4(1, 1, 1, 0);
-	r_mat_push();
-	r_mat_translate(creal(e->pos), cimag(e->pos), 0);
-	r_mat_rotate_deg(2*t, 0, 0, 1);
-	draw_sprite_batched(0, 0, "stage6/scythecircle");
-	r_mat_pop();
-	draw_sprite_batched(creal(e->pos), cimag(e->pos), "stage6/baryon");
-	r_color4(1, 1, 1, 1);
-
-	l[0] = REF(creal(e->args[1]));
-	l[1] = REF(cimag(e->args[1]));
-
-	if(!l[0] || !l[1])
+	if(config_get_int(CONFIG_POSTPROCESS) < 1) {
+		draw_baryons(e, t);
 		return;
+	}
 
-	for(i = 0; i < 2; i++) {
-		draw_baryon_connector(e->pos, l[i]->pos);
+	r_state_push();
+	r_shader("baryon_feedback");
+	r_uniform_vec2("blur_resolution", 0.5*VIEWPORT_W, 0.5*VIEWPORT_H);
+	r_uniform_float("hue_shift", 0);
+	r_uniform_float("time", t/60.0);
+
+	r_framebuffer(baryon_aux_fb);
+	r_blend(BLEND_NONE);
+	r_uniform_vec2("blur_direction", 1, 0);
+	// r_uniform_float("hue_shift", 0.04 * sin(global.frames/30.0));
+	r_uniform_float("hue_shift", 0.01);
+	r_color4(0.95, 0.88, 0.9, 0.5);
+	draw_framebuffer_tex(baryon_fbpair.front, VIEWPORT_W, VIEWPORT_H);
+
+	fbpair_swap(&baryon_fbpair);
+
+	r_framebuffer(baryon_fbpair.back);
+	r_uniform_vec2("blur_direction", 0, 1);
+	r_color4(1, 1, 1, 1);
+	draw_framebuffer_tex(baryon_aux_fb, VIEWPORT_W, VIEWPORT_H);
+
+	// r_blend(BLEND_PREMUL_ALPHA);
+	// r_shader("sprite_default");
+	// draw_baryons(e, t);
+	r_state_pop();
+
+	r_shader("sprite_default");
+	draw_baryons(e, t);
+
+	r_shader_standard();
+	fbpair_swap(&baryon_fbpair);
+	r_color4(0.7, 0.7, 0.7, 0.7);
+	draw_framebuffer_tex(baryon_fbpair.front, VIEWPORT_W, VIEWPORT_H);
+
+	r_color4(1, 1, 1, 1);
+	r_framebuffer(baryon_fbpair.front);
+	r_shader("sprite_default");
+	draw_baryons(e, t);
+
+	for(Enemy *e = global.enemies.first; e; e = e->next) {
+		if(e->visual_rule == Baryon) {
+			complex p = e->pos;//+10*frand()*cexp(2.0*I*M_PI*frand());
+
+			r_draw_sprite(&(SpriteParams) {
+				.sprite = "part/myon",
+				.color = RGBA(1, 0.2, 1.0, 0.7),
+				.pos = { creal(p), cimag(p) },
+				.rotation.angle = (creal(e->args[0]) - t) / 16.0, // frand()*M_PI*2,
+				.scale.both = 2,
+			});
+		}
 	}
 }
 
@@ -1058,11 +1115,13 @@ int broglie_charge(Projectile *p, int t) {
 
 		PARTICLE(
 			.sprite = "blast",
+			.size = 16*(1+I), // HACK: thwart prototype (see TODO in projectile.c)
 			.pos = p->pos,
 			.color = &clr,
 			.timeout = 35,
 			.draw_rule = GrowFade,
 			.args = { 0, 2.4 },
+			.flags = PFLAG_REQUIREDPARTICLE,
 		);
 
 		int attack_num = creal(p->args[2]);
@@ -1100,7 +1159,7 @@ int broglie_charge(Projectile *p, int t) {
 						(1 + 2 * ((global.diff - 1) / (double)(D_Lunatic - 1))) * M_PI/11 + s_freq*10*I
 					},
 					.draw_rule = ProjNoDraw,
-					.flags = PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT,
+					.flags = PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT | PFLAG_NOSPAWNEFFECTS,
 					.type = FakeProj,
 				);
 			}
@@ -1502,7 +1561,7 @@ void elly_ricci(Boss *b, int t) {
 			complex pos = 0.5 * w/(float)c + fmod(w/(float)c*(i+0.5*_i),w) + (VIEWPORT_H+10)*I;
 
 			PROJECTILE("ball", pos, RGBA(0, 0, 0, 0), ricci_proj, { -v*I },
-				.flags = PFLAG_NOSPAWNZOOM | PFLAG_NOCLEAR | PFLAG_GRAZESPAM,
+				.flags = PFLAG_NOSPAWNEFFECTS | PFLAG_NOCLEAR | PFLAG_GRAZESPAM,
 				.max_viewport_dist = SAFE_RADIUS_MAX,
 			);
 		}
@@ -1630,14 +1689,29 @@ void elly_lhc(Boss *b, int t) {
 		for(i = 0; i < c; i++) {
 			complex v = 3*cexp(2.0*I*M_PI*frand());
 			tsrand_fill(4);
-			create_lasercurve2c(pos, 70+20*global.diff, 300, RGBA(1, 1, 1, 0), las_accel, v, 0.02*frand()*copysign(1,creal(v)))->width=15;
+			create_lasercurve2c(pos, 70+20*global.diff, 300, RGBA(0.5, 0.3, 0.9, 0), las_accel, v, 0.02*frand()*copysign(1,creal(v)))->width=15;
 
 			PROJECTILE("soul",    pos, RGBA(0.4, 0.0, 1.0, 0.0), linear,
 				.args = { (1+2.5*afrand(0))*cexp(2.0*I*M_PI*afrand(1)) },
+				.flags = PFLAG_NOSPAWNFLARE,
 			);
 			PROJECTILE("bigball", pos, RGBA(1.0, 0.0, 0.4, 0.0), linear,
 				.args = { (1+2.5*afrand(2))*cexp(2.0*I*M_PI*afrand(3)) },
+				.flags = PFLAG_NOSPAWNFLARE,
 			);
+
+			if(i < 5) {
+				PARTICLE(
+					.sprite = "stain",
+					.pos = pos,
+					.color = RGBA(0.3, 0.3, 1.0, 0.0),
+					.timeout = 60,
+					.rule = linear,
+					.draw_rule = ScaleFade,
+					.args = { (10+2*frand())*cexp(2*M_PI*I*i/5), 0, 2+5*I },
+					.flags = PFLAG_REQUIREDPARTICLE,
+				);
+			}
 		}
 	}
 
@@ -1657,15 +1731,89 @@ int baryon_explode(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
 		free_ref(e->args[1]);
-		petal_explosion(35, e->pos);
+		petal_explosion(24, e->pos);
 		play_sound("boom");
-		global.shake_view = min(30, global.shake_view + 10);
+		global.shake_view = max(15, global.shake_view);
+
+		for(uint i = 0; i < 3; ++i) {
+			PARTICLE(
+				.sprite = "smoke",
+				.pos = e->pos+10*frand()*cexp(2.0*I*M_PI*frand()),
+				.color = RGBA(0.2 * frand(), 0.5, 0.4 * frand(), 1.0),
+				.rule = asymptotic,
+				.draw_rule = ScaleFade,
+				.args = { cexp(I*2*M_PI*frand()) * 0.25, 2, (1 + 3*I) },
+				.timeout = 600 + 50 * nfrand(),
+				.layer = LAYER_PARTICLE_HIGH | 0x40,
+			);
+		}
+
+		PARTICLE(
+			.sprite = "blast_huge_halo",
+			.pos = e->pos + cexp(4*frand() + I*M_PI*frand()*2),
+			.color = RGBA(0.2 + frand() * 0.1, 0.6 + 0.4 * frand(), 0.5 + 0.5 * frand(), 0),
+			.timeout = 500 + 24 * frand() + 5,
+			.draw_rule = ScaleFade,
+			.args = { 0, 0, (0.25 + 2.5*I) * (1 + 0.2 * frand()) },
+			.layer = LAYER_PARTICLE_HIGH | 0x41,
+			.angle = frand() * 2 * M_PI,
+			.flags = PFLAG_REQUIREDPARTICLE,
+		);
+
+		PARTICLE(
+			.sprite = "blast_huge_rays",
+			.color = color_add(RGBA(0.2 + frand() * 0.3, 0.5 + 0.5 * frand(), frand(), 0.0), RGBA(1, 1, 1, 0)),
+			.pos = e->pos,
+			.timeout = 300 + 38 * frand(),
+			.draw_rule = ScaleFade,
+			.args = { 0, 0, (0 + 5*I) * (1 + 0.2 * frand()) },
+			.angle = frand() * 2 * M_PI,
+			.layer = LAYER_PARTICLE_HIGH | 0x42,
+			.flags = PFLAG_REQUIREDPARTICLE,
+		);
+
+		PARTICLE(
+			.sprite = "blast_huge_halo",
+			.pos = e->pos,
+			.color = RGBA(3.0, 1.0, 2.0, 1.0),
+			.timeout = 60 + 5 * nfrand(),
+			.draw_rule = ScaleFade,
+			.args = { 0, 0, (0.25 + 3.5*I) * (1 + 0.2 * frand()) },
+			.layer = LAYER_PARTICLE_HIGH | 0x41,
+			.angle = frand() * 2 * M_PI,
+		);
+
 		return 1;
 	}
 
-	GO_TO(e, global.boss->pos + (e->pos0-global.boss->pos)*(1.5+0.2*sin(t*0.1)), 0.04);
+	GO_TO(e, global.boss->pos + (e->pos0-global.boss->pos)*(1.0+0.2*sin(t*0.1)) * cexp(I*t*t*0.0004), 0.05);
 
-	if(frand() < t / 1000.0) {
+	if(!(t % 6)) {
+		PARTICLE(
+			.sprite = "blast_huge_halo",
+			.pos = e->pos,
+			.color = RGBA(3.0, 1.0, 2.0, 1.0),
+			.timeout = 10,
+			.draw_rule = ScaleFade,
+			.args = { 0, 0, (t / 120.0 + 0*I) * (1 + 0.2 * frand()) },
+			.layer = LAYER_PARTICLE_HIGH | 0x41,
+			.angle = frand() * 2 * M_PI,
+			.flags = PFLAG_REQUIREDPARTICLE,
+		);
+	}/* else {
+		PARTICLE(
+			.sprite = "smoke",
+			.pos = e->pos+10*frand()*cexp(2.0*I*M_PI*frand()),
+			.color = RGBA(0.2 * frand(), 0.5, 0.4 * frand(), 0.1 * frand()),
+			.rule = asymptotic,
+			.draw_rule = ScaleFade,
+			.args = { cexp(I*2*M_PI*frand()) * (1 + t/300.0), (1 + t / 200.0), (1 + 0.5*I) * (t / 200.0) },
+			.timeout = 60,
+			.layer = LAYER_PARTICLE_HIGH | 0x40,
+		);
+	}*/
+
+	if(t > 120 && frand() < (t - 120) / 300.0) {
 		e->hp = 0;
 		return 1;
 	}
@@ -1839,8 +1987,8 @@ void elly_baryon_explode(Boss *b, int t) {
 	}
 
 	FROM_TO(0, 200, 1) {
-		tsrand_fill(2);
-		petal_explosion(1, b->pos + 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1)));
+		// tsrand_fill(2);
+		// petal_explosion(1, b->pos + 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1)));
 		global.shake_view = max(global.shake_view, 5 * _i / 200.0);
 
 		if(_i > 30) {
@@ -1943,27 +2091,26 @@ static int elly_toe_boson(Projectile *p, int t) {
 		return ACTION_NONE;
 	}
 
-	if(t == activate_time) {
+	if(t == activate_time && num_in_trail == 2) {
 		play_sound("shot_special1");
 		play_sound("redirect");
 
-		for(int i = 0; i < 3; ++i) {
 			PARTICLE(
-				.sprite = "stain",
+				.sprite_ptr = get_sprite("part/blast"),
 				.pos = p->pos,
-				.color = RGBA(i==0, i==1, i==2, 0.0),
+				.color = HSLA(carg(p->args[0]),0.5,0.5,0),
 				.rule = elly_toe_boson_effect,
 				.draw_rule = ScaleFade,
 				.timeout = 60,
 				.args = {
 					0,
 					p->args[0] * 1.0,
-					0.5 * (0.8 + 2.0 * I),
+					0. + 1.0 * I,
 					M_PI*2*frand(),
 				},
 				.angle = 0,
+				.flags = PFLAG_REQUIREDPARTICLE,
 			);
-		}
 	}
 
 	p->pos += p->args[0];
@@ -2002,8 +2149,9 @@ static int elly_toe_boson(Projectile *p, int t) {
 			.color = &thiscolor_additive,
 			.timeout = 60,
 			.draw_rule = ScaleFade,
-			.args = { 0, 0, 3 * I },
+			.args = { 0, 0, 2 * I },
 			.angle = M_PI*2*frand(),
+			.flags = PFLAG_REQUIREDPARTICLE,
 		);
 
 		boson_color(&p->color, num_in_trail, warps_initial - warps_left);
@@ -2013,8 +2161,9 @@ static int elly_toe_boson(Projectile *p, int t) {
 		PARTICLE("stardust", p->pos, &thiscolor_additive, elly_toe_boson_effect,
 			.draw_rule = ScaleFade,
 			.timeout = 30,
-			.args = { 0, p->args[0] * 2, 3 * I, M_PI*2*frand() },
+			.args = { 0, p->args[0] * 2, 2 * I, M_PI*2*frand() },
 			.angle = 0,
+			.flags = PFLAG_REQUIREDPARTICLE,
 		);
 	}
 
@@ -2113,7 +2262,7 @@ static int elly_toe_fermion(Projectile *p, int t) {
 			.color = &thiscolor_additive,
 			.timeout = min(t / 6.0, 10),
 			.draw_rule = ScaleFade,
-			.args = { 0, 0, particle_scale * (1 + 2 * I) },
+			.args = { 0, 0, particle_scale * (0.5 + 2 * I) },
 			.angle = M_PI*2*frand(),
 		);
 	}
@@ -2128,15 +2277,16 @@ static int elly_toe_fermion(Projectile *p, int t) {
 			play_sound_ex("shot_special1", 5, false);
 
 			PARTICLE(
-				.sprite = "myon",
+				.sprite_ptr = get_sprite("part/blast"),
 				.pos = p->pos,
 				.color = &thiscolor_additive,
 				.rule = elly_toe_fermion_yukawa_effect,
 				.timeout = 60,
 				.draw_rule = ScaleFade,
-				.args = { add_ref(p), 0, 20 * I },
+				.args = { add_ref(p), 0, 0 + 1 * I },
 				.angle = M_PI*2*frand(),
 			);
+
 		}
 
 		p->pos0*=1.01;
@@ -2251,15 +2401,16 @@ static void elly_toe_laser_particle(Laser *l, complex origin) {
 	PARTICLE("stardust", origin, c, elly_toe_laser_particle_rule,
 		.draw_rule = ScaleFade,
 		.timeout = 30,
-		.args = { 0, 0, 2 * I, add_ref(l) },
+		.args = { 0, 0, 1.5 * I, add_ref(l) },
 		.angle = M_PI*2*frand(),
 	);
 
-	PARTICLE("stain", origin, c, elly_toe_laser_particle_rule,
+	PARTICLE("stain", origin, color_mul_scalar(COLOR_COPY(c),0.5), elly_toe_laser_particle_rule,
 		.draw_rule = ScaleFade,
 		.timeout = 20,
-		.args = { 0, 0, 2 * I, add_ref(l) },
+		.args = { 0, 0, 1 * I, add_ref(l) },
 		.angle = M_PI*2*frand(),
+		.flags = PFLAG_REQUIREDPARTICLE,
 	);
 
 	PARTICLE("smoothdot", origin, c, elly_toe_laser_particle_rule,
@@ -2267,6 +2418,7 @@ static void elly_toe_laser_particle(Laser *l, complex origin) {
 		.timeout = 40,
 		.args = { 0, 0, 1, add_ref(l) },
 		.angle = M_PI*2*frand(),
+		.flags = PFLAG_REQUIREDPARTICLE,
 	);
 }
 
@@ -2463,6 +2615,7 @@ void elly_theory(Boss *b, int time) {
 					40,
 				},
 				.max_viewport_dist=50,
+                                .flags = PFLAG_NOSPAWNFLARE,
 			);
 		}
 	}
@@ -2481,23 +2634,23 @@ void elly_theory(Boss *b, int time) {
 		global.shake_view_fade=1;
 
 		PARTICLE(
-			.sprite = "blast",
+			.sprite_ptr = get_sprite("part/blast"),
 			.pos = b->pos,
-			.color = RGBA_MUL_ALPHA(1.0, 0.3, 0.3, 0.5),
+			.color = RGBA(1.0, 0.3, 0.3, 0.0),
 			.timeout = 60,
-			.draw_rule = GrowFade,
-			.args = { 0, 4 },
-			// .flags = PFLAG_DRAWADD,
+			.draw_rule = ScaleFade,
+			.args = { 0, 0, 5*I },
+			.flags = PFLAG_REQUIREDPARTICLE,
 		);
 
-		for(int i = 0; i < 10; ++i) {
+		for(int i = 0; i < 5; ++i) {
 			PARTICLE(
 				.sprite = "stain",
 				.pos = b->pos,
 				.color = RGBA(0.3, 0.3, 1.0, 0.0),
-				.timeout = 120 + 20 * nfrand(),
+				.timeout = 100 + 20 * nfrand(),
 				.draw_rule = ScaleFade,
-				.args = { 0, 0, 2 * (1 + 5 * I) },
+				.args = { 0, 0, 2 * (0.4 + 2 * I) },
 				.angle = M_PI*2*frand(),
 			);
 		}
@@ -2541,6 +2694,7 @@ void elly_theory(Boss *b, int time) {
 				PROJECTILE("flea", b->pos, RGB(dir*(time>symmetrytime),0,1),
 					.rule = elly_toe_higgs,
 					.args = { v },
+                                        .flags = PFLAG_NOSPAWNFLARE,
 				);
 			}
 		}
@@ -2576,6 +2730,7 @@ void elly_theory(Boss *b, int time) {
 					-1,
 				},
 				.max_viewport_dist=50,
+                                .flags = PFLAG_NOSPAWNFLARE,
 			);
 		}
 	}

@@ -125,8 +125,9 @@ int stage5_limiter(Enemy *e, int t) {
 	e->pos += e->args[0];
 
 	FROM_TO_SND("shot1_loop", 0, 1200, 3) {
-		PROJECTILE("rice", e->pos, RGB(0.5,0.1,0.2), asymptotic, { 10*cexp(I*carg(global.plr.pos-e->pos)+0.2*I-0.1*I*(global.diff/4)+3.0*I/(_i+1)), 2 });
-		PROJECTILE("rice", e->pos, RGB(0.5,0.1,0.2), asymptotic, { 10*cexp(I*carg(global.plr.pos-e->pos)-0.2*I+0.1*I*(global.diff/4)-3.0*I/(_i+1)), 2 });
+		uint f = PFLAG_NOSPAWNFADE;
+		PROJECTILE("rice", e->pos, RGB(0.5,0.1,0.2), asymptotic, { 10*cexp(I*carg(global.plr.pos-e->pos)+0.2*I-0.1*I*(global.diff/4)+3.0*I/(_i+1)), 2 }, .flags = f);
+		PROJECTILE("rice", e->pos, RGB(0.5,0.1,0.2), asymptotic, { 10*cexp(I*carg(global.plr.pos-e->pos)-0.2*I+0.1*I*(global.diff/4)-3.0*I/(_i+1)), 2 }, .flags = f);
 	}
 
 	return 1;
@@ -247,6 +248,31 @@ int stage5_explosion(Enemy *e, int t) {
 	TIMER(&t)
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 5, Power, 5, Life, (int)creal(e->args[1]), NULL);
+
+		PARTICLE(
+			.sprite = "blast_huge_rays",
+			.color = color_add(RGBA(0, 0.2 + 0.5 * frand(), 0.5 + 0.5 * frand(), 0.0), RGBA(1, 1, 1, 0)),
+			.pos = e->pos,
+			.timeout = 60 + 10 * frand(),
+			.draw_rule = ScaleFade,
+			.args = { 0, 0, (0 + 3*I) * (1 + 0.2 * frand()) },
+			.angle = frand() * 2 * M_PI,
+			.layer = LAYER_PARTICLE_HIGH | 0x42,
+			.flags = PFLAG_REQUIREDPARTICLE,
+		);
+
+		PARTICLE(
+			.sprite = "blast_huge_halo",
+			.pos = e->pos,
+			.color = RGBA(0.3 * frand(), 0.3 * frand(), 1.0, 0),
+			.timeout = 200 + 24 * frand(),
+			.draw_rule = ScaleFade,
+			.args = { 0, 0, (0.25 + 2.5*I) * (1 + 0.2 * frand()) },
+			.layer = LAYER_PARTICLE_HIGH | 0x41,
+			.angle = frand() * 2 * M_PI,
+			.flags = PFLAG_REQUIREDPARTICLE,
+		);
+
 		play_sound("boom");
 		return 1;
 	}

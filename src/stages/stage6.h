@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "stage.h"
+#include "enemy.h"
 #include "stageutils.h"
 
 extern struct stage6_spells_s {
@@ -53,6 +54,9 @@ extern struct stage6_spells_s {
 
 extern StageProcs stage6_procs;
 extern StageProcs stage6_spell_procs;
+
+extern FBPair baryon_fbpair;
+extern Framebuffer *baryon_aux_fb;
 
 void start_fall_over(void);
 
