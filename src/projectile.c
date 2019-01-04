@@ -758,7 +758,7 @@ static Projectile* spawn_projectile_highlight_effect_internal(Projectile *p, boo
 			.shader = "sprite_bullet",
 			.size = p->size * 4.5,
 			.layer = LAYER_PARTICLE_HIGH | 0x40,
-			.draw_rule = ScaleFade,
+			.draw_rule = ScaleSquaredFade,
 			.args = { 0, 0, (0 + 2*I) * 0.1 * fmax(sx, sy) * (1 - 0.2 * frand()) },
 			.angle = frand() * M_PI * 2,
 			.pos = p->pos + frand() * 8 * cexp(I*M_PI*2*frand()),
@@ -988,7 +988,7 @@ void Fade(Projectile *p, int t) {
 	r_mat_pop();
 }
 
-void ScaleFade(Projectile *p, int t) {
+static void ScaleFadeImpl(Projectile *p, int t, int fade_exponent) {
 	r_mat_push();
 	apply_common_transforms(p, t);
 
@@ -996,11 +996,19 @@ void ScaleFade(Projectile *p, int t) {
 	double scale_max = cimag(p->args[2]);
 	double timefactor = t / (double)p->timeout;
 	double scale = scale_min * (1 - timefactor) + scale_max * timefactor;
-	double alpha = fabs(1 - timefactor);
+	double alpha = pow(fabs(1 - timefactor), fade_exponent);
 
 	r_mat_scale(scale, scale, 1);
 	ProjDrawCore(p, color_mul_scalar(COLOR_COPY(&p->color), alpha));
 	r_mat_pop();
+}
+
+void ScaleFade(Projectile *p, int t) {
+	ScaleFadeImpl(p, t, 1);
+}
+
+void ScaleSquaredFade(Projectile *p, int t) {
+	ScaleFadeImpl(p, t, 2);
 }
 
 void Petal(Projectile *p, int t) {

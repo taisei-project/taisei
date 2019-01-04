@@ -936,7 +936,7 @@ void player_graze(Player *plr, complex pos, int pts, int effect_intensity, const
 			.pos = pos,
 			.rule = asymptotic,
 			.timeout = 24 + 5 * afrand(2),
-			.draw_rule = ScaleFade,
+			.draw_rule = ScaleSquaredFade,
 			.args = { 0.2 * (1+afrand(0)*5)*cexp(I*M_PI*2*afrand(1)), 16 * (1 + 0.5 * anfrand(3)), 1 },
 			.flags = PFLAG_NOREFLECT,
 			// .layer = LAYER_PARTICLE_LOW,

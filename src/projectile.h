@@ -204,6 +204,7 @@ void DeathShrink(Projectile *p, int t);
 void Fade(Projectile *p, int t);
 void GrowFade(Projectile *p, int t);
 void ScaleFade(Projectile *p, int t);
+void ScaleSquaredFade(Projectile *p, int t);
 
 void Petal(Projectile *p, int t);
 void petal_explosion(int n, complex pos);
