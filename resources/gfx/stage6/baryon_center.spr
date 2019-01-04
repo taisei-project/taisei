@@ -5,3 +5,8 @@ region_x = 2
 region_y = 2
 region_w = 400
 region_h = 400
+
+# -- Pasted from the override file --
+
+w = 200
+h = 200

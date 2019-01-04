@@ -697,7 +697,7 @@ void draw_baryons(Enemy *e, int t) {
 	r_mat_push();
 	r_mat_translate(creal(e->pos), cimag(e->pos), 0);
 	r_mat_rotate_deg(2*t, 0, 0, 1);
-	draw_sprite_batched(0, 0, "stage6/scythecircle");
+	draw_sprite_batched(0, 0, "stage6/baryon_center");
 	r_mat_pop();
 	draw_sprite_batched(creal(e->pos), cimag(e->pos), "stage6/baryon");
 	r_color4(1, 1, 1, 1);
