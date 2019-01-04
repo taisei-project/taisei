@@ -744,6 +744,11 @@ void BaryonCenter(Enemy *e, int t, bool render) {
 		return;
 	}
 
+	if(config_get_int(CONFIG_POSTPROCESS) < 1) {
+		draw_baryons(e, t);
+		return;
+	}
+
 	r_state_push();
 	r_shader("baryon_feedback");
 	r_uniform_vec2("blur_resolution", 0.5*VIEWPORT_W, 0.5*VIEWPORT_H);
