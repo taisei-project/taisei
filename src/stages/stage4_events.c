@@ -856,9 +856,9 @@ static int kdanmaku_proj(Projectile *p, int t) {
 		p->args[1] = (global.plr.pos - p->pos) * 0.001;
 
 		if(frand() < 0.5) {
-			Projectile *v = vapor_particle(p->pos, RGBA(0.6, 0.3, 1.0, 0.0));
+			Projectile *v = vapor_particle(p->pos, color_mul_scalar(COLOR_COPY(&p->color), 0.5));
 
-			if(frand() < 0.4) {
+			if(frand() < 0.5) {
 				v->flags |= PFLAG_REQUIREDPARTICLE;
 			}
 		}
@@ -877,6 +877,7 @@ static int kdanmaku_proj(Projectile *p, int t) {
 
 	if(t > time && cabs(p->args[1]) < 2) {
 		p->args[1] *= 1.02;
+		fapproach_p(&p->color.a, 1, 0.025);
 	}
 
 	p->pos += p->args[1];
@@ -921,8 +922,8 @@ int kdanmaku_slave(Enemy *e, int t) {
 					.flags = PFLAG_NOSPAWNFLARE,
 				);
 
-				if(frand()<0.4) {
-					vapor_particle(p, RGBA(1, 0.25 * frand(), 0.25 * frand(), 0.0));
+				if(frand() < 0.5) {
+					vapor_particle(p, RGBA(0.5, 0.125 * frand(), 0.125 * frand(), 0.1));
 				}
 			}
 		}
