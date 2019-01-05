@@ -709,3 +709,23 @@ static void* delete_unknown_cmd(List **dest, List *elem, void *arg) {
 void progress_unload(void) {
 	list_foreach(&progress.unknown, delete_unknown_cmd, NULL);
 }
+
+uint32_t progress_times_any_ending_achieved(void) {
+	uint x = 0;
+
+	for(uint i = 0; i < NUM_ENDINGS; ++i) {
+		x += progress.achieved_endings[i];
+	}
+
+	return x;
+}
+
+uint32_t progress_times_any_good_ending_achieved(void) {
+	uint x = 0;
+
+	#define ENDING(e) x += progress.achieved_endings[e];
+	GOOD_ENDINGS
+	#undef ENDING
+
+	return x;
+}

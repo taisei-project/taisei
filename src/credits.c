@@ -26,6 +26,7 @@ static struct {
 	int ecount;
 	float panelalpha;
 	int end;
+	bool skipable;
 } credits;
 
 #define CREDITS_ENTRY_FADEIN 200.0
@@ -218,8 +219,10 @@ static void credits_init(void) {
 	stage_3d_context.crot[0] = 0;
 
 	global.frames = 0;
+
 	credits_fill();
 	credits.end += 500 + CREDITS_ENTRY_FADEOUT;
+	credits.skipable = progress_times_any_good_ending_achieved() > 0;
 
 	start_bgm("credits");
 }
@@ -424,7 +427,14 @@ static FrameAction credits_logic_frame(void *arg) {
 	events_poll(NULL, 0);
 	credits_process();
 	global.frames++;
-	return credits.end == 0 ? LFRAME_STOP : LFRAME_WAIT;
+
+	if(credits.end == 0) {
+		return LFRAME_STOP;
+	} else if(credits.skipable && gamekeypressed(KEY_SKIP)) {
+		return LFRAME_SKIP;
+	} else {
+		return LFRAME_WAIT;
+	}
 }
 
 static FrameAction credits_render_frame(void *arg) {

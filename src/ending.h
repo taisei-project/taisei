@@ -16,7 +16,7 @@ enum {
 	ENDING_FADE_TIME = 60,
 };
 
-enum {
+typedef enum EndingID {
 	// WARNING: Reordering this will break current progress files.
 
 	ENDING_BAD_1,
@@ -26,7 +26,33 @@ enum {
 	ENDING_BAD_3,
 	ENDING_GOOD_3,
 	NUM_ENDINGS,
-};
+} EndingID;
+
+#define GOOD_ENDINGS \
+	ENDING(ENDING_GOOD_1) \
+	ENDING(ENDING_GOOD_2) \
+	ENDING(ENDING_GOOD_3) \
+
+#define BAD_ENDINGS \
+	ENDING(ENDING_BAD_1) \
+	ENDING(ENDING_BAD_2) \
+	ENDING(ENDING_BAD_3) \
+
+static inline attr_must_inline bool ending_is_good(EndingID end) {
+	#define ENDING(e) (end == (e)) ||
+	return (
+		GOOD_ENDINGS
+	false);
+	#undef ENDING
+}
+
+static inline attr_must_inline bool ending_is_bad(EndingID end) {
+	#define ENDING(e) (end == (e)) ||
+	return (
+		BAD_ENDINGS
+	false);
+	#undef ENDING
+}
 
 typedef struct EndingEntry EndingEntry;
 typedef struct Ending Ending;

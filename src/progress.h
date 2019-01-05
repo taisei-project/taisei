@@ -60,3 +60,6 @@ extern GlobalProgress progress;
 void progress_load(void);
 void progress_save(void);
 void progress_unload(void);
+
+uint32_t progress_times_any_ending_achieved(void);
+uint32_t progress_times_any_good_ending_achieved(void);
