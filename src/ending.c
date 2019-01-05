@@ -206,6 +206,16 @@ void ending_preload(void) {
 	preload_resource(RES_BGM, "ending", RESF_OPTIONAL);
 }
 
+static void ending_advance(Ending *e) {
+	if(
+		e->pos < e->count-1 &&
+		e->entries[e->pos].time + ENDING_FADE_TIME < global.frames &&
+		global.frames < e->entries[e->pos+1].time - ENDING_FADE_TIME
+	) {
+		e->entries[e->pos+1].time = global.frames+(e->pos != e->count-2)*ENDING_FADE_TIME;
+	}
+}
+
 static bool ending_input_handler(SDL_Event *event, void *arg) {
 	Ending *e = arg;
 
@@ -215,10 +225,7 @@ static bool ending_input_handler(SDL_Event *event, void *arg) {
 	switch(type) {
 		case TE_GAME_KEY_DOWN:
 			if(code == KEY_SHOT) {
-				if(e->pos < e->count-1
-						&& e->entries[e->pos].time+ENDING_FADE_TIME < global.frames
-						&& global.frames < e->entries[e->pos+1].time-ENDING_FADE_TIME)
-					e->entries[e->pos+1].time = global.frames+(e->pos != e->count-2)*ENDING_FADE_TIME;
+				ending_advance(e);
 			}
 			break;
 		default:
@@ -250,6 +257,11 @@ static FrameAction ending_logic_frame(void *arg) {
 
 	if(global.frames >= e->duration) {
 		return LFRAME_STOP;
+	}
+
+	if(gamekeypressed(KEY_SKIP)) {
+		ending_advance(e);
+		return LFRAME_SKIP;
 	}
 
 	return LFRAME_WAIT;
