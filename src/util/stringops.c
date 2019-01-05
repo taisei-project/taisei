@@ -435,7 +435,7 @@ void format_huge_num(uint digits, uint num, size_t bufsize, char *buf) {
 	assert(digits > 0);
 
 	div_t separators = div(digits, 3);
-	uint len = digits + (separators.quot + !!separators.rem);
+	attr_unused uint len = digits + (separators.quot + !!separators.rem);
 	assert(bufsize >= len);
 
 	char *p = buf;
