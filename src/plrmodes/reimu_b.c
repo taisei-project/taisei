@@ -345,7 +345,7 @@ static void reimu_dream_bullet_warp(Projectile *p, int t) {
 		gap_bbox.top_left = min(creal(p0), creal(p1)) + I * min(cimag(p0), cimag(p1));
 		gap_bbox.bottom_right = max(creal(p0), creal(p1)) + I * max(cimag(p0), cimag(p1));
 
-		if(rect_rect_intersection(p_bbox, gap_bbox, true, &overlap)) {
+		if(rect_rect_intersection(p_bbox, gap_bbox, true, false, &overlap)) {
 			complex o = (overlap.top_left + overlap.bottom_right) / 2;
 			double fract;
 

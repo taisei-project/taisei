@@ -40,7 +40,7 @@ static bool segment_ellipse_nonintersection_heuristic(LineSegment seg, Ellipse e
 		.bottom_right = e.origin + largest_radius + I*largest_radius
 	};
 
-	return !rect_rect_intersect(seg_bbox, e_bbox, true);
+	return !rect_rect_intersect(seg_bbox, e_bbox, true, true);
 }
 
 // Is the point of shortest distance between the line through a and b
@@ -82,8 +82,8 @@ static double lineseg_circle_intersect_fallback(LineSegment seg, Circle c) {
 }
 
 bool lineseg_ellipse_intersect(LineSegment seg, Ellipse e) {
-	if (segment_ellipse_nonintersection_heuristic(seg, e)) {
-		return 0;
+	if(segment_ellipse_nonintersection_heuristic(seg, e)) {
+		return false;
 	}
 
 	// Transform the coordinate system so that the ellipse becomes a circle
@@ -106,10 +106,10 @@ bool lineseg_ellipse_intersect(LineSegment seg, Ellipse e) {
 
 double lineseg_circle_intersect(LineSegment seg, Circle c) {
 	Ellipse e = { .origin = c.origin, .axes = 2*c.radius + I*2*c.radius };
-	if (segment_ellipse_nonintersection_heuristic(seg, e)) {
-		return 0;
+	if(segment_ellipse_nonintersection_heuristic(seg, e)) {
+		return -1;
 	}
-	return lineseg_circle_intersect_fallback(seg, c) >= 0;
+	return lineseg_circle_intersect_fallback(seg, c);
 }
 
 bool rect_in_rect(Rect inner, Rect outer) {
@@ -120,7 +120,7 @@ bool rect_in_rect(Rect inner, Rect outer) {
 		rect_bottom(inner) <= rect_bottom(outer);
 }
 
-bool rect_rect_intersect(Rect r1, Rect r2, bool edges) {
+bool rect_rect_intersect(Rect r1, Rect r2, bool edges, bool corners) {
 	if(
 		rect_bottom(r1) < rect_top(r2)    ||
 		rect_top(r1)    > rect_bottom(r2) ||
@@ -141,12 +141,12 @@ bool rect_rect_intersect(Rect r1, Rect r2, bool edges) {
 		return false;
 	}
 
-	if(
+	if(!corners && (
 		(rect_left(r1) == rect_right(r2) && rect_bottom(r1) == rect_top(r2)) ||
 		(rect_left(r1) == rect_right(r2) && rect_bottom(r2) == rect_top(r1)) ||
 		(rect_left(r2) == rect_right(r1) && rect_bottom(r1) == rect_top(r2)) ||
 		(rect_left(r2) == rect_right(r1) && rect_bottom(r2) == rect_top(r1))
-	) {
+	)) {
 		// Discard corner intersects
 		return false;
 	}
@@ -154,8 +154,8 @@ bool rect_rect_intersect(Rect r1, Rect r2, bool edges) {
 	return true;
 }
 
-bool rect_rect_intersection(Rect r1, Rect r2, bool edges, Rect *out) {
-	if(!rect_rect_intersect(r1, r2, edges)) {
+bool rect_rect_intersection(Rect r1, Rect r2, bool edges, bool corners, Rect *out) {
+	if(!rect_rect_intersect(r1, r2, edges, corners)) {
 		return false;
 	}
 
@@ -182,7 +182,7 @@ bool rect_join(Rect *r1, Rect r2) {
 		return true;
 	}
 
-	if(!rect_rect_intersect(*r1, r2, true)) {
+	if(!rect_rect_intersect(*r1, r2, true, false)) {
 		return false;
 	}
 
