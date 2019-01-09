@@ -409,13 +409,6 @@ void options_sub_video(MenuData *parent, void *arg) {
 		bind_addvalue(b, "off");
 		bind_addvalue(b, "adaptive");
 
-#if 0
-	add_menu_entry(m, "Swap buffers", do_nothing,
-		b = bind_option(CONFIG_VID_LATE_SWAP, bind_common_onoff_get, bind_common_onoff_set)
-	);	bind_addvalue(b, "late");
-		bind_addvalue(b, "early");
-#endif
-
 	add_menu_entry(m, "Skip frames", do_nothing,
 		b = bind_option(CONFIG_VID_FRAMESKIP, bind_common_intplus1_get, bind_common_intplus1_set)
 	);	bind_addvalue(b, "0");

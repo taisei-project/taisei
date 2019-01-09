@@ -13,14 +13,15 @@
 #include "video.h"
 
 void fpscounter_reset(FPSCounter *fps) {
-	hrtime_t frametime = 1.0 / FPS;
+	hrtime_t frametime = HRTIME_RESOLUTION / FPS;
 	const int log_size = sizeof(fps->frametimes)/sizeof(hrtime_t);
 
 	for(int i = 0; i < log_size; ++i) {
 		fps->frametimes[i] = frametime;
 	}
 
-	fps->fps = 1.0 / frametime;
+	fps->fps = HRTIME_RESOLUTION / (long double)frametime;
+	fps->frametime = frametime;
 	fps->last_update_time = time_get();
 }
 
@@ -31,13 +32,14 @@ void fpscounter_update(FPSCounter *fps) {
 	memmove(fps->frametimes, fps->frametimes + 1, (log_size - 1) * sizeof(hrtime_t));
 	fps->frametimes[log_size - 1] = frametime;
 
-	hrtime_t avg = 0.0;
+	hrtime_t avg = 0;
 
 	for(int i = 0; i < log_size; ++i) {
 		avg += fps->frametimes[i];
 	}
 
-	fps->fps = 1.0 / (avg / log_size);
+	fps->fps = HRTIME_RESOLUTION / (avg / (long double)log_size);
+	fps->frametime = avg / log_size;
 	fps->last_update_time = time_get();
 }
 
@@ -60,20 +62,17 @@ void loop_at_fps(LogicFrameFunc logic_frame, RenderFrameFunc render_frame, void 
 
 	hrtime_t frame_start_time = time_get();
 	hrtime_t next_frame_time = frame_start_time;
-	hrtime_t target_frame_time = ((hrtime_t)1.0) / fps;
+	hrtime_t target_frame_time = HRTIME_RESOLUTION / fps;
 
 	FrameAction rframe_action = RFRAME_SWAP;
 	FrameAction lframe_action = LFRAME_WAIT;
 
-	int32_t delay = env_get("TAISEI_FRAMELIMITER_SLEEP", 0);
-	bool exact_delay = env_get("TAISEI_FRAMELIMITER_SLEEP_EXACT", 1);
+	int32_t sleep = env_get("TAISEI_FRAMELIMITER_SLEEP", 3);
 	bool compensate = env_get("TAISEI_FRAMELIMITER_COMPENSATE", 1);
 	bool uncapped_rendering_env = env_get("TAISEI_FRAMELIMITER_LOGIC_ONLY", 0);
-	bool late_swap = config_get_int(CONFIG_VID_LATE_SWAP);
 
 	if(global.is_replay_verification) {
 		uncapped_rendering_env = false;
-		delay = 0;
 	}
 
 	uint32_t frame_num = 0;
@@ -82,28 +81,11 @@ void loop_at_fps(LogicFrameFunc logic_frame, RenderFrameFunc render_frame, void 
 	static uint8_t recursion_detector;
 	++recursion_detector;
 
-#ifdef SPAM_FPS
-	hrtime_t frametimes[4096];
-	int frametimes_idx = 0;
-#endif
-
 	while(true) {
 		bool uncapped_rendering = uncapped_rendering_env;
 		frame_start_time = time_get();
 
 begin_frame:
-
-#ifdef DEBUG
-		if(gamekeypressed(KEY_FPSLIMIT_OFF)) {
-			uncapped_rendering = false;
-		} else {
-			uncapped_rendering = uncapped_rendering_env;
-		}
-#endif
-
-		if(late_swap && rframe_action == RFRAME_SWAP) {
-			video_swap_buffers();
-		}
 
 		global.fps.busy.last_update_time = time_get();
 
@@ -132,7 +114,7 @@ begin_frame:
 				hrtime_t frametime = target_frame_time;
 
 				if(lframe_action == LFRAME_SKIP) {
-					frametime *= 0.1;
+					frametime /= imax(1, config_get_int(CONFIG_SKIP_SPEED));
 				}
 
 				next_frame_time += frametime;
@@ -141,7 +123,7 @@ begin_frame:
 
 				if(total > target_frame_time) {
 					next_frame_time = frame_start_time;
-					log_debug("Executing logic took too long (%f), giving up", (double)total);
+					log_debug("Executing logic took too long (%"PRIuTIME"), giving up", total);
 				}
 			}
 
@@ -154,8 +136,12 @@ begin_frame:
 				);
 			}
 		} else {
-			lframe_action = logic_frame(arg);
-			fpscounter_update(&global.fps.logic);
+			uint cnt = 0;
+
+			do {
+				lframe_action = logic_frame(arg);
+				fpscounter_update(&global.fps.logic);
+			} while(lframe_action == LFRAME_SKIP && ++cnt < config_get_int(CONFIG_SKIP_SPEED));
 		}
 
 		if(taisei_quit_requested()) {
@@ -168,35 +154,19 @@ begin_frame:
 			r_framebuffer_clear(NULL, CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
 			rframe_action = render_frame(arg);
 			fpscounter_update(&global.fps.render);
-
-#ifdef SPAM_FPS
-			frametimes[frametimes_idx++] = *global.fps.render.frametimes;
-			size_t s = sizeof(frametimes)/sizeof(*frametimes);
-
-			if(frametimes_idx == s) {
-				hrtime_t total = 0;
-
-				for(int i = 0; i < s; ++i) {
-					total += frametimes[i];
-				}
-
-				frametimes_idx = 0;
-				log_info("%zi frames in %.2fs = %.2f FPS", s, (double)total, (double)(1 / (total / s)));
-			}
-#endif
 		}
 
 		if(lframe_action == LFRAME_STOP) {
 			break;
 		}
 
-		if(!late_swap && rframe_action == RFRAME_SWAP) {
+		if(rframe_action == RFRAME_SWAP) {
 			video_swap_buffers();
 		}
 
 		fpscounter_update(&global.fps.busy);
 
-		if(lframe_action == LFRAME_SKIP || uncapped_rendering) {
+		if(/*lframe_action == LFRAME_SKIP ||*/ uncapped_rendering) {
 			continue;
 		}
 
@@ -207,40 +177,31 @@ begin_frame:
 #endif
 
 		next_frame_time = frame_start_time + target_frame_time;
+		// next_frame_time = frame_start_time + 2 * target_frame_time - global.fps.logic.frametime;
 
 		if(compensate) {
 			hrtime_t rt = time_get();
-			hrtime_t diff = rt - next_frame_time;
 
-			if(diff >= 0) {
+			if(rt > next_frame_time) {
 				// frame took too long...
 				// try to compensate in the next frame to avoid slowdown
-				frame_start_time = rt - min(diff, target_frame_time);
+				frame_start_time = rt - imin(rt - next_frame_time, target_frame_time);
 				goto begin_frame;
 			}
 		}
 
-		if(delay > 0) {
-			int32_t realdelay = delay;
-			int32_t maxdelay = (int32_t)(1000 * (next_frame_time - time_get()));
-
-			if(realdelay > maxdelay) {
-				if(exact_delay) {
-					log_debug("Delay of %i ignored. Maximum is %i, TAISEI_FRAMELIMITER_SLEEP_EXACT is active", realdelay, maxdelay);
-					realdelay = 0;
-				} else {
-					log_debug("Delay reduced from %i to %i", realdelay, maxdelay);
-					realdelay = maxdelay;
-				}
-			}
-
-			if(realdelay > 0) {
-				SDL_Delay(realdelay);
+		if(sleep > 0) {
+			// CAUTION: All of these casts are important!
+			while((shrtime_t)next_frame_time - (shrtime_t)time_get() > (shrtime_t)target_frame_time / sleep) {
+				uint32_t nap_multiplier = 1;
+				uint32_t nap_divisor = 3;
+				hrtime_t nap_raw = imax(0, (shrtime_t)next_frame_time - (shrtime_t)time_get());
+				uint32_t nap_sdl = (nap_multiplier * nap_raw * 1000) / (HRTIME_RESOLUTION * nap_divisor);
+				nap_sdl = imax(nap_sdl, 1);
+				SDL_Delay(nap_sdl);
 			}
 		}
 
-		while(time_get() < next_frame_time) {
-			continue;
-		}
+		while(time_get() < next_frame_time);
 	}
 }

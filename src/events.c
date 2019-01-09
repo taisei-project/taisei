@@ -286,7 +286,7 @@ void events_emit(TaiseiEvent type, int32_t code, void *data1, void *data2) {
 void events_pause_keyrepeat(void) {
 	// workaround for SDL bug
 	// https://bugzilla.libsdl.org/show_bug.cgi?id=3287
-	keyrepeat_paused_until = time_get() + 0.25;
+	keyrepeat_paused_until = time_get() + HRTIME_RESOLUTION / 4;
 }
 
 /*

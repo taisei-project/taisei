@@ -13,6 +13,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <SDL_thread.h>
 
 void* memdup(const void *src, size_t size) {
 	void *data = malloc(size);
@@ -29,3 +30,16 @@ void inherit_missing_pointers(uint num, void *dest[num], void *const base[num]) 
 		}
 	}
 }
+
+bool is_main_thread(void) {
+	static bool initialized = false;
+	static SDL_threadID main_thread_id = 0;
+	SDL_threadID tid = SDL_ThreadID();
+
+	if(!initialized) {
+		main_thread_id = tid;
+	}
+
+	return main_thread_id == tid;
+}
+

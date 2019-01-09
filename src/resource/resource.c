@@ -63,8 +63,6 @@ typedef struct ResourceAsyncLoadData {
 	void *opaque;
 } ResourceAsyncLoadData;
 
-static SDL_threadID main_thread_id; // TODO: move this somewhere else
-
 static inline ResourceHandler* get_handler(ResourceType type) {
 	return *(_handlers + type);
 }
@@ -118,7 +116,7 @@ static void finish_async_load(InternalResource *ires, ResourceAsyncLoadData *dat
 static ResourceStatus wait_for_resource_load(InternalResource *ires, uint32_t want_flags) {
 	SDL_LockMutex(ires->mutex);
 
-	if(ires->async_task != NULL && SDL_ThreadID() == main_thread_id) {
+	if(ires->async_task != NULL && is_main_thread()) {
 		assert(ires->status == RES_STATUS_LOADING);
 
 		ResourceAsyncLoadData *data;
@@ -189,7 +187,7 @@ static void* load_resource_async_task(void *vdata) {
 }
 
 static bool resource_asyncload_handler(SDL_Event *evt, void *arg) {
-	assert(SDL_ThreadID() == main_thread_id);
+	assert(is_main_thread());
 
 	InternalResource *ires = evt->user.data1;
 
@@ -414,8 +412,6 @@ void preload_resources(ResourceType type, ResourceFlags flags, const char *first
 }
 
 void init_resources(void) {
-	main_thread_id = SDL_ThreadID();
-
 	for(int i = 0; i < RES_NUMTYPES; ++i) {
 		ResourceHandler *h = get_handler(i);
 		alloc_handler(h);

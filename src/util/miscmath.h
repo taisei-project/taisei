@@ -39,6 +39,10 @@ uint ipow10(uint n) attr_const;
 float normpdf(float x, float sigma) attr_const;
 void gaussian_kernel_1d(size_t size, float sigma, float kernel[size]) attr_nonnull(3);
 
+// Compute (a*b)/c with 128-bit intermediate precision.
+// If the final result would not fit into 64 bits, the return value is undefined.
+uint64_t umuldiv64(uint64_t x, uint64_t multiplier, uint64_t divisor);
+
 #define topow2(x) (_Generic((x), \
 	uint32_t: topow2_u32, \
 	uint64_t: topow2_u64, \

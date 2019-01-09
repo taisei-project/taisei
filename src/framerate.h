@@ -14,6 +14,7 @@
 typedef struct {
     hrtime_t frametimes[120]; // size = number of frames to average
     double fps; // average fps over the last X frames
+    hrtime_t frametime; // average frame time over the last X frames;
     hrtime_t last_update_time; // internal; last time the average was recalculated
 } FPSCounter;
 

@@ -16,7 +16,13 @@ static hrtime_t time_current;
 static hrtime_t time_offset;
 static uint64_t prev_hires_time;
 static uint64_t prev_hires_freq;
-static SDL_mutex *paranoia;
+static uint64_t fast_path_mul;
+
+static inline attr_must_inline void set_freq(uint64_t freq) {
+	prev_hires_freq = freq;
+	lldiv_t d = lldiv(HRTIME_RESOLUTION, freq);
+	fast_path_mul = d.quot * (d.rem == 0);
+}
 
 static void time_update(void) {
 	bool retry;
@@ -28,18 +34,24 @@ static void time_update(void) {
 		uint64_t cntr = SDL_GetPerformanceCounter();
 
 		if(freq != prev_hires_freq) {
-			log_debug("High resolution timer frequency changed: was %"PRIu64", now %"PRIu64". Saved time offset: %.16Lf", prev_hires_freq, freq, time_offset);
+			log_debug("High resolution timer frequency changed: was %"PRIu64", now %"PRIu64". Saved time offset: %"PRIuTIME"", prev_hires_freq, freq, time_offset);
 			time_offset = time_current;
-			prev_hires_freq = freq;
+			set_freq(freq);
 			prev_hires_time = SDL_GetPerformanceCounter();
 			retry = true;
 			continue;
 		}
 
-		hrtime_t time_new = time_offset + (hrtime_t)(cntr - prev_hires_time) / freq;
+		hrtime_t time_new;
+
+		if(fast_path_mul) {
+			time_new = time_offset + (cntr - prev_hires_time) * fast_path_mul;
+		} else {
+			time_new = time_offset + umuldiv64(cntr - prev_hires_time, HRTIME_RESOLUTION, freq);
+		}
 
 		if(time_new < time_current) {
-			log_warn("BUG: time went backwards. Was %.16Lf, now %.16Lf. Possible cause: your OS sucks spherical objects. Attempting to correct this...", time_current, time_new);
+			log_warn("BUG: time went backwards. Was %"PRIuTIME", now %"PRIuTIME". Possible cause: your OS sucks spherical objects. Attempting to correct this...", time_current, time_new);
 			time_offset = time_current;
 			time_current = 0;
 			prev_hires_time = SDL_GetPerformanceCounter();
@@ -54,15 +66,9 @@ void time_init(void) {
 	use_hires = env_get("TAISEI_HIRES_TIMER", 1);
 
 	if(use_hires) {
-		if(!(paranoia = SDL_CreateMutex())) {
-			log_warn("Not using the system high resolution timer: SDL_CreateMutex() failed: %s", SDL_GetError());
-			use_hires = false;
-			return;
-		}
-
 		log_info("Using the system high resolution timer");
 		prev_hires_time = SDL_GetPerformanceCounter();
-		prev_hires_freq = SDL_GetPerformanceFrequency();
+		set_freq(SDL_GetPerformanceFrequency());
 	} else {
 		log_info("Not using the system high resolution timer: disabled by environment");
 		return;
@@ -70,20 +76,15 @@ void time_init(void) {
 }
 
 void time_shutdown(void) {
-	if(paranoia) {
-		SDL_DestroyMutex(paranoia);
-		paranoia = NULL;
-	}
+
 }
 
 hrtime_t time_get(void) {
 	if(use_hires) {
-		SDL_LockMutex(paranoia);
+		assert(is_main_thread());
 		time_update();
-		hrtime_t t = time_current;
-		SDL_UnlockMutex(paranoia);
-		return t;
+		return time_current;
 	}
 
-	return SDL_GetTicks() / 1000.0;
+	return SDL_GetTicks() * (HRTIME_RESOLUTION / 1000);
 }

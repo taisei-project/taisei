@@ -173,22 +173,12 @@ Timing
    less accurate.
 
 **TAISEI_FRAMELIMITER_SLEEP**
-   | Default: ``0``
+   | Default: ``3``
 
-   If over ``0``, tries to sleep this many milliseconds after every frame
-   if it was processed quickly enough. This reduces CPU usage by having the
-   game spend less time in a busy loop, but may hurt framerate stability if
-   set too high, especially if the high resolution timer is disabled or
-   not available.
-
-**TAISEI_FRAMELIMITER_SLEEP_EXACT**
-   | Default: ``1``
-
-   If ``1``, the framerate limiter will either try to sleep the exact
-   amount of time set in ``TAISEI_FRAMELIMITER_SLEEP``, or none at all.
-   Mitigates the aforementioned framerate stability issues by effectively
-   making ``TAISEI_FRAMELIMITER_SLEEP`` do nothing if the value is too high
-   for your system.
+   If over ``0``, tries to give up processing time to other applications
+   while waiting for the next frame, if at least ``frame_time / this_value``
+   amount of time is remaining. Increasesing this value reduces CPU usage,
+   but may harm performance. Set to ``0`` for the v1.2 default behaviour.
 
 **TAISEI_FRAMELIMITER_COMPENSATE**
    | Default: ``1``

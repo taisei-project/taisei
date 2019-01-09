@@ -80,7 +80,6 @@
 	CONFIGDEF_INT       (VID_WIDTH,                 "vid_width",                            RESX) \
 	CONFIGDEF_INT       (VID_HEIGHT,                "vid_height",                           RESY) \
 	CONFIGDEF_INT       (VID_RESIZABLE,             "vid_resizable",                        0) \
-	CONFIGDEF_INT       (VID_LATE_SWAP,             "vid_late_swap",                        0) \
 	CONFIGDEF_INT       (VID_FRAMESKIP,             "vid_frameskip",                        1) \
 	CONFIGDEF_INT       (VSYNC,                     "vsync",                                0) \
 	CONFIGDEF_INT       (MIXER_CHUNKSIZE,           "mixer_chunksize",                      1024) \
@@ -100,6 +99,7 @@
 	CONFIGDEF_INT       (FXAA,                      "fxaa",                                 1) \
 	CONFIGDEF_INT       (POSTPROCESS,               "postprocess",                          2) \
 	CONFIGDEF_INT       (HEALTHBAR_STYLE,           "healthbar_style",                      1) \
+	CONFIGDEF_INT       (SKIP_SPEED,                "skip_speed",                           10) \
 	KEYDEFS \
 	CONFIGDEF_INT       (GAMEPAD_ENABLED,           "gamepad_enabled",                      0) \
 	CONFIGDEF_STRING    (GAMEPAD_DEVICE,            "gamepad_device",                       "default") \

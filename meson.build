@@ -169,6 +169,8 @@ if not (have_vla and have_complex)
 endif
 
 config.set('TAISEI_BUILDCONF_HAVE_TIMESPEC', have_timespec)
+config.set('TAISEI_BUILDCONF_HAVE_INT128', cc.sizeof('__int128') == 16)
+config.set('TAISEI_BUILDCONF_HAVE_LONG_DOUBLE', cc.sizeof('long double') > 8)
 
 macos_app_bundle = get_option('macos_bundle') and host_machine.system() == 'darwin'
 

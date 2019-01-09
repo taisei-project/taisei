@@ -11,3 +11,4 @@
 
 void* memdup(const void *src, size_t size);
 void inherit_missing_pointers(uint num, void *dest[num], void *const base[num]);
+bool is_main_thread(void);

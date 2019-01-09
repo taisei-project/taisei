@@ -11,6 +11,8 @@
 #include "miscmath.h"
 #include "assert.h"
 
+#include <stdlib.h>
+
 double approach(double v, double t, double d) {
 	if(v < t) {
 		v += d;
@@ -217,4 +219,121 @@ uint ipow10(uint n) {
 
 	assert(n < sizeof(pow10)/sizeof(*pow10));
 	return pow10[n];
+}
+
+typedef struct int128_bits {
+	uint64_t hi;
+	uint64_t lo;
+} int128_bits_t;
+
+static inline attr_must_inline attr_unused
+void udiv_128_64(int128_bits_t divident, uint64_t divisor, uint64_t *out_quotient) {
+	/*
+	if(!divident.hi) {
+		*out_quotient = divident.lo / divisor;
+		return;
+	}
+	*/
+
+	uint64_t quotient = divident.lo << 1;
+	uint64_t remainder = divident.hi;
+	uint64_t carry = divident.lo >> 63;
+	uint64_t temp_carry = 0;
+
+	for(int i = 0; i < 64; i++) {
+		temp_carry = remainder >> 63;
+		remainder <<= 1;
+		remainder |= carry;
+		carry = temp_carry;
+
+		if(carry == 0) {
+			if(remainder >= divisor) {
+				carry = 1;
+			} else {
+				temp_carry = quotient >> 63;
+				quotient <<= 1;
+				quotient |= carry;
+				carry = temp_carry;
+				continue;
+			}
+		}
+
+		remainder -= divisor;
+		remainder -= (1 - carry);
+		carry = 1;
+		temp_carry = quotient >> 63;
+		quotient <<= 1;
+		quotient |= carry;
+		carry = temp_carry;
+	}
+
+	*out_quotient = quotient;
+}
+
+static inline attr_must_inline attr_unused
+void umul_128_64(uint64_t multiplicant, uint64_t multiplier, int128_bits_t *result) {
+#if (defined(__x86_64) || defined(__x86_64__))
+    __asm__ (
+        "mulq %3"
+        : "=a,a" (result->lo),   "=d,d" (result->hi)
+        : "%0,0" (multiplicant), "r,m"  (multiplier)
+        : "cc"
+    );
+#else
+	uint64_t u1 = (multiplicant & 0xffffffff);
+	uint64_t v1 = (multiplier & 0xffffffff);
+	uint64_t t = (u1 * v1);
+	uint64_t w3 = (t & 0xffffffff);
+	uint64_t k = (t >> 32);
+
+	multiplicant >>= 32;
+	t = (multiplicant * v1) + k;
+	k = (t & 0xffffffff);
+	uint64_t w1 = (t >> 32);
+
+	multiplier >>= 32;
+	t = (u1 * multiplier) + k;
+	k = (t >> 32);
+
+	result->hi = (multiplicant * multiplier) + w1 + k;
+	result->lo = (t << 32) + w3;
+#endif
+}
+
+static inline attr_must_inline attr_unused
+uint64_t _umuldiv64_slow(uint64_t x, uint64_t multiplier, uint64_t divisor) {
+	int128_bits_t intermediate;
+	uint64_t result;
+	umul_128_64(x, multiplier, &intermediate);
+	udiv_128_64(intermediate, divisor, &result);
+	return result;
+}
+
+#include "util.h"
+
+static inline attr_must_inline
+uint64_t _umuldiv64(uint64_t x, uint64_t multiplier, uint64_t divisor) {
+#if defined(TAISEI_BUILDCONF_HAVE_INT128)
+	__extension__ typedef unsigned __int128 uint128_t;
+	return ((uint128_t)x * (uint128_t)multiplier) / divisor;
+#elif defined(TAISEI_BUILDCONF_HAVE_LONG_DOUBLE)
+	#define UMULDIV64_SANITY_CHECK
+	return ((long double)x * (long double)multiplier) / (long double)divisor;
+#else
+	return _umuldiv64_slow(x, multiplier, divisor);
+#endif
+}
+
+uint64_t umuldiv64(uint64_t x, uint64_t multiplier, uint64_t divisor) {
+#ifdef UMULDIV64_SANITY_CHECK
+	static char sanity = -1;
+
+	if(sanity < 0) {
+		sanity = (_umuldiv64(UINT64_MAX, UINT64_MAX, UINT64_MAX) == UINT64_MAX);
+	}
+
+	return (sanity ? _umuldiv64 : _umuldiv64_slow)(x, multiplier, divisor);
+#else
+	return _umuldiv64(x, multiplier, divisor);
+#endif
 }
