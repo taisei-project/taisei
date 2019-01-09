@@ -83,7 +83,7 @@ static int reimu_dream_gap_bomb_projectile(Projectile *p, int t) {
 		// Yes, I know, this is inefficient as hell, but I'm too lazy to write a
 		// stage_clear_hazards_inside_rectangle function.
 		stage_clear_hazards_at(p->pos, range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
-		ent_area_damage(p->pos, range, &(DamageInfo) { damage, DMG_PLAYER_BOMB });
+		ent_area_damage(p->pos, range, &(DamageInfo) { damage, DMG_PLAYER_BOMB }, NULL, NULL);
 	}
 
 	return ACTION_NONE;

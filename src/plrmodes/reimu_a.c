@@ -243,7 +243,7 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 		double damage = 2000;
 		double range = 300;
 
-		ent_area_damage(p->pos, range, &(DamageInfo){damage, DMG_PLAYER_BOMB});
+		ent_area_damage(p->pos, range, &(DamageInfo){damage, DMG_PLAYER_BOMB}, NULL, NULL);
 		stage_clear_hazards_at(p->pos, range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
 
 		int count = 21;

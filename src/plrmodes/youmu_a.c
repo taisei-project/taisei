@@ -354,12 +354,45 @@ static void youmu_mirror_shot(Player *plr) {
 	}
 }
 
-static int youmu_split(Enemy *e, int t) {
-	if(t == EVENT_DEATH) {
-		return ACTION_ACK;
+static void youmu_mirror_bomb_damage_callback(EntityInterface *victim, complex victim_origin, void *arg) {
+	victim_origin += cexp(I*M_PI*2*frand()) * 15 * frand();
+
+	PARTICLE(
+		.sprite = "blast_huge_halo",
+		.pos = victim_origin,
+		.color = RGBA(0.6 + 0.1 * frand(), 0.8, 0.7 + 0.075 * frand(), 0.5 * frand()),
+		.timeout = 30,
+		.draw_rule = ScaleFade,
+		.args = { 0, 0, (0.0 + 0.5*I) },
+		.layer = LAYER_PARTICLE_HIGH | 0x4,
+		.angle = frand() * 2 * M_PI,
+		.flags = PFLAG_REQUIREDPARTICLE,
+	);
+
+	if(global.frames & 2) {
+		return;
 	}
 
-	if(t == EVENT_DEATH) {
+	float t = frand();
+
+	PARTICLE(
+		.sprite = "petal",
+		.pos = victim_origin,
+		.rule = asymptotic,
+		.draw_rule = Petal,
+		.color = RGBA(sin(5*t) * t, cos(5*t) * t, 0.5 * t, 0),
+		.args = {
+			sign(nfrand())*(3+t*5*frand())*cexp(I*M_PI*8*t),
+			5+I,
+			frand() + frand()*I,
+			frand() + 360.0*I*frand()
+		},
+		.layer = LAYER_PARTICLE_PETAL,
+	);
+}
+
+static int youmu_mirror_bomb_controller(Enemy *e, int t) {
+	if(t == EVENT_DEATH || t == EVENT_BIRTH) {
 		return ACTION_ACK;
 	}
 
@@ -412,17 +445,21 @@ static int youmu_split(Enemy *e, int t) {
 		);
 	}
 
-	float range = 200;
-	ent_area_damage(myonpos, range, &(DamageInfo){250, DMG_PLAYER_BOMB});
+	// roughly matches the shader effect
+	float bombtime = player_get_bomb_progress(&global.plr, 0);
+	float envelope = bombtime * (1 - bombtime);
+	float range = 200 / (1 + pow(0.08 / envelope, 5));
+
+	ent_area_damage(myonpos, range, &(DamageInfo) { 200, DMG_PLAYER_BOMB }, youmu_mirror_bomb_damage_callback, e);
 	stage_clear_hazards_at(myonpos, range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
 
-	return 1;
+	return ACTION_NONE;
 }
 
 static void youmu_mirror_shader(Framebuffer *fb) {
 	ShaderProgram *shader = r_shader_get("youmua_bomb");
 
-	double t = player_get_bomb_progress(&global.plr,0);
+	double t = player_get_bomb_progress(&global.plr, 0);
 	r_shader_ptr(shader);
 	r_uniform_float("tbomb", t);
 
@@ -437,7 +474,7 @@ static void youmu_mirror_shader(Framebuffer *fb) {
 
 static void youmu_mirror_bomb(Player *plr) {
 	play_sound("bomb_youmu_b");
-	create_enemy_p(&plr->slaves, MYON->pos, ENEMY_BOMB, NULL, youmu_split, -cexp(I*carg(MYON->args[0])) * 30, 0, 0, 0);
+	create_enemy_p(&plr->slaves, MYON->pos, ENEMY_BOMB, NULL, youmu_mirror_bomb_controller, -cexp(I*carg(MYON->args[0])) * 30, 0, 0, 0);
 }
 
 static void youmu_mirror_init(Player *plr) {

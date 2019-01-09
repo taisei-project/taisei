@@ -176,15 +176,24 @@ DamageResult ent_damage(EntityInterface *ent, const DamageInfo *damage) {
 	return res;
 }
 
-void ent_area_damage(complex origin, float radius, const DamageInfo *damage) {
+void ent_area_damage(complex origin, float radius, const DamageInfo *damage, EntityAreaDamageCallback callback, void *callback_arg) {
 	for(Enemy *e = global.enemies.first; e; e = e->next) {
-		if(cabs(origin - e->pos) < radius) {
-			ent_damage(&e->ent, damage);
+		if(
+			cabs(origin - e->pos) < radius &&
+			ent_damage(&e->ent, damage) == DMG_RESULT_OK &&
+			callback != NULL
+		) {
+			callback(&e->entity_interface, e->pos, callback_arg);
 		}
 	}
 
-	if(global.boss && cabs(origin - global.boss->pos) < radius) {
-		ent_damage(&global.boss->ent, damage);
+	if(
+		global.boss != NULL &&
+		cabs(origin - global.boss->pos) < radius &&
+		ent_damage(&global.boss->ent, damage) == DMG_RESULT_OK &&
+		callback != NULL
+	) {
+		callback(&global.boss->entity_interface, global.boss->pos, callback_arg);
 	}
 }
 

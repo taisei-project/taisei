@@ -65,12 +65,24 @@ float fapproach_asymptotic(float val, float target, float rate, float epsilon) {
 	return val + (target - val) * rate;
 }
 
+complex capproach_asymptotic(complex val, complex target, double rate, double epsilon) {
+	if(cabs(val - target) < epsilon || rate >= 1) {
+		return target;
+	}
+
+	return val + (target - val) * rate;
+}
+
 void approach_asymptotic_p(double *val, double target, double rate, double epsilon) {
 	*val = approach_asymptotic(*val, target, rate, epsilon);
 }
 
 void fapproach_asymptotic_p(float *val, float target, float rate, float epsilon) {
 	*val = fapproach_asymptotic(*val, target, rate, epsilon);
+}
+
+void capproach_asymptotic_p(complex *val, complex target, double rate, double epsilon) {
+	*val = capproach_asymptotic(*val, target, rate, epsilon);
 }
 
 double psin(double x) {
@@ -119,6 +131,11 @@ intmax_t iclamp(intmax_t f, intmax_t lower, intmax_t upper) {
 	}
 
 	return f;
+}
+
+double smoothstep(double edge0, double edge1, double x) {
+	x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+	return x * x * (3 - 2 * x);
 }
 
 int sign(double x) {
