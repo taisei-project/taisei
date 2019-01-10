@@ -858,17 +858,17 @@ void stage_draw_scene(StageInfo *stage) {
 }
 
 struct glyphcb_state {
-	Color *color;
+	Color *color1, *color2;
 };
 
 static int draw_numeric_callback(Font *font, charcode_t charcode, SpriteParams *spr_params, void *userdata) {
 	struct glyphcb_state *st = userdata;
 
 	if(charcode != '0' && charcode != ',') {
-		st->color = &stagedraw.hud_text.color.active;
+		st->color1 = st->color2;
 	}
 
-	spr_params->color = st->color;
+	spr_params->color = st->color1;
 	return 0;
 }
 
@@ -876,15 +876,31 @@ static inline void stage_draw_hud_power_value(float xpos, float ypos) {
 	Font *fnt_int = get_font("standard");
 	Font *fnt_fract = get_font("small");
 
+	int pw = global.plr.power + global.plr.power_overflow;
+
+	Color *c_whole, *c_fract;
+	Color *c_op_mod = RGBA(1, 0.2 + 0.3 * psin(global.frames / 10.0), 0.2, 1.0);
+
+	if(pw <= PLR_MAX_POWER) {
+		c_whole = &stagedraw.hud_text.color.active;
+		c_fract = &stagedraw.hud_text.color.inactive;
+	} else if(pw - PLR_MAX_POWER < 100) {
+		c_whole = &stagedraw.hud_text.color.active;
+		c_fract = color_mul(COLOR_COPY(&stagedraw.hud_text.color.inactive), c_op_mod);
+	} else {
+		c_whole = color_mul(COLOR_COPY(&stagedraw.hud_text.color.active), c_op_mod);
+		c_fract = color_mul(COLOR_COPY(&stagedraw.hud_text.color.inactive), c_op_mod);
+	}
+
 	xpos = draw_fraction(
-		global.plr.power / 100.0,
+		pw / 100.0,
 		ALIGN_LEFT,
 		xpos,
 		ypos,
 		fnt_int,
 		fnt_fract,
-		&stagedraw.hud_text.color.active,
-		&stagedraw.hud_text.color.inactive,
+		c_whole,
+		c_fract,
 		false
 	);
 
@@ -921,7 +937,7 @@ static void stage_draw_hud_score(Alignment a, float xpos, float ypos, char *buf,
 		.align = ALIGN_RIGHT,
 		.glyph_callback = {
 			draw_numeric_callback,
-			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive },
+			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive, &stagedraw.hud_text.color.active },
 		}
 	});
 
@@ -1044,8 +1060,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	font_set_kerning_enabled(fnt, false);
 
 	// Point Item Value... value
-	// TODO: placeholder until the mechanic is actually implemented/powersurge is merged
-	format_huge_num(6, 9001, sizeof(buf), buf);
+	format_huge_num(6, global.plr.point_item_value, sizeof(buf), buf);
 	text_draw(buf, &(TextParams) {
 		.pos = { 0, labels->y.value },
 		.shader_ptr = stagedraw.hud_text.shader,
@@ -1416,5 +1431,19 @@ void stage_draw_hud(void) {
 		r_color4(1 - red, 1 - red, 1 - red, 1 - red);
 		draw_sprite(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
 		r_color4(1, 1, 1, 1);
+	}
+
+	// Power Surge indicator
+	if(global.plr.powersurge.ticks) {
+		float surge = global.plr.powersurge.ticks / (float)PLR_POWERSURGE_DURATION;
+		r_state_push();
+		r_mat_push();
+		r_mat_translate(VIEWPORT_X + surge * 0.5 * VIEWPORT_W, VIEWPORT_Y + VIEWPORT_H - 5, 0);
+		r_mat_scale(VIEWPORT_W * surge, 5, 1);
+		r_color4(0.2, 0, 0, 0.1);
+		r_shader_standard_notex();
+		r_draw_quad();
+		r_mat_pop();
+		r_state_pop();
 	}
 }

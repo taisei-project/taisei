@@ -17,6 +17,8 @@
 static Sprite* item_sprite(ItemType type) {
 	static const char *const map[] = {
 		[Power]     = "item/power",
+		[MiniPower] = "item/minipower",
+		[Surge]     = "item/surge",
 		[Point]     = "item/point",
 		[Life]      = "item/life",
 		[Bomb]      = "item/bomb",
@@ -55,6 +57,10 @@ Item* create_item(complex pos, complex v, ItemType type) {
 
 	// type = 1 + floor(Life * frand());
 
+	if(type == MiniPower && player_is_powersurge_active(&global.plr)) {
+		type = Surge;
+	}
+
 	Item *i = (Item*)objpool_acquire(stage_object_pools.items);
 	alist_append(&global.items, i);
 
@@ -83,11 +89,12 @@ Item* create_bpoint(complex pos) {
 	if(i) {
 		PARTICLE(
 			.sprite = "flare",
-			.pos = pos, .timeout = 30,
+			.pos = pos,
+			.timeout = 30,
 			.draw_rule = Fade,
 			.layer = LAYER_BULLET+1
 		);
-		i->auto_collect = 10;
+		collect_item(i, 1, 10);
 	}
 
 	return i;
@@ -140,50 +147,86 @@ static bool item_out_of_bounds(Item *item) {
 	);
 }
 
+bool collect_item(Item *item, float value, float speed) {
+	if(item->auto_collect || !player_is_alive(&global.plr)) {
+		return false;
+	}
+
+	item->auto_collect = speed;
+	item->pickup_value = clamp(value, ITEM_MIN_VALUE, ITEM_MAX_VALUE);
+
+	return true;
+}
+
+void collect_all_items(float value, float speed) {
+	for(Item *i = global.items.first; i; i = i->next) {
+		collect_item(i, value, speed);
+	}
+}
+
 void process_items(void) {
 	Item *item = global.items.first, *del = NULL;
 	float r = player_property(&global.plr, PLR_PROP_COLLECT_RADIUS);
 	bool plr_alive = player_is_alive(&global.plr);
-	bool plr_bombing = player_is_bomb_active(&global.plr);
 
 	while(item != NULL) {
-		if((item->type == Power && global.plr.power >= PLR_MAX_POWER) ||
+		bool may_collect = true;
+
+		if(item->type == Surge && !player_is_powersurge_active(&global.plr)) {
+			item->type = BPoint;
+		}
+
+		if(global.stage->type == STAGE_SPELL && (item->type == Life || item->type == Bomb)) {
 			// just in case we ever have some weird spell that spawns those...
-			(global.stage->type == STAGE_SPELL && (item->type == Life || item->type == Bomb))
-		) {
 			item->type = Point;
 		}
 
-		if(plr_alive) {
-			if(
-				(cabs(global.plr.pos - item->pos) < r) ||
-				(cimag(global.plr.pos) < player_property(&global.plr, PLR_PROP_POC)) ||
-				plr_bombing
-			) {
-				item->auto_collect = 1;
+		if(global.frames - item->birthtime < 20) {
+			may_collect = false;
+		}
+
+		if(may_collect) {
+			if(plr_alive) {
+				if(cimag(global.plr.pos) < player_property(&global.plr, PLR_PROP_POC)) {
+					collect_item(item, 1, 1);
+				} else if(cabs(global.plr.pos - item->pos) < r) {
+					collect_item(item, 1 - cimag(global.plr.pos) / VIEWPORT_H, 1);
+				}
+			} else if(item->auto_collect) {
+				item->auto_collect = 0;
+				item->pos0 = item->pos;
+				item->birthtime = global.frames;
+				item->v = -10*I + 5*nfrand();
 			}
-		} else if(item->auto_collect) {
-			item->auto_collect = 0;
-			item->pos0 = item->pos;
-			item->birthtime = global.frames;
-			item->v = -10*I + 5*nfrand();
 		}
 
 		complex deltapos = move_item(item);
+		int v = may_collect ? collision_item(item) : 0;
 
-		int v = collision_item(item);
 		if(v == 1) {
 			switch(item->type) {
 			case Power:
-				player_set_power(&global.plr, global.plr.power + POWER_VALUE);
+				player_add_power(&global.plr, POWER_VALUE);
+				player_add_points(&global.plr, 25);
+				player_extend_powersurge(&global.plr, 24);
+				play_sound("item_generic");
+				break;
+			case MiniPower:
+				player_add_power(&global.plr, POWER_VALUE_MINI);
+				player_add_points(&global.plr, 5);
+				play_sound("item_generic");
+				break;
+			case Surge:
+				player_extend_powersurge(&global.plr, 8);
+				player_add_points(&global.plr, 25);
 				play_sound("item_generic");
 				break;
 			case Point:
-				player_add_points(&global.plr, 100);
+				player_add_points(&global.plr, round(global.plr.point_item_value * item->pickup_value));
 				play_sound("item_generic");
 				break;
 			case BPoint:
-				player_add_points(&global.plr, 1);
+				player_add_piv(&global.plr, 1);
 				play_sound("item_generic");
 				break;
 			case Life:
@@ -242,6 +285,8 @@ void spawn_items(complex pos, ...) {
 void items_preload(void) {
 	preload_resources(RES_SPRITE, RESF_PERMANENT,
 		"item/power",
+		"item/minipower",
+		"item/surge",
 		"item/point",
 		"item/life",
 		"item/bomb",
