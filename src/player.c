@@ -181,30 +181,62 @@ static int player_focus_circle_logic(Enemy *e, int t) {
 }
 
 static void player_focus_circle_visual(Enemy *e, int t, bool render) {
-	if(!render || !creal(e->args[0])) {
+	if(!render) {
 		return;
 	}
 
-	int trans_frames = 12;
-	double trans_factor = 1 - min(trans_frames, t) / (double)trans_frames;
-	double rot_speed = DEG2RAD * global.frames * (1 + 3 * trans_factor);
-	double scale = 1.0 + trans_factor;
+	float focus_opacity = creal(e->args[0]);
 
-	r_draw_sprite(&(SpriteParams) {
-		.sprite = "focus",
-		.rotation.angle = rot_speed,
-		.color = RGBA_MUL_ALPHA(1, 1, 1, creal(e->args[0])),
-		.pos = { creal(e->pos), cimag(e->pos) },
-		.scale.both = scale,
-	});
+	if(focus_opacity > 0) {
+		int trans_frames = 12;
+		double trans_factor = 1 - min(trans_frames, t) / (double)trans_frames;
+		double rot_speed = DEG2RAD * global.frames * (1 + 3 * trans_factor);
+		double scale = 1.0 + trans_factor;
 
-	r_draw_sprite(&(SpriteParams) {
-		.sprite = "focus",
-		.rotation.angle = rot_speed * -1,
-		.color = RGBA_MUL_ALPHA(1, 1, 1, creal(e->args[0])),
-		.pos = { creal(e->pos), cimag(e->pos) },
-		.scale.both = scale,
-	});
+		r_draw_sprite(&(SpriteParams) {
+			.sprite = "focus",
+			.rotation.angle = rot_speed,
+			.color = RGBA_MUL_ALPHA(1, 1, 1, creal(e->args[0])),
+			.pos = { creal(e->pos), cimag(e->pos) },
+			.scale.both = scale,
+		});
+
+		r_draw_sprite(&(SpriteParams) {
+			.sprite = "focus",
+			.rotation.angle = rot_speed * -1,
+			.color = RGBA_MUL_ALPHA(1, 1, 1, creal(e->args[0])),
+			.pos = { creal(e->pos), cimag(e->pos) },
+			.scale.both = scale,
+		});
+	}
+
+	float ps_opacity = 1.0;
+
+	if(player_is_powersurge_active(&global.plr)) {
+		ps_opacity *= clamp((global.frames - global.plr.powersurge.time.activated) / 30.0, 0, 1);
+	} else if(global.plr.powersurge.time.expired == 0) {
+		ps_opacity = 0;
+	} else {
+		ps_opacity *= (1 - clamp((global.frames - global.plr.powersurge.time.expired) / 40.0, 0, 1));
+	}
+
+	if(ps_opacity > 0) {
+		r_state_push();
+		r_mat_push();
+		r_mat_translate(creal(e->pos), cimag(e->pos), 0);
+		r_mat_scale(140, 140, 0);
+		r_shader("healthbar_radial");
+		r_uniform_vec4_rgba("borderColor",   RGBA(0.5, 0.5, 0.5, 0.5));
+		r_uniform_vec4_rgba("glowColor",     RGBA(0.5, 0.5, 0.5, 0.75));
+		r_uniform_vec4_rgba("fillColor",     RGBA(1.0, 0.5, 0.0, 0.75));
+		r_uniform_vec4_rgba("altFillColor",  RGBA(0.0, 0.5, 1.0, 0.75));
+		r_uniform_vec4_rgba("coreFillColor", RGBA(0.8, 0.8, 0.8, 0.25));
+		r_uniform_vec2("fill", global.plr.powersurge.ticks / (float)PLR_POWERSURGE_DURATION, 0);
+		r_uniform_float("opacity", ps_opacity);
+		r_draw_quad();
+		r_mat_pop();
+		r_state_pop();
+	}
 }
 
 static void player_spawn_focus_circle(Player *plr) {

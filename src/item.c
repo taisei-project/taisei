@@ -226,7 +226,12 @@ void process_items(void) {
 				play_sound("item_generic");
 				break;
 			case BPoint:
-				player_add_piv(&global.plr, 1);
+				if(player_is_powersurge_active(&global.plr)) {
+					player_add_points(&global.plr, global.plr.point_item_value / 100);
+					player_add_piv(&global.plr, 3);
+				} else {
+					player_add_piv(&global.plr, 1);
+				}
 				play_sound("item_generic");
 				break;
 			case Life:

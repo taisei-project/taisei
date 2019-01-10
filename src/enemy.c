@@ -120,6 +120,18 @@ static void* _delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 		PARTICLE(.proto = pp_blast, .pos = e->pos, .timeout = 20, .draw_rule = Blast, .flags = PFLAG_REQUIREDPARTICLE);
 		PARTICLE(.proto = pp_blast, .pos = e->pos, .timeout = 20, .draw_rule = Blast, .flags = PFLAG_REQUIREDPARTICLE);
 		PARTICLE(.proto = pp_blast, .pos = e->pos, .timeout = 15, .draw_rule = GrowFade, .flags = PFLAG_REQUIREDPARTICLE);
+
+		int num_items = 0;
+
+		for(Projectile *p = global.projs.first; p; p = p->next) {
+			if(p->type == EnemyProj && cabs(p->pos - e->pos) < 64) {
+				num_items += 1;
+			}
+		}
+
+		if(num_items > 0) {
+			spawn_items(e->pos, BPoint, num_items, NULL);
+		}
 	}
 
 	e->logic_rule(e, EVENT_DEATH);
