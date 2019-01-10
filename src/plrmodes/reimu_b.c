@@ -72,13 +72,32 @@ static int reimu_dream_gap_bomb_projectile(Projectile *p, int t) {
 	}
 
 	if(t == EVENT_DEATH) {
+		Sprite *spr = get_sprite("part/blast");
+
+		double range = GAP_LENGTH;
+		double damage = 50;
+
+		PARTICLE(
+			.sprite_ptr = spr,
+			.color = &p->color,
+			.pos = p->pos,
+			.timeout = 20,
+			.draw_rule = ScaleFade,
+			.layer = LAYER_BOSS + 2,
+			.args = { 0, 0, 3 * range / spr->w * I },
+			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		);
+
+		stage_clear_hazards_at(p->pos, range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
+		ent_area_damage(p->pos, range, &(DamageInfo) { damage, DMG_PLAYER_BOMB }, NULL, NULL);
 		return ACTION_ACK;
 	}
 
 	p->pos += p->args[0];
+	p->angle = carg(p->args[0]);
 
 	if(!(t % 3)) {
-		double range = GAP_LENGTH * 0.35;
+		double range = GAP_LENGTH * 0.5;
 		double damage = 50;
 		// Yes, I know, this is inefficient as hell, but I'm too lazy to write a
 		// stage_clear_hazards_inside_rectangle function.
@@ -135,14 +154,14 @@ static int reimu_dream_gap(Enemy *e, int t) {
 
 	if(player_is_bomb_active(&global.plr)) {
 		reimu_dream_gap_bomb(e, t + cimag(e->args[3]));
-	} else {
-		complex new_pos = reimu_dream_gap_target_pos(e);
+	}
 
-		if(t == 0) {
-			e->pos = new_pos;
-		} else {
-			e->pos += (new_pos - e->pos) * 0.1 * (1 - sqrt(gap_renderer->args[0]));
-		}
+	complex new_pos = reimu_dream_gap_target_pos(e);
+
+	if(t == 0) {
+		e->pos = new_pos;
+	} else {
+		e->pos += (new_pos - e->pos) * 0.1 * (0.1 + 0.9 * (1 - sqrt(gap_renderer->args[0])));
 	}
 
 	return ACTION_NONE;
