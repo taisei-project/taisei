@@ -31,6 +31,7 @@ enum {
 	// -Wpedantic doesn't like this
 	// PLR_MAX_PIV = UINT32_MAX,
 	#define PLR_MAX_PIV UINT32_MAX
+	#define PLR_MAX_GRAZE UINT32_MAX
 
 	PLR_MAX_LIFE_FRAGMENTS = 5,
 	PLR_MAX_BOMB_FRAGMENTS = 5,
@@ -101,12 +102,16 @@ struct Player {
 
 	uint64_t points;
 
-	int point_item_value;
+	uint point_item_value;
 	int lives;
 	int bombs;
 	int life_fragments;
 	int bomb_fragments;
 	int continues_used;
+	uint graze;
+	int focus;
+	int power;
+	int power_overflow;
 
 	int continuetime;
 	int recovery;
@@ -120,11 +125,6 @@ struct Player {
 	int lastmovesequence; // used for animation
 	int axis_ud;
 	int axis_lr;
-
-	uint16_t graze;
-	int16_t focus;
-	int16_t power;
-	int16_t power_overflow;
 
 	bool gamepadmove;
 	bool iddqd;

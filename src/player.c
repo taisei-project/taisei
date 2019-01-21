@@ -1156,9 +1156,9 @@ void player_fix_input(Player *plr) {
 }
 
 void player_graze(Player *plr, complex pos, int pts, int effect_intensity, const Color *color) {
-	if(!(++plr->graze)) {
-		log_warn("Graze counter overflow");
-		plr->graze = 0xffff;
+	if(++plr->graze >= PLR_MAX_GRAZE) {
+		log_debug("Graze counter overflow");
+		plr->graze = PLR_MAX_GRAZE;
 	}
 
 	pos = (pos + plr->pos) * 0.5;
@@ -1277,7 +1277,7 @@ void player_add_points(Player *plr, uint points) {
 void player_add_piv(Player *plr, uint piv) {
 	uint v = plr->point_item_value + piv;
 
-	if(v > PLR_MAX_PIV) {
+	if(v > PLR_MAX_PIV || v < plr->point_item_value) {
 		plr->point_item_value = PLR_MAX_PIV;
 	} else {
 		plr->point_item_value = v;

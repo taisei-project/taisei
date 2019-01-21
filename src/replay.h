@@ -40,13 +40,16 @@
 
 	// Taisei v1.2 revision 2: adds graze points
 	#define REPLAY_STRUCT_VERSION_TS102000_REV2 8
+
+	// Taisei v1.3 revision 0: adds piv; expands points to 64bit, graze to 32bit
+	#define REPLAY_STRUCT_VERSION_TS103000_REV0 9
 /* END supported struct versions */
 
 #define REPLAY_VERSION_COMPRESSION_BIT 0x8000
 #define REPLAY_COMPRESSION_CHUNK_SIZE 4096
 
 // What struct version to use when saving recorded replays
-#define REPLAY_STRUCT_VERSION_WRITE (REPLAY_STRUCT_VERSION_TS102000_REV2 | REPLAY_VERSION_COMPRESSION_BIT)
+#define REPLAY_STRUCT_VERSION_WRITE (REPLAY_STRUCT_VERSION_TS103000_REV0 | REPLAY_VERSION_COMPRESSION_BIT)
 
 #define REPLAY_ALLOC_INITIAL 256
 
@@ -83,11 +86,11 @@ typedef struct ReplayStage {
 	// initial game settings
 	uint16_t stage; // must match type of StageInfo.id in stage.h
 	uint32_t seed;  // this also happens to be the game initiation time, and we currently use this property
-                  // NOTE: this might change eventually
+                    // NOTE: this might change eventually
 	uint8_t diff;
 
 	// initial player settings
-	uint32_t plr_points;
+	uint64_t plr_points; // NOTE: before REPLAY_STRUCT_VERSION_TS103000_REV0: uint32_t
 	/* BEGIN REPLAY_STRUCT_VERSION_TS102000_REV1 and above */
 	uint8_t plr_continues_used;
 	/* END REPLAY_STRUCT_VERSION_TS102000_REV1 and above */
@@ -103,8 +106,11 @@ typedef struct ReplayStage {
 	uint8_t plr_bomb_fragments;
 	uint8_t plr_inputflags;
 	/* BEGIN REPLAY_STRUCT_VERSION_TS102000_REV2 and above */
-	uint16_t plr_graze;
+	uint32_t plr_graze; // NOTE: before REPLAY_STRUCT_VERSION_TS103000_REV0: uint16_t
 	/* END REPLAY_STRUCT_VERSION_TS102000_REV2 and above */
+	/* BEGIN REPLAY_STRUCT_VERSION_TS103000_REV0 and above */
+	uint32_t plr_point_item_value;
+	/* END REPLAY_STRUCT_VERSION_TS103000_REV0 and above */
 
 	// player input
 	uint16_t numevents;
