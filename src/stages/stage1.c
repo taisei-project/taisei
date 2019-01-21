@@ -65,7 +65,7 @@ static bool particle_filter(Projectile *part) {
 }
 
 static bool stage1_draw_predicate(EntityInterface *ent) {
-	if(ent->draw_layer == LAYER_PLAYER_SLAVE || ent->draw_layer == LAYER_PLAYER_FOCUS) {
+	if(ent->draw_layer == LAYER_PLAYER_SLAVE || ent->draw_layer == LAYER_PLAYER_FOCUS || ent->draw_layer == LAYER_PLAYER_SHOT) {
 		return false;
 	}
 
@@ -239,7 +239,7 @@ static vec3 **stage1_smoke_pos(vec3 p, float maxrange) {
 	return linear3dpos(p, maxrange/2.0, q, r);
 }
 
-static void stage1_fog(Framebuffer *fb) {
+static bool stage1_fog(Framebuffer *fb) {
 	r_shader("zbuf_fog");
 	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	r_uniform_vec4("fog_color", 0.8, 0.8, 0.8, 1.0);
@@ -249,6 +249,7 @@ static void stage1_fog(Framebuffer *fb) {
 	r_uniform_float("sphereness", 0.2);
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
+	return true;
 }
 
 static void stage1_draw(void) {

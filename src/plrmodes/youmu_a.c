@@ -456,7 +456,7 @@ static int youmu_mirror_bomb_controller(Enemy *e, int t) {
 	return ACTION_NONE;
 }
 
-static void youmu_mirror_shader(Framebuffer *fb) {
+static bool youmu_mirror_shader(Framebuffer *fb) {
 	ShaderProgram *shader = r_shader_get("youmua_bomb");
 
 	double t = player_get_bomb_progress(&global.plr, 0);
@@ -470,6 +470,8 @@ static void youmu_mirror_shader(Framebuffer *fb) {
 
 	float f = max(0,1 - 10*t);
 	colorfill(f, f, f, f);
+
+	return true;
 }
 
 static void youmu_mirror_bomb(Player *plr) {

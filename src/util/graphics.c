@@ -208,7 +208,7 @@ void fbutil_create_attachments(Framebuffer *fb, uint num_attachments, FBAttachme
 	for(uint i = 0; i < num_attachments; ++i) {
 		log_debug("%i %i", attachments[i].tex_params.width, attachments[i].tex_params.height);
 		Texture *tex = r_texture_create(&attachments[i].tex_params);
-		snprintf(buf, sizeof(buf), "FB %p %s attachment", (void*)fb, attachment_name(attachments[i].attachment));
+		snprintf(buf, sizeof(buf), "%s [%s]", r_framebuffer_get_debug_label(fb), attachment_name(attachments[i].attachment));
 		r_texture_set_debug_label(tex, buf);
 		r_framebuffer_attach(fb, tex, 0, attachments[i].attachment);
 	}

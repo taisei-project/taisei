@@ -16,6 +16,7 @@
 
 typedef enum StageFBPair {
 	FBPAIR_BG,
+	FBPAIR_BG_AUX,
 	FBPAIR_FG,
 	FBPAIR_FG_AUX,
 	NUM_FBPAIRS,

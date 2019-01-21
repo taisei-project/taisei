@@ -149,7 +149,7 @@ static vec3 **stage2_bg_grass_pos2(vec3 pos, float maxrange) {
 	return linear3dpos(pos, maxrange, p, r);
 }
 
-static void stage2_fog(Framebuffer *fb) {
+static bool stage2_fog(Framebuffer *fb) {
 	r_shader("zbuf_fog");
 	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	r_uniform_vec4("fog_color", 0.05, 0.0, 0.03, 1.0);
@@ -159,15 +159,17 @@ static void stage2_fog(Framebuffer *fb) {
 	r_uniform_float("sphereness", 0);
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
+	return true;
 }
 
-static void stage2_bloom(Framebuffer *fb) {
+static bool stage2_bloom(Framebuffer *fb) {
 	r_shader("bloom");
 	r_uniform_int("samples", 10);
 	r_uniform_float("intensity", 0.05);
 	r_uniform_float("radius", 0.03);
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
+	return true;
 }
 
 static void stage2_start(void) {

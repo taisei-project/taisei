@@ -63,7 +63,7 @@ struct stage4_spells_s stage4_spells = {
 	},
 };
 
-static void stage4_fog(Framebuffer *fb) {
+static bool stage4_fog(Framebuffer *fb) {
 	float f = 0;
 	int redtime = 5100 + STAGE4_MIDBOSS_MUSIC_TIME;
 
@@ -81,6 +81,8 @@ static void stage4_fog(Framebuffer *fb) {
 	r_uniform_float("sphereness", 0);
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
+
+	return true;
 }
 
 static vec3 **stage4_fountain_pos(vec3 pos, float maxrange) {

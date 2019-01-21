@@ -14,6 +14,8 @@
 #define DEG2RAD (M_PI/180.0)
 #define RAD2DEG (180.0/M_PI)
 
+double lerp(double v0, double v1, double f) attr_const;
+complex clerp(complex v0, complex v1, double f) attr_const;
 intmax_t imin(intmax_t, intmax_t) attr_const;
 intmax_t imax(intmax_t, intmax_t) attr_const;
 intmax_t iclamp(intmax_t, intmax_t, intmax_t) attr_const;

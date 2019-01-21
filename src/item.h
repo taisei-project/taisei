@@ -37,6 +37,7 @@ struct Item {
 	ENTITY_INTERFACE_NAMED(Item, ent);
 
 	int birthtime;
+	int collecttime;
 	complex pos;
 	complex pos0;
 
@@ -63,8 +64,8 @@ void spawn_item(complex pos, ItemType type);
 // WARNING: if you pass a float or double as the amount, it will not work! You must explicitly cast it to an int.
 void spawn_items(complex pos, ...) attr_sentinel;
 
-bool collect_item(Item *item, float value, float speed);
-void collect_all_items(float value, float speed);
+bool collect_item(Item *item, float value, float speed, int delay);
+void collect_all_items(float value, float speed, int delay);
 
 void items_preload(void);
 

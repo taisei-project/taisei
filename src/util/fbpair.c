@@ -22,11 +22,21 @@ static void fbpair_resize_fb(Framebuffer *fb, FramebufferAttachment attachment, 
 	fbutil_resize_attachment(fb, attachment, width, height);
 }
 
-void fbpair_create(FBPair *pair, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
+void fbpair_create(FBPair *pair, uint num_attachments, FBAttachmentConfig attachments[num_attachments], const char *debug_label) {
 	assert(num_attachments > 0 && num_attachments <= FRAMEBUFFER_MAX_ATTACHMENTS);
 	memset(pair, 0, sizeof(*pair));
-	fbutil_create_attachments(pair->front = r_framebuffer_create(), num_attachments, attachments);
-	fbutil_create_attachments(pair->back  = r_framebuffer_create(), num_attachments, attachments);
+
+	char buf[R_DEBUG_LABEL_SIZE];
+
+	snprintf(buf, sizeof(buf), "%s FB 1", debug_label);
+	pair->front = r_framebuffer_create();
+	r_framebuffer_set_debug_label(pair->front, buf);
+	fbutil_create_attachments(pair->front, num_attachments, attachments);
+
+	snprintf(buf, sizeof(buf), "%s FB 2", debug_label);
+	pair->back = r_framebuffer_create();
+	r_framebuffer_set_debug_label(pair->back, buf);
+	fbutil_create_attachments(pair->back, num_attachments, attachments);
 }
 
 void fbpair_destroy(FBPair *pair) {

@@ -51,6 +51,13 @@ enum {
 	PLR_POWERSURGE_POWERCOST = 100,
 };
 
+static const float PLR_POWERSURGE_POSITIVE_DRAIN_MAX = (0.15 / 60.0);
+static const float PLR_POWERSURGE_POSITIVE_DRAIN_MIN = (0.15 / 60.0);
+static const float PLR_POWERSURGE_NEGATIVE_DRAIN_MAX = (0.10 / 60.0);
+static const float PLR_POWERSURGE_NEGATIVE_DRAIN_MIN = (0.01 / 60.0);
+static const float PLR_POWERSURGE_POSITIVE_GAIN      = (1.50 / 60.0);
+static const float PLR_POWERSURGE_NEGATIVE_GAIN      = (0.20 / 60.0);
+
 typedef enum {
 	// do not reorder these or you'll break replays
 
@@ -83,10 +90,12 @@ struct Player {
 	EnemyList focus_circle;
 
 	struct {
-		int ticks;
+		float positive;
+		float negative;
 		struct {
 			int activated, expired;
 		} time;
+		int bonus;
 		double damage_done;
 	} powersurge;
 
@@ -178,7 +187,7 @@ void player_add_lives(Player *plr, int lives);
 void player_add_bombs(Player *plr, int bombs);
 void player_add_points(Player *plr, uint points);
 void player_add_piv(Player *plr, uint piv);
-void player_extend_powersurge(Player *plr, int ticks);
+void player_extend_powersurge(Player *plr, float pos, float neg);
 
 void player_register_damage(Player *plr, EntityInterface *target, const DamageInfo *damage);
 
@@ -186,14 +195,18 @@ void player_cancel_bomb(Player *plr, int delay);
 void player_cancel_powersurge(Player *plr);
 void player_placeholder_bomb_logic(Player *plr);
 
-
 bool player_is_bomb_active(Player *plr);
 bool player_is_powersurge_active(Player *plr);
 bool player_is_vulnerable(Player *plr);
 bool player_is_alive(Player *plr);
 
+uint player_powersurge_calc_bonus(Player *plr);
+uint player_powersurge_calc_bonus_rate(Player *plr);
+
 // Progress is normalized from 0: bomb start to 1: bomb end
 double player_get_bomb_progress(Player *plr, double *out_speed);
+
+void player_damage_hook(Player *plr, EntityInterface *target, DamageInfo *dmg);
 
 void player_preload(void);
 

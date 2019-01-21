@@ -69,6 +69,7 @@ Item* create_item(complex pos, complex v, ItemType type) {
 	i->v = v;
 	i->birthtime = global.frames;
 	i->auto_collect = 0;
+	i->collecttime = 0;
 	i->type = type;
 
 	i->ent.draw_layer = LAYER_ITEM | i->type;
@@ -84,7 +85,7 @@ void delete_item(Item *item) {
 }
 
 Item* create_bpoint(complex pos) {
-	Item *i = create_item(pos, 0, BPoint);
+	Item *i = create_item(pos, -10*I + 5*nfrand(), BPoint);
 
 	if(i) {
 		PARTICLE(
@@ -94,7 +95,7 @@ Item* create_bpoint(complex pos) {
 			.draw_rule = Fade,
 			.layer = LAYER_BULLET+1
 		);
-		collect_item(i, 1, 10);
+		collect_item(i, 1, 10, 20);
 	}
 
 	return i;
@@ -113,7 +114,7 @@ static complex move_item(Item *i) {
 
 	complex oldpos = i->pos;
 
-	if(i->auto_collect) {
+	if(i->auto_collect && i->collecttime <= global.frames && global.frames - i->birthtime > 20) {
 		i->pos -= (7+i->auto_collect)*cexp(I*carg(i->pos - global.plr.pos));
 	} else {
 		i->pos = i->pos0 + log(t/5.0 + 1)*5*(i->v + lim) + lim*t;
@@ -147,20 +148,27 @@ static bool item_out_of_bounds(Item *item) {
 	);
 }
 
-bool collect_item(Item *item, float value, float speed) {
-	if(item->auto_collect || !player_is_alive(&global.plr)) {
+bool collect_item(Item *item, float value, float speed, int delay) {
+	if(!player_is_alive(&global.plr)) {
 		return false;
 	}
 
-	item->auto_collect = speed;
-	item->pickup_value = clamp(value, ITEM_MIN_VALUE, ITEM_MAX_VALUE);
+	if(item->auto_collect) {
+		item->auto_collect = imax(speed, item->auto_collect);
+		item->pickup_value = max(clamp(value, ITEM_MIN_VALUE, ITEM_MAX_VALUE), item->pickup_value);
+		item->collecttime = imin(global.frames + delay, item->collecttime);
+	} else {
+		item->auto_collect = speed;
+		item->pickup_value = clamp(value, ITEM_MIN_VALUE, ITEM_MAX_VALUE);
+		item->collecttime = global.frames + delay;
+	}
 
 	return true;
 }
 
-void collect_all_items(float value, float speed) {
+void collect_all_items(float value, float speed, int delay) {
 	for(Item *i = global.items.first; i; i = i->next) {
-		collect_item(i, value, speed);
+		collect_item(i, value, speed, delay);
 	}
 }
 
@@ -176,7 +184,17 @@ void process_items(void) {
 			item->type = BPoint;
 		}
 
-		if(global.stage->type == STAGE_SPELL && (item->type == Life || item->type == Bomb)) {
+		if(item->type == MiniPower && global.plr.power == PLR_MAX_POWER) {
+			item->type = BPoint;
+
+			if(collect_item(item, 1, 1, 20)) {
+				item->pos0 = item->pos;
+				item->birthtime = global.frames;
+				item->v = -20*I + 10*nfrand();
+			}
+		}
+
+		if(global.stage->type == STAGE_SPELL && (item->type == Life || item->type == Bomb || item->type == LifeFrag || item->type == BombFrag)) {
 			// just in case we ever have some weird spell that spawns those...
 			item->type = Point;
 		}
@@ -188,9 +206,9 @@ void process_items(void) {
 		if(may_collect) {
 			if(plr_alive) {
 				if(cimag(global.plr.pos) < player_property(&global.plr, PLR_PROP_POC)) {
-					collect_item(item, 1, 1);
+					collect_item(item, 1, 1, 0);
 				} else if(cabs(global.plr.pos - item->pos) < r) {
-					collect_item(item, 1 - cimag(global.plr.pos) / VIEWPORT_H, 1);
+					collect_item(item, 1 - cimag(global.plr.pos) / VIEWPORT_H, 1, 0);
 				}
 			} else if(item->auto_collect) {
 				item->auto_collect = 0;
@@ -208,7 +226,7 @@ void process_items(void) {
 			case Power:
 				player_add_power(&global.plr, POWER_VALUE);
 				player_add_points(&global.plr, 25);
-				player_extend_powersurge(&global.plr, 24);
+				player_extend_powersurge(&global.plr, PLR_POWERSURGE_POSITIVE_GAIN*3, PLR_POWERSURGE_NEGATIVE_GAIN*3);
 				play_sound("item_generic");
 				break;
 			case MiniPower:
@@ -217,7 +235,7 @@ void process_items(void) {
 				play_sound("item_generic");
 				break;
 			case Surge:
-				player_extend_powersurge(&global.plr, 8);
+				player_extend_powersurge(&global.plr, PLR_POWERSURGE_POSITIVE_GAIN, PLR_POWERSURGE_NEGATIVE_GAIN);
 				player_add_points(&global.plr, 25);
 				play_sound("item_generic");
 				break;

@@ -18,6 +18,18 @@
 static void ent_draw_boss(EntityInterface *ent);
 static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg);
 
+typedef struct SpellBonus {
+	int clear;
+	int time;
+	int survival;
+	int endurance;
+	float diff_multiplier;
+	int total;
+	bool failed;
+} SpellBonus;
+
+static void calc_spell_bonus(Attack *a, SpellBonus *bonus);
+
 Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 	Boss *buf = calloc(1, sizeof(Boss));
 
@@ -439,17 +451,55 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	StageProgress *p = get_spellstage_progress(b->current, NULL, false);
 
 	if(p) {
-		char buf[16];
+		char buf[32];
 		float a = clamp((global.frames - b->current->starttime - 60) / 60.0, 0, 1);
-		snprintf(buf, sizeof(buf), "%u / %u", p->num_cleared, p->num_played);
-
 		font = get_font("small");
 
+		float bonus_ofs = 220;
+
+		r_mat_push();
+		r_mat_translate(
+			bonus_ofs * pow(1 - a, 2),
+			font_get_lineskip(font) + y_offset + y_text_offset + 0.5,
+		0);
+
+		bool kern = font_get_kerning_enabled(font);
+		font_set_kerning_enabled(font, false);
+
+		snprintf(buf, sizeof(buf), "%u / %u", p->num_cleared, p->num_played);
+
 		draw_boss_text(ALIGN_RIGHT,
-			(VIEWPORT_W - 10) + (text_width(font, buf, 0) + 10) * pow(1 - a, 2),
-			text_height(font, buf, 0) + y_offset + y_text_offset,
-			buf, font, color_mul_scalar(RGBA(1, 1, 1, 1), a * opacity)
+			VIEWPORT_W - 10 - text_width(font, buf, 0), 0,
+			"History: ", font, color_mul_scalar(RGB(0.75, 0.75, 0.75), a * opacity)
 		);
+
+		draw_boss_text(ALIGN_RIGHT,
+			VIEWPORT_W - 10, 0,
+			buf, font, color_mul_scalar(RGB(0.50, 1.00, 0.50), a * opacity)
+		);
+
+		// r_mat_translate(0, 6.5, 0);
+
+		bonus_ofs -= draw_boss_text(ALIGN_LEFT,
+			VIEWPORT_W - bonus_ofs, 0,
+			"Bonus: ", font, color_mul_scalar(RGB(0.75, 0.75, 0.75), a * opacity)
+		);
+
+		SpellBonus bonus;
+		calc_spell_bonus(b->current, &bonus);
+		format_huge_num(floor(log10(bonus.total) + 1), bonus.total, sizeof(buf), buf);
+
+		draw_boss_text(ALIGN_LEFT,
+			VIEWPORT_W - bonus_ofs, 0,
+			buf, font, color_mul_scalar(
+				bonus.failed ? RGB(1.00, 0.50, 0.50)
+				             : RGB(0.30, 0.60, 1.00)
+			, a * opacity)
+		);
+
+		font_set_kerning_enabled(font, kern);
+
+		r_mat_pop();
 	}
 }
 
@@ -731,53 +781,59 @@ static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg)
 	return DMG_RESULT_OK;
 }
 
-static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
-	bool fail = a->failtime, extra = a->type == AT_ExtraSpell;
-
-	const char *title = extra ?
-	                    (fail ? "Extra Spell failed..." : "Extra Spell cleared!"):
-	                    (fail ?       "Spell failed..." :       "Spell cleared!");
+static void calc_spell_bonus(Attack *a, SpellBonus *bonus) {
+	bonus->failed = a->failtime > 0;
 
 	int time_left = max(0, a->starttime + a->timeout - global.frames);
-
 	double sv = a->scorevalue;
 
-	int clear_bonus = 0.5 * sv * !fail;
-	int time_bonus = sv * (time_left / (double)a->timeout);
-	int endurance_bonus = 0;
-	int surv_bonus = 0;
+	bonus->clear = 0.5 * sv * !bonus->failed;
+	bonus->time = sv * (time_left / (double)a->timeout);
+	bonus->endurance = 0;
+	bonus->survival = 0;
 
-	if(fail) {
-		time_bonus /= 4;
-		endurance_bonus = sv * 0.1 * (max(0, a->failtime - a->starttime) / (double)a->timeout);
+	if(bonus->failed) {
+		bonus->time /= 4;
+		bonus->endurance = sv * 0.1 * (max(0, a->failtime - a->starttime) / (double)a->timeout);
 	} else if(a->type == AT_SurvivalSpell) {
-		surv_bonus = sv * (1.0 + 0.02 * (a->timeout / (double)FPS));
+		bonus->survival = sv * (1.0 + 0.02 * (a->timeout / (double)FPS));
 	}
 
-	int total = time_bonus + surv_bonus + endurance_bonus + clear_bonus;
-	float diff_bonus = 0.6 + 0.2 * global.diff;
-	total *= diff_bonus;
+	bonus->total = bonus->clear + bonus->time + bonus->endurance + bonus->survival;
+	bonus->diff_multiplier = 0.6 + 0.2 * global.diff;
+	bonus->total *= bonus->diff_multiplier;
+}
+
+static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
+	SpellBonus bonus = { 0 };
+	calc_spell_bonus(a, &bonus);
+
+	bool extra = a->type == AT_ExtraSpell;
+
+	const char *title = extra ?
+	                    (bonus.failed ? "Extra Spell failed..." : "Extra Spell cleared!"):
+	                    (bonus.failed ?       "Spell failed..." :       "Spell cleared!");
 
 	char diff_bonus_text[6];
-	snprintf(diff_bonus_text, sizeof(diff_bonus_text), "x%.2f", diff_bonus);
+	snprintf(diff_bonus_text, sizeof(diff_bonus_text), "x%.2f", bonus.diff_multiplier);
 
-	player_add_points(plr, total);
+	player_add_points(plr, bonus.total);
 
 	StageTextTable tbl;
 	stagetext_begin_table(&tbl, title, RGB(1, 1, 1), RGB(1, 1, 1), VIEWPORT_W/2, 0,
 		ATTACK_END_DELAY_SPELL * 2, ATTACK_END_DELAY_SPELL / 2, ATTACK_END_DELAY_SPELL);
-	stagetext_table_add_numeric_nonzero(&tbl, "Clear bonus", clear_bonus);
-	stagetext_table_add_numeric_nonzero(&tbl, "Time bonus", time_bonus);
-	stagetext_table_add_numeric_nonzero(&tbl, "Survival bonus", surv_bonus);
-	stagetext_table_add_numeric_nonzero(&tbl, "Endurance bonus", endurance_bonus);
+	stagetext_table_add_numeric_nonzero(&tbl, "Clear bonus", bonus.clear);
+	stagetext_table_add_numeric_nonzero(&tbl, "Time bonus", bonus.time);
+	stagetext_table_add_numeric_nonzero(&tbl, "Survival bonus", bonus.survival);
+	stagetext_table_add_numeric_nonzero(&tbl, "Endurance bonus", bonus.endurance);
 	stagetext_table_add_separator(&tbl);
 	stagetext_table_add(&tbl, "Diff. multiplier", diff_bonus_text);
-	stagetext_table_add_numeric(&tbl, "Total", total);
+	stagetext_table_add_numeric(&tbl, "Total", bonus.total);
 	stagetext_end_table(&tbl);
 
 	play_sound("spellend");
 
-	if(!fail) {
+	if(!bonus.failed) {
 		play_sound("spellclear");
 	}
 }
@@ -1188,10 +1244,10 @@ Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 	a->starttime = global.frames;
 
 	// FIXME: figure out a better value/formula, i pulled this out of my ass
-	a->scorevalue = 2000.0 + hp * 0.6;
+	a->scorevalue = (2000.0 + hp * 0.6) * 10;
 
 	if(a->type == AT_ExtraSpell) {
-		a->scorevalue *= 1.25;
+		a->scorevalue *= 1.5;
 	}
 
 	return a;

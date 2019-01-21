@@ -13,6 +13,14 @@
 
 #include <stdlib.h>
 
+double lerp(double v0, double v1, double f) {
+	return f * (v1 - v0) + v0;
+}
+
+complex clerp(complex v0, complex v1, double f) {
+	return f * (v1 - v0) + v0;
+}
+
 double approach(double v, double t, double d) {
 	if(v < t) {
 		v += d;

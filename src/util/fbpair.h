@@ -31,7 +31,7 @@ typedef struct FBAttachmentConfig {
 	TextureParams tex_params;
 } FBAttachmentConfig;
 
-void fbpair_create(FBPair *pair, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) attr_nonnull(1, 3);
+void fbpair_create(FBPair *pair, uint num_attachments, FBAttachmentConfig attachments[num_attachments], const char *debug_label) attr_nonnull(1, 3);
 void fbpair_resize(FBPair *pair, FramebufferAttachment attachment, uint width, uint height) attr_nonnull(1);
 void fbpair_resize_all(FBPair *pair, uint width, uint height) attr_nonnull(1);
 void fbpair_destroy(FBPair *pair) attr_nonnull(1);

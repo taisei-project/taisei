@@ -56,6 +56,7 @@ static struct {
 
 	PostprocessShader *viewport_pp;
 	FBPair fb_pairs[NUM_FBPAIRS];
+	FBPair powersurge_fbpair;
 	CustomFramebuffer *custom_fbs;
 
 	bool framerate_graphs;
@@ -159,6 +160,7 @@ static bool stage_draw_event(SDL_Event *e, void *arg) {
 				case CONFIG_POSTPROCESS:
 				case CONFIG_BG_QUALITY:
 					update_fb_size(FBPAIR_BG);
+					update_fb_size(FBPAIR_BG_AUX);
 					// fallthrough
 
 				case CONFIG_FG_QUALITY:
@@ -175,7 +177,10 @@ static bool stage_draw_event(SDL_Event *e, void *arg) {
 }
 
 static void stage_draw_setup_framebuffers(void) {
-	int fg_width, fg_height, bg_width, bg_height, fga_width, fga_height;
+	int fg_width, fg_height;
+	int bg_width, bg_height;
+	int fga_width, fga_height;
+	int bga_width, bga_height;
 	FBAttachmentConfig a[2], *a_color, *a_depth;
 	memset(a, 0, sizeof(a));
 
@@ -188,6 +193,7 @@ static void stage_draw_setup_framebuffers(void) {
 	set_fb_size(FBPAIR_FG, &fg_width, &fg_height, 1, 1);
 	set_fb_size(FBPAIR_FG_AUX, &fga_width, &fga_height, 1, 1);
 	set_fb_size(FBPAIR_BG, &bg_width, &bg_height, 1, 1);
+	set_fb_size(FBPAIR_BG_AUX, &bga_width, &bga_height, 1, 1);
 
 	// Set up some parameters shared by all attachments
 	TextureParams tex_common = {
@@ -204,19 +210,15 @@ static void stage_draw_setup_framebuffers(void) {
 	a_color->tex_params.type = TEX_TYPE_RGB_16;
 	a_color->tex_params.width = fg_width;
 	a_color->tex_params.height = fg_height;
-	fbpair_create(stagedraw.fb_pairs + FBPAIR_FG, 1, a);
+	fbpair_create(stagedraw.fb_pairs + FBPAIR_FG, 1, a, "Stage FG");
 	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_FG, 0, 0, fg_width, fg_height);
-	r_framebuffer_set_debug_label(stagedraw.fb_pairs[FBPAIR_FG].front, "Stage FG FB 1");
-	r_framebuffer_set_debug_label(stagedraw.fb_pairs[FBPAIR_FG].back, "Stage FG FB 2");
 
 	// Foreground auxiliary: 1 RGBA texture per FB
 	a_color->tex_params.type = TEX_TYPE_RGBA;
 	a_color->tex_params.width = fga_width;
 	a_color->tex_params.height = fga_height;
-	fbpair_create(stagedraw.fb_pairs + FBPAIR_FG_AUX, 1, a);
+	fbpair_create(stagedraw.fb_pairs + FBPAIR_FG_AUX, 1, a, "Stage FG AUX");
 	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_FG_AUX, 0, 0, fga_width, fga_height);
-	r_framebuffer_set_debug_label(stagedraw.fb_pairs[FBPAIR_FG_AUX].front, "Stage FG AUX FB 1");
-	r_framebuffer_set_debug_label(stagedraw.fb_pairs[FBPAIR_FG_AUX].back, "Stage FG AUX FB 2");
 
 	// Background: 1 RGB texture + depth per FB
 	a_color->tex_params.type = TEX_TYPE_RGB;
@@ -225,10 +227,20 @@ static void stage_draw_setup_framebuffers(void) {
 	a_depth->tex_params.type = TEX_TYPE_DEPTH;
 	a_depth->tex_params.width = bg_width;
 	a_depth->tex_params.height = bg_height;
-	fbpair_create(stagedraw.fb_pairs + FBPAIR_BG, 2, a);
+	fbpair_create(stagedraw.fb_pairs + FBPAIR_BG, 2, a, "Stage BG");
 	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_BG, 0, 0, bg_width, bg_height);
-	r_framebuffer_set_debug_label(stagedraw.fb_pairs[FBPAIR_BG].front, "Stage BG FB 1");
-	r_framebuffer_set_debug_label(stagedraw.fb_pairs[FBPAIR_BG].back, "Stage BG FB 2");
+
+	// Background auxiliary: 1 RGB texture per FB
+	a_color->tex_params.type = TEX_TYPE_RGB_8;
+	a_color->tex_params.width = bga_width;
+	a_color->tex_params.height = bga_height;
+	fbpair_create(stagedraw.fb_pairs + FBPAIR_BG_AUX, 1, a, "Stage BG AUX");
+	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_BG_AUX, 0, 0, bga_width, bga_height);
+
+	// CAUTION: should be at least 16-bit, lest the feedback shader do an oopsie!
+	a_color->tex_params.type = TEX_TYPE_RGBA_16;
+	stagedraw.powersurge_fbpair.front = stage_add_background_framebuffer("Powersurge effect FB 1", 0.125, 0.25, 1, a);
+	stagedraw.powersurge_fbpair.back  = stage_add_background_framebuffer("Powersurge effect FB 2", 0.125, 0.25, 1, a);
 }
 
 static Framebuffer* add_custom_framebuffer(const char *label, StageFBPair fbtype, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
@@ -250,10 +262,10 @@ static Framebuffer* add_custom_framebuffer(const char *label, StageFBPair fbtype
 	}
 
 	cfb->fb = r_framebuffer_create();
+	r_framebuffer_set_debug_label(cfb->fb, label);
 	fbutil_create_attachments(cfb->fb, num_attachments, cfg);
 	r_framebuffer_viewport(cfb->fb, 0, 0, width, height);
 	r_framebuffer_clear(cfb->fb, CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
-	r_framebuffer_set_debug_label(cfb->fb, label);
 
 	return cfb->fb;
 }
@@ -291,6 +303,7 @@ void stage_draw_init(void) {
 	NULL);
 
 	preload_resources(RES_TEXTURE, RESF_PERMANENT,
+		"powersurge_flow",
 		"titletransition",
 		"hud",
 	NULL);
@@ -300,11 +313,13 @@ void stage_draw_init(void) {
 	NULL);
 
 	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
+		"copy_depth",
+		"ingame_menu",
+		"powersurge_effect",
+		"powersurge_feedback",
+		"sprite_circleclipped_indicator",
 		"text_hud",
 		"text_stagetext",
-		"ingame_menu",
-		"sprite_circleclipped_indicator",
-		"copy_depth",
 
 		// TODO: Maybe don't preload this if FXAA is disabled.
 		// But then we also have to handle the edge case of it being enabled later mid-game.
@@ -436,8 +451,10 @@ static void apply_shader_rules(ShaderRule *shaderrules, FBPair *fbos) {
 
 	for(ShaderRule *rule = shaderrules; *rule; ++rule) {
 		r_framebuffer(fbos->back);
-		(*rule)(fbos->front);
-		fbpair_swap(fbos);
+
+		if((*rule)(fbos->front)) {
+			fbpair_swap(fbos);
+		}
 	}
 
 	return;
@@ -454,7 +471,8 @@ static void draw_wall_of_text(float f, const char *txt) {
 	text_render(buf, get_font("standard"), &spr, &bbox);
 
 	// FIXME: The shader currently assumes that the sprite takes up the entire texture.
-	// If it could handle any arbitrary sprite, then text_render wouldn't have to resize // the texture per every new string of text.
+	// If it could handle any arbitrary sprite, then text_render wouldn't have to resize
+	// the texture per every new string of text.
 
 	float w = VIEWPORT_W;
 	float h = VIEWPORT_H;
@@ -501,6 +519,13 @@ static void draw_spellbg(int t) {
 	draw_sprite(0, 0, "boss_spellcircle0");
 	r_mat_pop();
 
+	r_mat_pop();
+}
+
+static void draw_spellbg_overlay(int t) {
+	r_mat_push();
+	Boss *b = global.boss;
+
 	float delay = ATTACK_START_DELAY;
 
 	if(b->current->type == AT_ExtraSpell) {
@@ -509,6 +534,7 @@ static void draw_spellbg(int t) {
 
 	{
 		float f = (-t+ATTACK_START_DELAY) / (delay+ATTACK_START_DELAY);
+
 		if(f > 0) {
 			draw_wall_of_text(f, b->current->name);
 		}
@@ -543,23 +569,119 @@ static inline bool should_draw_stage_bg(void) {
 	);
 }
 
-static void fxaa_rule(Framebuffer *fb) {
+static bool fxaa_rule(Framebuffer *fb) {
 	r_state_push();
 	r_enable(RCAP_DEPTH_TEST);
 	r_depth_func(DEPTH_ALWAYS);
+	r_blend(BLEND_NONE);
 	r_shader_ptr(stagedraw.shaders.fxaa);
 	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_state_pop();
+
+	return true;
 }
 
-static void copydepth_rule(Framebuffer *fb) {
+static bool copydepth_rule(Framebuffer *fb) {
 	r_state_push();
 	r_enable(RCAP_DEPTH_TEST);
 	r_depth_func(DEPTH_ALWAYS);
+	r_blend(BLEND_NONE);
 	r_shader_ptr(stagedraw.shaders.copy_depth);
 	draw_framebuffer_attachment(fb, VIEWPORT_W, VIEWPORT_H, FRAMEBUFFER_ATTACH_DEPTH);
 	r_state_pop();
+
+	return false;
+}
+
+static bool powersurge_draw_predicate(EntityInterface *ent) {
+	uint layer = ent->draw_layer & ~LAYER_LOW_MASK;
+
+	switch(layer) {
+		case LAYER_PLAYER_SLAVE:
+		case LAYER_PLAYER_SHOT:
+		case LAYER_PLAYER_FOCUS:
+		case LAYER_PLAYER:
+			return true;
+	}
+
+	if(ent->type == ENT_PROJECTILE) {
+		Projectile *p = ENT_CAST(ent, Projectile);
+		return p->flags & PFLAG_PLRSPECIALPARTICLE;
+	}
+
+	return false;
+}
+
+static bool powersurge_rule(Framebuffer *fb) {
+	Framebuffer *target_fb = r_framebuffer_current();
+
+	r_state_push();
+	r_blend(BLEND_NONE);
+	r_disable(RCAP_DEPTH_TEST);
+
+	if(player_is_powersurge_active(&global.plr)) {
+		r_state_push();
+		r_framebuffer(stagedraw.powersurge_fbpair.front);
+		r_blend(BLEND_PREMUL_ALPHA);
+		r_shader("sprite_default");
+		ent_draw(powersurge_draw_predicate);
+		r_state_pop();
+	}
+
+	// TODO: Add heuristic to not run the effect if the buffer can be reasonably assumed to be empty.
+
+	r_shader("powersurge_feedback");
+	r_uniform_vec2("blur_resolution", 0.5*VIEWPORT_W, 0.5*VIEWPORT_H);
+
+	r_framebuffer(stagedraw.powersurge_fbpair.back);
+	r_uniform_vec2("blur_direction", 1, 0);
+	r_uniform_vec4("fade", 1, 1, 1, 1);
+	draw_framebuffer_tex(stagedraw.powersurge_fbpair.front, VIEWPORT_W, VIEWPORT_H);
+	fbpair_swap(&stagedraw.powersurge_fbpair);
+
+	r_framebuffer(stagedraw.powersurge_fbpair.back);
+	r_uniform_vec2("blur_direction", 0, 1);
+	r_uniform_vec4("fade", 0.9, 0.9, 0.9, 0.9);
+	draw_framebuffer_tex(stagedraw.powersurge_fbpair.front, VIEWPORT_W, VIEWPORT_H);
+
+	r_framebuffer(target_fb);
+	r_shader("powersurge_effect");
+	r_uniform_sampler("shotlayer", r_framebuffer_get_attachment(stagedraw.powersurge_fbpair.back, FRAMEBUFFER_ATTACH_COLOR0));
+	r_uniform_sampler("flowlayer", "powersurge_flow");
+	r_uniform_float("time", global.frames/60.0);
+	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
+	fbpair_swap(&stagedraw.powersurge_fbpair);
+
+	r_state_pop();
+
+	return true;
+}
+
+static bool boss_distortion_rule(Framebuffer *fb) {
+	if(global.boss == NULL) {
+		return false;
+	}
+
+	r_state_push();
+	r_blend(BLEND_NONE);
+	r_disable(RCAP_DEPTH_TEST);
+
+	complex fpos = global.boss->pos;
+	complex pos = fpos + 15*cexp(I*global.frames/4.5);
+
+	r_shader("boss_zoom");
+	r_uniform_vec2("blur_orig", creal(pos)  / VIEWPORT_W,  1-cimag(pos)  / VIEWPORT_H);
+	r_uniform_vec2("fix_orig",  creal(fpos) / VIEWPORT_W,  1-cimag(fpos) / VIEWPORT_H);
+	r_uniform_float("blur_rad", 1.5*(0.2+0.025*sin(global.frames/15.0)));
+	r_uniform_float("rad", 0.24);
+	r_uniform_float("ratio", (float)VIEWPORT_H/VIEWPORT_W);
+	r_uniform_vec4_rgba("color", &global.boss->zoomcolor);
+	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
+
+	r_state_pop();
+
+	return true;
 }
 
 static void finish_3d_scene(FBPair *fbpair) {
@@ -582,106 +704,91 @@ static void finish_3d_scene(FBPair *fbpair) {
 	// but that would require a bit of refactoring. This is the simplest solution
 	// as far as I can tell.
 
-	if(config_get_int(CONFIG_FXAA)) {
-		apply_shader_rules((ShaderRule[]) { fxaa_rule, NULL }, fbpair);
-	} else {
-		apply_shader_rules((ShaderRule[]) { copydepth_rule, NULL }, fbpair);
-		// Swap because we didn't touch the color buffer.
-		fbpair_swap(fbpair);
-	}
+	apply_shader_rules((ShaderRule[]) {
+		config_get_int(CONFIG_FXAA)
+			? fxaa_rule
+			: copydepth_rule,
+		NULL
+	}, fbpair);
+}
+
+static void draw_full_spellbg(int t, FBPair *fbos) {
+	r_framebuffer(fbos->back);
+	draw_spellbg(t);
+	fbpair_swap(fbos);
+	apply_shader_rules((ShaderRule[]) { boss_distortion_rule, NULL }, fbos);
+	draw_spellbg_overlay(t);
 }
 
 static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 	Boss *b = global.boss;
-	if(b && b->current && b->current->draw_rule) {
-		int t = global.frames - b->current->starttime;
 
-		set_ortho(VIEWPORT_W, VIEWPORT_H);
-
-		if(should_draw_stage_bg()) {
-			finish_3d_scene(fbos);
-			apply_shader_rules(shaderrules, fbos);
-		}
-
-		r_framebuffer(fbos->back);
-		draw_framebuffer_tex(fbos->front, VIEWPORT_W, VIEWPORT_H);
-		draw_spellbg(t);
-		fbpair_swap(fbos);
-		r_framebuffer(fbos->back);
-
-		complex pos = b->pos;
-		float ratio = (float)VIEWPORT_H/VIEWPORT_W;
-
-		if(t<ATTACK_START_DELAY) {
-			r_shader("spellcard_intro");
-
-			r_uniform_float("ratio", ratio);
-			r_uniform_vec2("origin", creal(pos)/VIEWPORT_W, 1-cimag(pos)/VIEWPORT_H);
-
-			float delay = ATTACK_START_DELAY;
-			if(b->current->type == AT_ExtraSpell)
-				delay = ATTACK_START_DELAY_EXTRA;
-			float duration = ATTACK_START_DELAY_EXTRA;
-
-			r_uniform_float("t", (t+delay)/duration);
-		} else if(b->current->endtime) {
-			int tn = global.frames - b->current->endtime;
-			ShaderProgram *shader = r_shader_get("spellcard_outro");
-			r_shader_ptr(shader);
-
-			float delay = ATTACK_END_DELAY;
-
-			if(boss_is_dying(b)) {
-				delay = BOSS_DEATH_DELAY;
-			} else if(b->current->type == AT_ExtraSpell) {
-				delay = ATTACK_END_DELAY_EXTRA;
-			}
-
-			r_uniform_float("ratio", ratio);
-			r_uniform_vec2("origin", creal(pos)/VIEWPORT_W, 1-cimag(pos)/VIEWPORT_H);
-			r_uniform_float("t", max(0,tn/delay+1));
-		} else {
-			r_shader_standard();
-		}
-
-		draw_framebuffer_tex(fbos->front, VIEWPORT_W, VIEWPORT_H);
-		fbpair_swap(fbos);
-		r_framebuffer(NULL);
-		r_shader_standard();
-	} else if(should_draw_stage_bg()) {
-		set_ortho(VIEWPORT_W, VIEWPORT_H);
+	if(should_draw_stage_bg()) {
 		finish_3d_scene(fbos);
 		apply_shader_rules(shaderrules, fbos);
 	}
-}
 
-static void apply_zoom_shader(void) {
-	r_shader("boss_zoom");
+	if(b && b->current && b->current->draw_rule) {
+		int t = global.frames - b->current->starttime;
 
-	complex fpos = global.boss->pos;
-	complex pos = fpos + 15*cexp(I*global.frames/4.5);
+		bool trans_intro = t < ATTACK_START_DELAY;
+		bool trans_outro = b->current->endtime;
 
-	r_uniform_vec2("blur_orig", creal(pos)  / VIEWPORT_W,  1-cimag(pos)  / VIEWPORT_H);
-	r_uniform_vec2("fix_orig",  creal(fpos) / VIEWPORT_W,  1-cimag(fpos) / VIEWPORT_H);
+		if(!trans_intro && !trans_outro) {
+			draw_full_spellbg(t, fbos);
+		} else {
+			FBPair *aux = stage_get_fbpair(FBPAIR_BG_AUX);
+			draw_full_spellbg(t, aux);
 
-	float spellcard_sup = 1;
-	// This factor is used to surpress the effect near the start of spell cards.
-	// This is necessary so it doesn’t distort the awesome spinning background effect.
+			apply_shader_rules((ShaderRule[]) { boss_distortion_rule, NULL }, fbos);
+			fbpair_swap(fbos);
+			r_framebuffer(fbos->back);
 
-	if(global.boss->current && global.boss->current->draw_rule) {
-		float t = (global.frames - global.boss->current->starttime + ATTACK_START_DELAY)/(float)ATTACK_START_DELAY;
-		spellcard_sup = 1-1/(0.1*t*t+1);
+			complex pos = b->pos;
+			float ratio = (float)VIEWPORT_H/VIEWPORT_W;
+			float delay;
+
+			if(trans_intro) {
+				float duration = ATTACK_START_DELAY_EXTRA;
+
+				if(b->current->type == AT_ExtraSpell) {
+					delay = ATTACK_START_DELAY_EXTRA;
+				} else {
+					delay = ATTACK_START_DELAY;
+				}
+
+				r_shader("spellcard_intro");
+				r_uniform_float("ratio", ratio);
+				r_uniform_vec2("origin", creal(pos) / VIEWPORT_W, 1 - cimag(pos) / VIEWPORT_H);
+				r_uniform_float("t", (t + delay) / duration);
+			} else {
+				int tn = global.frames - b->current->endtime;
+
+				if(boss_is_dying(b)) {
+					delay = BOSS_DEATH_DELAY;
+				} else if(b->current->type == AT_ExtraSpell) {
+					delay = ATTACK_END_DELAY_EXTRA;
+				} else {
+					delay = ATTACK_END_DELAY;
+				}
+
+				r_shader("spellcard_outro");
+				r_uniform_float("ratio", ratio);
+				r_uniform_vec2("origin", creal(pos) / VIEWPORT_W, 1 - cimag(pos) / VIEWPORT_H);
+				r_uniform_float("t", max(0, tn / delay + 1));
+			}
+
+			draw_framebuffer_tex(aux->front, VIEWPORT_W, VIEWPORT_H);
+			fbpair_swap(fbos);
+		}
+	} else {
+		apply_shader_rules((ShaderRule[]) { boss_distortion_rule, NULL }, fbos);
 	}
 
-	if(boss_is_dying(global.boss)) {
-		float t = (global.frames - global.boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
-		spellcard_sup = 1-t*t;
-	}
-
-	r_uniform_float("blur_rad", 1.5*spellcard_sup*(0.2+0.025*sin(global.frames/15.0)));
-	r_uniform_float("rad", 0.24);
-	r_uniform_float("ratio", (float)VIEWPORT_H/VIEWPORT_W);
-	r_uniform_vec4_rgba("color", &global.boss->zoomcolor);
+	apply_shader_rules((ShaderRule[]) {
+		powersurge_rule,
+		NULL
+	}, fbos);
 }
 
 static void stage_render_bg(StageInfo *stage) {
@@ -699,9 +806,10 @@ static void stage_render_bg(StageInfo *stage) {
 		fbpair_swap(background);
 	}
 
-	apply_bg_shaders(stage->procs->shader_rules, background);
+	set_ortho(VIEWPORT_W, VIEWPORT_H);
+	r_disable(RCAP_DEPTH_TEST);
 
-	return;
+	apply_bg_shaders(stage->procs->shader_rules, background);
 }
 
 bool stage_should_draw_particle(Projectile *p) {
@@ -792,7 +900,6 @@ void stage_draw_scene(StageInfo *stage) {
 	bool draw_bg = !config_get_int(CONFIG_NO_STAGEBG) && !key_nobg;
 
 	if(draw_bg) {
-		// render the 3D background
 		stage_render_bg(stage);
 	}
 
@@ -800,18 +907,11 @@ void stage_draw_scene(StageInfo *stage) {
 	r_framebuffer(foreground->back);
 	set_ortho(VIEWPORT_W, VIEWPORT_H);
 	r_disable(RCAP_DEPTH_TEST);
+	r_shader_standard();
 
 	if(draw_bg) {
-		// enable boss background distortion
-		if(global.boss) {
-			apply_zoom_shader();
-		}
-
-		// draw the 3D background
+		// blit the background
 		draw_framebuffer_tex(background->front, VIEWPORT_W, VIEWPORT_H);
-
-		// disable boss background distortion
-		r_shader_standard();
 
 		// draw bomb background
 		// FIXME: we need a more flexible and consistent way for entities to hook
@@ -1431,19 +1531,5 @@ void stage_draw_hud(void) {
 		r_color4(1 - red, 1 - red, 1 - red, 1 - red);
 		draw_sprite(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
 		r_color4(1, 1, 1, 1);
-	}
-
-	// Power Surge indicator
-	if(global.plr.powersurge.ticks) {
-		float surge = global.plr.powersurge.ticks / (float)PLR_POWERSURGE_DURATION;
-		r_state_push();
-		r_mat_push();
-		r_mat_translate(VIEWPORT_X + surge * 0.5 * VIEWPORT_W, VIEWPORT_Y + VIEWPORT_H - 5, 0);
-		r_mat_scale(VIEWPORT_W * surge, 5, 1);
-		r_color4(0.2, 0, 0, 0.1);
-		r_shader_standard_notex();
-		r_draw_quad();
-		r_mat_pop();
-		r_state_pop();
 	}
 }
