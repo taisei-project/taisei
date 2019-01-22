@@ -156,17 +156,17 @@ begin_frame:
 			fpscounter_update(&global.fps.render);
 		}
 
-		if(lframe_action == LFRAME_STOP) {
-			break;
-		}
-
 		if(rframe_action == RFRAME_SWAP) {
 			video_swap_buffers();
 		}
 
+		if(lframe_action == LFRAME_STOP) {
+			break;
+		}
+
 		fpscounter_update(&global.fps.busy);
 
-		if(/*lframe_action == LFRAME_SKIP ||*/ uncapped_rendering) {
+		if(uncapped_rendering || global.frameskip > 0) {
 			continue;
 		}
 
