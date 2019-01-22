@@ -86,7 +86,7 @@ static double fb_scale(void) {
 static void set_fb_size(StageFBPair fb_id, int *w, int *h, float scale_worst, float scale_best) {
 	double scale = fb_scale();
 
-	if(fb_id == FBPAIR_FG_AUX) {
+	if(fb_id == FBPAIR_FG_AUX || fb_id == FBPAIR_BG_AUX) {
 		scale_worst *= 0.5;
 	}
 
@@ -126,7 +126,7 @@ static void update_fb_size(StageFBPair fb_id) {
 	fbpair_resize_all(stagedraw.fb_pairs + fb_id, w, h);
 	fbpair_viewport(stagedraw.fb_pairs + fb_id, 0, 0, w, h);
 
-	if(fb_id != FBPAIR_FG_AUX) {
+	if(fb_id != FBPAIR_FG_AUX && fb_id != FBPAIR_BG_AUX) {
 		for(CustomFramebuffer *cfb = stagedraw.custom_fbs; cfb; cfb = cfb->next) {
 			if(cfb->scaling_base == fb_id) {
 				set_custom_fb_size(cfb, &w, &h);
@@ -230,8 +230,8 @@ static void stage_draw_setup_framebuffers(void) {
 	fbpair_create(stagedraw.fb_pairs + FBPAIR_BG, 2, a, "Stage BG");
 	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_BG, 0, 0, bg_width, bg_height);
 
-	// Background auxiliary: 1 RGB texture per FB
-	a_color->tex_params.type = TEX_TYPE_RGB_8;
+	// Background auxiliary: 1 RGBA texture per FB
+	a_color->tex_params.type = TEX_TYPE_RGBA_8;
 	a_color->tex_params.width = bga_width;
 	a_color->tex_params.height = bga_height;
 	fbpair_create(stagedraw.fb_pairs + FBPAIR_BG_AUX, 1, a, "Stage BG AUX");
@@ -613,9 +613,7 @@ static bool powersurge_draw_predicate(EntityInterface *ent) {
 	return false;
 }
 
-static bool powersurge_rule(Framebuffer *fb) {
-	Framebuffer *target_fb = r_framebuffer_current();
-
+static bool draw_powersurge_effect(Framebuffer *target_fb, BlendMode blend) {
 	r_state_push();
 	r_blend(BLEND_NONE);
 	r_disable(RCAP_DEPTH_TEST);
@@ -650,7 +648,13 @@ static bool powersurge_rule(Framebuffer *fb) {
 	r_uniform_sampler("shotlayer", r_framebuffer_get_attachment(stagedraw.powersurge_fbpair.back, FRAMEBUFFER_ATTACH_COLOR0));
 	r_uniform_sampler("flowlayer", "powersurge_flow");
 	r_uniform_float("time", global.frames/60.0);
-	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
+	r_blend(blend);
+	r_cull(CULL_BACK);
+	r_mat_push();
+	r_mat_scale(VIEWPORT_W, VIEWPORT_H, 1);
+	r_mat_translate(0.5, 0.5, 0);
+	r_draw_quad();
+	r_mat_pop();
 	fbpair_swap(&stagedraw.powersurge_fbpair);
 
 	r_state_pop();
@@ -713,15 +717,23 @@ static void finish_3d_scene(FBPair *fbpair) {
 }
 
 static void draw_full_spellbg(int t, FBPair *fbos) {
+	BlendMode blend_old = r_blend_current();
 	r_framebuffer(fbos->back);
+	r_blend(BLEND_PREMUL_ALPHA);
 	draw_spellbg(t);
 	fbpair_swap(fbos);
+	r_blend(BLEND_NONE);
 	apply_shader_rules((ShaderRule[]) { boss_distortion_rule, NULL }, fbos);
+	r_blend(BLEND_PREMUL_ALPHA);
 	draw_spellbg_overlay(t);
+	r_blend(blend_old);
 }
 
 static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 	Boss *b = global.boss;
+
+	r_state_push();
+	r_blend(BLEND_NONE);
 
 	if(should_draw_stage_bg()) {
 		finish_3d_scene(fbos);
@@ -778,17 +790,16 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 				r_uniform_float("t", max(0, tn / delay + 1));
 			}
 
+			r_blend(BLEND_PREMUL_ALPHA);
 			draw_framebuffer_tex(aux->front, VIEWPORT_W, VIEWPORT_H);
+			r_blend(BLEND_NONE);
 			fbpair_swap(fbos);
 		}
 	} else {
 		apply_shader_rules((ShaderRule[]) { boss_distortion_rule, NULL }, fbos);
 	}
 
-	apply_shader_rules((ShaderRule[]) {
-		powersurge_rule,
-		NULL
-	}, fbos);
+	r_state_pop();
 }
 
 static void stage_render_bg(StageInfo *stage) {
@@ -810,6 +821,23 @@ static void stage_render_bg(StageInfo *stage) {
 	r_disable(RCAP_DEPTH_TEST);
 
 	apply_bg_shaders(stage->procs->shader_rules, background);
+
+	int pp = config_get_int(CONFIG_POSTPROCESS);
+
+	if(pp > 1) {
+		draw_powersurge_effect(background->front, BLEND_PREMUL_ALPHA);
+	} else if(pp > 0) {
+		Framebuffer *staging = stage_get_fbpair(FBPAIR_BG_AUX)->back;
+
+		r_state_push();
+		r_framebuffer_clear(staging, CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+		draw_powersurge_effect(staging, BLEND_NONE);
+		r_shader_standard();
+		r_framebuffer(background->front);
+		r_blend(BLEND_PREMUL_ALPHA);
+		draw_framebuffer_tex(staging, VIEWPORT_W, VIEWPORT_H);
+		r_state_pop();
+	}
 }
 
 bool stage_should_draw_particle(Projectile *p) {
@@ -907,11 +935,16 @@ void stage_draw_scene(StageInfo *stage) {
 	r_framebuffer(foreground->back);
 	set_ortho(VIEWPORT_W, VIEWPORT_H);
 	r_disable(RCAP_DEPTH_TEST);
+	r_blend(BLEND_PREMUL_ALPHA);
+	r_cull(CULL_BACK);
 	r_shader_standard();
 
 	if(draw_bg) {
 		// blit the background
+		r_state_push();
+		r_blend(BLEND_NONE);
 		draw_framebuffer_tex(background->front, VIEWPORT_W, VIEWPORT_H);
+		r_state_pop();
 
 		// draw bomb background
 		// FIXME: we need a more flexible and consistent way for entities to hook
@@ -928,6 +961,7 @@ void stage_draw_scene(StageInfo *stage) {
 
 	// everything drawn, now apply postprocessing
 	fbpair_swap(foreground);
+	r_blend(BLEND_NONE);
 
 	// stage postprocessing
 	apply_shader_rules(global.stage->procs->postprocess_rules, foreground);
@@ -954,6 +988,7 @@ void stage_draw_scene(StageInfo *stage) {
 
 	// draw the game viewport and HUD
 	stage_draw_foreground();
+	r_blend(BLEND_PREMUL_ALPHA);
 	stage_draw_hud();
 }
 

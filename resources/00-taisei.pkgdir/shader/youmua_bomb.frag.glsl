@@ -7,6 +7,7 @@
 
 UNIFORM(1) float tbomb;
 UNIFORM(2) vec2 myon;
+UNIFORM(3) vec4 fill_overlay;
 
 void main(void) {
 	vec2 pos = texCoord;
@@ -22,5 +23,5 @@ void main(void) {
 	pos = myon + radius*vec2(cos(angle), sin(angle));
 
 	float bladeShine = pow(bladeFac,4)/(1+pow(radius/envelope,5));
-	fragColor = texture(tex, pos)+vec4(0.5,0,1,0)*bladeShine;
+	fragColor = alphaCompose(texture(tex, pos) + vec4(0.5, 0, 1, 0) * bladeShine, fill_overlay);
 }

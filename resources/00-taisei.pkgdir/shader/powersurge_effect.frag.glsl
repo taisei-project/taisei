@@ -3,6 +3,9 @@
 #include "interface/standard.glslh"
 #include "lib/util.glslh"
 
+#define ENABLE_ALPHA_CULLING
+// #define DEBUG_ALPHA_CULLING
+
 UNIFORM(1) sampler2D shotlayer;
 UNIFORM(2) sampler2D flowlayer;
 UNIFORM(3) float time;
@@ -29,16 +32,17 @@ void main(void) {
 	vec2 gradX = dFdx(uv);
 	vec2 gradY = dFdy(uv);
 	vec4 c = textureGrad(shotlayer, uv, gradX, gradY);
-	vec4 bg = textureGrad(tex, uv, gradX, gradY);
 
+	#ifdef ENABLE_ALPHA_CULLING
 	if(c.a <= 0) {
-		fragColor = bg;
-
-		// uncomment for culling visualization
-		// fragColor = vec4(1, 0, 0, 1);
-
+		#ifdef DEBUG_ALPHA_CULLING
+		fragColor = vec4(1, 0, 0, 1);
 		return;
+		#else
+		discard;
+		#endif
 	}
+	#endif
 
 	c = colormap(c);
 
@@ -59,5 +63,5 @@ void main(void) {
 
 	m.rgb = hueShift(clamp(m.rgb / 3, 0, 1), time * 0.1 + uv.y);
 
-	fragColor = alphaCompose(bg, c * m);
+	fragColor = c * m;
 }
