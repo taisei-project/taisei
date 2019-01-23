@@ -288,11 +288,15 @@ void stage_draw_init(void) {
 		"hud/heart",
 		"hud/star",
 		"star",
-		"hud",
 	NULL);
 
 	preload_resources(RES_TEXTURE, RESF_PERMANENT,
 		"titletransition",
+		"hud",
+	NULL);
+
+	preload_resources(RES_MODEL, RESF_PERMANENT,
+		"hud",
 	NULL);
 
 	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
@@ -1220,7 +1224,12 @@ static void stage_draw_framerate_graphs(void) {
 
 void stage_draw_hud(void) {
 	// Background
-	draw_sprite(SCREEN_W/2.0, SCREEN_H/2.0, "hud");
+	r_mat_push();
+	r_mat_translate(SCREEN_W*0.5, SCREEN_H*0.5, 0);
+	r_shader_standard();
+	r_uniform_sampler("tex", "hud");
+	r_draw_model("hud");
+	r_mat_pop();
 
 	// TODO: refactor this whole mess of arcane magic numbers into something more sensible
 	// hahaha who am I kidding, nobody is gonna do that.
