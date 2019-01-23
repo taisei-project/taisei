@@ -14,10 +14,14 @@ cglm_includes = []
 cglm_links = []
 cglm_deps = []
 
+cc = meson.get_compiler('c')
+
+have_visibility_kwarg = meson.version().version_compare('>=0.48.0')
+
 # Hiding symbols that are not explicitly marked as exported
 # requires a compiler flag on all compilers except VS.
-cc = meson.get_compiler('c')
-if cc.get_id() != 'msvc'
+
+if not have_visibility_kwarg and cc.has_argument('-fvisibility=hidden')
   cglm_args += ['-fvisibility=hidden']
 endif
 
@@ -34,22 +38,19 @@ if lib_type == 'default_library'
   lib_type = get_option('default_library')
 endif
 
-if lib_type == 'static'
-  cglm_lib = static_library('cglm', cglm_sources,
-    install : not meson.is_subproject(),
-    build_by_default : not meson.is_subproject(),
-    c_args : cglm_args,
-    dependencies: cglm_deps,
-  )
-elif lib_type == 'shared'
-  cglm_lib = static_library('cglm', cglm_sources,
-    install : not meson.is_subproject(),
-    build_by_default : not meson.is_subproject(),
-    c_args : cglm_args,
-    dependencies: cglm_deps,
-  )
-elif lib_type == 'inline'
+lib_type = '@0@_library'.format(lib_type)
+
+if lib_type == 'inline_library'
   cglm_lib = []
+else
+  cglm_lib = build_target('cglm', cglm_sources,
+    target_type : lib_type,
+    install : not meson.is_subproject(),
+    build_by_default : not meson.is_subproject(),
+    c_args : cglm_args,
+    dependencies : cglm_deps,
+    gnu_symbol_visibility : 'hidden', # non-fatal warning on meson <0.48.0, whatever
+  )
 endif
 
 # Make this library usable as a Meson subproject.
